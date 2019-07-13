@@ -53,16 +53,16 @@
 
 #include <Qt>
 
-class StickMan;
 QT_BEGIN_NAMESPACE
-class QStateMachine;
-class QAnimationGroup;
-class QState;
 class QAbstractState;
 class QAbstractTransition;
+class QAnimationGroup;
 class QObject;
+class QState;
+class QStateMachine;
 QT_END_NAMESPACE
 class GraphicsView;
+class StickMan;
 class LifeCycle
 {
 public:
@@ -70,7 +70,8 @@ public:
     ~LifeCycle();
 
     void setDeathAnimation(const QString &fileName);
-    void addActivity(const QString &fileName, Qt::Key key, QObject *sender = NULL, const char *signal = NULL);
+    void addActivity(const QString &fileName, Qt::Key key,
+                     QObject *sender = nullptr, const char *signal = nullptr);
 
     void start();
 

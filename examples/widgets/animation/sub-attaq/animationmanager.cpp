@@ -51,22 +51,13 @@
 //Own
 #include "animationmanager.h"
 
-//Qt
-#include <QtCore/QAbstractAnimation>
-#include <QtCore/QDebug>
-
-// the universe's only animation manager
-AnimationManager *AnimationManager::instance = nullptr;
-
-AnimationManager::AnimationManager()
-{
-}
+#include <QAbstractAnimation>
 
 AnimationManager *AnimationManager::self()
 {
-    if (!instance)
-        instance = new AnimationManager;
-    return instance;
+    // the universe's only animation manager
+    static AnimationManager s_instance;
+    return &s_instance;
 }
 
 void AnimationManager::registerAnimation(QAbstractAnimation *anim)

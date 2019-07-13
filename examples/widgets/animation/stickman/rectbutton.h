@@ -57,19 +57,19 @@ class RectButton : public QGraphicsObject
 {
     Q_OBJECT
 public:
-    RectButton(QString buttonText);
-    ~RectButton();
+    RectButton(const QString &buttonText);
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
 protected:
-    QString m_ButtonText;
-
     void mousePressEvent (QGraphicsSceneMouseEvent *event) override;
 
 signals:
     void clicked();
+
+private:
+    QString m_ButtonText;
 };
 
 #endif // RECTBUTTON_H

@@ -51,13 +51,7 @@
 #ifndef QANIMATIONSTATE_H
 #define QANIMATIONSTATE_H
 
-#ifndef QT_STATEMACHINE_SOLUTION
-#  include <QtCore/qstate.h>
-#  include <QtCore/qabstractanimation.h>
-#else
-#  include "qstate.h"
-#  include "qabstractanimation.h"
-#endif
+#include <QState>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,7 +61,7 @@ class QAnimationState : public QState
 {
     Q_OBJECT
 public:
-    QAnimationState(QState *parent = 0);
+    QAnimationState(QState *parent = nullptr);
     ~QAnimationState();
 
     void setAnimation(QAbstractAnimation *animation);

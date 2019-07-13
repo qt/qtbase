@@ -52,15 +52,14 @@
 #include "submarine.h"
 #include "submarine_p.h"
 #include "torpedo.h"
-#include "pixmapitem.h"
 #include "graphicsscene.h"
 #include "animationmanager.h"
 #include "qanimationstate.h"
 
-#include <QtCore/QPropertyAnimation>
-#include <QtCore/QStateMachine>
-#include <QtCore/QFinalState>
-#include <QtCore/QSequentialAnimationGroup>
+#include <QFinalState>
+#include <QPropertyAnimation>
+#include <QStateMachine>
+#include <QSequentialAnimationGroup>
 
 static QAbstractAnimation *setupDestroyAnimation(SubMarine *sub)
 {
@@ -86,9 +85,8 @@ SubMarine::SubMarine(int type, const QString &name, int points) : PixmapItem(QSt
 
     graphicsRotation = new QGraphicsRotation(this);
     graphicsRotation->setAxis(Qt::YAxis);
-    graphicsRotation->setOrigin(QVector3D(size().width()/2, size().height()/2, 0));
-    QList<QGraphicsTransform *> r;
-    r.append(graphicsRotation);
+    graphicsRotation->setOrigin(QVector3D(size().width() / 2, size().height() / 2, 0));
+    QList<QGraphicsTransform *> r({graphicsRotation});
     setTransformations(r);
 
     //We setup the state machine of the submarine
@@ -112,7 +110,7 @@ SubMarine::SubMarine(int type, const QString &name, int points) : PixmapItem(QSt
     machine->setInitialState(moving);
 
     //End
-    QFinalState *final = new QFinalState(machine);
+    QFinalState *finalState = new QFinalState(machine);
 
     //If the moving animation is finished we move to the return state
     movement->addTransition(movement, &QAnimationState::animationFinished, rotation);
@@ -128,7 +126,7 @@ SubMarine::SubMarine(int type, const QString &name, int points) : PixmapItem(QSt
     moving->addTransition(this, &SubMarine::subMarineDestroyed, destroyedState);
 
     //Transition to final state when the destroyed animation is finished
-    destroyedState->addTransition(destroyedState, &QAnimationState::animationFinished, final);
+    destroyedState->addTransition(destroyedState, &QAnimationState::animationFinished, finalState);
 
     //The machine has finished to be executed, then the submarine is dead
     connect(machine,&QState::finished,this, &SubMarine::subMarineExecutionFinished);
@@ -145,9 +143,8 @@ void SubMarine::setCurrentDirection(SubMarine::Movement direction)
 {
     if (this->direction == direction)
         return;
-    if (direction == SubMarine::Right && this->direction == SubMarine::None) {
+    if (direction == SubMarine::Right && this->direction == SubMarine::None)
           graphicsRotation->setAngle(180);
-    }
     this->direction = direction;
 }
 
@@ -158,9 +155,8 @@ enum SubMarine::Movement SubMarine::currentDirection() const
 
 void SubMarine::setCurrentSpeed(int speed)
 {
-    if (speed < 0 || speed > 3) {
+    if (speed < 0 || speed > 3)
         qWarning("SubMarine::setCurrentSpeed : The speed is invalid");
-    }
     this->speed = speed;
     emit subMarineStateChanged();
 }
@@ -172,7 +168,7 @@ int SubMarine::currentSpeed() const
 
 void SubMarine::launchTorpedo(int speed)
 {
-    Torpedo * torp = new Torpedo();
+    Torpedo *torp = new Torpedo;
     GraphicsScene *scene = static_cast<GraphicsScene *>(this->scene());
     scene->addItem(torp);
     torp->setPos(pos());

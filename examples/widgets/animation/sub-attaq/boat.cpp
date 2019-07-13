@@ -52,18 +52,17 @@
 #include "boat.h"
 #include "boat_p.h"
 #include "bomb.h"
-#include "pixmapitem.h"
 #include "graphicsscene.h"
 #include "animationmanager.h"
 #include "qanimationstate.h"
 
 //Qt
-#include <QtCore/QPropertyAnimation>
-#include <QtCore/QStateMachine>
-#include <QtCore/QHistoryState>
-#include <QtCore/QFinalState>
-#include <QtCore/QState>
-#include <QtCore/QSequentialAnimationGroup>
+#include <QFinalState>
+#include <QHistoryState>
+#include <QPropertyAnimation>
+#include <QSequentialAnimationGroup>
+#include <QState>
+#include <QStateMachine>
 
 static QAbstractAnimation *setupDestroyAnimation(Boat *boat)
 {
@@ -181,7 +180,7 @@ Boat::Boat()
     launchStateLeft->addTransition(historyState);
     launchStateRight->addTransition(historyState);
 
-    QFinalState *final = new QFinalState(machine);
+    QFinalState *finalState = new QFinalState(machine);
 
     //This state play the destroyed animation
     QAnimationState *destroyedState = new QAnimationState(machine);
@@ -191,10 +190,10 @@ Boat::Boat()
     moving->addTransition(this, &Boat::boatDestroyed, destroyedState);
 
     //Transition to final state when the destroyed animation is finished
-    destroyedState->addTransition(destroyedState, &QAnimationState::animationFinished, final);
+    destroyedState->addTransition(destroyedState, &QAnimationState::animationFinished, finalState);
 
     //The machine has finished to be executed, then the boat is dead
-    connect(machine,&QState::finished, this, &Boat::boatExecutionFinished);
+    connect(machine, &QState::finished, this, &Boat::boatExecutionFinished);
 
 }
 
