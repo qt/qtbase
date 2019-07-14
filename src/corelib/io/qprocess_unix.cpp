@@ -438,7 +438,6 @@ void QProcessPrivate::startProcess()
     int envc = 0;
     char **envp = 0;
     if (environment.d.constData()) {
-        QProcessEnvironmentPrivate::MutexLocker locker(environment.d);
         envp = _q_dupEnvironment(environment.d.constData()->vars, &envc);
     }
 
@@ -970,7 +969,6 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             int envc = 0;
             char **envp = nullptr;
             if (environment.d.constData()) {
-                QProcessEnvironmentPrivate::MutexLocker locker(environment.d);
                 envp = _q_dupEnvironment(environment.d.constData()->vars, &envc);
             }
 
