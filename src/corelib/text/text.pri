@@ -9,7 +9,7 @@ HEADERS +=  \
         text/qchar.h \
         text/qcollator.h \
         text/qcollator_p.h \
-        tools/qdoublescanprint_p.h \
+        text/qdoublescanprint_p.h \
         text/qlocale.h \
         text/qlocale_p.h \
         text/qlocale_tools_p.h \
