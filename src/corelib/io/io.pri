@@ -173,7 +173,7 @@ win32 {
                 io/qlockfile_unix.cpp \
                 io/qfilesystemiterator_unix.cpp
 
-        !integrity:!uikit:!rtems {
+        qtConfig(process) {
             SOURCES += io/forkfd_qt.cpp
             HEADERS += \
                      ../3rdparty/forkfd/forkfd.h

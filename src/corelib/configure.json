@@ -890,7 +890,7 @@
             "label": "QProcess",
             "purpose": "Supports external process invocation.",
             "section": "File I/O",
-            "condition": "features.processenvironment && !config.winrt && !config.uikit && !config.integrity && !config.vxworks && !config.rtems",
+            "condition": "features.processenvironment && (features.thread || !config.unix) && !config.winrt && !config.uikit && !config.integrity && !config.vxworks && !config.rtems",
             "output": [ "publicFeature", "feature" ]
         },
         "processenvironment": {
