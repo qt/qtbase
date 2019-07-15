@@ -362,7 +362,7 @@ static bool parseTestArgs()
         g_options.testArgs += QStringLiteral(" -o output.%1,%1").arg(format);
 
     g_options.testArgs += unhandledArgs;
-    g_options.testArgs = QStringLiteral("shell am start -e applicationArguments \"'%1'\" -n %2/%3").arg(shellQuote(g_options.testArgs.trimmed()),
+    g_options.testArgs = QStringLiteral("shell am start -e applicationArguments \\\"%1\\\" -n %2/%3").arg(shellQuote(g_options.testArgs.trimmed()),
                                                                                                       g_options.package,
                                                                                                       g_options.activity);
     return true;
