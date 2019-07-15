@@ -338,11 +338,10 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) Q_DECL_
     setDate(). The fromString() function returns a QDate given a string and a
     date format which is used to interpret the date within the string.
 
-    The year(), month(), and day() functions provide access to the
-    year, month, and day numbers. Also, dayOfWeek() and dayOfYear()
-    functions are provided. The same information is provided in
-    textual format by the toString(), shortDayName(), longDayName(),
-    shortMonthName(), and longMonthName() functions.
+    The year(), month(), and day() functions provide access to the year, month,
+    and day numbers. Also, dayOfWeek() and dayOfYear() functions are
+    provided. The same information is provided in textual format by
+    toString(). The day and month numbers can be mapped to names using QLocal.
 
     QDate provides a full set of operators to compare two QDate
     objects where smaller means earlier, and larger means later.
@@ -807,11 +806,10 @@ static QString toStringIsoDate(qint64 jd)
     Returns the date as a string. The \a format parameter determines
     the format of the string.
 
-    If the \a format is Qt::TextDate, the string is formatted in
-    the default way. QDate::shortDayName() and QDate::shortMonthName()
-    are used to generate the string, so the day and month names will
-    be localized names using the system locale, i.e. QLocale::system(). An
-    example of this formatting is "Sat May 20 1995".
+    If the \a format is Qt::TextDate, the string is formatted in the default
+    way. The day and month names will be localized names using the system
+    locale, i.e. QLocale::system(). An example of this formatting
+    is "Sat May 20 1995".
 
     If the \a format is Qt::ISODate, the string format corresponds
     to the ISO 8601 extended specification for representations of
@@ -843,7 +841,7 @@ static QString toStringIsoDate(qint64 jd)
     range 0 to 9999. This restriction may apply to locale-aware
     formats as well, depending on the locale settings.
 
-    \sa fromString(), shortDayName(), shortMonthName(), QLocale::toString()
+    \sa fromString(), QLocale::toString()
 */
 QString QDate::toString(Qt::DateFormat format) const
 {
@@ -3802,12 +3800,10 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 
     Returns the datetime as a string in the \a format given.
 
-    If the \a format is Qt::TextDate, the string is formatted in
-    the default way. QDate::shortDayName(), QDate::shortMonthName(),
-    and QTime::toString() are used to generate the string, so the
-    day and month names will be localized names using the system locale,
-    i.e. QLocale::system(). An example of this formatting is
-    "Wed May 20 03:40:13 1998".
+    If the \a format is Qt::TextDate, the string is formatted in the default
+    way. The day and month names will be localized names using the system
+    locale, i.e. QLocale::system(). An example of this formatting is "Wed May 20
+    03:40:13 1998".
 
     If the \a format is Qt::ISODate, the string format corresponds
     to the ISO 8601 extended specification for representations of
@@ -4983,18 +4979,14 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
     \row \li dd \li the day as number with a leading zero (01 to 31)
     \row \li ddd
             \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
-            Uses QDate::shortDayName().
     \row \li dddd
             \li the long localized day name (e.g. 'Monday' to 'Sunday').
-            Uses QDate::longDayName().
     \row \li M \li the month as number without a leading zero (1-12)
     \row \li MM \li the month as number with a leading zero (01-12)
     \row \li MMM
             \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
-            Uses QDate::shortMonthName().
     \row \li MMMM
             \li the long localized month name (e.g. 'January' to 'December').
-            Uses QDate::longMonthName().
     \row \li yy \li the year as two digit number (00-99)
     \row \li yyyy \li the year as four digit number
     \endtable
