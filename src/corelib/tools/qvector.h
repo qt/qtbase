@@ -416,7 +416,7 @@ template <typename T>
 void QVector<T>::resize(int asize)
 {
     if (asize == d->size)
-        return;
+        return detach();
     if (asize > int(d->alloc) || !isDetached()) { // there is not enough space
         QArrayData::AllocationOptions opt = asize > int(d->alloc) ? QArrayData::Grow : QArrayData::Default;
         realloc(qMax(int(d->alloc), asize), opt);
