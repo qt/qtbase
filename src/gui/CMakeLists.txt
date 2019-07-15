@@ -695,7 +695,7 @@ if (QT_FEATURE_vulkan)
         COMMENT "Generating vulkan data"
     )
 
-    extend_target(Gui CONDITION QT_FEATURE_vulkan
+    extend_target(Gui
         SOURCES
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun}"
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun_p}"
