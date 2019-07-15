@@ -569,12 +569,12 @@ class Scope(object):
 
     def _evalOps(self, key: str,
                  transformer: typing.Optional[typing.Callable[[Scope, typing.List[str]], typing.List[str]]],
-                 result: typing.List[str], *, inherrit: bool = False) \
+                 result: typing.List[str], *, inherit: bool = False) \
             -> typing.List[str]:
         self._visited_keys.add(key)
 
         # Inherrit values from above:
-        if self._parent and inherrit:
+        if self._parent and inherit:
             result = self._parent._evalOps(key, transformer, result)
 
         if transformer:
@@ -590,7 +590,7 @@ class Scope(object):
 
         return result
 
-    def get(self, key: str, *, ignore_includes: bool = False, inherrit: bool = False) -> typing.List[str]:
+    def get(self, key: str, *, ignore_includes: bool = False, inherit: bool = False) -> typing.List[str]:
 
         is_same_path = self.currentdir == self.basedir
 
@@ -605,7 +605,7 @@ class Scope(object):
             else:
                 return ['${CMAKE_CURRENT_BINARY_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
 
-        return self._evalOps(key, None, [], inherrit=inherrit)
+        return self._evalOps(key, None, [], inherit=inherit)
 
     def get_string(self, key: str, default: str = '') -> str:
         v = self.get(key)
@@ -625,7 +625,7 @@ class Scope(object):
         mapped_files = list(map(lambda f: map_to_file(f, self, is_include=is_include), expanded_files))
 
         if use_vpath:
-            result = list(map(lambda f: handle_vpath(f, self.basedir, self.get('VPATH', inherrit=True)), mapped_files))
+            result = list(map(lambda f: handle_vpath(f, self.basedir, self.get('VPATH', inherit=True)), mapped_files))
         else:
             result = mapped_files
 
@@ -649,13 +649,17 @@ class Scope(object):
         while match:
             old_result = result
             if match.group(0) == value:
-                return self.get(match.group(1))
-
-            replacement = self.get(match.group(1))
-            replacement_str = replacement[0] if replacement else ''
-            result = result[:match.start()] \
-                     + replacement_str \
-                     + result[match.end():]
+                get_result = self.get(match.group(1), inherit = True)
+                if len(get_result) == 1:
+                    result = get_result[0]
+                else:
+                    return get_result
+            else:
+                replacement = self.get(match.group(1), inherit = True)
+                replacement_str = replacement[0] if replacement else ''
+                result = result[:match.start()] \
+                         + replacement_str \
+                         + result[match.end():]
 
             if result == old_result:
                 return [result,] # Do not go into infinite loop

@@ -336,3 +336,11 @@ def test_qstandardpaths_scopes():
     assert scope10.total_condition == 'UNIX AND NOT APPLE_OSX AND (ANDROID_EMBEDDED OR NOT ANDROID)'
     assert scope11.total_condition == 'HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)'
     assert scope12.total_condition == 'UNIX AND NOT APPLE_OSX AND NOT HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)'
+
+def test_recursive_expansion():
+    scope = _new_scope(A='Foo',B='$$A/Bar')
+    assert scope.get_string('A') == 'Foo'
+    assert scope.get_string('B') == '$$A/Bar'
+    assert scope._expand_value('$$B/Source.cpp') == ['Foo/Bar/Source.cpp']
+    assert scope._expand_value('$$B') == ['Foo/Bar']
+
