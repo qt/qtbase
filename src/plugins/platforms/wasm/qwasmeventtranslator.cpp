@@ -824,7 +824,7 @@ static Qt::Key find_impl(const KeyMapping *first, const KeyMapping *last, Qt::Ke
             return first->to;
         ++first;
     }
-    return {};
+    return Qt::Key_unknown;
 }
 
 template <size_t N>
