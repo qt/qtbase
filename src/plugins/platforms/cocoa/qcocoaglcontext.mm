@@ -40,6 +40,8 @@
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
 #include "qcocoahelpers.h"
+#include "qcocoascreen.h"
+
 #include <qdebug.h>
 #include <QtPlatformHeaders/qcocoanativecontext.h>
 #include <dlfcn.h>
@@ -275,9 +277,28 @@ void QCocoaGLContext::updateSurfaceFormat()
 
     NSOpenGLPixelFormat *pixelFormat = m_context.pixelFormat;
 
+    GLint virtualScreen = [&, this]() {
+        auto *platformScreen = static_cast<QCocoaScreen*>(context()->screen()->handle());
+        auto displayId = platformScreen->nativeScreen().qt_displayId;
+        auto requestedDisplay = CGDisplayIDToOpenGLDisplayMask(displayId);
+        for (int i = 0; i < pixelFormat.numberOfVirtualScreens; ++i) {
+            GLint supportedDisplays;
+            [pixelFormat getValues:&supportedDisplays forAttribute:NSOpenGLPFAScreenMask forVirtualScreen:i];
+            // Note: The mask returned for NSOpenGLPFAScreenMask is a bit mask of
+            // physical displays that the renderer can drive, while the one returned
+            // from CGDisplayIDToOpenGLDisplayMask has a single bit set, representing
+            // that particular display.
+            if (requestedDisplay & supportedDisplays)
+                return i;
+        }
+        qCWarning(lcQpaOpenGLContext) << "Could not find virtual screen for"
+                    << platformScreen << "with displayId" << displayId;
+        return 0;
+    }();
+
     auto pixelFormatAttribute = [&](NSOpenGLPixelFormatAttribute attribute) {
         int value = 0;
-        [pixelFormat getValues:&value forAttribute:attribute forVirtualScreen:0];
+        [pixelFormat getValues:&value forAttribute:attribute forVirtualScreen:virtualScreen];
         return value;
     };
 
