@@ -76,9 +76,14 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcQpaOpenGLContext, "qt.qpa.openglcontext", QtWarningMsg);
 
 QCocoaGLContext::QCocoaGLContext(QOpenGLContext *context)
-    : QPlatformOpenGLContext(), m_format(context->format())
+    : QPlatformOpenGLContext()
+    , m_format(context->format())
 {
-    QVariant nativeHandle = context->nativeHandle();
+}
+
+void QCocoaGLContext::initialize()
+{
+    QVariant nativeHandle = context()->nativeHandle();
     if (!nativeHandle.isNull()) {
         if (!nativeHandle.canConvert<QCocoaNativeContext>()) {
             qCWarning(lcQpaOpenGLContext, "QOpenGLContext native handle must be a QCocoaNativeContext");
@@ -95,7 +100,7 @@ QCocoaGLContext::QCocoaGLContext(QOpenGLContext *context)
         // Note: We have no way of knowing whether the NSOpenGLContext was created with the
         // share context as reported by the QOpenGLContext, but we just have to trust that
         // it was. It's okey, as the only thing we're using it for is to report isShared().
-        if (QPlatformOpenGLContext *shareContext = context->shareHandle())
+        if (QPlatformOpenGLContext *shareContext = context()->shareHandle())
             m_shareContext = static_cast<QCocoaGLContext *>(shareContext)->nativeContext();
 
         updateSurfaceFormat();
@@ -110,7 +115,7 @@ QCocoaGLContext::QCocoaGLContext(QOpenGLContext *context)
     if (m_format.renderableType() != QSurfaceFormat::OpenGL)
         return;
 
-    if (QPlatformOpenGLContext *shareContext = context->shareHandle()) {
+    if (QPlatformOpenGLContext *shareContext = context()->shareHandle()) {
         m_shareContext = static_cast<QCocoaGLContext *>(shareContext)->nativeContext();
 
         // Allow sharing between 3.2 Core and 4.1 Core profile versions in
@@ -149,6 +154,9 @@ QCocoaGLContext::QCocoaGLContext(QOpenGLContext *context)
         qCWarning(lcQpaOpenGLContext, "Failed to create NSOpenGLContext");
         return;
     }
+
+    // The native handle should reflect the underlying context, even if we created it
+    context()->setNativeHandle(QVariant::fromValue<QCocoaNativeContext>(m_context));
 
     // --------------------- Set NSOpenGLContext properties ---------------------
 
