@@ -332,7 +332,7 @@ bool QNetworkConnectionEvents::stopMonitoring()
 
 QNetworkConnectionMonitorPrivate::QNetworkConnectionMonitorPrivate()
 {
-    auto hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    auto hr = CoInitialize(nullptr);
     if (FAILED(hr)) {
         qCWarning(lcNetMon) << "Failed to initialize COM:" << errorStringFromHResult(hr);
         comInitFailed = true;
@@ -611,7 +611,7 @@ bool QNetworkListManagerEvents::stop()
 
 QNetworkStatusMonitorPrivate::QNetworkStatusMonitorPrivate()
 {
-    auto hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    auto hr = CoInitialize(nullptr);
     if (FAILED(hr)) {
         qCWarning(lcNetMon) << "Failed to initialize COM:" << errorStringFromHResult(hr);
         comInitFailed = true;
