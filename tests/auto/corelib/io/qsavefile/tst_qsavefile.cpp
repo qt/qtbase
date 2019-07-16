@@ -72,6 +72,7 @@ public slots:
 
 private slots:
     void transactionalWrite();
+    void retryTransactionalWrite();
     void textStreamManualFlush();
     void textStreamAutoFlush();
     void saveTwice();
@@ -127,6 +128,39 @@ void tst_QSaveFile::transactionalWrite()
     other.open(QIODevice::WriteOnly);
     other.close();
     QCOMPARE(QFile::permissions(targetFile), QFile::permissions(otherFile));
+}
+
+// QTBUG-77007: Simulate the case of an application with a loop prompting
+// to retry saving on failure. Create a read-only file first (Unix only)
+void tst_QSaveFile::retryTransactionalWrite()
+{
+#ifndef Q_OS_UNIX
+    QSKIP("This test is Unix only");
+#endif
+    QTemporaryDir dir;
+    QVERIFY2(dir.isValid(), qPrintable(dir.errorString()));
+
+    QString targetFile = dir.path() + QLatin1String("/outfile");
+    const QString readOnlyName = targetFile + QLatin1String(".ro");
+    {
+        QFile readOnlyFile(readOnlyName);
+        QVERIFY2(readOnlyFile.open(QIODevice::WriteOnly), msgCannotOpen(readOnlyFile).constData());
+        readOnlyFile.write("Hello");
+        readOnlyFile.close();
+        auto permissions = readOnlyFile.permissions();
+        permissions &= ~(QFileDevice::WriteOwner | QFileDevice::WriteGroup | QFileDevice::WriteUser);
+        QVERIFY(readOnlyFile.setPermissions(permissions));
+    }
+
+    QSaveFile file(readOnlyName);
+    QVERIFY(!file.open(QIODevice::WriteOnly));
+
+    file.setFileName(targetFile);
+    QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
+    QVERIFY(file.isOpen());
+    QCOMPARE(file.write("Hello"), Q_INT64_C(5));
+    QCOMPARE(file.error(), QFile::NoError);
+    QVERIFY(file.commit());
 }
 
 void tst_QSaveFile::saveTwice()

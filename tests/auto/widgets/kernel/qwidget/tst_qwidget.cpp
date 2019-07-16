@@ -6142,7 +6142,7 @@ void tst_QWidget::minAndMaxSizeWithX11BypassWindowManagerHint()
 {
     if (m_platform != QStringLiteral("xcb"))
         QSKIP("This test is for X11 only.");
-    // Same size as in QWidget::create_sys().
+    // Same size as in QWidgetPrivate::create.
     const QSize desktopSize = QApplication::desktop()->size();
     const QSize originalSize(desktopSize.width() / 2, desktopSize.height() * 4 / 10);
 
@@ -9425,7 +9425,7 @@ void tst_QWidget::initialPosForDontShowOnScreenWidgets()
         const QPoint expectedPos(0, 0);
         QWidget widget;
         widget.setAttribute(Qt::WA_DontShowOnScreen);
-        widget.winId(); // Make sure create_sys is called.
+        widget.winId(); // Make sure QWidgetPrivate::create is called.
         QCOMPARE(widget.pos(), expectedPos);
         QCOMPARE(widget.geometry().topLeft(), expectedPos);
     }
@@ -9435,7 +9435,7 @@ void tst_QWidget::initialPosForDontShowOnScreenWidgets()
         QWidget widget;
         widget.setAttribute(Qt::WA_DontShowOnScreen);
         widget.move(expectedPos);
-        widget.winId(); // Make sure create_sys is called.
+        widget.winId(); // Make sure QWidgetPrivate::create is called.
         QCOMPARE(widget.pos(), expectedPos);
         QCOMPARE(widget.geometry().topLeft(), expectedPos);
     }

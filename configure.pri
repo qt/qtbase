@@ -286,20 +286,39 @@ defineTest(qtConfTest_architecture) {
     !qtConfTest_compile($${1}): \
         error("Could not determine $$eval($${1}.label). See config.log for details.")
 
+    host = $$eval($${1}.host)
+    isEmpty(host): host = false
+    file_prefix =
+    exts = -
+    $$host {
+        equals(QMAKE_HOST.os, Windows): \
+            exts = .exe
+    } else {
+        win32 {
+            exts = .exe
+        } else:android {
+            file_prefix = lib
+            exts = .so
+        } else:wasm {
+            exts = .wasm .o
+        }
+    }
+
     test = $$eval($${1}.test)
+    output = $$eval($${1}.output)
     test_out_dir = $$OUT_PWD/$$basename(QMAKE_CONFIG_TESTS_DIR)/$$test
-    unix:exists($$test_out_dir/arch): \
-        content = $$cat($$test_out_dir/arch, blob)
-    else: win32:exists($$test_out_dir/arch.exe): \
-        content = $$cat($$test_out_dir/arch.exe, blob)
-    else: android:exists($$test_out_dir/libarch.so): \
-        content = $$cat($$test_out_dir/libarch.so, blob)
-    else: wasm:exists($$test_out_dir/arch.wasm): \
-        content = $$cat($$test_out_dir/arch.wasm, blob)
-    else: wasm:exists($$test_out_dir/arch.o): \
-        content = $$cat($$test_out_dir/arch.o, blob)
-    else: \
+    test_out_file =
+    for(ext, exts) {
+        equals(ext, -): ext =
+        f = $$test_out_dir/$$file_prefix$$output$$ext
+        exists($$f) {
+            test_out_file = $$f
+            break()
+        }
+    }
+    isEmpty(test_out_file): \
         error("$$eval($${1}.label) detection binary not found.")
+    content = $$cat($$test_out_file, blob)
 
     arch_magic = ".*==Qt=magic=Qt== Architecture:([^\\0]*).*"
     subarch_magic = ".*==Qt=magic=Qt== Sub-architecture:([^\\0]*).*"
