@@ -46,6 +46,7 @@
 #endif // NO_SSL
 
 #include <cstdlib>
+#include <memory>
 #include <string>
 
 #include "emulationdetector.h"
@@ -116,7 +117,7 @@ private:
 
     quint16 serverPort = 0;
     QThread *workerThread = nullptr;
-    QNetworkAccessManager manager;
+    std::unique_ptr<QNetworkAccessManager> manager;
 
     QTestEventLoop eventLoop;
 
@@ -129,6 +130,10 @@ private:
 
     static const Http2::RawSettings defaultServerSettings;
 };
+
+#define STOP_ON_FAILURE \
+    if (QTest::currentTestFailed()) \
+        return;
 
 const Http2::RawSettings tst_Http2::defaultServerSettings{{Http2::Settings::MAX_CONCURRENT_STREAMS_ID, 100}};
 
@@ -177,7 +182,7 @@ tst_Http2::~tst_Http2()
 
 void tst_Http2::init()
 {
-    manager.clearConnectionCache();
+    manager.reset(new QNetworkAccessManager);
 }
 
 void tst_Http2::singleRequest_data()
@@ -234,13 +239,14 @@ void tst_Http2::singleRequest()
     QFETCH(const QNetworkRequest::Attribute, h2Attribute);
     request.setAttribute(h2Attribute, QVariant(true));
 
-    auto reply = manager.get(request);
+    auto reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
     // Since we're using self-signed certificates,
     // ignore SSL errors:
     reply->ignoreSslErrors();
 
     runEventLoop();
+    STOP_ON_FAILURE
 
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
@@ -276,6 +282,7 @@ void tst_Http2::multipleRequests()
         sendRequest(i, priorities[QRandomGenerator::global()->bounded(3)]);
 
     runEventLoop();
+    STOP_ON_FAILURE
 
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
@@ -305,7 +312,7 @@ void tst_Http2::flowControlClientSide()
     params.maxSessionReceiveWindowSize = Http2::defaultSessionWindowSize * 5;
     params.settingsFrameData[Settings::INITIAL_WINDOW_SIZE_ID] = Http2::defaultSessionWindowSize;
     // Inform our manager about non-default settings:
-    manager.setProperty(Http2::http2ParametersPropertyName, QVariant::fromValue(params));
+    manager->setProperty(Http2::http2ParametersPropertyName, QVariant::fromValue(params));
 
     const Http2::RawSettings serverSettings = {{Settings::MAX_CONCURRENT_STREAMS_ID, quint32(3)}};
     ServerPtr srv(newServer(serverSettings, defaultConnectionType(), params));
@@ -323,6 +330,7 @@ void tst_Http2::flowControlClientSide()
         sendRequest(i);
 
     runEventLoop(120000);
+    STOP_ON_FAILURE
 
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
@@ -363,6 +371,7 @@ void tst_Http2::flowControlServerSide()
         sendRequest(i, QNetworkRequest::NormalPriority, payload);
 
     runEventLoop(120000);
+    STOP_ON_FAILURE
 
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
@@ -383,7 +392,7 @@ void tst_Http2::pushPromise()
     Http2::ProtocolParameters params;
     // Defaults are good, except ENABLE_PUSH:
     params.settingsFrameData[Settings::ENABLE_PUSH_ID] = 1;
-    manager.setProperty(Http2::http2ParametersPropertyName, QVariant::fromValue(params));
+    manager->setProperty(Http2::http2ParametersPropertyName, QVariant::fromValue(params));
 
     ServerPtr srv(newServer(defaultServerSettings, defaultConnectionType(), params));
     srv->enablePushPromise(true, QByteArray("/script.js"));
@@ -399,12 +408,13 @@ void tst_Http2::pushPromise()
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
 
-    auto reply = manager.get(request);
+    auto reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
     // Since we're using self-signed certificates, ignore SSL errors:
     reply->ignoreSslErrors();
 
     runEventLoop();
+    STOP_ON_FAILURE
 
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
@@ -422,7 +432,7 @@ void tst_Http2::pushPromise()
     url.setPath("/script.js");
     QNetworkRequest promisedRequest(url);
     promisedRequest.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
-    reply = manager.get(promisedRequest);
+    reply = manager->get(promisedRequest);
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
     reply->ignoreSslErrors();
 
@@ -473,7 +483,7 @@ void tst_Http2::goaway()
         url.setPath(QString("/%1").arg(i));
         QNetworkRequest request(url);
         request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
-        replies[i] = manager.get(request);
+        replies[i] = manager->get(request);
         QCOMPARE(replies[i]->error(), QNetworkReply::NoError);
         void (QNetworkReply::*errorSignal)(QNetworkReply::NetworkError) =
             &QNetworkReply::error;
@@ -483,6 +493,7 @@ void tst_Http2::goaway()
     }
 
     runEventLoop(5000 + responseTimeoutMS);
+    STOP_ON_FAILURE
 
     // No request processed, no 'replyFinished' slot calls:
     QCOMPARE(nRequests, 0);
@@ -526,6 +537,7 @@ void tst_Http2::earlyResponse()
     sendRequest(1, QNetworkRequest::NormalPriority, {1000000, Qt::Uninitialized});
 
     runEventLoop();
+    STOP_ON_FAILURE
 
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
@@ -543,7 +555,7 @@ void tst_Http2::clearHTTP2State()
     windowUpdates = 0;
     prefaceOK = false;
     serverGotSettingsACK = false;
-    manager.setProperty(Http2::http2ParametersPropertyName, QVariant());
+    manager->setProperty(Http2::http2ParametersPropertyName, QVariant());
 }
 
 void tst_Http2::runEventLoop(int ms)
@@ -596,9 +608,9 @@ void tst_Http2::sendRequest(int streamNumber,
 
     QNetworkReply *reply = nullptr;
     if (payload.size())
-        reply = manager.post(request, payload);
+        reply = manager->post(request, payload);
     else
-        reply = manager.get(request);
+        reply = manager->get(request);
 
     reply->ignoreSslErrors();
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
@@ -690,14 +702,29 @@ void tst_Http2::replyFinished()
     QVERIFY(nRequests);
 
     if (const auto reply = qobject_cast<QNetworkReply *>(sender())) {
+        if (reply->error() != QNetworkReply::NoError)
+            stopEventLoop();
+
         QCOMPARE(reply->error(), QNetworkReply::NoError);
+
         const QVariant http2Used(reply->attribute(QNetworkRequest::HTTP2WasUsedAttribute));
+        if (!http2Used.isValid() || !http2Used.toBool())
+            stopEventLoop();
+
         QVERIFY(http2Used.isValid());
         QVERIFY(http2Used.toBool());
+
         const QVariant spdyUsed(reply->attribute(QNetworkRequest::SpdyWasUsedAttribute));
+        if (!spdyUsed.isValid() || spdyUsed.toBool())
+            stopEventLoop();
+
         QVERIFY(spdyUsed.isValid());
         QVERIFY(!spdyUsed.toBool());
+
         const QVariant code(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute));
+        if (!code.isValid() || !code.canConvert<int>() || code.value<int>() != 200)
+            stopEventLoop();
+
         QVERIFY(code.isValid());
         QVERIFY(code.canConvert<int>());
         QCOMPARE(code.value<int>(), 200);
@@ -715,6 +742,8 @@ void tst_Http2::replyFinishedWithError()
     if (const auto reply = qobject_cast<QNetworkReply *>(sender())) {
         // For now this is a 'generic' code, it just verifies some error was
         // reported without testing its type.
+        if (reply->error() == QNetworkReply::NoError)
+            stopEventLoop();
         QVERIFY(reply->error() != QNetworkReply::NoError);
     }
 
