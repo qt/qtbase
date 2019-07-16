@@ -53,24 +53,6 @@ static inline QByteArray getGlString(GLenum param)
     return QByteArray();
 }
 
-@implementation NSOpenGLPixelFormat (QtHelpers)
-- (GLint)qt_getAttribute:(NSOpenGLPixelFormatAttribute)attribute
-{
-    int value = 0;
-    [self getValues:&value forAttribute:attribute forVirtualScreen:0];
-    return value;
-}
-@end
-
-@implementation NSOpenGLContext (QtHelpers)
-- (GLint)qt_getParameter:(NSOpenGLContextParameter)parameter
-{
-    int value = 0;
-    [self getValues:&value forParameter:parameter];
-    return value;
-}
-@end
-
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaOpenGLContext, "qt.qpa.openglcontext", QtWarningMsg);
@@ -293,7 +275,13 @@ void QCocoaGLContext::updateSurfaceFormat()
 
     NSOpenGLPixelFormat *pixelFormat = m_context.pixelFormat;
 
-    int colorSize = [pixelFormat qt_getAttribute:NSOpenGLPFAColorSize];
+    auto pixelFormatAttribute = [&](NSOpenGLPixelFormatAttribute attribute) {
+        int value = 0;
+        [pixelFormat getValues:&value forAttribute:attribute forVirtualScreen:0];
+        return value;
+    };
+
+    int colorSize = pixelFormatAttribute(NSOpenGLPFAColorSize);
     colorSize /= 4; // The attribute includes the alpha component
     m_format.setRedBufferSize(colorSize);
     m_format.setGreenBufferSize(colorSize);
@@ -305,22 +293,28 @@ void QCocoaGLContext::updateSurfaceFormat()
     // size, as that will make the user believe the alpha channel can be used for
     // something useful, when in reality it can't, due to the surface being opaque.
     if (m_format.alphaBufferSize() > 0)
-        m_format.setAlphaBufferSize([pixelFormat qt_getAttribute:NSOpenGLPFAAlphaSize]);
+        m_format.setAlphaBufferSize(pixelFormatAttribute(NSOpenGLPFAAlphaSize));
 
-    m_format.setDepthBufferSize([pixelFormat qt_getAttribute:NSOpenGLPFADepthSize]);
-    m_format.setStencilBufferSize([pixelFormat qt_getAttribute:NSOpenGLPFAStencilSize]);
-    m_format.setSamples([pixelFormat qt_getAttribute:NSOpenGLPFASamples]);
+    m_format.setDepthBufferSize(pixelFormatAttribute(NSOpenGLPFADepthSize));
+    m_format.setStencilBufferSize(pixelFormatAttribute(NSOpenGLPFAStencilSize));
+    m_format.setSamples(pixelFormatAttribute(NSOpenGLPFASamples));
 
-    if ([pixelFormat qt_getAttribute:NSOpenGLPFATripleBuffer])
+    if (pixelFormatAttribute(NSOpenGLPFATripleBuffer))
         m_format.setSwapBehavior(QSurfaceFormat::TripleBuffer);
-    else if ([pixelFormat qt_getAttribute:NSOpenGLPFADoubleBuffer])
+    else if (pixelFormatAttribute(NSOpenGLPFADoubleBuffer))
         m_format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     else
         m_format.setSwapBehavior(QSurfaceFormat::SingleBuffer);
 
     // ------------------- Query the context -------------------
 
-    m_format.setSwapInterval([m_context qt_getParameter:NSOpenGLCPSwapInterval]);
+    auto glContextParameter = [&](NSOpenGLContextParameter parameter) {
+        int value = 0;
+        [m_context getValues:&value forParameter:parameter];
+        return value;
+    };
+
+    m_format.setSwapInterval(glContextParameter(NSOpenGLCPSwapInterval));
 
     if (oldContext)
         [oldContext makeCurrentContext];
