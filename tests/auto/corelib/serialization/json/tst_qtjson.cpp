@@ -437,6 +437,7 @@ void tst_QtJson::testObjectSimple()
     QCOMPARE(object.value("boolean").toBool(), true);
     QCOMPARE(object.value(QLatin1String("boolean")).toBool(), true);
     QJsonObject object2 = object;
+    QJsonObject object3 = object;
 
     QStringList keys = object.keys();
     QVERIFY2(keys.contains("number"), "key number not found");
@@ -478,6 +479,23 @@ void tst_QtJson::testObjectSimple()
     before = object2.value("string").toString();
     object2.insert(QStringView(u"string"), QString::fromLatin1("foo"));
     QVERIFY2(object2.value(QStringView(u"string")).toString() != before, "value should have been updated");
+
+    // same tests again but with QLatin1String keys
+    object3.insert(QLatin1String("value"), value);
+    QCOMPARE(object3.value("value"), value);
+
+    size = object3.size();
+    object3.remove(QLatin1String("boolean"));
+    QCOMPARE(object3.size(), size - 1);
+    QVERIFY2(!object3.contains("boolean"), "key boolean should have been removed");
+
+    taken = object3.take(QLatin1String("value"));
+    QCOMPARE(taken, value);
+    QVERIFY2(!object3.contains("value"), "key value should have been removed");
+
+    before = object3.value("string").toString();
+    object3.insert(QLatin1String("string"), QString::fromLatin1("foo"));
+    QVERIFY2(object3.value(QLatin1String("string")).toString() != before, "value should have been updated");
 
     size = object.size();
     QJsonObject subobject;
@@ -2716,6 +2734,8 @@ void tst_QtJson::longStrings()
     // test around 15 and 16 bit boundaries, as these are limits
     // in the data structures (for Latin1String in qjson_p.h)
     QString s(0x7ff0, 'a');
+    QByteArray ba(0x7ff0, 'a');
+    ba.append(0x8010 - 0x7ff0, 'c');
     for (int i = 0x7ff0; i < 0x8010; i++) {
         s.append(QLatin1Char('c'));
 
@@ -2732,9 +2752,21 @@ void tst_QtJson::longStrings()
         /* ... and a QByteArray from the QJsonDocument */
         QByteArray a2 = d2.toJson();
         QCOMPARE(a1, a2);
+
+        // Test long keys
+        QJsonObject o1, o2;
+        o1[s] = 42;
+        o2[QLatin1String(ba.data(), i + 1)] = 42;
+        d1.setObject(o1);
+        d2.setObject(o2);
+        a1 = d1.toJson();
+        a2 = d2.toJson();
+        QCOMPARE(a1, a2);
     }
 
     s = QString(0xfff0, 'a');
+    ba = QByteArray(0xfff0, 'a');
+    ba.append(0x10010 - 0xfff0, 'c');
     for (int i = 0xfff0; i < 0x10010; i++) {
         s.append(QLatin1Char('c'));
 
@@ -2750,6 +2782,16 @@ void tst_QtJson::longStrings()
         QJsonDocument d2 = QJsonDocument::fromJson(a1);
         /* ... and a QByteArray from the QJsonDocument */
         QByteArray a2 = d2.toJson();
+        QCOMPARE(a1, a2);
+
+        // Test long keys
+        QJsonObject o1, o2;
+        o1[s] = 42;
+        o2[QLatin1String(ba.data(), i + 1)] = 42;
+        d1.setObject(o1);
+        d2.setObject(o2);
+        a1 = d1.toJson();
+        a2 = d2.toJson();
         QCOMPARE(a1, a2);
     }
 }

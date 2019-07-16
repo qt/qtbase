@@ -66,11 +66,13 @@
 
 #include <limits.h>
 #include <limits>
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 
 // in qstring.cpp
 void qt_to_latin1_unchecked(uchar *dst, const ushort *uc, qsizetype len);
+void qt_from_latin1(ushort *dst, const char *str, size_t size) noexcept;
 
 /*
   This defines a binary data structure for Json data. The data structure is optimised for fast reading
@@ -153,16 +155,24 @@ typedef qle_uint offset;
 // round the size up to the next 4 byte boundary
 inline int alignedSize(int size) { return (size + 3) & ~3; }
 
+const int MaxLatin1Length = 0x7fff;
+
 static inline bool useCompressed(QStringView s)
 {
-    if (s.length() >= 0x8000)
+    if (s.length() > MaxLatin1Length)
         return false;
     return QtPrivate::isLatin1(s);
 }
 
-static inline int qStringSize(QStringView string, bool compress)
+static inline bool useCompressed(QLatin1String s)
 {
-    int l = 2 + string.length();
+    return s.size() <= MaxLatin1Length;
+}
+
+template <typename T>
+static inline int qStringSize(T string, bool compress)
+{
+    int l = 2 + string.size();
     if (!compress)
         l *= 2;
     return alignedSize(l);
@@ -218,9 +228,27 @@ public:
     {
         d->length = str.length();
         qToLittleEndian<quint16>(str.utf16(), str.length(), d->utf16);
-        if (str.length() & 1)
-            d->utf16[str.length()] = 0;
+        fillTrailingZeros();
         return *this;
+    }
+
+    inline String &operator=(QLatin1String str)
+    {
+        d->length = str.size();
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        for (int i = 0; i < str.size(); ++i)
+            d->utf16[i] = str[i].unicode();
+#else
+        qt_from_latin1((ushort *)d->utf16, str.data(), str.size());
+#endif
+        fillTrailingZeros();
+        return *this;
+    }
+
+    void fillTrailingZeros()
+    {
+        if (d->length & 1)
+            d->utf16[d->length] = 0;
     }
 
     inline bool operator ==(QStringView str) const {
@@ -293,9 +321,25 @@ public:
         const ushort *uc = (const ushort *)str.utf16();
         qt_to_latin1_unchecked(l, uc, len);
 
-        for ( ; (quintptr)(l+len) & 0x3; ++len)
-            l[len] = 0;
+        fillTrailingZeros();
         return *this;
+    }
+
+    inline Latin1String &operator=(QLatin1String str)
+    {
+        int len = d->length = str.size();
+        uchar *l = (uchar *)d->latin1;
+        memcpy(l, str.data(), len);
+
+        fillTrailingZeros();
+        return *this;
+    }
+
+    void fillTrailingZeros()
+    {
+        uchar *l = (uchar *)d->latin1;
+        for (int len = d->length; (quintptr)(l + len) & 0x3; ++len)
+            l[len] = 0;
     }
 
     QLatin1String toQLatin1String() const noexcept {
@@ -413,7 +457,8 @@ inline bool String::operator<(const Latin1String &str) const
 
 }
 
-static inline void copyString(char *dest, QStringView str, bool compress)
+template <typename T>
+static inline void copyString(char *dest, T str, bool compress)
 {
     if (compress) {
         Latin1String string(dest);

@@ -397,14 +397,7 @@ QJsonValue QJsonObject::value(const QString &key) const
 */
 QJsonValue QJsonObject::value(QStringView key) const
 {
-    if (!d)
-        return QJsonValue(QJsonValue::Undefined);
-
-    bool keyExists;
-    int i = o->indexOf(key, &keyExists);
-    if (!keyExists)
-        return QJsonValue(QJsonValue::Undefined);
-    return QJsonValue(d, o, o->entryAt(i)->value);
+    return valueImpl(key);
 }
 
 /*!
@@ -412,6 +405,15 @@ QJsonValue QJsonObject::value(QStringView key) const
     \since 5.7
 */
 QJsonValue QJsonObject::value(QLatin1String key) const
+{
+    return valueImpl(key);
+}
+
+/*!
+    \internal
+*/
+template <typename T>
+QJsonValue QJsonObject::valueImpl(T key) const
 {
     if (!d)
         return QJsonValue(QJsonValue::Undefined);
@@ -477,13 +479,7 @@ QJsonValueRef QJsonObject::operator [](const QString &key)
 */
 QJsonValueRef QJsonObject::operator [](QStringView key)
 {
-    bool keyExists = false;
-    int index = o ? o->indexOf(key, &keyExists) : 0;
-    if (!keyExists) {
-        iterator i = insertAt(index, key, QJsonValue(), false);
-        index = i.i;
-    }
-    return QJsonValueRef(this, index);
+    return atImpl(key);
 }
 
 /*!
@@ -492,8 +488,22 @@ QJsonValueRef QJsonObject::operator [](QStringView key)
 */
 QJsonValueRef QJsonObject::operator [](QLatin1String key)
 {
-    // ### optimize me
-    return operator[](QString(key));
+    return atImpl(key);
+}
+
+/*!
+    \internal
+*/
+template <typename T>
+QJsonValueRef QJsonObject::atImpl(T key)
+{
+    bool keyExists = false;
+    int index = o ? o->indexOf(key, &keyExists) : 0;
+    if (!keyExists) {
+        iterator i = insertAt(index, key, QJsonValue(), false);
+        index = i.i;
+    }
+    return QJsonValueRef(this, index);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -522,6 +532,24 @@ QJsonObject::iterator QJsonObject::insert(const QString &key, const QJsonValue &
 */
 QJsonObject::iterator QJsonObject::insert(QStringView key, const QJsonValue &value)
 {
+    return insertImpl(key, value);
+}
+
+/*!
+    \overload
+    \since 5.14
+*/
+QJsonObject::iterator QJsonObject::insert(QLatin1String key, const QJsonValue &value)
+{
+    return insertImpl(key, value);
+}
+
+/*!
+    \internal
+*/
+template <typename T>
+QJsonObject::iterator QJsonObject::insertImpl(T key, const QJsonValue &value)
+{
     if (value.t == QJsonValue::Undefined) {
         remove(key);
         return end();
@@ -534,7 +562,8 @@ QJsonObject::iterator QJsonObject::insert(QStringView key, const QJsonValue &val
 /*!
     \internal
  */
-QJsonObject::iterator QJsonObject::insertAt(int pos, QStringView key, const QJsonValue &value, bool keyExists)
+template <typename T>
+QJsonObject::iterator QJsonObject::insertAt(int pos, T key, const QJsonValue &value, bool keyExists)
 {
     QJsonValue val = value;
 
@@ -590,6 +619,24 @@ void QJsonObject::remove(const QString &key)
 */
 void QJsonObject::remove(QStringView key)
 {
+    removeImpl(key);
+}
+
+/*!
+    \overload
+    \since 5.14
+*/
+void QJsonObject::remove(QLatin1String key)
+{
+    removeImpl(key);
+}
+
+/*!
+    \internal
+*/
+template <typename T>
+void QJsonObject::removeImpl(T key)
+{
     if (!d)
         return;
 
@@ -623,6 +670,24 @@ QJsonValue QJsonObject::take(const QString &key)
 */
 QJsonValue QJsonObject::take(QStringView key)
 {
+    return takeImpl(key);
+}
+
+/*!
+    \overload
+    \since 5.14
+*/
+QJsonValue QJsonObject::take(QLatin1String key)
+{
+    return takeImpl(key);
+}
+
+/*!
+    \internal
+*/
+template <typename T>
+QJsonValue QJsonObject::takeImpl(T key)
+{
     if (!o)
         return QJsonValue(QJsonValue::Undefined);
 
@@ -655,12 +720,7 @@ bool QJsonObject::contains(const QString &key) const
 */
 bool QJsonObject::contains(QStringView key) const
 {
-    if (!o)
-        return false;
-
-    bool keyExists;
-    o->indexOf(key, &keyExists);
-    return keyExists;
+    return containsImpl(key);
 }
 
 /*!
@@ -668,6 +728,15 @@ bool QJsonObject::contains(QStringView key) const
     \since 5.7
 */
 bool QJsonObject::contains(QLatin1String key) const
+{
+    return containsImpl(key);
+}
+
+/*!
+    \internal
+*/
+template <typename T>
+bool QJsonObject::containsImpl(T key) const
 {
     if (!o)
         return false;
@@ -751,12 +820,7 @@ QJsonObject::iterator QJsonObject::find(const QString &key)
 */
 QJsonObject::iterator QJsonObject::find(QStringView key)
 {
-    bool keyExists = false;
-    int index = o ? o->indexOf(key, &keyExists) : 0;
-    if (!keyExists)
-        return end();
-    detach2();
-    return iterator(this, index);
+    return findImpl(key);
 }
 
 /*!
@@ -764,6 +828,15 @@ QJsonObject::iterator QJsonObject::find(QStringView key)
     \since 5.7
 */
 QJsonObject::iterator QJsonObject::find(QLatin1String key)
+{
+    return findImpl(key);
+}
+
+/*!
+    \internal
+*/
+template <typename T>
+QJsonObject::iterator QJsonObject::findImpl(T key)
 {
     bool keyExists = false;
     int index = o ? o->indexOf(key, &keyExists) : 0;
@@ -812,11 +885,7 @@ QJsonObject::const_iterator QJsonObject::constFind(const QString &key) const
 */
 QJsonObject::const_iterator QJsonObject::constFind(QStringView key) const
 {
-    bool keyExists = false;
-    int index = o ? o->indexOf(key, &keyExists) : 0;
-    if (!keyExists)
-        return end();
-    return const_iterator(this, index);
+    return constFindImpl(key);
 }
 
 /*!
@@ -824,6 +893,15 @@ QJsonObject::const_iterator QJsonObject::constFind(QStringView key) const
     \since 5.7
 */
 QJsonObject::const_iterator QJsonObject::constFind(QLatin1String key) const
+{
+    return constFindImpl(key);
+}
+
+/*!
+    \internal
+*/
+template <typename T>
+QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
 {
     bool keyExists = false;
     int index = o ? o->indexOf(key, &keyExists) : 0;

@@ -118,7 +118,9 @@ public:
     bool contains(const QString &key) const;
 #endif
     void remove(QStringView key);
+    void remove(QLatin1String key);
     QJsonValue take(QStringView key);
+    QJsonValue take(QLatin1String key);
     bool contains(QStringView key) const;
     bool contains(QLatin1String key) const;
 
@@ -241,6 +243,7 @@ public:
     const_iterator constFind(QStringView key) const;
     const_iterator constFind(QLatin1String key) const;
     iterator insert(QStringView key, const QJsonValue &value);
+    iterator insert(QLatin1String key, const QJsonValue &value);
 
     // STL compatibility
     typedef QJsonValue mapped_type;
@@ -265,11 +268,20 @@ private:
     void compact();
     void compactIfNeeded();
 
+    template <typename T> QJsonValue valueImpl(T key) const;
+    template <typename T> QJsonValueRef atImpl(T key);
+    template <typename T> void removeImpl(T key);
+    template <typename T> QJsonValue takeImpl(T key);
+    template <typename T> bool containsImpl(T key) const;
+    template <typename T> iterator findImpl(T key);
+    template <typename T> const_iterator constFindImpl(T key) const;
+    template <typename T> iterator insertImpl(T key, const QJsonValue &value);
+
     QString keyAt(int i) const;
     QJsonValue valueAt(int i) const;
     void setValueAt(int i, const QJsonValue &val);
     void removeAt(int i);
-    iterator insertAt(int i, QStringView key, const QJsonValue &val, bool exists);
+    template <typename T> iterator insertAt(int i, T key, const QJsonValue &val, bool exists);
 
     QJsonPrivate::Data *d;
     QJsonPrivate::Object *o;
