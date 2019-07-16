@@ -1074,7 +1074,7 @@ QList<QByteArray> QImageReader::supportedSubTypes() const
     \since 5.5
 
     Returns the transformation metadata of the image, including image orientation. If the format
-    does not support transformation metadata \c QImageIOHandler::Transformation_None is returned.
+    does not support transformation metadata, QImageIOHandler::TransformationNone is returned.
 
     \sa setAutoTransform(), autoTransform()
 */

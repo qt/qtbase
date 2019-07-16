@@ -972,12 +972,11 @@ QByteArray qUncompress(const uchar* data, int nbytes)
     \section2 8-bit Character Comparisons
 
     In QByteArray, the notion of uppercase and lowercase and of which
-    character is greater than or less than another character is
-    locale dependent. This affects functions that support a case
+    character is greater than or less than another character is done
+    in the Latin-1 locale. This affects functions that support a case
     insensitive option or that compare or lowercase or uppercase
     their arguments. Case insensitive operations and comparisons will
-    be accurate if both strings contain only ASCII characters. (If \c
-    $LC_CTYPE is set, most Unix systems do "the right thing".)
+    be accurate if both strings contain only Latin-1 characters.
     Functions that this affects include contains(), indexOf(),
     lastIndexOf(), operator<(), operator<=(), operator>(),
     operator>=(), isLower(), isUpper(), toLower() and toUpper().

@@ -891,7 +891,9 @@ QHostInfoLookupManager::QHostInfoLookupManager() : wasDeleted(false)
 
 QHostInfoLookupManager::~QHostInfoLookupManager()
 {
+    QMutexLocker locker(&mutex);
     wasDeleted = true;
+    locker.unlock();
 
     // don't qDeleteAll currentLookups, the QThreadPool has ownership
     clear();
@@ -919,14 +921,14 @@ void QHostInfoLookupManager::clear()
 
 void QHostInfoLookupManager::work()
 {
+    QMutexLocker locker(&mutex);
+
     if (wasDeleted)
         return;
 
     // goals of this function:
     //  - launch new lookups via the thread pool
     //  - make sure only one lookup per host/IP is in progress
-
-    QMutexLocker locker(&mutex);
 
     if (!finishedLookups.isEmpty()) {
         // remove ID from aborted if it is in there
@@ -979,10 +981,11 @@ void QHostInfoLookupManager::work()
 // called by QHostInfo
 void QHostInfoLookupManager::scheduleLookup(QHostInfoRunnable *r)
 {
+    QMutexLocker locker(&this->mutex);
+
     if (wasDeleted)
         return;
 
-    QMutexLocker locker(&this->mutex);
     scheduledLookups.enqueue(r);
     work();
 }
@@ -990,10 +993,10 @@ void QHostInfoLookupManager::scheduleLookup(QHostInfoRunnable *r)
 // called by QHostInfo
 void QHostInfoLookupManager::abortLookup(int id)
 {
+    QMutexLocker locker(&this->mutex);
+
     if (wasDeleted)
         return;
-
-    QMutexLocker locker(&this->mutex);
 
 #if QT_CONFIG(thread)
     // is postponed? delete and return
@@ -1020,20 +1023,22 @@ void QHostInfoLookupManager::abortLookup(int id)
 // called from QHostInfoRunnable
 bool QHostInfoLookupManager::wasAborted(int id)
 {
+    QMutexLocker locker(&this->mutex);
+
     if (wasDeleted)
         return true;
 
-    QMutexLocker locker(&this->mutex);
     return abortedLookups.contains(id);
 }
 
 // called from QHostInfoRunnable
 void QHostInfoLookupManager::lookupFinished(QHostInfoRunnable *r)
 {
+    QMutexLocker locker(&this->mutex);
+
     if (wasDeleted)
         return;
 
-    QMutexLocker locker(&this->mutex);
 #if QT_CONFIG(thread)
     currentLookups.removeOne(r);
 #endif
@@ -1095,22 +1100,9 @@ void qt_qhostinfo_cache_inject(const QString &hostname, const QHostInfo &resolut
 QHostInfoCache::QHostInfoCache() : max_age(60), enabled(true), cache(128)
 {
 #ifdef QT_QHOSTINFO_CACHE_DISABLED_BY_DEFAULT
-    enabled = false;
+    enabled.store(false, std::memory_order_relaxed);
 #endif
 }
-
-bool QHostInfoCache::isEnabled()
-{
-    return enabled;
-}
-
-// this function is currently only used for the auto tests
-// and not usable by public API
-void QHostInfoCache::setEnabled(bool e)
-{
-    enabled = e;
-}
-
 
 QHostInfo QHostInfoCache::get(const QString &name, bool *valid)
 {
