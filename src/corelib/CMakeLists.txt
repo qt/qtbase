@@ -1037,11 +1037,13 @@ extend_target(Core CONDITION QT_FEATURE_mimetype
 )
 
 # Resources:
-set_source_files_properties("mimetypes/mime/packages/freedesktop.org.xml"
-    PROPERTIES alias "freedesktop.org.xml")
-add_qt_resource(Core "mimetypes" PREFIX "/qt-project.org/qmime/packages" BASE "mimetypes" FILES
-    mime/packages/freedesktop.org.xml)
-
+# special case begin
+# We can't specify the resources directly as we have unit tests that
+# depend on these as well and we no longer support the use of hand
+# edited qrc files.
+include(${CMAKE_CURRENT_SOURCE_DIR}/mimetypes/mimetypes_resources.cmake)
+corelib_add_mimetypes_resources(Core)
+# special case end
 
 extend_target(Core CONDITION WASM
     SOURCES

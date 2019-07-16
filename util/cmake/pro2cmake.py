@@ -132,18 +132,18 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '') -> str:
             if alias:
                 full_source = os.path.join(base_dir, source)
                 output += 'set_source_files_properties("{}"\n' \
-                          '    PROPERTIES alias "{}")\n'.format(full_source, alias)
+                          '    PROPERTIES alias "{}"\n)\n'.format(full_source, alias)
 
         params = ''
         if lang:
-            params += ' LANG "{}"'.format(lang)
+            params += '    LANG\n        "{}"\n'.format(lang)
         if prefix:
-            params += ' PREFIX "{}"'.format(prefix)
+            params += '    PREFIX\n        "{}"\n'.format(prefix)
         if base_dir:
-            params += ' BASE "{}"'.format(base_dir)
-        output += 'add_qt_resource({} "{}"{} FILES\n    {})\n'.format(target, full_resource_name,
+            params += '    BASE\n        "{}"\n'.format(base_dir)
+        output += 'add_qt_resource({} "{}"\n{}    FILES\n        {}\n)\n'.format(target, full_resource_name,
                                                                       params,
-                                                                      '\n    '.join(sorted_files))
+                                                                      '\n        '.join(sorted_files))
 
         resource_count += 1
 
