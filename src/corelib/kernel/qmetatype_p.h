@@ -206,7 +206,9 @@ template<> struct TypeDefinition<QCborArray> { static const bool IsAvailable = f
 template<> struct TypeDefinition<QCborMap> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QCborSimpleType> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QCborValue> { static const bool IsAvailable = false; };
+#if QT_CONFIG(easingcurve)
 template<> struct TypeDefinition<QEasingCurve> { static const bool IsAvailable = false; };
+#endif
 template<> struct TypeDefinition<QJsonArray> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QJsonDocument> { static const bool IsAvailable = false; };
 template<> struct TypeDefinition<QJsonObject> { static const bool IsAvailable = false; };

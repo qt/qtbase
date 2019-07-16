@@ -79,6 +79,7 @@
 #define QT_NO_DATASTREAM
 #define QT_FEATURE_datestring 1
 #define QT_FEATURE_datetimeparser -1
+#define QT_FEATURE_easingcurve -1
 #define QT_FEATURE_etw -1
 #define QT_FEATURE_getauxval (QT_HAS_INCLUDE(<sys/auxv.h>) ? 1 : -1)
 #define QT_FEATURE_getentropy -1

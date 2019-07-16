@@ -66,7 +66,9 @@ class QBitArray;
 class QDataStream;
 class QDate;
 class QDateTime;
+#if QT_CONFIG(easingcurve)
 class QEasingCurve;
+#endif
 class QLine;
 class QLineF;
 class QLocale;
@@ -162,7 +164,9 @@ class Q_CORE_EXPORT QVariant
         RegExp = QMetaType::QRegExp,
         RegularExpression = QMetaType::QRegularExpression,
         Hash = QMetaType::QVariantHash,
+#if QT_CONFIG(easingcurve)
         EasingCurve = QMetaType::QEasingCurve,
+#endif
         Uuid = QMetaType::QUuid,
 #if QT_CONFIG(itemmodel)
         ModelIndex = QMetaType::QModelIndex,
@@ -254,7 +258,9 @@ class Q_CORE_EXPORT QVariant
 #endif // QT_CONFIG(regularexpression)
 #ifndef QT_BOOTSTRAPPED
     QVariant(const QUrl &url);
+#if QT_CONFIG(easingcurve)
     QVariant(const QEasingCurve &easing);
+#endif
     QVariant(const QUuid &uuid);
     QVariant(const QJsonValue &jsonValue);
     QVariant(const QJsonObject &jsonObject);
@@ -328,7 +334,9 @@ class Q_CORE_EXPORT QVariant
 #endif // QT_CONFIG(regularexpression)
 #ifndef QT_BOOTSTRAPPED
     QUrl toUrl() const;
+#if QT_CONFIG(easingcurve)
     QEasingCurve toEasingCurve() const;
+#endif
     QUuid toUuid() const;
     QJsonValue toJsonValue() const;
     QJsonObject toJsonObject() const;

@@ -12,7 +12,6 @@ HEADERS +=  \
         tools/qcontainerfwd.h \
         tools/qcontainertools_impl.h \
         tools/qcryptographichash.h \
-        tools/qeasingcurve.h \
         tools/qfreelist_p.h \
         tools/qhash.h \
         tools/qhashfunctions.h \
@@ -43,7 +42,6 @@ HEADERS +=  \
         tools/qsimd_p.h \
         tools/qsize.h \
         tools/qstack.h \
-        tools/qtimeline.h \
         tools/qtools_p.h \
         tools/qvarlengtharray.h \
         tools/qvector.h \
@@ -54,7 +52,6 @@ SOURCES += \
         tools/qarraydata.cpp \
         tools/qbitarray.cpp \
         tools/qcryptographichash.cpp \
-        tools/qeasingcurve.cpp \
         tools/qfreelist.cpp \
         tools/qhash.cpp \
         tools/qline.cpp \
@@ -72,7 +69,6 @@ SOURCES += \
         tools/qsharedpointer.cpp \
         tools/qsimd.cpp \
         tools/qsize.cpp \
-        tools/qtimeline.cpp \
         tools/qversionnumber.cpp
 
 msvc: NO_PCH_SOURCES += tools/qvector_msvc.cpp
@@ -102,6 +98,16 @@ qtConfig(system-doubleconversion) {
     QMAKE_USE_PRIVATE += doubleconversion
 } else: qtConfig(doubleconversion) {
     include($$PWD/../../3rdparty/double-conversion/double-conversion.pri)
+}
+
+qtConfig(easingcurve) {
+    HEADERS += \
+        tools/qeasingcurve.h \
+        tools/qtimeline.h
+
+    SOURCES += \
+        tools/qeasingcurve.cpp \
+        tools/qtimeline.cpp
 }
 
 # Note: libm should be present by default becaue this is C++

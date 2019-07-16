@@ -1009,11 +1009,17 @@
             "condition": "features.textcodec",
             "output": [ "publicFeature", "feature" ]
         },
+        "easingcurve": {
+            "label": "Easing curve",
+            "purpose": "Provides easing curve.",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
+        },
         "animation": {
             "label": "Animation",
             "purpose": "Provides a framework for animations.",
             "section": "Utilities",
-            "condition": "features.properties",
+            "condition": "features.properties && features.easingcurve",
             "output": [ "publicFeature", "feature" ]
         },
         "statemachine": {

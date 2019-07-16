@@ -378,6 +378,7 @@
             "label": "QScroller",
             "purpose": "Enables kinetic scrolling for any scrolling widget or graphics item.",
             "section": "Widgets",
+            "condition": "features.easingcurve",
             "output": [ "publicFeature" ]
         },
         "graphicsview": {

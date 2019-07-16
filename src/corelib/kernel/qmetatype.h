@@ -94,6 +94,13 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
 #define QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(F)\
     F(VoidStar, 31, void*) \
 
+#if QT_CONFIG(easingcurve)
+#define QT_FOR_EACH_STATIC_EASINGCURVE(F)\
+    F(QEasingCurve, 29, QEasingCurve)
+#else
+#define QT_FOR_EACH_STATIC_EASINGCURVE(F)
+#endif
+
 #if QT_CONFIG(itemmodel)
 #define QT_FOR_EACH_STATIC_ITEMMODEL_CLASS(F)\
     F(QModelIndex, 42, QModelIndex) \
@@ -122,7 +129,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QPoint, 25, QPoint) \
     F(QPointF, 26, QPointF) \
     F(QRegExp, 27, QRegExp) \
-    F(QEasingCurve, 29, QEasingCurve) \
+    QT_FOR_EACH_STATIC_EASINGCURVE(F) \
     F(QUuid, 30, QUuid) \
     F(QVariant, 41, QVariant) \
     F(QRegularExpression, 44, QRegularExpression) \
