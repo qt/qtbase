@@ -56,6 +56,8 @@ public:
     QCocoaGLContext(QOpenGLContext *context);
     ~QCocoaGLContext();
 
+    void initialize() override;
+
     bool makeCurrent(QPlatformSurface *surface) override;
     void swapBuffers(QPlatformSurface *surface) override;
     void doneCurrent() override;
