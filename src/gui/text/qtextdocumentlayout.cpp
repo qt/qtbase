@@ -1707,6 +1707,12 @@ recalc_minmax_widths:
             if (maxW == QFIXED_MAX)
                 continue;
 
+            // for variable columns the maxWidth will later be considered as the
+            // column width (column width = content width). We must avoid that the
+            // pixel-alignment rounding step floors this value and thus the text
+            // rendering later erroneously wraps the content.
+            maxW = maxW.ceil();
+
             widthToDistribute = maxW;
             for (int n = 0; n < cspan; ++n) {
                 const int col = i + n;
