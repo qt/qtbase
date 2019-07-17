@@ -44,6 +44,9 @@ static const EnumLookup specialCharactersEnumLookup[] =
 #if QT_VERSION >= 0x050000
     {QChar::Tabulation, "Tabulation"},
     {QChar::LineFeed, "LineFeed"},
+#  if QT_VERSION >= 0x050e00
+    {QChar::FormFeed, "FormFeed"},
+#  endif
     {QChar::CarriageReturn, "CarriageReturn"},
     {QChar::Space, "Space"},
 #endif
