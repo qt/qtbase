@@ -217,25 +217,6 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
 
     connect(qGuiApp, &QGuiApplication::focusWindowChanged,
         this, &QCocoaIntegration::focusWindowChanged);
-
-    static auto splashScreenHider = QMacKeyValueObserver(NSApp, @"modalWindow", []{
-        const QWindowList allWindows = QGuiApplication::topLevelWindows();
-        for (QWindow *window : allWindows) {
-            if ((window->flags() & Qt::SplashScreen) == Qt::SplashScreen) {
-                QCocoaWindow *platformWindow = static_cast<QCocoaWindow*>(window->handle());
-                NSWindow *splashWindow = platformWindow->view().window;
-                if (!splashWindow)
-                    continue;
-                if (NSApp.modalWindow) {
-                    NSInteger originalLevel = splashWindow.level;
-                    splashWindow.level = NSNormalWindowLevel;
-                    window->setProperty("_q_levelBeforeModalSession", (qlonglong)originalLevel);
-                } else if (NSInteger originalLevel = window->property("_q_levelBeforeModalSession").toLongLong()) {
-                    splashWindow.level = originalLevel;
-                }
-            }
-        }
-    });
 }
 
 QCocoaIntegration::~QCocoaIntegration()
