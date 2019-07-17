@@ -627,7 +627,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
         // from http spec is also allowed.
         if (proxyConnectionHeader.isEmpty())
             proxyConnectionHeader = d->reply->headerField("Connection");
-        if (proxyConnectionHeader.compare("close", Qt::CaseSensitive) == 0) {
+        if (proxyConnectionHeader.compare("close", Qt::CaseInsensitive) == 0) {
             willClose = true;
         } else if (proxyConnectionHeader.compare("keep-alive", Qt::CaseInsensitive) == 0) {
             willClose = false;

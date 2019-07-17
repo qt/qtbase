@@ -71,6 +71,8 @@ class tst_Http2 : public QObject
 public:
     tst_Http2();
     ~tst_Http2();
+public slots:
+    void init();
 private slots:
     // Tests:
     void singleRequest_data();
@@ -172,6 +174,11 @@ tst_Http2::~tst_Http2()
         connect(workerThread, &QThread::finished,
                 workerThread, &QThread::deleteLater);
     }
+}
+
+void tst_Http2::init()
+{
+    manager.clearConnectionCache();
 }
 
 void tst_Http2::singleRequest_data()
