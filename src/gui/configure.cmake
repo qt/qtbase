@@ -655,8 +655,7 @@ qt_feature("opengl_dynamic"
 )
 qt_feature("dynamicgl" PUBLIC
     LABEL "Dynamic OpenGL: dynamicgl"
-    AUTODETECT OFF
-    CONDITION WIN32 AND NOT WINRT
+    CONDITION QT_FEATURE_opengl_dynamic
     DISABLE INPUT_angle STREQUAL 'yes' OR INPUT_opengl STREQUAL 'no' OR INPUT_opengl STREQUAL 'desktop'
 )
 qt_feature_definition("opengl_dynamic" "QT_OPENGL_DYNAMIC")

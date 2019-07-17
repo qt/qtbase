@@ -788,7 +788,7 @@ def parseFeature(ctx, feature, data, cm_fh):
 
     cxxFeature = featureName(feature)
 
-    def writeFeature(name, publicFeature=False, privateFeature=False, labelAppend=''):
+    def writeFeature(name, publicFeature=False, privateFeature=False, labelAppend='', superFeature=None, autoDetect=''):
         if comment:
             cm_fh.write('# {}\n'.format(comment))
 
@@ -804,7 +804,11 @@ def parseFeature(ctx, feature, data, cm_fh):
         if purpose != label:
             cm_fh.write(lineify('PURPOSE', purpose))
         cm_fh.write(lineify('AUTODETECT', autoDetect, quote=False))
-        cm_fh.write(lineify('CONDITION', condition, quote=False))
+        if superFeature:
+            feature_condition = "QT_FEATURE_{}".format(superFeature)
+        else:
+            feature_condition = condition
+        cm_fh.write(lineify('CONDITION', feature_condition, quote=False))
         cm_fh.write(lineify('ENABLE', enable, quote=False))
         cm_fh.write(lineify('DISABLE', disable, quote=False))
         cm_fh.write(lineify('EMIT_IF', emitIf, quote=False))
@@ -814,7 +818,7 @@ def parseFeature(ctx, feature, data, cm_fh):
 
     # Default internal feature case.
     featureCalls = {}
-    featureCalls[cxxFeature] = {'name': cxxFeature, 'labelAppend': ''}
+    featureCalls[cxxFeature] = {'name': cxxFeature, 'labelAppend': '', 'autoDetect': autoDetect}
 
     # Go over all outputs to compute the number of features that have to be declared
     for o in output:
@@ -835,6 +839,9 @@ def parseFeature(ctx, feature, data, cm_fh):
             continue
         if name not in featureCalls:
             featureCalls[name] = {'name': name, 'labelAppend': labelAppend}
+
+        if name != cxxFeature:
+            featureCalls[name]['superFeature'] = cxxFeature
 
         if outputType in ['feature', 'publicFeature']:
             featureCalls[name]['publicFeature'] = True

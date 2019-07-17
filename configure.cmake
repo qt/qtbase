@@ -243,7 +243,7 @@ qt_feature("developer_build"
 )
 qt_feature("private_tests" PRIVATE
     LABEL "Developer build: private_tests"
-    AUTODETECT OFF
+    CONDITION QT_FEATURE_developer_build
 )
 qt_feature_definition("developer_build" "QT_BUILD_INTERNAL")
 qt_feature("appstore_compliant" PUBLIC
