@@ -84,6 +84,8 @@ private slots:
     void goaway_data();
     void goaway();
     void earlyResponse();
+    void connectToHost_data();
+    void connectToHost();
 
 protected slots:
     // Slots to listen to our in-process server:
@@ -542,6 +544,127 @@ void tst_Http2::earlyResponse()
     QVERIFY(nRequests == 0);
     QVERIFY(prefaceOK);
     QVERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::connectToHost_data()
+{
+    // The attribute to set on a new request:
+    QTest::addColumn<QNetworkRequest::Attribute>("requestAttribute");
+    // The corresponding (to the attribute above) connection type the
+    // server will use:
+    QTest::addColumn<H2Type>("connectionType");
+
+#if QT_CONFIG(ssl)
+    QTest::addRow("encrypted-h2-direct") << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
+    if (!clearTextHTTP2)
+        QTest::addRow("encrypted-h2-ALPN") << QNetworkRequest::HTTP2AllowedAttribute << H2Type::h2Alpn;
+#endif // QT_CONFIG(ssl)
+    // This works for all configurations, tests 'preconnect-http' scheme:
+    // h2 with protocol upgrade is not working for now (the logic is a bit
+    // complicated there ...).
+    QTest::addRow("h2-direct") << QNetworkRequest::Http2DirectAttribute << H2Type::h2cDirect;
+}
+
+void tst_Http2::connectToHost()
+{
+    // QNetworkAccessManager::connectToHostEncrypted() and connectToHost()
+    // creates a special request with 'preconnect-https' or 'preconnect-http'
+    // schemes. At the level of the protocol handler we are supposed to report
+    // these requests as finished and wait for the real requests. This test will
+    // connect to a server with the first reply 'finished' signal meaning we
+    // indeed connected. At this point we check that a client preface was not
+    // sent yet, and no response received. Then we send the second (the real)
+    // request and do our usual checks. Since our server closes its listening
+    // socket on the first incoming connection (would not accept a new one),
+    // the successful completion of the second requests also means we were able
+    // to find a cached connection and re-use it.
+
+    QFETCH(const QNetworkRequest::Attribute, requestAttribute);
+    QFETCH(const H2Type, connectionType);
+
+    clearHTTP2State();
+
+    serverPort = 0;
+    nRequests = 2;
+
+    ServerPtr targetServer(newServer(defaultServerSettings, connectionType));
+
+#if QT_CONFIG(ssl)
+    Q_ASSERT(!clearTextHTTP2 || connectionType != H2Type::h2Alpn);
+#else
+    Q_ASSERT(connectionType == H2Type::h2c || connectionType == H2Type::h2cDirect);
+    Q_ASSERT(targetServer->isClearText());
+#endif // QT_CONFIG(ssl)
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    auto url = requestUrl(connectionType);
+    url.setPath("/index.html");
+
+    QNetworkReply *reply = nullptr;
+    // Here some mess with how we create this first reply:
+#if QT_CONFIG(ssl)
+    if (!targetServer->isClearText()) {
+        // Let's emulate what QNetworkAccessManager::connectToHostEncrypted() does.
+        // Alas, we cannot use it directly, since it does not return the reply and
+        // also does not know the difference between H2 with ALPN or direct.
+        auto copyUrl = url;
+        copyUrl.setScheme(QLatin1String("preconnect-https"));
+        QNetworkRequest request(copyUrl);
+        request.setAttribute(requestAttribute, true);
+        reply = manager->get(request);
+        // Since we're using self-signed certificates, ignore SSL errors:
+        reply->ignoreSslErrors();
+    } else
+#endif  // QT_CONFIG(ssl)
+    {
+        // Emulating what QNetworkAccessManager::connectToHost() does with
+        // additional information that it cannot provide (the attribute).
+        auto copyUrl = url;
+        copyUrl.setScheme(QLatin1String("preconnect-http"));
+        QNetworkRequest request(copyUrl);
+        request.setAttribute(requestAttribute, true);
+        reply = manager->get(request);
+    }
+
+    connect(reply, &QNetworkReply::finished, [this, reply]() {
+        --nRequests;
+        eventLoop.exitLoop();
+        QCOMPARE(reply->error(), QNetworkReply::NoError);
+        QVERIFY(reply->isFinished());
+        // Nothing must be sent yet:
+        QVERIFY(!prefaceOK);
+        QVERIFY(!serverGotSettingsACK);
+        // Nothing received back:
+        QVERIFY(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).isNull());
+        QCOMPARE(reply->readAll().size(), 0);
+    });
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QCOMPARE(nRequests, 1);
+
+    QNetworkRequest request(url);
+    request.setAttribute(requestAttribute, QVariant(true));
+    reply = manager->get(request);
+    connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+    // Note, unlike the first request, when the connection is ecnrytped, we
+    // do not ignore TLS errors on this reply - we should re-use existing
+    // connection, there TLS errors were already ignored.
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QVERIFY(nRequests == 0);
+    QVERIFY(prefaceOK);
+    QVERIFY(serverGotSettingsACK);
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QVERIFY(reply->isFinished());
 }
 
 void tst_Http2::serverStarted(quint16 port)
