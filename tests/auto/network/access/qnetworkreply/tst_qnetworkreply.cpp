@@ -6426,7 +6426,8 @@ void tst_QNetworkReply::abortOnEncrypted()
         QSKIP("Server fails to listen. Skipping since QTcpServer is covered in another test.");
 
     server.connect(&server, &SslServer::newEncryptedConnection, [&server]() {
-            connect(server.socket, &QTcpSocket::readyRead, server.socket, []() {
+            // MSVC 201X C4573-misunderstands connect() or QObject::connect(), so use server.connect():
+            server.connect(server.socket, &QTcpSocket::readyRead, server.socket, []() {
                 // This slot must not be invoked!
                 QVERIFY(false);
             });
