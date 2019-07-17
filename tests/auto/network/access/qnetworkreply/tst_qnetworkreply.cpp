@@ -6474,8 +6474,8 @@ void tst_QNetworkReply::sslSessionSharing_data()
 
 void tst_QNetworkReply::sslSessionSharing()
 {
-#ifdef QT_SECURETRANSPORT
-    QSKIP("Not implemented with SecureTransport");
+#if QT_CONFIG(schannel) || defined(QT_SECURETRANSPORT)
+    QSKIP("Not implemented with SecureTransport/Schannel");
 #endif
 
     QString urlString("https://" + QtNetworkSettings::httpServerName());
@@ -6542,8 +6542,8 @@ void tst_QNetworkReply::sslSessionSharingFromPersistentSession_data()
 
 void tst_QNetworkReply::sslSessionSharingFromPersistentSession()
 {
-#ifdef QT_SECURETRANSPORT
-    QSKIP("Not implemented with SecureTransport");
+#if QT_CONFIG(schannel) || defined(QT_SECURETRANSPORT)
+    QSKIP("Not implemented with SecureTransport/Schannel");
 #endif
 
     QString urlString("https://" + QtNetworkSettings::httpServerName());
