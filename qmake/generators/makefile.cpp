@@ -3418,9 +3418,9 @@ MakefileGenerator::writePkgConfigFile()
     t << endl;
 
     // requires
-    const QString requires = project->values("QMAKE_PKGCONFIG_REQUIRES").join(' ');
-    if (!requires.isEmpty()) {
-        t << "Requires: " << requires << endl;
+    const QString requiresString = project->values("QMAKE_PKGCONFIG_REQUIRES").join(' ');
+    if (!requiresString.isEmpty()) {
+        t << "Requires: " << requiresString << endl;
     }
 
     t << endl;
