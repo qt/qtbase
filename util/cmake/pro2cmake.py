@@ -1795,27 +1795,19 @@ def write_plugin(cm_fh, scope, *, indent: int = 0):
 
     plugin_type = scope.get_string('PLUGIN_TYPE')
     is_qml_plugin = any('qml_plugin' == s for s in scope.get('_LOADED'))
-    target_path = scope.get_string('TARGETPATH')
-
+    plugin_function_name = 'add_qt_plugin'
     if plugin_type:
         extra.append('TYPE {}'.format(plugin_type))
     elif is_qml_plugin:
-        extra.append('TYPE {}'.format('qml_plugin'))
-        extra.append('QML_TARGET_PATH "{}"'.format(target_path))
+        plugin_function_name = 'add_qml_module'
+        write_qml_plugin(cm_fh, plugin_name, scope, indent=indent, extra_lines=extra)
 
     plugin_class_name = scope.get_string('PLUGIN_CLASS_NAME')
     if plugin_class_name:
         extra.append('CLASS_NAME {}'.format(plugin_class_name))
 
-    write_main_part(cm_fh, plugin_name, 'Plugin', 'add_qt_plugin', scope,
+    write_main_part(cm_fh, plugin_name, 'Plugin', plugin_function_name, scope,
                     indent=indent, extra_lines=extra, known_libraries={}, extra_keys=[])
-
-    if is_qml_plugin:
-        extra = []
-        extra.append('TARGET_PATH "{}"'.format(target_path))
-
-        write_qml_plugin(cm_fh, plugin_name, scope, indent=indent, extra_lines=extra)
-
 
 def write_qml_plugin(cm_fh: typing.IO[str],
                      target: str,
@@ -1824,9 +1816,10 @@ def write_qml_plugin(cm_fh: typing.IO[str],
                      indent: int = 0,
                      **kwargs: typing.Any):
     # Collect other args if available
-    cxx_module = scope.get_string('CXX_MODULE')
-    if cxx_module:
-        extra_lines.append('CXX_MODULE "{}"'.format(cxx_module))
+    indent += 2
+    target_path = scope.get_string('TARGETPATH')
+    if target_path:
+        extra_lines.append('TARGET_PATH "{}"'.format(target_path))
     import_version = scope.get_string('IMPORT_VERSION')
     if import_version:
         import_version = import_version.replace("$$QT_MINOR_VERSION","${CMAKE_PROJECT_VERSION_MINOR}")
@@ -1838,19 +1831,12 @@ def write_qml_plugin(cm_fh: typing.IO[str],
     if plugindump_dep:
         extra_lines.append('QML_PLUGINDUMP_DEPENDENCIES "{}"'.format(plugindump_dep))
 
-    cm_fh.write('\n{}{}({}\n'.format(spaces(indent), 'add_qml_module', target))
-    indent += 1
-    for extra_line in extra_lines:
-        cm_fh.write('{}{}\n'.format(spaces(indent), extra_line))
-
     qml_files = scope.expand('QML_FILES')
     if qml_files:
-        cm_fh.write('{}{}\n'.format(spaces(indent), 'QML_FILES'))
-        write_list(cm_fh, qml_files, '', indent=indent + 1)
+        extra_lines.append('QML_FILES\n{}{}'.format(
+            spaces(indent),
+            '\n{}'.format(spaces(indent)).join(qml_files)))
 
-    # Footer:
-    indent -= 1
-    cm_fh.write('{})\n'.format(spaces(indent)))
 
 
 def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,

@@ -194,6 +194,56 @@ set(QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "")
 
 # Functions and macros:
 
+# qt_remove_args can remove arguments from an existing list of function
+# arguments in order to pass a filtered list of arguments to a different function.
+# Parameters:
+#   out_var: result of remove all arguments specified by ARGS_TO_REMOVE from ALL_ARGS
+#   ARGS_TO_REMOVE: Arguments to remove.
+#   ALL_ARGS: All arguments supplied to cmake_parse_arguments or
+#   qt_parse_all_arguments
+#   from which ARGS_TO_REMOVE should be removed from. We require all the
+#   arguments or we can't properly identify the range of the arguments detailed
+#   in ARGS_TO_REMOVE.
+#   ARGS: Arguments passed into the function, usually ${ARGV}
+#
+#   E.g.:
+#   We want to forward all arguments from foo to bar, execpt ZZZ since it will
+#   trigger an error in bar.
+#
+#   foo(target BAR .... ZZZ .... WWW ...)
+#   bar(target BAR.... WWW...)
+#
+#   function(foo target)
+#       qt_parse_all_arguments(arg "" "" "BAR;ZZZ;WWW ${ARGV})
+#       qt_remove_args(forward_args
+#           ARGS_TO_REMOVE ${target} ZZZ
+#           ALL_ARGS ${target} BAR ZZZ WWW
+#           ARGS ${ARGV}
+#       )
+#       bar(${target} ${forward_args})
+#   endfunction()
+#
+function(qt_remove_args out_var)
+    cmake_parse_arguments(arg "" "" "ARGS_TO_REMOVE;ALL_ARGS;ARGS" ${ARGN})
+    set(result ${arg_ARGS})
+    foreach(arg IN LISTS arg_ARGS_TO_REMOVE)
+        # find arg
+        list(FIND result ${arg} find_result)
+        if (NOT find_result EQUAL -1)
+            # remove arg
+            list(REMOVE_AT result ${find_result})
+            list(LENGTH result result_len)
+            list(GET result ${find_result} arg_current)
+            # remove values until we hit another arg
+            while(NOT ${arg_current} IN_LIST arg_ALL_ARGS AND find_result LESS result_len)
+                list(REMOVE_AT result ${find_result})
+                list(GET result ${find_result} arg_current)
+                list(LENGTH result result_len)
+            endwhile()
+        endif()
+    endforeach()
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
 # Wraps install() command. In a prefix build, simply passes along arguments to install().
 # In a non-prefix build, handles association of targets to export names, and also calls export().
 function(qt_install)
@@ -1446,6 +1496,18 @@ function(qt_get_module_for_plugin target target_type)
     message(AUTHOR_WARNING "The plug-in '${target}' does not belong to any Qt module.")
 endfunction()
 
+
+# Collection of add_qt_plugin arguments so they can be shared across different
+# plugin type wrappers
+set(__add_qt_plugin_optional_args
+    "STATIC;EXCEPTIONS"
+)
+set(__add_qt_plugin_single_args
+    "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;QML_TARGET_PATH"
+)
+set(__add_qt_plugin_multi_args
+    "${__default_private_args};${__default_public_args};DEFAULT_IF"
+)
 # This is the main entry point for defining Qt plugins.
 # A CMake target is created with the given target. The TYPE parameter is needed to place the
 # plugin into the correct plugins/ sub-directory.
@@ -1454,9 +1516,12 @@ function(add_qt_plugin target)
 
     qt_internal_set_qt_known_plugins("${QT_KNOWN_PLUGINS}" "${target}")
 
-    qt_parse_all_arguments(arg "add_qt_plugin" "STATIC;EXCEPTIONS"
-        "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;QML_TARGET_PATH"
-        "${__default_private_args};${__default_public_args};DEFAULT_IF" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_plugin"
+        "${__add_qt_plugin_optional_args}"
+        "${__add_qt_plugin_single_args}"
+        "${__add_qt_plugin_multi_args}"
+        "${ARGN}"
+    )
 
     set(output_directory_default "${QT_BUILD_DIR}/${INSTALL_PLUGINSDIR}/${arg_TYPE}")
     set(install_directory_default "${INSTALL_PLUGINSDIR}/${arg_TYPE}")
@@ -1633,7 +1698,7 @@ function(qt_add_qmltypes_target target)
 
     qt_parse_all_arguments(arg "qt_generate_qmltypes"
         ""
-        "TARGET_PATH;IMPORT_VERSION;IMPORT_NAME;CXX_MODULE;QML_PLUGINDUMP_DENDENCIES"
+        "TARGET_PATH;IMPORT_VERSION;IMPORT_NAME;QML_PLUGINDUMP_DEPENDENCIES"
         ""
         ${ARGN})
 
@@ -1657,77 +1722,117 @@ function(qt_add_qmltypes_target target)
     endif()
 
     if(NOT arg_IMPORT_VERSION)
-        if(NOT arg_CXX_MODULE)
-            if (NOT ${CMAKE_PROJECT_VERSION_MAJOR} OR NOT ${CMAKE_PROJECT_VERSION_MINOR})
-                message(FATAL_ERROR "Please specify import version using IMPORT_VERSION")
-            endif()
-            set(import_version "${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}")
-        else()
-            if(NOT TARGET arg_CXX_MODULE)
-                message(FATAL_ERROR "CXX_MODULE parameter must be a cmake target")
-            endif()
-
-            get_target_property(qt_major_version ${arg_CXX_MODULE} INTERFACE_QT_MAJOR_VERSION)
-            if (NOT qt_major_version)
-                message(FATAL_ERROR "CXX_MODULE(${arg_CXX_MODULE} is not a valid Qt module")
-            endif()
-
-            get_target_property(cxx_module_alias ${arg_CXX_MODULE} ALIASED_TARGET)
-            if (cxx_module_alias)
-                set(cxx_module_target ${cxx_module_alias})
-            else()
-                set(cxx_module_target ${arg_CXX_MODULE})
-            endif()
-
-            set(import_version "${${cxx_module_target}_VERSION_MAJOR}.${${cxx_module_target}_VERSION_MINOR}")
-        endif()
-    else()
-        set(import_version ${arg_IMPORT_VERSION})
+        message(FATAL_ERROR "Import version parameter was not specified. Specify the import version using the IMPORT_VERSION.")
     endif()
 
     get_target_property(source_dir ${target} SOURCE_DIR)
 
     # qml1_target check is no longer required
     set(qmltypes_command_args "-nonrelocatable")
-    if (NOT arg_QML_PLUGINDUMP_DENDENCIES AND EXISTS "${source_dir}/dependencies.json")
+    if (NOT arg_QML_PLUGINDUMP_DEPENDENCIES AND EXISTS "${source_dir}/dependencies.json")
         list(APPEND qmltypes_command_args "-dependencies" "${source_dir}/dependencies.json")
-    elseif(arg_QML_PLUGINDUMP_DENDENCIES)
-        list(APPEND qmltypes_command_args "-dependencies" "${arg_QML_PLUGINDUMP_DENDENCIES}")
+    elseif(arg_QML_PLUGINDUMP_DEPENDENCIES)
+        list(APPEND qmltypes_command_args "-dependencies" "${arg_QML_PLUGINDUMP_DEPENDENCIES}")
     endif()
 
     string(REPLACE "/" "." import_name_arg ${import_name})
 
-    list(APPEND qmltypes_command_args "${import_name_arg}" "${import_version}")
+    list(APPEND qmltypes_command_args "${import_name_arg}" "${arg_IMPORT_VERSION}")
 
+    set(qml_plugindump_target ${QT_CMAKE_EXPORT_NAMESPACE}::qmlplugindump)
+
+    # Manually set dependency on plugindump target since CMake will not add
+    # this rule because it's not the main executable argument to the COMMAND
+    # parameter.
     add_custom_target(
         "${target}_qmltypes"
-        DEPENDS qmlplugindump
+        DEPENDS ${qml_plugindump_target}
         COMMAND ${CMAKE_COMMAND} -E env "QML2_IMPORTPATH=${import_paths_env}"
-        $<TARGET_FILE:qmlplugindump> ${qmltypes_command_args} > "${source_dir}/plugins.qmltypes"
+        $<TARGET_FILE:${qml_plugindump_target}> ${qmltypes_command_args} > "${source_dir}/plugins.qmltypes"
         )
 endfunction()
 
+# This function creates a CMake target for qml modules. It will also make
+# sure that if no C++ source are present, that qml files show up in the project
+# in an IDE. Finally, it will also create a custom ${target}_qmltypes which
+# can be used to generate the respective plugin.qmltypes file.
+#
+#  TARGET_PATH: Expected installation path for the Qml Module. Equivalent
+#  to the module's URI where '.' is replaced with '/'.
+#  IMPORT_VERSION: Import version for the qml module
+#  IMPORT_NAME: Override for the default import name used in the ${target}_qmltypes
+#  target (optional)
+#  QML_PLUGINDUMP_DEPENDENCIES: Path to a dependencies.json file to be consumed
+#  with the ${target}_qmltypes target (optional)
+#
 function(add_qml_module target)
+
+    set(qml_module_single_args
+        TARGET_PATH
+        IMPORT_VERSION
+        IMPORT_NAME
+        QML_PLUGINDUMP_DEPENDENCIES
+    )
+    set(qml_module_multi_args
+        QML_FILES
+    )
+
     qt_parse_all_arguments(arg "add_qml_module"
-        ""
-        "TARGET_PATH;IMPORT_VERSION;IMPORT_NAME;CXX_MODULE;QML_PLUGINDUMP_DENDENCIES"
-        "QML_FILES" ${ARGN})
+        "${__add_qt_plugin_optional_args}"
+        "${__add_qt_plugin_single_args};${qml_module_single_args}"
+        "${__add_qt_plugin_multi_args};${qml_module_multi_args}" ${ARGN})
 
     if (NOT arg_TARGET_PATH)
-        message(FATAL_ERROR "add_qml_module called without a TARGET_PATH.")
+        message(FATAL_ERROR "add_qml_module called without specifying the module's target path. Please specify one using the TARGET_PATH parameter.")
+    endif()
+
+    set(target_path ${arg_TARGET_PATH})
+
+    if (NOT arg_IMPORT_VERSION)
+        message(FATAL_ERROR "add_qml_module called without specifying the module's import version. Please specify one using the IMPORT_VERSION parameter.")
+    endif()
+
+    qt_remove_args(plugin_args
+        ARGS_TO_REMOVE
+            ${target}
+            ${qml_module_multi_args}
+            ${qml_module_single_args}
+        ALL_ARGS
+            ${__add_qt_plugin_optional_args}
+            ${__add_qt_plugin_single_args}
+            ${qml_module_single_args}
+            ${__add_qt_plugin_multi_args}
+            ${qml_module_multi_args}
+        ARGS
+            ${ARGV}
+    )
+
+    # If we have no sources, but qml files, create a custom target so the
+    # qml file will be visibile in an IDE.
+    if (NOT arg_SOURCES AND arg_QML_FILES)
+        add_custom_target(${target}
+            SOURCES ${arg_QML_FILES}
+        )
+    else()
+        add_qt_plugin(${target}
+            TYPE
+                qml_plugin
+            QML_TARGET_PATH
+                "${target_path}"
+            ${plugin_args}
+        )
     endif()
 
     qt_add_qmltypes_target(${target}
-        TARGET_PATH "${arg_TARGET_PATH}"
+        TARGET_PATH "${target_path}"
         IMPORT_VERSION "${arg_IMPORT_VERSION}"
         IMPORT_NAME "${arg_IMPORT_NAME}"
-        CXX_MODULE "${arg_CXX_MODULE}"
-        QML_PLUGINDUMP_DENDENCIES "${arg_QML_PLUGINDUMP_DENDENCIES}")
+        QML_PLUGINDUMP_DEPENDENCIES "${arg_QML_PLUGINDUMP_DEPENDENCIES}")
 
     set(plugin_types "${CMAKE_CURRENT_SOURCE_DIR}/plugins.qmltypes")
     if (EXISTS ${plugin_types})
         qt_copy_or_install(FILES ${plugin_types}
-            DESTINATION "${INSTALL_QMLDIR}/${arg_TARGET_PATH}"
+            DESTINATION "${INSTALL_QMLDIR}/${target_path}"
         )
     endif()
 
@@ -1735,18 +1840,19 @@ function(add_qml_module target)
         FILES
             "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
         DESTINATION
-            "${INSTALL_QMLDIR}/${arg_TARGET_PATH}"
+            "${INSTALL_QMLDIR}/${target_path}"
     )
 
     if(NOT QT_BUILD_SHARED_LIBS)
-        string(REPLACE "." "_" uri_target ${arg_TARGET_PATH})
+        string(REPLACE "/" "." uri ${arg_TARGET_PATH})
+        string(REPLACE "." "_" uri_target ${uri})
         add_qt_resource(${target} ${uri_target}
             FILES ${arg_QML_FILES} "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
-            PREFIX "/qt-project.org/import/${arg_TARGET_PATH}")
+            PREFIX "/qt-project.org/import/${target_path}")
     else()
         if(arg_QML_FILES)
             qt_copy_or_install(FILES ${arg_QML_FILES}
-                DESTINATION "${INSTALL_QMLDIR}/${arg_TARGET_PATH}"
+                DESTINATION "${INSTALL_QMLDIR}/${target_path}"
             )
         endif()
     endif()
