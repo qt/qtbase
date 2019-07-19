@@ -651,7 +651,7 @@ bool operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
         if (colorSpace1.transferFunction() != colorSpace2.transferFunction())
             return false;
         if (colorSpace1.transferFunction() == QColorSpace::TransferFunction::Gamma)
-            return colorSpace1.gamma() == colorSpace2.gamma();
+            return (qAbs(colorSpace1.gamma() - colorSpace2.gamma()) <= (1.0f / 512.0f));
         return true;
     }
 

@@ -232,6 +232,8 @@ private slots:
 
     void wideImage();
 
+    void colorspaceEquality();
+
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void toWinHBITMAP_data();
     void toWinHBITMAP();
@@ -3616,6 +3618,22 @@ void tst_QImage::wideImage()
     painter.drawImage(0, 0, i2);
 
     // Qt6: Test that it actually works on 64bit architectures.
+}
+
+void tst_QImage::colorspaceEquality()
+{
+    QImage image1(10, 10, QImage::Format_RGB32);
+    image1.fill(Qt::red);
+    QImage image2(image1);
+    QCOMPARE(image1, image2);
+    image1.setColorSpace(QColorSpace::SRgbLinear);
+    QVERIFY(image1 != image2);
+    image2.setColorSpace(QColorSpace::SRgbLinear);
+    QVERIFY(image1 == image2);
+    image1.setColorSpace(QColorSpace(QColorSpace::Gamut::DciP3D65, QColorSpace::TransferFunction::Gamma, 2.2f));
+    QVERIFY(image1 != image2);
+    image2.setColorSpace(QColorSpace(QColorSpace::Gamut::DciP3D65, QColorSpace::TransferFunction::Gamma, 2.2001f));
+    QVERIFY(image1 == image2);
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)

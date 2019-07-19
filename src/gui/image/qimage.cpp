@@ -3834,7 +3834,9 @@ bool QImage::operator==(const QImage & i) const
         return false;
 
     // obviously different stuff?
-    if (i.d->height != d->height || i.d->width != d->width || i.d->format != d->format)
+    if (i.d->height != d->height || i.d->width != d->width)
+        return false;
+    if (i.d->format != d->format || i.d->colorSpace != d->colorSpace)
         return false;
 
     if (d->format != Format_RGB32) {
