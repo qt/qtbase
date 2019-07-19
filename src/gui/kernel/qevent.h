@@ -175,7 +175,7 @@ class Q_GUI_EXPORT QWheelEvent : public QInputEvent
 public:
     enum { DefaultDeltasPerStep = 120 };
 
-#if QT_DEPRECATED_SINCE(5, 14)
+#if QT_DEPRECATED_SINCE(5, 15)
     // Actually deprecated since 5.0, in docs
     QT_DEPRECATED_X("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
     QWheelEvent(const QPointF &pos, int delta,
@@ -213,7 +213,7 @@ public:
     inline QPoint pixelDelta() const { return pixelD; }
     inline QPoint angleDelta() const { return angleD; }
 
-#if QT_DEPRECATED_SINCE(5, 14)
+#if QT_DEPRECATED_SINCE(5, 15)
     // Actually deprecated since 5.0, in docs
     QT_DEPRECATED_X("Use angleDelta()")
     inline int delta() const  { return qt4D; }
@@ -238,7 +238,7 @@ public:
     inline const QPointF &posF() const { return p; }
     QT_DEPRECATED_X("Use globalPosition()")
     inline const QPointF &globalPosF()   const { return g; }
-#endif // QT_DEPRECATED_SINCE(5, 14)
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
     inline QPointF position() const { return p; }
     inline QPointF globalPosition() const { return g; }

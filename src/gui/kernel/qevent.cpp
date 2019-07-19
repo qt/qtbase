@@ -758,7 +758,7 @@ QHoverEvent::~QHoverEvent()
 */
 
 #if QT_CONFIG(wheelevent)
-#if QT_DEPRECATED_SINCE(5, 14)
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \obsolete
     This constructor has been deprecated.
@@ -839,7 +839,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
       angleD(angleDelta), qt4D(qt4Delta), qt4O(qt4Orientation), mouseState(buttons), src(source),
       invertedScrolling(inverted), ph(phase)
 {}
-#endif // QT_DEPRECATED_SINCE(5, 14)
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
     Constructs a wheel event object.
