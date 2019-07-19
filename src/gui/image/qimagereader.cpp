@@ -1149,6 +1149,7 @@ bool QImageReader::autoTransform() const
     return false;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \since 5.6
 
@@ -1181,6 +1182,7 @@ float QImageReader::gamma() const
         return d->handler->option(QImageIOHandler::Gamma).toFloat();
     return 0.0;
 }
+#endif
 
 /*!
     Returns \c true if an image can be read for the device (i.e., the
