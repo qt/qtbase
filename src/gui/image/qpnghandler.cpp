@@ -611,6 +611,9 @@ bool QPngHandlerPrivate::readPngHeader()
         if (!colorSpace.isValid()) {
             qWarning() << "QPngHandler: Failed to parse ICC profile";
         } else {
+            QColorSpacePrivate *csD = QColorSpacePrivate::getWritable(colorSpace);
+            if (csD->description.isEmpty())
+                csD->description = QString::fromLatin1((const char *)name);
             colorSpaceState = Icc;
         }
     }
@@ -680,7 +683,7 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
         png_set_gamma(png_ptr, 1.0f / gamma, fileGamma);
         QColorSpacePrivate *csPrivate = QColorSpacePrivate::getWritable(colorSpace);
         csPrivate->transferFunction = QColorSpace::TransferFunction::Gamma;
-        csPrivate->gamma = gamma;
+        csPrivate->gamma = 1.0f / gamma;
         csPrivate->setTransferFunction();
         colorSpaceState = GammaChrm;
     }
@@ -977,7 +980,24 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_i
                  bpc, // per channel
                  color_type, 0, 0, 0);       // sets #channels
 
-    if (gamma != 0.0) {
+    if (image.colorSpace().isValid()) {
+        QColorSpace cs = image.colorSpace();
+        // Support the old gamma making it override transferfunction.
+        if (gamma != 0.0 && !qFuzzyCompare(cs.gamma(), 1.0f / gamma)) {
+            QColorSpacePrivate *csPrivate = QColorSpacePrivate::getWritable(cs);
+            csPrivate->transferFunction = QColorSpace::TransferFunction::Gamma;
+            csPrivate->gamma = 1.0f / gamma;
+            csPrivate->setTransferFunction();
+            csPrivate->iccProfile.clear();
+            csPrivate->description.clear();
+        }
+        QByteArray iccProfileName = QColorSpacePrivate::get(cs)->description.toLatin1();
+        if (iccProfileName.isEmpty())
+            iccProfileName = QByteArrayLiteral("Custom");
+        QByteArray iccProfile = cs.iccProfile();
+        png_set_iCCP(png_ptr, info_ptr, (png_const_charp)iccProfileName.constData(),
+                     PNG_COMPRESSION_TYPE_BASE, (png_const_bytep)iccProfile.constData(), iccProfile.length());
+    } else if (gamma != 0.0) {
         png_set_gAMA(png_ptr, info_ptr, 1.0/gamma);
     }
 
