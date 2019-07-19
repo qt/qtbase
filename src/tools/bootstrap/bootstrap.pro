@@ -126,10 +126,7 @@ win32:SOURCES += ../../corelib/global/qoperatingsystemversion_win.cpp \
 mac {
     SOURCES += \
         ../../corelib/kernel/qcoreapplication_mac.cpp \
-        ../../corelib/kernel/qcore_mac.cpp \
-        ../../corelib/io/qfilesystemengine_unix.cpp \
-        ../../corelib/io/qfilesystemiterator_unix.cpp \
-        ../../corelib/io/qfsfileengine_unix.cpp
+        ../../corelib/kernel/qcore_mac.cpp
 
     OBJECTIVE_SOURCES += \
         ../../corelib/global/qoperatingsystemversion_darwin.mm \
