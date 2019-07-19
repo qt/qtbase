@@ -514,10 +514,9 @@ Q_CONSTRUCTOR_FUNCTION(qt_apple_check_os_version);
 
 // -------------------------------------------------------------------------
 
-void QMacKeyValueObserver::addObserver()
+void QMacKeyValueObserver::addObserver(NSKeyValueObservingOptions options)
 {
-    [object addObserver:observer forKeyPath:keyPath
-        options:NSKeyValueObservingOptionNew context:callback.get()];
+    [object addObserver:observer forKeyPath:keyPath options:options context:callback.get()];
 }
 
 void QMacKeyValueObserver::removeObserver() {
