@@ -247,12 +247,14 @@ bool QColorSpacePrivate::identifyColorSpace()
     case QColorSpace::Gamut::SRgb:
         if (transferFunction == QColorSpace::TransferFunction::SRgb) {
             id = QColorSpace::SRgb;
-            description = QStringLiteral("sRGB");
+            if (description.isEmpty())
+                description = QStringLiteral("sRGB");
             return true;
         }
         if (transferFunction == QColorSpace::TransferFunction::Linear) {
             id = QColorSpace::SRgbLinear;
-            description = QStringLiteral("Linear sRGB");
+            if (description.isEmpty())
+                description = QStringLiteral("Linear sRGB");
             return true;
         }
         break;
@@ -260,7 +262,8 @@ bool QColorSpacePrivate::identifyColorSpace()
         if (transferFunction == QColorSpace::TransferFunction::Gamma) {
             if (qAbs(gamma - 2.19921875f) < (1/1024.0f)) {
                 id = QColorSpace::AdobeRgb;
-                description = QStringLiteral("Adobe RGB");
+                if (description.isEmpty())
+                    description = QStringLiteral("Adobe RGB");
                 return true;
             }
         }
@@ -268,21 +271,24 @@ bool QColorSpacePrivate::identifyColorSpace()
     case QColorSpace::Gamut::DciP3D65:
         if (transferFunction == QColorSpace::TransferFunction::SRgb) {
             id = QColorSpace::DisplayP3;
-            description = QStringLiteral("Display P3");
+            if (description.isEmpty())
+                description = QStringLiteral("Display P3");
             return true;
         }
         break;
     case QColorSpace::Gamut::ProPhotoRgb:
         if (transferFunction == QColorSpace::TransferFunction::ProPhotoRgb) {
             id = QColorSpace::ProPhotoRgb;
-            description = QStringLiteral("ProPhoto RGB");
+            if (description.isEmpty())
+                description = QStringLiteral("ProPhoto RGB");
             return true;
         }
         if (transferFunction == QColorSpace::TransferFunction::Gamma) {
             // ProPhoto RGB's curve is effectively gamma 1.8 for 8bit precision.
             if (qAbs(gamma - 1.8f) < (1/1024.0f)) {
                 id = QColorSpace::ProPhotoRgb;
-                description = QStringLiteral("ProPhoto RGB");
+                if (description.isEmpty())
+                    description = QStringLiteral("ProPhoto RGB");
                 return true;
             }
         }
@@ -290,7 +296,8 @@ bool QColorSpacePrivate::identifyColorSpace()
     case QColorSpace::Gamut::Bt2020:
         if (transferFunction == QColorSpace::TransferFunction::Bt2020) {
             id = QColorSpace::Bt2020;
-            description = QStringLiteral("BT.2020");
+            if (description.isEmpty())
+                description = QStringLiteral("BT.2020");
             return true;
         }
         break;

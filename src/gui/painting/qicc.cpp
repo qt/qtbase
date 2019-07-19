@@ -42,8 +42,9 @@
 #include <qbuffer.h>
 #include <qbytearray.h>
 #include <qdatastream.h>
-#include <qloggingcategory.h>
 #include <qendian.h>
+#include <qloggingcategory.h>
+#include <qstring.h>
 
 #include "qcolorspace_p.h"
 #include "qcolortrc_p.h"
@@ -117,6 +118,7 @@ enum class Tag : quint32 {
     bkpt = IccTag('b', 'k', 'p', 't'),
     mft1 = IccTag('m', 'f', 't', '1'),
     mft2 = IccTag('m', 'f', 't', '2'),
+    mluc = IccTag('m', 'l', 'u', 'c'),
     mAB_ = IccTag('m', 'A', 'B', ' '),
     mBA_ = IccTag('m', 'B', 'A', ' '),
     chad = IccTag('c', 'h', 'a', 'd'),
@@ -162,6 +164,25 @@ struct ParaTagData : GenericTagData {
     quint16_be curveType;
     quint16_be null2;
     quint32_be parameter[1];
+};
+
+struct DescTagData : GenericTagData {
+    quint32_be asciiDescriptionLength;
+    char asciiDescription[1];
+    // .. we ignore the rest
+};
+
+struct MlucTagRecord {
+    quint16_be languageCode;
+    quint16_be countryCode;
+    quint32_be size;
+    quint32_be offset;
+};
+
+struct MlucTagData : GenericTagData {
+    quint32_be recordCount;
+    quint32_be recordSize; // = sizeof(MlucTagRecord)
+    MlucTagRecord records[1];
 };
 
 // For both mAB and mBA
@@ -535,6 +556,53 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
     return false;
 }
 
+bool parseDesc(const QByteArray &data, const TagEntry &tagEntry, QString &descName)
+{
+    const GenericTagData *tag = (const GenericTagData *)(data.constData() + tagEntry.offset);
+
+    // Either 'desc' (ICCv2) or 'mluc' (ICCv4)
+    if (tag->type == quint32(Tag::desc)) {
+        if (tagEntry.size < sizeof(DescTagData))
+            return false;
+        const DescTagData *desc = (const DescTagData *)(data.constData() + tagEntry.offset);
+        const quint32 len = desc->asciiDescriptionLength;
+        if (len < 1)
+            return false;
+        if (tagEntry.size - 12 < len)
+            return false;
+        if (desc->asciiDescription[len - 1] != '\0')
+            return false;
+        descName = QString::fromLatin1(desc->asciiDescription, len - 1);
+        return true;
+    }
+    if (tag->type != quint32(Tag::mluc))
+        return false;
+
+    if (tagEntry.size < sizeof(MlucTagData))
+        return false;
+    const MlucTagData *mluc = (const MlucTagData *)(data.constData() + tagEntry.offset);
+    if (mluc->recordCount < 1)
+        return false;
+    if (mluc->recordSize < 12)
+        return false;
+    // We just use the primary record regardless of language or country.
+    const quint32 stringOffset = mluc->records[0].offset;
+    const quint32 stringSize = mluc->records[0].size;
+    if (tagEntry.size < stringOffset || tagEntry.size - stringOffset < stringSize )
+        return false;
+    if ((stringSize | stringOffset) & 1)
+        return false;
+    quint32 stringLen = stringSize / 2;
+    const ushort *unicodeString = (const ushort *)(data.constData() + tagEntry.offset + stringOffset);
+    // The given length shouldn't include 0-termination, but might.
+    if (stringLen > 1 && unicodeString[stringLen - 1] == 0)
+        --stringLen;
+    QVarLengthArray<quint16> utf16hostendian(stringLen);
+    qFromBigEndian<ushort>(unicodeString, stringLen, utf16hostendian.data());
+    descName = QString::fromUtf16(utf16hostendian.data(), stringLen);
+    return true;
+}
+
 bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
 {
     if (data.size() < qsizetype(sizeof(ICCProfileHeader))) {
@@ -690,7 +758,12 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Custom;
     }
 
-    // FIXME: try to parse the description..
+    if (tagIndex.contains(Tag::desc)) {
+        if (!parseDesc(data, tagIndex[Tag::desc], colorspaceDPtr->description))
+            qCWarning(lcIcc) << "fromIccProfile: Failed to parse description";
+        else
+            qCDebug(lcIcc) << "fromIccProfile: Description" << colorspaceDPtr->description;
+    }
 
     if (!colorspaceDPtr->identifyColorSpace())
         colorspaceDPtr->id = QColorSpace::Unknown;

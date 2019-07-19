@@ -53,6 +53,7 @@ private slots:
     void toIccProfile_data();
     void toIccProfile();
 
+    void fromIccProfile_data();
     void fromIccProfile();
 
     void imageConversion_data();
@@ -142,21 +143,38 @@ void tst_QColorSpace::toIccProfile()
     QCOMPARE(iccProfile2, iccProfile);
 }
 
+void tst_QColorSpace::fromIccProfile_data()
+{
+    QTest::addColumn<QString>("testProfile");
+    QTest::addColumn<QColorSpace::ColorSpaceId>("colorSpaceId");
+    QTest::addColumn<QColorSpace::TransferFunction>("transferFunction");
+    QTest::addColumn<QString>("description");
+
+    QString prefix = QFINDTESTDATA("resources/");
+    // Read the official sRGB ICCv2 profile:
+    QTest::newRow("sRGB2014 (ICCv2)") << prefix + "sRGB2014.icc" << QColorSpace::SRgb
+                                           << QColorSpace::TransferFunction::SRgb << QString("sRGB2014");
+    // My monitor's profile:
+    QTest::newRow("HP ZR30w (ICCv4)") << prefix + "HP_ZR30w.icc" << QColorSpace::Unknown
+                                      << QColorSpace::TransferFunction::Gamma << QString("HP Z30i");
+}
+
 void tst_QColorSpace::fromIccProfile()
 {
-    // Read the official sRGB ICCv2 profile:
-    QString prefix = QFINDTESTDATA("resources/");
-    QFile file(prefix + "sRGB2014.icc");
+    QFETCH(QString, testProfile);
+    QFETCH(QColorSpace::ColorSpaceId, colorSpaceId);
+    QFETCH(QColorSpace::TransferFunction, transferFunction);
+    QFETCH(QString, description);
+
+    QFile file(testProfile);
     file.open(QIODevice::ReadOnly);
     QByteArray iccProfile = file.readAll();
-    QColorSpace stdSRgb = QColorSpace::fromIccProfile(iccProfile);
-    QVERIFY(stdSRgb.isValid());
+    QColorSpace fileColorSpace = QColorSpace::fromIccProfile(iccProfile);
+    QVERIFY(fileColorSpace.isValid());
 
-    QCOMPARE(stdSRgb.gamut(), QColorSpace::Gamut::SRgb);
-    QCOMPARE(stdSRgb.transferFunction(), QColorSpace::TransferFunction::SRgb);
-    QCOMPARE(stdSRgb.colorSpaceId(), QColorSpace::SRgb);
-
-    QCOMPARE(stdSRgb, QColorSpace(QColorSpace::SRgb));
+    QCOMPARE(fileColorSpace.colorSpaceId(), colorSpaceId);
+    QCOMPARE(fileColorSpace.transferFunction(), transferFunction);
+    QCOMPARE(QColorSpacePrivate::get(fileColorSpace)->description, description);
 }
 
 void tst_QColorSpace::imageConversion_data()
