@@ -350,8 +350,12 @@ public:
     QMacKeyValueObserver() {}
 
     // Note: QMacKeyValueObserver must not outlive the object observed!
-    QMacKeyValueObserver(id object, NSString *keyPath, Callback callback)
-        : object(object), keyPath(keyPath), callback(new Callback(callback)) { addObserver(); }
+    QMacKeyValueObserver(id object, NSString *keyPath, Callback callback,
+        NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew)
+        : object(object), keyPath(keyPath), callback(new Callback(callback))
+    {
+        addObserver(options);
+    }
 
     QMacKeyValueObserver(const QMacKeyValueObserver &other)
          : QMacKeyValueObserver(other.object, other.keyPath, *other.callback.get()) {}
@@ -381,7 +385,7 @@ private:
         std::swap(first.callback, second.callback);
     }
 
-    void addObserver();
+    void addObserver(NSKeyValueObservingOptions options);
 
     id object = nil;
     NSString *keyPath = nullptr;
