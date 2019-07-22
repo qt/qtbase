@@ -6,6 +6,7 @@
 
 add_qt_plugin(qsqlite
     TYPE sqldrivers
+    CLASS_NAME QSQLiteDriverPlugin
     SOURCES
         qsql_sqlite.cpp qsql_sqlite_p.h
         smain.cpp

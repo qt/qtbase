@@ -6,6 +6,7 @@
 
 add_qt_plugin(qgif
     TYPE imageformats
+    CLASS_NAME QGifPlugin
     SOURCES
         main.cpp main.h
         qgifhandler.cpp qgifhandler_p.h

@@ -6,6 +6,7 @@
 
 add_qt_plugin(qtuiotouchplugin
     TYPE generic
+    CLASS_NAME QTuioTouchPlugin
     SOURCES
         main.cpp
         qoscbundle.cpp qoscbundle_p.h

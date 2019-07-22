@@ -6,6 +6,7 @@
 
 add_qt_plugin(qgenericbearer
     TYPE bearer
+    CLASS_NAME QGenericEnginePlugin
     SOURCES
         ../platformdefs_win.h
         ../qbearerengine_impl.h

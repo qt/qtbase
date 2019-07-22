@@ -6,6 +6,7 @@
 
 add_qt_plugin(qxdgdesktopportal
     TYPE platformthemes
+    CLASS_NAME QXdgDesktopPortalThemePlugin
     SOURCES
         main.cpp
         qxdgdesktopportalfiledialog.cpp qxdgdesktopportalfiledialog_p.h
