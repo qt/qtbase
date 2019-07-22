@@ -1076,7 +1076,7 @@ def extract_cmake_libraries(scope: Scope, *, known_libraries: typing.Set[str]=se
     for key in ['QMAKE_USE_PRIVATE', 'QMAKE_USE_FOR_PRIVATE', 'LIBS_PRIVATE',]:
         private_dependencies += scope.expand(key)
 
-    for key in ['QT_FOR_PRIVATE',]:
+    for key in ['QT_FOR_PRIVATE','QT_PRIVATE']:
         private_dependencies += [map_qt_library(q) for q in scope.expand(key)]
 
     for key in ['QT',]:
