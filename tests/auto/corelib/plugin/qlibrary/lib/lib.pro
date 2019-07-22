@@ -12,7 +12,7 @@ msvc: DEFINES += WIN32_MSVC
 target.path = $$[QT_INSTALL_TESTS]/tst_qlibrary
 INSTALLS += target
 
-win32 {
+win32:debug_and_release {
     CONFIG(debug, debug|release) {
         DESTDIR = ../debug/
     } else {
