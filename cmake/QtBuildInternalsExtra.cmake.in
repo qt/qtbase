@@ -15,3 +15,7 @@ set(CMAKE_INSTALL_PREFIX @CMAKE_INSTALL_PREFIX@ CACHE PATH
 if(@FEATURE_developer_build@)
     set(FEATURE_developer_build ON CACHE BOOL "Developer build." FORCE)
 endif()
+
+# Propagate non-prefix builds.
+set(QT_WILL_INSTALL @QT_WILL_INSTALL@ CACHE BOOL
+    "Boolean indicating if doing a Qt prefix build (vs non-prefix build)." FORCE)
