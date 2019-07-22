@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>table-border-test-header.html</file>
+        <file>table-border-test.html</file>
+    </qresource>
+</RCC>
