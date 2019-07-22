@@ -131,7 +131,7 @@ QString MingwMakefileGenerator::installRoot() const
     return QStringLiteral("$(INSTALL_ROOT:@msyshack@%=%)");
 }
 
-void createLdResponseFile(const QString &fileName, const ProStringList &objList)
+static void createResponseFile(const QString &fileName, const ProStringList &objList)
 {
     QString filePath = Option::output_dir + QDir::separator() + fileName;
     QFile file(filePath);
@@ -150,23 +150,6 @@ void createLdResponseFile(const QString &fileName, const ProStringList &objList)
                 .replace(QLatin1Char('\''), QLatin1String("\\'"));
             t << path << endl;
         }
-        t.flush();
-        file.close();
-    }
-}
-
-void createArObjectScriptFile(const QString &fileName, const QString &target, const ProStringList &objList)
-{
-    QString filePath = Option::output_dir + QDir::separator() + fileName;
-    QFile file(filePath);
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream t(&file);
-        // ### quoting?
-        t << "CREATE " << target << endl;
-        for (ProStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
-            t << "ADDMOD " << *it << endl;
-        }
-        t << "SAVE\n";
         t.flush();
         file.close();
     }
@@ -298,26 +281,25 @@ void MingwMakefileGenerator::writeObjectsPart(QTextStream &t)
     if (objmax.isEmpty() || project->values("OBJECTS").count() < objmax.toInt()) {
         objectsLinkLine = "$(OBJECTS)";
     } else if (project->isActiveConfig("staticlib") && project->first("TEMPLATE") == "lib") {
-        QString ar_script_file = var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("TARGET");
+        QString ar_response_file = var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("TARGET");
         if (!var("BUILD_NAME").isEmpty()) {
-            ar_script_file += "." + var("BUILD_NAME");
+            ar_response_file += "." + var("BUILD_NAME");
         }
         if (!var("MAKEFILE").isEmpty())
-            ar_script_file += "." + var("MAKEFILE");
+            ar_response_file += "." + var("MAKEFILE");
         // QMAKE_LIB is used for win32, including mingw, whereas QMAKE_AR is used on Unix.
-        // Strip off any options since the ar commands will be read from file.
-        QString ar_cmd = var("QMAKE_LIB").section(" ", 0, 0);
+        QString ar_cmd = var("QMAKE_LIB");
         if (ar_cmd.isEmpty())
-            ar_cmd = "ar";
-        createArObjectScriptFile(ar_script_file, var("DEST_TARGET"), project->values("OBJECTS"));
-        objectsLinkLine = ar_cmd + " -M < " + escapeFilePath(ar_script_file);
+            ar_cmd = "ar -rc";
+        createResponseFile(ar_response_file, project->values("OBJECTS"));
+        objectsLinkLine = ar_cmd + ' ' + var("DEST_TARGET") + " @" + escapeFilePath(ar_response_file);
     } else {
         QString ld_response_file = var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("TARGET");
         if (!var("BUILD_NAME").isEmpty())
             ld_response_file += "." + var("BUILD_NAME");
         if (!var("MAKEFILE").isEmpty())
             ld_response_file += "." + var("MAKEFILE");
-        createLdResponseFile(ld_response_file, project->values("OBJECTS"));
+        createResponseFile(ld_response_file, project->values("OBJECTS"));
         objectsLinkLine = "@" + escapeFilePath(ld_response_file);
     }
     Win32MakefileGenerator::writeObjectsPart(t);
