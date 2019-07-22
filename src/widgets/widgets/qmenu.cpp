@@ -2392,7 +2392,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     }
 
 #ifdef QT_KEYPAD_NAVIGATION
-    if (!atAction && QApplication::keypadNavigationEnabled()) {
+    if (!atAction && QApplicationPrivate::keypadNavigationEnabled()) {
         // Try to have one item activated
         if (d->defaultAction && d->defaultAction->isEnabled()) {
             atAction = d->defaultAction;

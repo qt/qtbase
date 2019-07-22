@@ -54,6 +54,7 @@
 #endif
 
 #include "qapplication.h"
+#include "private/qapplication_p.h"
 #if QT_CONFIG(graphicsview)
 #include "qgraphicssceneevent.h"
 #endif
@@ -1662,7 +1663,7 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
             case Qt::Key_F4:
 #ifdef QT_KEYPAD_NAVIGATION
             case Qt::Key_Select:
-                if (!QApplication::keypadNavigationEnabled())
+                if (!QApplicationPrivate::keypadNavigationEnabled())
                     break;
 #endif
                 if (!m_completer->currentCompletion().isEmpty() && hasSelectedText()
@@ -1912,7 +1913,7 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
                 break;
 #ifdef QT_KEYPAD_NAVIGATION
             case Qt::Key_Back:
-                if (QApplication::keypadNavigationEnabled() && !event->isAutoRepeat()
+                if (QApplicationPrivate::keypadNavigationEnabled() && !event->isAutoRepeat()
                     && !isReadOnly()) {
                     if (text().length() == 0) {
                         setText(m_cancelText);

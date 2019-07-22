@@ -393,7 +393,7 @@ QPointer<QWidget> QWidgetPrivate::editingWidget;
 
     This feature is only available in Qt for Embedded Linux.
 
-    \sa setEditFocus(), QApplication::keypadNavigationEnabled()
+    \sa setEditFocus(), QApplication::navigationMode()
 */
 bool QWidget::hasEditFocus() const
 {
@@ -413,7 +413,7 @@ bool QWidget::hasEditFocus() const
 
     This feature is only available in Qt for Embedded Linux.
 
-    \sa hasEditFocus(), QApplication::keypadNavigationEnabled()
+    \sa hasEditFocus(), QApplication::navigationMode()
 */
 void QWidget::setEditFocus(bool on)
 {

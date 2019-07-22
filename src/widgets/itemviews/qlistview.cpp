@@ -54,6 +54,7 @@
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
+#include <private/qapplication_p.h>
 #include <private/qlistview_p.h>
 #include <private/qscrollbar_p.h>
 #include <qdebug.h>
@@ -1185,7 +1186,7 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
             rect.translate(0, -rect.height());
             if (rect.bottom() <= 0) {
 #ifdef QT_KEYPAD_NAVIGATION
-                if (QApplication::keypadNavigationEnabled()) {
+                if (QApplicationPrivate::keypadNavigationEnabled()) {
                     int row = d->batchStartRow() - 1;
                     while (row >= 0 && d->isHiddenOrDisabled(row))
                         --row;
@@ -1214,7 +1215,7 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
             rect.translate(0, rect.height());
             if (rect.top() >= contents.height()) {
 #ifdef QT_KEYPAD_NAVIGATION
-                if (QApplication::keypadNavigationEnabled()) {
+                if (QApplicationPrivate::keypadNavigationEnabled()) {
                     int rowCount = d->model->rowCount(d->root);
                     int row = 0;
                     while (row < rowCount && d->isHiddenOrDisabled(row))

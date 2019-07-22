@@ -3843,8 +3843,6 @@ void QApplicationPrivate::openPopup(QWidget *popup)
     This feature is available in Qt for Embedded Linux only.
 
     \since 4.6
-
-    \sa keypadNavigationEnabled()
 */
 void QApplication::setNavigationMode(Qt::NavigationMode mode)
 {
@@ -3857,8 +3855,6 @@ void QApplication::setNavigationMode(Qt::NavigationMode mode)
     This feature is available in Qt for Embedded Linux only.
 
     \since 4.6
-
-    \sa keypadNavigationEnabled()
 */
 Qt::NavigationMode QApplication::navigationMode()
 {

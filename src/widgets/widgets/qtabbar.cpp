@@ -65,6 +65,7 @@
 #endif
 
 #include "qdebug.h"
+#include "private/qapplication_p.h"
 #include "private/qtabbar_p.h"
 
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
@@ -415,7 +416,7 @@ void QTabBarPrivate::init()
     QObject::connect(rightB, SIGNAL(clicked()), q, SLOT(_q_scrollTabs()));
     rightB->hide();
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled()) {
+    if (QApplicationPrivate::keypadNavigationEnabled()) {
         leftB->setFocusPolicy(Qt::NoFocus);
         rightB->setFocusPolicy(Qt::NoFocus);
         q->setFocusPolicy(Qt::NoFocus);

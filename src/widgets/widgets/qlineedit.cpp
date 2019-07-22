@@ -1481,7 +1481,7 @@ bool QLineEdit::event(QEvent * e)
         d->initMouseYThreshold();
     }
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled()) {
+    if (QApplicationPrivate::keypadNavigationEnabled()) {
         if (e->type() == QEvent::EnterEditFocus) {
             end(false);
             d->setCursorVisible(true);
@@ -1513,7 +1513,7 @@ void QLineEdit::mousePressEvent(QMouseEvent* e)
     if (e->button() == Qt::RightButton)
         return;
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled() && !hasEditFocus()) {
+    if (QApplication::QApplicationPrivate() && !hasEditFocus()) {
         setEditFocus(true);
         // Get the completion list to pop up.
         if (d->control->completer())
@@ -1722,7 +1722,7 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
     bool select = false;
     switch (event->key()) {
         case Qt::Key_Select:
-            if (QApplication::keypadNavigationEnabled()) {
+            if (QApplicationPrivate::keypadNavigationEnabled()) {
                 if (hasEditFocus()) {
                     setEditFocus(false);
                     if (d->control->completer() && d->control->completer()->popup()->isVisible())
@@ -1733,13 +1733,13 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
             break;
         case Qt::Key_Back:
         case Qt::Key_No:
-            if (!QApplication::keypadNavigationEnabled() || !hasEditFocus()) {
+            if (!QApplicationPrivate::keypadNavigationEnabled() || !hasEditFocus()) {
                 event->ignore();
                 return;
             }
             break;
         default:
-            if (QApplication::keypadNavigationEnabled()) {
+            if (QApplicationPrivate::keypadNavigationEnabled()) {
                 if (!hasEditFocus() && !(event->modifiers() & Qt::ControlModifier)) {
                     if (!event->text().isEmpty() && event->text().at(0).isPrint()
                         && !isReadOnly())
@@ -1754,7 +1754,7 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
 
 
 
-    if (QApplication::keypadNavigationEnabled() && !select && !hasEditFocus()) {
+    if (QApplicationPrivate::keypadNavigationEnabled() && !select && !hasEditFocus()) {
         setEditFocus(true);
         if (event->key() == Qt::Key_Select)
             return; // Just start. No action.
@@ -1801,7 +1801,7 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
     // Focus in if currently in navigation focus on the widget
     // Only focus in on preedits, to allow input methods to
     // commit text as they focus out without interfering with focus
-    if (QApplication::keypadNavigationEnabled()
+    if (QApplicationPrivate::keypadNavigationEnabled()
         && hasFocus() && !hasEditFocus()
         && !e->preeditString().isEmpty())
         setEditFocus(true);
@@ -1874,7 +1874,7 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
         d->clickCausedFocus = 1;
     }
 #ifdef QT_KEYPAD_NAVIGATION
-    if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && ( e->reason() == Qt::PopupFocusReason))) {
+    if (!QApplicationPrivate::keypadNavigationEnabled() || (hasEditFocus() && ( e->reason() == Qt::PopupFocusReason))) {
 #endif
     d->control->setBlinkingCursorEnabled(true);
     QStyleOptionFrame opt;
@@ -1918,7 +1918,7 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
     d->control->setBlinkingCursorEnabled(false);
 #ifdef QT_KEYPAD_NAVIGATION
     // editingFinished() is already emitted on LeaveEditFocus
-    if (!QApplication::keypadNavigationEnabled())
+    if (!QApplicationPrivate::keypadNavigationEnabled())
 #endif
     if (reason != Qt::PopupFocusReason
         || !(QApplication::activePopupWidget() && QApplication::activePopupWidget()->parentWidget() == this)) {
@@ -2041,7 +2041,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     int flags = QWidgetLineControl::DrawText;
 
 #ifdef QT_KEYPAD_NAVIGATION
-    if (!QApplication::keypadNavigationEnabled() || hasEditFocus())
+    if (!QApplicationPrivate::keypadNavigationEnabled() || hasEditFocus())
 #endif
     if (d->control->hasSelectedText() || (d->cursorVisible && !d->control->inputMask().isEmpty() && !d->control->isReadOnly())){
         flags |= QWidgetLineControl::DrawSelections;

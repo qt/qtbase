@@ -223,7 +223,7 @@ void QComboBoxPrivate::_q_completerActivated(const QModelIndex &index)
     }
 
 #  ifdef QT_KEYPAD_NAVIGATION
-    if ( QApplication::keypadNavigationEnabled()
+    if ( QApplicationPrivate::keypadNavigationEnabled()
          && q->isEditable()
          && q->completer()
          && q->completer()->completionMode() == QCompleter::UnfilteredPopupCompletion ) {
@@ -1534,7 +1534,7 @@ void QComboBox::setAutoCompletion(bool enable)
     Q_D(QComboBox);
 
 #ifdef QT_KEYPAD_NAVIGATION
-    if (Q_UNLIKELY(QApplication::keypadNavigationEnabled() && !enable && isEditable()))
+    if (Q_UNLIKELY(QApplicationPrivate::keypadNavigationEnabled() && !enable && isEditable()))
         qWarning("QComboBox::setAutoCompletion: auto completion is mandatory when combo box editable");
 #endif
 
@@ -1881,7 +1881,7 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     setAutoCompletion(d->autoCompletion);
 
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled()) {
+    if (QApplicationPrivate::keypadNavigationEnabled()) {
         // Editable combo boxes will have a completer that is set to UnfilteredPopupCompletion.
         // This means that when the user enters edit mode they are immediately presented with a
         // list of possible completions.
@@ -2653,7 +2653,7 @@ void QComboBox::showPopup()
 
 #ifdef QT_KEYPAD_NAVIGATION
 #if QT_CONFIG(completer)
-    if (QApplication::keypadNavigationEnabled() && d->completer) {
+    if (QApplicationPrivate::keypadNavigationEnabled() && d->completer) {
         // editable combo box is line edit plus completer
         setEditFocus(true);
         d->completer->complete(); // show popup
@@ -2859,7 +2859,7 @@ void QComboBox::showPopup()
 
     container->update();
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled())
+    if (QApplicationPrivate::keypadNavigationEnabled())
         view()->setEditFocus(true);
 #endif
     if (startTimer) {
@@ -2931,7 +2931,7 @@ void QComboBox::hidePopup()
             d->container->hide();
     }
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled() && isEditable() && hasFocus())
+    if (QApplicationPrivate::keypadNavigationEnabled() && isEditable() && hasFocus())
         setEditFocus(true);
 #endif
     d->_q_resetButton();
@@ -3190,7 +3190,7 @@ void QComboBoxPrivate::showPopupFromMouseEvent(QMouseEvent *e)
         }
     } else {
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled() && sc == QStyle::SC_ComboBoxEditField && lineEdit) {
+        if (QApplicationPrivate::keypadNavigationEnabled() && sc == QStyle::SC_ComboBoxEditField && lineEdit) {
             lineEdit->event(e);  //so lineedit can move cursor, etc
             return;
         }
@@ -3239,7 +3239,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
         Q_FALLTHROUGH();
     case Qt::Key_PageUp:
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled())
+        if (QApplicationPrivate::keypadNavigationEnabled())
             e->ignore();
         else
 #endif
@@ -3254,7 +3254,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
         Q_FALLTHROUGH();
     case Qt::Key_PageDown:
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled())
+        if (QApplicationPrivate::keypadNavigationEnabled())
             e->ignore();
         else
 #endif
@@ -3288,7 +3288,7 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
         break;
 #ifdef QT_KEYPAD_NAVIGATION
     case Qt::Key_Select:
-        if (QApplication::keypadNavigationEnabled()
+        if (QApplicationPrivate::keypadNavigationEnabled()
                 && (!hasEditFocus() || !d->lineEdit)) {
             showPopup();
             return;
@@ -3296,11 +3296,11 @@ void QComboBox::keyPressEvent(QKeyEvent *e)
         break;
     case Qt::Key_Left:
     case Qt::Key_Right:
-        if (QApplication::keypadNavigationEnabled() && !hasEditFocus())
+        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus())
             e->ignore();
         break;
     case Qt::Key_Back:
-        if (QApplication::keypadNavigationEnabled()) {
+        if (QApplicationPrivate::keypadNavigationEnabled()) {
             if (!hasEditFocus() || !d->lineEdit)
                 e->ignore();
         } else {

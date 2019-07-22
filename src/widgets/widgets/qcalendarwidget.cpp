@@ -54,6 +54,7 @@
 #include <qspinbox.h>
 #include <qmenu.h>
 #include <qapplication.h>
+#include <private/qapplication_p.h>
 #include <qbasictimer.h>
 #include <qstylepainter.h>
 
@@ -1384,14 +1385,14 @@ void QCalendarView::keyPressEvent(QKeyEvent *event)
 {
 #ifdef QT_KEYPAD_NAVIGATION
     if (event->key() == Qt::Key_Select) {
-        if (QApplication::keypadNavigationEnabled()) {
+        if (QApplicationPrivate::keypadNavigationEnabled()) {
             if (!hasEditFocus()) {
                 setEditFocus(true);
                 return;
             }
         }
     } else if (event->key() == Qt::Key_Back) {
-        if (QApplication::keypadNavigationEnabled() && hasEditFocus()) {
+        if (QApplicationPrivate::keypadNavigationEnabled() && hasEditFocus()) {
             if (qobject_cast<QCalendarModel *>(model())) {
                 emit changeDate(origDate, true); //changes selection back to origDate, but doesn't activate
                 setEditFocus(false);

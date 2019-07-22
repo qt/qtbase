@@ -61,6 +61,7 @@
 #include <qstyleditemdelegate.h>
 #include <private/qabstractitemview_p.h>
 #include <private/qabstractitemmodel_p.h>
+#include <private/qapplication_p.h>
 #include <private/qguiapplication_p.h>
 #include <private/qscrollbar_p.h>
 #ifndef QT_NO_ACCESSIBILITY
@@ -2290,7 +2291,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
 #ifdef QT_KEYPAD_NAVIGATION
     switch (event->key()) {
     case Qt::Key_Select:
-        if (QApplication::keypadNavigationEnabled()) {
+        if (QApplicationPrivate::keypadNavigationEnabled()) {
             if (!hasEditFocus()) {
                 setEditFocus(true);
                 return;
@@ -2298,7 +2299,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         }
         break;
     case Qt::Key_Back:
-        if (QApplication::keypadNavigationEnabled() && hasEditFocus()) {
+        if (QApplicationPrivate::keypadNavigationEnabled() && hasEditFocus()) {
             setEditFocus(false);
         } else {
             event->ignore();
@@ -2309,7 +2310,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         // Let's ignore vertical navigation events, only if there is no other widget
         // what can take the focus in vertical direction. This means widget can handle navigation events
         // even the widget don't have edit focus, and there is no other widget in requested direction.
-        if(QApplication::keypadNavigationEnabled() && !hasEditFocus()
+        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()
                 && QWidgetPrivate::canKeypadNavigate(Qt::Vertical)) {
             event->ignore();
             return;
@@ -2318,14 +2319,14 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Left:
     case Qt::Key_Right:
         // Similar logic as in up and down events
-        if(QApplication::keypadNavigationEnabled() && !hasEditFocus()
+        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()
                 && (QWidgetPrivate::canKeypadNavigate(Qt::Horizontal) || QWidgetPrivate::inTabWidget(this))) {
             event->ignore();
             return;
         }
         break;
     default:
-        if (QApplication::keypadNavigationEnabled() && !hasEditFocus()) {
+        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()) {
             event->ignore();
             return;
         }
@@ -2413,7 +2414,8 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Down:
     case Qt::Key_Up:
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled() && QWidgetPrivate::canKeypadNavigate(Qt::Vertical)) {
+        if (QApplicationPrivate::keypadNavigationEnabled()
+                && QWidgetPrivate::canKeypadNavigate(Qt::Vertical)) {
             event->accept(); // don't change focus
             break;
         }

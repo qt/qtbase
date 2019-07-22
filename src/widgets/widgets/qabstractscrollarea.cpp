@@ -1362,7 +1362,7 @@ void QAbstractScrollArea::keyPressEvent(QKeyEvent * e)
 #endif
     } else {
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled() && !hasEditFocus()) {
+        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()) {
             e->ignore();
             return;
         }
@@ -1376,7 +1376,7 @@ void QAbstractScrollArea::keyPressEvent(QKeyEvent * e)
             break;
         case Qt::Key_Left:
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled() && hasEditFocus()
+        if (QApplicationPrivate::keypadNavigationEnabled() && hasEditFocus()
             && (!d->hbar->isVisible() || d->hbar->value() == d->hbar->minimum())) {
             //if we aren't using the hbar or we are already at the leftmost point ignore
             e->ignore();
@@ -1389,7 +1389,7 @@ void QAbstractScrollArea::keyPressEvent(QKeyEvent * e)
             break;
         case Qt::Key_Right:
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled() && hasEditFocus()
+        if (QApplicationPrivate::keypadNavigationEnabled() && hasEditFocus()
             && (!d->hbar->isVisible() || d->hbar->value() == d->hbar->maximum())) {
             //if we aren't using the hbar or we are already at the rightmost point ignore
             e->ignore();
