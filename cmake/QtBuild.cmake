@@ -1943,16 +1943,21 @@ endfunction()
 # This function creates a CMake test target with the specified name for use with CTest.
 function(add_qt_test name)
     qt_parse_all_arguments(arg "add_qt_test"
-        "RUN_SERIAL;EXCEPTIONS"
-        "" "TESTDATA;${__default_private_args}" ${ARGN})
+        "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST"
+        "QML_IMPORTPATH" "TESTDATA;${__default_private_args}" ${ARGN})
     set(path "${CMAKE_CURRENT_BINARY_DIR}")
 
     if (${arg_EXCEPTIONS})
-        set(EXCEPTIONS_TEXT "EXCEPTIONS")
+        set(exceptions_text "EXCEPTIONS")
+    endif()
+
+    if (${arg_GUI})
+        set(gui_text "GUI")
     endif()
 
     add_qt_executable("${name}"
-        ${EXCEPTIONS_TEXT}
+        ${exceptions_text}
+        ${gui_text}
         NO_INSTALL
         OUTPUT_DIRECTORY "${path}"
         SOURCES "${arg_SOURCES}"
@@ -1974,16 +1979,49 @@ function(add_qt_test name)
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
     )
 
+    # QMLTest specifics
+
+    extend_target("${name}" CONDITION arg_QMLTEST
+        PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::QuickTest
+    )
+
+    extend_target("${name}" CONDITION arg_QMLTEST AND NOT ANDROID
+        DEFINES
+            QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+
+    extend_target("${name}" CONDITION arg_QMLTEST AND ANDROID
+        DEFINES
+            QUICK_TEST_SOURCE_DIR=":/"
+    )
+
+    if (arg_QML_IMPORTPATH)
+        set(extra_test_args "-import" "${arg_QML_IMPORTPATH}")
+    endif()
+
     # Generate a label in the form tests/auto/foo/bar/tst_baz
     # and use it also for XML output
     file(RELATIVE_PATH label "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${name}")
 
-    add_test(NAME "${name}" COMMAND "${name}" -o ${name}.xml,xml -o -,txt  WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    if(arg_QMLTEST AND NOT arg_SOURCES)
+        set(test_executable ${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner "$<TARGET_FILE:${name}>")
+    else()
+        set(test_executable "${name}")
+    endif()
 
+    add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args} -o ${name}.xml,xml -o -,txt  WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
     set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}" LABELS "${label}")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "PATH=${path}${QT_PATH_SEPARATOR}${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}$ENV{PATH}")
-    set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "QT_PLUGIN_PATH=${PROJECT_BINARY_DIR}/${INSTALL_PLUGINSDIR}")
 
+    # Add the install prefix to list of plugin paths when doing a prefix build
+    if(NOT QT_INSTALL_DIR)
+        list(APPEND plugin_paths "${CMAKE_INSTALL_PREFIX}/${INSTALL_PLUGINSDIR}")
+    endif()
+    #TODO: Collect all paths from known repositories when performing a super
+    # build.
+    list(APPEND plugin_paths "${PROJECT_BINARY_DIR}/${INSTALL_PLUGINSDIR}")
+    list(JOIN plugin_paths "${QT_PATH_SEPARATOR}" plugin_paths_joined)
+    set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "QT_PLUGIN_PATH=${plugin_paths_joined}")
 
     if(ANDROID OR IOS OR WINRT)
         set(builtin_testdata TRUE)

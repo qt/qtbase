@@ -1698,14 +1698,26 @@ def write_tool(cm_fh: typing.IO[str], scope: Scope, *,
                     extra_lines=extra, extra_keys=['CONFIG'])
 
 
-def write_test(cm_fh: typing.IO[str], scope: Scope, *,
-               indent: int = 0) -> None:
+def write_test(cm_fh: typing.IO[str], scope: Scope,
+                gui: bool = False, *, indent: int = 0) -> None:
     test_name = scope.TARGET
     assert test_name
 
+    extra = ['GUI',] if gui else []
+    libraries={'Qt::Core', 'Qt::Test'}
+
+    if 'qmltestcase' in scope.get('CONFIG'):
+        libraries.add('Qt::QmlTest')
+        extra.append('QMLTEST')
+        importpath = scope.get('IMPORTPATH')
+        if importpath:
+            qml_importpath = scope.expandString(importpath)
+            if qml_importpath:
+                extra.append('QML_IMPORTPATH "{}"'.format(qml_importpath))
+
     write_main_part(cm_fh, test_name, 'Test', 'add_qt_test', scope,
-                    indent=indent, known_libraries={'Qt::Core', 'Qt::Test',},
-                    extra_keys=[])
+                    indent=indent, known_libraries=libraries,
+                    extra_lines=extra, extra_keys=[])
 
 
 def write_binary(cm_fh: typing.IO[str], scope: Scope,
@@ -1713,7 +1725,7 @@ def write_binary(cm_fh: typing.IO[str], scope: Scope,
     binary_name = scope.TARGET
     assert binary_name
 
-    extra = ['GUI',] if gui else[]
+    extra = ['GUI',] if gui else []
 
     target_path = scope.get_string('target.path')
     if target_path:
@@ -1857,13 +1869,14 @@ def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
         assert not is_example
         write_tool(cm_fh, scope, indent=indent)
     else:
-        if 'testcase' in scope.get('CONFIG') \
-                or 'testlib' in scope.get('CONFIG'):
+        config = scope.get('CONFIG')
+        gui = all(val not in config for val in ['console', 'cmdline'])
+        if 'testcase' in config \
+                or 'testlib' in config \
+                or 'qmltestcase' in config:
             assert not is_example
-            write_test(cm_fh, scope, indent=indent)
+            write_test(cm_fh, scope, gui, indent=indent)
         else:
-            config = scope.get('CONFIG')
-            gui = all(val not in config for val in ['console', 'cmdline'])
             if is_example:
                 write_example(cm_fh, scope, gui, indent=indent)
             else:
