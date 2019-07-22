@@ -2,8 +2,18 @@
 
 if(NOT @BUILD_SHARED_LIBS@)
     set(_module_target "@INSTALL_CMAKE_NAMESPACE@::@QT_MODULE@")
+    # Properties can't be set on aliased targets, so make sure to unalias the target. This is needed
+    # when Qt examples are built as part of the Qt build itself.
+    get_target_property(_aliased_target ${_module_target} ALIASED_TARGET)
+    if(_aliased_target)
+        set(_module_target ${_aliased_target})
+    endif()
+    unset(_aliased_target)
 
     set(_default_plugins_are_enabled "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_DEFAULT_PLUGINS>>")
+    # Make sure to boolify the result of the expression, in case if the returned property value
+    # is empty.
+    set(_default_plugins_are_enabled_wrapped "$<BOOL:${_default_plugins_are_enabled}>")
     set(_manual_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_PLUGINS>>")
     set(_no_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_NO_PLUGINS>>")
 
@@ -23,7 +33,7 @@ if(NOT @BUILD_SHARED_LIBS@)
                     "$<BOOL:$<OR:"
                         "${_plugin_is_whitelisted},"
                         "$<AND:"
-                            "${_default_plugins_are_enabled},"
+                            "${_default_plugins_are_enabled_wrapped},"
                             "${_plugin_is_default},"
                             "${_plugin_is_not_blacklisted}"
                         ">"
