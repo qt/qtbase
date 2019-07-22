@@ -118,11 +118,13 @@ class QSystemTrayIconSys
 public:
     QSystemTrayIconSys(QCocoaSystemTrayIcon *sys) {
         item = [[QNSStatusItem alloc] initWithSysTray:sys];
-        [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:item];
+        NSUserNotificationCenter.defaultUserNotificationCenter.delegate = item;
     }
     ~QSystemTrayIconSys() {
         [[[item item] view] setHidden: YES];
-        [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:nil];
+        NSUserNotificationCenter *center = NSUserNotificationCenter.defaultUserNotificationCenter;
+        if (center.delegate == item)
+            center.delegate = nil;
         [item release];
     }
     QNSStatusItem *item;
@@ -277,7 +279,10 @@ void QCocoaSystemTrayIcon::showMessage(const QString &title, const QString &mess
         notification.contentImage = [nsimage autorelease];
     }
 
-    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+    NSUserNotificationCenter *center = NSUserNotificationCenter.defaultUserNotificationCenter;
+    center.delegate = m_sys->item;
+    [center deliverNotification:notification];
+    [notification release];
 }
 QT_END_NAMESPACE
 

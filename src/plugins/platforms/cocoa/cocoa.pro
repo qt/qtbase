@@ -6,6 +6,7 @@ SOURCES += main.mm \
     qcocoatheme.mm \
     qcocoabackingstore.mm \
     qcocoawindow.mm \
+    qcocoawindowmanager.mm \
     qnsview.mm \
     qnswindow.mm \
     qnswindowdelegate.mm \
@@ -41,6 +42,7 @@ HEADERS += qcocoaintegration.h \
     qcocoatheme.h \
     qcocoabackingstore.h \
     qcocoawindow.h \
+    qcocoawindowmanager.h \
     qnsview.h \
     qnswindow.h \
     qnswindowdelegate.h \
