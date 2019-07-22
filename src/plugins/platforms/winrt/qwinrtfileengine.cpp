@@ -257,6 +257,29 @@ qint64 QWinRTFileEngine::size() const
     return qint64(size);
 }
 
+bool QWinRTFileEngine::setSize(qint64 size)
+{
+    Q_D(QWinRTFileEngine);
+    if (!d->stream) {
+        setError(QFileDevice::ResizeError, QLatin1String("File must be open to be resized"));
+        return false;
+    }
+
+    if (size < 0) {
+        setError(QFileDevice::ResizeError, QLatin1String("File size cannot be negative"));
+        return false;
+    }
+
+    HRESULT hr = d->stream->put_Size(static_cast<quint64>(size));
+    RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::ResizeError, false);
+    if (!flush()) {
+        setError(QFileDevice::ResizeError, QLatin1String("Could not flush file"));
+        return false;
+    }
+
+    return true;
+}
+
 qint64 QWinRTFileEngine::pos() const
 {
     Q_D(const QWinRTFileEngine);
