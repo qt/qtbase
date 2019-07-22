@@ -1534,7 +1534,7 @@ function(add_qt_plugin target)
         set(archive_install_directory_default "${INSTALL_QMLDIR}/${target_path}")
     endif()
 
-    if ("x${arg_CLASS_NAME}" STREQUAL x)
+    if ("x${arg_CLASS_NAME}" STREQUAL "x" AND NOT "${arg_TYPE}" STREQUAL "qml_plugin")
         message(AUTHOR_WARNING "add_qt_plugin called without setting CLASS_NAME.")
     endif()
 
@@ -1574,8 +1574,10 @@ function(add_qt_plugin target)
     endif()
 
     # Save the Qt module in the plug-in's properties
-    qt_get_module_for_plugin("${target}" "${arg_TYPE}")
-    get_target_property(qt_module "${target}" QT_MODULE)
+    if(NOT arg_TYPE STREQUAL "qml_plugin")
+        qt_get_module_for_plugin("${target}" "${arg_TYPE}")
+        get_target_property(qt_module "${target}" QT_MODULE)
+    endif()
 
     # Add the plug-in to the list of plug-ins of this module
     if(TARGET "${qt_module}")
