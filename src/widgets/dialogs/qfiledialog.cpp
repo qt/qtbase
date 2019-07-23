@@ -2376,10 +2376,10 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
     It can also be used on other platforms, where it will fall back to using QFileDialog.
 
     The function is asynchronous and returns immediately. The \a fileOpenCompleted
-    callback will be called when a file has been selected and its contents has been
+    callback will be called when a file has been selected and its contents have been
     read into memory.
 
-    \snippet code/src_gui_dialogs_qfiledialog.cpp 14
+    \snippet code/src_gui_dialogs_qfiledialog.cpp 15
     \since 5.13
 */
 void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::function<void(const QString &, const QByteArray &)> &fileOpenCompleted)
