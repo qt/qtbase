@@ -3,7 +3,6 @@ SUBDIRS = \
         qbytearray \
         qchar \
         qlocale \
-        qregexp \
         qstringbuilder \
         qstringlist
 
