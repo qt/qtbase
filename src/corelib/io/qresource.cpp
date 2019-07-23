@@ -951,11 +951,12 @@ Q_CORE_EXPORT bool qRegisterResourceData(int version, const unsigned char *tree,
     if (resourceGlobalData.isDestroyed())
         return false;
     QMutexLocker lock(resourceMutex());
+    ResourceList *list = resourceList();
     if (version >= 0x01 && version <= 0x3) {
         bool found = false;
         QResourceRoot res(version, tree, name, data);
-        for(int i = 0; i < resourceList()->size(); ++i) {
-            if(*resourceList()->at(i) == res) {
+        for (int i = 0; i < list->size(); ++i) {
+            if (*list->at(i) == res) {
                 found = true;
                 break;
             }
@@ -963,7 +964,7 @@ Q_CORE_EXPORT bool qRegisterResourceData(int version, const unsigned char *tree,
         if(!found) {
             QResourceRoot *root = new QResourceRoot(version, tree, name, data);
             root->ref.ref();
-            resourceList()->append(root);
+            list->append(root);
         }
         return true;
     }
@@ -979,9 +980,10 @@ Q_CORE_EXPORT bool qUnregisterResourceData(int version, const unsigned char *tre
     QMutexLocker lock(resourceMutex());
     if (version >= 0x01 && version <= 0x3) {
         QResourceRoot res(version, tree, name, data);
-        for(int i = 0; i < resourceList()->size(); ) {
-            if(*resourceList()->at(i) == res) {
-                QResourceRoot *root = resourceList()->takeAt(i);
+        ResourceList *list = resourceList();
+        for (int i = 0; i < list->size(); ) {
+            if (*list->at(i) == res) {
+                QResourceRoot *root = list->takeAt(i);
                 if(!root->ref.deref())
                     delete root;
             } else {
@@ -1227,7 +1229,7 @@ QResource::unregisterResource(const QString &rccFilename, const QString &resourc
         if(res->type() == QResourceRoot::Resource_File) {
             QDynamicFileResourceRoot *root = reinterpret_cast<QDynamicFileResourceRoot*>(res);
             if (root->mappingFile() == rccFilename && root->mappingRoot() == r) {
-                resourceList()->removeAt(i);
+                list->removeAt(i);
                 if(!root->ref.deref()) {
                     delete root;
                     return true;
@@ -1298,7 +1300,7 @@ QResource::unregisterResource(const uchar *rccData, const QString &resourceRoot)
         if(res->type() == QResourceRoot::Resource_Buffer) {
             QDynamicBufferResourceRoot *root = reinterpret_cast<QDynamicBufferResourceRoot*>(res);
             if (root->mappingBuffer() == rccData && root->mappingRoot() == r) {
-                resourceList()->removeAt(i);
+                list->removeAt(i);
                 if(!root->ref.deref()) {
                     delete root;
                     return true;
