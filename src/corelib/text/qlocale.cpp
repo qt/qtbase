@@ -567,8 +567,8 @@ QString qt_readEscapedFormatString(QStringView format, int *idx)
 
     while (i < format.size()) {
         if (format.at(i).unicode() == '\'') {
-            if (i + 1 < format.size() && format.at(i + 1).unicode() == '\'') {
-                // "''" inside of a quoted string
+            if (format.mid(i + 1).startsWith(QLatin1Char('\''))) {
+                // "''" inside a quoted string
                 result.append(QLatin1Char('\''));
                 i += 2;
             } else {
@@ -3186,31 +3186,19 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
 
             case 'a':
                 used = true;
-                if (i + 1 < format.size() && format.at(i + 1).unicode() == 'p') {
-                    repeat = 2;
-                } else {
-                    repeat = 1;
-                }
+                repeat = format.mid(i + 1).startsWith(QLatin1Char('p')) ? 2 : 1;
                 result.append(time.hour() < 12 ? q->amText().toLower() : q->pmText().toLower());
                 break;
 
             case 'A':
                 used = true;
-                if (i + 1 < format.size() && format.at(i + 1).unicode() == 'P') {
-                    repeat = 2;
-                } else {
-                    repeat = 1;
-                }
+                repeat = format.mid(i + 1).startsWith(QLatin1Char('P')) ? 2 : 1;
                 result.append(time.hour() < 12 ? q->amText().toUpper() : q->pmText().toUpper());
                 break;
 
             case 'z':
                 used = true;
-                if (repeat >= 3) {
-                    repeat = 3;
-                } else {
-                    repeat = 1;
-                }
+                repeat = (repeat >= 3) ? 3 : 1;
 
                 // note: the millisecond component is treated like the decimal part of the seconds
                 // so ms == 2 is always printed as "002", but ms == 200 can be either "2" or "200"
@@ -3229,20 +3217,16 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
                 used = true;
                 repeat = 1;
                 // If we have a QDateTime use the time spec otherwise use the current system tzname
-                if (formatDate) {
-                    result.append(datetime.timeZoneAbbreviation());
-                } else {
-                    result.append(QDateTime::currentDateTime().timeZoneAbbreviation());
-                }
+                result.append(formatDate ? datetime.timeZoneAbbreviation()
+                                         : QDateTime::currentDateTime().timeZoneAbbreviation());
                 break;
 
             default:
                 break;
             }
         }
-        if (!used) {
+        if (!used)
             result.append(QString(repeat, c));
-        }
         i += repeat;
     }
 
