@@ -236,9 +236,6 @@ void QApplicationPrivate::createEventDispatcher()
                 encapsulated in a QStyle object. This can be changed at runtime
                 with setStyle().
 
-            \li  It specifies how the application is to allocate colors. See
-                setColorSpec() for details.
-
             \li  It provides localization of strings that are visible to the
                 user via translate().
 
@@ -299,11 +296,6 @@ void QApplicationPrivate::createEventDispatcher()
             setStyle().
 
         \row
-        \li  Color usage
-        \li  colorSpec(),
-            setColorSpec().
-
-        \row
         \li  Text handling
         \li  installTranslator(),
             removeTranslator()
@@ -337,6 +329,7 @@ void QApplicationPrivate::createEventDispatcher()
     \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop, QSettings
 */
 
+#if QT_DEPRECATED_SINCE(5, 8)
 // ### fixme: Qt 6: Remove ColorSpec and accessors.
 /*!
     \enum QApplication::ColorSpec
@@ -350,15 +343,7 @@ void QApplicationPrivate::createEventDispatcher()
 
     See setColorSpec() for full details.
 */
-
-/*!
-    \fn QApplication::setGraphicsSystem(const QString &)
-    \obsolete
-
-    This call has no effect.
-
-    Use the QPA framework instead.
-*/
+#endif
 
 /*!
     \fn QWidget *QApplication::topLevelAt(const QPoint &point)
@@ -1955,13 +1940,6 @@ bool QApplication::event(QEvent *e)
 
     return QGuiApplication::event(e);
 }
-
-/*!
-   \fn void QApplication::syncX()
-    Was used to synchronize with the X server in 4.x, here for source compatibility.
-    \internal
-    \obsolete
-*/
 
 // ### FIXME: topLevelWindows does not contain QWidgets without a parent
 // until QWidgetPrivate::create is called. So we have to override the
@@ -3990,15 +3968,6 @@ int QApplication::doubleClickInterval()
 }
 
 /*!
-    \fn QApplication::keyboardInputDirection()
-    \since 4.2
-    \deprecated
-
-    Returns the current keyboard input direction. Replaced with QInputMethod::inputDirection()
-    \sa QInputMethod::inputDirection()
-*/
-
-/*!
     \property QApplication::keyboardInputInterval
     \brief the time limit in milliseconds that distinguishes a key press
     from two consecutive key presses
@@ -4133,14 +4102,6 @@ void QApplication::beep()
     so only valid when the unique application object is a QApplication.
 
     \sa QCoreApplication::instance(), qGuiApp
-*/
-
-/*!
-    \fn QLocale QApplication::keyboardInputLocale()
-    \since 4.2
-    \obsolete
-
-    Returns the current keyboard input locale. Replaced with QInputMethod::locale()
 */
 
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event)
