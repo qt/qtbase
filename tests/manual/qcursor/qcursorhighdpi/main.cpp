@@ -356,15 +356,12 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     MainWindowPtrList windows;
-
-    QDesktopWidget *desktopWidget = app.desktop();
-
     const int lastScreen = arguments.contains("-p")
         ? 0  // Primary screen only
-        : desktopWidget->screenCount() - 1; // All screens
+        : QGuiApplication::screens().size() - 1; // All screens
     for (int s = lastScreen; s >= 0; --s) {
-        MainWindowPtr window(new MainWindow(desktopWidget->screen(s)));
-        const QPoint pos = desktopWidget->screenGeometry(s).center() - QPoint(200, 100);
+        MainWindowPtr window(new MainWindow());
+        const QPoint pos = QGuiApplication::screens().at(s)->geometry().center() - QPoint(200, 100);
         window->move(pos);
         windows.append(window);
         window->show();
