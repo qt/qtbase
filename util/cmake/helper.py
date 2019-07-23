@@ -356,7 +356,7 @@ platform_mapping = {
     'netbsd': 'NETBSD',
     'haiku': 'HAIKU',
     'netbsd': 'NETBSD',
-    'mac': 'APPLE_OSX',
+    'mac': 'APPLE',
     'macx': 'APPLE_OSX',
     'macos': 'APPLE_OSX',
     'macx-icc': '(APPLE_OSX AND ICC)',

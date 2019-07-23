@@ -445,13 +445,6 @@ extend_target(Core CONDITION WIN32 AND NOT WINRT
 extend_target(Core CONDITION APPLE
     SOURCES
         global/qoperatingsystemversion_darwin.mm
-    LIBRARIES
-        ${FWCoreFoundation}
-        ${FWFoundation}
-)
-
-extend_target(Core CONDITION APPLE_OSX
-    SOURCES
         io/qstandardpaths_mac.mm
         io/qstorageinfo_mac.cpp
         kernel/qcfsocketnotifier.cpp kernel/qcfsocketnotifier_p.h
@@ -461,10 +454,15 @@ extend_target(Core CONDITION APPLE_OSX
         kernel/qcoreapplication_mac.cpp
         kernel/qeventdispatcher_cf.mm kernel/qeventdispatcher_cf_p.h
     LIBRARIES
+        ${FWCoreFoundation}
+        ${FWFoundation}
+)
+
+extend_target(Core CONDITION APPLE_OSX
+    LIBRARIES
         ${FWAppKit}
         ${FWApplicationServices}
         ${FWCoreServices}
-        ${FWFoundation}
         ${FWSecurity}
     PUBLIC_LIBRARIES
         ${FWDiskArbitration}
@@ -561,6 +559,11 @@ extend_target(Core CONDITION QT_FEATURE_journald
 #### Keys ignored in scope 38:.:global:global/global.pri:silent:
 # versiontagging_compiler.commands = "@echo" "compiling[versiontagging]" "${QMAKE_FILE_IN}" "&&"
 
+extend_target(Core CONDITION NOT GCC OR NOT ltcg
+    SOURCES
+        global/qversiontagging.cpp
+)
+
 extend_target(Core CONDITION UNIX
     SOURCES
         io/qfilesystemengine_unix.cpp
@@ -644,18 +647,18 @@ extend_target(Core CONDITION MSVC
         tools/qvector_msvc.cpp
 )
 
-extend_target(Core CONDITION APPLE_OSX AND NOT NACL
+extend_target(Core CONDITION APPLE AND NOT NACL
     SOURCES
         kernel/qelapsedtimer_mac.cpp
         tools/qlocale_mac.mm
 )
 
-extend_target(Core CONDITION UNIX AND (NACL OR NOT APPLE_OSX)
+extend_target(Core CONDITION UNIX AND (NACL OR NOT APPLE)
     SOURCES
         tools/qlocale_unix.cpp
 )
 
-extend_target(Core CONDITION WIN32 AND (NACL OR NOT APPLE_OSX)
+extend_target(Core CONDITION WIN32 AND (NACL OR NOT APPLE)
     SOURCES
         tools/qlocale_win.cpp
 )
@@ -831,9 +834,14 @@ extend_target(Core CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT 
         ../3rdparty/forkfd
 )
 
-extend_target(Core CONDITION APPLE_OSX AND QT_FEATURE_processenvironment
+extend_target(Core CONDITION APPLE AND QT_FEATURE_processenvironment
     SOURCES
         io/qprocess_darwin.mm
+)
+
+extend_target(Core CONDITION APPLE AND NOT APPLE_OSX
+    PUBLIC_LIBRARIES
+        ${FWMobileCoreServices}
 )
 
 extend_target(Core CONDITION ANDROID AND NOT ANDROID_EMBEDDED
@@ -853,7 +861,7 @@ extend_target(Core CONDITION HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)
         be
 )
 
-extend_target(Core CONDITION UNIX AND NOT APPLE_OSX AND NOT HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)
+extend_target(Core CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)
     SOURCES
         io/qstandardpaths_unix.cpp
         io/qstorageinfo_unix.cpp
@@ -911,12 +919,12 @@ extend_target(Core CONDITION QT_FEATURE_dlopen AND QT_FEATURE_library
         ${CMAKE_DL_LIBS}
 )
 
-extend_target(Core CONDITION APPLE_OSX AND (APPLE_IOS OR APPLE_TVOS)
+extend_target(Core CONDITION APPLE AND (APPLE_IOS OR APPLE_TVOS)
     LIBRARIES
         ${FWUIKit}
 )
 
-extend_target(Core CONDITION APPLE_OSX AND APPLE_WATCHOS
+extend_target(Core CONDITION APPLE_WATCHOS
     LIBRARIES
         ${FWWatchKit}
 )

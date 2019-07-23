@@ -92,16 +92,24 @@ extend_target(Test CONDITION embedded
         -fno-rtti
 )
 
-extend_target(Test CONDITION APPLE_OSX
+extend_target(Test CONDITION APPLE
     SOURCES
         qappletestlogger.cpp qappletestlogger_p.h
+    PUBLIC_LIBRARIES
+        ${FWSecurity}
+)
+
+extend_target(Test CONDITION APPLE_OSX
+    SOURCES
         qtestutil_macos.mm qtestutil_macos_p.h
     PUBLIC_LIBRARIES
         ${FWApplicationServices}
         ${FWFoundation}
         ${FWIOKit}
-        ${FWSecurity}
 )
+
+#### Keys ignored in scope 8:.:.:testlib.pro:OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"):
+# _LOADED = "sdk"
 
 # special case begin
 # Do not bother with disabled stuff:

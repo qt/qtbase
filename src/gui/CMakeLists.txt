@@ -276,10 +276,17 @@ add_qt_resource(Gui qmake_webgradients PREFIX "/qgradient" BASE "painting" FILES
 # special case end
 
 set_source_files_properties("painting/../../3rdparty/icc/sRGB2014.icc"
-    PROPERTIES alias "sRGB2014.icc")
-add_qt_resource(Gui "qpdf" PREFIX "qpdf/" BASE "painting" FILES
-    ../../3rdparty/icc/sRGB2014.icc
-    qpdfa_metadata.xml)
+    PROPERTIES alias "sRGB2014.icc"
+)
+add_qt_resource(Gui "qpdf"
+    PREFIX
+        "qpdf/"
+    BASE
+        "painting"
+    FILES
+        ../../3rdparty/icc/sRGB2014.icc
+        qpdfa_metadata.xml
+)
 
 add_qt_simd_part(Gui SIMD sse2
     SOURCES
@@ -485,7 +492,7 @@ extend_target(Gui CONDITION WIN32
 #### Keys ignored in scope 20:.:.:gui.pro:NOT QMAKE_LIBDIR_OPENGL_ISEMPTY:
 # CMAKE_OPENGL_LIBDIR = "$$cmakePortablePaths$$QMAKE_LIBDIR_OPENGL"
 
-#### Keys ignored in scope 21:.:.:gui.pro:APPLE_OSX:
+#### Keys ignored in scope 21:.:.:gui.pro:APPLE:
 # CMAKE_GL_HEADER_NAME = "gl.h"
 
 #### Keys ignored in scope 22:.:.:gui.pro:QT_FEATURE_egl:
@@ -501,7 +508,7 @@ extend_target(Gui CONDITION QT_FEATURE_accessibility
         accessible/qplatformaccessibility.cpp accessible/qplatformaccessibility.h
 )
 
-extend_target(Gui CONDITION APPLE_OSX AND QT_FEATURE_accessibility
+extend_target(Gui CONDITION APPLE AND QT_FEATURE_accessibility
     SOURCES
         accessible/qaccessiblecache_mac.mm
     LIBRARIES
