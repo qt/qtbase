@@ -291,7 +291,7 @@ public:
         detailModeButton->setToolTip(QCoreApplication::translate("QFileDialog", "Detail View", nullptr));
 #endif // QT_CONFIG(tooltip)
         fileTypeLabel->setText(QCoreApplication::translate("QFileDialog", "Files of type:", nullptr));
-        Q_UNUSED(QFileDialog);
+        (void)QFileDialog;
     } // retranslateUi
 
 };
