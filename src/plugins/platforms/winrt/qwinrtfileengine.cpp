@@ -43,6 +43,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QHash>
 #include <QtCore/qfunctions_winrt.h>
+#include <QtCore/private/qfsfileengine_p.h>
 
 #include <wrl.h>
 #include <windows.storage.h>
@@ -196,7 +197,19 @@ bool QWinRTFileEngine::open(QIODevice::OpenMode openMode)
     hr = QWinRTFunctions::await(op, d->stream.GetAddressOf());
     RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::OpenError, false);
 
-    d->openMode = openMode;
+    const ProcessOpenModeResult res = processOpenModeFlags(openMode);
+    if (!res.ok) {
+        setError(QFileDevice::OpenError, res.error);
+        return false;
+    }
+    d->openMode = res.openMode;
+    if (d->openMode & QIODevice::Truncate) {
+        if (!setSize(0)) {
+            close();
+            setError(QFileDevice::OpenError, QLatin1String("Could not truncate file"));
+            return false;
+        }
+    }
 
     return SUCCEEDED(hr);
 }
