@@ -1251,6 +1251,7 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
     \sa font(), setText(), setForeground()
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn QColor QTreeWidgetItem::backgroundColor(int column) const
     \obsolete
@@ -1264,6 +1265,7 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
 
     This function is deprecated. Use setBackground() instead.
 */
+#endif
 
 /*!
     \fn QBrush QTreeWidgetItem::background(int column) const
@@ -1284,6 +1286,7 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
     \sa setForeground()
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn QColor QTreeWidgetItem::textColor(int column) const
     \obsolete
@@ -1297,6 +1300,7 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
 
     This function is deprecated. Use setForeground() instead.
 */
+#endif
 
 /*!
     \fn QBrush QTreeWidgetItem::foreground(int column) const

@@ -8073,7 +8073,7 @@ public:
             sp.setHeightForWidth(hfwLayout);
 
             QVBoxLayout *vbox = new QVBoxLayout;
-            vbox->setMargin(0);
+            vbox->setContentsMargins(0, 0, 0, 0);
             vbox->addWidget(new ASWidget(sizeHint + QSize(30, 20), sp, false, false));
             setLayout(vbox);
         }
@@ -10120,7 +10120,7 @@ void tst_QWidget::grabMouse()
     w.setObjectName(QLatin1String("tst_qwidget_grabMouse"));
     w.setWindowTitle(w.objectName());
     QLayout *layout = new QVBoxLayout(&w);
-    layout->setMargin(50);
+    layout->setContentsMargins(50, 50, 50, 50);
     GrabLoggerWidget *grabber = new GrabLoggerWidget(&log, &w);
     const QString grabberObjectName = QLatin1String("tst_qwidget_grabMouse_grabber");
     grabber->setObjectName(grabberObjectName);

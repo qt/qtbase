@@ -4441,12 +4441,14 @@ protected:
         case QGraphicsItem::ItemPositionHasChanged:
             break;
         case QGraphicsItem::ItemMatrixChange: {
+#if QT_DEPRECATED_SINCE(5, 13)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
             QVariant variant;
             variant.setValue<QMatrix>(matrix());
             oldValues << variant;
 QT_WARNING_POP
+#endif
         }
             break;
         case QGraphicsItem::ItemTransformChange: {
@@ -4566,6 +4568,7 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(tester.oldValues.last(), QVariant(true));
         QCOMPARE(tester.isEnabled(), true);
     }
+#if QT_DEPRECATED_SINCE(5, 13)
     {
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED // QDesktopWidget::screen()
@@ -4585,6 +4588,7 @@ QT_WARNING_DISABLE_DEPRECATED // QDesktopWidget::screen()
         QCOMPARE(tester.matrix(), QMatrix().rotate(90));
 QT_WARNING_POP
     }
+#endif
     {
         tester.resetTransform();
         ++changeCount;

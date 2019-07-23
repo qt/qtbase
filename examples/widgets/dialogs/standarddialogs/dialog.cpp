@@ -317,7 +317,7 @@ void Dialog::setInteger()
 {
 //! [0]
     bool ok;
-    int i = QInputDialog::getInt(this, tr("QInputDialog::getInteger()"),
+    int i = QInputDialog::getInt(this, tr("QInputDialog::getInt()"),
                                  tr("Percentage:"), 25, 0, 100, 1, &ok);
     if (ok)
         integerLabel->setText(tr("%1%").arg(i));

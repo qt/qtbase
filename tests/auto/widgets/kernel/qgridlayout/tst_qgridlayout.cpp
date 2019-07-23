@@ -219,9 +219,9 @@ void tst_QGridLayout::badDistributionBug()
     QDialog dialog;
     Ui::SortDialog ui;
     ui.setupUi(&dialog);
-    ui.gridLayout->setMargin(0);
+    ui.gridLayout->setContentsMargins(0, 0, 0, 0);
     ui.gridLayout->setSpacing(0);
-    ui.vboxLayout->setMargin(0);
+    ui.vboxLayout->setContentsMargins(0, 0, 0, 0);
     ui.vboxLayout->setSpacing(0);
     ui.okButton->setFixedHeight(20);
     ui.moreButton->setFixedHeight(20);
@@ -237,7 +237,7 @@ void tst_QGridLayout::setMinAndMaxSize()
     QWidget widget;
     setFrameless(&widget);
     QGridLayout layout(&widget);
-    layout.setMargin(0);
+    layout.setContentsMargins(0, 0, 0, 0);
     layout.setSpacing(0);
     layout.setSizeConstraint(QLayout::SetMinAndMaxSize);
     widget.show();
@@ -396,7 +396,7 @@ void tst_QGridLayout::spacingAndSpacers()
     QWidget widget;
     setFrameless(&widget);
     QGridLayout layout(&widget);
-    layout.setMargin(0);
+    layout.setContentsMargins(0, 0, 0, 0);
     layout.setSpacing(0);
     widget.show();
 
@@ -1541,7 +1541,7 @@ void tst_QGridLayout::spacerWithSpacing()
                 QWidget window;
                 QGridLayout layout(&window);
                 layout.setSpacing(1);
-                layout.setMargin(0);
+                layout.setContentsMargins(0, 0, 0, 0);
                 populate(&layout, 0, i);
                 populate(&layout, 1, j);
                 populate(&layout, 2, k);
@@ -1651,7 +1651,7 @@ void tst_QGridLayout::taskQTBUG_52357_spacingWhenItemIsHidden()
     QWidget widget;
     setFrameless(&widget);
     QGridLayout layout(&widget);
-    layout.setMargin(0);
+    layout.setContentsMargins(0, 0, 0, 0);
     layout.setSpacing(5);
     QPushButton button1;
     layout.addWidget(&button1, 0, 0);

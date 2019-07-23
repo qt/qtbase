@@ -930,12 +930,14 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
     \sa Qt::AlignmentFlag
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn QColor QListWidgetItem::backgroundColor() const
     \obsolete
 
     This function is deprecated. Use background() instead.
 */
+#endif
 
 /*!
     \fn QBrush QListWidgetItem::background() const
@@ -946,6 +948,7 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
     \sa setBackground(), foreground()
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn QColor QListWidgetItem::textColor() const
     \obsolete
@@ -954,6 +957,7 @@ QDataStream &operator>>(QDataStream &in, QListWidgetItem &item)
 
     This function is deprecated. Use foreground() instead.
 */
+#endif
 
 /*!
     \fn QBrush QListWidgetItem::foreground() const
@@ -1119,12 +1123,14 @@ void QListWidgetItem::setFlags(Qt::ItemFlags aflags)
     \sa background(), setForeground()
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn void QListWidgetItem::setTextColor(const QColor &color)
     \obsolete
 
     This function is deprecated. Use setForeground() instead.
 */
+#endif
 
 /*!
     \fn void QListWidgetItem::setForeground(const QBrush &brush)
