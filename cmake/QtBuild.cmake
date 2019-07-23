@@ -1831,19 +1831,35 @@ function(add_qml_module target)
         IMPORT_NAME "${arg_IMPORT_NAME}"
         QML_PLUGINDUMP_DEPENDENCIES "${arg_QML_PLUGINDUMP_DEPENDENCIES}")
 
+    qt_path_join(qml_module_install_dir ${QT_INSTALL_DIR} "${INSTALL_QMLDIR}/${target_path}")
     set(plugin_types "${CMAKE_CURRENT_SOURCE_DIR}/plugins.qmltypes")
     if (EXISTS ${plugin_types})
         qt_copy_or_install(FILES ${plugin_types}
-            DESTINATION "${INSTALL_QMLDIR}/${target_path}"
+            DESTINATION "${qml_module_install_dir}"
         )
+
+        if(QT_WILL_INSTALL)
+            # plugin.qmltypes when present should also be copied to the
+            # cmake binary dir when doing prefix builds
+            file(COPY ${plugin_types}
+                DESTINATION "${QT_BUILD_DIR}/${INSTALL_QMLDIR}/${target_path}"
+            )
+        endif()
     endif()
 
     qt_copy_or_install(
         FILES
             "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
         DESTINATION
-            "${INSTALL_QMLDIR}/${target_path}"
+            "${qml_module_install_dir}"
     )
+    if(QT_WILL_INSTALL)
+        # qmldir should also be copied to the cmake binary dir when doing
+        # prefix builds
+        file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
+            DESTINATION "${QT_BUILD_DIR}/${INSTALL_QMLDIR}/${target_path}"
+        )
+    endif()
 
     if(NOT QT_BUILD_SHARED_LIBS)
         string(REPLACE "/" "." uri ${arg_TARGET_PATH})
@@ -1854,7 +1870,7 @@ function(add_qml_module target)
     else()
         if(arg_QML_FILES)
             qt_copy_or_install(FILES ${arg_QML_FILES}
-                DESTINATION "${INSTALL_QMLDIR}/${target_path}"
+                DESTINATION "${qml_module_install_dir}"
             )
         endif()
     endif()
@@ -1994,16 +2010,17 @@ function(add_qt_test name)
         endif()
     else()
         # Install test data
+        qt_path_join(testdata_install_dir ${QT_INSTALL_DIR} "${INSTALL_TESTDIR}/${name}")
         foreach(testdata IN LISTS arg_TESTDATA)
             set(testdata "${CMAKE_CURRENT_SOURCE_DIR}/${testdata}")
             if (IS_DIRECTORY "${testdata}")
                 qt_copy_or_install(
                     DIRECTORY "${testdata}"
-                    DESTINATION "${INSTALL_TESTSDIR}/${name}")
+                    DESTINATION "${testdata_install_dir}")
             else()
                 qt_copy_or_install(
                     FILES "${testdata}"
-                    DESTINATION "${INSTALL_TESTSDIR}/${name}")
+                    DESTINATION "${testdata_install_dir}")
             endif()
         endforeach()
     endif()
