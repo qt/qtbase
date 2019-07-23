@@ -358,7 +358,7 @@ if [ -z "$QT_MAJOR_VERSION" ]; then
 fi
 
 #-------------------------------------------------------------------------------
-# initalize variables
+# initialize variables
 #-------------------------------------------------------------------------------
 
 # QTDIR may be set and point to an old or system-wide Qt installation
