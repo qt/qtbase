@@ -256,9 +256,9 @@ add_qt_module(Gui
     DEFINES
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
+        QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}" # special case
     INCLUDE_DIRECTORIES
         ../3rdparty/VulkanMemoryAllocator
-        QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}" # special case
     LIBRARIES
         Qt::CorePrivate
         ZLIB::ZLIB
