@@ -852,8 +852,10 @@ bool QResourceRoot::mappingRootSubdir(const QString &path, QString *match) const
 Q_CORE_EXPORT bool qRegisterResourceData(int version, const unsigned char *tree,
                                          const unsigned char *name, const unsigned char *data)
 {
+    if (resourceGlobalData.isDestroyed())
+        return false;
     QMutexLocker lock(resourceMutex());
-    if ((version == 0x01 || version == 0x2) && resourceList()) {
+    if (version == 0x01 || version == 0x2) {
         bool found = false;
         QResourceRoot res(version, tree, name, data);
         for(int i = 0; i < resourceList()->size(); ++i) {
@@ -879,7 +881,7 @@ Q_CORE_EXPORT bool qUnregisterResourceData(int version, const unsigned char *tre
         return false;
 
     QMutexLocker lock(resourceMutex());
-    if ((version == 0x01 || version == 0x02) && resourceList()) {
+    if (version == 0x01 || version == 0x02) {
         QResourceRoot res(version, tree, name, data);
         for(int i = 0; i < resourceList()->size(); ) {
             if(*resourceList()->at(i) == res) {
