@@ -4,7 +4,7 @@ CONFIG -= debug_and_release_target
 INCLUDEPATH += ../../../../../shared/
 HEADERS += ../../../../../shared/emulationdetector.h
 SOURCES  += ../tst_qnetworkreply.cpp
-TARGET = ../tst_qnetworkreply
+TARGET = tst_qnetworkreply
 
 QT = core-private network-private testlib
 QT_FOR_CONFIG += gui-private

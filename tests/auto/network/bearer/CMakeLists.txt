@@ -1,0 +1,6 @@
+# Generated from bearer.pro.
+
+add_subdirectory(qnetworkconfiguration)
+add_subdirectory(qnetworkconfigurationmanager)
+add_subdirectory(qnetworkconfigurationmanagerqappless)
+add_subdirectory(qnetworksession)

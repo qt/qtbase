@@ -3,13 +3,13 @@ SOURCES  += ../tst_qtcpserver.cpp
 
 win32: QMAKE_USE += ws2_32
 
-TARGET = ../tst_qtcpserver
+TARGET = tst_qtcpserver
 
 win32 {
   CONFIG(debug, debug|release) {
-    TARGET = ../../debug/tst_qtcpserver
+    TARGET = ../debug/tst_qtcpserver
 } else {
-    TARGET = ../../release/tst_qtcpserver
+    TARGET = ../release/tst_qtcpserver
   }
 }
 
