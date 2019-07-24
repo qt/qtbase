@@ -102,16 +102,6 @@ std::pair<OutputIt1, OutputIt2> separate_if(InputIt first, InputIt last, OutputI
     return std::make_pair(dest1, dest2);
 }
 
-int get_signal_index()
-{
-    static auto senderMetaObject = &QHostInfoResult::staticMetaObject;
-    static auto signal = &QHostInfoResult::resultsReady;
-    int signal_index = -1;
-    void *args[] = { &signal_index, &signal };
-    senderMetaObject->static_metacall(QMetaObject::IndexOfMethod, 0, args);
-    return signal_index + QMetaObjectPrivate::signalOffset(senderMetaObject);
-}
-
 }
 
 /*
@@ -129,23 +119,26 @@ void QHostInfoResult::postResultsReady(const QHostInfo &info)
 {
     // queued connection will take care of dispatching to right thread
     if (!slotObj) {
-        emitResultsReady(info);
+        emit resultsReady(info);
         return;
     }
-    static const int signal_index = get_signal_index();
-
     // we used to have a context object, but it's already destroyed
     if (withContextObject && !receiver)
         return;
 
-    /* QHostInfoResult c'tor moves the result object to the thread of receiver.
-       If we don't have a receiver, then the result object will not live in a
-       thread that runs an event loop - so move it to this' thread, which is the thread
-       that initiated the lookup, and required to have a running event loop. */
-    auto result = new QHostInfoResult(receiver, slotObj);
-    if (!receiver)
-        result->moveToThread(thread());
+    static const int signal_index = []() -> int {
+        auto senderMetaObject = &QHostInfoResult::staticMetaObject;
+        auto signal = &QHostInfoResult::resultsReady;
+        int signal_index = -1;
+        void *args[] = { &signal_index, &signal };
+        senderMetaObject->static_metacall(QMetaObject::IndexOfMethod, 0, args);
+        return signal_index + QMetaObjectPrivate::signalOffset(senderMetaObject);
+    }();
+
+    // a long-living version of this
+    auto result = new QHostInfoResult(this);
     Q_CHECK_PTR(result);
+
     const int nargs = 2;
     auto types = reinterpret_cast<int *>(malloc(nargs * sizeof(int)));
     Q_CHECK_PTR(types);
@@ -159,6 +152,26 @@ void QHostInfoResult::postResultsReady(const QHostInfo &info)
     auto metaCallEvent = new QMetaCallEvent(slotObj, nullptr, signal_index, nargs, types, args);
     Q_CHECK_PTR(metaCallEvent);
     qApp->postEvent(result, metaCallEvent);
+}
+
+/*
+    Receives the event posted by postResultsReady, and calls the functor.
+*/
+bool QHostInfoResult::event(QEvent *event)
+{
+    if (event->type() == QEvent::MetaCall) {
+        Q_ASSERT(slotObj);
+        auto metaCallEvent = static_cast<QMetaCallEvent *>(event);
+        auto args = metaCallEvent->args();
+        // we didn't have a context object, or it's still alive
+        if (!withContextObject || receiver)
+            slotObj->call(const_cast<QObject*>(receiver.data()), args);
+        slotObj->destroyIfLastRef();
+
+        deleteLater();
+        return true;
+    }
+    return QObject::event(event);
 }
 
 /*!
@@ -255,64 +268,9 @@ static int nextId()
 
     \sa abortHostLookup(), addresses(), error(), fromName()
 */
-int QHostInfo::lookupHost(const QString &name, QObject *receiver,
-                          const char *member)
+int QHostInfo::lookupHost(const QString &name, QObject *receiver, const char *member)
 {
-#if defined QHOSTINFO_DEBUG
-    qDebug("QHostInfo::lookupHost(\"%s\", %p, %s)",
-           name.toLatin1().constData(), receiver, member ? member + 1 : 0);
-#endif
-
-    if (!QAbstractEventDispatcher::instance(QThread::currentThread())) {
-        qWarning("QHostInfo::lookupHost() called with no event dispatcher");
-        return -1;
-    }
-
-    qRegisterMetaType<QHostInfo>();
-
-    int id = nextId(); // generate unique ID
-
-    if (name.isEmpty()) {
-        if (!receiver)
-            return -1;
-
-        QHostInfo hostInfo(id);
-        hostInfo.setError(QHostInfo::HostNotFound);
-        hostInfo.setErrorString(QCoreApplication::translate("QHostInfo", "No host name given"));
-        QScopedPointer<QHostInfoResult> result(new QHostInfoResult);
-        QObject::connect(result.data(), SIGNAL(resultsReady(QHostInfo)),
-                         receiver, member, Qt::QueuedConnection);
-        result.data()->emitResultsReady(hostInfo);
-        return id;
-    }
-
-    QHostInfoLookupManager *manager = theHostInfoLookupManager();
-
-    if (manager) {
-        // the application is still alive
-        if (manager->cache.isEnabled()) {
-            // check cache first
-            bool valid = false;
-            QHostInfo info = manager->cache.get(name, &valid);
-            if (valid) {
-                if (!receiver)
-                    return -1;
-
-                info.setLookupId(id);
-                QHostInfoResult result;
-                QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
-                result.emitResultsReady(info);
-                return id;
-            }
-        }
-
-        // cache is not enabled or it was not in the cache, do normal lookup
-        QHostInfoRunnable* runnable = new QHostInfoRunnable(name, id);
-        if (receiver)
-            QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)), receiver, member, Qt::QueuedConnection);
-        manager->scheduleLookup(runnable);
-    }
-    return id;
+    return QHostInfoPrivate::lookupHostImpl(name, receiver, nullptr, member);
 }
 
 /*!
@@ -818,14 +776,32 @@ QString QHostInfo::localHostName()
     \sa hostName()
 */
 
+// ### Qt 6 merge with function below
 int QHostInfo::lookupHostImpl(const QString &name,
                               const QObject *receiver,
                               QtPrivate::QSlotObjectBase *slotObj)
 {
+    return QHostInfoPrivate::lookupHostImpl(name, receiver, slotObj, nullptr);
+}
+/*
+    Called by the various lookupHost overloads to perform the lookup.
+
+    Signals either the functor encapuslated in the \a slotObj in the context
+    of \a receiver, or the \a member slot of the \a receiver.
+
+    \a receiver might be the nullptr, but only if a \a slotObj is provided.
+*/
+int QHostInfoPrivate::lookupHostImpl(const QString &name,
+                                     const QObject *receiver,
+                                     QtPrivate::QSlotObjectBase *slotObj,
+                                     const char *member)
+{
 #if defined QHOSTINFO_DEBUG
-    qDebug("QHostInfo::lookupHost(\"%s\", %p, %p)",
-           name.toLatin1().constData(), receiver, slotObj);
+    qDebug("QHostInfoPrivate::lookupHostImpl(\"%s\", %p, %p, %s)",
+           name.toLatin1().constData(), receiver, slotObj, member ? member + 1 : 0);
 #endif
+    Q_ASSERT(!member != !slotObj); // one of these must be set, but not both
+    Q_ASSERT(receiver || slotObj);
 
     if (!QAbstractEventDispatcher::instance(QThread::currentThread())) {
         qWarning("QHostInfo::lookupHost() called with no event dispatcher");
@@ -840,8 +816,13 @@ int QHostInfo::lookupHostImpl(const QString &name,
         QHostInfo hostInfo(id);
         hostInfo.setError(QHostInfo::HostNotFound);
         hostInfo.setErrorString(QCoreApplication::translate("QHostInfo", "No host name given"));
+
         QHostInfoResult result(receiver, slotObj);
+        if (receiver && member)
+            QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)),
+                            receiver, member, Qt::QueuedConnection);
         result.postResultsReady(hostInfo);
+
         return id;
     }
 
@@ -856,21 +837,22 @@ int QHostInfo::lookupHostImpl(const QString &name,
             if (valid) {
                 info.setLookupId(id);
                 QHostInfoResult result(receiver, slotObj);
+                if (receiver && member)
+                    QObject::connect(&result, SIGNAL(resultsReady(QHostInfo)),
+                                    receiver, member, Qt::QueuedConnection);
                 result.postResultsReady(info);
                 return id;
             }
         }
 
         // cache is not enabled or it was not in the cache, do normal lookup
-        QHostInfoRunnable* runnable = new QHostInfoRunnable(name, id, receiver, slotObj);
+        QHostInfoRunnable *runnable = new QHostInfoRunnable(name, id, receiver, slotObj);
+        if (receiver && member)
+            QObject::connect(&runnable->resultEmitter, SIGNAL(resultsReady(QHostInfo)),
+                                receiver, member, Qt::QueuedConnection);
         manager->scheduleLookup(runnable);
     }
     return id;
-}
-
-QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i) : toBeLookedUp(hn), id(i)
-{
-    setAutoDelete(true);
 }
 
 QHostInfoRunnable::QHostInfoRunnable(const QString &hn, int i, const QObject *receiver,
@@ -1119,7 +1101,7 @@ QHostInfo qt_qhostinfo_lookup(const QString &name, QObject *receiver, const char
     }
 
     // was not in cache, trigger lookup
-    *id = QHostInfo::lookupHost(name, receiver, member);
+    *id = QHostInfoPrivate::lookupHostImpl(name, receiver, nullptr, member);
 
     // return empty response, valid==false
     return QHostInfo();
