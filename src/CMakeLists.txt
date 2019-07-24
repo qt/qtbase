@@ -26,9 +26,6 @@ if (QT_FEATURE_xml)
 endif()
 add_subdirectory(tools)
 
-# Need to build qmake and other Core tools before exporting them.
-qt_export_tools(Core)
-
 if (QT_FEATURE_dbus)
     add_subdirectory(dbus)
 endif()
