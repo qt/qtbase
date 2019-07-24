@@ -570,16 +570,18 @@ int QDate::daysInYear() const
 }
 
 /*!
-    Returns the week number (1 to 53), and stores the year in
-    *\a{yearNumber} unless \a yearNumber is null (the default).
+    Returns the ISO 8601 week number (1 to 53).
 
-    Returns 0 if the date is invalid.
+    Returns 0 if the date is invalid. Otherwise, returns the week number for the
+    date. If \a yearNumber is not \nullptr (its default), stores the year as
+    *\a{yearNumber}.
 
-    In accordance with ISO 8601, weeks start on Monday and the first
-    Thursday of a year is always in week 1 of that year. Most years
-    have 52 weeks, but some have 53.
+    In accordance with ISO 8601, each week falls in the year to which most of
+    its days belong, in the Gregorian calendar. As ISO 8601's week starts on
+    Monday, this is the year in which the week's Thursday falls. Most years have
+    52 weeks, but some have 53.
 
-    *\a{yearNumber} is not always the same as year(). For example, 1
+    \note *\a{yearNumber} is not always the same as year(). For example, 1
     January 2000 has week number 52 in the year 1999, and 31 December
     2002 has week number 1 in the year 2003.
 
@@ -591,26 +593,11 @@ int QDate::weekNumber(int *yearNumber) const
     if (!isValid())
         return 0;
 
-    int year = QDate::year();
-    int yday = dayOfYear();
-    int wday = dayOfWeek();
-
-    int week = (yday - wday + 10) / 7;
-
-    if (week == 0) {
-        // last week of previous year
-        --year;
-        week = (yday + 365 + (QDate::isLeapYear(year) ? 1 : 0) - wday + 10) / 7;
-        Q_ASSERT(week == 52 || week == 53);
-    } else if (week == 53) {
-        // maybe first week of next year
-        int w = (yday - 365 - (QDate::isLeapYear(year) ? 1 : 0) - wday + 10) / 7;
-        if (w > 0) {
-            ++year;
-            week = w;
-        }
-        Q_ASSERT(week == 53 || week == 1);
-    }
+    // The Thursday of the same week determines our answer:
+    QDate thursday(addDays(4 - dayOfWeek()));
+    int year = thursday.year();
+    // Week n's Thurs's DOY has 1 <= DOY - 7*(n-1) < 8, so 0 <= DOY + 6 - 7*n < 7:
+    int week = (thursday.dayOfYear() + 6) / 7;
 
     if (yearNumber)
         *yearNumber = year;
