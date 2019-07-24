@@ -1754,12 +1754,91 @@ function(qt_add_qmltypes_target target)
         )
 endfunction()
 
+# Create a custom target that will ensure all js and qml files are processed
+# by the qmlcachegen tool during build. The generated jsc/qmlc files will
+# also be added to list of files to be installed.
+#
+# TARGET_PATH: QML target path
+# QML_FILES: List of QML Files
+#
+# Note: This will only run on non static builds.
+#
+function(add_qmlcachegen_target target)
+    if (NOT QT_BUILD_SHARED_LIBS)
+        # Do nothing for static builds since the QML files are embedded into
+        # the executable.
+        return()
+    endif()
+
+    if ("${CMAKE_PROJECT_NAME}" STREQUAL "QtDeclarative"
+            AND NOT TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen)
+        # qmlcachegen is not available when building qtdeclarative since
+        # tools get built after source. We should not error in this case.
+        return()
+    endif()
+
+    if (NOT TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen)
+        message(FATAL_ERROR "Could not locate qmlcachegen tool. \
+Please add QmlTools to your find_package command."
+        )
+    endif()
+
+    qt_parse_all_arguments(arg "add_qmlcachegen_target"
+        "" "TARGET_PATH" "QML_FILES" ${ARGN}
+    )
+
+    set(cache_dir "${QT_BUILD_DIR}/${INSTALL_QMLDIR}/${arg_TARGET_PATH}")
+
+    foreach(qml_file IN LISTS arg_QML_FILES)
+        if("${qml_file}" MATCHES "\.m?js$" OR "${qml_file}" MATCHES "\.qml$")
+            if(NOT IS_ABSOLUTE ${qml_file})
+                get_filename_component(qml_file ${qml_file} ABSOLUTE)
+            endif()
+            file(RELATIVE_PATH qmlc_file "${CMAKE_CURRENT_SOURCE_DIR}" "${qml_file}")
+            set(qmlc_file "${cache_dir}/${qmlc_file}c")
+            list(APPEND qmlc_files ${qmlc_file})
+            add_custom_command(OUTPUT "${qmlc_file}"
+                DEPENDS
+                    ${qml_file}
+                COMMAND
+                    ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen -o ${qmlc_file} ${qml_file}
+                COMMENT
+                    "Generating QML Cache for ${qml_file}"
+            )
+        endif()
+    endforeach()
+
+    if(qmlc_files)
+        set(qmlcachegen_target "${target}_qmlcachegen")
+        # Add custom target which depends on all the qmlc files and then add
+        # that target as a dependency of ${target}. This will guarantee
+        # that the qmlc file get generated.
+        add_custom_target(${qmlcachegen_target}
+            DEPENDS ${qmlc_files}
+        )
+
+        add_dependencies(${target} ${qmlcachegen_target})
+
+        if (QT_WILL_INSTALL)
+            # Only install on non-prefix builds, since the file does not exist
+            # at configuration time. Furthermore, the cached qml files are
+            # generated in the destination location for non-prefix builds.
+            qt_copy_or_install(
+                FILES ${qmlc_files}
+                DESTINATION ${INSTALL_QMLDIR}/${arg_TARGET_PATH}
+            )
+        endif()
+    endif()
+
+endfunction()
+
 # This function creates a CMake target for qml modules. It will also make
 # sure that if no C++ source are present, that qml files show up in the project
 # in an IDE. Finally, it will also create a custom ${target}_qmltypes which
 # can be used to generate the respective plugin.qmltypes file.
 #
 #  EMBED_QML_FILES: When present will embed qml files into the binary
+#  all the qml files ahead of time and cache the result.
 #  TARGET_PATH: Expected installation path for the Qml Module. Equivalent
 #  to the module's URI where '.' is replaced with '/'.
 #  IMPORT_VERSION: Import version for the qml module
@@ -1769,7 +1848,6 @@ endfunction()
 #  with the ${target}_qmltypes target (optional)
 #
 function(add_qml_module target)
-
     set(qml_module_optional_args
         EMBED_QML_FILES
     )
@@ -1827,6 +1905,13 @@ function(add_qml_module target)
             QML_TARGET_PATH
                 "${target_path}"
     ${plugin_args}
+        )
+    endif()
+
+    if (NOT arg_EMBED_QML_FILES AND arg_QML_FILES)
+        add_qmlcachegen_target(${target}
+            TARGET_PATH ${arg_TARGET_PATH}
+            QML_FILES ${arg_QML_FILES}
         )
     endif()
 
