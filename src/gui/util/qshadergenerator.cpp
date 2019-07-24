@@ -302,7 +302,7 @@ QByteArray QShaderGenerator::createShaderCode(const QStringList &enabledLayers) 
         const int minor = format.version().minorVersion();
 
         const int version = major == 2 && isGLES ? 100
-                          : major == 3 && isGLES ? 300
+                          : major == 3 && isGLES ? 300 + (10 * minor)
                           : major == 2 ? 100 + 10 * (minor + 1)
                           : major == 3 && minor <= 2 ? 100 + 10 * (minor + 3)
                           : major * 100 + minor * 10;
