@@ -1847,13 +1847,82 @@ Please add QmlTools to your find_package command."
 
 endfunction()
 
+# Create a custom target that will ensure all js and qml files are processed
+# by the qmlcachegen tool during build and their output embedded into the target
+# binary.
+#
+# TARGET_PATH: QML target path
+# QML_FILES: List of QML Files
+#
+function(add_quick_compiler_target target)
+
+    if (NOT TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen)
+        message(FATAL_ERROR "Could not locate qmlcachegen tool. \
+Please add QmlTools to your find_package command."
+        )
+    endif()
+
+    qt_parse_all_arguments(arg "add_quick_compiler_target"
+        "" "TARGET_PATH" "QML_FILES" ${ARGN}
+    )
+
+    if (arg_QML_FILES)
+
+        # enable quick compiler and qml loader
+        foreach(file IN LISTS arg_QML_FILES)
+            get_filename_component(file_absolute ${file} ABSOLUTE)
+            file(RELATIVE_PATH file_relative ${CMAKE_CURRENT_SOURCE_DIR} ${file_absolute})
+            qt_get_relative_resource_path_for_file(alias ${file})
+            set(file_resource_path "/qt-project.org/import/${arg_TARGET_PATH}/${alias}")
+            list(APPEND file_resource_paths ${file_resource_path})
+            string(REGEX REPLACE "\.js$" "_js" compiled_file ${file_relative})
+            string(REGEX REPLACE "\.mjs$" "_mjs" compiled_file ${compiled_file})
+            string(REGEX REPLACE "\.qml$" "_qml" compiled_file ${compiled_file})
+            set(compiled_file "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${compiled_file}.cpp")
+            add_custom_command(
+                OUTPUT ${compiled_file}
+                DEPENDS ${file_absolute}
+                COMMAND
+                    ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen
+                    --resource-path ${file_resource_path}
+                    -o ${compiled_file}
+                    ${file_absolute}
+            )
+            target_sources(${target} PRIVATE ${compiled_file})
+        endforeach()
+
+        set(qmlcache_loader_list "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${target}_qml_loader_file_list.rsp")
+        file(GENERATE
+            OUTPUT ${qmlcache_loader_list}
+            CONTENT "$<JOIN:${file_resource_paths},\n>"
+        )
+
+        set(qmlcache_loader_file "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/qmlcache_loader.cpp")
+        string(REPLACE "/" "_" resource_name ${arg_TARGET_PATH})
+        string(REPLACE "." "_" resource_name ${resource_name})
+        set(resource_name "qmake_${resource_name}.qrc")
+        add_custom_command(
+            OUTPUT ${qmlcache_loader_file}
+            DEPENDS ${qmlcache_loader_list}
+            COMMAND
+                ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen
+                --resource-name "${resource_name}"
+                -o ${qmlcache_loader_file}
+                "@${qmlcache_loader_list}"
+        )
+        target_sources(${target} PRIVATE ${qmlcache_loader_file})
+    endif()
+endfunction()
+
 # This function creates a CMake target for qml modules. It will also make
 # sure that if no C++ source are present, that qml files show up in the project
 # in an IDE. Finally, it will also create a custom ${target}_qmltypes which
 # can be used to generate the respective plugin.qmltypes file.
 #
-#  EMBED_QML_FILES: When present will embed qml files into the binary
-#  all the qml files ahead of time and cache the result.
+#  EMBED_QML_FILES: All qml files (.js, .mjs and .qml) will be embedded
+#  into the binary.
+#  INSTALL_QML_FILES: All qml files (.js, .mjs and .qml) will be installed with
+#  the module.
 #  TARGET_PATH: Expected installation path for the Qml Module. Equivalent
 #  to the module's URI where '.' is replaced with '/'.
 #  IMPORT_VERSION: Import version for the qml module
@@ -1865,6 +1934,7 @@ endfunction()
 function(add_qml_module target)
     set(qml_module_optional_args
         EMBED_QML_FILES
+        INSTALL_QML_FILES
     )
 
     set(qml_module_single_args
@@ -1892,6 +1962,10 @@ function(add_qml_module target)
         message(FATAL_ERROR "add_qml_module called without specifying the module's import version. Please specify one using the IMPORT_VERSION parameter.")
     endif()
 
+    if (NOT arg_EMBED_QML_FILES AND NOT arg_INSTALL_QML_FILES)
+        message(FATAL_ERROR "add_qml_module called without EMBED_QML_FILES or INSTALL_QML_FILES. Please specify at least one of these options.")
+    endif()
+
     qt_remove_args(plugin_args
         ARGS_TO_REMOVE
             ${target}
@@ -1913,6 +1987,9 @@ function(add_qml_module target)
         add_custom_target(${target}
             SOURCES ${arg_QML_FILES}
         )
+        if (arg_EMBED_QML_FILES)
+            message(FATAL_ERROR "Can't embed qml files in a qml module which does not have any c++ source files.")
+        endif()
     else()
         add_qt_plugin(${target}
             TYPE
@@ -1923,7 +2000,16 @@ function(add_qml_module target)
         )
     endif()
 
-    if (NOT arg_EMBED_QML_FILES AND arg_QML_FILES)
+    foreach (qml_file IN LISTS arg_QML_FILES)
+        if (NOT ${qml_file} MATCHES "\.js$"
+                AND NOT ${qml_file} MATCHES "\.mjs$"
+                AND NOT ${qml_file} MATCHES "\.qml$")
+            message(FATAL_ERROR "add_qml_module, '${qml_file}' is not a valid qml file. Valid extensions are: .js, .mjs and .qml.")
+        endif()
+    endforeach()
+
+    # Only generate compiled caches if we are not embedding
+    if (arg_INSTALL_QML_FILES AND arg_QML_FILES AND NOT arg_EMBED_QML_FILES)
         add_qmlcachegen_target(${target}
             TARGET_PATH ${arg_TARGET_PATH}
             QML_FILES ${arg_QML_FILES}
@@ -1974,14 +2060,21 @@ function(add_qml_module target)
         if (NOT QT_BUILD_SHARED_LIBS)
             list(APPEND resource_files "${CMAKE_CURRENT_SOURCE_DIR}/qmldir")
         endif()
-        list(APPEND resource_files ${arg_QML_FILES})
-        add_qt_resource(${target} ${uri_target}
-            FILES ${resource_files}
-            PREFIX "/qt-project.org/import/${target_path}"
+
+        if (resource_files)
+            add_qt_resource(${target} ${uri_target}
+                FILES ${resource_files}
+                PREFIX "/qt-project.org/import/${target_path}"
+            )
+        endif()
+
+        add_quick_compiler_target(${target}
+            TARGET_PATH ${arg_TARGET_PATH}
+            QML_FILES ${arg_QML_FILES}
         )
     endif()
 
-    if (QT_BUILD_SHARED_LIBS AND arg_QML_FILES)
+    if (QT_BUILD_SHARED_LIBS AND arg_QML_FILES AND arg_INSTALL_QML_FILES)
         qt_copy_or_install(FILES ${arg_QML_FILES}
             DESTINATION "${qml_module_install_dir}"
         )
@@ -2339,6 +2432,14 @@ function(qt_create_tracepoints name tracePointsFile)
         "#include <private/qtrace_p.h>")
 endfunction()
 
+function(qt_get_relative_resource_path_for_file output_alias file)
+    get_property(alias SOURCE ${file} PROPERTY alias)
+    if (NOT alias)
+        set(alias "${file}")
+    endif()
+    set(${output_alias} ${alias} PARENT_SCOPE)
+endfunction()
+
 function(add_qt_resource target resourceName)
     # Don't try to add resources when cross compiling, and the target is actually a host target
     # (like a tool).
@@ -2367,10 +2468,8 @@ function(add_qt_resource target resourceName)
         else()
             set(based_file "${file}")
         endif()
-        get_property(alias SOURCE ${based_file} PROPERTY alias)
-        if (NOT alias)
-            set(alias "${file}")
-        endif()
+
+        qt_get_relative_resource_path_for_file(alias ${based_file})
 
         if (NOT IS_ABSOLUTE ${based_file})
             set(based_file "${CMAKE_CURRENT_SOURCE_DIR}/${based_file}")
@@ -2390,7 +2489,6 @@ function(add_qt_resource target resourceName)
     file(GENERATE OUTPUT "${generatedResourceFile}" CONTENT "${qrcContents}")
 
     # Process .qrc file:
-
     set(generatedSourceCode "${CMAKE_CURRENT_BINARY_DIR}/qrc_${resourceName}.cpp")
     add_custom_command(OUTPUT "${generatedSourceCode}"
                        COMMAND "${QT_CMAKE_EXPORT_NAMESPACE}::rcc"

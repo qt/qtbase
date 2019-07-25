@@ -1878,8 +1878,18 @@ def write_qml_plugin(cm_fh: typing.IO[str],
                      **kwargs: typing.Any):
     # Collect other args if available
     indent += 2
-    if 'builtin_resources' in scope.get('CONFIG'):
+    scope_config = scope.get('CONFIG')
+    is_embedding_qml_files = False
+    if 'builtin_resources' in scope_config or 'qt_quick_compiler' in scope_config:
         extra_lines.append('EMBED_QML_FILES')
+        is_embedding_qml_files = True
+
+    if not is_embedding_qml_files:
+        extra_lines.append('INSTALL_QML_FILES')
+
+    if 'install_qml_files' in scope_config and is_embedding_qml_files:
+        extra_lines.append('INSTALL_QML_FILES')
+
     target_path = scope.get_string('TARGETPATH')
     if target_path:
         extra_lines.append('TARGET_PATH "{}"'.format(target_path))
