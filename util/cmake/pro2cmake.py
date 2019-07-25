@@ -1843,7 +1843,7 @@ def write_qml_plugin(cm_fh: typing.IO[str],
     if plugindump_dep:
         extra_lines.append('QML_PLUGINDUMP_DEPENDENCIES "{}"'.format(plugindump_dep))
 
-    qml_files = scope.expand('QML_FILES')
+    qml_files = scope.get_files('QML_FILES', use_vpath=True)
     if qml_files:
         extra_lines.append('QML_FILES\n{}{}'.format(
             spaces(indent),
