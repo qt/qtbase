@@ -980,6 +980,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_i
                  bpc, // per channel
                  color_type, 0, 0, 0);       // sets #channels
 
+#ifdef PNG_iCCP_SUPPORTED
     if (image.colorSpace().isValid()) {
         QColorSpace cs = image.colorSpace();
         // Support the old gamma making it override transferfunction.
@@ -995,9 +996,17 @@ bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_i
         if (iccProfileName.isEmpty())
             iccProfileName = QByteArrayLiteral("Custom");
         QByteArray iccProfile = cs.iccProfile();
-        png_set_iCCP(png_ptr, info_ptr, (png_const_charp)iccProfileName.constData(),
-                     PNG_COMPRESSION_TYPE_BASE, (png_const_bytep)iccProfile.constData(), iccProfile.length());
-    } else if (gamma != 0.0) {
+        png_set_iCCP(png_ptr, info_ptr,
+             #if PNG_LIBPNG_VER < 10500
+                     iccProfileName.data(), PNG_COMPRESSION_TYPE_BASE, iccProfile.data(),
+             #else
+                     iccProfileName.constData(), PNG_COMPRESSION_TYPE_BASE,
+                     (png_const_bytep)iccProfile.constData(),
+             #endif
+                     iccProfile.length());
+    } else
+#endif
+    if (gamma != 0.0) {
         png_set_gAMA(png_ptr, info_ptr, 1.0/gamma);
     }
 
