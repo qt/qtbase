@@ -49,7 +49,14 @@
 
 QT_BEGIN_NAMESPACE
 
-class QNSWindowBackingStore : public QRasterBackingStore
+class QCocoaBackingStore : public QRasterBackingStore
+{
+protected:
+    QCocoaBackingStore(QWindow *window);
+    QCFType<CGColorSpaceRef> colorSpace() const;
+};
+
+class QNSWindowBackingStore : public QCocoaBackingStore
 {
 public:
     QNSWindowBackingStore(QWindow *window);
@@ -64,7 +71,7 @@ private:
     void redrawRoundedBottomCorners(CGRect) const;
 };
 
-class QCALayerBackingStore : public QPlatformBackingStore
+class QCALayerBackingStore : public QCocoaBackingStore
 {
 public:
     QCALayerBackingStore(QWindow *window);
