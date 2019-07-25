@@ -1829,6 +1829,8 @@ def write_qml_plugin(cm_fh: typing.IO[str],
                      **kwargs: typing.Any):
     # Collect other args if available
     indent += 2
+    if 'builtin_resources' in scope.get('CONFIG'):
+        extra_lines.append('EMBED_QML_FILES')
     target_path = scope.get_string('TARGETPATH')
     if target_path:
         extra_lines.append('TARGET_PATH "{}"'.format(target_path))

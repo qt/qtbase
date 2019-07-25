@@ -1759,6 +1759,7 @@ endfunction()
 # in an IDE. Finally, it will also create a custom ${target}_qmltypes which
 # can be used to generate the respective plugin.qmltypes file.
 #
+#  EMBED_QML_FILES: When present will embed qml files into the binary
 #  TARGET_PATH: Expected installation path for the Qml Module. Equivalent
 #  to the module's URI where '.' is replaced with '/'.
 #  IMPORT_VERSION: Import version for the qml module
@@ -1768,6 +1769,10 @@ endfunction()
 #  with the ${target}_qmltypes target (optional)
 #
 function(add_qml_module target)
+
+    set(qml_module_optional_args
+        EMBED_QML_FILES
+    )
 
     set(qml_module_single_args
         TARGET_PATH
@@ -1780,7 +1785,7 @@ function(add_qml_module target)
     )
 
     qt_parse_all_arguments(arg "add_qml_module"
-        "${__add_qt_plugin_optional_args}"
+        "${__add_qt_plugin_optional_args};${qml_module_optional_args}"
         "${__add_qt_plugin_single_args};${qml_module_single_args}"
         "${__add_qt_plugin_multi_args};${qml_module_multi_args}" ${ARGN})
 
@@ -1821,7 +1826,7 @@ function(add_qml_module target)
                 qml_plugin
             QML_TARGET_PATH
                 "${target_path}"
-            ${plugin_args}
+    ${plugin_args}
         )
     endif()
 
@@ -1861,18 +1866,25 @@ function(add_qml_module target)
         )
     endif()
 
-    if(NOT QT_BUILD_SHARED_LIBS)
+    if(NOT QT_BUILD_SHARED_LIBS OR arg_EMBED_QML_FILES)
         string(REPLACE "/" "." uri ${arg_TARGET_PATH})
         string(REPLACE "." "_" uri_target ${uri})
-        add_qt_resource(${target} ${uri_target}
-            FILES ${arg_QML_FILES} "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
-            PREFIX "/qt-project.org/import/${target_path}")
-    else()
-        if(arg_QML_FILES)
-            qt_copy_or_install(FILES ${arg_QML_FILES}
-                DESTINATION "${qml_module_install_dir}"
-            )
+        # only embed qmldir on static builds. Some qml modules may request
+        # their qml files to be embedded into their binary
+        if (NOT QT_BUILD_SHARED_LIBS)
+            list(APPEND resource_files "${CMAKE_CURRENT_SOURCE_DIR}/qmldir")
         endif()
+        list(APPEND resource_files ${arg_QML_FILES})
+        add_qt_resource(${target} ${uri_target}
+            FILES ${resource_files}
+            PREFIX "/qt-project.org/import/${target_path}"
+        )
+    endif()
+
+    if (NOT QT_BUILD_SHARED_LIBS AND arg_QML_FILES)
+        qt_copy_or_install(FILES ${arg_QML_FILES}
+            DESTINATION "${qml_module_install_dir}"
+        )
     endif()
 
 endfunction()
