@@ -349,7 +349,7 @@ static constexpr int daysInUsualMonth(int month) // (February isn't usual.)
     The year(), month(), and day() functions provide access to the year, month,
     and day numbers. Also, dayOfWeek() and dayOfYear() functions are
     provided. The same information is provided in textual format by
-    toString(). The day and month numbers can be mapped to names using QLocal.
+    toString(). The day and month numbers can be mapped to names using QLocale.
 
     QDate provides a full set of operators to compare two QDate
     objects where smaller means earlier, and larger means later.
