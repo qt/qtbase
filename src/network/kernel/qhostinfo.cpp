@@ -140,17 +140,15 @@ void QHostInfoResult::postResultsReady(const QHostInfo &info)
     Q_CHECK_PTR(result);
 
     const int nargs = 2;
-    auto types = reinterpret_cast<int *>(malloc(nargs * sizeof(int)));
-    Q_CHECK_PTR(types);
+    auto metaCallEvent = new QMetaCallEvent(slotObj, nullptr, signal_index, nargs);
+    Q_CHECK_PTR(metaCallEvent);
+    void **args = metaCallEvent->args();
+    int *types = metaCallEvent->types();
     types[0] = QMetaType::type("void");
     types[1] = QMetaType::type("QHostInfo");
-    auto args = reinterpret_cast<void **>(malloc(nargs * sizeof(void *)));
-    Q_CHECK_PTR(args);
-    args[0] = 0;
+    args[0] = nullptr;
     args[1] = QMetaType::create(types[1], &info);
     Q_CHECK_PTR(args[1]);
-    auto metaCallEvent = new QMetaCallEvent(slotObj, nullptr, signal_index, nargs, types, args);
-    Q_CHECK_PTR(metaCallEvent);
     qApp->postEvent(result, metaCallEvent);
 }
 

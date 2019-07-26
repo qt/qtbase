@@ -1542,21 +1542,14 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
             return false;
         }
 
-        // args and typesCopy will be deallocated by ~QMetaCallEvent() using free()
-        void **args = static_cast<void **>(calloc(1, sizeof(void *)));
-        Q_CHECK_PTR(args);
-
-        int *types = static_cast<int *>(calloc(1, sizeof(int)));
-        Q_CHECK_PTR(types);
-
-        QCoreApplication::postEvent(object, new QMetaCallEvent(slot, 0, -1, 1, types, args));
+        QCoreApplication::postEvent(object, new QMetaCallEvent(slot, 0, -1, 1));
     } else if (type == Qt::BlockingQueuedConnection) {
 #if QT_CONFIG(thread)
         if (currentThread == objectThread)
             qWarning("QMetaObject::invokeMethod: Dead lock detected");
 
         QSemaphore semaphore;
-        QCoreApplication::postEvent(object, new QMetaCallEvent(slot, 0, -1, 0, 0, argv, &semaphore));
+        QCoreApplication::postEvent(object, new QMetaCallEvent(slot, 0, -1, argv, &semaphore));
         semaphore.acquire();
 #endif // QT_CONFIG(thread)
     } else {
@@ -2310,42 +2303,31 @@ bool QMetaMethod::invoke(QObject *object,
             return false;
         }
 
-        int nargs = 1; // include return type
-        void **args = (void **) malloc(paramCount * sizeof(void *));
-        Q_CHECK_PTR(args);
-        int *types = (int *) malloc(paramCount * sizeof(int));
-        Q_CHECK_PTR(types);
-        types[0] = 0; // return type
-        args[0] = 0;
+        QScopedPointer<QMetaCallEvent> event(new QMetaCallEvent(idx_offset, idx_relative, callFunction, 0, -1, paramCount));
+        int *types = event->types();
+        void **args = event->args();
 
+        int argIndex = 0;
         for (int i = 1; i < paramCount; ++i) {
             types[i] = QMetaType::type(typeNames[i]);
             if (types[i] == QMetaType::UnknownType && param[i]) {
                 // Try to register the type and try again before reporting an error.
-                int index = nargs - 1;
-                void *argv[] = { &types[i], &index };
+                void *argv[] = { &types[i], &argIndex };
                 QMetaObject::metacall(object, QMetaObject::RegisterMethodArgumentMetaType,
                                       idx_relative + idx_offset, argv);
                 if (types[i] == -1) {
                     qWarning("QMetaMethod::invoke: Unable to handle unregistered datatype '%s'",
                             typeNames[i]);
-                    for (int x = 1; x < i; ++x) {
-                        if (types[x] && args[x])
-                            QMetaType::destroy(types[x], args[x]);
-                    }
-                    free(types);
-                    free(args);
                     return false;
                 }
             }
             if (types[i] != QMetaType::UnknownType) {
                 args[i] = QMetaType::create(types[i], param[i]);
-                ++nargs;
+                ++argIndex;
             }
         }
 
-        QCoreApplication::postEvent(object, new QMetaCallEvent(idx_offset, idx_relative, callFunction,
-                                                        0, -1, nargs, types, args));
+        QCoreApplication::postEvent(object, event.take());
     } else { // blocking queued connection
 #if QT_CONFIG(thread)
         QThread *currentThread = QThread::currentThread();
@@ -2358,7 +2340,7 @@ bool QMetaMethod::invoke(QObject *object,
 
         QSemaphore semaphore;
         QCoreApplication::postEvent(object, new QMetaCallEvent(idx_offset, idx_relative, callFunction,
-                                                        0, -1, 0, 0, param, &semaphore));
+                                                        0, -1, param, &semaphore));
         semaphore.acquire();
 #endif // QT_CONFIG(thread)
     }
