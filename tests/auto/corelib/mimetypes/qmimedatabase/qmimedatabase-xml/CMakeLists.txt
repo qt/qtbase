@@ -5,11 +5,12 @@
 #####################################################################
 
 add_qt_test(tst_qmimedatabase-xml
+    GUI
     SOURCES
         ../tst_qmimedatabase.h
         tst_qmimedatabase-xml.cpp
     PUBLIC_LIBRARIES
-        Qt::ConcurrentPrivate
+        Qt::Concurrent
 )
 
 # Resources:
@@ -25,7 +26,6 @@ set_source_files_properties("../text-x-objcsrc.xml"
 set_source_files_properties("../yast2-metapackage-handler-mimetypes.xml"
     PROPERTIES alias "yast2-metapackage-handler-mimetypes.xml"
 )
-
 add_qt_resource(tst_qmimedatabase-xml "testdata"
     PREFIX
         "/qt-project.org/qmime"
@@ -56,7 +56,7 @@ corelib_add_mimetypes_resources(tst_qmimedatabase-xml)
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qmimedatabase-xml CONDITION CMAKE_COMPILER_IS_GNUCXX
+extend_target(tst_qmimedatabase-xml CONDITION CMAKE_COMPILER_IS_GNUCXX # special case
     COMPILE_OPTIONS
         -W
         -Wall
@@ -66,7 +66,7 @@ extend_target(tst_qmimedatabase-xml CONDITION CMAKE_COMPILER_IS_GNUCXX
         -Wshadow
 )
 
-extend_target(tst_qmimedatabase-xml CONDITION UNIX AND NOT APPLE_OSX AND NOT QNX
+extend_target(tst_qmimedatabase-xml CONDITION UNIX AND NOT APPLE AND NOT QNX
     DEFINES
         USE_XDG_DATA_DIRS
 )

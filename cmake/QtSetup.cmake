@@ -63,6 +63,14 @@ if (PROJECT_NAME STREQUAL "QtBase")
     unset(__qt_will_install_value)
 endif()
 
+# Specify the QT_SOURCE_TREE only when building qtbase. Needed by some tests when the tests are
+# built as part of the project, and not standalone. For standalone tests, the value is set in
+# QtBuildInternalsExtra.cmake.
+if(PROJECT_NAME STREQUAL "QtBase")
+    set(QT_SOURCE_TREE "${QtBase_SOURCE_DIR}" CACHE PATH
+        "A path to the source tree of the previously configured QtBase project." FORCE)
+endif()
+
 if(FEATURE_developer_build)
     if(DEFINED QT_CMAKE_EXPORT_COMPILE_COMMANDS)
         set(CMAKE_EXPORT_COMPILE_COMMANDS ${QT_CMAKE_EXPORT_COMPILE_COMMANDS})

@@ -265,6 +265,8 @@ endfunction()
 
 function(qt_generate_build_internals_extra_cmake_code)
     if(PROJECT_NAME STREQUAL "QtBase")
+
+        set(QT_SOURCE_TREE "${QtBase_SOURCE_DIR}")
         qt_path_join(extra_file_path
                      ${QT_CONFIG_BUILD_DIR}
                      ${INSTALL_CMAKE_NAMESPACE}BuildInternals/QtBuildInternalsExtra.cmake)

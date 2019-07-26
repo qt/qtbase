@@ -1,19 +1,30 @@
-# Generated from qmimedatabase-cache.pro.
+# Generated from qmimedatabase-xml.pro.
 
 #####################################################################
-## tst_qmimedatabase-cache Test:
+## tst_qmimedatabase-xml Test:
 #####################################################################
 
-add_qt_test(tst_qmimedatabase-cache
+add_qt_test(tst_qmimedatabase-xml
     GUI
     SOURCES
         ../tst_qmimedatabase.h
-        tst_qmimedatabase-cache.cpp
+        tst_qmimedatabase-xml.cpp
     PUBLIC_LIBRARIES
         Qt::Concurrent
 )
 
 # Resources:
+set_source_files_properties("/Volumes/T3/Dev/qt/qt5_cmake/qtbase/src/corelib/mimetypes/mime/packages/freedesktop.org.xml"
+    PROPERTIES alias "freedesktop.org.xml"
+)
+add_qt_resource(tst_qmimedatabase-xml "mimetypes"
+    PREFIX
+        "/qt-project.org/qmime/packages"
+    BASE
+        "/Volumes/T3/Dev/qt/qt5_cmake/qtbase/src/corelib/mimetypes"
+    FILES
+        mime/packages/freedesktop.org.xml
+)
 set_source_files_properties("../qml-again.xml"
     PROPERTIES alias "qml-again.xml"
 )
@@ -26,7 +37,7 @@ set_source_files_properties("../text-x-objcsrc.xml"
 set_source_files_properties("../yast2-metapackage-handler-mimetypes.xml"
     PROPERTIES alias "yast2-metapackage-handler-mimetypes.xml"
 )
-add_qt_resource(tst_qmimedatabase-cache "testdata"
+add_qt_resource(tst_qmimedatabase-xml "testdata"
     PREFIX
         "/qt-project.org/qmime"
     BASE
@@ -44,20 +55,14 @@ add_qt_resource(tst_qmimedatabase-cache "testdata"
         yast2-metapackage-handler-mimetypes.xml
 )
 
-# special case begin
-set(corelib_source_dir ../../../../../../src/corelib)
-include(${corelib_source_dir}/mimetypes/mimetypes_resources.cmake)
-corelib_add_mimetypes_resources(tst_qmimedatabase-cache)
-# special case end
 
-#### Keys ignored in scope 1:.:.:qmimedatabase-cache.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:qmimedatabase-xml.pro:<TRUE>:
 # CONFIG = "testcase"
 
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qmimedatabase-cache CONDITION CMAKE_COMPILER_IS_GNUCXX
-
+extend_target(tst_qmimedatabase-xml CONDITION 2*_x_ - g
     COMPILE_OPTIONS
         -W
         -Wall
@@ -67,7 +72,7 @@ extend_target(tst_qmimedatabase-cache CONDITION CMAKE_COMPILER_IS_GNUCXX
         -Wshadow
 )
 
-extend_target(tst_qmimedatabase-cache CONDITION UNIX AND NOT APPLE AND NOT QNX
+extend_target(tst_qmimedatabase-xml CONDITION UNIX AND NOT APPLE AND NOT QNX
     DEFINES
         USE_XDG_DATA_DIRS
 )

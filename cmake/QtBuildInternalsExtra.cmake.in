@@ -19,3 +19,6 @@ endif()
 # Propagate non-prefix builds.
 set(QT_WILL_INSTALL @QT_WILL_INSTALL@ CACHE BOOL
     "Boolean indicating if doing a Qt prefix build (vs non-prefix build)." FORCE)
+
+set(QT_SOURCE_TREE "@QT_SOURCE_TREE@" CACHE PATH
+"A path to the source tree of the previously configured QtBase project." FORCE)

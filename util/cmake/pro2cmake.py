@@ -96,10 +96,47 @@ def _parse_commandline():
     return parser.parse_args()
 
 
-def process_qrc_file(target: str, filepath: str, base_dir: str = '') -> str:
+def find_qmake_conf(project_file_path: str = '') -> typing.Optional[str]:
+    if not os.path.isabs(project_file_path):
+        print('Warning: could not find .qmake.conf file, given path is not an absolute path: {}'
+              .format(project_file_path))
+        return None
+
+    cwd = os.path.dirname(project_file_path)
+    file_name = '.qmake.conf'
+
+    while os.path.isdir(cwd):
+        maybe_file = os.path.join(cwd, file_name)
+        if os.path.isfile(maybe_file):
+            return maybe_file
+        else:
+            cwd = os.path.dirname(cwd)
+
+    return None
+
+
+def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_file_path: str = '') -> str:
     assert(target)
+
+    # Hack to handle QT_SOURCE_TREE. Assume currently that it's the same
+    # as the qtbase source path.
+    qt_source_tree_literal = '${QT_SOURCE_TREE}'
+    if qt_source_tree_literal in filepath:
+        qmake_conf = find_qmake_conf(project_file_path)
+
+        if qmake_conf:
+            qt_source_tree = os.path.dirname(qmake_conf)
+            filepath = filepath.replace(qt_source_tree_literal, qt_source_tree)
+        else:
+            print('Warning, could not determine QT_SOURCE_TREE location while trying to find: {}'
+                  .format(filepath))
+
+
     resource_name = os.path.splitext(os.path.basename(filepath))[0]
     base_dir = os.path.join('' if base_dir == '.' else base_dir, os.path.dirname(filepath))
+
+    if not os.path.isfile(filepath):
+        raise RuntimeError('Invalid file path given to process_qrc_file: {}'.format(filepath))
 
     tree = ET.parse(filepath)
     root = tree.getroot()
@@ -338,7 +375,7 @@ class Scope(object):
                  file: typing.Optional[str] = None, condition: str = '',
                  base_dir: str = '',
                  operations: typing.Mapping[str, typing.List[Operation]] = {
-                    'QT_SOURCE_TREE': [SetOperation(['${PROJECT_SOURCE_DIR}'])],
+                    'QT_SOURCE_TREE': [SetOperation(['${QT_SOURCE_TREE}'])],
                     'QT_BUILD_TREE': [SetOperation(['${PROJECT_BUILD_DIR}'])],
                  }) -> None:
         if parent_scope:
@@ -357,6 +394,7 @@ class Scope(object):
         self._scope_id = Scope.SCOPE_ID
         Scope.SCOPE_ID += 1
         self._file = file
+        self._file_absolute_path = os.path.abspath(file)
         self._condition = map_condition(condition)
         self._children = []  # type: typing.List[Scope]
         self._included_children = []  # type: typing.List[Scope]
@@ -493,6 +531,10 @@ class Scope(object):
     @property
     def file(self) -> str:
         return self._file or ''
+
+    @property
+    def file_absolute_path(self) -> str:
+        return self._file_absolute_path or ''
 
     @property
     def generated_cmake_lists_path(self) -> str:
@@ -1464,7 +1506,7 @@ def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
         qrc_only = True
         for r in resources:
             if r.endswith('.qrc'):
-                qrc_output += process_qrc_file(target, r, scope.basedir)
+                qrc_output += process_qrc_file(target, r, scope.basedir, scope.file_absolute_path)
             else:
                 qrc_only = False
 
