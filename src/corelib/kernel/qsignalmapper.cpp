@@ -61,7 +61,6 @@ public:
 /*!
     \class QSignalMapper
     \inmodule QtCore
-    \obsolete The recommended solution is connecting the signal to a lambda.
     \brief The QSignalMapper class bundles signals from identifiable senders.
 
     \ingroup objectmodel
@@ -69,7 +68,9 @@ public:
 
     This class collects a set of parameterless signals, and re-emits
     them with integer, string or widget parameters corresponding to
-    the object that sent the signal.
+    the object that sent the signal. Note that in most cases you can
+    use lambdas for passing custom parameters to slots. This is less
+    costly and will simplify the code.
 
     The class supports the mapping of particular strings or integers
     with particular objects using setMapping(). The objects' signals
@@ -311,4 +312,3 @@ void QSignalMapper::map(QObject *sender)
 QT_END_NAMESPACE
 
 #include "moc_qsignalmapper.cpp"
-
