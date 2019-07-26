@@ -260,6 +260,12 @@ QT_BEGIN_NAMESPACE
     tied to those concepts, however, and is thus a topic that is currently out
     of scope, but may be introduced in the future.
 
+    \note The Metal backend requires that an autorelease pool is available on
+    the rendering thread, ideally wrapping each iteration of the render loop.
+    This needs no action from the users of QRhi when rendering on the main
+    (gui) thread, but becomes important when a separate, dedicated render
+    thread is used.
+
     \section3 Resource synchronization
 
     QRhi does not expose APIs for resource barriers or image layout

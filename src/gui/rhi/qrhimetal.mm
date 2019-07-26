@@ -57,7 +57,8 @@ QT_BEGIN_NAMESPACE
     Textures are Private (device local) and a host visible staging buffer is
     used to upload data to them. Does not rely on strong objects refs from
     command buffers but does rely on the automatic resource tracking of the
-    command encoders.
+    command encoders. Assumes that an autorelease pool (ideally per frame) is
+    available on the thread on which QRhi is used.
 */
 
 #if __has_feature(objc_arc)
@@ -1214,10 +1215,12 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     Q_ASSERT(currentSwapChain == swapChainD);
 
     const bool needsPresent = !flags.testFlag(QRhi::SkipPresent);
-    if (needsPresent) {
+    if (needsPresent)
         [swapChainD->cbWrapper.d->cb presentDrawable: swapChainD->d->curDrawable];
-        swapChainD->d->curDrawable = nil;
-    }
+
+    // Must not hold on to the drawable, regardless of needsPresent.
+    // (internally it is autoreleased or something, it seems)
+    swapChainD->d->curDrawable = nil;
 
     __block int thisFrameSlot = currentFrameSlot;
     [swapChainD->cbWrapper.d->cb addCompletedHandler: ^(id<MTLCommandBuffer>) {
