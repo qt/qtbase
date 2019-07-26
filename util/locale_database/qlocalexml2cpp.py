@@ -42,6 +42,20 @@ from enumdata import language_aliases, country_aliases, script_aliases
 
 from localexml import Locale
 
+generated_template = """
+/*
+    This part of the file was generated on %s from the
+    Common Locale Data Repository v%s
+
+    http://www.unicode.org/cldr/
+
+    Do not edit this section: instead regenerate it using
+    cldr2qlocalexml.py and qlocalexml2cpp.py on updated (or
+    edited) CLDR data; see qtbase/util/locale_database/.
+*/
+
+"""
+
 class Error:
     def __init__(self, msg):
         self.msg = msg
@@ -360,20 +374,7 @@ def main():
     dupes = findDupes(language_map, country_map)
 
     cldr_version = firstChildText(doc.documentElement, "version")
-
-    data_temp_file.write("""
-/*
-    This part of the file was generated on %s from the
-    Common Locale Data Repository v%s
-
-    http://www.unicode.org/cldr/
-
-    Do not edit this section: instead regenerate it using
-    cldr2qlocalexml.py and qlocalexml2cpp.py on updated (or
-    edited) CLDR data; see qtbase/util/locale_database/.
-*/
-
-""" % (str(datetime.date.today()), cldr_version) )
+    data_temp_file.write(generated_template % (datetime.date.today(), cldr_version))
 
     # Likely subtags map
     data_temp_file.write("static const QLocaleId likely_subtags[] = {\n")
