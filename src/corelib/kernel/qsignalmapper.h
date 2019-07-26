@@ -42,8 +42,6 @@
 
 #include <QtCore/qobject.h>
 
-#if QT_DEPRECATED_SINCE(5, 10)
-
 QT_BEGIN_NAMESPACE
 
 class QSignalMapperPrivate;
@@ -53,7 +51,7 @@ class Q_CORE_EXPORT QSignalMapper : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QSignalMapper)
 public:
-    QT_DEPRECATED explicit QSignalMapper(QObject *parent = nullptr);
+    explicit QSignalMapper(QObject *parent = nullptr);
     ~QSignalMapper();
 
     void setMapping(QObject *sender, int id);
@@ -83,7 +81,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif
 
 #endif // QSIGNALMAPPER_H
