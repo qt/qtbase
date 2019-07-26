@@ -138,16 +138,16 @@ static constexpr const auto KeyTbl = qMakeArray(
         Emkb2Qt< Qt::Key_Minus,         '-' >,
         Emkb2Qt< Qt::Key_Period,        '.' >,
         Emkb2Qt< Qt::Key_Slash,         '/' >,
-        Emkb2Qt< Qt::Key_0,             '0' >,
-        Emkb2Qt< Qt::Key_1,             '1' >,
-        Emkb2Qt< Qt::Key_2,             '2' >,
-        Emkb2Qt< Qt::Key_3,             '3' >,
-        Emkb2Qt< Qt::Key_4,             '4' >,
-        Emkb2Qt< Qt::Key_5,             '5' >,
-        Emkb2Qt< Qt::Key_6,             '6' >,
-        Emkb2Qt< Qt::Key_7,             '7' >,
-        Emkb2Qt< Qt::Key_8,             '8' >,
-        Emkb2Qt< Qt::Key_9,             '9' >,
+        Emkb2Qt< Qt::Key_0,             'D','i','g','i','t','0' >,
+        Emkb2Qt< Qt::Key_1,             'D','i','g','i','t','1' >,
+        Emkb2Qt< Qt::Key_2,             'D','i','g','i','t','2' >,
+        Emkb2Qt< Qt::Key_3,             'D','i','g','i','t','3' >,
+        Emkb2Qt< Qt::Key_4,             'D','i','g','i','t','4' >,
+        Emkb2Qt< Qt::Key_5,             'D','i','g','i','t','5' >,
+        Emkb2Qt< Qt::Key_6,             'D','i','g','i','t','6' >,
+        Emkb2Qt< Qt::Key_7,             'D','i','g','i','t','7' >,
+        Emkb2Qt< Qt::Key_8,             'D','i','g','i','t','8' >,
+        Emkb2Qt< Qt::Key_9,             'D','i','g','i','t','9' >,
         Emkb2Qt< Qt::Key_Semicolon,     ';' >,
         Emkb2Qt< Qt::Key_Equal,         '=' >,
         Emkb2Qt< Qt::Key_A,             'K','e','y','A' >,
@@ -432,7 +432,8 @@ Qt::Key QWasmEventTranslator::translateEmscriptKey(const EmscriptenKeyboardEvent
 {
     Qt::Key qtKey = Qt::Key_unknown;
 
-    if (qstrncmp(emscriptKey->code, "Key", 3) == 0 || qstrncmp(emscriptKey->code, "Numpad", 6) == 0) {
+    if (qstrncmp(emscriptKey->code, "Key", 3) == 0 || qstrncmp(emscriptKey->code, "Numpad", 6) == 0 ||
+        qstrncmp(emscriptKey->code, "Digit", 5) == 0) {
 
         emkb2qt_t searchKey{emscriptKey->code, 0}; // search emcsripten code
         auto it1 = std::lower_bound(KeyTbl.cbegin(), KeyTbl.cend(), searchKey);
@@ -862,11 +863,10 @@ Qt::Key QWasmEventTranslator::translateDeadKey(Qt::Key deadKey, Qt::Key accentBa
     case Qt::Key_Apostrophe:// linux
         wasmKey = find(circumflexKeyTable, accentBaseKey);
         break;
-        break;
     default:
         break;
-    };
 
+    };
     return wasmKey;
 }
 

@@ -170,7 +170,6 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
       encoder(HPack::FieldLookupTable::DefaultSize, true)
 {
     Q_ASSERT(channel && m_connection);
-
     continuedFrames.reserve(20);
 
     const ProtocolParameters params(m_connection->http2Parameters());
@@ -328,10 +327,32 @@ bool QHttp2ProtocolHandler::sendRequest()
         return false;
     }
 
+    // Process 'fake' (created by QNetworkAccessManager::connectToHostEncrypted())
+    // requests first:
+    auto &requests = m_channel->spdyRequestsToSend;
+    for (auto it = requests.begin(), endIt = requests.end(); it != endIt;) {
+        const auto &pair = *it;
+        const QString scheme(pair.first.url().scheme());
+        if (scheme == QLatin1String("preconnect-http")
+            || scheme == QLatin1String("preconnect-https")) {
+            m_connection->preConnectFinished();
+            emit pair.second->finished();
+            it = requests.erase(it);
+            if (!requests.size()) {
+                // Normally, after a connection was established and H2
+                // was negotiated, we send a client preface. connectToHostEncrypted
+                // though is not meant to send any data, it's just a 'preconnect'.
+                // Thus we return early:
+                return true;
+            }
+        } else {
+            ++it;
+        }
+    }
+
     if (!prefaceSent && !sendClientPreface())
         return false;
 
-    auto &requests = m_channel->spdyRequestsToSend;
     if (!requests.size())
         return true;
 
