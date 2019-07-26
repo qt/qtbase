@@ -1129,7 +1129,7 @@ QString QDate::toString(Qt::DateFormat format) const
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
     case Qt::RFC2822Date:
-        return QLocale::c().toString(*this, QStringViewLiteral("dd MMM yyyy"));
+        return QLocale::c().toString(*this, u"dd MMM yyyy");
     default:
 #if QT_CONFIG(textdate)
     case Qt::TextDate:
@@ -4122,7 +4122,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
     case Qt::DefaultLocaleLongDate:
         return QLocale().toString(*this, QLocale::LongFormat);
     case Qt::RFC2822Date: {
-        buf = QLocale::c().toString(*this, QStringViewLiteral("dd MMM yyyy hh:mm:ss "));
+        buf = QLocale::c().toString(*this, u"dd MMM yyyy hh:mm:ss ");
         buf += toOffsetString(Qt::TextDate, offsetFromUtc());
         return buf;
     }
@@ -5622,7 +5622,7 @@ QDebug operator<<(QDebug dbg, const QTime &time)
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QTime(";
     if (time.isValid())
-        dbg.nospace() << time.toString(QStringViewLiteral("HH:mm:ss.zzz"));
+        dbg.nospace() << time.toString(u"HH:mm:ss.zzz");
     else
         dbg.nospace() << "Invalid";
     dbg.nospace() << ')';
@@ -5635,7 +5635,7 @@ QDebug operator<<(QDebug dbg, const QDateTime &date)
     dbg.nospace() << "QDateTime(";
     if (date.isValid()) {
         const Qt::TimeSpec ts = date.timeSpec();
-        dbg.noquote() << date.toString(QStringViewLiteral("yyyy-MM-dd HH:mm:ss.zzz t"))
+        dbg.noquote() << date.toString(u"yyyy-MM-dd HH:mm:ss.zzz t")
                       << ' ' << ts;
         switch (ts) {
         case Qt::UTC:

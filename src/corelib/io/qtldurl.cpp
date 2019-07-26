@@ -59,9 +59,9 @@ enum TLDMatchType {
 static bool containsTLDEntry(QStringView entry, TLDMatchType match)
 {
     const QStringView matchSymbols[] = {
-        QStringViewLiteral(""),
-        QStringViewLiteral("*"),
-        QStringViewLiteral("!"),
+        u"",
+        u"*",
+        u"!",
     };
     const auto symbol = matchSymbols[match];
     int index = qt_hash(entry, qt_hash(symbol)) % tldCount;

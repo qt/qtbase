@@ -1459,8 +1459,8 @@ void tst_QLocale::dayOfWeek()
     QCOMPARE(QLocale::c().toString(date, "ddd"), shortName);
     QCOMPARE(QLocale::c().toString(date, "dddd"), longName);
 
-    QCOMPARE(QLocale::c().toString(date, QStringViewLiteral("ddd")), shortName);
-    QCOMPARE(QLocale::c().toString(date, QStringViewLiteral("dddd")), longName);
+    QCOMPARE(QLocale::c().toString(date, u"ddd"), shortName);
+    QCOMPARE(QLocale::c().toString(date, u"dddd"), longName);
 }
 
 void tst_QLocale::formatDate_data()

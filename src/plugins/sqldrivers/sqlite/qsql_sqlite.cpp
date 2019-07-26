@@ -531,7 +531,7 @@ bool QSQLiteResult::exec()
                 }
                 case QVariant::Time: {
                     const QTime time = value.toTime();
-                    const QString str = time.toString(QStringViewLiteral("hh:mm:ss.zzz"));
+                    const QString str = time.toString(u"hh:mm:ss.zzz");
                     res = sqlite3_bind_text16(d->stmt, i + 1, str.utf16(),
                                               str.size() * sizeof(ushort), SQLITE_TRANSIENT);
                     break;

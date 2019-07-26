@@ -1355,7 +1355,7 @@ QDateTime QNetworkHeadersPrivate::fromHttpDate(const QByteArray &value)
 
 QByteArray QNetworkHeadersPrivate::toHttpDate(const QDateTime &dt)
 {
-    return QLocale::c().toString(dt, QStringViewLiteral("ddd, dd MMM yyyy hh:mm:ss 'GMT'"))
+    return QLocale::c().toString(dt, u"ddd, dd MMM yyyy hh:mm:ss 'GMT'")
         .toLatin1();
 }
 

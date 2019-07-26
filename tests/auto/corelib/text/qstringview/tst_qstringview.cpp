@@ -251,7 +251,7 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(sv2.empty());
     }
     {
-        constexpr QStringView sv = QStringViewLiteral("");
+        constexpr QStringView sv = u"";
         Q_STATIC_ASSERT(sv.size() == 0);
         Q_STATIC_ASSERT(!sv.isNull());
         Q_STATIC_ASSERT(sv.empty());
@@ -263,7 +263,7 @@ void tst_QStringView::constExpr() const
         Q_STATIC_ASSERT(sv2.empty());
     }
     {
-        constexpr QStringView sv = QStringViewLiteral("Hello");
+        constexpr QStringView sv = u"Hello";
         Q_STATIC_ASSERT(sv.size() == 5);
         Q_STATIC_ASSERT(!sv.empty());
         Q_STATIC_ASSERT(!sv.isEmpty());
@@ -465,7 +465,7 @@ void tst_QStringView::arg() const
 #undef CHECK2
 #undef CHECK1
 
-    QCOMPARE(QStringViewLiteral(" %2 %2 %1 %3 ").arg(QLatin1Char('c'), QChar::CarriageReturn, u'C'), " \r \r c C ");
+    QCOMPARE(QStringView(u" %2 %2 %1 %3 ").arg(QLatin1Char('c'), QChar::CarriageReturn, u'C'), " \r \r c C ");
 }
 
 void tst_QStringView::fromQString() const
@@ -662,9 +662,9 @@ void tst_QStringView::conversion_tests(String string) const
 
 void tst_QStringView::comparison()
 {
-    const QStringView aa = QStringViewLiteral("aa");
-    const QStringView upperAa = QStringViewLiteral("AA");
-    const QStringView bb = QStringViewLiteral("bb");
+    const QStringView aa = u"aa";
+    const QStringView upperAa = u"AA";
+    const QStringView bb = u"bb";
 
     QVERIFY(aa == aa);
     QVERIFY(aa != bb);
