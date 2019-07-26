@@ -31,6 +31,7 @@
 from __future__ import annotations
 
 from argparse import ArgumentParser
+from textwrap import dedent
 import copy
 import xml.etree.ElementTree as ET
 from itertools import chain
@@ -1602,11 +1603,17 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
             has_test_data = True
             cm_fh.write('# Collect test data\n')
             for data in test_data:
-                if data.endswith('*'):
-                    cm_fh.write('{}file(GLOB test_data_glob \n{}LIST_DIRECTORIES'
-                            ' true\n{}RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}}\n{}"{}")\n'\
-                            .format(spaces(indent), spaces(indent + 1), \
-                            spaces(indent + 1), spaces(indent + 1), data))
+                if '*' in data:
+                    cm_fh.write(dedent("""
+                        {indent}file(GLOB test_data_glob
+                        {indent1}LIST_DIRECTORIES true
+                        {indent1}RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}}
+                        {indent1}"{}")
+                        """).format(
+                        data,
+                        indent=spaces(indent),
+                        indent1=spaces(indent + 1)
+                    ))
                     cm_fh.write('{}list(APPEND test_data ${{test_data_glob}})\n'.format(spaces(indent)))
                 else:
                     cm_fh.write('{}list(APPEND test_data "{}")\n'.format(spaces(indent), data))

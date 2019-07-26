@@ -192,6 +192,11 @@ unset(__config_path_part)
 # at the QtPostProcess stage.
 set(QT_BUILD_INTERNALS_EXTRA_CMAKE_CODE "")
 
+# Save the value of the current first project source dir.
+# This will be /path/to/qtbase for qtbase both in a super-build and a non super-build.
+# This will be /path/to/qtbase/tests when building standalone tests.
+set(QT_TOP_LEVEL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
 # Functions and macros:
 
 # qt_remove_args can remove arguments from an existing list of function
@@ -2145,7 +2150,11 @@ function(add_qt_test name)
         endif()
     else()
         # Install test data
-        qt_path_join(testdata_install_dir ${QT_INSTALL_DIR} "${INSTALL_TESTDIR}/${name}")
+        file(RELATIVE_PATH relative_path_to_test_project
+            "${QT_TOP_LEVEL_SOURCE_DIR}"
+            "${CMAKE_CURRENT_SOURCE_DIR}")
+        qt_path_join(testdata_install_dir ${QT_INSTALL_DIR}
+                     "${relative_path_to_test_project}/testdata")
         foreach(testdata IN LISTS arg_TESTDATA)
             set(testdata "${CMAKE_CURRENT_SOURCE_DIR}/${testdata}")
             if (IS_DIRECTORY "${testdata}")
