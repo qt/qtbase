@@ -830,10 +830,6 @@ void tst_QStringApiSymmetry::member_compare_impl() const
         QEXPECT_FAIL("", "Qt is missing a nothrow utf8-utf16 comparator", Continue); \
     QVERIFY(noexcept(expr)); } while (0)
 
-    if (std::is_same<LHS, QByteArray>::value || // needs to simply be marked as noexcept
-        ((std::is_same<LHS, QString>::value || std::is_same<LHS, QStringRef>::value)
-           && std::is_same<RHS, QChar>::value)) // implict QChar -> QString conversion kills noexcept
-        QEXPECT_FAIL("", "known issues, will be fixed before 5.14 release", Continue);
     QVERIFY_NOEXCEPT(lhs.compare(rhs, Qt::CaseSensitive));
 
     QCOMPARE(sign(lhs.compare(rhs)),                      caseSensitiveCompareResult);
