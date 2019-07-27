@@ -62,9 +62,7 @@ struct IsCompatibleCharTypeHelper
     : std::integral_constant<bool,
                              std::is_same<Char, QChar>::value ||
                              std::is_same<Char, ushort>::value ||
-#if defined(Q_COMPILER_UNICODE_STRINGS)
                              std::is_same<Char, char16_t>::value ||
-#endif
                              (std::is_same<Char, wchar_t>::value && sizeof(wchar_t) == sizeof(QChar))> {};
 template <typename Char>
 struct IsCompatibleCharType
@@ -105,11 +103,7 @@ struct IsCompatibleStdBasicString
 class QStringView
 {
 public:
-#if defined(Q_OS_WIN) && !defined(Q_COMPILER_UNICODE_STRINGS)
-    typedef wchar_t storage_type;
-#else
     typedef char16_t storage_type;
-#endif
     typedef const QChar value_type;
     typedef std::ptrdiff_t difference_type;
     typedef qsizetype size_type;

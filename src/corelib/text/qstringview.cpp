@@ -57,9 +57,8 @@ QT_BEGIN_NAMESPACE
 
     The UTF-16 string may be represented as an array (or an array-compatible
     data-structure such as QString,
-    std::basic_string, etc.) of QChar, \c ushort, \c char16_t (on compilers that
-    support C++11 Unicode strings) or (on platforms, such as Windows,
-    where it is a 16-bit type) \c wchar_t.
+    std::basic_string, etc.) of QChar, \c ushort, \c char16_t or
+    (on platforms, such as Windows, where it is a 16-bit type) \c wchar_t.
 
     QStringView is designed as an interface type; its main use-case is
     as a function parameter type. When QStringViews are used as automatic
@@ -115,8 +114,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \typedef QStringView::storage_type
 
-    Alias for \c{char16_t} for non-Windows or if Q_COMPILER_UNICODE_STRINGS
-    is defined. Otherwise, alias for \c{wchar_t}.
+    Alias for \c{char16_t}.
 */
 
 /*!
