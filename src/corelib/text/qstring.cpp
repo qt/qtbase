@@ -11438,7 +11438,7 @@ bool QStringRef::isRightToLeft() const
 
     \sa QString::isRightToLeft()
 */
-bool QtPrivate::isRightToLeft(QStringView string)
+bool QtPrivate::isRightToLeft(QStringView string) noexcept
 {
     const ushort *p = reinterpret_cast<const ushort*>(string.data());
     const ushort * const end = p + string.size();

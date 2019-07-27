@@ -92,12 +92,13 @@ Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray convertToLatin1(QStringView str);
 Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray convertToUtf8(QStringView str);
 Q_REQUIRED_RESULT Q_CORE_EXPORT QByteArray convertToLocal8Bit(QStringView str);
 Q_REQUIRED_RESULT Q_CORE_EXPORT QVector<uint> convertToUcs4(QStringView str);
-Q_REQUIRED_RESULT Q_CORE_EXPORT bool isRightToLeft(QStringView string);
 
-Q_REQUIRED_RESULT Q_CORE_EXPORT bool isAscii(QLatin1String s) noexcept;
-Q_REQUIRED_RESULT Q_CORE_EXPORT bool isAscii(QStringView   s) noexcept;
-Q_REQUIRED_RESULT               bool isLatin1(QLatin1String s) noexcept; // in qstring.h
-Q_REQUIRED_RESULT Q_CORE_EXPORT bool isLatin1(QStringView   s) noexcept;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool isRightToLeft(QStringView string) noexcept;
+
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool isAscii(QLatin1String s) noexcept;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool isAscii(QStringView   s) noexcept;
+Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline            bool isLatin1(QLatin1String s) noexcept;
+Q_REQUIRED_RESULT Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool isLatin1(QStringView   s) noexcept;
 
 } // namespace QtPRivate
 

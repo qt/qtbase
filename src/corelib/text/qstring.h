@@ -235,7 +235,7 @@ QT_DEPRECATED_X("Use QLatin1String") typedef QLatin1String QLatin1Literal;
 //
 // QLatin1String inline implementations
 //
-inline bool QtPrivate::isLatin1(QLatin1String) noexcept
+Q_DECL_CONSTEXPR bool QtPrivate::isLatin1(QLatin1String) noexcept
 { return true; }
 
 //
