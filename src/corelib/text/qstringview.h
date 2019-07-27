@@ -294,7 +294,7 @@ public:
     Q_REQUIRED_RESULT bool isRightToLeft() const noexcept
     { return QtPrivate::isRightToLeft(*this); }
 
-    Q_REQUIRED_RESULT Q_CORE_EXPORT int toWCharArray(wchar_t *array) const;
+    Q_REQUIRED_RESULT inline int toWCharArray(wchar_t *array) const; // defined in qstring.h
 
     //
     // STL compatibility API:

@@ -867,11 +867,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QStringView::toWCharArray(wchar_t *array) const
     \since 5.14
 
     Transcribes this string into the given \a array.
 
-    Caller is responsible for ensuring \a array is large enough to hold the
+    The caller is responsible for ensuring \a array is large enough to hold the
     \c wchar_t encoding of this string (allocating the array with the same length
     as the string is always sufficient). The array is encoded in UTF-16 on
     platforms where \c wchar_t is 2 bytes wide (e.g. Windows); otherwise (Unix
@@ -884,16 +885,5 @@ QT_BEGIN_NAMESPACE
 
     \sa QString::toWCharArray()
 */
-
-int QStringView::toWCharArray(wchar_t *array) const
-{
-    if (sizeof(wchar_t) == sizeof(QChar)) {
-        memcpy(array, data(), sizeof(QChar) * size());
-        return size();
-    } else {
-        return QString::toUcs4_helper(reinterpret_cast<const ushort *>(data()), int(size()),
-                                      reinterpret_cast<uint *>(array));
-    }
-}
 
 QT_END_NAMESPACE
