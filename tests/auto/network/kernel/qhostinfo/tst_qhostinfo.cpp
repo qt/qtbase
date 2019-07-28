@@ -92,6 +92,7 @@ private slots:
     void lookupIPv6();
     void lookupConnectToFunctionPointer_data();
     void lookupConnectToFunctionPointer();
+    void lookupConnectToFunctionPointerDeleted();
     void lookupConnectToLambda_data();
     void lookupConnectToLambda();
     void reverseLookup_data();
@@ -359,6 +360,17 @@ void tst_QHostInfo::lookupConnectToFunctionPointer()
     expected.sort();
 
     QCOMPARE(tmp.join(' '), expected.join(' '));
+}
+
+void tst_QHostInfo::lookupConnectToFunctionPointerDeleted()
+{
+    {
+        QObject contextObject;
+        QHostInfo::lookupHost("localhost", &contextObject, [](const QHostInfo){
+            QFAIL("This should never be called!");
+        });
+    }
+    QTestEventLoop::instance().enterLoop(3);
 }
 
 void tst_QHostInfo::lookupConnectToLambda_data()
@@ -708,6 +720,7 @@ void tst_QHostInfo::cache()
 
 void tst_QHostInfo::resultsReady(const QHostInfo &hi)
 {
+    QVERIFY(QThread::currentThread() == thread());
     lookupDone = true;
     lookupResults = hi;
     lookupsDoneCounter++;
