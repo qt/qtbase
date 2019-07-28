@@ -326,6 +326,13 @@ private:
     class AlignmentDummy { Data header; T array[1]; };
 };
 
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606
+template <typename InputIterator,
+          typename ValueType = typename std::iterator_traits<InputIterator>::value_type,
+          QtPrivate::IfIsInputIterator<InputIterator> = true>
+QVector(InputIterator, InputIterator) -> QVector<ValueType>;
+#endif
+
 #ifdef Q_CC_MSVC
 // behavior change: an object of POD type constructed with an initializer of the form ()
 // will be default-initialized

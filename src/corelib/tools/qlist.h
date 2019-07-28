@@ -446,6 +446,13 @@ private:
     inline int count_impl(const T &, QListData::ArrayCompatibleLayout) const;
 };
 
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606
+template <typename InputIterator,
+          typename ValueType = typename std::iterator_traits<InputIterator>::value_type,
+          QtPrivate::IfIsInputIterator<InputIterator> = true>
+QList(InputIterator, InputIterator) -> QList<ValueType>;
+#endif
+
 #if defined(Q_CC_BOR)
 template <typename T>
 Q_INLINE_TEMPLATE T &QList<T>::Node::t()
