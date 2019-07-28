@@ -84,12 +84,14 @@ class QHostInfoResult : public QObject
 
     QPointer<const QObject> receiver = nullptr;
     QtPrivate::QSlotObjectBase *slotObj = nullptr;
+    const bool withContextObject = false;
 
 public:
     QHostInfoResult() = default;
     QHostInfoResult(const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj) :
         receiver(receiver),
-        slotObj(slotObj)
+        slotObj(slotObj),
+        withContextObject(slotObj && receiver)
     {
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this,
                 &QObject::deleteLater);
@@ -97,10 +99,15 @@ public:
             moveToThread(receiver->thread());
     }
 
+    void postResultsReady(const QHostInfo &info);
+
 public Q_SLOTS:
     inline void emitResultsReady(const QHostInfo &info)
     {
         if (slotObj) {
+            // we used to have a context object, but it's already destroyed
+            if (withContextObject && !receiver)
+                return;
             QHostInfo copy = info;
             void *args[2] = { 0, reinterpret_cast<void *>(&copy) };
             slotObj->call(const_cast<QObject*>(receiver.data()), args);
