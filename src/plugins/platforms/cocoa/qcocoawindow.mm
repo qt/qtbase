@@ -1647,6 +1647,9 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
         [nsWindow setDepthLimit:NSWindowDepthTwentyfourBitRGB];
     }
 
+    if (format().colorSpace() == QSurfaceFormat::sRGBColorSpace)
+        nsWindow.colorSpace = NSColorSpace.sRGBColorSpace;
+
     return nsWindow;
 }
 
