@@ -181,6 +181,8 @@ private slots:
     void tabOrderWithCompoundWidgets();
     void tabOrderNoChange();
     void tabOrderNoChange2();
+    void appFocusWidgetWithFocusProxyLater();
+    void appFocusWidgetWhenLosingFocusProxy();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void activation();
 #endif
@@ -2029,6 +2031,51 @@ void tst_QWidget::tabOrderNoChange2()
 
     QCOMPARE(focusChainForward, getFocusChain(&w, true));
     QCOMPARE(focusChainBackward, getFocusChain(&w, false));
+}
+
+void tst_QWidget::appFocusWidgetWithFocusProxyLater()
+{
+    // Given a lineedit without a focus proxy
+    QWidget window;
+    window.setWindowTitle(QTest::currentTestFunction());
+    QLineEdit *lineEditFocusProxy = new QLineEdit(&window);
+    QLineEdit *lineEdit = new QLineEdit(&window);
+    lineEdit->setFocus();
+    window.show();
+    QApplication::setActiveWindow(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QCOMPARE(QApplication::focusWidget(), lineEdit);
+
+    // When setting a focus proxy for the focus widget (like QWebEngineView does)
+    lineEdit->setFocusProxy(lineEditFocusProxy);
+
+    // Then the focus widget should be updated
+    QCOMPARE(QApplication::focusWidget(), lineEditFocusProxy);
+
+    // So that deleting the lineEdit and later the window, doesn't crash
+    delete lineEdit;
+    QCOMPARE(QApplication::focusWidget(), nullptr);
+}
+
+void tst_QWidget::appFocusWidgetWhenLosingFocusProxy()
+{
+    // Given a lineedit with a focus proxy
+    QWidget window;
+    window.setWindowTitle(QTest::currentTestFunction());
+    QLineEdit *lineEditFocusProxy = new QLineEdit(&window);
+    QLineEdit *lineEdit = new QLineEdit(&window);
+    lineEdit->setFocusProxy(lineEditFocusProxy);
+    lineEdit->setFocus();
+    window.show();
+    QApplication::setActiveWindow(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QCOMPARE(QApplication::focusWidget(), lineEditFocusProxy);
+
+    // When unsetting the focus proxy
+    lineEdit->setFocusProxy(nullptr);
+
+    // Then the application focus widget should be back to the lineedit
+    QCOMPARE(QApplication::focusWidget(), lineEdit);
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
