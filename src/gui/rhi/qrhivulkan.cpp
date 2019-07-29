@@ -1661,6 +1661,10 @@ QRhi::FrameOpResult QRhiVulkan::endFrame(QRhiSwapChain *swapChain, QRhi::EndFram
             }
         }
 
+        // Do platform-specific WM notification. F.ex. essential on X11 in
+        // order to prevent glitches on resizing the window.
+        inst->presentQueued(swapChainD->window);
+
         // mark the current swapchain buffer as unused from our side
         frame.imageAcquired = false;
         // and move on to the next buffer
