@@ -41,5 +41,20 @@
         "LicenseId": "MIT",
         "LicenseFile": "WEBGRADIENTS_LICENSE.txt",
         "Copyright": "Copyright (c) 2017 itmeo"
+    },
+    {
+        "Id": "xserverhelper",
+        "Name": "X Server helper",
+        "QDocModule": "qtgui",
+        "QtUsage": "Used in Qt GUI (QRegion).",
+        "Files": "qregion.cpp",
+
+        "Description": "Code from X11's region.h, Region.c, poly.h, and PolyReg.c",
+        "Homepage": "https://www.x.org/",
+        "License": "X11 License and Historical Permission Notice and Disclaimer",
+        "LicenseId": "X11 AND HPND",
+        "LicenseFile": "XCONSORTIUM_LICENSE.txt",
+        "Copyright": "Copyright (c) 1987, 1988 X Consortium
+Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts."
     }
 ]
