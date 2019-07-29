@@ -1981,7 +1981,7 @@ function(add_qml_module target)
         )
     endif()
 
-    if (NOT QT_BUILD_SHARED_LIBS AND arg_QML_FILES)
+    if (QT_BUILD_SHARED_LIBS AND arg_QML_FILES)
         qt_copy_or_install(FILES ${arg_QML_FILES}
             DESTINATION "${qml_module_install_dir}"
         )
