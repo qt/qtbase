@@ -275,23 +275,22 @@ private Q_SLOTS:
     void member_compare_QString_const_char_star_data() { member_compare_data(); }
     void member_compare_QString_const_char_star() { member_compare_impl<QString, const char *>(); }
 
-#ifdef NOT_YET_IMPLEMENTED // QChar doesn't implicitly convert to QStringView
     void member_compare_QStringView_QChar_data() { member_compare_data(false); }
     void member_compare_QStringView_QChar() { member_compare_impl<QStringView, QChar>(); }
-#endif
     void member_compare_QStringView_QStringRef_data() { member_compare_data(); }
     void member_compare_QStringView_QStringRef() { member_compare_impl<QStringView, QStringRef>(); }
     void member_compare_QStringView_QString_data() { member_compare_data(); }
     void member_compare_QStringView_QString() { member_compare_impl<QStringView, QString>(); }
     void member_compare_QStringView_QStringView_data() { member_compare_data(); }
     void member_compare_QStringView_QStringView() { member_compare_impl<QStringView, QStringView>(); }
-#ifdef NOT_YET_IMPLEMENTED
     void member_compare_QStringView_QLatin1String_data() { member_compare_data(); }
     void member_compare_QStringView_QLatin1String() { member_compare_impl<QStringView, QLatin1String>(); }
+#ifdef NOT_YET_IMPLEMENTED
     void member_compare_QStringView_QByteArray_data() { member_compare_data(); }
     void member_compare_QStringView_QByteArray() { member_compare_impl<QStringView, QByteArray>(); }
     void member_compare_QStringView_const_char_star_data() { member_compare_data(); }
     void member_compare_QStringView_const_char_star() { member_compare_impl<QStringView, const char *>(); }
+#endif
 
     void member_compare_QLatin1String_QChar_data() { member_compare_data(false); }
     void member_compare_QLatin1String_QChar() { member_compare_impl<QLatin1String, QChar>(); }
@@ -303,6 +302,7 @@ private Q_SLOTS:
     void member_compare_QLatin1String_QStringView() { member_compare_impl<QLatin1String, QStringView>(); }
     void member_compare_QLatin1String_QLatin1String_data() { member_compare_data(); }
     void member_compare_QLatin1String_QLatin1String() { member_compare_impl<QLatin1String, QLatin1String>(); }
+#ifdef NOT_YET_IMPLEMENTED
     void member_compare_QLatin1String_QByteArray_data() { member_compare_data(); }
     void member_compare_QLatin1String_QByteArray() { member_compare_impl<QLatin1String, QByteArray>(); }
     void member_compare_QLatin1String_const_char_star_data() { member_compare_data(); }
@@ -725,6 +725,8 @@ void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
     ROW("0", "");
     ROW("0", "1");
     ROW("0", "0");
+    ROW("10", "0");
+    ROW("01", "1");
     ROW("\xE4", "\xE4"); // ä <> ä
     ROW("\xE4", "\xC4"); // ä <> Ä
 #undef ROW

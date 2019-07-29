@@ -111,6 +111,15 @@ public:
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QLatin1Char front() const { return at(0); }
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QLatin1Char back() const { return at(size() - 1); }
 
+    Q_REQUIRED_RESULT int compare(QStringView other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::compareStrings(*this, other, cs); }
+    Q_REQUIRED_RESULT int compare(QLatin1String other, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
+    { return QtPrivate::compareStrings(*this, other, cs); }
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR int compare(QChar c) const noexcept
+    { return isEmpty() || front() == c ? size() - 1 : uchar(m_data[0]) - c.unicode() ; }
+    Q_REQUIRED_RESULT int compare(QChar c, Qt::CaseSensitivity cs) const noexcept
+    { return QtPrivate::compareStrings(*this, QStringView(&c, 1), cs); }
+
     Q_REQUIRED_RESULT bool startsWith(QStringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return QtPrivate::startsWith(*this, s, cs); }
     Q_REQUIRED_RESULT bool startsWith(QLatin1String s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
@@ -233,6 +242,8 @@ Q_DECL_CONSTEXPR bool QtPrivate::isLatin1(QLatin1String) noexcept
 //
 // QStringView members that require QLatin1String:
 //
+int QStringView::compare(QLatin1String s, Qt::CaseSensitivity cs) const noexcept
+{ return QtPrivate::compareStrings(*this, s, cs); }
 bool QStringView::startsWith(QLatin1String s, Qt::CaseSensitivity cs) const noexcept
 { return QtPrivate::startsWith(*this, s, cs); }
 bool QStringView::endsWith(QLatin1String s, Qt::CaseSensitivity cs) const noexcept

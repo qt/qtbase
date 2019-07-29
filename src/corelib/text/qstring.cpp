@@ -9718,6 +9718,23 @@ QString &QString::setRawData(const QChar *unicode, int size)
 */
 
 /*!
+    \fn int QLatin1String::compare(QStringView str, Qt::CaseSensitivity cs) const
+    \fn int QLatin1String::compare(QLatin1String l1, Qt::CaseSensitivity cs) const
+    \fn int QLatin1String::compare(QChar ch) const
+    \fn int QLatin1String::compare(QChar ch, Qt::CaseSensitivity cs) const
+    \since 5.14
+
+    Returns an integer that compares to zero as this Latin-1 string compares to the
+    string-view \a str, Latin-1 string \a l1, or character \a ch, respectively.
+
+    If \a cs is Qt::CaseSensitive (the default), the comparison is case sensitive;
+    otherwise the comparison is case-insensitive.
+
+    \sa operator==(), operator<(), operator>()
+*/
+
+
+/*!
     \fn bool QLatin1String::startsWith(QStringView str, Qt::CaseSensitivity cs) const
     \since 5.10
     \fn bool QLatin1String::startsWith(QLatin1String l1, Qt::CaseSensitivity cs) const
