@@ -1775,13 +1775,6 @@ function(add_qmlcachegen_target target)
         return()
     endif()
 
-    if ("${CMAKE_PROJECT_NAME}" STREQUAL "QtDeclarative"
-            AND NOT TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen)
-        # qmlcachegen is not available when building qtdeclarative since
-        # tools get built after source. We should not error in this case.
-        return()
-    endif()
-
     if (NOT TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen)
         message(FATAL_ERROR "Could not locate qmlcachegen tool. \
 Please add QmlTools to your find_package command."
