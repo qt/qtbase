@@ -54,7 +54,7 @@ public:
             printf("ok\n");
             break;
         case UnconnectedClient:
-            peerAddress = host;
+            peerAddress = QHostAddress(host);
             peerPort = port;
             if (bind(QHostAddress::Any, port + 1, ShareAddress | ReuseAddressHint)) {
                 startTimer(250);
