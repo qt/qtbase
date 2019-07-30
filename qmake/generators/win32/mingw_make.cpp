@@ -93,18 +93,6 @@ bool MingwMakefileGenerator::writeMakefile(QTextStream &t)
        project->first("TEMPLATE") == "aux") {
         if(project->isActiveConfig("create_pc") && project->first("TEMPLATE") == "lib")
             writePkgConfigFile();
-
-        if(Option::mkfile::do_stub_makefile) {
-            t << "QMAKE    = " << var("QMAKE_QMAKE") << Qt::endl;
-            const ProStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
-            for (ProStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
-                t << escapeDependencyPath(*it) << ' ';
-            t << "first all clean install distclean uninstall: qmake\n"
-              << "qmake_all:\n";
-            writeMakeQmake(t);
-            t << "FORCE:\n\n";
-            return true;
-        }
         writeMingwParts(t);
         return MakefileGenerator::writeMakefile(t);
     }

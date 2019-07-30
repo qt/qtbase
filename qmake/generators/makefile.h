@@ -90,7 +90,6 @@ protected:
     void writeExtraCompilerTargets(QTextStream &t);
     void writeExtraCompilerVariables(QTextStream &t);
     bool writeDummyMakefile(QTextStream &t);
-    virtual bool writeStubMakefile(QTextStream &t);
     virtual bool writeMakefile(QTextStream &t);
     virtual void writeDefaultVariables(QTextStream &t);
 
