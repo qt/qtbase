@@ -343,7 +343,7 @@ void QAbstractItemViewPrivate::_q_scrollerStateChanged()
 
     \value SingleSelection  When the user selects an item, any already-selected
     item becomes unselected. It is possible for the user to deselect the selected
-    item.
+    item by pressing the Ctrl key when clicking the selected item.
 
     \value ContiguousSelection When the user selects an item in the usual way,
     the selection is cleared and the new item selected. However, if the user
