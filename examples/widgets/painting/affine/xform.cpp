@@ -260,7 +260,7 @@ void XFormView::timerEvent(QTimerEvent *e)
 #if QT_CONFIG(wheelevent)
 void XFormView::wheelEvent(QWheelEvent *e)
 {
-    m_scale += e->delta() / qreal(600);
+    m_scale += e->angleDelta().y() / qreal(600);
     m_scale = qMax(qreal(0.1), qMin(qreal(4), m_scale));
     emit scaleChanged(int(m_scale*1000));
 }

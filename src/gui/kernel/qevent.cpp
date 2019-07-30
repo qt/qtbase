@@ -743,12 +743,14 @@ QHoverEvent::~QHoverEvent()
     \l inverted always returns false.
 */
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \fn Qt::Orientation QWheelEvent::orientation() const
     \obsolete
 
     Use angleDelta() instead.
 */
+#endif
 
 #if QT_CONFIG(wheelevent)
 #if QT_DEPRECATED_SINCE(5, 15)
@@ -929,6 +931,7 @@ QWheelEvent::~QWheelEvent()
     \endlist
 */
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \fn int QWheelEvent::delta() const
     \obsolete
@@ -992,6 +995,7 @@ QWheelEvent::~QWheelEvent()
 
     This function has been deprecated, use globalPosition() instead.
 */
+#endif
 
 /*!
     \fn Qt::ScrollPhase QWheelEvent::phase() const
