@@ -57,6 +57,7 @@ private:
     QList<Build *> makefiles;
     void clearBuilds();
     MakefileGenerator *processBuild(const ProString &);
+    void accumulateVariableFromBuilds(const ProKey &name, Build *build) const;
 
 public:
 
@@ -185,6 +186,7 @@ BuildsMetaMakefileGenerator::write()
         if(!build->makefile) {
             ret = false;
         } else if(build == glue) {
+            accumulateVariableFromBuilds("QMAKE_INTERNAL_INCLUDED_FILES", build);
             ret = build->makefile->writeProjectMakefile();
         } else {
             ret = build->makefile->write();
@@ -225,6 +227,16 @@ MakefileGenerator
             return createMakefileGenerator(build_proj);
     }
     return nullptr;
+}
+
+void BuildsMetaMakefileGenerator::accumulateVariableFromBuilds(const ProKey &name, Build *dst) const
+{
+    ProStringList &values = dst->makefile->projectFile()->values(name);
+    for (auto build : makefiles) {
+        if (build != dst)
+            values += build->makefile->projectFile()->values(name);
+    }
+    values.removeDuplicates();
 }
 
 class SubdirsMetaMakefileGenerator : public MetaMakefileGenerator
