@@ -2299,9 +2299,9 @@ QString MakefileGenerator::buildArgs(bool withExtra)
 
 //could get stored argv, but then it would have more options than are
 //probably necesary this will try to guess the bare minimum..
-QString MakefileGenerator::build_args()
+QString MakefileGenerator::fullBuildArgs()
 {
-    QString ret = "$(QMAKE)";
+    QString ret;
 
     //output
     QString ofile = fileFixify(Option::output.fileName());
@@ -2326,7 +2326,7 @@ MakefileGenerator::writeHeader(QTextStream &t)
     t << "# Project:  " << fileFixify(project->projectFile()) << Qt::endl;
     t << "# Template: " << var("TEMPLATE") << Qt::endl;
     if(!project->isActiveConfig("build_pass"))
-        t << "# Command: " << build_args().replace(QLatin1String("$(QMAKE)"), var("QMAKE_QMAKE")) << Qt::endl;
+        t << "# Command: " << var("QMAKE_QMAKE") << fullBuildArgs() << Qt::endl;
     t << "#############################################################################\n";
     t << Qt::endl;
     QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
@@ -2792,7 +2792,7 @@ MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
           << "@$(QMAKE) -prl " << files.join(' ') << ' ' << buildArgs(true) << Qt::endl;
     }
 
-        QString qmake = build_args();
+        QString qmake = "$(QMAKE)" + fullBuildArgs();
         if(!ofile.isEmpty() && !project->isActiveConfig("no_autoqmake")) {
             t << escapeDependencyPath(ofile) << ": "
               << escapeDependencyPath(fileFixify(project->projectFile())) << " ";

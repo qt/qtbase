@@ -58,7 +58,7 @@ class MakefileGenerator : protected QMakeSourceFileInfo
     bool resolveDependenciesInFrameworks = false;
     QHash<QString, bool> init_compiler_already;
     QString makedir, chkexists;
-    QString build_args();
+    QString fullBuildArgs();
 
     //internal caches
     mutable QHash<QString, QMakeLocalFileName> depHeuristicsCache;
