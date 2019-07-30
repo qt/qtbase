@@ -1543,12 +1543,6 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
     Qt::WindowType type = window()->type();
     Qt::WindowFlags flags = window()->flags();
 
-    // Note: The macOS window manager has a bug, where if a screen is rotated, it will not allow
-    // a window to be created within the area of the screen that has a Y coordinate (I quadrant)
-    // higher than the height of the screen  in its non-rotated state, unless the window is
-    // created with the NSWindowStyleMaskBorderless style mask.
-    NSWindowStyleMask styleMask = windowStyleMask(flags);
-
     QRect rect = geometry();
 
     QScreen *targetScreen = nullptr;
@@ -1559,22 +1553,37 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
         }
     }
 
+    NSWindowStyleMask styleMask = windowStyleMask(flags);
+
     if (!targetScreen) {
         qCWarning(lcQpaWindow) << "Window position" << rect << "outside any known screen, using primary screen";
         targetScreen = QGuiApplication::primaryScreen();
-        // AppKit will only reposition a window that's outside the target screen area if
-        // the window has a title bar. If left out, the window ends up with no screen.
-        // The style mask will be corrected to the original style mask in setWindowFlags.
-        styleMask |= NSWindowStyleMaskTitled;
+        // Unless the window is created as borderless AppKit won't find a position and
+        // screen that's close to the requested invalid position, and will always place
+        // the window on the primary screen.
+        styleMask = NSWindowStyleMaskBorderless;
     }
 
     rect.translate(-targetScreen->geometry().topLeft());
     auto *targetCocoaScreen = static_cast<QCocoaScreen *>(targetScreen->handle());
-    NSRect frame = QCocoaScreen::mapToNative(rect, targetCocoaScreen);
+    NSRect contentRect = QCocoaScreen::mapToNative(rect, targetCocoaScreen);
+
+    if (targetScreen->primaryOrientation() == Qt::PortraitOrientation) {
+        // The macOS window manager has a bug, where if a screen is rotated, it will not allow
+        // a window to be created within the area of the screen that has a Y coordinate (I quadrant)
+        // higher than the height of the screen in its non-rotated state (including a magic padding
+        // of 24 points), unless the window is created with the NSWindowStyleMaskBorderless style mask.
+        if (styleMask && (contentRect.origin.y + 24 > targetScreen->geometry().width())) {
+            qCDebug(lcQpaWindow) << "Window positioned on portrait screen."
+                << "Adjusting style mask during creation";
+            styleMask = NSWindowStyleMaskBorderless;
+        }
+    }
 
     // Create NSWindow
     Class windowClass = shouldBePanel ? [QNSPanel class] : [QNSWindow class];
-    QCocoaNSWindow *nsWindow = [[windowClass alloc] initWithContentRect:frame
+    QCocoaNSWindow *nsWindow = [[windowClass alloc] initWithContentRect:contentRect
+        // Mask will be updated in setWindowFlags if not the final mask
         styleMask:styleMask
         // Deferring window creation breaks OpenGL (the GL context is
         // set up before the window is shown and needs a proper window)
