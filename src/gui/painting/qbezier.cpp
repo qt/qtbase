@@ -122,10 +122,10 @@ void QBezier::addToPolygon(QPolygonF *polygon, qreal bezier_flattening_threshold
     int levels[10];
     beziers[0] = *this;
     levels[0] = 9;
-    QBezier *b = beziers;
-    int *lvl = levels;
+    int top = 0;
 
-    while (b >= beziers) {
+    while (top >= 0) {
+        QBezier *b = &beziers[top];
         // check if we can pop the top bezier curve from the stack
         qreal y4y1 = b->y4 - b->y1;
         qreal x4x1 = b->x4 - b->x1;
@@ -139,17 +139,15 @@ void QBezier::addToPolygon(QPolygonF *polygon, qreal bezier_flattening_threshold
                 qAbs(b->x1 - b->x3) + qAbs(b->y1 - b->y3);
             l = 1.;
         }
-        if (d < bezier_flattening_threshold*l || *lvl == 0) {
+        if (d < bezier_flattening_threshold * l || levels[top] == 0) {
             // good enough, we pop it off and add the endpoint
             polygon->append(QPointF(b->x4, b->y4));
-            --b;
-            --lvl;
+            --top;
         } else {
             // split, second half of the polygon goes lower into the stack
             b->split(b+1, b);
-            lvl[1] = --lvl[0];
-            ++b;
-            ++lvl;
+            levels[top + 1] = --levels[top];
+            ++top;
         }
     }
 }
@@ -160,10 +158,10 @@ void QBezier::addToPolygon(QDataBuffer<QPointF> &polygon, qreal bezier_flattenin
     int levels[10];
     beziers[0] = *this;
     levels[0] = 9;
-    QBezier *b = beziers;
-    int *lvl = levels;
+    int top = 0;
 
-    while (b >= beziers) {
+    while (top >= 0) {
+        QBezier *b = &beziers[top];
         // check if we can pop the top bezier curve from the stack
         qreal y4y1 = b->y4 - b->y1;
         qreal x4x1 = b->x4 - b->x1;
@@ -177,17 +175,15 @@ void QBezier::addToPolygon(QDataBuffer<QPointF> &polygon, qreal bezier_flattenin
                 qAbs(b->x1 - b->x3) + qAbs(b->y1 - b->y3);
             l = 1.;
         }
-        if (d < bezier_flattening_threshold*l || *lvl == 0) {
+        if (d < bezier_flattening_threshold * l || levels[top] == 0) {
             // good enough, we pop it off and add the endpoint
             polygon.add(QPointF(b->x4, b->y4));
-            --b;
-            --lvl;
+            --top;
         } else {
             // split, second half of the polygon goes lower into the stack
             b->split(b+1, b);
-            lvl[1] = --lvl[0];
-            ++b;
-            ++lvl;
+            levels[top + 1] = --levels[top];
+            ++top;
         }
     }
 }
