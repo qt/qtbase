@@ -1301,7 +1301,23 @@ bool QWindowsKeyMapper::translateKeyEventInternal(QWindow *window, MSG msg,
                       || code == Qt::Key_Control
                       || code == Qt::Key_Meta
                       || code == Qt::Key_Alt)) {
-            // Someone ate the key down event
+
+            // Workaround for QTBUG-77153:
+            // The Surface Pen eraser button generates Meta+F18/19/20 keystrokes,
+            // but when it is not touching the screen the Fn Down is eaten and only
+            // a Fn Up with the previous state as "not pressed" is generated, which
+            // would be ignored. We detect this case and synthesize the expected events.
+            if ((msg.lParam & 0x40000000) == 0 &&
+                    Qt::KeyboardModifier(state) == Qt::NoModifier &&
+                    ((code == Qt::Key_F18) || (code == Qt::Key_F19) || (code == Qt::Key_F20))) {
+                QWindowSystemInterface::handleExtendedKeyEvent(receiver, QEvent::KeyPress, code,
+                                                               Qt::MetaModifier, scancode,
+                                                               quint32(msg.wParam), MetaLeft);
+                QWindowSystemInterface::handleExtendedKeyEvent(receiver, QEvent::KeyRelease, code,
+                                                               Qt::NoModifier, scancode,
+                                                               quint32(msg.wParam), 0);
+                result = true;
+            }
         } else {
             if (!code)
                 code = asciiToKeycode(rec->ascii ? char(rec->ascii) : char(msg.wParam), state);

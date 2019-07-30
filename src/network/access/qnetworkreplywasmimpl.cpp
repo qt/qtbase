@@ -135,8 +135,10 @@ static void q_loadCallback(val event)
 
         if (readyState == 4) { // done
             reply->setReplyAttributes(xhr["data-handler"].as<quintptr>(), status, statusText);
-            if (!responseString.isEmpty())
-                reply->dataReceived(responseString.toUtf8(), responseString.size());
+            if (!responseString.isEmpty()) {
+                QByteArray responseStringArray = responseString.toUtf8();
+                reply->dataReceived(responseStringArray, responseStringArray.size());
+            }
         }
     }
     if (status >= 400 && !statusText.isEmpty())

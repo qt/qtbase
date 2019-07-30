@@ -79,6 +79,7 @@ public:
     bool close() override;
     bool flush() override;
     qint64 size() const override;
+    bool setSize(qint64 size) override;
     qint64 pos() const override;
     bool seek(qint64 pos) override;
     bool remove() override;
