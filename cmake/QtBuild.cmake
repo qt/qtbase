@@ -350,6 +350,17 @@ function(qt_set_up_nonprefix_build)
     endif()
 endfunction()
 
+function(qt_is_imported_target target out_var)
+    if(NOT TARGET "${target}")
+        set(target "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
+    endif()
+    if(NOT TARGET "${target}")
+        message(FATAL_ERROR "Invalid target given to qt_is_imported_target: ${target}")
+    endif()
+    get_target_property(is_imported "${target}" IMPORTED)
+    set(${out_var} "${is_imported}" PARENT_SCOPE)
+endfunction()
+
 # Generates module .pri files for consumption by qmake
 function(qt_generate_module_pri_file target target_path pri_files_var)
     set(flags INTERNAL_MODULE)
@@ -854,6 +865,12 @@ endfunction()
 # This function can be used to add sources/libraries/etc. to the specified CMake target
 # if the provided CONDITION evaluates to true.
 function(extend_target target)
+    # Don't try to extend_target when cross compiling an imported host target (like a tool).
+    qt_is_imported_target("${target}" is_imported)
+    if(is_imported)
+        return()
+    endif()
+
     if (NOT TARGET "${target}")
         message(FATAL_ERROR "Trying to extend non-existing target \"${target}\".")
     endif()
@@ -2322,9 +2339,14 @@ function(qt_create_tracepoints name tracePointsFile)
         "#include <private/qtrace_p.h>")
 endfunction()
 
-
-
 function(add_qt_resource target resourceName)
+    # Don't try to add resources when cross compiling, and the target is actually a host target
+    # (like a tool).
+    qt_is_imported_target("${target}" is_imported)
+    if(is_imported)
+        return()
+    endif()
+
     qt_parse_all_arguments(rcc "add_qt_resource" "" "PREFIX;LANG;BASE" "FILES" ${ARGN})
 
     # Generate .qrc file:
