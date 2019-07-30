@@ -99,6 +99,8 @@ void qt_create_tls()
         return;
     static QBasicMutex mutex;
     QMutexLocker locker(&mutex);
+    if (qt_current_thread_data_tls_index != TLS_OUT_OF_INDEXES)
+        return;
     qt_current_thread_data_tls_index = TlsAlloc();
 }
 
