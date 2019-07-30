@@ -1132,6 +1132,8 @@ void tst_QtJson::undefinedValues()
     QJsonObject object;
     object.insert("Key", QJsonValue(QJsonValue::Undefined));
     QCOMPARE(object.size(), 0);
+    object["Key"] = QJsonValue(QJsonValue::Undefined);
+    QCOMPARE(object.size(), 0);
 
     object.insert("Key", QLatin1String("Value"));
     QCOMPARE(object.size(), 1);

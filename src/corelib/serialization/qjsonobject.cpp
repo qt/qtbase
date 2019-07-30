@@ -1476,7 +1476,10 @@ void QJsonObject::setValueAt(int i, const QJsonValue &val)
     Q_ASSERT(o && i >= 0 && i < (int)o->length);
 
     QJsonPrivate::Entry *e = o->entryAt(i);
-    insertAt(i, e->key(), val, true);
+    if (val.t == QJsonValue::Undefined)
+        removeAt(i);
+    else
+        insertAt(i, e->key(), val, true);
 }
 
 /*!
