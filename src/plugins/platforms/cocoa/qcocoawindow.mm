@@ -1569,8 +1569,8 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
     }
 
     rect.translate(-targetScreen->geometry().topLeft());
-    QCocoaScreen *cocoaScreen = static_cast<QCocoaScreen *>(targetScreen->handle());
-    NSRect frame = QCocoaScreen::mapToNative(rect, cocoaScreen);
+    auto *targetCocoaScreen = static_cast<QCocoaScreen *>(targetScreen->handle());
+    NSRect frame = QCocoaScreen::mapToNative(rect, targetCocoaScreen);
 
     // Create NSWindow
     Class windowClass = shouldBePanel ? [QNSPanel class] : [QNSWindow class];
@@ -1579,15 +1579,22 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
         // Deferring window creation breaks OpenGL (the GL context is
         // set up before the window is shown and needs a proper window)
         backing:NSBackingStoreBuffered defer:NO
-        screen:cocoaScreen->nativeScreen()
+        screen:targetCocoaScreen->nativeScreen()
         platformWindow:this];
 
-    Q_ASSERT_X(nsWindow.screen == cocoaScreen->nativeScreen(), "QCocoaWindow",
-        "Resulting NSScreen should match the requested NSScreen");
+    // The resulting screen can be different from the screen requested if
+    // for example the application has been assigned to a specific display.
+    auto resultingScreen = QCocoaIntegration::instance()->screenForNSScreen(nsWindow.screen);
 
-    if (targetScreen != window()->screen()) {
+    // But may not always be resolved at this point, in which case we fall back
+    // to the target screen. The real screen will be delivered as a screen change
+    // when resolved as part of ordering the window on screen.
+    if (!resultingScreen)
+        resultingScreen = targetCocoaScreen;
+
+    if (resultingScreen->screen() != window()->screen()) {
         QWindowSystemInterface::handleWindowScreenChanged<
-            QWindowSystemInterface::SynchronousDelivery>(window(), targetScreen);
+            QWindowSystemInterface::SynchronousDelivery>(window(), resultingScreen->screen());
     }
 
     static QSharedPointer<QNSWindowDelegate> sharedDelegate([[QNSWindowDelegate alloc] init],
