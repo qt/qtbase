@@ -112,11 +112,39 @@ int get_signal_index()
     return signal_index + QMetaObjectPrivate::signalOffset(senderMetaObject);
 }
 
-void emit_results_ready(const QHostInfo &hostInfo, const QObject *receiver,
-                        QtPrivate::QSlotObjectBase *slotObj)
+}
+
+/*
+    The calling thread is likely the one that executes the lookup via
+    QHostInfoRunnable. Unless we operate with a queued connection already,
+    posts the QHostInfo to a dedicated QHostInfoResult object that lives in
+    the same thread as the user-provided receiver, or (if there is none) in
+    the thread that made the call to lookupHost. That QHostInfoResult object
+    then calls the user code in the correct thread.
+
+    The 'result' object deletes itself (via deleteLater) when the metacall
+    event is received.
+*/
+void QHostInfoResult::postResultsReady(const QHostInfo &info)
 {
+    // queued connection will take care of dispatching to right thread
+    if (!slotObj) {
+        emitResultsReady(info);
+        return;
+    }
     static const int signal_index = get_signal_index();
+
+    // we used to have a context object, but it's already destroyed
+    if (withContextObject && !receiver)
+        return;
+
+    /* QHostInfoResult c'tor moves the result object to the thread of receiver.
+       If we don't have a receiver, then the result object will not live in a
+       thread that runs an event loop - so move it to this' thread, which is the thread
+       that initiated the lookup, and required to have a running event loop. */
     auto result = new QHostInfoResult(receiver, slotObj);
+    if (!receiver)
+        result->moveToThread(thread());
     Q_CHECK_PTR(result);
     const int nargs = 2;
     auto types = reinterpret_cast<int *>(malloc(nargs * sizeof(int)));
@@ -126,13 +154,11 @@ void emit_results_ready(const QHostInfo &hostInfo, const QObject *receiver,
     auto args = reinterpret_cast<void **>(malloc(nargs * sizeof(void *)));
     Q_CHECK_PTR(args);
     args[0] = 0;
-    args[1] = QMetaType::create(types[1], &hostInfo);
+    args[1] = QMetaType::create(types[1], &info);
     Q_CHECK_PTR(args[1]);
     auto metaCallEvent = new QMetaCallEvent(slotObj, nullptr, signal_index, nargs, types, args);
     Q_CHECK_PTR(metaCallEvent);
     qApp->postEvent(result, metaCallEvent);
-}
-
 }
 
 /*!
@@ -322,6 +348,10 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
     ready, the \a functor is called with a QHostInfo argument. The
     QHostInfo object can then be inspected to get the results of the
     lookup.
+
+    The \a functor will be run in the thread that makes the call to lookupHost;
+    that thread must have a running Qt event loop.
+
     \note There is no guarantee on the order the signals will be emitted
     if you start multiple requests with lookupHost().
 
@@ -810,7 +840,8 @@ int QHostInfo::lookupHostImpl(const QString &name,
         QHostInfo hostInfo(id);
         hostInfo.setError(QHostInfo::HostNotFound);
         hostInfo.setErrorString(QCoreApplication::translate("QHostInfo", "No host name given"));
-        emit_results_ready(hostInfo, receiver, slotObj);
+        QHostInfoResult result(receiver, slotObj);
+        result.postResultsReady(hostInfo);
         return id;
     }
 
@@ -824,7 +855,8 @@ int QHostInfo::lookupHostImpl(const QString &name,
             QHostInfo info = manager->cache.get(name, &valid);
             if (valid) {
                 info.setLookupId(id);
-                emit_results_ready(info, receiver, slotObj);
+                QHostInfoResult result(receiver, slotObj);
+                result.postResultsReady(info);
                 return id;
             }
         }
@@ -882,7 +914,7 @@ void QHostInfoRunnable::run()
 
     // signal emission
     hostInfo.setLookupId(id);
-    resultEmitter.emitResultsReady(hostInfo);
+    resultEmitter.postResultsReady(hostInfo);
 
 #if QT_CONFIG(thread)
     // now also iterate through the postponed ones
@@ -895,7 +927,7 @@ void QHostInfoRunnable::run()
             QHostInfoRunnable* postponed = *it;
             // we can now emit
             hostInfo.setLookupId(postponed->id);
-            postponed->resultEmitter.emitResultsReady(hostInfo);
+            postponed->resultEmitter.postResultsReady(hostInfo);
             delete postponed;
         }
         manager->postponedLookups.erase(partitionBegin, partitionEnd);

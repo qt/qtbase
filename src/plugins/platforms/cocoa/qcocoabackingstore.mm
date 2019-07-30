@@ -48,8 +48,21 @@
 
 QT_BEGIN_NAMESPACE
 
-QNSWindowBackingStore::QNSWindowBackingStore(QWindow *window)
+QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QRasterBackingStore(window)
+{
+}
+
+QCFType<CGColorSpaceRef> QCocoaBackingStore::colorSpace() const
+{
+    NSView *view = static_cast<QCocoaWindow *>(window()->handle())->view();
+    return QCFType<CGColorSpaceRef>::constructFromGet(view.window.colorSpace.CGColorSpace);
+}
+
+// ----------------------------------------------------------------------------
+
+QNSWindowBackingStore::QNSWindowBackingStore(QWindow *window)
+    : QCocoaBackingStore(window)
 {
 }
 
@@ -175,11 +188,10 @@ void QNSWindowBackingStore::flush(QWindow *window, const QRegion &region, const 
     Q_ASSERT_X(graphicsContext, "QCocoaBackingStore",
         "Focusing the view should give us a current graphics context");
 
-    // Prevent potentially costly color conversion by assigning the display color space
-    // to the backingstore image. This does not copy the underlying image data.
-    CGColorSpaceRef displayColorSpace = view.window.screen.colorSpace.CGColorSpace;
+    // Tag backingstore image with color space based on the window.
+    // Note: This does not copy the underlying image data.
     QCFType<CGImageRef> cgImage = CGImageCreateCopyWithColorSpace(
-        QCFType<CGImageRef>(m_image.toCGImage()), displayColorSpace);
+        QCFType<CGImageRef>(m_image.toCGImage()), colorSpace());
 
     // Create temporary image to use for blitting, without copying image data
     NSImage *backingStoreImage = [[[NSImage alloc] initWithCGImage:cgImage size:NSZeroSize] autorelease];
@@ -293,7 +305,7 @@ void QNSWindowBackingStore::redrawRoundedBottomCorners(CGRect windowRect) const
 // ----------------------------------------------------------------------------
 
 QCALayerBackingStore::QCALayerBackingStore(QWindow *window)
-    : QPlatformBackingStore(window)
+    : QCocoaBackingStore(window)
 {
     qCDebug(lcQpaBackingStore) << "Creating QCALayerBackingStore for" << window;
     m_buffers.resize(1);
@@ -432,11 +444,7 @@ bool QCALayerBackingStore::recreateBackBufferIfNeeded()
             << "based on requested" << m_requestedSize << "and dpr =" << devicePixelRatio;
 
         static auto pixelFormat = QImage::toPixelFormat(QImage::Format_ARGB32_Premultiplied);
-
-        NSView *view = static_cast<QCocoaWindow *>(window()->handle())->view();
-        auto colorSpace = QCFType<CGColorSpaceRef>::constructFromGet(view.window.screen.colorSpace.CGColorSpace);
-
-        m_buffers.back().reset(new GraphicsBuffer(requestedBufferSize, devicePixelRatio, pixelFormat, colorSpace));
+        m_buffers.back().reset(new GraphicsBuffer(requestedBufferSize, devicePixelRatio, pixelFormat, colorSpace()));
         return true;
     }
 

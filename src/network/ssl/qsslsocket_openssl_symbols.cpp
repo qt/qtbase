@@ -882,8 +882,25 @@ static LoadedOpenSsl loadOpenSsl()
     //  macOS's /usr/lib/libssl.dylib, /usr/lib/libcrypto.dylib will be picked up in the third
     //    attempt, _after_ <bundle>/Contents/Frameworks has been searched.
     //  iOS does not ship a system libssl.dylib, libcrypto.dylib in the first place.
+# if defined(Q_OS_ANDROID)
+    // OpenSSL 1.1.x must be suffixed otherwise it will use the system libcrypto.so libssl.so which on API-21 are OpenSSL 1.0 not 1.1
+    auto openSSLSuffix = [](const QByteArray &defaultSuffix = {}) {
+        auto suffix = qgetenv("ANDROID_OPENSSL_SUFFIX");
+        if (suffix.isEmpty())
+            return defaultSuffix;
+        return suffix;
+    };
+#  if QT_CONFIG(opensslv11)
+    static QString suffix = QString::fromLatin1(openSSLSuffix("_1_1"));
+#  else
+    static QString suffix = QString::fromLatin1(openSSLSuffix());
+#  endif
+    libssl->setFileNameAndVersion(QLatin1String("ssl") + suffix, -1);
+    libcrypto->setFileNameAndVersion(QLatin1String("crypto") + suffix, -1);
+# else
     libssl->setFileNameAndVersion(QLatin1String("ssl"), -1);
     libcrypto->setFileNameAndVersion(QLatin1String("crypto"), -1);
+# endif
     if (libcrypto->load() && libssl->load()) {
         // libssl.so.0 and libcrypto.so.0 found
         return result;
