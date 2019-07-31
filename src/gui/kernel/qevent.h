@@ -177,28 +177,28 @@ public:
 
 #if QT_DEPRECATED_SINCE(5, 15)
     // Actually deprecated since 5.0, in docs
-    QT_DEPRECATED_X("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
+    QT_DEPRECATED_VERSION_X_5_15("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
     QWheelEvent(const QPointF &pos, int delta,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                 Qt::Orientation orient = Qt::Vertical);
     // Actually deprecated since 5.0, in docs
-    QT_DEPRECATED_X("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
+    QT_DEPRECATED_VERSION_X_5_15("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
     QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers,
                 Qt::Orientation orient = Qt::Vertical);
-    QT_DEPRECATED_X("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
+    QT_DEPRECATED_VERSION_X_5_15("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
     QWheelEvent(const QPointF &pos, const QPointF& globalPos,
                 QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
-    QT_DEPRECATED_X("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
+    QT_DEPRECATED_VERSION_X_5_15("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
     QWheelEvent(const QPointF &pos, const QPointF& globalPos,
                 QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
                 Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase);
-    QT_DEPRECATED_X("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
+    QT_DEPRECATED_VERSION_X_5_15("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
     QWheelEvent(const QPointF &pos, const QPointF &globalPos, QPoint pixelDelta, QPoint angleDelta,
                 int qt4Delta, Qt::Orientation qt4Orientation, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase, Qt::MouseEventSource source);
-    QT_DEPRECATED_X("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
+    QT_DEPRECATED_VERSION_X_5_15("Use the last QWheelEvent constructor taking pixelDelta, angleDelta, phase, and inverted")
     QWheelEvent(const QPointF &pos, const QPointF &globalPos, QPoint pixelDelta, QPoint angleDelta,
                 int qt4Delta, Qt::Orientation qt4Orientation, Qt::MouseButtons buttons,
                 Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase, Qt::MouseEventSource source, bool inverted);
@@ -215,28 +215,28 @@ public:
 
 #if QT_DEPRECATED_SINCE(5, 15)
     // Actually deprecated since 5.0, in docs
-    QT_DEPRECATED_X("Use angleDelta()")
+    QT_DEPRECATED_VERSION_X_5_15("Use angleDelta()")
     inline int delta() const  { return qt4D; }
     // Actually deprecated since 5.0, in docs
-    QT_DEPRECATED_X("Use angleDelta()")
+    QT_DEPRECATED_VERSION_X_5_15("Use angleDelta()")
     inline Qt::Orientation orientation() const { return qt4O; }
 #ifndef QT_NO_INTEGER_EVENT_COORDINATES
-    QT_DEPRECATED_X("Use position()")
+    QT_DEPRECATED_VERSION_X_5_15("Use position()")
     inline QPoint pos() const { return p.toPoint(); }
-    QT_DEPRECATED_X("Use globalPosition()")
+    QT_DEPRECATED_VERSION_X_5_15("Use globalPosition()")
     inline QPoint globalPos()   const { return g.toPoint(); }
-    QT_DEPRECATED_X("Use position()")
+    QT_DEPRECATED_VERSION_X_5_15("Use position()")
     inline int x() const { return int(p.x()); }
-    QT_DEPRECATED_X("Use position()")
+    QT_DEPRECATED_VERSION_X_5_15("Use position()")
     inline int y() const { return int(p.y()); }
-    QT_DEPRECATED_X("Use globalPosition()")
+    QT_DEPRECATED_VERSION_X_5_15("Use globalPosition()")
     inline int globalX() const { return int(g.x()); }
-    QT_DEPRECATED_X("Use globalPosition()")
+    QT_DEPRECATED_VERSION_X_5_15("Use globalPosition()")
     inline int globalY() const { return int(g.y()); }
 #endif
-    QT_DEPRECATED_X("Use position()")
+    QT_DEPRECATED_VERSION_X_5_15("Use position()")
     inline const QPointF &posF() const { return p; }
-    QT_DEPRECATED_X("Use globalPosition()")
+    QT_DEPRECATED_VERSION_X_5_15("Use globalPosition()")
     inline const QPointF &globalPosF()   const { return g; }
 #endif // QT_DEPRECATED_SINCE(5, 15)
 
