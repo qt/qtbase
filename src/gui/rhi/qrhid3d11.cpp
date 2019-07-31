@@ -189,10 +189,10 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             DXGI_ADAPTER_DESC1 desc;
             adapter->GetDesc1(&desc);
             const QString name = QString::fromUtf16((char16_t *) desc.Description);
-            qDebug("Adapter %d: '%s' (flags 0x%x)", adapterIndex, qPrintable(name), desc.Flags);
+            qCDebug(QRHI_LOG_INFO, "Adapter %d: '%s' (flags 0x%x)", adapterIndex, qPrintable(name), desc.Flags);
             if (!adapterToUse && (requestedAdapterIndex < 0 || requestedAdapterIndex == adapterIndex)) {
                 adapterToUse = adapter;
-                qDebug("  using this adapter");
+                qCDebug(QRHI_LOG_INFO, "  using this adapter");
             } else {
                 adapter->Release();
             }

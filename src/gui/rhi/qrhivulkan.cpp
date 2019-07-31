@@ -360,14 +360,14 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             requestedPhysDevIndex = qEnvironmentVariableIntValue("QT_VK_PHYSICAL_DEVICE_INDEX");
         for (uint32_t i = 0; i < physDevCount; ++i) {
             f->vkGetPhysicalDeviceProperties(physDevs[i], &physDevProperties);
-            qDebug("Physical device %d: '%s' %d.%d.%d", i,
-                   physDevProperties.deviceName,
-                   VK_VERSION_MAJOR(physDevProperties.driverVersion),
-                   VK_VERSION_MINOR(physDevProperties.driverVersion),
-                   VK_VERSION_PATCH(physDevProperties.driverVersion));
+            qCDebug(QRHI_LOG_INFO, "Physical device %d: '%s' %d.%d.%d", i,
+                    physDevProperties.deviceName,
+                    VK_VERSION_MAJOR(physDevProperties.driverVersion),
+                    VK_VERSION_MINOR(physDevProperties.driverVersion),
+                    VK_VERSION_PATCH(physDevProperties.driverVersion));
             if (physDevIndex < 0 && (requestedPhysDevIndex < 0 || requestedPhysDevIndex == int(i))) {
                 physDevIndex = i;
-                qDebug("    using this physical device");
+                qCDebug(QRHI_LOG_INFO, "    using this physical device");
             }
         }
         if (physDevIndex < 0) {
@@ -386,7 +386,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         gfxQueueFamilyIdx = -1;
         int computelessGfxQueueCandidateIdx = -1;
         for (int i = 0; i < queueFamilyProps.count(); ++i) {
-            qDebug("queue family %d: flags=0x%x count=%d", i, queueFamilyProps[i].queueFlags, queueFamilyProps[i].queueCount);
+            qCDebug(QRHI_LOG_INFO, "queue family %d: flags=0x%x count=%d",
+                    i, queueFamilyProps[i].queueFlags, queueFamilyProps[i].queueCount);
             if (gfxQueueFamilyIdx == -1
                     && (queueFamilyProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
                     && (!maybeWindow || inst->supportsPresent(physDev, i, maybeWindow)))
@@ -422,7 +423,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, nullptr);
         QVector<VkExtensionProperties> devExts(devExtCount);
         f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, devExts.data());
-        qDebug("%d device extensions available", devExts.count());
+        qCDebug(QRHI_LOG_INFO, "%d device extensions available", devExts.count());
 
         QVector<const char *> requestedDevExts;
         requestedDevExts.append("VK_KHR_swapchain");
@@ -1244,9 +1245,9 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
     // with VK_ERROR_NATIVE_WINDOW_IN_USE_KHR if the old swapchain is provided)
     const bool reuseExisting = swapChainD->sc && swapChainD->lastConnectedSurface == swapChainD->surface;
 
-    qDebug("Creating %s swapchain of %u buffers, size %dx%d, presentation mode %d",
-           reuseExisting ? "recycled" : "new",
-           reqBufferCount, swapChainD->pixelSize.width(), swapChainD->pixelSize.height(), presentMode);
+    qCDebug(QRHI_LOG_INFO, "Creating %s swapchain of %u buffers, size %dx%d, presentation mode %d",
+            reuseExisting ? "recycled" : "new",
+            reqBufferCount, swapChainD->pixelSize.width(), swapChainD->pixelSize.height(), presentMode);
 
     VkSwapchainCreateInfoKHR swapChainInfo;
     memset(&swapChainInfo, 0, sizeof(swapChainInfo));
@@ -1290,7 +1291,7 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
         return false;
     }
     if (actualSwapChainBufferCount != reqBufferCount)
-        qDebug("Actual swapchain buffer count is %u", actualSwapChainBufferCount);
+        qCDebug(QRHI_LOG_INFO, "Actual swapchain buffer count is %u", actualSwapChainBufferCount);
     swapChainD->bufferCount = actualSwapChainBufferCount;
 
     VkImage swapChainImages[QVkSwapChain::MAX_BUFFER_COUNT];

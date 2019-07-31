@@ -36,6 +36,7 @@
 
 #include "qrhi_p_p.h"
 #include <qmath.h>
+#include <QLoggingCategory>
 
 #include "qrhinull_p_p.h"
 #ifndef QT_NO_OPENGL
@@ -53,6 +54,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
 /*!
     \class QRhi
@@ -389,6 +392,22 @@ QT_BEGIN_NAMESPACE
     texture object is "exported" via QRhi::nativeHandles() or
     QRhiTexture::nativeHandles(). Most importantly, passing pointers in structs
     and via setters does not transfer ownership.
+
+    \section2 Troubleshooting
+
+    Errors are printed to the output via qWarning(). Additional debug messages
+    can be enabled via the following logging categories. Messages from these
+    categories are not printed by default unless explicitly enabled via
+    QRhi::EnableProfiling or the facilities of QLoggingCategory (such as, the
+    \c QT_LOGGING_RULES environment variable).
+
+    \list
+    \li \c{qt.rhi.general}
+    \endlist
+
+    It is strongly advised to inspect the output with the logging categories
+    (\c{qt.rhi.*}) enabled whenever a QRhi-based application is not behaving as
+    expected.
  */
 
 /*!
@@ -409,7 +428,8 @@ QT_BEGIN_NAMESPACE
     \value EnableProfiling Enables gathering timing (CPU, GPU) and resource
     (QRhiBuffer, QRhiTexture, etc.) information and additional metadata. See
     QRhiProfiler. Avoid enabling in production builds as it may involve a
-    performance penalty.
+    performance penalty. Also enables debug messages from the \c{qt.rhi.*}
+    logging categories.
 
     \value EnableDebugMarkers Enables debug marker groups. Without this frame
     debugging features like making debug groups and custom resource name
@@ -3873,11 +3893,21 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
 
     if (r->d) {
         r->d->q = r.data();
+
         if (flags.testFlag(EnableProfiling)) {
             QRhiProfilerPrivate *profD = QRhiProfilerPrivate::get(&r->d->profiler);
             profD->rhiDWhenEnabled = r->d;
+            const_cast<QLoggingCategory &>(QRHI_LOG_INFO()).setEnabled(QtDebugMsg, true);
         }
+
+        // Play nice with QSG_INFO since that is still the most commonly used
+        // way to get graphics info printed from Qt Quick apps, and the Quick
+        // scenegraph is our primary user.
+        if (qEnvironmentVariableIsSet("QSG_INFO"))
+            const_cast<QLoggingCategory &>(QRHI_LOG_INFO()).setEnabled(QtDebugMsg, true);
+
         r->d->debugMarkers = flags.testFlag(EnableDebugMarkers);
+
         if (r->d->create(flags)) {
             r->d->implType = impl;
             r->d->implThread = QThread::currentThread();

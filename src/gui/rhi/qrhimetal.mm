@@ -353,7 +353,7 @@ bool QRhiMetal::create(QRhi::Flags flags)
     else
         d->dev = MTLCreateSystemDefaultDevice();
 
-    qDebug("Metal device: %s", qPrintable(QString::fromNSString([d->dev name])));
+    qCDebug(QRHI_LOG_INFO, "Metal device: %s", qPrintable(QString::fromNSString([d->dev name])));
 
     if (importedCmdQueue)
         [d->cmdQueue retain];
@@ -3538,7 +3538,7 @@ bool QMetalSwapChain::buildOrResize()
     rtWrapper.d->colorAttCount = 1;
     rtWrapper.d->dsAttCount = ds ? 1 : 0;
 
-    qDebug("got CAMetalLayer, size %dx%d", pixelSize.width(), pixelSize.height());
+    qCDebug(QRHI_LOG_INFO, "got CAMetalLayer, size %dx%d", pixelSize.width(), pixelSize.height());
 
     if (samples > 1) {
         MTLTextureDescriptor *desc = [[MTLTextureDescriptor alloc] init];

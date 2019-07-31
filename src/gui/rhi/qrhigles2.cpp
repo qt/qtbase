@@ -385,7 +385,7 @@ bool QRhiGles2::create(QRhi::Flags flags)
             ctx = nullptr;
             return false;
         }
-        qDebug() << "Created OpenGL context" << ctx->format();
+        qCDebug(QRHI_LOG_INFO) << "Created OpenGL context" << ctx->format();
     }
 
     if (!ensureContext(maybeWindow ? maybeWindow : fallbackSurface)) // see 'window' discussion in QRhiGles2InitParams comments
@@ -397,7 +397,7 @@ bool QRhiGles2::create(QRhi::Flags flags)
     const char *renderer = reinterpret_cast<const char *>(f->glGetString(GL_RENDERER));
     const char *version = reinterpret_cast<const char *>(f->glGetString(GL_VERSION));
     if (vendor && renderer && version)
-        qDebug("OpenGL VENDOR: %s RENDERER: %s VERSION: %s", vendor, renderer, version);
+        qCDebug(QRHI_LOG_INFO, "OpenGL VENDOR: %s RENDERER: %s VERSION: %s", vendor, renderer, version);
 
     const QSurfaceFormat actualFormat = ctx->format();
 
