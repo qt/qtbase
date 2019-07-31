@@ -610,7 +610,7 @@ void tst_QMenu::widgetActionFocus()
 
 static QMenu *getTornOffMenu()
 {
-    foreach (QWidget *w, QApplication::allWidgets()) {
+    for (QWidget *w : QApplication::allWidgets()) {
         if (w->isVisible() && w->inherits("QTornOffMenu"))
             return static_cast<QMenu *>(w);
     }
@@ -948,8 +948,7 @@ void tst_QMenu::menuSizeHint()
 {
     QMenu menu;
     //this is a list of arbitrary strings so that we check the geometry
-    QStringList list = QStringList() << "trer" << "ezrfgtgvqd" << "sdgzgzerzerzer" << "eerzertz"  << "er";
-    foreach (QString str, list)
+    for (auto str : {"trer", "ezrfgtgvqd", "sdgzgzerzerzer", "eerzertz", "er"})
         menu.addAction(str);
 
     int left, top, right, bottom;
@@ -960,7 +959,7 @@ void tst_QMenu::menuSizeHint()
 
     int maxWidth =0;
     QRect result;
-    foreach (QAction *action, menu.actions()) {
+    for (QAction *action : menu.actions()) {
         maxWidth = qMax(maxWidth, menu.actionGeometry(action).width());
         result |= menu.actionGeometry(action);
         QCOMPARE(result.x(), left + hmargin + panelWidth);
