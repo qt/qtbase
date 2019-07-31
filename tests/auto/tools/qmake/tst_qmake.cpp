@@ -33,6 +33,7 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QObject>
+#include <QRegularExpression>
 #include <QStandardPaths>
 #include <QTemporaryDir>
 
@@ -82,6 +83,7 @@ private slots:
     void project();
     void proFileCache();
     void resources();
+    void conflictingTargets();
 
 private:
     TestCompiler test_compiler;
@@ -619,6 +621,19 @@ void tst_qmake::resources()
     }
 
     QVERIFY(test_compiler.make(workDir));
+}
+
+void tst_qmake::conflictingTargets()
+{
+    QString workDir = base_path + "/testdata/conflicting_targets";
+    QVERIFY(test_compiler.qmake(workDir, "conflicting_targets"));
+    const QRegularExpression rex("Targets of builds '([^']+)' and '([^']+)' conflict");
+    auto match = rex.match(test_compiler.commandOutput());
+    QVERIFY(match.hasMatch());
+    QStringList builds = { match.captured(1), match.captured(2) };
+    std::sort(builds.begin(), builds.end());
+    const QStringList expectedBuilds{"Debug", "Release"};
+    QCOMPARE(builds, expectedBuilds);
 }
 
 QTEST_MAIN(tst_qmake)

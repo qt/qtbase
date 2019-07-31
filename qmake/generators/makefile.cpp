@@ -3456,4 +3456,13 @@ QString MakefileGenerator::shellQuote(const QString &str)
     return isWindowsShell() ? IoUtils::shellQuoteWin(str) : IoUtils::shellQuoteUnix(str);
 }
 
+/*
+ * Returns the name of the variable that contains the fully resolved target
+ * (including DESTDIR) of this generator.
+ */
+ProKey MakefileGenerator::fullTargetVariable() const
+{
+    return "TARGET";
+}
+
 QT_END_NAMESPACE

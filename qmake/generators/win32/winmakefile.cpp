@@ -815,4 +815,9 @@ QString Win32MakefileGenerator::getManifestFileForRcFile() const
     return QString();
 }
 
+ProKey Win32MakefileGenerator::fullTargetVariable() const
+{
+    return "DEST_TARGET";
+}
+
 QT_END_NAMESPACE
