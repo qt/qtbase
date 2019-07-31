@@ -197,8 +197,15 @@ NSOpenGLPixelFormat *QCocoaGLContext::pixelFormatForSurfaceFormat(const QSurface
         attrs << NSOpenGLPFAStencilSize << format.stencilBufferSize();
     if (format.alphaBufferSize() > 0)
         attrs << NSOpenGLPFAAlphaSize << format.alphaBufferSize();
-    if (format.redBufferSize() > 0 && format.greenBufferSize() > 0 && format.blueBufferSize() > 0) {
-        const int colorSize = format.redBufferSize() + format.greenBufferSize() + format.blueBufferSize();
+
+    auto rbz = format.redBufferSize();
+    auto gbz = format.greenBufferSize();
+    auto bbz = format.blueBufferSize();
+    if (rbz > 0 || gbz > 0 || bbz > 0) {
+        auto fallbackSize = qMax(rbz, qMax(gbz, bbz));
+        auto colorSize = (rbz > 0 ? rbz : fallbackSize)
+                       + (gbz > 0 ? gbz : fallbackSize)
+                       + (bbz > 0 ? bbz : fallbackSize);
         attrs << NSOpenGLPFAColorSize << colorSize << NSOpenGLPFAMinimumPolicy;
     }
 
