@@ -3530,6 +3530,13 @@ void tst_QLineEdit::textMargin()
     centerOnScreen(&tlw);
     tlw.show();
 
+    const QMargins margins = testWidget.textMargins();
+    QCOMPARE(left, margins.left());
+    QCOMPARE(top, margins.top());
+    QCOMPARE(right, margins.right());
+    QCOMPARE(bottom, margins.bottom());
+
+#if QT_DEPRECATED_SINCE(5, 14)
     int l;
     int t;
     int r;
@@ -3539,6 +3546,7 @@ void tst_QLineEdit::textMargin()
     QCOMPARE(top, t);
     QCOMPARE(right, r);
     QCOMPARE(bottom, b);
+#endif
 
     QTest::mouseClick(&testWidget, Qt::LeftButton, 0, mousePressPos);
     QTRY_COMPARE(testWidget.cursorPosition(), cursorPosition);

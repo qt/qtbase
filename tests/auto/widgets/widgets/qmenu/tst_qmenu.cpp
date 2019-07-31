@@ -951,8 +951,7 @@ void tst_QMenu::menuSizeHint()
     for (auto str : {"trer", "ezrfgtgvqd", "sdgzgzerzerzer", "eerzertz", "er"})
         menu.addAction(str);
 
-    int left, top, right, bottom;
-    menu.getContentsMargins(&left, &top, &right, &bottom);
+    const QMargins cm = menu.contentsMargins();
     const int panelWidth = menu.style()->pixelMetric(QStyle::PM_MenuPanelWidth, 0, &menu);
     const int hmargin = menu.style()->pixelMetric(QStyle::PM_MenuHMargin, 0, &menu),
     vmargin = menu.style()->pixelMetric(QStyle::PM_MenuVMargin, 0, &menu);
@@ -962,15 +961,15 @@ void tst_QMenu::menuSizeHint()
     for (QAction *action : menu.actions()) {
         maxWidth = qMax(maxWidth, menu.actionGeometry(action).width());
         result |= menu.actionGeometry(action);
-        QCOMPARE(result.x(), left + hmargin + panelWidth);
-        QCOMPARE(result.y(), top + vmargin + panelWidth);
+        QCOMPARE(result.x(), cm.left() + hmargin + panelWidth);
+        QCOMPARE(result.y(), cm.top() + vmargin + panelWidth);
     }
 
     QStyleOption opt(0);
     opt.rect = menu.rect();
     opt.state = QStyle::State_None;
 
-    QSize resSize = QSize(result.x(), result.y()) + result.size() + QSize(hmargin + right + panelWidth, vmargin + top + panelWidth);
+    QSize resSize = QSize(result.x(), result.y()) + result.size() + QSize(hmargin + cm.right() + panelWidth, vmargin + cm.top() + panelWidth);
 
     resSize = menu.style()->sizeFromContents(QStyle::CT_Menu, &opt,
                                     resSize.expandedTo(QApplication::globalStrut()), &menu);
@@ -1571,8 +1570,7 @@ void tst_QMenu::menuSize_Scrolling()
 
             int hmargin = style()->pixelMetric(QStyle::PM_MenuHMargin, nullptr, this);
             int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, nullptr, this);
-            int leftMargin, topMargin, rightMargin, bottomMargin;
-            getContentsMargins(&leftMargin, &topMargin, &rightMargin, &bottomMargin);
+            const QMargins cm = contentsMargins();
             QRect lastItem = actionGeometry(actions().at(actions().length() - 1));
             QSize s = size();
 #ifdef Q_OS_WINRT
@@ -1585,7 +1583,7 @@ void tst_QMenu::menuSize_Scrolling()
                 return;
             }
 
-            QCOMPARE( s.width(), lastItem.right() + fw + hmargin + rightMargin + 1);
+            QCOMPARE( s.width(), lastItem.right() + fw + hmargin + cm.right() + 1);
             QMenu::showEvent(e);
         }
 
