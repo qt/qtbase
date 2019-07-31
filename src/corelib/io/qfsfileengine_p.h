@@ -66,7 +66,7 @@ struct ProcessOpenModeResult {
     QIODevice::OpenMode openMode;
     QString error;
 };
-inline Q_CORE_EXPORT ProcessOpenModeResult processOpenModeFlags(QIODevice::OpenMode mode);
+Q_CORE_EXPORT ProcessOpenModeResult processOpenModeFlags(QIODevice::OpenMode mode);
 
 class QFSFileEnginePrivate;
 
