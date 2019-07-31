@@ -313,7 +313,7 @@ inline void QPainterPathData::clear()
     elements.clear();
 
     cStart = 0;
-
+    fillRule = Qt::OddEvenFill;
     bounds = {};
     controlBounds = {};
 
