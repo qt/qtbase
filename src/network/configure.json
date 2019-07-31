@@ -352,9 +352,10 @@
             "condition": "features.openssl-linked && libs.openssl.source != 0
                           && input.openssl.prefix == '' && input.openssl.libs == '' && input.openssl.libs.debug == ''",
             "message": "When linking against OpenSSL, you can override the default
-library names through OPENSSL_LIBS.
+library names and directories with setting OPENSSL_PREFIX (or OPENSSL_INCDIR, OPENSSL_LIBDIR),
+and OPENSSL_LIBS, OPENSSL_LIBS_DEBUG, OPENSSL_LIBS_RELEASE.
 For example:
-    OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto' ./configure -openssl-linked"
+    ./configure -openssl-linked OPENSSL_PREFIX='/opt/ssl' OPENSSL_LIBS='-lssl -lcrypto'"
         },
         {
             "type": "warning",

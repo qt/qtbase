@@ -102,9 +102,9 @@ qtConfig(ssl) {
         # Add optional SSL libs
         # Static linking of OpenSSL with msvc:
         #   - Binaries http://slproweb.com/products/Win32OpenSSL.html
-        #   - also needs -lUser32 -lAdvapi32 -lGdi32 -lCrypt32
+        #   - also needs -lWs2_32 -lGdi32 -lAdvapi32 -lCrypt32 -lUser32
         #   - libs in <OPENSSL_DIR>\lib\VC\static
-        #   - configure: -openssl -openssl-linked -I <OPENSSL_DIR>\include -L <OPENSSL_DIR>\lib\VC\static OPENSSL_LIBS="-lUser32 -lAdvapi32 -lGdi32" OPENSSL_LIBS_DEBUG="-lssleay32MDd -llibeay32MDd" OPENSSL_LIBS_RELEASE="-lssleay32MD -llibeay32MD"
+        #   - configure: -openssl-linked -openssl-linked OPENSSL_INCDIR="%OPENSSL_DIR%\include" OPENSSL_LIBDIR="%OPENSSL_DIR%\lib\VC\static" OPENSSL_LIBS="-lWs2_32 -lGdi32 -lAdvapi32 -lCrypt32 -lUser32" OPENSSL_LIBS_DEBUG="-llibssl64MDd -llibcrypto64MDd" OPENSSL_LIBS_RELEASE="-llibssl64MD -llibcrypto64MD"
 
         qtConfig(openssl-linked): \
             QMAKE_USE_FOR_PRIVATE += openssl
