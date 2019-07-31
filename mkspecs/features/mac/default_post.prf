@@ -261,7 +261,7 @@ xcode_product_bundle_identifier_setting.value = "$${xcode_product_bundle_identif
 QMAKE_MAC_XCODE_SETTINGS += xcode_product_bundle_identifier_setting
 
 !macx-xcode {
-    generate_xcode_project.commands = @$(QMAKE) -spec macx-xcode $(EXPORT__PRO_FILE_)
+    generate_xcode_project.commands = @$(QMAKE) -spec macx-xcode $(EXPORT__PRO_FILE_) $$QMAKE_ARGS
     generate_xcode_project.target = xcodeproj
     QMAKE_EXTRA_VARIABLES += _PRO_FILE_
     QMAKE_EXTRA_TARGETS += generate_xcode_project
