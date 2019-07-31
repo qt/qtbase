@@ -2337,6 +2337,18 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                     case QShaderDescription::Uint4:
                         f->glUniform4uiv(uniform.glslLocation, 1, reinterpret_cast<const quint32 *>(src));
                         break;
+                    case QShaderDescription::Bool: // a glsl bool is 4 bytes, like (u)int
+                        f->glUniform1i(uniform.glslLocation, *reinterpret_cast<const qint32 *>(src));
+                        break;
+                    case QShaderDescription::Bool2:
+                        f->glUniform2iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
+                        break;
+                    case QShaderDescription::Bool3:
+                        f->glUniform3iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
+                        break;
+                    case QShaderDescription::Bool4:
+                        f->glUniform4iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
+                        break;
                     // ### more types
                     default:
                         break;
