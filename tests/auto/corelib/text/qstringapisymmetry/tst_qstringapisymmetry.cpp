@@ -73,6 +73,8 @@ QStringList toQStringList(const Iterable &i) {
 
 MAKE_ALL(QByteArray, QChar)
 MAKE_ALL(QByteArray, QLatin1String)
+MAKE_ALL(QByteArray, char16_t)
+MAKE_ALL(char16_t, QByteArray)
 
 MAKE_ALL(const char*, QChar)
 
@@ -100,6 +102,11 @@ static QByteArray rowName(const QByteArray &data)
     return result;
 }
 
+# define QVERIFY_NOEXCEPT(expr) do { \
+    if (!has_nothrow_compare<LHS, RHS>::value) \
+        QEXPECT_FAIL("", "Qt is missing a nothrow utf8-utf16 comparator", Continue); \
+    QVERIFY(noexcept(expr)); } while (0)
+
 class tst_QStringApiSymmetry : public QObject
 {
     Q_OBJECT
@@ -113,9 +120,11 @@ class tst_QStringApiSymmetry : public QObject
     void compare_impl() const;
 
 private Q_SLOTS:
-    // test all combinations of {QChar, QStringRef, QString, QStringView, QLatin1String, QByteArray, const char*}
+    // test all combinations of {QChar, char16_t, QStringRef, QString, QStringView, QLatin1String, QByteArray, const char*}
     void compare_QChar_QChar_data() { compare_data(false); }
     void compare_QChar_QChar() { compare_impl<QChar, QChar>(); }
+    void compare_QChar_char16_t_data() { compare_data(false); }
+    void compare_QChar_char16_t() { compare_impl<QChar, char16_t>(); }
     void compare_QChar_QStringRef_data() { compare_data(false); }
     void compare_QChar_QStringRef() { compare_impl<QChar, QStringRef>(); }
     void compare_QChar_QString_data() { compare_data(false); }
@@ -129,8 +138,27 @@ private Q_SLOTS:
     void compare_QChar_const_char_star_data() { compare_data(false); }
     void compare_QChar_const_char_star() { compare_impl<QChar, const char *>(); }
 
+    void compare_char16_t_QChar_data() { compare_data(false); }
+    void compare_char16_t_QChar() { compare_impl<char16_t, QChar>(); }
+    //void compare_char16_t_char16_t_data() { compare_data(false); }
+    //void compare_char16_t_char16_t() { compare_impl<char16_t, char16_t>(); }
+    void compare_char16_t_QStringRef_data() { compare_data(false); }
+    void compare_char16_t_QStringRef() { compare_impl<char16_t, QStringRef>(); }
+    void compare_char16_t_QString_data() { compare_data(false); }
+    void compare_char16_t_QString() { compare_impl<char16_t, QString>(); }
+    void compare_char16_t_QStringView_data() { compare_data(false); }
+    void compare_char16_t_QStringView() { compare_impl<char16_t, QStringView>(); }
+    void compare_char16_t_QLatin1String_data() { compare_data(false); }
+    void compare_char16_t_QLatin1String() { compare_impl<char16_t, QLatin1String>(); }
+    void compare_char16_t_QByteArray_data() { compare_data(false); }
+    void compare_char16_t_QByteArray() { compare_impl<char16_t, QByteArray>(); }
+    //void compare_char16_t_const_char_star_data() { compare_data(false); }
+    //void compare_char16_t_const_char_star() { compare_impl<char16_t, const char *>(); }
+
     void compare_QStringRef_QChar_data() { compare_data(false); }
     void compare_QStringRef_QChar() { compare_impl<QStringRef, QChar>(); }
+    void compare_QStringRef_char16_t_data() { compare_data(false); }
+    void compare_QStringRef_char16_t() { compare_impl<QStringRef, char16_t>(); }
     void compare_QStringRef_QStringRef_data() { compare_data(); }
     void compare_QStringRef_QStringRef() { compare_impl<QStringRef, QStringRef>(); }
     void compare_QStringRef_QString_data() { compare_data(); }
@@ -146,6 +174,8 @@ private Q_SLOTS:
 
     void compare_QString_QChar_data() { compare_data(false); }
     void compare_QString_QChar() { compare_impl<QString, QChar>(); }
+    void compare_QString_char16_t_data() { compare_data(false); }
+    void compare_QString_char16_t() { compare_impl<QString, char16_t>(); }
     void compare_QString_QStringRef_data() { compare_data(); }
     void compare_QString_QStringRef() { compare_impl<QString, QStringRef>(); }
     void compare_QString_QString_data() { compare_data(); }
@@ -161,6 +191,8 @@ private Q_SLOTS:
 
     void compare_QStringView_QChar_data() { compare_data(false); }
     void compare_QStringView_QChar() { compare_impl<QStringView, QChar>(); }
+    void compare_QStringView_char16_t_data() { compare_data(false); }
+    void compare_QStringView_char16_t() { compare_impl<QStringView, char16_t>(); }
     void compare_QStringView_QStringRef_data() { compare_data(); }
     void compare_QStringView_QStringRef() { compare_impl<QStringView, QStringRef>(); }
     void compare_QStringView_QString_data() { compare_data(); }
@@ -178,6 +210,8 @@ private Q_SLOTS:
 
     void compare_QLatin1String_QChar_data() { compare_data(false); }
     void compare_QLatin1String_QChar() { compare_impl<QLatin1String, QChar>(); }
+    void compare_QLatin1String_char16_t_data() { compare_data(false); }
+    void compare_QLatin1String_char16_t() { compare_impl<QLatin1String, char16_t>(); }
     void compare_QLatin1String_QStringRef_data() { compare_data(); }
     void compare_QLatin1String_QStringRef() { compare_impl<QLatin1String, QStringRef>(); }
     void compare_QLatin1String_QString_data() { compare_data(); }
@@ -193,6 +227,8 @@ private Q_SLOTS:
 
     void compare_QByteArray_QChar_data() { compare_data(false); }
     void compare_QByteArray_QChar() { compare_impl<QByteArray, QChar>(); }
+    void compare_QByteArray_char16_t_data() { compare_data(false); }
+    void compare_QByteArray_char16_t() { compare_impl<QByteArray, char16_t>(); }
     void compare_QByteArray_QStringRef_data() { compare_data(); }
     void compare_QByteArray_QStringRef() { compare_impl<QByteArray, QStringRef>(); }
     void compare_QByteArray_QString_data() { compare_data(); }
@@ -206,6 +242,8 @@ private Q_SLOTS:
 
     void compare_const_char_star_QChar_data() { compare_data(false); }
     void compare_const_char_star_QChar() { compare_impl<const char *, QChar>(); }
+    //void compare_const_char_star_char16_t_data() { compare_data(false); }
+    //void compare_const_char_star_char16_t() { compare_impl<const char *, char16_t>(); }
     void compare_const_char_star_QStringRef_data() { compare_data(); }
     void compare_const_char_star_QStringRef() { compare_impl<const char *, QStringRef>(); }
     void compare_const_char_star_QString_data() { compare_data(); }
@@ -223,10 +261,12 @@ private:
     void member_compare_impl() const;
 
 private Q_SLOTS:
-    // test all combinations of {QChar, QStringRef, QString, QStringView, QLatin1String, QByteArray, const char*}
+    // test all combinations of {QChar, char16_t, QStringRef, QString, QStringView, QLatin1String, QByteArray, const char*}
 #ifdef NOT_YET_IMPLEMENTED // probably never will be - what's the point of QChar::compare(QStringView)?
     void member_compare_QChar_QChar_data() { member_compare_data(false); }
     void member_compare_QChar_QChar() { member_compare_impl<QChar, QChar>(); }
+    void member_compare_QChar_char16_t_data() { member_compare_data(false); }
+    void member_compare_QChar_char16_t() { member_compare_impl<QChar, char16_t>(); }
     void member_compare_QChar_QStringRef_data() { member_compare_data(false); }
     void member_compare_QChar_QStringRef() { member_compare_impl<QChar, QStringRef>(); }
     void member_compare_QChar_QString_data() { member_compare_data(false); }
@@ -241,8 +281,12 @@ private Q_SLOTS:
     void member_compare_QChar_const_char_star() { member_compare_impl<QChar, const char *>(); }
 #endif
 
+    // void member_compare_char16_t_XXX() - not possible
+
     void member_compare_QStringRef_QChar_data() { member_compare_data(false); }
     void member_compare_QStringRef_QChar() { member_compare_impl<QStringRef, QChar>(); }
+    void member_compare_QStringRef_char16_t_data() { member_compare_data(false); }
+    void member_compare_QStringRef_char16_t() { member_compare_impl<QStringRef, char16_t>(); }
     void member_compare_QStringRef_QStringRef_data() { member_compare_data(); }
     void member_compare_QStringRef_QStringRef() { member_compare_impl<QStringRef, QStringRef>(); }
     void member_compare_QStringRef_QString_data() { member_compare_data(); }
@@ -262,6 +306,8 @@ private Q_SLOTS:
 
     void member_compare_QString_QChar_data() { member_compare_data(false); }
     void member_compare_QString_QChar() { member_compare_impl<QString, QChar>(); }
+    void member_compare_QString_char16_t_data() { member_compare_data(false); }
+    void member_compare_QString_char16_t() { member_compare_impl<QString, char16_t>(); }
     void member_compare_QString_QStringRef_data() { member_compare_data(); }
     void member_compare_QString_QStringRef() { member_compare_impl<QString, QStringRef>(); }
     void member_compare_QString_QString_data() { member_compare_data(); }
@@ -277,6 +323,8 @@ private Q_SLOTS:
 
     void member_compare_QStringView_QChar_data() { member_compare_data(false); }
     void member_compare_QStringView_QChar() { member_compare_impl<QStringView, QChar>(); }
+    void member_compare_QStringView_char16_t_data() { member_compare_data(false); }
+    void member_compare_QStringView_char16_t() { member_compare_impl<QStringView, char16_t>(); }
     void member_compare_QStringView_QStringRef_data() { member_compare_data(); }
     void member_compare_QStringView_QStringRef() { member_compare_impl<QStringView, QStringRef>(); }
     void member_compare_QStringView_QString_data() { member_compare_data(); }
@@ -294,6 +342,8 @@ private Q_SLOTS:
 
     void member_compare_QLatin1String_QChar_data() { member_compare_data(false); }
     void member_compare_QLatin1String_QChar() { member_compare_impl<QLatin1String, QChar>(); }
+    void member_compare_QLatin1String_char16_t_data() { member_compare_data(false); }
+    void member_compare_QLatin1String_char16_t() { member_compare_impl<QLatin1String, char16_t>(); }
     void member_compare_QLatin1String_QStringRef_data() { member_compare_data(); }
     void member_compare_QLatin1String_QStringRef() { member_compare_impl<QLatin1String, QStringRef>(); }
     void member_compare_QLatin1String_QString_data() { member_compare_data(); }
@@ -310,6 +360,8 @@ private Q_SLOTS:
 
     void member_compare_QByteArray_QChar_data() { member_compare_data(false); }
     void member_compare_QByteArray_QChar() { member_compare_impl<QByteArray, QChar>(); }
+    void member_compare_QByteArray_char16_t_data() { member_compare_data(false); }
+    void member_compare_QByteArray_char16_t() { member_compare_impl<QByteArray, char16_t>(); }
     void member_compare_QByteArray_QStringRef_data() { member_compare_data(); }
     void member_compare_QByteArray_QStringRef() { member_compare_impl<QByteArray, QStringRef>(); }
     void member_compare_QByteArray_QString_data() { member_compare_data(); }
@@ -330,7 +382,7 @@ private:
     template <typename Haystack, typename Needle> void endsWith_impl() const;
 
 private Q_SLOTS:
-    // test all combinations of {QString, QStringRef, QStringView, QLatin1String} x {QString, QStringRef, QStringView, QLatin1String, QChar}:
+    // test all combinations of {QString, QStringRef, QStringView, QLatin1String} x {QString, QStringRef, QStringView, QLatin1String, QChar, char16_t}:
     void startsWith_QString_QString_data() { startsWith_data(); }
     void startsWith_QString_QString() { startsWith_impl<QString, QString>(); }
     void startsWith_QString_QStringRef_data() { startsWith_data(); }
@@ -341,6 +393,8 @@ private Q_SLOTS:
     void startsWith_QString_QLatin1String() { startsWith_impl<QString, QLatin1String>(); }
     void startsWith_QString_QChar_data() { startsWith_data(false); }
     void startsWith_QString_QChar() { startsWith_impl<QString, QChar>(); }
+    void startsWith_QString_char16_t_data() { startsWith_data(false); }
+    void startsWith_QString_char16_t() { startsWith_impl<QString, char16_t>(); }
 
     void startsWith_QStringRef_QString_data() { startsWith_data(); }
     void startsWith_QStringRef_QString() { startsWith_impl<QStringRef, QString>(); }
@@ -352,6 +406,8 @@ private Q_SLOTS:
     void startsWith_QStringRef_QLatin1String() { startsWith_impl<QStringRef, QLatin1String>(); }
     void startsWith_QStringRef_QChar_data() { startsWith_data(false); }
     void startsWith_QStringRef_QChar() { startsWith_impl<QStringRef, QChar>(); }
+    void startsWith_QStringRef_char16_t_data() { startsWith_data(false); }
+    void startsWith_QStringRef_char16_t() { startsWith_impl<QStringRef, char16_t>(); }
 
     void startsWith_QStringView_QString_data() { startsWith_data(); }
     void startsWith_QStringView_QString() { startsWith_impl<QStringView, QString>(); }
@@ -363,6 +419,8 @@ private Q_SLOTS:
     void startsWith_QStringView_QLatin1String() { startsWith_impl<QStringView, QLatin1String>(); }
     void startsWith_QStringView_QChar_data() { startsWith_data(false); }
     void startsWith_QStringView_QChar() { startsWith_impl<QStringView, QChar>(); }
+    void startsWith_QStringView_char16_t_data() { startsWith_data(false); }
+    void startsWith_QStringView_char16_t() { startsWith_impl<QStringView, char16_t>(); }
 
     void startsWith_QLatin1String_QString_data() { startsWith_data(); }
     void startsWith_QLatin1String_QString() { startsWith_impl<QLatin1String, QString>(); }
@@ -374,6 +432,8 @@ private Q_SLOTS:
     void startsWith_QLatin1String_QLatin1String() { startsWith_impl<QLatin1String, QLatin1String>(); }
     void startsWith_QLatin1String_QChar_data() { startsWith_data(false); }
     void startsWith_QLatin1String_QChar() { startsWith_impl<QLatin1String, QChar>(); }
+    void startsWith_QLatin1String_char16_t_data() { startsWith_data(false); }
+    void startsWith_QLatin1String_char16_t() { startsWith_impl<QLatin1String, char16_t>(); }
 
     void endsWith_QString_QString_data() { endsWith_data(); }
     void endsWith_QString_QString() { endsWith_impl<QString, QString>(); }
@@ -385,6 +445,8 @@ private Q_SLOTS:
     void endsWith_QString_QLatin1String() { endsWith_impl<QString, QLatin1String>(); }
     void endsWith_QString_QChar_data() { endsWith_data(false); }
     void endsWith_QString_QChar() { endsWith_impl<QString, QChar>(); }
+    void endsWith_QString_char16_t_data() { endsWith_data(false); }
+    void endsWith_QString_char16_t() { endsWith_impl<QString, char16_t>(); }
 
     void endsWith_QStringRef_QString_data() { endsWith_data(); }
     void endsWith_QStringRef_QString() { endsWith_impl<QStringRef, QString>(); }
@@ -396,6 +458,8 @@ private Q_SLOTS:
     void endsWith_QStringRef_QLatin1String() { endsWith_impl<QStringRef, QLatin1String>(); }
     void endsWith_QStringRef_QChar_data() { endsWith_data(false); }
     void endsWith_QStringRef_QChar() { endsWith_impl<QStringRef, QChar>(); }
+    void endsWith_QStringRef_char16_t_data() { endsWith_data(false); }
+    void endsWith_QStringRef_char16_t() { endsWith_impl<QStringRef, char16_t>(); }
 
     void endsWith_QStringView_QString_data() { endsWith_data(); }
     void endsWith_QStringView_QString() { endsWith_impl<QStringView, QString>(); }
@@ -407,6 +471,8 @@ private Q_SLOTS:
     void endsWith_QStringView_QLatin1String() { endsWith_impl<QStringView, QLatin1String>(); }
     void endsWith_QStringView_QChar_data() { endsWith_data(false); }
     void endsWith_QStringView_QChar() { endsWith_impl<QStringView, QChar>(); }
+    void endsWith_QStringView_char16_t_data() { endsWith_data(false); }
+    void endsWith_QStringView_char16_t() { endsWith_impl<QStringView, char16_t>(); }
 
     void endsWith_QLatin1String_QString_data() { endsWith_data(); }
     void endsWith_QLatin1String_QString() { endsWith_impl<QLatin1String, QString>(); }
@@ -418,6 +484,8 @@ private Q_SLOTS:
     void endsWith_QLatin1String_QLatin1String() { endsWith_impl<QLatin1String, QLatin1String>(); }
     void endsWith_QLatin1String_QChar_data() { endsWith_data(false); }
     void endsWith_QLatin1String_QChar() { endsWith_impl<QLatin1String, QChar>(); }
+    void endsWith_QLatin1String_char16_t_data() { endsWith_data(false); }
+    void endsWith_QLatin1String_char16_t() { endsWith_impl<QLatin1String, char16_t>(); }
 
 private:
     void split_data(bool rhsHasVariableLength = true);
@@ -569,7 +637,7 @@ private:
     void indexOf_data(bool rhsHasVariableLength = true);
 
 private Q_SLOTS:
-    // test all combinations of {QString, QLatin1String, QStringRef, QStringView} x {QString, QLatin1String, QStringRef, QStringView, QChar}:
+    // test all combinations of {QString, QLatin1String, QStringRef, QStringView} x {QString, QLatin1String, QStringRef, QStringView, QChar, char16_t}:
     void indexOf_QString_QString_data() { indexOf_data(); }
     void indexOf_QString_QString() { indexOf_impl<QString, QString>(); }
     void indexOf_QString_QLatin1String_data() { indexOf_data(); }
@@ -580,6 +648,8 @@ private Q_SLOTS:
     void indexOf_QString_QStringView() { indexOf_impl<QString, QStringView>(); }
     void indexOf_QString_QChar_data() { indexOf_data(false); }
     void indexOf_QString_QChar() { indexOf_impl<QString, QChar>(); }
+    void indexOf_QString_char16_t_data() { indexOf_data(false); }
+    void indexOf_QString_char16_t() { indexOf_impl<QString, char16_t>(); }
 
     void indexOf_QLatin1String_QString_data() { indexOf_data(); }
     void indexOf_QLatin1String_QString() { indexOf_impl<QLatin1String, QString>(); }
@@ -591,6 +661,8 @@ private Q_SLOTS:
     void indexOf_QLatin1String_QStringView() { indexOf_impl<QLatin1String, QStringView>(); }
     void indexOf_QLatin1String_QChar_data() { indexOf_data(false); }
     void indexOf_QLatin1String_QChar() { indexOf_impl<QLatin1String, QChar>(); }
+    void indexOf_QLatin1String_char16_t_data() { indexOf_data(false); }
+    void indexOf_QLatin1String_char16_t() { indexOf_impl<QLatin1String, char16_t>(); }
 
     void indexOf_QStringRef_QString_data() { indexOf_data(); }
     void indexOf_QStringRef_QString() { indexOf_impl<QStringRef, QString>(); }
@@ -602,6 +674,8 @@ private Q_SLOTS:
     void indexOf_QStringRef_QStringView() { indexOf_impl<QStringRef, QStringView>(); }
     void indexOf_QStringRef_QChar_data() { indexOf_data(false); }
     void indexOf_QStringRef_QChar() { indexOf_impl<QStringRef, QChar>(); }
+    void indexOf_QStringRef_char16_t_data() { indexOf_data(false); }
+    void indexOf_QStringRef_char16_t() { indexOf_impl<QStringRef, char16_t>(); }
 
     void indexOf_QStringView_QString_data() { indexOf_data(); }
     void indexOf_QStringView_QString() { indexOf_impl<QStringView, QString>(); }
@@ -613,13 +687,15 @@ private Q_SLOTS:
     void indexOf_QStringView_QStringView() { indexOf_impl<QStringView, QStringView>(); }
     void indexOf_QStringView_QChar_data() { indexOf_data(false); }
     void indexOf_QStringView_QChar() { indexOf_impl<QStringView, QChar>(); }
+    void indexOf_QStringView_char16_t_data() { indexOf_data(false); }
+    void indexOf_QStringView_char16_t() { indexOf_impl<QStringView, char16_t>(); }
 
 private:
     template <typename Haystack, typename Needle> void contains_impl() const;
     void contains_data(bool rhsHasVariableLength = true);
 
 private Q_SLOTS:
-    // test all combinations of {QString, QLatin1String, QStringRef, QStringView} x {QString, QLatin1String, QStringRef, QStringView, QChar}:
+    // test all combinations of {QString, QLatin1String, QStringRef, QStringView} x {QString, QLatin1String, QStringRef, QStringView, QChar, char16_t}:
     void contains_QString_QString_data() { contains_data(); }
     void contains_QString_QString() { contains_impl<QString, QString>(); }
     void contains_QString_QLatin1String_data() { contains_data(); }
@@ -630,6 +706,8 @@ private Q_SLOTS:
     void contains_QString_QStringView() { contains_impl<QString, QStringView>(); }
     void contains_QString_QChar_data() { contains_data(false); }
     void contains_QString_QChar() { contains_impl<QString, QChar>(); }
+    void contains_QString_char16_t_data() { contains_data(false); }
+    void contains_QString_char16_t() { contains_impl<QString, char16_t>(); }
 
     void contains_QLatin1String_QString_data() { contains_data(); }
     void contains_QLatin1String_QString() { contains_impl<QLatin1String, QString>(); }
@@ -641,6 +719,8 @@ private Q_SLOTS:
     void contains_QLatin1String_QStringView() { contains_impl<QLatin1String, QStringView>(); }
     void contains_QLatin1String_QChar_data() { contains_data(false); }
     void contains_QLatin1String_QChar() { contains_impl<QLatin1String, QChar>(); }
+    void contains_QLatin1String_char16_t_data() { contains_data(false); }
+    void contains_QLatin1String_char16_t() { contains_impl<QLatin1String, char16_t>(); }
 
     void contains_QStringRef_QString_data() { contains_data(); }
     void contains_QStringRef_QString() { contains_impl<QStringRef, QString>(); }
@@ -652,6 +732,8 @@ private Q_SLOTS:
     void contains_QStringRef_QStringView() { contains_impl<QStringRef, QStringView>(); }
     void contains_QStringRef_QChar_data() { contains_data(false); }
     void contains_QStringRef_QChar() { contains_impl<QStringRef, QChar>(); }
+    void contains_QStringRef_char16_t_data() { contains_data(false); }
+    void contains_QStringRef_char16_t() { contains_impl<QStringRef, char16_t>(); }
 
     void contains_QStringView_QString_data() { contains_data(); }
     void contains_QStringView_QString() { contains_impl<QStringView, QString>(); }
@@ -663,13 +745,15 @@ private Q_SLOTS:
     void contains_QStringView_QStringView() { contains_impl<QStringView, QStringView>(); }
     void contains_QStringView_QChar_data() { contains_data(false); }
     void contains_QStringView_QChar() { contains_impl<QStringView, QChar>(); }
+    void contains_QStringView_char16_t_data() { contains_data(false); }
+    void contains_QStringView_char16_t() { contains_impl<QStringView, char16_t>(); }
 
 private:
     template <typename Haystack, typename Needle> void lastIndexOf_impl() const;
     void lastIndexOf_data(bool rhsHasVariableLength = true);
 
 private Q_SLOTS:
-    // test all combinations of {QString, QLatin1String, QStringRef, QStringView} x {QString, QLatin1String, QStringRef, QStringView, QChar}:
+    // test all combinations of {QString, QLatin1String, QStringRef, QStringView} x {QString, QLatin1String, QStringRef, QStringView, QChar, char16_t}:
     void lastIndexOf_QString_QString_data() { lastIndexOf_data(); }
     void lastIndexOf_QString_QString() { lastIndexOf_impl<QString, QString>(); }
     void lastIndexOf_QString_QLatin1String_data() { lastIndexOf_data(); }
@@ -680,6 +764,8 @@ private Q_SLOTS:
     void lastIndexOf_QString_QStringView() { lastIndexOf_impl<QString, QStringView>(); }
     void lastIndexOf_QString_QChar_data() { lastIndexOf_data(false); }
     void lastIndexOf_QString_QChar() { lastIndexOf_impl<QString, QChar>(); }
+    void lastIndexOf_QString_char16_t_data() { lastIndexOf_data(false); }
+    void lastIndexOf_QString_char16_t() { lastIndexOf_impl<QString, char16_t>(); }
 
     void lastIndexOf_QLatin1String_QString_data() { lastIndexOf_data(); }
     void lastIndexOf_QLatin1String_QString() { lastIndexOf_impl<QLatin1String, QString>(); }
@@ -691,6 +777,8 @@ private Q_SLOTS:
     void lastIndexOf_QLatin1String_QStringView() { lastIndexOf_impl<QLatin1String, QStringView>(); }
     void lastIndexOf_QLatin1String_QChar_data() { lastIndexOf_data(false); }
     void lastIndexOf_QLatin1String_QChar() { lastIndexOf_impl<QLatin1String, QChar>(); }
+    void lastIndexOf_QLatin1String_char16_t_data() { lastIndexOf_data(false); }
+    void lastIndexOf_QLatin1String_char16_t() { lastIndexOf_impl<QLatin1String, char16_t>(); }
 
     void lastIndexOf_QStringRef_QString_data() { lastIndexOf_data(); }
     void lastIndexOf_QStringRef_QString() { lastIndexOf_impl<QStringRef, QString>(); }
@@ -702,6 +790,8 @@ private Q_SLOTS:
     void lastIndexOf_QStringRef_QStringView() { lastIndexOf_impl<QStringRef, QStringView>(); }
     void lastIndexOf_QStringRef_QChar_data() { lastIndexOf_data(false); }
     void lastIndexOf_QStringRef_QChar() { lastIndexOf_impl<QStringRef, QChar>(); }
+    void lastIndexOf_QStringRef_char16_t_data() { lastIndexOf_data(false); }
+    void lastIndexOf_QStringRef_char16_t() { lastIndexOf_impl<QStringRef, char16_t>(); }
 
     void lastIndexOf_QStringView_QString_data() { lastIndexOf_data(); }
     void lastIndexOf_QStringView_QString() { lastIndexOf_impl<QStringView, QString>(); }
@@ -713,6 +803,8 @@ private Q_SLOTS:
     void lastIndexOf_QStringView_QStringView() { lastIndexOf_impl<QStringView, QStringView>(); }
     void lastIndexOf_QStringView_QChar_data() { lastIndexOf_data(false); }
     void lastIndexOf_QStringView_QChar() { lastIndexOf_impl<QStringView, QChar>(); }
+    void lastIndexOf_QStringView_char16_t_data() { lastIndexOf_data(false); }
+    void lastIndexOf_QStringView_char16_t() { lastIndexOf_impl<QStringView, char16_t>(); }
 };
 
 void tst_QStringApiSymmetry::compare_data(bool hasConceptOfNullAndEmpty)
@@ -770,6 +862,7 @@ template <typename String> String detached(String s)
 
 template <class Str> Str  make(const QStringRef &sf, QLatin1String l1, const QByteArray &u8);
 template <> QChar         make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf.isEmpty() ? QChar() : sf.at(0); }
+template <> char16_t      make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf.isEmpty() ? char16_t() : char16_t{sf.at(0).unicode()}; }
 template <> QStringRef    make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf; }
 template <> QString       make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf.toString(); }
 template <> QStringView   make(const QStringRef &sf, QLatin1String,    const QByteArray &)   { return sf; }
@@ -812,15 +905,6 @@ void tst_QStringApiSymmetry::compare_impl() const
     const auto lhs = make<LHS>(lhsUnicode, lhsLatin1, lhsU8);
     const auto rhs = make<RHS>(rhsUnicode, rhsLatin1, rhsU8);
 
-#ifdef Q_COMPILER_NOEXCEPT
-# define QVERIFY_NOEXCEPT(expr) do { \
-    if (has_nothrow_compare<LHS, RHS>::value) {} else \
-        QEXPECT_FAIL("", "Qt is missing a nothrow utf8-utf16 comparator", Continue); \
-    QVERIFY(noexcept(expr)); } while (0)
-#else
-# define QVERIFY_NOEXCEPT(expr)
-#endif
-
 #define CHECK(op) \
     QVERIFY_NOEXCEPT(lhs op rhs); \
     do { if (caseSensitiveCompareResult op 0) { \
@@ -853,11 +937,6 @@ void tst_QStringApiSymmetry::member_compare_impl() const
 
     const auto lhs = make<LHS>(lhsUnicode, lhsLatin1, lhsU8);
     const auto rhs = make<RHS>(rhsUnicode, rhsLatin1, rhsU8);
-
-#define QVERIFY_NOEXCEPT(expr) do { \
-    if (has_nothrow_compare<LHS, RHS>::value) {} else \
-        QEXPECT_FAIL("", "Qt is missing a nothrow utf8-utf16 comparator", Continue); \
-    QVERIFY(noexcept(expr)); } while (0)
 
     QVERIFY_NOEXCEPT(lhs.compare(rhs, Qt::CaseSensitive));
 
