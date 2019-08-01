@@ -100,6 +100,9 @@ QStringList QLibraryPrivate::suffixes_sys(const QString& fullVersion)
         suffixes << QLatin1String(".so.%1").arg(fullVersion);
     } else {
         suffixes << QLatin1String(".so");
+# ifdef Q_OS_ANDROID
+        suffixes << QStringLiteral(LIBS_SUFFIX);
+# endif
     }
 #endif
 # ifdef Q_OS_MAC
@@ -226,7 +229,14 @@ bool QLibraryPrivate::load_sys()
             } else {
                 attempt = path + prefixes.at(prefix) + name + suffixes.at(suffix);
             }
+
             pHnd = dlopen(QFile::encodeName(attempt), dlFlags);
+#ifdef Q_OS_ANDROID
+            if (!pHnd) {
+                auto attemptFromBundle = attempt;
+                pHnd = dlopen(QFile::encodeName(attemptFromBundle.replace(QLatin1Char('/'), QLatin1Char('_'))), dlFlags);
+            }
+#endif
 
             if (!pHnd && fileName.startsWith(QLatin1Char('/')) && QFile::exists(attempt)) {
                 // We only want to continue if dlopen failed due to that the shared library did not exist.

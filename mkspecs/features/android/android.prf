@@ -16,17 +16,22 @@ APK_PATH = $$shell_path($$OUT_PWD/android-build/$${TARGET}.apk)
 }
 QMAKE_EXTRA_TARGETS *= apk apk_install_target
 
-contains(TEMPLATE, ".*app") {
-    !android_app {
-        !contains(TARGET, ".so"): TARGET = lib$${TARGET}.so
-        QMAKE_LFLAGS += -Wl,-soname,$$shell_quote($$TARGET)
+build_pass {
+    contains(TEMPLATE, ".*app") {
+        !android_app {
+            !contains(TARGET, ".so") {
+                single_arch:TARGET = lib$${TARGET}.so
+                       else:TARGET = lib$${TARGET}_$${QT_ARCH}.so
+            }
+            QMAKE_LFLAGS += -Wl,-soname,$$shell_quote($$TARGET)
 
-        android_install {
-            target.path=/libs/$$ANDROID_TARGET_ARCH/
-            INSTALLS *= target
+            android_install {
+                target.path=/libs/$$ANDROID_TARGET_ARCH/
+                INSTALLS *= target
+            }
         }
+    } else: contains(TEMPLATE, "lib"):!static:!QTDIR_build:android_install {
+        target.path = /libs/$$ANDROID_TARGET_ARCH/
+        INSTALLS *= target
     }
-} else: contains(TEMPLATE, "lib"):!static:!QTDIR_build:android_install {
-    target.path = /libs/$$ANDROID_TARGET_ARCH/
-    INSTALLS *= target
 }

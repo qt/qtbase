@@ -91,7 +91,7 @@ FILE *openProcess(const QString &command)
 #if defined(Q_OS_WIN32)
     QString processedCommand = QLatin1Char('\"') + command + QLatin1Char('\"');
 #else
-    QString processedCommand = command;
+    const QString& processedCommand = command;
 #endif
 
     return popen(processedCommand.toLocal8Bit().constData(), QT_POPEN_READ);
@@ -99,7 +99,7 @@ FILE *openProcess(const QString &command)
 
 struct QtDependency
 {
-    QtDependency(QString rpath, QString apath) : relativePath(rpath), absolutePath(apath) {}
+    QtDependency(const QString &rpath, const QString &apath) : relativePath(rpath), absolutePath(apath) {}
 
     bool operator==(const QtDependency &other) const
     {
@@ -127,7 +127,6 @@ struct Options
         , sectionsOnly(false)
         , protectedAuthenticationPath(false)
         , jarSigner(false)
-        , gdbServer(Auto)
         , installApk(false)
         , uninstallApk(false)
     {}
@@ -150,7 +149,6 @@ struct Options
     bool generateAssetsFileList;
     bool build;
     bool auxMode;
-    bool stripLibraries = true;
     ActionTimer timer;
 
     // External tools
@@ -175,22 +173,22 @@ struct Options
 
     // lib c++ path
     QString stdCppPath;
-    QString stdCppName = QStringLiteral("gnustl_shared");
+    QString stdCppName = QStringLiteral("c++_shared");
 
     // Build information
     QString androidPlatform;
-    QString architecture;
-    QString toolchainVersion;
+    QHash<QString, QString> architectures;
+    QString currentArchitecture;
     QString toolchainPrefix;
-    QString toolPrefix;
-    bool useLLVM = false;
     QString ndkHost;
 
     // Package information
     DeploymentMechanism deploymentMechanism;
     QString packageName;
     QStringList extraLibs;
+    QHash<QString, QStringList> archExtraLibs;
     QStringList extraPlugins;
+    QHash<QString, QStringList> archExtraPlugins;
 
     // Signing information
     bool releasePackage;
@@ -211,23 +209,34 @@ struct Options
     bool jarSigner;
     QString apkPath;
 
-    // Gdbserver
-    TriState gdbServer;
-
     // Installation information
     bool installApk;
     bool uninstallApk;
     QString installLocation;
 
-    // Collected information
+    // Per architecture collected information
+    void clear(const QString &arch)
+    {
+        currentArchitecture = arch;
+    }
     typedef QPair<QString, QString> BundledFile;
-    QList<BundledFile> bundledFiles;
-    QList<QtDependency> qtDependencies;
-    QStringList localLibs;
+    QHash<QString, QList<BundledFile>> bundledFiles;
+    QHash<QString, QList<QtDependency>> qtDependencies;
+    QHash<QString, QStringList> localLibs;
+    bool usesOpenGL = false;
+
+    // Per package collected information
     QStringList localJars;
     QStringList initClasses;
     QStringList permissions;
     QStringList features;
+};
+
+static const QHash<QByteArray, QByteArray> elfArchitecures = {
+    {"aarch64", "arm64-v8a"},
+    {"arm", "armeabi-v7a"},
+    {"i386", "x86"},
+    {"x86_64", "x86_64"}
 };
 
 // Copy-pasted from qmake/library/ioutil.cpp
@@ -301,6 +310,59 @@ static QString shellQuote(const QString &arg)
         return shellQuoteUnix(arg);
 }
 
+QString architecureFromName(const QString &name)
+{
+    QRegExp architecture(QStringLiteral(".*_(.*)\\.so"));
+    if (!architecture.exactMatch(name))
+        return {};
+    return architecture.capturedTexts().last();
+}
+
+QString fileArchitecture(const Options &options, const QString &path)
+{
+    auto arch = architecureFromName(path);
+    if (!arch.isEmpty())
+        return arch;
+
+    QString readElf = QStringLiteral("%1/toolchains/%2/prebuilt/%3/bin/llvm-readobj").arg(options.ndkPath,
+                                                                                          options.toolchainPrefix,
+                                                                                          options.ndkHost);
+#if defined(Q_OS_WIN32)
+    readElf += QStringLiteral(".exe");
+#endif
+
+    if (!QFile::exists(readElf)) {
+        fprintf(stderr, "Command does not exist: %s\n", qPrintable(readElf));
+        return {};
+    }
+
+    readElf = QStringLiteral("%1 -needed-libs %2").arg(shellQuote(readElf), shellQuote(path));
+
+    FILE *readElfCommand = openProcess(readElf);
+    if (!readElfCommand) {
+        fprintf(stderr, "Cannot execute command %s\n", qPrintable(readElf));
+        return {};
+    }
+
+    char buffer[512];
+    while (fgets(buffer, sizeof(buffer), readElfCommand) != nullptr) {
+        QByteArray line = QByteArray::fromRawData(buffer, qstrlen(buffer));
+        QString library;
+        line = line.trimmed();
+        if (line.startsWith("Arch: ")) {
+            auto it = elfArchitecures.find(line.mid(6));
+            pclose(readElfCommand);
+            return it != elfArchitecures.constEnd() ? QString::fromLatin1(it.value()) : QString{};
+        }
+    }
+    pclose(readElfCommand);
+    return {};
+}
+
+bool checkArchitecture(const Options &options, const QString &fileName)
+{
+    return fileArchitecture(options, fileName) == options.currentArchitecture;
+}
 
 void deleteMissingFiles(const Options &options, const QDir &srcDir, const QDir &dstDir)
 {
@@ -388,10 +450,6 @@ Options parseOptions()
                 options.installLocation = arguments.at(++i);
         } else if (argument.compare(QLatin1String("--release"), Qt::CaseInsensitive) == 0) {
             options.releasePackage = true;
-        } else if (argument.compare(QLatin1String("--gdbserver"), Qt::CaseInsensitive) == 0) {
-            options.gdbServer = Options::True;
-        } else if (argument.compare(QLatin1String("--no-gdbserver"), Qt::CaseInsensitive) == 0) {
-            options.gdbServer = Options::False;
         } else if (argument.compare(QLatin1String("--jdk"), Qt::CaseInsensitive) == 0) {
             if (i + 1 == arguments.size())
                 options.helpRequested = true;
@@ -462,8 +520,6 @@ Options parseOptions()
             options.generateAssetsFileList = false;
         } else if (argument.compare(QLatin1String("--aux-mode"), Qt::CaseInsensitive) == 0) {
             options.auxMode = true;
-        } else if (argument.compare(QLatin1String("--no-strip"), Qt::CaseInsensitive) == 0) {
-            options.stripLibraries = false;
         }
     }
 
@@ -533,10 +589,6 @@ void printHelp()
                     "         --protected: Keystore has protected authentication path.\n"
                     "         --jarsigner: Force jarsigner usage, otherwise apksigner will be\n"
                     "           used if available.\n"
-                    "    --gdbserver: Adds the gdbserver to the package. By default the gdbserver\n"
-                    "       is bundled for debug pacakges.\n"
-                    "    --no-gdbserver: Prevents the gdbserver from being added to the package\n"
-                    "       By default the gdbserver is bundled for debug pacakges.\n"
                     "    --jdk <path/to/jdk>: Used to find the jarsigner tool when used\n"
                     "       in combination with the --release argument. By default,\n"
                     "       an attempt is made to detect the tool using the JAVA_HOME and\n"
@@ -549,7 +601,6 @@ void printHelp()
                     "    --aux-mode: Operate in auxiliary mode. This will only copy the\n"
                     "       dependencies into the build directory and update the XML templates.\n"
                     "       The project will not be built or installed.\n"
-                    "    --no-strip: Do not strip debug symbols from libraries.\n"
                     "    --apk <path/where/to/copy/the/apk>: Path where to copy the built apk.\n"
                     "    --help: Displays this information.\n\n",
                     qPrintable(QCoreApplication::arguments().at(0))
@@ -580,9 +631,10 @@ bool alwaysOverwritableFile(const QString &fileName)
             || fileName.endsWith(QLatin1String("/src/org/qtproject/qt5/android/bindings/QtActivity.java")));
 }
 
+
 bool copyFileIfNewer(const QString &sourceFileName,
                      const QString &destinationFileName,
-                     bool verbose,
+                     const Options &options,
                      bool forceOverwrite = false)
 {
     if (QFile::exists(destinationFileName)) {
@@ -592,7 +644,7 @@ bool copyFileIfNewer(const QString &sourceFileName,
         if (!forceOverwrite
                 && sourceFileInfo.lastModified() <= destinationFileInfo.lastModified()
                 && !alwaysOverwritableFile(destinationFileName)) {
-            if (verbose)
+            if (options.verbose)
                 fprintf(stdout, "  -- Skipping file %s. Same or newer file already in place.\n", qPrintable(sourceFileName));
             return true;
         } else {
@@ -611,11 +663,10 @@ bool copyFileIfNewer(const QString &sourceFileName,
     if (!QFile::exists(destinationFileName) && !QFile::copy(sourceFileName, destinationFileName)) {
         fprintf(stderr, "Failed to copy %s to %s.\n", qPrintable(sourceFileName), qPrintable(destinationFileName));
         return false;
-    } else if (verbose) {
+    } else if (options.verbose) {
         fprintf(stdout, "  -- Copied %s\n", qPrintable(destinationFileName));
         fflush(stdout);
     }
-
     return true;
 }
 
@@ -666,7 +717,7 @@ QString cleanPackageName(QString packageName)
             }
         }
         if (keywords.contains(word)) {
-            packageName.insert(next, QLatin1String("_"));
+            packageName.insert(next, QStringLiteral("_"));
             index = next + 1;
         } else {
             index = next;
@@ -678,7 +729,7 @@ QString cleanPackageName(QString packageName)
 
 QString detectLatestAndroidPlatform(const QString &sdkPath)
 {
-    QDir dir(sdkPath + QLatin1String("/platforms"));
+    QDir dir(sdkPath + QStringLiteral("/platforms"));
     if (!dir.exists()) {
         fprintf(stderr, "Directory %s does not exist\n", qPrintable(dir.absolutePath()));
         return QString();
@@ -795,51 +846,20 @@ bool readInputFile(Options *options)
     }
 
     {
-        const QJsonValue applicationBinary = jsonObject.value(QStringLiteral("application-binary"));
-        if (applicationBinary.isUndefined()) {
-            fprintf(stderr, "No application binary defined in json file.\n");
-            return false;
-        }
-        options->applicationBinary = applicationBinary.toString();
-
-        if (!QFile::exists(options->applicationBinary)) {
-            fprintf(stderr, "Cannot find application binary %s.\n", qPrintable(options->applicationBinary));
-            return false;
-        }
-    }
-
-    {
-        const QJsonValue deploymentDependencies = jsonObject.value(QStringLiteral("deployment-dependencies"));
-        if (!deploymentDependencies.isUndefined()) {
-            QString deploymentDependenciesString = deploymentDependencies.toString();
-            const auto dependencies = deploymentDependenciesString.splitRef(QLatin1Char(','));
-            for (const QStringRef &dependency : dependencies) {
-                QString path = options->qtInstallDirectory + QLatin1Char('/') + dependency;
-                if (QFileInfo(path).isDir()) {
-                    QDirIterator iterator(path, QDirIterator::Subdirectories);
-                    while (iterator.hasNext()) {
-                        iterator.next();
-                        if (iterator.fileInfo().isFile()) {
-                            QString subPath = iterator.filePath();
-                            options->qtDependencies.append(QtDependency(subPath.mid(options->qtInstallDirectory.length() + 1),
-                                                                        subPath));
-                        }
-                    }
-                } else {
-                    options->qtDependencies.append(QtDependency(dependency.toString(), path));
-                }
-            }
-        }
-    }
-
-
-    {
-        const QJsonValue targetArchitecture = jsonObject.value(QStringLiteral("target-architecture"));
-        if (targetArchitecture.isUndefined()) {
+        const QJsonObject targetArchitectures = jsonObject.value(QStringLiteral("architectures")).toObject();
+        if (targetArchitectures.isEmpty()) {
             fprintf(stderr, "No target architecture defined in json file.\n");
             return false;
         }
-        options->architecture = targetArchitecture.toString();
+        for (auto it = targetArchitectures.constBegin(); it != targetArchitectures.constEnd(); ++it) {
+            if (it.value().isUndefined()) {
+                fprintf(stderr, "Invalid architecure.\n");
+                return false;
+            }
+            if (it.value().isNull())
+                continue;
+            options->architectures.insert(it.key(), it.value().toString());
+        }
     }
 
     {
@@ -852,36 +872,12 @@ bool readInputFile(Options *options)
     }
 
     {
-        const QJsonValue value = jsonObject.value(QStringLiteral("useLLVM"));
-        options->useLLVM = value.toBool(false);
-    }
-
-    {
         const QJsonValue toolchainPrefix = jsonObject.value(QStringLiteral("toolchain-prefix"));
         if (toolchainPrefix.isUndefined()) {
             fprintf(stderr, "No toolchain prefix defined in json file.\n");
             return false;
         }
         options->toolchainPrefix = toolchainPrefix.toString();
-    }
-
-    {
-        const QJsonValue toolPrefix = jsonObject.value(QStringLiteral("tool-prefix"));
-        if (toolPrefix.isUndefined()) {
-            fprintf(stderr, "Warning: No tool prefix defined in json file.\n");
-            options->toolPrefix = options->toolchainPrefix;
-        } else {
-            options->toolPrefix = toolPrefix.toString();
-        }
-    }
-
-    if (!options->useLLVM) {
-        const QJsonValue toolchainVersion = jsonObject.value(QStringLiteral("toolchain-version"));
-        if (toolchainVersion.isUndefined()) {
-            fprintf(stderr, "No toolchain version defined in json file.\n");
-            return false;
-        }
-        options->toolchainVersion = toolchainVersion.toString();
     }
 
     {
@@ -892,10 +888,6 @@ bool readInputFile(Options *options)
         }
         options->ndkHost = ndkHost.toString();
     }
-
-    options->packageName = packageNameFromAndroidManifest(options->androidSourceDirectory + QLatin1String("/AndroidManifest.xml"));
-    if (options->packageName.isEmpty())
-        options->packageName = cleanPackageName(QString::fromLatin1("org.qtproject.example.%1").arg(QFileInfo(options->applicationBinary).baseName().mid(sizeof("lib") - 1)));
 
     {
         const QJsonValue extraLibs = jsonObject.value(QStringLiteral("android-extra-libs"));
@@ -916,12 +908,6 @@ bool readInputFile(Options *options)
             return false;
         }
         options->stdCppPath = stdcppPath.toString();
-        auto name = QFileInfo(options->stdCppPath).baseName();
-        if (!name.startsWith(QLatin1String("lib"))) {
-            fprintf(stderr, "Invalid STD C++ library name.\n");
-            return false;
-        }
-        options->stdCppName = name.mid(3);
     }
 
     {
@@ -935,10 +921,68 @@ bool readInputFile(Options *options)
         if (!qmlImportPaths.isUndefined())
             options->qmlImportPaths = qmlImportPaths.toString().split(QLatin1Char(','));
     }
+
+    {
+        const QJsonValue applicationBinary = jsonObject.value(QStringLiteral("application-binary"));
+        if (applicationBinary.isUndefined()) {
+            fprintf(stderr, "No application binary defined in json file.\n");
+            return false;
+        }
+        options->applicationBinary = applicationBinary.toString();
+        if (options->build) {
+            for (auto it = options->architectures.constBegin(); it != options->architectures.constEnd(); ++it) {
+                if (!QFile::exists(QStringLiteral("%1/libs/%2/lib%3_%2.so").arg(options->outputDirectory, it.key(), options->applicationBinary))) {
+                    fprintf(stderr, "Cannot find application binary %s.\n", qPrintable(options->applicationBinary));
+                    return false;
+                }
+            }
+        }
+    }
+
+    {
+        const QJsonValue deploymentDependencies = jsonObject.value(QStringLiteral("deployment-dependencies"));
+        if (!deploymentDependencies.isUndefined()) {
+            QString deploymentDependenciesString = deploymentDependencies.toString();
+            const auto dependencies = deploymentDependenciesString.splitRef(QLatin1Char(','));
+            for (const QStringRef &dependency : dependencies) {
+                QString path = options->qtInstallDirectory + QLatin1Char('/') + dependency;
+                if (QFileInfo(path).isDir()) {
+                    QDirIterator iterator(path, QDirIterator::Subdirectories);
+                    while (iterator.hasNext()) {
+                        iterator.next();
+                        if (iterator.fileInfo().isFile()) {
+                            QString subPath = iterator.filePath();
+                            auto arch = fileArchitecture(*options, subPath);
+                            if (!arch.isEmpty()) {
+                                options->qtDependencies[arch].append(QtDependency(subPath.mid(options->qtInstallDirectory.length() + 1),
+                                                                                  subPath));
+                            } else if (options->verbose) {
+                                fprintf(stderr, "Skipping \"%s\", unknown architecture\n", qPrintable(subPath));
+                                fflush(stderr);
+                            }
+                        }
+                    }
+                } else {
+                    auto arch = fileArchitecture(*options, path);
+                    if (!arch.isEmpty()) {
+                        options->qtDependencies[arch].append(QtDependency(dependency.toString(), path));
+                    } else if (options->verbose) {
+                        fprintf(stderr, "Skipping \"%s\", unknown architecture\n", qPrintable(path));
+                        fflush(stderr);
+                    }
+                }
+            }
+        }
+    }
+
+    options->packageName = packageNameFromAndroidManifest(options->androidSourceDirectory + QStringLiteral("/AndroidManifest.xml"));
+    if (options->packageName.isEmpty())
+        options->packageName = cleanPackageName(QStringLiteral("org.qtproject.example.%1").arg(options->applicationBinary));
+
     return true;
 }
 
-bool copyFiles(const QDir &sourceDirectory, const QDir &destinationDirectory, bool verbose, bool forceOverwrite = false)
+bool copyFiles(const QDir &sourceDirectory, const QDir &destinationDirectory, const Options &options, bool forceOverwrite = false)
 {
     const QFileInfoList entries = sourceDirectory.entryInfoList(QDir::NoDotAndDotDot | QDir::Files | QDir::Dirs);
     for (const QFileInfo &entry : entries) {
@@ -949,11 +993,11 @@ bool copyFiles(const QDir &sourceDirectory, const QDir &destinationDirectory, bo
                 return false;
             }
 
-            if (!copyFiles(dir, QDir(destinationDirectory.path() + QLatin1String("/") + dir.dirName()), verbose, forceOverwrite))
+            if (!copyFiles(dir, QDir(destinationDirectory.path() + QStringLiteral("/") + dir.dirName()), options, forceOverwrite))
                 return false;
         } else {
             QString destination = destinationDirectory.absoluteFilePath(entry.fileName());
-            if (!copyFileIfNewer(entry.absoluteFilePath(), destination, verbose, forceOverwrite))
+            if (!copyFileIfNewer(entry.absoluteFilePath(), destination, options, forceOverwrite))
                 return false;
         }
     }
@@ -993,7 +1037,7 @@ bool copyAndroidTemplate(const Options &options, const QString &androidTemplate,
         return false;
     }
 
-    return copyFiles(sourceDirectory, QDir(outDir), options.verbose);
+    return copyFiles(sourceDirectory, QDir(outDir), options);
 }
 
 bool copyGradleTemplate(const Options &options)
@@ -1010,7 +1054,7 @@ bool copyGradleTemplate(const Options &options)
         return false;
     }
 
-    return copyFiles(sourceDirectory, QDir(outDir), options.verbose);
+    return copyFiles(sourceDirectory, QDir(outDir), options);
 }
 
 bool copyAndroidTemplate(const Options &options)
@@ -1041,38 +1085,42 @@ bool copyAndroidSources(const Options &options)
         return false;
     }
 
-    return copyFiles(sourceDirectory, QDir(options.outputDirectory), options.verbose, true);
+    return copyFiles(sourceDirectory, QDir(options.outputDirectory), options, true);
 }
 
-bool copyAndroidExtraLibs(const Options &options)
+bool copyAndroidExtraLibs(Options *options)
 {
-    if (options.extraLibs.isEmpty())
+    if (options->extraLibs.isEmpty())
         return true;
 
-    if (options.verbose)
-        fprintf(stdout, "Copying %d external libraries to package.\n", options.extraLibs.size());
+    if (options->verbose)
+        fprintf(stdout, "Copying %d external libraries to package.\n", options->extraLibs.size());
 
-    for (const QString &extraLib : options.extraLibs) {
+    for (const QString &extraLib : options->extraLibs) {
         QFileInfo extraLibInfo(extraLib);
         if (!extraLibInfo.exists()) {
             fprintf(stderr, "External library %s does not exist!\n", qPrintable(extraLib));
             return false;
         }
-
-        if (!extraLibInfo.fileName().startsWith(QLatin1String("lib")) || extraLibInfo.suffix() != QLatin1String("so")) {
+        if (!checkArchitecture(*options, extraLibInfo.filePath())) {
+            if (options->verbose)
+                fprintf(stdout, "Skipping \"%s\", architecture mismatch.\n", qPrintable(extraLib));
+            continue;
+        }
+        if (!extraLibInfo.fileName().startsWith(QStringLiteral("lib")) || extraLibInfo.suffix() != QStringLiteral("so")) {
             fprintf(stderr, "The file name of external library %s must begin with \"lib\" and end with the suffix \".so\".\n",
                     qPrintable(extraLib));
             return false;
         }
-
-        QString destinationFile(options.outputDirectory
-                                + QLatin1String("/libs/")
-                                + options.architecture
+        QString destinationFile(options->outputDirectory
+                                + QStringLiteral("/libs/")
+                                + options->currentArchitecture
                                 + QLatin1Char('/')
                                 + extraLibInfo.fileName());
 
-        if (!copyFileIfNewer(extraLib, destinationFile, options.verbose))
+        if (!copyFileIfNewer(extraLib, destinationFile, *options))
             return false;
+        options->archExtraLibs[options->currentArchitecture] += extraLib;
     }
 
     return true;
@@ -1093,15 +1141,15 @@ QStringList allFilesInside(const QDir& current, const QDir& rootDir)
     return result;
 }
 
-bool copyAndroidExtraResources(const Options &options)
+bool copyAndroidExtraResources(Options *options)
 {
-    if (options.extraPlugins.isEmpty())
+    if (options->extraPlugins.isEmpty())
         return true;
 
-    if (options.verbose)
-        fprintf(stdout, "Copying %d external resources to package.\n", options.extraPlugins.size());
+    if (options->verbose)
+        fprintf(stdout, "Copying %d external resources to package.\n", options->extraPlugins.size());
 
-    for (const QString &extraResource : options.extraPlugins) {
+    for (const QString &extraResource : options->extraPlugins) {
         QFileInfo extraResourceInfo(extraResource);
         if (!extraResourceInfo.exists() || !extraResourceInfo.isDir()) {
             fprintf(stderr, "External resource %s does not exist or not a correct directory!\n", qPrintable(extraResource));
@@ -1109,20 +1157,22 @@ bool copyAndroidExtraResources(const Options &options)
         }
 
         QDir resourceDir(extraResource);
-        QString assetsDir = options.outputDirectory + QStringLiteral("/assets/") + resourceDir.dirName() + QLatin1Char('/');
-        QString libsDir = options.outputDirectory + QStringLiteral("/libs/") + options.architecture + QLatin1Char('/');
+        QString assetsDir = options->outputDirectory + QStringLiteral("/assets/") + resourceDir.dirName() + QLatin1Char('/');
+        QString libsDir = options->outputDirectory + QStringLiteral("/libs/") + options->currentArchitecture + QLatin1Char('/');
 
         const QStringList files = allFilesInside(resourceDir, resourceDir);
         for (const QString &resourceFile : files) {
             QString originFile(resourceDir.filePath(resourceFile));
             QString destinationFile;
-            if (!resourceFile.endsWith(QLatin1String(".so"))) {
+            if (!resourceFile.endsWith(QStringLiteral(".so"))) {
                 destinationFile = assetsDir + resourceFile;
             } else {
+                if (!checkArchitecture(*options, originFile))
+                    continue;
                 destinationFile = libsDir + QStringLiteral("/lib") + QString(resourceDir.dirName() + QLatin1Char('/') + resourceFile).replace(QLatin1Char('/'), QLatin1Char('_'));
+                options->archExtraPlugins[options->currentArchitecture] += resourceFile;
             }
-
-            if (!copyFileIfNewer(originFile, destinationFile, options.verbose))
+            if (!copyFileIfNewer(originFile, destinationFile, *options))
                 return false;
         }
     }
@@ -1174,75 +1224,118 @@ bool updateFile(const QString &fileName, const QHash<QString, QString> &replacem
 
 }
 
-bool updateLibsXml(const Options &options)
+bool updateLibsXml(Options *options)
 {
-    if (options.verbose)
+    if (options->verbose)
         fprintf(stdout, "  -- res/values/libs.xml\n");
 
-    QString fileName = options.outputDirectory + QLatin1String("/res/values/libs.xml");
+    QString fileName = options->outputDirectory + QStringLiteral("/res/values/libs.xml");
     if (!QFile::exists(fileName)) {
         fprintf(stderr, "Cannot find %s in prepared packaged. This file is required.\n", qPrintable(fileName));
         return false;
     }
 
-    QString libsPath = QLatin1String("libs/") + options.architecture + QLatin1Char('/');
-
-    QString qtLibs = QLatin1String("<item>") + options.stdCppName + QLatin1String("</item>\n");
+    QString qtLibs;
     QString bundledInLibs;
     QString bundledInAssets;
-    for (const Options::BundledFile &bundledFile : options.bundledFiles) {
-        if (bundledFile.second.startsWith(QLatin1String("lib/"))) {
-            QString s = bundledFile.second.mid(sizeof("lib/lib") - 1);
-            s.chop(sizeof(".so") - 1);
-            qtLibs += QString::fromLatin1("<item>%1</item>\n").arg(s);
-        } else if (bundledFile.first.startsWith(libsPath)) {
-            QString s = bundledFile.first.mid(libsPath.length());
-            bundledInLibs += QString::fromLatin1("<item>%1:%2</item>\n")
-                    .arg(s).arg(bundledFile.second);
-        } else if (bundledFile.first.startsWith(QLatin1String("assets/"))) {
-            QString s = bundledFile.first.mid(sizeof("assets/") - 1);
-            bundledInAssets += QString::fromLatin1("<item>%1:%2</item>\n")
-                    .arg(s).arg(bundledFile.second);
-        }
-    }
+    QString allLocalLibs;
+    QString extraLibs;
 
-    if (!options.extraPlugins.isEmpty()) {
-        for (const QString &extraRes : options.extraPlugins) {
-            QDir resourceDir(extraRes);
-            const QStringList files = allFilesInside(resourceDir, resourceDir);
-            for (const QString &file : files) {
-                QString destinationPath = resourceDir.dirName() + QLatin1Char('/') + file;
-                if (!file.endsWith(QLatin1String(".so"))) {
-                    bundledInAssets += QStringLiteral("<item>%1:%1</item>\n")
-                        .arg(destinationPath);
-                } else {
-                    bundledInLibs += QStringLiteral("<item>lib%1:%2</item>\n")
-                        .arg(QString(destinationPath).replace(QLatin1Char('/'), QLatin1Char('_')))
-                        .arg(destinationPath);
+    for (auto it = options->architectures.constBegin(); it != options->architectures.constEnd(); ++it) {
+        QString libsPath = QStringLiteral("libs/") + it.key() + QLatin1Char('/');
+
+        qtLibs += QStringLiteral("        <item>%1;%2</item>\n").arg(it.key(), options->stdCppName);
+        for (const Options::BundledFile &bundledFile : options->bundledFiles[it.key()]) {
+            if (bundledFile.second.startsWith(QStringLiteral("lib/"))) {
+                QString s = bundledFile.second.mid(sizeof("lib/lib") - 1);
+                s.chop(sizeof(".so") - 1);
+                qtLibs += QStringLiteral("        <item>%1;%2</item>\n").arg(it.key(), s);
+            } else if (bundledFile.first.startsWith(libsPath)) {
+                QString s = bundledFile.first.mid(libsPath.length());
+                bundledInLibs += QString::fromLatin1("        <item>%1;%2:%3</item>\n")
+                        .arg(it.key(), s, bundledFile.second);
+            } else if (bundledFile.first.startsWith(QStringLiteral("assets/"))) {
+                QString s = bundledFile.first.mid(sizeof("assets/") - 1);
+                bundledInAssets += QString::fromLatin1("        <item>%1:%2</item>\n")
+                        .arg(s).arg(bundledFile.second);
+            }
+        }
+
+        if (!options->archExtraPlugins[it.key()].isEmpty()) {
+            for (const QString &extraRes : options->archExtraPlugins[it.key()]) {
+                QDir resourceDir(extraRes);
+                const QStringList files = allFilesInside(resourceDir, resourceDir);
+                for (const QString &file : files) {
+                    QString destinationPath = resourceDir.dirName() + QLatin1Char('/') + file;
+                    if (!file.endsWith(QStringLiteral(".so"))) {
+                        bundledInAssets += QStringLiteral("        <item>%1:%1</item>\n")
+                            .arg(destinationPath);
+                    } else {
+                        bundledInLibs += QStringLiteral("        <item>%1;lib%2:%3</item>\n")
+                                .arg(it.key(),
+                                     QString(destinationPath).replace(QLatin1Char('/'), QLatin1Char('_')),
+                                     destinationPath);
+                    }
                 }
             }
         }
+
+        if (!options->archExtraLibs[it.key()].isEmpty()) {
+            for (const QString &extraLib : options->archExtraLibs[it.key()]) {
+                QFileInfo extraLibInfo(extraLib);
+                QString name = extraLibInfo.fileName().mid(sizeof("lib") - 1);
+                name.chop(sizeof(".so") - 1);
+                extraLibs += QStringLiteral("    <item>%1;%2").arg(it.key(), name);
+            }
+        }
+
+        QStringList localLibs;
+        localLibs = options->localLibs[it.key()];
+        // If .pro file overrides dependency detection, we need to see which platform plugin they picked
+        if (localLibs.isEmpty()) {
+            QString plugin;
+            for (const QtDependency &qtDependency : options->qtDependencies[it.key()]) {
+                if (qtDependency.relativePath.endsWith(QStringLiteral("libqtforandroid.so"))
+                        || qtDependency.relativePath.endsWith(QStringLiteral("libqtforandroidGL.so"))) {
+                    if (!plugin.isEmpty() && plugin != qtDependency.relativePath) {
+                        fprintf(stderr, "Both platform plugins libqtforandroid.so and libqtforandroidGL.so included in package. Please include only one.\n");
+                        return false;
+                    }
+
+                    plugin = qtDependency.relativePath;
+                }
+                if (qtDependency.relativePath.contains(QStringLiteral("libQt5OpenGL"))
+                        || qtDependency.relativePath.contains(QStringLiteral("libQt5Quick"))) {
+                    options->usesOpenGL |= true;
+                    break;
+                }
+            }
+
+            if (plugin.isEmpty()) {
+                fflush(stdout);
+                fprintf(stderr, "No platform plugin, neither libqtforandroid.so or libqtforandroidGL.so, included in package. Please include one.\n");
+                fflush(stderr);
+                return false;
+            }
+
+            localLibs.append(plugin);
+            if (options->verbose)
+                fprintf(stdout, "  -- Using platform plugin %s\n", qPrintable(plugin));
+        }
+        allLocalLibs += QStringLiteral("        <item>%1;%2</item>\n").arg(it.key(), localLibs.join(QLatin1Char(':'))
+                                                                                              .replace(QStringLiteral("lib/"), QString{})
+                                                                                              .replace(QLatin1Char('/'), QLatin1Char('_')));
     }
 
     QHash<QString, QString> replacements;
-    replacements[QLatin1String("<!-- %%INSERT_QT_LIBS%% -->")] = qtLibs;
+    replacements[QStringLiteral("<!-- %%INSERT_QT_LIBS%% -->")] += qtLibs.trimmed();
+    replacements[QStringLiteral("<!-- %%INSERT_LOCAL_LIBS%% -->")] = allLocalLibs.trimmed();
+    replacements[QStringLiteral("<!-- %%INSERT_EXTRA_LIBS%% -->")] = extraLibs.trimmed();
 
-    if (options.deploymentMechanism == Options::Bundled) {
-        replacements[QLatin1String("<!-- %%INSERT_BUNDLED_IN_LIB%% -->")] = bundledInLibs;
-        replacements[QLatin1String("<!-- %%INSERT_BUNDLED_IN_ASSETS%% -->")] = bundledInAssets;
+    if (options->deploymentMechanism == Options::Bundled) {
+        replacements[QStringLiteral("<!-- %%INSERT_BUNDLED_IN_LIB%% -->")] += bundledInLibs.trimmed();
+        replacements[QStringLiteral("<!-- %%INSERT_BUNDLED_IN_ASSETS%% -->")] += bundledInAssets.trimmed();
     }
-
-    QString extraLibs;
-    if (!options.extraLibs.isEmpty()) {
-        for (const QString extraLib : options.extraLibs) {
-            QFileInfo extraLibInfo(extraLib);
-            QString name = extraLibInfo.fileName().mid(sizeof("lib") - 1);
-            name.chop(sizeof(".so") - 1);
-
-            extraLibs += QLatin1String("<item>") + name + QLatin1String("</item>\n");
-        }
-    }
-    replacements[QLatin1String("<!-- %%INSERT_EXTRA_LIBS%% -->")] = extraLibs;
 
     if (!updateFile(fileName, replacements))
         return false;
@@ -1256,9 +1349,9 @@ bool updateStringsXml(const Options &options)
         fprintf(stdout, "  -- res/values/strings.xml\n");
 
     QHash<QString, QString> replacements;
-    replacements[QStringLiteral("<!-- %%INSERT_APP_NAME%% -->")] = QFileInfo(options.applicationBinary).baseName().mid(sizeof("lib") - 1);
+    replacements[QStringLiteral("<!-- %%INSERT_APP_NAME%% -->")] = options.applicationBinary;
 
-    QString fileName = options.outputDirectory + QLatin1String("/res/values/strings.xml");
+    QString fileName = options.outputDirectory + QStringLiteral("/res/values/strings.xml");
     if (!QFile::exists(fileName)) {
         if (options.verbose)
             fprintf(stdout, "  -- Create strings.xml since it's missing.\n");
@@ -1268,7 +1361,7 @@ bool updateStringsXml(const Options &options)
             return false;
         }
         file.write(QByteArray("<?xml version='1.0' encoding='utf-8'?><resources><string name=\"app_name\" translatable=\"false\">")
-                   .append(QFileInfo(options.applicationBinary).baseName().mid(sizeof("lib") - 1).toLatin1())
+                   .append(options.applicationBinary.toLatin1())
                    .append("</string></resources>\n"));
         return true;
     }
@@ -1284,71 +1377,34 @@ bool updateAndroidManifest(Options &options)
     if (options.verbose)
         fprintf(stdout, "  -- AndroidManifest.xml \n");
 
-    QStringList localLibs = options.localLibs;
-
-    // If .pro file overrides dependency detection, we need to see which platform plugin they picked
-    if (localLibs.isEmpty()) {
-        QString plugin;
-        for (const QtDependency &qtDependency : qAsConst(options.qtDependencies)) {
-            if (qtDependency.relativePath.endsWith(QLatin1String("libqtforandroid.so"))
-                    || qtDependency.relativePath.endsWith(QLatin1String("libqtforandroidGL.so"))) {
-                if (!plugin.isEmpty() && plugin != qtDependency.relativePath) {
-                    fprintf(stderr, "Both platform plugins libqtforandroid.so and libqtforandroidGL.so included in package. Please include only one.\n");
-                    return false;
-                }
-
-                plugin = qtDependency.relativePath;
-            }
-        }
-
-        if (plugin.isEmpty()) {
-            fprintf(stderr, "No platform plugin, neither libqtforandroid.so or libqtforandroidGL.so, included in package. Please include one.\n");
-            return false;
-        }
-
-        localLibs.append(plugin);
-        if (options.verbose)
-            fprintf(stdout, "  -- Using platform plugin %s\n", qPrintable(plugin));
-    }
-
-    bool usesGL = false;
-    for (const QtDependency &qtDependency : qAsConst(options.qtDependencies)) {
-        if (qtDependency.relativePath.endsWith(QLatin1String("libQt5OpenGL.so"))
-                || qtDependency.relativePath.endsWith(QLatin1String("libQt5Quick.so"))) {
-            usesGL = true;
-            break;
-        }
-    }
-
     options.localJars.removeDuplicates();
     options.initClasses.removeDuplicates();
 
     QHash<QString, QString> replacements;
-    replacements[QLatin1String("-- %%INSERT_APP_NAME%% --")] = QFileInfo(options.applicationBinary).baseName().mid(sizeof("lib") - 1);
-    replacements[QLatin1String("-- %%INSERT_APP_LIB_NAME%% --")] = QFileInfo(options.applicationBinary).baseName().mid(sizeof("lib") - 1);
-    replacements[QLatin1String("-- %%INSERT_LOCAL_LIBS%% --")] = localLibs.join(QLatin1Char(':'));
-    replacements[QLatin1String("-- %%INSERT_LOCAL_JARS%% --")] = options.localJars.join(QLatin1Char(':'));
-    replacements[QLatin1String("-- %%INSERT_INIT_CLASSES%% --")] = options.initClasses.join(QLatin1Char(':'));
-    replacements[QLatin1String("-- %%INSERT_VERSION_NAME%% --")] = options.versionName;
-    replacements[QLatin1String("-- %%INSERT_VERSION_CODE%% --")] = options.versionCode;
-    replacements[QLatin1String("package=\"org.qtproject.example\"")] = QString::fromLatin1("package=\"%1\"").arg(options.packageName);
-    replacements[QLatin1String("-- %%BUNDLE_LOCAL_QT_LIBS%% --")]
-            = (options.deploymentMechanism == Options::Bundled) ? QString::fromLatin1("1") : QString::fromLatin1("0");
-    replacements[QLatin1String("-- %%USE_LOCAL_QT_LIBS%% --")]
-            = (options.deploymentMechanism != Options::Ministro) ? QString::fromLatin1("1") : QString::fromLatin1("0");
+    replacements[QStringLiteral("-- %%INSERT_APP_NAME%% --")] = options.applicationBinary;
+    replacements[QStringLiteral("-- %%INSERT_APP_LIB_NAME%% --")] = options.applicationBinary;
+    replacements[QStringLiteral("-- %%INSERT_LOCAL_JARS%% --")] = options.localJars.join(QLatin1Char(':'));
+    replacements[QStringLiteral("-- %%INSERT_INIT_CLASSES%% --")] = options.initClasses.join(QLatin1Char(':'));
+    replacements[QStringLiteral("-- %%INSERT_VERSION_NAME%% --")] = options.versionName;
+    replacements[QStringLiteral("-- %%INSERT_VERSION_CODE%% --")] = options.versionCode;
+    replacements[QStringLiteral("package=\"org.qtproject.example\"")] = QStringLiteral("package=\"%1\"").arg(options.packageName);
+    replacements[QStringLiteral("-- %%BUNDLE_LOCAL_QT_LIBS%% --")]
+            = (options.deploymentMechanism == Options::Bundled) ? QStringLiteral("1") : QStringLiteral("0");
+    replacements[QStringLiteral("-- %%USE_LOCAL_QT_LIBS%% --")]
+            = (options.deploymentMechanism != Options::Ministro) ? QStringLiteral("1") : QStringLiteral("0");
 
     QString permissions;
     for (const QString &permission : qAsConst(options.permissions))
-        permissions += QString::fromLatin1("    <uses-permission android:name=\"%1\" />\n").arg(permission);
-    replacements[QLatin1String("<!-- %%INSERT_PERMISSIONS -->")] = permissions;
+        permissions += QStringLiteral("    <uses-permission android:name=\"%1\" />\n").arg(permission);
+    replacements[QStringLiteral("<!-- %%INSERT_PERMISSIONS -->")] = permissions.trimmed();
 
     QString features;
     for (const QString &feature : qAsConst(options.features))
         features += QStringLiteral("    <uses-feature android:name=\"%1\" android:required=\"false\" />\n").arg(feature);
-    if (usesGL)
+    if (options.usesOpenGL)
         features += QStringLiteral("    <uses-feature android:glEsVersion=\"0x00020000\" android:required=\"true\" />");
 
-    replacements[QLatin1String("<!-- %%INSERT_FEATURES -->")] = features;
+    replacements[QStringLiteral("<!-- %%INSERT_FEATURES -->")] = features.trimmed();
 
     QString androidManifestPath = options.outputDirectory + QLatin1String("/AndroidManifest.xml");
     if (!updateFile(androidManifestPath, replacements))
@@ -1409,7 +1465,7 @@ bool updateAndroidFiles(Options &options)
     if (options.verbose)
         fprintf(stdout, "Updating Android package files with project settings.\n");
 
-    if (!updateLibsXml(options))
+    if (!updateLibsXml(&options))
         return false;
 
     if (!updateAndroidManifest(options))
@@ -1466,7 +1522,7 @@ bool readAndroidDependencyXml(Options *options,
                               QSet<QString> *usedDependencies,
                               QSet<QString> *remainingDependencies)
 {
-    QString androidDependencyName = absoluteFilePath(options, QString::fromLatin1("/lib/%1-android-dependencies.xml").arg(moduleName));
+    QString androidDependencyName = absoluteFilePath(options, QStringLiteral("/lib/%1-android-dependencies.xml").arg(moduleName));
 
     QFile androidDependencyFile(androidDependencyName);
     if (androidDependencyFile.exists()) {
@@ -1505,7 +1561,7 @@ bool readAndroidDependencyXml(Options *options,
                         if (options->verbose)
                             fprintf(stdout, "Appending dependency from xml: %s\n", qPrintable(fileName.relativePath));
 
-                        options->qtDependencies.append(fileName);
+                        options->qtDependencies[options->currentArchitecture].append(fileName);
                     }
                 } else if (reader.name() == QLatin1String("jar")) {
                     int bundling = reader.attributes().value(QLatin1String("bundling")).toInt();
@@ -1513,7 +1569,7 @@ bool readAndroidDependencyXml(Options *options,
                     if (bundling == (options->deploymentMechanism == Options::Bundled)) {
                         QtDependency dependency(fileName, absoluteFilePath(options, fileName));
                         if (!usedDependencies->contains(dependency.absolutePath)) {
-                            options->qtDependencies.append(dependency);
+                            options->qtDependencies[options->currentArchitecture].append(dependency);
                             usedDependencies->insert(dependency.absolutePath);
                         }
                     }
@@ -1529,15 +1585,15 @@ bool readAndroidDependencyXml(Options *options,
                     if (reader.attributes().hasAttribute(QLatin1String("replaces"))) {
                         QString replaces = reader.attributes().value(QLatin1String("replaces")).toString();
                         for (int i=0; i<options->localLibs.size(); ++i) {
-                            if (options->localLibs.at(i) == replaces) {
-                                options->localLibs[i] = fileName;
+                            if (options->localLibs[options->currentArchitecture].at(i) == replaces) {
+                                options->localLibs[options->currentArchitecture][i] = fileName;
                                 break;
                             }
                         }
                     } else if (!fileName.isEmpty()) {
-                        options->localLibs.append(fileName);
+                        options->localLibs[options->currentArchitecture].append(fileName);
                     }
-                    if (fileName.endsWith(QLatin1String(".so"))) {
+                    if (fileName.endsWith(QStringLiteral(".so")) && checkArchitecture(*options, fileName)) {
                         remainingDependencies->insert(fileName);
                     }
                 } else if (reader.name() == QLatin1String("permission")) {
@@ -1557,26 +1613,19 @@ bool readAndroidDependencyXml(Options *options,
     } else if (options->verbose) {
         fprintf(stdout, "No android dependencies for %s\n", qPrintable(moduleName));
     }
+    options->permissions.removeDuplicates();
+    options->features.removeDuplicates();
 
     return true;
 }
 
 QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
 {
-    QString readElf = options.ndkPath
-            + QLatin1String("/toolchains/")
-            + options.toolchainPrefix;
-
-    if (!options.useLLVM)
-        readElf += QLatin1Char('-') + options.toolchainVersion;
-
-    readElf += QLatin1String("/prebuilt/")
-            + options.ndkHost
-            + QLatin1String("/bin/")
-            + options.toolPrefix +
-            (options.useLLVM ? QLatin1String("-readobj") : QLatin1String("-readelf"));
+    QString readElf = QStringLiteral("%1/toolchains/%2/prebuilt/%3/bin/llvm-readobj").arg(options.ndkPath,
+                                                                                          options.toolchainPrefix,
+                                                                                          options.ndkHost);
 #if defined(Q_OS_WIN32)
-    readElf += QLatin1String(".exe");
+    readElf += QStringLiteral(".exe");
 #endif
 
     if (!QFile::exists(readElf)) {
@@ -1584,14 +1633,11 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
         return QStringList();
     }
 
-    if (options.useLLVM)
-        readElf = QString::fromLatin1("%1 -needed-libs %2").arg(shellQuote(readElf), shellQuote(fileName));
-    else
-        readElf = QString::fromLatin1("%1 -d -W %2").arg(shellQuote(readElf), shellQuote(fileName));
+    readElf = QStringLiteral("%1 -needed-libs %2").arg(shellQuote(readElf), shellQuote(fileName));
 
     FILE *readElfCommand = openProcess(readElf);
     if (!readElfCommand) {
-        fprintf(stderr, "Cannot execute command %s", qPrintable(readElf));
+        fprintf(stderr, "Cannot execute command %s\n", qPrintable(readElf));
         return QStringList();
     }
 
@@ -1599,23 +1645,26 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
 
     bool readLibs = false;
     char buffer[512];
-    while (fgets(buffer, sizeof(buffer), readElfCommand) != 0) {
+    while (fgets(buffer, sizeof(buffer), readElfCommand) != nullptr) {
         QByteArray line = QByteArray::fromRawData(buffer, qstrlen(buffer));
         QString library;
-        if (options.useLLVM) {
-            line = line.trimmed();
-            if (!readLibs) {
-                readLibs = line.startsWith("NeededLibraries");
-                continue;
+        line = line.trimmed();
+        if (!readLibs) {
+            if (line.startsWith("Arch: ")) {
+                auto it = elfArchitecures.find(line.mid(6));
+                if (it == elfArchitecures.constEnd() || *it != options.currentArchitecture.toLatin1()) {
+                    if (options.verbose)
+                        fprintf(stdout, "Skipping \"%s\", architecture mismatch\n", qPrintable(fileName));
+                    return {};
+                }
             }
-            if (!line.startsWith("lib"))
-                continue;
-            library = QString::fromLatin1(line);
-        } else if (line.contains("(NEEDED)") && line.contains("Shared library:")) {
-            const int pos = line.lastIndexOf('[') + 1;
-            library = QString::fromLatin1(line.mid(pos, line.length() - pos - 2));
+            readLibs = line.startsWith("NeededLibraries");
+            continue;
         }
-        QString libraryName = QLatin1String("lib/") + library;
+        if (!line.startsWith("lib"))
+            continue;
+        library = QString::fromLatin1(line);
+        QString libraryName = QStringLiteral("lib/") + library;
         if (QFile::exists(absoluteFilePath(&options, libraryName)))
             ret += libraryName;
     }
@@ -1653,7 +1702,7 @@ bool readDependenciesFromElf(Options *options,
             return false;
         }
 
-        options->qtDependencies.append(QtDependency(dependency, absoluteDependencyPath));
+        options->qtDependencies[options->currentArchitecture].append(QtDependency(dependency, absoluteDependencyPath));
         if (options->verbose)
             fprintf(stdout, "Appending dependency: %s\n", qPrintable(dependency));
         dependenciesToCheck.append(dependency);
@@ -1797,10 +1846,10 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
                     fprintf(stdout, "    -- Appending dependency found by qmlimportscanner: %s\n", qPrintable(fileName.absolutePath));
 
                 // Put all imports in default import path in assets
-                fileName.relativePath.prepend(QLatin1String("qml/"));
-                options->qtDependencies.append(fileName);
+                fileName.relativePath.prepend(QStringLiteral("qml/"));
+                options->qtDependencies[options->currentArchitecture].append(fileName);
 
-                if (fileName.absolutePath.endsWith(QLatin1String(".so"))) {
+                if (fileName.absolutePath.endsWith(QStringLiteral(".so")) && checkArchitecture(*options, fileName.absolutePath)) {
                     QSet<QString> remainingDependencies;
                     if (!readDependenciesFromElf(options, fileName.absolutePath, usedDependencies, &remainingDependencies))
                         return false;
@@ -1819,7 +1868,7 @@ bool readDependencies(Options *options)
         fprintf(stdout, "Detecting dependencies of application.\n");
 
     // Override set in .pro file
-    if (!options->qtDependencies.isEmpty()) {
+    if (!options->qtDependencies[options->currentArchitecture].isEmpty()) {
         if (options->verbose)
             fprintf(stdout, "\tDependencies explicitly overridden in .pro file. No detection needed.\n");
         return true;
@@ -1829,11 +1878,7 @@ bool readDependencies(Options *options)
     QSet<QString> remainingDependencies;
 
     // Add dependencies of application binary first
-    if (!readDependenciesFromElf(options, options->applicationBinary, &usedDependencies, &remainingDependencies))
-        return false;
-
-    // Jam in the dependencies of the platform plugin, since the application will crash without it
-    if (!readDependenciesFromElf(options, options->qtInstallDirectory + QLatin1String("/plugins/platforms/android/libqtforandroid.so"), &usedDependencies, &remainingDependencies))
+    if (!readDependenciesFromElf(options, QStringLiteral("%1/libs/%2/lib%3_%2.so").arg(options->outputDirectory, options->currentArchitecture, options->applicationBinary), &usedDependencies, &remainingDependencies))
         return false;
 
     while (!remainingDependencies.isEmpty()) {
@@ -1853,14 +1898,14 @@ bool readDependencies(Options *options)
         }
     }
 
-    QStringList::iterator it = options->localLibs.begin();
-    while (it != options->localLibs.end()) {
+    QStringList::iterator it = options->localLibs[options->currentArchitecture].begin();
+    while (it != options->localLibs[options->currentArchitecture].end()) {
         QStringList unmetDependencies;
         if (!goodToCopy(options, absoluteFilePath(options, *it), &unmetDependencies)) {
             fprintf(stdout, "Skipping %s due to unmet dependencies: %s\n",
                     qPrintable(*it),
                     qPrintable(unmetDependencies.join(QLatin1Char(','))));
-            it = options->localLibs.erase(it);
+            it = options->localLibs[options->currentArchitecture].erase(it);
         } else {
             ++it;
         }
@@ -1872,94 +1917,33 @@ bool readDependencies(Options *options)
     return true;
 }
 
-bool stripFile(const Options &options, const QString &fileName)
+bool containsApplicationBinary(Options *options)
 {
-    QString strip = options.ndkPath
-            + QLatin1String("/toolchains/")
-            + options.toolchainPrefix;
-
-    if (!options.useLLVM)
-        strip += QLatin1Char('-') + options.toolchainVersion;
-
-    strip += QLatin1String("/prebuilt/")
-            + options.ndkHost
-            + QLatin1String("/bin/")
-            + options.toolPrefix
-            + QLatin1String("-strip");
-#if defined(Q_OS_WIN32)
-    strip += QLatin1String(".exe");
-#endif
-
-    if (!QFile::exists(strip)) {
-        fprintf(stderr, "Command does not exist: %s\n", qPrintable(strip));
-        return false;
-    }
-
-    if (options.useLLVM)
-        strip = QString::fromLatin1("%1 -strip-all %2").arg(shellQuote(strip), shellQuote(fileName));
-    else
-        strip = QString::fromLatin1("%1 %2").arg(shellQuote(strip), shellQuote(fileName));
-
-    FILE *stripCommand = openProcess(strip);
-    if (stripCommand == 0) {
-        fprintf(stderr, "Cannot execute command %s", qPrintable(strip));
-        return false;
-    }
-
-    pclose(stripCommand);
-
-    return true;
-}
-
-bool stripLibraries(const Options &options)
-{
-    if (!options.stripLibraries)
+    if (!options->build)
         return true;
-    if (options.verbose)
-        fprintf(stdout, "Stripping libraries to minimize size.\n");
 
-
-    QString libraryPath = options.outputDirectory
-            + QLatin1String("/libs/")
-            + options.architecture;
-    const QStringList libraries = QDir(libraryPath).entryList(QDir::Files);
-    for (const QString &library : libraries) {
-        if (library.endsWith(QLatin1String(".so"))) {
-            if (!stripFile(options, libraryPath + QLatin1Char('/') + library))
-                return false;
-        }
-    }
-
-
-    return true;
-}
-
-bool containsApplicationBinary(const Options &options)
-{
-    if (options.verbose)
+    if (options->verbose)
         fprintf(stdout, "Checking if application binary is in package.\n");
 
-    QFileInfo applicationBinary(options.applicationBinary);
-    QString destinationFileName = options.outputDirectory
-            + QLatin1String("/libs/")
-            + options.architecture
-            + QLatin1Char('/')
-            + applicationBinary.fileName();
+    QFileInfo applicationBinary(options->applicationBinary);
+    QString applicationFileName = QStringLiteral("lib%1_%2.so").arg(options->applicationBinary,
+                                                                    options->currentArchitecture);
 
-    if (!QFile::exists(destinationFileName)) {
+    QString applicationPath = QStringLiteral("%1/libs/%2/%3").arg(options->outputDirectory,
+                                                                               options->currentArchitecture,
+                                                                               applicationFileName);
+    if (!QFile::exists(applicationPath)) {
 #if defined(Q_OS_WIN32)
         QLatin1String makeTool("mingw32-make"); // Only Mingw host builds supported on Windows currently
 #else
         QLatin1String makeTool("make");
 #endif
-
         fprintf(stderr, "Application binary is not in output directory: %s. Please run '%s install INSTALL_ROOT=%s' first.\n",
-                qPrintable(destinationFileName),
+                qPrintable(applicationFileName),
                 qPrintable(makeTool),
-                qPrintable(options.outputDirectory));
+                qPrintable(options->outputDirectory));
         return false;
     }
-
     return true;
 }
 
@@ -1997,10 +1981,13 @@ bool goodToCopy(const Options *options, const QString &file, QStringList *unmetD
     if (!file.endsWith(QLatin1String(".so")))
         return true;
 
+    if (!checkArchitecture(*options, file))
+        return false;
+
     bool ret = true;
     const auto libs = getQtLibsFromElf(*options, file);
     for (const QString &lib : libs) {
-        if (!options->qtDependencies.contains(QtDependency(lib, absoluteFilePath(options, lib)))) {
+        if (!options->qtDependencies[options->currentArchitecture].contains(QtDependency(lib, absoluteFilePath(options, lib)))) {
             ret = false;
             unmetDependencies->append(lib);
         }
@@ -2027,25 +2014,22 @@ bool copyQtFiles(Options *options)
 
     QString libsDirectory = QLatin1String("libs/");
 
+
     // Copy other Qt dependencies
-    QString libDestinationDirectory = libsDirectory + options->architecture + QLatin1Char('/');
-    QString assetsDestinationDirectory = QLatin1String("assets/--Added-by-androiddeployqt--/");
-    for (const QtDependency &qtDependency : qAsConst(options->qtDependencies)) {
+    QString assetsDestinationDirectory = QStringLiteral("assets/--Added-by-androiddeployqt--/");
+    for (const QtDependency &qtDependency : qAsConst(options->qtDependencies[options->currentArchitecture])) {
         QString sourceFileName = qtDependency.absolutePath;
         QString destinationFileName;
 
-        if (qtDependency.relativePath.endsWith(QLatin1String(".so"))) {
+        if (qtDependency.relativePath.endsWith(QStringLiteral(".so"))) {
             QString garbledFileName;
-            if (qtDependency.relativePath.startsWith(QLatin1String("lib/"))) {
+            if (qtDependency.relativePath.startsWith(QStringLiteral("lib/"))) {
                 garbledFileName = qtDependency.relativePath.mid(sizeof("lib/") - 1);
             } else {
-                garbledFileName = QLatin1String("lib")
-                                + QString(qtDependency.relativePath).replace(QLatin1Char('/'), QLatin1Char('_'));
-
+                garbledFileName = QString(qtDependency.relativePath).replace(QLatin1Char('/'), QLatin1Char('_'));
             }
-            destinationFileName = libDestinationDirectory + garbledFileName;
-
-        } else if (qtDependency.relativePath.startsWith(QLatin1String("jar/"))) {
+            destinationFileName = libsDirectory + options->currentArchitecture + QLatin1Char('/') + garbledFileName;
+        } else if (qtDependency.relativePath.startsWith(QStringLiteral("jar/"))) {
             destinationFileName = libsDirectory + qtDependency.relativePath.mid(sizeof("jar/") - 1);
         } else {
             destinationFileName = assetsDestinationDirectory + qtDependency.relativePath;
@@ -2058,20 +2042,34 @@ bool copyQtFiles(Options *options)
 
         QStringList unmetDependencies;
         if (!goodToCopy(options, sourceFileName, &unmetDependencies)) {
-            fprintf(stdout, "  -- Skipping %s. It has unmet dependencies: %s.\n",
-                    qPrintable(sourceFileName),
-                    qPrintable(unmetDependencies.join(QLatin1Char(','))));
+            if (unmetDependencies.isEmpty()) {
+                if (options->verbose) {
+                    fprintf(stdout, "  -- Skipping %s, architecture mismatch.\n",
+                            qPrintable(sourceFileName));
+                }
+            } else {
+                if (unmetDependencies.isEmpty()) {
+                    if (options->verbose) {
+                        fprintf(stdout, "  -- Skipping %s, architecture mismatch.\n",
+                                qPrintable(sourceFileName));
+                    }
+                } else {
+                    fprintf(stdout, "  -- Skipping %s. It has unmet dependencies: %s.\n",
+                            qPrintable(sourceFileName),
+                            qPrintable(unmetDependencies.join(QLatin1Char(','))));
+                }
+            }
             continue;
         }
 
         if (options->deploymentMechanism == Options::Bundled
                 && !copyFileIfNewer(sourceFileName,
                                     options->outputDirectory + QLatin1Char('/') + destinationFileName,
-                                    options->verbose)) {
+                                    *options)) {
             return false;
         }
 
-        options->bundledFiles += qMakePair(destinationFileName, qtDependency.relativePath);
+        options->bundledFiles[options->currentArchitecture] += qMakePair(destinationFileName, qtDependency.relativePath);
     }
 
     return true;
@@ -2409,21 +2407,18 @@ bool copyStdCpp(Options *options)
     if (options->verbose)
         fprintf(stdout, "Copying STL library\n");
 
-    if (!QFile::exists(options->stdCppPath)) {
-        fprintf(stderr, "STL library does not exist at %s\n", qPrintable(options->stdCppPath));
+    QString stdCppPath = QStringLiteral("%1/%2/lib%3.so").arg(options->stdCppPath, options->architectures[options->currentArchitecture], options->stdCppName);
+    if (!QFile::exists(stdCppPath)) {
+        fprintf(stderr, "STL library does not exist at %s\n", qPrintable(stdCppPath));
+        fflush(stdout);
+        fflush(stderr);
         return false;
     }
 
-    const QString destinationDirectory = options->outputDirectory
-            + QLatin1String("/libs/") + options->architecture;
-
-    if (!copyFileIfNewer(options->stdCppPath, destinationDirectory + QLatin1String("/lib")
-                                   + options->stdCppName + QLatin1String(".so"),
-                         options->verbose)) {
-        return false;
-    }
-
-    return true;
+    const QString destinationFile = QStringLiteral("%1/libs/%2/lib%3.so").arg(options->outputDirectory,
+                                                                              options->currentArchitecture,
+                                                                              options->stdCppName);
+    return copyFileIfNewer(stdCppPath, destinationFile, *options);
 }
 
 bool jarSignerSignPackage(const Options &options)
@@ -2654,55 +2649,6 @@ bool signPackage(const Options &options)
     return apkSignerRunner() && QFile::remove(apkPath(options, UnsignedAPK));
 }
 
-bool copyGdbServer(const Options &options)
-{
-    if (options.verbose)
-        fprintf(stdout, "Copying gdbserver into package.\n");
-
-    QString architectureSubDirectory;
-    if (options.architecture == QLatin1String("arm64-v8a"))
-        architectureSubDirectory = QLatin1String("android-arm64");
-    else if (options.architecture.startsWith(QLatin1String("arm")))
-        architectureSubDirectory = QLatin1String("android-arm");
-    else
-        architectureSubDirectory = QLatin1String("android-") + options.architecture;
-
-    QString gdbServerBinary = options.ndkPath
-            + QLatin1String("/prebuilt/")
-            + architectureSubDirectory
-            + QLatin1String("/gdbserver/gdbserver");
-    if (!QFile::exists(gdbServerBinary)) {
-        fprintf(stderr, "Cannot find gdbserver at %s.\n", qPrintable(gdbServerBinary));
-        return false;
-    }
-
-    QString gdbServerTarget = options.outputDirectory + QLatin1String("/libs/") + options.architecture;
-
-    if (!copyFileIfNewer(gdbServerBinary,
-                         gdbServerTarget + QLatin1String("/gdbserver"),
-                         options.verbose)
-        || !copyFileIfNewer(gdbServerBinary,
-                            gdbServerTarget + QLatin1String("/libgdbserver.so"),
-                            options.verbose)) {
-        return false;
-    }
-
-    QString addedByAndroidDeployQtPath = options.outputDirectory + QLatin1String("/assets/--Added-by-androiddeployqt--/");
-    if (!QDir().mkpath(addedByAndroidDeployQtPath)) {
-        fprintf(stderr, "Failed to create directory '%s'", qPrintable(addedByAndroidDeployQtPath));
-        return false;
-    }
-    QFile f(addedByAndroidDeployQtPath + QLatin1String("debugger.command"));
-    if (!f.open(QIODevice::WriteOnly)) {
-        fprintf(stderr, "Failed to create directory '%s'", qPrintable(addedByAndroidDeployQtPath));
-        return false;
-    }
-    f.write("lib/libgdbserver.so --multi +");
-    f.close();
-
-    return true;
-}
-
 bool generateAssetsFileList(const Options &options)
 {
     if (options.verbose)
@@ -2764,8 +2710,6 @@ enum ErrorCode
     CannotCopyGnuStl = 5,
     CannotCopyQtFiles = 6,
     CannotFindApplicationBinary = 7,
-    CannotCopyGdbServer = 8,
-    CannotStripLibraries = 9,
     CannotCopyAndroidExtraLibs = 10,
     CannotCopyAndroidSources = 11,
     CannotUpdateAndroidFiles = 12,
@@ -2813,25 +2757,7 @@ int main(int argc, char *argv[])
                 : "No"
             );
 
-    if (options.auxMode) {
-        if (!readDependencies(&options))
-            return CannotReadDependencies;
-        if (!copyQtFiles(&options))
-            return CannotCopyQtFiles;
-        if (!copyAndroidExtraResources(options))
-            return CannotCopyAndroidExtraResources;
-        if (!copyAndroidExtraLibs(options))
-            return CannotCopyAndroidExtraLibs;
-        if (!stripLibraries(options))
-            return CannotStripLibraries;
-        if (!updateAndroidFiles(options))
-            return CannotUpdateAndroidFiles;
-        if (options.generateAssetsFileList && !generateAssetsFileList(options))
-            return CannotGenerateAssetsFileList;
-        return 0;
-    }
-
-    if (options.build) {
+    if (options.build && !options.auxMode) {
         cleanAndroidFiles(options);
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %d ms: Cleaned Android file\n", options.timer.elapsed());
@@ -2843,59 +2769,67 @@ int main(int argc, char *argv[])
             fprintf(stdout, "[TIMING] %d ms: Copied Android template\n", options.timer.elapsed());
     }
 
-    if (!readDependencies(&options))
-        return CannotReadDependencies;
+    for (auto it = options.architectures.constBegin(); it != options.architectures.constEnd(); ++it) {
+        options.clear(it.key());
 
-    if (Q_UNLIKELY(options.timing))
-        fprintf(stdout, "[TIMING] %d ms: Read dependencies\n", options.timer.elapsed());
+        if (!readDependencies(&options))
+            return CannotReadDependencies;
 
-    if (options.deploymentMechanism != Options::Ministro && !copyStdCpp(&options))
-        return CannotCopyGnuStl;
+        if (Q_UNLIKELY(options.timing))
+            fprintf(stdout, "[TIMING] %d ms: Read dependencies\n", options.timer.elapsed());
 
-    if (Q_UNLIKELY(options.timing))
-        fprintf(stdout, "[TIMING] %d ms: Copied GNU STL\n", options.timer.elapsed());
+        if (!copyQtFiles(&options))
+            return CannotCopyQtFiles;
 
-    if (!copyQtFiles(&options))
-        return CannotCopyQtFiles;
-
-    if (options.build) {
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %d ms: Copied Qt files\n", options.timer.elapsed());
 
-        if (!containsApplicationBinary(options))
-            return CannotFindApplicationBinary;
-
-        if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Checked for application binary\n", options.timer.elapsed());
-
-        bool needToCopyGdbServer = options.gdbServer == Options::True
-                || (options.gdbServer == Options::Auto && !options.releasePackage);
-        if (needToCopyGdbServer && !copyGdbServer(options))
-            return CannotCopyGdbServer;
-
-        if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Copied GDB server\n", options.timer.elapsed());
-
-        if (!copyAndroidExtraLibs(options))
+        if (!copyAndroidExtraLibs(&options))
             return CannotCopyAndroidExtraLibs;
 
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %d ms: Copied extra libs\n", options.timer.elapsed());
 
-        if (!copyAndroidExtraResources(options))
+        if (!copyAndroidExtraResources(&options))
             return CannotCopyAndroidExtraResources;
 
+        if (Q_UNLIKELY(options.timing))
+            fprintf(stdout, "[TIMING] %d ms: Copied extra resources\n", options.timer.elapsed());
+
+        if (!options.auxMode) {
+            if (options.deploymentMechanism != Options::Ministro && !copyStdCpp(&options))
+                return CannotCopyGnuStl;
+
+            if (Q_UNLIKELY(options.timing))
+                fprintf(stdout, "[TIMING] %d ms: Copied GNU STL\n", options.timer.elapsed());
+        }
+
+        if (!containsApplicationBinary(&options))
+            return CannotFindApplicationBinary;
+
+        if (Q_UNLIKELY(options.timing))
+            fprintf(stdout, "[TIMING] %d ms: Checked for application binary\n", options.timer.elapsed());
+
+        if (options.deploymentMechanism != Options::Ministro) {
+            if (Q_UNLIKELY(options.timing))
+                fprintf(stdout, "[TIMING] %d ms: Bundled Qt libs\n", options.timer.elapsed());
+        }
+    }
+
+    if (options.auxMode) {
+        if (!updateAndroidFiles(options))
+            return CannotUpdateAndroidFiles;
+        if (options.generateAssetsFileList && !generateAssetsFileList(options))
+            return CannotGenerateAssetsFileList;
+        return 0;
+    }
+
+    if (options.build) {
         if (!copyAndroidSources(options))
             return CannotCopyAndroidSources;
 
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %d ms: Copied android sources\n", options.timer.elapsed());
-
-        if (!stripLibraries(options))
-            return CannotStripLibraries;
-
-        if (Q_UNLIKELY(options.timing))
-            fprintf(stdout, "[TIMING] %d ms: Stripped libraries\n", options.timer.elapsed());
 
         if (!updateAndroidFiles(options))
             return CannotUpdateAndroidFiles;
