@@ -59,3 +59,38 @@ define_property(GLOBAL
         ""
 )
 
+define_property(TARGET
+    PROPERTY
+        QT_QML_MODULE_TARGET_PATH
+    BRIEF_DOCS
+        "Specifies the target path for a qml module"
+    FULL_DOCS
+        "Specifies the target path for a qml module"
+)
+
+define_property(TARGET
+    PROPERTY
+        QT_QML_MODULE_URI
+    BRIEF_DOCS
+        "Specifies the URI for a qml module"
+    FULL_DOCS
+        "Specifies the URI for a qml module"
+)
+
+define_property(TARGET
+    PROPERTY
+        QT_QML_MODULE_RESOURCE_PREFIX
+    BRIEF_DOCS
+        "Specifies the qml module's resource prefix."
+    FULL_DOCS
+        "Specifies the qml module's resource prefix."
+)
+
+define_property(TARGET
+    PROPERTY
+        QT_QML_MODULE_VERSION
+    BRIEF_DOCS
+        "Specifies the qml module's version."
+    FULL_DOCS
+        "Specifies the qml module's version."
+)

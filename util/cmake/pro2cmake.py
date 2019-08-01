@@ -651,8 +651,8 @@ class Scope(object):
 
         return self._evalOps(key, None, [], inherit=inherit)
 
-    def get_string(self, key: str, default: str = '') -> str:
-        v = self.get(key)
+    def get_string(self, key: str, default: str = '', inherit : bool = False) -> str:
+        v = self.get(key, inherit = inherit)
         if len(v) == 0:
             return default
         assert len(v) == 1
@@ -1646,6 +1646,8 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     # Evaluate total condition of all scopes:
     recursive_evaluate_scope(scope)
 
+    is_qml_plugin = any('qml_plugin' == s for s in scope.get('_LOADED'))
+
     if 'exceptions' in scope.get('CONFIG'):
         extra_lines.append('EXCEPTIONS')
 
@@ -1705,6 +1707,9 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     write_simd_part(cm_fh, name, scope, indent)
 
     write_android_part(cm_fh, name, scopes[0], indent)
+
+    if is_qml_plugin:
+        write_qml_plugin_qml_files(cm_fh, name, scopes[0], indent)
 
     ignored_keys_report = write_ignored_keys(scopes[0], spaces(indent))
     if ignored_keys_report:
@@ -1898,6 +1903,7 @@ def write_plugin(cm_fh, scope, *, indent: int = 0):
     write_main_part(cm_fh, plugin_name, 'Plugin', plugin_function_name, scope,
                     indent=indent, extra_lines=extra, known_libraries={}, extra_keys=[])
 
+
 def write_qml_plugin(cm_fh: typing.IO[str],
                      target: str,
                      scope: Scope, *,
@@ -1908,36 +1914,67 @@ def write_qml_plugin(cm_fh: typing.IO[str],
     indent += 2
     scope_config = scope.get('CONFIG')
     is_embedding_qml_files = False
-    if 'builtin_resources' in scope_config or 'qt_quick_compiler' in scope_config:
-        extra_lines.append('EMBED_QML_FILES')
-        is_embedding_qml_files = True
 
-    if not is_embedding_qml_files:
-        extra_lines.append('INSTALL_QML_FILES')
 
-    if 'install_qml_files' in scope_config and is_embedding_qml_files:
-        extra_lines.append('INSTALL_QML_FILES')
+    sources = scope.get_files('SOURCES')
+    if len(sources) != 0:
+        extra_lines.append('CPP_PLUGIN')
 
     target_path = scope.get_string('TARGETPATH')
     if target_path:
-        extra_lines.append('TARGET_PATH "{}"'.format(target_path))
+        uri = target_path.replace('/','.')
+        extra_lines.append('URI "{}"'.format(uri))
+        # Catch special cases such as foo.QtQuick.2.bar, which when converted
+        # into a target path via cmake will result in foo/QtQuick/2/bar, which is
+        # not what we want. So we supply the target path override.
+        target_path_from_uri = uri.replace('.', '/')
+        if target_path != target_path_from_uri:
+            extra_lines.append('TARGET_PATH "{}"'.format(target_path))
+
     import_version = scope.get_string('IMPORT_VERSION')
     if import_version:
         import_version = import_version.replace("$$QT_MINOR_VERSION","${CMAKE_PROJECT_VERSION_MINOR}")
-        extra_lines.append('IMPORT_VERSION "{}"'.format(import_version))
+        extra_lines.append('VERSION "{}"'.format(import_version))
+
     import_name = scope.get_string('IMPORT_NAME')
     if import_name:
-        extra_lines.append('IMPORT_NAME "{}"'.format(import_name))
+        extra_lines.append('NAME "{}"'.format(import_name))
     plugindump_dep = scope.get_string('QML_PLUGINDUMP_DEPENDENCIES')
+
     if plugindump_dep:
         extra_lines.append('QML_PLUGINDUMP_DEPENDENCIES "{}"'.format(plugindump_dep))
 
+    # This is only required because of qmldir
+    extra_lines.append('RESOURCE_PREFIX "/qt-project.org/imports"')
+
+def write_qml_plugin_qml_files(cm_fh: typing.IO[str],
+                               target: str,
+                               scope: Scope,
+                               indent: int = 0):
+
     qml_files = scope.get_files('QML_FILES', use_vpath=True)
     if qml_files:
-        extra_lines.append('QML_FILES\n{}{}'.format(
+        target_path = scope.get_string('TARGETPATH', inherit=True)
+        target_path_mangled = target_path.replace('/', '_')
+        target_path_mangled = target_path_mangled.replace('.', '_')
+        resource_name = 'qmake_' + target_path_mangled
+        prefix = '/qt-project.org/imports/' + target_path
+        cm_fh.write('\n# QML Files\n')
+        cm_fh.write('{}add_qt_resource({} {}\n{}PREFIX\n{}"{}"\n{}FILES\n{}{}\n)\n'.format(
             spaces(indent),
-            '\n{}'.format(spaces(indent)).join(qml_files)))
+            target,
+            resource_name,
+            spaces(indent + 1),
+            spaces(indent + 2),
+            prefix,
+            spaces(indent + 1),
+            spaces(indent + 2),
+            '\n{}'.format(spaces(indent + 2)).join(qml_files)))
 
+    if 'install_qml_files' in scope.get('CONFIG'):
+        cm_fh.write('\nqt_install_qml_files({}\n    FILES\n        {}\n)\n\n'.format(
+            target,
+            '\n        '.join(qml_files)))
 
 
 def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
