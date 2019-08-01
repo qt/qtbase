@@ -3592,6 +3592,42 @@ QRhiResource::Type QRhiCommandBuffer::resourceType() const
     return CommandBuffer;
 }
 
+#ifndef QT_NO_DEBUG
+static const char *resourceTypeStr(QRhiResource *res)
+{
+    switch (res->resourceType()) {
+    case QRhiResource::Buffer:
+        return "Buffer";
+    case QRhiResource::Texture:
+        return "Texture";
+    case QRhiResource::Sampler:
+        return "Sampler";
+    case QRhiResource::RenderBuffer:
+        return "RenderBuffer";
+    case QRhiResource::RenderPassDescriptor:
+        return "RenderPassDescriptor";
+    case QRhiResource::RenderTarget:
+        return "RenderTarget";
+    case QRhiResource::TextureRenderTarget:
+        return "TextureRenderTarget";
+    case QRhiResource::ShaderResourceBindings:
+        return "ShaderResourceBindings";
+    case QRhiResource::GraphicsPipeline:
+        return "GraphicsPipeline";
+    case QRhiResource::SwapChain:
+        return "SwapChain";
+    case QRhiResource::ComputePipeline:
+        return "ComputePipeline";
+    case QRhiResource::CommandBuffer:
+        return "CommandBuffer";
+    default:
+        Q_UNREACHABLE();
+        break;
+    }
+    return "";
+}
+#endif
+
 QRhiImplementation::~QRhiImplementation()
 {
     qDeleteAll(resUpdPool);
@@ -3601,10 +3637,10 @@ QRhiImplementation::~QRhiImplementation()
     // and freak out for unfreed graphics objects in the derived dtor already.
 #ifndef QT_NO_DEBUG
     if (!resources.isEmpty()) {
-        qWarning("QRhi %p going down with %d unreleased resources. This is not nice.",
+        qWarning("QRhi %p going down with %d unreleased resources that own native graphics objects. This is not nice.",
                  q, resources.count());
         for (QRhiResource *res : qAsConst(resources)) {
-            qWarning("  Resource %p (%s)", res, res->m_objectName.constData());
+            qWarning("  %s resource %p (%s)", resourceTypeStr(res), res, res->m_objectName.constData());
             res->m_rhi = nullptr;
         }
     }
