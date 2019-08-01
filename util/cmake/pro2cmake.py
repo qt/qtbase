@@ -1058,7 +1058,9 @@ def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
             cond_ind = ind
             if conditions:
                 conditions_str = " OR ".join(sorted("(" + " AND ".join(condition) + ")" for condition in conditions))
-                cm_fh.write(f'{ind}if(NOT ({conditions_str}))\n')
+                conditions_str_wrapped = "NOT ({})".format(conditions_str)
+                conditions_simplified = simplify_condition(conditions_str_wrapped)
+                cm_fh.write(f'{ind}if({conditions_simplified})\n')
                 cond_ind += "    "
             cm_fh.write(f'{cond_ind}add_subdirectory({sd})\n')
             if conditions:
@@ -1479,10 +1481,31 @@ def simplify_condition(condition: str) -> str:
         condition = condition.replace(' ON ', ' true ')
         condition = condition.replace(' OFF ', ' false ')
 
+    # SymPy chokes on expressions that contain two tokens one next to
+    # the other delimited by a space, which are not an operation.
+    # So a CMake condition like "TARGET Foo::Bar" fails the whole
+    # expression simplifying process.
+    # Turn these conditions into a single token so that SymPy can parse
+    # the expression, and thus simplify it.
+    # Do this by replacing and keeping a map of conditions to single
+    # token symbols.
+    pattern = re.compile(r'(TARGET [a-zA-Z]+::[a-zA-Z]+)')
+    target_symbol_mapping = {}
+    all_target_conditions = re.findall(pattern, condition)
+    for target_condition in all_target_conditions:
+        # Replace spaces and colons with underscores.
+        target_condition_symbol_name = re.sub('[ :]', '_', target_condition)
+        target_symbol_mapping[target_condition_symbol_name] = target_condition
+        condition = re.sub(target_condition, target_condition_symbol_name, condition)
+
     try:
         # Generate and simplify condition using sympy:
         condition_expr = simplify_logic(condition)
         condition = str(_recursive_simplify(condition_expr))
+
+        # Restore the target conditions.
+        for symbol_name in target_symbol_mapping:
+            condition = re.sub(symbol_name, target_symbol_mapping[symbol_name], condition)
 
         # Map back to CMake syntax:
         condition = condition.replace('~', 'NOT ')
