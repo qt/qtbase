@@ -1042,67 +1042,135 @@ def map_condition(condition: str) -> str:
     return cmake_condition.strip()
 
 
-def handle_subdir(scope: Scope, cm_fh: typing.IO[str], *,
-                  indent: int = 0, is_example: bool=False) -> None:
-    ind = '    ' * indent
+def handle_subdir(scope: Scope,
+                  cm_fh: typing.IO[str],
+                  *,
+                  indent: int = 0,
+                  is_example: bool = False) -> None:
 
-    def find_all_remove_subdir(scope: Scope,
-                               current_conditions: typing.FrozenSet[str]=None,
-                               rm_subdir_conditions: typing.Dict[str, typing.Set[typing.FrozenSet[str]]]=None) -> typing.Dict[str, typing.Set[typing.FrozenSet[str]]]:
-        rm_subdir_conditions = rm_subdir_conditions if rm_subdir_conditions is not None else dict()
-        for sd in scope.get_files('SUBDIRS'):
-            if sd.startswith('-') and current_conditions is not None:
-                conditions = rm_subdir_conditions.get(sd[1:], set())
-                conditions.add(current_conditions)
-                rm_subdir_conditions[sd[1:]] = conditions
-        current_conditions = current_conditions if current_conditions is not None else frozenset()
-        for child_scope in scope.children:
-            assert child_scope.condition
-            find_all_remove_subdir(child_scope, frozenset((*current_conditions, child_scope.condition)), rm_subdir_conditions)
-        return rm_subdir_conditions
+    # Global nested dictionary that will contain sub_dir assignments and their conditions.
+    # Declared as a global in order not to pollute the nested function signatures with giant
+    # type hints.
+    sub_dirs: typing.Dict[str, typing.Dict[str, typing.Set[typing.FrozenSet[str]]]] = {}
 
-    rm_subdir_conditions = find_all_remove_subdir(scope)
-
-    for sd in scope.get_files('SUBDIRS'):
-        if os.path.isdir(sd):
-            conditions = rm_subdir_conditions.get(sd)
-            cond_ind = ind
-            if conditions:
-                conditions_str = " OR ".join(sorted("(" + " AND ".join(condition) + ")" for condition in conditions))
-                conditions_str_wrapped = "NOT ({})".format(conditions_str)
-                conditions_simplified = simplify_condition(conditions_str_wrapped)
-                cm_fh.write(f'{ind}if({conditions_simplified})\n')
-                cond_ind += "    "
-            cm_fh.write(f'{cond_ind}add_subdirectory({sd})\n')
-            if conditions:
-                cm_fh.write(f'{ind}endif()\n')
-        elif os.path.isfile(sd):
-            subdir_result = parseProFile(sd, debug=False)
-            subdir_scope \
-                = Scope.FromDict(scope, sd,
-                                 subdir_result.asDict().get('statements'),
-                                 '', scope.basedir)
-
-            do_include(subdir_scope)
-            cmakeify_scope(subdir_scope, cm_fh, indent=indent, is_example=is_example)
-        elif sd.startswith('-'):
-            pass
+    # Collects assignment conditions into global sub_dirs dict.
+    def collect_subdir_info(sub_dir_assignment: str,
+                            *,
+                            current_conditions: typing.FrozenSet[str] = None):
+        subtraction = sub_dir_assignment.startswith('-')
+        if subtraction:
+            subdir_name = sub_dir_assignment[1:]
         else:
-            print('    XXXX: SUBDIR {} in {}: Not found.'.format(sd, scope))
+            subdir_name = sub_dir_assignment
+        if subdir_name not in sub_dirs:
+            sub_dirs[subdir_name] = {}
+        additions = sub_dirs[subdir_name].get('additions', set())
+        subtractions = sub_dirs[subdir_name].get('subtractions', set())
+        if current_conditions:
+            if subtraction:
+                subtractions.add(current_conditions)
+            else:
+                additions.add(current_conditions)
+        if additions:
+            sub_dirs[subdir_name]['additions'] = additions
+        if subtractions:
+            sub_dirs[subdir_name]['subtractions'] = subtractions
 
-    for c in scope.children:
-        cond = c.condition
-        temp_buf = io.StringIO('')  # we do not want to print empty conditions
-        handle_subdir(c, temp_buf, indent=indent + 1, is_example=is_example)
-        sub_call_str = temp_buf.getvalue()
-        if sub_call_str:
-            if cond == 'else':
-                cm_fh.write('\n{}else()\n'.format(ind))
-            elif cond:
-                cm_fh.write('\n{}if({})\n'.format(ind, cond))
-            cm_fh.write(sub_call_str)
-            if cond:
-                cm_fh.write('{}endif()\n'.format(ind))
+    # Recursive helper that collects subdir info for given scope,
+    # and the children of the given scope.
+    def handle_subdir_helper(scope: Scope,
+                             cm_fh: typing.IO[str],
+                             *,
+                             indent: int = 0,
+                             current_conditions: typing.FrozenSet[str] = None,
+                             is_example: bool = False):
+        for sd in scope.get_files('SUBDIRS'):
+            # Collect info about conditions and SUBDIR assignments in the
+            # current scope.
+            if os.path.isdir(sd) or sd.startswith('-'):
+                collect_subdir_info(sd, current_conditions=current_conditions)
+            # For the file case, directly write into the file handle.
+            elif os.path.isfile(sd):
+                subdir_result = parseProFile(sd, debug=False)
+                subdir_scope \
+                    = Scope.FromDict(scope, sd,
+                                     subdir_result.asDict().get('statements'),
+                                     '', scope.basedir)
+
+                do_include(subdir_scope)
+                cmakeify_scope(subdir_scope, cm_fh, indent=indent, is_example=is_example)
+            else:
+                print('    XXXX: SUBDIR {} in {}: Not found.'.format(sd, scope))
+
+        # Collect info about conditions and SUBDIR assignments in child
+        # scopes, aka recursively call the same function, but with an
+        # updated current_conditions frozen set.
+        for c in scope.children:
+            handle_subdir_helper(c, cm_fh,
+                                 indent=indent + 1,
+                                 is_example=is_example,
+                                 current_conditions=frozenset((*current_conditions, c.condition)))
+
+    def group_and_print_sub_dirs(indent: int = 0):
+        # Simplify conditions, and group
+        # subdirectories with the same conditions.
+        grouped_sub_dirs = {}
+        for subdir_name in sub_dirs:
+            additions = sub_dirs[subdir_name].get('additions', set())
+            subtractions = sub_dirs[subdir_name].get('subtractions', set())
+
+            # An empty condition key represents the group of sub dirs
+            # that should be added unconditionally.
+            condition_key = ''
+            if additions or subtractions:
+                addition_str = ''
+                subtraction_str = ''
+                if additions:
+                    addition_str = " OR ".join(sorted("(" + " AND ".join(condition) + ")"
+                                                      for condition in additions))
+                    if addition_str:
+                        addition_str = '({})'.format(addition_str)
+                if subtractions:
+                    subtraction_str = " OR ".join(sorted("(" + " AND ".join(condition) + ")"
+                                                         for condition in subtractions))
+                    if subtraction_str:
+                        subtraction_str = 'NOT ({})'.format(subtraction_str)
+
+                condition_str = addition_str
+                if condition_str and subtraction_str:
+                    condition_str += ' AND '
+                condition_str += subtraction_str
+                condition_simplified = simplify_condition(condition_str)
+                condition_key = condition_simplified
+
+            sub_dir_list_by_key = grouped_sub_dirs.get(condition_key, [])
+            sub_dir_list_by_key.append(subdir_name)
+            grouped_sub_dirs[condition_key] = sub_dir_list_by_key
+
+        # Print the groups.
+        ind = '    ' * indent
+        for condition_key in grouped_sub_dirs:
+            cond_ind = ind
+            if condition_key:
+                cm_fh.write(f'{ind}if({condition_key})\n')
+                cond_ind += "    "
+
+            sub_dir_list_by_key = grouped_sub_dirs.get(condition_key, [])
+            for subdir_name in sub_dir_list_by_key:
+                cm_fh.write(f'{cond_ind}add_subdirectory({subdir_name})\n')
+            if condition_key:
+                cm_fh.write(f'{ind}endif()\n')
+
+    # A set of conditions which will be ANDed together. The set is recreated with more conditions
+    # as the scope deepens.
+    current_conditions = frozenset()
+
+    # Do the work.
+    handle_subdir_helper(scope, cm_fh,
+                         indent=indent,
+                         current_conditions=current_conditions,
+                         is_example=is_example)
+    group_and_print_sub_dirs(indent=indent)
 
 
 def sort_sources(sources: typing.List[str]) -> typing.List[str]:
