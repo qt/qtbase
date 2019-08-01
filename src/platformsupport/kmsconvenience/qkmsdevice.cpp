@@ -342,10 +342,14 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     }
     qCDebug(qLcKmsDebug) << "Physical size is" << physSize << "mm" << "for output" << connectorName;
 
-    const QByteArray formatStr = userConnectorConfig.value(QStringLiteral("format"), QStringLiteral("xrgb8888"))
+    const QByteArray formatStr = userConnectorConfig.value(QStringLiteral("format"), QString())
             .toByteArray().toLower();
     uint32_t drmFormat;
-    if (formatStr == "xrgb8888") {
+    bool drmFormatExplicit = true;
+    if (formatStr.isEmpty()) {
+        drmFormat = DRM_FORMAT_XRGB8888;
+        drmFormatExplicit = false;
+    } else if (formatStr == "xrgb8888") {
         drmFormat = DRM_FORMAT_XRGB8888;
     } else if (formatStr == "xbgr8888") {
         drmFormat = DRM_FORMAT_XBGR8888;
@@ -368,7 +372,10 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     } else {
         qWarning("Invalid pixel format \"%s\" for output %s", formatStr.constData(), connectorName.constData());
         drmFormat = DRM_FORMAT_XRGB8888;
+        drmFormatExplicit = false;
     }
+    qCDebug(qLcKmsDebug) << "Format is" << hex << drmFormat << dec << "requested_by_user =" << drmFormatExplicit
+                         << "for output" << connectorName;
 
     const QString cloneSource = userConnectorConfig.value(QStringLiteral("clones")).toString();
     if (!cloneSource.isEmpty())
@@ -411,6 +418,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     output.forced_plane_id = 0;
     output.forced_plane_set = false;
     output.drm_format = drmFormat;
+    output.drm_format_requested_by_user = drmFormatExplicit;
     output.clone_source = cloneSource;
     output.size = framebufferSize;
 

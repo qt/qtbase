@@ -201,6 +201,7 @@ struct QKmsOutput
     uint32_t forced_plane_id = 0;
     bool forced_plane_set = false;
     uint32_t drm_format = DRM_FORMAT_XRGB8888;
+    bool drm_format_requested_by_user = false;
     QString clone_source;
     QVector<QKmsPlane> available_planes;
     struct QKmsPlane *eglfs_plane = nullptr;
