@@ -387,7 +387,10 @@ class Scope(object):
             parent_scope._add_child(self)
         else:
             self._parent = None  # type: typing.Optional[Scope]
-            self._operations['QT'] = [SetOperation(['core', 'gui'])]
+            # Only add the  "QT = core gui" Set operation once, on the
+            # very top-level .pro scope, aka it's basedir is empty.
+            if not base_dir:
+                self._operations['QT'] = [SetOperation(['core', 'gui'])]
 
         self._basedir = base_dir
         if file:
