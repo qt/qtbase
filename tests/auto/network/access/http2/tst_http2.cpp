@@ -591,6 +591,19 @@ void tst_Http2::connectToHost()
 
 #if QT_CONFIG(ssl)
     Q_ASSERT(!clearTextHTTP2 || connectionType != H2Type::h2Alpn);
+
+#if QT_CONFIG(securetransport)
+    // Normally on macOS we use plain text only for SecureTransport
+    // does not support ALPN on the server side. With 'direct encrytped'
+    // we have to use TLS sockets (== private key) and thus suppress a
+    // keychain UI asking for permission to use a private key.
+    // Our CI has this, but somebody testing locally - will have a problem.
+    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", QByteArray("1"));
+    auto envRollback = qScopeGuard([](){
+        qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN");
+    });
+#endif // QT_CONFIG(securetransport)
+
 #else
     Q_ASSERT(connectionType == H2Type::h2c || connectionType == H2Type::h2cDirect);
     Q_ASSERT(targetServer->isClearText());
