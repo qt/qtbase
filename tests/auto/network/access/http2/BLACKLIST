@@ -1,0 +1,3 @@
+ See qtbase/src/testlib/qtestblacklist.cpp for format
+[connectToHost]
+*
