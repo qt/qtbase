@@ -2847,13 +2847,15 @@ bool QGles2Buffer::build()
     QRHI_RES_RHI(QRhiGles2);
     QRHI_PROF;
 
+    const int nonZeroSize = m_size <= 0 ? 256 : m_size;
+
     if (m_usage.testFlag(QRhiBuffer::UniformBuffer)) {
         if (int(m_usage) != QRhiBuffer::UniformBuffer) {
             qWarning("Uniform buffer: multiple usages specified, this is not supported by the OpenGL backend");
             return false;
         }
-        ubuf.resize(m_size);
-        QRHI_PROF_F(newBuffer(this, m_size, 0, 1));
+        ubuf.resize(nonZeroSize);
+        QRHI_PROF_F(newBuffer(this, nonZeroSize, 0, 1));
         return true;
     }
 
@@ -2868,11 +2870,11 @@ bool QGles2Buffer::build()
 
     rhiD->f->glGenBuffers(1, &buffer);
     rhiD->f->glBindBuffer(targetForDataOps, buffer);
-    rhiD->f->glBufferData(targetForDataOps, m_size, nullptr, m_type == Dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    rhiD->f->glBufferData(targetForDataOps, nonZeroSize, nullptr, m_type == Dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 
     usageState.access = AccessNone;
 
-    QRHI_PROF_F(newBuffer(this, m_size, 1, 0));
+    QRHI_PROF_F(newBuffer(this, nonZeroSize, 1, 0));
     rhiD->registerResource(this);
     return true;
 }

@@ -4947,6 +4947,11 @@ QRhiShaderResourceBindings *QRhi::newShaderResourceBindings()
     backends. See \l{QRhiBuffer::UsageFlag}{UsageFlags} and
     \l{QRhi::NonDynamicUniformBuffers}{the feature flags}.
 
+    \note Backends may choose to allocate buffers bigger than \a size. This is
+    done transparently to applications, so there are no special restrictions on
+    the value of \a size. QRhiBuffer::size() will always report back the value
+    that was requested in \a size.
+
     \sa QRhiResource::release()
  */
 QRhiBuffer *QRhi::newBuffer(QRhiBuffer::Type type,
