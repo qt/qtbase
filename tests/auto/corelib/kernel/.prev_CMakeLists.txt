@@ -1,6 +1,6 @@
 # Generated from kernel.pro.
 
-# add_subdirectory(qcoreapplication) # special case
+add_subdirectory(qcoreapplication)
 add_subdirectory(qdeadlinetimer)
 add_subdirectory(qelapsedtimer)
 add_subdirectory(qeventdispatcher)
@@ -12,13 +12,13 @@ add_subdirectory(qmetaobject)
 add_subdirectory(qmetaobjectbuilder)
 add_subdirectory(qmetamethod)
 add_subdirectory(qmetaproperty)
-# add_subdirectory(qmetatype) # special case
+add_subdirectory(qmetatype)
 add_subdirectory(qmetaenum)
 if(TARGET Qt::Gui)
     add_subdirectory(qmimedata)
 endif()
 if(TARGET Qt::Network AND NOT ANDROID AND NOT APPLE_UIKIT)
-    # add_subdirectory(qobject) # special case
+    add_subdirectory(qobject)
 endif()
 add_subdirectory(qpointer)
 if(QT_FEATURE_private_tests AND NOT ANDROID AND NOT APPLE_UIKIT)
@@ -32,7 +32,7 @@ endif()
 if(QT_FEATURE_systemsemaphore AND NOT ANDROID AND NOT APPLE_UIKIT)
     add_subdirectory(qsystemsemaphore)
 endif()
-# add_subdirectory(qtimer) # special case
+add_subdirectory(qtimer)
 add_subdirectory(qtranslator)
 add_subdirectory(qvariant)
 if(win32_x_ AND NOT WINRT)
