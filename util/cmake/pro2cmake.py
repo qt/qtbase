@@ -374,10 +374,14 @@ class Scope(object):
                  parent_scope: typing.Optional[Scope],
                  file: typing.Optional[str] = None, condition: str = '',
                  base_dir: str = '',
-                 operations: typing.Mapping[str, typing.List[Operation]] = {
-                    'QT_SOURCE_TREE': [SetOperation(['${QT_SOURCE_TREE}'])],
-                    'QT_BUILD_TREE': [SetOperation(['${PROJECT_BUILD_DIR}'])],
-                 }) -> None:
+                 operations: typing.Union[
+                               typing.Mapping[str, typing.List[Operation]], None] = None) -> None:
+        if operations is None:
+            operations = {
+                'QT_SOURCE_TREE': [SetOperation(['${QT_SOURCE_TREE}'])],
+                'QT_BUILD_TREE': [SetOperation(['${PROJECT_BUILD_DIR}'])],
+            }
+
         self._operations = copy.deepcopy(operations)
         if parent_scope:
             parent_scope._add_child(self)
