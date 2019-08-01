@@ -8,7 +8,7 @@ if(NOT APPLE_UIKIT)
     add_subdirectory(io)
     add_subdirectory(itemmodels)
     add_subdirectory(mimetypes)
-    # add_subdirectory(plugin) # special case missing project
+    add_subdirectory(plugin)
     add_subdirectory(serialization)
     add_subdirectory(statemachine)
     add_subdirectory(thread)
