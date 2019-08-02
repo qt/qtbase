@@ -71,13 +71,17 @@ public:
     bool removeProject( const QString &workPath, const QString &project );
     // removes the file specified by 'fileName' on the 'workPath'
     bool removeFile( const QString &workPath, const QString &fileName );
-    // returns each line of stdout of the last command append with a "new line" character(s) to suit the platform
+
+    // Returns each line of stdout/stderr of the last commands
+    // separated by platform-specific line endings.
     QString commandOutput() const;
+
     // clear the results of storage of stdout for running previous commands
     void clearCommandOutput();
 
-private:
     bool runCommand(const QString &cmd, const QStringList &args, bool expectFail = false);
+
+private:
     bool errorOut();
 
     QString makeCmd_;

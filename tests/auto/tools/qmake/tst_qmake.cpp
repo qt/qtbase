@@ -76,8 +76,10 @@ private slots:
     void findMocs();
     void findDeps();
     void rawString();
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
     void bundle_spaces();
+#elif defined(Q_OS_WIN)
+    void windowsResources();
 #endif
     void substitutes();
     void project();
@@ -512,7 +514,8 @@ struct TempFile
     }
 };
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
+
 void tst_qmake::bundle_spaces()
 {
     QString workDir = base_path + "/testdata/bundle-spaces";
@@ -543,7 +546,34 @@ void tst_qmake::bundle_spaces()
     QVERIFY( !non_existing_file.exists() );
     QVERIFY( test_compiler.removeMakefile(workDir) );
 }
-#endif // defined(Q_OS_MAC)
+
+#elif defined(Q_OS_WIN) // defined(Q_OS_DARWIN)
+
+void tst_qmake::windowsResources()
+{
+    QString workDir = base_path + "/testdata/windows_resources";
+    QVERIFY(test_compiler.qmake(workDir, "windows_resources"));
+    QVERIFY(test_compiler.make(workDir));
+
+    // Another "make" must not rebuild the .res file
+    test_compiler.clearCommandOutput();
+    QVERIFY(test_compiler.make(workDir));
+    QVERIFY(!test_compiler.commandOutput().contains("windows_resources.rc"));
+    test_compiler.clearCommandOutput();
+
+    // Wait a second to make sure we get a new timestamp in the touch below
+    QTest::qWait(1000);
+
+    // Touch the deepest include of the .rc file
+    QVERIFY(test_compiler.runCommand("cmd", QStringList{"/c",
+                        "echo.>>" + QDir::toNativeSeparators(workDir + "/version.inc")}));
+
+    // The next "make" must rebuild the .res file
+    QVERIFY(test_compiler.make(workDir));
+    QVERIFY(test_compiler.commandOutput().contains("windows_resources.rc"));
+}
+
+#endif // defined(Q_OS_WIN)
 
 void tst_qmake::substitutes()
 {

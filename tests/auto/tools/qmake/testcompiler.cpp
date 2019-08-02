@@ -164,15 +164,17 @@ bool TestCompiler::runCommand(const QString &cmd, const QStringList &args, bool 
         return errorOut();
     }
 
-    child.setReadChannel(QProcess::StandardError);
     child.waitForFinished(-1);
     bool ok = child.exitStatus() == QProcess::NormalExit && (expectFail ^ (child.exitCode() == 0));
 
-    foreach (const QByteArray &output, child.readAllStandardError().split('\n')) {
-        testOutput_.append(QString::fromLocal8Bit(output));
-
-        if (output.startsWith("Project MESSAGE: FAILED"))
-            ok = false;
+    for (auto channel : { QProcess::StandardOutput, QProcess::StandardError }) {
+        child.setReadChannel(channel);
+        while (!child.atEnd()) {
+            const QString output = QString::fromLocal8Bit(child.readLine());
+            if (output.startsWith("Project MESSAGE: FAILED"))
+                ok = false;
+            testOutput_.append(output);
+        }
     }
 
     return ok ? true : errorOut();

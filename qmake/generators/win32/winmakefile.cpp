@@ -667,6 +667,9 @@ void Win32MakefileGenerator::writeRcFilePart(QTextStream &t)
             incPathStr += escapeFilePath(path);
         }
 
+        addSourceFile(rc_file, QMakeSourceFileInfo::SEEK_DEPS);
+        const QStringList rcDeps = QStringList(rc_file) << dependencies(rc_file);
+
         // The resource tool may use defines. This might be the same defines passed in as the
         // compiler, since you may use these defines in the .rc file itself.
         // As the escape syntax for the command line defines for RC is different from that for CL,
@@ -678,7 +681,8 @@ void Win32MakefileGenerator::writeRcFilePart(QTextStream &t)
         // Also, we need to add the _DEBUG define manually since the compiler defines this symbol
         // by itself, and we use it in the automatically created rc file when VERSION is defined
         // in the .pro file.
-        t << escapeDependencyPath(res_file) << ": " << escapeDependencyPath(rc_file) << "\n\t"
+        t << escapeDependencyPath(res_file) << ": "
+          << escapeDependencyPaths(rcDeps).join(' ') << "\n\t"
           << var("QMAKE_RC") << (project->isActiveConfig("debug") ? " -D_DEBUG" : "")
           << defines << incPathStr << " -fo " << escapeFilePath(res_file)
           << ' ' << escapeFilePath(rc_file);
