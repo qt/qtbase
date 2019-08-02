@@ -2570,7 +2570,20 @@ function(add_qt_resource target resourceName)
                        DEPENDS ${files}
                        COMMENT "RCC ${resourceName}"
                        VERBATIM)
-    target_sources(${target} PRIVATE "${generatedSourceCode}")
+
+    get_target_property(type "${target}" TYPE)
+    if(type STREQUAL STATIC_LIBRARY)
+        set(resourceTarget "${target}_resources_${resourceName}")
+        add_library("${resourceTarget}" OBJECT "${generatedSourceCode}")
+        qt_internal_add_target_aliases("${resourceTarget}")
+        qt_install(TARGETS "${resourceTarget}"
+            EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
+            DESTINATION ${INSTALL_LIBDIR}
+        )
+        target_link_libraries(${target} INTERFACE "$<TARGET_OBJECTS:${INSTALL_CMAKE_NAMESPACE}::${resourceTarget}>")
+    else()
+        target_sources(${target} PRIVATE "${generatedSourceCode}")
+    endif()
 endfunction()
 
 
