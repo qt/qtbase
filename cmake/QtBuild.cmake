@@ -2159,7 +2159,7 @@ endfunction()
 # Please consider to use a more specific version target like the one created
 # by add_qt_test or add_qt_tool below.
 function(add_qt_executable name)
-    qt_parse_all_arguments(arg "add_qt_executable" "GUI;BOOTSTRAP;NO_QT;NO_INSTALL;EXCEPTIONS" "OUTPUT_DIRECTORY;INSTALL_DIRECTORY" "EXE_FLAGS;${__default_private_args}" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_executable" "GUI;BOOTSTRAP;NO_QT;NO_INSTALL;EXCEPTIONS" "OUTPUT_DIRECTORY;INSTALL_DIRECTORY" "EXE_FLAGS;${__default_private_args};${__default_public_args}" ${ARGN})
 
     if ("x${arg_OUTPUT_DIRECTORY}" STREQUAL "x")
         set(arg_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
@@ -2189,7 +2189,7 @@ function(add_qt_executable name)
             ${arg_INCLUDE_DIRECTORIES}
         DEFINES ${arg_DEFINES}
         LIBRARIES ${arg_LIBRARIES}
-        PUBLIC_LIBRARIES ${extra_libraries}
+        PUBLIC_LIBRARIES ${extra_libraries} ${arg_PUBLIC_LIBRARIES}
         DBUS_ADAPTOR_SOURCES "${arg_DBUS_ADAPTOR_SOURCES}"
         DBUS_ADAPTOR_FLAGS "${arg_DBUS_ADAPTOR_FLAGS}"
         DBUS_INTERFACE_SOURCES "${arg_DBUS_INTERFACE_SOURCES}"
@@ -2222,7 +2222,7 @@ endfunction()
 function(add_qt_test name)
     qt_parse_all_arguments(arg "add_qt_test"
         "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST"
-        "QML_IMPORTPATH" "TESTDATA;${__default_private_args}" ${ARGN})
+        "QML_IMPORTPATH" "TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN})
     set(path "${CMAKE_CURRENT_BINARY_DIR}")
 
     if (${arg_EXCEPTIONS})
@@ -2243,12 +2243,12 @@ function(add_qt_test name)
             "${CMAKE_CURRENT_SOURCE_DIR}"
             "${CMAKE_CURRENT_BINARY_DIR}"
             $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-            "${arg_INCLUDE_DIRECTORIES}"
+            ${arg_INCLUDE_DIRECTORIES}
         DEFINES
-            "${arg_DEFINES}"
             QT_TESTCASE_BUILDDIR="${CMAKE_CURRENT_BINARY_DIR}"
             QT_TESTCASE_SOURCEDIR="${CMAKE_CURRENT_SOURCE_DIR}"
-        PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Core ${QT_CMAKE_EXPORT_NAMESPACE}::Test
+            ${arg_DEFINES}
+        PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Core ${QT_CMAKE_EXPORT_NAMESPACE}::Test ${arg_PUBLIC_LIBRARIES}
         LIBRARIES ${arg_LIBRARIES}
         COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
         LINK_OPTIONS ${arg_LINK_OPTIONS}
