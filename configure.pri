@@ -266,28 +266,10 @@ defineTest(qtConfTest_architecture) {
     !qtConfTest_compile($${1}): \
         error("Could not determine $$eval($${1}.label). See config.log for details.")
 
-    host = $$eval($${1}.host)
-    isEmpty(host): host = false
-    file_prefix =
-    ext =
-    $$host {
-        equals(QMAKE_HOST.os, Windows): \
-            ext = .exe
-    } else {
-        win32 {
-            ext = .exe
-        } else:android {
-            file_prefix = lib
-            ext = .so
-        } else:wasm {
-            ext = .wasm
-        }
-    }
-
     test = $$eval($${1}.test)
     output = $$eval($${1}.output)
     test_out_dir = $$OUT_PWD/$$basename(QMAKE_CONFIG_TESTS_DIR)/$$test
-    test_out_file = $$test_out_dir/$$file_prefix$$output$$ext
+    test_out_file = $$test_out_dir/$$cat($$test_out_dir/$${output}.target.txt)
     exists($$test_out_file): \
         content = $$cat($$test_out_file, blob)
     else: \
