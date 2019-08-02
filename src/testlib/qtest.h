@@ -46,6 +46,7 @@
 #include <QtTest/qtestdata.h>
 #include <QtTest/qbenchmark.h>
 
+#include <QtCore/qbitarray.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
@@ -89,6 +90,16 @@ template<> inline char *toString(const QLatin1String &str)
 template<> inline char *toString(const QByteArray &ba)
 {
     return QTest::toPrettyCString(ba.constData(), ba.length());
+}
+
+template<> inline char *toString(const QBitArray &ba)
+{
+    qsizetype size = ba.size();
+    char *str = static_cast<char *>(malloc(size + 1));
+    for (qsizetype i = 0; i < size; ++i)
+        str[i] = "01"[ba.testBit(i)];
+    str[size] = '\0';
+    return str;
 }
 
 #if QT_CONFIG(datestring)
