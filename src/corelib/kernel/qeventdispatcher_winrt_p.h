@@ -57,7 +57,7 @@
 
 #include <qt_windows.h>
 
-namespace std { template <typename T> class function; }
+#include <functional>
 
 QT_BEGIN_NAMESPACE
 

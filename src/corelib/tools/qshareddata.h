@@ -297,24 +297,12 @@ template <class T> inline bool operator==(const QExplicitlySharedDataPointer<T> 
 }
 
 template <class T>
-Q_INLINE_TEMPLATE void qSwap(QSharedDataPointer<T> &p1, QSharedDataPointer<T> &p2)
+Q_INLINE_TEMPLATE void swap(QSharedDataPointer<T> &p1, QSharedDataPointer<T> &p2)
 { p1.swap(p2); }
 
 template <class T>
-Q_INLINE_TEMPLATE void qSwap(QExplicitlySharedDataPointer<T> &p1, QExplicitlySharedDataPointer<T> &p2)
+Q_INLINE_TEMPLATE void swap(QExplicitlySharedDataPointer<T> &p1, QExplicitlySharedDataPointer<T> &p2)
 { p1.swap(p2); }
-
-QT_END_NAMESPACE
-namespace std {
-    template <class T>
-    Q_INLINE_TEMPLATE void swap(QT_PREPEND_NAMESPACE(QSharedDataPointer)<T> &p1, QT_PREPEND_NAMESPACE(QSharedDataPointer)<T> &p2)
-    { p1.swap(p2); }
-
-    template <class T>
-    Q_INLINE_TEMPLATE void swap(QT_PREPEND_NAMESPACE(QExplicitlySharedDataPointer)<T> &p1, QT_PREPEND_NAMESPACE(QExplicitlySharedDataPointer)<T> &p2)
-    { p1.swap(p2); }
-}
-QT_BEGIN_NAMESPACE
 
 template <class T>
 Q_INLINE_TEMPLATE uint qHash(const QSharedDataPointer<T> &ptr, uint seed = 0) noexcept
