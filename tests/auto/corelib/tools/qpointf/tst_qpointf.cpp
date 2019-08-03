@@ -46,6 +46,8 @@ private slots:
     void getSet_data();
     void getSet();
 
+    void transposed();
+
     void rx();
     void ry();
 
@@ -152,6 +154,11 @@ void tst_QPointF::getSet()
 
     point.setY(r);
     QCOMPARE(point.y(), r);
+}
+
+void tst_QPointF::transposed()
+{
+    QCOMPARE(QPointF(1, 2).transposed(), QPointF(2, 1));
 }
 
 void tst_QPointF::rx()

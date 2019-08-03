@@ -1908,7 +1908,7 @@ void QXcbWindow::handleButtonPressEvent(int event_x, int event_y, int root_x, in
             else if (detail == 7)
                 angleDelta.setX(-120);
             if (modifiers & Qt::AltModifier)
-                std::swap(angleDelta.rx(), angleDelta.ry());
+                angleDelta = angleDelta.transposed();
             QWindowSystemInterface::handleWheelEvent(window(), timestamp, local, global, QPoint(), angleDelta, modifiers);
 #if QT_CONFIG(xcb_xinput)
         }
