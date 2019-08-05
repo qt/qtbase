@@ -105,12 +105,12 @@ public Q_SLOTS:
     inline void emitResultsReady(const QHostInfo &info)
     {
         if (slotObj) {
-            // we used to have a context object, but it's already destroyed
-            if (withContextObject && !receiver)
-                return;
-            QHostInfo copy = info;
-            void *args[2] = { 0, reinterpret_cast<void *>(&copy) };
-            slotObj->call(const_cast<QObject*>(receiver.data()), args);
+            // we either didn't have a context object, or it's still alive
+            if (!withContextObject || receiver) {
+                QHostInfo copy = info;
+                void *args[2] = { 0, reinterpret_cast<void *>(&copy) };
+                slotObj->call(const_cast<QObject*>(receiver.data()), args);
+            }
             slotObj->destroyIfLastRef();
         } else {
             emit resultsReady(info);

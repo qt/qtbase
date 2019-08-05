@@ -295,6 +295,12 @@ void Automaton::build ()
   buildDefaultReduceActions ();
 }
 
+#if defined(__cpp_lib_not_fn) && __cpp_lib_not_fn >= 201603
+# define Q_NOT_FN std::not_fn
+#else
+# define Q_NOT_FN std::not1
+#endif
+
 void Automaton::buildNullables ()
 {
   bool changed = true;
@@ -305,7 +311,7 @@ void Automaton::buildNullables ()
 
       for (RulePointer rule = _M_grammar->rules.begin (); rule != _M_grammar->rules.end (); ++rule)
         {
-          NameList::iterator nn = std::find_if (rule->rhs.begin (), rule->rhs.end (), std::not1 (Nullable (this)));
+          NameList::iterator nn = std::find_if(rule->rhs.begin(), rule->rhs.end(), Q_NOT_FN(Nullable(this)));
 
           if (nn == rule->rhs.end ())
             changed |= nullables.insert (rule->lhs).second;
@@ -646,7 +652,7 @@ void Automaton::buildIncludesDigraph ()
                   if (! _M_grammar->isNonTerminal (*A))
                     continue;
 
-                  NameList::iterator first_not_nullable = std::find_if (dot, rule->rhs.end (), std::not1 (Nullable (this)));
+                  NameList::iterator first_not_nullable = std::find_if(dot, rule->rhs.end(), Q_NOT_FN(Nullable(this)));
                   if (first_not_nullable != rule->rhs.end ())
                     continue;
 

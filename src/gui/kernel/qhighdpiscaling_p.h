@@ -59,6 +59,7 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtGui/qregion.h>
 #include <QtGui/qscreen.h>
+#include <QtGui/qvector2d.h>
 #include <QtGui/qwindow.h>
 
 QT_BEGIN_NAMESPACE
@@ -117,11 +118,24 @@ private:
 
 namespace QHighDpi {
 
-template <typename T>
-inline T scale(const T &value, qreal scaleFactor, QPoint origin = QPoint(0, 0))
+inline qreal scale(qreal value, qreal scaleFactor, QPointF /* origin */ = QPointF(0, 0))
 {
-    Q_UNUSED(origin)
     return value * scaleFactor;
+}
+
+inline QSize scale(const QSize &value, qreal scaleFactor, QPointF /* origin */ = QPointF(0, 0))
+{
+    return value * scaleFactor;
+}
+
+inline QSizeF scale(const QSizeF &value, qreal scaleFactor, QPointF /* origin */ = QPointF(0, 0))
+{
+    return value * scaleFactor;
+}
+
+inline QVector2D scale(const QVector2D &value, qreal scaleFactor, QPointF /* origin */ = QPointF(0, 0))
+{
+    return value * float(scaleFactor);
 }
 
 inline QPointF scale(const QPointF &pos, qreal scaleFactor, QPointF origin = QPointF(0, 0))
