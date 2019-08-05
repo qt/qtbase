@@ -1986,13 +1986,17 @@ def write_qml_plugin_qml_files(cm_fh: typing.IO[str],
 
     qml_files = scope.get_files('QML_FILES', use_vpath=True)
     if qml_files:
+        cm_fh.write('\n{}set(qml_files\n{}{}\n)\n'.format(
+            spaces(indent),
+            spaces(indent + 1),
+            '\n{}'.format(spaces(indent + 1)).join(qml_files)))
+
         target_path = scope.get_string('TARGETPATH', inherit=True)
         target_path_mangled = target_path.replace('/', '_')
         target_path_mangled = target_path_mangled.replace('.', '_')
         resource_name = 'qmake_' + target_path_mangled
         prefix = '/qt-project.org/imports/' + target_path
-        cm_fh.write('\n# QML Files\n')
-        cm_fh.write('{}add_qt_resource({} {}\n{}PREFIX\n{}"{}"\n{}FILES\n{}{}\n)\n'.format(
+        cm_fh.write('\n{}add_qt_resource({} {}\n{}PREFIX\n{}"{}"\n{}FILES\n{}${{qml_files}}\n)\n'.format(
             spaces(indent),
             target,
             resource_name,
@@ -2000,13 +2004,10 @@ def write_qml_plugin_qml_files(cm_fh: typing.IO[str],
             spaces(indent + 2),
             prefix,
             spaces(indent + 1),
-            spaces(indent + 2),
-            '\n{}'.format(spaces(indent + 2)).join(qml_files)))
+            spaces(indent + 2)))
 
-    if 'install_qml_files' in scope.get('CONFIG'):
-        cm_fh.write('\nqt_install_qml_files({}\n    FILES\n        {}\n)\n\n'.format(
-            target,
-            '\n        '.join(qml_files)))
+        cm_fh.write('\nqt_install_qml_files({}\n    FILES ${{qml_files}}\n)\n\n'.format(
+            target))
 
 
 def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
