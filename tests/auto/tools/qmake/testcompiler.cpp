@@ -285,8 +285,10 @@ bool TestCompiler::make( const QString &workPath, const QString &target, bool ex
     D.setCurrent( workPath );
 
     QStringList args = makeArgs_;
-    if (makeCmd_.contains("nmake", Qt::CaseInsensitive))
+    if (makeCmd_.contains("nmake", Qt::CaseInsensitive) ||
+        makeCmd_.contains("jom", Qt::CaseInsensitive)) {
         args << "/NOLOGO";
+    }
     if (!target.isEmpty())
         args << target;
 
