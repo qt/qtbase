@@ -94,7 +94,7 @@ public:
     }
 
     QVertexIndexVector() = default;
-    QVertexIndexVector(const QVertexIndexVector &other) = default;
+    QVertexIndexVector(const QVertexIndexVector &) = default;
     inline QVertexIndexVector &operator = (const QVertexIndexVector &other)
     {
         if (t == UnsignedInt)
