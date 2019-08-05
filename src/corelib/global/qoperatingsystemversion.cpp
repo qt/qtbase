@@ -438,6 +438,14 @@ const QOperatingSystemVersion QOperatingSystemVersion::MacOSMojave =
     QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 14);
 
 /*!
+    \variable QOperatingSystemVersion::MacOSCatalina
+    \brief a version corresponding to macOS Catalina (version 10.15).
+    \since 5.12.5
+ */
+const QOperatingSystemVersion QOperatingSystemVersion::MacOSCatalina =
+    QOperatingSystemVersion(QOperatingSystemVersion::MacOS, 10, 15);
+
+/*!
     \variable QOperatingSystemVersion::AndroidJellyBean
     \brief a version corresponding to Android Jelly Bean (version 4.1, API level 16).
     \since 5.9
