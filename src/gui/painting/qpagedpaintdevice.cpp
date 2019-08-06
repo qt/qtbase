@@ -42,6 +42,7 @@
 
 QT_BEGIN_NAMESPACE
 
+// ### Qt 6: remove when the deprecated constructor is removed
 class QDummyPagedPaintDevicePrivate : public QPagedPaintDevicePrivate
 {
     bool setPageLayout(const QPageLayout &newPageLayout) override
@@ -85,7 +86,7 @@ QPagedPaintDevicePrivate::~QPagedPaintDevicePrivate()
     \class QPagedPaintDevice
     \inmodule QtGui
 
-    \brief The QPagedPaintDevice class is a represents a paintdevice that supports
+    \brief The QPagedPaintDevice class represents a paint device that supports
     multiple pages.
 
     \ingroup painting

@@ -65,18 +65,18 @@
         } \
     } while(0)
 
+Q_DECLARE_METATYPE(QDir::Filters)
+Q_DECLARE_METATYPE(QFileDevice::Permissions)
+
+Q_LOGGING_CATEGORY(lcFileSystemModel, "qt.widgets.tests.qfilesystemmodel")
+
 class tst_QFileSystemModel : public QObject {
   Q_OBJECT
 
-public:
-    tst_QFileSystemModel();
-
-public Q_SLOTS:
-    void init();
-    void cleanup();
-
 private slots:
     void initTestCase();
+    void cleanup();
+
     void indexPath();
 
     void rootPath();
@@ -128,48 +128,33 @@ private slots:
     void fileInfo();
 
 protected:
-    bool createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount = 0, const QStringList &intial_dirs = QStringList());
-    QModelIndex prepareTestModelRoot(const QString &test_path, QSignalSpy **spy2 = nullptr,
-                                     QSignalSpy **spy3 = nullptr);
+    bool createFiles(QFileSystemModel *model, const QString &test_path,
+                     const QStringList &initial_files, int existingFileCount = 0,
+                     const QStringList &initial_dirs = QStringList());
+    QModelIndex prepareTestModelRoot(QFileSystemModel *model, const QString &test_path,
+                                     QSignalSpy **spy2 = nullptr, QSignalSpy **spy3 = nullptr);
 
 private:
-    QFileSystemModel *model;
     QString flatDirTestPath;
     QTemporaryDir m_tempDir;
 };
 
-tst_QFileSystemModel::tst_QFileSystemModel() : model(0)
-{
-}
-
-void tst_QFileSystemModel::init()
-{
-    cleanup();
-    QCOMPARE(model, nullptr);
-    model = new QFileSystemModel;
-}
-
 void tst_QFileSystemModel::cleanup()
 {
-    delete model;
-    model = 0;
-    QString tmp = flatDirTestPath;
-    QDir dir(tmp);
-    if (dir.exists(tmp)) {
-        QStringList list = dir.entryList(QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot);
-        for (int i = 0; i < list.count(); ++i) {
-            QFileInfo fi(dir.path() + '/' + list.at(i));
-            if (fi.exists() && fi.isFile()) {
-                QFile p(fi.absoluteFilePath());
-                p.setPermissions(QFile::ReadUser | QFile::ReadOwner | QFile::ExeOwner | QFile::ExeUser | QFile::WriteUser | QFile::WriteOwner | QFile::WriteOther);
-                QFile dead(dir.path() + '/' + list.at(i));
-                dead.remove();
+    QDir dir(flatDirTestPath);
+    if (dir.exists()) {
+        const QDir::Filters filters = QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot;
+        const QFileInfoList list = dir.entryInfoList(filters);
+        for (const QFileInfo &fi : list) {
+            if (fi.isDir()) {
+                QVERIFY(dir.rmdir(fi.fileName()));
+            } else {
+                QFile dead(fi.absoluteFilePath());
+                dead.setPermissions(QFile::ReadUser | QFile::ReadOwner | QFile::ExeOwner | QFile::ExeUser | QFile::WriteUser | QFile::WriteOwner | QFile::WriteOther);
+                QVERIFY(dead.remove());
             }
-            if (fi.exists() && fi.isDir())
-                QVERIFY(dir.rmdir(list.at(i)));
         }
-        list = dir.entryList(QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot);
-        QCOMPARE(list.count(), 0);
+        QVERIFY(dir.entryInfoList(filters).isEmpty());
     }
 }
 
@@ -182,6 +167,7 @@ void tst_QFileSystemModel::initTestCase()
 void tst_QFileSystemModel::indexPath()
 {
 #if !defined(Q_OS_WIN)
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
     int depth = QDir::currentPath().count('/');
     model->setRootPath(QDir::currentPath());
     QString backPath;
@@ -195,9 +181,10 @@ void tst_QFileSystemModel::indexPath()
 
 void tst_QFileSystemModel::rootPath()
 {
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
     QCOMPARE(model->rootPath(), QString(QDir().path()));
 
-    QSignalSpy rootChanged(model, SIGNAL(rootPathChanged(QString)));
+    QSignalSpy rootChanged(model.data(), &QFileSystemModel::rootPathChanged);
     QModelIndex root = model->setRootPath(model->rootPath());
     root = model->setRootPath("this directory shouldn't exist");
     QCOMPARE(rootChanged.count(), 0);
@@ -243,6 +230,7 @@ void tst_QFileSystemModel::rootPath()
 
 void tst_QFileSystemModel::readOnly()
 {
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
     QCOMPARE(model->isReadOnly(), true);
     QTemporaryFile file(flatDirTestPath + QStringLiteral("/XXXXXX.dat"));
     QVERIFY2(file.open(), qPrintable(file.errorString()));
@@ -263,19 +251,21 @@ void tst_QFileSystemModel::readOnly()
 class CustomFileIconProvider : public QFileIconProvider
 {
 public:
-    CustomFileIconProvider() : QFileIconProvider() {
-        mb = qApp->style()->standardIcon(QStyle::SP_MessageBoxCritical);
-        dvd = qApp->style()->standardIcon(QStyle::SP_DriveDVDIcon);
+    CustomFileIconProvider() : QFileIconProvider()
+    {
+        auto style = QApplication::style();
+        mb = style->standardIcon(QStyle::SP_MessageBoxCritical);
+        dvd = style->standardIcon(QStyle::SP_DriveDVDIcon);
     }
 
-    virtual QIcon icon(const QFileInfo &info) const
+    QIcon icon(const QFileInfo &info) const override
     {
         if (info.isDir())
             return mb;
 
         return QFileIconProvider::icon(info);
     }
-    virtual QIcon icon(IconType type) const
+    QIcon icon(IconType type) const override
     {
         if (type == QFileIconProvider::Folder)
             return dvd;
@@ -289,69 +279,67 @@ private:
 
 void tst_QFileSystemModel::iconProvider()
 {
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
     QVERIFY(model->iconProvider());
-    QFileIconProvider *p = new QFileIconProvider();
-    model->setIconProvider(p);
-    QCOMPARE(model->iconProvider(), p);
-    model->setIconProvider(0);
-    delete p;
+    QScopedPointer<QFileIconProvider> provider(new QFileIconProvider);
+    model->setIconProvider(provider.data());
+    QCOMPARE(model->iconProvider(), provider.data());
+    model->setIconProvider(nullptr);
+    provider.reset();
 
-    QFileSystemModel *myModel = new QFileSystemModel();
+    QScopedPointer<QFileSystemModel> myModel(new QFileSystemModel);
     const QStringList documentPaths = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation);
     QVERIFY(!documentPaths.isEmpty());
-    const QString documentPath = documentPaths.front();
-    myModel->setRootPath(documentPath);
+    myModel->setRootPath(documentPaths.constFirst());
     //We change the provider, icons must be updated
-    CustomFileIconProvider *custom = new CustomFileIconProvider();
-    myModel->setIconProvider(custom);
+    provider.reset(new CustomFileIconProvider);
+    myModel->setIconProvider(provider.data());
 
-    QPixmap mb = qApp->style()->standardIcon(QStyle::SP_MessageBoxCritical).pixmap(50, 50);
+    QPixmap mb = QApplication::style()->standardIcon(QStyle::SP_MessageBoxCritical).pixmap(50, 50);
     QCOMPARE(myModel->fileIcon(myModel->index(QDir::homePath())).pixmap(50, 50), mb);
-    delete myModel;
-    delete custom;
 }
 
-bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount, const QStringList &initial_dirs)
+bool tst_QFileSystemModel::createFiles(QFileSystemModel *model, const QString &test_path,
+                                       const QStringList &initial_files, int existingFileCount,
+                                       const QStringList &initial_dirs)
 {
-    //qDebug() << (model->rowCount(model->index(test_path))) << existingFileCount << initial_files;
+    qCDebug(lcFileSystemModel) << (model->rowCount(model->index(test_path))) << existingFileCount << initial_files;
     bool timedOut = false;
     TRY_WAIT((model->rowCount(model->index(test_path)) == existingFileCount), &timedOut);
     if (timedOut)
         return false;
 
-    for (int i = 0; i < initial_dirs.count(); ++i) {
-        QDir dir(test_path);
-        if (!dir.exists()) {
-            qWarning() << "error" << test_path << "doesn't exists";
-            return false;
-        }
-        if(!dir.mkdir(initial_dirs.at(i))) {
-            qWarning() << "error" << "failed to make" << initial_dirs.at(i);
-            return false;
-        }
-        //qDebug() << test_path + '/' + initial_dirs.at(i) << (QFile::exists(test_path + '/' + initial_dirs.at(i)));
+    QDir dir(test_path);
+    if (!dir.exists()) {
+        qWarning() << "error" << test_path << "doesn't exist";
+        return false;
     }
-    for (int i = 0; i < initial_files.count(); ++i) {
-        QFile file(test_path + '/' + initial_files.at(i));
+    for (const auto &initial_dir : initial_dirs) {
+        if (!dir.mkdir(initial_dir)) {
+            qWarning() << "error" << "failed to make" << initial_dir;
+            return false;
+        }
+        qCDebug(lcFileSystemModel) << test_path + '/' + initial_dir << (QFile::exists(test_path + '/' + initial_dir));
+    }
+    for (const auto &initial_file : initial_files) {
+        QFile file(test_path + '/' + initial_file);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Append)) {
-            qDebug() << "failed to open file" << initial_files.at(i);
+            qDebug() << "failed to open file" << initial_file;
             return false;
         }
         if (!file.resize(1024 + file.size())) {
-            qDebug() << "failed to resize file" << initial_files.at(i);
+            qDebug() << "failed to resize file" << initial_file;
             return false;
         }
         if (!file.flush()) {
-            qDebug() << "failed to flush file" << initial_files.at(i);
+            qDebug() << "failed to flush file" << initial_file;
             return false;
         }
         file.close();
 #if defined(Q_OS_WIN)
-        if (initial_files.at(i)[0] == '.') {
-            QString hiddenFile = QDir::toNativeSeparators(file.fileName());
-            wchar_t nativeHiddenFile[MAX_PATH];
-            memset(nativeHiddenFile, 0, sizeof(nativeHiddenFile));
-            hiddenFile.toWCharArray(nativeHiddenFile);
+        if (initial_file[0] == '.') {
+            const QString hiddenFile = QDir::toNativeSeparators(file.fileName());
+            const auto nativeHiddenFile = reinterpret_cast<const wchar_t *>(hiddenFile.utf16());
 #ifndef Q_OS_WINRT
             DWORD currentAttributes = ::GetFileAttributes(nativeHiddenFile);
 #else // !Q_OS_WINRT
@@ -370,13 +358,13 @@ bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringLi
             }
         }
 #endif
-        //qDebug() << test_path + '/' + initial_files.at(i) << (QFile::exists(test_path + '/' + initial_files.at(i)));
+        qCDebug(lcFileSystemModel) << test_path + '/' + initial_file << (QFile::exists(test_path + '/' + initial_file));
     }
     return true;
 }
 
-QModelIndex tst_QFileSystemModel::prepareTestModelRoot(const QString &test_path, QSignalSpy **spy2,
-                                                       QSignalSpy **spy3)
+QModelIndex tst_QFileSystemModel::prepareTestModelRoot(QFileSystemModel *model, const QString &test_path,
+                                                       QSignalSpy **spy2, QSignalSpy **spy3)
 {
     if (model->rowCount(model->index(test_path)) != 0)
         return QModelIndex();
@@ -387,9 +375,8 @@ QModelIndex tst_QFileSystemModel::prepareTestModelRoot(const QString &test_path,
         *spy3 = new QSignalSpy(model, &QFileSystemModel::rowsAboutToBeInserted);
 
     QStringList files = { "b", "d", "f", "h", "j", ".a", ".c", ".e", ".g" };
-    QString l = "b,d,f,h,j,.a,.c,.e,.g";
 
-    if (!createFiles(test_path, files))
+    if (!createFiles(model, test_path, files))
         return QModelIndex();
 
     QModelIndex root = model->setRootPath(test_path);
@@ -406,10 +393,10 @@ QModelIndex tst_QFileSystemModel::prepareTestModelRoot(const QString &test_path,
 
 void tst_QFileSystemModel::rowCount()
 {
-    const QString tmp = flatDirTestPath;
     QSignalSpy *spy2 = nullptr;
     QSignalSpy *spy3 = nullptr;
-    QModelIndex root = prepareTestModelRoot(flatDirTestPath, &spy2, &spy3);
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QModelIndex root = prepareTestModelRoot(model.data(), flatDirTestPath, &spy2, &spy3);
     QVERIFY(root.isValid());
 
     QVERIFY(spy2 && spy2->count() > 0);
@@ -419,11 +406,11 @@ void tst_QFileSystemModel::rowCount()
 void tst_QFileSystemModel::rowsInserted_data()
 {
     QTest::addColumn<int>("count");
-    QTest::addColumn<int>("ascending");
+    QTest::addColumn<Qt::SortOrder>("ascending");
     for (int i = 0; i < 4; ++i) {
         const QByteArray iB = QByteArray::number(i);
-        QTest::newRow(("Qt::AscendingOrder " + iB).constData()) << i << (int)Qt::AscendingOrder;
-        QTest::newRow(("Qt::DescendingOrder " + iB).constData()) << i << (int)Qt::DescendingOrder;
+        QTest::newRow(("Qt::AscendingOrder " + iB).constData()) << i << Qt::AscendingOrder;
+        QTest::newRow(("Qt::DescendingOrder " + iB).constData()) << i << Qt::DescendingOrder;
     }
 }
 
@@ -436,20 +423,21 @@ static inline QString lastEntry(const QModelIndex &root)
 void tst_QFileSystemModel::rowsInserted()
 {
     const QString tmp = flatDirTestPath;
-    QModelIndex root = prepareTestModelRoot(tmp);
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QModelIndex root = prepareTestModelRoot(model.data(), tmp);
     QVERIFY(root.isValid());
 
-    QFETCH(int, ascending);
+    QFETCH(Qt::SortOrder, ascending);
     QFETCH(int, count);
-    model->sort(0, (Qt::SortOrder)ascending);
+    model->sort(0, ascending);
 
-    QSignalSpy spy0(model, SIGNAL(rowsInserted(QModelIndex,int,int)));
-    QSignalSpy spy1(model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
+    QSignalSpy spy0(model.data(), &QAbstractItemModel::rowsInserted);
+    QSignalSpy spy1(model.data(), &QAbstractItemModel::rowsAboutToBeInserted);
     int oldCount = model->rowCount(root);
     QStringList files;
     for (int i = 0; i < count; ++i)
         files.append(QLatin1Char('c') + QString::number(i));
-    QVERIFY(createFiles(tmp, files, 5));
+    QVERIFY(createFiles(model.data(), tmp, files, 5));
     QTRY_COMPARE(model->rowCount(root), oldCount + count);
     int totalRowsInserted = 0;
     for (int i = 0; i < spy0.count(); ++i) {
@@ -469,7 +457,7 @@ void tst_QFileSystemModel::rowsInserted()
     }
     if (count == 0) QCOMPARE(spy1.count(), 0); else QVERIFY(spy1.count() >= 1);
 
-    QVERIFY(createFiles(tmp, QStringList(".hidden_file"), 5 + count));
+    QVERIFY(createFiles(model.data(), tmp, QStringList(".hidden_file"), 5 + count));
 
     if (count != 0)
         QTRY_VERIFY(spy0.count() >= 1);
@@ -489,19 +477,21 @@ void tst_QFileSystemModel::rowsRemoved_data()
 void tst_QFileSystemModel::rowsRemoved()
 {
     const QString tmp = flatDirTestPath;
-    QModelIndex root = prepareTestModelRoot(tmp);
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QModelIndex root = prepareTestModelRoot(model.data(), tmp);
     QVERIFY(root.isValid());
 
     QFETCH(int, count);
-    QFETCH(int, ascending);
-    model->sort(0, (Qt::SortOrder)ascending);
+    QFETCH(Qt::SortOrder, ascending);
+    model->sort(0, ascending);
 
-    QSignalSpy spy0(model, SIGNAL(rowsRemoved(QModelIndex,int,int)));
-    QSignalSpy spy1(model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
+    QSignalSpy spy0(model.data(), &QAbstractItemModel::rowsRemoved);
+    QSignalSpy spy1(model.data(), &QAbstractItemModel::rowsAboutToBeRemoved);
     int oldCount = model->rowCount(root);
     for (int i = count - 1; i >= 0; --i) {
-        //qDebug() << "removing" <<  model->index(i, 0, root).data().toString();
-        QVERIFY(QFile::remove(tmp + '/' + model->index(i, 0, root).data().toString()));
+        const QString fileName = model->index(i, 0, root).data().toString();
+        qCDebug(lcFileSystemModel) << "removing" << fileName;
+        QVERIFY(QFile::remove(tmp + QLatin1Char('/') + fileName));
     }
     for (int i = 0 ; i < 10; ++i) {
         if (count != 0) {
@@ -520,18 +510,23 @@ void tst_QFileSystemModel::rowsRemoved()
             lst.append(model->index(i, 0, root).data().toString());
         if (model->rowCount(root) == oldCount - count)
             break;
-        qDebug() << "still have:" << lst << QFile::exists(tmp + '/' + QString(".a"));
+        qCDebug(lcFileSystemModel) << "still have:" << lst << QFile::exists(tmp + QLatin1String("/.a"));
         QDir tmpLister(tmp);
-        qDebug() << tmpLister.entryList();
+        qCDebug(lcFileSystemModel) << tmpLister.entryList();
     }
     QTRY_COMPARE(model->rowCount(root), oldCount - count);
 
-    QVERIFY(QFile::exists(tmp + '/' + QString(".a")));
-    QVERIFY(QFile::remove(tmp + '/' + QString(".a")));
-    QVERIFY(QFile::remove(tmp + '/' + QString(".c")));
+    QVERIFY(QFile::exists(tmp + QLatin1String("/.a")));
+    QVERIFY(QFile::remove(tmp + QLatin1String("/.a")));
+    QVERIFY(QFile::remove(tmp + QLatin1String("/.c")));
 
-    if (count != 0) QVERIFY(spy0.count() >= 1); else QCOMPARE(spy0.count(), 0);
-    if (count != 0) QVERIFY(spy1.count() >= 1); else QCOMPARE(spy1.count(), 0);
+    if (count != 0) {
+        QVERIFY(spy0.count() >= 1);
+        QVERIFY(spy1.count() >= 1);
+    } else {
+        QCOMPARE(spy0.count(), 0);
+        QCOMPARE(spy1.count(), 0);
+    }
 }
 
 void tst_QFileSystemModel::dataChanged_data()
@@ -544,18 +539,19 @@ void tst_QFileSystemModel::dataChanged()
     QSKIP("This can't be tested right now since we don't watch files, only directories.");
 
     const QString tmp = flatDirTestPath;
-    QModelIndex root = prepareTestModelRoot(tmp);
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QModelIndex root = prepareTestModelRoot(model.data(), tmp);
     QVERIFY(root.isValid());
 
     QFETCH(int, count);
-    QFETCH(int, assending);
-    model->sort(0, (Qt::SortOrder)assending);
+    QFETCH(Qt::SortOrder, ascending);
+    model->sort(0, ascending);
 
-    QSignalSpy spy(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
+    QSignalSpy spy(model.data(), &QAbstractItemModel::dataChanged);
     QStringList files;
     for (int i = 0; i < count; ++i)
         files.append(model->index(i, 0, root).data().toString());
-    createFiles(tmp, files);
+    createFiles(model.data(), tmp, files);
 
     QTest::qWait(WAITTIME);
 
@@ -566,64 +562,68 @@ void tst_QFileSystemModel::filters_data()
 {
     QTest::addColumn<QStringList>("files");
     QTest::addColumn<QStringList>("dirs");
-    QTest::addColumn<int>("dirFilters");
+    QTest::addColumn<QDir::Filters>("dirFilters");
     QTest::addColumn<QStringList>("nameFilters");
     QTest::addColumn<int>("rowCount");
-    QTest::newRow("no dirs") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs) << QStringList() << 2;
-    QTest::newRow("no dirs - dot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDot) << QStringList() << 1;
-    QTest::newRow("no dirs - dotdot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDotDot) << QStringList() << 1;
-    QTest::newRow("no dirs - dotanddotdot") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::NoDotAndDotDot) << QStringList() << 0;
-    QTest::newRow("one dir - dot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDot) << QStringList() << 2;
-    QTest::newRow("one dir - dotdot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDotDot) << QStringList() << 2;
-    QTest::newRow("one dir - dotanddotdot") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs | QDir::NoDotAndDotDot) << QStringList() << 1;
-    QTest::newRow("one dir") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") << (int)(QDir::Dirs) << QStringList() << 3;
-    QTest::newRow("no dir + hidden") << (QStringList() << "a" << "b" << "c") << QStringList() << (int)(QDir::Dirs | QDir::Hidden) << QStringList() << 2;
-    QTest::newRow("dir+hid+files") << (QStringList() << "a" << "b" << "c") << QStringList() <<
-                         (int)(QDir::Dirs | QDir::Files | QDir::Hidden) << QStringList() << 5;
-    QTest::newRow("dir+file+hid-dot .A") << (QStringList() << "a" << "b" << "c") << (QStringList() << ".A") <<
-                         (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot) << QStringList() << 4;
-    QTest::newRow("dir+files+hid+dot A") << (QStringList() << "a" << "b" << "c") << (QStringList() << "AFolder") <<
-                         (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot) << (QStringList() << "A*") << 2;
-    QTest::newRow("dir+files+hid+dot+cas1") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") <<
-                         (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::CaseSensitive) << (QStringList() << "Z") << 1;
-    QTest::newRow("dir+files+hid+dot+cas2") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") <<
-                         (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::CaseSensitive) << (QStringList() << "a") << 1;
-    QTest::newRow("dir+files+hid+dot+cas+alldir") << (QStringList() << "a" << "b" << "c") << (QStringList() << "Z") <<
-                         (int)(QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::CaseSensitive | QDir::AllDirs) << (QStringList() << "Z") << 1;
 
-    QTest::newRow("case sensitive") << (QStringList() << "Antiguagdb" << "Antiguamtd"
-        << "Antiguamtp" << "afghanistangdb" << "afghanistanmtd")
-        << QStringList() << (int)(QDir::Files) << QStringList() << 5;
+    const QStringList abcList{QLatin1String("a"), QLatin1String("b"), QLatin1String("c")};
+    const QStringList zList{QLatin1String("Z")};
+
+    QTest::newRow("no dirs") << abcList << QStringList() << QDir::Filters(QDir::Dirs) << QStringList() << 2;
+    QTest::newRow("no dirs - dot") << abcList << QStringList() << (QDir::Dirs | QDir::NoDot) << QStringList() << 1;
+    QTest::newRow("no dirs - dotdot") << abcList << QStringList() << (QDir::Dirs | QDir::NoDotDot) << QStringList() << 1;
+    QTest::newRow("no dirs - dotanddotdot") << abcList << QStringList() << (QDir::Dirs | QDir::NoDotAndDotDot) << QStringList() << 0;
+    QTest::newRow("one dir - dot") << abcList << zList << (QDir::Dirs | QDir::NoDot) << QStringList() << 2;
+    QTest::newRow("one dir - dotdot") << abcList << zList << (QDir::Dirs | QDir::NoDotDot) << QStringList() << 2;
+    QTest::newRow("one dir - dotanddotdot") << abcList << zList << (QDir::Dirs | QDir::NoDotAndDotDot) << QStringList() << 1;
+    QTest::newRow("one dir") << abcList << zList << QDir::Filters(QDir::Dirs) << QStringList() << 3;
+    QTest::newRow("no dir + hidden") << abcList << QStringList() << (QDir::Dirs | QDir::Hidden) << QStringList() << 2;
+    QTest::newRow("dir+hid+files") << abcList << QStringList() <<
+                         (QDir::Dirs | QDir::Files | QDir::Hidden) << QStringList() << 5;
+    QTest::newRow("dir+file+hid-dot .A") << abcList << QStringList{QLatin1String(".A")} <<
+                         (QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot) << QStringList() << 4;
+    QTest::newRow("dir+files+hid+dot A") << abcList << QStringList{QLatin1String("AFolder")} <<
+                         (QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot) << QStringList{QLatin1String("A*")} << 2;
+    QTest::newRow("dir+files+hid+dot+cas1") << abcList << zList <<
+                         (QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::CaseSensitive) << zList << 1;
+    QTest::newRow("dir+files+hid+dot+cas2") << abcList << zList <<
+                         (QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::CaseSensitive) << QStringList{QLatin1String("a")} << 1;
+    QTest::newRow("dir+files+hid+dot+cas+alldir") << abcList << zList <<
+                         (QDir::Dirs | QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot | QDir::CaseSensitive | QDir::AllDirs) << zList << 1;
+
+    QTest::newRow("case sensitive") << QStringList{QLatin1String("Antiguagdb"), QLatin1String("Antiguamtd"),
+        QLatin1String("Antiguamtp"), QLatin1String("afghanistangdb"), QLatin1String("afghanistanmtd")}
+        << QStringList() << QDir::Filters(QDir::Files) << QStringList() << 5;
 }
 
 void tst_QFileSystemModel::filters()
 {
     QString tmp = flatDirTestPath;
-    QVERIFY(createFiles(tmp, QStringList()));
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QVERIFY(createFiles(model.data(), tmp, QStringList()));
     QModelIndex root = model->setRootPath(tmp);
     QFETCH(QStringList, files);
     QFETCH(QStringList, dirs);
-    QFETCH(int, dirFilters);
+    QFETCH(QDir::Filters, dirFilters);
     QFETCH(QStringList, nameFilters);
     QFETCH(int, rowCount);
 
     if (nameFilters.count() > 0)
         model->setNameFilters(nameFilters);
     model->setNameFilterDisables(false);
-    model->setFilter((QDir::Filters)dirFilters);
+    model->setFilter(dirFilters);
 
-    QVERIFY(createFiles(tmp, files, 0, dirs));
+    QVERIFY(createFiles(model.data(), tmp, files, 0, dirs));
     QTRY_COMPARE(model->rowCount(root), rowCount);
 
     // Make sure that we do what QDir does
     QDir xFactor(tmp);
-    QDir::Filters  filters = (QDir::Filters)dirFilters;
     QStringList dirEntries;
 
     if (nameFilters.count() > 0)
-        dirEntries = xFactor.entryList(nameFilters, filters);
+        dirEntries = xFactor.entryList(nameFilters, dirFilters);
     else
-        dirEntries = xFactor.entryList(filters);
+        dirEntries = xFactor.entryList(dirFilters);
 
     QCOMPARE(dirEntries.count(), rowCount);
 
@@ -667,12 +667,13 @@ void tst_QFileSystemModel::nameFilters()
 {
     QStringList list;
     list << "a" << "b" << "c";
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
     model->setNameFilters(list);
     model->setNameFilterDisables(false);
     QCOMPARE(model->nameFilters(), list);
 
     QString tmp = flatDirTestPath;
-    QVERIFY(createFiles(tmp, list));
+    QVERIFY(createFiles(model.data(), tmp, list));
     QModelIndex root = model->setRootPath(tmp);
     QTRY_COMPARE(model->rowCount(root), 3);
 
@@ -693,15 +694,17 @@ void tst_QFileSystemModel::setData_data()
               << QDir::temp().absolutePath() + '/' + "a"
               << false;
     */
+
+    const QStringList abcList{QLatin1String("a"), QLatin1String("b"), QLatin1String("c")};
     QTest::newRow("in current dir")
               << QString()
-              << (QStringList() << "a" << "b" << "c")
+              << abcList
               << "a"
               << "d"
               << true;
     QTest::newRow("in subdir")
               << "s"
-              << (QStringList() << "a" << "b" << "c")
+              << abcList
               << "a"
               << "d"
               << true;
@@ -709,7 +712,8 @@ void tst_QFileSystemModel::setData_data()
 
 void tst_QFileSystemModel::setData()
 {
-    QSignalSpy spy(model, SIGNAL(fileRenamed(QString,QString,QString)));
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QSignalSpy spy(model.data(), &QFileSystemModel::fileRenamed);
     QFETCH(QString, subdirName);
     QFETCH(QStringList, files);
     QFETCH(QString, oldFileName);
@@ -722,7 +726,7 @@ void tst_QFileSystemModel::setData()
         QVERIFY(dir.mkdir(subdirName));
         tmp.append('/' + subdirName);
     }
-    QVERIFY(createFiles(tmp, files));
+    QVERIFY(createFiles(model.data(), tmp, files));
     QModelIndex tmpIdx = model->setRootPath(flatDirTestPath);
     if (!subdirName.isEmpty()) {
         tmpIdx = model->index(tmp);
@@ -760,6 +764,7 @@ void tst_QFileSystemModel::sortPersistentIndex()
     const QFileInfo fileInfo(file.fileName());
     file.close();
     QTRY_VERIFY(QDir(flatDirTestPath).entryInfoList().contains(fileInfo));
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
     QModelIndex root = model->setRootPath(flatDirTestPath);
     QTRY_VERIFY(model->rowCount(root) > 0);
 
@@ -786,8 +791,9 @@ void tst_QFileSystemModel::sort()
 {
     QFETCH(bool, fileDialogMode);
 
-    MyFriendFileSystemModel *myModel = new MyFriendFileSystemModel();
-    QTreeView *tree = new QTreeView();
+    QScopedPointer<MyFriendFileSystemModel> myModel(new MyFriendFileSystemModel);
+    QTreeView tree;
+    tree.setWindowTitle(QTest::currentTestFunction());
 
     if (fileDialogMode && EmulationDetector::isRunningArmOnX86())
         QSKIP("Crashes in QEMU. QTBUG-70572");
@@ -816,24 +822,23 @@ void tst_QFileSystemModel::sort()
 
     myModel->setRootPath("");
     myModel->setFilter(QDir::AllEntries | QDir::System | QDir::Hidden);
-    tree->setSortingEnabled(true);
-    tree->setModel(myModel);
-    tree->show();
-    tree->resize(800, 800);
-    QVERIFY(QTest::qWaitForWindowActive(tree));
-    tree->header()->setSortIndicator(1,Qt::DescendingOrder);
-    tree->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    tree.setSortingEnabled(true);
+    tree.setModel(myModel.data());
+    tree.show();
+    tree.resize(800, 800);
+    QVERIFY(QTest::qWaitForWindowActive(&tree));
+    tree.header()->setSortIndicator(1, Qt::DescendingOrder);
+    tree.header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     QStringList dirsToOpen;
-    do
-    {
-        dirsToOpen<<dir.absolutePath();
+    do {
+        dirsToOpen << dir.absolutePath();
     } while (dir.cdUp());
 
     for (int i = dirsToOpen.size() -1 ; i > 0 ; --i) {
         QString path = dirsToOpen[i];
-        tree->expand(myModel->index(path, 0));
+        tree.expand(myModel->index(path, 0));
     }
-    tree->expand(myModel->index(dirPath, 0));
+    tree.expand(myModel->index(dirPath, 0));
     QModelIndex parent = myModel->index(dirPath, 0);
     QList<QString> expectedOrder;
     expectedOrder << tempFile2.fileName() << tempFile.fileName() << dirPath + QChar('/') + ".." << dirPath + QChar('/') + ".";
@@ -859,15 +864,13 @@ void tst_QFileSystemModel::sort()
             QTRY_COMPARE(dirPath + QChar('/') + myModel->index(i, 1, parent).data(QFileSystemModel::FileNameRole).toString(), expectedOrder.at(i));
         }
     }
-
-    delete tree;
-    delete myModel;
 }
 
 void tst_QFileSystemModel::mkdir()
 {
     QString tmp = flatDirTestPath;
     QString newFolderPath = QDir::toNativeSeparators(tmp + '/' + "NewFoldermkdirtest4");
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
     QModelIndex tmpDir = model->index(tmp);
     QVERIFY(tmpDir.isValid());
     QDir bestatic(newFolderPath);
@@ -902,6 +905,7 @@ void tst_QFileSystemModel::deleteFile()
         qWarning() << "unable to create" << newFilePath;
     }
     newFile.close();
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
     QModelIndex idx = model->index(newFilePath);
     QVERIFY(idx.isValid());
     QVERIFY(model->remove(idx));
@@ -963,7 +967,8 @@ void tst_QFileSystemModel::caseSensitivity()
     QString tmp = flatDirTestPath;
     QStringList files;
     files << "a" << "c" << "C";
-    QVERIFY(createFiles(tmp, files));
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QVERIFY(createFiles(model.data(), tmp, files));
     QModelIndex root = model->index(tmp);
     QStringList paths;
     QModelIndexList indexes;
@@ -1013,13 +1018,14 @@ void tst_QFileSystemModel::dirsBeforeFiles()
 
     const int itemCount = 3;
     for (int i = 0; i < itemCount; ++i) {
-        QLatin1Char c('a' + i);
-        dir.mkdir(c + QLatin1String("-dir"));
+        QLatin1Char c('a' + char(i));
+        QVERIFY(dir.mkdir(c + QLatin1String("-dir")));
         QFile file(flatDirTestPath + QLatin1Char('/') + c + QLatin1String("-file"));
-        file.open(QIODevice::ReadWrite);
+        QVERIFY(file.open(QIODevice::ReadWrite));
         file.close();
     }
 
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
     QModelIndex root = model->setRootPath(flatDirTestPath);
     // Wait for model to be notified by the file system watcher
     QTRY_COMPARE(model->rowCount(root), 2 * itemCount);
@@ -1073,7 +1079,7 @@ static inline QByteArray permissionRowName(bool readOnly, int permission)
 
 void tst_QFileSystemModel::permissions_data()
 {
-    QTest::addColumn<int>("permissions");
+    QTest::addColumn<QFileDevice::Permissions>("permissions");
     QTest::addColumn<bool>("readOnly");
 
     static const int permissions[] = {
@@ -1081,22 +1087,23 @@ void tst_QFileSystemModel::permissions_data()
         QFile::ReadOwner,
         QFile::WriteOwner|QFile::ReadOwner,
     };
-    for (size_t i = 0; i < sizeof permissions / sizeof *permissions; ++i) {
-        QTest::newRow(permissionRowName(false, permissions[i]).constData()) << permissions[i] << false;
-        QTest::newRow(permissionRowName(true, permissions[i]).constData()) << permissions[i] << true;
+    for (int permission : permissions) {
+        QTest::newRow(permissionRowName(false, permission).constData()) << QFileDevice::Permissions(permission) << false;
+        QTest::newRow(permissionRowName(true, permission).constData()) << QFileDevice::Permissions(permission) << true;
     }
 }
 
 void tst_QFileSystemModel::permissions() // checks QTBUG-20503
 {
-    QFETCH(int, permissions);
+    QFETCH(QFileDevice::Permissions, permissions);
     QFETCH(bool, readOnly);
 
     const QString tmp = flatDirTestPath;
     const QString file = tmp + QLatin1String("/f");
-    QVERIFY(createFiles(tmp, QStringList() << "f"));
+    QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
+    QVERIFY(createFiles(model.data(), tmp, QStringList{QLatin1String("f")}));
 
-    QVERIFY(QFile::setPermissions(file,  QFile::Permissions(permissions)));
+    QVERIFY(QFile::setPermissions(file,  permissions));
 
     const QModelIndex root = model->setRootPath(tmp);
 

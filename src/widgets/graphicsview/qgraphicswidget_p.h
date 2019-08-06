@@ -190,7 +190,8 @@ public:
             , buttonMouseOver(false)
             , buttonSunken(false)
         {}
-    } *windowData;
+    };
+    std::unique_ptr<WindowData> windowData;
     void ensureWindowData();
 
     bool setWindowFrameMargins;

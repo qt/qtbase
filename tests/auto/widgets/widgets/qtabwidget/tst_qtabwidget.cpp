@@ -620,7 +620,7 @@ void tst_QTabWidget::heightForWidth()
 
     QWidget *window = new QWidget;
     QVBoxLayout *lay = new QVBoxLayout(window);
-    lay->setMargin(0);
+    lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(0);
     QTabWidget *tabWid = new QTabWidget(window);
     QWidget *w = new QWidget;
@@ -637,7 +637,7 @@ void tst_QTabWidget::heightForWidth()
                                );
     label->setWordWrap(true);
     lay2->addWidget(label);
-    lay2->setMargin(0);
+    lay2->setContentsMargins(0, 0, 0, 0);
 
     lay->addWidget(tabWid);
     int h = window->heightForWidth(160);

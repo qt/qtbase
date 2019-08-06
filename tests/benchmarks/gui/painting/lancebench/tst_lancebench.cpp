@@ -305,17 +305,17 @@ void tst_LanceBench::runTestSuite(GraphicsEngine engine, QImage::Format format, 
 
 void tst_LanceBench::paint(QPaintDevice *device, GraphicsEngine engine, QImage::Format format, const QStringList &script, const QString &filePath)
 {
-    PaintCommands pcmd(script, 800, 800, format);
-    switch (engine) {
-    case OpenGL:
-        pcmd.setType(OpenGLBufferType); // version/profile is communicated through the context's format()
-        break;
-    case Raster:
-        pcmd.setType(ImageType);
-        break;
-    }
-    pcmd.setFilePath(filePath);
     QBENCHMARK {
+        PaintCommands pcmd(script, 800, 800, format);
+        switch (engine) {
+        case OpenGL:
+            pcmd.setType(OpenGLBufferType); // version/profile is communicated through the context's format()
+            break;
+        case Raster:
+            pcmd.setType(ImageType);
+            break;
+        }
+        pcmd.setFilePath(filePath);
         QPainter p(device);
         pcmd.setPainter(&p);
         pcmd.runCommands();

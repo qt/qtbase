@@ -194,7 +194,7 @@ void tst_QBoxLayout::setGeometry()
     setFrameless(&toplevel);
     QWidget w(&toplevel);
     QVBoxLayout *lay = new QVBoxLayout;
-    lay->setMargin(0);
+    lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(0);
     QHBoxLayout *lay2 = new QHBoxLayout;
     QDial *dial = new QDial;
@@ -271,7 +271,7 @@ void tst_QBoxLayout::widgetSurplus()
     QDialog window;
     QScopedPointer<MarginEatingStyle> marginEater(new MarginEatingStyle);
     QVBoxLayout *vbox = new QVBoxLayout(&window);
-    vbox->setMargin(0);
+    vbox->setContentsMargins(0, 0, 0, 0);
     vbox->setSpacing(0);
 
     QLabel *hiddenLabel = new QLabel(tr("Invisible label"));

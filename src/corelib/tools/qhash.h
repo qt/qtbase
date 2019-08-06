@@ -136,7 +136,7 @@ struct QHashDummyValue
 {
 };
 
-inline bool operator==(const QHashDummyValue & /* v1 */, const QHashDummyValue & /* v2 */)
+constexpr bool operator==(const QHashDummyValue &, const QHashDummyValue &) noexcept
 {
     return true;
 }
@@ -957,44 +957,32 @@ Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::Node **QHash<Key, T>::findNode(cons
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE bool QHash<Key, T>::operator==(const QHash &other) const
 {
-    if (size() != other.size())
-        return false;
     if (d == other.d)
         return true;
+    if (size() != other.size())
+        return false;
 
     const_iterator it = begin();
 
     while (it != end()) {
         // Build two equal ranges for i.key(); one for *this and one for other.
         // For *this we can avoid a lookup via equal_range, as we know the beginning of the range.
-        auto thisEqualRangeEnd = it;
-        while (thisEqualRangeEnd != end() && it.key() == thisEqualRangeEnd.key())
-            ++thisEqualRangeEnd;
+        auto thisEqualRangeStart = it;
+        const Key &thisEqualRangeKey = it.key();
+        size_type n = 0;
+        do {
+            ++it;
+            ++n;
+        } while (it != end() && it.key() == thisEqualRangeKey);
 
-        const auto otherEqualRange = other.equal_range(it.key());
+        const auto otherEqualRange = other.equal_range(thisEqualRangeKey);
 
-        if (std::distance(it, thisEqualRangeEnd) != std::distance(otherEqualRange.first, otherEqualRange.second))
+        if (n != std::distance(otherEqualRange.first, otherEqualRange.second))
             return false;
 
         // Keys in the ranges are equal by construction; this checks only the values.
-        //
-        // When using the 3-arg std::is_permutation, MSVC will emit warning C4996,
-        // passing an unchecked iterator to a Standard Library algorithm. We don't
-        // want to suppress the warning, and we can't use stdext::make_checked_array_iterator
-        // because QHash::(const_)iterator does not work with size_t and thus will
-        // emit more warnings. Use the 4-arg std::is_permutation instead (which
-        // is supported since MSVC 2015).
-        //
-        // ### Qt 6: if C++14 library support is a mandated minimum, remove the ifdef for MSVC.
-        if (!std::is_permutation(it, thisEqualRangeEnd, otherEqualRange.first
-#ifdef Q_CC_MSVC
-                                 , otherEqualRange.second
-#endif
-                                 )) {
+        if (!qt_is_permutation(thisEqualRangeStart, it, otherEqualRange.first, otherEqualRange.second))
             return false;
-        }
-
-        it = thisEqualRangeEnd;
     }
 
     return true;

@@ -78,24 +78,22 @@ void tst_qdiriterator::data()
 }
 
 #ifdef Q_OS_WIN
-static int posix_helper(const wchar_t *dirpath)
+static int posix_helper(const wchar_t *dirpath, size_t length)
 {
     int count = 0;
     HANDLE hSearch;
     WIN32_FIND_DATA fd;
 
-    const size_t origDirPathLength = wcslen(dirpath);
-
     wchar_t appendedPath[MAX_PATH];
-    wcscpy(appendedPath, dirpath);
-    wcscat(appendedPath, L"\\*");
+    Q_ASSERT(MAX_PATH > length + 3);
+    wcsncpy(appendedPath, dirpath, length);
+    wcscpy(appendedPath + length, L"\\*");
 #ifndef Q_OS_WINRT
     hSearch = FindFirstFile(appendedPath, &fd);
 #else
     hSearch = FindFirstFileEx(appendedPath, FindExInfoStandard, &fd,
                               FindExSearchNameMatch, NULL, FIND_FIRST_EX_LARGE_FETCH);
 #endif
-    appendedPath[origDirPathLength] = 0;
 
     if (hSearch == INVALID_HANDLE_VALUE) {
         qWarning("FindFirstFile failed");
@@ -107,10 +105,12 @@ static int posix_helper(const wchar_t *dirpath)
             !(fd.cFileName[0] == L'.' && fd.cFileName[1] == L'.' && fd.cFileName[2] == 0))
         {
             if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-                wcscat(appendedPath, L"\\");
-                wcscat(appendedPath, fd.cFileName);
-                count += posix_helper(appendedPath);
-                appendedPath[origDirPathLength] = 0;
+                // newLength will "point" to where we put a * earlier, so we overwrite that.
+                size_t newLength = length + 1; // "+ 1" for directory separator
+                Q_ASSERT(newLength + wcslen(fd.cFileName) + 1 < MAX_PATH); // "+ 1" for null-terminator
+                wcscpy(appendedPath + newLength, fd.cFileName);
+                newLength += wcslen(fd.cFileName);
+                count += posix_helper(appendedPath, newLength);
             }
             else {
                 ++count;
@@ -164,8 +164,8 @@ void tst_qdiriterator::posix()
     QBENCHMARK {
 #ifdef Q_OS_WIN
         wchar_t wPath[MAX_PATH];
-        path.toWCharArray(wPath);
-        count = posix_helper(wPath);
+        const int end = path.toWCharArray(wPath);
+        count = posix_helper(wPath, end);
 #else
         count = posix_helper(dirpath.constData());
 #endif

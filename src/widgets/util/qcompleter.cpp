@@ -161,6 +161,7 @@
 #include "QtWidgets/qapplication.h"
 #include "QtGui/qevent.h"
 #include "QtWidgets/qdesktopwidget.h"
+#include <private/qapplication_p.h>
 #include <private/qdesktopwidget_p.h>
 #if QT_CONFIG(lineedit)
 #include "QtWidgets/qlineedit.h"
@@ -1416,7 +1417,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
             // widget lost focus, hide the popup
             if (d->widget && (!d->widget->hasFocus()
 #ifdef QT_KEYPAD_NAVIGATION
-                || (QApplication::keypadNavigationEnabled() && !d->widget->hasEditFocus())
+                || (QApplicationPrivate::keypadNavigationEnabled() && !d->widget->hasEditFocus())
 #endif
                 ))
                 d->popup->hide();
@@ -1434,7 +1435,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
         switch (key) {
 #ifdef QT_KEYPAD_NAVIGATION
         case Qt::Key_Select:
-            if (!QApplication::keypadNavigationEnabled())
+            if (!QApplicationPrivate::keypadNavigationEnabled())
                 break;
 #endif
         case Qt::Key_Return:
@@ -1464,7 +1465,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
     case QEvent::KeyRelease: {
         QKeyEvent *ke = static_cast<QKeyEvent *>(e);
-        if (QApplication::keypadNavigationEnabled() && ke->key() == Qt::Key_Back) {
+        if (QApplicationPrivate::keypadNavigationEnabled() && ke->key() == Qt::Key_Back) {
             // Send the event to the 'widget'. This is what we did for KeyPress, so we need
             // to do the same for KeyRelease, in case the widget's KeyPress event set
             // up something (such as a timer) that is relying on also receiving the
@@ -1481,7 +1482,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 
     case QEvent::MouseButtonPress: {
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled()) {
+        if (QApplicationPrivate::keypadNavigationEnabled()) {
             // if we've clicked in the widget (or its descendant), let it handle the click
             QWidget *source = qobject_cast<QWidget *>(o);
             if (source) {

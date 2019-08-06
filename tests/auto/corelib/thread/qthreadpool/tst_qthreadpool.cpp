@@ -92,7 +92,9 @@ private slots:
     void priorityStart();
     void waitForDone();
     void clear();
+#if QT_DEPRECATED_SINCE(5, 9)
     void cancel();
+#endif
     void tryTake();
     void waitForDoneTimeout();
     void destroyingWaitsForTasksToFinish();
@@ -963,6 +965,7 @@ void tst_QThreadPool::clear()
     QCOMPARE(count.loadRelaxed(), threadPool.maxThreadCount());
 }
 
+#if QT_DEPRECATED_SINCE(5, 9)
 void tst_QThreadPool::cancel()
 {
     QSemaphore sem(0);
@@ -1034,6 +1037,7 @@ void tst_QThreadPool::cancel()
     delete runnables[0]; //if the pool deletes them then we'll get double-free crash
     delete runnables[runs-1];
 }
+#endif
 
 void tst_QThreadPool::tryTake()
 {

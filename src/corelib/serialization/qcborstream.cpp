@@ -1972,7 +1972,15 @@ inline void QCborStreamReader::preparse()
     if (lastError() == QCborError::NoError) {
         type_ = cbor_value_get_type(&d->currentElement);
 
-        if (type_ != CborInvalidType) {
+        if (type_ == CborInvalidType) {
+            // We may have reached the end.
+            if (d->device && d->containerStack.isEmpty()) {
+                d->buffer.clear();
+                if (d->bufferStart)
+                    d->device->skip(d->bufferStart);
+                d->bufferStart = 0;
+            }
+        } else {
             d->lastError = {};
             // Undo the type mapping that TinyCBOR does (we have an explicit type
             // for negative integer and we don't have separate types for Boolean,

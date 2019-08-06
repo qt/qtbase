@@ -33,7 +33,6 @@
 #include <QFontDialog>
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QSignalMapper>
 #include "ui_keypadnavigation.h"
 
 class KeypadNavigation : public QMainWindow
@@ -48,7 +47,7 @@ public:
         ui->setupUi(this);
 
         const struct {
-            QObject *action;
+            QAction *action;
             QWidget *page;
         } layoutMappings[] = {
             {ui->m_actionLayoutVerticalSimple,  ui->m_pageVerticalSimple},
@@ -58,15 +57,16 @@ public:
             {ui->m_actionLayoutChaos,           ui->m_pageChaos},
             {ui->m_actionLayoutDialogs,         ui->m_pageDialogs}
         };
-        for (int i = 0; i < int(sizeof layoutMappings / sizeof layoutMappings[0]); ++i) {
-            connect(layoutMappings[i].action, SIGNAL(triggered()), &m_layoutSignalMapper, SLOT(map()));
-            m_layoutSignalMapper.setMapping(layoutMappings[i].action, layoutMappings[i].page);
+        for (auto layoutMapping : layoutMappings) {
+            const auto page = layoutMapping.page;
+            connect(layoutMapping.action, &QAction::triggered, ui->m_stackWidget,
+                    [this, page]()
+                        { ui->m_stackWidget->setCurrentWidget(page); });
         }
-        connect(&m_layoutSignalMapper, SIGNAL(mapped(QWidget*)), ui->m_stackWidget, SLOT(setCurrentWidget(QWidget*)));
 
 #ifdef QT_KEYPAD_NAVIGATION
         const struct {
-            QObject *action;
+            QAction *action;
             Qt::NavigationMode mode;
         } modeMappings[] = {
             {ui->m_actionModeNone,                  Qt::NavigationModeNone},
@@ -75,17 +75,17 @@ public:
             {ui->m_actionModeCursorAuto,            Qt::NavigationModeCursorAuto},
             {ui->m_actionModeCursorForceVisible,    Qt::NavigationModeCursorForceVisible}
         };
-        for (int i = 0; i < int(sizeof modeMappings / sizeof modeMappings[0]); ++i) {
-            connect(modeMappings[i].action, SIGNAL(triggered()), &m_modeSignalMapper, SLOT(map()));
-            m_modeSignalMapper.setMapping(modeMappings[i].action, int(modeMappings[i].mode));
+        for (auto modeMapping : modeMappings) {
+            const auto mode = modeMapping.mode;
+            connect(modeMapping.action, &QAction::triggered, this,
+                    [this, mode]() { setNavigationMode(mode); });
         }
-        connect(&m_modeSignalMapper, SIGNAL(mapped(int)), SLOT(setNavigationMode(int)));
 #else // QT_KEYPAD_NAVIGATION
         ui->m_menuNavigation_mode->deleteLater();
 #endif // QT_KEYPAD_NAVIGATION
 
         const struct {
-            QObject *button;
+            QPushButton *button;
             Dialog dialog;
         } openDialogMappings[] = {
             {ui->m_buttonGetOpenFileName,       DialogGetOpenFileName},
@@ -97,11 +97,11 @@ public:
             {ui->m_buttonAboutQt,               DialogAboutQt},
             {ui->m_buttonGetItem,               DialogGetItem}
         };
-        for (int i = 0; i < int(sizeof openDialogMappings / sizeof openDialogMappings[0]); ++i) {
-            connect(openDialogMappings[i].button, SIGNAL(clicked()), &m_dialogSignalMapper, SLOT(map()));
-            m_dialogSignalMapper.setMapping(openDialogMappings[i].button, int(openDialogMappings[i].dialog));
+        for (auto openDialogMapping : openDialogMappings) {
+            const auto dialog = openDialogMapping.dialog;
+            connect(openDialogMapping.button, &QPushButton::clicked, this,
+                    [this, dialog]() { openDialog(dialog); });
         }
-        connect(&m_dialogSignalMapper, SIGNAL(mapped(int)), SLOT(openDialog(int)));
     }
 
     ~KeypadNavigation()
@@ -162,11 +162,6 @@ private:
     };
 
     Ui_KeypadNavigation *ui;
-    QSignalMapper m_layoutSignalMapper;
-#ifdef QT_KEYPAD_NAVIGATION
-    QSignalMapper m_modeSignalMapper;
-#endif // QT_KEYPAD_NAVIGATION
-    QSignalMapper m_dialogSignalMapper;
 };
 
 int main(int argc, char *argv[])

@@ -339,7 +339,7 @@ def main():
 
     (data_temp_file, data_temp_file_path) = tempfile.mkstemp("qlocale_data_p", dir=qtsrcdir)
     data_temp_file = os.fdopen(data_temp_file, "w")
-    qlocaledata_file = open(qtsrcdir + "/src/corelib/tools/qlocale_data_p.h", "r")
+    qlocaledata_file = open(qtsrcdir + "/src/corelib/text/qlocale_data_p.h", "r")
     s = qlocaledata_file.readline()
     while s and s != GENERATED_BLOCK_START:
         data_temp_file.write(s)
@@ -735,14 +735,14 @@ def main():
     data_temp_file.close()
     qlocaledata_file.close()
 
-    os.remove(qtsrcdir + "/src/corelib/tools/qlocale_data_p.h")
-    os.rename(data_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale_data_p.h")
+    os.remove(qtsrcdir + "/src/corelib/text/qlocale_data_p.h")
+    os.rename(data_temp_file_path, qtsrcdir + "/src/corelib/text/qlocale_data_p.h")
 
     # qlocale.h
 
     (qlocaleh_temp_file, qlocaleh_temp_file_path) = tempfile.mkstemp("qlocale.h", dir=qtsrcdir)
     qlocaleh_temp_file = os.fdopen(qlocaleh_temp_file, "w")
-    qlocaleh_file = open(qtsrcdir + "/src/corelib/tools/qlocale.h", "r")
+    qlocaleh_file = open(qtsrcdir + "/src/corelib/text/qlocale.h", "r")
     s = qlocaleh_file.readline()
     while s and s != GENERATED_BLOCK_START:
         qlocaleh_temp_file.write(s)
@@ -808,14 +808,14 @@ def main():
     qlocaleh_temp_file.close()
     qlocaleh_file.close()
 
-    os.remove(qtsrcdir + "/src/corelib/tools/qlocale.h")
-    os.rename(qlocaleh_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.h")
+    os.remove(qtsrcdir + "/src/corelib/text/qlocale.h")
+    os.rename(qlocaleh_temp_file_path, qtsrcdir + "/src/corelib/text/qlocale.h")
 
     # qlocale.qdoc
 
     (qlocaleqdoc_temp_file, qlocaleqdoc_temp_file_path) = tempfile.mkstemp("qlocale.qdoc", dir=qtsrcdir)
     qlocaleqdoc_temp_file = os.fdopen(qlocaleqdoc_temp_file, "w")
-    qlocaleqdoc_file = open(qtsrcdir + "/src/corelib/tools/qlocale.qdoc", "r")
+    qlocaleqdoc_file = open(qtsrcdir + "/src/corelib/text/qlocale.qdoc", "r")
     s = qlocaleqdoc_file.readline()
     DOCSTRING = "    QLocale's data is based on Common Locale Data Repository "
     while s:
@@ -827,8 +827,8 @@ def main():
     qlocaleqdoc_temp_file.close()
     qlocaleqdoc_file.close()
 
-    os.remove(qtsrcdir + "/src/corelib/tools/qlocale.qdoc")
-    os.rename(qlocaleqdoc_temp_file_path, qtsrcdir + "/src/corelib/tools/qlocale.qdoc")
+    os.remove(qtsrcdir + "/src/corelib/text/qlocale.qdoc")
+    os.rename(qlocaleqdoc_temp_file_path, qtsrcdir + "/src/corelib/text/qlocale.qdoc")
 
 if __name__ == "__main__":
     main()

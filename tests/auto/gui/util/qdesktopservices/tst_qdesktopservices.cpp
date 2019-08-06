@@ -39,7 +39,9 @@ class tst_qdesktopservices : public QObject
 private slots:
     void openUrl();
     void handlers();
+#if QT_DEPRECATED_SINCE(5, 0)
     void testDataLocation();
+#endif
 };
 
 void tst_qdesktopservices::openUrl()
@@ -89,6 +91,7 @@ void tst_qdesktopservices::handlers()
 #define Q_XDG_PLATFORM
 #endif
 
+#if QT_DEPRECATED_SINCE(5, 0)
 void tst_qdesktopservices::testDataLocation()
 {
     // This is the one point where QDesktopServices and QStandardPaths differ.
@@ -115,6 +118,7 @@ void tst_qdesktopservices::testDataLocation()
 #endif
     }
 }
+#endif
 
 QTEST_MAIN(tst_qdesktopservices)
 

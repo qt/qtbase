@@ -38,11 +38,11 @@ command-line argument.  Save its standard output (but not error) to a
 file for later processing by ``./qlocalexml2cpp.py``
 
 When you update the CLDR data, be sure to also update
-src/corelib/tools/qt_attribution.json's entry for unicode-cldr.  Check
+src/corelib/text/qt_attribution.json's entry for unicode-cldr.  Check
 this script's output for unknown language, country or script messages;
 if any can be resolved, use their entry in common/main/en.xml to
 append new entries to enumdata.py's lists and update documentation in
-src/corelib/tools/qlocale.qdoc, adding the new entries in alphabetic
+src/corelib/text/qlocale.qdoc, adding the new entries in alphabetic
 order.
 
 While updating the locale data, check also for updates to MS-Win's

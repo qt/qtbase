@@ -1,5 +1,3 @@
-[clearAndGrab]
-ubuntu
-
 [stackWidgetOpaqueChildIsVisible]
-windows
+windows-10 msvc-2017
+

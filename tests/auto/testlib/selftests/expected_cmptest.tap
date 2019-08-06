@@ -245,9 +245,9 @@ not ok 32 - compareQPixmaps(one null)
   found: 1 (opA).isNull()
   expected: 0 (opB).isNull()
   actual: 1 (opA).isNull()
-  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:483)
+  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:486)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 483
+  line: 486
   ...
 not ok 33 - compareQPixmaps(other null)
   ---
@@ -257,9 +257,9 @@ not ok 33 - compareQPixmaps(other null)
   found: 0 (opA).isNull()
   expected: 1 (opB).isNull()
   actual: 0 (opA).isNull()
-  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:483)
+  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:486)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 483
+  line: 486
   ...
 ok 34 - compareQPixmaps(equal)
 not ok 35 - compareQPixmaps(different size)
@@ -270,19 +270,31 @@ not ok 35 - compareQPixmaps(different size)
   found: 11x20 (opA)
   expected: 20x20 (opB)
   actual: 11x20 (opA)
-  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:483)
+  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:486)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 483
+  line: 486
   ...
 not ok 36 - compareQPixmaps(different pixels)
   ---
   # Compared values are not the same
-  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:483)
+  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:486)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 483
+  line: 486
   ...
-ok 37 - compareQImages(both null)
-not ok 38 - compareQImages(one null)
+not ok 37 - compareQPixmaps(different dpr)
+  ---
+  type: QCOMPARE
+  message: Compared QPixmaps differ in device pixel ratio.
+  wanted: 2 (opB)
+  found: 1 (opA)
+  expected: 2 (opB)
+  actual: 1 (opA)
+  at: tst_Cmptest::compareQPixmaps() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:486)
+  file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
+  line: 486
+  ...
+ok 38 - compareQImages(both null)
+not ok 39 - compareQImages(one null)
   ---
   type: QCOMPARE
   message: Compared QImages differ.
@@ -290,11 +302,11 @@ not ok 38 - compareQImages(one null)
   found: 1 (opA).isNull()
   expected: 0 (opB).isNull()
   actual: 1 (opA).isNull()
-  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:510)
+  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:516)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 510
+  line: 516
   ...
-not ok 39 - compareQImages(other null)
+not ok 40 - compareQImages(other null)
   ---
   type: QCOMPARE
   message: Compared QImages differ.
@@ -302,12 +314,12 @@ not ok 39 - compareQImages(other null)
   found: 0 (opA).isNull()
   expected: 1 (opB).isNull()
   actual: 0 (opA).isNull()
-  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:510)
+  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:516)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 510
+  line: 516
   ...
-ok 40 - compareQImages(equal)
-not ok 41 - compareQImages(different size)
+ok 41 - compareQImages(equal)
+not ok 42 - compareQImages(different size)
   ---
   type: QCOMPARE
   message: Compared QImages differ in size.
@@ -315,11 +327,11 @@ not ok 41 - compareQImages(different size)
   found: 11x20 (opA)
   expected: 20x20 (opB)
   actual: 11x20 (opA)
-  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:510)
+  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:516)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 510
+  line: 516
   ...
-not ok 42 - compareQImages(different format)
+not ok 43 - compareQImages(different format)
   ---
   type: QCOMPARE
   message: Compared QImages differ in format.
@@ -327,19 +339,31 @@ not ok 42 - compareQImages(different format)
   found: 6 (opA)
   expected: 3 (opB)
   actual: 6 (opA)
-  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:510)
+  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:516)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 510
+  line: 516
   ...
-not ok 43 - compareQImages(different pixels)
+not ok 44 - compareQImages(different pixels)
   ---
   # Compared values are not the same
-  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:510)
+  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:516)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 510
+  line: 516
   ...
-ok 44 - compareQRegion(equal-empty)
-not ok 45 - compareQRegion(1-empty)
+not ok 45 - compareQImages(different dpr)
+  ---
+  type: QCOMPARE
+  message: Compared QImages differ in device pixel ratio.
+  wanted: 2 (opB)
+  found: 1 (opA)
+  expected: 2 (opB)
+  actual: 1 (opA)
+  at: tst_Cmptest::compareQImages() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:516)
+  file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
+  line: 516
+  ...
+ok 46 - compareQRegion(equal-empty)
+not ok 47 - compareQRegion(1-empty)
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -347,12 +371,12 @@ not ok 45 - compareQRegion(1-empty)
   found: QRegion(200x50+10+10) (rA)
   expected: QRegion(null) (rB)
   actual: QRegion(200x50+10+10) (rA)
-  at: tst_Cmptest::compareQRegion() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:533)
+  at: tst_Cmptest::compareQRegion() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:539)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 533
+  line: 539
   ...
-ok 46 - compareQRegion(equal)
-not ok 47 - compareQRegion(different lists)
+ok 48 - compareQRegion(equal)
+not ok 49 - compareQRegion(different lists)
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -360,11 +384,11 @@ not ok 47 - compareQRegion(different lists)
   found: QRegion(200x50+10+10) (rA)
   expected: QRegion(2 rectangles, 50x200+100+200, 200x50+10+10) (rB)
   actual: QRegion(200x50+10+10) (rA)
-  at: tst_Cmptest::compareQRegion() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:533)
+  at: tst_Cmptest::compareQRegion() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:539)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 533
+  line: 539
   ...
-not ok 48 - compareQVector2D()
+not ok 50 - compareQVector2D()
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -372,11 +396,11 @@ not ok 48 - compareQVector2D()
   found: QVector2D(1, 2) (v2a)
   expected: QVector2D(1, 3) (v2b)
   actual: QVector2D(1, 2) (v2a)
-  at: tst_Cmptest::compareQVector2D() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:542)
+  at: tst_Cmptest::compareQVector2D() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:548)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 542
+  line: 548
   ...
-not ok 49 - compareQVector3D()
+not ok 51 - compareQVector3D()
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -384,11 +408,11 @@ not ok 49 - compareQVector3D()
   found: QVector3D(1, 2, 3) (v3a)
   expected: QVector3D(1, 3, 3) (v3b)
   actual: QVector3D(1, 2, 3) (v3a)
-  at: tst_Cmptest::compareQVector3D() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:551)
+  at: tst_Cmptest::compareQVector3D() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:557)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 551
+  line: 557
   ...
-not ok 50 - compareQVector4D()
+not ok 52 - compareQVector4D()
   ---
   type: QCOMPARE
   message: Compared values are not the same
@@ -396,11 +420,11 @@ not ok 50 - compareQVector4D()
   found: QVector4D(1, 2, 3, 4) (v4a)
   expected: QVector4D(1, 3, 3, 4) (v4b)
   actual: QVector4D(1, 2, 3, 4) (v4a)
-  at: tst_Cmptest::compareQVector4D() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:560)
+  at: tst_Cmptest::compareQVector4D() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:566)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 560
+  line: 566
   ...
-not ok 51 - verify()
+not ok 53 - verify()
   ---
   type: QVERIFY
   message: Verification failed
@@ -408,35 +432,11 @@ not ok 51 - verify()
   found: false (opaqueFunc() < 2)
   expected: true (opaqueFunc() < 2)
   actual: false (opaqueFunc() < 2)
-  at: tst_Cmptest::verify() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:572)
-  file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 572
-  ...
-not ok 52 - verify2()
-  ---
-  type: QVERIFY
-  message: 42
-  wanted: true (opaqueFunc() < 2)
-  found: false (opaqueFunc() < 2)
-  expected: true (opaqueFunc() < 2)
-  actual: false (opaqueFunc() < 2)
-  at: tst_Cmptest::verify2() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:578)
+  at: tst_Cmptest::verify() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:578)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 578
   ...
-not ok 53 - tryVerify()
-  ---
-  type: QVERIFY
-  message: Verification failed
-  wanted: true (opaqueFunc() < 2)
-  found: false (opaqueFunc() < 2)
-  expected: true (opaqueFunc() < 2)
-  actual: false (opaqueFunc() < 2)
-  at: tst_Cmptest::tryVerify() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:584)
-  file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
-  line: 584
-  ...
-not ok 54 - tryVerify2()
+not ok 54 - verify2()
   ---
   type: QVERIFY
   message: 42
@@ -444,13 +444,37 @@ not ok 54 - tryVerify2()
   found: false (opaqueFunc() < 2)
   expected: true (opaqueFunc() < 2)
   actual: false (opaqueFunc() < 2)
-  at: tst_Cmptest::tryVerify2() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:590)
+  at: tst_Cmptest::verify2() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:584)
+  file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
+  line: 584
+  ...
+not ok 55 - tryVerify()
+  ---
+  type: QVERIFY
+  message: Verification failed
+  wanted: true (opaqueFunc() < 2)
+  found: false (opaqueFunc() < 2)
+  expected: true (opaqueFunc() < 2)
+  actual: false (opaqueFunc() < 2)
+  at: tst_Cmptest::tryVerify() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:590)
   file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
   line: 590
   ...
-ok 55 - verifyExplicitOperatorBool()
-ok 56 - cleanupTestCase()
-1..56
-# tests 56
+not ok 56 - tryVerify2()
+  ---
+  type: QVERIFY
+  message: 42
+  wanted: true (opaqueFunc() < 2)
+  found: false (opaqueFunc() < 2)
+  expected: true (opaqueFunc() < 2)
+  actual: false (opaqueFunc() < 2)
+  at: tst_Cmptest::tryVerify2() (qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp:596)
+  file: qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp
+  line: 596
+  ...
+ok 57 - verifyExplicitOperatorBool()
+ok 58 - cleanupTestCase()
+1..58
+# tests 58
 # pass 18
-# fail 38
+# fail 40

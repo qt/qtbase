@@ -77,6 +77,8 @@ macos | ios {
         kernel/qnetconmonitor_darwin.mm
 
     LIBS_PRIVATE += -framework SystemConfiguration
+} else:qtConfig(netlistmgr) {
+    SOURCES += kernel/qnetconmonitor_win.cpp
 } else {
     SOURCES += kernel/qnetconmonitor_stub.cpp
 }

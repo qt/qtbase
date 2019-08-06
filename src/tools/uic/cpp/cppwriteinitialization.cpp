@@ -547,10 +547,11 @@ void WriteInitialization::acceptUI(DomUI *node)
     m_output << m_option.indent << language::endFunctionDefinition("setupUi");
 
     if (!m_mainFormUsedInRetranslateUi && language::language() == Language::Cpp) {
+        // Mark varName as unused to avoid compiler warnings.
         m_refreshInitialization += m_indent;
-        m_refreshInitialization += QLatin1String("Q_UNUSED(");
+        m_refreshInitialization += QLatin1String("(void)");
         m_refreshInitialization += varName ;
-        m_refreshInitialization += QLatin1String(");\n");
+        m_refreshInitialization += QLatin1String(";\n");
     }
 
     m_output << m_option.indent

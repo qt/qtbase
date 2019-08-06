@@ -76,7 +76,7 @@ public:
 #else
     bool nativeEventFilter(const QByteArray &eventType, void *message, long *result) override;
 #endif
-    qint64 eventCounter;
+    qint64 eventCounter = 0;
 };
 
 QT_END_NAMESPACE

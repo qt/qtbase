@@ -2586,7 +2586,7 @@ void tst_QTextStream::stringview_write_operator_ToDevice()
     QBuffer buf;
     buf.open(QBuffer::WriteOnly);
     QTextStream stream(&buf);
-    const QStringView expected = QStringViewLiteral("expectedStringView");
+    const QStringView expected = u"expectedStringView";
     stream << expected;
     stream.flush();
     QCOMPARE(buf.buffer().constData(), "expectedStringView");

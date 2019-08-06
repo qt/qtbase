@@ -136,6 +136,13 @@ public:
     static QWidget *tryModalHelper_sys(QWidget *top);
     bool canQuit();
 #endif
+#ifdef QT_KEYPAD_NAVIGATION
+    static bool keypadNavigationEnabled()
+    {
+        return navigationMode == Qt::NavigationModeKeypadTabOrder ||
+                navigationMode == Qt::NavigationModeKeypadDirectional;
+    }
+#endif
 
     bool notify_helper(QObject *receiver, QEvent * e);
 

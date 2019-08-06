@@ -138,16 +138,16 @@ static constexpr const auto KeyTbl = qMakeArray(
         Emkb2Qt< Qt::Key_Minus,         '-' >,
         Emkb2Qt< Qt::Key_Period,        '.' >,
         Emkb2Qt< Qt::Key_Slash,         '/' >,
-        Emkb2Qt< Qt::Key_0,             '0' >,
-        Emkb2Qt< Qt::Key_1,             '1' >,
-        Emkb2Qt< Qt::Key_2,             '2' >,
-        Emkb2Qt< Qt::Key_3,             '3' >,
-        Emkb2Qt< Qt::Key_4,             '4' >,
-        Emkb2Qt< Qt::Key_5,             '5' >,
-        Emkb2Qt< Qt::Key_6,             '6' >,
-        Emkb2Qt< Qt::Key_7,             '7' >,
-        Emkb2Qt< Qt::Key_8,             '8' >,
-        Emkb2Qt< Qt::Key_9,             '9' >,
+        Emkb2Qt< Qt::Key_0,             'D','i','g','i','t','0' >,
+        Emkb2Qt< Qt::Key_1,             'D','i','g','i','t','1' >,
+        Emkb2Qt< Qt::Key_2,             'D','i','g','i','t','2' >,
+        Emkb2Qt< Qt::Key_3,             'D','i','g','i','t','3' >,
+        Emkb2Qt< Qt::Key_4,             'D','i','g','i','t','4' >,
+        Emkb2Qt< Qt::Key_5,             'D','i','g','i','t','5' >,
+        Emkb2Qt< Qt::Key_6,             'D','i','g','i','t','6' >,
+        Emkb2Qt< Qt::Key_7,             'D','i','g','i','t','7' >,
+        Emkb2Qt< Qt::Key_8,             'D','i','g','i','t','8' >,
+        Emkb2Qt< Qt::Key_9,             'D','i','g','i','t','9' >,
         Emkb2Qt< Qt::Key_Semicolon,     ';' >,
         Emkb2Qt< Qt::Key_Equal,         '=' >,
         Emkb2Qt< Qt::Key_A,             'K','e','y','A' >,
@@ -432,7 +432,8 @@ Qt::Key QWasmEventTranslator::translateEmscriptKey(const EmscriptenKeyboardEvent
 {
     Qt::Key qtKey = Qt::Key_unknown;
 
-    if (qstrncmp(emscriptKey->code, "Key", 3) == 0 || qstrncmp(emscriptKey->code, "Numpad", 6) == 0) {
+    if (qstrncmp(emscriptKey->code, "Key", 3) == 0 || qstrncmp(emscriptKey->code, "Numpad", 6) == 0 ||
+        qstrncmp(emscriptKey->code, "Digit", 5) == 0) {
 
         emkb2qt_t searchKey{emscriptKey->code, 0}; // search emcsripten code
         auto it1 = std::lower_bound(KeyTbl.cbegin(), KeyTbl.cend(), searchKey);
@@ -779,6 +780,60 @@ quint64 QWasmEventTranslator::getTimestamp()
     return QDeadlineTimer::current().deadlineNSecs() / 1000;
 }
 
+struct KeyMapping { Qt::Key from, to; };
+
+constexpr KeyMapping tildeKeyTable[] = { // ~
+    { Qt::Key_A, Qt::Key_Atilde },
+    { Qt::Key_N, Qt::Key_Ntilde },
+    { Qt::Key_O, Qt::Key_Otilde },
+};
+constexpr KeyMapping graveKeyTable[] = { // `
+    { Qt::Key_A, Qt::Key_Agrave },
+    { Qt::Key_E, Qt::Key_Egrave },
+    { Qt::Key_I, Qt::Key_Igrave },
+    { Qt::Key_O, Qt::Key_Ograve },
+    { Qt::Key_U, Qt::Key_Ugrave },
+};
+constexpr KeyMapping acuteKeyTable[] = { // '
+    { Qt::Key_A, Qt::Key_Aacute },
+    { Qt::Key_E, Qt::Key_Eacute },
+    { Qt::Key_I, Qt::Key_Iacute },
+    { Qt::Key_O, Qt::Key_Oacute },
+    { Qt::Key_U, Qt::Key_Uacute },
+    { Qt::Key_Y, Qt::Key_Yacute },
+};
+constexpr KeyMapping diaeresisKeyTable[] = { // umlaut ¨
+    { Qt::Key_A, Qt::Key_Adiaeresis },
+    { Qt::Key_E, Qt::Key_Ediaeresis },
+    { Qt::Key_I, Qt::Key_Idiaeresis },
+    { Qt::Key_O, Qt::Key_Odiaeresis },
+    { Qt::Key_U, Qt::Key_Udiaeresis },
+    { Qt::Key_Y, Qt::Key_ydiaeresis },
+};
+constexpr KeyMapping circumflexKeyTable[] = { // ^
+    { Qt::Key_A, Qt::Key_Acircumflex },
+    { Qt::Key_E, Qt::Key_Ecircumflex },
+    { Qt::Key_I, Qt::Key_Icircumflex },
+    { Qt::Key_O, Qt::Key_Ocircumflex },
+    { Qt::Key_U, Qt::Key_Ucircumflex },
+};
+
+static Qt::Key find_impl(const KeyMapping *first, const KeyMapping *last, Qt::Key key) noexcept
+{
+    while (first != last) {
+        if (first->from == key)
+            return first->to;
+        ++first;
+    }
+    return Qt::Key_unknown;
+}
+
+template <size_t N>
+static Qt::Key find(const KeyMapping (&map)[N], Qt::Key key) noexcept
+{
+    return find_impl(map, map + N, key);
+}
+
 Qt::Key QWasmEventTranslator::translateDeadKey(Qt::Key deadKey, Qt::Key accentBaseKey)
 {
     Qt::Key wasmKey = Qt::Key_unknown;
@@ -788,31 +843,30 @@ Qt::Key QWasmEventTranslator::translateDeadKey(Qt::Key deadKey, Qt::Key accentBa
 #else
     case Qt::Key_O: // ´ Key_Dead_Grave
 #endif
-        wasmKey = graveKeyTable.value(accentBaseKey);
+        wasmKey = find(graveKeyTable, accentBaseKey);
         break;
     case Qt::Key_E: // ´ Key_Dead_Acute
-        wasmKey = acuteKeyTable.value(accentBaseKey);
+        wasmKey = find(acuteKeyTable, accentBaseKey);
         break;
     case Qt::Key_AsciiTilde:
     case Qt::Key_N:// Key_Dead_Tilde
-        wasmKey = tildeKeyTable.value(accentBaseKey);
+        wasmKey = find(tildeKeyTable, accentBaseKey);
         break;
 #ifndef Q_OS_MACOS
     case Qt::Key_QuoteLeft:
 #endif
     case Qt::Key_U:// ¨ Key_Dead_Diaeresis
-        wasmKey = diaeresisKeyTable.value(accentBaseKey);
+        wasmKey = find(diaeresisKeyTable, accentBaseKey);
         break;
     case Qt::Key_I:// macOS Key_Dead_Circumflex
     case Qt::Key_6:// linux
     case Qt::Key_Apostrophe:// linux
-        wasmKey = circumflexKeyTable.value(accentBaseKey);
-        break;
+        wasmKey = find(circumflexKeyTable, accentBaseKey);
         break;
     default:
         break;
-    };
 
+    };
     return wasmKey;
 }
 

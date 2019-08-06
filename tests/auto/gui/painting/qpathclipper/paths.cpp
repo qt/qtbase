@@ -578,7 +578,7 @@ QPainterPath Paths::node()
     m_rect.setHeight(100);
 
     QPainterPath shape;
-    shape.addRoundRect(m_rect, 25);
+    shape.addRoundedRect(m_rect, 25, Qt::RelativeSize);
 
     const int conWidth = 10;
     const int xOffset  = 7;

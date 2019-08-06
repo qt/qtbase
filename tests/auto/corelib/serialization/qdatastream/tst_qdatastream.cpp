@@ -2391,10 +2391,10 @@ void tst_QDataStream::setVersion()
 
         if (vers == 1) {
             for (int grp = 0; grp < (int)QPalette::NColorGroups; ++grp) {
-                QVERIFY(pal1.color((QPalette::ColorGroup)grp, QPalette::Foreground)
-                        == inPal1.color((QPalette::ColorGroup)grp, QPalette::Foreground));
-                QVERIFY(pal1.color((QPalette::ColorGroup)grp, QPalette::Background)
-                        == inPal1.color((QPalette::ColorGroup)grp, QPalette::Background));
+                QVERIFY(pal1.color((QPalette::ColorGroup)grp, QPalette::WindowText)
+                        == inPal1.color((QPalette::ColorGroup)grp, QPalette::WindowText));
+                QVERIFY(pal1.color((QPalette::ColorGroup)grp, QPalette::Window)
+                        == inPal1.color((QPalette::ColorGroup)grp, QPalette::Window));
                 QVERIFY(pal1.color((QPalette::ColorGroup)grp, QPalette::Light)
                         == inPal1.color((QPalette::ColorGroup)grp, QPalette::Light));
                 QVERIFY(pal1.color((QPalette::ColorGroup)grp, QPalette::Dark)

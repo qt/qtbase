@@ -6426,7 +6426,8 @@ void tst_QNetworkReply::abortOnEncrypted()
         QSKIP("Server fails to listen. Skipping since QTcpServer is covered in another test.");
 
     server.connect(&server, &SslServer::newEncryptedConnection, [&server]() {
-            connect(server.socket, &QTcpSocket::readyRead, server.socket, []() {
+            // MSVC 201X C4573-misunderstands connect() or QObject::connect(), so use server.connect():
+            server.connect(server.socket, &QTcpSocket::readyRead, server.socket, []() {
                 // This slot must not be invoked!
                 QVERIFY(false);
             });
@@ -6474,8 +6475,8 @@ void tst_QNetworkReply::sslSessionSharing_data()
 
 void tst_QNetworkReply::sslSessionSharing()
 {
-#ifdef QT_SECURETRANSPORT
-    QSKIP("Not implemented with SecureTransport");
+#if QT_CONFIG(schannel) || defined(QT_SECURETRANSPORT)
+    QSKIP("Not implemented with SecureTransport/Schannel");
 #endif
 
     QString urlString("https://" + QtNetworkSettings::httpServerName());
@@ -6542,8 +6543,8 @@ void tst_QNetworkReply::sslSessionSharingFromPersistentSession_data()
 
 void tst_QNetworkReply::sslSessionSharingFromPersistentSession()
 {
-#ifdef QT_SECURETRANSPORT
-    QSKIP("Not implemented with SecureTransport");
+#if QT_CONFIG(schannel) || defined(QT_SECURETRANSPORT)
+    QSKIP("Not implemented with SecureTransport/Schannel");
 #endif
 
     QString urlString("https://" + QtNetworkSettings::httpServerName());
@@ -8200,6 +8201,9 @@ void tst_QNetworkReply::backgroundRequestInterruption_data()
 void tst_QNetworkReply::backgroundRequestInterruption()
 {
 #ifndef QT_NO_BEARERMANAGEMENT
+    if (QNetworkStatusMonitor::isEnabled() && QByteArray(QTest::currentDataTag()).startsWith("http"))
+        QSKIP("This test (currently) doesn't make any sense when QNetworkStatusMonitor is enabled");
+
     QFETCH(QUrl, url);
     QFETCH(bool, background);
     QFETCH(QNetworkReply::NetworkError, error);

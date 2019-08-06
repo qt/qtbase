@@ -43,6 +43,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QHash>
 #include <QtCore/qfunctions_winrt.h>
+#include <QtCore/private/qfsfileengine_p.h>
 
 #include <wrl.h>
 #include <windows.storage.h>
@@ -196,7 +197,19 @@ bool QWinRTFileEngine::open(QIODevice::OpenMode openMode)
     hr = QWinRTFunctions::await(op, d->stream.GetAddressOf());
     RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::OpenError, false);
 
-    d->openMode = openMode;
+    const ProcessOpenModeResult res = processOpenModeFlags(openMode);
+    if (!res.ok) {
+        setError(QFileDevice::OpenError, res.error);
+        return false;
+    }
+    d->openMode = res.openMode;
+    if (d->openMode & QIODevice::Truncate) {
+        if (!setSize(0)) {
+            close();
+            setError(QFileDevice::OpenError, QLatin1String("Could not truncate file"));
+            return false;
+        }
+    }
 
     return SUCCEEDED(hr);
 }
@@ -255,6 +268,29 @@ qint64 QWinRTFileEngine::size() const
     RETURN_IF_FAILED("Failed to get file size", return 0);
 
     return qint64(size);
+}
+
+bool QWinRTFileEngine::setSize(qint64 size)
+{
+    Q_D(QWinRTFileEngine);
+    if (!d->stream) {
+        setError(QFileDevice::ResizeError, QLatin1String("File must be open to be resized"));
+        return false;
+    }
+
+    if (size < 0) {
+        setError(QFileDevice::ResizeError, QLatin1String("File size cannot be negative"));
+        return false;
+    }
+
+    HRESULT hr = d->stream->put_Size(static_cast<quint64>(size));
+    RETURN_AND_SET_ERROR_IF_FAILED(QFileDevice::ResizeError, false);
+    if (!flush()) {
+        setError(QFileDevice::ResizeError, QLatin1String("Could not flush file"));
+        return false;
+    }
+
+    return true;
 }
 
 qint64 QWinRTFileEngine::pos() const

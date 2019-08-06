@@ -110,8 +110,6 @@ QGraphicsWidgetPrivate::QGraphicsWidgetPrivate()
 
 QGraphicsWidgetPrivate::~QGraphicsWidgetPrivate()
 {
-    // Remove any lazily allocated data
-    delete windowData;
 }
 
 /*!
@@ -147,7 +145,7 @@ void QGraphicsWidgetPrivate::ensureWindowFrameMargins() const
 void QGraphicsWidgetPrivate::ensureWindowData()
 {
     if (!windowData)
-        windowData = new WindowData;
+        windowData = qt_make_unique<WindowData>();
 }
 
 void QGraphicsWidgetPrivate::setPalette_helper(const QPalette &palette)

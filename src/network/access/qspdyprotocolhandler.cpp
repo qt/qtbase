@@ -305,7 +305,7 @@ bool QSpdyProtocolHandler::sendRequest()
 
         currentReply->setSpdyWasUsed(true);
         qint32 streamID = generateNextStreamID();
-        currentReply->setProperty("SPDYStreamID", streamID);
+        m_streamIDs.insert(currentReply, streamID);
 
         currentReply->setRequest(currentRequest);
         currentReply->d_func()->connection = m_connection;
@@ -322,7 +322,7 @@ bool QSpdyProtocolHandler::sendRequest()
 
 void QSpdyProtocolHandler::_q_replyDestroyed(QObject* reply)
 {
-    qint32 streamID = reply->property("SPDYStreamID").toInt();
+    qint32 streamID = m_streamIDs.take(reply);
     if (m_inFlightStreams.remove(streamID))
         sendRST_STREAM(streamID, RST_STREAM_CANCEL);
 }
@@ -624,10 +624,12 @@ void QSpdyProtocolHandler::sendSYN_STREAM(const HttpMessagePair &messagePair,
 
         // hack: set the stream ID on the device directly, so when we get
         // the signal for uploading we know which stream we are sending on
-        request.uploadByteDevice()->setProperty("SPDYStreamID", streamID);
+        m_streamIDs.insert(request.uploadByteDevice(), streamID);
 
         QObject::connect(request.uploadByteDevice(), SIGNAL(readyRead()), this,
                          SLOT(_q_uploadDataReadyRead()), Qt::QueuedConnection);
+        QObject::connect(request.uploadByteDevice(), SIGNAL(destroyed(QObject*)), this,
+                         SLOT(_q_uploadDataDestroyed(QObject *)));
     }
 
     QByteArray namesAndValues = composeHeader(request);
@@ -661,6 +663,11 @@ void QSpdyProtocolHandler::sendSYN_STREAM(const HttpMessagePair &messagePair,
 
     if (reply->d_func()->state == QHttpNetworkReplyPrivate::SPDYUploading)
         uploadData(streamID);
+}
+
+void QSpdyProtocolHandler::_q_uploadDataDestroyed(QObject *uploadData)
+{
+    m_streamIDs.remove(uploadData);
 }
 
 void QSpdyProtocolHandler::sendRST_STREAM(qint32 streamID, RST_STREAM_STATUS_CODE statusCode)
@@ -756,7 +763,7 @@ void QSpdyProtocolHandler::_q_uploadDataReadyRead()
 {
     QNonContiguousByteDevice *device = qobject_cast<QNonContiguousByteDevice *>(sender());
     Q_ASSERT(device);
-    qint32 streamID = device->property("SPDYStreamID").toInt();
+    qint32 streamID = m_streamIDs.value(device);
     Q_ASSERT(streamID > 0);
     uploadData(streamID);
 }

@@ -37,6 +37,10 @@
 **
 ****************************************************************************/
 
+#ifdef QT_NO_LINKED_LIST
+# undef QT_NO_LINKED_LIST
+#endif
+
 #include "qlinkedlist.h"
 
 QT_BEGIN_NAMESPACE

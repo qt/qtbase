@@ -59,13 +59,6 @@ QT_BEGIN_NAMESPACE
 
 QXunitTestLogger::QXunitTestLogger(const char *filename)
     : QAbstractTestLogger(filename)
-    , listOfTestcases(0)
-    , currentLogElement(0)
-    , errorLogElement(0)
-    , logFormatter(0)
-    , testCounter(0)
-    , failureCounter(0)
-    , errorCounter(0)
 {
 }
 
@@ -155,7 +148,7 @@ void QXunitTestLogger::leaveTestFunction()
 void QXunitTestLogger::addIncident(IncidentTypes type, const char *description,
                                    const char *file, int line)
 {
-    const char *typeBuf = 0;
+    const char *typeBuf = nullptr;
     char buf[100];
 
     switch (type) {
@@ -299,7 +292,7 @@ void QXunitTestLogger::addTag(QTestElement* element)
 void QXunitTestLogger::addMessage(MessageTypes type, const QString &message, const char *file, int line)
 {
     QTestElement *errorElement = new QTestElement(QTest::LET_Error);
-    const char *typeBuf = 0;
+    const char *typeBuf = nullptr;
 
     switch (type) {
     case QAbstractTestLogger::Warn:

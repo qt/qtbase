@@ -58,7 +58,7 @@ class MakefileGenerator : protected QMakeSourceFileInfo
     bool resolveDependenciesInFrameworks = false;
     QHash<QString, bool> init_compiler_already;
     QString makedir, chkexists;
-    QString build_args();
+    QString fullBuildArgs();
 
     //internal caches
     mutable QHash<QString, QMakeLocalFileName> depHeuristicsCache;
@@ -90,7 +90,6 @@ protected:
     void writeExtraCompilerTargets(QTextStream &t);
     void writeExtraCompilerVariables(QTextStream &t);
     bool writeDummyMakefile(QTextStream &t);
-    virtual bool writeStubMakefile(QTextStream &t);
     virtual bool writeMakefile(QTextStream &t);
     virtual void writeDefaultVariables(QTextStream &t);
 

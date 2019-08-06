@@ -134,8 +134,8 @@ private:
     bool fileExists( const QString &host, quint16 port, const QString &user, const QString &password, const QString &file, const QString &cdDir = QString() );
     bool dirExists( const QString &host, quint16 port, const QString &user, const QString &password, const QString &cdDir, const QString &dirToCreate );
 
-    void renameInit( bool &isSuccess, const QString &host, const QString &user, const QString &password, const QString &createFile );
-    void renameCleanup( bool &isSuccess, const QString &host, const QString &user, const QString &password, const QString &fileToDelete );
+    void renameInit( const QString &host, const QString &user, const QString &password, const QString &createFile );
+    void renameCleanup( const QString &host, const QString &user, const QString &password, const QString &fileToDelete );
 
     QFtp *ftp;
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -336,11 +336,7 @@ static QByteArray msgTimedOut(const QString &host, quint16 port = 0)
         result += ':';
         result += QByteArray::number(port);
     }
-
-    if (host == QtNetworkSettings::ftpServerName())
-        return "(QTBUG-75549) Flaky results: " % result;
-    else
-        return result;
+    return result;
 }
 
 void tst_QFtp::connectToHost()
@@ -355,7 +351,7 @@ void tst_QFtp::connectToHost()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
 
     QTEST( connectToHost_state, "state" );
 
@@ -438,7 +434,7 @@ void tst_QFtp::login()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
 
     ResMapIt it = resultMap.find( QFtp::Login );
     QVERIFY( it != resultMap.end() );
@@ -486,7 +482,7 @@ void tst_QFtp::close()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
 
     QCOMPARE( close_state, (int)QFtp::Unconnected );
 
@@ -554,7 +550,7 @@ void tst_QFtp::list()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
 
     ResMapIt it = resultMap.find( QFtp::List );
     QVERIFY( it != resultMap.end() );
@@ -615,7 +611,7 @@ void tst_QFtp::cd()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() ) {
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
     }
 
     ResMapIt it = resultMap.find( QFtp::Cd );
@@ -692,7 +688,7 @@ void tst_QFtp::get()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
 
     ResMapIt it = resultMap.find( QFtp::Get );
     QVERIFY( it != resultMap.end() );
@@ -819,7 +815,7 @@ void tst_QFtp::put()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
 
     it = resultMap.find( QFtp::Put );
     QVERIFY( it != resultMap.end() );
@@ -852,7 +848,7 @@ void tst_QFtp::put()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
 
     QCOMPARE( done_success, 1 );
     QTEST( buf.buffer(), "fileData" );
@@ -870,7 +866,7 @@ void tst_QFtp::put()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
 
     it = resultMap.find( QFtp::Remove );
     QVERIFY( it != resultMap.end() );
@@ -934,7 +930,7 @@ void tst_QFtp::mkdir()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
 
     ResMapIt it = resultMap.find( QFtp::Mkdir );
     QVERIFY( it != resultMap.end() );
@@ -959,7 +955,7 @@ void tst_QFtp::mkdir()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
 
     it = resultMap.find( QFtp::Mkdir );
     QVERIFY( it != resultMap.end() );
@@ -979,7 +975,7 @@ void tst_QFtp::mkdir()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
 
     it = resultMap.find( QFtp::Rmdir );
     QVERIFY( it != resultMap.end() );
@@ -1077,9 +1073,8 @@ void tst_QFtp::rename_data()
             << 0;
 }
 
-void tst_QFtp::renameInit( bool &isSuccess, const QString &host, const QString &user, const QString &password, const QString &createFile )
+void tst_QFtp::renameInit( const QString &host, const QString &user, const QString &password, const QString &createFile )
 {
-    isSuccess = false;
     if ( !createFile.isNull() ) {
         // upload the file
         init();
@@ -1093,7 +1088,7 @@ void tst_QFtp::renameInit( bool &isSuccess, const QString &host, const QString &
         delete ftp;
         ftp = 0;
         if ( QTestEventLoop::instance().timeout() )
-            QSKIP( msgTimedOut(host) );
+            QFAIL( msgTimedOut(host) );
 
         ResMapIt it = resultMap.find( QFtp::Put );
         QVERIFY( it != resultMap.end() );
@@ -1101,12 +1096,10 @@ void tst_QFtp::renameInit( bool &isSuccess, const QString &host, const QString &
 
         QVERIFY( fileExists( host, 21, user, password, createFile ) );
     }
-    isSuccess = true;
 }
 
-void tst_QFtp::renameCleanup( bool &isSuccess, const QString &host, const QString &user, const QString &password, const QString &fileToDelete )
+void tst_QFtp::renameCleanup( const QString &host, const QString &user, const QString &password, const QString &fileToDelete )
 {
-    isSuccess = false;
     if ( !fileToDelete.isNull() ) {
         // cleanup (i.e. remove the file)
         init();
@@ -1120,7 +1113,7 @@ void tst_QFtp::renameCleanup( bool &isSuccess, const QString &host, const QStrin
         delete ftp;
         ftp = 0;
         if ( QTestEventLoop::instance().timeout() )
-            QSKIP( msgTimedOut(host) );
+            QFAIL( msgTimedOut(host) );
 
         ResMapIt it = resultMap.find( QFtp::Remove );
         QVERIFY( it != resultMap.end() );
@@ -1128,7 +1121,6 @@ void tst_QFtp::renameCleanup( bool &isSuccess, const QString &host, const QStrin
 
         QVERIFY( !fileExists( host, 21, user, password, fileToDelete ) );
     }
-    isSuccess = true;
 }
 
 void tst_QFtp::rename()
@@ -1151,10 +1143,7 @@ void tst_QFtp::rename()
     if(renamedFile.contains('%'))
         renamedFile = renamedFile.arg(uniqueExtension);
 
-    bool isSuccess = true;
-    renameInit(isSuccess, host, user, password, createFile);
-    if (!isSuccess)
-        QSKIP("(QTBUG-75549) abort test when there is an error in helper functions");
+    renameInit( host, user, password, createFile );
 
     init();
     ftp = newFtp();
@@ -1169,7 +1158,7 @@ void tst_QFtp::rename()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host) );
+        QFAIL( msgTimedOut(host) );
 
     ResMapIt it = resultMap.find( QFtp::Rename );
     QVERIFY( it != resultMap.end() );
@@ -1184,9 +1173,7 @@ void tst_QFtp::rename()
         QVERIFY( !fileExists( host, 21, user, password, renamedFile ) );
     }
 
-    renameCleanup(isSuccess, host, user, password, renamedFile);
-    if (!isSuccess)
-        QSKIP("(QTBUG-75549) abort test when there is an error in helper functions");
+    renameCleanup( host, user, password, renamedFile );
 }
 
 /*
@@ -1360,7 +1347,7 @@ void tst_QFtp::commandSequence()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host) );
+        QFAIL( msgTimedOut(host) );
 
     QTEST( commandSequence_success, "success" );
 }
@@ -1415,7 +1402,7 @@ void tst_QFtp::abort()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
 
     ResMapIt it = resultMap.find( cmd );
     QVERIFY( it != resultMap.end() );
@@ -1453,7 +1440,7 @@ void tst_QFtp::abort()
         delete ftp;
         ftp = 0;
         if ( QTestEventLoop::instance().timeout() )
-            QSKIP( msgTimedOut(host, port) );
+            QFAIL( msgTimedOut(host, port) );
 
         it = resultMap.find( QFtp::Remove );
         QVERIFY( it != resultMap.end() );
@@ -1491,11 +1478,8 @@ void tst_QFtp::bytesAvailable()
         addCommand( QFtp::Close, ftp->close() );
 
     QTestEventLoop::instance().enterLoop( 40 );
-    if ( QTestEventLoop::instance().timeout() ) {
-        delete ftp;
-        ftp = 0;
-        QSKIP( msgTimedOut(host) );
-    }
+    if ( QTestEventLoop::instance().timeout() )
+        QFAIL( msgTimedOut(host) );
 
     ResMapIt it = resultMap.find( QFtp::Get );
     QVERIFY( it != resultMap.end() );
@@ -1588,7 +1572,7 @@ void tst_QFtp::proxy()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() ) {
-        QSKIP( msgTimedOut(host, port) );
+        QFAIL( msgTimedOut(host, port) );
     }
 
     ResMapIt it = resultMap.find( QFtp::Cd );
@@ -1623,7 +1607,7 @@ void tst_QFtp::binaryAscii()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(QtNetworkSettings::ftpServerName()) );
+        QFAIL( msgTimedOut(QtNetworkSettings::ftpServerName()) );
 
     ResMapIt it = resultMap.find(QFtp::Put);
     QVERIFY(it != resultMap.end());
@@ -1645,7 +1629,7 @@ void tst_QFtp::binaryAscii()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(QtNetworkSettings::ftpServerName()) );
+        QFAIL( msgTimedOut(QtNetworkSettings::ftpServerName()) );
 
     ResMapIt it2 = resultMap.find(QFtp::Get);
     QVERIFY(it2 != resultMap.end());
@@ -1668,7 +1652,7 @@ void tst_QFtp::binaryAscii()
     delete ftp;
     ftp = 0;
     if ( QTestEventLoop::instance().timeout() )
-        QSKIP( msgTimedOut(QtNetworkSettings::ftpServerName()) );
+        QFAIL( msgTimedOut(QtNetworkSettings::ftpServerName()) );
 
     it = resultMap.find( QFtp::Remove );
     QVERIFY( it != resultMap.end() );
@@ -2100,7 +2084,7 @@ void tst_QFtp::doneSignal()
     connect(&ftp, SIGNAL(done(bool)), &(QTestEventLoop::instance()), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(61);
     if (QTestEventLoop::instance().timeout())
-        QSKIP( msgTimedOut(QtNetworkSettings::ftpServerName()) );
+        QFAIL("Network operation timed out");
 
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.first().first().toBool(), false);

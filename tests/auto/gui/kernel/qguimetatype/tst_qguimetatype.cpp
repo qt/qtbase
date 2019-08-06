@@ -191,7 +191,7 @@ template<> struct TestValueFactory<QMetaType::QTextLength> {
     static QTextLength *create() { return new QTextLength(QTextLength::PercentageLength, 50); }
 };
 template<> struct TestValueFactory<QMetaType::QTextFormat> {
-    static QTextFormat *create() { return new QTextFormat(QTextFormat::TableFormat); }
+    static QTextFormat *create() { return new QTextFormat(QTextFormat::FrameFormat); }
 };
 template<> struct TestValueFactory<QMetaType::QMatrix> {
     static QMatrix *create() { return new QMatrix(10, 20, 30, 40, 50, 60); }

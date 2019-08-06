@@ -304,7 +304,6 @@ headersclean:!internal_module {
         header_check.variable_out = PRE_TARGETDEPS
         header_check.name = headercheck ${QMAKE_FILE_IN}
         header_check.commands = $$hcleanCOMMAND
-        silent:header_check.commands = @echo compiling[header] ${QMAKE_FILE_IN} && $$hcleanCOMMAND
         QMAKE_EXTRA_COMPILERS += header_check
     }
     unset(hcleanCOMMAND)

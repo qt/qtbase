@@ -39,6 +39,7 @@
 
 #include "qtabwidget.h"
 
+#include "private/qapplication_p.h"
 #include "private/qwidget_p.h"
 #include "private/qtabbar_p.h"
 #include "qapplication.h"
@@ -241,7 +242,7 @@ void QTabWidgetPrivate::init()
     q->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding,
                                  QSizePolicy::TabWidget));
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled())
+    if (QApplicationPrivate::keypadNavigationEnabled())
         q->setFocusPolicy(Qt::NoFocus);
     else
 #endif
@@ -1108,14 +1109,14 @@ void QTabWidget::keyPressEvent(QKeyEvent *e)
     if (((e->key() == Qt::Key_Tab || e->key() == Qt::Key_Backtab) &&
           count() > 1 && e->modifiers() & Qt::ControlModifier)
 #ifdef QT_KEYPAD_NAVIGATION
-          || QApplication::keypadNavigationEnabled() && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right) && count() > 1
+          || QApplicationPrivate::keypadNavigationEnabled() && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right) && count() > 1
 #endif
        ) {
         int pageCount = d->tabs->count();
         int page = currentIndex();
         int dx = (e->key() == Qt::Key_Backtab || e->modifiers() & Qt::ShiftModifier) ? -1 : 1;
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled() && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right))
+        if (QApplicationPrivate::keypadNavigationEnabled() && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right))
             dx = e->key() == (isRightToLeft() ? Qt::Key_Right : Qt::Key_Left) ? -1 : 1;
 #endif
         for (int pass = 0; pass < pageCount; ++pass) {

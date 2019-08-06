@@ -253,6 +253,7 @@ private slots:
     void fillInt() const;
     void fillMovable() const;
     void fillCustom() const;
+    void fillDetaches() const;
     void first() const;
     void fromListInt() const;
     void fromListMovable() const;
@@ -1308,6 +1309,16 @@ void tst_QVector::fillCustom() const
     const int instancesCount = Custom::counter.loadAcquire();
     fill<Custom>();
     QCOMPARE(instancesCount, Custom::counter.loadAcquire());
+}
+
+void tst_QVector::fillDetaches() const
+{
+    QVector<int> test = { 1, 2, 3 };
+    QVector<int> copy = test;
+    copy.fill(42);
+
+    QCOMPARE(test, QVector<int>({1, 2, 3}));
+    QCOMPARE(copy, QVector<int>({42, 42, 42}));
 }
 
 void tst_QVector::first() const

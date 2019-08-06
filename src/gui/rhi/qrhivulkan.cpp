@@ -360,14 +360,14 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             requestedPhysDevIndex = qEnvironmentVariableIntValue("QT_VK_PHYSICAL_DEVICE_INDEX");
         for (uint32_t i = 0; i < physDevCount; ++i) {
             f->vkGetPhysicalDeviceProperties(physDevs[i], &physDevProperties);
-            qDebug("Physical device %d: '%s' %d.%d.%d", i,
-                   physDevProperties.deviceName,
-                   VK_VERSION_MAJOR(physDevProperties.driverVersion),
-                   VK_VERSION_MINOR(physDevProperties.driverVersion),
-                   VK_VERSION_PATCH(physDevProperties.driverVersion));
+            qCDebug(QRHI_LOG_INFO, "Physical device %d: '%s' %d.%d.%d", i,
+                    physDevProperties.deviceName,
+                    VK_VERSION_MAJOR(physDevProperties.driverVersion),
+                    VK_VERSION_MINOR(physDevProperties.driverVersion),
+                    VK_VERSION_PATCH(physDevProperties.driverVersion));
             if (physDevIndex < 0 && (requestedPhysDevIndex < 0 || requestedPhysDevIndex == int(i))) {
                 physDevIndex = i;
-                qDebug("    using this physical device");
+                qCDebug(QRHI_LOG_INFO, "    using this physical device");
             }
         }
         if (physDevIndex < 0) {
@@ -386,7 +386,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         gfxQueueFamilyIdx = -1;
         int computelessGfxQueueCandidateIdx = -1;
         for (int i = 0; i < queueFamilyProps.count(); ++i) {
-            qDebug("queue family %d: flags=0x%x count=%d", i, queueFamilyProps[i].queueFlags, queueFamilyProps[i].queueCount);
+            qCDebug(QRHI_LOG_INFO, "queue family %d: flags=0x%x count=%d",
+                    i, queueFamilyProps[i].queueFlags, queueFamilyProps[i].queueCount);
             if (gfxQueueFamilyIdx == -1
                     && (queueFamilyProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
                     && (!maybeWindow || inst->supportsPresent(physDev, i, maybeWindow)))
@@ -422,7 +423,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, nullptr);
         QVector<VkExtensionProperties> devExts(devExtCount);
         f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, devExts.data());
-        qDebug("%d device extensions available", devExts.count());
+        qCDebug(QRHI_LOG_INFO, "%d device extensions available", devExts.count());
 
         QVector<const char *> requestedDevExts;
         requestedDevExts.append("VK_KHR_swapchain");
@@ -1244,9 +1245,9 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
     // with VK_ERROR_NATIVE_WINDOW_IN_USE_KHR if the old swapchain is provided)
     const bool reuseExisting = swapChainD->sc && swapChainD->lastConnectedSurface == swapChainD->surface;
 
-    qDebug("Creating %s swapchain of %u buffers, size %dx%d, presentation mode %d",
-           reuseExisting ? "recycled" : "new",
-           reqBufferCount, swapChainD->pixelSize.width(), swapChainD->pixelSize.height(), presentMode);
+    qCDebug(QRHI_LOG_INFO, "Creating %s swapchain of %u buffers, size %dx%d, presentation mode %d",
+            reuseExisting ? "recycled" : "new",
+            reqBufferCount, swapChainD->pixelSize.width(), swapChainD->pixelSize.height(), presentMode);
 
     VkSwapchainCreateInfoKHR swapChainInfo;
     memset(&swapChainInfo, 0, sizeof(swapChainInfo));
@@ -1290,7 +1291,7 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
         return false;
     }
     if (actualSwapChainBufferCount != reqBufferCount)
-        qDebug("Actual swapchain buffer count is %u", actualSwapChainBufferCount);
+        qCDebug(QRHI_LOG_INFO, "Actual swapchain buffer count is %u", actualSwapChainBufferCount);
     swapChainD->bufferCount = actualSwapChainBufferCount;
 
     VkImage swapChainImages[QVkSwapChain::MAX_BUFFER_COUNT];
@@ -1660,6 +1661,10 @@ QRhi::FrameOpResult QRhiVulkan::endFrame(QRhiSwapChain *swapChain, QRhi::EndFram
                 return QRhi::FrameOpError;
             }
         }
+
+        // Do platform-specific WM notification. F.ex. essential on X11 in
+        // order to prevent glitches on resizing the window.
+        inst->presentQueued(swapChainD->window);
 
         // mark the current swapchain buffer as unused from our side
         frame.imageAcquired = false;
@@ -3660,34 +3665,6 @@ void QRhiVulkan::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline
     psD->lastActiveFrameSlot = currentFrameSlot;
 }
 
-QRhiPassResourceTracker::BufferStage toPassTrackerBufferStage(QRhiShaderResourceBinding::StageFlags stages)
-{
-    // pick the earlier stage (as this is going to be dstAccessMask)
-    if (stages.testFlag(QRhiShaderResourceBinding::VertexStage))
-        return QRhiPassResourceTracker::BufVertexStage;
-    if (stages.testFlag(QRhiShaderResourceBinding::FragmentStage))
-        return QRhiPassResourceTracker::BufFragmentStage;
-    if (stages.testFlag(QRhiShaderResourceBinding::ComputeStage))
-        return QRhiPassResourceTracker::BufComputeStage;
-
-    Q_UNREACHABLE();
-    return QRhiPassResourceTracker::BufVertexStage;
-}
-
-QRhiPassResourceTracker::TextureStage toPassTrackerTextureStage(QRhiShaderResourceBinding::StageFlags stages)
-{
-    // pick the earlier stage (as this is going to be dstAccessMask)
-    if (stages.testFlag(QRhiShaderResourceBinding::VertexStage))
-        return QRhiPassResourceTracker::TexVertexStage;
-    if (stages.testFlag(QRhiShaderResourceBinding::FragmentStage))
-        return QRhiPassResourceTracker::TexFragmentStage;
-    if (stages.testFlag(QRhiShaderResourceBinding::ComputeStage))
-        return QRhiPassResourceTracker::TexComputeStage;
-
-    Q_UNREACHABLE();
-    return QRhiPassResourceTracker::TexVertexStage;
-}
-
 void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBindings *srb,
                                     int dynamicOffsetCount,
                                     const QRhiCommandBuffer::DynamicOffset *dynamicOffsets)
@@ -3743,7 +3720,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             bufD->lastActiveFrameSlot = currentFrameSlot;
             trackedRegisterBuffer(&passResTracker, bufD, bufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0,
                                   QRhiPassResourceTracker::BufUniformRead,
-                                  toPassTrackerBufferStage(b->stage));
+                                  QRhiPassResourceTracker::toPassTrackerBufferStage(b->stage));
 
             // Check both the "local" id (the generation counter) and the
             // global id. The latter is relevant when a newly allocated
@@ -3764,7 +3741,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             samplerD->lastActiveFrameSlot = currentFrameSlot;
             trackedRegisterTexture(&passResTracker, texD,
                                    QRhiPassResourceTracker::TexSample,
-                                   toPassTrackerTextureStage(b->stage));
+                                   QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
 
             if (texD->generation != bd.stex.texGeneration
                     || texD->m_id != bd.stex.texId
@@ -3797,7 +3774,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
                 access = QRhiPassResourceTracker::TexStorageLoadStore;
             trackedRegisterTexture(&passResTracker, texD,
                                    access,
-                                   toPassTrackerTextureStage(b->stage));
+                                   QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
 
             if (texD->generation != bd.simage.generation || texD->m_id != bd.simage.id) {
                 rewriteDescSet = true;
@@ -3828,7 +3805,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
                 access = QRhiPassResourceTracker::BufStorageLoadStore;
             trackedRegisterBuffer(&passResTracker, bufD, bufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0,
                                   access,
-                                  toPassTrackerBufferStage(b->stage));
+                                  QRhiPassResourceTracker::toPassTrackerBufferStage(b->stage));
 
             if (bufD->generation != bd.sbuf.generation || bufD->m_id != bd.sbuf.id) {
                 rewriteDescSet = true;

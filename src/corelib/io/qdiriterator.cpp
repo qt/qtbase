@@ -107,6 +107,8 @@
 #include <QtCore/private/qfilesystemengine_p.h>
 #include <QtCore/private/qfileinfo_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 template <class Iterator>
@@ -132,7 +134,7 @@ public:
     void checkAndPushDirectory(const QFileInfo &);
     bool matchesFilters(const QString &fileName, const QFileInfo &fi) const;
 
-    QScopedPointer<QAbstractFileEngine> engine;
+    std::unique_ptr<QAbstractFileEngine> engine;
 
     QFileSystemEntry dirEntry;
     const QStringList nameFilters;
@@ -435,7 +437,7 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
 QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
 {
     const QDirPrivate *other = dir.d_ptr.constData();
-    d.reset(new QDirIteratorPrivate(other->dirEntry, other->nameFilters, other->filters, flags, !other->fileEngine.isNull()));
+    d.reset(new QDirIteratorPrivate(other->dirEntry, other->nameFilters, other->filters, flags, bool(other->fileEngine)));
 }
 
 /*!

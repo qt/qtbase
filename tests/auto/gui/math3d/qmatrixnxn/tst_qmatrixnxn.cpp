@@ -2861,8 +2861,10 @@ void tst_QMatrixNxN::convertGeneric()
     QMatrix4x4 m4(m1);
     QVERIFY(isSame(m4, unique4x4));
 
+#if QT_DEPRECATED_SINCE(5, 0)
     QMatrix4x4 m5 = qGenericMatrixToMatrix4x4(m1);
     QVERIFY(isSame(m5, unique4x4));
+#endif
 
     static float const conv4x4[12] = {
         1.0f, 2.0f, 3.0f, 4.0f,
@@ -2874,8 +2876,10 @@ void tst_QMatrixNxN::convertGeneric()
     QMatrix4x3 m10 = m9.toGenericMatrix<4, 3>();
     QVERIFY(isSame(m10, conv4x4));
 
+#if QT_DEPRECATED_SINCE(5, 0)
     QMatrix4x3 m11 = qGenericMatrixFromMatrix4x4<4, 3>(m9);
     QVERIFY(isSame(m11, conv4x4));
+#endif
 }
 
 // Copy of "flagBits" in qmatrix4x4.h.

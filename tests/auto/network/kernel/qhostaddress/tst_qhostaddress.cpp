@@ -375,11 +375,14 @@ QT_WARNING_DISABLE_DEPRECATED
 void tst_QHostAddress::assignment()
 {
     QHostAddress address;
+
+#if QT_DEPRECATED_SINCE(5, 8)
     address = "127.0.0.1";
     QCOMPARE(address, QHostAddress("127.0.0.1"));
 
     address = "::1";
     QCOMPARE(address, QHostAddress("::1"));
+#endif
 
     // WinRT does not support sockaddr_in
 #ifndef Q_OS_WINRT

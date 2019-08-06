@@ -263,7 +263,7 @@ void tst_QTextCodec::fromUnicode()
         If the encoding is a superset of ASCII, test that the byte
         array is correct (no off by one, no trailing '\0').
     */
-    QByteArray result = codec->fromUnicode(QStringViewLiteral("abc"));
+    QByteArray result = codec->fromUnicode(u"abc");
     if (result.startsWith('a')) {
         QCOMPARE(result.size(), 3);
         QCOMPARE(result, QByteArray("abc"));

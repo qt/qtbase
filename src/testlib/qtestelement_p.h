@@ -69,8 +69,8 @@ class QTestElement: public QTestCoreElement<QTestElement>
         void setParent(const QTestElement *p);
 
     private:
-        QTestElement *listOfChildren;
-        const QTestElement * parent;
+        QTestElement *listOfChildren = nullptr;
+        const QTestElement * parent = nullptr;
 
 };
 

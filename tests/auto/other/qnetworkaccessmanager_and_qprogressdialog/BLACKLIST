@@ -1,2 +1,5 @@
+[downloadCheck]
+windows-10 msvc-2015
+windows-10 msvc-2017
 [downloadCheck:with-zeroCopy]
 windows

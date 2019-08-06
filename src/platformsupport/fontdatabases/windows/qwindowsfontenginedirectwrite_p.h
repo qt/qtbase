@@ -112,7 +112,7 @@ public:
     QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition) override;
     QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t) override;
     QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, const QTransform &xform) override;
-    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) override;
+    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t, const QColor &color) override;
 
     QFontEngine *cloneWithSize(qreal pixelSize) const override;
     Qt::HANDLE handle() const override;
@@ -126,7 +126,7 @@ public:
     void setUniqueFamilyName(const QString &newName) { m_uniqueFamilyName = newName; }
 
 private:
-    QImage imageForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform);
+    QImage imageForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform, const QColor &color = QColor());
     void collectMetrics();
     void renderGlyphRun(QImage *destination, float r, float g, float b, float a, IDWriteGlyphRunAnalysis *glyphAnalysis, const QRect &boundingRect);
     static QString filenameFromFontFile(IDWriteFontFile *fontFile);

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -613,7 +613,8 @@ using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
 #  define Q_ALWAYS_INLINE inline
 #endif
 
-#if defined(Q_CC_GNU) && defined(Q_OS_WIN)
+#if defined(Q_CC_GNU) && defined(Q_OS_WIN) && !defined(QT_NO_DATA_RELOCATION)
+// ### Qt6: you can remove me
 #  define QT_INIT_METAOBJECT __attribute__((init_priority(101)))
 #else
 #  define QT_INIT_METAOBJECT
@@ -1001,6 +1002,29 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #    pragma warn -sig
 #  endif
 #endif
+
+// Work around MSVC warning about use of 3-arg algorithms
+// until we can depend on the C++14 4-arg ones.
+//
+// These algortithms do NOT check for equal length.
+// They need to be treated as if they called the 3-arg version (which they do)!
+#ifdef Q_CC_MSVC
+# define QT_3ARG_ALG(alg, f1, l1, f2, l2) \
+    std::alg(f1, l1, f2, l2)
+#else
+# define QT_3ARG_ALG(alg, f1, l1, f2, l2)     \
+    [&f1, &l1, &f2, &l2]() {                  \
+        Q_UNUSED(l2);                         \
+        return std::alg(f1, l1, f2);          \
+    }()
+#endif
+template <typename ForwardIterator1, typename ForwardIterator2>
+inline bool qt_is_permutation(ForwardIterator1 first1, ForwardIterator1 last1,
+                              ForwardIterator2 first2, ForwardIterator2 last2)
+{
+    return QT_3ARG_ALG(is_permutation, first1, last1, first2, last2);
+}
+#undef QT_3ARG_ALG
 
 // this adds const to non-const objects (like std::as_const)
 template <typename T>

@@ -66,8 +66,6 @@ UnixMakefileGenerator::writeMakefile(QTextStream &t)
     if (project->first("TEMPLATE") == "app" ||
         project->first("TEMPLATE") == "lib" ||
         project->first("TEMPLATE") == "aux") {
-        if(Option::mkfile::do_stub_makefile && MakefileGenerator::writeStubMakefile(t))
-            return true;
         writeMakeParts(t);
         return MakefileGenerator::writeMakefile(t);
     } else if (project->first("TEMPLATE") == "subdirs") {

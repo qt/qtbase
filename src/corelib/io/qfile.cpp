@@ -55,6 +55,8 @@
 # include "qcoreapplication.h"
 #endif
 
+#include <private/qmemory_p.h>
+
 #ifdef QT_NO_QOBJECT
 #define tr(X) QString::fromLatin1(X)
 #endif
@@ -85,10 +87,9 @@ QFilePrivate::openExternalFile(int flags, int fd, QFile::FileHandleFlags handleF
     Q_UNUSED(fd);
     return false;
 #else
-    delete fileEngine;
-    fileEngine = nullptr;
-    QFSFileEngine *fe = new QFSFileEngine;
-    fileEngine = fe;
+    auto fs = qt_make_unique<QFSFileEngine>();
+    auto fe = fs.get();
+    fileEngine = std::move(fs);
     return fe->open(QIODevice::OpenMode(flags), fd, handleFlags);
 #endif
 }
@@ -101,10 +102,9 @@ QFilePrivate::openExternalFile(int flags, FILE *fh, QFile::FileHandleFlags handl
     Q_UNUSED(fh);
     return false;
 #else
-    delete fileEngine;
-    fileEngine = nullptr;
-    QFSFileEngine *fe = new QFSFileEngine;
-    fileEngine = fe;
+    auto fs = qt_make_unique<QFSFileEngine>();
+    auto fe = fs.get();
+    fileEngine = std::move(fs);
     return fe->open(QIODevice::OpenMode(flags), fh, handleFlags);
 #endif
 }
@@ -112,8 +112,8 @@ QFilePrivate::openExternalFile(int flags, FILE *fh, QFile::FileHandleFlags handl
 QAbstractFileEngine *QFilePrivate::engine() const
 {
     if (!fileEngine)
-        fileEngine = QAbstractFileEngine::create(fileName);
-    return fileEngine;
+        fileEngine.reset(QAbstractFileEngine::create(fileName));
+    return fileEngine.get();
 }
 
 //************* QFile
@@ -334,10 +334,7 @@ QFile::setFileName(const QString &name)
         file_already_open(*this, "setFileName");
         close();
     }
-    if(d->fileEngine) { //get a new file engine later
-        delete d->fileEngine;
-        d->fileEngine = nullptr;
-    }
+    d->fileEngine.reset(); //get a new file engine later
     d->fileName = name;
 }
 

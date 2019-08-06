@@ -227,11 +227,9 @@ bool QFileSystemModel::remove(const QModelIndex &aindex)
 /*!
   Constructs a file system model with the given \a parent.
 */
-QFileSystemModel::QFileSystemModel(QObject *parent)
-    : QAbstractItemModel(*new QFileSystemModelPrivate, parent)
+QFileSystemModel::QFileSystemModel(QObject *parent) :
+    QFileSystemModel(*new QFileSystemModelPrivate, parent)
 {
-    Q_D(QFileSystemModel);
-    d->init();
 }
 
 /*!
@@ -247,9 +245,7 @@ QFileSystemModel::QFileSystemModel(QFileSystemModelPrivate &dd, QObject *parent)
 /*!
   Destroys this file system model.
 */
-QFileSystemModel::~QFileSystemModel()
-{
-}
+QFileSystemModel::~QFileSystemModel() = default;
 
 /*!
     \reimp
@@ -1945,6 +1941,9 @@ QStringList QFileSystemModelPrivate::unwatchPathsAt(const QModelIndex &index)
 void QFileSystemModelPrivate::init()
 {
     Q_Q(QFileSystemModel);
+
+    delayedSortTimer.setSingleShot(true);
+
     qRegisterMetaType<QVector<QPair<QString,QFileInfo> > >();
 #if QT_CONFIG(filesystemwatcher)
     q->connect(&fileInfoGatherer, SIGNAL(newListOfFiles(QString,QStringList)),

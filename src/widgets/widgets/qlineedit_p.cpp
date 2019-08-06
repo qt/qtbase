@@ -254,10 +254,7 @@ QRect QLineEditPrivate::adjustedContentsRect() const
     QStyleOptionFrame opt;
     q->initStyleOption(&opt);
     QRect r = q->style()->subElementRect(QStyle::SE_LineEditContents, &opt, q);
-    r.setX(r.x() + effectiveLeftTextMargin());
-    r.setY(r.y() + topTextMargin);
-    r.setRight(r.right() - effectiveRightTextMargin());
-    r.setBottom(r.bottom() - bottomTextMargin);
+    r = r.marginsRemoved(effectiveTextMargins());
     return r;
 }
 
@@ -672,14 +669,12 @@ static int effectiveTextMargin(int defaultMargin, const QLineEditPrivate::SideWi
                                  return e.widget->isVisibleTo(e.widget->parentWidget()); }));
 }
 
-int QLineEditPrivate::effectiveLeftTextMargin() const
+QMargins QLineEditPrivate::effectiveTextMargins() const
 {
-    return effectiveTextMargin(leftTextMargin, leftSideWidgetList(), sideWidgetParameters());
-}
-
-int QLineEditPrivate::effectiveRightTextMargin() const
-{
-    return effectiveTextMargin(rightTextMargin, rightSideWidgetList(), sideWidgetParameters());
+    return {effectiveTextMargin(textMargins.left(), leftSideWidgetList(), sideWidgetParameters()),
+            textMargins.top(),
+            effectiveTextMargin(textMargins.right(), rightSideWidgetList(), sideWidgetParameters()),
+            textMargins.bottom()};
 }
 
 

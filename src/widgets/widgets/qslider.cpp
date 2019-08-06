@@ -46,6 +46,7 @@
 #include "qpainter.h"
 #include "qstyle.h"
 #include "qstyleoption.h"
+#include "private/qapplication_p.h"
 #include "private/qabstractslider_p.h"
 #include "qdebug.h"
 
@@ -360,7 +361,7 @@ void QSlider::mousePressEvent(QMouseEvent *ev)
         return;
     }
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled())
+    if (QApplicationPrivate::keypadNavigationEnabled())
         setEditFocus(true);
 #endif
     ev->accept();

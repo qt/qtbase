@@ -544,6 +544,7 @@ void QJsonDocument::setArray(const QJsonArray &array)
     d->ref.ref();
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Returns a QJsonValue representing the value for the key \a key.
 
@@ -557,6 +558,16 @@ void QJsonDocument::setArray(const QJsonArray &array)
     \sa QJsonValue, QJsonValue::isUndefined(), QJsonObject
  */
 const QJsonValue QJsonDocument::operator[](const QString &key) const
+{
+    return (*this)[QStringView(key)];
+}
+#endif
+
+/*!
+    \overload
+    \since 5.14
+*/
+const QJsonValue QJsonDocument::operator[](QStringView key) const
 {
     if (!isObject())
         return QJsonValue(QJsonValue::Undefined);

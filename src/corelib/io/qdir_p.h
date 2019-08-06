@@ -54,6 +54,8 @@
 #include "qfilesystementry_p.h"
 #include "qfilesystemmetadata_p.h"
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QDirPrivate : public QSharedData
@@ -82,7 +84,7 @@ public:
 
     static inline QChar getFilterSepChar(const QString &nameFilter);
 
-    static inline QStringList splitFilters(const QString &nameFilter, QChar sep = 0);
+    static inline QStringList splitFilters(const QString &nameFilter, QChar sep = {});
 
     void setPath(const QString &path);
 
@@ -98,7 +100,7 @@ public:
     QDir::SortFlags sort;
     QDir::Filters filters;
 
-    QScopedPointer<QAbstractFileEngine> fileEngine;
+    std::unique_ptr<QAbstractFileEngine> fileEngine;
 
     QFileSystemEntry dirEntry;
     mutable QFileSystemEntry absoluteDirEntry;

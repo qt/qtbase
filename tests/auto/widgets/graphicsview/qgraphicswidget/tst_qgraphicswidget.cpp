@@ -2905,7 +2905,7 @@ public:
         Q_UNUSED(widget);
         qreal w = rect().width();
         QRectF box(0, 0, w, 2400/w);
-        painter->drawRoundRect(box);
+        painter->drawRoundedRect(box, 25, 25, Qt::RelativeSize);
         painter->drawLine(box.topLeft(), box.bottomRight());
         painter->drawLine(box.bottomLeft(), box.topRight());
     }

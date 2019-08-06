@@ -457,7 +457,7 @@ void ArthurStyle::polish(QWidget *widget)
 
     QPalette pal = widget->palette();
     if (widget->isWindow()) {
-        pal.setColor(QPalette::Background, QColor(241, 241, 241));
+        pal.setColor(QPalette::Window, QColor(241, 241, 241));
         widget->setPalette(pal);
     }
 
@@ -474,7 +474,7 @@ void ArthurStyle::unpolish(QWidget *widget)
 
 void ArthurStyle::polish(QPalette &palette)
 {
-    palette.setColor(QPalette::Background, QColor(241, 241, 241));
+    palette.setColor(QPalette::Window, QColor(241, 241, 241));
 }
 
 QRect ArthurStyle::subElementRect(SubElement element, const QStyleOption *option, const QWidget *widget) const

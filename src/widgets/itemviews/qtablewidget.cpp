@@ -1251,6 +1251,7 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
     \sa font(), setText(), setForeground()
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn QColor QTableWidgetItem::backgroundColor() const
     \obsolete
@@ -1264,6 +1265,7 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 
     This function is deprecated. Use setBackground() instead.
 */
+#endif
 
 /*!
     \fn QBrush QTableWidgetItem::background() const
@@ -1283,6 +1285,7 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
     \sa setForeground()
 */
 
+#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn QColor QTableWidgetItem::textColor() const
     \obsolete
@@ -1296,6 +1299,7 @@ void QTableWidgetItem::setFlags(Qt::ItemFlags aflags)
 
     This function is deprecated. Use setForeground() instead.
 */
+#endif
 
 /*!
     \fn QBrush QTableWidgetItem::foreground() const

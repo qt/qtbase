@@ -828,14 +828,14 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
         return;
 
     QWidget *rootWidget = m_widget;
-    QPoint pos = event->pos();
+    QPoint pos = event->position().toPoint();
 
     // Use proper popup window for wheel event. Some QPA sends the wheel
     // event to the root menu, so redirect it to the proper popup window.
     QWidget *activePopupWidget = QApplication::activePopupWidget();
     if (activePopupWidget && activePopupWidget != m_widget) {
         rootWidget = activePopupWidget;
-        pos = rootWidget->mapFromGlobal(event->globalPos());
+        pos = rootWidget->mapFromGlobal(event->globalPosition().toPoint());
     }
 
     // which child should have it?
@@ -846,7 +846,12 @@ void QWidgetWindow::handleWheelEvent(QWheelEvent *event)
 
     QPoint mapped = widget->mapFrom(rootWidget, pos);
 
+#if QT_DEPRECATED_SINCE(5, 0)
     QWheelEvent translated(mapped, event->globalPos(), event->pixelDelta(), event->angleDelta(), event->delta(), event->orientation(), event->buttons(), event->modifiers(), event->phase(), event->source(), event->inverted());
+#else
+    QWheelEvent translated(QPointF(mapped), event->globalPosition(), event->pixelDelta(), event->angleDelta(),
+                           event->buttons(), event->modifiers(), event->phase(), event->inverted(), event->source());
+#endif
     translated.setTimestamp(event->timestamp());
     QGuiApplication::forwardEvent(widget, &translated, event);
 }

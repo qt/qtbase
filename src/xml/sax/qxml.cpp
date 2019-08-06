@@ -1161,12 +1161,12 @@ QChar QXmlInputSource::next()
             d->nextReturnedEndOfData = false;
             fetchData();
             if (d->pos >= d->length) {
-                return EndOfDocument;
+                return QChar(EndOfDocument);
             }
             return next();
         }
         d->nextReturnedEndOfData = true;
-        return EndOfData;
+        return QChar(EndOfData);
     }
 
     // QXmlInputSource has no way to signal encoding errors. The best we can do
@@ -1174,7 +1174,7 @@ QChar QXmlInputSource::next()
     // will then just call this function again to get the next char.
     QChar c = d->unicode[d->pos++];
     if (c.unicode() == EndOfData)
-        c = EndOfDocument;
+        c = QChar(EndOfDocument);
     return c;
 }
 
@@ -1313,8 +1313,8 @@ static QString extractEncodingDecl(const QString &text, bool *needMoreText)
         return QString();
 
     while (pos < endPos) {
-        ushort uc = text.at(pos).unicode();
-        if (uc == '\'' || uc == '"')
+        QChar uc = text.at(pos);
+        if (uc == u'\'' || uc == u'"')
             break;
         ++pos;
     }
@@ -1325,8 +1325,8 @@ static QString extractEncodingDecl(const QString &text, bool *needMoreText)
     QString encoding;
     ++pos;
     while (pos < endPos) {
-        ushort uc = text.at(pos).unicode();
-        if (uc == '\'' || uc == '"')
+        QChar uc = text.at(pos);
+        if (uc == u'\'' || uc == u'"')
             break;
         encoding.append(uc);
         ++pos;
@@ -7800,7 +7800,7 @@ void QXmlSimpleReaderPrivate::next()
     c = inputSource->next();
     // If we are not incremental parsing, we just skip over EndOfData chars to give the
     // parser an uninterrupted stream of document chars.
-    if (c == QXmlInputSource::EndOfData && parseStack == nullptr)
+    if (c == QChar(QXmlInputSource::EndOfData) && parseStack == nullptr)
         c = inputSource->next();
     if (uc == '\n') {
         lineNr++;
@@ -7877,7 +7877,7 @@ void QXmlSimpleReaderPrivate::init(const QXmlInputSource *i)
 */
 void QXmlSimpleReaderPrivate::initData()
 {
-    c = QXmlInputSource::EndOfData;
+    c = QChar(QXmlInputSource::EndOfData);
     xmlRefStack.clear();
     next();
 }
@@ -7925,7 +7925,7 @@ void QXmlSimpleReaderPrivate::unexpectedEof(ParseFunction where, int state)
     if (parseStack == nullptr) {
         reportParseError(QLatin1String(XMLERR_UNEXPECTEDEOF));
     } else {
-        if (c == QXmlInputSource::EndOfDocument) {
+        if (c == QChar(QXmlInputSource::EndOfDocument)) {
             reportParseError(QLatin1String(XMLERR_UNEXPECTEDEOF));
         } else {
             pushParseState(where, state);

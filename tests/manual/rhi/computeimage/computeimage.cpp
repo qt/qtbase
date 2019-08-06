@@ -146,7 +146,7 @@ void Window::customInit()
     d.ubuf->build();
     d.releasePool << d.ubuf;
 
-    qint32 flip = m_r->isYUpInFramebuffer() ? 1 : 0;
+    qint32 flip = 0; // regardless of isYUpInFramebuffer() since the input is not flipped so the end result is good for GL too
     d.initialUpdates->updateDynamicBuffer(d.ubuf, 64, 4, &flip);
 
     d.sampler = m_r->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,

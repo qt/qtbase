@@ -23,6 +23,7 @@ qimagereader \
 qlayout \
 qlocale \
 qmimedatabase \
+qnetconmonitor \
 qnetworkaccessmanager/qget \
 qnetworkconfigurationmanager \
 qnetworkconfiguration \

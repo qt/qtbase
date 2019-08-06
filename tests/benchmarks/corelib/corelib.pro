@@ -4,6 +4,7 @@ SUBDIRS = \
         json \
         mimetypes \
         kernel \
+        text \
         thread \
         time \
         tools \

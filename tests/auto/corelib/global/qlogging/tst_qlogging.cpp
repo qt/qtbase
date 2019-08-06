@@ -50,8 +50,8 @@ private slots:
     void installMessageHandler();
 #if QT_DEPRECATED_SINCE(5, 0)
     void installMsgHandler();
-#endif
     void installBothHandler();
+#endif
 
 #ifdef QT_BUILD_INTERNAL
     void cleanupFuncinfo_data();
@@ -163,7 +163,6 @@ void tst_qmessagehandler::installMsgHandler()
     QtMsgHandler myHandler = qInstallMsgHandler(oldHandler);
     QCOMPARE((void*)myHandler, (void*)customMsgHandler);
 }
-#endif
 
 void tst_qmessagehandler::installBothHandler()
 {
@@ -178,6 +177,7 @@ void tst_qmessagehandler::installBothHandler()
     QCOMPARE(s_function, Q_FUNC_INFO);
     QCOMPARE(s_line, line);
 }
+#endif
 
 # define ADD(x)          QTest::newRow(x) << Q_FUNC_INFO << x;
 

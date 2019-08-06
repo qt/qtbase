@@ -169,12 +169,14 @@ static QSet<QByteArray> keywords()
 #endif
             ;
 
+#if QT_CONFIG(properties)
             QCoreApplication *app = QCoreApplication::instance();
             if (app) {
                 const QVariant platformName = app->property("platformName");
                 if (platformName.isValid())
                     set << platformName.toByteArray();
             }
+#endif
 
             return set;
 }
@@ -218,11 +220,10 @@ static bool checkCondition(const QByteArray &condition)
     static const QSet<QByteArray> matchedConditions = activeConditions();
     QList<QByteArray> conds = condition.split(' ');
 
-    for (int i = 0; i < conds.size(); ++i) {
-        QByteArray c = conds.at(i);
+    for (QByteArray c : conds) {
         bool result = c.startsWith('!');
         if (result)
-            c = c.mid(1);
+            c.remove(0, 1);
 
         result ^= matchedConditions.contains(c);
         if (!result)
@@ -232,7 +233,7 @@ static bool checkCondition(const QByteArray &condition)
 }
 
 static bool ignoreAll = false;
-static std::set<QByteArray> *ignoredTests = 0;
+static std::set<QByteArray> *ignoredTests = nullptr;
 
 namespace QTestPrivate {
 

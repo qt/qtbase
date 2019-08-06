@@ -44,6 +44,7 @@
 #include <QPainter>
 #include <QPaintEngine>
 #endif
+#include <private/qpagedpaintdevice_p.h>
 
 typedef QList<int> IntList;
 
@@ -91,7 +92,7 @@ private slots:
     void QTBUG11282_insertBeforeMergedEnding();
 #endif
     void QTBUG22011_insertBeforeRowSpan();
-#ifndef QT_NO_PRINTER
+#if !defined(QT_NO_PRINTER) && defined(QT_BUILD_INTERNAL)
     void QTBUG31330_renderBackground();
 #endif
 
@@ -1025,7 +1026,7 @@ void tst_QTextTable::QTBUG22011_insertBeforeRowSpan()
     QCOMPARE(table->columns(), 6);
 }
 
-#ifndef QT_NO_PRINTER
+#if !defined(QT_NO_PRINTER) && defined(QT_BUILD_INTERNAL)
 namespace {
 class QTBUG31330_PaintDevice : public QPagedPaintDevice
 {
@@ -1065,11 +1066,46 @@ public:
         {}
     };
 
+    class QDummyPagedPaintDevicePrivate : public QPagedPaintDevicePrivate
+    {
+        bool setPageLayout(const QPageLayout &newPageLayout) override
+        {
+            m_pageLayout = newPageLayout;
+            return m_pageLayout.isEquivalentTo(newPageLayout);
+        }
+
+        bool setPageSize(const QPageSize &pageSize) override
+        {
+            m_pageLayout.setPageSize(pageSize);
+            return m_pageLayout.pageSize().isEquivalentTo(pageSize);
+        }
+
+        bool setPageOrientation(QPageLayout::Orientation orientation) override
+        {
+            m_pageLayout.setOrientation(orientation);
+            return m_pageLayout.orientation() == orientation;
+        }
+
+        bool setPageMargins(const QMarginsF &margins, QPageLayout::Unit units) override
+        {
+            m_pageLayout.setUnits(units);
+            m_pageLayout.setMargins(margins);
+            return m_pageLayout.margins() == margins && m_pageLayout.units() == units;
+        }
+
+        QPageLayout pageLayout() const override
+        {
+            return m_pageLayout;
+        }
+
+        QPageLayout m_pageLayout;
+    };
+
     int pages;
     QPaintEngine* engine;
 
     QTBUG31330_PaintDevice(QPaintEngine* engine)
-        : pages(1), engine(engine)
+        : QPagedPaintDevice(new QDummyPagedPaintDevicePrivate), pages(1), engine(engine)
     {
         QPageLayout layout = pageLayout();
         layout.setUnits(QPageLayout::Point);

@@ -4074,8 +4074,10 @@ void tst_QTableView::mouseWheel()
     view.verticalScrollBar()->setValue(10);
 
     QPoint pos = view.viewport()->geometry().center();
-    QWheelEvent verticalEvent(pos, delta, 0, 0, Qt::Vertical);
-    QWheelEvent horizontalEvent(pos, delta, 0, 0, Qt::Horizontal);
+    QWheelEvent verticalEvent(pos, view.mapToGlobal(pos), QPoint(), QPoint(0, delta),
+                              Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
+    QWheelEvent horizontalEvent(pos, view.mapToGlobal(pos), QPoint(), QPoint(delta, 0),
+                                Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
     QApplication::sendEvent(view.viewport(), &horizontalEvent);
     QVERIFY(qAbs(view.horizontalScrollBar()->value() - horizontalPositon) < 15);
     QApplication::sendEvent(view.viewport(), &verticalEvent);
@@ -4350,7 +4352,9 @@ void tst_QTableView::taskQTBUG_5237_wheelEventOnHeader()
     int sbValueBefore = view.verticalScrollBar()->value();
     QHeaderView *header = view.verticalHeader();
     QTest::mouseMove(header);
-    QWheelEvent wheelEvent(header->geometry().center(), -720, 0, 0);
+    QPoint pos = header->geometry().center();
+    QWheelEvent wheelEvent(pos, header->viewport()->mapToGlobal(pos), QPoint(), QPoint(0, -720),
+                           Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
     QApplication::sendEvent(header->viewport(), &wheelEvent);
     int sbValueAfter = view.verticalScrollBar()->value();
     QVERIFY(sbValueBefore != sbValueAfter);

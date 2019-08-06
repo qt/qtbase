@@ -254,12 +254,22 @@ void tst_QComboBox::getSetCheck()
     obj1.setMaxCount(INT_MAX);
     QCOMPARE(INT_MAX, obj1.maxCount());
 
+    // QCompleter *QComboBox::completer()
+    // void QComboBox::setCompleter(QCompleter *)
+    obj1.setCompleter(nullptr);
+    QCOMPARE(nullptr, obj1.completer());
+    QCompleter completer;
+    obj1.setCompleter(&completer);
+    QVERIFY(obj1.completer() == nullptr); // no QLineEdit is set
+
+#if QT_DEPRECATED_SINCE(5, 13)
     // bool QComboBox::autoCompletion()
     // void QComboBox::setAutoCompletion(bool)
     obj1.setAutoCompletion(false);
     QCOMPARE(false, obj1.autoCompletion());
     obj1.setAutoCompletion(true);
     QCOMPARE(true, obj1.autoCompletion());
+#endif
 
     // bool QComboBox::duplicatesEnabled()
     // void QComboBox::setDuplicatesEnabled(bool)
@@ -316,6 +326,9 @@ void tst_QComboBox::getSetCheck()
     obj1.setLineEdit((QLineEdit *)0);
     QCOMPARE(var8, obj1.lineEdit());
     // delete var8; // No delete, since QComboBox takes ownership
+
+    // After setting a line edit, completer() should not return nullptr anymore
+    QVERIFY(obj1.completer() != nullptr);
 
     // const QValidator * QComboBox::validator()
     // void QComboBox::setValidator(const QValidator *)
@@ -777,7 +790,9 @@ void tst_QComboBox::virtualAutocompletion()
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
     QComboBox *testWidget = topLevel.comboBox();
     testWidget->clear();
+#if QT_DEPRECATED_SINCE(5, 13)
     testWidget->setAutoCompletion(true);
+#endif
     testWidget->addItem("Foo");
     testWidget->addItem("Bar");
     testWidget->addItem("Boat");
@@ -837,7 +852,9 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
     QCOMPARE(qApp->focusWidget(), (QWidget *)testWidget);
 
     testWidget->clear();
+#if QT_DEPRECATED_SINCE(5, 13)
     testWidget->setAutoCompletion(true);
+#endif
     testWidget->addItem("Cow");
     testWidget->addItem("irrelevant1");
     testWidget->addItem("aww");
@@ -2102,7 +2119,9 @@ void tst_QComboBox::mouseWheel()
         box.setEditable(i==0?false:true);
         box.setCurrentIndex(startIndex);
 
-        QWheelEvent event = QWheelEvent(box.rect().bottomRight() , WHEEL_DELTA * wheelDirection, Qt::NoButton, Qt::NoModifier);
+        const QPoint wheelPoint = box.rect().bottomRight();
+        QWheelEvent event(wheelPoint, box.mapToGlobal(wheelPoint), QPoint(), QPoint(0, WHEEL_DELTA * wheelDirection),
+                              Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
         QVERIFY(applicationInstance->sendEvent(&box,&event));
 
         QCOMPARE(box.currentIndex(), expectedIndex);
@@ -2131,7 +2150,9 @@ void tst_QComboBox::popupWheelHandling()
     comboBox->showPopup();
     QTRY_VERIFY(comboBox->view() && comboBox->view()->isVisible());
     const QPoint popupPos = comboBox->view()->pos();
-    QWheelEvent event(QPointF(10, 10), WHEEL_DELTA, Qt::NoButton, Qt::NoModifier);
+    const QPoint wheelPoint(10, 10);
+    QWheelEvent event(wheelPoint, scrollArea.mapToGlobal(wheelPoint), QPoint(), QPoint(0, WHEEL_DELTA),
+                          Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
     QVERIFY(QCoreApplication::sendEvent(scrollArea.windowHandle(), &event));
     QCoreApplication::processEvents();
     QVERIFY(comboBox->view()->isVisible());
@@ -3050,7 +3071,9 @@ void tst_QComboBox::task_QTBUG_31146_popupCompletion()
 {
     QComboBox comboBox;
     comboBox.setEditable(true);
+#if QT_DEPRECATED_SINCE(5, 13)
     comboBox.setAutoCompletion(true);
+#endif
     comboBox.setInsertPolicy(QComboBox::NoInsert);
     comboBox.completer()->setCaseSensitivity(Qt::CaseInsensitive);
     comboBox.completer()->setCompletionMode(QCompleter::PopupCompletion);

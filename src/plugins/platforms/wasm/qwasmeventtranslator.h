@@ -77,42 +77,6 @@ private:
 
     Qt::Key translateDeadKey(Qt::Key deadKey, Qt::Key accentBaseKey);
 
-    QHash<Qt::Key , Qt::Key> tildeKeyTable { // ~
-        { Qt::Key_A, Qt::Key_Atilde},
-        { Qt::Key_N, Qt::Key_Ntilde},
-        { Qt::Key_O, Qt::Key_Otilde}
-     };
-    QHash<Qt::Key , Qt::Key> graveKeyTable { // `
-        { Qt::Key_A, Qt::Key_Agrave},
-        { Qt::Key_E, Qt::Key_Egrave},
-        { Qt::Key_I, Qt::Key_Igrave},
-        { Qt::Key_O, Qt::Key_Ograve},
-        { Qt::Key_U, Qt::Key_Ugrave}
-     };
-    QHash<Qt::Key , Qt::Key> acuteKeyTable { // '
-        { Qt::Key_A, Qt::Key_Aacute},
-        { Qt::Key_E, Qt::Key_Eacute},
-        { Qt::Key_I, Qt::Key_Iacute},
-        { Qt::Key_O, Qt::Key_Oacute},
-        { Qt::Key_U, Qt::Key_Uacute},
-        { Qt::Key_Y, Qt::Key_Yacute}
-     };
-    QHash<Qt::Key , Qt::Key> diaeresisKeyTable { // umlaut ¨
-        { Qt::Key_A, Qt::Key_Adiaeresis},
-        { Qt::Key_E, Qt::Key_Ediaeresis},
-        { Qt::Key_I, Qt::Key_Idiaeresis},
-        { Qt::Key_O, Qt::Key_Odiaeresis},
-        { Qt::Key_U, Qt::Key_Udiaeresis},
-        { Qt::Key_Y, Qt::Key_ydiaeresis}
-     };
-    QHash<Qt::Key , Qt::Key> circumflexKeyTable { // ^
-        { Qt::Key_A, Qt::Key_Acircumflex},
-        { Qt::Key_E, Qt::Key_Ecircumflex},
-        { Qt::Key_I, Qt::Key_Icircumflex},
-        { Qt::Key_O, Qt::Key_Ocircumflex},
-        { Qt::Key_U, Qt::Key_Ucircumflex}
-     };
-
     QMap <int, QPointF> pressedTouchIds;
 
 private:

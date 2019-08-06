@@ -44,6 +44,7 @@
 #include "qfiledialog.h"
 
 #include "qfiledialog_p.h"
+#include <private/qapplication_p.h>
 #include <private/qguiapplication_p.h>
 #include <qfontmetrics.h>
 #include <qaction.h>
@@ -4035,7 +4036,7 @@ bool QFileDialogPrivate::itemViewKeyboardEvent(QKeyEvent *event) {
         return true;
     case Qt::Key_Back:
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled())
+        if (QApplicationPrivate::keypadNavigationEnabled())
             return false;
 #endif
     case Qt::Key_Left:

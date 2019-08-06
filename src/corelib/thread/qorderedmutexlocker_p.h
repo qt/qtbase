@@ -159,7 +159,7 @@ public:
     void relock() {}
     void unlock() {}
 
-    static bool relock(QBasicMutex *, QBasicMutex *) {}
+    static bool relock(QBasicMutex *, QBasicMutex *) { return false; }
 };
 
 using QBasicMutexLocker = QMutexLocker;

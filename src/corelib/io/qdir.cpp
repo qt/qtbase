@@ -153,7 +153,7 @@ QDirPrivate::QDirPrivate(const QDirPrivate &copy)
 
 bool QDirPrivate::exists() const
 {
-    if (fileEngine.isNull()) {
+    if (!fileEngine) {
         QFileSystemEngine::fillMetaData(dirEntry, metaData,
                 QFileSystemMetaData::ExistsAttribute | QFileSystemMetaData::DirectoryType); // always stat
         return metaData.exists() && metaData.isDirectory();
@@ -226,7 +226,7 @@ inline void QDirPrivate::resolveAbsoluteEntry() const
         return;
 
     QString absoluteName;
-    if (fileEngine.isNull()) {
+    if (!fileEngine) {
         if (!dirEntry.isRelative() && dirEntry.isClean()) {
             absoluteDirEntry = dirEntry;
             return;
@@ -693,7 +693,7 @@ QString QDir::absolutePath() const
 QString QDir::canonicalPath() const
 {
     const QDirPrivate* d = d_ptr.constData();
-    if (d->fileEngine.isNull()) {
+    if (!d->fileEngine) {
         QFileSystemEntry answer = QFileSystemEngine::canonicalName(d->dirEntry, d->metaData);
         return answer.filePath();
     }
@@ -947,6 +947,12 @@ QString QDir::fromNativeSeparators(const QString &pathName)
     int i = pathName.indexOf(QLatin1Char('\\'));
     if (i != -1) {
         QString n(pathName);
+        if (n.startsWith(QLatin1String("\\\\?\\"))) {
+            n.remove(0, 4);
+            i = n.indexOf(QLatin1Char('\\'));
+            if (i == -1)
+                return n;
+        }
 
         QChar * const data = n.data();
         data[i++] = QLatin1Char('/');
@@ -1496,7 +1502,7 @@ bool QDir::mkdir(const QString &dirName) const
     }
 
     QString fn = filePath(dirName);
-    if (d->fileEngine.isNull())
+    if (!d->fileEngine)
         return QFileSystemEngine::createDirectory(QFileSystemEntry(fn), false);
     return d->fileEngine->mkdir(fn, false);
 }
@@ -1520,7 +1526,7 @@ bool QDir::rmdir(const QString &dirName) const
     }
 
     QString fn = filePath(dirName);
-    if (d->fileEngine.isNull())
+    if (!d->fileEngine)
         return QFileSystemEngine::removeDirectory(QFileSystemEntry(fn), false);
 
     return d->fileEngine->rmdir(fn, false);
@@ -1548,7 +1554,7 @@ bool QDir::mkpath(const QString &dirPath) const
     }
 
     QString fn = filePath(dirPath);
-    if (d->fileEngine.isNull())
+    if (!d->fileEngine)
         return QFileSystemEngine::createDirectory(QFileSystemEntry(fn), true);
     return d->fileEngine->mkdir(fn, true);
 }
@@ -1574,7 +1580,7 @@ bool QDir::rmpath(const QString &dirPath) const
     }
 
     QString fn = filePath(dirPath);
-    if (d->fileEngine.isNull())
+    if (!d->fileEngine)
         return QFileSystemEngine::removeDirectory(QFileSystemEntry(fn), true);
     return d->fileEngine->rmdir(fn, true);
 }
@@ -1647,7 +1653,7 @@ bool QDir::isReadable() const
 {
     const QDirPrivate* d = d_ptr.constData();
 
-    if (d->fileEngine.isNull()) {
+    if (!d->fileEngine) {
         if (!d->metaData.hasFlags(QFileSystemMetaData::UserReadPermission))
             QFileSystemEngine::fillMetaData(d->dirEntry, d->metaData, QFileSystemMetaData::UserReadPermission);
 
@@ -1692,7 +1698,7 @@ bool QDir::exists() const
 */
 bool QDir::isRoot() const
 {
-    if (d_ptr->fileEngine.isNull())
+    if (!d_ptr->fileEngine)
         return d_ptr->dirEntry.isRoot();
     return d_ptr->fileEngine->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::RootFlag;
 }
@@ -1724,7 +1730,7 @@ bool QDir::isRoot() const
 */
 bool QDir::isRelative() const
 {
-    if (d_ptr->fileEngine.isNull())
+    if (!d_ptr->fileEngine)
         return d_ptr->dirEntry.isRelative();
     return d_ptr->fileEngine->isRelativePath();
 }
@@ -1741,7 +1747,7 @@ bool QDir::makeAbsolute()
 {
     const QDirPrivate *d = d_ptr.constData();
     QScopedPointer<QDirPrivate> dir;
-    if (!d->fileEngine.isNull()) {
+    if (!!d->fileEngine) {
         QString absolutePath = d->fileEngine->fileName(QAbstractFileEngine::AbsoluteName);
         if (QDir::isRelativePath(absolutePath))
             return false;
@@ -1774,8 +1780,8 @@ bool QDir::operator==(const QDir &dir) const
     if (d == other)
         return true;
     Qt::CaseSensitivity sensitive;
-    if (d->fileEngine.isNull() || other->fileEngine.isNull()) {
-        if (d->fileEngine.data() != other->fileEngine.data()) // one is native, the other is a custom file-engine
+    if (!d->fileEngine || !other->fileEngine) {
+        if (d->fileEngine.get() != other->fileEngine.get()) // one is native, the other is a custom file-engine
             return false;
 
         sensitive = QFileSystemEngine::isCaseSensitive() ? Qt::CaseSensitive : Qt::CaseInsensitive;
@@ -2339,6 +2345,11 @@ static QString qt_cleanPath(const QString &path, bool *ok)
     if (path.isEmpty())
         return path;
     QString name = path;
+#if defined (Q_OS_WIN)
+    if (name.startsWith(QLatin1String("\\\\?\\")))
+        name.remove(0, 4);
+#endif
+
     QChar dir_separator = QDir::separator();
     if (dir_separator != QLatin1Char('/'))
        name.replace(dir_separator, QLatin1Char('/'));

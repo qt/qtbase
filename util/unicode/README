@@ -19,7 +19,7 @@ To update:
   need to be expanded, for example. In some cases QChar may need
   additions to some of its enums.
 * Build with the modified code, fix any compilation issues.
-* That may have updated qtbase/src/corelib/tools/qunicodetables.cpp;
+* That may have updated qtbase/src/corelib/text/qunicodetables.cpp;
   if so the update matters; be sure to commit the changes to data/ at
   the same time and update tools/qt_attribution.json to match; use the
   UCD Revision number, rather than the Unicode standard number, as the

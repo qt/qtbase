@@ -40,6 +40,10 @@
 #ifndef QLINKEDLIST_H
 #define QLINKEDLIST_H
 
+#include <QtCore/qglobal.h>
+
+#ifndef QT_NO_LINKED_LIST
+
 #include <QtCore/qiterator.h>
 #include <QtCore/qrefcount.h>
 #include <QtCore/qcontainertools_impl.h>
@@ -580,5 +584,9 @@ inline QDataStream &operator<<(QDataStream &s, const QLinkedList<T> &l)
 #endif
 
 QT_END_NAMESPACE
+
+Q_DECLARE_SEQUENTIAL_CONTAINER_METATYPE(QLinkedList)
+
+#endif // QT_NO_LINKED_LIST
 
 #endif // QLINKEDLIST_H

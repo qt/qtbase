@@ -178,6 +178,9 @@ public class QtNative
             return fdDesc.detachFd();
         } catch (FileNotFoundException e) {
             return -1;
+        } catch (SecurityException e) {
+            Log.e(QtTAG, "Exception when opening file", e);
+            return -1;
         }
     }
 

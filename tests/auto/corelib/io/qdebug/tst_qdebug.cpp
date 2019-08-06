@@ -506,7 +506,7 @@ void tst_QDebug::qDebugQStringView() const
     {
         QLatin1String file, function;
         int line = 0;
-        const QStringView inView = QStringViewLiteral("input");
+        const QStringView inView = u"input";
 
         MessageHandlerSetter mhs(myMessageHandler);
         { qDebug() << inView; }

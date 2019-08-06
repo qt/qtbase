@@ -62,7 +62,7 @@ QByteArray QLatin1Codec::convertFromUnicode(const QChar *ch, int len, ConverterS
     char *d = r.data();
     int invalid = 0;
     for (int i = 0; i < len; ++i) {
-        if (ch[i] > 0xff) {
+        if (ch[i] > QChar(0xff)) {
             d[i] = replacement;
             ++invalid;
         } else {
@@ -112,28 +112,28 @@ QString QLatin15Codec::convertToUnicode(const char* chars, int len, ConverterSta
     while(len--) {
         switch(uc->unicode()) {
             case 0xa4:
-                *uc = 0x20ac;
+                *uc = QChar(0x20ac);
                 break;
             case 0xa6:
-                *uc = 0x0160;
+                *uc = QChar(0x0160);
                 break;
             case 0xa8:
-                *uc = 0x0161;
+                *uc = QChar(0x0161);
                 break;
             case 0xb4:
-                *uc = 0x017d;
+                *uc = QChar(0x017d);
                 break;
             case 0xb8:
-                *uc = 0x017e;
+                *uc = QChar(0x017e);
                 break;
             case 0xbc:
-                *uc = 0x0152;
+                *uc = QChar(0x0152);
                 break;
             case 0xbd:
-                *uc = 0x0153;
+                *uc = QChar(0x0153);
                 break;
             case 0xbe:
-                *uc = 0x0178;
+                *uc = QChar(0x0178);
                 break;
             default:
                 break;
