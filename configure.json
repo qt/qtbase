@@ -896,7 +896,7 @@
         },
         "c++1z": {
             "label": "C++1z",
-            "condition": "features.c++14 && tests.c++1z",
+            "condition": "features.c++14 && tests.c++1z && !config.uikit",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "precompile_header": {
