@@ -215,7 +215,7 @@ ProjectGenerator::init()
     }
 
     //setup deplist
-    QList<QMakeLocalFileName> deplist;
+    QVector<QMakeLocalFileName> deplist;
     {
         const ProStringList &d = v["DEPENDPATH"];
         for(int i = 0; i < d.size(); ++i)

@@ -199,10 +199,10 @@ void QMakeSourceFileInfo::dependTreeWalker(SourceFile *node, SourceDependChildre
     }
 }
 
-void QMakeSourceFileInfo::setDependencyPaths(const QList<QMakeLocalFileName> &l)
+void QMakeSourceFileInfo::setDependencyPaths(const QVector<QMakeLocalFileName> &l)
 {
     // Ensure that depdirs does not contain the same paths several times, to minimize the stats
-    QList<QMakeLocalFileName> ll;
+    QVector<QMakeLocalFileName> ll;
     for (int i = 0; i < l.count(); ++i) {
         if (!ll.contains(l.at(i)))
             ll.append(l.at(i));
@@ -853,8 +853,8 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                         }
                     }
                     if(!exists) { //path lookup
-                        for(QList<QMakeLocalFileName>::Iterator it = depdirs.begin(); it != depdirs.end(); ++it) {
-                            QMakeLocalFileName f((*it).real() + Option::dir_sep + lfn.real());
+                        for (const QMakeLocalFileName &depdir : qAsConst(depdirs)) {
+                            QMakeLocalFileName f(depdir.real() + Option::dir_sep + lfn.real());
                             QFileInfo fi(findFileInfo(f));
                             if(fi.exists() && !fi.isDir()) {
                                 lfn = fixPathForFile(f);

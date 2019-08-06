@@ -79,7 +79,7 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
     ProStringList impexts = project->values("QMAKE_LIB_EXTENSIONS");
     if (impexts.isEmpty())
         impexts = project->values("QMAKE_EXTENSION_STATICLIB");
-    QList<QMakeLocalFileName> dirs;
+    QVector<QMakeLocalFileName> dirs;
     int libidx = 0;
     for (const ProString &dlib : project->values("QMAKE_DEFAULT_LIBDIRS"))
         dirs.append(QMakeLocalFileName(dlib.toQString()));
@@ -104,8 +104,7 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
             QString lib = arg.toQString();
             ProString verovr =
                     project->first(ProKey("QMAKE_" + lib.toUpper() + "_VERSION_OVERRIDE"));
-            for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin();
-                 dir_it != dirs.end(); ++dir_it) {
+            for (auto dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
                 QString cand = (*dir_it).real() + Option::dir_sep + lib;
                 if (linkPrl && processPrlFile(cand, true)) {
                     (*it) = cand;
@@ -128,8 +127,7 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                 if (processPrlFile(lib, false))
                     (*it) = lib;
             } else {
-                for (QList<QMakeLocalFileName>::Iterator dir_it = dirs.begin();
-                     dir_it != dirs.end(); ++dir_it) {
+                for (auto dir_it = dirs.begin(); dir_it != dirs.end(); ++dir_it) {
                     QString cand = (*dir_it).real() + Option::dir_sep + lib;
                     if (processPrlFile(cand, false)) {
                         (*it) = cand;
