@@ -212,3 +212,72 @@ when scanning the source files with \c{moc}.
 
 \snippet cmake-macros/examples.cmake qt5_generate_moc
 */
+
+
+/*!
+\page qtcore-cmake-qt5-import-plugins.html
+\ingroup cmake-macros-qtcore
+
+\title qt5_import_plugins
+
+\brief Specifies a custom set of plugins to import for a static Qt build
+
+\section1 Synopsis
+
+\badcode
+qt5_import_plugins(target
+                   [INCLUDE plugin ...]
+                   [EXCLUDE plugin ...]
+                   [INCLUDE_BY_TYPE plugin_type plugin ...]
+                   [EXCLUDE_BY_TYPE plugin_type])
+\endcode
+
+\section1 Description
+
+Specifies a custom set of plugins to import. The optional arguments:
+\c INCLUDE, \c EXCLUDE, \c INCLUDE_BY_TYPE, and \c EXCLUDE_BY_TYPE,
+can be used more than once.
+
+This CMake command was introduced in Qt 5.14.
+
+\list
+\li \c INCLUDE -- can be used to specify a list of plugins to import.
+\li \c EXCLUDE -- can be used to specify a list of plugins to exclude.
+\li \c INCLUDE_BY_TYPE -- can be used to override the list of plugins to
+       import for a certain plugin type.
+\li \c EXCLUDE_BY_TYPE -- can be used to specify a plugin type to exclude;
+       then no plugins of that type are imported.
+\endlist
+
+Qt provides plugin types such as \c imageformats, \c platforms,
+and \c sqldrivers.
+
+If \c qt5_import_plugins() isn't called, the target automatically links against
+a sane set of default plugins, for each Qt module that the target is linked
+against. For more information, see
+\l{CMake target_link_libraries Documentation}{target_link_libraries}.
+
+Each plugin comes with a C++ stub file that automatically
+initializes the plugin. Consequently, any target that links against a plugin
+has this C++ file added to its \c SOURCES.
+
+\note This macro imports plugins from static Qt builds only.
+On shared builds, it does nothing.
+
+\section1 Example
+
+\snippet cmake-macros/examples.cmake qt5_import_plugins
+
+In the snippet above, the following occurs with the executable \c myapp:
+
+\list
+\li The \c Qt5::QCocoaIntegrationPlugin is imported into myapp.
+\li The \c Qt5::QMinimalIntegrationPlugin plugin is
+    excluded from being automatically imported into myapp.
+\li The default list of plugins for \c imageformats is
+    overridden to only include Qt5::QGifPlugin and Qt5::QJpegPlugin.
+\li All \c sqldrivers plugins are excluded from automatic importing.
+\endlist
+
+*/
+
