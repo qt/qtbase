@@ -279,6 +279,13 @@ bool TestCompiler::qmake(const QString &workDir, const QString &proName, const Q
                       << additionalArguments);
 }
 
+bool TestCompiler::qmake(const QString &workDir, const QStringList &arguments)
+{
+    QDir d;
+    d.setCurrent(workDir); // ### runCommand should take a workingDir argument instead
+    return runCommand(qmakeCmd_, arguments);
+}
+
 bool TestCompiler::make( const QString &workPath, const QString &target, bool expectFail )
 {
     QDir D;

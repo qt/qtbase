@@ -81,6 +81,7 @@ private slots:
     void substitutes();
     void project();
     void proFileCache();
+    void qinstall();
     void resources();
 
 private:
@@ -586,6 +587,104 @@ void tst_qmake::proFileCache()
 {
     QString workDir = base_path + "/testdata/pro_file_cache";
     QVERIFY( test_compiler.qmake( workDir, "pro_file_cache" ));
+}
+
+void tst_qmake::qinstall()
+{
+    const QString testName = "qinstall";
+    QDir testDataDir = base_path + "/testdata";
+    if (testDataDir.exists(testName))
+        testDataDir.rmdir(testName);
+    QVERIFY(testDataDir.mkdir(testName));
+    const QString workDir = testDataDir.filePath(testName);
+    auto qinstall = [&](const QString &src, const QString &dst, bool executable = false) {
+                        QStringList args = {"-install", "qinstall"};
+                        if (executable)
+                            args << "-exe";
+                        args << src << dst;
+                        return test_compiler.qmake(workDir, args);
+                    };
+    const QFileDevice::Permissions readFlags
+            = QFileDevice::ReadOwner | QFileDevice::ReadUser
+            | QFileDevice::ReadGroup | QFileDevice::ReadOther;
+    const QFileDevice::Permissions writeFlags
+            = QFileDevice::WriteOwner | QFileDevice::WriteUser
+            | QFileDevice::WriteGroup | QFileDevice::WriteOther;
+    const QFileDevice::Permissions exeFlags
+            = QFileDevice::ExeOwner | QFileDevice::ExeUser
+            | QFileDevice::ExeGroup | QFileDevice::ExeOther;
+
+    // install a regular file
+    {
+        QFileInfo src(testDataDir.filePath("project/main.cpp"));
+        QFileInfo dst("foo.cpp");
+        QVERIFY(qinstall(src.filePath(), dst.filePath()));
+        QVERIFY(dst.exists());
+        QCOMPARE(src.size(), dst.size());
+        QVERIFY(dst.permissions() & readFlags);
+        QVERIFY(dst.permissions() & writeFlags);
+        QVERIFY(!(dst.permissions() & exeFlags));
+        test_compiler.clearCommandOutput();
+    }
+
+    // install an executable file
+    {
+        const QString mocFilePath = QLibraryInfo::location(QLibraryInfo::BinariesPath)
+                + "/moc"
+#ifdef Q_OS_WIN
+                + ".exe"
+#endif
+                ;
+        QFileInfo src(mocFilePath);
+        QVERIFY(src.exists());
+        QVERIFY(src.permissions() & exeFlags);
+        QFileInfo dst("copied_" + src.fileName());
+        QVERIFY(qinstall(src.filePath(), dst.filePath(), true));
+        QVERIFY(dst.exists());
+        QCOMPARE(src.size(), dst.size());
+        QVERIFY(dst.permissions() & readFlags);
+        QVERIFY(dst.permissions() & writeFlags);
+        QVERIFY(dst.permissions() & exeFlags);
+        test_compiler.clearCommandOutput();
+    }
+
+    // install a read-only file
+    {
+        QFile srcfile("foo.cpp");
+        QVERIFY(srcfile.setPermissions(srcfile.permissions() & ~writeFlags));
+        QFileInfo src(srcfile);
+        QFileInfo dst("bar.cpp");
+        QVERIFY(qinstall(src.filePath(), dst.filePath()));
+        QVERIFY(dst.exists());
+        QCOMPARE(src.size(), dst.size());
+        QVERIFY(dst.permissions() & readFlags);
+        QVERIFY(dst.permissions() & writeFlags);
+        QVERIFY(!(dst.permissions() & exeFlags));
+        test_compiler.clearCommandOutput();
+    }
+
+    // install a directory
+    {
+        QDir src = testDataDir;
+        src.cd("project");
+        QDir dst("narf");
+        QVERIFY(qinstall(src.absolutePath(), dst.absolutePath()));
+        QCOMPARE(src.entryList(QDir::Files, QDir::Name), dst.entryList(QDir::Files, QDir::Name));
+        test_compiler.clearCommandOutput();
+    }
+
+    // install a directory with a read-only file
+    {
+        QDir src("narf");
+        QFile srcfile(src.filePath("main.cpp"));
+        QVERIFY(srcfile.setPermissions(srcfile.permissions() & ~writeFlags));
+        QDir dst("zort");
+#ifdef Q_OS_WIN
+        QEXPECT_FAIL("", "QTBUG-77299", Abort);
+#endif
+        QVERIFY(qinstall(src.absolutePath(), dst.absolutePath()));
+        QCOMPARE(src.entryList(QDir::Files, QDir::Name), dst.entryList(QDir::Files, QDir::Name));
+    }
 }
 
 void tst_qmake::resources()
