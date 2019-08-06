@@ -133,8 +133,12 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_fil
 
 
     resource_name = os.path.splitext(os.path.basename(filepath))[0]
-    base_dir = os.path.join('' if base_dir == '.' else base_dir, os.path.dirname(filepath))
+    dir_name = os.path.dirname(filepath)
+    base_dir = os.path.join('' if base_dir == '.' else base_dir, dir_name)
 
+    # Small not very thorough check to see if this a shared qrc resource
+    # pattern is mostly used by the tests.
+    is_parent_path = dir_name.startswith('..')
     if not os.path.isfile(filepath):
         raise RuntimeError('Invalid file path given to process_qrc_file: {}'.format(filepath))
 
@@ -159,6 +163,11 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_fil
 
             # Get alias:
             alias = file.get('alias', '')
+            # In cases where examples use shared resources, we set the alias
+            # too the same name of the file, or the applications won't be
+            # be able to locate the resource
+            if not alias and is_parent_path:
+                alias = path
             files[path] = alias
 
         sorted_files = sorted(files.keys())
