@@ -648,9 +648,6 @@ void tst_Http2::connectToHost()
         eventLoop.exitLoop();
         QCOMPARE(reply->error(), QNetworkReply::NoError);
         QVERIFY(reply->isFinished());
-        // Nothing must be sent yet:
-        QVERIFY(!prefaceOK);
-        QVERIFY(!serverGotSettingsACK);
         // Nothing received back:
         QVERIFY(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).isNull());
         QCOMPARE(reply->readAll().size(), 0);
