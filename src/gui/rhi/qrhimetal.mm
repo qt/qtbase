@@ -1986,9 +1986,11 @@ bool QMetalBuffer::build()
     }
 #endif
 
-    // Immutable and Static only has buf[0] and pendingUpdates[0] in use.
-    // Dynamic uses all.
-    d->slotted = m_type == Dynamic;
+    // Have QMTL_FRAMES_IN_FLIGHT versions regardless of the type, for now.
+    // This is because writing to a Managed buffer (which is what Immutable and
+    // Static maps to on macOS) is not safe when another frame reading from the
+    // same buffer is still in flight.
+    d->slotted = !m_usage.testFlag(QRhiBuffer::StorageBuffer); // except for SSBOs written in the shader
 
     QRHI_RES_RHI(QRhiMetal);
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
