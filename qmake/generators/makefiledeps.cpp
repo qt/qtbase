@@ -60,14 +60,14 @@ QT_BEGIN_NAMESPACE
 inline bool qmake_endOfLine(const char &c) { return (c == '\r' || c == '\n'); }
 #endif
 
-QMakeLocalFileName::QMakeLocalFileName(const QString &name) : is_null(name.isNull())
-                                                            , real_name(name)
+QMakeLocalFileName::QMakeLocalFileName(const QString &name)
+    : real_name(name)
 {
 }
 const QString
 &QMakeLocalFileName::local() const
 {
-    if(!is_null && local_name.isNull())
+    if (!isNull() && local_name.isNull())
         local_name = Option::normalizePath(real_name);
     return local_name;
 }
