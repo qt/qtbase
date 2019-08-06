@@ -42,7 +42,8 @@ class SourceFiles;
 
 class QMakeLocalFileName {
     bool is_null;
-    mutable QString real_name, local_name;
+    QString real_name;
+    mutable QString local_name;
 public:
     QMakeLocalFileName() : is_null(true) {}
     QMakeLocalFileName(const QString &);
