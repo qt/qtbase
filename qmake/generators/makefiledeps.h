@@ -79,9 +79,6 @@ private:
     bool findDeps(SourceFile *);
     void dependTreeWalker(SourceFile *, SourceDependChildren *);
 
-    //cache
-    QString cachefile;
-
 protected:
     virtual QMakeLocalFileName fixPathForFile(const QMakeLocalFileName &, bool forOpen=false);
     virtual QMakeLocalFileName findFileForDep(const QMakeLocalFileName &, const QMakeLocalFileName &);
@@ -113,12 +110,6 @@ public:
     QStringList dependencies(const QString &file);
 
     bool mocable(const QString &file);
-
-    virtual QMap<QString, QStringList> getCacheVerification();
-    virtual bool verifyCache(const QMap<QString, QStringList> &);
-    void setCacheFile(const QString &cachefile); //auto caching
-    void loadCache(const QString &cf);
-    void saveCache(const QString &cf);
 
 private:
     DependencyMode dep_mode;
