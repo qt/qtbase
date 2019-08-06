@@ -679,9 +679,6 @@ void tst_qmake::qinstall()
         QFile srcfile(src.filePath("main.cpp"));
         QVERIFY(srcfile.setPermissions(srcfile.permissions() & ~writeFlags));
         QDir dst("zort");
-#ifdef Q_OS_WIN
-        QEXPECT_FAIL("", "QTBUG-77299", Abort);
-#endif
         QVERIFY(qinstall(src.absolutePath(), dst.absolutePath()));
         QCOMPARE(src.entryList(QDir::Files, QDir::Name), dst.entryList(QDir::Files, QDir::Name));
     }
