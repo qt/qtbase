@@ -154,8 +154,8 @@ QBitArray::QBitArray(int size, bool value)
     uchar* c = reinterpret_cast<uchar*>(d.data());
     memset(c + 1, value ? 0xff : 0, d.size() - 1);
     *c = d.size()*8 - size;
-    if (value && size && size % 8)
-        *(c+1+size/8) &= (1 << (size%8)) - 1;
+    if (value && size && size & 7)
+        *(c+1+size/8) &= (1 << (size & 7)) - 1;
 }
 
 /*! \fn int QBitArray::size() const
@@ -227,8 +227,8 @@ void QBitArray::resize(int size)
         uchar* c = reinterpret_cast<uchar*>(d.data());
         if (size > (s << 3))
             memset(c + s, 0, d.size() - s);
-        else if ( size % 8)
-            *(c+1+size/8) &= (1 << (size%8)) - 1;
+        else if (size & 7)
+            *(c+1+size/8) &= (1 << (size & 7)) - 1;
         *c = d.size()*8 - size;
     }
 }
