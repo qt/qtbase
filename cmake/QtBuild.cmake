@@ -2018,8 +2018,6 @@ endfunction()
 #  to the module's URI where '.' is replaced with '/'. Use this to override the
 #  default substitution pattern.
 #  VERSION: Version of the qml module
-#  NAME: Override for the default import name used in the ${target}_qmltypes
-#  target (optional)
 #  RESOURCE_PREFIX: Resource import prefix to be prepended to the module's
 #  target path.
 #  QML_PLUGINDUMP_DEPENDENCIES: Path to a dependencies.json file to be consumed
@@ -2037,7 +2035,6 @@ function(add_qml_module target)
         URI
         TARGET_PATH
         VERSION
-        NAME
         RESOURCE_PREFIX
         QML_PLUGINDUMP_DEPENDENCIES
     )
@@ -2108,7 +2105,7 @@ function(add_qml_module target)
     qt_add_qmltypes_target(${target}
         TARGET_PATH "${arg_TARGET_PATH}"
         IMPORT_VERSION "${arg_VERSION}"
-        IMPORT_NAME "${arg_NAME}"
+        IMPORT_NAME "${arg_URI}"
         QML_PLUGINDUMP_DEPENDENCIES "${arg_QML_PLUGINDUMP_DEPENDENCIES}")
 
     qt_path_join(qml_module_install_dir ${QT_INSTALL_DIR} "${INSTALL_QMLDIR}/${arg_TARGET_PATH}")
@@ -2130,7 +2127,8 @@ function(add_qml_module target)
     if (NOT QT_BUILD_SHARED_LIBS)
         # only embed qmldir on static builds. Some qml modules may request
         # their qml files to be embedded into their binary
-        string(REPLACE "." "_" qmldir_resource_name ${arg_URI})
+        string(REPLACE "." "_" qmldir_resource_name ${arg_TARGET_PATH})
+        string(REPLACE "/" "_" qmldir_resource_name ${qmldir_resource_name})
         set(qmldir_resource_name "${qmldir_resource_name}_qmldir")
         add_qt_resource(${target} ${uri_target}
             FILES "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"

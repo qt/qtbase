@@ -1955,22 +1955,24 @@ def write_qml_plugin(cm_fh: typing.IO[str],
     target_path = scope.get_string('TARGETPATH')
     if target_path:
         uri = target_path.replace('/','.')
-        extra_lines.append('URI "{}"'.format(uri))
+        import_name = scope.get_string('IMPORT_NAME')
         # Catch special cases such as foo.QtQuick.2.bar, which when converted
         # into a target path via cmake will result in foo/QtQuick/2/bar, which is
         # not what we want. So we supply the target path override.
         target_path_from_uri = uri.replace('.', '/')
         if target_path != target_path_from_uri:
             extra_lines.append('TARGET_PATH "{}"'.format(target_path))
+        if import_name:
+            extra_lines.append('URI "{}"'.format(import_name))
+        else:
+            uri = re.sub('\\.\\d+\\.', '.',uri)
+            extra_lines.append('URI "{}"'.format(uri))
 
     import_version = scope.get_string('IMPORT_VERSION')
     if import_version:
         import_version = import_version.replace("$$QT_MINOR_VERSION","${CMAKE_PROJECT_VERSION_MINOR}")
         extra_lines.append('VERSION "{}"'.format(import_version))
 
-    import_name = scope.get_string('IMPORT_NAME')
-    if import_name:
-        extra_lines.append('NAME "{}"'.format(import_name))
     plugindump_dep = scope.get_string('QML_PLUGINDUMP_DEPENDENCIES')
 
     if plugindump_dep:
