@@ -226,11 +226,13 @@ void QXcbEventQueue::run()
     };
 
     while (!m_closeConnectionDetected && (event = xcb_wait_for_event(connection))) {
+        m_newEventsMutex.lock();
         enqueueEvent(event);
         while (!m_closeConnectionDetected && (event = xcb_poll_for_queued_event(connection)))
             enqueueEvent(event);
 
         m_newEventsCondition.wakeOne();
+        m_newEventsMutex.unlock();
         wakeUpDispatcher();
     }
 
@@ -350,9 +352,12 @@ bool QXcbEventQueue::peekEventQueue(PeekerCallback peeker, void *peekerData,
 
 void QXcbEventQueue::waitForNewEvents(unsigned long time)
 {
-    m_newEventsMutex.lock();
+    QMutexLocker locker(&m_newEventsMutex);
+    QXcbEventNode *tailBeforeFlush = m_flushedTail;
+    flushBufferedEvents();
+    if (tailBeforeFlush != m_flushedTail)
+        return;
     m_newEventsCondition.wait(&m_newEventsMutex, time);
-    m_newEventsMutex.unlock();
 }
 
 void QXcbEventQueue::sendCloseConnectionEvent() const

@@ -51,14 +51,6 @@ QT_BEGIN_NAMESPACE
 QBenchmarkGlobalData *QBenchmarkGlobalData::current;
 
 QBenchmarkGlobalData::QBenchmarkGlobalData()
-    : measurer(0)
-    , walltimeMinimum(-1)
-    , iterationCount(-1)
-    , medianIterationCount(-1)
-    , createChart(false)
-    , verboseOutput(false)
-    , minimumTotal(-1)
-    , mode_(WallTime)
 {
     setMode(mode_);
 }
@@ -74,14 +66,13 @@ void QBenchmarkGlobalData::setMode(Mode mode)
 {
     mode_ = mode;
 
-    if (measurer)
-        delete measurer;
+    delete measurer;
     measurer = createMeasurer();
 }
 
 QBenchmarkMeasurerBase * QBenchmarkGlobalData::createMeasurer()
 {
-    QBenchmarkMeasurerBase *measurer = 0;
+    QBenchmarkMeasurerBase *measurer = nullptr;
     if (0) {
 #if QT_CONFIG(valgrind)
     } else if (mode_ == CallgrindChildProcess || mode_ == CallgrindParentProcess) {
@@ -106,24 +97,18 @@ QBenchmarkMeasurerBase * QBenchmarkGlobalData::createMeasurer()
 
 int QBenchmarkGlobalData::adjustMedianIterationCount()
 {
-    if (medianIterationCount != -1) {
-        return medianIterationCount;
-    } else {
-        return measurer->adjustMedianCount(1);
-    }
+    return medianIterationCount != -1
+        ? medianIterationCount : measurer->adjustMedianCount(1);
 }
 
 
 QBenchmarkTestMethodData *QBenchmarkTestMethodData::current;
 
-QBenchmarkTestMethodData::QBenchmarkTestMethodData()
-:resultAccepted(false), runOnce(false), iterationCount(-1)
-{
-}
+QBenchmarkTestMethodData::QBenchmarkTestMethodData() = default;
 
 QBenchmarkTestMethodData::~QBenchmarkTestMethodData()
 {
-    QBenchmarkTestMethodData::current = 0;
+    QBenchmarkTestMethodData::current = nullptr;
 }
 
 void QBenchmarkTestMethodData::beginDataRun()

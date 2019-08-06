@@ -106,8 +106,8 @@ class QTestElementAttribute: public QTestCoreList<QTestElementAttribute>
         bool setPair(QTest::AttributeIndex attributeIndex, const char *value);
 
     private:
-        char *attributeValue;
-        QTest::AttributeIndex attributeIndex;
+        char *attributeValue = nullptr;
+        QTest::AttributeIndex attributeIndex = QTest::AI_Undefined;
 };
 
 QT_END_NAMESPACE

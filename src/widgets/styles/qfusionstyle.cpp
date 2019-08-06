@@ -469,7 +469,14 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     case PE_FrameGroupBox:
     {
         QPixmap pixmap(QLatin1String(":/qt-project.org/styles/commonstyle/images/fusion_groupbox.png"));
-        int topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight), option->fontMetrics.height()) + groupBoxTopMargin;
+        int topMargin = 0;
+        auto control = dynamic_cast<const QGroupBox *>(widget);
+        if (control && !control->isCheckable() && control->title().isEmpty()) {
+            // Shrinking the topMargin if Not checkable AND title is empty
+            topMargin = groupBoxTopMargin;
+        } else {
+            topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight), option->fontMetrics.height()) + groupBoxTopMargin;
+        }
         QRect frame = option->rect.adjusted(0, topMargin, 0, 0);
         qDrawBorderPixmap(painter, frame, QMargins(6, 6, 6, 6), pixmap);
         break;

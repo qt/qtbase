@@ -1268,6 +1268,7 @@ tst_QDir::cleanPath_data()
     QTest::newRow("drive-above-root") << "A:/.." << "A:/..";
     QTest::newRow("unc-server-up") << "//server/path/.." << "//server";
     QTest::newRow("unc-server-above-root") << "//server/.." << "//server/..";
+    QTest::newRow("longpath") << "\\\\?\\d:\\" << "d:/";
 #else
     QTest::newRow("data15") << "//c:/foo" << "/c:/foo";
 #endif // non-windows
@@ -1745,6 +1746,7 @@ void tst_QDir::nativeSeparators()
     QCOMPARE(QDir::toNativeSeparators(QLatin1String("\\")), QString("\\"));
     QCOMPARE(QDir::fromNativeSeparators(QLatin1String("/")), QString("/"));
     QCOMPARE(QDir::fromNativeSeparators(QLatin1String("\\")), QString("/"));
+    QCOMPARE(QDir::fromNativeSeparators(QLatin1String("\\\\?\\C:\\")), QString("C:/"));
 #else
     QCOMPARE(QDir::toNativeSeparators(QLatin1String("/")), QString("/"));
     QCOMPARE(QDir::toNativeSeparators(QLatin1String("\\")), QString("\\"));

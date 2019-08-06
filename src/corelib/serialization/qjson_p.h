@@ -66,11 +66,13 @@
 
 #include <limits.h>
 #include <limits>
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 
 // in qstring.cpp
 void qt_to_latin1_unchecked(uchar *dst, const ushort *uc, qsizetype len);
+void qt_from_latin1(ushort *dst, const char *str, size_t size) noexcept;
 
 /*
   This defines a binary data structure for Json data. The data structure is optimised for fast reading
@@ -153,16 +155,24 @@ typedef qle_uint offset;
 // round the size up to the next 4 byte boundary
 inline int alignedSize(int size) { return (size + 3) & ~3; }
 
-static inline bool useCompressed(const QString &s)
+const int MaxLatin1Length = 0x7fff;
+
+static inline bool useCompressed(QStringView s)
 {
-    if (s.length() >= 0x8000)
+    if (s.length() > MaxLatin1Length)
         return false;
     return QtPrivate::isLatin1(s);
 }
 
-static inline int qStringSize(const QString &string, bool compress)
+static inline bool useCompressed(QLatin1String s)
 {
-    int l = 2 + string.length();
+    return s.size() <= MaxLatin1Length;
+}
+
+template <typename T>
+static inline int qStringSize(T string, bool compress)
+{
+    int l = 2 + string.size();
     if (!compress)
         l *= 2;
     return alignedSize(l);
@@ -214,37 +224,49 @@ public:
         return maxSize >= 0 && uint(d->length) <= maxSize / sizeof(ushort);
     }
 
-    inline String &operator=(const QString &str)
+    inline String &operator=(QStringView str)
     {
         d->length = str.length();
-#if Q_BYTE_ORDER == Q_BIG_ENDIAN
-        const ushort *uc = (const ushort *)str.unicode();
-        for (int i = 0; i < str.length(); ++i)
-            d->utf16[i] = uc[i];
-#else
-        memcpy(d->utf16, str.unicode(), str.length()*sizeof(ushort));
-#endif
-        if (str.length() & 1)
-            d->utf16[str.length()] = 0;
+        qToLittleEndian<quint16>(str.utf16(), str.length(), d->utf16);
+        fillTrailingZeros();
         return *this;
     }
 
-    inline bool operator ==(const QString &str) const {
+    inline String &operator=(QLatin1String str)
+    {
+        d->length = str.size();
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+        for (int i = 0; i < str.size(); ++i)
+            d->utf16[i] = str[i].unicode();
+#else
+        qt_from_latin1((ushort *)d->utf16, str.data(), str.size());
+#endif
+        fillTrailingZeros();
+        return *this;
+    }
+
+    void fillTrailingZeros()
+    {
+        if (d->length & 1)
+            d->utf16[d->length] = 0;
+    }
+
+    inline bool operator ==(QStringView str) const {
         int slen = str.length();
         int l = d->length;
         if (slen != l)
             return false;
-        const ushort *s = (const ushort *)str.constData();
+        const ushort *s = (const ushort *)str.utf16();
         const qle_ushort *a = d->utf16;
         const ushort *b = s;
         while (l-- && *a == *b)
             a++,b++;
         return (l == -1);
     }
-    inline bool operator !=(const QString &str) const {
+    inline bool operator !=(QStringView str) const {
         return !operator ==(str);
     }
-    inline bool operator >=(const QString &str) const {
+    inline bool operator >=(QStringView str) const {
         // ###
         return toString() >= str;
     }
@@ -292,16 +314,32 @@ public:
         return byteSize() <= maxSize;
     }
 
-    inline Latin1String &operator=(const QString &str)
+    inline Latin1String &operator=(QStringView str)
     {
         int len = d->length = str.length();
         uchar *l = (uchar *)d->latin1;
-        const ushort *uc = (const ushort *)str.unicode();
+        const ushort *uc = (const ushort *)str.utf16();
         qt_to_latin1_unchecked(l, uc, len);
 
-        for ( ; (quintptr)(l+len) & 0x3; ++len)
-            l[len] = 0;
+        fillTrailingZeros();
         return *this;
+    }
+
+    inline Latin1String &operator=(QLatin1String str)
+    {
+        int len = d->length = str.size();
+        uchar *l = (uchar *)d->latin1;
+        memcpy(l, str.data(), len);
+
+        fillTrailingZeros();
+        return *this;
+    }
+
+    void fillTrailingZeros()
+    {
+        uchar *l = (uchar *)d->latin1;
+        for (int len = d->length; (quintptr)(l + len) & 0x3; ++len)
+            l[len] = 0;
     }
 
     QLatin1String toQLatin1String() const noexcept {
@@ -351,11 +389,11 @@ public:
     { \
         return lhs.toQLatin1String() op rhs; \
     } \
-    inline bool operator op(const QString &lhs, Latin1String rhs) noexcept \
+    inline bool operator op(QStringView lhs, Latin1String rhs) noexcept \
     { \
         return lhs op rhs.toQLatin1String(); \
     } \
-    inline bool operator op(Latin1String lhs, const QString &rhs) noexcept \
+    inline bool operator op(Latin1String lhs, QStringView rhs) noexcept \
     { \
         return lhs.toQLatin1String() op rhs; \
     } \
@@ -419,7 +457,8 @@ inline bool String::operator<(const Latin1String &str) const
 
 }
 
-static inline void copyString(char *dest, const QString &str, bool compress)
+template <typename T>
+static inline void copyString(char *dest, T str, bool compress)
 {
     if (compress) {
         Latin1String string(dest);
@@ -469,7 +508,7 @@ public:
     Entry *entryAt(int i) const {
         return reinterpret_cast<Entry *>(((char *)this) + table()[i]);
     }
-    int indexOf(const QString &key, bool *exists) const;
+    int indexOf(QStringView key, bool *exists) const;
     int indexOf(QLatin1String key, bool *exists) const;
 
     bool isValid(int maxSize) const;
@@ -577,9 +616,9 @@ public:
         return shallowKey().isValid(maxSize);
     }
 
-    bool operator ==(const QString &key) const;
-    inline bool operator !=(const QString &key) const { return !operator ==(key); }
-    inline bool operator >=(const QString &key) const;
+    bool operator ==(QStringView key) const;
+    inline bool operator !=(QStringView key) const { return !operator ==(key); }
+    inline bool operator >=(QStringView key) const;
 
     bool operator==(QLatin1String key) const;
     inline bool operator!=(QLatin1String key) const { return !operator ==(key); }
@@ -589,7 +628,7 @@ public:
     bool operator >=(const Entry &other) const;
 };
 
-inline bool Entry::operator >=(const QString &key) const
+inline bool Entry::operator >=(QStringView key) const
 {
     if (value.latinKey)
         return (shallowLatin1Key() >= key);
@@ -602,10 +641,10 @@ inline bool Entry::operator >=(QLatin1String key) const
     if (value.latinKey)
         return shallowLatin1Key() >= key;
     else
-        return shallowKey() >= key;
+        return shallowKey() >= QString(key); // ### conversion to QString
 }
 
-inline bool operator <(const QString &key, const Entry &e)
+inline bool operator <(QStringView key, const Entry &e)
 { return e >= key; }
 
 inline bool operator<(QLatin1String key, const Entry &e)

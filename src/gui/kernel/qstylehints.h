@@ -74,10 +74,14 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_PROPERTY(bool useHoverEffects READ useHoverEffects WRITE setUseHoverEffects NOTIFY useHoverEffectsChanged FINAL)
     Q_PROPERTY(int wheelScrollLines READ wheelScrollLines NOTIFY wheelScrollLinesChanged FINAL)
     Q_PROPERTY(int mouseQuickSelectionThreshold READ mouseQuickSelectionThreshold WRITE setMouseQuickSelectionThreshold NOTIFY mouseQuickSelectionThresholdChanged FINAL)
+    Q_PROPERTY(int mouseDoubleClickDistance READ mouseDoubleClickDistance STORED false CONSTANT FINAL)
+    Q_PROPERTY(int touchDoubleTapDistance READ touchDoubleTapDistance STORED false CONSTANT FINAL)
 
 public:
     void setMouseDoubleClickInterval(int mouseDoubleClickInterval);
     int mouseDoubleClickInterval() const;
+    int mouseDoubleClickDistance() const;
+    int touchDoubleTapDistance() const;
     void setMousePressAndHoldInterval(int mousePressAndHoldInterval);
     int mousePressAndHoldInterval() const;
     void setStartDragDistance(int startDragDistance);

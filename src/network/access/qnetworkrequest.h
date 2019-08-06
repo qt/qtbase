@@ -128,7 +128,8 @@ public:
     };
 
 
-    explicit QNetworkRequest(const QUrl &url = QUrl());
+    QNetworkRequest();
+    explicit QNetworkRequest(const QUrl &url);
     QNetworkRequest(const QNetworkRequest &other);
     ~QNetworkRequest();
     QNetworkRequest &operator=(QNetworkRequest &&other) noexcept { swap(other); return *this; }

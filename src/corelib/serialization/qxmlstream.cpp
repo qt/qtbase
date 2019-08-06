@@ -782,8 +782,8 @@ QXmlStreamPrivateTagStack::QXmlStreamPrivateTagStack()
     tagStackStringStorage.reserve(32);
     tagStackStringStorageSize = 0;
     NamespaceDeclaration &namespaceDeclaration = namespaceDeclarations.push();
-    namespaceDeclaration.prefix = addToStringStorage(QStringViewLiteral("xml"));
-    namespaceDeclaration.namespaceUri = addToStringStorage(QStringViewLiteral("http://www.w3.org/XML/1998/namespace"));
+    namespaceDeclaration.prefix = addToStringStorage(u"xml");
+    namespaceDeclaration.namespaceUri = addToStringStorage(u"http://www.w3.org/XML/1998/namespace");
     initialTagStackStringStorageSize = tagStackStringStorageSize;
 }
 
@@ -1423,7 +1423,7 @@ inline int QXmlStreamReaderPrivate::fastScanNMTOKEN()
     int n = 0;
     uint c;
     while ((c = getChar()) != StreamEOF) {
-        if (fastDetermineNameChar(c) == NotName) {
+        if (fastDetermineNameChar(QChar(c)) == NotName) {
             putChar(c);
             return n;
         } else {

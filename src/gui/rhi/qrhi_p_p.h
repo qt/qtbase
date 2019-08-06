@@ -52,6 +52,7 @@
 #include "qrhiprofiler_p_p.h"
 #include <QBitArray>
 #include <QAtomicInt>
+#include <QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
 
@@ -59,6 +60,8 @@ QT_BEGIN_NAMESPACE
 #define QRHI_RES_RHI(t) t *rhiD = static_cast<t *>(m_rhi)
 #define QRHI_PROF QRhiProfilerPrivate *rhiP = m_rhi->profilerPrivateOrNull()
 #define QRHI_PROF_F(f) for (bool qrhip_enabled = rhiP != nullptr; qrhip_enabled; qrhip_enabled = false) rhiP->f
+
+Q_DECLARE_LOGGING_CATEGORY(QRHI_LOG_INFO)
 
 class QRhiImplementation
 {
@@ -552,6 +555,9 @@ public:
         UsageState stateAtPassBegin;
     };
     const QVector<Texture> *textures() const { return &m_textures; }
+
+    static BufferStage toPassTrackerBufferStage(QRhiShaderResourceBinding::StageFlags stages);
+    static TextureStage toPassTrackerTextureStage(QRhiShaderResourceBinding::StageFlags stages);
 
 private:
     QVector<Buffer> m_buffers;

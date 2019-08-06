@@ -36,6 +36,7 @@
 
 #include "qrhi_p_p.h"
 #include <qmath.h>
+#include <QLoggingCategory>
 
 #include "qrhinull_p_p.h"
 #ifndef QT_NO_OPENGL
@@ -53,6 +54,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
 /*!
     \class QRhi
@@ -260,6 +263,12 @@ QT_BEGIN_NAMESPACE
     tied to those concepts, however, and is thus a topic that is currently out
     of scope, but may be introduced in the future.
 
+    \note The Metal backend requires that an autorelease pool is available on
+    the rendering thread, ideally wrapping each iteration of the render loop.
+    This needs no action from the users of QRhi when rendering on the main
+    (gui) thread, but becomes important when a separate, dedicated render
+    thread is used.
+
     \section3 Resource synchronization
 
     QRhi does not expose APIs for resource barriers or image layout
@@ -383,6 +392,22 @@ QT_BEGIN_NAMESPACE
     texture object is "exported" via QRhi::nativeHandles() or
     QRhiTexture::nativeHandles(). Most importantly, passing pointers in structs
     and via setters does not transfer ownership.
+
+    \section2 Troubleshooting
+
+    Errors are printed to the output via qWarning(). Additional debug messages
+    can be enabled via the following logging categories. Messages from these
+    categories are not printed by default unless explicitly enabled via
+    QRhi::EnableProfiling or the facilities of QLoggingCategory (such as, the
+    \c QT_LOGGING_RULES environment variable).
+
+    \list
+    \li \c{qt.rhi.general}
+    \endlist
+
+    It is strongly advised to inspect the output with the logging categories
+    (\c{qt.rhi.*}) enabled whenever a QRhi-based application is not behaving as
+    expected.
  */
 
 /*!
@@ -403,7 +428,8 @@ QT_BEGIN_NAMESPACE
     \value EnableProfiling Enables gathering timing (CPU, GPU) and resource
     (QRhiBuffer, QRhiTexture, etc.) information and additional metadata. See
     QRhiProfiler. Avoid enabling in production builds as it may involve a
-    performance penalty.
+    performance penalty. Also enables debug messages from the \c{qt.rhi.*}
+    logging categories.
 
     \value EnableDebugMarkers Enables debug marker groups. Without this frame
     debugging features like making debug groups and custom resource name
@@ -3867,11 +3893,21 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
 
     if (r->d) {
         r->d->q = r.data();
+
         if (flags.testFlag(EnableProfiling)) {
             QRhiProfilerPrivate *profD = QRhiProfilerPrivate::get(&r->d->profiler);
             profD->rhiDWhenEnabled = r->d;
+            const_cast<QLoggingCategory &>(QRHI_LOG_INFO()).setEnabled(QtDebugMsg, true);
         }
+
+        // Play nice with QSG_INFO since that is still the most commonly used
+        // way to get graphics info printed from Qt Quick apps, and the Quick
+        // scenegraph is our primary user.
+        if (qEnvironmentVariableIsSet("QSG_INFO"))
+            const_cast<QLoggingCategory &>(QRHI_LOG_INFO()).setEnabled(QtDebugMsg, true);
+
         r->d->debugMarkers = flags.testFlag(EnableDebugMarkers);
+
         if (r->d->create(flags)) {
             r->d->implType = impl;
             r->d->implThread = QThread::currentThread();
@@ -4911,6 +4947,11 @@ QRhiShaderResourceBindings *QRhi::newShaderResourceBindings()
     backends. See \l{QRhiBuffer::UsageFlag}{UsageFlags} and
     \l{QRhi::NonDynamicUniformBuffers}{the feature flags}.
 
+    \note Backends may choose to allocate buffers bigger than \a size. This is
+    done transparently to applications, so there are no special restrictions on
+    the value of \a size. QRhiBuffer::size() will always report back the value
+    that was requested in \a size.
+
     \sa QRhiResource::release()
  */
 QRhiBuffer *QRhi::newBuffer(QRhiBuffer::Type type,
@@ -5329,6 +5370,34 @@ void QRhiPassResourceTracker::registerTexture(QRhiTexture *tex, TextureAccess *a
     t.stage = *stage;
     t.stateAtPassBegin = state; // first use -> initial state
     m_textures.append(t);
+}
+
+QRhiPassResourceTracker::BufferStage QRhiPassResourceTracker::toPassTrackerBufferStage(QRhiShaderResourceBinding::StageFlags stages)
+{
+    // pick the earlier stage (as this is going to be dstAccessMask)
+    if (stages.testFlag(QRhiShaderResourceBinding::VertexStage))
+        return QRhiPassResourceTracker::BufVertexStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::FragmentStage))
+        return QRhiPassResourceTracker::BufFragmentStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::ComputeStage))
+        return QRhiPassResourceTracker::BufComputeStage;
+
+    Q_UNREACHABLE();
+    return QRhiPassResourceTracker::BufVertexStage;
+}
+
+QRhiPassResourceTracker::TextureStage QRhiPassResourceTracker::toPassTrackerTextureStage(QRhiShaderResourceBinding::StageFlags stages)
+{
+    // pick the earlier stage (as this is going to be dstAccessMask)
+    if (stages.testFlag(QRhiShaderResourceBinding::VertexStage))
+        return QRhiPassResourceTracker::TexVertexStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::FragmentStage))
+        return QRhiPassResourceTracker::TexFragmentStage;
+    if (stages.testFlag(QRhiShaderResourceBinding::ComputeStage))
+        return QRhiPassResourceTracker::TexComputeStage;
+
+    Q_UNREACHABLE();
+    return QRhiPassResourceTracker::TexVertexStage;
 }
 
 QT_END_NAMESPACE

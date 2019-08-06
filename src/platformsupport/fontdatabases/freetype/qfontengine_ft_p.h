@@ -236,7 +236,7 @@ private:
     QImage alphaMapForGlyph(glyph_t, QFixed) override;
     QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t) override;
     QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) override;
-    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) override;
+    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t, const QColor &color) override;
     glyph_metrics_t alphaMapBoundingBox(glyph_t glyph,
                                         QFixed subPixelPosition,
                                         const QTransform &matrix,

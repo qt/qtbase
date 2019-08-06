@@ -1,6 +1,2 @@
-[basicRawEventTranslation]
-linux
 [multiPointRawEventTranslationOnTouchScreen]
-linux
-[multiPointRawEventTranslationOnTouchPad]
-linux
+ubuntu-16.04

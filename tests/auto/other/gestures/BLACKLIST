@@ -3,17 +3,25 @@ rhel-7.4
 rhel-7.6
 ubuntu-18.04
 [customGesture]
-# QTBUG-67254
-ubuntu
-opensuse
 opensuse-leap
+# QTBUG-67254
+opensuse-42.3
 [graphicsItemGesture]
 ubuntu-18.04
+rhel-7.4
+rhel-7.6
 [graphicsItemTreeGesture]
 ubuntu-18.04
 [graphicsView]
 ubuntu-18.04
+rhel-7.4
+rhel-7.6
 [explicitGraphicsObjectTarget]
 ubuntu-18.04
+rhel-7.4
+rhel-7.6
 [autoCancelGestures2]
 ubuntu-18.04
+rhel-7.4
+rhel-7.6
+

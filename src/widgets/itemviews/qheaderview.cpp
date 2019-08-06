@@ -189,7 +189,7 @@ static const int maxSizeSection = 1048575; // since section size is in a bitfiel
     The following values are obsolete:
     \value Custom Use Fixed instead.
 
-    \sa setResizeMode(), setSectionResizeMode(), stretchLastSection, minimumSectionSize
+    \sa setSectionResizeMode(), stretchLastSection, minimumSectionSize
 */
 
 /*!
@@ -880,7 +880,7 @@ void QHeaderView::swapSections(int first, int second)
     size equal to zero is however not recommended. In that situation hideSection
     should be used instead.
 
-    \sa sectionResized(), resizeMode(), sectionSize(), hideSection()
+    \sa sectionResized(), sectionSize(), hideSection()
 */
 
 void QHeaderView::resizeSection(int logical, int size)
@@ -960,7 +960,7 @@ void QHeaderView::resizeSection(int logical, int size)
     Resizes the sections according to the given \a mode, ignoring the current
     resize mode.
 
-    \sa resizeMode(), sectionResized()
+    \sa sectionResized()
 */
 
 void QHeaderView::resizeSections(QHeaderView::ResizeMode mode)
@@ -1139,16 +1139,6 @@ void QHeaderView::setSectionsMovable(bool movable)
     d->movableSections = movable;
 }
 
-// ### Qt 6 - remove this obsolete function
-/*!
-    \obsolete
-    \fn void QHeaderView::setMovable(bool movable)
-
-    Use setSectionsMovable instead.
-
-    \sa setSectionsMovable()
-*/
-
 /*!
     \since 5.0
 
@@ -1166,16 +1156,6 @@ bool QHeaderView::sectionsMovable() const
     Q_D(const QHeaderView);
     return d->movableSections;
 }
-
-// ### Qt 6 - remove this obsolete function
-/*!
-    \obsolete
-    \fn bool QHeaderView::isMovable() const
-
-    Use sectionsMovable instead.
-
-    \sa sectionsMovable()
-*/
 
 /*!
     \property QHeaderView::firstSectionMovable
@@ -1223,16 +1203,6 @@ void QHeaderView::setSectionsClickable(bool clickable)
     d->clickableSections = clickable;
 }
 
-// ### Qt 6 - remove this obsolete function
-/*!
-    \obsolete
-    \fn void QHeaderView::setClickable(bool clickable)
-
-    Use setSectionsClickable instead.
-
-    \sa setSectionsClickable()
-*/
-
 /*!
     \since 5.0
 
@@ -1248,16 +1218,6 @@ bool QHeaderView::sectionsClickable() const
     Q_D(const QHeaderView);
     return d->clickableSections;
 }
-
-// ### Qt 6 - remove this obsolete function
-/*!
-    \obsolete
-    \fn bool QHeaderView::isClickable() const
-
-    Use sectionsClickable instead.
-
-    \sa sectionsClickable()
-*/
 
 void QHeaderView::setHighlightSections(bool highlight)
 {
@@ -1277,7 +1237,7 @@ bool QHeaderView::highlightSections() const
     Sets the constraints on how the header can be resized to those described
     by the given \a mode.
 
-    \sa resizeMode(), length(), sectionResized()
+    \sa length(), sectionResized()
 */
 
 void QHeaderView::setSectionResizeMode(ResizeMode mode)
@@ -1326,26 +1286,6 @@ void QHeaderView::setSectionResizeMode(int logicalIndex, ResizeMode mode)
     if (d->hasAutoResizeSections() && d->state == QHeaderViewPrivate::NoState)
         d->doDelayedResizeSections(); // section sizes may change as a result of the new mode
 }
-
-// ### Qt 6 - remove this obsolete function
-/*!
-    \overload
-    \obsolete
-    \fn void QHeaderView::setResizeMode(int logicalIndex, ResizeMode mode)
-
-    Use setSectionResizeMode instead.
-
-    \sa setSectionResizeMode()
-*/
-
-/*!
-    \obsolete
-    \fn void QHeaderView::setResizeMode(ResizeMode mode)
-
-    Use setSectionResizeMode instead.
-
-    \sa setSectionResizeMode()
-*/
 
 /*!
     \since 5.0
@@ -1407,16 +1347,6 @@ int QHeaderView::resizeContentsPrecision() const
     return d->resizeContentsPrecision;
 }
 
-// ### Qt 6 - remove this obsolete function
-/*!
-    \obsolete
-    \fn QHeaderView::ResizeMode QHeaderView::resizeMode(int logicalIndex) const
-
-    Use sectionResizeMode instead.
-
-    \sa sectionResizeMode()
-*/
-
 /*!
     \since 4.1
 
@@ -1424,7 +1354,7 @@ int QHeaderView::resizeContentsPrecision() const
     views, this can be used to see if the headerview needs to resize the
     sections when the view's geometry changes.
 
-    \sa stretchLastSection, resizeMode()
+    \sa stretchLastSection
 */
 
 int QHeaderView::stretchSectionCount() const

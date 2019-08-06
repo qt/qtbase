@@ -73,6 +73,7 @@
 #include <QNetworkSession>
 #include <QSharedPointer>
 
+#include <atomic>
 
 QT_BEGIN_NAMESPACE
 
@@ -83,12 +84,14 @@ class QHostInfoResult : public QObject
 
     QPointer<const QObject> receiver = nullptr;
     QtPrivate::QSlotObjectBase *slotObj = nullptr;
+    const bool withContextObject = false;
 
 public:
     QHostInfoResult() = default;
     QHostInfoResult(const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj) :
         receiver(receiver),
-        slotObj(slotObj)
+        slotObj(slotObj),
+        withContextObject(slotObj && receiver)
     {
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this,
                 &QObject::deleteLater);
@@ -96,10 +99,15 @@ public:
             moveToThread(receiver->thread());
     }
 
+    void postResultsReady(const QHostInfo &info);
+
 public Q_SLOTS:
     inline void emitResultsReady(const QHostInfo &info)
     {
         if (slotObj) {
+            // we used to have a context object, but it's already destroyed
+            if (withContextObject && !receiver)
+                return;
             QHostInfo copy = info;
             void *args[2] = { nullptr, reinterpret_cast<void *>(&copy) };
             slotObj->call(const_cast<QObject*>(receiver.data()), args);
@@ -177,10 +185,12 @@ public:
     void put(const QString &name, const QHostInfo &info);
     void clear();
 
-    bool isEnabled();
-    void setEnabled(bool e);
+    bool isEnabled() { return enabled.load(std::memory_order_relaxed); }
+    // this function is currently only used for the auto tests
+    // and not usable by public API
+    void setEnabled(bool e) { enabled.store(e, std::memory_order_relaxed); }
 private:
-    bool enabled;
+    std::atomic<bool> enabled;
     struct QHostInfoCacheElement {
         QHostInfo info;
         QElapsedTimer age;
@@ -205,31 +215,13 @@ public:
 };
 
 
-class QAbstractHostInfoLookupManager : public QObject
+class QHostInfoLookupManager
 {
-    Q_OBJECT
-
-public:
-    ~QAbstractHostInfoLookupManager() {}
-    virtual void clear() = 0;
-
-    QHostInfoCache cache;
-
-protected:
-     QAbstractHostInfoLookupManager() {}
-     static QAbstractHostInfoLookupManager* globalInstance();
-
-};
-
-class QHostInfoLookupManager : public QAbstractHostInfoLookupManager
-{
-    Q_OBJECT
 public:
     QHostInfoLookupManager();
     ~QHostInfoLookupManager();
 
-    void clear() override;
-    void work();
+    void clear();
 
     // called from QHostInfo
     void scheduleLookup(QHostInfoRunnable *r);
@@ -238,6 +230,8 @@ public:
     // called from QHostInfoRunnable
     void lookupFinished(QHostInfoRunnable *r);
     bool wasAborted(int id);
+
+    QHostInfoCache cache;
 
     friend class QHostInfoRunnable;
 protected:
@@ -252,14 +246,12 @@ protected:
 #if QT_CONFIG(thread)
     QThreadPool threadPool;
 #endif
-    QRecursiveMutex mutex;
+    QMutex mutex;
 
     bool wasDeleted;
 
-private slots:
-#if QT_CONFIG(thread)
-    void waitForThreadPoolDone() { threadPool.waitForDone(); }
-#endif
+private:
+    void rescheduleWithMutexHeld();
 };
 
 QT_END_NAMESPACE

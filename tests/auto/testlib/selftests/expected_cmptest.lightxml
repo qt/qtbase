@@ -209,6 +209,12 @@
     <DataTag><![CDATA[different pixels]]></DataTag>
     <Description><![CDATA[Compared values are not the same]]></Description>
 </Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[different dpr]]></DataTag>
+    <Description><![CDATA[Compared QPixmaps differ in device pixel ratio.
+   Actual   (opA): 1
+   Expected (opB): 2]]></Description>
+</Incident>
     <Duration msecs="0"/>
 </TestFunction>
 <TestFunction name="compareQImages">
@@ -245,6 +251,12 @@
 <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
     <DataTag><![CDATA[different pixels]]></DataTag>
     <Description><![CDATA[Compared values are not the same]]></Description>
+</Incident>
+<Incident type="fail" file="qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp" line="0">
+    <DataTag><![CDATA[different dpr]]></DataTag>
+    <Description><![CDATA[Compared QImages differ in device pixel ratio.
+   Actual   (opA): 1
+   Expected (opB): 2]]></Description>
 </Incident>
     <Duration msecs="0"/>
 </TestFunction>

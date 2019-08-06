@@ -431,7 +431,7 @@ QByteArray createAlpnString(const QByteArrayList &nextAllowedProtocols)
 
 bool QSslSocketPrivate::s_loadRootCertsOnDemand = true;
 bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, qt_schannel_mutex, (QMutex::Recursive))
+Q_GLOBAL_STATIC(QRecursiveMutex, qt_schannel_mutex)
 
 void QSslSocketPrivate::ensureInitialized()
 {

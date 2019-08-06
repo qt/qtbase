@@ -544,11 +544,9 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
 #if !QT_CONFIG(icu)
     QTextCodecCache *cache = &globalData->codecCache;
     QTextCodec *codec;
-    if (cache) {
-        codec = cache->value(name);
-        if (codec)
-            return codec;
-    }
+    codec = cache->value(name);
+    if (codec)
+        return codec;
 
     for (TextCodecListConstIt it = globalData->allCodecs.constBegin(), cend = globalData->allCodecs.constEnd(); it != cend; ++it) {
         QTextCodec *cursor = *it;
@@ -560,8 +558,7 @@ QTextCodec *QTextCodec::codecForName(const QByteArray &name)
         QList<QByteArray> aliases = cursor->aliases();
         for (ByteArrayListConstIt ait = aliases.constBegin(), acend = aliases.constEnd(); ait != acend; ++ait) {
             if (qTextCodecNameMatch(*ait, name)) {
-                if (cache)
-                    cache->insert(name, cursor);
+                cache->insert(name, cursor);
                 return cursor;
             }
         }

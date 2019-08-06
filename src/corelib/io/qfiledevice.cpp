@@ -42,6 +42,8 @@
 #include "qfiledevice_p.h"
 #include "qfsfileengine_p.h"
 
+#include <private/qmemory_p.h>
+
 #ifdef QT_NO_QOBJECT
 #define tr(X) QString::fromLatin1(X)
 #endif
@@ -53,24 +55,20 @@ QT_BEGIN_NAMESPACE
 #endif
 
 QFileDevicePrivate::QFileDevicePrivate()
-    : fileEngine(nullptr),
-      cachedSize(0),
+    : cachedSize(0),
       error(QFile::NoError), lastWasWrite(false)
 {
     writeBufferChunkSize = QFILE_WRITEBUFFER_SIZE;
 }
 
 QFileDevicePrivate::~QFileDevicePrivate()
-{
-    delete fileEngine;
-    fileEngine = nullptr;
-}
+    = default;
 
 QAbstractFileEngine * QFileDevicePrivate::engine() const
 {
     if (!fileEngine)
-        fileEngine = new QFSFileEngine;
-    return fileEngine;
+        fileEngine = qt_make_unique<QFSFileEngine>();
+    return fileEngine.get();
 }
 
 void QFileDevicePrivate::setError(QFileDevice::FileError err)

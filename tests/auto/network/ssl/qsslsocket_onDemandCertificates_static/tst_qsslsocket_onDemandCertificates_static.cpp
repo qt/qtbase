@@ -178,6 +178,7 @@ void tst_QSslSocket_onDemandCertificates_static::onDemandRootCertLoadingStaticMe
 {
     QString host("www.qt.io");
 
+#if QT_DEPRECATED_SINCE(5, 5)
     // not using any root certs -> should not work
     QSslSocket::setDefaultCaCertificates(QList<QSslCertificate>());
     QSslSocketPtr socket = newSocket();
@@ -200,6 +201,7 @@ void tst_QSslSocket_onDemandCertificates_static::onDemandRootCertLoadingStaticMe
     QVERIFY(!socket3->waitForEncrypted());
 
     QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());
+#endif
 
     // setting empty default configuration -> should not work
     QSslConfiguration conf;

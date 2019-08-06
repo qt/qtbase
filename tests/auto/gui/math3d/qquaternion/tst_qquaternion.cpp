@@ -778,7 +778,10 @@ void tst_QQuaternion::conjugate()
     QQuaternion v1(w1, x1, y1, z1);
     QQuaternion v2(w1, -x1, -y1, -z1);
 
+#if QT_DEPRECATED_SINCE(5, 5)
     QCOMPARE(v1.conjugate(), v2);
+#endif
+    QCOMPARE(v1.conjugated(), v2);
 }
 
 // Test quaternion creation from an axis and an angle.

@@ -463,14 +463,13 @@ void tst_QGraphicsProxyWidget::setWidget()
         QCOMPARE(proxy->focusPolicy(), Qt::WheelFocus);
         QVERIFY(proxy->acceptDrops());
         QCOMPARE(proxy->acceptHoverEvents(), true); // to get widget enter events
-        int left, top, right, bottom;
-        widget->getContentsMargins(&left, &top, &right, &bottom);
+        const QMarginsF margins = QMarginsF{widget->contentsMargins()};
         qreal rleft, rtop, rright, rbottom;
         proxy->getContentsMargins(&rleft, &rtop, &rright, &rbottom);
-        QCOMPARE((qreal)left, rleft);
-        QCOMPARE((qreal)top, rtop);
-        QCOMPARE((qreal)right, rright);
-        QCOMPARE((qreal)bottom, rbottom);
+        QCOMPARE(margins.left(), rleft);
+        QCOMPARE(margins.top(), rtop);
+        QCOMPARE(margins.right(), rright);
+        QCOMPARE(margins.bottom(), rbottom);
     } else {
         // proxy shouldn't mess with the widget if it can't insert it.
         QCOMPARE(proxy->widget(), nullptr);

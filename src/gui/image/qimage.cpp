@@ -5067,12 +5067,12 @@ void QImage::applyColorTransform(const QColorTransform &transform)
     if (depth() > 32) {
         for (int i = 0; i < height(); ++i) {
             QRgba64 *scanline = reinterpret_cast<QRgba64 *>(scanLine(i));
-            transform.d_func()->apply(scanline, scanline, width(), flags);
+            transform.d->apply(scanline, scanline, width(), flags);
         }
     } else {
         for (int i = 0; i < height(); ++i) {
             QRgb *scanline = reinterpret_cast<QRgb *>(scanLine(i));
-            transform.d_func()->apply(scanline, scanline, width(), flags);
+            transform.d->apply(scanline, scanline, width(), flags);
         }
     }
 

@@ -168,7 +168,7 @@ QString QBenchmarkValgrindUtils::outFileBase(qint64 pid)
 // Returns \c true upon success, otherwise false.
 bool QBenchmarkValgrindUtils::runCallgrindSubProcess(const QStringList &origAppArgs, int &exitCode)
 {
-    const QString execFile(origAppArgs.at(0));
+    const QString &execFile = origAppArgs.at(0);
     QStringList args;
     args << QLatin1String("--tool=callgrind") << QLatin1String("--instr-atstart=yes")
          << QLatin1String("--quiet")
@@ -177,7 +177,7 @@ bool QBenchmarkValgrindUtils::runCallgrindSubProcess(const QStringList &origAppA
     // pass on original arguments that make sense (e.g. avoid wasting time producing output
     // that will be ignored anyway) ...
     for (int i = 1; i < origAppArgs.size(); ++i) {
-        const QString arg(origAppArgs.at(i));
+        const QString &arg = origAppArgs.at(i);
         if (arg == QLatin1String("-callgrind"))
             continue;
         args << arg; // ok to pass on

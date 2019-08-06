@@ -771,14 +771,13 @@ void QSplitterPrivate::setGeo(QSplitterLayoutStruct *sls, int p, int s, bool all
     if (!sls->handle->isHidden()) {
         QSplitterHandle *h = sls->handle;
         QSize hs = h->sizeHint();
-        int left, top, right, bottom;
-        h->getContentsMargins(&left, &top, &right, &bottom);
+        const QMargins m = h->contentsMargins();
         if (orient==Qt::Horizontal) {
             if (q->isRightToLeft())
                 p = contents.width() - p + hs.width();
-            h->setGeometry(p-hs.width() - left, contents.y(), hs.width() + left + right, contents.height());
+            h->setGeometry(p-hs.width() - m.left(), contents.y(), hs.width() + m.left() + m.right(), contents.height());
         } else {
-            h->setGeometry(contents.x(), p-hs.height() - top, contents.width(), hs.height() + top + bottom);
+            h->setGeometry(contents.x(), p-hs.height() - m.top(), contents.width(), hs.height() + m.top() + m.bottom());
         }
     }
 }

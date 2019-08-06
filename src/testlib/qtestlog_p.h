@@ -66,6 +66,10 @@ class QTestData;
 class Q_TESTLIB_EXPORT QTestLog
 {
 public:
+    QTestLog() = delete;
+    ~QTestLog() = delete;
+    Q_DISABLE_COPY_MOVE(QTestLog)
+
     enum LogMode {
         Plain = 0, XML, LightXML, XunitXML, CSV, TeamCity, TAP
 #if defined(QT_USE_APPLE_UNIFIED_LOGGING)
@@ -135,9 +139,6 @@ public:
     static qreal msecsFunctionTime() { return QTestLog::nsecsFunctionTime() / 1000000.; }
 
 private:
-    QTestLog();
-    ~QTestLog();
-
     static bool printAvailableTags;
 };
 

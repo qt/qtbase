@@ -54,6 +54,7 @@
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
+#include <private/qapplication_p.h>
 #include <private/qlistview_p.h>
 #include <private/qscrollbar_p.h>
 #include <qdebug.h>
@@ -810,14 +811,14 @@ void QListView::mouseReleaseEvent(QMouseEvent *e)
 void QListView::wheelEvent(QWheelEvent *e)
 {
     Q_D(QListView);
-    if (e->orientation() == Qt::Vertical) {
+    if (qAbs(e->angleDelta().y()) > qAbs(e->angleDelta().x())) {
         if (e->angleDelta().x() == 0
-            && ((d->flow == TopToBottom && d->wrap) || (d->flow == LeftToRight && !d->wrap))
-            && d->vbar->minimum() == 0 && d->vbar->maximum() == 0) {
+                && ((d->flow == TopToBottom && d->wrap) || (d->flow == LeftToRight && !d->wrap))
+                && d->vbar->minimum() == 0 && d->vbar->maximum() == 0) {
             QPoint pixelDelta(e->pixelDelta().y(), e->pixelDelta().x());
             QPoint angleDelta(e->angleDelta().y(), e->angleDelta().x());
-            QWheelEvent hwe(e->pos(), e->globalPos(), pixelDelta, angleDelta, e->delta(),
-                            Qt::Horizontal, e->buttons(), e->modifiers(), e->phase(), e->source(), e->inverted());
+            QWheelEvent hwe(e->position(), e->globalPosition(), pixelDelta, angleDelta,
+                            e->buttons(), e->modifiers(), e->phase(), e->inverted(), e->source());
             if (e->spontaneous())
                 qt_sendSpontaneousEvent(d->hbar, &hwe);
             else
@@ -1185,7 +1186,7 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
             rect.translate(0, -rect.height());
             if (rect.bottom() <= 0) {
 #ifdef QT_KEYPAD_NAVIGATION
-                if (QApplication::keypadNavigationEnabled()) {
+                if (QApplicationPrivate::keypadNavigationEnabled()) {
                     int row = d->batchStartRow() - 1;
                     while (row >= 0 && d->isHiddenOrDisabled(row))
                         --row;
@@ -1214,7 +1215,7 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
             rect.translate(0, rect.height());
             if (rect.top() >= contents.height()) {
 #ifdef QT_KEYPAD_NAVIGATION
-                if (QApplication::keypadNavigationEnabled()) {
+                if (QApplicationPrivate::keypadNavigationEnabled()) {
                     int rowCount = d->model->rowCount(d->root);
                     int row = 0;
                     while (row < rowCount && d->isHiddenOrDisabled(row))
@@ -1895,7 +1896,7 @@ bool QListViewPrivate::dropOn(QDropEvent *event, int *dropRow, int *dropCol, QMo
 
 void QListViewPrivate::removeCurrentAndDisabled(QVector<QModelIndex> *indexes, const QModelIndex &current) const
 {
-    auto isCurrentOrDisabled = [=](const QModelIndex &index) {
+    auto isCurrentOrDisabled = [this, current](const QModelIndex &index) {
         return !isIndexEnabled(index) || index == current;
     };
     indexes->erase(std::remove_if(indexes->begin(), indexes->end(),

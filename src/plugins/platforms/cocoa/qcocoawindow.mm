@@ -454,13 +454,35 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
     if (type == Qt::ToolTip)
         windowLevel = NSScreenSaverWindowLevel;
 
-    // Any "special" window should be in at least the same level as its parent.
-    if (type != Qt::Window) {
-        const QWindow * const transientParent = window()->transientParent();
-        const QCocoaWindow * const transientParentWindow = transientParent ?
-                    static_cast<QCocoaWindow *>(transientParent->handle()) : nullptr;
-        if (transientParentWindow)
-            windowLevel = qMax([transientParentWindow->nativeWindow() level], windowLevel);
+    auto *transientParent = window()->transientParent();
+    if (transientParent && transientParent->handle()) {
+        // We try to keep windows in at least the same window level as
+        // their transient parent. Unfortunately this only works when the
+        // window is created. If the window level changes after that, as
+        // a result of a call to setWindowFlags, or by changing the level
+        // of the native window, we will not pick this up, and the window
+        // will be left behind (or in a different window level than) its
+        // parent. We could KVO-observe the window level of our transient
+        // parent, but that requires us to know when the parent goes away
+        // so that we can unregister the observation before the parent is
+        // dealloced, something we can't do for generic NSWindows. Another
+        // way would be to override [NSWindow setLevel:] and notify child
+        // windows about the change, but that doesn't work for foreign
+        // windows, which can still be transient parents via fromWinId().
+        // One area where this problem is apparent is when AppKit tweaks
+        // the window level of modal windows during application activation
+        // and deactivation. Since we don't pick up on these window level
+        // changes in a generic way, we need to add logic explicitly to
+        // re-evaluate the window level after AppKit has done its tweaks.
+
+        auto *transientCocoaWindow = static_cast<QCocoaWindow *>(transientParent->handle());
+        auto *nsWindow = transientCocoaWindow->nativeWindow();
+
+        // We only upgrade the window level for "special" windows, to work
+        // around Qt Designer parenting the designer windows to the widget
+        // palette window (QTBUG-31779). This should be fixed in designer.
+        if (type != Qt::Window)
+            windowLevel = qMax(windowLevel, nsWindow.level);
     }
 
     return windowLevel;
@@ -1625,6 +1647,9 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
         [nsWindow setDynamicDepthLimit:NO];
         [nsWindow setDepthLimit:NSWindowDepthTwentyfourBitRGB];
     }
+
+    if (format().colorSpace() == QSurfaceFormat::sRGBColorSpace)
+        nsWindow.colorSpace = NSColorSpace.sRGBColorSpace;
 
     return nsWindow;
 }

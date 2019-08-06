@@ -93,7 +93,6 @@ bool Option::mkfile::do_deps = true;
 bool Option::mkfile::do_mocs = true;
 bool Option::mkfile::do_dep_heuristics = true;
 bool Option::mkfile::do_preprocess = false;
-bool Option::mkfile::do_stub_makefile = false;
 QStringList Option::mkfile::project_files;
 
 static Option::QMAKE_MODE default_mode(QString progname)
@@ -254,8 +253,6 @@ Option::parseCommandLine(QStringList &args, QMakeCmdLineParserState &state)
                             Option::mkfile::do_deps = false;
                         } else if (arg == "-nomoc") {
                             Option::mkfile::do_mocs = false;
-                        } else if (arg == "-createstub") {
-                            Option::mkfile::do_stub_makefile = true;
                         } else if (arg == "-nodependheuristics") {
                             Option::mkfile::do_dep_heuristics = false;
                         } else if (arg == "-E") {

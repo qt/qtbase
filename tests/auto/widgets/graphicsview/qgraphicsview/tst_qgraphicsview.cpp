@@ -2219,7 +2219,7 @@ void tst_QGraphicsView::wheelEvent()
     {
         QWheelEvent event(view.mapFromScene(widget->boundingRect().center()),
                           view.mapToGlobal(view.mapFromScene(widget->boundingRect().center())),
-                          120, 0, 0, Qt::Horizontal);
+                          QPoint(), QPoint(120, 0), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
         QApplication::sendEvent(view.viewport(), &event);
         QCOMPARE(scene.orientation, Qt::Horizontal);
     }
@@ -2228,7 +2228,7 @@ void tst_QGraphicsView::wheelEvent()
     {
         QWheelEvent event(view.mapFromScene(widget->boundingRect().center()),
                           view.mapToGlobal(view.mapFromScene(widget->boundingRect().center())),
-                          120, 0, 0, Qt::Vertical);
+                          QPoint(), QPoint(0, 120), Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
         QApplication::sendEvent(view.viewport(), &event);
         QCOMPARE(scene.orientation, Qt::Vertical);
     }
@@ -2526,9 +2526,8 @@ void tst_QGraphicsView::viewportUpdateMode2()
     view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view.setScene(&dummyScene);
     view.ensurePolished(); // make sure we get the right content margins
-    int left, top, right, bottom;
-    view.getContentsMargins(&left, &top, &right, &bottom);
-    view.resize(200 + left + right, 200 + top + bottom);
+    const QMargins margins = view.contentsMargins();
+    view.resize(200 + margins.left() + margins.right(), 200 + margins.top() + margins.bottom());
     toplevel.show();
     qApp->setActiveWindow(&toplevel);
     QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
@@ -4043,9 +4042,8 @@ void tst_QGraphicsView::update()
     CustomView view(0, &toplevel);
     view.setScene(&dummyScene);
     view.ensurePolished(); // must ensure polished to get content margins right
-    int left, top, right, bottom;
-    view.getContentsMargins(&left, &top, &right, &bottom);
-    view.resize(200 + left + right, 200 + top + bottom);
+    const QMargins margins = view.contentsMargins();
+    view.resize(200 + margins.left() + margins.right(), 200 + margins.top() + margins.bottom());
     toplevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
 

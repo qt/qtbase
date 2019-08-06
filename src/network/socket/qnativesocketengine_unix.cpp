@@ -1000,8 +1000,11 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
 
         // parse the ancillary data
         struct cmsghdr *cmsgptr;
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_CLANG("-Wsign-compare")
         for (cmsgptr = CMSG_FIRSTHDR(&msg); cmsgptr != NULL;
              cmsgptr = CMSG_NXTHDR(&msg, cmsgptr)) {
+            QT_WARNING_POP
             if (cmsgptr->cmsg_level == IPPROTO_IPV6 && cmsgptr->cmsg_type == IPV6_PKTINFO
                     && cmsgptr->cmsg_len >= CMSG_LEN(sizeof(in6_pktinfo))) {
                 in6_pktinfo *info = reinterpret_cast<in6_pktinfo *>(CMSG_DATA(cmsgptr));

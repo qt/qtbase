@@ -1,13 +1,13 @@
 [task258920_mouseBorder]
-osx
-[submenuTearOffDontClose]
-osx-10.12 ci
+osx-10.14
+osx-10.13
 [layoutDirection]
+osx-10.12
+osx-10.13
 # Fails when enabling synchronous expose events QTBUG-62092
-osx ci
 [pushButtonPopulateOnAboutToShow]
-osx
+osx-10.13
 [tearOff]
-osx
+osx-10.14
 [activeSubMenuPosition]
 winrt

@@ -131,12 +131,6 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMCONSUMERRELEASEKHRPROC) (EGLDisplay
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMCONSUMEROUTPUTEXTPROC) (EGLDisplay dpy, EGLStreamKHR stream, EGLOutputLayerEXT layer);
 #endif
 
-#ifndef EGL_EXT_stream_acquire_mode
-#define EGL_EXT_stream_acquire_mode 1
-#define EGL_CONSUMER_AUTO_ACQUIRE_EXT         0x332B
-#define EGL_RESOURCE_BUSY_EXT                 0x3353
-#endif
-
 #ifndef EGL_EXT_platform_device
 #define EGL_PLATFORM_DEVICE_EXT           0x313F
 #endif
@@ -160,11 +154,6 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLSETSTREAMATTRIBNVPROC) (EGLDisplay dpy, E
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYSTREAMATTRIBNVPROC) (EGLDisplay dpy, EGLStreamKHR stream, EGLenum attribute, EGLAttrib *value);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMCONSUMERACQUIREATTRIBNVPROC) (EGLDisplay dpy, EGLStreamKHR stream, const EGLAttrib *attrib_list);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLSTREAMCONSUMERRELEASEATTRIBNVPROC) (EGLDisplay dpy, EGLStreamKHR stream, const EGLAttrib *attrib_list);
-#endif
-
-#ifndef EGL_NV_output_drm_flip_event
-#define EGL_NV_output_drm_flip_event 1
-#define EGL_DRM_FLIP_EVENT_DATA_NV            0x333E
 #endif
 
 QT_BEGIN_NAMESPACE

@@ -779,8 +779,7 @@ int QAccessibleLineEdit::cursorPosition() const
 QRect QAccessibleLineEdit::characterRect(int offset) const
 {
     int x = lineEdit()->d_func()->control->cursorToX(offset);
-    int y;
-    lineEdit()->getTextMargins(0, &y, 0, 0);
+    int y = lineEdit()->textMargins().top();
     QFontMetrics fm(lineEdit()->font());
     const QString ch = text(offset, offset + 1);
     if (ch.isEmpty())

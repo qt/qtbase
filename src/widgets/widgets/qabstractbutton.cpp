@@ -44,6 +44,7 @@
 #endif
 #if QT_CONFIG(buttongroup)
 #include "qbuttongroup.h"
+#include "private/qapplication_p.h"
 #include "private/qbuttongroup_p.h"
 #endif
 #include "qabstractbutton_p.h"
@@ -319,7 +320,7 @@ void QAbstractButtonPrivate::moveFocus(int key)
 
     if (exclusive
 #ifdef QT_KEYPAD_NAVIGATION
-        && !QApplication::keypadNavigationEnabled()
+        && !QApplicationPrivate::keypadNavigationEnabled()
 #endif
         && candidate
         && fb->d_func()->checked
@@ -1063,7 +1064,7 @@ void QAbstractButton::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Right:
     case Qt::Key_Down: {
 #ifdef QT_KEYPAD_NAVIGATION
-        if ((QApplication::keypadNavigationEnabled()
+        if ((QApplicationPrivate::keypadNavigationEnabled()
                 && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right))
                 || (!QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional
                 || (e->key() == Qt::Key_Up || e->key() == Qt::Key_Down))) {
@@ -1159,7 +1160,7 @@ void QAbstractButton::focusInEvent(QFocusEvent *e)
 {
     Q_D(QAbstractButton);
 #ifdef QT_KEYPAD_NAVIGATION
-    if (!QApplication::keypadNavigationEnabled())
+    if (!QApplicationPrivate::keypadNavigationEnabled())
 #endif
     d->fixFocusPolicy();
     QWidget::focusInEvent(e);

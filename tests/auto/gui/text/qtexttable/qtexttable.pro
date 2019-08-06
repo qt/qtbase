@@ -1,6 +1,6 @@
 CONFIG += testcase
 TARGET = tst_qtexttable
-QT += testlib
+QT += testlib gui-private
 qtHaveModule(widgets): QT += widgets
 SOURCES  += tst_qtexttable.cpp
 

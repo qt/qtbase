@@ -36,7 +36,7 @@
 #include <private/qcolorspace_p.h>
 
 Q_DECLARE_METATYPE(QColorSpace::ColorSpaceId)
-Q_DECLARE_METATYPE(QColorSpace::Gamut)
+Q_DECLARE_METATYPE(QColorSpace::Primaries)
 Q_DECLARE_METATYPE(QColorSpace::TransferFunction)
 
 class tst_QColorSpace : public QObject
@@ -53,6 +53,7 @@ private slots:
     void toIccProfile_data();
     void toIccProfile();
 
+    void fromIccProfile_data();
     void fromIccProfile();
 
     void imageConversion_data();
@@ -60,11 +61,14 @@ private slots:
 
     void loadImage();
 
-    void gamut();
+    void primaries();
     void primariesXyz();
     void primaries2_data();
     void primaries2();
     void invalidPrimaries();
+
+    void changeTransferFunction();
+    void changePrimaries();
 };
 
 tst_QColorSpace::tst_QColorSpace()
@@ -74,33 +78,33 @@ tst_QColorSpace::tst_QColorSpace()
 void tst_QColorSpace::namedColorSpaces_data()
 {
     QTest::addColumn<QColorSpace::ColorSpaceId>("colorSpaceId");
-    QTest::addColumn<QColorSpace::Gamut>("gamutId");
+    QTest::addColumn<QColorSpace::Primaries>("primariesId");
     QTest::addColumn<QColorSpace::TransferFunction>("transferFunctionId");
 
     QTest::newRow("sRGB") << QColorSpace::SRgb
-                          << QColorSpace::Gamut::SRgb
+                          << QColorSpace::Primaries::SRgb
                           << QColorSpace::TransferFunction::SRgb;
     QTest::newRow("sRGB Linear") << QColorSpace::SRgbLinear
-                                 << QColorSpace::Gamut::SRgb
+                                 << QColorSpace::Primaries::SRgb
                                  << QColorSpace::TransferFunction::Linear;
     QTest::newRow("Adobe RGB") << QColorSpace::AdobeRgb
-                               << QColorSpace::Gamut::AdobeRgb
+                               << QColorSpace::Primaries::AdobeRgb
                                << QColorSpace::TransferFunction::Gamma;
     QTest::newRow("Display-P3") << QColorSpace::DisplayP3
-                                << QColorSpace::Gamut::DciP3D65
+                                << QColorSpace::Primaries::DciP3D65
                                 << QColorSpace::TransferFunction::SRgb;
     QTest::newRow("ProPhoto RGB") << QColorSpace::ProPhotoRgb
-                                  << QColorSpace::Gamut::ProPhotoRgb
+                                  << QColorSpace::Primaries::ProPhotoRgb
                                   << QColorSpace::TransferFunction::ProPhotoRgb;
     QTest::newRow("BT.2020") << QColorSpace::Bt2020
-                             << QColorSpace::Gamut::Bt2020
+                             << QColorSpace::Primaries::Bt2020
                              << QColorSpace::TransferFunction::Bt2020;
 }
 
 void tst_QColorSpace::namedColorSpaces()
 {
     QFETCH(QColorSpace::ColorSpaceId, colorSpaceId);
-    QFETCH(QColorSpace::Gamut, gamutId);
+    QFETCH(QColorSpace::Primaries, primariesId);
     QFETCH(QColorSpace::TransferFunction, transferFunctionId);
 
     QColorSpace colorSpace = colorSpaceId;
@@ -108,7 +112,7 @@ void tst_QColorSpace::namedColorSpaces()
     QVERIFY(colorSpace.isValid());
 
     QCOMPARE(colorSpace.colorSpaceId(), colorSpaceId);
-    QCOMPARE(colorSpace.gamut(), gamutId);
+    QCOMPARE(colorSpace.primaries(), primariesId);
     QCOMPARE(colorSpace.transferFunction(), transferFunctionId);
 }
 
@@ -121,10 +125,10 @@ void tst_QColorSpace::toIccProfile_data()
 void tst_QColorSpace::toIccProfile()
 {
     QFETCH(QColorSpace::ColorSpaceId, colorSpaceId);
-    QFETCH(QColorSpace::Gamut, gamutId);
+    QFETCH(QColorSpace::Primaries, primariesId);
     QFETCH(QColorSpace::TransferFunction, transferFunctionId);
 
-    Q_UNUSED(gamutId);
+    Q_UNUSED(primariesId);
     Q_UNUSED(transferFunctionId);
 
     QColorSpace colorSpace = colorSpaceId;
@@ -142,21 +146,38 @@ void tst_QColorSpace::toIccProfile()
     QCOMPARE(iccProfile2, iccProfile);
 }
 
+void tst_QColorSpace::fromIccProfile_data()
+{
+    QTest::addColumn<QString>("testProfile");
+    QTest::addColumn<QColorSpace::ColorSpaceId>("colorSpaceId");
+    QTest::addColumn<QColorSpace::TransferFunction>("transferFunction");
+    QTest::addColumn<QString>("description");
+
+    QString prefix = QFINDTESTDATA("resources/");
+    // Read the official sRGB ICCv2 profile:
+    QTest::newRow("sRGB2014 (ICCv2)") << prefix + "sRGB2014.icc" << QColorSpace::SRgb
+                                           << QColorSpace::TransferFunction::SRgb << QString("sRGB2014");
+    // My monitor's profile:
+    QTest::newRow("HP ZR30w (ICCv4)") << prefix + "HP_ZR30w.icc" << QColorSpace::Unknown
+                                      << QColorSpace::TransferFunction::Gamma << QString("HP Z30i");
+}
+
 void tst_QColorSpace::fromIccProfile()
 {
-    // Read the official sRGB ICCv2 profile:
-    QString prefix = QFINDTESTDATA("resources/");
-    QFile file(prefix + "sRGB2014.icc");
+    QFETCH(QString, testProfile);
+    QFETCH(QColorSpace::ColorSpaceId, colorSpaceId);
+    QFETCH(QColorSpace::TransferFunction, transferFunction);
+    QFETCH(QString, description);
+
+    QFile file(testProfile);
     file.open(QIODevice::ReadOnly);
     QByteArray iccProfile = file.readAll();
-    QColorSpace stdSRgb = QColorSpace::fromIccProfile(iccProfile);
-    QVERIFY(stdSRgb.isValid());
+    QColorSpace fileColorSpace = QColorSpace::fromIccProfile(iccProfile);
+    QVERIFY(fileColorSpace.isValid());
 
-    QCOMPARE(stdSRgb.gamut(), QColorSpace::Gamut::SRgb);
-    QCOMPARE(stdSRgb.transferFunction(), QColorSpace::TransferFunction::SRgb);
-    QCOMPARE(stdSRgb.colorSpaceId(), QColorSpace::SRgb);
-
-    QCOMPARE(stdSRgb, QColorSpace(QColorSpace::SRgb));
+    QCOMPARE(fileColorSpace.colorSpaceId(), colorSpaceId);
+    QCOMPARE(fileColorSpace.transferFunction(), transferFunction);
+    QCOMPARE(QColorSpacePrivate::get(fileColorSpace)->description, description);
 }
 
 void tst_QColorSpace::imageConversion_data()
@@ -262,7 +283,7 @@ void tst_QColorSpace::loadImage()
     QVERIFY(maxBlue2 > maxBlue);
 }
 
-void tst_QColorSpace::gamut()
+void tst_QColorSpace::primaries()
 {
     QColor black = QColor::fromRgbF(0.0, 0.0, 0.0);
     QColor white = QColor::fromRgbF(1.0, 1.0, 1.0);
@@ -304,30 +325,30 @@ void tst_QColorSpace::primariesXyz()
     QColorSpace bt2020 = QColorSpace::Bt2020;
 
     // Check if our calculated matrices, match the precalculated ones.
-    QCOMPARE(sRgb.d_func()->toXyz, QColorMatrix::toXyzFromSRgb());
-    QCOMPARE(adobeRgb.d_func()->toXyz, QColorMatrix::toXyzFromAdobeRgb());
-    QCOMPARE(displayP3.d_func()->toXyz, QColorMatrix::toXyzFromDciP3D65());
-    QCOMPARE(proPhotoRgb.d_func()->toXyz, QColorMatrix::toXyzFromProPhotoRgb());
-    QCOMPARE(bt2020.d_func()->toXyz, QColorMatrix::toXyzFromBt2020());
+    QCOMPARE(QColorSpacePrivate::get(sRgb)->toXyz, QColorMatrix::toXyzFromSRgb());
+    QCOMPARE(QColorSpacePrivate::get(adobeRgb)->toXyz, QColorMatrix::toXyzFromAdobeRgb());
+    QCOMPARE(QColorSpacePrivate::get(displayP3)->toXyz, QColorMatrix::toXyzFromDciP3D65());
+    QCOMPARE(QColorSpacePrivate::get(proPhotoRgb)->toXyz, QColorMatrix::toXyzFromProPhotoRgb());
+    QCOMPARE(QColorSpacePrivate::get(bt2020)->toXyz, QColorMatrix::toXyzFromBt2020());
 }
 
 void tst_QColorSpace::primaries2_data()
 {
-    QTest::addColumn<QColorSpace::Gamut>("gamut");
+    QTest::addColumn<QColorSpace::Primaries>("primariesId");
 
-    QTest::newRow("sRGB") << QColorSpace::Gamut::SRgb;
-    QTest::newRow("DCI-P3 (D65)") << QColorSpace::Gamut::DciP3D65;
-    QTest::newRow("Adobe RGB (1998)") << QColorSpace::Gamut::AdobeRgb;
-    QTest::newRow("ProPhoto RGB") << QColorSpace::Gamut::ProPhotoRgb;
-    QTest::newRow("BT.2020") << QColorSpace::Gamut::Bt2020;
+    QTest::newRow("sRGB") << QColorSpace::Primaries::SRgb;
+    QTest::newRow("DCI-P3 (D65)") << QColorSpace::Primaries::DciP3D65;
+    QTest::newRow("Adobe RGB (1998)") << QColorSpace::Primaries::AdobeRgb;
+    QTest::newRow("ProPhoto RGB") << QColorSpace::Primaries::ProPhotoRgb;
+    QTest::newRow("BT.2020") << QColorSpace::Primaries::Bt2020;
 }
 
 void tst_QColorSpace::primaries2()
 {
-    QFETCH(QColorSpace::Gamut, gamut);
-    QColorSpacePrimaries primaries(gamut);
+    QFETCH(QColorSpace::Primaries, primariesId);
+    QColorSpacePrimaries primaries(primariesId);
 
-    QColorSpace original(gamut,  QColorSpace::TransferFunction::Linear);
+    QColorSpace original(primariesId,  QColorSpace::TransferFunction::Linear);
     QColorSpace custom1(primaries.whitePoint, primaries.redPoint,
                         primaries.greenPoint, primaries.bluePoint, QColorSpace::TransferFunction::Linear);
     QCOMPARE(original, custom1);
@@ -355,6 +376,50 @@ void tst_QColorSpace::invalidPrimaries()
     QColorSpace custom(QPointF(), QPointF(), QPointF(), QPointF(), QColorSpace::TransferFunction::Linear);
     QVERIFY(!custom.isValid());
     QCOMPARE(custom.colorSpaceId(), QColorSpace::Undefined);
+}
+
+void tst_QColorSpace::changeTransferFunction()
+{
+    QColorSpace sRgb = QColorSpace::SRgb;
+
+    QColorSpace sRgbLinear = sRgb.withTransferFunction(QColorSpace::TransferFunction::Linear);
+    QCOMPARE(sRgbLinear.transferFunction(), QColorSpace::TransferFunction::Linear);
+    QCOMPARE(sRgbLinear.gamma(), 1.0f);
+    QCOMPARE(sRgbLinear.primaries(), QColorSpace::Primaries::SRgb);
+    QCOMPARE(sRgbLinear.colorSpaceId(), QColorSpace::SRgbLinear);
+    QCOMPARE(sRgbLinear, QColorSpace(QColorSpace::SRgbLinear));
+    QVERIFY(sRgbLinear != sRgb);
+    QCOMPARE(sRgbLinear.withTransferFunction(QColorSpace::TransferFunction::SRgb), sRgb);
+
+    QColorSpace aRgb = QColorSpace::AdobeRgb;
+    aRgb.setTransferFunction(QColorSpace::TransferFunction::SRgb);
+    QCOMPARE(aRgb.transferFunction(), QColorSpace::TransferFunction::SRgb);
+    QCOMPARE(aRgb.primaries(), QColorSpace::Primaries::AdobeRgb);
+    QCOMPARE(aRgb.colorSpaceId(), QColorSpace::Unknown);
+    QVERIFY(aRgb != QColorSpace(QColorSpace::AdobeRgb));
+    QVERIFY(aRgb != sRgb);
+    QCOMPARE(aRgb.withTransferFunction(QColorSpace::TransferFunction::Gamma, 2.2f),
+             QColorSpace(QColorSpace::AdobeRgb));
+    QVERIFY(aRgb != QColorSpace(QColorSpace::AdobeRgb));
+    aRgb.setTransferFunction(QColorSpace::TransferFunction::Gamma, 2.2f);
+    QVERIFY(aRgb == QColorSpace(QColorSpace::AdobeRgb));
+
+    QColorSpace undefined;
+    QCOMPARE(undefined.withTransferFunction(QColorSpace::TransferFunction::Linear), undefined);
+    undefined.setTransferFunction(QColorSpace::TransferFunction::SRgb);
+    QCOMPARE(undefined, QColorSpace());
+}
+
+void tst_QColorSpace::changePrimaries()
+{
+    QColorSpace cs = QColorSpace::SRgb;
+    cs.setPrimaries(QColorSpace::Primaries::DciP3D65);
+    QVERIFY(cs.isValid());
+    QCOMPARE(cs, QColorSpace(QColorSpace::DisplayP3));
+    cs.setTransferFunction(QColorSpace::TransferFunction::Linear);
+    cs.setPrimaries(QPointF(0.3127, 0.3290), QPointF(0.640, 0.330),
+                    QPointF(0.3000, 0.6000), QPointF(0.150, 0.060));
+    QCOMPARE(cs, QColorSpace(QColorSpace::SRgbLinear));
 }
 
 QTEST_MAIN(tst_QColorSpace)

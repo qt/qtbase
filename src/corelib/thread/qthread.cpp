@@ -851,7 +851,7 @@ Qt::HANDLE QThread::currentThreadId() noexcept
 
 QThread *QThread::currentThread()
 {
-    return QThreadData::current()->thread;
+    return QThreadData::current()->thread.loadAcquire();
 }
 
 int QThread::idealThreadCount() noexcept
@@ -883,11 +883,11 @@ QThreadData *QThreadData::current(bool createIfNecessary)
     if (!data && createIfNecessary) {
         data = new QThreadData;
         data->thread = new QAdoptedThread(data);
-        data->threadId.storeRelaxed(Qt::HANDLE(data->thread));
+        data->threadId.storeRelaxed(Qt::HANDLE(data->thread.loadAcquire()));
         data->deref();
         data->isAdopted = true;
-        if (!QCoreApplicationPrivate::theMainThread)
-            QCoreApplicationPrivate::theMainThread = data->thread.loadRelaxed();
+        if (!QCoreApplicationPrivate::theMainThread.loadAcquire())
+            QCoreApplicationPrivate::theMainThread.storeRelease(data->thread.loadRelaxed());
     }
     return data;
 }

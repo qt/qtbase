@@ -54,8 +54,7 @@ QTestXunitStreamer::QTestXunitStreamer(QXunitTestLogger *logger)
     QTEST_ASSERT(testLogger);
 }
 
-QTestXunitStreamer::~QTestXunitStreamer()
-{}
+QTestXunitStreamer::~QTestXunitStreamer() = default;
 
 void QTestXunitStreamer::indentForElement(const QTestElement* element, char* buf, int size)
 {
@@ -129,7 +128,7 @@ void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTe
         return;
     }
 
-    char const* key = 0;
+    char const* key = nullptr;
     if (attrindex == QTest::AI_Description)
         key = "message";
     else if (attrindex != QTest::AI_File && attrindex != QTest::AI_Line)

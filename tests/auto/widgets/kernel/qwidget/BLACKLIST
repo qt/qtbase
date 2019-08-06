@@ -2,30 +2,34 @@
 [normalGeometry]
 ubuntu-16.04
 [saveRestoreGeometry]
-xcb
-b2qt
-[restoreVersion1Geometry]
-osx
-[updateWhileMinimized]
+opensuse-leap
 ubuntu-16.04
+b2qt
+opensuse-42.3
+[restoreVersion1Geometry]
+ubuntu-16.04
+[updateWhileMinimized]
 ubuntu-18.04
 rhel-7.4
+ubuntu-16.04
 rhel-7.6
-osx
 [focusProxyAndInputMethods]
-linux
-[raise]
-# QTBUG-68175
-opensuse
+ubuntu-16.04
+rhel-7.6
 opensuse-leap
-[setWindowGeometry]
-osx
-[windowMoveResize]
-osx
+ubuntu-18.04
+rhel-7.4
+opensuse-42.3
+[raise]
+opensuse-leap
+# QTBUG-68175
+opensuse-42.3
 [childEvents]
 osx ci
 [renderInvisible]
-osx
+osx-10.12
+osx-10.11
+osx-10.14
 [optimizedResizeMove]
 osx
 [optimizedResize_topLevel]
@@ -40,12 +44,14 @@ opensuse
 opensuse-leap
 [moveInResizeEvent]
 ubuntu-16.04
-[moveChild:right]
-osx
-[activateWindow]
-osx-10.12 ci
 [multipleToplevelFocusCheck]
-linux
+ubuntu-16.04
+rhel-7.6
+opensuse-leap
+ubuntu-18.04
+rhel-7.4
+opensuse-42.3
 [windowState]
 # QTBUG-75270
 winrt
+

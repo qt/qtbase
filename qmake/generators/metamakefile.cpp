@@ -57,6 +57,7 @@ private:
     QList<Build *> makefiles;
     void clearBuilds();
     MakefileGenerator *processBuild(const ProString &);
+    void accumulateVariableFromBuilds(const ProKey &name, Build *build) const;
 
 public:
 
@@ -95,9 +96,6 @@ BuildsMetaMakefileGenerator::init()
     if(builds.count() > 1 && Option::output.fileName() == "-") {
         use_single_build = true;
         warn_msg(WarnLogic, "Cannot direct to stdout when using multiple BUILDS.");
-    } else if(0 && !use_single_build && project->first("TEMPLATE") == "subdirs") {
-        use_single_build = true;
-        warn_msg(WarnLogic, "Cannot specify multiple builds with TEMPLATE subdirs.");
     }
     if(!use_single_build) {
         for(int i = 0; i < builds.count(); i++) {
@@ -188,6 +186,7 @@ BuildsMetaMakefileGenerator::write()
         if(!build->makefile) {
             ret = false;
         } else if(build == glue) {
+            accumulateVariableFromBuilds("QMAKE_INTERNAL_INCLUDED_FILES", build);
             ret = build->makefile->writeProjectMakefile();
         } else {
             ret = build->makefile->write();
@@ -228,6 +227,16 @@ MakefileGenerator
             return createMakefileGenerator(build_proj);
     }
     return nullptr;
+}
+
+void BuildsMetaMakefileGenerator::accumulateVariableFromBuilds(const ProKey &name, Build *dst) const
+{
+    ProStringList &values = dst->makefile->projectFile()->values(name);
+    for (auto build : makefiles) {
+        if (build != dst)
+            values += build->makefile->projectFile()->values(name);
+    }
+    values.removeDuplicates();
 }
 
 class SubdirsMetaMakefileGenerator : public MetaMakefileGenerator
@@ -327,17 +336,13 @@ SubdirsMetaMakefileGenerator::init()
                 hasError |= tmpError;
             }
             sub->makefile = MetaMakefileGenerator::createMetaGenerator(sub_proj, sub_name);
-            if(0 && sub->makefile->type() == SUBDIRSMETATYPE) {
-                subs.append(sub);
-            } else {
-                const QString output_name = Option::output.fileName();
-                Option::output.setFileName(sub->output_file);
-                hasError |= !sub->makefile->write();
-                delete sub;
-                qmakeClearCaches();
-                sub = nullptr;
-                Option::output.setFileName(output_name);
-            }
+            const QString output_name = Option::output.fileName();
+            Option::output.setFileName(sub->output_file);
+            hasError |= !sub->makefile->write();
+            delete sub;
+            qmakeClearCaches();
+            sub = nullptr;
+            Option::output.setFileName(output_name);
             Option::output_dir = old_output_dir;
             qmake_setpwd(oldpwd);
 

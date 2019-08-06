@@ -51,12 +51,10 @@ QT_BEGIN_NAMESPACE
 class QTestDataPrivate
 {
 public:
-    QTestDataPrivate() : tag(0), parent(0), data(0), dataCount(0) {}
-
-    char *tag;
-    QTestTable *parent;
-    void **data;
-    int dataCount;
+    char *tag = nullptr;
+    QTestTable *parent = nullptr;
+    void **data = nullptr;
+    int dataCount = 0;
 };
 
 QTestData::QTestData(const char *tag, QTestTable *parent)

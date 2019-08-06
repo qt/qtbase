@@ -66,6 +66,8 @@ enum OutputConfiguration {
 
 int QKmsDevice::crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr connector)
 {
+    int candidate = -1;
+
     for (int i = 0; i < connector->count_encoders; i++) {
         drmModeEncoderPtr encoder = drmModeGetEncoder(m_dri_fd, connector->encoders[i]);
         if (!encoder) {
@@ -73,19 +75,30 @@ int QKmsDevice::crtcForConnector(drmModeResPtr resources, drmModeConnectorPtr co
             continue;
         }
 
+        quint32 encoderId = encoder->encoder_id;
+        quint32 crtcId = encoder->crtc_id;
         quint32 possibleCrtcs = encoder->possible_crtcs;
         drmModeFreeEncoder(encoder);
 
         for (int j = 0; j < resources->count_crtcs; j++) {
             bool isPossible = possibleCrtcs & (1 << j);
             bool isAvailable = !(m_crtc_allocator & (1 << j));
+            // Preserve the existing CRTC -> encoder -> connector routing if
+            // any. It makes the initialization faster, and may be better
+            // since we have a very dumb picking algorithm.
+            bool isBestChoice = (!connector->encoder_id ||
+                                 (connector->encoder_id == encoderId &&
+                                  resources->crtcs[j] == crtcId));
 
-            if (isPossible && isAvailable)
+            if (isPossible && isAvailable && isBestChoice) {
                 return j;
+            } else if (isPossible && isAvailable) {
+                candidate = j;
+            }
         }
     }
 
-    return -1;
+    return candidate;
 }
 
 static const char * const connector_type_names[] = { // must match DRM_MODE_CONNECTOR_*

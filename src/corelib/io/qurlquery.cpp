@@ -146,7 +146,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QUrlQuery(std::initializer_list<QPair<QString, QString>> list)
+    \fn QUrlQuery::QUrlQuery(std::initializer_list<QPair<QString, QString>> list)
 
     \since 5.13
 
@@ -293,9 +293,9 @@ void QUrlQueryPrivate::setQuery(const QString &query)
         const QChar *delimiter = nullptr;
         while (pos != end) {
             // scan for the component parts of this pair
-            if (!delimiter && pos->unicode() == valueDelimiter)
+            if (!delimiter && *pos == valueDelimiter)
                 delimiter = pos;
-            if (pos->unicode() == pairDelimiter)
+            if (*pos == pairDelimiter)
                 break;
             ++pos;
         }
@@ -584,8 +584,8 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
 */
 void QUrlQuery::setQueryDelimiters(QChar valueDelimiter, QChar pairDelimiter)
 {
-    d->valueDelimiter = valueDelimiter.unicode();
-    d->pairDelimiter = pairDelimiter.unicode();
+    d->valueDelimiter = valueDelimiter;
+    d->pairDelimiter = pairDelimiter;
 }
 
 /*!

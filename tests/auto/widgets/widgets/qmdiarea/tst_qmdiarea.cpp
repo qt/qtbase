@@ -880,7 +880,7 @@ void tst_QMdiArea::minimumSizeHint()
 {
     QMdiArea workspace;
     workspace.show();
-    QSize expectedSize(workspace.style()->pixelMetric(QStyle::PM_MDIMinimizedWidth),
+    QSize expectedSize(workspace.style()->pixelMetric(QStyle::PM_MdiSubWindowMinimizedWidth),
                        workspace.style()->pixelMetric(QStyle::PM_TitleBarHeight));
     qApp->processEvents();
     QAbstractScrollArea dummyScrollArea;

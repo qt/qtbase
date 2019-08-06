@@ -105,7 +105,7 @@ public:
         m_green = new LightWidget(Qt::green);
         vbox->addWidget(m_green);
         QPalette pal = palette();
-        pal.setColor(QPalette::Background, Qt::black);
+        pal.setColor(QPalette::Window, Qt::black);
         setPalette(pal);
         setAutoFillBackground(true);
     }

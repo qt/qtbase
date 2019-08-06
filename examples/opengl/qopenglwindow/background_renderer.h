@@ -62,11 +62,14 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLFunctions>
 
+#include <memory>
+
 class FragmentToy : public QObject, protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
-    FragmentToy(const QString &fragmentSource, QObject *parent = 0);
+    explicit FragmentToy(const QString &fragmentSource, QObject *parent = nullptr);
+    ~FragmentToy();
 
     void draw(const QSize &windowSize);
 
@@ -79,9 +82,9 @@ private:
     QString m_fragment_file;
     QDateTime m_fragment_file_last_modified;
 
-    QScopedPointer<QOpenGLShaderProgram> m_program;
-    QScopedPointer<QOpenGLShader> m_vertex_shader;
-    QScopedPointer<QOpenGLShader> m_fragment_shader;
+    std::unique_ptr<QOpenGLShaderProgram> m_program;
+    std::unique_ptr<QOpenGLShader> m_vertex_shader;
+    std::unique_ptr<QOpenGLShader> m_fragment_shader;
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_vertex_buffer;
     GLuint m_vertex_coord_pos;

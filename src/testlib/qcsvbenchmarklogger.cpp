@@ -46,9 +46,7 @@ QCsvBenchmarkLogger::QCsvBenchmarkLogger(const char *filename)
 {
 }
 
-QCsvBenchmarkLogger::~QCsvBenchmarkLogger()
-{
-}
+QCsvBenchmarkLogger::~QCsvBenchmarkLogger() = default;
 
 void QCsvBenchmarkLogger::startLogging()
 {

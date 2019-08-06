@@ -62,11 +62,12 @@ public:
 
     explicit QHostInfo(int lookupId = -1);
     QHostInfo(const QHostInfo &d);
+    QHostInfo(QHostInfo &&other) noexcept : d_ptr(qExchange(other.d_ptr, nullptr)) {}
     QHostInfo &operator=(const QHostInfo &d);
     QHostInfo &operator=(QHostInfo &&other) noexcept { swap(other); return *this; }
     ~QHostInfo();
 
-    void swap(QHostInfo &other) noexcept { qSwap(d, other.d); }
+    void swap(QHostInfo &other) noexcept { qSwap(d_ptr, other.d_ptr); }
 
     QString hostName() const;
     void setHostName(const QString &name);
@@ -147,7 +148,8 @@ public:
 #endif // Q_QDOC
 
 private:
-    QScopedPointer<QHostInfoPrivate> d;
+    QHostInfoPrivate *d_ptr;
+    Q_DECLARE_PRIVATE(QHostInfo)
 
     static int lookupHostImpl(const QString &name,
                               const QObject *receiver,

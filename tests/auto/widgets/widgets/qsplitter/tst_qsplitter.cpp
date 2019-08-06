@@ -599,7 +599,7 @@ void tst_QSplitter::testShowHide()
     QWidget widget(&topLevel);
     widget.resize(400 + split->handleWidth(), 200);
     QVBoxLayout *lay=new QVBoxLayout(&widget);
-    lay->setMargin(0);
+    lay->setContentsMargins(0, 0, 0, 0);
     lay->setSpacing(0);
     split->addWidget(new QWidget);
     split->addWidget(new QWidget);

@@ -822,6 +822,8 @@ QString QFileSystemEngine::resolveUserName(uint userId)
 #endif
     if (pw)
         return QFile::decodeName(QByteArray(pw->pw_name));
+#else // Integrity || WASM
+    Q_UNUSED(userId);
 #endif
     return QString();
 }
@@ -859,6 +861,8 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
 #endif
     if (gr)
         return QFile::decodeName(QByteArray(gr->gr_name));
+#else // Integrity || WASM
+    Q_UNUSED(groupId);
 #endif
     return QString();
 }

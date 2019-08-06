@@ -845,7 +845,7 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     The return value is of type QJsonValueRef, a helper class for QJsonArray
     and QJsonObject. When you get an object of type QJsonValueRef, you can
     use it as if it were a reference to a QJsonValue. If you assign to it,
-    the assignment will apply to the character in the QJsonArray of QJsonObject
+    the assignment will apply to the element in the QJsonArray or QJsonObject
     from which you got the reference.
 
     \sa operator+()

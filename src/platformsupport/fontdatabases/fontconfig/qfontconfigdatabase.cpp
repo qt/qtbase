@@ -927,66 +927,38 @@ void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef 
             antialias = antialiasingEnabled - 1;
     }
 
-    // try to find a match for fid
-    const QFontEngine::FaceId fid = engine->faceId();
-    FcPattern *pattern = FcPatternCreate();
-    FcPattern *match = nullptr;
-
-    // try a trivial match by filename - FC_FILE is highest priority, so if it matches, FcFontMatch
-    // will just find the file (fine) and spend a millisecond or so doing unnecessary work (bad).
-    if (!fid.filename.isEmpty() && QFile::exists(QString::fromUtf8(fid.filename))) {
-        FcBlanks *blanks = FcConfigGetBlanks(nullptr);
-        int count = 0;
-        FcPattern *fileMatch = FcFreeTypeQuery((const FcChar8 *)fid.filename.data(), fid.index,
-                                               blanks, &count);
-        if (fileMatch) {
-            // Apply Fontconfig configuration - FcFreeTypeQuery only returns information stored in
-            // the font file, we also want to respect system and user settings.
-            FcConfigSubstitute(0, pattern, FcMatchPattern);
-            FcDefaultSubstitute(pattern);
-            match = FcFontRenderPrepare(0, pattern, fileMatch);
-            FcPatternDestroy(fileMatch);
-        }
-    }
-
-    if (!match) {
-        FcValue value;
-
-        // Fontconfig rules might process this information for arbitrary purposes, so add it,
-        // even though we already know that it doesn't match an existing file.
-        if (!fid.filename.isEmpty()) {
-            value.type = FcTypeString;
-            value.u.s = (const FcChar8 *)fid.filename.data();
-            FcPatternAdd(pattern, FC_FILE, value, true);
-
-            value.type = FcTypeInteger;
-            value.u.i = fid.index;
-            FcPatternAdd(pattern, FC_INDEX, value, true);
-        }
-
-        const QByteArray cs = fontDef.family.toUtf8();
-        value.type = FcTypeString;
-        value.u.s = (const FcChar8 *)cs.data();
-        FcPatternAdd(pattern, FC_FAMILY, value, true);
-
-        if (fontDef.pixelSize > 0.1) {
-            value.type = FcTypeDouble;
-            value.u.d = fontDef.pixelSize;
-            FcPatternAdd(pattern, FC_PIXEL_SIZE, value, true);
-        }
-
-        FcResult result;
-
-        FcConfigSubstitute(0, pattern, FcMatchPattern);
-        FcDefaultSubstitute(pattern);
-
-        match = FcFontMatch(0, pattern, &result);
-    }
-
     QFontEngine::GlyphFormat format;
+    // try and get the pattern
+    FcPattern *pattern = FcPatternCreate();
+
+    FcValue value;
+    value.type = FcTypeString;
+    QByteArray cs = fontDef.family.toUtf8();
+    value.u.s = (const FcChar8 *)cs.data();
+    FcPatternAdd(pattern,FC_FAMILY,value,true);
+
+    QFontEngine::FaceId fid = engine->faceId();
+
+    if (!fid.filename.isEmpty()) {
+        value.u.s = (const FcChar8 *)fid.filename.data();
+        FcPatternAdd(pattern,FC_FILE,value,true);
+
+        value.type = FcTypeInteger;
+        value.u.i = fid.index;
+        FcPatternAdd(pattern,FC_INDEX,value,true);
+    }
+
+    if (fontDef.pixelSize > 0.1)
+        FcPatternAddDouble(pattern, FC_PIXEL_SIZE, fontDef.pixelSize);
+
+    FcResult result;
+
+    FcConfigSubstitute(0, pattern, FcMatchPattern);
+    FcDefaultSubstitute(pattern);
+
+    FcPattern *match = FcFontMatch(0, pattern, &result);
     if (match) {
-        engine->setDefaultHintStyle(defaultHintStyleFromMatch(
-            (QFont::HintingPreference)fontDef.hintingPreference, match, useXftConf));
+        engine->setDefaultHintStyle(defaultHintStyleFromMatch((QFont::HintingPreference)fontDef.hintingPreference, match, useXftConf));
 
         FcBool fc_autohint;
         if (FcPatternGetBool(match, FC_AUTOHINT,0, &fc_autohint) == FcResultMatch)

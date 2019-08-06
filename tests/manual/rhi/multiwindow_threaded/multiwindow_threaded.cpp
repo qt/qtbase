@@ -290,6 +290,10 @@ struct Renderer
 void Thread::run()
 {
     while (active) {
+#ifdef Q_OS_DARWIN
+        QMacAutoReleasePool autoReleasePool;
+#endif
+
         if (pendingRender) {
             pendingRender = false;
             renderer->render(pendingRenderIsNewExpose, false);

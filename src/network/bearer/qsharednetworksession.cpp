@@ -64,9 +64,23 @@ struct DeleteLater {
     }
 };
 
+template <typename Container>
+static void maybe_prune_expired(Container &c)
+{
+    if (c.size() > 16) {
+        for (auto it = c.cbegin(), end = c.cend(); it != end; /*erasing*/) {
+            if (!it->second.lock())
+                it = c.erase(it);
+            else
+                ++it;
+        }
+    }
+}
+
 QSharedPointer<QNetworkSession> QSharedNetworkSessionManager::getSession(const QNetworkConfiguration &config)
 {
     QSharedNetworkSessionManager *m = sharedNetworkSessionManager();
+    maybe_prune_expired(m->sessions);
     auto &entry = m->sessions[config];
     //if already have a session, return it
     if (auto p = entry.toStrongRef())

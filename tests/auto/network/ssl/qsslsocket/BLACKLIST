@@ -1,23 +1,15 @@
 [abortOnSslErrors]
-windows
+windows-10 msvc-2015
 [deprecatedProtocols]
 windows
-[disabledProtocols]
-windows
-[protocol]
-windows
-[qtbug18498_peek]
-windows
-[setReadBufferSize]
-windows
 [spontaneousWrite]
-windows
+windows-7sp1
 [sslErrors]
-windows
+windows-7sp1
 [connectToHostEncrypted]
 osx-10.13
 [setSslConfiguration]
-windows
-osx-10.13
+windows-10 msvc-2015
+windows-7sp1
 [connectToHostEncryptedWithVerificationPeerName]
 osx-10.13

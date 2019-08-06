@@ -215,7 +215,7 @@ void QSecureTransportContext::reset(SSLContextRef newContext)
     context = newContext;
 }
 
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, qt_securetransport_mutex, (QMutex::Recursive))
+Q_GLOBAL_STATIC(QRecursiveMutex, qt_securetransport_mutex)
 
 //#define QSSLSOCKET_DEBUG
 

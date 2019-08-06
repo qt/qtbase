@@ -167,14 +167,8 @@ MakefileGenerator::initOutPaths()
         ProString &pathRef = v[dkey].first();
         pathRef = fileFixify(pathRef.toQString(), FileFixifyFromOutdir);
 
-#ifdef Q_OS_WIN
-        // We don't want to add a separator for DLLDESTDIR on Windows (###why?)
-        if (dkey != "DLLDESTDIR")
-#endif
-        {
-            if(!pathRef.endsWith(Option::dir_sep))
-                pathRef += Option::dir_sep;
-        }
+        if (!pathRef.endsWith(Option::dir_sep))
+            pathRef += Option::dir_sep;
 
         if (noIO() || (project->first("TEMPLATE") == "subdirs"))
             continue;
@@ -2234,21 +2228,6 @@ MakefileGenerator::writeDummyMakefile(QTextStream &t)
 }
 
 bool
-MakefileGenerator::writeStubMakefile(QTextStream &t)
-{
-    t << "QMAKE    = " << var("QMAKE_QMAKE") << Qt::endl;
-    const ProStringList &qut = project->values("QMAKE_EXTRA_TARGETS");
-    for (ProStringList::ConstIterator it = qut.begin(); it != qut.end(); ++it)
-        t << *it << " ";
-    //const QString ofile = Option::fixPathToTargetOS(fileFixify(Option::output.fileName()));
-    t << "first all clean install distclean uninstall: qmake\n"
-      << "qmake_all:\n";
-    writeMakeQmake(t);
-    t << "FORCE:\n\n";
-    return true;
-}
-
-bool
 MakefileGenerator::writeMakefile(QTextStream &t)
 {
     t << "####### Compile\n\n";
@@ -2299,9 +2278,9 @@ QString MakefileGenerator::buildArgs(bool withExtra)
 
 //could get stored argv, but then it would have more options than are
 //probably necesary this will try to guess the bare minimum..
-QString MakefileGenerator::build_args()
+QString MakefileGenerator::fullBuildArgs()
 {
-    QString ret = "$(QMAKE)";
+    QString ret;
 
     //output
     QString ofile = fileFixify(Option::output.fileName());
@@ -2326,7 +2305,7 @@ MakefileGenerator::writeHeader(QTextStream &t)
     t << "# Project:  " << fileFixify(project->projectFile()) << Qt::endl;
     t << "# Template: " << var("TEMPLATE") << Qt::endl;
     if(!project->isActiveConfig("build_pass"))
-        t << "# Command: " << build_args().replace(QLatin1String("$(QMAKE)"), var("QMAKE_QMAKE")) << Qt::endl;
+        t << "# Command: " << var("QMAKE_QMAKE") << fullBuildArgs() << Qt::endl;
     t << "#############################################################################\n";
     t << Qt::endl;
     QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
@@ -2792,7 +2771,7 @@ MakefileGenerator::writeMakeQmake(QTextStream &t, bool noDummyQmakeAll)
           << "@$(QMAKE) -prl " << files.join(' ') << ' ' << buildArgs(true) << Qt::endl;
     }
 
-        QString qmake = build_args();
+        QString qmake = "$(QMAKE)" + fullBuildArgs();
         if(!ofile.isEmpty() && !project->isActiveConfig("no_autoqmake")) {
             t << escapeDependencyPath(ofile) << ": "
               << escapeDependencyPath(fileFixify(project->projectFile())) << " ";
@@ -3429,9 +3408,9 @@ MakefileGenerator::writePkgConfigFile()
     t << Qt::endl;
 
     // requires
-    const QString requires = project->values("QMAKE_PKGCONFIG_REQUIRES").join(' ');
-    if (!requires.isEmpty()) {
-        t << "Requires: " << requires << Qt::endl;
+    const QString requiresString = project->values("QMAKE_PKGCONFIG_REQUIRES").join(' ');
+    if (!requiresString.isEmpty()) {
+        t << "Requires: " << requiresString << Qt::endl;
     }
 
     t << Qt::endl;

@@ -227,11 +227,8 @@ Q_SIGNALS:
     void highlighted(int index);
     void textHighlighted(const QString &);
     void currentIndexChanged(int index);
-    void currentTextChanged(const QString &);
-#if QT_DEPRECATED_SINCE(5, 13)
-    QT_DEPRECATED_VERSION_X(5, 13, "Use currentTextChanged() instead")
     void currentIndexChanged(const QString &);
-#endif
+    void currentTextChanged(const QString &);
 #if QT_DEPRECATED_SINCE(5, 15)
     QT_DEPRECATED_VERSION_X(5, 15, "Use textActivated() instead")
     void activated(const QString &);

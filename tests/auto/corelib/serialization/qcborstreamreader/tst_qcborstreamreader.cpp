@@ -80,6 +80,11 @@ private Q_SLOTS:
     void addData_singleElement();
     void addData_complex_data() { arrays_data(); }
     void addData_complex();
+
+    void duplicatedData_data() { arrays_data(); }
+    void duplicatedData();
+    void extraData_data() { arrays_data(); }
+    void extraData();
 };
 
 #define FOR_CBOR_TYPE(F) \
@@ -480,6 +485,28 @@ static QString parseOne(QCborStreamReader &reader)
     return result;
 }
 
+static QString parse(QCborStreamReader &reader, const QByteArray &data)
+{
+    qint64 oldPos = 0;
+    if (QIODevice *dev = reader.device())
+        oldPos = dev->pos();
+
+    QString r = parseOne(reader);
+    if (r.isEmpty())
+        return r;
+
+    if (reader.currentOffset() - oldPos != data.size())
+        r = QString("Number of parsed bytes (%1) not expected (%2)")
+                .arg(reader.currentOffset()).arg(data.size());
+    if (QIODevice *dev = reader.device()) {
+        if (dev->pos() - oldPos != data.size())
+            r = QString("QIODevice not advanced (%1) as expected (%2)")
+                    .arg(dev->pos()).arg(data.size());
+    }
+
+    return r;
+}
+
 bool parseNonRecursive(QString &result, bool &printingStringChunks, QCborStreamReader &reader)
 {
     while (reader.lastError() == QCborError::NoError) {
@@ -612,13 +639,13 @@ void tst_QCborStreamReader::fixed()
     }
     QVERIFY(reader.isValid());
     QCOMPARE(reader.lastError(), QCborError::NoError);
-    QCOMPARE(parseOne(reader), expected);
+    QCOMPARE(parse(reader, data), expected);
 
     // verify that we can re-read
     reader.reset();
     QVERIFY(reader.isValid());
     QCOMPARE(reader.lastError(), QCborError::NoError);
-    QCOMPARE(parseOne(reader), expected);
+    QCOMPARE(parse(reader, data), expected);
 }
 
 void tst_QCborStreamReader::strings_data()
@@ -721,7 +748,7 @@ void tst_QCborStreamReader::emptyContainers()
     QCOMPARE(reader.lastError(), QCborError::NoError);
     if (reader.isLengthKnown())
         QCOMPARE(reader.length(), 0U);
-    QCOMPARE(parseOne(reader), expected);
+    QCOMPARE(parse(reader, data), expected);
 
     // verify that we can re-read
     reader.reset();
@@ -729,7 +756,7 @@ void tst_QCborStreamReader::emptyContainers()
     QCOMPARE(reader.lastError(), QCborError::NoError);
     if (reader.isLengthKnown())
         QCOMPARE(reader.length(), 0U);
-    QCOMPARE(parseOne(reader), expected);
+    QCOMPARE(parse(reader, data), expected);
 }
 
 void tst_QCborStreamReader::arrays_data()
@@ -758,7 +785,7 @@ static void checkContainer(int len, const QByteArray &data, const QString &expec
         QVERIFY(reader.isLengthKnown());
         QCOMPARE(reader.length(), uint(len));
     }
-    QCOMPARE(parseOne(reader), expected);
+    QCOMPARE(parse(reader, data), expected);
 
     // verify that we can re-read
     reader.reset();
@@ -768,7 +795,7 @@ static void checkContainer(int len, const QByteArray &data, const QString &expec
         QVERIFY(reader.isLengthKnown());
         QCOMPARE(reader.length(), uint(len));
     }
-    QCOMPARE(parseOne(reader), expected);
+    QCOMPARE(parse(reader, data), expected);
 }
 
 void tst_QCborStreamReader::arrays()
@@ -892,7 +919,7 @@ void tst_QCborStreamReader::validation()
         buffer.open(QIODevice::ReadOnly);
         reader.setDevice(&buffer);
     }
-    parseOne(reader);
+    parse(reader, data);
     QVERIFY(reader.lastError() != QCborError::NoError);
 
     // next() should fail
@@ -997,7 +1024,7 @@ void tst_QCborStreamReader::addData_singleElement()
             reader.addData(data.constData() + i, 1);
         }
 
-        parseOne(reader);
+        parse(reader, data);
         QCOMPARE(reader.lastError(), QCborError::EndOfFile);
     }
 
@@ -1009,7 +1036,7 @@ void tst_QCborStreamReader::addData_singleElement()
         reader.addData(data.right(1));
     }
     QCOMPARE(reader.lastError(), QCborError::NoError);
-    QCOMPARE(parseOne(reader), expected);
+    QCOMPARE(parse(reader, data), expected);
 }
 
 void tst_QCborStreamReader::addData_complex()
@@ -1083,6 +1110,69 @@ void tst_QCborStreamReader::addData_complex()
              "{1, [" + expected + ", " + expected + "]}");
     QCOMPARE(doit("\xbf\x01\x9f" + data + data + "\xff\xff"),
              "{1, [" + expected + ", " + expected + "]}");
+}
+
+void tst_QCborStreamReader::duplicatedData()
+{
+    QFETCH_GLOBAL(bool, useDevice);
+    QFETCH(QByteArray, data);
+    QFETCH(QString, expected);
+    removeIndicators(expected);
+
+    // double the data up
+    QByteArray doubledata = data + data;
+
+    QBuffer buffer(&doubledata);
+    QCborStreamReader reader(doubledata);
+    if (useDevice) {
+        buffer.open(QIODevice::ReadOnly);
+        reader.setDevice(&buffer);
+    }
+    QVERIFY(reader.isValid());
+    QCOMPARE(reader.lastError(), QCborError::NoError);
+    QCOMPARE(parse(reader, data), expected);     // yes, data
+
+    QVERIFY(reader.currentOffset() < doubledata.size());
+    if (useDevice) {
+        reader.setDevice(&buffer);
+        QVERIFY(reader.isValid());
+        QCOMPARE(reader.lastError(), QCborError::NoError);
+        QCOMPARE(parse(reader, data), expected);
+        QCOMPARE(buffer.pos(), doubledata.size());
+    } else {
+        // there's no reader.setData()
+    }
+}
+
+void tst_QCborStreamReader::extraData()
+{
+    QFETCH_GLOBAL(bool, useDevice);
+    QFETCH(QByteArray, data);
+    QFETCH(QString, expected);
+    removeIndicators(expected);
+
+    QByteArray extension(9, '\0');
+
+    // stress test everything with extra bytes (just one byte changing;
+    // TinyCBOR used to have a bug where the next byte got sometimes read)
+    for (int c = '\0'; c < 0x100; ++c) {
+        extension[0] = c;
+        QByteArray extendeddata = data + extension;
+
+        QBuffer buffer(&extendeddata);
+        QCborStreamReader reader(extendeddata);
+        if (useDevice) {
+            buffer.open(QIODevice::ReadOnly);
+            reader.setDevice(&buffer);
+        }
+        QVERIFY(reader.isValid());
+        QCOMPARE(reader.lastError(), QCborError::NoError);
+        QCOMPARE(parse(reader, data), expected);     // yes, data
+
+        // if we were a parser, we could parse the next payload
+        if (useDevice)
+            QCOMPARE(buffer.readAll(), extension);
+    }
 }
 
 

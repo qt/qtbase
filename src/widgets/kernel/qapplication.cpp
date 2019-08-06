@@ -236,9 +236,6 @@ void QApplicationPrivate::createEventDispatcher()
                 encapsulated in a QStyle object. This can be changed at runtime
                 with setStyle().
 
-            \li  It specifies how the application is to allocate colors. See
-                setColorSpec() for details.
-
             \li  It provides localization of strings that are visible to the
                 user via translate().
 
@@ -299,11 +296,6 @@ void QApplicationPrivate::createEventDispatcher()
             setStyle().
 
         \row
-        \li  Color usage
-        \li  colorSpec(),
-            setColorSpec().
-
-        \row
         \li  Text handling
         \li  installTranslator(),
             removeTranslator()
@@ -337,6 +329,7 @@ void QApplicationPrivate::createEventDispatcher()
     \sa QCoreApplication, QAbstractEventDispatcher, QEventLoop, QSettings
 */
 
+#if QT_DEPRECATED_SINCE(5, 8)
 // ### fixme: Qt 6: Remove ColorSpec and accessors.
 /*!
     \enum QApplication::ColorSpec
@@ -350,15 +343,7 @@ void QApplicationPrivate::createEventDispatcher()
 
     See setColorSpec() for full details.
 */
-
-/*!
-    \fn QApplication::setGraphicsSystem(const QString &)
-    \obsolete
-
-    This call has no effect.
-
-    Use the QPA framework instead.
-*/
+#endif
 
 /*!
     \fn QWidget *QApplication::topLevelAt(const QPoint &point)
@@ -1956,15 +1941,8 @@ bool QApplication::event(QEvent *e)
     return QGuiApplication::event(e);
 }
 
-/*!
-   \fn void QApplication::syncX()
-    Was used to synchronize with the X server in 4.x, here for source compatibility.
-    \internal
-    \obsolete
-*/
-
 // ### FIXME: topLevelWindows does not contain QWidgets without a parent
-// until create_sys is called. So we have to override the
+// until QWidgetPrivate::create is called. So we have to override the
 // QGuiApplication::notifyLayoutDirectionChange
 // to do the right thing.
 void QApplicationPrivate::notifyLayoutDirectionChange()
@@ -3240,13 +3218,18 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 if (spontaneous && phase == Qt::ScrollBegin)
                     QApplicationPrivate::wheel_widget = nullptr;
 
-                const QPoint &relpos = wheel->pos();
+                QPoint relpos = wheel->position().toPoint();
 
                 if (spontaneous && (phase == Qt::NoScrollPhase || phase == Qt::ScrollUpdate))
                     QApplicationPrivate::giveFocusAccordingToFocusPolicy(w, e, relpos);
 
+#if QT_DEPRECATED_SINCE(5, 14)
                 QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
                                wheel->modifiers(), phase, wheel->source(), wheel->inverted());
+#else
+                QWheelEvent we(relpos, wheel->globalPosition(), wheel->pixelDelta(), wheel->angleDelta(), wheel->buttons(),
+                               wheel->modifiers(), phase, wheel->inverted(), wheel->source());
+#endif
                 we.setTimestamp(wheel->timestamp());
                 bool eventAccepted;
                 do {
@@ -3281,9 +3264,14 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 // is set. Since it accepted the wheel event previously, we continue
                 // sending those events until we get a ScrollEnd, which signifies
                 // the end of the natural scrolling sequence.
-                const QPoint &relpos = QApplicationPrivate::wheel_widget->mapFromGlobal(wheel->globalPos());
+                const QPoint &relpos = QApplicationPrivate::wheel_widget->mapFromGlobal(wheel->globalPosition().toPoint());
+#if QT_DEPRECATED_SINCE(5, 0)
                 QWheelEvent we(relpos, wheel->globalPos(), wheel->pixelDelta(), wheel->angleDelta(), wheel->delta(), wheel->orientation(), wheel->buttons(),
                                wheel->modifiers(), wheel->phase(), wheel->source());
+#else
+                QWheelEvent we(relpos, wheel->globalPosition(), wheel->pixelDelta(), wheel->angleDelta(), wheel->buttons(),
+                               wheel->modifiers(), wheel->phase(), wheel->inverted(), wheel->source());
+#endif
                 we.setTimestamp(wheel->timestamp());
                 we.spont = true;
                 we.ignore();
@@ -3833,8 +3821,6 @@ void QApplicationPrivate::openPopup(QWidget *popup)
     This feature is available in Qt for Embedded Linux only.
 
     \since 4.6
-
-    \sa keypadNavigationEnabled()
 */
 void QApplication::setNavigationMode(Qt::NavigationMode mode)
 {
@@ -3847,8 +3833,6 @@ void QApplication::setNavigationMode(Qt::NavigationMode mode)
     This feature is available in Qt for Embedded Linux only.
 
     \since 4.6
-
-    \sa keypadNavigationEnabled()
 */
 Qt::NavigationMode QApplication::navigationMode()
 {
@@ -3982,15 +3966,6 @@ int QApplication::doubleClickInterval()
 {
     return QGuiApplication::styleHints()->mouseDoubleClickInterval();
 }
-
-/*!
-    \fn QApplication::keyboardInputDirection()
-    \since 4.2
-    \deprecated
-
-    Returns the current keyboard input direction. Replaced with QInputMethod::inputDirection()
-    \sa QInputMethod::inputDirection()
-*/
 
 /*!
     \property QApplication::keyboardInputInterval
@@ -4127,14 +4102,6 @@ void QApplication::beep()
     so only valid when the unique application object is a QApplication.
 
     \sa QCoreApplication::instance(), qGuiApp
-*/
-
-/*!
-    \fn QLocale QApplication::keyboardInputLocale()
-    \since 4.2
-    \obsolete
-
-    Returns the current keyboard input locale. Replaced with QInputMethod::locale()
 */
 
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event)

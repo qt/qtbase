@@ -46,6 +46,7 @@
 #include "qapplication.h"
 #include "qvariant.h"
 #include "qdebug.h"
+#include "private/qapplication_p.h"
 #include "private/qlayoutengine_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -300,7 +301,7 @@ bool QScrollArea::event(QEvent *e)
         d->updateScrollBars();
     }
 #ifdef QT_KEYPAD_NAVIGATION
-    else if (QApplication::keypadNavigationEnabled()) {
+    else if (QApplicationPrivate::keypadNavigationEnabled()) {
         if (e->type() == QEvent::Show)
             QApplication::instance()->installEventFilter(this);
         else if (e->type() == QEvent::Hide)
@@ -319,7 +320,7 @@ bool QScrollArea::eventFilter(QObject *o, QEvent *e)
     Q_D(QScrollArea);
 #ifdef QT_KEYPAD_NAVIGATION
     if (d->widget && o != d->widget && e->type() == QEvent::FocusIn
-            && QApplication::keypadNavigationEnabled()) {
+            && QApplicationPrivate::keypadNavigationEnabled()) {
         if (o->isWidgetType())
             ensureWidgetVisible(static_cast<QWidget *>(o));
     }

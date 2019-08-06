@@ -65,6 +65,7 @@
 #endif
 
 #include "qdebug.h"
+#include "private/qapplication_p.h"
 #include "private/qtabbar_p.h"
 
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
@@ -415,7 +416,7 @@ void QTabBarPrivate::init()
     QObject::connect(rightB, SIGNAL(clicked()), q, SLOT(_q_scrollTabs()));
     rightB->hide();
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled()) {
+    if (QApplicationPrivate::keypadNavigationEnabled()) {
         leftB->setFocusPolicy(Qt::NoFocus);
         rightB->setFocusPolicy(Qt::NoFocus);
         q->setFocusPolicy(Qt::NoFocus);
@@ -2210,7 +2211,9 @@ void QTabBar::wheelEvent(QWheelEvent *event)
 {
 #ifndef Q_OS_MAC
     Q_D(QTabBar);
-    int offset = event->delta() > 0 ? -1 : 1;
+    int delta = (qAbs(event->angleDelta().x()) > qAbs(event->angleDelta().y()) ?
+                     event->angleDelta().x() : event->angleDelta().y());
+    int offset = delta > 0 ? -1 : 1;
     d->setCurrentNextEnabledIndex(offset);
     QWidget::wheelEvent(event);
 #else

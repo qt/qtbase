@@ -493,9 +493,9 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
         connect(&d->statusMonitor, SIGNAL(onlineStateChanged(bool)),
                 SLOT(_q_onlineStateChanged(bool)));
 #ifdef QT_NO_BEARERMANAGEMENT
-        d->networkAccessible = d->statusMonitor.isNetworkAccesible();
+        d->networkAccessible = d->statusMonitor.isNetworkAccessible();
 #else
-        d->networkAccessible = d->statusMonitor.isNetworkAccesible() ? Accessible : NotAccessible;
+        d->networkAccessible = d->statusMonitor.isNetworkAccessible() ? Accessible : NotAccessible;
     } else {
         // if a session is required, we track online state through
         // the QNetworkSession's signals if a request is already made.
@@ -1236,10 +1236,11 @@ void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quin
     if (sslConfiguration != QSslConfiguration::defaultConfiguration())
         request.setSslConfiguration(sslConfiguration);
 
-    // There is no way to enable SPDY via a request, so we need to check
-    // the ssl configuration whether SPDY is allowed here.
-    if (sslConfiguration.allowedNextProtocols().contains(
-                QSslConfiguration::NextProtocolSpdy3_0))
+    // There is no way to enable SPDY/HTTP2 via a request, so we need to check
+    // the ssl configuration whether SPDY/HTTP2 is allowed here.
+    if (sslConfiguration.allowedNextProtocols().contains(QSslConfiguration::ALPNProtocolHTTP2))
+        request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, true);
+    else if (sslConfiguration.allowedNextProtocols().contains(QSslConfiguration::NextProtocolSpdy3_0))
         request.setAttribute(QNetworkRequest::SpdyAllowedAttribute, true);
 
     request.setPeerVerifyName(peerName);
@@ -1565,8 +1566,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     QNetworkReplyImpl *reply = new QNetworkReplyImpl(this);
 #ifndef QT_NO_BEARERMANAGEMENT
     // NETMONTODO: network reply impl must be augmented to use the same monitoring
-    // capabilities as http network reply impl does.
-    if (!isLocalFile && !d->statusMonitor.isEnabled()) {
+    // capabilities as http network reply impl does. Once it does: uncomment the condition below
+    if (!isLocalFile /*&& !d->statusMonitor.isEnabled()*/) {
         connect(this, SIGNAL(networkSessionConnected()),
                 reply, SLOT(_q_networkSessionConnected()));
     }
