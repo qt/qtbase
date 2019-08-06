@@ -1974,7 +1974,7 @@ def write_qml_plugin(cm_fh: typing.IO[str],
         if import_name:
             extra_lines.append('URI "{}"'.format(import_name))
         else:
-            uri = re.sub('\\.\\d+\\.', '.',uri)
+            uri = re.sub('\\.\\d+', '', uri)
             extra_lines.append('URI "{}"'.format(uri))
 
     import_version = scope.get_string('IMPORT_VERSION')
