@@ -3115,18 +3115,19 @@ bool QGles2Texture::build()
                 for (int layer = 0, layerCount = isCube ? 6 : 1; layer != layerCount; ++layer) {
                     for (int level = 0; level != mipLevelCount; ++level) {
                         const QSize mipSize = rhiD->q->sizeForMipLevel(level, size);
-                        rhiD->f->glTexImage2D(faceTargetBase + layer, level, glsizedintformat,
+                        rhiD->f->glTexImage2D(faceTargetBase + layer, level, glintformat,
                                               mipSize.width(), mipSize.height(), 0,
                                               glformat, gltype, nullptr);
                     }
                 }
             } else {
-                rhiD->f->glTexImage2D(target, 0, glsizedintformat, size.width(), size.height(),
+                rhiD->f->glTexImage2D(target, 0, glintformat, size.width(), size.height(),
                                       0, glformat, gltype, nullptr);
             }
         } else {
             // Must be specified with immutable storage functions otherwise
-            // bindImageTexture may fail.
+            // bindImageTexture may fail. Also, the internal format must be a
+            // sized format here.
             rhiD->f->glTexStorage2D(target, mipLevelCount, glsizedintformat, size.width(), size.height());
         }
         specified = true;
