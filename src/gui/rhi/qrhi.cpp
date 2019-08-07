@@ -505,8 +505,11 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     to issue a \l{QRhiCommandBuffer::drawIndexed()}{drawIndexed()} with a
     non-aligned effective offset may lead to unspecified behavior.
 
-    \value NPOTTextureRepeat Indicates that the \l{QRhiSampler::Repeat}{Repeat}
-    mode is supported for textures with a non-power-of-two size.
+    \value NPOTTextureRepeat Indicates that the
+    \l{QRhiSampler::Repeat}{Repeat} wrap mode and mipmap filtering modes are
+    supported for textures with a non-power-of-two size. In practice this can
+    only be false with OpenGL ES 2.0 implementations without
+    \c{GL_OES_texture_npot}.
 
     \value RedOrAlpha8IsRed Indicates that the
     \l{QRhiTexture::RED_OR_ALPHA8}{RED_OR_ALPHA8} format maps to a one

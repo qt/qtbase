@@ -693,7 +693,6 @@ public:
     QGles2RenderTargetData *enqueueBindFramebuffer(QRhiRenderTarget *rt, QGles2CommandBuffer *cbD,
                                                    bool *wantsColorClear = nullptr, bool *wantsDsClear = nullptr);
     int effectiveSampleCount(int sampleCount) const;
-    QSize safeTextureSize(const QSize &size) const;
     bool compileShader(GLuint program, const QRhiShaderStage &shaderStage,
                        QShaderDescription *desc, int *glslVersionUsed);
     bool linkProgram(GLuint program);
@@ -717,8 +716,7 @@ public:
               maxTextureSize(2048),
               maxDrawBuffers(4),
               msaaRenderBuffer(false),
-              npotTexture(true),
-              npotTextureRepeat(true),
+              npotTextureFull(true),
               gles(false),
               fixedIndexPrimitiveRestart(false),
               bgraExternalFormat(false),
@@ -747,8 +745,7 @@ public:
         // Multisample fb and blit are supported (GLES 3.0 or OpenGL 3.x). Not
         // the same as multisample textures!
         uint msaaRenderBuffer : 1;
-        uint npotTexture : 1;
-        uint npotTextureRepeat : 1;
+        uint npotTextureFull : 1;
         uint gles : 1;
         uint fixedIndexPrimitiveRestart : 1;
         uint bgraExternalFormat : 1;

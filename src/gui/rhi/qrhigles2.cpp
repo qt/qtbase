@@ -424,8 +424,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
     caps.msaaRenderBuffer = f->hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)
             && f->hasOpenGLExtension(QOpenGLExtensions::FramebufferBlit);
 
-    caps.npotTexture = f->hasOpenGLFeature(QOpenGLFunctions::NPOTTextures);
-    caps.npotTextureRepeat = f->hasOpenGLFeature(QOpenGLFunctions::NPOTTextureRepeat);
+    caps.npotTextureFull = f->hasOpenGLFeature(QOpenGLFunctions::NPOTTextures)
+            && f->hasOpenGLFeature(QOpenGLFunctions::NPOTTextureRepeat);
 
     caps.gles = actualFormat.renderableType() == QSurfaceFormat::OpenGLES;
     if (caps.gles)
@@ -550,43 +550,6 @@ int QRhiGles2::effectiveSampleCount(int sampleCount) const
         return 1;
     }
     return s;
-}
-
-static inline bool isPowerOfTwo(int x)
-{
-    // Assumption: x >= 1
-    return x == (x & -x);
-}
-
-QSize QRhiGles2::safeTextureSize(const QSize &pixelSize) const
-{
-    QSize size = pixelSize.isEmpty() ? QSize(1, 1) : pixelSize;
-
-    if (!caps.npotTexture) {
-        if (!isPowerOfTwo(size.width())) {
-            qWarning("Texture width %d is not a power of two, adjusting",
-                     size.width());
-            size.setWidth(qNextPowerOfTwo(size.width()));
-        }
-        if (!isPowerOfTwo(size.height())) {
-            qWarning("Texture height %d is not a power of two, adjusting",
-                     size.height());
-            size.setHeight(qNextPowerOfTwo(size.height()));
-        }
-    }
-
-    if (size.width() > caps.maxTextureSize) {
-        qWarning("Texture width %d exceeds maximum width %d, adjusting",
-                 size.width(), caps.maxTextureSize);
-        size.setWidth(caps.maxTextureSize);
-    }
-    if (size.height() > caps.maxTextureSize) {
-        qWarning("Texture height %d exceeds maximum height %d, adjusting",
-                 size.height(), caps.maxTextureSize);
-        size.setHeight(caps.maxTextureSize);
-    }
-
-    return size;
 }
 
 QRhiSwapChain *QRhiGles2::createSwapChain()
@@ -730,7 +693,7 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::NonFourAlignedEffectiveIndexBufferOffset:
         return true;
     case QRhi::NPOTTextureRepeat:
-        return caps.npotTextureRepeat;
+        return caps.npotTextureFull;
     case QRhi::RedOrAlpha8IsRed:
         return caps.coreProfile;
     case QRhi::ElementIndexUint:
@@ -2942,7 +2905,7 @@ bool QGles2RenderBuffer::build()
     rhiD->f->glGenRenderbuffers(1, &renderbuffer);
     rhiD->f->glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
 
-    const QSize size = rhiD->safeTextureSize(m_pixelSize);
+    const QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
 
     switch (m_type) {
     case QRhiRenderBuffer::DepthStencil:
@@ -3039,7 +3002,7 @@ bool QGles2Texture::prepareBuild(QSize *adjustedSize)
     if (!rhiD->ensureContext())
         return false;
 
-    const QSize size = rhiD->safeTextureSize(m_pixelSize);
+    const QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
 
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
