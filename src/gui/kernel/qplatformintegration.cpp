@@ -244,6 +244,9 @@ QPlatformServices *QPlatformIntegration::services() const
     \value TopStackedNativeChildWindows The platform supports native child windows via
     QWindowContainer without having to punch a transparent hole in the
     backingstore. (since 5.10)
+
+    \value OpenGLOnRasterSurface The platform supports making a QOpenGLContext current
+    in combination with a QWindow of type RasterSurface.
  */
 
 /*!

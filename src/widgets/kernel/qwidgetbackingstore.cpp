@@ -76,6 +76,11 @@ extern QRegion qt_dirtyRegion(QWidget *);
 Q_GLOBAL_STATIC(QPlatformTextureList, qt_dummy_platformTextureList)
 #endif
 
+static bool hasPlatformWindow(QWidget *widget)
+{
+    return widget && widget->windowHandle() && widget->windowHandle()->handle();
+}
+
 /**
  * Flushes the contents of the \a backingStore into the screen area of \a widget.
  * \a region is the region to be updated in \a widget coordinates.
@@ -198,7 +203,7 @@ void QWidgetBackingStore::showYellowThing(QWidget *widget, const QRegion &toBePa
     QRegion paintRegion = toBePainted;
     QRect widgetRect = widget->rect();
 
-    if (!widget->internalWinId()) {
+    if (!hasPlatformWindow(widget)) {
         QWidget *nativeParent = widget->nativeParentWidget();
         const QPoint offset = widget->mapTo(nativeParent, QPoint(0, 0));
         paintRegion.translate(offset);
@@ -654,7 +659,7 @@ void QWidgetBackingStore::markDirtyOnScreen(const QRegion &region, QWidget *widg
     }
 
     // Alien widgets.
-    if (!widget->internalWinId() && !widget->isWindow()) {
+    if (!hasPlatformWindow(widget) && !widget->isWindow()) {
         QWidget *nativeParent = widget->nativeParentWidget();        // Alien widgets with the top-level as the native parent (common case).
         if (nativeParent == tlw) {
             if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
@@ -784,7 +789,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
         destRect = destRect.translated(dx, dy).intersected(clipR);
     const QRect sourceRect(destRect.translated(-dx, -dy));
     const QRect parentRect(rect & clipR);
-    const bool nativeWithTextureChild = textureChildSeen && q->internalWinId();
+    const bool nativeWithTextureChild = textureChildSeen && hasPlatformWindow(q);
 
     const bool accelerateMove = accelEnv && isOpaque && !nativeWithTextureChild
 #if QT_CONFIG(graphicsview)
@@ -952,9 +957,9 @@ static void findTextureWidgetsRecursively(QWidget *tlw, QWidget *widget, QPlatfo
     for (int i = 0; i < wd->children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(wd->children.at(i));
         // Stop at native widgets but store them. Stop at hidden widgets too.
-        if (w && !w->isWindow() && w->internalWinId())
+        if (w && !w->isWindow() && hasPlatformWindow(w))
             nativeChildren->append(w);
-        if (w && !w->isWindow() && !w->internalWinId() && !w->isHidden() && QWidgetPrivate::get(w)->textureChildSeen)
+        if (w && !w->isWindow() && !hasPlatformWindow(w) && !w->isHidden() && QWidgetPrivate::get(w)->textureChildSeen)
             findTextureWidgetsRecursively(tlw, w, widgetTextures, nativeChildren);
     }
 }
@@ -985,7 +990,7 @@ static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
         Q_ASSERT(!tl->isEmpty());
         for (int i = 0; i < tl->count(); ++i) {
             QWidget *w = static_cast<QWidget *>(tl->source(i));
-            if ((w->internalWinId() && w == widget) || (!w->internalWinId() && w->nativeParentWidget() == widget))
+            if ((hasPlatformWindow(w) && w == widget) || (!hasPlatformWindow(w) && w->nativeParentWidget() == widget))
                 return tl;
         }
     }
@@ -1096,7 +1101,8 @@ void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedReg
     if (!tlw->isVisible() || !tlwExtra || tlwExtra->inTopLevelResize)
         return;
 
-    if (!exposedWidget || !exposedWidget->internalWinId() || !exposedWidget->isVisible() || !exposedWidget->testAttribute(Qt::WA_Mapped)
+    if (!exposedWidget || !hasPlatformWindow(exposedWidget)
+        || !exposedWidget->isVisible() || !exposedWidget->testAttribute(Qt::WA_Mapped)
         || !exposedWidget->updatesEnabled() || exposedRegion.isEmpty()) {
         return;
     }
@@ -1269,8 +1275,8 @@ void QWidgetBackingStore::doSync()
             w->d_func()->sendPaintEvent(w->rect());
             if (w != tlw) {
                 QWidget *npw = w->nativeParentWidget();
-                if (w->internalWinId() || (npw && npw != tlw)) {
-                    if (!w->internalWinId())
+                if (hasPlatformWindow(w) || (npw && npw != tlw)) {
+                    if (!hasPlatformWindow(w))
                         w = npw;
                     QWidgetPrivate *wPrivate = w->d_func();
                     if (!wPrivate->needsFlush)

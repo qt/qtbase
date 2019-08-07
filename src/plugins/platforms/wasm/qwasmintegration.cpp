@@ -168,6 +168,7 @@ bool QWasmIntegration::hasCapability(QPlatformIntegration::Capability cap) const
     case RasterGLSurface: return false; // to enable this you need to fix qopenglwidget and quickwidget for wasm
     case MultipleWindows: return true;
     case WindowManagement: return true;
+    case OpenGLOnRasterSurface: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

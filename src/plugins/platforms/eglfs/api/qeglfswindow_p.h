@@ -118,7 +118,6 @@ protected:
     QOpenGLCompositorBackingStore *m_backingStore;
     QOpenGLContext *m_rasterCompositingContext;
 #endif
-    bool m_raster;
     WId m_winId;
 
     EGLSurface m_surface;
