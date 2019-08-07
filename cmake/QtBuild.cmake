@@ -2354,7 +2354,7 @@ endfunction()
 
 # Sets QT_WILL_BUILD_TOOLS if tools will be built.
 function(qt_check_if_tools_will_be_built)
-    set01(will_build_tools NOT CMAKE_CROSSCOMPILING AND NOT QT_FORCE_FIND_TOOLS)
+    set(will_build_tools NOT CMAKE_CROSSCOMPILING AND NOT QT_FORCE_FIND_TOOLS)
     set(QT_WILL_BUILD_TOOLS ${will_build_tools} CACHE INTERNAL "Are tools going to be built" FORCE)
 endfunction()
 
