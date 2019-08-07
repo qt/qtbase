@@ -2093,21 +2093,21 @@ def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
                       indent: int = 0, is_example: bool=False) -> None:
     assert scope.TEMPLATE in ('app', 'lib')
 
+    config = scope.get('CONFIG')
     is_lib = scope.TEMPLATE == 'lib'
     is_qml_plugin = any('qml_plugin' == s for s in scope.get('_LOADED'))
-    is_plugin = any('qt_plugin' == s for s in scope.get('_LOADED')) or is_qml_plugin
+    is_plugin = any('qt_plugin' == s for s in scope.get('_LOADED')) or is_qml_plugin or 'plugin' in config
 
-    if is_lib or 'qt_module' in scope.get('_LOADED'):
-        assert not is_example
-        write_module(cm_fh, scope, indent=indent)
-    elif is_plugin:
+    if is_plugin:
         assert not is_example
         write_plugin(cm_fh, scope, indent=indent)
+    elif is_lib or 'qt_module' in scope.get('_LOADED'):
+        assert not is_example
+        write_module(cm_fh, scope, indent=indent)
     elif 'qt_tool' in scope.get('_LOADED'):
         assert not is_example
         write_tool(cm_fh, scope, indent=indent)
     else:
-        config = scope.get('CONFIG')
         gui = all(val not in config for val in ['console', 'cmdline'])
         if 'testcase' in config \
                 or 'testlib' in config \
