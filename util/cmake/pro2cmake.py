@@ -1800,6 +1800,11 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
                     cm_fh.write('{}list(APPEND test_data "{}")\n'.format(spaces(indent), data))
             cm_fh.write('\n')
 
+    # Check for DESTDIR override
+    destdir = scope.get_string('DESTDIR')
+    if destdir:
+        extra_lines.append('OUTPUT_DIRECTORY "{}"'.format(destdir))
+
     cm_fh.write('{}{}({}\n'.format(spaces(indent), cmake_function, name))
     for extra_line in extra_lines:
         cm_fh.write('{}    {}\n'.format(spaces(indent), extra_line))
