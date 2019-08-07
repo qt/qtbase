@@ -188,6 +188,8 @@ private slots:
 
     void lineHeightType();
     void cssLineHeightMultiplier();
+
+    void clearUndoRedoStacks();
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -3485,6 +3487,17 @@ void tst_QTextDocument::cssLineHeightMultiplier()
         QCOMPARE(format.lineHeight(), 138.0);
     }
 }
+
+void tst_QTextDocument::clearUndoRedoStacks()
+{
+    QTextDocument doc;
+    QTextCursor c(&doc);
+    c.insertText(QStringLiteral("lorem ipsum"));
+    QVERIFY(doc.isUndoAvailable());
+    doc.clearUndoRedoStacks(QTextDocument::UndoStack); // Don't crash
+    QVERIFY(!doc.isUndoAvailable());
+}
+
 
 QTEST_MAIN(tst_QTextDocument)
 #include "tst_qtextdocument.moc"
