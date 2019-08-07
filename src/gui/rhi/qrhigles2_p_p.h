@@ -768,6 +768,7 @@ public:
         uint instancing : 1;
         uint baseVertex : 1;
         uint compute : 1;
+        uint textureCompareMode : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QVector<GLint> supportedCompressedFormats;

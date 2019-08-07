@@ -472,6 +472,11 @@ bool QRhiGles2::create(QRhi::Flags flags)
     else
         caps.compute = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 3); // 4.3
 
+    if (caps.gles)
+        caps.textureCompareMode = caps.ctxMajor >= 3; // ES 3.0
+    else
+        caps.textureCompareMode = true;
+
     if (!caps.gles)
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     // else (with gles) this is always on
@@ -2376,11 +2381,13 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                         f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_T, samplerD->d.glwrapt);
                         // 3D textures not supported by GLES 2.0 or by us atm...
                         //f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_R, samplerD->d.glwrapr);
-                        if (samplerD->d.gltexcomparefunc != GL_NEVER) {
-                            f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-                            f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_FUNC, samplerD->d.gltexcomparefunc);
-                        } else {
-                            f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+                        if (caps.textureCompareMode) {
+                            if (samplerD->d.gltexcomparefunc != GL_NEVER) {
+                                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+                                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_FUNC, samplerD->d.gltexcomparefunc);
+                            } else {
+                                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+                            }
                         }
                         texD->samplerState = samplerD->d;
                     }
