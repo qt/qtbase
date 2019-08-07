@@ -76,13 +76,14 @@ macro(qt_build_repo)
         find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
     endif()
 
+    ## Decide whether tools will be built.
+    qt_check_if_tools_will_be_built()
+
     if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists.txt")
         add_subdirectory(src)
     endif()
 
     if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tools/CMakeLists.txt")
-        ## Decide whether tools will be built.
-        qt_check_if_tools_will_be_built()
         add_subdirectory(tools)
     endif()
 
