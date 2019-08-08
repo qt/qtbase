@@ -2121,49 +2121,52 @@ function(add_qt_test name)
         set(gui_text "GUI")
     endif()
 
-    set(private_includes
-        "${CMAKE_CURRENT_SOURCE_DIR}"
-        "${CMAKE_CURRENT_BINARY_DIR}"
-        "$<BUILD_INTERFACE:${QT_BUILD_DIR}/include>"
-         ${arg_INCLUDE_DIRECTORIES}
-    )
+    # Handle cases where we have a qml test without source files
+    if (arg_SOURCES)
+        set(private_includes
+            "${CMAKE_CURRENT_SOURCE_DIR}"
+            "${CMAKE_CURRENT_BINARY_DIR}"
+            "$<BUILD_INTERFACE:${QT_BUILD_DIR}/include>"
+             ${arg_INCLUDE_DIRECTORIES}
+        )
 
-    add_qt_executable("${name}"
-        ${exceptions_text}
-        ${gui_text}
-        NO_INSTALL
-        OUTPUT_DIRECTORY "${path}"
-        SOURCES "${arg_SOURCES}"
-        INCLUDE_DIRECTORIES
-            ${private_includes}
-        DEFINES
-            QT_TESTCASE_BUILDDIR="${CMAKE_CURRENT_BINARY_DIR}"
-            QT_TESTCASE_SOURCEDIR="${CMAKE_CURRENT_SOURCE_DIR}"
-            ${arg_DEFINES}
-        PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Core ${QT_CMAKE_EXPORT_NAMESPACE}::Test ${arg_PUBLIC_LIBRARIES}
-        LIBRARIES ${arg_LIBRARIES}
-        COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
-        LINK_OPTIONS ${arg_LINK_OPTIONS}
-        MOC_OPTIONS ${arg_MOC_OPTIONS}
-        ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
-        DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-    )
+        add_qt_executable("${name}"
+            ${exceptions_text}
+            ${gui_text}
+            NO_INSTALL
+            OUTPUT_DIRECTORY "${path}"
+            SOURCES "${arg_SOURCES}"
+            INCLUDE_DIRECTORIES
+                ${private_includes}
+            DEFINES
+                QT_TESTCASE_BUILDDIR="${CMAKE_CURRENT_BINARY_DIR}"
+                QT_TESTCASE_SOURCEDIR="${CMAKE_CURRENT_SOURCE_DIR}"
+                ${arg_DEFINES}
+            PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::Core ${QT_CMAKE_EXPORT_NAMESPACE}::Test ${arg_PUBLIC_LIBRARIES}
+            LIBRARIES ${arg_LIBRARIES}
+            COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
+            LINK_OPTIONS ${arg_LINK_OPTIONS}
+            MOC_OPTIONS ${arg_MOC_OPTIONS}
+            ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
+            DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+        )
 
-    # QMLTest specifics
+        # QMLTest specifics
 
-    extend_target("${name}" CONDITION arg_QMLTEST
-        PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::QuickTest
-    )
+        extend_target("${name}" CONDITION arg_QMLTEST
+            PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::QuickTest
+        )
 
-    extend_target("${name}" CONDITION arg_QMLTEST AND NOT ANDROID
-        DEFINES
-            QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
-    )
+        extend_target("${name}" CONDITION arg_QMLTEST AND NOT ANDROID
+            DEFINES
+                QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+        )
 
-    extend_target("${name}" CONDITION arg_QMLTEST AND ANDROID
-        DEFINES
-            QUICK_TEST_SOURCE_DIR=":/"
-    )
+        extend_target("${name}" CONDITION arg_QMLTEST AND ANDROID
+            DEFINES
+                QUICK_TEST_SOURCE_DIR=":/"
+        )
+    endif()
 
     if (arg_QML_IMPORTPATH)
         set(extra_test_args "-import" "${arg_QML_IMPORTPATH}")
@@ -2174,12 +2177,14 @@ function(add_qt_test name)
     file(RELATIVE_PATH label "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${name}")
 
     if(arg_QMLTEST AND NOT arg_SOURCES)
-        set(test_executable ${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner "$<TARGET_FILE:${name}>")
+        set(test_working_dir "${CMAKE_CURRENT_SOURCE_DIR}")
+        set(test_executable ${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner)
     else()
+        set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
         set(test_executable "${name}")
     endif()
 
-    add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args} -o ${name}.xml,xml -o -,txt  WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args} -o ${name}.xml,xml -o -,txt  WORKING_DIRECTORY "${test_working_dir}")
     set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}" LABELS "${label}")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "PATH=${path}${QT_PATH_SEPARATOR}${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}$ENV{PATH}")
 
