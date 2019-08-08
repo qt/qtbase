@@ -278,6 +278,20 @@ def handle_vpath(source: str, base_dir: str, vpath: typing.List[str]) -> str:
     return '{}-NOTFOUND'.format(source)
 
 
+def handle_function_value(group: pp.ParseResults):
+    function_name = group[0]
+    function_args = group[1]
+    if function_name == 'qtLibraryTarget':
+        if len(function_args) > 1:
+            raise RuntimeError('Don\'t know what to with more than one function argument for $$qtLibraryTarget().')
+        return str(function_args[0])
+
+    if function_name == 'quote':
+        # Do nothing, just return a string result
+        return str(group)
+
+    raise RuntimeError('No logic to handle function "{}", please add one in handle_function_value().'.format(function_name))
+
 class Operation:
     def __init__(self, value: typing.Union[typing.List[str], str]):
         if isinstance(value, list):
@@ -751,9 +765,8 @@ class Scope(object):
 
     @property
     def TARGET(self) -> str:
-        return self.get_string('TARGET') \
+        return self.expandString('TARGET') \
             or os.path.splitext(os.path.basename(self.file))[0]
-
     @property
     def _INCLUDED(self) -> typing.List[str]:
         return self.get('_INCLUDED')
@@ -808,10 +821,17 @@ class QmakeParser:
                           pp.Combine(pp.OneOrMore(Substitution
                                                   | LiteralValuePart
                                                   | pp.Literal('$'))))
+        FunctionValue \
+                = add_element('FunctionValue',
+                        pp.Group(pp.Suppress(pp.Literal('$') + pp.Literal('$'))
+                            + Identifier
+                            + pp.nestedExpr() #.setParseAction(lambda s, l, t: ['(', *t[0], ')'])
+                            ).setParseAction(lambda s, l, t: handle_function_value(*t)))
         Value \
             = add_element('Value',
                           pp.NotAny(Else | pp.Literal('}') | EOL) \
                           + (pp.QuotedString(quoteChar='"', escChar='\\')
+                              | FunctionValue
                               | SubstitutionValue
                               | BracedValue))
 

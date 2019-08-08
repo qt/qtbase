@@ -343,3 +343,10 @@ def test_multi_condition_divided_by_lc():
 def test_nested_function_calls():
     result = parse_file(_tests_path + '/data/nested_function_calls.pro')
     assert len(result) == 1
+
+def test_value_function():
+    result = parse_file(_tests_path + '/data/value_function.pro')
+    target = result[0]['value'][0]
+    assert target == 'Dummy'
+    value = result[1]['value']
+    assert value[0] == '$$TARGET'
