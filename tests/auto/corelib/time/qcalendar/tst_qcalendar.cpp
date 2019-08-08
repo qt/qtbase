@@ -179,6 +179,10 @@ void tst_QCalendar::specific_data()
     // Jalali year 1355 started on Gregorian 1976-3-21:
     ADDROW(Jalali, 1355, 1, 1, 1976, 3, 21);
 #endif // jalali
+#if QT_CONFIG(islamiccivilcalendar)
+    // TODO: confirm this is correct
+    ADDROW(IslamicCivil, 1, 1, 1, 622, 7, 19);
+#endif
 
 #undef ADDROW
 }

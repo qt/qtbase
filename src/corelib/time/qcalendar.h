@@ -62,8 +62,10 @@
    * Indian -- National
    * Islamic -- Based on astronomical observations, not predictions, so hard to
      implement. CLDR's data for type="islamic" apply, unless overridden, to the
-     other Islamic calendar variants.
-   * IslamicTabular -- tabular, astronomical epoch, CLDR type="islamic-tbla"
+     other Islamic calendar variants, i.e. IslamicCivil, above, and the three
+     following. See QHijriCalendar, a common base to provide that data.
+   * IslamicTabular -- tabular, astronomical epoch (same as IslamicCivil, except
+     for epoch), CLDR type="islamic-tbla"
    * Saudi -- Saudi Arabia, sighting; CLDR type="islamic-rgsa"
    * UmmAlQura -- Umm al-Qura, Saudi Arabia, calculated; CLDR type="islamic-umalqura"
    * Iso8601 -- as Gregorian, but treating ISO 8601 weeks as "months"
@@ -115,8 +117,14 @@ public:
 #if QT_CONFIG(jalalicalendar) // type="persian"
         Jalali = 10,
 #endif
+#if QT_CONFIG(islamiccivilcalendar) // type="islamic-civil", uses data from type="islamic"
+        IslamicCivil = 11,
+        // tabular, civil epoch
+        // 30 year cycle, leap on 2, 5, 7, 10, 13, 16, 18, 21, 24, 26 and 29
+        // (Other variants: 2, 5, 8, (10|11), 13, 16, 19, 21, 24, 27 and 29.)
+#endif
 
-        Last = 10, // Highest number of any above
+        Last = 11, // Highest number of any above
         User = -1
     };
     // New entries must be added to the \enum doc in qcalendar.cpp and

@@ -64,7 +64,7 @@ from dateconverter import convert_date
 from localexml import Locale
 
 # TODO: make calendars a command-line option
-calendars = ['gregorian', 'persian'] # 'islamic', 'hebrew'
+calendars = ['gregorian', 'persian', 'islamic'] # 'hebrew'
 findEntryInFile = xpathlite._findEntryInFile
 def wrappedwarn(prefix, tokens):
     return sys.stderr.write(

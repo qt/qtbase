@@ -20,6 +20,21 @@ SOURCES += \
         time/qmilankoviccalendar.cpp \
         time/qromancalendar.cpp
 
+qtConfig(hijricalendar) {
+    SOURCES += \
+        time/qhijricalendar.cpp
+    HEADERS += \
+        time/qhijricalendar_p.h \
+        time/qhijricalendar_data_p.h
+}
+
+qtConfig(islamiccivilcalendar) {
+    SOURCES += \
+        time/qislamiccivilcalendar.cpp
+    HEADERS += \
+        time/qislamiccivilcalendar_p.h
+}
+
 qtConfig(jalalicalendar) {
     SOURCES += \
         time/qjalalicalendar.cpp

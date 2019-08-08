@@ -225,6 +225,15 @@ class Locale:
     def firstThree(i, name): return name[:3]
     def initial(i, name): return name[:1]
     def number(i, name): return str(i + 1)
+    def islamicShort(i, name):
+        if not name: return name
+        if name == 'Shawwal': return 'Shaw.'
+        words = name.split()
+        if words[0].startswith('Dhu'):
+            words[0] = words[0][:7] + '.'
+        elif len(words[0]) > 3:
+            words[0] = words[0][:3] + '.'
+        return ' '.join(words)
     @staticmethod
     def __monthNames(calendars,
                      known={ # Map calendar to (names, extractors...):
@@ -239,6 +248,12 @@ class Locale:
                         (fullName, fullName),
                         (firstThree, firstThree),
                         (number, initial)),
+            'islamic': ((u'Muharram', u'Safar', u'Rabiʻ I', u'Rabiʻ II', u'Jumada I',
+                         u'Jumada II', u'Rajab', u'Shaʻban', u'Ramadan', u'Shawwal',
+                         u'Dhuʻl-Qiʻdah', u'Dhuʻl-Hijjah'),
+                        (fullName, fullName),
+                        (islamicShort, islamicShort),
+                        (number, number)),
             'hebrew': (('Tishri', 'Heshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar I',
                         'Adar', 'Nisan', 'Iyar', 'Sivan', 'Tamuz', 'Av'),
                        (fullName, fullName),
@@ -258,7 +273,7 @@ class Locale:
                        ';'.join(get[n][0](i, x) for i, x in enumerate(names)))
                 yield ('_'.join((camelCase(('standalone', size, 'months')), cal)),
                        ';'.join(get[n][1](i, x) for i, x in enumerate(names)))
-    del fullName, firstThree, initial, number
+    del fullName, firstThree, initial, number, islamicShort
 
     @classmethod
     def C(cls, calendars=('gregorian',),

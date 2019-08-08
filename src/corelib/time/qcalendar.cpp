@@ -36,6 +36,9 @@
 #if QT_CONFIG(jalalicalendar)
 #include "qjalalicalendar_p.h"
 #endif
+#if QT_CONFIG(islamiccivilcalendar)
+#include "qislamiccivilcalendar_p.h"
+#endif
 
 #include "qdatetime.h"
 #include "qcalendarmath_p.h"
@@ -624,6 +627,10 @@ const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
 #if QT_CONFIG(jalalicalendar)
     case QCalendar::System::Jalali:
         return new QJalaliCalendar;
+#endif
+#if QT_CONFIG(islamiccivilcalendar)
+    case QCalendar::System::IslamicCivil:
+        return new QIslamicCivilCalendar;
 #else // When highest-numbered system isn't enabled, ensure we have a case for Last:
     case QCalendar::System::Last:
 #endif
@@ -667,6 +674,7 @@ const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
     \value Julian An ancient Roman calendar with too few leap years.
     \value Milankovic A revised Julian calendar used by some Orthodox churches.
     \value Jalali The Solar Hijri calendar (also called Persian).
+    \value IslamicCivil The (tabular) Islamic Civil calendar.
 
     \sa QCalendar
 */

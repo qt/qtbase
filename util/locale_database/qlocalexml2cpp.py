@@ -44,7 +44,7 @@ from localexml import Locale
 
 # TODO: Make calendars a command-line parameter
 # map { CLDR name: Qt file name }
-calendars = {'gregorian': 'roman', 'persian': 'jalali',} # 'islamic': 'hijri', 'hebrew': 'hebrew',
+calendars = {'gregorian': 'roman', 'persian': 'jalali', 'islamic': 'hijri',} # 'hebrew': 'hebrew',
 
 generated_template = """
 /*
