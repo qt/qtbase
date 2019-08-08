@@ -75,6 +75,14 @@ public:
                       QLocale::FormatType format) const override;
     QString standaloneMonthName(const QLocale &locale, int month, int year,
                                 QLocale::FormatType format) const override;
+
+    // Static optimized versions for the benefit of QDate:
+    static int weekDayOfJulian(qint64 jd);
+    static bool leapTest(int year);
+    static int monthLength(int month, int year);
+    static bool validParts(int year, int month, int day);
+    static QCalendar::YearMonthDay partsFromJulian(qint64 jd);
+    static bool julianFromParts(int year, int month, int day, qint64 *jd);
 };
 
 QT_END_NAMESPACE
