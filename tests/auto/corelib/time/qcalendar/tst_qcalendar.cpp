@@ -167,6 +167,14 @@ void tst_QCalendar::specific_data()
 
     ADDROW(Gregorian, 1970, 1, 1, 1970, 1, 1);
 
+    // One known specific date, for each calendar
+#ifndef QT_BOOTSTRAPPED
+    // Julian 1582-10-4 was followed by Gregorian 1582-10-15
+    ADDROW(Julian, 1582, 10, 4, 1582, 10, 14);
+    // Milankovic matches Gregorian for a few centuries
+    ADDROW(Milankovic, 1923, 3, 20, 1923, 3, 20);
+#endif
+
 #undef ADDROW
 }
 

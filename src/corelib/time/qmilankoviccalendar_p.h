@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -37,69 +37,38 @@
 **
 ****************************************************************************/
 
-#include "qglobal.h"
+#ifndef QMILANKOVICCALENDAR_CALENDAR_P_H
+#define QMILANKOVICCALENDAR_CALENDAR_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of calendar implementations.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "qromancalendar_p.h"
-#include "qromancalendar_data_p.h"
 
 QT_BEGIN_NAMESPACE
 
-/*!
-  \since 5.14
-
-  \class QRomanCalendar
-  \inmodule QtCore
-  \brief The QRomanCalendar class is a shared base for calendars based on the
-  ancient Roman calendar.
-
-  \section1
-
-  Calendars based on the ancient Roman calendar share the names of months, whose
-  lengths depend in a common way on whether the year is a leap year. They differ
-  in how they determine which years are leap years.
-
-  \sa QGregorianCalendar, QJulianCalendar, QMilankovicCalendar
-*/
-
-int QRomanCalendar::daysInMonth(int month, int year) const
+class Q_CORE_EXPORT QMilankovicCalendar : public QRomanCalendar
 {
-    if (!year || month < 1 || month > 12)
-        return 0;
-
-    if (month == 2)
-        return isLeapYear(year) ? 29 : 28;
-
-    // Long if odd up to July = 7, or if even from 8 = August onwards:
-    return 30 | ((month & 1) ^ (month >> 3));
-}
-
-int QRomanCalendar::minDaysInMonth() const
-{
-    return 28;
-}
-
-bool QRomanCalendar::isLunar() const
-{
-    return false;
-}
-
-bool QRomanCalendar::isLuniSolar() const
-{
-    return false;
-}
-
-bool QRomanCalendar::isSolar() const
-{
-    return true;
-}
-
-const QCalendarLocale *QRomanCalendar::localeMonthIndexData() const
-{
-    return locale_data;
-}
-
-const ushort *QRomanCalendar::localeMonthData() const
-{
-    return months_data;
-}
+public:
+    QMilankovicCalendar();
+    // Calendar properties:
+    QString name() const override;
+    QCalendar::System calendarSystem() const override;
+    // Date queries:
+    bool isLeapYear(int year) const override;
+    // Julian Day conversions:
+    bool dateToJulianDay(int year, int month, int day, qint64 *jd) const override;
+    QCalendar::YearMonthDay julianDayToDate(qint64 jd) const override;
+};
 
 QT_END_NAMESPACE
+
+#endif // QMILANKOVICCALENDAR_CALENDAR_P_H

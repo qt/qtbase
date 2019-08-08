@@ -7,6 +7,8 @@ HEADERS += \
         time/qdatetime.h \
         time/qdatetime_p.h \
         time/qgregoriancalendar_p.h \
+        time/qjuliancalendar_p.h \
+        time/qmilankoviccalendar_p.h \
         time/qromancalendar_p.h \
         time/qromancalendar_data_p.h
 
@@ -14,6 +16,8 @@ SOURCES += \
         time/qdatetime.cpp \
         time/qcalendar.cpp \
         time/qgregoriancalendar.cpp \
+        time/qjuliancalendar.cpp \
+        time/qmilankoviccalendar.cpp \
         time/qromancalendar.cpp
 
 qtConfig(timezone) {

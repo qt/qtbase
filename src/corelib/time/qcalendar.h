@@ -103,9 +103,14 @@ public:
         int day = Unspecified;
     };
     // Feature (\w+)calendar uses CLDR type="\1" data, except as noted in type="..." comments below
-    enum class System {
+    enum class System
+    {
         Gregorian, // CLDR: type = "gregory", alias = "gregorian"
-        Last = Gregorian,
+#ifndef QT_BOOTSTRAPPED
+        Julian = 8,
+        Milankovic = 9,
+#endif // These are Roman-based, so share Gregorian's CLDR data
+        Last = 9, // Highest number of any above
         User = -1
     };
     // New entries must be added to the \enum doc in qcalendar.cpp and

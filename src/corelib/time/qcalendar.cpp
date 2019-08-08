@@ -29,6 +29,10 @@
 #include "qcalendar.h"
 #include "qcalendarbackend_p.h"
 #include "qgregoriancalendar_p.h"
+#ifndef QT_BOOTSTRAPPED
+#include "qjuliancalendar_p.h"
+#include "qmilankoviccalendar_p.h"
+#endif
 
 #include "qdatetime.h"
 #include "qcalendarmath_p.h"
@@ -608,6 +612,14 @@ const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
     switch (system) {
     case QCalendar::System::Gregorian:
         return new QGregorianCalendar;
+#ifndef QT_BOOTSTRAPPED
+    case QCalendar::System::Julian:
+        return new QJulianCalendar;
+    case QCalendar::System::Milankovic:
+        return new QMilankovicCalendar;
+#else // When highest-numbered system isn't enabled, ensure we have a case for Last:
+    case QCalendar::System::Last:
+#endif
     case QCalendar::System::User:
         Q_UNREACHABLE();
     }
@@ -645,6 +657,8 @@ const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
     This enumerated type is used to specify a choice of calendar system.
 
     \value Gregorian The default calendar, used internationally.
+    \value Julian An ancient Roman calendar with too few leap years.
+    \value Milankovic A revised Julian calendar used by some Orthodox churches.
 
     \sa QCalendar
 */

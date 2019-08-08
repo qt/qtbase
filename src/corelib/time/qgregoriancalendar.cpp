@@ -57,7 +57,7 @@ using namespace QRoundingDown;
     The Gregorian calendar is a refinement of the earlier Julian calendar,
     itself a late form of the Roman calendar. It is widely used.
 
-    \sa QRomanCalendar, QCalendarBackend, QCalendar
+    \sa QRomanCalendar, QJulianCalendar, QCalendarBackend, QCalendar
 */
 
 QGregorianCalendar::QGregorianCalendar()
