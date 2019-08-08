@@ -746,7 +746,12 @@ endfunction()
 #  * foo_versioned with the value "Qt6Core" (based on major Qt version)
 #  * foo_upper with the value "CORE"
 #  * foo_lower with the value "core"
-#  * foo_include_dir with the module's include directory in the binary tree
+#  * foo_repo_include_dir with the module's include directory
+#    e.g for QtQuick it would be qtdeclarative_build_dir/include for a prefix build or
+#                                qtbase_build_dir/include for a non-prefix build
+#  * foo_include_dir with the module's include directory
+#    e.g for QtQuick it would be qtdeclarative_build_dir/include/QtQuick for a prefix build or
+#                                qtbase_build_dir/include/QtQuick for a non-prefix build
 #  * foo_define same as foo_uper but with - replaced as _
 function(qt_internal_module_info result target)
     set(module "Qt${target}")
@@ -757,6 +762,7 @@ function(qt_internal_module_info result target)
     string(REPLACE "-" "_" define "${upper}")
     set("${result}_upper" "${upper}" PARENT_SCOPE)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
+    set("${result}_repo_include_dir" "${QT_BUILD_DIR}/include" PARENT_SCOPE)
     set("${result}_include_dir" "${QT_BUILD_DIR}/include/${module}" PARENT_SCOPE)
     set("${result}_define" "${define}" PARENT_SCOPE)
 endfunction()
@@ -1222,26 +1228,32 @@ function(add_qt_module target)
 
     qt_autogen_tools_initial_setup(${target})
 
-    set(_public_includes
-        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-        $<BUILD_INTERFACE:${module_include_dir}>
+    set(private_includes
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+        "${module_include_dir}/${PROJECT_VERSION}"
+        "${module_include_dir}/${PROJECT_VERSION}/${module}"
+         ${arg_INCLUDE_DIRECTORIES}
     )
+
+    set(public_includes
+        # For the syncqt headers
+        "$<BUILD_INTERFACE:${module_repo_include_dir}>"
+        "$<BUILD_INTERFACE:${module_include_dir}>"
+    )
+
     if(NOT arg_NO_MODULE_HEADERS)
-        list(APPEND _public_includes $<INSTALL_INTERFACE:include/${module}>)
+        # For the syncqt headers
+        list(APPEND public_includes "$<INSTALL_INTERFACE:include/${module}>")
     endif()
-    list(APPEND _public_includes ${arg_PUBLIC_INCLUDE_DIRECTORIES})
+    list(APPEND public_includes ${arg_PUBLIC_INCLUDE_DIRECTORIES})
 
     extend_target("${target}"
         SOURCES ${arg_SOURCES}
-        PUBLIC_INCLUDE_DIRECTORIES
-            ${_public_includes}
         INCLUDE_DIRECTORIES
-            "${CMAKE_CURRENT_SOURCE_DIR}"
-            "${CMAKE_CURRENT_BINARY_DIR}"
-            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-            "${module_include_dir}/${PROJECT_VERSION}"
-            "${module_include_dir}/${PROJECT_VERSION}/${module}"
-            ${arg_INCLUDE_DIRECTORIES}
+            ${private_includes}
+        PUBLIC_INCLUDE_DIRECTORIES
+            ${public_includes}
         PUBLIC_DEFINES
             ${arg_PUBLIC_DEFINES}
             QT_${module_define}_LIB
@@ -1407,18 +1419,22 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     # that belong to Qt.
     qt_internal_add_link_flags_no_undefined("${target}")
 
-    target_include_directories("${target_private}" INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-        $<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>
-        $<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>
+    set(interface_includes
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+        "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>"
+        "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>"
     )
 
     if(NOT arg_NO_MODULE_HEADERS)
-        target_include_directories("${target_private}" INTERFACE
-            $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>
-            $<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>
+        list(APPEND interface_includes
+            "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>"
+            "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>"
         )
     endif()
+
+    target_include_directories("${target_private}" INTERFACE
+        ${interface_includes}
+    )
 
     if(NOT ${arg_DISABLE_TOOLS_EXPORT})
         qt_export_tools(${target})
@@ -1616,15 +1632,24 @@ function(add_qt_plugin target)
     set_property(TARGET "${target}" PROPERTY QT_DEFAULT_PLUGIN "${_default_plugin}")
     set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "QT_PLUGIN_CLASS_NAME;QT_MODULE;QT_DEFAULT_PLUGIN")
 
+    set(private_includes
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+         # For the syncqt headers
+        "$<BUILD_INTERFACE:${module_repo_include_dir}>"
+         ${arg_INCLUDE_DIRECTORIES}
+    )
+
+    set(public_includes
+        ${arg_PUBLIC_INCLUDE_DIRECTORIES}
+    )
+
     extend_target("${target}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
-            "${CMAKE_CURRENT_SOURCE_DIR}"
-            "${CMAKE_CURRENT_BINARY_DIR}"
-            # For the syncqt headers
-            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-            ${arg_INCLUDE_DIRECTORIES}
-        PUBLIC_INCLUDE_DIRECTORIES ${arg_PUBLIC_INCLUDE_DIRECTORIES}
+            ${private_includes}
+        PUBLIC_INCLUDE_DIRECTORIES
+            ${public_includes}
         LIBRARIES ${arg_LIBRARIES} Qt::PlatformPluginInternal
         PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
         DEFINES
@@ -2179,12 +2204,15 @@ function(add_qt_executable name)
         set(extra_libraries "Qt::Core")
     endif()
 
+    set(private_includes
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+         ${arg_INCLUDE_DIRECTORIES}
+    )
+
     extend_target("${name}"
         SOURCES ${arg_SOURCES}
-        INCLUDE_DIRECTORIES
-            "${CMAKE_CURRENT_SOURCE_DIR}"
-            "${CMAKE_CURRENT_BINARY_DIR}"
-            ${arg_INCLUDE_DIRECTORIES}
+        INCLUDE_DIRECTORIES ${private_includes}
         DEFINES ${arg_DEFINES}
         LIBRARIES ${arg_LIBRARIES}
         PUBLIC_LIBRARIES ${extra_libraries} ${arg_PUBLIC_LIBRARIES}
@@ -2231,6 +2259,13 @@ function(add_qt_test name)
         set(gui_text "GUI")
     endif()
 
+    set(private_includes
+        "${CMAKE_CURRENT_SOURCE_DIR}"
+        "${CMAKE_CURRENT_BINARY_DIR}"
+        "$<BUILD_INTERFACE:${QT_BUILD_DIR}/include>"
+         ${arg_INCLUDE_DIRECTORIES}
+    )
+
     add_qt_executable("${name}"
         ${exceptions_text}
         ${gui_text}
@@ -2238,10 +2273,7 @@ function(add_qt_test name)
         OUTPUT_DIRECTORY "${path}"
         SOURCES "${arg_SOURCES}"
         INCLUDE_DIRECTORIES
-            "${CMAKE_CURRENT_SOURCE_DIR}"
-            "${CMAKE_CURRENT_BINARY_DIR}"
-            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
-            ${arg_INCLUDE_DIRECTORIES}
+            ${private_includes}
         DEFINES
             QT_TESTCASE_BUILDDIR="${CMAKE_CURRENT_BINARY_DIR}"
             QT_TESTCASE_SOURCEDIR="${CMAKE_CURRENT_SOURCE_DIR}"
