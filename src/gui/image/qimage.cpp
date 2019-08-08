@@ -713,7 +713,7 @@ bool QImageData::checkForAlphaPixels() const
     \value Format_Grayscale8 The image is stored using an 8-bit grayscale format. (added in Qt 5.5)
     \value Format_Grayscale16 The image is stored using an 16-bit grayscale format. (added in Qt 5.13)
     \value Format_RGBX64     The image is stored using a 64-bit halfword-ordered RGB(x) format (16-16-16-16).
-                             This is the same as the Format_RGBX64 except alpha must always be 65535. (added in Qt 5.12)
+                             This is the same as the Format_RGBA64 except alpha must always be 65535. (added in Qt 5.12)
     \value Format_RGBA64     The image is stored using a 64-bit halfword-ordered RGBA format (16-16-16-16). (added in Qt 5.12)
     \value Format_RGBA64_Premultiplied    The image is stored using a premultiplied 64-bit halfword-ordered
                              RGBA format (16-16-16-16). (added in Qt 5.12)
