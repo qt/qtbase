@@ -20,6 +20,14 @@ SOURCES += \
         time/qmilankoviccalendar.cpp \
         time/qromancalendar.cpp
 
+qtConfig(jalalicalendar) {
+    SOURCES += \
+        time/qjalalicalendar.cpp
+    HEADERS += \
+        time/qjalalicalendar_p.h \
+        time/qjalalicalendar_data_p.h
+}
+
 qtConfig(timezone) {
     HEADERS += \
         time/qtimezone.h \

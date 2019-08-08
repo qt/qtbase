@@ -86,6 +86,7 @@
 #define QT_NO_GEOM_VARIANT
 #define QT_FEATURE_iconv -1
 #define QT_FEATURE_icu -1
+#define QT_FEATURE_jalalicalendar -1
 #define QT_FEATURE_journald -1
 #define QT_FEATURE_futimens -1
 #define QT_FEATURE_futimes -1

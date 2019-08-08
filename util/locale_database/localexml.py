@@ -234,6 +234,11 @@ class Locale:
                           (fullName, fullName), # long
                           (firstThree, firstThree), # short
                           (number, initial)), # narrow
+            'persian': (('Farvardin', 'Ordibehesht', 'Khordad', 'Tir', 'Mordad',
+                         'Shahrivar', 'Mehr', 'Aban', 'Azar', 'Dey', 'Bahman', 'Esfand'),
+                        (fullName, fullName),
+                        (firstThree, firstThree),
+                        (number, initial)),
             'hebrew': (('Tishri', 'Heshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar I',
                         'Adar', 'Nisan', 'Iyar', 'Sivan', 'Tamuz', 'Av'),
                        (fullName, fullName),

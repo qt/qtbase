@@ -110,7 +110,13 @@ public:
         Julian = 8,
         Milankovic = 9,
 #endif // These are Roman-based, so share Gregorian's CLDR data
-        Last = 9, // Highest number of any above
+
+        // Feature-controlled calendars:
+#if QT_CONFIG(jalalicalendar) // type="persian"
+        Jalali = 10,
+#endif
+
+        Last = 10, // Highest number of any above
         User = -1
     };
     // New entries must be added to the \enum doc in qcalendar.cpp and

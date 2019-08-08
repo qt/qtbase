@@ -1041,6 +1041,12 @@
             "section": "Utilities",
             "output": [ "privateFeature" ]
         },
+        "jalalicalendar": {
+            "label": "QJalaliCalendar",
+            "purpose": "Support the Jalali (Persian) calendar",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
+        },
         "timezone": {
             "label": "QTimeZone",
             "purpose": "Provides support for time-zone handling.",

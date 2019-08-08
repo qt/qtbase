@@ -175,6 +175,11 @@ void tst_QCalendar::specific_data()
     ADDROW(Milankovic, 1923, 3, 20, 1923, 3, 20);
 #endif
 
+#if QT_CONFIG(jalalicalendar)
+    // Jalali year 1355 started on Gregorian 1976-3-21:
+    ADDROW(Jalali, 1355, 1, 1, 1976, 3, 21);
+#endif // jalali
+
 #undef ADDROW
 }
 
