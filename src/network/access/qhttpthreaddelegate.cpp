@@ -352,9 +352,9 @@ void QHttpThreadDelegate::startRequest()
                                                                 networkSession);
 #endif // QT_NO_BEARERMANAGEMENT
         if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
-            && http2Parameters.validate()) {
+            || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
             httpConnection->setHttp2Parameters(http2Parameters);
-        } // else we ignore invalid parameters and use our own defaults.
+        }
 #ifndef QT_NO_SSL
         // Set the QSslConfiguration from this QNetworkRequest.
         if (ssl)

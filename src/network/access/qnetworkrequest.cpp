@@ -42,6 +42,8 @@
 #include "qplatformdefs.h"
 #include "qnetworkcookie.h"
 #include "qsslconfiguration.h"
+#include "qhttp2configuration.h"
+#include "private/http2protocol_p.h"
 #include "QtCore/qshareddata.h"
 #include "QtCore/qlocale.h"
 #include "QtCore/qdatetime.h"
@@ -445,6 +447,7 @@ public:
             sslConfiguration = new QSslConfiguration(*other.sslConfiguration);
 #endif
         peerVerifyName = other.peerVerifyName;
+        h2Configuration = other.h2Configuration;
     }
 
     inline bool operator==(const QNetworkRequestPrivate &other) const
@@ -454,7 +457,8 @@ public:
             rawHeaders == other.rawHeaders &&
             attributes == other.attributes &&
             maxRedirectsAllowed == other.maxRedirectsAllowed &&
-            peerVerifyName == other.peerVerifyName;
+            peerVerifyName == other.peerVerifyName &&
+            h2Configuration == other.h2Configuration;
         // don't compare cookedHeaders
     }
 
@@ -465,6 +469,7 @@ public:
 #endif
     int maxRedirectsAllowed;
     QString peerVerifyName;
+    QHttp2Configuration h2Configuration;
 };
 
 /*!
@@ -476,6 +481,13 @@ public:
 QNetworkRequest::QNetworkRequest()
     : d(new QNetworkRequestPrivate)
 {
+    // Initial values proposed by RFC 7540 are quite draconian,
+    // so unless an application will set its own parameters, we
+    // make stream window size larger and increase (via WINDOW_UPDATE)
+    // the session window size. These are our 'defaults':
+    d->h2Configuration.setStreamReceiveWindowSize(Http2::qtDefaultStreamReceiveWindowSize);
+    d->h2Configuration.setSessionReceiveWindowSize(Http2::maxSessionReceiveWindowSize);
+    d->h2Configuration.setServerPushEnabled(false);
 }
 
 /*!
@@ -833,6 +845,50 @@ QString QNetworkRequest::peerVerifyName() const
 void QNetworkRequest::setPeerVerifyName(const QString &peerName)
 {
     d->peerVerifyName = peerName;
+}
+
+/*!
+    \since 5.14
+
+    Returns the current parameters that QNetworkAccessManager is
+    using for this request and its underlying HTTP/2 connection.
+    This is either a configuration previously set by an application
+    or a default configuration.
+
+    The default values that QNetworkAccessManager is using are:
+
+    \list
+      \li Window size for connection-level flowcontrol is 2147483647 octets
+      \li Window size for stream-level flowcontrol is 21474836 octets
+      \li Max frame size is 16384
+    \endlist
+
+    By default, server push is disabled, Huffman compression and
+    string indexing are enabled.
+
+    \sa setHttp2Configuration
+*/
+QHttp2Configuration QNetworkRequest::http2Configuration() const
+{
+    return d->h2Configuration;
+}
+
+/*!
+    \since 5.14
+
+    Sets request's HTTP/2 parameters from \a configuration.
+
+    \note The configuration must be set prior to making a request.
+    \note HTTP/2 multiplexes several streams in a single HTTP/2
+    connection. This implies that QNetworkAccessManager will use
+    the configuration found in the first request from  a series
+    of requests sent to the same host.
+
+    \sa http2Configuration, QNetworkAccessManager, QHttp2Configuration
+*/
+void QNetworkRequest::setHttp2Configuration(const QHttp2Configuration &configuration)
+{
+    d->h2Configuration = configuration;
 }
 
 static QByteArray headerName(QNetworkRequest::KnownHeaders header)

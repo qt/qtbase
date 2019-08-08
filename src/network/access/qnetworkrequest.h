@@ -49,6 +49,7 @@
 QT_BEGIN_NAMESPACE
 
 class QSslConfiguration;
+class QHttp2Configuration;
 
 class QNetworkRequestPrivate;
 class Q_NETWORK_EXPORT QNetworkRequest
@@ -175,6 +176,9 @@ public:
 
     QString peerVerifyName() const;
     void setPeerVerifyName(const QString &peerName);
+
+    QHttp2Configuration http2Configuration() const;
+    void setHttp2Configuration(const QHttp2Configuration &configuration);
 private:
     QSharedDataPointer<QNetworkRequestPrivate> d;
     friend class QNetworkRequestPrivate;

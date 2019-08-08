@@ -797,10 +797,8 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
 
     // Create the HTTP thread delegate
     QHttpThreadDelegate *delegate = new QHttpThreadDelegate;
-    // Propagate Http/2 settings if any
-    const QVariant blob(manager->property(Http2::http2ParametersPropertyName));
-    if (blob.isValid() && blob.canConvert<Http2::ProtocolParameters>())
-        delegate->http2Parameters = blob.value<Http2::ProtocolParameters>();
+    // Propagate Http/2 settings:
+    delegate->http2Parameters = request.http2Configuration();
 #ifndef QT_NO_BEARERMANAGEMENT
     if (!QNetworkStatusMonitor::isEnabled())
         delegate->networkSession = managerPrivate->getNetworkSession();

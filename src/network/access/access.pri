@@ -24,7 +24,8 @@ HEADERS += \
     access/qabstractnetworkcache.h \
     access/qnetworkfile_p.h \
     access/qhsts_p.h \
-    access/qhstspolicy.h
+    access/qhstspolicy.h \
+    access/qhttp2configuration.h
 
 SOURCES += \
     access/qnetworkaccessauthenticationmanager.cpp \
@@ -44,7 +45,8 @@ SOURCES += \
     access/qabstractnetworkcache.cpp \
     access/qnetworkfile.cpp \
     access/qhsts.cpp \
-    access/qhstspolicy.cpp
+    access/qhstspolicy.cpp \
+    access/qhttp2configuration.cpp
 
 qtConfig(ftp) {
     HEADERS += \

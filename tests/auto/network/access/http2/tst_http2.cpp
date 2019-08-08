@@ -32,8 +32,10 @@
 
 #include <QtNetwork/private/http2protocol_p.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
+#include <QtNetwork/qhttp2configuration.h>
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkreply.h>
+
 #include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qthread.h>
@@ -65,6 +67,24 @@ Q_DECLARE_METATYPE(H2Type)
 Q_DECLARE_METATYPE(QNetworkRequest::Attribute)
 
 QT_BEGIN_NAMESPACE
+
+QHttp2Configuration qt_defaultH2Configuration()
+{
+    QHttp2Configuration config;
+    config.setStreamReceiveWindowSize(Http2::qtDefaultStreamReceiveWindowSize);
+    config.setSessionReceiveWindowSize(Http2::maxSessionReceiveWindowSize);
+    config.setServerPushEnabled(false);
+    return config;
+}
+
+RawSettings qt_H2ConfigurationToSettings(const QHttp2Configuration &config = qt_defaultH2Configuration())
+{
+    RawSettings settings;
+    settings[Http2::Settings::ENABLE_PUSH_ID] = config.serverPushEnabled();
+    settings[Http2::Settings::INITIAL_WINDOW_SIZE_ID] = config.streamReceiveWindowSize();
+    return settings;
+}
+
 
 class tst_Http2 : public QObject
 {
@@ -110,12 +130,13 @@ private:
     // small payload.
     void runEventLoop(int ms = 5000);
     void stopEventLoop();
-    Http2Server *newServer(const Http2::RawSettings &serverSettings, H2Type connectionType,
-                           const Http2::ProtocolParameters &clientSettings = {});
+    Http2Server *newServer(const RawSettings &serverSettings, H2Type connectionType,
+                           const RawSettings &clientSettings = qt_H2ConfigurationToSettings());
     // Send a get or post request, depending on a payload (empty or not).
     void sendRequest(int streamNumber,
                      QNetworkRequest::Priority priority = QNetworkRequest::NormalPriority,
-                     const QByteArray &payload = QByteArray());
+                     const QByteArray &payload = QByteArray(),
+                     const QHttp2Configuration &clientConfiguration = qt_defaultH2Configuration());
     QUrl requestUrl(H2Type connnectionType) const;
 
     quint16 serverPort = 0;
@@ -131,14 +152,14 @@ private:
     bool prefaceOK = false;
     bool serverGotSettingsACK = false;
 
-    static const Http2::RawSettings defaultServerSettings;
+    static const RawSettings defaultServerSettings;
 };
 
 #define STOP_ON_FAILURE \
     if (QTest::currentTestFailed()) \
         return;
 
-const Http2::RawSettings tst_Http2::defaultServerSettings{{Http2::Settings::MAX_CONCURRENT_STREAMS_ID, 100}};
+const RawSettings tst_Http2::defaultServerSettings{{Http2::Settings::MAX_CONCURRENT_STREAMS_ID, 100}};
 
 namespace {
 
@@ -308,18 +329,15 @@ void tst_Http2::flowControlClientSide()
     nRequests = 10;
     windowUpdates = 0;
 
-    Http2::ProtocolParameters params;
+    QHttp2Configuration params;
     // A small window size for a session, and even a smaller one per stream -
     // this will result in WINDOW_UPDATE frames both on connection stream and
     // per stream.
-    params.maxSessionReceiveWindowSize = Http2::defaultSessionWindowSize * 5;
-    params.settingsFrameData[Settings::INITIAL_WINDOW_SIZE_ID] = Http2::defaultSessionWindowSize;
-    // Inform our manager about non-default settings:
-    manager->setProperty(Http2::http2ParametersPropertyName, QVariant::fromValue(params));
+    params.setSessionReceiveWindowSize(Http2::defaultSessionWindowSize * 5);
+    params.setStreamReceiveWindowSize(Http2::defaultSessionWindowSize);
 
-    const Http2::RawSettings serverSettings = {{Settings::MAX_CONCURRENT_STREAMS_ID, quint32(3)}};
-    ServerPtr srv(newServer(serverSettings, defaultConnectionType(), params));
-
+    const RawSettings serverSettings = {{Settings::MAX_CONCURRENT_STREAMS_ID, quint32(3)}};
+    ServerPtr srv(newServer(serverSettings, defaultConnectionType(), qt_H2ConfigurationToSettings(params)));
 
     const QByteArray respond(int(Http2::defaultSessionWindowSize * 10), 'x');
     srv->setResponseBody(respond);
@@ -330,7 +348,7 @@ void tst_Http2::flowControlClientSide()
     QVERIFY(serverPort != 0);
 
     for (int i = 0; i < nRequests; ++i)
-        sendRequest(i);
+        sendRequest(i, QNetworkRequest::NormalPriority, {}, params);
 
     runEventLoop(120000);
     STOP_ON_FAILURE
@@ -359,7 +377,7 @@ void tst_Http2::flowControlServerSide()
     serverPort = 0;
     nRequests = 10;
 
-    const Http2::RawSettings serverSettings = {{Settings::MAX_CONCURRENT_STREAMS_ID, 7}};
+    const RawSettings serverSettings = {{Settings::MAX_CONCURRENT_STREAMS_ID, 7}};
 
     ServerPtr srv(newServer(serverSettings, defaultConnectionType()));
 
@@ -392,12 +410,11 @@ void tst_Http2::pushPromise()
     serverPort = 0;
     nRequests = 1;
 
-    Http2::ProtocolParameters params;
+    QHttp2Configuration params;
     // Defaults are good, except ENABLE_PUSH:
-    params.settingsFrameData[Settings::ENABLE_PUSH_ID] = 1;
-    manager->setProperty(Http2::http2ParametersPropertyName, QVariant::fromValue(params));
+    params.setServerPushEnabled(true);
 
-    ServerPtr srv(newServer(defaultServerSettings, defaultConnectionType(), params));
+    ServerPtr srv(newServer(defaultServerSettings, defaultConnectionType(), qt_H2ConfigurationToSettings(params)));
     srv->enablePushPromise(true, QByteArray("/script.js"));
 
     QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
@@ -410,6 +427,7 @@ void tst_Http2::pushPromise()
 
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
+    request.setHttp2Configuration(params);
 
     auto reply = manager->get(request);
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
@@ -689,7 +707,6 @@ void tst_Http2::clearHTTP2State()
     windowUpdates = 0;
     prefaceOK = false;
     serverGotSettingsACK = false;
-    manager->setProperty(Http2::http2ParametersPropertyName, QVariant());
 }
 
 void tst_Http2::runEventLoop(int ms)
@@ -702,12 +719,11 @@ void tst_Http2::stopEventLoop()
     eventLoop.exitLoop();
 }
 
-Http2Server *tst_Http2::newServer(const Http2::RawSettings &serverSettings, H2Type connectionType,
-                                  const Http2::ProtocolParameters &clientSettings)
+Http2Server *tst_Http2::newServer(const RawSettings &serverSettings, H2Type connectionType,
+                                  const RawSettings &clientSettings)
 {
     using namespace Http2;
-    auto srv = new Http2Server(connectionType, serverSettings,
-                               clientSettings.settingsFrameData);
+    auto srv = new Http2Server(connectionType, serverSettings, clientSettings);
 
     using Srv = Http2Server;
     using Cl = tst_Http2;
@@ -729,7 +745,8 @@ Http2Server *tst_Http2::newServer(const Http2::RawSettings &serverSettings, H2Ty
 
 void tst_Http2::sendRequest(int streamNumber,
                             QNetworkRequest::Priority priority,
-                            const QByteArray &payload)
+                            const QByteArray &payload,
+                            const QHttp2Configuration &h2Config)
 {
     auto url = requestUrl(defaultConnectionType());
     url.setPath(QString("/stream%1.html").arg(streamNumber));
@@ -739,6 +756,7 @@ void tst_Http2::sendRequest(int streamNumber,
     request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, QVariant(true));
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
     request.setPriority(priority);
+    request.setHttp2Configuration(h2Config);
 
     QNetworkReply *reply = nullptr;
     if (payload.size())

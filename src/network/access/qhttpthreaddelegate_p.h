@@ -62,6 +62,7 @@
 #include <QNetworkReply>
 #include "qhttpnetworkrequest_p.h"
 #include "qhttpnetworkconnection_p.h"
+#include "qhttp2configuration.h"
 #include <QSharedPointer>
 #include <QScopedPointer>
 #include "private/qnoncontiguousbytedevice_p.h"
@@ -116,7 +117,7 @@ public:
     qint64 removedContentLength;
     QNetworkReply::NetworkError incomingErrorCode;
     QString incomingErrorDetail;
-    Http2::ProtocolParameters http2Parameters;
+    QHttp2Configuration http2Parameters;
 #ifndef QT_NO_BEARERMANAGEMENT
     QSharedPointer<QNetworkSession> networkSession;
 #endif
