@@ -1091,14 +1091,22 @@ def handle_subdir(scope: Scope,
                 collect_subdir_info(sd, current_conditions=current_conditions)
             # For the file case, directly write into the file handle.
             elif os.path.isfile(sd):
-                subdir_result = parseProFile(sd, debug=False)
-                subdir_scope \
-                    = Scope.FromDict(scope, sd,
-                                     subdir_result.asDict().get('statements'),
-                                     '', scope.basedir)
+                # Handle cases with SUBDIRS += Foo/bar/z.pro. We want to be able
+                # to generate add_subdirectory(Foo/bar) instead of parsing the full
+                # .pro file in the current CMakeLists.txt. This causes issues
+                # with relative paths in certain projects otherwise.
+                dirname = os.path.dirname(sd)
+                if dirname:
+                    collect_subdir_info(dirname, current_conditions=current_conditions)
+                else:
+                    subdir_result = parseProFile(sd, debug=False)
+                    subdir_scope \
+                        = Scope.FromDict(scope, sd,
+                                         subdir_result.asDict().get('statements'),
+                                         '', scope.basedir)
 
-                do_include(subdir_scope)
-                cmakeify_scope(subdir_scope, cm_fh, indent=indent, is_example=is_example)
+                    do_include(subdir_scope)
+                    cmakeify_scope(subdir_scope, cm_fh, indent=indent, is_example=is_example)
             else:
                 print('    XXXX: SUBDIR {} in {}: Not found.'.format(sd, scope))
 
