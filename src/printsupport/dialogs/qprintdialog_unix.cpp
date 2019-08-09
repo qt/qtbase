@@ -727,6 +727,11 @@ void QPrintDialogPrivate::selectPrinter(const QPrinter::OutputFormat outputForma
         else
             options.pageSetCombo->setEnabled(true);
 
+        // Disable complex page ranges widget when printing to pdf
+        // It doesn't work since it relies on cups to do the heavy lifting and cups
+        // is not used when printing to PDF
+        options.pagesRadioButton->setEnabled(outputFormat != QPrinter::PdfFormat);
+
 #if QT_CONFIG(cups)
         // Disable color options on main dialog if not printing to file, it will be handled by CUPS advanced dialog
         options.colorMode->setVisible(outputFormat == QPrinter::PdfFormat);
