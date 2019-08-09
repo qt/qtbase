@@ -35,7 +35,12 @@ add_qt_test(tst_qnetworkreply
 )
 
 # Resources:
+set_source_files_properties("../resource"
+    PROPERTIES alias "resource"
+)
 add_qt_resource(tst_qnetworkreply "qnetworkreply"
+    PREFIX
+        "/"
     BASE
         ".."
     FILES

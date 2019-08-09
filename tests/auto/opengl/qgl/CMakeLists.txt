@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_test(tst_qgl
+    GUI
     SOURCES
         tst_qgl.cpp
     LIBRARIES
@@ -13,7 +14,6 @@ add_qt_test(tst_qgl
         Qt::OpenGLPrivate
         Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
-        Qt::Core
         Qt::Gui
         Qt::OpenGL
         Qt::Widgets
@@ -21,9 +21,14 @@ add_qt_test(tst_qgl
 
 # Resources:
 set_source_files_properties("../../gui/image/qpixmap/images/designer.png"
-    PROPERTIES alias "designer.png")
-add_qt_resource(tst_qgl "qgl" FILES
-    ../../gui/image/qpixmap/images/designer.png)
+    PROPERTIES alias "designer.png"
+)
+add_qt_resource(tst_qgl "qgl"
+    PREFIX
+        "/"
+    FILES
+        ../../gui/image/qpixmap/images/designer.png
+)
 
 
 #### Keys ignored in scope 1:.:.:qgl.pro:<TRUE>:

@@ -77,9 +77,13 @@ extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEM
 # CONFIG = "no_linker_version_script"
 
 # Resources:
-add_qt_resource(EglFSDeviceIntegration "cursor" FILES
-    cursor-atlas.png
-    cursor.json)
+add_qt_resource(EglFSDeviceIntegration "cursor"
+    PREFIX
+        "/"
+    FILES
+        cursor-atlas.png
+        cursor.json
+)
 
 
 extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
@@ -119,27 +123,3 @@ add_qt_plugin(qeglfs
 #### Keys ignored in scope 12:.:.:eglfs-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 add_subdirectory(deviceintegration)
-
-    if(TARGET Qt::InputSupportPrivate)
-    endif()
-
-    if(TARGET Qt::PlatformCompositorSupportPrivate)
-    endif()
-
-    if(NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY)
-    endif()
-
-    if(NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY)
-    endif()
-
-    if(use_gold_linker)
-    endif()
-
-    if(NOT DEFINES___contains___QT_NO_CURSOR)
-    endif()
-
-    if(QT_FEATURE_opengl)
-    endif()
-
-    if(NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN)
-    endif()

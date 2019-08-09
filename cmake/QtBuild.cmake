@@ -2541,6 +2541,9 @@ function(add_qt_resource target resourceName)
 
     if(NOT rcc_PREFIX)
         get_target_property(rcc_PREFIX ${target} QT_RESOURCE_PREFIX)
+        if (NOT rcc_PREFIX)
+            message(FATAL_ERROR "add_qt_resource() was called without a PREFIX and the target does not provide QT_RESOURCE_PREFIX. Please either add a PREFIX or make the target ${target} provide a default.")
+        endif()
     endif()
 
     # Apply quick compiler pass

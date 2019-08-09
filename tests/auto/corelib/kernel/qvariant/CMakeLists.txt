@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_test(tst_qvariant
+    GUI
     SOURCES
         tst_qvariant.cpp
     DEFINES
@@ -16,9 +17,13 @@ add_qt_test(tst_qvariant
 )
 
 # Resources:
-add_qt_resource(tst_qvariant "qvariant" FILES
-    stream/qt4.9/
-    stream/qt5.0/)
+add_qt_resource(tst_qvariant "qvariant"
+    PREFIX
+        "/"
+    FILES
+        stream/qt4.9/
+        stream/qt5.0/
+)
 
 
 #### Keys ignored in scope 1:.:.:qvariant.pro:<TRUE>:

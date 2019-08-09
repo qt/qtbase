@@ -152,7 +152,7 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_fil
     for resource in root:
         assert(resource.tag == 'qresource')
         lang = resource.get('lang', '')
-        prefix = resource.get('prefix', '')
+        prefix = resource.get('prefix', '/')
 
         full_resource_name = resource_name + (str(resource_count) if resource_count > 0 else '')
 
@@ -192,8 +192,7 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_fil
         params = ''
         if lang:
             params += '    LANG\n        "{}"\n'.format(lang)
-        if prefix:
-            params += '    PREFIX\n        "{}"\n'.format(prefix)
+        params += '    PREFIX\n        "{}"\n'.format(prefix)
         if base_dir:
             params += '    BASE\n        "{}"\n'.format(base_dir)
         output += 'add_qt_resource({} "{}"\n{}    FILES\n        {}\n)\n'.format(target, full_resource_name,

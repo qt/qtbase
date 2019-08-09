@@ -63,9 +63,13 @@ extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::PlatformCompositorSupp
 # CONFIG = "no_linker_version_script"
 
 # Resources:
-add_qt_resource(EglFSDeviceIntegration "cursor" FILES
-    cursor-atlas.png
-    cursor.json)
+add_qt_resource(EglFSDeviceIntegration "cursor"
+    PREFIX
+        "/"
+    FILES
+        cursor-atlas.png
+        cursor.json
+)
 
 
 extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
@@ -106,4 +110,3 @@ add_qt_plugin(qeglfs
 #### Keys ignored in scope 12:.:.:eglfs-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 add_subdirectory(deviceintegration)
-

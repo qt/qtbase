@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_test(tst_qwidget
+    GUI
     SOURCES
         tst_qwidget.cpp
     LIBRARIES
@@ -13,17 +14,19 @@ add_qt_test(tst_qwidget
         Qt::TestPrivate
         Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
-        Qt::Core
         Qt::Gui
-        Qt::Test
         Qt::Widgets
 )
 
 # Resources:
-add_qt_resource(tst_qwidget "qwidget" FILES
-    geometry-fullscreen.dat
-    geometry-maximized.dat
-    geometry.dat)
+add_qt_resource(tst_qwidget "qwidget"
+    PREFIX
+        "/"
+    FILES
+        geometry-fullscreen.dat
+        geometry-maximized.dat
+        geometry.dat
+)
 
 
 #### Keys ignored in scope 1:.:.:qwidget.pro:<TRUE>:
@@ -33,7 +36,7 @@ add_qt_resource(tst_qwidget "qwidget" FILES
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qwidget CONDITION APPLE_OSX
+extend_target(tst_qwidget CONDITION APPLE
     SOURCES
         tst_qwidget_mac_helpers.mm
     PUBLIC_LIBRARIES
