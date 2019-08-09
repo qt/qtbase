@@ -110,12 +110,9 @@ public:
         const QMetaObject * const mo = obj->metaObject();
         const QMetaMethod signalMetaMethod = QMetaMethod::fromSignal(signal0);
         const int sigIndex = signalMetaMethod.methodIndex();
-        if (!signalMetaMethod.isValid() ||
-            signalMetaMethod.methodType() != QMetaMethod::Signal) {
-            qWarning("QSignalSpy: Not a valid signal: '%s'",
-                     signalMetaMethod.methodSignature().constData());
+
+        if (!isSignalMetaMethodValid(signalMetaMethod))
             return;
-        }
 
         if (!connectToSignal(obj, sigIndex))
             return;
@@ -164,6 +161,16 @@ private:
             qWarning("QSignalSpy: QMetaObject::connect returned false. Unable to connect.");
 
         return connected;
+    }
+
+    static bool isSignalMetaMethodValid(const QMetaMethod &signal)
+    {
+        const bool valid = signal.isValid() && signal.methodType() == QMetaMethod::Signal;
+
+        if (!valid)
+            qWarning("QSignalSpy: Not a valid signal: '%s'", signal.methodSignature().constData());
+
+        return valid;
     }
 
     void initArgs(const QMetaMethod &member, const QObject *obj)
