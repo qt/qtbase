@@ -2425,7 +2425,7 @@ function(qt_quick_compiler_process_resources target resource_name)
     foreach(file IN LISTS arg_FILES)
         # check whether this resource should not be processed by the qt quick
         # compiler
-        get_source_file_property(skip_compiler_check ${file} QT_QUICKCOMPILER_SKIPPED_RESOURCE)
+        get_source_file_property(skip_compiler_check ${file} QT_SKIP_QUICKCOMPILER)
         if (skip_compiler_check)
             list(APPEND resource_files ${file})
             continue()

@@ -115,7 +115,7 @@ def find_qmake_conf(project_file_path: str = '') -> typing.Optional[str]:
     return None
 
 
-def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_file_path: str = '') -> str:
+def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_file_path: str = '', skip_qtquick_compiler: bool = False) -> str:
     assert(target)
 
     # Hack to handle QT_SOURCE_TREE. Assume currently that it's the same
@@ -181,6 +181,14 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_fil
                 output += 'set_source_files_properties("{}"\n' \
                           '    PROPERTIES alias "{}"\n)\n'.format(full_source, alias)
 
+        if skip_qtquick_compiler:
+            file_list = '\n    '.join(sorted_files)
+            output += 'set(resource_files\n    {}\n)\n\n'.format(file_list)
+            file_list = "${resource_files}"
+            output += 'set_source_files_properties(${resource_files} QT_SKIP_QUICKCOMPILER 1)\n\n'
+        else:
+            file_list = '\n        '.join(sorted_files)
+
         params = ''
         if lang:
             params += '    LANG\n        "{}"\n'.format(lang)
@@ -190,7 +198,7 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_fil
             params += '    BASE\n        "{}"\n'.format(base_dir)
         output += 'add_qt_resource({} "{}"\n{}    FILES\n        {}\n)\n'.format(target, full_resource_name,
                                                                       params,
-                                                                      '\n        '.join(sorted_files))
+                                                                      file_list)
 
         resource_count += 1
 
@@ -1666,12 +1674,13 @@ def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
 
     # Handle QRC files by turning them into add_qt_resource:
     resources = scope.get_files('RESOURCES')
+    qtquickcompiler_skipped = scope.get_files('QTQUICK_COMPILER_SKIPPED_RESOURCES')
     qrc_output = ''
     if resources:
         qrc_only = True
         for r in resources:
             if r.endswith('.qrc'):
-                qrc_output += process_qrc_file(target, r, scope.basedir, scope.file_absolute_path)
+                qrc_output += process_qrc_file(target, r, scope.basedir, scope.file_absolute_path, r in qtquickcompiler_skipped)
             else:
                 qrc_only = False
 
