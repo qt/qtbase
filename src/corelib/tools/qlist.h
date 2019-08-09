@@ -111,7 +111,7 @@ struct Q_CORE_EXPORT QListData {
     void remove(int i);
     void remove(int i, int n);
     void move(int from, int to);
-    inline int size() const Q_DECL_NOTHROW { return d->end - d->begin; }
+    inline int size() const Q_DECL_NOTHROW { return int(d->end - d->begin); }   // q6sizetype
     inline bool isEmpty() const Q_DECL_NOTHROW { return d->end  == d->begin; }
     inline void **at(int i) const Q_DECL_NOTHROW { return d->array + d->begin + i; }
     inline void **begin() const Q_DECL_NOTHROW { return d->array + d->begin; }
@@ -1031,7 +1031,7 @@ int lastIndexOf(const QList<T> &list, const U &u, int from)
         Node *n = reinterpret_cast<Node *>(list.p.at(from + 1));
         while (n-- != b) {
             if (n->t() == u)
-                return n - b;
+                return typename QList<T>::difference_type(n - b);
         }
     }
     return -1;
