@@ -1,9 +1,5 @@
 [pauseAndPropertyAnimations]
-osx-10.12
-osx-10.14
-osx-10.13
+osx
 [multipleSequentialGroups]
-osx-10.12
-osx-10.14
-osx-10.13
+osx
 

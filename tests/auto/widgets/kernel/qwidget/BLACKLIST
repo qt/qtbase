@@ -14,12 +14,9 @@ rhel-7.4
 ubuntu-16.04
 rhel-7.6
 [focusProxyAndInputMethods]
-ubuntu-16.04
 rhel-7.6
 opensuse-leap
-ubuntu-18.04
-rhel-7.4
-opensuse-42.3
+ubuntu
 [raise]
 opensuse-leap
 # QTBUG-68175
@@ -45,12 +42,9 @@ opensuse-leap
 [moveInResizeEvent]
 ubuntu-16.04
 [multipleToplevelFocusCheck]
-ubuntu-16.04
 rhel-7.6
 opensuse-leap
-ubuntu-18.04
-rhel-7.4
-opensuse-42.3
+ubuntu
 [windowState]
 # QTBUG-75270
 winrt

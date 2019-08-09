@@ -1,10 +1,6 @@
-[abortOnSslErrors]
-windows-10 msvc-2015
 [deprecatedProtocols]
 windows
 [spontaneousWrite]
-windows-7sp1
-[sslErrors]
 windows-7sp1
 [connectToHostEncrypted]
 osx-10.13

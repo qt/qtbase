@@ -1,106 +1,53 @@
 # See qtbase/src/testlib/qtestblacklist.cpp for format
 [authenticationCacheAfterCancel]
-windows-10 msvc-2017
-windows-10 msvc-2015
-osx-10.13
 windows-7sp1
-[httpAbort]
-ubuntu-16.04
-rhel-7.6
-[backgroundRequestInterruption]
-ubuntu-16.04
-opensuse-leap
-ubuntu-18.04
-b2qt
-osx-10.12
 windows-10 msvc-2015
-opensuse-42.3
+[backgroundRequestInterruption]
+opensuse-leap
+windows-10 msvc-2015
+b2qt
+ubuntu
+osx
 [backgroundRequestInterruption:ftp, bg, nobg]
 *
-[getErrors]
-osx-10.13
-# QTBUG-71953
 [getErrors:ftp-host]
 linux
 # QTBUG-71953
 [getFromHttp]
-rhel-6.6
-ubuntu-16.04
-rhel-7.6
-opensuse-leap
-osx-10.11
-osx-10.13
-windows-7sp1
-ubuntu-18.04
-osx-10.14
-rhel-7.4
-b2qt
-windows-10 msvc-2017
-osx-10.12
-windows-10 msvc-2015
-opensuse-42.3
+* !android !winrt
 [getFromHttp:success-external]
 *
 [getFromHttpIntoBuffer]
-osx-10.12
-osx-10.13
+osx
 [getFromHttpIntoBuffer2]
-windows-10 msvc-2015
-windows-10 msvc-2017
+windows-10
 [headFromHttp]
-osx-10.13
 windows-10 msvc-2017
-[ioGetFromHttpWithSocksProxy]
-osx-10.12
 [ioPostToHttpFromSocket]
 # QTBUG-66247
-osx-10.13
 windows-7sp1
 windows-10 msvc-2017
-osx-10.12
-windows-10 msvc-2015
+osx
 [ioHttpRedirect]
-windows-10 msvc-2015
 # QTBUG-66602
-windows-10 msvc-2017
+windows-10
 [ioHttpRedirectMultipartPost]
-ubuntu-16.04
-rhel-7.6
 # QTBUG-66247
-opensuse-leap
-osx-10.13
-ubuntu-18.04
-rhel-7.4
 b2qt
-osx-10.12
 windows-10 msvc-2015
-opensuse-42.3
+ubuntu
+rhel
 [ioHttpRedirectPolicy]
-ubuntu-16.04
 opensuse-leap
-windows-7sp1
-ubuntu-18.04
 b2qt
-windows-10 msvc-2017
-windows-10 msvc-2015
-opensuse-42.3
-[ioHttpRedirectPostPut]
-osx-10.12
-windows-10 msvc-2015
+ubuntu
+windows-10
 [putToFtp]
-windows-10 msvc-2017
+windows-10
 [putWithServerClosingConnectionImmediately]
-osx-10.11
-osx-10.13
 windows-7sp1
-windows-10 msvc-2017
-osx-10.12
-windows-10 msvc-2015
-[qtbug28035browserDoesNotLoadQtProjectOrgCorrectly]
-windows-10 msvc-2015
-windows-7sp1
-[authenticationWithDifferentRealm]
-osx-10.13
+windows-10
+osx
 [backgroundRequest]
 osx-10.12
 [connectToIPv6Address]
@@ -109,141 +56,73 @@ osx-10.12
 osx-10.12
 [downloadProgress]
 osx-10.12
-[emitErrorForAllReplies]
-osx-10.12
 [encrypted]
-osx-10.13
-[ftpAuthentication]
 osx-10.13
 [httpCanReadLine]
 osx-10.12
-osx-10.13
 [httpRecursiveCreation]
-osx-10.12
-osx-10.13
+osx
 [httpWithNoCredentialUsage]
 osx-10.12
 [ignoreSslErrorsList]
-osx-10.12
-osx-10.13
+osx
 [ignoreSslErrorsListWithSlot]
-osx-10.12
-osx-10.13
+osx
 [ioGetFromBuiltinHttp]
-osx-10.12
-osx-10.11
-osx-10.14
-osx-10.13
+osx
 [ioGetFromHttp]
-osx-10.12
-[ioGetFromHttpWithAuth]
-osx-10.12
-osx-10.13
-[ioGetFromHttpWithAuthSynchronous]
-osx-10.12
-[ioGetFromHttpWithProxyAuth]
-osx-10.12
-[ioGetFromHttpWithReuseParallel]
-osx-10.12
-osx-10.13
-[ioGetFromHttpWithReuseSequential]
-osx-10.12
-osx-10.13
-[ioGetFromHttpsWithIgnoreSslErrors]
-osx-10.12
-[ioGetFromHttpsWithSslErrors]
-osx-10.12
-[ioGetFromHttpsWithSslHandshakeError]
-osx-10.12
-[ioGetWithManyProxies]
 osx-10.12
 [ioPostToHttpFromFile]
 osx-10.13
-[ioPostToHttpFromMiddleOfFileFiveBytes]
-osx-10.13
-[ioPostToHttpFromMiddleOfFileToEnd]
-osx-10.13
-[ioPostToHttpFromMiddleOfQBufferFiveBytes]
-osx-10.13
 [ioPostToHttpFromSocketSynchronous]
-osx-10.12
-osx-10.13
-[ioPostToHttpNoBufferFlag]
-osx-10.13
+osx
 [ioPostToHttpUploadProgress]
-osx-10.12
-osx-10.11
-osx-10.13
+osx
 [ioPutToHttpFromFile]
 osx-10.13
 [lastModifiedHeaderForHttp]
 osx-10.12
-osx-10.13
 [multipartSkipIndices]
 osx-10.12
-osx-10.13
 [nestedEventLoops]
-osx-10.12
-osx-10.13
-[pipelining]
-osx-10.13
+osx
 [postToHttp]
 osx-10.12
-osx-10.13
 [postToHttpMultipart]
 osx-10.12
-osx-10.13
 [postToHttpSynchronous]
 osx-10.12
-osx-10.13
 [postToHttps]
-osx-10.12
-osx-10.13
+osx
 [postToHttpsMultipart]
-osx-10.12
-osx-10.13
+osx
 [postToHttpsSynchronous]
-osx-10.12
-osx-10.13
+osx
 [putGetDeleteGetFromHttp]
 osx-10.12
-[putToHttp]
-osx-10.12
-osx-10.13
 [putToHttpSynchronous]
 osx-10.12
-osx-10.13
 [putToHttps]
-osx-10.12
-osx-10.13
+osx
 [putToHttpsSynchronous]
-osx-10.12
-osx-10.13
+osx
 [putWithRateLimiting]
-osx-10.12
 osx-10.13
 [qtbug13431replyThrottling]
 osx-10.12
 [receiveCookiesFromHttp]
-osx-10.12
-osx-10.13
+osx
 [receiveCookiesFromHttpSynchronous]
-osx-10.12
-osx-10.13
+osx
 [sendCookies]
-osx-10.12
-osx-10.13
+osx
 [sendCookiesSynchronous]
-osx-10.12
-osx-10.13
+osx
 [sendCustomRequestToHttp]
 osx-10.12
 [sslConfiguration]
-osx-10.12
-osx-10.13
+osx
 [synchronousRequest]
-osx-10.12
-osx-10.13
+osx
 [backgroundRequestConnectInBackground]
-osx-10.12
-osx-10.13
+osx
