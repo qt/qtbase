@@ -1914,8 +1914,6 @@ function(add_qml_module target)
 
     set(qml_module_optional_args
         CPP_PLUGIN
-        EMBED_QML_FILES
-        INSTALL_QML_FILES
     )
 
     set(qml_module_single_args
