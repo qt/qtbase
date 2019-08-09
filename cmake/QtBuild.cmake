@@ -2600,7 +2600,7 @@ function(add_qt_resource target resourceName)
                        COMMAND "${QT_CMAKE_EXPORT_NAMESPACE}::rcc"
                        ARGS --name "${newResourceName}"
                            --output "${generatedSourceCode}" "${generatedResourceFile}"
-                       DEPENDS ${resources}
+                       DEPENDS ${resources} ${generatedResourceFile}
                        COMMENT "RCC ${newResourceName}"
                        VERBATIM)
 
