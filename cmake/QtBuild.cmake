@@ -2411,6 +2411,7 @@ function(qt_quick_compiler_process_resources target resource_name)
     )
 
     set(qml_files)
+    set(resource_files)
     # scan for qml files
     foreach(file IN LISTS arg_FILES)
         # check whether this resource should not be processed by the qt quick
@@ -2444,7 +2445,12 @@ function(qt_quick_compiler_process_resources target resource_name)
             get_filename_component(file_absolute ${file} ABSOLUTE)
             file(RELATIVE_PATH file_relative ${CMAKE_CURRENT_SOURCE_DIR} ${file_absolute})
             qt_get_relative_resource_path_for_file(file_resource_path ${file})
-            set(file_resource_path "${arg_PREFIX}/${file_resource_path}")
+            if (arg_PREFIX STREQUAL "/")
+                # TO_CMAKE_PATH does not clean up cases such as //Foo
+                set(file_resource_path "/${file_resource_path}")
+            else()
+                set(file_resource_path "${arg_PREFIX}/${file_resource_path}")
+            endif()
             file(TO_CMAKE_PATH ${file_resource_path} file_resource_path)
             list(APPEND file_resource_paths ${file_resource_path})
             string(REGEX REPLACE "\.js$" "_js" compiled_file ${file_relative})
