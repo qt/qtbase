@@ -153,6 +153,8 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_fil
         assert(resource.tag == 'qresource')
         lang = resource.get('lang', '')
         prefix = resource.get('prefix', '/')
+        if not prefix.startswith('/'):
+            prefix = '/' + prefix
 
         full_resource_name = resource_name + (str(resource_count) if resource_count > 0 else '')
 
