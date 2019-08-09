@@ -79,11 +79,12 @@ define_property(TARGET
 
 define_property(TARGET
     PROPERTY
-        QT_QML_MODULE_RESOURCE_PREFIX
+        QT_RESOURCE_PREFIX
     BRIEF_DOCS
-        "Specifies the qml module's resource prefix."
+        "Specifies the default Qt resource prefix."
     FULL_DOCS
-        "Specifies the qml module's resource prefix."
+        "When using add_qt_resource() without a PREFIX, then prefix of this target property
+        will be used."
 )
 
 define_property(TARGET

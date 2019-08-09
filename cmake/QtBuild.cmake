@@ -1905,8 +1905,6 @@ endfunction()
 #  to the module's URI where '.' is replaced with '/'. Use this to override the
 #  default substitution pattern.
 #  VERSION: Version of the qml module
-#  RESOURCE_PREFIX: Resource import prefix to be prepended to the module's
-#  target path.
 #  QML_PLUGINDUMP_DEPENDENCIES: Path to a dependencies.json file to be consumed
 #  with the ${target}_qmltypes target (optional)
 #
@@ -1920,7 +1918,6 @@ function(add_qml_module target)
         URI
         TARGET_PATH
         VERSION
-        RESOURCE_PREFIX
         QML_PLUGINDUMP_DEPENDENCIES
     )
 
@@ -1937,10 +1934,6 @@ function(add_qml_module target)
 
     if (NOT arg_VERSION)
         message(FATAL_ERROR "add_qml_module called without specifying the module's import version. Please specify one using the VERSION parameter.")
-    endif()
-
-    if (NOT arg_RESOURCE_PREFIX)
-        message(FATAL_ERROR "add_qml_module called without specifying the module's import prefix. Prease specify one using the RESOURCE_PREFIX parameter.")
     endif()
 
     if (NOT arg_TARGET_PATH)
@@ -1983,7 +1976,7 @@ function(add_qml_module target)
         PROPERTIES
             QT_QML_MODULE_TARGET_PATH ${arg_TARGET_PATH}
             QT_QML_MODULE_URI ${arg_URI}
-            QT_QML_MODULE_RESOURCE_PREFIX ${arg_RESOURCE_PREFIX}
+            QT_RESOURCE_PREFIX "/qt-project.org/imports/${arg_TARGET_PATH}"
             QT_QML_MODULE_VERSION ${arg_VERSION}
     )
 
@@ -2017,7 +2010,6 @@ function(add_qml_module target)
         set(qmldir_resource_name "${qmldir_resource_name}_qmldir")
         add_qt_resource(${target} ${uri_target}
             FILES "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
-            PREFIX "${arg_RESOURCE_PREFIX}/${arg_TARGET_PATH}"
         )
     endif()
 
@@ -2547,6 +2539,9 @@ function(add_qt_resource target resourceName)
         set(resource_files ${rcc_FILES})
     endif()
 
+    if(NOT rcc_PREFIX)
+        get_target_property(rcc_PREFIX ${target} QT_RESOURCE_PREFIX)
+    endif()
 
     # Apply quick compiler pass
     qt_quick_compiler_process_resources(${target} ${resourceName}

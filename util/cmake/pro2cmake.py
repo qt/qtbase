@@ -2097,8 +2097,6 @@ def write_qml_plugin(cm_fh: typing.IO[str],
     if plugindump_dep:
         extra_lines.append('QML_PLUGINDUMP_DEPENDENCIES "{}"'.format(plugindump_dep))
 
-    # This is only required because of qmldir
-    extra_lines.append('RESOURCE_PREFIX "/qt-project.org/imports"')
 
 def write_qml_plugin_qml_files(cm_fh: typing.IO[str],
                                target: str,
@@ -2116,14 +2114,10 @@ def write_qml_plugin_qml_files(cm_fh: typing.IO[str],
         target_path_mangled = target_path.replace('/', '_')
         target_path_mangled = target_path_mangled.replace('.', '_')
         resource_name = 'qmake_' + target_path_mangled
-        prefix = '/qt-project.org/imports/' + target_path
-        cm_fh.write('\n{}add_qt_resource({} {}\n{}PREFIX\n{}"{}"\n{}FILES\n{}${{qml_files}}\n)\n'.format(
+        cm_fh.write('\n{}add_qt_resource({} {}\n{}FILES\n{}${{qml_files}}\n)\n'.format(
             spaces(indent),
             target,
             resource_name,
-            spaces(indent + 1),
-            spaces(indent + 2),
-            prefix,
             spaces(indent + 1),
             spaces(indent + 2)))
 
