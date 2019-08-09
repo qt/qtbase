@@ -1865,6 +1865,8 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     # Check for DESTDIR override
     destdir = scope.get_string('DESTDIR')
     if destdir:
+        if destdir.startswith('./') or destdir.startswith('../'):
+            destdir = '${CMAKE_CURRENT_BINARY_DIR}/' + destdir
         extra_lines.append('OUTPUT_DIRECTORY "{}"'.format(destdir))
 
     cm_fh.write('{}{}({}\n'.format(spaces(indent), cmake_function, name))
