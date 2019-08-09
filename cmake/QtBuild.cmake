@@ -2453,8 +2453,8 @@ function(qt_quick_compiler_process_resources target resource_name)
         foreach(file IN LISTS qml_files)
             get_filename_component(file_absolute ${file} ABSOLUTE)
             file(RELATIVE_PATH file_relative ${CMAKE_CURRENT_SOURCE_DIR} ${file_absolute})
-            qt_get_relative_resource_path_for_file(alias ${file})
-            set(file_resource_path "${arg_PREFIX}/${alias}")
+            qt_get_relative_resource_path_for_file(file_resource_path ${file})
+            set(file_resource_path "${arg_PREFIX}/${file_resource_path}")
             file(TO_CMAKE_PATH ${file_resource_path} file_resource_path)
             list(APPEND file_resource_paths ${file_resource_path})
             string(REGEX REPLACE "\.js$" "_js" compiled_file ${file_relative})
@@ -2577,7 +2577,7 @@ function(add_qt_resource target resourceName)
     string(APPEND qrcContents ">\n")
 
     foreach(file IN LISTS resources)
-        qt_get_relative_resource_path_for_file(alias ${file})
+        qt_get_relative_resource_path_for_file(file_resource_path ${file})
 
         if (NOT IS_ABSOLUTE ${file})
             set(file "${CMAKE_CURRENT_SOURCE_DIR}/${file}")
@@ -2585,7 +2585,7 @@ function(add_qt_resource target resourceName)
 
         ### FIXME: escape file paths to be XML conform
         # <file ...>...</file>
-        string(APPEND qrcContents "    <file alias=\"${alias}\">")
+        string(APPEND qrcContents "    <file alias=\"${file_resource_path}\">")
         string(APPEND qrcContents "${file}</file>\n")
         list(APPEND files "${file}")
     endforeach()
