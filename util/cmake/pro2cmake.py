@@ -170,36 +170,42 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_fil
                 alias = path
             files[path] = alias
 
-        sorted_files = sorted(files.keys())
-
-        assert(sorted_files)
-
-        for source in sorted_files:
-            alias = files[source]
-            if alias:
-                full_source = os.path.join(base_dir, source)
-                output += 'set_source_files_properties("{}"\n' \
-                          '    PROPERTIES alias "{}"\n)\n'.format(full_source, alias)
-
-        if skip_qtquick_compiler:
-            file_list = '\n    '.join(sorted_files)
-            output += 'set(resource_files\n    {}\n)\n\n'.format(file_list)
-            file_list = "${resource_files}"
-            output += 'set_source_files_properties(${resource_files} QT_SKIP_QUICKCOMPILER 1)\n\n'
-        else:
-            file_list = '\n        '.join(sorted_files)
-
-        params = ''
-        if lang:
-            params += '    LANG\n        "{}"\n'.format(lang)
-        params += '    PREFIX\n        "{}"\n'.format(prefix)
-        if base_dir:
-            params += '    BASE\n        "{}"\n'.format(base_dir)
-        output += 'add_qt_resource({} "{}"\n{}    FILES\n        {}\n)\n'.format(target, full_resource_name,
-                                                                      params,
-                                                                      file_list)
-
+        output += write_add_qt_resource_call(target, full_resource_name, prefix, base_dir, lang, files, skip_qtquick_compiler)
         resource_count += 1
+
+    return output
+
+
+def write_add_qt_resource_call(target: str, resource_name: str, prefix: typing.Optional[str], base_dir: typing.Optional[str], lang: typing.Optional[str], files: typing.Dict[str, str], skip_qtquick_compiler: bool) -> str:
+    output = ''
+
+    sorted_files = sorted(files.keys())
+
+    assert(sorted_files)
+
+    for source in sorted_files:
+        alias = files[source]
+        if alias:
+            full_source = os.path.join(base_dir, source)
+            output += 'set_source_files_properties("{}"\n' \
+                      '    PROPERTIES alias "{}"\n)\n'.format(full_source, alias)
+
+    if skip_qtquick_compiler:
+        file_list = '\n    '.join(sorted_files)
+        output += 'set(resource_files\n    {}\n)\n\n'.format(file_list)
+        file_list = "${resource_files}"
+        output += 'set_source_files_properties(${resource_files} QT_SKIP_QUICKCOMPILER 1)\n\n'
+    else:
+        file_list = '\n        '.join(sorted_files)
+
+    params = ''
+    if lang:
+        params += '    LANG\n        "{}"\n'.format(lang)
+    params += '    PREFIX\n        "{}"\n'.format(prefix)
+    if base_dir:
+        params += '    BASE\n        "{}"\n'.format(base_dir)
+    output += 'add_qt_resource({} "{}"\n{}    FILES\n        {}\n)\n'.format(target, resource_name,
+                                                                             params, file_list)
 
     return output
 
@@ -1676,15 +1682,35 @@ def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
     qtquickcompiler_skipped = scope.get_files('QTQUICK_COMPILER_SKIPPED_RESOURCES')
     qrc_output = ''
     if resources:
-        qrc_only = True
+        standalone_files: typing.List[str] = []
         for r in resources:
+            skip_qtquick_compiler = r in qtquickcompiler_skipped
             if r.endswith('.qrc'):
-                qrc_output += process_qrc_file(target, r, scope.basedir, scope.file_absolute_path, r in qtquickcompiler_skipped)
+                qrc_output += process_qrc_file(target, r, scope.basedir, scope.file_absolute_path, skip_qtquick_compiler)
             else:
-                qrc_only = False
+                immediate_files = {f:"" for f in scope.get_files(r + ".files")}
+                if immediate_files:
+                    immediate_prefix = scope.get(r + ".prefix")
+                    if immediate_prefix:
+                        immediate_prefix = immediate_prefix[0]
+                    else:
+                        immediate_prefix = "/"
+                    immediate_base = scope.get(r + ".base")
+                    immediate_lang = None
+                    immediate_name = "qmake_" + r
+                    qrc_output += write_add_qt_resource_call(target, immediate_name, immediate_prefix, immediate_base, immediate_lang, immediate_files, skip_qtquick_compiler)
+                else:
+                    standalone_files.append(r)
 
-        if not qrc_only:
-            print('     XXXX Ignoring non-QRC file resources.')
+        if standalone_files:
+            name = "qmake_immediate"
+            prefix = "/"
+            base = None
+            lang = None
+            files = {f:"" for f in standalone_files}
+            skip_qtquick_compiler = False
+            qrc_output += write_add_qt_resource_call(target, name, prefix, base, lang, files, skip_qtquick_compiler)
+
 
     if qrc_output:
         cm_fh.write('\n# Resources:\n')
