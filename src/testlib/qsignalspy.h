@@ -59,7 +59,6 @@ public:
     explicit QSignalSpy(const QObject *obj, const char *aSignal)
         : m_waiting(false)
     {
-        static const int memberOffset = QObject::staticMetaObject.methodCount();
         if (!obj) {
             qWarning("QSignalSpy: Cannot spy on a null object");
             return;
@@ -83,11 +82,9 @@ public:
             return;
         }
 
-        if (!QMetaObject::connect(obj, sigIndex, this, memberOffset,
-                    Qt::DirectConnection, nullptr)) {
-            qWarning("QSignalSpy: QMetaObject::connect returned false. Unable to connect.");
+        if (!connectToSignal(obj, sigIndex))
             return;
-        }
+
         sig = ba;
         initArgs(mo->method(sigIndex), obj);
     }
@@ -100,7 +97,6 @@ public:
     QSignalSpy(const typename QtPrivate::FunctionPointer<Func>::Object *obj, Func signal0)
         : m_waiting(false)
     {
-        static const int memberOffset = QObject::staticMetaObject.methodCount();
         if (!obj) {
             qWarning("QSignalSpy: Cannot spy on a null object");
             return;
@@ -121,11 +117,9 @@ public:
             return;
         }
 
-        if (!QMetaObject::connect(obj, sigIndex, this, memberOffset,
-                    Qt::DirectConnection, nullptr)) {
-            qWarning("QSignalSpy: QMetaObject::connect returned false. Unable to connect.");
+        if (!connectToSignal(obj, sigIndex))
             return;
-        }
+
         sig = signalMetaMethod.methodSignature();
         initArgs(mo->method(sigIndex), obj);
     }
@@ -160,6 +154,18 @@ public:
     }
 
 private:
+    bool connectToSignal(const QObject *sender, int sigIndex)
+    {
+        static const int memberOffset = QObject::staticMetaObject.methodCount();
+        const bool connected = QMetaObject::connect(
+            sender, sigIndex, this, memberOffset, Qt::DirectConnection, nullptr);
+
+        if (!connected)
+            qWarning("QSignalSpy: QMetaObject::connect returned false. Unable to connect.");
+
+        return connected;
+    }
+
     void initArgs(const QMetaMethod &member, const QObject *obj)
     {
         args.reserve(member.parameterCount());
