@@ -59,9 +59,6 @@
 #    define HAVE_PIPE2    1
 #  endif
 #endif
-#if defined(__FreeBSD__) && __FreeBSD__ >= 9
-#  include <sys/procdesc.h>
-#endif
 
 #if _POSIX_VERSION-0 >= 200809L || _XOPEN_VERSION-0 >= 500
 #  define HAVE_WAITID   1
@@ -94,6 +91,10 @@
 #endif
 
 #include "forkfd_atomic.h"
+
+static int system_has_forkfd(void);
+static int system_forkfd(int flags, pid_t *ppid, int *system);
+static int system_forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage);
 
 #define CHILDREN_IN_SMALL_ARRAY     16
 #define CHILDREN_IN_BIG_ARRAY       256
@@ -446,6 +447,37 @@ static void ignore_sigpipe()
 #endif
 }
 
+#if defined(__GNUC__) && (!defined(__FreeBSD__) || __FreeBSD__ < 10)
+__attribute((destructor, unused)) static void cleanup();
+#endif
+
+static void cleanup()
+{
+    BigArray *array;
+    /* This function is not thread-safe!
+     * It must only be called when the process is shutting down.
+     * At shutdown, we expect no one to be calling forkfd(), so we don't
+     * need to be thread-safe with what is done there.
+     *
+     * But SIGCHLD might be delivered to any thread, including this one.
+     * There's no way to prevent that. The correct solution would be to
+     * cooperatively delete. We don't do that.
+     */
+    if (ffd_atomic_load(&forkfd_status, FFD_ATOMIC_RELAXED) == 0)
+        return;
+
+    /* notify the handler that we're no longer in operation */
+    ffd_atomic_store(&forkfd_status, 0, FFD_ATOMIC_RELAXED);
+
+    /* free any arrays we might have */
+    array = ffd_atomic_load(&children.header.nextArray, FFD_ATOMIC_ACQUIRE);
+    while (array != NULL) {
+        BigArray *next = ffd_atomic_load(&array->header.nextArray, FFD_ATOMIC_ACQUIRE);
+        free(array);
+        array = next;
+    }
+}
+
 static void forkfd_initialize()
 {
 #if defined(HAVE_BROKEN_WAITID)
@@ -487,42 +519,13 @@ static void forkfd_initialize()
     ignore_sigpipe();
 #endif
 
-#ifndef __GNUC__
+#ifdef __GNUC__
+    (void) cleanup; /* suppress unused static function warning */
+#else
     atexit(cleanup);
 #endif
 
     ffd_atomic_store(&forkfd_status, 1, FFD_ATOMIC_RELAXED);
-}
-
-#ifdef __GNUC__
-__attribute((destructor, unused)) static void cleanup();
-#endif
-
-static void cleanup()
-{
-    BigArray *array;
-    /* This function is not thread-safe!
-     * It must only be called when the process is shutting down.
-     * At shutdown, we expect no one to be calling forkfd(), so we don't
-     * need to be thread-safe with what is done there.
-     *
-     * But SIGCHLD might be delivered to any thread, including this one.
-     * There's no way to prevent that. The correct solution would be to
-     * cooperatively delete. We don't do that.
-     */
-    if (ffd_atomic_load(&forkfd_status, FFD_ATOMIC_RELAXED) == 0)
-        return;
-
-    /* notify the handler that we're no longer in operation */
-    ffd_atomic_store(&forkfd_status, 0, FFD_ATOMIC_RELAXED);
-
-    /* free any arrays we might have */
-    array = ffd_atomic_load(&children.header.nextArray, FFD_ATOMIC_ACQUIRE);
-    while (array != NULL) {
-        BigArray *next = ffd_atomic_load(&array->header.nextArray, FFD_ATOMIC_ACQUIRE);
-        free(array);
-        array = next;
-    }
 }
 
 static int create_pipe(int filedes[], int flags)
@@ -562,55 +565,6 @@ static int create_pipe(int filedes[], int flags)
         fcntl(filedes[0], F_SETFL, fcntl(filedes[0], F_GETFL) | O_NONBLOCK);
     return ret;
 }
-
-#if defined(FORKFD_NO_SPAWNFD) && defined(__FreeBSD__) && __FreeBSD__ >= 9
-#  if __FreeBSD__ == 9
-/* PROCDESC is an optional feature in the kernel and wasn't enabled
- * by default on FreeBSD 9. So we need to check for it at runtime. */
-static ffd_atomic_int system_has_forkfd = FFD_ATOMIC_INIT(1);
-#  else
-/* On FreeBSD 10, PROCDESC was enabled by default. On v11, it's not an option
- * anymore and can't be disabled. */
-static const int system_has_forkfd = 1;
-#  endif
-
-static int system_forkfd(int flags, pid_t *ppid)
-{
-    int ret;
-    pid_t pid;
-    pid = pdfork(&ret, PD_DAEMON);
-    if (__builtin_expect(pid == -1, 0)) {
-#  if __FreeBSD__ == 9
-        if (errno == ENOSYS) {
-            /* PROCDESC wasn't compiled into the kernel: don't try it again. */
-            ffd_atomic_store(&system_has_forkfd, 0, FFD_ATOMIC_RELAXED);
-        }
-#  endif
-        return -1;
-    }
-    if (pid == 0) {
-        /* child process */
-        return FFD_CHILD_PROCESS;
-    }
-
-    /* parent process */
-    if (flags & FFD_CLOEXEC)
-        fcntl(ret, F_SETFD, FD_CLOEXEC);
-    if (flags & FFD_NONBLOCK)
-        fcntl(ret, F_SETFL, fcntl(ret, F_GETFL) | O_NONBLOCK);
-    if (ppid)
-        *ppid = pid;
-    return ret;
-}
-#else
-static const int system_has_forkfd = 0;
-static int system_forkfd(int flags, pid_t *ppid)
-{
-    (void)flags;
-    (void)ppid;
-    return -1;
-}
-#endif
 
 #ifndef FORKFD_NO_FORKFD
 /**
@@ -659,11 +613,9 @@ int forkfd(int flags, pid_t *ppid)
     int efd;
 #endif
 
-    if (system_has_forkfd) {
-        ret = system_forkfd(flags, ppid);
-        if (system_has_forkfd)
-            return ret;
-    }
+    fd = system_forkfd(flags, ppid, &ret);
+    if (ret)
+        return fd;
 
     (void) pthread_once(&forkfd_initialization, forkfd_initialize);
 
@@ -788,7 +740,7 @@ int spawnfd(int flags, pid_t *ppid, const char *path, const posix_spawn_file_act
     /* we can only do work if we have a way to start the child in stopped mode;
      * otherwise, we have a major race condition. */
 
-    assert(!system_has_forkfd);
+    assert(!system_has_forkfd());
 
     (void) pthread_once(&forkfd_initialization, forkfd_initialize);
 
@@ -846,25 +798,8 @@ int forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage)
     struct pipe_payload payload;
     int ret;
 
-    if (system_has_forkfd) {
-#if defined(__FreeBSD__) && __FreeBSD__ >= 9
-        pid_t pid;
-        int status;
-        int options = WEXITED;
-
-        ret = pdgetpid(ffd, &pid);
-        if (ret == -1)
-            return ret;
-        ret = fcntl(ffd, F_GETFL);
-        if (ret == -1)
-            return ret;
-        options |= (ret & O_NONBLOCK) ? WNOHANG : 0;
-        ret = wait4(pid, &status, options, rusage);
-        if (ret != -1 && info)
-            convertStatusToForkfdInfo(status, info);
-        return ret == -1 ? -1 : 0;
-#endif
-    }
+    if (system_has_forkfd())
+        return system_forkfd_wait(ffd, info, rusage);
 
     ret = read(ffd, &payload, sizeof(payload));
     if (ret == -1)
@@ -884,3 +819,28 @@ int forkfd_close(int ffd)
 {
     return close(ffd);
 }
+
+#if defined(__FreeBSD__) && __FreeBSD__ >= 9
+#  include "forkfd_freebsd.c"
+#else
+int system_has_forkfd()
+{
+    return 0;
+}
+
+int system_forkfd(int flags, pid_t *ppid, int *system)
+{
+    (void)flags;
+    (void)ppid;
+    *system = 0;
+    return -1;
+}
+
+int system_forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage)
+{
+    (void)ffd;
+    (void)info;
+    (void)rusage;
+    return -1;
+}
+#endif
