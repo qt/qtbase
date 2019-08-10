@@ -2618,7 +2618,7 @@ void QTreeView::sortByColumn(int column)
 /*!
   \since 4.2
 
-  Sets the model up for sorting by the values in the given \a column and \a order.
+  Sorts the model by the values in the given \a column and \a order.
 
   \a column may be -1, in which case no sort indicator will be shown
   and the model will return to its natural, unsorted order. Note that not
@@ -2629,7 +2629,7 @@ void QTreeView::sortByColumn(int column)
 void QTreeView::sortByColumn(int column, Qt::SortOrder order)
 {
     Q_D(QTreeView);
-    if (column < 0)
+    if (column < -1)
         return;
     // If sorting is enabled it will emit a signal connected to
     // _q_sortIndicatorChanged, which then actually sorts

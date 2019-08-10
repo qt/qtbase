@@ -4248,32 +4248,42 @@ void tst_QTableView::task191545_dragSelectRows()
 void tst_QTableView::task234926_setHeaderSorting()
 {
     QStringListModel model;
-    QStringList data;
-    data << "orange" << "apple" << "banana" << "lemon" << "pumpkin";
+    QSortFilterProxyModel sfpm; // default QStandardItemModel does not support 'unsorted' state
+    sfpm.setSourceModel(&model);
+    const QStringList data({"orange", "apple", "banana", "lemon", "pumpkin"});
     QStringList sortedDataA = data;
     QStringList sortedDataD = data;
     std::sort(sortedDataA.begin(), sortedDataA.end());
     std::sort(sortedDataD.begin(), sortedDataD.end(), std::greater<QString>());
     model.setStringList(data);
     QTableView view;
-    view.setModel(&model);
-//    view.show();
+    view.setModel(&sfpm);
+
     QTRY_COMPARE(model.stringList(), data);
     view.setSortingEnabled(true);
     view.sortByColumn(0, Qt::AscendingOrder);
-    QTRY_COMPARE(model.stringList() , sortedDataA);
+    for (int i = 0; i < sortedDataA.size(); ++i)
+        QCOMPARE(view.model()->data(view.model()->index(i, 0)).toString(), sortedDataA.at(i));
 
     view.horizontalHeader()->setSortIndicator(0, Qt::DescendingOrder);
-    QTRY_COMPARE(model.stringList() , sortedDataD);
+    for (int i = 0; i < sortedDataD.size(); ++i)
+        QCOMPARE(view.model()->data(view.model()->index(i, 0)).toString(), sortedDataD.at(i));
 
     QHeaderView *h = new QHeaderView(Qt::Horizontal);
     h->setModel(&model);
     view.setHorizontalHeader(h);
     h->setSortIndicator(0, Qt::AscendingOrder);
-    QTRY_COMPARE(model.stringList() , sortedDataA);
+    for (int i = 0; i < sortedDataA.size(); ++i)
+        QCOMPARE(view.model()->data(view.model()->index(i, 0)).toString(), sortedDataA.at(i));
 
     h->setSortIndicator(0, Qt::DescendingOrder);
-    QTRY_COMPARE(model.stringList() , sortedDataD);
+    for (int i = 0; i < sortedDataD.size(); ++i)
+        QCOMPARE(view.model()->data(view.model()->index(i, 0)).toString(), sortedDataD.at(i));
+
+    view.sortByColumn(-1, Qt::AscendingOrder);
+    QCOMPARE(view.horizontalHeader()->sortIndicatorSection(), -1);
+    for (int i = 0; i < data.size(); ++i)
+        QCOMPARE(view.model()->data(view.model()->index(i, 0)).toString(), data.at(i));
 }
 
 void tst_QTableView::taskQTBUG_5062_spansInconsistency()

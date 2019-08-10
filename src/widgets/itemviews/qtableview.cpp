@@ -3187,14 +3187,18 @@ void QTableView::sortByColumn(int column)
 /*!
   \since 4.2
 
-  Sorts the model by the values in the given \a column in the given \a order.
+  Sorts the model by the values in the given \a column and \a order.
+
+  \a column may be -1, in which case no sort indicator will be shown
+  and the model will return to its natural, unsorted order. Note that not
+  all models support this and may even crash in this case.
 
   \sa sortingEnabled
  */
 void QTableView::sortByColumn(int column, Qt::SortOrder order)
 {
     Q_D(QTableView);
-    if (column < 0)
+    if (column < -1)
         return;
     // If sorting is enabled it will emit a signal connected to
     // _q_sortIndicatorChanged, which then actually sorts
