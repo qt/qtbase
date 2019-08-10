@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2019 Intel Corporation.
 ** Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -843,7 +843,7 @@ out:
 #endif // _POSIX_SPAWN && !FORKFD_NO_SPAWNFD
 
 
-int forkfd_wait(int ffd, forkfd_info *info, struct rusage *rusage)
+int forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage)
 {
     struct pipe_payload payload;
     int ret;

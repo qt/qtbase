@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Intel Corporation.
+** Copyright (C) 2019 Intel Corporation.
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 
 #include <fcntl.h>
 #include <stdint.h>
+#include <sys/wait.h>
 #include <unistd.h> // to get the POSIX flags
 
 #if _POSIX_SPAWN > 0
@@ -48,7 +49,7 @@ struct forkfd_info {
 };
 
 int forkfd(int flags, pid_t *ppid);
-int forkfd_wait(int ffd, forkfd_info *info, struct rusage *rusage);
+int forkfd_wait(int ffd, struct forkfd_info *info, struct rusage *rusage);
 int forkfd_close(int ffd);
 
 #if _POSIX_SPAWN > 0
