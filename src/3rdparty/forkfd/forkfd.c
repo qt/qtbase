@@ -93,9 +93,7 @@
 #  endif
 #endif
 
-#ifndef FFD_ATOMIC_RELAXED
-#  include "forkfd_gcc.h"
-#endif
+#include "forkfd_atomic.h"
 
 #define CHILDREN_IN_SMALL_ARRAY     16
 #define CHILDREN_IN_BIG_ARRAY       256
