@@ -12,6 +12,8 @@ LIBS += -lshlwapi -lwtsapi32
 QMAKE_USE_PRIVATE += \
     advapi32 \
     d3d9/nolink \
+    d3d11/nolink \
+    dxgi/nolink \
     ole32 \
     shell32 \
     user32 \
