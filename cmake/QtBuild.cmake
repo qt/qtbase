@@ -760,6 +760,7 @@ function(qt_internal_module_info result target)
     string(TOUPPER "${target}" upper)
     string(TOLOWER "${target}" lower)#  * foo_upper with the value "CORE"
     string(REPLACE "-" "_" define "${upper}")
+    string(REPLACE "." "_" define "${define}")
     set("${result}_upper" "${upper}" PARENT_SCOPE)
     set("${result}_lower" "${lower}" PARENT_SCOPE)
     set("${result}_repo_include_dir" "${QT_BUILD_DIR}/include" PARENT_SCOPE)
