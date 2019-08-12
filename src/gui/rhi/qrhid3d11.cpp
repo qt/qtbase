@@ -157,6 +157,36 @@ static inline Int aligned(Int v, Int byteAlign)
     return (v + byteAlign - 1) & ~(byteAlign - 1);
 }
 
+static IDXGIFactory1 *createDXGIFactory2()
+{
+    IDXGIFactory1 *result = nullptr;
+    if (QOperatingSystemVersion::current() > QOperatingSystemVersion::Windows7) {
+        using PtrCreateDXGIFactory2 = HRESULT (WINAPI *)(UINT, REFIID, void **);
+        QSystemLibrary dxgilib(QStringLiteral("dxgi"));
+        if (auto createDXGIFactory2 = (PtrCreateDXGIFactory2)dxgilib.resolve("CreateDXGIFactory2")) {
+            const HRESULT hr = createDXGIFactory2(0, IID_IDXGIFactory2, reinterpret_cast<void **>(&result));
+            if (FAILED(hr)) {
+                qWarning("CreateDXGIFactory2() failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
+                result = nullptr;
+            }
+        } else {
+            qWarning("Unable to resolve CreateDXGIFactory2()");
+        }
+    }
+    return result;
+}
+
+static IDXGIFactory1 *createDXGIFactory1()
+{
+    IDXGIFactory1 *result = nullptr;
+    const HRESULT hr = CreateDXGIFactory1(IID_IDXGIFactory1, reinterpret_cast<void **>(&result));
+    if (FAILED(hr)) {
+        qWarning("CreateDXGIFactory1() failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
+        result = nullptr;
+    }
+    return result;
+}
+
 bool QRhiD3D11::create(QRhi::Flags flags)
 {
     Q_UNUSED(flags);
@@ -165,19 +195,14 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     if (debugLayer)
         devFlags |= D3D11_CREATE_DEVICE_DEBUG;
 
-    HRESULT hr;
-#if !defined(Q_CC_MINGW)
-    hasDxgi2 = QOperatingSystemVersion::current() > QOperatingSystemVersion::Windows7;
-    if (hasDxgi2)
-        hr = CreateDXGIFactory2(0, IID_IDXGIFactory2, reinterpret_cast<void **>(&dxgiFactory));
+    dxgiFactory = createDXGIFactory2();
+    if (dxgiFactory != nullptr)
+        hasDxgi2 = true;
     else
-#endif
-        hr = CreateDXGIFactory1(IID_IDXGIFactory1, reinterpret_cast<void **>(&dxgiFactory));
+        dxgiFactory = createDXGIFactory1();
 
-    if (FAILED(hr)) {
-        qWarning("Failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
+    if (dxgiFactory == nullptr)
         return false;
-    }
 
     if (!importedDevice) {
         IDXGIAdapter1 *adapterToUse = nullptr;
