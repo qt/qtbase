@@ -59,10 +59,8 @@ public:
     explicit QSignalSpy(const QObject *obj, const char *aSignal)
         : m_waiting(false)
     {
-        if (!obj) {
-            qWarning("QSignalSpy: Cannot spy on a null object");
+        if (!isObjectValid(obj))
             return;
-        }
 
         if (!aSignal) {
             qWarning("QSignalSpy: Null signal name is not valid");
@@ -97,10 +95,8 @@ public:
     QSignalSpy(const typename QtPrivate::FunctionPointer<Func>::Object *obj, Func signal0)
         : m_waiting(false)
     {
-        if (!obj) {
-            qWarning("QSignalSpy: Cannot spy on a null object");
+        if (!isObjectValid(obj))
             return;
-        }
 
         if (!signal0) {
             qWarning("QSignalSpy: Null signal name is not valid");
@@ -169,6 +165,16 @@ private:
 
         if (!valid)
             qWarning("QSignalSpy: Not a valid signal: '%s'", signal.methodSignature().constData());
+
+        return valid;
+    }
+
+    static bool isObjectValid(const QObject *object)
+    {
+        const bool valid = !!object;
+
+        if (!valid)
+            qWarning("QSignalSpy: Cannot spy on a null object");
 
         return valid;
     }
