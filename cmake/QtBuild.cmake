@@ -2239,7 +2239,7 @@ function(add_qt_test name)
             "${QT_TOP_LEVEL_SOURCE_DIR}"
             "${CMAKE_CURRENT_SOURCE_DIR}")
         qt_path_join(testdata_install_dir ${QT_INSTALL_DIR}
-                     "${relative_path_to_test_project}/testdata")
+                     "${relative_path_to_test_project}")
         foreach(testdata IN LISTS arg_TESTDATA)
             set(testdata "${CMAKE_CURRENT_SOURCE_DIR}/${testdata}")
             if (IS_DIRECTORY "${testdata}")
