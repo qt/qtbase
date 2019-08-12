@@ -523,8 +523,8 @@ struct QD3D11SwapChain : public QRhiSwapChain
     DXGI_FORMAT colorFormat;
     IDXGISwapChain *swapChain = nullptr;
     static const int BUFFER_COUNT = 2;
-    ID3D11Texture2D *tex[BUFFER_COUNT];
-    ID3D11RenderTargetView *rtv[BUFFER_COUNT];
+    ID3D11Texture2D *backBufferTex;
+    ID3D11RenderTargetView *backBufferRtv;
     ID3D11Texture2D *msaaTex[BUFFER_COUNT];
     ID3D11RenderTargetView *msaaRtv[BUFFER_COUNT];
     DXGI_SAMPLE_DESC sampleDesc;
@@ -656,6 +656,7 @@ public:
     ID3DUserDefinedAnnotation *annotations = nullptr;
     IDXGIFactory1 *dxgiFactory = nullptr;
     bool hasDxgi2 = false;
+    bool supportsFlipDiscardSwapchain = false;
     QRhiD3D11NativeHandles nativeHandlesStruct;
 
     struct {
