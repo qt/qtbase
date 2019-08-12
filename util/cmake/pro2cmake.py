@@ -2008,7 +2008,14 @@ def write_binary(cm_fh: typing.IO[str], scope: Scope,
     binary_name = scope.TARGET
     assert binary_name
 
-    extra = ['GUI',] if gui else []
+    is_qt_test_helper = 'qt_test_helper' in scope.get('_LOADED')
+
+    extra = ['GUI'] if gui and not is_qt_test_helper else []
+    cmake_function_call = 'add_qt_executable'
+
+    if is_qt_test_helper:
+        binary_name += '_helper'
+        cmake_function_call = 'add_qt_test_helper'
 
     target_path = scope.get_string('target.path')
     if target_path:
@@ -2017,7 +2024,7 @@ def write_binary(cm_fh: typing.IO[str], scope: Scope,
         if 'target' in scope.get('INSTALLS'):
             extra.append('INSTALL_DIRECTORY "{}"'.format(target_path))
 
-    write_main_part(cm_fh, binary_name, 'Binary', 'add_qt_executable', scope,
+    write_main_part(cm_fh, binary_name, 'Binary', cmake_function_call, scope,
                     extra_lines=extra, indent=indent,
                     known_libraries={'Qt::Core', }, extra_keys=['target.path', 'INSTALLS'])
 

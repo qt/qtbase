@@ -2031,11 +2031,27 @@ function(add_qml_module target)
 
 endfunction()
 
+# Collection of add_qt_executable arguments so they can be shared across add_qt_executable
+# and add_qt_test_helper.
+set(__add_qt_executable_optional_args
+    "GUI;BOOTSTRAP;NO_QT;NO_INSTALL;EXCEPTIONS"
+)
+set(__add_qt_executable_single_args
+    "OUTPUT_DIRECTORY;INSTALL_DIRECTORY"
+)
+set(__add_qt_executable_multi_args
+    "EXE_FLAGS;${__default_private_args};${__default_public_args}"
+)
+
 # This function creates a CMake target for a generic console or GUI binary.
 # Please consider to use a more specific version target like the one created
 # by add_qt_test or add_qt_tool below.
 function(add_qt_executable name)
-    qt_parse_all_arguments(arg "add_qt_executable" "GUI;BOOTSTRAP;NO_QT;NO_INSTALL;EXCEPTIONS" "OUTPUT_DIRECTORY;INSTALL_DIRECTORY" "EXE_FLAGS;${__default_private_args};${__default_public_args}" ${ARGN})
+    qt_parse_all_arguments(arg "add_qt_executable"
+        "${__add_qt_executable_optional_args}"
+        "${__add_qt_executable_single_args}"
+        "${__add_qt_executable_multi_args}"
+        ${ARGN})
 
     if ("x${arg_OUTPUT_DIRECTORY}" STREQUAL "x")
         set(arg_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
@@ -2142,6 +2158,11 @@ function(add_qt_test name)
             DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
         )
 
+        # Tests should not be bundles on macOS even if arg_GUI is true, because some tests make
+        # assumptions about the location of helper processes, and those paths would be different
+        # if a test is built as a bundle.
+        set_property(TARGET "${name}" PROPERTY MACOSX_BUNDLE FALSE)
+
         # QMLTest specifics
 
         extend_target("${name}" CONDITION arg_QMLTEST
@@ -2236,10 +2257,41 @@ function(add_qt_test name)
 endfunction()
 
 
-# This function creates an executable for use as helper program with tests. Some
-# tests launch separate programs to test certainly input/output behavior.
+# This function creates an executable for use as a helper program with tests. Some
+# tests launch separate programs to test certain input/output behavior.
+# Specify OVERRIDE_OUTPUT_DIRECTORY if you dont' want to place the helper in the parent directory,
+# in which case you should specify OUTPUT_DIRECTORY "/foo/bar" manually.
 function(add_qt_test_helper name)
-    add_qt_executable("${name}" NO_INSTALL OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.." ${ARGN})
+
+    set(add_qt_test_helper_optional_args
+        "OVERRIDE_OUTPUT_DIRECTORY"
+    )
+
+    qt_parse_all_arguments(arg "add_qt_test_helper"
+        "${add_qt_test_helper_optional_args};${__add_qt_executable_optional_args}"
+        "${__add_qt_executable_single_args}"
+        "${__add_qt_executable_multi_args}"
+         ${ARGN})
+
+    qt_remove_args(forward_args
+        ARGS_TO_REMOVE
+            "${name}"
+            ${add_qt_test_helper_optional_args}
+        ALL_ARGS
+            ${add_qt_test_helper_optional_args}
+            ${__add_qt_executable_optional_args}
+            ${__add_qt_executable_single_args}
+            ${__add_qt_executable_multi_args}
+        ARGS
+            ${ARGV}
+    )
+
+    set(extra_args_to_pass)
+    if(NOT arg_OVERRIDE_OUTPUT_DIRECTORY)
+        set(extra_args_to_pass OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/..")
+    endif()
+
+    add_qt_executable("${name}" NO_INSTALL ${extra_args_to_pass} ${forward_args})
 endfunction()
 
 # Sets QT_WILL_BUILD_TOOLS if tools will be built.
