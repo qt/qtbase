@@ -2413,11 +2413,13 @@ function(qt_quick_compiler_process_resources target resource_name)
 
     set(qml_files)
     set(resource_files)
+    set(retained_files)
     # scan for qml files
     foreach(file IN LISTS arg_FILES)
         # check whether this resource should not be processed by the qt quick
         # compiler
         get_source_file_property(skip_compiler_check ${file} QT_SKIP_QUICKCOMPILER)
+        get_source_file_property(retain_compiler_check ${file} QT_RETAIN_QUICKCOMPILER)
         if (skip_compiler_check)
             list(APPEND resource_files ${file})
             continue()
@@ -2427,6 +2429,10 @@ function(qt_quick_compiler_process_resources target resource_name)
                 OR ${file} MATCHES "\.mjs$"
                 OR ${file} MATCHES "\.qml$")
             list(APPEND qml_files ${file})
+            if (retain_compiler_check)
+                list(APPEND retained_files ${file})
+                list(APPEND resource_files ${file})
+            endif()
         else()
             list(APPEND resource_files ${file})
         endif()
@@ -2435,6 +2441,7 @@ function(qt_quick_compiler_process_resources target resource_name)
         message(WARNING "add_qt_resource: Qml files were detected but the qmlcachgen target is not defined. Consider adding QmlTools to your find_package command.")
     endif()
 
+    set(retained_resource_paths)
     if (TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen AND qml_files)
         # Enable qt quick compiler support
         set(qml_resource_file "${CMAKE_CURRENT_BINARY_DIR}/${resource_name}.qrc")
@@ -2451,6 +2458,9 @@ function(qt_quick_compiler_process_resources target resource_name)
                 set(file_resource_path "/${file_resource_path}")
             else()
                 set(file_resource_path "${arg_PREFIX}/${file_resource_path}")
+            endif()
+            if (file IN_LIST retained_files)
+                list(APPEND retained_resource_paths ${file_resource_path})
             endif()
             file(TO_CMAKE_PATH ${file_resource_path} file_resource_path)
             list(APPEND file_resource_paths ${file_resource_path})
@@ -2481,11 +2491,22 @@ function(qt_quick_compiler_process_resources target resource_name)
         if (chained_resource_name)
             set(resource_name_arg "${resource_name_arg}=${chained_resource_name}")
         endif()
+
+        if (retained_resource_paths)
+            set(retained_loader_list "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${resource_name}/retained_file_list.rsp")
+            file(GENERATE
+                OUTPUT ${retained_loader_list}
+                CONTENT "$<JOIN:${retained_resource_paths},\n>"
+            )
+            set(retained_args "--retain" "@${retained_loader_list}")
+        endif()
+
         add_custom_command(
             OUTPUT ${qmlcache_loader_file}
             DEPENDS ${qmlcache_loader_list}
             COMMAND
                 ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen
+                ${retained_args}
                 --resource-name "${resource_name_arg}"
                 -o ${qmlcache_loader_file}
                 "@${qmlcache_loader_list}"
