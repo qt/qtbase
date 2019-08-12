@@ -191,6 +191,7 @@ private slots:
 
     void fontTagFace();
 
+    void clearUndoRedoStacks();
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -3521,6 +3522,17 @@ void tst_QTextDocument::fontTagFace()
         QCOMPARE(format.fontFamilies().toStringList(), expectedFamilies);
     }
 }
+
+void tst_QTextDocument::clearUndoRedoStacks()
+{
+    QTextDocument doc;
+    QTextCursor c(&doc);
+    c.insertText(QStringLiteral("lorem ipsum"));
+    QVERIFY(doc.isUndoAvailable());
+    doc.clearUndoRedoStacks(QTextDocument::UndoStack); // Don't crash
+    QVERIFY(!doc.isUndoAvailable());
+}
+
 
 QTEST_MAIN(tst_QTextDocument)
 #include "tst_qtextdocument.moc"

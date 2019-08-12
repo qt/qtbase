@@ -3944,6 +3944,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         CGContextScaleCTM(ctx, -1, 1);
                         CGContextTranslateCTM(ctx, -frameRect.left(), 0);
                     } else if (tabDirection == QMacStylePrivate::West && tp == QStyleOptionTab::Beginning) {
+                        CGContextTranslateCTM(ctx, 0, opt->rect.top());
                         CGContextScaleCTM(ctx, 1, -1);
                         CGContextTranslateCTM(ctx, 0, -frameRect.right());
                     } else if (tabDirection == QMacStylePrivate::East && tp == QStyleOptionTab::End) {

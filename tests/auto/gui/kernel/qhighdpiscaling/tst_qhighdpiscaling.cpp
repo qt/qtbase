@@ -36,6 +36,7 @@ class tst_QHighDpiScaling: public QObject
     Q_OBJECT
 
 private slots:
+    void factor();
     void scale();
 };
 
@@ -49,6 +50,23 @@ public:
     int depth() const override { return 32; }
     QImage::Format format() const override { return QImage::Format_ARGB32_Premultiplied; }
 };
+
+void tst_QHighDpiScaling::factor()
+{
+    QHighDpiScaling::setGlobalFactor(2);
+
+    // Verfy that QHighDpiScaling::factor() does not crash on nullptr contexts.
+    QPoint fakeNativePosition = QPoint(5, 5);
+    QPlatformScreen *screenContext = nullptr;
+    QVERIFY(QHighDpiScaling::factor(screenContext) >= 0);
+    QVERIFY(QHighDpiScaling::factor(screenContext, &fakeNativePosition) >= 0);
+    QPlatformScreen *platformScreenContext = nullptr;
+    QVERIFY(QHighDpiScaling::factor(platformScreenContext) >= 0);
+    QVERIFY(QHighDpiScaling::factor(platformScreenContext, &fakeNativePosition) >= 0);
+    QWindow *windowContext = nullptr;
+    QVERIFY(QHighDpiScaling::factor(windowContext) >= 0);
+    QVERIFY(QHighDpiScaling::factor(windowContext, &fakeNativePosition) >= 0);
+}
 
 // QTBUG-77255: Test some scaling overloads
 void tst_QHighDpiScaling::scale()

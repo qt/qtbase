@@ -456,6 +456,8 @@ QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QPlatformS
 {
     if (!m_active)
         return { qreal(1), QPoint() };
+    if (!platformScreen)
+        return { m_factor, QPoint() }; // the global factor
     const QPlatformScreen *actualScreen = nativePosition ?
         platformScreen->screenForPosition(*nativePosition) : platformScreen;
     return { m_factor * screenSubfactor(actualScreen), actualScreen->geometry().topLeft() };

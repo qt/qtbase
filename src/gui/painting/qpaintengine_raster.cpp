@@ -2908,19 +2908,34 @@ bool QRasterPaintEngine::drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs,
         for (int i = 0; i < numGlyphs; i++) {
             QFixed spp = fontEngine->subPixelPositionForX(positions[i].x);
 
-            QPoint offset;
-            const QImage *alphaMap = fontEngine->lockedAlphaMapForGlyph(glyphs[i], spp, neededFormat, s->matrix,
-                                                                        &offset);
-            if (alphaMap == 0 || alphaMap->isNull())
+            const QFontEngine::Glyph *alphaMap = fontEngine->glyphData(glyphs[i], spp, neededFormat, s->matrix);
+            if (!alphaMap)
                 continue;
 
-            alphaPenBlt(alphaMap->constBits(), alphaMap->bytesPerLine(), alphaMap->depth(),
-                        qFloor(positions[i].x) + offset.x(),
-                        qRound(positions[i].y) + offset.y(),
-                        alphaMap->width(), alphaMap->height(),
-                        fontEngine->expectsGammaCorrectedBlending());
+            int depth;
+            int bytesPerLine;
+            switch (alphaMap->format) {
+            case QFontEngine::Format_Mono:
+                depth = 1;
+                bytesPerLine = ((alphaMap->width + 31) & ~31) >> 3;
+                break;
+            case QFontEngine::Format_A8:
+                depth = 8;
+                bytesPerLine = (alphaMap->width + 3) & ~3;
+                break;
+            case QFontEngine::Format_A32:
+                depth = 32;
+                bytesPerLine = alphaMap->width * 4;
+                break;
+            default:
+                Q_UNREACHABLE();
+            };
 
-            fontEngine->unlockAlphaMapForGlyph();
+            alphaPenBlt(alphaMap->data, bytesPerLine, depth,
+                        qFloor(positions[i].x) + alphaMap->x,
+                        qRound(positions[i].y) - alphaMap->y,
+                        alphaMap->width, alphaMap->height,
+                        fontEngine->expectsGammaCorrectedBlending());
         }
 
     } else {
