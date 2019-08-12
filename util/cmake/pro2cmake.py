@@ -192,6 +192,9 @@ def write_add_qt_resource_call(target: str, resource_name: str, prefix: typing.O
             output += 'set_source_files_properties("{}"\n' \
                       '    PROPERTIES alias "{}"\n)\n'.format(full_source, alias)
 
+    # Quote file paths in case there are spaces.
+    sorted_files = ['"{}"'.format(f) for f in sorted_files]
+
     if skip_qtquick_compiler:
         file_list = '\n    '.join(sorted_files)
         output += 'set(resource_files\n    {}\n)\n\n'.format(file_list)
@@ -2137,6 +2140,10 @@ def write_qml_plugin_qml_files(cm_fh: typing.IO[str],
 
     qml_files = scope.get_files('QML_FILES', use_vpath=True)
     if qml_files:
+
+        # Quote file paths in case there are spaces.
+        qml_files = ['"{}"'.format(f) for f in qml_files]
+
         cm_fh.write('\n{}set(qml_files\n{}{}\n)\n'.format(
             spaces(indent),
             spaces(indent + 1),
