@@ -1362,6 +1362,9 @@ def write_defines(cm_fh: typing.IO[str], scope: Scope, cmake_parameter: str, *,
     defines = [d.replace('=\\\\\\"$$PWD/\\\\\\"',
                          '="${CMAKE_CURRENT_SOURCE_DIR}/"') for d in defines]
 
+    if 'qml_debug' in scope.get('CONFIG'):
+        defines.append('QT_QML_DEBUG')
+
     write_list(cm_fh, defines, cmake_parameter, indent, footer=footer)
 
 
