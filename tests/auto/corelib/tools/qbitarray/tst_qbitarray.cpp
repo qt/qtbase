@@ -84,6 +84,8 @@ private slots:
     void operator_noteq();
 
     void resize();
+    void fromBits_data();
+    void fromBits();
 };
 
 void tst_QBitArray::size_data()
@@ -608,6 +610,61 @@ void tst_QBitArray::resize()
     b &= a;
     QCOMPARE( b, QStringToQBitArray(QString("1100000000")) );
 
+}
+
+void tst_QBitArray::fromBits_data()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<int>("size");
+    QTest::addColumn<QBitArray>("expected");
+
+    QTest::newRow("empty") << QByteArray() << 0 << QBitArray();
+
+    auto add = [](const QByteArray &tag, const char *data) {
+        QTest::newRow(tag) << QByteArray(data, (tag.size() + 7) / 8) << tag.size()
+                           << QStringToQBitArray(tag);
+    };
+
+    // "0" to "0000000000000000"
+    for (int i = 1; i < 16; ++i) {
+        char zero[2] = { 0, 0 };
+        QByteArray pattern(i, '0');
+        add(pattern, zero);
+    }
+
+    // "1" to "1111111111111111"
+    for (int i = 1; i < 16; ++i) {
+        char one[2] = { '\xff', '\xff' };
+        QByteArray pattern(i, '1');
+        add(pattern, one);
+    }
+
+    // trailing 0 and 1
+    char zero = 1;
+    char one = 0;
+    QByteArray pzero = "1";
+    QByteArray pone = "0";
+    for (int i = 2; i < 8; ++i) {
+        zero <<= 1;
+        pzero.prepend('0');
+        add(pzero, &zero);
+
+        one = (one << 1) | 1;
+        pone.prepend('1');
+        add(pone, &one);
+    }
+}
+
+void tst_QBitArray::fromBits()
+{
+    QFETCH(QByteArray, data);
+    QFETCH(int, size);
+    QFETCH(QBitArray, expected);
+
+    QBitArray fromBits = QBitArray::fromBits(data, size);
+    QCOMPARE(fromBits, expected);
+
+    QCOMPARE(QBitArray::fromBits(fromBits.bits(), fromBits.size()), expected);
 }
 
 QTEST_APPLESS_MAIN(tst_QBitArray)

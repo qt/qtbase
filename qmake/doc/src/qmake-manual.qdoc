@@ -2583,10 +2583,8 @@
 
     \section1 RC_FILE
 
-    Specifies the name of the resource file for the application.
-    The value of this variable is typically handled by
-    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely
-    needs to be modified.
+    Windows only. Specifies the name of the Windows resource file (.rc) for the
+    target. See \l{Adding Windows Resource Files}.
 
     \target RC_CODEPAGE
     \section1 RC_CODEPAGE
@@ -2649,7 +2647,9 @@
 
     \section1 RES_FILE
 
-    Specifies the name of the compiled Windows resource file for the target.
+    Windows only. Specifies the name of the Windows resource compiler's output
+    file for this target. See \l{RC_FILE} and \l{Adding Windows Resource Files}.
+
     The value of this variable is typically handled by
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely
     needs to be modified.

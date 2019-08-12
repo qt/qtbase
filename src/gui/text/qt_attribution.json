@@ -1,0 +1,17 @@
+[
+    {
+        "Id": "aglfn",
+        "Name": "Adobe Glyph List For New Fonts",
+        "QDocModule": "qtgui",
+        "Description": "Provides standardized names for glyphs.",
+        "QtUsage": "Used by PDF generator to make it easier for reader applications to resolve  the original contents of rendered text.",
+        "Path": "qfontsubset_agl.cpp",
+
+        "Homepage": "https://github.com/adobe-type-tools/agl-aglfn",
+        "Version": "1.7",
+        "License": "BSD 3-Clause \"New\" or \"Revised\" License",
+        "LicenseId": "BSD-3-Clause",
+        "LicenseFile": "AGLFN_LICENSE.txt",
+        "Copyright": "Copyright 2002, 2003, 2005, 2006, 2008, 2010, 2015 Adobe Systems"
+    }
+]

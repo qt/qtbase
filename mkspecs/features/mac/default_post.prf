@@ -1,5 +1,9 @@
 load(default_post)
 
+# Recompute SDK version in case the user set it explicitly
+sdk_version = $$QMAKE_MAC_SDK_VERSION
+QMAKE_MAC_SDK_VERSION = $$xcodeSDKInfo(SDKVersion)
+
 contains(TEMPLATE, .*app) {
     !macx-xcode:if(isEmpty(BUILDS)|build_pass) {
         # Detect changes to the platform SDK
@@ -14,7 +18,7 @@ contains(TEMPLATE, .*app) {
 
     !versionAtLeast(QMAKE_MAC_SDK_VERSION, $$QT_MAC_SDK_VERSION_MIN): \
         warning("Qt requires at least version $$QT_MAC_SDK_VERSION_MIN of the platform SDK," \
-              "you're using $${QMAKE_MAC_SDK_VERSION}. Please upgrade.")
+              "you're building against version $${QMAKE_MAC_SDK_VERSION}. Please upgrade.")
 
     !isEmpty(QT_MAC_SDK_VERSION_MAX) {
         # For Qt developers only
@@ -242,6 +246,11 @@ macx-xcode {
     }
 
     QMAKE_PCH_OUTPUT_EXT = _${QMAKE_PCH_ARCH}$${QMAKE_PCH_OUTPUT_EXT}
+}
+
+!equals(sdk_version, $$QMAKE_MAC_SDK_VERSION) {
+    # Explicit SDK version has been set, respect that
+    QMAKE_LFLAGS += -Wl,-sdk_version -Wl,$$sdk_version
 }
 
 cache(QMAKE_XCODE_DEVELOPER_PATH, stash)

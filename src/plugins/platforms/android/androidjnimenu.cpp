@@ -225,10 +225,11 @@ namespace QtAndroidMenu
              QString itemText = removeAmpersandEscapes(item->text());
              jstring jtext = env->NewString(reinterpret_cast<const jchar *>(itemText.data()),
                                            itemText.length());
+             jint menuId = platformMenu->menuId(item);
              jobject menuItem = env->CallObjectMethod(menu,
                                                       addMenuItemMethodID,
                                                       menuNoneValue,
-                                                      int(item->tag()),
+                                                      menuId,
                                                       order++,
                                                       jtext);
              env->DeleteLocalRef(jtext);
@@ -262,10 +263,11 @@ namespace QtAndroidMenu
                 QString itemText = removeAmpersandEscapes(item->text());
                 jstring jtext = env->NewString(reinterpret_cast<const jchar *>(itemText.data()),
                                                itemText.length());
+                jint menuId = visibleMenuBar->menuId(item);
                 jobject menuItem = env->CallObjectMethod(menu,
                                                          addMenuItemMethodID,
                                                          menuNoneValue,
-                                                         int(item->tag()),
+                                                         menuId,
                                                          order++,
                                                          jtext);
                 env->DeleteLocalRef(jtext);
@@ -290,7 +292,7 @@ namespace QtAndroidMenu
 
         const QAndroidPlatformMenuBar::PlatformMenusType &menus = visibleMenuBar->menus();
         if (menus.size() == 1) { // Expanded menu
-            QAndroidPlatformMenuItem *item = static_cast<QAndroidPlatformMenuItem *>(menus.front()->menuItemForTag(menuId));
+            QAndroidPlatformMenuItem *item = static_cast<QAndroidPlatformMenuItem *>(menus.front()->menuItemForId(menuId));
             if (item) {
                 if (item->menu()) {
                     showContextMenu(item->menu(), QRect(), env);
@@ -301,7 +303,7 @@ namespace QtAndroidMenu
                 }
             }
         } else {
-            QAndroidPlatformMenu *menu = static_cast<QAndroidPlatformMenu *>(visibleMenuBar->menuForTag(menuId));
+            QAndroidPlatformMenu *menu = static_cast<QAndroidPlatformMenu *>(visibleMenuBar->menuForId(menuId));
             if (menu)
                 showContextMenu(menu, QRect(), env);
         }
@@ -341,7 +343,7 @@ namespace QtAndroidMenu
     static jboolean onContextItemSelected(JNIEnv *env, jobject /*thiz*/, jint menuId, jboolean checked)
     {
         QMutexLocker lock(&visibleMenuMutex);
-        QAndroidPlatformMenuItem * item = static_cast<QAndroidPlatformMenuItem *>(visibleMenu->menuItemForTag(menuId));
+        QAndroidPlatformMenuItem * item = static_cast<QAndroidPlatformMenuItem *>(visibleMenu->menuItemForId(menuId));
         if (item) {
             if (item->menu()) {
                 showContextMenu(item->menu(), QRect(), env);

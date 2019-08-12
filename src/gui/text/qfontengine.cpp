@@ -923,29 +923,10 @@ QFixed QFontEngine::subPixelPositionForX(QFixed x) const
     return subPixelPosition;
 }
 
-QImage *QFontEngine::lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
-                                            QFontEngine::GlyphFormat neededFormat,
-                                            const QTransform &t, QPoint *offset)
+QFontEngine::Glyph *QFontEngine::glyphData(glyph_t, QFixed,
+                                           QFontEngine::GlyphFormat, const QTransform &)
 {
-    Q_ASSERT(currentlyLockedAlphaMap.isNull());
-    if (neededFormat == Format_None)
-        neededFormat = Format_A32;
-
-    if (neededFormat != Format_A32)
-        currentlyLockedAlphaMap = alphaMapForGlyph(glyph, subPixelPosition, t);
-    else
-        currentlyLockedAlphaMap = alphaRGBMapForGlyph(glyph, subPixelPosition, t);
-
-    if (offset != 0)
-        *offset = QPoint(0, 0);
-
-    return &currentlyLockedAlphaMap;
-}
-
-void QFontEngine::unlockAlphaMapForGlyph()
-{
-    Q_ASSERT(!currentlyLockedAlphaMap.isNull());
-    currentlyLockedAlphaMap = QImage();
+    return nullptr;
 }
 
 QImage QFontEngine::alphaMapForGlyph(glyph_t glyph)

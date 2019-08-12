@@ -129,20 +129,6 @@ private:
 class QFontEngineFT : public QFontEngine
 {
 public:
-
-    /* we don't cache glyphs that are too large anyway, so we can make this struct rather small */
-    struct Glyph {
-        ~Glyph();
-        int linearAdvance : 22;
-        unsigned char width;
-        unsigned char height;
-        short x;
-        short y;
-        short advance;
-        signed char format;
-        uchar *data;
-    };
-
     struct GlyphInfo {
         int             linearAdvance;
         unsigned short  width;
@@ -241,11 +227,9 @@ private:
                                         QFixed subPixelPosition,
                                         const QTransform &matrix,
                                         QFontEngine::GlyphFormat format) override;
-    QImage *lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
-                                   GlyphFormat neededFormat, const QTransform &t,
-                                   QPoint *offset) override;
+    Glyph *glyphData(glyph_t glyph, QFixed subPixelPosition,
+                     GlyphFormat neededFormat, const QTransform &t) override;
     bool hasInternalCaching() const override { return cacheEnabled; }
-    void unlockAlphaMapForGlyph() override;
     bool expectsGammaCorrectedBlending() const override;
 
     void removeGlyphFromCache(glyph_t glyph) override;
