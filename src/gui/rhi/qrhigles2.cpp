@@ -268,6 +268,10 @@ QT_BEGIN_NAMESPACE
 #define GL_VERTEX_PROGRAM_POINT_SIZE      0x8642
 #endif
 
+#ifndef GL_POINT_SPRITE
+#define GL_POINT_SPRITE                   0x8861
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -477,9 +481,10 @@ bool QRhiGles2::create(QRhi::Flags flags)
     else
         caps.textureCompareMode = true;
 
-    if (!caps.gles)
+    if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-    // else (with gles) this is always on
+        f->glEnable(GL_POINT_SPRITE);
+    } // else (with gles) these are always on
 
     nativeHandlesStruct.context = ctx;
 
