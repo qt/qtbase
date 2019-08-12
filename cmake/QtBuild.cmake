@@ -2456,7 +2456,7 @@ function(qt_quick_compiler_process_resources target resource_name)
             string(REGEX REPLACE "\.js$" "_js" compiled_file ${file_relative})
             string(REGEX REPLACE "\.mjs$" "_mjs" compiled_file ${compiled_file})
             string(REGEX REPLACE "\.qml$" "_qml" compiled_file ${compiled_file})
-            set(compiled_file "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${compiled_file}.cpp")
+            set(compiled_file "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${resource_name}/${compiled_file}.cpp")
             add_custom_command(
                 OUTPUT ${compiled_file}
                 DEPENDS ${file_absolute}
@@ -2469,13 +2469,13 @@ function(qt_quick_compiler_process_resources target resource_name)
             target_sources(${target} PRIVATE ${compiled_file})
         endforeach()
 
-        set(qmlcache_loader_list "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${resource_name}_qml_loader_file_list.rsp")
+        set(qmlcache_loader_list "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${resource_name}/qml_loader_file_list.rsp")
         file(GENERATE
             OUTPUT ${qmlcache_loader_list}
             CONTENT "$<JOIN:${file_resource_paths},\n>"
         )
 
-        set(qmlcache_loader_file "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${resource_name}_qmlcache_loader.cpp")
+        set(qmlcache_loader_file "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${resource_name}/qmlcache_loader.cpp")
         set(resource_name_arg "${resource_name}.qrc")
         if (chained_resource_name)
             set(resource_name_arg "${resource_name_arg}=${chained_resource_name}")
