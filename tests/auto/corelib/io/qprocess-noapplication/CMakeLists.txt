@@ -1,13 +1,11 @@
-# Generated from qdebug.pro.
+# Generated from qprocess-noapplication.pro.
 
 #####################################################################
-## tst_qdebug Test:
+## qprocess-noapplication Test:
 #####################################################################
 
-add_qt_test(tst_qdebug
+add_qt_test(qprocess-noapplication
     GUI
     SOURCES
-        tst_qdebug.cpp
-    PUBLIC_LIBRARIES
-        Qt::Concurrent
+        tst_qprocessnoapplication.cpp
 )

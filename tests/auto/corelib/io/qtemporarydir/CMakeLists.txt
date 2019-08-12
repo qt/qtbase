@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_test(tst_qtemporarydir
+    GUI
     SOURCES
         ../../../../shared/emulationdetector.h
         tst_qtemporarydir.cpp
@@ -13,6 +14,3 @@ add_qt_test(tst_qtemporarydir
     LIBRARIES
         Qt::TestPrivate
 )
-
-#### Keys ignored in scope 1:.:.:qtemporarydir.pro:<TRUE>:
-# CONFIG = "testcase"

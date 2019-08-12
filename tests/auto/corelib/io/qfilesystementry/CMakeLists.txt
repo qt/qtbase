@@ -12,6 +12,3 @@ add_qt_test(tst_qfilesystementry
     LIBRARIES
         Qt::CorePrivate
 )
-
-#### Keys ignored in scope 1:.:.:qfilesystementry.pro:<TRUE>:
-# CONFIG = "testcase"

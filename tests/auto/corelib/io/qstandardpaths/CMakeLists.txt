@@ -4,17 +4,19 @@
 ## tst_qstandardpaths Test:
 #####################################################################
 
+# Collect test data
+list(APPEND test_data "tst_qstandardpaths.cpp")
+list(APPEND test_data "qstandardpaths.pro")
+
 add_qt_test(tst_qstandardpaths
+    GUI
     SOURCES
         ../../../../shared/emulationdetector.h
         tst_qstandardpaths.cpp
     INCLUDE_DIRECTORIES
         ../../../../shared
+    TESTDATA ${test_data}
 )
-
-#### Keys ignored in scope 1:.:.:qstandardpaths.pro:<TRUE>:
-# CONFIG = "testcase"
-# TESTDATA = "tst_qstandardpaths.cpp" "qstandardpaths.pro"
 
 ## Scopes:
 #####################################################################

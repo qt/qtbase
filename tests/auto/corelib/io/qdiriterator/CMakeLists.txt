@@ -4,22 +4,27 @@
 ## tst_qdiriterator Test:
 #####################################################################
 
+# Collect test data
+list(APPEND test_data "entrylist")
+
 add_qt_test(tst_qdiriterator
+    GUI
     SOURCES
         tst_qdiriterator.cpp
     LIBRARIES
         Qt::CorePrivate
+    TESTDATA ${test_data}
 )
 
 # Resources:
-add_qt_resource(tst_qdiriterator "qdiriterator" PREFIX "/testdata/" FILES
-    entrylist/directory/dummy
-    entrylist/file)
+add_qt_resource(tst_qdiriterator "qdiriterator"
+    PREFIX
+        "/testdata/"
+    FILES
+        "entrylist/directory/dummy"
+        "entrylist/file"
+)
 
-
-#### Keys ignored in scope 1:.:.:qdiriterator.pro:<TRUE>:
-# CONFIG = "testcase"
-# TESTDATA = "entrylist"
 
 ## Scopes:
 #####################################################################

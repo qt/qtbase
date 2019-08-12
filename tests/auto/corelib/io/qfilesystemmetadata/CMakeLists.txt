@@ -5,11 +5,9 @@
 #####################################################################
 
 add_qt_test(tst_qfilesystemmetadata
+    GUI
     SOURCES
         tst_qfilesystemmetadata.cpp
     LIBRARIES
         Qt::CorePrivate
 )
-
-#### Keys ignored in scope 1:.:.:qfilesystemmetadata.pro:<TRUE>:
-# CONFIG = "testcase" "parallel_test"

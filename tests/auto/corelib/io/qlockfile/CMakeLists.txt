@@ -1,13 +1,15 @@
-# Generated from qurl.pro.
+# Generated from qlockfile.pro.
 
 #####################################################################
-## tst_qurl Test:
+## tst_qlockfile Test:
 #####################################################################
 
-add_qt_test(tst_qurl
+add_qt_test(tst_qlockfile
     GUI
     SOURCES
-        tst_qurl.cpp
+        tst_qlockfile.cpp
+    LIBRARIES
+        Qt::CorePrivate
     PUBLIC_LIBRARIES
         Qt::Concurrent
 )
@@ -15,7 +17,8 @@ add_qt_test(tst_qurl
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qurl CONDITION APPLE
-    SOURCES
-        tst_qurl_mac.mm
+extend_target(tst_qlockfile CONDITION WIN32 AND NOT WINRT
+    PUBLIC_LIBRARIES
+        advapi32
 )
+add_subdirectory(qlockfiletesthelper)

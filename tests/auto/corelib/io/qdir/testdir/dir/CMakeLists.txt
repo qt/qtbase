@@ -1,13 +1,13 @@
-# Generated from qdebug.pro.
+# Generated from qdir.pro.
 
 #####################################################################
-## tst_qdebug Test:
+## qdir Binary:
 #####################################################################
 
-add_qt_test(tst_qdebug
+add_qt_executable(qdir
     GUI
-    SOURCES
-        tst_qdebug.cpp
+    DEFINES
+        QT_DISABLE_DEPRECATED_BEFORE=0
     PUBLIC_LIBRARIES
-        Qt::Concurrent
+        Qt::Gui
 )

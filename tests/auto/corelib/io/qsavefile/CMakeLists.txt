@@ -4,11 +4,12 @@
 ## tst_qsavefile Test:
 #####################################################################
 
+# Collect test data
+list(APPEND test_data "tst_qsavefile.cpp")
+
 add_qt_test(tst_qsavefile
+    GUI
     SOURCES
         tst_qsavefile.cpp
+    TESTDATA ${test_data}
 )
-
-#### Keys ignored in scope 1:.:.:qsavefile.pro:<TRUE>:
-# CONFIG = "testcase"
-# TESTDATA = "tst_qsavefile.cpp"

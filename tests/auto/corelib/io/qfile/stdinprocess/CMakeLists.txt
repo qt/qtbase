@@ -1,11 +1,10 @@
 # Generated from stdinprocess.pro.
 
 #####################################################################
-## stdinprocess Binary:
+## stdinprocess_helper Binary:
 #####################################################################
 
-add_qt_executable(stdinprocess
-    GUI
+add_qt_test_helper(stdinprocess_helper
     SOURCES
         main.cpp
 )
