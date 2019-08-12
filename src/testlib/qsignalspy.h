@@ -118,6 +118,16 @@ public:
     }
 #endif // Q_CLANG_QDOC
 
+    QSignalSpy(const QObject *obj, const QMetaMethod &signal)
+        : m_waiting(false)
+    {
+        if (isObjectValid(obj) && isSignalMetaMethodValid(signal) &&
+            connectToSignal(obj, signal.methodIndex())) {
+            sig = signal.methodSignature();
+            initArgs(signal, obj);
+        }
+    }
+
     inline bool isValid() const { return !sig.isEmpty(); }
     inline QByteArray signal() const { return sig; }
 
