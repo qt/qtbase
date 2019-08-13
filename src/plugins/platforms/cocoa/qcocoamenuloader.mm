@@ -59,7 +59,6 @@
     NSMenuItem *aboutItem;
     NSMenuItem *aboutQtItem;
     NSMenuItem *hideItem;
-    NSMenuItem *lastAppSpecificItem;
     NSMenuItem *servicesItem;
     NSMenuItem *hideAllOthersItem;
     NSMenuItem *showAllItem;
@@ -118,6 +117,9 @@
         [appMenu addItem:[NSMenuItem separatorItem]];
 
         // Preferences
+        // We'll be adding app specific items after this. The macOS HIG state that,
+        // "In general, a Preferences menu item should be the first app-specific menu item."
+        // https://developer.apple.com/macos/human-interface-guidelines/menus/menu-bar-menus/
         preferencesItem = [[QCocoaNSMenuItem alloc] init];
         preferencesItem.title = @"Preferences…";
         preferencesItem.keyEquivalent = @",";
@@ -125,11 +127,6 @@
         preferencesItem.enabled = NO;
         preferencesItem.hidden = YES;
         [appMenu addItem:preferencesItem];
-
-        // We'll be adding app specific items after this. The macOS HIG state that,
-        // "In general, a Preferences menu item should be the first app-specific menu item."
-        // https://developer.apple.com/macos/human-interface-guidelines/menus/menu-bar-menus/
-        lastAppSpecificItem = preferencesItem;
 
         [appMenu addItem:[NSMenuItem separatorItem]];
 
@@ -193,8 +190,6 @@
     [hideAllOthersItem release];
     [showAllItem release];
     [quitItem release];
-
-    [lastAppSpecificItem release];
 
     [super dealloc];
 }
@@ -272,25 +267,20 @@
     // No reason to create the item if it already exists.
     for (NSMenuItem *item in appMenu.itemArray)
         if (qt_objc_cast<QCocoaNSMenuItem *>(item).platformMenuItem == platformItem)
-            return [[item retain] autorelease];
+            return item;
 
     // Create an App-Specific menu item, insert it into the menu and return
     // it as an autorelease item.
     QCocoaNSMenuItem *item;
     if (platformItem->isSeparator())
-        item = [[QCocoaNSMenuItem separatorItemWithPlatformMenuItem:platformItem] retain];
+        item = [QCocoaNSMenuItem separatorItemWithPlatformMenuItem:platformItem];
     else
-        item = [[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:platformItem];
+        item = [[[QCocoaNSMenuItem alloc] initWithPlatformMenuItem:platformItem] autorelease];
 
-    const auto location = [appMenu indexOfItem:lastAppSpecificItem];
+    const auto location = [self indexOfLastAppSpecificMenuItem];
+    [appMenu insertItem:item atIndex:NSInteger(location) + 1];
 
-    if (!lastAppSpecificItem.separatorItem)
-        [lastAppSpecificItem release];
-    lastAppSpecificItem = item;  // Keep track of this for later (i.e., don't release it)
-
-    [appMenu insertItem:item atIndex:location + 1];
-
-    return [[item retain] autorelease];
+    return item;
 }
 
 - (void)orderFrontStandardAboutPanel:(id)sender
@@ -344,8 +334,24 @@
 - (NSArray<NSMenuItem *> *)mergeable
 {
     // Don't include the quitItem here, since we want it always visible and enabled regardless
-    // Note that lastAppSpecificItem may be nil, so we can't use @[] here.
-    return [NSArray arrayWithObjects:preferencesItem, aboutItem, aboutQtItem, lastAppSpecificItem, nil];
+    auto items = [NSArray arrayWithObjects:preferencesItem, aboutItem,  aboutQtItem,
+                  appMenu.itemArray[[self indexOfLastAppSpecificMenuItem]], nil];
+    return items;
 }
+
+- (NSUInteger)indexOfLastAppSpecificMenuItem
+{
+    // Either the 'Preferences', which is the first app specific menu item, or something
+    // else we appended later (thus the reverse order):
+    const auto location = [appMenu.itemArray indexOfObjectWithOptions:NSEnumerationReverse
+                           passingTest:^BOOL(NSMenuItem *item, NSUInteger, BOOL *) {
+                               if (auto qtItem = qt_objc_cast<QCocoaNSMenuItem*>(item))
+                                   return qtItem != quitItem;
+                              return NO;
+                           }];
+    Q_ASSERT(location != NSNotFound);
+    return location;
+}
+
 
 @end

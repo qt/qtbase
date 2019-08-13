@@ -417,20 +417,19 @@ void tst_QWizard::setPixmap()
     QVERIFY(wizard.pixmap(QWizard::BannerPixmap).isNull());
     QVERIFY(wizard.pixmap(QWizard::LogoPixmap).isNull());
     QVERIFY(wizard.pixmap(QWizard::WatermarkPixmap).isNull());
-#ifdef Q_OS_OSX
-    QVERIFY(!wizard.pixmap(QWizard::BackgroundPixmap).isNull());
-#else
-    QVERIFY(wizard.pixmap(QWizard::BackgroundPixmap).isNull());
-#endif
+    if (QSysInfo::macVersion() <= Q_MV_OSX(10, 13))
+        QVERIFY(!wizard.pixmap(QWizard::BackgroundPixmap).isNull());
+    else
+        QVERIFY(wizard.pixmap(QWizard::BackgroundPixmap).isNull());
 
     QVERIFY(page->pixmap(QWizard::BannerPixmap).isNull());
     QVERIFY(page->pixmap(QWizard::LogoPixmap).isNull());
     QVERIFY(page->pixmap(QWizard::WatermarkPixmap).isNull());
-#ifdef Q_OS_OSX
-    QVERIFY(!wizard.pixmap(QWizard::BackgroundPixmap).isNull());
-#else
-    QVERIFY(page->pixmap(QWizard::BackgroundPixmap).isNull());
-#endif
+    if (QSysInfo::macVersion() <= Q_MV_OSX(10, 13))
+        QVERIFY(!wizard.pixmap(QWizard::BackgroundPixmap).isNull());
+    else
+        QVERIFY(page->pixmap(QWizard::BackgroundPixmap).isNull());
+
     wizard.setPixmap(QWizard::BannerPixmap, p1);
     wizard.setPixmap(QWizard::LogoPixmap, p2);
     wizard.setPixmap(QWizard::WatermarkPixmap, p3);

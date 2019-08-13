@@ -114,8 +114,8 @@ public:
     // not ambiguous. Implementation detail that should not be documented.
     template<char = 0>
 #endif
-    QTextLayout(const QString &text, const QFont &font, const QPaintDevice *paintdevice)
-        : QTextLayout(text, font, const_cast<QPaintDevice*>(paintdevice))
+    QTextLayout(const QString &textData, const QFont &textFont, const QPaintDevice *paintdevice)
+        : QTextLayout(textData, textFont, const_cast<QPaintDevice*>(paintdevice))
     {}
 #else
     QTextLayout(const QString &text, const QFont &font, const QPaintDevice *paintdevice = nullptr);
