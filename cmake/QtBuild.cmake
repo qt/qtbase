@@ -2539,6 +2539,14 @@ function(add_qt_resource target resourceName)
     if (rcc_BASE)
         foreach(file IN LISTS rcc_FILES)
             set(resource_file "${rcc_BASE}/${file}")
+            qt_get_relative_resource_path_for_file(alias ${resource_file})
+            # Handle case where resources were generated from a directory
+            # different than the one where the main .pro file resides.
+            # Unless otherwise specified, we should use the original file path
+            # as alias.
+            if (alias STREQUAL resource_file)
+                set_source_files_properties(${resource_file} PROPERTIES alias ${file})
+            endif()
             file(TO_CMAKE_PATH ${resource_file} resource_file)
             list(APPEND resource_files ${resource_file})
         endforeach()
