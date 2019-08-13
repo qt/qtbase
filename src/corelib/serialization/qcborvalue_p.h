@@ -245,13 +245,21 @@ public:
         appendByteData(s.latin1(), s.size(), QCborValue::String,
                        QtCbor::Element::StringIsAscii);
     }
-    void appendAsciiString(const QString &s);
+    void appendAsciiString(QStringView s);
+
+#if QT_STRINGVIEW_LEVEL < 2
     void append(const QString &s)
+    {
+        append(qToStringViewIgnoringNull(s));
+    }
+#endif
+
+    void append(QStringView s)
     {
         if (QtPrivate::isAscii(s))
             appendAsciiString(s);
         else
-            appendByteData(reinterpret_cast<const char *>(s.constData()), s.size() * 2,
+            appendByteData(reinterpret_cast<const char *>(s.utf16()), s.size() * 2,
                            QCborValue::String, QtCbor::Element::StringIsUtf16);
     }
     void append(const QCborValue &v)
@@ -345,33 +353,41 @@ public:
         return e;
     }
 
-    bool stringEqualsElement(qsizetype idx, QLatin1String s) const
+    static int compareUtf8(const QtCbor::ByteData *b, const QLatin1String &s)
     {
-        const auto &e = elements.at(idx);
-        if (e.type != QCborValue::String)
-            return false;
-
-        const QtCbor::ByteData *b = byteData(idx);
-        if (!b)
-            return s.isEmpty();
-
-        if (e.flags & QtCbor::Element::StringIsUtf16)
-            return QtPrivate::compareStrings(b->asStringView(), s) == 0;
-        return QUtf8::compareUtf8(b->byte(), b->len, s) == 0;
+        return QUtf8::compareUtf8(b->byte(), b->len, s);
     }
-    bool stringEqualsElement(qsizetype idx, const QString &s) const
-    {
-        const auto &e = elements.at(idx);
-        if (e.type != QCborValue::String)
-            return false;
 
-        const QtCbor::ByteData *b = byteData(idx);
+    static int compareUtf8(const QtCbor::ByteData *b, QStringView s)
+    {
+        return QUtf8::compareUtf8(b->byte(), b->len, s.data(), s.size());
+    }
+
+    template<typename String>
+    int stringCompareElement(const QtCbor::Element &e, String s) const
+    {
+        if (e.type != QCborValue::String)
+            return int(e.type) - int(QCborValue::String);
+
+        const QtCbor::ByteData *b = byteData(e);
         if (!b)
-            return s.isEmpty();
+            return s.isEmpty() ? 0 : -1;
 
         if (e.flags & QtCbor::Element::StringIsUtf16)
-            return QtPrivate::compareStrings(b->asStringView(), s) == 0;
-        return QUtf8::compareUtf8(b->byte(), b->len, s.data(), s.size()) == 0;
+            return QtPrivate::compareStrings(b->asStringView(), s);
+        return compareUtf8(b, s);
+    }
+
+    template<typename String>
+    bool stringEqualsElement(const QtCbor::Element &e, String s) const
+    {
+        return stringCompareElement(e, s) == 0;
+    }
+
+    template<typename String>
+    bool stringEqualsElement(qsizetype idx, String s) const
+    {
+        return stringEqualsElement(elements.at(idx), s);
     }
 
     static int compareElement_helper(const QCborContainerPrivate *c1, QtCbor::Element e1,
