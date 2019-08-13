@@ -976,11 +976,8 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
     if (!surface->surfaceHandle())
         return false;
     if (!surface->supportsOpenGL()) {
-#ifndef Q_OS_WASM // ### work around the WASM platform plugin using QOpenGLContext with raster surfaces.
-        // see QTBUG-70076
         qWarning() << "QOpenGLContext::makeCurrent() called with non-opengl surface" << surface;
         return false;
-#endif
     }
 
     if (!d->platformGLContext->makeCurrent(surface->surfaceHandle()))

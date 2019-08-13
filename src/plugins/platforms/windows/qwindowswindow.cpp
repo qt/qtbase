@@ -2674,7 +2674,8 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
     // QTBUG-32663, suppress resize cursor for fixed size windows.
     const QWindow *w = window();
     if (!w->isTopLevel() // Task 105852, minimized windows need to respond to user input.
-        || !(m_windowState & ~Qt::WindowActive)
+        || (m_windowState != Qt::WindowNoState)
+        || !isActive()
         || (m_data.flags & Qt::FramelessWindowHint)) {
         return false;
     }
@@ -2694,12 +2695,10 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
             return true;
         }
         if (localPos.y() < 0) {
-            const QMargins margins = frameMargins();
-            const int topResizeBarPos = margins.left() - margins.top();
-            if (localPos.y() < topResizeBarPos) {
+            const int topResizeBarPos = -frameMargins().top();
+            if (localPos.y() >= topResizeBarPos)
                 *result = HTCAPTION; // Extend caption over top resize bar, let's user move the window.
-                return true;
-            }
+            return true;
         }
     }
     if (fixedWidth && (localPos.x() < 0 || localPos.x() >= size.width())) {
