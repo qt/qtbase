@@ -265,6 +265,10 @@ endfunction()
 
 function(qt_generate_build_internals_extra_cmake_code)
     if(PROJECT_NAME STREQUAL "QtBase")
+        set(QT_EXTRA_BUILD_INTERNALS_VARS)
+        foreach(var IN LISTS qt_base_configure_tests_vars_to_export)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "set(${var} \"${${var}}\" CACHE INTERNAL \"\")\n")
+        endforeach()
 
         set(QT_SOURCE_TREE "${QtBase_SOURCE_DIR}")
         qt_path_join(extra_file_path

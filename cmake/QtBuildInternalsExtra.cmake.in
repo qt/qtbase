@@ -22,3 +22,6 @@ set(QT_WILL_INSTALL @QT_WILL_INSTALL@ CACHE BOOL
 
 set(QT_SOURCE_TREE "@QT_SOURCE_TREE@" CACHE PATH
 "A path to the source tree of the previously configured QtBase project." FORCE)
+
+# Extra set of exported variables
+@QT_EXTRA_BUILD_INTERNALS_VARS@
