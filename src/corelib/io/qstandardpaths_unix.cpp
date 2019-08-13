@@ -348,6 +348,9 @@ QStringList QStandardPaths::standardLocations(StandardLocation type)
         break;
     case FontsLocation:
         dirs += QDir::homePath() + QLatin1String("/.fonts");
+        dirs += xdgDataDirs();
+        for (int i = 1; i < dirs.count(); ++i)
+            dirs[i].append(QLatin1String("/fonts"));
         break;
     default:
         break;
