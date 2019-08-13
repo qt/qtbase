@@ -99,7 +99,7 @@ QNetworkInterface getInterfaceFromHostAddress(const QHostAddress &local)
 }
 } // anonymous namespace
 
-class QNetworkConnectionEvents final : public INetworkConnectionEvents
+class QNetworkConnectionEvents : public INetworkConnectionEvents
 {
 public:
     QNetworkConnectionEvents(QNetworkConnectionMonitorPrivate *monitor);
@@ -465,7 +465,7 @@ bool QNetworkConnectionMonitor::isReachable()
     return d_func()->connectivity & required;
 }
 
-class QNetworkListManagerEvents final : public INetworkListManagerEvents
+class QNetworkListManagerEvents : public INetworkListManagerEvents
 {
 public:
     QNetworkListManagerEvents(QNetworkStatusMonitorPrivate *monitor);
