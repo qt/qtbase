@@ -1913,6 +1913,7 @@ void tst_QImageReader::saveColorSpace()
     QImage stored = QImage::fromData(buf.buffer(), "png");
 
     QCOMPARE(stored, orig);
+    QCOMPARE(stored.colorSpace(), orig.colorSpace());
 }
 
 void tst_QImageReader::readText_data()
