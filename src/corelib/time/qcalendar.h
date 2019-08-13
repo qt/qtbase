@@ -128,7 +128,7 @@ public:
         User = -1
     };
     // New entries must be added to the \enum doc in qcalendar.cpp and
-    // handled in QCalendar::fromEnum()
+    // handled in QCalendarBackend::fromEnum()
     Q_ENUM(System)
 
     explicit QCalendar(); // Gregorian, optimised

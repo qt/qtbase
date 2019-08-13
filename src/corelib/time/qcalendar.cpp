@@ -136,6 +136,7 @@ Q_GLOBAL_STATIC(Registry, calendarRegistry);
 
     \class QCalendarBackend
     \inmodule QtCore
+    \internal
     \reentrant
     \brief The QCalendarBackend class provides basic calendaring functions.
 
@@ -167,7 +168,7 @@ Q_GLOBAL_STATIC(Registry, calendarRegistry);
 */
 
 /*!
-    Constructs the calendar and registers it.
+    Constructs the calendar and registers it under \a name using \a id.
 */
 QCalendarBackend::QCalendarBackend(const QString &name, QCalendar::System id)
 {
@@ -192,7 +193,7 @@ QCalendarBackend::~QCalendarBackend()
     return the member of that enum that produces it. Other calendars should
     return User.
 
-    \sa QCalendar::fromEnum()
+    \sa QCalendarBackend::fromEnum()
 */
 QCalendar::System QCalendarBackend::calendarSystem() const
 {
@@ -391,7 +392,7 @@ int QCalendarBackend::maxMonthsInYear() const
 // Julian day number calculations
 
 /*!
-    \fn bool dateToJulianDay(int year, int month, int day, qint64 *jd) const
+    \fn bool QCalendarBackend::dateToJulianDay(int year, int month, int day, qint64 *jd) const
 
     Computes the Julian day number corresponding to the specified \a year, \a
     month, and \a day. Returns true and sets \a jd if there is such a date in
@@ -401,7 +402,7 @@ int QCalendarBackend::maxMonthsInYear() const
 */
 
 /*!
-    \fn QCalendar::YearMonthDay julianDayToDate(qint64 jd) const
+    \fn QCalendar::YearMonthDay QCalendarBackend::julianDayToDate(qint64 jd) const
 
     Computes the year, month, and day in this calendar for the given Julian day
     number \a jd. If the given day falls outside this calendar's scope
@@ -413,7 +414,7 @@ int QCalendarBackend::maxMonthsInYear() const
 */
 
 /*!
-   Returns the day of the week for a given Julian Day Number.
+   Returns the day of the week for the given Julian Day Number \a jd.
 
    This is 1 for Monday through 7 for Sunday.
 
@@ -541,7 +542,7 @@ int QCalendarBackend::dayOfWeek(qint64 jd) const
     QCalendarBackend sub-class must be registered before being exposed to Date
     and Time APIs.
 
-    \sa registerCalendar(), fromName()
+    \sa registerAlias(), fromName()
 */
 QStringList QCalendarBackend::availableCalendars()
 {
@@ -578,7 +579,7 @@ bool QCalendarBackend::registerAlias(const QString &name)
   other means. However, calendars available via the QCalendar::System enum are
   always registered when this is called.
 
-  \sa availableCalendars(), registerCalendar(), fromEnum()
+  \sa availableCalendars(), registerAlias(), fromEnum()
 */
 const QCalendarBackend *QCalendarBackend::fromName(QStringView name)
 {
@@ -662,7 +663,7 @@ const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
 
   A QCalendar value is immutable.
 
-  \sa QCalendarBackend, QDate, QDateTime
+  \sa QDate, QDateTime
 */
 
 /*!
@@ -675,6 +676,8 @@ const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
     \value Milankovic A revised Julian calendar used by some Orthodox churches.
     \value Jalali The Solar Hijri calendar (also called Persian).
     \value IslamicCivil The (tabular) Islamic Civil calendar.
+    \omitvalue Last
+    \omitvalue User
 
     \sa QCalendar
 */
@@ -772,7 +775,7 @@ bool QCalendar::isGregorian() const
 }
 
 /*!
-  Returns \c true if the given year is a leap year.
+  Returns \c true if the given \a year is a leap year.
 
   Since the year is not a whole number of days long, some years are longer than
   others. The difference may be a whole month or just a single day; the details
@@ -896,7 +899,7 @@ int QCalendar::maxMonthsInYear() const
 
 /*!
     \fn QDate QCalendar::dateFromParts(int year, int month, int day) const
-    \fn QDate QCalendar::dateFromParts(QCalendar::YearMonthDay parts) const
+    \fn QDate QCalendar::dateFromParts(const QCalendar::YearMonthDay &parts) const
 
     Converts a year, month, and day to a QDate.
 
@@ -924,7 +927,7 @@ QDate QCalendar::dateFromParts(const QCalendar::YearMonthDay &parts) const
     Converts a QDate to a year, month, and day of the month.
 
     The returned structure's isValid() shall be false if the calendar is unable
-    to represent the given \a date. Otherwise its \a year, \a month, and \a day
+    to represent the given \a date. Otherwise its year, month, and day
     members record the so-named parts of its representation.
 
     \sa dateFromParts(), isProleptic(), hasYearZero()
@@ -967,7 +970,7 @@ int QCalendar::dayOfWeek(QDate date) const
   in the specified \a locale; the \a format determines how fully it shall be
   expressed (i.e. to what extent it is abbreviated).
 
-  \sa standaloneMonthName(), maxMonthsInYear(), dateTimeString()
+  \sa standaloneMonthName(), maxMonthsInYear(), dateTimeToString()
 */
 QString QCalendar::monthName(const QLocale &locale, int month, int year,
                              QLocale::FormatType format) const
@@ -996,7 +999,7 @@ QString QCalendar::monthName(const QLocale &locale, int month, int year,
   specified \a locale; the \a format determines how fully it shall be expressed
   (i.e. to what extent it is abbreviated).
 
-  \sa monthName(), maxMonthsInYear(), dateTimeString()
+  \sa monthName(), maxMonthsInYear(), dateTimeToString()
 */
 QString QCalendar::standaloneMonthName(const QLocale &locale, int month, int year,
                                        QLocale::FormatType format) const

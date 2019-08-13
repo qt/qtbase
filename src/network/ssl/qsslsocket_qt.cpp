@@ -72,6 +72,7 @@ static QAsn1Element _q_PKCS7_data(const QByteArray &data)
 
     Some test vectors:
     http://www.drh-consultancy.demon.co.uk/test.txt
+    \internal
 */
 static QByteArray _q_PKCS12_keygen(char id, const QByteArray &salt, const QString &passPhrase, int n, int r)
 {

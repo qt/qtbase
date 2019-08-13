@@ -2538,6 +2538,10 @@ QStateMachine::~QStateMachine()
            state machine. Commonly, this could mean that one of the states has not been given
            any parent or added to any machine. The context of this error is the source state of
            the transition.
+    \value StateMachineChildModeSetToParallelError The machine's \l childMode
+           property was set to \l{QState::ParallelStates}. This is illegal.
+           Only states may be declared as parallel, not the state machine
+           itself. This enum value was added in Qt 5.14.
 
     \sa setErrorState()
 */
