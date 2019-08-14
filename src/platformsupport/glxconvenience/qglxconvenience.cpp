@@ -261,8 +261,10 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
             qCDebug(lcGlx) << "qglx_findConfig: Found non-matching but compatible FBConfig";
             return compatibleCandidate;
         }
-        qCWarning(lcGlx, "qglx_findConfig: Failed to finding matching FBConfig (%d %d %d %d)", requestedRed, requestedGreen, requestedBlue, requestedAlpha);
     } while (qglx_reduceFormat(&format));
+
+    if (!config)
+        qCWarning(lcGlx) << "qglx_findConfig: Failed to finding matching FBConfig for" << format;
 
     return config;
 }

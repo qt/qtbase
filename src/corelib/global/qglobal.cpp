@@ -88,6 +88,11 @@
 #  include <sys/systeminfo.h>
 #endif
 
+#if defined(Q_OS_DARWIN) && QT_HAS_INCLUDE(<IOKit/IOKitLib.h>)
+#  include <IOKit/IOKitLib.h>
+#  include <private/qcore_mac_p.h>
+#endif
+
 #ifdef Q_OS_UNIX
 #include <sys/utsname.h>
 #include <private/qcore_unix_p.h>
@@ -2960,20 +2965,19 @@ enum {
 */
 QByteArray QSysInfo::machineUniqueId()
 {
-#ifdef Q_OS_BSD4
+#if defined(Q_OS_DARWIN) && QT_HAS_INCLUDE(<IOKit/IOKitLib.h>)
+    char uuid[UuidStringLen + 1];
+    io_service_t service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
+    QCFString stringRef = (CFStringRef)IORegistryEntryCreateCFProperty(service, CFSTR(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);
+    CFStringGetCString(stringRef, uuid, sizeof(uuid), kCFStringEncodingMacRoman);
+    return QByteArray(uuid);
+#elif defined(Q_OS_BSD4) && defined(KERN_HOSTUUID)
     char uuid[UuidStringLen + 1];
     size_t uuidlen = sizeof(uuid);
-#  ifdef KERN_HOSTUUID
     int name[] = { CTL_KERN, KERN_HOSTUUID };
     if (sysctl(name, sizeof name / sizeof name[0], &uuid, &uuidlen, nullptr, 0) == 0
             && uuidlen == sizeof(uuid))
         return QByteArray(uuid, uuidlen - 1);
-
-#  else
-    // Darwin: no fixed value, we need to search by name
-    if (sysctlbyname("kern.uuid", uuid, &uuidlen, nullptr, 0) == 0 && uuidlen == sizeof(uuid))
-        return QByteArray(uuid, uuidlen - 1);
-#  endif
 #elif defined(Q_OS_UNIX)
     // The modern name on Linux is /etc/machine-id, but that path is
     // unlikely to exist on non-Linux (non-systemd) systems. The old

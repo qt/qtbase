@@ -168,8 +168,10 @@ struct Q_AUTOTEST_EXPORT ProtocolParameters
     bool indexStrings = true;
 
     // This parameter is not negotiated via SETTINGS frames, so we have it
-    // as a member and will convey it to our peer as a WINDOW_UPDATE frame:
-    qint32 maxSessionReceiveWindowSize = Http2::maxSessionReceiveWindowSize;
+    // as a member and will convey it to our peer as a WINDOW_UPDATE frame.
+    // Note, some servers do not accept our WINDOW_UPDATE from the default
+    // 64 KB to the possible maximum. Let's use a half of it:
+    qint32 maxSessionReceiveWindowSize = Http2::maxSessionReceiveWindowSize / 2;
 
     // This is our default SETTINGS frame:
     //
