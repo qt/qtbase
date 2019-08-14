@@ -46,6 +46,7 @@
 #include <qstylefactory.h>
 #include <qdesktopwidget.h>
 #include <private/qwidget_p.h>
+#include <private/qwidgetbackingstore_p.h>
 #include <private/qapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <qcalendarwidget.h>
@@ -9564,7 +9565,7 @@ void tst_QWidget::destroyBackingStore()
     QTRY_VERIFY(w.numPaintEvents > 0);
     w.reset();
     w.update();
-    qt_widget_private(&w)->topData()->backingStoreTracker.create(&w);
+    qt_widget_private(&w)->topData()->widgetBackingStore.reset(new QWidgetBackingStore(&w));
 
     w.update();
     QApplication::processEvents();
@@ -9584,7 +9585,7 @@ QWidgetBackingStore* backingStore(QWidget &widget)
     QWidgetBackingStore *backingStore = nullptr;
 #ifdef QT_BUILD_INTERNAL
     if (QTLWExtra *topExtra = qt_widget_private(&widget)->maybeTopData())
-        backingStore = topExtra->backingStoreTracker.data();
+        backingStore = topExtra->widgetBackingStore.get();
 #endif
     return backingStore;
 }
@@ -9784,12 +9785,12 @@ class scrollWidgetWBS : public QWidget
 public:
     void deleteBackingStore()
     {
-        static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStoreTracker.destroy();
+        static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->widgetBackingStore.reset(nullptr);
     }
     void enableBackingStore()
     {
         if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
-            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->backingStoreTracker.create(this);
+            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->widgetBackingStore.reset(new QWidgetBackingStore(this));
             static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBackingStore(this->rect());
             repaint();
         }

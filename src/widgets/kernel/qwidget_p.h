@@ -116,56 +116,12 @@ protected:
     QRegion m_region;
 };
 
-
-
-class Q_AUTOTEST_EXPORT QWidgetBackingStoreTracker
-{
-
-public:
-    QWidgetBackingStoreTracker();
-    ~QWidgetBackingStoreTracker();
-
-    void create(QWidget *tlw);
-    void destroy();
-
-    void registerWidget(QWidget *w);
-    void unregisterWidget(QWidget *w);
-    void unregisterWidgetSubtree(QWidget *w);
-
-    inline QWidgetBackingStore* data()
-    {
-        return m_ptr;
-    }
-
-    inline QWidgetBackingStore* operator->()
-    {
-        return m_ptr;
-    }
-
-    inline QWidgetBackingStore& operator*()
-    {
-        return *m_ptr;
-    }
-
-    inline operator bool() const
-    {
-        return (nullptr != m_ptr);
-    }
-
-private:
-    Q_DISABLE_COPY_MOVE(QWidgetBackingStoreTracker)
-
-private:
-    QWidgetBackingStore* m_ptr;
-    QSet<QWidget *> m_widgets;
-};
-
 struct QTLWExtra {
     // *************************** Cross-platform variables *****************************
 
     // Regular pointers (keep them together to avoid gaps on 64 bits architectures).
     std::unique_ptr<QIcon> icon; // widget icon
-    QWidgetBackingStoreTracker backingStoreTracker;
+    std::unique_ptr<QWidgetBackingStore> widgetBackingStore;
     QBackingStore *backingStore;
     QPainter *sharedPainter;
     QWidgetWindow *window;
@@ -1028,7 +984,7 @@ inline QWidgetBackingStore *QWidgetPrivate::maybeBackingStore() const
 {
     Q_Q(const QWidget);
     QTLWExtra *x = q->window()->d_func()->maybeTopData();
-    return x ? x->backingStoreTracker.data() : nullptr;
+    return x ? x->widgetBackingStore.get() : nullptr;
 }
 
 QT_END_NAMESPACE
