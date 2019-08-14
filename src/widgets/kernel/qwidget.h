@@ -697,7 +697,7 @@ private:
     QLayout *takeLayout();
 
     friend class QBackingStoreDevice;
-    friend class QWidgetBackingStore;
+    friend class QWidgetRepaintManager;
     friend class QApplication;
     friend class QApplicationPrivate;
     friend class QGuiApplication;

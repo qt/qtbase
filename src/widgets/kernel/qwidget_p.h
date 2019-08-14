@@ -86,7 +86,7 @@ QT_BEGIN_NAMESPACE
 class QWidgetWindow;
 class QPaintEngine;
 class QPixmap;
-class QWidgetBackingStore;
+class QWidgetRepaintManager;
 class QGraphicsProxyWidget;
 class QWidgetItemV2;
 class QOpenGLContext;
@@ -121,7 +121,7 @@ struct QTLWExtra {
 
     // Regular pointers (keep them together to avoid gaps on 64 bits architectures).
     std::unique_ptr<QIcon> icon; // widget icon
-    std::unique_ptr<QWidgetBackingStore> widgetBackingStore;
+    std::unique_ptr<QWidgetRepaintManager> repaintManager;
     QBackingStore *backingStore;
     QPainter *sharedPainter;
     QWidgetWindow *window;
@@ -305,7 +305,7 @@ public:
     QTLWExtra *maybeTopData() const;
     QPainter *sharedPainter() const;
     void setSharedPainter(QPainter *painter);
-    QWidgetBackingStore *maybeBackingStore() const;
+    QWidgetRepaintManager *maybeRepaintManager() const;
 
     enum class WindowHandleMode {
         Direct,
@@ -384,13 +384,13 @@ public:
     void render(QPaintDevice *target, const QPoint &targetOffset, const QRegion &sourceRegion,
                 QWidget::RenderFlags renderFlags);
     void drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QPoint &offset, int flags,
-                    QPainter *sharedPainter = nullptr, QWidgetBackingStore *backingStore = nullptr);
+                    QPainter *sharedPainter = nullptr, QWidgetRepaintManager *repaintManager = nullptr);
     void sendPaintEvent(const QRegion &toBePainted);
 
 
     void paintSiblingsRecursive(QPaintDevice *pdev, const QObjectList& children, int index,
                                 const QRegion &rgn, const QPoint &offset, int flags,
-                                QPainter *sharedPainter, QWidgetBackingStore *backingStore);
+                                QPainter *sharedPainter, QWidgetRepaintManager *repaintManager);
 
 #if QT_CONFIG(graphicsview)
     static QGraphicsProxyWidget * nearestGraphicsProxyWidget(const QWidget *origin);
@@ -876,15 +876,15 @@ public:
 struct QWidgetPaintContext
 {
     inline QWidgetPaintContext(QPaintDevice *d, const QRegion &r, const QPoint &o, int f,
-                               QPainter *p, QWidgetBackingStore *b)
-        : pdev(d), rgn(r), offset(o), flags(f), sharedPainter(p), backingStore(b), painter(nullptr) {}
+                               QPainter *p, QWidgetRepaintManager *rpm)
+        : pdev(d), rgn(r), offset(o), flags(f), sharedPainter(p), repaintManager(rpm), painter(nullptr) {}
 
     QPaintDevice *pdev;
     QRegion rgn;
     QPoint offset;
     int flags;
     QPainter *sharedPainter;
-    QWidgetBackingStore *backingStore;
+    QWidgetRepaintManager *repaintManager;
     QPainter *painter;
 };
 
@@ -980,11 +980,11 @@ inline bool QWidgetPrivate::pointInsideRectAndMask(const QPoint &p) const
                                      || extra->mask.contains(p));
 }
 
-inline QWidgetBackingStore *QWidgetPrivate::maybeBackingStore() const
+inline QWidgetRepaintManager *QWidgetPrivate::maybeRepaintManager() const
 {
     Q_Q(const QWidget);
     QTLWExtra *x = q->window()->d_func()->maybeTopData();
-    return x ? x->widgetBackingStore.get() : nullptr;
+    return x ? x->repaintManager.get() : nullptr;
 }
 
 QT_END_NAMESPACE

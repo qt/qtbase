@@ -46,7 +46,7 @@
 #include <qstylefactory.h>
 #include <qdesktopwidget.h>
 #include <private/qwidget_p.h>
-#include <private/qwidgetbackingstore_p.h>
+#include <private/qwidgetrepaintmanager_p.h>
 #include <private/qapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
 #include <qcalendarwidget.h>
@@ -9565,7 +9565,7 @@ void tst_QWidget::destroyBackingStore()
     QTRY_VERIFY(w.numPaintEvents > 0);
     w.reset();
     w.update();
-    qt_widget_private(&w)->topData()->widgetBackingStore.reset(new QWidgetBackingStore(&w));
+    qt_widget_private(&w)->topData()->repaintManager.reset(new QWidgetRepaintManager(&w));
 
     w.update();
     QApplication::processEvents();
@@ -9580,14 +9580,14 @@ void tst_QWidget::destroyBackingStore()
 #endif // QT_BUILD_INTERNAL
 
 // Helper function
-QWidgetBackingStore* backingStore(QWidget &widget)
+QWidgetRepaintManager* repaintManager(QWidget &widget)
 {
-    QWidgetBackingStore *backingStore = nullptr;
+    QWidgetRepaintManager *repaintManager = nullptr;
 #ifdef QT_BUILD_INTERNAL
     if (QTLWExtra *topExtra = qt_widget_private(&widget)->maybeTopData())
-        backingStore = topExtra->widgetBackingStore.get();
+        repaintManager = topExtra->repaintManager.get();
 #endif
-    return backingStore;
+    return repaintManager;
 }
 
 // Tables of 5000 elements do not make sense on Windows Mobile.
@@ -9785,12 +9785,12 @@ class scrollWidgetWBS : public QWidget
 public:
     void deleteBackingStore()
     {
-        static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->widgetBackingStore.reset(nullptr);
+        static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->repaintManager.reset(nullptr);
     }
     void enableBackingStore()
     {
-        if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeBackingStore()) {
-            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->widgetBackingStore.reset(new QWidgetBackingStore(this));
+        if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeRepaintManager()) {
+            static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->repaintManager.reset(new QWidgetRepaintManager(this));
             static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBackingStore(this->rect());
             repaint();
         }

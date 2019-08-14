@@ -90,7 +90,7 @@
 #include <private/qgraphicseffect_p.h>
 #endif
 #include <qbackingstore.h>
-#include <private/qwidgetbackingstore_p.h>
+#include <private/qwidgetrepaintmanager_p.h>
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
 # include <private/qpaintengine_mac_p.h>
 #endif
@@ -869,11 +869,11 @@ QRegion qt_dirtyRegion(QWidget *widget)
     if (!widget)
         return QRegion();
 
-    QWidgetBackingStore *bs = qt_widget_private(widget)->maybeBackingStore();
-    if (!bs)
+    QWidgetRepaintManager *repaintManager = qt_widget_private(widget)->maybeRepaintManager();
+    if (!repaintManager)
         return QRegion();
 
-    return bs->dirtyRegion(widget);
+    return repaintManager->dirtyRegion(widget);
 }
 
 /*****************************************************************************
@@ -1278,9 +1278,9 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
     setAttribute(Qt::WA_WState_Created);                        // set created flag
     d->create();
 
-    // a real toplevel window needs a backing store
+    // A real toplevel window needs a paint manager
     if (isWindow() && windowType() != Qt::Desktop)
-        d->topData()->widgetBackingStore.reset(new QWidgetBackingStore(this));
+        d->topData()->repaintManager.reset(new QWidgetRepaintManager(this));
 
     d->setModal_sys();
 
@@ -1585,10 +1585,10 @@ QWidget::~QWidget()
         qApp->d_func()->sendSyntheticEnterLeave(this);
     }
 
-    if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
-        bs->removeDirtyWidget(this);
+    if (QWidgetRepaintManager *repaintManager = d->maybeRepaintManager()) {
+        repaintManager->removeDirtyWidget(this);
         if (testAttribute(Qt::WA_StaticContents))
-            bs->removeStaticWidget(this);
+            repaintManager->removeStaticWidget(this);
     }
 
     delete d->needsFlush;
@@ -1804,7 +1804,7 @@ void QWidgetPrivate::deleteTLSysExtra()
         //the qplatformbackingstore may hold a reference to the window, so the backingstore
         //needs to be deleted first.
 
-        extra->topextra->widgetBackingStore.reset(nullptr);
+        extra->topextra->repaintManager.reset(nullptr);
         deleteBackingStore(this);
 #ifndef QT_NO_OPENGL
         extra->topextra->widgetTextures.clear();
@@ -1875,8 +1875,8 @@ void QWidgetPrivate::syncBackingStore()
     if (paintOnScreen()) {
         repaint_sys(dirty);
         dirty = QRegion();
-    } else if (QWidgetBackingStore *bs = maybeBackingStore()) {
-        bs->sync();
+    } else if (QWidgetRepaintManager *repaintManager = maybeRepaintManager()) {
+        repaintManager->sync();
     }
 }
 
@@ -1884,8 +1884,8 @@ void QWidgetPrivate::syncBackingStore(const QRegion &region)
 {
     if (paintOnScreen())
         repaint_sys(region);
-    else if (QWidgetBackingStore *bs = maybeBackingStore()) {
-        bs->sync(q_func(), region);
+    else if (QWidgetRepaintManager *repaintManager = maybeRepaintManager()) {
+        repaintManager->sync(q_func(), region);
     }
 }
 
@@ -5411,7 +5411,7 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
 }
 
 void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QPoint &offset, int flags,
-                                QPainter *sharedPainter, QWidgetBackingStore *backingStore)
+                                QPainter *sharedPainter, QWidgetRepaintManager *repaintManager)
 {
     if (rgn.isEmpty())
         return;
@@ -5426,7 +5426,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         QWidgetEffectSourcePrivate *sourced = static_cast<QWidgetEffectSourcePrivate *>
                                                          (source->d_func());
         if (!sourced->context) {
-            QWidgetPaintContext context(pdev, rgn, offset, flags, sharedPainter, backingStore);
+            QWidgetPaintContext context(pdev, rgn, offset, flags, sharedPainter, repaintManager);
             sourced->context = &context;
             if (!sharedPainter) {
                 setSystemClip(pdev->paintEngine(), pdev->devicePixelRatioF(), rgn.translated(offset));
@@ -5452,8 +5452,8 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 
             // Native widgets need to be marked dirty on screen so painting will be done in correct context
             // Same check as in the no effects case below.
-            if (backingStore && !onScreen && !asRoot && (q->internalWinId() || !q->nativeParentWidget()->isWindow()))
-                backingStore->markDirtyOnScreen(rgn, q, offset);
+            if (repaintManager && !onScreen && !asRoot && (q->internalWinId() || !q->nativeParentWidget()->isWindow()))
+                repaintManager->markDirtyOnScreen(rgn, q, offset);
 
             return;
         }
@@ -5481,7 +5481,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 
             //clip away the new area
 #ifndef QT_NO_PAINT_DEBUG
-            bool flushed = QWidgetBackingStore::flushPaint(q, toBePainted);
+            bool flushed = QWidgetRepaintManager::flushPaint(q, toBePainted);
 #endif
             QPaintEngine *paintEngine = pdev->paintEngine();
             if (paintEngine) {
@@ -5543,11 +5543,11 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 // This widget renders into a texture which is composed later. We just need to
                 // punch a hole in the backingstore, so the texture will be visible.
                 beginBackingStorePainting();
-                if (!q->testAttribute(Qt::WA_AlwaysStackOnTop) && backingStore) {
+                if (!q->testAttribute(Qt::WA_AlwaysStackOnTop) && repaintManager) {
                     QPainter p(q);
                     p.setCompositionMode(QPainter::CompositionMode_Source);
                     p.fillRect(q->rect(), Qt::transparent);
-                } else if (!backingStore) {
+                } else if (!repaintManager) {
                     // We are not drawing to a backingstore: fall back to QImage
                     QImage img = grabFramebuffer();
                     // grabFramebuffer() always sets the format to RGB32
@@ -5572,8 +5572,8 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             }
 
             // Native widgets need to be marked dirty on screen so painting will be done in correct context
-            if (backingStore && !onScreen && !asRoot && (q->internalWinId() || (q->nativeParentWidget() && !q->nativeParentWidget()->isWindow())))
-                backingStore->markDirtyOnScreen(toBePainted, q, offset);
+            if (repaintManager && !onScreen && !asRoot && (q->internalWinId() || (q->nativeParentWidget() && !q->nativeParentWidget()->isWindow())))
+                repaintManager->markDirtyOnScreen(toBePainted, q, offset);
 
             //restore
             if (paintEngine) {
@@ -5599,7 +5599,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 
 #ifndef QT_NO_PAINT_DEBUG
             if (flushed)
-                QWidgetBackingStore::unflushPaint(q, toBePainted);
+                QWidgetRepaintManager::unflushPaint(q, toBePainted);
 #endif
         } else if (q->isWindow()) {
             QPaintEngine *engine = pdev->paintEngine();
@@ -5619,8 +5619,8 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
     }
 
     if (recursive && !children.isEmpty()) {
-        paintSiblingsRecursive(pdev, children, children.size() - 1, rgn, offset, flags & ~DrawAsRoot
-                                , sharedPainter, backingStore);
+        paintSiblingsRecursive(pdev, children, children.size() - 1, rgn, offset, flags & ~DrawAsRoot,
+                               sharedPainter, repaintManager);
     }
 }
 
@@ -5712,7 +5712,7 @@ void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
 
 void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectList& siblings, int index, const QRegion &rgn,
                                             const QPoint &offset, int flags
-                                            , QPainter *sharedPainter, QWidgetBackingStore *backingStore)
+                                            , QPainter *sharedPainter, QWidgetRepaintManager *repaintManager)
 {
     QWidget *w = 0;
     QRect boundingRect;
@@ -5747,8 +5747,8 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
         QRegion wr(rgn);
         if (wd->isOpaque)
             wr -= hasMask ? wd->extra->mask.translated(widgetPos) : w->data->crect;
-        paintSiblingsRecursive(pdev, siblings, --index, wr, offset, flags
-                               , sharedPainter, backingStore);
+        paintSiblingsRecursive(pdev, siblings, --index, wr, offset, flags,
+                               sharedPainter, repaintManager);
     }
 
     if (w->updatesEnabled()
@@ -5761,7 +5761,7 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
         wRegion.translate(-widgetPos);
         if (hasMask)
             wRegion &= wd->extra->mask;
-        wd->drawWidget(pdev, wRegion, offset + widgetPos, flags, sharedPainter, backingStore);
+        wd->drawWidget(pdev, wRegion, offset + widgetPos, flags, sharedPainter, repaintManager);
     }
 }
 
@@ -5796,7 +5796,7 @@ void QWidgetEffectSourcePrivate::draw(QPainter *painter)
         toBePainted &= wd->extra->mask;
 
     wd->drawWidget(context->pdev, toBePainted, context->offset, context->flags,
-                   context->sharedPainter, context->backingStore);
+                   context->sharedPainter, context->repaintManager);
 }
 
 QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset,
@@ -8173,8 +8173,8 @@ void QWidgetPrivate::hide_helper()
         }
     }
 
-    if (QWidgetBackingStore *bs = maybeBackingStore())
-        bs->removeDirtyWidget(q);
+    if (QWidgetRepaintManager *repaintManager = maybeRepaintManager())
+        repaintManager->removeDirtyWidget(q);
 
 #ifndef QT_NO_ACCESSIBILITY
     if (wasVisible) {
@@ -10680,12 +10680,12 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     }
 #endif
 
-    if (QWidgetBackingStore *oldBs = oldtlw->d_func()->maybeBackingStore()) {
+    if (QWidgetRepaintManager *oldPaintManager = oldtlw->d_func()->maybeRepaintManager()) {
         if (newParent)
-            oldBs->removeDirtyWidget(this);
+            oldPaintManager->removeDirtyWidget(this);
         // Move the widget and all its static children from
         // the old backing store to the new one.
-        oldBs->moveStaticWidgets(this);
+        oldPaintManager->moveStaticWidgets(this);
     }
 
     // ### fixme: Qt 6: Remove AA_ImmediateWidgetCreation.
@@ -11039,7 +11039,7 @@ void QWidgetPrivate::repaint(T r)
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
     if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
-        tlwExtra->widgetBackingStore->markDirty(r, q, QWidgetBackingStore::UpdateNow);
+        tlwExtra->repaintManager->markDirty(r, q, QWidgetRepaintManager::UpdateNow);
 }
 
 /*!
@@ -11114,7 +11114,7 @@ void QWidgetPrivate::update(T r)
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
     if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
-        tlwExtra->widgetBackingStore->markDirty(clipped, q);
+        tlwExtra->repaintManager->markDirty(clipped, q);
 }
 
  /*!
@@ -11395,11 +11395,11 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
 
     case Qt::WA_StaticContents:
-        if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
+        if (QWidgetRepaintManager *repaintManager = d->maybeRepaintManager()) {
             if (on)
-                bs->addStaticWidget(this);
+                repaintManager->addStaticWidget(this);
             else
-                bs->removeStaticWidget(this);
+                repaintManager->removeStaticWidget(this);
         }
         break;
     case Qt::WA_TranslucentBackground:
@@ -12204,14 +12204,14 @@ void QWidget::setBackingStore(QBackingStore *store)
     deleteBackingStore(d);
     topData->backingStore = store;
 
-    QWidgetBackingStore *bs = d->maybeBackingStore();
-    if (!bs)
+    QWidgetRepaintManager *repaintManager = d->maybeRepaintManager();
+    if (!repaintManager)
         return;
 
     if (isTopLevel()) {
-        if (bs->store != oldStore && bs->store != store)
-            delete bs->store;
-        bs->store = store;
+        if (repaintManager->store != oldStore && repaintManager->store != store)
+            delete repaintManager->store;
+        repaintManager->store = store;
     }
 }
 
@@ -12227,9 +12227,8 @@ QBackingStore *QWidget::backingStore() const
     if (extra && extra->backingStore)
         return extra->backingStore;
 
-    QWidgetBackingStore *bs = d->maybeBackingStore();
-
-    return bs ? bs->store : 0;
+    QWidgetRepaintManager *repaintManager = d->maybeRepaintManager();
+    return repaintManager ? repaintManager->store : nullptr;
 }
 
 void QWidgetPrivate::getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const

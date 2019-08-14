@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWIDGETBACKINGSTORE_P_H
-#define QWIDGETBACKINGSTORE_P_H
+#ifndef QWIDGETREPAINTMANAGER_P_H
+#define QWIDGETREPAINTMANAGER_P_H
 
 //
 //  W A R N I N G
@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 class QPlatformTextureList;
 class QPlatformTextureListWatcher;
-class QWidgetBackingStore;
+class QWidgetRepaintManager;
 
 struct BeginPaintInfo {
     inline BeginPaintInfo() : wasFlushed(0), nothingToPaint(0), backingStoreRecreated(0) {}
@@ -76,7 +76,7 @@ class QPlatformTextureListWatcher : public QObject
     Q_OBJECT
 
 public:
-    QPlatformTextureListWatcher(QWidgetBackingStore *backingStore);
+    QPlatformTextureListWatcher(QWidgetRepaintManager *repaintManager);
     void watch(QPlatformTextureList *textureList);
     bool isLocked() const;
 
@@ -85,11 +85,11 @@ private slots:
 
 private:
      QHash<QPlatformTextureList *, bool> m_locked;
-     QWidgetBackingStore *m_backingStore;
+     QWidgetRepaintManager *m_repaintManager;
 };
 #endif
 
-class Q_AUTOTEST_EXPORT QWidgetBackingStore
+class Q_AUTOTEST_EXPORT QWidgetRepaintManager
 {
 public:
     enum UpdateTime {
@@ -102,8 +102,8 @@ public:
         BufferInvalid
     };
 
-    QWidgetBackingStore(QWidget *t);
-    ~QWidgetBackingStore();
+    QWidgetRepaintManager(QWidget *t);
+    ~QWidgetRepaintManager();
 
     static void showYellowThing(QWidget *widget, const QRegion &rgn, int msec, bool);
 
@@ -145,7 +145,7 @@ private:
     static void qt_flush(QWidget *widget, const QRegion &region, QBackingStore *backingStore,
                          QWidget *tlw,
                          QPlatformTextureList *widgetTextures,
-                         QWidgetBackingStore *widgetBackingStore);
+                         QWidgetRepaintManager *repaintManager);
 
     void doSync();
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);
@@ -208,8 +208,8 @@ private:
     inline void moveStaticWidgets(QWidget *reparented)
     {
         Q_ASSERT(reparented);
-        QWidgetBackingStore *newBs = reparented->d_func()->maybeBackingStore();
-        if (newBs == this)
+        QWidgetRepaintManager *newPaintManager = reparented->d_func()->maybeRepaintManager();
+        if (newPaintManager == this)
             return;
 
         int i = 0;
@@ -217,8 +217,8 @@ private:
             QWidget *w = staticWidgets.at(i);
             if (reparented == w || reparented->isAncestorOf(w)) {
                 staticWidgets.removeAt(i);
-                if (newBs)
-                    newBs->addStaticWidget(w);
+                if (newPaintManager)
+                    newPaintManager->addStaticWidget(w);
             } else {
                 ++i;
             }
@@ -273,9 +273,9 @@ private:
     friend class QWidget;
     friend class QBackingStore;
 
-    Q_DISABLE_COPY_MOVE(QWidgetBackingStore)
+    Q_DISABLE_COPY_MOVE(QWidgetRepaintManager)
 };
 
 QT_END_NAMESPACE
 
-#endif // QBACKINGSTORE_P_H
+#endif // QWIDGETREPAINTMANAGER_P_H

@@ -40,7 +40,7 @@
 
 #include "qplatformdefs.h"
 
-#include "qwidgetbackingstore_p.h"
+#include "qwidgetrepaintmanager_p.h"
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qdebug.h>
@@ -87,9 +87,9 @@ static bool hasPlatformWindow(QWidget *widget)
  * Flushes the contents of the \a backingStore into the screen area of \a widget.
  * \a region is the region to be updated in \a widget coordinates.
  */
-void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBackingStore *backingStore,
+void QWidgetRepaintManager::qt_flush(QWidget *widget, const QRegion &region, QBackingStore *backingStore,
                                    QWidget *tlw, QPlatformTextureList *widgetTextures,
-                                   QWidgetBackingStore *widgetBackingStore)
+                                   QWidgetRepaintManager *repaintManager)
 {
 #ifdef QT_NO_OPENGL
     Q_UNUSED(widgetTextures);
@@ -103,7 +103,7 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
 #if !defined(QT_NO_PAINT_DEBUG)
     static int flushUpdate = qEnvironmentVariableIntValue("QT_FLUSH_UPDATE");
     if (flushUpdate > 0)
-        QWidgetBackingStore::showYellowThing(widget, region, flushUpdate * 10, false);
+        QWidgetRepaintManager::showYellowThing(widget, region, flushUpdate * 10, false);
 #endif
 
     if (tlw->testAttribute(Qt::WA_DontShowOnScreen) || widget->testAttribute(Qt::WA_DontShowOnScreen))
@@ -117,12 +117,12 @@ void QWidgetBackingStore::qt_flush(QWidget *widget, const QRegion &region, QBack
 
     static bool fpsDebug = qEnvironmentVariableIntValue("QT_DEBUG_FPS");
     if (fpsDebug) {
-        if (!widgetBackingStore->perfFrames++)
-            widgetBackingStore->perfTime.start();
-        if (widgetBackingStore->perfTime.elapsed() > 5000) {
-            double fps = double(widgetBackingStore->perfFrames * 1000) / widgetBackingStore->perfTime.restart();
+        if (!repaintManager->perfFrames++)
+            repaintManager->perfTime.start();
+        if (repaintManager->perfTime.elapsed() > 5000) {
+            double fps = double(repaintManager->perfFrames * 1000) / repaintManager->perfTime.restart();
             qDebug("FPS: %.1f\n", fps);
-            widgetBackingStore->perfFrames = 0;
+            repaintManager->perfFrames = 0;
         }
     }
 
@@ -197,7 +197,7 @@ static void showYellowThing_win(QWidget *widget, const QRegion &region, int msec
 }
 #endif //  defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 
-void QWidgetBackingStore::showYellowThing(QWidget *widget, const QRegion &toBePainted, int msec, bool unclipped)
+void QWidgetRepaintManager::showYellowThing(QWidget *widget, const QRegion &toBePainted, int msec, bool unclipped)
 {
 #ifdef Q_OS_WINRT
     Q_UNUSED(msec)
@@ -268,7 +268,7 @@ void QWidgetBackingStore::showYellowThing(QWidget *widget, const QRegion &toBePa
 #endif // !Q_OS_WIN
 }
 
-bool QWidgetBackingStore::flushPaint(QWidget *widget, const QRegion &rgn)
+bool QWidgetRepaintManager::flushPaint(QWidget *widget, const QRegion &rgn)
 {
     if (!widget)
         return false;
@@ -286,11 +286,11 @@ bool QWidgetBackingStore::flushPaint(QWidget *widget, const QRegion &rgn)
         delay = flushPaint;
     }
 
-    QWidgetBackingStore::showYellowThing(widget, rgn, delay * 10, true);
+    QWidgetRepaintManager::showYellowThing(widget, rgn, delay * 10, true);
     return true;
 }
 
-void QWidgetBackingStore::unflushPaint(QWidget *widget, const QRegion &rgn)
+void QWidgetRepaintManager::unflushPaint(QWidget *widget, const QRegion &rgn)
 {
     if (widget->d_func()->paintOnScreen() || rgn.isEmpty())
         return;
@@ -300,7 +300,7 @@ void QWidgetBackingStore::unflushPaint(QWidget *widget, const QRegion &rgn)
     if (!tlwExtra)
         return;
 
-    qt_flush(widget, rgn, tlwExtra->widgetBackingStore->store, tlw, 0, tlw->d_func()->maybeBackingStore());
+    qt_flush(widget, rgn, tlwExtra->repaintManager->store, tlw, 0, tlw->d_func()->maybeRepaintManager());
 }
 #endif // QT_NO_PAINT_DEBUG
 
@@ -308,7 +308,7 @@ void QWidgetBackingStore::unflushPaint(QWidget *widget, const QRegion &rgn)
     Moves the whole rect by (dx, dy) in widget's coordinate system.
     Doesn't generate any updates.
 */
-bool QWidgetBackingStore::bltRect(const QRect &rect, int dx, int dy, QWidget *widget)
+bool QWidgetRepaintManager::bltRect(const QRect &rect, int dx, int dy, QWidget *widget)
 {
     const QPoint pos(widget->mapTo(tlw, rect.topLeft()));
     const QRect tlwRect(QRect(pos, rect.size()));
@@ -323,7 +323,7 @@ bool QWidgetBackingStore::bltRect(const QRect &rect, int dx, int dy, QWidget *wi
 
     The \a toClean region might be clipped by the window surface.
 */
-void QWidgetBackingStore::beginPaint(QRegion &toClean, QWidget *widget, QBackingStore *backingStore,
+void QWidgetRepaintManager::beginPaint(QRegion &toClean, QWidget *widget, QBackingStore *backingStore,
                                      BeginPaintInfo *returnInfo, bool toCleanIsInTopLevelCoordinates)
 {
     Q_UNUSED(widget);
@@ -335,7 +335,7 @@ void QWidgetBackingStore::beginPaint(QRegion &toClean, QWidget *widget, QBacking
 #ifdef QT_NO_PAINT_DEBUG
     backingStore->beginPaint(toClean);
 #else
-    returnInfo->wasFlushed = QWidgetBackingStore::flushPaint(tlw, toClean);
+    returnInfo->wasFlushed = QWidgetRepaintManager::flushPaint(tlw, toClean);
     // Avoid deadlock with QT_FLUSH_PAINT: the server will wait for
     // the BackingStore lock, so if we hold that, the server will
     // never release the Communication lock that we are waiting for in
@@ -347,14 +347,14 @@ void QWidgetBackingStore::beginPaint(QRegion &toClean, QWidget *widget, QBacking
     Q_UNUSED(returnInfo);
 }
 
-void QWidgetBackingStore::endPaint(const QRegion &cleaned, QBackingStore *backingStore,
+void QWidgetRepaintManager::endPaint(const QRegion &cleaned, QBackingStore *backingStore,
         BeginPaintInfo *beginPaintInfo)
 {
 #ifndef QT_NO_PAINT_DEBUG
     if (!beginPaintInfo->wasFlushed)
         backingStore->endPaint();
     else
-        QWidgetBackingStore::unflushPaint(tlw, cleaned);
+        QWidgetRepaintManager::unflushPaint(tlw, cleaned);
 #else
     Q_UNUSED(beginPaintInfo);
     Q_UNUSED(cleaned);
@@ -370,7 +370,7 @@ void QWidgetBackingStore::endPaint(const QRegion &cleaned, QBackingStore *backin
     If the widget is non-zero, only the dirty region for the widget is returned
     and the region will be in widget coordinates.
 */
-QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
+QRegion QWidgetRepaintManager::dirtyRegion(QWidget *widget) const
 {
     const bool widgetDirty = widget && widget != tlw;
     const QRect tlwRect(topLevelRect());
@@ -419,7 +419,7 @@ QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
     for the entire backing store is returned. The content will be clipped to \a withinClipRect
     if non-empty.
 */
-QRegion QWidgetBackingStore::staticContents(QWidget *parent, const QRect &withinClipRect) const
+QRegion QWidgetRepaintManager::staticContents(QWidget *parent, const QRect &withinClipRect) const
 {
     if (!parent && tlw->testAttribute(Qt::WA_StaticContents)) {
         const QSize surfaceGeometry(store->size());
@@ -467,7 +467,7 @@ QRegion QWidgetBackingStore::staticContents(QWidget *parent, const QRect &within
     return region;
 }
 
-void QWidgetBackingStore::sendUpdateRequest(QWidget *widget, UpdateTime updateTime)
+void QWidgetRepaintManager::sendUpdateRequest(QWidget *widget, UpdateTime updateTime)
 {
     if (!widget)
         return;
@@ -520,7 +520,7 @@ static inline QRect widgetRectFor(QWidget *widget, const QRegion &) { return wid
     instead of the top-level widget, and bufferState is completely ignored.
 */
 template <class T>
-void QWidgetBackingStore::markDirty(const T &r, QWidget *widget, UpdateTime updateTime, BufferState bufferState)
+void QWidgetRepaintManager::markDirty(const T &r, QWidget *widget, UpdateTime updateTime, BufferState bufferState)
 {
     Q_ASSERT(tlw->d_func()->extra);
     Q_ASSERT(tlw->d_func()->extra->topextra);
@@ -624,8 +624,8 @@ void QWidgetBackingStore::markDirty(const T &r, QWidget *widget, UpdateTime upda
     if (updateTime == UpdateNow)
         sendUpdateRequest(tlw, updateTime);
 }
-template void QWidgetBackingStore::markDirty<QRect>(const QRect &, QWidget *, UpdateTime, BufferState);
-template void QWidgetBackingStore::markDirty<QRegion>(const QRegion &, QWidget *, UpdateTime, BufferState);
+template void QWidgetRepaintManager::markDirty<QRect>(const QRect &, QWidget *, UpdateTime, BufferState);
+template void QWidgetRepaintManager::markDirty<QRegion>(const QRegion &, QWidget *, UpdateTime, BufferState);
 
 /*!
     Marks the \a region of the \a widget as dirty on screen. The \a region will be copied from
@@ -633,7 +633,7 @@ template void QWidgetBackingStore::markDirty<QRegion>(const QRegion &, QWidget *
 
     Paint on screen widgets are ignored.
 */
-void QWidgetBackingStore::markDirtyOnScreen(const QRegion &region, QWidget *widget, const QPoint &topLevelOffset)
+void QWidgetRepaintManager::markDirtyOnScreen(const QRegion &region, QWidget *widget, const QPoint &topLevelOffset)
 {
     if (!widget || widget->d_func()->paintOnScreen() || region.isEmpty())
         return;
@@ -678,7 +678,7 @@ void QWidgetBackingStore::markDirtyOnScreen(const QRegion &region, QWidget *widg
     appendDirtyOnScreenWidget(widget);
 }
 
-void QWidgetBackingStore::removeDirtyWidget(QWidget *w)
+void QWidgetRepaintManager::removeDirtyWidget(QWidget *w)
 {
     if (!w)
         return;
@@ -696,7 +696,7 @@ void QWidgetBackingStore::removeDirtyWidget(QWidget *w)
     }
 }
 
-void QWidgetBackingStore::updateLists(QWidget *cur)
+void QWidgetRepaintManager::updateLists(QWidget *cur)
 {
     if (!cur)
         return;
@@ -714,7 +714,7 @@ void QWidgetBackingStore::updateLists(QWidget *cur)
         addStaticWidget(cur);
 }
 
-QWidgetBackingStore::QWidgetBackingStore(QWidget *topLevel)
+QWidgetRepaintManager::QWidgetRepaintManager(QWidget *topLevel)
     : tlw(topLevel),
       updateRequestSent(0),
       textureListWatcher(0),
@@ -727,7 +727,7 @@ QWidgetBackingStore::QWidgetBackingStore(QWidget *topLevel)
     updateLists(topLevel);
 }
 
-QWidgetBackingStore::~QWidgetBackingStore()
+QWidgetRepaintManager::~QWidgetRepaintManager()
 {
     for (int c = 0; c < dirtyWidgets.size(); ++c)
         resetWidget(dirtyWidgets.at(c));
@@ -800,7 +800,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
         invalidateBackingStore((newRect & clipR).translated(-data.crect.topLeft()));
     } else {
 
-        QWidgetBackingStore *wbs = x->widgetBackingStore.get();
+        QWidgetRepaintManager *wbs = x->repaintManager.get();
         QRegion childExpose(newRect & clipR);
         QRegion overlappedExpose;
 
@@ -864,7 +864,7 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
     if (x->inTopLevelResize)
         return;
 
-    QWidgetBackingStore *wbs = x->widgetBackingStore.get();
+    QWidgetRepaintManager *wbs = x->repaintManager.get();
     if (!wbs)
         return;
 
@@ -1006,8 +1006,8 @@ static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
 // unlocked state. This is essential when a custom composeAndFlush()
 // implementation in a platform plugin is not synchronous and keeps
 // holding on to the textures for some time even after returning from there.
-QPlatformTextureListWatcher::QPlatformTextureListWatcher(QWidgetBackingStore *backingStore)
-    : m_backingStore(backingStore)
+QPlatformTextureListWatcher::QPlatformTextureListWatcher(QWidgetRepaintManager *paintManager)
+    : m_repaintManager(paintManager)
 {
 }
 
@@ -1031,7 +1031,7 @@ void QPlatformTextureListWatcher::onLockStatusChanged(bool locked)
     QPlatformTextureList *tl = static_cast<QPlatformTextureList *>(sender());
     m_locked[tl] = locked;
     if (!isLocked())
-        m_backingStore->sync();
+        m_repaintManager->sync();
 }
 
 #else
@@ -1053,7 +1053,7 @@ static inline bool discardSyncRequest(QWidget *tlw, QTLWExtra *tlwExtra)
     return false;
 }
 
-bool QWidgetBackingStore::syncAllowed()
+bool QWidgetRepaintManager::syncAllowed()
 {
 #ifndef QT_NO_OPENGL
     QTLWExtra *tlwExtra = tlw->d_func()->maybeTopData();
@@ -1085,7 +1085,7 @@ bool QWidgetBackingStore::syncAllowed()
     otherwise the area is marked as dirty on screen and will be flushed right after
     we are done with all painting.
 */
-void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedRegion)
+void QWidgetRepaintManager::sync(QWidget *exposedWidget, const QRegion &exposedRegion)
 {
     QTLWExtra *tlwExtra = tlw->d_func()->maybeTopData();
     if (!tlw->isVisible() || !tlwExtra || tlwExtra->inTopLevelResize)
@@ -1116,7 +1116,7 @@ void QWidgetBackingStore::sync(QWidget *exposedWidget, const QRegion &exposedReg
 /*!
     Synchronizes the backing store, i.e. dirty areas are repainted and flushed.
 */
-void QWidgetBackingStore::sync()
+void QWidgetRepaintManager::sync()
 {
     updateRequestSent = false;
     QTLWExtra *tlwExtra = tlw->d_func()->maybeTopData();
@@ -1139,7 +1139,7 @@ void QWidgetBackingStore::sync()
         doSync();
 }
 
-void QWidgetBackingStore::doSync()
+void QWidgetRepaintManager::doSync()
 {
     const bool updatesDisabled = !tlw->updatesEnabled();
     bool repaintAllWidgets = false;
@@ -1365,7 +1365,7 @@ void QWidgetBackingStore::doSync()
     If the \a widget is non-zero, the content is flushed to the \a widget.
     If the \a surface is non-zero, the content of the \a surface is flushed.
 */
-void QWidgetBackingStore::flush(QWidget *widget)
+void QWidgetRepaintManager::flush(QWidget *widget)
 {
     const bool hasDirtyOnScreenWidgets = !dirtyOnScreenWidgets.isEmpty();
     bool flushed = false;
@@ -1424,8 +1424,8 @@ void QWidgetPrivate::invalidateBackingStore_resizeHelper(const QPoint &oldPos, c
 
     if (!staticContents || graphicsEffect) {
         QRegion staticChildren;
-        QWidgetBackingStore *bs = 0;
-        if (offset.isNull() && (bs = maybeBackingStore()))
+        QWidgetRepaintManager *bs = 0;
+        if (offset.isNull() && (bs = maybeRepaintManager()))
             staticChildren = bs->staticContents(q, oldWidgetRect);
         const bool hasStaticChildren = !staticChildren.isEmpty();
 
@@ -1528,11 +1528,11 @@ void QWidgetPrivate::invalidateBackingStore(const T &r)
         if (masked.isEmpty())
             return;
 
-        tlwExtra->widgetBackingStore->markDirty(masked, q,
-            QWidgetBackingStore::UpdateLater, QWidgetBackingStore::BufferInvalid);
+        tlwExtra->repaintManager->markDirty(masked, q,
+            QWidgetRepaintManager::UpdateLater, QWidgetRepaintManager::BufferInvalid);
     } else {
-        tlwExtra->widgetBackingStore->markDirty(clipped, q,
-            QWidgetBackingStore::UpdateLater, QWidgetBackingStore::BufferInvalid);
+        tlwExtra->repaintManager->markDirty(clipped, q,
+            QWidgetRepaintManager::UpdateLater, QWidgetRepaintManager::BufferInvalid);
     }
 }
 // Needed by tst_QWidget
@@ -1575,14 +1575,14 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
         return; // Nothing to repaint.
 
 #ifndef QT_NO_PAINT_DEBUG
-    bool flushed = QWidgetBackingStore::flushPaint(q, toBePainted);
+    bool flushed = QWidgetRepaintManager::flushPaint(q, toBePainted);
 #endif
 
     drawWidget(q, toBePainted, QPoint(), QWidgetPrivate::DrawAsRoot | QWidgetPrivate::DrawPaintOnScreen, 0);
 
 #ifndef QT_NO_PAINT_DEBUG
     if (flushed)
-        QWidgetBackingStore::unflushPaint(q, toBePainted);
+        QWidgetRepaintManager::unflushPaint(q, toBePainted);
 #endif
 
     if (Q_UNLIKELY(q->paintingActive()))
@@ -1592,4 +1592,4 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
 
 QT_END_NAMESPACE
 
-#include "moc_qwidgetbackingstore_p.cpp"
+#include "moc_qwidgetrepaintmanager_p.cpp"
