@@ -465,6 +465,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
 
     switch (elem) {
 
+#if QT_CONFIG(groupbox)
     // No frame drawn
     case PE_FrameGroupBox:
     {
@@ -481,6 +482,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
         qDrawBorderPixmap(painter, frame, QMargins(6, 6, 6, 6), pixmap);
         break;
     }
+#endif // QT_CONFIG(groupbox)
     case PE_IndicatorBranch: {
         if (!(option->state & State_Children))
             break;
