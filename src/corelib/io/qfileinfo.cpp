@@ -249,17 +249,18 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     isSymLink(). The symLinkTarget() function provides the name of the file
     the symlink points to.
 
-    On Unix (including \macos and iOS), the symlink has the same size() has
-    the file it points to, because Unix handles symlinks
-    transparently; similarly, opening a symlink using QFile
-    effectively opens the link's target. For example:
+    On Unix (including \macos and iOS), the property getter functions in this
+    class return the properties such as times and size of the target file, not
+    the symlink, because Unix handles symlinks transparently. Opening a symlink
+    using QFile effectively opens the link's target. For example:
 
     \snippet code/src_corelib_io_qfileinfo.cpp 0
 
-    On Windows, symlinks (shortcuts) are \c .lnk files. The reported
-    size() is that of the symlink (not the link's target), and
-    opening a symlink using QFile opens the \c .lnk file. For
-    example:
+    On Windows, symlinks (shortcuts) are \c .lnk files. Similarly to Unix
+    systems, the property getters return the size of the targeted file, not
+    the \c .lnk file itself. Please note this behavior is deprecated and will
+    likely be removed in a future version of Qt, after which \c .lnk files will
+    be treated as regular files.
 
     \snippet code/src_corelib_io_qfileinfo.cpp 1
 
@@ -904,6 +905,9 @@ QDir QFileInfo::absoluteDir() const
 /*!
     Returns \c true if the user can read the file; otherwise returns \c false.
 
+    If the file is a symlink, this function returns true if the target is
+    readable (not the symlink).
+
     \note If the \l{NTFS permissions} check has not been enabled, the result
     on Windows will merely reflect whether the file exists.
 
@@ -920,6 +924,9 @@ bool QFileInfo::isReadable() const
 
 /*!
     Returns \c true if the user can write to the file; otherwise returns \c false.
+
+    If the file is a symlink, this function returns true if the target is
+    writeable (not the symlink).
 
     \note If the \l{NTFS permissions} check has not been enabled, the result on
     Windows will merely reflect whether the file is marked as Read Only.
@@ -938,6 +945,9 @@ bool QFileInfo::isWritable() const
 /*!
     Returns \c true if the file is executable; otherwise returns \c false.
 
+    If the file is a symlink, this function returns true if the target is
+    executable (not the symlink).
+
     \sa isReadable(), isWritable(), permission()
 */
 bool QFileInfo::isExecutable() const
@@ -952,8 +962,13 @@ bool QFileInfo::isExecutable() const
 /*!
     Returns \c true if this is a `hidden' file; otherwise returns \c false.
 
-    \b{Note:} This function returns \c true for the special entries
-    "." and ".." on Unix, even though QDir::entryList threats them as shown.
+    \b{Note:} This function returns \c true for the special entries "." and
+    ".." on Unix, even though QDir::entryList threats them as shown. And note
+    that, since this function inspects the file name, on Unix it will inspect
+    the name of the symlink, if this file is a symlink, not the target's name.
+
+    On Windows, this function returns \c true if the target file is hidden (not
+    the symlink).
 */
 bool QFileInfo::isHidden() const
 {
@@ -992,6 +1007,9 @@ bool QFileInfo::isNativePath() const
     link to a file. Returns \c false if the
     object points to something which isn't a file, such as a directory.
 
+    If the file is a symlink, this function returns true if the target is a
+    regular file (not the symlink).
+
     \sa isDir(), isSymLink(), isBundle()
 */
 bool QFileInfo::isFile() const
@@ -1006,6 +1024,9 @@ bool QFileInfo::isFile() const
 /*!
     Returns \c true if this object points to a directory or to a symbolic
     link to a directory; otherwise returns \c false.
+
+    If the file is a symlink, this function returns true if the target is a
+    directory (not the symlink).
 
     \sa isFile(), isSymLink(), isBundle()
 */
@@ -1023,6 +1044,9 @@ bool QFileInfo::isDir() const
     \since 4.3
     Returns \c true if this object points to a bundle or to a symbolic
     link to a bundle on \macos and iOS; otherwise returns \c false.
+
+    If the file is a symlink, this function returns true if the target is a
+    bundle (not the symlink).
 
     \sa isDir(), isSymLink(), isFile()
 */
@@ -1045,7 +1069,8 @@ bool QFileInfo::isBundle() const
     the \l{symLinkTarget()}{link's target}.
 
     In addition, true will be returned for shortcuts (\c *.lnk files) on
-    Windows. Opening those will open the \c .lnk file itself.
+    Windows. This behavior is deprecated and will likely change in a future
+    version of Qt. Opening those will open the \c .lnk file itself.
 
     Example:
 
@@ -1136,6 +1161,9 @@ QString QFileInfo::symLinkTarget() const
     milliseconds). On Windows, it will return an empty string unless
     the \l{NTFS permissions} check has been enabled.
 
+    If the file is a symlink, this function returns the owner of the target
+    (not the symlink).
+
     \sa ownerId(), group(), groupId()
 */
 QString QFileInfo::owner() const
@@ -1151,6 +1179,9 @@ QString QFileInfo::owner() const
 
     On Windows and on systems where files do not have owners this
     function returns ((uint) -2).
+
+    If the file is a symlink, this function returns the id of the owner of the target
+    (not the symlink).
 
     \sa owner(), group(), groupId()
 */
@@ -1171,6 +1202,9 @@ uint QFileInfo::ownerId() const
     This function can be time consuming under Unix (in the order of
     milliseconds).
 
+    If the file is a symlink, this function returns the owning group of the
+    target (not the symlink).
+
     \sa groupId(), owner(), ownerId()
 */
 QString QFileInfo::group() const
@@ -1186,6 +1220,9 @@ QString QFileInfo::group() const
 
     On Windows and on systems where files do not have groups this
     function always returns (uint) -2.
+
+    If the file is a symlink, this function returns the id of the group owning the
+    target (not the symlink).
 
     \sa group(), owner(), ownerId()
 */
@@ -1212,6 +1249,9 @@ uint QFileInfo::groupId() const
     Example:
     \snippet code/src_corelib_io_qfileinfo.cpp 10
 
+    If the file is a symlink, this function checks the permissions of the
+    target (not the symlink).
+
     \sa isReadable(), isWritable(), isExecutable()
 */
 bool QFileInfo::permission(QFile::Permissions permissions) const
@@ -1234,6 +1274,9 @@ bool QFileInfo::permission(QFile::Permissions permissions) const
 
     \note The result might be inaccurate on Windows if the
     \l{NTFS permissions} check has not been enabled.
+
+    If the file is a symlink, this function returns the permissions of the
+    target (not the symlink).
 */
 QFile::Permissions QFileInfo::permissions() const
 {
@@ -1250,6 +1293,9 @@ QFile::Permissions QFileInfo::permissions() const
 /*!
     Returns the file size in bytes. If the file does not exist or cannot be
     fetched, 0 is returned.
+
+    If the file is a symlink, the size of the target file is returned
+    (not the symlink).
 
     \sa exists()
 */
@@ -1280,6 +1326,9 @@ qint64 QFileInfo::size() const
     the time the file was created, metadataChangeTime() to get the time its
     metadata was last changed, or lastModified() to get the time it was last modified.
 
+    If the file is a symlink, the time of the target file is returned
+    (not the symlink).
+
     \sa birthTime(), metadataChangeTime(), lastModified(), lastRead()
 */
 QDateTime QFileInfo::created() const
@@ -1298,6 +1347,9 @@ QDateTime QFileInfo::created() const
     If the file birth time is not available, this function returns an invalid
     QDateTime.
 
+    If the file is a symlink, the time of the target file is returned
+    (not the symlink).
+
     \sa lastModified(), lastRead(), metadataChangeTime()
 */
 QDateTime QFileInfo::birthTime() const
@@ -1312,6 +1364,9 @@ QDateTime QFileInfo::birthTime() const
     user writes or sets inode information (for example, changing the file
     permissions).
 
+    If the file is a symlink, the time of the target file is returned
+    (not the symlink).
+
     \sa lastModified(), lastRead()
 */
 QDateTime QFileInfo::metadataChangeTime() const
@@ -1321,6 +1376,9 @@ QDateTime QFileInfo::metadataChangeTime() const
 
 /*!
     Returns the date and local time when the file was last modified.
+
+    If the file is a symlink, the time of the target file is returned
+    (not the symlink).
 
     \sa birthTime(), lastRead(), metadataChangeTime(), fileTime()
 */
@@ -1335,6 +1393,9 @@ QDateTime QFileInfo::lastModified() const
     On platforms where this information is not available, returns the
     same as lastModified().
 
+    If the file is a symlink, the time of the target file is returned
+    (not the symlink).
+
     \sa birthTime(), lastModified(), metadataChangeTime(), fileTime()
 */
 QDateTime QFileInfo::lastRead() const
@@ -1347,6 +1408,9 @@ QDateTime QFileInfo::lastRead() const
 
     Returns the file time specified by \a time. If the time cannot be
     determined, an invalid date time is returned.
+
+    If the file is a symlink, the time of the target file is returned
+    (not the symlink).
 
     \sa QFile::FileTime, QDateTime::isValid()
 */
