@@ -4491,7 +4491,7 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
     while (count--) {
         int x = spans->x;
         int length = spans->len;
-        if (solidFill && bpp >= QPixelLayout::BPP8 && spans->coverage == 255 && length) {
+        if (solidFill && bpp >= QPixelLayout::BPP8 && spans->coverage == 255 && length && op.destStore64) {
             // If dest doesn't matter we don't need to bother with blending or converting all the identical pixels
             op.destStore64(data->rasterBuffer, x, spans->y, &color, 1);
             spanfill_from_first(data->rasterBuffer, bpp, x, spans->y, length);
