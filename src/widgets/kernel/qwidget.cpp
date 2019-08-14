@@ -2353,7 +2353,7 @@ bool QWidgetPrivate::updateBrushOrigin(QPainter *painter, const QBrush &brush) c
     return true;
 }
 
-void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int flags) const
+void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, DrawWidgetFlags flags) const
 {
     Q_Q(const QWidget);
 
@@ -5410,7 +5410,7 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
 #endif
 }
 
-void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QPoint &offset, int flags,
+void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QPoint &offset, DrawWidgetFlags flags,
                                 QPainter *sharedPainter, QWidgetRepaintManager *repaintManager)
 {
     if (rgn.isEmpty())
@@ -5508,7 +5508,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                     beginBackingStorePainting();
 #endif
                     QPainter p(q);
-                    paintBackground(&p, toBePainted, (asRoot || onScreen) ? flags | DrawAsRoot : 0);
+                    paintBackground(&p, toBePainted, (asRoot || onScreen) ? (flags | DrawAsRoot) : DrawWidgetFlags());
 #ifndef QT_NO_OPENGL
                     endBackingStorePainting();
 #endif
@@ -5691,7 +5691,7 @@ void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
     }
 
     // Set backingstore flags.
-    int flags = DrawPaintOnScreen | DrawInvisible;
+    DrawWidgetFlags flags = DrawPaintOnScreen | DrawInvisible;
     if (renderFlags & QWidget::DrawWindowBackground)
         flags |= DrawAsRoot;
 
@@ -5711,7 +5711,7 @@ void QWidgetPrivate::render(QPaintDevice *target, const QPoint &targetOffset,
 }
 
 void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectList& siblings, int index, const QRegion &rgn,
-                                            const QPoint &offset, int flags
+                                            const QPoint &offset, DrawWidgetFlags flags
                                             , QPainter *sharedPainter, QWidgetRepaintManager *repaintManager)
 {
     QWidget *w = 0;

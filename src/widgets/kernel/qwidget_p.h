@@ -266,10 +266,11 @@ static inline bool bypassGraphicsProxyWidget(const QWidget *p)
 class Q_WIDGETS_EXPORT QWidgetPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QWidget)
+    Q_GADGET
 
 public:
     // *************************** Cross-platform ***************************************
-    enum DrawWidgetFlags {
+    enum DrawWidgetFlag {
         DrawAsRoot = 0x01,
         DrawPaintOnScreen = 0x02,
         DrawRecursive = 0x04,
@@ -279,12 +280,15 @@ public:
         DontDrawNativeChildren = 0x40,
         DontSetCompositionMode = 0x80
     };
+    Q_DECLARE_FLAGS(DrawWidgetFlags, DrawWidgetFlag)
+    Q_FLAG(DrawWidgetFlags)
 
     enum CloseMode {
         CloseNoEvent,
         CloseWithEvent,
         CloseWithSpontaneousEvent
     };
+    Q_ENUM(CloseMode)
 
     enum Direction {
         DirectionNorth = 0x01,
@@ -292,6 +296,7 @@ public:
         DirectionSouth = 0x02,
         DirectionWest = 0x20
     };
+    Q_ENUM(Direction)
 
     // Functions.
     explicit QWidgetPrivate(int version = QObjectPrivateVersion);
@@ -376,20 +381,20 @@ public:
     void setUpdatesEnabled_helper(bool );
 
     bool updateBrushOrigin(QPainter *, const QBrush &brush) const;
-    void paintBackground(QPainter *, const QRegion &, int flags = DrawAsRoot) const;
+    void paintBackground(QPainter *, const QRegion &, DrawWidgetFlags flags = DrawAsRoot) const;
     bool isAboutToShow() const;
     QRegion prepareToRender(const QRegion &region, QWidget::RenderFlags renderFlags);
     void render_helper(QPainter *painter, const QPoint &targetOffset, const QRegion &sourceRegion,
                        QWidget::RenderFlags renderFlags);
     void render(QPaintDevice *target, const QPoint &targetOffset, const QRegion &sourceRegion,
                 QWidget::RenderFlags renderFlags);
-    void drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QPoint &offset, int flags,
+    void drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QPoint &offset, DrawWidgetFlags flags,
                     QPainter *sharedPainter = nullptr, QWidgetRepaintManager *repaintManager = nullptr);
     void sendPaintEvent(const QRegion &toBePainted);
 
 
     void paintSiblingsRecursive(QPaintDevice *pdev, const QObjectList& children, int index,
-                                const QRegion &rgn, const QPoint &offset, int flags,
+                                const QRegion &rgn, const QPoint &offset, DrawWidgetFlags flags,
                                 QPainter *sharedPainter, QWidgetRepaintManager *repaintManager);
 
 #if QT_CONFIG(graphicsview)
@@ -873,16 +878,18 @@ public:
     bool stealMouseGrab(bool grab);
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWidgetPrivate::DrawWidgetFlags)
+
 struct QWidgetPaintContext
 {
-    inline QWidgetPaintContext(QPaintDevice *d, const QRegion &r, const QPoint &o, int f,
+    inline QWidgetPaintContext(QPaintDevice *d, const QRegion &r, const QPoint &o, QWidgetPrivate::DrawWidgetFlags f,
                                QPainter *p, QWidgetRepaintManager *rpm)
         : pdev(d), rgn(r), offset(o), flags(f), sharedPainter(p), repaintManager(rpm), painter(nullptr) {}
 
     QPaintDevice *pdev;
     QRegion rgn;
     QPoint offset;
-    int flags;
+    QWidgetPrivate::DrawWidgetFlags flags;
     QPainter *sharedPainter;
     QWidgetRepaintManager *repaintManager;
     QPainter *painter;

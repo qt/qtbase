@@ -1335,7 +1335,7 @@ void QWidgetRepaintManager::doSync()
         QWidget *w = opaqueNonOverlappedWidgets[i];
         QWidgetPrivate *wd = w->d_func();
 
-        int flags = QWidgetPrivate::DrawRecursive;
+        QWidgetPrivate::DrawWidgetFlags flags = QWidgetPrivate::DrawRecursive;
         // Scrolled and moved widgets must draw all children.
         if (!wd->isScrolled && !wd->isMoved)
             flags |= QWidgetPrivate::DontDrawOpaqueChildren;
@@ -1353,7 +1353,7 @@ void QWidgetRepaintManager::doSync()
 
     // Paint the rest with composition.
     if (repaintAllWidgets || !dirtyCopy.isEmpty()) {
-        const int flags = QWidgetPrivate::DrawAsRoot | QWidgetPrivate::DrawRecursive;
+        QWidgetPrivate::DrawWidgetFlags flags = QWidgetPrivate::DrawAsRoot | QWidgetPrivate::DrawRecursive;
         tlw->d_func()->drawWidget(store->paintDevice(), dirtyCopy, QPoint(), flags, 0, this);
     }
 
