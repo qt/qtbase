@@ -300,7 +300,7 @@ void QWidgetBackingStore::unflushPaint(QWidget *widget, const QRegion &rgn)
     if (!tlwExtra)
         return;
 
-    qt_flush(widget, rgn, tlwExtra->backingStoreTracker->store, tlw, 0, tlw->d_func()->maybeBackingStore());
+    qt_flush(widget, rgn, tlwExtra->widgetBackingStore->store, tlw, 0, tlw->d_func()->maybeBackingStore());
 }
 #endif // QT_NO_PAINT_DEBUG
 
@@ -800,7 +800,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
         invalidateBackingStore((newRect & clipR).translated(-data.crect.topLeft()));
     } else {
 
-        QWidgetBackingStore *wbs = x->backingStoreTracker.data();
+        QWidgetBackingStore *wbs = x->widgetBackingStore.get();
         QRegion childExpose(newRect & clipR);
         QRegion overlappedExpose;
 
@@ -864,7 +864,7 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
     if (x->inTopLevelResize)
         return;
 
-    QWidgetBackingStore *wbs = x->backingStoreTracker.data();
+    QWidgetBackingStore *wbs = x->widgetBackingStore.get();
     if (!wbs)
         return;
 
@@ -1528,10 +1528,10 @@ void QWidgetPrivate::invalidateBackingStore(const T &r)
         if (masked.isEmpty())
             return;
 
-        tlwExtra->backingStoreTracker->markDirty(masked, q,
+        tlwExtra->widgetBackingStore->markDirty(masked, q,
             QWidgetBackingStore::UpdateLater, QWidgetBackingStore::BufferInvalid);
     } else {
-        tlwExtra->backingStoreTracker->markDirty(clipped, q,
+        tlwExtra->widgetBackingStore->markDirty(clipped, q,
             QWidgetBackingStore::UpdateLater, QWidgetBackingStore::BufferInvalid);
     }
 }

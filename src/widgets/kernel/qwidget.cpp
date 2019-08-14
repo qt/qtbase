@@ -146,91 +146,6 @@ static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
-/*!
-    \internal
-    \class QWidgetBackingStoreTracker
-    \brief Class which allows tracking of which widgets are using a given backing store
-
-    QWidgetBackingStoreTracker is a thin wrapper around a QWidgetBackingStore pointer,
-    which maintains a list of the QWidgets which are currently using the backing
-    store.  This list is modified via the registerWidget and unregisterWidget functions.
- */
-
-QWidgetBackingStoreTracker::QWidgetBackingStoreTracker()
-    :   m_ptr(0)
-{
-
-}
-
-QWidgetBackingStoreTracker::~QWidgetBackingStoreTracker()
-{
-    delete m_ptr;
-}
-
-/*!
-    \internal
-    Destroy the contained QWidgetBackingStore, if not null, and clear the list of
-    widgets using the backing store, then create a new QWidgetBackingStore, providing
-    the QWidget.
- */
-void QWidgetBackingStoreTracker::create(QWidget *widget)
-{
-    destroy();
-    m_ptr = new QWidgetBackingStore(widget);
-}
-
-/*!
-    \internal
-    Destroy the contained QWidgetBackingStore, if not null, and clear the list of
-    widgets using the backing store.
- */
-void QWidgetBackingStoreTracker::destroy()
-{
-    delete m_ptr;
-    m_ptr = 0;
-    m_widgets.clear();
-}
-
-/*!
-    \internal
-    Add the widget to the list of widgets currently using the backing store.
-    If the widget was already in the list, this function is a no-op.
- */
-void QWidgetBackingStoreTracker::registerWidget(QWidget *w)
-{
-    Q_ASSERT(m_ptr);
-    Q_ASSERT(w->internalWinId());
-    Q_ASSERT(qt_widget_private(w)->maybeBackingStore() == m_ptr);
-    m_widgets.insert(w);
-}
-
-/*!
-    \internal
-    Remove the widget from the list of widgets currently using the backing store.
-    If the widget was in the list, and removing it causes the list to be empty,
-    the backing store is deleted.
-    If the widget was not in the list, this function is a no-op.
- */
-void QWidgetBackingStoreTracker::unregisterWidget(QWidget *w)
-{
-    if (m_widgets.remove(w) && m_widgets.isEmpty()) {
-        delete m_ptr;
-        m_ptr = 0;
-    }
-}
-
-/*!
-    \internal
-    Recursively remove widget and all of its descendents.
- */
-void QWidgetBackingStoreTracker::unregisterWidgetSubtree(QWidget *widget)
-{
-    unregisterWidget(widget);
-    foreach (QObject *child, widget->children())
-        if (QWidget *childWidget = qobject_cast<QWidget *>(child))
-            unregisterWidgetSubtree(childWidget);
-}
-
 QWidgetPrivate::QWidgetPrivate(int version)
     : QObjectPrivate(version)
       , extra(0)
@@ -1364,10 +1279,8 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
     d->create();
 
     // a real toplevel window needs a backing store
-    if (isWindow() && windowType() != Qt::Desktop) {
-        d->topData()->backingStoreTracker.destroy();
-        d->topData()->backingStoreTracker.create(this);
-    }
+    if (isWindow() && windowType() != Qt::Desktop)
+        d->topData()->widgetBackingStore.reset(new QWidgetBackingStore(this));
 
     d->setModal_sys();
 
@@ -1891,7 +1804,7 @@ void QWidgetPrivate::deleteTLSysExtra()
         //the qplatformbackingstore may hold a reference to the window, so the backingstore
         //needs to be deleted first.
 
-        extra->topextra->backingStoreTracker.destroy();
+        extra->topextra->widgetBackingStore.reset(nullptr);
         deleteBackingStore(this);
 #ifndef QT_NO_OPENGL
         extra->topextra->widgetTextures.clear();
@@ -10755,15 +10668,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     if (newParent && isAncestorOf(focusWidget()))
         focusWidget()->clearFocus();
 
-    QTLWExtra *oldTopExtra = window()->d_func()->maybeTopData();
-    QWidgetBackingStoreTracker *oldBsTracker = oldTopExtra ? &oldTopExtra->backingStoreTracker : 0;
-
     d->setParent_sys(parent, f);
-
-    QTLWExtra *topExtra = window()->d_func()->maybeTopData();
-    QWidgetBackingStoreTracker *bsTracker = topExtra ? &topExtra->backingStoreTracker : 0;
-    if (oldBsTracker && oldBsTracker != bsTracker)
-        oldBsTracker->unregisterWidgetSubtree(this);
 
     if (desktopWidget)
         parent = 0;
@@ -11134,7 +11039,7 @@ void QWidgetPrivate::repaint(T r)
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
     if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
-        tlwExtra->backingStoreTracker->markDirty(r, q, QWidgetBackingStore::UpdateNow);
+        tlwExtra->widgetBackingStore->markDirty(r, q, QWidgetBackingStore::UpdateNow);
 }
 
 /*!
@@ -11209,7 +11114,7 @@ void QWidgetPrivate::update(T r)
 
     QTLWExtra *tlwExtra = q->window()->d_func()->maybeTopData();
     if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
-        tlwExtra->backingStoreTracker->markDirty(clipped, q);
+        tlwExtra->widgetBackingStore->markDirty(clipped, q);
 }
 
  /*!
