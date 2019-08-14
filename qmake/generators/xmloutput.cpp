@@ -113,7 +113,8 @@ QString XmlOutput::doConversion(const QString &text)
 
         // this is a way to escape characters that shouldn't be converted
         for (int i=0; i<text.count(); ++i) {
-            if (text.at(i) == QLatin1Char('&')) {
+            const QChar c = text.at(i);
+            if (c == QLatin1Char('&')) {
                 if ( (i + 7) < text.count() &&
                     text.at(i + 1) == QLatin1Char('#') &&
                     text.at(i + 2) == QLatin1Char('x') &&
@@ -122,12 +123,15 @@ QString XmlOutput::doConversion(const QString &text)
                 } else {
                     output += QLatin1String("&amp;");
                 }
+            } else if (c == QLatin1Char('<')) {
+                output += QLatin1String("&lt;");
+            } else if (c == QLatin1Char('>')) {
+                output += QLatin1String("&gt;");
             } else {
-                QChar c = text.at(i);
                 if (c.unicode() < 0x20) {
                     output += QString("&#x%1;").arg(c.unicode(), 2, 16, QLatin1Char('0'));
                 } else {
-                    output += text.at(i);
+                    output += c;
                 }
             }
         }
