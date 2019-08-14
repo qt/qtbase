@@ -47,6 +47,8 @@
 
 #include <private/qnumeric_p.h>
 
+#include <tuple> // for std::tie()
+
 QT_BEGIN_NAMESPACE
 
 //#define QDEBUG_BEZIER
@@ -128,7 +130,7 @@ void QBezier::addToPolygon(QPolygonF *polygon, qreal bezier_flattening_threshold
             --lvl;
         } else {
             // split, second half of the polygon goes lower into the stack
-            b->split(b+1, b);
+            std::tie(b[1], b[0]) = b->split();
             lvl[1] = --lvl[0];
             ++b;
             ++lvl;
@@ -166,7 +168,7 @@ void QBezier::addToPolygon(QDataBuffer<QPointF> &polygon, qreal bezier_flattenin
             --lvl;
         } else {
             // split, second half of the polygon goes lower into the stack
-            b->split(b+1, b);
+            std::tie(b[1], b[0]) = b->split();
             lvl[1] = --lvl[0];
             ++b;
             ++lvl;
@@ -422,7 +424,7 @@ redo:
                 o += 2;
             --b;
         } else {
-            b->split(b+1, b);
+            std::tie(b[1], b[0]) = b->split();
             ++b;
         }
     }
@@ -464,8 +466,6 @@ qreal QBezier::length(qreal error) const
 
 void QBezier::addIfClose(qreal *length, qreal error) const
 {
-    QBezier left, right;     /* bez poly splits */
-
     qreal len = qreal(0.0);  /* arc length */
     qreal chord;             /* chord length */
 
@@ -476,9 +476,9 @@ void QBezier::addIfClose(qreal *length, qreal error) const
     chord = QLineF(QPointF(x1, y1),QPointF(x4, y4)).length();
 
     if((len-chord) > error) {
-        split(&left, &right);                 /* split in two */
-        left.addIfClose(length, error);       /* try left side */
-        right.addIfClose(length, error);      /* try right side */
+        const auto halves = split();                  /* split in two */
+        halves.first.addIfClose(length, error);       /* try left side */
+        halves.second.addIfClose(length, error);      /* try right side */
         return;
     }
 
