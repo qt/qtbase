@@ -928,6 +928,13 @@ bool QSslSocketBackendPrivate::initSslContext()
         QCFType<CFMutableArrayRef> cfNames(CFArrayCreateMutable(nullptr, 0, &kCFTypeArrayCallBacks));
         if (cfNames) {
             for (const QByteArray &name : protocolNames) {
+                if (name.size() > 255) {
+                    qCWarning(lcSsl) << "TLS ALPN extension" << name
+                                     << "is too long and will be ignored.";
+                    continue;
+                } else if (name.isEmpty()) {
+                    continue;
+                }
                 QCFString cfName(QString::fromLatin1(name).toCFString());
                 CFArrayAppendValue(cfNames, cfName);
             }

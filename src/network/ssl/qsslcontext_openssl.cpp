@@ -157,32 +157,36 @@ SSL* QSslContext::createSsl()
         for (int a = 0; a < protocols.count(); ++a) {
             if (protocols.at(a).size() > 255) {
                 qCWarning(lcSsl) << "TLS NPN extension" << protocols.at(a)
-                                 << "is too long and will be truncated to 255 characters.";
-                protocols[a] = protocols.at(a).left(255);
+                                 << "is too long and will be ignored.";
+                continue;
+            } else if (protocols.at(a).isEmpty()) {
+                continue;
             }
             m_supportedNPNVersions.append(protocols.at(a).size()).append(protocols.at(a));
         }
-        m_npnContext.data = reinterpret_cast<unsigned char *>(m_supportedNPNVersions.data());
-        m_npnContext.len = m_supportedNPNVersions.count();
-        m_npnContext.status = QSslConfiguration::NextProtocolNegotiationNone;
+        if (m_supportedNPNVersions.size()) {
+            m_npnContext.data = reinterpret_cast<unsigned char *>(m_supportedNPNVersions.data());
+            m_npnContext.len = m_supportedNPNVersions.count();
+            m_npnContext.status = QSslConfiguration::NextProtocolNegotiationNone;
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
-        if (QSslSocket::sslLibraryVersionNumber() >= 0x10002000L) {
-            // Callback's type has a parameter 'const unsigned char ** out'
-            // since it was introduced in 1.0.2. Internally, OpenSSL's own code
-            // (tests/examples) cast it to unsigned char * (since it's 'out').
-            // We just re-use our NPN callback and cast here:
-            typedef int (*alpn_callback_t) (SSL *, const unsigned char **, unsigned char *,
-                                            const unsigned char *, unsigned int, void *);
-            // With ALPN callback is for a server side only, for a client m_npnContext.status
-            // will stay in NextProtocolNegotiationNone.
-            q_SSL_CTX_set_alpn_select_cb(ctx, alpn_callback_t(next_proto_cb), &m_npnContext);
-            // Client:
-            q_SSL_set_alpn_protos(ssl, m_npnContext.data, m_npnContext.len);
-        }
+            if (QSslSocket::sslLibraryVersionNumber() >= 0x10002000L) {
+                // Callback's type has a parameter 'const unsigned char ** out'
+                // since it was introduced in 1.0.2. Internally, OpenSSL's own code
+                // (tests/examples) cast it to unsigned char * (since it's 'out').
+                // We just re-use our NPN callback and cast here:
+                typedef int (*alpn_callback_t) (SSL *, const unsigned char **, unsigned char *,
+                                                const unsigned char *, unsigned int, void *);
+                // With ALPN callback is for a server side only, for a client m_npnContext.status
+                // will stay in NextProtocolNegotiationNone.
+                q_SSL_CTX_set_alpn_select_cb(ctx, alpn_callback_t(next_proto_cb), &m_npnContext);
+                // Client:
+                q_SSL_set_alpn_protos(ssl, m_npnContext.data, m_npnContext.len);
+            }
 #endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
 
-        // And in case our peer does not support ALPN, but supports NPN:
-        q_SSL_CTX_set_next_proto_select_cb(ctx, next_proto_cb, &m_npnContext);
+            // And in case our peer does not support ALPN, but supports NPN:
+            q_SSL_CTX_set_next_proto_select_cb(ctx, next_proto_cb, &m_npnContext);
+        }
     }
 #endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
 
