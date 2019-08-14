@@ -79,7 +79,7 @@ qint32 main(qint32 argc, char **argv)
     fid.write("#include <QtCore/qfloat16.h>\n\n");
 
     fid.write("QT_BEGIN_NAMESPACE\n\n");
-    fid.write("#if !defined(__F16C__) && !defined(__ARM_FP16_FORMAT_IEEE)\n\n");
+    fid.write("#if !defined(__ARM_FP16_FORMAT_IEEE)\n\n");
 
     fid.write("const quint32 qfloat16::mantissatable[2048] = {\n");
     fid.write("0,\n");
@@ -156,7 +156,7 @@ qint32 main(qint32 argc, char **argv)
 
     fid.write("};\n\n");
 
-    fid.write("#endif // !__F16C__ && !__ARM_FP16_FORMAT_IEEE\n\n");
+    fid.write("#endif // !__ARM_FP16_FORMAT_IEEE\n\n");
     fid.write("QT_END_NAMESPACE\n");
     fid.close();
     return 0;
