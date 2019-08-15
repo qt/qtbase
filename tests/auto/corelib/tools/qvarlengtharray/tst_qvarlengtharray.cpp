@@ -64,20 +64,20 @@ private:
     void initializeList();
 };
 
-int fooCtor = 0;
-int fooDtor = 0;
-
-struct Foo
+struct Tracker
 {
-    int *p;
+    static int count;
+    Tracker() { ++count; }
+    Tracker(const Tracker &) { ++count; }
+    Tracker(Tracker &&) { ++count; }
 
-    Foo() { p = new int; ++fooCtor; }
-    Foo(const Foo &/*other*/) { p = new int; ++fooCtor; }
+    Tracker &operator=(const Tracker &) = default;
+    Tracker &operator=(Tracker &&) = default;
 
-    void operator=(const Foo & /* other */) { }
-
-    ~Foo() { delete p; ++fooDtor; }
+    ~Tracker() { --count; }
 };
+
+int Tracker::count = 0;
 
 void tst_QVarLengthArray::append()
 {
@@ -130,6 +130,23 @@ void tst_QVarLengthArray::removeLast()
         v.removeLast();
         QCOMPARE(v.size(), 2);
     }
+
+    {
+        Tracker t;
+        QCOMPARE(Tracker::count, 1);
+        QVarLengthArray<Tracker, 2> v;
+        v.append(t);
+        v.append({});
+        QCOMPARE(Tracker::count, 3);
+        v.removeLast();
+        QCOMPARE(Tracker::count, 2);
+        v.append(t);
+        v.append({});
+        QCOMPARE(Tracker::count, 4);
+        v.removeLast();
+        QCOMPARE(Tracker::count, 3);
+    }
+    QCOMPARE(Tracker::count, 0);
 }
 
 void tst_QVarLengthArray::oldTests()

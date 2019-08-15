@@ -112,7 +112,9 @@ public:
 
     inline void removeLast() {
         Q_ASSERT(s > 0);
-        realloc(s - 1, a);
+        if (QTypeInfo<T>::isComplex)
+            ptr[s - 1].~T();
+        --s;
     }
     inline int size() const { return s; }
     inline int count() const { return s; }

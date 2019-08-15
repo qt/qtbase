@@ -72,7 +72,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, qt_opensslInitMutex, (QMutex::Recursive))
+Q_GLOBAL_STATIC(QRecursiveMutex, qt_opensslInitMutex)
 
 void QSslSocketPrivate::deinitialize()
 {

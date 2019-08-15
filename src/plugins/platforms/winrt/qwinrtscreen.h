@@ -96,7 +96,6 @@ public:
     QImage::Format format() const override;
     QSizeF physicalSize() const override;
     QDpi logicalDpi() const override;
-    qreal pixelDensity() const override;
     qreal scaleFactor() const;
     QPlatformCursor *cursor() const override;
     Qt::KeyboardModifiers keyboardModifiers() const;

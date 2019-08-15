@@ -196,6 +196,9 @@ qmake_pch.obj:
 {$(SOURCE_PATH)\src\corelib\serialization}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 
+{$(SOURCE_PATH)\src\corelib\text}.cpp{}.obj::
+	$(CXX) $(CXXFLAGS) $<
+
 {$(SOURCE_PATH)\src\corelib\time}.cpp{}.obj::
 	$(CXX) $(CXXFLAGS) $<
 

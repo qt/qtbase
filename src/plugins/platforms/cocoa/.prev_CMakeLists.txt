@@ -37,6 +37,7 @@ add_qt_plugin(qcocoa
         qcocoasystemtrayicon.h qcocoasystemtrayicon.mm
         qcocoatheme.h qcocoatheme.mm
         qcocoawindow.h qcocoawindow.mm
+        qcocoawindowmanager.h qcocoawindowmanager.mm
         qiosurfacegraphicsbuffer.h qiosurfacegraphicsbuffer.mm
         qmacclipboard.h qmacclipboard.mm
         qmultitouch_mac.mm qmultitouch_mac_p.h
@@ -71,14 +72,21 @@ add_qt_plugin(qcocoa
 )
 
 # Resources:
-add_qt_resource(qcocoa "qcocoaresources" PREFIX "/qt-project.org/mac/cursors" FILES
-    images/sizeallcursor.png
-    images/spincursor.png
-    images/waitcursor.png)
+set(qcocoaresources_resource_files
+    "images/sizeallcursor.png"
+    "images/spincursor.png"
+    "images/waitcursor.png"
+)
+
+add_qt_resource(qcocoa "qcocoaresources"
+    PREFIX
+        "/qt-project.org/mac/cursors"
+    FILES
+        ${qcocoaresources_resource_files}
+)
 
 
 #### Keys ignored in scope 1:.:.:cocoa.pro:<TRUE>:
-# CONFIG = "no_app_extension_api_only"
 # OTHER_FILES = "cocoa.json"
 # PLUGIN_CLASS_NAME = "QCocoaIntegrationPlugin"
 # PLUGIN_TYPE = "platforms"
@@ -118,17 +126,17 @@ extend_target(qcocoa CONDITION TARGET Qt::Widgets
 #### Keys ignored in scope 5:.:.:cocoa.pro:TARGET Qt::Widgets:
 # QT_FOR_CONFIG = "widgets"
 
-extend_target(qcocoa CONDITION (TARGET Qt::Widgets) AND (QT_FEATURE_colordialog)
+extend_target(qcocoa CONDITION QT_FEATURE_colordialog AND TARGET Qt::Widgets
     SOURCES
         qcocoacolordialoghelper.h qcocoacolordialoghelper.mm
 )
 
-extend_target(qcocoa CONDITION (TARGET Qt::Widgets) AND (QT_FEATURE_filedialog)
+extend_target(qcocoa CONDITION QT_FEATURE_filedialog AND TARGET Qt::Widgets
     SOURCES
         qcocoafiledialoghelper.h qcocoafiledialoghelper.mm
 )
 
-extend_target(qcocoa CONDITION (TARGET Qt::Widgets) AND (QT_FEATURE_fontdialog)
+extend_target(qcocoa CONDITION QT_FEATURE_fontdialog AND TARGET Qt::Widgets
     SOURCES
         qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
 )

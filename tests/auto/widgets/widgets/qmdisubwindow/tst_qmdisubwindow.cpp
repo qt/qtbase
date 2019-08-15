@@ -613,7 +613,7 @@ void tst_QMdiSubWindow::showShaded()
 
     // Calculate mouse position for bottom right corner and simulate a
     // vertical resize with the mouse.
-    int offset = window->style()->pixelMetric(QStyle::PM_MDIFrameWidth) / 2;
+    int offset = window->style()->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth) / 2;
     QPoint mousePosition(window->width() - qMax(offset, 2), window->height() - qMax(offset, 2));
     QWidget *mouseReceiver = nullptr;
 #ifdef Q_OS_MAC
@@ -759,7 +759,7 @@ void tst_QMdiSubWindow::setOpaqueResizeAndMove()
     QTRY_COMPARE(priv->resizeTimerId, -1);
 
     // Enter resize mode.
-    int offset = window->style()->pixelMetric(QStyle::PM_MDIFrameWidth) / 2;
+    int offset = window->style()->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth) / 2;
     QPoint mousePosition(mouseReceiver->width() - qMax(offset, 2), mouseReceiver->height() - qMax(offset, 2));
     sendMouseMove(mouseReceiver, mousePosition, Qt::NoButton);
     sendMousePress(mouseReceiver, mousePosition);
@@ -1762,7 +1762,8 @@ void tst_QMdiSubWindow::fixedMinMaxSize()
     int minimizedHeight = subWindow->style()->pixelMetric(QStyle::PM_TitleBarHeight, &options);
     if (!subWindow->style()->styleHint(QStyle::SH_TitleBar_NoBorder, &options, subWindow))
         minimizedHeight += 8;
-    int minimizedWidth = subWindow->style()->pixelMetric(QStyle::PM_MDIMinimizedWidth, &options);
+    int minimizedWidth = subWindow->style()->pixelMetric(QStyle::PM_MdiSubWindowMinimizedWidth,
+                                                         &options);
     const QSize minimizedSize = QSize(minimizedWidth, minimizedHeight);
 
     // Even though the sub window has a minimum size set, it should be possible

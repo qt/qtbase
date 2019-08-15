@@ -311,6 +311,10 @@ def handle_function_value(group: pp.ParseResults):
         # Do nothing, just return a string result
         return str(group)
 
+    # Return the whole expression as a string.
+    if function_name in ['join', 'cmakeRelativePath', 'shell_quote', 'shadowed']:
+        return 'join({})'.format(''.join(function_args))
+
     raise RuntimeError('No logic to handle function "{}", please add one in handle_function_value().'.format(function_name))
 
 class Operation:

@@ -393,7 +393,7 @@ QPointer<QWidget> QWidgetPrivate::editingWidget;
 
     This feature is only available in Qt for Embedded Linux.
 
-    \sa setEditFocus(), QApplication::keypadNavigationEnabled()
+    \sa setEditFocus(), QApplication::navigationMode()
 */
 bool QWidget::hasEditFocus() const
 {
@@ -413,7 +413,7 @@ bool QWidget::hasEditFocus() const
 
     This feature is only available in Qt for Embedded Linux.
 
-    \sa hasEditFocus(), QApplication::keypadNavigationEnabled()
+    \sa hasEditFocus(), QApplication::navigationMode()
 */
 void QWidget::setEditFocus(bool on)
 {
@@ -1193,7 +1193,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     q->setAttribute(Qt::WA_ContentsMarginsRespectsSafeArea);
     q->setAttribute(Qt::WA_WState_Hidden);
 
-    //give potential windows a bigger "pre-initial" size; create_sys() will give them a new size later
+    //give potential windows a bigger "pre-initial" size; create() will give them a new size later
     data.crect = parentWidget ? QRect(0,0,100,30) : QRect(0,0,640,480);
     focus_next = focus_prev = q;
 
@@ -1287,27 +1287,19 @@ QScreen *QWidgetPrivate::associatedScreen() const
 /*!
     Creates a new widget window.
 
-    The parameter \a window is ignored in Qt 5. Please use
-    QWindow::fromWinId() to create a QWindow wrapping a foreign
-    window and pass it to QWidget::createWindowContainer() instead.
-
-    Initializes the window (sets the geometry etc.) if \a
-    initializeWindow is true. If \a initializeWindow is false, no
-    initialization is performed. This parameter only makes sense if \a
-    window is a valid window.
-
-    Destroys the old window if \a destroyOldWindow is true. If \a
-    destroyOldWindow is false, you are responsible for destroying the
-    window yourself (using platform native code).
-
-    The QWidget constructor calls create(0,true,true) to create a
-    window for this widget.
+    The parameters \a window, \a initializeWindow, and \a destroyOldWindow
+    are ignored in Qt 5. Please use QWindow::fromWinId() to create a
+    QWindow wrapping a foreign window and pass it to
+    QWidget::createWindowContainer() instead.
 
     \sa createWindowContainer(), QWindow::fromWinId()
 */
 
 void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
 {
+    Q_UNUSED(initializeWindow);
+    Q_UNUSED(destroyOldWindow);
+
     Q_D(QWidget);
     if (Q_UNLIKELY(window))
         qWarning("QWidget::create(): Parameter 'window' does not have any effect.");
@@ -1367,7 +1359,7 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
     d->updateIsOpaque();
 
     setAttribute(Qt::WA_WState_Created);                        // set created flag
-    d->create_sys(window, initializeWindow, destroyOldWindow);
+    d->create();
 
     // a real toplevel window needs a backing store
     if (isWindow() && windowType() != Qt::Desktop) {
@@ -1431,13 +1423,9 @@ void q_createNativeChildrenAndSetParent(const QWidget *parentWidget)
 
 }
 
-void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyOldWindow)
+void QWidgetPrivate::create()
 {
     Q_Q(QWidget);
-
-    Q_UNUSED(window);
-    Q_UNUSED(initializeWindow);
-    Q_UNUSED(destroyOldWindow);
 
     if (!q->testAttribute(Qt::WA_NativeWindow) && !q->isWindow())
         return; // we only care about real toplevels
@@ -6469,8 +6457,18 @@ void QWidget::setFocusProxy(QWidget * w)
         }
     }
 
+    QWidget *oldDeepestFocusProxy = d_func()->deepestFocusProxy();
+    if (!oldDeepestFocusProxy)
+        oldDeepestFocusProxy = this;
+    const bool changingAppFocusWidget = (QApplicationPrivate::focus_widget == oldDeepestFocusProxy);
+
     d->createExtra();
     d->extra->focus_proxy = w;
+
+    if (changingAppFocusWidget) {
+        QWidget *newDeepestFocusProxy = d_func()->deepestFocusProxy();
+        QApplicationPrivate::focus_widget = newDeepestFocusProxy ? newDeepestFocusProxy : this;
+    }
 }
 
 
@@ -7474,6 +7472,17 @@ QByteArray QWidget::saveGeometry() const
     return array;
 }
 
+static void checkRestoredGeometry(const QRect &availableGeometry, QRect *restoredGeometry,
+                                  int frameHeight)
+{
+    if (!restoredGeometry->intersects(availableGeometry)) {
+        restoredGeometry->moveBottom(qMin(restoredGeometry->bottom(), availableGeometry.bottom()));
+        restoredGeometry->moveLeft(qMax(restoredGeometry->left(), availableGeometry.left()));
+        restoredGeometry->moveRight(qMin(restoredGeometry->right(), availableGeometry.right()));
+    }
+    restoredGeometry->moveTop(qMax(restoredGeometry->top(), availableGeometry.top() + frameHeight));
+}
+
 /*!
     \since 4.2
 
@@ -7528,7 +7537,7 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     quint8 fullScreen;
     qint32 restoredScreenWidth = 0;
 
-    stream >> restoredFrameGeometry
+    stream >> restoredFrameGeometry // Only used for sanity checks in version 0
            >> restoredNormalGeometry
            >> restoredScreenNumber
            >> maximized
@@ -7558,8 +7567,6 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     }
 
     const int frameHeight = 20;
-    if (!restoredFrameGeometry.isValid())
-        restoredFrameGeometry = QRect(QPoint(0,0), sizeHint());
 
     if (!restoredNormalGeometry.isValid())
         restoredNormalGeometry = QRect(QPoint(0, frameHeight), sizeHint());
@@ -7579,23 +7586,11 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     // - (Mac only) The window is higher than the available geometry. It must
     //   be possible to bring the size grip on screen by moving the window.
 #if 0 // Used to be included in Qt4 for Q_WS_MAC
-    restoredFrameGeometry.setHeight(qMin(restoredFrameGeometry.height(), availableGeometry.height()));
     restoredNormalGeometry.setHeight(qMin(restoredNormalGeometry.height(), availableGeometry.height() - frameHeight));
 #endif
 
-    if (!restoredFrameGeometry.intersects(availableGeometry)) {
-        restoredFrameGeometry.moveBottom(qMin(restoredFrameGeometry.bottom(), availableGeometry.bottom()));
-        restoredFrameGeometry.moveLeft(qMax(restoredFrameGeometry.left(), availableGeometry.left()));
-        restoredFrameGeometry.moveRight(qMin(restoredFrameGeometry.right(), availableGeometry.right()));
-    }
-    restoredFrameGeometry.moveTop(qMax(restoredFrameGeometry.top(), availableGeometry.top()));
-
-    if (!restoredNormalGeometry.intersects(availableGeometry)) {
-        restoredNormalGeometry.moveBottom(qMin(restoredNormalGeometry.bottom(), availableGeometry.bottom()));
-        restoredNormalGeometry.moveLeft(qMax(restoredNormalGeometry.left(), availableGeometry.left()));
-        restoredNormalGeometry.moveRight(qMin(restoredNormalGeometry.right(), availableGeometry.right()));
-    }
-    restoredNormalGeometry.moveTop(qMax(restoredNormalGeometry.top(), availableGeometry.top() + frameHeight));
+    checkRestoredGeometry(availableGeometry, &restoredGeometry, frameHeight);
+    checkRestoredGeometry(availableGeometry, &restoredNormalGeometry, frameHeight);
 
     if (maximized || fullScreen) {
         // set geometry before setting the window state to make
@@ -7649,7 +7644,7 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
 
   Changing the margins will trigger a resizeEvent().
 
-  \sa contentsRect(), getContentsMargins()
+  \sa contentsRect(), contentsMargins()
 */
 void QWidget::setContentsMargins(int left, int top, int right, int bottom)
 {
@@ -7679,7 +7674,7 @@ void QWidget::setContentsMargins(int left, int top, int right, int bottom)
 
   Changing the margins will trigger a resizeEvent().
 
-  \sa contentsRect(), getContentsMargins()
+  \sa contentsRect(), contentsMargins()
 */
 void QWidget::setContentsMargins(const QMargins &margins)
 {
@@ -7708,7 +7703,11 @@ void QWidgetPrivate::updateContentsRect()
     QCoreApplication::sendEvent(q, &e);
 }
 
+#if QT_DEPRECATED_SINCE(5, 14)
 /*!
+    \obsolete
+    Use contentsMargins().
+
   Returns the widget's contents margins for \a left, \a top, \a
   right, and \a bottom.
 
@@ -7726,6 +7725,7 @@ void QWidget::getContentsMargins(int *left, int *top, int *right, int *bottom) c
     if (bottom)
         *bottom = m.bottom();
 }
+#endif
 
 // FIXME: Move to qmargins.h for next minor Qt release
 QMargins operator|(const QMargins &m1, const QMargins &m2)
@@ -7739,7 +7739,7 @@ QMargins operator|(const QMargins &m1, const QMargins &m2)
 
   \brief The contentsMargins function returns the widget's contents margins.
 
-  \sa getContentsMargins(), setContentsMargins(), contentsRect()
+  \sa setContentsMargins(), contentsRect()
  */
 QMargins QWidget::contentsMargins() const
 {
@@ -7752,7 +7752,7 @@ QMargins QWidget::contentsMargins() const
 /*!
     Returns the area inside the widget's margins.
 
-    \sa setContentsMargins(), getContentsMargins()
+    \sa setContentsMargins(), contentsMargins()
 */
 QRect QWidget::contentsRect() const
 {
@@ -9408,12 +9408,6 @@ bool QWidget::event(QEvent *event)
         d->renderToTextureReallyDirty = 1;
 #endif
         break;
-    case QEvent::PlatformSurface: {
-        auto surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);
-        if (surfaceEvent->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
-            d->setWinId(0);
-        break;
-    }
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -11392,7 +11386,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             // windowModality property and then reshown.
         }
         if (testAttribute(Qt::WA_WState_Created)) {
-            // don't call setModal_sys() before create_sys()
+            // don't call setModal_sys() before create()
             d->setModal_sys();
         }
         break;

@@ -151,8 +151,11 @@ void tst_QScrollBar::QTBUG_27308()
 
     testWidget.setValue(testWidget.minimum());
     testWidget.setEnabled(false);
-    QWheelEvent event(testWidget.rect().center(),
-                      -WHEEL_DELTA, Qt::NoButton, Qt::NoModifier, testWidget.orientation());
+    const QPoint wheelPoint = testWidget.rect().center();
+    const QPoint angleDelta(testWidget.orientation() == Qt::Horizontal ? -WHEEL_DELTA : 0,
+                            testWidget.orientation() == Qt::Vertical ? -WHEEL_DELTA : 0);
+    QWheelEvent event(wheelPoint, testWidget.mapToGlobal(wheelPoint), QPoint(), angleDelta,
+                      Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
     qApp->sendEvent(&testWidget, &event);
     QCOMPARE(testWidget.value(), testWidget.minimum());
 }

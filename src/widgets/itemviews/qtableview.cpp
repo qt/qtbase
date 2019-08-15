@@ -51,6 +51,7 @@
 #if QT_CONFIG(abstractbutton)
 #include <qabstractbutton.h>
 #endif
+#include <private/qapplication_p.h>
 #include <private/qtableview_p.h>
 #include <private/qheaderview_p.h>
 #include <private/qscrollbar_p.h>
@@ -1710,7 +1711,7 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
     case MoveUp: {
         int originalRow = visualRow;
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled() && visualRow == 0)
+        if (QApplicationPrivate::keypadNavigationEnabled() && visualRow == 0)
             visualRow = d->visualRow(model()->rowCount() - 1) + 1;
             // FIXME? visualRow = bottom + 1;
 #endif
@@ -1739,7 +1740,7 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
             visualRow = d->visualRow(d->rowSpanEndLogical(span.top(), span.height()));
         }
 #ifdef QT_KEYPAD_NAVIGATION
-        if (QApplication::keypadNavigationEnabled() && visualRow >= bottom)
+        if (QApplicationPrivate::keypadNavigationEnabled() && visualRow >= bottom)
             visualRow = -1;
 #endif
         int r = d->logicalRow(visualRow);

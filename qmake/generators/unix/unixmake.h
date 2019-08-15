@@ -42,7 +42,6 @@ class UnixMakefileGenerator : public MakefileGenerator
 
 protected:
     virtual bool doPrecompiledHeaders() const { return project->isActiveConfig("precompile_header"); }
-    bool doDepends() const override { return !Option::mkfile::do_stub_makefile && MakefileGenerator::doDepends(); }
 #ifdef Q_OS_WIN // MinGW x-compiling for QNX
     QString installRoot() const override;
 #endif

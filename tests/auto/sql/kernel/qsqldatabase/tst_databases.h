@@ -34,7 +34,8 @@
 #include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlQuery>
-#include <QRegExp>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QDir>
 #include <QScopedPointer>
 #include <QVariant>
@@ -511,13 +512,13 @@ public:
         QSqlQuery q( "SELECT banner FROM v$version", db );
         q.next();
 
-        QRegExp vers( "([0-9]+)\\.[0-9\\.]+[0-9]" );
-
-        if ( vers.indexIn( q.value( 0 ).toString() ) ) {
+        QRegularExpression vers("([0-9]+)\\.[0-9\\.]+[0-9]");
+        QRegularExpressionMatch match = vers.match(q.value(0).toString());
+        if (match.hasMatch()) {
             bool ok;
-            ver = vers.cap( 1 ).toInt( &ok );
+            ver = match.captured(1).toInt(&ok);
 
-            if ( !ok )
+            if (!ok)
                 ver = -1;
         }
 

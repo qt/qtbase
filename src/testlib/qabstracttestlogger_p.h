@@ -117,8 +117,7 @@ struct QTestCharBuffer
 {
     enum { InitialSize = 512 };
 
-    inline QTestCharBuffer()
-            : _size(InitialSize), buf(staticBuf)
+    inline QTestCharBuffer() : buf(staticBuf)
     {
         staticBuf[0] = '\0';
     }
@@ -170,7 +169,7 @@ struct QTestCharBuffer
     }
 
 private:
-    int _size;
+    int _size = InitialSize;
     char* buf;
     char staticBuf[InitialSize];
 };

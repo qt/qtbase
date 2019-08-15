@@ -570,11 +570,9 @@ void QExpandingLineEdit::changeEvent(QEvent *e)
 
 void QExpandingLineEdit::updateMinimumWidth()
 {
-    int left, right;
-    getTextMargins(&left, 0, &right, 0);
-    int width = left + right + 4 /*horizontalMargin in qlineedit.cpp*/;
-    getContentsMargins(&left, 0, &right, 0);
-    width += left + right;
+    const QMargins tm = textMargins();
+    const QMargins cm = contentsMargins();
+    const int width = tm.left() + tm.right() + cm.left() + cm.right() + 4 /*horizontalMargin in qlineedit.cpp*/;
 
     QStyleOptionFrame opt;
     initStyleOption(&opt);

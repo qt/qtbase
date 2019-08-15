@@ -51,24 +51,24 @@ add_qt_tool(qmake # special case
         ../src/corelib/tools/qarraydataops.h
         ../src/corelib/tools/qarraydatapointer.h
         ../src/corelib/tools/qbitarray.cpp ../src/corelib/tools/qbitarray.h
-        ../src/corelib/tools/qbytearray.cpp ../src/corelib/tools/qbytearray.h
-        ../src/corelib/tools/qbytearraymatcher.cpp ../src/corelib/tools/qbytearraymatcher.h
-        ../src/corelib/tools/qchar.h
+        ../src/corelib/text/qbytearray.cpp ../src/corelib/text/qbytearray.h
+        ../src/corelib/text/qbytearraymatcher.cpp ../src/corelib/text/qbytearraymatcher.h
+        ../src/corelib/text/qchar.h
         ../src/corelib/tools/qcryptographichash.cpp ../src/corelib/tools/qcryptographichash.h
         ../src/corelib/time/qdatetime.cpp ../src/corelib/time/qdatetime.h ../src/corelib/time/qdatetime_p.h # special case
         ../src/corelib/tools/qhash.cpp ../src/corelib/tools/qhash.h
         ../src/corelib/tools/qlist.cpp ../src/corelib/tools/qlist.h
-        ../src/corelib/tools/qlocale.cpp ../src/corelib/tools/qlocale.h
-        ../src/corelib/tools/qlocale_tools.cpp ../src/corelib/tools/qlocale_tools_p.h
+        ../src/corelib/text/qlocale.cpp ../src/corelib/text/qlocale.h
+        ../src/corelib/text/qlocale_tools.cpp ../src/corelib/text/qlocale_tools_p.h
         ../src/corelib/tools/qmap.cpp ../src/corelib/tools/qmap.h
-        ../src/corelib/tools/qregexp.cpp ../src/corelib/tools/qregexp.h
+        ../src/corelib/text/qregexp.cpp ../src/corelib/text/qregexp.h
         ../src/corelib/tools/qringbuffer.cpp # special case
-        ../src/corelib/tools/qstring.cpp ../src/corelib/tools/qstring.h
-        ../src/corelib/tools/qstringlist.cpp ../src/corelib/tools/qstringlist.h
-        ../src/corelib/tools/qstringmatcher.h
+        ../src/corelib/text/qstring.cpp ../src/corelib/text/qstring.h
+        ../src/corelib/text/qstringlist.cpp ../src/corelib/text/qstringlist.h
+        ../src/corelib/text/qstringmatcher.h
         ../src/corelib/tools/qvector.h
         ../src/corelib/tools/qversionnumber.cpp ../src/corelib/tools/qversionnumber.h
-        ../src/corelib/tools/qvsnprintf.cpp
+        ../src/corelib/text/qvsnprintf.cpp
         cachekeys.h
         generators/mac/pbuilder_pbx.cpp generators/mac/pbuilder_pbx.h
         generators/makefile.cpp generators/makefile.h
@@ -108,8 +108,7 @@ add_qt_tool(qmake # special case
         QT_VERSION_MINOR=${PROJECT_VERSION_MINOR} # special case
         QT_VERSION_PATCH=${PROJECT_VERSION_PATCH} # special case
     INCLUDE_DIRECTORIES
-        # . # special case
-        library
+        # . # special case remove
         generators
         generators/mac
         generators/unix
@@ -122,7 +121,6 @@ add_qt_tool(qmake # special case
 qt_internal_add_target_aliases(Bootstrap) # special case
 
 #### Keys ignored in scope 1:.:.:qmake.pro:<TRUE>:
-# CONFIG = "cmdline" "-qt"
 # PRECOMPILED_HEADER = "qmake_pch.h"
 # _OPTION = "host_build"
 
@@ -137,7 +135,7 @@ extend_target(qmake CONDITION WIN32
         ../src/corelib/io/qfsfileengine_win.cpp
         ../src/corelib/io/qsettings_win.cpp
         ../src/corelib/plugin/qsystemlibrary.cpp
-        ../src/corelib/tools/qlocale_win.cpp
+        ../src/corelib/text/qlocale_win.cpp # special case
         library/registry.cpp # special case
     DEFINES
         UNICODE
@@ -157,7 +155,7 @@ extend_target(qmake CONDITION UNIX
         ../src/corelib/io/qfilesystemiterator_unix.cpp
         ../src/corelib/io/qfsfileengine_unix.cpp
         ../src/corelib/kernel/qcore_unix.cpp
-        ../src/corelib/tools/qlocale_unix.cpp
+        ../src/corelib/text/qlocale_unix.cpp
 )
 
 extend_target(qmake CONDITION APPLE_OSX
@@ -180,7 +178,7 @@ extend_target(qmake CONDITION WIN32
         ../src/corelib/io/qfilesystemengine_win.cpp
         ../src/corelib/io/qfilesystemiterator_win.cpp
         ../src/corelib/io/qfsfileengine_win.cpp
-        ../src/corelib/tools/qlocale_win.cpp
+        ../src/corelib/text/qlocale_win.cpp
         ../src/corelib/io/qsettings_win.cpp
         # ../src/corelib/global/qoperatingsystemversion.cpp special case: remove this
         ../src/corelib/plugin/qsystemlibrary.cpp

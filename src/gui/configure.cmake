@@ -790,6 +790,7 @@ qt_feature("xcb_egl_plugin" PRIVATE
 )
 qt_feature("xcb_native_painting" PRIVATE
     LABEL "Native painting (experimental)"
+    AUTODETECT OFF
     CONDITION QT_FEATURE_xcb_xlib AND QT_FEATURE_fontconfig AND XRender_FOUND
     EMIT_IF QT_FEATURE_xcb
 )

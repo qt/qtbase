@@ -524,7 +524,10 @@ public:
 
     void setContentsMargins(int left, int top, int right, int bottom);
     void setContentsMargins(const QMargins &margins);
+#if QT_DEPRECATED_SINCE(5, 14)
+    QT_DEPRECATED_X("use contentsMargins()")
     void getContentsMargins(int *left, int *top, int *right, int *bottom) const;
+#endif
     QMargins contentsMargins() const;
 
     QRect contentsRect() const;

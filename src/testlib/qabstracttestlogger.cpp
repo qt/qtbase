@@ -87,7 +87,7 @@ QAbstractTestLogger::~QAbstractTestLogger()
     if (stream != stdout) {
         fclose(stream);
     }
-    stream = 0;
+    stream = nullptr;
 }
 
 void QAbstractTestLogger::filterUnprintable(char *str) const

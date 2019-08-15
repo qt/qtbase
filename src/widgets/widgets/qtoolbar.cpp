@@ -53,7 +53,6 @@
 #if QT_CONFIG(rubberband)
 #include <qrubberband.h>
 #endif
-#include <qsignalmapper.h>
 #include <qstylepainter.h>
 #include <qstyleoption.h>
 #include <qtoolbutton.h>

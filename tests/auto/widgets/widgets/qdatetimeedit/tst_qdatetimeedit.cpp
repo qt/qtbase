@@ -3141,7 +3141,6 @@ void tst_QDateTimeEdit::wheelEvent_data()
 {
 #if QT_CONFIG(wheelevent)
     QTest::addColumn<QPoint>("angleDelta");
-    QTest::addColumn<int>("qt4Delta");
     QTest::addColumn<int>("stepModifier");
     QTest::addColumn<Qt::KeyboardModifiers>("modifiers");
     QTest::addColumn<Qt::MouseEventSource>("source");
@@ -3255,7 +3254,6 @@ void tst_QDateTimeEdit::wheelEvent_data()
                                           modifierName.latin1(),
                                           sourceName.latin1())
                                     << angleDelta
-                                    << units
                                     << static_cast<int>(stepModifier)
                                     << modifiers
                                     << source
@@ -3277,7 +3275,6 @@ void tst_QDateTimeEdit::wheelEvent()
 {
 #if QT_CONFIG(wheelevent)
     QFETCH(QPoint, angleDelta);
-    QFETCH(int, qt4Delta);
     QFETCH(int, stepModifier);
     QFETCH(Qt::KeyboardModifiers, modifiers);
     QFETCH(Qt::MouseEventSource, source);
@@ -3294,9 +3291,8 @@ void tst_QDateTimeEdit::wheelEvent()
     style->stepModifier = static_cast<Qt::KeyboardModifier>(stepModifier);
     edit.setStyle(style.data());
 
-    QWheelEvent event(QPointF(), QPointF(), QPoint(), angleDelta, qt4Delta,
-                      Qt::Vertical, Qt::NoButton, modifiers, Qt::NoScrollPhase,
-                      source);
+    QWheelEvent event(QPointF(), QPointF(), QPoint(), angleDelta,
+                      Qt::NoButton, modifiers, Qt::NoScrollPhase, false, source);
 
     QCOMPARE(edit.date(), startDate);
     for (QDate expected : expectedDates) {

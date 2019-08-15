@@ -307,7 +307,7 @@ int main(int argc, char **argv)
             opacity = qBound(0.0f, opacity, 1.0f);
         }
 
-        cb->beginPass(rt, { 0, 1, 0, 1 }, { 1, 0 }, u);
+        cb->beginPass(rt, QColor::fromRgbF(0.0f, 1.0f, 0.0f, 1.0f), { 1, 0 }, u);
         cb->setGraphicsPipeline(ps);
         cb->setViewport({ 0, 0, 1280, 720 });
         cb->setShaderResources();

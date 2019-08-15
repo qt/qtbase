@@ -376,7 +376,7 @@ bool QNetworkStatusMonitor::isMonitoring() const
     return d->ipv4Probe.isMonitoring() || d->ipv6Probe.isMonitoring();
 }
 
-bool QNetworkStatusMonitor::isNetworkAccesible()
+bool QNetworkStatusMonitor::isNetworkAccessible()
 {
     // This function is to be executed on the thread that created
     // and uses 'this'.

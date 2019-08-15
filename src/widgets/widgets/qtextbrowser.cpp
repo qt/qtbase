@@ -42,6 +42,7 @@
 
 #include <qstack.h>
 #include <qapplication.h>
+#include <private/qapplication_p.h>
 #include <qevent.h>
 #include <qdesktopwidget.h>
 #include <qdebug.h>
@@ -1016,7 +1017,7 @@ void QTextBrowser::keyPressEvent(QKeyEvent *ev)
     Q_D(QTextBrowser);
     switch (ev->key()) {
     case Qt::Key_Select:
-        if (QApplication::keypadNavigationEnabled()) {
+        if (QApplicationPrivate::keypadNavigationEnabled()) {
             if (!hasEditFocus()) {
                 setEditFocus(true);
                 return;
@@ -1031,7 +1032,7 @@ void QTextBrowser::keyPressEvent(QKeyEvent *ev)
         }
         break;
     case Qt::Key_Back:
-        if (QApplication::keypadNavigationEnabled()) {
+        if (QApplicationPrivate::keypadNavigationEnabled()) {
             if (hasEditFocus()) {
                 setEditFocus(false);
                 ev->accept();
@@ -1041,7 +1042,7 @@ void QTextBrowser::keyPressEvent(QKeyEvent *ev)
         QTextEdit::keyPressEvent(ev);
         return;
     default:
-        if (QApplication::keypadNavigationEnabled() && !hasEditFocus()) {
+        if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()) {
             ev->ignore();
             return;
         }

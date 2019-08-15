@@ -123,14 +123,18 @@ private slots:
     void drawPath2();
     void drawPath3();
 
+#if QT_DEPRECATED_SINCE(5, 13)
     void drawRoundRect_data() { fillData(); }
     void drawRoundRect();
+#endif
+    void drawRoundedRect_data() { fillData(); }
+    void drawRoundedRect();
 
     void qimageFormats_data();
     void qimageFormats();
     void textOnTransparentImage();
 
-#ifndef QT_NO_WIDGETS
+#if !defined(QT_NO_WIDGETS) && QT_DEPRECATED_SINCE(5, 13)
     void initFrom();
 #endif
 
@@ -679,12 +683,14 @@ static QRect getPaintedSize(const QPixmap &pm, const QColor &background)
 }
 
 #ifndef QT_NO_WIDGETS
+
+#if QT_DEPRECATED_SINCE(5, 13)
 void tst_QPainter::initFrom()
 {
     QWidget *widget = new QWidget();
     QPalette pal = widget->palette();
-    pal.setColor(QPalette::Foreground, QColor(255, 0, 0));
-    pal.setBrush(QPalette::Background, QColor(0, 255, 0));
+    pal.setColor(QPalette::WindowText, QColor(255, 0, 0));
+    pal.setBrush(QPalette::Window, QColor(0, 255, 0));
     widget->setPalette(pal);
     widget->show();
 
@@ -698,11 +704,12 @@ void tst_QPainter::initFrom()
     p.initFrom(widget);
 
     QCOMPARE(p.font(), font);
-    QCOMPARE(p.pen().color(), pal.color(QPalette::Foreground));
+    QCOMPARE(p.pen().color(), pal.color(QPalette::WindowText));
     QCOMPARE(p.background(), pal.window());
 
     delete widget;
 }
+#endif
 
 void tst_QPainter::drawBorderPixmap()
 {
@@ -1546,6 +1553,7 @@ void tst_QPainter::drawClippedEllipse()
 
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 void tst_QPainter::drawRoundRect()
 {
     QFETCH(QRect, rect);
@@ -1571,6 +1579,42 @@ void tst_QPainter::drawRoundRect()
         p.setPen(usePen ? QPen(Qt::black) : QPen(Qt::NoPen));
         p.setBrush(Qt::black);
         p.drawRoundRect(rect);
+        p.end();
+
+        int increment = usePen ? 1 : 0;
+
+        const QRect painted = getPaintedSize(pixmap, Qt::white);
+        QCOMPARE(painted.width(), rect.width() + increment);
+        QCOMPARE(painted.height(), rect.height() + increment);
+    }
+}
+#endif
+
+void tst_QPainter::drawRoundedRect()
+{
+    QFETCH(QRect, rect);
+    QFETCH(bool, usePen);
+
+#ifdef Q_OS_DARWIN
+    if (QTest::currentDataTag() == QByteArray("rect(6, 12, 3, 14) with pen") ||
+        QTest::currentDataTag() == QByteArray("rect(6, 17, 3, 25) with pen") ||
+        QTest::currentDataTag() == QByteArray("rect(10, 6, 10, 3) with pen") ||
+        QTest::currentDataTag() == QByteArray("rect(10, 12, 10, 14) with pen") ||
+        QTest::currentDataTag() == QByteArray("rect(13, 45, 17, 80) with pen") ||
+        QTest::currentDataTag() == QByteArray("rect(13, 50, 17, 91) with pen") ||
+        QTest::currentDataTag() == QByteArray("rect(17, 6, 24, 3) with pen") ||
+        QTest::currentDataTag() == QByteArray("rect(24, 12, 38, 14) with pen"))
+        QSKIP("The Mac paint engine is off-by-one on certain rect sizes");
+#endif
+    QPixmap pixmap(rect.x() + rect.width() + 10,
+                   rect.y() + rect.height() + 10);
+    {
+        pixmap.fill(Qt::white);
+        QPainter p(&pixmap);
+        p.setRenderHint(QPainter::Qt4CompatiblePainting);
+        p.setPen(usePen ? QPen(Qt::black) : QPen(Qt::NoPen));
+        p.setBrush(Qt::black);
+        p.drawRoundedRect(rect, 25, 25, Qt::RelativeSize);
         p.end();
 
         int increment = usePen ? 1 : 0;
@@ -1662,9 +1706,13 @@ void tst_QPainter::combinedMatrix()
 
     p.translate(0.5, 0.5);
 
+    QTransform ct = p.combinedTransform();
+#if QT_DEPRECATED_SINCE(5, 13)
     QMatrix cm = p.combinedMatrix();
+    QCOMPARE(cm, ct.toAffine());
+#endif
 
-    QPointF pt = QPointF(0, 0) * cm;
+    QPointF pt = QPointF(0, 0) * ct.toAffine();
 
     QCOMPARE(pt.x(), 48.0);
     QCOMPARE(pt.y(), 16.0);
@@ -1979,7 +2027,7 @@ void tst_QPainter::clippedFillPath_data()
                                << pen2;
 
     path = QPainterPath();
-    path.addRoundRect(QRect(15, 15, 50, 50), 20);
+    path.addRoundedRect(QRect(15, 15, 50, 50), 20, Qt::RelativeSize);
     QTest::newRow("round rect 0") << QSize(100, 100) << path
                                   << QRect(15, 15, 49, 49)
                                   << QBrush(Qt::NoBrush)
@@ -4088,14 +4136,18 @@ void tst_QPainter::inactivePainter()
     p.setClipRegion(region);
     p.setClipping(true);
 
+#if QT_DEPRECATED_SINCE(5, 13)
     p.combinedMatrix();
+#endif
     p.combinedTransform();
 
     p.compositionMode();
     p.setCompositionMode(QPainter::CompositionMode_Plus);
 
     p.device();
+#if QT_DEPRECATED_SINCE(5, 13)
     p.deviceMatrix();
+#endif
     p.deviceTransform();
 
     p.font();
@@ -4119,7 +4171,9 @@ void tst_QPainter::inactivePainter()
     p.setRenderHint(QPainter::Antialiasing, true);
     p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, false);
 
+#if QT_DEPRECATED_SINCE(5, 13)
     p.resetMatrix();
+#endif
     p.resetTransform();
     p.rotate(1);
     p.scale(2, 2);
@@ -4135,8 +4189,10 @@ void tst_QPainter::inactivePainter()
     p.window();
     p.setWindow(QRect(10, 10, 620, 460));
 
+#if QT_DEPRECATED_SINCE(5, 13)
     p.worldMatrix();
     p.setWorldMatrix(QMatrix().translate(43, 21), true);
+#endif
     p.setWorldMatrixEnabled(true);
 
     p.transform();

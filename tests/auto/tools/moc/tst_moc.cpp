@@ -1053,7 +1053,7 @@ void tst_Moc::testExtraDataForEnum()
     const QMetaObject *mobjUser = &EnumUserClass::staticMetaObject;
     QCOMPARE(mobjUser->enumeratorCount(), 0);
 
-    const QMetaObject * const *objects = mobjUser->d.relatedMetaObjects;
+    const auto *objects = mobjUser->d.relatedMetaObjects;
     QVERIFY(objects);
     QCOMPARE(objects[0], mobjSource);
     QVERIFY(!objects[1]);
@@ -3579,10 +3579,9 @@ namespace QTBUG32933_relatedObjectsDontIncludeItself {
 void tst_Moc::QTBUG32933_relatedObjectsDontIncludeItself()
 {
     const QMetaObject *mo = &QTBUG32933_relatedObjectsDontIncludeItself::NS::Obj::staticMetaObject;
-    const QMetaObject * const *objects = mo->d.relatedMetaObjects;
+    const auto *objects = mo->d.relatedMetaObjects;
     // the related objects should be empty because the enums is in the same object.
     QVERIFY(!objects);
-
 }
 
 class UnrelatedClass : public QObject
@@ -3688,7 +3687,7 @@ void tst_Moc::relatedMetaObjectsNameConflict()
 
     // load all specified metaobjects int a set
     QSet<const QMetaObject*> dependency;
-    const QMetaObject *const *i = dependingObject->d.relatedMetaObjects;
+    const auto *i = dependingObject->d.relatedMetaObjects;
     while (*i) {
         dependency.insert(*i);
         ++i;

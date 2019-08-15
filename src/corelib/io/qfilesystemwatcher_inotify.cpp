@@ -422,16 +422,27 @@ void QInotifyFileSystemWatcherEngine::readFromInotify()
     }
 }
 
+template <typename Hash, typename Key>
+typename Hash::const_iterator
+find_last_in_equal_range(const Hash &c, const Key &key)
+{
+    // find c.equal_range(key).second - 1 without backwards iteration:
+    auto i = c.find(key);
+    const auto end = c.cend();
+    if (i == end)
+        return end;
+    decltype(i) prev;
+    do {
+        prev = i;
+        ++i;
+    } while (i != end && i.key() == key);
+    return prev;
+}
+
 QString QInotifyFileSystemWatcherEngine::getPathFromID(int id) const
 {
-    QHash<int, QString>::const_iterator i = idToPath.find(id);
-    while (i != idToPath.constEnd() && i.key() == id) {
-        if ((i + 1) == idToPath.constEnd() || (i + 1).key() != id) {
-            return i.value();
-        }
-        ++i;
-    }
-    return QString();
+    auto i = find_last_in_equal_range(idToPath, id);
+    return i == idToPath.cend() ? QString() : i.value() ;
 }
 
 QT_END_NAMESPACE

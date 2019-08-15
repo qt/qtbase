@@ -57,7 +57,8 @@ QT_BEGIN_NAMESPACE
     Textures are Private (device local) and a host visible staging buffer is
     used to upload data to them. Does not rely on strong objects refs from
     command buffers but does rely on the automatic resource tracking of the
-    command encoders.
+    command encoders. Assumes that an autorelease pool (ideally per frame) is
+    available on the thread on which QRhi is used.
 */
 
 #if __has_feature(objc_arc)
@@ -352,7 +353,7 @@ bool QRhiMetal::create(QRhi::Flags flags)
     else
         d->dev = MTLCreateSystemDefaultDevice();
 
-    qDebug("Metal device: %s", qPrintable(QString::fromNSString([d->dev name])));
+    qCDebug(QRHI_LOG_INFO, "Metal device: %s", qPrintable(QString::fromNSString([d->dev name])));
 
     if (importedCmdQueue)
         [d->cmdQueue retain];
@@ -1214,10 +1215,12 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     Q_ASSERT(currentSwapChain == swapChainD);
 
     const bool needsPresent = !flags.testFlag(QRhi::SkipPresent);
-    if (needsPresent) {
+    if (needsPresent)
         [swapChainD->cbWrapper.d->cb presentDrawable: swapChainD->d->curDrawable];
-        swapChainD->d->curDrawable = nil;
-    }
+
+    // Must not hold on to the drawable, regardless of needsPresent.
+    // (internally it is autoreleased or something, it seems)
+    swapChainD->d->curDrawable = nil;
 
     __block int thisFrameSlot = currentFrameSlot;
     [swapChainD->cbWrapper.d->cb addCompletedHandler: ^(id<MTLCommandBuffer>) {
@@ -3535,7 +3538,7 @@ bool QMetalSwapChain::buildOrResize()
     rtWrapper.d->colorAttCount = 1;
     rtWrapper.d->dsAttCount = ds ? 1 : 0;
 
-    qDebug("got CAMetalLayer, size %dx%d", pixelSize.width(), pixelSize.height());
+    qCDebug(QRHI_LOG_INFO, "got CAMetalLayer, size %dx%d", pixelSize.width(), pixelSize.height());
 
     if (samples > 1) {
         MTLTextureDescriptor *desc = [[MTLTextureDescriptor alloc] init];

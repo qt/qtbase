@@ -1322,8 +1322,8 @@ bool tst_QMetaObjectBuilder::sameMetaObject
             return false;
     }
 
-    const QMetaObject * const *objects1 = meta1->d.relatedMetaObjects;
-    const QMetaObject * const *objects2 = meta2->d.relatedMetaObjects;
+    const auto *objects1 = meta1->d.relatedMetaObjects;
+    const auto *objects2 = meta2->d.relatedMetaObjects;
     if (objects1 && !objects2)
         return false;
     if (objects2 && !objects1)
@@ -1391,7 +1391,7 @@ private:
 };
 
 QMetaObject TestObject::staticMetaObject = {
-    { 0, 0, 0, 0, 0, 0 }
+    { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr }
 };
 
 TestObject::TestObject(QObject *parent)

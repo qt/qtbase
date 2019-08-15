@@ -43,7 +43,6 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QPaintEngine>
-#include <QSignalMapper>
 #include <QAction>
 #include <QDebug>
 

@@ -691,7 +691,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     }
     // Find the topmost item under the mouse with a cursor.
     foreach (QGraphicsItem *item, scene->d_func()->cachedItemsUnderMouse) {
-        if (item->hasCursor()) {
+        if (item->isEnabled() && item->hasCursor()) {
             _q_setViewportCursor(item->cursor());
             return;
         }
@@ -808,7 +808,7 @@ void QGraphicsViewPrivate::_q_unsetViewportCursor()
     Q_Q(QGraphicsView);
     const auto items = q->items(lastMouseEvent.pos());
     for (QGraphicsItem *item : items) {
-        if (item->hasCursor()) {
+        if (item->isEnabled() && item->hasCursor()) {
             _q_setViewportCursor(item->cursor());
             return;
         }
@@ -3426,12 +3426,13 @@ void QGraphicsView::wheelEvent(QWheelEvent *event)
 
     QGraphicsSceneWheelEvent wheelEvent(QEvent::GraphicsSceneWheel);
     wheelEvent.setWidget(viewport());
-    wheelEvent.setScenePos(mapToScene(event->pos()));
-    wheelEvent.setScreenPos(event->globalPos());
+    wheelEvent.setScenePos(mapToScene(event->position().toPoint()));
+    wheelEvent.setScreenPos(event->globalPosition().toPoint());
     wheelEvent.setButtons(event->buttons());
     wheelEvent.setModifiers(event->modifiers());
-    wheelEvent.setDelta(event->delta());
-    wheelEvent.setOrientation(event->orientation());
+    const bool horizontal = qAbs(event->angleDelta().x()) > qAbs(event->angleDelta().y());
+    wheelEvent.setDelta(horizontal ? event->angleDelta().x() : event->angleDelta().y());
+    wheelEvent.setOrientation(horizontal ? Qt::Horizontal : Qt::Vertical);
     wheelEvent.setAccepted(false);
     QCoreApplication::sendEvent(d->scene, &wheelEvent);
     event->setAccepted(wheelEvent.isAccepted());

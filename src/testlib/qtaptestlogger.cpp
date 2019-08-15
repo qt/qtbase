@@ -55,9 +55,7 @@ QTapTestLogger::QTapTestLogger(const char *filename)
 {
 }
 
-QTapTestLogger::~QTapTestLogger()
-{
-}
+QTapTestLogger::~QTapTestLogger() = default;
 
 void QTapTestLogger::startLogging()
 {

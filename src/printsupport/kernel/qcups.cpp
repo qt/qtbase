@@ -106,7 +106,7 @@ static inline QString jobHoldToString(const QCUPSSupport::JobHoldUntil jobHold, 
             if (holdUntilTime < localDateTime.time())
                 localDateTime = localDateTime.addDays(1);
             localDateTime.setTime(holdUntilTime);
-            return localDateTime.toUTC().time().toString(QStringViewLiteral("HH:mm"));
+            return localDateTime.toUTC().time().toString(u"HH:mm");
         }
         // else fall through:
         Q_FALLTHROUGH();

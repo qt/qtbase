@@ -62,32 +62,32 @@ extend_target(Bootstrap
         ../../corelib/serialization/qtextstream.cpp
         ../../corelib/serialization/qxmlstream.cpp
         ../../corelib/serialization/qxmlutils.cpp
+        ../../corelib/text/qbytearray.cpp
+        ../../corelib/text/qbytearraymatcher.cpp
+        ../../corelib/text/qlocale.cpp
+        ../../corelib/text/qlocale_tools.cpp
+        ../../corelib/text/qregexp.cpp
+        ../../corelib/text/qstring.cpp
+        ../../corelib/text/qstring_compat.cpp
+        ../../corelib/text/qstringbuilder.cpp
+        ../../corelib/text/qstringlist.cpp
+        ../../corelib/text/qstringview.cpp
+        ../../corelib/text/qvsnprintf.cpp
         ../../corelib/time/qdatetime.cpp
         ../../corelib/tools/qarraydata.cpp
         ../../corelib/tools/qbitarray.cpp
-        ../../corelib/tools/qbytearray.cpp
-        ../../corelib/tools/qbytearraymatcher.cpp
         ../../corelib/tools/qcommandlineoption.cpp
         ../../corelib/tools/qcommandlineparser.cpp
         ../../corelib/tools/qcryptographichash.cpp
         ../../corelib/tools/qhash.cpp
         ../../corelib/tools/qline.cpp
         ../../corelib/tools/qlist.cpp
-        ../../corelib/tools/qlocale.cpp
-        ../../corelib/tools/qlocale_tools.cpp
         ../../corelib/tools/qmap.cpp
         ../../corelib/tools/qpoint.cpp
         ../../corelib/tools/qrect.cpp
-        ../../corelib/tools/qregexp.cpp
         ../../corelib/tools/qringbuffer.cpp
         ../../corelib/tools/qsize.cpp
-        ../../corelib/tools/qstring.cpp
-        ../../corelib/tools/qstring_compat.cpp
-        ../../corelib/tools/qstringbuilder.cpp
-        ../../corelib/tools/qstringlist.cpp
-        ../../corelib/tools/qstringview.cpp
         ../../corelib/tools/qversionnumber.cpp
-        ../../corelib/tools/qvsnprintf.cpp
         ../../xml/dom/qdom.cpp
         ../../xml/sax/qxml.cpp
     PUBLIC_DEFINES # special case
@@ -109,7 +109,6 @@ extend_target(Bootstrap
 )
 
 #### Keys ignored in scope 1:.:.:bootstrap.pro:<TRUE>:
-# CONFIG = "minimal_syncqt" "internal_module" "force_bootstrap" "gc_binaries"
 # INSTALLS = "lib"
 # MODULE_CONFIG = "gc_binaries"
 # MODULE_INCNAME = "QtCore" "QtXml"
@@ -153,24 +152,25 @@ extend_target(Bootstrap CONDITION WIN32
         user32
 )
 
-extend_target(Bootstrap CONDITION APPLE_OSX
+extend_target(Bootstrap CONDITION APPLE
     SOURCES
         ../../corelib/global/qoperatingsystemversion_darwin.mm
-        ../../corelib/io/qfilesystemengine_unix.cpp
-        ../../corelib/io/qfilesystemiterator_unix.cpp
-        ../../corelib/io/qfsfileengine_unix.cpp
-        ../../corelib/io/qstandardpaths_mac.mm
         ../../corelib/kernel/qcore_foundation.mm
         ../../corelib/kernel/qcore_mac.cpp
         ../../corelib/kernel/qcore_mac_objc.mm
         ../../corelib/kernel/qcoreapplication_mac.cpp
-    LIBRARIES
-        ${FWCoreServices}
     PUBLIC_LIBRARIES
         ${FWFoundation}
 )
 
-extend_target(Bootstrap CONDITION APPLE_OSX AND APPLE_UIKIT
+extend_target(Bootstrap CONDITION APPLE_OSX
+    SOURCES
+        ../../corelib/io/qstandardpaths_mac.mm
+    LIBRARIES
+        ${FWCoreServices}
+)
+
+extend_target(Bootstrap CONDITION APPLE_UIKIT
     LIBRARIES
         ${FWUIKit}
 )
@@ -183,9 +183,6 @@ extend_target(Bootstrap CONDITION UNIX AND NOT APPLE_OSX
 # special case: This will never get cross_compiled!
 # extend_target(Bootstrap CONDITION cross_compile [...])
 # extend_target(Bootstrap CONDITION NOT cross_compile [...])
-
-#### Keys ignored in scope 12:.:.:bootstrap.pro:else:
-# CONFIG = "no_core_dep"
 
 extend_target(Bootstrap CONDITION WIN32 AND mingw
     PUBLIC_LIBRARIES

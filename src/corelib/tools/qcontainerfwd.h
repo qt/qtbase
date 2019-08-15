@@ -47,7 +47,9 @@ QT_BEGIN_NAMESPACE
 
 template <class Key, class T> class QCache;
 template <class Key, class T> class QHash;
+#ifndef QT_NO_LINKED_LIST
 template <class T> class QLinkedList;
+#endif
 template <class T> class QList;
 template <class Key, class T> class QMap;
 template <class Key, class T> class QMultiHash;

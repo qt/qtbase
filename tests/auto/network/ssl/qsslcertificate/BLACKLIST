@@ -1,3 +1,13 @@
 # OpenSSL version is too new. Rich will fix :)
 [subjectAndIssuerAttributes]
-*
+ubuntu-16.04
+rhel-7.6
+opensuse-leap
+windows-7sp1
+ubuntu-18.04
+rhel-7.4
+b2qt
+windows-10 msvc-2017
+windows-10 msvc-2015
+opensuse-42.3
+

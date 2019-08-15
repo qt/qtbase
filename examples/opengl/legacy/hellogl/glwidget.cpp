@@ -140,10 +140,10 @@ void GLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
 
-    qglClearColor(qtPurple.dark());
+    qglClearColor(qtPurple.darker());
 
     logo = new QtLogo(this, 64);
-    logo->setColor(qtGreen.dark());
+    logo->setColor(qtGreen.darker());
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);

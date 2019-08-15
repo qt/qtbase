@@ -107,9 +107,7 @@ QXmlTestLogger::QXmlTestLogger(XmlMode mode, const char *filename)
 {
 }
 
-QXmlTestLogger::~QXmlTestLogger()
-{
-}
+QXmlTestLogger::~QXmlTestLogger() = default;
 
 void QXmlTestLogger::startLogging()
 {
@@ -182,23 +180,20 @@ inline static bool isEmpty(const char *str)
 static const char *incidentFormatString(bool noDescription, bool noTag)
 {
     if (noDescription) {
-        if (noTag)
-            return "<Incident type=\"%s\" file=\"%s\" line=\"%d\" />\n";
-        else
-            return "<Incident type=\"%s\" file=\"%s\" line=\"%d\">\n"
+        return noTag
+            ?   "<Incident type=\"%s\" file=\"%s\" line=\"%d\" />\n"
+            :   "<Incident type=\"%s\" file=\"%s\" line=\"%d\">\n"
                 "    <DataTag><![CDATA[%s%s%s%s]]></DataTag>\n"
                 "</Incident>\n";
-    } else {
-        if (noTag)
-            return "<Incident type=\"%s\" file=\"%s\" line=\"%d\">\n"
-                "    <Description><![CDATA[%s%s%s%s]]></Description>\n"
-                "</Incident>\n";
-        else
-            return "<Incident type=\"%s\" file=\"%s\" line=\"%d\">\n"
-                "    <DataTag><![CDATA[%s%s%s]]></DataTag>\n"
-                "    <Description><![CDATA[%s]]></Description>\n"
-                "</Incident>\n";
     }
+    return noTag
+        ? "<Incident type=\"%s\" file=\"%s\" line=\"%d\">\n"
+          "    <Description><![CDATA[%s%s%s%s]]></Description>\n"
+          "</Incident>\n"
+        : "<Incident type=\"%s\" file=\"%s\" line=\"%d\">\n"
+          "    <DataTag><![CDATA[%s%s%s]]></DataTag>\n"
+          "    <Description><![CDATA[%s]]></Description>\n"
+          "</Incident>\n";
 }
 
 static const char *benchmarkResultFormatString()

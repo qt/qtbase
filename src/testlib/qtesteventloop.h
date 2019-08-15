@@ -56,8 +56,7 @@ class Q_TESTLIB_EXPORT QTestEventLoop : public QObject
     Q_OBJECT
 
 public:
-    inline QTestEventLoop(QObject *aParent = nullptr)
-        : QObject(aParent), inLoop(false), _timeout(false), timerId(-1), loop(nullptr) {}
+    using QObject::QObject;
 
     inline void enterLoopMSecs(int ms);
     inline void enterLoop(int secs) { enterLoopMSecs(secs * 1000); }
@@ -84,10 +83,10 @@ protected:
 
 private:
     Q_DECL_UNUSED_MEMBER bool inLoop; // ### Qt 6: remove
-    bool _timeout;
-    int timerId;
+    bool _timeout = false;
+    int timerId = -1;
 
-    QEventLoop *loop;
+    QEventLoop *loop = nullptr;
 };
 
 inline void QTestEventLoop::enterLoopMSecs(int ms)

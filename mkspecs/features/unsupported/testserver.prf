@@ -58,9 +58,9 @@ debug_and_release:!build_pass: return()
 
 DOCKER_ENABLED = 1
 
-equals(QMAKE_HOST.os, Darwin) | equals(QMAKE_HOST.os, Windows) {
+equals(QMAKE_HOST.os, Darwin) {
     DOCKER_ENABLED = 0
-    message("Not using docker network test server on macOS and Windows, see QTQAINFRA-2717 and QTQAINFRA-2750")
+    message("Not using docker network test server on macOS, see QTQAINFRA-2717 and QTQAINFRA-2750")
 }
 
 TESTSERVER_VERSION = ""

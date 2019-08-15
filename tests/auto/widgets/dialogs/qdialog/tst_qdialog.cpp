@@ -52,7 +52,9 @@ class DummyDialog : public QDialog
 {
 public:
     DummyDialog(): QDialog() {}
+#if QT_DEPRECATED_SINCE(5, 13)
     using QDialog::showExtension;
+#endif
 };
 
 class tst_QDialog : public QObject
@@ -64,8 +66,10 @@ public:
 private slots:
     void cleanup();
     void getSetCheck();
+#if QT_DEPRECATED_SINCE(5, 13)
     void showExtension_data();
     void showExtension();
+#endif
     void defaultButtons();
     void showMaximized();
     void showMinimized();
@@ -76,6 +80,9 @@ private slots:
     void deleteInExec();
 #if QT_CONFIG(sizegrip)
     void showSizeGrip();
+#if QT_DEPRECATED_SINCE(5, 13)
+    void showSizeGrip_deprecated();
+#endif
 #endif
     void setVisible();
     void reject();
@@ -89,6 +96,7 @@ private slots:
 void tst_QDialog::getSetCheck()
 {
     QDialog obj1;
+#if QT_DEPRECATED_SINCE(5, 13)
     // QWidget* QDialog::extension()
     // void QDialog::setExtension(QWidget*)
     QWidget *var1 = new QWidget;
@@ -97,6 +105,7 @@ void tst_QDialog::getSetCheck()
     obj1.setExtension((QWidget *)0);
     QCOMPARE((QWidget *)0, obj1.extension());
     // No delete var1, since setExtension takes ownership
+#endif
 
     // int QDialog::result()
     // void QDialog::setResult(int)
@@ -146,6 +155,7 @@ void tst_QDialog::cleanup()
     QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
+#if QT_DEPRECATED_SINCE(5, 13)
 void tst_QDialog::showExtension_data()
 {
     QTest::addColumn<QSize>("dlgSize");
@@ -197,6 +207,7 @@ void tst_QDialog::showExtension()
 
     testWidget.setExtension( 0 );
 }
+#endif
 
 void tst_QDialog::defaultButtons()
 {
@@ -422,8 +433,36 @@ void tst_QDialog::deleteInExec()
 }
 
 #if QT_CONFIG(sizegrip)
+
 // From Task 124269
 void tst_QDialog::showSizeGrip()
+{
+    QDialog dialog(nullptr);
+    dialog.show();
+    QWidget *ext = new QWidget(&dialog);
+    QVERIFY(!dialog.isSizeGripEnabled());
+
+    dialog.setSizeGripEnabled(true);
+    QPointer<QSizeGrip> sizeGrip = dialog.findChild<QSizeGrip *>();
+    QVERIFY(sizeGrip);
+    QVERIFY(sizeGrip->isVisible());
+    QVERIFY(dialog.isSizeGripEnabled());
+
+    dialog.setSizeGripEnabled(false);
+    QVERIFY(!dialog.isSizeGripEnabled());
+
+    dialog.setSizeGripEnabled(true);
+    sizeGrip = dialog.findChild<QSizeGrip *>();
+    QVERIFY(sizeGrip);
+    QVERIFY(sizeGrip->isVisible());
+    sizeGrip->hide();
+    dialog.hide();
+    dialog.show();
+    QVERIFY(!sizeGrip->isVisible());
+}
+
+#if QT_DEPRECATED_SINCE(5, 13)
+void tst_QDialog::showSizeGrip_deprecated()
 {
     QDialog dialog(0);
     dialog.show();
@@ -476,7 +515,9 @@ void tst_QDialog::showSizeGrip()
     dialog.show();
     QVERIFY(!sizeGrip->isVisible());
 }
-#endif
+#endif // QT_DEPRECATED_SINCE(5, 13)
+
+#endif // QT_CONFIG(sizegrip)
 
 void tst_QDialog::setVisible()
 {

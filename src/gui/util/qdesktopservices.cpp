@@ -290,6 +290,7 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
     setUrlHandler(scheme, 0, 0);
 }
 
+#if QT_DEPRECATED_SINCE(5, 0)
 /*!
     \enum QDesktopServices::StandardLocation
     \since 4.4
@@ -344,6 +345,7 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
     \obsolete
     Use QStandardPaths::displayName()
 */
+#endif
 
 extern Q_CORE_EXPORT QString qt_applicationName_noFallback();
 

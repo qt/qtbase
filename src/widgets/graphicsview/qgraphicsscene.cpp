@@ -2805,7 +2805,7 @@ QGraphicsPolygonItem *QGraphicsScene::addPolygon(const QPolygonF &polygon,
     Note that the item's geometry is provided in item coordinates, and its
     position is initialized to (0, 0). For example, if a QRect(50, 50, 100,
     100) is added, its top-left corner will be at (50, 50) relative to the
-    origin in the items coordinate system.
+    origin in the item's coordinate system.
 
     If the item is visible (i.e., QGraphicsItem::isVisible() returns \c true),
     QGraphicsScene will emit changed() once control goes back to the event

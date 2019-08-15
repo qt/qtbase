@@ -182,6 +182,29 @@ gss_ctx_id_t ctx;
 "# FIXME: qmake: LIBS += -lgssapi_krb5
 )
 
+# netlistmgr
+qt_config_compile_test(netlistmgr
+    LABEL "Network List Manager"
+"
+#include <netlistmgr.h>
+#include <wrl/client.h>
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+using namespace Microsoft::WRL;
+ComPtr<INetworkListManager> networkListManager;
+ComPtr<IConnectionPoint> connectionPoint;
+ComPtr<IConnectionPointContainer> connectionPointContainer;
+networkListManager.As(&connectionPointContainer);
+connectionPointContainer->FindConnectionPoint(IID_INetworkConnectionEvents, &connectionPoint);
+    /* END TEST: */
+    return 0;
+}
+"# FIXME: qmake: LIBS += -lOle32
+)
+
 
 
 #### Features
@@ -352,3 +375,9 @@ qt_feature("sspi" PUBLIC
     CONDITION WIN32 AND NOT WINRT
 )
 qt_feature_definition("sspi" "QT_NO_SSPI" NEGATE VALUE "1")
+qt_feature("netlistmgr" PRIVATE
+    SECTION "Networking"
+    LABEL "Network List Manager"
+    PURPOSE "Use Network List Manager to keep track of network connectivity"
+    CONDITION WIN32 AND TEST_netlistmgr
+)

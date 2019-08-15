@@ -54,6 +54,7 @@
 #endif
 #include <qstyle.h>
 #include <qtimer.h>
+#include "private/qapplication_p.h"
 #include "private/qtextdocumentlayout_p.h"
 #include "private/qabstracttextdocumentlayout_p.h"
 #include "qtextdocument.h"
@@ -1573,7 +1574,7 @@ bool QPlainTextEdit::event(QEvent *e)
     }
 #ifdef QT_KEYPAD_NAVIGATION
     else if (e->type() == QEvent::EnterEditFocus || e->type() == QEvent::LeaveEditFocus) {
-        if (QApplication::keypadNavigationEnabled())
+        if (QApplicationPrivate::keypadNavigationEnabled())
             d->sendControlEvent(e);
     }
 #endif
@@ -1691,7 +1692,7 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
     switch (e->key()) {
         case Qt::Key_Select:
-            if (QApplication::keypadNavigationEnabled()) {
+            if (QApplicationPrivate::keypadNavigationEnabled()) {
                 if (!(d->control->textInteractionFlags() & Qt::LinksAccessibleByKeyboard))
                     setEditFocus(!hasEditFocus());
                 else {
@@ -1709,14 +1710,14 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
             break;
         case Qt::Key_Back:
         case Qt::Key_No:
-            if (!QApplication::keypadNavigationEnabled()
-                    || (QApplication::keypadNavigationEnabled() && !hasEditFocus())) {
+            if (!QApplicationPrivate::keypadNavigationEnabled()
+                    || (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus())) {
                 e->ignore();
                 return;
             }
             break;
         default:
-            if (QApplication::keypadNavigationEnabled()) {
+            if (QApplicationPrivate::keypadNavigationEnabled()) {
                 if (!hasEditFocus() && !(e->modifiers() & Qt::ControlModifier)) {
                     if (e->text()[0].isPrint()) {
                         setEditFocus(true);
@@ -1792,7 +1793,7 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
         switch (e->key()) {
             case Qt::Key_Up:
             case Qt::Key_Down:
-                if (QApplication::keypadNavigationEnabled()) {
+                if (QApplicationPrivate::keypadNavigationEnabled()) {
                     // Cursor position didn't change, so we want to leave
                     // these keys to change focus.
                     e->ignore();
@@ -1801,7 +1802,7 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
                 break;
             case Qt::Key_Left:
             case Qt::Key_Right:
-                if (QApplication::keypadNavigationEnabled()
+                if (QApplicationPrivate::keypadNavigationEnabled()
                         && QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional) {
                     // Same as for Key_Up and Key_Down.
                     e->ignore();
@@ -1810,7 +1811,7 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
                 break;
             case Qt::Key_Back:
                 if (!e->isAutoRepeat()) {
-                    if (QApplication::keypadNavigationEnabled()) {
+                    if (QApplicationPrivate::keypadNavigationEnabled()) {
                         if (document()->isEmpty()) {
                             setEditFocus(false);
                             e->accept();
@@ -1836,7 +1837,7 @@ void QPlainTextEdit::keyReleaseEvent(QKeyEvent *e)
 {
 #ifdef QT_KEYPAD_NAVIGATION
     Q_D(QPlainTextEdit);
-    if (QApplication::keypadNavigationEnabled()) {
+    if (QApplicationPrivate::keypadNavigationEnabled()) {
         if (!e->isAutoRepeat() && e->key() == Qt::Key_Back
             && d->deleteAllTimer.isActive()) {
             d->deleteAllTimer.stop();
@@ -2080,7 +2081,7 @@ void QPlainTextEdit::mousePressEvent(QMouseEvent *e)
 {
     Q_D(QPlainTextEdit);
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled() && !hasEditFocus())
+    if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus())
         setEditFocus(true);
 #endif
     d->sendControlEvent(e);
@@ -2212,7 +2213,7 @@ void QPlainTextEdit::inputMethodEvent(QInputMethodEvent *e)
     Q_D(QPlainTextEdit);
 #ifdef QT_KEYPAD_NAVIGATION
     if (d->control->textInteractionFlags() & Qt::TextEditable
-        && QApplication::keypadNavigationEnabled()
+        && QApplicationPrivate::keypadNavigationEnabled()
         && !hasEditFocus()) {
         setEditFocus(true);
         selectAll();    // so text is replaced rather than appended to

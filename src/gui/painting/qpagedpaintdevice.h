@@ -213,6 +213,7 @@ public:
         Envelope10 = Comm10E
     };
 
+    // keep in sync with QPdfEngine::PdfVersion!
     enum PdfVersion { PdfVersion_1_4, PdfVersion_A1b, PdfVersion_1_6 };
 
     // ### Qt6 Make these virtual

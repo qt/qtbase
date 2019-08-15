@@ -472,7 +472,7 @@ qDoubleSscanf(argv[0], invalidLocale, \"invalid format\", &a, &argc);
     /* END TEST: */
     return 0;
 }
-"# FIXME: qmake: DEFINES += QDSP_P_H=$$shell_quote(\"@PWD@/tools/qdoublescanprint_p.h\")
+"# FIXME: qmake: DEFINES += QDSP_P_H=$$shell_quote(\"@PWD@/text/qdoublescanprint_p.h\")
 )
 
 

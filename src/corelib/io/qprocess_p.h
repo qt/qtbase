@@ -146,16 +146,22 @@ public:
     inline QString nameToString(const Key &name) const { return name; }
     inline Value prepareValue(const QString &value) const { return value; }
     inline QString valueToString(const Value &value) const { return value; }
-    struct MutexLocker {
-        MutexLocker(const QProcessEnvironmentPrivate *) {}
-    };
-    struct OrderedMutexLocker {
-        OrderedMutexLocker(const QProcessEnvironmentPrivate *,
-                           const QProcessEnvironmentPrivate *) {}
-    };
 #else
+    struct NameMapMutexLocker : public QMutexLocker
+    {
+        NameMapMutexLocker(const QProcessEnvironmentPrivate *d) : QMutexLocker(&d->nameMapMutex) {}
+    };
+    struct OrderedNameMapMutexLocker : public QOrderedMutexLocker
+    {
+        OrderedNameMapMutexLocker(const QProcessEnvironmentPrivate *d1,
+                                  const QProcessEnvironmentPrivate *d2)
+            : QOrderedMutexLocker(&d1->nameMapMutex, &d2->nameMapMutex)
+        {}
+    };
+
     inline Key prepareName(const QString &name) const
     {
+        const NameMapMutexLocker locker(this);
         Key &ent = nameMap[name];
         if (ent.isEmpty())
             ent = name.toLocal8Bit();
@@ -164,40 +170,27 @@ public:
     inline QString nameToString(const Key &name) const
     {
         const QString sname = QString::fromLocal8Bit(name);
-        nameMap[sname] = name;
+        {
+            const NameMapMutexLocker locker(this);
+            nameMap[sname] = name;
+        }
         return sname;
     }
     inline Value prepareValue(const QString &value) const { return Value(value); }
     inline QString valueToString(const Value &value) const { return value.string(); }
 
-    struct MutexLocker : public QMutexLocker
-    {
-        MutexLocker(const QProcessEnvironmentPrivate *d) : QMutexLocker(&d->mutex) {}
-    };
-    struct OrderedMutexLocker : public QOrderedMutexLocker
-    {
-        OrderedMutexLocker(const QProcessEnvironmentPrivate *d1,
-                           const QProcessEnvironmentPrivate *d2) :
-            QOrderedMutexLocker(&d1->mutex, &d2->mutex)
-        {}
-    };
-
     QProcessEnvironmentPrivate() : QSharedData() {}
     QProcessEnvironmentPrivate(const QProcessEnvironmentPrivate &other) :
-        QSharedData()
+        QSharedData(), vars(other.vars)
     {
-        // This being locked ensures that the functions that only assign
-        // d pointers don't need explicit locking.
         // We don't need to lock our own mutex, as this object is new and
         // consequently not shared. For the same reason, non-const methods
         // do not need a lock, as they detach objects (however, we need to
         // ensure that they really detach before using prepareName()).
-        MutexLocker locker(&other);
-        vars = other.vars;
+        NameMapMutexLocker locker(&other);
         nameMap = other.nameMap;
-        // We need to detach our members, so that our mutex can protect them.
-        // As we are being detached, they likely would be detached a moment later anyway.
-        vars.detach();
+        // We need to detach our nameMap, so that our mutex can protect it.
+        // As we are being detached, it likely would be detached a moment later anyway.
         nameMap.detach();
     }
 #endif
@@ -208,8 +201,7 @@ public:
 #ifdef Q_OS_UNIX
     typedef QHash<QString, Key> NameHash;
     mutable NameHash nameMap;
-
-    mutable QMutex mutex;
+    mutable QMutex nameMapMutex;
 #endif
 
     static QProcessEnvironment fromList(const QStringList &list);

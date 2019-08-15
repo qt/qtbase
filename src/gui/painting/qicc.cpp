@@ -42,8 +42,9 @@
 #include <qbuffer.h>
 #include <qbytearray.h>
 #include <qdatastream.h>
-#include <qloggingcategory.h>
 #include <qendian.h>
+#include <qloggingcategory.h>
+#include <qstring.h>
 
 #include "qcolorspace_p.h"
 #include "qcolortrc_p.h"
@@ -117,6 +118,7 @@ enum class Tag : quint32 {
     bkpt = IccTag('b', 'k', 'p', 't'),
     mft1 = IccTag('m', 'f', 't', '1'),
     mft2 = IccTag('m', 'f', 't', '2'),
+    mluc = IccTag('m', 'l', 'u', 'c'),
     mAB_ = IccTag('m', 'A', 'B', ' '),
     mBA_ = IccTag('m', 'B', 'A', ' '),
     chad = IccTag('c', 'h', 'a', 'd'),
@@ -164,6 +166,25 @@ struct ParaTagData : GenericTagData {
     quint32_be parameter[1];
 };
 
+struct DescTagData : GenericTagData {
+    quint32_be asciiDescriptionLength;
+    char asciiDescription[1];
+    // .. we ignore the rest
+};
+
+struct MlucTagRecord {
+    quint16_be languageCode;
+    quint16_be countryCode;
+    quint32_be size;
+    quint32_be offset;
+};
+
+struct MlucTagData : GenericTagData {
+    quint32_be recordCount;
+    quint32_be recordSize; // = sizeof(MlucTagRecord)
+    MlucTagRecord records[1];
+};
+
 // For both mAB and mBA
 struct mABTagData : GenericTagData {
     quint8 inputChannels;
@@ -190,23 +211,17 @@ static float fromFixedS1516(int x)
     return x * (1.0f / 65536.0f);
 }
 
-QColorVector fromXyzData(const XYZTagData *xyz)
-{
-    const float x = fromFixedS1516(xyz->fixedX);
-    const float y = fromFixedS1516(xyz->fixedY);
-    const float z = fromFixedS1516(xyz->fixedZ);
-    qCDebug(lcIcc) << "XYZ_ " << x << y << z;
-
-    return QColorVector(x, y, z);
-}
-
 static bool isValidIccProfile(const ICCProfileHeader &header)
 {
     if (header.signature != uint(Tag::acsp)) {
         qCWarning(lcIcc, "Failed ICC signature test");
         return false;
     }
-    if (header.profileSize < (sizeof(ICCProfileHeader) + header.tagCount * sizeof(TagTableEntry))) {
+
+    // Don't overflow 32bit integers:
+    if (header.tagCount >= INT32_MAX / sizeof(TagTableEntry))
+        return false;
+    if (header.profileSize - sizeof(ICCProfileHeader) < header.tagCount * sizeof(TagTableEntry)) {
         qCWarning(lcIcc, "Failed basic size sanity");
         return false;
     }
@@ -288,7 +303,7 @@ QByteArray toIccProfile(const QColorSpace &space)
     if (!space.isValid())
         return QByteArray();
 
-    const QColorSpacePrivate *spaceDPtr = space.d_func();
+    const QColorSpacePrivate *spaceDPtr = QColorSpacePrivate::get(space);
 
     constexpr int tagCount = 9;
     constexpr uint profileDataOffset = 128 + 4 + 12 * tagCount;
@@ -413,17 +428,44 @@ QByteArray toIccProfile(const QColorSpace &space)
     return iccProfile;
 }
 
-bool parseTRC(const GenericTagData *trcData, QColorTrc &gamma)
+struct TagEntry {
+    quint32 offset;
+    quint32 size;
+};
+
+bool parseXyzData(const QByteArray &data, const TagEntry &tagEntry, QColorVector &colorVector)
 {
+    if (tagEntry.size < sizeof(XYZTagData)) {
+        qCWarning(lcIcc) << "Undersized XYZ tag";
+        return false;
+    }
+    const XYZTagData *xyz = reinterpret_cast<const XYZTagData *>(data.constData() + tagEntry.offset);
+    if (xyz->type != quint32(Tag::XYZ_)) {
+        qCWarning(lcIcc) << "Bad XYZ content type";
+        return false;
+    }
+    const float x = fromFixedS1516(xyz->fixedX);
+    const float y = fromFixedS1516(xyz->fixedY);
+    const float z = fromFixedS1516(xyz->fixedZ);
+
+    colorVector = QColorVector(x, y, z);
+    return true;
+}
+
+bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma)
+{
+    const GenericTagData *trcData = reinterpret_cast<const GenericTagData *>(data.constData() + tagEntry.offset);
     if (trcData->type == quint32(Tag::curv)) {
-        const CurvTagData *curv = reinterpret_cast<const CurvTagData *>(trcData);
-        qCDebug(lcIcc) << "curv" << uint(curv->valueCount);
+        const CurvTagData *curv = static_cast<const CurvTagData *>(trcData);
+        if (curv->valueCount > (1 << 16))
+            return false;
+        if (tagEntry.size - 12 < 2 * curv->valueCount)
+            return false;
         if (curv->valueCount == 0) {
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(); // Linear
         } else if (curv->valueCount == 1) {
             float g = curv->value[0] * (1.0f / 256.0f);
-            qCDebug(lcIcc) << g;
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction::fromGamma(g);
         } else {
@@ -445,49 +487,54 @@ bool parseTRC(const GenericTagData *trcData, QColorTrc &gamma)
         return true;
     }
     if (trcData->type == quint32(Tag::para)) {
-        const ParaTagData *para = reinterpret_cast<const ParaTagData *>(trcData);
-        qCDebug(lcIcc) << "para" << uint(para->curveType);
+        if (tagEntry.size < sizeof(ParaTagData))
+            return false;
+        const ParaTagData *para = static_cast<const ParaTagData *>(trcData);
         switch (para->curveType) {
         case 0: {
             float g = fromFixedS1516(para->parameter[0]);
-            qCDebug(lcIcc) << g;
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction::fromGamma(g);
             break;
         }
         case 1: {
+            if (tagEntry.size < sizeof(ParaTagData) + 2 * 4)
+                return false;
             float g = fromFixedS1516(para->parameter[0]);
             float a = fromFixedS1516(para->parameter[1]);
             float b = fromFixedS1516(para->parameter[2]);
             float d = -b / a;
-            qCDebug(lcIcc) << g << a << b;
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(a, b, 0.0f, d, 0.0f, 0.0f, g);
             break;
         }
         case 2: {
+            if (tagEntry.size < sizeof(ParaTagData) + 3 * 4)
+                return false;
             float g = fromFixedS1516(para->parameter[0]);
             float a = fromFixedS1516(para->parameter[1]);
             float b = fromFixedS1516(para->parameter[2]);
             float c = fromFixedS1516(para->parameter[3]);
             float d = -b / a;
-            qCDebug(lcIcc) << g << a << b << c;
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(a, b, 0.0f, d, c, c, g);
             break;
         }
         case 3: {
+            if (tagEntry.size < sizeof(ParaTagData) + 4 * 4)
+                return false;
             float g = fromFixedS1516(para->parameter[0]);
             float a = fromFixedS1516(para->parameter[1]);
             float b = fromFixedS1516(para->parameter[2]);
             float c = fromFixedS1516(para->parameter[3]);
             float d = fromFixedS1516(para->parameter[4]);
-            qCDebug(lcIcc) << g << a << b << c << d;
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(a, b, c, d, 0.0f, 0.0f, g);
             break;
         }
         case 4: {
+            if (tagEntry.size < sizeof(ParaTagData) + 6 * 4)
+                return false;
             float g = fromFixedS1516(para->parameter[0]);
             float a = fromFixedS1516(para->parameter[1]);
             float b = fromFixedS1516(para->parameter[2]);
@@ -495,7 +542,6 @@ bool parseTRC(const GenericTagData *trcData, QColorTrc &gamma)
             float d = fromFixedS1516(para->parameter[4]);
             float e = fromFixedS1516(para->parameter[5]);
             float f = fromFixedS1516(para->parameter[6]);
-            qCDebug(lcIcc) << g << a << b << c << d << e << f;
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(a, b, c, d, e, f, g);
             break;
@@ -508,6 +554,53 @@ bool parseTRC(const GenericTagData *trcData, QColorTrc &gamma)
     }
     qCWarning(lcIcc) << "Invalid TRC data type";
     return false;
+}
+
+bool parseDesc(const QByteArray &data, const TagEntry &tagEntry, QString &descName)
+{
+    const GenericTagData *tag = (const GenericTagData *)(data.constData() + tagEntry.offset);
+
+    // Either 'desc' (ICCv2) or 'mluc' (ICCv4)
+    if (tag->type == quint32(Tag::desc)) {
+        if (tagEntry.size < sizeof(DescTagData))
+            return false;
+        const DescTagData *desc = (const DescTagData *)(data.constData() + tagEntry.offset);
+        const quint32 len = desc->asciiDescriptionLength;
+        if (len < 1)
+            return false;
+        if (tagEntry.size - 12 < len)
+            return false;
+        if (desc->asciiDescription[len - 1] != '\0')
+            return false;
+        descName = QString::fromLatin1(desc->asciiDescription, len - 1);
+        return true;
+    }
+    if (tag->type != quint32(Tag::mluc))
+        return false;
+
+    if (tagEntry.size < sizeof(MlucTagData))
+        return false;
+    const MlucTagData *mluc = (const MlucTagData *)(data.constData() + tagEntry.offset);
+    if (mluc->recordCount < 1)
+        return false;
+    if (mluc->recordSize < 12)
+        return false;
+    // We just use the primary record regardless of language or country.
+    const quint32 stringOffset = mluc->records[0].offset;
+    const quint32 stringSize = mluc->records[0].size;
+    if (tagEntry.size < stringOffset || tagEntry.size - stringOffset < stringSize )
+        return false;
+    if ((stringSize | stringOffset) & 1)
+        return false;
+    quint32 stringLen = stringSize / 2;
+    const ushort *unicodeString = (const ushort *)(data.constData() + tagEntry.offset + stringOffset);
+    // The given length shouldn't include 0-termination, but might.
+    if (stringLen > 1 && unicodeString[stringLen - 1] == 0)
+        --stringLen;
+    QVarLengthArray<quint16> utf16hostendian(stringLen);
+    qFromBigEndian<ushort>(unicodeString, stringLen, utf16hostendian.data());
+    descName = QString::fromUtf16(utf16hostendian.data(), stringLen);
+    return true;
 }
 
 bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
@@ -529,8 +622,12 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     // Read tag index
     const TagTableEntry *tagTable = (const TagTableEntry *)(data.constData() + sizeof(ICCProfileHeader));
     const qsizetype offsetToData = sizeof(ICCProfileHeader) + header->tagCount * sizeof(TagTableEntry);
+    if (offsetToData > data.size()) {
+        qCWarning(lcIcc) << "fromIccProfile: failed index size sanity";
+        return false;
+    }
 
-    QHash<Tag, quint32> tagIndex;
+    QHash<Tag, TagEntry> tagIndex;
     for (uint i = 0; i < header->tagCount; ++i) {
         // Sanity check tag sizes and offsets:
         if (qsizetype(tagTable[i].offset) < offsetToData) {
@@ -542,15 +639,24 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
             qCWarning(lcIcc) << "fromIccProfile: failed tag offset sanity 2";
             return false;
         }
-        if ((tagTable[i].offset + tagTable[i].size) > header->profileSize) {
+        if (tagTable[i].size < 12) {
+            qCWarning(lcIcc) << "fromIccProfile: failed minimal tag size sanity";
+            return false;
+        }
+        if (tagTable[i].size > header->profileSize - tagTable[i].offset) {
             qCWarning(lcIcc) << "fromIccProfile: failed tag offset + size sanity";
+            return false;
+        }
+        if (tagTable[i].offset & 0x03) {
+            qCWarning(lcIcc) << "fromIccProfile: invalid tag offset alignment";
             return false;
         }
 //        printf("'%4s' %d %d\n", (const char *)&tagTable[i].signature,
 //                                quint32(tagTable[i].offset),
 //                                quint32(tagTable[i].size));
-        tagIndex.insert(Tag(quint32(tagTable[i].signature)), tagTable[i].offset);
+        tagIndex.insert(Tag(quint32(tagTable[i].signature)), { tagTable[i].offset, tagTable[i].size });
     }
+
     // Check the profile is three-component matrix based (what we currently support):
     if (!tagIndex.contains(Tag::rXYZ) || !tagIndex.contains(Tag::gXYZ) || !tagIndex.contains(Tag::bXYZ) ||
         !tagIndex.contains(Tag::rTRC) || !tagIndex.contains(Tag::gTRC) || !tagIndex.contains(Tag::bTRC) ||
@@ -559,70 +665,70 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         return false;
     }
 
+    QColorSpacePrivate *colorspaceDPtr = QColorSpacePrivate::getWritable(*colorSpace);
+
     // Parse XYZ tags
-    const XYZTagData *rXyz = (const XYZTagData *)(data.constData() + tagIndex[Tag::rXYZ]);
-    const XYZTagData *gXyz = (const XYZTagData *)(data.constData() + tagIndex[Tag::gXYZ]);
-    const XYZTagData *bXyz = (const XYZTagData *)(data.constData() + tagIndex[Tag::bXYZ]);
-    const XYZTagData *wXyz = (const XYZTagData *)(data.constData() + tagIndex[Tag::wtpt]);
-    if (rXyz->type != quint32(Tag::XYZ_) || gXyz->type != quint32(Tag::XYZ_) ||
-        wXyz->type != quint32(Tag::XYZ_) || wXyz->type != quint32(Tag::XYZ_)) {
-        qCWarning(lcIcc) << "fromIccProfile: Bad XYZ data type";
+    if (!parseXyzData(data, tagIndex[Tag::rXYZ], colorspaceDPtr->toXyz.r))
         return false;
-    }
-    QColorSpacePrivate *colorspaceDPtr = colorSpace->d_func();
+    if (!parseXyzData(data, tagIndex[Tag::gXYZ], colorspaceDPtr->toXyz.g))
+        return false;
+    if (!parseXyzData(data, tagIndex[Tag::bXYZ], colorspaceDPtr->toXyz.b))
+        return false;
+    if (!parseXyzData(data, tagIndex[Tag::wtpt], colorspaceDPtr->whitePoint))
+        return false;
 
-    colorspaceDPtr->toXyz.r = fromXyzData(rXyz);
-    colorspaceDPtr->toXyz.g = fromXyzData(gXyz);
-    colorspaceDPtr->toXyz.b = fromXyzData(bXyz);
-    QColorVector whitePoint = fromXyzData(wXyz);
-    colorspaceDPtr->whitePoint = whitePoint;
-
-    colorspaceDPtr->gamut = QColorSpace::Gamut::Custom;
+    colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
     if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromSRgb()) {
-        qCDebug(lcIcc) << "fromIccProfile: sRGB gamut detected";
-        colorspaceDPtr->gamut = QColorSpace::Gamut::SRgb;
+        qCDebug(lcIcc) << "fromIccProfile: sRGB primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::SRgb;
     } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromAdobeRgb()) {
-        qCDebug(lcIcc) << "fromIccProfile: Adobe RGB gamut detected";
-        colorspaceDPtr->gamut = QColorSpace::Gamut::AdobeRgb;
+        qCDebug(lcIcc) << "fromIccProfile: Adobe RGB primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::AdobeRgb;
     } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromDciP3D65()) {
-        qCDebug(lcIcc) << "fromIccProfile: DCI-P3 D65 gamut detected";
-        colorspaceDPtr->gamut = QColorSpace::Gamut::DciP3D65;
+        qCDebug(lcIcc) << "fromIccProfile: DCI-P3 D65 primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::DciP3D65;
     } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromBt2020()) {
-        qCDebug(lcIcc) << "fromIccProfile: BT.2020 gamut detected";
-        colorspaceDPtr->gamut = QColorSpace::Gamut::Bt2020;
+        qCDebug(lcIcc) << "fromIccProfile: BT.2020 primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::Bt2020;
     }
     if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromProPhotoRgb()) {
-        qCDebug(lcIcc) << "fromIccProfile: ProPhoto RGB gamut detected";
-        colorspaceDPtr->gamut = QColorSpace::Gamut::ProPhotoRgb;
+        qCDebug(lcIcc) << "fromIccProfile: ProPhoto RGB primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::ProPhotoRgb;
     }
     // Reset the matrix to our canonical values:
-    if (colorspaceDPtr->gamut != QColorSpace::Gamut::Custom)
+    if (colorspaceDPtr->primaries != QColorSpace::Primaries::Custom)
         colorspaceDPtr->setToXyzMatrix();
 
     // Parse TRC tags
-    const GenericTagData *rTrc;
-    const GenericTagData *gTrc;
-    const GenericTagData *bTrc;
+    TagEntry rTrc;
+    TagEntry gTrc;
+    TagEntry bTrc;
     if (tagIndex.contains(Tag::aarg) && tagIndex.contains(Tag::aagg) && tagIndex.contains(Tag::aabg)) {
         // Apple extension for parametric version of TRCs in ICCv2:
-        rTrc = (const GenericTagData *)(data.constData() + tagIndex[Tag::aarg]);
-        gTrc = (const GenericTagData *)(data.constData() + tagIndex[Tag::aagg]);
-        bTrc = (const GenericTagData *)(data.constData() + tagIndex[Tag::aabg]);
+        rTrc = tagIndex[Tag::aarg];
+        gTrc = tagIndex[Tag::aagg];
+        bTrc = tagIndex[Tag::aabg];
     } else {
-        rTrc = (const GenericTagData *)(data.constData() + tagIndex[Tag::rTRC]);
-        gTrc = (const GenericTagData *)(data.constData() + tagIndex[Tag::gTRC]);
-        bTrc = (const GenericTagData *)(data.constData() + tagIndex[Tag::bTRC]);
+        rTrc = tagIndex[Tag::rTRC];
+        gTrc = tagIndex[Tag::gTRC];
+        bTrc = tagIndex[Tag::bTRC];
     }
 
     QColorTrc rCurve;
     QColorTrc gCurve;
     QColorTrc bCurve;
-    if (!parseTRC(rTrc, rCurve))
+    if (!parseTRC(data, rTrc, rCurve)) {
+        qCWarning(lcIcc) << "fromIccProfile: Invalid rTRC";
         return false;
-    if (!parseTRC(gTrc, gCurve))
+    }
+    if (!parseTRC(data, gTrc, gCurve)) {
+        qCWarning(lcIcc) << "fromIccProfile: Invalid gTRC";
         return false;
-    if (!parseTRC(bTrc, bCurve))
+    }
+    if (!parseTRC(data, bTrc, bCurve)) {
+        qCWarning(lcIcc) << "fromIccProfile: Invalid bTRC";
         return false;
+    }
     if (rCurve == gCurve && gCurve == bCurve && rCurve.m_type == QColorTrc::Type::Function) {
         if (rCurve.m_fun.isLinear()) {
             qCDebug(lcIcc) << "fromIccProfile: Linear gamma detected";
@@ -652,7 +758,12 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Custom;
     }
 
-    // FIXME: try to parse the description..
+    if (tagIndex.contains(Tag::desc)) {
+        if (!parseDesc(data, tagIndex[Tag::desc], colorspaceDPtr->description))
+            qCWarning(lcIcc) << "fromIccProfile: Failed to parse description";
+        else
+            qCDebug(lcIcc) << "fromIccProfile: Description" << colorspaceDPtr->description;
+    }
 
     if (!colorspaceDPtr->identifyColorSpace())
         colorspaceDPtr->id = QColorSpace::Unknown;

@@ -1929,8 +1929,10 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, co
     return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
 }
 
-QImage QFontEngineFT::bitmapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)
+QImage QFontEngineFT::bitmapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t, const QColor &color)
 {
+    Q_UNUSED(color);
+
     Glyph *glyph = loadGlyphFor(g, subPixelPosition, defaultFormat, t);
     if (glyph == nullptr)
         return QImage();

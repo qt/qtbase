@@ -30,23 +30,35 @@ add_qt_test(tst_qfile
 )
 
 # Resources:
+set(qfile_resource_files
+    "resources/"
+)
+
 add_qt_resource(tst_qfile "qfile"
     PREFIX
         "/tst_qfileinfo/"
     FILES
-        "resources/"
+        ${qfile_resource_files}
 )
+set(rename-fallback_resource_files
+    "rename-fallback.qrc"
+)
+
 add_qt_resource(tst_qfile "rename-fallback"
     PREFIX
         "/"
     FILES
-        "rename-fallback.qrc"
+        ${rename-fallback_resource_files}
 )
+set(copy-fallback_resource_files
+    "copy-fallback.qrc"
+)
+
 add_qt_resource(tst_qfile "copy-fallback"
     PREFIX
         "/"
     FILES
-        "copy-fallback.qrc"
+        ${copy-fallback_resource_files}
 )
 
 

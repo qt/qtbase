@@ -486,8 +486,11 @@ class Q_CORE_EXPORT QAbstractMetaCallEvent : public QEvent
 {
 public:
     QAbstractMetaCallEvent(const QObject *sender, int signalId, QSemaphore *semaphore = nullptr)
-        : QEvent(MetaCall), signalId_(signalId), sender_(sender), semaphore_(semaphore)
-    {}
+        : QEvent(MetaCall), signalId_(signalId), sender_(sender)
+#if QT_CONFIG(thread)
+        , semaphore_(semaphore)
+#endif
+    { Q_UNUSED(semaphore); }
     ~QAbstractMetaCallEvent();
 
     virtual void placeMetaCall(QObject *object) = 0;
@@ -498,7 +501,9 @@ public:
 private:
     int signalId_;
     const QObject *sender_;
+#if QT_CONFIG(thread)
     QSemaphore *semaphore_;
+#endif
 };
 
 class Q_CORE_EXPORT QMetaCallEvent : public QAbstractMetaCallEvent

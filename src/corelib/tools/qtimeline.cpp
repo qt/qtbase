@@ -526,29 +526,24 @@ QTimeLine::CurveShape QTimeLine::curveShape() const
     return EaseInOutCurve;
 }
 
-void QTimeLine::setCurveShape(CurveShape shape)
+static QEasingCurve::Type convert(QTimeLine::CurveShape shape)
 {
     switch (shape) {
-    default:
-    case EaseInOutCurve:
-        setEasingCurve(QEasingCurve(QEasingCurve::InOutSine));
-        break;
-    case EaseInCurve:
-        setEasingCurve(QEasingCurve(QEasingCurve::InCurve));
-        break;
-    case EaseOutCurve:
-        setEasingCurve(QEasingCurve(QEasingCurve::OutCurve));
-        break;
-    case LinearCurve:
-        setEasingCurve(QEasingCurve(QEasingCurve::Linear));
-        break;
-    case SineCurve:
-        setEasingCurve(QEasingCurve(QEasingCurve::SineCurve));
-        break;
-    case CosineCurve:
-        setEasingCurve(QEasingCurve(QEasingCurve::CosineCurve));
-        break;
+#define CASE(x, y) case QTimeLine::x: return QEasingCurve::y
+    CASE(EaseInOutCurve, InOutSine);
+    CASE(EaseInCurve,    InCurve);
+    CASE(EaseOutCurve,   OutCurve);
+    CASE(LinearCurve,    Linear);
+    CASE(SineCurve,      SineCurve);
+    CASE(CosineCurve,    CosineCurve);
+#undef CASE
     }
+    Q_UNREACHABLE();
+}
+
+void QTimeLine::setCurveShape(CurveShape shape)
+{
+    setEasingCurve(convert(shape));
 }
 
 /*!

@@ -297,7 +297,7 @@ QT_BEGIN_NAMESPACE
          \li "<APPROOT>/tmp"
     \row \li HomeLocation
          \li "<APPROOT>/files"
-         \li "<APPROOT>" (not writable)
+         \li system defined
     \row \li DataLocation
          \li "<APPROOT>/files", "<USER>/<APPNAME>/files"
          \li "<APPROOT>/Library/Application Support"

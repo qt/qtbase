@@ -104,11 +104,7 @@ QT_BEGIN_NAMESPACE
   \value LET_SystemError
 */
 
-QTestElementAttribute::QTestElementAttribute()
-    :attributeValue(0),
-    attributeIndex(QTest::AI_Undefined)
-{
-}
+QTestElementAttribute::QTestElementAttribute() = default;
 
 QTestElementAttribute::~QTestElementAttribute()
 {
@@ -145,7 +141,7 @@ const char *QTestElementAttribute::name() const
     if (attributeIndex != QTest::AI_Undefined)
         return AttributeNames[attributeIndex];
 
-    return 0;
+    return nullptr;
 }
 
 QTest::AttributeIndex QTestElementAttribute::index() const
@@ -168,7 +164,7 @@ bool QTestElementAttribute::setPair(QTest::AttributeIndex index, const char *val
     attributeIndex = index;
     attributeValue = qstrdup(value);
 
-    return attributeValue != 0;
+    return attributeValue != nullptr;
 }
 
 QT_END_NAMESPACE

@@ -207,7 +207,10 @@ void tst_QLine::testIntersection()
 
 
     QPointF ip;
-    QLineF::IntersectionType itype = a.intersect(b, &ip);
+    QLineF::IntersectionType itype = a.intersects(b, &ip);
+#if QT_DEPRECATED_SINCE(5, 14)
+    QCOMPARE(a.intersect(b, &ip), itype);
+#endif
 
     QCOMPARE(int(itype), type);
     if (type != QLineF::NoIntersection) {

@@ -67,6 +67,7 @@
 #endif
 #include "QtCore/qpointer.h"
 #include "QtCore/qmimedata.h"
+#include <QtCore/qmargins.h>
 
 #include "private/qwidgetlinecontrol_p.h"
 
@@ -153,7 +154,7 @@ public:
         : control(0), frame(1), contextMenuEnabled(1), cursorVisible(0),
         dragEnabled(0), clickCausedFocus(0), edited(0), hscroll(0), vscroll(0),
         alignment(Qt::AlignLeading | Qt::AlignVCenter),
-        leftTextMargin(0), topTextMargin(0), rightTextMargin(0), bottomTextMargin(0),
+        textMargins{0, 0, 0, 0},
         lastTextSize(0), mouseYThreshold(0)
     {
     }
@@ -233,10 +234,7 @@ public:
     void _q_textChanged(const QString &);
     void _q_clearButtonClicked();
 
-    int leftTextMargin; // use effectiveLeftTextMargin() in case of icon.
-    int topTextMargin;
-    int rightTextMargin; // use effectiveRightTextMargin() in case of icon.
-    int bottomTextMargin;
+    QMargins textMargins; // use effectiveTextMargins() in case of icon.
 
     QString placeholderText;
 
@@ -252,8 +250,7 @@ public:
     inline const SideWidgetEntryList &rightSideWidgetList() const
         { return q_func()->layoutDirection() == Qt::LeftToRight ? trailingSideWidgets : leadingSideWidgets; }
 
-    int effectiveLeftTextMargin() const;
-    int effectiveRightTextMargin() const;
+    QMargins effectiveTextMargins() const;
 
 private:
     struct SideWidgetLocation {

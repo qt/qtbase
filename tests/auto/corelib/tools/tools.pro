@@ -6,13 +6,7 @@ SUBDIRS=\
     qarraydata \
     qarraydata_strictiterators \
     qbitarray \
-    qbytearray \
-    qbytearraylist \
-    qbytearraymatcher \
-    qbytedatabuffer \
     qcache \
-    qchar \
-    qcollator \
     qcommandlineparser \
     qcontiguouscache \
     qcryptographichash \
@@ -22,12 +16,10 @@ SUBDIRS=\
     qhash \
     qhash_strictiterators \
     qhashfunctions \
-    qlatin1string \
     qline \
     qlinkedlist \
     qlist \
     qlist_strictiterators \
-    qlocale \
     qmakearray \
     qmap \
     qmap_strictiterators \
@@ -39,8 +31,6 @@ SUBDIRS=\
     qpointf \
     qqueue \
     qrect \
-    qregexp \
-    qregularexpression \
     qringbuffer \
     qscopedpointer \
     qscopedvaluerollback \
@@ -50,16 +40,6 @@ SUBDIRS=\
     qsize \
     qsizef \
     qstl \
-    qstring \
-    qstring_no_cast_from_bytearray \
-    qstringapisymmetry \
-    qstringbuilder \
-    qstringiterator \
-    qstringlist \
-    qstringmatcher \
-    qstringref \
-    qstringview \
-    qtextboundaryfinder \
     qtimeline \
     qvarlengtharray \
     qvector \

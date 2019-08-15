@@ -60,23 +60,23 @@ class QBenchmarkPerfEventsMeasurer : public QBenchmarkMeasurerBase
 public:
     QBenchmarkPerfEventsMeasurer();
     ~QBenchmarkPerfEventsMeasurer();
-    virtual void init() override;
-    virtual void start() override;
-    virtual qint64 checkpoint() override;
-    virtual qint64 stop() override;
-    virtual bool isMeasurementAccepted(qint64 measurement) override;
-    virtual int adjustIterationCount(int suggestion) override;
-    virtual int adjustMedianCount(int suggestion) override;
-    virtual bool repeatCount() override { return 1; }
-    virtual bool needsWarmupIteration() override { return true; }
-    virtual QTest::QBenchmarkMetric metricType() override;
+    void init() override;
+    void start() override;
+    qint64 checkpoint() override;
+    qint64 stop() override;
+    bool isMeasurementAccepted(qint64 measurement) override;
+    int adjustIterationCount(int suggestion) override;
+    int adjustMedianCount(int suggestion) override;
+    bool repeatCount() override { return true; }
+    bool needsWarmupIteration() override { return true; }
+    QTest::QBenchmarkMetric metricType() override;
 
     static bool isAvailable();
     static QTest::QBenchmarkMetric metricForEvent(quint32 type, quint64 event_id);
     static void setCounter(const char *name);
     static void listCounters();
 private:
-    int fd;
+    int fd = -1;
 
     qint64 readValue();
 };

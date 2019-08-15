@@ -5,10 +5,12 @@
 #####################################################################
 
 add_qt_test(tst_qtconcurrentfilter
+    GUI
     SOURCES
         tst_qtconcurrentfilter.cpp
     DEFINES
+        # -QT_NO_LINKED_LIST # special case remove until figured out how to deal with this
         QT_STRICT_ITERATORS
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Concurrent
 )

@@ -175,7 +175,7 @@ void Base::removeItems(int pos, int numItems)
     length -= numItems;
 }
 
-int Object::indexOf(const QString &key, bool *exists) const
+int Object::indexOf(QStringView key, bool *exists) const
 {
     int min = 0;
     int n = length;
@@ -257,7 +257,7 @@ bool Array::isValid(int maxSize) const
 }
 
 
-bool Entry::operator ==(const QString &key) const
+bool Entry::operator ==(QStringView key) const
 {
     if (value.latinKey)
         return (shallowLatin1Key() == key);
@@ -270,7 +270,7 @@ bool Entry::operator==(QLatin1String key) const
     if (value.latinKey)
         return shallowLatin1Key() == key;
     else
-        return shallowKey() == key;
+        return shallowKey() == QString(key); // ### conversion to QString
 }
 
 bool Entry::operator ==(const Entry &other) const

@@ -34,7 +34,7 @@
 #include <qsqlrecord.h>
 #include <qsqlfield.h>
 #include <qsqlindex.h>
-#include <qregexp.h>
+#include <qregularexpression.h>
 #include <qvariant.h>
 #include <qdatetime.h>
 #include <qdebug.h>
@@ -228,7 +228,7 @@ struct FieldDef {
     QString fieldName() const
     {
         QString rt = typeName;
-        rt.replace(QRegExp("\\s"), QString("_"));
+        rt.replace(QRegularExpression("\\s"), QString("_"));
         int i = rt.indexOf(QLatin1Char('('));
         if (i == -1)
             i = rt.length();

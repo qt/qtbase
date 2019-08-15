@@ -461,7 +461,7 @@ void tst_QLabel::unicodeText()
     QVBoxLayout *layout = new QVBoxLayout();
     QLabel *label = new QLabel(text, &frame);
     layout->addWidget(label);
-    layout->setMargin(8);
+    layout->setContentsMargins(8, 8, 8, 8);
     frame.setLayout(layout);
     frame.show();
     QVERIFY(QTest::qWaitForWindowExposed(&frame));

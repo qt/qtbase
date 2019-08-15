@@ -1010,7 +1010,7 @@ inline bool QUrlPrivate::setScheme(const QString &value, int len, bool doSetErro
         for (int i = needsLowercasing; i >= 0; --i) {
             ushort c = schemeData[i].unicode();
             if (c >= 'A' && c <= 'Z')
-                schemeData[i] = c + 0x20;
+                schemeData[i] = QChar(c + 0x20);
         }
     }
 

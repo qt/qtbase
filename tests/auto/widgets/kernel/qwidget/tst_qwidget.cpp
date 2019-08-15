@@ -182,6 +182,8 @@ private slots:
     void tabOrderWithCompoundWidgets();
     void tabOrderNoChange();
     void tabOrderNoChange2();
+    void appFocusWidgetWithFocusProxyLater();
+    void appFocusWidgetWhenLosingFocusProxy();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void activation();
 #endif
@@ -2030,6 +2032,51 @@ void tst_QWidget::tabOrderNoChange2()
 
     QCOMPARE(focusChainForward, getFocusChain(&w, true));
     QCOMPARE(focusChainBackward, getFocusChain(&w, false));
+}
+
+void tst_QWidget::appFocusWidgetWithFocusProxyLater()
+{
+    // Given a lineedit without a focus proxy
+    QWidget window;
+    window.setWindowTitle(QTest::currentTestFunction());
+    QLineEdit *lineEditFocusProxy = new QLineEdit(&window);
+    QLineEdit *lineEdit = new QLineEdit(&window);
+    lineEdit->setFocus();
+    window.show();
+    QApplication::setActiveWindow(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QCOMPARE(QApplication::focusWidget(), lineEdit);
+
+    // When setting a focus proxy for the focus widget (like QWebEngineView does)
+    lineEdit->setFocusProxy(lineEditFocusProxy);
+
+    // Then the focus widget should be updated
+    QCOMPARE(QApplication::focusWidget(), lineEditFocusProxy);
+
+    // So that deleting the lineEdit and later the window, doesn't crash
+    delete lineEdit;
+    QCOMPARE(QApplication::focusWidget(), nullptr);
+}
+
+void tst_QWidget::appFocusWidgetWhenLosingFocusProxy()
+{
+    // Given a lineedit with a focus proxy
+    QWidget window;
+    window.setWindowTitle(QTest::currentTestFunction());
+    QLineEdit *lineEditFocusProxy = new QLineEdit(&window);
+    QLineEdit *lineEdit = new QLineEdit(&window);
+    lineEdit->setFocusProxy(lineEditFocusProxy);
+    lineEdit->setFocus();
+    window.show();
+    QApplication::setActiveWindow(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QCOMPARE(QApplication::focusWidget(), lineEditFocusProxy);
+
+    // When unsetting the focus proxy
+    lineEdit->setFocusProxy(nullptr);
+
+    // Then the application focus widget should be back to the lineedit
+    QCOMPARE(QApplication::focusWidget(), lineEdit);
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
@@ -6142,7 +6189,7 @@ void tst_QWidget::minAndMaxSizeWithX11BypassWindowManagerHint()
 {
     if (m_platform != QStringLiteral("xcb"))
         QSKIP("This test is for X11 only.");
-    // Same size as in QWidget::create_sys().
+    // Same size as in QWidgetPrivate::create.
     const QSize desktopSize = QApplication::desktop()->size();
     const QSize originalSize(desktopSize.width() / 2, desktopSize.height() * 4 / 10);
 
@@ -8026,7 +8073,7 @@ public:
             sp.setHeightForWidth(hfwLayout);
 
             QVBoxLayout *vbox = new QVBoxLayout;
-            vbox->setMargin(0);
+            vbox->setContentsMargins(0, 0, 0, 0);
             vbox->addWidget(new ASWidget(sizeHint + QSize(30, 20), sp, false, false));
             setLayout(vbox);
         }
@@ -9425,7 +9472,7 @@ void tst_QWidget::initialPosForDontShowOnScreenWidgets()
         const QPoint expectedPos(0, 0);
         QWidget widget;
         widget.setAttribute(Qt::WA_DontShowOnScreen);
-        widget.winId(); // Make sure create_sys is called.
+        widget.winId(); // Make sure QWidgetPrivate::create is called.
         QCOMPARE(widget.pos(), expectedPos);
         QCOMPARE(widget.geometry().topLeft(), expectedPos);
     }
@@ -9435,7 +9482,7 @@ void tst_QWidget::initialPosForDontShowOnScreenWidgets()
         QWidget widget;
         widget.setAttribute(Qt::WA_DontShowOnScreen);
         widget.move(expectedPos);
-        widget.winId(); // Make sure create_sys is called.
+        widget.winId(); // Make sure QWidgetPrivate::create is called.
         QCOMPARE(widget.pos(), expectedPos);
         QCOMPARE(widget.geometry().topLeft(), expectedPos);
     }
@@ -10073,7 +10120,7 @@ void tst_QWidget::grabMouse()
     w.setObjectName(QLatin1String("tst_qwidget_grabMouse"));
     w.setWindowTitle(w.objectName());
     QLayout *layout = new QVBoxLayout(&w);
-    layout->setMargin(50);
+    layout->setContentsMargins(50, 50, 50, 50);
     GrabLoggerWidget *grabber = new GrabLoggerWidget(&log, &w);
     const QString grabberObjectName = QLatin1String("tst_qwidget_grabMouse_grabber");
     grabber->setObjectName(grabberObjectName);

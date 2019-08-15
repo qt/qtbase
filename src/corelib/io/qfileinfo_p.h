@@ -61,6 +61,8 @@
 #include <QtCore/private/qfilesystementry_p.h>
 #include <QtCore/private/qfilesystemmetadata_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 class QFileInfoPrivate : public QSharedData
@@ -126,10 +128,10 @@ public:
             metaData = QFileSystemMetaData();
     }
 
-    inline QFileInfoPrivate(const QFileSystemEntry &file, const QFileSystemMetaData &data, QAbstractFileEngine *engine)
+    inline QFileInfoPrivate(const QFileSystemEntry &file, const QFileSystemMetaData &data, std::unique_ptr<QAbstractFileEngine> engine)
         : fileEntry(file),
         metaData(data),
-        fileEngine(engine),
+        fileEngine{std::move(engine)},
         cachedFlags(0),
 #ifndef QT_NO_FSFILEENGINE
         isDefaultConstructed(false),
@@ -163,7 +165,7 @@ public:
     QFileSystemEntry fileEntry;
     mutable QFileSystemMetaData metaData;
 
-    QScopedPointer<QAbstractFileEngine> const fileEngine;
+    std::unique_ptr<QAbstractFileEngine> const fileEngine;
 
     mutable QString fileNames[QAbstractFileEngine::NFileNames];
     mutable QString fileOwners[2];  // QAbstractFileEngine::FileOwner: OwnerUser and OwnerGroup

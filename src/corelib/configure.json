@@ -596,7 +596,7 @@
                     "qDoubleSnprintf(argv[0], 1, invalidLocale, \"invalid format\", a);",
                     "qDoubleSscanf(argv[0], invalidLocale, \"invalid format\", &a, &argc);"
                 ],
-                "qmake": "DEFINES += QDSP_P_H=$$shell_quote(\\\"@PWD@/tools/qdoublescanprint_p.h\\\")"
+                "qmake": "DEFINES += QDSP_P_H=$$shell_quote(\\\"@PWD@/text/qdoublescanprint_p.h\\\")"
             }
         }
     },

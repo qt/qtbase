@@ -104,6 +104,10 @@ FAIL!  : tst_Cmptest::compareQPixmaps(different size) Compared QPixmaps differ i
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 FAIL!  : tst_Cmptest::compareQPixmaps(different pixels) Compared values are not the same
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compareQPixmaps(different dpr) Compared QPixmaps differ in device pixel ratio.
+   Actual   (opA): 1
+   Expected (opB): 2
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 PASS   : tst_Cmptest::compareQImages(both null)
 FAIL!  : tst_Cmptest::compareQImages(one null) Compared QImages differ.
    Actual   (opA).isNull(): 1
@@ -123,6 +127,10 @@ FAIL!  : tst_Cmptest::compareQImages(different format) Compared QImages differ i
    Expected (opB): 3
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 FAIL!  : tst_Cmptest::compareQImages(different pixels) Compared values are not the same
+   Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
+FAIL!  : tst_Cmptest::compareQImages(different dpr) Compared QImages differ in device pixel ratio.
+   Actual   (opA): 1
+   Expected (opB): 2
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 PASS   : tst_Cmptest::compareQRegion(equal-empty)
 FAIL!  : tst_Cmptest::compareQRegion(1-empty) Compared values are not the same
@@ -156,5 +164,5 @@ FAIL!  : tst_Cmptest::tryVerify2() 'opaqueFunc() < 2' returned FALSE. (42)
    Loc: [qtbase/tests/auto/testlib/selftests/cmptest/tst_cmptest.cpp(0)]
 PASS   : tst_Cmptest::verifyExplicitOperatorBool()
 PASS   : tst_Cmptest::cleanupTestCase()
-Totals: 18 passed, 38 failed, 0 skipped, 0 blacklisted, 0ms
+Totals: 18 passed, 40 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Cmptest *********

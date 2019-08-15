@@ -1,13 +1,14 @@
-[bindThenResolveHost:first-fail]
-windows
+[bind]
+windows-10 msvc-2015
+windows-7sp1
 [bind:[::]]
 windows
 [bind:[::]:randomport]
 windows
-[invalidProxy:socks5-on-http]
-windows
+[timeoutConnect]
+windows-10 msvc-2015
+# QTBUG-66247
 [timeoutConnect:ip]
 windows
 # QTBUG-66247
-[taskQtBug5799ConnectionErrorEventLoop]
-windows
+

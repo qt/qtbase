@@ -747,7 +747,7 @@ void QMetaObjectBuilder::addMetaObject
 
     if ((members & RelatedMetaObjects) != 0) {
         Q_ASSERT(priv(prototype->d.data)->revision >= 2);
-        const QMetaObject * const *objects = prototype->d.relatedMetaObjects;
+        const auto *objects = prototype->d.relatedMetaObjects;
         if (objects) {
             while (*objects != 0) {
                 addRelatedMetaObject(*objects);
@@ -1464,16 +1464,16 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
 
     // Create the relatedMetaObjects block if we need one.
     if (d->relatedMetaObjects.size() > 0) {
-        ALIGN(size, QMetaObject *);
-        const QMetaObject **objects =
-            reinterpret_cast<const QMetaObject **>(buf + size);
+        using SuperData = QMetaObject::SuperData;
+        ALIGN(size, SuperData);
+        auto objects = reinterpret_cast<SuperData *>(buf + size);
         if (buf) {
             meta->d.relatedMetaObjects = objects;
             for (index = 0; index < d->relatedMetaObjects.size(); ++index)
                 objects[index] = d->relatedMetaObjects[index];
-            objects[index] = 0;
+            objects[index] = nullptr;
         }
-        size += sizeof(QMetaObject *) * (d->relatedMetaObjects.size() + 1);
+        size += sizeof(SuperData) * (d->relatedMetaObjects.size() + 1);
     }
 
     // Align the final size and return it.

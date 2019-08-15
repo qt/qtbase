@@ -70,6 +70,7 @@
 #include <qtextformat.h>
 #include <qdatetime.h>
 #include <qapplication.h>
+#include <private/qapplication_p.h>
 #include <limits.h>
 #include <qtexttable.h>
 #include <qvariant.h>
@@ -1116,7 +1117,7 @@ bool QTextEdit::event(QEvent *e)
 #endif // QT_NO_CONTEXTMENU
 #ifdef QT_KEYPAD_NAVIGATION
     if (e->type() == QEvent::EnterEditFocus || e->type() == QEvent::LeaveEditFocus) {
-        if (QApplication::keypadNavigationEnabled())
+        if (QApplicationPrivate::keypadNavigationEnabled())
             d->sendControlEvent(e);
     }
 #endif
@@ -1301,7 +1302,7 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
     switch (e->key()) {
         case Qt::Key_Select:
-            if (QApplication::keypadNavigationEnabled()) {
+            if (QApplicationPrivate::keypadNavigationEnabled()) {
                 // code assumes linksaccessible + editable isn't meaningful
                 if (d->control->textInteractionFlags() & Qt::TextEditable) {
                     setEditFocus(!hasEditFocus());
@@ -1322,14 +1323,14 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
             break;
         case Qt::Key_Back:
         case Qt::Key_No:
-            if (!QApplication::keypadNavigationEnabled()
-                    || (QApplication::keypadNavigationEnabled() && !hasEditFocus())) {
+            if (!QApplicationPrivate::keypadNavigationEnabled()
+                    || (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus())) {
                 e->ignore();
                 return;
             }
             break;
         default:
-            if (QApplication::keypadNavigationEnabled()) {
+            if (QApplicationPrivate::keypadNavigationEnabled()) {
                 if (!hasEditFocus() && !(e->modifiers() & Qt::ControlModifier)) {
                     if (e->text()[0].isPrint())
                         setEditFocus(true);
@@ -1418,7 +1419,7 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
         switch (e->key()) {
             case Qt::Key_Up:
             case Qt::Key_Down:
-                if (QApplication::keypadNavigationEnabled()) {
+                if (QApplicationPrivate::keypadNavigationEnabled()) {
                     // Cursor position didn't change, so we want to leave
                     // these keys to change focus.
                     e->ignore();
@@ -1427,7 +1428,7 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
                 break;
             case Qt::Key_Back:
                 if (!e->isAutoRepeat()) {
-                    if (QApplication::keypadNavigationEnabled()) {
+                    if (QApplicationPrivate::keypadNavigationEnabled()) {
                         if (document()->isEmpty() || !(d->control->textInteractionFlags() & Qt::TextEditable)) {
                             setEditFocus(false);
                             e->accept();
@@ -1453,7 +1454,7 @@ void QTextEdit::keyReleaseEvent(QKeyEvent *e)
 {
 #ifdef QT_KEYPAD_NAVIGATION
     Q_D(QTextEdit);
-    if (QApplication::keypadNavigationEnabled()) {
+    if (QApplicationPrivate::keypadNavigationEnabled()) {
         if (!e->isAutoRepeat() && e->key() == Qt::Key_Back
             && d->deleteAllTimer.isActive()) {
             d->deleteAllTimer.stop();
@@ -1665,7 +1666,7 @@ void QTextEdit::mousePressEvent(QMouseEvent *e)
 {
     Q_D(QTextEdit);
 #ifdef QT_KEYPAD_NAVIGATION
-    if (QApplication::keypadNavigationEnabled() && !hasEditFocus())
+    if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus())
         setEditFocus(true);
 #endif
     d->sendControlEvent(e);
@@ -1796,7 +1797,7 @@ void QTextEdit::inputMethodEvent(QInputMethodEvent *e)
     Q_D(QTextEdit);
 #ifdef QT_KEYPAD_NAVIGATION
     if (d->control->textInteractionFlags() & Qt::TextEditable
-        && QApplication::keypadNavigationEnabled()
+        && QApplicationPrivate::keypadNavigationEnabled()
         && !hasEditFocus())
         setEditFocus(true);
 #endif

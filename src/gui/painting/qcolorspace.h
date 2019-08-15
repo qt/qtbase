@@ -63,7 +63,7 @@ public:
         Bt2020,
     };
     Q_ENUM(ColorSpaceId)
-    enum class Gamut {
+    enum class Primaries {
         Custom = 0,
         SRgb,
         AdobeRgb,
@@ -71,7 +71,7 @@ public:
         ProPhotoRgb,
         Bt2020,
     };
-    Q_ENUM(Gamut)
+    Q_ENUM(Primaries)
     enum class TransferFunction {
         Custom = 0,
         Linear,
@@ -83,22 +83,32 @@ public:
     Q_ENUM(TransferFunction)
 
     QColorSpace(ColorSpaceId colorSpaceId = Undefined);
-    QColorSpace(Gamut gamut, TransferFunction fun, float gamma = 0.0f);
-    QColorSpace(Gamut gamut, float gamma);
+    QColorSpace(Primaries primaries, TransferFunction fun, float gamma = 0.0f);
+    QColorSpace(Primaries primaries, float gamma);
     QColorSpace(const QPointF &whitePoint, const QPointF &redPoint,
                 const QPointF &greenPoint, const QPointF &bluePoint,
                 TransferFunction fun, float gamma = 0.0f);
     ~QColorSpace();
 
-    QColorSpace(QColorSpace &&colorSpace);
+    QColorSpace(QColorSpace &&colorSpace) noexcept;
     QColorSpace(const QColorSpace &colorSpace);
-    QColorSpace &operator=(QColorSpace &&colorSpace);
+    QColorSpace &operator=(QColorSpace &&colorSpace) noexcept;
     QColorSpace &operator=(const QColorSpace &colorSpace);
 
+    void swap(QColorSpace &colorSpace) noexcept
+    { qSwap(d_ptr, colorSpace.d_ptr); }
+
     ColorSpaceId colorSpaceId() const noexcept;
-    Gamut gamut() const noexcept;
+    Primaries primaries() const noexcept;
     TransferFunction transferFunction() const noexcept;
     float gamma() const noexcept;
+
+    void setTransferFunction(TransferFunction transferFunction, float gamma = 0.0f);
+    QColorSpace withTransferFunction(TransferFunction transferFunction, float gamma = 0.0f) const;
+
+    void setPrimaries(Primaries primariesId);
+    void setPrimaries(const QPointF &whitePoint, const QPointF &redPoint,
+                      const QPointF &greenPoint, const QPointF &bluePoint);
 
     bool isValid() const noexcept;
 
@@ -110,11 +120,9 @@ public:
 
     QColorTransform transformationToColorSpace(const QColorSpace &colorspace) const;
 
-    QColorSpacePrivate *d_func();
-    inline const QColorSpacePrivate *d_func() const { return d_ptr.constData(); }
 
 private:
-    friend class QColorSpacePrivate;
+    Q_DECLARE_PRIVATE(QColorSpace)
     QExplicitlySharedDataPointer<QColorSpacePrivate> d_ptr;
 };
 
@@ -123,6 +131,8 @@ inline bool operator!=(const QColorSpace &colorSpace1, const QColorSpace &colorS
 {
     return !(colorSpace1 == colorSpace2);
 }
+
+Q_DECLARE_SHARED(QColorSpace)
 
 // QColorSpace stream functions
 #if !defined(QT_NO_DATASTREAM)

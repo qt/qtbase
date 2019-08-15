@@ -449,8 +449,8 @@
 
     \value ItemSendsGeometryChanges The item enables itemChange()
     notifications for ItemPositionChange, ItemPositionHasChanged,
-    ItemMatrixChange, ItemTransformChange, ItemTransformHasChanged,
-    ItemRotationChange, ItemRotationHasChanged, ItemScaleChange, ItemScaleHasChanged,
+    ItemTransformChange, ItemTransformHasChanged, ItemRotationChange,
+    ItemRotationHasChanged, ItemScaleChange, ItemScaleHasChanged,
     ItemTransformOriginPointChange, and ItemTransformOriginPointHasChanged. For
     performance reasons, these notifications are disabled by default. You must
     enable this flag to receive notifications for position and transform

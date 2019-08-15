@@ -157,6 +157,31 @@ add_qt_module(Core
         statemachine/qsignaltransition.cpp statemachine/qsignaltransition.h statemachine/qsignaltransition_p.h
         statemachine/qstate.cpp statemachine/qstate.h statemachine/qstate_p.h
         statemachine/qstatemachine.cpp statemachine/qstatemachine.h statemachine/qstatemachine_p.h
+        text/qbytearray.cpp text/qbytearray.h text/qbytearray_p.h
+        text/qbytearraylist.cpp text/qbytearraylist.h
+        text/qbytearraymatcher.cpp text/qbytearraymatcher.h
+        text/qbytedata_p.h
+        text/qchar.h
+        text/qcollator.cpp text/qcollator.h text/qcollator_p.h
+        text/qdoublescanprint_p.h
+        text/qharfbuzz.cpp text/qharfbuzz_p.h
+        text/qlocale.cpp text/qlocale.h text/qlocale_p.h
+        text/qlocale_data_p.h
+        text/qlocale_tools.cpp text/qlocale_tools_p.h
+        text/qregexp.cpp text/qregexp.h
+        text/qstring.cpp text/qstring.h
+        text/qstring_compat.cpp
+        text/qstringalgorithms.h text/qstringalgorithms_p.h
+        text/qstringbuilder.cpp text/qstringbuilder.h
+        text/qstringiterator_p.h
+        text/qstringlist.cpp text/qstringlist.h
+        text/qstringliteral.h
+        text/qstringmatcher.h
+        text/qstringview.cpp text/qstringview.h
+        text/qtextboundaryfinder.cpp text/qtextboundaryfinder.h
+        text/qunicodetables_p.h
+        text/qunicodetools.cpp text/qunicodetools_p.h
+        text/qvsnprintf.cpp
         thread/qmutex.h
         thread/qreadwritelock.h
         thread/qrunnable.cpp thread/qrunnable.h
@@ -169,30 +194,19 @@ add_qt_module(Core
         tools/qarraydataops.h
         tools/qarraydatapointer.h
         tools/qbitarray.cpp tools/qbitarray.h
-        tools/qbytearray.cpp tools/qbytearray.h tools/qbytearray_p.h
-        tools/qbytearraylist.cpp tools/qbytearraylist.h
-        tools/qbytearraymatcher.cpp tools/qbytearraymatcher.h
-        tools/qbytedata_p.h
         tools/qcache.h
-        tools/qchar.h
-        tools/qcollator.cpp tools/qcollator.h tools/qcollator_p.h
         tools/qcontainerfwd.h
         tools/qcontainertools_impl.h
         tools/qcontiguouscache.cpp tools/qcontiguouscache.h
         tools/qcryptographichash.cpp tools/qcryptographichash.h
-        tools/qdoublescanprint_p.h
         tools/qeasingcurve.cpp tools/qeasingcurve.h
         tools/qfreelist.cpp tools/qfreelist_p.h
-        tools/qharfbuzz.cpp tools/qharfbuzz_p.h
         tools/qhash.cpp tools/qhash.h
         tools/qhashfunctions.h
         tools/qiterator.h
         tools/qline.cpp tools/qline.h
         tools/qlinkedlist.cpp tools/qlinkedlist.h
         tools/qlist.cpp tools/qlist.h
-        tools/qlocale.cpp tools/qlocale.h tools/qlocale_p.h
-        tools/qlocale_data_p.h
-        tools/qlocale_tools.cpp tools/qlocale_tools_p.h
         tools/qmakearray_p.h
         tools/qmap.cpp tools/qmap.h
         tools/qmargins.cpp tools/qmargins.h
@@ -203,7 +217,6 @@ add_qt_module(Core
         tools/qqueue.h
         tools/qrect.cpp tools/qrect.h
         tools/qrefcount.cpp tools/qrefcount.h
-        tools/qregexp.cpp tools/qregexp.h
         tools/qringbuffer.cpp tools/qringbuffer_p.h
         tools/qscopedpointer.h tools/qscopedpointer_p.h
         tools/qscopedvaluerollback.h
@@ -215,24 +228,11 @@ add_qt_module(Core
         tools/qsimd.cpp tools/qsimd_p.h
         tools/qsize.cpp tools/qsize.h
         tools/qstack.h
-        tools/qstring.cpp tools/qstring.h
-        tools/qstring_compat.cpp
-        tools/qstringalgorithms.h tools/qstringalgorithms_p.h
-        tools/qstringbuilder.cpp tools/qstringbuilder.h
-        tools/qstringiterator_p.h
-        tools/qstringlist.cpp tools/qstringlist.h
-        tools/qstringliteral.h
-        tools/qstringmatcher.h
-        tools/qstringview.cpp tools/qstringview.h
-        tools/qtextboundaryfinder.cpp tools/qtextboundaryfinder.h
         tools/qtimeline.cpp tools/qtimeline.h
         tools/qtools_p.h
-        tools/qunicodetables_p.h
-        tools/qunicodetools.cpp tools/qunicodetools_p.h
         tools/qvarlengtharray.h
         tools/qvector.h
         tools/qversionnumber.cpp tools/qversionnumber.h
-        tools/qvsnprintf.cpp
     DEFINES
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
@@ -318,7 +318,7 @@ endif()
 add_qt_simd_part(Core SIMD mips_dsp
     SOURCES
         ../gui/painting/qt_mips_asm_dsp_p.h
-        tools/qstring_mips_dsp_asm.S
+        text/qstring_mips_dsp_asm.S
 )
 
 
@@ -336,10 +336,9 @@ if(ANDROID)
 endif()
 
 #### Keys ignored in scope 1:.:.:corelib.pro:<TRUE>:
-# CMAKE_DISABLED_FEATURES = "$$joinQT_DISABLED_FEATURES,"$$escape_expand(\\n)    ""
-# CMAKE_HOST_DATA_DIR = "$$cmakeRelativePath$$[QT_HOST_DATA/src],$$[QT_INSTALL_PREFIX]"
-# CMAKE_INSTALL_DATA_DIR = "$$cmakeRelativePath$$[QT_HOST_DATA],$$[QT_INSTALL_PREFIX]"
-# CONFIG = "exceptions" "qt_tracepoints" "$$MODULE_CONFIG" "simd" "optimize_full"
+# CMAKE_DISABLED_FEATURES = "join(QT_DISABLED_FEATURES,"$$escape_expand(\\n)    ")"
+# CMAKE_HOST_DATA_DIR = "join($$[QT_HOST_DATA/src],$$[QT_INSTALL_PREFIX])"
+# CMAKE_INSTALL_DATA_DIR = "join($$[QT_HOST_DATA],$$[QT_INSTALL_PREFIX])"
 # HOST_BINS = "$$[QT_HOST_BINS]"
 # INSTALLS = "ctest_qt5_module_files" "cmake_qt5_umbrella_module_files"
 # MODULE = "core"
@@ -508,12 +507,15 @@ extend_target(Core CONDITION INTEGRITY
 #### Keys ignored in scope 27:.:global:global/global.pri:else:
 # F16C_SOURCES = "global/qfloat16_f16c.c"
 
-extend_target(Core CONDITION linux_x_ OR hurd_x_ AND NOT cross_compile AND NOT static AND NOT _x_-armcc_x_
-    DEFINES
-        ELF_INTERPRETER=\\\"=Creadelf-l/bin/ls|perl-n-e\'/programinterpreter:.*]/{print$1;}\'\\\"
-    LINK_OPTIONS
-        "-Wl,-e,qt_core_boilerplate"
-)
+# special case begin
+# Remove this because it's handled manually
+#extend_target(Core CONDITION linux_x_ OR hurd_x_ AND NOT cross_compile AND NOT static AND NOT _x_-armcc_x_
+#    DEFINES
+#        ELF_INTERPRETER=\\\"=Creadelf-l/bin/ls|perl-n-e\'['quote', ['if', ['/program', 'interpreter:', ['.*'], ']/'], '{', 'print', '$1;', '}']]\'\\\"
+#    LINK_OPTIONS
+#        "-Wl,-e,qt_core_boilerplate"
+#)
+# special case end
 
 extend_target(Core CONDITION LINUX AND NOT static
     SOURCES
@@ -586,7 +588,6 @@ extend_target(Core CONDITION QT_FEATURE_thread
         thread/qfutex_p.h
         thread/qgenericatomic.h
         thread/qmutex.cpp thread/qmutex_p.h
-        thread/qmutexpool.cpp thread/qmutexpool_p.h
         thread/qorderedmutexlocker_p.h
         thread/qreadwritelock.cpp thread/qreadwritelock_p.h
         thread/qsemaphore.cpp thread/qsemaphore.h
@@ -647,52 +648,6 @@ extend_target(Core CONDITION MSVC
         tools/qvector_msvc.cpp
 )
 
-extend_target(Core CONDITION APPLE AND NOT NACL
-    SOURCES
-        kernel/qelapsedtimer_mac.cpp
-        tools/qlocale_mac.mm
-)
-
-extend_target(Core CONDITION UNIX AND (NACL OR NOT APPLE)
-    SOURCES
-        tools/qlocale_unix.cpp
-)
-
-extend_target(Core CONDITION WIN32 AND (NACL OR NOT APPLE)
-    SOURCES
-        tools/qlocale_win.cpp
-)
-
-extend_target(Core CONDITION QT_FEATURE_icu
-    SOURCES
-        tools/qcollator_icu.cpp
-        tools/qlocale_icu.cpp
-    LIBRARIES
-        ICU::i18n ICU::uc ICU::data
-)
-
-extend_target(Core CONDITION WIN32 AND NOT QT_FEATURE_icu
-    SOURCES
-        tools/qcollator_win.cpp
-)
-
-extend_target(Core CONDITION APPLE_OSX AND NOT QT_FEATURE_icu
-    SOURCES
-        tools/qcollator_macx.cpp
-)
-
-extend_target(Core CONDITION UNIX AND NOT APPLE_OSX AND NOT QT_FEATURE_icu
-    SOURCES
-        tools/qcollator_posix.cpp
-)
-
-extend_target(Core CONDITION QT_FEATURE_regularexpression
-    SOURCES
-        tools/qregularexpression.cpp tools/qregularexpression.h
-    LIBRARIES
-        WrapPCRE2::WrapPCRE2
-)
-
 extend_target(Core CONDITION QT_FEATURE_commandlineparser
     SOURCES
         tools/qcommandlineoption.cpp tools/qcommandlineoption.h
@@ -702,6 +657,51 @@ extend_target(Core CONDITION QT_FEATURE_commandlineparser
 extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND (NOT APPLE_OSX OR NOT ICC)
     LIBRARIES
         m
+)
+
+extend_target(Core CONDITION APPLE_OSX AND NOT NACL
+    SOURCES
+        text/qlocale_mac.mm
+)
+
+extend_target(Core CONDITION UNIX AND (NACL OR NOT APPLE_OSX)
+    SOURCES
+        text/qlocale_unix.cpp
+)
+
+extend_target(Core CONDITION WIN32 AND (NACL OR NOT APPLE_OSX)
+    SOURCES
+        text/qlocale_win.cpp
+)
+
+extend_target(Core CONDITION QT_FEATURE_icu
+    SOURCES
+        text/qcollator_icu.cpp
+        text/qlocale_icu.cpp
+    LIBRARIES
+        ICU::i18n ICU::uc ICU::data
+)
+
+extend_target(Core CONDITION WIN32 AND NOT QT_FEATURE_icu
+    SOURCES
+        text/qcollator_win.cpp
+)
+
+extend_target(Core CONDITION APPLE_OSX AND NOT QT_FEATURE_icu
+    SOURCES
+        text/qcollator_macx.cpp
+)
+
+extend_target(Core CONDITION UNIX AND NOT APPLE_OSX AND NOT QT_FEATURE_icu
+    SOURCES
+        text/qcollator_posix.cpp
+)
+
+extend_target(Core CONDITION QT_FEATURE_regularexpression
+    SOURCES
+        text/qregularexpression.cpp text/qregularexpression.h
+    LIBRARIES
+        WrapPCRE2::WrapPCRE2
 )
 
 extend_target(Core CONDITION QT_FEATURE_timezone
@@ -917,6 +917,11 @@ extend_target(Core CONDITION QT_FEATURE_library AND WIN32
 extend_target(Core CONDITION QT_FEATURE_dlopen AND QT_FEATURE_library
     LIBRARIES
         ${CMAKE_DL_LIBS}
+)
+
+extend_target(Core CONDITION APPLE AND NOT NACL
+    SOURCES
+        kernel/qelapsedtimer_mac.cpp
 )
 
 extend_target(Core CONDITION APPLE AND (APPLE_IOS OR APPLE_TVOS)

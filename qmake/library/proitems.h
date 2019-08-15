@@ -68,6 +68,7 @@ class ProString {
 public:
     ProString();
     ProString(const ProString &other);
+    ProString &operator=(const ProString &) = default;
     PROITEM_EXPLICIT ProString(const QString &str);
     PROITEM_EXPLICIT ProString(const QStringRef &str);
     PROITEM_EXPLICIT ProString(const char *str);
@@ -432,11 +433,12 @@ public:
     ProFunctionDef(const ProFunctionDef &o) : m_pro(o.m_pro), m_offset(o.m_offset) { m_pro->ref(); }
     ProFunctionDef(ProFunctionDef &&other) noexcept
         : m_pro(other.m_pro), m_offset(other.m_offset) { other.m_pro = nullptr; }
-    ~ProFunctionDef() { m_pro->deref(); }
+    ~ProFunctionDef() { if (m_pro) m_pro->deref(); }
     ProFunctionDef &operator=(const ProFunctionDef &o)
     {
         if (this != &o) {
-            m_pro->deref();
+            if (m_pro)
+                m_pro->deref();
             m_pro = o.m_pro;
             m_pro->ref();
             m_offset = o.m_offset;

@@ -71,6 +71,28 @@ static void appendOrganizationAndApp(QString &path)
 #endif
 }
 
+#if QT_CONFIG(regularexpression)
+static QLatin1String xdg_key_name(QStandardPaths::StandardLocation type)
+{
+    switch (type) {
+    case QStandardPaths::DesktopLocation:
+        return QLatin1String("DESKTOP");
+    case QStandardPaths::DocumentsLocation:
+        return QLatin1String("DOCUMENTS");
+    case QStandardPaths::PicturesLocation:
+        return QLatin1String("PICTURES");
+    case QStandardPaths::MusicLocation:
+        return QLatin1String("MUSIC");
+    case QStandardPaths::MoviesLocation:
+        return QLatin1String("VIDEOS");
+    case QStandardPaths::DownloadLocation:
+        return QLatin1String("DOWNLOAD");
+    default:
+        return QLatin1String();
+    }
+}
+#endif
+
 QString QStandardPaths::writableLocation(StandardLocation type)
 {
     switch (type) {
@@ -182,61 +204,32 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     if (xdgConfigHome.isEmpty())
         xdgConfigHome = QDir::homePath() + QLatin1String("/.config");
     QFile file(xdgConfigHome + QLatin1String("/user-dirs.dirs"));
-    if (!isTestModeEnabled() && file.open(QIODevice::ReadOnly)) {
-        QHash<QString, QString> lines;
+    const QLatin1String key = xdg_key_name(type);
+    if (!key.isEmpty() && !isTestModeEnabled() && file.open(QIODevice::ReadOnly)) {
         QTextStream stream(&file);
         // Only look for lines like: XDG_DESKTOP_DIR="$HOME/Desktop"
         QRegularExpression exp(QLatin1String("^XDG_(.*)_DIR=(.*)$"));
+        QString result;
         while (!stream.atEnd()) {
             const QString &line = stream.readLine();
             QRegularExpressionMatch match = exp.match(line);
-            if (match.hasMatch()) {
-                const QStringList lst = match.capturedTexts();
-                const QString key = lst.at(1);
-                QString value = lst.at(2);
+            if (match.hasMatch() && match.capturedView(1) == key) {
+                QStringView value = match.capturedView(2);
                 if (value.length() > 2
                     && value.startsWith(QLatin1Char('\"'))
                     && value.endsWith(QLatin1Char('\"')))
                     value = value.mid(1, value.length() - 2);
-                // Store the key and value: "DESKTOP", "$HOME/Desktop"
-                lines[key] = value;
-            }
-        }
-
-        QString key;
-        switch (type) {
-        case DesktopLocation:
-            key = QLatin1String("DESKTOP");
-            break;
-        case DocumentsLocation:
-            key = QLatin1String("DOCUMENTS");
-            break;
-        case PicturesLocation:
-            key = QLatin1String("PICTURES");
-            break;
-        case MusicLocation:
-            key = QLatin1String("MUSIC");
-            break;
-        case MoviesLocation:
-            key = QLatin1String("VIDEOS");
-            break;
-        case DownloadLocation:
-            key = QLatin1String("DOWNLOAD");
-            break;
-        default:
-            break;
-        }
-        if (!key.isEmpty()) {
-            QString value = lines.value(key);
-            if (!value.isEmpty()) {
                 // value can start with $HOME
                 if (value.startsWith(QLatin1String("$HOME")))
-                    value = QDir::homePath() + value.midRef(5);
-                if (value.length() > 1 && value.endsWith(QLatin1Char('/')))
-                    value.chop(1);
-                return value;
+                    result = QDir::homePath() + value.mid(5);
+                else
+                    result = value.toString();
+                if (result.length() > 1 && result.endsWith(QLatin1Char('/')))
+                    result.chop(1);
             }
         }
+        if (!result.isNull())
+            return result;
     }
 #endif // QT_CONFIG(regularexpression)
 

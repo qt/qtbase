@@ -110,6 +110,7 @@ public:
 private slots:
     void _q_uploadDataReadyRead();
     void _q_replyDestroyed(QObject*);
+    void _q_uploadDataDestroyed(QObject *);
 
 private:
 
@@ -216,6 +217,7 @@ private:
     bool m_waitingForCompleteStream;
     z_stream m_deflateStream;
     z_stream m_inflateStream;
+    QHash<QObject *, qint32> m_streamIDs;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSpdyProtocolHandler::DataFrameFlags)

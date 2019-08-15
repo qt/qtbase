@@ -661,6 +661,7 @@ void QPainterPath::clear()
 
     detach();
     d_func()->clear();
+    d_func()->elements.append( {0, 0, MoveToElement} );
 }
 
 /*!
@@ -2337,12 +2338,12 @@ bool QPainterPath::operator==(const QPainterPath &path) const
 {
     QPainterPathData *d = reinterpret_cast<QPainterPathData *>(d_func());
     QPainterPathData *other_d = path.d_func();
-    if (other_d == d)
+    if (other_d == d) {
         return true;
-    else if (!d || !other_d) {
-        if (!d && other_d->elements.empty() && other_d->fillRule == Qt::OddEvenFill)
+    } else if (!d || !other_d) {
+        if (!other_d && isEmpty() && elementAt(0) == QPointF() && d->fillRule == Qt::OddEvenFill)
             return true;
-        if (!other_d && d && d->elements.empty() && d->fillRule == Qt::OddEvenFill)
+        if (!d && path.isEmpty() && path.elementAt(0) == QPointF() && other_d->fillRule == Qt::OddEvenFill)
             return true;
         return false;
     }

@@ -1662,8 +1662,12 @@ void tst_QAbstractSlider::wheelEvent()
     slider->setOrientation(sliderOrientation);
 
     Qt::KeyboardModifier k = withModifiers ? Qt::ControlModifier : Qt::NoModifier;
-    QWheelEvent event(slider->rect().bottomRight() + distanceFromBottomRight, WHEEL_DELTA * deltaMultiple,
-                      Qt::NoButton, k, wheelOrientation);
+
+    const QPoint wheelPoint = slider->rect().bottomRight() + distanceFromBottomRight;
+    const QPoint angleDelta(wheelOrientation == Qt::Horizontal ? WHEEL_DELTA * deltaMultiple : 0,
+                            wheelOrientation == Qt::Vertical ? WHEEL_DELTA * deltaMultiple : 0);
+    QWheelEvent event(wheelPoint, slider->mapToGlobal(wheelPoint), QPoint(), angleDelta,
+                      Qt::NoButton, k, Qt::NoScrollPhase, false);
     QVERIFY(applicationInstance->sendEvent(slider,&event));
 #ifdef Q_OS_MAC
     QEXPECT_FAIL("Normal data page", "QTBUG-23679", Continue);
@@ -1674,8 +1678,8 @@ void tst_QAbstractSlider::wheelEvent()
 
     slider->setSliderPosition(initialSliderPosition);
     k = withModifiers ? Qt::ShiftModifier : Qt::NoModifier;
-    event = QWheelEvent(slider->rect().bottomRight() + distanceFromBottomRight, WHEEL_DELTA * deltaMultiple,
-                      Qt::NoButton, k, wheelOrientation);
+    event = QWheelEvent(wheelPoint, slider->mapToGlobal(wheelPoint), QPoint(), angleDelta,
+                        Qt::NoButton, k, Qt::NoScrollPhase, false);
     QSignalSpy spy1(slider, SIGNAL(actionTriggered(int)));
     QSignalSpy spy2(slider, SIGNAL(valueChanged(int)));
     QVERIFY(applicationInstance->sendEvent(slider,&event));
@@ -1715,16 +1719,16 @@ void tst_QAbstractSlider::fineGrainedWheelEvent()
     slider->setSliderPosition(0);
 
     const int singleStepDelta = invertedControls ? (-WHEEL_DELTA / 3) : (WHEEL_DELTA / 3);
-
-    QWheelEvent eventDown(slider->rect().bottomRight(), singleStepDelta / 2,
-                      Qt::NoButton, Qt::NoModifier, Qt::Vertical);
+    const QPoint wheelPoint = slider->rect().bottomRight();
+    QWheelEvent eventDown(wheelPoint, slider->mapToGlobal(wheelPoint), QPoint(), QPoint(0, singleStepDelta / 2),
+                          Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
     QVERIFY(applicationInstance->sendEvent(slider,&eventDown));
     QCOMPARE(slider->sliderPosition(), 0);
     QVERIFY(applicationInstance->sendEvent(slider,&eventDown));
     QCOMPARE(slider->sliderPosition(), 1);
 
-    QWheelEvent eventUp(slider->rect().bottomRight(), -singleStepDelta / 2,
-                        Qt::NoButton, Qt::NoModifier, Qt::Vertical);
+    QWheelEvent eventUp(wheelPoint, slider->mapToGlobal(wheelPoint), QPoint(), QPoint(0, -singleStepDelta / 2),
+                          Qt::NoButton, Qt::NoModifier, Qt::NoScrollPhase, false);
     QVERIFY(applicationInstance->sendEvent(slider,&eventUp));
     QCOMPARE(slider->sliderPosition(), 1);
     QVERIFY(applicationInstance->sendEvent(slider,&eventUp));

@@ -312,7 +312,7 @@ void toString(QString &appendTo, const IPv6Address address)
         }
     }
 
-    const QChar colon = ushort(':');
+    const QChar colon = u':';
     if (zeroRunLength < 4)
         zeroRunOffset = -1;
     else if (zeroRunOffset == 0)

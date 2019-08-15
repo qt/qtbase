@@ -110,7 +110,7 @@ public:
     QImage alphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t) override;
     QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) override;
     glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed, const QTransform &matrix, GlyphFormat) override;
-    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t) override;
+    QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t, const QColor &color) override;
     QFixed emSquareSize() const override;
     void doKerning(QGlyphLayout *g, ShaperFlags flags) const override;
 
@@ -137,7 +137,7 @@ public:
 protected:
     QCoreTextFontEngine(const QFontDef &def);
     void init();
-    QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &m);
+    QImage imageForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &m, const QColor &color = QColor());
     void loadAdvancesForGlyphs(QVarLengthArray<CGGlyph> &cgGlyphs, QGlyphLayout *glyphs) const;
     bool hasColorGlyphs() const;
     bool shouldAntialias() const;

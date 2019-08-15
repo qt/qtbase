@@ -378,24 +378,24 @@ void tst_QFileDialog2::task143519_deleteAndRenameActionBehavior()
     // defaults
     QVERIFY(openContextMenu(fd));
     QCOMPARE(fd.selectedFiles(), QStringList(ctx.file.fileName()));
-    QCOMPARE(rm->isEnabled(), !fd.isReadOnly());
-    QCOMPARE(mv->isEnabled(), !fd.isReadOnly());
+    QCOMPARE(rm->isEnabled(), !fd.testOption(QFileDialog::ReadOnly));
+    QCOMPARE(mv->isEnabled(), !fd.testOption(QFileDialog::ReadOnly));
 
     // change to non-defaults:
-    fd.setReadOnly(!fd.isReadOnly());
+    fd.setOption(QFileDialog::ReadOnly, !fd.testOption(QFileDialog::ReadOnly));
 
     QVERIFY(openContextMenu(fd));
     QCOMPARE(fd.selectedFiles().size(), 1);
-    QCOMPARE(rm->isEnabled(), !fd.isReadOnly());
-    QCOMPARE(mv->isEnabled(), !fd.isReadOnly());
+    QCOMPARE(rm->isEnabled(), !fd.testOption(QFileDialog::ReadOnly));
+    QCOMPARE(mv->isEnabled(), !fd.testOption(QFileDialog::ReadOnly));
 
     // and changed back to defaults:
-    fd.setReadOnly(!fd.isReadOnly());
+    fd.setOption(QFileDialog::ReadOnly, !fd.testOption(QFileDialog::ReadOnly));
 
     QVERIFY(openContextMenu(fd));
     QCOMPARE(fd.selectedFiles().size(), 1);
-    QCOMPARE(rm->isEnabled(), !fd.isReadOnly());
-    QCOMPARE(mv->isEnabled(), !fd.isReadOnly());
+    QCOMPARE(rm->isEnabled(), !fd.testOption(QFileDialog::ReadOnly));
+    QCOMPARE(mv->isEnabled(), !fd.testOption(QFileDialog::ReadOnly));
 }
 #endif // !QT_NO_CONTEXTMENU && !QT_NO_MENU
 

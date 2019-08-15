@@ -30,6 +30,7 @@
 #include <QtTest/QtTest>
 
 #include <QBuffer>
+#include <QColorSpace>
 #include <QDebug>
 #include <QImage>
 #include <QImageReader>
@@ -157,6 +158,9 @@ private slots:
 
     void saveFormat_data();
     void saveFormat();
+
+    void saveColorSpace_data();
+    void saveColorSpace();
 
     void readText_data();
     void readText();
@@ -1883,6 +1887,33 @@ void tst_QImageReader::saveFormat()
     QCOMPARE(stored, converted);
 }
 
+void tst_QImageReader::saveColorSpace_data()
+{
+    QTest::addColumn<QColorSpace::ColorSpaceId>("colorspaceId");
+
+    QTest::newRow("Undefined")    << QColorSpace::Undefined;
+    QTest::newRow("sRGB")         << QColorSpace::SRgb;
+    QTest::newRow("sRGB(linear)") << QColorSpace::SRgbLinear;
+    QTest::newRow("AdobeRGB")     << QColorSpace::AdobeRgb;
+    QTest::newRow("DisplayP3")    << QColorSpace::DisplayP3;
+    QTest::newRow("ProPhotoRgb")  << QColorSpace::ProPhotoRgb;
+}
+
+void tst_QImageReader::saveColorSpace()
+{
+    QFETCH(QColorSpace::ColorSpaceId, colorspaceId);
+
+    QImage orig(":/images/kollada.png");
+
+    orig.setColorSpace(colorspaceId);
+    QBuffer buf;
+    buf.open(QIODevice::WriteOnly);
+    QVERIFY(orig.save(&buf, "png"));
+    buf.close();
+    QImage stored = QImage::fromData(buf.buffer(), "png");
+
+    QCOMPARE(stored, orig);
+}
 
 void tst_QImageReader::readText_data()
 {

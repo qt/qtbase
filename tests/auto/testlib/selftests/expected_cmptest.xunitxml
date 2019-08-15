@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="38" tests="26" name="tst_Cmptest">
+<testsuite errors="0" failures="40" tests="26" name="tst_Cmptest">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -98,6 +98,9 @@
    Actual   (opA): 11x20
    Expected (opB): 20x20" result="fail"/>
     <failure tag="different pixels" message="Compared values are not the same" result="fail"/>
+    <failure tag="different dpr" message="Compared QPixmaps differ in device pixel ratio.
+   Actual   (opA): 1
+   Expected (opB): 2" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQImages">
     <failure tag="one null" message="Compared QImages differ.
@@ -113,6 +116,9 @@
    Actual   (opA): 6
    Expected (opB): 3" result="fail"/>
     <failure tag="different pixels" message="Compared values are not the same" result="fail"/>
+    <failure tag="different dpr" message="Compared QImages differ in device pixel ratio.
+   Actual   (opA): 1
+   Expected (opB): 2" result="fail"/>
   </testcase>
   <testcase result="fail" name="compareQRegion">
     <failure tag="1&#x002D;empty" message="Compared values are not the same

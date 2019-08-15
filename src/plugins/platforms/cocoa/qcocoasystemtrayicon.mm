@@ -118,11 +118,13 @@ class QSystemTrayIconSys
 public:
     QSystemTrayIconSys(QCocoaSystemTrayIcon *sys) {
         item = [[QNSStatusItem alloc] initWithSysTray:sys];
-        [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:item];
+        NSUserNotificationCenter.defaultUserNotificationCenter.delegate = item;
     }
     ~QSystemTrayIconSys() {
         [[[item item] view] setHidden: YES];
-        [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:nil];
+        NSUserNotificationCenter *center = NSUserNotificationCenter.defaultUserNotificationCenter;
+        if (center.delegate == item)
+            center.delegate = nil;
         [item release];
     }
     QNSStatusItem *item;
@@ -264,7 +266,6 @@ bool QCocoaSystemTrayIcon::supportsMessages() const
 void QCocoaSystemTrayIcon::showMessage(const QString &title, const QString &message,
                                        const QIcon& icon, MessageIcon, int)
 {
-    Q_UNUSED(icon);
     if (!m_sys)
         return;
 
@@ -272,7 +273,16 @@ void QCocoaSystemTrayIcon::showMessage(const QString &title, const QString &mess
     notification.title = [NSString stringWithUTF8String:title.toUtf8().data()];
     notification.informativeText = [NSString stringWithUTF8String:message.toUtf8().data()];
 
-    [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:notification];
+    if (!icon.isNull()) {
+        auto *nsimage = qt_mac_create_nsimage(icon);
+        [nsimage setTemplate:icon.isMask()];
+        notification.contentImage = [nsimage autorelease];
+    }
+
+    NSUserNotificationCenter *center = NSUserNotificationCenter.defaultUserNotificationCenter;
+    center.delegate = m_sys->item;
+    [center deliverNotification:notification];
+    [notification release];
 }
 QT_END_NAMESPACE
 

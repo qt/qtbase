@@ -48,10 +48,6 @@ NmakeMakefileGenerator::writeMakefile(QTextStream &t)
     if(project->first("TEMPLATE") == "app" ||
        project->first("TEMPLATE") == "lib" ||
        project->first("TEMPLATE") == "aux") {
-#if 0
-        if(Option::mkfile::do_stub_makefile)
-            return MakefileGenerator::writeStubMakefile(t);
-#endif
         writeNmakeParts(t);
         return MakefileGenerator::writeMakefile(t);
     }

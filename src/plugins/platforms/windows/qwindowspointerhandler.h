@@ -82,6 +82,7 @@ private:
     bool m_needsEnterOnPointerUpdate = false;
     QEvent::Type m_lastEventType = QEvent::None;
     Qt::MouseButton m_lastEventButton = Qt::NoButton;
+    DWORD m_pointerType = 0;
 };
 
 QT_END_NAMESPACE

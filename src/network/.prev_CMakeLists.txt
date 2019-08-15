@@ -108,9 +108,7 @@ extend_target(Network CONDITION QT_FEATURE_settings
         access/qhstsstore.cpp access/qhstsstore_p.h
 )
 
-extend_target(Network CONDITION APPLE_OSX
-    SOURCES
-        kernel/qnetworkproxy_mac.cpp
+extend_target(Network CONDITION APPLE
     LIBRARIES
         ${FWCoreFoundation}
         ${FWSecurity}
@@ -219,7 +217,7 @@ extend_target(Network CONDITION QT_FEATURE_dnslookup AND WINRT
         kernel/qdnslookup_winrt.cpp
 )
 
-extend_target(Network CONDITION APPLE_OSX AND NOT APPLE_UIKIT
+extend_target(Network CONDITION APPLE AND NOT APPLE_UIKIT
     LIBRARIES
         ${FWCoreServices}
         ${FWSystemConfiguration}
@@ -232,7 +230,12 @@ extend_target(Network CONDITION APPLE_IOS OR APPLE_OSX
         ${FWSystemConfiguration}
 )
 
-extend_target(Network CONDITION NOT APPLE_IOS AND NOT APPLE_OSX
+extend_target(Network CONDITION QT_FEATURE_netlistmgr AND NOT APPLE_IOS AND NOT APPLE_OSX
+    SOURCES
+        kernel/qnetconmonitor_win.cpp
+)
+
+extend_target(Network CONDITION NOT APPLE_IOS AND NOT APPLE_OSX AND NOT QT_FEATURE_netlistmgr
     SOURCES
         kernel/qnetconmonitor_stub.cpp
 )
@@ -245,6 +248,11 @@ extend_target(Network CONDITION QT_FEATURE_gssapi
 extend_target(Network CONDITION APPLE_UIKIT
     SOURCES
         kernel/qnetworkinterface_uikit_p.h
+)
+
+extend_target(Network CONDITION APPLE_OSX
+    SOURCES
+        kernel/qnetworkproxy_mac.cpp
 )
 
 extend_target(Network CONDITION QT_FEATURE_libproxy AND NOT APPLE_OSX AND (UNIX OR WINRT)

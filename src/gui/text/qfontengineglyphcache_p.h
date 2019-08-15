@@ -65,7 +65,10 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QFontEngineGlyphCache: public QSharedData
 {
 public:
-    QFontEngineGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix) : m_format(format), m_transform(matrix)
+    QFontEngineGlyphCache(QFontEngine::GlyphFormat format, const QTransform &matrix, const QColor &color = QColor())
+        : m_format(format)
+        , m_transform(matrix)
+        , m_color(color)
     {
         Q_ASSERT(m_format != QFontEngine::Format_None);
     }
@@ -74,9 +77,11 @@ public:
 
     QFontEngine::GlyphFormat glyphFormat() const { return m_format; }
     const QTransform &transform() const { return m_transform; }
+    const QColor &color() const { return m_color; }
 
     QFontEngine::GlyphFormat m_format;
     QTransform m_transform;
+    QColor m_color;
 };
 typedef QHash<void *, QList<QFontEngineGlyphCache *> > GlyphPointerHash;
 typedef QHash<int, QList<QFontEngineGlyphCache *> > GlyphIntHash;

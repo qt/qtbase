@@ -142,9 +142,7 @@ public:
 #endif
         if (style() != p->style())
             setStyle(p->style());
-        int leftMargin, topMargin, rightMargin, bottomMargin;
-        p->getContentsMargins(&leftMargin, &topMargin, &rightMargin, &bottomMargin);
-        setContentsMargins(leftMargin, topMargin, rightMargin, bottomMargin);
+        setContentsMargins(p->contentsMargins());
         setLayoutDirection(p->layoutDirection());
         //QObject::connect(this, SIGNAL(triggered(QAction*)), this, SLOT(onTrigger(QAction*)));
         //QObject::connect(this, SIGNAL(hovered(QAction*)), this, SLOT(onHovered(QAction*)));
@@ -200,7 +198,7 @@ void QMenuPrivate::init()
     q->setAttribute(Qt::WA_X11NetWmWindowTypePopupMenu);
     defaultMenuAction = menuAction = new QAction(q);
     menuAction->d_func()->menu = q;
-    QObject::connect(menuAction, &QAction::changed, [=] {
+    QObject::connect(menuAction, &QAction::changed, [this] {
         if (!tornPopup.isNull())
             tornPopup->updateWindowTitle();
     });
@@ -2392,7 +2390,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     }
 
 #ifdef QT_KEYPAD_NAVIGATION
-    if (!atAction && QApplication::keypadNavigationEnabled()) {
+    if (!atAction && QApplicationPrivate::keypadNavigationEnabled()) {
         // Try to have one item activated
         if (d->defaultAction && d->defaultAction->isEnabled()) {
             atAction = d->defaultAction;
@@ -2847,8 +2845,8 @@ void QMenu::paintEvent(QPaintEvent *e)
 void QMenu::wheelEvent(QWheelEvent *e)
 {
     Q_D(QMenu);
-    if (d->scroll && rect().contains(e->pos()))
-        d->scrollMenu(e->delta() > 0 ?
+    if (d->scroll && rect().contains(e->position().toPoint()))
+        d->scrollMenu(e->angleDelta().y() > 0 ?
                       QMenuPrivate::QMenuScroller::ScrollUp : QMenuPrivate::QMenuScroller::ScrollDown);
 }
 #endif

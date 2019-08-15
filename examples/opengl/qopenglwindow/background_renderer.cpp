@@ -91,6 +91,9 @@ FragmentToy::FragmentToy(const QString &fragmentSource, QObject *parent)
     }
 }
 
+FragmentToy::~FragmentToy()
+    = default;
+
 void FragmentToy::draw(const QSize &windowSize)
 {
     if (!m_program)
@@ -120,7 +123,7 @@ void FragmentToy::draw(const QSize &windowSize)
         if (!m_vertex_shader->compileSourceCode(vertex_shader)) {
             qWarning() << "Failed to compile the vertex shader:" << m_vertex_shader->log();
         }
-        if (!m_program->addShader(m_vertex_shader.data())) {
+        if (!m_program->addShader(m_vertex_shader.get())) {
             qWarning() << "Failed to add vertex shader to program:" << m_program->log();
         }
     }
@@ -153,7 +156,7 @@ void FragmentToy::draw(const QSize &windowSize)
         }
 
         if (m_fragment_shader) {
-            if (!m_program->addShader(m_fragment_shader.data())) {
+            if (!m_program->addShader(m_fragment_shader.get())) {
                 qWarning() << "Failed to add fragment shader to program:" << m_program->log();
             }
         }
@@ -197,14 +200,14 @@ void FragmentToy::fileChanged(const QString &path)
             m_fragment_file_last_modified = fragment_source.lastModified();
             m_recompile_shaders = true;
             if (m_program) {
-                m_program->removeShader(m_fragment_shader.data());
+                m_program->removeShader(m_fragment_shader.get());
                 m_fragment_shader.reset(nullptr);
             }
         }
     } else {
         m_recompile_shaders = true;
         if (m_program) {
-            m_program->removeShader(m_fragment_shader.data());
+            m_program->removeShader(m_fragment_shader.get());
             m_fragment_shader.reset(nullptr);
         }
     }

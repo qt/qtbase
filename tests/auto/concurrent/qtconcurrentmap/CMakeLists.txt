@@ -5,16 +5,15 @@
 #####################################################################
 
 add_qt_test(tst_qtconcurrentmap
+    GUI
     SOURCES
         tst_qtconcurrentmap.cpp
     DEFINES
+        # -QT_NO_LINKED_LIST # special case remove until we figure this out
         QT_STRICT_ITERATORS
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Concurrent
 )
 
 ## Scopes:
 #####################################################################
-#
-#extend_target(tst_qtconcurrentmap CONDITION contains(QT_CONFIG, c++1z)
-#)

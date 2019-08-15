@@ -92,6 +92,7 @@ private slots:
     void lookupIPv6();
     void lookupConnectToFunctionPointer_data();
     void lookupConnectToFunctionPointer();
+    void lookupConnectToFunctionPointerDeleted();
     void lookupConnectToLambda_data();
     void lookupConnectToLambda();
     void reverseLookup_data();
@@ -358,6 +359,17 @@ void tst_QHostInfo::lookupConnectToFunctionPointer()
     QCOMPARE(tmp.join(' '), expected.join(' '));
 }
 
+void tst_QHostInfo::lookupConnectToFunctionPointerDeleted()
+{
+    {
+        QObject contextObject;
+        QHostInfo::lookupHost("localhost", &contextObject, [](const QHostInfo){
+            QFAIL("This should never be called!");
+        });
+    }
+    QTestEventLoop::instance().enterLoop(3);
+}
+
 void tst_QHostInfo::lookupConnectToLambda_data()
 {
     lookupIPv4_data();
@@ -464,7 +476,9 @@ void tst_QHostInfo::reverseLookup_data()
 
     QTest::newRow("dns.google") << QString("8.8.8.8") << reverseLookupHelper("8.8.8.8") << 0 << false;
     QTest::newRow("one.one.one.one") << QString("1.1.1.1") << reverseLookupHelper("1.1.1.1") << 0 << false;
-    QTest::newRow("bogus-name") << QString("1::2::3::4") << QStringList() << 1 << true;
+    QTest::newRow("dns.google IPv6") << QString("2001:4860:4860::8888") << reverseLookupHelper("2001:4860:4860::8888") << 0 << true;
+    QTest::newRow("cloudflare IPv6") << QString("2606:4700:4700::1111") << reverseLookupHelper("2606:4700:4700::1111") << 0 << true;
+    QTest::newRow("bogus-name IPv6") << QString("1::2::3::4") << QStringList() << 1 << true;
 }
 
 void tst_QHostInfo::reverseLookup()
@@ -705,6 +719,7 @@ void tst_QHostInfo::cache()
 
 void tst_QHostInfo::resultsReady(const QHostInfo &hi)
 {
+    QVERIFY(QThread::currentThread() == thread());
     lookupDone = true;
     lookupResults = hi;
     lookupsDoneCounter++;
