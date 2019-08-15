@@ -397,15 +397,12 @@ QRegion QWidgetBackingStore::dirtyRegion(QWidget *widget) const
     // Append the region that needs flush.
     r += dirtyOnScreen;
 
-    if (dirtyOnScreenWidgets) { // Only in use with native child widgets.
-        for (int i = 0; i < dirtyOnScreenWidgets->size(); ++i) {
-            QWidget *w = dirtyOnScreenWidgets->at(i);
-            if (widgetDirty && w != widget && !widget->isAncestorOf(w))
-                continue;
-            QWidgetPrivate *wd = w->d_func();
-            Q_ASSERT(wd->needsFlush);
-            r += wd->needsFlush->translated(w->mapTo(tlw, QPoint()));
-        }
+    for (QWidget *w : dirtyOnScreenWidgets) {
+        if (widgetDirty && w != widget && !widget->isAncestorOf(w))
+            continue;
+        QWidgetPrivate *wd = w->d_func();
+        Q_ASSERT(wd->needsFlush);
+        r += wd->needsFlush->translated(w->mapTo(tlw, QPoint()));
     }
 
     if (widgetDirty) {
@@ -686,8 +683,8 @@ void QWidgetBackingStore::removeDirtyWidget(QWidget *w)
     if (!w)
         return;
 
-    dirtyWidgetsRemoveAll(w);
-    dirtyOnScreenWidgetsRemoveAll(w);
+    dirtyWidgets.removeAll(w);
+    dirtyOnScreenWidgets.removeAll(w);
     dirtyRenderToTextureWidgets.removeAll(w);
     resetWidget(w);
 
@@ -719,7 +716,6 @@ void QWidgetBackingStore::updateLists(QWidget *cur)
 
 QWidgetBackingStore::QWidgetBackingStore(QWidget *topLevel)
     : tlw(topLevel),
-      dirtyOnScreenWidgets(0),
       updateRequestSent(0),
       textureListWatcher(0),
       perfFrames(0)
@@ -737,8 +733,6 @@ QWidgetBackingStore::~QWidgetBackingStore()
         resetWidget(dirtyWidgets.at(c));
     for (int c = 0; c < dirtyRenderToTextureWidgets.size(); ++c)
         resetWidget(dirtyRenderToTextureWidgets.at(c));
-
-    delete dirtyOnScreenWidgets;
 }
 
 static QVector<QRect> getSortedRectsToScroll(const QRegion &region, int dx, int dy)
@@ -1373,7 +1367,7 @@ void QWidgetBackingStore::doSync()
 */
 void QWidgetBackingStore::flush(QWidget *widget)
 {
-    const bool hasDirtyOnScreenWidgets = dirtyOnScreenWidgets && !dirtyOnScreenWidgets->isEmpty();
+    const bool hasDirtyOnScreenWidgets = !dirtyOnScreenWidgets.isEmpty();
     bool flushed = false;
 
     // Flush the region in dirtyOnScreen.
@@ -1400,15 +1394,13 @@ void QWidgetBackingStore::flush(QWidget *widget)
     if (!hasDirtyOnScreenWidgets)
         return;
 
-    for (int i = 0; i < dirtyOnScreenWidgets->size(); ++i) {
-        QWidget *w = dirtyOnScreenWidgets->at(i);
+    for (QWidget *w : qExchange(dirtyOnScreenWidgets, {})) {
         QWidgetPrivate *wd = w->d_func();
         Q_ASSERT(wd->needsFlush);
         QPlatformTextureList *widgetTexturesForNative = wd->textureChildSeen ? widgetTexturesFor(tlw, w) : 0;
         qt_flush(w, *wd->needsFlush, store, tlw, widgetTexturesForNative, this);
         *wd->needsFlush = QRegion();
     }
-    dirtyOnScreenWidgets->clear();
 }
 
 /*!

@@ -129,7 +129,7 @@ private:
     QRegion dirtyFromPreviousSync;
     QVector<QWidget *> dirtyWidgets;
     QVector<QWidget *> dirtyRenderToTextureWidgets;
-    QVector<QWidget *> *dirtyOnScreenWidgets;
+    QVector<QWidget *> dirtyOnScreenWidgets;
     QList<QWidget *> staticWidgets;
     QBackingStore *store;
     uint updateRequestSent : 1;
@@ -190,17 +190,6 @@ private:
         }
     }
 
-    inline void dirtyWidgetsRemoveAll(QWidget *widget)
-    {
-        int i = 0;
-        while (i < dirtyWidgets.size()) {
-            if (dirtyWidgets.at(i) == widget)
-                dirtyWidgets.remove(i);
-            else
-                ++i;
-        }
-    }
-
     inline void addStaticWidget(QWidget *widget)
     {
         if (!widget)
@@ -246,26 +235,8 @@ private:
         if (!widget)
             return;
 
-        if (!dirtyOnScreenWidgets) {
-            dirtyOnScreenWidgets = new QVector<QWidget *>;
-            dirtyOnScreenWidgets->append(widget);
-        } else if (!dirtyOnScreenWidgets->contains(widget)) {
-            dirtyOnScreenWidgets->append(widget);
-        }
-    }
-
-    inline void dirtyOnScreenWidgetsRemoveAll(QWidget *widget)
-    {
-        if (!widget || !dirtyOnScreenWidgets)
-            return;
-
-        int i = 0;
-        while (i < dirtyOnScreenWidgets->size()) {
-            if (dirtyOnScreenWidgets->at(i) == widget)
-                dirtyOnScreenWidgets->remove(i);
-            else
-                ++i;
-        }
+        if (!dirtyOnScreenWidgets.contains(widget))
+            dirtyOnScreenWidgets.append(widget);
     }
 
     inline void resetWidget(QWidget *widget)
