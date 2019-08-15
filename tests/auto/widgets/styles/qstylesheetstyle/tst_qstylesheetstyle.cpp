@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -25,12 +25,40 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtCore>
-#include <QtGui>
-#include <QtWidgets>
+
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QDateEdit>
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QDialogButtonBox>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QGroupBox>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QHeaderView>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QProgressBar>
+#include <QtWidgets/QSpinBox>
+#include <QtWidgets/QSplitter>
+#include <QtWidgets/QStyle>
+#include <QtWidgets/QStyleFactory>
+#include <QtWidgets/QTableWidget>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QToolTip>
+#include <QtWidgets/QTreeView>
+#include <QtWidgets/QVBoxLayout>
+
+#include <QtGui/QPainter>
+#include <QtGui/QScreen>
+
 #include <QtTest/QtTest>
-#include <QtDebug>
-#include <QMetaObject>
+
+#include <QtCore/QDebug>
+#include <QtCore/QMetaObject>
+#include <QtCore/QScopedPointer>
 
 #include <private/qstylesheetstyle_p.h>
 #include <private/qhighdpiscaling_p.h>
@@ -43,10 +71,10 @@ class tst_QStyleSheetStyle : public QObject
     Q_OBJECT
 public:
     tst_QStyleSheetStyle();
-    ~tst_QStyleSheetStyle();
 
 private slots:
     void init();
+    void cleanup();
     void repolish();
     void repolish_without_crashing();
     void numinstances();
@@ -77,7 +105,7 @@ private slots:
     void hoverColors();
 #endif
     void background();
-    void tabAlignement();
+    void tabAlignment();
     void attributesList();
     void minmaxSizes();
     void task206238_twice();
@@ -107,36 +135,40 @@ private slots:
     void highdpiImages();
 
 private:
-    QColor COLOR(const QWidget& w) {
+    static QColor COLOR(const QWidget &w)
+    {
         w.ensurePolished();
         return w.palette().color(w.foregroundRole());
     }
-    QColor APPCOLOR(const QWidget& w) {
+
+    static QColor APPCOLOR(const QWidget &w)
+    {
         w.ensurePolished();
-        return qApp->palette(&w).color(w.foregroundRole());
+        return QApplication::palette(&w).color(w.foregroundRole());
     }
-    QColor BACKGROUND(const QWidget& w) {
+
+    static QColor BACKGROUND(const QWidget &w)
+    {
         w.ensurePolished();
         return w.palette().color(w.backgroundRole());
     }
-    QColor APPBACKGROUND(const QWidget& w) {
+
+    static QColor APPBACKGROUND(const QWidget &w)
+    {
         w.ensurePolished();
-        return qApp->palette(&w).color(w.backgroundRole());
+        return QApplication::palette(&w).color(w.backgroundRole());
     }
-    int FONTSIZE(const QWidget &w) {
+
+    static int FONTSIZE(const QWidget &w)
+    {
         w.ensurePolished();
         return w.font().pointSize();
     }
-    int APPFONTSIZE(const QWidget &w) {
-        return qApp->font(&w).pointSize();
-    }
+
+    static int APPFONTSIZE(const QWidget &w) { return QApplication::font(&w).pointSize(); }
 };
 
 tst_QStyleSheetStyle::tst_QStyleSheetStyle()
-{
-}
-
-tst_QStyleSheetStyle::~tst_QStyleSheetStyle()
 {
 }
 
@@ -146,9 +178,15 @@ void tst_QStyleSheetStyle::init()
     QCoreApplication::setAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles, false);
 }
 
+void tst_QStyleSheetStyle::cleanup()
+{
+    QTRY_VERIFY(QApplication::topLevelWidgets().isEmpty());
+}
+
 void tst_QStyleSheetStyle::numinstances()
 {
     QWidget w;
+    w.setWindowTitle(QTest::currentTestFunction());
     w.resize(200, 200);
     centerOnScreen(&w);
     QCommonStyle *style = new QCommonStyle;
@@ -175,7 +213,7 @@ void tst_QStyleSheetStyle::numinstances()
     QCOMPARE(QStyleSheetStyle::numinstances, 0);
 
     // set and unset widget stylesheet
-    w.setStyle(0);
+    w.setStyle(nullptr);
     w.setStyleSheet("color: red");
     QCOMPARE(QStyleSheetStyle::numinstances, 1);
     c.setStyle(style);
@@ -325,7 +363,7 @@ void tst_QStyleSheetStyle::reparentWithNoChildStyleSheet()
     QCOMPARE(COLOR(c1), red);
 
     qApp->setStyleSheet("* { color: blue }");
-    c1.setParent(0);
+    c1.setParent(nullptr);
     QCOMPARE(COLOR(c1), blue);
     delete pb;
 }
@@ -372,6 +410,7 @@ void tst_QStyleSheetStyle::repolish_without_crashing()
 {
     // This used to crash, QTBUG-69204
     QMainWindow w;
+    w.setWindowTitle(QTest::currentTestFunction());
     QScopedPointer<QSplitter> splitter1(new QSplitter(w.centralWidget()));
     QScopedPointer<QSplitter> splitter2(new QSplitter);
     QScopedPointer<QSplitter> splitter3(new QSplitter);
@@ -408,7 +447,7 @@ void tst_QStyleSheetStyle::widgetStyle()
     QPointer<QStyle> style1 = QStyleFactory::create("Windows");
     QPointer<QStyle> style2 = QStyleFactory::create("Windows");
 
-    QStyle *appStyle = qApp->style();
+    QStyle *appStyle = QApplication::style();
 
     // Sanity: By default, a window inherits the application style
     QCOMPARE(appStyle, window1->style());
@@ -423,7 +462,7 @@ void tst_QStyleSheetStyle::widgetStyle()
     QVERIFY(!style1.isNull()); // case we have not already crashed
 
     // Setting null style must make it follow the qApp style
-    window1->setStyle(0);
+    window1->setStyle(nullptr);
     QCOMPARE(window1->style(), appStyle);
     QVERIFY(!style2.isNull()); // case we have not already crashed
     QVERIFY(!style2.isNull()); // case we have not already crashed
@@ -431,16 +470,15 @@ void tst_QStyleSheetStyle::widgetStyle()
     // Sanity: Set the stylesheet
     window1->setStyleSheet(":x { }");
 
-    QPointer<QStyleSheetStyle> proxy = (QStyleSheetStyle *)window1->style();
+    QPointer<QStyleSheetStyle> proxy = qobject_cast<QStyleSheetStyle *>(window1->style());
     QVERIFY(!proxy.isNull());
-    QCOMPARE(proxy->metaObject()->className(), "QStyleSheetStyle"); // must be our proxy
-    QVERIFY(proxy->base == 0); // and follows the application
+    QCOMPARE(proxy->base, nullptr); // and follows the application
 
     // Set the stylesheet
     window1->setStyle(style1);
     QVERIFY(proxy.isNull()); // we create a new one each time
-    proxy = (QStyleSheetStyle *)window1->style();
-    QCOMPARE(proxy->metaObject()->className(), "QStyleSheetStyle"); // it is a proxy
+    proxy = qobject_cast<QStyleSheetStyle *>(window1->style());
+    QVERIFY(!proxy.isNull()); // it is a proxy
     QCOMPARE(proxy->baseStyle(), style1.data()); // must have been replaced with the new one
 
     // Update the stylesheet and check nothing changes
@@ -449,15 +487,15 @@ void tst_QStyleSheetStyle::widgetStyle()
     QCOMPARE(proxy->baseStyle(), style1.data()); // the same guy
 
     // Remove the stylesheet
-    proxy = (QStyleSheetStyle *)window1->style();
+    proxy = qobject_cast<QStyleSheetStyle *>(window1->style());
     window1->setStyleSheet(QString());
     QVERIFY(proxy.isNull()); // should have disappeared
     QCOMPARE(window1->style(), style1.data()); // its restored
 
     // Style Sheet existing children propagation
     window1->setStyleSheet(":z { }");
-    proxy = (QStyleSheetStyle *)window1->style();
-    QCOMPARE(proxy->metaObject()->className(), "QStyleSheetStyle");
+    proxy = qobject_cast<QStyleSheetStyle *>(window1->style());
+    QVERIFY(!proxy.isNull()); // it is a proxy
     QCOMPARE(window1->style(), widget1->style()); // proxy must have propagated
     QCOMPARE(widget2->style(), appStyle); // widget2 is following the app style
 
@@ -473,55 +511,57 @@ void tst_QStyleSheetStyle::widgetStyle()
     // Style Sheet propagation on a child widget with a custom style
     widget2->setStyle(style1);
     window2->setStyleSheet(":x { }");
-    proxy = (QStyleSheetStyle *)widget2->style();
-    QCOMPARE(proxy->metaObject()->className(), "QStyleSheetStyle");
+    proxy = qobject_cast<QStyleSheetStyle *>(widget2->style());
+    QVERIFY(!proxy.isNull()); // it is a proxy
     QCOMPARE(proxy->baseStyle(), style1.data());
 
     // Style Sheet propagation on a child widget with a custom style already set
     window2->setStyleSheet(QString());
     QCOMPARE(window2->style(), style2.data());
     QCOMPARE(widget2->style(), style1.data());
-    widget2->setStyle(0);
+    widget2->setStyle(nullptr);
     window2->setStyleSheet(":x { }");
     widget2->setStyle(style1);
-    proxy = (QStyleSheetStyle *)widget2->style();
-    QCOMPARE(proxy->metaObject()->className(), "QStyleSheetStyle");
+    proxy = qobject_cast<QStyleSheetStyle *>(widget2->style());
+    QVERIFY(!proxy.isNull()); // it is a proxy
 
     // QApplication, QWidget both having a style sheet
 
     // clean everything out
-    window1->setStyle(0);
+    window1->setStyle(nullptr);
     window1->setStyleSheet(QString());
-    window2->setStyle(0);
+    window2->setStyle(nullptr);
     window2->setStyleSheet(QString());
-    qApp->setStyle(0);
+    QApplication::setStyle(nullptr);
 
     qApp->setStyleSheet("may_insanity_prevail { }"); // app has stylesheet
-    QCOMPARE(window1->style(), qApp->style());
+    QCOMPARE(window1->style(), QApplication::style());
     QCOMPARE(window1->style()->metaObject()->className(), "QStyleSheetStyle");
     QCOMPARE(widget1->style()->metaObject()->className(), "QStyleSheetStyle"); // check the child
     window1->setStyleSheet("may_more_insanity_prevail { }"); // window has stylesheet
     QCOMPARE(window1->style()->metaObject()->className(), "QStyleSheetStyle"); // a new one
     QCOMPARE(widget1->style(), window1->style()); // child follows...
-    proxy = (QStyleSheetStyle *) window1->style();
+    proxy = qobject_cast<QStyleSheetStyle *>(window1->style());
+    QVERIFY(!proxy.isNull());
     QStyle *newStyle = QStyleFactory::create("Windows");
-    qApp->setStyle(newStyle); // set a custom style on app
-    proxy = (QStyleSheetStyle *) window1->style();
+    QApplication::setStyle(newStyle); // set a custom style on app
+    proxy = qobject_cast<QStyleSheetStyle *>(window1->style());
+    QVERIFY(!proxy.isNull()); // it is a proxy
     QCOMPARE(proxy->baseStyle(), newStyle); // magic ;) the widget still follows the application
     QCOMPARE(static_cast<QStyle *>(proxy), widget1->style()); // child still follows...
 
     window1->setStyleSheet(QString()); // remove stylesheet
-    QCOMPARE(window1->style(), qApp->style()); // is this cool or what
-    QCOMPARE(widget1->style(), qApp->style()); // annoying child follows...
+    QCOMPARE(window1->style(), QApplication::style()); // is this cool or what
+    QCOMPARE(widget1->style(), QApplication::style()); // annoying child follows...
     QScopedPointer<QStyle> wndStyle(QStyleFactory::create("Windows"));
     window1->setStyle(wndStyle.data());
     QCOMPARE(window1->style()->metaObject()->className(), "QStyleSheetStyle"); // auto wraps it
     QCOMPARE(widget1->style(), window1->style()); // and auto propagates to child
     qApp->setStyleSheet(QString()); // remove the app stylesheet
     QCOMPARE(window1->style(), wndStyle.data()); // auto dewrap
-    QCOMPARE(widget1->style(), qApp->style()); // and child state is restored
-    window1->setStyle(0); // let sanity prevail
-    qApp->setStyle(0);
+    QCOMPARE(widget1->style(), QApplication::style()); // and child state is restored
+    window1->setStyle(nullptr); // let sanity prevail
+    QApplication::setStyle(nullptr);
 
     delete window1;
     delete widget2;
@@ -534,32 +574,32 @@ void tst_QStyleSheetStyle::appStyle()
 {
     qApp->setStyleSheet(QString());
     // qApp style can never be 0
-    QVERIFY(QApplication::style() != 0);
+    QVERIFY(QApplication::style() != nullptr);
     QPointer<QStyle> style1 = QStyleFactory::create("Windows");
     QPointer<QStyle> style2 = QStyleFactory::create("Windows");
-    qApp->setStyle(style1);
+    QApplication::setStyle(style1);
     // Basic sanity
     QCOMPARE(QApplication::style(), style1.data());
-    qApp->setStyle(style2);
+    QApplication::setStyle(style2);
     QVERIFY(style1.isNull()); // qApp must have taken ownership and deleted it
     // Setting null should not crash
-    qApp->setStyle(0);
+    QApplication::setStyle(nullptr);
     QCOMPARE(QApplication::style(), style2.data());
 
     // Set the stylesheet
     qApp->setStyleSheet("whatever");
-    QPointer<QStyleSheetStyle> sss = (QStyleSheetStyle *)qApp->style();
+    QPointer<QStyleSheetStyle> sss = static_cast<QStyleSheetStyle *>(QApplication::style());
     QVERIFY(!sss.isNull());
     QCOMPARE(sss->metaObject()->className(), "QStyleSheetStyle"); // must be our proxy now
     QVERIFY(!style2.isNull()); // this should exist as it is the base of the proxy
     QCOMPARE(sss->baseStyle(), style2.data());
     style1 = QStyleFactory::create("Windows");
-    qApp->setStyle(style1);
+    QApplication::setStyle(style1);
     QVERIFY(style2.isNull()); // should disappear automatically
     QVERIFY(sss.isNull()); // should disappear automatically
 
     // Update the stylesheet and check nothing changes
-    sss = (QStyleSheetStyle *)qApp->style();
+    sss = static_cast<QStyleSheetStyle *>(QApplication::style());
     qApp->setStyleSheet("whatever2");
     QCOMPARE(QApplication::style(), sss.data());
     QCOMPARE(sss->baseStyle(), style1.data());
@@ -577,12 +617,13 @@ void tst_QStyleSheetStyle::dynamicProperty()
 {
     qApp->setStyleSheet(QString());
 
-    QString appStyle = qApp->style()->metaObject()->className();
+    QString appStyle = QApplication::style()->metaObject()->className();
     QPushButton pb1(QStringLiteral("dynamicProperty_pb1"));
     pb1.setMinimumWidth(160);
     pb1.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(20, 100));
 
     QPushButton pb2(QStringLiteral("dynamicProperty_pb2"));
+    pb2.setWindowTitle(QTest::currentTestFunction());
     pb2.setMinimumWidth(160);
     pb2.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(20, 200));
 
@@ -625,7 +666,7 @@ namespace ns {
     class PushButton1 : public QPushButton {
         Q_OBJECT
     public:
-        PushButton1() { }
+        using QPushButton::QPushButton;
     };
     class PushButton2 : public PushButton1 {
         Q_OBJECT
@@ -781,7 +822,7 @@ void tst_QStyleSheetStyle::onWidgetDestroyed()
     qApp->setStyleSheet(QString());
     QLabel *l = new QLabel;
     l->setStyleSheet("QLabel { color: red }");
-    QPointer<QStyleSheetStyle> ss = (QStyleSheetStyle *) l->style();
+    QPointer<QStyleSheetStyle> ss = static_cast<QStyleSheetStyle *>(l->style());
     delete l;
     QVERIFY(ss.isNull());
 }
@@ -789,6 +830,7 @@ void tst_QStyleSheetStyle::onWidgetDestroyed()
 void tst_QStyleSheetStyle::fontPrecedence()
 {
     QLineEdit edit;
+    edit.setWindowTitle(QTest::currentTestFunction());
     edit.setMinimumWidth(200);
     centerOnScreen(&edit);
     edit.show();
@@ -817,23 +859,23 @@ void tst_QStyleSheetStyle::fontPrecedence()
 }
 
 // Ensure primary will only return true if the color covers more than 50% of pixels
-static bool testForColors(const QImage& image, const QColor& color, bool ensurePrimary=false)
+static bool testForColors(const QImage& image, const QColor &color, bool ensurePrimary = false)
 {
     int count = 0;
     QRgb rgb = color.rgba();
-    int totalCount = image.height()*image.width();
+    int totalCount = image.height() * image.width();
     for (int y = 0; y < image.height(); ++y) {
         for (int x = 0; x < image.width(); ++x) {
             // Because of antialiasing we allow a certain range of errors here.
             QRgb pixel = image.pixel(x, y);
 
-            if (qAbs((int)(pixel & 0xff) - (int)(rgb & 0xff)) +
-                    qAbs((int)((pixel & 0xff00) >> 8) - (int)((rgb & 0xff00) >> 8)) +
-                    qAbs((int)((pixel & 0xff0000) >> 16) - (int)((rgb & 0xff0000) >> 16)) <= 50) {
+            if (qAbs(int(pixel & 0xff) - int(rgb & 0xff)) +
+                    qAbs(int((pixel & 0xff00) >> 8) - int((rgb & 0xff00) >> 8)) +
+                    qAbs(int((pixel & 0xff0000) >> 16) - int((rgb & 0xff0000) >> 16)) <= 50) {
                 count++;
                 if (!ensurePrimary && count >=10 )
                     return true;
-                else if (count > totalCount/2)
+                if (count > totalCount / 2)
                     return true;
             }
         }
@@ -842,7 +884,8 @@ static bool testForColors(const QImage& image, const QColor& color, bool ensureP
     return false;
 }
 
-class TestDialog : public QDialog {
+class TestDialog : public QDialog
+{
 public:
     explicit TestDialog(const QString &styleSheet);
 
@@ -878,8 +921,8 @@ TestDialog::TestDialog(const QString &styleSheet) :
     addWidget(spinbox);
     QComboBox *combobox = new QComboBox;
     combobox->setEditable(true);
-    combobox->addItems(QStringList() << "TESTING TESTING");
-    addWidget(spinbox);
+    combobox->addItems(QStringList{"TESTING TESTING"});
+    addWidget(combobox);
     addWidget(new QLabel("<b>TESTING TESTING</b>"));
 }
 
@@ -921,12 +964,12 @@ void tst_QStyleSheetStyle::focusColors()
         QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
                 (QString::fromLatin1(widget->metaObject()->className())
                 + " did not contain background color #e8ff66, using style "
-                + QString::fromLatin1(qApp->style()->metaObject()->className()))
+                + QString::fromLatin1(QApplication::style()->metaObject()->className()))
                 .toLocal8Bit().constData());
         QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
                 (QString::fromLatin1(widget->metaObject()->className())
                 + " did not contain text color #ff0084, using style "
-                + QString::fromLatin1(qApp->style()->metaObject()->className()))
+                + QString::fromLatin1(QApplication::style()->metaObject()->className()))
                 .toLocal8Bit().constData());
     }
 }
@@ -1007,20 +1050,14 @@ class SingleInheritanceDialog : public QDialog
 {
     Q_OBJECT
 public:
-    SingleInheritanceDialog(QWidget *w = 0) :
-        QDialog(w)
-    {
-    }
+    using QDialog::QDialog;
 };
 
 class DoubleInheritanceDialog : public SingleInheritanceDialog
 {
     Q_OBJECT
 public:
-    DoubleInheritanceDialog(QWidget *w = 0) :
-        SingleInheritanceDialog(w)
-    {
-    }
+    using SingleInheritanceDialog::SingleInheritanceDialog;
 };
 
 void tst_QStyleSheetStyle::background()
@@ -1086,9 +1123,10 @@ void tst_QStyleSheetStyle::background()
     }
 }
 
-void tst_QStyleSheetStyle::tabAlignement()
+void tst_QStyleSheetStyle::tabAlignment()
 {
     QWidget topLevel;
+    topLevel.setWindowTitle(QTest::currentTestFunction());
     QTabWidget tabWidget(&topLevel);
     tabWidget.addTab(new QLabel("tab1"),"tab1");
     tabWidget.resize(QSize(400,400));
@@ -1148,6 +1186,7 @@ void tst_QStyleSheetStyle::attributesList()
 void tst_QStyleSheetStyle::minmaxSizes()
 {
     QTabWidget tabWidget;
+    tabWidget.setWindowTitle(QTest::currentTestFunction());
     tabWidget.setObjectName("tabWidget");
     int index1 = tabWidget.addTab(new QLabel("Tab1"),"a");
 
@@ -1187,6 +1226,7 @@ void tst_QStyleSheetStyle::task206238_twice()
 {
     const QColor red(Qt::red);
     QMainWindow w;
+    w.setWindowTitle(QTest::currentTestFunction());
     QTabWidget* tw = new QTabWidget;
     tw->addTab(new QLabel("foo"), "test");
     w.setCentralWidget(tw);
@@ -1220,6 +1260,8 @@ void tst_QStyleSheetStyle::transparent()
 
 class ProxyStyle : public QStyle
 {
+    Q_OBJECT
+
     public:
         ProxyStyle(QStyle *s)
         {
@@ -1227,19 +1269,19 @@ class ProxyStyle : public QStyle
         }
 
         void drawControl(ControlElement ce, const QStyleOption *opt,
-                         QPainter *painter, const QWidget *widget = 0) const;
+                         QPainter *painter, const QWidget *widget = nullptr) const override;
 
         void drawPrimitive(QStyle::PrimitiveElement pe,
                            const QStyleOption* opt,
-                           QPainter* p ,
-                           const QWidget* w) const
+                           QPainter *p,
+                           const QWidget *w) const override
         {
             style->drawPrimitive(pe, opt, p, w);
         }
 
         QRect subElementRect(QStyle::SubElement se,
-                             const QStyleOption* opt,
-                             const QWidget* w) const
+                             const QStyleOption *opt,
+                             const QWidget *w) const override
         {
             Q_UNUSED(se);
             Q_UNUSED(opt);
@@ -1248,64 +1290,64 @@ class ProxyStyle : public QStyle
         }
 
         void drawComplexControl(QStyle::ComplexControl cc,
-                                const QStyleOptionComplex* opt,
-                                QPainter* p,
-                                const QWidget* w) const
+                                const QStyleOptionComplex *opt,
+                                QPainter *p,
+                                const QWidget *w) const override
         {
             style->drawComplexControl(cc, opt, p, w);
         }
 
 
         SubControl hitTestComplexControl(QStyle::ComplexControl cc,
-                                         const QStyleOptionComplex* opt,
-                                         const QPoint& pt,
-                                         const QWidget* w) const
+                                         const QStyleOptionComplex *opt,
+                                         const QPoint &pt,
+                                         const QWidget *w) const override
         {
             return style->hitTestComplexControl(cc, opt, pt, w);
         }
 
         QRect subControlRect(QStyle::ComplexControl cc,
-                             const QStyleOptionComplex* opt,
+                             const QStyleOptionComplex *opt,
                              QStyle::SubControl sc,
-                             const QWidget* w) const
+                             const QWidget *w) const override
         {
             return style->subControlRect(cc, opt, sc, w);
         }
 
         int pixelMetric(QStyle::PixelMetric pm,
-                        const QStyleOption* opt,
-                        const QWidget* w) const
+                        const QStyleOption *opt,
+                        const QWidget *w) const override
         {
             return style->pixelMetric(pm, opt, w);
         }
 
 
         QSize sizeFromContents(QStyle::ContentsType ct,
-                               const QStyleOption* opt,
-                               const QSize& size,
-                               const QWidget* w) const
+                               const QStyleOption *opt,
+                               const QSize &size,
+                               const QWidget *w) const override
         {
             return style->sizeFromContents(ct, opt, size, w);
         }
 
         int styleHint(QStyle::StyleHint sh,
-                      const QStyleOption* opt,
-                      const QWidget* w,
-                      QStyleHintReturn* shr) const
+                      const QStyleOption *opt,
+                      const QWidget *w,
+                      QStyleHintReturn *shr) const override
         {
             return style->styleHint(sh, opt, w, shr);
         }
 
         QPixmap standardPixmap(QStyle::StandardPixmap spix,
-                               const QStyleOption* opt,
-                               const QWidget* w) const
+                               const QStyleOption *opt,
+                               const QWidget *w) const override
         {
             return style->standardPixmap(spix, opt, w);
         }
 
         QPixmap generatedIconPixmap(QIcon::Mode mode,
-                                    const QPixmap& pix,
-                                    const QStyleOption* opt) const
+                                    const QPixmap &pix,
+                                    const QStyleOption *opt) const override
         {
             return style->generatedIconPixmap(mode, pix, opt);
         }
@@ -1314,14 +1356,14 @@ class ProxyStyle : public QStyle
                           QSizePolicy::ControlType c2,
                           Qt::Orientation ori,
                           const QStyleOption *opt,
-                          const QWidget *w) const
+                          const QWidget *w) const override
         {
             return style->layoutSpacing(c1, c2, ori, opt, w);
         }
 
         QIcon standardIcon(StandardPixmap si,
                            const QStyleOption *opt,
-                           const QWidget *w) const
+                           const QWidget *w) const override
         {
             return style->standardIcon(si, opt, w);
         }
@@ -1357,7 +1399,7 @@ void tst_QStyleSheetStyle::proxyStyle()
 {
     //Should not crash;   task 158984
 
-    ProxyStyle *proxy = new ProxyStyle(qApp->style());
+    ProxyStyle *proxy = new ProxyStyle(QApplication::style());
     QString styleSheet("QPushButton {background-color: red; }");
 
     QWidget *w = new QWidget;
@@ -1365,7 +1407,7 @@ void tst_QStyleSheetStyle::proxyStyle()
     centerOnScreen(w);
     QVBoxLayout *layout = new QVBoxLayout(w);
 
-    QPushButton *pb1 = new QPushButton(qApp->style()->objectName(), w);
+    QPushButton *pb1 = new QPushButton(QApplication::style()->objectName(), w);
     layout->addWidget(pb1);
 
     QPushButton *pb2 = new QPushButton("ProxyStyle", w);
@@ -1383,7 +1425,7 @@ void tst_QStyleSheetStyle::proxyStyle()
     // In this case it would be the QStyleSheetStyle that is deleted
     // later on. We need to get access to the "real" QStyle to be able to
     // draw correctly.
-    ProxyStyle* newProxy = new ProxyStyle(qApp->style());
+    ProxyStyle *newProxy = new ProxyStyle(QApplication::style());
     pb4->setStyle(newProxy);
 
     layout->addWidget(pb4);
@@ -1421,6 +1463,7 @@ void tst_QStyleSheetStyle::emptyStyleSheet()
     //empty stylesheet should not change anything
     qApp->setStyleSheet(QString());
     QWidget w;
+    w.setWindowTitle(QTest::currentTestFunction());
     QHBoxLayout layout(&w);
     w.setLayout(&layout);
     layout.addWidget(new QPushButton("push", &w));
@@ -1479,6 +1522,7 @@ void tst_QStyleSheetStyle::toolTip()
 {
     qApp->setStyleSheet(QString());
     QWidget w;
+    w.setWindowTitle(QTest::currentTestFunction());
     // Use "Fusion" to prevent the Vista style from clobbering the tooltip palette in polish().
     QStyle *fusionStyle = QStyleFactory::create(QLatin1String("Fusion"));
     QVERIFY(fusionStyle);
@@ -1512,28 +1556,27 @@ void tst_QStyleSheetStyle::toolTip()
 
     centerOnScreen(&w);
     w.show();
-    qApp->setActiveWindow(&w);
+    QApplication::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     const QColor normalToolTip = QToolTip::palette().color(QPalette::Inactive, QPalette::ToolTipBase);
-    QList<QWidget *> widgets;
-    QList<QColor> colors;
+    // Tooltip on the widget without stylesheet, then to other widget,
+    // including one without stylesheet (the tooltip will be reused,
+    // but its color must change)
+    const QWidgetList widgets{wid4, wid1, wid2, wid3, wid4};
+    const QVector<QColor> colors{normalToolTip, QColor("#ae2"), QColor("#f81"),
+                                 QColor("#0b8"), normalToolTip};
 
-
-    //tooltip on the widget without stylesheet, then to othes widget, including one without stylesheet
-    //(the tooltip will be reused but his colour must change)
-    widgets << wid4          << wid1   << wid2   << wid3   << wid4;
-    colors  << normalToolTip << "#ae2" << "#f81" << "#0b8" << normalToolTip;
-
-    for (int i = 0; i < widgets.count() ; i++)
-    {
+    QWidgetList topLevels;
+    for (int i = 0; i < widgets.count() ; ++i) {
         QWidget *wid = widgets.at(i);
         QColor col = colors.at(i);
 
         QToolTip::showText( QPoint(0,0) , "This is " + wid->objectName(), wid);
 
-        QWidget *tooltip = 0;
-        foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+        topLevels = QApplication::topLevelWidgets();
+        QWidget *tooltip = nullptr;
+        for (QWidget *widget : qAsConst(topLevels)) {
             if (widget->inherits("QTipLabel")) {
                 tooltip = widget;
                 break;
@@ -1548,15 +1591,16 @@ void tst_QStyleSheetStyle::toolTip()
     QTest::qWait(100);
     delete wid3; //should not crash;
     QTest::qWait(10);
-    foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+    topLevels = QApplication::topLevelWidgets();
+    for (QWidget *widget : qAsConst(topLevels))
         widget->update(); //should not crash either
-    }
 }
 
 void tst_QStyleSheetStyle::embeddedFonts()
 {
     //task 235622 and 210551
     QSpinBox spin;
+    spin.setWindowTitle(QTest::currentTestFunction());
     spin.setMinimumWidth(160);
     spin.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(20, 20));
     spin.show();
@@ -1636,19 +1680,17 @@ void tst_QStyleSheetStyle::complexWidgetFocus()
     // For this reason, we use unusual and extremely ugly colors! :-)
 
     QDialog frame;
+    frame.setWindowTitle(QTest::currentTestFunction());
     frame.setStyleSheet("*:focus { background: black; color: black } "
                         "QSpinBox::up-arrow:focus, QSpinBox::down-arrow:focus { width: 7px; height: 7px; background: #ff0084 } "
                         "QComboBox::down-arrow:focus { width: 7px; height: 7px; background: #ff0084 }"
                         "QSlider::handle:horizontal:focus { width: 7px; height: 7px; background: #ff0084 } ");
 
-    QList<QWidget *> widgets;
-    widgets << new QSpinBox;
-    widgets << new QComboBox;
-    widgets << new QSlider(Qt::Horizontal);
+    const QWidgetList widgets{new QSpinBox, new QComboBox, new QSlider(Qt::Horizontal)};
 
     QLayout* layout = new QGridLayout;
     layout->addWidget(new QLineEdit); // Avoids initial focus.
-    foreach (QWidget *widget, widgets)
+    for (QWidget *widget : widgets)
         layout->addWidget(widget);
     frame.setLayout(layout);
 
@@ -1656,7 +1698,7 @@ void tst_QStyleSheetStyle::complexWidgetFocus()
     frame.show();
     QApplication::setActiveWindow(&frame);
     QVERIFY(QTest::qWaitForWindowActive(&frame));
-    foreach (QWidget *widget, widgets) {
+    for (QWidget *widget : widgets) {
         widget->setFocus();
         QApplication::processEvents();
 
@@ -1668,7 +1710,7 @@ void tst_QStyleSheetStyle::complexWidgetFocus()
         QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
                 (QString::fromLatin1(widget->metaObject()->className())
                 + " did not contain text color #ff0084, using style "
-                + QString::fromLatin1(qApp->style()->metaObject()->className()))
+                + QString::fromLatin1(QApplication::style()->metaObject()->className()))
                 .toLocal8Bit().constData());
     }
 }
@@ -1676,6 +1718,7 @@ void tst_QStyleSheetStyle::complexWidgetFocus()
 void tst_QStyleSheetStyle::task188195_baseBackground()
 {
     QTreeView tree;
+    tree.setWindowTitle(QTest::currentTestFunction());
     tree.setStyleSheet( "QTreeView:disabled { background-color:#ab1251; }" );
     tree.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(20, 100));
     tree.show();
@@ -1720,6 +1763,7 @@ void tst_QStyleSheetStyle::task232085_spinBoxLineEditBg()
     spinbox->setValue(8888);
 
     QDialog frame;
+    frame.setWindowTitle(QTest::currentTestFunction());
     QLayout* layout = new QGridLayout;
 
     QLineEdit* dummy = new QLineEdit; // Avoids initial focus.
@@ -1746,18 +1790,19 @@ void tst_QStyleSheetStyle::task232085_spinBoxLineEditBg()
     QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
             (QString::fromLatin1(spinbox->metaObject()->className())
             + " did not contain background color #e8ff66, using style "
-            + QString::fromLatin1(qApp->style()->metaObject()->className()))
+            + QString::fromLatin1(QApplication::style()->metaObject()->className()))
             .toLocal8Bit().constData());
     QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
             (QString::fromLatin1(spinbox->metaObject()->className())
             + " did not contain text color #ff0084, using style "
-            + QString::fromLatin1(qApp->style()->metaObject()->className()))
+            + QString::fromLatin1(QApplication::style()->metaObject()->className()))
             .toLocal8Bit().constData());
 }
 
 class ChangeEventWidget : public QWidget
-{ public:
-    void changeEvent(QEvent * event)
+{
+protected:
+    void changeEvent(QEvent *event) override
     {
         if(event->type() == QEvent::StyleChange) {
             static bool recurse = false;
@@ -1789,7 +1834,7 @@ void tst_QStyleSheetStyle::QTBUG11658_cachecrash()
     class Widget : public QWidget
     {
     public:
-        Widget(QWidget *parent = 0)
+        Widget(QWidget *parent = nullptr)
         : QWidget(parent)
         {
             setMinimumWidth(160);
@@ -1800,13 +1845,14 @@ void tst_QStyleSheetStyle::QTBUG11658_cachecrash()
 
             QString szStyleSheet = QLatin1String("* { color: red; }");
             qApp->setStyleSheet(szStyleSheet);
-            qApp->setStyle(QStyleFactory::create(QLatin1String("Windows")));
+            QApplication::setStyle(QStyleFactory::create(QLatin1String("Windows")));
         }
     };
 
     Widget *w = new Widget();
     delete w;
     w = new Widget();
+    w->setWindowTitle(QTest::currentTestFunction());
     centerOnScreen(w);
     w->show();
 
@@ -1818,15 +1864,17 @@ void tst_QStyleSheetStyle::QTBUG11658_cachecrash()
 void tst_QStyleSheetStyle::QTBUG15910_crashNullWidget()
 {
     struct Widget : QWidget {
-        virtual void paintEvent(QPaintEvent* ) {
+        void paintEvent(QPaintEvent *) override
+        {
             QStyleOption opt;
             opt.init(this);
             QPainter p(this);
-            style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, 0);
-            style()->drawPrimitive(QStyle::PE_Frame, &opt, &p, 0);
-            style()->drawControl(QStyle::CE_PushButton, &opt, &p, 0);
+            style()->drawPrimitive(QStyle::PE_Widget, &opt, &p, nullptr);
+            style()->drawPrimitive(QStyle::PE_Frame, &opt, &p, nullptr);
+            style()->drawControl(QStyle::CE_PushButton, &opt, &p, nullptr);
         }
     } w;
+    w.setWindowTitle(QTest::currentTestFunction());
     w.setStyleSheet("* { background-color: white; color:black; border 3px solid yellow }");
     w.setMinimumWidth(160);
     centerOnScreen(&w);
@@ -1840,10 +1888,12 @@ void tst_QStyleSheetStyle::QTBUG36933_brokenPseudoClassLookup()
     const int columnCount = 10;
 
     QTableWidget widget(rowCount, columnCount);
+    widget.setWindowTitle(QTest::currentTestFunction());
 
     for (int row = 0; row < rowCount; ++row) {
+        const QString rowNumber = QLatin1String("row ") + QString::number(row + 1);
         for (int column = 0; column < columnCount; ++column) {
-            const QString t = QLatin1String("row ") + QString::number(row + 1)
+            const QString t = rowNumber
                 + QLatin1String(" column ") + QString::number(column + 1);
             widget.setItem(row, column, new QTableWidgetItem(t));
         }
@@ -1874,6 +1924,7 @@ void tst_QStyleSheetStyle::QTBUG36933_brokenPseudoClassLookup()
 void tst_QStyleSheetStyle::styleSheetChangeBeforePolish()
 {
     QWidget widget;
+    widget.setWindowTitle(QTest::currentTestFunction());
     QVBoxLayout *vbox = new QVBoxLayout(&widget);
     QFrame *frame = new QFrame(&widget);
     frame->setFixedSize(200, 200);
@@ -2106,6 +2157,8 @@ void tst_QStyleSheetStyle::highdpiImages()
     QFETCH(QColor, color);
 
     QWidget w;
+    w.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1String("::")
+                     + QLatin1String(QTest::currentDataTag()));
     QScreen *screen = QGuiApplication::primaryScreen();
     w.move(screen->availableGeometry().topLeft());
     QHighDpiScaling::setScreenFactor(screen, screenFactor);
