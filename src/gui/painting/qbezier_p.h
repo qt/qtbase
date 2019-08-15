@@ -69,7 +69,8 @@ class Q_GUI_EXPORT QBezier
 {
 public:
     static QBezier fromPoints(const QPointF &p1, const QPointF &p2,
-                              const QPointF &p3, const QPointF &p4);
+                              const QPointF &p3, const QPointF &p4)
+    { return {p1.x(), p1.y(), p2.x(), p2.y(), p3.x(), p3.y(), p4.x(), p4.y()}; }
 
     static void coefficients(qreal t, qreal &a, qreal &b, qreal &c, qreal &d);
 
