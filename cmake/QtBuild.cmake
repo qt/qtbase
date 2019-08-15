@@ -2394,7 +2394,7 @@ function(qt_create_tracepoints name tracePointsFile)
 endfunction()
 
 function(qt_get_relative_resource_path_for_file output_alias file)
-    get_property(alias SOURCE ${file} PROPERTY alias)
+    get_property(alias SOURCE ${file} PROPERTY QT_RESOURCE_ALIAS)
     if (NOT alias)
         set(alias "${file}")
     endif()
@@ -2566,7 +2566,7 @@ function(add_qt_resource target resourceName)
             # Unless otherwise specified, we should use the original file path
             # as alias.
             if (alias STREQUAL resource_file)
-                set_source_files_properties(${resource_file} PROPERTIES alias ${file})
+                set_source_files_properties(${resource_file} PROPERTIES QT_RESOURCE_ALIAS ${file})
             endif()
             file(TO_CMAKE_PATH ${resource_file} resource_file)
             list(APPEND resource_files ${resource_file})

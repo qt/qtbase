@@ -192,7 +192,7 @@ def write_add_qt_resource_call(target: str, resource_name: str, prefix: typing.O
         if alias:
             full_source = os.path.join(base_dir, source)
             output += 'set_source_files_properties("{}"\n' \
-                      '    PROPERTIES alias "{}"\n)\n'.format(full_source, alias)
+                      '    PROPERTIES QT_RESOURCE_ALIAS "{}"\n)\n'.format(full_source, alias)
 
     # Quote file paths in case there are spaces.
     sorted_files = ['"{}"'.format(f) for f in sorted_files]

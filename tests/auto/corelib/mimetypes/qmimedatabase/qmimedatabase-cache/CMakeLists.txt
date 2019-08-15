@@ -15,16 +15,16 @@ add_qt_test(tst_qmimedatabase-cache
 
 # Resources:
 set_source_files_properties("../qml-again.xml"
-    PROPERTIES alias "qml-again.xml"
+    PROPERTIES QT_RESOURCE_ALIAS "qml-again.xml"
 )
 set_source_files_properties("../test.qml"
-    PROPERTIES alias "test.qml"
+    PROPERTIES QT_RESOURCE_ALIAS "test.qml"
 )
 set_source_files_properties("../text-x-objcsrc.xml"
-    PROPERTIES alias "text-x-objcsrc.xml"
+    PROPERTIES QT_RESOURCE_ALIAS "text-x-objcsrc.xml"
 )
 set_source_files_properties("../yast2-metapackage-handler-mimetypes.xml"
-    PROPERTIES alias "yast2-metapackage-handler-mimetypes.xml"
+    PROPERTIES QT_RESOURCE_ALIAS "yast2-metapackage-handler-mimetypes.xml"
 )
 add_qt_resource(tst_qmimedatabase-cache "testdata"
     PREFIX

@@ -70,7 +70,7 @@ add_qt_plugin(qwindows
 
 # Resources:
 set_source_files_properties("openglblacklists/default.json"
-    PROPERTIES alias "default.json")
+    PROPERTIES QT_RESOURCE_ALIAS "default.json")
 add_qt_resource(qwindows "openglblacklists" PREFIX "/qt-project.org/windows/openglblacklists" FILES
     openglblacklists/default.json)
 

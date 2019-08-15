@@ -21,7 +21,7 @@ add_qt_test(tst_qgl
 
 # Resources:
 set_source_files_properties("../../gui/image/qpixmap/images/designer.png"
-    PROPERTIES alias "designer.png"
+    PROPERTIES QT_RESOURCE_ALIAS "designer.png"
 )
 add_qt_resource(tst_qgl "qgl"
     PREFIX

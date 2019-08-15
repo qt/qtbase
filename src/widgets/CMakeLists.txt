@@ -234,17 +234,17 @@ add_qt_resource(Widgets "qstyle" PREFIX "/qt-project.org/styles/commonstyle" BAS
     images/viewlist-16.png
     images/viewlist-32.png)
 set_source_files_properties("styles/images/closedock-down-macstyle-16.png"
-    PROPERTIES alias "images/closedock-down-16.png")
+    PROPERTIES QT_RESOURCE_ALIAS "images/closedock-down-16.png")
 set_source_files_properties("styles/images/closedock-macstyle-16.png"
-    PROPERTIES alias "images/closedock-16.png")
+    PROPERTIES QT_RESOURCE_ALIAS "images/closedock-16.png")
 set_source_files_properties("styles/images/dockdock-down-macstyle-16.png"
-    PROPERTIES alias "images/dockdock-down-16.png")
+    PROPERTIES QT_RESOURCE_ALIAS "images/dockdock-down-16.png")
 set_source_files_properties("styles/images/dockdock-macstyle-16.png"
-    PROPERTIES alias "images/dockdock-16.png")
+    PROPERTIES QT_RESOURCE_ALIAS "images/dockdock-16.png")
 set_source_files_properties("styles/images/toolbar-ext-macstyle.png"
-    PROPERTIES alias "images/toolbar-ext.png")
+    PROPERTIES QT_RESOURCE_ALIAS "images/toolbar-ext.png")
 set_source_files_properties("styles/images/toolbar-ext-macstyle@2x.png"
-    PROPERTIES alias "images/toolbar-ext@2x.png")
+    PROPERTIES QT_RESOURCE_ALIAS "images/toolbar-ext@2x.png")
 add_qt_resource(Widgets "qstyle1" PREFIX "/qt-project.org/styles/macstyle" BASE "styles" FILES
     images/closedock-down-macstyle-16.png
     images/closedock-macstyle-16.png

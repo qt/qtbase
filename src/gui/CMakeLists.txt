@@ -276,7 +276,7 @@ add_qt_resource(Gui qmake_webgradients PREFIX "/qgradient" BASE "painting" FILES
 # special case end
 
 set_source_files_properties("painting/../../3rdparty/icc/sRGB2014.icc"
-    PROPERTIES alias "sRGB2014.icc"
+    PROPERTIES QT_RESOURCE_ALIAS "sRGB2014.icc"
 )
 add_qt_resource(Gui "qpdf"
     PREFIX

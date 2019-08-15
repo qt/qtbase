@@ -19,9 +19,9 @@ add_qt_test(tst_qfontdialog
 
 # Resources:
 set_source_files_properties("../../../shared/resources/test.ttf"
-    PROPERTIES alias "test.ttf")
+    PROPERTIES QT_RESOURCE_ALIAS "test.ttf")
 set_source_files_properties("../../../shared/resources/testfont.ttf"
-    PROPERTIES alias "testfont.ttf")
+    PROPERTIES QT_RESOURCE_ALIAS "testfont.ttf")
 add_qt_resource(tst_qfontdialog "testfonts" PREFIX "/" FILES
     ../../../shared/resources/test.ttf
     ../../../shared/resources/testfont.ttf)
