@@ -189,7 +189,9 @@ struct QTLWExtra {
     // ### TODO replace initialScreenIndex with QScreen *, in case the screens change at runtime
     int initialScreenIndex; // Screen number when passing a QDesktop[Screen]Widget as parent.
 
+#ifndef QT_NO_OPENGL
     std::vector<std::unique_ptr<QPlatformTextureList>> widgetTextures;
+#endif
 
     // *************************** Cross-platform bit fields ****************************
     uint opacity : 8;
