@@ -6181,7 +6181,7 @@ void QWidget::setFocusProxy(QWidget * w)
 QWidget *QWidget::focusProxy() const
 {
     Q_D(const QWidget);
-    return d->extra ? (QWidget *)d->extra->focus_proxy : nullptr;
+    return d->extra ? d->extra->focus_proxy.data() : nullptr;
 }
 
 
@@ -11932,7 +11932,7 @@ QOpenGLContext *QWidgetPrivate::shareContext() const
 #ifdef QT_NO_OPENGL
     return 0;
 #else
-    if (Q_UNLIKELY(!extra || !extra->topextra || !extra->topextra->window))
+    if (!extra || !extra->topextra || !extra->topextra->window)
         return 0;
 
     if (!extra->topextra->shareContext) {
