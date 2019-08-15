@@ -72,6 +72,8 @@ class tst_QStyleSheetStyle : public QObject
 public:
     tst_QStyleSheetStyle();
 
+    static void initMain();
+
 private slots:
     void init();
     void cleanup();
@@ -166,10 +168,22 @@ private:
     }
 
     static int APPFONTSIZE(const QWidget &w) { return QApplication::font(&w).pointSize(); }
+
+    const QRect m_availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+    QSize m_testSize;
 };
+
+// highdpiImages() tests HighDPI scaling; disable initially.
+void tst_QStyleSheetStyle::initMain()
+{
+    QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
+}
 
 tst_QStyleSheetStyle::tst_QStyleSheetStyle()
 {
+    const int testSize = qMax(200, m_availableGeometry.width() / 10);
+    m_testSize.setWidth(testSize);
+    m_testSize.setHeight(testSize);
 }
 
 void tst_QStyleSheetStyle::init()
@@ -187,7 +201,7 @@ void tst_QStyleSheetStyle::numinstances()
 {
     QWidget w;
     w.setWindowTitle(QTest::currentTestFunction());
-    w.resize(200, 200);
+    w.resize(m_testSize);
     centerOnScreen(&w);
     QCommonStyle *style = new QCommonStyle;
     style->setParent(&w);
@@ -410,6 +424,7 @@ void tst_QStyleSheetStyle::repolish_without_crashing()
 {
     // This used to crash, QTBUG-69204
     QMainWindow w;
+    w.resize(m_testSize);
     w.setWindowTitle(QTest::currentTestFunction());
     QScopedPointer<QSplitter> splitter1(new QSplitter(w.centralWidget()));
     QScopedPointer<QSplitter> splitter2(new QSplitter);
@@ -619,13 +634,13 @@ void tst_QStyleSheetStyle::dynamicProperty()
 
     QString appStyle = QApplication::style()->metaObject()->className();
     QPushButton pb1(QStringLiteral("dynamicProperty_pb1"));
-    pb1.setMinimumWidth(160);
-    pb1.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(20, 100));
+    pb1.setMinimumWidth(m_testSize.width());
+    pb1.move(m_availableGeometry.topLeft() + QPoint(20, 100));
 
     QPushButton pb2(QStringLiteral("dynamicProperty_pb2"));
     pb2.setWindowTitle(QTest::currentTestFunction());
-    pb2.setMinimumWidth(160);
-    pb2.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(20, 200));
+    pb2.setMinimumWidth(m_testSize.width());
+    pb2.move(m_availableGeometry.topLeft() + QPoint(20, m_testSize.width() + 40));
 
     pb1.setProperty("type", "critical");
     qApp->setStyleSheet("*[class~=\"QPushButton\"] { color: red; } *[type=\"critical\"] { background: white; }");
@@ -831,7 +846,7 @@ void tst_QStyleSheetStyle::fontPrecedence()
 {
     QLineEdit edit;
     edit.setWindowTitle(QTest::currentTestFunction());
-    edit.setMinimumWidth(200);
+    edit.setMinimumWidth(m_testSize.width());
     centerOnScreen(&edit);
     edit.show();
     QFont font;
@@ -1066,24 +1081,25 @@ void tst_QStyleSheetStyle::background()
 
     const QString styleSheet = QStringLiteral("* { background-color: #e8ff66; }");
     QVector<WidgetPtr> widgets;
-    const QPoint topLeft = QGuiApplication::primaryScreen()->availableGeometry().topLeft();
+    const QPoint topLeft = m_availableGeometry.topLeft();
     // Testing inheritance styling of QDialog.
     WidgetPtr toplevel(new SingleInheritanceDialog);
-    toplevel->resize(200, 200);
+    toplevel->resize(m_testSize);
     toplevel->move(topLeft + QPoint(20, 20));
     toplevel->setStyleSheet(styleSheet);
     widgets.append(toplevel);
 
     toplevel = WidgetPtr(new DoubleInheritanceDialog);
-    toplevel->resize(200, 200);
-    toplevel->move(topLeft + QPoint(20, 320));
+    toplevel->resize(m_testSize);
+    toplevel->move(topLeft + QPoint(20, m_testSize.height() + 120));
     toplevel->setStyleSheet(styleSheet);
     widgets.append(toplevel);
 
     // Testing gradients in QComboBox.
     // First color
     toplevel = WidgetPtr(new QDialog);
-    toplevel->move(topLeft + QPoint(320, 20));
+    toplevel->resize(m_testSize);
+    toplevel->move(topLeft + QPoint(m_testSize.width() + 120, 20));
     QGridLayout *layout = new QGridLayout(toplevel.data());
     QComboBox* cb = new QComboBox;
     cb->setMinimumWidth(160);
@@ -1092,7 +1108,8 @@ void tst_QStyleSheetStyle::background()
     widgets.append(toplevel);
     // Second color
     toplevel = WidgetPtr(new QDialog);
-    toplevel->move(topLeft + QPoint(320, 320));
+    toplevel->resize(m_testSize);
+    toplevel->move(topLeft + QPoint(m_testSize.width() + 120, m_testSize.height() + 120));
     layout = new QGridLayout(toplevel.data());
     cb = new QComboBox;
     cb->setMinimumWidth(160);
@@ -1186,6 +1203,7 @@ void tst_QStyleSheetStyle::attributesList()
 void tst_QStyleSheetStyle::minmaxSizes()
 {
     QTabWidget tabWidget;
+    tabWidget.resize(m_testSize);
     tabWidget.setWindowTitle(QTest::currentTestFunction());
     tabWidget.setObjectName("tabWidget");
     int index1 = tabWidget.addTab(new QLabel("Tab1"),"a");
@@ -1226,6 +1244,7 @@ void tst_QStyleSheetStyle::task206238_twice()
 {
     const QColor red(Qt::red);
     QMainWindow w;
+    w.resize(m_testSize);
     w.setWindowTitle(QTest::currentTestFunction());
     QTabWidget* tw = new QTabWidget;
     tw->addTab(new QLabel("foo"), "test");
@@ -1403,7 +1422,7 @@ void tst_QStyleSheetStyle::proxyStyle()
     QString styleSheet("QPushButton {background-color: red; }");
 
     QWidget *w = new QWidget;
-    w->setMinimumWidth(160);
+    w->setMinimumWidth(m_testSize.width());
     centerOnScreen(w);
     QVBoxLayout *layout = new QVBoxLayout(w);
 
@@ -1522,6 +1541,7 @@ void tst_QStyleSheetStyle::toolTip()
 {
     qApp->setStyleSheet(QString());
     QWidget w;
+    w.resize(m_testSize);
     w.setWindowTitle(QTest::currentTestFunction());
     // Use "Fusion" to prevent the Vista style from clobbering the tooltip palette in polish().
     QStyle *fusionStyle = QStyleFactory::create(QLatin1String("Fusion"));
@@ -1601,8 +1621,8 @@ void tst_QStyleSheetStyle::embeddedFonts()
     //task 235622 and 210551
     QSpinBox spin;
     spin.setWindowTitle(QTest::currentTestFunction());
-    spin.setMinimumWidth(160);
-    spin.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(20, 20));
+    spin.setMinimumWidth(m_testSize.width());
+    spin.move(m_availableGeometry.topLeft() + QPoint(20, 20));
     spin.show();
     spin.setStyleSheet("QSpinBox { font-size: 32px; }");
     QTest::qWait(20);
@@ -1623,7 +1643,7 @@ void tst_QStyleSheetStyle::embeddedFonts()
     //task 242556
     QComboBox box;
     box.setMinimumWidth(160);
-    box.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(20, 120));
+    box.move(m_availableGeometry.topLeft() + QPoint(20, 120));
     box.setEditable(true);
     box.addItems(QStringList() << "First" << "Second" << "Third");
     box.setStyleSheet("QComboBox { font-size: 32px; }");
@@ -1720,7 +1740,7 @@ void tst_QStyleSheetStyle::task188195_baseBackground()
     QTreeView tree;
     tree.setWindowTitle(QTest::currentTestFunction());
     tree.setStyleSheet( "QTreeView:disabled { background-color:#ab1251; }" );
-    tree.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(20, 100));
+    tree.setGeometry(QRect(m_availableGeometry.topLeft() + QPoint(20, 100), m_testSize));
     tree.show();
     QVERIFY(QTest::qWaitForWindowActive(&tree));
     QImage image(tree.width(), tree.height(), QImage::Format_ARGB32);
@@ -1741,7 +1761,8 @@ void tst_QStyleSheetStyle::task188195_baseBackground()
     QTableWidget table(12, 12);
     table.setItem(0, 0, new QTableWidgetItem());
     table.setStyleSheet( "QTableView {background-color: #ff0000}" );
-    table.move(QGuiApplication::primaryScreen()->availableGeometry().topLeft() + QPoint(300, 100));
+    // This needs to be large so that >50% (excluding header rows/columns) are red.
+    table.setGeometry(QRect(m_availableGeometry.topLeft() + QPoint(300, 100), m_testSize * 2));
     table.show();
     QVERIFY(QTest::qWaitForWindowActive(&table));
     image = QImage(table.width(), table.height(), QImage::Format_ARGB32);
@@ -1834,10 +1855,10 @@ void tst_QStyleSheetStyle::QTBUG11658_cachecrash()
     class Widget : public QWidget
     {
     public:
-        Widget(QWidget *parent = nullptr)
+        Widget(int minimumWidth, QWidget *parent = nullptr)
         : QWidget(parent)
         {
-            setMinimumWidth(160);
+            setMinimumWidth(minimumWidth);
             QVBoxLayout* pLayout = new QVBoxLayout(this);
             QCheckBox* pCheckBox = new QCheckBox(this);
             pLayout->addWidget(pCheckBox);
@@ -1849,9 +1870,9 @@ void tst_QStyleSheetStyle::QTBUG11658_cachecrash()
         }
     };
 
-    Widget *w = new Widget();
+    Widget *w = new Widget(m_testSize.width());
     delete w;
-    w = new Widget();
+    w = new Widget(m_testSize.width());
     w->setWindowTitle(QTest::currentTestFunction());
     centerOnScreen(w);
     w->show();
@@ -1888,6 +1909,7 @@ void tst_QStyleSheetStyle::QTBUG36933_brokenPseudoClassLookup()
     const int columnCount = 10;
 
     QTableWidget widget(rowCount, columnCount);
+    widget.resize(m_testSize);
     widget.setWindowTitle(QTest::currentTestFunction());
 
     for (int row = 0; row < rowCount; ++row) {
@@ -1927,12 +1949,12 @@ void tst_QStyleSheetStyle::styleSheetChangeBeforePolish()
     widget.setWindowTitle(QTest::currentTestFunction());
     QVBoxLayout *vbox = new QVBoxLayout(&widget);
     QFrame *frame = new QFrame(&widget);
-    frame->setFixedSize(200, 200);
+    frame->setFixedSize(m_testSize);
     frame->setStyleSheet("background-color: #FF0000;");
     frame->setStyleSheet("background-color: #00FF00;");
     vbox->addWidget(frame);
     QFrame *frame2 = new QFrame(&widget);
-    frame2->setFixedSize(200, 200);
+    frame2->setFixedSize(m_testSize);
     frame2->setStyleSheet("background-color: #FF0000;");
     frame2->setStyleSheet("background-color: #00FF00;");
     vbox->addWidget(frame);
