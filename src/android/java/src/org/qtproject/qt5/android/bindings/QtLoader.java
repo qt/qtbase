@@ -44,8 +44,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.ComponentInfo;
-import android.content.pm.PackageInfo;
-import android.content.res.AssetManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -55,15 +53,8 @@ import android.util.Log;
 import org.kde.necessitas.ministro.IMinistro;
 import org.kde.necessitas.ministro.IMinistroCallback;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,8 +79,6 @@ public abstract class QtLoader {
     public static final String ENVIRONMENT_VARIABLES_KEY = "environment.variables";
     public static final String APPLICATION_PARAMETERS_KEY = "application.parameters";
     public static final String BUNDLED_LIBRARIES_KEY = "bundled.libraries";
-    public static final String BUNDLED_IN_LIB_RESOURCE_ID_KEY = "android.app.bundled_in_lib_resource_id";
-    public static final String BUNDLED_IN_ASSETS_RESOURCE_ID_KEY = "android.app.bundled_in_assets_resource_id";
     public static final String MAIN_LIBRARY_KEY = "main.library";
     public static final String STATIC_INIT_CLASSES_KEY = "static.init.classes";
     public static final String NECESSITAS_API_LEVEL_KEY = "necessitas.api.level";
@@ -141,7 +130,6 @@ public abstract class QtLoader {
     public String QT_ANDROID_DEFAULT_THEME = null; // sets the default theme.
 
     public static final int INCOMPATIBLE_MINISTRO_VERSION = 1; // Incompatible Ministro version. Ministro needs to be upgraded.
-    public static final int BUFFER_SIZE = 1024;
 
     public String[] m_sources = {"https://download.qt-project.org/ministro/android/qt5/qt-5.7"}; // Make sure you are using ONLY secure locations
     public String m_repository = "default"; // Overwrites the default Ministro repository
@@ -368,263 +356,6 @@ public abstract class QtLoader {
         errorDialog.show();
     }
 
-    static private void copyFile(InputStream inputStream, OutputStream outputStream)
-            throws IOException
-    {
-        byte[] buffer = new byte[BUFFER_SIZE];
-
-        int count;
-        while ((count = inputStream.read(buffer)) > 0)
-            outputStream.write(buffer, 0, count);
-    }
-
-    private void copyAsset(String source, String destination)
-            throws IOException
-    {
-        // Already exists, we don't have to do anything
-        File destinationFile = new File(destination);
-        if (destinationFile.exists())
-            return;
-
-        File parentDirectory = destinationFile.getParentFile();
-        if (!parentDirectory.exists())
-            parentDirectory.mkdirs();
-
-        destinationFile.createNewFile();
-
-        AssetManager assetsManager = m_context.getAssets();
-        InputStream inputStream = null;
-        FileOutputStream outputStream = null;
-        try {
-            inputStream = assetsManager.open(source);
-            outputStream = new FileOutputStream(destinationFile);
-            copyFile(inputStream, outputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (inputStream != null)
-                inputStream.close();
-
-            if (outputStream != null)
-                // Ensure that the buffered data is flushed to the OS for writing.
-                outputStream.flush();
-        }
-        // Mark the output stream as still needing to be written to physical disk.
-        // The output stream will be closed after this sync completes.
-        m_fileOutputStreams.add(outputStream);
-    }
-
-    private static void createBundledBinary(String source, String destination)
-            throws IOException
-    {
-        // Already exists, we don't have to do anything
-        File destinationFile = new File(destination);
-        if (destinationFile.exists())
-            return;
-
-        File parentDirectory = destinationFile.getParentFile();
-        if (!parentDirectory.exists())
-            parentDirectory.mkdirs();
-
-        destinationFile.createNewFile();
-
-        InputStream inputStream = null;
-        FileOutputStream outputStream = null;
-        try {
-            inputStream = new FileInputStream(source);
-            outputStream = new FileOutputStream(destinationFile);
-            copyFile(inputStream, outputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (inputStream != null)
-                inputStream.close();
-
-            if (outputStream != null)
-                // Ensure that the buffered data is flushed to the OS for writing.
-                outputStream.flush();
-        }
-        // Mark the output stream as still needing to be written to physical disk.
-        // The output stream will be closed after this sync completes.
-        m_fileOutputStreams.add(outputStream);
-    }
-
-    private boolean cleanCacheIfNecessary(String pluginsPrefix, long packageVersion)
-    {
-        File versionFile = new File(pluginsPrefix + "cache.version");
-
-        long cacheVersion = 0;
-        if (versionFile.exists() && versionFile.canRead()) {
-            DataInputStream inputStream = null;
-            try {
-                inputStream = new DataInputStream(new FileInputStream(versionFile));
-                cacheVersion = inputStream.readLong();
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }
-
-        if (cacheVersion != packageVersion) {
-            deleteRecursively(new File(pluginsPrefix));
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private void extractBundledPluginsAndImports(String pluginsPrefix, String libsDir)
-            throws IOException
-    {
-        long packageVersion = -1;
-        try {
-            PackageInfo packageInfo = m_context.getPackageManager().getPackageInfo(m_context.getPackageName(), 0);
-            packageVersion = packageInfo.lastUpdateTime;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (!cleanCacheIfNecessary(pluginsPrefix, packageVersion))
-            return;
-
-        {
-            // why can't we load the plugins directly from libs ?!?!
-            String key = BUNDLED_IN_LIB_RESOURCE_ID_KEY;
-            if (m_contextInfo.metaData.containsKey(key)) {
-                int resourceId = m_contextInfo.metaData.getInt(key);
-                ArrayList<String> list = prefferedAbiLibs(m_context.getResources().getStringArray(resourceId));
-
-                for (String bundledImportBinary : list) {
-                    String[] split = bundledImportBinary.split(":");
-                    String sourceFileName = libsDir + split[0];
-                    String destinationFileName = pluginsPrefix + split[1];
-                    createBundledBinary(sourceFileName, destinationFileName);
-                }
-            }
-        }
-
-        {
-            String key = BUNDLED_IN_ASSETS_RESOURCE_ID_KEY;
-            if (m_contextInfo.metaData.containsKey(key)) {
-                String[] list = m_context.getResources().getStringArray(m_contextInfo.metaData.getInt(key));
-
-                for (String fileName : list) {
-                    String[] split = fileName.split(":");
-                    String sourceFileName = split[0];
-                    String destinationFileName = pluginsPrefix + split[1];
-                    copyAsset(sourceFileName, destinationFileName);
-                }
-            }
-
-        }
-
-        // The Java compiler must be assured that variables belonging to this parent thread will not
-        // go out of scope during the runtime of the spawned thread (since in general spawned
-        // threads can outlive their parent threads). Copy variables and declare as 'final' before
-        // passing into the spawned thread.
-        final String pluginsPrefixFinal = pluginsPrefix;
-        final long packageVersionFinal = packageVersion;
-
-        // Spawn a worker thread to write all installed files to physical disk and indicate
-        // successful installation by creating the 'cache.version' file.
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    finalizeInstallation(pluginsPrefixFinal, packageVersionFinal);
-                } catch (Exception e) {
-                    Log.e(QtApplication.QtTAG, e.getMessage());
-                    e.printStackTrace();
-                    return;
-                }
-            }
-        }).start();
-    }
-
-    private void finalizeInstallation(String pluginsPrefix, long packageVersion)
-            throws IOException
-    {
-        {
-            // Write all installed files to physical disk and close each output stream
-            for (FileOutputStream fileOutputStream : m_fileOutputStreams) {
-                fileOutputStream.getFD().sync();
-                fileOutputStream.close();
-            }
-
-            m_fileOutputStreams.clear();
-        }
-
-        {
-            // Create 'cache.version' file
-
-            File versionFile = new File(pluginsPrefix + "cache.version");
-
-            File parentDirectory = versionFile.getParentFile();
-            if (!parentDirectory.exists())
-                parentDirectory.mkdirs();
-
-            versionFile.createNewFile();
-
-            DataOutputStream outputStream = null;
-            try {
-                outputStream = new DataOutputStream(new FileOutputStream(versionFile));
-                outputStream.writeLong(packageVersion);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (outputStream != null)
-                    outputStream.close();
-            }
-        }
-
-    }
-
-    private void deleteRecursively(File directory)
-    {
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory())
-                    deleteRecursively(file);
-                else
-                    file.delete();
-            }
-
-            directory.delete();
-        }
-    }
-
-    private void cleanOldCacheIfNecessary(String oldLocalPrefix, String localPrefix)
-    {
-        File newCache = new File(localPrefix);
-        if (!newCache.exists()) {
-            {
-                File oldPluginsCache = new File(oldLocalPrefix + "plugins/");
-                if (oldPluginsCache.exists() && oldPluginsCache.isDirectory())
-                    deleteRecursively(oldPluginsCache);
-            }
-
-            {
-                File oldImportsCache = new File(oldLocalPrefix + "imports/");
-                if (oldImportsCache.exists() && oldImportsCache.isDirectory())
-                    deleteRecursively(oldImportsCache);
-            }
-
-            {
-                File oldQmlCache = new File(oldLocalPrefix + "qml/");
-                if (oldQmlCache.exists() && oldQmlCache.isDirectory())
-                    deleteRecursively(oldQmlCache);
-            }
-        }
-    }
-
     public void startApp(final boolean firstStart)
     {
         try {
@@ -688,29 +419,13 @@ public abstract class QtLoader {
 
                 if (m_contextInfo.metaData.containsKey("android.app.bundle_local_qt_libs")
                         && m_contextInfo.metaData.getInt("android.app.bundle_local_qt_libs") == 1) {
-                    File dataDir = new File(m_context.getApplicationInfo().dataDir);
-                    String dataPath = dataDir.getCanonicalPath() + "/";
-                    String pluginsPrefix = dataPath + "qt-reserved-files/";
-
-                    if (libsDir == null)
-                        throw new Exception("Invalid libsDir");
-
-                    cleanOldCacheIfNecessary(dataPath, pluginsPrefix);
-                    extractBundledPluginsAndImports(pluginsPrefix, libsDir);
-
-                    if (m_contextInfo.metaData.containsKey(BUNDLED_IN_LIB_RESOURCE_ID_KEY)) {
-                        int resourceId = m_contextInfo.metaData.getInt("android.app.load_local_libs_resource_id");
-                        for (String libs : prefferedAbiLibs(m_context.getResources().getStringArray(resourceId))) {
-                            for (String lib : libs.split(":")) {
-                                if (!lib.isEmpty())
-                                    libraryList.add(libsDir + lib);
-                            }
+                    int resourceId = m_contextInfo.metaData.getInt("android.app.load_local_libs_resource_id");
+                    for (String libs : prefferedAbiLibs(m_context.getResources().getStringArray(resourceId))) {
+                        for (String lib : libs.split(":")) {
+                            if (!lib.isEmpty())
+                                libraryList.add(libsDir + lib);
                         }
                     }
-
-                    ENVIRONMENT_VARIABLES += "\tQML2_IMPORT_PATH=" + pluginsPrefix + "/qml"
-                            + "\tQML_IMPORT_PATH=" + pluginsPrefix + "/imports"
-                            + "\tQT_PLUGIN_PATH=" + pluginsPrefix + "/plugins";
                     if (bundledLibsDir != null)
                         ENVIRONMENT_VARIABLES += "\tQT_BUNDLED_LIBS_PATH=" + bundledLibsDir;
                 }

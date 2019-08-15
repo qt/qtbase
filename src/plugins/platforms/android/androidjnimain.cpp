@@ -60,6 +60,7 @@
 #include "qandroideventdispatcher.h"
 #include <android/api-level.h>
 
+#include <QtCore/qresource.h>
 #include <QtCore/qthread.h>
 #include <QtCore/private/qjnihelpers_p.h>
 #include <QtCore/private/qjni_p.h>
@@ -524,6 +525,10 @@ static jboolean startQtApplication(JNIEnv */*env*/, jclass /*clazz*/)
         if (vm != 0)
             vm->AttachCurrentThread(&env, &args);
     }
+
+    // Register resources if they are available
+    if (QFile{QStringLiteral("assets:/android_rcc_bundle.rcc")}.exists())
+        QResource::registerResource(QStringLiteral("assets:/android_rcc_bundle.rcc"));
 
     QVarLengthArray<const char *> params(m_applicationParams.size());
     for (int i = 0; i < m_applicationParams.size(); i++)
