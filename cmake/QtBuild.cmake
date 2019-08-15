@@ -1521,8 +1521,12 @@ endfunction()
 # Utility function to find the module to which a plug-in belongs.
 # This will set the QT_MODULE target property on the plug-in - e.g. "Gui", "Sql"...
 function(qt_get_module_for_plugin target target_type)
-    foreach(qt_module ${QT_KNOWN_MODULES})
-        get_target_property(plugin_types "${qt_module}" MODULE_PLUGIN_TYPES)
+    set(known_modules ${QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE} ${QT_KNOWN_MODULES})
+    list(REMOVE_DUPLICATES known_modules)
+    foreach(qt_module ${known_modules})
+        get_target_property(plugin_types
+                           "${QT_CMAKE_EXPORT_NAMESPACE}::${qt_module}"
+                            MODULE_PLUGIN_TYPES)
         if(plugin_types)
             foreach(plugin_type ${plugin_types})
                 if("${target_type}" STREQUAL "${plugin_type}")
