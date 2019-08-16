@@ -321,12 +321,8 @@ bool QWidgetRepaintManager::bltRect(const QRect &rect, int dx, int dy, QWidget *
 
     The \a toClean region might be clipped by the window surface.
 */
-void QWidgetRepaintManager::beginPaint(QRegion &toClean, QWidget *widget, QBackingStore *backingStore,
-                                     BeginPaintInfo *returnInfo, bool toCleanIsInTopLevelCoordinates)
+void QWidgetRepaintManager::beginPaint(QRegion &toClean, QBackingStore *backingStore, BeginPaintInfo *returnInfo)
 {
-    Q_UNUSED(widget);
-    Q_UNUSED(toCleanIsInTopLevelCoordinates);
-
     // Always flush repainted areas.
     dirtyOnScreen += toClean;
 
@@ -1303,7 +1299,7 @@ void QWidgetRepaintManager::doSync()
 #endif
 
     BeginPaintInfo beginPaintInfo;
-    beginPaint(toClean, tlw, store, &beginPaintInfo);
+    beginPaint(toClean, store, &beginPaintInfo);
 
     // Must do this before sending any paint events because
     // the size may change in the paint event.

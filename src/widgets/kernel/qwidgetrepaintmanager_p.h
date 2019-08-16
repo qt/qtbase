@@ -148,8 +148,7 @@ private:
     void doSync();
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);
 
-    void beginPaint(QRegion &toClean, QWidget *widget, QBackingStore *backingStore,
-                    BeginPaintInfo *returnInfo, bool toCleanIsInTopLevelCoordinates = true);
+    void beginPaint(QRegion &toClean, QBackingStore *backingStore, BeginPaintInfo *returnInfo);
     void endPaint(const QRegion &cleaned, QBackingStore *backingStore, BeginPaintInfo *beginPaintInfo);
 
     QRegion dirtyRegion(QWidget *widget = nullptr) const;
