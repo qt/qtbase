@@ -101,6 +101,9 @@ elseif(ANDROID)
     list(APPEND init_platform "set(ANDROID_NATIVE_API_LEVEL \"${ANDROID_NATIVE_API_LEVEL}\" CACHE STRING \"\")")
     list(APPEND init_platform "set(ANDROID_STL \"${ANDROID_STL}\" CACHE STRING \"\")")
     list(APPEND init_platform "set(ANDROID_ABI \"${ANDROID_ABI}\" CACHE STRING \"\")")
+    list(APPEND init_platform "if (NOT DEFINED ANDROID_SDK_ROOT)")
+    list(APPEND init_platform "    set(ANDROID_SDK_ROOT \"${ANDROID_SDK_ROOT}\" CACHE STRING \"\")")
+    list(APPEND init_platform "endif()")
 endif()
 
 string(REPLACE ";" "\n" init_vcpkg "${init_vcpkg}")
@@ -222,6 +225,7 @@ configure_file(
 qt_install(FILES
     "${__build_internals_build_dir}/${INSTALL_CMAKE_NAMESPACE}BuildInternalsConfig.cmake"
     "${__build_internals_build_dir}/QtBuildInternalsExtra.cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtBuildInternals/QtBuildInternalsAndroid.cmake"
     DESTINATION "${__build_internals_install_dir}"
     COMPONENT Devel
 )
