@@ -3728,6 +3728,15 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     while (argumentTypes[nargs-1])
         ++nargs;
 
+    QBasicMutexLocker locker(signalSlotLock(c->receiver.loadRelaxed()));
+    if (!c->receiver.loadRelaxed()) {
+        // the connection has been disconnected before we got the lock
+        return;
+    }
+    if (c->isSlotObject)
+        c->slotObj->ref();
+    locker.unlock();
+
     QMetaCallEvent *ev = c->isSlotObject ?
         new QMetaCallEvent(c->slotObj, sender, signal, nargs) :
         new QMetaCallEvent(c->method_offset, c->method_relative, c->callFunction, sender, signal, nargs);
@@ -3746,9 +3755,11 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
             args[n] = QMetaType::create(types[n], argv[n]);
     }
 
-    QBasicMutexLocker locker(signalSlotLock(c->receiver.loadRelaxed()));
+    locker.relock();
+    if (c->isSlotObject)
+        c->slotObj->destroyIfLastRef();
     if (!c->receiver.loadRelaxed()) {
-        // the connection has been disconnected before we got the lock
+        // the connection has been disconnected while we were unlocked
         locker.unlock();
         delete ev;
         return;
