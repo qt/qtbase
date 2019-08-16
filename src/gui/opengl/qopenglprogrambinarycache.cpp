@@ -264,10 +264,8 @@ public:
 bool QOpenGLProgramBinaryCache::load(const QByteArray &cacheKey, uint programId)
 {
     QMutexLocker lock(&m_mutex);
-    if (m_memCache.contains(cacheKey)) {
-        const MemCacheEntry *e = m_memCache[cacheKey];
+    if (const MemCacheEntry *e = m_memCache.object(cacheKey))
         return setProgramBinary(programId, e->format, e->blob.constData(), e->blob.size());
-    }
 
     QByteArray buf;
     const QString fn = cacheFileName(cacheKey);
