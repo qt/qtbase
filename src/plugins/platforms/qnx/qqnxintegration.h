@@ -46,6 +46,10 @@
 
 #include <screen/screen.h>
 
+#if QT_CONFIG(opengl)
+#include <EGL/egl.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QQnxScreenEventThread;
@@ -96,7 +100,8 @@ public:
     QPlatformWindow *createPlatformWindow(QWindow *window) const override;
     QPlatformBackingStore *createPlatformBackingStore(QWindow *window) const override;
 
-#if !defined(QT_NO_OPENGL)
+#if QT_CONFIG(opengl)
+    EGLDisplay eglDisplay() const { return m_eglDisplay; }
     QPlatformOpenGLContext *createPlatformOpenGLContext(QOpenGLContext *context) const override;
 #endif
 
@@ -174,6 +179,12 @@ private:
     mutable QMutex m_windowMapperMutex;
 
     Options m_options;
+
+#if QT_CONFIG(opengl)
+    EGLDisplay m_eglDisplay;
+    void createEglDisplay();
+    void destroyEglDisplay();
+#endif
 
     static QQnxIntegration *ms_instance;
 

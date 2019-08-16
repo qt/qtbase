@@ -58,19 +58,12 @@ public:
     QQnxGLContext(const QSurfaceFormat &format, QPlatformOpenGLContext *share);
     virtual ~QQnxGLContext();
 
-    static void initializeContext();
-    static void shutdownContext();
-
     bool makeCurrent(QPlatformSurface *surface) override;
     void swapBuffers(QPlatformSurface *surface) override;
     void doneCurrent() override;
 
 protected:
     EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) override;
-
-private:
-    //Can be static because different displays returne the same handle
-    static EGLDisplay ms_eglDisplay;
 };
 
 QT_END_NAMESPACE
