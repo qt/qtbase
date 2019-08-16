@@ -182,6 +182,10 @@ protected:
 class tst_QGraphicsScene : public QObject
 {
     Q_OBJECT
+public:
+    tst_QGraphicsScene();
+    static void initMain() { QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling); }
+
 public slots:
     void cleanup();
 
@@ -284,7 +288,18 @@ private slots:
     void taskQTBUG_15977_renderWithDeviceCoordinateCache();
     void taskQTBUG_16401_focusItem();
     void taskQTBUG_42915_focusNextPrevChild();
+
+private:
+    QRect m_availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+    QSize m_testSize;
 };
+
+tst_QGraphicsScene::tst_QGraphicsScene()
+{
+    const int testSize = qMax(200, m_availableGeometry.width() / 10);
+    m_testSize.setWidth(testSize);
+    m_testSize.setHeight(testSize);
+}
 
 void tst_QGraphicsScene::cleanup()
 {
@@ -1085,6 +1100,7 @@ void tst_QGraphicsScene::addItem()
         CustomView view;
         view.setWindowTitle(QTest::currentTestFunction());
         view.setScene(&scene);
+        view.resize(m_testSize);
         view.show();
         QVERIFY(QTest::qWaitForWindowExposed(&view));
         QCoreApplication::processEvents();
@@ -2597,6 +2613,7 @@ void tst_QGraphicsScene::render()
 
     QGraphicsView view;
     view.setWindowTitle(QTest::currentTestFunction());
+    view.resize(m_testSize);
     QGraphicsScene scene(&view);
     scene.addEllipse(QRectF(-10, -10, 20, 20), QPen(Qt::black, 0), QBrush(Qt::white));
     scene.addEllipse(QRectF(-2, -7, 4, 4), QPen(Qt::black, 0), QBrush(Qt::yellow))->setZValue(1);
@@ -2678,34 +2695,32 @@ void tst_QGraphicsScene::renderItemsWithNegativeWidthOrHeight()
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED) || defined(Q_OS_WINRT)
     QSKIP("Test only works on platforms with resizable windows");
 #endif
-
-    QGraphicsScene scene(0, 0, 150, 150);
+    QGraphicsScene scene(0, 0, m_testSize.width(), m_testSize.height());
 
     // Add item with negative width.
-    QGraphicsRectItem *item1 = new QGraphicsRectItem(0, 0, -150, 50);
+    QGraphicsRectItem *item1 = new QGraphicsRectItem(0, 0, -m_testSize.width(), 50);
     item1->setBrush(Qt::red);
-    item1->setPos(150, 50);
+    item1->setPos(m_testSize.width(), 50);
     scene.addItem(item1);
 
     // Add item with negative height.
-    QGraphicsRectItem *item2 = new QGraphicsRectItem(0, 0, 50, -150);
+    QGraphicsRectItem *item2 = new QGraphicsRectItem(0, 0, 50, -m_testSize.height());
     item2->setBrush(Qt::blue);
-    item2->setPos(50, 150);
+    item2->setPos(50, m_testSize.height());
     scene.addItem(item2);
 
     QGraphicsView view(&scene);
     view.setWindowTitle(QTest::currentTestFunction());
     view.setFrameStyle(QFrame::NoFrame);
-    view.resize(150, 150);
     view.show();
-    QCOMPARE(view.viewport()->size(), QSize(150, 150));
+    QTRY_COMPARE(view.viewport()->size(), m_testSize);
 
     QImage expected(view.viewport()->size(), QImage::Format_RGB32);
     view.viewport()->render(&expected);
 
     // Make sure the scene background is the same as the viewport background.
     scene.setBackgroundBrush(view.viewport()->palette().brush(view.viewport()->backgroundRole()));
-    QImage actual(150, 150, QImage::Format_RGB32);
+    QImage actual(m_testSize, QImage::Format_RGB32);
     QPainter painter(&actual);
     scene.render(&painter);
     painter.end();
@@ -2730,6 +2745,7 @@ void tst_QGraphicsScene::contextMenuEvent()
 
     QGraphicsView view(&scene);
     view.setWindowTitle(QTest::currentTestFunction());
+    view.resize(m_testSize);
     view.show();
     view.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&view));
@@ -2746,7 +2762,7 @@ void tst_QGraphicsScene::contextMenuEvent()
 class ContextMenuItem : public QGraphicsRectItem
 {
 public:
-    ContextMenuItem() : QGraphicsRectItem(0, 0, 100, 100)
+    ContextMenuItem(const QSize &s) : QGraphicsRectItem(0, 0, s.width(), s.height())
     { setBrush(Qt::red); }
 
 protected:
@@ -2760,27 +2776,30 @@ void tst_QGraphicsScene::contextMenuEvent_ItemIgnoresTransformations()
     QSKIP("Test fails on some Android devices (QTBUG-44430)");
 #endif
 
-    QGraphicsScene scene(0, 0, 200, 200);
-    ContextMenuItem *item = new ContextMenuItem;
+    QGraphicsScene scene(0, 0, m_testSize.width(), m_testSize.height());
+    const QSize itemSize = m_testSize / 2;
+    ContextMenuItem *item = new ContextMenuItem(itemSize);
     item->setFlag(QGraphicsItem::ItemIgnoresTransformations);
     scene.addItem(item);
 
     QWidget topLevel;
     topLevel.setWindowTitle(QTest::currentTestFunction());
+    topLevel.resize(m_testSize);
     QGraphicsView view(&scene, &topLevel);
-    view.resize(200, 200);
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
+
+
     {
-        QPoint pos(50, 50);
+        QPoint pos(itemSize.width() / 2, itemSize.height() / 2);
         QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.viewport()->mapToGlobal(pos));
         event.ignore();
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(event.isAccepted());
     }
     {
-        QPoint pos(150, 150);
+        QPoint pos(itemSize.width() * 3 / 2, itemSize.height() * 3 / 2);
         QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.viewport()->mapToGlobal(pos));
         event.ignore();
         QApplication::sendEvent(view.viewport(), &event);
@@ -2788,14 +2807,14 @@ void tst_QGraphicsScene::contextMenuEvent_ItemIgnoresTransformations()
     }
     view.scale(1.5, 1.5);
     {
-        QPoint pos(25, 25);
+        QPoint pos(itemSize.width() / 4, itemSize.height() / 4);
         QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.viewport()->mapToGlobal(pos));
         event.ignore();
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(event.isAccepted());
     }
     {
-        QPoint pos(55, 55);
+        QPoint pos(itemSize.width() / 2 + 5, itemSize.height() / 2 + 5);
         QContextMenuEvent event(QContextMenuEvent::Keyboard, pos, view.viewport()->mapToGlobal(pos));
         event.ignore();
         QApplication::sendEvent(view.viewport(), &event);
@@ -2844,6 +2863,7 @@ void tst_QGraphicsScene::update2()
     scene.setSceneRect(-200, -200, 200, 200);
     CustomView view;
     view.setWindowTitle(QTest::currentTestFunction());
+    view.resize(m_testSize);
     view.setScene(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
@@ -3514,6 +3534,7 @@ void tst_QGraphicsScene::task160653_selectionChanged()
     QSignalSpy spy(&scene, &QGraphicsScene::selectionChanged);
     QGraphicsView view(&scene);
     view.setWindowTitle(QTest::currentTestFunction());
+    view.resize(m_testSize);
     view.show();
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTest::mouseClick(
@@ -3803,6 +3824,7 @@ void tst_QGraphicsScene::inputMethod()
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.resize(m_testSize);
     view.show();
     view.setWindowTitle(QTest::currentTestFunction());
     QApplication::setActiveWindow(&view);
@@ -4044,6 +4066,7 @@ void tst_QGraphicsScene::isActive()
     {
         QWidget toplevel1;
         toplevel1.setWindowTitle(QTest::currentTestFunction());
+        toplevel1.resize(m_testSize);
         QHBoxLayout *layout = new QHBoxLayout;
         toplevel1.setLayout(layout);
         QGraphicsView *view1 = new QGraphicsView(&scene1);
@@ -4109,9 +4132,9 @@ void tst_QGraphicsScene::isActive()
 
 
     {
-        const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
         QWidget toplevel2;
         toplevel2.setWindowTitle(QTest::currentTestFunction());
+        toplevel2.resize(m_testSize);
         QHBoxLayout *layout = new QHBoxLayout;
         toplevel2.setLayout(layout);
         QGraphicsView *view1 = new QGraphicsView(&scene1);
@@ -4124,7 +4147,7 @@ void tst_QGraphicsScene::isActive()
         QVERIFY(!scene1.hasFocus());
         QVERIFY(!scene2.hasFocus());
 
-        toplevel2.move(availableGeometry.topLeft() + QPoint(50, 50));
+        toplevel2.move(m_availableGeometry.topLeft() + QPoint(50, 50));
         toplevel2.show();
         QApplication::setActiveWindow(&toplevel2);
         QVERIFY(QTest::qWaitForWindowActive(&toplevel2));
@@ -4173,7 +4196,8 @@ void tst_QGraphicsScene::isActive()
         QVERIFY(!scene2.hasFocus());
 
         QGraphicsView topLevelView;
-        topLevelView.move(availableGeometry.topLeft() + QPoint(500, 50));
+        topLevelView.move(toplevel2.geometry().topRight() + QPoint(100, 50));
+        topLevelView.resize(m_testSize);
         topLevelView.show();
         QApplication::setActiveWindow(&topLevelView);
         topLevelView.setFocus();
@@ -4219,6 +4243,7 @@ void tst_QGraphicsScene::isActive()
 
     {
         QWidget toplevel3;
+        toplevel3.resize(m_testSize);
         QHBoxLayout *layout = new QHBoxLayout;
         toplevel3.setLayout(layout);
         QGraphicsView *view1 = new QGraphicsView(&scene1);
@@ -4297,6 +4322,7 @@ void tst_QGraphicsScene::siblingIndexAlwaysValid()
 
     QGraphicsView view2(&scene2);
     view2.setWindowTitle(QTest::currentTestFunction());
+    view2.resize(m_testSize);
 
     // first add the blue rect
     QGraphicsRectItem* const item1 = new QGraphicsRectItem(QRect( 10, 10, 10, 10 ));
@@ -4341,6 +4367,7 @@ void tst_QGraphicsScene::removeFullyTransparentItem()
 
     CustomView view;
     view.setWindowTitle(QTest::currentTestFunction());
+    view.resize(m_testSize);
     view.setScene(&scene);
     view.show();
     QApplication::setActiveWindow(&view);
@@ -4398,6 +4425,7 @@ void tst_QGraphicsScene::taskQT657_paintIntoCacheWithTransparentParts()
 
     QGraphicsScene *scene = new QGraphicsScene();
     CustomView view;
+    view.resize(m_testSize);
     view.setWindowTitle(QTest::currentTestFunction());
     view.setScene(scene);
 
@@ -4442,6 +4470,7 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
 
         QGraphicsScene *scene = new QGraphicsScene();
         CustomView view;
+        view.resize(m_testSize);
         view.setWindowTitle(QTest::currentTestFunction());
         view.setScene(scene);
 
@@ -4483,6 +4512,7 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         QGraphicsScene *scene = new QGraphicsScene();
         CustomView view;
         view.setWindowTitle(QTest::currentTestFunction());
+        view.resize(m_testSize);
         view.setScene(scene);
 
         scene->addItem(rectItem);
@@ -4522,6 +4552,7 @@ void tst_QGraphicsScene::taskQTBUG_7863_paintIntoCacheWithTransparentParts()
         QGraphicsScene *scene = new QGraphicsScene();
         CustomView view;
         view.setWindowTitle(QTest::currentTestFunction());
+        view.resize(m_testSize);
         view.setScene(scene);
 
         scene->addItem(rectItem);
@@ -4737,6 +4768,7 @@ void tst_QGraphicsScene::minimumRenderSize()
 
     CustomView view;
     view.setWindowTitle(QTest::currentTestFunction());
+    view.resize(m_testSize);
     view.setScene(&scene);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
@@ -4790,6 +4822,7 @@ void tst_QGraphicsScene::focusOnTouch()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setWindowTitle(QTest::currentTestFunction());
+    view.resize(m_testSize);
     scene.setSceneRect(0, 0, 100, 100);
     QGraphicsRectItem *rect = scene.addRect(0, 0, 100, 100);
     rect->setFlag(QGraphicsItem::ItemIsFocusable, true);
@@ -4847,6 +4880,7 @@ void tst_QGraphicsScene::taskQTBUG_16401_focusItem()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.resize(m_testSize);
     QGraphicsRectItem *rect = scene.addRect(0, 0, 100, 100);
     rect->setFlag(QGraphicsItem::ItemIsFocusable);
 
@@ -4878,6 +4912,7 @@ void tst_QGraphicsScene::taskQTBUG_42915_focusNextPrevChild()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.setWindowTitle(QTest::currentTestFunction());
+    view.resize(m_testSize);
     scene.setSceneRect(1, 1, 198, 198);
     view.setFocus();
 
