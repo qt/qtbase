@@ -1306,13 +1306,6 @@ void QWidgetRepaintManager::doSync()
 
     BeginPaintInfo beginPaintInfo;
     beginPaint(toClean, tlw, store, &beginPaintInfo);
-    if (beginPaintInfo.nothingToPaint) {
-        for (int i = 0; i < opaqueNonOverlappedWidgets.size(); ++i)
-            resetWidget(opaqueNonOverlappedWidgets[i]);
-        dirty = QRegion();
-        updateRequestSent = false;
-        return;
-    }
 
     // Must do this before sending any paint events because
     // the size may change in the paint event.
