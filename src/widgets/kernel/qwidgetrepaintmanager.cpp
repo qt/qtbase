@@ -638,12 +638,6 @@ void QWidgetRepaintManager::markDirtyOnScreen(const QRegion &region, QWidget *wi
     if (!widget || widget->d_func()->paintOnScreen() || region.isEmpty())
         return;
 
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
-        dirtyOnScreen += region.translated(topLevelOffset);
-    return;
-#endif
-
     // Top-level.
     if (widget == tlw) {
         if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
@@ -1559,12 +1553,6 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
                                                 || engine->type() == QPaintEngine::OpenGL2))
                                         && (usesDoubleBufferedGLContext || q->autoFillBackground());
     QRegion toBePainted(noPartialUpdateSupport ? q->rect() : rgn);
-
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    // No difference between update() and repaint() on the Mac.
-    update_sys(toBePainted);
-    return;
-#endif
 
     toBePainted &= clipRect();
     clipToEffectiveMask(toBePainted);
