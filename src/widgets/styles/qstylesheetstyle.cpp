@@ -615,7 +615,7 @@ public:
 public:
     int features;
     QBrush defaultBackground;
-    QFont font;
+    QFont font; // Be careful using this font directly. Prefer using font.resolve( )
     bool hasFont;
 
     QHash<QString, QVariant> styleHints;
@@ -3211,7 +3211,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 rule.drawRule(p, opt->rect);
                 toolOpt.rect = rule.contentsRect(opt->rect);
                 if (rule.hasFont)
-                    toolOpt.font = rule.font;
+                    toolOpt.font = rule.font.resolve(toolOpt.font);
                 drawControl(CE_ToolButtonLabel, &toolOpt, p, w);
             }
 
@@ -3514,7 +3514,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
             const QFont oldFont = p->font();
             if (rule.hasFont)
-                p->setFont(rule.font);
+                p->setFont(rule.font.resolve(p->font()));
 
             if (rule.hasPosition() && rule.position()->textAlignment != 0) {
                 Qt::Alignment textAlignment = rule.position()->textAlignment;
@@ -3678,7 +3678,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             subRule.configurePalette(&mi.palette, QPalette::HighlightedText, QPalette::Highlight);
             QFont oldFont = p->font();
             if (subRule.hasFont)
-                p->setFont(subRule.font.resolve(p->font()));
+                p->setFont(subRule.font.resolve(mi.font));
             else
                 p->setFont(mi.font);
 
@@ -4084,7 +4084,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             subRule.configurePalette(&boxCopy.palette, QPalette::ButtonText, QPalette::Button);
             QFont oldFont = p->font();
             if (subRule.hasFont)
-                p->setFont(subRule.font);
+                p->setFont(subRule.font.resolve(p->font()));
             boxCopy.rect = subRule.contentsRect(opt->rect);
             if (subRule.hasImage()) {
                 // the image is already drawn with CE_ToolBoxTabShape, adjust rect here
@@ -4171,7 +4171,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             subRule.configurePalette(&tabCopy.palette, QPalette::WindowText, QPalette::Base);
             QFont oldFont = p->font();
             if (subRule.hasFont)
-                p->setFont(subRule.font);
+                p->setFont(subRule.font.resolve(p->font()));
             if (subRule.hasBox() || !subRule.hasNativeBorder()) {
                 tabCopy.rect = ce == CE_TabBarTabShape ? subRule.borderRect(r)
                                                        : subRule.contentsRect(r);
@@ -5035,8 +5035,12 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                         bool nullIcon = hdr->icon.isNull();
                         const int margin = pixelMetric(QStyle::PM_HeaderMargin, hdr, w);
                         int iconSize = nullIcon ? 0 : pixelMetric(QStyle::PM_SmallIconSize, hdr, w);
-                        const QSize txt = subRule.hasFont ? QFontMetrics(subRule.font).size(0, hdr->text)
-                                                          : hdr->fontMetrics.size(0, hdr->text);
+                        QFontMetrics fm = hdr->fontMetrics;
+                        if (subRule.hasFont) {
+                            QFont styleFont = w ? subRule.font.resolve(w->font()) : subRule.font;
+                            fm = QFontMetrics(styleFont);
+                        }
+                        const QSize txt = fm.size(0, hdr->text);
                         nativeContentsSize.setHeight(margin + qMax(iconSize, txt.height()) + margin);
                         nativeContentsSize.setWidth((nullIcon ? 0 : margin) + iconSize
                                                     + (hdr->text.isNull() ? 0 : margin) + txt.width() + margin);
