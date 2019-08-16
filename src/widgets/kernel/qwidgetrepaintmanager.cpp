@@ -1341,7 +1341,6 @@ void QWidgetRepaintManager::doSync()
 /*!
     Flushes the contents of the backing store into the top-level widget.
     If the \a widget is non-zero, the content is flushed to the \a widget.
-    If the \a surface is non-zero, the content of the \a surface is flushed.
 */
 void QWidgetRepaintManager::flush(QWidget *widget)
 {
