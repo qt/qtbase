@@ -5,11 +5,9 @@
 #####################################################################
 
 add_qt_executable(udpServer
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/./" # special case
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:udpServer.pro:<TRUE>:
-# CONFIG = "cmdline"

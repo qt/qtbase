@@ -1,11 +1,10 @@
 # Generated from signalbug.pro.
 
 #####################################################################
-## signalbug Binary:
+## signalbug_helper Binary:
 #####################################################################
 
-add_qt_executable(signalbug
-    GUI
+add_qt_test_helper(signalbug_helper
     SOURCES
         signalbug.cpp signalbug.h
 )

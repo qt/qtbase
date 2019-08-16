@@ -6,18 +6,12 @@
 
 add_qt_executable(crashingServer
     GUI
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/./"
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Network
 )
 
-#### Keys ignored in scope 1:.:.:crashingServer.pro:<TRUE>:
-# CONFIG = "-app_bundle"
-# DESTDIR = "./"
-
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:crashingServer.pro:mingw:
-# CONFIG = "console"

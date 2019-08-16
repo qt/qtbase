@@ -1,11 +1,10 @@
 # Generated from acquirerelease.pro.
 
 #####################################################################
-## acquirerelease Binary:
+## acquirerelease_helper Binary:
 #####################################################################
 
-add_qt_executable(acquirerelease
-    GUI
+add_qt_test_helper(acquirerelease_helper
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

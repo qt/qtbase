@@ -5,13 +5,10 @@
 #####################################################################
 
 add_qt_executable(socketprocess
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/./"
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Network
         Qt::Test
 )
-
-#### Keys ignored in scope 1:.:.:socketprocess.pro:<TRUE>:
-# CONFIG = "cmdline"
-# DESTDIR = "./"

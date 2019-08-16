@@ -1,11 +1,10 @@
 # Generated from producerconsumer.pro.
 
 #####################################################################
-## producerconsumer Binary:
+## producerconsumer_helper Binary:
 #####################################################################
 
-add_qt_executable(producerconsumer
-    GUI
+add_qt_test_helper(producerconsumer_helper
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

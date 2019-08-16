@@ -5,12 +5,9 @@
 #####################################################################
 
 add_qt_executable(lackey
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/./"
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:lackey.pro:<TRUE>:
-# CONFIG = "cmdline"
-# DESTDIR = "./"

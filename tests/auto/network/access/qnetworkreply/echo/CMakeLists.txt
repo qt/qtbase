@@ -5,9 +5,7 @@
 #####################################################################
 
 add_qt_executable(echo
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
         main.cpp
 )
-
-#### Keys ignored in scope 1:.:.:echo.pro:<TRUE>:
-# CONFIG = "-debug_and_release_target" "cmdline"

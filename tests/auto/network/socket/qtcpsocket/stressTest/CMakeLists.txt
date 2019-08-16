@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_executable(stressTest
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/./"
     SOURCES
         Test.cpp Test.h
         main.cpp
@@ -14,7 +15,5 @@ add_qt_executable(stressTest
 )
 
 #### Keys ignored in scope 1:.:.:stressTest.pro:<TRUE>:
-# CONFIG = "cmdline"
-# DESTDIR = "./"
 # MOC_DIR = ".moc/"
 # TMP_DIR = ".tmp/"

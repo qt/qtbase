@@ -5,12 +5,9 @@
 #####################################################################
 
 add_qt_executable(clientserver
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/./"
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:clientserver.pro:<TRUE>:
-# CONFIG = "cmdline"
-# DESTDIR = "./"

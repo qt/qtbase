@@ -5,8 +5,9 @@
 #####################################################################
 
 add_qt_executable(qpong
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/./"
     SOURCES
         qpong.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::DBus
 )
