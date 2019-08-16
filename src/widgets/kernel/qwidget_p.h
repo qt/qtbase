@@ -439,6 +439,8 @@ public:
     void syncBackingStore();
     void syncBackingStore(const QRegion &region);
 
+    bool shouldDiscardSyncRequest() const;
+
     // tells the input method about the widgets transform
     void updateWidgetTransform(QEvent *event);
 

@@ -1045,12 +1045,10 @@ static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
 
 #endif // QT_NO_OPENGL
 
-static inline bool discardSyncRequest(QWidget *tlw, QTLWExtra *tlwExtra)
+bool QWidgetPrivate::shouldDiscardSyncRequest() const
 {
-    if (!tlw || !tlwExtra || !tlw->testAttribute(Qt::WA_Mapped) || !tlw->isVisible())
-        return true;
-
-    return false;
+    Q_Q(const QWidget);
+    return !maybeTopData() || !q->testAttribute(Qt::WA_Mapped) || !q->isVisible();
 }
 
 bool QWidgetRepaintManager::syncAllowed()
@@ -1119,8 +1117,7 @@ void QWidgetRepaintManager::sync(QWidget *exposedWidget, const QRegion &exposedR
 void QWidgetRepaintManager::sync()
 {
     updateRequestSent = false;
-    QTLWExtra *tlwExtra = tlw->d_func()->maybeTopData();
-    if (discardSyncRequest(tlw, tlwExtra)) {
+    if (qt_widget_private(tlw)->shouldDiscardSyncRequest()) {
         // If the top-level is minimized, it's not visible on the screen so we can delay the
         // update until it's shown again. In order to do that we must keep the dirty states.
         // These will be cleared when we receive the first expose after showNormal().
@@ -1543,10 +1540,10 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
     if (data.in_destructor)
         return;
 
-    Q_Q(QWidget);
-    if (discardSyncRequest(q, maybeTopData()))
+    if (shouldDiscardSyncRequest())
         return;
 
+    Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_StaticContents)) {
         if (!extra)
             createExtra();
