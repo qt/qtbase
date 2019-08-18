@@ -1830,7 +1830,7 @@ void ListenerObject::slotAboutToBeReset()
 
 void ListenerObject::slotReset()
 {
-    foreach (const QModelIndex &idx, m_persistentIndexes) {
+    for (const auto &idx : qAsConst(m_persistentIndexes)) {
         QVERIFY(!idx.isValid());
     }
 }

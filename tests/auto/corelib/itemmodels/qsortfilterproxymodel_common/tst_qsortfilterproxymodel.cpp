@@ -829,7 +829,7 @@ void tst_QSortFilterProxyModel::removeRows_data()
 
 void tst_QSortFilterProxyModel::removeRows()
 {
-    QFETCH(QStringList, initial);
+    QFETCH(const QStringList, initial);
     QFETCH(int, sortOrder);
     QFETCH(QString, filter);
     QFETCH(int, position);
@@ -843,7 +843,7 @@ void tst_QSortFilterProxyModel::removeRows()
     proxy.setSourceModel(&model);
 
     // prepare model
-    foreach (QString s, initial)
+    for (const auto &s : initial)
         model.appendRow(new QStandardItem(s));
 
     if (sortOrder != -1)
@@ -3035,15 +3035,15 @@ void tst_QSortFilterProxyModel::removeRowsRecursive()
 
     QList<QPersistentModelIndex> sourceIndexes;
     QList<QPersistentModelIndex> proxyIndexes;
-    foreach (QStandardItem *item, items) {
+    for (const auto item : qAsConst(items)) {
         QModelIndex idx = item->index();
         sourceIndexes << idx;
         proxyIndexes << proxy.mapFromSource(idx);
     }
 
-    foreach (const QPersistentModelIndex &pidx, sourceIndexes)
+    for (const auto &pidx : qAsConst(sourceIndexes))
         QVERIFY(pidx.isValid());
-    foreach (const QPersistentModelIndex &pidx, proxyIndexes)
+    for (const auto &pidx : qAsConst(proxyIndexes))
         QVERIFY(pidx.isValid());
 
     QList<QStandardItem*> itemRow = pItem1->takeRow(0);
@@ -3051,9 +3051,9 @@ void tst_QSortFilterProxyModel::removeRowsRecursive()
     QCOMPARE(itemRow.count(), 1);
     QCOMPARE(itemRow.first(), pItem11);
 
-    foreach (const QPersistentModelIndex &pidx, sourceIndexes)
+    for (const auto &pidx : qAsConst(sourceIndexes))
         QVERIFY(!pidx.isValid());
-    foreach (const QPersistentModelIndex &pidx, proxyIndexes)
+    for (const auto &pidx : qAsConst(proxyIndexes))
         QVERIFY(!pidx.isValid());
 
     delete pItem11;
@@ -3280,10 +3280,8 @@ void tst_QSortFilterProxyModel::testMultipleProxiesWithSelection()
 
 static bool isValid(const QItemSelection &selection)
 {
-    foreach (const QItemSelectionRange &range, selection)
-        if (!range.isValid())
-            return false;
-    return true;
+    return std::all_of(selection.begin(), selection.end(),
+                       [](const QItemSelectionRange &range) { return range.isValid(); });
 }
 
 void tst_QSortFilterProxyModel::mapSelectionFromSource()
@@ -3737,14 +3735,16 @@ void tst_QSortFilterProxyModel::testParentLayoutChanged()
 
     QVERIFY(beforeParents.first() == proxy.mapFromSource(model.indexFromItem(model.invisibleRootItem()->child(1))));
 
-    QList<QPersistentModelIndex> proxy2BeforeList = proxy2ParentsAboutToBeChangedSpy.first().first().value<QList<QPersistentModelIndex> >();
-    QList<QPersistentModelIndex> proxy2AfterList = proxy2ParentsChangedSpy.first().first().value<QList<QPersistentModelIndex> >();
+    const QList<QPersistentModelIndex> proxy2BeforeList =
+            proxy2ParentsAboutToBeChangedSpy.first().first().value<QList<QPersistentModelIndex> >();
+    const QList<QPersistentModelIndex> proxy2AfterList =
+            proxy2ParentsChangedSpy.first().first().value<QList<QPersistentModelIndex> >();
 
     QCOMPARE(proxy2BeforeList.size(), beforeParents.size());
     QCOMPARE(proxy2AfterList.size(), afterParents.size());
-    foreach (const QPersistentModelIndex &idx, proxy2BeforeList)
+    for (const QPersistentModelIndex &idx : proxy2BeforeList)
         QVERIFY(beforeParents.contains(proxy2.mapToSource(idx)));
-    foreach (const QPersistentModelIndex &idx, proxy2AfterList)
+    for (const QPersistentModelIndex &idx : proxy2AfterList)
         QVERIFY(afterParents.contains(proxy2.mapToSource(idx)));
 }
 
