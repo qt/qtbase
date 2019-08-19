@@ -67,8 +67,8 @@ class Q_AUTOTEST_EXPORT QLoggingRule
 {
 public:
     QLoggingRule();
-    QLoggingRule(const QStringRef &pattern, bool enabled);
-    int pass(const QString &categoryName, QtMsgType type) const;
+    QLoggingRule(QStringView pattern, bool enabled);
+    int pass(QLatin1String categoryName, QtMsgType type) const;
 
     enum PatternFlag {
         FullText = 0x1,
@@ -84,7 +84,7 @@ public:
     bool enabled;
 
 private:
-    void parse(const QStringRef &pattern);
+    void parse(QStringView pattern);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QLoggingRule::PatternFlags)
@@ -101,7 +101,7 @@ public:
     QVector<QLoggingRule> rules() const { return _rules; }
 
 private:
-    void parseNextLine(QStringRef line);
+    void parseNextLine(QStringView line);
 
 private:
     bool m_inRulesSection = false;

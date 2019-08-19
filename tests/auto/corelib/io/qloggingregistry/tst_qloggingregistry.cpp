@@ -158,10 +158,13 @@ private slots:
         QFETCH(QtMsgType, msgType);
         QFETCH(LoggingRuleState, result);
 
-        QLoggingRule rule(QStringRef(&pattern), true);
+        const auto categoryL1 = category.toLatin1();
+        const auto categoryL1S = QLatin1String(categoryL1);
+
+        QLoggingRule rule(pattern, true);
         LoggingRuleState state = Invalid;
         if (rule.flags != 0) {
-            switch (rule.pass(category, msgType)) {
+            switch (rule.pass(categoryL1S, msgType)) {
             case -1: QFAIL("Shoudn't happen, we set pattern to true"); break;
             case 0: state = NoMatch; break;
             case 1: state = Match; break;
