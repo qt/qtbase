@@ -383,7 +383,7 @@ endfunction()
 
 # Generates module .pri files for consumption by qmake
 function(qt_generate_module_pri_file target target_path pri_files_var)
-    set(flags INTERNAL_MODULE)
+    set(flags INTERNAL_MODULE HEADER_MODULE)
     set(options)
     set(multiopts QMAKE_MODULE_CONFIG)
     cmake_parse_arguments(arg "${flags}" "${options}" "${multiopts}" ${ARGN})
@@ -391,10 +391,19 @@ function(qt_generate_module_pri_file target target_path pri_files_var)
     qt_internal_module_info(module "${target}")
     set(pri_files)
 
-    get_target_property(enabled_features "${target}" QT_ENABLED_PUBLIC_FEATURES)
-    get_target_property(disabled_features "${target}" QT_DISABLED_PUBLIC_FEATURES)
-    get_target_property(enabled_private_features "${target}" QT_ENABLED_PRIVATE_FEATURES)
-    get_target_property(disabled_private_features "${target}" QT_DISABLED_PRIVATE_FEATURES)
+    set(property_prefix)
+    if(arg_HEADER_MODULE)
+        set(property_prefix "interface_")
+    endif()
+
+    get_target_property(enabled_features "${target}"
+                        "${property_prefix}QT_ENABLED_PUBLIC_FEATURES")
+    get_target_property(disabled_features "${target}"
+                        "${property_prefix}QT_DISABLED_PUBLIC_FEATURES")
+    get_target_property(enabled_private_features "${target}"
+                        "${property_prefix}QT_ENABLED_PRIVATE_FEATURES")
+    get_target_property(disabled_private_features "${target}"
+                        "${property_prefix}QT_DISABLED_PRIVATE_FEATURES")
 
     foreach(var enabled_features disabled_features enabled_private_features disabled_private_features)
         if(${var} STREQUAL "${var}-NOTFOUND")
@@ -901,7 +910,7 @@ function(extend_target target)
     if (NOT TARGET "${target}")
         message(FATAL_ERROR "Trying to extend non-existing target \"${target}\".")
     endif()
-    qt_parse_all_arguments(arg "extend_target" "" ""
+    qt_parse_all_arguments(arg "extend_target" "HEADER_MODULE" ""
         "CONDITION;${__default_public_args};${__default_private_args};COMPILE_FLAGS" ${ARGN})
     if ("x${arg_CONDITION}" STREQUAL x)
         set(arg_CONDITION ON)
@@ -949,16 +958,35 @@ function(extend_target target)
         if (arg_COMPILE_FLAGS)
             set_source_files_properties(${arg_SOURCES} PROPERTIES COMPILE_FLAGS "${arg_COMPILE_FLAGS}")
         endif()
-        target_include_directories("${target}" PUBLIC ${arg_PUBLIC_INCLUDE_DIRECTORIES} PRIVATE ${arg_INCLUDE_DIRECTORIES})
-        target_compile_definitions("${target}" PUBLIC ${arg_PUBLIC_DEFINES} PRIVATE ${arg_DEFINES})
-        target_link_libraries("${target}" PUBLIC ${arg_PUBLIC_LIBRARIES} PRIVATE ${arg_LIBRARIES})
-        target_compile_options("${target}" PUBLIC ${arg_PUBLIC_COMPILE_OPTIONS} PRIVATE ${arg_COMPILE_OPTIONS})
-        target_link_options("${target}" PUBLIC ${arg_PUBLIC_LINK_OPTIONS} PRIVATE ${arg_LINK_OPTIONS})
 
-        set_target_properties("${target}" PROPERTIES
-            AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}"
-            _qt_target_deps "${target_deps}"
-        )
+        set(public_visibility_option "PUBLIC")
+        set(private_visibility_option "PRIVATE")
+        if(arg_HEADER_MODULE)
+            set(public_visibility_option "INTERFACE")
+            set(private_visibility_option "INTERFACE")
+        endif()
+        target_include_directories("${target}"
+                                   ${public_visibility_option} ${arg_PUBLIC_INCLUDE_DIRECTORIES}
+                                   ${private_visibility_option} ${arg_INCLUDE_DIRECTORIES})
+        target_compile_definitions("${target}"
+                                    ${public_visibility_option} ${arg_PUBLIC_DEFINES}
+                                    ${private_visibility_option} ${arg_DEFINES})
+        target_link_libraries("${target}"
+                              ${public_visibility_option} ${arg_PUBLIC_LIBRARIES}
+                              ${private_visibility_option} ${arg_LIBRARIES})
+        target_compile_options("${target}"
+                               ${public_visibility_option} ${arg_PUBLIC_COMPILE_OPTIONS}
+                               ${private_visibility_option} ${arg_COMPILE_OPTIONS})
+        target_link_options("${target}"
+                            ${public_visibility_option} ${arg_PUBLIC_LINK_OPTIONS}
+                            ${private_visibility_option} ${arg_LINK_OPTIONS})
+
+        if(NOT arg_HEADER_MODULE)
+            set_target_properties("${target}" PROPERTIES
+                AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}"
+                _qt_target_deps "${target_deps}"
+            )
+        endif()
 
         # When computing the private library dependencies, we need to check not only the known
         # modules added by this repo's qt_build_repo(), but also all module dependencies that
@@ -1172,7 +1200,7 @@ function(add_qt_module target)
 
     # Process arguments:
     qt_parse_all_arguments(arg "add_qt_module"
-        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT"
+        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE"
         "CONFIG_MODULE_NAME"
         "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES" ${ARGN})
 
@@ -1183,7 +1211,9 @@ function(add_qt_module target)
     qt_internal_add_qt_repo_known_module("${target}")
 
     ### Define Targets:
-    if(${arg_STATIC})
+    if(${arg_HEADER_MODULE})
+        add_library("${target}" INTERFACE)
+    elseif(${arg_STATIC})
         add_library("${target}" STATIC)
     elseif(${QT_BUILD_SHARED_LIBS})
         add_library("${target}" SHARED)
@@ -1193,13 +1223,15 @@ function(add_qt_module target)
     qt_internal_add_target_aliases("${target}")
 
     # Add _private target to link against the private headers:
-    set(target_private "${target}Private")
-    add_library("${target_private}" INTERFACE)
-    qt_internal_add_target_aliases("${target_private}")
+    if(NOT ${arg_NO_PRIVATE_MODULE})
+        set(target_private "${target}Private")
+        add_library("${target_private}" INTERFACE)
+        qt_internal_add_target_aliases("${target_private}")
+    endif()
 
     # Module headers:
     if(${arg_NO_MODULE_HEADERS} OR ${arg_NO_SYNC_QT})
-        set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS OFF)
+        set_target_properties("${target}" PROPERTIES INTERFACE_MODULE_HAS_HEADERS OFF)
     else()
         # Use QT_BUILD_DIR for the syncqt call.
         # So we either write the generated files into the qtbase non-prefix build root, or the
@@ -1215,7 +1247,7 @@ function(add_qt_module target)
                                  "${PROJECT_SOURCE_DIR}")
         execute_process(COMMAND ${syncqt_full_command})
 
-        set_target_properties("${target}" PROPERTIES MODULE_HAS_HEADERS ON)
+        set_target_properties("${target}" PROPERTIES INTERFACE_MODULE_HAS_HEADERS ON)
 
         ### FIXME: Can we replace headers.pri?
         qt_read_headers_pri("${target}" "module_headers")
@@ -1227,25 +1259,29 @@ function(add_qt_module target)
         endif()
     endif()
 
-    # Plugin types associated to a module
-    if(NOT "x${arg_PLUGIN_TYPES}" STREQUAL "x")
-        set_target_properties("${target}" PROPERTIES MODULE_PLUGIN_TYPES "${arg_PLUGIN_TYPES}")
-    endif()
+    if(NOT arg_HEADER_MODULE)
+        # Plugin types associated to a module
+        if(NOT "x${arg_PLUGIN_TYPES}" STREQUAL "x")
+            set_target_properties("${target}" PROPERTIES MODULE_PLUGIN_TYPES "${arg_PLUGIN_TYPES}")
+        endif()
 
-    set_target_properties("${target}" PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
-        RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
-        ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
-        VERSION ${PROJECT_VERSION}
-        SOVERSION ${PROJECT_VERSION_MAJOR}
-        OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
-    )
+        set_target_properties("${target}" PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
+            RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+            ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
+            VERSION ${PROJECT_VERSION}
+            SOVERSION ${PROJECT_VERSION_MAJOR}
+            OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
+        )
+    endif()
 
     qt_internal_library_deprecation_level(deprecation_define)
 
-    qt_autogen_tools_initial_setup(${target})
+    if(NOT arg_HEADER_MODULE)
+        qt_autogen_tools_initial_setup(${target})
+    endif()
 
     set(private_includes
         "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -1267,7 +1303,13 @@ function(add_qt_module target)
     endif()
     list(APPEND public_includes ${arg_PUBLIC_INCLUDE_DIRECTORIES})
 
+    set(header_module)
+    if(arg_HEADER_MODULE)
+        set(header_module "HEADER_MODULE")
+    endif()
+
     extend_target("${target}"
+        ${header_module}
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${private_includes}
@@ -1301,7 +1343,7 @@ function(add_qt_module target)
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
     )
 
-    if(NOT ${arg_EXCEPTIONS})
+    if(NOT ${arg_EXCEPTIONS} AND NOT ${arg_HEADER_MODULE})
         qt_internal_set_no_exceptions_flags("${target}")
     endif()
 
@@ -1399,7 +1441,10 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     )
 
     file(COPY ${extra_cmake_files} DESTINATION "${config_build_dir}")
-    set(exported_targets ${target} ${target_private})
+    set(exported_targets ${target})
+    if(NOT ${arg_NO_PRIVATE_MODULE})
+        list(APPEND exported_targets ${target_private})
+    endif()
     set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
     qt_install(TARGETS ${exported_targets}
         EXPORT ${export_name}
@@ -1435,6 +1480,7 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     qt_path_join(pri_target_path ${PROJECT_BINARY_DIR} mkspecs/modules)
     qt_generate_module_pri_file("${target}" "${pri_target_path}" module_pri_files
         ${arg_INTERNAL_MODULE}
+        ${header_module}
         QMAKE_MODULE_CONFIG
             ${arg_QMAKE_MODULE_CONFIG}
         )
@@ -1442,7 +1488,9 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
-    qt_internal_add_link_flags_no_undefined("${target}")
+    if(NOT arg_HEADER_MODULE)
+        qt_internal_add_link_flags_no_undefined("${target}")
+    endif()
 
     set(interface_includes
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
@@ -1457,9 +1505,10 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         )
     endif()
 
-    target_include_directories("${target_private}" INTERFACE
-        ${interface_includes}
-    )
+
+    if(NOT ${arg_NO_PRIVATE_MODULE})
+        target_include_directories("${target_private}" INTERFACE ${interface_includes})
+    endif()
 
     if(NOT ${arg_DISABLE_TOOLS_EXPORT})
         qt_export_tools(${target})

@@ -1962,6 +1962,10 @@ def write_module(cm_fh: typing.IO[str], scope: Scope, *,
         extra.append('NO_MODULE_HEADERS')
     if 'minimal_syncqt' in scope.get('CONFIG'):
         extra.append('NO_SYNC_QT')
+    if 'no_private_module' in scope.get('CONFIG'):
+        extra.append('NO_PRIVATE_MODULE')
+    if 'header_module' in scope.get('CONFIG'):
+        extra.append('HEADER_MODULE')
 
     module_config = scope.get("MODULE_CONFIG")
     if len(module_config):
