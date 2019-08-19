@@ -242,6 +242,39 @@ static int doLink(int argc, char **argv)
 
 #endif
 
+static bool setFilePermissions(QFile &file, QFileDevice::Permissions permissions)
+{
+    if (file.setPermissions(permissions))
+        return true;
+    fprintf(stderr, "Error setting permissions on %s: %s\n",
+            qPrintable(file.fileName()), qPrintable(file.errorString()));
+    return false;
+}
+
+static bool copyFileTimes(QFile &targetFile, const QString &sourceFilePath,
+                          bool mustEnsureWritability, QString *errorString)
+{
+#ifdef Q_OS_WIN
+    bool mustRestorePermissions = false;
+    QFileDevice::Permissions targetPermissions;
+    if (mustEnsureWritability) {
+        targetPermissions = targetFile.permissions();
+        if (!targetPermissions.testFlag(QFileDevice::WriteUser)) {
+            mustRestorePermissions = true;
+            if (!setFilePermissions(targetFile, targetPermissions | QFileDevice::WriteUser))
+                return false;
+        }
+    }
+#endif
+    if (!IoUtils::touchFile(targetFile.fileName(), sourceFilePath, errorString))
+        return false;
+#ifdef Q_OS_WIN
+    if (mustRestorePermissions && !setFilePermissions(targetFile, targetPermissions))
+        return false;
+#endif
+    return true;
+}
+
 static int installFile(const QString &source, const QString &target, bool exe = false,
                        bool preservePermissions = false)
 {
@@ -270,18 +303,15 @@ static int installFile(const QString &source, const QString &target, bool exe = 
         targetPermissions |= QFileDevice::ExeOwner | QFileDevice::ExeUser |
                 QFileDevice::ExeGroup | QFileDevice::ExeOther;
     }
-    if (!targetFile.setPermissions(targetPermissions)) {
-        fprintf(stderr, "Error setting permissions on %s: %s\n",
-                qPrintable(target), qPrintable(targetFile.errorString()));
+    if (!setFilePermissions(targetFile, targetPermissions))
         return 3;
-    }
 
-    // Copy file times
     QString error;
-    if (!IoUtils::touchFile(target, sourceFile.fileName(), &error)) {
+    if (!copyFileTimes(targetFile, sourceFile.fileName(), preservePermissions, &error)) {
         fprintf(stderr, "%s", qPrintable(error));
         return 3;
     }
+
     return 0;
 }
 

@@ -820,7 +820,7 @@
         },
         "datestring": {
             "label": "QDate/QTime/QDateTime",
-            "purpose": "Provides convertion between dates and strings.",
+            "purpose": "Provides conversion between dates and strings.",
             "section": "Data structures",
             "condition": "features.textdate",
             "output": [ "publicFeature", "feature" ]

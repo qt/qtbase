@@ -4842,6 +4842,7 @@ void tst_QLineEdit::inputRejected()
     QCOMPARE(spyInputRejected.count(), 0);
     QTest::keyClicks(testWidget, "fgh");
     QCOMPARE(spyInputRejected.count(), 3);
+#if QT_CONFIG(clipboard)
     testWidget->clear();
     spyInputRejected.clear();
     QApplication::clipboard()->setText("ijklmno");
@@ -4849,6 +4850,7 @@ void tst_QLineEdit::inputRejected()
     // The first 5 characters are accepted, but
     // the last 2 are not.
     QCOMPARE(spyInputRejected.count(), 1);
+#endif
 
     testWidget->setMaxLength(INT_MAX);
     testWidget->clear();
@@ -4859,11 +4861,13 @@ void tst_QLineEdit::inputRejected()
     QCOMPARE(spyInputRejected.count(), 0);
     QTest::keyClicks(testWidget, "a#");
     QCOMPARE(spyInputRejected.count(), 2);
+#if QT_CONFIG(clipboard)
     testWidget->clear();
     spyInputRejected.clear();
     QApplication::clipboard()->setText("a#");
     testWidget->paste();
     QCOMPARE(spyInputRejected.count(), 1);
+#endif
 
     testWidget->clear();
     testWidget->setValidator(0);
