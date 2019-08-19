@@ -51,6 +51,7 @@
             "translationdir": "string",
 
             "android-arch": "string",
+            "android-abis": "string",
             "android-ndk": "string",
             "android-ndk-host": "string",
             "android-ndk-platform": "string",
