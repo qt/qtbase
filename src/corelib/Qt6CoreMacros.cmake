@@ -256,41 +256,46 @@ function(QT5_ADD_BINARY_RESOURCES target )
 endfunction()
 
 
+# qt5_add_resources(target resourcename ...
+# or
 # qt5_add_resources(outfiles inputfile ... )
 
 function(QT5_ADD_RESOURCES outfiles )
+    if (TARGET ${outfiles})
+        QT6_PROCESS_RESOURCE(${ARGV})
+    else()
+        set(options)
+        set(oneValueArgs)
+        set(multiValueArgs OPTIONS)
 
-    set(options)
-    set(oneValueArgs)
-    set(multiValueArgs OPTIONS)
+        cmake_parse_arguments(_RCC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    cmake_parse_arguments(_RCC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+        set(rcc_files ${_RCC_UNPARSED_ARGUMENTS})
+        set(rcc_options ${_RCC_OPTIONS})
 
-    set(rcc_files ${_RCC_UNPARSED_ARGUMENTS})
-    set(rcc_options ${_RCC_OPTIONS})
+        if("${rcc_options}" MATCHES "-binary")
+            message(WARNING "Use qt5_add_binary_resources for binary option")
+        endif()
 
-    if("${rcc_options}" MATCHES "-binary")
-        message(WARNING "Use qt5_add_binary_resources for binary option")
+        foreach(it ${rcc_files})
+            get_filename_component(outfilename ${it} NAME_WE)
+            get_filename_component(infile ${it} ABSOLUTE)
+            set(outfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}.cpp)
+
+            _QT5_PARSE_QRC_FILE(${infile} _out_depends _rc_depends)
+            set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
+
+            add_custom_command(OUTPUT ${outfile}
+                               COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
+                               ARGS ${rcc_options} --name ${outfilename} --output ${outfile} ${infile}
+                               MAIN_DEPENDENCY ${infile}
+                               DEPENDS ${_rc_depends} "${_out_depends}" VERBATIM)
+            set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON)
+            set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
+            list(APPEND ${outfiles} ${outfile})
+        endforeach()
+        set(${outfiles} ${${outfiles}} PARENT_SCOPE)
     endif()
-
-    foreach(it ${rcc_files})
-        get_filename_component(outfilename ${it} NAME_WE)
-        get_filename_component(infile ${it} ABSOLUTE)
-        set(outfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}.cpp)
-
-        _QT5_PARSE_QRC_FILE(${infile} _out_depends _rc_depends)
-        set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
-
-        add_custom_command(OUTPUT ${outfile}
-                           COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::rcc
-                           ARGS ${rcc_options} --name ${outfilename} --output ${outfile} ${infile}
-                           MAIN_DEPENDENCY ${infile}
-                           DEPENDS ${_rc_depends} "${_out_depends}" VERBATIM)
-        set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC ON)
-        set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOUIC ON)
-        list(APPEND ${outfiles} ${outfile})
-    endforeach()
-    set(${outfiles} ${${outfiles}} PARENT_SCOPE)
 endfunction()
 
 # qt5_add_big_resources(outfiles inputfile ... )

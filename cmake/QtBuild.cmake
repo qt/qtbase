@@ -1156,7 +1156,7 @@ function(add_qt_module target)
     qt_parse_all_arguments(arg "add_qt_module"
         "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT"
         "CONFIG_MODULE_NAME"
-        "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG" ${ARGN})
+        "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES" ${ARGN})
 
     if(NOT DEFINED arg_CONFIG_MODULE_NAME)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
@@ -1345,6 +1345,13 @@ function(add_qt_module target)
         list(APPEND extra_cmake_includes "${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake")
     endif()
 
+    foreach(cmake_file IN LISTS arg_EXTRA_CMAKE_FILES)
+        get_filename_component(basename ${cmake_file} NAME)
+        file(COPY ${cmake_file} DESTINATION ${config_build_dir})
+        list(APPEND extra_cmake_files "${config_build_dir}/${basename}")
+    endforeach()
+    list(APPEND extra_cmake_includes ${arg_EXTRA_CMAKE_INCLUDES})
+
     set(extra_cmake_code "")
 
     if(target STREQUAL Core)
@@ -1365,7 +1372,6 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         VERSION ${PROJECT_VERSION}
         COMPATIBILITY AnyNewerVersion
     )
-
     qt_install(FILES
         "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
         "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigVersion.cmake"
@@ -1898,6 +1904,36 @@ function(qt_install_qml_files target)
     )
 
 endfunction()
+
+
+function(add_qt_resource target resourceName)
+    # Don't try to add resources when cross compiling, and the target is actually a host target
+    # (like a tool).
+    qt_is_imported_target("${target}" is_imported)
+    if(is_imported)
+        return()
+    endif()
+
+    qt_parse_all_arguments(arg "add_qt_resource" "" "PREFIX;LANG;BASE" "FILES" ${ARGN})
+
+    QT6_PROCESS_RESOURCE(${target} ${resourceName}
+        PREFIX "${arg_PREFIX}"
+        LANG "${arg_LANG}"
+        BASE "${arg_BASE}"
+        FILES ${arg_FILES}
+        OUTPUT_TARGET out_target
+   )
+
+   if (out_target)
+        qt_internal_add_target_aliases("${out_target}")
+        qt_install(TARGETS "${out_target}"
+            EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
+            DESTINATION ${INSTALL_LIBDIR}
+        )
+   endif()
+
+endfunction()
+
 
 # This function creates a CMake target for qml modules. It will also make
 # sure that if no C++ source are present, that qml files show up in the project
@@ -2443,8 +2479,6 @@ function(add_qt_tool name)
     endif()
 endfunction()
 
-
-
 function(qt_create_tracepoints name tracePointsFile)
     #### TODO
     string(TOLOWER "${name}" name)
@@ -2452,261 +2486,6 @@ function(qt_create_tracepoints name tracePointsFile)
     file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/qt${name}_tracepoints_p.h" CONTENT
         "#include <private/qtrace_p.h>")
 endfunction()
-
-function(qt_get_relative_resource_path_for_file output_alias file)
-    get_property(alias SOURCE ${file} PROPERTY QT_RESOURCE_ALIAS)
-    if (NOT alias)
-        set(alias "${file}")
-    endif()
-    set(${output_alias} ${alias} PARENT_SCOPE)
-endfunction()
-
-# Inspect all files passed to a call to add_qt_resource. If there are any
-# files present, invoke the quick compiler and return the remaining resource
-# files that have not been prossed in REMAING_RESOURCES as well as the new
-# name for the resource in OUTPUT_RESOURCE_NAME.
-function(qt_quick_compiler_process_resources target resource_name)
-
-    qt_parse_all_arguments(arg "qt_qtuick_compiler_process_resources"
-        "" "PREFIX;OUTPUT_REMAINING_RESOURCES;OUTPUT_RESOURCE_NAME" "FILES" ${ARGN}
-    )
-
-    set(qml_files)
-    set(resource_files)
-    set(retained_files)
-    # scan for qml files
-    foreach(file IN LISTS arg_FILES)
-        # check whether this resource should not be processed by the qt quick
-        # compiler
-        get_source_file_property(skip_compiler_check ${file} QT_SKIP_QUICKCOMPILER)
-        get_source_file_property(retain_compiler_check ${file} QT_RETAIN_QUICKCOMPILER)
-        if (skip_compiler_check)
-            list(APPEND resource_files ${file})
-            continue()
-        endif()
-
-        if (${file} MATCHES "\.js$"
-                OR ${file} MATCHES "\.mjs$"
-                OR ${file} MATCHES "\.qml$")
-            list(APPEND qml_files ${file})
-            if (retain_compiler_check)
-                list(APPEND retained_files ${file})
-                list(APPEND resource_files ${file})
-            endif()
-        else()
-            list(APPEND resource_files ${file})
-        endif()
-    endforeach()
-    if (NOT TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen AND qml_files)
-        message(WARNING "add_qt_resource: Qml files were detected but the qmlcachgen target is not defined. Consider adding QmlTools to your find_package command.")
-    endif()
-
-    set(retained_resource_paths)
-    if (TARGET ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen AND qml_files)
-        # Enable qt quick compiler support
-        set(qml_resource_file "${CMAKE_CURRENT_BINARY_DIR}/${resource_name}.qrc")
-        if (resource_files)
-            set(chained_resource_name "${resource_name}_qmlcache")
-        endif()
-
-        foreach(file IN LISTS qml_files)
-            get_filename_component(file_absolute ${file} ABSOLUTE)
-            file(RELATIVE_PATH file_relative ${CMAKE_CURRENT_SOURCE_DIR} ${file_absolute})
-            qt_get_relative_resource_path_for_file(file_resource_path ${file})
-            if (arg_PREFIX STREQUAL "/")
-                # TO_CMAKE_PATH does not clean up cases such as //Foo
-                set(file_resource_path "/${file_resource_path}")
-            else()
-                set(file_resource_path "${arg_PREFIX}/${file_resource_path}")
-            endif()
-            if (file IN_LIST retained_files)
-                list(APPEND retained_resource_paths ${file_resource_path})
-            endif()
-            file(TO_CMAKE_PATH ${file_resource_path} file_resource_path)
-            list(APPEND file_resource_paths ${file_resource_path})
-            string(REGEX REPLACE "\.js$" "_js" compiled_file ${file_relative})
-            string(REGEX REPLACE "\.mjs$" "_mjs" compiled_file ${compiled_file})
-            string(REGEX REPLACE "\.qml$" "_qml" compiled_file ${compiled_file})
-            set(compiled_file "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${resource_name}/${compiled_file}.cpp")
-            add_custom_command(
-                OUTPUT ${compiled_file}
-                DEPENDS ${file_absolute}
-                COMMAND
-                    ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen
-                    --resource-path ${file_resource_path}
-                    -o ${compiled_file}
-                    ${file_absolute}
-            )
-            target_sources(${target} PRIVATE ${compiled_file})
-        endforeach()
-
-        set(qmlcache_loader_list "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${resource_name}/qml_loader_file_list.rsp")
-        file(GENERATE
-            OUTPUT ${qmlcache_loader_list}
-            CONTENT "$<JOIN:${file_resource_paths},\n>"
-        )
-
-        set(qmlcache_loader_file "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${resource_name}/qmlcache_loader.cpp")
-        set(resource_name_arg "${resource_name}.qrc")
-        if (chained_resource_name)
-            set(resource_name_arg "${resource_name_arg}=${chained_resource_name}")
-        endif()
-
-        if (retained_resource_paths)
-            set(retained_loader_list "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${resource_name}/retained_file_list.rsp")
-            file(GENERATE
-                OUTPUT ${retained_loader_list}
-                CONTENT "$<JOIN:${retained_resource_paths},\n>"
-            )
-            set(retained_args "--retain" "@${retained_loader_list}")
-        endif()
-
-        add_custom_command(
-            OUTPUT ${qmlcache_loader_file}
-            DEPENDS ${qmlcache_loader_list}
-            COMMAND
-                ${QT_CMAKE_EXPORT_NAMESPACE}::qmlcachegen
-                ${retained_args}
-                --resource-name "${resource_name_arg}"
-                -o ${qmlcache_loader_file}
-                "@${qmlcache_loader_list}"
-        )
-
-        qt_propagate_generated_resource(${target} ${resource_name} ${qmlcache_loader_file})
-
-        if (resource_files)
-            set(resource_name ${chained_resource_name})
-        endif()
-    else()
-        set(resource_files ${arg_FILES})
-    endif()
-
-    set(${arg_OUTPUT_REMAINING_RESOURCES} ${resource_files} PARENT_SCOPE)
-    set(${arg_OUTPUT_RESOURCE_NAME} ${resource_name} PARENT_SCOPE)
-
-endfunction()
-
-
-function(qt_propagate_generated_resource target resource_name generated_source_code)
-    get_target_property(type ${target} TYPE)
-    if(type STREQUAL STATIC_LIBRARY)
-        set(resource_target "${target}_resources_${resourceName}")
-        add_library("${resource_target}" OBJECT "${generated_source_code}")
-        qt_internal_add_target_aliases("${resource_target}")
-        qt_install(TARGETS "${resource_target}"
-            EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
-            DESTINATION ${INSTALL_LIBDIR}
-        )
-        target_link_libraries(${target} INTERFACE "$<TARGET_OBJECTS:${INSTALL_CMAKE_NAMESPACE}::${resource_target}>")
-    else()
-        target_sources(${target} PRIVATE ${generated_source_code})
-    endif()
-endfunction()
-
-function(add_qt_resource target resourceName)
-    # Don't try to add resources when cross compiling, and the target is actually a host target
-    # (like a tool).
-    qt_is_imported_target("${target}" is_imported)
-    if(is_imported)
-        return()
-    endif()
-
-    qt_parse_all_arguments(rcc "add_qt_resource" "" "PREFIX;LANG;BASE" "FILES" ${ARGN})
-
-    string(REPLACE "/" "_" resourceName ${resourceName})
-    string(REPLACE "." "_" resourceName ${resourceName})
-
-    # Apply base to all files
-    if (rcc_BASE)
-        foreach(file IN LISTS rcc_FILES)
-            set(resource_file "${rcc_BASE}/${file}")
-            qt_get_relative_resource_path_for_file(alias ${resource_file})
-            # Handle case where resources were generated from a directory
-            # different than the one where the main .pro file resides.
-            # Unless otherwise specified, we should use the original file path
-            # as alias.
-            if (alias STREQUAL resource_file)
-                set_source_files_properties(${resource_file} PROPERTIES QT_RESOURCE_ALIAS ${file})
-            endif()
-            file(TO_CMAKE_PATH ${resource_file} resource_file)
-            list(APPEND resource_files ${resource_file})
-        endforeach()
-    else()
-        set(resource_files ${rcc_FILES})
-    endif()
-
-    if(NOT rcc_PREFIX)
-        get_target_property(rcc_PREFIX ${target} QT_RESOURCE_PREFIX)
-        if (NOT rcc_PREFIX)
-            message(FATAL_ERROR "add_qt_resource() was called without a PREFIX and the target does not provide QT_RESOURCE_PREFIX. Please either add a PREFIX or make the target ${target} provide a default.")
-        endif()
-    endif()
-
-    # Apply quick compiler pass
-    qt_quick_compiler_process_resources(${target} ${resourceName}
-        FILES ${resource_files}
-        PREFIX ${rcc_PREFIX}
-        OUTPUT_REMAINING_RESOURCES resources
-        OUTPUT_RESOURCE_NAME newResourceName
-    )
-
-    if (NOT resources)
-        return()
-    endif()
-    set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/generated_${newResourceName}.qrc")
-    set(generatedSourceCode "${CMAKE_CURRENT_BINARY_DIR}/qrc_${newResourceName}.cpp")
-
-    # Generate .qrc file:
-
-    # <RCC><qresource ...>
-    set(qrcContents "<RCC>\n  <qresource")
-    if (rcc_PREFIX)
-        string(APPEND qrcContents " prefix=\"${rcc_PREFIX}\"")
-    endif()
-    if (rcc_LANG)
-        string(APPEND qrcContents " lang=\"${rcc_LANG}\"")
-    endif()
-    string(APPEND qrcContents ">\n")
-
-    foreach(file IN LISTS resources)
-        qt_get_relative_resource_path_for_file(file_resource_path ${file})
-
-        if (NOT IS_ABSOLUTE ${file})
-            set(file "${CMAKE_CURRENT_SOURCE_DIR}/${file}")
-        endif()
-
-        ### FIXME: escape file paths to be XML conform
-        # <file ...>...</file>
-        string(APPEND qrcContents "    <file alias=\"${file_resource_path}\">")
-        string(APPEND qrcContents "${file}</file>\n")
-        list(APPEND files "${file}")
-    endforeach()
-
-    # </qresource></RCC>
-    string(APPEND qrcContents "  </qresource>\n</RCC>\n")
-
-    file(GENERATE OUTPUT "${generatedResourceFile}" CONTENT "${qrcContents}")
-
-    # Process .qrc file:
-    add_custom_command(OUTPUT "${generatedSourceCode}"
-                       COMMAND "${QT_CMAKE_EXPORT_NAMESPACE}::rcc"
-                       ARGS --name "${newResourceName}"
-                           --output "${generatedSourceCode}" "${generatedResourceFile}"
-                       DEPENDS ${resources} ${generatedResourceFile}
-                       COMMENT "RCC ${newResourceName}"
-                       VERBATIM)
-
-    get_target_property(type "${target}" TYPE)
-    # Only do this if newResourceName is the same as resourceName, since
-    # the resource will be chainloaded by the qt quickcompiler
-    # qml cache loader
-    if(newResourceName STREQUAL resourceName)
-        qt_propagate_generated_resource(${target} ${resourceName} "${generatedSourceCode}")
-    else()
-        target_sources(${target} PRIVATE "${generatedSourceCode}")
-    endif()
-endfunction()
-
 
 # Handle files that need special SIMD-related flags.
 # This creates an object library and makes target link
