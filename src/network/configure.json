@@ -360,7 +360,11 @@
             "purpose": "Provides bearer management for the network stack.",
             "section": "Networking",
             "condition": "features.thread && features.library && features.networkinterface && features.properties",
-            "output": [ "publicFeature", "feature" ]
+            "output": [
+                "publicFeature",
+                "feature",
+                { "type": "define", "negative": true, "name": "QT_NO_BEARERMANAGEMENT" }
+            ]
         },
         "localserver": {
             "label": "QLocalServer",
