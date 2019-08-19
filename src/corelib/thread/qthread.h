@@ -161,6 +161,7 @@ private:
 #if QT_CONFIG(cxx11_future)
     static QThread *createThreadImpl(std::future<void> &&future);
 #endif
+    static Qt::HANDLE currentThreadIdImpl() noexcept Q_DECL_PURE_FUNCTION;
 
     friend class QCoreApplication;
     friend class QThreadData;
@@ -235,6 +236,38 @@ QThread *QThread::create(Function &&f)
 #endif // QTHREAD_HAS_VARIADIC_CREATE
 
 #endif // QT_CONFIG(cxx11_future)
+
+/*
+    On architectures and platforms we know, interpret the thread control
+    block (TCB) as a unique identifier for a thread within a process. Otherwise,
+    fall back to a slower but safe implementation.
+
+    As per the documentation of currentThreadId, we return an opaque handle
+    as a thread identifier, and application code is not supposed to use that
+    value for anything. In Qt we use the handle to check if threads are identical,
+    for which the TCB is sufficient.
+
+    So we use the fastest possible way, rathern than spend time on returning
+    some pseudo-interoperable value.
+*/
+inline Qt::HANDLE QThread::currentThreadId() noexcept
+{
+    Qt::HANDLE tid; // typedef to void*
+    Q_STATIC_ASSERT(sizeof(tid) == sizeof(void*));
+    // See https://akkadia.org/drepper/tls.pdf for x86 ABI
+#if defined(Q_PROCESSOR_X86_32) && defined(Q_OS_LINUX) // x86 32-bit always uses GS
+    __asm__("movl %%gs:0, %0" : "=r" (tid) : : );
+#elif defined(Q_PROCESSOR_X86_64) && defined(Q_OS_DARWIN64)
+    // 64bit macOS uses GS, see https://github.com/apple/darwin-xnu/blob/master/libsyscall/os/tsd.h
+    __asm__("movq %%gs:0, %0" : "=r" (tid) : : );
+#elif defined(Q_PROCESSOR_X86_64) && (defined(Q_OS_LINUX) || defined(Q_OS_FREEBSD))
+    // x86_64 Linux, BSD uses FS
+    __asm__("movq %%fs:0, %0" : "=r" (tid) : : );
+#else
+    tid = currentThreadIdImpl();
+#endif
+    return tid;
+}
 
 QT_END_NAMESPACE
 

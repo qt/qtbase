@@ -844,7 +844,7 @@ bool QThread::event(QEvent* event)
     return QObject::event(event);
 }
 
-Qt::HANDLE QThread::currentThreadId() noexcept
+Qt::HANDLE QThread::currentThreadIdImpl() noexcept
 {
     return Qt::HANDLE(currentThread());
 }
