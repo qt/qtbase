@@ -1914,6 +1914,13 @@ void tst_QImageReader::saveColorSpace()
 
     QCOMPARE(stored, orig);
     QCOMPARE(stored.colorSpace(), orig.colorSpace());
+
+    buf.open(QIODevice::WriteOnly);
+    QVERIFY(orig.save(&buf, "jpeg"));
+    buf.close();
+    stored = QImage::fromData(buf.buffer(), "jpeg");
+
+    QCOMPARE(stored.colorSpace(), orig.colorSpace());
 }
 
 void tst_QImageReader::readText_data()
