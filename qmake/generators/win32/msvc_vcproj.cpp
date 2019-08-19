@@ -940,6 +940,15 @@ void VcprojGenerator::initProject()
     vcProject.SccProjectName = project->first("SCCPROJECTNAME").toQString();
     vcProject.SccLocalPath = project->first("SCCLOCALPATH").toQString();
     vcProject.flat_files = project->isActiveConfig("flat");
+
+    // Set up the full target path for target conflict checking.
+    const QChar slash = QLatin1Char('/');
+    QString destdir = QDir::fromNativeSeparators(var("DESTDIR"));
+    if (!destdir.endsWith(slash))
+        destdir.append(slash);
+    project->values("DEST_TARGET") = ProStringList(destdir
+                                                   + project->first("TARGET")
+                                                   + project->first("TARGET_EXT"));
 }
 
 void VcprojGenerator::initConfiguration()
