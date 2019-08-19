@@ -155,20 +155,33 @@ gbm_surface *QEglFSKmsGbmScreen::createSurface(EGLConfig eglConfig)
         qCDebug(qLcEglfsKmsDebug, "Creating gbm_surface for screen %s", qPrintable(name()));
 
         const auto gbmDevice = static_cast<QEglFSKmsGbmDevice *>(device())->gbmDevice();
-        EGLint native_format = -1;
-        EGLBoolean success = eglGetConfigAttrib(display(), eglConfig, EGL_NATIVE_VISUAL_ID, &native_format);
-        qCDebug(qLcEglfsKmsDebug) << "Got native format" << hex << native_format << dec << "from eglGetConfigAttrib() with return code" << bool(success);
+        // If there was no format override given in the config file,
+        // query the native (here, gbm) format from the EGL config.
+        const bool queryFromEgl = !m_output.drm_format_requested_by_user;
+        if (queryFromEgl) {
+            EGLint native_format = -1;
+            EGLBoolean success = eglGetConfigAttrib(display(), eglConfig, EGL_NATIVE_VISUAL_ID, &native_format);
+            qCDebug(qLcEglfsKmsDebug) << "Got native format" << hex << native_format << dec
+                                      << "from eglGetConfigAttrib() with return code" << bool(success);
 
-        if (success)
-            m_gbm_surface = gbm_surface_create(gbmDevice,
-                                           rawGeometry().width(),
-                                           rawGeometry().height(),
-                                           native_format,
-                                           GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+            if (success) {
+                m_gbm_surface = gbm_surface_create(gbmDevice,
+                                                   rawGeometry().width(),
+                                                   rawGeometry().height(),
+                                                   native_format,
+                                                   GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
+                if (m_gbm_surface)
+                    m_output.drm_format = gbmFormatToDrmFormat(native_format);
+            }
+        }
 
-        if (!m_gbm_surface) { // fallback for older drivers
+        // Fallback for older drivers, and when "format" is explicitly specified
+        // in the output config. (not guaranteed that the requested format works
+        // of course, but do what we are told to)
+        if (!m_gbm_surface) {
             uint32_t gbmFormat = drmFormatToGbmFormat(m_output.drm_format);
-            qCDebug(qLcEglfsKmsDebug, "Could not create surface with EGL_NATIVE_VISUAL_ID, falling back to format %x", gbmFormat);
+            if (queryFromEgl)
+                qCDebug(qLcEglfsKmsDebug, "Could not create surface with EGL_NATIVE_VISUAL_ID, falling back to format %x", gbmFormat);
             m_gbm_surface = gbm_surface_create(gbmDevice,
                                            rawGeometry().width(),
                                            rawGeometry().height(),

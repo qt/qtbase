@@ -263,6 +263,7 @@ public:
 
 bool QOpenGLProgramBinaryCache::load(const QByteArray &cacheKey, uint programId)
 {
+    QMutexLocker lock(&m_mutex);
     if (m_memCache.contains(cacheKey)) {
         const MemCacheEntry *e = m_memCache[cacheKey];
         return setProgramBinary(programId, e->format, e->blob.constData(), e->blob.size());
@@ -401,6 +402,7 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
     GLint outSize = 0;
 #if defined(QT_OPENGL_ES_2)
     if (context->isOpenGLES() && context->format().majorVersion() < 3) {
+        QMutexLocker lock(&m_mutex);
         initializeProgramBinaryOES(context);
         getProgramBinaryOES(programId, blobSize, &outSize, &blobFormat, p);
     } else
