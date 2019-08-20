@@ -334,20 +334,7 @@ int main(int argc, char **argv)
                 checkers_background = false;
             }
         } else {
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-            QString input = QString::fromLocal8Bit(argv[i]);
-            if (input.indexOf('*') >= 0) {
-                QFileInfo info(input);
-                QDir dir = info.dir();
-                QFileInfoList infos = dir.entryInfoList(QStringList(info.fileName()));
-                for (int ii=0; ii<infos.size(); ++ii)
-                    files.append(infos.at(ii).absoluteFilePath());
-            } else {
-                files.append(input);
-            }
-#else
             files.append(QString(argv[i]));
-#endif
         }
     }
     scaledWidth = int(width * scalefactor);

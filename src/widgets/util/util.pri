@@ -54,7 +54,3 @@ qtConfig(xcb) {
 } else {
     SOURCES += util/qsystemtrayicon_qpa.cpp
 }
-
-mac {
-    OBJECTIVE_SOURCES += util/qscroller_mac.mm
-}

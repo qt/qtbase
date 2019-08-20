@@ -1125,16 +1125,6 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
                 select = false;
                 break;
             }
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-            else
-#ifdef QT_KEYPAD_NAVIGATION
-                if (!QApplicationPrivate::keypadNavigationEnabled())
-#endif
-            {
-                select = (event->modifiers() & Qt::ShiftModifier);
-                break;
-            }
-#endif
         }
         Q_FALLTHROUGH();
     case Qt::Key_Backtab:

@@ -5153,13 +5153,6 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
             sz = csz + QSize(vertical ? 0 : spaceForIcon, vertical ? spaceForIcon : 0);
             return subRule.boxSize(subRule.adjustSize(sz));
         }
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        if (baseStyle()->inherits("QMacStyle")) {
-            //adjust the size after the call to the style because the mac style ignore the size arguments anyway.
-            //this might cause the (max-){width,height} property to include the native style border while they should not.
-            return subRule.adjustSize(baseStyle()->sizeFromContents(ct, opt, csz, w));
-        }
-#endif
         sz = subRule.adjustSize(csz);
         break;
     }

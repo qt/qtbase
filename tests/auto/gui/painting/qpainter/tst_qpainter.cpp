@@ -461,11 +461,6 @@ void tst_QPainter::drawPixmap_comp()
     destPm.fill(c1);
     srcPm.fill(c2);
 
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    if (!destPm.x11PictureHandle())
-        QSKIP("Requires XRender support");
-#endif
-
     QPainter p(&destPm);
     p.drawPixmap(0, 0, srcPm);
     p.end();

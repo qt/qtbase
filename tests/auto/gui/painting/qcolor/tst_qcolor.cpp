@@ -111,10 +111,6 @@ private slots:
 
     void qcolorprofile_data();
     void qcolorprofile();
-
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    void setallowX11ColorNames();
-#endif
 };
 
 // Testing get/set functions
@@ -1459,62 +1455,6 @@ void tst_QColor::achromaticHslHue()
     QColor hsl = color.toHsl();
     QCOMPARE(hsl.hslHue(), -1);
 }
-
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-void tst_QColor::setallowX11ColorNames()
-{
-    RGBData x11RgbTbl[] = {
-        // a few standard X11 color names
-        { "DodgerBlue1", qRgb(30, 144, 255) },
-        { "DodgerBlue2", qRgb(28, 134, 238) },
-        { "DodgerBlue3", qRgb(24, 116, 205) },
-        { "DodgerBlue4", qRgb(16, 78, 139) },
-        { "SteelBlue1", qRgb(99, 184, 255) },
-        { "SteelBlue2", qRgb(92, 172, 238) },
-        { "SteelBlue3", qRgb(79, 148, 205) },
-        { "SteelBlue4", qRgb(54, 100, 139) },
-        { "DeepSkyBlue1", qRgb(0, 191, 255) },
-        { "DeepSkyBlue2", qRgb(0, 178, 238) },
-        { "DeepSkyBlue3", qRgb(0, 154, 205) },
-        { "DeepSkyBlue4", qRgb(0, 104, 139) },
-        { "SkyBlue1", qRgb(135, 206, 255) },
-        { "SkyBlue2", qRgb(126, 192, 238) },
-        { "SkyBlue3", qRgb(108, 166, 205) },
-        { "SkyBlue4", qRgb(74, 112, 139) }
-    };
-    static const int x11RgbTblSize = sizeof(x11RgbTbl) / sizeof(RGBData);
-
-    // X11 color names should not work by default
-    QVERIFY(!QColor::allowX11ColorNames());
-    for (int i = 0; i < x11RgbTblSize; ++i) {
-        QString colorName = QLatin1String(x11RgbTbl[i].name);
-        QColor color;
-        color.setNamedColor(colorName);
-        QVERIFY(!color.isValid());
-    }
-
-    // enable X11 color names
-    QColor::setAllowX11ColorNames(true);
-    QVERIFY(QColor::allowX11ColorNames());
-    for (int i = 0; i < x11RgbTblSize; ++i) {
-        QString colorName = QLatin1String(x11RgbTbl[i].name);
-        QColor color;
-        color.setNamedColor(colorName);
-        QColor expected(x11RgbTbl[i].value);
-        QCOMPARE(color, expected);
-    }
-
-    // should be able to turn off X11 color names
-    QColor::setAllowX11ColorNames(false);
-    QVERIFY(!QColor::allowX11ColorNames());
-    for (int i = 0; i < x11RgbTblSize; ++i) {
-        QString colorName = QLatin1String(x11RgbTbl[i].name);
-        QColor color;
-        color.setNamedColor(colorName);
-        QVERIFY(!color.isValid());
-    }
-}
-#endif
 
 void tst_QColor::premultiply()
 {

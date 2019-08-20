@@ -1585,7 +1585,6 @@ protected:
     {
         Q_UNUSED(e)
 
-#if 1 // Used to be excluded in Qt4 for Q_WS_MAC
         QStyleOptionToolButton opt;
         initStyleOption(&opt);
 
@@ -1598,7 +1597,7 @@ protected:
             toolPalette.setColor(QPalette::ButtonText, toolPalette.color(QPalette::HighlightedText));
             setPalette(toolPalette);
         }
-#endif
+
         QToolButton::paintEvent(e);
     }
 };
