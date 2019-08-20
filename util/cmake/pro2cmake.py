@@ -1014,6 +1014,7 @@ def map_condition(condition: str) -> str:
                        condition)
     condition = re.sub(r'qtConfig\(opengl\.\*\)', r'QT_FEATURE_opengl', condition)
     condition = re.sub(r'^win\*$', r'win', condition)
+    condition = re.sub(r'contains\(CONFIG, static\)', r'NOT QT_BUILD_SHARED_LIBS', condition)
 
     def gcc_version_handler(match_obj: re.Match):
         operator = match_obj.group(1)
