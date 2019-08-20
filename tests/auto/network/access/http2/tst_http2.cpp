@@ -82,6 +82,8 @@ RawSettings qt_H2ConfigurationToSettings(const QHttp2Configuration &config = qt_
     RawSettings settings;
     settings[Http2::Settings::ENABLE_PUSH_ID] = config.serverPushEnabled();
     settings[Http2::Settings::INITIAL_WINDOW_SIZE_ID] = config.streamReceiveWindowSize();
+    if (config.maxFrameSize() != Http2::minPayloadLimit)
+        settings[Http2::Settings::MAX_FRAME_SIZE_ID] = config.maxFrameSize();
     return settings;
 }
 
@@ -107,6 +109,7 @@ private slots:
     void earlyResponse();
     void connectToHost_data();
     void connectToHost();
+    void maxFrameSize();
 
 protected slots:
     // Slots to listen to our in-process server:
@@ -694,6 +697,73 @@ void tst_Http2::connectToHost()
 
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(reply->isFinished());
+}
+
+void tst_Http2::maxFrameSize()
+{
+#if !QT_CONFIG(ssl)
+    QSKIP("TLS support is needed for this test");
+#endif // QT_CONFIG(ssl)
+
+    // Here we test we send 'MAX_FRAME_SIZE' setting in our
+    // 'SETTINGS'. If done properly, our server will not chunk
+    // the payload into several DATA frames.
+
+#if QT_CONFIG(securetransport)
+    // Normally on macOS we use plain text only for SecureTransport
+    // does not support ALPN on the server side. With 'direct encrytped'
+    // we have to use TLS sockets (== private key) and thus suppress a
+    // keychain UI asking for permission to use a private key.
+    // Our CI has this, but somebody testing locally - will have a problem.
+    qputenv("QT_SSL_USE_TEMPORARY_KEYCHAIN", QByteArray("1"));
+    auto envRollback = qScopeGuard([](){
+        qunsetenv("QT_SSL_USE_TEMPORARY_KEYCHAIN");
+    });
+#endif // QT_CONFIG(securetransport)
+
+    auto connectionType = H2Type::h2Alpn;
+    auto attribute = QNetworkRequest::HTTP2AllowedAttribute;
+    if (clearTextHTTP2) {
+        connectionType = H2Type::h2Direct;
+        attribute = QNetworkRequest::Http2DirectAttribute;
+    }
+
+    auto h2Config = qt_defaultH2Configuration();
+    h2Config.setMaxFrameSize(Http2::minPayloadLimit * 3);
+
+    serverPort = 0;
+    nRequests = 1;
+
+    ServerPtr srv(newServer(defaultServerSettings, connectionType,
+                            qt_H2ConfigurationToSettings(h2Config)));
+    srv->setResponseBody(QByteArray(Http2::minPayloadLimit * 2, 'q'));
+    QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+    QVERIFY(serverPort != 0);
+
+    const QSignalSpy frameCounter(srv.data(), &Http2Server::sendingData);
+    auto url = requestUrl(connectionType);
+    url.setPath(QString("/stream1.html"));
+
+    QNetworkRequest request(url);
+    request.setAttribute(attribute, QVariant(true));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
+    request.setHttp2Configuration(h2Config);
+
+    QNetworkReply *reply = manager->get(request);
+    reply->ignoreSslErrors();
+    connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    // Normally, with a 16kb limit, our server would split such
+    // a response into 3 'DATA' frames (16kb + 16kb + 0|END_STREAM).
+    QCOMPARE(frameCounter.count(), 1);
+
+    QVERIFY(nRequests == 0);
+    QVERIFY(prefaceOK);
+    QVERIFY(serverGotSettingsACK);
 }
 
 void tst_Http2::serverStarted(quint16 port)

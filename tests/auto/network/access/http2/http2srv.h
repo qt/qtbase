@@ -128,6 +128,7 @@ Q_SIGNALS:
     void receivedRequest(quint32 streamID);
     void receivedData(quint32 streamID);
     void windowUpdate(quint32 streamID);
+    void sendingData();
 
 private slots:
     void connectionEstablished();

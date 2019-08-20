@@ -75,9 +75,13 @@ Frame configurationToSettingsFrame(const QHttp2Configuration &config)
     builder.append(Settings::INITIAL_WINDOW_SIZE_ID);
     builder.append(config.streamReceiveWindowSize());
 
-    // TODO: Max frame size; in future, if the need
-    // is proven, we can also set decoding table size
-    // and header list size. For now, defaults suffice.
+    if (config.maxFrameSize() != minPayloadLimit) {
+        builder.append(Settings::MAX_FRAME_SIZE_ID);
+        builder.append(config.maxFrameSize());
+    }
+    // TODO: In future, if the need is proven, we can
+    // also send decoding table size and header list size.
+    // For now, defaults suffice.
     return builder.outboundFrame();
 }
 
