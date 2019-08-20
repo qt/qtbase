@@ -66,9 +66,6 @@ public:
     void setHuffmanCompressionEnabled(bool enable);
     bool huffmanCompressionEnabled() const;
 
-    void setStringIndexingEnabled(bool enable);
-    bool stringIndexingEnabled() const;
-
     bool setSessionReceiveWindowSize(unsigned size);
     unsigned sessionReceiveWindowSize() const;
 

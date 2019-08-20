@@ -79,13 +79,9 @@ QT_BEGIN_NAMESPACE
          frame.
     \endlist
 
-    The QHttp2Configuration class also controls some of the parameters
-    affecting the header compression algorithm (HPACK). They include:
-
-    \list
-      \li Huffman string compression.
-      \li Indexing strings.
-    \endlist
+    The QHttp2Configuration class also controls if the header compression
+    algorithm (HPACK) is additionally using Huffman coding for string
+    compression.
 
     \note The configuration must be set before the first request
     was sent to a given host (and thus an HTTP/2 session established).
@@ -112,7 +108,6 @@ public:
     bool pushEnabled = false;
     // TODO: for now those two below are noop.
     bool huffmanCompressionEnabled = true;
-    bool indexingEnabled = true;
 };
 
 /*!
@@ -122,7 +117,6 @@ public:
     \list
         \li Server push is disabled
         \li Huffman string compression is enabled
-        \li String indexing is enabled
         \li Window size for connection-level flow control is 65535 octets
         \li Window size for stream-level flow control is 65535 octets
         \li Frame size is 16384 octets
@@ -209,30 +203,6 @@ void QHttp2Configuration::setHuffmanCompressionEnabled(bool enable)
 bool QHttp2Configuration::huffmanCompressionEnabled() const
 {
     return d->huffmanCompressionEnabled;
-}
-
-/*!
-    If \a enable is \c true, HPACK compression will index strings
-    in its dynamic compression table. Enabled by default.
-
-    \note This setting only has an affect on how QNetworkAccessManager
-    sending 'HEADERS' frames.
-
-    \sa stringIndexingEnabled
-*/
-void QHttp2Configuration::setStringIndexingEnabled(bool enable)
-{
-    d->indexingEnabled = enable;
-}
-
-/*!
-    Returns \true if HPACK compression is indexing strings.
-
-    \sa setStringIndexingEnabled
-*/
-bool QHttp2Configuration::stringIndexingEnabled() const
-{
-    return d->indexingEnabled;
 }
 
 /*!
@@ -335,7 +305,6 @@ bool operator==(const QHttp2Configuration &lhs, const QHttp2Configuration &rhs)
 
     return lhs.d->pushEnabled == rhs.d->pushEnabled
            && lhs.d->huffmanCompressionEnabled == rhs.d->huffmanCompressionEnabled
-           && lhs.d->indexingEnabled == rhs.d->indexingEnabled
            && lhs.d->sessionWindowSize == rhs.d->sessionWindowSize
            && lhs.d->streamWindowSize == rhs.d->streamWindowSize;
 }
