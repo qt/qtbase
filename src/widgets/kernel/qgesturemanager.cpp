@@ -143,6 +143,7 @@ Qt::GestureType QGestureManager::registerGestureRecognizer(QGestureRecognizer *r
 void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
 {
     QList<QGestureRecognizer *> list = m_recognizers.values(type);
+    m_recognizers.remove(type);
     foreach (QGesture *g, m_gestureToRecognizer.keys()) {
         QGestureRecognizer *recognizer = m_gestureToRecognizer.value(g);
         if (list.contains(recognizer)) {
