@@ -331,6 +331,9 @@ void QEglFSKmsGbmScreen::flip()
             static int zpos = qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_ZPOS");
             if (zpos)
                 drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->zposPropertyId, zpos);
+            static uint blendOp = uint(qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_BLEND_OP"));
+            if (blendOp)
+                drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->blendOpPropertyId, blendOp);
         }
 #endif
     } else {
