@@ -861,22 +861,6 @@ QWidgetSet *QWidgetPrivate::allWidgets = 0;         // widgets with no wid
 
 
 /*****************************************************************************
-  QWidget utility functions
- *****************************************************************************/
-
-QRegion qt_dirtyRegion(QWidget *widget)
-{
-    if (!widget)
-        return QRegion();
-
-    QWidgetRepaintManager *repaintManager = qt_widget_private(widget)->maybeRepaintManager();
-    if (!repaintManager)
-        return QRegion();
-
-    return repaintManager->dirtyRegion(widget);
-}
-
-/*****************************************************************************
   QWidget member functions
  *****************************************************************************/
 
