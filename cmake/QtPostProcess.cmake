@@ -72,7 +72,9 @@ function(qt_internal_create_module_depends_file target)
     set(main_module_tool_deps "")
 
     qt_internal_get_qt_all_known_modules(known_modules)
-    foreach (dep ${depends})
+
+    set(all_depends ${depends} ${public_depends})
+    foreach (dep ${all_depends})
         # Normalize module by stripping leading "Qt::" and trailing "Private"
         if (dep MATCHES "Qt::(.*)")
             set(dep "${CMAKE_MATCH_1}")
