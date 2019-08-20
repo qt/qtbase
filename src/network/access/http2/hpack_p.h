@@ -83,6 +83,7 @@ public:
                           quint32 newSize);
 
     void setMaxDynamicTableSize(quint32 size);
+    void setCompressStrings(bool compress);
 
 private:
     bool encodeRequestPseudoHeaders(BitOStream &outputStream,

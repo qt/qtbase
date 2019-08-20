@@ -179,6 +179,7 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
     maxSessionReceiveWindowSize = h2Config.sessionReceiveWindowSize();
     pushPromiseEnabled = h2Config.serverPushEnabled();
     streamInitialReceiveWindowSize = h2Config.streamReceiveWindowSize();
+    encoder.setCompressStrings(h2Config.huffmanCompressionEnabled());
 
     if (!channel->ssl && m_connection->connectionType() != QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
         // We upgraded from HTTP/1.1 to HTTP/2. channel->request was already sent
