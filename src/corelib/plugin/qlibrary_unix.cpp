@@ -52,6 +52,10 @@
 #  include <private/qcore_mac_p.h>
 #endif
 
+#ifdef Q_OS_ANDROID
+#  include <private/qjnihelpers_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static QString qdlerror()
@@ -157,9 +161,12 @@ bool QLibraryPrivate::load_sys()
     // Do not unload the library during dlclose(). Consequently, the
     // library's specific static variables are not reinitialized if the
     // library is reloaded with dlopen() at a later time.
-#if defined(RTLD_NODELETE) && !defined(Q_OS_ANDROID)
+#if defined(RTLD_NODELETE)
     if (loadHints & QLibrary::PreventUnloadHint) {
-        dlFlags |= RTLD_NODELETE;
+#   ifdef Q_OS_ANDROID // RTLD_NODELETE flag is supported by Android 23+
+        if (QtAndroidPrivate::androidSdkVersion() > 22)
+#   endif
+            dlFlags |= RTLD_NODELETE;
     }
 #endif
 
