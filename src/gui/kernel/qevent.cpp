@@ -535,13 +535,6 @@ Qt::MouseEventFlags QMouseEvent::flags() const
 */
 
 /*!
-    \fn QPointF QMouseEvent::posF() const
-    \obsolete
-
-    Use localPos() instead.
-*/
-
-/*!
     \class QHoverEvent
     \ingroup events
     \inmodule QtGui
@@ -1100,16 +1093,6 @@ QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers,
 QKeyEvent::~QKeyEvent()
 {
 }
-
-/*!
-    \fn QKeyEvent *QKeyEvent::createExtendedKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, quint32 nativeScanCode, quint32 nativeVirtualKey, quint32 nativeModifiers, const QString& text, bool autorep, ushort count)
-    \internal
-*/
-
-/*!
-    \fn bool QKeyEvent::hasExtendedInfo() const
-    \internal
-*/
 
 /*!
   \fn quint32 QKeyEvent::nativeScanCode() const
@@ -2539,7 +2522,7 @@ Qt::MouseButtons QTabletEvent::buttons() const
     globalPos() can differ significantly from the current position
     QCursor::pos().
 
-    \sa globalX(), globalY(), hiResGlobalPos()
+    \sa globalX(), globalY()
 */
 
 /*!
@@ -2581,15 +2564,6 @@ Qt::MouseButtons QTabletEvent::buttons() const
     the eraser-end versus the pen-end of the stylus on some OS's.
 
     \sa pointerType()
-*/
-
-/*!
-    \fn const QPointF &QTabletEvent::hiResGlobalPos() const
-
-    The high precision coordinates delivered from the tablet expressed.
-    Sub pixeling information is in the fractional part of the QPointF.
-
-    \sa globalPos(), hiResGlobalX(), hiResGlobalY()
 */
 
 /*!
@@ -2674,10 +2648,10 @@ Qt::MouseButtons QTabletEvent::buttons() const
     \sa Qt::NativeGestureType, QGestureEvent
 */
 
+#if QT_DEPRECATED_SINCE(5, 10)
 /*!
     \deprecated The QTouchDevice parameter is now required
 */
-#if QT_DEPRECATED_SINCE(5, 10)
 QNativeGestureEvent::QNativeGestureEvent(Qt::NativeGestureType type, const QPointF &localPos, const QPointF &windowPos,
                                          const QPointF &screenPos, qreal realValue, ulong sequenceId, quint64 intValue)
     : QInputEvent(QEvent::NativeGesture), mGestureType(type),
@@ -4290,18 +4264,6 @@ QWindowStateChangeEvent::~QWindowStateChangeEvent()
     QGraphicsItem::acceptTouchEvents()
 */
 
-/*! \enum QTouchEvent::DeviceType
-    \obsolete
-
-    This enum represents the type of device that generated a QTouchEvent.
-
-    This enum has been deprecated. Use QTouchDevice::DeviceType instead.
-    \omitvalue TouchPad
-    \omitvalue TouchScreen
-
-    \sa QTouchDevice::DeviceType, QTouchDevice::type(), QTouchEvent::device()
-*/
-
 /*!
     Constructs a QTouchEvent with the given \a eventType, \a device, and
     \a touchPoints. The \a touchPointStates and \a modifiers
@@ -4339,16 +4301,6 @@ QTouchEvent::~QTouchEvent()
 
     Returns the target object within the window on which the event occurred.
     This is typically a QWidget or a QQuickItem. May be 0 when no specific target is available.
-*/
-
-/*! \fn QTouchEvent::DeviceType QTouchEvent::deviceType() const
-    \obsolete
-
-    Returns the touch device Type, which is of type \l {QTouchEvent::DeviceType} {DeviceType}.
-
-    This function has been deprecated. Use QTouchDevice::type() instead.
-
-    \sa QTouchDevice::type(), QTouchEvent::device()
 */
 
 /*! \fn QTouchEvent::TouchPoint::TouchPoint(TouchPoint &&other)
