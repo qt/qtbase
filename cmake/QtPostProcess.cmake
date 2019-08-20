@@ -56,6 +56,9 @@ endmacro()
 function(qt_internal_create_module_depends_file target)
     get_target_property(depends "${target}" LINK_LIBRARIES)
     get_target_property(public_depends "${target}" INTERFACE_LINK_LIBRARIES)
+
+    # Used for collecting Qt module dependencies that should be find_package()'d in
+    # ModuleDependencies.cmake.
     get_target_property(target_deps "${target}" _qt_target_deps)
     set(target_deps_seen "")
 
@@ -64,11 +67,21 @@ function(qt_internal_create_module_depends_file target)
         list(APPEND target_deps ${extra_depends})
     endif()
 
+    # Used for assembling the content of an include/Module/ModuleDepends.h header.
     set(qtdeps "")
+
+    # Used for collecting third party dependencies that should be find_package()'d in
+    # ModuleDependencies.cmake.
     set(third_party_deps "")
     set(third_party_deps_seen "")
+
+    # Used for collecting Qt tool dependencies that should be find_package()'d in
+    # ModuleToolsDependencies.cmake.
     set(tool_deps "")
     set(tool_deps_seen "")
+
+    # Used for collecting Qt tool dependencies that should be find_package()'d in
+    # ModuleDependencies.cmake.
     set(main_module_tool_deps "")
 
     qt_internal_get_qt_all_known_modules(known_modules)
