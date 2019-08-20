@@ -71,6 +71,7 @@ function(qt_internal_create_module_depends_file target)
     set(tool_deps_seen "")
     set(main_module_tool_deps "")
 
+    qt_internal_get_qt_all_known_modules(known_modules)
     foreach (dep ${depends})
         # Normalize module by stripping leading "Qt::" and trailing "Private"
         if (dep MATCHES "Qt::(.*)")
@@ -80,7 +81,7 @@ function(qt_internal_create_module_depends_file target)
             set(dep "${CMAKE_MATCH_1}")
         endif()
 
-        list(FIND QT_KNOWN_MODULES "${dep}" _pos)
+        list(FIND known_modules "${dep}" _pos)
         if (_pos GREATER -1)
             list(APPEND qtdeps "${dep}")
 
@@ -224,12 +225,14 @@ endfunction()
 
 # Create Depends.cmake & Depends.h files for all modules and plug-ins.
 function(qt_internal_create_depends_files)
-    message("Generating depends files for ${QT_KNOWN_MODULES}...")
-    foreach (target ${QT_KNOWN_MODULES})
+    qt_internal_get_qt_repo_known_modules(repo_known_modules)
+
+    message("Generating ModuleDepends files and CMake ModuleDependencies files for ${repo_known_modules}...")
+    foreach (target ${repo_known_modules})
         qt_internal_create_module_depends_file(${target})
     endforeach()
 
-    message("Generating depends files for ${QT_KNOWN_PLUGINS}...")
+    message("Generating CMake PluginDependencies files for ${QT_KNOWN_PLUGINS}...")
     foreach (target ${QT_KNOWN_PLUGINS})
         qt_internal_create_plugin_depends_file(${target})
     endforeach()
@@ -238,8 +241,10 @@ endfunction()
 # This function creates the Qt<Module>Plugins.cmake used to list all
 # the plug-in target files.
 function(qt_internal_create_plugins_files)
-    message("Generating Plugins files for ${QT_KNOWN_MODULES}...")
-    foreach (QT_MODULE ${QT_KNOWN_MODULES})
+    qt_internal_get_qt_repo_known_modules(repo_known_modules)
+
+    message("Generating Plugins files for ${repo_known_modules}...")
+    foreach (QT_MODULE ${repo_known_modules})
         qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${INSTALL_CMAKE_NAMESPACE}${QT_MODULE})
         qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${INSTALL_CMAKE_NAMESPACE}${QT_MODULE})
         set(QT_MODULE_PLUGIN_INCLUDES "")
@@ -285,7 +290,8 @@ endfunction()
 # For every Qt module check if there any android dependencies that require
 # processing.
 function(qt_modules_process_android_dependencies)
-    foreach (target ${QT_KNOWN_MODULES})
+    qt_internal_get_qt_repo_known_modules(repo_known_modules)
+    foreach (target ${repo_known_modules})
         qt_android_dependencies(${target})
     endforeach()
 endfunction()

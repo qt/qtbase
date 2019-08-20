@@ -118,15 +118,35 @@ else()
     set(QT_HAS_NAMESPACE ON)
 endif()
 
-macro(qt_internal_set_qt_known_modules)
-    set(QT_KNOWN_MODULES ${ARGN} CACHE INTERNAL "Known Qt modules" FORCE)
-endmacro()
+
+function(qt_internal_clear_qt_repo_known_modules)
+    set(QT_REPO_KNOWN_MODULES "" CACHE INTERNAL "Known current repo Qt modules" FORCE)
+endfunction()
+
+function(qt_internal_add_qt_repo_known_module)
+    set(QT_REPO_KNOWN_MODULES ${QT_REPO_KNOWN_MODULES} ${ARGN}
+        CACHE INTERNAL "Known current repo Qt modules" FORCE)
+endfunction()
+
+function(qt_internal_get_qt_repo_known_modules out_var)
+    set("${out_var}" "${QT_REPO_KNOWN_MODULES}" PARENT_SCOPE)
+endfunction()
+
+# Gets the list of all known Qt modules both found and that were built as part of the
+# current project.
+function(qt_internal_get_qt_all_known_modules out_var)
+    qt_internal_get_qt_repo_known_modules(repo_known_modules)
+    set(known_modules ${QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE} ${repo_known_modules})
+    list(REMOVE_DUPLICATES known_modules)
+    set("${out_var}" "${known_modules}" PARENT_SCOPE)
+endfunction()
+
 macro(qt_internal_set_qt_known_plugins)
     set(QT_KNOWN_PLUGINS ${ARGN} CACHE INTERNAL "Known Qt plugins" FORCE)
 endmacro()
 
 # Reset:
-qt_internal_set_qt_known_modules("")
+qt_internal_clear_qt_repo_known_modules("")
 qt_internal_set_qt_known_plugins("")
 
 set(QT_KNOWN_MODULES_WITH_TOOLS "" CACHE INTERNAL "Known Qt modules with tools" FORCE)
@@ -941,11 +961,9 @@ function(extend_target target)
         )
 
         # When computing the private library dependencies, we need to check not only the known
-        # modules added by this repo's qt_build_repo() (which are stored in QT_KNOWN_MODULES), but
-        # also all module dependencies that were found via find_package() (which are stored in
-        # QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE).
-        set(known_modules ${QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE} ${QT_KNOWN_MODULES})
-        list(REMOVE_DUPLICATES known_modules)
+        # modules added by this repo's qt_build_repo(), but also all module dependencies that
+        # were found via find_package().
+        qt_internal_get_qt_all_known_modules(known_modules)
 
         # When a public module depends on a private module (Gui on CorePrivate)
         # make its private module depend on the other private module (GuiPrivate will depend on
@@ -1162,7 +1180,7 @@ function(add_qt_module target)
         set(arg_CONFIG_MODULE_NAME "${module_lower}")
     endif()
 
-    qt_internal_set_qt_known_modules("${QT_KNOWN_MODULES}" "${target}")
+    qt_internal_add_qt_repo_known_module("${target}")
 
     ### Define Targets:
     if(${arg_STATIC})
@@ -1527,8 +1545,7 @@ endfunction()
 # Utility function to find the module to which a plug-in belongs.
 # This will set the QT_MODULE target property on the plug-in - e.g. "Gui", "Sql"...
 function(qt_get_module_for_plugin target target_type)
-    set(known_modules ${QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE} ${QT_KNOWN_MODULES})
-    list(REMOVE_DUPLICATES known_modules)
+    qt_internal_get_qt_all_known_modules(known_modules)
     foreach(qt_module ${known_modules})
         get_target_property(plugin_types
                            "${QT_CMAKE_EXPORT_NAMESPACE}::${qt_module}"
@@ -1691,7 +1708,8 @@ function(add_qt_plugin target)
 
 
     set(qt_libs_private "")
-    foreach(it ${QT_KNOWN_MODULES})
+    qt_internal_get_qt_all_known_modules(known_modules)
+    foreach(it ${known_modules})
         list(FIND arg_LIBRARIES "Qt::${it}Private" pos)
         if(pos GREATER -1)
             list(APPEND qt_libs_private "Qt::${it}Private")
