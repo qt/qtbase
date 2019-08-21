@@ -100,18 +100,57 @@ public:
 
     void sync(QWidget *exposedWidget, const QRegion &exposedRegion);
     void sync();
-    void flush(QWidget *widget = nullptr);
 
     QBackingStore *backingStore() const { return store; }
-
-    inline bool isDirty() const
-    {
-        return !(dirtyWidgets.isEmpty() && dirty.isEmpty() && dirtyRenderToTextureWidgets.isEmpty());
-    }
+    void setBackingStore(QBackingStore *backingStore) { store = backingStore; }
 
     template <class T>
     void markDirty(const T &r, QWidget *widget, UpdateTime updateTime = UpdateLater,
                    BufferState bufferState = BufferValid);
+
+    void removeDirtyWidget(QWidget *w);
+
+    inline void addStaticWidget(QWidget *widget)
+    {
+        if (!widget)
+            return;
+
+        Q_ASSERT(widget->testAttribute(Qt::WA_StaticContents));
+        if (!staticWidgets.contains(widget))
+            staticWidgets.append(widget);
+    }
+
+    // Move the reparented widget and all its static children from this backing store
+    // to the new backing store if reparented into another top-level / backing store.
+    inline void moveStaticWidgets(QWidget *reparented)
+    {
+        Q_ASSERT(reparented);
+        QWidgetRepaintManager *newPaintManager = reparented->d_func()->maybeRepaintManager();
+        if (newPaintManager == this)
+            return;
+
+        int i = 0;
+        while (i < staticWidgets.size()) {
+            QWidget *w = staticWidgets.at(i);
+            if (reparented == w || reparented->isAncestorOf(w)) {
+                staticWidgets.removeAt(i);
+                if (newPaintManager)
+                    newPaintManager->addStaticWidget(w);
+            } else {
+                ++i;
+            }
+        }
+    }
+
+    inline void removeStaticWidget(QWidget *widget)
+    {
+        staticWidgets.removeAll(widget);
+    }
+
+    QRegion staticContents(QWidget *widget = nullptr, const QRect &withinClipRect = QRect()) const;
+
+    void markDirtyOnScreen(const QRegion &dirtyOnScreen, QWidget *widget, const QPoint &topLevelOffset);
+    bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);
 
 private:
     QWidget *tlw;
@@ -131,20 +170,19 @@ private:
 
     void sendUpdateRequest(QWidget *widget, UpdateTime updateTime);
 
-    void flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures);
+    inline bool isDirty() const
+    {
+        return !(dirtyWidgets.isEmpty() && dirty.isEmpty() && dirtyRenderToTextureWidgets.isEmpty());
+    }
 
     void doSync();
-    bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);
+    void flush(QWidget *widget = nullptr);
+    void flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures);
 
     void beginPaint(QRegion &toClean, QBackingStore *backingStore);
     void endPaint(QBackingStore *backingStore);
 
     QRegion dirtyRegion(QWidget *widget = nullptr) const;
-    QRegion staticContents(QWidget *widget = nullptr, const QRect &withinClipRect = QRect()) const;
-
-    void markDirtyOnScreen(const QRegion &dirtyOnScreen, QWidget *widget, const QPoint &topLevelOffset);
-
-    void removeDirtyWidget(QWidget *w);
 
     void updateLists(QWidget *widget);
 
@@ -172,41 +210,6 @@ private:
             Q_ASSERT(widgetPrivate->renderToTexture);
             dirtyRenderToTextureWidgets.append(widget);
             widgetPrivate->inDirtyList = true;
-        }
-    }
-
-    inline void addStaticWidget(QWidget *widget)
-    {
-        if (!widget)
-            return;
-
-        Q_ASSERT(widget->testAttribute(Qt::WA_StaticContents));
-        if (!staticWidgets.contains(widget))
-            staticWidgets.append(widget);
-    }
-
-    inline void removeStaticWidget(QWidget *widget)
-    { staticWidgets.removeAll(widget); }
-
-    // Move the reparented widget and all its static children from this backing store
-    // to the new backing store if reparented into another top-level / backing store.
-    inline void moveStaticWidgets(QWidget *reparented)
-    {
-        Q_ASSERT(reparented);
-        QWidgetRepaintManager *newPaintManager = reparented->d_func()->maybeRepaintManager();
-        if (newPaintManager == this)
-            return;
-
-        int i = 0;
-        while (i < staticWidgets.size()) {
-            QWidget *w = staticWidgets.at(i);
-            if (reparented == w || reparented->isAncestorOf(w)) {
-                staticWidgets.removeAt(i);
-                if (newPaintManager)
-                    newPaintManager->addStaticWidget(w);
-            } else {
-                ++i;
-            }
         }
     }
 
@@ -252,10 +255,6 @@ private:
         return !staticWidgets.isEmpty() && false;
 #endif
     }
-
-    friend class QWidgetPrivate;
-    friend class QWidget;
-    friend class QBackingStore;
 
     Q_DISABLE_COPY_MOVE(QWidgetRepaintManager)
 };

@@ -11840,9 +11840,9 @@ void QWidget::setBackingStore(QBackingStore *store)
         return;
 
     if (isTopLevel()) {
-        if (repaintManager->store != oldStore && repaintManager->store != store)
-            delete repaintManager->store;
-        repaintManager->store = store;
+        if (repaintManager->backingStore() != oldStore && repaintManager->backingStore() != store)
+            delete repaintManager->backingStore();
+        repaintManager->setBackingStore(store);
     }
 }
 
@@ -11859,7 +11859,7 @@ QBackingStore *QWidget::backingStore() const
         return extra->backingStore;
 
     QWidgetRepaintManager *repaintManager = d->maybeRepaintManager();
-    return repaintManager ? repaintManager->store : nullptr;
+    return repaintManager ? repaintManager->backingStore() : nullptr;
 }
 
 void QWidgetPrivate::getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const
