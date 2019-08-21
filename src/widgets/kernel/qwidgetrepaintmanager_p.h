@@ -180,9 +180,6 @@ private:
     void flush(QWidget *widget = nullptr);
     void flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures);
 
-    void beginPaint(QRegion &toClean, QBackingStore *backingStore);
-    void endPaint(QBackingStore *backingStore);
-
     QRegion dirtyRegion(QWidget *widget = nullptr) const;
 
     void updateLists(QWidget *widget);

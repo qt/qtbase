@@ -90,25 +90,6 @@ bool QWidgetRepaintManager::bltRect(const QRect &rect, int dx, int dy, QWidget *
 }
 
 /*!
-    Prepares the window surface to paint a\ toClean region of the \a widget.
-
-    The \a toClean region might be clipped by the window surface.
-*/
-void QWidgetRepaintManager::beginPaint(QRegion &toClean, QBackingStore *backingStore)
-{
-    // Always flush repainted areas.
-    dirtyOnScreen += toClean;
-
-    backingStore->beginPaint(toClean);
-}
-
-void QWidgetRepaintManager::endPaint(QBackingStore *backingStore)
-{
-    backingStore->endPaint();
-    flush();
-}
-
-/*!
     Returns the region (in top-level coordinates) that needs repaint and/or flush.
 
     If the widget is non-zero, only the dirty region for the widget is returned
@@ -1048,7 +1029,10 @@ void QWidgetRepaintManager::paintAndFlush()
     }
 #endif
 
-    beginPaint(toClean, store);
+    // Always flush repainted areas
+    dirtyOnScreen += toClean;
+
+    store->beginPaint(toClean);
 
     // Must do this before sending any paint events because
     // the size may change in the paint event.
@@ -1084,7 +1068,9 @@ void QWidgetRepaintManager::paintAndFlush()
         tlw->d_func()->drawWidget(store->paintDevice(), dirtyCopy, QPoint(), flags, 0, this);
     }
 
-    endPaint(store);
+    store->endPaint();
+
+    flush();
 }
 
 /*!
