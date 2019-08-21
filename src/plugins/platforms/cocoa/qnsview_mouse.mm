@@ -389,14 +389,16 @@
         }
         // Close the popups if the click was outside.
         if (!inside) {
+            bool selfClosed = false;
             Qt::WindowType type = QCocoaIntegration::instance()->activePopupWindow()->window()->type();
             while (QCocoaWindow *popup = QCocoaIntegration::instance()->popPopupWindow()) {
+                selfClosed = self == popup->view();
                 QWindowSystemInterface::handleCloseEvent(popup->window());
                 QWindowSystemInterface::flushWindowSystemEvents();
             }
             // Consume the mouse event when closing the popup, except for tool tips
             // were it's expected that the event is processed normally.
-            if (type != Qt::ToolTip)
+            if (type != Qt::ToolTip || selfClosed)
                  return;
         }
     }
