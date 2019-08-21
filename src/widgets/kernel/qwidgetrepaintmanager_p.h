@@ -63,11 +63,6 @@ class QPlatformTextureList;
 class QPlatformTextureListWatcher;
 class QWidgetRepaintManager;
 
-struct BeginPaintInfo {
-    inline BeginPaintInfo() : wasFlushed(0) {}
-    uint wasFlushed : 1;
-};
-
 #ifndef QT_NO_OPENGL
 class QPlatformTextureListWatcher : public QObject
 {
@@ -103,8 +98,6 @@ public:
     QWidgetRepaintManager(QWidget *t);
     ~QWidgetRepaintManager();
 
-    static void showYellowThing(QWidget *widget, const QRegion &rgn, int msec, bool);
-
     void sync(QWidget *exposedWidget, const QRegion &exposedRegion);
     void sync();
     void flush(QWidget *widget = nullptr);
@@ -138,8 +131,6 @@ private:
 
     void sendUpdateRequest(QWidget *widget, UpdateTime updateTime);
 
-    static bool flushPaint(QWidget *widget, const QRegion &rgn);
-    static void unflushPaint(QWidget *widget, const QRegion &rgn);
     static void qt_flush(QWidget *widget, const QRegion &region, QBackingStore *backingStore,
                          QWidget *tlw,
                          QPlatformTextureList *widgetTextures,
@@ -148,8 +139,8 @@ private:
     void doSync();
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);
 
-    void beginPaint(QRegion &toClean, QBackingStore *backingStore, BeginPaintInfo *returnInfo);
-    void endPaint(const QRegion &cleaned, QBackingStore *backingStore, BeginPaintInfo *beginPaintInfo);
+    void beginPaint(QRegion &toClean, QBackingStore *backingStore);
+    void endPaint(QBackingStore *backingStore);
 
     QRegion dirtyRegion(QWidget *widget = nullptr) const;
     QRegion staticContents(QWidget *widget = nullptr, const QRect &withinClipRect = QRect()) const;

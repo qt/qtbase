@@ -5303,9 +5303,6 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             q->setAttribute(Qt::WA_WState_InPaintEvent);
 
             //clip away the new area
-#ifndef QT_NO_PAINT_DEBUG
-            bool flushed = QWidgetRepaintManager::flushPaint(q, toBePainted);
-#endif
             QPaintEngine *paintEngine = pdev->paintEngine();
             if (paintEngine) {
                 setRedirected(pdev, -offset);
@@ -5406,11 +5403,6 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             if (paintEngine && paintEngine->autoDestruct()) {
                 delete paintEngine;
             }
-
-#ifndef QT_NO_PAINT_DEBUG
-            if (flushed)
-                QWidgetRepaintManager::unflushPaint(q, toBePainted);
-#endif
         } else if (q->isWindow()) {
             QPaintEngine *engine = pdev->paintEngine();
             if (engine) {
