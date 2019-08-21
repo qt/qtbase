@@ -63,25 +63,6 @@ class QPlatformTextureList;
 class QPlatformTextureListWatcher;
 class QWidgetRepaintManager;
 
-#ifndef QT_NO_OPENGL
-class QPlatformTextureListWatcher : public QObject
-{
-    Q_OBJECT
-
-public:
-    QPlatformTextureListWatcher(QWidgetRepaintManager *repaintManager);
-    void watch(QPlatformTextureList *textureList);
-    bool isLocked() const;
-
-private slots:
-     void onLockStatusChanged(bool locked);
-
-private:
-     QHash<QPlatformTextureList *, bool> m_locked;
-     QWidgetRepaintManager *m_repaintManager;
-};
-#endif
-
 class Q_AUTOTEST_EXPORT QWidgetRepaintManager
 {
 public:

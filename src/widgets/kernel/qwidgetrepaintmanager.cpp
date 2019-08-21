@@ -69,6 +69,44 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_OPENGL
 Q_GLOBAL_STATIC(QPlatformTextureList, qt_dummy_platformTextureList)
+
+// Watches one or more QPlatformTextureLists for changes in the lock state and
+// triggers a backingstore sync when all the registered lists turn into
+// unlocked state. This is essential when a custom composeAndFlush()
+// implementation in a platform plugin is not synchronous and keeps
+// holding on to the textures for some time even after returning from there.
+class QPlatformTextureListWatcher : public QObject
+{
+    Q_OBJECT
+public:
+    QPlatformTextureListWatcher(QWidgetRepaintManager *repaintManager)
+        : m_repaintManager(repaintManager) {}
+
+    void watch(QPlatformTextureList *textureList) {
+        connect(textureList, SIGNAL(locked(bool)), SLOT(onLockStatusChanged(bool)));
+        m_locked[textureList] = textureList->isLocked();
+    }
+
+    bool isLocked() const {
+        foreach (bool v, m_locked) {
+            if (v)
+                return true;
+        }
+        return false;
+    }
+
+private slots:
+     void onLockStatusChanged(bool locked) {
+        QPlatformTextureList *tl = static_cast<QPlatformTextureList *>(sender());
+        m_locked[tl] = locked;
+        if (!isLocked())
+            m_repaintManager->sync();
+     }
+
+private:
+     QHash<QPlatformTextureList *, bool> m_locked;
+     QWidgetRepaintManager *m_repaintManager;
+};
 #endif
 
 // ---------------------------------------------------------------------------
@@ -654,39 +692,6 @@ static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
     }
 
     return 0;
-}
-
-// Watches one or more QPlatformTextureLists for changes in the lock state and
-// triggers a backingstore sync when all the registered lists turn into
-// unlocked state. This is essential when a custom composeAndFlush()
-// implementation in a platform plugin is not synchronous and keeps
-// holding on to the textures for some time even after returning from there.
-QPlatformTextureListWatcher::QPlatformTextureListWatcher(QWidgetRepaintManager *paintManager)
-    : m_repaintManager(paintManager)
-{
-}
-
-void QPlatformTextureListWatcher::watch(QPlatformTextureList *textureList)
-{
-    connect(textureList, SIGNAL(locked(bool)), SLOT(onLockStatusChanged(bool)));
-    m_locked[textureList] = textureList->isLocked();
-}
-
-bool QPlatformTextureListWatcher::isLocked() const
-{
-    foreach (bool v, m_locked) {
-        if (v)
-            return true;
-    }
-    return false;
-}
-
-void QPlatformTextureListWatcher::onLockStatusChanged(bool locked)
-{
-    QPlatformTextureList *tl = static_cast<QPlatformTextureList *>(sender());
-    m_locked[tl] = locked;
-    if (!isLocked())
-        m_repaintManager->sync();
 }
 
 #else
@@ -1445,4 +1450,4 @@ void QWidgetPrivate::invalidateBackingStore_resizeHelper(const QPoint &oldPos, c
 
 QT_END_NAMESPACE
 
-#include "moc_qwidgetrepaintmanager_p.cpp"
+#include "qwidgetrepaintmanager.moc"
