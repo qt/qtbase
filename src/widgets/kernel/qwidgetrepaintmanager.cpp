@@ -846,7 +846,7 @@ void QWidgetRepaintManager::sync(QWidget *exposedWidget, const QRegion &exposedR
         markDirtyOnScreen(exposedRegion, exposedWidget, QPoint());
 
     if (syncAllowed())
-        doSync();
+        paintAndFlush();
 }
 
 /*!
@@ -871,10 +871,10 @@ void QWidgetRepaintManager::sync()
     }
 
     if (syncAllowed())
-        doSync();
+        paintAndFlush();
 }
 
-void QWidgetRepaintManager::doSync()
+void QWidgetRepaintManager::paintAndFlush()
 {
     const bool updatesDisabled = !tlw->updatesEnabled();
     bool repaintAllWidgets = false;

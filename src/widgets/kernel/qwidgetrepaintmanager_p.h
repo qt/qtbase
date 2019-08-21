@@ -175,7 +175,8 @@ private:
         return !(dirtyWidgets.isEmpty() && dirty.isEmpty() && dirtyRenderToTextureWidgets.isEmpty());
     }
 
-    void doSync();
+    void paintAndFlush();
+
     void flush(QWidget *widget = nullptr);
     void flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures);
 
