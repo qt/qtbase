@@ -610,7 +610,7 @@ bool QTextHtmlImporter::appendNodeText()
             || ch == QChar::ParagraphSeparator) {
 
             if (!textToInsert.isEmpty()) {
-                if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && textToInsert.at(textToInsert.length() - 1) == QChar(' '))
+                if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && textToInsert.at(textToInsert.length() - 1) == QLatin1Char(' '))
                     textToInsert = textToInsert.chopped(1);
                 cursor.insertText(textToInsert, format);
                 textToInsert.clear();
