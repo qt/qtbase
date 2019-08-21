@@ -131,10 +131,7 @@ private:
 
     void sendUpdateRequest(QWidget *widget, UpdateTime updateTime);
 
-    static void qt_flush(QWidget *widget, const QRegion &region, QBackingStore *backingStore,
-                         QWidget *tlw,
-                         QPlatformTextureList *widgetTextures,
-                         QWidgetRepaintManager *repaintManager);
+    void flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures);
 
     void doSync();
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);

@@ -76,84 +76,6 @@ static bool hasPlatformWindow(QWidget *widget)
     return widget && widget->windowHandle() && widget->windowHandle()->handle();
 }
 
-/**
- * Flushes the contents of the \a backingStore into the screen area of \a widget.
- * \a region is the region to be updated in \a widget coordinates.
- */
-void QWidgetRepaintManager::qt_flush(QWidget *widget, const QRegion &region, QBackingStore *backingStore,
-                                   QWidget *tlw, QPlatformTextureList *widgetTextures,
-                                   QWidgetRepaintManager *repaintManager)
-{
-#ifdef QT_NO_OPENGL
-    Q_UNUSED(widgetTextures);
-    Q_ASSERT(!region.isEmpty());
-#else
-    Q_ASSERT(!region.isEmpty() || widgetTextures);
-#endif
-    Q_ASSERT(widget);
-    Q_ASSERT(backingStore);
-    Q_ASSERT(tlw);
-
-    if (tlw->testAttribute(Qt::WA_DontShowOnScreen) || widget->testAttribute(Qt::WA_DontShowOnScreen))
-        return;
-
-    // Foreign Windows do not have backing store content and must not be flushed
-    if (QWindow *widgetWindow = widget->windowHandle()) {
-        if (widgetWindow->type() == Qt::ForeignWindow)
-            return;
-    }
-
-    static bool fpsDebug = qEnvironmentVariableIntValue("QT_DEBUG_FPS");
-    if (fpsDebug) {
-        if (!repaintManager->perfFrames++)
-            repaintManager->perfTime.start();
-        if (repaintManager->perfTime.elapsed() > 5000) {
-            double fps = double(repaintManager->perfFrames * 1000) / repaintManager->perfTime.restart();
-            qDebug("FPS: %.1f\n", fps);
-            repaintManager->perfFrames = 0;
-        }
-    }
-
-    QPoint offset;
-    if (widget != tlw)
-        offset += widget->mapTo(tlw, QPoint());
-
-    QRegion effectiveRegion = region;
-#ifndef QT_NO_OPENGL
-    const bool compositionWasActive = widget->d_func()->renderToTextureComposeActive;
-    if (!widgetTextures) {
-        widget->d_func()->renderToTextureComposeActive = false;
-        // Detect the case of falling back to the normal flush path when no
-        // render-to-texture widgets are visible anymore. We will force one
-        // last flush to go through the OpenGL-based composition to prevent
-        // artifacts. The next flush after this one will use the normal path.
-        if (compositionWasActive)
-            widgetTextures = qt_dummy_platformTextureList;
-    } else {
-        widget->d_func()->renderToTextureComposeActive = true;
-    }
-    // When changing the composition status, make sure the dirty region covers
-    // the entire widget.  Just having e.g. the shown/hidden render-to-texture
-    // widget's area marked as dirty is incorrect when changing flush paths.
-    if (compositionWasActive != widget->d_func()->renderToTextureComposeActive)
-        effectiveRegion = widget->rect();
-
-    // re-test since we may have been forced to this path via the dummy texture list above
-    if (widgetTextures) {
-        qt_window_private(tlw->windowHandle())->compositing = true;
-        widget->window()->d_func()->sendComposeStatus(widget->window(), false);
-        // A window may have alpha even when the app did not request
-        // WA_TranslucentBackground. Therefore the compositor needs to know whether the app intends
-        // to rely on translucency, in order to decide if it should clear to transparent or opaque.
-        const bool translucentBackground = widget->testAttribute(Qt::WA_TranslucentBackground);
-        backingStore->handle()->composeAndFlush(widget->windowHandle(), effectiveRegion, offset,
-                                                widgetTextures, translucentBackground);
-        widget->window()->d_func()->sendComposeStatus(widget->window(), true);
-    } else
-#endif
-        backingStore->flush(effectiveRegion, widget->windowHandle(), offset);
-}
-
 /*
     Moves the whole rect by (dx, dy) in widget's coordinate system.
     Doesn't generate any updates.
@@ -913,8 +835,8 @@ void QWidgetRepaintManager::sync(QWidget *exposedWidget, const QRegion &exposedR
 
     // Nothing to repaint.
     if (!isDirty() && store->size().isValid()) {
-        QPlatformTextureList *tl = widgetTexturesFor(tlw, exposedWidget);
-        qt_flush(exposedWidget, tl ? QRegion() : exposedRegion, store, tlw, tl, this);
+        QPlatformTextureList *widgetTextures = widgetTexturesFor(tlw, exposedWidget);
+        flush(exposedWidget, widgetTextures ? QRegion() : exposedRegion, widgetTextures);
         return;
     }
 
@@ -1054,7 +976,7 @@ void QWidgetRepaintManager::doSync()
     QTLWExtra *tlwExtra = tlw->d_func()->topData();
     tlwExtra->widgetTextures.clear();
     findAllTextureWidgetsRecursively(tlw, tlw);
-    qt_window_private(tlw->windowHandle())->compositing = false; // will get updated in qt_flush()
+    qt_window_private(tlw->windowHandle())->compositing = false; // will get updated in flush()
 #endif
 
     if (toClean.isEmpty()) {
@@ -1177,7 +1099,7 @@ void QWidgetRepaintManager::flush(QWidget *widget)
     // Flush the region in dirtyOnScreen.
     if (!dirtyOnScreen.isEmpty()) {
         QWidget *target = widget ? widget : tlw;
-        qt_flush(target, dirtyOnScreen, store, tlw, widgetTexturesFor(tlw, tlw), this);
+        flush(target, dirtyOnScreen, widgetTexturesFor(tlw, tlw));
         dirtyOnScreen = QRegion();
         flushed = true;
     }
@@ -1186,10 +1108,10 @@ void QWidgetRepaintManager::flush(QWidget *widget)
     if (!flushed && !hasDirtyOnScreenWidgets) {
 #ifndef QT_NO_OPENGL
         if (!tlw->d_func()->topData()->widgetTextures.empty()) {
-            QPlatformTextureList *tl = widgetTexturesFor(tlw, tlw);
-            if (tl) {
+            QPlatformTextureList *widgetTextures = widgetTexturesFor(tlw, tlw);
+            if (widgetTextures) {
                 QWidget *target = widget ? widget : tlw;
-                qt_flush(target, QRegion(), store, tlw, tl, this);
+                flush(target, QRegion(), widgetTextures);
             }
         }
 #endif
@@ -1202,9 +1124,85 @@ void QWidgetRepaintManager::flush(QWidget *widget)
         QWidgetPrivate *wd = w->d_func();
         Q_ASSERT(wd->needsFlush);
         QPlatformTextureList *widgetTexturesForNative = wd->textureChildSeen ? widgetTexturesFor(tlw, w) : 0;
-        qt_flush(w, *wd->needsFlush, store, tlw, widgetTexturesForNative, this);
+        flush(w, *wd->needsFlush, widgetTexturesForNative);
         *wd->needsFlush = QRegion();
     }
+}
+
+/*
+    Flushes the contents of the backingstore into the screen area of \a widget.
+
+    \a region is the region to be updated in \a widget coordinates.
+ */
+void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures)
+{
+#ifdef QT_NO_OPENGL
+    Q_UNUSED(widgetTextures);
+    Q_ASSERT(!region.isEmpty());
+#else
+    Q_ASSERT(!region.isEmpty() || widgetTextures);
+#endif
+    Q_ASSERT(widget);
+    Q_ASSERT(tlw);
+
+    if (tlw->testAttribute(Qt::WA_DontShowOnScreen) || widget->testAttribute(Qt::WA_DontShowOnScreen))
+        return;
+
+    // Foreign Windows do not have backing store content and must not be flushed
+    if (QWindow *widgetWindow = widget->windowHandle()) {
+        if (widgetWindow->type() == Qt::ForeignWindow)
+            return;
+    }
+
+    static bool fpsDebug = qEnvironmentVariableIntValue("QT_DEBUG_FPS");
+    if (fpsDebug) {
+        if (!perfFrames++)
+            perfTime.start();
+        if (perfTime.elapsed() > 5000) {
+            double fps = double(perfFrames * 1000) / perfTime.restart();
+            qDebug("FPS: %.1f\n", fps);
+            perfFrames = 0;
+        }
+    }
+
+    QPoint offset;
+    if (widget != tlw)
+        offset += widget->mapTo(tlw, QPoint());
+
+    QRegion effectiveRegion = region;
+#ifndef QT_NO_OPENGL
+    const bool compositionWasActive = widget->d_func()->renderToTextureComposeActive;
+    if (!widgetTextures) {
+        widget->d_func()->renderToTextureComposeActive = false;
+        // Detect the case of falling back to the normal flush path when no
+        // render-to-texture widgets are visible anymore. We will force one
+        // last flush to go through the OpenGL-based composition to prevent
+        // artifacts. The next flush after this one will use the normal path.
+        if (compositionWasActive)
+            widgetTextures = qt_dummy_platformTextureList;
+    } else {
+        widget->d_func()->renderToTextureComposeActive = true;
+    }
+    // When changing the composition status, make sure the dirty region covers
+    // the entire widget.  Just having e.g. the shown/hidden render-to-texture
+    // widget's area marked as dirty is incorrect when changing flush paths.
+    if (compositionWasActive != widget->d_func()->renderToTextureComposeActive)
+        effectiveRegion = widget->rect();
+
+    // re-test since we may have been forced to this path via the dummy texture list above
+    if (widgetTextures) {
+        qt_window_private(tlw->windowHandle())->compositing = true;
+        widget->window()->d_func()->sendComposeStatus(widget->window(), false);
+        // A window may have alpha even when the app did not request
+        // WA_TranslucentBackground. Therefore the compositor needs to know whether the app intends
+        // to rely on translucency, in order to decide if it should clear to transparent or opaque.
+        const bool translucentBackground = widget->testAttribute(Qt::WA_TranslucentBackground);
+        store->handle()->composeAndFlush(widget->windowHandle(), effectiveRegion, offset,
+                                                widgetTextures, translucentBackground);
+        widget->window()->d_func()->sendComposeStatus(widget->window(), true);
+    } else
+#endif
+        store->flush(effectiveRegion, widget->windowHandle(), offset);
 }
 
 /*!
