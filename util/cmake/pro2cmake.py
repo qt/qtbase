@@ -116,7 +116,7 @@ def find_qmake_conf(project_file_path: str = '') -> typing.Optional[str]:
 
 
 def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_file_path: str = '', skip_qtquick_compiler: bool = False,
-        retain_qtquick_compiler: bool = False) -> str:
+        retain_qtquick_compiler: bool = False, is_example: bool = False) -> str:
     assert(target)
 
     # Hack to handle QT_SOURCE_TREE. Assume currently that it's the same
@@ -173,14 +173,14 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_fil
                 alias = path
             files[path] = alias
 
-        output += write_add_qt_resource_call(target, full_resource_name, prefix, base_dir, lang, files, skip_qtquick_compiler, retain_qtquick_compiler)
+        output += write_add_qt_resource_call(target, full_resource_name, prefix, base_dir, lang, files, skip_qtquick_compiler, retain_qtquick_compiler, is_example)
         resource_count += 1
 
     return output
 
 
 def write_add_qt_resource_call(target: str, resource_name: str, prefix: typing.Optional[str], base_dir: typing.Optional[str],
-        lang: typing.Optional[str], files: typing.Dict[str, str], skip_qtquick_compiler: bool, retain_qtquick_compiler: bool) -> str:
+        lang: typing.Optional[str], files: typing.Dict[str, str], skip_qtquick_compiler: bool, retain_qtquick_compiler: bool, is_example :bool) -> str:
     output = ''
 
     sorted_files = sorted(files.keys())
@@ -212,8 +212,13 @@ def write_add_qt_resource_call(target: str, resource_name: str, prefix: typing.O
     params += '    PREFIX\n        "{}"\n'.format(prefix)
     if base_dir:
         params += '    BASE\n        "{}"\n'.format(base_dir)
-    output += 'add_qt_resource({} "{}"\n{}    FILES\n        {}\n)\n'.format(target, resource_name,
-                                                                             params, file_list)
+    add_resource_command = ''
+    if is_example:
+        add_resource_command = 'QT5_ADD_RESOURCES'
+    else:
+        add_resource_command = 'add_qt_resource'
+    output += '{}({} "{}"\n{}    FILES\n        {}\n)\n'.format(add_resource_command,
+            target, resource_name, params, file_list)
 
     return output
 
@@ -1689,7 +1694,7 @@ def map_to_cmake_condition(condition: typing.Optional[str]) -> str:
     return condition
 
 
-def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: int = 0):
+def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: int = 0, is_example = False):
     vpath = scope.expand('VPATH')
 
     # Handle QRC files by turning them into add_qt_resource:
@@ -1704,7 +1709,7 @@ def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
             retain_qtquick_compiler = r in qtquickcompiler_retained
             if r.endswith('.qrc'):
                 qrc_output += process_qrc_file(target, r, scope.basedir, scope.file_absolute_path,
-                        skip_qtquick_compiler, retain_qtquick_compiler)
+                        skip_qtquick_compiler, retain_qtquick_compiler, is_example)
             else:
                 immediate_files = {f:"" for f in scope.get_files(r + ".files")}
                 if immediate_files:
@@ -1717,7 +1722,7 @@ def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
                     immediate_lang = None
                     immediate_name = "qmake_" + r
                     qrc_output += write_add_qt_resource_call(target, immediate_name, immediate_prefix, immediate_base, immediate_lang,
-                            immediate_files, skip_qtquick_compiler, retain_qtquick_compiler)
+                            immediate_files, skip_qtquick_compiler, retain_qtquick_compiler, is_example)
                 else:
                     # stadalone source file properties need to be set as they
                     # are parsed.
@@ -1736,7 +1741,8 @@ def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
             files = {f:"" for f in standalone_files}
             skip_qtquick_compiler = False
             qrc_output += write_add_qt_resource_call(target, name, prefix, base, lang, files,
-                    skip_qtquick_compiler = False, retain_qtquick_compiler = False)
+                    skip_qtquick_compiler = False, retain_qtquick_compiler = False,
+                    is_example = is_example)
 
 
     if qrc_output:
@@ -2071,7 +2077,7 @@ def write_example(cm_fh: typing.IO[str], scope: Scope,
 
     add_executable = 'add_{}executable({}'.format("qt_gui_" if gui else "", binary_name);
 
-    write_all_source_file_lists(cm_fh, scope, add_executable, indent=0, extra_keys=['RESOURCES'])
+    write_all_source_file_lists(cm_fh, scope, add_executable, indent=0)
 
     cm_fh.write(')\n')
 
@@ -2085,6 +2091,8 @@ def write_example(cm_fh: typing.IO[str], scope: Scope,
                header='target_link_libraries({} PUBLIC\n'.format(binary_name), footer=')')
     write_compile_options(cm_fh, scope, 'target_compile_options({}'.format(binary_name),
                           indent=0, footer=')')
+
+    write_resources(cm_fh, binary_name, scope, indent = indent, is_example = True)
 
     cm_fh.write('\ninstall(TARGETS {}\n'.format(binary_name) +
                 '    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"\n' +
