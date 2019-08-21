@@ -1775,6 +1775,42 @@ void QWidgetPrivate::syncBackingStore(const QRegion &region)
     }
 }
 
+void QWidgetPrivate::repaint_sys(const QRegion &rgn)
+{
+    if (data.in_destructor)
+        return;
+
+    if (shouldDiscardSyncRequest())
+        return;
+
+    Q_Q(QWidget);
+    if (q->testAttribute(Qt::WA_StaticContents)) {
+        if (!extra)
+            createExtra();
+        extra->staticContentsSize = data.crect.size();
+    }
+
+    QPaintEngine *engine = q->paintEngine();
+
+    // QGLWidget does not support partial updates if:
+    // 1) The context is double buffered
+    // 2) The context is single buffered and auto-fill background is enabled.
+    const bool noPartialUpdateSupport = (engine && (engine->type() == QPaintEngine::OpenGL
+                                                || engine->type() == QPaintEngine::OpenGL2))
+                                        && (usesDoubleBufferedGLContext || q->autoFillBackground());
+    QRegion toBePainted(noPartialUpdateSupport ? q->rect() : rgn);
+
+    toBePainted &= clipRect();
+    clipToEffectiveMask(toBePainted);
+    if (toBePainted.isEmpty())
+        return; // Nothing to repaint.
+
+    drawWidget(q, toBePainted, QPoint(), QWidgetPrivate::DrawAsRoot | QWidgetPrivate::DrawPaintOnScreen, 0);
+
+    if (Q_UNLIKELY(q->paintingActive()))
+        qWarning("QWidget::repaint: It is dangerous to leave painters active on a widget outside of the PaintEvent");
+}
+
 void QWidgetPrivate::setUpdatesEnabled_helper(bool enable)
 {
     Q_Q(QWidget);

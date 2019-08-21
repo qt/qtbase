@@ -98,9 +98,6 @@ public:
     QWidgetRepaintManager(QWidget *t);
     ~QWidgetRepaintManager();
 
-    void sync(QWidget *exposedWidget, const QRegion &exposedRegion);
-    void sync();
-
     QBackingStore *backingStore() const { return store; }
     void setBackingStore(QBackingStore *backingStore) { store = backingStore; }
 
@@ -110,49 +107,44 @@ public:
 
     void removeDirtyWidget(QWidget *w);
 
-    inline void addStaticWidget(QWidget *widget)
-    {
-        if (!widget)
-            return;
-
-        Q_ASSERT(widget->testAttribute(Qt::WA_StaticContents));
-        if (!staticWidgets.contains(widget))
-            staticWidgets.append(widget);
-    }
-
-    // Move the reparented widget and all its static children from this backing store
-    // to the new backing store if reparented into another top-level / backing store.
-    inline void moveStaticWidgets(QWidget *reparented)
-    {
-        Q_ASSERT(reparented);
-        QWidgetRepaintManager *newPaintManager = reparented->d_func()->maybeRepaintManager();
-        if (newPaintManager == this)
-            return;
-
-        int i = 0;
-        while (i < staticWidgets.size()) {
-            QWidget *w = staticWidgets.at(i);
-            if (reparented == w || reparented->isAncestorOf(w)) {
-                staticWidgets.removeAt(i);
-                if (newPaintManager)
-                    newPaintManager->addStaticWidget(w);
-            } else {
-                ++i;
-            }
-        }
-    }
-
-    inline void removeStaticWidget(QWidget *widget)
-    {
-        staticWidgets.removeAll(widget);
-    }
-
-    QRegion staticContents(QWidget *widget = nullptr, const QRect &withinClipRect = QRect()) const;
+    void sync(QWidget *exposedWidget, const QRegion &exposedRegion);
+    void sync();
 
     void markDirtyOnScreen(const QRegion &dirtyOnScreen, QWidget *widget, const QPoint &topLevelOffset);
+
+    void addStaticWidget(QWidget *widget);
+    void moveStaticWidgets(QWidget *reparented);
+    void removeStaticWidget(QWidget *widget);
+    QRegion staticContents(QWidget *widget = nullptr, const QRect &withinClipRect = QRect()) const;
+
     bool bltRect(const QRect &rect, int dx, int dy, QWidget *widget);
 
 private:
+    void updateLists(QWidget *widget);
+
+    void addDirtyWidget(QWidget *widget, const QRegion &rgn);
+    void resetWidget(QWidget *widget);
+
+    void addDirtyRenderToTextureWidget(QWidget *widget);
+
+    void sendUpdateRequest(QWidget *widget, UpdateTime updateTime);
+
+    bool syncAllowed();
+    void paintAndFlush();
+
+    void appendDirtyOnScreenWidget(QWidget *widget);
+
+    void flush(QWidget *widget = nullptr);
+    void flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures);
+
+    bool isDirty() const;
+    QRegion dirtyRegion(QWidget *widget = nullptr) const;
+
+    bool hasStaticContents() const;
+    void updateStaticContentsSize();
+
+    QRect topLevelRect() const { return tlw->data->crect; }
+
     QWidget *tlw;
     QRegion dirtyOnScreen; // needsFlush
     QRegion dirty; // needsRepaint
@@ -167,92 +159,6 @@ private:
     QPlatformTextureListWatcher *textureListWatcher;
     QElapsedTimer perfTime;
     int perfFrames;
-
-    void sendUpdateRequest(QWidget *widget, UpdateTime updateTime);
-
-    inline bool isDirty() const
-    {
-        return !(dirtyWidgets.isEmpty() && dirty.isEmpty() && dirtyRenderToTextureWidgets.isEmpty());
-    }
-
-    void paintAndFlush();
-
-    void flush(QWidget *widget = nullptr);
-    void flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures);
-
-    QRegion dirtyRegion(QWidget *widget = nullptr) const;
-
-    void updateLists(QWidget *widget);
-
-    bool syncAllowed();
-
-    inline void addDirtyWidget(QWidget *widget, const QRegion &rgn)
-    {
-        if (widget && !widget->d_func()->inDirtyList && !widget->data->in_destructor) {
-            QWidgetPrivate *widgetPrivate = widget->d_func();
-#if QT_CONFIG(graphicseffect)
-            if (widgetPrivate->graphicsEffect)
-                widgetPrivate->dirty = widgetPrivate->effectiveRectFor(rgn.boundingRect());
-            else
-#endif // QT_CONFIG(graphicseffect)
-                widgetPrivate->dirty = rgn;
-            dirtyWidgets.append(widget);
-            widgetPrivate->inDirtyList = true;
-        }
-    }
-
-    inline void addDirtyRenderToTextureWidget(QWidget *widget)
-    {
-        if (widget && !widget->d_func()->inDirtyList && !widget->data->in_destructor) {
-            QWidgetPrivate *widgetPrivate = widget->d_func();
-            Q_ASSERT(widgetPrivate->renderToTexture);
-            dirtyRenderToTextureWidgets.append(widget);
-            widgetPrivate->inDirtyList = true;
-        }
-    }
-
-    inline QRect topLevelRect() const
-    {
-        return tlw->data->crect;
-    }
-
-    inline void appendDirtyOnScreenWidget(QWidget *widget)
-    {
-        if (!widget)
-            return;
-
-        if (!dirtyOnScreenWidgets.contains(widget))
-            dirtyOnScreenWidgets.append(widget);
-    }
-
-    inline void resetWidget(QWidget *widget)
-    {
-        if (widget) {
-            widget->d_func()->inDirtyList = false;
-            widget->d_func()->isScrolled = false;
-            widget->d_func()->isMoved = false;
-            widget->d_func()->dirty = QRegion();
-        }
-    }
-
-    inline void updateStaticContentsSize()
-    {
-        for (int i = 0; i < staticWidgets.size(); ++i) {
-            QWidgetPrivate *wd = staticWidgets.at(i)->d_func();
-            if (!wd->extra)
-                wd->createExtra();
-            wd->extra->staticContentsSize = wd->data.crect.size();
-        }
-    }
-
-    inline bool hasStaticContents() const
-    {
-#if defined(Q_OS_WIN)
-        return !staticWidgets.isEmpty();
-#else
-        return !staticWidgets.isEmpty() && false;
-#endif
-    }
 
     Q_DISABLE_COPY_MOVE(QWidgetRepaintManager)
 };
