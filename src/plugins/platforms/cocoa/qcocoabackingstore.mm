@@ -212,9 +212,6 @@ void QNSWindowBackingStore::flush(QWindow *window, const QRegion &region, const 
 
         CGRect viewRect = viewLocalRect.toCGRect();
 
-        if (windowHasUnifiedToolbar())
-            NSDrawWindowBackground(viewRect);
-
         [backingStoreImage drawInRect:viewRect fromRect:backingStoreRect.toCGRect()
             operation:compositingOperation fraction:1.0 respectFlipped:YES hints:nil];
 
