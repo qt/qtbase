@@ -42,6 +42,8 @@ def parse_command_line():
                         help='Run pro2cmake only on .pro files that already have a CMakeLists.txt.')
     parser.add_argument('--only-qtbase-main-modules', dest='only_qtbase_main_modules', action='store_true',
                         help='Run pro2cmake only on the main modules in qtbase.')
+    parser.add_argument('--is-example', dest='is_example', action='store_true',
+                        help='Run pro2cmake with --is-example flag.')
     parser.add_argument('path', metavar='<path>', type=str,
                         help='The path where to look for .pro files.')
 
@@ -126,7 +128,11 @@ def run(all_files: typing.List[str], pro2cmake: str, args: argparse.Namespace) -
 
         def _process_a_file(data: typing.Tuple[str, int, int]) -> typing.Tuple[int, str, str]:
             filename, index, total = data
-            result = subprocess.run((pro2cmake, os.path.basename(filename)),
+            pro2cmake_args = [pro2cmake]
+            if args.is_example:
+                pro2cmake_args.append('--is-example')
+            pro2cmake_args.append(os.path.basename(filename))
+            result = subprocess.run(pro2cmake_args,
                                     cwd=os.path.dirname(filename),
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             stdout = 'Converted[{}/{}]: {}\n'.format(index, total, filename)
