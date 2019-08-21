@@ -51,6 +51,17 @@ QT_BEGIN_NAMESPACE
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QRasterBackingStore(window)
 {
+    // Ideally this would be plumbed from the platform layer to QtGui, and
+    // the QBackingStore would be recreated, but we don't have that code yet,
+    // so at least make sure we invalidate our backingstore when the backing
+    // properties (color space e.g.) are changed.
+    NSView *view = static_cast<QCocoaWindow *>(window->handle())->view();
+    m_backingPropertiesObserver = QMacNotificationObserver(view.window,
+        NSWindowDidChangeBackingPropertiesNotification, [this]() {
+            qCDebug(lcQpaBackingStore) << "Backing properties for"
+                << this->window() << "did change";
+            backingPropertiesChanged();
+        });
 }
 
 QCFType<CGColorSpaceRef> QCocoaBackingStore::colorSpace() const
@@ -297,6 +308,11 @@ void QNSWindowBackingStore::redrawRoundedBottomCorners(CGRect windowRect) const
 #else
     Q_UNUSED(windowRect);
 #endif
+}
+
+void QNSWindowBackingStore::backingPropertiesChanged()
+{
+    m_image = QImage();
 }
 
 // ----------------------------------------------------------------------------
@@ -572,6 +588,12 @@ QImage QCALayerBackingStore::toImage() const
     QImage imageCopy = m_buffers.back()->asImage()->copy();
     m_buffers.back()->unlock();
     return imageCopy;
+}
+
+void QCALayerBackingStore::backingPropertiesChanged()
+{
+    m_buffers.clear();
+    m_buffers.resize(1);
 }
 
 QPlatformGraphicsBuffer *QCALayerBackingStore::graphicsBuffer() const

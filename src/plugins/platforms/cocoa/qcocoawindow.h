@@ -161,6 +161,7 @@ public:
     Q_NOTIFICATION_HANDLER(NSWindowDidOrderOffScreenNotification) void windowDidOrderOffScreen();
     Q_NOTIFICATION_HANDLER(NSWindowDidChangeOcclusionStateNotification) void windowDidChangeOcclusionState();
     Q_NOTIFICATION_HANDLER(NSWindowDidChangeScreenNotification) void windowDidChangeScreen();
+    Q_NOTIFICATION_HANDLER(NSWindowDidChangeBackingPropertiesNotification) void windowDidChangeBackingProperties();
     Q_NOTIFICATION_HANDLER(NSWindowWillCloseNotification) void windowWillClose();
 
     bool windowShouldClose();
