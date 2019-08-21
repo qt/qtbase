@@ -208,6 +208,9 @@ private:
     static bool notifyInternal2(QObject *receiver, QEvent *);
     static bool forwardEvent(QObject *receiver, QEvent *event, QEvent *originatingEvent = nullptr);
 #endif
+#if QT_CONFIG(library)
+    static QStringList libraryPathsLocked();
+#endif
 
     static QCoreApplication *self;
 
