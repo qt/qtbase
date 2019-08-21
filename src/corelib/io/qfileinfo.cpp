@@ -1145,6 +1145,25 @@ bool QFileInfo::isShortcut() const
             [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); });
 }
 
+
+/*!
+    Returns \c true if the object points to a junction;
+    otherwise returns \c false.
+
+    Junctions only exist on Windows' NTFS file system, and are typically
+    created by the \c{mklink} command. They can be thought of as symlinks for
+    directories, and can only be created for absolute paths on the local
+    volume.
+*/
+bool QFileInfo::isJunction() const
+{
+    Q_D(const QFileInfo);
+    return d->checkAttribute<bool>(
+            QFileSystemMetaData::LegacyLinkType,
+            [d]() { return d->metaData.isJunction(); },
+            [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); });
+}
+
 /*!
     Returns \c true if the object points to a directory or to a symbolic
     link to a directory, and that directory is the root directory; otherwise
