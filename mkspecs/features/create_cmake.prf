@@ -138,8 +138,8 @@ CMAKE_RELEASE_TYPE =
 #   the debug libraries at build time.
 
 equals(QMAKE_HOST.os, Windows): CMAKE_BIN_SUFFIX = ".exe"
-debug_and_release|CONFIG(debug, debug|release): CMAKE_DEBUG_TYPE = debug
-debug_and_release|CONFIG(release, debug|release): CMAKE_RELEASE_TYPE = release
+if(debug_and_release:build_all)|CONFIG(debug, debug|release): CMAKE_DEBUG_TYPE = debug
+if(debug_and_release:build_all)|CONFIG(release, debug|release): CMAKE_RELEASE_TYPE = release
 
 # CMAKE_DEBUG_AND_RELEASE is used to tell the _populate_$${CMAKE_MODULE_NAME}_target_properties
 # functions whether a Configuration specific generator expression needs to be added to the values
