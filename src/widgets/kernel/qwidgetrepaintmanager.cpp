@@ -729,10 +729,8 @@ void QWidgetRepaintManager::sync(QWidget *exposedWidget, const QRegion &exposedR
         return;
     }
 
-    if (exposedWidget != tlw)
-        markNeedsFlush(exposedWidget, exposedRegion, exposedWidget->mapTo(tlw, QPoint()));
-    else
-        markNeedsFlush(exposedWidget, exposedRegion, QPoint());
+    QPoint offset = exposedWidget != tlw ? exposedWidget->mapTo(tlw, QPoint()) : QPoint();
+    markNeedsFlush(exposedWidget, exposedRegion, offset);
 
     if (syncAllowed())
         paintAndFlush();
