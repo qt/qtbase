@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -67,15 +67,9 @@ using namespace QTestPrivate;
 class tst_QStyle : public QObject
 {
     Q_OBJECT
-public:
-    tst_QStyle();
 
-private:
-    bool testAllFunctions(QStyle *);
-    bool testScrollBarSubControls();
 private slots:
     void drawItemPixmap();
-    void init();
     void cleanup();
 #ifndef QT_NO_STYLE_FUSION
     void testFusionStyle();
@@ -100,38 +94,29 @@ private slots:
     void testProxyCalled();
     void testStyleOptionInit();
 private:
+    bool testAllFunctions(QStyle *);
+    bool testScrollBarSubControls(const QStyle *style);
+    void testPainting(QStyle *style, const QString &platform);
     void lineUpLayoutTest(QStyle *);
-    QWidget *testWidget;
 };
-
-
-tst_QStyle::tst_QStyle()
-{
-    testWidget = 0;
-}
 
 class MyWidget : public QWidget
 {
 public:
-    MyWidget( QWidget* QWidget=0, const char* name=0 );
-protected:
-    void paintEvent( QPaintEvent* );
-};
+    using QWidget::QWidget;
 
-void tst_QStyle::init()
-{
-    testWidget = new MyWidget( 0, "testObject");
-}
+protected:
+    void paintEvent(QPaintEvent *) override;
+};
 
 void tst_QStyle::cleanup()
 {
-    delete testWidget;
-    testWidget = 0;
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QStyle::testStyleFactory()
 {
-    QStringList keys = QStyleFactory::keys();
+    const QStringList keys = QStyleFactory::keys();
 #ifndef QT_NO_STYLE_FUSION
     QVERIFY(keys.contains("Fusion"));
 #endif
@@ -139,17 +124,17 @@ void tst_QStyle::testStyleFactory()
     QVERIFY(keys.contains("Windows"));
 #endif
 
-    foreach (QString styleName , keys) {
-        QStyle *style = QStyleFactory::create(styleName);
-        QVERIFY2(style != 0, qPrintable(QString::fromLatin1("Fail to load style '%1'").arg(styleName)));
-        delete style;
+    for (const QString &styleName : keys) {
+        QScopedPointer<QStyle> style(QStyleFactory::create(styleName));
+        QVERIFY2(!style.isNull(),
+                 qPrintable(QString::fromLatin1("Fail to load style '%1'").arg(styleName)));
     }
 }
 
 class CustomProxy : public QProxyStyle
 {
-    virtual int pixelMetric(PixelMetric metric, const QStyleOption *option = 0,
-                            const QWidget *widget = 0) const
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = nullptr,
+                            const QWidget *widget = nullptr) const override
     {
         if (metric == QStyle::PM_ButtonIconSize)
             return 13;
@@ -170,9 +155,9 @@ void tst_QStyle::testProxyStyle()
     QCOMPARE(proxyStyle->baseStyle(), style);
 
     QVERIFY(testAllFunctions(proxyStyle));
-    proxyStyle->setBaseStyle(0);
+    proxyStyle->setBaseStyle(nullptr);
     QVERIFY(proxyStyle->baseStyle());
-    qApp->setStyle(proxyStyle);
+    QApplication::setStyle(proxyStyle);
 
     QProxyStyle* baseStyle = new QProxyStyle("Windows");
     QCOMPARE(baseStyle->baseStyle()->objectName(), style->objectName());
@@ -189,10 +174,12 @@ void tst_QStyle::testProxyStyle()
 
 void tst_QStyle::drawItemPixmap()
 {
-    testWidget->resize(300, 300);
-    testWidget->showNormal();
+    MyWidget testWidget;
+    testWidget.setObjectName("testObject");
+    testWidget.resize(300, 300);
+    testWidget.showNormal();
 
-    QImage image = testWidget->grab().toImage();
+    QImage image = testWidget.grab().toImage();
     const QRgb green = QColor(Qt::green).rgb();
     QVERIFY(image.reinterpretAsFormat(QImage::Format_RGB32));
     const QRgb *bits = reinterpret_cast<const QRgb *>(image.constBits());
@@ -201,33 +188,33 @@ void tst_QStyle::drawItemPixmap()
     QEXPECT_FAIL("", "QWidget::resize does not work on WinRT", Continue);
 #endif
     QVERIFY(std::all_of(bits, end, [green] (QRgb r) { return r == green; }));
-    testWidget->hide();
 }
 
 bool tst_QStyle::testAllFunctions(QStyle *style)
 {
     QStyleOption opt;
-    opt.init(testWidget);
+    QWidget testWidget;
+    opt.init(&testWidget);
 
-    testWidget->setStyle(style);
+    testWidget.setStyle(style);
 
     //Tests styleHint with default arguments for potential crashes
     for ( int hint = 0 ; hint < int(QStyle::SH_Menu_Mask); ++hint) {
         style->styleHint(QStyle::StyleHint(hint));
-        style->styleHint(QStyle::StyleHint(hint), &opt, testWidget);
+        style->styleHint(QStyle::StyleHint(hint), &opt, &testWidget);
     }
 
     //Tests pixelMetric with default arguments for potential crashes
     for ( int pm = 0 ; pm < int(QStyle::PM_LayoutVerticalSpacing); ++pm) {
         style->pixelMetric(QStyle::PixelMetric(pm));
-        style->pixelMetric(QStyle::PixelMetric(pm), &opt, testWidget);
+        style->pixelMetric(QStyle::PixelMetric(pm), &opt, &testWidget);
     }
 
     //Tests drawControl with default arguments for potential crashes
     for ( int control = 0 ; control < int(QStyle::CE_ColumnViewGrip); ++control) {
         QPixmap surface(QSize(200, 200));
         QPainter painter(&surface);
-        style->drawControl(QStyle::ControlElement(control), &opt, &painter, 0);
+        style->drawControl(QStyle::ControlElement(control), &opt, &painter, nullptr);
     }
 
     //Tests drawComplexControl with default arguments for potential crashes
@@ -235,35 +222,35 @@ bool tst_QStyle::testAllFunctions(QStyle *style)
         QPixmap surface(QSize(200, 200));
         QPainter painter(&surface);
         QStyleOptionComboBox copt1;
-        copt1.init(testWidget);
+        copt1.init(&testWidget);
 
         QStyleOptionGroupBox copt2;
-        copt2.init(testWidget);
+        copt2.init(&testWidget);
         QStyleOptionSizeGrip copt3;
-        copt3.init(testWidget);
+        copt3.init(&testWidget);
         QStyleOptionSlider copt4;
-        copt4.init(testWidget);
+        copt4.init(&testWidget);
         copt4.minimum = 0;
         copt4.maximum = 100;
         copt4.tickInterval = 25;
         copt4.sliderValue = 50;
         QStyleOptionSpinBox copt5;
-        copt5.init(testWidget);
+        copt5.init(&testWidget);
         QStyleOptionTitleBar copt6;
-        copt6.init(testWidget);
+        copt6.init(&testWidget);
         QStyleOptionToolButton copt7;
-        copt7.init(testWidget);
+        copt7.init(&testWidget);
         QStyleOptionComplex copt9;
-        copt9.initFrom(testWidget);
+        copt9.initFrom(&testWidget);
 
-        style->drawComplexControl(QStyle::CC_SpinBox, &copt5, &painter, 0);
-        style->drawComplexControl(QStyle::CC_ComboBox, &copt1, &painter, 0);
-        style->drawComplexControl(QStyle::CC_ScrollBar, &copt4, &painter, 0);
-        style->drawComplexControl(QStyle::CC_Slider, &copt4, &painter, 0);
-        style->drawComplexControl(QStyle::CC_ToolButton, &copt7, &painter, 0);
-        style->drawComplexControl(QStyle::CC_TitleBar, &copt6, &painter, 0);
-        style->drawComplexControl(QStyle::CC_GroupBox, &copt2, &painter, 0);
-        style->drawComplexControl(QStyle::CC_Dial, &copt4, &painter, 0);
+        style->drawComplexControl(QStyle::CC_SpinBox, &copt5, &painter, nullptr);
+        style->drawComplexControl(QStyle::CC_ComboBox, &copt1, &painter, nullptr);
+        style->drawComplexControl(QStyle::CC_ScrollBar, &copt4, &painter, nullptr);
+        style->drawComplexControl(QStyle::CC_Slider, &copt4, &painter, nullptr);
+        style->drawComplexControl(QStyle::CC_ToolButton, &copt7, &painter, nullptr);
+        style->drawComplexControl(QStyle::CC_TitleBar, &copt6, &painter, nullptr);
+        style->drawComplexControl(QStyle::CC_GroupBox, &copt2, &painter, nullptr);
+        style->drawComplexControl(QStyle::CC_Dial, &copt4, &painter, nullptr);
     }
 
     //Check standard pixmaps/icons
@@ -279,20 +266,21 @@ bool tst_QStyle::testAllFunctions(QStyle *style)
     }
 
     style->itemPixmapRect(QRect(0, 0, 100, 100), Qt::AlignHCenter, QPixmap(200, 200));
-    style->itemTextRect(QFontMetrics(qApp->font()), QRect(0, 0, 100, 100), Qt::AlignHCenter, true, QString("Test"));
+    style->itemTextRect(QFontMetrics(QApplication::font()), QRect(0, 0, 100, 100),
+                        Qt::AlignHCenter, true, QLatin1String("Test"));
 
-    return testScrollBarSubControls();
+    return testScrollBarSubControls(style);
 }
 
-bool tst_QStyle::testScrollBarSubControls()
+bool tst_QStyle::testScrollBarSubControls(const QStyle *style)
 {
-    const auto *style = testWidget->style();
-    const bool isMacStyle = style->objectName().toLower() == "macintosh";
+    const bool isMacStyle = style->objectName().compare(QLatin1String("macintosh"),
+                                                        Qt::CaseInsensitive) == 0;
     QScrollBar scrollBar;
     setFrameless(&scrollBar);
     scrollBar.show();
     const QStyleOptionSlider opt = qt_qscrollbarStyleOption(&scrollBar);
-    foreach (int sc, QList<int>() << 1 << 2 << 4 << 8) {
+    for (int sc : {1, 2, 4, 8}) {
         const auto subControl = static_cast<QStyle::SubControl>(sc);
         const QRect sr = style->subControlRect(QStyle::CC_ScrollBar, &opt, subControl, &scrollBar);
         if (sr.isNull()) {
@@ -310,34 +298,34 @@ bool tst_QStyle::testScrollBarSubControls()
 #ifndef QT_NO_STYLE_FUSION
 void tst_QStyle::testFusionStyle()
 {
-    QStyle *fstyle = QStyleFactory::create("Fusion");
-    QVERIFY(testAllFunctions(fstyle));
-    lineUpLayoutTest(fstyle);
-    delete fstyle;
+    QScopedPointer<QStyle> fstyle(QStyleFactory::create("Fusion"));
+    QVERIFY(!fstyle.isNull());
+    QVERIFY(testAllFunctions(fstyle.data()));
+    lineUpLayoutTest(fstyle.data());
 }
 #endif
 
 void tst_QStyle::testWindowsStyle()
 {
-    QStyle *wstyle = QStyleFactory::create("Windows");
-    QVERIFY(testAllFunctions(wstyle));
-    lineUpLayoutTest(wstyle);
+    QScopedPointer<QStyle> wstyle(QStyleFactory::create("Windows"));
+    QVERIFY(!wstyle.isNull());
+    QVERIFY(testAllFunctions(wstyle.data()));
+    lineUpLayoutTest(wstyle.data());
 
     // Tests drawing indeterminate progress with 0 size: QTBUG-15973
     QStyleOptionProgressBar pb;
     pb.rect = QRect(0,0,-9,0);
     QPixmap surface(QSize(200, 200));
     QPainter painter(&surface);
-    wstyle->drawControl(QStyle::CE_ProgressBar, &pb, &painter, 0);
-    delete wstyle;
+    wstyle->drawControl(QStyle::CE_ProgressBar, &pb, &painter, nullptr);
 }
 
 #if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA) && !defined(Q_OS_WINRT)
 void tst_QStyle::testWindowsVistaStyle()
 {
-    QStyle *vistastyle = QStyleFactory::create("WindowsVista");
-    QVERIFY(testAllFunctions(vistastyle));
-    delete vistastyle;
+    QScopedPointer<QStyle> vistastyle(QStyleFactory::create("WindowsVista"));
+    QVERIFY(!vistastyle.isNull());
+    QVERIFY(testAllFunctions(vistastyle.data()));
 }
 #endif
 
@@ -351,14 +339,7 @@ void tst_QStyle::testMacStyle()
 #endif
 
 // Helper class...
-
-MyWidget::MyWidget( QWidget* parent, const char* name )
-    : QWidget( parent )
-{
-    setObjectName(name);
-}
-
-void MyWidget::paintEvent( QPaintEvent* )
+void MyWidget::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
     QPixmap big(400,400);
@@ -371,20 +352,12 @@ class Qt42Style : public QCommonStyle
 {
     Q_OBJECT
 public:
-    Qt42Style() : QCommonStyle()
-    {
-        margin_toplevel = 10;
-        margin = 5;
-        spacing = 0;
-    }
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = nullptr,
+                    const QWidget *widget = nullptr) const override;
 
-    virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0,
-                            const QWidget * widget = 0 ) const;
-
-    int margin_toplevel;
-    int margin;
-    int spacing;
-
+    int margin_toplevel = 10;
+    int margin = 5;
+    int spacing = 0;
 };
 
 int Qt42Style::pixelMetric(PixelMetric metric, const QStyleOption * /* option = 0*/,
@@ -393,13 +366,10 @@ int Qt42Style::pixelMetric(PixelMetric metric, const QStyleOption * /* option = 
     switch (metric) {
         case QStyle::PM_DefaultTopLevelMargin:
             return margin_toplevel;
-        break;
         case QStyle::PM_DefaultChildMargin:
             return margin;
-        break;
         case QStyle::PM_DefaultLayoutSpacing:
             return spacing;
-        break;
         default:
             break;
     }
@@ -409,7 +379,7 @@ int Qt42Style::pixelMetric(PixelMetric metric, const QStyleOption * /* option = 
 
 void tst_QStyle::pixelMetric()
 {
-    Qt42Style *style = new Qt42Style();
+    QScopedPointer<Qt42Style> style(new Qt42Style);
     QCOMPARE(style->pixelMetric(QStyle::PM_DefaultTopLevelMargin), 10);
     QCOMPARE(style->pixelMetric(QStyle::PM_DefaultChildMargin), 5);
     QCOMPARE(style->pixelMetric(QStyle::PM_DefaultLayoutSpacing), 0);
@@ -427,8 +397,6 @@ void tst_QStyle::pixelMetric()
     QCOMPARE(style->pixelMetric(QStyle::PM_DefaultTopLevelMargin), -1);
     QCOMPARE(style->pixelMetric(QStyle::PM_DefaultChildMargin), -1);
     QCOMPARE(style->pixelMetric(QStyle::PM_DefaultLayoutSpacing), -1);
-
-    delete style;
 }
 
 #if !defined(QT_NO_STYLE_WINDOWS) && !defined(QT_NO_STYLE_FUSION)
@@ -474,10 +442,11 @@ void tst_QStyle::lineUpLayoutTest(QStyle *style)
     layout.addWidget(&lineedit);
     layout.addWidget(&combo);
     widget.setLayout(&layout);
-        widget.setStyle(style);
-        // propagate the style.
-        foreach (QWidget *w, widget.findChildren<QWidget *>())
-            w->setStyle(style);
+    widget.setStyle(style);
+    // propagate the style.
+    const auto children = widget.findChildren<QWidget *>();
+    for (QWidget *w : children)
+        w->setStyle(style);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
@@ -498,31 +467,32 @@ void tst_QStyle::lineUpLayoutTest(QStyle *style)
 
 void tst_QStyle::defaultFont()
 {
-    QFont defaultFont = qApp->font();
+    QFont defaultFont = QApplication::font();
     QFont pointFont = defaultFont;
     pointFont.setPixelSize(9);
-    qApp->setFont(pointFont);
+    QApplication::setFont(pointFont);
     QPushButton button;
     setFrameless(&button);
     button.show();
-    qApp->processEvents();
-    qApp->setFont(defaultFont);
+    QCoreApplication::processEvents();
+    QApplication::setFont(defaultFont);
 }
 
 class DrawTextStyle : public QProxyStyle
 {
     Q_OBJECT
 public:
-    DrawTextStyle(QStyle *base = 0) : QProxyStyle(), alignment(0) { setBaseStyle(base); }
+    using QProxyStyle::QProxyStyle;
+
     void drawItemText(QPainter *painter, const QRect &rect,
-                              int flags, const QPalette &pal, bool enabled,
-                              const QString &text, QPalette::ColorRole textRole = QPalette::NoRole) const
+                      int flags, const QPalette &pal, bool enabled,
+                      const QString &text, QPalette::ColorRole textRole = QPalette::NoRole) const override
     {
-        DrawTextStyle *that = (DrawTextStyle *)this;
-        that->alignment = flags;
+        alignment = flags;
         QProxyStyle::drawItemText(painter, rect, flags, pal, enabled, text, textRole);
     }
-    int alignment;
+
+    mutable int alignment = 0;
 };
 
 
@@ -533,46 +503,48 @@ void tst_QStyle::testDrawingShortcuts()
         setFrameless(&w);
         QToolButton *tb = new QToolButton(&w);
         tb->setText("&abc");
-        DrawTextStyle *dts = new DrawTextStyle;
+        QScopedPointer<DrawTextStyle> dts(new DrawTextStyle);
         w.show();
-        tb->setStyle(dts);
+        tb->setStyle(dts.data());
         tb->grab();
         QStyleOptionToolButton sotb;
         sotb.initFrom(tb);
         bool showMnemonic = dts->styleHint(QStyle::SH_UnderlineShortcut, &sotb, tb);
         QVERIFY(dts->alignment & (showMnemonic ? Qt::TextShowMnemonic : Qt::TextHideMnemonic));
-        delete dts;
     }
     {
         QToolBar w;
         setFrameless(&w);
         QToolButton *tb = new QToolButton(&w);
         tb->setText("&abc");
-        DrawTextStyle *dts = new DrawTextStyle;
+        QScopedPointer<DrawTextStyle> dts(new DrawTextStyle);
         w.addWidget(tb);
         w.show();
-        tb->setStyle(dts);
+        tb->setStyle(dts.data());
         tb->grab();
         QStyleOptionToolButton sotb;
         sotb.initFrom(tb);
         bool showMnemonic = dts->styleHint(QStyle::SH_UnderlineShortcut, &sotb, tb);
         QVERIFY(dts->alignment & (showMnemonic ? Qt::TextShowMnemonic : Qt::TextHideMnemonic));
-        delete dts;
      }
 }
 
-#define SCROLLBAR_SPACING 33
+static const int SCROLLBAR_SPACING = 33;
 
 class FrameTestStyle : public QProxyStyle {
 public:
     FrameTestStyle() : QProxyStyle("Windows") { }
-    int styleHint(StyleHint hint, const QStyleOption *opt, const QWidget *widget, QStyleHintReturn *returnData) const {
+
+    int styleHint(StyleHint hint, const QStyleOption *opt, const QWidget *widget,
+                  QStyleHintReturn *returnData) const override
+    {
         if (hint == QStyle::SH_ScrollView_FrameOnlyAroundContents)
             return 1;
         return QProxyStyle ::styleHint(hint, opt, widget, returnData);
     }
 
-    int pixelMetric(PixelMetric pm, const QStyleOption *option, const QWidget *widget) const {
+    int pixelMetric(PixelMetric pm, const QStyleOption *option, const QWidget *widget) const override
+    {
         if (pm == QStyle::PM_ScrollView_ScrollBarSpacing)
             return SCROLLBAR_SPACING;
         return QProxyStyle ::pixelMetric(pm, option ,widget);
@@ -583,12 +555,12 @@ void tst_QStyle::testFrameOnlyAroundContents()
 {
     QScrollArea area;
     area.setGeometry(0, 0, 200, 200);
-    QStyle *winStyle = QStyleFactory::create("Windows");
+    QScopedPointer<QStyle> winStyle(QStyleFactory::create("Windows"));
     FrameTestStyle frameStyle;
     QWidget *widget = new QWidget(&area);
     widget->setGeometry(0, 0, 400, 400);
-    area.setStyle(winStyle);
-    area.verticalScrollBar()->setStyle(winStyle);
+    area.setStyle(winStyle.data());
+    area.verticalScrollBar()->setStyle(winStyle.data());
     area.setWidget(widget);
     area.setVisible(true);
     int viewPortWidth = area.viewport()->width();
@@ -598,8 +570,7 @@ void tst_QStyle::testFrameOnlyAroundContents()
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "QWidget::setGeometry does not work on WinRT", Continue);
 #endif
-    QVERIFY(viewPortWidth == area.viewport()->width() + SCROLLBAR_SPACING);
-    delete winStyle;
+    QCOMPARE(viewPortWidth, area.viewport()->width() + SCROLLBAR_SPACING);
 }
 
 
@@ -607,16 +578,16 @@ class ProxyTest: public QProxyStyle
 {
     Q_OBJECT
 public:
-    ProxyTest(QStyle *style = 0)
-        :QProxyStyle(style)
-        , called(false)
-    {}
+    using QProxyStyle::QProxyStyle;
 
-    void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p, const QWidget *w) const override {
+    void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
+                       const QWidget *w) const override
+    {
         called = true;
         return QProxyStyle::drawPrimitive(pe, opt, p, w);
     }
-    mutable bool called;
+
+    mutable bool called = false;
 };
 
 
@@ -630,17 +601,16 @@ void tst_QStyle::testProxyCalled()
     QPixmap surface(QSize(200, 200));
     QPainter painter(&surface);
 
-    QStringList keys = QStyleFactory::keys();
+    const QStringList keys = QStyleFactory::keys();
     QVector<QStyle*> styles;
     styles.reserve(keys.size() + 1);
 
     styles << new QCommonStyle();
 
-    Q_FOREACH (const QString &key, keys) {
+    for (const QString &key : keys)
         styles << QStyleFactory::create(key);
-    }
 
-    Q_FOREACH (QStyle *style, styles) {
+    for (QStyle *style : styles) {
         ProxyTest testStyle;
         testStyle.setBaseStyle(style);
         style->drawControl(QStyle::CE_ToolButtonLabel, &opt, &painter, &b);
@@ -654,11 +624,9 @@ class TestStyleOptionInitProxy: public QProxyStyle
 {
     Q_OBJECT
 public:
-    mutable bool invalidOptionsDetected;
-    explicit TestStyleOptionInitProxy(QStyle *style = nullptr)
-        : QProxyStyle(style),
-          invalidOptionsDetected(false)
-    {}
+    mutable bool invalidOptionsDetected = false;
+
+    using QProxyStyle::QProxyStyle;
 
     void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p, const QWidget *w) const override {
         checkStyleEnum<QStyle::PrimitiveElement>(pe, opt);
@@ -743,7 +711,7 @@ void tst_QStyle::testStyleOptionInit()
     QStringList keys = QStyleFactory::keys();
     keys.prepend(QString()); // QCommonStyle marker
 
-    Q_FOREACH (const QString &key, keys) {
+    for (const QString &key : qAsConst(keys)) {
         QStyle* style = key.isEmpty() ? new QCommonStyle : QStyleFactory::create(key);
         TestStyleOptionInitProxy testStyle;
         testStyle.setBaseStyle(style);
