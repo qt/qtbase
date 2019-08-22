@@ -129,7 +129,6 @@ private:
     QWidget *tlw;
     QRegion dirtyOnScreen; // needsFlush
     QRegion dirty; // needsRepaint
-    QRegion dirtyFromPreviousSync;
     QVector<QWidget *> dirtyWidgets;
     QVector<QWidget *> dirtyRenderToTextureWidgets;
     QVector<QWidget *> dirtyOnScreenWidgets;
