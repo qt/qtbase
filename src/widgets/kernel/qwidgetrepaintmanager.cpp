@@ -1018,30 +1018,25 @@ void QWidgetRepaintManager::markNeedsFlush(QWidget *widget, const QRegion &regio
     if (!widget || widget->d_func()->paintOnScreen() || region.isEmpty())
         return;
 
-    // Top-level.
     if (widget == tlw) {
+        // Top-level (native)
         if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
             needsFlush += region;
-        return;
-    }
-
-    // Alien widgets.
-    if (!hasPlatformWindow(widget) && !widget->isWindow()) {
-        QWidget *nativeParent = widget->nativeParentWidget();        // Alien widgets with the top-level as the native parent (common case).
+    } else if (!hasPlatformWindow(widget) && !widget->isWindow()) {
+        QWidget *nativeParent = widget->nativeParentWidget();
         if (nativeParent == tlw) {
+            // Alien widgets with the top-level as the native parent (common case)
             if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
                 needsFlush += region.translated(topLevelOffset);
-            return;
+        } else {
+            // Alien widgets with native parent != tlw
+            const QPoint nativeParentOffset = widget->mapTo(nativeParent, QPoint());
+            appendDirtyOnScreenWidget(nativeParent, region.translated(nativeParentOffset));
         }
-
-        // Alien widgets with native parent != tlw
-        const QPoint nativeParentOffset = widget->mapTo(nativeParent, QPoint());
-        appendDirtyOnScreenWidget(nativeParent, region.translated(nativeParentOffset));
-        return;
+    } else {
+        // Native child widgets
+        appendDirtyOnScreenWidget(widget, region);
     }
-
-    // Native child widgets
-    appendDirtyOnScreenWidget(widget, region);
 }
 
 void QWidgetRepaintManager::appendDirtyOnScreenWidget(QWidget *widget, const QRegion &region)
