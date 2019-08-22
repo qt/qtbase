@@ -922,9 +922,6 @@ void QWidgetRepaintManager::paintAndFlush()
                 if (hasPlatformWindow(w) || (npw && npw != tlw)) {
                     if (!hasPlatformWindow(w))
                         w = npw;
-                    QWidgetPrivate *wPrivate = w->d_func();
-                    if (!wPrivate->needsFlush)
-                        wPrivate->needsFlush = new QRegion;
                     appendDirtyOnScreenWidget(w);
                 }
             }
@@ -1039,28 +1036,26 @@ void QWidgetRepaintManager::markDirtyOnScreen(const QRegion &region, QWidget *wi
             return;
         }
 
-        // Alien widgets with native parent != tlw.
-        QWidgetPrivate *nativeParentPrivate = nativeParent->d_func();
-        if (!nativeParentPrivate->needsFlush)
-            nativeParentPrivate->needsFlush = new QRegion;
+        // Alien widgets with native parent != tlw
         const QPoint nativeParentOffset = widget->mapTo(nativeParent, QPoint());
-        *nativeParentPrivate->needsFlush += region.translated(nativeParentOffset);
-        appendDirtyOnScreenWidget(nativeParent);
+        appendDirtyOnScreenWidget(nativeParent, region.translated(nativeParentOffset));
         return;
     }
 
-    // Native child widgets.
-    QWidgetPrivate *widgetPrivate = widget->d_func();
-    if (!widgetPrivate->needsFlush)
-        widgetPrivate->needsFlush = new QRegion;
-    *widgetPrivate->needsFlush += region;
-    appendDirtyOnScreenWidget(widget);
+    // Native child widgets
+    appendDirtyOnScreenWidget(widget, region);
 }
 
-void QWidgetRepaintManager::appendDirtyOnScreenWidget(QWidget *widget)
+void QWidgetRepaintManager::appendDirtyOnScreenWidget(QWidget *widget, const QRegion &region)
 {
     if (!widget)
         return;
+
+    auto *widgetPrivate = qt_widget_private(widget);
+    if (!widgetPrivate->needsFlush)
+        widgetPrivate->needsFlush = new QRegion;
+
+    *widgetPrivate->needsFlush += region;
 
     if (!dirtyOnScreenWidgets.contains(widget))
         dirtyOnScreenWidgets.append(widget);
