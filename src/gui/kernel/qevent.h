@@ -350,7 +350,7 @@ public:
     const QPointF &windowPos() const { return mWindowPos; }
     const QPointF &screenPos() const { return mScreenPos; }
 
-    const QTouchDevice *device() const;
+    const QTouchDevice *device() const { return mDevice; }
 
 protected:
     Qt::NativeGestureType mGestureType;
@@ -360,6 +360,7 @@ protected:
     qreal mRealValue;
     ulong mSequenceId;
     quint64 mIntValue;
+    const QTouchDevice *mDevice;
 };
 #endif // QT_NO_GESTURES
 
