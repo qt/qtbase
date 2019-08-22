@@ -409,7 +409,7 @@ static bool pullFiles()
             return false;
         }
         auto checkerIt = g_options.checkFiles.find(it.key());
-        ret &= checkerIt != g_options.checkFiles.end() && checkerIt.value()(output);
+        ret = ret && checkerIt != g_options.checkFiles.end() && checkerIt.value()(output);
         if (it.value() == QStringLiteral("-")){
             fprintf(stdout, "%s", output.constData());
             fflush(stdout);
