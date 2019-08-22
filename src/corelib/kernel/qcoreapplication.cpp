@@ -55,6 +55,7 @@
 #include <qfileinfo.h>
 #include <qmutex.h>
 #include <private/qloggingregistry_p.h>
+#include <qscopeguard.h>
 #include <qstandardpaths.h>
 #ifndef QT_NO_QOBJECT
 #include <qthread.h>
@@ -70,6 +71,7 @@
 #include <private/qfactoryloader_p.h>
 #include <private/qfunctions_p.h>
 #include <private/qlocale_p.h>
+#include <private/qlocking_p.h>
 #include <private/qhooks_p.h>
 
 #ifndef QT_NO_QOBJECT
@@ -294,7 +296,7 @@ void qAddPreRoutine(QtStartUpFunction p)
 
     // Due to C++11 parallel dynamic initialization, this can be called
     // from multiple threads.
-    QMutexLocker locker(&globalRoutinesMutex);
+    const auto locker = qt_scoped_lock(globalRoutinesMutex);
     list->prepend(p); // in case QCoreApplication is re-created, see qt_call_pre_routines
 }
 
@@ -303,7 +305,7 @@ void qAddPostRoutine(QtCleanUpFunction p)
     QVFuncList *list = postRList();
     if (!list)
         return;
-    QMutexLocker locker(&globalRoutinesMutex);
+    const auto locker = qt_scoped_lock(globalRoutinesMutex);
     list->prepend(p);
 }
 
@@ -312,7 +314,7 @@ void qRemovePostRoutine(QtCleanUpFunction p)
     QVFuncList *list = postRList();
     if (!list)
         return;
-    QMutexLocker locker(&globalRoutinesMutex);
+    const auto locker = qt_scoped_lock(globalRoutinesMutex);
     list->removeAll(p);
 }
 
@@ -323,7 +325,7 @@ static void qt_call_pre_routines()
 
     QVFuncList list;
     {
-        QMutexLocker locker(&globalRoutinesMutex);
+        const auto locker = qt_scoped_lock(globalRoutinesMutex);
         // Unlike qt_call_post_routines, we don't empty the list, because
         // Q_COREAPP_STARTUP_FUNCTION is a macro, so the user expects
         // the function to be executed every time QCoreApplication is created.
@@ -342,7 +344,7 @@ void Q_CORE_EXPORT qt_call_post_routines()
         QVFuncList list;
         {
             // extract the current list and make the stored list empty
-            QMutexLocker locker(&globalRoutinesMutex);
+            const auto locker = qt_scoped_lock(globalRoutinesMutex);
             qSwap(*postRList, list);
         }
 
@@ -522,7 +524,7 @@ void QCoreApplicationPrivate::cleanupThreadData()
 #endif
 
         // need to clear the state of the mainData, just in case a new QCoreApplication comes along.
-        QMutexLocker locker(&threadData->postEventList.mutex);
+        const auto locker = qt_scoped_lock(threadData->postEventList.mutex);
         for (int i = 0; i < threadData->postEventList.size(); ++i) {
             const QPostEvent &pe = threadData->postEventList.at(i);
             if (pe.event) {
@@ -1705,7 +1707,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
 
     ++data->postEventList.recursion;
 
-    QMutexLocker locker(&data->postEventList.mutex);
+    auto locker = qt_unique_lock(data->postEventList.mutex);
 
     // by default, we assume that the event dispatcher can go to sleep after
     // processing all events. if any new events are posted while we send
@@ -1821,13 +1823,8 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
         // for the next event.
         const_cast<QPostEvent &>(pe).event = 0;
 
-        struct MutexUnlocker
-        {
-            QMutexLocker &m;
-            MutexUnlocker(QMutexLocker &m) : m(m) { m.unlock(); }
-            ~MutexUnlocker() { m.relock(); }
-        };
-        MutexUnlocker unlocker(locker);
+        locker.unlock();
+        const auto relocker = qScopeGuard([&locker] { locker.lock(); });
 
         QScopedPointer<QEvent> event_deleter(e); // will delete the event (with the mutex unlocked)
 
@@ -1864,7 +1861,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
 void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
 {
     QThreadData *data = receiver ? receiver->d_func()->threadData : QThreadData::current();
-    QMutexLocker locker(&data->postEventList.mutex);
+    auto locker = qt_unique_lock(data->postEventList.mutex);
 
     // the QObject destructor calls this function directly.  this can
     // happen while the event loop is in the middle of posting events,
@@ -1927,7 +1924,7 @@ void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
 
     QThreadData *data = QThreadData::current();
 
-    QMutexLocker locker(&data->postEventList.mutex);
+    const auto locker = qt_scoped_lock(data->postEventList.mutex);
 
     if (data->postEventList.size() == 0) {
 #if defined(QT_DEBUG)
