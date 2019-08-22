@@ -2322,24 +2322,27 @@ function(add_qt_test name)
     endif()
 
     if(builtin_testdata)
-        target_compile_definitions("${name}" PRIVATE BUILTIN_TESTDATA)
+        # Safe guard against qml only tests, no source files == no target
+        if (TARGET "${name}")
+            target_compile_definitions("${name}" PRIVATE BUILTIN_TESTDATA)
 
-        foreach(testdata IN LISTS arg_TESTDATA)
-            list(APPEND builtin_files ${testdata})
-        endforeach()
+            foreach(testdata IN LISTS arg_TESTDATA)
+                list(APPEND builtin_files ${testdata})
+            endforeach()
 
-        set(blacklist_path "BLACKLIST")
-        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${blacklist_path}")
-            list(APPEND builtin_files ${blacklist_path})
-        endif()
+            set(blacklist_path "BLACKLIST")
+            if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${blacklist_path}")
+                list(APPEND builtin_files ${blacklist_path})
+            endif()
 
-        list(REMOVE_DUPLICATES builtin_files)
+            list(REMOVE_DUPLICATES builtin_files)
 
-        if (builtin_files)
-            add_qt_resource(${name} "testdata"
-                PREFIX "/"
-                FILES ${builtin_files}
-                BASE ${CMAKE_CURRENT_SOURCE_DIR})
+            if (builtin_files)
+                add_qt_resource(${name} "testdata"
+                    PREFIX "/"
+                    FILES ${builtin_files}
+                    BASE ${CMAKE_CURRENT_SOURCE_DIR})
+            endif()
         endif()
     else()
         # Install test data
