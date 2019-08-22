@@ -91,7 +91,7 @@ public:
     void sync(QWidget *exposedWidget, const QRegion &exposedRegion);
     void sync();
 
-    void markDirtyOnScreen(const QRegion &dirtyOnScreen, QWidget *widget, const QPoint &topLevelOffset);
+    void markNeedsFlush(QWidget *widget, const QRegion &region, const QPoint &topLevelOffset);
 
     void addStaticWidget(QWidget *widget);
     void moveStaticWidgets(QWidget *reparented);
@@ -130,10 +130,10 @@ private:
     QBackingStore *store = nullptr;
 
     QRegion dirty; // needsRepaint
-    QRegion dirtyOnScreen; // needsFlush
-
     QVector<QWidget *> dirtyWidgets;
     QVector<QWidget *> dirtyRenderToTextureWidgets;
+
+    QRegion needsFlush;
     QVector<QWidget *> dirtyOnScreenWidgets;
 
     QList<QWidget *> staticWidgets;

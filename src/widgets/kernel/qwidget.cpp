@@ -5312,7 +5312,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             // Native widgets need to be marked dirty on screen so painting will be done in correct context
             // Same check as in the no effects case below.
             if (repaintManager && !onScreen && !asRoot && (q->internalWinId() || !q->nativeParentWidget()->isWindow()))
-                repaintManager->markDirtyOnScreen(rgn, q, offset);
+                repaintManager->markNeedsFlush(q, rgn, offset);
 
             return;
         }
@@ -5420,7 +5420,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 
             // Native widgets need to be marked dirty on screen so painting will be done in correct context
             if (repaintManager && !onScreen && !asRoot && (q->internalWinId() || (q->nativeParentWidget() && !q->nativeParentWidget()->isWindow())))
-                repaintManager->markDirtyOnScreen(toBePainted, q, offset);
+                repaintManager->markNeedsFlush(q, toBePainted, offset);
 
             //restore
             if (paintEngine) {

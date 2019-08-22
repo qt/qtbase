@@ -524,7 +524,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
         if (childUpdatesEnabled) {
             QRegion needsFlush(sourceRect);
             needsFlush += destRect;
-            repaintManager->markDirtyOnScreen(needsFlush, pw, toplevelOffset);
+            repaintManager->markNeedsFlush(pw, needsFlush, toplevelOffset);
         }
     }
 }
@@ -604,7 +604,7 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
         // Instead of using native scroll-on-screen, we copy from
         // backingstore, giving only one screen update for each
         // scroll, and a solid appearance
-        repaintManager->markDirtyOnScreen(destRect, q, toplevelOffset);
+        repaintManager->markNeedsFlush(q, destRect, toplevelOffset);
     }
 }
 
@@ -730,9 +730,9 @@ void QWidgetRepaintManager::sync(QWidget *exposedWidget, const QRegion &exposedR
     }
 
     if (exposedWidget != tlw)
-        markDirtyOnScreen(exposedRegion, exposedWidget, exposedWidget->mapTo(tlw, QPoint()));
+        markNeedsFlush(exposedWidget, exposedRegion, exposedWidget->mapTo(tlw, QPoint()));
     else
-        markDirtyOnScreen(exposedRegion, exposedWidget, QPoint());
+        markNeedsFlush(exposedWidget, exposedRegion, QPoint());
 
     if (syncAllowed())
         paintAndFlush();
@@ -966,7 +966,7 @@ void QWidgetRepaintManager::paintAndFlush()
 #endif
 
     // Always flush repainted areas
-    dirtyOnScreen += toClean;
+    needsFlush += toClean;
 
     store->beginPaint(toClean);
 
@@ -1010,12 +1010,12 @@ void QWidgetRepaintManager::paintAndFlush()
 }
 
 /*!
-    Marks the \a region of the \a widget as dirty on screen. The \a region will be copied from
+    Marks the \a region of the \a widget as needing a flush. The \a region will be copied from
     the backing store to the \a widget's native parent next time flush() is called.
 
     Paint on screen widgets are ignored.
 */
-void QWidgetRepaintManager::markDirtyOnScreen(const QRegion &region, QWidget *widget, const QPoint &topLevelOffset)
+void QWidgetRepaintManager::markNeedsFlush(QWidget *widget, const QRegion &region, const QPoint &topLevelOffset)
 {
     if (!widget || widget->d_func()->paintOnScreen() || region.isEmpty())
         return;
@@ -1023,7 +1023,7 @@ void QWidgetRepaintManager::markDirtyOnScreen(const QRegion &region, QWidget *wi
     // Top-level.
     if (widget == tlw) {
         if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
-            dirtyOnScreen += region;
+            needsFlush += region;
         return;
     }
 
@@ -1032,7 +1032,7 @@ void QWidgetRepaintManager::markDirtyOnScreen(const QRegion &region, QWidget *wi
         QWidget *nativeParent = widget->nativeParentWidget();        // Alien widgets with the top-level as the native parent (common case).
         if (nativeParent == tlw) {
             if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
-                dirtyOnScreen += region.translated(topLevelOffset);
+                needsFlush += region.translated(topLevelOffset);
             return;
         }
 
@@ -1070,15 +1070,15 @@ void QWidgetRepaintManager::flush(QWidget *widget)
     const bool hasDirtyOnScreenWidgets = !dirtyOnScreenWidgets.isEmpty();
     bool flushed = false;
 
-    // Flush the region in dirtyOnScreen.
-    if (!dirtyOnScreen.isEmpty()) {
+    // Flush the region in needsFlush
+    if (!needsFlush.isEmpty()) {
         QWidget *target = widget ? widget : tlw;
-        flush(target, dirtyOnScreen, widgetTexturesFor(tlw, tlw));
-        dirtyOnScreen = QRegion();
+        flush(target, needsFlush, widgetTexturesFor(tlw, tlw));
+        needsFlush = QRegion();
         flushed = true;
     }
 
-    // Render-to-texture widgets are not in dirtyOnScreen so flush if we have not done it above.
+    // Render-to-texture widgets are not in needsFlush so flush if we have not done it above.
     if (!flushed && !hasDirtyOnScreenWidgets) {
 #ifndef QT_NO_OPENGL
         if (!tlw->d_func()->topData()->widgetTextures.empty()) {
@@ -1328,7 +1328,7 @@ QRegion QWidgetRepaintManager::dirtyRegion(QWidget *widget) const
     }
 
     // Append the region that needs flush.
-    r += dirtyOnScreen;
+    r += needsFlush;
 
     for (QWidget *w : dirtyOnScreenWidgets) {
         if (widgetDirty && w != widget && !widget->isAncestorOf(w))
