@@ -112,12 +112,8 @@ private:
 // ---------------------------------------------------------------------------
 
 QWidgetRepaintManager::QWidgetRepaintManager(QWidget *topLevel)
-    : tlw(topLevel),
-      updateRequestSent(0),
-      textureListWatcher(0),
-      perfFrames(0)
+    : tlw(topLevel), store(tlw->backingStore())
 {
-    store = tlw->backingStore();
     Q_ASSERT(store);
 
     // Ensure all existing subsurfaces and static widgets are added to their respective lists.

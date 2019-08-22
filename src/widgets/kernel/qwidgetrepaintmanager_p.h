@@ -126,19 +126,24 @@ private:
 
     QRect topLevelRect() const { return tlw->data->crect; }
 
-    QWidget *tlw;
-    QRegion dirtyOnScreen; // needsFlush
+    QWidget *tlw = nullptr;
+    QBackingStore *store = nullptr;
+
     QRegion dirty; // needsRepaint
+    QRegion dirtyOnScreen; // needsFlush
+
     QVector<QWidget *> dirtyWidgets;
     QVector<QWidget *> dirtyRenderToTextureWidgets;
     QVector<QWidget *> dirtyOnScreenWidgets;
-    QList<QWidget *> staticWidgets;
-    QBackingStore *store;
-    uint updateRequestSent : 1;
 
-    QPlatformTextureListWatcher *textureListWatcher;
+    QList<QWidget *> staticWidgets;
+
+    QPlatformTextureListWatcher *textureListWatcher = nullptr;
+
+    bool updateRequestSent = false;
+
     QElapsedTimer perfTime;
-    int perfFrames;
+    int perfFrames = 0;
 
     Q_DISABLE_COPY_MOVE(QWidgetRepaintManager)
 };
