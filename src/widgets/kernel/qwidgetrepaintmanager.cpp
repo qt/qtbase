@@ -478,7 +478,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
         invalidateBackingStore((newRect & clipR).translated(-data.crect.topLeft()));
     } else {
 
-        QWidgetRepaintManager *wbs = x->repaintManager.get();
+        QWidgetRepaintManager *repaintManager = x->repaintManager.get();
         QRegion childExpose(newRect & clipR);
         QRegion overlappedExpose;
 
@@ -490,7 +490,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
                 const QVector<QRect> rectsToScroll
                         = getSortedRectsToScroll(QRegion(sourceRect) - overlappedExpose, dx, dy);
                 for (QRect rect : rectsToScroll) {
-                    if (wbs->bltRect(rect, dx, dy, pw)) {
+                    if (repaintManager->bltRect(rect, dx, dy, pw)) {
                         childExpose -= rect.translated(dx, dy);
                     }
                 }
@@ -510,7 +510,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
             }
             if (!childExpose.isEmpty()) {
                 childExpose.translate(-data.crect.topLeft());
-                wbs->markDirty(childExpose, q);
+                repaintManager->markDirty(childExpose, q);
                 isMoved = true;
             }
         }
@@ -521,14 +521,14 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
             parentExpose += QRegion(newRect) - extra->mask.translated(data.crect.topLeft());
 
         if (!parentExpose.isEmpty()) {
-            wbs->markDirty(parentExpose, pw);
+            repaintManager->markDirty(parentExpose, pw);
             pd->isMoved = true;
         }
 
         if (childUpdatesEnabled) {
             QRegion needsFlush(sourceRect);
             needsFlush += destRect;
-            wbs->markDirtyOnScreen(needsFlush, pw, toplevelOffset);
+            repaintManager->markDirtyOnScreen(needsFlush, pw, toplevelOffset);
         }
     }
 }
@@ -542,8 +542,8 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
     if (x->inTopLevelResize)
         return;
 
-    QWidgetRepaintManager *wbs = x->repaintManager.get();
-    if (!wbs)
+    QWidgetRepaintManager *repaintManager = x->repaintManager.get();
+    if (!repaintManager)
         return;
 
     static const bool accelEnv = qEnvironmentVariableIntValue("QT_NO_FAST_SCROLL") == 0;
@@ -574,7 +574,7 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
             const QVector<QRect> rectsToScroll
                     = getSortedRectsToScroll(QRegion(sourceRect) - overlappedExpose, dx, dy);
             for (const QRect &rect : rectsToScroll) {
-                if (wbs->bltRect(rect, dx, dy, q)) {
+                if (repaintManager->bltRect(rect, dx, dy, q)) {
                     childExpose -= rect.translated(dx, dy);
                 }
             }
@@ -601,14 +601,14 @@ void QWidgetPrivate::scrollRect(const QRect &rect, int dx, int dy)
         if (!overlappedExpose.isEmpty())
             invalidateBackingStore(overlappedExpose);
         if (!childExpose.isEmpty()) {
-            wbs->markDirty(childExpose, q);
+            repaintManager->markDirty(childExpose, q);
             isScrolled = true;
         }
 
         // Instead of using native scroll-on-screen, we copy from
         // backingstore, giving only one screen update for each
         // scroll, and a solid appearance
-        wbs->markDirtyOnScreen(destRect, q, toplevelOffset);
+        repaintManager->markDirtyOnScreen(destRect, q, toplevelOffset);
     }
 }
 
