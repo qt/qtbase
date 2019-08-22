@@ -44,6 +44,10 @@
 
 #include <QtCore/qshareddata.h>
 
+#ifndef Q_CLANG_QDOC
+QT_REQUIRE_CONFIG(http);
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QHttp2ConfigurationPrivate;

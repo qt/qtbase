@@ -24,8 +24,7 @@ HEADERS += \
     access/qabstractnetworkcache.h \
     access/qnetworkfile_p.h \
     access/qhsts_p.h \
-    access/qhstspolicy.h \
-    access/qhttp2configuration.h
+    access/qhstspolicy.h
 
 SOURCES += \
     access/qnetworkaccessauthenticationmanager.cpp \
@@ -45,8 +44,7 @@ SOURCES += \
     access/qabstractnetworkcache.cpp \
     access/qnetworkfile.cpp \
     access/qhsts.cpp \
-    access/qhstspolicy.cpp \
-    access/qhttp2configuration.cpp
+    access/qhstspolicy.cpp
 
 qtConfig(ftp) {
     HEADERS += \
@@ -99,7 +97,8 @@ qtConfig(http) {
         access/qhttpnetworkrequest.cpp \
         access/qhttpprotocolhandler.cpp \
         access/qhttpthreaddelegate.cpp \
-        access/qnetworkreplyhttpimpl.cpp
+        access/qnetworkreplyhttpimpl.cpp \
+        access/qhttp2configuration.cpp
 
     HEADERS += \
         access/qabstractprotocolhandler_p.h \
@@ -113,7 +112,8 @@ qtConfig(http) {
         access/qhttpnetworkrequest_p.h \
         access/qhttpprotocolhandler_p.h \
         access/qhttpthreaddelegate_p.h \
-        access/qnetworkreplyhttpimpl_p.h
+        access/qnetworkreplyhttpimpl_p.h \
+        access/qhttp2configuration.h
 
     qtConfig(ssl) {
         SOURCES += \

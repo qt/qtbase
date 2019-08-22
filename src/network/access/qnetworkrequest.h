@@ -176,9 +176,10 @@ public:
 
     QString peerVerifyName() const;
     void setPeerVerifyName(const QString &peerName);
-
+#if QT_CONFIG(http) || defined(Q_CLANG_QDOC)
     QHttp2Configuration http2Configuration() const;
     void setHttp2Configuration(const QHttp2Configuration &configuration);
+#endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC)
 private:
     QSharedDataPointer<QNetworkRequestPrivate> d;
     friend class QNetworkRequestPrivate;

@@ -42,8 +42,10 @@
 #include "qplatformdefs.h"
 #include "qnetworkcookie.h"
 #include "qsslconfiguration.h"
+#if QT_CONFIG(http) || defined(Q_CLANG_QDOC)
 #include "qhttp2configuration.h"
 #include "private/http2protocol_p.h"
+#endif
 #include "QtCore/qshareddata.h"
 #include "QtCore/qlocale.h"
 #include "QtCore/qdatetime.h"
@@ -447,7 +449,9 @@ public:
             sslConfiguration = new QSslConfiguration(*other.sslConfiguration);
 #endif
         peerVerifyName = other.peerVerifyName;
+#if QT_CONFIG(http)
         h2Configuration = other.h2Configuration;
+#endif
     }
 
     inline bool operator==(const QNetworkRequestPrivate &other) const
@@ -457,8 +461,11 @@ public:
             rawHeaders == other.rawHeaders &&
             attributes == other.attributes &&
             maxRedirectsAllowed == other.maxRedirectsAllowed &&
-            peerVerifyName == other.peerVerifyName &&
-            h2Configuration == other.h2Configuration;
+            peerVerifyName == other.peerVerifyName
+#if QT_CONFIG(http)
+            && h2Configuration == other.h2Configuration
+#endif
+            ;
         // don't compare cookedHeaders
     }
 
@@ -469,7 +476,9 @@ public:
 #endif
     int maxRedirectsAllowed;
     QString peerVerifyName;
+#if QT_CONFIG(http)
     QHttp2Configuration h2Configuration;
+#endif
 };
 
 /*!
@@ -481,6 +490,7 @@ public:
 QNetworkRequest::QNetworkRequest()
     : d(new QNetworkRequestPrivate)
 {
+#if QT_CONFIG(http)
     // Initial values proposed by RFC 7540 are quite draconian,
     // so unless an application will set its own parameters, we
     // make stream window size larger and increase (via WINDOW_UPDATE)
@@ -488,6 +498,7 @@ QNetworkRequest::QNetworkRequest()
     d->h2Configuration.setStreamReceiveWindowSize(Http2::qtDefaultStreamReceiveWindowSize);
     d->h2Configuration.setSessionReceiveWindowSize(Http2::maxSessionReceiveWindowSize);
     d->h2Configuration.setServerPushEnabled(false);
+#endif // QT_CONFIG(http)
 }
 
 /*!
@@ -847,6 +858,7 @@ void QNetworkRequest::setPeerVerifyName(const QString &peerName)
     d->peerVerifyName = peerName;
 }
 
+#if QT_CONFIG(http) || defined(Q_CLANG_QDOC)
 /*!
     \since 5.14
 
@@ -890,6 +902,7 @@ void QNetworkRequest::setHttp2Configuration(const QHttp2Configuration &configura
 {
     d->h2Configuration = configuration;
 }
+#endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC)
 
 static QByteArray headerName(QNetworkRequest::KnownHeaders header)
 {
