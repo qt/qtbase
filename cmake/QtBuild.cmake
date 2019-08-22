@@ -2270,6 +2270,7 @@ function(add_qt_test name)
 
         if (builtin_files)
             add_qt_resource(${name} "testdata"
+                PREFIX "/"
                 FILES ${builtin_files}
                 BASE ${CMAKE_CURRENT_SOURCE_DIR})
         endif()
