@@ -119,8 +119,7 @@ public:
     void waitForResult(int resultIndex);
     void waitForResume();
 
-    QMutex *mutex() const;
-    QMutex &mutex(int) const;
+    QMutex &mutex() const;
     QtPrivate::ExceptionStore &exceptionStore();
     QtPrivate::ResultStoreBase &resultStoreBase();
     const QtPrivate::ResultStoreBase &resultStoreBase() const;
@@ -191,7 +190,7 @@ public:
 template <typename T>
 inline void QFutureInterface<T>::reportResult(const T *result, int index)
 {
-    std::lock_guard<QMutex> locker(mutex(0));
+    std::lock_guard<QMutex> locker{mutex()};
     if (this->queryState(Canceled) || this->queryState(Finished)) {
         return;
     }
@@ -217,7 +216,7 @@ inline void QFutureInterface<T>::reportResult(const T &result, int index)
 template <typename T>
 inline void QFutureInterface<T>::reportResults(const QVector<T> &_results, int beginIndex, int count)
 {
-    std::lock_guard<QMutex> locker(mutex(0));
+    std::lock_guard<QMutex> locker{mutex()};
     if (this->queryState(Canceled) || this->queryState(Finished)) {
         return;
     }
@@ -245,14 +244,14 @@ inline void QFutureInterface<T>::reportFinished(const T *result)
 template <typename T>
 inline const T &QFutureInterface<T>::resultReference(int index) const
 {
-    std::lock_guard<QMutex> locker(mutex(0));
+    std::lock_guard<QMutex> locker{mutex()};
     return resultStoreBase().resultAt(index).template value<T>();
 }
 
 template <typename T>
 inline const T *QFutureInterface<T>::resultPointer(int index) const
 {
-    std::lock_guard<QMutex> locker(mutex(0));
+    std::lock_guard<QMutex> locker{mutex()};
     return resultStoreBase().resultAt(index).template pointer<T>();
 }
 
@@ -266,7 +265,7 @@ inline QList<T> QFutureInterface<T>::results()
     QFutureInterfaceBase::waitForResult(-1);
 
     QList<T> res;
-    std::lock_guard<QMutex> locker(mutex(0));
+    std::lock_guard<QMutex> locker{mutex()};
 
     QtPrivate::ResultIteratorBase it = resultStoreBase().begin();
     while (it != resultStoreBase().end()) {
