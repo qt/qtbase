@@ -34,7 +34,7 @@ include(MacroAddFileDependencies)
 
 include(CMakeParseArguments)
 
-function(QT5_ADD_DBUS_INTERFACE _sources _interface _basename)
+function(QT6_ADD_DBUS_INTERFACE _sources _interface _basename)
     get_filename_component(_infile ${_interface} ABSOLUTE)
     set(_header "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.h")
     set(_impl   "${CMAKE_CURRENT_BINARY_DIR}/${_basename}.cpp")
@@ -63,7 +63,7 @@ function(QT5_ADD_DBUS_INTERFACE _sources _interface _basename)
 
     set_source_files_properties("${_impl}" "${_header}" PROPERTIES SKIP_AUTOMOC TRUE)
 
-    qt5_generate_moc("${_header}" "${_moc}")
+    qt6_generate_moc("${_header}" "${_moc}")
 
     list(APPEND ${_sources} "${_impl}" "${_header}" "${_moc}")
     macro_add_file_dependencies("${_impl}" "${_moc}")
@@ -71,20 +71,20 @@ function(QT5_ADD_DBUS_INTERFACE _sources _interface _basename)
 endfunction()
 
 
-function(QT5_ADD_DBUS_INTERFACES _sources)
+function(QT6_ADD_DBUS_INTERFACES _sources)
     foreach(_current_FILE ${ARGN})
         get_filename_component(_infile ${_current_FILE} ABSOLUTE)
         get_filename_component(_basename ${_current_FILE} NAME)
         # get the part before the ".xml" suffix
         string(TOLOWER ${_basename} _basename)
         string(REGEX REPLACE "(.*\\.)?([^\\.]+)\\.xml" "\\2" _basename ${_basename})
-        qt5_add_dbus_interface(${_sources} ${_infile} ${_basename}interface)
+        qt6_add_dbus_interface(${_sources} ${_infile} ${_basename}interface)
     endforeach()
     set(${_sources} ${${_sources}} PARENT_SCOPE)
 endfunction()
 
 
-function(QT5_GENERATE_DBUS_INTERFACE _header) # _customName OPTIONS -some -options )
+function(QT6_GENERATE_DBUS_INTERFACE _header) # _customName OPTIONS -some -options )
     set(options)
     set(oneValueArgs)
     set(multiValueArgs OPTIONS)
@@ -117,7 +117,7 @@ function(QT5_GENERATE_DBUS_INTERFACE _header) # _customName OPTIONS -some -optio
 endfunction()
 
 
-function(QT5_ADD_DBUS_ADAPTOR _sources _xml_file _include _parentClass) # _optionalBasename _optionalClassName)
+function(QT6_ADD_DBUS_ADAPTOR _sources _xml_file _include _parentClass) # _optionalBasename _optionalClassName)
     get_filename_component(_infile ${_xml_file} ABSOLUTE)
 
     set(_optionalBasename "${ARGV4}")
@@ -145,7 +145,7 @@ function(QT5_ADD_DBUS_ADAPTOR _sources _xml_file _include _parentClass) # _optio
         )
     endif()
 
-    qt5_generate_moc("${_header}" "${_moc}")
+    qt6_generate_moc("${_header}" "${_moc}")
     set_source_files_properties("${_impl}" "${_header}" PROPERTIES SKIP_AUTOMOC TRUE)
     macro_add_file_dependencies("${_impl}" "${_moc}")
 

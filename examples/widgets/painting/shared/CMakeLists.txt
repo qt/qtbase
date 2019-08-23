@@ -2,7 +2,7 @@
 
 # special case:
 add_library(painting_shared OBJECT)
-qt5_wrap_cpp(moc_files arthurwidgets.h hoverpoints.h) # no automoc for OBJECT libs:-/
+qt6_wrap_cpp(moc_files arthurwidgets.h hoverpoints.h) # no automoc for OBJECT libs:-/
 target_sources(painting_shared PRIVATE
     arthurstyle.cpp arthurstyle.h
     arthurwidgets.cpp arthurwidgets.h
@@ -12,7 +12,7 @@ target_sources(painting_shared PRIVATE
 target_link_libraries(painting_shared PUBLIC Qt::Widgets)
 target_include_directories(painting_shared PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
-qt5_add_resources(res_files shared.qrc)
+qt6_add_resources(res_files shared.qrc)
 target_sources(painting_shared PRIVATE ${res_files})
 
 ## Scopes:

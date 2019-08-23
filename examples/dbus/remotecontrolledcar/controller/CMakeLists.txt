@@ -16,7 +16,7 @@ find_package(Qt6 COMPONENTS Widgets)
 
 # special case begin
 set(controller_SRCS)
-qt5_add_dbus_interface(controller_SRCS
+qt6_add_dbus_interface(controller_SRCS
     car.xml
     car_interface
 )

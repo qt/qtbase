@@ -16,11 +16,11 @@ find_package(Qt6 COMPONENTS Widgets)
 
 # special case begin
 set(chat_SRCS)
-qt5_add_dbus_interface(chat_SRCS
+qt6_add_dbus_interface(chat_SRCS
     org.example.chat.xml
     chat_interface
 )
-qt5_add_dbus_adaptor(chat_SRCS
+qt6_add_dbus_adaptor(chat_SRCS
     org.example.chat.xml
     qobject.h
     QObject

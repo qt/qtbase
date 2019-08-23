@@ -214,7 +214,7 @@ def write_add_qt_resource_call(target: str, resource_name: str, prefix: typing.O
         params += '    BASE\n        "{}"\n'.format(base_dir)
     add_resource_command = ''
     if is_example:
-        add_resource_command = 'QT5_ADD_RESOURCES'
+        add_resource_command = 'QT6_ADD_RESOURCES'
     else:
         add_resource_command = 'add_qt_resource'
     output += '{}({} "{}"\n{}    FILES\n        {}\n)\n'.format(add_resource_command,
