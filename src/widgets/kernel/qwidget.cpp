@@ -1758,8 +1758,8 @@ QRegion QWidgetPrivate::overlappedRegion(const QRect &rect, bool breakAfterFirst
 
 void QWidgetPrivate::syncBackingStore()
 {
-    if (paintOnScreen()) {
-        repaint_sys(dirty);
+    if (shouldPaintOnScreen()) {
+        paintOnScreen(dirty);
         dirty = QRegion();
     } else if (QWidgetRepaintManager *repaintManager = maybeRepaintManager()) {
         repaintManager->sync();
@@ -1768,14 +1768,14 @@ void QWidgetPrivate::syncBackingStore()
 
 void QWidgetPrivate::syncBackingStore(const QRegion &region)
 {
-    if (paintOnScreen())
-        repaint_sys(region);
+    if (shouldPaintOnScreen())
+        paintOnScreen(region);
     else if (QWidgetRepaintManager *repaintManager = maybeRepaintManager()) {
         repaintManager->sync(q_func(), region);
     }
 }
 
-void QWidgetPrivate::repaint_sys(const QRegion &rgn)
+void QWidgetPrivate::paintOnScreen(const QRegion &rgn)
 {
     if (data.in_destructor)
         return;
@@ -2138,7 +2138,7 @@ void QWidgetPrivate::clipToEffectiveMask(QRegion &region) const
     }
 }
 
-bool QWidgetPrivate::paintOnScreen() const
+bool QWidgetPrivate::shouldPaintOnScreen() const
 {
 #if defined(QT_NO_BACKINGSTORE)
     return true;
@@ -5276,7 +5276,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         return;
 
     const bool asRoot = flags & DrawAsRoot;
-    bool onScreen = paintOnScreen();
+    bool onScreen = shouldPaintOnScreen();
 
     Q_Q(QWidget);
 #if QT_CONFIG(graphicseffect)

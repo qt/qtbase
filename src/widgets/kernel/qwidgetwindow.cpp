@@ -803,7 +803,7 @@ void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
     if (updateSize()) {
         QGuiApplication::forwardEvent(m_widget, event);
 
-        if (m_widget->d_func()->paintOnScreen()) {
+        if (m_widget->d_func()->shouldPaintOnScreen()) {
             QRegion updateRegion(geometry());
             if (m_widget->testAttribute(Qt::WA_StaticContents))
                 updateRegion -= QRect(0, 0, oldSize.width(), oldSize.height());

@@ -350,7 +350,8 @@ public:
 #if QT_CONFIG(graphicsview)
     static QGraphicsProxyWidget * nearestGraphicsProxyWidget(const QWidget *origin);
 #endif
-    void repaint_sys(const QRegion &rgn);
+    bool shouldPaintOnScreen() const;
+    void paintOnScreen(const QRegion &rgn);
 
     QRect clipRect() const;
     QRegion clipRegion() const;
@@ -362,7 +363,6 @@ public:
     void updateIsOpaque();
     void setOpaque(bool opaque);
     void updateIsTranslucent();
-    bool paintOnScreen() const;
 #if QT_CONFIG(graphicseffect)
     void invalidateGraphicsEffectsRecursively();
 #endif // QT_CONFIG(graphicseffect)

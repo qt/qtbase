@@ -184,7 +184,7 @@ public:
 
     inline void dispatchPendingUpdateRequests()
     {
-        if (qt_widget_private(viewport)->paintOnScreen())
+        if (qt_widget_private(viewport)->shouldPaintOnScreen())
             QCoreApplication::sendPostedEvents(viewport, QEvent::UpdateRequest);
         else
             QCoreApplication::sendPostedEvents(viewport->window(), QEvent::UpdateRequest);

@@ -221,7 +221,7 @@ void QWidgetRepaintManager::markDirty(const T &r, QWidget *widget, UpdateTime up
 
     // ---------------------------------------------------------------------------
 
-    if (widget->d_func()->paintOnScreen()) {
+    if (widget->d_func()->shouldPaintOnScreen()) {
         if (widget->d_func()->dirty.isEmpty()) {
             widget->d_func()->dirty = r;
             sendUpdateRequest(widget, updateTime);
@@ -1019,7 +1019,7 @@ void QWidgetRepaintManager::paintAndFlush()
 */
 void QWidgetRepaintManager::markNeedsFlush(QWidget *widget, const QRegion &region, const QPoint &topLevelOffset)
 {
-    if (!widget || widget->d_func()->paintOnScreen() || region.isEmpty())
+    if (!widget || widget->d_func()->shouldPaintOnScreen() || region.isEmpty())
         return;
 
     if (widget == tlw) {
