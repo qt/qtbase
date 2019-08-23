@@ -103,17 +103,20 @@ CONFIG += no_app_extension_api_only
 qtHaveModule(widgets) {
     QT_FOR_CONFIG += widgets
 
-    SOURCES += \
-        qpaintengine_mac.mm \
-        qprintengine_mac.mm \
-        qcocoaprintersupport.mm \
-        qcocoaprintdevice.mm \
+    SOURCES += qpaintengine_mac.mm
+    HEADERS += qpaintengine_mac_p.h
 
-    HEADERS += \
-        qpaintengine_mac_p.h \
-        qprintengine_mac_p.h \
-        qcocoaprintersupport.h \
-        qcocoaprintdevice.h \
+    qtHaveModule(printsupport) {
+        QT += printsupport-private
+        SOURCES += \
+            qprintengine_mac.mm \
+            qcocoaprintersupport.mm \
+            qcocoaprintdevice.mm
+        HEADERS += \
+            qcocoaprintersupport.h \
+            qcocoaprintdevice.h \
+            qprintengine_mac_p.h
+    }
 
     qtConfig(colordialog) {
         SOURCES += qcocoacolordialoghelper.mm
@@ -130,7 +133,7 @@ qtHaveModule(widgets) {
         HEADERS += qcocoafontdialoghelper.h
     }
 
-    QT += widgets-private printsupport-private
+    QT += widgets-private
 }
 
 OTHER_FILES += cocoa.json
