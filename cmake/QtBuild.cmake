@@ -2337,6 +2337,13 @@ function(add_qt_test name)
 
             list(REMOVE_DUPLICATES builtin_files)
 
+            # Skip Qt quick compiler when embedding test resources
+            foreach(file IN LISTS builtin_files)
+                set_source_files_properties(${file}
+                    PROPERTIES QT_SKIP_QUICKCOMPILER TRUE
+                )
+            endforeach()
+
             if (builtin_files)
                 add_qt_resource(${name} "testdata"
                     PREFIX "/"
