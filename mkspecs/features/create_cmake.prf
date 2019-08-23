@@ -153,7 +153,14 @@ if(debug_and_release:build_all)|CONFIG(release, debug|release): CMAKE_RELEASE_TY
 # <CONFIG> equivalent to the value  specified by CMAKE_BUILD_TYPE.
 # This means that when Qt was built in a Release configuration, and the application in a Debug
 # configuration, IMPORTED_LOCATION_RELEASE will be used for the Qt libraries.
-debug_and_release {
+#
+# Note that we need to check for the "debug_and_release" feature, and not the CONFIG value, because
+# the CONFIG value is always set to true on Windows in msvc-desktop.conf disregarding whether the
+# configure line specified just -debug or just -release.
+# This also means that if a user configures and builds Qt with -release, and then calls nmake debug
+# to build debug libraries of Qt, the generated CMake file won't know about debug libraries,
+# and will always link against the release libraries.
+qtConfig(debug_and_release) {
     CMAKE_DEBUG_AND_RELEASE = TRUE
 } else {
     CMAKE_DEBUG_AND_RELEASE = FALSE
