@@ -964,8 +964,11 @@ void QWidgetRepaintManager::paintAndFlush()
     }
 #endif
 
-    // Always flush repainted areas
-    topLevelNeedsFlush += toClean;
+    // Always flush repainted areas. FIXME: We should mark individual widgets,
+    // not the top level widget unconditionally, as this results in always
+    // flushing the top level widget, even if the painted region is entirely
+    // within a native child.
+    markNeedsFlush(tlw, toClean, QPoint());
 
     store->beginPaint(toClean);
 
