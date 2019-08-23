@@ -3284,8 +3284,11 @@ void QGuiApplication::setFont(const QFont &font)
         *QGuiApplicationPrivate::app_font = font;
     applicationResourceFlags |= ApplicationFontExplicitlySet;
 
-    if (emitChange && qGuiApp)
-        emit qGuiApp->fontChanged(*QGuiApplicationPrivate::app_font);
+    if (emitChange && qGuiApp) {
+        auto font = *QGuiApplicationPrivate::app_font;
+        locker.unlock();
+        emit qGuiApp->fontChanged(font);
+    }
 }
 
 /*!
