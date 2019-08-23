@@ -123,8 +123,6 @@ private:
     bool hasStaticContents() const;
     void updateStaticContentsSize();
 
-    QRect topLevelRect() const { return tlw->data->crect; }
-
     QWidget *tlw = nullptr;
     QBackingStore *store = nullptr;
 

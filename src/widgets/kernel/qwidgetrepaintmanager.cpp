@@ -799,7 +799,7 @@ void QWidgetRepaintManager::paintAndFlush()
     bool repaintAllWidgets = false;
 
     const bool inTopLevelResize = tlw->d_func()->maybeTopData()->inTopLevelResize;
-    const QRect tlwRect(topLevelRect());
+    const QRect tlwRect = tlw->data->crect;
     const QRect surfaceGeometry(tlwRect.topLeft(), store->size());
     if ((inTopLevelResize || surfaceGeometry.size() != tlwRect.size()) && !updatesDisabled) {
         if (hasStaticContents() && !store->size().isEmpty() ) {
