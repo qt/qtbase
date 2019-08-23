@@ -145,13 +145,13 @@ function(__qt_quick_compiler_process_resources target resource_name)
         if (resource_files)
             set(resource_name ${chained_resource_name})
         endif()
+        target_link_libraries(${target} PRIVATE @QT_CMAKE_EXPORT_NAMESPACE@::Qml)
     else()
         set(resource_files ${arg_FILES})
     endif()
 
     set(${arg_OUTPUT_REMAINING_RESOURCES} ${resource_files} PARENT_SCOPE)
     set(${arg_OUTPUT_RESOURCE_NAME} ${resource_name} PARENT_SCOPE)
-
 endfunction()
 
 #
