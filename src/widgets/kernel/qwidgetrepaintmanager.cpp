@@ -964,7 +964,7 @@ void QWidgetRepaintManager::paintAndFlush()
 #endif
 
     // Always flush repainted areas
-    needsFlush += toClean;
+    topLevelNeedsFlush += toClean;
 
     store->beginPaint(toClean);
 
@@ -1021,13 +1021,13 @@ void QWidgetRepaintManager::markNeedsFlush(QWidget *widget, const QRegion &regio
     if (widget == tlw) {
         // Top-level (native)
         if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
-            needsFlush += region;
+            topLevelNeedsFlush += region;
     } else if (!hasPlatformWindow(widget) && !widget->isWindow()) {
         QWidget *nativeParent = widget->nativeParentWidget();
         if (nativeParent == tlw) {
             // Alien widgets with the top-level as the native parent (common case)
             if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
-                needsFlush += region.translated(topLevelOffset);
+                topLevelNeedsFlush += region.translated(topLevelOffset);
         } else {
             // Alien widgets with native parent != tlw
             const QPoint nativeParentOffset = widget->mapTo(nativeParent, QPoint());
@@ -1063,11 +1063,11 @@ void QWidgetRepaintManager::flush(QWidget *widget)
     const bool hasDirtyOnScreenWidgets = !dirtyOnScreenWidgets.isEmpty();
     bool flushed = false;
 
-    // Flush the region in needsFlush
-    if (!needsFlush.isEmpty()) {
+    // Flush the top level widget
+    if (!topLevelNeedsFlush.isEmpty()) {
         QWidget *target = widget ? widget : tlw;
-        flush(target, needsFlush, widgetTexturesFor(tlw, tlw));
-        needsFlush = QRegion();
+        flush(target, topLevelNeedsFlush, widgetTexturesFor(tlw, tlw));
+        topLevelNeedsFlush = QRegion();
         flushed = true;
     }
 
@@ -1321,7 +1321,7 @@ QRegion QWidgetRepaintManager::dirtyRegion(QWidget *widget) const
     }
 
     // Append the region that needs flush.
-    r += needsFlush;
+    r += topLevelNeedsFlush;
 
     for (QWidget *w : dirtyOnScreenWidgets) {
         if (widgetDirty && w != widget && !widget->isAncestorOf(w))

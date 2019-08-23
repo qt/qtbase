@@ -133,7 +133,7 @@ private:
     QVector<QWidget *> dirtyWidgets;
     QVector<QWidget *> dirtyRenderToTextureWidgets;
 
-    QRegion needsFlush;
+    QRegion topLevelNeedsFlush;
     QVector<QWidget *> dirtyOnScreenWidgets;
 
     QList<QWidget *> staticWidgets;
