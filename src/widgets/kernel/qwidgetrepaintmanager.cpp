@@ -332,9 +332,10 @@ void QWidgetRepaintManager::removeDirtyWidget(QWidget *w)
         return;
 
     dirtyWidgets.removeAll(w);
-    dirtyOnScreenWidgets.removeAll(w);
     dirtyRenderToTextureWidgets.removeAll(w);
     resetWidget(w);
+
+    needsFlushWidgets.removeAll(w);
 
     QWidgetPrivate *wd = w->d_func();
     const int n = wd->children.count();
@@ -920,7 +921,7 @@ void QWidgetRepaintManager::paintAndFlush()
                 if (hasPlatformWindow(w) || (npw && npw != tlw)) {
                     if (!hasPlatformWindow(w))
                         w = npw;
-                    appendDirtyOnScreenWidget(w);
+                    markNeedsFlush(w);
                 }
             }
         }
@@ -1031,15 +1032,15 @@ void QWidgetRepaintManager::markNeedsFlush(QWidget *widget, const QRegion &regio
         } else {
             // Alien widgets with native parent != tlw
             const QPoint nativeParentOffset = widget->mapTo(nativeParent, QPoint());
-            appendDirtyOnScreenWidget(nativeParent, region.translated(nativeParentOffset));
+            markNeedsFlush(nativeParent, region.translated(nativeParentOffset));
         }
     } else {
         // Native child widgets
-        appendDirtyOnScreenWidget(widget, region);
+        markNeedsFlush(widget, region);
     }
 }
 
-void QWidgetRepaintManager::appendDirtyOnScreenWidget(QWidget *widget, const QRegion &region)
+void QWidgetRepaintManager::markNeedsFlush(QWidget *widget, const QRegion &region)
 {
     if (!widget)
         return;
@@ -1050,8 +1051,8 @@ void QWidgetRepaintManager::appendDirtyOnScreenWidget(QWidget *widget, const QRe
 
     *widgetPrivate->needsFlush += region;
 
-    if (!dirtyOnScreenWidgets.contains(widget))
-        dirtyOnScreenWidgets.append(widget);
+    if (!needsFlushWidgets.contains(widget))
+        needsFlushWidgets.append(widget);
 }
 
 /*!
@@ -1060,7 +1061,7 @@ void QWidgetRepaintManager::appendDirtyOnScreenWidget(QWidget *widget, const QRe
 */
 void QWidgetRepaintManager::flush(QWidget *widget)
 {
-    const bool hasDirtyOnScreenWidgets = !dirtyOnScreenWidgets.isEmpty();
+    const bool hasNeedsFlushWidgets = !needsFlushWidgets.isEmpty();
     bool flushed = false;
 
     // Flush the top level widget
@@ -1071,8 +1072,8 @@ void QWidgetRepaintManager::flush(QWidget *widget)
         flushed = true;
     }
 
-    // Render-to-texture widgets are not in needsFlush so flush if we have not done it above.
-    if (!flushed && !hasDirtyOnScreenWidgets) {
+    // Render-to-texture widgets are not in topLevelNeedsFlush so flush if we have not done it above.
+    if (!flushed && !hasNeedsFlushWidgets) {
 #ifndef QT_NO_OPENGL
         if (!tlw->d_func()->topData()->widgetTextures.empty()) {
             QPlatformTextureList *widgetTextures = widgetTexturesFor(tlw, tlw);
@@ -1084,10 +1085,10 @@ void QWidgetRepaintManager::flush(QWidget *widget)
 #endif
     }
 
-    if (!hasDirtyOnScreenWidgets)
+    if (!hasNeedsFlushWidgets)
         return;
 
-    for (QWidget *w : qExchange(dirtyOnScreenWidgets, {})) {
+    for (QWidget *w : qExchange(needsFlushWidgets, {})) {
         QWidgetPrivate *wd = w->d_func();
         Q_ASSERT(wd->needsFlush);
         QPlatformTextureList *widgetTexturesForNative = wd->textureChildSeen ? widgetTexturesFor(tlw, w) : 0;
@@ -1323,7 +1324,7 @@ QRegion QWidgetRepaintManager::dirtyRegion(QWidget *widget) const
     // Append the region that needs flush.
     r += topLevelNeedsFlush;
 
-    for (QWidget *w : dirtyOnScreenWidgets) {
+    for (QWidget *w : needsFlushWidgets) {
         if (widgetDirty && w != widget && !widget->isAncestorOf(w))
             continue;
         QWidgetPrivate *wd = w->d_func();

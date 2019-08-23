@@ -113,7 +113,7 @@ private:
     bool syncAllowed();
     void paintAndFlush();
 
-    void appendDirtyOnScreenWidget(QWidget *widget, const QRegion &region = QRegion());
+    void markNeedsFlush(QWidget *widget, const QRegion &region = QRegion());
 
     void flush(QWidget *widget = nullptr);
     void flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures);
@@ -134,7 +134,7 @@ private:
     QVector<QWidget *> dirtyRenderToTextureWidgets;
 
     QRegion topLevelNeedsFlush;
-    QVector<QWidget *> dirtyOnScreenWidgets;
+    QVector<QWidget *> needsFlushWidgets;
 
     QList<QWidget *> staticWidgets;
 
