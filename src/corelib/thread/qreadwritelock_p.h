@@ -54,7 +54,9 @@
 
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qhash.h>
-#include <QtCore/qwaitcondition.h>
+
+#include <mutex>
+#include <condition_variable>
 
 QT_REQUIRE_CONFIG(thread);
 
@@ -66,9 +68,9 @@ public:
     explicit QReadWriteLockPrivate(bool isRecursive = false)
         : recursive(isRecursive) {}
 
-    QMutex mutex;
-    QWaitCondition writerCond;
-    QWaitCondition readerCond;
+    std::mutex mutex;
+    std::condition_variable writerCond;
+    std::condition_variable readerCond;
     int readerCount = 0;
     int writerCount = 0;
     int waitingReaders = 0;
@@ -76,8 +78,8 @@ public:
     const bool recursive;
 
     //Called with the mutex locked
-    bool lockForWrite(int timeout);
-    bool lockForRead(int timeout);
+    bool lockForWrite(std::unique_lock<std::mutex> &lock, int timeout);
+    bool lockForRead(std::unique_lock<std::mutex> &lock, int timeout);
     void unlock();
 
     //memory management
