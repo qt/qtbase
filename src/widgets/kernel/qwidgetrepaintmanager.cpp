@@ -1292,56 +1292,6 @@ bool QWidgetRepaintManager::isDirty() const
 }
 
 /*!
-    Returns the region (in top-level coordinates) that needs repaint and/or flush.
-
-    If the widget is non-zero, only the dirty region for the widget is returned
-    and the region will be in widget coordinates.
-*/
-QRegion QWidgetRepaintManager::dirtyRegion(QWidget *widget) const
-{
-    const bool widgetDirty = widget && widget != tlw;
-    const QRect tlwRect(topLevelRect());
-    const QRect surfaceGeometry(tlwRect.topLeft(), store->size());
-    if (surfaceGeometry != tlwRect && surfaceGeometry.size() != tlwRect.size()) {
-        if (widgetDirty) {
-            const QRect dirtyTlwRect = QRect(QPoint(), tlwRect.size());
-            const QPoint offset(widget->mapTo(tlw, QPoint()));
-            const QRect dirtyWidgetRect(dirtyTlwRect & widget->rect().translated(offset));
-            return dirtyWidgetRect.translated(-offset);
-        }
-        return QRect(QPoint(), tlwRect.size());
-    }
-
-    // Calculate the region that needs repaint.
-    QRegion r(dirty);
-    for (int i = 0; i < dirtyWidgets.size(); ++i) {
-        QWidget *w = dirtyWidgets.at(i);
-        if (widgetDirty && w != widget && !widget->isAncestorOf(w))
-            continue;
-        r += w->d_func()->dirty.translated(w->mapTo(tlw, QPoint()));
-    }
-
-    // Append the region that needs flush.
-    r += topLevelNeedsFlush;
-
-    for (QWidget *w : needsFlushWidgets) {
-        if (widgetDirty && w != widget && !widget->isAncestorOf(w))
-            continue;
-        QWidgetPrivate *wd = w->d_func();
-        Q_ASSERT(wd->needsFlush);
-        r += wd->needsFlush->translated(w->mapTo(tlw, QPoint()));
-    }
-
-    if (widgetDirty) {
-        // Intersect with the widget geometry and translate to its coordinates.
-        const QPoint offset(widget->mapTo(tlw, QPoint()));
-        r &= widget->rect().translated(offset);
-        r.translate(-offset);
-    }
-    return r;
-}
-
-/*!
     Invalidates the backing store when the widget is resized.
     Static areas are never invalidated unless absolutely needed.
 */

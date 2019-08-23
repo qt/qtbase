@@ -119,7 +119,6 @@ private:
     void flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures);
 
     bool isDirty() const;
-    QRegion dirtyRegion(QWidget *widget = nullptr) const;
 
     bool hasStaticContents() const;
     void updateStaticContentsSize();
