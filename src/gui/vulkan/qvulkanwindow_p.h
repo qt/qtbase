@@ -102,6 +102,7 @@ public:
     QHash<VkPhysicalDevice, QVulkanInfoVector<QVulkanExtension> > supportedDevExtensions;
     QVector<VkFormat> requestedColorFormats;
     VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT;
+    QVulkanWindow::QueueCreateInfoModifier queueCreateInfoModifier;
 
     VkDevice dev = VK_NULL_HANDLE;
     QVulkanDeviceFunctions *devFuncs;

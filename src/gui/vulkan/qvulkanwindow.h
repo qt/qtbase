@@ -103,6 +103,12 @@ public:
     QVector<int> supportedSampleCounts();
     void setSampleCount(int sampleCount);
 
+    typedef std::function<void(const VkQueueFamilyProperties *,
+                               uint32_t,
+                               QVector<VkDeviceQueueCreateInfo> &)> QueueCreateInfoModifier;
+    QueueCreateInfoModifier queueCreateInfoModifier() const;
+    void setQueueCreateInfoModifier(QueueCreateInfoModifier modifier);
+
     bool isValid() const;
 
     virtual QVulkanWindowRenderer *createRenderer();
