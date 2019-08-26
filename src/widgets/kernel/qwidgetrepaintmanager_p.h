@@ -65,16 +65,19 @@ class QWidgetRepaintManager;
 
 class Q_AUTOTEST_EXPORT QWidgetRepaintManager
 {
+    Q_GADGET
 public:
     enum UpdateTime {
         UpdateNow,
         UpdateLater
     };
+    Q_ENUM(UpdateTime)
 
     enum BufferState{
         BufferValid,
         BufferInvalid
     };
+    Q_ENUM(BufferState)
 
     QWidgetRepaintManager(QWidget *t);
     ~QWidgetRepaintManager();

@@ -206,6 +206,9 @@ static inline QRect widgetRectFor(QWidget *widget, const QRegion &) { return wid
 template <class T>
 void QWidgetRepaintManager::markDirty(const T &r, QWidget *widget, UpdateTime updateTime, BufferState bufferState)
 {
+    qCInfo(lcWidgetPainting) << "Marking" << r << "of" << widget << "dirty"
+        << "with" << updateTime;
+
     Q_ASSERT(tlw->d_func()->extra);
     Q_ASSERT(tlw->d_func()->extra->topextra);
     Q_ASSERT(!tlw->d_func()->extra->topextra->inTopLevelResize);
@@ -369,6 +372,8 @@ void QWidgetRepaintManager::sendUpdateRequest(QWidget *widget, UpdateTime update
 {
     if (!widget)
         return;
+
+    qCInfo(lcWidgetPainting) << "Sending update request to" << widget << "with" << updateTime;
 
 #ifndef QT_NO_OPENGL
     // Having every repaint() leading to a sync/flush is bad as it causes
@@ -713,6 +718,8 @@ static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
 */
 void QWidgetRepaintManager::sync(QWidget *exposedWidget, const QRegion &exposedRegion)
 {
+    qCInfo(lcWidgetPainting) << "Syncing" << exposedRegion << "of" << exposedWidget;
+
     QTLWExtra *tlwExtra = tlw->d_func()->maybeTopData();
     if (!tlw->isVisible() || !tlwExtra || tlwExtra->inTopLevelResize)
         return;
@@ -745,6 +752,8 @@ void QWidgetRepaintManager::sync(QWidget *exposedWidget, const QRegion &exposedR
 */
 void QWidgetRepaintManager::sync()
 {
+    qCInfo(lcWidgetPainting) << "Syncing dirty widgets";
+
     updateRequestSent = false;
     if (qt_widget_private(tlw)->shouldDiscardSyncRequest()) {
         // If the top-level is minimized, it's not visible on the screen so we can delay the
@@ -798,6 +807,9 @@ bool QWidgetRepaintManager::syncAllowed()
 
 void QWidgetRepaintManager::paintAndFlush()
 {
+    qCInfo(lcWidgetPainting) << "Painting and flushing dirty"
+        << "top level" << dirty << "and dirty widgets" << dirtyWidgets;
+
     const bool updatesDisabled = !tlw->updatesEnabled();
     bool repaintAllWidgets = false;
 
@@ -1027,10 +1039,15 @@ void QWidgetRepaintManager::markNeedsFlush(QWidget *widget, const QRegion &regio
 
     if (widget == tlw) {
         // Top-level (native)
+        qCInfo(lcWidgetPainting) << "Marking" << region << "of top level"
+            << widget << "as needing flush";
         if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
             topLevelNeedsFlush += region;
     } else if (!hasPlatformWindow(widget) && !widget->isWindow()) {
         QWidget *nativeParent = widget->nativeParentWidget();
+        qCInfo(lcWidgetPainting) << "Marking" << region << "of"
+                << widget << "as needing flush in" << nativeParent
+                << "at offset" << topLevelOffset;
         if (nativeParent == tlw) {
             // Alien widgets with the top-level as the native parent (common case)
             if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
@@ -1042,6 +1059,8 @@ void QWidgetRepaintManager::markNeedsFlush(QWidget *widget, const QRegion &regio
         }
     } else {
         // Native child widgets
+        qCInfo(lcWidgetPainting) << "Marking" << region
+            << "of native child" << widget << "as needing flush";
         markNeedsFlush(widget, region);
     }
 }
@@ -1066,6 +1085,9 @@ void QWidgetRepaintManager::markNeedsFlush(QWidget *widget, const QRegion &regio
 */
 void QWidgetRepaintManager::flush()
 {
+    qCInfo(lcWidgetPainting) << "Flushing top level"
+        << topLevelNeedsFlush << "and children" << needsFlushWidgets;
+
     const bool hasNeedsFlushWidgets = !needsFlushWidgets.isEmpty();
     bool flushed = false;
 
@@ -1122,6 +1144,8 @@ void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatf
         if (widgetWindow->type() == Qt::ForeignWindow)
             return;
     }
+
+    qCInfo(lcWidgetPainting) << "Flushing" << region << "of" << widget;
 
     static bool fpsDebug = qEnvironmentVariableIntValue("QT_DEBUG_FPS");
     if (fpsDebug) {

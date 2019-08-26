@@ -119,6 +119,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcWidgetPainting, "qt.widgets.painting", QtWarningMsg);
+
 static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 {
     return (qMax(r1.left(), r2.left()) <= qMin(r1.right(), r2.right()) &&
@@ -5273,10 +5275,14 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
     if (rgn.isEmpty())
         return;
 
+    Q_Q(QWidget);
+
+    qCInfo(lcWidgetPainting) << "Drawing" << rgn << "of" << q << "at" << offset
+        << "into paint device" << pdev << "with" << flags;
+
     const bool asRoot = flags & DrawAsRoot;
     bool onScreen = shouldPaintOnScreen();
 
-    Q_Q(QWidget);
 #if QT_CONFIG(graphicseffect)
     if (graphicsEffect && graphicsEffect->isEnabled()) {
         QGraphicsEffectSource *source = graphicsEffect->d_func()->source;
