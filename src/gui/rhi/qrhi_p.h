@@ -843,6 +843,8 @@ class Q_GUI_EXPORT QRhiRenderPassDescriptor : public QRhiResource
 public:
     QRhiResource::Type resourceType() const override;
 
+    virtual const QRhiNativeHandles *nativeHandles();
+
 protected:
     QRhiRenderPassDescriptor(QRhiImplementation *rhi);
 };

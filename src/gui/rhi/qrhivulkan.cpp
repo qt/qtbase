@@ -182,6 +182,13 @@ QT_BEGIN_NAMESPACE
     \l{QRhi::endOffsrceenFrame()}{endOffscreenFrame()} pair.
  */
 
+/*!
+    \class QRhiVulkanRenderPassNativeHandles
+    \internal
+    \inmodule QtGui
+    \brief Holds the Vulkan render pass object backing a QRhiRenderPassDescriptor.
+ */
+
 static inline VkDeviceSize aligned(VkDeviceSize v, VkDeviceSize byteAlign)
 {
     return (v + byteAlign - 1) & ~(byteAlign - 1);
@@ -5096,6 +5103,12 @@ void QVkRenderPassDescriptor::release()
     rhiD->releaseQueue.append(e);
 
     rhiD->unregisterResource(this);
+}
+
+const QRhiNativeHandles *QVkRenderPassDescriptor::nativeHandles()
+{
+    nativeHandlesStruct.renderPass = rp;
+    return &nativeHandlesStruct;
 }
 
 QVkReferenceRenderTarget::QVkReferenceRenderTarget(QRhiImplementation *rhi)

@@ -171,9 +171,11 @@ struct QVkRenderPassDescriptor : public QRhiRenderPassDescriptor
     QVkRenderPassDescriptor(QRhiImplementation *rhi);
     ~QVkRenderPassDescriptor();
     void release() override;
+    const QRhiNativeHandles *nativeHandles() override;
 
     VkRenderPass rp = VK_NULL_HANDLE;
     bool ownsRp = false;
+    QRhiVulkanRenderPassNativeHandles nativeHandlesStruct;
     int lastActiveFrameSlot = -1;
 };
 

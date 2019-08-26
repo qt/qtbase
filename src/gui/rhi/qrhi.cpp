@@ -2246,6 +2246,10 @@ QRhiResource::Type QRhiSampler::resourceType() const
     \internal
     \inmodule QtGui
     \brief Render pass resource.
+
+    A render pass, if such a concept exists in the underlying graphics API, is
+    a collection of attachments (color, depth, stencil) and describes how those
+    attachments are used.
  */
 
 /*!
@@ -2262,6 +2266,18 @@ QRhiRenderPassDescriptor::QRhiRenderPassDescriptor(QRhiImplementation *rhi)
 QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
 {
     return RenderPassDescriptor;
+}
+
+/*!
+    \return a pointer to a backend-specific QRhiNativeHandles subclass, such as
+    QRhiVulkanRenderPassNativeHandles. The returned value is null when exposing
+    the underlying native resources is not supported by the backend.
+
+    \sa QRhiVulkanRenderPassNativeHandles
+ */
+const QRhiNativeHandles *QRhiRenderPassDescriptor::nativeHandles()
+{
+    return nullptr;
 }
 
 /*!
