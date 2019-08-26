@@ -707,9 +707,9 @@ static QPlatformTextureList *widgetTexturesFor(QWidget *tlw, QWidget *widget)
 /*!
     Synchronizes the \a exposedRegion of the \a exposedWidget with the backing store.
 
-    If there's nothing to repaint, the area is flushed and painting does not occur;
-    otherwise the area is marked as dirty on screen and will be flushed right after
-    we are done with all painting.
+    If there are dirty widgets, including but not limited to the \a exposedWidget,
+    these will be repainted first. The backingstore is then flushed to the screen,
+    regardless of whether or not there were any repaints.
 */
 void QWidgetRepaintManager::sync(QWidget *exposedWidget, const QRegion &exposedRegion)
 {
@@ -730,6 +730,9 @@ void QWidgetRepaintManager::sync(QWidget *exposedWidget, const QRegion &exposedR
         return;
     }
 
+    // As requests to sync a specific widget typically comes from an expose event
+    // we can't rely solely on our own dirty tracking to decide what to flush, and
+    // need to respect the platform's request to at least flush the entire widget,
     QPoint offset = exposedWidget != tlw ? exposedWidget->mapTo(tlw, QPoint()) : QPoint();
     markNeedsFlush(exposedWidget, exposedRegion, offset);
 
