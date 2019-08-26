@@ -32,6 +32,7 @@ import os.path
 import re
 import sys
 from typing import Set, Union, List, Dict
+from textwrap import dedent
 
 from helper import map_qt_library, featureName, map_platform, \
     find_3rd_party_library_mapping, generate_find_package_info
@@ -80,6 +81,7 @@ def map_tests(test: str) -> str:
         'fsgsbase': 'TEST_subarch_fsgsbase',
         'gfni': 'TEST_subarch_gfni',
         'ibt': 'TEST_subarch_ibt',
+        'libclang': 'TEST_libclang',
         'lwp': 'TEST_subarch_lwp',
         'lzcnt': 'TEST_subarch_lzcnt',
         'mmx': 'TEST_subarch_mmx',
@@ -589,6 +591,19 @@ def parseTest(ctx, test, data, cm_fh):
         if qmakeFixme != "":
             cm_fh.write(qmakeFixme)
         cm_fh.write(")\n\n")
+
+    elif data["type"] == "libclang":
+        knownTests.add(test)
+
+        cm_fh.write("# {}\n".format(test))
+        lib_clang_lib = find_3rd_party_library_mapping("libclang")
+        cm_fh.write(generate_find_package_info(lib_clang_lib))
+        cm_fh.write(dedent("""
+        if(TARGET WrapLibClang::WrapLibClang)
+            set(TEST_libclang "ON" CACHE BOOL "Required libclang version found." FORCE)
+        endif()
+        """))
+        cm_fh.write("\n")
 
     elif data["type"] == "x86Simd":
         knownTests.add(test)
