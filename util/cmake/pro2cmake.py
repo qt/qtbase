@@ -1883,8 +1883,7 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
             for data in test_data:
                 if '*' in data:
                     cm_fh.write(dedent("""
-                        {indent}file(GLOB test_data_glob
-                        {indent1}LIST_DIRECTORIES true
+                        {indent}file(GLOB_RECURSE test_data_glob
                         {indent1}RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}}
                         {indent1}"{}")
                         """).format(
