@@ -1224,6 +1224,12 @@ defineReplace(qtConfOutputPostProcess_publicPro) {
             "QT_RELEASE_DATE = $$config.input.qt_release_date"
     }
 
+    wasm: {
+        qt_emcc_version = $$qtSystemEmccVersion()
+        output += \
+           "QT_EMCC_VERSION = $$qt_emcc_version"
+    }
+
     return($$output)
 }
 
@@ -1255,6 +1261,12 @@ defineReplace(qtConfOutputPostProcess_publicHeader) {
 
     !isEmpty(config.input.qt_libinfix): \
         output += "$${LITERAL_HASH}define QT_LIBINFIX \"$$eval(config.input.qt_libinfix)\""
+
+    wasm: {
+        qt_emcc_version = $$qtSystemEmccVersion()
+output += \
+           "$${LITERAL_HASH}define QT_EMCC_VERSION \"$$qt_emcc_version\""
+    }
 
     return($$output)
 }
@@ -1336,6 +1348,14 @@ defineTest(qtConfReport_buildMode) {
         build_mode = "$$build_mode; optimized tools"
 
     qtConfReportPadded($$1, $$build_mode)
+}
+
+defineTest(qtConfReport_emccVersion) {
+    EMCC_VERSION = $$qtSystemEmccVersion()
+    REQ_VERSION = $$qtEmccRecommendedVersion()
+    !equals(EMCC_VERSION, $$REQ_VERSION) {
+        qtConfAddReport("You should use the recommended Emscripten version $$REQ_VERSION with this Qt. You have $$EMCC_VERSION $$QT_EMCC_VERSION")
+    }
 }
 
 # ensure pristine environment for configuration

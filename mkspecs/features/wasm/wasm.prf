@@ -1,8 +1,11 @@
 
+
 # DESTDIR will be empty if not set in the app .pro file; make sure it has a value
 isEmpty(DESTDIR): DESTDIR = $$OUT_PWD
 
 exists($$QMAKE_QT_CONFIG) {
+## this may be subject to change
+
     qtConfig(thread) {
 
         EMCC_THREAD_LFLAGS += -s USE_PTHREADS=1
@@ -108,6 +111,8 @@ contains(TEMPLATE, .*app) {
             $$QMAKE_LIBS_FREETYPE $$QMAKE_LIBS_LIBPNG
     }
 }
+
+qtConfTest_emccVersion()
 
 # Pass --source-map-base on the linker line. This informs the
 # browser where to find the source files when debugging.
