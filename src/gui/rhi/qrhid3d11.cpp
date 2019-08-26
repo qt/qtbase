@@ -873,8 +873,10 @@ const QRhiNativeHandles *QRhiD3D11::nativeHandles(QRhiCommandBuffer *cb)
 
 void QRhiD3D11::beginExternal(QRhiCommandBuffer *cb)
 {
-    Q_UNUSED(cb);
-    flushCommandBuffer();
+    QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    // no timestampSwapChain, in order to avoid timestamp mess
+    executeCommandBuffer(cbD);
+    cbD->resetCommands();
 }
 
 void QRhiD3D11::endExternal(QRhiCommandBuffer *cb)
@@ -1135,25 +1137,23 @@ static inline bool isDepthTextureFormat(QRhiTexture::Format format)
 
 QRhi::FrameOpResult QRhiD3D11::finish()
 {
-    if (inFrame)
-        flushCommandBuffer();
+    if (inFrame) {
+        if (ofr.active) {
+            Q_ASSERT(!contextState.currentSwapChain);
+            Q_ASSERT(ofr.cbWrapper.recordingPass == QD3D11CommandBuffer::NoPass);
+            executeCommandBuffer(&ofr.cbWrapper);
+            ofr.cbWrapper.resetCommands();
+        } else {
+            Q_ASSERT(contextState.currentSwapChain);
+            Q_ASSERT(contextState.currentSwapChain->cb.recordingPass == QD3D11CommandBuffer::NoPass);
+            executeCommandBuffer(&contextState.currentSwapChain->cb); // no timestampSwapChain, in order to avoid timestamp mess
+            contextState.currentSwapChain->cb.resetCommands();
+        }
+    }
 
     finishActiveReadbacks();
 
     return QRhi::FrameOpSuccess;
-}
-
-void QRhiD3D11::flushCommandBuffer()
-{
-    if (ofr.active) {
-        Q_ASSERT(!contextState.currentSwapChain);
-        executeCommandBuffer(&ofr.cbWrapper);
-        ofr.cbWrapper.resetCommands();
-    } else {
-        Q_ASSERT(contextState.currentSwapChain);
-        executeCommandBuffer(&contextState.currentSwapChain->cb); // no timestampSwapChain, in order to avoid timestamp mess
-        contextState.currentSwapChain->cb.resetCommands();
-    }
 }
 
 void QRhiD3D11::enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,

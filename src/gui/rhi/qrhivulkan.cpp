@@ -1868,12 +1868,16 @@ QRhi::FrameOpResult QRhiVulkan::finish()
         VkCommandBuffer cb;
         if (ofr.active) {
             Q_ASSERT(!currentSwapChain);
+            Q_ASSERT(ofr.cbWrapper.recordingPass == QVkCommandBuffer::NoPass);
             recordCommandBuffer(&ofr.cbWrapper);
+            ofr.cbWrapper.resetCommands();
             cb = ofr.cbWrapper.cb;
         } else {
             Q_ASSERT(currentSwapChain);
+            Q_ASSERT(currentSwapChain->cbWrapper.recordingPass == QVkCommandBuffer::NoPass);
             swapChainD = currentSwapChain;
             recordCommandBuffer(&swapChainD->cbWrapper);
+            swapChainD->cbWrapper.resetCommands();
             cb = swapChainD->cbWrapper.cb;
         }
         QRhi::FrameOpResult submitres = endAndSubmitCommandBuffer(cb, VK_NULL_HANDLE, nullptr, nullptr);
@@ -3120,17 +3124,16 @@ VkSampleCountFlagBits QRhiVulkan::effectiveSampleCount(int sampleCount)
 void QRhiVulkan::enqueueTransitionPassResources(QVkCommandBuffer *cbD)
 {
     cbD->passResTrackers.append(QRhiPassResourceTracker());
+    cbD->currentPassResTrackerIndex = cbD->passResTrackers.count() - 1;
+
     QVkCommandBuffer::Command cmd;
     cmd.cmd = QVkCommandBuffer::Command::TransitionPassResources;
     cmd.args.transitionResources.trackerIndex = cbD->passResTrackers.count() - 1;
     cbD->commands.append(cmd);
-    cbD->currentPassResTrackerIndex = cbD->passResTrackers.count() - 1;
 }
 
 void QRhiVulkan::recordCommandBuffer(QVkCommandBuffer *cbD)
 {
-    Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::NoPass);
-
     for (QVkCommandBuffer::Command &cmd : cbD->commands) {
         switch (cmd.cmd) {
         case QVkCommandBuffer::Command::CopyBuffer:
@@ -3244,8 +3247,6 @@ void QRhiVulkan::recordCommandBuffer(QVkCommandBuffer *cbD)
             break;
         }
     }
-
-    cbD->resetCommands();
 }
 
 static inline VkAccessFlags toVkAccess(QRhiPassResourceTracker::BufferAccess access)
@@ -4138,13 +4139,30 @@ const QRhiNativeHandles *QRhiVulkan::nativeHandles(QRhiCommandBuffer *cb)
 
 void QRhiVulkan::beginExternal(QRhiCommandBuffer *cb)
 {
-    Q_UNUSED(cb);
+    QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
+    recordCommandBuffer(cbD);
+    cbD->resetCommands();
 }
 
 void QRhiVulkan::endExternal(QRhiCommandBuffer *cb)
 {
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
+    Q_ASSERT(cbD->commands.isEmpty() && cbD->currentPassResTrackerIndex == -1);
+
     cbD->resetCachedState();
+
+    // ### FIXME this is all broken (leads to barriers within a renderpass
+    // instance which (1) would need a self-dependency for the subpass and (2) is
+    // not what we want anyway since it then has a different sychronization scope).
+    //
+    // To be replaced with a secondary command buffer for the external content.
+    //
+    if (cbD->recordingPass != QVkCommandBuffer::NoPass) {
+        // Commands that come after this point need a resource tracker and the
+        // corresponding barriers. Note that we are inside a renderpass
+        // instance here and that needs a self-dependency for the subpass.
+        enqueueTransitionPassResources(cbD);
+    }
 }
 
 void QRhiVulkan::setObjectName(uint64_t object, VkDebugReportObjectTypeEXT type, const QByteArray &name, int slot)

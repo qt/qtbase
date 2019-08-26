@@ -525,19 +525,16 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     }
     void resetCommands() {
         commands.clear();
-        // beginExternal() can lead to calling resetCommands() inside a pass,
-        // hence the condition
-        if (recordingPass == NoPass) {
-            passResTrackers.clear();
-            currentPassResTrackerIndex = -1;
-        }
         dataRetainPool.clear();
         imageRetainPool.clear();
+
+        passResTrackers.clear();
+        currentPassResTrackerIndex = -1;
     }
     void resetState() {
-        resetCommands();
         recordingPass = NoPass;
         currentTarget = nullptr;
+        resetCommands();
         resetCachedState();
     }
     void resetCachedState() {
@@ -671,7 +668,6 @@ public:
 
     bool ensureContext(QSurface *surface = nullptr) const;
     void executeDeferredReleases();
-    QRhi::FrameOpResult flushCommandBuffer();
     void trackedBufferBarrier(QGles2CommandBuffer *cbD, QGles2Buffer *bufD, QGles2Buffer::Access access);
     void trackedImageBarrier(QGles2CommandBuffer *cbD, QGles2Texture *texD, QGles2Texture::Access access);
     void enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cbD,
@@ -692,6 +688,7 @@ public:
                              const uint *dynOfsPairs, int dynOfsCount);
     QGles2RenderTargetData *enqueueBindFramebuffer(QRhiRenderTarget *rt, QGles2CommandBuffer *cbD,
                                                    bool *wantsColorClear = nullptr, bool *wantsDsClear = nullptr);
+    void enqueueBarriersForPass(QGles2CommandBuffer *cbD);
     int effectiveSampleCount(int sampleCount) const;
     bool compileShader(GLuint program, const QRhiShaderStage &shaderStage,
                        QShaderDescription *desc, int *glslVersionUsed);

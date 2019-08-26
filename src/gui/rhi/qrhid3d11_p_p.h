@@ -473,9 +473,9 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         imageRetainPool.clear();
     }
     void resetState() {
-        resetCommands();
         recordingPass = NoPass;
         currentTarget = nullptr;
+        resetCommands();
         resetCachedState();
     }
     void resetCachedState() {
@@ -633,7 +633,6 @@ public:
     void sendVMemStatsToProfiler() override;
     void makeThreadLocalNativeContextCurrent() override;
 
-    void flushCommandBuffer();
     void enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,
                              int layer, int level, const QRhiTextureSubresourceUploadDescription &subresDesc);
     void enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates);

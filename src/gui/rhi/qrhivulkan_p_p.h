@@ -324,9 +324,9 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     };
 
     void resetState() {
-        resetCommands();
         recordingPass = NoPass;
         currentTarget = nullptr;
+        resetCommands();
         resetCachedState();
     }
 
@@ -510,9 +510,10 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
 
     void resetCommands() {
         commands.clear();
+        resetPools();
+
         passResTrackers.clear();
         currentPassResTrackerIndex = -1;
-        resetPools();
     }
 
     void resetPools() {

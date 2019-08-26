@@ -1094,15 +1094,36 @@ const QRhiNativeHandles *QRhiGles2::nativeHandles(QRhiCommandBuffer *cb)
 
 void QRhiGles2::beginExternal(QRhiCommandBuffer *cb)
 {
-    Q_UNUSED(cb);
-    flushCommandBuffer(); // also ensures the context is current
+    if (ofr.active) {
+        Q_ASSERT(!currentSwapChain);
+        if (!ensureContext())
+            return;
+    } else {
+        Q_ASSERT(currentSwapChain);
+        if (!ensureContext(currentSwapChain->surface))
+            return;
+    }
+
+    QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
+    executeCommandBuffer(cbD);
+    cbD->resetCommands();
 }
 
 void QRhiGles2::endExternal(QRhiCommandBuffer *cb)
 {
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
-    Q_ASSERT(cbD->commands.isEmpty());
+    Q_ASSERT(cbD->commands.isEmpty() && cbD->currentPassResTrackerIndex == -1);
+
     cbD->resetCachedState();
+
+    if (cbD->recordingPass != QGles2CommandBuffer::NoPass) {
+        // Commands that come after this point need a resource tracker and also
+        // a BarriersForPass command enqueued. (the ones we had from
+        // beginPass() are now gone since beginExternal() processed all that
+        // due to calling executeCommandBuffer()).
+        enqueueBarriersForPass(cbD);
+    }
+
     if (cbD->currentTarget)
         enqueueBindFramebuffer(cbD->currentTarget, cbD);
 }
@@ -1196,23 +1217,22 @@ QRhi::FrameOpResult QRhiGles2::endOffscreenFrame()
 
 QRhi::FrameOpResult QRhiGles2::finish()
 {
-    return inFrame ? flushCommandBuffer() : QRhi::FrameOpSuccess;
-}
-
-QRhi::FrameOpResult QRhiGles2::flushCommandBuffer()
-{
-    if (ofr.active) {
-        Q_ASSERT(!currentSwapChain);
-        if (!ensureContext())
-            return QRhi::FrameOpError;
-        executeCommandBuffer(&ofr.cbWrapper);
-        ofr.cbWrapper.resetCommands();
-    } else {
-        Q_ASSERT(currentSwapChain);
-        if (!ensureContext(currentSwapChain->surface))
-            return QRhi::FrameOpError;
-        executeCommandBuffer(&currentSwapChain->cb);
-        currentSwapChain->cb.resetCommands();
+    if (inFrame) {
+        if (ofr.active) {
+            Q_ASSERT(!currentSwapChain);
+            Q_ASSERT(ofr.cbWrapper.recordingPass == QGles2CommandBuffer::NoPass);
+            if (!ensureContext())
+                return QRhi::FrameOpError;
+            executeCommandBuffer(&ofr.cbWrapper);
+            ofr.cbWrapper.resetCommands();
+        } else {
+            Q_ASSERT(currentSwapChain);
+            Q_ASSERT(currentSwapChain->cb.recordingPass == QGles2CommandBuffer::NoPass);
+            if (!ensureContext(currentSwapChain->surface))
+                return QRhi::FrameOpError;
+            executeCommandBuffer(&currentSwapChain->cb);
+            currentSwapChain->cb.resetCommands();
+        }
     }
     return QRhi::FrameOpSuccess;
 }
@@ -2483,6 +2503,16 @@ QGles2RenderTargetData *QRhiGles2::enqueueBindFramebuffer(QRhiRenderTarget *rt, 
     return rtD;
 }
 
+void QRhiGles2::enqueueBarriersForPass(QGles2CommandBuffer *cbD)
+{
+    cbD->passResTrackers.append(QRhiPassResourceTracker());
+    cbD->currentPassResTrackerIndex = cbD->passResTrackers.count() - 1;
+    QGles2CommandBuffer::Command cmd;
+    cmd.cmd = QGles2CommandBuffer::Command::BarriersForPass;
+    cmd.args.barriersForPass.trackerIndex = cbD->currentPassResTrackerIndex;
+    cbD->commands.append(cmd);
+}
+
 void QRhiGles2::beginPass(QRhiCommandBuffer *cb,
                           QRhiRenderTarget *rt,
                           const QColor &colorClearValue,
@@ -2497,12 +2527,7 @@ void QRhiGles2::beginPass(QRhiCommandBuffer *cb,
 
     // Get a new resource tracker. Then add a command that will generate
     // glMemoryBarrier() calls based on that tracker when submitted.
-    cbD->passResTrackers.append(QRhiPassResourceTracker());
-    cbD->currentPassResTrackerIndex = cbD->passResTrackers.count() - 1;
-    QGles2CommandBuffer::Command cmd;
-    cmd.cmd = QGles2CommandBuffer::Command::BarriersForPass;
-    cmd.args.barriersForPass.trackerIndex = cbD->currentPassResTrackerIndex;
-    cbD->commands.append(cmd);
+    enqueueBarriersForPass(cbD);
 
     bool wantsColorClear, wantsDsClear;
     QGles2RenderTargetData *rtD = enqueueBindFramebuffer(rt, cbD, &wantsColorClear, &wantsDsClear);
@@ -2578,12 +2603,7 @@ void QRhiGles2::beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch 
     if (resourceUpdates)
         enqueueResourceUpdates(cb, resourceUpdates);
 
-    cbD->passResTrackers.append(QRhiPassResourceTracker());
-    cbD->currentPassResTrackerIndex = cbD->passResTrackers.count() - 1;
-    QGles2CommandBuffer::Command cmd;
-    cmd.cmd = QGles2CommandBuffer::Command::BarriersForPass;
-    cmd.args.barriersForPass.trackerIndex = cbD->currentPassResTrackerIndex;
-    cbD->commands.append(cmd);
+    enqueueBarriersForPass(cbD);
 
     cbD->recordingPass = QGles2CommandBuffer::ComputePass;
 
