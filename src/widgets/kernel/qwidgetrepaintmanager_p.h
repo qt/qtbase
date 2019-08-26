@@ -115,7 +115,7 @@ private:
 
     void markNeedsFlush(QWidget *widget, const QRegion &region = QRegion());
 
-    void flush(QWidget *widget = nullptr);
+    void flush();
     void flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures);
 
     bool isDirty() const;

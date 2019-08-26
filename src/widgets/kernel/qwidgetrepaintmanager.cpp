@@ -1063,17 +1063,15 @@ void QWidgetRepaintManager::markNeedsFlush(QWidget *widget, const QRegion &regio
 
 /*!
     Flushes the contents of the backing store into the top-level widget.
-    If the \a widget is non-zero, the content is flushed to the \a widget.
 */
-void QWidgetRepaintManager::flush(QWidget *widget)
+void QWidgetRepaintManager::flush()
 {
     const bool hasNeedsFlushWidgets = !needsFlushWidgets.isEmpty();
     bool flushed = false;
 
     // Flush the top level widget
     if (!topLevelNeedsFlush.isEmpty()) {
-        QWidget *target = widget ? widget : tlw;
-        flush(target, topLevelNeedsFlush, widgetTexturesFor(tlw, tlw));
+        flush(tlw, topLevelNeedsFlush, widgetTexturesFor(tlw, tlw));
         topLevelNeedsFlush = QRegion();
         flushed = true;
     }
@@ -1082,11 +1080,8 @@ void QWidgetRepaintManager::flush(QWidget *widget)
     if (!flushed && !hasNeedsFlushWidgets) {
 #ifndef QT_NO_OPENGL
         if (!tlw->d_func()->topData()->widgetTextures.empty()) {
-            QPlatformTextureList *widgetTextures = widgetTexturesFor(tlw, tlw);
-            if (widgetTextures) {
-                QWidget *target = widget ? widget : tlw;
-                flush(target, QRegion(), widgetTextures);
-            }
+            if (QPlatformTextureList *widgetTextures = widgetTexturesFor(tlw, tlw))
+                flush(tlw, QRegion(), widgetTextures);
         }
 #endif
     }
