@@ -1199,17 +1199,22 @@ bool qSharedBuild() noexcept
            the application is compiled (32 or 64).
 */
 
+#if QT_DEPRECATED_SINCE(5, 9)
 /*!
     \deprecated
     \variable QSysInfo::WindowsVersion
     \brief the version of the Windows operating system on which the
            application is run.
+
+    Use QOperatingSystemVersion::current() instead.
 */
 
 /*!
     \deprecated
     \fn QSysInfo::WindowsVersion QSysInfo::windowsVersion()
     \since 4.4
+
+    Use QOperatingSystemVersion::current() instead.
 
     Returns the version of the Windows operating system on which the
     application is run, or WV_None if the operating system is not
@@ -1221,16 +1226,21 @@ bool qSharedBuild() noexcept
     \variable QSysInfo::MacintoshVersion
     \brief the version of the Macintosh operating system on which
            the application is run.
+
+    Use QOperatingSystemVersion::current() instead.
 */
 
 /*!
     \deprecated
     \fn QSysInfo::MacVersion QSysInfo::macVersion()
 
+    Use QOperatingSystemVersion::current() instead.
+
     Returns the version of Darwin (\macos or iOS) on which the
     application is run, or MV_None if the operating system
     is not a version of Darwin.
 */
+#endif
 
 /*!
     \enum QSysInfo::Endian
@@ -1241,9 +1251,12 @@ bool qSharedBuild() noexcept
                       the platform's byte order.
 */
 
+#if QT_DEPRECATED_SINCE(5, 9)
 /*!
     \deprecated
     \enum QSysInfo::WinVersion
+
+    Use the versions defined in QOperatingSystemVersion instead.
 
     This enum provides symbolic names for the various versions of the
     Windows operating system. On Windows, the
@@ -1301,6 +1314,8 @@ bool qSharedBuild() noexcept
 /*!
     \deprecated
     \enum QSysInfo::MacVersion
+
+    Use the versions defined in QOperatingSystemVersion instead.
 
     This enum provides symbolic names for the various versions of the
     Darwin operating system, covering both \macos and iOS. The
@@ -1372,6 +1387,7 @@ bool qSharedBuild() noexcept
 
     \sa WinVersion
 */
+#endif
 
 /*!
     \macro Q_OS_DARWIN
