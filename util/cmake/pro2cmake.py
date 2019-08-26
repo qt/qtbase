@@ -796,8 +796,10 @@ class Scope(object):
 
     @property
     def TARGET(self) -> str:
-        return self.expandString('TARGET') \
+        target =  self.expandString('TARGET') \
             or os.path.splitext(os.path.basename(self.file))[0]
+        return re.sub('\.\./', '', target)
+
     @property
     def _INCLUDED(self) -> typing.List[str]:
         return self.get('_INCLUDED')
