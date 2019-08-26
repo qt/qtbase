@@ -42,7 +42,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QShader
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Contains multiple versions of a shader translated to multiple shading languages,
     together with reflection metadata.
@@ -134,7 +135,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QShaderVersion
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Specifies the shading language version.
 
@@ -171,7 +173,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QShaderKey
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Specifies the shading language, the version with flags, and the variant.
 
@@ -202,7 +205,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QShaderCode
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Contains source or binary code for a shader and additional metadata.
 

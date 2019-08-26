@@ -58,7 +58,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiGles2InitParams
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief OpenGL specific initialization parameters.
 
     An OpenGL-based QRhi needs an already created QOffscreenSurface at minimum.
@@ -130,13 +131,15 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiGles2NativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Holds the OpenGL context used by the QRhi.
  */
 
 /*!
     \class QRhiGles2TextureNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Holds the OpenGL texture object that is backing a QRhiTexture instance.
  */
 

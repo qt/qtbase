@@ -41,7 +41,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiNullInitParams
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Null backend specific initialization parameters.
 
     A Null QRhi needs no special parameters for initialization.
@@ -60,13 +61,15 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiNullNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Empty.
  */
 
 /*!
     \class QRhiNullTextureNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Empty.
  */
 
