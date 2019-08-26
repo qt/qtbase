@@ -2224,8 +2224,11 @@ endfunction()
 function(add_qt_test name)
     qt_parse_all_arguments(arg "add_qt_test"
         "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST"
-        "QML_IMPORTPATH" "TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN})
-    set(path "${CMAKE_CURRENT_BINARY_DIR}")
+        "QML_IMPORTPATH;OUTPUT_DIRECTORY" "TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN})
+
+    if (NOT arg_OUTPUT_DIRECTORY)
+        set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
 
     if (${arg_EXCEPTIONS})
         set(exceptions_text "EXCEPTIONS")
@@ -2248,7 +2251,7 @@ function(add_qt_test name)
             ${exceptions_text}
             ${gui_text}
             NO_INSTALL
-            OUTPUT_DIRECTORY "${path}"
+            OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}"
             SOURCES "${arg_SOURCES}"
             INCLUDE_DIRECTORIES
                 ${private_includes}
