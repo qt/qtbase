@@ -979,12 +979,6 @@ void QWidgetRepaintManager::paintAndFlush()
     }
 #endif
 
-    // Always flush repainted areas. FIXME: We should mark individual widgets,
-    // not the top level widget unconditionally, as this results in always
-    // flushing the top level widget, even if the painted region is entirely
-    // within a native child.
-    markNeedsFlush(tlw, toClean, QPoint());
-
     store->beginPaint(toClean);
 
     // Must do this before sending any paint events because
@@ -1041,8 +1035,7 @@ void QWidgetRepaintManager::markNeedsFlush(QWidget *widget, const QRegion &regio
         // Top-level (native)
         qCInfo(lcWidgetPainting) << "Marking" << region << "of top level"
             << widget << "as needing flush";
-        if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
-            topLevelNeedsFlush += region;
+        topLevelNeedsFlush += region;
     } else if (!hasPlatformWindow(widget) && !widget->isWindow()) {
         QWidget *nativeParent = widget->nativeParentWidget();
         qCInfo(lcWidgetPainting) << "Marking" << region << "of"
@@ -1050,8 +1043,7 @@ void QWidgetRepaintManager::markNeedsFlush(QWidget *widget, const QRegion &regio
                 << "at offset" << topLevelOffset;
         if (nativeParent == tlw) {
             // Alien widgets with the top-level as the native parent (common case)
-            if (!widget->testAttribute(Qt::WA_WState_InPaintEvent))
-                topLevelNeedsFlush += region.translated(topLevelOffset);
+            topLevelNeedsFlush += region.translated(topLevelOffset);
         } else {
             // Alien widgets with native parent != tlw
             const QPoint nativeParentOffset = widget->mapTo(nativeParent, QPoint());
