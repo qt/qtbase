@@ -1525,7 +1525,8 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
     if (frame.timestampQueryIndex >= 0) {
         quint64 timestamp[2] = { 0, 0 };
         VkResult err = df->vkGetQueryPoolResults(dev, timestampQueryPool, frame.timestampQueryIndex, 2,
-                                                 2 * sizeof(quint64), timestamp, sizeof(quint64), VK_QUERY_RESULT_64_BIT);
+                                                 2 * sizeof(quint64), timestamp, sizeof(quint64),
+                                                 VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
         timestampQueryPoolMap.clearBit(frame.timestampQueryIndex / 2);
         frame.timestampQueryIndex = -1;
         if (err == VK_SUCCESS) {
