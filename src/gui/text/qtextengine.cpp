@@ -399,6 +399,7 @@ struct QBidiAlgorithm {
                         analysis[i].bidiDirection = (level & 1) ? QChar::DirR : QChar::DirL;
                     runHasContent = true;
                     lastRunWithContent = -1;
+                    ++isolatePairPosition;
                 }
                 int runBeforeIsolate = runs.size();
                 ushort newLevel = isRtl ? ((stack.top().level + 1) | 1) : ((stack.top().level + 2) & ~1);
@@ -440,21 +441,19 @@ struct QBidiAlgorithm {
                 doEmbed(true, true, false);
                 break;
             case QChar::DirLRI:
-                Q_ASSERT(isolatePairs.at(isolatePairPosition).start == i);
                 doEmbed(false, false, true);
-                ++isolatePairPosition;
                 break;
             case QChar::DirRLI:
-                Q_ASSERT(isolatePairs.at(isolatePairPosition).start == i);
                 doEmbed(true, false, true);
-                ++isolatePairPosition;
                 break;
             case QChar::DirFSI: {
-                const auto &pair = isolatePairs.at(isolatePairPosition);
-                Q_ASSERT(pair.start == i);
-                bool isRtl = QStringView(text + pair.start + 1, pair.end - pair.start - 1).isRightToLeft();
+                bool isRtl = false;
+                if (isolatePairPosition < isolatePairs.size()) {
+                    const auto &pair = isolatePairs.at(isolatePairPosition);
+                    Q_ASSERT(pair.start == i);
+                    isRtl = QStringView(text + pair.start + 1, pair.end - pair.start - 1).isRightToLeft();
+                }
                 doEmbed(isRtl, false, true);
-                ++isolatePairPosition;
                 break;
             }
 
