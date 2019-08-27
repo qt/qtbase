@@ -122,6 +122,7 @@ enum Property {
     BorderRight,
     BorderTop,
     BorderBottom,
+    BorderCollapse,
     Padding,
     PaddingLeft,
     PaddingRight,
@@ -478,6 +479,7 @@ struct Q_GUI_EXPORT Declaration
     QIcon iconValue() const;
 
     void borderImageValue(QString *image, int *cuts, TileMode *h, TileMode *v) const;
+    bool borderCollapseValue() const;
 };
 QT_CSS_DECLARE_TYPEINFO(Declaration, Q_MOVABLE_TYPE)
 

@@ -40,6 +40,7 @@
 
 #include "qhttpnetworkconnectionchannel_p.h"
 #include "qhttpnetworkconnection_p.h"
+#include "qhttp2configuration.h"
 #include "private/qnoncontiguousbytedevice_p.h"
 
 #include <qpair.h>
@@ -48,6 +49,7 @@
 #include <private/qhttp2protocolhandler_p.h>
 #include <private/qhttpprotocolhandler_p.h>
 #include <private/qspdyprotocolhandler_p.h>
+#include <private/http2protocol_p.h>
 
 #ifndef QT_NO_SSL
 #    include <private/qsslsocket_p.h>
@@ -947,9 +949,7 @@ void QHttpNetworkConnectionChannel::_q_connected()
             if (tryProtocolUpgrade) {
                 // Let's augment our request with some magic headers and try to
                 // switch to HTTP/2.
-                const Http2::ProtocolParameters params(connection->http2Parameters());
-                Q_ASSERT(params.validate());
-                params.addProtocolUpgradeHeaders(&request);
+                Http2::appendProtocolUpgradeHeaders(connection->http2Parameters(), &request);
             }
             sendRequest();
         }

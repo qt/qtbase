@@ -42,6 +42,7 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qatomic.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qmap.h>
 
 #include <vector>
 #include <map>
@@ -69,13 +70,15 @@ enum class H2Type {
     h2cDirect, // Clear text direct
 };
 
+using RawSettings = QMap<Http2::Settings, quint32>;
+
 class Http2Server : public QTcpServer
 {
     Q_OBJECT
 public:
 
-    Http2Server(H2Type type, const Http2::RawSettings &serverSettings,
-                const Http2::RawSettings &clientSettings);
+    Http2Server(H2Type type, const RawSettings &serverSettings,
+                const RawSettings &clientSettings);
 
     ~Http2Server();
 
@@ -125,6 +128,7 @@ Q_SIGNALS:
     void receivedRequest(quint32 streamID);
     void receivedData(quint32 streamID);
     void windowUpdate(quint32 streamID);
+    void sendingData();
 
 private slots:
     void connectionEstablished();
@@ -147,8 +151,8 @@ private:
     bool settingsSent = false;
     bool waitingClientAck = false;
 
-    Http2::RawSettings serverSettings;
-    Http2::RawSettings expectedClientSettings;
+    RawSettings serverSettings;
+    RawSettings expectedClientSettings;
 
     bool connectionError = false;
 

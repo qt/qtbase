@@ -626,7 +626,7 @@ public:
 
     // Variables.
     // Regular pointers (keep them together to avoid gaps on 64 bit architectures).
-    QWExtra *extra;
+    std::unique_ptr<QWExtra> extra;
     QWidget *focus_next;
     QWidget *focus_prev;
     QWidget *focus_child;
@@ -803,7 +803,7 @@ public:
 
 inline QWExtra *QWidgetPrivate::extraData() const
 {
-    return extra;
+    return extra.get();
 }
 
 inline QTLWExtra *QWidgetPrivate::topData() const

@@ -65,6 +65,10 @@
 #define GL_RGBA16                         0x805B
 #endif
 
+#ifndef GL_BGR
+#define GL_BGR 0x80E0
+#endif
+
 #ifndef GL_BGRA
 #define GL_BGRA 0x80E1
 #endif
@@ -201,6 +205,20 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
         externalFormat = internalFormat = GL_RGB;
         pixelType = GL_UNSIGNED_BYTE;
         targetFormat = QImage::Format_RGB888;
+        break;
+    case QImage::Format_BGR888:
+        if (isOpenGL12orBetter) {
+            externalFormat = GL_BGR;
+            internalFormat = GL_RGB;
+            pixelType = GL_UNSIGNED_BYTE;
+            targetFormat = QImage::Format_BGR888;
+        } else if (funcs->hasOpenGLExtension(QOpenGLExtensions::TextureSwizzle)) {
+            funcs->glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+            funcs->glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
+            externalFormat = internalFormat = GL_RGB;
+            pixelType = GL_UNSIGNED_BYTE;
+            targetFormat = QImage::Format_BGR888;
+        }
         break;
     case QImage::Format_RGBX8888:
     case QImage::Format_RGBA8888:

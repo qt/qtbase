@@ -130,7 +130,6 @@ extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidgetPrivate::QWidgetPrivate(int version)
     : QObjectPrivate(version)
-      , extra(0)
       , focus_next(0)
       , focus_prev(0)
       , focus_child(0)
@@ -1460,7 +1459,7 @@ QWidget::~QWidget()
         while (w->d_func()->extra && w->d_func()->extra->focus_proxy)
             w = w->d_func()->extra->focus_proxy;
         QWidget *window = w->window();
-        QWExtra *e = window ? window->d_func()->extra : 0;
+        QWExtra *e = window ? window->d_func()->extra.get() : nullptr ;
         if (!e || !e->proxyWidget || (w->parentWidget() && w->parentWidget()->d_func()->focus_child == this))
 #endif
         clearFocus();
@@ -1618,7 +1617,7 @@ void QWidgetPrivate::createTLExtra()
 void QWidgetPrivate::createExtra()
 {
     if (!extra) {                                // if not exists
-        extra = new QWExtra;
+        extra = qt_make_unique<QWExtra>();
         extra->glContext = 0;
 #if QT_CONFIG(graphicsview)
         extra->proxyWidget = 0;
@@ -1666,9 +1665,8 @@ void QWidgetPrivate::deleteExtra()
             deleteTLSysExtra();
             // extra->topextra->backingStore destroyed in QWidgetPrivate::deleteTLSysExtra()
         }
-        delete extra;
         // extra->xic destroyed in QWidget::destroy()
-        extra = 0;
+        extra.reset();
     }
 }
 
@@ -1739,7 +1737,7 @@ QRegion QWidgetPrivate::overlappedRegion(const QRect &rect, bool breakAfterFirst
 
             const QRect siblingRect = sibling->d_func()->effectiveRectFor(sibling->data->crect);
             if (qRectIntersects(siblingRect, r)) {
-                const QWExtra *siblingExtra = sibling->d_func()->extra;
+                const auto &siblingExtra = sibling->d_func()->extra;
                 if (siblingExtra && siblingExtra->hasMask && !sibling->d_func()->graphicsEffect
                     && !siblingExtra->mask.translated(sibling->data->crect.topLeft()).intersects(r)) {
                     continue;
@@ -3733,7 +3731,7 @@ QSize QWidget::sizeIncrement() const
 QSize QWidget::baseSize() const
 {
     Q_D(const QWidget);
-    return (d->extra != 0 && d->extra->topextra != 0)
+    return (d->extra && d->extra->topextra)
         ? QSize(d->extra->topextra->basew, d->extra->topextra->baseh)
         : QSize(0, 0);
 }
@@ -5694,7 +5692,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
 QGraphicsProxyWidget *QWidgetPrivate::nearestGraphicsProxyWidget(const QWidget *origin)
 {
     if (origin) {
-        QWExtra *extra = origin->d_func()->extra;
+        const auto &extra = origin->d_func()->extra;
         if (extra && extra->proxyWidget)
             return extra->proxyWidget;
         return nearestGraphicsProxyWidget(origin->parentWidget());
@@ -6240,7 +6238,7 @@ bool QWidget::hasFocus() const
         w = w->d_func()->extra->focus_proxy;
 #if QT_CONFIG(graphicsview)
     if (QWidget *window = w->window()) {
-        QWExtra *e = window->d_func()->extra;
+        const auto &e = window->d_func()->extra;
         if (e && e->proxyWidget && e->proxyWidget->hasFocus() && window->focusWidget() == w)
             return true;
     }
@@ -6297,7 +6295,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
 
 #if QT_CONFIG(graphicsview)
     QWidget *previousProxyFocus = 0;
-    if (QWExtra *topData = window()->d_func()->extra) {
+    if (const auto &topData = window()->d_func()->extra) {
         if (topData->proxyWidget && topData->proxyWidget->hasFocus()) {
             previousProxyFocus = topData->proxyWidget->widget()->focusWidget();
             if (previousProxyFocus && previousProxyFocus->focusProxy())
@@ -6310,7 +6308,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
 
 #if QT_CONFIG(graphicsview)
     // Update proxy state
-    if (QWExtra *topData = window()->d_func()->extra) {
+    if (const auto &topData = window()->d_func()->extra) {
         if (topData->proxyWidget && !topData->proxyWidget->hasFocus()) {
             f->d_func()->updateFocusChild();
             topData->proxyWidget->d_func()->focusFromWidgetToProxy = 1;
@@ -6351,7 +6349,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
         }
 #endif
 #if QT_CONFIG(graphicsview)
-        if (QWExtra *topData = window()->d_func()->extra) {
+        if (const auto &topData = window()->d_func()->extra) {
             if (topData->proxyWidget) {
                 if (previousProxyFocus && previousProxyFocus != f) {
                     // Send event to self
@@ -6364,7 +6362,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
                 if (!isHidden()) {
 #if QT_CONFIG(graphicsview)
                     // Update proxy state
-                    if (QWExtra *topData = window()->d_func()->extra)
+                    if (const auto &topData = window()->d_func()->extra)
                         if (topData->proxyWidget && topData->proxyWidget->hasFocus())
                             topData->proxyWidget->d_func()->updateProxyInputMethodAcceptanceFromWidget();
 #endif
@@ -6501,7 +6499,7 @@ void QWidget::clearFocus()
     }
 
 #if QT_CONFIG(graphicsview)
-    QWExtra *topData = d_func()->extra;
+    const auto &topData = d_func()->extra;
     if (topData && topData->proxyWidget)
         topData->proxyWidget->clearFocus();
 #endif
@@ -6660,7 +6658,7 @@ bool QWidget::isActiveWindow() const
         return true;
 
 #if QT_CONFIG(graphicsview)
-    if (QWExtra *tlwExtra = tlw->d_func()->extra) {
+    if (const auto &tlwExtra = tlw->d_func()->extra) {
         if (isVisible() && tlwExtra->proxyWidget)
             return tlwExtra->proxyWidget->isActiveWindow();
     }
@@ -10050,7 +10048,7 @@ void QWidget::setSizePolicy(QSizePolicy policy)
     d->size_policy = policy;
 
 #if QT_CONFIG(graphicsview)
-    if (QWExtra *extra = d->extra) {
+    if (const auto &extra = d->extra) {
         if (extra->proxyWidget)
             extra->proxyWidget->setSizePolicy(policy);
     }

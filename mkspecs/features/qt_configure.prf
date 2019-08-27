@@ -560,7 +560,7 @@ defineTest(qtConfResolveLibs) {
             } else {
                 paths += $$lp
             }
-        } else: contains(l, "^-l.*") {
+        } else: !android: contains(l, "^-l.*") {
             lib = $$replace(l, "^-l", )
             lcan =
             integrity:contains(lib, "^.*\\.a") {

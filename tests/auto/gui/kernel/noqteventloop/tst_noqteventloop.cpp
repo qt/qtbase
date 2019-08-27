@@ -258,8 +258,8 @@ void tst_NoQtEventLoop::consumeMouseEvents()
 
     ::SetWindowPos(mainWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-    Window *childWindow = new Window;
-    childWindow->setParent(QWindow::fromWinId((WId)mainWnd));
+    QWindow *mainWindow = QWindow::fromWinId(reinterpret_cast<WId>(mainWnd));
+    Window *childWindow = new Window(mainWindow);
     childWindow->setGeometry(margin, topVerticalMargin,
                              width - 2 * margin, height - margin - topVerticalMargin);
     childWindow->show();
@@ -276,6 +276,7 @@ void tst_NoQtEventLoop::consumeMouseEvents()
         if (g_exit)
             break;
     }
+    delete mainWindow;
 
     QCOMPARE(testThread->passed(), true);
 

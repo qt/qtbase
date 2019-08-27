@@ -92,6 +92,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "border-bottom-right-radius", BorderBottomRightRadius },
     { "border-bottom-style", BorderBottomStyle },
     { "border-bottom-width", BorderBottomWidth },
+    { "border-collapse", BorderCollapse },
     { "border-color", BorderColor },
     { "border-image", BorderImage },
     { "border-left", BorderLeft },
@@ -611,11 +612,7 @@ bool ValueExtractor::extractBorder(int *borders, QBrush *colors, BorderStyle *st
         case BorderRightStyle: styles[RightEdge] = decl.styleValue(); break;
         case BorderStyles:  decl.styleValues(styles); break;
 
-#ifndef QT_OS_ANDROID_GCC_48_WORKAROUND
         case BorderTopLeftRadius: radii[0] = sizeValue(decl); break;
-#else
-        case BorderTopLeftRadius: new(radii)QSize(sizeValue(decl)); break;
-#endif
         case BorderTopRightRadius: radii[1] = sizeValue(decl); break;
         case BorderBottomLeftRadius: radii[2] = sizeValue(decl); break;
         case BorderBottomRightRadius: radii[3] = sizeValue(decl); break;
@@ -1730,6 +1727,14 @@ void Declaration::borderImageValue(QString *image, int *cuts,
                                         tileModes, NumKnownTileModes));
     } else
         *h = *v;
+}
+
+bool Declaration::borderCollapseValue() const
+{
+    if (d->values.count() != 1)
+        return false;
+    else
+        return d->values.at(0).toString() == QLatin1String("collapse");
 }
 
 QIcon Declaration::iconValue() const

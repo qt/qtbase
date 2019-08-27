@@ -2593,51 +2593,43 @@ void QTextHtmlExporter::emitFloatStyle(QTextFrameFormat::Position pos, StyleMode
         html += QLatin1Char('\"');
 }
 
+static QLatin1String richtextBorderStyleToHtmlBorderStyle(QTextFrameFormat::BorderStyle style)
+{
+    switch (style) {
+    case QTextFrameFormat::BorderStyle_None:
+        return QLatin1String("none");
+    case QTextFrameFormat::BorderStyle_Dotted:
+        return QLatin1String("dotted");
+    case QTextFrameFormat::BorderStyle_Dashed:
+        return QLatin1String("dashed");
+    case QTextFrameFormat::BorderStyle_Solid:
+        return QLatin1String("solid");
+    case QTextFrameFormat::BorderStyle_Double:
+        return QLatin1String("double");
+    case QTextFrameFormat::BorderStyle_DotDash:
+        return QLatin1String("dot-dash");
+    case QTextFrameFormat::BorderStyle_DotDotDash:
+        return QLatin1String("dot-dot-dash");
+    case QTextFrameFormat::BorderStyle_Groove:
+        return QLatin1String("groove");
+    case QTextFrameFormat::BorderStyle_Ridge:
+        return QLatin1String("ridge");
+    case QTextFrameFormat::BorderStyle_Inset:
+        return QLatin1String("inset");
+    case QTextFrameFormat::BorderStyle_Outset:
+        return QLatin1String("outset");
+    default:
+        Q_UNREACHABLE();
+    };
+    return QLatin1String("");
+}
+
 void QTextHtmlExporter::emitBorderStyle(QTextFrameFormat::BorderStyle style)
 {
     Q_ASSERT(style <= QTextFrameFormat::BorderStyle_Outset);
 
     html += QLatin1String(" border-style:");
-
-    switch (style) {
-    case QTextFrameFormat::BorderStyle_None:
-        html += QLatin1String("none");
-        break;
-    case QTextFrameFormat::BorderStyle_Dotted:
-        html += QLatin1String("dotted");
-        break;
-    case QTextFrameFormat::BorderStyle_Dashed:
-        html += QLatin1String("dashed");
-        break;
-    case QTextFrameFormat::BorderStyle_Solid:
-        html += QLatin1String("solid");
-        break;
-    case QTextFrameFormat::BorderStyle_Double:
-        html += QLatin1String("double");
-        break;
-    case QTextFrameFormat::BorderStyle_DotDash:
-        html += QLatin1String("dot-dash");
-        break;
-    case QTextFrameFormat::BorderStyle_DotDotDash:
-        html += QLatin1String("dot-dot-dash");
-        break;
-    case QTextFrameFormat::BorderStyle_Groove:
-        html += QLatin1String("groove");
-        break;
-    case QTextFrameFormat::BorderStyle_Ridge:
-        html += QLatin1String("ridge");
-        break;
-    case QTextFrameFormat::BorderStyle_Inset:
-        html += QLatin1String("inset");
-        break;
-    case QTextFrameFormat::BorderStyle_Outset:
-        html += QLatin1String("outset");
-        break;
-    default:
-        Q_ASSERT(false);
-        break;
-    };
-
+    html += richtextBorderStyleToHtmlBorderStyle(style);
     html += QLatin1Char(';');
 }
 
@@ -3204,6 +3196,33 @@ void QTextHtmlExporter::emitTable(const QTextTable *table)
             if (cellFormat.hasProperty(QTextFormat::TableCellBottomPadding))
                 styleString += QLatin1String(" padding-bottom:") + QString::number(cellFormat.bottomPadding()) + QLatin1Char(';');
 
+            if (cellFormat.hasProperty(QTextFormat::TableCellTopBorder))
+                styleString += QLatin1String(" border-top:") + QString::number(cellFormat.topBorder()) + QLatin1String("px;");
+            if (cellFormat.hasProperty(QTextFormat::TableCellRightBorder))
+                styleString += QLatin1String(" border-right:") + QString::number(cellFormat.rightBorder()) + QLatin1String("px;");
+            if (cellFormat.hasProperty(QTextFormat::TableCellBottomBorder))
+                styleString += QLatin1String(" border-bottom:") + QString::number(cellFormat.bottomBorder()) + QLatin1String("px;");
+            if (cellFormat.hasProperty(QTextFormat::TableCellLeftBorder))
+                styleString += QLatin1String(" border-left:") + QString::number(cellFormat.leftBorder()) + QLatin1String("px;");
+
+            if (cellFormat.hasProperty(QTextFormat::TableCellTopBorderBrush))
+                styleString += QLatin1String(" border-top-color:") + cellFormat.topBorderBrush().color().name() + QLatin1Char(';');
+            if (cellFormat.hasProperty(QTextFormat::TableCellRightBorderBrush))
+                styleString += QLatin1String(" border-right-color:") + cellFormat.rightBorderBrush().color().name() + QLatin1Char(';');
+            if (cellFormat.hasProperty(QTextFormat::TableCellBottomBorderBrush))
+                styleString += QLatin1String(" border-bottom-color:") + cellFormat.bottomBorderBrush().color().name() + QLatin1Char(';');
+            if (cellFormat.hasProperty(QTextFormat::TableCellLeftBorderBrush))
+                styleString += QLatin1String(" border-left-color:") + cellFormat.leftBorderBrush().color().name() + QLatin1Char(';');
+
+            if (cellFormat.hasProperty(QTextFormat::TableCellTopBorderStyle))
+                styleString += QLatin1String(" border-top-style:") + richtextBorderStyleToHtmlBorderStyle(cellFormat.topBorderStyle()) + QLatin1Char(';');
+            if (cellFormat.hasProperty(QTextFormat::TableCellRightBorderStyle))
+                styleString += QLatin1String(" border-right-style:") + richtextBorderStyleToHtmlBorderStyle(cellFormat.rightBorderStyle()) + QLatin1Char(';');
+            if (cellFormat.hasProperty(QTextFormat::TableCellBottomBorderStyle))
+                styleString += QLatin1String(" border-bottom-style:") + richtextBorderStyleToHtmlBorderStyle(cellFormat.bottomBorderStyle()) + QLatin1Char(';');
+            if (cellFormat.hasProperty(QTextFormat::TableCellLeftBorderStyle))
+                styleString += QLatin1String(" border-left-style:") + richtextBorderStyleToHtmlBorderStyle(cellFormat.leftBorderStyle()) + QLatin1Char(';');
+
             if (!styleString.isEmpty())
                 html += QLatin1String(" style=\"") + styleString + QLatin1Char('\"');
 
@@ -3309,6 +3328,9 @@ void QTextHtmlExporter::emitFrameStyle(const QTextFrameFormat &format, FrameType
                     QString::number(format.bottomMargin()),
                     QString::number(format.leftMargin()),
                     QString::number(format.rightMargin()));
+
+    if (format.property(QTextFormat::TableBorderCollapse).toBool())
+        html += QLatin1String(" border-collapse:collapse;");
 
     if (html.length() == originalHtmlLength) // nothing emitted?
         html.chop(styleAttribute.size());

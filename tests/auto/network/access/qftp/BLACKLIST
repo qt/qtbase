@@ -7,15 +7,10 @@ redhatenterpriselinuxworkstation-6.6
 redhatenterpriselinuxworkstation-6.6
 
 [list]
-ubuntu-16.04
 opensuse-leap
-osx-10.11
 windows-7sp1
-ubuntu-18.04
-osx-10.14
-b2qt
-osx-10.12
 windows-10 msvc-2015
-opensuse-42.3
+ubuntu
+osx
 [list:epsvNotSupported]
 *

@@ -138,11 +138,8 @@ bool QDockAreaLayoutItem::skip() const
 
 QSize QDockAreaLayoutItem::minimumSize() const
 {
-    if (widgetItem != 0) {
-        int left, top, right, bottom;
-        widgetItem->widget()->getContentsMargins(&left, &top, &right, &bottom);
-        return widgetItem->minimumSize() + QSize(left+right, top+bottom);
-    }
+    if (widgetItem)
+        return widgetItem->minimumSize().grownBy(widgetItem->widget()->contentsMargins());
     if (subinfo != 0)
         return subinfo->minimumSize();
     return QSize(0, 0);
@@ -150,11 +147,8 @@ QSize QDockAreaLayoutItem::minimumSize() const
 
 QSize QDockAreaLayoutItem::maximumSize() const
 {
-    if (widgetItem != 0) {
-        int left, top, right, bottom;
-        widgetItem->widget()->getContentsMargins(&left, &top, &right, &bottom);
-        return widgetItem->maximumSize()+ QSize(left+right, top+bottom);
-    }
+    if (widgetItem)
+        return widgetItem->maximumSize().grownBy(widgetItem->widget()->contentsMargins());
     if (subinfo != 0)
         return subinfo->maximumSize();
     return QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
@@ -180,11 +174,8 @@ QSize QDockAreaLayoutItem::sizeHint() const
 {
     if (placeHolderItem != 0)
         return QSize(0, 0);
-    if (widgetItem != 0) {
-        int left, top, right, bottom;
-        widgetItem->widget()->getContentsMargins(&left, &top, &right, &bottom);
-        return widgetItem->sizeHint() + QSize(left+right, top+bottom);
-    }
+    if (widgetItem)
+        return widgetItem->sizeHint().grownBy(widgetItem->widget()->contentsMargins());
     if (subinfo != 0)
         return subinfo->sizeHint();
     return QSize(-1, -1);

@@ -2448,6 +2448,51 @@ void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::funct
 }
 
 /*!
+    This is a convenience static function that saves \a fileContent to a file, using
+    a file name and location chosen by the user. \a fileNameHint can be provided to
+    suggest a file name to the user.
+
+    This function is used to save files to the local file system on Qt for WebAssembly, where
+    the web sandbox places restrictions on how such access may happen. Its implementation will
+    make the browser display a native file dialog, where the user makes the file selection.
+
+    It can also be used on other platforms, where it will fall back to using QFileDialog.
+
+    The function is asynchronous and returns immediately.
+
+    \snippet code/src_gui_dialogs_qfiledialog.cpp 16
+    \since 5.14
+*/
+void QFileDialog::saveFileContent(const QByteArray &fileContent, const QString &fileNameHint)
+{
+#ifdef Q_OS_WASM
+    QWasmLocalFileAccess::saveFile(fileContent.constData(), fileContent.size(), fileNameHint.toStdString());
+#else
+    QFileDialog *dialog = new QFileDialog();
+    dialog->setAcceptMode(QFileDialog::AcceptSave);
+    dialog->setFileMode(QFileDialog::AnyFile);
+    dialog->selectFile(fileNameHint);
+
+    auto fileSelected = [=](const QString &fileName) {
+        if (!fileName.isNull()) {
+            QFile selectedFile(fileName);
+            if (selectedFile.open(QIODevice::WriteOnly))
+                selectedFile.write(fileContent);
+        }
+    };
+
+    auto dialogClosed = [=](int code) {
+        Q_UNUSED(code);
+        delete dialog;
+    };
+
+    connect(dialog, &QFileDialog::fileSelected, fileSelected);
+    connect(dialog, &QFileDialog::finished, dialogClosed);
+    dialog->show();
+#endif
+}
+
+/*!
     This is a convenience static function that will return a file name selected
     by the user. The file does not have to exist.
 

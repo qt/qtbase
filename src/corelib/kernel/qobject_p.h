@@ -509,12 +509,6 @@ private:
 class Q_CORE_EXPORT QMetaCallEvent : public QAbstractMetaCallEvent
 {
 public:
-    // kept for compatibility until QtDeclarative has moved over
-    QMetaCallEvent(ushort method_offset, ushort method_relative,
-                   QObjectPrivate::StaticMetaCallFunction callFunction,
-                   const QObject *sender, int signalId,
-                   int nargs, int *types, void **args);
-
     // blocking queued with semaphore - args always owned by caller
     QMetaCallEvent(ushort method_offset, ushort method_relative,
                    QObjectPrivate::StaticMetaCallFunction callFunction,

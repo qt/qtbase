@@ -51,13 +51,12 @@ defineReplace(qtGetExportsForModule) {
     return($$result)
 }
 
-defineReplace(qtExportLibsForModule) {
+defineReplace(qtExportDepsForModule) {
     result =
     for (lib, QT.$${1}.libraries) {
         NAME = $$upper($$lib)
         vars = \
             QMAKE_DEPENDS_$${NAME}_CC QMAKE_DEPENDS_$${NAME}_LD \
-            QMAKE_LIBS_$$NAME QMAKE_LIBS_$${NAME}_DEBUG QMAKE_LIBS_$${NAME}_RELEASE \
             QMAKE_DEFINES_$$NAME QMAKE_INCDIR_$$NAME
         for (var, vars) {
             expvar = $$var
@@ -66,6 +65,24 @@ defineReplace(qtExportLibsForModule) {
             !defined($$expvar, var): expvar = $$var
             defined($$expvar, var): \
                 result += "$$var = $$val_escape($$expvar)"
+        }
+    }
+    return($$result)
+}
+
+defineReplace(qtExportLibsForModule) {
+    result =
+    for (lib, QT.$${1}.libraries) {
+        NAME = $$upper($$lib)
+        vars = \
+            QMAKE_LIBS_$$NAME QMAKE_LIBS_$${NAME}_DEBUG QMAKE_LIBS_$${NAME}_RELEASE
+        for (var, vars) {
+            expvar = $$var
+            expvar ~= s/^QMAKE_/QMAKE_EXPORT_/
+            defined($$expvar, var):equals($$expvar, -): next()
+            !defined($$expvar, var): expvar = $$var
+            defined($$expvar, var): \
+                result += "$$var$${2} = $$val_escape($$expvar)"
         }
     }
     return($$result)
@@ -160,6 +177,7 @@ defineReplace(qtExportLibsForModule) {
             "QT.$${MODULE}_private.module_config =$$join(module_build_type, " ", " ")" \
             $$qtGetFeaturesForModule($${MODULE}_private) \
             "" \
+            $$qtExportDepsForModule($${MODULE}_private) \
             $$qtExportLibsForModule($${MODULE}_private)
         write_file($$MODULE_PRIVATE_PRI, MODULE_PRIVATE_PRI_CONT)|error()
     }
@@ -220,7 +238,10 @@ defineReplace(qtExportLibsForModule) {
     }
     cache(QT_MODULES, transient)
 
-} # !build_pass
+} else:android:!no_private_module:!internal_module {
+    MODULE_PRIVATE_PRI_CONT = $$qtExportLibsForModule($${MODULE}_private, _$${QT_ARCH})
+    write_file($$MODULE_PRIVATE_PRI, MODULE_PRIVATE_PRI_CONT, append)|error()
+}
 
 # Schedule the regular .pri file for installation
 CONFIG += qt_install_module

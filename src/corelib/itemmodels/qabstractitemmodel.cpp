@@ -1898,10 +1898,17 @@ bool QAbstractItemModel::clearItemData(const QModelIndex &index)
 */
 bool QAbstractItemModel::setItemData(const QModelIndex &index, const QMap<int, QVariant> &roles)
 {
-    bool b = true;
-    for (QMap<int, QVariant>::ConstIterator it = roles.begin(); it != roles.end(); ++it)
-        b = b && setData(index, it.value(), it.key());
-    return b;
+    // ### Qt 6: Consider change the semantics of this function,
+    // or deprecating/removing it altogether.
+    //
+    // For instance, it should try setting *all* the data
+    // in \a roles, and not bail out at the first setData that returns
+    // false. It should also have a transactional approach.
+    for (auto it = roles.begin(), e = roles.end(); it != e; ++it) {
+        if (!setData(index, it.value(), it.key()))
+            return false;
+    }
+    return true;
 }
 
 /*!
