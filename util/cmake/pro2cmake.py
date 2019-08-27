@@ -1016,7 +1016,9 @@ def map_condition(condition: str) -> str:
                        condition)
     condition = re.sub(r'qtConfig\(opengl\.\*\)', r'QT_FEATURE_opengl', condition)
     condition = re.sub(r'^win\*$', r'win', condition)
+    condition = re.sub(r'^no-png$', r'NOT QT_FEATURE_png', condition)
     condition = re.sub(r'contains\(CONFIG, static\)', r'NOT QT_BUILD_SHARED_LIBS', condition)
+    condition = re.sub(r'contains\(QT_CONFIG,\w*shared\)', r'QT_BUILD_SHARED_LIBS', condition)
 
     def gcc_version_handler(match_obj: re.Match):
         operator = match_obj.group(1)
@@ -1624,6 +1626,8 @@ def simplify_condition(condition: str) -> str:
         condition = condition.replace(' OR ', ' | ')
         condition = condition.replace(' ON ', ' true ')
         condition = condition.replace(' OFF ', ' false ')
+        # Replace dashes with a token
+        condition = condition.replace('-', '_dash_')
 
     # SymPy chokes on expressions that contain two tokens one next to
     # the other delimited by a space, which are not an operation.
@@ -1633,7 +1637,9 @@ def simplify_condition(condition: str) -> str:
     # the expression, and thus simplify it.
     # Do this by replacing and keeping a map of conditions to single
     # token symbols.
-    pattern = re.compile(r'(TARGET [a-zA-Z]+::[a-zA-Z]+)')
+    # Support both target names without double colons, and with double
+    # colons.
+    pattern = re.compile(r'(TARGET [a-zA-Z]+(?:::[a-zA-Z]+)?)')
     target_symbol_mapping = {}
     all_target_conditions = re.findall(pattern, condition)
     for target_condition in all_target_conditions:
@@ -1657,6 +1663,7 @@ def simplify_condition(condition: str) -> str:
         condition = condition.replace('|', 'OR')
         condition = condition.replace('True', 'ON')
         condition = condition.replace('False', 'OFF')
+        condition = condition.replace('_dash_', '-')
     except:
         # sympy did not like our input, so leave this condition alone:
         condition = input_condition
