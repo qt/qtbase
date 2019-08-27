@@ -1171,15 +1171,39 @@ def handle_subdir(scope: Scope,
         # scopes, aka recursively call the same function, but with an
         # updated current_conditions frozen set.
         for c in scope.children:
+            # Use total_condition for 'else' conditions, otherwise just use the regular value to
+            # simplify the logic.
+            child_condition = c.total_condition if c.condition == 'else' else c.condition
             handle_subdir_helper(c, cm_fh,
                                  indent=indent + 1,
                                  is_example=is_example,
-                                 current_conditions=frozenset((*current_conditions, c.condition)))
+                                 current_conditions=frozenset((*current_conditions,
+                                                               child_condition)))
 
     def group_and_print_sub_dirs(indent: int = 0):
         # Simplify conditions, and group
         # subdirectories with the same conditions.
         grouped_sub_dirs = {}
+
+        # Wraps each element in the given interable with parentheses,
+        # to make sure boolean simplification happens correctly.
+        def wrap_in_parenthesis(iterable):
+            return ['({})'.format(c) for c in iterable]
+
+        def join_all_conditions(set_of_alternatives):
+            # Elements within one frozen set represent one single
+            # alternative whose pieces are ANDed together.
+            # This is repeated for each alternative that would
+            # enable a subdir, and are thus ORed together.
+            final_str = ''
+            if set_of_alternatives:
+                wrapped_set_of_alternatives = [wrap_in_parenthesis(alternative)
+                                               for alternative in set_of_alternatives]
+                alternatives = ['({})'.format(" AND ".join(alternative))
+                                for alternative in wrapped_set_of_alternatives]
+                final_str = ' OR '.join(sorted(alternatives))
+            return final_str
+
         for subdir_name in sub_dirs:
             additions = sub_dirs[subdir_name].get('additions', set())
             subtractions = sub_dirs[subdir_name].get('subtractions', set())
@@ -1188,18 +1212,12 @@ def handle_subdir(scope: Scope,
             # that should be added unconditionally.
             condition_key = ''
             if additions or subtractions:
-                addition_str = ''
-                subtraction_str = ''
-                if additions:
-                    addition_str = " OR ".join(sorted("(" + " AND ".join(condition) + ")"
-                                                      for condition in additions))
-                    if addition_str:
-                        addition_str = '({})'.format(addition_str)
-                if subtractions:
-                    subtraction_str = " OR ".join(sorted("(" + " AND ".join(condition) + ")"
-                                                         for condition in subtractions))
-                    if subtraction_str:
-                        subtraction_str = 'NOT ({})'.format(subtraction_str)
+                addition_str = join_all_conditions(additions)
+                if addition_str:
+                    addition_str = '({})'.format(addition_str)
+                subtraction_str = join_all_conditions(subtractions)
+                if subtraction_str:
+                    subtraction_str = 'NOT ({})'.format(subtraction_str)
 
                 condition_str = addition_str
                 if condition_str and subtraction_str:
@@ -1229,6 +1247,10 @@ def handle_subdir(scope: Scope,
     # A set of conditions which will be ANDed together. The set is recreated with more conditions
     # as the scope deepens.
     current_conditions = frozenset()
+
+    # Compute the total condition for scopes. Needed for scopes that
+    # have 'else' as a condition.
+    recursive_evaluate_scope(scope)
 
     # Do the work.
     handle_subdir_helper(scope, cm_fh,
