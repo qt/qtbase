@@ -1,4 +1,6 @@
 
+load(qt_functions)
+
 contains(TEMPLATE, subdirs) {
     for(build, QMAKE_EXCLUSIVE_BUILDS) {
         prepareRecursiveTarget($$build)

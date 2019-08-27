@@ -1855,10 +1855,9 @@ static void qt_painterpath_isect_curve(const QBezier &bezier, const QPointF &pt,
         }
 
         // split curve and try again...
-        QBezier first_half, second_half;
-        bezier.split(&first_half, &second_half);
-        qt_painterpath_isect_curve(first_half, pt, winding, depth + 1);
-        qt_painterpath_isect_curve(second_half, pt, winding, depth + 1);
+        const auto halves = bezier.split();
+        qt_painterpath_isect_curve(halves.first,  pt, winding, depth + 1);
+        qt_painterpath_isect_curve(halves.second, pt, winding, depth + 1);
     }
 }
 
@@ -2013,10 +2012,9 @@ static bool qt_isect_curve_horizontal(const QBezier &bezier, qreal y, qreal x1, 
         if (depth == 32 || (bounds.width() < lower_bound && bounds.height() < lower_bound))
             return true;
 
-        QBezier first_half, second_half;
-        bezier.split(&first_half, &second_half);
-        if (qt_isect_curve_horizontal(first_half, y, x1, x2, depth + 1)
-            || qt_isect_curve_horizontal(second_half, y, x1, x2, depth + 1))
+        const auto halves = bezier.split();
+        if (qt_isect_curve_horizontal(halves.first, y, x1, x2, depth + 1)
+            || qt_isect_curve_horizontal(halves.second, y, x1, x2, depth + 1))
             return true;
     }
     return false;
@@ -2032,10 +2030,9 @@ static bool qt_isect_curve_vertical(const QBezier &bezier, qreal x, qreal y1, qr
         if (depth == 32 || (bounds.width() < lower_bound && bounds.height() < lower_bound))
             return true;
 
-        QBezier first_half, second_half;
-        bezier.split(&first_half, &second_half);
-        if (qt_isect_curve_vertical(first_half, x, y1, y2, depth + 1)
-            || qt_isect_curve_vertical(second_half, x, y1, y2, depth + 1))
+        const auto halves = bezier.split();
+        if (qt_isect_curve_vertical(halves.first, x, y1, y2, depth + 1)
+            || qt_isect_curve_vertical(halves.second, x, y1, y2, depth + 1))
             return true;
     }
      return false;

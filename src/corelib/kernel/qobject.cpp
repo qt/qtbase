@@ -527,28 +527,6 @@ inline void QMetaCallEvent::allocArgs()
 /*!
     \internal
 
-    Only used by QtDeclarative - to be removed when migrated.
- */
-QMetaCallEvent::QMetaCallEvent(ushort method_offset, ushort method_relative,
-                               QObjectPrivate::StaticMetaCallFunction callFunction,
-                               const QObject *sender, int signalId,
-                               int nargs, int *types_, void **args_)
-    : QAbstractMetaCallEvent(sender, signalId),
-      d({nullptr, nullptr, callFunction, nargs, method_offset, method_relative}),
-      prealloc_()
-{
-    allocArgs();
-    for (int arg = 0; arg < nargs; ++arg) {
-        types()[arg] = types_[arg];
-        args()[arg] = args_[arg];
-    }
-    free(types_);
-    free(args_);
-}
-
-/*!
-    \internal
-
     Used for blocking queued connections, just passes \a args through without
     allocating any memory.
  */

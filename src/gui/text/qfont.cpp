@@ -180,14 +180,14 @@ Q_GUI_EXPORT int qt_defaultDpi()
 }
 
 QFontPrivate::QFontPrivate()
-    : engineData(0), dpi(qt_defaultDpi()), screen(0),
+    : engineData(0), dpi(qt_defaultDpi()),
       underline(false), overline(false), strikeOut(false), kerning(true),
       capital(0), letterSpacingIsAbsolute(false), scFont(0)
 {
 }
 
 QFontPrivate::QFontPrivate(const QFontPrivate &other)
-    : request(other.request), engineData(0), dpi(other.dpi), screen(other.screen),
+    : request(other.request), engineData(0), dpi(other.dpi),
       underline(other.underline), overline(other.overline),
       strikeOut(other.strikeOut), kerning(other.kerning),
       capital(other.capital), letterSpacingIsAbsolute(other.letterSpacingIsAbsolute),
@@ -581,11 +581,9 @@ QFont::QFont(const QFont &font, const QPaintDevice *pd)
 {
     Q_ASSERT(pd);
     const int dpi = pd->logicalDpiY();
-    const int screen = 0;
-    if (font.d->dpi != dpi || font.d->screen != screen ) {
+    if (font.d->dpi != dpi) {
         d = new QFontPrivate(*font.d);
         d->dpi = dpi;
-        d->screen = screen;
     } else {
         d = font.d;
     }

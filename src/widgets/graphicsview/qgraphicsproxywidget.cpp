@@ -404,7 +404,7 @@ void QGraphicsProxyWidgetPrivate::_q_removeWidgetSlot()
 {
     Q_Q(QGraphicsProxyWidget);
     if (!widget.isNull()) {
-        if (QWExtra *extra = widget->d_func()->extra)
+        if (const auto &extra = widget->d_func()->extra)
             extra->proxyWidget = 0;
     }
     widget = 0;
@@ -477,8 +477,8 @@ void QGraphicsProxyWidgetPrivate::updateProxyInputMethodAcceptanceFromWidget()
 */
 void QGraphicsProxyWidgetPrivate::embedSubWindow(QWidget *subWin)
 {
-    QWExtra *extra;
-    if (!((extra = subWin->d_func()->extra) && extra->proxyWidget)) {
+    const auto &extra = subWin->d_func()->extra;
+    if (!extra || !extra->proxyWidget) {
         QGraphicsProxyWidget *subProxy = new QGraphicsProxyWidget(q_func(), subWin->windowFlags());
         subProxy->d_func()->setWidget_helper(subWin, false);
     }
@@ -631,7 +631,7 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
     if (!newWidget)
         return;
     if (!newWidget->isWindow()) {
-        QWExtra *extra = newWidget->parentWidget()->d_func()->extra;
+        const auto &extra = newWidget->parentWidget()->d_func()->extra;
         if (!extra || !extra->proxyWidget)  {
             qWarning("QGraphicsProxyWidget::setWidget: cannot embed widget %p "
                      "which is not a toplevel widget, and is not a child of an embedded widget", newWidget);
@@ -641,10 +641,10 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
 
     // Register this proxy within the widget's private.
     // ### This is a bit backdoorish
-    QWExtra *extra = newWidget->d_func()->extra;
+    QWExtra *extra = newWidget->d_func()->extra.get();
     if (!extra) {
         newWidget->d_func()->createExtra();
-        extra = newWidget->d_func()->extra;
+        extra = newWidget->d_func()->extra.get();
     }
     QGraphicsProxyWidget **proxyWidget = &extra->proxyWidget;
     if (*proxyWidget) {

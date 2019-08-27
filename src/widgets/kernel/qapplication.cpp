@@ -3388,7 +3388,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 #if QT_CONFIG(graphicsview)
             // QGraphicsProxyWidget handles its own propagation,
             // and we must not change QDragManagers currentTarget.
-            QWExtra *extra = w->window()->d_func()->extra;
+            const auto &extra = w->window()->d_func()->extra;
             if (extra && extra->proxyWidget) {
                 res = d->notify_helper(w, dragEvent);
                 break;
@@ -3416,7 +3416,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 #if QT_CONFIG(graphicsview)
             // QGraphicsProxyWidget handles its own propagation,
             // and we must not change QDragManagers currentTarget.
-            QWExtra *extra = w->window()->d_func()->extra;
+            const auto &extra = w->window()->d_func()->extra;
             bool isProxyWidget = extra && extra->proxyWidget;
             if (!isProxyWidget)
 #endif

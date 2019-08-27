@@ -854,6 +854,8 @@ void QKmsDevice::discoverPlanes()
                 plane.crtcYPropertyId = prop->prop_id;
             } else if (!strcasecmp(prop->name, "zpos")) {
                 plane.zposPropertyId = prop->prop_id;
+            } else if (!strcasecmp(prop->name, "blend_op")) {
+                plane.blendOpPropertyId = prop->prop_id;
             }
         });
 

@@ -4,8 +4,7 @@
 ubuntu-18.04
 # QTBUG-74162
 [passwordAuth2]
-osx-10.12
-ubuntu-18.04
+ubuntu
 [downloadBigFile]
 windows-10 msvc-2015
 windows-7sp1

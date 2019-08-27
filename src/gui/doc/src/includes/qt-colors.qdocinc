@@ -1,0 +1,86 @@
+\table
+\header
+    \li Name
+    \li Hex
+    \li Color
+\row
+    \li Color0
+    \li #000000
+    \li \svgcolor {#000000}
+\row
+    \li Color1
+    \li #ffffff
+    \li \svgcolor {#ffffff}
+\row
+    \li Black
+    \li #000000
+    \li \svgcolor {#000000}
+\row
+    \li White
+    \li #ffffff
+    \li \svgcolor {#ffffff}
+\row
+    \li DarkGray
+    \li #808080
+    \li \svgcolor {#808080}
+\row
+    \li Gray
+    \li #a0a0a4
+    \li \svgcolor {#a0a0a4}
+\row
+    \li LightGray
+    \li #c0c0c0
+    \li \svgcolor {#c0c0c0}
+\row
+    \li Red
+    \li #ff0000
+    \li \svgcolor {#ff0000}
+\row
+    \li Green
+    \li #00ff00
+    \li \svgcolor {#00ff00}
+\row
+    \li Blue
+    \li #0000ff
+    \li \svgcolor {#0000ff}
+\row
+    \li Cyan
+    \li #00ffff
+    \li \svgcolor {#00ffff}
+\row
+    \li Magenta
+    \li #ff00ff
+    \li \svgcolor {#ff00ff}
+\row
+    \li Yellow
+    \li #ffff00
+    \li \svgcolor {#ffff00}
+\row
+    \li DarkRed
+    \li #800000
+    \li \svgcolor {#800000}
+\row
+    \li DarkGreen
+    \li #008000
+    \li \svgcolor {#008000}
+\row
+    \li DarkBlue
+    \li #000080
+    \li \svgcolor {#000080}
+\row
+    \li DarkCyan
+    \li #008080
+    \li \svgcolor {#008080}
+\row
+    \li DarkMagenta
+    \li #800080
+    \li \svgcolor {#800080}
+\row
+    \li DarkYellow
+    \li #808000
+    \li \svgcolor {#808000}
+\row
+    \li Transparent
+    \li #00000000
+    \li (transparent)
+\endtable

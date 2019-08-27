@@ -5,9 +5,6 @@ windows-7sp1
 windows
 [bind:[::]:randomport]
 windows
-[timeoutConnect]
-windows-10 msvc-2015
-# QTBUG-66247
 [timeoutConnect:ip]
 windows
 # QTBUG-66247

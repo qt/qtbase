@@ -305,7 +305,7 @@ FrameStatus FrameReader::read(QAbstractSocket &socket)
             return status;
         }
 
-        if (Http2PredefinedParameters::maxFrameSize < frame.payloadSize())
+        if (Http2PredefinedParameters::maxPayloadSize < frame.payloadSize())
             return FrameStatus::sizeError;
 
         frame.buffer.resize(frame.payloadSize() + frameHeaderSize);
@@ -388,7 +388,7 @@ void FrameWriter::setPayloadSize(quint32 size)
     auto &buffer = frame.buffer;
 
     Q_ASSERT(buffer.size() >= frameHeaderSize);
-    Q_ASSERT(size < maxPayloadSize);
+    Q_ASSERT(size <= maxPayloadSize);
 
     buffer[0] = size >> 16;
     buffer[1] = size >> 8;

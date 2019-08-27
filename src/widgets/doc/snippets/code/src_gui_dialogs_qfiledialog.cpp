@@ -155,3 +155,8 @@ auto fileOpenCompleted = [](const QString &fileName, const QByteArray &fileConte
 }
 QFileDialog::getOpenFileContent("Images (*.png *.xpm *.jpg)",  fileContentReady);
 //! [15]
+
+//! [16]
+QByteArray imageData; // obtained from e.g. QImage::save()
+QFileDialog::saveFile("myimage.png", imageData);
+//! [16]

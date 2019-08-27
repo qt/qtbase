@@ -43,6 +43,8 @@
 #include "private/qhttpnetworkrequest_p.h"
 #include "private/qhttpnetworkreply_p.h"
 
+#include <access/qhttp2configuration.h>
+
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstring.h>
 
@@ -62,88 +64,29 @@ const char Http2clientPreface[clientPrefaceLength] =
      0x2e, 0x30, 0x0d, 0x0a, 0x0d, 0x0a,
      0x53, 0x4d, 0x0d, 0x0a, 0x0d, 0x0a};
 
-// TODO: (in 5.11) - remove it!
-const char *http2ParametersPropertyName = "QT_HTTP2_PARAMETERS_PROPERTY";
-
-ProtocolParameters::ProtocolParameters()
+Frame configurationToSettingsFrame(const QHttp2Configuration &config)
 {
-    settingsFrameData[Settings::INITIAL_WINDOW_SIZE_ID] = qtDefaultStreamReceiveWindowSize;
-    settingsFrameData[Settings::ENABLE_PUSH_ID] = 0;
+    // 6.5 SETTINGS
+    FrameWriter builder(FrameType::SETTINGS, FrameFlag::EMPTY, connectionStreamID);
+    // Server push:
+    builder.append(Settings::ENABLE_PUSH_ID);
+    builder.append(int(config.serverPushEnabled()));
+    // Stream receive window size:
+    builder.append(Settings::INITIAL_WINDOW_SIZE_ID);
+    builder.append(config.streamReceiveWindowSize());
+
+    if (config.maxFrameSize() != minPayloadLimit) {
+        builder.append(Settings::MAX_FRAME_SIZE_ID);
+        builder.append(config.maxFrameSize());
+    }
+    // TODO: In future, if the need is proven, we can
+    // also send decoding table size and header list size.
+    // For now, defaults suffice.
+    return builder.outboundFrame();
 }
 
-bool ProtocolParameters::validate() const
+QByteArray settingsFrameToBase64(const Frame &frame)
 {
-    // 0. Huffman/indexing: any values are valid and allowed.
-
-    // 1. Session receive window size (client side): HTTP/2 starts from the
-    // default value of 64Kb, if a client code tries to set lesser value,
-    // the delta would become negative, but this is not allowed.
-    if (maxSessionReceiveWindowSize < qint32(defaultSessionWindowSize)) {
-        qCWarning(QT_HTTP2, "Session receive window must be at least 65535 bytes");
-        return false;
-    }
-
-    // 2. HEADER_TABLE_SIZE: we do not validate HEADER_TABLE_SIZE, considering
-    // all values as valid. RFC 7540 and 7541 do not provide any lower/upper
-    // limits. If it's 0 - we do not index anything, if it's too huge - a user
-    // who provided such a value can potentially have a huge memory footprint,
-    // up to them to decide.
-
-    // 3. SETTINGS_ENABLE_PUSH: RFC 7540, 6.5.2, a value other than 0 or 1 will
-    // be treated by our peer as a PROTOCOL_ERROR.
-    if (settingsFrameData.contains(Settings::ENABLE_PUSH_ID)
-        && settingsFrameData[Settings::ENABLE_PUSH_ID] > 1) {
-        qCWarning(QT_HTTP2, "SETTINGS_ENABLE_PUSH can be only 0 or 1");
-        return false;
-    }
-
-    // 4. SETTINGS_MAX_CONCURRENT_STREAMS : RFC 7540 recommends 100 as the lower
-    // limit, says nothing about the upper limit. The RFC allows 0, but this makes
-    // no sense to us at all: there is no way a user can change this later and
-    // we'll not be able to get any responses on such a connection.
-    if (settingsFrameData.contains(Settings::MAX_CONCURRENT_STREAMS_ID)
-        && !settingsFrameData[Settings::MAX_CONCURRENT_STREAMS_ID]) {
-        qCWarning(QT_HTTP2, "MAX_CONCURRENT_STREAMS must be a positive number");
-        return false;
-    }
-
-    // 5. SETTINGS_INITIAL_WINDOW_SIZE.
-    if (settingsFrameData.contains(Settings::INITIAL_WINDOW_SIZE_ID)) {
-        const quint32 value = settingsFrameData[Settings::INITIAL_WINDOW_SIZE_ID];
-        // RFC 7540, 6.5.2 (the upper limit). The lower limit is our own - we send
-        // SETTINGS frame only once and will not be able to change this 0, thus
-        // we'll suspend all streams.
-        if (!value || value > quint32(maxSessionReceiveWindowSize)) {
-            qCWarning(QT_HTTP2, "INITIAL_WINDOW_SIZE must be in the range "
-                                "(0, 2^31-1]");
-            return false;
-        }
-    }
-
-    // 6. SETTINGS_MAX_FRAME_SIZE: RFC 7540, 6.5.2, a value outside of the range
-    // [2^14-1, 2^24-1] will be treated by our peer as a PROTOCOL_ERROR.
-    if (settingsFrameData.contains(Settings::MAX_FRAME_SIZE_ID)) {
-        const quint32 value = settingsFrameData[Settings::INITIAL_WINDOW_SIZE_ID];
-        if (value < maxFrameSize || value > maxPayloadSize) {
-            qCWarning(QT_HTTP2, "MAX_FRAME_SIZE must be in the range [2^14, 2^24-1]");
-            return false;
-        }
-    }
-
-    // For SETTINGS_MAX_HEADER_LIST_SIZE RFC 7540 does not provide any specific
-    // numbers. It's clear, if a value is too small, no header can ever be sent
-    // by our peer at all. The default value is unlimited and we normally do not
-    // change this.
-    //
-    // Note: the size is calculated as the length of uncompressed (no HPACK)
-    // name + value + 32 bytes.
-
-    return true;
-}
-
-QByteArray ProtocolParameters::settingsFrameToBase64() const
-{
-    Frame frame(settingsFrame());
     // SETTINGS frame's payload consists of pairs:
     // 2-byte-identifier | 4-byte-value == multiple of 6.
     Q_ASSERT(frame.payloadSize() && !(frame.payloadSize() % 6));
@@ -157,20 +100,7 @@ QByteArray ProtocolParameters::settingsFrameToBase64() const
     return wrapper.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
 }
 
-Frame ProtocolParameters::settingsFrame() const
-{
-    // 6.5 SETTINGS
-    FrameWriter builder(FrameType::SETTINGS, FrameFlag::EMPTY, connectionStreamID);
-    for (auto it = settingsFrameData.cbegin(), end = settingsFrameData.cend();
-         it != end; ++it) {
-        builder.append(it.key());
-        builder.append(it.value());
-    }
-
-    return builder.outboundFrame();
-}
-
-void ProtocolParameters::addProtocolUpgradeHeaders(QHttpNetworkRequest *request) const
+void appendProtocolUpgradeHeaders(const QHttp2Configuration &config, QHttpNetworkRequest *request)
 {
     Q_ASSERT(request);
     // RFC 2616, 14.10
@@ -184,8 +114,10 @@ void ProtocolParameters::addProtocolUpgradeHeaders(QHttpNetworkRequest *request)
     request->setHeaderField("Connection", value);
     // This we just (re)write.
     request->setHeaderField("Upgrade", "h2c");
+
+    const Frame frame(configurationToSettingsFrame(config));
     // This we just (re)write.
-    request->setHeaderField("HTTP2-Settings", settingsFrameToBase64());
+    request->setHeaderField("HTTP2-Settings", settingsFrameToBase64(frame));
 }
 
 void qt_error(quint32 errorCode, QNetworkReply::NetworkError &error,

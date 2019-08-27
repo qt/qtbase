@@ -60,8 +60,6 @@ QT_BEGIN_NAMESPACE
 inline bool qmake_endOfLine(const char &c) { return (c == '\r' || c == '\n'); }
 #endif
 
-//#define QMAKE_USE_CACHE
-
 QMakeLocalFileName::QMakeLocalFileName(const QString &name) : is_null(name.isNull())
 {
     if(!name.isEmpty()) {
@@ -265,19 +263,10 @@ QMakeSourceFileInfo::QMakeSourceFileInfo(const QString &cf)
     //buffer
     spare_buffer = nullptr;
     spare_buffer_size = 0;
-
-    //cache
-    cachefile = cf;
-    if(!cachefile.isEmpty())
-        loadCache(cachefile);
 }
 
 QMakeSourceFileInfo::~QMakeSourceFileInfo()
 {
-    //cache
-    if(!cachefile.isEmpty() /*&& files_changed*/)
-        saveCache(cachefile);
-
     //buffer
     if(spare_buffer) {
         free(spare_buffer);
@@ -288,12 +277,6 @@ QMakeSourceFileInfo::~QMakeSourceFileInfo()
     //quick project lookup
     delete files;
     delete includes;
-}
-
-void QMakeSourceFileInfo::setCacheFile(const QString &cf)
-{
-    cachefile = cf;
-    loadCache(cachefile);
 }
 
 void QMakeSourceFileInfo::addSourceFiles(const ProStringList &l, uchar seek,
@@ -1052,153 +1035,6 @@ bool QMakeSourceFileInfo::findMocs(SourceFile *file)
 #undef SKIP_BSNL
     }
     return true;
-}
-
-
-void QMakeSourceFileInfo::saveCache(const QString &cf)
-{
-#ifdef QMAKE_USE_CACHE
-    if(cf.isEmpty())
-        return;
-
-    QFile file(QMakeLocalFileName(cf).local());
-    if(file.open(QIODevice::WriteOnly)) {
-        QTextStream stream(&file);
-        stream << QMAKE_VERSION_STR << endl << endl; //version
-        { //cache verification
-            QMap<QString, QStringList> verify = getCacheVerification();
-             stream << verify.count() << endl;
-             for(QMap<QString, QStringList>::iterator it = verify.begin();
-                 it != verify.end(); ++it) {
-                 stream << it.key() << endl << it.value().join(';') << endl;
-             }
-             stream << endl;
-        }
-        if(files->nodes) {
-            for(int file = 0; file < files->num_nodes; ++file) {
-                for(SourceFiles::SourceFileNode *node = files->nodes[file]; node; node = node->next) {
-                    stream << node->file->file.local() << endl; //source
-                    stream << node->file->type << endl; //type
-
-                    //depends
-                    stream << ";";
-                    if(node->file->deps) {
-                        for(int depend = 0; depend < node->file->deps->used_nodes; ++depend) {
-                            if(depend)
-                                stream << ";";
-                            stream << node->file->deps->children[depend]->file.local();
-                        }
-                    }
-                    stream << endl;
-
-                    stream << node->file->mocable << endl; //mocable
-                    stream << endl; //just for human readability
-                }
-            }
-        }
-        stream.flush();
-        file.close();
-    }
-#else
-    Q_UNUSED(cf);
-#endif
-}
-
-void QMakeSourceFileInfo::loadCache(const QString &cf)
-{
-    if(cf.isEmpty())
-        return;
-
-#ifdef QMAKE_USE_CACHE
-    QMakeLocalFileName cache_file(cf);
-    int fd = open(QMakeLocalFileName(cf).local().toLatin1(), O_RDONLY);
-    if(fd == -1)
-        return;
-    QFileInfo cache_fi = findFileInfo(cache_file);
-    if(!cache_fi.exists() || cache_fi.isDir())
-        return;
-
-    QFile file;
-    if (!file.open(fd, QIODevice::ReadOnly))
-        return;
-    QTextStream stream(&file);
-
-    if (stream.readLine() == QMAKE_VERSION_STR) { //version check
-        stream.skipWhiteSpace();
-
-        bool verified = true;
-        { //cache verification
-            QMap<QString, QStringList> verify;
-            int len = stream.readLine().toInt();
-            for(int i = 0; i < len; ++i) {
-                QString var = stream.readLine();
-                QString val = stream.readLine();
-                verify.insert(var, val.split(';', QString::SkipEmptyParts));
-            }
-            verified = verifyCache(verify);
-        }
-        if(verified) {
-            stream.skipWhiteSpace();
-            if(!files)
-                files = new SourceFiles;
-            while(!stream.atEnd()) {
-                QString source = stream.readLine();
-                QString type = stream.readLine();
-                QString depends = stream.readLine();
-                QString mocable = stream.readLine();
-                stream.skipWhiteSpace();
-
-                QMakeLocalFileName fn(source);
-                QFileInfo fi = findFileInfo(fn);
-
-                SourceFile *file = files->lookupFile(fn);
-                if(!file) {
-                    file = new SourceFile;
-                    file->file = fn;
-                    files->addFile(file);
-                    file->type = (SourceFileType)type.toInt();
-                    file->exists = fi.exists();
-                }
-                if(fi.exists() && fi.lastModified() < cache_fi.lastModified()) {
-                    if(!file->dep_checked) { //get depends
-                        if(!file->deps)
-                            file->deps = new SourceDependChildren;
-                        file->dep_checked = true;
-                        QStringList depend_list = depends.split(";", QString::SkipEmptyParts);
-                        for(int depend = 0; depend < depend_list.size(); ++depend) {
-                            QMakeLocalFileName dep_fn(depend_list.at(depend));
-                            QFileInfo dep_fi(findFileInfo(dep_fn));
-                            SourceFile *dep = files->lookupFile(dep_fn);
-                            if(!dep) {
-                                dep = new SourceFile;
-                                dep->file = dep_fn;
-                                dep->exists = dep_fi.exists();
-                                dep->type = QMakeSourceFileInfo::TYPE_UNKNOWN;
-                                files->addFile(dep);
-                            }
-                            dep->included_count++;
-                            file->deps->addChild(dep);
-                        }
-                    }
-                    if(!file->moc_checked) { //get mocs
-                        file->moc_checked = true;
-                        file->mocable = mocable.toInt();
-                    }
-                }
-            }
-        }
-    }
-#endif
-}
-
-QMap<QString, QStringList> QMakeSourceFileInfo::getCacheVerification()
-{
-    return QMap<QString, QStringList>();
-}
-
-bool QMakeSourceFileInfo::verifyCache(const QMap<QString, QStringList> &v)
-{
-    return v == getCacheVerification();
 }
 
 QT_END_NAMESPACE

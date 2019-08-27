@@ -300,14 +300,17 @@ inline XmlOutput::xml_output valueTagT( const triState v)
     return valueTag(v == _True ? "true" : "false");
 }
 
-static QString vcxCommandSeparator()
+static QString commandLinesForOutput(QStringList commands)
 {
     // MSBuild puts the contents of the custom commands into a batch file and calls it.
     // As we want every sub-command to be error-checked (as is done by makefile-based
     // backends), we insert the checks ourselves, using the undocumented jump target.
-    static QString cmdSep =
-    QLatin1String("&#x000D;&#x000A;if errorlevel 1 goto VCEnd&#x000D;&#x000A;");
-    return cmdSep;
+    static QString errchk = QStringLiteral("if errorlevel 1 goto VCEnd");
+    for (int i = commands.count() - 2; i >= 0; --i) {
+        if (!commands.at(i).startsWith("rem", Qt::CaseInsensitive))
+            commands.insert(i + 1, errchk);
+    }
+    return commands.join('\n');
 }
 
 static QString unquote(const QString &value)
@@ -1658,7 +1661,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCustomBuildTool &tool)
     {
         xml << tag("Command")
             << attrTag("Condition", condition)
-            << valueTag(tool.CommandLine.join(vcxCommandSeparator()));
+            << valueTag(commandLinesForOutput(tool.CommandLine));
     }
 
     if ( !tool.Description.isEmpty() )
@@ -1712,7 +1715,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCEventTool &tool)
 {
     xml
         << tag(tool.EventName)
-            << tag(_Command) << valueTag(tool.CommandLine.join(vcxCommandSeparator()))
+            << tag(_Command) << valueTag(commandLinesForOutput(tool.CommandLine))
             << tag(_Message) << valueTag(tool.Description)
         << closetag(tool.EventName);
 }

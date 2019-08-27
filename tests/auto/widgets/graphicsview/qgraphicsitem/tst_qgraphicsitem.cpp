@@ -272,6 +272,9 @@ class tst_QGraphicsItem : public QObject
 {
     Q_OBJECT
 
+public:
+    static void initMain();
+
 private slots:
     void construction();
     void constructionWithParent();
@@ -473,6 +476,14 @@ private:
     QList<QGraphicsItem *> paintedItems;
     QTouchDevice *m_touchDevice = nullptr;
 };
+
+void tst_QGraphicsItem::initMain()
+{
+#ifdef Q_OS_WIN
+    // Ensure minimum size constraints of framed windows on High DPI screens
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+}
 
 void tst_QGraphicsItem::construction()
 {

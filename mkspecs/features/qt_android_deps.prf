@@ -16,7 +16,7 @@
 ANDROID_DEPENDS_DIR = $$MODULE_BASE_OUTDIR/lib/
 DEPENDENCY_FILE = $$ANDROID_DEPENDS_DIR$$TARGET-android-dependencies.xml
 
-!build_pass {
+build_pass:!isEmpty(QT_ARCH): {
     !isEmpty(MODULE_PLUGIN_TYPES) {
         for(PLUGIN_TYPE, MODULE_PLUGIN_TYPES) {
             ANDROID_BUNDLED_FILES += "plugins/$$PLUGIN_TYPE"
@@ -46,6 +46,8 @@ DEPENDENCY_FILE = $$ANDROID_DEPENDS_DIR$$TARGET-android-dependencies.xml
             EXTENDS = $$section(LIB_FILE, ":", 1, 1)
             !isEmpty(EXTENDS): EXTENDS = "extends=\"$$EXTENDS\""
             LIB_FILE = $$section(LIB_FILE, ":", 0, 0)
+            LIB_FILE = $$replace(LIB_FILE,".so", "_$${QT_ARCH}.so")
+            !isEmpty(EXTENDS): EXTENDS = $$replace(EXTENDS,".so", "_$${QT_ARCH}.so")
             FILE_CONTENT += "<lib file=\"$$LIB_FILE\" $$EXTENDS />"
         }
     }
@@ -54,12 +56,14 @@ DEPENDENCY_FILE = $$ANDROID_DEPENDS_DIR$$TARGET-android-dependencies.xml
         for(REPLACEMENT, ANDROID_LIB_DEPENDENCY_REPLACEMENTS) {
             REPLACEMENT_FILE = $$section(REPLACEMENT, ":", 0, 0)
             LIB_FILE = $$section(REPLACEMENT, ":", 1, 1)
+            REPLACEMENT_FILE = $$replace(REPLACEMENT_FILE,".so", "_$${QT_ARCH}.so")
             FILE_CONTENT += "<lib file=\"$$LIB_FILE\" replaces=\"$$REPLACEMENT_FILE\" />"
         }
     }
 
     !isEmpty(ANDROID_BUNDLED_FILES) {
         for (BUNDLED_FILE, ANDROID_BUNDLED_FILES) {
+            BUNDLED_FILE = $$replace(BUNDLED_FILE,".so", "_$${QT_ARCH}.so")
             FILE_CONTENT += "<bundled file=\"$$BUNDLED_FILE\" />"
         }
     }

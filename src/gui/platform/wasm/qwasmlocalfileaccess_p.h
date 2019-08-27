@@ -71,6 +71,8 @@ void openFile(const std::string &accept,
     const std::function<char *(uint64_t size, const std::string name)> &acceptFile,
     const std::function<void()> &fileDataReady);
 
+void saveFile(const char *content, size_t size, const std::string &fileNameHint);
+
 } // namespace QWasmLocalFileAccess
 
 QT_END_NAMESPACE

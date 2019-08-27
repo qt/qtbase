@@ -1,24 +1,16 @@
-[listenWhileListening]
-windows-10 msvc-2015
 [listenWhileListening:WithSocks5Proxy]
 linux
 windows
 [ipv6Server]
-windows-10 msvc-2015
 windows-7sp1
 windows-10 msvc-2017
 [ipv6Server:WithoutProxy]
 windows
 osx
-[addressReusable]
-windows-10 msvc-2015
 [eagainBlockingAccept]
-windows-10 msvc-2015
 windows-7sp1
-windows-10 msvc-2017
-[proxyFactory]
-windows-7sp1
+windows-10
 [serverAddress]
-windows-10 msvc-2017
-windows-10 msvc-2015
 windows-7sp1
+windows-10
+

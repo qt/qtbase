@@ -41,7 +41,9 @@
 
 #include "qcupsprintersupport_p.h"
 
+#if QT_CONFIG(mimetype)
 #include <QtCore/QMimeDatabase>
+#endif
 #include <qdebug.h>
 
 #include "private/qcups_p.h" // Only needed for PDPK_*

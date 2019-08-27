@@ -50,6 +50,7 @@
 #include <QDomDocument>
 #include "common.h"
 
+// #define DEBUG_WRITE_OUTPUT
 
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 
@@ -196,6 +197,7 @@ private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
     static QString cssFontSizeString(const QFont &font);
+    void writeActualAndExpected(const char* testTag, const QString &actual, const QString &expected);
 
     QTextDocument *doc;
     QTextCursor cursor;
@@ -222,6 +224,27 @@ QString tst_QTextDocument::cssFontSizeString(const QFont &font)
     return font.pointSize() >= 0
             ? QString::number(font.pointSizeF()) + QStringLiteral("pt")
             : QString::number(font.pixelSize()) + QStringLiteral("px");
+}
+
+void tst_QTextDocument::writeActualAndExpected(const char *testTag, const QString &actual, const QString &expected)
+{
+#ifdef DEBUG_WRITE_OUTPUT
+    {
+        QFile out(QDir::temp().absoluteFilePath(QLatin1String(testTag) + QLatin1String("-actual.html")));
+        out.open(QFile::WriteOnly);
+        out.write(actual.toUtf8());
+        out.close();
+    } {
+        QFile out(QDir::temp().absoluteFilePath(QLatin1String(testTag) + QLatin1String("-expected.html")));
+        out.open(QFile::WriteOnly);
+        out.write(expected.toUtf8());
+        out.close();
+    }
+#else
+    Q_UNUSED(testTag)
+    Q_UNUSED(actual)
+    Q_UNUSED(expected)
+#endif
 }
 
 // Testing get/set functions
@@ -1765,6 +1788,8 @@ void tst_QTextDocument::toHtml()
 
     QString output = doc->toHtml();
 
+    writeActualAndExpected(QTest::currentDataTag(), output, expectedOutput);
+
     QCOMPARE(output, expectedOutput);
 
     QDomDocument document;
@@ -1961,6 +1986,8 @@ void tst_QTextDocument::toHtmlRootFrameProperties()
     expectedOutput.prepend(htmlHead);
     expectedOutput.replace("DEFAULTBLOCKSTYLE", "style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"");
     expectedOutput.append(htmlTail);
+
+    writeActualAndExpected(QTest::currentTestFunction(), doc.toHtml(), expectedOutput);
 
     QCOMPARE(doc.toHtml(), expectedOutput);
 }
@@ -2733,6 +2760,8 @@ void tst_QTextDocument::backgroundImage_checkExpectedHtml(const QTextDocument &d
                     .arg(cssFontSizeString(defaultFont))
                     .arg(defaultFont.weight() * 8)
                     .arg((defaultFont.italic() ? "italic" : "normal"));
+
+    writeActualAndExpected(QTest::currentTestFunction(), doc.toHtml(), expectedHtml);
 
     QCOMPARE(doc.toHtml(), expectedHtml);
 }

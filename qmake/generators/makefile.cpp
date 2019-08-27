@@ -771,20 +771,6 @@ MakefileGenerator::init()
         QMakeSourceFileInfo::setDependencyPaths(deplist);
         debug_msg(1, "Dependency Directories: %s",
                   incDirs.join(QString(" :: ")).toLatin1().constData());
-        //cache info
-        if(project->isActiveConfig("qmake_cache")) {
-            QString cache_file;
-            if(!project->isEmpty("QMAKE_INTERNAL_CACHE_FILE")) {
-                cache_file = QDir::fromNativeSeparators(project->first("QMAKE_INTERNAL_CACHE_FILE").toQString());
-            } else {
-                cache_file = ".qmake.internal.cache";
-                if(project->isActiveConfig("build_pass"))
-                    cache_file += ".BUILD." + project->first("BUILD_PASS");
-            }
-            if(cache_file.indexOf('/') == -1)
-                cache_file.prepend(Option::output_dir + '/');
-            QMakeSourceFileInfo::setCacheFile(cache_file);
-        }
 
         //add to dependency engine
         for(x = 0; x < compilers.count(); ++x) {
