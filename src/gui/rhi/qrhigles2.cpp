@@ -1184,8 +1184,9 @@ QRhi::FrameOpResult QRhiGles2::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiGles2::beginOffscreenFrame(QRhiCommandBuffer **cb)
+QRhi::FrameOpResult QRhiGles2::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags)
 {
+    Q_UNUSED(flags);
     if (!ensureContext())
         return QRhi::FrameOpError;
 
@@ -1200,8 +1201,9 @@ QRhi::FrameOpResult QRhiGles2::beginOffscreenFrame(QRhiCommandBuffer **cb)
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiGles2::endOffscreenFrame()
+QRhi::FrameOpResult QRhiGles2::endOffscreenFrame(QRhi::EndFrameFlags flags)
 {
+    Q_UNUSED(flags);
     Q_ASSERT(ofr.active);
     ofr.active = false;
 

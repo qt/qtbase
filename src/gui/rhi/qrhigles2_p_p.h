@@ -602,8 +602,8 @@ public:
     QRhiSwapChain *createSwapChain() override;
     QRhi::FrameOpResult beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags) override;
     QRhi::FrameOpResult endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameFlags flags) override;
-    QRhi::FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb) override;
-    QRhi::FrameOpResult endOffscreenFrame() override;
+    QRhi::FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags) override;
+    QRhi::FrameOpResult endOffscreenFrame(QRhi::EndFrameFlags flags) override;
     QRhi::FrameOpResult finish() override;
 
     void resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;

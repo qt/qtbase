@@ -275,6 +275,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     QRhi does not expose APIs for resource barriers or image layout
     transitions. Such synchronization is done implicitly by the backends, where
     applicable (for example, Vulkan), by tracking resource usage as necessary.
+    Buffer and image barriers are inserted before render or compute passes
+    transparently to the application.
 
     \note Resources within a render or compute pass are expected to be bound to
     a single usage during that pass. For example, a buffer can be used as
@@ -554,6 +556,11 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 /*!
     \enum QRhi::BeginFrameFlag
     Flag values for QRhi::beginFrame()
+
+    \value ExternalContentsInPass Specifies that one or more render or compute
+    passes in this frame will call QRhiCommandBuffer::beginExternal(). Some
+    backends, Vulkan in particular, will fail if this flag is not set and
+    beginExternal() is still called.
  */
 
 /*!
@@ -4801,6 +4808,11 @@ const QRhiNativeHandles *QRhiCommandBuffer::nativeHandles()
     enqueue commands to the current pass' command buffer by calling graphics
     API functions directly.
 
+    \note This is only available when the intent was declared up front in
+    beginFrame(). Therefore this function must only be called when the frame
+    was started with specifying QRhi::ExternalContentsInPass in the flags
+    passed to QRhi::beginFrame().
+
     With Vulkan or Metal one can query the native command buffer or encoder
     objects via nativeHandles() and enqueue commands to them. With OpenGL or
     Direct3D 11 the (device) context can be retrieved from
@@ -4817,6 +4829,16 @@ const QRhiNativeHandles *QRhiCommandBuffer::nativeHandles()
     \note Once beginExternal() is called, no other render pass specific
     functions (\c set* or \c draw*) must be called on the
     QRhiCommandBuffer until endExternal().
+
+    \warning Some backends may return a native command buffer object from
+    QRhiCommandBuffer::nativeHandles() that is different from the primary one
+    when inside a beginExternal() - endExternal() block. Therefore it is
+    important to (re)query the native command buffer object after calling
+    beginExternal(). In practical terms this means that with Vulkan for example
+    the externally recorded Vulkan commands are placed onto a secondary command
+    buffer (with VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT).
+    nativeHandles() returns this secondary command buffer when called between
+    begin/endExternal.
 
     \sa endExternal(), nativeHandles()
  */
@@ -5124,6 +5146,13 @@ QRhiSwapChain *QRhi::newSwapChain()
 /*!
     Starts a new frame targeting the next available buffer of \a swapChain.
 
+    A frame consists of resource updates and one or more render and compute
+    passes.
+
+    \a flags can indicate certain special cases. For example, the fact that
+    QRhiCommandBuffer::beginExternal() will be called within this new frame
+    must be declared up front by setting the ExternalContentsInPass flag.
+
     The high level pattern of rendering into a QWindow using a swapchain:
 
     \list
@@ -5151,9 +5180,7 @@ QRhiSwapChain *QRhi::newSwapChain()
 
     \endlist
 
-    \a flags is currently unused.
-
-    \sa endFrame()
+    \sa endFrame(), beginOffscreenFrame()
  */
 QRhi::FrameOpResult QRhi::beginFrame(QRhiSwapChain *swapChain, BeginFrameFlags flags)
 {
@@ -5253,7 +5280,8 @@ int QRhi::currentFrameSlot() const
 
 /*!
     Starts a new offscreen frame. Provides a command buffer suitable for
-    recording rendering commands in \a cb.
+    recording rendering commands in \a cb. \a flags is used to indicate
+    certain special cases, just like with beginFrame().
 
     \note The QRhiCommandBuffer stored to *cb is not owned by the caller.
 
@@ -5287,14 +5315,14 @@ int QRhi::currentFrameSlot() const
           // image data available in rbResult
    \endcode
 
-   \sa endOffscreenFrame()
+   \sa endOffscreenFrame(), beginFrame()
  */
-QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb)
+QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb, BeginFrameFlags flags)
 {
     if (d->inFrame)
         qWarning("Attempted to call beginOffscreenFrame() within a still active frame; ignored");
 
-    QRhi::FrameOpResult r = !d->inFrame ? d->beginOffscreenFrame(cb) : FrameOpSuccess;
+    QRhi::FrameOpResult r = !d->inFrame ? d->beginOffscreenFrame(cb, flags) : FrameOpSuccess;
     if (r == FrameOpSuccess)
         d->inFrame = true;
 
@@ -5306,12 +5334,12 @@ QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb)
 
     \sa beginOffscreenFrame()
  */
-QRhi::FrameOpResult QRhi::endOffscreenFrame()
+QRhi::FrameOpResult QRhi::endOffscreenFrame(EndFrameFlags flags)
 {
     if (!d->inFrame)
         qWarning("Attempted to call endOffscreenFrame() without an active frame; ignored");
 
-    QRhi::FrameOpResult r = d->inFrame ? d->endOffscreenFrame() : FrameOpSuccess;
+    QRhi::FrameOpResult r = d->inFrame ? d->endOffscreenFrame(flags) : FrameOpSuccess;
     d->inFrame = false;
     qDeleteAll(d->pendingReleaseAndDestroyResources);
     d->pendingReleaseAndDestroyResources.clear();

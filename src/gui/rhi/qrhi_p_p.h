@@ -95,8 +95,8 @@ public:
     virtual QRhiSwapChain *createSwapChain() = 0;
     virtual QRhi::FrameOpResult beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags) = 0;
     virtual QRhi::FrameOpResult endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameFlags flags) = 0;
-    virtual QRhi::FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb) = 0;
-    virtual QRhi::FrameOpResult endOffscreenFrame() = 0;
+    virtual QRhi::FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags) = 0;
+    virtual QRhi::FrameOpResult endOffscreenFrame(QRhi::EndFrameFlags flags) = 0;
     virtual QRhi::FrameOpResult finish() = 0;
 
     virtual void resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) = 0;

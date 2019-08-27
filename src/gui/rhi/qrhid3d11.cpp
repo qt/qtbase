@@ -991,8 +991,9 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiD3D11::beginOffscreenFrame(QRhiCommandBuffer **cb)
+QRhi::FrameOpResult QRhiD3D11::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags)
 {
+    Q_UNUSED(flags);
     ofr.active = true;
 
     ofr.cbWrapper.resetState();
@@ -1001,8 +1002,9 @@ QRhi::FrameOpResult QRhiD3D11::beginOffscreenFrame(QRhiCommandBuffer **cb)
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiD3D11::endOffscreenFrame()
+QRhi::FrameOpResult QRhiD3D11::endOffscreenFrame(QRhi::EndFrameFlags flags)
 {
+    Q_UNUSED(flags);
     ofr.active = false;
 
     executeCommandBuffer(&ofr.cbWrapper);
