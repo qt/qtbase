@@ -2123,7 +2123,12 @@ function(add_qml_module target)
         string(REPLACE "." "_" qmldir_resource_name ${arg_TARGET_PATH})
         string(REPLACE "/" "_" qmldir_resource_name ${qmldir_resource_name})
         set(qmldir_resource_name "${qmldir_resource_name}_qmldir")
-        add_qt_resource(${target} ${uri_target}
+        get_target_property(target_resource_prefix ${target} QT_RESOURCE_PREFIX)
+        set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
+            PROPERTIES QT_RESOURCE_ALIAS "qmldir"
+        )
+        add_qt_resource(${target} ${qmldir_resource_name}
+            PREFIX ${target_resource_prefix}
             FILES "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
         )
     endif()

@@ -251,22 +251,20 @@ endif()
 
     #TODO: ANDROID_VERSION_CODE, doesn't seem to be used?
 
-    #TODO: QML import path, could be a property? Example below:
-    #get_target_property(qml_import_path ${target} QT_QML_IMPORT_PATH)
-    #if (qml_import_path)
-    #    file(TO_NATIVE_PATH "${qml_import_path}" qml_import_path_native)
-    #    file(APPEND ${deploy_file}
-    #        "   \"qml-import-path\": \"${qml_import_path_native}\",\n")
-    #endif()
+    get_target_property(qml_import_path ${target} QT_QML_IMPORT_PATH)
+    if (qml_import_path)
+        file(TO_NATIVE_PATH "${qml_import_path}" qml_import_path_native)
+        file(APPEND ${deploy_file}
+            "   \"qml-import-path\": \"${qml_import_path_native}\",\n")
+    endif()
 
-    #TODO: QML root path, could be a property? Example below:
-    #get_target_property(qml_root_path ${target} QT_QML_ROOT_PATH)
-    #if(NOT qml_root_path)
-    #    set(qml_root_path "${target_source_dir}")
-    #endif()
-    #file(TO_NATIVE_PATH "${qml_root_path}" qml_root_path_native)
-    #file(APPEND ${deploy_file}
-    #    "   \"qml-root-path\": \"${qml_root_path_native}\",\n")
+    get_target_property(qml_root_path ${target} QT_QML_ROOT_PATH)
+    if(NOT qml_root_path)
+        set(qml_root_path "${target_source_dir}")
+    endif()
+    file(TO_NATIVE_PATH "${qml_root_path}" qml_root_path_native)
+    file(APPEND ${deploy_file}
+        "   \"qml-root-path\": \"${qml_root_path_native}\",\n")
 
     # App binary
     file(TO_NATIVE_PATH "${target_binary_dir}/lib${target_output_name}.so" target_binary_dir_native)
