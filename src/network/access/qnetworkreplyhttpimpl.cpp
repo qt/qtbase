@@ -752,8 +752,9 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
             quint64 requestStartOffset = requestRange.left(index).toULongLong();
             quint64 requestEndOffset = requestRange.mid(index + 1).toULongLong();
 
+            // In case an end offset is not given it is skipped from the request range
             requestRange = "bytes=" + QByteArray::number(resumeOffset + requestStartOffset) +
-                           '-' + QByteArray::number(requestEndOffset);
+                           '-' + (requestEndOffset ? QByteArray::number(requestEndOffset) : QByteArray());
 
             httpRequest.setHeaderField("Range", requestRange);
         } else {
