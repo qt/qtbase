@@ -112,15 +112,8 @@ public:
     virtual bool shouldQuit() override;
     bool tryCloseAllWindows() override;
 
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-#if QT_CONFIG(settings)
-    static bool x11_apply_settings();
-#endif
-    static void reset_instance_pointer();
-#endif
     static bool autoSipEnabled;
     static QString desktopStyleKey();
-
 
     void createEventDispatcher() override;
     static void dispatchEnterLeave(QWidget *enter, QWidget *leave, const QPointF &globalPosF);
@@ -132,10 +125,7 @@ public:
     static bool isBlockedByModal(QWidget *widget);
     static bool modalState();
     static bool tryModalHelper(QWidget *widget, QWidget **rettop = nullptr);
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    static QWidget *tryModalHelper_sys(QWidget *top);
-    bool canQuit();
-#endif
+
 #ifdef QT_KEYPAD_NAVIGATION
     static bool keypadNavigationEnabled()
     {
@@ -146,17 +136,9 @@ public:
 
     bool notify_helper(QObject *receiver, QEvent * e);
 
-    void init(
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-                   Display *dpy = 0, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0
-#endif
-                   );
+    void init();
     void initialize();
     void process_cmdline();
-
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    static void x11_initialize_style();
-#endif
 
     static bool inPopupMode();
     bool popupActive() override { return inPopupMode(); }
@@ -212,10 +194,6 @@ public:
     static void initializeWidgetFontHash();
     static void setSystemFont(const QFont &font);
 
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    static void applyX11SpecificCommandLineArguments(QWidget *main_widget);
-#endif
-
     static QApplicationPrivate *instance() { return self; }
 
 #ifdef QT_KEYPAD_NAVIGATION
@@ -223,10 +201,6 @@ public:
     static Qt::NavigationMode navigationMode;
 #endif
 
-#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ || 0 /* Used to be included in Qt4 for Q_WS_X11 */
-    void _q_alertTimeOut();
-    QHash<QWidget *, QTimer *> alertTimerHash;
-#endif
 #ifndef QT_NO_STYLE_STYLESHEET
     static QString styleSheet;
 #endif
@@ -263,14 +237,6 @@ public:
     QGestureManager *gestureManager;
     QWidget *gestureWidget;
 #endif
-#if 0 /* Used to be included in Qt4 for Q_WS_X11 */ || 0 /* Used to be included in Qt4 for Q_WS_WIN */
-    QPixmap *move_cursor;
-    QPixmap *copy_cursor;
-    QPixmap *link_cursor;
-#endif
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-    QPixmap *ignore_cursor;
-#endif
 
     static bool updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
     void initializeMultitouch();
@@ -299,14 +265,7 @@ private:
     static bool isAlien(QWidget *);
 };
 
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-  extern void qt_win_set_cursor(QWidget *, bool);
-#elif 0 // Used to be included in Qt4 for Q_WS_X11
-  extern void qt_x11_enforce_cursor(QWidget *, bool);
-  extern void qt_x11_enforce_cursor(QWidget *);
-#else
-  extern void qt_qpa_set_cursor(QWidget * w, bool force);
-#endif
+extern void qt_qpa_set_cursor(QWidget * w, bool force);
 
 QT_END_NAMESPACE
 

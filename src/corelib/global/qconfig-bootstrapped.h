@@ -84,8 +84,11 @@
 #define QT_FEATURE_getauxval (QT_HAS_INCLUDE(<sys/auxv.h>) ? 1 : -1)
 #define QT_FEATURE_getentropy -1
 #define QT_NO_GEOM_VARIANT
+#define QT_FEATURE_hijricalendar -1
 #define QT_FEATURE_iconv -1
 #define QT_FEATURE_icu -1
+#define QT_FEATURE_islamiccivilcalendar -1
+#define QT_FEATURE_jalalicalendar -1
 #define QT_FEATURE_journald -1
 #define QT_FEATURE_futimens -1
 #define QT_FEATURE_futimes -1

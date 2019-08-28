@@ -43,7 +43,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QShaderDescription
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Describes the interface of a shader.
 
@@ -231,21 +232,24 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QShaderDescription::InOutVariable
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Describes an input or output variable in the shader.
  */
 
 /*!
     \class QShaderDescription::BlockVariable
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Describes a member of a uniform or push constant block.
  */
 
 /*!
     \class QShaderDescription::UniformBlock
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Describes a uniform block.
 
@@ -257,14 +261,16 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QShaderDescription::PushConstantBlock
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Describes a push constant block.
  */
 
 /*!
     \class QShaderDescription::StorageBlock
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Describes a shader storage block.
  */

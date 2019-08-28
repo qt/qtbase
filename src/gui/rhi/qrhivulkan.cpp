@@ -62,7 +62,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiVulkanInitParams
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Vulkan specific initialization parameters.
 
     A Vulkan-based QRhi needs at minimum a valid QVulkanInstance. It is up to
@@ -146,7 +147,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiVulkanNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Collects device, queue, and other Vulkan objects that are used by the QRhi.
 
     \note Ownership of the Vulkan objects is never transferred.
@@ -154,7 +156,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiVulkanTextureNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Holds the Vulkan image object that is backing a QRhiTexture.
 
     Importing and exporting Vulkan image objects that back a QRhiTexture when
@@ -168,7 +171,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiVulkanCommandBufferNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Holds the Vulkan command buffer object that is backing a QRhiCommandBuffer.
 
     \note The Vulkan command buffer object is only guaranteed to be valid, and

@@ -976,11 +976,7 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
             && (event->pos() - state->pressPos).manhattanLength()
                 > QApplication::startDragDistance()) {
             startDrag();
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-            grabMouseWhileInWindow();
-#else
             q->grabMouse();
-#endif
             ret = true;
         }
     }
@@ -1028,13 +1024,6 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
     QWidget *tl = q->topLevelWidget();
     QRect geo = tl->geometry();
     QRect titleRect = tl->frameGeometry();
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    if ((features & QDockWidget::DockWidgetVerticalTitleBar)) {
-        titleRect.setTop(geo.top());
-        titleRect.setBottom(geo.bottom());
-        titleRect.setRight(geo.left() - 1);
-    } else
-#endif
     {
         titleRect.setLeft(geo.left());
         titleRect.setRight(geo.right());
@@ -1587,17 +1576,6 @@ bool QDockWidget::event(QEvent *event)
         if (d->mouseMoveEvent(static_cast<QMouseEvent *>(event)))
             return true;
         break;
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-    case QEvent::Leave:
-        if (d->state != 0 && d->state->dragging && !d->state->nca) {
-            // This is a workaround for loosing the mouse on Vista.
-            QPoint pos = QCursor::pos();
-            QMouseEvent fake(QEvent::MouseMove, mapFromGlobal(pos), pos, Qt::NoButton,
-                             QGuiApplication::mouseButtons(), QGuiApplication::keyboardModifiers());
-            d->mouseMoveEvent(&fake);
-        }
-        break;
-#endif
     case QEvent::MouseButtonRelease:
         if (d->mouseReleaseEvent(static_cast<QMouseEvent *>(event)))
             return true;

@@ -15,3 +15,4 @@ HEADERS += \
 RESOURCES += \
     highdpi.qrc
 
+DEFINES += HAVE_SCREEN_BASE_DPI

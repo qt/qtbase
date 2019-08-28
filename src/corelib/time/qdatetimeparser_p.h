@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -57,6 +57,7 @@
 #include "QtCore/qdatetime.h"
 #include "QtCore/qstringlist.h"
 #include "QtCore/qlocale.h"
+#include "QtCore/qcalendar.h"
 #ifndef QT_BOOTSTRAPPED
 # include "QtCore/qvariant.h"
 #endif
@@ -82,9 +83,9 @@ public:
         FromString,
         DateTimeEdit
     };
-    QDateTimeParser(QVariant::Type t, Context ctx)
+    QDateTimeParser(QVariant::Type t, Context ctx, const QCalendar &cal = QCalendar())
         : currentSectionIndex(-1), display(nullptr), cachedDay(-1), parserType(t),
-        fixday(false), spec(Qt::LocalTime), context(ctx)
+        fixday(false), spec(Qt::LocalTime), context(ctx), calendar(cal)
     {
         defaultLocale = QLocale::system();
         first.type = FirstSection;
@@ -195,6 +196,7 @@ public:
 
     void setDefaultLocale(const QLocale &loc) { defaultLocale = loc; }
     virtual QString displayText() const { return text; }
+    void setCalendar(const QCalendar &calendar);
 
 private:
     int sectionMaxSize(Section s, int count) const;
@@ -215,7 +217,7 @@ private:
     ParsedSection parseSection(const QDateTime &currentValue, int sectionIndex,
                                int offset, QString *text) const;
     int findMonth(const QString &str1, int monthstart, int sectionIndex,
-                  QString *monthName = nullptr, int *used = nullptr) const;
+                  int year, QString *monthName = nullptr, int *used = nullptr) const;
     int findDay(const QString &str1, int intDaystart, int sectionIndex,
                 QString *dayName = nullptr, int *used = nullptr) const;
     ParsedSection findTimeZone(QStringRef str, const QDateTime &when,
@@ -297,6 +299,7 @@ protected: // for the benefit of QDateTimeEditPrivate
     bool fixday;
     Qt::TimeSpec spec; // spec if used by QDateTimeEdit
     Context context;
+    QCalendar calendar;
 };
 Q_DECLARE_TYPEINFO(QDateTimeParser::SectionNode, Q_PRIMITIVE_TYPE);
 

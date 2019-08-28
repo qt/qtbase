@@ -71,6 +71,7 @@ QTOBJS= \
 	qbytearray.obj \
 	qvsnprintf.obj \
 	qbytearraymatcher.obj \
+	qcalendar.obj \
 	qdatetime.obj \
 	qdir.obj \
 	qdiriterator.obj \
@@ -83,6 +84,7 @@ QTOBJS= \
 	qfileinfo.obj \
 	qendian.obj \
 	qglobal.obj \
+	qgregoriancalendar.obj \
 	qhash.obj \
 	qiodevice.obj \
 	qringbuffer.obj \
@@ -97,6 +99,7 @@ QTOBJS= \
 	qoperatingsystemversion.obj \
 	qoperatingsystemversion_win.obj \
 	qregexp.obj \
+	qromancalendar.obj \
 	qutfcodec.obj \
 	qstring.obj \
 	qstringlist.obj \

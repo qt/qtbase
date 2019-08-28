@@ -28,6 +28,7 @@ QOBJS = \
 	qmetatype.o qsystemerror.o qvariant.o \
 	quuid.o \
 	qarraydata.o qbitarray.o qbytearray.o qbytearraymatcher.o \
+	qcalendar.o qgregoriancalendar.o qromancalendar.o \
 	qcryptographichash.o qdatetime.o qhash.o qlist.o \
 	qlocale.o qlocale_tools.o qmap.o qregexp.o qringbuffer.o \
 	qstringbuilder.o qstring.o qstringlist.o qversionnumber.o \
@@ -114,7 +115,10 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/text/qstring.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qstringlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/text/qvsnprintf.cpp \
+	   $(SOURCE_PATH)/src/corelib/time/qcalendar.cpp \
 	   $(SOURCE_PATH)/src/corelib/time/qdatetime.cpp \
+	   $(SOURCE_PATH)/src/corelib/time/qgregoriancalendar.cpp \
+	   $(SOURCE_PATH)/src/corelib/time/qromancalendar.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
@@ -426,6 +430,15 @@ qfileinfo.o: $(SOURCE_PATH)/src/corelib/io/qfileinfo.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qdatetime.o: $(SOURCE_PATH)/src/corelib/time/qdatetime.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qcalendar.o: $(SOURCE_PATH)/src/corelib/time/qcalendar.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qgregoriancalendar.o: $(SOURCE_PATH)/src/corelib/time/qgregoriancalendar.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qromancalendar.o: $(SOURCE_PATH)/src/corelib/time/qromancalendar.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qstringlist.o: $(SOURCE_PATH)/src/corelib/text/qstringlist.cpp

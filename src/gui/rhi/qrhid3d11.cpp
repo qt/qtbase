@@ -58,7 +58,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiD3D11InitParams
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Direct3D 11 specific initialization parameters.
 
     A D3D11-based QRhi needs no special parameters for initialization. If
@@ -97,7 +98,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiD3D11NativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Holds the D3D device and device context used by the QRhi.
 
     \note The class uses \c{void *} as the type since including the COM-based
@@ -107,7 +109,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiD3D11TextureNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Holds the D3D texture object that is backing a QRhiTexture instance.
 
     \note The class uses \c{void *} as the type since including the COM-based

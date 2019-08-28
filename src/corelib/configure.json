@@ -1041,6 +1041,25 @@
             "section": "Utilities",
             "output": [ "privateFeature" ]
         },
+        "jalalicalendar": {
+            "label": "QJalaliCalendar",
+            "purpose": "Support the Jalali (Persian) calendar",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
+        },
+        "hijricalendar": {
+            "label": "QHijriCalendar",
+            "purpose": "Generic basis for Islamic calendars, providing shared locale data",
+            "section": "Utilities",
+            "output": [ "privateFeature" ]
+        },
+        "islamiccivilcalendar": {
+            "label": "QIslamicCivilCalendar",
+            "purpose": "Support the Islamic Civil calendar",
+            "section": "Utilities",
+            "condition": "features.hijricalendar",
+            "output": [ "publicFeature" ]
+        },
         "timezone": {
             "label": "QTimeZone",
             "purpose": "Provides support for time-zone handling.",

@@ -184,24 +184,10 @@ public:
 
     inline void dispatchPendingUpdateRequests()
     {
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        // QWidget::update() works slightly different on the Mac without the raster engine;
-        // it's not part of our backing store so it needs special threatment.
-        if (QApplicationPrivate::graphics_system_name != QLatin1String("raster")) {
-            // At this point either HIViewSetNeedsDisplay (Carbon) or setNeedsDisplay: YES (Cocoa)
-            // is called, which means there's a pending update request. We want to dispatch it
-            // now because otherwise graphics view updates would require two
-            // round-trips in the event loop before the item is painted.
-            extern void qt_mac_dispatchPendingUpdateRequests(QWidget *);
-            qt_mac_dispatchPendingUpdateRequests(viewport->window());
-        } else
-#endif
-        {
-            if (qt_widget_private(viewport)->paintOnScreen())
-                QCoreApplication::sendPostedEvents(viewport, QEvent::UpdateRequest);
-            else
-                QCoreApplication::sendPostedEvents(viewport->window(), QEvent::UpdateRequest);
-        }
+        if (qt_widget_private(viewport)->shouldPaintOnScreen())
+            QCoreApplication::sendPostedEvents(viewport, QEvent::UpdateRequest);
+        else
+            QCoreApplication::sendPostedEvents(viewport->window(), QEvent::UpdateRequest);
     }
 
     void setUpdateClip(QGraphicsItem *);

@@ -1,10 +1,47 @@
 # Qt time / date / zone / calendar module
 
 HEADERS += \
+        time/qcalendar.h \
+        time/qcalendarbackend_p.h \
+        time/qcalendarmath_p.h \
         time/qdatetime.h \
-        time/qdatetime_p.h
+        time/qdatetime_p.h \
+        time/qgregoriancalendar_p.h \
+        time/qjuliancalendar_p.h \
+        time/qmilankoviccalendar_p.h \
+        time/qromancalendar_p.h \
+        time/qromancalendar_data_p.h
 
-SOURCES += time/qdatetime.cpp
+SOURCES += \
+        time/qdatetime.cpp \
+        time/qcalendar.cpp \
+        time/qgregoriancalendar.cpp \
+        time/qjuliancalendar.cpp \
+        time/qmilankoviccalendar.cpp \
+        time/qromancalendar.cpp
+
+qtConfig(hijricalendar) {
+    SOURCES += \
+        time/qhijricalendar.cpp
+    HEADERS += \
+        time/qhijricalendar_p.h \
+        time/qhijricalendar_data_p.h
+}
+
+qtConfig(islamiccivilcalendar) {
+    SOURCES += \
+        time/qislamiccivilcalendar.cpp
+    HEADERS += \
+        time/qislamiccivilcalendar_p.h
+}
+
+qtConfig(jalalicalendar) {
+    SOURCES += \
+        time/qjalalicalendar.cpp
+    HEADERS += \
+        time/qjalalicalendar_p.h \
+        time/qjalalicalendar_data_p.h
+}
 
 qtConfig(timezone) {
     HEADERS += \

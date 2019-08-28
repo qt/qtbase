@@ -111,7 +111,7 @@ const QRect QDesktopWidgetPrivate::availableGeometry(const QWidget *widget)
 QDesktopScreenWidget *QDesktopWidgetPrivate::widgetForScreen(QScreen *qScreen) const
 {
     foreach (QDesktopScreenWidget *widget, screens) {
-        if (widget->screen() == qScreen)
+        if (widget->assignedScreen() == qScreen)
             return widget;
     }
     return nullptr;

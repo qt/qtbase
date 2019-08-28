@@ -660,10 +660,6 @@ QImage::Format QXcbScreen::format() const
 
 int QXcbScreen::forcedDpi() const
 {
-    static const int overrideDpi = qEnvironmentVariableIntValue("QT_FONT_DPI");
-    if (overrideDpi)
-        return overrideDpi;
-
     const int forcedDpi = m_virtualDesktop->forcedDpi();
     if (forcedDpi > 0)
         return forcedDpi;
@@ -677,11 +673,6 @@ QDpi QXcbScreen::logicalDpi() const
         return QDpi(forcedDpi, forcedDpi);
 
     return m_virtualDesktop->dpi();
-}
-
-qreal QXcbScreen::pixelDensity() const
-{
-    return m_pixelDensity;
 }
 
 QPlatformCursor *QXcbScreen::cursor() const
@@ -747,14 +738,6 @@ void QXcbScreen::updateGeometry(const QRect &geometry, uint8_t rotation)
     if (m_sizeMillimeters.isEmpty())
         m_sizeMillimeters = sizeInMillimeters(geometry.size(), m_virtualDesktop->dpi());
 
-    qreal dpi = forcedDpi();
-    if (dpi <= 0)
-        dpi = geometry.width() / physicalSize().width() * qreal(25.4);
-
-    // Use 128 as a reference DPI on small screens. This favors "small UI" over "large UI".
-    qreal referenceDpi = physicalSize().width() <= 320 ? 128 : 96;
-
-    m_pixelDensity = qMax(1, qRound(dpi/referenceDpi));
     m_geometry = geometry;
     m_availableGeometry = geometry & m_virtualDesktop->workArea();
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);

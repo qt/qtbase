@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -111,6 +111,9 @@ public:
 
     bool isNavigationBarVisible() const;
     bool isGridVisible() const;
+
+    QCalendar calendar() const;
+    void setCalendar(QCalendar calendar);
 
     SelectionMode selectionMode() const;
     void setSelectionMode(SelectionMode mode);
