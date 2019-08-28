@@ -1596,6 +1596,13 @@ endfunction()
 function(qt_get_module_for_plugin target target_type)
     qt_internal_get_qt_all_known_modules(known_modules)
     foreach(qt_module ${known_modules})
+        get_target_property(module_type "${QT_CMAKE_EXPORT_NAMESPACE}::${qt_module}" TYPE)
+        # Assuming interface libraries can't have plugins. Otherwise we'll need to fix the property
+        # name, because the current one would be invalid for interface libraries.
+        if(module_type STREQUAL "INTERFACE_LIBRARY")
+            continue()
+        endif()
+
         get_target_property(plugin_types
                            "${QT_CMAKE_EXPORT_NAMESPACE}::${qt_module}"
                             MODULE_PLUGIN_TYPES)
