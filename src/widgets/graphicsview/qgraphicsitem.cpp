@@ -11523,9 +11523,11 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change)
     case QGraphicsItem::ItemFlagsHaveChanged:
         str = "ItemFlagsHaveChanged";
         break;
+#if QT_DEPRECATED_SINCE(5, 14)
     case QGraphicsItem::ItemMatrixChange:
         str = "ItemMatrixChange";
         break;
+#endif
     case QGraphicsItem::ItemParentChange:
         str = "ItemParentChange";
         break;

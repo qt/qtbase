@@ -65,16 +65,19 @@ class QWidgetRepaintManager;
 
 class Q_AUTOTEST_EXPORT QWidgetRepaintManager
 {
+    Q_GADGET
 public:
     enum UpdateTime {
         UpdateNow,
         UpdateLater
     };
+    Q_ENUM(UpdateTime)
 
     enum BufferState{
         BufferValid,
         BufferInvalid
     };
+    Q_ENUM(BufferState)
 
     QWidgetRepaintManager(QWidget *t);
     ~QWidgetRepaintManager();
@@ -115,7 +118,7 @@ private:
 
     void markNeedsFlush(QWidget *widget, const QRegion &region = QRegion());
 
-    void flush(QWidget *widget = nullptr);
+    void flush();
     void flush(QWidget *widget, const QRegion &region, QPlatformTextureList *widgetTextures);
 
     bool isDirty() const;
