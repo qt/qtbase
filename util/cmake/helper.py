@@ -113,6 +113,7 @@ _qt_library_map = [
     LibraryMapping('main-lib', 'Qt6', 'Qt::AppManMain', extra = ['COMPONENTS', 'AppManMain']),
     LibraryMapping('manager-lib', 'Qt6', 'Qt::AppManManager', extra = ['COMPONENTS', 'AppManManager']),
     LibraryMapping('monitor-lib', 'Qt6', 'Qt::AppManMonitor', extra = ['COMPONENTS', 'AppManMonitor']),
+    LibraryMapping('mqtt', 'Qt6', 'Qt::Mqtt', extra = ['COMPONENTS', 'Mqtt']),
     LibraryMapping('multimedia', 'Qt6', 'Qt::Multimedia', extra = ['COMPONENTS', 'Multimedia']),
     LibraryMapping('multimediawidgets', 'Qt6', 'Qt::MultimediaWidgets', extra = ['COMPONENTS', 'MultimediaWidgets']),
     LibraryMapping('network', 'Qt6', 'Qt::Network', extra = ['COMPONENTS', 'Network']),
