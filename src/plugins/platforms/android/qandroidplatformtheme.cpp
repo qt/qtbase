@@ -464,7 +464,8 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
             return QStringList(QLatin1String("android"));
         }
         return QStringList(QLatin1String("fusion"));
-
+    case DialogButtonBoxLayout:
+        return QVariant(QPlatformDialogHelper::AndroidLayout);
     case MouseDoubleClickDistance:
     {
             int minimumDistance = qEnvironmentVariableIntValue("QT_ANDROID_MINIMUM_MOUSE_DOUBLE_CLICK_DISTANCE");
@@ -488,8 +489,6 @@ QVariant QAndroidPlatformTheme::themeHint(ThemeHint hint) const
 
             Q_FALLTHROUGH();
     }
-    case DialogButtonBoxLayout:
-        return QVariant(QPlatformDialogHelper::AndroidLayout);
     default:
         return QPlatformTheme::themeHint(hint);
     }
