@@ -566,6 +566,10 @@ function(qt_generate_module_pri_file target target_path config_module_name pri_f
                         "${property_prefix}QT_ENABLED_PRIVATE_FEATURES")
     get_target_property(disabled_private_features "${target}"
                         "${property_prefix}QT_DISABLED_PRIVATE_FEATURES")
+    qt_correct_features(enabled_features "${enabled_features}")
+    qt_correct_features(disabled_features "${disabled_features}")
+    qt_correct_features(enabled_private_features "${enabled_private_features}")
+    qt_correct_features(disabled_private_features "${disabled_private_features}")
 
     foreach(var enabled_features disabled_features enabled_private_features disabled_private_features)
         if(${var} STREQUAL "${var}-NOTFOUND")
@@ -575,11 +579,31 @@ function(qt_generate_module_pri_file target target_path config_module_name pri_f
         endif()
     endforeach()
 
+    set(module_internal_config v2)
+    if(NOT QT_FEATURE_shared)
+        list(APPEND module_internal_config staticlib)
+    endif()
+    if(arg_INTERNAL_MODULE)
+        list(APPEND module_internal_config internal_module)
+    endif()
+
+    get_target_property(target_type ${target} TYPE)
+    if (NOT target_type STREQUAL "INTERFACE_LIBRARY")
+        get_target_property(is_fw ${target} FRAMEWORK)
+        if(is_fw)
+            list(APPEND module_internal_config lib_bundle)
+        endif()
+    endif()
+
+    # TODO: Add the value 'ltcg' to module_internal_config if LTCG is turned on.
+
+    list(JOIN module_internal_config " " joined_module_internal_config)
+
     if(arg_QMAKE_MODULE_CONFIG)
-        string(REPLACE ";" " " module_config "${arg_QMAKE_MODULE_CONFIG}")
-        set(module_config "\nQT.${module_config_name}.CONFIG = ${module_config}")
+        string(REPLACE ";" " " module_build_config "${arg_QMAKE_MODULE_CONFIG}")
+        set(module_build_config "\nQT.${config_module_name}.CONFIG = ${module_build_config}")
     else()
-        set(module_config "")
+        set(module_build_config "")
     endif()
 
     if (NOT ${arg_INTERNAL_MODULE})
@@ -598,10 +622,10 @@ QT.${config_module_name}.frameworks =
 QT.${config_module_name}.bins = $$QT_MODULE_BIN_BASE
 QT.${config_module_name}.depends =
 QT.${config_module_name}.uses =
-QT.${config_module_name}.module_config = v2
+QT.${config_module_name}.module_config = ${joined_module_internal_config}
 QT.${config_module_name}.DEFINES = QT_${module_define}_LIB
 QT.${config_module_name}.enabled_features = ${enabled_features}
-QT.${config_module_name}.disabled_features = ${disabled_features}${module_config}
+QT.${config_module_name}.disabled_features = ${disabled_features}${module_build_config}
 QT_MODULES += ${config_module_name}
 "
         )
@@ -621,7 +645,7 @@ QT.${config_module_name}_private.includes = $$QT_MODULE_INCLUDE_BASE/${module}/$
 QT.${config_module_name}_private.frameworks =
 QT.${config_module_name}_private.depends = ${config_module_name}
 QT.${config_module_name}_private.uses =
-QT.${config_module_name}_private.module_config = v2
+QT.${config_module_name}_private.module_config = ${joined_module_internal_config}
 QT.${config_module_name}_private.enabled_features = ${enabled_private_features}
 QT.${config_module_name}_private.disabled_features = ${disabled_private_features}
 "
@@ -630,6 +654,59 @@ QT.${config_module_name}_private.disabled_features = ${disabled_private_features
     set("${pri_files_var}" "${pri_files}" PARENT_SCOPE)
 endfunction()
 
+function(qt_cmake_build_type_to_qmake_build_config out_var build_type)
+    if(build_type STREQUAL "Debug")
+        set(cfg debug)
+    else()
+        set(cfg release)
+    endif()
+    set(${out_var} ${cfg} PARENT_SCOPE)
+endfunction()
+
+function(qt_guess_qmake_build_config out_var)
+    if(QT_GENERATOR_IS_MULTI_CONFIG)
+        unset(cfg)
+        foreach(config_type ${CMAKE_CONFIGURATION_TYPES})
+            qt_cmake_build_type_to_qmake_build_config(tmp ${config_type})
+            list(APPEND cfg ${tmp})
+        endforeach()
+        if(cfg)
+            list(REMOVE_DUPLICATES cfg)
+        else()
+            set(cfg debug)
+        endif()
+    else()
+        qt_cmake_build_type_to_qmake_build_config(cfg ${CMAKE_BUILD_TYPE})
+    endif()
+    set(${out_var} ${cfg} PARENT_SCOPE)
+endfunction()
+
+function(qt_correct_features out_var features)
+    set(corrected_features "")
+    foreach(feature ${features})
+        get_property(feature_original_name GLOBAL PROPERTY "QT_FEATURE_ORIGINAL_NAME_${feature}")
+        list(APPEND corrected_features "${feature_original_name}")
+    endforeach()
+    set(${out_var} ${corrected_features} PARENT_SCOPE)
+endfunction()
+
+# Get original names for config values (which correspond to feature names) and use them if they
+# exist, otherwise just use the config value (which might be the case when a config value has
+# a custom name).
+function(qt_correct_config out_var config)
+    set(corrected_config "")
+    foreach(name ${config})
+        get_property(feature_original_name GLOBAL PROPERTY "QT_FEATURE_ORIGINAL_NAME_${name}")
+        if(feature_original_name)
+            list(APPEND corrected_config "${feature_original_name}")
+        else()
+            list(APPEND corrected_config "${name}")
+        endif()
+    endforeach()
+    set(${out_var} ${corrected_config} PARENT_SCOPE)
+endfunction()
+
+# Creates mkspecs/qconfig.pri which contains public global features among other things.
 function(qt_generate_global_config_pri_file)
     qt_path_join(qconfig_pri_target_path ${PROJECT_BINARY_DIR} ${INSTALL_MKSPECSDIR})
     qt_path_join(qconfig_pri_target_path "${qconfig_pri_target_path}" "qconfig.pri")
@@ -637,8 +714,11 @@ function(qt_generate_global_config_pri_file)
     get_target_property(enabled_features GlobalConfig INTERFACE_QT_ENABLED_PUBLIC_FEATURES)
     get_target_property(disabled_features GlobalConfig INTERFACE_QT_DISABLED_PUBLIC_FEATURES)
 
-    string (REPLACE ";" " " enabled_features "${enabled_features}")
-    string (REPLACE ";" " " disabled_features "${disabled_features}")
+    qt_correct_features(corrected_enabled_features "${enabled_features}")
+    qt_correct_features(corrected_disabled_features "${disabled_features}")
+
+    string (REPLACE ";" " " corrected_enabled_features "${corrected_enabled_features}")
+    string (REPLACE ";" " " corrected_disabled_features "${corrected_disabled_features}")
 
     # Add some required CONFIG entries.
     set(config_entries "")
@@ -650,21 +730,85 @@ function(qt_generate_global_config_pri_file)
     list(APPEND config_entries "${qt_build_config_type}")
     string (REPLACE ";" " " config_entries "${config_entries}")
 
+    get_target_property(public_config GlobalConfig INTERFACE_QT_QMAKE_PUBLIC_CONFIG)
+    get_target_property(qt_public_config GlobalConfig INTERFACE_QT_QMAKE_PUBLIC_QT_CONFIG)
+    qt_correct_config(corrected_public_config "${public_config}")
+    qt_correct_config(corrected_qt_public_config "${qt_public_config}")
+    qt_guess_qmake_build_config(qmake_build_config)
+    list(APPEND corrected_qt_public_config ${qmake_build_config})
+
+    list(JOIN corrected_public_config " " public_config_joined)
+    list(JOIN corrected_qt_public_config " " qt_public_config_joined)
+
     file(GENERATE
         OUTPUT "${qconfig_pri_target_path}"
         CONTENT
         "QT_ARCH = ${TEST_architecture_arch}
 QT_BUILDABI = ${TEST_buildAbi}
-QT.global.enabled_features = ${enabled_features}
-QT.global.disabled_features = ${disabled_features}
+QT.global.enabled_features = ${corrected_enabled_features}
+QT.global.disabled_features = ${corrected_disabled_features}
+QT.global.disabled_features += release build_all
+QT_CONFIG += ${qt_public_config_joined}
+CONFIG += ${config_entries} ${public_config_joined}
 QT_VERSION = ${PROJECT_VERSION}
 QT_MAJOR_VERSION = ${PROJECT_VERSION_MAJOR}
 QT_MINOR_VERSION = ${PROJECT_VERSION_MINOR}
 QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
-CONFIG += ${config_entries}
 "
     )
     qt_install(FILES "${qconfig_pri_target_path}" DESTINATION ${INSTALL_MKSPECSDIR})
+endfunction()
+
+# Creates mkspecs/qmodule.pri which contains private global features among other things.
+function(qt_generate_global_module_pri_file)
+    qt_path_join(qmodule_pri_target_path ${PROJECT_BINARY_DIR} mkspecs)
+    qt_path_join(qmodule_pri_target_path "${qmodule_pri_target_path}" "qmodule.pri")
+
+    get_target_property(enabled_features GlobalConfig INTERFACE_QT_ENABLED_PRIVATE_FEATURES)
+    get_target_property(disabled_features GlobalConfig INTERFACE_QT_DISABLED_PRIVATE_FEATURES)
+
+    qt_correct_features(corrected_enabled_features "${enabled_features}")
+    qt_correct_features(corrected_disabled_features "${disabled_features}")
+
+    string (REPLACE ";" " " corrected_enabled_features "${corrected_enabled_features}")
+    string (REPLACE ";" " " corrected_disabled_features "${corrected_disabled_features}")
+
+    set(corrected_private_config "")
+    get_target_property(private_config GlobalConfig INTERFACE_QT_QMAKE_PRIVATE_CONFIG)
+    qt_correct_config(corrected_private_config "${private_config}")
+    list(JOIN corrected_private_config " " private_config_joined)
+
+    file(GENERATE
+        OUTPUT "${qmodule_pri_target_path}"
+        CONTENT
+        "QT.global_private.enabled_features = ${corrected_enabled_features}
+QT.global_private.disabled_features = ${corrected_disabled_features}
+CONFIG += ${private_config_joined}
+"
+    )
+    qt_install(FILES "${qmodule_pri_target_path}" DESTINATION mkspecs)
+endfunction()
+
+function(qt_generate_qt_conf)
+    qt_path_join(qt_conf__path ${PROJECT_BINARY_DIR} "bin" "qt.conf")
+
+    file(GENERATE
+        OUTPUT "${qt_conf__path}"
+        CONTENT
+        "[EffectivePaths]
+Prefix=..
+[DevicePaths]
+Prefix=${CMAKE_INSTALL_PREFIX}
+[Paths]
+Prefix=${CMAKE_INSTALL_PREFIX}
+HostPrefix=${CMAKE_INSTALL_PREFIX}
+Sysroot=
+SysrootifyPrefix=false
+TargetSpec=${QT_QMAKE_TARGET_MKSPEC}
+HostSpec=${QT_QMAKE_HOST_MKSPEC}
+[EffectiveSourcePaths]
+Prefix=${CMAKE_SOURCE_DIR}
+")
 endfunction()
 
 # Takes a list of path components and joins them into one path separated by forward slashes "/",
@@ -813,6 +957,10 @@ function(qt_ensure_sync_qt)
         message(STATUS "Using source syncqt found at: ${QT_SYNCQT}")
 
         qt_path_join(syncqt_install_dir ${QT_INSTALL_DIR} ${INSTALL_LIBEXECDIR})
+        qt_copy_or_install(PROGRAMS "${SYNCQT_FROM_SOURCE}"
+                           DESTINATION "${syncqt_install_dir}")
+
+        qt_path_join(syncqt_install_dir ${QT_INSTALL_DIR} ${INSTALL_BINDIR})
         qt_copy_or_install(PROGRAMS "${SYNCQT_FROM_SOURCE}"
                            DESTINATION "${syncqt_install_dir}")
     elseif(QT_HOST_PATH)
