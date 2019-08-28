@@ -23,10 +23,26 @@ function(qt_feature_module_begin)
     set(__QtFeature_private_extra "" PARENT_SCOPE)
     set(__QtFeature_public_extra "" PARENT_SCOPE)
 
+    set(__QtFeature_config_definitions "" PARENT_SCOPE)
+
     set(__QtFeature_define_definitions "" PARENT_SCOPE)
 endfunction()
 
+function(qt_feature_normalize_name name out_var)
+    # Normalize the feature name to something CMake can deal with.
+    if(name MATCHES "c\\+\\+")
+        string(REGEX REPLACE "[^a-zA-Z0-9_]" "x" name "${name}")
+    else()
+        string(REGEX REPLACE "[^a-zA-Z0-9_]" "_" name "${name}")
+    endif()
+    set(${out_var} "${name}" PARENT_SCOPE)
+endfunction()
+
 function(qt_feature feature)
+    set(original_name "${feature}")
+    qt_feature_normalize_name("${feature}" feature)
+    set_property(GLOBAL PROPERTY QT_FEATURE_ORIGINAL_NAME_${feature} "${original_name}")
+
     qt_parse_all_arguments(arg "qt_feature"
         "PRIVATE;PUBLIC"
         "LABEL;PURPOSE;SECTION;" "AUTODETECT;CONDITION;ENABLE;DISABLE;EMIT_IF" ${ARGN})
@@ -260,7 +276,63 @@ function(qt_evaluate_feature feature)
     qt_feature_set_value("${feature}" "${cache}" "${emit_if}" "${condition}" "${arg_LABEL}")
 endfunction()
 
+function(qt_feature_config feature config_var_name)
+    qt_feature_normalize_name("${feature}" feature)
+    qt_parse_all_arguments(arg "qt_feature_config" "NEGATE" "NAME" "" ${ARGN})
+
+    # Store all the config related info in a unique variable key.
+    set(key_name "_QT_FEATURE_CONFIG_DEFINITION_${feature}_${config_var_name}")
+    set(${key_name} "FEATURE;${feature};CONFIG_VAR_NAME;${config_var_name};${ARGN}" PARENT_SCOPE)
+
+    # Store the key for later evaluation.
+    list(APPEND __QtFeature_config_definitions "${key_name}")
+
+    set(__QtFeature_config_definitions ${__QtFeature_config_definitions} PARENT_SCOPE)
+endfunction()
+
+function(qt_evaluate_qmake_config_values key)
+    if(NOT DEFINED ${key})
+        qt_debug_print_variables(DEDUP MATCH "^_QT_FEATURE_CONFIG_DEFINITION")
+        message(FATAL_ERROR
+                "Attempting to evaluate feature config ${key} but its definition is missing. ")
+    endif()
+
+    cmake_parse_arguments(arg
+        "NEGATE"
+        "FEATURE;NAME;CONFIG_VAR_NAME"
+        "" ${${key}})
+
+    set(expected "NOT")
+    if (arg_NEGATE)
+        set(expected "")
+    endif()
+
+    # If no custom name is specified, then the config value is the same as the feature name.
+    if(NOT arg_NAME)
+        set(arg_NAME "${arg_FEATURE}")
+    endif()
+
+    # The feature condition is false, there is no need to export any config values.
+    if(${expected} ${QT_FEATURE_${arg_FEATURE}})
+        return()
+    endif()
+
+    if(arg_CONFIG_VAR_NAME STREQUAL "QMAKE_PUBLIC_CONFIG")
+        list(APPEND __QtFeature_qmake_public_config "${arg_NAME}")
+        set(__QtFeature_qmake_public_config "${__QtFeature_qmake_public_config}" PARENT_SCOPE)
+    endif()
+    if(arg_CONFIG_VAR_NAME STREQUAL "QMAKE_PRIVATE_CONFIG")
+        list(APPEND __QtFeature_qmake_private_config "${arg_NAME}")
+        set(__QtFeature_qmake_private_config "${__QtFeature_qmake_private_config}" PARENT_SCOPE)
+    endif()
+    if(arg_CONFIG_VAR_NAME STREQUAL "QMAKE_PUBLIC_QT_CONFIG")
+        list(APPEND __QtFeature_qmake_public_qt_config "${arg_NAME}")
+        set(__QtFeature_qmake_public_qt_config "${__QtFeature_qmake_public_qt_config}" PARENT_SCOPE)
+    endif()
+endfunction()
+
 function(qt_feature_definition feature name)
+    qt_feature_normalize_name("${feature}" feature)
     qt_parse_all_arguments(arg "qt_feature_definition" "NEGATE" "VALUE" "" ${ARGN})
 
     # Store all the define related info in a unique variable key.
@@ -389,6 +461,11 @@ function(qt_feature_module_end)
        endif()
     endforeach()
 
+    foreach(key ${__QtFeature_config_definitions})
+        qt_evaluate_qmake_config_values(${key})
+        unset(${key} PARENT_SCOPE)
+    endforeach()
+
     foreach(key ${__QtFeature_define_definitions})
         qt_evaluate_feature_definition(${key})
         unset(${key} PARENT_SCOPE)
@@ -428,7 +505,7 @@ function(qt_feature_module_end)
             set(propertyPrefix "INTERFACE_")
         else()
             set(propertyPrefix "")
-            set_target_properties("${target}" PROPERTIES EXPORT_PROPERTIES "QT_ENABLED_PUBLIC_FEATURES;QT_DISABLED_PUBLIC_FEATURES;QT_ENABLED_PRIVATE_FEATURES;QT_DISABLED_PRIVATE_FEATURES;MODULE_PLUGIN_TYPES;QT_PLUGINS")
+            set_target_properties("${target}" PROPERTIES EXPORT_PROPERTIES "QT_ENABLED_PUBLIC_FEATURES;QT_DISABLED_PUBLIC_FEATURES;QT_ENABLED_PRIVATE_FEATURES;QT_DISABLED_PRIVATE_FEATURES;MODULE_PLUGIN_TYPES;QT_PLUGINS;QT_QMAKE_PUBLIC_CONFIG;QT_QMAKE_PRIVATE_CONFIG;QT_QMAKE_PUBLIC_QT_CONFIG")
         endif()
         foreach(visibility public private)
             string(TOUPPER "${visibility}" capitalVisibility)
@@ -438,6 +515,36 @@ function(qt_feature_module_end)
                 set_property(TARGET "${target}" PROPERTY ${propertyPrefix}QT_${capitalState}_${capitalVisibility}_FEATURES "${${state}_${visibility}_features}")
             endforeach()
         endforeach()
+
+        set_property(TARGET "${target}"
+                    PROPERTY ${propertyPrefix}QT_QMAKE_PUBLIC_CONFIG
+                    "${__QtFeature_qmake_public_config}")
+        set_property(TARGET "${target}"
+                     PROPERTY ${propertyPrefix}QT_QMAKE_PRIVATE_CONFIG
+                     "${__QtFeature_qmake_private_config}")
+        set_property(TARGET "${target}"
+                     PROPERTY ${propertyPrefix}QT_QMAKE_PUBLIC_QT_CONFIG
+                     "${__QtFeature_qmake_public_qt_config}")
+
+        # Config values were the old-school features before actual configure.json features were
+        # implemented. Therefore "CONFIG+=foo" values should be considered features as well,
+        # so that CMake can find them when building qtmultimedia for example.
+        if(__QtFeature_qmake_public_config)
+            set_property(TARGET "${target}"
+                         APPEND PROPERTY ${propertyPrefix}QT_ENABLED_PUBLIC_FEATURES
+                         ${__QtFeature_qmake_public_config})
+        endif()
+        if(__QtFeature_qmake_private_config)
+            set_property(TARGET "${target}"
+                         APPEND PROPERTY ${propertyPrefix}QT_ENABLED_PRIVATE_FEATURES
+                         ${__QtFeature_qmake_private_config})
+        endif()
+        if(__QtFeature_qmake_public_qt_config)
+            set_property(TARGET "${target}"
+                         APPEND PROPERTY ${propertyPrefix}QT_ENABLED_PUBLIC_FEATURES
+                         ${__QtFeature_qmake_public_qt_config})
+        endif()
+
         qt_feature_copy_global_config_features_to_core(${target})
     endif()
 
@@ -477,6 +584,19 @@ function(qt_feature_copy_global_config_features_to_core target)
                 set(total_values ${core_values} ${global_values})
                 set_property(TARGET Core PROPERTY ${core_property_name} ${total_values})
             endforeach()
+        endforeach()
+
+        set(config_property_names
+            QT_QMAKE_PUBLIC_CONFIG QT_QMAKE_PRIVATE_CONFIG QT_QMAKE_PUBLIC_QT_CONFIG )
+        foreach(property_name ${config_property_names})
+            set(core_property_name "${property_name}")
+            set(global_property_name "INTERFACE_${core_property_name}")
+
+            get_property(core_values TARGET Core PROPERTY ${core_property_name})
+            get_property(global_values TARGET GlobalConfig PROPERTY ${global_property_name})
+
+            set(total_values ${core_values} ${global_values})
+            set_property(TARGET Core PROPERTY ${core_property_name} ${total_values})
         endforeach()
     endif()
 endfunction()
