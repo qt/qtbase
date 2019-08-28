@@ -835,9 +835,6 @@ defineTest(qtConfOutput_preparePaths) {
     addConfStr($$[QMAKE_SPEC])
 
     $${currentConfig}.output.qconfigSource = \
-        "/* Installation date */" \
-        "static const char qt_configure_installation     [12+11]  = \"qt_instdate=2012-12-20\";" \
-        "" \
         "/* Installation Info */" \
         "static const char qt_configure_prefix_path_str  [12+256] = \"qt_prfxpath=$$config.input.prefix\";" \
         "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \
