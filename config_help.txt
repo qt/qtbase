@@ -205,7 +205,6 @@ Build environment:
                          [$ANDROID_NDK_HOST]
   -android-abis .......  Comma separated Android abis, default is:
                          armeabi-v7a,arm64-v8a,x86,x86_64
-  -android-toolchain-version ... Set Android toolchain version
   -android-style-assets  Automatically extract style assets from the device at
                          run time. This option makes the Android style behave
                          correctly, but also makes the Android platform plugin
