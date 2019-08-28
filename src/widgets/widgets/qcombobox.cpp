@@ -2539,21 +2539,6 @@ QSize QComboBox::sizeHint() const
 }
 
 #ifdef Q_OS_MAC
-
-namespace {
-struct IndexSetter {
-    int index;
-    QComboBox *cb;
-
-    void operator()(void)
-    {
-        cb->setCurrentIndex(index);
-        emit cb->activated(index);
-        emit cb->activated(cb->itemText(index));
-    }
-};
-}
-
 void QComboBoxPrivate::cleanupNativePopup()
 {
     if (!m_platformMenu)
