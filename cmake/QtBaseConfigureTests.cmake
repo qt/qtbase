@@ -3,9 +3,20 @@ function(run_config_test_architecture)
     set(qt_base_configure_tests_vars_to_export)
     # Test architecture
     set(_arch_file "${CMAKE_CURRENT_BINARY_DIR}/architecture_test")
+    set(saved_executable_suffix "${CMAKE_EXECUTABLE_SUFFIX}")
+
+    # With emscripten the application entry point is a .js file (to be run with node for example), but the
+    # real "data" is in the .wasm file, so that's where we need to look for the ABI, etc. information.
+    if (EMSCRIPTEN)
+        set(CMAKE_EXECUTABLE_SUFFIX ".wasm")
+    endif()
+
     try_compile(_arch_result "${CMAKE_CURRENT_BINARY_DIR}"
         "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/arch/arch.cpp"
         COPY_FILE "${_arch_file}")
+
+    set(CMAKE_EXECUTABLE_SUFFIX "${saved_executable_suffix}")
+
     if (NOT _arch_result)
         message(FATAL_ERROR "Failed to compile architecture detection file.")
     endif()
