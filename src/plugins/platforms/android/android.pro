@@ -93,7 +93,3 @@ qtConfig(vulkan) {
 
 PLUGIN_TYPE = platforms
 load(qt_plugin)
-
-#Non-standard install directory, QTBUG-29859
-DESTDIR = $$DESTDIR/android
-target.path = $${target.path}/android
