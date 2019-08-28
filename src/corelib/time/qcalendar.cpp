@@ -810,7 +810,7 @@ bool QCalendar::isLuniSolar() const
 /*!
   Returns \c true if this calendar is solar.
 
-  A solar calendar is based primaril on the Sun's varying position in the sky,
+  A solar calendar is based primarily on the Sun's varying position in the sky,
   relative to the fixed stars.
 */
 bool QCalendar::isSolar() const
