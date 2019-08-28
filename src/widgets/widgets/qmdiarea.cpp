@@ -2493,13 +2493,6 @@ bool QMdiArea::event(QEvent *event)
 {
     Q_D(QMdiArea);
     switch (event->type()) {
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-    // QWidgetPrivate::hide_helper activates another sub-window when closing a
-    // modal dialog on Windows (see activateWindow() inside the ifdef).
-    case QEvent::WindowUnblocked:
-        d->activateCurrentWindow();
-        break;
-#endif
     case QEvent::WindowActivate: {
         d->isActivated = true;
         if (d->childWindows.isEmpty())
@@ -2557,11 +2550,7 @@ bool QMdiArea::eventFilter(QObject *object, QEvent *event)
 
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
         // Ingore key events without a Ctrl modifier (except for press/release on the modifier itself).
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        if (!(keyEvent->modifiers() & Qt::MetaModifier) && keyEvent->key() != Qt::Key_Meta)
-#else
         if (!(keyEvent->modifiers() & Qt::ControlModifier) && keyEvent->key() != Qt::Key_Control)
-#endif
             return QAbstractScrollArea::eventFilter(object, event);
 
         // Find closest mdi area (in case we have a nested workspace).
@@ -2576,11 +2565,7 @@ bool QMdiArea::eventFilter(QObject *object, QEvent *event)
         // 3) Ctrl-Shift-Tab (Tab, Tab, ...) -> iterate through all windows in the opposite
         //    direction (activatePreviousSubWindow())
         switch (keyEvent->key()) {
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        case Qt::Key_Meta:
-#else
         case Qt::Key_Control:
-#endif
             if (keyPress)
                 area->d_func()->startTabToPreviousTimer();
             else

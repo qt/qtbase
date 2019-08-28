@@ -267,10 +267,6 @@ void tst_QPixmap::fromImage()
     image.fill(0x7f7f7f7f);
 
     const QPixmap pixmap = QPixmap::fromImage(image);
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    if (pixmap.handle()->classId() == QPlatformPixmap::X11Class && !pixmap.x11PictureHandle())
-        QSKIP("Requires XRender support");
-#endif
     const QImage result = pixmap.toImage();
     image = image.convertToFormat(result.format());
     QCOMPARE(result, image);
@@ -491,11 +487,6 @@ void tst_QPixmap::fill()
     else
         pm = QPixmap(400, 400);
 
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    if (!bitmap && pm.handle()->classId() == QPlatformPixmap::X11Class && !pm.x11PictureHandle())
-        QSKIP("Requires XRender support");
-#endif
-
     pm.fill(color);
     if (syscolor && !bitmap && pm.depth() < 24) {
         QSKIP("Test does not work on displays without true color");
@@ -521,10 +512,6 @@ void tst_QPixmap::fill()
 void tst_QPixmap::fill_transparent()
 {
     QPixmap pixmap(10, 10);
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    if (pixmap.handle()->classId() == QPlatformPixmap::X11Class && !pixmap.x11PictureHandle())
-        QSKIP("Requires XRender support");
-#endif
     pixmap.fill(Qt::transparent);
     QVERIFY(pixmap.hasAlphaChannel());
 }

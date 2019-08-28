@@ -52,6 +52,7 @@
 #include <private/qlocale_tools_p.h>
 
 #include <qmutex.h>
+#include <QtCore/private/qlocking_p.h>
 
 #include <stdlib.h>
 #include <limits.h>
@@ -3367,7 +3368,7 @@ static QBasicMutex environmentMutex;
 */
 void qTzSet()
 {
-    QMutexLocker locker(&environmentMutex);
+    const auto locker = qt_scoped_lock(environmentMutex);
 #if defined(Q_OS_WIN)
     _tzset();
 #else
@@ -3381,7 +3382,7 @@ void qTzSet()
 */
 time_t qMkTime(struct tm *when)
 {
-    QMutexLocker locker(&environmentMutex);
+    const auto locker = qt_scoped_lock(environmentMutex);
     return mktime(when);
 }
 
@@ -3413,7 +3414,7 @@ time_t qMkTime(struct tm *when)
 */
 QByteArray qgetenv(const char *varName)
 {
-    QMutexLocker locker(&environmentMutex);
+    const auto locker = qt_scoped_lock(environmentMutex);
 #ifdef Q_CC_MSVC
     size_t requiredSize = 0;
     QByteArray buffer;
@@ -3481,7 +3482,7 @@ QByteArray qgetenv(const char *varName)
 QString qEnvironmentVariable(const char *varName, const QString &defaultValue)
 {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
-    QMutexLocker locker(&environmentMutex);
+    const auto locker = qt_scoped_lock(environmentMutex);
     QVarLengthArray<wchar_t, 32> wname(int(strlen(varName)) + 1);
     for (int i = 0; i < wname.size(); ++i) // wname.size() is correct: will copy terminating null
         wname[i] = uchar(varName[i]);
@@ -3529,7 +3530,7 @@ QString qEnvironmentVariable(const char *varName)
 */
 bool qEnvironmentVariableIsEmpty(const char *varName) noexcept
 {
-    QMutexLocker locker(&environmentMutex);
+    const auto locker = qt_scoped_lock(environmentMutex);
 #ifdef Q_CC_MSVC
     // we provide a buffer that can only hold the empty string, so
     // when the env.var isn't empty, we'll get an ERANGE error (buffer
@@ -3568,7 +3569,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) noexcept
     static const int MaxDigitsForOctalInt =
         (std::numeric_limits<uint>::digits + NumBinaryDigitsPerOctalDigit - 1) / NumBinaryDigitsPerOctalDigit;
 
-    QMutexLocker locker(&environmentMutex);
+    const auto locker = qt_scoped_lock(environmentMutex);
 #ifdef Q_CC_MSVC
     // we provide a buffer that can hold any int value:
     char buffer[MaxDigitsForOctalInt + 2]; // +1 for NUL +1 for optional '-'
@@ -3633,7 +3634,7 @@ int qEnvironmentVariableIntValue(const char *varName, bool *ok) noexcept
 */
 bool qEnvironmentVariableIsSet(const char *varName) noexcept
 {
-    QMutexLocker locker(&environmentMutex);
+    const auto locker = qt_scoped_lock(environmentMutex);
 #ifdef Q_CC_MSVC
     size_t requiredSize = 0;
     (void)getenv_s(&requiredSize, 0, 0, varName);
@@ -3663,7 +3664,7 @@ bool qEnvironmentVariableIsSet(const char *varName) noexcept
 */
 bool qputenv(const char *varName, const QByteArray& value)
 {
-    QMutexLocker locker(&environmentMutex);
+    const auto locker = qt_scoped_lock(environmentMutex);
 #if defined(Q_CC_MSVC)
     return _putenv_s(varName, value.constData()) == 0;
 #elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_HAIKU)
@@ -3694,7 +3695,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 */
 bool qunsetenv(const char *varName)
 {
-    QMutexLocker locker(&environmentMutex);
+    const auto locker = qt_scoped_lock(environmentMutex);
 #if defined(Q_CC_MSVC)
     return _putenv_s(varName, "") == 0;
 #elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_BSD4) || defined(Q_OS_HAIKU)

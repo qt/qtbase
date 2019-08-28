@@ -7566,19 +7566,6 @@ void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
 */
 void QGraphicsItem::updateMicroFocus()
 {
-#if !defined(QT_NO_IM) && 0 /* Used to be included in Qt4 for Q_WS_X11 */
-    if (QWidget *fw = QApplication::focusWidget()) {
-        if (scene()) {
-            for (int i = 0 ; i < scene()->views().count() ; ++i) {
-                if (scene()->views().at(i) == fw) {
-                    if (qApp)
-                        QGuiApplication::inputMethod()->update(Qt::ImQueryAll);
-                    break;
-                }
-            }
-        }
-    }
-#endif
 }
 
 /*!

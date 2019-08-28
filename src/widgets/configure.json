@@ -627,12 +627,6 @@
             "condition": "features.listview",
             "output": [ "publicFeature", "feature" ]
         },
-        "paint_debug": {
-            "label": "Painting Debug Utilities",
-            "purpose": "Enabled debugging painting with the environment variables QT_FLUSH_UPDATE and QT_FLUSH_PAINT.",
-            "section": "Painting",
-            "output": [ "publicFeature", "feature" ]
-        },
         "completer": {
             "label": "QCompleter",
             "purpose": "Provides completions based on an item model.",

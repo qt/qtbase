@@ -78,11 +78,6 @@ int QWidgetLineControl::redoTextLayout() const
     QTextLine l = m_textLayout.createLine();
     m_textLayout.endLayout();
 
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    if (m_threadChecks)
-        m_textLayoutThread = QThread::currentThread();
-#endif
-
     return qRound(l.ascent());
 }
 

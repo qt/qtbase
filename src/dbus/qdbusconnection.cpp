@@ -47,6 +47,7 @@
 #include <qvector.h>
 #include <qtimer.h>
 #include <qthread.h>
+#include <QtCore/private/qlocking_p.h>
 
 #include "qdbusconnectioninterface.h"
 #include "qdbuserror.h"
@@ -106,7 +107,7 @@ QDBusConnectionPrivate *QDBusConnectionManager::busConnection(QDBusConnection::B
     // (the event loop will resume delivery)
     bool suspendedDelivery = qApp && qApp->thread() == QThread::currentThread();
 
-    QMutexLocker lock(&defaultBusMutex);
+    const auto locker = qt_scoped_lock(defaultBusMutex);
     if (defaultBuses[type])
         return defaultBuses[type];
 
@@ -178,7 +179,7 @@ void QDBusConnectionManager::run()
     exec();
 
     // cleanup:
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     for (QHash<QString, QDBusConnectionPrivate *>::const_iterator it = connectionHash.constBegin();
          it != connectionHash.constEnd(); ++it) {
         QDBusConnectionPrivate *d = it.value();
@@ -240,7 +241,7 @@ QDBusConnectionPrivate *QDBusConnectionManager::connectToPeer(const QString &add
 
 void QDBusConnectionManager::executeConnectionRequest(QDBusConnectionManager::ConnectionRequestData *data)
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     const QString &name = *data->name;
     QDBusConnectionPrivate *&d = data->result;
 
@@ -428,7 +429,7 @@ QDBusConnection::QDBusConnection(const QString &name)
     if (name.isEmpty() || _q_manager.isDestroyed()) {
         d = 0;
     } else {
-        QMutexLocker locker(&_q_manager()->mutex);
+        const auto locker = qt_scoped_lock(_q_manager()->mutex);
         d = _q_manager()->connection(name);
         if (d)
             d->ref.ref();
@@ -537,7 +538,7 @@ QDBusConnection QDBusConnection::connectToPeer(const QString &address,
 void QDBusConnection::disconnectFromBus(const QString &name)
 {
     if (_q_manager()) {
-        QMutexLocker locker(&_q_manager()->mutex);
+        const auto locker = qt_scoped_lock(_q_manager()->mutex);
         QDBusConnectionPrivate *d = _q_manager()->connection(name);
         if (d && d->mode != QDBusConnectionPrivate::ClientMode)
             return;
@@ -558,7 +559,7 @@ void QDBusConnection::disconnectFromBus(const QString &name)
 void QDBusConnection::disconnectFromPeer(const QString &name)
 {
     if (_q_manager()) {
-        QMutexLocker locker(&_q_manager()->mutex);
+        const auto locker = qt_scoped_lock(_q_manager()->mutex);
         QDBusConnectionPrivate *d = _q_manager()->connection(name);
         if (d && d->mode != QDBusConnectionPrivate::PeerMode)
             return;

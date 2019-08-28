@@ -40,9 +40,6 @@
 #include <QPointer>
 #include <QObject>
 #include <QtCore/qmath.h>
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-#  include <QLibrary>
-#endif
 
 #include "qscrollerproperties.h"
 #include "private/qscrollerproperties_p.h"
@@ -73,10 +70,6 @@ QScrollerPropertiesPrivate *QScrollerPropertiesPrivate::defaults()
         spp.overshootDragDistanceFactor = qreal(1);
         spp.overshootScrollDistanceFactor = qreal(0.5);
         spp.overshootScrollTime = qreal(0.7);
-#  if 0 // Used to be included in Qt4 for Q_WS_WIN
-        if (QLibrary::resolve(QLatin1String("UxTheme"), "BeginPanningFeedback"))
-            spp.overshootScrollTime = qreal(0.35);
-#  endif
         spp.hOvershootPolicy = QScrollerProperties::OvershootWhenScrollable;
         spp.vOvershootPolicy = QScrollerProperties::OvershootWhenScrollable;
         spp.frameRate = QScrollerProperties::Standard;

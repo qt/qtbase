@@ -59,7 +59,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
 /*!
     \class QRhi
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Accelerated 2D/3D graphics API abstraction.
 
@@ -604,7 +605,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
 /*!
     \class QRhiInitParams
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Base class for backend-specific initialization parameters.
 
     Contains fields that are relevant to all backends.
@@ -612,7 +614,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
 /*!
     \class QRhiDepthStencilClearValue
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Specifies clear values for a depth or stencil buffer.
  */
 
@@ -679,7 +682,8 @@ QDebug operator<<(QDebug dbg, const QRhiDepthStencilClearValue &v)
 
 /*!
     \class QRhiViewport
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Specifies a viewport rectangle.
 
     Used with QRhiCommandBuffer::setViewport().
@@ -778,7 +782,8 @@ QDebug operator<<(QDebug dbg, const QRhiViewport &v)
 
 /*!
     \class QRhiScissor
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Specifies a scissor rectangle.
 
     Used with QRhiCommandBuffer::setScissor(). Setting a scissor rectangle is
@@ -857,7 +862,8 @@ QDebug operator<<(QDebug dbg, const QRhiScissor &s)
 
 /*!
     \class QRhiVertexInputBinding
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes a vertex input binding.
 
     Specifies the stride (in bytes, must be a multiple of 4), the
@@ -987,7 +993,8 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
 
 /*!
     \class QRhiVertexInputAttribute
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes a single vertex input element.
 
     The members specify the binding number, location, format, and offset for a
@@ -1140,7 +1147,8 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputAttribute &a)
 
 /*!
     \class QRhiVertexInputLayout
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the layout of vertex inputs consumed by a vertex shader.
 
     The vertex input layout is defined by the collections of
@@ -1199,7 +1207,8 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
 
 /*!
     \class QRhiShaderStage
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Specifies the type and the shader code for a shader stage in the pipeline.
  */
 
@@ -1283,7 +1292,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderStage &s)
 
 /*!
     \class QRhiColorAttachment
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the a single color attachment of a render target.
 
     A color attachment is either a QRhiTexture or a QRhiRenderBuffer. The
@@ -1341,7 +1351,8 @@ QRhiColorAttachment::QRhiColorAttachment(QRhiRenderBuffer *renderBuffer)
 
 /*!
     \class QRhiTextureRenderTargetDescription
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the color and depth or depth/stencil attachments of a render target.
 
     A texture render target has zero or more textures as color attachments,
@@ -1396,7 +1407,8 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
 
 /*!
     \class QRhiTextureSubresourceUploadDescription
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the source for one mip level in a layer in a texture upload operation.
 
     The source content is specified either as a QImage or as a raw blob. The
@@ -1476,7 +1488,8 @@ QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription
 
 /*!
     \class QRhiTextureUploadEntry
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes one layer (face for cubemaps) in a texture upload operation.
  */
 
@@ -1504,7 +1517,8 @@ QRhiTextureUploadEntry::QRhiTextureUploadEntry(int layer, int level,
 
 /*!
     \class QRhiTextureUploadDescription
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes a texture upload operation.
 
     Used with QRhiResourceUpdateBatch::uploadTexture(). That function has two
@@ -1609,7 +1623,8 @@ void QRhiTextureUploadDescription::append(const QRhiTextureUploadEntry &entry)
 
 /*!
     \class QRhiTextureCopyDescription
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes a texture-to-texture copy operation.
 
     An empty pixelSize() indicates that the entire subresource is to be copied.
@@ -1632,7 +1647,8 @@ void QRhiTextureUploadDescription::append(const QRhiTextureUploadEntry &entry)
 
 /*!
     \class QRhiReadbackDescription
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes a readback (reading back texture contents from possibly GPU-only memory) operation.
 
     The source of the readback operation is either a QRhiTexture or the
@@ -1678,7 +1694,8 @@ QRhiReadbackDescription::QRhiReadbackDescription(QRhiTexture *texture)
 
 /*!
     \class QRhiReadbackResult
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the results of a potentially asynchronous readback operation.
 
     When \l completed is set, the function is invoked when the \l data is
@@ -1688,13 +1705,15 @@ QRhiReadbackDescription::QRhiReadbackDescription(QRhiTexture *texture)
 
 /*!
     \class QRhiNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Base class for classes exposing backend-specific collections of native resource objects.
  */
 
 /*!
     \class QRhiResource
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Base class for classes encapsulating native resource objects.
  */
 
@@ -1813,7 +1832,8 @@ quint64 QRhiResource::globalResourceId() const
 
 /*!
     \class QRhiBuffer
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Vertex, index, or uniform (constant) buffer resource.
  */
 
@@ -1914,7 +1934,8 @@ QRhiResource::Type QRhiBuffer::resourceType() const
 
 /*!
     \class QRhiRenderBuffer
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Renderbuffer resource.
 
     Renderbuffers cannot be sampled or read but have some benefits over
@@ -1990,7 +2011,8 @@ QRhiResource::Type QRhiRenderBuffer::resourceType() const
 
 /*!
     \class QRhiTexture
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Texture resource.
  */
 
@@ -2158,7 +2180,8 @@ bool QRhiTexture::buildFrom(const QRhiNativeHandles *src)
 
 /*!
     \class QRhiSampler
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Sampler resource.
  */
 
@@ -2220,7 +2243,8 @@ QRhiResource::Type QRhiSampler::resourceType() const
 
 /*!
     \class QRhiRenderPassDescriptor
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Render pass resource.
  */
 
@@ -2242,7 +2266,8 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
 
 /*!
     \class QRhiRenderTarget
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Represents an onscreen (swapchain) or offscreen (texture) render target.
  */
 
@@ -2279,7 +2304,8 @@ QRhiResource::Type QRhiRenderTarget::resourceType() const
 
 /*!
     \class QRhiTextureRenderTarget
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Texture render target resource.
 
     A texture render target allows rendering into one or more textures,
@@ -2396,7 +2422,8 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
 
 /*!
     \class QRhiShaderResourceBindings
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Encapsulates resources for making buffer, texture, sampler resources visible to shaders.
 
     A QRhiShaderResourceBindings is a collection of QRhiShaderResourceBinding
@@ -2513,7 +2540,8 @@ bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBind
 
 /*!
     \class QRhiShaderResourceBinding
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the shader resource for a single binding point.
 
     A QRhiShaderResourceBinding cannot be constructed directly. Instead, use
@@ -3038,7 +3066,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 
 /*!
     \class QRhiGraphicsPipeline
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Graphics pipeline state resource.
 
     \note Setting the shader resource bindings is mandatory. The referenced
@@ -3193,7 +3222,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 
 /*!
     \class QRhiGraphicsPipeline::TargetBlend
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the blend state for one color attachment.
 
     Defaults to color write enabled, blending disabled. The blend values are
@@ -3203,7 +3233,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 
 /*!
     \class QRhiGraphicsPipeline::StencilOpState
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the stencil operation state.
  */
 
@@ -3258,7 +3289,8 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
 
 /*!
     \class QRhiSwapChain
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Swapchain resource.
 
     A swapchain enables presenting rendering results to a surface. A swapchain
@@ -3520,7 +3552,8 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
 
 /*!
     \class QRhiComputePipeline
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Compute pipeline state resource.
 
     \note Setting the shader resource bindings is mandatory. The referenced
@@ -3548,7 +3581,8 @@ QRhiComputePipeline::QRhiComputePipeline(QRhiImplementation *rhi)
 
 /*!
     \class QRhiCommandBuffer
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Command buffer resource.
 
     Not creatable by applications at the moment. The only ways to obtain a
@@ -4008,7 +4042,8 @@ void QRhi::runCleanup()
 
 /*!
     \class QRhiResourceUpdateBatch
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Records upload and copy type of operations.
 
     With QRhi it is no longer possible to perform copy type of operations at

@@ -52,6 +52,7 @@
 #include "qstringlist.h"
 #include "qstringmatcher.h"
 #include "qvector.h"
+#include "private/qlocking_p.h"
 
 #include <limits.h>
 #include <algorithm>
@@ -3825,7 +3826,7 @@ static QBasicMutex engineCacheMutex;
 static void derefEngine(QRegExpEngine *eng, const QRegExpEngineKey &key)
 {
 #if !defined(QT_NO_REGEXP_OPTIM)
-    QMutexLocker locker(&engineCacheMutex);
+    const auto locker = qt_scoped_lock(engineCacheMutex);
     if (!eng->ref.deref()) {
         if (QRECache *c = engineCache()) {
             c->unusedEngines.insert(key, eng, 4 + key.pattern.length() / 4);
@@ -3846,7 +3847,7 @@ static void prepareEngine_helper(QRegExpPrivate *priv)
     Q_ASSERT(!priv->eng);
 
 #if !defined(QT_NO_REGEXP_OPTIM)
-    QMutexLocker locker(&engineCacheMutex);
+    const auto locker = qt_scoped_lock(engineCacheMutex);
     if (QRECache *c = engineCache()) {
         priv->eng = c->unusedEngines.take(priv->engineKey);
         if (!priv->eng)

@@ -636,7 +636,7 @@ void QQnxScreenEventHandler::handleDisplayEvent(screen_event_t event)
         // We never remove the primary display, the qpa plugin doesn't support that and it crashes.
         // To support it, this would be needed:
         // - Adjust all qnx qpa code which uses screens
-        // - Make QWidgetBackingStore not dereference a null paint device
+        // - Make QWidgetRepaintManager not dereference a null paint device
         // - Create platform resources ( QQnxWindow ) for all QWindow because they would be deleted
         //   when you delete the screen
 

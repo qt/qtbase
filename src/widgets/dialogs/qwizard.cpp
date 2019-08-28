@@ -1336,7 +1336,7 @@ void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
     int extraHeight = 0;
 #if QT_CONFIG(style_windowsvista)
     if (isVistaThemeEnabled())
-        extraHeight = vistaHelper->titleBarSize() + vistaHelper->topOffset();
+        extraHeight = vistaHelper->titleBarSize() + vistaHelper->topOffset(q);
 #endif
     QSize minimumSize = mainLayout->totalMinimumSize() + QSize(0, extraHeight);
     QSize maximumSize = mainLayout->totalMaximumSize();
@@ -1595,8 +1595,8 @@ bool QWizardPrivate::handleAeroStyleChange()
     bool vistaMargins = false;
 
     if (isVistaThemeEnabled()) {
-        const int topOffset = vistaHelper->topOffset();
-        const int topPadding = vistaHelper->topPadding();
+        const int topOffset = vistaHelper->topOffset(q);
+        const int topPadding = vistaHelper->topPadding(q);
         if (isVistaThemeEnabled(QVistaHelper::VistaAero)) {
             if (isWindow) {
                 vistaHelper->setDWMTitleBar(QVistaHelper::ExtendedTitleBar);
@@ -3214,7 +3214,7 @@ void QWizard::resizeEvent(QResizeEvent *event)
     int heightOffset = 0;
 #if QT_CONFIG(style_windowsvista)
     if (d->isVistaThemeEnabled()) {
-        heightOffset = d->vistaHelper->topOffset();
+        heightOffset = d->vistaHelper->topOffset(this);
         if (d->isVistaThemeEnabled(QVistaHelper::VistaAero))
             heightOffset += d->vistaHelper->titleBarSize();
     }
@@ -3246,7 +3246,7 @@ void QWizard::paintEvent(QPaintEvent * event)
         if (d->isVistaThemeEnabled(QVistaHelper::VistaBasic)) {
             QPainter painter(this);
             QColor color = d->vistaHelper->basicWindowFrameColor();
-            painter.fillRect(0, 0, width(), QVistaHelper::topOffset(), color);
+            painter.fillRect(0, 0, width(), QVistaHelper::topOffset(this), color);
         }
         d->vistaHelper->paintEvent(event);
     }

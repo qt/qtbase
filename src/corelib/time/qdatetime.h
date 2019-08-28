@@ -54,6 +54,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSDate);
 
 QT_BEGIN_NAMESPACE
 
+class QCalendar;
 class QTimeZone;
 class QDateTime;
 
@@ -69,6 +70,7 @@ private:
 public:
     Q_DECL_CONSTEXPR QDate() : jd(nullJd()) {}
     QDate(int y, int m, int d);
+    QDate(int y, int m, int d, QCalendar cal);
 
     Q_DECL_CONSTEXPR bool isNull() const { return !isValid(); }
     Q_DECL_CONSTEXPR bool isValid() const { return jd >= minJd() && jd <= maxJd(); }
@@ -81,6 +83,14 @@ public:
     int daysInMonth() const;
     int daysInYear() const;
     int weekNumber(int *yearNum = nullptr) const;
+
+    int year(QCalendar cal) const;
+    int month(QCalendar cal) const;
+    int day(QCalendar cal) const;
+    int dayOfWeek(QCalendar cal) const;
+    int dayOfYear(QCalendar cal) const;
+    int daysInMonth(QCalendar cal) const;
+    int daysInYear(QCalendar cal) const;
 
     QDateTime startOfDay(Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0) const;
     QDateTime endOfDay(Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0) const;
@@ -103,8 +113,12 @@ public:
     QString toString(Qt::DateFormat f = Qt::TextDate) const;
 #if QT_STRINGVIEW_LEVEL < 2
     QString toString(const QString &format) const;
+    QString toString(const QString &format, QCalendar cal) const;
 #endif
+
     QString toString(QStringView format) const;
+    QString toString(Qt::DateFormat f, QCalendar cal) const;
+    QString toString(QStringView format, QCalendar cal) const;
 #endif
 #if QT_DEPRECATED_SINCE(5,0)
     QT_DEPRECATED_X("Use setDate() instead") inline bool setYMD(int y, int m, int d)
@@ -112,6 +126,7 @@ public:
 #endif
 
     bool setDate(int year, int month, int day);
+    bool setDate(int year, int month, int day, QCalendar cal);
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void getDate(int *year, int *month, int *day); // ### Qt 6: remove
@@ -121,6 +136,8 @@ public:
     Q_REQUIRED_RESULT QDate addDays(qint64 days) const;
     Q_REQUIRED_RESULT QDate addMonths(int months) const;
     Q_REQUIRED_RESULT QDate addYears(int years) const;
+    Q_REQUIRED_RESULT QDate addMonths(int months, QCalendar cal) const;
+    Q_REQUIRED_RESULT QDate addYears(int years, QCalendar cal) const;
     qint64 daysTo(const QDate &) const;
 
     Q_DECL_CONSTEXPR bool operator==(const QDate &other) const { return jd == other.jd; }
@@ -134,6 +151,7 @@ public:
 #if QT_CONFIG(datestring)
     static QDate fromString(const QString &s, Qt::DateFormat f = Qt::TextDate);
     static QDate fromString(const QString &s, const QString &format);
+    static QDate fromString(const QString &s, const QString &format, QCalendar cal);
 #endif
     static bool isValid(int y, int m, int d);
     static bool isLeapYear(int year);
@@ -353,6 +371,7 @@ public:
 #if QT_CONFIG(datestring)
     static QDateTime fromString(const QString &s, Qt::DateFormat f = Qt::TextDate);
     static QDateTime fromString(const QString &s, const QString &format);
+    static QDateTime fromString(const QString &s, const QString &format, QCalendar cal);
 #endif
 
 #if QT_DEPRECATED_SINCE(5, 8)

@@ -2478,12 +2478,6 @@ void PaintCommands::command_surface_begin(QRegularExpressionMatch re)
         m_painter->fillRect(QRect(0, 0, qRound(w), qRound(h)), Qt::transparent);
         m_painter->restore();
 #endif
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    } else if (m_type == WidgetType) {
-        m_surface_pixmap = QPixmap(qRound(w), qRound(h));
-        m_surface_pixmap.fill(Qt::transparent);
-        m_painter = new QPainter(&m_surface_pixmap);
-#endif
     } else {
         QImage::Format surface_format;
         if (QImage::toPixelFormat(m_format).alphaUsage() != QPixelFormat::UsesAlpha)
@@ -2534,11 +2528,6 @@ void PaintCommands::command_surface_end(QRegularExpressionMatch)
         // Flush the pipeline:
         m_painter->beginNativePainting();
         m_painter->endNativePainting();
-#endif
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    } else if (m_type == WidgetType) {
-        m_painter->drawPixmap(m_surface_rect.topLeft(), m_surface_pixmap);
-        m_surface_pixmap = QPixmap();
 #endif
     } else {
         m_painter->drawImage(m_surface_rect, m_surface_image);

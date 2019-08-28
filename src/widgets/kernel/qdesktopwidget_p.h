@@ -68,7 +68,7 @@ public:
     int screenNumber() const;
     void setScreenGeometry(const QRect &geometry);
 
-    QScreen *screen() const { return m_screen.data(); }
+    QScreen *assignedScreen() const { return m_screen.data(); }
     QRect screenGeometry() const { return m_geometry; }
 
 private:
