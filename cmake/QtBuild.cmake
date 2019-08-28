@@ -94,6 +94,8 @@ elseif(ANDROID)
     endif()
 elseif(APPLE)
     set(QT_QMAKE_TARGET_MKSPEC macx-clang)
+elseif(EMSCRIPTEN)
+    set(QT_QMAKE_TARGET_MKSPEC wasm-emscripten)
 endif()
 
 # TODO: Fixme to be correct.
