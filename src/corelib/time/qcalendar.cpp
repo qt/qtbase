@@ -221,8 +221,8 @@ QString QCalendar::name() const
    Calendars with intercallary days may represent these as extra days of the
    preceding month, or as short months separate from the usual ones. In the
    former case, daysInMonth(month, year) should be the number of ordinary days
-   in the month, although \c{isDateValid(year, month, day)} might return \c true for
-   some larger values of \c day.
+   in the month, although \c{isDateValid(year, month, day)} might return \c true
+   for some larger values of \c day.
 
    \sa daysInYear(), monthsInYear(), minimumDaysInMonth(), maximumDaysInMonth()
 */
@@ -725,7 +725,8 @@ QCalendar::QCalendar(QStringView name)
   Returns the number of days in the given \a month of the given \a year.
 
   Months are numbered consecutively, starting with 1 for the first month of each
-  year.
+  year. If \a year is \c Unspecified (its default, if not passed), the month's
+  length in a normal year is returned.
 
   \sa maximumDaysInMonth(), minimumDaysInMonth()
 */
