@@ -688,6 +688,9 @@ endmacro()
 
 
 function(qt_internal_add_link_flags_no_undefined target)
+    if (NOT QT_BUILD_SHARED_LIBS)
+        return()
+    endif()
     if (GCC OR CLANG)
         if(APPLE)
             set(no_undefined_flag "-Wl,-undefined,error")
@@ -707,7 +710,7 @@ function(qt_internal_add_link_flags_gc_sections target visibility)
         message(FATAL_ERROR "Visibitily setting must be one of PRIVATE, INTERFACE or PUBLIC.")
     endif()
 
-    if (GCC OR CLANG)
+    if ((GCC OR CLANG) AND NOT EMSCRIPTEN)
         if(APPLE)
             set(gc_sections_flag "-Wl,-dead_strip")
         elseif(LINUX OR BSD OR SOLARIS OR WIN32 OR ANDROID)
