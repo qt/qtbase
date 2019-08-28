@@ -119,6 +119,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcWidgetPainting, "qt.widgets.painting", QtWarningMsg);
+
 static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 {
     return (qMax(r1.left(), r2.left()) <= qMin(r1.right(), r2.right()) &&
@@ -5273,10 +5275,14 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
     if (rgn.isEmpty())
         return;
 
+    Q_Q(QWidget);
+
+    qCInfo(lcWidgetPainting) << "Drawing" << rgn << "of" << q << "at" << offset
+        << "into paint device" << pdev << "with" << flags;
+
     const bool asRoot = flags & DrawAsRoot;
     bool onScreen = shouldPaintOnScreen();
 
-    Q_Q(QWidget);
 #if QT_CONFIG(graphicseffect)
     if (graphicsEffect && graphicsEffect->isEnabled()) {
         QGraphicsEffectSource *source = graphicsEffect->d_func()->source;
@@ -5307,9 +5313,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             }
             sourced->context = 0;
 
-            // Native widgets need to be marked dirty on screen so painting will be done in correct context
-            // Same check as in the no effects case below.
-            if (repaintManager && !asRoot && (q->internalWinId() || !q->nativeParentWidget()->isWindow()))
+            if (repaintManager)
                 repaintManager->markNeedsFlush(q, rgn, offset);
 
             return;
@@ -5416,8 +5420,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 sendPaintEvent(toBePainted);
             }
 
-            // Native widgets need to be marked dirty on screen so painting will be done in correct context
-            if (repaintManager && !asRoot && (q->internalWinId() || (q->nativeParentWidget() && !q->nativeParentWidget()->isWindow())))
+            if (repaintManager)
                 repaintManager->markNeedsFlush(q, toBePainted, offset);
 
             //restore

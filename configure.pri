@@ -618,10 +618,11 @@ defineTest(qtConfOutput_prepareOptions) {
                 qtConfFatalError("Specified Android NDK host is invalid.")
         }
 
-        target_arch = $$eval(config.input.android-arch)
-        isEmpty(target_arch): \
-            target_arch = armeabi-v7a
-
+        android_abis = $$eval(config.input.android-abis)
+        isEmpty(android_abis): \
+            android_abis = $$eval(config.input.android-arch)
+        isEmpty(android_abis): \
+            android_abis = armeabi-v7a,arm64-v8a,x86,x86_64
         platform = $$eval(config.input.android-ndk-platform)
         isEmpty(platform): \
             platform = android-21
@@ -631,7 +632,7 @@ defineTest(qtConfOutput_prepareOptions) {
             "DEFAULT_ANDROID_NDK_ROOT = $$val_escape(ndk_root)" \
             "DEFAULT_ANDROID_PLATFORM = $$platform" \
             "DEFAULT_ANDROID_NDK_HOST = $$ndk_host" \
-            "DEFAULT_ANDROID_TARGET_ARCH = $$target_arch" \
+            "DEFAULT_ANDROID_ABIS = $$split(android_abis, ',')" \
             "DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION = $$ndk_tc_ver"
     }
 
