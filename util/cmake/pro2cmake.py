@@ -318,7 +318,8 @@ def handle_function_value(group: pp.ParseResults):
 
     # Return the whole expression as a string.
     if function_name in ['join', 'cmakeRelativePath', 'shell_quote', 'shadowed', 'cmakeTargetPath',
-                         'shell_path']:
+                         'shell_path', 'cmakeProcessLibs', 'cmakeTargetPaths',
+                         'cmakePortablePaths', 'escape_expand']:
         return 'join({})'.format(''.join(function_args))
 
     raise RuntimeError('No logic to handle function "{}", please add one in handle_function_value().'.format(function_name))
