@@ -71,14 +71,6 @@ enum {
     defaultWindowHeight = 160
 };
 
-static void qt_closePopups()
-{
-    while (QCocoaWindow *popup = QCocoaIntegration::instance()->popPopupWindow()) {
-        QWindowSystemInterface::handleCloseEvent(popup->window());
-        QWindowSystemInterface::flushWindowSystemEvents();
-    }
-}
-
 Q_LOGGING_CATEGORY(lcCocoaNotifications, "qt.qpa.cocoa.notifications");
 
 static void qRegisterNotificationCallbacks()
@@ -800,6 +792,11 @@ void QCocoaWindow::windowDidExitFullScreen()
     }
 }
 
+void QCocoaWindow::windowWillMiniaturize()
+{
+    QCocoaIntegration::instance()->closePopups(window());
+}
+
 void QCocoaWindow::windowDidMiniaturize()
 {
     if (!isContentView())
@@ -1138,7 +1135,7 @@ void QCocoaWindow::viewDidChangeGlobalFrame()
 void QCocoaWindow::windowWillMove()
 {
     // Close any open popups on window move
-    qt_closePopups();
+    QCocoaIntegration::instance()->closePopups();
 }
 
 void QCocoaWindow::windowDidMove()
@@ -1267,7 +1264,7 @@ void QCocoaWindow::windowWillClose()
 {
     // Close any open popups on window closing.
     if (window() && !windowIsPopupType(window()->type()))
-        qt_closePopups();
+        QCocoaIntegration::instance()->closePopups();
 }
 
 // ----------------------- NSWindowDelegate callbacks -----------------------
