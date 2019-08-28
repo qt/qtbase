@@ -29,7 +29,7 @@ You may use vcpkg to install dependencies needed to build QtBase.
   * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to ``qt-x64-windows-static`` or ``qt-x86-windows-static``
   * Set the ``VCPKG_ROOT`` environment variable to the path where you cloned vcpkg
   * Build Qt dependencies:  ``vcpkg install @qt-packages-windows.txt``
-  * When running cmake in qtbase, support for vcpkg will be picked up automatically when the VCPKG_ROOT environment variable is set.
+  * When running cmake in qtbase, support for vcpkg will be picked up automatically when the VCPKG_ROOT/VCPKG_DEFAULT_TRIPLET environment variable is set.
 
 # Building against homebrew on macOS
 
