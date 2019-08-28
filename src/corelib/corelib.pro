@@ -1,6 +1,6 @@
 TARGET	   = QtCore
 QT         =
-CONFIG    += exceptions
+CONFIG    += exceptions metatypes install_metatypes
 
 MODULE = core     # not corelib, as per project file
 MODULE_CONFIG = moc resources
