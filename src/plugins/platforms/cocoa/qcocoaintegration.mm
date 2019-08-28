@@ -482,6 +482,19 @@ void QCocoaIntegration::beep() const
     NSBeep();
 }
 
+void QCocoaIntegration::closePopups(QWindow *forWindow)
+{
+    for (auto it = m_popupWindowStack.begin(); it != m_popupWindowStack.end();) {
+        auto *popup = *it;
+        if (!forWindow || popup->window()->transientParent() == forWindow) {
+            it = m_popupWindowStack.erase(it);
+            QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::SynchronousDelivery>(popup->window());
+        } else {
+            ++it;
+        }
+    }
+}
+
 void QCocoaIntegration::focusWindowChanged(QWindow *focusWindow)
 {
     // Don't revert icon just because we lost focus
