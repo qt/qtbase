@@ -338,7 +338,16 @@ void QPlatformBackingStore::composeAndFlush(QWindow *window, const QRegion &regi
         }
     }
 
-    if (!d_ptr->context->makeCurrent(window)) {
+    bool current = d_ptr->context->makeCurrent(window);
+
+    if (!current && !d_ptr->context->isValid()) {
+        delete d_ptr->blitter;
+        d_ptr->blitter = nullptr;
+        d_ptr->textureId = 0;
+        current = d_ptr->context->create() && d_ptr->context->makeCurrent(window);
+    }
+
+    if (!current) {
         qCWarning(lcQpaBackingStore, "composeAndFlush: makeCurrent() failed");
         return;
     }
