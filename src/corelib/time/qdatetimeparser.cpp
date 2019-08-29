@@ -60,6 +60,9 @@
 
 QT_BEGIN_NAMESPACE
 
+template <typename T>
+using ShortVector = QVarLengthArray<T, 13>; // enough for month (incl. leap) and day-of-week names
+
 QDateTimeParser::~QDateTimeParser()
 {
 }
@@ -1538,7 +1541,7 @@ QDateTimeParser::parse(QString input, int position, const QDateTime &defaultValu
   length of overlap in *used (if \a used is non-NULL) and the first entry that
   overlapped this much in *usedText (if \a usedText is non-NULL).
  */
-static int findTextEntry(const QString &text, const QVector<QString> &entries, QString *usedText, int *used)
+static int findTextEntry(const QString &text, const ShortVector<QString> &entries, QString *usedText, int *used)
 {
     if (text.isEmpty())
         return -1;
@@ -1586,7 +1589,7 @@ int QDateTimeParser::findMonth(const QString &str1, int startMonth, int sectionI
 
     QLocale::FormatType type = sn.count == 3 ? QLocale::ShortFormat : QLocale::LongFormat;
     QLocale l = locale();
-    QVector<QString> monthNames;
+    ShortVector<QString> monthNames;
     monthNames.reserve(13 - startMonth);
     for (int month = startMonth; month <= 12; ++month)
         monthNames.append(calendar.monthName(l, month, year, type));
@@ -1605,7 +1608,7 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
 
     QLocale::FormatType type = sn.count == 4 ? QLocale::LongFormat : QLocale::ShortFormat;
     QLocale l = locale();
-    QVector<QString> daysOfWeek;
+    ShortVector<QString> daysOfWeek;
     daysOfWeek.reserve(8 - startDay);
     for (int day = startDay; day <= 7; ++day)
         daysOfWeek.append(l.dayName(day, type));
