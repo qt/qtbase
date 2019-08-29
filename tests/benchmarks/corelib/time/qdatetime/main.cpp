@@ -135,7 +135,7 @@ void tst_QDateTime::isNull()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.isNull();
     }
 }
@@ -144,7 +144,7 @@ void tst_QDateTime::isValid()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.isValid();
     }
 }
@@ -153,7 +153,7 @@ void tst_QDateTime::date()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.date();
     }
 }
@@ -162,7 +162,7 @@ void tst_QDateTime::time()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.time();
     }
 }
@@ -171,7 +171,7 @@ void tst_QDateTime::timeSpec()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.timeSpec();
     }
 }
@@ -180,7 +180,7 @@ void tst_QDateTime::offsetFromUtc()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.offsetFromUtc();
     }
 }
@@ -189,7 +189,7 @@ void tst_QDateTime::timeZoneAbbreviation()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.timeZoneAbbreviation();
     }
 }
@@ -198,7 +198,7 @@ void tst_QDateTime::toMSecsSinceEpoch()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.toMSecsSinceEpoch();
     }
 }
@@ -207,7 +207,7 @@ void tst_QDateTime::toMSecsSinceEpoch1950()
 {
     const auto list = daily(JULIAN_DAY_1950, JULIAN_DAY_1960);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.toMSecsSinceEpoch();
     }
 }
@@ -216,7 +216,7 @@ void tst_QDateTime::toMSecsSinceEpoch2050()
 {
     const auto list = daily(JULIAN_DAY_2050, JULIAN_DAY_2060);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.toMSecsSinceEpoch();
     }
 }
@@ -226,7 +226,7 @@ void tst_QDateTime::toMSecsSinceEpochTz()
     qint64 result;
     const auto list = norse(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             result = test.toMSecsSinceEpoch();
     }
     Q_UNUSED(result);
@@ -237,7 +237,7 @@ void tst_QDateTime::toMSecsSinceEpoch1950Tz()
     qint64 result;
     const auto list = norse(JULIAN_DAY_1950, JULIAN_DAY_1960);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             result = test.toMSecsSinceEpoch();
     }
     Q_UNUSED(result);
@@ -248,7 +248,7 @@ void tst_QDateTime::toMSecsSinceEpoch2050Tz()
     qint64 result;
     const auto list = norse(JULIAN_DAY_2050, JULIAN_DAY_2060);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             result = test.toMSecsSinceEpoch();
     }
     Q_UNUSED(result);
@@ -258,7 +258,7 @@ void tst_QDateTime::setDate()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (QDateTime test, list)
+        for (QDateTime test : list)
             test.setDate(QDate::fromJulianDay(JULIAN_DAY_2010));
     }
 }
@@ -267,7 +267,7 @@ void tst_QDateTime::setTime()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (QDateTime test, list)
+        for (QDateTime test : list)
             test.setTime(QTime(12, 0, 0));
     }
 }
@@ -276,7 +276,7 @@ void tst_QDateTime::setTimeSpec()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (QDateTime test, list)
+        for (QDateTime test : list)
             test.setTimeSpec(Qt::UTC);
     }
 }
@@ -285,7 +285,7 @@ void tst_QDateTime::setOffsetFromUtc()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (QDateTime test, list)
+        for (QDateTime test : list)
             test.setOffsetFromUtc(3600);
     }
 }
@@ -295,7 +295,7 @@ void tst_QDateTime::setMSecsSinceEpoch()
     qint64 msecs = qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970 + 180) * MSECS_PER_DAY;
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (QDateTime test, list)
+        for (QDateTime test : list)
             test.setMSecsSinceEpoch(msecs);
     }
 }
@@ -305,7 +305,7 @@ void tst_QDateTime::setMSecsSinceEpochTz()
     const qint64 msecs = qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970 + 180) * MSECS_PER_DAY;
     const auto list = norse(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (QDateTime test, list)
+        for (QDateTime test : list)
             test.setMSecsSinceEpoch(msecs);
     }
 }
@@ -314,7 +314,7 @@ void tst_QDateTime::toString()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2011);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.toString(QStringLiteral("yyy-MM-dd hh:mm:ss.zzz t"));
     }
 }
@@ -323,7 +323,7 @@ void tst_QDateTime::toStringTextFormat()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2011);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.toString(Qt::TextDate);
     }
 }
@@ -332,7 +332,7 @@ void tst_QDateTime::toStringIsoFormat()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2011);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.toString(Qt::ISODate);
     }
 }
@@ -342,7 +342,7 @@ void tst_QDateTime::addDays()
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QDateTime next;
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             next = test.addDays(1);
     }
     Q_UNUSED(next);
@@ -352,7 +352,7 @@ void tst_QDateTime::addDaysTz()
 {
     const auto list = norse(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             QDateTime result = test.addDays(1);
     }
 }
@@ -362,7 +362,7 @@ void tst_QDateTime::addMSecs()
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QDateTime next;
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             next = test.addMSecs(1);
     }
     Q_UNUSED(next);
@@ -372,7 +372,7 @@ void tst_QDateTime::addMSecsTz()
 {
     const auto list = norse(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             QDateTime result = test.addMSecs(1);
     }
 }
@@ -381,7 +381,7 @@ void tst_QDateTime::toTimeSpec()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.toTimeSpec(Qt::UTC);
     }
 }
@@ -390,7 +390,7 @@ void tst_QDateTime::toOffsetFromUtc()
 {
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.toOffsetFromUtc(3600);
     }
 }
@@ -401,7 +401,7 @@ void tst_QDateTime::daysTo()
         qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970) * MSECS_PER_DAY);
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.daysTo(other);
     }
 }
@@ -412,7 +412,7 @@ void tst_QDateTime::msecsTo()
         qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970) * MSECS_PER_DAY);
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             test.msecsTo(other);
     }
 }
@@ -424,7 +424,7 @@ void tst_QDateTime::equivalent()
         qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970) * MSECS_PER_DAY);
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             result = (test == other);
     }
     Q_UNUSED(result)
@@ -437,7 +437,7 @@ void tst_QDateTime::equivalentUtc()
         qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970) * MSECS_PER_DAY, Qt::UTC);
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             result = (test == other);
     }
     Q_UNUSED(result)
@@ -450,7 +450,7 @@ void tst_QDateTime::lessThan()
         qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970) * MSECS_PER_DAY);
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             result = (test < other);
     }
     Q_UNUSED(result)
@@ -463,7 +463,7 @@ void tst_QDateTime::lessThanUtc()
         qint64(JULIAN_DAY_2010 - JULIAN_DAY_1970) * MSECS_PER_DAY, Qt::UTC);
     const auto list = daily(JULIAN_DAY_2010, JULIAN_DAY_2020);
     QBENCHMARK {
-        foreach (const QDateTime &test, list)
+        for (const QDateTime &test : list)
             result = (test < other);
     }
     Q_UNUSED(result)
