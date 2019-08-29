@@ -1808,7 +1808,9 @@ function(add_qt_plugin target)
         COMPONENT Devel
     )
 
-    set(export_name "${target}Targets")
+    # Make the export name of plugins be consistent with modules, so that
+    # add_qt_resource adds its additional targets to the same export set in a static Qt build.
+    set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
     qt_install(TARGETS "${target}"
                EXPORT ${export_name}
                RUNTIME DESTINATION "${install_directory}"
@@ -2004,7 +2006,6 @@ function(add_qt_resource target resourceName)
    )
 
    if (out_target)
-        qt_internal_add_target_aliases("${out_target}")
         qt_install(TARGETS "${out_target}"
             EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
             DESTINATION ${INSTALL_LIBDIR}
