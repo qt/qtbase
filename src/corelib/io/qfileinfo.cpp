@@ -311,19 +311,6 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 */
 
 /*!
-    \enum QFileInfo::FileType
-
-    This enum is returned by type() to describe the type of the file system
-    entity described by the QFileInfo object.
-
-    \value Unknown      The object refers to an unknown item.
-    \value Regular      The object refers to a regular file.
-    \value Directory    The object refers to a directory.
-    \value SymbolicLink The object refers to a symbolic link.
-    \value Shortcut     The object refers to a shortcut.
-*/
-
-/*!
     \fn QFileInfo &QFileInfo::operator=(QFileInfo &&other)
 
     Move-assigns \a other to this QFileInfo instance.
@@ -1008,7 +995,11 @@ bool QFileInfo::isNativePath() const
 */
 bool QFileInfo::isFile() const
 {
-    return (type() & FileTypeMask) == Regular;
+    Q_D(const QFileInfo);
+    return d->checkAttribute<bool>(
+                QFileSystemMetaData::FileType,
+                [d]() { return d->metaData.isFile(); },
+                [d]() { return d->getFileFlags(QAbstractFileEngine::FileType); });
 }
 
 /*!
@@ -1019,7 +1010,11 @@ bool QFileInfo::isFile() const
 */
 bool QFileInfo::isDir() const
 {
-    return (type() & FileTypeMask) == Directory;
+    Q_D(const QFileInfo);
+    return d->checkAttribute<bool>(
+                QFileSystemMetaData::DirectoryType,
+                [d]() { return d->metaData.isDirectory(); },
+                [d]() { return d->getFileFlags(QAbstractFileEngine::DirectoryType); });
 }
 
 
@@ -1070,8 +1065,6 @@ bool QFileInfo::isSymLink() const
 }
 
 /*!
-    \fn bool QFileInfo::isSymbolicLink() const
-
     Returns \c true if this object points to a symbolic link;
     otherwise returns \c false.
 
@@ -1091,9 +1084,16 @@ bool QFileInfo::isSymLink() const
     \sa isFile(), isDir(), isShortcut(), symLinkTarget()
 */
 
-/*!
-    \fn bool QFileInfo::isShortcut() const
+bool QFileInfo::isSymbolicLink() const
+{
+    Q_D(const QFileInfo);
+    return d->checkAttribute<bool>(
+                QFileSystemMetaData::LegacyLinkType,
+                [d]() { return d->metaData.isLink(); },
+                [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); });
+}
 
+/*!
     Returns \c true if this object points to a shortcut;
     otherwise returns \c false.
 
@@ -1110,6 +1110,14 @@ bool QFileInfo::isSymLink() const
 
     \sa isFile(), isDir(), isSymbolicLink(), symLinkTarget()
 */
+bool QFileInfo::isShortcut() const
+{
+    Q_D(const QFileInfo);
+    return d->checkAttribute<bool>(
+            QFileSystemMetaData::LegacyLinkType,
+            [d]() { return d->metaData.isLnkFile(); },
+            [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); });
+}
 
 /*!
     Returns \c true if the object points to a directory or to a symbolic
@@ -1312,53 +1320,6 @@ qint64 QFileInfo::size() const
             }
             return d->fileSize;
         });
-}
-
-/*!
-    Returns the QFileInfo::FileTypes.
-
-    QFileInfo::FileTypes combines with an indirection flag (link type) and a
-    base type it refers to.
-
-    For example, \c SymbolicLink combines with \c Regular meaning a symlink to
-    a regular file.
-
-    In addition, FileTypeMask and LinkTypeMask are used to extract the base
-    type and link type respectively.
-
-    \sa isFile(), isDir(), isShortcut(), isSymbolicLink()
-*/
-QFileInfo::FileTypes QFileInfo::type() const
-{
-    Q_D(const QFileInfo);
-
-    QFileInfo::FileTypes type = QFileInfo::Unknown;
-    if (d->checkAttribute<bool>(
-            QFileSystemMetaData::LegacyLinkType,
-            [d]() { return d->metaData.isLnkFile(); },
-            [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); })) {
-        type = QFileInfo::Shortcut;
-    } else if (d->checkAttribute<bool>(
-            QFileSystemMetaData::LegacyLinkType,
-            [d]() { return d->metaData.isLink(); },
-            [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); })) {
-        type = QFileInfo::SymbolicLink;
-    }
-
-    if (d->checkAttribute<bool>(
-            QFileSystemMetaData::DirectoryType,
-            [d]() { return d->metaData.isDirectory(); },
-            [d]() { return d->getFileFlags(QAbstractFileEngine::DirectoryType); })) {
-        return type | QFileInfo::Directory;
-    }
-
-    if (d->checkAttribute<bool>(
-            QFileSystemMetaData::FileType,
-            [d]() { return d->metaData.isFile(); },
-            [d]() { return d->getFileFlags(QAbstractFileEngine::FileType); })) {
-        return type | QFileInfo::Regular;
-    }
-    return type;
 }
 
 #if QT_DEPRECATED_SINCE(5, 10)
