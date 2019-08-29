@@ -356,14 +356,16 @@ QRhi::FrameOpResult QRhiNull::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameF
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiNull::beginOffscreenFrame(QRhiCommandBuffer **cb)
+QRhi::FrameOpResult QRhiNull::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags)
 {
+    Q_UNUSED(flags);
     *cb = &offscreenCommandBuffer;
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiNull::endOffscreenFrame()
+QRhi::FrameOpResult QRhiNull::endOffscreenFrame(QRhi::EndFrameFlags flags)
 {
+    Q_UNUSED(flags);
     return QRhi::FrameOpSuccess;
 }
 

@@ -1966,6 +1966,7 @@ void QAbstractItemView::mouseDoubleClickEvent(QMouseEvent *event)
     if ((event->button() == Qt::LeftButton) && !edit(persistent, DoubleClicked, event)
         && !style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, 0, this))
         emit activated(persistent);
+    d->pressedIndex = QModelIndex();
 }
 
 #if QT_CONFIG(draganddrop)
