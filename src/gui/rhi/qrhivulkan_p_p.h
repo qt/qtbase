@@ -171,9 +171,11 @@ struct QVkRenderPassDescriptor : public QRhiRenderPassDescriptor
     QVkRenderPassDescriptor(QRhiImplementation *rhi);
     ~QVkRenderPassDescriptor();
     void release() override;
+    const QRhiNativeHandles *nativeHandles() override;
 
     VkRenderPass rp = VK_NULL_HANDLE;
     bool ownsRp = false;
+    QRhiVulkanRenderPassNativeHandles nativeHandlesStruct;
     int lastActiveFrameSlot = -1;
 };
 
@@ -307,13 +309,11 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     ~QVkCommandBuffer();
     void release() override;
 
-    VkCommandBuffer cb = VK_NULL_HANDLE;
-    QRhiVulkanCommandBufferNativeHandles nativeHandlesStruct;
+    const QRhiNativeHandles *nativeHandles();
 
-    const QRhiNativeHandles *nativeHandles() {
-        nativeHandlesStruct.commandBuffer = cb;
-        return &nativeHandlesStruct;
-    }
+    VkCommandBuffer cb = VK_NULL_HANDLE; // primary
+    bool useSecondaryCb = false;
+    QRhiVulkanCommandBufferNativeHandles nativeHandlesStruct;
 
     enum PassType {
         NoPass,
@@ -322,9 +322,12 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     };
 
     void resetState() {
-        resetCommands();
         recordingPass = NoPass;
         currentTarget = nullptr;
+
+        secondaryCbs.clear();
+
+        resetCommands();
         resetCachedState();
     }
 
@@ -341,6 +344,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         currentIndexFormat = VK_INDEX_TYPE_UINT16;
         memset(currentVertexBuffers, 0, sizeof(currentVertexBuffers));
         memset(currentVertexOffsets, 0, sizeof(currentVertexOffsets));
+        inExternal = false;
     }
 
     PassType recordingPass;
@@ -358,6 +362,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     static const int VERTEX_INPUT_RESOURCE_SLOT_COUNT = 32;
     VkBuffer currentVertexBuffers[VERTEX_INPUT_RESOURCE_SLOT_COUNT];
     quint32 currentVertexOffsets[VERTEX_INPUT_RESOURCE_SLOT_COUNT];
+    QVarLengthArray<VkCommandBuffer, 4> secondaryCbs;
+    bool inExternal;
 
     struct Command {
         enum Cmd {
@@ -384,7 +390,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             DebugMarkerEnd,
             DebugMarkerInsert,
             TransitionPassResources,
-            Dispatch
+            Dispatch,
+            ExecuteSecondary
         };
         Cmd cmd;
 
@@ -493,6 +500,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             } debugMarkerEnd;
             struct {
                 VkDebugMarkerMarkerInfoEXT marker;
+                int markerNameIndex;
             } debugMarkerInsert;
             struct {
                 int trackerIndex;
@@ -500,6 +508,9 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             struct {
                 int x, y, z;
             } dispatch;
+            struct {
+                VkCommandBuffer cb;
+            } executeSecondary;
         } args;
     };
     QVector<Command> commands;
@@ -508,9 +519,10 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
 
     void resetCommands() {
         commands.clear();
+        resetPools();
+
         passResTrackers.clear();
         currentPassResTrackerIndex = -1;
-        resetPools();
     }
 
     void resetPools() {
@@ -519,7 +531,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         pools.dynamicOffset.clear();
         pools.vertexBuffer.clear();
         pools.vertexBufferOffset.clear();
-        pools.debugMarkerName.clear();
+        pools.debugMarkerData.clear();
     }
 
     struct {
@@ -528,7 +540,7 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         QVarLengthArray<uint32_t, 4> dynamicOffset;
         QVarLengthArray<VkBuffer, 4> vertexBuffer;
         QVarLengthArray<VkDeviceSize, 4> vertexBufferOffset;
-        QVarLengthArray<QByteArray, 4> debugMarkerName;
+        QVarLengthArray<QByteArray, 4> debugMarkerData;
     } pools;
 
     friend class QRhiVulkan;
@@ -592,7 +604,7 @@ struct QVkSwapChain : public QRhiSwapChain
         bool imageAcquired = false;
         bool imageSemWaitable = false;
         quint32 imageIndex = 0;
-        VkCommandBuffer cmdBuf = VK_NULL_HANDLE;
+        VkCommandBuffer cmdBuf = VK_NULL_HANDLE; // primary
         VkFence cmdFence = VK_NULL_HANDLE;
         bool cmdFenceWaitable = false;
         int timestampQueryIndex = -1;
@@ -637,8 +649,8 @@ public:
     QRhiSwapChain *createSwapChain() override;
     QRhi::FrameOpResult beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags) override;
     QRhi::FrameOpResult endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameFlags flags) override;
-    QRhi::FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb) override;
-    QRhi::FrameOpResult endOffscreenFrame() override;
+    QRhi::FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags) override;
+    QRhi::FrameOpResult endOffscreenFrame(QRhi::EndFrameFlags flags) override;
     QRhi::FrameOpResult finish() override;
 
     void resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
@@ -727,9 +739,12 @@ public:
     VkShaderModule createShader(const QByteArray &spirv);
 
     void prepareNewFrame(QRhiCommandBuffer *cb);
-    QRhi::FrameOpResult startCommandBuffer(VkCommandBuffer *cb);
-    QRhi::FrameOpResult endAndSubmitCommandBuffer(VkCommandBuffer cb, VkFence cmdFence,
-                                                  VkSemaphore *waitSem, VkSemaphore *signalSem);
+    VkCommandBuffer startSecondaryCommandBuffer(QVkRenderTargetData *rtD = nullptr);
+    void endAndEnqueueSecondaryCommandBuffer(VkCommandBuffer cb, QVkCommandBuffer *cbD);
+    void deferredReleaseSecondaryCommandBuffer(VkCommandBuffer cb);
+    QRhi::FrameOpResult startPrimaryCommandBuffer(VkCommandBuffer *cb);
+    QRhi::FrameOpResult endAndSubmitPrimaryCommandBuffer(VkCommandBuffer cb, VkFence cmdFence,
+                                                         VkSemaphore *waitSem, VkSemaphore *signalSem);
     void waitCommandCompletion(int frameSlot);
     VkDeviceSize subresUploadByteSize(const QRhiTextureSubresourceUploadDescription &subresDesc) const;
     using BufferImageCopyList = QVarLengthArray<VkBufferImageCopy, 16>;
@@ -740,7 +755,7 @@ public:
     void enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdateBatch *resourceUpdates);
     void executeBufferHostWritesForCurrentFrame(QVkBuffer *bufD);
     void enqueueTransitionPassResources(QVkCommandBuffer *cbD);
-    void recordCommandBuffer(QVkCommandBuffer *cbD);
+    void recordPrimaryCommandBuffer(QVkCommandBuffer *cbD);
     void trackedRegisterBuffer(QRhiPassResourceTracker *passResTracker,
                                QVkBuffer *bufD,
                                int slot,
@@ -856,7 +871,8 @@ public:
             Sampler,
             TextureRenderTarget,
             RenderPass,
-            StagingBuffer
+            StagingBuffer,
+            CommandBuffer
         };
         Type type;
         int lastActiveFrameSlot; // -1 if not used otherwise 0..FRAMES_IN_FLIGHT-1
@@ -903,6 +919,9 @@ public:
                 VkBuffer stagingBuffer;
                 QVkAlloc stagingAllocation;
             } stagingBuffer;
+            struct {
+                VkCommandBuffer cb;
+            } commandBuffer;
         };
     };
     QVector<DeferredReleaseEntry> releaseQueue;

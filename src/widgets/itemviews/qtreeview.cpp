@@ -1943,6 +1943,7 @@ void QTreeView::mouseDoubleClickEvent(QMouseEvent *event)
         if (!style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, 0, this))
             emit activated(persistent);
 
+        d->pressedIndex = QModelIndex();
         d->executePostedLayout(); // we need to make sure viewItems is updated
         if (d->itemsExpandable
             && d->expandsOnDoubleClick
