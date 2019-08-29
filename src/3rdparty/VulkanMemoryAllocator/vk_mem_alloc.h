@@ -5268,22 +5268,22 @@ class VmaBlockMetadata_Generic : public VmaBlockMetadata
 public:
     VmaBlockMetadata_Generic(VmaAllocator hAllocator);
     virtual ~VmaBlockMetadata_Generic();
-    virtual void Init(VkDeviceSize size);
+    void Init(VkDeviceSize size) override;
 
-    virtual bool Validate() const;
-    virtual size_t GetAllocationCount() const { return m_Suballocations.size() - m_FreeCount; }
-    virtual VkDeviceSize GetSumFreeSize() const { return m_SumFreeSize; }
-    virtual VkDeviceSize GetUnusedRangeSizeMax() const;
-    virtual bool IsEmpty() const;
+    bool Validate() const override;
+    size_t GetAllocationCount() const override { return m_Suballocations.size() - m_FreeCount; }
+    VkDeviceSize GetSumFreeSize() const override { return m_SumFreeSize; }
+    VkDeviceSize GetUnusedRangeSizeMax() const override;
+    bool IsEmpty() const override;
 
-    virtual void CalcAllocationStatInfo(VmaStatInfo& outInfo) const;
-    virtual void AddPoolStats(VmaPoolStats& inoutStats) const;
+    void CalcAllocationStatInfo(VmaStatInfo& outInfo) const override;
+    void AddPoolStats(VmaPoolStats& inoutStats) const override;
 
 #if VMA_STATS_STRING_ENABLED
-    virtual void PrintDetailedMap(class VmaJsonWriter& json) const;
+    void PrintDetailedMap(class VmaJsonWriter& json) const override;
 #endif
 
-    virtual bool CreateAllocationRequest(
+    bool CreateAllocationRequest(
         uint32_t currentFrameIndex,
         uint32_t frameInUseCount,
         VkDeviceSize bufferImageGranularity,
@@ -5293,28 +5293,28 @@ public:
         VmaSuballocationType allocType,
         bool canMakeOtherLost,
         uint32_t strategy,
-        VmaAllocationRequest* pAllocationRequest);
+        VmaAllocationRequest* pAllocationRequest) override;
 
-    virtual bool MakeRequestedAllocationsLost(
+    bool MakeRequestedAllocationsLost(
         uint32_t currentFrameIndex,
         uint32_t frameInUseCount,
-        VmaAllocationRequest* pAllocationRequest);
+        VmaAllocationRequest* pAllocationRequest) override;
 
-    virtual uint32_t MakeAllocationsLost(uint32_t currentFrameIndex, uint32_t frameInUseCount);
+    uint32_t MakeAllocationsLost(uint32_t currentFrameIndex, uint32_t frameInUseCount) override;
 
-    virtual VkResult CheckCorruption(const void* pBlockData);
+    VkResult CheckCorruption(const void* pBlockData) override;
 
-    virtual void Alloc(
+    void Alloc(
         const VmaAllocationRequest& request,
         VmaSuballocationType type,
         VkDeviceSize allocSize,
         bool upperAddress,
-        VmaAllocation hAllocation);
+        VmaAllocation hAllocation) override;
 
-    virtual void Free(const VmaAllocation allocation);
-    virtual void FreeAtOffset(VkDeviceSize offset);
+    void Free(const VmaAllocation allocation) override;
+    void FreeAtOffset(VkDeviceSize offset) override;
 
-    virtual bool ResizeAllocation(const VmaAllocation alloc, VkDeviceSize newSize);
+    bool ResizeAllocation(const VmaAllocation alloc, VkDeviceSize newSize) override;
 
     ////////////////////////////////////////////////////////////////////////////////
     // For defragmentation
@@ -5449,22 +5449,22 @@ class VmaBlockMetadata_Linear : public VmaBlockMetadata
 public:
     VmaBlockMetadata_Linear(VmaAllocator hAllocator);
     virtual ~VmaBlockMetadata_Linear();
-    virtual void Init(VkDeviceSize size);
+    void Init(VkDeviceSize size) override;
 
-    virtual bool Validate() const;
-    virtual size_t GetAllocationCount() const;
-    virtual VkDeviceSize GetSumFreeSize() const { return m_SumFreeSize; }
-    virtual VkDeviceSize GetUnusedRangeSizeMax() const;
-    virtual bool IsEmpty() const { return GetAllocationCount() == 0; }
+    bool Validate() const override;
+    size_t GetAllocationCount() const override;
+    VkDeviceSize GetSumFreeSize() const override { return m_SumFreeSize; }
+    VkDeviceSize GetUnusedRangeSizeMax() const override;
+    bool IsEmpty() const override { return GetAllocationCount() == 0; }
 
-    virtual void CalcAllocationStatInfo(VmaStatInfo& outInfo) const;
-    virtual void AddPoolStats(VmaPoolStats& inoutStats) const;
+    void CalcAllocationStatInfo(VmaStatInfo& outInfo) const override;
+    void AddPoolStats(VmaPoolStats& inoutStats) const override;
 
 #if VMA_STATS_STRING_ENABLED
-    virtual void PrintDetailedMap(class VmaJsonWriter& json) const;
+    void PrintDetailedMap(class VmaJsonWriter& json) const override;
 #endif
 
-    virtual bool CreateAllocationRequest(
+    bool CreateAllocationRequest(
         uint32_t currentFrameIndex,
         uint32_t frameInUseCount,
         VkDeviceSize bufferImageGranularity,
@@ -5474,26 +5474,26 @@ public:
         VmaSuballocationType allocType,
         bool canMakeOtherLost,
         uint32_t strategy,
-        VmaAllocationRequest* pAllocationRequest);
+        VmaAllocationRequest* pAllocationRequest) override;
 
-    virtual bool MakeRequestedAllocationsLost(
+    bool MakeRequestedAllocationsLost(
         uint32_t currentFrameIndex,
         uint32_t frameInUseCount,
-        VmaAllocationRequest* pAllocationRequest);
+        VmaAllocationRequest* pAllocationRequest) override;
 
-    virtual uint32_t MakeAllocationsLost(uint32_t currentFrameIndex, uint32_t frameInUseCount);
+    uint32_t MakeAllocationsLost(uint32_t currentFrameIndex, uint32_t frameInUseCount) override;
 
-    virtual VkResult CheckCorruption(const void* pBlockData);
+    VkResult CheckCorruption(const void* pBlockData) override;
 
-    virtual void Alloc(
+    void Alloc(
         const VmaAllocationRequest& request,
         VmaSuballocationType type,
         VkDeviceSize allocSize,
         bool upperAddress,
-        VmaAllocation hAllocation);
+        VmaAllocation hAllocation) override;
 
-    virtual void Free(const VmaAllocation allocation);
-    virtual void FreeAtOffset(VkDeviceSize offset);
+    void Free(const VmaAllocation allocation) override;
+    void FreeAtOffset(VkDeviceSize offset) override;
 
 private:
     /*
@@ -5559,22 +5559,22 @@ class VmaBlockMetadata_Buddy : public VmaBlockMetadata
 public:
     VmaBlockMetadata_Buddy(VmaAllocator hAllocator);
     virtual ~VmaBlockMetadata_Buddy();
-    virtual void Init(VkDeviceSize size);
+    void Init(VkDeviceSize size) override;
 
-    virtual bool Validate() const;
-    virtual size_t GetAllocationCount() const { return m_AllocationCount; }
-    virtual VkDeviceSize GetSumFreeSize() const { return m_SumFreeSize + GetUnusableSize(); }
-    virtual VkDeviceSize GetUnusedRangeSizeMax() const;
-    virtual bool IsEmpty() const { return m_Root->type == Node::TYPE_FREE; }
+    bool Validate() const override;
+    size_t GetAllocationCount() const override { return m_AllocationCount; }
+    VkDeviceSize GetSumFreeSize() const override { return m_SumFreeSize + GetUnusableSize(); }
+    VkDeviceSize GetUnusedRangeSizeMax() const override;
+    bool IsEmpty() const override { return m_Root->type == Node::TYPE_FREE; }
 
-    virtual void CalcAllocationStatInfo(VmaStatInfo& outInfo) const;
-    virtual void AddPoolStats(VmaPoolStats& inoutStats) const;
+    void CalcAllocationStatInfo(VmaStatInfo& outInfo) const override;
+    void AddPoolStats(VmaPoolStats& inoutStats) const override;
 
 #if VMA_STATS_STRING_ENABLED
-    virtual void PrintDetailedMap(class VmaJsonWriter& json) const;
+    void PrintDetailedMap(class VmaJsonWriter& json) const override;
 #endif
 
-    virtual bool CreateAllocationRequest(
+    bool CreateAllocationRequest(
         uint32_t currentFrameIndex,
         uint32_t frameInUseCount,
         VkDeviceSize bufferImageGranularity,
@@ -5584,26 +5584,26 @@ public:
         VmaSuballocationType allocType,
         bool canMakeOtherLost,
         uint32_t strategy,
-        VmaAllocationRequest* pAllocationRequest);
+        VmaAllocationRequest* pAllocationRequest) override;
 
-    virtual bool MakeRequestedAllocationsLost(
+    bool MakeRequestedAllocationsLost(
         uint32_t currentFrameIndex,
         uint32_t frameInUseCount,
-        VmaAllocationRequest* pAllocationRequest);
+        VmaAllocationRequest* pAllocationRequest) override;
 
-    virtual uint32_t MakeAllocationsLost(uint32_t currentFrameIndex, uint32_t frameInUseCount);
+    uint32_t MakeAllocationsLost(uint32_t currentFrameIndex, uint32_t frameInUseCount) override;
 
-    virtual VkResult CheckCorruption(const void* /*pBlockData*/) { return VK_ERROR_FEATURE_NOT_PRESENT; }
+    VkResult CheckCorruption(const void* /*pBlockData*/) override { return VK_ERROR_FEATURE_NOT_PRESENT; }
 
-    virtual void Alloc(
+    void Alloc(
         const VmaAllocationRequest& request,
         VmaSuballocationType type,
         VkDeviceSize allocSize,
         bool upperAddress,
-        VmaAllocation hAllocation);
+        VmaAllocation hAllocation) override;
 
-    virtual void Free(const VmaAllocation allocation) { FreeAtOffset(allocation, allocation->GetOffset()); }
-    virtual void FreeAtOffset(VkDeviceSize offset) { FreeAtOffset(VMA_NULL, offset); }
+    void Free(const VmaAllocation allocation) override { FreeAtOffset(allocation, allocation->GetOffset()); }
+    void FreeAtOffset(VkDeviceSize offset) override { FreeAtOffset(VMA_NULL, offset); }
 
 private:
     static const VkDeviceSize MIN_NODE_SIZE = 32;
@@ -6025,16 +6025,16 @@ public:
         bool overlappingMoveSupported);
     virtual ~VmaDefragmentationAlgorithm_Generic();
 
-    virtual void AddAllocation(VmaAllocation hAlloc, VkBool32* pChanged);
-    virtual void AddAll() { m_AllAllocations = true; }
+    void AddAllocation(VmaAllocation hAlloc, VkBool32* pChanged) override;
+    void AddAll() override { m_AllAllocations = true; }
 
-    virtual VkResult Defragment(
+    VkResult Defragment(
         VmaVector< VmaDefragmentationMove, VmaStlAllocator<VmaDefragmentationMove> >& moves,
         VkDeviceSize maxBytesToMove,
-        uint32_t maxAllocationsToMove);
+        uint32_t maxAllocationsToMove) override;
 
-    virtual VkDeviceSize GetBytesMoved() const { return m_BytesMoved; }
-    virtual uint32_t GetAllocationsMoved() const { return m_AllocationsMoved; }
+    VkDeviceSize GetBytesMoved() const override { return m_BytesMoved; }
+    uint32_t GetAllocationsMoved() const override { return m_AllocationsMoved; }
 
 private:
     uint32_t m_AllocationCount;
@@ -6152,16 +6152,16 @@ public:
         bool overlappingMoveSupported);
     virtual ~VmaDefragmentationAlgorithm_Fast();
 
-    virtual void AddAllocation(VmaAllocation /*hAlloc*/, VkBool32* /*pChanged*/) { ++m_AllocationCount; }
-    virtual void AddAll() { m_AllAllocations = true; }
+    void AddAllocation(VmaAllocation /*hAlloc*/, VkBool32* /*pChanged*/) override { ++m_AllocationCount; }
+    void AddAll() override { m_AllAllocations = true; }
 
-    virtual VkResult Defragment(
+    VkResult Defragment(
         VmaVector< VmaDefragmentationMove, VmaStlAllocator<VmaDefragmentationMove> >& moves,
         VkDeviceSize maxBytesToMove,
-        uint32_t maxAllocationsToMove);
+        uint32_t maxAllocationsToMove) override;
 
-    virtual VkDeviceSize GetBytesMoved() const { return m_BytesMoved; }
-    virtual uint32_t GetAllocationsMoved() const { return m_AllocationsMoved; }
+    VkDeviceSize GetBytesMoved() const override { return m_BytesMoved; }
+    uint32_t GetAllocationsMoved() const override { return m_AllocationsMoved; }
 
 private:
     struct BlockInfo

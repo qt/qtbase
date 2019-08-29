@@ -55,7 +55,7 @@ public:
     QIntegrityHIDManager(const QString &key, const QString &specification, QObject *parent = nullptr);
     ~QIntegrityHIDManager();
 
-    void run(void);
+    void run(void) override;
 private:
     void open_devices(void);
 

@@ -187,7 +187,7 @@ private:
         void doubleTimeout();
         void resetTimeout() {timeoutMs = 1000;}
         void stop();
-        void timerEvent(QTimerEvent *event);
+        void timerEvent(QTimerEvent *event) override;
 
         int timerId = -1;
         int timeoutMs = 1000;

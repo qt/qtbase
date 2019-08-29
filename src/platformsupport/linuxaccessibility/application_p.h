@@ -79,7 +79,7 @@ Q_SIGNALS:
     void windowActivated(QObject* window, bool active);
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private Q_SLOTS:
     void notifyKeyboardListenerCallback(const QDBusMessage& message);

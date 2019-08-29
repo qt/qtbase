@@ -48,7 +48,7 @@ class QLibInputPlugin : public QGenericPlugin
     Q_PLUGIN_METADATA(IID QGenericPluginFactoryInterface_iid FILE "libinput.json")
 
 public:
-    QObject *create(const QString &key, const QString &specification);
+    QObject *create(const QString &key, const QString &specification) override;
 };
 
 QObject *QLibInputPlugin::create(const QString &key, const QString &specification)

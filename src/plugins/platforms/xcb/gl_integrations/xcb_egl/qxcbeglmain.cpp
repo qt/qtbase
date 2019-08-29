@@ -48,7 +48,7 @@ class QXcbEglIntegrationPlugin : public QXcbGlIntegrationPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID QXcbGlIntegrationFactoryInterface_iid FILE "xcb_egl.json")
 public:
-    QXcbGlIntegration *create()
+    QXcbGlIntegration *create() override
     {
         return new QXcbEglIntegration();
     }

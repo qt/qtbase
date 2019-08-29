@@ -53,7 +53,7 @@ class QTuioTouchPlugin : public QGenericPlugin
 public:
     QTuioTouchPlugin();
 
-    QObject* create(const QString &key, const QString &specification);
+    QObject* create(const QString &key, const QString &specification) override;
 };
 
 QTuioTouchPlugin::QTuioTouchPlugin()

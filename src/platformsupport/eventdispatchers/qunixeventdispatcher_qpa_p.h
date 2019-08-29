@@ -64,10 +64,10 @@ public:
     explicit QUnixEventDispatcherQPA(QObject *parent = nullptr);
     ~QUnixEventDispatcherQPA();
 
-    bool processEvents(QEventLoop::ProcessEventsFlags flags);
-    bool hasPendingEvents();
+    bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
+    bool hasPendingEvents() override;
 
-    void flush();
+    void flush() override;
 };
 
 QT_END_NAMESPACE

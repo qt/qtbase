@@ -80,8 +80,8 @@ public:
     ~AtSpiAdaptor();
 
     void registerApplication();
-    QString introspect(const QString &path) const;
-    bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection);
+    QString introspect(const QString &path) const override;
+    bool handleMessage(const QDBusMessage &message, const QDBusConnection &connection) override;
     void notify(QAccessibleEvent *event);
 
     void init();

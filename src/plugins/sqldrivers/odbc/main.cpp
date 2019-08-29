@@ -51,7 +51,7 @@ class QODBCDriverPlugin : public QSqlDriverPlugin
 public:
     QODBCDriverPlugin();
 
-    QSqlDriver* create(const QString &);
+    QSqlDriver* create(const QString &) override;
 };
 
 QODBCDriverPlugin::QODBCDriverPlugin()

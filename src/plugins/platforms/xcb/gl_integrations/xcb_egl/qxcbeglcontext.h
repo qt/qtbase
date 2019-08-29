@@ -56,7 +56,7 @@ public:
     {
     }
 
-    void swapBuffers(QPlatformSurface *surface)
+    void swapBuffers(QPlatformSurface *surface) override
     {
         QEGLPlatformContext::swapBuffers(surface);
         if (surface->surface()->surfaceClass() == QSurface::Window) {
@@ -69,17 +69,17 @@ public:
         }
     }
 
-    bool makeCurrent(QPlatformSurface *surface)
+    bool makeCurrent(QPlatformSurface *surface) override
     {
         return QEGLPlatformContext::makeCurrent(surface);
     }
 
-    void doneCurrent()
+    void doneCurrent() override
     {
         QEGLPlatformContext::doneCurrent();
     }
 
-    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface)
+    EGLSurface eglSurfaceForPlatformSurface(QPlatformSurface *surface) override
     {
         if (surface->surface()->surfaceClass() == QSurface::Window)
             return static_cast<QXcbEglWindow *>(surface)->eglSurface();
