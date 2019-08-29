@@ -112,6 +112,8 @@ clang {
     greaterThan(QT_GCC_MAJOR_VERSION, 6): QMAKE_CXXFLAGS_WARN_ON += -Wno-stringop-overflow
     # GCC 9 introduced -Wformat-overflow in -Wall, but it is buggy:
     greaterThan(QT_GCC_MAJOR_VERSION, 8): QMAKE_CXXFLAGS_WARN_ON += -Wno-format-overflow
+    ver = $${QT_GCC_MAJOR_VERSION}.$${QT_GCC_MINOR_VERSION}
+    versionAtLeast(ver, 9.2): QMAKE_CXXFLAGS_WARN_ON += -Wsuggest-override
 }
 
 warnings_are_errors:warning_clean {
