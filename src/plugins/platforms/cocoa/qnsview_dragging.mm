@@ -270,6 +270,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
         // The drag was started from within the application
         response = QWindowSystemInterface::handleDrop(target, nativeDrag->dragMimeData(),
                                                       point, qtAllowed, buttons, modifiers);
+        nativeDrag->setAcceptedAction(response.acceptedAction());
     } else {
         QCocoaDropData mimeData(sender.draggingPasteboard);
         response = QWindowSystemInterface::handleDrop(target, &mimeData,
@@ -282,6 +283,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
 {
     Q_UNUSED(session);
     Q_UNUSED(screenPoint);
+    Q_UNUSED(operation);
 
     if (!m_platformWindow)
         return;
@@ -290,8 +292,7 @@ static QPoint mapWindowCoordinates(QWindow *source, QWindow *target, QPoint poin
     if (!target)
         return;
 
-    QCocoaDrag* nativeDrag = QCocoaIntegration::instance()->drag();
-    nativeDrag->setAcceptedAction(qt_mac_mapNSDragOperation(operation));
+    QCocoaIntegration::instance()->drag();
 
     // Qt starts drag-and-drop on a mouse button press event. Cococa in
     // this case won't send the matching release event, so we have to
