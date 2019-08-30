@@ -1890,9 +1890,8 @@ void tst_QImageReader::saveFormat()
 
 void tst_QImageReader::saveColorSpace_data()
 {
-    QTest::addColumn<QColorSpace::ColorSpaceId>("colorspaceId");
+    QTest::addColumn<QColorSpace::NamedColorSpace>("namedColorSpace");
 
-    QTest::newRow("Undefined")    << QColorSpace::Undefined;
     QTest::newRow("sRGB")         << QColorSpace::SRgb;
     QTest::newRow("sRGB(linear)") << QColorSpace::SRgbLinear;
     QTest::newRow("AdobeRGB")     << QColorSpace::AdobeRgb;
@@ -1902,11 +1901,11 @@ void tst_QImageReader::saveColorSpace_data()
 
 void tst_QImageReader::saveColorSpace()
 {
-    QFETCH(QColorSpace::ColorSpaceId, colorspaceId);
+    QFETCH(QColorSpace::NamedColorSpace, namedColorSpace);
 
     QImage orig(":/images/kollada.png");
 
-    orig.setColorSpace(colorspaceId);
+    orig.setColorSpace(namedColorSpace);
     QBuffer buf;
     buf.open(QIODevice::WriteOnly);
     QVERIFY(orig.save(&buf, "png"));
