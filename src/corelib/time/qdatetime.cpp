@@ -74,6 +74,7 @@
 #endif
 
 #include "qcalendar.h"
+#include "qgregoriancalendar_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -103,6 +104,17 @@ static inline QDate fixedDate(QCalendar::YearMonthDay &&parts, QCalendar cal)
 
     parts.day = qMin(parts.day, cal.daysInMonth(parts.month, parts.year));
     return cal.dateFromParts(parts);
+}
+
+static inline QDate fixedDate(QCalendar::YearMonthDay &&parts)
+{
+    if (parts.year) {
+        parts.day = qMin(parts.day, QGregorianCalendar::monthLength(parts.month, parts.year));
+        qint64 jd;
+        if (QGregorianCalendar::julianFromParts(parts.year, parts.month, parts.day, &jd))
+            return QDate::fromJulianDay(jd);
+    }
+    return QDate();
 }
 
 /*****************************************************************************
@@ -340,7 +352,8 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) noexcep
 
 QDate::QDate(int y, int m, int d)
 {
-    *this = QCalendar().dateFromParts(y, m, d);
+    if (!QGregorianCalendar::julianFromParts(y, m, d, &jd))
+        jd = nullJd();
 }
 
 QDate::QDate(int y, int m, int d, QCalendar cal)
@@ -405,7 +418,12 @@ int QDate::year(QCalendar cal) const
 
 int QDate::year() const
 {
-    return year(QCalendar());
+    if (isValid()) {
+        const auto parts = QGregorianCalendar::partsFromJulian(jd);
+        if (parts.isValid())
+            return parts.year;
+    }
+    return 0;
 }
 
 /*!
@@ -452,7 +470,12 @@ int QDate::month(QCalendar cal) const
 
 int QDate::month() const
 {
-    return month(QCalendar());
+    if (isValid()) {
+        const auto parts = QGregorianCalendar::partsFromJulian(jd);
+        if (parts.isValid())
+            return parts.month;
+    }
+    return 0;
 }
 
 /*!
@@ -480,7 +503,12 @@ int QDate::day(QCalendar cal) const
 
 int QDate::day() const
 {
-    return day(QCalendar());
+    if (isValid()) {
+        const auto parts = QGregorianCalendar::partsFromJulian(jd);
+        if (parts.isValid())
+            return parts.day;
+    }
+    return 0;
 }
 
 /*!
@@ -507,7 +535,7 @@ int QDate::dayOfWeek(QCalendar cal) const
 
 int QDate::dayOfWeek() const
 {
-    return dayOfWeek(QCalendar());
+    return isValid() ? QGregorianCalendar::weekDayOfJulian(jd) : 0;
 }
 
 /*!
@@ -535,7 +563,12 @@ int QDate::dayOfYear(QCalendar cal) const
 
 int QDate::dayOfYear() const
 {
-    return dayOfYear(QCalendar());
+    if (isValid()) {
+        qint64 first;
+        if (QGregorianCalendar::julianFromParts(year(), 1, 1, &first))
+            return jd - first + 1;
+    }
+    return 0;
 }
 
 /*!
@@ -563,7 +596,12 @@ int QDate::daysInMonth(QCalendar cal) const
 
 int QDate::daysInMonth() const
 {
-    return daysInMonth(QCalendar());
+    if (isValid()) {
+        const auto parts = QGregorianCalendar::partsFromJulian(jd);
+        if (parts.isValid())
+            return QGregorianCalendar::monthLength(parts.month, parts.year);
+    }
+    return 0;
 }
 
 /*!
@@ -589,7 +627,7 @@ int QDate::daysInYear(QCalendar cal) const
 
 int QDate::daysInYear() const
 {
-    return daysInYear(QCalendar());
+    return isValid() ? QGregorianCalendar::leapTest(year()) ? 366 : 365 : 0;
 }
 
 /*!
@@ -1303,7 +1341,11 @@ QString QDate::toString(const QString &format, QCalendar cal) const
 */
 bool QDate::setDate(int year, int month, int day)
 {
-    return setDate(year, month, day, QCalendar());
+    if (QGregorianCalendar::julianFromParts(year, month, day, &jd))
+        return true;
+
+    jd = nullJd();
+    return false;
 }
 
 /*!
@@ -1339,7 +1381,7 @@ void QDate::getDate(int *year, int *month, int *day) const
 {
     QCalendar::YearMonthDay parts; // invalid by default
     if (isValid())
-        parts = QCalendar().partsFromDate(*this);
+        parts = QGregorianCalendar::partsFromJulian(jd);
 
     const bool ok = parts.isValid();
     if (year)
@@ -1428,7 +1470,30 @@ QDate QDate::addMonths(int nmonths, QCalendar cal) const
 
 QDate QDate::addMonths(int nmonths) const
 {
-    return addMonths(nmonths, QCalendar());
+    if (isNull())
+        return QDate();
+
+    if (nmonths == 0)
+        return *this;
+
+    auto parts = QGregorianCalendar::partsFromJulian(jd);
+
+    if (!parts.isValid())
+        return QDate();
+    Q_ASSERT(parts.year);
+
+    parts.month += nmonths;
+    while (parts.month <= 0) {
+        if (--parts.year) // skip over year 0
+            parts.month += 12;
+    }
+    while (parts.month > 12) {
+        parts.month -= 12;
+        if (!++parts.year) // skip over year 0
+            ++parts.year;
+    }
+
+    return fixedDate(std::move(parts));
 }
 
 /*!
@@ -1470,7 +1535,21 @@ QDate QDate::addYears(int nyears, QCalendar cal) const
 
 QDate QDate::addYears(int nyears) const
 {
-    return addYears(nyears, QCalendar());
+    if (isNull())
+        return QDate();
+
+    auto parts = QGregorianCalendar::partsFromJulian(jd);
+    if (!parts.isValid())
+        return QDate();
+
+    int old_y = parts.year;
+    parts.year += nyears;
+
+    // If we just crossed (or hit) a missing year zero, adjust year by +/- 1:
+    if ((old_y > 0) != (parts.year > 0) || !parts.year)
+        parts.year += nyears > 0 ? +1 : -1;
+
+    return fixedDate(std::move(parts));
 }
 
 /*!
@@ -1719,7 +1798,7 @@ QDate QDate::fromString(const QString &string, const QString &format)
 
 bool QDate::isValid(int year, int month, int day)
 {
-    return QCalendar().isDateValid(year, month, day);
+    return QGregorianCalendar::validParts(year, month, day);
 }
 
 /*!
@@ -1733,7 +1812,7 @@ bool QDate::isValid(int year, int month, int day)
 
 bool QDate::isLeapYear(int y)
 {
-    return QCalendar().isLeapYear(y);
+    return QGregorianCalendar::leapTest(y);
 }
 
 /*! \fn static QDate QDate::fromJulianDay(qint64 jd)

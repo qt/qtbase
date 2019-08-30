@@ -148,19 +148,19 @@ public:
     explicit QCalendarPopup(QWidget *parent = nullptr, QCalendarWidget *cw = nullptr,
                             QCalendar ca = QCalendar());
     QDate selectedDate() { return verifyCalendarInstance()->selectedDate(); }
-    void setDate(const QDate &date);
-    void setDateRange(const QDate &min, const QDate &max);
+    void setDate(QDate date);
+    void setDateRange(QDate min, QDate max);
     void setFirstDayOfWeek(Qt::DayOfWeek dow) { verifyCalendarInstance()->setFirstDayOfWeek(dow); }
     QCalendarWidget *calendarWidget() const { return const_cast<QCalendarPopup*>(this)->verifyCalendarInstance(); }
     void setCalendarWidget(QCalendarWidget *cw);
 Q_SIGNALS:
-    void activated(const QDate &date);
-    void newDateSelected(const QDate &newDate);
-    void hidingCalendar(const QDate &oldDate);
+    void activated(QDate date);
+    void newDateSelected(QDate newDate);
+    void hidingCalendar(QDate oldDate);
     void resetButton();
 
 private Q_SLOTS:
-    void dateSelected(const QDate &date);
+    void dateSelected(QDate date);
     void dateSelectionChanged();
 
 protected:

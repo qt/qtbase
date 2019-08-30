@@ -71,4 +71,3 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
 
     write_file($$ANDROID_DEPLOYMENT_SETTINGS_FILE, FILE_CONTENT)|error()
 }
-

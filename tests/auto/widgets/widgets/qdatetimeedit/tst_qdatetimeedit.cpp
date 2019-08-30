@@ -348,8 +348,7 @@ static QLatin1String sectionToName(const QDateTimeEdit::Section section)
     }
 }
 
-static QDate stepDate(const QDate& startDate, const QDateTimeEdit::Section section,
-                      const int steps)
+static QDate stepDate(QDate startDate, const QDateTimeEdit::Section section, const int steps)
 {
     switch (section) {
     case QDateTimeEdit::DaySection:
@@ -364,8 +363,7 @@ static QDate stepDate(const QDate& startDate, const QDateTimeEdit::Section secti
     }
 }
 
-static QTime stepTime(const QTime& startTime, const QDateTimeEdit::Section section,
-                      const int steps)
+static QTime stepTime(QTime startTime, const QDateTimeEdit::Section section, const int steps)
 {
     switch (section) {
     case QDateTimeEdit::SecondSection:

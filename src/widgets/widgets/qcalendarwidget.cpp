@@ -91,10 +91,10 @@ public:
     QCalendarDateSectionValidator() {}
     virtual ~QCalendarDateSectionValidator() {}
     virtual Section handleKey(int key) = 0;
-    virtual QDate applyToDate(const QDate &date, QCalendar cal = QCalendar()) const = 0;
-    virtual void setDate(const QDate &date, QCalendar cal = QCalendar()) = 0;
+    virtual QDate applyToDate(QDate date, QCalendar cal = QCalendar()) const = 0;
+    virtual void setDate(QDate date, QCalendar cal = QCalendar()) = 0;
     virtual QString text() const = 0;
-    virtual QString text(const QDate &date, QCalendar cal, int repeat) const = 0;
+    virtual QString text(QDate date, QCalendar cal, int repeat) const = 0;
 
     QLocale m_locale;
 
@@ -117,10 +117,10 @@ class QCalendarDayValidator : public QCalendarDateSectionValidator
 public:
     QCalendarDayValidator();
     virtual Section handleKey(int key) override;
-    virtual QDate applyToDate(const QDate &date, QCalendar cal) const override;
-    virtual void setDate(const QDate &date, QCalendar cal) override;
+    virtual QDate applyToDate(QDate date, QCalendar cal) const override;
+    virtual void setDate(QDate date, QCalendar cal) override;
     virtual QString text() const override;
-    virtual QString text(const QDate &date, QCalendar cal, int repeat) const override;
+    virtual QString text(QDate date, QCalendar cal, int repeat) const override;
 private:
     int m_pos;
     int m_day;
@@ -181,7 +181,7 @@ QCalendarDateSectionValidator::Section QCalendarDayValidator::handleKey(int key)
     return QCalendarDateSectionValidator::ThisSection;
 }
 
-QDate QCalendarDayValidator::applyToDate(const QDate &date, QCalendar cal) const
+QDate QCalendarDayValidator::applyToDate(QDate date, QCalendar cal) const
 {
     auto parts = cal.partsFromDate(date);
     if (!parts.isValid())
@@ -190,7 +190,7 @@ QDate QCalendarDayValidator::applyToDate(const QDate &date, QCalendar cal) const
     return cal.dateFromParts(parts);
 }
 
-void QCalendarDayValidator::setDate(const QDate &date, QCalendar cal)
+void QCalendarDayValidator::setDate(QDate date, QCalendar cal)
 {
     m_day = m_oldDay = date.day(cal);
     m_pos = 0;
@@ -201,7 +201,7 @@ QString QCalendarDayValidator::text() const
     return highlightString(formatNumber(m_day, 2), m_pos);
 }
 
-QString QCalendarDayValidator::text(const QDate &date, QCalendar cal, int repeat) const
+QString QCalendarDayValidator::text(QDate date, QCalendar cal, int repeat) const
 {
     if (repeat <= 1) {
         return QString::number(date.day(cal));
@@ -222,10 +222,10 @@ class QCalendarMonthValidator : public QCalendarDateSectionValidator
 public:
     QCalendarMonthValidator();
     virtual Section handleKey(int key) override;
-    virtual QDate applyToDate(const QDate &date, QCalendar cal) const override;
-    virtual void setDate(const QDate &date, QCalendar cal) override;
+    virtual QDate applyToDate(QDate date, QCalendar cal) const override;
+    virtual void setDate(QDate date, QCalendar cal) override;
     virtual QString text() const override;
-    virtual QString text(const QDate &date, QCalendar cal, int repeat) const override;
+    virtual QString text(QDate date, QCalendar cal, int repeat) const override;
 private:
     int m_pos;
     int m_month;
@@ -286,7 +286,7 @@ QCalendarDateSectionValidator::Section QCalendarMonthValidator::handleKey(int ke
     return QCalendarDateSectionValidator::ThisSection;
 }
 
-QDate QCalendarMonthValidator::applyToDate(const QDate &date, QCalendar cal) const
+QDate QCalendarMonthValidator::applyToDate(QDate date, QCalendar cal) const
 {
     auto parts = cal.partsFromDate(date);
     if (!parts.isValid())
@@ -296,7 +296,7 @@ QDate QCalendarMonthValidator::applyToDate(const QDate &date, QCalendar cal) con
     return cal.dateFromParts(parts);
 }
 
-void QCalendarMonthValidator::setDate(const QDate &date, QCalendar cal)
+void QCalendarMonthValidator::setDate(QDate date, QCalendar cal)
 {
     m_month = m_oldMonth = date.month(cal);
     m_pos = 0;
@@ -307,7 +307,7 @@ QString QCalendarMonthValidator::text() const
     return highlightString(formatNumber(m_month, 2), m_pos);
 }
 
-QString QCalendarMonthValidator::text(const QDate &date, QCalendar cal, int repeat) const
+QString QCalendarMonthValidator::text(QDate date, QCalendar cal, int repeat) const
 {
     if (repeat <= 1) {
         return QString::number(date.month(cal));
@@ -328,10 +328,10 @@ class QCalendarYearValidator : public QCalendarDateSectionValidator
 public:
     QCalendarYearValidator();
     virtual Section handleKey(int key) override;
-    virtual QDate applyToDate(const QDate &date, QCalendar cal) const override;
-    virtual void setDate(const QDate &date, QCalendar cal) override;
+    virtual QDate applyToDate(QDate date, QCalendar cal) const override;
+    virtual void setDate(QDate date, QCalendar cal) override;
     virtual QString text() const override;
-    virtual QString text(const QDate &date, QCalendar cal, int repeat) const override;
+    virtual QString text(QDate date, QCalendar cal, int repeat) const override;
 private:
     int pow10(int n);
     int m_pos;
@@ -392,7 +392,7 @@ QCalendarDateSectionValidator::Section QCalendarYearValidator::handleKey(int key
     return QCalendarDateSectionValidator::ThisSection;
 }
 
-QDate QCalendarYearValidator::applyToDate(const QDate &date, QCalendar cal) const
+QDate QCalendarYearValidator::applyToDate(QDate date, QCalendar cal) const
 {
     auto parts = cal.partsFromDate(date);
     if (!parts.isValid())
@@ -403,7 +403,7 @@ QDate QCalendarYearValidator::applyToDate(const QDate &date, QCalendar cal) cons
     return cal.dateFromParts(parts);
 }
 
-void QCalendarYearValidator::setDate(const QDate &date, QCalendar cal)
+void QCalendarYearValidator::setDate(QDate date, QCalendar cal)
 {
     m_year = m_oldYear = date.year(cal);
     m_pos = 0;
@@ -414,7 +414,7 @@ QString QCalendarYearValidator::text() const
     return highlightString(formatNumber(m_year, 4), m_pos);
 }
 
-QString QCalendarYearValidator::text(const QDate &date, QCalendar cal, int repeat) const
+QString QCalendarYearValidator::text(QDate date, QCalendar cal, int repeat) const
 {
     if (repeat < 4)
         return formatNumber(date.year(cal) % 100, 2);
@@ -444,7 +444,7 @@ public:
     QString currentText(QCalendar cal) const;
     QDate currentDate() const { return m_currentDate; }
     void setFormat(const QString &format);
-    void setInitialDate(const QDate &date, QCalendar cal);
+    void setInitialDate(QDate date, QCalendar cal);
 
     void setLocale(const QLocale &locale);
 
@@ -501,7 +501,7 @@ int QCalendarDateValidator::countRepeat(const QString &str, int index) const
     return count;
 }
 
-void QCalendarDateValidator::setInitialDate(const QDate &date, QCalendar cal)
+void QCalendarDateValidator::setInitialDate(QDate date, QCalendar cal)
 {
     m_yearValidator.setDate(date, cal);
     m_monthValidator.setDate(date, cal);
@@ -648,13 +648,13 @@ public:
     int dateEditAcceptDelay() const;
     void setDateEditAcceptDelay(int delay);
 
-    void setDate(const QDate &date);
+    void setDate(QDate date);
 
     bool eventFilter(QObject *o, QEvent *e) override;
     void timerEvent(QTimerEvent *e) override;
 
 signals:
-    void dateChanged(const QDate &date);
+    void dateChanged(QDate date);
     void editingFinished();
 
 private:
@@ -684,7 +684,7 @@ void QCalendarTextNavigator::setWidget(QWidget *widget)
     m_widget = widget;
 }
 
-void QCalendarTextNavigator::setDate(const QDate &date)
+void QCalendarTextNavigator::setDate(QDate date)
 {
     m_date = date;
 }
@@ -891,15 +891,15 @@ public:
     }
 
     void showMonth(int year, int month);
-    void setDate(const QDate &d);
+    void setDate(QDate d);
 
     void setCalendar(QCalendar c);
     QCalendar calendar() const;
 
-    void setMinimumDate(const QDate &date);
-    void setMaximumDate(const QDate &date);
+    void setMinimumDate(QDate date);
+    void setMaximumDate(QDate date);
 
-    void setRange(const QDate &min, const QDate &max);
+    void setRange(QDate min, QDate max);
 
     void setHorizontalHeaderFormat(QCalendarWidget::HorizontalHeaderFormat format);
 
@@ -913,7 +913,7 @@ public:
     Qt::DayOfWeek dayOfWeekForColumn(int section) const;
     int columnForDayOfWeek(Qt::DayOfWeek day) const;
     QDate dateForCell(int row, int column) const;
-    void cellForDate(const QDate &date, int *row, int *column) const;
+    void cellForDate(QDate date, int *row, int *column) const;
     QString dayName(Qt::DayOfWeek day) const;
 
     void setView(QCalendarView *view)
@@ -921,7 +921,7 @@ public:
 
     void internalUpdate();
     QDate referenceDate() const;
-    int columnForFirstOfMonth(const QDate &date) const;
+    int columnForFirstOfMonth(QDate date) const;
 
     int m_firstColumn;
     int m_firstRow;
@@ -951,9 +951,9 @@ public:
     virtual void keyboardSearch(const QString & search) override { Q_UNUSED(search) }
 
 signals:
-    void showDate(const QDate &date);
-    void changeDate(const QDate &date, bool changeMonth);
-    void clicked(const QDate &date);
+    void showDate(QDate date);
+    void changeDate(QDate date, bool changeMonth);
+    void clicked(QDate date);
     void editingFinished();
 protected:
     QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) override;
@@ -1039,7 +1039,7 @@ QDate QCalendarModel::referenceDate() const
     return QDate();
 }
 
-int QCalendarModel::columnForFirstOfMonth(const QDate &date) const
+int QCalendarModel::columnForFirstOfMonth(QDate date) const
 {
     return (columnForDayOfWeek(static_cast<Qt::DayOfWeek>(m_calendar.dayOfWeek(date)))
             - (date.day(m_calendar) % 7) + 8) % 7;
@@ -1063,7 +1063,7 @@ QDate QCalendarModel::dateForCell(int row, int column) const
     return refDate.addDays(requestedDay);
 }
 
-void QCalendarModel::cellForDate(const QDate &date, int *row, int *column) const
+void QCalendarModel::cellForDate(QDate date, int *row, int *column) const
 {
     if (!row && !column)
         return;
@@ -1206,7 +1206,7 @@ Qt::ItemFlags QCalendarModel::flags(const QModelIndex &index) const
     return QAbstractTableModel::flags(index);
 }
 
-void QCalendarModel::setDate(const QDate &d)
+void QCalendarModel::setDate(QDate d)
 {
     m_date = d;
     if (m_date < m_minimumDate)
@@ -1240,7 +1240,7 @@ void QCalendarModel::showMonth(int year, int month)
     internalUpdate();
 }
 
-void QCalendarModel::setMinimumDate(const QDate &d)
+void QCalendarModel::setMinimumDate(QDate d)
 {
     if (!d.isValid() || d == m_minimumDate)
         return;
@@ -1253,7 +1253,7 @@ void QCalendarModel::setMinimumDate(const QDate &d)
     internalUpdate();
 }
 
-void QCalendarModel::setMaximumDate(const QDate &d)
+void QCalendarModel::setMaximumDate(QDate d)
 {
     if (!d.isValid() || d == m_maximumDate)
         return;
@@ -1266,7 +1266,7 @@ void QCalendarModel::setMaximumDate(const QDate &d)
     internalUpdate();
 }
 
-void QCalendarModel::setRange(const QDate &min, const QDate &max)
+void QCalendarModel::setRange(QDate min, QDate max)
 {
     m_minimumDate = min;
     m_maximumDate = max;
@@ -1597,7 +1597,7 @@ public:
             { }
     virtual void paint(QPainter *painter, const QStyleOptionViewItem &option,
                 const QModelIndex &index) const override;
-    void paintCell(QPainter *painter, const QRect &rect, const QDate &date) const;
+    void paintCell(QPainter *painter, const QRect &rect, QDate date) const;
 
 private:
     QCalendarWidgetPrivate *calendarWidgetPrivate;
@@ -1658,11 +1658,11 @@ public:
 
     void showMonth(int year, int month);
     void update();
-    void paintCell(QPainter *painter, const QRect &rect, const QDate &date) const;
+    void paintCell(QPainter *painter, const QRect &rect, QDate date) const;
 
-    void _q_slotShowDate(const QDate &date);
-    void _q_slotChangeDate(const QDate &date);
-    void _q_slotChangeDate(const QDate &date, bool changeMonth);
+    void _q_slotShowDate(QDate date);
+    void _q_slotChangeDate(QDate date);
+    void _q_slotChangeDate(QDate date, bool changeMonth);
     void _q_editingFinished();
     void _q_monthChanged(QAction*);
     void _q_prevMonthClicked();
@@ -1675,7 +1675,7 @@ public:
     void updateMonthMenu();
     void updateMonthMenuNames();
     void updateNavigationBar();
-    void updateCurrentPage(const QDate &newDate);
+    void updateCurrentPage(QDate newDate);
     inline QDate getCurrentDate();
     void setNavigatorEnabled(bool enable);
 
@@ -1714,7 +1714,7 @@ void QCalendarDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opt
     }
 }
 
-void QCalendarDelegate::paintCell(QPainter *painter, const QRect &rect, const QDate &date) const
+void QCalendarDelegate::paintCell(QPainter *painter, const QRect &rect, QDate date) const
 {
     storedOption.rect = rect;
     int row = -1;
@@ -1881,7 +1881,7 @@ void QCalendarWidgetPrivate::updateMonthMenuNames()
     }
 }
 
-void QCalendarWidgetPrivate::updateCurrentPage(const QDate &date)
+void QCalendarWidgetPrivate::updateCurrentPage(QDate date)
 {
     Q_Q(QCalendarWidget);
     QCalendar cal = m_model->calendar();
@@ -1999,23 +1999,23 @@ void QCalendarWidgetPrivate::update()
     }
 }
 
-void QCalendarWidgetPrivate::paintCell(QPainter *painter, const QRect &rect, const QDate &date) const
+void QCalendarWidgetPrivate::paintCell(QPainter *painter, const QRect &rect, QDate date) const
 {
     Q_Q(const QCalendarWidget);
     q->paintCell(painter, rect, date);
 }
 
-void QCalendarWidgetPrivate::_q_slotShowDate(const QDate &date)
+void QCalendarWidgetPrivate::_q_slotShowDate(QDate date)
 {
     updateCurrentPage(date);
 }
 
-void QCalendarWidgetPrivate::_q_slotChangeDate(const QDate &date)
+void QCalendarWidgetPrivate::_q_slotChangeDate(QDate date)
 {
     _q_slotChangeDate(date, true);
 }
 
-void QCalendarWidgetPrivate::_q_slotChangeDate(const QDate &date, bool changeMonth)
+void QCalendarWidgetPrivate::_q_slotChangeDate(QDate date, bool changeMonth)
 {
     QDate oldDate = m_model->m_date;
     m_model->setDate(date);

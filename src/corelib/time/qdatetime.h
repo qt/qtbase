@@ -58,7 +58,7 @@ class QCalendar;
 class QTimeZone;
 class QDateTime;
 
-class Q_CORE_EXPORT QDate
+class Q_CORE_EXPORT QDate // ### Qt 6: change to be used by value, not const &
 {
 public:
     enum MonthNameType { // ### Qt 6: remove, along with methods using it
@@ -138,7 +138,7 @@ public:
     Q_REQUIRED_RESULT QDate addYears(int years) const;
     Q_REQUIRED_RESULT QDate addMonths(int months, QCalendar cal) const;
     Q_REQUIRED_RESULT QDate addYears(int years, QCalendar cal) const;
-    qint64 daysTo(const QDate &) const;
+    qint64 daysTo(const QDate &) const; // ### Qt 6: QDate
 
     Q_DECL_CONSTEXPR bool operator==(const QDate &other) const { return jd == other.jd; }
     Q_DECL_CONSTEXPR bool operator!=(const QDate &other) const { return jd != other.jd; }
@@ -177,7 +177,7 @@ private:
 };
 Q_DECLARE_TYPEINFO(QDate, Q_MOVABLE_TYPE);
 
-class Q_CORE_EXPORT QTime
+class Q_CORE_EXPORT QTime // ### Qt 6: change to be used by value, not const &
 {
     explicit Q_DECL_CONSTEXPR QTime(int ms) : mds(ms)
     {}
@@ -203,9 +203,9 @@ public:
     bool setHMS(int h, int m, int s, int ms = 0);
 
     Q_REQUIRED_RESULT QTime addSecs(int secs) const;
-    int secsTo(const QTime &) const;
+    int secsTo(const QTime &) const; // ### Qt 6: plain QTime
     Q_REQUIRED_RESULT QTime addMSecs(int ms) const;
-    int msecsTo(const QTime &) const;
+    int msecsTo(const QTime &) const; // ### Qt 6: plain QTime
 
     Q_DECL_CONSTEXPR bool operator==(const QTime &other) const { return mds == other.mds; }
     Q_DECL_CONSTEXPR bool operator!=(const QTime &other) const { return mds != other.mds; }
@@ -236,7 +236,7 @@ private:
 
     friend class QDateTime;
     friend class QDateTimePrivate;
-#ifndef QT_NO_DATASTREAM
+#ifndef QT_NO_DATASTREAM // ### Qt 6: plain QTime
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QTime &);
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QTime &);
 #endif
@@ -287,7 +287,7 @@ class Q_CORE_EXPORT QDateTime
 
 public:
     QDateTime() noexcept(Data::CanBeSmall);
-    explicit QDateTime(const QDate &);
+    explicit QDateTime(const QDate &); // ### Qt 6: plain QDate, QTime
     QDateTime(const QDate &, const QTime &, Qt::TimeSpec spec = Qt::LocalTime);
     // ### Qt 6: Merge with above with default offsetSeconds = 0
     QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec, int offsetSeconds);
@@ -319,7 +319,7 @@ public:
     qint64 toMSecsSinceEpoch() const;
     qint64 toSecsSinceEpoch() const;
 
-    void setDate(const QDate &date);
+    void setDate(const QDate &date); // ### Qt 6: plain QDate
     void setTime(const QTime &time);
     void setTimeSpec(Qt::TimeSpec spec);
     void setOffsetFromUtc(int offsetSeconds);

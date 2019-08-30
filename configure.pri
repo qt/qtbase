@@ -573,14 +573,7 @@ defineTest(qtConfOutput_prepareOptions) {
             qtConfFatalError("Cannot find Android NDK." \
                              "Please use -android-ndk option to specify one.")
 
-        ndk_tc_ver = $$eval(config.input.android-toolchain-version)
-        isEmpty(ndk_tc_ver): \
-            ndk_tc_ver = 4.9
-        !exists($$ndk_root/toolchains/arm-linux-androideabi-$$ndk_tc_ver/prebuilt/*): \
-            qtConfFatalError("Cannot detect Android NDK toolchain." \
-                             "Please use -android-toolchain-version to specify it.")
-
-        ndk_tc_pfx = $$ndk_root/toolchains/arm-linux-androideabi-$$ndk_tc_ver/prebuilt
+        ndk_tc_pfx = $$ndk_root/toolchains/llvm/prebuilt
         ndk_host = $$eval(config.input.android-ndk-host)
         isEmpty(ndk_host): \
             ndk_host = $$getenv(ANDROID_NDK_HOST)
@@ -632,8 +625,7 @@ defineTest(qtConfOutput_prepareOptions) {
             "DEFAULT_ANDROID_NDK_ROOT = $$val_escape(ndk_root)" \
             "DEFAULT_ANDROID_PLATFORM = $$platform" \
             "DEFAULT_ANDROID_NDK_HOST = $$ndk_host" \
-            "DEFAULT_ANDROID_ABIS = $$split(android_abis, ',')" \
-            "DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION = $$ndk_tc_ver"
+            "DEFAULT_ANDROID_ABIS = $$split(android_abis, ',')"
     }
 
     export($${currentConfig}.output.devicePro)
