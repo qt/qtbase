@@ -102,6 +102,7 @@ macro(qt_set_up_standalone_tests_build)
     qt_set_up_build_internals_paths()
     include(QtSetup)
     qt_find_apple_system_frameworks()
+    qt_check_if_tools_will_be_built()
 endmacro()
 
 macro(qt_build_tests)
