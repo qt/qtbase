@@ -129,6 +129,7 @@ struct Options
         , jarSigner(false)
         , installApk(false)
         , uninstallApk(false)
+        , qmlImportScannerBinaryPath()
     {}
 
     enum DeploymentMechanism
@@ -230,6 +231,9 @@ struct Options
     QStringList initClasses;
     QStringList permissions;
     QStringList features;
+
+    // Override qml import scanner path
+    QString qmlImportScannerBinaryPath;
 };
 
 static const QHash<QByteArray, QByteArray> elfArchitecures = {
@@ -520,6 +524,8 @@ Options parseOptions()
             options.generateAssetsFileList = false;
         } else if (argument.compare(QLatin1String("--aux-mode"), Qt::CaseInsensitive) == 0) {
             options.auxMode = true;
+        } else if (argument.compare(QLatin1String("--qml-importscanner-binary"), Qt::CaseInsensitive) == 0) {
+            options.qmlImportScannerBinaryPath = arguments.at(++i).trimmed();
         }
     }
 
@@ -602,6 +608,10 @@ void printHelp()
                     "       dependencies into the build directory and update the XML templates.\n"
                     "       The project will not be built or installed.\n"
                     "    --apk <path/where/to/copy/the/apk>: Path where to copy the built apk.\n"
+                    "    --qml-importscanner-binary <path/to/qmlimportscanner>: Override the\n"
+                    "       default qmlimportscanner binary path. By default the\n"
+                    "       qmlimportscanner binary is located using the Qt directory\n"
+                    "       specified in the input file.\n"
                     "    --help: Displays this information.\n\n",
                     qPrintable(QCoreApplication::arguments().at(0))
             );
@@ -920,6 +930,12 @@ bool readInputFile(Options *options)
         const QJsonValue qmlImportPaths = jsonObject.value(QLatin1String("qml-import-paths"));
         if (!qmlImportPaths.isUndefined())
             options->qmlImportPaths = qmlImportPaths.toString().split(QLatin1Char(','));
+    }
+
+    {
+        const QJsonValue qmlImportScannerBinaryPath = jsonObject.value(QLatin1String("qml-importscanner-binary"));
+        if (!qmlImportScannerBinaryPath.isUndefined())
+            options->qmlImportScannerBinaryPath = qmlImportScannerBinaryPath.toString();
     }
 
     {
@@ -1726,10 +1742,15 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
     if (options->verbose)
         fprintf(stdout, "Scanning for QML imports.\n");
 
-    QString qmlImportScanner = options->qtInstallDirectory + QLatin1String("/bin/qmlimportscanner");
+    QString qmlImportScanner;
+    if (!options->qmlImportScannerBinaryPath.isEmpty()) {
+        qmlImportScanner = options->qmlImportScannerBinaryPath;
+    } else {
+        options->qtInstallDirectory + QLatin1String("/bin/qmlimportscanner");
 #if defined(Q_OS_WIN32)
-    qmlImportScanner += QLatin1String(".exe");
+        qmlImportScanner += QLatin1String(".exe");
 #endif
+    }
 
     if (!QFile::exists(qmlImportScanner)) {
         fprintf(stderr, "qmlimportscanner not found: %s\n", qPrintable(qmlImportScanner));
