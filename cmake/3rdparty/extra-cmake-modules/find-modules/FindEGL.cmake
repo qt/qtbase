@@ -129,25 +129,33 @@ int main(int argc, char *argv[]) {
 
 cmake_pop_check_state()
 
+set(required_vars EGL_INCLUDE_DIR HAVE_EGL)
+if(NOT EMSCRIPTEN)
+    list(APPEND required_vars EGL_LIBRARY)
+endif()
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(EGL
     FOUND_VAR
         EGL_FOUND
     REQUIRED_VARS
-        EGL_LIBRARY
-        EGL_INCLUDE_DIR
-        HAVE_EGL
+        ${required_vars}
     VERSION_VAR
         EGL_VERSION
 )
 
 if(EGL_FOUND AND NOT TARGET EGL::EGL)
-    add_library(EGL::EGL UNKNOWN IMPORTED)
-    set_target_properties(EGL::EGL PROPERTIES
-        IMPORTED_LOCATION "${EGL_LIBRARY}"
-        INTERFACE_COMPILE_OPTIONS "${EGL_DEFINITIONS}"
-        INTERFACE_INCLUDE_DIRECTORIES "${EGL_INCLUDE_DIR}"
-    )
+    if (EMSCRIPTEN)
+        add_library(EGL::EGL INTERFACE IMPORTED)
+        # Nothing further to be done, system include paths have headers and linkage is implicit.
+    else()
+        add_library(EGL::EGL UNKNOWN IMPORTED)
+        set_target_properties(EGL::EGL PROPERTIES
+            IMPORTED_LOCATION "${EGL_LIBRARY}"
+            INTERFACE_COMPILE_OPTIONS "${EGL_DEFINITIONS}"
+            INTERFACE_INCLUDE_DIRECTORIES "${EGL_INCLUDE_DIR}"
+        )
+    endif()
 endif()
 
 mark_as_advanced(EGL_LIBRARY EGL_INCLUDE_DIR HAVE_EGL)
