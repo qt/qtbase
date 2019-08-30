@@ -1225,6 +1225,10 @@ function(add_qt_module target)
     else()
         add_library("${target}" STATIC)
     endif()
+
+    if (android)
+        qt_android_apply_arch_suffix("${target}")
+    endif()
     qt_internal_add_target_aliases("${target}")
 
     # Add _private target to link against the private headers:
@@ -1682,6 +1686,10 @@ function(add_qt_plugin target)
             # but Qt plugins are actually suffixed with .dylib.
             set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
         endif()
+    endif()
+
+    if (ANDROID)
+        qt_android_apply_arch_suffix("${target}")
     endif()
     qt_internal_add_target_aliases("${target}")
 
