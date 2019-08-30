@@ -78,6 +78,11 @@ QCalendar::System QGregorianCalendar::calendarSystem() const
 
 bool QGregorianCalendar::isLeapYear(int year) const
 {
+    return leapTest(year);
+}
+
+bool QGregorianCalendar::leapTest(int year)
+{
     if (year == QCalendar::Unspecified)
         return false;
 
@@ -88,10 +93,37 @@ bool QGregorianCalendar::isLeapYear(int year) const
     return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
 }
 
+// Duplicating code from QRomanCalendar, but inlining isLeapYear() as leapTest():
+int QGregorianCalendar::monthLength(int month, int year)
+{
+    if (month < 1 || month > 12)
+        return 0;
+
+    if (month == 2)
+        return leapTest(year) ? 29 : 28;
+
+    return 30 | ((month & 1) ^ (month >> 3));
+}
+
+bool QGregorianCalendar::validParts(int year, int month, int day)
+{
+    return year && 0 < day && day <= monthLength(month, year);
+}
+
+int QGregorianCalendar::weekDayOfJulian(qint64 jd)
+{
+    return qMod(jd, 7) + 1;
+}
+
 bool QGregorianCalendar::dateToJulianDay(int year, int month, int day, qint64 *jd) const
 {
+    return julianFromParts(year, month, day, jd);
+}
+
+bool QGregorianCalendar::julianFromParts(int year, int month, int day, qint64 *jd)
+{
     Q_ASSERT(jd);
-    if (!isDateValid(year, month, day))
+    if (!validParts(year, month, day))
         return false;
 
     if (year < 0)
@@ -111,6 +143,11 @@ bool QGregorianCalendar::dateToJulianDay(int year, int month, int day, qint64 *j
 }
 
 QCalendar::YearMonthDay QGregorianCalendar::julianDayToDate(qint64 jd) const
+{
+    return partsFromJulian(jd);
+}
+
+QCalendar::YearMonthDay QGregorianCalendar::partsFromJulian(qint64 jd)
 {
     /*
      * Math from The Calendar FAQ at http://www.tondering.dk/claus/cal/julperiod.php

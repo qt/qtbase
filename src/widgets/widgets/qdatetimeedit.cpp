@@ -2636,13 +2636,13 @@ void QCalendarPopup::setCalendarWidget(QCalendarWidget *cw)
 }
 
 
-void QCalendarPopup::setDate(const QDate &date)
+void QCalendarPopup::setDate(QDate date)
 {
     oldDate = date;
     verifyCalendarInstance()->setSelectedDate(date);
 }
 
-void QCalendarPopup::setDateRange(const QDate &min, const QDate &max)
+void QCalendarPopup::setDateRange(QDate min, QDate max)
 {
     QCalendarWidget *cw = verifyCalendarInstance();
     cw->setMinimumDate(min);
@@ -2686,7 +2686,7 @@ void QCalendarPopup::dateSelectionChanged()
     dateChanged = true;
     emit newDateSelected(verifyCalendarInstance()->selectedDate());
 }
-void QCalendarPopup::dateSelected(const QDate &date)
+void QCalendarPopup::dateSelected(QDate date)
 {
     dateChanged = true;
     emit activated(date);
