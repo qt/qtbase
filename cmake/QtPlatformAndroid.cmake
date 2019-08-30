@@ -274,7 +274,16 @@ endif()
     string(APPEND file_contents
         "   \"application-binary\": \"${target_output_name}\",\n")
 
-    # Lats item in json file
+    # Override qmlimportscanner binary path
+    set(qml_importscanner_binary_path "${QT_HOST_PATH}/bin/qmlimportscanner")
+    if (WIN32)
+        string(APPEND qml_importscanner_binary_path ".exe")
+    endif()
+    file(TO_NATIVE_PATH "${qml_importscanner_binary_path}" qml_importscanner_binary_path_native)
+    string(APPEND file_contents
+        "   \"qml-importscanner-binary\" : \"${qml_importscanner_binary_path_native}\",\n")
+
+    # Last item in json file
 
     # base location of stdlibc++, will be suffixed by androiddeploy qt
     set(android_ndk_stdlib_base_path
