@@ -274,7 +274,7 @@ QLibraryInfo::licensedProducts()
 QDate
 QLibraryInfo::buildDate()
 {
-    return QDate::fromString(QString::fromLatin1(qt_configure_installation + 12), Qt::ISODate);
+    return QDate::fromString(QString::fromLatin1("2012-12-20"), Qt::ISODate);
 }
 #endif
 #endif // datestring

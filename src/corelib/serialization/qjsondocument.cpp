@@ -332,7 +332,7 @@ QVariant QJsonDocument::toVariant() const
 }
 
 /*!
- Converts the QJsonDocument to a UTF-8 encoded JSON document.
+ Converts the QJsonDocument to an indented, UTF-8 encoded JSON document.
 
  \sa fromJson()
  */
