@@ -566,7 +566,7 @@ qt_feature("fontconfig" PUBLIC PRIVATE
 qt_feature_definition("fontconfig" "QT_NO_FONTCONFIG" NEGATE VALUE "1")
 qt_feature("harfbuzz" PUBLIC PRIVATE
     LABEL "HarfBuzz"
-    CONDITION HARFBUZZ_FOUND
+    CONDITION harfbuzz_FOUND
 )
 qt_feature_definition("harfbuzz" "QT_NO_HARFBUZZ" NEGATE VALUE "1")
 qt_feature("qqnx_imf" PRIVATE

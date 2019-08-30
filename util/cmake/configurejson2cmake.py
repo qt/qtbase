@@ -660,7 +660,7 @@ def parseFeature(ctx, feature, data, cm_fh):
         },
         'GNUmake': None,
         'harfbuzz': {
-            'condition': 'HARFBUZZ_FOUND'
+            'condition': 'harfbuzz_FOUND'
         },
         'host-dbus': None,
         'iconv': {
