@@ -30,7 +30,7 @@ endfunction()
 
 # Inspect all files passed to a call to add_qt_resource. If there are any
 # files present, invoke the quick compiler and return the remaining resource
-# files that have not been prossed in REMAING_RESOURCES as well as the new
+# files that have not been processed in OUTPUT_REMAINING_RESOURCES as well as the new
 # name for the resource in OUTPUT_RESOURCE_NAME.
 function(__qt_quick_compiler_process_resources target resource_name)
 
@@ -150,7 +150,16 @@ function(__qt_quick_compiler_process_resources target resource_name)
         if (resource_files)
             set(resource_name ${chained_resource_name})
         endif()
-        target_link_libraries(${target} PRIVATE @QT_CMAKE_EXPORT_NAMESPACE@::Qml)
+
+        # The generated qmlcache_loader source file uses private headers of Qml, so make sure
+        # if the object library was created, it depends on the Qml target. If there's no target,
+        # that means the target is a shared library and the sources are directly added to the target
+        # via target_sources, so add dependency in that case as well.
+        set(chosen_target "target") # shared library case
+        if(output_target)
+            set(chosen_target "output_target") # static library case.
+        endif()
+        target_link_libraries(${${chosen_target}} PRIVATE @QT_CMAKE_EXPORT_NAMESPACE@::Qml)
     else()
         set(resource_files ${arg_FILES})
     endif()
@@ -216,6 +225,9 @@ function(QT@PROJECT_VERSION_MAJOR@_PROCESS_RESOURCE target resourceName)
     )
 
     if (NOT resources)
+        if (rcc_OUTPUT_TARGET)
+            set(${rcc_OUTPUT_TARGET} "${output_target}" PARENT_SCOPE)
+        endif()
         return()
     endif()
     set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/generated_${newResourceName}.qrc")
