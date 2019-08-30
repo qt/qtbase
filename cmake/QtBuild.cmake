@@ -1837,6 +1837,11 @@ function(qt_add_qmltypes_target target)
         return()
     endif()
 
+    # Do nothing during a Qt static build (because the tool isn't built in that case).
+    if (NOT QT_BUILD_SHARED_LIBS)
+        return()
+    endif()
+
     qt_parse_all_arguments(arg "qt_generate_qmltypes"
         ""
         "TARGET_PATH;IMPORT_VERSION;IMPORT_NAME;QML_PLUGINDUMP_DEPENDENCIES"
