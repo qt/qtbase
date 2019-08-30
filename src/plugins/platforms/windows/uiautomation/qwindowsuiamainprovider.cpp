@@ -670,18 +670,26 @@ HRESULT QWindowsUiaMainProvider::ElementProviderFromPoint(double x, double y, IR
     QPoint point;
     nativeUiaPointToPoint(uiaPoint, window, &point);
 
-    QAccessibleInterface *targetacc = accessible->childAt(point.x(), point.y());
-
-    if (targetacc) {
-        QAccessibleInterface *acc = targetacc;
-        // Controls can be embedded within grouping elements. By default returns the innermost control.
-        while (acc) {
-            targetacc = acc;
-            // For accessibility tools it may be better to return the text element instead of its subcomponents.
-            if (targetacc->textInterface()) break;
-            acc = acc->childAt(point.x(), point.y());
+    if (auto targetacc = accessible->childAt(point.x(), point.y())) {
+        auto acc = accessible->childAt(point.x(), point.y());
+        // Reject the cases where childAt() returns a different instance in each call for the same
+        // element (e.g., QAccessibleTree), as it causes an endless loop with Youdao Dictionary installed.
+        if (targetacc == acc) {
+            // Controls can be embedded within grouping elements. By default returns the innermost control.
+            while (acc) {
+                targetacc = acc;
+                // For accessibility tools it may be better to return the text element instead of its subcomponents.
+                if (targetacc->textInterface()) break;
+                acc = targetacc->childAt(point.x(), point.y());
+                if (acc != targetacc->childAt(point.x(), point.y())) {
+                    qCDebug(lcQpaUiAutomation) << "Non-unique childAt() for" << targetacc;
+                    break;
+                }
+            }
+            *pRetVal = providerForAccessible(targetacc);
+        } else {
+            qCDebug(lcQpaUiAutomation) << "Non-unique childAt() for" << accessible;
         }
-        *pRetVal = providerForAccessible(targetacc);
     }
     return S_OK;
 }
