@@ -434,8 +434,7 @@ QT_END_NAMESPACE
 }
 
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification {
-    Q_UNUSED(center);
-    Q_UNUSED(notification);
+    [center removeDeliveredNotification:notification];
     emit systray->messageClicked();
 }
 
