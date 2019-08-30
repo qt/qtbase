@@ -42,11 +42,13 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qcolortransform.h>
+#include <QtCore/qobjectdefs.h>
 #include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
 class QColorSpacePrivate;
+class QPointF;
 
 class Q_GUI_EXPORT QColorSpace
 {
