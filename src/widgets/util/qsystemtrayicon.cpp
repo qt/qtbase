@@ -367,8 +367,6 @@ bool QSystemTrayIcon::event(QEvent *e)
     This signal is emitted when the message displayed using showMessage()
     was clicked by the user.
 
-    Currently this signal is not sent on \macos.
-
     \note We follow Microsoft Windows behavior, so the
     signal is also emitted when the user clicks on a tray icon with
     a balloon message displayed.
