@@ -1767,6 +1767,9 @@ public:
         PassThrough
     };
 
+    // QTBUG-48701
+    enum ReturnByValue_t { ReturnByValue }; // ### Qt 7: Remove me
+
 #ifndef Q_QDOC
     // NOTE: Generally, do not add QT_Q_ENUM if a corresponding Q_Q_FLAG exists.
     QT_Q_ENUM(ScrollBarPolicy)

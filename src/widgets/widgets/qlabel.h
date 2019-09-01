@@ -72,9 +72,25 @@ public:
     ~QLabel();
 
     QString text() const;
-    const QPixmap *pixmap() const;
+
+#if QT_DEPRECATED_SINCE(5,15)
+    QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QPixmap by-value")
+    const QPixmap *pixmap() const; // ### Qt 7: Remove function
+
+    QPixmap pixmap(Qt::ReturnByValue_t) const;
+#else
+    QPixmap pixmap(Qt::ReturnByValue_t = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
+#endif // QT_DEPRECATED_SINCE(5,15)
+
 #ifndef QT_NO_PICTURE
-    const QPicture *picture() const;
+#  if QT_DEPRECATED_SINCE(5,15)
+    QT_DEPRECATED_VERSION_X(5, 15, "Use the other overload which returns QPicture by-value")
+    const QPicture *picture() const; // ### Qt 7: Remove function
+
+    QPicture picture(Qt::ReturnByValue_t) const;
+#  else
+    QPicture picture(Qt::ReturnByValue_t = Qt::ReturnByValue) const; // ### Qt 7: Remove arg
+#  endif // QT_DEPRECATED_SINCE(5,15)
 #endif
 #if QT_CONFIG(movie)
     QMovie *movie() const;

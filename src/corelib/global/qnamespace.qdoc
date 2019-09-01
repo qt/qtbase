@@ -3319,3 +3319,13 @@
   \value RoundPreferFloor Round up for .75 and above.
   \value PassThrough Don't round.
 */
+
+/*!
+  \enum Qt::ReturnByValue_t
+  \since 5.15
+
+  This is a dummy type, designed to help users transition from certain deprecated APIs to their replacement APIs.
+
+  \sa QLabel::picture()
+  \sa QLabel::pixmap()
+*/
