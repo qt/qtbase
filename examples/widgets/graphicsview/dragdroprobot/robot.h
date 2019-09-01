@@ -62,15 +62,15 @@ QT_END_NAMESPACE
 class RobotPart : public QGraphicsObject
 {
 public:
-    RobotPart(QGraphicsItem *parent = 0);
+    RobotPart(QGraphicsItem *parent = nullptr);
 
 protected:
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override;
     void dragLeaveEvent(QGraphicsSceneDragDropEvent *event) override;
     void dropEvent(QGraphicsSceneDragDropEvent *event) override;
 
-    QColor color;
-    bool dragOver;
+    QColor color = Qt::lightGray;
+    bool dragOver = false;
 };
 //! [0]
 
@@ -78,10 +78,10 @@ protected:
 class RobotHead : public RobotPart
 {
 public:
-    RobotHead(QGraphicsItem *parent = 0);
+    RobotHead(QGraphicsItem *parent = nullptr);
 
     QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
 
 protected:
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event) override;
@@ -96,10 +96,10 @@ private:
 class RobotTorso : public RobotPart
 {
 public:
-    RobotTorso(QGraphicsItem *parent = 0);
+    using RobotPart::RobotPart;
 
     QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
 };
 //! [2]
 
@@ -107,10 +107,10 @@ public:
 class RobotLimb : public RobotPart
 {
 public:
-    RobotLimb(QGraphicsItem *parent = 0);
+    RobotLimb(QGraphicsItem *parent = nullptr);
 
     QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
 };
 //! [3]
 
@@ -118,10 +118,10 @@ public:
 class Robot : public RobotPart
 {
 public:
-    Robot(QGraphicsItem *parent = 0);
+    Robot(QGraphicsItem *parent = nullptr);
 
     QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
 };
 //! [4]
 

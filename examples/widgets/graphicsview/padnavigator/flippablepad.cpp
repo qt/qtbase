@@ -75,8 +75,8 @@ FlippablePad::FlippablePad(const QSize &size, QGraphicsItem *parent)
 //! [2]
 //! [3]
     int numIcons = size.width() * size.height();
-    QList<QPixmap> pixmaps;
-    QDirIterator it(":/images", QStringList() << "*.png");
+    QVector<QPixmap> pixmaps;
+    QDirIterator it(":/images", {"*.png"});
     while (it.hasNext() && pixmaps.size() < numIcons)
         pixmaps << it.next();
 //! [3]

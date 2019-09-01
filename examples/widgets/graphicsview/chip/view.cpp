@@ -62,7 +62,7 @@
 #else
 #include <QtWidgets>
 #endif
-#include <qmath.h>
+#include <QtMath>
 
 #if QT_CONFIG(wheelevent)
 void GraphicsView::wheelEvent(QWheelEvent *e)

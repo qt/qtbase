@@ -50,7 +50,9 @@
 
 #include "chip.h"
 
-#include <QtWidgets>
+#include <QGraphicsSceneMouseEvent>
+#include <QPainter>
+#include <QStyleOptionGraphicsItem>
 
 Chip::Chip(const QColor &color, int x, int y)
 {
