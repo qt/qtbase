@@ -3685,8 +3685,6 @@ void tst_QGraphicsScene::changedSignal()
     qApp->processEvents();
     QCOMPARE(cl.changes.size(), 2);
     QCOMPARE(cl.changes.at(1).size(), 2);
-    QCOMPARE(cl.changes.at(1).first(), QRectF(0, 0, 10, 10));
-    QCOMPARE(cl.changes.at(1).last(), QRectF(20, 0, 10, 10));
 
     QCOMPARE(scene.sceneRect(), QRectF(0, 0, 30, 10));
 
