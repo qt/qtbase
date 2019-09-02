@@ -849,8 +849,11 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     }
     state = QHttpNetworkConnectionChannel::IdleState;
-
-    requeueCurrentlyPipelinedRequests();
+    if (alreadyPipelinedRequests.length()) {
+        // If nothing was in a pipeline, no need in calling
+        // _q_startNextRequest (which it does):
+        requeueCurrentlyPipelinedRequests();
+    }
 
     pendingEncrypt = false;
 }
