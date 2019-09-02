@@ -6,6 +6,7 @@
 
 #### Libraries
 
+qt_find_package(MySQL PROVIDED_TARGETS MySQL::MySQL)
 qt_find_package(PostgreSQL PROVIDED_TARGETS PostgreSQL::PostgreSQL)
 qt_find_package(ODBC PROVIDED_TARGETS ODBC::ODBC)
 qt_find_package(SQLite3 PROVIDED_TARGETS SQLite::SQLite3)
@@ -27,7 +28,7 @@ qt_feature("sql_ibase" PRIVATE
 )
 qt_feature("sql_mysql" PRIVATE
     LABEL "MySql"
-    CONDITION libs.mysql OR FIXME
+    CONDITION MySQL_FOUND
 )
 qt_feature("sql_oci" PRIVATE
     LABEL "OCI (Oracle)"

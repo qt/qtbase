@@ -19,7 +19,7 @@ if(QT_FEATURE_sql_psql)
 endif()
 
 if(QT_FEATURE_sql_mysql)
-#     TODO add_subdirectory(mysql)
+     add_subdirectory(mysql)
 endif()
 
 if(QT_FEATURE_sql_odbc)

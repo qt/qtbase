@@ -216,6 +216,7 @@ _library_map = [
     LibraryMapping('libudev', 'Libudev', 'PkgConfig::Libudev'),
     LibraryMapping('lttng-ust', 'LTTngUST', 'LTTng::UST', resultVariable='LTTNGUST'),
     LibraryMapping('mtdev', 'Mtdev', 'PkgConfig::Mtdev'),
+    LibraryMapping('mysql', 'MySQL', 'MySQL::MySQL'),
     LibraryMapping('odbc', 'ODBC', 'ODBC::ODBC'),
     LibraryMapping('opengl_es2', 'GLESv2', 'GLESv2::GLESv2'),
     LibraryMapping('opengl', 'OpenGL', 'OpenGL::GL', resultVariable='OpenGL_OpenGL'),
