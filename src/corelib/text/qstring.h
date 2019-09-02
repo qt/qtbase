@@ -220,7 +220,8 @@ Q_DECLARE_TYPEINFO(QLatin1String, Q_MOVABLE_TYPE);
 
 // Qt 4.x compatibility
 #if QT_DEPRECATED_SINCE(5, 14)
-QT_DEPRECATED_X("Use QLatin1String") typedef QLatin1String QLatin1Literal;
+QT_DEPRECATED_X("Use QLatin1String")
+typedef QLatin1String QLatin1Literal;
 #endif
 
 //
