@@ -1295,16 +1295,23 @@ function(add_qt_module target)
     set(private_includes
         "${CMAKE_CURRENT_SOURCE_DIR}"
         "${CMAKE_CURRENT_BINARY_DIR}"
-        "${module_include_dir}/${PROJECT_VERSION}"
-        "${module_include_dir}/${PROJECT_VERSION}/${module}"
          ${arg_INCLUDE_DIRECTORIES}
     )
 
-    set(public_includes
-        # For the syncqt headers
-        "$<BUILD_INTERFACE:${module_repo_include_dir}>"
-        "$<BUILD_INTERFACE:${module_include_dir}>"
-    )
+    set(public_includes "")
+
+    # Handle cases like QmlDevTools which do not have their own headers, but rather borrow them
+    # from another module.
+    if(NOT arg_NO_SYNC_QT)
+        list(APPEND private_includes
+                    "${module_include_dir}/${PROJECT_VERSION}"
+                    "${module_include_dir}/${PROJECT_VERSION}/${module}")
+
+        list(APPEND public_includes
+                    # For the syncqt headers
+                    "$<BUILD_INTERFACE:${module_repo_include_dir}>"
+                    "$<BUILD_INTERFACE:${module_include_dir}>")
+    endif()
 
     if(NOT arg_NO_MODULE_HEADERS)
         # For the syncqt headers
@@ -1501,19 +1508,22 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         qt_internal_add_link_flags_no_undefined("${target}")
     endif()
 
-    set(interface_includes
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
-        "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>"
-        "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>"
-    )
+    set(interface_includes "")
 
-    if(NOT arg_NO_MODULE_HEADERS)
+    # Handle cases like QmlDevTools which do not have their own headers, but rather borrow them
+    # from another module.
+    if(NOT arg_NO_SYNC_QT)
         list(APPEND interface_includes
-            "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>"
-            "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>"
-        )
-    endif()
+                    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+                    "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>"
+                    "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
 
+        if(NOT arg_NO_MODULE_HEADERS)
+            list(APPEND interface_includes
+                        "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>"
+                        "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>")
+        endif()
+    endif()
 
     if(NOT ${arg_NO_PRIVATE_MODULE})
         target_include_directories("${target_private}" INTERFACE ${interface_includes})
