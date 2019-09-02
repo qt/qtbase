@@ -293,7 +293,7 @@ double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
     // "-nan" or "+nan"
     if (qstrcmp(num, "nan") == 0) {
         processed = 3;
-        return qt_snan();
+        return qt_qnan();
     } else if ((num[0] == '-' || num[0] == '+') && qstrcmp(num + 1, "nan") == 0) {
         processed = 0;
         ok = false;
@@ -322,7 +322,7 @@ double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
         conv_flags = double_conversion::StringToDoubleConverter::ALLOW_LEADING_SPACES
                 | double_conversion::StringToDoubleConverter::ALLOW_TRAILING_SPACES;
     }
-    double_conversion::StringToDoubleConverter conv(conv_flags, 0.0, qt_snan(), 0, 0);
+    double_conversion::StringToDoubleConverter conv(conv_flags, 0.0, qt_qnan(), 0, 0);
     d = conv.StringToDouble(num, numLen, &processed);
 
     if (!qIsFinite(d)) {
