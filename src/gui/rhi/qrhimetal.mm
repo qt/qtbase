@@ -997,11 +997,44 @@ void QRhiMetal::setVertexInput(QRhiCommandBuffer *cb,
     }
 }
 
+QSize safeOutputSize(QRhiMetal *rhiD, QMetalCommandBuffer *cbD)
+{
+    QSize size = cbD->currentTarget->pixelSize();
+
+    // So now we have the issue that the texture (drawable) size may have
+    // changed again since swapchain buildOrResize() was called. This can
+    // happen for example when interactively resizing the window a lot in one
+    // go, and command buffer building happens on a dedicated thread (f.ex.
+    // using the threaded render loop of Qt Quick).
+    //
+    // This is only an issue when running in debug mode with XCode because Metal
+    // validation will fail when setting viewport or scissor with the real size
+    // being smaller than what we think it is. So query the drawable size right
+    // here, in debug mode at least.
+    //
+    // In addition, we have to take the smaller of the two widths and heights
+    // to be safe, apparently. In some cases validation seems to think that the
+    // "render pass width" (or height) is the old(?) value.
+
+#ifdef QT_DEBUG
+    if (cbD->currentTarget->resourceType() == QRhiResource::RenderTarget) {
+        Q_ASSERT(rhiD->currentSwapChain);
+        const QSize otherSize = rhiD->currentSwapChain->surfacePixelSize();
+        size.setWidth(qMin(size.width(), otherSize.width()));
+        size.setHeight(qMin(size.height(), otherSize.height()));
+    }
+#else
+    Q_UNUSED(rhiD);
+#endif
+
+    return size;
+}
+
 void QRhiMetal::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 {
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
-    const QSize outputSize = cbD->currentTarget->pixelSize();
+    const QSize outputSize = safeOutputSize(this, cbD);
 
     // x,y is top-left in MTLViewportRect but bottom-left in QRhiViewport
     float x, y, w, h;
@@ -1033,7 +1066,7 @@ void QRhiMetal::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
     Q_ASSERT(QRHI_RES(QMetalGraphicsPipeline, cbD->currentGraphicsPipeline)->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor));
-    const QSize outputSize = cbD->currentTarget->pixelSize();
+    const QSize outputSize = safeOutputSize(this, cbD);
 
     // x,y is top-left in MTLScissorRect but bottom-left in QRhiScissor
     int x, y, w, h;
