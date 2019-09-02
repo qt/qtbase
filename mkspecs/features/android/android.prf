@@ -4,17 +4,22 @@ APK_PATH = $$shell_path($$OUT_PWD/android-build/$${TARGET}.apk)
     apk_install_target.depends = first
     apk_install_target.commands = $(MAKE) -f $(MAKEFILE) INSTALL_ROOT=$$OUT_PWD/android-build install
 
-    apk.target = apk
-    apk.depends = apk_install_target
     qtPrepareTool(ANDROIDDEPLOYQT, androiddeployqt)
     isEmpty(ANDROID_DEPLOYMENT_SETTINGS_FILE): ANDROID_DEPLOYMENT_SETTINGS_FILE = $$OUT_PWD/android-$$TARGET-deployment-settings.json
     contains(QMAKE_HOST.os, Windows): extension = .exe
+
+    apk.target = apk
+    apk.depends = apk_install_target
     apk.commands = $$ANDROIDDEPLOYQT --input $$ANDROID_DEPLOYMENT_SETTINGS_FILE --output $$OUT_PWD/android-build --apk $$APK_PATH
+
+    aab.target = aab
+    aab.depends = apk_install_target
+    aab.commands = $$ANDROIDDEPLOYQT --input $$ANDROID_DEPLOYMENT_SETTINGS_FILE --output $$OUT_PWD/android-build --aab --apk $$APK_PATH
 } else {
+    prepareRecursiveTarget(aab)
     prepareRecursiveTarget(apk)
     prepareRecursiveTarget(apk_install_target)
 }
-QMAKE_EXTRA_TARGETS *= apk apk_install_target
 
 build_pass {
     contains(TEMPLATE, ".*app") {
@@ -34,4 +39,11 @@ build_pass {
         target.path = /libs/$$ANDROID_TARGET_ARCH/
         INSTALLS *= target
     }
+} else {
+    QMAKE_EXTRA_TARGETS *= aab apk apk_install_target
+
+    android-build-distclean.commands = \
+        $$QMAKE_DEL_TREE $$shell_quote($$shell_path($$OUT_PWD/android-build))
+    QMAKE_EXTRA_TARGETS *= android-build-distclean
+    CLEAN_DEPS += android-build-distclean
 }

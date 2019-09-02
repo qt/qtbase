@@ -41,7 +41,6 @@
 #define QCOLORTRANSFORM_H
 
 #include <QtGui/qtguiglobal.h>
-#include <QtCore/qsharedpointer.h>
 #include <QtGui/qrgb.h>
 
 QT_BEGIN_NAMESPACE

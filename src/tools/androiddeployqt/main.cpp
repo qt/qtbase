@@ -121,8 +121,8 @@ struct Options
         , auxMode(false)
         , deploymentMechanism(Bundled)
         , releasePackage(false)
-        , digestAlg(QLatin1String("SHA1"))
-        , sigAlg(QLatin1String("SHA1withRSA"))
+        , digestAlg(QLatin1String("SHA-256"))
+        , sigAlg(QLatin1String("SHA256withRSA"))
         , internalSf(false)
         , sectionsOnly(false)
         , protectedAuthenticationPath(false)
@@ -182,6 +182,8 @@ struct Options
     QString currentArchitecture;
     QString toolchainPrefix;
     QString ndkHost;
+    bool buildAAB = false;
+
 
     // Package information
     DeploymentMechanism deploymentMechanism;
@@ -416,7 +418,10 @@ Options parseOptions()
                 options.helpRequested = true;
             else
                 options.inputFileName = arguments.at(++i);
-        } else if (argument.compare(QLatin1String("--no-build"), Qt::CaseInsensitive) == 0) {
+        } else if (argument.compare(QLatin1String("--aab"), Qt::CaseInsensitive) == 0) {
+            options.buildAAB = true;
+            options.build = true;
+        } else if (options.buildAAB && argument.compare(QLatin1String("--no-build"), Qt::CaseInsensitive) == 0) {
             options.build = false;
         } else if (argument.compare(QLatin1String("--install"), Qt::CaseInsensitive) == 0) {
             options.installApk = true;
@@ -559,6 +564,7 @@ void printHelp()
                     "    --deployment <mechanism>: Supported deployment mechanisms:\n"
                     "       bundled (default): Include Qt files in stand-alone package.\n"
                     "       ministro: Use the Ministro service to manage Qt files.\n"
+                    "    --aab: Build an Android App Bundle.\n"
                     "    --no-build: Do not build the package, it is useful to just install\n"
                     "       a package previously built.\n"
                     "    --install: Installs apk to device/emulator. By default this step is\n"
@@ -2293,6 +2299,9 @@ bool buildAndroidProject(const Options &options)
     }
 
     QString commandLine = QLatin1String("%1 --no-daemon %2").arg(shellQuote(gradlePath), options.releasePackage ? QLatin1String(" assembleRelease") : QLatin1String(" assembleDebug"));
+    if (options.buildAAB)
+        commandLine += QLatin1String(" bundle");
+
     if (options.verbose)
         commandLine += QLatin1String(" --info");
 
@@ -2353,28 +2362,38 @@ bool uninstallApk(const Options &options)
 }
 
 enum PackageType {
+    AAB,
     UnsignedAPK,
     SignedAPK
 };
 
-QString apkPath(const Options &options, PackageType pt)
+QString packagePath(const Options &options, PackageType pt)
 {
     QString path(options.outputDirectory);
-    path += QLatin1String("/build/outputs/apk/");
+    path += QLatin1String("/build/outputs/%1/").arg(pt >= UnsignedAPK ? QStringLiteral("apk") : QStringLiteral("bundle"));
     QString buildType(options.releasePackage ? QLatin1String("release/") : QLatin1String("debug/"));
     if (QDir(path + buildType).exists())
         path += buildType;
     path += QDir(options.outputDirectory).dirName() + QLatin1Char('-');
     if (options.releasePackage) {
         path += QLatin1String("release-");
-        if (pt == UnsignedAPK)
-            path += QLatin1String("un");
-        path += QLatin1String("signed.apk");
+        if (pt >= UnsignedAPK) {
+            if (pt == UnsignedAPK)
+                path += QLatin1String("un");
+            path += QLatin1String("signed.apk");
+        } else {
+            path.chop(1);
+            path += QLatin1String(".aab");
+        }
     } else {
         path += QLatin1String("debug");
-        if (pt == SignedAPK)
-            path += QLatin1String("-signed");
-        path += QLatin1String(".apk");
+        if (pt >= UnsignedAPK) {
+            if (pt == SignedAPK)
+                path += QLatin1String("-signed");
+            path += QLatin1String(".apk");
+        } else {
+            path += QLatin1String(".aab");
+        }
     }
     return shellQuote(path);
 }
@@ -2391,7 +2410,7 @@ bool installApk(const Options &options)
 
     FILE *adbCommand = runAdb(options,
                               QLatin1String(" install -r ")
-                              + apkPath(options, options.keyStore.isEmpty() ? UnsignedAPK
+                              + packagePath(options, options.keyStore.isEmpty() ? UnsignedAPK
                                                                             : SignedAPK));
     if (adbCommand == 0)
         return false;
@@ -2417,7 +2436,7 @@ bool installApk(const Options &options)
 bool copyPackage(const Options &options)
 {
     fflush(stdout);
-    auto from = apkPath(options, options.keyStore.isEmpty() ? UnsignedAPK : SignedAPK);
+    auto from = packagePath(options, options.keyStore.isEmpty() ? UnsignedAPK : SignedAPK);
     QFile::remove(options.apkPath);
     return QFile::copy(from, options.apkPath);
 }
@@ -2500,29 +2519,39 @@ bool jarSignerSignPackage(const Options &options)
     if (options.protectedAuthenticationPath)
         jarSignerTool += QLatin1String(" -protected");
 
-    jarSignerTool += QLatin1String(" %1 %2")
-            .arg(apkPath(options, UnsignedAPK))
-            .arg(shellQuote(options.keyStoreAlias));
+    auto signPackage = [&](const QString &file) {
+        fprintf(stdout, "Signing file %s\n", qPrintable(file));
+        fflush(stdout);
+        auto command = jarSignerTool + QLatin1String(" %1 %2")
+                .arg(file)
+                .arg(shellQuote(options.keyStoreAlias));
 
-    FILE *jarSignerCommand = openProcess(jarSignerTool);
-    if (jarSignerCommand == 0) {
-        fprintf(stderr, "Couldn't run jarsigner.\n");
+        FILE *jarSignerCommand = openProcess(command);
+        if (jarSignerCommand == 0) {
+            fprintf(stderr, "Couldn't run jarsigner.\n");
+            return false;
+        }
+
+        if (options.verbose) {
+            char buffer[512];
+            while (fgets(buffer, sizeof(buffer), jarSignerCommand) != 0)
+                fprintf(stdout, "%s", buffer);
+        }
+
+        int errorCode = pclose(jarSignerCommand);
+        if (errorCode != 0) {
+            fprintf(stderr, "jarsigner command failed.\n");
+            if (!options.verbose)
+                fprintf(stderr, "  -- Run with --verbose for more information.\n");
+            return false;
+        }
+        return true;
+    };
+
+    if (!signPackage(packagePath(options, UnsignedAPK)))
         return false;
-    }
-
-    if (options.verbose) {
-        char buffer[512];
-        while (fgets(buffer, sizeof(buffer), jarSignerCommand) != 0)
-            fprintf(stdout, "%s", buffer);
-    }
-
-    int errorCode = pclose(jarSignerCommand);
-    if (errorCode != 0) {
-        fprintf(stderr, "jarsigner command failed.\n");
-        if (!options.verbose)
-            fprintf(stderr, "  -- Run with --verbose for more information.\n");
+    if (options.buildAAB && !signPackage(packagePath(options, AAB)))
         return false;
-    }
 
     QString zipAlignTool = options.sdkPath + QLatin1String("/tools/zipalign");
 #if defined(Q_OS_WIN32)
@@ -2543,8 +2572,8 @@ bool jarSignerSignPackage(const Options &options)
     zipAlignTool = QLatin1String("%1%2 -f 4 %3 %4")
             .arg(shellQuote(zipAlignTool),
                  options.verbose ? QLatin1String(" -v") : QLatin1String(),
-                 apkPath(options, UnsignedAPK),
-                 apkPath(options, SignedAPK));
+                 packagePath(options, UnsignedAPK),
+                 packagePath(options, SignedAPK));
 
     FILE *zipAlignCommand = openProcess(zipAlignTool);
     if (zipAlignCommand == 0) {
@@ -2556,7 +2585,7 @@ bool jarSignerSignPackage(const Options &options)
     while (fgets(buffer, sizeof(buffer), zipAlignCommand) != 0)
         fprintf(stdout, "%s", buffer);
 
-    errorCode = pclose(zipAlignCommand);
+    int errorCode = pclose(zipAlignCommand);
     if (errorCode != 0) {
         fprintf(stderr, "zipalign command failed.\n");
         if (!options.verbose)
@@ -2564,7 +2593,7 @@ bool jarSignerSignPackage(const Options &options)
         return false;
     }
 
-    return QFile::remove(apkPath(options, UnsignedAPK));
+    return QFile::remove(packagePath(options, UnsignedAPK));
 }
 
 bool signPackage(const Options &options)
@@ -2598,8 +2627,8 @@ bool signPackage(const Options &options)
     zipAlignTool = QLatin1String("%1%2 -f 4 %3 %4")
             .arg(shellQuote(zipAlignTool),
                  options.verbose ? QLatin1String(" -v") : QLatin1String(),
-                 apkPath(options, UnsignedAPK),
-                 apkPath(options, SignedAPK));
+                 packagePath(options, UnsignedAPK),
+                 packagePath(options, SignedAPK));
 
     FILE *zipAlignCommand = openProcess(zipAlignTool);
     if (zipAlignCommand == 0) {
@@ -2635,7 +2664,7 @@ bool signPackage(const Options &options)
         apkSignerCommandLine += QLatin1String(" --verbose");
 
     apkSignerCommandLine += QLatin1String(" %1")
-            .arg(apkPath(options, SignedAPK));
+            .arg(packagePath(options, SignedAPK));
 
     auto apkSignerRunner = [&] {
         FILE *apkSignerCommand = openProcess(apkSignerCommandLine);
@@ -2663,10 +2692,10 @@ bool signPackage(const Options &options)
         return false;
 
     apkSignerCommandLine = QLatin1String("%1 verify --verbose %2")
-        .arg(shellQuote(apksignerTool), apkPath(options, SignedAPK));
+        .arg(shellQuote(apksignerTool), packagePath(options, SignedAPK));
 
     // Verify the package and remove the unsigned apk
-    return apkSignerRunner() && QFile::remove(apkPath(options, UnsignedAPK));
+    return apkSignerRunner() && QFile::remove(packagePath(options, UnsignedAPK));
 }
 
 bool generateAssetsFileList(const Options &options)
@@ -2890,7 +2919,7 @@ int main(int argc, char *argv[])
     if (options.installApk)
         fprintf(stdout, "  -- It can now be run from the selected device/emulator.\n");
 
-    fprintf(stdout, "  -- File: %s\n", qPrintable(apkPath(options, options.keyStore.isEmpty() ? UnsignedAPK
+    fprintf(stdout, "  -- File: %s\n", qPrintable(packagePath(options, options.keyStore.isEmpty() ? UnsignedAPK
                                                                                               : SignedAPK)));
     fflush(stdout);
     return 0;
