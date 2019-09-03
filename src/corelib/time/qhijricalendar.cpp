@@ -102,7 +102,7 @@ int QHijriCalendar::daysInMonth(int month, int year) const
     return month % 2 == 0 ? 29 : 30;
 }
 
-int QHijriCalendar::maxDaysInMonth() const
+int QHijriCalendar::maximumDaysInMonth() const
 {
     return 30;
 }

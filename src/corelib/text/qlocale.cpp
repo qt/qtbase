@@ -2916,7 +2916,7 @@ static QString rawStandaloneWeekDayName(const QLocaleData *data, const int day,
 QString QCalendarBackend::monthName(const QLocale &locale, int month, int,
                                     QLocale::FormatType format) const
 {
-    Q_ASSERT(month >= 1 && month <= maxMonthsInYear());
+    Q_ASSERT(month >= 1 && month <= maximumMonthsInYear());
     return rawMonthName(localeMonthIndexData()[locale.d->m_data_offset],
                         localeMonthData(), month, format);
 }
@@ -2942,7 +2942,7 @@ QString QGregorianCalendar::monthName(const QLocale &locale, int month, int year
 QString QCalendarBackend::standaloneMonthName(const QLocale &locale, int month, int,
                                               QLocale::FormatType format) const
 {
-    Q_ASSERT(month >= 1 && month <= maxMonthsInYear());
+    Q_ASSERT(month >= 1 && month <= maximumMonthsInYear());
     return rawStandaloneMonthName(localeMonthIndexData()[locale.d->m_data_offset],
                                   localeMonthData(), month, format);
 }

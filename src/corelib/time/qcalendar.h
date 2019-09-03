@@ -155,9 +155,9 @@ public:
     bool isSolar() const;
     bool isProleptic() const;
     bool hasYearZero() const;
-    int maxDaysInMonth() const;
-    int minDaysInMonth() const;
-    int maxMonthsInYear() const;
+    int maximumDaysInMonth() const;
+    int minimumDaysInMonth() const;
+    int maximumMonthsInYear() const;
     QString name() const;
 
     // QDate conversions:
