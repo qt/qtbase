@@ -5020,6 +5020,23 @@ QRhiProfiler *QRhi::profiler()
 }
 
 /*!
+    Attempts to release resources in the backend's caches. This can include both
+    CPU and GPU resources.  Only memory and resources that can be recreated
+    automatically are in scope. As an example, if the backend's
+    QRhiGraphicsPipeline implementation maintains a cache of shader compilation
+    results, calling this function leads to emptying that cache, thus
+    potentially freeing up memory and graphics resources.
+
+    Calling this function makes sense in resource constrained environments,
+    where at a certain point there is a need to ensure minimal resource usage,
+    at the expense of performance.
+ */
+void QRhi::releaseCachedResources()
+{
+    d->releaseCachedResources();
+}
+
+/*!
     \return a new graphics pipeline resource.
 
     \sa QRhiResource::release()

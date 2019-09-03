@@ -502,6 +502,10 @@ void QRhiGles2::destroy()
     ensureContext();
     executeDeferredReleases();
 
+    for (uint shader : m_shaderCache)
+        f->glDeleteShader(shader);
+    m_shaderCache.clear();
+
     if (!importedContext) {
         delete ctx;
         ctx = nullptr;
@@ -755,6 +759,17 @@ void QRhiGles2::makeThreadLocalNativeContextCurrent()
         ensureContext(currentSwapChain->surface);
     else
         ensureContext();
+}
+
+void QRhiGles2::releaseCachedResources()
+{
+    if (!ensureContext())
+        return;
+
+    for (uint shader : m_shaderCache)
+        f->glDeleteShader(shader);
+
+    m_shaderCache.clear();
 }
 
 QRhiRenderBuffer *QRhiGles2::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -2673,7 +2688,6 @@ static inline GLenum toGlShaderType(QRhiShaderStage::Type type)
 bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage,
                               QShaderDescription *desc, int *glslVersionUsed)
 {
-    GLuint shader = f->glCreateShader(toGlShaderType(shaderStage.type()));
     const QShader bakedShader = shaderStage.shader();
     QVector<int> versionsToTry;
     QByteArray source;
@@ -2733,27 +2747,40 @@ bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage
         return false;
     }
 
-    const char *srcStr = source.constData();
-    const GLint srcLength = source.count();
-    f->glShaderSource(shader, 1, &srcStr, &srcLength);
-    f->glCompileShader(shader);
-    GLint compiled = 0;
-    f->glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-    if (!compiled) {
-        GLint infoLogLength = 0;
-        f->glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
-        QByteArray log;
-        if (infoLogLength > 1) {
-            GLsizei length = 0;
-            log.resize(infoLogLength);
-            f->glGetShaderInfoLog(shader, infoLogLength, &length, log.data());
+    GLuint shader;
+    auto cacheIt = m_shaderCache.constFind(shaderStage);
+    if (cacheIt != m_shaderCache.constEnd()) {
+        shader = *cacheIt;
+    } else {
+        shader = f->glCreateShader(toGlShaderType(shaderStage.type()));
+        const char *srcStr = source.constData();
+        const GLint srcLength = source.count();
+        f->glShaderSource(shader, 1, &srcStr, &srcLength);
+        f->glCompileShader(shader);
+        GLint compiled = 0;
+        f->glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+        if (!compiled) {
+            GLint infoLogLength = 0;
+            f->glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
+            QByteArray log;
+            if (infoLogLength > 1) {
+                GLsizei length = 0;
+                log.resize(infoLogLength);
+                f->glGetShaderInfoLog(shader, infoLogLength, &length, log.data());
+            }
+            qWarning("Failed to compile shader: %s\nSource was:\n%s", log.constData(), source.constData());
+            return false;
         }
-        qWarning("Failed to compile shader: %s\nSource was:\n%s", log.constData(), source.constData());
-        return false;
+        if (m_shaderCache.count() >= MAX_SHADER_CACHE_ENTRIES) {
+            // Use the simplest strategy: too many cached shaders -> drop them all.
+            for (uint shader : m_shaderCache)
+                f->glDeleteShader(shader); // does not actually get released yet when attached to a not-yet-released program
+            m_shaderCache.clear();
+        }
+        m_shaderCache.insert(shaderStage, shader);
     }
 
     f->glAttachShader(program, shader);
-    f->glDeleteShader(shader);
 
     *desc = bakedShader.description();
     return true;

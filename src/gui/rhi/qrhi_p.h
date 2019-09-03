@@ -1420,6 +1420,8 @@ public:
     static const int MAX_LAYERS = 6; // cubemaps only
     static const int MAX_LEVELS = 16; // a width and/or height of 65536 should be enough for everyone
 
+    void releaseCachedResources();
+
 protected:
     QRhi();
 
