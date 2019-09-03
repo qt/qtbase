@@ -85,6 +85,11 @@ if(VCPKG_TARGET_TRIPLET)
     list(APPEND init_vcpkg "set(VCPKG_TARGET_TRIPLET \"${VCPKG_TARGET_TRIPLET}\" CACHE STRING \"\")")
 endif()
 
+# On Windows compilers aren't easily mixed. Avoid that qtbase is built using cl.exe for example and then for another
+# build gcc is picked up from %PATH%. The same goes when using a custom compiler on other platforms, such as ICC.
+list(APPEND init_platform "set(CMAKE_CXX_COMPILER \"${CMAKE_CXX_COMPILER}\" CACHE STRING \"\")")
+list(APPEND init_platform "set(CMAKE_C_COMPILER \"${CMAKE_C_COMPILER}\" CACHE STRING \"\")")
+
 if(APPLE)
     if(CMAKE_OSX_SYSROOT)
         list(APPEND init_platform "set(CMAKE_OSX_SYSROOT \"${CMAKE_OSX_SYSROOT}\" CACHE PATH \"\")")
@@ -92,11 +97,6 @@ if(APPLE)
     if(CMAKE_OSX_DEPLOYMENT_TARGET)
         list(APPEND init_platform "set(CMAKE_OSX_DEPLOYMENT_TARGET \"${CMAKE_OSX_DEPLOYMENT_TARGET}\" CACHE STRING \"\")")
     endif()
-elseif(WIN32)
-    # On Windows compilers aren't easily mixed. Avoid that qtbase is built using cl.exe for example and then for another
-    # build gcc is picked up from %PATH%.
-    list(APPEND init_platform "set(CMAKE_CXX_COMPILER \"${CMAKE_CXX_COMPILER}\" CACHE STRING \"\")")
-    list(APPEND init_platform "set(CMAKE_C_COMPILER \"${CMAKE_C_COMPILER}\" CACHE STRING \"\")")
 elseif(ANDROID)
     list(APPEND init_platform "set(ANDROID_NATIVE_API_LEVEL \"${ANDROID_NATIVE_API_LEVEL}\" CACHE STRING \"\")")
     list(APPEND init_platform "set(ANDROID_STL \"${ANDROID_STL}\" CACHE STRING \"\")")
