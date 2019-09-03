@@ -245,7 +245,13 @@ def write_add_qt_resource_call(target: str, resource_name: str, prefix: typing.O
                       '    PROPERTIES QT_RESOURCE_ALIAS "{}"\n)\n'.format(full_source, alias)
 
     # Quote file paths in case there are spaces.
-    sorted_files = ['"{}"'.format(f) for f in sorted_files]
+    sorted_files_backup = sorted_files
+    sorted_files = []
+    for source in sorted_files_backup:
+        if source.startswith('${'):
+            sorted_files.append(source)
+        else:
+            sorted_files.append('"{}"'.format(source))
 
     file_list = '\n    '.join(sorted_files)
     output += 'set({}_resource_files\n    {}\n)\n\n'.format(resource_name, file_list)
@@ -366,11 +372,17 @@ def handle_function_value(group: pp.ParseResults):
         # Do nothing, just return a string result
         return str(group)
 
+    if function_name == 'files':
+        if len(function_args) > 1:
+            raise RuntimeError('Don\'t know what to with more than one function argument for $$files().')
+        return str(function_args[0])
+
     # Return the whole expression as a string.
-    if function_name in ['join', 'cmakeRelativePath', 'shell_quote', 'shadowed', 'cmakeTargetPath',
+    if function_name in ['join', 'files', 'cmakeRelativePath', 'shell_quote', 'shadowed', 'cmakeTargetPath',
                          'shell_path', 'cmakeProcessLibs', 'cmakeTargetPaths',
                          'cmakePortablePaths', 'escape_expand']:
         return 'join({})'.format(''.join(function_args))
+
 
     raise RuntimeError('No logic to handle function "{}", please add one in handle_function_value().'.format(function_name))
 
@@ -1795,6 +1807,7 @@ def map_to_cmake_condition(condition: typing.Optional[str]) -> str:
     return condition
 
 
+resource_file_expansion_counter = 0
 def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: int = 0, is_example = False):
     vpath = scope.expand('VPATH')
 
@@ -1825,14 +1838,24 @@ def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
                     qrc_output += write_add_qt_resource_call(target, immediate_name, immediate_prefix, immediate_base, immediate_lang,
                             immediate_files, skip_qtquick_compiler, retain_qtquick_compiler, is_example)
                 else:
-                    # stadalone source file properties need to be set as they
-                    # are parsed.
-                    if skip_qtquick_compiler:
-                        output += 'set_source_files_properties("{}" PROPERTIES QT_SKIP_QUICKCOMPILER 1)\n\n'.format(r)
+                    if '*' in r:
+                        global resource_file_expansion_counter
+                        r = r.replace('"','')
+                        qrc_output += '\nfile(GLOB resource_glob_{} RELATIVE "${{CMAKE_CURRENT_SOURCE_DIR}}" "{}")\n'.format(resource_file_expansion_counter, r)
+                        qrc_output +='foreach(file IN LISTS resource_glob_{})\n'.format(resource_file_expansion_counter)
+                        qrc_output += '    set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/${file}" PROPERTIES QT_RESOURCE_ALIAS "${file}")\n'
+                        qrc_output +='endforeach()\n'
+                        standalone_files.append('${{resource_glob_{}}}'.format(resource_file_expansion_counter))
+                        resource_file_expansion_counter += 1
+                    else:
+                        # stadalone source file properties need to be set as they
+                        # are parsed.
+                        if skip_qtquick_compiler:
+                            qrc_output += 'set_source_files_properties("{}" PROPERTIES QT_SKIP_QUICKCOMPILER 1)\n\n'.format(r)
 
-                    if retain_qtquick_compiler:
-                        output += 'set_source_files_properties("{}" PROPERTIES QT_RETAIN_QUICKCOMPILER 1)\n\n'.format(r)
-                    standalone_files.append(r)
+                        if retain_qtquick_compiler:
+                            qrc_output += 'set_source_files_properties("{}" PROPERTIES QT_RETAIN_QUICKCOMPILER 1)\n\n'.format(r)
+                        standalone_files.append(r)
 
         if standalone_files:
             name = "qmake_immediate"
