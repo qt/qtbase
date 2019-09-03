@@ -314,8 +314,10 @@ static QString shellQuote(const QString &arg)
 
 QString architecureFromName(const QString &name)
 {
+    const QFileInfo fi(name);
+    const QString extractedFileName = fi.fileName();
     QRegExp architecture(QStringLiteral(".*_(.*)\\.so"));
-    if (!architecture.exactMatch(name))
+    if (!architecture.exactMatch(extractedFileName))
         return {};
     return architecture.capturedTexts().last();
 }
