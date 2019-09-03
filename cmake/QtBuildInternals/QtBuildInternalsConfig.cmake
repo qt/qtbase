@@ -93,7 +93,7 @@ macro(qt_build_repo)
 
     qt_build_repo_end()
 
-    if (BUILD_EXAMPLES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt")
+    if (BUILD_EXAMPLES AND BUILD_SHARED_LIBS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt")
         add_subdirectory(examples)
     endif()
 endmacro()
