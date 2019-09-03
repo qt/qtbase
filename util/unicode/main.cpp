@@ -814,8 +814,8 @@ static const char *property_string =
     "#endif\n"
     "    ushort graphemeBreakClass  : 5; /* 5 used */\n"
     "    ushort wordBreakClass      : 5; /* 5 used */\n"
-    "    ushort sentenceBreakClass  : 8; /* 4 used */\n"
     "    ushort lineBreakClass      : 6; /* 6 used */\n"
+    "    ushort sentenceBreakClass  : 8; /* 4 used */\n"
     "    ushort script              : 8;\n"
     "};\n\n"
     "Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) noexcept;\n"
@@ -873,6 +873,9 @@ static const char *methods =
     "\n";
 
 static const int SizeOfPropertiesStruct = 20;
+
+static const QByteArray sizeOfPropertiesStructCheck =
+        "Q_STATIC_ASSERT(sizeof(Properties) == " + QByteArray::number(SizeOfPropertiesStruct) + ");\n\n";
 
 struct PropertyFlags {
     bool operator==(const PropertyFlags &o) const {
@@ -2502,15 +2505,15 @@ static QByteArray createPropertyInfo()
         out += ", ";
 //     "        ushort graphemeBreakClass  : 5; /* 5 used */\n"
 //     "        ushort wordBreakClass      : 5; /* 5 used */\n"
-//     "        ushort sentenceBreakClass  : 8; /* 4 used */\n"
 //     "        ushort lineBreakClass      : 6; /* 6 used */\n"
         out += QByteArray::number( p.graphemeBreakClass );
         out += ", ";
         out += QByteArray::number( p.wordBreakClass );
         out += ", ";
-        out += QByteArray::number( p.sentenceBreakClass );
-        out += ", ";
         out += QByteArray::number( p.lineBreakClass );
+        out += ", ";
+//     "        ushort sentenceBreakClass  : 8; /* 4 used */\n"
+        out += QByteArray::number( p.sentenceBreakClass );
         out += ", ";
 //     "        ushort script              : 8;\n"
         out += QByteArray::number( p.script );
@@ -3129,6 +3132,7 @@ int main(int, char **)
     f.write("#define UNICODE_DATA_VERSION " DATA_VERSION_STR "\n\n");
     f.write("namespace QUnicodeTables {\n\n");
     f.write(property_string);
+    f.write(sizeOfPropertiesStructCheck);
     f.write(grapheme_break_class_string);
     f.write(word_break_class_string);
     f.write(sentence_break_class_string);

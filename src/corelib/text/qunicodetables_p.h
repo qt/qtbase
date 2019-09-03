@@ -88,8 +88,8 @@ struct Properties {
 #endif
     ushort graphemeBreakClass  : 5; /* 5 used */
     ushort wordBreakClass      : 5; /* 5 used */
-    ushort sentenceBreakClass  : 8; /* 4 used */
     ushort lineBreakClass      : 6; /* 6 used */
+    ushort sentenceBreakClass  : 8; /* 4 used */
     ushort script              : 8;
 };
 
@@ -127,6 +127,8 @@ struct CasefoldTraits
     static inline bool caseSpecial(const Properties *prop)
     { return prop->caseFoldSpecial; }
 };
+
+Q_STATIC_ASSERT(sizeof(Properties) == 20);
 
 enum GraphemeBreakClass {
     GraphemeBreak_Any,
