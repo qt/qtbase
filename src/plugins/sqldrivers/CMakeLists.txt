@@ -35,7 +35,7 @@ if(QT_FEATURE_sql_oci)
 endif()
 
 if(QT_FEATURE_sql_db2)
-#     TODO add_subdirectory(db2)
+     add_subdirectory(db2)
 endif()
 
 if(QT_FEATURE_sql_sqlite)
