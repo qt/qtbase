@@ -3,7 +3,7 @@ instructions:
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} {{.InstallDir}}\\bin\\qt-cmake {{.Env.COIN_CMAKE_ARGS}}"
     maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 120
+    maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
       Failed to call cmake. Contact Liang then.
     enable_if:
@@ -13,7 +13,7 @@ instructions:
   - type: ExecuteCommand
     command: "{{.InstallDir}}/bin/qt-cmake {{.Env.COIN_CMAKE_ARGS}}"
     maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 120
+    maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
       Failed to call cmake. Contact Liang then.
     disable_if:

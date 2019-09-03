@@ -20,7 +20,7 @@ instructions:
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} cmake --build ."
     maxTimeInSeconds: 6000
-    maxTimeBetweenOutput: 120
+    maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
       Failed to build sources. In the current state bug can be everywhere. Contact Liang first.
   - type: UploadTestArtifact
