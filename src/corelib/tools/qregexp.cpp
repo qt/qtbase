@@ -3009,12 +3009,10 @@ int QRegExpEngine::getEscape()
         yyCharClass->addSingleton(0x005f); // '_'
         return Tok_CharClass;
     case 'I':
-        if (xmlSchemaExtensions) {
-            yyCharClass->setNegative(!yyCharClass->negative());
-            Q_FALLTHROUGH();
-        } else {
+        if (!xmlSchemaExtensions)
             break;
-        }
+        yyCharClass->setNegative(!yyCharClass->negative());
+        Q_FALLTHROUGH();
     case 'i':
         if (xmlSchemaExtensions) {
             yyCharClass->addCategories(FLAG(QChar::Mark_NonSpacing) |
@@ -3049,12 +3047,10 @@ int QRegExpEngine::getEscape()
             break;
         }
     case 'C':
-        if (xmlSchemaExtensions) {
-            yyCharClass->setNegative(!yyCharClass->negative());
-            Q_FALLTHROUGH();
-        } else {
+        if (!xmlSchemaExtensions)
             break;
-        }
+        yyCharClass->setNegative(!yyCharClass->negative());
+        Q_FALLTHROUGH();
     case 'c':
         if (xmlSchemaExtensions) {
             yyCharClass->addCategories(FLAG(QChar::Mark_NonSpacing) |
@@ -3095,12 +3091,10 @@ int QRegExpEngine::getEscape()
             break;
         }
     case 'P':
-        if (xmlSchemaExtensions) {
-            yyCharClass->setNegative(!yyCharClass->negative());
-            Q_FALLTHROUGH();
-        } else {
+        if (!xmlSchemaExtensions)
             break;
-        }
+        yyCharClass->setNegative(!yyCharClass->negative());
+        Q_FALLTHROUGH();
     case 'p':
         if (xmlSchemaExtensions) {
             if (yyCh != '{') {
