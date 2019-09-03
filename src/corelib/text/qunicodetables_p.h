@@ -63,6 +63,15 @@ QT_BEGIN_NAMESPACE
 
 namespace QUnicodeTables {
 
+enum Case {
+    LowerCase,
+    UpperCase,
+    TitleCase,
+    CaseFold,
+
+    NumCases
+};
+
 struct Properties {
     ushort category            : 8; /* 5 used */
     ushort direction           : 8; /* 5 used */
@@ -70,19 +79,15 @@ struct Properties {
     ushort joining             : 3;
     signed short digitValue    : 5;
     signed short mirrorDiff    : 16;
-    ushort lowerCaseSpecial    : 1;
-    signed short lowerCaseDiff : 15;
+    ushort unicodeVersion      : 8; /* 5 used */
+    ushort nfQuickCheck        : 8;
 #ifdef Q_OS_WASM
     unsigned char              : 0; //wasm 64 packing trick
 #endif
-    ushort upperCaseSpecial    : 1;
-    signed short upperCaseDiff : 15;
-    ushort titleCaseSpecial    : 1;
-    signed short titleCaseDiff : 15;
-    ushort caseFoldSpecial     : 1;
-    signed short caseFoldDiff  : 15;
-    ushort unicodeVersion      : 8; /* 5 used */
-    ushort nfQuickCheck        : 8;
+    struct {
+        ushort special    : 1;
+        signed short diff : 15;
+    } cases[NumCases];
 #ifdef Q_OS_WASM
     unsigned char              : 0; //wasm 64 packing trick
 #endif
@@ -95,38 +100,6 @@ struct Properties {
 
 Q_CORE_EXPORT const Properties * QT_FASTCALL properties(uint ucs4) noexcept;
 Q_CORE_EXPORT const Properties * QT_FASTCALL properties(ushort ucs2) noexcept;
-
-struct LowercaseTraits
-{
-    static inline signed short caseDiff(const Properties *prop)
-    { return prop->lowerCaseDiff; }
-    static inline bool caseSpecial(const Properties *prop)
-    { return prop->lowerCaseSpecial; }
-};
-
-struct UppercaseTraits
-{
-    static inline signed short caseDiff(const Properties *prop)
-    { return prop->upperCaseDiff; }
-    static inline bool caseSpecial(const Properties *prop)
-    { return prop->upperCaseSpecial; }
-};
-
-struct TitlecaseTraits
-{
-    static inline signed short caseDiff(const Properties *prop)
-    { return prop->titleCaseDiff; }
-    static inline bool caseSpecial(const Properties *prop)
-    { return prop->titleCaseSpecial; }
-};
-
-struct CasefoldTraits
-{
-    static inline signed short caseDiff(const Properties *prop)
-    { return prop->caseFoldDiff; }
-    static inline bool caseSpecial(const Properties *prop)
-    { return prop->caseFoldSpecial; }
-};
 
 Q_STATIC_ASSERT(sizeof(Properties) == 20);
 

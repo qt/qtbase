@@ -6629,9 +6629,9 @@ namespace QUnicodeTables {
     reallocate memory to grow the buffer. In that case, we need to adjust the \a
     it pointer.
  */
-template <typename Traits, typename T>
+template <typename T>
 Q_NEVER_INLINE
-static QString detachAndConvertCase(T &str, QStringIterator it)
+static QString detachAndConvertCase(T &str, QStringIterator it, QUnicodeTables::Case which)
 {
     Q_ASSERT(!str.isEmpty());
     QString s = std::move(str);             // will copy if T is const QString
@@ -6640,10 +6640,10 @@ static QString detachAndConvertCase(T &str, QStringIterator it)
     do {
         uint uc = it.nextUnchecked();
 
-        const QUnicodeTables::Properties *prop = qGetProp(uc);
-        signed short caseDiff = Traits::caseDiff(prop);
+        const auto fold = qGetProp(uc)->cases[which];
+        signed short caseDiff = fold.diff;
 
-        if (Q_UNLIKELY(Traits::caseSpecial(prop))) {
+        if (Q_UNLIKELY(fold.special)) {
             const ushort *specialCase = specialCaseMap + caseDiff;
             ushort length = *specialCase++;
 
@@ -6674,8 +6674,8 @@ static QString detachAndConvertCase(T &str, QStringIterator it)
     return s;
 }
 
-template <typename Traits, typename T>
-static QString convertCase(T &str)
+template <typename T>
+static QString convertCase(T &str, QUnicodeTables::Case which)
 {
     const QChar *p = str.constBegin();
     const QChar *e = p + str.size();
@@ -6687,9 +6687,9 @@ static QString convertCase(T &str)
     QStringIterator it(p, e);
     while (it.hasNext()) {
         uint uc = it.nextUnchecked();
-        if (Traits::caseDiff(qGetProp(uc))) {
+        if (qGetProp(uc)->cases[which].diff) {
             it.recedeUnchecked();
-            return detachAndConvertCase<Traits>(str, it);
+            return detachAndConvertCase(str, it, which);
         }
     }
     return std::move(str);
@@ -6698,12 +6698,12 @@ static QString convertCase(T &str)
 
 QString QString::toLower_helper(const QString &str)
 {
-    return QUnicodeTables::convertCase<QUnicodeTables::LowercaseTraits>(str);
+    return QUnicodeTables::convertCase(str, QUnicodeTables::LowerCase);
 }
 
 QString QString::toLower_helper(QString &str)
 {
-    return QUnicodeTables::convertCase<QUnicodeTables::LowercaseTraits>(str);
+    return QUnicodeTables::convertCase(str, QUnicodeTables::LowerCase);
 }
 
 /*!
@@ -6715,12 +6715,12 @@ QString QString::toLower_helper(QString &str)
 
 QString QString::toCaseFolded_helper(const QString &str)
 {
-    return QUnicodeTables::convertCase<QUnicodeTables::CasefoldTraits>(str);
+    return QUnicodeTables::convertCase(str, QUnicodeTables::CaseFold);
 }
 
 QString QString::toCaseFolded_helper(QString &str)
 {
-    return QUnicodeTables::convertCase<QUnicodeTables::CasefoldTraits>(str);
+    return QUnicodeTables::convertCase(str, QUnicodeTables::CaseFold);
 }
 
 /*!
@@ -6738,12 +6738,12 @@ QString QString::toCaseFolded_helper(QString &str)
 
 QString QString::toUpper_helper(const QString &str)
 {
-    return QUnicodeTables::convertCase<QUnicodeTables::UppercaseTraits>(str);
+    return QUnicodeTables::convertCase(str, QUnicodeTables::UpperCase);
 }
 
 QString QString::toUpper_helper(QString &str)
 {
-    return QUnicodeTables::convertCase<QUnicodeTables::UppercaseTraits>(str);
+    return QUnicodeTables::convertCase(str, QUnicodeTables::UpperCase);
 }
 
 #if QT_DEPRECATED_SINCE(5, 14)
