@@ -364,6 +364,113 @@ def write_add_qt_resource_call(
     return output
 
 
+class QmlDirFileInfo:
+    def __init__(self, file_path: str, type_name: str):
+        self.file_path = file_path
+        self.version = ""
+        self.type_name = type_name
+        self.internal = False
+        self.singleton = False
+
+
+class QmlDir:
+    def __init__(self):
+        self.module = ""
+        self.plugin_name = ""
+        self.plugin_path = ""
+        self.classname = ""
+        self.imports = []  # typing.List[str]
+        self.type_names = {}  # typing.Dict[str, QmlDirFileInfo]
+        self.type_infos = []  # typing.List[str]
+        self.depends = []  # typing.List[[str,str]]
+        self.designer_supported = False
+
+    def __str__(self):
+        str = "module: {}\n".format(self.module)
+        str += "plugin: {} {}\n".format(self.plugin_name, self.plugin_path)
+        str += "classname: {}\n".format(self.classname)
+        str += "type_infos:{}\n".format("    \n".join(self.type_infos))
+        str += "imports:{}\n".format("    \n".join(self.imports))
+        str += "dependends: \n"
+        for dep in self.depends:
+            str += "    {} {}\n".format(dep[0], dep[1])
+        str += "designer supported: {}\n".format(self.designer_supported)
+        str += "type_names:\n"
+        for key in self.type_names:
+            file_info = self.type_names[key]
+            str += "    type:{} version:{} path:{} internal:{} singleton:{}\n".format(
+                file_info.type_name,
+                file_info.version,
+                file_info.type_name,
+                file_info.file_path,
+                file_info.internal,
+                file_info.singleton,
+            )
+        return str
+
+    def get_or_create_file_info(self, path: str, type_name: str) -> QmlDirFileInfo:
+        if not path in self.type_names:
+            self.type_names[path] = QmlDirFileInfo(path, type_name)
+        qmldir_file = self.type_names[path]
+        if qmldir_file.type_name != type_name:
+            raise RuntimeError("Registered qmldir file type_name does not match.")
+        return qmldir_file
+
+    def handle_file_internal(self, type_name: str, path: str):
+        qmldir_file = self.get_or_create_file_info(path, type_name)
+        qmldir_file.internal = True
+
+    def handle_file_singleton(self, type_name: str, version: str, path: str):
+        qmldir_file = self.handle_file(type_name, version, path)
+        qmldir_file.singleton = True
+
+    def handle_file(self, type_name: str, version: str, path: str) -> QmlDirFileInfo:
+        qmldir_file = self.get_or_create_file_info(path, type_name)
+        qmldir_file.version = version
+        qmldir_file.type_name = type_name
+        qmldir_file.path = path
+        return qmldir_file
+
+    def from_file(self, path: str):
+        f = open(path, "r")
+        if not f:
+            raise RuntimeError("Failed to open qmldir file at: {}".format(str))
+        for line in f:
+            if line.startswith("#"):
+                continue
+            line = line.strip().replace("\n", "")
+            if len(line) == 0:
+                continue
+
+            entries = line.split(" ")
+            if len(entries) == 0:
+                raise RuntimeError("Unexpected QmlDir file line entry")
+            if entries[0] == "module":
+                self.module = entries[1]
+            elif entries[0] == "[singleton]":
+                self.handle_file_singleton(entries[1], entries[2], entries[3])
+            elif entries[0] == "internal":
+                self.handle_file_internal(entries[1], entries[2])
+            elif entries[0] == "plugin":
+                self.plugin_name = entries[1]
+                if len(entries) > 2:
+                    self.plugin_path = entries[2]
+            elif entries[0] == "classname":
+                self.classname = entries[1]
+            elif entries[0] == "typeinfo":
+                self.type_infos.append(entries[1])
+            elif entries[0] == "depends":
+                self.depends.append((entries[1], entries[2]))
+            elif entries[0] == "designersupported":
+                self.designer_supported = True
+            elif entries[0] == "import":
+                self.imports.append(entries[1])
+            elif len(entries) == 3:
+                self.handle_file(entries[0], entries[1], entries[2])
+            else:
+                raise RuntimeError("Uhandled qmldir entry {}".format(line))
+
+
 def fixup_linecontinuation(contents: str) -> str:
     # Remove all line continuations, aka a backslash followed by
     # a newline character with an arbitrary amount of whitespace
@@ -2352,9 +2459,6 @@ def write_main_part(
 
     write_android_part(cm_fh, name, scopes[0], indent)
 
-    if is_qml_plugin:
-        write_qml_plugin_qml_files(cm_fh, name, scopes[0], indent)
-
     ignored_keys_report = write_ignored_keys(scopes[0], spaces(indent))
     if ignored_keys_report:
         cm_fh.write(ignored_keys_report)
@@ -2534,7 +2638,9 @@ def write_find_package_section(
         cm_fh.write("\n")
 
 
-def write_example(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0) -> str:
+def write_example(
+    cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0, is_plugin: bool = False
+) -> str:
     binary_name = scope.TARGET
     assert binary_name
 
@@ -2551,9 +2657,53 @@ def write_example(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: in
     (public_libs, private_libs) = extract_cmake_libraries(scope)
     write_find_package_section(cm_fh, public_libs, private_libs, indent=indent)
 
-    add_executable = f'add_{"qt_gui_" if gui else ""}executable({binary_name}'
+    add_target = ""
 
-    write_all_source_file_lists(cm_fh, scope, add_executable, indent=0)
+    qmldir = None
+    if is_plugin:
+        if "qml" in scope.get("QT"):
+            # Get the uri from the destination directory
+            dest_dir = scope.expandString("DESTDIR")
+            if not dest_dir:
+                dest_dir = "${CMAKE_CURRENT_BINARY_DIR}"
+            else:
+                uri = os.path.basename(dest_dir)
+                dest_dir = "${CMAKE_CURRENT_BINARY_DIR}/" + dest_dir
+
+            add_target = f"qt6_add_qml_module({binary_name}\n"
+            add_target += f'    OUTPUT_DIRECTORY "{dest_dir}"\n'
+            add_target += "    VERSION 1.0\n"
+            add_target += '    URI "{}"\n'.format(uri)
+
+            qmldir_file_path = scope.get_files("qmldir.files")
+            if qmldir_file_path:
+                qmldir_file_path = os.path.join(os.getcwd(), qmldir_file_path[0])
+            else:
+                qmldir_file_path = os.path.join(os.getcwd(), "qmldir")
+
+            if os.path.exists(qmldir_file_path):
+                qml_dir = QmlDir()
+                qml_dir.from_file(qmldir_file_path)
+                if qml_dir.designer_supported:
+                    add_target += "    DESIGNER_SUPPORTED\n"
+                if len(qml_dir.classname) != 0:
+                    add_target += f"    CLASSNAME {qml_dir.classname}\n"
+                if len(qml_dir.imports) != 0:
+                    add_target += "    IMPORTS\n{}".format("        \n".join(qml_dir.imports))
+                if len(qml_dir.depends) != 0:
+                    add_target += "    DEPENDENCIES\n"
+                    for dep in qml_dir.depends:
+                        add_target += f"        {dep[0]}/{dep[1]}\n"
+
+            add_target += "    INSTALL_LOCATION ${INSTALL_EXAMPLEDIR}\n)\n\n"
+            add_target += f"target_sources({binary_name} PRIVATE"
+        else:
+            add_target = f"add_library({binary_name} MODULE"
+
+    else:
+        add_target = f'add_{"qt_gui_" if gui else ""}executable({binary_name}'
+
+    write_all_source_file_lists(cm_fh, scope, add_target, indent=0)
 
     cm_fh.write(")\n")
 
@@ -2561,14 +2711,18 @@ def write_example(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: in
         cm_fh, scope, f"target_include_directories({binary_name} PUBLIC", indent=0, footer=")"
     )
     write_defines(
-        cm_fh, scope, f"target_compile_definitions({binary_name} PUBLIC", indent=0, footer=")"
+        cm_fh,
+        scope,
+        "target_compile_definitions({} PUBLIC".format(binary_name),
+        indent=0,
+        footer=")",
     )
     write_list(
         cm_fh,
         private_libs,
         "",
         indent=indent,
-        header=f"target_link_libraries({binary_name} PRIVATE\n",
+        header="target_link_libraries({} PRIVATE\n".format(binary_name),
         footer=")",
     )
     write_list(
@@ -2576,21 +2730,24 @@ def write_example(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: in
         public_libs,
         "",
         indent=indent,
-        header=f"target_link_libraries({binary_name} PUBLIC\n",
+        header="target_link_libraries({} PUBLIC\n".format(binary_name),
         footer=")",
     )
     write_compile_options(
-        cm_fh, scope, f"target_compile_options({binary_name}", indent=0, footer=")"
+        cm_fh, scope, "target_compile_options({}".format(binary_name), indent=0, footer=")"
     )
 
     write_resources(cm_fh, binary_name, scope, indent=indent, is_example=True)
 
+    if qmldir:
+        write_qml_plugin_epilogue(cm_fh, binary_name, scope, qmldir, indent)
+
     cm_fh.write(
-        f"\ninstall(TARGETS {binary_name}\n"
-        '    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"\n'
-        '    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"\n'
-        '    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"\n'
-        ")\n"
+        "\ninstall(TARGETS {}\n".format(binary_name)
+        + '    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"\n'
+        + '    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"\n'
+        + '    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"\n'
+        + ")\n"
     )
 
     return binary_name
@@ -2602,6 +2759,7 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
 
     extra = []
 
+    qmldir = None
     plugin_type = scope.get_string("PLUGIN_TYPE")
     is_qml_plugin = any("qml_plugin" == s for s in scope.get("_LOADED"))
     plugin_function_name = "add_qt_plugin"
@@ -2609,11 +2767,11 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
         extra.append(f"TYPE {plugin_type}")
     elif is_qml_plugin:
         plugin_function_name = "add_qml_module"
-        write_qml_plugin(cm_fh, plugin_name, scope, indent=indent, extra_lines=extra)
+        qmldir = write_qml_plugin(cm_fh, plugin_name, scope, indent=indent, extra_lines=extra)
 
     plugin_class_name = scope.get_string("PLUGIN_CLASS_NAME")
     if plugin_class_name:
-        extra.append(f"CLASS_NAME {plugin_class_name}")
+        extra.append("CLASS_NAME {}".format(plugin_class_name))
 
     write_main_part(
         cm_fh,
@@ -2626,6 +2784,10 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
         known_libraries={},
         extra_keys=[],
     )
+
+    if qmldir:
+        write_qml_plugin_epilogue(cm_fh, plugin_name, scope, qmldir, indent)
+
     return plugin_name
 
 
@@ -2634,18 +2796,12 @@ def write_qml_plugin(
     target: str,
     scope: Scope,
     *,
-    extra_lines: List[str] = [],
+    extra_lines: typing.List[str] = [],
     indent: int = 0,
-    **kwargs: Any,
-):
+    **kwargs: typing.Any,
+) -> QmlDir:
     # Collect other args if available
     indent += 2
-    # scope_config = scope.get('CONFIG')
-    # is_embedding_qml_files = False
-
-    sources = scope.get_files("SOURCES")
-    if len(sources) != 0:
-        extra_lines.append("CPP_PLUGIN")
 
     target_path = scope.get_string("TARGETPATH")
     if target_path:
@@ -2675,28 +2831,74 @@ def write_qml_plugin(
     if plugindump_dep:
         extra_lines.append(f'QML_PLUGINDUMP_DEPENDENCIES "{plugindump_dep}"')
 
+    qmldir_file_path = os.path.join(os.getcwd(), "qmldir")
+    if os.path.exists(qmldir_file_path):
+        qml_dir = QmlDir()
+        qml_dir.from_file(qmldir_file_path)
+        if qml_dir.designer_supported:
+            extra_lines.append("DESIGNER_SUPPORTED")
+        if len(qml_dir.classname) != 0:
+            extra_lines.append(f"CLASSNAME {qml_dir.classname}")
+        if len(qml_dir.imports) != 0:
+            extra_lines.append("IMPORTS\n        {}".format("\n        ".join(qml_dir.imports)))
+        if len(qml_dir.depends) != 0:
+            extra_lines.append("DEPENDENCIES")
+            for dep in qml_dir.depends:
+                extra_lines.append(f"    {dep[0]}/{dep[1]}")
 
-def write_qml_plugin_qml_files(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
+        return qml_dir
+
+    return None
+
+
+def write_qml_plugin_epilogue(
+    cm_fh: typing.IO[str], target: str, scope: Scope, qmldir: QmlDir, indent: int = 0
+):
 
     qml_files = scope.get_files("QML_FILES", use_vpath=True)
     if qml_files:
 
+        indent_0 = spaces(indent)
+        indent_1 = spaces(indent + 1)
         # Quote file paths in case there are spaces.
-        qml_files = [f'"{f}"' for f in qml_files]
+        qml_files_quoted = ['"{}"'.format(f) for f in qml_files]
 
-        qml_files_line = "\n{spaces(indent+1)}".join(qml_files)
-        cm_fh.write(f"\n{spaces(indent)}set(qml_files\n{spaces(indent+1)}{qml_files_line}\n)\n")
-
-        target_path = scope.get_string("TARGETPATH", inherit=True)
-        target_path_mangled = target_path.replace("/", "_")
-        target_path_mangled = target_path_mangled.replace(".", "_")
-        resource_name = "qmake_" + target_path_mangled
         cm_fh.write(
-            f"\n{spaces(indent)}add_qt_resource({target} {resource_name}\n"
-            f"{spaces(indent+1)}FILES\n{spaces(indent+2)}${{qml_files}}\n)\n"
+            "\n{}set(qml_files\n{}{}\n)\n".format(
+                indent_0, indent_1, "\n{}".format(indent_1).join(qml_files_quoted)
+            )
         )
 
-        cm_fh.write(f"\nqt_install_qml_files({target}\n    FILES ${{qml_files}}\n)\n\n")
+        for qml_file in qml_files:
+            if qml_file in qmldir.type_names:
+                qmldir_file_info = qmldir.type_names[qml_file]
+                cm_fh.write(
+                    "{}set_source_files_properties({} PROPERTIES\n".format(indent_0, qml_file)
+                )
+                cm_fh.write(
+                    '{}QT_QML_SOURCE_VERSION "{}"\n'.format(indent_1, qmldir_file_info.version)
+                )
+                # Only write typename if they are different, CMake will infer
+                # the name by default
+                if (
+                    os.path.splitext(os.path.basename(qmldir_file_info.path))[0]
+                    != qmldir_file_info.type_name
+                ):
+                    cm_fh.write(
+                        "{}QT_QML_SOURCE_TYPENAME {}\n".format(indent_1, qmldir_file_info.type_name)
+                    )
+                cm_fh.write("{}QT_QML_SOURCE_INSTALL TRUE\n".format(indent_1))
+                if qmldir_file_info.singleton:
+                    cm_fh.write("{}QT_QML_SINGLETON_TYPE TRUE\n".format(indent_1))
+                if qmldir_file_info.internal:
+                    cm_fh.write("{}QT_QML_INTERNAL_TYPE TRUE\n".format(indent_1))
+                cm_fh.write("{})\n".format(indent_0))
+
+        cm_fh.write(
+            "\n{}qt6_target_qml_files({}\n{}FILES\n{}${{qml_files}}\n)\n".format(
+                indent_0, target, indent_1, spaces(indent + 2)
+            )
+        )
 
 
 def handle_app_or_lib(
@@ -2711,8 +2913,13 @@ def handle_app_or_lib(
         any("qt_plugin" == s for s in scope.get("_LOADED")) or is_qml_plugin or "plugin" in config
     )
     target = ""
+    gui = all(
+        val not in config for val in ["console", "cmdline"]
+    ) and "testlib" not in scope.expand("QT")
 
-    if is_plugin:
+    if is_example:
+        target = write_example(cm_fh, scope, gui, indent=indent, is_plugin=is_plugin)
+    elif is_plugin:
         assert not is_example
         target = write_plugin(cm_fh, scope, indent=indent)
     elif is_lib or "qt_module" in scope.get("_LOADED"):
@@ -2722,17 +2929,11 @@ def handle_app_or_lib(
         assert not is_example
         target = write_tool(cm_fh, scope, indent=indent)
     else:
-        gui = all(
-            val not in config for val in ["console", "cmdline"]
-        ) and "testlib" not in scope.expand("QT")
         if "testcase" in config or "testlib" in config or "qmltestcase" in config:
             assert not is_example
             target = write_test(cm_fh, scope, gui, indent=indent)
         else:
-            if is_example:
-                target = write_example(cm_fh, scope, gui, indent=indent)
-            else:
-                target = write_binary(cm_fh, scope, gui, indent=indent)
+            target = write_binary(cm_fh, scope, gui, indent=indent)
 
     # ind = spaces(indent)
     write_source_file_list(

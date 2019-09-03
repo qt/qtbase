@@ -2035,7 +2035,8 @@ endfunction()
 function(add_qml_module target)
 
     set(qml_module_optional_args
-        CPP_PLUGIN
+        DESIGNER_SUPPORTED
+        DO_NOT_INSTALL
     )
 
     set(qml_module_single_args
@@ -2043,12 +2044,19 @@ function(add_qml_module target)
         TARGET_PATH
         VERSION
         QML_PLUGINDUMP_DEPENDENCIES
+        CLASSNAME
+    )
+
+    set(qml_module_multi_args
+        IMPORTS
+        TYPEINFO
+        DEPENDENCIES
     )
 
     qt_parse_all_arguments(arg "add_qml_module"
         "${__add_qt_plugin_optional_args};${qml_module_optional_args}"
         "${__add_qt_plugin_single_args};${qml_module_single_args}"
-        "${__add_qt_plugin_multi_args}" ${ARGN})
+        "${__add_qt_plugin_multi_args};${qml_module_multi_args}" ${ARGN})
 
     if (NOT arg_URI)
         message(FATAL_ERROR "add_qml_module called without specifying the module's uri. Please specify one using the URI parameter.")
@@ -2081,11 +2089,7 @@ function(add_qml_module target)
 
     # If we have no sources, but qml files, create a custom target so the
     # qml file will be visibile in an IDE.
-    if (NOT arg_CPP_PLUGIN)
-        add_custom_target(${target}
-            SOURCES ${arg_QML_FILES}
-        )
-    else()
+    if (arg_SOURCES)
         add_qt_plugin(${target}
             TYPE
                 qml_plugin
@@ -2095,21 +2099,37 @@ function(add_qml_module target)
         )
     endif()
 
-    # Set target properties
-    set_target_properties(${target}
-        PROPERTIES
-            QT_QML_MODULE_TARGET_PATH ${arg_TARGET_PATH}
-            QT_QML_MODULE_URI ${arg_URI}
-            QT_RESOURCE_PREFIX "/qt-project.org/imports/${arg_TARGET_PATH}"
-            QT_QML_MODULE_VERSION ${arg_VERSION}
+
+    if (arg_CPP_PLUGIN)
+        set(no_create_option DO_NOT_CREATE_TARGET)
+    endif()
+
+    if (arg_CLASSNAME)
+        set(classname_arg CLASSNAME ${arg_CLASSNAME})
+    endif()
+
+    if (arg_DESIGNER_SUPPORTED)
+        set(designer_supported_arg DESIGNER_SUPPORTED)
+    endif()
+
+    qt6_add_qml_module(${target}
+        ${designer_supported_arg}
+        ${no_create_option}
+        ${classname_arg}
+        RESOURCE_PREFIX "/qt-project.org/imports"
+        TARGET_PATH ${arg_TARGET_PATH}
+        URI ${arg_URI}
+        VERSION ${arg_VERSION}
+        QML_FILES ${arg_QML_FILES}
+        IMPORTS "${arg_IMPORTS}"
+        TYPEINFO "${arg_TYPEINFO}"
+        DO_NOT_INSTALL
+        DO_NOT_CREATE_TARGET
+        DEPENDENCIES ${arg_DEPENDENCIES}
+        RESOURCE_EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
     )
 
-    qt_add_qmltypes_target(${target}
-        TARGET_PATH "${arg_TARGET_PATH}"
-        IMPORT_VERSION "${arg_VERSION}"
-        IMPORT_NAME "${arg_URI}"
-        QML_PLUGINDUMP_DEPENDENCIES "${arg_QML_PLUGINDUMP_DEPENDENCIES}")
-
+    get_target_property(qmldir_file ${target} QT_QML_MODULE_QMLDIR_FILE)
     qt_path_join(qml_module_install_dir ${QT_INSTALL_DIR} "${INSTALL_QMLDIR}/${arg_TARGET_PATH}")
     set(plugin_types "${CMAKE_CURRENT_SOURCE_DIR}/plugins.qmltypes")
     if (EXISTS ${plugin_types})
@@ -2126,25 +2146,10 @@ function(add_qml_module target)
         endif()
     endif()
 
-    if (NOT QT_BUILD_SHARED_LIBS)
-        # only embed qmldir on static builds. Some qml modules may request
-        # their qml files to be embedded into their binary
-        string(REPLACE "." "_" qmldir_resource_name ${arg_TARGET_PATH})
-        string(REPLACE "/" "_" qmldir_resource_name ${qmldir_resource_name})
-        set(qmldir_resource_name "${qmldir_resource_name}_qmldir")
-        get_target_property(target_resource_prefix ${target} QT_RESOURCE_PREFIX)
-        set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
-            PROPERTIES QT_RESOURCE_ALIAS "qmldir"
-        )
-        add_qt_resource(${target} ${qmldir_resource_name}
-            PREFIX ${target_resource_prefix}
-            FILES "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
-        )
-    endif()
 
     qt_copy_or_install(
         FILES
-            "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
+            "${qmldir_file}"
         DESTINATION
             "${qml_module_install_dir}"
     )
@@ -2152,7 +2157,7 @@ function(add_qml_module target)
     if(QT_WILL_INSTALL)
         # qmldir should also be copied to the cmake binary dir when doing
         # prefix builds
-        file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/qmldir"
+        file(COPY "${qmldir_file}"
             DESTINATION "${QT_BUILD_DIR}/${INSTALL_QMLDIR}/${arg_TARGET_PATH}"
         )
     endif()
