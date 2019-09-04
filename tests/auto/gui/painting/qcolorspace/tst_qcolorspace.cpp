@@ -64,8 +64,12 @@ private slots:
 
     void primaries();
     void primariesXyz();
+
+#ifdef QT_BUILD_INTERNAL
     void primaries2_data();
     void primaries2();
+#endif
+
     void invalidPrimaries();
 
     void changeTransferFunction();
@@ -357,6 +361,7 @@ void tst_QColorSpace::primariesXyz()
     QCOMPARE(QColorSpacePrivate::get(bt2020)->toXyz, QColorMatrix::toXyzFromBt2020());
 }
 
+#ifdef QT_BUILD_INTERNAL
 void tst_QColorSpace::primaries2_data()
 {
     QTest::addColumn<QColorSpace::Primaries>("primariesId");
@@ -395,6 +400,7 @@ void tst_QColorSpace::primaries2()
     QCOMPARE(color3.blue(),  color1.blue());
     QCOMPARE(color3.alpha(), color1.alpha());
 }
+#endif
 
 void tst_QColorSpace::invalidPrimaries()
 {

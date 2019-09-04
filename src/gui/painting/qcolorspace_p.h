@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QColorSpacePrimaries
+class Q_AUTOTEST_EXPORT QColorSpacePrimaries
 {
 public:
    QColorSpacePrimaries() = default;
