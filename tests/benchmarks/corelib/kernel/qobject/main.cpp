@@ -51,7 +51,54 @@ private slots:
     void connect_disconnect_benchmark_data();
     void connect_disconnect_benchmark();
     void receiver_destroyed_benchmark();
+
+    void stdAllocator();
 };
+
+class QObjectUsingStandardAllocator : public QObject
+{
+    Q_OBJECT
+public:
+    QObjectUsingStandardAllocator()
+    {
+    }
+};
+
+template<class T>
+inline void allocator()
+{
+    // We need to allocate certain amount of objects otherwise the new implementation
+    // may re-use the previous allocation, hiding the somehow high cost of allocation. It
+    // also helps us to reduce the noise ratio, which is high for memory allocation.
+    //
+    // The check depends on memory allocation performance, which is quite non-deterministic.
+    // When a new memory is requested, the new operator, depending on implementation, is trying
+    // to re-use existing, already allocated for the process memory. If there is not enough, it
+    // asks OS to give more. Of course the first case is faster then the second. In the same
+    // time, from an application perspective the first is also more likely.
+    //
+    // As a result, depending on which use-case one wants to test, it may be recommended to run this
+    // test in separation from others, to "force" expensive code path in the memory allocation.
+    //
+    // The time based results are heavily affected by background noise. One really needs to
+    // prepare OS (no other tasks, CPU and RAM reservations) to run this test, or use
+    // instruction counting which seems to be less fragile.
+
+    const int count = 256 * 1024;
+
+    QScopedPointer<T> objects[count];
+    QBENCHMARK_ONCE {
+        for (int i = 0; i < count; ++i)
+            objects[i].reset(new T);
+        for (int i = 0; i < count; ++i)
+            objects[i].reset();
+    }
+}
+
+void QObjectBenchmark::stdAllocator()
+{
+    allocator<QObjectUsingStandardAllocator>();
+}
 
 struct Functor {
     void operator()(){}

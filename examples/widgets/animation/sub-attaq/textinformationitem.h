@@ -52,13 +52,13 @@
 #define TEXTINFORMATIONITEM_H
 
 //Qt
-#include <QtWidgets/QGraphicsTextItem>
+#include <QGraphicsTextItem>
 
 class TextInformationItem : public QGraphicsTextItem
 {
 public:
-    TextInformationItem(QGraphicsItem * parent = 0);
-    void setMessage(const QString& text);
+    TextInformationItem(QGraphicsItem *parent = nullptr);
+    void setMessage(const QString &text);
 };
 
 #endif // TEXTINFORMATIONITEM_H

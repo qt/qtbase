@@ -383,6 +383,14 @@ typedef double qreal;
 #define QT_DEPRECATED_VERSION_5(minor)      QT_DEPRECATED_VERSION_5_##minor
 #define QT_DEPRECATED_VERSION(major, minor) QT_DEPRECATED_VERSION_##major(minor)
 
+#ifdef __cplusplus
+// A tag to help mark stuff deprecated (cf. QStringViewLiteral)
+namespace QtPrivate {
+enum class Deprecated_t {};
+constexpr Q_DECL_UNUSED Deprecated_t Deprecated = {};
+}
+#endif
+
 /*
    The Qt modules' export macros.
    The options are:
@@ -841,10 +849,6 @@ Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line) 
 #  else
 #    define Q_ASSERT(cond) ((cond) ? static_cast<void>(0) : qt_assert(#cond, __FILE__, __LINE__))
 #  endif
-#endif
-
-#if defined(QT_NO_DEBUG) && !defined(QT_PAINT_DEBUG)
-#define QT_NO_PAINT_DEBUG
 #endif
 
 #ifndef Q_CC_MSVC

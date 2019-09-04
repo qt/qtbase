@@ -228,7 +228,7 @@ void ModelMoveCommand::doCommand()
             if (srcParent == destParent)
                 d = m_destRow - (m_endRow - m_startRow + 1);
             else
-                d = m_destRow - (m_endRow - m_startRow) + 1;
+                d = m_destRow;
         }
 
         foreach (const qint64 id, l)

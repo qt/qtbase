@@ -79,9 +79,6 @@ normalizePath(\$out_basedir);
 our $build_basedir;
 our $basedir;
 
-# Make sure we use Windows line endings for chomp and friends on Windows.
-$INPUT_RECORD_SEPARATOR = "\r\n" if ($^O eq "msys");
-
 # will be defined based on the modules sync.profile
 our (%modules, %moduleheaders, @allmoduleheadersprivate, %classnames, %deprecatedheaders);
 our (@qpa_headers, @private_headers);
@@ -182,10 +179,10 @@ sub shouldMasterInclude {
     my ($iheader) = @_;
     return 0 if (basename($iheader) =~ /_/);
     return 0 if (basename($iheader) =~ /qconfig/);
+    local $/ = "\x0a";
     if (open(F, "<$iheader")) {
         while (<F>) {
-            chomp;
-            chop if /\r$/;
+            s/\x0d?\x0a//;
             return 0 if (/^\#pragma qt_no_master_include$/);
         }
         close(F);
@@ -215,11 +212,11 @@ sub classNames {
     my $ihdrbase = basename($iheader);
 
     my $parsable = "";
+    local $/ = "\x0a";
     if(open(F, "<$iheader")) {
         while(<F>) {
+            s/\x0d?\x0a//;
             my $line = $_;
-            chomp $line;
-                        chop $line if ($line =~ /\r$/);
             if($line =~ /^\#/) {
                 $$clean = 0 if ($line =~ m/^#pragma qt_sync_skip_header_check/);
                 return @ret if($line =~ m/^#pragma qt_sync_stop_processing/);
@@ -231,6 +228,7 @@ sub classNames {
                 $line .= ";" if($line =~ m/^Q_[A-Z_0-9]*\(.*\)[\r\n]*$/); #qt macro
                 $line .= ";" if($line =~ m/^QT_(BEGIN|END)_HEADER[\r\n]*$/); #qt macro
                 $line .= ";" if($line =~ m/^QT_(BEGIN|END)_NAMESPACE(_[A-Z]+)*[\r\n]*$/); #qt macro
+                $line .= ";" if($line =~ m/^QT_DEPRECATED_X\(.*\)[\r\n]*$/); #qt macro
                 $line .= ";" if($line =~ m/^QT_MODULE\(.*\)[\r\n]*$/); # QT_MODULE macro
                 $line .= ";" if($line =~ m/^QT_WARNING_(PUSH|POP|DISABLE_\w+\(.*\))[\r\n]*$/); # qt macros
                 $$requires = $1 if ($line =~ m/^QT_REQUIRE_CONFIG\((.*)\);[\r\n]*$/);
@@ -336,6 +334,7 @@ sub check_header {
         $header_skip_qt_begin_namespace_test = 1 if ($ignore_for_qt_begin_namespace_check{$header});
     }
 
+    local $/ = "\x0a";
     open(F, "<$iheader") or return;
     my $qt_begin_namespace_found = 0;
     my $qt_end_namespace_found = 0;
@@ -344,7 +343,7 @@ sub check_header {
     my $stop_processing = 0;
     my $we_mean_it = 0;
     while ($line = <F>) {
-        chomp $line;
+        $line =~ s/\x0d?\x0a//;
         my $output_line = 1;
         if ($line =~ /^ *\# *pragma (qt_no_included_check|qt_sync_stop_processing)/) {
             $stop_processing = 1;
@@ -965,9 +964,10 @@ foreach my $lib (@modules_to_sync) {
                         #push @files, "$out_basedir/include/Qt/$t" if(-e "$out_basedir/include/Qt/$t");
                         foreach my $file (@files) {
                            my $remove_file = 0;
+                           local $/ = "\x0a";
                            if(open(F, "<$file")) {
                                 while(my $line = <F>) {
-                                    chomp $line;
+                                    $line =~ s/\x0d?\x0a//;
                                     if($line =~ /^\#include \"([^\"]*)\"$/) {
                                         my $include = $1;
                                         $include = $subdir . "/" . $include unless(substr($include, 0, 1) eq "/");

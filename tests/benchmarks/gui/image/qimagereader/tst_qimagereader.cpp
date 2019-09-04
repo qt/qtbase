@@ -51,6 +51,7 @@ public:
     virtual ~tst_QImageReader();
 
 public slots:
+    void initTestCase();
     void init();
     void cleanup();
 
@@ -69,6 +70,7 @@ private slots:
 
 private:
     QList< QPair<QString, QByteArray> > images; // filename, format
+    QString prefix;
 };
 
 tst_QImageReader::tst_QImageReader()
@@ -102,6 +104,13 @@ tst_QImageReader::~tst_QImageReader()
 {
 }
 
+void tst_QImageReader::initTestCase()
+{
+    prefix = QFINDTESTDATA("images/");
+    if (prefix.isEmpty())
+        QFAIL("Can't find images directory!");
+}
+
 void tst_QImageReader::init()
 {
 }
@@ -128,7 +137,7 @@ void tst_QImageReader::readImage()
     QFETCH(QByteArray, format);
 
     QBENCHMARK {
-        QImageReader io("images/" + fileName, format);
+        QImageReader io(prefix + fileName, format);
         QImage image = io.read();
         QVERIFY(!image.isNull());
     }
@@ -159,7 +168,7 @@ void tst_QImageReader::setScaledSize()
     QFETCH(QByteArray, format);
 
     QBENCHMARK {
-        QImageReader reader("images/" + fileName, format);
+        QImageReader reader(prefix + fileName, format);
         reader.setScaledSize(newSize);
         QImage image = reader.read();
         QCOMPARE(image.size(), newSize);
@@ -186,7 +195,7 @@ void tst_QImageReader::setClipRect()
     QFETCH(QByteArray, format);
 
     QBENCHMARK {
-        QImageReader reader("images/" + fileName, format);
+        QImageReader reader(prefix + fileName, format);
         reader.setClipRect(newRect);
         QImage image = reader.read();
         QCOMPARE(image.rect(), newRect);
@@ -205,7 +214,7 @@ void tst_QImageReader::setScaledClipRect()
     QFETCH(QByteArray, format);
 
     QBENCHMARK {
-        QImageReader reader("images/" + fileName, format);
+        QImageReader reader(prefix + fileName, format);
         reader.setScaledSize(QSize(300, 300));
         reader.setScaledClipRect(newRect);
         QImage image = reader.read();

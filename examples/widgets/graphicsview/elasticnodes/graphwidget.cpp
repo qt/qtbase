@@ -190,7 +190,7 @@ void GraphWidget::timerEvent(QTimerEvent *event)
 //! [5]
 void GraphWidget::wheelEvent(QWheelEvent *event)
 {
-    scaleView(pow((double)2, -event->delta() / 240.0));
+    scaleView(pow((double)2, -event->angleDelta().y() / 240.0));
 }
 //! [5]
 #endif

@@ -606,9 +606,6 @@ void tst_QGLThreads::painterOnPixmapInThread()
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedOpenGL)
         || !QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps))
         QSKIP("No platformsupport for ThreadedOpenGL or ThreadedPixmaps");
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    QSKIP("Drawing text in threads onto X11 drawables currently crashes on some X11 servers.");
-#endif
     PaintThreadManager<PixmapWrapper> painterThreads(5);
     painterThreads.start();
 

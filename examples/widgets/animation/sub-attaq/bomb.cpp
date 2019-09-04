@@ -51,15 +51,14 @@
 //Own
 #include "bomb.h"
 #include "submarine.h"
-#include "pixmapitem.h"
 #include "animationmanager.h"
 #include "qanimationstate.h"
 
 //Qt
-#include <QtCore/QSequentialAnimationGroup>
-#include <QtCore/QPropertyAnimation>
-#include <QtCore/QStateMachine>
-#include <QtCore/QFinalState>
+#include <QFinalState>
+#include <QPropertyAnimation>
+#include <QSequentialAnimationGroup>
+#include <QStateMachine>
 
 Bomb::Bomb() : PixmapItem(QString("bomb"), GraphicsScene::Big)
 {
@@ -83,7 +82,7 @@ void Bomb::launch(Bomb::Direction direction)
     anim->setEndValue(QPointF(x() + delta*2,scene()->height()));
     anim->setDuration(y()/2*60);
     launchAnimation->addAnimation(anim);
-    connect(anim,&QVariantAnimation::valueChanged,this,&Bomb::onAnimationLaunchValueChanged);
+    connect(anim, &QVariantAnimation::valueChanged, this, &Bomb::onAnimationLaunchValueChanged);
     connect(this, &Bomb::bombExploded, launchAnimation, &QAbstractAnimation::stop);
     //We setup the state machine of the bomb
     QStateMachine *machine = new QStateMachine(this);
@@ -93,18 +92,18 @@ void Bomb::launch(Bomb::Direction direction)
     launched->setAnimation(launchAnimation);
 
     //End
-    QFinalState *final = new QFinalState(machine);
+    QFinalState *finalState = new QFinalState(machine);
 
     machine->setInitialState(launched);
 
     //### Add a nice animation when the bomb is destroyed
-    launched->addTransition(this, &Bomb::bombExploded,final);
+    launched->addTransition(this, &Bomb::bombExploded, finalState);
 
     //If the animation is finished, then we move to the final state
-    launched->addTransition(launched, &QAnimationState::animationFinished, final);
+    launched->addTransition(launched, &QAnimationState::animationFinished, finalState);
 
     //The machine has finished to be executed, then the boat is dead
-    connect(machine,&QState::finished,this, &Bomb::bombExecutionFinished);
+    connect(machine,&QState::finished, this, &Bomb::bombExecutionFinished);
 
     machine->start();
 

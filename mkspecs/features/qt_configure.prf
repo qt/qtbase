@@ -560,7 +560,7 @@ defineTest(qtConfResolveLibs) {
             } else {
                 paths += $$lp
             }
-        } else: contains(l, "^-l.*") {
+        } else: !android: contains(l, "^-l.*") {
             lib = $$replace(l, "^-l", )
             lcan =
             integrity:contains(lib, "^.*\\.a") {
@@ -1905,8 +1905,11 @@ defineTest(qtConfCreateReportRecurse) {
         entry = $${1}.$$n
         subKeys = $$eval($${entry}._KEYS_)
         contains(subKeys, condition) {
-            condition = $$eval($${entry}.condition)
-            r = $$qtConfEvaluate($$condition)
+            r = true
+            for (condition, $$qtConfScalarOrList($${entry}.condition)) {
+                r = $$qtConfEvaluate($$condition)
+                !$$r: break()
+            }
             !qtConfIsBoolean($$r): \
                 error("Evaluation of condition '$$condition' in report entry $${entry} yielded non-boolean value '$$r'.")
             !$$r: next()

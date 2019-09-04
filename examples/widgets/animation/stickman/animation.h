@@ -52,8 +52,8 @@
 #define ANIMATION_H
 
 #include <QPointF>
-#include <QList>
 #include <QString>
+#include <QVector>
 
 class Frame;
 QT_BEGIN_NAMESPACE
@@ -85,7 +85,7 @@ public:
 
 private:
     QString m_name;
-    QList<Frame *> m_frames;
+    QVector<Frame *> m_frames;
     int m_currentFrame;
 };
 

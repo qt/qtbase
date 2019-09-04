@@ -131,6 +131,7 @@ public:
         Format_RGBA64,
         Format_RGBA64_Premultiplied,
         Format_Grayscale16,
+        Format_BGR888,
 #ifndef Q_QDOC
         NImageFormats
 #endif

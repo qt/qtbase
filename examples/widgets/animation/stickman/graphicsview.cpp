@@ -51,13 +51,8 @@
 #include "graphicsview.h"
 #include "stickman.h"
 
-#include <QtGui/QKeyEvent>
-#include <QtWidgets/QGraphicsScene>
-#include <QtWidgets/QGraphicsView>
-
-GraphicsView::GraphicsView(QWidget *parent)
-    : QGraphicsView(parent), m_editor(nullptr)
-{}
+#include <QKeyEvent>
+#include <QGraphicsScene>
 
 void GraphicsView::keyPressEvent(QKeyEvent *e)
 {
@@ -66,7 +61,8 @@ void GraphicsView::keyPressEvent(QKeyEvent *e)
     emit keyPressed(Qt::Key(e->key()));
 }
 
-void GraphicsView::resizeEvent(QResizeEvent *)
+void GraphicsView::resizeEvent(QResizeEvent *e)
 {
     fitInView(scene()->sceneRect());
+    QGraphicsView::resizeEvent(e);
 }

@@ -73,7 +73,6 @@ public:
 private:
     bool testAllFunctions(QStyle *);
     bool testScrollBarSubControls();
-    void testPainting(QStyle *style, const QString &platform);
 private slots:
     void drawItemPixmap();
     void init();
@@ -333,140 +332,14 @@ void tst_QStyle::testWindowsStyle()
     delete wstyle;
 }
 
-void writeImage(const QString &fileName, QImage image)
-{
-    QImageWriter imageWriter(fileName);
-    imageWriter.setFormat("png");
-    qDebug() << "result " << imageWriter.write(image);
-}
-
-QImage readImage(const QString &fileName)
-{
-    QImageReader reader(fileName);
-    return reader.read();
-}
-
-
 #if defined(Q_OS_WIN) && !defined(QT_NO_STYLE_WINDOWSVISTA) && !defined(Q_OS_WINRT)
 void tst_QStyle::testWindowsVistaStyle()
 {
     QStyle *vistastyle = QStyleFactory::create("WindowsVista");
     QVERIFY(testAllFunctions(vistastyle));
-
-    if (QOperatingSystemVersion::current().majorVersion()
-            == QOperatingSystemVersion::WindowsVista.majorVersion()
-            && QOperatingSystemVersion::current().minorVersion()
-            == QOperatingSystemVersion::WindowsVista.minorVersion())
-        testPainting(vistastyle, "vista");
     delete vistastyle;
 }
 #endif
-
-void comparePixmap(const QString &filename, const QPixmap &pixmap)
-{
-    QImage oldFile = readImage(filename);
-    QPixmap oldPixmap = QPixmap::fromImage(oldFile);
-    if (!oldFile.isNull())
-        QCOMPARE(pixmap, oldPixmap);
-    else
-        writeImage(filename, pixmap.toImage());
-}
-
-void tst_QStyle::testPainting(QStyle *style, const QString &platform)
-{
-qDebug("TEST PAINTING");
-    //Test Menu
-    QString fileName = "images/" + platform + "/menu.png";
-    QMenu menu;
-    menu.setStyle(style);
-    menu.show();
-    menu.addAction(new QAction("Test 1", &menu));
-    menu.addAction(new QAction("Test 2", &menu));
-    QPixmap pixmap = menu.grab();
-    comparePixmap(fileName, pixmap);
-
-    //Push button
-    fileName = "images/" + platform + "/button.png";
-    QPushButton button("OK");
-    button.setStyle(style);
-    button.show();
-    pixmap = button.grab();
-    button.hide();
-    comparePixmap(fileName, pixmap);
-
-    //Push button
-    fileName = "images/" + platform + "/radiobutton.png";
-    QRadioButton radiobutton("Check");
-    radiobutton.setStyle(style);
-    radiobutton.show();
-    pixmap = radiobutton.grab();
-    radiobutton.hide();
-    comparePixmap(fileName, pixmap);
-
-    //Combo box
-    fileName = "images/" + platform + "/combobox.png";
-    QComboBox combobox;
-    combobox.setStyle(style);
-    combobox.addItem("Test 1");
-    combobox.addItem("Test 2");
-    combobox.show();
-    pixmap = combobox.grab();
-    combobox.hide();
-    comparePixmap(fileName, pixmap);
-
-    //Spin box
-    fileName = "images/" + platform + "/spinbox.png";
-    QDoubleSpinBox spinbox;
-    spinbox.setLocale(QLocale(QLocale::English, QLocale::UnitedStates));
-    spinbox.setStyle(style);
-    spinbox.show();
-    pixmap = spinbox.grab();
-    spinbox.hide();
-    comparePixmap(fileName, pixmap);
-    QLocale::setDefault(QLocale::system());
-
-    //Slider
-    fileName = "images/" + platform + "/slider.png";
-    QSlider slider;
-    slider.setStyle(style);
-    slider.show();
-    pixmap = slider.grab();
-    slider.hide();
-    comparePixmap(fileName, pixmap);
-
-    //Line edit
-    fileName = "images/" + platform + "/lineedit.png";
-    QLineEdit lineedit("Test text");
-    lineedit.setStyle(style);
-    lineedit.show();
-    pixmap = lineedit.grab();
-    lineedit.hide();
-    comparePixmap(fileName, pixmap);
-
-    //MDI
-    fileName = "images/" + platform + "/mdi.png";
-    QMdiArea mdiArea;
-    mdiArea.addSubWindow(new QWidget(&mdiArea));
-    mdiArea.resize(200, 200);
-    mdiArea.setStyle(style);
-    mdiArea.show();
-    pixmap = mdiArea.grab();
-    mdiArea.hide();
-    comparePixmap(fileName, pixmap);
-
-    // QToolButton
-    fileName = "images/" + platform + "/toolbutton.png";
-    QToolButton tb;
-    tb.setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    tb.setText("AaQqPpXx");
-    tb.setIcon(style->standardPixmap(QStyle::SP_DirHomeIcon));
-    tb.setStyle(style);
-    tb.show();
-    pixmap = tb.grab();
-    tb.hide();
-    comparePixmap(fileName, pixmap);
-
-}
 
 #ifdef Q_OS_MAC
 void tst_QStyle::testMacStyle()

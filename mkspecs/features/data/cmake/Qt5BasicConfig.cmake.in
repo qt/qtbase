@@ -317,6 +317,22 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
     list(REMOVE_DUPLICATES Qt5$${CMAKE_MODULE_NAME}_EXECUTABLE_COMPILE_FLAGS)
 !!ENDIF // TEMPLATE != aux
 
+    # It can happen that the same FooConfig.cmake file is included when calling find_package()
+    # on some Qt component. An example of that is when using a Qt static build with auto inclusion
+    # of plugins:
+    #
+    # Qt5WidgetsConfig.cmake -> Qt5GuiConfig.cmake -> Qt5Gui_QSvgIconPlugin.cmake ->
+    # Qt5SvgConfig.cmake -> Qt5WidgetsConfig.cmake ->
+    # finish processing of second Qt5WidgetsConfig.cmake ->
+    # return to first Qt5WidgetsConfig.cmake ->
+    # add_library cannot create imported target "Qt5::Widgets".
+    #
+    # Make sure to return early in the original Config inclusion, because the target has already
+    # been defined as part of the second inclusion.
+    if(TARGET Qt5::$${CMAKE_MODULE_NAME})
+        return()
+    endif()
+
     set(_Qt5$${CMAKE_MODULE_NAME}_LIB_DEPENDENCIES \"$${CMAKE_QT5_MODULE_DEPS}\")
 
 !!IF !isEmpty(CMAKE_INTERFACE_QT5_MODULE_DEPS)
@@ -380,6 +396,8 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} PROPERTY INTERFACE_QT_ENABLED_FEATURES $$join(QT.$${MODULE}.enabled_features, ";"))
     set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} PROPERTY INTERFACE_QT_DISABLED_FEATURES $$join(QT.$${MODULE}.disabled_features, ";"))
+
+    set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} PROPERTY INTERFACE_QT_PLUGIN_TYPES \"$${CMAKE_MODULE_PLUGIN_TYPES}\")
 
     set(_Qt5$${CMAKE_MODULE_NAME}_PRIVATE_DIRS_EXIST TRUE)
     foreach (_Qt5$${CMAKE_MODULE_NAME}_PRIVATE_DIR ${Qt5$${CMAKE_MODULE_NAME}_OWN_PRIVATE_INCLUDE_DIRS})
@@ -488,7 +506,8 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
 
     file(GLOB pluginTargets \"${CMAKE_CURRENT_LIST_DIR}/Qt5$${CMAKE_MODULE_NAME}_*Plugin.cmake\")
 
-    macro(_populate_$${CMAKE_MODULE_NAME}_plugin_properties Plugin Configuration PLUGIN_LOCATION)
+    macro(_populate_$${CMAKE_MODULE_NAME}_plugin_properties Plugin Configuration PLUGIN_LOCATION
+          IsDebugAndRelease)
         set_property(TARGET Qt5::${Plugin} APPEND PROPERTY IMPORTED_CONFIGURATIONS ${Configuration})
 
 !!IF isEmpty(CMAKE_PLUGIN_DIR_IS_ABSOLUTE)
@@ -500,6 +519,36 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
         set_target_properties(Qt5::${Plugin} PROPERTIES
             \"IMPORTED_LOCATION_${Configuration}\" ${imported_location}
         )
+
+!!IF !isEmpty(CMAKE_STATIC_TYPE)
+        set(_static_deps
+            ${_Qt5${Plugin}_STATIC_${Configuration}_LIB_DEPENDENCIES}
+        )
+
+        if(NOT "${IsDebugAndRelease}")
+            set(_genex_condition \"1\")
+        else()
+            if("${Configuration}" STREQUAL "DEBUG")
+                set(_genex_condition \"$<CONFIG:Debug>\")
+            else()
+                set(_genex_condition \"$<NOT:$<CONFIG:Debug>>\")
+            endif()
+        endif()
+        if(_static_deps)
+            set(_static_deps_genex \"$<${_genex_condition}:${_static_deps}>\")
+            set_property(TARGET Qt5::${Plugin} APPEND PROPERTY INTERFACE_LINK_LIBRARIES
+                         \"${_static_deps_genex}\"
+            )
+        endif()
+
+        set(_static_link_flags \"${_Qt5${Plugin}_STATIC_${Configuration}_LINK_FLAGS}\")
+        if(NOT CMAKE_VERSION VERSION_LESS \"3.13\" AND _static_link_flags)
+            set(_static_link_flags_genex \"$<${_genex_condition}:${_static_link_flags}>\")
+            set_property(TARGET Qt5::${Plugin} APPEND PROPERTY INTERFACE_LINK_OPTIONS
+                \"${_static_link_flags_genex}\"
+            )
+        endif()
+!!ENDIF
     endmacro()
 
     if (pluginTargets)

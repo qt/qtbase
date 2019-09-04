@@ -4,7 +4,6 @@ qtConfig(graphicsview) {
 HEADERS += graphicsview/qgraphicsgridlayout.h \
     graphicsview/qgraphicsitem.h \
     graphicsview/qgraphicsitem_p.h \
-    graphicsview/qgraphicsitemanimation.h \
     graphicsview/qgraphicslayout.h \
     graphicsview/qgraphicslayout_p.h \
     graphicsview/qgraphicslayoutitem.h \
@@ -34,7 +33,6 @@ HEADERS += graphicsview/qgraphicsgridlayout.h \
 
 SOURCES += graphicsview/qgraphicsgridlayout.cpp \
     graphicsview/qgraphicsitem.cpp \
-    graphicsview/qgraphicsitemanimation.cpp \
     graphicsview/qgraphicslayout.cpp \
     graphicsview/qgraphicslayout_p.cpp \
     graphicsview/qgraphicslayoutitem.cpp \
@@ -55,4 +53,9 @@ SOURCES += graphicsview/qgraphicsgridlayout.cpp \
     graphicsview/qsimplex_p.cpp \
     graphicsview/qgraphicsanchorlayout_p.cpp \
     graphicsview/qgraphicsanchorlayout.cpp
+
+    qtConfig(easingcurve) {
+        HEADERS += graphicsview/qgraphicsitemanimation.h
+        SOURCES += graphicsview/qgraphicsitemanimation.cpp
+    }
 }

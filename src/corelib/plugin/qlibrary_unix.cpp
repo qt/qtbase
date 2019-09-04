@@ -52,6 +52,10 @@
 #  include <private/qcore_mac_p.h>
 #endif
 
+#ifdef Q_OS_ANDROID
+#  include <private/qjnihelpers_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static QString qdlerror()
@@ -96,6 +100,9 @@ QStringList QLibraryPrivate::suffixes_sys(const QString& fullVersion)
         suffixes << QLatin1String(".so.%1").arg(fullVersion);
     } else {
         suffixes << QLatin1String(".so");
+# ifdef Q_OS_ANDROID
+        suffixes << QStringLiteral(LIBS_SUFFIX);
+# endif
     }
 #endif
 # ifdef Q_OS_MAC
@@ -157,9 +164,12 @@ bool QLibraryPrivate::load_sys()
     // Do not unload the library during dlclose(). Consequently, the
     // library's specific static variables are not reinitialized if the
     // library is reloaded with dlopen() at a later time.
-#if defined(RTLD_NODELETE) && !defined(Q_OS_ANDROID)
+#if defined(RTLD_NODELETE)
     if (loadHints & QLibrary::PreventUnloadHint) {
-        dlFlags |= RTLD_NODELETE;
+#   ifdef Q_OS_ANDROID // RTLD_NODELETE flag is supported by Android 23+
+        if (QtAndroidPrivate::androidSdkVersion() > 22)
+#   endif
+            dlFlags |= RTLD_NODELETE;
     }
 #endif
 
@@ -219,7 +229,14 @@ bool QLibraryPrivate::load_sys()
             } else {
                 attempt = path + prefixes.at(prefix) + name + suffixes.at(suffix);
             }
+
             pHnd = dlopen(QFile::encodeName(attempt), dlFlags);
+#ifdef Q_OS_ANDROID
+            if (!pHnd) {
+                auto attemptFromBundle = attempt;
+                pHnd = dlopen(QFile::encodeName(attemptFromBundle.replace(QLatin1Char('/'), QLatin1Char('_'))), dlFlags);
+            }
+#endif
 
             if (!pHnd && fileName.startsWith(QLatin1Char('/')) && QFile::exists(attempt)) {
                 // We only want to continue if dlopen failed due to that the shared library did not exist.

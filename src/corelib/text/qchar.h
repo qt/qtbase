@@ -78,6 +78,7 @@ public:
         Null = 0x0000,
         Tabulation = 0x0009,
         LineFeed = 0x000a,
+        FormFeed = 0x000c,
         CarriageReturn = 0x000d,
         Space = 0x0020,
         Nbsp = 0x00a0,

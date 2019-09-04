@@ -12,7 +12,7 @@ HEADERS += \
 	kernel/qactiongroup.h \
 	kernel/qapplication.h \
 	kernel/qapplication_p.h \
-        kernel/qwidgetbackingstore_p.h \
+        kernel/qwidgetrepaintmanager_p.h \
 	kernel/qboxlayout.h \
 	kernel/qdesktopwidget.h \
 	kernel/qgridlayout.h \
@@ -41,7 +41,7 @@ SOURCES += \
 	kernel/qaction.cpp \
 	kernel/qactiongroup.cpp \
 	kernel/qapplication.cpp \
-        kernel/qwidgetbackingstore.cpp \
+        kernel/qwidgetrepaintmanager.cpp \
         kernel/qboxlayout.cpp \
 	kernel/qgridlayout.cpp \
         kernel/qlayout.cpp \

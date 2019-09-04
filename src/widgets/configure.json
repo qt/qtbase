@@ -378,6 +378,7 @@
             "label": "QScroller",
             "purpose": "Enables kinetic scrolling for any scrolling widget or graphics item.",
             "section": "Widgets",
+            "condition": "features.easingcurve",
             "output": [ "publicFeature" ]
         },
         "graphicsview": {
@@ -624,12 +625,6 @@
             "purpose": "Provides a model/view implementation of a column view.",
             "section": "ItemViews",
             "condition": "features.listview",
-            "output": [ "publicFeature", "feature" ]
-        },
-        "paint_debug": {
-            "label": "Painting Debug Utilities",
-            "purpose": "Enabled debugging painting with the environment variables QT_FLUSH_UPDATE and QT_FLUSH_PAINT.",
-            "section": "Painting",
             "output": [ "publicFeature", "feature" ]
         },
         "completer": {

@@ -123,6 +123,22 @@ public:
     };
     Q_DECLARE_FLAGS(ShaperFlags, ShaperFlag)
 
+    /* Used with the Freetype font engine. We don't cache glyphs that are too large anyway, so we can make this struct rather small */
+    struct Glyph {
+        Glyph() = default;
+        ~Glyph() { delete [] data; }
+        short linearAdvance = 0;
+        unsigned char width = 0;
+        unsigned char height = 0;
+        short x = 0;
+        short y = 0;
+        short advance = 0;
+        signed char format = 0;
+        uchar *data = nullptr;
+    private:
+        Q_DISABLE_COPY(Glyph);
+    };
+
     virtual ~QFontEngine();
 
     inline Type type() const { return m_type; }
@@ -190,11 +206,7 @@ public:
     virtual QImage alphaMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t);
     virtual QImage bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform &t, const QColor &color = QColor());
-    virtual QImage *lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
-                                           GlyphFormat neededFormat,
-                                           const QTransform &t = QTransform(),
-                                           QPoint *offset = nullptr);
-    virtual void unlockAlphaMapForGlyph();
+    virtual Glyph *glyphData(glyph_t glyph, QFixed subPixelPosition, GlyphFormat neededFormat, const QTransform &t);
     virtual bool hasInternalCaching() const { return false; }
 
     virtual glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed /*subPixelPosition*/, const QTransform &matrix, GlyphFormat /*format*/)
@@ -345,7 +357,6 @@ public:
     void loadKerningPairs(QFixed scalingFactor);
 
     GlyphFormat glyphFormat;
-    QImage currentlyLockedAlphaMap;
     int m_subPixelPositionCount; // Number of positions within a single pixel for this cache
 
     inline QVariant userData() const { return m_userData; }

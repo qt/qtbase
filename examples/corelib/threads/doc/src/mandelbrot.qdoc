@@ -304,8 +304,8 @@
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 12
 
     The wheel event handler is reimplemented to make the mouse wheel
-    control the zoom level. QWheelEvent::delta() returns the angle of
-    the wheel mouse movement, in eights of a degree. For most mice,
+    control the zoom level. QWheelEvent::angleDelta() returns the angle
+    of the wheel mouse movement, in eighths of a degree. For most mice,
     one wheel step corresponds to 15 degrees. We find out how many
     mouse steps we have and determine the resulting zoom factor.
     For example, if we have two wheel steps in the positive direction

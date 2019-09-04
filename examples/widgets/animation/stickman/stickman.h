@@ -57,8 +57,6 @@ static const int NodeCount = 16;
 static const int BoneCount = 24;
 
 class Node;
-QT_BEGIN_NAMESPACE
-QT_END_NAMESPACE
 class StickMan: public QGraphicsObject
 {
     Q_OBJECT
@@ -67,7 +65,6 @@ class StickMan: public QGraphicsObject
     Q_PROPERTY(bool isDead WRITE setIsDead READ isDead)
 public:
     StickMan();
-    ~StickMan();
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -101,13 +98,11 @@ private:
     Node *m_nodes[NodeCount];
     qreal m_perfectBoneLengths[BoneCount];
 
-    uint m_sticks : 1;
-    uint m_isDead : 1;
-    uint m_reserved : 30;
+    bool m_sticks = true;
+    bool m_isDead = false;
 
-    QPixmap m_pixmap;
-    QColor m_penColor;
-    QColor m_fillColor;
+    QColor m_penColor = Qt::white;
+    QColor m_fillColor = Qt::black;
 };
 
 #endif // STICKMAN_H

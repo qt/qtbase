@@ -1,3 +1,5 @@
+CONFIG += single_arch
+
 CONFIG -= qt android_install
 
 templates.files = \

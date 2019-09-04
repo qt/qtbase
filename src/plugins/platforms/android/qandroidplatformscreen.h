@@ -103,7 +103,7 @@ protected:
 
 private:
     QDpi logicalDpi() const override;
-    qreal pixelDensity()  const override;
+    QDpi logicalBaseDpi() const override;
     Qt::ScreenOrientation orientation() const override;
     Qt::ScreenOrientation nativeOrientation() const override;
     void surfaceChanged(JNIEnv *env, jobject surface, int w, int h) override;

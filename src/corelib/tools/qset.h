@@ -263,6 +263,13 @@ private:
     }
 };
 
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606
+template <typename InputIterator,
+          typename ValueType = typename std::iterator_traits<InputIterator>::value_type,
+          QtPrivate::IfIsInputIterator<InputIterator> = true>
+QSet(InputIterator, InputIterator) -> QSet<ValueType>;
+#endif
+
 template <typename T>
 uint qHash(const QSet<T> &key, uint seed = 0)
 noexcept(noexcept(qHashRangeCommutative(key.begin(), key.end(), seed)))

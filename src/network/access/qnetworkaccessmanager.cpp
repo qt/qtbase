@@ -70,6 +70,7 @@
 #include "QtNetwork/private/qauthenticator_p.h"
 #include "QtNetwork/qsslconfiguration.h"
 #include "QtNetwork/qnetworkconfigmanager.h"
+#include "QtNetwork/private/http2protocol_p.h"
 
 #if QT_CONFIG(http)
 #include "qhttpmultipart.h"
@@ -489,6 +490,7 @@ QNetworkAccessManager::QNetworkAccessManager(QObject *parent)
     qRegisterMetaType<QSharedPointer<char> >();
 
     Q_D(QNetworkAccessManager);
+
     if (QNetworkStatusMonitor::isEnabled()) {
         connect(&d->statusMonitor, SIGNAL(onlineStateChanged(bool)),
                 SLOT(_q_onlineStateChanged(bool)));
@@ -1178,7 +1180,6 @@ QSharedPointer<QNetworkSession> QNetworkAccessManagerPrivate::getNetworkSession(
 
 #endif // QT_NO_BEARERMANAGEMENT
 
-
 #ifndef QT_NO_SSL
 /*!
     \since 5.2
@@ -1688,7 +1689,7 @@ void QNetworkAccessManager::clearConnectionCache()
     \sa setAutoDeleteReplies,
     QNetworkRequest::AutoDeleteReplyOnFinishAttribute
 */
-bool QNetworkAccessManager::autoDeleteReplies()
+bool QNetworkAccessManager::autoDeleteReplies() const
 {
     return d_func()->autoDeleteReplies;
 }

@@ -88,6 +88,7 @@ template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB444>() { return 4; }
 template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB555>() { return 5; }
 template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB666>() { return 6; }
 template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_RGB888>() { return 8; }
+template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_BGR888>() { return 8; }
 template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_ARGB4444_Premultiplied>() { return 4; }
 template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_ARGB8555_Premultiplied>() { return 5; }
 template<> Q_DECL_CONSTEXPR uint redWidth<QImage::Format_ARGB8565_Premultiplied>() { return 5; }
@@ -101,6 +102,7 @@ template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB444>() { return  8; 
 template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB555>() { return 10; }
 template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB666>() { return 12; }
 template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_RGB888>() { return 16; }
+template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_BGR888>() { return 0; }
 template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_ARGB4444_Premultiplied>() { return  8; }
 template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_ARGB8555_Premultiplied>() { return 18; }
 template<> Q_DECL_CONSTEXPR uint redShift<QImage::Format_ARGB8565_Premultiplied>() { return 19; }
@@ -119,6 +121,7 @@ template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB444>() { return 4;
 template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB555>() { return 5; }
 template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB666>() { return 6; }
 template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_RGB888>() { return 8; }
+template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_BGR888>() { return 8; }
 template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_ARGB4444_Premultiplied>() { return 4; }
 template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_ARGB8555_Premultiplied>() { return 5; }
 template<> Q_DECL_CONSTEXPR uint greenWidth<QImage::Format_ARGB8565_Premultiplied>() { return 6; }
@@ -132,6 +135,7 @@ template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB444>() { return 4;
 template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB555>() { return 5; }
 template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB666>() { return 6; }
 template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_RGB888>() { return 8; }
+template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_BGR888>() { return 8; }
 template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_ARGB4444_Premultiplied>() { return  4; }
 template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_ARGB8555_Premultiplied>() { return 13; }
 template<> Q_DECL_CONSTEXPR uint greenShift<QImage::Format_ARGB8565_Premultiplied>() { return 13; }
@@ -150,6 +154,7 @@ template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB444>() { return 4; 
 template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB555>() { return 5; }
 template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB666>() { return 6; }
 template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_RGB888>() { return 8; }
+template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_BGR888>() { return 8; }
 template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_ARGB4444_Premultiplied>() { return 4; }
 template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_ARGB8555_Premultiplied>() { return 5; }
 template<> Q_DECL_CONSTEXPR uint blueWidth<QImage::Format_ARGB8565_Premultiplied>() { return 5; }
@@ -163,6 +168,7 @@ template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB444>() { return 0; 
 template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB555>() { return 0; }
 template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB666>() { return 0; }
 template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_RGB888>() { return 0; }
+template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_BGR888>() { return 16; }
 template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_ARGB4444_Premultiplied>() { return 0; }
 template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_ARGB8555_Premultiplied>() { return 8; }
 template<> Q_DECL_CONSTEXPR uint blueShift<QImage::Format_ARGB8565_Premultiplied>() { return 8; }
@@ -181,6 +187,7 @@ template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_RGB444>() { return 0;
 template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_RGB555>() { return 0; }
 template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_RGB666>() { return 0; }
 template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_RGB888>() { return 0; }
+template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_BGR888>() { return 0; }
 template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_ARGB4444_Premultiplied>() { return  4; }
 template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_ARGB8555_Premultiplied>() { return  8; }
 template<> Q_DECL_CONSTEXPR uint alphaWidth<QImage::Format_ARGB8565_Premultiplied>() { return  8; }
@@ -194,6 +201,7 @@ template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGB444>() { return 0;
 template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGB555>() { return 0; }
 template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGB666>() { return 0; }
 template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_RGB888>() { return 0; }
+template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_BGR888>() { return 0; }
 template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_ARGB4444_Premultiplied>() { return 12; }
 template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_ARGB8555_Premultiplied>() { return  0; }
 template<> Q_DECL_CONSTEXPR uint alphaShift<QImage::Format_ARGB8565_Premultiplied>() { return  0; }
@@ -214,6 +222,7 @@ template<> constexpr QPixelLayout::BPP bitsPerPixel<QImage::Format_RGB444>() { r
 template<> constexpr QPixelLayout::BPP bitsPerPixel<QImage::Format_RGB555>() { return QPixelLayout::BPP16; }
 template<> constexpr QPixelLayout::BPP bitsPerPixel<QImage::Format_RGB666>() { return QPixelLayout::BPP24; }
 template<> constexpr QPixelLayout::BPP bitsPerPixel<QImage::Format_RGB888>() { return QPixelLayout::BPP24; }
+template<> constexpr QPixelLayout::BPP bitsPerPixel<QImage::Format_BGR888>() { return QPixelLayout::BPP24; }
 template<> constexpr QPixelLayout::BPP bitsPerPixel<QImage::Format_ARGB4444_Premultiplied>() { return QPixelLayout::BPP16; }
 template<> constexpr QPixelLayout::BPP bitsPerPixel<QImage::Format_ARGB8555_Premultiplied>() { return QPixelLayout::BPP24; }
 template<> constexpr QPixelLayout::BPP bitsPerPixel<QImage::Format_ARGB8565_Premultiplied>() { return QPixelLayout::BPP24; }
@@ -1528,7 +1537,8 @@ QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
     { false, false, QPixelLayout::BPP16, nullptr,
       convertGrayscale16ToRGB32, convertGrayscale16ToRGBA64,
       fetchGrayscale16ToRGB32, fetchGrayscale16ToRGBA64,
-      storeGrayscale16FromARGB32PM, storeGrayscale16FromRGB32 } // Format_Grayscale16
+      storeGrayscale16FromARGB32PM, storeGrayscale16FromRGB32 }, // Format_Grayscale16
+    pixelLayoutRGB<QImage::Format_BGR888>(),
 };
 
 Q_STATIC_ASSERT(sizeof(qPixelLayouts) / sizeof(*qPixelLayouts) == QImage::NImageFormats);
@@ -1643,7 +1653,8 @@ ConvertAndStorePixelsFunc64 qStoreFromRGBA64PM[QImage::NImageFormats] = {
     storeRGBX64FromRGBA64PM,
     storeRGBA64FromRGBA64PM,
     storeRGBA64PMFromRGBA64PM,
-    storeGray16FromRGBA64PM
+    storeGray16FromRGBA64PM,
+    storeGenericFromRGBA64PM<QImage::Format_BGR888>,
 };
 
 /*
@@ -1732,6 +1743,7 @@ static DestFetchProc destFetchProc[QImage::NImageFormats] =
     destFetch,          // Format_RGBA64
     destFetch,          // Format_RGBA64_Premultiplied
     destFetch,          // Format_Grayscale16
+    destFetch,          // Format_BGR888
 };
 
 #if QT_CONFIG(raster_64bit)
@@ -1782,6 +1794,7 @@ static DestFetchProc64 destFetchProc64[QImage::NImageFormats] =
     destFetch64,        // Format_RGBA64
     destFetchRGB64,     // Format_RGBA64_Premultiplied
     destFetch64,        // Format_Grayscale16
+    destFetch64,        // Format_BGR888
 };
 #endif
 
@@ -1922,6 +1935,7 @@ static DestStoreProc destStoreProc[QImage::NImageFormats] =
     destStore,          // Format_RGBA64
     destStore,          // Format_RGBA64_Premultiplied
     destStore,          // Format_Grayscale16
+    destStore,          // Format_BGR888
 };
 
 #if QT_CONFIG(raster_64bit)
@@ -1971,6 +1985,7 @@ static DestStoreProc64 destStoreProc64[QImage::NImageFormats] =
     destStore64RGBA64,  // Format_RGBA64
     0,                  // Format_RGBA64_Premultiplied
     destStore64,        // Format_Grayscale16
+    destStore64,        // Format_BGR888
 };
 #endif
 
@@ -3922,6 +3937,7 @@ static SourceFetchProc sourceFetchUntransformed[QImage::NImageFormats] = {
     fetchUntransformed,         // RGBA64
     fetchUntransformed,         // RGBA64_Premultiplied
     fetchUntransformed,         // Grayscale16
+    fetchUntransformed,         // BGR888
 };
 
 static const SourceFetchProc sourceFetchGeneric[NBlendTypes] = {
@@ -4544,7 +4560,7 @@ void blend_color_generic_rgb64(int count, const QSpan *spans, void *userData)
     while (count--) {
         int x = spans->x;
         int length = spans->len;
-        if (solidFill && bpp >= QPixelLayout::BPP8 && spans->coverage == 255 && length) {
+        if (solidFill && bpp >= QPixelLayout::BPP8 && spans->coverage == 255 && length && op.destStore64) {
             // If dest doesn't matter we don't need to bother with blending or converting all the identical pixels
             op.destStore64(data->rasterBuffer, x, spans->y, &color, 1);
             spanfill_from_first(data->rasterBuffer, bpp, x, spans->y, length);
@@ -6588,6 +6604,14 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         qt_alphamapblit_generic,
         qt_alphargbblit_generic,
         qt_rectfill_quint16
+    },
+    // Format_BGR888
+    {
+        blend_color_generic,
+        0,
+        qt_alphamapblit_generic,
+        qt_alphargbblit_generic,
+        qt_rectfill_quint24
     },
 };
 

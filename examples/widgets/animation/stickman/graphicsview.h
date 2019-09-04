@@ -51,24 +51,20 @@
 #ifndef GRAPHICSVIEW_H
 #define GRAPHICSVIEW_H
 
-#include <QtWidgets/QGraphicsView>
+#include <QGraphicsView>
 
-class MainWindow;
 class GraphicsView: public QGraphicsView
 {
     Q_OBJECT
 public:
-    GraphicsView(QWidget *parent = nullptr);
+    using QGraphicsView::QGraphicsView;
 
 protected:
-    void resizeEvent(QResizeEvent *event) override;
-    void keyPressEvent(QKeyEvent *) override;
+    void resizeEvent(QResizeEvent *e) override;
+    void keyPressEvent(QKeyEvent *e) override;
 
 signals:
     void keyPressed(int key);
-
-private:
-    MainWindow *m_editor;
 };
 
 #endif

@@ -51,7 +51,7 @@
 #ifndef ANIMATIONMANAGER_H
 #define ANIMATIONMANAGER_H
 
-#include <QtCore/QObject>
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 class QAbstractAnimation;
@@ -59,9 +59,10 @@ QT_END_NAMESPACE
 
 class AnimationManager : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
+    AnimationManager() = default;
+    ~AnimationManager() = default;
 public:
-    AnimationManager();
     void registerAnimation(QAbstractAnimation *anim);
     void unregisterAnimation(QAbstractAnimation *anim);
     void unregisterAllAnimations();
@@ -75,8 +76,7 @@ private slots:
     void unregisterAnimation_helper(QObject *obj);
 
 private:
-    static AnimationManager *instance;
-    QList<QAbstractAnimation *> animations;
+    QVector<QAbstractAnimation *> animations;
 };
 
 #endif // ANIMATIONMANAGER_H

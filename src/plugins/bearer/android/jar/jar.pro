@@ -1,3 +1,5 @@
+CONFIG += single_arch
+
 TARGET = QtAndroidBearer
 
 load(qt_build_paths)

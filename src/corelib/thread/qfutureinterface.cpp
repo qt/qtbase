@@ -429,6 +429,11 @@ QMutex *QFutureInterfaceBase::mutex() const
     return &d->m_mutex;
 }
 
+QMutex &QFutureInterfaceBase::mutex(int) const
+{
+    return d->m_mutex;
+}
+
 QtPrivate::ExceptionStore &QFutureInterfaceBase::exceptionStore()
 {
     return d->m_exceptionStore;

@@ -52,15 +52,26 @@ builtin_resources {
 qmldir.base = $$qmldir_path
 qmldir.files = $$qmldir_file
 qmldir.path = $$[QT_INSTALL_QML]/$$TARGETPATH
-INSTALLS += qmldir
 
 qmlfiles.base = $$_PRO_FILE_PWD_
 qmlfiles.files = $$fq_aux_qml_files
 install_qml_files: qmlfiles.files += $$fq_qml_files
 qmlfiles.path = $${qmldir.path}
-INSTALLS += qmlfiles
 
-!debug_and_release|!build_all|CONFIG(release, debug|release) {
+INSTALL_QML_FILES = false
+
+android {
+    build_pass {
+        isEmpty(ANDROID_ABIS): ANDROID_ABIS = $$ALL_ANDROID_ABIS
+        ABI = $$first(ANDROID_ABIS)
+        equals(ABI,  $$QT_ARCH): INSTALL_QML_FILES = true
+    }
+} else: !debug_and_release|!build_all|CONFIG(release, debug|release): INSTALL_QML_FILES = true
+
+equals(INSTALL_QML_FILES, true) {
+    INSTALLS += qmldir
+    INSTALLS += qmlfiles
+
     !prefix_build {
         COPIES += qmldir qmlfiles
     } else {

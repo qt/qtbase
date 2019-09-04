@@ -256,15 +256,6 @@ QWindow *QWindowsScreen::windowAt(const QPoint &screenPoint, unsigned flags)
     return result;
 }
 
-qreal QWindowsScreen::pixelDensity() const
-{
-    // QTBUG-49195: Use logical DPI instead of physical DPI to calculate
-    // the pixel density since it is reflects the Windows UI scaling.
-    // High DPI auto scaling should be disabled when the user chooses
-    // small fonts on a High DPI monitor, resulting in lower logical DPI.
-    return qMax(1, qRound(logicalDpi().first / 96));
-}
-
 /*!
     \brief Determine siblings in a virtual desktop system.
 

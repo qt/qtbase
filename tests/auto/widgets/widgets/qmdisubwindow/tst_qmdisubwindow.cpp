@@ -52,9 +52,7 @@
 #include <QVector>
 
 QT_BEGIN_NAMESPACE
-#if 1 // Used to be excluded in Qt4 for Q_WS_WIN
 extern bool qt_tab_all_widgets();
-#endif
 QT_END_NAMESPACE
 
 static inline bool tabAllWidgets()

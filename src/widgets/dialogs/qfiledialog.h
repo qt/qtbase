@@ -284,6 +284,7 @@ public:
 
     static void getOpenFileContent(const QString &nameFilter,
                                    const std::function<void(const QString &, const QByteArray &)> &fileContentsReady);
+    static void saveFileContent(const QByteArray &fileContent, const QString &fileNameHint = QString());
 
 protected:
     QFileDialog(const QFileDialogArgs &args);

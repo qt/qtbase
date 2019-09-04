@@ -76,7 +76,7 @@ void fill_push_header(const HttpHeader &originalRequest, HttpHeader &promisedReq
 
 }
 
-Http2Server::Http2Server(H2Type type, const Http2::RawSettings &ss, const Http2::RawSettings &cs)
+Http2Server::Http2Server(H2Type type, const RawSettings &ss, const RawSettings &cs)
     : connectionType(type),
       serverSettings(ss),
       expectedClientSettings(cs)
@@ -218,7 +218,7 @@ void Http2Server::sendDATA(quint32 streamID, quint32 windowSize)
 
     quint32 bytesToSend = std::min<quint32>(windowSize, responseBody.size() - offset);
     quint32 bytesSent = 0;
-    const quint32 frameSizeLimit(clientSetting(Settings::MAX_FRAME_SIZE_ID, Http2::maxFrameSize));
+    const quint32 frameSizeLimit(clientSetting(Settings::MAX_FRAME_SIZE_ID, Http2::minPayloadLimit));
     const uchar *src = reinterpret_cast<const uchar *>(responseBody.constData() + offset);
     const bool last = offset + bytesToSend == quint32(responseBody.size());
 
@@ -236,6 +236,10 @@ void Http2Server::sendDATA(quint32 streamID, quint32 windowSize)
         src += chunkSize;
         bytesToSend -= chunkSize;
         bytesSent += chunkSize;
+        if (frameSizeLimit != Http2::minPayloadLimit) {
+            // Our test is probably interested in how many DATA frames were sent.
+            emit sendingData();
+        }
     }
 
     if (interrupted.loadAcquire())
@@ -767,7 +771,7 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
     Q_ASSERT(activeRequests.find(streamID) != activeRequests.end());
 
     const quint32 maxFrameSize(clientSetting(Settings::MAX_FRAME_SIZE_ID,
-                                             Http2::maxFrameSize));
+                                             Http2::maxPayloadSize));
 
     if (pushPromiseEnabled) {
         // A real server supporting PUSH_PROMISE will probably first send

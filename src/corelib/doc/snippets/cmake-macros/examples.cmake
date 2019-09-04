@@ -24,3 +24,14 @@ add_dependencies(myapp resources)
 #! [qt5_generate_moc]
 qt5_generate_moc(main.cpp main.moc TARGET myapp)
 #! [qt5_generate_moc]
+
+#! [qt5_import_plugins]
+add_executable(myapp main.cpp)
+target_link_libraries(myapp Qt5::Gui Qt5::Sql)
+qt5_import_plugins(myapp
+    INCLUDE Qt5::QCocoaIntegrationPlugin
+    EXCLUDE Qt5::QMinimalIntegrationPlugin
+    INCLUDE_BY_TYPE imageformats Qt5::QGifPlugin Qt5::QJpegPlugin
+    EXCLUDE_BY_TYPE sqldrivers
+)
+#! [qt5_import_plugins]

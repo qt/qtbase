@@ -576,6 +576,9 @@ bool QTextHtmlImporter::appendNodeText()
             && ch != QChar::Nbsp
             && ch != QChar::ParagraphSeparator) {
 
+            if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && (ch == QLatin1Char('\n') || ch == QLatin1Char('\r')))
+                compressNextWhitespace = PreserveWhiteSpace;
+
             if (compressNextWhitespace == CollapseWhiteSpace)
                 compressNextWhitespace = RemoveWhiteSpace; // allow this one, and remove the ones coming next.
             else if(compressNextWhitespace == RemoveWhiteSpace)
@@ -592,7 +595,9 @@ bool QTextHtmlImporter::appendNodeText()
                 }
             } else if (wsm != QTextHtmlParserNode::WhiteSpacePreWrap) {
                 compressNextWhitespace = RemoveWhiteSpace;
-                if (wsm == QTextHtmlParserNode::WhiteSpaceNoWrap)
+                if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && (ch == QLatin1Char('\n') || ch == QLatin1Char('\r')))
+                { }
+                else if (wsm == QTextHtmlParserNode::WhiteSpaceNoWrap)
                     ch = QChar::Nbsp;
                 else
                     ch = QLatin1Char(' ');
@@ -605,6 +610,8 @@ bool QTextHtmlImporter::appendNodeText()
             || ch == QChar::ParagraphSeparator) {
 
             if (!textToInsert.isEmpty()) {
+                if (wsm == QTextHtmlParserNode::WhiteSpacePreLine && textToInsert.at(textToInsert.length() - 1) == QLatin1Char(' '))
+                    textToInsert = textToInsert.chopped(1);
                 cursor.insertText(textToInsert, format);
                 textToInsert.clear();
             }
@@ -979,6 +986,7 @@ QTextHtmlImporter::Table QTextHtmlImporter::scanTable(int tableNodeIdx)
         tableFmt.setColumns(table.columns);
         tableFmt.setColumnWidthConstraints(columnWidths);
         tableFmt.setHeaderRowCount(tableHeaderRowCount);
+        tableFmt.setBorderCollapse(node.borderCollapse);
         fmt = tableFmt;
     }
 
@@ -1054,6 +1062,31 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processBlockNode()
                     fmt.setLeftPadding(leftPadding(currentNodeIdx));
                 if (rightPadding(currentNodeIdx) >= 0)
                     fmt.setRightPadding(rightPadding(currentNodeIdx));
+                if (tableCellBorder(currentNodeIdx, QCss::TopEdge) > 0)
+                    fmt.setTopBorder(tableCellBorder(currentNodeIdx, QCss::TopEdge));
+                if (tableCellBorder(currentNodeIdx, QCss::RightEdge) > 0)
+                    fmt.setRightBorder(tableCellBorder(currentNodeIdx, QCss::RightEdge));
+                if (tableCellBorder(currentNodeIdx, QCss::BottomEdge) > 0)
+                    fmt.setBottomBorder(tableCellBorder(currentNodeIdx, QCss::BottomEdge));
+                if (tableCellBorder(currentNodeIdx, QCss::LeftEdge) > 0)
+                    fmt.setLeftBorder(tableCellBorder(currentNodeIdx, QCss::LeftEdge));
+                if (tableCellBorderStyle(currentNodeIdx, QCss::TopEdge) != QTextFrameFormat::BorderStyle_None)
+                    fmt.setTopBorderStyle(tableCellBorderStyle(currentNodeIdx, QCss::TopEdge));
+                if (tableCellBorderStyle(currentNodeIdx, QCss::RightEdge) != QTextFrameFormat::BorderStyle_None)
+                    fmt.setRightBorderStyle(tableCellBorderStyle(currentNodeIdx, QCss::RightEdge));
+                if (tableCellBorderStyle(currentNodeIdx, QCss::BottomEdge) != QTextFrameFormat::BorderStyle_None)
+                    fmt.setBottomBorderStyle(tableCellBorderStyle(currentNodeIdx, QCss::BottomEdge));
+                if (tableCellBorderStyle(currentNodeIdx, QCss::LeftEdge) != QTextFrameFormat::BorderStyle_None)
+                    fmt.setLeftBorderStyle(tableCellBorderStyle(currentNodeIdx, QCss::LeftEdge));
+                if (tableCellBorderBrush(currentNodeIdx, QCss::TopEdge) != Qt::NoBrush)
+                    fmt.setTopBorderBrush(tableCellBorderBrush(currentNodeIdx, QCss::TopEdge));
+                if (tableCellBorderBrush(currentNodeIdx, QCss::RightEdge) != Qt::NoBrush)
+                    fmt.setRightBorderBrush(tableCellBorderBrush(currentNodeIdx, QCss::RightEdge));
+                if (tableCellBorderBrush(currentNodeIdx, QCss::BottomEdge) != Qt::NoBrush)
+                    fmt.setBottomBorderBrush(tableCellBorderBrush(currentNodeIdx, QCss::BottomEdge));
+                if (tableCellBorderBrush(currentNodeIdx, QCss::LeftEdge) != Qt::NoBrush)
+                    fmt.setLeftBorderBrush(tableCellBorderBrush(currentNodeIdx, QCss::LeftEdge));
+
                 cell.setFormat(fmt);
 
                 cursor.setPosition(cell.firstPosition());

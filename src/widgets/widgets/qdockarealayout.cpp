@@ -138,11 +138,8 @@ bool QDockAreaLayoutItem::skip() const
 
 QSize QDockAreaLayoutItem::minimumSize() const
 {
-    if (widgetItem != 0) {
-        int left, top, right, bottom;
-        widgetItem->widget()->getContentsMargins(&left, &top, &right, &bottom);
-        return widgetItem->minimumSize() + QSize(left+right, top+bottom);
-    }
+    if (widgetItem)
+        return widgetItem->minimumSize().grownBy(widgetItem->widget()->contentsMargins());
     if (subinfo != 0)
         return subinfo->minimumSize();
     return QSize(0, 0);
@@ -150,11 +147,8 @@ QSize QDockAreaLayoutItem::minimumSize() const
 
 QSize QDockAreaLayoutItem::maximumSize() const
 {
-    if (widgetItem != 0) {
-        int left, top, right, bottom;
-        widgetItem->widget()->getContentsMargins(&left, &top, &right, &bottom);
-        return widgetItem->maximumSize()+ QSize(left+right, top+bottom);
-    }
+    if (widgetItem)
+        return widgetItem->maximumSize().grownBy(widgetItem->widget()->contentsMargins());
     if (subinfo != 0)
         return subinfo->maximumSize();
     return QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
@@ -180,11 +174,8 @@ QSize QDockAreaLayoutItem::sizeHint() const
 {
     if (placeHolderItem != 0)
         return QSize(0, 0);
-    if (widgetItem != 0) {
-        int left, top, right, bottom;
-        widgetItem->widget()->getContentsMargins(&left, &top, &right, &bottom);
-        return widgetItem->sizeHint() + QSize(left+right, top+bottom);
-    }
+    if (widgetItem)
+        return widgetItem->sizeHint().grownBy(widgetItem->widget()->contentsMargins());
     if (subinfo != 0)
         return subinfo->sizeHint();
     return QSize(-1, -1);
@@ -1934,11 +1925,6 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                 QDockAreaLayoutItem item(new QDockWidgetItem(widget));
                 if (flags & StateFlagFloating) {
                     bool drawer = false;
-#if 0 // Used to be included in Qt4 for Q_WS_MAC // drawer support
-                    extern bool qt_mac_is_macdrawer(const QWidget *); //qwidget_mac.cpp
-                    extern bool qt_mac_set_drawer_preferred_edge(QWidget *, Qt::DockWidgetArea); //qwidget_mac.cpp
-                    drawer = qt_mac_is_macdrawer(widget);
-#endif
 
                     if (!testing) {
                         widget->hide();
@@ -1949,13 +1935,6 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                     int x, y, w, h;
                     stream >> x >> y >> w >> h;
 
-#if 0 // Used to be included in Qt4 for Q_WS_MAC // drawer support
-                    if (drawer) {
-                        mainWindow->window()->createWinId();
-                        widget->window()->createWinId();
-                        qt_mac_set_drawer_preferred_edge(widget, toDockWidgetArea(dockPos));
-                    } else
-#endif
                     if (!testing)
                         widget->setGeometry(QDockAreaLayout::constrainedRect(QRect(x, y, w, h), widget));
 
@@ -2049,9 +2028,8 @@ void QDockAreaLayoutInfo::updateSeparatorWidgets() const
         }
         j++;
 
-#if 1 // Used to be excluded in Qt4 for Q_WS_MAC
         sepWidget->raise();
-#endif
+
         QRect sepRect = separatorRect(i).adjusted(-2, -2, 2, 2);
         sepWidget->setGeometry(sepRect);
         sepWidget->setMask( QRegion(separatorRect(i).translated( - sepRect.topLeft())));
@@ -3090,10 +3068,6 @@ bool QDockAreaLayout::restoreDockWidget(QDockWidget *dockWidget)
         dockWidget->d_func()->setWindowState(true, true, r);
     }
     dockWidget->setVisible(!placeHolder->hidden);
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    if (placeHolder->window) // gets rid of the X11BypassWindowManager window flag
-        dockWidget->d_func()->setWindowState(true);
-#endif
 
     item->placeHolderItem = 0;
     delete placeHolder;
@@ -3340,9 +3314,8 @@ void QDockAreaLayout::updateSeparatorWidgets() const
         }
         j++;
 
-#if 1 // Used to be excluded in Qt4 for Q_WS_MAC
         sepWidget->raise();
-#endif
+
         QRect sepRect = separatorRect(i).adjusted(-2, -2, 2, 2);
         sepWidget->setGeometry(sepRect);
         sepWidget->setMask( QRegion(separatorRect(i).translated( - sepRect.topLeft())));

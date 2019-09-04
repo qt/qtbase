@@ -1,7 +1,7 @@
 {
     "module": "gui",
     "depends": [
-        "core",
+        "core-private",
         "network"
     ],
     "testDir": "../../config.tests",
@@ -41,11 +41,10 @@
             "sm": { "type": "boolean", "name": "sessionmanager" },
             "tslib": "boolean",
             "vulkan": "boolean",
-            "xcb": { "type": "enum", "values": [ "no", "yes", "qt", "system" ] },
+            "xcb": "boolean",
+            "bundled-xcb-xinput": "boolean",
             "xcb-native-painting": "boolean",
             "xcb-xlib": "boolean",
-            "xcb-xinput": "boolean",
-            "xkb": "boolean",
             "xkbcommon": "boolean"
         }
     },
@@ -61,6 +60,7 @@
             "export": "",
             "headers": ["bcm_host.h"],
             "sources": [
+                { "type": "pkgConfig", "args": "bcm_host" },
                 { "type": "makeSpec", "spec": "BCM_HOST" }
             ]
         },
@@ -572,18 +572,22 @@
             ]
         },
         "xcb": {
-            "label": "XCB >= 1.9",
+            "label": "XCB >= 1.11",
             "test": {
                 "main": [
                     "int primaryScreen = 0;",
                     "(void)xcb_connect(\"\", &primaryScreen);",
-                    "// This won't compile unless libxcb >= 1.9 which defines XCB_CONN_CLOSED_INVALID_SCREEN.",
-                    "int xcbScreenError = XCB_CONN_CLOSED_INVALID_SCREEN;"
+                    "/* XCB_PACKED define was added in libxcb 1.11 */",
+                    "#ifdef XCB_PACKED",
+                    "    return 0;",
+                    "#else",
+                    "    return -1;",
+                    "#endif"
                 ]
             },
             "headers": "xcb/xcb.h",
             "sources": [
-                { "type": "pkgConfig", "args": "xcb >= 1.9" },
+                { "type": "pkgConfig", "args": "xcb >= 1.11" },
                 "-lxcb"
             ]
         },
@@ -690,21 +694,10 @@
             "use": "xcb xlib"
         },
         "xcb_xkb": {
-            "label": "XCB XKB >= 1.10",
-            "test": {
-                "head": [
-                    "// xkb.h is using a variable called 'explicit', which is a reserved keyword in C++",
-                    "#define explicit dont_use_cxx_explicit"
-                ],
-                "tail": "#undef explicit",
-                "main": [
-                    "// This takes more arguments in xcb-xkb < 1.10.",
-                    "xcb_xkb_get_kbd_by_name_unchecked(NULL, 0, 0, 0, 0);"
-                ]
-            },
+            "label": "XCB XKB",
             "headers": "xcb/xkb.h",
             "sources": [
-                { "type": "pkgConfig", "args": "xcb-xkb >= 1.10" },
+                { "type": "pkgConfig", "args": "xcb-xkb" },
                 "-lxcb-xkb"
             ],
             "use": "xcb"
@@ -768,7 +761,7 @@
         "xkbcommon_x11": {
             "label": "xkbcommon-x11",
             "test": {
-                "main": "xkb_x11_get_core_keyboard_device_id(nullptr);"
+                "main": "xkb_x11_setup_xkb_extension_flags flag = XKB_X11_SETUP_XKB_EXTENSION_NO_FLAGS;"
             },
             "headers": [ "xkbcommon/xkbcommon-x11.h" ],
             "sources": [
@@ -1055,6 +1048,11 @@
             "label": "XCB (extensions)",
             "type": "compile",
             "test": {
+                "head": [
+                    "// xkb.h is using a variable called 'explicit', which is a reserved keyword in C++",
+                    "#define explicit dont_use_cxx_explicit"
+                ],
+                "tail": "#undef explicit",
                 "include": [
                     "xcb/xcb.h",
                     "xcb/xcb_image.h",
@@ -1067,7 +1065,8 @@
                     "xcb/xfixes.h",
                     "xcb/xinerama.h",
                     "xcb/xcb_icccm.h",
-                    "xcb/xcb_renderutil.h"
+                    "xcb/xcb_renderutil.h",
+                    "xcb/xkb.h"
                 ],
                 "main": [
                     "int primaryScreen = 0;",
@@ -1081,10 +1080,13 @@
                     "    xcb_render_query_pict_formats_reply(c, formatsCookie, &error);",
 
                     "/* RENDERUTIL: xcb_renderutil.h include won't compile unless version >= 0.3.9 */",
-                    "xcb_render_util_find_standard_format(nullptr, XCB_PICT_STANDARD_ARGB_32);"
+                    "xcb_render_util_find_standard_format(nullptr, XCB_PICT_STANDARD_ARGB_32);",
+
+                    "/* XKB: This takes more arguments in xcb-xkb < 1.11 */",
+                    "xcb_xkb_get_kbd_by_name_replies_key_names_value_list_sizeof(nullptr, 0, 0, 0, 0, 0, 0, 0, 0);"
                 ]
             },
-            "use": "xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb"
+            "use": "xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb_xkb xcb"
         },
         "x11prefix": {
             "label": "X11 prefix",
@@ -1374,7 +1376,7 @@
         },
         "egl": {
             "label": "EGL",
-            "condition": "(features.opengl || features.openvg) && (features.angle || libs.egl)",
+            "condition": "(features.opengl || features.openvg) && (features.angle || libs.egl) && (features.dlopen || !config.unix)",
             "output": [ "privateFeature", "feature" ]
         },
         "egl_x11": {
@@ -1513,16 +1515,7 @@
             "label": "XCB",
             "section": "Platform plugins",
             "autoDetect": "!config.darwin",
-            "enable": "input.xcb == 'system' || input.xcb == 'qt' || input.xcb == 'yes'",
-            "condition": "features.thread && features.xkbcommon && libs.xcb",
-            "output": [ "privateFeature" ]
-        },
-        "system-xcb": {
-            "label": "Using system-provided XCB libraries",
-            "enable": "input.xcb == 'system'",
-            "disable": "input.xcb == 'qt'",
-            "autoDetect": "!config.darwin",
-            "condition": "features.xcb && tests.xcb_syslibs",
+            "condition": "features.thread && libs.xcb && tests.xcb_syslibs && features.xkbcommon-x11",
             "output": [ "privateFeature" ]
         },
         "x11-prefix": {
@@ -1561,12 +1554,6 @@
             "condition": "features.xcb-native-painting",
             "output": [ "privateFeature" ]
         },
-        "xkb": {
-            "label": "XCB XKB",
-            "emitIf": "features.xcb",
-            "condition": "(!features.system-xcb || libs.xcb_xkb) && libs.xkbcommon_x11",
-            "output": [ "privateFeature" ]
-        },
         "xcb-xlib": {
             "label": "XCB Xlib",
             "condition": "features.xlib && libs.xcb_xlib",
@@ -1578,15 +1565,22 @@
             "condition": "features.sessionmanager && libs.x11sm",
             "output": [ "privateFeature" ]
         },
-        "xcb-xinput": {
-            "label": "XCB XInput",
+        "system-xcb-xinput": {
+            "label": "Using system-provided xcb-xinput",
             "emitIf": "features.xcb",
-            "condition": "!features.system-xcb || libs.xcb_xinput",
+            "disable": "input.bundled-xcb-xinput == 'yes'",
+            "enable": "input.bundled-xcb-xinput == 'no'",
+            "condition": "libs.xcb_xinput",
             "output": [ "privateFeature" ]
         },
         "xkbcommon": {
             "label": "xkbcommon",
             "condition": "libs.xkbcommon",
+            "output": [ "privateFeature" ]
+        },
+        "xkbcommon-x11": {
+            "label": "xkbcommon-x11",
+            "condition": "features.xkbcommon && libs.xkbcommon_x11",
             "output": [ "privateFeature" ]
         },
         "xlib": {
@@ -1830,7 +1824,7 @@
         {
             "type": "error",
             "condition": "input.xcb != '' && input.xcb != 'no' && input.xkbcommon == 'no'",
-            "message": "XCB plugin requires xkbcommon, but -no-xkbcommon was provided."
+            "message": "XCB plugin requires xkbcommon and xkbcommon-x11, but -no-xkbcommon was provided."
         }
     ],
 
@@ -1952,7 +1946,8 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "entries": [
                         "xlib",
                         "xcb-xlib",
-                        "egl_x11"
+                        "egl_x11",
+                        "xkbcommon-x11"
                     ]
                 }
             ]
@@ -1985,7 +1980,7 @@ QMAKE_LIBDIR_OPENGL[_ES2] and QMAKE_LIBS_OPENGL[_ES2] in the mkspec for your pla
                     "section": "XCB",
                     "condition": "features.xcb",
                     "entries": [
-                        "system-xcb", "xkb", "xcb-xinput", "xcb-native-painting",
+                        "system-xcb-xinput", "xcb-native-painting",
                         {
                             "section": "GL integrations",
                             "entries": [

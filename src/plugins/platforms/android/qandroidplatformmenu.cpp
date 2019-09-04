@@ -62,6 +62,7 @@ void QAndroidPlatformMenu::insertMenuItem(QPlatformMenuItem *menuItem, QPlatform
                                  m_menuItems.end(),
                                  static_cast<QAndroidPlatformMenuItem *>(before)),
                        static_cast<QAndroidPlatformMenuItem *>(menuItem));
+    m_menuHash.insert(m_nextMenuId++, menuItem);
 }
 
 void QAndroidPlatformMenu::removeMenuItem(QPlatformMenuItem *menuItem)
@@ -72,6 +73,21 @@ void QAndroidPlatformMenu::removeMenuItem(QPlatformMenuItem *menuItem)
                                                    static_cast<QAndroidPlatformMenuItem *>(menuItem));
     if (it != m_menuItems.end())
         m_menuItems.erase(it);
+
+    {
+        int maxId = -1;
+        QHash<int, QPlatformMenuItem *>::iterator it = m_menuHash.begin();
+        while (it != m_menuHash.end()) {
+            if (it.value() == menuItem) {
+                it = m_menuHash.erase(it);
+            } else {
+                maxId = qMax(maxId, it.key());
+                ++it;
+            }
+        }
+
+        m_nextMenuId = maxId + 1;
+    }
 }
 
 void QAndroidPlatformMenu::syncMenuItem(QPlatformMenuItem *menuItem)
@@ -139,6 +155,16 @@ void QAndroidPlatformMenu::showPopup(const QWindow *parentWindow, const QRect &t
     QtAndroidMenu::showContextMenu(this, targetRect, QJNIEnvironmentPrivate());
 }
 
+QPlatformMenuItem *QAndroidPlatformMenu::menuItemForTag(quintptr tag) const
+{
+    for (QAndroidPlatformMenuItem *menuItem : m_menuItems) {
+        if (menuItem->tag() == tag)
+            return menuItem;
+    }
+
+    return nullptr;
+}
+
 QPlatformMenuItem *QAndroidPlatformMenu::menuItemAt(int position) const
 {
     if (position < m_menuItems.size())
@@ -146,13 +172,20 @@ QPlatformMenuItem *QAndroidPlatformMenu::menuItemAt(int position) const
     return 0;
 }
 
-QPlatformMenuItem *QAndroidPlatformMenu::menuItemForTag(quintptr tag) const
+int QAndroidPlatformMenu::menuId(QPlatformMenuItem *menu) const
 {
-    for (QPlatformMenuItem *menuItem : m_menuItems) {
-        if (menuItem->tag() == tag)
-            return menuItem;
+    QHash<int, QPlatformMenuItem *>::const_iterator it;
+    for (it = m_menuHash.constBegin(); it != m_menuHash.constEnd(); ++it) {
+        if (it.value() == menu)
+            return it.key();
     }
-    return 0;
+
+    return -1;
+}
+
+QPlatformMenuItem *QAndroidPlatformMenu::menuItemForId(int menuId) const
+{
+    return m_menuHash.value(menuId);
 }
 
 QAndroidPlatformMenu::PlatformMenuItemsType QAndroidPlatformMenu::menuItems() const

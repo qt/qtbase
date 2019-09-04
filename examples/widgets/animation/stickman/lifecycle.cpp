@@ -54,8 +54,15 @@
 #include "animation.h"
 #include "graphicsview.h"
 
-#include <QtCore>
-#include <QtWidgets>
+#include <QEventTransition>
+#include <QFile>
+#include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
+#include <QRandomGenerator>
+#include <QSignalTransition>
+#include <QState>
+#include <QStateMachine>
+#include <QTimer>
 
 class KeyPressTransition: public QSignalTransition
 {
@@ -107,7 +114,7 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     // Create animation group to be used for all transitions
     m_animationGroup = new QParallelAnimationGroup();
     const int stickManNodeCount = m_stickMan->nodeCount();
-    for (int i=0; i<stickManNodeCount; ++i) {
+    for (int i = 0; i < stickManNodeCount; ++i) {
         QPropertyAnimation *pa = new QPropertyAnimation(m_stickMan->node(i), "pos");
         m_animationGroup->addAnimation(pa);
     }
@@ -175,7 +182,7 @@ void LifeCycle::addActivity(const QString &fileName, Qt::Key key, QObject *sende
     QState *state = makeState(m_alive, fileName);
     m_alive->addTransition(new KeyPressTransition(m_keyReceiver, key, state));
 
-    if (sender || signal)
+    if (sender && signal)
         m_alive->addTransition(sender, signal, state);
 }
 
@@ -192,13 +199,13 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
 
     const int frameCount = animation.totalFrames();
     QState *previousState = nullptr;
-    for (int i=0; i<frameCount; ++i) {
+    for (int i = 0; i < frameCount; ++i) {
         animation.setCurrentFrame(i);
 
 //! [1]
         QState *frameState = new QState(topLevel);
         const int nodeCount = animation.nodeCount();
-        for (int j=0; j<nodeCount; ++j)
+        for (int j = 0; j < nodeCount; ++j)
             frameState->assignProperty(m_stickMan->node(j), "pos", animation.nodePos(j));
 //! [1]
 

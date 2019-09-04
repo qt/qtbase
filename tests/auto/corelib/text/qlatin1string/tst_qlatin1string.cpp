@@ -70,7 +70,7 @@ void tst_QLatin1String::arg() const
     do { \
         auto p = QLatin1String(pattern); \
         QCOMPARE(p.arg(QLatin1String(arg1)), expected); \
-        QCOMPARE(p.arg(QStringViewLiteral(arg1)), expected); \
+        QCOMPARE(p.arg(u"" arg1), expected); \
         QCOMPARE(p.arg(QStringLiteral(arg1)), expected); \
         QCOMPARE(p.arg(QString(QLatin1String(arg1))), expected); \
     } while (false) \
@@ -79,9 +79,9 @@ void tst_QLatin1String::arg() const
     do { \
         auto p = QLatin1String(pattern); \
         QCOMPARE(p.arg(QLatin1String(arg1), QLatin1String(arg2)), expected); \
-        QCOMPARE(p.arg(QStringViewLiteral(arg1), QLatin1String(arg2)), expected); \
-        QCOMPARE(p.arg(QLatin1String(arg1), QStringViewLiteral(arg2)), expected); \
-        QCOMPARE(p.arg(QStringViewLiteral(arg1), QStringViewLiteral(arg2)), expected); \
+        QCOMPARE(p.arg(u"" arg1, QLatin1String(arg2)), expected); \
+        QCOMPARE(p.arg(QLatin1String(arg1), u"" arg2), expected); \
+        QCOMPARE(p.arg(u"" arg1, u"" arg2), expected); \
     } while (false) \
     /*end*/
 

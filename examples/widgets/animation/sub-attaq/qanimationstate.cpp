@@ -50,7 +50,7 @@
 
 #include "qanimationstate.h"
 
-#include <QtCore/qstate.h>
+#include <QAbstractAnimation>
 
 QT_BEGIN_NAMESPACE
 
@@ -106,7 +106,7 @@ void QAnimationState::setAnimation(QAbstractAnimation *animation)
         return;
 
     //Disconnect from the previous animation if exist
-    if(m_animation)
+    if (m_animation)
         disconnect(m_animation, &QAbstractAnimation::finished, this, &QAnimationState::animationFinished);
 
     m_animation = animation;

@@ -185,7 +185,6 @@ public:
     QFontDef request;
     mutable QFontEngineData *engineData;
     int dpi;
-    int screen;
 
     uint underline  :  1;
     uint overline   :  1;
@@ -230,19 +229,17 @@ public:
     void clear();
 
     struct Key {
-        Key() : script(0), multi(0), screen(0) { }
-        Key(const QFontDef &d, uchar c, bool m = 0, uchar s = 0)
-            : def(d), script(c), multi(m), screen(s) { }
+        Key() : script(0), multi(0) { }
+        Key(const QFontDef &d, uchar c, bool m = 0)
+            : def(d), script(c), multi(m) { }
 
         QFontDef def;
         uchar script;
         uchar multi: 1;
-        uchar screen: 7;
 
         inline bool operator<(const Key &other) const
         {
             if (script != other.script) return script < other.script;
-            if (screen != other.screen) return screen < other.screen;
             if (multi != other.multi) return multi < other.multi;
             if (multi && def.fallBackFamilies.size() != other.def.fallBackFamilies.size())
                 return def.fallBackFamilies.size() < other.def.fallBackFamilies.size();
@@ -251,7 +248,6 @@ public:
         inline bool operator==(const Key &other) const
         {
             return script == other.script
-                    && screen == other.screen
                     && multi == other.multi
                     && (!multi || def.fallBackFamilies == other.def.fallBackFamilies)
                     && def == other.def;

@@ -59,7 +59,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
 /*!
     \class QRhi
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Accelerated 2D/3D graphics API abstraction.
 
@@ -274,6 +275,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     QRhi does not expose APIs for resource barriers or image layout
     transitions. Such synchronization is done implicitly by the backends, where
     applicable (for example, Vulkan), by tracking resource usage as necessary.
+    Buffer and image barriers are inserted before render or compute passes
+    transparently to the application.
 
     \note Resources within a render or compute pass are expected to be bound to
     a single usage during that pass. For example, a buffer can be used as
@@ -505,8 +508,11 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     to issue a \l{QRhiCommandBuffer::drawIndexed()}{drawIndexed()} with a
     non-aligned effective offset may lead to unspecified behavior.
 
-    \value NPOTTextureRepeat Indicates that the \l{QRhiSampler::Repeat}{Repeat}
-    mode is supported for textures with a non-power-of-two size.
+    \value NPOTTextureRepeat Indicates that the
+    \l{QRhiSampler::Repeat}{Repeat} wrap mode and mipmap filtering modes are
+    supported for textures with a non-power-of-two size. In practice this can
+    only be false with OpenGL ES 2.0 implementations without
+    \c{GL_OES_texture_npot}.
 
     \value RedOrAlpha8IsRed Indicates that the
     \l{QRhiTexture::RED_OR_ALPHA8}{RED_OR_ALPHA8} format maps to a one
@@ -550,6 +556,11 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 /*!
     \enum QRhi::BeginFrameFlag
     Flag values for QRhi::beginFrame()
+
+    \value ExternalContentsInPass Specifies that one or more render or compute
+    passes in this frame will call QRhiCommandBuffer::beginExternal(). Some
+    backends, Vulkan in particular, will fail if this flag is not set and
+    beginExternal() is still called.
  */
 
 /*!
@@ -601,7 +612,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
 /*!
     \class QRhiInitParams
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Base class for backend-specific initialization parameters.
 
     Contains fields that are relevant to all backends.
@@ -609,7 +621,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
 /*!
     \class QRhiDepthStencilClearValue
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Specifies clear values for a depth or stencil buffer.
  */
 
@@ -676,7 +689,8 @@ QDebug operator<<(QDebug dbg, const QRhiDepthStencilClearValue &v)
 
 /*!
     \class QRhiViewport
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Specifies a viewport rectangle.
 
     Used with QRhiCommandBuffer::setViewport().
@@ -775,7 +789,8 @@ QDebug operator<<(QDebug dbg, const QRhiViewport &v)
 
 /*!
     \class QRhiScissor
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Specifies a scissor rectangle.
 
     Used with QRhiCommandBuffer::setScissor(). Setting a scissor rectangle is
@@ -854,7 +869,8 @@ QDebug operator<<(QDebug dbg, const QRhiScissor &s)
 
 /*!
     \class QRhiVertexInputBinding
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes a vertex input binding.
 
     Specifies the stride (in bytes, must be a multiple of 4), the
@@ -984,7 +1000,8 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
 
 /*!
     \class QRhiVertexInputAttribute
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes a single vertex input element.
 
     The members specify the binding number, location, format, and offset for a
@@ -1137,7 +1154,8 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputAttribute &a)
 
 /*!
     \class QRhiVertexInputLayout
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the layout of vertex inputs consumed by a vertex shader.
 
     The vertex input layout is defined by the collections of
@@ -1196,7 +1214,8 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
 
 /*!
     \class QRhiShaderStage
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Specifies the type and the shader code for a shader stage in the pipeline.
  */
 
@@ -1280,7 +1299,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderStage &s)
 
 /*!
     \class QRhiColorAttachment
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the a single color attachment of a render target.
 
     A color attachment is either a QRhiTexture or a QRhiRenderBuffer. The
@@ -1338,7 +1358,8 @@ QRhiColorAttachment::QRhiColorAttachment(QRhiRenderBuffer *renderBuffer)
 
 /*!
     \class QRhiTextureRenderTargetDescription
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the color and depth or depth/stencil attachments of a render target.
 
     A texture render target has zero or more textures as color attachments,
@@ -1393,7 +1414,8 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
 
 /*!
     \class QRhiTextureSubresourceUploadDescription
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the source for one mip level in a layer in a texture upload operation.
 
     The source content is specified either as a QImage or as a raw blob. The
@@ -1473,7 +1495,8 @@ QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription
 
 /*!
     \class QRhiTextureUploadEntry
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes one layer (face for cubemaps) in a texture upload operation.
  */
 
@@ -1501,7 +1524,8 @@ QRhiTextureUploadEntry::QRhiTextureUploadEntry(int layer, int level,
 
 /*!
     \class QRhiTextureUploadDescription
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes a texture upload operation.
 
     Used with QRhiResourceUpdateBatch::uploadTexture(). That function has two
@@ -1606,7 +1630,8 @@ void QRhiTextureUploadDescription::append(const QRhiTextureUploadEntry &entry)
 
 /*!
     \class QRhiTextureCopyDescription
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes a texture-to-texture copy operation.
 
     An empty pixelSize() indicates that the entire subresource is to be copied.
@@ -1629,7 +1654,8 @@ void QRhiTextureUploadDescription::append(const QRhiTextureUploadEntry &entry)
 
 /*!
     \class QRhiReadbackDescription
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes a readback (reading back texture contents from possibly GPU-only memory) operation.
 
     The source of the readback operation is either a QRhiTexture or the
@@ -1675,7 +1701,8 @@ QRhiReadbackDescription::QRhiReadbackDescription(QRhiTexture *texture)
 
 /*!
     \class QRhiReadbackResult
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the results of a potentially asynchronous readback operation.
 
     When \l completed is set, the function is invoked when the \l data is
@@ -1685,13 +1712,15 @@ QRhiReadbackDescription::QRhiReadbackDescription(QRhiTexture *texture)
 
 /*!
     \class QRhiNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Base class for classes exposing backend-specific collections of native resource objects.
  */
 
 /*!
     \class QRhiResource
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Base class for classes encapsulating native resource objects.
  */
 
@@ -1810,7 +1839,8 @@ quint64 QRhiResource::globalResourceId() const
 
 /*!
     \class QRhiBuffer
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Vertex, index, or uniform (constant) buffer resource.
  */
 
@@ -1911,7 +1941,8 @@ QRhiResource::Type QRhiBuffer::resourceType() const
 
 /*!
     \class QRhiRenderBuffer
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Renderbuffer resource.
 
     Renderbuffers cannot be sampled or read but have some benefits over
@@ -1987,7 +2018,8 @@ QRhiResource::Type QRhiRenderBuffer::resourceType() const
 
 /*!
     \class QRhiTexture
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Texture resource.
  */
 
@@ -2155,7 +2187,8 @@ bool QRhiTexture::buildFrom(const QRhiNativeHandles *src)
 
 /*!
     \class QRhiSampler
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Sampler resource.
  */
 
@@ -2217,8 +2250,13 @@ QRhiResource::Type QRhiSampler::resourceType() const
 
 /*!
     \class QRhiRenderPassDescriptor
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Render pass resource.
+
+    A render pass, if such a concept exists in the underlying graphics API, is
+    a collection of attachments (color, depth, stencil) and describes how those
+    attachments are used.
  */
 
 /*!
@@ -2238,8 +2276,21 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
 }
 
 /*!
+    \return a pointer to a backend-specific QRhiNativeHandles subclass, such as
+    QRhiVulkanRenderPassNativeHandles. The returned value is null when exposing
+    the underlying native resources is not supported by the backend.
+
+    \sa QRhiVulkanRenderPassNativeHandles
+ */
+const QRhiNativeHandles *QRhiRenderPassDescriptor::nativeHandles()
+{
+    return nullptr;
+}
+
+/*!
     \class QRhiRenderTarget
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Represents an onscreen (swapchain) or offscreen (texture) render target.
  */
 
@@ -2276,7 +2327,8 @@ QRhiResource::Type QRhiRenderTarget::resourceType() const
 
 /*!
     \class QRhiTextureRenderTarget
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Texture render target resource.
 
     A texture render target allows rendering into one or more textures,
@@ -2393,7 +2445,8 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
 
 /*!
     \class QRhiShaderResourceBindings
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Encapsulates resources for making buffer, texture, sampler resources visible to shaders.
 
     A QRhiShaderResourceBindings is a collection of QRhiShaderResourceBinding
@@ -2510,7 +2563,8 @@ bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBind
 
 /*!
     \class QRhiShaderResourceBinding
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the shader resource for a single binding point.
 
     A QRhiShaderResourceBinding cannot be constructed directly. Instead, use
@@ -3035,7 +3089,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 
 /*!
     \class QRhiGraphicsPipeline
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Graphics pipeline state resource.
 
     \note Setting the shader resource bindings is mandatory. The referenced
@@ -3190,7 +3245,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 
 /*!
     \class QRhiGraphicsPipeline::TargetBlend
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the blend state for one color attachment.
 
     Defaults to color write enabled, blending disabled. The blend values are
@@ -3200,7 +3256,8 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 
 /*!
     \class QRhiGraphicsPipeline::StencilOpState
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Describes the stencil operation state.
  */
 
@@ -3255,7 +3312,8 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
 
 /*!
     \class QRhiSwapChain
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Swapchain resource.
 
     A swapchain enables presenting rendering results to a surface. A swapchain
@@ -3517,7 +3575,8 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
 
 /*!
     \class QRhiComputePipeline
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Compute pipeline state resource.
 
     \note Setting the shader resource bindings is mandatory. The referenced
@@ -3545,7 +3604,8 @@ QRhiComputePipeline::QRhiComputePipeline(QRhiImplementation *rhi)
 
 /*!
     \class QRhiCommandBuffer
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Command buffer resource.
 
     Not creatable by applications at the moment. The only ways to obtain a
@@ -3592,6 +3652,42 @@ QRhiResource::Type QRhiCommandBuffer::resourceType() const
     return CommandBuffer;
 }
 
+#ifndef QT_NO_DEBUG
+static const char *resourceTypeStr(QRhiResource *res)
+{
+    switch (res->resourceType()) {
+    case QRhiResource::Buffer:
+        return "Buffer";
+    case QRhiResource::Texture:
+        return "Texture";
+    case QRhiResource::Sampler:
+        return "Sampler";
+    case QRhiResource::RenderBuffer:
+        return "RenderBuffer";
+    case QRhiResource::RenderPassDescriptor:
+        return "RenderPassDescriptor";
+    case QRhiResource::RenderTarget:
+        return "RenderTarget";
+    case QRhiResource::TextureRenderTarget:
+        return "TextureRenderTarget";
+    case QRhiResource::ShaderResourceBindings:
+        return "ShaderResourceBindings";
+    case QRhiResource::GraphicsPipeline:
+        return "GraphicsPipeline";
+    case QRhiResource::SwapChain:
+        return "SwapChain";
+    case QRhiResource::ComputePipeline:
+        return "ComputePipeline";
+    case QRhiResource::CommandBuffer:
+        return "CommandBuffer";
+    default:
+        Q_UNREACHABLE();
+        break;
+    }
+    return "";
+}
+#endif
+
 QRhiImplementation::~QRhiImplementation()
 {
     qDeleteAll(resUpdPool);
@@ -3601,10 +3697,10 @@ QRhiImplementation::~QRhiImplementation()
     // and freak out for unfreed graphics objects in the derived dtor already.
 #ifndef QT_NO_DEBUG
     if (!resources.isEmpty()) {
-        qWarning("QRhi %p going down with %d unreleased resources. This is not nice.",
+        qWarning("QRhi %p going down with %d unreleased resources that own native graphics objects. This is not nice.",
                  q, resources.count());
         for (QRhiResource *res : qAsConst(resources)) {
-            qWarning("  Resource %p (%s)", res, res->m_objectName.constData());
+            qWarning("  %s resource %p (%s)", resourceTypeStr(res), res, res->m_objectName.constData());
             res->m_rhi = nullptr;
         }
     }
@@ -3969,7 +4065,8 @@ void QRhi::runCleanup()
 
 /*!
     \class QRhiResourceUpdateBatch
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Records upload and copy type of operations.
 
     With QRhi it is no longer possible to perform copy type of operations at
@@ -4711,6 +4808,11 @@ const QRhiNativeHandles *QRhiCommandBuffer::nativeHandles()
     enqueue commands to the current pass' command buffer by calling graphics
     API functions directly.
 
+    \note This is only available when the intent was declared up front in
+    beginFrame(). Therefore this function must only be called when the frame
+    was started with specifying QRhi::ExternalContentsInPass in the flags
+    passed to QRhi::beginFrame().
+
     With Vulkan or Metal one can query the native command buffer or encoder
     objects via nativeHandles() and enqueue commands to them. With OpenGL or
     Direct3D 11 the (device) context can be retrieved from
@@ -4727,6 +4829,16 @@ const QRhiNativeHandles *QRhiCommandBuffer::nativeHandles()
     \note Once beginExternal() is called, no other render pass specific
     functions (\c set* or \c draw*) must be called on the
     QRhiCommandBuffer until endExternal().
+
+    \warning Some backends may return a native command buffer object from
+    QRhiCommandBuffer::nativeHandles() that is different from the primary one
+    when inside a beginExternal() - endExternal() block. Therefore it is
+    important to (re)query the native command buffer object after calling
+    beginExternal(). In practical terms this means that with Vulkan for example
+    the externally recorded Vulkan commands are placed onto a secondary command
+    buffer (with VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT).
+    nativeHandles() returns this secondary command buffer when called between
+    begin/endExternal.
 
     \sa endExternal(), nativeHandles()
  */
@@ -5034,6 +5146,13 @@ QRhiSwapChain *QRhi::newSwapChain()
 /*!
     Starts a new frame targeting the next available buffer of \a swapChain.
 
+    A frame consists of resource updates and one or more render and compute
+    passes.
+
+    \a flags can indicate certain special cases. For example, the fact that
+    QRhiCommandBuffer::beginExternal() will be called within this new frame
+    must be declared up front by setting the ExternalContentsInPass flag.
+
     The high level pattern of rendering into a QWindow using a swapchain:
 
     \list
@@ -5061,9 +5180,7 @@ QRhiSwapChain *QRhi::newSwapChain()
 
     \endlist
 
-    \a flags is currently unused.
-
-    \sa endFrame()
+    \sa endFrame(), beginOffscreenFrame()
  */
 QRhi::FrameOpResult QRhi::beginFrame(QRhiSwapChain *swapChain, BeginFrameFlags flags)
 {
@@ -5163,7 +5280,8 @@ int QRhi::currentFrameSlot() const
 
 /*!
     Starts a new offscreen frame. Provides a command buffer suitable for
-    recording rendering commands in \a cb.
+    recording rendering commands in \a cb. \a flags is used to indicate
+    certain special cases, just like with beginFrame().
 
     \note The QRhiCommandBuffer stored to *cb is not owned by the caller.
 
@@ -5197,14 +5315,14 @@ int QRhi::currentFrameSlot() const
           // image data available in rbResult
    \endcode
 
-   \sa endOffscreenFrame()
+   \sa endOffscreenFrame(), beginFrame()
  */
-QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb)
+QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb, BeginFrameFlags flags)
 {
     if (d->inFrame)
         qWarning("Attempted to call beginOffscreenFrame() within a still active frame; ignored");
 
-    QRhi::FrameOpResult r = !d->inFrame ? d->beginOffscreenFrame(cb) : FrameOpSuccess;
+    QRhi::FrameOpResult r = !d->inFrame ? d->beginOffscreenFrame(cb, flags) : FrameOpSuccess;
     if (r == FrameOpSuccess)
         d->inFrame = true;
 
@@ -5216,12 +5334,12 @@ QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb)
 
     \sa beginOffscreenFrame()
  */
-QRhi::FrameOpResult QRhi::endOffscreenFrame()
+QRhi::FrameOpResult QRhi::endOffscreenFrame(EndFrameFlags flags)
 {
     if (!d->inFrame)
         qWarning("Attempted to call endOffscreenFrame() without an active frame; ignored");
 
-    QRhi::FrameOpResult r = d->inFrame ? d->endOffscreenFrame() : FrameOpSuccess;
+    QRhi::FrameOpResult r = d->inFrame ? d->endOffscreenFrame(flags) : FrameOpSuccess;
     d->inFrame = false;
     qDeleteAll(d->pendingReleaseAndDestroyResources);
     d->pendingReleaseAndDestroyResources.clear();

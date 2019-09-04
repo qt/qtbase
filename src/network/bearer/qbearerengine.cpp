@@ -38,6 +38,8 @@
 ****************************************************************************/
 
 #include "qbearerengine_p.h"
+#include <QtCore/private/qlocking_p.h>
+
 #include <algorithm>
 
 #ifndef QT_NO_BEARERMANAGEMENT
@@ -86,7 +88,7 @@ bool QBearerEngine::requiresPolling() const
 */
 bool QBearerEngine::configurationsInUse() const
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     return hasUsedConfiguration(accessPointConfigurations)
         || hasUsedConfiguration(snapConfigurations)
         || hasUsedConfiguration(userChoiceConfigurations);

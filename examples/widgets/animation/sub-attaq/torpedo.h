@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-#ifndef __TORPEDO__H__
-#define __TORPEDO__H__
+#ifndef TORPEDO_H
+#define TORPEDO_H
 
 #include "pixmapitem.h"
 
@@ -73,4 +73,4 @@ private:
     int currentSpeed;
 };
 
-#endif //__TORPEDO__H__
+#endif // TORPEDO_H

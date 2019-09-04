@@ -248,7 +248,7 @@ static const char *encodingToolTips[]
 {
     QT_TRANSLATE_NOOP("EncodingDialog", "Unicode points for use with any encoding (C++, Python)"),
     QT_TRANSLATE_NOOP("EncodingDialog", "QString::fromUtf8()"),
-    QT_TRANSLATE_NOOP("EncodingDialog", "QStringViewLiteral(), wchar_t on Windows"),
+    QT_TRANSLATE_NOOP("EncodingDialog", "wchar_t on Windows, char16_t everywhere"),
     QT_TRANSLATE_NOOP("EncodingDialog", "wchar_t on Unix (Ucs4)"),
     QT_TRANSLATE_NOOP("EncodingDialog", "QLatin1String")
 };

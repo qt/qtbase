@@ -265,6 +265,13 @@ private:
     }
 };
 
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606
+template <typename InputIterator,
+          typename ValueType = typename std::iterator_traits<InputIterator>::value_type,
+          QtPrivate::IfIsInputIterator<InputIterator> = true>
+QVarLengthArray(InputIterator, InputIterator) -> QVarLengthArray<ValueType>;
+#endif
+
 template <class T, int Prealloc>
 Q_INLINE_TEMPLATE QVarLengthArray<T, Prealloc>::QVarLengthArray(int asize)
     : s(asize) {

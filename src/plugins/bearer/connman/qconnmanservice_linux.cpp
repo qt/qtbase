@@ -80,8 +80,7 @@ QConnmanManagerInterface::QConnmanManagerInterface( QObject *parent)
     qDBusRegisterMetaType<ConnmanMap>();
     qDBusRegisterMetaType<ConnmanMapList>();
 
-    QList<QVariant> argumentList;
-    QDBusPendingReply<QVariantMap> props_reply = asyncCallWithArgumentList(QLatin1String("GetProperties"), argumentList);
+    QDBusPendingReply<QVariantMap> props_reply = asyncCall(QLatin1String("GetProperties"));
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(props_reply, this);
 
     QObject::connect(watcher,SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -106,8 +105,7 @@ QConnmanManagerInterface::QConnmanManagerInterface( QObject *parent)
                            QLatin1String("TechnologyRemoved"),
                            this,SLOT(technologyRemoved(QDBusObjectPath)));
 
-    QList<QVariant> argumentList2;
-    QDBusPendingReply<ConnmanMapList> serv_reply = asyncCallWithArgumentList(QLatin1String("GetServices"), argumentList2);
+    QDBusPendingReply<ConnmanMapList> serv_reply = asyncCall(QLatin1String("GetServices"));
     QDBusPendingCallWatcher *watcher2 = new QDBusPendingCallWatcher(serv_reply, this);
 
     QObject::connect(watcher2,SIGNAL(finished(QDBusPendingCallWatcher*)),
@@ -289,8 +287,7 @@ QConnmanServiceInterface::QConnmanServiceInterface(const QString &dbusPathName,Q
                              CONNMAN_SERVICE_INTERFACE,
                              QDBusConnection::systemBus(), parent)
 {
-    QList<QVariant> argumentList;
-    QDBusPendingReply<QVariantMap> props_reply = asyncCallWithArgumentList(QLatin1String("GetProperties"), argumentList);
+    QDBusPendingReply<QVariantMap> props_reply = asyncCall(QLatin1String("GetProperties"));
 
     QDBusPendingCallWatcher *watcher = new QDBusPendingCallWatcher(props_reply, this);
 
