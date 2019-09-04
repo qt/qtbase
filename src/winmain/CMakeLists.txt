@@ -5,6 +5,7 @@ endif()
 
 add_qt_module(WinMain
   STATIC
+  NO_SYNC_QT
   NO_MODULE_HEADERS
   DEFINES
       QT_NO_FOREACH
