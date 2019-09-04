@@ -461,7 +461,9 @@ void QFileSystemEngine::clearWinStatData(QFileSystemMetaData &data)
 QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
                                                   QFileSystemMetaData &data)
 {
-   if (data.missingFlags(QFileSystemMetaData::LinkType))
+    Q_CHECK_FILE_NAME(link, link);
+
+    if (data.missingFlags(QFileSystemMetaData::LinkType))
        QFileSystemEngine::fillMetaData(link, data, QFileSystemMetaData::LinkType);
 
     QString target;
@@ -480,6 +482,8 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
 //static
 QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data)
 {
+    Q_CHECK_FILE_NAME(entry, entry);
+
     if (data.missingFlags(QFileSystemMetaData::ExistsAttribute))
        QFileSystemEngine::fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute);
 
@@ -492,6 +496,8 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 //static
 QString QFileSystemEngine::nativeAbsoluteFilePath(const QString &path)
 {
+    Q_CHECK_FILE_NAME(path, QString());
+
     // can be //server or //server/share
     QString absPath;
     QVarLengthArray<wchar_t, MAX_PATH> buf(qMax(MAX_PATH, path.size() + 1));
@@ -527,6 +533,8 @@ QString QFileSystemEngine::nativeAbsoluteFilePath(const QString &path)
 //static
 QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 {
+    Q_CHECK_FILE_NAME(entry, entry);
+
     QString ret;
 
     if (!entry.isRelative()) {
@@ -609,6 +617,8 @@ QByteArray fileIdWin8(HANDLE handle)
 //static
 QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 {
+    Q_CHECK_FILE_NAME(entry, QByteArray());
+
     QByteArray result;
 
 #ifndef Q_OS_WINRT
@@ -999,6 +1009,7 @@ static bool isDirPath(const QString &dirPath, bool *existed);
 bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
                                      QFileSystemMetaData::MetaDataFlags what)
 {
+    Q_CHECK_FILE_NAME(entry, false);
     what |= QFileSystemMetaData::WinLnkType | QFileSystemMetaData::WinStatFlags;
     data.entryFlags &= ~what;
 
@@ -1116,6 +1127,8 @@ static bool isDirPath(const QString &dirPath, bool *existed)
 bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool createParents)
 {
     QString dirName = entry.filePath();
+    Q_CHECK_FILE_NAME(dirName, false);
+
     if (createParents) {
         dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
         // We spefically search for / so \ would break it..
@@ -1177,6 +1190,8 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
 bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents)
 {
     QString dirName = entry.filePath();
+    Q_CHECK_FILE_NAME(dirName, false);
+
     if (removeEmptyParents) {
         dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
         for (int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
@@ -1381,6 +1396,9 @@ bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSyst
 //static
 bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
+    Q_CHECK_FILE_NAME(source, false);
+    Q_CHECK_FILE_NAME(target, false);
+
 #ifndef Q_OS_WINRT
     bool ret = ::MoveFile((wchar_t*)source.nativeFilePath().utf16(),
                           (wchar_t*)target.nativeFilePath().utf16()) != 0;
@@ -1396,6 +1414,9 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
 //static
 bool QFileSystemEngine::renameOverwriteFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
+    Q_CHECK_FILE_NAME(source, false);
+    Q_CHECK_FILE_NAME(target, false);
+
     bool ret = ::MoveFileEx(reinterpret_cast<const wchar_t *>(source.nativeFilePath().utf16()),
                             reinterpret_cast<const wchar_t *>(target.nativeFilePath().utf16()),
                             MOVEFILE_REPLACE_EXISTING) != 0;
@@ -1407,6 +1428,8 @@ bool QFileSystemEngine::renameOverwriteFile(const QFileSystemEntry &source, cons
 //static
 bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &error)
 {
+    Q_CHECK_FILE_NAME(entry, false);
+
     bool ret = ::DeleteFile((wchar_t*)entry.nativeFilePath().utf16()) != 0;
     if(!ret)
         error = QSystemError(::GetLastError(), QSystemError::NativeError);
@@ -1417,6 +1440,8 @@ bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &
 bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error,
                                        QFileSystemMetaData *data)
 {
+    Q_CHECK_FILE_NAME(entry, false);
+
     Q_UNUSED(data);
     int mode = 0;
 
