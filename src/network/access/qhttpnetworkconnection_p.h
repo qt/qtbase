@@ -57,6 +57,8 @@
 #include <QtNetwork/qabstractsocket.h>
 #include <QtNetwork/qnetworksession.h>
 
+#include <qhttp2configuration.h>
+
 #include <private/qobject_p.h>
 #include <qauthenticator.h>
 #include <qnetworkproxy.h>
@@ -142,8 +144,8 @@ public:
     ConnectionType connectionType();
     void setConnectionType(ConnectionType type);
 
-    Http2::ProtocolParameters http2Parameters() const;
-    void setHttp2Parameters(const Http2::ProtocolParameters &params);
+    QHttp2Configuration http2Parameters() const;
+    void setHttp2Parameters(const QHttp2Configuration &params);
 
 #ifndef QT_NO_SSL
     void setSslConfiguration(const QSslConfiguration &config);
@@ -294,7 +296,7 @@ public:
     QSharedPointer<QNetworkSession> networkSession;
 #endif
 
-    Http2::ProtocolParameters http2Parameters;
+    QHttp2Configuration http2Parameters;
 
     QString peerVerifyName;
     // If network status monitoring is enabled, we activate connectionMonitor

@@ -84,8 +84,11 @@ void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
     platformScreen->d_func()->screen = q;
     orientation = platformScreen->orientation();
     geometry = platformScreen->deviceIndependentGeometry();
-    availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(), QHighDpiScaling::factor(platformScreen), geometry.topLeft());
-    logicalDpi = platformScreen->logicalDpi();
+    availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(),
+                        QHighDpiScaling::factor(platformScreen), geometry.topLeft());
+
+    logicalDpi = QPlatformScreen::overrideDpi(platformScreen->logicalDpi());
+
     refreshRate = platformScreen->refreshRate();
     // safeguard ourselves against buggy platform behavior...
     if (refreshRate < 1.0)
@@ -285,7 +288,7 @@ qreal QScreen::logicalDotsPerInchX() const
 {
     Q_D(const QScreen);
     if (QHighDpiScaling::isActive())
-        return QHighDpiScaling::logicalDpi().first;
+        return QHighDpiScaling::logicalDpi(this).first;
     return d->logicalDpi.first;
 }
 
@@ -301,7 +304,7 @@ qreal QScreen::logicalDotsPerInchY() const
 {
     Q_D(const QScreen);
     if (QHighDpiScaling::isActive())
-        return QHighDpiScaling::logicalDpi().second;
+        return QHighDpiScaling::logicalDpi(this).second;
     return d->logicalDpi.second;
 }
 
@@ -320,7 +323,7 @@ qreal QScreen::logicalDotsPerInchY() const
 qreal QScreen::logicalDotsPerInch() const
 {
     Q_D(const QScreen);
-    QDpi dpi = QHighDpiScaling::isActive() ? QHighDpiScaling::logicalDpi() : d->logicalDpi;
+    QDpi dpi = QHighDpiScaling::isActive() ? QHighDpiScaling::logicalDpi(this) : d->logicalDpi;
     return (dpi.first + dpi.second) * qreal(0.5);
 }
 

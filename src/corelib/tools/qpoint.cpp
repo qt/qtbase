@@ -138,6 +138,17 @@ QT_BEGIN_NAMESPACE
     \sa y(), setX()
 */
 
+/*!
+    \fn QPoint::transposed() const
+    \since 5.14
+
+    Returns a point with x and y coordinates exchanged:
+    \code
+    QPoint{1, 2}.transposed() // {2, 1}
+    \endcode
+
+    \sa x(), y(), setX(), setY()
+*/
 
 /*!
     \fn int &QPoint::rx()
@@ -580,6 +591,18 @@ QDebug operator<<(QDebug dbg, const QPointF &p)
     Sets the y coordinate of this point to the given \a y coordinate.
 
     \sa y(), setX()
+*/
+
+/*!
+    \fn QPointF::transposed() const
+    \since 5.14
+
+    Returns a point with x and y coordinates exchanged:
+    \code
+    QPointF{1.0, 2.0}.transposed() // {2.0, 1.0}
+    \endcode
+
+    \sa x(), y(), setX(), setY()
 */
 
 /*!

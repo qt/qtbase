@@ -48,15 +48,12 @@
 **
 ****************************************************************************/
 
-#ifndef __SUBMARINE__H__
-#define __SUBMARINE__H__
-
-//Qt
-#include <QtWidgets/QGraphicsTransform>
+#ifndef SUBMARINE_H
+#define SUBMARINE_H
 
 #include "pixmapitem.h"
 
-class Torpedo;
+#include <QGraphicsRotation>
 
 class SubMarine : public PixmapItem
 {
@@ -99,4 +96,4 @@ private:
     QGraphicsRotation *graphicsRotation;
 };
 
-#endif //__SUBMARINE__H__
+#endif // SUBMARINE_H

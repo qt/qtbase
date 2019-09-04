@@ -566,6 +566,7 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_5_12 Version 18 (Qt 5.12)
     \value Qt_5_13 Version 19 (Qt 5.13)
     \value Qt_5_14 Same as Qt_5_13
+    \value Qt_5_15 Same as Qt_5_13
     \omitvalue Qt_DefaultCompiledVersion
 
     \sa setVersion(), version()

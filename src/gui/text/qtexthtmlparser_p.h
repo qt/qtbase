@@ -158,6 +158,7 @@ struct QTextHtmlParserNode {
         WhiteSpacePre,
         WhiteSpaceNoWrap,
         WhiteSpacePreWrap,
+        WhiteSpacePreLine,
         WhiteSpaceModeUndefined = -1
     };
 
@@ -194,8 +195,12 @@ struct QTextHtmlParserNode {
     int tableCellColSpan;
     qreal tableCellSpacing;
     qreal tableCellPadding;
+    qreal tableCellBorder[4];
+    QBrush tableCellBorderBrush[4];
+    QTextFrameFormat::BorderStyle tableCellBorderStyle[4];
     QBrush borderBrush;
     QTextFrameFormat::BorderStyle borderStyle;
+    bool borderCollapse;
     int userState;
 
     int cssListIndent;
@@ -288,6 +293,10 @@ public:
     inline int bottomPadding(int i) const { return at(i).padding[MarginBottom]; }
     inline int leftPadding(int i) const { return at(i).padding[MarginLeft]; }
     inline int rightPadding(int i) const { return at(i).padding[MarginRight]; }
+
+    inline qreal tableCellBorder(int i, int edge) const { return at(i).tableCellBorder[edge]; }
+    inline QTextFrameFormat::BorderStyle tableCellBorderStyle(int i, int edge) const { return at(i).tableCellBorderStyle[edge]; }
+    inline QBrush tableCellBorderBrush(int i, int edge) const { return at(i).tableCellBorderBrush[edge]; }
 
     void dumpHtml();
 

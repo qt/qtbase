@@ -429,8 +429,8 @@ typedef void (QT_FASTCALL *Rgb888ToRgbConverter)(quint32 *dst, const uchar *src,
 template <bool rgbx>
 static void convert_RGB888_to_RGB(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
-    Q_ASSERT(src->format == QImage::Format_RGB888);
-    if (rgbx)
+    Q_ASSERT(src->format == QImage::Format_RGB888 || src->format == QImage::Format_BGR888);
+    if (rgbx ^ (src->format == QImage::Format_BGR888))
         Q_ASSERT(dest->format == QImage::Format_RGBX8888 || dest->format == QImage::Format_RGBA8888 || dest->format == QImage::Format_RGBA8888_Premultiplied);
     else
         Q_ASSERT(dest->format == QImage::Format_RGB32 || dest->format == QImage::Format_ARGB32 || dest->format == QImage::Format_ARGB32_Premultiplied);
@@ -1421,6 +1421,69 @@ static void convert_RGBA64_to_gray16(QImageData *dest, const QImageData *src, Qt
     }
 }
 
+static void convert_RGB888_to_BGR888(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(src->format == QImage::Format_RGB888 || src->format == QImage::Format_BGR888);
+    Q_ASSERT(dest->format == QImage::Format_RGB888 || dest->format == QImage::Format_BGR888);
+    Q_ASSERT(src->width == dest->width);
+    Q_ASSERT(src->height == dest->height);
+
+    const qsizetype sbpl = src->bytes_per_line;
+    const qsizetype dbpl = dest->bytes_per_line;
+    const uchar *src_data = src->data;
+    uchar *dest_data = dest->data;
+
+    for (int i = 0; i < src->height; ++i) {
+        int pixel = 0;
+        // Handle 4 pixels (12 bytes) at a time
+        for (; pixel + 3 < src->width; pixel += 4) {
+            const uchar *src = src_data + pixel * 3;
+            quint32 *dest_packed = (quint32 *) (dest_data + pixel * 3);
+            dest_packed[0] = (src[5] << 24) | (src[0] << 16) | (src[1] << 8) | (src[2] << 0);
+            dest_packed[1] = (src[7] << 24) | (src[8] << 16) | (src[3] << 8) | (src[4] << 0);
+            dest_packed[2] = (src[9] << 24) | (src[10] << 16) | (src[11] << 8) | (src[6] << 0);
+        }
+
+        // epilog: handle left over pixels
+        for (; pixel < src->width; ++pixel) {
+            dest_data[pixel * 3 + 0] = src_data[pixel * 3 + 2];
+            dest_data[pixel * 3 + 1] = src_data[pixel * 3 + 1];
+            dest_data[pixel * 3 + 2] = src_data[pixel * 3 + 0];
+        }
+
+        src_data += sbpl;
+        dest_data += dbpl;
+    }
+}
+
+static bool convert_RGB888_to_BGR888_inplace(QImageData *data, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(data->format == QImage::Format_RGB888 || data->format == QImage::Format_BGR888);
+
+    const qsizetype bpl = data->bytes_per_line;
+    uchar *line_data = data->data;
+
+    for (int i = 0; i < data->height; ++i) {
+        for (int j = 0; j < data->width; ++j)
+            qSwap(line_data[j * 3 + 0], line_data[j * 3 + 2]);
+        line_data += bpl;
+    }
+
+    switch (data->format) {
+    case QImage::Format_RGB888:
+        data->format = QImage::Format_BGR888;
+        break;
+    case QImage::Format_BGR888:
+        data->format = QImage::Format_RGB888;
+        break;
+    default:
+        Q_UNREACHABLE();
+        data->format = QImage::Format_Invalid;
+        return false;
+    }
+    return true;
+}
+
 static QVector<QRgb> fix_color_table(const QVector<QRgb> &ctbl, QImage::Format format)
 {
     QVector<QRgb> colorTable = ctbl;
@@ -2265,7 +2328,7 @@ static bool convert_Grayscale8_to_Indexed8_inplace(QImageData *data, Qt::ImageCo
 Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormats] =
 {
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     },
     {
         0,
@@ -2286,7 +2349,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_Mono
 
     {
@@ -2308,7 +2371,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_MonoLSB
 
     {
@@ -2333,7 +2396,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0, 0, 0, 0, 0,
         convert_Indexed8_to_Alpha8,
         convert_Indexed8_to_Grayscale8,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_Indexed8
 
     {
@@ -2361,7 +2424,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_RGB_to_RGB30<PixelOrderRGB, false>,
         0,
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_RGB32
 
     {
@@ -2391,7 +2454,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0, 0,
         0,
         convert_ARGB32_to_RGBA64<false>,
-        0, 0
+        0, 0, 0
     }, // Format_ARGB32
 
     {
@@ -2416,7 +2479,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_ARGB_to_RGBA,
         0, 0, 0, 0,
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     },  // Format_ARGB32_Premultiplied
 
     {
@@ -2438,7 +2501,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB16
 
     {
@@ -2460,7 +2523,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB8565_Premultiplied
 
     {
@@ -2482,7 +2545,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB666
 
     {
@@ -2504,7 +2567,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB6666_Premultiplied
 
     {
@@ -2526,7 +2589,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB555
 
     {
@@ -2548,7 +2611,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB8555_Premultiplied
 
     {
@@ -2565,13 +2628,14 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0,
+        0, // self
         0,
         0,
         convert_RGB888_to_RGB<true>,
         convert_RGB888_to_RGB<true>,
         convert_RGB888_to_RGB<true>,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        convert_RGB888_to_BGR888,
     }, // Format_RGB888
 
     {
@@ -2593,7 +2657,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB444
 
     {
@@ -2614,7 +2678,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB4444_Premultiplied
     {
         0,
@@ -2641,7 +2705,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_RGB_to_RGB30<PixelOrderRGB, true>,
         0,
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_RGBX8888
     {
         0,
@@ -2670,7 +2734,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0, 0,
         0,
         convert_ARGB32_to_RGBA64<true>,
-        0, 0
+        0, 0, 0
     }, // Format_RGBA8888
 
     {
@@ -2692,7 +2756,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGBA8888_Premultiplied
 
     {
@@ -2720,7 +2784,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_BGR30_to_RGB30,
         convert_BGR30_to_RGB30,
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_BGR30
     {
         0,
@@ -2747,7 +2811,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_A2RGB30_PM_to_RGB30<true>,
         convert_BGR30_to_RGB30,
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_A2BGR30_Premultiplied
     {
         0,
@@ -2773,7 +2837,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_BGR30_to_RGB30,
         0,
         convert_passthrough,
-        0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB30
     {
         0,
@@ -2800,7 +2864,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_A2RGB30_PM_to_RGB30<false>,
         0,
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_A2RGB30_Premultiplied
     {
         0,
@@ -2820,7 +2884,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_Alpha8
     {
         0,
@@ -2840,14 +2904,15 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_Grayscale8
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, // self
         convert_passthrough,
         convert_passthrough,
-        convert_RGBA64_to_gray16
+        convert_RGBA64_to_gray16,
+        0
     }, // Format_RGBX64
     {
         0,
@@ -2874,6 +2939,7 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_RGBA64_to_RGBx64,
         0, // self
         convert_RGBA64_to_RGBA64PM,
+        0,
         0
     }, // Format_RGBA64
     {
@@ -2901,7 +2967,8 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_RGBA64PM_to_RGBA64<true>,
         convert_RGBA64PM_to_RGBA64<false>,
         0, // self
-        convert_RGBA64_to_gray16
+        convert_RGBA64_to_gray16,
+        0
     }, // Format_RGBA64_Premultiplied
     {
         0,
@@ -2931,20 +2998,46 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_gray16_to_RGBA64,
         convert_gray16_to_RGBA64,
         convert_gray16_to_RGBA64,
-        0  // self
+        0,  // self
+        0
     }, // Format_Grayscale16
+    {
+        0,
+        0,
+        0,
+        0,
+        0, 0, 0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        convert_RGB888_to_BGR888,
+        0,
+        0,
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+        convert_RGB888_to_RGB<false>,
+        convert_RGB888_to_RGB<false>,
+        convert_RGB888_to_RGB<false>,
+#else
+        0, 0, 0,
+#endif
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, // self
+    }, // Format_BGR888
 };
 
 InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QImage::NImageFormats] =
 {
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     },
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_Mono
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_MonoLSB
     {
         0,
@@ -2968,7 +3061,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0, 0, 0, 0, 0,
         convert_Indexed8_to_Alpha8_inplace,
         convert_Indexed8_to_Grayscale8_inplace,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_Indexed8
     {
         0,
@@ -2995,7 +3088,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_RGB_to_RGB30_inplace<PixelOrderRGB, false>,
         0,
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_RGB32
     {
         0,
@@ -3022,7 +3115,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_RGB_to_RGB30_inplace<PixelOrderRGB, false>,
         0,
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_ARGB32
     {
         0,
@@ -3046,34 +3139,35 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_ARGB_to_RGBA_inplace<QImage::Format_RGBA8888_Premultiplied>,
         0, 0, 0, 0,
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     },  // Format_ARGB32_Premultiplied
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB16
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB8565_Premultiplied
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB666
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB6666_Premultiplied
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB555
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB8555_Premultiplied
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        convert_RGB888_to_BGR888_inplace
     }, // Format_RGB888
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB444
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_ARGB4444_Premultiplied
     {
         0,
@@ -3100,7 +3194,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_RGB_to_RGB30_inplace<PixelOrderRGB, true>,
         0,
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_RGBX8888
     {
         0,
@@ -3127,7 +3221,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_RGB_to_RGB30_inplace<PixelOrderRGB, true>,
         0,
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_RGBA8888
     {
         0,
@@ -3149,7 +3243,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0,
         0,
         0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_RGBA8888_Premultiplied
     {
         0,
@@ -3176,7 +3270,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_BGR30_to_RGB30_inplace,
         convert_BGR30_to_A2RGB30_inplace,
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_BGR30
     {
         0,
@@ -3202,7 +3296,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0, // self
         convert_A2RGB30_PM_to_RGB30_inplace<true>,
         convert_BGR30_to_RGB30_inplace,
-        0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0
     }, // Format_A2BGR30_Premultiplied
     {
         0,
@@ -3228,7 +3322,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_BGR30_to_A2RGB30_inplace,
         0, // self
         convert_passthrough_inplace<QImage::Format_A2RGB30_Premultiplied>,
-        0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0
     }, // Format_RGB30
     {
         0,
@@ -3255,7 +3349,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_A2RGB30_PM_to_RGB30_inplace<false>,
         0, // self
         0, 0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_A2RGB30_Premultiplied
     {
         0,
@@ -3280,7 +3374,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0, 0, 0, 0,
         0, // self
         0,
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_Alpha8
     {
         0,
@@ -3305,32 +3399,37 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0, 0, 0, 0,
         0,
         0, // self
-        0, 0, 0, 0
+        0, 0, 0, 0, 0
     }, // Format_Grayscale8
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, // self
         convert_passthrough_inplace<QImage::Format_RGBA64>,
         convert_passthrough_inplace<QImage::Format_RGBA64_Premultiplied>,
-        0
+        0, 0
     }, // Format_RGBX64
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         convert_RGBA64_to_RGBx64_inplace,
         0, // self
         convert_RGBA64_to_RGBA64PM_inplace,
-        0
+        0, 0
     }, // Format_RGBA64
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         convert_RGBA64PM_to_RGBA64_inplace<true>,
         convert_RGBA64PM_to_RGBA64_inplace<false>,
         0, // self
-        0
+        0, 0
     }, // Format_RGBA64_Premultiplied
     {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, // Format_Grayscale16
+    {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        convert_RGB888_to_BGR888_inplace,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    }, // Format_BGR888
 };
 
 static void qInitImageConversions()
@@ -3341,6 +3440,9 @@ static void qInitImageConversions()
         qimage_converter_map[QImage::Format_RGB888][QImage::Format_RGB32] = convert_RGB888_to_RGB32_ssse3;
         qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32] = convert_RGB888_to_RGB32_ssse3;
         qimage_converter_map[QImage::Format_RGB888][QImage::Format_ARGB32_Premultiplied] = convert_RGB888_to_RGB32_ssse3;
+        qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBX8888] = convert_RGB888_to_RGB32_ssse3;
+        qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888] = convert_RGB888_to_RGB32_ssse3;
+        qimage_converter_map[QImage::Format_BGR888][QImage::Format_RGBA8888_Premultiplied] = convert_RGB888_to_RGB32_ssse3;
     }
 #endif
 

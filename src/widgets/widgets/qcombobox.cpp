@@ -64,7 +64,9 @@
 #include <qheaderview.h>
 #include <qmath.h>
 #include <qmetaobject.h>
+#if QT_CONFIG(proxymodel)
 #include <qabstractproxymodel.h>
+#endif
 #include <qstylehints.h>
 #include <private/qguiapplication_p.h>
 #include <private/qhighdpiscaling_p.h>
@@ -200,6 +202,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
 void QComboBoxPrivate::_q_completerActivated(const QModelIndex &index)
 {
     Q_Q(QComboBox);
+#if QT_CONFIG(proxymodel)
     if (index.isValid() && q->completer()) {
         QAbstractProxyModel *proxy = qobject_cast<QAbstractProxyModel *>(q->completer()->completionModel());
         if (proxy) {
@@ -221,6 +224,7 @@ void QComboBoxPrivate::_q_completerActivated(const QModelIndex &index)
             emitActivated(currentIndex);
         }
     }
+#endif
 
 #  ifdef QT_KEYPAD_NAVIGATION
     if ( QApplicationPrivate::keypadNavigationEnabled()
@@ -443,13 +447,6 @@ void QComboBoxPrivateContainer::paintEvent(QPaintEvent *e)
 
 void QComboBoxPrivateContainer::leaveEvent(QEvent *)
 {
-// On Mac using the Mac style we want to clear the selection
-// when the mouse moves outside the popup.
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    QStyleOptionComboBox opt = comboStyleOption();
-    if (combo->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, combo))
-          view->clearSelection();
-#endif
 }
 
 QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView, QComboBox *parent)

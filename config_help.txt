@@ -203,9 +203,8 @@ Build environment:
   -android-ndk-platform  Set Android platform
   -android-ndk-host .... Set Android NDK host (linux-x86, linux-x86_64, etc.)
                          [$ANDROID_NDK_HOST]
-  -android-arch ........ Set Android architecture (armeabi, armeabi-v7a,
-                         arm64-v8a, x86, x86_64)
-  -android-toolchain-version ... Set Android toolchain version
+  -android-abis .......  Comma separated Android abis, default is:
+                         armeabi-v7a,arm64-v8a,x86,x86_64
   -android-style-assets  Automatically extract style assets from the device at
                          run time. This option makes the Android style behave
                          correctly, but also makes the Android platform plugin
@@ -297,8 +296,7 @@ Gui, printing, widget options:
     -gbm ............... Enable backends for GBM [auto] (Linux only)
     -kms ............... Enable backends for KMS [auto] (Linux only)
     -linuxfb ........... Enable Linux Framebuffer support [auto] (Linux only)
-    -xcb ............... Enable X11 support. Select used xcb-* libraries [system/qt/no]
-                         (-qt-xcb still uses system version of libxcb itself)
+    -xcb ............... Enable X11 support [auto] (Linux only)
 
   Input backends:
     -libudev............ Enable udev support [auto]
@@ -307,7 +305,7 @@ Gui, printing, widget options:
     -libinput .......... Enable libinput support [auto]
     -mtdev ............. Enable mtdev support [auto]
     -tslib ............. Enable tslib support [auto]
-    -xcb-xinput ........ Enable XInput2 support [auto]
+    -bundled-xcb-xinput  Use bundled XInput2 support [auto]
     -xkbcommon ......... Enable key mapping support [auto]
 
   Image formats:

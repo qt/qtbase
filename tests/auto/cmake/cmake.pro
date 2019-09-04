@@ -1,6 +1,11 @@
 
-# Cause make to do nothing.
 TEMPLATE = subdirs
+
+# installed_cmake includes this file, and tries to add the mockplugins
+# directory relative to itself, but doesn't have its own copy of the directory.
+# So, we make the path absolute so it includes this copy of the directory
+# instead.
+SUBDIRS += $$PWD/mockplugins
 
 CMAKE_QT_MODULES_UNDER_TEST = core network xml sql testlib
 

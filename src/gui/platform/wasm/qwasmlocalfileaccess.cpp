@@ -164,6 +164,43 @@ void openFile(const std::string &accept,
     openFiles(accept, FileSelectMode::SingleFile, fileDialogClosedWithInt, acceptFile, fileDataReady);
 }
 
+void saveFile(const char *content, size_t size, const std::string &fileNameHint)
+{
+    // Save a file by creating programatically clicking a download
+    // link to an object url to a Blob containing the file content.
+    // File content is copied once, so that the passed in content
+    // buffer can be released as soon as this function returns - we
+    // don't know for how long the browser will retain the TypedArray
+    // view used to create the Blob.
+
+    emscripten::val document = emscripten::val::global("document");
+    emscripten::val window = emscripten::val::global("window");
+
+    emscripten::val fileContentView = emscripten::val(emscripten::typed_memory_view(size, content));
+    emscripten::val fileContentCopy = emscripten::val::global("ArrayBuffer").new_(size);
+    emscripten::val fileContentCopyView = emscripten::val::global("Uint8Array").new_(fileContentCopy);
+    fileContentCopyView.call<void>("set", fileContentView);
+
+    emscripten::val contentArray = emscripten::val::array();
+    contentArray.call<void>("push", fileContentCopyView);
+    emscripten::val type = emscripten::val::object();
+    type.set("type","application/octet-stream");
+    emscripten::val contentBlob = emscripten::val::global("Blob").new_(contentArray, type);
+
+    emscripten::val contentUrl = window["URL"].call<emscripten::val>("createObjectURL", contentBlob);
+    emscripten::val contentLink = document.call<emscripten::val>("createElement", std::string("a"));
+    contentLink.set("href", contentUrl);
+    contentLink.set("download", fileNameHint);
+    contentLink.set("style", "display:none");
+
+    emscripten::val body = document["body"];
+    body.call<void>("appendChild", contentLink);
+    contentLink.call<void>("click");
+    body.call<void>("removeChild", contentLink);
+
+    window["URL"].call<emscripten::val>("revokeObjectURL", contentUrl);
+}
+
 } // namespace QWasmLocalFileAccess
 
 QT_END_NAMESPACE

@@ -492,6 +492,8 @@ inline my_jpeg_destination_mgr::my_jpeg_destination_mgr(QIODevice *device)
     free_in_buffer = max_buf;
 }
 
+static constexpr int maxMarkerSize = 65533;
+
 static inline void set_text(const QImage &image, j_compress_ptr cinfo, const QString &description)
 {
     const QMap<QString, QString> text = qt_getImageText(image, description);
@@ -500,9 +502,30 @@ static inline void set_text(const QImage &image, j_compress_ptr cinfo, const QSt
         if (!comment.isEmpty())
             comment += ": ";
         comment += it.value().toUtf8();
-        if (comment.length() > 65530)
-            comment.truncate(65530);
+        if (comment.length() > maxMarkerSize)
+            comment.truncate(maxMarkerSize);
         jpeg_write_marker(cinfo, JPEG_COM, (const JOCTET *)comment.constData(), comment.size());
+    }
+}
+
+static inline void write_icc_profile(const QImage &image, j_compress_ptr cinfo)
+{
+    const QByteArray iccProfile = image.colorSpace().iccProfile();
+    if (iccProfile.isEmpty())
+        return;
+
+    const QByteArray iccSignature("ICC_PROFILE", 12);
+    constexpr int maxIccMarkerSize = maxMarkerSize - (12 + 2);
+    int index = 0;
+    const int markers = (iccProfile.size() + (maxIccMarkerSize - 1)) / maxIccMarkerSize;
+    Q_ASSERT(markers < 256);
+    for (int marker = 1; marker <= markers; ++marker) {
+        const int len = std::min(iccProfile.size() - index, maxIccMarkerSize);
+        const QByteArray block = iccSignature
+                               + QByteArray(1, char(marker)) + QByteArray(1, char(markers))
+                               + iccProfile.mid(index, len);
+        jpeg_write_marker(cinfo, JPEG_APP0 + 2, reinterpret_cast<const JOCTET *>(block.constData()), block.size());
+        index += len;
     }
 }
 
@@ -586,6 +609,8 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
         jpeg_start_compress(&cinfo, TRUE);
 
         set_text(image, &cinfo, description);
+        if (cinfo.in_color_space == JCS_RGB)
+            write_icc_profile(image, &cinfo);
 
         row_pointer[0] = new uchar[cinfo.image_width*cinfo.input_components];
         int w = cinfo.image_width;

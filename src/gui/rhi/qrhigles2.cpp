@@ -58,7 +58,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiGles2InitParams
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief OpenGL specific initialization parameters.
 
     An OpenGL-based QRhi needs an already created QOffscreenSurface at minimum.
@@ -130,13 +131,15 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiGles2NativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Holds the OpenGL context used by the QRhi.
  */
 
 /*!
     \class QRhiGles2TextureNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Holds the OpenGL texture object that is backing a QRhiTexture instance.
  */
 
@@ -266,6 +269,10 @@ QT_BEGIN_NAMESPACE
 
 #ifndef GL_VERTEX_PROGRAM_POINT_SIZE
 #define GL_VERTEX_PROGRAM_POINT_SIZE      0x8642
+#endif
+
+#ifndef GL_POINT_SPRITE
+#define GL_POINT_SPRITE                   0x8861
 #endif
 
 /*!
@@ -424,8 +431,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
     caps.msaaRenderBuffer = f->hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)
             && f->hasOpenGLExtension(QOpenGLExtensions::FramebufferBlit);
 
-    caps.npotTexture = f->hasOpenGLFeature(QOpenGLFunctions::NPOTTextures);
-    caps.npotTextureRepeat = f->hasOpenGLFeature(QOpenGLFunctions::NPOTTextureRepeat);
+    caps.npotTextureFull = f->hasOpenGLFeature(QOpenGLFunctions::NPOTTextures)
+            && f->hasOpenGLFeature(QOpenGLFunctions::NPOTTextureRepeat);
 
     caps.gles = actualFormat.renderableType() == QSurfaceFormat::OpenGLES;
     if (caps.gles)
@@ -472,9 +479,15 @@ bool QRhiGles2::create(QRhi::Flags flags)
     else
         caps.compute = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 3); // 4.3
 
-    if (!caps.gles)
+    if (caps.gles)
+        caps.textureCompareMode = caps.ctxMajor >= 3; // ES 3.0
+    else
+        caps.textureCompareMode = true;
+
+    if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-    // else (with gles) this is always on
+        f->glEnable(GL_POINT_SPRITE);
+    } // else (with gles) these are always on
 
     nativeHandlesStruct.context = ctx;
 
@@ -545,43 +558,6 @@ int QRhiGles2::effectiveSampleCount(int sampleCount) const
         return 1;
     }
     return s;
-}
-
-static inline bool isPowerOfTwo(int x)
-{
-    // Assumption: x >= 1
-    return x == (x & -x);
-}
-
-QSize QRhiGles2::safeTextureSize(const QSize &pixelSize) const
-{
-    QSize size = pixelSize.isEmpty() ? QSize(1, 1) : pixelSize;
-
-    if (!caps.npotTexture) {
-        if (!isPowerOfTwo(size.width())) {
-            qWarning("Texture width %d is not a power of two, adjusting",
-                     size.width());
-            size.setWidth(qNextPowerOfTwo(size.width()));
-        }
-        if (!isPowerOfTwo(size.height())) {
-            qWarning("Texture height %d is not a power of two, adjusting",
-                     size.height());
-            size.setHeight(qNextPowerOfTwo(size.height()));
-        }
-    }
-
-    if (size.width() > caps.maxTextureSize) {
-        qWarning("Texture width %d exceeds maximum width %d, adjusting",
-                 size.width(), caps.maxTextureSize);
-        size.setWidth(caps.maxTextureSize);
-    }
-    if (size.height() > caps.maxTextureSize) {
-        qWarning("Texture height %d exceeds maximum height %d, adjusting",
-                 size.height(), caps.maxTextureSize);
-        size.setHeight(caps.maxTextureSize);
-    }
-
-    return size;
 }
 
 QRhiSwapChain *QRhiGles2::createSwapChain()
@@ -725,7 +701,7 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::NonFourAlignedEffectiveIndexBufferOffset:
         return true;
     case QRhi::NPOTTextureRepeat:
-        return caps.npotTextureRepeat;
+        return caps.npotTextureFull;
     case QRhi::RedOrAlpha8IsRed:
         return caps.coreProfile;
     case QRhi::ElementIndexUint:
@@ -1118,15 +1094,36 @@ const QRhiNativeHandles *QRhiGles2::nativeHandles(QRhiCommandBuffer *cb)
 
 void QRhiGles2::beginExternal(QRhiCommandBuffer *cb)
 {
-    Q_UNUSED(cb);
-    flushCommandBuffer(); // also ensures the context is current
+    if (ofr.active) {
+        Q_ASSERT(!currentSwapChain);
+        if (!ensureContext())
+            return;
+    } else {
+        Q_ASSERT(currentSwapChain);
+        if (!ensureContext(currentSwapChain->surface))
+            return;
+    }
+
+    QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
+    executeCommandBuffer(cbD);
+    cbD->resetCommands();
 }
 
 void QRhiGles2::endExternal(QRhiCommandBuffer *cb)
 {
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
-    Q_ASSERT(cbD->commands.isEmpty());
+    Q_ASSERT(cbD->commands.isEmpty() && cbD->currentPassResTrackerIndex == -1);
+
     cbD->resetCachedState();
+
+    if (cbD->recordingPass != QGles2CommandBuffer::NoPass) {
+        // Commands that come after this point need a resource tracker and also
+        // a BarriersForPass command enqueued. (the ones we had from
+        // beginPass() are now gone since beginExternal() processed all that
+        // due to calling executeCommandBuffer()).
+        enqueueBarriersForPass(cbD);
+    }
+
     if (cbD->currentTarget)
         enqueueBindFramebuffer(cbD->currentTarget, cbD);
 }
@@ -1187,8 +1184,9 @@ QRhi::FrameOpResult QRhiGles2::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiGles2::beginOffscreenFrame(QRhiCommandBuffer **cb)
+QRhi::FrameOpResult QRhiGles2::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags)
 {
+    Q_UNUSED(flags);
     if (!ensureContext())
         return QRhi::FrameOpError;
 
@@ -1203,8 +1201,9 @@ QRhi::FrameOpResult QRhiGles2::beginOffscreenFrame(QRhiCommandBuffer **cb)
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiGles2::endOffscreenFrame()
+QRhi::FrameOpResult QRhiGles2::endOffscreenFrame(QRhi::EndFrameFlags flags)
 {
+    Q_UNUSED(flags);
     Q_ASSERT(ofr.active);
     ofr.active = false;
 
@@ -1220,23 +1219,22 @@ QRhi::FrameOpResult QRhiGles2::endOffscreenFrame()
 
 QRhi::FrameOpResult QRhiGles2::finish()
 {
-    return inFrame ? flushCommandBuffer() : QRhi::FrameOpSuccess;
-}
-
-QRhi::FrameOpResult QRhiGles2::flushCommandBuffer()
-{
-    if (ofr.active) {
-        Q_ASSERT(!currentSwapChain);
-        if (!ensureContext())
-            return QRhi::FrameOpError;
-        executeCommandBuffer(&ofr.cbWrapper);
-        ofr.cbWrapper.resetCommands();
-    } else {
-        Q_ASSERT(currentSwapChain);
-        if (!ensureContext(currentSwapChain->surface))
-            return QRhi::FrameOpError;
-        executeCommandBuffer(&currentSwapChain->cb);
-        currentSwapChain->cb.resetCommands();
+    if (inFrame) {
+        if (ofr.active) {
+            Q_ASSERT(!currentSwapChain);
+            Q_ASSERT(ofr.cbWrapper.recordingPass == QGles2CommandBuffer::NoPass);
+            if (!ensureContext())
+                return QRhi::FrameOpError;
+            executeCommandBuffer(&ofr.cbWrapper);
+            ofr.cbWrapper.resetCommands();
+        } else {
+            Q_ASSERT(currentSwapChain);
+            Q_ASSERT(currentSwapChain->cb.recordingPass == QGles2CommandBuffer::NoPass);
+            if (!ensureContext(currentSwapChain->surface))
+                return QRhi::FrameOpError;
+            executeCommandBuffer(&currentSwapChain->cb);
+            currentSwapChain->cb.resetCommands();
+        }
     }
     return QRhi::FrameOpSuccess;
 }
@@ -2376,11 +2374,13 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                         f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_T, samplerD->d.glwrapt);
                         // 3D textures not supported by GLES 2.0 or by us atm...
                         //f->glTexParameteri(texD->target, GL_TEXTURE_WRAP_R, samplerD->d.glwrapr);
-                        if (samplerD->d.gltexcomparefunc != GL_NEVER) {
-                            f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-                            f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_FUNC, samplerD->d.gltexcomparefunc);
-                        } else {
-                            f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+                        if (caps.textureCompareMode) {
+                            if (samplerD->d.gltexcomparefunc != GL_NEVER) {
+                                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+                                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_FUNC, samplerD->d.gltexcomparefunc);
+                            } else {
+                                f->glTexParameteri(texD->target, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+                            }
                         }
                         texD->samplerState = samplerD->d;
                     }
@@ -2505,6 +2505,16 @@ QGles2RenderTargetData *QRhiGles2::enqueueBindFramebuffer(QRhiRenderTarget *rt, 
     return rtD;
 }
 
+void QRhiGles2::enqueueBarriersForPass(QGles2CommandBuffer *cbD)
+{
+    cbD->passResTrackers.append(QRhiPassResourceTracker());
+    cbD->currentPassResTrackerIndex = cbD->passResTrackers.count() - 1;
+    QGles2CommandBuffer::Command cmd;
+    cmd.cmd = QGles2CommandBuffer::Command::BarriersForPass;
+    cmd.args.barriersForPass.trackerIndex = cbD->currentPassResTrackerIndex;
+    cbD->commands.append(cmd);
+}
+
 void QRhiGles2::beginPass(QRhiCommandBuffer *cb,
                           QRhiRenderTarget *rt,
                           const QColor &colorClearValue,
@@ -2519,12 +2529,7 @@ void QRhiGles2::beginPass(QRhiCommandBuffer *cb,
 
     // Get a new resource tracker. Then add a command that will generate
     // glMemoryBarrier() calls based on that tracker when submitted.
-    cbD->passResTrackers.append(QRhiPassResourceTracker());
-    cbD->currentPassResTrackerIndex = cbD->passResTrackers.count() - 1;
-    QGles2CommandBuffer::Command cmd;
-    cmd.cmd = QGles2CommandBuffer::Command::BarriersForPass;
-    cmd.args.barriersForPass.trackerIndex = cbD->currentPassResTrackerIndex;
-    cbD->commands.append(cmd);
+    enqueueBarriersForPass(cbD);
 
     bool wantsColorClear, wantsDsClear;
     QGles2RenderTargetData *rtD = enqueueBindFramebuffer(rt, cbD, &wantsColorClear, &wantsDsClear);
@@ -2600,12 +2605,7 @@ void QRhiGles2::beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch 
     if (resourceUpdates)
         enqueueResourceUpdates(cb, resourceUpdates);
 
-    cbD->passResTrackers.append(QRhiPassResourceTracker());
-    cbD->currentPassResTrackerIndex = cbD->passResTrackers.count() - 1;
-    QGles2CommandBuffer::Command cmd;
-    cmd.cmd = QGles2CommandBuffer::Command::BarriersForPass;
-    cmd.args.barriersForPass.trackerIndex = cbD->currentPassResTrackerIndex;
-    cbD->commands.append(cmd);
+    enqueueBarriersForPass(cbD);
 
     cbD->recordingPass = QGles2CommandBuffer::ComputePass;
 
@@ -2935,7 +2935,7 @@ bool QGles2RenderBuffer::build()
     rhiD->f->glGenRenderbuffers(1, &renderbuffer);
     rhiD->f->glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer);
 
-    const QSize size = rhiD->safeTextureSize(m_pixelSize);
+    const QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
 
     switch (m_type) {
     case QRhiRenderBuffer::DepthStencil:
@@ -3032,7 +3032,7 @@ bool QGles2Texture::prepareBuild(QSize *adjustedSize)
     if (!rhiD->ensureContext())
         return false;
 
-    const QSize size = rhiD->safeTextureSize(m_pixelSize);
+    const QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
 
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
@@ -3145,18 +3145,19 @@ bool QGles2Texture::build()
                 for (int layer = 0, layerCount = isCube ? 6 : 1; layer != layerCount; ++layer) {
                     for (int level = 0; level != mipLevelCount; ++level) {
                         const QSize mipSize = rhiD->q->sizeForMipLevel(level, size);
-                        rhiD->f->glTexImage2D(faceTargetBase + layer, level, glsizedintformat,
+                        rhiD->f->glTexImage2D(faceTargetBase + layer, level, glintformat,
                                               mipSize.width(), mipSize.height(), 0,
                                               glformat, gltype, nullptr);
                     }
                 }
             } else {
-                rhiD->f->glTexImage2D(target, 0, glsizedintformat, size.width(), size.height(),
+                rhiD->f->glTexImage2D(target, 0, glintformat, size.width(), size.height(),
                                       0, glformat, gltype, nullptr);
             }
         } else {
             // Must be specified with immutable storage functions otherwise
-            // bindImageTexture may fail.
+            // bindImageTexture may fail. Also, the internal format must be a
+            // sized format here.
             rhiD->f->glTexStorage2D(target, mipLevelCount, glsizedintformat, size.width(), size.height());
         }
         specified = true;

@@ -99,8 +99,7 @@ QOfonoManagerInterface::~QOfonoManagerInterface()
 QStringList QOfonoManagerInterface::getModems()
 {
     if (modemList.isEmpty()) {
-        QList<QVariant> argumentList;
-        QDBusPendingReply<PathPropertiesList> reply = callWithArgumentList(QDBus::Block, QLatin1String("GetModems"), argumentList);
+        QDBusPendingReply<PathPropertiesList> reply = call(QDBus::Block, QLatin1String("GetModems"));
         reply.waitForFinished();
         if (!reply.isError()) {
             const auto modems = reply.value();
@@ -184,8 +183,7 @@ QStringList QOfonoModemInterface::interfaces()
 QVariantMap QOfonoModemInterface::getProperties()
 {
     if (propertiesMap.isEmpty()) {
-        QList<QVariant> argumentList;
-        QDBusPendingReply<QVariantMap> reply = callWithArgumentList(QDBus::Block, QLatin1String("GetProperties"), argumentList);
+        QDBusPendingReply<QVariantMap> reply = call(QDBus::Block, QLatin1String("GetProperties"));
         if (!reply.isError()) {
             propertiesMap = reply.value();
         }
@@ -233,8 +231,7 @@ QVariant QOfonoNetworkRegistrationInterface::getProperty(const QString &property
 QVariantMap QOfonoNetworkRegistrationInterface::getProperties()
 {
     if (propertiesMap.isEmpty()) {
-        QList<QVariant> argumentList;
-        QDBusPendingReply<QVariantMap> reply = callWithArgumentList(QDBus::Block, QLatin1String("GetProperties"), argumentList);
+        QDBusPendingReply<QVariantMap> reply = call(QDBus::Block, QLatin1String("GetProperties"));
         reply.waitForFinished();
         if (!reply.isError()) {
             propertiesMap = reply.value();
@@ -306,8 +303,7 @@ QVariant QOfonoDataConnectionManagerInterface::getProperty(const QString &proper
 QVariantMap &QOfonoDataConnectionManagerInterface::getProperties()
 {
     if (propertiesMap.isEmpty()) {
-        QList<QVariant> argumentList;
-        QDBusPendingReply<QVariantMap> reply = callWithArgumentList(QDBus::Block, QLatin1String("GetProperties"), argumentList);
+        QDBusPendingReply<QVariantMap> reply = call(QDBus::Block, QLatin1String("GetProperties"));
         if (!reply.isError()) {
             propertiesMap = reply.value();
         }
@@ -343,8 +339,7 @@ QOfonoConnectionContextInterface::~QOfonoConnectionContextInterface()
 QVariantMap QOfonoConnectionContextInterface::getProperties()
 {
     if (propertiesMap.isEmpty()) {
-        QList<QVariant> argumentList;
-        QDBusPendingReply<QVariantMap> reply = callWithArgumentList(QDBus::Block, QLatin1String("GetProperties"), argumentList);
+        QDBusPendingReply<QVariantMap> reply = call(QDBus::Block, QLatin1String("GetProperties"));
         if (!reply.isError()) {
             propertiesMap = reply.value();
         }

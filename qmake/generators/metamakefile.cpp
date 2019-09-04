@@ -33,6 +33,10 @@
 #include "project.h"
 #include "cachekeys.h"
 
+#include <algorithm>
+#include <iterator>
+#include <utility>
+
 #define BUILDSMETATYPE 1
 #define SUBDIRSMETATYPE 2
 
@@ -58,6 +62,7 @@ private:
     void clearBuilds();
     MakefileGenerator *processBuild(const ProString &);
     void accumulateVariableFromBuilds(const ProKey &name, Build *build) const;
+    void checkForConflictingTargets() const;
 
 public:
 
@@ -186,6 +191,7 @@ BuildsMetaMakefileGenerator::write()
         if(!build->makefile) {
             ret = false;
         } else if(build == glue) {
+            checkForConflictingTargets();
             accumulateVariableFromBuilds("QMAKE_INTERNAL_INCLUDED_FILES", build);
             ret = build->makefile->writeProjectMakefile();
         } else {
@@ -237,6 +243,39 @@ void BuildsMetaMakefileGenerator::accumulateVariableFromBuilds(const ProKey &nam
             values += build->makefile->projectFile()->values(name);
     }
     values.removeDuplicates();
+}
+
+void BuildsMetaMakefileGenerator::checkForConflictingTargets() const
+{
+    if (makefiles.count() < 3) {
+        // Checking for conflicts only makes sense if we have more than one BUILD,
+        // and the last entry in makefiles is the "glue" Build.
+        return;
+    }
+    using TargetInfo = std::pair<Build *, ProString>;
+    QVector<TargetInfo> targets;
+    const int last = makefiles.count() - 1;
+    targets.resize(last);
+    for (int i = 0; i < last; ++i) {
+        Build *b = makefiles.at(i);
+        auto mkf = b->makefile;
+        auto prj = mkf->projectFile();
+        targets[i] = std::make_pair(b, prj->first(mkf->fullTargetVariable()));
+    }
+    std::stable_sort(targets.begin(), targets.end(),
+              [](const TargetInfo &lhs, const TargetInfo &rhs)
+              {
+                  return lhs.second < rhs.second;
+              });
+    for (auto prev = targets.begin(), it = std::next(prev); it != targets.end(); ++prev, ++it) {
+        if (prev->second == it->second) {
+            warn_msg(WarnLogic, "Targets of builds '%s' and '%s' conflict: %s.",
+                     qPrintable(prev->first->build),
+                     qPrintable(it->first->build),
+                     qPrintable(prev->second.toQString()));
+            break;
+        }
+    }
 }
 
 class SubdirsMetaMakefileGenerator : public MetaMakefileGenerator

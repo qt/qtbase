@@ -52,6 +52,8 @@
 #include <QtCore/qthreadpool.h>
 #include <QtCore/qvector.h>
 
+#include <mutex>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -147,7 +149,7 @@ public:
                    ReduceResultType &r,
                    const IntermediateResults<T> &result)
     {
-        QMutexLocker locker(&mutex);
+        std::unique_lock<QMutex> locker(mutex);
         if (!canReduce(result.begin)) {
             ++resultsMapSize;
             resultsMap.insert(result.begin, result);
@@ -161,7 +163,7 @@ public:
             // reduce this result
             locker.unlock();
             reduceResult(reduce, r, result);
-            locker.relock();
+            locker.lock();
 
             // reduce all stored results as well
             while (!resultsMap.isEmpty()) {
@@ -170,7 +172,7 @@ public:
 
                 locker.unlock();
                 reduceResults(reduce, r, resultsMapCopy);
-                locker.relock();
+                locker.lock();
 
                 resultsMapSize -= resultsMapCopy.size();
             }
@@ -180,7 +182,7 @@ public:
             // reduce this result
             locker.unlock();
             reduceResult(reduce, r, result);
-            locker.relock();
+            locker.lock();
 
             // OrderedReduce
             progress += result.end - result.begin;
@@ -193,7 +195,7 @@ public:
 
                 locker.unlock();
                 reduceResult(reduce, r, it.value());
-                locker.relock();
+                locker.lock();
 
                 --resultsMapSize;
                 progress += it.value().end - it.value().begin;

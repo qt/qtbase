@@ -322,8 +322,10 @@ QLibraryInfo::buildDate()
 #elif defined(Q_CC_MSVC)
 #  if _MSC_VER < 1910
 #    define COMPILER_STRING "MSVC 2015"
-#  elif _MSC_VER < 2000
+#  elif _MSC_VER < 1917
 #    define COMPILER_STRING "MSVC 2017"
+#  elif _MSC_VER < 2000
+#    define COMPILER_STRING "MSVC 2019"
 #  else
 #    define COMPILER_STRING "MSVC _MSC_VER " QT_STRINGIFY(_MSC_VER)
 #  endif

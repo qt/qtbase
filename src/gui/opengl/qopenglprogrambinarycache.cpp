@@ -40,6 +40,7 @@
 #include "qopenglprogrambinarycache_p.h"
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
+#include <QSysInfo>
 #include <QStandardPaths>
 #include <QDir>
 #include <QSaveFile>
@@ -102,7 +103,7 @@ static inline bool qt_ensureWritableDir(const QString &name)
 QOpenGLProgramBinaryCache::QOpenGLProgramBinaryCache()
     : m_cacheWritable(false)
 {
-    const QString subPath = QLatin1String("/qtshadercache/");
+    const QString subPath = QLatin1String("/qtshadercache-") + QSysInfo::buildAbi() + QLatin1Char('/');
     const QString sharedCachePath = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
     if (!sharedCachePath.isEmpty()) {
         m_cacheDir = sharedCachePath + subPath;

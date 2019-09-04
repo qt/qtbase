@@ -52,10 +52,9 @@
 #include "node.h"
 
 #include <QPainter>
-#include <QTimer>
-#include <qmath.h>
+#include <QtMath>
 
-static const qreal Coords[NodeCount * 2] = {
+static constexpr qreal Coords[NodeCount * 2] = {
     0.0, -150.0, // head, #0
 
     0.0, -100.0, // body pentagon, top->bottom, left->right, #1 - 5
@@ -81,7 +80,7 @@ static const qreal Coords[NodeCount * 2] = {
 
 };
 
-static const int Bones[BoneCount * 2] = {
+static constexpr int Bones[BoneCount * 2] = {
     0, 1, // neck
 
     1, 2, // body
@@ -117,19 +116,13 @@ static const int Bones[BoneCount * 2] = {
 
 StickMan::StickMan()
 {
-    m_sticks = true;
-    m_isDead = false;
-    m_pixmap = QPixmap("images/head.png");
-    m_penColor = Qt::white;
-    m_fillColor = Qt::black;
-
     // Set up start position of limbs
-    for (int i=0; i<NodeCount; ++i) {
+    for (int i = 0; i < NodeCount; ++i) {
         m_nodes[i] = new Node(QPointF(Coords[i * 2], Coords[i * 2 + 1]), this);
         connect(m_nodes[i], &Node::positionChanged, this, &StickMan::childPositionChanged);
     }
 
-    for (int i=0; i<BoneCount; ++i) {
+    for (int i = 0; i < BoneCount; ++i) {
         int n1 = Bones[i * 2];
         int n2 = Bones[i * 2 + 1];
 
@@ -137,14 +130,10 @@ StickMan::StickMan()
         Node *node2 = m_nodes[n2];
 
         QPointF dist = node1->pos() - node2->pos();
-        m_perfectBoneLengths[i] = sqrt(pow(dist.x(),2) + pow(dist.y(),2));
+        m_perfectBoneLengths[i] = sqrt(pow(dist.x(), 2) + pow(dist.y(), 2));
     }
 
     startTimer(10);
-}
-
-StickMan::~StickMan()
-{
 }
 
 void StickMan::childPositionChanged()
@@ -155,7 +144,7 @@ void StickMan::childPositionChanged()
 void StickMan::setDrawSticks(bool on)
 {
     m_sticks = on;
-    for (int i=0;i<nodeCount();++i) {
+    for (int i = 0; i < nodeCount(); ++i) {
         Node *node = m_nodes[i];
         node->setVisible(on);
     }
@@ -188,7 +177,7 @@ void StickMan::stabilize()
 {
     static const qreal threshold = 0.001;
 
-    for (int i=0; i<BoneCount; ++i) {
+    for (int i = 0; i < BoneCount; ++i) {
         int n1 = Bones[i * 2];
         int n2 = Bones[i * 2 + 1];
 
@@ -236,7 +225,7 @@ void StickMan::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
     stabilize();
     if (m_sticks) {
         painter->setPen(Qt::white);
-        for (int i=0; i<BoneCount; ++i) {
+        for (int i = 0; i < BoneCount; ++i) {
             int n1 = Bones[i * 2];
             int n2 = Bones[i * 2 + 1];
 

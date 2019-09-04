@@ -68,16 +68,15 @@
 #include "qanimationstate.h"
 
 //Qt
-#include <QtCore/QPropertyAnimation>
-#include <QtCore/QRandomGenerator>
-#include <QtWidgets/QGraphicsScene>
+#include <QPropertyAnimation>
+#include <QRandomGenerator>
 
 //This state is describing when the boat is moving right
 class MovementState : public QAnimationState
 {
 Q_OBJECT
 public:
-    explicit MovementState(SubMarine *submarine, QState *parent = 0) : QAnimationState(parent)
+    explicit MovementState(SubMarine *submarine, QState *parent = nullptr) : QAnimationState(parent)
     {
         movementAnimation = new QPropertyAnimation(submarine, "pos");
         connect(movementAnimation, &QPropertyAnimation::valueChanged,
@@ -117,7 +116,7 @@ private:
 class ReturnState : public QAnimationState
 {
 public:
-    explicit ReturnState(SubMarine *submarine, QState *parent = 0) : QAnimationState(parent)
+    explicit ReturnState(SubMarine *submarine, QState *parent = nullptr) : QAnimationState(parent)
     {
         returnAnimation = new QPropertyAnimation(submarine->rotation(), "angle");
         returnAnimation->setDuration(500);

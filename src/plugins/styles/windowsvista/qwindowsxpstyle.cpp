@@ -1486,8 +1486,9 @@ case PE_Frame:
 
                 // Inner white border
                 p->setPen(QPen(option->palette.base().color(), 0));
-                const auto topLevelAdjustment = QStyleHelper::dpiScaled(0.5);
-                const auto bottomRightAdjustment = QStyleHelper::dpiScaled(-1);
+                const qreal dpi = QStyleHelper::dpi(option);
+                const auto topLevelAdjustment = QStyleHelper::dpiScaled(0.5, dpi);
+                const auto bottomRightAdjustment = QStyleHelper::dpiScaled(-1, dpi);
                 p->drawRect(QRectF(option->rect).adjusted(topLevelAdjustment, topLevelAdjustment,
                                                           bottomRightAdjustment, bottomRightAdjustment));
                 // Outer dark border
@@ -3313,7 +3314,8 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
         break;
 
     case PM_SplitterWidth:
-        res = qMax(int(QStyleHelper::dpiScaled(5.)), QApplication::globalStrut().width());
+        res = qMax(int(QStyleHelper::dpiScaled(5., option)),
+                   QApplication::globalStrut().width());
         break;
 
     case PM_MdiSubWindowMinimizedWidth:
@@ -3322,13 +3324,13 @@ int QWindowsXPStyle::pixelMetric(PixelMetric pm, const QStyleOption *option, con
 
 #if QT_CONFIG(toolbar)
     case PM_ToolBarHandleExtent:
-        res = int(QStyleHelper::dpiScaled(8.));
+        res = int(QStyleHelper::dpiScaled(8., option));
         break;
 
 #endif // QT_CONFIG(toolbar)
     case PM_DockWidgetSeparatorExtent:
     case PM_DockWidgetTitleMargin:
-        res = int(QStyleHelper::dpiScaled(4.));
+        res = int(QStyleHelper::dpiScaled(4., option));
         break;
 
     case PM_ButtonShiftHorizontal:
@@ -3413,7 +3415,7 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
             const bool isToolTitle = false;
             const int height = tb->rect.height();
             const int width = tb->rect.width();
-            const int buttonMargin = int(QStyleHelper::dpiScaled(4));
+            const int buttonMargin = int(QStyleHelper::dpiScaled(4, option));
             const qreal factor = QWindowsStylePrivate::nativeMetricScaleFactor(widget);
             int buttonHeight = qRound(qreal(GetSystemMetrics(SM_CYSIZE)) * factor)
                 - buttonMargin;
@@ -3524,23 +3526,27 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
             const int x = cmb->rect.x(), y = cmb->rect.y(), wi = cmb->rect.width(), he = cmb->rect.height();
-            const int xpos = x + wi - qRound(QStyleHelper::dpiScaled(1 + 16));
+            const int xpos = x + wi - qRound(QStyleHelper::dpiScaled(1 + 16, option));
 
             switch (subControl) {
             case SC_ComboBoxFrame:
                 rect = cmb->rect;
                 break;
 
-            case SC_ComboBoxArrow:
-                rect = QRect(xpos, y + qRound(QStyleHelper::dpiScaled(1)),
-                             qRound(QStyleHelper::dpiScaled(16)), he - qRound(QStyleHelper::dpiScaled(2)));
+            case SC_ComboBoxArrow: {
+                const qreal dpi = QStyleHelper::dpi(option);
+                rect = QRect(xpos, y + qRound(QStyleHelper::dpiScaled(1, dpi)),
+                             qRound(QStyleHelper::dpiScaled(16, dpi)),
+                             he - qRound(QStyleHelper::dpiScaled(2, dpi)));
+            }
                 break;
 
             case SC_ComboBoxEditField: {
-                const int frame = qRound(QStyleHelper::dpiScaled(2));
+                const qreal dpi = QStyleHelper::dpi(option);
+                const int frame = qRound(QStyleHelper::dpiScaled(2, dpi));
                 rect = QRect(x + frame, y + frame,
-                             wi - qRound(QStyleHelper::dpiScaled(3 + 16)),
-                             he - qRound(QStyleHelper::dpiScaled(4)));
+                             wi - qRound(QStyleHelper::dpiScaled(3 + 16, dpi)),
+                             he - qRound(QStyleHelper::dpiScaled(4, dpi)));
             }
                 break;
 

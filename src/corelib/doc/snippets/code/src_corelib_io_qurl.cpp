@@ -183,7 +183,7 @@ QUrl url("http://qt-project.org/support/file.html");
 //! [19]
 
 //! [20]
-    qDebug() << QUrl("file:file.txt").toLocalFile();            // "file:file.txt"
-    qDebug() << QUrl("file:/home/user/file.txt").toLocalFile(); // "file:///home/user/file.txt"
+    qDebug() << QUrl("file:file.txt").toLocalFile();            // "file.txt"
+    qDebug() << QUrl("file:/home/user/file.txt").toLocalFile(); // "/home/user/file.txt"
     qDebug() << QUrl("file.txt").toLocalFile();                 // ""; wasn't a local file as it had no scheme
 //! [20]

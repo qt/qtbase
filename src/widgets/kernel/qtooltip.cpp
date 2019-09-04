@@ -36,9 +36,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-# include <private/qcore_mac_p.h>
-#endif
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 
@@ -62,11 +59,6 @@
 #include <qlabel.h>
 #include <QtWidgets/private/qlabel_p.h>
 #include <qtooltip.h>
-
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-# include <private/qcore_mac_p.h>
-#include <private/qt_cocoa_helpers_mac_p.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -317,20 +309,7 @@ void QTipLabel::timerEvent(QTimerEvent *e)
         || e->timerId() == expireTimer.timerId()){
         hideTimer.stop();
         expireTimer.stop();
-#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && QT_CONFIG(effects)
-        if (QApplication::isEffectEnabled(Qt::UI_FadeTooltip)){
-            // Fade out tip on mac (makes it invisible).
-            // The tip will not be deleted until a new tip is shown.
-
-                        // DRSWAT - Cocoa
-                        macWindowFade(qt_mac_window_for(this));
-            QTipLabel::instance->fadingOut = true; // will never be false again.
-        }
-        else
-            hideTipImmediately();
-#else
         hideTipImmediately();
-#endif
     }
 }
 
@@ -420,29 +399,11 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
 #endif //QT_NO_STYLE_STYLESHEET
 
 
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    // When in full screen mode, there is no Dock nor Menu so we can use
-    // the whole screen for displaying the tooltip. However when not in
-    // full screen mode we need to save space for the dock, so we use
-    // availableGeometry instead.
-    extern bool qt_mac_app_fullscreen; //qapplication_mac.mm
-    QRect screen;
-    if(qt_mac_app_fullscreen)
-        screen = QDesktopWidgetPrivate::screenGeometry(getTipScreen(pos, w));
-    else
-        screen = QDesktopWidgetPrivate::availableGeometry(getTipScreen(pos, w));
-#else
     QRect screen = QDesktopWidgetPrivate::screenGeometry(getTipScreen(pos, w));
-#endif
 
     QPoint p = pos;
-    p += QPoint(2,
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-                21
-#else
-                16
-#endif
-        );
+    p += QPoint(2, 16);
+
     if (p.x() + this->width() > screen.x() + screen.width())
         p.rx() -= 4 + this->width();
     if (p.y() + this->height() > screen.y() + screen.height())
@@ -541,7 +502,7 @@ QT_WARNING_POP
         QTipLabel::instance->setObjectName(QLatin1String("qtooltip_label"));
 
 
-#if QT_CONFIG(effects) && !0 /* Used to be included in Qt4 for Q_WS_MAC */
+#if QT_CONFIG(effects)
         if (QApplication::isEffectEnabled(Qt::UI_FadeTooltip))
             qFadeEffect(QTipLabel::instance);
         else if (QApplication::isEffectEnabled(Qt::UI_AnimateTooltip))

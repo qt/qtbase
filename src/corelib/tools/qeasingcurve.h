@@ -41,6 +41,9 @@
 #define QEASINGCURVE_H
 
 #include <QtCore/qglobal.h>
+
+QT_REQUIRE_CONFIG(easingcurve);
+
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qvector.h>
 

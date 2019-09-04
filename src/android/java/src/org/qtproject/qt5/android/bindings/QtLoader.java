@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2016, BogDan Vatra <bogdan@kde.org>
+    Copyright (c) 2019, BogDan Vatra <bogdan@kde.org>
     Contact: http://www.qt.io/licensing/
 
     Commercial License Usage
@@ -63,9 +63,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 import dalvik.system.DexClassLoader;
 
@@ -85,7 +88,6 @@ public abstract class QtLoader {
     public static final String ENVIRONMENT_VARIABLES_KEY = "environment.variables";
     public static final String APPLICATION_PARAMETERS_KEY = "application.parameters";
     public static final String BUNDLED_LIBRARIES_KEY = "bundled.libraries";
-    public static final String QT_LIBS_RESOURCE_ID_KEY = "android.app.qt_libs_resource_id";
     public static final String BUNDLED_IN_LIB_RESOURCE_ID_KEY = "android.app.bundled_in_lib_resource_id";
     public static final String BUNDLED_IN_ASSETS_RESOURCE_ID_KEY = "android.app.bundled_in_assets_resource_id";
     public static final String MAIN_LIBRARY_KEY = "main.library";
@@ -153,7 +155,7 @@ public abstract class QtLoader {
     // this repository is used to push a new release, and should be used to test your application.
     // * unstable - unstable repository, DO NOT use this repository in production,
     // this repository is used to push Qt snapshots.
-    public String[] m_qtLibs = null; // required qt libs
+    public ArrayList<String> m_qtLibs = null; // required qt libs
     public int m_displayDensity = -1;
     private ContextWrapper m_context;
     protected ComponentInfo m_contextInfo;
@@ -191,6 +193,36 @@ public abstract class QtLoader {
     }
     // Implement in subclass
 
+    private final List<String> supportedAbis = Arrays.asList(Build.SUPPORTED_ABIS);
+    private String preferredAbi = null;
+
+    private ArrayList<String> prefferedAbiLibs(String []libs)
+    {
+        HashMap<String, ArrayList<String>> abisLibs = new HashMap<>();
+        for (String lib : libs) {
+            String[] archLib = lib.split(";", 2);
+            if (preferredAbi != null && !archLib[0].equals(preferredAbi))
+                continue;
+            if (!abisLibs.containsKey(archLib[0]))
+                abisLibs.put(archLib[0], new ArrayList<String>());
+            abisLibs.get(archLib[0]).add(archLib[1]);
+        }
+
+        if (preferredAbi != null) {
+            if (abisLibs.containsKey(preferredAbi)) {
+                return abisLibs.get(preferredAbi);
+            }
+            return new ArrayList<String>();
+        }
+
+        for (String abi: supportedAbis) {
+            if (abisLibs.containsKey(abi)) {
+                preferredAbi = abi;
+                return abisLibs.get(abi);
+            }
+        }
+        return new ArrayList<String>();
+    }
 
     // this function is used to load and start the loader
     private void loadApplication(Bundle loaderParams)
@@ -218,12 +250,14 @@ public abstract class QtLoader {
 
             // add all bundled Qt libs to loader params
             ArrayList<String> libs = new ArrayList<String>();
-            if (m_contextInfo.metaData.containsKey("android.app.bundled_libs_resource_id"))
-                libs.addAll(Arrays.asList(m_context.getResources().getStringArray(m_contextInfo.metaData.getInt("android.app.bundled_libs_resource_id"))));
+            if (m_contextInfo.metaData.containsKey("android.app.bundled_libs_resource_id")) {
+                int resourceId = m_contextInfo.metaData.getInt("android.app.bundled_libs_resource_id");
+                libs.addAll(prefferedAbiLibs(m_context.getResources().getStringArray(resourceId)));
+            }
 
             String libName = null;
             if (m_contextInfo.metaData.containsKey("android.app.lib_name")) {
-                libName = m_contextInfo.metaData.getString("android.app.lib_name");
+                libName = m_contextInfo.metaData.getString("android.app.lib_name") + "_" + preferredAbi;
                 loaderParams.putString(MAIN_LIBRARY_KEY, libName); //main library contains main() function
             }
 
@@ -278,7 +312,7 @@ public abstract class QtLoader {
             try {
                 if (m_service != null) {
                     Bundle parameters = new Bundle();
-                    parameters.putStringArray(REQUIRED_MODULES_KEY, m_qtLibs);
+                    parameters.putStringArray(REQUIRED_MODULES_KEY, (String[]) m_qtLibs.toArray());
                     parameters.putString(APPLICATION_TITLE_KEY, getTitle());
                     parameters.putInt(MINIMUM_MINISTRO_API_KEY, MINISTRO_API_LEVEL);
                     parameters.putInt(MINIMUM_QT_VERSION_KEY, QT_VERSION);
@@ -464,7 +498,8 @@ public abstract class QtLoader {
             // why can't we load the plugins directly from libs ?!?!
             String key = BUNDLED_IN_LIB_RESOURCE_ID_KEY;
             if (m_contextInfo.metaData.containsKey(key)) {
-                String[] list = m_context.getResources().getStringArray(m_contextInfo.metaData.getInt(key));
+                int resourceId = m_contextInfo.metaData.getInt(key);
+                ArrayList<String> list = prefferedAbiLibs(m_context.getResources().getStringArray(resourceId));
 
                 for (String bundledImportBinary : list) {
                     String[] split = bundledImportBinary.split(":");
@@ -603,7 +638,7 @@ public abstract class QtLoader {
 
             if (m_contextInfo.metaData.containsKey("android.app.qt_libs_resource_id")) {
                 int resourceId = m_contextInfo.metaData.getInt("android.app.qt_libs_resource_id");
-                m_qtLibs = m_context.getResources().getStringArray(resourceId);
+                m_qtLibs = prefferedAbiLibs(m_context.getResources().getStringArray(resourceId));
             }
 
             if (m_contextInfo.metaData.containsKey("android.app.use_local_qt_libs")
@@ -617,6 +652,7 @@ public abstract class QtLoader {
                     apkDeployFromSystem = true;
 
                 String libsDir = null;
+                String bundledLibsDir = null;
                 if (apkDeployFromSystem) {
                     String systemLibsPrefix = SYSTEM_LIB_PATH;
                     if (m_contextInfo.metaData.containsKey("android.app.system_libs_prefix")) {
@@ -633,8 +669,11 @@ public abstract class QtLoader {
                 } else {
                     String nativeLibraryPrefix = m_context.getApplicationInfo().nativeLibraryDir + "/";
                     File nativeLibraryDir = new File(nativeLibraryPrefix);
-                    if (nativeLibraryDir.exists() && nativeLibraryDir.isDirectory() && nativeLibraryDir.list().length > 0)
+                    if (nativeLibraryDir.exists() && nativeLibraryDir.isDirectory() && nativeLibraryDir.list().length > 0) {
                         libsDir = nativeLibraryPrefix;
+                        bundledLibsDir = nativeLibraryPrefix;
+                    }
+
                 }
 
                 if (apkDeployFromSystem && libsDir == null)
@@ -643,8 +682,8 @@ public abstract class QtLoader {
 
                 if (m_qtLibs != null) {
                     String libPrefix = libsDir + "lib";
-                    for (int i = 0; i < m_qtLibs.length; i++)
-                        libraryList.add(libPrefix + m_qtLibs[i] + ".so");
+                    for (String lib : m_qtLibs)
+                        libraryList.add(libPrefix + lib + ".so");
                 }
 
                 if (m_contextInfo.metaData.containsKey("android.app.bundle_local_qt_libs")
@@ -654,22 +693,26 @@ public abstract class QtLoader {
                     String pluginsPrefix = dataPath + "qt-reserved-files/";
 
                     if (libsDir == null)
-                        throw new Exception("");
+                        throw new Exception("Invalid libsDir");
 
                     cleanOldCacheIfNecessary(dataPath, pluginsPrefix);
                     extractBundledPluginsAndImports(pluginsPrefix, libsDir);
 
                     if (m_contextInfo.metaData.containsKey(BUNDLED_IN_LIB_RESOURCE_ID_KEY)) {
-                        String[] extraLibs = m_contextInfo.metaData.getString("android.app.load_local_libs").split(":");
-                        for (String lib : extraLibs) {
-                            if (!lib.isEmpty())
-                                libraryList.add(pluginsPrefix + lib);
+                        int resourceId = m_contextInfo.metaData.getInt("android.app.load_local_libs_resource_id");
+                        for (String libs : prefferedAbiLibs(m_context.getResources().getStringArray(resourceId))) {
+                            for (String lib : libs.split(":")) {
+                                if (!lib.isEmpty())
+                                    libraryList.add(libsDir + lib);
+                            }
                         }
                     }
 
                     ENVIRONMENT_VARIABLES += "\tQML2_IMPORT_PATH=" + pluginsPrefix + "/qml"
                             + "\tQML_IMPORT_PATH=" + pluginsPrefix + "/imports"
                             + "\tQT_PLUGIN_PATH=" + pluginsPrefix + "/plugins";
+                    if (bundledLibsDir != null)
+                        ENVIRONMENT_VARIABLES += "\tQT_BUNDLED_LIBS_PATH=" + bundledLibsDir;
                 }
 
                 Bundle loaderParams = new Bundle();

@@ -58,7 +58,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiD3D11InitParams
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Direct3D 11 specific initialization parameters.
 
     A D3D11-based QRhi needs no special parameters for initialization. If
@@ -97,7 +98,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiD3D11NativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Holds the D3D device and device context used by the QRhi.
 
     \note The class uses \c{void *} as the type since including the COM-based
@@ -107,7 +109,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiD3D11TextureNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Holds the D3D texture object that is backing a QRhiTexture instance.
 
     \note The class uses \c{void *} as the type since including the COM-based
@@ -157,6 +160,36 @@ static inline Int aligned(Int v, Int byteAlign)
     return (v + byteAlign - 1) & ~(byteAlign - 1);
 }
 
+static IDXGIFactory1 *createDXGIFactory2()
+{
+    IDXGIFactory1 *result = nullptr;
+    if (QOperatingSystemVersion::current() > QOperatingSystemVersion::Windows7) {
+        using PtrCreateDXGIFactory2 = HRESULT (WINAPI *)(UINT, REFIID, void **);
+        QSystemLibrary dxgilib(QStringLiteral("dxgi"));
+        if (auto createDXGIFactory2 = (PtrCreateDXGIFactory2)dxgilib.resolve("CreateDXGIFactory2")) {
+            const HRESULT hr = createDXGIFactory2(0, IID_IDXGIFactory2, reinterpret_cast<void **>(&result));
+            if (FAILED(hr)) {
+                qWarning("CreateDXGIFactory2() failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
+                result = nullptr;
+            }
+        } else {
+            qWarning("Unable to resolve CreateDXGIFactory2()");
+        }
+    }
+    return result;
+}
+
+static IDXGIFactory1 *createDXGIFactory1()
+{
+    IDXGIFactory1 *result = nullptr;
+    const HRESULT hr = CreateDXGIFactory1(IID_IDXGIFactory1, reinterpret_cast<void **>(&result));
+    if (FAILED(hr)) {
+        qWarning("CreateDXGIFactory1() failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
+        result = nullptr;
+    }
+    return result;
+}
+
 bool QRhiD3D11::create(QRhi::Flags flags)
 {
     Q_UNUSED(flags);
@@ -165,19 +198,22 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     if (debugLayer)
         devFlags |= D3D11_CREATE_DEVICE_DEBUG;
 
-    HRESULT hr;
-#if !defined(Q_CC_MINGW)
-    hasDxgi2 = QOperatingSystemVersion::current() > QOperatingSystemVersion::Windows7;
-    if (hasDxgi2)
-        hr = CreateDXGIFactory2(0, IID_IDXGIFactory2, reinterpret_cast<void **>(&dxgiFactory));
-    else
-#endif
-        hr = CreateDXGIFactory1(IID_IDXGIFactory1, reinterpret_cast<void **>(&dxgiFactory));
-
-    if (FAILED(hr)) {
-        qWarning("Failed to create DXGI factory: %s", qPrintable(comErrorMessage(hr)));
-        return false;
+    dxgiFactory = createDXGIFactory2();
+    if (dxgiFactory != nullptr) {
+        hasDxgi2 = true;
+        supportsFlipDiscardSwapchain = QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10
+                && !qEnvironmentVariableIntValue("QT_D3D_NO_FLIP");
+    } else {
+        dxgiFactory = createDXGIFactory1();
+        hasDxgi2 = false;
+        supportsFlipDiscardSwapchain = false;
     }
+
+    if (dxgiFactory == nullptr)
+        return false;
+
+    qCDebug(QRHI_LOG_INFO, "DXGI 1.2 = %s, FLIP_DISCARD swapchain supported = %s",
+            hasDxgi2 ? "true" : "false", supportsFlipDiscardSwapchain ? "true" : "false");
 
     if (!importedDevice) {
         IDXGIAdapter1 *adapterToUse = nullptr;
@@ -837,8 +873,10 @@ const QRhiNativeHandles *QRhiD3D11::nativeHandles(QRhiCommandBuffer *cb)
 
 void QRhiD3D11::beginExternal(QRhiCommandBuffer *cb)
 {
-    Q_UNUSED(cb);
-    flushCommandBuffer();
+    QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    // no timestampSwapChain, in order to avoid timestamp mess
+    executeCommandBuffer(cbD);
+    cbD->resetCommands();
 }
 
 void QRhiD3D11::endExternal(QRhiCommandBuffer *cb)
@@ -891,7 +929,7 @@ QRhi::FrameOpResult QRhiD3D11::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
     swapChainD->cb.resetState();
 
     swapChainD->rt.d.rtv[0] = swapChainD->sampleDesc.Count > 1 ?
-                swapChainD->msaaRtv[currentFrameSlot] : swapChainD->rtv[currentFrameSlot];
+                swapChainD->msaaRtv[currentFrameSlot] : swapChainD->backBufferRtv;
     swapChainD->rt.d.dsv = swapChainD->ds ? swapChainD->ds->dsv : nullptr;
 
     QRHI_PROF_F(beginSwapChainFrame(swapChain));
@@ -920,7 +958,7 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
         executeCommandBuffer(&swapChainD->cb);
 
     if (swapChainD->sampleDesc.Count > 1) {
-        context->ResolveSubresource(swapChainD->tex[currentFrameSlot], 0,
+        context->ResolveSubresource(swapChainD->backBufferTex, 0,
                                     swapChainD->msaaTex[currentFrameSlot], 0,
                                     swapChainD->colorFormat);
     }
@@ -953,8 +991,9 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiD3D11::beginOffscreenFrame(QRhiCommandBuffer **cb)
+QRhi::FrameOpResult QRhiD3D11::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags)
 {
+    Q_UNUSED(flags);
     ofr.active = true;
 
     ofr.cbWrapper.resetState();
@@ -963,8 +1002,9 @@ QRhi::FrameOpResult QRhiD3D11::beginOffscreenFrame(QRhiCommandBuffer **cb)
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiD3D11::endOffscreenFrame()
+QRhi::FrameOpResult QRhiD3D11::endOffscreenFrame(QRhi::EndFrameFlags flags)
 {
+    Q_UNUSED(flags);
     ofr.active = false;
 
     executeCommandBuffer(&ofr.cbWrapper);
@@ -1099,25 +1139,23 @@ static inline bool isDepthTextureFormat(QRhiTexture::Format format)
 
 QRhi::FrameOpResult QRhiD3D11::finish()
 {
-    if (inFrame)
-        flushCommandBuffer();
+    if (inFrame) {
+        if (ofr.active) {
+            Q_ASSERT(!contextState.currentSwapChain);
+            Q_ASSERT(ofr.cbWrapper.recordingPass == QD3D11CommandBuffer::NoPass);
+            executeCommandBuffer(&ofr.cbWrapper);
+            ofr.cbWrapper.resetCommands();
+        } else {
+            Q_ASSERT(contextState.currentSwapChain);
+            Q_ASSERT(contextState.currentSwapChain->cb.recordingPass == QD3D11CommandBuffer::NoPass);
+            executeCommandBuffer(&contextState.currentSwapChain->cb); // no timestampSwapChain, in order to avoid timestamp mess
+            contextState.currentSwapChain->cb.resetCommands();
+        }
+    }
 
     finishActiveReadbacks();
 
     return QRhi::FrameOpSuccess;
-}
-
-void QRhiD3D11::flushCommandBuffer()
-{
-    if (ofr.active) {
-        Q_ASSERT(!contextState.currentSwapChain);
-        executeCommandBuffer(&ofr.cbWrapper);
-        ofr.cbWrapper.resetCommands();
-    } else {
-        Q_ASSERT(contextState.currentSwapChain);
-        executeCommandBuffer(&contextState.currentSwapChain->cb); // no timestampSwapChain, in order to avoid timestamp mess
-        contextState.currentSwapChain->cb.resetCommands();
-    }
 }
 
 void QRhiD3D11::enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,
@@ -1304,14 +1342,14 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                     // has to be supported. Insert a resolve.
                     QD3D11CommandBuffer::Command rcmd;
                     rcmd.cmd = QD3D11CommandBuffer::Command::ResolveSubRes;
-                    rcmd.args.resolveSubRes.dst = swapChainD->tex[swapChainD->currentFrameSlot];
+                    rcmd.args.resolveSubRes.dst = swapChainD->backBufferTex;
                     rcmd.args.resolveSubRes.dstSubRes = 0;
                     rcmd.args.resolveSubRes.src = swapChainD->msaaTex[swapChainD->currentFrameSlot];
                     rcmd.args.resolveSubRes.srcSubRes = 0;
                     rcmd.args.resolveSubRes.format = swapChainD->colorFormat;
                     cbD->commands.append(rcmd);
                 }
-                src = swapChainD->tex[swapChainD->currentFrameSlot];
+                src = swapChainD->backBufferTex;
                 dxgiFormat = swapChainD->colorFormat;
                 pixelSize = swapChainD->pixelSize;
                 format = colorTextureFormatFromDxgiFormat(dxgiFormat, nullptr);
@@ -3503,9 +3541,9 @@ QD3D11SwapChain::QD3D11SwapChain(QRhiImplementation *rhi)
       rt(rhi),
       cb(rhi)
 {
+    backBufferTex = nullptr;
+    backBufferRtv = nullptr;
     for (int i = 0; i < BUFFER_COUNT; ++i) {
-        tex[i] = nullptr;
-        rtv[i] = nullptr;
         msaaTex[i] = nullptr;
         msaaRtv[i] = nullptr;
         timestampActive[i] = false;
@@ -3522,15 +3560,15 @@ QD3D11SwapChain::~QD3D11SwapChain()
 
 void QD3D11SwapChain::releaseBuffers()
 {
+    if (backBufferRtv) {
+        backBufferRtv->Release();
+        backBufferRtv = nullptr;
+    }
+    if (backBufferTex) {
+        backBufferTex->Release();
+        backBufferTex = nullptr;
+    }
     for (int i = 0; i < BUFFER_COUNT; ++i) {
-        if (rtv[i]) {
-            rtv[i]->Release();
-            rtv[i] = nullptr;
-        }
-        if (tex[i]) {
-            tex[i]->Release();
-            tex[i] = nullptr;
-        }
         if (msaaRtv[i]) {
             msaaRtv[i]->Release();
             msaaRtv[i] = nullptr;
@@ -3656,18 +3694,19 @@ bool QD3D11SwapChain::buildOrResize()
     const UINT swapChainFlags = 0;
 
     QRHI_RES_RHI(QRhiD3D11);
+    const bool useFlipDiscard = rhiD->hasDxgi2 && rhiD->supportsFlipDiscardSwapchain;
     if (!swapChain) {
         HWND hwnd = reinterpret_cast<HWND>(window->winId());
         sampleDesc = rhiD->effectiveSampleCount(m_sampleCount);
 
-        // We use FLIP_DISCARD which implies a buffer count of 2 (as opposed to the
-        // old DISCARD with back buffer count == 1). This makes no difference for
-        // the rest of the stuff except that automatic MSAA is unsupported and
-        // needs to be implemented via a custom multisample render target and an
-        // explicit resolve.
-
         HRESULT hr;
-        if (rhiD->hasDxgi2) {
+        if (useFlipDiscard) {
+            // We use FLIP_DISCARD which implies a buffer count of 2 (as opposed to the
+            // old DISCARD with back buffer count == 1). This makes no difference for
+            // the rest of the stuff except that automatic MSAA is unsupported and
+            // needs to be implemented via a custom multisample render target and an
+            // explicit resolve.
+
             DXGI_SWAP_CHAIN_DESC1 desc;
             memset(&desc, 0, sizeof(desc));
             desc.Width = pixelSize.width();
@@ -3690,7 +3729,10 @@ bool QD3D11SwapChain::buildOrResize()
             if (SUCCEEDED(hr))
                 swapChain = sc1;
         } else {
-            // Windows 7
+            // Windows 7 for instance. Use DISCARD mode. Regardless, keep on
+            // using our manual resolve for symmetry with the FLIP_DISCARD code
+            // path when MSAA is requested.
+
             DXGI_SWAP_CHAIN_DESC desc;
             memset(&desc, 0, sizeof(desc));
             desc.BufferDesc.Width = pixelSize.width();
@@ -3700,10 +3742,10 @@ bool QD3D11SwapChain::buildOrResize()
             desc.BufferDesc.Format = colorFormat;
             desc.SampleDesc.Count = 1;
             desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-            desc.BufferCount = BUFFER_COUNT;
+            desc.BufferCount = 1;
             desc.OutputWindow = hwnd;
             desc.Windowed = true;
-            desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+            desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
             desc.Flags = swapChainFlags;
 
             hr = rhiD->dxgiFactory->CreateSwapChain(rhiD->dev, &desc, &swapChain);
@@ -3712,30 +3754,49 @@ bool QD3D11SwapChain::buildOrResize()
             qWarning("Failed to create D3D11 swapchain: %s", qPrintable(comErrorMessage(hr)));
             return false;
         }
+        rhiD->dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
     } else {
         releaseBuffers();
-        HRESULT hr = swapChain->ResizeBuffers(2, pixelSize.width(), pixelSize.height(), colorFormat, swapChainFlags);
+        const UINT count = useFlipDiscard ? BUFFER_COUNT : 1;
+        HRESULT hr = swapChain->ResizeBuffers(count, pixelSize.width(), pixelSize.height(),
+                                              colorFormat, swapChainFlags);
         if (FAILED(hr)) {
             qWarning("Failed to resize D3D11 swapchain: %s", qPrintable(comErrorMessage(hr)));
             return false;
         }
     }
 
+    // This looks odd (for FLIP_DISCARD, esp. compared with backends for Vulkan
+    // & co.) but the backbuffer is always at index 0, with magic underneath.
+    // Some explanation from
+    // https://docs.microsoft.com/en-us/windows/win32/direct3ddxgi/dxgi-1-4-improvements
+    //
+    // "In Direct3D 11, applications could call GetBuffer( 0, … ) only once.
+    // Every call to Present implicitly changed the resource identity of the
+    // returned interface. Direct3D 12 no longer supports that implicit
+    // resource identity change, due to the CPU overhead required and the
+    // flexible resource descriptor design. As a result, the application must
+    // manually call GetBuffer for every each buffer created with the
+    // swapchain."
+
+    // So just query index 0 once (per resize) and be done with it.
+    HRESULT hr = swapChain->GetBuffer(0, IID_ID3D11Texture2D, reinterpret_cast<void **>(&backBufferTex));
+    if (FAILED(hr)) {
+        qWarning("Failed to query swapchain backbuffer: %s", qPrintable(comErrorMessage(hr)));
+        return false;
+    }
+    D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
+    memset(&rtvDesc, 0, sizeof(rtvDesc));
+    rtvDesc.Format = srgbAdjustedFormat;
+    rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+    hr = rhiD->dev->CreateRenderTargetView(backBufferTex, &rtvDesc, &backBufferRtv);
+    if (FAILED(hr)) {
+        qWarning("Failed to create rtv for swapchain backbuffer: %s", qPrintable(comErrorMessage(hr)));
+        return false;
+    }
+
+    // Try to reduce stalls by having a dedicated MSAA texture per swapchain buffer.
     for (int i = 0; i < BUFFER_COUNT; ++i) {
-        HRESULT hr = swapChain->GetBuffer(0, IID_ID3D11Texture2D, reinterpret_cast<void **>(&tex[i]));
-        if (FAILED(hr)) {
-            qWarning("Failed to query swapchain buffer %d: %s", i, qPrintable(comErrorMessage(hr)));
-            return false;
-        }
-        D3D11_RENDER_TARGET_VIEW_DESC rtvDesc;
-        memset(&rtvDesc, 0, sizeof(rtvDesc));
-        rtvDesc.Format = srgbAdjustedFormat;
-        rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-        hr = rhiD->dev->CreateRenderTargetView(tex[i], &rtvDesc, &rtv[i]);
-        if (FAILED(hr)) {
-            qWarning("Failed to create rtv for swapchain buffer %d: %s", i, qPrintable(comErrorMessage(hr)));
-            return false;
-        }
         if (sampleDesc.Count > 1) {
             if (!newColorBuffer(pixelSize, srgbAdjustedFormat, sampleDesc, &msaaTex[i], &msaaRtv[i]))
                 return false;

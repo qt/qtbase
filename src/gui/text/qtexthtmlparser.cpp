@@ -491,12 +491,19 @@ QTextHtmlParserNode::QTextHtmlParserNode()
       listStyle(QTextListFormat::ListStyleUndefined), imageWidth(-1), imageHeight(-1), tableBorder(0),
       tableCellRowSpan(1), tableCellColSpan(1), tableCellSpacing(2), tableCellPadding(0),
       borderBrush(Qt::darkGray), borderStyle(QTextFrameFormat::BorderStyle_Outset),
+      borderCollapse(false),
       userState(-1), cssListIndent(0), wsm(WhiteSpaceModeUndefined)
 {
     margin[QTextHtmlParser::MarginLeft] = 0;
     margin[QTextHtmlParser::MarginRight] = 0;
     margin[QTextHtmlParser::MarginTop] = 0;
     margin[QTextHtmlParser::MarginBottom] = 0;
+
+    for (int i = 0; i < 4; ++i) {
+        tableCellBorderStyle[i] = QTextFrameFormat::BorderStyle_None;
+        tableCellBorder[i] = 0;
+        tableCellBorderBrush[i] = Qt::NoBrush;
+    }
 }
 
 void QTextHtmlParser::dumpHtml()
@@ -649,7 +656,7 @@ void QTextHtmlParser::parseTag()
         parseExclamationTag();
         if (nodes.last().wsm != QTextHtmlParserNode::WhiteSpacePre
             && nodes.last().wsm != QTextHtmlParserNode::WhiteSpacePreWrap
-            && !textEditMode)
+                && !textEditMode)
             eatSpace();
         return;
     }
@@ -717,7 +724,8 @@ void QTextHtmlParser::parseTag()
     // in a white-space preserving environment strip off a initial newline
     // since the element itself already generates a newline
     if ((node->wsm == QTextHtmlParserNode::WhiteSpacePre
-         || node->wsm == QTextHtmlParserNode::WhiteSpacePreWrap)
+         || node->wsm == QTextHtmlParserNode::WhiteSpacePreWrap
+         || node->wsm == QTextHtmlParserNode::WhiteSpacePreLine)
         && node->isBlock()) {
         if (pos < len - 1 && txt.at(pos) == QLatin1Char('\n'))
             ++pos;
@@ -761,7 +769,8 @@ void QTextHtmlParser::parseCloseTag()
     // in a new block for elements following the <pre>
     // ...foo\n</pre><p>blah -> foo</pre><p>blah
     if ((at(p).wsm == QTextHtmlParserNode::WhiteSpacePre
-         || at(p).wsm == QTextHtmlParserNode::WhiteSpacePreWrap)
+         || at(p).wsm == QTextHtmlParserNode::WhiteSpacePreWrap
+         || at(p).wsm == QTextHtmlParserNode::WhiteSpacePreLine)
         && at(p).isBlock()) {
         if (at(last()).text.endsWith(QLatin1Char('\n')))
             nodes[last()].text.chop(1);
@@ -1167,6 +1176,25 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
     QCss::ValueExtractor extractor(declarations);
     extractor.extractBox(margin, padding);
 
+    if (id == Html_td || id == Html_th) {
+        QCss::BorderStyle cssStyles[4];
+        int cssBorder[4];
+        QSize cssRadii[4]; // unused
+        for (int i = 0; i < 4; ++i) {
+            cssStyles[i] = QCss::BorderStyle_None;
+            cssBorder[i] = 0;
+        }
+        // this will parse (and cache) "border-width" as a list so the
+        // QCss::BorderWidth parsing below which expects a single value
+        // will not work as expected - which in this case does not matter
+        // because tableBorder is not relevant for cells.
+        extractor.extractBorder(cssBorder, tableCellBorderBrush, cssStyles, cssRadii);
+        for (int i = 0; i < 4; ++i) {
+            tableCellBorderStyle[i] = static_cast<QTextFrameFormat::BorderStyle>(cssStyles[i] - 1);
+            tableCellBorder[i] = static_cast<qreal>(cssBorder[i]);
+        }
+    }
+
     for (int i = 0; i < declarations.count(); ++i) {
         const QCss::Declaration &decl = declarations.at(i);
         if (decl.d->values.isEmpty()) continue;
@@ -1183,6 +1211,9 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
             break;
         case QCss::BorderWidth:
             tableBorder = extractor.lengthValue(decl);
+            break;
+        case QCss::BorderCollapse:
+            borderCollapse = decl.borderCollapseValue();
             break;
         case QCss::Color: charFormat.setForeground(decl.colorValue()); break;
         case QCss::Float:
@@ -1278,6 +1309,7 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
             case QCss::Value_Pre: wsm = QTextHtmlParserNode::WhiteSpacePre; break;
             case QCss::Value_NoWrap: wsm = QTextHtmlParserNode::WhiteSpaceNoWrap; break;
             case QCss::Value_PreWrap: wsm = QTextHtmlParserNode::WhiteSpacePreWrap; break;
+            case QCss::Value_PreLine: wsm = QTextHtmlParserNode::WhiteSpacePreLine; break;
             default: break;
             }
             break;
@@ -1651,6 +1683,11 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                     if (!c.isValid())
                         qWarning("QTextHtmlParser::applyAttributes: Unknown color name '%s'",value.toLatin1().constData());
                     node->charFormat.setBackground(c);
+                } else if (key == QLatin1String("bordercolor")) {
+                    QColor c; c.setNamedColor(value);
+                    if (!c.isValid())
+                        qWarning("QTextHtmlParser::applyAttributes: Unknown color name '%s'",value.toLatin1().constData());
+                    node->borderBrush = c;
                 } else if (key == QLatin1String("background")) {
                     node->applyBackgroundImage(value, resourceProvider);
                 } else if (key == QLatin1String("cellspacing")) {

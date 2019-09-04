@@ -49,10 +49,11 @@
 ****************************************************************************/
 
 #include "progressitem.h"
-#include "pixmapitem.h"
 
-ProgressItem::ProgressItem (QGraphicsItem * parent)
-    : QGraphicsTextItem(parent), currentLevel(1), currentScore(0)
+#include <QFont>
+
+ProgressItem::ProgressItem(QGraphicsItem *parent)
+    : QGraphicsTextItem(parent)
 {
     setFont(QFont("Comic Sans MS"));
     setPos(parentItem()->boundingRect().topRight() - QPointF(180, -5));

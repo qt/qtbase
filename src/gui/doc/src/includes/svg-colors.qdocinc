@@ -1,0 +1,594 @@
+\table
+\header
+    \li Name
+    \li Hex
+    \li Color
+\row
+    \li aliceblue
+    \li #f0f8ff
+    \li \svgcolor {#f0f8ff}
+\row
+    \li antiquewhite
+    \li #faebd7
+    \li \svgcolor {#faebd7}
+\row
+    \li aqua
+    \li #00ffff
+    \li \svgcolor {#00ffff}
+\row
+    \li aquamarine
+    \li #7fffd4
+    \li \svgcolor {#7fffd4}
+\row
+    \li azure
+    \li #f0ffff
+    \li \svgcolor {#f0ffff}
+\row
+    \li beige
+    \li #f5f5dc
+    \li \svgcolor {#f5f5dc}
+\row
+    \li bisque
+    \li #ffe4c4
+    \li \svgcolor {#ffe4c4}
+\row
+    \li black
+    \li #000000
+    \li \svgcolor {#000000}
+\row
+    \li blanchedalmond
+    \li #ffebcd
+    \li \svgcolor {#ffebcd}
+\row
+    \li blue
+    \li #0000ff
+    \li \svgcolor {#0000ff}
+\row
+    \li blueviolet
+    \li #8a2be2
+    \li \svgcolor {#8a2be2}
+\row
+    \li brown
+    \li #a52a2a
+    \li \svgcolor {#a52a2a}
+\row
+    \li burlywood
+    \li #deb887
+    \li \svgcolor {#deb887}
+\row
+    \li cadetblue
+    \li #5f9ea0
+    \li \svgcolor {#5f9ea0}
+\row
+    \li chartreuse
+    \li #7fff00
+    \li \svgcolor {#7fff00}
+\row
+    \li chocolate
+    \li #d2691e
+    \li \svgcolor {#d2691e}
+\row
+    \li coral
+    \li #ff7f50
+    \li \svgcolor {#ff7f50}
+\row
+    \li cornflowerblue
+    \li #6495ed
+    \li \svgcolor {#6495ed}
+\row
+    \li cornsilk
+    \li #fff8dc
+    \li \svgcolor {#fff8dc}
+\row
+    \li crimson
+    \li #dc143c
+    \li \svgcolor {#dc143c}
+\row
+    \li cyan
+    \li #00ffff
+    \li \svgcolor {#00ffff}
+\row
+    \li darkblue
+    \li #00008b
+    \li \svgcolor {#00008b}
+\row
+    \li darkcyan
+    \li #008b8b
+    \li \svgcolor {#008b8b}
+\row
+    \li darkgoldenrod
+    \li #b8860b
+    \li \svgcolor {#b8860b}
+\row
+    \li darkgray
+    \li #a9a9a9
+    \li \svgcolor {#a9a9a9}
+\row
+    \li darkgreen
+    \li #006400
+    \li \svgcolor {#006400}
+\row
+    \li darkgrey
+    \li #a9a9a9
+    \li \svgcolor {#a9a9a9}
+\row
+    \li darkkhaki
+    \li #bdb76b
+    \li \svgcolor {#bdb76b}
+\row
+    \li darkmagenta
+    \li #8b008b
+    \li \svgcolor {#8b008b}
+\row
+    \li darkolivegreen
+    \li #556b2f
+    \li \svgcolor {#556b2f}
+\row
+    \li darkorange
+    \li #ff8c00
+    \li \svgcolor {#ff8c00}
+\row
+    \li darkorchid
+    \li #9932cc
+    \li \svgcolor {#9932cc}
+\row
+    \li darkred
+    \li #8b0000
+    \li \svgcolor {#8b0000}
+\row
+    \li darksalmon
+    \li #e9967a
+    \li \svgcolor {#e9967a}
+\row
+    \li darkseagreen
+    \li #8fbc8f
+    \li \svgcolor {#8fbc8f}
+\row
+    \li darkslateblue
+    \li #483d8b
+    \li \svgcolor {#483d8b}
+\row
+    \li darkslategray
+    \li #2f4f4f
+    \li \svgcolor {#2f4f4f}
+\row
+    \li darkslategrey
+    \li #2f4f4f
+    \li \svgcolor {#2f4f4f}
+\row
+    \li darkturquoise
+    \li #00ced1
+    \li \svgcolor {#00ced1}
+\row
+    \li darkviolet
+    \li #9400d3
+    \li \svgcolor {#9400d3}
+\row
+    \li deeppink
+    \li #ff1493
+    \li \svgcolor {#ff1493}
+\row
+    \li deepskyblue
+    \li #00bfff
+    \li \svgcolor {#00bfff}
+\row
+    \li dimgray
+    \li #696969
+    \li \svgcolor {#696969}
+\row
+    \li dimgrey
+    \li #696969
+    \li \svgcolor {#696969}
+\row
+    \li dodgerblue
+    \li #1e90ff
+    \li \svgcolor {#1e90ff}
+\row
+    \li firebrick
+    \li #b22222
+    \li \svgcolor {#b22222}
+\row
+    \li floralwhite
+    \li #fffaf0
+    \li \svgcolor {#fffaf0}
+\row
+    \li forestgreen
+    \li #228b22
+    \li \svgcolor {#228b22}
+\row
+    \li fuchsia
+    \li #ff00ff
+    \li \svgcolor {#ff00ff}
+\row
+    \li gainsboro
+    \li #dcdcdc
+    \li \svgcolor {#dcdcdc}
+\row
+    \li ghostwhite
+    \li #f8f8ff
+    \li \svgcolor {#f8f8ff}
+\row
+    \li gold
+    \li #ffd700
+    \li \svgcolor {#ffd700}
+\row
+    \li goldenrod
+    \li #daa520
+    \li \svgcolor {#daa520}
+\row
+    \li gray
+    \li #808080
+    \li \svgcolor {#808080}
+\row
+    \li grey
+    \li #808080
+    \li \svgcolor {#808080}
+\row
+    \li green
+    \li #008000
+    \li \svgcolor {#008000}
+\row
+    \li greenyellow
+    \li #adff2f
+    \li \svgcolor {#adff2f}
+\row
+    \li honeydew
+    \li #f0fff0
+    \li \svgcolor {#f0fff0}
+\row
+    \li hotpink
+    \li #ff69b4
+    \li \svgcolor {#ff69b4}
+\row
+    \li indianred
+    \li #cd5c5c
+    \li \svgcolor {#cd5c5c}
+\row
+    \li indigo
+    \li #4b0082
+    \li \svgcolor {#4b0082}
+\row
+    \li ivory
+    \li #fffff0
+    \li \svgcolor {#fffff0}
+\row
+    \li khaki
+    \li #f0e68c
+    \li \svgcolor {#f0e68c}
+\row
+    \li lavender
+    \li #e6e6fa
+    \li \svgcolor {#e6e6fa}
+\row
+    \li lavenderblush
+    \li #fff0f5
+    \li \svgcolor {#fff0f5}
+\row
+    \li lawngreen
+    \li #7cfc00
+    \li \svgcolor {#7cfc00}
+\row
+    \li lemonchiffon
+    \li #fffacd
+    \li \svgcolor {#fffacd}
+\row
+    \li lightblue
+    \li #add8e6
+    \li \svgcolor {#add8e6}
+\row
+    \li lightcoral
+    \li #f08080
+    \li \svgcolor {#f08080}
+\row
+    \li lightcyan
+    \li #e0ffff
+    \li \svgcolor {#e0ffff}
+\row
+    \li lightgoldenrodyellow
+    \li #fafad2
+    \li \svgcolor {#fafad2}
+\row
+    \li lightgray
+    \li #d3d3d3
+    \li \svgcolor {#d3d3d3}
+\row
+    \li lightgreen
+    \li #90ee90
+    \li \svgcolor {#90ee90}
+\row
+    \li lightgrey
+    \li #d3d3d3
+    \li \svgcolor {#d3d3d3}
+\row
+    \li lightpink
+    \li #ffb6c1
+    \li \svgcolor {#ffb6c1}
+\row
+    \li lightsalmon
+    \li #ffa07a
+    \li \svgcolor {#ffa07a}
+\row
+    \li lightseagreen
+    \li #20b2aa
+    \li \svgcolor {#20b2aa}
+\row
+    \li lightskyblue
+    \li #87cefa
+    \li \svgcolor {#87cefa}
+\row
+    \li lightslategray
+    \li #778899
+    \li \svgcolor {#778899}
+\row
+    \li lightslategrey
+    \li #778899
+    \li \svgcolor {#778899}
+\row
+    \li lightsteelblue
+    \li #b0c4de
+    \li \svgcolor {#b0c4de}
+\row
+    \li lightyellow
+    \li #ffffe0
+    \li \svgcolor {#ffffe0}
+\row
+    \li lime
+    \li #00ff00
+    \li \svgcolor {#00ff00}
+\row
+    \li limegreen
+    \li #32cd32
+    \li \svgcolor {#32cd32}
+\row
+    \li linen
+    \li #faf0e6
+    \li \svgcolor {#faf0e6}
+\row
+    \li magenta
+    \li #ff00ff
+    \li \svgcolor {#ff00ff}
+\row
+    \li maroon
+    \li #800000
+    \li \svgcolor {#800000}
+\row
+    \li mediumaquamarine
+    \li #66cdaa
+    \li \svgcolor {#66cdaa}
+\row
+    \li mediumblue
+    \li #0000cd
+    \li \svgcolor {#0000cd}
+\row
+    \li mediumorchid
+    \li #ba55d3
+    \li \svgcolor {#ba55d3}
+\row
+    \li mediumpurple
+    \li #9370db
+    \li \svgcolor {#9370db}
+\row
+    \li mediumseagreen
+    \li #3cb371
+    \li \svgcolor {#3cb371}
+\row
+    \li mediumslateblue
+    \li #7b68ee
+    \li \svgcolor {#7b68ee}
+\row
+    \li mediumspringgreen
+    \li #00fa9a
+    \li \svgcolor {#00fa9a}
+\row
+    \li mediumturquoise
+    \li #48d1cc
+    \li \svgcolor {#48d1cc}
+\row
+    \li mediumvioletred
+    \li #c71585
+    \li \svgcolor {#c71585}
+\row
+    \li midnightblue
+    \li #191970
+    \li \svgcolor {#191970}
+\row
+    \li mintcream
+    \li #f5fffa
+    \li \svgcolor {#f5fffa}
+\row
+    \li mistyrose
+    \li #ffe4e1
+    \li \svgcolor {#ffe4e1}
+\row
+    \li moccasin
+    \li #ffe4b5
+    \li \svgcolor {#ffe4b5}
+\row
+    \li navajowhite
+    \li #ffdead
+    \li \svgcolor {#ffdead}
+\row
+    \li navy
+    \li #000080
+    \li \svgcolor {#000080}
+\row
+    \li oldlace
+    \li #fdf5e6
+    \li \svgcolor {#fdf5e6}
+\row
+    \li olive
+    \li #808000
+    \li \svgcolor {#808000}
+\row
+    \li olivedrab
+    \li #6b8e23
+    \li \svgcolor {#6b8e23}
+\row
+    \li orange
+    \li #ffa500
+    \li \svgcolor {#ffa500}
+\row
+    \li orangered
+    \li #ff4500
+    \li \svgcolor {#ff4500}
+\row
+    \li orchid
+    \li #da70d6
+    \li \svgcolor {#da70d6}
+\row
+    \li palegoldenrod
+    \li #eee8aa
+    \li \svgcolor {#eee8aa}
+\row
+    \li palegreen
+    \li #98fb98
+    \li \svgcolor {#98fb98}
+\row
+    \li paleturquoise
+    \li #afeeee
+    \li \svgcolor {#afeeee}
+\row
+    \li palevioletred
+    \li #db7093
+    \li \svgcolor {#db7093}
+\row
+    \li papayawhip
+    \li #ffefd5
+    \li \svgcolor {#ffefd5}
+\row
+    \li peachpuff
+    \li #ffdab9
+    \li \svgcolor {#ffdab9}
+\row
+    \li peru
+    \li #cd853f
+    \li \svgcolor {#cd853f}
+\row
+    \li pink
+    \li #ffc0cb
+    \li \svgcolor {#ffc0cb}
+\row
+    \li plum
+    \li #dda0dd
+    \li \svgcolor {#dda0dd}
+\row
+    \li powderblue
+    \li #b0e0e6
+    \li \svgcolor {#b0e0e6}
+\row
+    \li purple
+    \li #800080
+    \li \svgcolor {#800080}
+\row
+    \li red
+    \li #ff0000
+    \li \svgcolor {#ff0000}
+\row
+    \li rosybrown
+    \li #bc8f8f
+    \li \svgcolor {#bc8f8f}
+\row
+    \li royalblue
+    \li #4169e1
+    \li \svgcolor {#4169e1}
+\row
+    \li saddlebrown
+    \li #8b4513
+    \li \svgcolor {#8b4513}
+\row
+    \li salmon
+    \li #fa8072
+    \li \svgcolor {#fa8072}
+\row
+    \li sandybrown
+    \li #f4a460
+    \li \svgcolor {#f4a460}
+\row
+    \li seagreen
+    \li #2e8b57
+    \li \svgcolor {#2e8b57}
+\row
+    \li seashell
+    \li #fff5ee
+    \li \svgcolor {#fff5ee}
+\row
+    \li sienna
+    \li #a0522d
+    \li \svgcolor {#a0522d}
+\row
+    \li silver
+    \li #c0c0c0
+    \li \svgcolor {#c0c0c0}
+\row
+    \li skyblue
+    \li #87ceeb
+    \li \svgcolor {#87ceeb}
+\row
+    \li slateblue
+    \li #6a5acd
+    \li \svgcolor {#6a5acd}
+\row
+    \li slategray
+    \li #708090
+    \li \svgcolor {#708090}
+\row
+    \li slategrey
+    \li #708090
+    \li \svgcolor {#708090}
+\row
+    \li snow
+    \li #fffafa
+    \li \svgcolor {#fffafa}
+\row
+    \li springgreen
+    \li #00ff7f
+    \li \svgcolor {#00ff7f}
+\row
+    \li steelblue
+    \li #4682b4
+    \li \svgcolor {#4682b4}
+\row
+    \li tan
+    \li #d2b48c
+    \li \svgcolor {#d2b48c}
+\row
+    \li teal
+    \li #008080
+    \li \svgcolor {#008080}
+\row
+    \li thistle
+    \li #d8bfd8
+    \li \svgcolor {#d8bfd8}
+\row
+    \li tomato
+    \li #ff6347
+    \li \svgcolor {#ff6347}
+\row
+    \li turquoise
+    \li #40e0d0
+    \li \svgcolor {#40e0d0}
+\row
+    \li violet
+    \li #ee82ee
+    \li \svgcolor {#ee82ee}
+\row
+    \li wheat
+    \li #f5deb3
+    \li \svgcolor {#f5deb3}
+\row
+    \li white
+    \li #ffffff
+    \li \svgcolor {#ffffff}
+\row
+    \li whitesmoke
+    \li #f5f5f5
+    \li \svgcolor {#f5f5f5}
+\row
+    \li yellow
+    \li #ffff00
+    \li \svgcolor {#ffff00}
+\row
+    \li yellowgreen
+    \li #9acd32
+    \li \svgcolor {#9acd32}
+\endtable

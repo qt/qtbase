@@ -40,6 +40,10 @@
 #ifndef QTIMELINE_H
 #define QTIMELINE_H
 
+#include <QtCore/qglobal.h>
+
+QT_REQUIRE_CONFIG(easingcurve);
+
 #include <QtCore/qeasingcurve.h>
 #include <QtCore/qobject.h>
 

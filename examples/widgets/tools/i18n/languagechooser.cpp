@@ -53,12 +53,6 @@
 #include "languagechooser.h"
 #include "mainwindow.h"
 
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-QT_BEGIN_NAMESPACE
-extern void qt_mac_set_menubar_merge(bool merge);
-QT_END_NAMESPACE
-#endif
-
 LanguageChooser::LanguageChooser(const QString& defaultLang, QWidget *parent)
     : QDialog(parent, Qt::WindowStaysOnTopHint)
 {
@@ -94,10 +88,6 @@ LanguageChooser::LanguageChooser(const QString& defaultLang, QWidget *parent)
     mainLayout->addWidget(groupBox);
     mainLayout->addWidget(buttonBox);
     setLayout(mainLayout);
-
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    qt_mac_set_menubar_merge(false);
-#endif
 
     setWindowTitle("I18N");
 }

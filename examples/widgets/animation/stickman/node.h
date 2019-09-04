@@ -51,13 +51,13 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include <QGraphicsItem>
+#include <QGraphicsObject>
 
 class Node: public QGraphicsObject
 {
     Q_OBJECT
 public:
-    explicit Node(const QPointF &pos, QGraphicsItem *parent = 0);
+    explicit Node(const QPointF &pos, QGraphicsItem *parent = nullptr);
     ~Node();
 
     QRectF boundingRect() const override;

@@ -33,6 +33,7 @@
 
 #include <qstringlist.h>
 #include <qfileinfo.h>
+#include <qvector.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -40,13 +41,14 @@ struct SourceFile;
 struct SourceDependChildren;
 class SourceFiles;
 
-class QMakeLocalFileName {
-    bool is_null;
-    mutable QString real_name, local_name;
+class QMakeLocalFileName
+{
+    QString real_name;
+    mutable QString local_name;
 public:
-    QMakeLocalFileName() : is_null(true) {}
+    QMakeLocalFileName() = default;
     QMakeLocalFileName(const QString &);
-    bool isNull() const { return is_null; }
+    bool isNull() const { return real_name.isNull(); }
     inline const QString &real() const { return real_name; }
     const QString &local() const;
 
@@ -64,7 +66,7 @@ private:
     //quick project lookups
     SourceFiles *files, *includes;
     bool files_changed;
-    QList<QMakeLocalFileName> depdirs;
+    QVector<QMakeLocalFileName> depdirs;
     QStringList systemIncludes;
 
     //sleezy buffer code
@@ -77,9 +79,6 @@ private:
     bool findDeps(SourceFile *);
     void dependTreeWalker(SourceFile *, SourceDependChildren *);
 
-    //cache
-    QString cachefile;
-
 protected:
     virtual QMakeLocalFileName fixPathForFile(const QMakeLocalFileName &, bool forOpen=false);
     virtual QMakeLocalFileName findFileForDep(const QMakeLocalFileName &, const QMakeLocalFileName &);
@@ -90,8 +89,8 @@ public:
     QMakeSourceFileInfo(const QString &cachefile="");
     virtual ~QMakeSourceFileInfo();
 
-    QList<QMakeLocalFileName> dependencyPaths() const { return depdirs; }
-    void setDependencyPaths(const QList<QMakeLocalFileName> &);
+    QVector<QMakeLocalFileName> dependencyPaths() const { return depdirs; }
+    void setDependencyPaths(const QVector<QMakeLocalFileName> &);
 
     enum DependencyMode { Recursive, NonRecursive };
     inline void setDependencyMode(DependencyMode mode) { dep_mode = mode; }
@@ -111,12 +110,6 @@ public:
     QStringList dependencies(const QString &file);
 
     bool mocable(const QString &file);
-
-    virtual QMap<QString, QStringList> getCacheVerification();
-    virtual bool verifyCache(const QMap<QString, QStringList> &);
-    void setCacheFile(const QString &cachefile); //auto caching
-    void loadCache(const QString &cf);
-    void saveCache(const QString &cf);
 
 private:
     DependencyMode dep_mode;

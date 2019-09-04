@@ -507,6 +507,7 @@ public slots:
     { QObject::moveToThread(t); }
 
     void slotWithUnregisteredParameterType(MyUnregisteredType);
+    void slotWithOneUnregisteredParameterType(QString a1, MyUnregisteredType a2);
 
     CountedStruct throwingSlot(const CountedStruct &, CountedStruct s2) {
 #ifndef QT_NO_EXCEPTIONS
@@ -603,6 +604,9 @@ void QtTestObject::testSender()
 
 void QtTestObject::slotWithUnregisteredParameterType(MyUnregisteredType)
 { slotResult = "slotWithUnregisteredReturnType"; }
+
+void QtTestObject::slotWithOneUnregisteredParameterType(QString a1, MyUnregisteredType)
+{ slotResult = "slotWithUnregisteredReturnType-" + a1; }
 
 void QtTestObject::staticFunction0()
 {
@@ -883,6 +887,16 @@ void tst_QMetaObject::invokeQueuedMetaMember()
         MyUnregisteredType t;
         QTest::ignoreMessage(QtWarningMsg, "QMetaMethod::invoke: Unable to handle unregistered datatype 'MyUnregisteredType'");
         QVERIFY(!QMetaObject::invokeMethod(&obj, "slotWithUnregisteredParameterType", Qt::QueuedConnection, Q_ARG(MyUnregisteredType, t)));
+        QVERIFY(obj.slotResult.isEmpty());
+    }
+
+    obj.slotResult.clear();
+    {
+        QString a1("Cannot happen");
+        MyUnregisteredType t;
+        QTest::ignoreMessage(QtWarningMsg, "QMetaMethod::invoke: Unable to handle unregistered datatype 'MyUnregisteredType'");
+        QVERIFY(!QMetaObject::invokeMethod(&obj, "slotWithOneUnregisteredParameterType", Qt::QueuedConnection,
+                                           Q_ARG(QString, a1), Q_ARG(MyUnregisteredType, t)));
         QVERIFY(obj.slotResult.isEmpty());
     }
 }

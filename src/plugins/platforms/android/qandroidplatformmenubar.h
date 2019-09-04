@@ -43,6 +43,7 @@
 #include <qpa/qplatformmenu.h>
 #include <qvector.h>
 #include <qmutex.h>
+#include <qhash.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -60,6 +61,8 @@ public:
     void syncMenu(QPlatformMenu *menu) override;
     void handleReparent(QWindow *newParentWindow) override;
     QPlatformMenu *menuForTag(quintptr tag) const override;
+    QPlatformMenu *menuForId(int menuId) const;
+    int menuId(QPlatformMenu *menu) const;
 
     QWindow *parentWindow() const override;
     PlatformMenusType menus() const;
@@ -69,6 +72,9 @@ private:
     PlatformMenusType m_menus;
     QWindow *m_parentWindow;
     QMutex m_menusListMutex;
+
+    int m_nextMenuId = 0;
+    QHash<int, QPlatformMenu *> m_menuHash;
 };
 
 QT_END_NAMESPACE

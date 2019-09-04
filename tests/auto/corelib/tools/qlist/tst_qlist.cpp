@@ -310,6 +310,7 @@ private slots:
     void lastComplex() const;
     void constFirst() const;
     void constLast() const;
+    void cpp17ctad() const;
     void beginOptimal() const;
     void beginMovable() const;
     void beginComplex() const;
@@ -862,6 +863,33 @@ void tst_QList::constLast() const
     QVERIFY(!listCopy.isDetached());
     QVERIFY(list.isSharedWith(listCopy));
     QVERIFY(listCopy.isSharedWith(list));
+}
+
+void tst_QList::cpp17ctad() const
+{
+#ifdef __cpp_deduction_guides
+#define QVERIFY_IS_LIST_OF(obj, Type) \
+    QVERIFY2((std::is_same<decltype(obj), QList<Type>>::value), \
+             QMetaType::typeName(qMetaTypeId<decltype(obj)::value_type>()))
+#define CHECK(Type, One, Two, Three) \
+    do { \
+        const Type v[] = {One, Two, Three}; \
+        QList v1 = {One, Two, Three}; \
+        QVERIFY_IS_LIST_OF(v1, Type); \
+        QList v2(v1.begin(), v1.end()); \
+        QVERIFY_IS_LIST_OF(v2, Type); \
+        QList v3(std::begin(v), std::end(v)); \
+        QVERIFY_IS_LIST_OF(v3, Type); \
+    } while (false) \
+    /*end*/
+    CHECK(int, 1, 2, 3);
+    CHECK(double, 1.0, 2.0, 3.0);
+    CHECK(QString, QStringLiteral("one"), QStringLiteral("two"), QStringLiteral("three"));
+#undef QVERIFY_IS_LIST_OF
+#undef CHECK
+#else
+    QSKIP("This test requires C++17 Constructor Template Argument Deduction support enabled in the compiler.");
+#endif
 }
 
 template<typename T>

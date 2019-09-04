@@ -124,6 +124,7 @@ QString graphicsApiName()
 QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers;
 int sampleCount = 1;
 QRhiSwapChain::Flags scFlags = 0;
+QRhi::BeginFrameFlags beginFrameFlags = 0;
 QRhi::EndFrameFlags endFrameFlags = 0;
 
 class Window : public QWindow
@@ -375,7 +376,7 @@ void Window::render()
     // GPU/present, and that's what throttles the thread to the refresh rate.
     // (except for OpenGL where it happens either in endFrame or somewhere else
     // depending on the GL implementation)
-    QRhi::FrameOpResult r = m_r->beginFrame(m_sc);
+    QRhi::FrameOpResult r = m_r->beginFrame(m_sc, beginFrameFlags);
     if (r == QRhi::FrameOpSwapChainOutOfDate) {
         resizeSwapChain();
         if (!m_hasSwapChain)

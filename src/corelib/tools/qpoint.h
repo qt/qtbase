@@ -64,6 +64,8 @@ public:
 
     Q_DECL_CONSTEXPR inline int manhattanLength() const;
 
+    Q_DECL_CONSTEXPR QPoint transposed() const noexcept { return {yp, xp}; }
+
     Q_DECL_RELAXED_CONSTEXPR inline int &rx();
     Q_DECL_RELAXED_CONSTEXPR inline int &ry();
 
@@ -231,6 +233,8 @@ public:
     Q_DECL_CONSTEXPR inline qreal y() const;
     Q_DECL_RELAXED_CONSTEXPR inline void setX(qreal x);
     Q_DECL_RELAXED_CONSTEXPR inline void setY(qreal y);
+
+    Q_DECL_CONSTEXPR QPointF transposed() const noexcept { return {yp, xp}; }
 
     Q_DECL_RELAXED_CONSTEXPR inline qreal &rx();
     Q_DECL_RELAXED_CONSTEXPR inline qreal &ry();

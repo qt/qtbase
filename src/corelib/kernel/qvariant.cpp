@@ -46,7 +46,9 @@
 #include "qdebug.h"
 #include "qmap.h"
 #include "qdatetime.h"
+#if QT_CONFIG(easingcurve)
 #include "qeasingcurve.h"
+#endif
 #include "qlist.h"
 #if QT_CONFIG(regularexpression)
 #include "qregularexpression.h"
@@ -2194,7 +2196,7 @@ QVariant::QVariant(const QTime &val)
 QVariant::QVariant(const QDateTime &val)
     : d(DateTime)
 { v_construct<QDateTime>(&d, val); }
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(easingcurve)
 QVariant::QVariant(const QEasingCurve &val)
     : d(EasingCurve)
 { v_construct<QEasingCurve>(&d, val); }
@@ -2471,7 +2473,9 @@ static const ushort mapIdFromQt3ToCurrent[MapFromThreeCount] =
     QVariant::Pen,
     QVariant::LongLong,
     QVariant::ULongLong,
+#if QT_CONFIG(easingcurve)
     QVariant::EasingCurve
+#endif
 };
 
 /*!
@@ -2788,7 +2792,7 @@ QDateTime QVariant::toDateTime() const
 
     \sa canConvert(int targetTypeId), convert()
 */
-#ifndef QT_BOOTSTRAPPED
+#if QT_CONFIG(easingcurve)
 QEasingCurve QVariant::toEasingCurve() const
 {
     return qVariantToHelper<QEasingCurve>(d, handlerManager);

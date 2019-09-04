@@ -92,6 +92,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "border-bottom-right-radius", BorderBottomRightRadius },
     { "border-bottom-style", BorderBottomStyle },
     { "border-bottom-width", BorderBottomWidth },
+    { "border-collapse", BorderCollapse },
     { "border-color", BorderColor },
     { "border-image", BorderImage },
     { "border-left", BorderLeft },
@@ -222,6 +223,7 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "outset", Value_Outset },
     { "overline", Value_Overline },
     { "pre", Value_Pre },
+    { "pre-line", Value_PreLine },
     { "pre-wrap", Value_PreWrap },
     { "ridge", Value_Ridge },
     { "right", Value_Right },
@@ -248,10 +250,10 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
 };
 
 //Map id to strings as they appears in the 'values' array above
-static const short indexOfId[NumKnownValues] = { 0, 41, 48, 42, 49, 54, 35, 26, 70, 71, 25, 43, 5, 63, 47,
-    29, 58, 59, 27, 51, 61, 6, 10, 39, 56, 19, 13, 17, 18, 20, 21, 50, 24, 46, 67, 37, 3, 2, 40, 62, 16,
-    11, 57, 14, 32, 64, 33, 65, 55, 66, 34, 69, 8, 28, 38, 12, 36, 60, 7, 9, 4, 68, 53, 22, 23, 30, 31,
-    1, 15, 0, 52, 45, 44 };
+static const short indexOfId[NumKnownValues] = { 0, 41, 48, 42, 49, 50, 55, 35, 26, 71, 72, 25, 43, 5, 64, 48,
+    29, 59, 60, 27, 52, 62, 6, 10, 39, 56, 19, 13, 17, 18, 20, 21, 51, 24, 46, 68, 37, 3, 2, 40, 63, 16,
+    11, 58, 14, 32, 65, 33, 66, 56, 67, 34, 70, 8, 28, 38, 12, 36, 61, 7, 9, 4, 69, 54, 22, 23, 30, 31,
+    1, 15, 0, 53, 45, 44 };
 
 QString Value::toString() const
 {
@@ -610,11 +612,7 @@ bool ValueExtractor::extractBorder(int *borders, QBrush *colors, BorderStyle *st
         case BorderRightStyle: styles[RightEdge] = decl.styleValue(); break;
         case BorderStyles:  decl.styleValues(styles); break;
 
-#ifndef QT_OS_ANDROID_GCC_48_WORKAROUND
         case BorderTopLeftRadius: radii[0] = sizeValue(decl); break;
-#else
-        case BorderTopLeftRadius: new(radii)QSize(sizeValue(decl)); break;
-#endif
         case BorderTopRightRadius: radii[1] = sizeValue(decl); break;
         case BorderBottomLeftRadius: radii[2] = sizeValue(decl); break;
         case BorderBottomRightRadius: radii[3] = sizeValue(decl); break;
@@ -1729,6 +1727,14 @@ void Declaration::borderImageValue(QString *image, int *cuts,
                                         tileModes, NumKnownTileModes));
     } else
         *h = *v;
+}
+
+bool Declaration::borderCollapseValue() const
+{
+    if (d->values.count() != 1)
+        return false;
+    else
+        return d->values.at(0).toString() == QLatin1String("collapse");
 }
 
 QIcon Declaration::iconValue() const

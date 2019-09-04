@@ -55,11 +55,10 @@ Window::Window(QWidget *parent)
     m_iconSize(64, 64)
 {
     m_ui.setupUi(this);
-    QButtonGroup *buttonGroup = findChild<QButtonGroup *>();     // ### workaround for uic in 4.4
     m_ui.easingCurvePicker->setIconSize(m_iconSize);
     m_ui.easingCurvePicker->setMinimumHeight(m_iconSize.height() + 50);
-    buttonGroup->setId(m_ui.lineRadio, 0);
-    buttonGroup->setId(m_ui.circleRadio, 1);
+    m_ui.buttonGroup->setId(m_ui.lineRadio, 0);
+    m_ui.buttonGroup->setId(m_ui.circleRadio, 1);
 
     QEasingCurve dummy;
     m_ui.periodSpinBox->setValue(dummy.period());
@@ -68,7 +67,7 @@ Window::Window(QWidget *parent)
 
     connect(m_ui.easingCurvePicker, &QListWidget::currentRowChanged,
             this, &Window::curveChanged);
-    connect(buttonGroup, QOverload<int>::of(&QButtonGroup::buttonClicked),
+    connect(m_ui.buttonGroup, QOverload<int>::of(&QButtonGroup::buttonClicked),
             this, &Window::pathChanged);
     connect(m_ui.periodSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &Window::periodChanged);

@@ -1,8 +1,6 @@
 [interpolation]
-osx-10.12
 windows-10 msvc-2015
-osx-10.13
-windows-7sp1
+osx
 [frameRate]
 osx-10.12
 osx-10.13

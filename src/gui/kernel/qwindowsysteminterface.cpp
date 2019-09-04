@@ -857,8 +857,8 @@ void QWindowSystemInterface::handleScreenGeometryChange(QScreen *screen, const Q
 
 void QWindowSystemInterface::handleScreenLogicalDotsPerInchChange(QScreen *screen, qreal dpiX, qreal dpiY)
 {
-    QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent *e =
-            new QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent(screen, dpiX, dpiY); // ### tja
+    const QDpi effectiveDpi = QPlatformScreen::overrideDpi(QDpi{dpiX, dpiY});
+    auto e = new QWindowSystemInterfacePrivate::ScreenLogicalDotsPerInchEvent(screen, effectiveDpi.first, effectiveDpi.second);
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 

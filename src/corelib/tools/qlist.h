@@ -112,7 +112,7 @@ struct Q_CORE_EXPORT QListData {
     void remove(int i);
     void remove(int i, int n);
     void move(int from, int to);
-    inline int size() const noexcept { return d->end - d->begin; }
+    inline int size() const noexcept { return int(d->end - d->begin); }   // q6sizetype
     inline bool isEmpty() const noexcept { return d->end  == d->begin; }
     inline void **at(int i) const noexcept { return d->array + d->begin + i; }
     inline void **begin() const noexcept { return d->array + d->begin; }
@@ -445,6 +445,13 @@ private:
     inline int count_impl(const T &, QListData::NotArrayCompatibleLayout) const;
     inline int count_impl(const T &, QListData::ArrayCompatibleLayout) const;
 };
+
+#if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606
+template <typename InputIterator,
+          typename ValueType = typename std::iterator_traits<InputIterator>::value_type,
+          QtPrivate::IfIsInputIterator<InputIterator> = true>
+QList(InputIterator, InputIterator) -> QList<ValueType>;
+#endif
 
 #if defined(Q_CC_BOR)
 template <typename T>
@@ -1044,7 +1051,7 @@ int lastIndexOf(const QList<T> &list, const U &u, int from)
         Node *n = reinterpret_cast<Node *>(list.p.at(from + 1));
         while (n-- != b) {
             if (n->t() == u)
-                return n - b;
+                return typename QList<T>::difference_type(n - b);
         }
     }
     return -1;

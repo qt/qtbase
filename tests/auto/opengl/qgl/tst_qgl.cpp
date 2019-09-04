@@ -60,6 +60,8 @@ public:
     tst_QGL();
     virtual ~tst_QGL();
 
+    static void initMain();
+
 private slots:
     void initTestCase();
     void getSetCheck();
@@ -99,6 +101,11 @@ tst_QGL::tst_QGL()
 
 tst_QGL::~tst_QGL()
 {
+}
+
+void tst_QGL::initMain()
+{
+    QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
 }
 
 void tst_QGL::initTestCase()

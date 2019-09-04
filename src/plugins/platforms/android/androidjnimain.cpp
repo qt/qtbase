@@ -454,9 +454,9 @@ static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring pa
         const QList<QByteArray> envVars = QByteArray(nativeString).split('\t');
         env->ReleaseStringUTFChars(environmentString, nativeString);
         for (const QByteArray &envVar : envVars) {
-            const QList<QByteArray> envVarPair = envVar.split('=');
-            if (envVarPair.size() == 2 && ::setenv(envVarPair[0], envVarPair[1], 1) != 0)
-                qWarning() << "Can't set environment" << envVarPair;
+            int pos = envVar.indexOf('=');
+            if (pos != -1 && ::setenv(envVar.left(pos), envVar.mid(pos + 1), 1) != 0)
+                qWarning() << "Can't set environment" << envVar;
         }
     }
 

@@ -1,9 +1,0 @@
-[remainingTime]
-osx-10.12
-osx-10.14
-osx-10.13
-windows-10 msvc-2017
-[basic_chrono]
-osx-10.14
-osx-10.13
-

@@ -223,6 +223,7 @@ public:
     static QWindow *currentMouseWindow;
     static QWindow *currentMousePressWindow;
     static Qt::ApplicationState applicationState;
+    static Qt::HighDpiScaleFactorRoundingPolicy highDpiScaleFactorRoundingPolicy;
     static bool highDpiScalingUpdated;
     static QPointer<QWindow> currentDragWindow;
 

@@ -764,27 +764,13 @@ MakefileGenerator::init()
         ProStringList incDirs = v["DEPENDPATH"] + v["QMAKE_ABSOLUTE_SOURCE_PATH"];
         if(project->isActiveConfig("depend_includepath"))
             incDirs += v["INCLUDEPATH"];
-        QList<QMakeLocalFileName> deplist;
+        QVector<QMakeLocalFileName> deplist;
         deplist.reserve(incDirs.size());
         for (ProStringList::Iterator it = incDirs.begin(); it != incDirs.end(); ++it)
             deplist.append(QMakeLocalFileName((*it).toQString()));
         QMakeSourceFileInfo::setDependencyPaths(deplist);
         debug_msg(1, "Dependency Directories: %s",
                   incDirs.join(QString(" :: ")).toLatin1().constData());
-        //cache info
-        if(project->isActiveConfig("qmake_cache")) {
-            QString cache_file;
-            if(!project->isEmpty("QMAKE_INTERNAL_CACHE_FILE")) {
-                cache_file = QDir::fromNativeSeparators(project->first("QMAKE_INTERNAL_CACHE_FILE").toQString());
-            } else {
-                cache_file = ".qmake.internal.cache";
-                if(project->isActiveConfig("build_pass"))
-                    cache_file += ".BUILD." + project->first("BUILD_PASS");
-            }
-            if(cache_file.indexOf('/') == -1)
-                cache_file.prepend(Option::output_dir + '/');
-            QMakeSourceFileInfo::setCacheFile(cache_file);
-        }
 
         //add to dependency engine
         for(x = 0; x < compilers.count(); ++x) {
@@ -1839,7 +1825,7 @@ static QStringList splitDeps(const QString &indeps, bool lineMode)
 
 QString MakefileGenerator::resolveDependency(const QDir &outDir, const QString &file)
 {
-    const QList<QMakeLocalFileName> &depdirs = QMakeSourceFileInfo::dependencyPaths();
+    const QVector<QMakeLocalFileName> &depdirs = QMakeSourceFileInfo::dependencyPaths();
     for (const auto &depdir : depdirs) {
         const QString &local = depdir.local();
         QString lf = outDir.absoluteFilePath(local + '/' + file);
@@ -3105,7 +3091,7 @@ MakefileGenerator::findFileForDep(const QMakeLocalFileName &dep, const QMakeLoca
 
         if(Option::output_dir != qmake_getpwd()
            && QDir::isRelativePath(dep.real())) { //is it from the shadow tree
-            QList<QMakeLocalFileName> depdirs = QMakeSourceFileInfo::dependencyPaths();
+            QVector<QMakeLocalFileName> depdirs = QMakeSourceFileInfo::dependencyPaths();
             depdirs.prepend(fileInfo(file.real()).absoluteDir().path());
             QString pwd = qmake_getpwd();
             if(pwd.at(pwd.length()-1) != '/')
@@ -3454,6 +3440,15 @@ QString MakefileGenerator::installMetaFile(const ProKey &replace_rule, const QSt
 QString MakefileGenerator::shellQuote(const QString &str)
 {
     return isWindowsShell() ? IoUtils::shellQuoteWin(str) : IoUtils::shellQuoteUnix(str);
+}
+
+/*
+ * Returns the name of the variable that contains the fully resolved target
+ * (including DESTDIR) of this generator.
+ */
+ProKey MakefileGenerator::fullTargetVariable() const
+{
+    return "TARGET";
 }
 
 QT_END_NAMESPACE

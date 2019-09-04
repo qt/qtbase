@@ -572,6 +572,7 @@ QT_BEGIN_NAMESPACE
     \value Null A QChar with this value isNull().
     \value Tabulation Character tabulation.
     \value LineFeed
+    \value FormFeed
     \value CarriageReturn
     \value Space
     \value Nbsp Non-breaking space.

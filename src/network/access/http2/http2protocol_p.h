@@ -55,12 +55,14 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qglobal.h>
+#include <QtCore/qmap.h>
 
 // Different HTTP/2 constants/values as defined by RFC 7540.
 
 QT_BEGIN_NAMESPACE
 
 class QHttpNetworkRequest;
+class QHttp2Configuration;
 class QHttpNetworkReply;
 class QByteArray;
 class QString;
@@ -118,13 +120,19 @@ enum Http2PredefinedParameters
     connectionStreamID = 0, // HTTP/2, 5.1.1
     frameHeaderSize = 9, // HTTP/2, 4.1
 
-    // It's our max frame size we send in SETTINGS frame,
-    // it's also the default one and we also use it to later
-    // validate incoming frames:
-    maxFrameSize = 16384, // HTTP/2 6.5.2
+    // The initial allowed payload size. We would use it as an
+    // upper limit for a frame payload we send, until our peer
+    // updates us with a larger SETTINGS_MAX_FRAME_SIZE.
+
+    // The initial maximum payload size that an HTTP/2 frame
+    // can contain is 16384. It's also the minimal size that
+    // can be advertised  via 'SETTINGS' frames. A real frame
+    // can have a payload smaller than 16384.
+    minPayloadLimit = 16384, // HTTP/2 6.5.2
+    // The maximum allowed payload size.
+    maxPayloadSize = (1 << 24) - 1, // HTTP/2 6.5.2
 
     defaultSessionWindowSize = 65535, // HTTP/2 6.5.2
-    maxPayloadSize = (1 << 24) - 1, // HTTP/2 6.5.2
     // Using 1000 (rather arbitrarily), just to
     // impose *some* upper limit:
     maxPeerConcurrentStreams  = 1000,
@@ -145,46 +153,9 @@ const quint32 lastValidStreamID((quint32(1) << 31) - 1); // HTTP/2, 5.1.1
 const qint32 maxSessionReceiveWindowSize((quint32(1) << 31) - 1);
 const qint32 qtDefaultStreamReceiveWindowSize = maxSessionReceiveWindowSize / maxConcurrentStreams;
 
-// The class ProtocolParameters allows client code to customize HTTP/2 protocol
-// handler, if needed. Normally, we use our own default parameters (see below).
-// In 5.10 we can also use setProperty/property on a QNAM object to pass the
-// non-default values to the protocol handler. In 5.11 this will probably become
-// a public API.
-
-using RawSettings = QMap<Settings, quint32>;
-
-struct Q_AUTOTEST_EXPORT ProtocolParameters
-{
-    ProtocolParameters();
-
-    bool validate() const;
-    QByteArray settingsFrameToBase64() const;
-    struct Frame settingsFrame() const;
-    void addProtocolUpgradeHeaders(QHttpNetworkRequest *request) const;
-
-    // HPACK:
-    // TODO: for now we ignore them (fix it for 5.11, would require changes in HPACK)
-    bool useHuffman = true;
-    bool indexStrings = true;
-
-    // This parameter is not negotiated via SETTINGS frames, so we have it
-    // as a member and will convey it to our peer as a WINDOW_UPDATE frame:
-    qint32 maxSessionReceiveWindowSize = Http2::maxSessionReceiveWindowSize;
-
-    // This is our default SETTINGS frame:
-    //
-    // SETTINGS_INITIAL_WINDOW_SIZE: (2^31 - 1) / 100
-    // SETTINGS_ENABLE_PUSH: 0.
-    //
-    // Note, whenever we skip some value in our SETTINGS frame, our peer
-    // will assume the defaults recommended by RFC 7540, which in general
-    // are good enough, although we (and most browsers) prefer to work
-    // with larger window sizes.
-    RawSettings settingsFrameData;
-};
-
-// TODO: remove in 5.11
-extern const Q_AUTOTEST_EXPORT char *http2ParametersPropertyName;
+struct Frame configurationToSettingsFrame(const QHttp2Configuration &configuration);
+QByteArray settingsFrameToBase64(const Frame &settingsFrame);
+void appendProtocolUpgradeHeaders(const QHttp2Configuration &configuration, QHttpNetworkRequest *request);
 
 extern const Q_AUTOTEST_EXPORT char Http2clientPreface[clientPrefaceLength];
 
@@ -233,6 +204,5 @@ Q_DECLARE_LOGGING_CATEGORY(QT_HTTP2)
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(Http2::Settings)
-Q_DECLARE_METATYPE(Http2::ProtocolParameters)
 
 #endif

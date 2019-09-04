@@ -54,7 +54,7 @@
 //Qt
 #include <QPainter>
 
-PixmapItem::PixmapItem(const QString &fileName,GraphicsScene::Mode mode, QGraphicsItem * parent)
+PixmapItem::PixmapItem(const QString &fileName, GraphicsScene::Mode mode, QGraphicsItem *parent)
     : QGraphicsObject(parent)
 {
     if (mode == GraphicsScene::Big)
@@ -63,7 +63,8 @@ PixmapItem::PixmapItem(const QString &fileName,GraphicsScene::Mode mode, QGraphi
         pix = QPixmap(QStringLiteral(":/small/") + fileName);
 }
 
-PixmapItem::PixmapItem(const QString &fileName, QGraphicsScene *scene) : QGraphicsObject(), pix(fileName)
+PixmapItem::PixmapItem(const QString &fileName, QGraphicsScene *scene)
+    : QGraphicsObject(), pix(fileName)
 {
     scene->addItem(this);
 }

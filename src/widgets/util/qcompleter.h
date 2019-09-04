@@ -75,12 +75,14 @@ public:
         UnfilteredPopupCompletion,
         InlineCompletion
     };
+    Q_ENUM(CompletionMode)
 
     enum ModelSorting {
         UnsortedModel = 0,
         CaseSensitivelySortedModel,
         CaseInsensitivelySortedModel
     };
+    Q_ENUM(ModelSorting)
 
     QCompleter(QObject *parent = nullptr);
     QCompleter(QAbstractItemModel *model, QObject *parent = nullptr);

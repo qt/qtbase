@@ -1243,8 +1243,10 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiMetal::beginOffscreenFrame(QRhiCommandBuffer **cb)
+QRhi::FrameOpResult QRhiMetal::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags)
 {
+    Q_UNUSED(flags);
+
     currentFrameSlot = (currentFrameSlot + 1) % QMTL_FRAMES_IN_FLIGHT;
     if (swapchains.count() > 1) {
         for (QMetalSwapChain *sc : qAsConst(swapchains)) {
@@ -1268,8 +1270,9 @@ QRhi::FrameOpResult QRhiMetal::beginOffscreenFrame(QRhiCommandBuffer **cb)
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiMetal::endOffscreenFrame()
+QRhi::FrameOpResult QRhiMetal::endOffscreenFrame(QRhi::EndFrameFlags flags)
 {
+    Q_UNUSED(flags);
     Q_ASSERT(d->ofr.active);
     d->ofr.active = false;
 
@@ -1986,9 +1989,11 @@ bool QMetalBuffer::build()
     }
 #endif
 
-    // Immutable and Static only has buf[0] and pendingUpdates[0] in use.
-    // Dynamic uses all.
-    d->slotted = m_type == Dynamic;
+    // Have QMTL_FRAMES_IN_FLIGHT versions regardless of the type, for now.
+    // This is because writing to a Managed buffer (which is what Immutable and
+    // Static maps to on macOS) is not safe when another frame reading from the
+    // same buffer is still in flight.
+    d->slotted = !m_usage.testFlag(QRhiBuffer::StorageBuffer); // except for SSBOs written in the shader
 
     QRHI_RES_RHI(QRhiMetal);
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
