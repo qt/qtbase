@@ -63,6 +63,20 @@ SET(CMAKE_INSTALL_RPATH "${_default_install_rpath}" CACHE PATH "RPATH for instal
 # which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+function(qt_setup_tool_path_command)
+    if(NOT WIN32)
+        return()
+    endif()
+    set(bindir "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
+    file(TO_NATIVE_PATH "${bindir}" bindir)
+    list(APPEND command "${CMAKE_COMMAND}")
+    list(APPEND command -E)
+    list(APPEND command env)
+    list(APPEND command set \"PATH=${bindir}$<SEMICOLON>%PATH%\")
+    set(QT_TOOL_PATH_SETUP_COMMAND "${command}" CACHE INTERNAL "internal command prefix for tool invocations" FORCE)
+endfunction()
+qt_setup_tool_path_command()
+
 # Platform define path, etc.
 set(QT_QMAKE_TARGET_MKSPEC "")
 if(WIN32)
