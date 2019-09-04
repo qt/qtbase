@@ -36,6 +36,7 @@ class tst_QSplashScreen : public QObject
 
 private slots:
     void checkCloseTime();
+    void checkScreenConstructor();
 };
 
 class CloseEventSplash : public QSplashScreen
@@ -67,6 +68,17 @@ void tst_QSplashScreen::checkCloseTime()
     // it can't have been exposed
     QVERIFY(w.windowHandle());
     QVERIFY(w.windowHandle()->isExposed());
+}
+
+void tst_QSplashScreen::checkScreenConstructor()
+{
+    for (const auto screen : QGuiApplication::screens()) {
+        QSplashScreen splash(screen);
+        splash.show();
+        QCOMPARE(splash.screen(), screen);
+        QVERIFY(splash.windowHandle());
+        QCOMPARE(splash.windowHandle()->screen(), screen);
+    }
 }
 
 QTEST_MAIN(tst_QSplashScreen)
