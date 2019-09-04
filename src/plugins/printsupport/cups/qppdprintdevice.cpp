@@ -40,13 +40,11 @@
 #include "qppdprintdevice.h"
 
 #include "qcupsprintersupport_p.h"
+#include "private/qcups_p.h" // Only needed for PDPK_*
 
 #if QT_CONFIG(mimetype)
 #include <QtCore/QMimeDatabase>
 #endif
-#include <qdebug.h>
-
-#include "private/qcups_p.h" // Only needed for PDPK_*
 
 #ifndef QT_LINUXBASE // LSB merges everything into cups.h
 #include <cups/language.h>
