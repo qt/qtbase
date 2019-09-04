@@ -51,6 +51,8 @@
 #include <QtCore/QString>
 #include <QtCore/private/qeventdispatcher_winrt_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QWinRTUiAutomation;
@@ -212,10 +214,9 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaTextRangeProvider::GetBoundingRectangles(UINT
     auto accid = id();
     auto startOffset = m_startOffset;
     auto endOffset = m_endOffset;
-    auto rects = QSharedPointer<QList<QRect>>(new QList<QRect>);
-    auto ptrRects = new QSharedPointer<QList<QRect>>(rects);
+    auto rects = std::make_shared<QVarLengthArray<QRect>>();
 
-    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, startOffset, endOffset, ptrRects]() {
+    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, startOffset, endOffset, rects]() {
         if (QAccessibleInterface *accessible = accessibleForId(accid)) {
             if (QAccessibleTextInterface *textInterface = accessible->textInterface()) {
                 int len = textInterface->characterCount();
@@ -233,7 +234,7 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaTextRangeProvider::GetBoundingRectangles(UINT
                                                  qMin(startRect.y(), endRect.y()),
                                                  qMax(startRect.x() + startRect.width(), endRect.x() + endRect.width()) - qMin(startRect.x(), endRect.x()),
                                                  qMax(startRect.y() + startRect.height(), endRect.y() + endRect.height()) - qMin(startRect.y(), endRect.y()));
-                            (*ptrRects)->append(lineRect);
+                            rects->append(lineRect);
                         }
                         if (end >= len) break;
                         textInterface->textAfterOffset(end + 1, QAccessible::LineBoundary, &start, &end);
@@ -241,7 +242,6 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaTextRangeProvider::GetBoundingRectangles(UINT
                 }
             }
         }
-        delete ptrRects;
         return S_OK;
     }))) {
         return E_FAIL;
@@ -251,11 +251,12 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaTextRangeProvider::GetBoundingRectangles(UINT
     if (!doubleArray)
         return E_OUTOFMEMORY;
 
-    for (int i = 0; i < rects->size(); ++i) {
-        doubleArray[i*4] = (*rects)[i].left();
-        doubleArray[i*4+1] = (*rects)[i].top();
-        doubleArray[i*4+2] = (*rects)[i].width();
-        doubleArray[i*4+3] = (*rects)[i].height();
+    DOUBLE *dst = doubleArray;
+    for (auto rect : *rects) {
+        *dst++ = rect.left();
+        *dst++ = rect.top();
+        *dst++ = rect.width();
+        *dst++ = rect.height();
     }
     *returnValue = doubleArray;
     *returnValueSize = 4 * rects->size();
