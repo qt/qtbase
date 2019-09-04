@@ -36,7 +36,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QString project_builtin_regx() //calculate the builtin regular expression..
+static QString project_builtin_regx() //calculate the builtin regular expression..
 {
     QString ret;
     QStringList builtin_exts;

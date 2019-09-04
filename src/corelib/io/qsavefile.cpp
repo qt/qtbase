@@ -243,9 +243,15 @@ bool QSaveFile::open(OpenMode mode)
         return false;
     };
 
+    bool requiresDirectWrite = false;
 #ifdef Q_OS_WIN
     // check if it is an Alternate Data Stream
-    if (d->finalFileName == d->fileName && d->fileName.indexOf(QLatin1Char(':'), 2) > 1) {
+    requiresDirectWrite = d->finalFileName == d->fileName && d->fileName.indexOf(QLatin1Char(':'), 2) > 1;
+#elif defined(Q_OS_ANDROID)
+    // check if it is a content:// URL
+    requiresDirectWrite  = d->fileName.startsWith(QLatin1String("content://"));
+#endif
+    if (requiresDirectWrite) {
         // yes, we can't rename onto it...
         if (d->directWriteFallback) {
             if (openDirectly())
@@ -254,14 +260,12 @@ bool QSaveFile::open(OpenMode mode)
             d->fileEngine.reset();
         } else {
             QString msg =
-                    QSaveFile::tr("QSaveFile cannot open '%1' without direct write fallback "
-                                  "enabled: path contains an Alternate Data Stream specifier")
-                    .arg(QDir::toNativeSeparators(d->fileName));
+                    QSaveFile::tr("QSaveFile cannot open '%1' without direct write fallback enabled.")
+                     .arg(QDir::toNativeSeparators(d->fileName));
             d->setError(QFileDevice::OpenError, msg);
         }
         return false;
     }
-#endif
 
     d->fileEngine.reset(new QTemporaryFileEngine(&d->finalFileName, QTemporaryFileEngine::Win32NonShared));
     // if the target file exists, we'll copy its permissions below,

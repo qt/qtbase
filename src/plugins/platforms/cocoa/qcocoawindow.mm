@@ -1262,6 +1262,17 @@ void QCocoaWindow::windowDidChangeScreen()
         currentScreen->requestUpdate();
     }
 }
+/*
+    The window's backing scale factor or color space has changed.
+*/
+void QCocoaWindow::windowDidChangeBackingProperties()
+{
+    // Ideally we would plumb this thought QPA in a way that lets clients
+    // invalidate their own caches, and recreate QBackingStore. For now we
+    // trigger an expose, and let QCocoaBackingStore deal with its own
+    // buffer invalidation.
+    [m_view setNeedsDisplay:YES];
+}
 
 void QCocoaWindow::windowWillClose()
 {
@@ -1648,21 +1659,6 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
     m_windowModality = QPlatformWindow::window()->modality();
 
     applyContentBorderThickness(nsWindow);
-
-    // Prevent CoreGraphics RGB32 -> RGB64 backing store conversions on deep color
-    // displays by forcing 8-bit components, unless a deep color format has been
-    // requested. This conversion uses significant CPU time.
-    QSurface::SurfaceType surfaceType = QPlatformWindow::window()->surfaceType();
-    bool usesCoreGraphics = surfaceType == QSurface::RasterSurface || surfaceType == QSurface::RasterGLSurface;
-    QSurfaceFormat surfaceFormat = QPlatformWindow::window()->format();
-    bool usesDeepColor = surfaceFormat.redBufferSize() > 8 ||
-                         surfaceFormat.greenBufferSize() > 8 ||
-                         surfaceFormat.blueBufferSize() > 8;
-    bool usesLayer = view().layer;
-    if (usesCoreGraphics && !usesDeepColor && !usesLayer) {
-        [nsWindow setDynamicDepthLimit:NO];
-        [nsWindow setDepthLimit:NSWindowDepthTwentyfourBitRGB];
-    }
 
     if (format().colorSpace() == QSurfaceFormat::sRGBColorSpace)
         nsWindow.colorSpace = NSColorSpace.sRGBColorSpace;

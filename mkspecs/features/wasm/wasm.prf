@@ -6,16 +6,6 @@ exists($$QMAKE_QT_CONFIG) {
     qtConfig(thread) {
 
         EMCC_THREAD_LFLAGS += -s USE_PTHREADS=1
-        # Hardcode wasm memory size. Emscripten does not currently support memory growth
-        # (ALLOW_MEMORY_GROWTH) in pthreads mode, and requires specifying the memory size
-        # at build time. Further, browsers limit the maximum initial memory size to 1GB.
-        TOTAL_MEMORY = 1GB
-        !isEmpty(QMAKE_WASM_TOTAL_MEMORY) {
-            TOTAL_MEMORY = $$QMAKE_WASM_TOTAL_MEMORY
-        }
-
-        message("Setting TOTAL_MEMORY to" $$TOTAL_MEMORY)
-        EMCC_THREAD_LFLAGS += -s TOTAL_MEMORY=$$TOTAL_MEMORY
 
         # Create worker threads at startup. This is supposed to be an optimization,
         # however exceeding the pool size has been obesverved to hang the application.
@@ -28,6 +18,20 @@ exists($$QMAKE_QT_CONFIG) {
         EMCC_THREAD_LFLAGS += -s PTHREAD_POOL_SIZE=$$POOL_SIZE
     } else {
         EMCC_THREAD_LFLAGS += -s ALLOW_MEMORY_GROWTH=1
+    }
+
+     qtConfig(thread) | !isEmpty(QMAKE_WASM_TOTAL_MEMORY) {
+
+            # Hardcode wasm memory size. Emscripten does not currently support memory growth
+            # (ALLOW_MEMORY_GROWTH) in pthreads mode, and requires specifying the memory size
+            # at build time. Further, browsers limit the maximum initial memory size to 1GB.
+            # QMAKE_WASM_TOTAL_MEMORY must be a multiple of 64KB
+            TOTAL_MEMORY = 1GB
+            !isEmpty(QMAKE_WASM_TOTAL_MEMORY) {
+                TOTAL_MEMORY = $$QMAKE_WASM_TOTAL_MEMORY
+            }
+            message("Setting TOTAL_MEMORY to" $$TOTAL_MEMORY)
+            EMCC_THREAD_LFLAGS += -s TOTAL_MEMORY=$$TOTAL_MEMORY
     }
     QMAKE_LFLAGS       += $$EMCC_THREAD_LFLAGS
     QMAKE_LFLAGS_DEBUG += $$EMCC_THREAD_LFLAGS
