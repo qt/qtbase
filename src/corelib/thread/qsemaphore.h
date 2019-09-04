@@ -80,8 +80,7 @@ public:
     explicit QSemaphoreReleaser(QSemaphore *sem, int n = 1) noexcept
         : m_sem(sem), m_n(n) {}
     QSemaphoreReleaser(QSemaphoreReleaser &&other) noexcept
-        : m_sem(other.m_sem), m_n(other.m_n)
-    { other.m_sem = nullptr; }
+        : m_sem(other.cancel()), m_n(other.m_n) {}
     QSemaphoreReleaser &operator=(QSemaphoreReleaser &&other) noexcept
     { QSemaphoreReleaser moved(std::move(other)); swap(moved); return *this; }
 
@@ -102,9 +101,7 @@ public:
 
     QSemaphore *cancel() noexcept
     {
-        QSemaphore *old = m_sem;
-        m_sem = nullptr;
-        return old;
+        return qExchange(m_sem, nullptr);
     }
 
 private:
