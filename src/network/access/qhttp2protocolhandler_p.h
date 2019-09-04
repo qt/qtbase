@@ -90,6 +90,8 @@ public:
     QHttp2ProtocolHandler &operator = (const QHttp2ProtocolHandler &rhs) = delete;
     QHttp2ProtocolHandler &operator = (QHttp2ProtocolHandler &&rhs) = delete;
 
+    Q_INVOKABLE void handleConnectionClosure();
+
 private slots:
     void _q_uploadDataReadyRead();
     void _q_replyDestroyed(QObject* reply);
