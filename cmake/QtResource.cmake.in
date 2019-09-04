@@ -98,10 +98,10 @@ function(__qt_quick_compiler_process_resources target resource_name)
             set(compiled_file "${CMAKE_CURRENT_BINARY_DIR}/qmlcache/${resource_name}/${compiled_file}.cpp")
             add_custom_command(
                 OUTPUT ${compiled_file}
-                DEPENDS ${file_absolute} @QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen
+                DEPENDS ${file_absolute}
+                ${QT_TOOL_PATH_SETUP_COMMAND}
                 COMMAND
-                    ${QT_TOOL_PATH_SETUP_COMMAND}
-                    $<TARGET_FILE:@QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen>
+                    @QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen
                     --resource-path ${file_resource_path}
                     -o ${compiled_file}
                     ${file_absolute}
@@ -132,10 +132,10 @@ function(__qt_quick_compiler_process_resources target resource_name)
 
         add_custom_command(
             OUTPUT ${qmlcache_loader_file}
-            DEPENDS ${qmlcache_loader_list} @QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen
+            DEPENDS ${qmlcache_loader_list}
+            ${QT_TOOL_PATH_SETUP_COMMAND}
             COMMAND
-                ${QT_TOOL_PATH_SETUP_COMMAND}
-                $<TARGET_FILE:@QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen>
+                @QT_CMAKE_EXPORT_NAMESPACE@::qmlcachegen
                 ${retained_args}
                 --resource-name "${resource_name_arg}"
                 -o ${qmlcache_loader_file}
