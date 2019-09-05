@@ -57,6 +57,9 @@
 #ifdef Q_OS_WIN
 #  include <QtCore/QVarLengthArray>
 #  include <qt_windows.h>
+#  ifndef Q_OS_WINRT
+#      include <shlobj.h>
+#  endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -837,8 +840,8 @@ QString QFileSystemModelPrivate::displayName(const QModelIndex &index) const
 {
 #if defined(Q_OS_WIN)
     QFileSystemNode *dirNode = node(index);
-    if (!dirNode->volumeName.isNull())
-        return dirNode->volumeName + QLatin1String(" (") + name(index) + QLatin1Char(')');
+    if (!dirNode->volumeName.isEmpty())
+        return dirNode->volumeName;
 #endif
     return name(index);
 }
@@ -1773,6 +1776,27 @@ void QFileSystemModelPrivate::_q_directoryChanged(const QString &directory, cons
         removeNode(parentNode, toRemove[i]);
 }
 
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
+static QString volumeName(const QString &path)
+{
+    IShellItem *item = nullptr;
+    const QString native = QDir::toNativeSeparators(path);
+    HRESULT hr = SHCreateItemFromParsingName(reinterpret_cast<const wchar_t *>(native.utf16()),
+                                             nullptr, IID_IShellItem,
+                                             reinterpret_cast<void **>(&item));
+    if (FAILED(hr))
+        return QString();
+    LPWSTR name = nullptr;
+    hr = item->GetDisplayName(SIGDN_NORMALDISPLAY, &name);
+    if (FAILED(hr))
+        return QString();
+    QString result = QString::fromWCharArray(name);
+    CoTaskMemFree(name);
+    item->Release();
+    return result;
+}
+#endif // Q_OS_WIN && !Q_OS_WINRT
+
 /*!
     \internal
 
@@ -1791,15 +1815,8 @@ QFileSystemModelPrivate::QFileSystemNode* QFileSystemModelPrivate::addNode(QFile
 #endif
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     //The parentNode is "" so we are listing the drives
-    if (parentNode->fileName.isEmpty()) {
-        wchar_t name[MAX_PATH + 1];
-        //GetVolumeInformation requires to add trailing backslash
-        const QString nodeName = fileName + QLatin1String("\\");
-        BOOL success = ::GetVolumeInformation((wchar_t *)(nodeName.utf16()),
-                name, MAX_PATH + 1, NULL, 0, NULL, NULL, 0);
-        if (success && name[0])
-            node->volumeName = QString::fromWCharArray(name);
-    }
+    if (parentNode->fileName.isEmpty())
+        node->volumeName = volumeName(fileName);
 #endif
     Q_ASSERT(!parentNode->children.contains(fileName));
     parentNode->children.insert(fileName, node);
