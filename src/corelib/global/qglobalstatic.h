@@ -98,6 +98,7 @@ enum GuardValues {
 
 QT_END_NAMESPACE
 #include <QtCore/qmutex.h>
+#include <mutex>
 QT_BEGIN_NAMESPACE
 
 #define Q_GLOBAL_STATIC_INTERNAL(ARGS)                                  \
@@ -107,7 +108,7 @@ QT_BEGIN_NAMESPACE
         static QBasicMutex mutex;                                       \
         int x = guard.loadAcquire();                                    \
         if (Q_UNLIKELY(x >= QtGlobalStatic::Uninitialized)) {           \
-            QMutexLocker locker(&mutex);                                \
+            const std::lock_guard<QBasicMutex> locker(mutex);           \
             if (guard.loadRelaxed() == QtGlobalStatic::Uninitialized) {        \
                 d = new Type ARGS;                                      \
                 static struct Cleanup {                                 \

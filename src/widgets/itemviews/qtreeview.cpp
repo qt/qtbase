@@ -1943,6 +1943,7 @@ void QTreeView::mouseDoubleClickEvent(QMouseEvent *event)
         if (!style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, 0, this))
             emit activated(persistent);
 
+        d->pressedIndex = QModelIndex();
         d->executePostedLayout(); // we need to make sure viewItems is updated
         if (d->itemsExpandable
             && d->expandsOnDoubleClick
@@ -2173,35 +2174,6 @@ QModelIndex QTreeView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
         return QModelIndex();
     }
     int vi = -1;
-#if 0 /* Used to be included in Qt4 for Q_WS_MAC */ && QT_CONFIG(style_mac)
-    // Selection behavior is slightly different on the Mac.
-    if (d->selectionMode == QAbstractItemView::ExtendedSelection
-        && d->selectionModel
-        && d->selectionModel->hasSelection()) {
-
-        const bool moveUpDown = (cursorAction == MoveUp || cursorAction == MoveDown);
-        const bool moveNextPrev = (cursorAction == MoveNext || cursorAction == MovePrevious);
-        const bool contiguousSelection = moveUpDown && (modifiers & Qt::ShiftModifier);
-
-        // Use the outermost index in the selection as the current index
-        if (!contiguousSelection && (moveUpDown || moveNextPrev)) {
-
-            // Find outermost index.
-            const bool useTopIndex = (cursorAction == MoveUp || cursorAction == MovePrevious);
-            int index = useTopIndex ? INT_MAX : INT_MIN;
-            const QItemSelection selection = d->selectionModel->selection();
-            for (int i = 0; i < selection.count(); ++i) {
-                const QItemSelectionRange &range = selection.at(i);
-                int candidate = d->viewIndex(useTopIndex ? range.topLeft() : range.bottomRight());
-                if (candidate >= 0)
-                    index = useTopIndex ? qMin(index, candidate) : qMax(index, candidate);
-            }
-
-            if (index >= 0 && index < INT_MAX)
-                vi = index;
-        }
-    }
-#endif
     if (vi < 0)
         vi = qMax(0, d->viewIndex(current));
 

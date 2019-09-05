@@ -85,9 +85,7 @@ public:
     QWidget *viewport;
     QWidget *cornerWidget;
     QRect cornerPaintingRect;
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    QRect reverseCornerPaintingRect;
-#endif
+
     int left, top, right, bottom; // viewport margin
 
     int xoffset, yoffset;
@@ -112,11 +110,6 @@ public:
     inline bool viewportEvent(QEvent *event)
     { return q_func()->viewportEvent(event); }
     QScopedPointer<QObject> viewportFilter;
-
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-    bool singleFingerPanEnabled;
-    void setSingleFingerPanEnabled(bool on = true);
-#endif
 };
 
 class QAbstractScrollAreaFilter : public QObject

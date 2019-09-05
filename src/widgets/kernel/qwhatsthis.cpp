@@ -577,26 +577,12 @@ void QWhatsThisPrivate::say(QWidget * widget, const QString &text, int x, int y)
     if (text.size() == 0)
         return;
     // make a fresh widget, and set it up
-    QWhatsThat *whatsThat = new QWhatsThat(
-        text,
-#if 0 /* Used to be included in Qt4 for Q_WS_X11 */ && !defined(QT_NO_CURSOR)
-        QApplication::desktop()->screen(widget ? widget->x11Info().screen() : QCursor::x11Screen()),
-#else
-        0,
-#endif
-        widget
-       );
-
+    QWhatsThat *whatsThat = new QWhatsThat(text, 0, widget);
 
     // okay, now to find a suitable location
-
     int scr = (widget ?
                 QDesktopWidgetPrivate::screenNumber(widget) :
-#if 0 /* Used to be included in Qt4 for Q_WS_X11 */ && !defined(QT_NO_CURSOR)
-                QCursor::x11Screen()
-#else
                 QDesktopWidgetPrivate::screenNumber(QPoint(x,y))
-#endif
                );
     QRect screen = QDesktopWidgetPrivate::screenGeometry(scr);
 

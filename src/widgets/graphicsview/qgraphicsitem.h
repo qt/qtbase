@@ -110,8 +110,10 @@ public:
 
     enum GraphicsItemChange {
         ItemPositionChange,
-        ItemMatrixChange,
-        ItemVisibleChange,
+#if QT_DEPRECATED_SINCE(5, 14)
+        ItemMatrixChange Q_DECL_ENUMERATOR_DEPRECATED_X("Use ItemTransformChange instead"),
+#endif
+        ItemVisibleChange = 2,
         ItemEnabledChange,
         ItemSelectedChange,
         ItemParentChange,

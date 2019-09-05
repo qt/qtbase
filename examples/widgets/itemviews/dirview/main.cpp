@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
     if (parser.isSet(dontUseCustomDirectoryIconsOption))
         model.setOption(QFileSystemModel::DontUseCustomDirectoryIcons);
     if (parser.isSet(dontWatchOption))
-        model.setOption(QFileSystemModel::DontWatch);
+        model.setOption(QFileSystemModel::DontWatchForChanges);
     QTreeView tree;
     tree.setModel(&model);
     if (!rootPath.isEmpty()) {

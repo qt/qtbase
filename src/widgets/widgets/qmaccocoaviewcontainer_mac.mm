@@ -82,8 +82,32 @@
 
     The following is a snippet showing how to subclass QMacCocoaViewContainer
     to wrap an NSSearchField.
-    \snippet macmainwindow.mm 0
 
+    \code
+        SearchWidget::SearchWidget(QWidget *parent)
+        : QMacCocoaViewContainer(0, parent)
+        {
+            // Many Cocoa objects create temporary autorelease objects,
+            // so create a pool to catch them.
+            NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+
+            // Create the NSSearchField, set it on the QCocoaViewContainer.
+            NSSearchField *search = [[NSSearchField alloc] init];
+            setCocoaView(search);
+
+            // Use a Qt menu for the search field menu.
+            QMenu *qtMenu = createMenu(this);
+            NSMenu *nsMenu = qtMenu->macMenu(0);
+            [[search cell] setSearchMenuTemplate:nsMenu];
+
+            // Release our reference, since our super class takes ownership and we
+            // don't need it anymore.
+            [search release];
+
+            // Clean up our pool as we no longer need it.
+            [pool release];
+        }
+    \endcode
 */
 
 QT_BEGIN_NAMESPACE

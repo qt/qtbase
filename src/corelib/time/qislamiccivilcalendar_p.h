@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,36 +37,40 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#ifndef QISLAMIC_CIVIL_CALENDAR_P_H
+#define QISLAMIC_CIVIL_CALENDAR_P_H
 
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of calendar implementations.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#import <AppKit/AppKit.h>
+#include "qhijricalendar_p.h"
 
-#include "qscroller_p.h"
+QT_REQUIRE_CONFIG(islamiccivilcalendar);
 
 QT_BEGIN_NAMESPACE
 
-QPointF QScrollerPrivate::realDpi(int screen) const
+class Q_CORE_EXPORT QIslamicCivilCalendar : public QHijriCalendar
 {
-    QMacAutoReleasePool pool;
-    NSArray *nsscreens = [NSScreen screens];
-
-    if (screen < 0 || screen >= int([nsscreens count]))
-        screen = 0;
-
-    NSScreen *nsscreen = [nsscreens objectAtIndex:screen];
-    CGDirectDisplayID display = [[[nsscreen deviceDescription] objectForKey:@"NSScreenNumber"] intValue];
-
-    CGSize mmsize = CGDisplayScreenSize(display);
-    if (mmsize.width > 0 && mmsize.height > 0) {
-        return QPointF(CGDisplayPixelsWide(display) / mmsize.width,
-                       CGDisplayPixelsHigh(display) / mmsize.height) * qreal(25.4);
-    } else {
-        return QPointF();
-    }
-}
+public:
+    QIslamicCivilCalendar();
+    // Calendar properties:
+    QString name() const override;
+    QCalendar::System calendarSystem() const override;
+    // Date queries:
+    bool isLeapYear(int year) const override;
+    // Julian Day conversions:
+    bool dateToJulianDay(int year, int month, int day, qint64 *jd) const override;
+    QCalendar::YearMonthDay julianDayToDate(qint64 jd) const override;
+};
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QISLAMIC_CIVIL_CALENDAR_P_H

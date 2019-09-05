@@ -37,10 +37,12 @@
 #include <QPushButton>
 #include <QButtonGroup>
 #include <QLineEdit>
+#include <QPlainTextEdit>
 #include <QScrollBar>
 #include <QSlider>
 #include <QSpinBox>
 #include <QTabBar>
+#include <QTextBrowser>
 #include <QIcon>
 #include <QPainter>
 #include <QWindow>
@@ -55,8 +57,15 @@
 #include <QCommandLineOption>
 #include <QDebug>
 #include <private/qhighdpiscaling_p.h>
+#include <qpa/qplatformscreen.h>
 
 #include "dragwidget.h"
+
+static QTextStream &operator<<(QTextStream &str, const QRect &r)
+{
+    str << r.width() << 'x' << r.height() << forcesign << r.x() << r.y() << noforcesign;
+    return str;
+}
 
 class DemoContainerBase
 {
@@ -1176,6 +1185,85 @@ public:
     }
 };
 
+class MetricsTest : public QWidget
+{
+    QPlainTextEdit *m_textEdit;
+
+public:
+    MetricsTest()
+    {
+        qDebug() << R"(
+MetricsTest
+Relevant environment variables are:
+QT_FONT_DPI=N
+QT_SCALE_FACTOR=n
+QT_ENABLE_HIGHDPI_SCALING=0|1
+QT_USE_PHYSICAL_DPI=0|1
+QT_SCREEN_SCALE_FACTORS=N;N;N or QT_SCREEN_SCALE_FACTORS=name:N
+QT_SCALE_FACTOR_ROUNDING_POLICY=Round|Ceil|Floor|RoundPreferFloor|PassThrough
+QT_DPI_ADJUSTMENT_POLICY=AdjustDpi|DontAdjustDpi|AdjustUpOnly)";
+
+        resize(480, 360);
+
+        QVBoxLayout *layout = new QVBoxLayout();
+        setLayout(layout);
+
+        m_textEdit = new QPlainTextEdit;
+        m_textEdit->setReadOnly(true);
+        layout->addWidget(m_textEdit);
+    }
+
+    void updateMetrics()
+    {
+        QString text;
+        QTextStream str(&text);
+
+        auto currentScreen = windowHandle()->screen();
+        const auto screens = QGuiApplication::screens();
+        for (int i = 0, size = screens.size(); i < size; ++i) {
+            auto screen = screens.at(i);
+            auto platformScreen = screen->handle();
+            str << "Screen #" << i << " \"" << screen->name() << '"';
+            if (screen == currentScreen)
+                str << " [current]";
+            if (screen == QGuiApplication::primaryScreen())
+                str << " [primary]";
+            str << "\n  screen geometry: " << screen->geometry()
+                << "\n  platform screen geometry: " << platformScreen->geometry()
+                << "\n  platform screen logicalDpi: " << platformScreen->logicalDpi().first;
+
+#ifdef HAVE_SCREEN_BASE_DPI
+            str << "\n  platform screen logicalBaseDpi: " << platformScreen->logicalBaseDpi().first;
+#endif
+            str << "\n  platform screen devicePixelRatio: " <<platformScreen->devicePixelRatio()
+                << "\n  platform screen physicalDpi: " << screen->physicalDotsPerInch()
+                << "\n\n";
+        }
+
+        str << "widget devicePixelRatio: " << this->devicePixelRatioF()
+            << "\nwidget logicalDpi: " << this->logicalDpiX()
+            << "\n\nQT_FONT_DPI: " << qgetenv("QT_FONT_DPI")
+            << "\nQT_SCALE_FACTOR: " << qgetenv("QT_SCALE_FACTOR")
+            << "\nQT_ENABLE_HIGHDPI_SCALING: " << qgetenv("QT_ENABLE_HIGHDPI_SCALING")
+            << "\nQT_SCREEN_SCALE_FACTORS: " << qgetenv("QT_SCREEN_SCALE_FACTORS")
+            << "\nQT_USE_PHYSICAL_DPI: " << qgetenv("QT_USE_PHYSICAL_DPI")
+            << "\nQT_SCALE_FACTOR_ROUNDING_POLICY: " << qgetenv("QT_SCALE_FACTOR_ROUNDING_POLICY")
+            << "\nQT_DPI_ADJUSTMENT_POLICY: " << qgetenv("QT_DPI_ADJUSTMENT_POLICY")
+            << '\n';
+
+        m_textEdit->setPlainText(text);
+    }
+
+    void paintEvent(QPaintEvent *ev)
+    {
+        // We get a paint event on screen change, so this is a convenient place
+        // to update the metrics, at the possible risk of doing something else
+        // than painting in a paint event.
+        updateMetrics();
+        QWidget::paintEvent(ev);
+    }
+};
+
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
@@ -1212,6 +1300,7 @@ int main(int argc, char **argv)
     demoList << new DemoContainer<ScreenDisplayer>("screens", "Test screen and window positioning");
     demoList << new DemoContainer<PhysicalSizeTest>("physicalsize", "Test manual highdpi support using physicalDotsPerInch");
     demoList << new DemoContainer<GraphicsViewCaching>("graphicsview", "Test QGraphicsView caching");
+    demoList << new DemoContainer<MetricsTest>("metrics", "Show display metrics");
 
     foreach (DemoContainerBase *demo, demoList)
         parser.addOption(demo->option());

@@ -595,7 +595,9 @@ QHostInfo::QHostInfo(const QHostInfo &other)
 }
 
 /*!
-    Move-constucts a new QHostInfo from \a other.
+    \fn QHostInfo(QHostInfo &&other)
+
+    Move-constructs a new QHostInfo from \a other.
 
     \note The moved-from object \a other is placed in a
     partially-formed state, in which the only valid operations are

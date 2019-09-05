@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -52,6 +52,7 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include <QtCore/qcalendar.h>
 #include "QtWidgets/qcalendarwidget.h"
 #include "QtWidgets/qspinbox.h"
 #include "QtWidgets/qtoolbutton.h"
@@ -70,7 +71,6 @@ class Q_AUTOTEST_EXPORT QDateTimeEditPrivate : public QAbstractSpinBoxPrivate, p
     Q_DECLARE_PUBLIC(QDateTimeEdit)
 public:
     QDateTimeEditPrivate();
-    ~QDateTimeEditPrivate();
 
     void init(const QVariant &var);
     void readLocaleSettings();
@@ -145,21 +145,22 @@ class QCalendarPopup : public QWidget
 {
     Q_OBJECT
 public:
-    explicit QCalendarPopup(QWidget *parent = nullptr, QCalendarWidget *cw = nullptr);
+    explicit QCalendarPopup(QWidget *parent = nullptr, QCalendarWidget *cw = nullptr,
+                            QCalendar ca = QCalendar());
     QDate selectedDate() { return verifyCalendarInstance()->selectedDate(); }
-    void setDate(const QDate &date);
-    void setDateRange(const QDate &min, const QDate &max);
+    void setDate(QDate date);
+    void setDateRange(QDate min, QDate max);
     void setFirstDayOfWeek(Qt::DayOfWeek dow) { verifyCalendarInstance()->setFirstDayOfWeek(dow); }
     QCalendarWidget *calendarWidget() const { return const_cast<QCalendarPopup*>(this)->verifyCalendarInstance(); }
     void setCalendarWidget(QCalendarWidget *cw);
 Q_SIGNALS:
-    void activated(const QDate &date);
-    void newDateSelected(const QDate &newDate);
-    void hidingCalendar(const QDate &oldDate);
+    void activated(QDate date);
+    void newDateSelected(QDate newDate);
+    void hidingCalendar(QDate oldDate);
     void resetButton();
 
 private Q_SLOTS:
-    void dateSelected(const QDate &date);
+    void dateSelected(QDate date);
     void dateSelectionChanged();
 
 protected:
@@ -174,6 +175,7 @@ private:
     QPointer<QCalendarWidget> calendar;
     QDate oldDate;
     bool dateChanged;
+    QCalendar calendarSystem;
 };
 
 QT_END_NAMESPACE

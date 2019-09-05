@@ -42,7 +42,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QShader
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Contains multiple versions of a shader translated to multiple shading languages,
     together with reflection metadata.
@@ -134,7 +135,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QShaderVersion
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Specifies the shading language version.
 
@@ -171,7 +173,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QShaderKey
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Specifies the shading language, the version with flags, and the variant.
 
@@ -202,7 +205,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QShaderCode
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Contains source or binary code for a shader and additional metadata.
 
@@ -446,7 +450,7 @@ QShaderKey::QShaderKey(QShader::Source s,
 }
 
 /*!
-    Returns \c true if the two QShader objects \a a and \a b are equal,
+    Returns \c true if the two QShader objects \a lhs and \a rhs are equal,
     meaning they are for the same stage with matching sets of shader source or
     binary code.
 
@@ -482,7 +486,7 @@ uint qHash(const QShader &s, uint seed) Q_DECL_NOTHROW
 }
 
 /*!
-    Returns \c true if the two QShaderVersion objects \a a and \a b are
+    Returns \c true if the two QShaderVersion objects \a lhs and \a rhs are
     equal.
 
     \relates QShaderVersion
@@ -502,7 +506,7 @@ bool operator==(const QShaderVersion &lhs, const QShaderVersion &rhs) Q_DECL_NOT
  */
 
 /*!
-    Returns \c true if the two QShaderKey objects \a a and \a b are equal.
+    Returns \c true if the two QShaderKey objects \a lhs and \a rhs are equal.
 
     \relates QShaderKey
  */
@@ -532,7 +536,7 @@ uint qHash(const QShaderKey &k, uint seed) Q_DECL_NOTHROW
 }
 
 /*!
-    Returns \c true if the two QShaderCode objects \a a and \a b are equal.
+    Returns \c true if the two QShaderCode objects \a lhs and \a rhs are equal.
 
     \relates QShaderCode
  */

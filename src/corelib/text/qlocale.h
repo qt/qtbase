@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
+class QCalendar;
 class QDataStream;
 class QDate;
 class QDateTime;
@@ -1013,6 +1013,14 @@ public:
     QString toString(const QDate &date, FormatType format = LongFormat) const;
     QString toString(const QTime &time, FormatType format = LongFormat) const;
     QString toString(const QDateTime &dateTime, FormatType format = LongFormat) const;
+    /* Removing default value for `format' is done intentionally,
+     * after all tests we will remove non-calendar-aware version of these functions,
+     * and add a default value for both calendar instance, and format
+     */
+    QString toString(const QDate &date, QStringView formatStr, QCalendar cal) const;
+    QString toString(const QDate &date, FormatType format, QCalendar cal) const;
+    QString toString(const QDateTime &dateTime, FormatType format, QCalendar cal) const;
+    QString toString(const QDateTime &dateTime, QStringView formatStr, QCalendar cal) const;
 
     QString dateFormat(FormatType format = LongFormat) const;
     QString timeFormat(FormatType format = LongFormat) const;
@@ -1024,6 +1032,13 @@ public:
     QDate toDate(const QString &string, const QString &format) const;
     QTime toTime(const QString &string, const QString &format) const;
     QDateTime toDateTime(const QString &string, const QString &format) const;
+    // Calendar-aware API
+    QDate toDate(const QString &string, FormatType format, QCalendar cal) const;
+    QTime toTime(const QString &string, FormatType format, QCalendar cal) const;
+    QDateTime toDateTime(const QString &string, FormatType format, QCalendar cal) const;
+    QDate toDate(const QString &string, const QString &format, QCalendar cal) const;
+    QTime toTime(const QString &string, const QString &format, QCalendar cal) const;
+    QDateTime toDateTime(const QString &string, const QString &format, QCalendar cal) const;
 #endif
 
     // ### Qt 5: We need to return QString from these function since
@@ -1108,6 +1123,8 @@ private:
     QLocale(QLocalePrivate &dd);
     friend class QLocalePrivate;
     friend class QSystemLocale;
+    friend class QCalendarBackend;
+    friend class QGregorianCalendar;
     friend Q_CORE_EXPORT uint qHash(const QLocale &key, uint seed) noexcept;
 
     QSharedDataPointer<QLocalePrivate> d;

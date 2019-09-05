@@ -42,6 +42,7 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtCore/qdatetime.h>
+#include <QtCore/qcalendar.h>
 #include <QtCore/qvariant.h>
 #include <QtWidgets/qabstractspinbox.h>
 
@@ -101,6 +102,9 @@ public:
     QDateTime dateTime() const;
     QDate date() const;
     QTime time() const;
+
+    QCalendar calendar() const;
+    void setCalendar(QCalendar calendar);
 
     QDateTime minimumDateTime() const;
     void clearMinimumDateTime();

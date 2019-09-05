@@ -139,7 +139,7 @@ private:
 
     QNetworkConnectionMonitorPrivate *monitor = nullptr;
 
-    QAtomicInteger<ULONG> ref = 1; // start at 1 for our own initial reference
+    QAtomicInteger<ULONG> ref = 0;
     DWORD cookie = 0;
 };
 
@@ -346,6 +346,8 @@ QNetworkConnectionMonitorPrivate::~QNetworkConnectionMonitorPrivate()
 {
     if (comInitFailed)
         return;
+    if (monitoring)
+        stopMonitoring();
     connectionEvents.Reset();
     CoUninitialize();
 }
@@ -496,7 +498,7 @@ private:
 
     QNetworkStatusMonitorPrivate *monitor = nullptr;
 
-    QAtomicInteger<ULONG> ref = 1; // start at 1 for our own initial reference
+    QAtomicInteger<ULONG> ref = 0;
     DWORD cookie = 0;
 };
 

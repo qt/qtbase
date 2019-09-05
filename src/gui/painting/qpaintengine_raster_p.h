@@ -306,7 +306,7 @@ public:
 
     void recalculateFastImages();
     bool canUseFastImageBlending(QPainter::CompositionMode mode, const QImage &image) const;
-    bool canUseImageBlitting(QPainter::CompositionMode mode, const QImage &image) const;
+    bool canUseImageBlitting(QPainter::CompositionMode mode, const QImage &image, const QPointF &pt, const QRectF &sr) const;
 
     QPaintDevice *device;
     QScopedPointer<QOutlineMapper> outlineMapper;

@@ -100,7 +100,7 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
 
 QEventDispatcherWin32Private::QEventDispatcherWin32Private()
     : threadId(GetCurrentThreadId()), interrupt(false), internalHwnd(0),
-      wakeUps(0), activateNotifiersPosted(false),
+      getMessageHook(0), wakeUps(0), activateNotifiersPosted(false),
       winEventNotifierActivatedEvent(NULL)
 {
 }
@@ -245,9 +245,6 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
     case WM_QT_SENDPOSTEDEVENTS:
         Q_ASSERT(d != 0);
 
-        // Allow posting WM_QT_SENDPOSTEDEVENTS message.
-        d->wakeUps.storeRelaxed(0);
-
         // We send posted events manually, if the window procedure was invoked
         // by the foreign event loop (e.g. from the native modal dialog).
         q->sendPostedEvents();
@@ -257,9 +254,9 @@ LRESULT QT_WIN_CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPA
     return DefWindowProc(hwnd, message, wp, lp);
 }
 
-static inline UINT inputTimerMask()
+static inline UINT inputQueueMask()
 {
-    UINT result = QS_TIMER | QS_INPUT | QS_RAWINPUT;
+    UINT result = QS_ALLEVENTS;
     // QTBUG 28513, QTBUG-29097, QTBUG-29435: QS_TOUCH, QS_POINTER became part of
     // QS_INPUT in Windows Kit 8. They should not be used when running on pre-Windows 8.
 #if WINVER > 0x0601
@@ -267,6 +264,25 @@ static inline UINT inputTimerMask()
         result &= ~(QS_TOUCH | QS_POINTER);
 #endif //  WINVER > 0x0601
     return result;
+}
+
+LRESULT QT_WIN_CALLBACK qt_GetMessageHook(int code, WPARAM wp, LPARAM lp)
+{
+    QEventDispatcherWin32 *q = qobject_cast<QEventDispatcherWin32 *>(QAbstractEventDispatcher::instance());
+    Q_ASSERT(q != 0);
+    QEventDispatcherWin32Private *d = q->d_func();
+    MSG *msg = reinterpret_cast<MSG *>(lp);
+    static const UINT mask = inputQueueMask();
+
+    if (HIWORD(GetQueueStatus(mask)) == 0 && wp == PM_REMOVE) {
+        // Allow posting WM_QT_SENDPOSTEDEVENTS message.
+        d->wakeUps.storeRelaxed(0);
+        if (!(msg->hwnd == d->internalHwnd && msg->message == WM_QT_SENDPOSTEDEVENTS)) {
+            PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS,
+                        WMWP_QT_TOFOREIGNLOOP, 0);
+        }
+    }
+    return d->getMessageHook ? CallNextHookEx(0, code, wp, lp) : 0;
 }
 
 // Provide class name and atom for the message window used by
@@ -447,6 +463,14 @@ void QEventDispatcherWin32::createInternalHwnd()
         return;
     d->internalHwnd = qt_create_internal_window(this);
 
+    // setup GetMessage hook needed to drive our posted events
+    d->getMessageHook = SetWindowsHookEx(WH_GETMESSAGE, (HOOKPROC) qt_GetMessageHook, NULL, GetCurrentThreadId());
+    if (Q_UNLIKELY(!d->getMessageHook)) {
+        int errorCode = GetLastError();
+        qFatal("Qt: INTERNAL ERROR: failed to install GetMessage hook: %d, %ls",
+               errorCode, qUtf16Printable(qt_error_string(errorCode)));
+    }
+
     // start all normal timers
     for (int i = 0; i < d->timerVec.count(); ++i)
         d->registerTimer(d->timerVec.at(i));
@@ -499,7 +523,6 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     bool canWait;
     bool retVal = false;
-    bool needWM_QT_SENDPOSTEDEVENTS = false;
     do {
         DWORD waitRet = 0;
         DWORD nCount = 0;
@@ -549,11 +572,8 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             if (haveMessage) {
                 if (d->internalHwnd == msg.hwnd && msg.message == WM_QT_SENDPOSTEDEVENTS) {
                     // Set result to 'true', if the message was sent by wakeUp().
-                    if (msg.wParam == WMWP_QT_FROMWAKEUP) {
-                        d->wakeUps.storeRelaxed(0);
+                    if (msg.wParam == WMWP_QT_FROMWAKEUP)
                         retVal = true;
-                    }
-                    needWM_QT_SENDPOSTEDEVENTS = true;
                     continue;
                 }
                 if (msg.message == WM_TIMER) {
@@ -573,22 +593,10 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
                 }
 
                 if (!filterNativeEvent(QByteArrayLiteral("windows_generic_MSG"), &msg, 0)) {
-                    // Post WM_QT_SENDPOSTEDEVENTS before calling external code,
-                    // as it can start a foreign event loop.
-                    if (needWM_QT_SENDPOSTEDEVENTS) {
-                        needWM_QT_SENDPOSTEDEVENTS = false;
-                        PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS,
-                                    WMWP_QT_TOFOREIGNLOOP, 0);
-                    }
                     TranslateMessage(&msg);
                     DispatchMessage(&msg);
                 }
             } else if (waitRet - WAIT_OBJECT_0 < nCount) {
-                if (needWM_QT_SENDPOSTEDEVENTS) {
-                    needWM_QT_SENDPOSTEDEVENTS = false;
-                    PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS,
-                                WMWP_QT_TOFOREIGNLOOP, 0);
-                }
                 activateEventNotifiers();
             } else {
                 // nothing todo so break
@@ -606,20 +614,11 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             waitRet = MsgWaitForMultipleObjectsEx(nCount, pHandles, INFINITE, QS_ALLINPUT, MWMO_ALERTABLE | MWMO_INPUTAVAILABLE);
             emit awake();
             if (waitRet - WAIT_OBJECT_0 < nCount) {
-                if (needWM_QT_SENDPOSTEDEVENTS) {
-                    needWM_QT_SENDPOSTEDEVENTS = false;
-                    PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS,
-                                WMWP_QT_TOFOREIGNLOOP, 0);
-                }
                 activateEventNotifiers();
                 retVal = true;
             }
         }
     } while (canWait);
-
-    if (needWM_QT_SENDPOSTEDEVENTS)
-        PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS,
-                    WMWP_QT_TOFOREIGNLOOP, 0);
 
     return retVal;
 }
@@ -1004,6 +1003,10 @@ void QEventDispatcherWin32::closingDown()
     d->timerDict.clear();
 
     d->closingDown = true;
+
+    if (d->getMessageHook)
+        UnhookWindowsHookEx(d->getMessageHook);
+    d->getMessageHook = 0;
 }
 
 bool QEventDispatcherWin32::event(QEvent *e)

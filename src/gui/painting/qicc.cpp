@@ -765,10 +765,9 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
             qCDebug(lcIcc) << "fromIccProfile: Description" << colorspaceDPtr->description;
     }
 
-    if (!colorspaceDPtr->identifyColorSpace())
-        colorspaceDPtr->id = QColorSpace::Unknown;
-    else
-        qCDebug(lcIcc) << "fromIccProfile: Named colorspace detected: " << colorSpace->colorSpaceId();
+    colorspaceDPtr->identifyColorSpace();
+    if (colorspaceDPtr->namedColorSpace)
+        qCDebug(lcIcc) << "fromIccProfile: Named colorspace detected: " << QColorSpace::NamedColorSpace(colorspaceDPtr->namedColorSpace);
 
     colorspaceDPtr->iccProfile = data;
 

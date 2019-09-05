@@ -228,6 +228,7 @@ sub classNames {
                 $line .= ";" if($line =~ m/^Q_[A-Z_0-9]*\(.*\)[\r\n]*$/); #qt macro
                 $line .= ";" if($line =~ m/^QT_(BEGIN|END)_HEADER[\r\n]*$/); #qt macro
                 $line .= ";" if($line =~ m/^QT_(BEGIN|END)_NAMESPACE(_[A-Z]+)*[\r\n]*$/); #qt macro
+                $line .= ";" if($line =~ m/^QT_DEPRECATED_X\(.*\)[\r\n]*$/); #qt macro
                 $line .= ";" if($line =~ m/^QT_MODULE\(.*\)[\r\n]*$/); # QT_MODULE macro
                 $line .= ";" if($line =~ m/^QT_WARNING_(PUSH|POP|DISABLE_\w+\(.*\))[\r\n]*$/); # qt macros
                 $$requires = $1 if ($line =~ m/^QT_REQUIRE_CONFIG\((.*)\);[\r\n]*$/);

@@ -250,8 +250,9 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
     if (rect.isEmpty())
         return;
 
-    const int arrowWidth = QStyleHelper::dpiScaled(14);
-    const int arrowHeight = QStyleHelper::dpiScaled(8);
+    const qreal dpi = QStyleHelper::dpi(option);
+    const int arrowWidth = int(QStyleHelper::dpiScaled(14, dpi));
+    const int arrowHeight = int(QStyleHelper::dpiScaled(8, dpi));
 
     const int arrowMax = qMin(arrowHeight, arrowWidth);
     const int rectMax = qMin(rect.height(), rect.width());
@@ -788,12 +789,13 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
                 painter->drawRect(rect.adjusted(checkMarkPadding, checkMarkPadding, -checkMarkPadding, -checkMarkPadding));
 
             } else if (checkbox->state & State_On) {
-                qreal penWidth = QStyleHelper::dpiScaled(1.5);
+                const qreal dpi = QStyleHelper::dpi(option);
+                qreal penWidth = QStyleHelper::dpiScaled(1.5, dpi);
                 penWidth = qMax<qreal>(penWidth, 0.13 * rect.height());
                 penWidth = qMin<qreal>(penWidth, 0.20 * rect.height());
                 QPen checkPen = QPen(checkMarkColor, penWidth);
                 checkMarkColor.setAlpha(210);
-                painter->translate(dpiScaled(-0.8), dpiScaled(0.5));
+                painter->translate(dpiScaled(-0.8, dpi), dpiScaled(0.5, dpi));
                 painter->setPen(checkPen);
                 painter->setBrush(Qt::NoBrush);
 
@@ -1544,7 +1546,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             QColor highlight = option->palette.highlight().color();
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
                 int w = 0;
-                const int margin = QStyleHelper::dpiScaled(5);
+                const int margin = int(QStyleHelper::dpiScaled(5, option));
                 if (!menuItem->text.isEmpty()) {
                     painter->setFont(menuItem->font);
                     proxy()->drawItemText(painter, menuItem->rect.adjusted(margin, 0, -margin, 0), Qt::AlignLeft | Qt::AlignVCenter,
@@ -1574,7 +1576,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             bool ignoreCheckMark = false;
             const int checkColHOffset = windowsItemHMargin + windowsItemFrame - 1;
             int checkcol = qMax<int>(menuItem->rect.height() * 0.79,
-                                     qMax<int>(menuItem->maxIconWidth, dpiScaled(21))); // icon checkbox's highlight column width
+                                     qMax<int>(menuItem->maxIconWidth, dpiScaled(21, option))); // icon checkbox's highlight column width
             if (
 #if QT_CONFIG(combobox)
                 qobject_cast<const QComboBox*>(widget) ||
@@ -1584,7 +1586,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
 
             if (!ignoreCheckMark) {
                 // Check, using qreal and QRectF to avoid error accumulation
-                const qreal boxMargin = dpiScaled(3.5);
+                const qreal boxMargin = dpiScaled(3.5, option);
                 const qreal boxWidth = checkcol - 2 * boxMargin;
                 QRectF checkRectF(option->rect.left() + boxMargin + checkColHOffset, option->rect.center().y() - boxWidth/2 + 1, boxWidth, boxWidth);
                 QRect checkRect = checkRectF.toRect();
@@ -3184,7 +3186,7 @@ int QFusionStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, co
     default:
         return QCommonStyle::pixelMetric(metric, option, widget);
     }
-    return QStyleHelper::dpiScaled(val);
+    return QStyleHelper::dpiScaled(val, option);
 }
 
 /*!
@@ -3236,7 +3238,7 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
             if (menuItem->text.contains(QLatin1Char('\t')))
                 w += tabSpacing;
             else if (menuItem->menuItemType == QStyleOptionMenuItem::SubMenu)
-                w += 2 * QStyleHelper::dpiScaled(QFusionStylePrivate::menuArrowHMargin);
+                w += 2 * QStyleHelper::dpiScaled(QFusionStylePrivate::menuArrowHMargin, option);
             else if (menuItem->menuItemType == QStyleOptionMenuItem::DefaultItem) {
                 QFontMetrics fm(menuItem->font);
                 QFont fontBold = menuItem->font;
@@ -3244,9 +3246,10 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
                 QFontMetrics fmBold(fontBold);
                 w += fmBold.horizontalAdvance(menuItem->text) - fm.horizontalAdvance(menuItem->text);
             }
-            const int checkcol = qMax<int>(maxpmw, QStyleHelper::dpiScaled(QFusionStylePrivate::menuCheckMarkWidth)); // Windows always shows a check column
+            const qreal dpi = QStyleHelper::dpi(option);
+            const int checkcol = qMax<int>(maxpmw, QStyleHelper::dpiScaled(QFusionStylePrivate::menuCheckMarkWidth, dpi)); // Windows always shows a check column
             w += checkcol;
-            w += QStyleHelper::dpiScaled(int(QFusionStylePrivate::menuRightBorder) + 10);
+            w += QStyleHelper::dpiScaled(int(QFusionStylePrivate::menuRightBorder) + 10, dpi);
             newSize.setWidth(w);
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
                 if (!menuItem->text.isEmpty()) {
@@ -3260,8 +3263,8 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
                 }
 #endif
             }
-            newSize.setWidth(newSize.width() + QStyleHelper::dpiScaled(12));
-            newSize.setWidth(qMax<int>(newSize.width(), QStyleHelper::dpiScaled(120)));
+            newSize.setWidth(newSize.width() + int(QStyleHelper::dpiScaled(12, dpi)));
+            newSize.setWidth(qMax<int>(newSize.width(), int(QStyleHelper::dpiScaled(120, dpi))));
         }
         break;
     case CT_SizeGrip:
@@ -3409,7 +3412,7 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                 break;
             case SC_SliderGroove: {
                 QPoint grooveCenter = slider->rect.center();
-                const int grooveThickness = QStyleHelper::dpiScaled(7);
+                const int grooveThickness = QStyleHelper::dpiScaled(7, option);
                 if (slider->orientation == Qt::Horizontal) {
                     rect.setHeight(grooveThickness);
                     if (slider->tickPosition & QSlider::TicksAbove)
@@ -3438,7 +3441,7 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
             int center = spinbox->rect.height() / 2;
             int fw = spinbox->frame ? 3 : 0; // Is drawn with 3 pixels width in drawComplexControl, independently from PM_SpinBoxFrameWidth
             int y = fw;
-            const int buttonWidth = QStyleHelper::dpiScaled(14);
+            const int buttonWidth = QStyleHelper::dpiScaled(14, option);
             int x, lx, rx;
             x = spinbox->rect.width() - y - buttonWidth + 2;
             lx = fw;
@@ -3522,17 +3525,19 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
 
     case CC_ComboBox:
         switch (subControl) {
-        case SC_ComboBoxArrow:
+        case SC_ComboBoxArrow: {
+            const qreal dpi = QStyleHelper::dpi(option);
             rect = visualRect(option->direction, option->rect, rect);
-            rect.setRect(rect.right() - QStyleHelper::dpiScaled(18), rect.top() - 2,
-                         QStyleHelper::dpiScaled(19), rect.height() + 4);
+            rect.setRect(rect.right() - int(QStyleHelper::dpiScaled(18, dpi)), rect.top() - 2,
+                         int(QStyleHelper::dpiScaled(19, dpi)), rect.height() + 4);
             rect = visualRect(option->direction, option->rect, rect);
+        }
             break;
         case SC_ComboBoxEditField: {
             int frameWidth = 2;
             rect = visualRect(option->direction, option->rect, rect);
             rect.setRect(option->rect.left() + frameWidth, option->rect.top() + frameWidth,
-                         option->rect.width() - int(QStyleHelper::dpiScaled(19)) - 2 * frameWidth,
+                         option->rect.width() - int(QStyleHelper::dpiScaled(19, option)) - 2 * frameWidth,
                          option->rect.height() - 2 * frameWidth);
             if (const QStyleOptionComboBox *box = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
                 if (!box->editable) {
