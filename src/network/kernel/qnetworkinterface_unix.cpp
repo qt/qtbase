@@ -485,6 +485,7 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
         struct ifreq req;
     };
     int socket = -1;
+    memset(&mediareq, 0, sizeof(mediareq));
 
     // ensure both structs start with the name field, of size IFNAMESIZ
     Q_STATIC_ASSERT(sizeof(mediareq.ifm_name) == sizeof(req.ifr_name));

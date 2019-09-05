@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QColorSpacePrimaries
+class Q_AUTOTEST_EXPORT QColorSpacePrimaries
 {
 public:
    QColorSpacePrimaries() = default;
@@ -90,29 +90,40 @@ class QColorSpacePrivate : public QSharedData
 {
 public:
     QColorSpacePrivate();
-    QColorSpacePrivate(QColorSpace::ColorSpaceId colorSpaceId);
+    QColorSpacePrivate(QColorSpace::NamedColorSpace namedColorSpace);
     QColorSpacePrivate(QColorSpace::Primaries primaries, QColorSpace::TransferFunction fun, float gamma);
     QColorSpacePrivate(const QColorSpacePrimaries &primaries, QColorSpace::TransferFunction fun, float gamma);
     QColorSpacePrivate(const QColorSpacePrivate &other) = default;
 
+    // named different from get to avoid accidental detachs
     static QColorSpacePrivate *getWritable(QColorSpace &colorSpace)
     {
-        colorSpace.d_ptr.detach();
-        return colorSpace.d_ptr.data();
+        if (!colorSpace.d_ptr) {
+            colorSpace.d_ptr = new QColorSpacePrivate;
+            colorSpace.d_ptr->ref.ref();
+        } else if (colorSpace.d_ptr->ref.loadRelaxed() != 1) {
+            colorSpace.d_ptr->ref.deref();
+            colorSpace.d_ptr = new QColorSpacePrivate(*colorSpace.d_ptr);
+            colorSpace.d_ptr->ref.ref();
+        }
+        Q_ASSERT(colorSpace.d_ptr->ref.loadRelaxed() == 1);
+        return colorSpace.d_ptr;
     }
 
     static const QColorSpacePrivate *get(const QColorSpace &colorSpace)
     {
-        return colorSpace.d_ptr.data();
+        return colorSpace.d_ptr;
     }
 
     void initialize();
     void setToXyzMatrix();
     void setTransferFunction();
-    bool identifyColorSpace();
+    void identifyColorSpace();
     QColorTransform transformationToColorSpace(const QColorSpacePrivate *out) const;
 
-    QColorSpace::ColorSpaceId id;
+    static constexpr QColorSpace::NamedColorSpace Unknown = QColorSpace::NamedColorSpace(0);
+    QColorSpace::NamedColorSpace namedColorSpace = Unknown;
+
     QColorSpace::Primaries primaries;
     QColorSpace::TransferFunction transferFunction;
     float gamma;

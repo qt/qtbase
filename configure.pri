@@ -573,14 +573,7 @@ defineTest(qtConfOutput_prepareOptions) {
             qtConfFatalError("Cannot find Android NDK." \
                              "Please use -android-ndk option to specify one.")
 
-        ndk_tc_ver = $$eval(config.input.android-toolchain-version)
-        isEmpty(ndk_tc_ver): \
-            ndk_tc_ver = 4.9
-        !exists($$ndk_root/toolchains/arm-linux-androideabi-$$ndk_tc_ver/prebuilt/*): \
-            qtConfFatalError("Cannot detect Android NDK toolchain." \
-                             "Please use -android-toolchain-version to specify it.")
-
-        ndk_tc_pfx = $$ndk_root/toolchains/arm-linux-androideabi-$$ndk_tc_ver/prebuilt
+        ndk_tc_pfx = $$ndk_root/toolchains/llvm/prebuilt
         ndk_host = $$eval(config.input.android-ndk-host)
         isEmpty(ndk_host): \
             ndk_host = $$getenv(ANDROID_NDK_HOST)
@@ -618,10 +611,11 @@ defineTest(qtConfOutput_prepareOptions) {
                 qtConfFatalError("Specified Android NDK host is invalid.")
         }
 
-        target_arch = $$eval(config.input.android-arch)
-        isEmpty(target_arch): \
-            target_arch = armeabi-v7a
-
+        android_abis = $$eval(config.input.android-abis)
+        isEmpty(android_abis): \
+            android_abis = $$eval(config.input.android-arch)
+        isEmpty(android_abis): \
+            android_abis = armeabi-v7a,arm64-v8a,x86,x86_64
         platform = $$eval(config.input.android-ndk-platform)
         isEmpty(platform): \
             platform = android-21
@@ -631,8 +625,7 @@ defineTest(qtConfOutput_prepareOptions) {
             "DEFAULT_ANDROID_NDK_ROOT = $$val_escape(ndk_root)" \
             "DEFAULT_ANDROID_PLATFORM = $$platform" \
             "DEFAULT_ANDROID_NDK_HOST = $$ndk_host" \
-            "DEFAULT_ANDROID_TARGET_ARCH = $$target_arch" \
-            "DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION = $$ndk_tc_ver"
+            "DEFAULT_ANDROID_ABIS = $$split(android_abis, ',')"
     }
 
     export($${currentConfig}.output.devicePro)
@@ -850,9 +843,6 @@ defineTest(qtConfOutput_preparePaths) {
     addConfStr($$[QMAKE_SPEC])
 
     $${currentConfig}.output.qconfigSource = \
-        "/* Installation date */" \
-        "static const char qt_configure_installation     [12+11]  = \"qt_instdate=2012-12-20\";" \
-        "" \
         "/* Installation Info */" \
         "static const char qt_configure_prefix_path_str  [12+256] = \"qt_prfxpath=$$config.input.prefix\";" \
         "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \

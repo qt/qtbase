@@ -843,6 +843,8 @@ class Q_GUI_EXPORT QRhiRenderPassDescriptor : public QRhiResource
 public:
     QRhiResource::Type resourceType() const override;
 
+    virtual const QRhiNativeHandles *nativeHandles();
+
 protected:
     QRhiRenderPassDescriptor(QRhiImplementation *rhi);
 };
@@ -1324,6 +1326,7 @@ public:
     };
 
     enum BeginFrameFlag {
+        ExternalContentsInPass = 0x01
     };
     Q_DECLARE_FLAGS(BeginFrameFlags, BeginFrameFlag)
 
@@ -1384,8 +1387,8 @@ public:
     bool isRecordingFrame() const;
     int currentFrameSlot() const;
 
-    FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb);
-    FrameOpResult endOffscreenFrame();
+    FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb, BeginFrameFlags flags = BeginFrameFlags());
+    FrameOpResult endOffscreenFrame(EndFrameFlags flags = EndFrameFlags());
 
     QRhi::FrameOpResult finish();
 

@@ -40,6 +40,7 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qstring.h>
+#include <QtGui/qpaintdevice.h>
 #include <QtGui/qpolygon.h>
 #include <QtCore/qstringbuilder.h>
 #include <QtGui/qaccessible.h>
@@ -75,7 +76,13 @@ class QWindow;
 namespace QStyleHelper
 {
     QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size);
-    Q_WIDGETS_EXPORT qreal dpiScaled(qreal value);
+
+    Q_WIDGETS_EXPORT qreal dpi(const QStyleOption *option);
+
+    Q_WIDGETS_EXPORT qreal dpiScaled(qreal value, qreal dpi);
+    Q_WIDGETS_EXPORT qreal dpiScaled(qreal value, const QPaintDevice *device);
+    Q_WIDGETS_EXPORT qreal dpiScaled(qreal value, const QStyleOption *option);
+
 #if QT_CONFIG(dial)
     qreal angle(const QPointF &p1, const QPointF &p2);
     QPolygonF calcLines(const QStyleOptionSlider *dial);

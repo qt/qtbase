@@ -68,6 +68,7 @@ public:
     qreal devicePixelRatio() const override { return m_devicePixelRatio; }
     QSizeF physicalSize() const override { return m_physicalSize; }
     QDpi logicalDpi() const override { return m_logicalDpi; }
+    QDpi logicalBaseDpi() const override { return m_logicalDpi; }
     qreal refreshRate() const override { return m_refreshRate; }
     QString name() const override { return m_name; }
     QPlatformCursor *cursor() const override { return m_cursor; }

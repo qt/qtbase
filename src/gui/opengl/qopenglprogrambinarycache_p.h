@@ -54,6 +54,7 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qopenglshaderprogram.h>
 #include <QtCore/qcache.h>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -99,6 +100,7 @@ private:
     void initializeProgramBinaryOES(QOpenGLContext *context);
     bool m_programBinaryOESInitialized = false;
 #endif
+    QMutex m_mutex;
 };
 
 QT_END_NAMESPACE

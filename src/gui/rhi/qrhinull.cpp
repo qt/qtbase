@@ -41,7 +41,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiNullInitParams
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Null backend specific initialization parameters.
 
     A Null QRhi needs no special parameters for initialization.
@@ -60,13 +61,15 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiNullNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Empty.
  */
 
 /*!
     \class QRhiNullTextureNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Empty.
  */
 
@@ -353,14 +356,16 @@ QRhi::FrameOpResult QRhiNull::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameF
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiNull::beginOffscreenFrame(QRhiCommandBuffer **cb)
+QRhi::FrameOpResult QRhiNull::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags)
 {
+    Q_UNUSED(flags);
     *cb = &offscreenCommandBuffer;
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiNull::endOffscreenFrame()
+QRhi::FrameOpResult QRhiNull::endOffscreenFrame(QRhi::EndFrameFlags flags)
 {
+    Q_UNUSED(flags);
     return QRhi::FrameOpSuccess;
 }
 

@@ -2056,7 +2056,7 @@ bool QTextStreamPrivate::getReal(double *f)
     // nan/+inf/-inf, so here we also check for uppercase and mixed
     // case versions.
     if (!qstricmp(buf, "nan") || !qstricmp(buf, "+nan") || !qstricmp(buf, "-nan")) {
-        *f = qSNaN();
+        *f = qQNaN();
         return true;
     } else if (!qstricmp(buf, "+inf") || !qstricmp(buf, "inf")) {
         *f = qInf();

@@ -1267,7 +1267,7 @@ Qt::DropActions QFileSystemModel::supportedDropActions() const
     \enum QFileSystemModel::Option
     \since 5.14
 
-    \value DontWatch Do not add file watchers to the paths.
+    \value DontWatchForChanges Do not add file watchers to the paths.
     This reduces overhead when using the model for simple tasks
     like line edit completion.
 
@@ -1331,8 +1331,8 @@ void QFileSystemModel::setOptions(Options options)
 
 #if QT_CONFIG(filesystemwatcher)
     Q_D(QFileSystemModel);
-    if (changed.testFlag(DontWatch))
-        d->fileInfoGatherer.setWatching(!options.testFlag(DontWatch));
+    if (changed.testFlag(DontWatchForChanges))
+        d->fileInfoGatherer.setWatching(!options.testFlag(DontWatchForChanges));
 #endif
 
     if (changed.testFlag(DontUseCustomDirectoryIcons)) {
@@ -1353,9 +1353,9 @@ QFileSystemModel::Options QFileSystemModel::options() const
     result.setFlag(DontResolveSymlinks, !resolveSymlinks());
 #if QT_CONFIG(filesystemwatcher)
     Q_D(const QFileSystemModel);
-    result.setFlag(DontWatch, !d->fileInfoGatherer.isWatching());
+    result.setFlag(DontWatchForChanges, !d->fileInfoGatherer.isWatching());
 #else
-    result.setFlag(DontWatch);
+    result.setFlag(DontWatchForChanges);
 #endif
     if (auto provider = iconProvider()) {
         result.setFlag(DontUseCustomDirectoryIcons,

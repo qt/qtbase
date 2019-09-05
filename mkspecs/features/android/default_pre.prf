@@ -61,13 +61,14 @@ QMAKE_CXXFLAGS_THREAD   = $$QMAKE_CFLAGS_THREAD
 QMAKE_LIBS_EGL          = -lEGL
 QMAKE_LIBS_OPENGL_ES2   = -lGLESv2
 
-# modifications to linux.conf
-QMAKE_AR                = $${CROSS_COMPILE}ar cqs
-QMAKE_OBJCOPY           = $${CROSS_COMPILE}objcopy
-QMAKE_NM                = $${CROSS_COMPILE}nm -P
-
 QMAKE_STRIP             =
 #$${CROSS_COMPILE}strip
+
+
+equals(QT_ARCH, x86): CROSS_COMPILE = $$NDK_LLVM_PATH/bin/i686-linux-android-
+else: equals(QT_ARCH, x86_64): CROSS_COMPILE = $$NDK_LLVM_PATH/bin/x86_64-linux-android-
+else: equals(QT_ARCH, arm64-v8a): CROSS_COMPILE = $$NDK_LLVM_PATH/bin/aarch64-linux-android-
+else: CROSS_COMPILE = $$NDK_LLVM_PATH/bin/arm-linux-androideabi-
 
 QMAKE_RANLIB            = $${CROSS_COMPILE}ranlib
 QMAKE_LINK_SHLIB        = $$QMAKE_LINK

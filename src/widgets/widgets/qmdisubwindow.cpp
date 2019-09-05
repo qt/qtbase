@@ -288,13 +288,6 @@ static inline bool isHoverControl(QStyle::SubControl control)
     return control != QStyle::SC_None && control != QStyle::SC_TitleBarLabel;
 }
 
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-static inline QRgb colorref2qrgb(COLORREF col)
-{
-    return qRgb(GetRValue(col),GetGValue(col),GetBValue(col));
-}
-#endif
-
 #ifndef QT_NO_TOOLTIP
 static void showToolTip(QHelpEvent *helpEvent, QWidget *widget, const QStyleOptionComplex &opt,
                         QStyle::ComplexControl complexControl, QStyle::SubControl subControl)
@@ -1926,43 +1919,7 @@ QPalette QMdiSubWindowPrivate::desktopPalette() const
     QPalette newPalette = q->palette();
 
     bool colorsInitialized = false;
-#if 0 // Used to be included in Qt4 for Q_WS_WIN // ask system properties on windows
-#ifndef SPI_GETGRADIENTCAPTIONS
-#define SPI_GETGRADIENTCAPTIONS 0x1008
-#endif
-#ifndef COLOR_GRADIENTACTIVECAPTION
-#define COLOR_GRADIENTACTIVECAPTION 27
-#endif
-#ifndef COLOR_GRADIENTINACTIVECAPTION
-#define COLOR_GRADIENTINACTIVECAPTION 28
-#endif
-    if (QGuiApplication::desktopSettingsAware()) {
-        newPalette.setColor(QPalette::Active, QPalette::Highlight,
-                            colorref2qrgb(GetSysColor(COLOR_ACTIVECAPTION)));
-        newPalette.setColor(QPalette::Inactive, QPalette::Highlight,
-                            colorref2qrgb(GetSysColor(COLOR_INACTIVECAPTION)));
-        newPalette.setColor(QPalette::Active, QPalette::HighlightedText,
-                            colorref2qrgb(GetSysColor(COLOR_CAPTIONTEXT)));
-        newPalette.setColor(QPalette::Inactive, QPalette::HighlightedText,
-                            colorref2qrgb(GetSysColor(COLOR_INACTIVECAPTIONTEXT)));
 
-        colorsInitialized = true;
-        BOOL hasGradient = false;
-        SystemParametersInfo(SPI_GETGRADIENTCAPTIONS, 0, &hasGradient, 0);
-
-        if (hasGradient) {
-            newPalette.setColor(QPalette::Active, QPalette::Base,
-                                colorref2qrgb(GetSysColor(COLOR_GRADIENTACTIVECAPTION)));
-            newPalette.setColor(QPalette::Inactive, QPalette::Base,
-                                colorref2qrgb(GetSysColor(COLOR_GRADIENTINACTIVECAPTION)));
-        } else {
-            newPalette.setColor(QPalette::Active, QPalette::Base,
-                                newPalette.color(QPalette::Active, QPalette::Highlight));
-            newPalette.setColor(QPalette::Inactive, QPalette::Base,
-                                newPalette.color(QPalette::Inactive, QPalette::Highlight));
-        }
-    }
-#endif
     if (!colorsInitialized) {
         newPalette.setColor(QPalette::Active, QPalette::Highlight,
                             newPalette.color(QPalette::Active, QPalette::Highlight));

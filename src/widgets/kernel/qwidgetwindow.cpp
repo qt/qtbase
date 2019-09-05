@@ -46,7 +46,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <QtGui/qaccessible.h>
 #endif
-#include <private/qwidgetbackingstore_p.h>
+#include <private/qwidgetrepaintmanager_p.h>
 #include <qpa/qwindowsysteminterface_p.h>
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformwindow.h>
@@ -770,8 +770,8 @@ void QWidgetWindow::repaintWindow()
 
     QTLWExtra *tlwExtra = m_widget->window()->d_func()->maybeTopData();
     if (tlwExtra && !tlwExtra->inTopLevelResize && tlwExtra->backingStore)
-        tlwExtra->widgetBackingStore->markDirty(m_widget->rect(), m_widget,
-                                                 QWidgetBackingStore::UpdateNow, QWidgetBackingStore::BufferInvalid);
+        tlwExtra->repaintManager->markDirty(m_widget->rect(), m_widget,
+                                                 QWidgetRepaintManager::UpdateNow, QWidgetRepaintManager::BufferInvalid);
 }
 
 // Store normal geometry used for saving application settings.
@@ -803,7 +803,7 @@ void QWidgetWindow::handleResizeEvent(QResizeEvent *event)
     if (updateSize()) {
         QGuiApplication::forwardEvent(m_widget, event);
 
-        if (m_widget->d_func()->paintOnScreen()) {
+        if (m_widget->d_func()->shouldPaintOnScreen()) {
             QRegion updateRegion(geometry());
             if (m_widget->testAttribute(Qt::WA_StaticContents))
                 updateRegion -= QRect(0, 0, oldSize.width(), oldSize.height());

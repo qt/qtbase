@@ -47,6 +47,7 @@
 #include "qcoreapplication.h"
 #include "qcoreevent.h"
 #include <private/qobject_p.h>
+#include <private/qlocking_p.h>
 
 #ifndef QT_NO_DBUS
 
@@ -232,7 +233,7 @@ void QDBusPendingCallPrivate::checkReceivedSignature()
 
 void QDBusPendingCallPrivate::waitForFinished()
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
 
     if (replyMessage.type() != QDBusMessage::InvalidMessage)
         return;                 // already finished
@@ -330,7 +331,7 @@ bool QDBusPendingCall::isFinished() const
     if (!d)
         return true; // considered finished
 
-    QMutexLocker locker(&d->mutex);
+    const auto locker = qt_scoped_lock(d->mutex);
     return d->replyMessage.type() != QDBusMessage::InvalidMessage;
 }
 
@@ -352,7 +353,7 @@ bool QDBusPendingCall::isValid() const
 {
     if (!d)
         return false;
-    QMutexLocker locker(&d->mutex);
+    const auto locker = qt_scoped_lock(d->mutex);
     return d->replyMessage.type() == QDBusMessage::ReplyMessage;
 }
 
@@ -369,7 +370,7 @@ bool QDBusPendingCall::isError() const
 {
     if (!d)
         return true; // considered finished and an error
-    QMutexLocker locker(&d->mutex);
+    const auto locker = qt_scoped_lock(d->mutex);
     return d->replyMessage.type() == QDBusMessage::ErrorMessage;
 }
 
@@ -384,7 +385,7 @@ bool QDBusPendingCall::isError() const
 QDBusError QDBusPendingCall::error() const
 {
     if (d) {
-        QMutexLocker locker(&d->mutex);
+        const auto locker = qt_scoped_lock(d->mutex);
         return QDBusError(d->replyMessage);
     }
 
@@ -409,7 +410,7 @@ QDBusMessage QDBusPendingCall::reply() const
 {
     if (!d)
         return QDBusMessage::createError(error());
-    QMutexLocker locker(&d->mutex);
+    const auto locker = qt_scoped_lock(d->mutex);
     return d->replyMessage;
 }
 
@@ -503,7 +504,7 @@ QDBusPendingCallWatcher::QDBusPendingCallWatcher(const QDBusPendingCall &call, Q
     : QObject(*new QDBusPendingCallWatcherPrivate, parent), QDBusPendingCall(call)
 {
     if (d) {                    // QDBusPendingCall::d
-        QMutexLocker locker(&d->mutex);
+        const auto locker = qt_scoped_lock(d->mutex);
         if (!d->watcherHelper) {
             d->watcherHelper = new QDBusPendingCallWatcherHelper;
             if (d->replyMessage.type() != QDBusMessage::InvalidMessage) {

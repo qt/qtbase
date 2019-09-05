@@ -71,6 +71,7 @@
 //#define READBACK_SWAPCHAIN
 //#define NO_VSYNC
 //#define USE_MIN_SWAPCHAIN_BUFFERS
+//#define DECLARE_EXT_CONTENTS
 
 struct {
     TriangleRenderer triRenderer;
@@ -116,6 +117,10 @@ void preInit()
 
 #ifdef USE_MIN_SWAPCHAIN_BUFFERS
     scFlags |= QRhiSwapChain::MinimalBufferCount;
+#endif
+
+#ifdef DECLARE_EXT_CONTENTS
+    beginFrameFlags |= QRhi::ExternalContentsInPass;
 #endif
 
     // For OpenGL some of these are incorporated into the QSurfaceFormat by

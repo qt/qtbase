@@ -49,6 +49,7 @@
 #include "qvarlengtharray.h"
 #include "qdebug.h"
 #include "qmutex.h"
+#include <QtCore/private/qlocking_p.h>
 #include "qloggingcategory.h"
 #ifndef QT_BOOTSTRAPPED
 #include "qelapsedtimer.h"
@@ -1375,7 +1376,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
 {
     QString message;
 
-    QMutexLocker lock(&QMessagePattern::mutex);
+    const auto locker = qt_scoped_lock(QMessagePattern::mutex);
 
     QMessagePattern *pattern = qMessagePattern();
     if (!pattern) {
@@ -1909,12 +1910,14 @@ void qErrnoWarning(const char *msg, ...)
 {
     // qt_error_string() will allocate anyway, so we don't have
     // to be careful here (like we do in plain qWarning())
+    QString error_string = qt_error_string(-1);  // before vasprintf changes errno/GetLastError()
+
     va_list ap;
     va_start(ap, msg);
     QString buf = QString::vasprintf(msg, ap);
     va_end(ap);
 
-    buf += QLatin1String(" (") + qt_error_string(-1) + QLatin1Char(')');
+    buf += QLatin1String(" (") + error_string + QLatin1Char(')');
     QMessageLogContext context;
     qt_message_output(QtCriticalMsg, context, buf);
 }
@@ -2091,7 +2094,7 @@ QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
 
 void qSetMessagePattern(const QString &pattern)
 {
-    QMutexLocker lock(&QMessagePattern::mutex);
+    const auto locker = qt_scoped_lock(QMessagePattern::mutex);
 
     if (!qMessagePattern()->fromEnvironment)
         qMessagePattern()->setPattern(pattern);

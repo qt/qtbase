@@ -423,7 +423,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 
     ret = QWindowsStylePrivate::fixedPixelMetric(pm);
     if (ret != QWindowsStylePrivate::InvalidMetric)
-        return int(QStyleHelper::dpiScaled(ret));
+        return int(QStyleHelper::dpiScaled(ret, opt));
 
     ret = 0;
 
@@ -469,7 +469,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         break;
 
     case PM_SplitterWidth:
-        ret = qMax(int(QStyleHelper::dpiScaled(4)), QApplication::globalStrut().width());
+        ret = qMax(int(QStyleHelper::dpiScaled(4, opt)), QApplication::globalStrut().width());
         break;
 
     default:
@@ -793,8 +793,9 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         QPen oldPen = p->pen();
         p->setPen(QPen(opt->palette.shadow().color(), 0));
         QRectF rect = opt->rect;
-        const qreal topLevelAdjustment = QStyleHelper::dpiScaled(0.5);
-        const qreal bottomRightAdjustment = QStyleHelper::dpiScaled(-1.5);
+        const qreal dpi = QStyleHelper::dpi(opt);
+        const qreal topLevelAdjustment = QStyleHelper::dpiScaled(0.5, dpi);
+        const qreal bottomRightAdjustment = QStyleHelper::dpiScaled(-1.5, dpi);
         rect.adjust(topLevelAdjustment, topLevelAdjustment,
                     bottomRightAdjustment, bottomRightAdjustment);
         p->drawRect(rect);
@@ -2303,8 +2304,9 @@ QSize QWindowsStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             int defwidth = 0;
             if (btn->features & QStyleOptionButton::AutoDefaultButton)
                 defwidth = 2 * proxy()->pixelMetric(PM_ButtonDefaultIndicator, btn, widget);
-            int minwidth = int(QStyleHelper::dpiScaled(75.));
-            int minheight = int(QStyleHelper::dpiScaled(23.));
+            const qreal dpi = QStyleHelper::dpi(opt);
+            int minwidth = int(QStyleHelper::dpiScaled(75, dpi));
+            int minheight = int(QStyleHelper::dpiScaled(23, dpi));
 
 #ifndef QT_QWS_SMALL_PUSHBUTTON
             if (w < minwidth + defwidth && !btn->text.isEmpty())

@@ -41,6 +41,7 @@
 #include <QtCore/qglobal.h>
 #if QT_CONFIG(library)
 #include <QtCore/qlibrary.h>
+#include <QtCore/private/qlocking_p.h>
 #endif
 #include <QtCore/qmutex.h>
 
@@ -80,7 +81,7 @@ bool qdbus_loadLibDBus()
 
     static bool triedToLoadLibrary = false;
     static QBasicMutex mutex;
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
 
     QLibrary *&lib = qdbus_libdbus;
     if (triedToLoadLibrary)

@@ -72,6 +72,10 @@
 #   include <time.h>
 #endif
 
+#include "private/qcalendarbackend_p.h"
+#include "private/qgregoriancalendar_p.h"
+#include "qcalendar.h"
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SYSTEMLOCALE
@@ -341,8 +345,10 @@ QByteArray QLocalePrivate::bcp47Name(char separator) const
     return localeId.withLikelySubtagsRemoved().name(separator);
 }
 
-static const QLocaleData *findLocaleDataById(const QLocaleId &localeId)
+static const QLocaleData *findLocaleDataById(const QLocaleId &lid)
 {
+    QLocaleId localeId = lid.withLikelySubtagsAdded();
+
     const uint idx = locale_index[localeId.language_id];
 
     const QLocaleData *data = locale_data + idx;
@@ -441,6 +447,12 @@ const QLocaleData *QLocaleData::findLocaleData(QLocale::Language language, QLoca
 
     // No match; return data at original index
     return locale_data + idx;
+}
+
+uint QLocaleData::findLocaleOffset(QLocale::Language language, QLocale::Script script,
+                                   QLocale::Country country)
+{
+    return findLocaleData(language, script, country) - locale_data;
 }
 
 static bool parse_locale_tag(const QString &input, int &i, QString *result,
@@ -550,6 +562,16 @@ static const QLocaleData *findLocaleData(const QString &name)
     return QLocaleData::findLocaleData(lang, script, cntry);
 }
 
+static uint findLocaleOffset(const QString &name)
+{
+    QLocale::Language lang;
+    QLocale::Script script;
+    QLocale::Country cntry;
+    QLocalePrivate::getLangAndCountry(name, lang, script, cntry);
+
+    return QLocaleData::findLocaleOffset(lang, script, cntry);
+}
+
 QString qt_readEscapedFormatString(QStringView format, int *idx)
 {
     int &i = *idx;
@@ -617,8 +639,8 @@ static QLocale::NumberOptions default_number_options = QLocale::DefaultNumberOpt
 static const QLocaleData *const c_data = locale_data;
 static QLocalePrivate *c_private()
 {
-    static QLocalePrivate c_locale =
-        { c_data, Q_BASIC_ATOMIC_INITIALIZER(1), QLocale::OmitGroupSeparator };
+    static QLocalePrivate c_locale{
+            c_data, Q_BASIC_ATOMIC_INITIALIZER(1), 0, QLocale::OmitGroupSeparator };
     return &c_locale;
 }
 
@@ -803,9 +825,11 @@ static QLocalePrivate *localePrivateByName(const QString &name)
 {
     if (name == QLatin1String("C"))
         return c_private();
+    // TODO: Remove this version, and use offset everywhere
     const QLocaleData *data = findLocaleData(name);
-    return QLocalePrivate::create(data, data->m_language_id == QLocale::C ?
-                                      QLocale::OmitGroupSeparator : QLocale::DefaultNumberOptions);
+    return QLocalePrivate::create(data, findLocaleOffset(name),
+                                  data->m_language_id == QLocale::C
+                                  ? QLocale::OmitGroupSeparator : QLocale::DefaultNumberOptions);
 }
 
 static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Script script,
@@ -814,7 +838,9 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
     if (language == QLocale::C)
         return c_private();
 
+    // TODO: Remove pointer, use index instead
     const QLocaleData *data = QLocaleData::findLocaleData(language, script, country);
+    const uint offset = QLocaleData::findLocaleOffset(language, script, country);
 
     QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions;
 
@@ -823,7 +849,7 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
         numberOptions = default_number_options;
         data = defaultData();
     }
-    return QLocalePrivate::create(data, numberOptions);
+    return QLocalePrivate::create(data, offset, numberOptions);
 }
 
 
@@ -1957,7 +1983,7 @@ QString QLocale::toString(qulonglong i) const
 
 QString QLocale::toString(const QDate &date, const QString &format) const
 {
-    return d->dateTimeToString(format, QDateTime(), date, QTime(), this);
+    return QCalendar().dateTimeToString(format, QDateTime(), date, QTime(), *this);
 }
 #endif
 
@@ -1972,7 +1998,7 @@ QString QLocale::toString(const QDate &date, const QString &format) const
 */
 QString QLocale::toString(const QDate &date, QStringView format) const
 {
-    return d->dateTimeToString(format, QDateTime(), date, QTime(), this);
+    return QCalendar().dateTimeToString(format, QDateTime(), date, QTime(), *this);
 }
 
 /*!
@@ -2027,7 +2053,7 @@ static bool timeFormatContainsAP(QStringView format)
 */
 QString QLocale::toString(const QTime &time, const QString &format) const
 {
-    return d->dateTimeToString(format, QDateTime(), QDate(), time, this);
+    return QCalendar().dateTimeToString(format, QDateTime(), QDate(), time, *this);
 }
 #endif
 
@@ -2042,7 +2068,7 @@ QString QLocale::toString(const QTime &time, const QString &format) const
 */
 QString QLocale::toString(const QTime &time, QStringView format) const
 {
-    return d->dateTimeToString(format, QDateTime(), QDate(), time, this);
+    return QCalendar().dateTimeToString(format, QDateTime(), QDate(), time, *this);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -2058,7 +2084,7 @@ QString QLocale::toString(const QTime &time, QStringView format) const
 
 QString QLocale::toString(const QDateTime &dateTime, const QString &format) const
 {
-    return d->dateTimeToString(format, dateTime, QDate(), QTime(), this);
+    return QCalendar().dateTimeToString(format, dateTime, QDate(), QTime(), *this);
 }
 #endif
 
@@ -2073,7 +2099,58 @@ QString QLocale::toString(const QDateTime &dateTime, const QString &format) cons
 */
 QString QLocale::toString(const QDateTime &dateTime, QStringView format) const
 {
-    return d->dateTimeToString(format, dateTime, QDate(), QTime(), this);
+    return QCalendar().dateTimeToString(format, dateTime, QDate(), QTime(), *this);
+}
+
+QString QLocale::toString(const QDate &date, QStringView format, QCalendar cal) const
+{
+    return cal.dateTimeToString(format, QDateTime(), date, QTime(), *this);
+}
+
+QString QLocale::toString(const QDate &date, QLocale::FormatType format, QCalendar cal) const
+{
+    if (!date.isValid())
+        return QString();
+
+#ifndef QT_NO_SYSTEMLOCALE
+    if (cal.isGregorian() && d->m_data == systemData()) {
+        QVariant res = systemLocale()->query(format == LongFormat
+                                             ? QSystemLocale::DateToStringLong
+                                             : QSystemLocale::DateToStringShort,
+                                             date);
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+
+    QString format_str = dateFormat(format);
+    return toString(date, format_str, cal);
+}
+
+QString QLocale::toString(const QDateTime &dateTime, QLocale::FormatType format,
+                          QCalendar cal) const
+{
+    if (!dateTime.isValid())
+        return QString();
+
+#ifndef QT_NO_SYSTEMLOCALE
+    if (cal.isGregorian() && d->m_data == systemData()) {
+        QVariant res = systemLocale()->query(format == LongFormat
+                                             ? QSystemLocale::DateTimeToStringLong
+                                             : QSystemLocale::DateTimeToStringShort,
+                                             dateTime);
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+
+    const QString format_str = dateTimeFormat(format);
+    return toString(dateTime, format_str, cal);
+}
+
+QString QLocale::toString(const QDateTime &dateTime, QStringView format, QCalendar cal) const
+{
+    return cal.dateTimeToString(format, dateTime, QDate(), QTime(), *this);
 }
 
 /*!
@@ -2232,6 +2309,7 @@ QString QLocale::dateTimeFormat(FormatType format) const
     return dateFormat(format) + QLatin1Char(' ') + timeFormat(format);
 }
 
+#if QT_CONFIG(datestring)
 /*!
     \since 4.4
 
@@ -2243,12 +2321,19 @@ QString QLocale::dateTimeFormat(FormatType format) const
 
     \sa timeFormat(), toDate(), toDateTime(), QTime::fromString()
 */
-#if QT_CONFIG(datestring)
 QTime QLocale::toTime(const QString &string, FormatType format) const
 {
     return toTime(string, timeFormat(format));
 }
-#endif
+
+/*!
+    \since 5.14
+    \overload
+*/
+QTime QLocale::toTime(const QString &string, FormatType format, QCalendar cal) const
+{
+    return toTime(string, timeFormat(format), cal);
+}
 
 /*!
     \since 4.4
@@ -2261,12 +2346,19 @@ QTime QLocale::toTime(const QString &string, FormatType format) const
 
     \sa dateFormat(), toTime(), toDateTime(), QDate::fromString()
 */
-#if QT_CONFIG(datestring)
 QDate QLocale::toDate(const QString &string, FormatType format) const
 {
     return toDate(string, dateFormat(format));
 }
-#endif
+
+/*!
+    \since 5.14
+    \overload
+*/
+QDate QLocale::toDate(const QString &string, FormatType format, QCalendar cal) const
+{
+    return toDate(string, dateFormat(format), cal);
+}
 
 /*!
     \since 4.4
@@ -2279,13 +2371,19 @@ QDate QLocale::toDate(const QString &string, FormatType format) const
 
     \sa dateTimeFormat(), toTime(), toDate(), QDateTime::fromString()
 */
-
-#if QT_CONFIG(datestring)
 QDateTime QLocale::toDateTime(const QString &string, FormatType format) const
 {
     return toDateTime(string, dateTimeFormat(format));
 }
-#endif
+
+/*!
+    \since 5.14
+    \overload
+*/
+QDateTime QLocale::toDateTime(const QString &string, FormatType format, QCalendar cal) const
+{
+    return toDateTime(string, dateTimeFormat(format), cal);
+}
 
 /*!
     \since 4.4
@@ -2298,22 +2396,30 @@ QDateTime QLocale::toDateTime(const QString &string, FormatType format) const
 
     \sa timeFormat(), toDate(), toDateTime(), QTime::fromString()
 */
-#if QT_CONFIG(datestring)
 QTime QLocale::toTime(const QString &string, const QString &format) const
+{
+    return toTime(string, format, QCalendar());
+}
+
+/*!
+    \since 5.14
+    \overload
+*/
+QTime QLocale::toTime(const QString &string, const QString &format, QCalendar cal) const
 {
     QTime time;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString);
+    QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
         dt.fromString(string, 0, &time);
 #else
+    Q_UNUSED(cal);
     Q_UNUSED(string);
     Q_UNUSED(format);
 #endif
     return time;
 }
-#endif
 
 /*!
     \since 4.4
@@ -2329,22 +2435,30 @@ QTime QLocale::toTime(const QString &string, const QString &format) const
 
     \sa dateFormat(), toTime(), toDateTime(), QDate::fromString()
 */
-#if QT_CONFIG(datestring)
 QDate QLocale::toDate(const QString &string, const QString &format) const
+{
+    return toDate(string, format, QCalendar());
+}
+
+/*!
+    \since 5.14
+    \overload
+*/
+QDate QLocale::toDate(const QString &string, const QString &format, QCalendar cal) const
 {
     QDate date;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString);
+    QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
         dt.fromString(string, &date, 0);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
+    Q_UNUSED(cal);
 #endif
     return date;
 }
-#endif
 
 /*!
     \since 4.4
@@ -2360,25 +2474,33 @@ QDate QLocale::toDate(const QString &string, const QString &format) const
 
     \sa dateTimeFormat(), toTime(), toDate(), QDateTime::fromString()
 */
-#if QT_CONFIG(datestring)
 QDateTime QLocale::toDateTime(const QString &string, const QString &format) const
+{
+    return toDateTime(string, format, QCalendar());
+}
+
+/*!
+    \since 5.14
+    \overload
+*/
+QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCalendar cal) const
 {
 #if QT_CONFIG(datetimeparser)
     QTime time;
     QDate date;
 
-    QDateTimeParser dt(QVariant::DateTime, QDateTimeParser::FromString);
+    QDateTimeParser dt(QVariant::DateTime, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format) && dt.fromString(string, &date, &time))
         return QDateTime(date, time);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
+    Q_UNUSED(cal);
 #endif
     return QDateTime(QDate(), QTime(-1, -1, -1));
 }
-#endif
-
+#endif // datestring
 
 /*!
     \since 4.1
@@ -2623,38 +2745,7 @@ QList<QLocale::Country> QLocale::countriesForLanguage(Language language)
 */
 QString QLocale::monthName(int month, FormatType type) const
 {
-    if (month < 1 || month > 12)
-        return QString();
-
-#ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(type == LongFormat
-                                             ? QSystemLocale::MonthNameLong
-                                             : QSystemLocale::MonthNameShort,
-                                             month);
-        if (!res.isNull())
-            return res.toString();
-    }
-#endif
-
-    quint32 idx, size;
-    switch (type) {
-    case QLocale::LongFormat:
-        idx = d->m_data->m_long_month_names_idx;
-        size = d->m_data->m_long_month_names_size;
-        break;
-    case QLocale::ShortFormat:
-        idx = d->m_data->m_short_month_names_idx;
-        size = d->m_data->m_short_month_names_size;
-        break;
-    case QLocale::NarrowFormat:
-        idx = d->m_data->m_narrow_month_names_idx;
-        size = d->m_data->m_narrow_month_names_size;
-        break;
-    default:
-        return QString();
-    }
-    return getLocaleListData(months_data + idx, size, month - 1);
+    return QCalendar().monthName(*this, month, QCalendar::Unspecified, type);
 }
 
 /*!
@@ -2670,41 +2761,7 @@ QString QLocale::monthName(int month, FormatType type) const
 */
 QString QLocale::standaloneMonthName(int month, FormatType type) const
 {
-    if (month < 1 || month > 12)
-        return QString();
-
-#ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(type == LongFormat
-                                             ? QSystemLocale::StandaloneMonthNameLong
-                                             : QSystemLocale::StandaloneMonthNameShort,
-                                             month);
-        if (!res.isNull())
-            return res.toString();
-    }
-#endif
-
-    quint32 idx, size;
-    switch (type) {
-    case QLocale::LongFormat:
-        idx = d->m_data->m_standalone_long_month_names_idx;
-        size = d->m_data->m_standalone_long_month_names_size;
-        break;
-    case QLocale::ShortFormat:
-        idx = d->m_data->m_standalone_short_month_names_idx;
-        size = d->m_data->m_standalone_short_month_names_size;
-        break;
-    case QLocale::NarrowFormat:
-        idx = d->m_data->m_standalone_narrow_month_names_idx;
-        size = d->m_data->m_standalone_narrow_month_names_size;
-        break;
-    default:
-        return QString();
-    }
-    QString name = getLocaleListData(months_data + idx, size, month - 1);
-    if (name.isEmpty())
-        return monthName(month, type);
-    return name;
+    return QCalendar().standaloneMonthName(*this, month, QCalendar::Unspecified, type);
 }
 
 /*!
@@ -2718,40 +2775,7 @@ QString QLocale::standaloneMonthName(int month, FormatType type) const
 */
 QString QLocale::dayName(int day, FormatType type) const
 {
-    if (day < 1 || day > 7)
-        return QString();
-
-#ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(type == LongFormat
-                                             ? QSystemLocale::DayNameLong
-                                             : QSystemLocale::DayNameShort,
-                                             day);
-        if (!res.isNull())
-            return res.toString();
-    }
-#endif
-    if (day == 7)
-        day = 0;
-
-    quint32 idx, size;
-    switch (type) {
-    case QLocale::LongFormat:
-        idx = d->m_data->m_long_day_names_idx;
-        size = d->m_data->m_long_day_names_size;
-        break;
-    case QLocale::ShortFormat:
-        idx = d->m_data->m_short_day_names_idx;
-        size = d->m_data->m_short_day_names_size;
-        break;
-    case QLocale::NarrowFormat:
-        idx = d->m_data->m_narrow_day_names_idx;
-        size = d->m_data->m_narrow_day_names_size;
-        break;
-    default:
-        return QString();
-    }
-    return getLocaleListData(days_data + idx, size, day);
+    return QCalendar().weekDayName(*this, day, type);
 }
 
 /*!
@@ -2768,12 +2792,190 @@ QString QLocale::dayName(int day, FormatType type) const
 */
 QString QLocale::standaloneDayName(int day, FormatType type) const
 {
+    return QCalendar().standaloneWeekDayName(*this, day, type);
+}
+
+// Calendar look-up of month and day names:
+
+/*!
+  \internal
+ */
+
+static QString rawMonthName(const QCalendarLocale &localeData,
+                            const ushort *monthsData, int month,
+                            QLocale::FormatType type)
+{
+    quint32 idx, size;
+    switch (type) {
+    case QLocale::LongFormat:
+       idx = localeData.m_long.index;
+       size = localeData.m_long.size;
+       break;
+    case QLocale::ShortFormat:
+       idx = localeData.m_short.index;
+       size = localeData.m_short.size;
+       break;
+    case QLocale::NarrowFormat:
+       idx = localeData.m_narrow.index;
+       size = localeData.m_narrow.size;
+       break;
+    default:
+       return QString();
+    }
+    return getLocaleListData(monthsData + idx, size, month - 1);
+}
+
+/*!
+  \internal
+ */
+
+static QString rawStandaloneMonthName(const QCalendarLocale &localeData,
+                                      const ushort *monthsData, int month,
+                                      QLocale::FormatType type)
+{
+    quint32 idx, size;
+    switch (type) {
+    case QLocale::LongFormat:
+        idx = localeData.m_standalone_long.index;
+        size = localeData.m_standalone_long.size;
+        break;
+    case QLocale::ShortFormat:
+        idx = localeData.m_standalone_short.index;
+        size = localeData.m_standalone_short.size;
+        break;
+    case QLocale::NarrowFormat:
+        idx = localeData.m_standalone_narrow.index;
+        size = localeData.m_standalone_narrow.size;
+        break;
+    default:
+        return QString();
+    }
+    QString name = getLocaleListData(monthsData + idx, size, month - 1);
+    return name.isEmpty() ? rawMonthName(localeData, monthsData, month, type) : name;
+}
+
+/*!
+  \internal
+ */
+
+static QString rawWeekDayName(const QLocaleData *data, const int day,
+                              QLocale::FormatType type)
+{
+    quint32 idx, size;
+    switch (type) {
+    case QLocale::LongFormat:
+        idx = data->m_long_day_names_idx;
+        size = data->m_long_day_names_size;
+        break;
+    case QLocale::ShortFormat:
+        idx = data->m_short_day_names_idx;
+        size = data->m_short_day_names_size;
+        break;
+    case QLocale::NarrowFormat:
+        idx = data->m_narrow_day_names_idx;
+        size = data->m_narrow_day_names_size;
+        break;
+    default:
+        return QString();
+    }
+    return getLocaleListData(days_data + idx, size, day == 7 ? 0 : day);
+}
+
+/*!
+  \internal
+ */
+
+static QString rawStandaloneWeekDayName(const QLocaleData *data, const int day,
+                                        QLocale::FormatType type)
+{
+    quint32 idx, size;
+    switch (type) {
+    case QLocale::LongFormat:
+        idx = data->m_standalone_long_day_names_idx;
+        size = data->m_standalone_long_day_names_size;
+        break;
+    case QLocale::ShortFormat:
+        idx = data->m_standalone_short_day_names_idx;
+        size = data->m_standalone_short_day_names_size;
+        break;
+    case QLocale::NarrowFormat:
+        idx = data->m_standalone_narrow_day_names_idx;
+        size = data->m_standalone_narrow_day_names_size;
+        break;
+    default:
+        return QString();
+    }
+    QString name = getLocaleListData(days_data + idx, size, day == 7 ? 0 : day);
+    if (name.isEmpty())
+        return rawWeekDayName(data, day, type);
+    return name;
+}
+
+// Refugees from qcalendar.cpp that need functions above:
+
+QString QCalendarBackend::monthName(const QLocale &locale, int month, int,
+                                    QLocale::FormatType format) const
+{
+    Q_ASSERT(month >= 1 && month <= maximumMonthsInYear());
+    return rawMonthName(localeMonthIndexData()[locale.d->m_data_offset],
+                        localeMonthData(), month, format);
+}
+
+QString QGregorianCalendar::monthName(const QLocale &locale, int month, int year,
+                                      QLocale::FormatType format) const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (locale.d->m_data == systemData()) {
+        Q_ASSERT(month >= 1 && month <= 12);
+        QVariant res = systemLocale()->query(format == QLocale::LongFormat
+                                             ? QSystemLocale::MonthNameLong
+                                             : QSystemLocale::MonthNameShort,
+                                             month);
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+
+    return QCalendarBackend::monthName(locale, month, year, format);
+}
+
+QString QCalendarBackend::standaloneMonthName(const QLocale &locale, int month, int,
+                                              QLocale::FormatType format) const
+{
+    Q_ASSERT(month >= 1 && month <= maximumMonthsInYear());
+    return rawStandaloneMonthName(localeMonthIndexData()[locale.d->m_data_offset],
+                                  localeMonthData(), month, format);
+}
+
+QString QGregorianCalendar::standaloneMonthName(const QLocale &locale, int month, int year,
+                                                QLocale::FormatType format) const
+{
+#ifndef QT_NO_SYSTEMLOCALE
+    if (locale.d->m_data == systemData()) {
+        Q_ASSERT(month >= 1 && month <= 12);
+        QVariant res = systemLocale()->query(format == QLocale::LongFormat
+                                             ? QSystemLocale::StandaloneMonthNameLong
+                                             : QSystemLocale::StandaloneMonthNameShort,
+                                             month);
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+
+    return QCalendarBackend::standaloneMonthName(locale, month, year, format);
+}
+
+// Most calendars share the common week-day naming, modulo locale.
+// Calendars that don't must override these methods.
+QString QCalendarBackend::weekDayName(const QLocale &locale, int day,
+                                      QLocale::FormatType format) const
+{
     if (day < 1 || day > 7)
         return QString();
 
 #ifndef QT_NO_SYSTEMLOCALE
-    if (d->m_data == systemData()) {
-        QVariant res = systemLocale()->query(type == LongFormat
+    if (locale.d->m_data == systemData()) {
+        QVariant res = systemLocale()->query(format == QLocale::LongFormat
                                              ? QSystemLocale::DayNameLong
                                              : QSystemLocale::DayNameShort,
                                              day);
@@ -2781,31 +2983,31 @@ QString QLocale::standaloneDayName(int day, FormatType type) const
             return res.toString();
     }
 #endif
-    if (day == 7)
-        day = 0;
 
-    quint32 idx, size;
-    switch (type) {
-    case QLocale::LongFormat:
-        idx = d->m_data->m_standalone_long_day_names_idx;
-        size = d->m_data->m_standalone_long_day_names_size;
-        break;
-    case QLocale::ShortFormat:
-        idx = d->m_data->m_standalone_short_day_names_idx;
-        size = d->m_data->m_standalone_short_day_names_size;
-        break;
-    case QLocale::NarrowFormat:
-        idx = d->m_data->m_standalone_narrow_day_names_idx;
-        size = d->m_data->m_standalone_narrow_day_names_size;
-        break;
-    default:
-        return QString();
-    }
-    QString name = getLocaleListData(days_data + idx, size, day);
-    if (name.isEmpty())
-        return dayName(day == 0 ? 7 : day, type);
-    return name;
+    return rawWeekDayName(locale.d->m_data, day, format);
 }
+
+QString QCalendarBackend::standaloneWeekDayName(const QLocale &locale, int day,
+                                                QLocale::FormatType format) const
+{
+    if (day < 1 || day > 7)
+        return QString();
+
+#ifndef QT_NO_SYSTEMLOCALE
+    if (locale.d->m_data == systemData()) {
+        QVariant res = systemLocale()->query(format == QLocale::LongFormat
+                                             ? QSystemLocale::DayNameLong
+                                             : QSystemLocale::DayNameShort,
+                                             day);
+        if (!res.isNull())
+            return res.toString();
+    }
+#endif
+
+    return rawStandaloneWeekDayName(locale.d->m_data, day, format);
+}
+
+// End of this block of qcalendar.cpp refugees.  (One more follows.)
 
 /*!
     \since 4.8
@@ -3010,10 +3212,11 @@ QString QLocale::pmText() const
     return getLocaleData(pm_data + d->m_data->m_pm_idx, d->m_data->m_pm_size);
 }
 
+// Another intrusion from QCalendar, using some of the tools above:
 
-QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &datetime,
-                                         const QDate &dateOnly, const QTime &timeOnly,
-                                         const QLocale *q) const
+QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &datetime,
+                                           const QDate &dateOnly, const QTime &timeOnly,
+                                           const QLocale &locale) const
 {
     QDate date;
     QTime time;
@@ -3035,6 +3238,15 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
     }
 
     QString result;
+    int year = 0, month = 0, day = 0;
+    if (formatDate) {
+        const auto parts = julianDayToDate(date.toJulianDay());
+        if (!parts.isValid())
+            return QString();
+        year = parts.year;
+        month = parts.month;
+        day = parts.day;
+    }
 
     int i = 0;
     while (i < format.size()) {
@@ -3057,15 +3269,14 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
 
                 switch (repeat) {
                 case 4: {
-                    const int yr = date.year();
-                    const int len = (yr < 0) ? 5 : 4;
-                    result.append(m_data->longLongToString(yr, -1, 10, len,
-                                                           QLocaleData::ZeroPadded));
+                    const int len = (year < 0) ? 5 : 4;
+                    result.append(locale.d->m_data->longLongToString(year, -1, 10, len,
+                                                                     QLocaleData::ZeroPadded));
                     break;
                 }
                 case 2:
-                    result.append(m_data->longLongToString(date.year() % 100, -1, 10, 2,
-                                                   QLocaleData::ZeroPadded));
+                    result.append(locale.d->m_data->longLongToString(year % 100, -1, 10, 2,
+                                                                     QLocaleData::ZeroPadded));
                     break;
                 default:
                     repeat = 1;
@@ -3079,17 +3290,17 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
                 repeat = qMin(repeat, 4);
                 switch (repeat) {
                 case 1:
-                    result.append(m_data->longLongToString(date.month()));
+                    result.append(locale.d->m_data->longLongToString(month));
                     break;
                 case 2:
-                    result.append(m_data->longLongToString(date.month(), -1, 10, 2,
-                                                           QLocaleData::ZeroPadded));
+                    result.append(locale.d->m_data->longLongToString(month, -1, 10, 2,
+                                                                     QLocaleData::ZeroPadded));
                     break;
                 case 3:
-                    result.append(q->monthName(date.month(), QLocale::ShortFormat));
+                    result.append(monthName(locale, month, year, QLocale::ShortFormat));
                     break;
                 case 4:
-                    result.append(q->monthName(date.month(), QLocale::LongFormat));
+                    result.append(monthName(locale, month, year, QLocale::LongFormat));
                     break;
                 }
                 break;
@@ -3099,17 +3310,19 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
                 repeat = qMin(repeat, 4);
                 switch (repeat) {
                 case 1:
-                    result.append(m_data->longLongToString(date.day()));
+                    result.append(locale.d->m_data->longLongToString(day));
                     break;
                 case 2:
-                    result.append(m_data->longLongToString(date.day(), -1, 10, 2,
-                                                           QLocaleData::ZeroPadded));
+                    result.append(locale.d->m_data->longLongToString(day, -1, 10, 2,
+                                                                     QLocaleData::ZeroPadded));
                     break;
                 case 3:
-                    result.append(q->dayName(date.dayOfWeek(), QLocale::ShortFormat));
+                    result.append(locale.dayName(
+                                      dayOfWeek(date.toJulianDay()), QLocale::ShortFormat));
                     break;
                 case 4:
-                    result.append(q->dayName(date.dayOfWeek(), QLocale::LongFormat));
+                    result.append(locale.dayName(
+                                      dayOfWeek(date.toJulianDay()), QLocale::LongFormat));
                     break;
                 }
                 break;
@@ -3133,11 +3346,11 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
 
                 switch (repeat) {
                 case 1:
-                    result.append(m_data->longLongToString(hour));
+                    result.append(locale.d->m_data->longLongToString(hour));
                     break;
                 case 2:
-                    result.append(m_data->longLongToString(hour, -1, 10, 2,
-                                                           QLocaleData::ZeroPadded));
+                    result.append(locale.d->m_data->longLongToString(hour, -1, 10, 2,
+                                                                     QLocaleData::ZeroPadded));
                     break;
                 }
                 break;
@@ -3147,11 +3360,11 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
                 repeat = qMin(repeat, 2);
                 switch (repeat) {
                 case 1:
-                    result.append(m_data->longLongToString(time.hour()));
+                    result.append(locale.d->m_data->longLongToString(time.hour()));
                     break;
                 case 2:
-                    result.append(m_data->longLongToString(time.hour(), -1, 10, 2,
-                                                           QLocaleData::ZeroPadded));
+                    result.append(locale.d->m_data->longLongToString(time.hour(), -1, 10, 2,
+                                                                     QLocaleData::ZeroPadded));
                     break;
                 }
                 break;
@@ -3161,11 +3374,11 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
                 repeat = qMin(repeat, 2);
                 switch (repeat) {
                 case 1:
-                    result.append(m_data->longLongToString(time.minute()));
+                    result.append(locale.d->m_data->longLongToString(time.minute()));
                     break;
                 case 2:
-                    result.append(m_data->longLongToString(time.minute(), -1, 10, 2,
-                                                           QLocaleData::ZeroPadded));
+                    result.append(locale.d->m_data->longLongToString(time.minute(), -1, 10, 2,
+                                                                     QLocaleData::ZeroPadded));
                     break;
                 }
                 break;
@@ -3175,11 +3388,11 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
                 repeat = qMin(repeat, 2);
                 switch (repeat) {
                 case 1:
-                    result.append(m_data->longLongToString(time.second()));
+                    result.append(locale.d->m_data->longLongToString(time.second()));
                     break;
                 case 2:
-                    result.append(m_data->longLongToString(time.second(), -1, 10, 2,
-                                                           QLocaleData::ZeroPadded));
+                    result.append(locale.d->m_data->longLongToString(time.second(), -1, 10, 2,
+                                                                     QLocaleData::ZeroPadded));
                     break;
                 }
                 break;
@@ -3187,13 +3400,15 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
             case 'a':
                 used = true;
                 repeat = format.mid(i + 1).startsWith(QLatin1Char('p')) ? 2 : 1;
-                result.append(time.hour() < 12 ? q->amText().toLower() : q->pmText().toLower());
+                result.append(time.hour() < 12 ? locale.amText().toLower()
+                                               : locale.pmText().toLower());
                 break;
 
             case 'A':
                 used = true;
                 repeat = format.mid(i + 1).startsWith(QLatin1Char('P')) ? 2 : 1;
-                result.append(time.hour() < 12 ? q->amText().toUpper() : q->pmText().toUpper());
+                result.append(time.hour() < 12 ? locale.amText().toUpper()
+                                                : locale.pmText().toUpper());
                 break;
 
             case 'z':
@@ -3202,15 +3417,14 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
 
                 // note: the millisecond component is treated like the decimal part of the seconds
                 // so ms == 2 is always printed as "002", but ms == 200 can be either "2" or "200"
-                result.append(m_data->longLongToString(time.msec(), -1, 10, 3,
-                                                       QLocaleData::ZeroPadded));
+                result.append(locale.d->m_data->longLongToString(time.msec(), -1, 10, 3,
+                                                                 QLocaleData::ZeroPadded));
                 if (repeat == 1) {
-                    if (result.endsWith(zero()))
+                    if (result.endsWith(locale.d->zero()))
                         result.chop(1);
-                    if (result.endsWith(zero()))
+                    if (result.endsWith(locale.d->zero()))
                         result.chop(1);
                 }
-
                 break;
 
             case 't':
@@ -3232,6 +3446,8 @@ QString QLocalePrivate::dateTimeToString(QStringView format, const QDateTime &da
 
     return result;
 }
+
+// End of QCalendar intrustions
 
 QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
                                     int width, unsigned flags) const

@@ -48,6 +48,7 @@
 #include <qdatetime.h>
 #include <qdir.h>
 #include <qtextstream.h>
+#include <private/qlocking_p.h>
 
 #include <qt_windows.h>
 
@@ -423,7 +424,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
         end = threads.constEnd();
         for(jt = threads.constBegin(); jt != end; ++jt) {
             thread = *jt;
-            QMutexLocker locker(&(thread->mutex));
+            const auto locker = qt_scoped_lock(thread->mutex);
 
             const auto hit = thread->handleForDir.find(QFileSystemWatcherPathKey(absolutePath));
             if (hit != thread->handleForDir.end() && hit.value().flags < flags) {
@@ -478,7 +479,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
             // now look for a thread to insert
             bool found = false;
             for (QWindowsFileSystemWatcherEngineThread *thread : qAsConst(threads)) {
-                QMutexLocker locker(&(thread->mutex));
+                const auto locker = qt_scoped_lock(thread->mutex);
                 if (thread->handles.count() < MAXIMUM_WAIT_OBJECTS) {
                     DEBUG() << "Added handle" << handle.handle << "for" << absolutePath << "to watch" << fileInfo.absoluteFilePath()
                             << "to existing thread " << thread;
@@ -554,7 +555,7 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
             if (*jt == 0)
                 continue;
 
-            QMutexLocker locker(&(thread->mutex));
+            auto locker = qt_unique_lock(thread->mutex);
 
             QWindowsFileSystemWatcherEngine::Handle handle = thread->handleForDir.value(QFileSystemWatcherPathKey(absolutePath));
             if (handle.handle == INVALID_HANDLE_VALUE) {
@@ -587,7 +588,7 @@ QStringList QWindowsFileSystemWatcherEngine::removePaths(const QStringList &path
                             locker.unlock();
                             thread->stop();
                             thread->wait();
-                            locker.relock();
+                            locker.lock();
                             // We can't delete the thread until the mutex locker is
                             // out of scope
                         }
@@ -652,13 +653,13 @@ static QString msgFindNextFailed(const QWindowsFileSystemWatcherEngineThread::Pa
 
 void QWindowsFileSystemWatcherEngineThread::run()
 {
-    QMutexLocker locker(&mutex);
+    auto locker = qt_unique_lock(mutex);
     forever {
         QVector<HANDLE> handlesCopy = handles;
         locker.unlock();
         DEBUG() << "QWindowsFileSystemWatcherThread" << this << "waiting on" << handlesCopy.count() << "handles";
         DWORD r = WaitForMultipleObjects(handlesCopy.count(), handlesCopy.constData(), false, INFINITE);
-        locker.relock();
+        locker.lock();
         do {
             if (r == WAIT_OBJECT_0) {
                 int m = msg;

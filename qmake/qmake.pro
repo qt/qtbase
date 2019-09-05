@@ -115,6 +115,7 @@ SOURCES += \
     qbuffer.cpp \
     qbytearray.cpp \
     qbytearraymatcher.cpp \
+    qcalendar.cpp \
     qcryptographichash.cpp \
     qdatetime.cpp \
     qdir.cpp \
@@ -127,6 +128,7 @@ SOURCES += \
     qfsfileengine.cpp \
     qfsfileengine_iterator.cpp \
     qglobal.cpp \
+    qgregoriancalendar.cpp \
     qhash.cpp \
     qiodevice.cpp \
     qjson.cpp \
@@ -145,6 +147,7 @@ SOURCES += \
     qmetatype.cpp \
     qnumeric.cpp \
     qregexp.cpp \
+    qromancalendar.cpp \
     qsettings.cpp \
     qstring.cpp \
     qstringlist.cpp \
@@ -168,6 +171,9 @@ HEADERS += \
     qbuffer.h \
     qbytearray.h \
     qbytearraymatcher.h \
+    qcalendar.h \
+    qcalendarbackend_p.h \
+    qcalendarmath_p.h \
     qchar.h \
     qcryptographichash.h \
     qdatetime.h \
@@ -178,6 +184,7 @@ HEADERS += \
     qfile.h \
     qfileinfo.h \
     qglobal.h \
+    qgregoriancalendar_p.h \
     qhash.h \
     qiodevice.h \
     qjson_p.h \
@@ -194,6 +201,7 @@ HEADERS += \
     qmetatype.h \
     qnumeric.h \
     qregexp.h \
+    qromancalendar_p.h \
     qstring.h \
     qstringlist.h \
     qstringmatcher.h \

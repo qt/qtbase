@@ -1689,7 +1689,7 @@ void QNetworkAccessManager::clearConnectionCache()
     \sa setAutoDeleteReplies,
     QNetworkRequest::AutoDeleteReplyOnFinishAttribute
 */
-bool QNetworkAccessManager::autoDeleteReplies()
+bool QNetworkAccessManager::autoDeleteReplies() const
 {
     return d_func()->autoDeleteReplies;
 }

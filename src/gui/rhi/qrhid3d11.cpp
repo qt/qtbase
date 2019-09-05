@@ -58,7 +58,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiD3D11InitParams
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Direct3D 11 specific initialization parameters.
 
     A D3D11-based QRhi needs no special parameters for initialization. If
@@ -97,7 +98,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiD3D11NativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Holds the D3D device and device context used by the QRhi.
 
     \note The class uses \c{void *} as the type since including the COM-based
@@ -107,7 +109,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiD3D11TextureNativeHandles
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Holds the D3D texture object that is backing a QRhiTexture instance.
 
     \note The class uses \c{void *} as the type since including the COM-based
@@ -870,8 +873,10 @@ const QRhiNativeHandles *QRhiD3D11::nativeHandles(QRhiCommandBuffer *cb)
 
 void QRhiD3D11::beginExternal(QRhiCommandBuffer *cb)
 {
-    Q_UNUSED(cb);
-    flushCommandBuffer();
+    QD3D11CommandBuffer *cbD = QRHI_RES(QD3D11CommandBuffer, cb);
+    // no timestampSwapChain, in order to avoid timestamp mess
+    executeCommandBuffer(cbD);
+    cbD->resetCommands();
 }
 
 void QRhiD3D11::endExternal(QRhiCommandBuffer *cb)
@@ -986,8 +991,9 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiD3D11::beginOffscreenFrame(QRhiCommandBuffer **cb)
+QRhi::FrameOpResult QRhiD3D11::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags)
 {
+    Q_UNUSED(flags);
     ofr.active = true;
 
     ofr.cbWrapper.resetState();
@@ -996,8 +1002,9 @@ QRhi::FrameOpResult QRhiD3D11::beginOffscreenFrame(QRhiCommandBuffer **cb)
     return QRhi::FrameOpSuccess;
 }
 
-QRhi::FrameOpResult QRhiD3D11::endOffscreenFrame()
+QRhi::FrameOpResult QRhiD3D11::endOffscreenFrame(QRhi::EndFrameFlags flags)
 {
+    Q_UNUSED(flags);
     ofr.active = false;
 
     executeCommandBuffer(&ofr.cbWrapper);
@@ -1132,25 +1139,23 @@ static inline bool isDepthTextureFormat(QRhiTexture::Format format)
 
 QRhi::FrameOpResult QRhiD3D11::finish()
 {
-    if (inFrame)
-        flushCommandBuffer();
+    if (inFrame) {
+        if (ofr.active) {
+            Q_ASSERT(!contextState.currentSwapChain);
+            Q_ASSERT(ofr.cbWrapper.recordingPass == QD3D11CommandBuffer::NoPass);
+            executeCommandBuffer(&ofr.cbWrapper);
+            ofr.cbWrapper.resetCommands();
+        } else {
+            Q_ASSERT(contextState.currentSwapChain);
+            Q_ASSERT(contextState.currentSwapChain->cb.recordingPass == QD3D11CommandBuffer::NoPass);
+            executeCommandBuffer(&contextState.currentSwapChain->cb); // no timestampSwapChain, in order to avoid timestamp mess
+            contextState.currentSwapChain->cb.resetCommands();
+        }
+    }
 
     finishActiveReadbacks();
 
     return QRhi::FrameOpSuccess;
-}
-
-void QRhiD3D11::flushCommandBuffer()
-{
-    if (ofr.active) {
-        Q_ASSERT(!contextState.currentSwapChain);
-        executeCommandBuffer(&ofr.cbWrapper);
-        ofr.cbWrapper.resetCommands();
-    } else {
-        Q_ASSERT(contextState.currentSwapChain);
-        executeCommandBuffer(&contextState.currentSwapChain->cb); // no timestampSwapChain, in order to avoid timestamp mess
-        contextState.currentSwapChain->cb.resetCommands();
-    }
 }
 
 void QRhiD3D11::enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,

@@ -167,7 +167,7 @@ public:
     void setRedirectPolicy(QNetworkRequest::RedirectPolicy policy);
     QNetworkRequest::RedirectPolicy redirectPolicy() const;
 
-    bool autoDeleteReplies();
+    bool autoDeleteReplies() const;
     void setAutoDeleteReplies(bool autoDelete);
 
 Q_SIGNALS:
