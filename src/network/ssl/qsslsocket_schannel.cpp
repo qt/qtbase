@@ -1360,6 +1360,18 @@ void QSslSocketBackendPrivate::transmit()
 #endif
                 schannelState = SchannelState::Renegotiate;
                 renegotiating = true;
+
+                if (dataBuffer[3].BufferType == SECBUFFER_EXTRA) {
+                    // https://docs.microsoft.com/en-us/windows/desktop/secauthn/extra-buffers-returned-by-schannel
+                    // dataBuffer[3].cbBuffer indicates the amount of bytes _NOT_ processed,
+                    // the rest need to be stored.
+#ifdef QSSLSOCKET_DEBUG
+                    qCDebug(lcSsl) << "We've got excess data, moving it to the intermediate buffer:"
+                                   << dataBuffer[3].cbBuffer << "bytes";
+#endif
+                    intermediateBuffer = ciphertext.right(int(dataBuffer[3].cbBuffer));
+                }
+
                 // We need to call 'continueHandshake' or else there's no guarantee it ever gets called
                 continueHandshake();
                 break;
