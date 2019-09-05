@@ -56,17 +56,18 @@ using namespace QRoundingDown;
 
     \section1 Civil Islamic Calendar
 
-    QIslamicCivilCalendar implements a tabular version of the Hijri calendar which
-    is known as the Islamic Civil Calendar. It has the same numbering of years and
-    months, but the months are determined by arithmetical rules rather than by
-    observation or astronomical calculations.
+    QIslamicCivilCalendar implements a tabular version of the Hijri calendar
+    which is known as the Islamic Civil Calendar. It has the same numbering of
+    years and months, but the months are determined by arithmetical rules rather
+    than by observation or astronomical calculations.
 
     \section2 Calendar Organization
 
-    The civil calendar follows the usual tabular scheme of odd-numbered months and
-    the last month of each leap year being 30 days long, the rest being 29 days
-    long. Its determination of leap years follows a 30-year cycle, in each of
-    which the years 2, 5, 7, 10, 13, 16, 18, 21, 24, 26 and 29 are leap years.
+    The civil calendar follows the usual tabular scheme of odd-numbered months
+    and the last month of each leap year being 30 days long, the rest being 29
+    days long. Its determination of leap years follows a 30-year cycle, in each
+    of which the years 2, 5, 7, 10, 13, 16, 18, 21, 24, 26 and 29 are leap
+    years.
 
     \sa QHijriCalendar, QCalendar
 */

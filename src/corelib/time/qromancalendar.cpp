@@ -53,9 +53,9 @@ QT_BEGIN_NAMESPACE
 
     \section1
 
-    Calendars based on the ancient Roman calendar share the names of months, whose
-    lengths depend in a common way on whether the year is a leap year. They differ
-    in how they determine which years are leap years.
+    Calendars based on the ancient Roman calendar share the names of months,
+    whose lengths depend in a common way on whether the year is a leap
+    year. They differ in how they determine which years are leap years.
 
     \sa QGregorianCalendar, QJulianCalendar, QMilankovicCalendar
 */

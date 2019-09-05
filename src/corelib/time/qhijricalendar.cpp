@@ -60,8 +60,8 @@ QT_BEGIN_NAMESPACE
     such as the annual period of fasting and the proper time for the pilgrimage
     to Mecca.
 
-    Source: \l {https://en.wikipedia.org/wiki/Islamic_calendar}{Wikipedia page on
-    Hijri Calendar}
+    Source: \l {https://en.wikipedia.org/wiki/Islamic_calendar}{Wikipedia page
+    on Hijri Calendar}
 
     \section1 Support for variants
 
@@ -69,10 +69,10 @@ QT_BEGIN_NAMESPACE
     Islamic calendar. Each year comprises 12 months of 29 or 30 days each; most
     years have as many of 29 as of 30, but leap years extend one 29-day month to
     30 days. In tabular versions of the calendar (where mathematical rules are
-    used to determine the details), odd-numbered months have 30 days, as does the
-    last (twelfth) month of a leap year; all other months have 29 days. Other
-    versions are based on actual astronomical observations of the moon's phase at
-    sunset, which vary from place to place.
+    used to determine the details), odd-numbered months have 30 days, as does
+    the last (twelfth) month of a leap year; all other months have 29
+    days. Other versions are based on actual astronomical observations of the
+    moon's phase at sunset, which vary from place to place.
 
     \sa QIslamicCivilCalendar, QCalendar
 */
