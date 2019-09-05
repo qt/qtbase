@@ -79,14 +79,6 @@ extern Q_CORE_EXPORT QBasicAtomicInteger<uint> qt_randomdevice_control;
 enum { qt_randomdevice_control = 0 };
 #endif
 
-inline bool qt_has_hwrng()
-{
-#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
-    return qCpuHasFeature(RDRND);
-#else
-    return false;
-#endif
-}
 
 
 QT_END_NAMESPACE

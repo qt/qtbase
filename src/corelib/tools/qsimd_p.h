@@ -346,6 +346,15 @@ extern Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2];
 #endif
 Q_CORE_EXPORT void qDetectCpuFeatures();
 
+#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
+Q_CORE_EXPORT qsizetype qRandomCpu(void *, qsizetype) Q_DECL_NOTHROW;
+#else
+static inline qsizetype qRandomCpu(void *, qsizetype) Q_DECL_NOTHROW
+{
+    return 0;
+}
+#endif
+
 static inline quint64 qCpuFeatures()
 {
     quint64 features = qt_cpu_features[0].load();
@@ -365,6 +374,15 @@ static inline quint64 qCpuFeatures()
 
 #define qCpuHasFeature(feature)     (((qCompilerCpuFeatures & CpuFeature ## feature) == CpuFeature ## feature) \
                                      || ((qCpuFeatures() & CpuFeature ## feature) == CpuFeature ## feature))
+
+inline bool qHasHwrng()
+{
+#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
+    return qCpuHasFeature(RDRND);
+#else
+    return false;
+#endif
+}
 
 #define ALIGNMENT_PROLOGUE_16BYTES(ptr, i, length) \
     for (; i < static_cast<int>(qMin(static_cast<quintptr>(length), ((4 - ((reinterpret_cast<quintptr>(ptr) >> 2) & 0x3)) & 0x3))); ++i)
