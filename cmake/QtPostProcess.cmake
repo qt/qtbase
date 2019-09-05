@@ -267,6 +267,11 @@ endfunction()
 # This function creates the Qt<Module>Plugins.cmake used to list all
 # the plug-in target files.
 function(qt_internal_create_plugins_files)
+    # The plugins cmake configuration is only needed for static builds. Dynamic builds don't need
+    # the application to link against plugins at build time.
+    if(NOT QT_BUILD_SHARED_LIBS)
+        return()
+    endif()
     qt_internal_get_qt_repo_known_modules(repo_known_modules)
 
     message("Generating Plugins files for ${repo_known_modules}...")
