@@ -2332,14 +2332,17 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     // However if the QMenu was constructed with a QDesktopScreenWidget as its parent,
     // then initialScreenIndex was set, so we should respect that for the lifetime of this menu.
     // Use d->popupScreen to remember, because initialScreenIndex will be reset after the first showing.
-    const int screenIndex = d->topData()->initialScreenIndex;
-    if (screenIndex >= 0)
-        d->popupScreen = screenIndex;
-    if (auto s = QGuiApplication::screens().value(d->popupScreen)) {
-        if (d->setScreen(s))
+    // However if eventLoop exists, then exec() already did this by calling createWinId(); so leave it alone. (QTBUG-76162)
+    if (!d->eventLoop) {
+        const int screenIndex = d->topData()->initialScreenIndex;
+        if (screenIndex >= 0)
+            d->popupScreen = screenIndex;
+        if (auto s = QGuiApplication::screens().value(d->popupScreen)) {
+            if (d->setScreen(s))
+                d->itemsDirty = true;
+        } else if (d->setScreenForPoint(p)) {
             d->itemsDirty = true;
-    } else if (d->setScreenForPoint(p)) {
-        d->itemsDirty = true;
+        }
     }
 
     const bool contextMenu = d->isContextMenu();
