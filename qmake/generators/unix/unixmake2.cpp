@@ -1206,8 +1206,10 @@ void UnixMakefileGenerator::init2()
         project->values("QMAKE_FRAMEWORK_VERSION").append(project->first("VER_MAJ"));
 
     if (project->first("TEMPLATE") == "aux") {
-        project->values("PRL_TARGET") =
-            project->values("TARGET").first().prepend(project->first("QMAKE_PREFIX_STATICLIB"));
+        project->values("PRL_TARGET") = {
+            project->first("QMAKE_PREFIX_STATICLIB") +
+            project->first("TARGET")
+        };
     } else if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         if(!project->isEmpty("QMAKE_BUNDLE")) {
             ProString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
