@@ -90,47 +90,6 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
-static qsizetype qt_random_cpu(void *buffer, qsizetype count) Q_DECL_NOTHROW;
-
-#  ifdef Q_PROCESSOR_X86_64
-#    define _rdrandXX_step _rdrand64_step
-#  else
-#    define _rdrandXX_step _rdrand32_step
-#  endif
-
-static QT_FUNCTION_TARGET(RDRND) qsizetype qt_random_cpu(void *buffer, qsizetype count) Q_DECL_NOTHROW
-{
-    unsigned *ptr = reinterpret_cast<unsigned *>(buffer);
-    unsigned *end = ptr + count;
-    int retries = 10;
-
-    while (ptr + sizeof(qregisteruint)/sizeof(*ptr) <= end) {
-        if (_rdrandXX_step(reinterpret_cast<qregisteruint *>(ptr)))
-            ptr += sizeof(qregisteruint)/sizeof(*ptr);
-        else if (--retries == 0)
-            goto out;
-    }
-
-    while (sizeof(*ptr) != sizeof(qregisteruint) && ptr != end) {
-        bool ok = _rdrand32_step(ptr);
-        if (!ok && --retries)
-            continue;
-        if (ok)
-            ++ptr;
-        break;
-    }
-
-out:
-    return ptr - reinterpret_cast<unsigned *>(buffer);
-}
-#else
-static qsizetype qt_random_cpu(void *, qsizetype)
-{
-    return 0;
-}
-#endif
-
 enum {
     // may be "overridden" by a member enum
     FillBufferNoexcept = true
@@ -371,8 +330,8 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     }
 
     qsizetype filled = 0;
-    if (qt_has_hwrng() && (uint(qt_randomdevice_control) & SkipHWRNG) == 0)
-        filled += qt_random_cpu(buffer, count);
+    if (qHasHwrng() && (uint(qt_randomdevice_control) & SkipHWRNG) == 0)
+        filled += qRandomCpu(buffer, count);
 
     if (filled != count && (uint(qt_randomdevice_control) & SkipSystemRNG) == 0) {
         qsizetype bytesFilled =
