@@ -13,13 +13,24 @@ if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake")
 endif()
 
 macro(qt_set_up_build_internals_paths)
-    # Set up the paths for the modules.
+    # Set up the paths for the cmake modules located in the build dir. Prepend, so the paths are
+    # least important compared to the source dir ones, but more important than command line
+    # provided ones.
     set(QT_CMAKE_MODULE_PATH "${QT_BUILD_INTERNALS_PATH}/../${QT_CMAKE_EXPORT_NAMESPACE}")
-    list(APPEND CMAKE_MODULE_PATH ${QT_CMAKE_MODULE_PATH})
+    list(PREPEND CMAKE_MODULE_PATH "${QT_CMAKE_MODULE_PATH}")
+
+    # When doing a non-prefix build, prepend the qtbase source cmake directory to CMAKE_MODULE_PATH,
+    # so that if a change is done in cmake/QtBuild.cmake, it gets automatically picked up when
+    # building qtdeclarative, rather than having to build qtbase first (which will copy
+    # QtBuild.cmake to the build dir). This is similar to qmake non-prefix builds, where the
+    # source qtbase/mkspecs directory is used.
+    if(NOT QT_WILL_INSTALL)
+        list(PREPEND CMAKE_MODULE_PATH "${QT_SOURCE_TREE}/cmake")
+    endif()
 
     # If the repo has its own cmake modules, include those in the module path.
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-        list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+        list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
     endif()
 endmacro()
 
