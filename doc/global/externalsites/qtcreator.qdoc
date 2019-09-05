@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -60,6 +60,18 @@
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-quick-tour.html
     \title Qt Creator: User Interface
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-modes.html
+    \title Qt Creator: Selecting Modes
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-sidebar-views.html
+    \title Qt Creator: Browsing Project Contents
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-output-panes.html
+    \title Qt Creator: Viewing Output
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-cli.html
@@ -125,7 +137,7 @@
     \externalpage http://doc.qt.io/qtcreator/quick-signals.html
     \title Qt Creator: Connecting Objects to Signals
 */
-* /*!
+/*!
     \externalpage http://doc.qt.io/qtcreator/quick-dynamic-properties.html
     \title Qt Creator: Specifying Dynamic Properties
 */
@@ -152,6 +164,10 @@
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-qml-modules-with-plugins.html
     \title Qt Creator: Using QML Modules with Plugins
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/quick-converting-ui-projects.html
+    \title Qt Creator: Converting UI Projects to Applications
 */
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-visual-editor.html
@@ -554,6 +570,10 @@
     \title Qt Creator: Analyzing CPU Usage
 */
 /*!
+    \externalpage http://doc.qt.io/qtcreator/creator-cppcheck.html
+    \title Qt Creator: Analyzing Code with Cppcheck
+*/
+/*!
     \externalpage http://doc.qt.io/qtcreator/creator-autotest.html
     \title Qt Creator: Running Autotests
 */
@@ -580,4 +600,28 @@
 /*!
     \externalpage http://doc.qt.io/qtcreator/creator-scxml.html
     \title Qt Creator: Editing State Charts
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/studio-timeline.html
+    \title Qt Creator: Creating Animations
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-language-servers.html
+    \title Qt Creator: Using Language Servers
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/qtcreator-toc.html
+    \title Qt Creator: All Topics
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-live-preview.html
+    \title Qt Creator: Previewing
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-live-preview-desktop.html
+    \title Qt Creator: Previewing on Desktop
+*/
+/*!
+    \externalpage http://doc.qt.io/qtcreator/creator-live-preview-devices.html
+    \title Qt Creator: Previewing on Devices
 */
