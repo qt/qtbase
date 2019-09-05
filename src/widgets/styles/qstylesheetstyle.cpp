@@ -2735,6 +2735,11 @@ static void updateObjects(const QList<const QObject *>& objects)
         if (auto widget = qobject_cast<QWidget*>(const_cast<QObject*>(object))) {
             widget->style()->polish(widget);
             QApplication::sendEvent(widget, &event);
+            QList<const QObject *> children;
+            children.reserve(widget->children().size() + 1);
+            for (auto child: qAsConst(widget->children()))
+                children.append(child);
+            updateObjects(children);
         }
     }
 }
