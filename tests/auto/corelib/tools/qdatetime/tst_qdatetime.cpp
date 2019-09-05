@@ -3319,6 +3319,14 @@ void tst_QDateTime::timeZones() const
     QCOMPARE(dt3.timeSpec(), dt1.timeSpec());
     QCOMPARE(dt3.timeZone(), dt1.timeZone());
 
+    // The start of year 1 should be *describable* in any zone (QTBUG-78051)
+    dt3 = QDateTime(QDate(1, 1, 1), QTime(0, 0, 0), ausTz);
+    QVERIFY(dt3.isValid());
+    // Likewise the end of year -1 (a.k.a. 1 BCE).
+    dt3 = dt3.addMSecs(-1);
+    QVERIFY(dt3.isValid());
+    QCOMPARE(dt3, QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59, 999), ausTz));
+
     // Check datastream serialises the time zone
     QByteArray tmp;
     {
