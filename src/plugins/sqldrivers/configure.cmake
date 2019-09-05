@@ -9,6 +9,7 @@
 qt_find_package(DB2 PROVIDED_TARGETS DB2::DB2)
 qt_find_package(MySQL PROVIDED_TARGETS MySQL::MySQL)
 qt_find_package(PostgreSQL PROVIDED_TARGETS PostgreSQL::PostgreSQL)
+qt_find_package(Oracle PROVIDED_TARGETS Oracle::OCI)
 qt_find_package(ODBC PROVIDED_TARGETS ODBC::ODBC)
 qt_find_package(SQLite3 PROVIDED_TARGETS SQLite::SQLite3)
 
@@ -33,7 +34,7 @@ qt_feature("sql_mysql" PRIVATE
 )
 qt_feature("sql_oci" PRIVATE
     LABEL "OCI (Oracle)"
-    CONDITION libs.oci OR FIXME
+    CONDITION Oracle_FOUND
 )
 qt_feature("sql_odbc" PRIVATE
     LABEL "ODBC"
