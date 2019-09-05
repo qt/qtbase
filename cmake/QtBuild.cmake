@@ -1305,8 +1305,8 @@ function(add_qt_module target)
     endif()
 
     set(private_includes
-        "${CMAKE_CURRENT_SOURCE_DIR}"
-        "${CMAKE_CURRENT_BINARY_DIR}"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
          ${arg_INCLUDE_DIRECTORIES}
     )
 
@@ -1316,8 +1316,8 @@ function(add_qt_module target)
     # from another module.
     if(NOT arg_NO_SYNC_QT)
         list(APPEND private_includes
-                    "${module_include_dir}/${PROJECT_VERSION}"
-                    "${module_include_dir}/${PROJECT_VERSION}/${module}")
+                    "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>"
+                    "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
 
         list(APPEND public_includes
                     # For the syncqt headers
