@@ -44,20 +44,20 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-  \since 5.14
+    \since 5.14
 
-  \class QRomanCalendar
-  \inmodule QtCore
-  \brief The QRomanCalendar class is a shared base for calendars based on the
-  ancient Roman calendar.
+    \class QRomanCalendar
+    \inmodule QtCore
+    \brief The QRomanCalendar class is a shared base for calendars based on the
+    ancient Roman calendar.
 
-  \section1
+    \section1
 
-  Calendars based on the ancient Roman calendar share the names of months, whose
-  lengths depend in a common way on whether the year is a leap year. They differ
-  in how they determine which years are leap years.
+    Calendars based on the ancient Roman calendar share the names of months, whose
+    lengths depend in a common way on whether the year is a leap year. They differ
+    in how they determine which years are leap years.
 
-  \sa QGregorianCalendar, QJulianCalendar, QMilankovicCalendar
+    \sa QGregorianCalendar, QJulianCalendar, QMilankovicCalendar
 */
 
 int QRomanCalendar::daysInMonth(int month, int year) const
