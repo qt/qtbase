@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -375,33 +375,10 @@ void tst_QTimeZone::dataStreamTest()
 void tst_QTimeZone::isTimeZoneIdAvailable()
 {
     QList<QByteArray> available = QTimeZone::availableTimeZoneIds();
-    foreach (const QByteArray &id, available)
+    foreach (const QByteArray &id, available) {
         QVERIFY(QTimeZone::isTimeZoneIdAvailable(id));
-
-#ifdef QT_BUILD_INTERNAL
-    // a-z, A-Z, 0-9, '.', '-', '_' are valid chars
-    // Can't start with '-'
-    // Parts separated by '/', each part min 1 and max of 14 chars
-    QCOMPARE(QTimeZonePrivate::isValidId("az"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("AZ"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("09"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("a/z"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("a.z"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("a-z"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("a_z"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId(".z"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("_z"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("12345678901234"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("12345678901234/12345678901234"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("a z"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("a\\z"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("a,z"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("/z"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("-z"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("123456789012345"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("123456789012345/12345678901234"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("12345678901234/123456789012345"), false);
-#endif // QT_BUILD_INTERNAL
+        QVERIFY(QTimeZone(id).isValid());
+    }
 }
 
 void tst_QTimeZone::specificTransition_data()
@@ -733,10 +710,16 @@ void tst_QTimeZone::isValidId_data()
     QTest::newRow(name " middle") << QByteArray("xyz/" section "/xyz") << valid; \
     QTest::newRow(name " back")   << QByteArray("xyz/xyz/" section)    << valid
 
+    // a-z, A-Z, 0-9, '.', '-', '_' are valid chars
+    // Can't start with '-'
+    // Parts separated by '/', each part min 1 and max of 14 chars
     TESTSET("empty", "", false);
     TESTSET("minimal", "m", true);
     TESTSET("maximal", "12345678901234", true);
+    TESTSET("maximal twice", "12345678901234/12345678901234", true);
     TESTSET("too long", "123456789012345", false);
+    TESTSET("too-long/maximal", "123456789012345/12345678901234", false);
+    TESTSET("maximal/too-long", "12345678901234/123456789012345", false);
 
     TESTSET("bad hyphen", "-hyphen", false);
     TESTSET("good hyphen", "hy-phen", true);
@@ -752,6 +735,22 @@ void tst_QTimeZone::isValidId_data()
     TESTSET("valid char 0", "0", true);
     TESTSET("valid char 9", "9", true);
 
+    TESTSET("valid pair az", "az", true);
+    TESTSET("valid pair AZ", "AZ", true);
+    TESTSET("valid pair 09", "09", true);
+    TESTSET("valid pair .z", ".z", true);
+    TESTSET("valid pair _z", "_z", true);
+    TESTSET("invalid pair -z", "-z", false);
+
+    TESTSET("valid triple a/z", "a/z", true);
+    TESTSET("valid triple a.z", "a.z", true);
+    TESTSET("valid triple a-z", "a-z", true);
+    TESTSET("valid triple a_z", "a_z", true);
+    TESTSET("invalid triple a z", "a z", false);
+    TESTSET("invalid triple a\\z", "a\\z", false);
+    TESTSET("invalid triple a,z", "a,z", false);
+
+    TESTSET("invalid space", " ", false);
     TESTSET("invalid char ^", "^", false);
     TESTSET("invalid char \"", "\"", false);
     TESTSET("invalid char $", "$", false);
@@ -760,6 +759,7 @@ void tst_QTimeZone::isValidId_data()
     TESTSET("invalid char (", "(", false);
     TESTSET("invalid char )", ")", false);
     TESTSET("invalid char =", "=", false);
+    TESTSET("invalid char -", "-", false);
     TESTSET("invalid char ?", "?", false);
     TESTSET("invalid char ß", "ß", false);
     TESTSET("invalid char \\x01", "\x01", false);
