@@ -49,6 +49,8 @@ private slots:
     void dataStreamTest();
     void isTimeZoneIdAvailable();
     void availableTimeZoneIds();
+    void utcOffsetId_data();
+    void utcOffsetId();
     void specificTransition_data();
     void specificTransition();
     void transitionEachZone_data();
@@ -378,6 +380,117 @@ void tst_QTimeZone::isTimeZoneIdAvailable()
     foreach (const QByteArray &id, available) {
         QVERIFY(QTimeZone::isTimeZoneIdAvailable(id));
         QVERIFY(QTimeZone(id).isValid());
+    }
+}
+
+void tst_QTimeZone::utcOffsetId_data()
+{
+    QTest::addColumn<QByteArray>("id");
+    QTest::addColumn<bool>("valid");
+    QTest::addColumn<int>("offset"); // ignored unless valid
+
+    // Some of these are actual CLDR zone IDs, some are known Windows IDs; the
+    // rest rely on parsing the offset. Since CLDR and Windows may add to their
+    // known IDs, which fall in which category may vary. Only the CLDR and
+    // Windows ones are known to isTimeZoneAvailable() or listed in
+    // availableTimeZoneIds().
+#define ROW(name, valid, offset) \
+    QTest::newRow(name) << QByteArray(name) << valid << offset
+
+    // See qtbase/util/locale_database/cldr2qtimezone.py for source
+    // CLDR v35.1 IDs:
+    ROW("UTC", true, 0);
+    ROW("UTC-14:00", true, -50400);
+    ROW("UTC-13:00", true, -46800);
+    ROW("UTC-12:00", true, -43200);
+    ROW("UTC-11:00", true, -39600);
+    ROW("UTC-10:00", true, -36000);
+    ROW("UTC-09:00", true, -32400);
+    ROW("UTC-08:00", true, -28800);
+    ROW("UTC-07:00", true, -25200);
+    ROW("UTC-06:00", true, -21600);
+    ROW("UTC-05:00", true, -18000);
+    ROW("UTC-04:30", true, -16200);
+    ROW("UTC-04:00", true, -14400);
+    ROW("UTC-03:30", true, -12600);
+    ROW("UTC-03:00", true, -10800);
+    ROW("UTC-02:00", true, -7200);
+    ROW("UTC-01:00", true, -3600);
+    ROW("UTC-00:00", true, 0);
+    ROW("UTC+00:00", true, 0);
+    ROW("UTC+01:00", true, 3600);
+    ROW("UTC+02:00", true, 7200);
+    ROW("UTC+03:00", true, 10800);
+    ROW("UTC+03:30", true, 12600);
+    ROW("UTC+04:00", true, 14400);
+    ROW("UTC+04:30", true, 16200);
+    ROW("UTC+05:00", true, 18000);
+    ROW("UTC+05:30", true, 19800);
+    ROW("UTC+05:45", true, 20700);
+    ROW("UTC+06:00", true, 21600);
+    ROW("UTC+06:30", true, 23400);
+    ROW("UTC+07:00", true, 25200);
+    ROW("UTC+08:00", true, 28800);
+    ROW("UTC+08:30", true, 30600);
+    ROW("UTC+09:00", true, 32400);
+    ROW("UTC+09:30", true, 34200);
+    ROW("UTC+10:00", true, 36000);
+    ROW("UTC+11:00", true, 39600);
+    ROW("UTC+12:00", true, 43200);
+    ROW("UTC+13:00", true, 46800);
+    ROW("UTC+14:00", true, 50400);
+    // Windows IDs known to CLDR v35.1:
+    ROW("UTC-11", true, -39600);
+    ROW("UTC-09", true, -32400);
+    ROW("UTC-08", true, -28800);
+    ROW("UTC-02", true, -7200);
+    ROW("UTC+12", true, 43200);
+    ROW("UTC+13", true, 46800);
+    // Encountered in bug reports:
+    ROW("UTC+10", true, 36000); // QTBUG-77738
+
+    // Bounds:
+    ROW("UTC+23", true, 82800);
+    ROW("UTC-23", true, -82800);
+    ROW("UTC+23:59", true, 86340);
+    ROW("UTC-23:59", true, -86340);
+    ROW("UTC+23:59:59", true, 86399);
+    ROW("UTC-23:59:59", true, -86399);
+
+    // Out of range
+    ROW("UTC+24:0:0", false, 0);
+    ROW("UTC-24:0:0", false, 0);
+    ROW("UTC+0:60:0", false, 0);
+    ROW("UTC-0:60:0", false, 0);
+    ROW("UTC+0:0:60", false, 0);
+    ROW("UTC-0:0:60", false, 0);
+
+    // Malformed
+    ROW("UTC+", false, 0);
+    ROW("UTC-", false, 0);
+    ROW("UTC10", false, 0);
+    ROW("UTC:10", false, 0);
+    ROW("UTC+cabbage", false, 0);
+    ROW("UTC+10:rice", false, 0);
+    ROW("UTC+9:3:oat", false, 0);
+    ROW("UTC+9+3", false, 0);
+    ROW("UTC+9-3", false, 0);
+    ROW("UTC+9:3-4", false, 0);
+    ROW("UTC+9:3:4:more", false, 0);
+    ROW("UTC+9:3:4:5", false, 0);
+}
+
+void tst_QTimeZone::utcOffsetId()
+{
+    QFETCH(QByteArray, id);
+    QFETCH(bool, valid);
+    QTimeZone zone(id);
+    QCOMPARE(zone.isValid(), valid);
+    if (valid) {
+        QDateTime epoch(QDate(1970, 1, 1), QTime(0, 0, 0), Qt::UTC);
+        QFETCH(int, offset);
+        QCOMPARE(zone.offsetFromUtc(epoch), offset);
+        QVERIFY(!zone.hasDaylightTime());
     }
 }
 
@@ -823,10 +936,6 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tz.offsetFromUtc(now), 36000);
     QCOMPARE(tz.standardTimeOffset(now), 36000);
     QCOMPARE(tz.daylightTimeOffset(now), 0);
-
-    // Test invalid UTC ID, must be in available list
-    tz = QTimeZone("UTC+00:01");
-    QCOMPARE(tz.isValid(),   false);
 
     // Test create custom zone
     tz = QTimeZone("QST", 123456, "Qt Standard Time", "QST", QLocale::Norway, "Qt Testing");
