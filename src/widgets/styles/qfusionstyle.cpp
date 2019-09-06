@@ -3232,7 +3232,7 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
         break;
     case CT_MenuItem:
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-            int w = newSize.width();
+            int w = size.width(); // Don't rely of QCommonStyle's width calculation here
             int maxpmw = menuItem->maxIconWidth;
             int tabSpacing = 20;
             if (menuItem->text.contains(QLatin1Char('\t')))
