@@ -86,7 +86,7 @@ static inline qreal initialGlobalScaleFactor()
     qreal result = 1;
     if (qEnvironmentVariableIsSet(scaleFactorEnvVar)) {
         bool ok;
-        const qreal f = qgetenv(scaleFactorEnvVar).toDouble(&ok);
+        const qreal f = qEnvironmentVariable(scaleFactorEnvVar).toDouble(&ok);
         if (ok && f > 0) {
             qCDebug(lcScaling) << "Apply " << scaleFactorEnvVar << f;
             result = f;
@@ -284,7 +284,8 @@ static inline bool usePixelDensity()
     return QCoreApplication::testAttribute(Qt::AA_EnableHighDpiScaling)
         || (screenEnvValueOk && screenEnvValue > 0)
         || (enableEnvValueOk && enableEnvValue > 0)
-        || (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar) && qgetenv(legacyDevicePixelEnvVar).toLower() == "auto");
+        || (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar)
+            && qEnvironmentVariable(legacyDevicePixelEnvVar).compare(QLatin1String("auto"), Qt::CaseInsensitive) == 0);
 }
 
 qreal QHighDpiScaling::rawScaleFactor(const QPlatformScreen *screen)
@@ -506,20 +507,20 @@ void QHighDpiScaling::updateHighDpiScaling()
     }
     if (qEnvironmentVariableIsSet(screenFactorsEnvVar)) {
         int i = 0;
-        const auto specs = qgetenv(screenFactorsEnvVar).split(';');
-        for (const QByteArray &spec : specs) {
-            int equalsPos = spec.lastIndexOf('=');
+        const QString spec = qEnvironmentVariable(screenFactorsEnvVar);
+        const auto specs = spec.splitRef(QLatin1Char(';'));
+        for (const QStringRef &spec : specs) {
+            int equalsPos = spec.lastIndexOf(QLatin1Char('='));
             qreal factor = 0;
             if (equalsPos > 0) {
                 // support "name=factor"
-                QByteArray name = spec.mid(0, equalsPos);
-                QByteArray f = spec.mid(equalsPos + 1);
                 bool ok;
-                factor = f.toDouble(&ok);
+                const auto name = spec.left(equalsPos);
+                factor = spec.mid(equalsPos + 1).toDouble(&ok);
                 if (ok && factor > 0 ) {
                     const auto screens = QGuiApplication::screens();
                     for (QScreen *s : screens) {
-                        if (s->name() == QString::fromLocal8Bit(name)) {
+                        if (s->name() == name) {
                             setScreenFactor(s, factor);
                             break;
                         }

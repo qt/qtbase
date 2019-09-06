@@ -1465,7 +1465,7 @@ QDate QDate::addMonths(int nmonths, QCalendar cal) const
 }
 
 /*!
-  \override
+  \overload
 */
 
 QDate QDate::addMonths(int nmonths) const
@@ -1530,7 +1530,7 @@ QDate QDate::addYears(int nyears, QCalendar cal) const
 }
 
 /*!
-  \override
+    \overload
 */
 
 QDate QDate::addYears(int nyears) const

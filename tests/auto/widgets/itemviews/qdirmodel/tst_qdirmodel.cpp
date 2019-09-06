@@ -34,6 +34,8 @@
 #include <qdebug.h>
 #include "emulationdetector.h"
 
+QT_WARNING_DISABLE_DEPRECATED
+
 class tst_QDirModel : public QObject
 {
     Q_OBJECT

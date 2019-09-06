@@ -5025,7 +5025,7 @@ QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace) const
 QColorSpace QImage::colorSpace() const
 {
     if (!d)
-        return QColorSpace::Undefined;
+        return QColorSpace();
     return d->colorSpace;
 }
 

@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QColorSpacePrimaries
+class Q_AUTOTEST_EXPORT QColorSpacePrimaries
 {
 public:
    QColorSpacePrimaries() = default;
@@ -90,7 +90,7 @@ class QColorSpacePrivate : public QSharedData
 {
 public:
     QColorSpacePrivate();
-    QColorSpacePrivate(QColorSpace::ColorSpaceId colorSpaceId);
+    QColorSpacePrivate(QColorSpace::NamedColorSpace namedColorSpace);
     QColorSpacePrivate(QColorSpace::Primaries primaries, QColorSpace::TransferFunction fun, float gamma);
     QColorSpacePrivate(const QColorSpacePrimaries &primaries, QColorSpace::TransferFunction fun, float gamma);
     QColorSpacePrivate(const QColorSpacePrivate &other) = default;
@@ -118,10 +118,12 @@ public:
     void initialize();
     void setToXyzMatrix();
     void setTransferFunction();
-    bool identifyColorSpace();
+    void identifyColorSpace();
     QColorTransform transformationToColorSpace(const QColorSpacePrivate *out) const;
 
-    QColorSpace::ColorSpaceId id;
+    static constexpr QColorSpace::NamedColorSpace Unknown = QColorSpace::NamedColorSpace(0);
+    QColorSpace::NamedColorSpace namedColorSpace = Unknown;
+
     QColorSpace::Primaries primaries;
     QColorSpace::TransferFunction transferFunction;
     float gamma;

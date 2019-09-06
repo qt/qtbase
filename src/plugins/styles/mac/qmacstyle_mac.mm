@@ -555,10 +555,10 @@ QRect rotateTabPainter(QPainter *p, QTabBar::Shape shape, QRect tabRect)
             newRot = -90;
         }
         tabRect.setRect(0, 0, tabRect.height(), tabRect.width());
-        QMatrix m;
-        m.translate(newX, newY);
-        m.rotate(newRot);
-        p->setMatrix(m, true);
+        QTransform transform;
+        transform.translate(newX, newY);
+        transform.rotate(newRot);
+        p->setTransform(transform, true);
     }
     return tabRect;
 }
@@ -2951,24 +2951,24 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         }
 #endif
 
-        QMatrix matrix;
-        matrix.translate(opt->rect.center().x() + xOffset, opt->rect.center().y() + 2);
+        QTransform transform;
+        transform.translate(opt->rect.center().x() + xOffset, opt->rect.center().y() + 2);
         QPainterPath path;
         switch(pe) {
         default:
         case PE_IndicatorArrowDown:
             break;
         case PE_IndicatorArrowUp:
-            matrix.rotate(180);
+            transform.rotate(180);
             break;
         case PE_IndicatorArrowLeft:
-            matrix.rotate(90);
+            transform.rotate(90);
             break;
         case PE_IndicatorArrowRight:
-            matrix.rotate(-90);
+            transform.rotate(-90);
             break;
         }
-        p->setMatrix(matrix);
+        p->setTransform(transform);
 
         path.moveTo(-halfSize, -halfSize * 0.5);
         path.lineTo(0.0, halfSize * 0.5);

@@ -531,7 +531,7 @@ QT_BEGIN_NAMESPACE
     optimize the execution of the matching algorithm. The JIT makes extensive
     usage of self-modifying code, which can lead debugging tools such as
     Valgrind to crash. You must enable all checks for self-modifying code if
-    you want to debug programs using QRegularExpression (f.i., see Valgrind's
+    you want to debug programs using QRegularExpression (for instance, Valgrind's
     \c{--smc-check} command line option). The downside of enabling such checks
     is that your program will run considerably slower.
 

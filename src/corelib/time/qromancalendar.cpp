@@ -72,7 +72,7 @@ int QRomanCalendar::daysInMonth(int month, int year) const
     return 30 | ((month & 1) ^ (month >> 3));
 }
 
-int QRomanCalendar::minDaysInMonth() const
+int QRomanCalendar::minimumDaysInMonth() const
 {
     return 28;
 }

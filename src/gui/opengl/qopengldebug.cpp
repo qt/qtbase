@@ -1807,7 +1807,7 @@ QList<QOpenGLDebugMessage> QOpenGLDebugLogger::loggedMessages() const
 
     \note Message texts are encoded in UTF-8 when they get passed to OpenGL, so
     their size in bytes does not usually match the amount of UTF-16 code units,
-    as returned f.i. by QString::length(). (It does if the message contains
+    as returned, for instance, by QString::length(). (It does if the message contains
     7-bit ASCII only data, which is typical for debug messages.)
 */
 qint64 QOpenGLDebugLogger::maximumMessageLength() const

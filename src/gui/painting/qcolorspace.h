@@ -54,17 +54,15 @@ class Q_GUI_EXPORT QColorSpace
 {
     Q_GADGET
 public:
-    enum ColorSpaceId {
-        Undefined = 0,
-        Unknown = 1,
-        SRgb,
+    enum NamedColorSpace {
+        SRgb = 1,
         SRgbLinear,
         AdobeRgb,
         DisplayP3,
         ProPhotoRgb,
         Bt2020,
     };
-    Q_ENUM(ColorSpaceId)
+    Q_ENUM(NamedColorSpace)
     enum class Primaries {
         Custom = 0,
         SRgb,
@@ -84,7 +82,8 @@ public:
     };
     Q_ENUM(TransferFunction)
 
-    QColorSpace(ColorSpaceId colorSpaceId = Undefined);
+    QColorSpace();
+    QColorSpace(NamedColorSpace namedColorSpace);
     QColorSpace(Primaries primaries, TransferFunction fun, float gamma = 0.0f);
     QColorSpace(Primaries primaries, float gamma);
     QColorSpace(const QPointF &whitePoint, const QPointF &redPoint,
@@ -108,7 +107,6 @@ public:
     void swap(QColorSpace &colorSpace) noexcept
     { qSwap(d_ptr, colorSpace.d_ptr); }
 
-    ColorSpaceId colorSpaceId() const noexcept;
     Primaries primaries() const noexcept;
     TransferFunction transferFunction() const noexcept;
     float gamma() const noexcept;
@@ -133,7 +131,11 @@ public:
 
 private:
     Q_DECLARE_PRIVATE(QColorSpace)
-    QColorSpacePrivate *d_ptr;
+    QColorSpacePrivate *d_ptr = nullptr;
+
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QColorSpace &colorSpace);
+#endif
 };
 
 bool Q_GUI_EXPORT operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2);

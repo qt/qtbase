@@ -176,16 +176,16 @@
 
     \snippet draganddrop/dropsite/dropsitewindow.cpp constructor part3
 
-    Two QPushButton objects, \c clearButton and \c quitButton, are instantiated
-    and added to \c buttonBox - a QDialogButtonBox object. We use
-    QDialogButtonBox here to ensure that the push buttons are presented in a
+    Three QPushButton objects, \c clearButton, \c copyButton, and \c quitButton,
+    are instantiated and added to \c buttonBox - a QDialogButtonBox object. We
+    use QDialogButtonBox here to ensure that the push buttons are presented in a
     layout that conforms to the platform's style.
 
     \snippet draganddrop/dropsite/dropsitewindow.cpp constructor part4
 
-    The \l{QPushButton::clicked()}{clicked()} signals for \c quitButton and
-    \c clearButton are connected to \l{QWidget::close()}{close()} and
-    \c clear(), respectively.
+    The \l{QPushButton::clicked()}{clicked()} signals for \c copyButton,
+    \c clearButton, and \c quitButton are connected to \c copy(),
+    \c clear() and \l{QWidget::close()}{close()}, respectively.
 
     For the layout, we use a QVBoxLayout, \c mainLayout, to arrange our widgets
     vertically. We also set the window title to "Drop Site" and the minimum

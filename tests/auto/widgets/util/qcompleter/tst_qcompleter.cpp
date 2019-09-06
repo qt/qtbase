@@ -107,8 +107,10 @@ private slots:
     void csMatchingOnCiSortedModel_data();
     void csMatchingOnCiSortedModel();
 
+#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
     void directoryModel_data();
     void directoryModel();
+#endif
     void fileSystemModel_data();
     void fileSystemModel();
 
@@ -224,9 +226,14 @@ void tst_QCompleter::setSourceModel(ModelType type)
         parent->setText(completionColumn, QLatin1String("p2,c4p2"));
         break;
     case DIRECTORY_MODEL:
+#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         completer->setCsvCompletion(false);
         completer->setModel(new QDirModel(completer));
         completer->setCompletionColumn(0);
+QT_WARNING_POP
+#endif // QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
         break;
     case FILESYSTEM_MODEL:
         completer->setCsvCompletion(false);
@@ -590,6 +597,7 @@ void tst_QCompleter::csMatchingOnCiSortedModel()
     filter();
 }
 
+#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
 void tst_QCompleter::directoryModel_data()
 {
     delete completer;
@@ -639,6 +647,7 @@ void tst_QCompleter::directoryModel()
 #endif
     filter();
 }
+#endif // QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
 
 void tst_QCompleter::fileSystemModel_data()
 {
@@ -1057,15 +1066,15 @@ void tst_QCompleter::setters()
     delete completer;
     completer = new CsvCompleter;
     QVERIFY(completer->popup() != nullptr);
-    QPointer<QDirModel> dirModel = new QDirModel(completer);
+    QPointer<QStandardItemModel> itemModel(new QStandardItemModel(1, 0, completer));
     QAbstractItemModel *oldModel = completer->model();
-    completer->setModel(dirModel);
+    completer->setModel(itemModel.data());
     QVERIFY(completer->popup()->model() != oldModel);
     QCOMPARE(completer->popup()->model(), completer->completionModel());
     completer->setPopup(new QListView);
     QCOMPARE(completer->popup()->model(), completer->completionModel());
     completer->setModel(new QStringListModel(completer));
-    QVERIFY(dirModel == nullptr); // must have been deleted
+    QVERIFY(itemModel.isNull()); // must have been deleted
 
     completer->setModel(nullptr);
     completer->setWidget(nullptr);

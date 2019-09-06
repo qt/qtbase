@@ -95,9 +95,9 @@ public:
     virtual bool isSolar() const = 0;
     virtual bool isProleptic() const;
     virtual bool hasYearZero() const;
-    virtual int maxDaysInMonth() const;
-    virtual int minDaysInMonth() const;
-    virtual int maxMonthsInYear() const;
+    virtual int maximumDaysInMonth() const;
+    virtual int minimumDaysInMonth() const;
+    virtual int maximumMonthsInYear() const;
     // Julian Day conversions:
     virtual bool dateToJulianDay(int year, int month, int day, qint64 *jd) const = 0;
     virtual QCalendar::YearMonthDay julianDayToDate(qint64 jd) const = 0;

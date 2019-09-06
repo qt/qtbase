@@ -1775,12 +1775,7 @@ void QByteArray::resize(int size)
         return;
     }
 
-    if (size == 0 && !d->capacityReserved) {
-        Data *x = Data::allocate(0);
-        if (!d->ref.deref())
-            Data::deallocate(d);
-        d = x;
-    } else if (d->size == 0 && d->ref.isStatic()) {
+    if (d->size == 0 && d->ref.isStatic()) {
         //
         // Optimize the idiom:
         //    QByteArray a;
@@ -1795,9 +1790,7 @@ void QByteArray::resize(int size)
         x->data()[size] = '\0';
         d = x;
     } else {
-        if (d->ref.isShared() || uint(size) + 1u > d->alloc
-                || (!d->capacityReserved && size < d->size
-                    && uint(size) + 1u < uint(d->alloc >> 1)))
+        if (d->ref.isShared() || uint(size) + 1u > d->alloc)
             reallocData(uint(size) + 1u, d->detachFlags() | Data::Grow);
         if (d->alloc) {
             d->size = size;

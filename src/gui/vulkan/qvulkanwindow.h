@@ -112,6 +112,7 @@ public:
     const VkPhysicalDeviceProperties *physicalDeviceProperties() const;
     VkDevice device() const;
     VkQueue graphicsQueue() const;
+    uint32_t graphicsQueueFamilyIndex() const;
     VkCommandPool graphicsCommandPool() const;
     uint32_t hostVisibleMemoryIndex() const;
     uint32_t deviceLocalMemoryIndex() const;

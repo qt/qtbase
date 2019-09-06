@@ -2254,10 +2254,10 @@ QVariant::QVariant(const QRegularExpression &re)
     : d(RegularExpression)
 { v_construct<QRegularExpression>(&d, re); }
 #endif // QT_CONFIG(regularexpression)
-#ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QUuid &uuid)
     : d(Uuid)
 { v_construct<QUuid>(&d, uuid); }
+#ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QJsonValue &jsonValue)
     : d(QMetaType::QJsonValue)
 { v_construct<QJsonValue>(&d, jsonValue); }
@@ -3011,7 +3011,6 @@ QPersistentModelIndex QVariant::toPersistentModelIndex() const
 }
 #endif // QT_CONFIG(itemmodel)
 
-#ifndef QT_BOOTSTRAPPED
 /*!
     \since 5.0
 
@@ -3026,6 +3025,7 @@ QUuid QVariant::toUuid() const
     return qVariantToHelper<QUuid>(d, handlerManager);
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     \since 5.0
 
