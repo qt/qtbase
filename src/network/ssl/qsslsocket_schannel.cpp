@@ -408,13 +408,17 @@ QByteArray createAlpnString(const QByteArrayList &nextAllowedProtocols)
             for (QByteArray proto : nextAllowedProtocols) {
                 if (proto.size() > 255) {
                     qCWarning(lcSsl) << "TLS ALPN extension" << proto
-                                     << "is too long and will be truncated to 255 characters.";
-                    proto = proto.left(255);
+                                     << "is too long and will be ignored.";
+                    continue;
+                } else if (proto.isEmpty()) {
+                    continue;
                 }
                 protocolString += char(proto.length()) + proto;
             }
             return protocolString;
         }();
+        if (names.isEmpty())
+            return alpnString;
 
         const quint16 namesSize = names.size();
         const quint32 alpnId = SecApplicationProtocolNegotiationExt_ALPN;

@@ -2413,7 +2413,7 @@ void QCalendarWidget::showNextMonth()
     Q_D(const QCalendarWidget);
     int year = yearShown();
     int month = monthShown();
-    if (month == d->m_model->m_calendar.maxMonthsInYear()) {
+    if (month == d->m_model->m_calendar.maximumMonthsInYear()) {
         ++year;
         month = 1;
     } else {
@@ -2437,7 +2437,7 @@ void QCalendarWidget::showPreviousMonth()
     int month = monthShown();
     if (month == 1) {
         --year;
-        month = d->m_model->m_calendar.maxMonthsInYear();
+        month = d->m_model->m_calendar.maximumMonthsInYear();
     } else {
         --month;
     }

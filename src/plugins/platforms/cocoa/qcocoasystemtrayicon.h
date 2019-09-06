@@ -65,7 +65,7 @@ public:
     void updateMenu(QPlatformMenu *menu) override;
     QRect geometry() const override;
     void showMessage(const QString &title, const QString &msg,
-                     const QIcon& icon, MessageIcon iconType, int secs) override;
+                     const QIcon& icon, MessageIcon iconType, int msecs) override;
 
     bool isSystemTrayAvailable() const override;
     bool supportsMessages() const override;

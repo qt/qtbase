@@ -143,7 +143,7 @@ qCalculateGrowingBlockSize(size_t elementCount, size_t elementSize, size_t heade
     }
 
     result.elementCount = (bytes - unsigned(headerSize)) / unsigned(elementSize);
-    result.size = bytes;
+    result.size = result.elementCount * elementSize + headerSize;
     return result;
 }
 

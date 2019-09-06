@@ -533,7 +533,7 @@ bool QToolBarLayout::layoutActions(const QSize &size)
             if (expanded)
                 rperp(o, size) = rowHeight;
             else
-                rperp(o, size) = perp(o, rect.size()) - perp(o, QSize(margins.top(), margins.left()));
+                rperp(o, size) = perp(o, rect.size()) - perp(o, margins);
             QRect r(pos, size);
 
             if (o == Qt::Horizontal)

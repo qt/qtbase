@@ -152,8 +152,7 @@ QColorMatrix QColorSpacePrimaries::toXyzMatrix() const
 }
 
 QColorSpacePrivate::QColorSpacePrivate()
-        : id(QColorSpace::Unknown)
-        , primaries(QColorSpace::Primaries::Custom)
+        : primaries(QColorSpace::Primaries::Custom)
         , transferFunction(QColorSpace::TransferFunction::Custom)
         , gamma(0.0f)
         , whitePoint(QColorVector::null())
@@ -161,16 +160,11 @@ QColorSpacePrivate::QColorSpacePrivate()
 {
 }
 
-QColorSpacePrivate::QColorSpacePrivate(QColorSpace::ColorSpaceId colorSpaceId)
-        : id(colorSpaceId)
+QColorSpacePrivate::QColorSpacePrivate(QColorSpace::NamedColorSpace namedColorSpace)
+        : namedColorSpace(namedColorSpace)
         , gamma(0.0f)
 {
-    switch (colorSpaceId) {
-    case QColorSpace::Undefined:
-        primaries = QColorSpace::Primaries::Custom;
-        transferFunction = QColorSpace::TransferFunction::Custom;
-        description = QStringLiteral("Undefined");
-        break;
+    switch (namedColorSpace) {
     case QColorSpace::SRgb:
         primaries = QColorSpace::Primaries::SRgb;
         transferFunction = QColorSpace::TransferFunction::SRgb;
@@ -202,9 +196,6 @@ QColorSpacePrivate::QColorSpacePrivate(QColorSpace::ColorSpaceId colorSpaceId)
         transferFunction = QColorSpace::TransferFunction::Bt2020;
         description = QStringLiteral("BT.2020");
         break;
-    case QColorSpace::Unknown:
-        qWarning("Can not create an unknown color space");
-        Q_FALLTHROUGH();
     default:
         Q_UNREACHABLE();
     }
@@ -216,8 +207,7 @@ QColorSpacePrivate::QColorSpacePrivate(QColorSpace::Primaries primaries, QColorS
         , transferFunction(fun)
         , gamma(gamma)
 {
-    if (!identifyColorSpace())
-        id = QColorSpace::Unknown;
+    identifyColorSpace();
     initialize();
 }
 
@@ -235,71 +225,71 @@ QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries,
     setTransferFunction();
 }
 
-bool QColorSpacePrivate::identifyColorSpace()
+void QColorSpacePrivate::identifyColorSpace()
 {
     switch (primaries) {
     case QColorSpace::Primaries::SRgb:
         if (transferFunction == QColorSpace::TransferFunction::SRgb) {
-            id = QColorSpace::SRgb;
+            namedColorSpace = QColorSpace::SRgb;
             if (description.isEmpty())
                 description = QStringLiteral("sRGB");
-            return true;
+            return;
         }
         if (transferFunction == QColorSpace::TransferFunction::Linear) {
-            id = QColorSpace::SRgbLinear;
+            namedColorSpace = QColorSpace::SRgbLinear;
             if (description.isEmpty())
                 description = QStringLiteral("Linear sRGB");
-            return true;
+            return;
         }
         break;
     case QColorSpace::Primaries::AdobeRgb:
         if (transferFunction == QColorSpace::TransferFunction::Gamma) {
             if (qAbs(gamma - 2.19921875f) < (1/1024.0f)) {
-                id = QColorSpace::AdobeRgb;
+                namedColorSpace = QColorSpace::AdobeRgb;
                 if (description.isEmpty())
                     description = QStringLiteral("Adobe RGB");
-                return true;
+                return;
             }
         }
         break;
     case QColorSpace::Primaries::DciP3D65:
         if (transferFunction == QColorSpace::TransferFunction::SRgb) {
-            id = QColorSpace::DisplayP3;
+            namedColorSpace = QColorSpace::DisplayP3;
             if (description.isEmpty())
                 description = QStringLiteral("Display P3");
-            return true;
+            return;
         }
         break;
     case QColorSpace::Primaries::ProPhotoRgb:
         if (transferFunction == QColorSpace::TransferFunction::ProPhotoRgb) {
-            id = QColorSpace::ProPhotoRgb;
+            namedColorSpace = QColorSpace::ProPhotoRgb;
             if (description.isEmpty())
                 description = QStringLiteral("ProPhoto RGB");
-            return true;
+            return;
         }
         if (transferFunction == QColorSpace::TransferFunction::Gamma) {
             // ProPhoto RGB's curve is effectively gamma 1.8 for 8bit precision.
             if (qAbs(gamma - 1.8f) < (1/1024.0f)) {
-                id = QColorSpace::ProPhotoRgb;
+                namedColorSpace = QColorSpace::ProPhotoRgb;
                 if (description.isEmpty())
                     description = QStringLiteral("ProPhoto RGB");
-                return true;
+                return;
             }
         }
         break;
     case QColorSpace::Primaries::Bt2020:
         if (transferFunction == QColorSpace::TransferFunction::Bt2020) {
-            id = QColorSpace::Bt2020;
+            namedColorSpace = QColorSpace::Bt2020;
             if (description.isEmpty())
                 description = QStringLiteral("BT.2020");
-            return true;
+            return;
         }
         break;
     default:
         break;
     }
-    id = QColorSpace::Unknown;
-    return false;
+
+    namedColorSpace = Unknown;
 }
 
 void QColorSpacePrivate::initialize()
@@ -410,12 +400,10 @@ QColorTransform QColorSpacePrivate::transformationToColorSpace(const QColorSpace
 
 
 /*!
-    \enum QColorSpace::ColorSpaceId
+    \enum QColorSpace::NamedColorSpace
 
     Predefined color spaces.
 
-    \value Undefined An empty, invalid or unsupported color space.
-    \value Unknown A valid color space that doesn't match any of the predefined color spaces.
     \value SRgb The sRGB color space, which Qt operates in by default. It is a close approximation
     of how most classic monitors operate, and a mode most software and hardware support.
     \l{http://www.color.org/chardata/rgb/srgb.xalter}{ICC registration of sRGB}.
@@ -458,22 +446,25 @@ QColorTransform QColorSpacePrivate::transformationToColorSpace(const QColorSpace
 */
 
 /*!
-    Creates a new colorspace object that represents \a colorSpaceId.
+    Creates a new colorspace object that represents an undefined and invalid colorspace.
  */
-QColorSpace::QColorSpace(QColorSpace::ColorSpaceId colorSpaceId)
-        : d_ptr(nullptr)
+QColorSpace::QColorSpace()
 {
-    static QColorSpacePrivate *predefinedColorspacePrivates[QColorSpace::Bt2020];
-    // Unknown and undefined both returns the static undefined colorspace
-    if (colorSpaceId > QColorSpace::Unknown) {
-        if (!predefinedColorspacePrivates[colorSpaceId - 2]) {
-            predefinedColorspacePrivates[colorSpaceId - 2] = new QColorSpacePrivate(colorSpaceId);
-            predefinedColorspacePrivates[colorSpaceId - 2]->ref.ref();
-        }
-        d_ptr = predefinedColorspacePrivates[colorSpaceId - 2];
-        d_ptr->ref.ref();
-        Q_ASSERT(isValid());
+}
+
+/*!
+    Creates a new colorspace object that represents a \a namedColorSpace.
+ */
+QColorSpace::QColorSpace(NamedColorSpace namedColorSpace)
+{
+    static QColorSpacePrivate *predefinedColorspacePrivates[QColorSpace::Bt2020 + 1];
+    if (!predefinedColorspacePrivates[namedColorSpace]) {
+        predefinedColorspacePrivates[namedColorSpace] = new QColorSpacePrivate(namedColorSpace);
+        predefinedColorspacePrivates[namedColorSpace]->ref.ref();
     }
+    d_ptr = predefinedColorspacePrivates[namedColorSpace];
+    d_ptr->ref.ref();
+    Q_ASSERT(isValid());
 }
 
 /*!
@@ -545,17 +536,6 @@ QColorSpace &QColorSpace::operator=(const QColorSpace &colorSpace)
 */
 
 /*!
-    Returns the id of the predefined color space this object
-    represents or \c Unknown if it doesn't match any of them.
-*/
-QColorSpace::ColorSpaceId QColorSpace::colorSpaceId() const noexcept
-{
-    if (Q_UNLIKELY(!d_ptr))
-        return QColorSpace::Undefined;
-    return d_ptr->id;
-}
-
-/*!
     Returns the predefined primaries of the color space
     or \c primaries::Custom if it doesn't match any of them.
 */
@@ -596,8 +576,6 @@ float QColorSpace::gamma() const noexcept
 /*!
     Sets the transfer function to \a transferFunction and \a gamma.
 
-    \note This also changes colorSpaceId().
-
     \sa transferFunction(), gamma(), withTransferFunction()
 */
 void QColorSpace::setTransferFunction(QColorSpace::TransferFunction transferFunction, float gamma)
@@ -634,8 +612,6 @@ QColorSpace QColorSpace::withTransferFunction(QColorSpace::TransferFunction tran
 /*!
     Sets the primaries to those of the \a primariesId set.
 
-    \note This also changes colorSpaceId().
-
     \sa primaries()
 */
 void QColorSpace::setPrimaries(QColorSpace::Primaries primariesId)
@@ -654,8 +630,6 @@ void QColorSpace::setPrimaries(QColorSpace::Primaries primariesId)
 /*!
     Set primaries to the chromaticities of \a whitePoint, \a redPoint, \a greenPoint
     and \a bluePoint.
-
-    \note This also changes colorSpaceId().
 
     \sa primaries()
 */
@@ -718,7 +692,6 @@ QColorSpace QColorSpace::fromIccProfile(const QByteArray &iccProfile)
     if (QIcc::fromIccProfile(iccProfile, &colorSpace))
         return colorSpace;
     QColorSpacePrivate *d = QColorSpacePrivate::getWritable(colorSpace);
-    d->id = QColorSpace::Undefined;
     d->iccProfile = iccProfile;
     return colorSpace;
 }
@@ -728,7 +701,8 @@ QColorSpace QColorSpace::fromIccProfile(const QByteArray &iccProfile)
 */
 bool QColorSpace::isValid() const noexcept
 {
-    return d_ptr && d_ptr->id != QColorSpace::Undefined && d_ptr->toXyz.isValid()
+    return d_ptr
+        && d_ptr->toXyz.isValid()
         && d_ptr->trc[0].isValid() && d_ptr->trc[1].isValid() && d_ptr->trc[2].isValid();
 }
 
@@ -744,11 +718,17 @@ bool operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
     if (!colorSpace1.d_ptr || !colorSpace2.d_ptr)
         return false;
 
-    if (colorSpace1.colorSpaceId() == QColorSpace::Undefined && colorSpace2.colorSpaceId() == QColorSpace::Undefined)
-        return colorSpace1.d_ptr->iccProfile == colorSpace2.d_ptr->iccProfile;
+    if (colorSpace1.d_ptr->namedColorSpace && colorSpace2.d_ptr->namedColorSpace)
+        return colorSpace1.d_ptr->namedColorSpace == colorSpace2.d_ptr->namedColorSpace;
 
-    if (colorSpace1.colorSpaceId() != QColorSpace::Unknown && colorSpace2.colorSpaceId() != QColorSpace::Unknown)
-        return colorSpace1.colorSpaceId() == colorSpace2.colorSpaceId();
+    const bool valid1 = colorSpace1.isValid();
+    const bool valid2 = colorSpace2.isValid();
+    if (!valid1 && !valid2)
+        return colorSpace1.d_ptr->iccProfile == colorSpace2.d_ptr->iccProfile;
+    else if (!valid1 || !valid2)
+        return false;
+
+    // At this point one or both color spaces are unknown but valid, and must be compared in detail instead
 
     if (colorSpace1.primaries() != QColorSpace::Primaries::Custom && colorSpace2.primaries() != QColorSpace::Primaries::Custom) {
         if (colorSpace1.primaries() != colorSpace2.primaries())
@@ -839,7 +819,9 @@ QDebug operator<<(QDebug dbg, const QColorSpace &colorSpace)
     QDebugStateSaver saver(dbg);
     dbg.nospace();
     dbg << "QColorSpace(";
-    dbg << colorSpace.colorSpaceId() << ", " << colorSpace.primaries() << ", " << colorSpace.transferFunction();
+    if (colorSpace.d_ptr->namedColorSpace)
+        dbg << colorSpace.d_ptr->namedColorSpace << ", ";
+    dbg << colorSpace.primaries() << ", " << colorSpace.transferFunction();
     dbg << ", gamma=" << colorSpace.gamma();
     dbg << ')';
     return dbg;

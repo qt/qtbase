@@ -90,7 +90,9 @@ ModelsToTest::ModelsToTest()
 {
     setupDatabase();
 
+#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
     tests.append(test("QDirModel", ReadOnly, HasData));
+#endif
     tests.append(test("QStringListModel", ReadWrite, HasData));
     tests.append(test("QStringListModelEmpty", ReadWrite, Empty));
 
@@ -165,11 +167,16 @@ QAbstractItemModel *ModelsToTest::createModel(const QString &modelType)
         return model;
     }
 
+#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     if (modelType == "QDirModel") {
         QDirModel *model = new QDirModel();
         model->setReadOnly(false);
         return model;
     }
+QT_WARNING_POP
+#endif
 
     if (modelType == "QSqlQueryModel") {
         QSqlQueryModel *model = new QSqlQueryModel();
@@ -287,6 +294,7 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
         return returnIndex;
     }
 
+#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
     if (QDirModel *dirModel = qobject_cast<QDirModel *>(model)) {
         m_dirModelTempDir.reset(new QTemporaryDir);
         if (!m_dirModelTempDir->isValid())
@@ -303,6 +311,7 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
         }
         return dirModel->index(tempDir.path());
     }
+#endif // QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
 
     if (QSqlQueryModel *queryModel = qobject_cast<QSqlQueryModel *>(model)) {
         QSqlQuery q;
@@ -359,11 +368,12 @@ QModelIndex ModelsToTest::populateTestArea(QAbstractItemModel *model)
  */
 void ModelsToTest::cleanupTestArea(QAbstractItemModel *model)
 {
-    if (qobject_cast<QDirModel *>(model)) {
-        m_dirModelTempDir.reset();
-    } else if (qobject_cast<QSqlQueryModel *>(model)) {
+    if (qobject_cast<QSqlQueryModel *>(model))
         QSqlQuery q("DROP TABLE test");
-    }
+#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
+    if (qobject_cast<QDirModel *>(model))
+        m_dirModelTempDir.reset();
+#endif
 }
 
 void ModelsToTest::setupDatabase()

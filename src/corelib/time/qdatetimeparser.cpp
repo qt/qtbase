@@ -223,21 +223,23 @@ int QDateTimeParser::absoluteMax(int s, const QDateTime &cur) const
     case TimeZoneSection: return QTimeZone::MaxUtcOffsetSecs;
 #endif
     case Hour24Section:
-    case Hour12Section: return 23; // this is special-cased in
-                                   // parseSection. We want it to be
-                                   // 23 for the stepBy case.
+    case Hour12Section:
+        // This is special-cased in parseSection.
+        // We want it to be 23 for the stepBy case.
+        return 23;
     case MinuteSection:
     case SecondSection: return 59;
     case MSecSection: return 999;
     case YearSection2Digits:
-    case YearSection: return 9999; // sectionMaxSize will prevent
-                                   // people from typing in a larger
-                                   // number in count == 2 sections.
-                                   // stepBy() will work on real years anyway
-    case MonthSection: return calendar.maxMonthsInYear();
+    case YearSection:
+        // sectionMaxSize will prevent people from typing in a larger number in
+        // count == 2 sections; stepBy() will work on real years anyway.
+        return 9999;
+    case MonthSection: return calendar.maximumMonthsInYear();
     case DaySection:
     case DayOfWeekSectionShort:
-    case DayOfWeekSectionLong: return cur.isValid() ? cur.date().daysInMonth(calendar) : calendar.maxDaysInMonth() ;
+    case DayOfWeekSectionLong:
+        return cur.isValid() ? cur.date().daysInMonth(calendar) : calendar.maximumDaysInMonth();
     case AmPmSection: return 1;
     default: break;
     }
@@ -615,7 +617,7 @@ int QDateTimeParser::sectionSize(int sectionIndex) const
 int QDateTimeParser::sectionMaxSize(Section s, int count) const
 {
 #if QT_CONFIG(textdate)
-    int mcount = calendar.maxMonthsInYear();
+    int mcount = calendar.maximumMonthsInYear();
 #endif
 
     switch (s) {
@@ -1291,9 +1293,9 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
         }
 
         if (!calendar.isDateValid(year, month, day)) {
-            if (day <= calendar.maxDaysInMonth())
+            if (day <= calendar.maximumDaysInMonth())
                 cachedDay = day;
-            if (day > calendar.minDaysInMonth() && calendar.isDateValid(year, month, 1))
+            if (day > calendar.minimumDaysInMonth() && calendar.isDateValid(year, month, 1))
                 needfixday = true;
         }
         if (needfixday) {

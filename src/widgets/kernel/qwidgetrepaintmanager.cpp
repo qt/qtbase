@@ -147,6 +147,7 @@ QWidgetRepaintManager::~QWidgetRepaintManager()
 }
 
 /*!
+    \internal
     Invalidates the \a r (in widget's coordinates) of the backing store, i.e.
     all widgets intersecting with the region will be repainted when the backing
     store is synced.
@@ -193,6 +194,7 @@ static inline QRect widgetRectFor(QWidget *, const QRect &r) { return r; }
 static inline QRect widgetRectFor(QWidget *widget, const QRegion &) { return widget->rect(); }
 
 /*!
+    \internal
     Marks the region of the widget as dirty (if not already marked as dirty) and
     posts an UpdateRequest event to the top-level widget (if not already posted).
 

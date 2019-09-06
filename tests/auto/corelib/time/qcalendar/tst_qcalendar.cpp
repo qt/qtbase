@@ -55,13 +55,13 @@ void tst_QCalendar::checkYear(const QCalendar &cal, int year, bool normal)
     QVERIFY(moons > 0);
     QVERIFY(!cal.isDateValid(year, moons + 1, 1));
     QVERIFY(!cal.isDateValid(year, 0, 1));
-    QVERIFY(moons <= cal.maxMonthsInYear());
+    QVERIFY(moons <= cal.maximumMonthsInYear());
 
     const int days = cal.daysInYear(year);
     QVERIFY(days > 0);
 
     int sum = 0;
-    const int longest = cal.maxDaysInMonth();
+    const int longest = cal.maximumDaysInMonth();
     for (int i = moons; i > 0; i--) {
         const int last = cal.daysInMonth(i, year);
         sum += last;

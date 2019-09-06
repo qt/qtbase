@@ -72,6 +72,7 @@ public:
 
 public slots:
     void updateFormatsTable(const QMimeData *mimeData);
+    void copy();
 
 private:
     DropArea *dropArea;
@@ -79,6 +80,7 @@ private:
     QTableWidget *formatsTable;
 
     QPushButton *clearButton;
+    QPushButton *copyButton;
     QPushButton *quitButton;
     QDialogButtonBox *buttonBox;
 };

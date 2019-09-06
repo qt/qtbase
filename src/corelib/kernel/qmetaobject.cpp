@@ -112,6 +112,13 @@ QT_BEGIN_NAMESPACE
     are returned by classInfo(), and you can search for pairs with
     indexOfClassInfo().
 
+    \note Operations that use the meta object system are generally thread-
+    safe, as QMetaObjects are typically static read-only instances
+    generated at compile time. However, if meta objects are dynamically
+    modified by the application (for instance, when using QQmlPropertyMap),
+    then the application has to explicitly synchronize access to the
+    respective meta object.
+
     \sa QMetaClassInfo, QMetaEnum, QMetaMethod, QMetaProperty, QMetaType,
         {Meta-Object System}
 */

@@ -2211,6 +2211,23 @@ VkQueue QVulkanWindow::graphicsQueue() const
 }
 
 /*!
+    Returns the family index of the active graphics queue.
+
+    \note Calling this function is only valid from the invocation of
+    QVulkanWindowRenderer::initResources() up until
+    QVulkanWindowRenderer::releaseResources(). Implementations of
+    QVulkanWindowRenderer::updateQueueCreateInfo() can also call this
+    function.
+
+    \since 5.15
+ */
+uint32_t QVulkanWindow::graphicsQueueFamilyIndex() const
+{
+    Q_D(const QVulkanWindow);
+    return d->gfxQueueFamilyIdx;
+}
+
+/*!
     Returns the active graphics command pool.
 
     \note Calling this function is only valid from the invocation of

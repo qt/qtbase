@@ -4451,6 +4451,7 @@ protected:
             break;
         case QGraphicsItem::ItemPositionHasChanged:
             break;
+#if QT_DEPRECATED_SINCE(5, 14)
         case QGraphicsItem::ItemMatrixChange: {
 #if QT_DEPRECATED_SINCE(5, 13)
 QT_WARNING_PUSH
@@ -4462,6 +4463,7 @@ QT_WARNING_POP
 #endif
         }
             break;
+#endif
         case QGraphicsItem::ItemTransformChange: {
             QVariant variant;
             variant.setValue<QTransform>(transform());
