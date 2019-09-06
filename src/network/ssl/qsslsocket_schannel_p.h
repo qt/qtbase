@@ -147,7 +147,6 @@ private:
     ULONG contextAttributes = 0;
 
     bool renegotiating = false;
-    bool peerCertVerified = false;
 };
 
 QT_END_NAMESPACE
