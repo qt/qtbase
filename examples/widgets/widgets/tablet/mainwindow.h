@@ -81,7 +81,7 @@ private:
     void createMenus();
 
     TabletCanvas *m_canvas;
-    QColorDialog *m_colorDialog;
+    QColorDialog *m_colorDialog = nullptr;
 };
 //! [0]
 

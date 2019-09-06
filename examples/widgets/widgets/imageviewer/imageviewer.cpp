@@ -50,7 +50,24 @@
 
 #include "imageviewer.h"
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QClipboard>
+#include <QColorSpace>
+#include <QDir>
+#include <QFileDialog>
+#include <QImageReader>
+#include <QImageWriter>
+#include <QLabel>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QPainter>
+#include <QScreen>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QStandardPaths>
+#include <QStatusBar>
+
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #if QT_CONFIG(printdialog)
@@ -60,8 +77,8 @@
 
 //! [0]
 ImageViewer::ImageViewer(QWidget *parent)
-   : QMainWindow(parent), imageLabel(new QLabel),
-     scrollArea(new QScrollArea), scaleFactor(1)
+   : QMainWindow(parent), imageLabel(new QLabel)
+   , scrollArea(new QScrollArea)
 {
     imageLabel->setBackgroundRole(QPalette::Base);
     imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);

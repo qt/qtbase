@@ -50,7 +50,10 @@
 
 #include "norwegianwoodstyle.h"
 
-#include <QtWidgets>
+#include <QComboBox>
+#include <QPainter>
+#include <QPushButton>
+#include <QStyleFactory>
 
 NorwegianWoodStyle::NorwegianWoodStyle() :
     QProxyStyle(QStyleFactory::create("windows"))

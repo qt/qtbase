@@ -50,7 +50,13 @@
 
 #include "sortingbox.h"
 
-#include <QtWidgets>
+#include <QMouseEvent>
+#include <QIcon>
+#include <QPainter>
+#include <QRandomGenerator>
+#include <QStyle>
+#include <QToolButton>
+#include <QToolTip>
 
 //! [0]
 SortingBox::SortingBox(QWidget *parent)
@@ -277,12 +283,12 @@ QToolButton *SortingBox::createToolButton(const QString &toolTip,
 QPoint SortingBox::initialItemPosition(const QPainterPath &path)
 {
     int x;
-    int y = (height() - (int)path.controlPointRect().height()) / 2;
+    int y = (height() - qRound(path.controlPointRect().height()) / 2);
     if (shapeItems.size() == 0)
-        x = ((3 * width()) / 2 - (int)path.controlPointRect().width()) / 2;
+        x = ((3 * width()) / 2 - qRound(path.controlPointRect().width())) / 2;
     else
         x = (width() / shapeItems.size()
-             - (int)path.controlPointRect().width()) / 2;
+             - qRound(path.controlPointRect().width())) / 2;
 
     return QPoint(x, y);
 }

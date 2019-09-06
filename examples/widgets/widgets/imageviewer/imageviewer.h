@@ -98,7 +98,7 @@ private:
     QImage image;
     QLabel *imageLabel;
     QScrollArea *scrollArea;
-    double scaleFactor;
+    double scaleFactor = 1;
 
 #ifndef QT_NO_PRINTER
     QPrinter printer;

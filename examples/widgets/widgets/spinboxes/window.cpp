@@ -48,9 +48,15 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "window.h"
+
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDateTimeEdit>
+#include <QGroupBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QSpinBox>
 
 //! [0]
 Window::Window(QWidget *parent)

@@ -48,14 +48,29 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
+#include "mainwindow.h"
 #include "iconpreviewarea.h"
 #include "iconsizespinbox.h"
 #include "imagedelegate.h"
-#include "mainwindow.h"
 
-#include <memory>
+#include <QApplication>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QFileDialog>
+#include <QHeaderView>
+#include <QFormLayout>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QImageReader>
+#include <QLabel>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QRadioButton>
+#include <QScreen>
+#include <QStandardPaths>
+#include <QStyleFactory>
+#include <QTableWidget>
+#include <QWindow>
 
 //! [40]
 enum { OtherSize = QStyle::PM_CustomBase };

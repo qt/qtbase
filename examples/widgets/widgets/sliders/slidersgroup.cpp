@@ -50,7 +50,10 @@
 
 #include "slidersgroup.h"
 
-#include <QtWidgets>
+#include <QBoxLayout>
+#include <QDial>
+#include <QScrollBar>
+#include <QSlider>
 
 //! [0]
 SlidersGroup::SlidersGroup(Qt::Orientation orientation, const QString &title,
