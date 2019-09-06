@@ -1410,16 +1410,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     bool isLocalFile = req.url().isLocalFile();
     QString scheme = req.url().scheme();
 
-#ifdef Q_OS_WASM
-    // Support http, https, and relateive urls
-    if (scheme == QLatin1String("http") || scheme == QLatin1String("https") || scheme.isEmpty()) {
-        QNetworkReplyWasmImpl *reply = new QNetworkReplyWasmImpl(this);
-        QNetworkReplyWasmImplPrivate *priv = reply->d_func();
-        priv->manager = this;
-        priv->setup(op, req, outgoingData);
-        return reply;
-    }
-#endif
+#ifndef Q_OS_WASM
 
     // fast path for GET on file:// URLs
     // The QNetworkAccessFileBackend will right now only be used for PUT
@@ -1506,7 +1497,7 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         }
 #endif
     }
-
+#endif
     QNetworkRequest request = req;
     if (!request.header(QNetworkRequest::ContentLengthHeader).isValid() &&
         outgoingData && !outgoingData->isSequential()) {
@@ -1524,6 +1515,16 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
                 request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
         }
     }
+#ifdef Q_OS_WASM
+    // Support http, https, and relative urls
+    if (scheme == QLatin1String("http") || scheme == QLatin1String("https") || scheme.isEmpty()) {
+        QNetworkReplyWasmImpl *reply = new QNetworkReplyWasmImpl(this);
+        QNetworkReplyWasmImplPrivate *priv = reply->d_func();
+        priv->manager = this;
+        priv->setup(op, request, outgoingData);
+        return reply;
+    }
+#endif
 
 #if QT_CONFIG(http)
     // Since Qt 5 we use the new QNetworkReplyHttpImpl
