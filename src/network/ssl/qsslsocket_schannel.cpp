@@ -828,12 +828,17 @@ bool QSslSocketBackendPrivate::acceptContext()
             &expiry // ptsTimeStamp
     );
 
+    if (status == SEC_E_INCOMPLETE_MESSAGE) {
+        // Need more data
+        return true;
+    }
+
     if (inBuffers[1].BufferType == SECBUFFER_EXTRA) {
         // https://docs.microsoft.com/en-us/windows/desktop/secauthn/extra-buffers-returned-by-schannel
         // inBuffers[1].cbBuffer indicates the amount of bytes _NOT_ processed, the rest need to
         // be stored.
         intermediateBuffer = intermediateBuffer.right(int(inBuffers[1].cbBuffer));
-    } else if (status != SEC_E_INCOMPLETE_MESSAGE) {
+    } else { /* No 'extra' data, message not incomplete */
         intermediateBuffer.clear();
     }
 
