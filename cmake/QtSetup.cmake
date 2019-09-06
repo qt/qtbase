@@ -87,6 +87,9 @@ option(BUILD_TESTING "Build the testing tree." ${QT_BUILD_TESTING})
 include(CTest)
 enable_testing()
 
+# Set up building of examples.
+option(BUILD_EXAMPLES "Build Qt examples" ON)
+
 ## Define some constants to check for certain platforms, etc:
 include(QtPlatformSupport)
 

@@ -69,7 +69,6 @@ qt_copy_or_install(DIRECTORY "${PROJECT_SOURCE_DIR}/mkspecs"
 
 qt_build_repo_end()
 
-option(BUILD_EXAMPLES "Build Qt examples" ON)
-if (BUILD_EXAMPLES)
+if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()

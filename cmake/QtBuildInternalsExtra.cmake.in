@@ -23,5 +23,9 @@ set(QT_WILL_INSTALL @QT_WILL_INSTALL@ CACHE BOOL
 set(QT_SOURCE_TREE "@QT_SOURCE_TREE@" CACHE PATH
 "A path to the source tree of the previously configured QtBase project." FORCE)
 
+# Propagate decision of building tests and examples to other repositories.
+set(BUILD_TESTING @BUILD_TESTING@ CACHE BOOL "Build the testing tree.")
+set(BUILD_EXAMPLES @BUILD_EXAMPLES@ CACHE BOOL "Build Qt examples")
+
 # Extra set of exported variables
 @QT_EXTRA_BUILD_INTERNALS_VARS@
