@@ -169,7 +169,7 @@ class PathStrokeWidget : public QWidget
 
 public:
     PathStrokeWidget(bool smallScreen);
-    void setStyle ( QStyle * style );
+    void setStyle(QStyle *style);
 
 private:
     PathStrokeRenderer *m_renderer;

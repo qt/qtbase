@@ -262,7 +262,7 @@ PathDeformWidget::PathDeformWidget(QWidget *parent, bool smallScreen)
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
     mainLayout->addWidget(m_renderer);
 
-    m_controls = new PathDeformControls(0, m_renderer, smallScreen);
+    m_controls = new PathDeformControls(nullptr, m_renderer, smallScreen);
     m_controls->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
 
     if (!smallScreen)

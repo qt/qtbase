@@ -54,7 +54,7 @@
 #include <QTouchEvent>
 
 GraphicsView::GraphicsView(QGraphicsScene *scene, QWidget *parent)
-    : QGraphicsView(scene, parent), totalScaleFactor(1)
+    : QGraphicsView(scene, parent)
 {
     viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
     setDragMode(ScrollHandDrag);
@@ -83,8 +83,8 @@ bool GraphicsView::viewportEvent(QEvent *event)
                 totalScaleFactor *= currentScaleFactor;
                 currentScaleFactor = 1;
             }
-            setTransform(QTransform().scale(totalScaleFactor * currentScaleFactor,
-                                            totalScaleFactor * currentScaleFactor));
+            setTransform(QTransform::fromScale(totalScaleFactor * currentScaleFactor,
+                                               totalScaleFactor * currentScaleFactor));
         }
         return true;
     }

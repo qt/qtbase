@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
         model->setHorizontalHeaderLabels(list);
 
         int row = 0;
-        QStandardItem *newItem = 0;
+        QStandardItem *newItem = nullptr;
         while (!stream.atEnd()) {
             line = stream.readLine();
             if (!line.startsWith('#') && line.contains(',')) {

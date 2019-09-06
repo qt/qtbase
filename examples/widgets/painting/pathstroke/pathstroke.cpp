@@ -48,11 +48,9 @@
 **
 ****************************************************************************/
 
+#include "pathstroke.h"
 #include "arthurstyle.h"
 #include "arthurwidgets.h"
-#include "pathstroke.h"
-
-#include <stdio.h>
 
 extern void draw_round_rect(QPainter *p, const QRect &bounds, int radius);
 
@@ -164,24 +162,39 @@ void PathStrokeControls::createCommonControls(QWidget* parent)
 
 
     // Connections
-    connect(flatCap, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setFlatCap);
-    connect(squareCap, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setSquareCap);
-    connect(roundCap, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setRoundCap);
+    connect(flatCap, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setFlatCap);
+    connect(squareCap, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setSquareCap);
+    connect(roundCap, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setRoundCap);
 
-    connect(bevelJoin, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setBevelJoin);
-    connect(miterJoin, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setMiterJoin);
-    connect(svgMiterJoin, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setSvgMiterJoin);
-    connect(roundJoin, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setRoundJoin);
+    connect(bevelJoin, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setBevelJoin);
+    connect(miterJoin, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setMiterJoin);
+    connect(svgMiterJoin, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setSvgMiterJoin);
+    connect(roundJoin, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setRoundJoin);
 
-    connect(curveMode, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setCurveMode);
-    connect(lineMode, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setLineMode);
+    connect(curveMode, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setCurveMode);
+    connect(lineMode, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setLineMode);
 
-    connect(solidLine, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setSolidLine);
-    connect(dashLine, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setDashLine);
-    connect(dotLine, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setDotLine);
-    connect(dashDotLine, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setDashDotLine);
-    connect(dashDotDotLine, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setDashDotDotLine);
-    connect(customDashLine, &QAbstractButton::clicked, m_renderer, &PathStrokeRenderer::setCustomDashLine);
+    connect(solidLine, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setSolidLine);
+    connect(dashLine, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setDashLine);
+    connect(dotLine, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setDotLine);
+    connect(dashDotLine, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setDashDotLine);
+    connect(dashDotDotLine, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setDashDotDotLine);
+    connect(customDashLine, &QAbstractButton::clicked,
+            m_renderer, &PathStrokeRenderer::setCustomDashLine);
 
     // Set the defaults:
     flatCap->setChecked(true);
@@ -247,15 +260,20 @@ void PathStrokeControls::layoutForDesktop()
 
 
     // Set up connections
-    connect(animated, &QAbstractButton::toggled, m_renderer, &PathStrokeRenderer::setAnimation);
+    connect(animated, &QAbstractButton::toggled,
+            m_renderer, &PathStrokeRenderer::setAnimation);
 
-    connect(penWidth, &QAbstractSlider::valueChanged, m_renderer, &PathStrokeRenderer::setPenWidth);
+    connect(penWidth, &QAbstractSlider::valueChanged,
+            m_renderer, &PathStrokeRenderer::setPenWidth);
 
-    connect(showSourceButton, &QAbstractButton::clicked, m_renderer, &ArthurFrame::showSource);
+    connect(showSourceButton, &QAbstractButton::clicked,
+            m_renderer, &ArthurFrame::showSource);
 #if QT_CONFIG(opengl)
-    connect(enableOpenGLButton, &QAbstractButton::clicked, m_renderer, &ArthurFrame::enableOpenGL);
+    connect(enableOpenGLButton, &QAbstractButton::clicked,
+            m_renderer, &ArthurFrame::enableOpenGL);
 #endif
-    connect(whatsThisButton, &QAbstractButton::clicked, m_renderer, &ArthurFrame::setDescriptionEnabled);
+    connect(whatsThisButton, &QAbstractButton::clicked,
+            m_renderer, &ArthurFrame::setDescriptionEnabled);
     connect(m_renderer, &ArthurFrame::descriptionEnabledChanged,
             whatsThisButton, &QAbstractButton::setChecked);
 
@@ -296,11 +314,11 @@ void PathStrokeControls::layoutForSmallScreens()
 #endif
 
     // Layouts:
-    QHBoxLayout *penWidthLayout = new QHBoxLayout(0);
+    QHBoxLayout *penWidthLayout = new QHBoxLayout;
     penWidthLayout->addWidget(penWidthLabel, 0, Qt::AlignRight);
     penWidthLayout->addWidget(penWidth);
 
-    QVBoxLayout *leftLayout = new QVBoxLayout(0);
+    QVBoxLayout *leftLayout = new QVBoxLayout;
     leftLayout->addWidget(m_capGroup);
     leftLayout->addWidget(m_joinGroup);
 #if QT_CONFIG(opengl)
@@ -308,7 +326,7 @@ void PathStrokeControls::layoutForSmallScreens()
 #endif
     leftLayout->addLayout(penWidthLayout);
 
-    QVBoxLayout *rightLayout = new QVBoxLayout(0);
+    QVBoxLayout *rightLayout = new QVBoxLayout;
     rightLayout->addWidget(m_styleGroup);
     rightLayout->addWidget(m_pathModeGroup);
 
@@ -356,7 +374,7 @@ PathStrokeWidget::PathStrokeWidget(bool smallScreen)
     // Widget construction and property setting
     m_renderer = new PathStrokeRenderer(this, smallScreen);
 
-    m_controls = new PathStrokeControls(0, m_renderer, smallScreen);
+    m_controls = new PathStrokeControls(nullptr, m_renderer, smallScreen);
 
     // Layouting
     QHBoxLayout *viewLayout = new QHBoxLayout(this);
@@ -383,10 +401,10 @@ void PathStrokeWidget::hideControls()
     m_controls->hide();
 }
 
-void PathStrokeWidget::setStyle( QStyle * style )
+void PathStrokeWidget::setStyle(QStyle *style)
 {
     QWidget::setStyle(style);
-    if (m_controls != 0)
+    if (m_controls != nullptr)
     {
         m_controls->setStyle(style);
 
@@ -516,7 +534,7 @@ void PathStrokeRenderer::updatePoints()
     qreal bottom = height() - pad;
 
     Q_ASSERT(m_points.size() == m_vectors.size());
-    for (int i=0; i<m_points.size(); ++i) {
+    for (int i = 0; i < m_points.size(); ++i) {
         QPointF pos = m_points.at(i);
         QPointF vec = m_vectors.at(i);
         pos += vec;
@@ -540,7 +558,7 @@ void PathStrokeRenderer::mousePressEvent(QMouseEvent *e)
     setDescriptionEnabled(false);
     m_activePoint = -1;
     qreal distance = -1;
-    for (int i=0; i<m_points.size(); ++i) {
+    for (int i = 0; i < m_points.size(); ++i) {
         qreal d = QLineF(e->pos(), m_points.at(i)).length();
         if ((distance < 0 && d < 8 * m_pointSize) || d < distance) {
             distance = d;
@@ -673,7 +691,6 @@ bool PathStrokeRenderer::event(QEvent *e)
         m_fingerPointMapping.clear();
         setAnimation(m_wasAnimated);
         return true;
-        break;
     default:
         break;
     }

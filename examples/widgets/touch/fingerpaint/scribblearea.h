@@ -62,7 +62,7 @@ class ScribbleArea : public QWidget
     Q_OBJECT
 
 public:
-    ScribbleArea(QWidget *parent = 0);
+    ScribbleArea(QWidget *parent = nullptr);
 
     bool openImage(const QString &fileName);
     bool saveImage(const QString &fileName, const char *fileFormat);

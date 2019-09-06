@@ -53,7 +53,7 @@
 #include <QOffscreenSurface>
 #include <QOpenGLFunctions>
 
-QFboPaintDevice::QFboPaintDevice(const QSize& size, bool flipped, bool clearOnInit,
+QFboPaintDevice::QFboPaintDevice(const QSize &size, bool flipped, bool clearOnInit,
                                  QOpenGLFramebufferObject::Attachment attachment)
         : QOpenGLPaintDevice(size)
 {
@@ -97,8 +97,8 @@ GLuint QFboPaintDevice::takeTexture()
 
 QImage QFboPaintDevice::toImage() const
 {
-    QOpenGLContext* currentContext = QOpenGLContext::currentContext();
-    QSurface* currentSurface = currentContext ? currentContext->surface() : 0;
+    QOpenGLContext *currentContext = QOpenGLContext::currentContext();
+    QSurface *currentSurface = currentContext ? currentContext->surface() : nullptr;
 
     context()->makeCurrent(m_surface);
 
