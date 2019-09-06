@@ -48,14 +48,15 @@
 **
 ****************************************************************************/
 
-#include <qevent.h>
-#include <QPainter>
-#include <QTextStream>
-#include <QUndoStack>
 #include "document.h"
 #include "commands.h"
 
-static const int resizeHandleWidth = 6;
+#include <QPainter>
+#include <QPaintEvent>
+#include <QTextStream>
+#include <QUndoStack>
+
+static constexpr int resizeHandleWidth = 6;
 
 /******************************************************************************
 ** Shape
@@ -96,26 +97,21 @@ QRect Shape::resizeHandle() const
 
 QString Shape::typeToString(Type type)
 {
-    QString result;
-
     switch (type) {
         case Rectangle:
-            result = QLatin1String("Rectangle");
-            break;
+            return QLatin1String("Rectangle");
         case Circle:
-            result = QLatin1String("Circle");
-            break;
+            return QLatin1String("Circle");
         case Triangle:
-            result = QLatin1String("Triangle");
-            break;
+            return QLatin1String("Triangle");
     }
 
-    return result;
+    return QString();
 }
 
 Shape::Type Shape::stringToType(const QString &s, bool *ok)
 {
-    if (ok != 0)
+    if (ok != nullptr)
         *ok = true;
 
     if (s == QLatin1String("Rectangle"))
@@ -125,7 +121,7 @@ Shape::Type Shape::stringToType(const QString &s, bool *ok)
     if (s == QLatin1String("Triangle"))
         return Triangle;
 
-    if (ok != 0)
+    if (ok != nullptr)
         *ok = false;
     return Rectangle;
 }
@@ -135,10 +131,8 @@ Shape::Type Shape::stringToType(const QString &s, bool *ok)
 */
 
 Document::Document(QWidget *parent)
-    : QWidget(parent), m_currentIndex(-1), m_mousePressIndex(-1), m_resizeHandlePressed(false)
+    : QWidget(parent), m_undoStack(new QUndoStack(this))
 {
-    m_undoStack = new QUndoStack(this);
-
     setAutoFillBackground(true);
     setBackgroundRole(QPalette::Base);
 

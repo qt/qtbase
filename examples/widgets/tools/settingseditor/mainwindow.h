@@ -68,7 +68,7 @@ class MainWindow : public QMainWindow
 public:
     typedef QSharedPointer<QSettings> SettingsPtr;
 
-    MainWindow();
+    MainWindow(QWidget *parent = nullptr);
 
 private slots:
     void openSettings();
@@ -81,11 +81,11 @@ private:
     void createActions();
     void setSettingsObject(const SettingsPtr &settings);
 
-    SettingsTree *settingsTree;
-    LocationDialog *locationDialog;
-    QAction *refreshAct;
-    QAction *autoRefreshAct;
-    QAction *fallbacksAct;
+    SettingsTree *settingsTree = nullptr;
+    LocationDialog *locationDialog = nullptr;
+    QAction *refreshAct = nullptr;
+    QAction *autoRefreshAct = nullptr;
+    QAction *fallbacksAct = nullptr;
 };
 
 #endif

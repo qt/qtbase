@@ -62,7 +62,7 @@ public:
     enum { Id = 1234 };
 
     MoveCommand(DiagramItem *diagramItem, const QPointF &oldPos,
-                QUndoCommand *parent = 0);
+                QUndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;
@@ -80,7 +80,7 @@ private:
 class DeleteCommand : public QUndoCommand
 {
 public:
-    explicit DeleteCommand(QGraphicsScene *graphicsScene, QUndoCommand *parent = 0);
+    explicit DeleteCommand(QGraphicsScene *graphicsScene, QUndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;
@@ -96,7 +96,7 @@ class AddCommand : public QUndoCommand
 {
 public:
     AddCommand(DiagramItem::DiagramType addType, QGraphicsScene *graphicsScene,
-               QUndoCommand *parent = 0);
+               QUndoCommand *parent = nullptr);
     ~AddCommand();
 
     void undo() override;

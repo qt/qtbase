@@ -65,7 +65,7 @@ class RegExpDialog : public QDialog
     Q_OBJECT
 
 public:
-    RegExpDialog(QWidget *parent = 0);
+    RegExpDialog(QWidget *parent = nullptr);
 
 private slots:
     void refresh();

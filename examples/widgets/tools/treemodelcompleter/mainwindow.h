@@ -60,8 +60,6 @@ class QAbstractItemModel;
 class QComboBox;
 class QLabel;
 class QLineEdit;
-class QProgressBar;
-class QCheckBox;
 class QTreeView;
 QT_END_NAMESPACE
 
@@ -71,27 +69,27 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
+    MainWindow(QWidget *parent = nullptr);
 
 private slots:
     void about();
     void changeCase(int);
     void changeMode(int);
-    void highlight(const QModelIndex&);
-    void updateContentsLabel(const QString&);
+    void highlight(const QModelIndex &index);
+    void updateContentsLabel(const QString &sep);
 //! [0]
 
 //! [1]
 private:
     void createMenu();
-    QAbstractItemModel *modelFromFile(const QString& fileName);
+    QAbstractItemModel *modelFromFile(const QString &fileName);
 
-    QTreeView *treeView;
-    QComboBox *caseCombo;
-    QComboBox *modeCombo;
-    QLabel *contentsLabel;
-    TreeModelCompleter *completer;
-    QLineEdit *lineEdit;
+    QTreeView *treeView = nullptr;
+    QComboBox *caseCombo = nullptr;
+    QComboBox *modeCombo = nullptr;
+    QLabel *contentsLabel = nullptr;
+    TreeModelCompleter *completer = nullptr;
+    QLineEdit *lineEdit = nullptr;
 };
 //! [1]
 

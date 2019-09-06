@@ -48,9 +48,19 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "locationdialog.h"
+
+#include <QBoxLayout>
+#include <QComboBox>
+#include <QDialogButtonBox>
+#include <QDir>
+#include <QPushButton>
+#include <QGroupBox>
+#include <QHeaderView>
+#include <QLabel>
+#include <QLineEdit>
+#include <QTableWidget>
+#include <QTableWidgetItem>
 
 LocationDialog::LocationDialog(QWidget *parent)
     : QDialog(parent)
@@ -91,8 +101,7 @@ LocationDialog::LocationDialog(QWidget *parent)
 
     locationsGroupBox = new QGroupBox(tr("Setting Locations"));
 
-    QStringList labels;
-    labels << tr("Location") << tr("Access");
+    const QStringList labels{tr("Location"), tr("Access")};
 
     locationsTable = new QTableWidget;
     locationsTable->setSelectionMode(QAbstractItemView::SingleSelection);
