@@ -8178,7 +8178,7 @@ void tst_QNetworkReply::ioHttpSingleRedirect()
 
     localhost.setPort(server.serverPort());
     QNetworkRequest request(localhost);
-    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 
     QNetworkReplyPtr reply(manager.get(request));
     QSignalSpy redSpy(reply.data(), SIGNAL(redirected(QUrl)));
@@ -8223,7 +8223,7 @@ void tst_QNetworkReply::ioHttpChangeMaxRedirects()
 
     localhost.setPort(server1.serverPort());
     QNetworkRequest request(localhost);
-    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 
     // Set Max redirects to 1. This will cause TooManyRedirectsError
     request.setMaximumRedirectsAllowed(1);
@@ -8285,7 +8285,7 @@ void tst_QNetworkReply::ioHttpRedirectErrors()
     server.setDataToTransmit(d2s);
 
     QNetworkRequest request(localhost);
-    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     QNetworkReplyPtr reply(manager.get(request));
     if (localhost.scheme() == "https")
         reply.data()->ignoreSslErrors();
@@ -8366,7 +8366,7 @@ void tst_QNetworkReply::ioHttpRedirectPolicy()
     redirectServer.responses.push_back(tempRedirectReplyStr().arg(QString(url.toEncoded())).toLatin1());
 
     // This is the default one we preserve between tests.
-    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::ManualRedirectPolicy);
+    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::NoLessSafeRedirectPolicy);
 
     manager.setRedirectPolicy(policy);
     QCOMPARE(manager.redirectPolicy(), policy);
@@ -8375,7 +8375,7 @@ void tst_QNetworkReply::ioHttpRedirectPolicy()
         reply->ignoreSslErrors();
 
     // Restore default:
-    manager.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
+    manager.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
     QSignalSpy redirectSpy(reply.data(), SIGNAL(redirected(QUrl)));
     QSignalSpy finishedSpy(reply.data(), SIGNAL(finished()));
     QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
@@ -8447,15 +8447,15 @@ void tst_QNetworkReply::ioHttpRedirectPolicyErrors()
 
     QNetworkRequest request(url);
     request.setMaximumRedirectsAllowed(maxRedirects);
-    // We always reset the policy to the default one ('Manual') after any related
+    // We always reset the policy to the default one ('NoLessSafe') after any related
     // test is finished:
-    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::ManualRedirectPolicy);
+    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::NoLessSafeRedirectPolicy);
     manager.setRedirectPolicy(policy);
     QCOMPARE(manager.redirectPolicy(), policy);
 
     QNetworkReplyPtr reply(manager.get(request));
     // Set it back to default:
-    manager.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
+    manager.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
 
     if (ssl)
         reply->ignoreSslErrors();
@@ -8490,7 +8490,7 @@ void tst_QNetworkReply::ioHttpUserVerifiedRedirect()
     redirectServer.setDataToTransmit(tempRedirectReplyStr().arg(QString(url.toEncoded())).toLatin1());
     url.setPort(redirectServer.serverPort());
 
-    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::ManualRedirectPolicy);
+    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::NoLessSafeRedirectPolicy);
     manager.setRedirectPolicy(QNetworkRequest::UserVerifiedRedirectPolicy);
     QCOMPARE(manager.redirectPolicy(), QNetworkRequest::UserVerifiedRedirectPolicy);
 
@@ -8508,8 +8508,8 @@ void tst_QNetworkReply::ioHttpUserVerifiedRedirect()
                    });
 
     // Before any test failed, reset the policy to default:
-    manager.setRedirectPolicy(QNetworkRequest::ManualRedirectPolicy);
-    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::ManualRedirectPolicy);
+    manager.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
+    QCOMPARE(manager.redirectPolicy(), QNetworkRequest::NoLessSafeRedirectPolicy);
 
     QSignalSpy finishedSpy(reply.data(), SIGNAL(finished()));
     waitForFinish(reply);

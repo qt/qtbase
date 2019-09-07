@@ -1019,16 +1019,13 @@ void QNetworkAccessManager::connectToHost(const QString &hostName, quint16 port)
     Use this function to enable or disable HTTP redirects on the manager's level.
 
     \note When creating a request QNetworkRequest::RedirectAttributePolicy has
-    the highest priority, next by priority is QNetworkRequest::FollowRedirectsAttribute.
-    Finally, the manager's policy has the lowest priority.
+    the highest priority, next by priority the manager's policy.
 
-    For backwards compatibility the default value is QNetworkRequest::ManualRedirectPolicy.
-    This may change in the future and some type of auto-redirect policy will become
-    the default; clients relying on manual redirect handling are encouraged to set
+    The default value is QNetworkRequest::NoLessSafeRedirectPolicy.
+    Clients relying on manual redirect handling are encouraged to set
     this policy explicitly in their code.
 
-    \sa redirectPolicy(), QNetworkRequest::RedirectPolicy,
-    QNetworkRequest::FollowRedirectsAttribute
+    \sa redirectPolicy(), QNetworkRequest::RedirectPolicy
 */
 void QNetworkAccessManager::setRedirectPolicy(QNetworkRequest::RedirectPolicy policy)
 {
@@ -1138,9 +1135,8 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     Q_D(QNetworkAccessManager);
 
     QNetworkRequest req(originalReq);
-    if (redirectPolicy() != QNetworkRequest::ManualRedirectPolicy
-        && req.attribute(QNetworkRequest::RedirectPolicyAttribute).isNull()
-        && req.attribute(QNetworkRequest::FollowRedirectsAttribute).isNull()) {
+    if (redirectPolicy() != QNetworkRequest::NoLessSafeRedirectPolicy
+        && req.attribute(QNetworkRequest::RedirectPolicyAttribute).isNull()) {
         req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, redirectPolicy());
     }
 

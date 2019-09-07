@@ -298,13 +298,13 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     \fn void QNetworkReply::redirected(const QUrl &url)
     \since 5.6
 
-    This signal is emitted if the QNetworkRequest::FollowRedirectsAttribute was
+    This signal is emitted if the QNetworkRequest::ManualRedirectPolicy was
     set in the request and the server responded with a 3xx status (specifically
     301, 302, 303, 305, 307 or 308 status code) with a valid url in the location
     header, indicating a HTTP redirect. The \a url parameter contains the new
     redirect url as returned by the server in the location header.
 
-    \sa QNetworkRequest::FollowRedirectsAttribute
+    \sa QNetworkRequest::RedirectPolicy
 */
 
 /*!
@@ -596,10 +596,10 @@ bool QNetworkReply::isRunning() const
 
 /*!
     Returns the URL of the content downloaded or uploaded. Note that
-    the URL may be different from that of the original request. If the
-    QNetworkRequest::FollowRedirectsAttribute was set in the request, then this
+    the URL may be different from that of the original request.
+    If redirections were enabled in the request, then this
     function returns the current url that the network API is accessing, i.e the
-    url emitted in the QNetworkReply::redirected signal.
+    url of the resource the request got redirected to.
 
     \sa request(), setUrl(), QNetworkRequest::url(), redirected()
 */

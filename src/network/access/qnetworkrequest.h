@@ -90,7 +90,6 @@ public:
         SynchronousRequestAttribute, // internal
         BackgroundRequestAttribute,
         EmitAllUploadProgressSignalsAttribute = BackgroundRequestAttribute + 3,
-        FollowRedirectsAttribute,
         Http2AllowedAttribute,
         Http2WasUsedAttribute,
         OriginalContentLengthAttribute,

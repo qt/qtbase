@@ -935,7 +935,7 @@ void tst_Http2::sendRequest(int streamNumber,
 
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
-    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, QVariant(true));
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
     request.setPriority(priority);
     request.setHttp2Configuration(h2Config);
