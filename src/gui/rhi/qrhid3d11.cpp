@@ -36,6 +36,7 @@
 
 #include "qrhid3d11_p_p.h"
 #include "qshader_p.h"
+#include "cs_tdr.h"
 #include <QWindow>
 #include <QOperatingSystemVersion>
 #include <qmath.h>
@@ -119,9 +120,14 @@ QT_BEGIN_NAMESPACE
  */
 
 QRhiD3D11::QRhiD3D11(QRhiD3D11InitParams *params, QRhiD3D11NativeHandles *importDevice)
-    : ofr(this)
+    : ofr(this),
+      deviceCurse(this)
 {
     debugLayer = params->enableDebugLayer;
+
+    deviceCurse.framesToActivate = params->framesUntilKillingDeviceViaTdr;
+    deviceCurse.permanent = params->repeatDeviceKill;
+
     importedDevice = importDevice != nullptr;
     if (importedDevice) {
         dev = reinterpret_cast<ID3D11Device *>(importDevice->dev);
@@ -264,6 +270,9 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     nativeHandlesStruct.dev = dev;
     nativeHandlesStruct.context = context;
 
+    if (deviceCurse.framesToActivate > 0)
+        deviceCurse.initResources();
+
     return true;
 }
 
@@ -280,6 +289,8 @@ void QRhiD3D11::destroy()
     finishActiveReadbacks();
 
     clearShaderCache();
+
+    deviceCurse.releaseResources();
 
     if (annotations) {
         annotations->Release();
@@ -1003,6 +1014,20 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
 
     swapChainD->frameCount += 1;
     contextState.currentSwapChain = nullptr;
+
+    if (deviceCurse.framesToActivate > 0) {
+        deviceCurse.framesLeft -= 1;
+        if (deviceCurse.framesLeft == 0) {
+            deviceCurse.framesLeft = deviceCurse.framesToActivate;
+            if (!deviceCurse.permanent)
+                deviceCurse.framesToActivate = -1;
+
+            deviceCurse.activate();
+        } else if (deviceCurse.framesLeft % 100 == 0) {
+            qDebug("Impending doom: %d frames left", deviceCurse.framesLeft);
+        }
+    }
+
     return QRhi::FrameOpSuccess;
 }
 
@@ -3912,6 +3937,36 @@ bool QD3D11SwapChain::buildOrResize()
         rhiD->registerResource(this);
 
     return true;
+}
+
+void QRhiD3D11::DeviceCurse::initResources()
+{
+    framesLeft = framesToActivate;
+
+    HRESULT hr = q->dev->CreateComputeShader(g_killDeviceByTimingOut, sizeof(g_killDeviceByTimingOut), nullptr, &cs);
+    if (FAILED(hr)) {
+        qWarning("Failed to create compute shader: %s", qPrintable(comErrorMessage(hr)));
+        return;
+    }
+}
+
+void QRhiD3D11::DeviceCurse::releaseResources()
+{
+    if (cs) {
+        cs->Release();
+        cs = nullptr;
+    }
+}
+
+void QRhiD3D11::DeviceCurse::activate()
+{
+    if (!cs)
+        return;
+
+    qDebug("Activating Curse. Goodbye Cruel World.");
+
+    q->context->CSSetShader(cs, nullptr, 0);
+    q->context->Dispatch(256, 1, 1);
 }
 
 QT_END_NAMESPACE

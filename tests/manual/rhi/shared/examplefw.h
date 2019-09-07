@@ -126,6 +126,7 @@ int sampleCount = 1;
 QRhiSwapChain::Flags scFlags = 0;
 QRhi::BeginFrameFlags beginFrameFlags = 0;
 QRhi::EndFrameFlags endFrameFlags = 0;
+int framesUntilTdr = -1;
 
 class Window : public QWindow
 {
@@ -278,6 +279,10 @@ void Window::init()
     if (graphicsApi == D3D11) {
         QRhiD3D11InitParams params;
         params.enableDebugLayer = true;
+        if (framesUntilTdr > 0) {
+            params.framesUntilKillingDeviceViaTdr = framesUntilTdr;
+            params.repeatDeviceKill = true;
+        }
         m_r = QRhi::create(QRhi::D3D11, &params, rhiFlags);
     }
 #endif
@@ -461,8 +466,13 @@ int main(int argc, char **argv)
     // Testing cleanup both with QWindow::close() (hitting X or Alt-F4) and
     // QCoreApplication::quit() (e.g. what a menu widget would do) is important.
     // Use this parameter for the latter.
-    QCommandLineOption sdOption({ "s", "self-destruct" }, QLatin1String("Self destruct after 5 seconds"));
+    QCommandLineOption sdOption({ "s", "self-destruct" }, QLatin1String("Self-destruct after 5 seconds."));
     cmdLineParser.addOption(sdOption);
+    // Attempt testing device lost situations on D3D at least.
+    QCommandLineOption tdrOption(QLatin1String("curse"), QLatin1String("Curse the graphics device. "
+                                                        "(generate a device reset every <count> frames when on D3D11)"),
+                                 QLatin1String("count"));
+    cmdLineParser.addOption(tdrOption);
 
     cmdLineParser.process(app);
     if (cmdLineParser.isSet(nullOption))
@@ -520,6 +530,9 @@ int main(int argc, char **argv)
         }
     }
 #endif
+
+    if (cmdLineParser.isSet(tdrOption))
+        framesUntilTdr = cmdLineParser.value(tdrOption).toInt();
 
     // Create and show the window.
     Window w;
