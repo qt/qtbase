@@ -1,0 +1,109 @@
+Qt 5.12.5 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.12.0 through 5.12.4.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.12 series is binary compatible with the 5.11.x series.
+Applications compiled for 5.11 will continue to run with 5.12.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - QBitArray:
+   * Fixed two bugs that caused QBitArrays created using fromBits() not to
+     compare equal to the equivalent QBitArray created using other methods
+     if the size was zero or not a multiple of 4. If the size modulus 8 was
+     5, 6, or 7, the data was actually incorrect.
+
+ - QCborStreamReader:
+   * Fixed a bug that caused the QIODevice that the data was being read
+     from not to show the entire CBOR message as consumed. This allows the
+     user to consume data that may follow the CBOR payload.
+
+ - QCryptographicHash:
+   * Fixed a bug that caused the SHA-3 and Keccak algorithms to crash if
+     passed 256 MB of data or more.
+
+ - QObject:
+   * Fixed a resource leak caused by a race condition if multiple QObjects
+     were created at the same time, for the first time in an application,
+     from multiple threads (implies threads not started with QThread).
+
+ - QStorageInfo:
+   * Fixed a bug that caused QStorageInfo to be unable to report all
+     filesystems if the options to mounted filesystems were too long (over
+     900 characters, roughly), such as those found in Docker overlay
+     mounts.
+
+ - QTimeZone:
+   * The IANA timezone database backend now properly follows symlinks even
+     when they point to variable locations like /run or /var (useful when
+     /etc is mounted read-only).
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - QImage:
+   * Improve loading time when loading png files that have the same size as
+     the target.
+
+ - QPixmapCache:
+   * [QTBUG-76694][QTBUG-72523] Ignore unsafe access from non-main threads
+
+ - Text:
+   * [QTBUG-76219] Fixed a bug which could cause the font cache to grow
+     larger than it was supposed to.
+   * [QTBUG-55096][QTBUG-74761] Fixed bug where regular text rendered with
+     a color font would always display in black.
+   * [QTBUG-69546] Fixed a crash bug in
+     QTextDocument::clearUndoRedoStacks(QTextDocument::UndoStack).
+
+****************************************************************************
+*                                QtNetwork                                 *
+****************************************************************************
+
+ - QHostInfo:
+   * Functors used in the lookupHost overloads are now called correctly in
+     the thread of the context object. When used without context object,
+     the thread that initiates the lookup will run the functor, and is
+     required to run an event loop.
+
+ - Windows:
+   * Correctly emit errors when trying to reach unreachable hosts or
+     services
+
+****************************************************************************
+*                                QtWidgets                                 *
+****************************************************************************
+
+ - QGraphicsView:
+   * Ignore disabled items when setting the mouse cursor.
+
+ - QSplashScreen:
+   * On macOS, lower the splash screen when a modal dialog is shown to make
+     sure the user sees the dialog.
+
+ - QSystemTrayIcon:
+   * On macOS, show the icon passed into showMessage in the notification
+     popup
+
+****************************************************************************
+*                                 Android                                  *
+****************************************************************************
+
+ - [QTBUG-76293] Fix NDK r20 linking.
+ - [QTBUG-76036] Fixed an issue where menus would not work on 64 bit
+   builds.
