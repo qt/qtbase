@@ -467,6 +467,17 @@ void retainExtraData(QByteArray &buffer, const SecBuffer &secBuffer)
     buffer.resize(secBuffer.cbBuffer);
 }
 
+qint64 checkIncompleteData(const SecBuffer &secBuffer)
+{
+    if (secBuffer.BufferType == SECBUFFER_MISSING) {
+#ifdef QSSLSOCKET_DEBUG
+        qCDebug(lcSsl, "Need %lu more bytes.", secBuffer.cbBuffer);
+#endif
+        return secBuffer.cbBuffer;
+}
+    return 0;
+}
+
 } // anonymous namespace
 
 bool QSslSocketPrivate::s_loadRootCertsOnDemand = true;
@@ -810,6 +821,10 @@ bool QSslSocketBackendPrivate::acceptContext()
     Q_ASSERT(mode == QSslSocket::SslServerMode);
     ULONG contextReq = getContextRequirements();
 
+    if (missingData > plainSocket->bytesAvailable())
+        return true;
+
+    missingData = 0;
     readToBuffer(intermediateBuffer, plainSocket);
     if (intermediateBuffer.isEmpty())
         return true; // definitely need more data..
@@ -866,6 +881,7 @@ bool QSslSocketBackendPrivate::acceptContext()
 
     if (status == SEC_E_INCOMPLETE_MESSAGE) {
         // Need more data
+        missingData = checkIncompleteData(outBuffers[0]);
         return true;
     }
 
@@ -905,6 +921,10 @@ bool QSslSocketBackendPrivate::performHandshake()
     qCDebug(lcSsl, "intermediateBuffer size: %d", intermediateBuffer.size());
 #endif
 
+    if (missingData > plainSocket->bytesAvailable())
+        return true;
+
+    missingData = 0;
     readToBuffer(intermediateBuffer, plainSocket);
     if (intermediateBuffer.isEmpty())
         return true; // no data, will fail
@@ -990,6 +1010,7 @@ bool QSslSocketBackendPrivate::performHandshake()
         return true;
     case SEC_E_INCOMPLETE_MESSAGE:
         // Simply incomplete, wait for more data
+        missingData = checkIncompleteData(outBuffers[0]);
         return true;
     case SEC_E_ALGORITHM_MISMATCH:
         setErrorAndEmit(QAbstractSocket::SslHandshakeFailedError,
@@ -1192,6 +1213,8 @@ void QSslSocketBackendPrivate::reset()
     connectionEncrypted = false;
     shutdown = false;
     renegotiating = false;
+
+    missingData = 0;
 }
 
 void QSslSocketBackendPrivate::startClientEncryption()
@@ -1288,6 +1311,14 @@ void QSslSocketBackendPrivate::transmit()
         int totalRead = 0;
         bool hadIncompleteData = false;
         while (!readBufferMaxSize || buffer.size() < readBufferMaxSize) {
+            if (missingData > plainSocket->bytesAvailable()) {
+#ifdef QSSLSOCKET_DEBUG
+                qCDebug(lcSsl, "We're still missing %lld bytes, will check later.", missingData);
+#endif
+                break;
+            }
+
+            missingData = 0;
             const qint64 bytesRead = readToBuffer(intermediateBuffer, plainSocket);
 #ifdef QSSLSOCKET_DEBUG
             qCDebug(lcSsl, "Read %lld encrypted bytes from the socket", bytesRead);
@@ -1341,6 +1372,7 @@ void QSslSocketBackendPrivate::transmit()
             }
 
             if (status == SEC_E_INCOMPLETE_MESSAGE) {
+                missingData = checkIncompleteData(dataBuffer[0]);
 #ifdef QSSLSOCKET_DEBUG
                 qCDebug(lcSsl, "We didn't have enough data to decrypt anything, will try again!");
 #endif
