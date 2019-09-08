@@ -1010,7 +1010,10 @@ void PaintCommands::command_drawPixmap(QRegularExpressionMatch re)
                qPrintable(re.captured(1)), pm.width(), pm.height(), pm.depth(),
                tx, ty, tw, th, sx, sy, sw, sh);
 
-    m_painter->drawPixmap(QRectF(tx, ty, tw, th), pm, QRectF(sx, sy, sw, sh));
+    if (!re.capturedLength(4))  // at most two coordinates specified
+        m_painter->drawPixmap(QPointF(tx, ty), pm);
+    else
+        m_painter->drawPixmap(QRectF(tx, ty, tw, th), pm, QRectF(sx, sy, sw, sh));
 }
 
 /***************************************************************************************************/
@@ -1057,7 +1060,10 @@ void PaintCommands::command_drawImage(QRegularExpressionMatch re)
         printf(" -(lance) drawImage('%s' dim=(%d, %d), (%f, %f, %f, %f), (%f, %f, %f, %f)\n",
                qPrintable(re.captured(1)), im.width(), im.height(), tx, ty, tw, th, sx, sy, sw, sh);
 
-    m_painter->drawImage(QRectF(tx, ty, tw, th), im, QRectF(sx, sy, sw, sh), Qt::OrderedDither | Qt::OrderedAlphaDither);
+    if (!re.capturedLength(4))  // at most two coordinates specified
+        m_painter->drawImage(QPointF(tx, ty), im);
+    else
+        m_painter->drawImage(QRectF(tx, ty, tw, th), im, QRectF(sx, sy, sw, sh));
 }
 
 /***************************************************************************************************/
