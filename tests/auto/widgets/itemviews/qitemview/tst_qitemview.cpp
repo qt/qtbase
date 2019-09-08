@@ -26,9 +26,10 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
-#include <QtCore/QtCore>
+#include <QRandomGenerator>
+#include <QStack>
+#include <QStandardItemModel>
+#include <QTest>
 #include "viewstotest.cpp"
 
 /*!
@@ -89,17 +90,19 @@ class CheckerModel : public QStandardItemModel
     Q_OBJECT
 
 public:
-    CheckerModel() : QStandardItemModel() {};
+    using QStandardItemModel::QStandardItemModel;
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole ) const {
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
+    {
         if (!index.isValid()) {
             qWarning("%s: index is not valid", Q_FUNC_INFO);
             return QVariant();
         }
         return QStandardItemModel::data(index, role);
-    };
+    }
 
-    Qt::ItemFlags flags(const QModelIndex & index) const {
+    Qt::ItemFlags flags(const QModelIndex &index) const override
+    {
         if (!index.isValid()) {
             qWarning("%s: index is not valid", Q_FUNC_INFO);
             return Qt::ItemFlags();
@@ -107,21 +110,24 @@ public:
         if (index.row() == 2 || index.row() == rowCount() - 3
             || index.column() == 2 || index.column() == columnCount() - 3) {
             Qt::ItemFlags f = QStandardItemModel::flags(index);
-            f &= ~Qt::ItemIsEnabled;
+            f.setFlag(Qt::ItemIsEnabled, false);
             return f;
         }
         return QStandardItemModel::flags(index);
-    };
+    }
 
-    QModelIndex parent ( const QModelIndex & child ) const {
+    QModelIndex parent(const QModelIndex &child) const override
+    {
         if (!child.isValid()) {
             qWarning("%s: child index is not valid", Q_FUNC_INFO);
             return QModelIndex();
         }
         return QStandardItemModel::parent(child);
-    };
+    }
 
-    QVariant headerData ( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const {
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role = Qt::DisplayRole) const override
+    {
         if (orientation == Qt::Horizontal
             && (section < 0 || section > columnCount())) {
             qWarning("%s: invalid section %d, must be in range 0..%d",
@@ -137,11 +143,9 @@ public:
         return QStandardItemModel::headerData(section, orientation, role);
     }
 
-    QModelIndex index( int row, int column, const QModelIndex & parent = QModelIndex() ) const {
-        return QStandardItemModel::index(row, column, parent);
-    };
-
-    bool setData ( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole ) {
+    bool setData(const QModelIndex &index, const QVariant &value,
+                 int role = Qt::EditRole) override
+    {
         if (!index.isValid()) {
             qWarning("%s: index is not valid", Q_FUNC_INFO);
             return false;
@@ -149,15 +153,19 @@ public:
         return QStandardItemModel::setData(index, value, role);
     }
 
-    void sort( int column, Qt::SortOrder order = Qt::AscendingOrder ) {
+    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override
+    {
         if (column < 0 || column > columnCount())
             qWarning("%s: invalid column %d, must be in range 0..%d",
                      Q_FUNC_INFO, column, columnCount());
         else
             QStandardItemModel::sort(column, order);
-    };
+    }
 
-    QModelIndexList match ( const QModelIndex & start, int role, const QVariant & value, int hits = 1, Qt::MatchFlags flags = Qt::MatchFlags( Qt::MatchStartsWith | Qt::MatchWrap ) ) const {
+    QModelIndexList match(const QModelIndex &start, int role,
+                          const QVariant &value, int hits = 1,
+                          Qt::MatchFlags flags = Qt::MatchFlags(Qt::MatchStartsWith | Qt::MatchWrap)) const override
+    {
         if (hits <= 0) {
             qWarning("%s: hits must be greater than zero", Q_FUNC_INFO);
             return QModelIndexList();
@@ -167,9 +175,11 @@ public:
             return QModelIndexList();
         }
         return QAbstractItemModel::match(start, role, value, hits, flags);
-    };
+    }
 
-    bool setHeaderData ( int section, Qt::Orientation orientation, const QVariant & value, int role = Qt::EditRole ) {
+    bool setHeaderData(int section, Qt::Orientation orientation,
+                       const QVariant &value, int role = Qt::EditRole) override
+    {
         if (orientation == Qt::Horizontal
             && (section < 0 || section > columnCount())) {
             qWarning("%s: invalid section %d, must be in range 0..%d",
@@ -183,7 +193,7 @@ public:
             return false;
         }
         return QAbstractItemModel::setHeaderData(section, orientation, value, role);
-    };
+    }
 };
 
 void tst_QItemView::init()
@@ -197,9 +207,9 @@ void tst_QItemView::cleanup()
     delete testViews;
     delete view;
     delete treeModel;
-    view = 0;
-    testViews = 0;
-    treeModel = 0;
+    view = nullptr;
+    testViews = nullptr;
+    treeModel = nullptr;
 }
 
 void tst_QItemView::setupWithNoTestData()
@@ -207,15 +217,15 @@ void tst_QItemView::setupWithNoTestData()
     ViewsToTest testViews;
     QTest::addColumn<QString>("viewType");
     QTest::addColumn<bool>("displays");
-    QTest::addColumn<int>("vscroll");
-    QTest::addColumn<int>("hscroll");
+    QTest::addColumn<QAbstractItemView::ScrollMode>("vscroll");
+    QTest::addColumn<QAbstractItemView::ScrollMode>("hscroll");
     for (int i = 0; i < testViews.tests.size(); ++i) {
         QString view = testViews.tests.at(i).viewType;
         QString test = view + " ScrollPerPixel";
         bool displayIndexes = (testViews.tests.at(i).display == ViewsToTest::DisplayRoot);
         QTest::newRow(test.toLatin1().data()) << view << displayIndexes
-                                              << (int)QAbstractItemView::ScrollPerPixel
-                                              << (int)QAbstractItemView::ScrollPerPixel
+                                              << QAbstractItemView::ScrollPerPixel
+                                              << QAbstractItemView::ScrollPerPixel
                                               ;
     }
     for (int i = 0; i < testViews.tests.size(); ++i) {
@@ -223,8 +233,8 @@ void tst_QItemView::setupWithNoTestData()
         QString test = view + " ScrollPerItem";
         bool displayIndexes = (testViews.tests.at(i).display == ViewsToTest::DisplayRoot);
         QTest::newRow(test.toLatin1().data()) << view << displayIndexes
-                                              << (int)QAbstractItemView::ScrollPerItem
-                                              << (int)QAbstractItemView::ScrollPerItem
+                                              << QAbstractItemView::ScrollPerItem
+                                              << QAbstractItemView::ScrollPerItem
                                               ;
     }
 }
@@ -267,13 +277,13 @@ void tst_QItemView::nonDestructiveBasicTest_data()
 void tst_QItemView::nonDestructiveBasicTest()
 {
     QFETCH(QString, viewType);
-    QFETCH(int, vscroll);
-    QFETCH(int, hscroll);
+    QFETCH(QAbstractItemView::ScrollMode, vscroll);
+    QFETCH(QAbstractItemView::ScrollMode, hscroll);
 
     view = testViews->createView(viewType);
     QVERIFY(view);
-    view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
-    view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
+    view->setVerticalScrollMode(vscroll);
+    view->setHorizontalScrollMode(hscroll);
 
     // setSelectionModel() will assert
     //view->setSelectionModel(0);
@@ -396,7 +406,8 @@ void tst_QItemView::spider_data()
     setupWithNoTestData();
 }
 
-void touch(QWidget *widget, Qt::KeyboardModifier modifier, Qt::Key keyPress){
+void touch(QWidget *widget, Qt::KeyboardModifier modifier, Qt::Key keyPress)
+{
     int width = widget->width();
     int height = widget->height();
     for (int i = 0; i < 5; ++i) {
@@ -409,7 +420,7 @@ void touch(QWidget *widget, Qt::KeyboardModifier modifier, Qt::Key keyPress){
         QTest::mousePress(widget, Qt::LeftButton, modifier, press);
         QTest::mouseMove(widget, releasePoint);
         if (QRandomGenerator::global()->bounded(1) == 0)
-            QTest::mouseRelease(widget, Qt::LeftButton, 0, releasePoint);
+            QTest::mouseRelease(widget, Qt::LeftButton, {}, releasePoint);
         else
             QTest::mouseRelease(widget, Qt::LeftButton, modifier, releasePoint);
         QTest::keyClick(widget, keyPress);
@@ -425,13 +436,13 @@ void touch(QWidget *widget, Qt::KeyboardModifier modifier, Qt::Key keyPress){
 void tst_QItemView::spider()
 {
     QFETCH(QString, viewType);
-    QFETCH(int, vscroll);
-    QFETCH(int, hscroll);
+    QFETCH(QAbstractItemView::ScrollMode, vscroll);
+    QFETCH(QAbstractItemView::ScrollMode, hscroll);
 
     view = testViews->createView(viewType);
     QVERIFY(view);
-    view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
-    view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
+    view->setVerticalScrollMode(vscroll);
+    view->setHorizontalScrollMode(hscroll);
     view->setModel(treeModel);
     view->show();
     QVERIFY(QTest::qWaitForWindowActive(view));
@@ -454,21 +465,21 @@ void tst_QItemView::resize()
     QSKIP("This test needs to be re-thought out, it takes too long and doesn't really catch the problem.");
 
     QFETCH(QString, viewType);
-    QFETCH(int, vscroll);
-    QFETCH(int, hscroll);
+    QFETCH(QAbstractItemView::ScrollMode, vscroll);
+    QFETCH(QAbstractItemView::ScrollMode, hscroll);
 
     view = testViews->createView(viewType);
     QVERIFY(view);
-    view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
-    view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
+    view->setVerticalScrollMode(vscroll);
+    view->setHorizontalScrollMode(hscroll);
     view->setModel(treeModel);
     view->show();
 
-    for (int w = 100; w < 400; w+=10) {
-        for (int h = 100; h < 400; h+=10) {
+    for (int w = 100; w < 400; w += 10) {
+        for (int h = 100; h < 400; h += 10) {
             view->resize(w, h);
             QTest::qWait(1);
-            qApp->processEvents();
+            QCoreApplication::processEvents();
         }
     }
 }
@@ -481,13 +492,13 @@ void tst_QItemView::visualRect_data()
 void tst_QItemView::visualRect()
 {
     QFETCH(QString, viewType);
-    QFETCH(int, vscroll);
-    QFETCH(int, hscroll);
+    QFETCH(QAbstractItemView::ScrollMode, vscroll);
+    QFETCH(QAbstractItemView::ScrollMode, hscroll);
 
     view = testViews->createView(viewType);
     QVERIFY(view);
-    view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
-    view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
+    view->setVerticalScrollMode(vscroll);
+    view->setHorizontalScrollMode(hscroll);
     QCOMPARE(view->visualRect(QModelIndex()), QRect());
 
     // Add model
@@ -617,13 +628,13 @@ void tst_QItemView::indexAt_data()
 void tst_QItemView::indexAt()
 {
     QFETCH(QString, viewType);
-    QFETCH(int, vscroll);
-    QFETCH(int, hscroll);
+    QFETCH(QAbstractItemView::ScrollMode, vscroll);
+    QFETCH(QAbstractItemView::ScrollMode, hscroll);
 
     view = testViews->createView(viewType);
     QVERIFY(view);
-    view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
-    view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
+    view->setVerticalScrollMode(vscroll);
+    view->setHorizontalScrollMode(hscroll);
     view->show();
     view->setModel(treeModel);
     checkChildren(view);
@@ -648,13 +659,13 @@ void tst_QItemView::scrollTo_data()
 void tst_QItemView::scrollTo()
 {
     QFETCH(QString, viewType);
-    QFETCH(int, vscroll);
-    QFETCH(int, hscroll);
+    QFETCH(QAbstractItemView::ScrollMode, vscroll);
+    QFETCH(QAbstractItemView::ScrollMode, hscroll);
 
     view = testViews->createView(viewType);
     QVERIFY(view);
-    view->setVerticalScrollMode((QAbstractItemView::ScrollMode)vscroll);
-    view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
+    view->setVerticalScrollMode(vscroll);
+    view->setHorizontalScrollMode(hscroll);
     view->setModel(treeModel);
     view->show();
 
@@ -682,10 +693,10 @@ void tst_QItemView::moveCursor_data()
     setupWithNoTestData();
 }
 
-class Event {
-public:
-    Event(){}
-    Event(Qt::Key k, QModelIndex s, QModelIndex e, QString n) : key(k), start(s), end(e), name(n){}
+struct Event
+{
+    Event(Qt::Key k, const QModelIndex &s, const QModelIndex &e, const QString &n)
+        : key(k), start(s), end(e), name(n){}
     Qt::Key key;
     QModelIndex start;
     QModelIndex end;
