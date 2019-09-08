@@ -130,10 +130,6 @@ public:
     {
         return QColorTransferFunction(1.0f / 1.055f, 0.055f / 1.055f, 1.0f / 12.92f, 0.04045f, 0.0f, 0.0f, 2.4f);
     }
-    static QColorTransferFunction fromBt2020()
-    {
-        return QColorTransferFunction(1.0f / 1.0993f, 0.0993f / 1.0993f, 1.0f / 4.5f, 0.08145f, 0.0f, 0.0f, 2.2f);
-    }
     static QColorTransferFunction fromProPhotoRgb()
     {
         return QColorTransferFunction(1.0f, 0.0f, 1.0f / 16.0f, 16.0f / 512.0f, 0.0f, 0.0f, 1.8f);
