@@ -27,16 +27,15 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
-#include <qfileiconprovider.h>
-#include <qfileinfo.h>
+#include <QFileIconProvider>
+#include <QFileInfo>
+#include <QTest>
 
 class tst_QFileIconProvider : public QObject
 {
     Q_OBJECT
 
 private slots:
-    void qfileiconprovider_data();
     void qfileiconprovider();
 
     void iconType_data();
@@ -51,21 +50,10 @@ private slots:
     void taskQTBUG_46755_QFileIconEngine_crash();
 };
 
-// Subclass that exposes the protected functions.
-class SubQFileIconProvider : public QFileIconProvider
-{
-public:
-
-};
-
-void tst_QFileIconProvider::qfileiconprovider_data()
-{
-}
-
 void tst_QFileIconProvider::qfileiconprovider()
 {
     // don't crash
-    SubQFileIconProvider provider;
+    QFileIconProvider provider;
 }
 
 Q_DECLARE_METATYPE(QFileIconProvider::IconType)
@@ -86,7 +74,7 @@ void tst_QFileIconProvider::iconType_data()
 void tst_QFileIconProvider::iconType()
 {
     QFETCH(QFileIconProvider::IconType, type);
-    SubQFileIconProvider provider;
+    QFileIconProvider provider;
     QVERIFY(!provider.icon(type).isNull());
 }
 
@@ -109,7 +97,7 @@ void tst_QFileIconProvider::iconInfo()
 
     if (setPath)
         QVERIFY(info.exists());
-    SubQFileIconProvider provider;
+    QFileIconProvider provider;
     // we should always get an icon
     QVERIFY(!provider.icon(info).isNull());
 }
@@ -131,7 +119,7 @@ void tst_QFileIconProvider::type_data()
 void tst_QFileIconProvider::type()
 {
     QFETCH(QFileInfo, info);
-    SubQFileIconProvider provider;
+    QFileIconProvider provider;
     QVERIFY(!provider.type(info).isEmpty());
 }
 
@@ -144,7 +132,8 @@ static QIcon getIcon()
 void tst_QFileIconProvider::taskQTBUG_46755_QFileIconEngine_crash()
 {
     const QIcon &icon = getIcon();
-    foreach (const QSize &size, icon.availableSizes())
+    const auto sizes = icon.availableSizes();
+    for (const QSize &size : sizes)
         icon.pixmap(size);
 
     // No crash, all good.
