@@ -26,22 +26,23 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
-#include <QtGui/QtGui>
-#include <QtWidgets/QtWidgets>
-#include <qlist.h>
+#include <QCompleter>
+#include <QHBoxLayout>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QSignalSpy>
-
-#include <qlistwidget.h>
+#include <QStyledItemDelegate>
+#include <QTest>
 #include <private/qlistwidget_p.h>
+
+using IntList = QVector<int>;
 
 class tst_QListWidget : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QListWidget();
+    tst_QListWidget() = default;
 
     enum ModelChanged {
         RowsAboutToBeInserted,
@@ -144,13 +145,18 @@ protected slots:
     void columnsRemoved(const QModelIndex &parent, int first, int last)
         { modelChanged(ColumnsRemoved, parent, first, last); }
 
-    void modelChanged(ModelChanged change, const QModelIndex &parent, int first, int last);
+    void modelChanged(ModelChanged change, const QModelIndex &parent, int first, int last)
+    {
+        rcParent[change] = parent;
+        rcFirst[change] = first;
+        rcLast[change] = last;
+    }
 
 private:
-    QListWidget *testWidget;
-    QVector<QModelIndex> rcParent;
-    QVector<int> rcFirst;
-    QVector<int> rcLast;
+    QListWidget *testWidget = nullptr;
+    QVector<QModelIndex> rcParent{8};
+    QVector<int> rcFirst = QVector<int>(8, 0);
+    QVector<int> rcLast = QVector<int>(8, 0);
 
     void populate();
     void checkDefaultValues();
@@ -168,7 +174,7 @@ void tst_QListWidget::moveRowsInvalid_data()
 
     const auto createWidget = []() -> QListWidget* {
         QListWidget* result = new QListWidget;
-        result->addItems(QStringList{"A", "B", "C", "D", "E", "F"});
+        result->addItems({"A", "B", "C", "D", "E", "F"});
         return result;
     };
 
@@ -259,35 +265,32 @@ void tst_QListWidget::moveRows()
 }
 
 
-typedef QList<int> IntList;
-
-tst_QListWidget::tst_QListWidget(): testWidget(0), rcParent(8), rcFirst(8,0), rcLast(8,0)
-{
-}
-
 void tst_QListWidget::initTestCase()
 {
     qRegisterMetaType<QListWidgetItem*>("QListWidgetItem*");
-    testWidget = new QListWidget();
+    qRegisterMetaType<QList<QPersistentModelIndex>>("QList<QPersistentModelIndex>");
+    qRegisterMetaType<QAbstractItemModel::LayoutChangeHint>("QAbstractItemModel::LayoutChangeHint");
+
+    testWidget = new QListWidget;
     testWidget->show();
 
-    connect(testWidget->model(), SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-            this, SLOT(rowsAboutToBeInserted(QModelIndex,int,int)));
-    connect(testWidget->model(), SIGNAL(rowsInserted(QModelIndex,int,int)),
-            this, SLOT(rowsInserted(QModelIndex,int,int)));
-    connect(testWidget->model(), SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-            this, SLOT(rowsAboutToBeRemoved(QModelIndex,int,int)));
-    connect(testWidget->model(), SIGNAL(rowsRemoved(QModelIndex,int,int)),
-            this, SLOT(rowsRemoved(QModelIndex,int,int)));
+    connect(testWidget->model(), &QAbstractItemModel::rowsAboutToBeInserted,
+            this, &tst_QListWidget::rowsAboutToBeInserted);
+    connect(testWidget->model(), &QAbstractItemModel::rowsInserted,
+            this, &tst_QListWidget::rowsInserted);
+    connect(testWidget->model(), &QAbstractItemModel::rowsAboutToBeRemoved,
+            this, &tst_QListWidget::rowsAboutToBeRemoved);
+    connect(testWidget->model(), &QAbstractItemModel::rowsRemoved,
+            this, &tst_QListWidget::rowsRemoved);
 
-    connect(testWidget->model(), SIGNAL(columnsAboutToBeInserted(QModelIndex,int,int)),
-            this, SLOT(columnsAboutToBeInserted(QModelIndex,int,int)));
-    connect(testWidget->model(), SIGNAL(columnsInserted(QModelIndex,int,int)),
-            this, SLOT(columnsInserted(QModelIndex,int,int)));
-    connect(testWidget->model(), SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-            this, SLOT(columnsAboutToBeRemoved(QModelIndex,int,int)));
-    connect(testWidget->model(), SIGNAL(columnsRemoved(QModelIndex,int,int)),
-            this, SLOT(columnsRemoved(QModelIndex,int,int)));
+    connect(testWidget->model(), &QAbstractItemModel::columnsAboutToBeInserted,
+            this, &tst_QListWidget::columnsAboutToBeInserted);
+    connect(testWidget->model(), &QAbstractItemModel::columnsInserted,
+            this, &tst_QListWidget::columnsInserted);
+    connect(testWidget->model(), &QAbstractItemModel::columnsAboutToBeRemoved,
+            this, &tst_QListWidget::columnsAboutToBeRemoved);
+    connect(testWidget->model(), &QAbstractItemModel::columnsRemoved,
+            this, &tst_QListWidget::columnsRemoved);
 
     checkDefaultValues();
 }
@@ -300,7 +303,7 @@ void tst_QListWidget::cleanupTestCase()
 void tst_QListWidget::init()
 {
     testWidget->clear();
-    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 }
 
 void tst_QListWidget::checkDefaultValues()
@@ -317,7 +320,7 @@ void tst_QListWidget::populate()
     addItems();
     setItemHidden();
 
-    testWidget->setCurrentIndex(testWidget->model()->index(0,0));
+    testWidget->setCurrentIndex(testWidget->model()->index(0, 0));
 
     // setCurrentItem();
     // setCurrentRow();
@@ -329,7 +332,7 @@ void tst_QListWidget::addItem()
     const QString label = QString::number(count);
     testWidget->addItem(label);
     QCOMPARE(testWidget->count(), ++count);
-    QCOMPARE(testWidget->item(testWidget->count()-1)->text(), label);
+    QCOMPARE(testWidget->item(testWidget->count() - 1)->text(), label);
 }
 
 void tst_QListWidget::addItem2()
@@ -337,7 +340,7 @@ void tst_QListWidget::addItem2()
     int count = testWidget->count();
 
     // Boundary Checking
-    testWidget->addItem(0);
+    testWidget->addItem(nullptr);
     QCOMPARE(testWidget->count(), count);
 
     QListWidgetItem *item = new QListWidgetItem(QString::number(count));
@@ -356,12 +359,11 @@ void tst_QListWidget::addItems()
     testWidget->addItems(QStringList());
     QCOMPARE(testWidget->count(), count);
 
-    QStringList stringList;
     QString label = QString::number(count);
-    stringList << QString::number(testWidget->count() + 1)
-               << QString::number(testWidget->count() + 2)
-               << QString::number(testWidget->count() + 3)
-               << label;
+    const QStringList stringList{QString::number(testWidget->count() + 1),
+                                 QString::number(testWidget->count() + 2),
+                                 QString::number(testWidget->count() + 3),
+                                 label};
     testWidget->addItems(stringList);
     QCOMPARE(testWidget->count(), count + stringList.count());
     QCOMPARE(testWidget->item(testWidget->count()-1)->text(), label);
@@ -371,7 +373,7 @@ void tst_QListWidget::addItems()
 void tst_QListWidget::openPersistentEditor()
 {
     // Boundary checking
-    testWidget->openPersistentEditor(0);
+    testWidget->openPersistentEditor(nullptr);
     QListWidgetItem *item = new QListWidgetItem(QString::number(testWidget->count()));
     testWidget->openPersistentEditor(item);
 
@@ -385,7 +387,7 @@ void tst_QListWidget::closePersistentEditor()
 {
     // Boundary checking
     int childCount = testWidget->viewport()->children().count();
-    testWidget->closePersistentEditor(0);
+    testWidget->closePersistentEditor(nullptr);
     QListWidgetItem *item = new QListWidgetItem(QString::number(testWidget->count()));
     testWidget->closePersistentEditor(item);
     QCOMPARE(childCount, testWidget->viewport()->children().count());
@@ -397,7 +399,7 @@ void tst_QListWidget::closePersistentEditor()
     // actual test
     childCount = testWidget->viewport()->children().count();
     testWidget->closePersistentEditor(item);
-    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
     QCOMPARE(testWidget->viewport()->children().count(), childCount - 1);
 }
 
@@ -412,40 +414,33 @@ QT_WARNING_DISABLE_DEPRECATED
 QT_WARNING_POP
 #endif
 
-    int totalHidden = 0;
-    for (int i = 0; i < testWidget->model()->rowCount(); ++i)
-        if (testWidget->item(i)->isHidden())
-            totalHidden++;
-
+    auto countHidden = [](QListWidget *testWidget)
+    {
+        int totalHidden = 0;
+        for (int i = 0; i < testWidget->model()->rowCount(); ++i) {
+            if (testWidget->item(i)->isHidden())
+                totalHidden++;
+        }
+        return totalHidden;
+    };
+    const int totalHidden = countHidden(testWidget);
     QListWidgetItem *item = new QListWidgetItem(QString::number(testWidget->count()));
     testWidget->addItem(item);
 
     // Check that nothing else changed
-    int newTotal = 0;
-    for (int i = 0; i < testWidget->model()->rowCount(); ++i)
-        if (testWidget->item(i)->isHidden())
-            newTotal++;
-    QCOMPARE(newTotal, totalHidden);
+    QCOMPARE(countHidden(testWidget), totalHidden);
 
     item->setHidden(true);
     QCOMPARE(item->isHidden(), true);
 
     // Check that nothing else changed
-    newTotal = 0;
-    for (int i = 0; i < testWidget->model()->rowCount(); ++i)
-        if (testWidget->item(i)->isHidden())
-            newTotal++;
-    QCOMPARE(newTotal, totalHidden + 1);
+    QCOMPARE(countHidden(testWidget), totalHidden + 1);
 
     item->setHidden(false);
     QCOMPARE(item->isHidden(), false);
 
     // Check that nothing else changed
-    newTotal = 0;
-    for (int i = 0; i < testWidget->model()->rowCount(); ++i)
-        if (testWidget->item(i)->isHidden())
-            newTotal++;
-    QCOMPARE(newTotal, totalHidden);
+    QCOMPARE(countHidden(testWidget), totalHidden);
 
     item->setHidden(true);
 }
@@ -466,11 +461,11 @@ void tst_QListWidget::setCurrentItem()
         testWidget->addItem(QString::number(i));
 
     // Boundary checking
-    testWidget->setCurrentItem((QListWidgetItem *)0);
-    QCOMPARE((QListWidgetItem *)0, testWidget->currentItem());
+    testWidget->setCurrentItem(nullptr);
+    QVERIFY(!testWidget->currentItem());
     QListWidgetItem item;
     testWidget->setCurrentItem(&item);
-    QCOMPARE((QListWidgetItem *)0, testWidget->currentItem());
+    QVERIFY(!testWidget->currentItem());
 
     // Make sure that currentItem changes to what is passed into setCurrentItem
     for (int i = 0; i < testWidget->count(); ++i) {
@@ -555,7 +550,7 @@ void tst_QListWidget::editItem_data()
 void tst_QListWidget::editItem()
 {
     // Boundary checking
-    testWidget->editItem(0);
+    testWidget->editItem(nullptr);
     QListWidgetItem *item = new QListWidgetItem(QString::number(testWidget->count()));
     testWidget->editItem(item);
 
@@ -593,8 +588,8 @@ void tst_QListWidget::findItems()
 
     populate();
 
-    for (int i=0; i < testWidget->count(); ++i)
-        QCOMPARE(testWidget->findItems( (testWidget->item(i)->text()), Qt::MatchExactly).count(), 1);
+    for (int i = 0; i < testWidget->count(); ++i)
+        QCOMPARE(testWidget->findItems(testWidget->item(i)->text(), Qt::MatchExactly).count(), 1);
 }
 
 
@@ -605,8 +600,7 @@ void tst_QListWidget::insertItem_data()
     QTest::addColumn<QString>("itemLabel");
     QTest::addColumn<int>("expectedIndex");
 
-    QStringList initialItems;
-    initialItems << "foo" << "bar";
+    const QStringList initialItems{"foo", "bar"};
 
     QTest::newRow("Insert less then 0") << initialItems << -1 << "inserted" << 0;
     QTest::newRow("Insert at 0") << initialItems << 0 << "inserted" << 0;
@@ -669,7 +663,7 @@ void tst_QListWidget::insertItems()
 
     if (insertType == 3) {
         QStringList strings;
-        for (int i=0; i<rowCount; ++i)
+        for (int i = 0; i < rowCount; ++i)
             strings << QString::number(i);
         testWidget->insertItems(0, strings);
     } else {
@@ -685,7 +679,7 @@ void tst_QListWidget::insertItems()
                 testWidget->insertItem(r, QString::number(r));
             } else if (insertType == 3) {
                 QStringList strings;
-                for (int i=0; i<rowCount; ++i)
+                for (int i = 0; i < rowCount; ++i)
                     strings << QString::number(i);
                 testWidget->insertItems(0, strings);
                 break;
@@ -702,7 +696,7 @@ void tst_QListWidget::insertItems()
         QCOMPARE(testWidget->item(r)->text(), QString::number(r));
 
     // make sure all items have view set correctly
-    for (int i=0; i<testWidget->count(); ++i)
+    for (int i = 0; i < testWidget->count(); ++i)
         QCOMPARE(testWidget->item(i)->listWidget(), testWidget);
 
     QCOMPARE(itemChangedSpy.count(), 0);
@@ -845,19 +839,19 @@ void tst_QListWidget::selectedItems_data()
 void tst_QListWidget::selectedItems()
 {
     QFETCH(int, itemCount);
-    QFETCH(IntList, hiddenRows);
-    QFETCH(IntList, selectedRows);
-    QFETCH(IntList, expectedRows);
+    QFETCH(const IntList, hiddenRows);
+    QFETCH(const IntList, selectedRows);
+    QFETCH(const IntList, expectedRows);
 
     QCOMPARE(testWidget->count(), 0);
 
     //insert items
-    for (int i=0; i<itemCount; ++i)
+    for (int i = 0; i < itemCount; ++i)
         new QListWidgetItem(QStringLiteral("Item") + QString::number(i), testWidget);
 
     //test the selection
     testWidget->setSelectionMode(QListWidget::SingleSelection);
-    for (int i=0; i<itemCount; ++i) {
+    for (int i = 0; i < itemCount; ++i) {
         QListWidgetItem *item = testWidget->item(i);
         item->setSelected(true);
         QVERIFY(item->isSelected());
@@ -871,20 +865,20 @@ void tst_QListWidget::selectedItems()
     //verify items are inserted
     QCOMPARE(testWidget->count(), itemCount);
     // hide items
-    foreach (int row, hiddenRows)
+    for (int row : hiddenRows)
         testWidget->item(row)->setHidden(true);
     // select items
-    foreach (int row, selectedRows)
+    for (int row : selectedRows)
         testWidget->item(row)->setSelected(true);
 
     // check that the correct number of items and the expected items are there
     QList<QListWidgetItem *> selectedItems = testWidget->selectedItems();
     QCOMPARE(selectedItems.count(), expectedRows.count());
-    foreach (int row, expectedRows)
+    for (int row : expectedRows)
         QVERIFY(selectedItems.contains(testWidget->item(row)));
 
     //check that isSelected agrees with selectedItems
-    for (int i=0; i<itemCount; ++i) {
+    for (int i = 0; i < itemCount; ++i) {
         QListWidgetItem *item = testWidget->item(i);
         if (item->isSelected())
             QVERIFY(selectedItems.contains(item));
@@ -927,8 +921,6 @@ void tst_QListWidget::removeItems()
             QCOMPARE(testWidget->item(r)->text(), QString::number(r));
         else
             QCOMPARE(testWidget->item(r)->text(), QString::number(r + removeRows));
-
-
 }
 
 void tst_QListWidget::moveItemsPriv_data()
@@ -967,8 +959,8 @@ void tst_QListWidget::moveItemsPriv()
 
     QListModel *model = qobject_cast<QListModel *>(testWidget->model());
     QVERIFY(model);
-    QSignalSpy beginMoveSpy(model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
-    QSignalSpy movedSpy(model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)));
+    QSignalSpy beginMoveSpy(model, &QAbstractItemModel::rowsAboutToBeMoved);
+    QSignalSpy movedSpy(model, &QAbstractItemModel::rowsMoved);
     model->move(srcRow, dstRow);
 
     if (shouldHaveSignaled) {
@@ -1034,31 +1026,31 @@ void tst_QListWidget::itemStreaming()
 
 void tst_QListWidget::sortItems_data()
 {
-    QTest::addColumn<int>("order");
+    QTest::addColumn<Qt::SortOrder>("order");
     QTest::addColumn<QVariantList>("initialList");
     QTest::addColumn<QVariantList>("expectedList");
     QTest::addColumn<IntList>("expectedRows");
 
     QTest::newRow("ascending strings")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << (QVariantList() << QString("c") << QString("d") << QString("a") << QString("b"))
         << (QVariantList() << QString("a") << QString("b") << QString("c") << QString("d"))
         << (IntList() << 2 << 3 << 0 << 1);
 
     QTest::newRow("descending strings")
-        << static_cast<int>(Qt::DescendingOrder)
+        << Qt::DescendingOrder
         << (QVariantList() << QString("c") << QString("d") << QString("a") << QString("b"))
         << (QVariantList() << QString("d") << QString("c") << QString("b") << QString("a"))
         << (IntList() << 1 << 0 << 3 << 2);
 
     QTest::newRow("ascending numbers")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << (QVariantList() << 1 << 11 << 2 << 22)
         << (QVariantList() << 1 << 2 << 11 << 22)
         << (IntList() << 0 << 2 << 1 << 3);
 
     QTest::newRow("descending numbers")
-        << static_cast<int>(Qt::DescendingOrder)
+        << Qt::DescendingOrder
         << (QVariantList() << 1 << 11 << 2 << 22)
         << (QVariantList() << 22 << 11 << 2 << 1)
         << (IntList() << 3 << 1 << 2 << 0);
@@ -1066,22 +1058,22 @@ void tst_QListWidget::sortItems_data()
 
 void tst_QListWidget::sortItems()
 {
-    QFETCH(int, order);
-    QFETCH(QVariantList, initialList);
-    QFETCH(QVariantList, expectedList);
-    QFETCH(IntList, expectedRows);
+    QFETCH(Qt::SortOrder, order);
+    QFETCH(const QVariantList, initialList);
+    QFETCH(const QVariantList, expectedList);
+    QFETCH(const IntList, expectedRows);
 
-    foreach (const QVariant &data, initialList) {
+    for (const QVariant &data : initialList) {
         QListWidgetItem *item = new QListWidgetItem(testWidget);
         item->setData(Qt::DisplayRole, data);
     }
 
     QAbstractItemModel *model = testWidget->model();
-    QList<QPersistentModelIndex> persistent;
+    QVector<QPersistentModelIndex> persistent;
     for (int j = 0; j < model->rowCount(QModelIndex()); ++j)
         persistent << model->index(j, 0, QModelIndex());
 
-    testWidget->sortItems(static_cast<Qt::SortOrder>(order));
+    testWidget->sortItems(order);
 
     QCOMPARE(testWidget->count(), expectedList.count());
     for (int i = 0; i < testWidget->count(); ++i)
@@ -1093,7 +1085,7 @@ void tst_QListWidget::sortItems()
 
 void tst_QListWidget::sortHiddenItems_data()
 {
-    QTest::addColumn<int>("order");
+    QTest::addColumn<Qt::SortOrder>("order");
     QTest::addColumn<QStringList>("initialList");
     QTest::addColumn<QStringList>("expectedList");
     QTest::addColumn<IntList>("expectedRows");
@@ -1110,21 +1102,21 @@ void tst_QListWidget::sortHiddenItems_data()
 
     }
     QTest::newRow("descending order, 20 items")
-        << static_cast<int>(Qt::DescendingOrder)
+        << Qt::DescendingOrder
         << initial
         << expected
         << rowOrder
         << visible;
 
     QTest::newRow("ascending order")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << (QStringList() << "c" << "d" << "a" << "b")
         << (QStringList() << "a" << "b" << "c" << "d")
         << (IntList() << 2 << 3 << 0 << 1)
         << (IntList() << 1 << 0 << 1 << 0);
 
     QTest::newRow("descending order")
-        << static_cast<int>(Qt::DescendingOrder)
+        << Qt::DescendingOrder
         << (QStringList() << "c" << "d" << "a" << "b")
         << (QStringList() << "d" << "c" << "b" << "a")
         << (IntList() << 1 << 0 << 3 << 2)
@@ -1133,7 +1125,7 @@ void tst_QListWidget::sortHiddenItems_data()
 
 void tst_QListWidget::sortHiddenItems()
 {
-    QFETCH(int, order);
+    QFETCH(Qt::SortOrder, order);
     QFETCH(QStringList, initialList);
     QFETCH(QStringList, expectedList);
     QFETCH(IntList, expectedRows);
@@ -1144,14 +1136,14 @@ void tst_QListWidget::sortHiddenItems()
     tw->addItems(initialList);
 
     QAbstractItemModel *model = tw->model();
-    QList<QPersistentModelIndex> persistent;
+    QVector<QPersistentModelIndex> persistent;
     for (int j = 0; j < model->rowCount(QModelIndex()); ++j) {
         persistent << model->index(j, 0, QModelIndex());
         tw->setRowHidden(j, j & 1); // every odd is hidden
     }
 
     tw->setSortingEnabled(true);
-    tw->sortItems(static_cast<Qt::SortOrder>(order));
+    tw->sortItems(order);
 
     QCOMPARE(tw->count(), expectedList.count());
     for (int i = 0; i < tw->count(); ++i) {
@@ -1165,50 +1157,35 @@ void tst_QListWidget::sortHiddenItems()
     delete tw;
 }
 
-void tst_QListWidget::modelChanged(ModelChanged change, const QModelIndex &parent,
-                                   int first, int last)
+class TestListWidget : public QListWidget
 {
-    rcParent[change] = parent;
-    rcFirst[change] = first;
-    rcLast[change] = last;
-}
-
-class TestListWidget : public QListWidget {
+    Q_OBJECT
 public:
-    TestListWidget() : QListWidget()
-    {
-
-    }
-    State getState() {return QListWidget::state();}
-
-    void closeEditor(QWidget *w, QAbstractItemDelegate::EndEditHint hint) {
-        QListWidget::closeEditor(w, hint);
-    }
-
-    bool isEditingState(QListWidgetItem *item) {
-        Q_UNUSED(item);
-        return QListWidget::state() == QListWidget::EditingState;
-    }
-
+    using QListWidget::QListWidget;
+    using QListWidget::state;
+    using QListWidget::closeEditor;
     using QListWidget::mimeData;
     using QListWidget::indexFromItem;
+
+    bool isEditingState() const {
+        return QListWidget::state() == QListWidget::EditingState;
+    }
 };
 
 void tst_QListWidget::closeEditor()
 {
     TestListWidget w;
-    QStringList labels = (QStringList() << "a" << "b" << "c" << "d");
-    w.addItems(labels);
+    w.addItems({"a", "b", "c", "d"});
     QListWidgetItem *item = w.item(0);
     item->setFlags(item->flags() | Qt::ItemIsEditable);
     QVERIFY(item);
     w.editItem(item);
 
-    QVERIFY(w.isEditingState(item));
+    QVERIFY(w.isEditingState());
 
     w.reset();
 
-    QVERIFY(!w.isEditingState(item));
+    QVERIFY(!w.isEditingState());
 }
 
 void tst_QListWidget::setData_data()
@@ -1267,15 +1244,15 @@ void tst_QListWidget::setData()
 
     QCOMPARE(roles.count(), values.count());
 
-    for (int manipulateModel=0; manipulateModel<2; ++manipulateModel) {
+    for (int manipulateModel = 0; manipulateModel < 2; ++manipulateModel) {
         testWidget->clear();
         testWidget->insertItems(0, initialItems);
         QCOMPARE(testWidget->count(), initialItems.count());
 
-        QSignalSpy itemChanged(testWidget, SIGNAL(itemChanged(QListWidgetItem*)));
-        QSignalSpy dataChanged(testWidget->model(), SIGNAL(dataChanged(QModelIndex,QModelIndex)));
+        QSignalSpy itemChanged(testWidget, &QListWidget::itemChanged);
+        QSignalSpy dataChanged(testWidget->model(), &QAbstractItemModel::dataChanged);
 
-        for (int i=0; i < roles.count(); ++i) {
+        for (int i = 0; i < roles.count(); ++i) {
             if (manipulateModel)
                 testWidget->model()->setData(
                     testWidget->model()->index(itemIndex, 0, testWidget->rootIndex()),
@@ -1286,7 +1263,7 @@ void tst_QListWidget::setData()
         }
 
         // make sure the data is actually set
-        for (int i=0; i < roles.count(); ++i)
+        for (int i = 0; i < roles.count(); ++i)
             QCOMPARE(testWidget->item(itemIndex)->data(roles.at(i)), values.at(i));
 
         // make sure we get the right number of emits
@@ -1297,50 +1274,50 @@ void tst_QListWidget::setData()
 
 void tst_QListWidget::insertItemsWithSorting_data()
 {
-    QTest::addColumn<int>("sortOrder");
+    QTest::addColumn<Qt::SortOrder>("sortOrder");
     QTest::addColumn<QStringList>("initialItems");
     QTest::addColumn<QStringList>("insertItems");
     QTest::addColumn<QStringList>("expectedItems");
     QTest::addColumn<IntList>("expectedRows");
 
     QTest::newRow("() + (a) = (a)")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << QStringList()
         << (QStringList() << "a")
         << (QStringList() << "a")
         << IntList();
     QTest::newRow("() + (c, b, a) = (a, b, c)")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << QStringList()
         << (QStringList() << "c" << "b" << "a")
         << (QStringList() << "a" << "b" << "c")
         << IntList();
     QTest::newRow("() + (a, b, c) = (c, b, a)")
-        << static_cast<int>(Qt::DescendingOrder)
+        << Qt::DescendingOrder
         << QStringList()
         << (QStringList() << "a" << "b" << "c")
         << (QStringList() << "c" << "b" << "a")
         << IntList();
     QTest::newRow("(a) + (b) = (a, b)")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << QStringList("a")
         << (QStringList() << "b")
         << (QStringList() << "a" << "b")
         << (IntList() << 0);
     QTest::newRow("(a) + (b) = (b, a)")
-        << static_cast<int>(Qt::DescendingOrder)
+        << Qt::DescendingOrder
         << QStringList("a")
         << (QStringList() << "b")
         << (QStringList() << "b" << "a")
         << (IntList() << 1);
     QTest::newRow("(a, c, b) + (d) = (a, b, c, d)")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << (QStringList() << "a" << "c" << "b")
         << (QStringList() << "d")
         << (QStringList() << "a" << "b" << "c" << "d")
         << (IntList() << 0 << 1 << 2);
     QTest::newRow("(b, c, a) + (d) = (d, c, b, a)")
-        << static_cast<int>(Qt::DescendingOrder)
+        << Qt::DescendingOrder
         << (QStringList() << "b" << "c" << "a")
         << (QStringList() << "d")
         << (QStringList() << "d" << "c" << "b" << "a")
@@ -1350,38 +1327,38 @@ void tst_QListWidget::insertItemsWithSorting_data()
         IntList reverseRows;
         QStringList ascendingItems;
         QStringList reverseItems;
-        for (int i = 'a'; i <= 'z'; ++i) {
+        for (char i = 'a'; i <= 'z'; ++i) {
             ascendingItems << QString(1, QLatin1Char(i));
             reverseItems << QString(1, QLatin1Char('z' - i + 'a'));
             ascendingRows << i - 'a';
             reverseRows << 'z' - i + 'a';
         }
         QTest::newRow("() + (sorted items) = (sorted items)")
-            << static_cast<int>(Qt::AscendingOrder)
+            << Qt::AscendingOrder
             << QStringList()
             << ascendingItems
             << ascendingItems
             << IntList();
         QTest::newRow("(sorted items) + () = (sorted items)")
-            << static_cast<int>(Qt::AscendingOrder)
+            << Qt::AscendingOrder
             << ascendingItems
             << QStringList()
             << ascendingItems
             << ascendingRows;
         QTest::newRow("() + (ascending items) = (reverse items)")
-            << static_cast<int>(Qt::DescendingOrder)
+            << Qt::DescendingOrder
             << QStringList()
             << ascendingItems
             << reverseItems
             << IntList();
         QTest::newRow("(reverse items) + () = (ascending items)")
-            << static_cast<int>(Qt::AscendingOrder)
+            << Qt::AscendingOrder
             << reverseItems
             << QStringList()
             << ascendingItems
             << ascendingRows;
         QTest::newRow("(reverse items) + () = (reverse items)")
-            << static_cast<int>(Qt::DescendingOrder)
+            << Qt::DescendingOrder
             << reverseItems
             << QStringList()
             << reverseItems
@@ -1391,16 +1368,16 @@ void tst_QListWidget::insertItemsWithSorting_data()
 
 void tst_QListWidget::insertItemsWithSorting()
 {
-    QFETCH(int, sortOrder);
-    QFETCH(QStringList, initialItems);
-    QFETCH(QStringList, insertItems);
-    QFETCH(QStringList, expectedItems);
-    QFETCH(IntList, expectedRows);
+    QFETCH(Qt::SortOrder, sortOrder);
+    QFETCH(const QStringList, initialItems);
+    QFETCH(const QStringList, insertItems);
+    QFETCH(const QStringList, expectedItems);
+    QFETCH(const IntList, expectedRows);
 
     for (int method = 0; method < 5; ++method) {
         QListWidget w;
         w.setSortingEnabled(true);
-        w.sortItems(static_cast<Qt::SortOrder>(sortOrder));
+        w.sortItems(sortOrder);
         w.addItems(initialItems);
 
         QAbstractItemModel *model = w.model();
@@ -1411,8 +1388,8 @@ void tst_QListWidget::insertItemsWithSorting()
         switch (method) {
             case 0:
                 // insert using item constructor
-                for (int i = 0; i < insertItems.size(); ++i)
-                    new QListWidgetItem(insertItems.at(i), &w);
+                for (const QString &str : insertItems)
+                    new QListWidgetItem(str, &w);
                 break;
             case 1:
                 // insert using insertItems()
@@ -1420,8 +1397,8 @@ void tst_QListWidget::insertItemsWithSorting()
                 break;
             case 2:
                 // insert using insertItem()
-                for (int i = 0; i < insertItems.size(); ++i)
-                    w.insertItem(0, insertItems.at(i));
+                for (const QString &str : insertItems)
+                    w.insertItem(0, str);
                 break;
             case 3:
                 // insert using addItems()
@@ -1429,8 +1406,8 @@ void tst_QListWidget::insertItemsWithSorting()
                 break;
             case 4:
                 // insert using addItem()
-                for (int i = 0; i < insertItems.size(); ++i)
-                    w.addItem(insertItems.at(i));
+                for (const QString &str : insertItems)
+                    w.addItem(str);
                 break;
         }
         QCOMPARE(w.count(), expectedItems.count());
@@ -1444,7 +1421,7 @@ void tst_QListWidget::insertItemsWithSorting()
 
 void tst_QListWidget::changeDataWithSorting_data()
 {
-    QTest::addColumn<int>("sortOrder");
+    QTest::addColumn<Qt::SortOrder>("sortOrder");
     QTest::addColumn<QStringList>("initialItems");
     QTest::addColumn<int>("itemIndex");
     QTest::addColumn<QString>("newValue");
@@ -1453,49 +1430,49 @@ void tst_QListWidget::changeDataWithSorting_data()
     QTest::addColumn<bool>("reorderingExpected");
 
     QTest::newRow("change a to b in (a)")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << (QStringList() << "a")
         << 0 << "b"
         << (QStringList() << "b")
         << (IntList() << 0)
         << false;
     QTest::newRow("change a to b in (a, c)")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << (QStringList() << "a" << "c")
         << 0 << "b"
         << (QStringList() << "b" << "c")
         << (IntList() << 0 << 1)
         << false;
     QTest::newRow("change a to c in (a, b)")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << (QStringList() << "a" << "b")
         << 0 << "c"
         << (QStringList() << "b" << "c")
         << (IntList() << 1 << 0)
         << true;
     QTest::newRow("change c to a in (c, b)")
-        << static_cast<int>(Qt::DescendingOrder)
+        << Qt::DescendingOrder
         << (QStringList() << "c" << "b")
         << 0 << "a"
         << (QStringList() << "b" << "a")
         << (IntList() << 1 << 0)
         << true;
     QTest::newRow("change e to i in (a, c, e, g)")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << (QStringList() << "a" << "c" << "e" << "g")
         << 2 << "i"
         << (QStringList() << "a" << "c" << "g" << "i")
         << (IntList() << 0 << 1 << 3 << 2)
         << true;
     QTest::newRow("change e to a in (c, e, g, i)")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << (QStringList() << "c" << "e" << "g" << "i")
         << 1 << "a"
         << (QStringList() << "a" << "c" << "g" << "i")
         << (IntList() << 1 << 0 << 2 << 3)
         << true;
     QTest::newRow("change e to f in (c, e, g, i)")
-        << static_cast<int>(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << (QStringList() << "c" << "e" << "g" << "i")
         << 1 << "f"
         << (QStringList() << "c" << "f" << "g" << "i")
@@ -1539,7 +1516,7 @@ void tst_QListWidget::itemData()
 
 void tst_QListWidget::changeDataWithSorting()
 {
-    QFETCH(int, sortOrder);
+    QFETCH(Qt::SortOrder, sortOrder);
     QFETCH(QStringList, initialItems);
     QFETCH(int, itemIndex);
     QFETCH(QString, newValue);
@@ -1549,16 +1526,16 @@ void tst_QListWidget::changeDataWithSorting()
 
     QListWidget w;
     w.setSortingEnabled(true);
-    w.sortItems(static_cast<Qt::SortOrder>(sortOrder));
+    w.sortItems(sortOrder);
     w.addItems(initialItems);
 
     QAbstractItemModel *model = w.model();
-    QList<QPersistentModelIndex> persistent;
+    QVector<QPersistentModelIndex> persistent;
     for (int j = 0; j < model->rowCount(QModelIndex()); ++j)
         persistent << model->index(j, 0, QModelIndex());
 
-    QSignalSpy dataChangedSpy(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)));
-    QSignalSpy layoutChangedSpy(model, SIGNAL(layoutChanged()));
+    QSignalSpy dataChangedSpy(model, &QAbstractItemModel::dataChanged);
+    QSignalSpy layoutChangedSpy(model, &QAbstractItemModel::layoutChanged);
 
     QListWidgetItem *item = w.item(itemIndex);
     item->setText(newValue);
@@ -1566,7 +1543,7 @@ void tst_QListWidget::changeDataWithSorting()
         QCOMPARE(w.item(i)->text(), expectedItems.at(i));
         for (int j = 0; j < persistent.count(); ++j) {
             if (persistent.at(j).row() == i) // the same toplevel row
-                QCOMPARE(persistent.at(j).internalPointer(), (void *)w.item(i));
+                QCOMPARE(persistent.at(j).internalPointer(), static_cast<void *>(w.item(i)));
         }
     }
 
@@ -1595,13 +1572,12 @@ void tst_QListWidget::itemWidget()
 #ifndef Q_OS_MAC
 class MyListWidget : public QListWidget
 {
+    Q_OBJECT
 public:
-    MyListWidget(QWidget *parent=0)
-        : QListWidget(parent)
-        {
-        }
+    using QListWidget::QListWidget;
 
-    void paintEvent(QPaintEvent *e) {
+    void paintEvent(QPaintEvent *e) override
+    {
         painted += e->region();
         QListWidget::paintEvent(e);
     }
@@ -1649,7 +1625,7 @@ void tst_QListWidget::fastScroll()
 void tst_QListWidget::insertUnchanged()
 {
     QListWidget w;
-    QSignalSpy itemChangedSpy(&w, SIGNAL(itemChanged(QListWidgetItem*)));
+    QSignalSpy itemChangedSpy(&w, &QListWidget::itemChanged);
     QListWidgetItem item("foo", &w);
     QCOMPARE(itemChangedSpy.count(), 0);
 }
@@ -1670,9 +1646,9 @@ void tst_QListWidget::task199503_crashWhenCleared()
 {
     //we test here for a crash that would occur if you clear the items in the currentItemChanged signal
     QListWidget w;
-    w.addItems( QStringList() << "item1" << "item2" << "item3");
+    w.addItems({"item1", "item2", "item3"});
     w.setCurrentRow(0);
-    w.connect(&w, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), SLOT(clear()));
+    w.connect(&w, &QListWidget::currentItemChanged, &w, &QListWidget::clear);
     w.setCurrentRow(1);
 }
 
@@ -1680,21 +1656,22 @@ void tst_QListWidget::task217070_scrollbarsAdjusted()
 {
     //This task was mailing for style using SH_ScrollView_FrameOnlyAroundContents such as QMotifStyle
     QListWidget v;
-    for (int i = 0; i<200;i++)
+    for (int i = 0; i < 200;i++)
         v.addItem(QString::number(i));
     v.show();
     v.setViewMode(QListView::IconMode);
     v.setResizeMode(QListView::Adjust);
     v.setUniformItemSizes(true);
-    v.resize(160,100);
+    v.resize(160, 100);
     QVERIFY(QTest::qWaitForWindowActive(&v));
     QScrollBar *hbar = v.horizontalScrollBar();
     QScrollBar *vbar = v.verticalScrollBar();
     QVERIFY(hbar && vbar);
-    for(int f=150; f>90 ; f--) {
-        v.resize(f,100);
-        QTest::qWait(30);
-        QVERIFY(vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, vbar) || vbar->isVisible());
+    const auto style = vbar->style();
+    for (int f = 150; f > 90 ; f--) {
+        v.resize(f, 100);
+        QTRY_VERIFY(style->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, vbar) ||
+                    vbar->isVisible());
         //the horizontal scrollbar must not be visible.
         QVERIFY(!hbar->isVisible());
     }
@@ -1711,12 +1688,11 @@ void tst_QListWidget::task258949_keypressHangup()
     }
 
     lw.show();
-    lw.setCurrentIndex(lw.model()->index(0,0));
-    QCOMPARE(lw.currentIndex(), lw.model()->index(0,0));
+    lw.setCurrentIndex(lw.model()->index(0, 0));
+    QCOMPARE(lw.currentIndex(), lw.model()->index(0, 0));
     QTest::qWait(30);
     QTest::keyPress(&lw, '1'); //this used to freeze
-    QTest::qWait(30);
-    QCOMPARE(lw.currentIndex(), lw.model()->index(0,0));
+    QTRY_COMPARE(lw.currentIndex(), lw.model()->index(0, 0));
 }
 
 void tst_QListWidget::QTBUG8086_currentItemChangedOnClick()
@@ -1735,25 +1711,26 @@ void tst_QListWidget::QTBUG8086_currentItemChangedOnClick()
     edit.setFocus();
     win.show();
 
-    QSignalSpy spy(&list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)));
+    QSignalSpy spy(&list, &QListWidget::currentItemChanged);
 
     QVERIFY(QTest::qWaitForWindowExposed(&win));
 
     QCOMPARE(spy.count(), 0);
 
-    QTest::mouseClick(list.viewport(), Qt::LeftButton, 0, list.visualItemRect(list.item(2)).center());
+    QTest::mouseClick(list.viewport(), Qt::LeftButton, {},
+                      list.visualItemRect(list.item(2)).center());
 
     QCOMPARE(spy.count(), 1);
-
 }
 
 
-class ItemDelegate : public QItemDelegate
+class ItemDelegate : public QStyledItemDelegate
 {
+    Q_OBJECT
 public:
-    ItemDelegate(QObject *parent = 0) : QItemDelegate(parent)
-    {}
-    virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const
+    using QStyledItemDelegate::QStyledItemDelegate;
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &,
+                          const QModelIndex &) const override
     {
         QLineEdit *lineEdit = new QLineEdit(parent);
         lineEdit->setFrame(false);
@@ -1775,10 +1752,10 @@ void tst_QListWidget::QTBUG14363_completerWithAnyKeyPressedEditTriggers()
     new QListWidgetItem(QLatin1String("completer"), &listWidget);
     listWidget.show();
     listWidget.setCurrentItem(item);
-    qApp->setActiveWindow(&listWidget);
+    QApplication::setActiveWindow(&listWidget);
     QVERIFY(QTest::qWaitForWindowActive(&listWidget));
     listWidget.setFocus();
-    QCOMPARE(qApp->focusWidget(), &listWidget);
+    QCOMPARE(QApplication::focusWidget(), &listWidget);
 
     QTest::keyClick(listWidget.viewport(), Qt::Key_C);
 
@@ -1792,41 +1769,27 @@ void tst_QListWidget::mimeData()
 {
     TestListWidget list;
 
-    for (int x = 0; x < 10; ++x) {
-        QListWidgetItem *item = new QListWidgetItem(QStringLiteral("123"));
-        list.addItem(item);
-    }
+    for (int x = 0; x < 10; ++x)
+        list.addItem(new QListWidgetItem(QStringLiteral("123")));
 
-    QList<QListWidgetItem *> tableWidgetItemList;
-    QModelIndexList modelIndexList;
+    const QList<QListWidgetItem *> tableWidgetItemList{list.item(1)};
+    const QModelIndexList modelIndexList{list.indexFromItem(list.item(1))};
 
     // do these checks more than once to ensure that the "cached indexes" work as expected
-    QVERIFY(!list.mimeData(tableWidgetItemList));
-    QVERIFY(!list.model()->mimeData(modelIndexList));
-    QVERIFY(!list.model()->mimeData(modelIndexList));
-    QVERIFY(!list.mimeData(tableWidgetItemList));
-
-    tableWidgetItemList << list.item(1);
-    modelIndexList << list.indexFromItem(list.item(1));
-
     QMimeData *data;
+    for (int i = 0; i < 2; ++i) {
+      QVERIFY(!list.mimeData({}));
+      QVERIFY(!list.model()->mimeData({}));
 
-    QVERIFY((data = list.mimeData(tableWidgetItemList)));
-    delete data;
+      QVERIFY((data = list.mimeData(tableWidgetItemList)));
+      delete data;
 
-    QVERIFY((data = list.model()->mimeData(modelIndexList)));
-    delete data;
-
-    QVERIFY((data = list.model()->mimeData(modelIndexList)));
-    delete data;
-
-    QVERIFY((data = list.mimeData(tableWidgetItemList)));
-    delete data;
+      QVERIFY((data = list.model()->mimeData(modelIndexList)));
+      delete data;
+    }
 
     // check the saved data is actually the same
-
     QMimeData *data2;
-
     data = list.mimeData(tableWidgetItemList);
     data2 = list.model()->mimeData(modelIndexList);
 
@@ -1850,13 +1813,14 @@ void tst_QListWidget::QTBUG50891_ensureSelectionModelSignalConnectionsAreSet()
     list.show();
     QVERIFY(QTest::qWaitForWindowExposed(&list));
 
-    QSignalSpy currentItemChangedSpy(&list, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)));
-    QSignalSpy itemSelectionChangedSpy(&list, SIGNAL(itemSelectionChanged()));
+    QSignalSpy currentItemChangedSpy(&list, &QListWidget::currentItemChanged);
+    QSignalSpy itemSelectionChangedSpy(&list, &QListWidget::itemSelectionChanged);
 
     QCOMPARE(currentItemChangedSpy.count(), 0);
     QCOMPARE(itemSelectionChangedSpy.count(), 0);
 
-    QTest::mouseClick(list.viewport(), Qt::LeftButton, 0, list.visualItemRect(list.item(2)).center());
+    QTest::mouseClick(list.viewport(), Qt::LeftButton, {},
+                      list.visualItemRect(list.item(2)).center());
 
     QCOMPARE(currentItemChangedSpy.count(), 1);
     QCOMPARE(itemSelectionChangedSpy.count(), 1);
