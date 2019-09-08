@@ -665,24 +665,22 @@ int QShortcut::id() const
 bool QShortcut::event(QEvent *e)
 {
     Q_D(QShortcut);
-    bool handled = false;
     if (d->sc_enabled && e->type() == QEvent::Shortcut) {
         QShortcutEvent *se = static_cast<QShortcutEvent *>(e);
         if (se->shortcutId() == d->sc_id && se->key() == d->sc_sequence){
 #if QT_CONFIG(whatsthis)
             if (QWhatsThis::inWhatsThisMode()) {
                 QWhatsThis::showText(QCursor::pos(), d->sc_whatsthis);
-                handled = true;
             } else
 #endif
             if (se->isAmbiguous())
                 emit activatedAmbiguously();
             else
                 emit activated();
-            handled = true;
+            return true;
         }
     }
-    return handled;
+    return QObject::event(e);
 }
 #endif // QT_NO_SHORTCUT
 

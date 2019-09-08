@@ -42,6 +42,7 @@
 #include "qwindowswindow.h"
 #include "qwindowsintegration.h"
 #include "qwindowscursor.h"
+#include "qwindowstheme.h"
 
 #include <QtCore/qt_windows.h>
 
@@ -547,10 +548,13 @@ bool QWindowsScreenManager::handleScreenChanges()
     // Look for changed monitors, add new ones
     const WindowsScreenDataList newDataList = monitorData();
     const bool lockScreen = newDataList.size() == 1 && (newDataList.front().flags & QWindowsScreenData::LockScreen);
+    bool primaryScreenChanged = false;
     for (const QWindowsScreenData &newData : newDataList) {
         const int existingIndex = indexOfMonitor(m_screens, newData.name);
         if (existingIndex != -1) {
             m_screens.at(existingIndex)->handleChanges(newData);
+            if (existingIndex == 0)
+                primaryScreenChanged = true;
         } else {
             QWindowsScreen *newScreen = new QWindowsScreen(newData);
             m_screens.push_back(newScreen);
@@ -567,6 +571,8 @@ bool QWindowsScreenManager::handleScreenChanges()
                 removeScreen(i);
         }     // for existing screens
     }     // not lock screen
+    if (primaryScreenChanged)
+        QWindowsTheme::instance()->refreshFonts();
     return true;
 }
 

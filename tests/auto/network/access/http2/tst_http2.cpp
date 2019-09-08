@@ -456,6 +456,9 @@ void tst_Http2::goaway_data()
     // - server waits for some time (enough for ur to init several streams on a
     // client side); then suddenly it replies with GOAWAY, never processing any
     // request.
+    if (clearTextHTTP2)
+        QSKIP("This test requires TLS with ALPN to work");
+
     QTest::addColumn<int>("responseTimeoutMS");
     QTest::newRow("ImmediateGOAWAY") << 0;
     QTest::newRow("DelayedGOAWAY") << 1000;
