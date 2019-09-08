@@ -26,25 +26,21 @@
 **
 ****************************************************************************/
 
-#include "../../../../shared/fakedirmodel.h"
-#include <QtTest/QtTest>
+#include <QColumnView>
+#include <QScrollBar>
+#include <QSignalSpy>
+#include <QStringListModel>
+#include <QStyledItemDelegate>
+#include <QTest>
 #include <QtTest/private/qtesthelpers_p.h>
-#include <qitemdelegate.h>
-#include <qcolumnview.h>
-#include <private/qcolumnviewgrip_p.h>
-#include <private/qfilesystemmodel_p.h>
-#include <qstringlistmodel.h>
-#include <qdebug.h>
-#include <qitemdelegate.h>
-#include <qscrollbar.h>
-#include <private/qcolumnview_p.h>
-#include <qscreen.h>
+#include <QtWidgets/private/qcolumnviewgrip_p.h>
+#include "../../../../shared/fakedirmodel.h"
 
 #define ANIMATION_DELAY 300
 
-class tst_QColumnView : public QObject {
-  Q_OBJECT
-
+class tst_QColumnView : public QObject
+{
+    Q_OBJECT
 public:
     tst_QColumnView();
 
@@ -98,6 +94,7 @@ private:
 
 class TreeModel : public QStandardItemModel
 {
+    Q_OBJECT
 public:
     TreeModel()
     {
@@ -122,51 +119,31 @@ public:
     inline QModelIndex thirdLevel() { return index(0, 0, secondLevel()); }
 };
 
-class ColumnView : public QColumnView {
-
+class ColumnView : public QColumnView
+{
+    Q_OBJECT
 public:
-    ColumnView(QWidget *parent = 0) : QColumnView(parent){}
+    using QColumnView::QColumnView;
+    using QColumnView::horizontalOffset;
+    using QColumnView::clicked;
+    using QColumnView::isIndexHidden;
+    using QColumnView::moveCursor;
+    using QColumnView::scrollContentsBy;
+    using QColumnView::setSelection;
+    using QColumnView::visualRegionForSelection;
 
-    QList<QPointer<QAbstractItemView> > createdColumns;
-    void ScrollContentsBy(int x, int y) {scrollContentsBy(x,y); }
-    int HorizontalOffset() const { return horizontalOffset(); }
-    void emitClicked() { emit clicked(QModelIndex()); }
+    friend class tst_QColumnView;
 
-    enum PublicCursorAction {
-        MoveUp = QAbstractItemView::MoveUp,
-        MoveDown = QAbstractItemView::MoveDown,
-        MoveLeft = QAbstractItemView::MoveLeft,
-        MoveRight = QAbstractItemView::MoveRight,
-        MoveHome = QAbstractItemView::MoveHome,
-        MoveEnd = QAbstractItemView::MoveEnd,
-        MovePageUp = QAbstractItemView::MovePageUp,
-        MovePageDown = QAbstractItemView::MovePageDown,
-        MoveNext = QAbstractItemView::MoveNext,
-        MovePrevious = QAbstractItemView::MovePrevious
-    };
+    QVector<QPointer<QAbstractItemView>> createdColumns;
 
-    inline QModelIndex MoveCursor(PublicCursorAction ca, Qt::KeyboardModifiers kbm)
-        { return QColumnView::moveCursor((CursorAction)ca, kbm); }
-    bool IsIndexHidden(const QModelIndex&index) const
-        { return isIndexHidden(index); }
-
-    void setSelection(const QRect & rect, QItemSelectionModel::SelectionFlags command )
-    {
-        QColumnView::setSelection(rect, command);
-    }
-
-    // visualRegionForSelection() is protected in QColumnView.
-    QRegion getVisualRegionForSelection(const QItemSelection &selection){
-        return QColumnView::visualRegionForSelection(selection);
-    }
 protected:
-    QAbstractItemView *createColumn(const QModelIndex &index) {
+    QAbstractItemView *createColumn(const QModelIndex &index) override
+    {
         QAbstractItemView *view = QColumnView::createColumn(index);
         QPointer<QAbstractItemView> savedView = view;
         createdColumns.append(savedView);
         return view;
     }
-
 };
 
 tst_QColumnView::tst_QColumnView()
@@ -183,7 +160,7 @@ void tst_QColumnView::initTestCase()
 
 void tst_QColumnView::init()
 {
-    qApp->setLayoutDirection(Qt::LeftToRight);
+    QGuiApplication::setLayoutDirection(Qt::LeftToRight);
 }
 
 void tst_QColumnView::rootIndex()
@@ -199,7 +176,7 @@ void tst_QColumnView::rootIndex()
     QModelIndex drive = model.firstLevel();
     QVERIFY(view.visualRect(drive).isValid());
     view.setRootIndex(QModelIndex());
-    QCOMPARE(view.HorizontalOffset(), 0);
+    QCOMPARE(view.horizontalOffset(), 0);
     QCOMPARE(view.rootIndex(), QModelIndex());
     QVERIFY(view.visualRect(drive).isValid());
 
@@ -210,7 +187,7 @@ void tst_QColumnView::rootIndex()
     while (i < model.rowCount(home) - 1 && !model.hasChildren(homeFile))
         homeFile = model.index(++i, 0, home);
     view.setRootIndex(home);
-    QCOMPARE(view.HorizontalOffset(), 0);
+    QCOMPARE(view.horizontalOffset(), 0);
     QCOMPARE(view.rootIndex(), home);
     QVERIFY(!view.visualRect(drive).isValid());
     QVERIFY(!view.visualRect(home).isValid());
@@ -221,7 +198,7 @@ void tst_QColumnView::rootIndex()
     view.setRootIndex(home);
     view.setCurrentIndex(homeFile);
     view.scrollTo(model.index(0,0, homeFile));
-    QCOMPARE(view.HorizontalOffset(), 0);
+    QCOMPARE(view.horizontalOffset(), 0);
     QCOMPARE(view.rootIndex(), home);
     QVERIFY(!view.visualRect(drive).isValid());
     QVERIFY(!view.visualRect(home).isValid());
@@ -238,17 +215,15 @@ void tst_QColumnView::rootIndex()
     QModelIndex two = model.index(0, 0, homeFile);
     while (i < model.rowCount(homeFile) - 1 && !model.hasChildren(two))
         two = model.index(++i, 0, homeFile);
-    qApp->processEvents();
     QTest::qWait(ANIMATION_DELAY);
     view.setCurrentIndex(two);
     view.scrollTo(two);
     QTest::qWait(ANIMATION_DELAY);
-    qApp->processEvents();
     QVERIFY(two.isValid());
-    QVERIFY(view.HorizontalOffset() != 0);
+    QVERIFY(view.horizontalOffset() != 0);
 
     view.setRootIndex(homeFile);
-    QCOMPARE(view.HorizontalOffset(), 0);
+    QCOMPARE(view.horizontalOffset(), 0);
 }
 
 void tst_QColumnView::grips()
@@ -262,9 +237,9 @@ void tst_QColumnView::grips()
 
     {
         const QObjectList list = view.viewport()->children();
-        for (int i = 0 ; i < list.count(); ++i) {
-            if (QAbstractItemView *view = qobject_cast<QAbstractItemView*>(list.at(i)))
-                QVERIFY(view->cornerWidget() != 0);
+        for (QObject *obj : list) {
+            if (QAbstractItemView *view = qobject_cast<QAbstractItemView*>(obj))
+                QVERIFY(view->cornerWidget() != nullptr);
         }
     }
     view.setResizeGripsVisible(false);
@@ -272,8 +247,8 @@ void tst_QColumnView::grips()
 
     {
         const QObjectList list = view.viewport()->children();
-        for (int i = 0 ; i < list.count(); ++i) {
-            if (QAbstractItemView *view = qobject_cast<QAbstractItemView*>(list.at(i))) {
+        for (QObject *obj : list) {
+            if (QAbstractItemView *view = qobject_cast<QAbstractItemView*>(obj)) {
                 if (view->isVisible())
                     QVERIFY(!view->cornerWidget());
             }
@@ -288,9 +263,9 @@ void tst_QColumnView::isIndexHidden()
 {
     ColumnView view;
     QModelIndex idx;
-    QCOMPARE(view.IsIndexHidden(idx), false);
+    QCOMPARE(view.isIndexHidden(idx), false);
     view.setModel(&m_fakeDirModel);
-    QCOMPARE(view.IsIndexHidden(idx), false);
+    QCOMPARE(view.isIndexHidden(idx), false);
 }
 
 void tst_QColumnView::indexAt()
@@ -319,7 +294,6 @@ void tst_QColumnView::indexAt()
 
         view.selectionModel()->select(child, QItemSelectionModel::SelectCurrent);
         view.setCurrentIndex(child);
-        qApp->processEvents();
         QTest::qWait(200);
 
         // test that the second row doesn't start at 0
@@ -348,17 +322,17 @@ void tst_QColumnView::scrollContentsBy()
     ColumnView view;
     if (reverse)
         view.setLayoutDirection(Qt::RightToLeft);
-    view.ScrollContentsBy(-1, -1);
-    view.ScrollContentsBy(0, 0);
+    view.scrollContentsBy(-1, -1);
+    view.scrollContentsBy(0, 0);
 
     TreeModel model;
     view.setModel(&model);
-    view.ScrollContentsBy(0, 0);
+    view.scrollContentsBy(0, 0);
 
     QModelIndex home = model.thirdLevel();
     view.setCurrentIndex(home);
     QTest::qWait(ANIMATION_DELAY);
-    view.ScrollContentsBy(0, 0);
+    view.scrollContentsBy(0, 0);
 }
 
 void tst_QColumnView::scrollTo_data()
@@ -385,7 +359,7 @@ void tst_QColumnView::scrollTo()
     QVERIFY(QTest::qWaitForWindowActive(&topLevel));
 
     view.scrollTo(QModelIndex(), QAbstractItemView::EnsureVisible);
-    QCOMPARE(view.HorizontalOffset(), 0);
+    QCOMPARE(view.horizontalOffset(), 0);
 
     TreeModel model;
     view.setModel(&model);
@@ -400,45 +374,44 @@ void tst_QColumnView::scrollTo()
 
     QModelIndex index = model.index(0, 0, home);
     view.scrollTo(index, QAbstractItemView::EnsureVisible);
-    QCOMPARE(view.HorizontalOffset(), 0);
+    QCOMPARE(view.horizontalOffset(), 0);
 
     // Embedded requires that at least one widget have focus
     QWidget w;
     w.show();
 
-    QCOMPARE(view.HorizontalOffset(), 0);
+    QCOMPARE(view.horizontalOffset(), 0);
     if (giveFocus)
         view.setFocus(Qt::OtherFocusReason);
     else
         view.clearFocus();
 
-    QCOMPARE(view.HorizontalOffset(), 0);
-    qApp->processEvents();
-    QCOMPARE(view.HorizontalOffset(), 0);
+    QCOMPARE(view.horizontalOffset(), 0);
+    QCoreApplication::processEvents();
+    QCOMPARE(view.horizontalOffset(), 0);
     QTRY_COMPARE(view.hasFocus(), giveFocus);
     // scroll to the right
     int level = 0;
-    int last = view.HorizontalOffset();
-    while(model.hasChildren(index) && level < 5) {
+    int last = view.horizontalOffset();
+    while (model.hasChildren(index) && level < 5) {
         view.setCurrentIndex(index);
         QTest::qWait(ANIMATION_DELAY);
         view.scrollTo(index, QAbstractItemView::EnsureVisible);
         QTest::qWait(ANIMATION_DELAY);
-        qApp->processEvents();
         index = model.index(0, 0, index);
         level++;
         if (level >= 2) {
             if (!reverse) {
-                QTRY_VERIFY(view.HorizontalOffset() < 0);
+                QTRY_VERIFY(view.horizontalOffset() < 0);
                 qDebug() << "last=" << last
-                             << " ; HorizontalOffset= " << view.HorizontalOffset();
-                QTRY_VERIFY(last > view.HorizontalOffset());
+                             << " ; horizontalOffset= " << view.horizontalOffset();
+                QTRY_VERIFY(last > view.horizontalOffset());
             } else {
-                QTRY_VERIFY(view.HorizontalOffset() > 0);
-                QTRY_VERIFY(last < view.HorizontalOffset());
+                QTRY_VERIFY(view.horizontalOffset() > 0);
+                QTRY_VERIFY(last < view.horizontalOffset());
             }
         }
-        last = view.HorizontalOffset();
+        last = view.horizontalOffset();
     }
 
     // scroll to the left
@@ -450,17 +423,17 @@ void tst_QColumnView::scrollTo()
         index = index.parent();
         if (start != level) {
             if (!reverse) {
-                QTRY_VERIFY(last < view.HorizontalOffset());
+                QTRY_VERIFY(last < view.horizontalOffset());
             } else {
-                if (last <= view.HorizontalOffset()) {
+                if (last <= view.horizontalOffset()) {
                     qDebug() << "Test failure. last=" << last
-                             << " ; HorizontalOffset= " << view.HorizontalOffset();
+                             << " ; horizontalOffset= " << view.horizontalOffset();
                 }
-                QTRY_VERIFY(last > view.HorizontalOffset());
+                QTRY_VERIFY(last > view.horizontalOffset());
             }
         }
         level--;
-        last = view.HorizontalOffset();
+        last = view.horizontalOffset();
     }
     // It shouldn't automatically steal focus if it doesn't have it
     QTRY_COMPARE(view.hasFocus(), giveFocus);
@@ -490,20 +463,20 @@ void tst_QColumnView::moveCursor()
     if (reverse)
         view.setLayoutDirection(Qt::RightToLeft);
     // don't crash
-    view.MoveCursor(ColumnView::MoveUp, Qt::NoModifier);
+    view.moveCursor(ColumnView::MoveUp, Qt::NoModifier);
 
     // don't do anything
-    QCOMPARE(view.MoveCursor(ColumnView::MoveEnd, Qt::NoModifier), QModelIndex());
+    QCOMPARE(view.moveCursor(ColumnView::MoveEnd, Qt::NoModifier), QModelIndex());
 
     view.setModel(&m_fakeDirModel);
     QModelIndex ci = view.currentIndex();
-    QCOMPARE(view.MoveCursor(ColumnView::MoveUp, Qt::NoModifier), QModelIndex());
-    QCOMPARE(view.MoveCursor(ColumnView::MoveDown, Qt::NoModifier), QModelIndex());
+    QCOMPARE(view.moveCursor(ColumnView::MoveUp, Qt::NoModifier), QModelIndex());
+    QCOMPARE(view.moveCursor(ColumnView::MoveDown, Qt::NoModifier), QModelIndex());
 
     // left at root
     view.setCurrentIndex(m_fakeDirModel.index(0,0));
-    ColumnView::PublicCursorAction action = reverse ? ColumnView::MoveRight : ColumnView::MoveLeft;
-    QCOMPARE(view.MoveCursor(action, Qt::NoModifier), m_fakeDirModel.index(0,0));
+    ColumnView::CursorAction action = reverse ? ColumnView::MoveRight : ColumnView::MoveLeft;
+    QCOMPARE(view.moveCursor(action, Qt::NoModifier), m_fakeDirModel.index(0,0));
 
     // left shouldn't move up
     int i = 0;
@@ -513,30 +486,29 @@ void tst_QColumnView::moveCursor()
     QVERIFY(m_fakeDirModel.hasChildren(ci));
     view.setCurrentIndex(ci);
     action = reverse ? ColumnView::MoveRight : ColumnView::MoveLeft;
-    QCOMPARE(view.MoveCursor(action, Qt::NoModifier), ci);
+    QCOMPARE(view.moveCursor(action, Qt::NoModifier), ci);
 
     // now move to the left (i.e. move over one column)
     view.setCurrentIndex(m_fakeDirHomeIndex);
-    QCOMPARE(view.MoveCursor(action, Qt::NoModifier), m_fakeDirHomeIndex.parent());
+    QCOMPARE(view.moveCursor(action, Qt::NoModifier), m_fakeDirHomeIndex.parent());
 
     // right
     action = reverse ? ColumnView::MoveLeft : ColumnView::MoveRight;
     view.setCurrentIndex(ci);
-    QModelIndex mc = view.MoveCursor(action, Qt::NoModifier);
+    QModelIndex mc = view.moveCursor(action, Qt::NoModifier);
     QCOMPARE(mc, m_fakeDirModel.index(0,0, ci));
 
     // for empty directories (no way to go 'right'), next one should move down
     QModelIndex idx = m_fakeDirModel.index(0, 0, ci);
     const int rowCount = m_fakeDirModel.rowCount(ci);
-    while (m_fakeDirModel.hasChildren(idx) && rowCount > idx.row() + 1) {
+    while (m_fakeDirModel.hasChildren(idx) && rowCount > idx.row() + 1)
         idx = idx.sibling(idx.row() + 1, idx.column());
-    }
     static const char error[]  = "This test requires an empty directory followed by another directory.";
     QVERIFY2(idx.isValid(), error);
     QVERIFY2(!m_fakeDirModel.hasChildren(idx), error);
     QVERIFY2(idx.row() + 1 < rowCount, error);
     view.setCurrentIndex(idx);
-    mc = view.MoveCursor(action, Qt::NoModifier);
+    mc = view.moveCursor(action, Qt::NoModifier);
     QCOMPARE(mc, idx.sibling(idx.row() + 1, idx.column()));
 }
 
@@ -554,11 +526,12 @@ void tst_QColumnView::selectAll()
     QVERIFY(view.selectionModel()->selectedIndexes().count() > 0);
 
     QModelIndex file;
-    for (int i = 0; i < m_fakeDirModel.rowCount(m_fakeDirHomeIndex); ++i)
+    for (int i = 0; i < m_fakeDirModel.rowCount(m_fakeDirHomeIndex); ++i) {
         if (!m_fakeDirModel.hasChildren(m_fakeDirModel.index(i, 0, m_fakeDirHomeIndex))) {
             file = m_fakeDirModel.index(i, 0, m_fakeDirHomeIndex);
             break;
         }
+    }
     view.setCurrentIndex(file);
     view.selectAll();
     QVERIFY(view.selectionModel()->selectedIndexes().count() > 0);
@@ -572,7 +545,7 @@ void tst_QColumnView::clicked()
     ColumnView view;
 
     view.setModel(&m_fakeDirModel);
-    view.resize(800,300);
+    view.resize(800, 300);
     view.show();
 
     view.setCurrentIndex(m_fakeDirHomeIndex);
@@ -581,12 +554,12 @@ void tst_QColumnView::clicked()
     QModelIndex parent = m_fakeDirHomeIndex.parent();
     QVERIFY(parent.isValid());
 
-    QSignalSpy clickedSpy(&view, SIGNAL(clicked(QModelIndex)));
+    QSignalSpy clickedSpy(&view, &QAbstractItemView::clicked);
 
     QPoint localPoint = view.visualRect(m_fakeDirHomeIndex).center();
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, localPoint);
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, {}, localPoint);
     QCOMPARE(clickedSpy.count(), 1);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
 
     if (sizeof(qreal) != sizeof(double))
         QSKIP("Skipped due to rounding errors");
@@ -653,21 +626,21 @@ void tst_QColumnView::visualRegionForSelection()
 {
     ColumnView view;
     QItemSelection emptyItemSelection;
-    QCOMPARE(QRegion(), view.getVisualRegionForSelection(emptyItemSelection));
+    QCOMPARE(QRegion(), view.visualRegionForSelection(emptyItemSelection));
 
     // a region that isn't empty
     view.setModel(&m_fakeDirModel);
 
 
     QItemSelection itemSelection(m_fakeDirModel.index(0, 0, m_fakeDirHomeIndex), m_fakeDirModel.index(m_fakeDirModel.rowCount(m_fakeDirHomeIndex) - 1, 0, m_fakeDirHomeIndex));
-    QVERIFY(QRegion() != view.getVisualRegionForSelection(itemSelection));
+    QVERIFY(QRegion() != view.visualRegionForSelection(itemSelection));
 }
 
 void tst_QColumnView::moveGrip_basic()
 {
     QColumnView view;
     QColumnViewGrip *grip = new QColumnViewGrip(&view);
-    QSignalSpy spy(grip, SIGNAL(gripMoved(int)));
+    QSignalSpy spy(grip, &QColumnViewGrip::gripMoved);
     view.setCornerWidget(grip);
     int oldX = view.width();
     grip->moveGrip(10);
@@ -707,12 +680,11 @@ void tst_QColumnView::moveGrip()
 
     int columnNum = view.createdColumns.count() - 2;
     QVERIFY(columnNum >= 0);
-    QObjectList list = view.createdColumns[columnNum]->children();
-    QColumnViewGrip *grip = 0;
-    for (int i = 0; i < list.count(); ++i) {
-        if ((grip = qobject_cast<QColumnViewGrip *>(list[i]))) {
+    const QObjectList list = view.createdColumns[columnNum]->children();
+    QColumnViewGrip *grip = nullptr;
+    for (QObject *obj : list) {
+        if ((grip = qobject_cast<QColumnViewGrip *>(obj)))
             break;
-        }
     }
     if (!grip)
         return;
@@ -728,7 +700,7 @@ void tst_QColumnView::doubleClick()
 {
     QColumnView view;
     QColumnViewGrip *grip = new QColumnViewGrip(&view);
-    QSignalSpy spy(grip, SIGNAL(gripMoved(int)));
+    QSignalSpy spy(grip, &QColumnViewGrip::gripMoved);
     view.setCornerWidget(grip);
     view.resize(200, 200);
     QCOMPARE(view.width(), 200);
@@ -741,24 +713,24 @@ void tst_QColumnView::gripMoved()
 {
     QColumnView view;
     QColumnViewGrip *grip = new QColumnViewGrip(&view);
-    QSignalSpy spy(grip, SIGNAL(gripMoved(int)));
+    QSignalSpy spy(grip, &QColumnViewGrip::gripMoved);
     view.setCornerWidget(grip);
     view.move(300, 300);
     view.resize(200, 200);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
 
     int oldWidth = view.width();
 
-    QTest::mousePress(grip, Qt::LeftButton, 0, QPoint(1,1));
+    QTest::mousePress(grip, Qt::LeftButton, {}, QPoint(1, 1));
     //QTest::mouseMove(grip, QPoint(grip->globalX()+50, y));
 
-    QPoint posNew = QPoint(grip->mapToGlobal(QPoint(1,1)).x() + 65, 0);
+    QPoint posNew = QPoint(grip->mapToGlobal(QPoint(1, 1)).x() + 65, 0);
     QMouseEvent *event = new QMouseEvent(QEvent::MouseMove, posNew, posNew, Qt::LeftButton, Qt::LeftButton,Qt::NoModifier);
     QCoreApplication::postEvent(grip, event);
     QCoreApplication::processEvents();
     QTest::mouseRelease(grip, Qt::LeftButton);
 
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(view.width(), oldWidth + 65);
 }
 
@@ -785,12 +757,12 @@ void tst_QColumnView::preview()
     }
     QVERIFY(file.isValid());
     view.setCurrentIndex(file);
-    QVERIFY(view.previewWidget() != (QWidget*)0);
+    QVERIFY(view.previewWidget() != nullptr);
 
     QWidget *previewWidget = new QWidget(&view);
     view.setPreviewWidget(previewWidget);
     QCOMPARE(view.previewWidget(), previewWidget);
-    QVERIFY(previewWidget->parent() != ((QWidget*)&view));
+    QVERIFY(previewWidget->parent() != &view);
     view.setCurrentIndex(home);
 
     // previewWidget should be marked for deletion
@@ -803,21 +775,21 @@ void tst_QColumnView::swapPreview()
 {
     // swap the preview widget in updatePreviewWidget
     QColumnView view;
-    QStringList sl;
-    sl << QLatin1String("test");
-    QStringListModel model(sl);
+    QStringListModel model({ QLatin1String("test") });
     view.setModel(&model);
     view.setCurrentIndex(view.indexAt(QPoint(1, 1)));
-    connect(&view, SIGNAL(updatePreviewWidget(QModelIndex)),
-            this, SLOT(setPreviewWidget()));
+    connect(&view, &QColumnView::updatePreviewWidget,
+            this, &tst_QColumnView::setPreviewWidget);
     view.setCurrentIndex(view.indexAt(QPoint(1, 1)));
     QTest::qWait(ANIMATION_DELAY);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
 }
 
 void tst_QColumnView::setPreviewWidget()
 {
-    ((QColumnView*)sender())->setPreviewWidget(new QWidget);
+    auto ptr = qobject_cast<QColumnView *>(sender());
+    QVERIFY(ptr);
+    ptr->setPreviewWidget(new QWidget);
 }
 
 void tst_QColumnView::sizes()
@@ -825,8 +797,7 @@ void tst_QColumnView::sizes()
     QColumnView view;
     QCOMPARE(view.columnWidths().count(), 0);
 
-    QList<int> newSizes;
-    newSizes << 10 << 4 << 50 << 6;
+    const QList<int> newSizes{ 10, 4, 50, 6 };
 
     QList<int> visibleSizes;
     view.setColumnWidths(newSizes);
@@ -839,8 +810,7 @@ void tst_QColumnView::sizes()
     QCOMPARE(postSizes, newSizes.mid(0, postSizes.count()));
 
     QVERIFY(view.columnWidths().count() > 1);
-    QList<int> smallerSizes;
-    smallerSizes << 6;
+    QList<int> smallerSizes{ 6 };
     view.setColumnWidths(smallerSizes);
     QList<int> expectedSizes = newSizes;
     expectedSizes[0] = 6;
@@ -851,13 +821,13 @@ void tst_QColumnView::sizes()
 void tst_QColumnView::rowDelegate()
 {
     ColumnView view;
-    QItemDelegate *d = new QItemDelegate;
+    QStyledItemDelegate *d = new QStyledItemDelegate;
     view.setItemDelegateForRow(3, d);
 
     view.setModel(&m_fakeDirModel);
     for (int i = 0; i < view.createdColumns.count(); ++i) {
         QAbstractItemView *column = view.createdColumns.at(i);
-        QCOMPARE(column->itemDelegateForRow(3), (QAbstractItemDelegate*)d);
+        QCOMPARE(column->itemDelegateForRow(3), d);
     }
     delete d;
 }
@@ -900,7 +870,7 @@ void tst_QColumnView::changeSameColumn()
     }
     QVERIFY(second.isValid());
 
-    QList<QPointer<QAbstractItemView> > old = view.createdColumns;
+    const auto old = view.createdColumns;
     view.setCurrentIndex(second);
 
     QCOMPARE(old, view.createdColumns);
@@ -973,7 +943,7 @@ void tst_QColumnView::pullRug()
     QModelIndex home = model.thirdLevel();
     view.setCurrentIndex(home);
     if (removeModel)
-        view.setModel(0);
+        view.setModel(nullptr);
     else
         view.setCurrentIndex(QModelIndex());
     QTest::qWait(ANIMATION_DELAY);
@@ -982,19 +952,19 @@ void tst_QColumnView::pullRug()
 
 void tst_QColumnView::dynamicModelChanges()
 {
-    struct MyItemDelegate : public QItemDelegate
+    struct MyItemDelegate : public QStyledItemDelegate
     {
         void paint(QPainter *painter,
                    const QStyleOptionViewItem &option,
-                   const QModelIndex &index) const
+                   const QModelIndex &index) const override
         {
             paintedIndexes += index;
-            QItemDelegate::paint(painter, option, index);
+            QStyledItemDelegate::paint(painter, option, index);
         }
 
         mutable QSet<QModelIndex> paintedIndexes;
 
-    } delegate;;
+    } delegate;
     QStandardItemModel model;
     ColumnView view;
     view.setModel(&model);
@@ -1008,8 +978,6 @@ void tst_QColumnView::dynamicModelChanges()
     QVERIFY(QTest::qWaitForWindowExposed(&view)); //let the time for painting to occur
     QTRY_COMPARE(delegate.paintedIndexes.count(), 1);
     QCOMPARE(*delegate.paintedIndexes.begin(), model.index(0,0));
-
-
 }
 
 
