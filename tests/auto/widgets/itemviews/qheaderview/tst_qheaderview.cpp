@@ -27,32 +27,28 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
+#include <QDesktopWidget>
+#include <QHeaderView>
+#include <QProxyStyle>
+#include <QSignalSpy>
+#include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include <QStringListModel>
-#include <QSortFilterProxyModel>
 #include <QTableView>
-#include <QProxyStyle>
+#include <QTest>
+#include <QTreeWidget>
+#include <QtWidgets/private/qheaderview_p.h>
 
-#include <qabstractitemmodel.h>
-#include <qapplication.h>
-#include <qheaderview.h>
-#include <private/qheaderview_p.h>
-#include <qitemdelegate.h>
-#include <qtreewidget.h>
-#include <qdebug.h>
-#include <qscreen.h>
-#include <qdesktopwidget.h>
-
-typedef QList<int> IntList;
-
-typedef QList<bool> BoolList;
+using BoolList = QVector<bool>;
+using IntList = QVector<int>;
+using ResizeVec = QVector<QHeaderView::ResizeMode>;
 
 class TestStyle : public QProxyStyle
 {
+    Q_OBJECT
 public:
-    void drawControl(ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
+    void drawControl(ControlElement element, const QStyleOption *option,
+                     QPainter *painter, const QWidget *widget) const override
     {
         if (element == CE_HeaderSection) {
             if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option))
@@ -60,16 +56,17 @@ public:
         }
         QProxyStyle::drawControl(element, option, painter, widget);
     }
-    mutable QStyleOptionHeader::SectionPosition lastPosition;
+    mutable QStyleOptionHeader::SectionPosition lastPosition = QStyleOptionHeader::Beginning;
 };
 
 class protected_QHeaderView : public QHeaderView
 {
     Q_OBJECT
 public:
-    protected_QHeaderView(Qt::Orientation orientation) : QHeaderView(orientation) {
+    protected_QHeaderView(Qt::Orientation orientation) : QHeaderView(orientation)
+    {
         resizeSections();
-    };
+    }
 
     void testEvent();
     void testhorizontalOffset();
@@ -80,7 +77,9 @@ public:
 
 class XResetModel : public QStandardItemModel
 {
-    virtual bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex())
+    Q_OBJECT
+public:
+    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override
     {
         blockSignals(true);
         bool r = QStandardItemModel::removeRows(row, count, parent);
@@ -89,7 +88,7 @@ class XResetModel : public QStandardItemModel
         endResetModel();
         return r;
     }
-    virtual bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex())
+    bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override
     {
         blockSignals(true);
         bool r = QStandardItemModel::insertRows(row, count, parent);
@@ -276,16 +275,14 @@ void tst_QHeaderView::initMain()
 
 class QtTestModel: public QAbstractTableModel
 {
-
-Q_OBJECT
-
+    Q_OBJECT
 public:
-    QtTestModel(QObject *parent = 0): QAbstractTableModel(parent),
-       cols(0), rows(0), wrongIndex(false), m_bMultiLine(false) {}
-    int rowCount(const QModelIndex&) const override { return rows; }
-    int columnCount(const QModelIndex&) const override { return cols; }
+    QtTestModel(int rc, int cc, QObject *parent = nullptr)
+        : QAbstractTableModel(parent), rows(rc), cols(cc) {}
+    int rowCount(const QModelIndex &) const override { return rows; }
+    int columnCount(const QModelIndex &) const override { return cols; }
     bool isEditable(const QModelIndex &) const { return true; }
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override
     {
         if (section < 0 || (role != Qt::DisplayRole && role != Qt::StatusTipRole))
             return QVariant();
@@ -394,9 +391,10 @@ public:
         endResetModel();
     }
 
-    int cols, rows;
-    mutable bool wrongIndex;
-    bool m_bMultiLine;
+    int rows = 0;
+    int cols = 0;
+    mutable bool wrongIndex = false;
+    bool m_bMultiLine = false;
 };
 
 // Testing get/set functions
@@ -442,16 +440,16 @@ void tst_QHeaderView::getSetCheck()
     // void QHeaderView::setOffset(int)
     obj1.setOffset(0);
     QCOMPARE(0, obj1.offset());
-    obj1.setOffset(INT_MIN);
-    QCOMPARE(INT_MIN, obj1.offset());
-    obj1.setOffset(INT_MAX);
-    QCOMPARE(INT_MAX, obj1.offset());
+    obj1.setOffset(std::numeric_limits<int>::min());
+    QCOMPARE(std::numeric_limits<int>::min(), obj1.offset());
+    obj1.setOffset(std::numeric_limits<int>::max());
+    QCOMPARE(std::numeric_limits<int>::max(), obj1.offset());
 
 }
 
 tst_QHeaderView::tst_QHeaderView()
 {
-    qRegisterMetaType<int>("Qt::SortOrder");
+    qRegisterMetaType<Qt::SortOrder>("Qt::SortOrder");
 }
 
 void tst_QHeaderView::initTestCase()
@@ -472,8 +470,8 @@ void tst_QHeaderView::cleanupTestCase()
 
 void tst_QHeaderView::init()
 {
-    topLevel = new QWidget();
-    view = new QHeaderView(Qt::Vertical,topLevel);
+    topLevel = new QWidget;
+    view = new QHeaderView(Qt::Vertical, topLevel);
     // Some initial value tests before a model is added
     QCOMPARE(view->length(), 0);
     QCOMPARE(view->sizeHint(), QSize(0,0));
@@ -499,7 +497,7 @@ void tst_QHeaderView::init()
     }
     */
 
-    QSignalSpy spy(view, SIGNAL(sectionCountChanged(int,int)));
+    QSignalSpy spy(view, &QHeaderView::sectionCountChanged);
     view->setModel(model);
     QCOMPARE(spy.count(), 1);
     view->resize(200,200);
@@ -510,11 +508,11 @@ void tst_QHeaderView::cleanup()
     m_tableview->setUpdatesEnabled(true);
     if (view && view->parent() != m_tableview)
         delete view;
-    view = 0;
+    view = nullptr;
     delete model;
-    model = 0;
+    model = nullptr;
     delete topLevel;
-    topLevel = 0;
+    topLevel = nullptr;
 }
 
 void tst_QHeaderView::noModel()
@@ -525,7 +523,7 @@ void tst_QHeaderView::noModel()
 
 void tst_QHeaderView::emptyModel()
 {
-    QtTestModel testmodel;
+    QtTestModel testmodel(0, 0);
     view->setModel(&testmodel);
     QVERIFY(!testmodel.wrongIndex);
     QCOMPARE(view->count(), testmodel.rows);
@@ -534,8 +532,7 @@ void tst_QHeaderView::emptyModel()
 
 void tst_QHeaderView::removeRows()
 {
-    QtTestModel model;
-    model.rows = model.cols = 10;
+    QtTestModel model(10, 10);
 
     QHeaderView vertical(Qt::Vertical);
     QHeaderView horizontal(Qt::Horizontal);
@@ -561,8 +558,7 @@ void tst_QHeaderView::removeRows()
 
 void tst_QHeaderView::removeCols()
 {
-    QtTestModel model;
-    model.rows = model.cols = 10;
+    QtTestModel model(10, 10);
 
     QHeaderView vertical(Qt::Vertical);
     QHeaderView horizontal(Qt::Horizontal);
@@ -644,14 +640,12 @@ void tst_QHeaderView::hidden()
         view->setSectionHidden(i, true);
     view->setModel(&model2);
     QVERIFY(view->sectionsHidden());
-    for (int i = 0; i < model2.rowCount(); ++i) {
+    for (int i = 0; i < model2.rowCount(); ++i)
         QVERIFY(view->isSectionHidden(i));
-    }
 
     view->setModel(model);
-    for (int i = 0; i < model2.rowCount(); ++i) {
+    for (int i = 0; i < model2.rowCount(); ++i)
         QVERIFY(view->isSectionHidden(i));
-    }
     QCOMPARE(view->isSectionHidden(model->rowCount() - 1), false);
     for (int i = 0; i < model->rowCount(); ++i)
         view->setSectionHidden(i, false);
@@ -680,14 +674,12 @@ void tst_QHeaderView::oneSectionSize()
 {
     //this ensures that if there is only one section, it gets a correct width (more than 0)
     QHeaderView view (Qt::Vertical);
-    QtTestModel model;
-    model.cols = 1;
-    model.rows = 1;
+    QtTestModel model(1, 1);
 
     view.setSectionResizeMode(QHeaderView::Interactive);
     view.setModel(&model);
-
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QVERIFY(view.sectionSize(0) > 0);
 }
@@ -695,15 +687,15 @@ void tst_QHeaderView::oneSectionSize()
 
 void tst_QHeaderView::sectionSize_data()
 {
-    QTest::addColumn<QList<int> >("boundsCheck");
-    QTest::addColumn<QList<int> >("defaultSizes");
+    QTest::addColumn<IntList>("boundsCheck");
+    QTest::addColumn<IntList>("defaultSizes");
     QTest::addColumn<int>("initialDefaultSize");
     QTest::addColumn<int>("lastVisibleSectionSize");
     QTest::addColumn<int>("persistentSectionSize");
 
     QTest::newRow("data set one")
-        << (QList<int>() << -1 << 0 << 4 << 9999)
-        << (QList<int>() << 10 << 30 << 30)
+        << (IntList{ -1, 0, 4, 9999 })
+        << (IntList{ 10, 30, 30 })
         << 30
         << 300
         << 20;
@@ -716,19 +708,19 @@ void tst_QHeaderView::sectionSize()
 #elif defined Q_OS_WINRT
     QSKIP("Fails on WinRT - QTBUG-68297");
 #endif
-    QFETCH(QList<int>, boundsCheck);
-    QFETCH(QList<int>, defaultSizes);
+    QFETCH(const IntList, boundsCheck);
+    QFETCH(const IntList, defaultSizes);
     QFETCH(int, initialDefaultSize);
     QFETCH(int, lastVisibleSectionSize);
     QFETCH(int, persistentSectionSize);
 
     // bounds check
-    foreach (int val, boundsCheck)
+    for (int val : boundsCheck)
         view->sectionSize(val);
 
     // default size
     QCOMPARE(view->defaultSectionSize(), initialDefaultSize);
-    foreach (int def, defaultSizes) {
+    for (int def : defaultSizes) {
         view->setDefaultSectionSize(def);
         QCOMPARE(view->defaultSectionSize(), def);
     }
@@ -757,9 +749,7 @@ void tst_QHeaderView::sectionSize()
     int sectionCount = view->count();
     for (int i = 0; i < sectionCount; ++i)
         view->resizeSection(i, persistentSectionSize);
-    QtTestModel model;
-    model.cols = sectionCount * 2;
-    model.rows = sectionCount * 2;
+    QtTestModel model(sectionCount * 2, sectionCount * 2);
     view->setModel(&model);
     for (int j = 0; j < sectionCount; ++j)
         QCOMPARE(view->sectionSize(j), persistentSectionSize);
@@ -784,35 +774,34 @@ void tst_QHeaderView::visualIndex()
 
 void tst_QHeaderView::visualIndexAt_data()
 {
-    QTest::addColumn<QList<int> >("hidden");
-    QTest::addColumn<QList<int> >("from");
-    QTest::addColumn<QList<int> >("to");
-    QTest::addColumn<QList<int> >("coordinate");
-    QTest::addColumn<QList<int> >("visual");
+    QTest::addColumn<IntList>("hidden");
+    QTest::addColumn<IntList>("from");
+    QTest::addColumn<IntList>("to");
+    QTest::addColumn<IntList>("coordinate");
+    QTest::addColumn<IntList>("visual");
 
-    QList<int> coordinateList;
-    coordinateList << -1 << 0 << 31 << 91 << 99999;
+    const IntList coordinateList{ -1, 0, 31, 91, 99999 };
 
     QTest::newRow("no hidden, no moved sections")
-        << QList<int>()
-        << QList<int>()
-        << QList<int>()
+        << IntList()
+        << IntList()
+        << IntList()
         << coordinateList
-        << (QList<int>() << -1 << 0 << 1 << 3 << -1);
+        << (IntList{ -1, 0, 1, 3, -1 });
 
     QTest::newRow("no hidden, moved sections")
-        << QList<int>()
-        << (QList<int>() << 0)
-        << (QList<int>() << 1)
+        << IntList()
+        << (IntList{ 0 })
+        << (IntList{ 1 })
         << coordinateList
-        << (QList<int>() << -1 << 0 << 1 << 3 << -1);
+        << (IntList{ -1, 0, 1, 3, -1 });
 
     QTest::newRow("hidden, no moved sections")
-        << (QList<int>() << 0)
-        << QList<int>()
-        << QList<int>()
+        << (IntList{ 0 })
+        << IntList()
+        << IntList()
         << coordinateList
-        << (QList<int>() << -1 << 1 << 2 << 3 << -1);
+        << (IntList{ -1, 1, 2, 3, -1 });
 }
 
 void tst_QHeaderView::visualIndexAt()
@@ -822,26 +811,24 @@ void tst_QHeaderView::visualIndexAt()
 #elif defined Q_OS_WINRT
     QSKIP("Fails on WinRT - QTBUG-68297");
 #endif
-    QFETCH(QList<int>, hidden);
-    QFETCH(QList<int>, from);
-    QFETCH(QList<int>, to);
-    QFETCH(QList<int>, coordinate);
-    QFETCH(QList<int>, visual);
+    QFETCH(const IntList, hidden);
+    QFETCH(const IntList, from);
+    QFETCH(const IntList, to);
+    QFETCH(const IntList, coordinate);
+    QFETCH(const IntList, visual);
 
     view->setStretchLastSection(true);
     topLevel->show();
     QVERIFY(QTest::qWaitForWindowExposed(topLevel));
 
-    for (int i = 0; i < hidden.count(); ++i)
-        view->setSectionHidden(hidden.at(i), true);
+    for (int i : hidden)
+        view->setSectionHidden(i, true);
 
     for (int j = 0; j < from.count(); ++j)
         view->moveSection(from.at(j), to.at(j));
 
-    QTest::qWait(100);
-
     for (int k = 0; k < coordinate.count(); ++k)
-        QCOMPARE(view->visualIndexAt(coordinate.at(k)), visual.at(k));
+        QTRY_COMPARE(view->visualIndexAt(coordinate.at(k)), visual.at(k));
 }
 
 void tst_QHeaderView::length()
@@ -852,9 +839,8 @@ void tst_QHeaderView::length()
 
     //minimumSectionSize should be the size of the last section of the widget is not tall enough
     int length = view->minimumSectionSize();
-    for (int i=0; i < view->count()-1; i++) {
+    for (int i = 0; i < view->count() - 1; i++)
         length += view->sectionSize(i);
-    }
 
     length = qMax(length, view->viewport()->height());
     QCOMPARE(length, view->length());
@@ -866,9 +852,7 @@ void tst_QHeaderView::length()
     QVERIFY(length != view->length());
 
     // layoutChanged might mean rows have been removed
-    QtTestModel model;
-    model.cols = 10;
-    model.rows = 10;
+    QtTestModel model(10, 10);
     view->setModel(&model);
     int oldLength = view->length();
     model.cleanup();
@@ -942,9 +926,9 @@ void tst_QHeaderView::swapSections()
     view->swapSections(1, -1);
     view->swapSections(1, 99999);
 
-    QVector<int> logical = (QVector<int>() << 0 << 1 << 2 << 3);
+    IntList logical{ 0, 1, 2, 3 };
 
-    QSignalSpy spy1(view, SIGNAL(sectionMoved(int,int,int)));
+    QSignalSpy spy1(view, &QHeaderView::sectionMoved);
 
     QCOMPARE(view->sectionsMoved(), false);
     view->swapSections(1, 1);
@@ -957,7 +941,7 @@ void tst_QHeaderView::swapSections()
         QCOMPARE(view->logicalIndex(i), logical.at(i));
     QCOMPARE(spy1.count(), 4);
 
-    logical = (QVector<int>()  << 3 << 1 << 2 << 0);
+    logical = { 3, 1, 2, 0 };
     view->swapSections(3, 0);
     QCOMPARE(view->sectionsMoved(), true);
     for (int j = 0; j < view->count(); ++j)
@@ -967,56 +951,56 @@ void tst_QHeaderView::swapSections()
 
 void tst_QHeaderView::moveSection_data()
 {
-    QTest::addColumn<QList<int> >("hidden");
-    QTest::addColumn<QList<int> >("from");
-    QTest::addColumn<QList<int> >("to");
-    QTest::addColumn<QList<bool> >("moved");
-    QTest::addColumn<QList<int> >("logical");
+    QTest::addColumn<IntList>("hidden");
+    QTest::addColumn<IntList>("from");
+    QTest::addColumn<IntList>("to");
+    QTest::addColumn<BoolList>("moved");
+    QTest::addColumn<IntList>("logical");
     QTest::addColumn<int>("count");
 
     QTest::newRow("bad args, no hidden")
-        << QList<int>()
-        << (QList<int>() << -1 << 1 << 99999 << 1)
-        << (QList<int>() << 1 << -1 << 1 << 99999)
-        << (QList<bool>() << false << false << false << false)
-        << (QList<int>() << 0 << 1 << 2 << 3)
+        << IntList()
+        << (IntList{ -1, 1, 99999, 1 })
+        << (IntList{ 1, -1, 1, 99999 })
+        << (BoolList{ false, false, false, false })
+        << (IntList{ 0, 1, 2, 3 })
         << 0;
 
     QTest::newRow("good args, no hidden")
-        << QList<int>()
-        << (QList<int>() << 1 << 1 << 2 << 1)
-        << (QList<int>() << 1 << 2 << 1 << 2)
-        << (QList<bool>() << false << true << true << true)
-        << (QList<int>() << 0 << 2 << 1 << 3)
+        << IntList()
+        << (IntList{ 1, 1, 2, 1 })
+        << (IntList{ 1, 2, 1, 2 })
+        << (BoolList{ false, true, true, true })
+        << (IntList{ 0, 2, 1, 3 })
         << 3;
 
     QTest::newRow("hidden sections")
-        << (QList<int>() << 0 << 3)
-        << (QList<int>() << 1 << 1 << 2 << 1)
-        << (QList<int>() << 1 << 2 << 1 << 2)
-        << (QList<bool>() << false << true << true << true)
-        << (QList<int>() << 0 << 2 << 1 << 3)
+        << (IntList{ 0, 3 })
+        << (IntList{ 1, 1, 2, 1 })
+        << (IntList{ 1, 2, 1, 2 })
+        << (BoolList{ false, true, true, true })
+        << (IntList{ 0, 2, 1, 3 })
         << 3;
 }
 
 void tst_QHeaderView::moveSection()
 {
-    QFETCH(QList<int>, hidden);
-    QFETCH(QList<int>, from);
-    QFETCH(QList<int>, to);
-    QFETCH(QList<bool>, moved);
-    QFETCH(QList<int>, logical);
+    QFETCH(const IntList, hidden);
+    QFETCH(const IntList, from);
+    QFETCH(const IntList, to);
+    QFETCH(const BoolList, moved);
+    QFETCH(const IntList, logical);
     QFETCH(int, count);
 
     QCOMPARE(from.count(), to.count());
     QCOMPARE(from.count(), moved.count());
     QCOMPARE(view->count(), logical.count());
 
-    QSignalSpy spy1(view, SIGNAL(sectionMoved(int,int,int)));
+    QSignalSpy spy1(view, &QHeaderView::sectionMoved);
     QCOMPARE(view->sectionsMoved(), false);
 
-    for (int h = 0; h < hidden.count(); ++h)
-        view->setSectionHidden(hidden.at(h), true);
+    for (int h : hidden)
+        view->setSectionHidden(h, true);
 
     for (int i = 0; i < from.count(); ++i) {
         view->moveSection(from.at(i), to.at(i));
@@ -1037,42 +1021,42 @@ void tst_QHeaderView::resizeAndMoveSection_data()
     QTest::addColumn<int>("logicalTo");
 
     QTest::newRow("resizeAndMove-1")
-        << (IntList() << 0 << 1)
-        << (IntList() << 20 << 40)
+        << (IntList{ 0, 1 })
+        << (IntList{ 20, 40 })
         << 0 << 1;
 
     QTest::newRow("resizeAndMove-2")
-        << (IntList() << 0 << 1 << 2 << 3)
-        << (IntList() << 20 << 60 << 10 << 80)
+        << (IntList{ 0, 1, 2, 3 })
+        << (IntList{ 20, 60, 10, 80 })
         << 0 << 2;
 
     QTest::newRow("resizeAndMove-3")
-        << (IntList() << 0 << 1 << 2 << 3)
-        << (IntList() << 100 << 60 << 40 << 10)
+        << (IntList{ 0, 1, 2, 3 })
+        << (IntList{ 100, 60, 40, 10 })
         << 0 << 3;
 
     QTest::newRow("resizeAndMove-4")
-        << (IntList() << 0 << 1 << 2 << 3)
-        << (IntList() << 10 << 40 << 80 << 30)
+        << (IntList{ 0, 1, 2, 3 })
+        << (IntList{ 10, 40, 80, 30 })
         << 1 << 2;
 
     QTest::newRow("resizeAndMove-5")
-        << (IntList() << 2 << 3)
-        << (IntList() << 100 << 200)
+        << (IntList{ 2, 3 })
+        << (IntList{ 100, 200})
         << 3 << 2;
 }
 
 void tst_QHeaderView::resizeAndMoveSection()
 {
-    QFETCH(IntList, logicalIndexes);
-    QFETCH(IntList, sizes);
+    QFETCH(const IntList, logicalIndexes);
+    QFETCH(const IntList, sizes);
     QFETCH(int, logicalFrom);
     QFETCH(int, logicalTo);
 
     // Save old visual indexes and sizes
     IntList oldVisualIndexes;
     IntList oldSizes;
-    foreach (int logical, logicalIndexes) {
+    for (int logical : logicalIndexes) {
         oldVisualIndexes.append(view->visualIndex(logical));
         oldSizes.append(view->sectionSize(logical));
     }
@@ -1188,31 +1172,32 @@ void tst_QHeaderView::resizeAndInsertSection()
 void tst_QHeaderView::resizeWithResizeModes_data()
 {
     QTest::addColumn<int>("size");
-    QTest::addColumn<QList<int> >("sections");
-    QTest::addColumn<QList<int> >("modes");
-    QTest::addColumn<QList<int> >("expected");
+    QTest::addColumn<IntList>("sections");
+    QTest::addColumn<ResizeVec>("modes");
+    QTest::addColumn<IntList>("expected");
 
     QTest::newRow("stretch first section")
         << 600
-        << (QList<int>() << 100 << 100 << 100 << 100)
-        << (QList<int>() << ((int)QHeaderView::Stretch)
-                         << ((int)QHeaderView::Interactive)
-                         << ((int)QHeaderView::Interactive)
-                         << ((int)QHeaderView::Interactive))
-        << (QList<int>() << 300 << 100 << 100 << 100);
+        << (IntList{ 100, 100, 100, 100 })
+        << (ResizeVec
+                { QHeaderView::Stretch,
+                  QHeaderView::Interactive,
+                  QHeaderView::Interactive,
+                  QHeaderView::Interactive })
+        << (IntList{ 300, 100, 100, 100 });
 }
 
 void  tst_QHeaderView::resizeWithResizeModes()
 {
     QFETCH(int, size);
-    QFETCH(QList<int>, sections);
-    QFETCH(QList<int>, modes);
-    QFETCH(QList<int>, expected);
+    QFETCH(const IntList, sections);
+    QFETCH(const ResizeVec, modes);
+    QFETCH(const IntList, expected);
 
     view->setStretchLastSection(false);
     for (int i = 0; i < sections.count(); ++i) {
         view->resizeSection(i, sections.at(i));
-        view->setSectionResizeMode(i, (QHeaderView::ResizeMode)modes.at(i));
+        view->setSectionResizeMode(i, modes.at(i));
     }
     topLevel->show();
     QVERIFY(QTest::qWaitForWindowExposed(topLevel));
@@ -1226,10 +1211,10 @@ void tst_QHeaderView::moveAndInsertSection_data()
     QTest::addColumn<int>("from");
     QTest::addColumn<int>("to");
     QTest::addColumn<int>("insert");
-    QTest::addColumn<QList<int> >("mapping");
+    QTest::addColumn<IntList>("mapping");
 
     QTest::newRow("move from 1 to 3, insert 0")
-        << 1 << 3 << 0 <<(QList<int>() << 0 << 1 << 3 << 4 << 2);
+        << 1 << 3 << 0 <<(IntList{ 0, 1, 3, 4, 2 });
 
 }
 
@@ -1238,12 +1223,10 @@ void tst_QHeaderView::moveAndInsertSection()
     QFETCH(int, from);
     QFETCH(int, to);
     QFETCH(int, insert);
-    QFETCH(QList<int>, mapping);
+    QFETCH(IntList, mapping);
 
     view->setStretchLastSection(false);
-
     view->moveSection(from, to);
-
     model->insertRow(insert);
 
     for (int i = 0; i < mapping.count(); ++i)
@@ -1266,12 +1249,12 @@ void tst_QHeaderView::resizeMode()
 
     // test when sections have been moved
     view->setStretchLastSection(false);
-    for (int i=0; i < (view->count() - 1); ++i)
+    for (int i = 0; i < (view->count() - 1); ++i)
         view->setSectionResizeMode(i, QHeaderView::Interactive);
     int logicalIndex = view->count() / 2;
     view->setSectionResizeMode(logicalIndex, QHeaderView::Stretch);
     view->moveSection(view->visualIndex(logicalIndex), 0);
-    for (int i=0; i < (view->count() - 1); ++i) {
+    for (int i = 0; i < (view->count() - 1); ++i) {
         if (i == logicalIndex)
             QCOMPARE(view->sectionResizeMode(i), QHeaderView::Stretch);
         else
@@ -1282,34 +1265,33 @@ void tst_QHeaderView::resizeMode()
 void tst_QHeaderView::resizeSection_data()
 {
     QTest::addColumn<int>("initial");
-    QTest::addColumn<QList<int> >("logical");
-    QTest::addColumn<QList<int> >("size");
-    QTest::addColumn<QList<int> >("mode");
+    QTest::addColumn<IntList>("logical");
+    QTest::addColumn<IntList>("size");
+    QTest::addColumn<ResizeVec>("mode");
     QTest::addColumn<int>("resized");
-    QTest::addColumn<QList<int> >("expected");
+    QTest::addColumn<IntList>("expected");
 
     QTest::newRow("bad args")
         << 100
-        << (QList<int>() << -1 << -1 << 99999 << 99999 << 4)
-        << (QList<int>() << -1 << 0 << 99999 << -1 << -1)
-        << (QList<int>()
-            << int(QHeaderView::Interactive)
-            << int(QHeaderView::Interactive)
-            << int(QHeaderView::Interactive)
-            << int(QHeaderView::Interactive))
+        << (IntList{ -1, -1, 99999, 99999, 4 })
+        << (IntList{ -1, 0, 99999, -1, -1 })
+        << (ResizeVec{
+                QHeaderView::Interactive,
+                QHeaderView::Interactive,
+                QHeaderView::Interactive,
+                QHeaderView::Interactive })
         << 0
-        << (QList<int>() << 0 << 0 << 0 << 0 << 0);
+        << (IntList{ 0, 0, 0, 0, 0 });
 }
 
 void tst_QHeaderView::resizeSection()
 {
-
     QFETCH(int, initial);
-    QFETCH(QList<int>, logical);
-    QFETCH(QList<int>, size);
-    QFETCH(QList<int>, mode);
+    QFETCH(const IntList, logical);
+    QFETCH(const IntList, size);
+    QFETCH(const ResizeVec, mode);
     QFETCH(int, resized);
-    QFETCH(QList<int>, expected);
+    QFETCH(const IntList, expected);
 
     view->resize(400, 400);
 
@@ -1320,12 +1302,12 @@ void tst_QHeaderView::resizeSection()
 
     for (int i = 0; i < logical.count(); ++i)
         if (logical.at(i) > -1 && logical.at(i) < view->count()) // for now
-            view->setSectionResizeMode(logical.at(i), (QHeaderView::ResizeMode)mode.at(i));
+            view->setSectionResizeMode(logical.at(i), mode.at(i));
 
     for (int j = 0; j < logical.count(); ++j)
         view->resizeSection(logical.at(j), initial);
 
-    QSignalSpy spy(view, SIGNAL(sectionResized(int,int,int)));
+    QSignalSpy spy(view, &QHeaderView::sectionResized);
 
     for (int k = 0; k < logical.count(); ++k)
         view->resizeSection(logical.at(k), size.at(k));
@@ -1366,9 +1348,7 @@ void tst_QHeaderView::showSortIndicator()
 
 void tst_QHeaderView::sortIndicatorTracking()
 {
-    QtTestModel model;
-    model.rows = model.cols = 10;
-
+    QtTestModel model(10, 10);
     QHeaderView hv(Qt::Horizontal);
 
     hv.setModel(&model);
@@ -1399,51 +1379,44 @@ void tst_QHeaderView::removeAndInsertRow()
 {
     // Check if logicalIndex returns the correct value after we have removed a row
     // we might as well te
-    for (int i = 0; i < model->rowCount(); ++i) {
+    for (int i = 0; i < model->rowCount(); ++i)
         QCOMPARE(i, view->logicalIndex(i));
-    }
 
     while (model->removeRow(0)) {
-        for (int i = 0; i < model->rowCount(); ++i) {
+        for (int i = 0; i < model->rowCount(); ++i)
             QCOMPARE(i, view->logicalIndex(i));
-        }
     }
 
-    int pass = 0;
-    for (pass = 0; pass < 5; pass++) {
-        for (int i = 0; i < model->rowCount(); ++i) {
+    for (int pass = 0; pass < 5; pass++) {
+        for (int i = 0; i < model->rowCount(); ++i)
             QCOMPARE(i, view->logicalIndex(i));
-        }
         model->insertRow(0);
     }
 
     while (model->removeRows(0, 2)) {
-        for (int i = 0; i < model->rowCount(); ++i) {
+        for (int i = 0; i < model->rowCount(); ++i)
             QCOMPARE(i, view->logicalIndex(i));
-        }
     }
 
-    for (pass = 0; pass < 3; pass++) {
+    for (int pass = 0; pass < 3; pass++) {
         model->insertRows(0, 2);
         for (int i = 0; i < model->rowCount(); ++i) {
             QCOMPARE(i, view->logicalIndex(i));
         }
     }
 
-    for (pass = 0; pass < 3; pass++) {
+    for (int pass = 0; pass < 3; pass++) {
         model->insertRows(3, 2);
-        for (int i = 0; i < model->rowCount(); ++i) {
+        for (int i = 0; i < model->rowCount(); ++i)
             QCOMPARE(i, view->logicalIndex(i));
-        }
     }
 
     // Insert at end
-    for (pass = 0; pass < 3; pass++) {
+    for (int pass = 0; pass < 3; pass++) {
         int rowCount = model->rowCount();
         model->insertRows(rowCount, 1);
-        for (int i = 0; i < rowCount; ++i) {
+        for (int i = 0; i < rowCount; ++i)
             QCOMPARE(i, view->logicalIndex(i));
-        }
     }
 
 }
@@ -1490,7 +1463,7 @@ void protected_QHeaderView::testEvent()
 
 void tst_QHeaderView::headerDataChanged()
 {
-    // This shouldn't asserver because view is Vertical
+    // This shouldn't assert because view is Vertical
     view->headerDataChanged(Qt::Horizontal, -1, -1);
 #if 0
     // This will assert
@@ -1525,19 +1498,18 @@ void tst_QHeaderView::verticalOffset()
 
 void  protected_QHeaderView::testhorizontalOffset()
 {
-    if(orientation() == Qt::Horizontal){
+    if (orientation() == Qt::Horizontal) {
         QCOMPARE(horizontalOffset(), 0);
         setOffset(10);
         QCOMPARE(horizontalOffset(), 10);
     }
     else
         QCOMPARE(horizontalOffset(), 0);
-
 }
 
 void  protected_QHeaderView::testverticalOffset()
 {
-    if(orientation() == Qt::Vertical){
+    if (orientation() == Qt::Vertical) {
         QCOMPARE(verticalOffset(), 0);
         setOffset(10);
         QCOMPARE(verticalOffset(), 10);
@@ -1562,7 +1534,7 @@ void tst_QHeaderView::hiddenSectionCount()
     model->clear();
     model->insertRows(0, 10);
     // Hide every other one
-    for (int i=0; i<10; i++)
+    for (int i = 0; i < 10; i++)
         view->setSectionHidden(i, (i & 1) == 0);
 
     QCOMPARE(view->hiddenSectionCount(), 5);
@@ -1577,7 +1549,7 @@ void tst_QHeaderView::hiddenSectionCount()
     model->removeRow(6);
     QCOMPARE(view->count(), 6);
     QCOMPARE(view->hiddenSectionCount(), 3);
-    model->removeRows(0,5);
+    model->removeRows(0, 5);
     QCOMPARE(view->count(), 1);
     QCOMPARE(view->hiddenSectionCount(), 0);
     QVERIFY(view->count() >=  view->hiddenSectionCount());
@@ -1610,8 +1582,8 @@ void tst_QHeaderView::focusPolicy()
 
     QTest::keyPress(&widget, Qt::Key_Tab);
 
-    qApp->processEvents();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
+    QCoreApplication::processEvents();
 
     QVERIFY(!widget.hasFocus());
     QVERIFY(!widget.header()->hasFocus());
@@ -1621,47 +1593,37 @@ class SimpleModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-
-    SimpleModel( QObject* parent=0)
-        : QAbstractItemModel(parent),
-        m_col_count(3) {}
-
-    QModelIndex parent(const QModelIndex &/*child*/) const
+    using QAbstractItemModel::QAbstractItemModel;
+    QModelIndex parent(const QModelIndex &/*child*/) const override
     {
         return QModelIndex();
     }
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override
     {
         return hasIndex(row, column, parent) ? createIndex(row, column) : QModelIndex();
     }
-    int rowCount(const QModelIndex & /*parent*/ = QModelIndex()) const
+    int rowCount(const QModelIndex & /*parent*/ = QModelIndex()) const override
     {
         return 8;
     }
-    int columnCount(const QModelIndex &/*parent*/ = QModelIndex()) const
+    int columnCount(const QModelIndex &/*parent*/ = QModelIndex()) const override
     {
         return m_col_count;
     }
-
-    QVariant data(const QModelIndex &index, int role) const
+    QVariant data(const QModelIndex &index, int role) const override
     {
         if (!index.isValid())
-        {
             return QVariant();
-        }
-        if (role == Qt::DisplayRole) {
+        if (role == Qt::DisplayRole)
             return QString::number(index.row()) + QLatin1Char(',') + QString::number(index.column());
-        }
         return QVariant();
     }
-
-    void setColumnCount( int c )
+    void setColumnCount(int c)
     {
         m_col_count = c;
     }
-
 private:
-    int m_col_count;
+    int m_col_count = 3;
 };
 
 void tst_QHeaderView::moveSectionAndReset()
@@ -1678,9 +1640,8 @@ void tst_QHeaderView::moveSectionAndReset()
             v.moveSection(movefrom, moveto);
             m.setColumnCount(cc - 1);
             v.reset();
-            for (int i = 0; i < cc - 1; ++i) {
+            for (int i = 0; i < cc - 1; ++i)
                 QCOMPARE(v.logicalIndex(v.visualIndex(i)), i);
-            }
         }
     }
 }
@@ -1719,7 +1680,7 @@ void tst_QHeaderView::saveRestore()
     const QByteArray s1 = savedState();
 
     QHeaderView h2(Qt::Vertical);
-    QSignalSpy spy(&h2, SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)));
+    QSignalSpy spy(&h2, &QHeaderView::sortIndicatorChanged);
 
     h2.setModel(&m);
     QVERIFY(h2.restoreState(s1));
@@ -1745,6 +1706,7 @@ void tst_QHeaderView::saveRestore()
 
 void tst_QHeaderView::restoreQt4State()
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // QTBUG-40462
     // Setting from Qt4, where information about multiple sections were grouped together in one
     // sectionItem object
@@ -1777,6 +1739,9 @@ void tst_QHeaderView::restoreQt4State()
     // Check nothing has been actually restored
     QCOMPARE(h2.length(), old_length);
     QCOMPARE(h2.saveState(), old_state);
+#else
+    QSKIP("Qt4 compatibility no longer needed in Qt6")
+#endif
 }
 
 void tst_QHeaderView::restoreToMoreColumns()
@@ -1910,16 +1875,18 @@ void tst_QHeaderView::defaultSectionSizeTest()
 
 class TestHeaderViewStyle : public QProxyStyle
 {
+    Q_OBJECT
 public:
-    TestHeaderViewStyle() : horizontalSectionSize(100) {}
-    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const override
+    using QProxyStyle::QProxyStyle;
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = nullptr,
+                    const QWidget *widget = nullptr) const override
     {
         if (metric == QStyle::PM_HeaderDefaultSectionSizeHorizontal)
             return horizontalSectionSize;
         else
             return QProxyStyle::pixelMetric(metric, option, widget);
     }
-    int horizontalSectionSize;
+    int horizontalSectionSize = 100;
 };
 
 void tst_QHeaderView::defaultSectionSizeTestStyles()
@@ -1946,107 +1913,107 @@ void tst_QHeaderView::defaultSectionSizeTestStyles()
 
 void tst_QHeaderView::defaultAlignment_data()
 {
-    QTest::addColumn<int>("direction");
-    QTest::addColumn<int>("initial");
-    QTest::addColumn<int>("alignment");
+    QTest::addColumn<Qt::Orientation>("direction");
+    QTest::addColumn<Qt::Alignment>("initial");
+    QTest::addColumn<Qt::Alignment>("alignment");
 
     QTest::newRow("horizontal right aligned")
-        << int(Qt::Horizontal)
-        << int(Qt::AlignCenter)
-        << int(Qt::AlignRight);
+        << Qt::Horizontal
+        << Qt::Alignment(Qt::AlignCenter)
+        << Qt::Alignment(Qt::AlignRight);
 
     QTest::newRow("horizontal left aligned")
-        << int(Qt::Horizontal)
-        << int(Qt::AlignCenter)
-        << int(Qt::AlignLeft);
+        << Qt::Horizontal
+        << Qt::Alignment(Qt::AlignCenter)
+        << Qt::Alignment(Qt::AlignLeft);
 
     QTest::newRow("vertical right aligned")
-        << int(Qt::Vertical)
-        << int(Qt::AlignLeft|Qt::AlignVCenter)
-        << int(Qt::AlignRight);
+        << Qt::Vertical
+        << Qt::Alignment(Qt::AlignLeft|Qt::AlignVCenter)
+        << Qt::Alignment(Qt::AlignRight);
 
     QTest::newRow("vertical left aligned")
-        << int(Qt::Vertical)
-        << int(Qt::AlignLeft|Qt::AlignVCenter)
-        << int(Qt::AlignLeft);
+        << Qt::Vertical
+        << Qt::Alignment(Qt::AlignLeft|Qt::AlignVCenter)
+        << Qt::Alignment(Qt::AlignLeft);
 }
 
 void tst_QHeaderView::defaultAlignment()
 {
-    QFETCH(int, direction);
-    QFETCH(int, initial);
-    QFETCH(int, alignment);
+    QFETCH(Qt::Orientation, direction);
+    QFETCH(Qt::Alignment, initial);
+    QFETCH(Qt::Alignment, alignment);
 
     SimpleModel m;
 
-    QHeaderView header((Qt::Orientation)direction);
+    QHeaderView header(direction);
     header.setModel(&m);
 
-    QCOMPARE(header.defaultAlignment(), (Qt::Alignment)initial);
-    header.setDefaultAlignment((Qt::Alignment)alignment);
-    QCOMPARE(header.defaultAlignment(), (Qt::Alignment)alignment);
+    QCOMPARE(header.defaultAlignment(), initial);
+    header.setDefaultAlignment(alignment);
+    QCOMPARE(header.defaultAlignment(), alignment);
 }
 
 void tst_QHeaderView::globalResizeMode_data()
 {
-    QTest::addColumn<int>("direction");
-    QTest::addColumn<int>("mode");
+    QTest::addColumn<Qt::Orientation>("direction");
+    QTest::addColumn<QHeaderView::ResizeMode>("mode");
     QTest::addColumn<int>("insert");
 
     QTest::newRow("horizontal ResizeToContents 0")
-        << int(Qt::Horizontal)
-        << int(QHeaderView::ResizeToContents)
+        << Qt::Horizontal
+        << QHeaderView::ResizeToContents
         << 0;
 }
 
 void tst_QHeaderView::globalResizeMode()
 {
-    QFETCH(int, direction);
-    QFETCH(int, mode);
+    QFETCH(Qt::Orientation, direction);
+    QFETCH(QHeaderView::ResizeMode, mode);
     QFETCH(int, insert);
 
     QStandardItemModel m(4, 4);
-    QHeaderView h((Qt::Orientation)direction);
+    QHeaderView h(direction);
     h.setModel(&m);
 
-    h.setSectionResizeMode((QHeaderView::ResizeMode)mode);
+    h.setSectionResizeMode(mode);
     m.insertRow(insert);
     for (int i = 0; i < h.count(); ++i)
-        QCOMPARE(h.sectionResizeMode(i), (QHeaderView::ResizeMode)mode);
+        QCOMPARE(h.sectionResizeMode(i), mode);
 }
 
 
 void tst_QHeaderView::sectionPressedSignal_data()
 {
-    QTest::addColumn<int>("direction");
+    QTest::addColumn<Qt::Orientation>("direction");
     QTest::addColumn<bool>("clickable");
     QTest::addColumn<int>("count");
 
     QTest::newRow("horizontal unclickable 0")
-        << int(Qt::Horizontal)
+        << Qt::Horizontal
         << false
         << 0;
 
     QTest::newRow("horizontal clickable 1")
-        << int(Qt::Horizontal)
+        << Qt::Horizontal
         << true
         << 1;
 }
 
 void tst_QHeaderView::sectionPressedSignal()
 {
-    QFETCH(int, direction);
+    QFETCH(Qt::Orientation, direction);
     QFETCH(bool, clickable);
     QFETCH(int, count);
 
     QStandardItemModel m(4, 4);
-    QHeaderView h((Qt::Orientation)direction);
+    QHeaderView h(direction);
 
     h.setModel(&m);
     h.show();
     h.setSectionsClickable(clickable);
 
-    QSignalSpy spy(&h, SIGNAL(sectionPressed(int)));
+    QSignalSpy spy(&h, &QHeaderView::sectionPressed);
 
     QCOMPARE(spy.count(), 0);
     QTest::mousePress(h.viewport(), Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
@@ -2055,20 +2022,20 @@ void tst_QHeaderView::sectionPressedSignal()
 
 void tst_QHeaderView::sectionClickedSignal()
 {
-    QFETCH(int, direction);
+    QFETCH(Qt::Orientation, direction);
     QFETCH(bool, clickable);
     QFETCH(int, count);
 
     QStandardItemModel m(4, 4);
-    QHeaderView h((Qt::Orientation)direction);
+    QHeaderView h(direction);
 
     h.setModel(&m);
     h.show();
     h.setSectionsClickable(clickable);
     h.setSortIndicatorShown(true);
 
-    QSignalSpy spy(&h, SIGNAL(sectionClicked(int)));
-    QSignalSpy spy2(&h, SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)));
+    QSignalSpy spy(&h, &QHeaderView::sectionClicked);
+    QSignalSpy spy2(&h, &QHeaderView::sortIndicatorChanged);
 
     QCOMPARE(spy.count(), 0);
     QCOMPARE(spy2.count(), 0);
@@ -2087,24 +2054,24 @@ void tst_QHeaderView::sectionClickedSignal()
 
 void tst_QHeaderView::defaultSectionSize_data()
 {
-    QTest::addColumn<int>("direction");
+    QTest::addColumn<Qt::Orientation>("direction");
     QTest::addColumn<int>("oldDefaultSize");
     QTest::addColumn<int>("newDefaultSize");
 
     //QTest::newRow("horizontal,-5") << int(Qt::Horizontal) << 100 << -5;
-    QTest::newRow("horizontal, 0") << int(Qt::Horizontal) << 100 << 0;
-    QTest::newRow("horizontal, 5") << int(Qt::Horizontal) << 100 << 5;
-    QTest::newRow("horizontal,25") << int(Qt::Horizontal) << 100 << 5;
+    QTest::newRow("horizontal, 0") << Qt::Horizontal << 100 << 0;
+    QTest::newRow("horizontal, 5") << Qt::Horizontal << 100 << 5;
+    QTest::newRow("horizontal,25") << Qt::Horizontal << 100 << 5;
 }
 
 void tst_QHeaderView::defaultSectionSize()
 {
-    QFETCH(int, direction);
+    QFETCH(Qt::Orientation, direction);
     QFETCH(int, oldDefaultSize);
     QFETCH(int, newDefaultSize);
 
     QStandardItemModel m(4, 4);
-    QHeaderView h((Qt::Orientation)direction);
+    QHeaderView h(direction);
 
     h.setModel(&m);
     h.setMinimumSectionSize(0);
@@ -2119,26 +2086,24 @@ void tst_QHeaderView::defaultSectionSize()
 
 void tst_QHeaderView::hideAndInsert_data()
 {
-    QTest::addColumn<int>("direction");
+    QTest::addColumn<Qt::Orientation>("direction");
     QTest::addColumn<int>("hide");
     QTest::addColumn<int>("insert");
     QTest::addColumn<int>("hidden");
 
-    QTest::newRow("horizontal, 0, 0") << int(Qt::Horizontal) << 0 << 0 << 1;
+    QTest::newRow("horizontal, 0, 0") << Qt::Horizontal << 0 << 0 << 1;
 }
 
 void tst_QHeaderView::hideAndInsert()
 {
-    QFETCH(int, direction);
+    QFETCH(Qt::Orientation, direction);
     QFETCH(int, hide);
     QFETCH(int, insert);
     QFETCH(int, hidden);
 
     QStandardItemModel m(4, 4);
-    QHeaderView h((Qt::Orientation)direction);
-
+    QHeaderView h(direction);
     h.setModel(&m);
-
     h.setSectionHidden(hide, true);
 
     if (direction == Qt::Vertical)
@@ -2147,20 +2112,14 @@ void tst_QHeaderView::hideAndInsert()
         m.insertColumn(insert);
 
     for (int i = 0; i < h.count(); ++i)
-        if (i != hidden)
-            QCOMPARE(h.isSectionHidden(i), false);
-        else
-            QCOMPARE(h.isSectionHidden(i), true);
+        QCOMPARE(h.isSectionHidden(i), i == hidden);
 }
 
 void tst_QHeaderView::removeSection()
 {
-//test that removing a hidden section gives the expected result: the next row should be hidden
-//(see task
     const int hidden = 3; //section that will be hidden
-    const QStringList list = QStringList() << "0" << "1" << "2" << "3" << "4" << "5" << "6";
 
-    QStringListModel model( list );
+    QStringListModel model({ "0", "1", "2", "3", "4", "5", "6" });
     QHeaderView view(Qt::Vertical);
     view.setModel(&model);
     view.hideSection(hidden);
@@ -2169,7 +2128,7 @@ void tst_QHeaderView::removeSection()
     view.show();
 
     for(int i = 0; i < view.count(); i++) {
-        if (i == (hidden-1)) { //-1 because we removed a row in the meantime
+        if (i == (hidden - 1)) { //-1 because we removed a row in the meantime
             QCOMPARE(view.sectionSize(i), 0);
             QVERIFY(view.isSectionHidden(i));
         } else {
@@ -2181,9 +2140,7 @@ void tst_QHeaderView::removeSection()
 
 void tst_QHeaderView::preserveHiddenSectionWidth()
 {
-    const QStringList list = QStringList() << "0" << "1" << "2" << "3";
-
-    QStringListModel model( list );
+    QStringListModel model({ "0", "1", "2", "3" });
     QHeaderView view(Qt::Vertical);
     view.setModel(&model);
     view.resizeSection(0, 100);
@@ -2249,38 +2206,36 @@ void tst_QHeaderView::emptySectionSpan()
 
 void tst_QHeaderView::task236450_hidden_data()
 {
-    QTest::addColumn<QList<int> >("hide1");
-    QTest::addColumn<QList<int> >("hide2");
+    QTest::addColumn<IntList>("hide1");
+    QTest::addColumn<IntList>("hide2");
 
-    QTest::newRow("set 1") << (QList<int>() << 1 << 3)
-                           << (QList<int>() << 1 << 5);
+    QTest::newRow("set 1") << (IntList{ 1, 3 })
+                           << (IntList{ 1, 5 });
 
-    QTest::newRow("set 2") << (QList<int>() << 2 << 3)
-                           << (QList<int>() << 1 << 5);
+    QTest::newRow("set 2") << (IntList{ 2, 3 })
+                           << (IntList{ 1, 5 });
 
-    QTest::newRow("set 3") << (QList<int>() << 0 << 2 << 4)
-                           << (QList<int>() << 2 << 3 << 5);
+    QTest::newRow("set 3") << (IntList{ 0, 2, 4 })
+                           << (IntList{ 2, 3, 5 });
 
 }
 
 void tst_QHeaderView::task236450_hidden()
 {
-    QFETCH(QList<int>, hide1);
-    QFETCH(QList<int>, hide2);
-    const QStringList list = QStringList() << "0" << "1" << "2" << "3" << "4" << "5";
+    QFETCH(const IntList, hide1);
+    QFETCH(const IntList, hide2);
 
-    QStringListModel model( list );
+    QStringListModel model({ "0", "1", "2", "3", "4", "5" });
     protected_QHeaderView view(Qt::Vertical);
     view.setModel(&model);
     view.show();
 
-    foreach (int i, hide1)
+    for (int i : hide1)
         view.hideSection(i);
 
     QCOMPARE(view.hiddenSectionCount(), hide1.count());
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
         QCOMPARE(!view.isSectionHidden(i), !hide1.contains(i));
-    }
 
     view.setDefaultSectionSize(2);
     view.scheduleDelayedItemsLayout();
@@ -2293,10 +2248,8 @@ void tst_QHeaderView::task236450_hidden()
     }
 
     QCOMPARE(view.hiddenSectionCount(), hide2.count());
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
         QCOMPARE(!view.isSectionHidden(i), !hide2.contains(i));
-    }
-
 }
 
 void tst_QHeaderView::task248050_hideRow()
@@ -2324,7 +2277,7 @@ void tst_QHeaderView::task248050_hideRow()
 
 
 //returns 0 if everything is fine.
-static int checkHeaderViewOrder(QHeaderView *view, const QVector<int> &expected)
+static int checkHeaderViewOrder(const QHeaderView *view, const IntList &expected)
 {
     if (view->count() != expected.count())
         return 1;
@@ -2341,8 +2294,8 @@ static int checkHeaderViewOrder(QHeaderView *view, const QVector<int> &expected)
 
 void tst_QHeaderView::QTBUG6058_reset()
 {
-    QStringListModel model1( QStringList() << "0" << "1" << "2" << "3" << "4" << "5" );
-    QStringListModel model2( QStringList() << "a" << "b" << "c" );
+    QStringListModel model1({ "0", "1", "2", "3", "4", "5" });
+    QStringListModel model2({ "a", "b", "c" });
     QSortFilterProxyModel proxy;
 
     QHeaderView view(Qt::Vertical);
@@ -2352,9 +2305,9 @@ void tst_QHeaderView::QTBUG6058_reset()
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     proxy.setSourceModel(&model1);
-    view.swapSections(0,2);
-    view.swapSections(1,4);
-    QVector<int> expectedOrder{2, 4, 0, 3, 1, 5};
+    view.swapSections(0, 2);
+    view.swapSections(1, 4);
+    IntList expectedOrder{2, 4, 0, 3, 1, 5};
     QTRY_COMPARE(checkHeaderViewOrder(&view, expectedOrder) , 0);
 
     proxy.setSourceModel(&model2);
@@ -2376,11 +2329,11 @@ void tst_QHeaderView::QTBUG7833_sectionClicked()
     proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
 
     QList<QStandardItem *> row;
-    for (int i = 0; i < 12; i++)
+    for (char i = 0; i < 12; i++)
         row.append(new QStandardItem(QString(QLatin1Char('A' + i))));
     sim->appendRow(row);
     row.clear();
-    for (int i = 12; i > 0; i--)
+    for (char i = 12; i > 0; i--)
         row.append(new QStandardItem(QString(QLatin1Char('A' + i))));
     sim->appendRow(row);
 
@@ -2410,19 +2363,21 @@ void tst_QHeaderView::QTBUG7833_sectionClicked()
     QCOMPARE(tv.horizontalHeader()->sectionSize(5), section5Size);
     tv.setColumnHidden(5, true);
 
-    QSignalSpy clickedSpy(tv.horizontalHeader(), SIGNAL(sectionClicked(int)));
-    QSignalSpy pressedSpy(tv.horizontalHeader(), SIGNAL(sectionPressed(int)));
+    QSignalSpy clickedSpy(tv.horizontalHeader(), &QHeaderView::sectionClicked);
+    QSignalSpy pressedSpy(tv.horizontalHeader(), &QHeaderView::sectionPressed);
 
 
     QTest::mouseClick(tv.horizontalHeader()->viewport(), Qt::LeftButton, Qt::NoModifier,
-                      QPoint(tv.horizontalHeader()->sectionViewportPosition(11) + tv.horizontalHeader()->sectionSize(11)/2, 5));
+                      QPoint(tv.horizontalHeader()->sectionViewportPosition(11) +
+                             tv.horizontalHeader()->sectionSize(11) / 2, 5));
     QCOMPARE(clickedSpy.count(), 1);
     QCOMPARE(pressedSpy.count(), 1);
     QCOMPARE(clickedSpy.at(0).at(0).toInt(), 11);
     QCOMPARE(pressedSpy.at(0).at(0).toInt(), 11);
 
     QTest::mouseClick(tv.horizontalHeader()->viewport(), Qt::LeftButton, Qt::NoModifier,
-                      QPoint(tv.horizontalHeader()->sectionViewportPosition(8) + tv.horizontalHeader()->sectionSize(0)/2, 5));
+                      QPoint(tv.horizontalHeader()->sectionViewportPosition(8) +
+                             tv.horizontalHeader()->sectionSize(0) / 2, 5));
 
     QCOMPARE(clickedSpy.count(), 2);
     QCOMPARE(pressedSpy.count(), 2);
@@ -2430,7 +2385,8 @@ void tst_QHeaderView::QTBUG7833_sectionClicked()
     QCOMPARE(pressedSpy.at(1).at(0).toInt(), 8);
 
     QTest::mouseClick(tv.horizontalHeader()->viewport(), Qt::LeftButton, Qt::NoModifier,
-                      QPoint(tv.horizontalHeader()->sectionViewportPosition(0) + tv.horizontalHeader()->sectionSize(0)/2, 5));
+                      QPoint(tv.horizontalHeader()->sectionViewportPosition(0) +
+                             tv.horizontalHeader()->sectionSize(0) / 2, 5));
 
     QCOMPARE(clickedSpy.count(), 3);
     QCOMPARE(pressedSpy.count(), 3);
@@ -2440,8 +2396,7 @@ void tst_QHeaderView::QTBUG7833_sectionClicked()
 
 void tst_QHeaderView::checkLayoutChangeEmptyModel()
 {
-    QtTestModel tm;
-    tm.cols = 11;
+    QtTestModel tm(0, 11);
     QTableView tv;
     tv.verticalHeader()->setStretchLastSection(true);
     tv.setModel(&tm);
@@ -2488,14 +2443,12 @@ void tst_QHeaderView::QTBUG8650_crashOnInsertSections()
 {
     QStringList headerLabels;
     QHeaderView view(Qt::Horizontal);
-    QStandardItemModel model(2,2);
+    QStandardItemModel model(2, 2);
     view.setModel(&model);
     view.moveSection(1, 0);
     view.hideSection(0);
 
-    QList<QStandardItem *> items;
-    items << new QStandardItem("c");
-    model.insertColumn(0, items);
+    model.insertColumn(0, { new QStandardItem("c") });
 }
 
 static void setModelTexts(QStandardItemModel *model)
@@ -2511,9 +2464,9 @@ static void setModelTexts(QStandardItemModel *model)
 void tst_QHeaderView::QTBUG12268_hiddenMovedSectionSorting()
 {
     QTableView view; // ### this test fails on QTableView &view = *m_tableview; !? + shadowing view member
-    QStandardItemModel *model = new QStandardItemModel(4,3, &view);
-    setModelTexts(model);
-    view.setModel(model);
+    QStandardItemModel model(4, 3);
+    setModelTexts(&model);
+    view.setModel(&model);
     view.horizontalHeader()->setSectionsMovable(true);
     view.setSortingEnabled(true);
     view.sortByColumn(1, Qt::AscendingOrder);
@@ -2549,9 +2502,7 @@ void tst_QHeaderView::QTBUG14242_hideSectionAutoSize()
 void tst_QHeaderView::QTBUG50171_visualRegionForSwappedItems()
 {
     protected_QHeaderView headerView(Qt::Horizontal);
-    QtTestModel model;
-    model.rows = 2;
-    model.cols = 3;
+    QtTestModel model(2, 3);
     headerView.setModel(&model);
     headerView.swapSections(1, 2);
     headerView.hideSection(0);
@@ -2560,17 +2511,17 @@ void tst_QHeaderView::QTBUG50171_visualRegionForSwappedItems()
 
 class QTBUG53221_Model : public QAbstractItemModel
 {
+    Q_OBJECT
 public:
     void insertRowAtBeginning()
     {
         Q_EMIT layoutAboutToBeChanged();
         m_displayNames.insert(0, QStringLiteral("Item %1").arg(m_displayNames.count()));
         // Rows are always inserted at the beginning, so move all others.
-        foreach (const QModelIndex &persIndex, persistentIndexList())
-        {
-            // The vertical header view will have a persistent index stored here on the second call to insertRowAtBeginning.
+        const auto pl = persistentIndexList();
+        // The vertical header view will have a persistent index stored here on the second call to insertRowAtBeginning.
+        for (const QModelIndex &persIndex : pl)
             changePersistentIndex(persIndex, index(persIndex.row() + 1, persIndex.column(), persIndex.parent()));
-        }
         Q_EMIT layoutChanged();
     }
 
@@ -2653,15 +2604,15 @@ void tst_QHeaderView::offsetConsistent()
 void tst_QHeaderView::initialSortOrderRole()
 {
     QTableView view; // ### Shadowing member view (of type QHeaderView)
-    QStandardItemModel *model = new QStandardItemModel(4, 3, &view);
-    setModelTexts(model);
+    QStandardItemModel model(4, 3);
+    setModelTexts(&model);
     QStandardItem *ascendingItem = new QStandardItem();
     QStandardItem *descendingItem = new QStandardItem();
     ascendingItem->setData(Qt::AscendingOrder, Qt::InitialSortOrderRole);
     descendingItem->setData(Qt::DescendingOrder, Qt::InitialSortOrderRole);
-    model->setHorizontalHeaderItem(1, ascendingItem);
-    model->setHorizontalHeaderItem(2, descendingItem);
-    view.setModel(model);
+    model.setHorizontalHeaderItem(1, ascendingItem);
+    model.setHorizontalHeaderItem(2, descendingItem);
+    view.setModel(&model);
     view.setSortingEnabled(true);
     view.sortByColumn(0, Qt::AscendingOrder);
     view.show();
@@ -2687,7 +2638,7 @@ const bool block_some_signals = true; // The test should also work with this set
 const int rowcount = 500;
 const int colcount = 10;
 
-QString istr(int n, bool comma = true)
+static inline QString istr(int n, bool comma = true)
 {
     QString s;
     s.setNum(n);
@@ -3433,9 +3384,7 @@ void tst_QHeaderView::testMinMaxSectionSize()
 
 void tst_QHeaderView::testResetCachedSizeHint()
 {
-    QtTestModel model;
-    model.rows = model.cols = 10;
-
+    QtTestModel model(10, 10);
     QTableView tv;
     tv.setModel(&model);
     tv.show();
@@ -3453,13 +3402,13 @@ void tst_QHeaderView::testResetCachedSizeHint()
 
 class StatusTipHeaderView : public QHeaderView
 {
+    Q_OBJECT
 public:
-    StatusTipHeaderView(Qt::Orientation orientation = Qt::Horizontal, QWidget *parent = 0) :
-        QHeaderView(orientation, parent), gotStatusTipEvent(false) {}
-    bool gotStatusTipEvent;
+    using QHeaderView::QHeaderView;
     QString statusTipText;
+    bool gotStatusTipEvent = false;
 protected:
-    bool event(QEvent *e)
+    bool event(QEvent *e) override
     {
         if (e->type() == QEvent::StatusTip) {
             gotStatusTipEvent = true;
@@ -3471,15 +3420,14 @@ protected:
 
 void tst_QHeaderView::statusTips()
 {
-    StatusTipHeaderView headerView;
-    QtTestModel model;
-    model.rows = model.cols = 5;
+    StatusTipHeaderView headerView(Qt::Horizontal);
+    QtTestModel model(5, 5);
     headerView.setModel(&model);
     headerView.viewport()->setMouseTracking(true);
     headerView.setGeometry(QRect(QPoint(QApplication::desktop()->geometry().center() - QPoint(250, 250)),
                            QSize(500, 500)));
     headerView.show();
-    qApp->setActiveWindow(&headerView);
+    QApplication::setActiveWindow(&headerView);
     QVERIFY(QTest::qWaitForWindowActive(&headerView));
 
     // Ensure it is moved away first and then moved to the relevant section
@@ -3504,8 +3452,7 @@ void tst_QHeaderView::testRemovingColumnsViaLayoutChanged()
 {
     const int persistentSectionSize = 101;
 
-    QtTestModel model;
-    model.rows = model.cols = 5;
+    QtTestModel model(5, 5);
     view->setModel(&model);
     for (int i = 0; i < model.cols; ++i)
         view->resizeSection(i, persistentSectionSize + i);
