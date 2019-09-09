@@ -66,8 +66,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#ifdef Q_OS_NACL
-#elif !defined (Q_OS_VXWORKS)
+#if !defined (Q_OS_VXWORKS)
 # if !defined(Q_OS_HPUX) || defined(__ia64)
 #  include <sys/select.h>
 # endif

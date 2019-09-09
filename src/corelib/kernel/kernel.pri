@@ -111,9 +111,8 @@ mac {
         kernel/qcoreapplication_mac.cpp \
         kernel/qcore_foundation.mm \
         kernel/qcore_mac.mm \
+        kernel/qelapsedtimer_mac.cpp \
         kernel/qeventdispatcher_cf.mm
-
-    !nacl: SOURCES += kernel/qelapsedtimer_mac.cpp
 
     LIBS_PRIVATE += -framework Foundation
 
@@ -130,19 +129,12 @@ mac {
     }
 }
 
-nacl {
-    SOURCES += \
-        kernel/qfunctions_nacl.cpp
-    HEADERS += \
-        kernel/qfunctions_nacl.h
-}
-
 unix|integrity {
     SOURCES += \
             kernel/qcore_unix.cpp \
             kernel/qeventdispatcher_unix.cpp \
             kernel/qtimerinfo_unix.cpp
-    !darwin|nacl: SOURCES += kernel/qelapsedtimer_unix.cpp
+    !darwin: SOURCES += kernel/qelapsedtimer_unix.cpp
 
     HEADERS += \
             kernel/qcore_unix_p.h \
