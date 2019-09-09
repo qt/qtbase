@@ -3773,10 +3773,22 @@ bool QD3D11SwapChain::buildOrResize()
     const UINT swapChainFlags = 0;
 
     QRHI_RES_RHI(QRhiD3D11);
-    const bool useFlipDiscard = rhiD->hasDxgi2 && rhiD->supportsFlipDiscardSwapchain;
+    bool useFlipDiscard = rhiD->hasDxgi2 && rhiD->supportsFlipDiscardSwapchain;
     if (!swapChain) {
         HWND hwnd = reinterpret_cast<HWND>(window->winId());
         sampleDesc = rhiD->effectiveSampleCount(m_sampleCount);
+
+        // Take a shortcut for alpha: our QWindow is OpenGLSurface so whatever
+        // the platform plugin does to enable transparency for OpenGL window
+        // will be sufficient for us too on the legacy (DISCARD) path. For
+        // FLIP_DISCARD we'd need to use DirectComposition (create a
+        // IDCompositionDevice/Target/Visual), avoid that for now.
+        if (m_flags.testFlag(SurfaceHasPreMulAlpha) || m_flags.testFlag(SurfaceHasNonPreMulAlpha)) {
+            useFlipDiscard = false;
+            if (window->requestedFormat().alphaBufferSize() <= 0)
+                qWarning("Swapchain says surface has alpha but the window has no alphaBufferSize set. "
+                         "This may lead to problems.");
+        }
 
         HRESULT hr;
         if (useFlipDiscard) {
@@ -3796,10 +3808,9 @@ bool QD3D11SwapChain::buildOrResize()
             desc.BufferCount = BUFFER_COUNT;
             desc.Scaling = DXGI_SCALING_STRETCH;
             desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-            if (m_flags.testFlag(SurfaceHasPreMulAlpha))
-                desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
-            else if (m_flags.testFlag(SurfaceHasNonPreMulAlpha))
-                desc.AlphaMode = DXGI_ALPHA_MODE_STRAIGHT;
+            // Do not bother with AlphaMode, if won't work unless we go through
+            // DirectComposition. Instead, we just take the other (DISCARD)
+            // path for now when alpha is requested.
             desc.Flags = swapChainFlags;
 
             IDXGISwapChain1 *sc1;
