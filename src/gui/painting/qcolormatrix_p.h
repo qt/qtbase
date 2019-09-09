@@ -226,12 +226,6 @@ public:
                               { 0.1351922452f, 0.7118769884f, 0.0000000000f },
                               { 0.0313525312f, 0.0000856627f, 0.8251883388f } };
     }
-    static QColorMatrix toXyzFromBt2020()
-    {
-        return QColorMatrix { { 0.6506130099f, 0.2695676684f, -0.0018652577f },
-                              { 0.1865101457f, 0.6840794086f,  0.0172256753f },
-                              { 0.1270887405f, 0.0463530831f,  0.8098278046f } };
-    }
 };
 
 inline bool operator==(const QColorMatrix &m1, const QColorMatrix &m2)

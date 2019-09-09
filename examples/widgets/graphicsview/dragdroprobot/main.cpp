@@ -48,19 +48,20 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QGraphicsScene>
+#include <QGraphicsView>
 
 #include "coloritem.h"
 #include "robot.h"
 
-#include <math.h>
+#include <cmath>
+
 
 class GraphicsView : public QGraphicsView
 {
 public:
-    GraphicsView(QGraphicsScene *scene) : QGraphicsView(scene)
-    {
-    }
+    using QGraphicsView::QGraphicsView;
 
 protected:
     void resizeEvent(QResizeEvent *) override
@@ -96,7 +97,7 @@ int main(int argc, char **argv)
     view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view.setBackgroundBrush(QColor(230, 200, 167));
     view.setWindowTitle("Drag and Drop Robot");
-     view.show();
+    view.show();
 
     return app.exec();
 }

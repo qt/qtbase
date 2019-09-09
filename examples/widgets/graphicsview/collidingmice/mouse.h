@@ -68,9 +68,9 @@ protected:
     void advance(int step) override;
 
 private:
-    qreal angle;
-    qreal speed;
-    qreal mouseEyeDirection;
+    qreal angle = 0;
+    qreal speed = 0;
+    qreal mouseEyeDirection = 0;
     QColor color;
 };
 //! [0]

@@ -158,21 +158,6 @@
                 "-latomic"
             ]
         },
-        "libdl": {
-            "label": "dlopen()",
-            "test": {
-                "main": [
-                    "dlclose(dlopen(0, 0));",
-                    "dlsym(RTLD_DEFAULT, 0);",
-                    "dlerror();"
-                ]
-            },
-            "headers": "dlfcn.h",
-            "sources": [
-                "",
-                "-ldl"
-            ]
-        },
         "librt": {
             "label": "clock_gettime()",
             "test": {
@@ -611,11 +596,6 @@
             "label": "POSIX monotonic clock",
             "condition": "features.clock-gettime && tests.clock-monotonic",
             "output": [ "feature" ]
-        },
-        "dlopen": {
-            "label": "dlopen()",
-            "condition": "config.unix && libs.libdl",
-            "output": [ "privateFeature" ]
         },
         "doubleconversion": {
             "label": "DoubleConversion",

@@ -52,10 +52,18 @@
 #include "padnavigator.h"
 #include "splashitem.h"
 
+#include <QEventTransition>
+#include <QGraphicsProxyWidget>
+#include <QGraphicsRotation>
+#include <QHistoryState>
+#include <QKeyEventTransition>
+#include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
+#include <QSequentialAnimationGroup>
+#include <QStateMachine>
+
 #ifndef QT_NO_OPENGL
-#include <QtOpenGL>
-#else
-#include <QtWidgets>
+#include <QOpenGLWidget>
 #endif
 
 //! [0]

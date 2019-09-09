@@ -58,7 +58,7 @@
 #include <QtOpenGL>
 
 #define BUFFER_OFFSET(i) ((char*)0 + (i))
-#define SIZE_OF_MEMBER(cls, member) sizeof(static_cast<cls *>(0)->member)
+#define SIZE_OF_MEMBER(cls, member) sizeof(static_cast<cls *>(nullptr)->member)
 
 #define GLBUFFERS_ASSERT_OPENGL(prefix, assertion, returnStatement)                         \
 if (m_failed || !(assertion)) {                                                             \
@@ -82,8 +82,8 @@ public:
     virtual void unbind() = 0;
     virtual bool failed() const {return m_failed;}
 protected:
-    GLuint m_texture;
-    bool m_failed;
+    GLuint m_texture = 0;
+    bool m_failed = false;
 };
 
 class GLFrameBufferObject
@@ -98,17 +98,17 @@ public:
     virtual bool failed() const {return m_failed;}
 protected:
     void setAsRenderTarget(bool state = true);
-    GLuint m_fbo;
-    GLuint m_depthBuffer;
+    GLuint m_fbo = 0;
+    GLuint m_depthBuffer = 0;
     int m_width, m_height;
-    bool m_failed;
+    bool m_failed = false;
 };
 
 class GLTexture2D : public GLTexture
 {
 public:
     GLTexture2D(int width, int height);
-    explicit GLTexture2D(const QString& fileName, int width = 0, int height = 0);
+    explicit GLTexture2D(const QString &fileName, int width = 0, int height = 0);
     void load(int width, int height, QRgb *data);
     void bind() override;
     void unbind() override;
@@ -197,11 +197,7 @@ template<class T>
 class GLVertexBuffer
 {
 public:
-    GLVertexBuffer(int length, const T *data = 0, int mode = GL_STATIC_DRAW)
-        : m_length(0)
-        , m_mode(mode)
-        , m_buffer(0)
-        , m_failed(false)
+    GLVertexBuffer(int length, const T *data = nullptr, int mode = GL_STATIC_DRAW)
     {
         GLBUFFERS_ASSERT_OPENGL("GLVertexBuffer::GLVertexBuffer", glGenBuffers && glBindBuffer && glBufferData, return)
 
@@ -275,12 +271,12 @@ public:
 
     T *lock()
     {
-        GLBUFFERS_ASSERT_OPENGL("GLVertexBuffer::lock", glBindBuffer && glMapBuffer, return 0)
+        GLBUFFERS_ASSERT_OPENGL("GLVertexBuffer::lock", glBindBuffer && glMapBuffer, return nullptr)
 
         glBindBuffer(GL_ARRAY_BUFFER, m_buffer);
         //glBufferData(GL_ARRAY_BUFFER, m_length, NULL, m_mode);
         GLvoid* buffer = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_WRITE);
-        m_failed = (buffer == 0);
+        m_failed = (buffer == nullptr);
         return reinterpret_cast<T *>(buffer);
     }
 
@@ -298,16 +294,17 @@ public:
     }
 
 private:
-    int m_length, m_mode;
-    GLuint m_buffer;
-    bool m_failed;
+    int m_length = 0;
+    int m_mode = 0;
+    GLuint m_buffer = 0;
+    bool m_failed = false;
 };
 
 template<class T>
 class GLIndexBuffer
 {
 public:
-    GLIndexBuffer(int length, const T *data = 0, int mode = GL_STATIC_DRAW)
+    GLIndexBuffer(int length, const T *data = nullptr, int mode = GL_STATIC_DRAW)
         : m_length(0)
         , m_mode(mode)
         , m_buffer(0)
@@ -345,11 +342,11 @@ public:
 
     T *lock()
     {
-        GLBUFFERS_ASSERT_OPENGL("GLIndexBuffer::lock", glBindBuffer && glMapBuffer, return 0)
+        GLBUFFERS_ASSERT_OPENGL("GLIndexBuffer::lock", glBindBuffer && glMapBuffer, return nullptr)
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_buffer);
         GLvoid* buffer = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_READ_WRITE);
-        m_failed = (buffer == 0);
+        m_failed = (buffer == nullptr);
         return reinterpret_cast<T *>(buffer);
     }
 

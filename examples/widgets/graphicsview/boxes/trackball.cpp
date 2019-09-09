@@ -50,34 +50,21 @@
 
 #include "trackball.h"
 #include "scene.h"
-#include <qmath.h>
-#include <cmath>
 
 //============================================================================//
 //                                  TrackBall                                 //
 //============================================================================//
 
 TrackBall::TrackBall(TrackMode mode)
-    : m_angularVelocity(0)
-    , m_paused(false)
-    , m_pressed(false)
-    , m_mode(mode)
+    : TrackBall(0, QVector3D(0, 1, 0), mode)
 {
-    m_axis = QVector3D(0, 1, 0);
-    m_rotation = QQuaternion();
-    m_lastTime = QTime::currentTime();
 }
 
 TrackBall::TrackBall(float angularVelocity, const QVector3D& axis, TrackMode mode)
     : m_axis(axis)
     , m_angularVelocity(angularVelocity)
-    , m_paused(false)
-    , m_pressed(false)
     , m_mode(mode)
-{
-    m_rotation = QQuaternion();
-    m_lastTime = QTime::currentTime();
-}
+{}
 
 void TrackBall::push(const QPointF& p, const QQuaternion &)
 {

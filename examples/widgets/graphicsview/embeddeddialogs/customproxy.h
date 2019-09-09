@@ -59,7 +59,7 @@ class CustomProxy : public QGraphicsProxyWidget
     Q_OBJECT
 
 public:
-    explicit CustomProxy(QGraphicsItem *parent = 0, Qt::WindowFlags wFlags = 0);
+    explicit CustomProxy(QGraphicsItem *parent = nullptr, Qt::WindowFlags wFlags = nullptr);
 
     QRectF boundingRect() const override;
     void paintWindowFrame(QPainter *painter, const QStyleOptionGraphicsItem *option,
@@ -79,8 +79,8 @@ private slots:
 
 private:
     QTimeLine *timeLine;
-    bool popupShown;
-    QGraphicsItem *currentPopup;
+    QGraphicsItem *currentPopup = nullptr;
+    bool popupShown = false;
 };
 
 #endif // CUSTOMPROXY_H

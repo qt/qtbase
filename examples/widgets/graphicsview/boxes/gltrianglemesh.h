@@ -51,13 +51,12 @@
 #ifndef GLTRIANGLEMESH_H
 #define GLTRIANGLEMESH_H
 
-//#include <GL/glew.h>
+#include "glbuffers.h"
 #include "glextensions.h"
 
 #include <QtWidgets>
 #include <QtOpenGL>
 
-#include "glbuffers.h"
 
 template<class TVertex, class TIndex>
 class GLTriangleMesh

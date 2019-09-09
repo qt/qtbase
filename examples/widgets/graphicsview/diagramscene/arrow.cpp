@@ -50,19 +50,17 @@
 
 
 #include "arrow.h"
+#include "diagramitem.h"
 
-#include <qmath.h>
-#include <QPen>
 #include <QPainter>
+#include <QPen>
+#include <QtMath>
 
 //! [0]
 Arrow::Arrow(DiagramItem *startItem, DiagramItem *endItem, QGraphicsItem *parent)
-    : QGraphicsLineItem(parent)
+    : QGraphicsLineItem(parent), myStartItem(startItem), myEndItem(endItem)
 {
-    myStartItem = startItem;
-    myEndItem = endItem;
     setFlag(QGraphicsItem::ItemIsSelectable, true);
-    myColor = Qt::black;
     setPen(QPen(myColor, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
 }
 //! [0]
@@ -98,7 +96,7 @@ void Arrow::updatePosition()
 
 //! [4]
 void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
-          QWidget *)
+                  QWidget *)
 {
     if (myStartItem->collidesWithItem(myEndItem))
         return;

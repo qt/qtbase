@@ -1220,7 +1220,6 @@ void QRhiD3D11::enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cb
         const QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
                                                              : subresDesc.sourceSize();
         quint32 bpl = 0;
-        QSize blockDim;
         textureFormatInfo(texD->m_format, size, &bpl, nullptr);
         box.left = dp.x();
         box.top = dp.y();
