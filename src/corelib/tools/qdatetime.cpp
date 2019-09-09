@@ -3028,15 +3028,15 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     datetime by adding a number of seconds, days, months, or years.
 
     QDateTime can describe datetimes with respect to \l{Qt::LocalTime}{local
-    time}, to \l{Qt::UTC}{UTC}, to a specified \l{Qt::OffsetFromUTC}{offset
-    from UTC} or to a specified \l{{Qt::TimeZone}{time zone}, in conjunction
-    with the QTimeZone class. For example, a time zone of "Europe/Berlin" will
-    apply the daylight-saving rules as used in Germany since 1970. In contrast,
-    an offset from UTC of +3600 seconds is one hour ahead of UTC (usually
-    written in ISO standard notation as "UTC+01:00"), with no daylight-saving
-    offset or changes. When using either local time or a specified time zone,
-    time-zone transitions such as the starts and ends of daylight-saving time
-    (DST) are taken into account. The choice of system used to represent a
+    time}, to \l{Qt::UTC}{UTC}, to a specified \l{Qt::OffsetFromUTC}{offset from
+    UTC} or to a specified \l{Qt::TimeZone}{time zone}, in conjunction with the
+    QTimeZone class. For example, a time zone of "Europe/Berlin" will apply the
+    daylight-saving rules as used in Germany since 1970. In contrast, an offset
+    from UTC of +3600 seconds is one hour ahead of UTC (usually written in ISO
+    standard notation as "UTC+01:00"), with no daylight-saving offset or
+    changes. When using either local time or a specified time zone, time-zone
+    transitions such as the starts and ends of daylight-saving time (DST; but
+    see below) are taken into account. The choice of system used to represent a
     datetime is described as its "timespec".
 
     A QDateTime object is typically created either by giving a date and time
@@ -3124,11 +3124,13 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 
     The range of valid dates taking DST into account is 1970-01-01 to the
     present, and rules are in place for handling DST correctly until 2037-12-31,
-    but these could change. For dates falling outside that range, QDateTime
-    makes a \e{best guess} using the rules for year 1970 or 2037, but we can't
-    guarantee accuracy. This means QDateTime doesn't take into account changes
-    in a time zone before 1970, even if the system's time zone database provides
-    that information.
+    but these could change. For dates after 2037, QDateTime makes a \e{best
+    guess} using the rules for year 2037, but we can't guarantee accuracy;
+    indeed, for \e{any} future date, the time-zone may change its rules before
+    that date comes around. For dates before 1970, QDateTime doesn't take DST
+    changes into account, even if the system's time zone database provides that
+    information, although it does take into account changes to the time-zone's
+    standard offset, where this information is available.
 
     \section2 Offsets From UTC
 
@@ -3374,17 +3376,22 @@ QTimeZone QDateTime::timeZone() const
 /*!
     \since 5.2
 
-    Returns the current Offset From UTC in seconds.
+    Returns this date-time's Offset From UTC in seconds.
 
-    If the timeSpec() is Qt::OffsetFromUTC this will be the value originally set.
+    The result depends on timeSpec():
+    \list
+    \li \c Qt::UTC The offset is 0.
+    \li \c Qt::OffsetFromUTC The offset is the value originally set.
+    \li \c Qt::LocalTime The local time's offset from UTC is returned.
+    \li \c Qt::TimeZone The offset used by the time-zone is returned.
+    \endlist
 
-    If the timeSpec() is Qt::TimeZone this will be the offset effective in the
-    Time Zone including any Daylight-Saving Offset.
-
-    If the timeSpec() is Qt::LocalTime this will be the difference between the
-    Local Time and UTC including any Daylight-Saving Offset.
-
-    If the timeSpec() is Qt::UTC this will be 0.
+    For the last two, the offset at this date and time will be returned, taking
+    account of Daylight-Saving Offset unless the date precedes the start of
+    1970. The offset is the difference between the local time or time in the
+    given time-zone and UTC time; it is positive in time-zones ahead of UTC
+    (East of The Prime Meridian), negative for those behind UTC (West of The
+    Prime Meridian).
 
     \sa setOffsetFromUtc()
 */
