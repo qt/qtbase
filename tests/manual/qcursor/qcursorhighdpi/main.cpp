@@ -218,7 +218,7 @@ protected:
 
 VerticalRuler::VerticalRuler(QWidget *parent) : QWidget(parent)
 {
-    const int screenWidth = QApplication::desktop()->screenGeometry(this).width();
+    const int screenWidth = screen()->geometry().width();
     setFixedWidth(screenWidth / 48); // 1920 pixel monitor ->40
 }
 

@@ -1765,7 +1765,7 @@ void tst_QCompleter::QTBUG_52028_tabAutoCompletes()
     auto le = new QLineEdit;
     w.layout()->addWidget(le);
 
-    const auto pos = QApplication::desktop()->availableGeometry(&w).topLeft() + QPoint(200,200);
+    const auto pos = w.screen()->availableGeometry().topLeft() + QPoint(200,200);
     w.move(pos);
     w.show();
     QApplication::setActiveWindow(&w);
@@ -1806,7 +1806,7 @@ void tst_QCompleter::QTBUG_51889_activatedSentTwice()
 
     w.layout()->addWidget(new QLineEdit);
 
-    const auto pos = QApplication::desktop()->availableGeometry(&w).topLeft() + QPoint(200,200);
+    const auto pos = w.screen()->availableGeometry().topLeft() + QPoint(200,200);
     w.move(pos);
     w.show();
     QApplication::setActiveWindow(&w);

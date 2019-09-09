@@ -34,7 +34,6 @@
 #include <qstyle.h>
 #include <qproxystyle.h>
 #include <qstylefactory.h>
-#include <qdesktopwidget.h>
 #include <qaction.h>
 #include <qstyleoption.h>
 #include <QVBoxLayout>
@@ -1149,8 +1148,8 @@ void tst_QMenuBar::check_menuPosition()
 
     Menu menu;
     menu.setTitle("&menu");
-    QRect availRect = QApplication::desktop()->availableGeometry(&w);
-    QRect screenRect = QApplication::desktop()->screenGeometry(&w);
+    QRect availRect = w.screen()->availableGeometry();
+    QRect screenRect = w.screen()->geometry();
 
     while(menu.sizeHint().height() < (screenRect.height()*2/3)) {
         menu.addAction("item");

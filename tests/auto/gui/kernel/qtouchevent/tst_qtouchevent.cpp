@@ -26,7 +26,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets/QDesktopWidget>
+#include <QtGui/QScreen>
 #include <QtWidgets/QGraphicsItem>
 #include <QtWidgets/QGraphicsScene>
 #include <QtWidgets/QGraphicsView>
@@ -617,7 +617,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QPointF pos = touchWidget.rect().center();
     QPointF screenPos = touchWidget.mapToGlobal(pos.toPoint());
     QPointF delta(10, 10);
-    QRectF screenGeometry = QApplication::desktop()->screenGeometry(&touchWidget);
+    QRectF screenGeometry = touchWidget.screen()->geometry();
 
     QTouchEvent::TouchPoint rawTouchPoint;
     rawTouchPoint.setId(0);
@@ -753,7 +753,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchScreen()
     QPointF leftScreenPos = leftWidget.mapToGlobal(leftPos.toPoint());
     QPointF rightScreenPos = rightWidget.mapToGlobal(rightPos.toPoint());
     QPointF centerScreenPos = touchWidget.mapToGlobal(centerPos.toPoint());
-    QRectF screenGeometry = QApplication::desktop()->screenGeometry(&touchWidget);
+    QRectF screenGeometry = touchWidget.screen()->geometry();
 
     QList<QTouchEvent::TouchPoint> rawTouchPoints;
     rawTouchPoints.append(QTouchEvent::TouchPoint(0));
@@ -968,7 +968,7 @@ void tst_QTouchEvent::touchOnMultipleTouchscreens()
     QPointF pos = touchWidget.rect().center();
     QPointF screenPos = touchWidget.mapToGlobal(pos.toPoint());
     QPointF delta(10, 10);
-    QRectF screenGeometry = QApplication::desktop()->screenGeometry(&touchWidget);
+    QRectF screenGeometry = touchWidget.screen()->geometry();
 
     QVector<QTouchEvent::TouchPoint> rawTouchPoints(3);
     rawTouchPoints[0].setId(0);
@@ -1131,7 +1131,7 @@ void tst_QTouchEvent::multiPointRawEventTranslationOnTouchPad()
     QPointF leftScreenPos = leftWidget.mapToGlobal(leftPos.toPoint());
     QPointF rightScreenPos = rightWidget.mapToGlobal(rightPos.toPoint());
     QPointF centerScreenPos = touchWidget.mapToGlobal(centerPos.toPoint());
-    QRectF screenGeometry = QApplication::desktop()->screenGeometry(&touchWidget);
+    QRectF screenGeometry = touchWidget.screen()->geometry();
 
     QList<QTouchEvent::TouchPoint> rawTouchPoints;
     rawTouchPoints.append(QTouchEvent::TouchPoint(0));
@@ -1348,7 +1348,7 @@ void tst_QTouchEvent::basicRawEventTranslationOfIds()
         screenPos << touchWidget.mapToGlobal(pos[i].toPoint());
     }
     QPointF delta(10, 10);
-    QRectF screenGeometry = QApplication::desktop()->screenGeometry(&touchWidget);
+    QRectF screenGeometry = touchWidget.screen()->geometry();
 
     QVector<QPointF> rawPosList;
     rawPosList << QPointF(12, 34) << QPointF(56, 78);
@@ -1629,7 +1629,7 @@ void tst_QTouchEvent::deleteInRawEventTranslation()
     QPointF leftScreenPos = leftWidget->mapToGlobal(leftPos.toPoint());
     QPointF centerScreenPos = centerWidget->mapToGlobal(centerPos.toPoint());
     QPointF rightScreenPos = rightWidget->mapToGlobal(rightPos.toPoint());
-    QRectF screenGeometry = QApplication::desktop()->screenGeometry(&touchWidget);
+    QRectF screenGeometry = touchWidget.screen()->geometry();
 
     QList<QTouchEvent::TouchPoint> rawTouchPoints;
     rawTouchPoints.append(QTouchEvent::TouchPoint(0));

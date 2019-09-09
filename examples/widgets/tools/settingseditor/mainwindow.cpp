@@ -54,12 +54,12 @@
 
 #include <QAction>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QFileDialog>
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QScreen>
 #include <QStandardPaths>
 #include <QStatusBar>
 
@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     fallbacksAct->setChecked(true);
 
     setWindowTitle(QCoreApplication::applicationName());
-    const QRect availableGeometry = QApplication::desktop()->availableGeometry(this);
+    const QRect availableGeometry = screen()->availableGeometry();
     adjustSize();
     move((availableGeometry.width() - width()) / 2, (availableGeometry.height() - height()) / 2);
 }
