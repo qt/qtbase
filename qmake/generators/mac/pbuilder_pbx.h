@@ -41,6 +41,8 @@ class ProjectBuilderMakefileGenerator : public UnixMakefileGenerator
     bool writeSubDirs(QTextStream &);
     bool writeMakeParts(QTextStream &);
     bool writeMakefile(QTextStream &) override;
+    bool replaceLibrarySuffix(const QString &lib_file, const ProString &opt, QString &name,
+                              QString &library);
 
     QString pbxbuild();
     QHash<QString, QString> keys;

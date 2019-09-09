@@ -1,0 +1,141 @@
+Qt 5.13.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.13.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.13 series is binary compatible with the 5.12.x series.
+Applications compiled for 5.12 will continue to run with 5.13.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                        Important Behavior Changes                        *
+****************************************************************************
+
+ - [QTBUG-76521] RCC's default compression algorithm was changed back to
+   Zlib, as it was in all previous releases until 5.13.0. The default will
+   remain Zlib for all Qt 5.x releases but will change in Qt 6.0. To
+   activate Zstd compression for your resources, either pass the
+   --compress-algo=zstd option to the rcc tool or add the XML attribute
+   compression-algorithm="zstd" to the <file> tags in the .qrc file.
+
+****************************************************************************
+*                                 Android                                  *
+****************************************************************************
+
+ - [QTBUG-76293] Fix NDK r20 linking.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - Global:
+   * [QTBUG-72073] Added the QT_NO_FLOAT16_OPERATORS macro in order to work
+     around a Microsoft <= VS2017 compiler bug that is exposed when using
+     std::bitset along with any Qt header that includes <qfloat16.h>.
+
+ - QCborStreamReader:
+   * Fixed a bug that caused the QIODevice that the data was being read
+     from not to show the entire CBOR message as consumed. This allows the
+     user to consume data that may follow the CBOR payload.
+
+ - QDeadlineTimer:
+   * [QTBUG-69750] Fixed integer overflows leading to immediate timeouts.
+
+ - QStorageInfo:
+   * Fixed a bug that caused QStorageInfo to be unable to report all
+     filesystems if the options to mounted filesystems were too long (over
+     900 characters, roughly), such as those found in Docker overlay
+     mounts.
+
+ - QTextBoundaryFinder:
+   * Sentence breaking now no longer breaks between uppercase letters and
+     comma. This is a deviation from the Unicode specification, but
+     produces less surprising behavior.
+
+ - QTimeZone:
+   * The IANA timezone database backend now properly follows symlinks even
+     when they point to variable locations like /run or /var (useful when
+     /etc is mounted read-only).
+
+ - QVector:
+   * Fixed a regression that caused fill() not to detach, corrupting shared
+     copies.
+
+****************************************************************************
+*                                QtNetwork                                 *
+****************************************************************************
+
+ - Windows:
+   * Correctly emit errors when trying to reach unreachable hosts or
+     services
+
+ - QNetworkAccessManager:
+   * Fixed QNetworkAccessManager::sendCustomRequest for Qt For WebAssembly.
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - [QTBUG-73231] QWindow::mapToGlobal()/mapFromGlobal() now handle windows
+   spanning screens correctly.
+
+ - QImage:
+   * Improve loading time when loading png files that have the same size as
+     the target.
+
+ - QPixmapCache:
+   * [QTBUG-76694][QTBUG-72523] Ignore unsafe access from non-main threads
+
+ - Text:
+   * [QTBUG-76219] Fixed a bug which could cause the font cache to grow
+     larger than it was supposed to.
+   * [QTBUG-55096][QTBUG-74761] Fixed bug where regular text rendered with
+     a color font would always display in black.
+
+****************************************************************************
+*                                QtWidgets                                 *
+****************************************************************************
+
+ - QSystemTrayIcon:
+   * On macOS, show the icon passed into showMessage in the notification
+     popup
+
+ - QDateTimeEdit:
+   * Use the information provided by the locale to determine the AM/PM
+     strings, unless they are already translated.
+
+ - QGraphicsView:
+   * Ignore disabled items when setting the mouse cursor.
+
+ - QMenu:
+   * Shortcuts are again shown by default in context menus, except on
+     macOS. They can be forced off by setting
+     AA_DontShowShortcutsInContextMenus to true.
+
+ - QSplashScreen:
+   * On macOS, lower the splash screen when a modal dialog is shown to make
+     sure the user sees the dialog.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - Updated bundled SQLite to version 3.28.0
+ - Updated QLocale's data to CLDR v35.1
+
+****************************************************************************
+*                                  qmake                                   *
+****************************************************************************
+
+ - [QTBUG-75653] The CONFIG value c++latest was added to select the latest
+   C++ standard the currently used toolchain supports.

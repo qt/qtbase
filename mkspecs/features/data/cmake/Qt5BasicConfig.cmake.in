@@ -53,7 +53,11 @@ function(_qt5_$${CMAKE_MODULE_NAME}_process_prl_file prl_file_location Configura
     set(_lib_deps)
     set(_link_flags)
 
-    get_filename_component(_qt5_install_libs \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/lib\" ABSOLUTE)
+!!IF isEmpty(CMAKE_LIB_DIR_IS_ABSOLUTE)
+    set(_qt5_install_libs \"${_qt5$${CMAKE_MODULE_NAME}_install_prefix}/$${CMAKE_LIB_DIR}\")
+!!ELSE
+    set(_qt5_install_libs \"$${CMAKE_LIB_DIR}\")
+!!ENDIF
 
     if(EXISTS \"${prl_file_location}\")
         file(STRINGS \"${prl_file_location}\" _prl_strings REGEX \"QMAKE_PRL_LIBS_FOR_CMAKE[ \\t]*=\")

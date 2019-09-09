@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 Intel Corporation.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -103,17 +103,22 @@ static QT_FUNCTION_TARGET(RDRND) qsizetype qt_random_cpu(void *buffer, qsizetype
 {
     unsigned *ptr = reinterpret_cast<unsigned *>(buffer);
     unsigned *end = ptr + count;
+    int retries = 10;
 
     while (ptr + sizeof(qregisteruint)/sizeof(*ptr) <= end) {
-        if (_rdrandXX_step(reinterpret_cast<qregisteruint *>(ptr)) == 0)
+        if (_rdrandXX_step(reinterpret_cast<qregisteruint *>(ptr)))
+            ptr += sizeof(qregisteruint)/sizeof(*ptr);
+        else if (--retries == 0)
             goto out;
-        ptr += sizeof(qregisteruint)/sizeof(*ptr);
     }
 
-    if (sizeof(*ptr) != sizeof(qregisteruint) && ptr != end) {
-        if (_rdrand32_step(ptr))
-            goto out;
-        ++ptr;
+    while (sizeof(*ptr) != sizeof(qregisteruint) && ptr != end) {
+        bool ok = _rdrand32_step(ptr);
+        if (!ok && --retries)
+            continue;
+        if (ok)
+            ++ptr;
+        break;
     }
 
 out:

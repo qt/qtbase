@@ -1803,8 +1803,8 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
 #ifndef QT_BOOTSTRAPPED
     Q_TRACE(qt_message_print, msgType, context.category, context.function, context.file, context.line, message);
 
-    // qDebug, qWarning, ... macros do not check whether category is enabled
-    if (isDefaultCategory(context.category)) {
+    // qDebug, qWarning, ... macros do not check whether category is enabledgc
+    if (msgType != QtFatalMsg && isDefaultCategory(context.category)) {
         if (QLoggingCategory *defaultCategory = QLoggingCategory::defaultCategory()) {
             if (!defaultCategory->isEnabled(msgType))
                 return;
