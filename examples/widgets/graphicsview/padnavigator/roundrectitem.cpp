@@ -50,7 +50,7 @@
 
 #include "roundrectitem.h"
 
-#include <QApplication>
+#include <QGuiApplication>
 #include <QPainter>
 #include <QPalette>
 
@@ -98,7 +98,7 @@ void RoundRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *opt
 //! [3]
 //! [4]
     if (fillRect)
-        painter->setBrush(QApplication::palette().brush(QPalette::Window));
+        painter->setBrush(QGuiApplication::palette().brush(QPalette::Window));
     else
         painter->setBrush(gradient);
     painter->setPen(QPen(Qt::black, 1));

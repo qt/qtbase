@@ -52,12 +52,8 @@
 #define DIAGRAMTEXTITEM_H
 
 #include <QGraphicsTextItem>
-#include <QPen>
 
 QT_BEGIN_NAMESPACE
-class QFocusEvent;
-class QGraphicsItem;
-class QGraphicsScene;
 class QGraphicsSceneMouseEvent;
 QT_END_NAMESPACE
 
@@ -69,7 +65,7 @@ class DiagramTextItem : public QGraphicsTextItem
 public:
     enum { Type = UserType + 3 };
 
-    DiagramTextItem(QGraphicsItem *parent = 0);
+    DiagramTextItem(QGraphicsItem *parent = nullptr);
 
     int type() const override { return Type; }
 

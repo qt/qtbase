@@ -42,6 +42,9 @@ CMAKE_INCLUDE_NAME = $$eval(QT.$${MODULE}.name)
 # (or QtCore_{libinfix_suffix}, Foo_{libinfix_suffix} on macos with -framework).
 CMAKE_QT_STEM = $${TARGET}
 
+# ANDROID_ABI is set by the android toolchain file, see https://developer.android.com/ndk/guides/cmake
+android: CMAKE_QT_STEM = $$replace(CMAKE_QT_STEM, "_$${QT_ARCH}", '_\$\{ANDROID_ABI\}')
+
 # On macOS when building just a debug configuration which is not part of debug_and_release,
 # $${TARGET} already contains a _debug suffix, as per the following call chain:
 # qt_module.prf -> qt5LibraryTarget -> qtLibraryTarget -> qtPlatformTargetSuffix.

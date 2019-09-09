@@ -61,7 +61,7 @@ class GraphWidget : public QGraphicsView
     Q_OBJECT
 
 public:
-    GraphWidget(QWidget *parent = 0);
+    GraphWidget(QWidget *parent = nullptr);
 
     void itemMoved();
 
@@ -81,7 +81,7 @@ protected:
     void scaleView(qreal scaleFactor);
 
 private:
-    int timerId;
+    int timerId = 0;
     Node *centerNode;
 };
 //! [0]

@@ -658,4 +658,9 @@ QString qmake_libraryInfoFile()
     return QString();
 }
 
+QString qmake_abslocation()
+{
+    return Option::globals->qmake_abslocation;
+}
+
 QT_END_NAMESPACE

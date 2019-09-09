@@ -81,7 +81,8 @@ class Q_GUI_EXPORT QPlatformTextureList : public QObject
 public:
     enum Flag {
         StacksOnTop = 0x01,
-        TextureIsSrgb = 0x02
+        TextureIsSrgb = 0x02,
+        NeedsPremultipliedAlphaBlending = 0x04
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

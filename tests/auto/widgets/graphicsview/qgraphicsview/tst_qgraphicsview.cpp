@@ -2610,11 +2610,6 @@ void tst_QGraphicsView::optimizationFlags()
     QGraphicsView view;
     QVERIFY(!view.optimizationFlags());
 
-    view.setOptimizationFlag(QGraphicsView::DontClipPainter);
-    QVERIFY(view.optimizationFlags() & QGraphicsView::DontClipPainter);
-    view.setOptimizationFlag(QGraphicsView::DontClipPainter, false);
-    QVERIFY(!view.optimizationFlags());
-
     view.setOptimizationFlag(QGraphicsView::DontSavePainterState);
     QVERIFY(view.optimizationFlags() & QGraphicsView::DontSavePainterState);
     view.setOptimizationFlag(QGraphicsView::DontSavePainterState, false);
@@ -2625,10 +2620,8 @@ void tst_QGraphicsView::optimizationFlags()
     view.setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing, false);
     QVERIFY(!view.optimizationFlags());
 
-    view.setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing
-                              | QGraphicsView::DontClipPainter);
-    QCOMPARE(view.optimizationFlags(), QGraphicsView::OptimizationFlags(QGraphicsView::DontAdjustForAntialiasing
-             | QGraphicsView::DontClipPainter));
+    view.setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing);
+    QCOMPARE(view.optimizationFlags(), QGraphicsView::OptimizationFlags(QGraphicsView::DontAdjustForAntialiasing));
 }
 
 class MessUpPainterItem : public QGraphicsRectItem

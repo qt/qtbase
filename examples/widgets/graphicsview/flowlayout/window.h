@@ -53,7 +53,6 @@
 class Window : public QGraphicsWidget
 {
     Q_OBJECT
-
 public:
-    Window();
+    Window(QGraphicsItem *parent = nullptr);
 };

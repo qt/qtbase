@@ -107,7 +107,7 @@ public:
         Q_UNUSED(option);
         Q_UNUSED(widget);
         painter->setBrush(m_brush);
-        painter->drawRoundedRect(rect(), Qt::RelativeSize);
+        painter->drawRoundedRect(rect(), 25, 25, Qt::RelativeSize);
         painter->drawLine(rect().topLeft(), rect().bottomRight());
         painter->drawLine(rect().bottomLeft(), rect().topRight());
     }

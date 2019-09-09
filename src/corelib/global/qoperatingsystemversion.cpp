@@ -356,14 +356,6 @@ bool QOperatingSystemVersion::isAnyOfType(std::initializer_list<OSType> types) c
 }
 
 /*!
-    \variable QOperatingSystemVersion::WindowsVista
-    \brief a version corresponding to Windows Vista (version 6.0).
-    \since 6.0
- */
-const QOperatingSystemVersion QOperatingSystemVersion::WindowsVista =
-        QOperatingSystemVersion(QOperatingSystemVersion::Windows, 6, 0);
-
-/*!
     \variable QOperatingSystemVersion::Windows7
     \brief a version corresponding to Windows 7 (version 6.1).
     \since 5.9

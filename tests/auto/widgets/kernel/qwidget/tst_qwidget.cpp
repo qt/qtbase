@@ -7704,9 +7704,7 @@ void tst_QWidget::moveWindowInShowEvent()
 void tst_QWidget::repaintWhenChildDeleted()
 {
 #ifdef Q_OS_WIN
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::WindowsVista) {
-        QTest::qWait(1000);
-    }
+    QTest::qWait(1000);
 #endif
     ColorWidget w(nullptr, Qt::FramelessWindowHint, Qt::red);
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
@@ -8903,11 +8901,10 @@ void tst_QWidget::translucentWidget()
 
 #ifdef Q_OS_WIN
     QWidget *desktopWidget = QApplication::desktop()->screen(0);
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::WindowsVista)
-        widgetSnapshot = grabWindow(desktopWidget->windowHandle(), labelPos.x(), labelPos.y(), label.width(), label.height());
-    else
+    widgetSnapshot = grabWindow(desktopWidget->windowHandle(), labelPos.x(), labelPos.y(), label.width(), label.height());
+#else
+    widgetSnapshot = label.grab(QRect(QPoint(0, 0), label.size()));
 #endif
-        widgetSnapshot = label.grab(QRect(QPoint(0, 0), label.size()));
     const QImage actual = widgetSnapshot.toImage().convertToFormat(QImage::Format_RGB32);
     const QImage expected = pm.toImage().scaled(label.devicePixelRatioF() * pm.size());
     if (m_platform == QStringLiteral("winrt"))

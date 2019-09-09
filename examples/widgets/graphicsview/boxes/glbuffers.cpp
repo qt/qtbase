@@ -49,8 +49,6 @@
 ****************************************************************************/
 
 #include "glbuffers.h"
-#include <QtGui/qmatrix4x4.h>
-#include <QtCore/qmath.h>
 
 void qgluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar)
 {
@@ -65,7 +63,7 @@ void qgluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zF
 //                                  GLTexture                                 //
 //============================================================================//
 
-GLTexture::GLTexture() : m_texture(0), m_failed(false)
+GLTexture::GLTexture()
 {
     glGenTextures(1, &m_texture);
 }
@@ -83,7 +81,7 @@ GLTexture2D::GLTexture2D(int width, int height)
 {
     glBindTexture(GL_TEXTURE_2D, m_texture);
     glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0,
-        GL_BGRA, GL_UNSIGNED_BYTE, 0);
+        GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -95,7 +93,7 @@ GLTexture2D::GLTexture2D(int width, int height)
 }
 
 
-GLTexture2D::GLTexture2D(const QString& fileName, int width, int height)
+GLTexture2D::GLTexture2D(const QString &fileName, int width, int height)
 {
     // TODO: Add error handling.
     QImage image(fileName);
@@ -162,7 +160,7 @@ GLTexture3D::GLTexture3D(int width, int height, int depth)
 
     glBindTexture(GL_TEXTURE_3D, m_texture);
     glTexImage3D(GL_TEXTURE_3D, 0, 4, width, height, depth, 0,
-        GL_BGRA, GL_UNSIGNED_BYTE, 0);
+        GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
 
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -206,7 +204,7 @@ GLTextureCube::GLTextureCube(int size)
 
     for (int i = 0; i < 6; ++i)
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 4, size, size, 0,
-            GL_BGRA, GL_UNSIGNED_BYTE, 0);
+            GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -252,7 +250,7 @@ GLTextureCube::GLTextureCube(const QStringList &fileNames, int size)
     // Clear remaining faces.
     while (index < 6) {
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, 0, 4, size, size, 0,
-            GL_BGRA, GL_UNSIGNED_BYTE, 0);
+            GL_BGRA, GL_UNSIGNED_BYTE, nullptr);
         ++index;
     }
 
@@ -291,11 +289,8 @@ void GLTextureCube::unbind()
 //============================================================================//
 
 GLFrameBufferObject::GLFrameBufferObject(int width, int height)
-    : m_fbo(0)
-    , m_depthBuffer(0)
-    , m_width(width)
+    : m_width(width)
     , m_height(height)
-    , m_failed(false)
 {
     GLBUFFERS_ASSERT_OPENGL("GLFrameBufferObject::GLFrameBufferObject",
         glGenFramebuffersEXT && glGenRenderbuffersEXT && glBindRenderbufferEXT && glRenderbufferStorageEXT, return)
@@ -373,7 +368,7 @@ void GLRenderTargetCube::getViewMatrix(QMatrix4x4& mat, int face)
         return;
     }
 
-    static int perm[6][3] = {
+    static constexpr int perm[6][3] = {
         {2, 1, 0},
         {2, 1, 0},
         {0, 2, 1},
@@ -382,7 +377,7 @@ void GLRenderTargetCube::getViewMatrix(QMatrix4x4& mat, int face)
         {0, 1, 2},
     };
 
-    static float signs[6][3] = {
+    static constexpr float signs[6][3] = {
         {-1.0f, -1.0f, -1.0f},
         {+1.0f, -1.0f, +1.0f},
         {+1.0f, +1.0f, -1.0f},

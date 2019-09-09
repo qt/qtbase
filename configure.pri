@@ -763,6 +763,11 @@ defineTest(qtConfOutput_preparePaths) {
         have_hostprefix = true
     }
 
+    equals(config.input.prefix, $$config.input.extprefix): \
+        qmake_crossbuild = false
+    else: \
+        qmake_crossbuild = true
+
     PREFIX_COMPLAINTS =
     PREFIX_REMINDER = false
     win32: \
@@ -801,6 +806,18 @@ defineTest(qtConfOutput_preparePaths) {
         processQtPath(host, hostlibdir, $$config.rel_input.libdir)
         processQtPath(host, hostdatadir, $$config.rel_input.archdatadir)
     }
+
+    win32:$$qtConfEvaluate("features.shared") {
+        # Windows DLLs are in the bin dir.
+        libloc_absolute_path = $$absolute_path($$config.rel_input.bindir, $$config.input.prefix)
+    } else {
+        libloc_absolute_path = $$absolute_path($$config.rel_input.libdir, $$config.input.prefix)
+    }
+    config.input.liblocation_to_prefix = $$relative_path($$config.input.prefix, $$libloc_absolute_path)
+
+    hostbindir_absolute_path = $$absolute_path($$config.rel_input.hostbindir, $$config.input.hostprefix)
+    config.input.hostbindir_to_hostprefix = $$relative_path($$config.input.hostprefix, $$hostbindir_absolute_path)
+    config.input.hostbindir_to_extprefix = $$relative_path($$config.input.extprefix, $$hostbindir_absolute_path)
 
     !isEmpty(PREFIX_COMPLAINTS) {
         PREFIX_COMPLAINTS = "$$join(PREFIX_COMPLAINTS, "$$escape_expand(\\n)Note: ")"
@@ -864,9 +881,13 @@ defineTest(qtConfOutput_preparePaths) {
         ";" \
         "" \
         "$${LITERAL_HASH}define QT_CONFIGURE_SETTINGS_PATH \"$$config.rel_input.sysconfdir\"" \
+        "$${LITERAL_HASH}define QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH \"$$config.input.liblocation_to_prefix\"" \
+        "$${LITERAL_HASH}define QT_CONFIGURE_HOSTBINDIR_TO_EXTPREFIX_PATH \"$$config.input.hostbindir_to_extprefix\"" \
+        "$${LITERAL_HASH}define QT_CONFIGURE_HOSTBINDIR_TO_HOSTPREFIX_PATH \"$$config.input.hostbindir_to_hostprefix\"" \
         "" \
         "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \
         "$${LITERAL_HASH} define QT_CONFIGURE_SYSROOTIFY_PREFIX $$qmake_sysrootify" \
+        "$${LITERAL_HASH} define QT_CONFIGURE_CROSSBUILD $$qmake_crossbuild" \
         "$${LITERAL_HASH}endif" \
         "" \
         "$${LITERAL_HASH}define QT_CONFIGURE_PREFIX_PATH qt_configure_prefix_path_str + 12" \

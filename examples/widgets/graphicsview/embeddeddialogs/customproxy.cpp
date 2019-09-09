@@ -50,14 +50,13 @@
 
 #include "customproxy.h"
 
-#include <QStyleOptionGraphicsItem>
-#include <QPainter>
 #include <QGraphicsScene>
+#include <QPainter>
+#include <QStyleOptionGraphicsItem>
 
 CustomProxy::CustomProxy(QGraphicsItem *parent, Qt::WindowFlags wFlags)
-    : QGraphicsProxyWidget(parent, wFlags), popupShown(false), currentPopup(nullptr)
+    : QGraphicsProxyWidget(parent, wFlags), timeLine(new QTimeLine(250, this))
 {
-    timeLine = new QTimeLine(250, this);
     connect(timeLine, &QTimeLine::valueChanged,
             this, &CustomProxy::updateStep);
     connect(timeLine, &QTimeLine::stateChanged,
@@ -99,7 +98,7 @@ void CustomProxy::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     QGraphicsProxyWidget::hoverEnterEvent(event);
     scene()->setActiveWindow(this);
-    if (timeLine->currentValue() != 1)
+    if (qFuzzyCompare(timeLine->currentValue(), 1))
         zoomIn();
 }
 
@@ -107,7 +106,7 @@ void CustomProxy::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     QGraphicsProxyWidget::hoverLeaveEvent(event);
     if (!popupShown
-            && (timeLine->direction() != QTimeLine::Backward || timeLine->currentValue() != 0)) {
+            && (timeLine->direction() != QTimeLine::Backward || qFuzzyIsNull(timeLine->currentValue()))) {
         zoomOut();
     }
 }
