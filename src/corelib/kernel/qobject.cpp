@@ -4291,21 +4291,17 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     \relates QObject
     \obsolete
 
+    In new code, you should prefer the use of the Q_ENUM() macro, which makes the
+    type available also to the meta type system.
+    For instance, QMetaEnum::fromType() will not work with types declared with Q_ENUMS().
+
     This macro registers one or several enum types to the meta-object
     system.
-
-    For example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 38
 
     If you want to register an enum that is declared in another class,
     the enum must be fully qualified with the name of the class
     defining it. In addition, the class \e defining the enum has to
     inherit QObject as well as declare the enum using Q_ENUMS().
-
-    In new code, you should prefer the use of the Q_ENUM() macro, which makes the
-    type available also to the meta type system.
-    For instance, QMetaEnum::fromType() will not work with types declared with Q_ENUMS().
 
     \sa {Qt's Property System}
 */
