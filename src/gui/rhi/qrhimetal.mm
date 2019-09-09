@@ -3596,6 +3596,18 @@ bool QMetalSwapChain::buildOrResize()
     }
 #endif
 
+    if (m_flags.testFlag(SurfaceHasPreMulAlpha)) {
+        d->layer.opaque = NO;
+    } else if (m_flags.testFlag(SurfaceHasNonPreMulAlpha)) {
+        // The CoreAnimation compositor is said to expect premultiplied alpha,
+        // so this is then wrong when it comes to the blending operations but
+        // there's nothing we can do. Fortunately Qt Quick always outputs
+        // premultiplied alpha so it is not a problem there.
+        d->layer.opaque = NO;
+    } else {
+        d->layer.opaque = YES;
+    }
+
     m_currentPixelSize = surfacePixelSize();
     pixelSize = m_currentPixelSize;
 
