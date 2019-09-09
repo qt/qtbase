@@ -1512,7 +1512,7 @@ bool QSslSocket::addDefaultCaCertificates(const QString &path, QSsl::EncodingFor
     SSL socket's CA certificate database is initialized to the default
     CA certificate database.
 
-    \sa QSslConfiguration::defaultCaCertificates(), addCaCertificates()
+    \sa QSslConfiguration::caCertificates(), addCaCertificates()
 */
 void QSslSocket::addDefaultCaCertificate(const QSslCertificate &certificate)
 {

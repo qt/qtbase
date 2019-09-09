@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QHttp2Configuration
-    \brief The QHttp2Configuration class controls HTTP/2 parameters and settings
+    \brief The QHttp2Configuration class controls HTTP/2 parameters and settings.
     \since 5.14
 
     \reentrant

@@ -3505,7 +3505,7 @@ Qt::ApplicationState QGuiApplication::applicationState()
     \since 5.14
 
     Sets the high-DPI scale factor rounding policy for the application. The
-    policy decides how non-integer scale factors (such as Windows 150%) are
+    \a policy decides how non-integer scale factors (such as Windows 150%) are
     handled, for applications that have AA_EnableHighDpiScaling enabled.
 
     The two principal options are whether fractional scale factors should

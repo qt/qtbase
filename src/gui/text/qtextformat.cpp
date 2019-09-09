@@ -650,6 +650,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value TableColumns
     \value TableColumnWidthConstraints
     \value TableHeaderRowCount
+    \value TableBorderCollapse Specifies the \l QTextTableFormat::borderCollapse property.
 
     Table cell properties
 
