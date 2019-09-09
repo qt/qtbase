@@ -281,7 +281,7 @@ static quint32 icon_name_hash(const char *p)
 QVector<const char *> QIconCacheGtkReader::lookup(const QStringRef &name)
 {
     QVector<const char *> ret;
-    if (!isValid())
+    if (!isValid() || name.isEmpty())
         return ret;
 
     QByteArray nameUtf8 = name.toUtf8();

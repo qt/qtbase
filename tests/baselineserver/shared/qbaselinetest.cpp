@@ -28,10 +28,8 @@
 
 #include "qbaselinetest.h"
 #include "baselineprotocol.h"
-#if QT_CONFIG(process)
-# include <QtCore/QProcess>
-#endif
 #include <QtCore/QDir>
+#include <QFile>
 
 #define MAXCMDLINEARGS 128
 
@@ -146,20 +144,15 @@ void addClientProperty(const QString& key, const QString& value)
 */
 void fetchCustomClientProperties()
 {
-#if !QT_CONFIG(process)
-    QSKIP("This test requires QProcess support");
-#else
-    QString script = "hostinfo.sh";  //### TBD: Windows implementation (hostinfo.bat)
+    QFile file("hostinfo.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+    QTextStream in(&file);
 
-    QProcess runScript;
-    runScript.setWorkingDirectory(QCoreApplication::applicationDirPath());
-    runScript.start("sh", QStringList() << script, QIODevice::ReadOnly);
-    if (!runScript.waitForFinished(5000) || runScript.error() != QProcess::UnknownError) {
-        qWarning() << "QBaselineTest: Error running script" << runScript.workingDirectory() + QDir::separator() + script << ":" << runScript.errorString();
-        qDebug() << "  stderr:" << runScript.readAllStandardError().trimmed();
-    }
-    while (!runScript.atEnd()) {
-        QByteArray line = runScript.readLine().trimmed();   // ###local8bit? utf8?
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();   // ###local8bit? utf8?
+        if (line.startsWith(QLatin1Char('#')))  // Ignore comments in file
+            continue;
         QString key, val;
         int colonPos = line.indexOf(':');
         if (colonPos > 0) {
@@ -171,7 +164,6 @@ void fetchCustomClientProperties()
         else
             qDebug() << "Unparseable script output ignored:" << line;
     }
-#endif // QT_CONFIG(process)
 }
 
 
