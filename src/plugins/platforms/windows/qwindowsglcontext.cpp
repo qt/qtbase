@@ -323,7 +323,7 @@ static inline bool
 static void describeFormats(HDC hdc)
 {
     const int pfiMax = DescribePixelFormat(hdc, 0, 0, nullptr);
-    for (int i = 0; i < pfiMax; i++) {
+    for (int i = 1; i <= pfiMax; i++) {
         PIXELFORMATDESCRIPTOR pfd;
         initPixelFormatDescriptor(&pfd);
         DescribePixelFormat(hdc, i, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
