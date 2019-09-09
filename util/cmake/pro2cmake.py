@@ -39,6 +39,7 @@ import os.path
 import re
 import io
 import typing
+import glob
 
 from sympy.logic import (simplify_logic, And, Or, Not,)
 import pyparsing as pp
@@ -52,6 +53,8 @@ from helper import map_qt_library, map_3rd_party_library, is_known_3rd_party_lib
 from shutil import copyfile
 from special_case_helper import SpecialCaseHandler
 
+
+cmake_version_string = "3.15.0"
 
 def _parse_commandline():
     parser = ArgumentParser(description='Generate CMakeLists.txt files from .'
@@ -94,6 +97,40 @@ def _parse_commandline():
                         nargs='+', help='The .pro/.pri file to process')
 
     return parser.parse_args()
+
+
+def is_top_level_repo_project(project_file_path: str = '') -> bool:
+    qmake_conf_path = find_qmake_conf(project_file_path)
+    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    project_dir_path = os.path.dirname(project_file_path)
+    if qmake_conf_dir_path == project_dir_path:
+        return True
+    return False
+
+
+def is_top_level_repo_tests_project(project_file_path: str = '') -> bool:
+    qmake_conf_path = find_qmake_conf(project_file_path)
+    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    project_dir_path = os.path.dirname(project_file_path)
+    project_dir_name = os.path.basename(project_dir_path)
+    maybe_same_level_dir_path = os.path.join(project_dir_path, "..")
+    normalized_maybe_same_level_dir_path = os.path.normpath(maybe_same_level_dir_path)
+    if qmake_conf_dir_path == normalized_maybe_same_level_dir_path and project_dir_name == 'tests':
+        return True
+    return False
+
+
+def is_top_level_repo_examples_project(project_file_path: str = '') -> bool:
+    qmake_conf_path = find_qmake_conf(project_file_path)
+    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    project_dir_path = os.path.dirname(project_file_path)
+    project_dir_name = os.path.basename(project_dir_path)
+    maybe_same_level_dir_path = os.path.join(project_dir_path, "..")
+    normalized_maybe_same_level_dir_path = os.path.normpath(maybe_same_level_dir_path)
+    if qmake_conf_dir_path == normalized_maybe_same_level_dir_path \
+            and project_dir_name == 'examples':
+        return True
+    return False
 
 
 def find_qmake_conf(project_file_path: str = '') -> typing.Optional[str]:
@@ -2274,16 +2311,124 @@ def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
                            footer = ')\n')
 
 
+def handle_top_level_repo_project(scope: Scope, cm_fh: typing.IO[str]):
+    # qtdeclarative
+    project_file_name = os.path.splitext(os.path.basename(scope.file_absolute_path))[0]
+
+    # declarative
+    file_name_without_qt_prefix = project_file_name[2:]
+
+    # Qt::Declarative
+    qt_lib = map_qt_library(file_name_without_qt_prefix)
+
+    # Found a mapping, adjust name.
+    if qt_lib != file_name_without_qt_prefix:
+        # QtDeclarative
+        qt_lib = re.sub(r':', r'', qt_lib)
+
+        # Declarative
+        qt_lib_no_prefix = qt_lib[2:]
+    else:
+        qt_lib += "_FIXME"
+        qt_lib_no_prefix = qt_lib
+
+    content = """cmake_minimum_required(VERSION {})
+
+project({}
+    VERSION 6.0.0
+    DESCRIPTION "Qt {} Libraries"
+    HOMEPAGE_URL "https://qt.io/"
+    LANGUAGES CXX C
+)
+
+find_package(Qt6 ${{PROJECT_VERSION}} CONFIG REQUIRED COMPONENTS BuildInternals Core SET_ME_TO_SOMETHING_USEFUL)
+find_package(Qt6 ${{PROJECT_VERSION}} CONFIG OPTIONAL_COMPONENTS SET_ME_TO_SOMETHING_USEFUL)
+qt_build_repo()
+""".format(cmake_version_string, qt_lib, qt_lib_no_prefix)
+
+    cm_fh.write('{}'.format(content))
+
+
+def find_top_level_repo_project_file(project_file_path: str = '') -> typing.Optional[str]:
+    qmake_conf_path = find_qmake_conf(project_file_path)
+    qmake_dir = os.path.dirname(qmake_conf_path)
+
+    # Hope to a programming god that there's only one .pro file at the
+    # top level directory of repository.
+    glob_result = glob.glob(os.path.join(qmake_dir, '*.pro'))
+    if len(glob_result) > 0:
+        return glob_result[0]
+    return None
+
+
+def handle_top_level_repo_tests_project(scope: Scope, cm_fh: typing.IO[str]):
+    top_level_project_path = find_top_level_repo_project_file(scope.file_absolute_path)
+    if top_level_project_path:
+        # qtdeclarative
+        file_name = os.path.splitext(os.path.basename(top_level_project_path))[0]
+
+        # declarative
+        file_name_without_qt = file_name[2:]
+
+        # Qt::Declarative
+        qt_lib = map_qt_library(file_name_without_qt)
+
+        # Found a mapping, adjust name.
+        if qt_lib != file_name_without_qt:
+            # QtDeclarative
+            qt_lib = re.sub(r':', r'', qt_lib) + "Tests"
+        else:
+            qt_lib += "Tests_FIXME"
+    else:
+        qt_lib = "Tests_FIXME"
+
+    content = """if(NOT TARGET Qt::Test)
+    cmake_minimum_required(VERSION {})
+    project({} VERSION 6.0.0 LANGUAGES C CXX)
+    find_package(Qt6 ${{PROJECT_VERSION}} REQUIRED COMPONENTS BuildInternals Core SET_ME_TO_SOMETHING_USEFUL)
+    find_package(Qt6 ${{PROJECT_VERSION}} OPTIONAL_COMPONENTS SET_ME_TO_SOMETHING_USEFUL)
+    qt_set_up_standalone_tests_build()
+endif()
+
+qt_build_tests()
+""".format(cmake_version_string, qt_lib)
+
+    cm_fh.write('{}'.format(content))
+
+
 def cmakeify_scope(scope: Scope, cm_fh: typing.IO[str], *,
                    indent: int = 0, is_example: bool=False) -> None:
     template = scope.TEMPLATE
-    if template == 'subdirs':
-        handle_subdir(scope, cm_fh, indent=indent, is_example=is_example)
+
+    temp_buffer = io.StringIO()
+
+    # Handle top level repo project in a special way.
+    if is_top_level_repo_project(scope.file_absolute_path):
+        handle_top_level_repo_project(scope, temp_buffer)
+    # Same for top-level tests.
+    elif is_top_level_repo_tests_project(scope.file_absolute_path):
+        handle_top_level_repo_tests_project(scope, temp_buffer)
+    elif template == 'subdirs':
+        handle_subdir(scope, temp_buffer, indent=indent, is_example=is_example)
     elif template in ('app', 'lib'):
-        handle_app_or_lib(scope, cm_fh, indent=indent, is_example=is_example)
+        handle_app_or_lib(scope, temp_buffer, indent=indent, is_example=is_example)
     else:
         print('    XXXX: {}: Template type {} not yet supported.'
               .format(scope.file, template))
+
+    buffer_value = temp_buffer.getvalue()
+
+    if is_top_level_repo_examples_project(scope.file_absolute_path):
+        # Wrap top level examples project with some commands which
+        # are necessary to build examples as part of the overall
+        # build.
+        buffer_value = """qt_examples_build_begin()
+
+{}
+qt_examples_build_end()
+""".format(buffer_value)
+
+    cm_fh.write(buffer_value)
 
 
 def generate_new_cmakelists(scope: Scope, *, is_example: bool=False) -> None:
