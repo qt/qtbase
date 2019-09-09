@@ -133,6 +133,18 @@ def is_top_level_repo_examples_project(project_file_path: str = '') -> bool:
     return False
 
 
+def is_example_project(project_file_path: str = '') -> bool:
+    qmake_conf_path = find_qmake_conf(project_file_path)
+    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+
+    project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
+    # If the project file is found in a subdir called 'examples'
+    # relative to the repo source dir, then it must be an example.
+    if project_relative_path.startswith('examples'):
+        return True
+    return False
+
+
 def find_qmake_conf(project_file_path: str = '') -> typing.Optional[str]:
     if not os.path.isabs(project_file_path):
         print('Warning: could not find .qmake.conf file, given path is not an absolute path: {}'
@@ -2437,7 +2449,10 @@ def generate_new_cmakelists(scope: Scope, *, is_example: bool=False) -> None:
         assert scope.file
         cm_fh.write('# Generated from {}.\n\n'
                     .format(os.path.basename(scope.file)))
-        cmakeify_scope(scope, cm_fh, is_example=is_example)
+
+        is_example_heuristic = is_example_project(scope.file_absolute_path)
+        final_is_example_decision = is_example or is_example_heuristic
+        cmakeify_scope(scope, cm_fh, is_example=final_is_example_decision)
 
 
 def do_include(scope: Scope, *, debug: bool = False) -> None:
