@@ -682,9 +682,6 @@ static inline QByteArray msgProcessError(const QString &binary, const QStringLis
 
 void tst_Selftests::doRunSubTest(QString const& subdir, QStringList const& loggers, QStringList const& arguments, bool crashes)
 {
-    if (EmulationDetector::isRunningArmOnX86() && (subdir == "crashes"))
-        QSKIP("Skipping \"crashes\" due to QTBUG-71915");
-
 #if defined(__GNUC__) && defined(__i386) && defined(Q_OS_LINUX)
     if (arguments.contains("-callgrind")) {
         QProcess checkProcess;
