@@ -2485,6 +2485,23 @@ def copy_generated_file_to_final_location(scope: Scope, keep_temporary_files=Fal
         os.remove(scope.generated_cmake_lists_path)
 
 
+def should_convert_project(project_file_path: str = '') -> bool:
+    qmake_conf_path = find_qmake_conf(project_file_path)
+    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+
+    project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
+
+    # Skip cmake auto tests, they should not be converted.
+    if project_relative_path.startswith('tests/auto/cmake'):
+        return False
+
+    # Skip qmake testdata projects.
+    if project_relative_path.startswith('tests/auto/tools/qmake/testdata'):
+        return False
+
+    return True
+
+
 def main() -> None:
     args = _parse_commandline()
 
@@ -2497,6 +2514,11 @@ def main() -> None:
         file_relative_path = os.path.basename(file)
         if new_current_dir:
             os.chdir(new_current_dir)
+
+        project_file_absolute_path = os.path.abspath(file)
+        if not should_convert_project(project_file_absolute_path):
+            print('Skipping conversion of project: "{}"'.format(project_file_absolute_path))
+            continue
 
         parseresult = parseProFile(file_relative_path, debug=debug_parsing)
 
