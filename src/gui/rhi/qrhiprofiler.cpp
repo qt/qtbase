@@ -319,7 +319,7 @@ void QRhiProfilerPrivate::writeFloat(const char *key, float f)
     Q_ASSERT(key[0] == 'F');
     buf.append(key);
     buf.append(',');
-    buf.append(QByteArray::number(f));
+    buf.append(QByteArray::number(double(f)));
     buf.append(',');
 }
 
@@ -385,7 +385,7 @@ void QRhiProfilerPrivate::newRenderBuffer(QRhiRenderBuffer *rb, bool transientBa
     const QRhiTexture::Format assumedFormat = type == QRhiRenderBuffer::DepthStencil ? QRhiTexture::D32F : QRhiTexture::RGBA8;
     quint32 byteSize = rhiDWhenEnabled->approxByteSizeForTexture(assumedFormat, sz, 1, 1);
     if (sampleCount > 1)
-        byteSize *= sampleCount;
+        byteSize *= uint(sampleCount);
 
     startEntry(QRhiProfiler::NewRenderBuffer, ts.elapsed(), rb);
     writeInt("type", type);
@@ -416,7 +416,7 @@ void QRhiProfilerPrivate::newTexture(QRhiTexture *tex, bool owns, int mipCount, 
     const QSize sz = tex->pixelSize();
     quint32 byteSize = rhiDWhenEnabled->approxByteSizeForTexture(format, sz, mipCount, layerCount);
     if (sampleCount > 1)
-        byteSize *= sampleCount;
+        byteSize *= uint(sampleCount);
 
     startEntry(QRhiProfiler::NewTexture, ts.elapsed(), tex);
     writeInt("width", sz.width());
@@ -467,7 +467,7 @@ void QRhiProfilerPrivate::resizeSwapChain(QRhiSwapChain *sc, int bufferCount, in
 
     const QSize sz = sc->currentPixelSize();
     quint32 byteSize = rhiDWhenEnabled->approxByteSizeForTexture(QRhiTexture::BGRA8, sz, 1, 1);
-    byteSize = byteSize * bufferCount + byteSize * msaaBufferCount * sampleCount;
+    byteSize = byteSize * uint(bufferCount) + byteSize * uint(msaaBufferCount) * uint(sampleCount);
 
     startEntry(QRhiProfiler::ResizeSwapChain, ts.elapsed(), sc);
     writeInt("width", sz.width());
@@ -569,7 +569,7 @@ void QRhiProfilerPrivate::swapChainFrameGpuTime(QRhiSwapChain *sc, float gpuTime
     }
 }
 
-void QRhiProfilerPrivate::newReadbackBuffer(quint64 id, QRhiResource *src, quint32 size)
+void QRhiProfilerPrivate::newReadbackBuffer(qint64 id, QRhiResource *src, quint32 size)
 {
     if (!outputDevice)
         return;
@@ -580,7 +580,7 @@ void QRhiProfilerPrivate::newReadbackBuffer(quint64 id, QRhiResource *src, quint
     endEntry();
 }
 
-void QRhiProfilerPrivate::releaseReadbackBuffer(quint64 id)
+void QRhiProfilerPrivate::releaseReadbackBuffer(qint64 id)
 {
     if (!outputDevice)
         return;
@@ -590,7 +590,7 @@ void QRhiProfilerPrivate::releaseReadbackBuffer(quint64 id)
     endEntry();
 }
 
-void QRhiProfilerPrivate::vmemStat(int realAllocCount, int subAllocCount, quint32 totalSize, quint32 unusedSize)
+void QRhiProfilerPrivate::vmemStat(uint realAllocCount, uint subAllocCount, quint32 totalSize, quint32 unusedSize)
 {
     if (!outputDevice)
         return;

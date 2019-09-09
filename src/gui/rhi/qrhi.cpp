@@ -673,7 +673,7 @@ bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClear
  */
 uint qHash(const QRhiDepthStencilClearValue &v, uint seed) Q_DECL_NOTHROW
 {
-    return seed * (qFloor(v.depthClearValue() * 100) + v.stencilClearValue());
+    return seed * (uint(qFloor(qreal(v.depthClearValue()) * 100)) + v.stencilClearValue());
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -768,7 +768,8 @@ bool operator!=(const QRhiViewport &a, const QRhiViewport &b) Q_DECL_NOTHROW
 uint qHash(const QRhiViewport &v, uint seed) Q_DECL_NOTHROW
 {
     const std::array<float, 4> r = v.viewport();
-    return seed + r[0] + r[1] + r[2] + r[3] + qFloor(v.minDepth() * 100) + qFloor(v.maxDepth() * 100);
+    return seed + uint(r[0]) + uint(r[1]) + uint(r[2]) + uint(r[3])
+            + uint(qFloor(qreal(v.minDepth()) * 100)) + uint(qFloor(qreal(v.maxDepth()) * 100));
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -850,7 +851,7 @@ bool operator!=(const QRhiScissor &a, const QRhiScissor &b) Q_DECL_NOTHROW
 uint qHash(const QRhiScissor &v, uint seed) Q_DECL_NOTHROW
 {
     const std::array<int, 4> r = v.scissor();
-    return seed + r[0] + r[1] + r[2] + r[3];
+    return seed + uint(r[0]) + uint(r[1]) + uint(r[2]) + uint(r[3]);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -1136,7 +1137,7 @@ bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribut
  */
 uint qHash(const QRhiVertexInputAttribute &v, uint seed) Q_DECL_NOTHROW
 {
-    return seed + v.binding() + v.location() + v.format() + v.offset();
+    return seed + uint(v.binding()) + uint(v.location()) + uint(v.format()) + v.offset();
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -3001,7 +3002,7 @@ bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
 uint qHash(const QRhiShaderResourceBinding &b, uint seed) Q_DECL_NOTHROW
 {
     const char *u = reinterpret_cast<const char *>(&b.d->u);
-    return seed + b.d->binding + 10 * b.d->stage + 100 * b.d->type
+    return seed + uint(b.d->binding) + 10 * uint(b.d->stage) + 100 * uint(b.d->type)
             + qHash(QByteArray::fromRawData(u, sizeof(b.d->u)), seed);
 }
 
@@ -3823,8 +3824,8 @@ void QRhiImplementation::compressedFormatInfo(QRhiTexture::Format format, const 
         break;
     }
 
-    const quint32 wblocks = (size.width() + xdim - 1) / xdim;
-    const quint32 hblocks = (size.height() + ydim - 1) / ydim;
+    const quint32 wblocks = uint((size.width() + xdim - 1) / xdim);
+    const quint32 hblocks = uint((size.height() + ydim - 1) / ydim);
 
     if (bpl)
         *bpl = wblocks * blockSize;
@@ -3880,9 +3881,9 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
     }
 
     if (bpl)
-        *bpl = size.width() * bpc;
+        *bpl = uint(size.width()) * bpc;
     if (byteSize)
-        *byteSize = size.width() * size.height() * bpc;
+        *byteSize = uint(size.width() * size.height()) * bpc;
 }
 
 // Approximate because it excludes subresource alignment or multisampling.
@@ -3892,12 +3893,12 @@ quint32 QRhiImplementation::approxByteSizeForTexture(QRhiTexture::Format format,
     quint32 approxSize = 0;
     for (int level = 0; level < mipCount; ++level) {
         quint32 byteSize = 0;
-        const QSize size(qFloor(float(qMax(1, baseSize.width() >> level))),
-                         qFloor(float(qMax(1, baseSize.height() >> level))));
+        const QSize size(qFloor(qreal(qMax(1, baseSize.width() >> level))),
+                         qFloor(qreal(qMax(1, baseSize.height() >> level))));
         textureFormatInfo(format, size, nullptr, &byteSize);
         approxSize += byteSize;
     }
-    approxSize *= layerCount;
+    approxSize *= uint(layerCount);
     return approxSize;
 }
 
