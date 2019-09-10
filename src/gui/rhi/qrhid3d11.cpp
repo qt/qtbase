@@ -267,9 +267,19 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     return true;
 }
 
+void QRhiD3D11::clearShaderCache()
+{
+    for (Shader &s : m_shaderCache)
+        s.s->Release();
+
+    m_shaderCache.clear();
+}
+
 void QRhiD3D11::destroy()
 {
     finishActiveReadbacks();
+
+    clearShaderCache();
 
     if (annotations) {
         annotations->Release();
@@ -459,6 +469,11 @@ void QRhiD3D11::sendVMemStatsToProfiler()
 void QRhiD3D11::makeThreadLocalNativeContextCurrent()
 {
     // nothing to do here
+}
+
+void QRhiD3D11::releaseCachedResources()
+{
+    clearShaderCache();
 }
 
 QRhiRenderBuffer *QRhiD3D11::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -3408,30 +3423,57 @@ bool QD3D11GraphicsPipeline::build()
 
     QByteArray vsByteCode;
     for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
-        QString error;
-        QByteArray bytecode = compileHlslShaderSource(shaderStage.shader(), shaderStage.shaderVariant(), &error);
-        if (bytecode.isEmpty()) {
-            qWarning("HLSL shader compilation failed: %s", qPrintable(error));
-            return false;
-        }
-        switch (shaderStage.type()) {
-        case QRhiShaderStage::Vertex:
-            hr = rhiD->dev->CreateVertexShader(bytecode.constData(), bytecode.size(), nullptr, &vs);
-            if (FAILED(hr)) {
-                qWarning("Failed to create vertex shader: %s", qPrintable(comErrorMessage(hr)));
+        auto cacheIt = rhiD->m_shaderCache.constFind(shaderStage);
+        if (cacheIt != rhiD->m_shaderCache.constEnd()) {
+            switch (shaderStage.type()) {
+            case QRhiShaderStage::Vertex:
+                vs = static_cast<ID3D11VertexShader *>(cacheIt->s);
+                vs->AddRef();
+                vsByteCode = cacheIt->bytecode;
+                break;
+            case QRhiShaderStage::Fragment:
+                fs = static_cast<ID3D11PixelShader *>(cacheIt->s);
+                fs->AddRef();
+                break;
+            default:
+                break;
+            }
+        } else {
+            QString error;
+            const QByteArray bytecode = compileHlslShaderSource(shaderStage.shader(), shaderStage.shaderVariant(), &error);
+            if (bytecode.isEmpty()) {
+                qWarning("HLSL shader compilation failed: %s", qPrintable(error));
                 return false;
             }
-            vsByteCode = bytecode;
-            break;
-        case QRhiShaderStage::Fragment:
-            hr = rhiD->dev->CreatePixelShader(bytecode.constData(), bytecode.size(), nullptr, &fs);
-            if (FAILED(hr)) {
-                qWarning("Failed to create pixel shader: %s", qPrintable(comErrorMessage(hr)));
-                return false;
+
+            if (rhiD->m_shaderCache.count() >= QRhiD3D11::MAX_SHADER_CACHE_ENTRIES) {
+                // Use the simplest strategy: too many cached shaders -> drop them all.
+                rhiD->clearShaderCache();
             }
-            break;
-        default:
-            break;
+
+            switch (shaderStage.type()) {
+            case QRhiShaderStage::Vertex:
+                hr = rhiD->dev->CreateVertexShader(bytecode.constData(), bytecode.size(), nullptr, &vs);
+                if (FAILED(hr)) {
+                    qWarning("Failed to create vertex shader: %s", qPrintable(comErrorMessage(hr)));
+                    return false;
+                }
+                vsByteCode = bytecode;
+                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(vs, bytecode));
+                vs->AddRef();
+                break;
+            case QRhiShaderStage::Fragment:
+                hr = rhiD->dev->CreatePixelShader(bytecode.constData(), bytecode.size(), nullptr, &fs);
+                if (FAILED(hr)) {
+                    qWarning("Failed to create pixel shader: %s", qPrintable(comErrorMessage(hr)));
+                    return false;
+                }
+                rhiD->m_shaderCache.insert(shaderStage, QRhiD3D11::Shader(fs, bytecode));
+                fs->AddRef();
+                break;
+            default:
+                break;
+            }
         }
     }
 
@@ -3501,18 +3543,30 @@ bool QD3D11ComputePipeline::build()
 
     QRHI_RES_RHI(QRhiD3D11);
 
-    QString error;
-    QByteArray bytecode = compileHlslShaderSource(m_shaderStage.shader(), m_shaderStage.shaderVariant(), &error);
-    if (bytecode.isEmpty()) {
-        qWarning("HLSL compute shader compilation failed: %s", qPrintable(error));
-        return false;
+    auto cacheIt = rhiD->m_shaderCache.constFind(m_shaderStage);
+    if (cacheIt != rhiD->m_shaderCache.constEnd()) {
+        cs = static_cast<ID3D11ComputeShader *>(cacheIt->s);
+    } else {
+        QString error;
+        const QByteArray bytecode = compileHlslShaderSource(m_shaderStage.shader(), m_shaderStage.shaderVariant(), &error);
+        if (bytecode.isEmpty()) {
+            qWarning("HLSL compute shader compilation failed: %s", qPrintable(error));
+            return false;
+        }
+
+        HRESULT hr = rhiD->dev->CreateComputeShader(bytecode.constData(), bytecode.size(), nullptr, &cs);
+        if (FAILED(hr)) {
+            qWarning("Failed to create compute shader: %s", qPrintable(comErrorMessage(hr)));
+            return false;
+        }
+
+        if (rhiD->m_shaderCache.count() >= QRhiD3D11::MAX_SHADER_CACHE_ENTRIES)
+            rhiD->clearShaderCache();
+
+        rhiD->m_shaderCache.insert(m_shaderStage, QRhiD3D11::Shader(cs, bytecode));
     }
 
-    HRESULT hr = rhiD->dev->CreateComputeShader(bytecode.constData(), bytecode.size(), nullptr, &cs);
-    if (FAILED(hr)) {
-        qWarning("Failed to create compute shader: %s", qPrintable(comErrorMessage(hr)));
-        return false;
-    }
+    cs->AddRef();
 
     generation += 1;
     rhiD->registerResource(this);

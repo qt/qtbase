@@ -48,6 +48,7 @@ using namespace QRoundingDown;
 
 /*!
   \since 5.14
+  \internal
 
   \class QIslamicCivilCalendar
   \inmodule QtCore
@@ -67,7 +68,7 @@ using namespace QRoundingDown;
   long. Its determination of leap years follows a 30-year cycle, in each of
   which the years 2, 5, 7, 10, 13, 16, 18, 21, 24, 26 and 29 are leap years.
 
-  \sa QJijriCalendar, QCalendar
+  \sa QHijriCalendar, QCalendar
 */
 
 QIslamicCivilCalendar::QIslamicCivilCalendar()

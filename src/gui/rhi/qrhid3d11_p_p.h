@@ -632,6 +632,7 @@ public:
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
     void makeThreadLocalNativeContextCurrent() override;
+    void releaseCachedResources() override;
 
     void enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,
                              int layer, int level, const QRhiTextureSubresourceUploadDescription &subresDesc);
@@ -646,6 +647,7 @@ public:
     DXGI_SAMPLE_DESC effectiveSampleCount(int sampleCount) const;
     void finishActiveReadbacks();
     void reportLiveObjects(ID3D11Device *device);
+    void clearShaderCache();
 
     bool debugLayer = false;
     bool importedDevice = false;
@@ -684,6 +686,14 @@ public:
         QRhiTexture::Format format;
     };
     QVector<ActiveReadback> activeReadbacks;
+
+    struct Shader {
+        Shader() = default;
+        Shader(IUnknown *s, const QByteArray &bytecode) : s(s), bytecode(bytecode) { }
+        IUnknown *s;
+        QByteArray bytecode;
+    };
+    QHash<QRhiShaderStage, Shader> m_shaderCache;
 };
 
 Q_DECLARE_TYPEINFO(QRhiD3D11::ActiveReadback, Q_MOVABLE_TYPE);

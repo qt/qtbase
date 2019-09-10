@@ -712,6 +712,7 @@ public:
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
     void makeThreadLocalNativeContextCurrent() override;
+    void releaseCachedResources() override;
 
     VkResult createDescriptorPool(VkDescriptorPool *pool);
     bool allocateDescriptorSet(VkDescriptorSetAllocateInfo *allocInfo, VkDescriptorSet *result, int *resultPoolIndex);
