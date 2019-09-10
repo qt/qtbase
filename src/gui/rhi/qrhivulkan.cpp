@@ -3744,6 +3744,11 @@ void QRhiVulkan::makeThreadLocalNativeContextCurrent()
     // nothing to do here
 }
 
+void QRhiVulkan::releaseCachedResources()
+{
+    // nothing to do here
+}
+
 QRhiRenderBuffer *QRhiVulkan::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
                                                  int sampleCount, QRhiRenderBuffer::Flags flags)
 {

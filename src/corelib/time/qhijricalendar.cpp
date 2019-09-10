@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \since 5.14
+  \internal
 
   \class QHijriCalendar
   \inmodule QtCore

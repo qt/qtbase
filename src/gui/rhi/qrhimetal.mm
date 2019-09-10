@@ -138,6 +138,20 @@ QT_BEGIN_NAMESPACE
     \l{QRhiCommandBuffer::endPass()}.
  */
 
+struct QMetalShader
+{
+    id<MTLLibrary> lib = nil;
+    id<MTLFunction> func = nil;
+    std::array<uint, 3> localSize;
+
+    void release() {
+        [lib release];
+        lib = nil;
+        [func release];
+        func = nil;
+    }
+};
+
 struct QRhiMetalData
 {
     QRhiMetalData(QRhiImplementation *rhi) : ofr(rhi) { }
@@ -206,6 +220,8 @@ struct QRhiMetalData
     API_AVAILABLE(macos(10.13), ios(11.0)) id<MTLCaptureScope> captureScope = nil;
 
     static const int TEXBUF_ALIGN = 256; // probably not accurate
+
+    QHash<QRhiShaderStage, QMetalShader> shaderCache;
 };
 
 Q_DECLARE_TYPEINFO(QRhiMetalData::DeferredReleaseEntry, Q_MOVABLE_TYPE);
@@ -289,17 +305,14 @@ struct QMetalGraphicsPipelineData
     MTLPrimitiveType primitiveType;
     MTLWinding winding;
     MTLCullMode cullMode;
-    id<MTLLibrary> vsLib = nil;
-    id<MTLFunction> vsFunc = nil;
-    id<MTLLibrary> fsLib = nil;
-    id<MTLFunction> fsFunc = nil;
+    QMetalShader vs;
+    QMetalShader fs;
 };
 
 struct QMetalComputePipelineData
 {
     id<MTLComputePipelineState> ps = nil;
-    id<MTLLibrary> csLib = nil;
-    id<MTLFunction> csFunc = nil;
+    QMetalShader cs;
     MTLSize localSize;
 };
 
@@ -403,6 +416,10 @@ void QRhiMetal::destroy()
 {
     executeDeferredReleases(true);
     finishActiveReadbacks(true);
+
+    for (QMetalShader &s : d->shaderCache)
+        s.release();
+    d->shaderCache.clear();
 
     if (@available(macOS 10.13, iOS 11.0, *)) {
         [d->captureScope release];
@@ -568,6 +585,14 @@ void QRhiMetal::sendVMemStatsToProfiler()
 void QRhiMetal::makeThreadLocalNativeContextCurrent()
 {
     // nothing to do here
+}
+
+void QRhiMetal::releaseCachedResources()
+{
+    for (QMetalShader &s : d->shaderCache)
+        s.release();
+
+    d->shaderCache.clear();
 }
 
 QRhiRenderBuffer *QRhiMetal::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -2843,36 +2868,17 @@ void QMetalGraphicsPipeline::release()
 {
     QRHI_RES_RHI(QRhiMetal);
 
+    d->vs.release();
+    d->fs.release();
+
+    [d->ds release];
+    d->ds = nil;
+
     if (!d->ps)
         return;
 
-    if (d->ps) {
-        [d->ps release];
-        d->ps = nil;
-    }
-
-    if (d->ds) {
-        [d->ds release];
-        d->ds = nil;
-    }
-
-    if (d->vsFunc) {
-        [d->vsFunc release];
-        d->vsFunc = nil;
-    }
-    if (d->vsLib) {
-        [d->vsLib release];
-        d->vsLib = nil;
-    }
-
-    if (d->fsFunc) {
-        [d->fsFunc release];
-        d->fsFunc = nil;
-    }
-    if (d->fsLib) {
-        [d->fsLib release];
-        d->fsLib = nil;
-    }
+    [d->ps release];
+    d->ps = nil;
 
     rhiD->unregisterResource(this);
 }
@@ -3159,34 +3165,66 @@ bool QMetalGraphicsPipeline::build()
     // buffers not just the resource binding layout) so leave it at the default
 
     for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
-        QString error;
-        QByteArray entryPoint;
-        id<MTLLibrary> lib = rhiD->d->createMetalLib(shaderStage.shader(), shaderStage.shaderVariant(), &error, &entryPoint);
-        if (!lib) {
-            qWarning("MSL shader compilation failed: %s", qPrintable(error));
-            return false;
-        }
-        id<MTLFunction> func = rhiD->d->createMSLShaderFunction(lib, entryPoint);
-        if (!func) {
-            qWarning("MSL function for entry point %s not found", entryPoint.constData());
-            [lib release];
-            return false;
-        }
-        switch (shaderStage.type()) {
-        case QRhiShaderStage::Vertex:
-            rpDesc.vertexFunction = func;
-            d->vsLib = lib;
-            d->vsFunc = func;
-            break;
-        case QRhiShaderStage::Fragment:
-            rpDesc.fragmentFunction = func;
-            d->fsLib = lib;
-            d->fsFunc = func;
-            break;
-        default:
-            [func release];
-            [lib release];
-            break;
+        auto cacheIt = rhiD->d->shaderCache.constFind(shaderStage);
+        if (cacheIt != rhiD->d->shaderCache.constEnd()) {
+            switch (shaderStage.type()) {
+            case QRhiShaderStage::Vertex:
+                d->vs = *cacheIt;
+                [d->vs.lib retain];
+                [d->vs.func retain];
+                rpDesc.vertexFunction = d->vs.func;
+                break;
+            case QRhiShaderStage::Fragment:
+                d->fs = *cacheIt;
+                [d->fs.lib retain];
+                [d->fs.func retain];
+                rpDesc.fragmentFunction = d->fs.func;
+                break;
+            default:
+                break;
+            }
+        } else {
+            QString error;
+            QByteArray entryPoint;
+            id<MTLLibrary> lib = rhiD->d->createMetalLib(shaderStage.shader(), shaderStage.shaderVariant(), &error, &entryPoint);
+            if (!lib) {
+                qWarning("MSL shader compilation failed: %s", qPrintable(error));
+                return false;
+            }
+            id<MTLFunction> func = rhiD->d->createMSLShaderFunction(lib, entryPoint);
+            if (!func) {
+                qWarning("MSL function for entry point %s not found", entryPoint.constData());
+                [lib release];
+                return false;
+            }
+            if (rhiD->d->shaderCache.count() >= QRhiMetal::MAX_SHADER_CACHE_ENTRIES) {
+                // Use the simplest strategy: too many cached shaders -> drop them all.
+                for (QMetalShader &s : rhiD->d->shaderCache)
+                    s.release();
+                rhiD->d->shaderCache.clear();
+            }
+            switch (shaderStage.type()) {
+            case QRhiShaderStage::Vertex:
+                d->vs.lib = lib;
+                d->vs.func = func;
+                rhiD->d->shaderCache.insert(shaderStage, d->vs);
+                [d->vs.lib retain];
+                [d->vs.func retain];
+                rpDesc.vertexFunction = func;
+                break;
+            case QRhiShaderStage::Fragment:
+                d->fs.lib = lib;
+                d->fs.func = func;
+                rhiD->d->shaderCache.insert(shaderStage, d->fs);
+                [d->fs.lib retain];
+                [d->fs.func retain];
+                rpDesc.fragmentFunction = func;
+                break;
+            default:
+                [func release];
+                [lib release];
+                break;
+            }
         }
     }
 
@@ -3286,22 +3324,13 @@ void QMetalComputePipeline::release()
 {
     QRHI_RES_RHI(QRhiMetal);
 
-    if (d->csFunc) {
-        [d->csFunc release];
-        d->csFunc = nil;
-    }
-    if (d->csLib) {
-        [d->csLib release];
-        d->csLib = nil;
-    }
+    d->cs.release();
 
     if (!d->ps)
         return;
 
-    if (d->ps) {
-        [d->ps release];
-        d->ps = nil;
-    }
+    [d->ps release];
+    d->ps = nil;
 
     rhiD->unregisterResource(this);
 }
@@ -3313,28 +3342,44 @@ bool QMetalComputePipeline::build()
 
     QRHI_RES_RHI(QRhiMetal);
 
-    const QShader shader = m_shaderStage.shader();
-    QString error;
-    QByteArray entryPoint;
-    id<MTLLibrary> lib = rhiD->d->createMetalLib(shader, m_shaderStage.shaderVariant(),
-                                                 &error, &entryPoint);
-    if (!lib) {
-        qWarning("MSL shader compilation failed: %s", qPrintable(error));
-        return false;
+    auto cacheIt = rhiD->d->shaderCache.constFind(m_shaderStage);
+    if (cacheIt != rhiD->d->shaderCache.constEnd()) {
+        d->cs = *cacheIt;
+    } else {
+        const QShader shader = m_shaderStage.shader();
+        QString error;
+        QByteArray entryPoint;
+        id<MTLLibrary> lib = rhiD->d->createMetalLib(shader, m_shaderStage.shaderVariant(),
+                                                     &error, &entryPoint);
+        if (!lib) {
+            qWarning("MSL shader compilation failed: %s", qPrintable(error));
+            return false;
+        }
+        id<MTLFunction> func = rhiD->d->createMSLShaderFunction(lib, entryPoint);
+        if (!func) {
+            qWarning("MSL function for entry point %s not found", entryPoint.constData());
+            [lib release];
+            return false;
+        }
+        d->cs.lib = lib;
+        d->cs.func = func;
+        d->cs.localSize = shader.description().computeShaderLocalSize();
+
+        if (rhiD->d->shaderCache.count() >= QRhiMetal::MAX_SHADER_CACHE_ENTRIES) {
+            for (QMetalShader &s : rhiD->d->shaderCache)
+                s.release();
+            rhiD->d->shaderCache.clear();
+        }
+        rhiD->d->shaderCache.insert(m_shaderStage, d->cs);
     }
-    id<MTLFunction> func = rhiD->d->createMSLShaderFunction(lib, entryPoint);
-    if (!func) {
-        qWarning("MSL function for entry point %s not found", entryPoint.constData());
-        [lib release];
-        return false;
-    }
-    d->csLib = lib;
-    d->csFunc = func;
-    std::array<uint, 3> localSize = shader.description().computeShaderLocalSize();
-    d->localSize = MTLSizeMake(localSize[0], localSize[1], localSize[2]);
+
+    [d->cs.lib retain];
+    [d->cs.func retain];
+
+    d->localSize = MTLSizeMake(d->cs.localSize[0], d->cs.localSize[1], d->cs.localSize[2]);
 
     NSError *err = nil;
-    d->ps = [rhiD->d->dev newComputePipelineStateWithFunction: d->csFunc error: &err];
+    d->ps = [rhiD->d->dev newComputePipelineStateWithFunction: d->cs.func error: &err];
     if (!d->ps) {
         const QString msg = QString::fromNSString(err.localizedDescription);
         qWarning("Failed to create render pipeline state: %s", qPrintable(msg));

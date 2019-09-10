@@ -665,6 +665,7 @@ public:
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
     void makeThreadLocalNativeContextCurrent() override;
+    void releaseCachedResources() override;
 
     bool ensureContext(QSurface *surface = nullptr) const;
     void executeDeferredReleases();
@@ -804,6 +805,8 @@ public:
         bool active = false;
         QGles2CommandBuffer cbWrapper;
     } ofr;
+
+    QHash<QRhiShaderStage, uint> m_shaderCache;
 };
 
 Q_DECLARE_TYPEINFO(QRhiGles2::DeferredReleaseEntry, Q_MOVABLE_TYPE);

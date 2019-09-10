@@ -417,6 +417,7 @@ public:
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
     void makeThreadLocalNativeContextCurrent() override;
+    void releaseCachedResources() override;
 
     void executeDeferredReleases(bool forced = false);
     void finishActiveReadbacks(bool forced = false);

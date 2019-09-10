@@ -2067,8 +2067,9 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
     \enum QTextDocument::ResourceType
 
     This enum describes the types of resources that can be loaded by
-    QTextDocument's loadResource() function.
+    QTextDocument's loadResource() function or by QTextBrowser::setSource().
 
+    \value UnknownResource No resource is loaded, or the resource type is not known.
     \value HtmlResource  The resource contains HTML.
     \value ImageResource The resource contains image data.
                          Currently supported data types are QVariant::Pixmap and
@@ -2082,7 +2083,7 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
     \value UserResource  The first available value for user defined
                          resource types.
 
-    \sa loadResource()
+    \sa loadResource(), QTextBrowser::sourceType()
 */
 
 /*!

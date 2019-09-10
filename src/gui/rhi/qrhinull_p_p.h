@@ -283,6 +283,7 @@ public:
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
     void makeThreadLocalNativeContextCurrent() override;
+    void releaseCachedResources() override;
 
     QRhiNullNativeHandles nativeHandlesStruct;
     QRhiSwapChain *currentSwapChain = nullptr;

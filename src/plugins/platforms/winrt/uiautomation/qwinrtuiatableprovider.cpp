@@ -51,6 +51,8 @@
 #include <QtCore/QString>
 #include <QtCore/private/qeventdispatcher_winrt_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QWinRTUiAutomation;
@@ -91,10 +93,9 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaTableProvider::GetColumnHeaders(UINT32 *retur
     *returnValue = nullptr;
 
     auto accid = id();
-    auto elementIds = QSharedPointer<QList<QAccessible::Id>>(new QList<QAccessible::Id>);
-    auto ptrElementIds = new QSharedPointer<QList<QAccessible::Id>>(elementIds);
+    auto elementIds = std::make_shared<QVarLengthArray<QAccessible::Id>>();
 
-    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, ptrElementIds]() {
+    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, elementIds]() {
         if (QAccessibleInterface *accessible = accessibleForId(accid)) {
             if (QAccessibleTableInterface *tableInterface = accessible->tableInterface()) {
                 for (int i = 0; i < tableInterface->columnCount(); ++i) {
@@ -105,14 +106,13 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaTableProvider::GetColumnHeaders(UINT32 *retur
                             for (auto header : qAsConst(headers)) {
                                 QAccessible::Id headerId = idForAccessible(header);
                                 QWinRTUiaMetadataCache::instance()->load(headerId);
-                                (*ptrElementIds)->append(headerId);
+                                elementIds->append(headerId);
                             }
                         }
                     }
                 }
             }
         }
-        delete ptrElementIds;
         return S_OK;
     }))) {
         return E_FAIL;
@@ -132,10 +132,9 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaTableProvider::GetRowHeaders(UINT32 *returnVa
     *returnValue = nullptr;
 
     auto accid = id();
-    auto elementIds = QSharedPointer<QList<QAccessible::Id>>(new QList<QAccessible::Id>);
-    auto ptrElementIds = new QSharedPointer<QList<QAccessible::Id>>(elementIds);
+    auto elementIds = std::make_shared<QVarLengthArray<QAccessible::Id>>();
 
-    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, ptrElementIds]() {
+    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, elementIds]() {
         if (QAccessibleInterface *accessible = accessibleForId(accid)) {
             if (QAccessibleTableInterface *tableInterface = accessible->tableInterface()) {
                 for (int i = 0; i < tableInterface->rowCount(); ++i) {
@@ -146,14 +145,13 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaTableProvider::GetRowHeaders(UINT32 *returnVa
                             for (auto header : qAsConst(headers)) {
                                 QAccessible::Id headerId = idForAccessible(header);
                                 QWinRTUiaMetadataCache::instance()->load(headerId);
-                                (*ptrElementIds)->append(headerId);
+                                elementIds->append(headerId);
                             }
                         }
                     }
                 }
             }
         }
-        delete ptrElementIds;
         return S_OK;
     }))) {
         return E_FAIL;
