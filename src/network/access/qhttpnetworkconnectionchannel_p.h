@@ -123,10 +123,7 @@ public:
     bool authenticationCredentialsSent;
     bool proxyCredentialsSent;
     QScopedPointer<QAbstractProtocolHandler> protocolHandler;
-    // SPDY or HTTP/2 requests; SPDY is TLS-only, but
-    // HTTP/2 can be cleartext also, that's why it's
-    // outside of QT_NO_SSL section. Sorted by priority:
-    QMultiMap<int, HttpMessagePair> spdyRequestsToSend;
+    QMultiMap<int, HttpMessagePair> h2RequestsToSend;
     bool switchedToHttp2 = false;
 #ifndef QT_NO_SSL
     bool ignoreAllSslErrors;
@@ -135,7 +132,7 @@ public:
     void ignoreSslErrors();
     void ignoreSslErrors(const QList<QSslError> &errors);
     void setSslConfiguration(const QSslConfiguration &config);
-    void requeueSpdyRequests(); // when we wanted SPDY but got HTTP
+    void requeueHttp2Requests(); // when we wanted HTTP/2 but got HTTP/1.1
 #endif
     // to emit the signal for all in-flight replies:
     void emitFinishedWithError(QNetworkReply::NetworkError error, const char *message);

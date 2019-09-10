@@ -188,7 +188,6 @@ public:
     NextProtocolNegotiationStatus nextProtocolNegotiationStatus() const;
 
     static const char ALPNProtocolHTTP2[];
-    static const char NextProtocolSpdy3_0[];
     static const char NextProtocolHttp1_1[];
 
 private:

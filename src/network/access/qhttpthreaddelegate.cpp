@@ -236,7 +236,7 @@ QHttpThreadDelegate::QHttpThreadDelegate(QObject *parent) :
     , synchronous(false)
     , incomingStatusCode(0)
     , isPipeliningUsed(false)
-    , isSpdyUsed(false)
+    , isHttp2Used(false)
     , incomingContentLength(-1)
     , removedContentLength(-1)
     , incomingErrorCode(QNetworkReply::NoError)
@@ -319,17 +319,6 @@ void QHttpThreadDelegate::startRequest()
             urlCopy.setScheme(QStringLiteral("h2"));
         }
     }
-
-#ifndef QT_NO_SSL
-    if (!isH2 && httpRequest.isSPDYAllowed() && ssl) {
-        connectionType = QHttpNetworkConnection::ConnectionTypeSPDY;
-        urlCopy.setScheme(QStringLiteral("spdy")); // to differentiate SPDY requests from HTTPS requests
-        QList<QByteArray> nextProtocols;
-        nextProtocols << QSslConfiguration::NextProtocolSpdy3_0
-                      << QSslConfiguration::NextProtocolHttp1_1;
-        incomingSslConfiguration->setAllowedNextProtocols(nextProtocols);
-    }
-#endif // QT_NO_SSL
 
 #ifndef QT_NO_NETWORKPROXY
     if (transparentProxy.type() != QNetworkProxy::NoProxy)
@@ -652,7 +641,7 @@ void QHttpThreadDelegate::headerChangedSlot()
     isPipeliningUsed = httpReply->isPipeliningUsed();
     incomingContentLength = httpReply->contentLength();
     removedContentLength = httpReply->removedContentLength();
-    isSpdyUsed = httpReply->isSpdyUsed();
+    isHttp2Used = httpReply->isHttp2Used();
 
     emit downloadMetaData(incomingHeaders,
                           incomingStatusCode,
@@ -661,7 +650,7 @@ void QHttpThreadDelegate::headerChangedSlot()
                           downloadBuffer,
                           incomingContentLength,
                           removedContentLength,
-                          isSpdyUsed);
+                          isHttp2Used);
 }
 
 void QHttpThreadDelegate::synchronousHeaderChangedSlot()
@@ -677,7 +666,7 @@ void QHttpThreadDelegate::synchronousHeaderChangedSlot()
     incomingStatusCode = httpReply->statusCode();
     incomingReasonPhrase = httpReply->reasonPhrase();
     isPipeliningUsed = httpReply->isPipeliningUsed();
-    isSpdyUsed = httpReply->isSpdyUsed();
+    isHttp2Used = httpReply->isHttp2Used();
     incomingContentLength = httpReply->contentLength();
 }
 

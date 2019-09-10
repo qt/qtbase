@@ -272,18 +272,6 @@ QT_BEGIN_NAMESPACE
         The QNetworkSession ConnectInBackground property will be set according to
         this attribute.
 
-    \value SpdyAllowedAttribute
-        Requests only, type: QMetaType::Bool (default: false)
-        Indicates whether the QNetworkAccessManager code is
-        allowed to use SPDY with this request. This applies only
-        to SSL requests, and depends on the server supporting SPDY.
-        Obsolete, use Http2 instead of Spdy.
-
-    \value SpdyWasUsedAttribute
-        Replies only, type: QMetaType::Bool
-        Indicates whether SPDY was used for receiving
-        this reply. Obsolete, use Http2 instead of Spdy.
-
     \value Http2AllowedAttribute
         Requests only, type: QMetaType::Bool (default: false)
         Indicates whether the QNetworkAccessManager code is
@@ -294,12 +282,6 @@ QT_BEGIN_NAMESPACE
         Replies only, type: QMetaType::Bool (default: false)
         Indicates whether HTTP/2 was used for receiving this reply.
         (This value was introduced in 5.9.)
-
-    \value HTTP2AllowedAttribute
-        Obsolete alias for Http2AllowedAttribute.
-
-    \value HTTP2WasUsedAttribute
-        Obsolete alias for Http2WasUsedAttribute.
 
     \value EmitAllUploadProgressSignalsAttribute
         Requests only, type: QMetaType::Bool (default: false)

@@ -114,11 +114,4 @@ qtConfig(http) {
         access/qhttpthreaddelegate_p.h \
         access/qnetworkreplyhttpimpl_p.h \
         access/qhttp2configuration.h
-
-    qtConfig(ssl) {
-        SOURCES += \
-            access/qspdyprotocolhandler.cpp
-        HEADERS += \
-            access/qspdyprotocolhandler_p.h
-    }
 }

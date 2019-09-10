@@ -112,7 +112,7 @@ public:
     int incomingStatusCode;
     QString incomingReasonPhrase;
     bool isPipeliningUsed;
-    bool isSpdyUsed;
+    bool isHttp2Used;
     qint64 incomingContentLength;
     qint64 removedContentLength;
     QNetworkReply::NetworkError incomingErrorCode;

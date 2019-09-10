@@ -332,13 +332,13 @@ bool QHttp2ProtocolHandler::sendRequest()
         // so we cannot create new streams.
         m_channel->emitFinishedWithError(QNetworkReply::ProtocolUnknownError,
                                          "GOAWAY received, cannot start a request");
-        m_channel->spdyRequestsToSend.clear();
+        m_channel->h2RequestsToSend.clear();
         return false;
     }
 
     // Process 'fake' (created by QNetworkAccessManager::connectToHostEncrypted())
     // requests first:
-    auto &requests = m_channel->spdyRequestsToSend;
+    auto &requests = m_channel->h2RequestsToSend;
     for (auto it = requests.begin(), endIt = requests.end(); it != endIt;) {
         const auto &pair = *it;
         const QString scheme(pair.first.url().scheme());
@@ -862,7 +862,7 @@ void QHttp2ProtocolHandler::handleGOAWAY()
     m_channel->emitFinishedWithError(QNetworkReply::ProtocolUnknownError,
                                      "GOAWAY received, cannot start a request");
     // Also, prevent further calls to sendRequest:
-    m_channel->spdyRequestsToSend.clear();
+    m_channel->h2RequestsToSend.clear();
 
     QNetworkReply::NetworkError error = QNetworkReply::NoError;
     QString message;
@@ -1281,7 +1281,7 @@ quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message, b
     const auto replyPrivate = reply->d_func();
     replyPrivate->connection = m_connection;
     replyPrivate->connectionChannel = m_channel;
-    reply->setSpdyWasUsed(true);
+    reply->setHttp2WasUsed(true);
     streamIDs.insert(reply, newStreamID);
     connect(reply, SIGNAL(destroyed(QObject*)),
             this, SLOT(_q_replyDestroyed(QObject*)));
@@ -1390,7 +1390,7 @@ void QHttp2ProtocolHandler::deleteActiveStream(quint32 streamID)
     }
 
     removeFromSuspended(streamID);
-    if (m_channel->spdyRequestsToSend.size())
+    if (m_channel->h2RequestsToSend.size())
         QMetaObject::invokeMethod(this, "sendRequest", Qt::QueuedConnection);
 }
 
@@ -1509,7 +1509,7 @@ void QHttp2ProtocolHandler::initReplyFromPushPromise(const HttpMessagePair &mess
     Q_ASSERT(promisedData.contains(cacheKey));
     auto promise = promisedData.take(cacheKey);
     Q_ASSERT(message.second);
-    message.second->setSpdyWasUsed(true);
+    message.second->setHttp2WasUsed(true);
 
     qCDebug(QT_HTTP2) << "found cached/promised response on stream" << promise.reservedID;
 

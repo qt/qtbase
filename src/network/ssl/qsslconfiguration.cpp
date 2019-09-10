@@ -54,7 +54,6 @@ const QSsl::SslOptions QSslConfigurationPrivate::defaultSslOptions = QSsl::SslOp
                                                                     |QSsl::SslOptionDisableSessionPersistence;
 
 const char QSslConfiguration::ALPNProtocolHTTP2[] = "h2";
-const char QSslConfiguration::NextProtocolSpdy3_0[] = "spdy/3";
 const char QSslConfiguration::NextProtocolHttp1_1[] = "http/1.1";
 
 /*!
@@ -131,12 +130,6 @@ const char QSslConfiguration::NextProtocolHttp1_1[] = "http/1.1";
 
     \value NextProtocolNegotiationUnsupported The client and
     server could not agree on a common next application protocol.
-*/
-
-/*!
-    \variable QSslConfiguration::NextProtocolSpdy3_0
-    \brief The value used for negotiating SPDY 3.0 during the Next
-    Protocol Negotiation.
 */
 
 /*!
@@ -967,7 +960,7 @@ QByteArray QSslConfiguration::nextNegotiatedProtocol() const
   Whether or not the negotiation succeeded can be queried through
   nextProtocolNegotiationStatus().
 
-  \sa nextNegotiatedProtocol(), nextProtocolNegotiationStatus(), allowedNextProtocols(), QSslConfiguration::NextProtocolSpdy3_0, QSslConfiguration::NextProtocolHttp1_1
+  \sa nextNegotiatedProtocol(), nextProtocolNegotiationStatus(), allowedNextProtocols(), QSslConfiguration::NextProtocolHttp1_1
  */
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void QSslConfiguration::setAllowedNextProtocols(const QList<QByteArray> &protocols)
@@ -985,7 +978,7 @@ void QSslConfiguration::setAllowedNextProtocols(QList<QByteArray> protocols)
   server through the Next Protocol Negotiation (NPN) or Application-Layer
   Protocol Negotiation (ALPN) TLS extension, as set by setAllowedNextProtocols().
 
-  \sa nextNegotiatedProtocol(), nextProtocolNegotiationStatus(), setAllowedNextProtocols(), QSslConfiguration::NextProtocolSpdy3_0, QSslConfiguration::NextProtocolHttp1_1
+  \sa nextNegotiatedProtocol(), nextProtocolNegotiationStatus(), setAllowedNextProtocols(), QSslConfiguration::NextProtocolHttp1_1
  */
 QList<QByteArray> QSslConfiguration::allowedNextProtocols() const
 {
