@@ -1480,7 +1480,8 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             cmd.cmd = QGles2CommandBuffer::Command::ReadPixels;
             cmd.args.readPixels.result = u.read.result;
             QGles2Texture *texD = QRHI_RES(QGles2Texture, u.read.rb.texture());
-            trackedImageBarrier(cbD, texD, QGles2Texture::AccessRead);
+            if (texD)
+                trackedImageBarrier(cbD, texD, QGles2Texture::AccessRead);
             cmd.args.readPixels.texture = texD ? texD->texture : 0;
             if (texD) {
                 cmd.args.readPixels.w = texD->m_pixelSize.width();
