@@ -48,6 +48,7 @@
 #include "qreadwritelock_p.h"
 #include "qelapsedtimer.h"
 #include "private/qfreelist_p.h"
+#include "private/qlocking_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -262,7 +263,7 @@ bool QReadWriteLock::tryLockForRead(int timeout)
         if (d->recursive)
             return d->recursiveLockForRead(timeout);
 
-        QMutexLocker lock(&d->mutex);
+        auto lock = qt_unique_lock(d->mutex);
         if (d != d_ptr.loadRelaxed()) {
             // d_ptr has changed: this QReadWriteLock was unlocked before we had
             // time to lock d->mutex.
@@ -369,7 +370,7 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
         if (d->recursive)
             return d->recursiveLockForWrite(timeout);
 
-        QMutexLocker lock(&d->mutex);
+        auto lock = qt_unique_lock(d->mutex);
         if (d != d_ptr.loadRelaxed()) {
             // The mutex was unlocked before we had time to lock the mutex.
             // We are holding to a mutex within a QReadWriteLockPrivate that is already released
@@ -418,7 +419,7 @@ void QReadWriteLock::unlock()
             return;
         }
 
-        QMutexLocker locker(&d->mutex);
+        const auto lock = qt_scoped_lock(d->mutex);
         if (d->writerCount) {
             Q_ASSERT(d->writerCount == 1);
             Q_ASSERT(d->readerCount == 0);
@@ -536,7 +537,7 @@ void QReadWriteLockPrivate::unlock()
 bool QReadWriteLockPrivate::recursiveLockForRead(int timeout)
 {
     Q_ASSERT(recursive);
-    QMutexLocker lock(&mutex);
+    auto lock = qt_unique_lock(mutex);
 
     Qt::HANDLE self = QThread::currentThreadId();
 
@@ -556,7 +557,7 @@ bool QReadWriteLockPrivate::recursiveLockForRead(int timeout)
 bool QReadWriteLockPrivate::recursiveLockForWrite(int timeout)
 {
     Q_ASSERT(recursive);
-    QMutexLocker lock(&mutex);
+    auto lock = qt_unique_lock(mutex);
 
     Qt::HANDLE self = QThread::currentThreadId();
     if (currentWriter == self) {
@@ -574,7 +575,7 @@ bool QReadWriteLockPrivate::recursiveLockForWrite(int timeout)
 void QReadWriteLockPrivate::recursiveUnlock()
 {
     Q_ASSERT(recursive);
-    QMutexLocker lock(&mutex);
+    auto lock = qt_unique_lock(mutex);
 
     Qt::HANDLE self = QThread::currentThreadId();
     if (self == currentWriter) {
