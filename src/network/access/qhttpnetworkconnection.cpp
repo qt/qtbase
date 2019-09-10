@@ -1232,7 +1232,8 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
             emitReplyError(channels[0].socket, channels[0].reply, QNetworkReply::HostNotFoundError);
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
         } else if (connectionType == QHttpNetworkConnection::ConnectionTypeSPDY
-                   || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2) {
+                   || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
+                   || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
             for (const HttpMessagePair &spdyPair : qAsConst(channels[0].spdyRequestsToSend)) {
                 // emit error for all replies
                 QHttpNetworkReply *currentReply = spdyPair.second;
