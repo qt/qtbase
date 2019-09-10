@@ -666,6 +666,7 @@ public:
     void sendVMemStatsToProfiler() override;
     void makeThreadLocalNativeContextCurrent() override;
     void releaseCachedResources() override;
+    bool isDeviceLost() const override;
 
     bool ensureContext(QSurface *surface = nullptr) const;
     void executeDeferredReleases();

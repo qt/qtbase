@@ -1422,6 +1422,8 @@ public:
 
     void releaseCachedResources();
 
+    bool isDeviceLost() const;
+
 protected:
     QRhi();
 

@@ -713,6 +713,7 @@ public:
     void sendVMemStatsToProfiler() override;
     void makeThreadLocalNativeContextCurrent() override;
     void releaseCachedResources() override;
+    bool isDeviceLost() const override;
 
     VkResult createDescriptorPool(VkDescriptorPool *pool);
     bool allocateDescriptorSet(VkDescriptorSetAllocateInfo *allocInfo, VkDescriptorSet *result, int *resultPoolIndex);

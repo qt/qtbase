@@ -267,6 +267,8 @@ bool QRhiD3D11::create(QRhi::Flags flags)
     if (FAILED(context->QueryInterface(IID_ID3DUserDefinedAnnotation, reinterpret_cast<void **>(&annotations))))
         annotations = nullptr;
 
+    deviceLost = false;
+
     nativeHandlesStruct.dev = dev;
     nativeHandlesStruct.context = context;
 
@@ -485,6 +487,11 @@ void QRhiD3D11::makeThreadLocalNativeContextCurrent()
 void QRhiD3D11::releaseCachedResources()
 {
     clearShaderCache();
+}
+
+bool QRhiD3D11::isDeviceLost() const
+{
+    return deviceLost;
 }
 
 QRhiRenderBuffer *QRhiD3D11::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -1003,8 +1010,14 @@ QRhi::FrameOpResult QRhiD3D11::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     if (!flags.testFlag(QRhi::SkipPresent)) {
         const UINT presentFlags = 0;
         HRESULT hr = swapChainD->swapChain->Present(swapChainD->swapInterval, presentFlags);
-        if (FAILED(hr))
+        if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
+            qWarning("Device loss detected in Present()");
+            deviceLost = true;
+            return QRhi::FrameOpDeviceLost;
+        } else if (FAILED(hr)) {
             qWarning("Failed to present: %s", qPrintable(comErrorMessage(hr)));
+            return QRhi::FrameOpError;
+        }
 
         // move on to the next buffer
         swapChainD->currentFrameSlot = (swapChainD->currentFrameSlot + 1) % QD3D11SwapChain::BUFFER_COUNT;
@@ -3850,7 +3863,11 @@ bool QD3D11SwapChain::buildOrResize()
         const UINT count = useFlipDiscard ? BUFFER_COUNT : 1;
         HRESULT hr = swapChain->ResizeBuffers(count, UINT(pixelSize.width()), UINT(pixelSize.height()),
                                               colorFormat, swapChainFlags);
-        if (FAILED(hr)) {
+        if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
+            qWarning("Device loss detected in ResizeBuffers()");
+            rhiD->deviceLost = true;
+            return false;
+        } else if (FAILED(hr)) {
             qWarning("Failed to resize D3D11 swapchain: %s", qPrintable(comErrorMessage(hr)));
             return false;
         }

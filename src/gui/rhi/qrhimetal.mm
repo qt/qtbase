@@ -596,6 +596,11 @@ void QRhiMetal::releaseCachedResources()
     d->shaderCache.clear();
 }
 
+bool QRhiMetal::isDeviceLost() const
+{
+    return false;
+}
+
 QRhiRenderBuffer *QRhiMetal::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
                                                 int sampleCount, QRhiRenderBuffer::Flags flags)
 {

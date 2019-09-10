@@ -3750,6 +3750,11 @@ void QRhiVulkan::releaseCachedResources()
     // nothing to do here
 }
 
+bool QRhiVulkan::isDeviceLost() const
+{
+    return false;
+}
+
 QRhiRenderBuffer *QRhiVulkan::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
                                                  int sampleCount, QRhiRenderBuffer::Flags flags)
 {

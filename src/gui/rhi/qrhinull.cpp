@@ -179,6 +179,11 @@ void QRhiNull::releaseCachedResources()
     // nothing to do here
 }
 
+bool QRhiNull::isDeviceLost() const
+{
+    return false;
+}
+
 QRhiRenderBuffer *QRhiNull::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
                                                int sampleCount, QRhiRenderBuffer::Flags flags)
 {

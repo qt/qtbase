@@ -633,6 +633,7 @@ public:
     void sendVMemStatsToProfiler() override;
     void makeThreadLocalNativeContextCurrent() override;
     void releaseCachedResources() override;
+    bool isDeviceLost() const override;
 
     void enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,
                              int layer, int level, const QRhiTextureSubresourceUploadDescription &subresDesc);
@@ -658,6 +659,7 @@ public:
     IDXGIFactory1 *dxgiFactory = nullptr;
     bool hasDxgi2 = false;
     bool supportsFlipDiscardSwapchain = false;
+    bool deviceLost = false;
     QRhiD3D11NativeHandles nativeHandlesStruct;
 
     struct {

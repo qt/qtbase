@@ -284,6 +284,7 @@ public:
     void sendVMemStatsToProfiler() override;
     void makeThreadLocalNativeContextCurrent() override;
     void releaseCachedResources() override;
+    bool isDeviceLost() const override;
 
     QRhiNullNativeHandles nativeHandlesStruct;
     QRhiSwapChain *currentSwapChain = nullptr;

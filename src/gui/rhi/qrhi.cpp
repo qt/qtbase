@@ -455,7 +455,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
     \value FrameOpDeviceLost The graphics device was lost. This can be
     recoverable by attempting to repeat the operation (such as, beginFrame())
-    and releasing and reinitializing all objects backed by native graphics
+    after releasing and reinitializing all objects backed by native graphics
     resources.
  */
 
@@ -5043,6 +5043,47 @@ QRhiProfiler *QRhi::profiler()
 void QRhi::releaseCachedResources()
 {
     d->releaseCachedResources();
+}
+
+/*!
+    \return true if the graphics device was lost.
+
+    The loss of the device is typically detected in beginFrame(), endFrame() or
+    QRhiSwapChain::buildOrResize(), depending on the backend and the underlying
+    native APIs. The most common is endFrame() because that is where presenting
+    happens. With some backends QRhiSwapChain::buildOrResize() can also fail
+    due to a device loss. Therefore this function is provided as a generic way
+    to check if a device loss was detected by a previous operation.
+
+    When the device is lost, no further operations should be done via the QRhi.
+    Rather, all QRhi resources should be released, followed by destroying the
+    QRhi. A new QRhi can then be attempted to be created. If successful, all
+    graphics resources must be reinitialized. If not, try again later,
+    repeatedly.
+
+    While simple applications may decide to not care about device loss,
+    on the commonly used desktop platforms a device loss can happen
+    due to a variety of reasons, including physically disconnecting the
+    graphics adapter, disabling the device or driver, uninstalling or upgrading
+    the graphics driver, or due to errors that lead to a graphics device reset.
+    Some of these can happen under perfectly normal circumstances as well, for
+    example the upgrade of the graphics driver to a newer version is a common
+    task that can happen at any time while a Qt application is running. Users
+    may very well expect applications to be able to survive this, even when the
+    application is actively using an API like OpenGL or Direct3D.
+
+    Qt's own frameworks built on top of QRhi, such as, Qt Quick, can be
+    expected to handle and take appropriate measures when a device loss occurs.
+    If the data for graphics resources, such as textures and buffers, are still
+    available on the CPU side, such an event may not be noticeable on the
+    application level at all since graphics resources can seamlessly be
+    reinitialized then. However, applications and libraries working directly
+    with QRhi are expected to be prepared to check and handle device loss
+    situations themselves.
+ */
+bool QRhi::isDeviceLost() const
+{
+    return d->isDeviceLost();
 }
 
 /*!

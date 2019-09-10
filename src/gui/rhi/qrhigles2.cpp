@@ -772,6 +772,11 @@ void QRhiGles2::releaseCachedResources()
     m_shaderCache.clear();
 }
 
+bool QRhiGles2::isDeviceLost() const
+{
+    return false;
+}
+
 QRhiRenderBuffer *QRhiGles2::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
                                                 int sampleCount, QRhiRenderBuffer::Flags flags)
 {
