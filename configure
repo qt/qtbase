@@ -120,6 +120,21 @@ set -f  # suppress globbing in for loop
 SAVED_IFS=$IFS
 IFS='
 '
+
+if [ "$CFG_DEV" = "yes" ]; then
+    CMAKE_CMDLINE="$CMAKE_CMDLINE
+-DFEATURE_developer_build=ON"
+    CMAKE_CMDLINE="$CMAKE_CMDLINE
+-DBUILD_TESTING=ON"
+    CMAKE_CMDLINE="$CMAKE_CMDLINE
+-DBUILD_EXAMPLES=ON"
+fi
+
+if [ "$CMAKE_MAKEFILES" = "no" ]; then
+       CMAKE_CMDLINE="$CMAKE_CMDLINE
+-G Ninja"
+fi
+
 for i in "$@"; do
     if [ "$PASSTHRU" = "yes" ]; then
         CMAKE_CMDLINE="$CMAKE_CMDLINE
@@ -432,6 +447,7 @@ OPT_HELP=
 CFG_SILENT=no
 CFG_DEV=no
 BUILD_WITH_CMAKE=no
+CMAKE_MAKEFILES=no
 
 #-------------------------------------------------------------------------------
 # parse command line arguments
@@ -586,6 +602,10 @@ while [ "$#" -gt 0 ]; do
         ;;
     cmake)
         BUILD_WITH_CMAKE=yes
+        ;;
+    cmake-makefiles)
+        BUILD_WITH_CMAKE=yes
+        CMAKE_MAKEFILES=yes
         ;;
     *)
         ;;
