@@ -254,7 +254,8 @@ mac {
         CMAKE_PRL_FILE_LOCATION_RELEASE = lib$${CMAKE_QT_STEM}.prl
     } else {
         qt_framework {
-            CMAKE_LIB_FILE_LOCATION_DEBUG = $${CMAKE_QT_STEM}.framework/$${CMAKE_QT_STEM}_debug
+            # Intentionally there is no '_debug' infix for framework builds.
+            CMAKE_LIB_FILE_LOCATION_DEBUG = $${CMAKE_QT_STEM}.framework/$${CMAKE_QT_STEM}
             CMAKE_LIB_FILE_LOCATION_RELEASE = $${CMAKE_QT_STEM}.framework/$${CMAKE_QT_STEM}
             CMAKE_BUILD_IS_FRAMEWORK = "true"
         } else {
