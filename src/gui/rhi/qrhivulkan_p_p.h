@@ -805,6 +805,7 @@ public:
     VkDeviceSize ubufAlign;
     VkDeviceSize texbufAlign;
     bool hasWideLines = false;
+    bool deviceLost = false;
 
     bool debugMarkersAvailable = false;
     bool vertexAttribDivisorAvailable = false;

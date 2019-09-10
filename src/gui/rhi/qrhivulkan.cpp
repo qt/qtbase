@@ -589,6 +589,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         vkDebugMarkerSetObjectName = reinterpret_cast<PFN_vkDebugMarkerSetObjectNameEXT>(f->vkGetDeviceProcAddr(dev, "vkDebugMarkerSetObjectNameEXT"));
     }
 
+    deviceLost = false;
+
     nativeHandlesStruct.physDev = physDev;
     nativeHandlesStruct.dev = dev;
     nativeHandlesStruct.gfxQueueFamilyIdx = gfxQueueFamilyIdx;
@@ -604,7 +606,8 @@ void QRhiVulkan::destroy()
     if (!df)
         return;
 
-    df->vkDeviceWaitIdle(dev);
+    if (!deviceLost)
+        df->vkDeviceWaitIdle(dev);
 
     executeDeferredReleases(true);
     finishActiveReadbacks(true);
@@ -1425,7 +1428,8 @@ void QRhiVulkan::releaseSwapChainResources(QRhiSwapChain *swapChain)
     if (swapChainD->sc == VK_NULL_HANDLE)
         return;
 
-    df->vkDeviceWaitIdle(dev);
+    if (!deviceLost)
+        df->vkDeviceWaitIdle(dev);
 
     for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i) {
         QVkSwapChain::FrameResources &frame(swapChainD->frameRes[i]);
@@ -1488,15 +1492,6 @@ void QRhiVulkan::releaseSwapChainResources(QRhiSwapChain *swapChain)
     // NB! surface and similar must remain intact
 }
 
-static inline bool checkDeviceLost(VkResult err)
-{
-    if (err == VK_ERROR_DEVICE_LOST) {
-        qWarning("Device lost");
-        return true;
-    }
-    return false;
-}
-
 QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags)
 {
     QVkSwapChain *swapChainD = QRHI_RES(QVkSwapChain, swapChain);
@@ -1523,10 +1518,12 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
         } else if (err == VK_ERROR_OUT_OF_DATE_KHR) {
             return QRhi::FrameOpSwapChainOutOfDate;
         } else {
-            if (checkDeviceLost(err))
+            if (err == VK_ERROR_DEVICE_LOST) {
+                qWarning("Device loss detected in vkAcquireNextImageKHR()");
+                deviceLost = true;
                 return QRhi::FrameOpDeviceLost;
-            else
-                qWarning("Failed to acquire next swapchain image: %d", err);
+            }
+            qWarning("Failed to acquire next swapchain image: %d", err);
             return QRhi::FrameOpError;
         }
     }
@@ -1690,10 +1687,12 @@ QRhi::FrameOpResult QRhiVulkan::endFrame(QRhiSwapChain *swapChain, QRhi::EndFram
             if (err == VK_ERROR_OUT_OF_DATE_KHR) {
                 return QRhi::FrameOpSwapChainOutOfDate;
             } else if (err != VK_SUBOPTIMAL_KHR) {
-                if (checkDeviceLost(err))
+                if (err == VK_ERROR_DEVICE_LOST) {
+                    qWarning("Device loss detected in vkQueuePresentKHR()");
+                    deviceLost = true;
                     return QRhi::FrameOpDeviceLost;
-                else
-                    qWarning("Failed to present: %d", err);
+                }
+                qWarning("Failed to present: %d", err);
                 return QRhi::FrameOpError;
             }
         }
@@ -1750,10 +1749,12 @@ QRhi::FrameOpResult QRhiVulkan::startPrimaryCommandBuffer(VkCommandBuffer *cb)
 
     VkResult err = df->vkAllocateCommandBuffers(dev, &cmdBufInfo, cb);
     if (err != VK_SUCCESS) {
-        if (checkDeviceLost(err))
+        if (err == VK_ERROR_DEVICE_LOST) {
+            qWarning("Device loss detected in vkAllocateCommandBuffers()");
+            deviceLost = true;
             return QRhi::FrameOpDeviceLost;
-        else
-            qWarning("Failed to allocate frame command buffer: %d", err);
+        }
+        qWarning("Failed to allocate frame command buffer: %d", err);
         return QRhi::FrameOpError;
     }
 
@@ -1763,10 +1764,12 @@ QRhi::FrameOpResult QRhiVulkan::startPrimaryCommandBuffer(VkCommandBuffer *cb)
 
     err = df->vkBeginCommandBuffer(*cb, &cmdBufBeginInfo);
     if (err != VK_SUCCESS) {
-        if (checkDeviceLost(err))
+        if (err == VK_ERROR_DEVICE_LOST) {
+            qWarning("Device loss detected in vkBeginCommandBuffer()");
+            deviceLost = true;
             return QRhi::FrameOpDeviceLost;
-        else
-            qWarning("Failed to begin frame command buffer: %d", err);
+        }
+        qWarning("Failed to begin frame command buffer: %d", err);
         return QRhi::FrameOpError;
     }
 
@@ -1778,10 +1781,12 @@ QRhi::FrameOpResult QRhiVulkan::endAndSubmitPrimaryCommandBuffer(VkCommandBuffer
 {
     VkResult err = df->vkEndCommandBuffer(cb);
     if (err != VK_SUCCESS) {
-        if (checkDeviceLost(err))
+        if (err == VK_ERROR_DEVICE_LOST) {
+            qWarning("Device loss detected in vkEndCommandBuffer()");
+            deviceLost = true;
             return QRhi::FrameOpDeviceLost;
-        else
-            qWarning("Failed to end frame command buffer: %d", err);
+        }
+        qWarning("Failed to end frame command buffer: %d", err);
         return QRhi::FrameOpError;
     }
 
@@ -1803,10 +1808,12 @@ QRhi::FrameOpResult QRhiVulkan::endAndSubmitPrimaryCommandBuffer(VkCommandBuffer
 
     err = df->vkQueueSubmit(gfxQueue, 1, &submitInfo, cmdFence);
     if (err != VK_SUCCESS) {
-        if (checkDeviceLost(err))
+        if (err == VK_ERROR_DEVICE_LOST) {
+            qWarning("Device loss detected in vkQueueSubmit()");
+            deviceLost = true;
             return QRhi::FrameOpDeviceLost;
-        else
-            qWarning("Failed to submit to graphics queue: %d", err);
+        }
+        qWarning("Failed to submit to graphics queue: %d", err);
         return QRhi::FrameOpError;
     }
 
@@ -3752,7 +3759,7 @@ void QRhiVulkan::releaseCachedResources()
 
 bool QRhiVulkan::isDeviceLost() const
 {
-    return false;
+    return deviceLost;
 }
 
 QRhiRenderBuffer *QRhiVulkan::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
