@@ -1325,7 +1325,7 @@ function(add_qt_module target)
                     "$<BUILD_INTERFACE:${module_include_dir}>")
     endif()
 
-    if(NOT arg_NO_MODULE_HEADERS)
+    if(NOT arg_NO_MODULE_HEADERS AND NOT arg_NO_SYNC_QT)
         # For the syncqt headers
         list(APPEND public_includes "$<INSTALL_INTERFACE:include/${module}>")
     endif()
