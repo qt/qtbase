@@ -76,20 +76,20 @@ class QPixelFormat
         // work around bug in old clang versions: when building webkit
         // with XCode 4.6 and older this fails compilation, thus cast to int
         FirstField = ModelField + int(ModelFieldWidth),
-        SecondField = FirstField + FirstFieldWidth,
-        ThirdField = SecondField + SecondFieldWidth,
-        FourthField = ThirdField + ThirdFieldWidth,
-        FifthField = FourthField + FourthFieldWidth,
-        AlphaField = FifthField + FifthFieldWidth,
-        AlphaUsageField = AlphaField + AlphaFieldWidth,
-        AlphaPositionField = AlphaUsageField + AlphaUsageFieldWidth,
-        PremulField = AlphaPositionField + AlphaPositionFieldWidth,
-        TypeInterpretationField = PremulField + PremulFieldWidth,
-        ByteOrderField = TypeInterpretationField + TypeInterpretationFieldWidth,
-        SubEnumField = ByteOrderField + ByteOrderFieldWidth,
-        UnusedField = SubEnumField + SubEnumFieldWidth,
+        SecondField = FirstField + int(FirstFieldWidth),
+        ThirdField = SecondField + int(SecondFieldWidth),
+        FourthField = ThirdField + int(ThirdFieldWidth),
+        FifthField = FourthField + int(FourthFieldWidth),
+        AlphaField = FifthField + int(FifthFieldWidth),
+        AlphaUsageField = AlphaField + int(AlphaFieldWidth),
+        AlphaPositionField = AlphaUsageField + int(AlphaUsageFieldWidth),
+        PremulField = AlphaPositionField + int(AlphaPositionFieldWidth),
+        TypeInterpretationField = PremulField + int(PremulFieldWidth),
+        ByteOrderField = TypeInterpretationField + int(TypeInterpretationFieldWidth),
+        SubEnumField = ByteOrderField + int(ByteOrderFieldWidth),
+        UnusedField = SubEnumField + int(SubEnumFieldWidth),
 
-        TotalFieldWidthByOffsets = UnusedField + UnusedFieldWidth
+        TotalFieldWidthByOffsets = UnusedField + int(UnusedFieldWidth)
     };
 
     Q_STATIC_ASSERT(uint(TotalFieldWidthByWidths) == uint(TotalFieldWidthByOffsets));
