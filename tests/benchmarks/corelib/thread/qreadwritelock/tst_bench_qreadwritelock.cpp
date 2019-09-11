@@ -44,6 +44,49 @@ struct LockerWrapper : T
     }
 };
 
+struct QRecursiveReadWriteLock : QReadWriteLock
+{
+    QRecursiveReadWriteLock() : QReadWriteLock(Recursive) {}
+};
+
+template <typename T, size_t N>
+  // requires N = 2^M for some Integral M >= 0
+struct Recursive
+{
+    Recursive<T, N/2> r1, r2;
+
+    template <typename...Args>
+    Q_ALWAYS_INLINE
+    explicit Recursive(Args &&...args)
+        : r1(args...),
+          r2(args...)
+    {}
+};
+
+template <typename T>
+struct Recursive<T, 1>
+{
+    T t;
+    template <typename...Args>
+    Q_ALWAYS_INLINE
+    explicit Recursive(Args &&...args)
+        : t(args...) {}
+};
+
+template <typename T>
+struct Recursive<T, 0>
+{
+    template <typename...Args>
+    Q_ALWAYS_INLINE
+    explicit Recursive(Args &&...) {}
+};
+
+template <size_t N>
+using QRecursiveReadLocker = Recursive<QReadLocker, N>;
+
+template <size_t N>
+using QRecursiveWriteLocker = Recursive<QWriteLocker, N>;
+
 int threadCount;
 
 class tst_QReadWriteLock : public QObject
@@ -105,6 +148,15 @@ void tst_QReadWriteLock::uncontended_data()
         << FunctionPtrHolder(testUncontended<QReadWriteLock, QReadLocker>);
     QTest::newRow("QReadWriteLock, write")
         << FunctionPtrHolder(testUncontended<QReadWriteLock, QWriteLocker>);
+#define ROW(n) \
+    QTest::addRow("QReadWriteLock, %s, recursive: %d", "read", n) \
+        << FunctionPtrHolder(testUncontended<QRecursiveReadWriteLock, QRecursiveReadLocker<n>>); \
+    QTest::addRow("QReadWriteLock, %s, recursive: %d", "write", n) \
+        << FunctionPtrHolder(testUncontended<QRecursiveReadWriteLock, QRecursiveWriteLocker<n>>)
+    ROW(1);
+    ROW(2);
+    ROW(32);
+#undef ROW
     QTest::newRow("std::mutex") << FunctionPtrHolder(
         testUncontended<std::mutex, LockerWrapper<std::unique_lock<std::mutex>>>);
 #ifdef __cpp_lib_shared_mutex
@@ -172,6 +224,13 @@ void tst_QReadWriteLock::readOnly_data()
     QTest::newRow("nothing") << FunctionPtrHolder(testReadOnly<int, FakeLock>);
     QTest::newRow("QMutex") << FunctionPtrHolder(testReadOnly<QMutex, QMutexLocker<QMutex>>);
     QTest::newRow("QReadWriteLock") << FunctionPtrHolder(testReadOnly<QReadWriteLock, QReadLocker>);
+#define ROW(n) \
+    QTest::addRow("QReadWriteLock, recursive: %d", n) \
+        << FunctionPtrHolder(testReadOnly<QRecursiveReadWriteLock, QRecursiveReadLocker<n>>)
+    ROW(1);
+    ROW(2);
+    ROW(32);
+#undef ROW
     QTest::newRow("std::mutex") << FunctionPtrHolder(
         testReadOnly<std::mutex, LockerWrapper<std::unique_lock<std::mutex>>>);
 #ifdef __cpp_lib_shared_mutex
@@ -233,6 +292,13 @@ void tst_QReadWriteLock::writeOnly_data()
     // QTest::newRow("nothing") << FunctionPtrHolder(testWriteOnly<int, FakeLock>);
     QTest::newRow("QMutex") << FunctionPtrHolder(testWriteOnly<QMutex, QMutexLocker<QMutex>>);
     QTest::newRow("QReadWriteLock") << FunctionPtrHolder(testWriteOnly<QReadWriteLock, QWriteLocker>);
+#define ROW(n) \
+    QTest::addRow("QReadWriteLock, recursive: %d", n) \
+        << FunctionPtrHolder(testWriteOnly<QRecursiveReadWriteLock, QRecursiveWriteLocker<n>>)
+    ROW(1);
+    ROW(2);
+    ROW(32);
+#undef ROW
     QTest::newRow("std::mutex") << FunctionPtrHolder(
         testWriteOnly<std::mutex, LockerWrapper<std::unique_lock<std::mutex>>>);
 #ifdef __cpp_lib_shared_mutex
