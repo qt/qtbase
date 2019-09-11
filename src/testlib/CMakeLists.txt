@@ -67,7 +67,6 @@ add_qt_module(Test
 )
 
 #### Keys ignored in scope 1:.:.:testlib.pro:<TRUE>:
-# CONFIG = "exceptions"
 # MODULE_CONFIG = "console" "testlib_defines"
 # _LOADED = "qt_module"
 
