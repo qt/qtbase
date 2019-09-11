@@ -36,6 +36,7 @@ import copy
 import xml.etree.ElementTree as ET
 from itertools import chain
 import os.path
+import posixpath
 import re
 import io
 import typing
@@ -155,7 +156,7 @@ def find_qmake_conf(project_file_path: str = '') -> typing.Optional[str]:
     file_name = '.qmake.conf'
 
     while os.path.isdir(cwd):
-        maybe_file = os.path.join(cwd, file_name)
+        maybe_file = posixpath.join(cwd, file_name)
         if os.path.isfile(maybe_file):
             return maybe_file
         else:
@@ -184,7 +185,7 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_fil
 
     resource_name = os.path.splitext(os.path.basename(filepath))[0]
     dir_name = os.path.dirname(filepath)
-    base_dir = os.path.join('' if base_dir == '.' else base_dir, dir_name)
+    base_dir = posixpath.join('' if base_dir == '.' else base_dir, dir_name)
 
     # Small not very thorough check to see if this a shared qrc resource
     # pattern is mostly used by the tests.
@@ -239,7 +240,7 @@ def write_add_qt_resource_call(target: str, resource_name: str, prefix: typing.O
     for source in sorted_files:
         alias = files[source]
         if alias:
-            full_source = os.path.join(base_dir, source)
+            full_source = posixpath.join(base_dir, source)
             output += 'set_source_files_properties("{}"\n' \
                       '    PROPERTIES QT_RESOURCE_ALIAS "{}"\n)\n'.format(full_source, alias)
 
@@ -320,7 +321,7 @@ def map_to_file(f: str, scope: Scope, *, is_include: bool = False) -> str:
         return f
 
     base_dir = scope.currentdir if is_include else scope.basedir
-    f = os.path.join(base_dir, f)
+    f = posixpath.join(base_dir, f)
 
     return trim_leading_dot(f)
 
@@ -345,9 +346,9 @@ def handle_vpath(source: str, base_dir: str, vpath: typing.List[str]) -> str:
         return source
 
     for v in vpath:
-        fullpath = os.path.join(v, source)
+        fullpath = posixpath.join(v, source)
         if os.path.exists(fullpath):
-            return trim_leading_dot(os.path.relpath(fullpath, base_dir))
+            return trim_leading_dot(posixpath.relpath(fullpath, base_dir))
 
     print('    XXXX: Source {}: Not found.'.format(source))
     return '{}-NOTFOUND'.format(source)
@@ -1319,7 +1320,7 @@ def sort_sources(sources: typing.List[str]) -> typing.List[str]:
         base = os.path.splitext(os.path.basename(s))[0]
         if base.endswith('_p'):
             base = base[:-2]
-        sort_name = os.path.join(dir, base)
+        sort_name = posixpath.join(dir, base)
 
         array = to_sort.get(sort_name, [])
         array.append(s)

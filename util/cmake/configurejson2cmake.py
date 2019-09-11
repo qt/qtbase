@@ -28,7 +28,7 @@
 #############################################################################
 
 import json_parser
-import os.path
+import posixpath
 import re
 import sys
 from typing import Set, Union, List, Dict
@@ -151,10 +151,10 @@ def cm(ctx, *output):
 
 
 def readJsonFromDir(dir):
-    path = os.path.join(dir, 'configure.json')
+    path = posixpath.join(dir, 'configure.json')
 
     print('Reading {}...'.format(path))
-    assert os.path.exists(path)
+    assert posixpath.exists(path)
 
     parser = json_parser.QMakeSpecificJSONParser()
     return parser.parse(path)
@@ -943,7 +943,7 @@ def processSubconfigs(dir, ctx, data):
     assert ctx is not None
     if 'subconfigs' in data:
         for subconf in data['subconfigs']:
-            subconfDir = os.path.join(dir, subconf)
+            subconfDir = posixpath.join(dir, subconf)
             subconfData = readJsonFromDir(subconfDir)
             subconfCtx = ctx
             processJson(subconfDir, subconfCtx, subconfData)
@@ -954,7 +954,7 @@ def processJson(dir, ctx, data):
 
     ctx = processFiles(ctx, data)
 
-    with open(os.path.join(dir, "configure.cmake"), 'w') as cm_fh:
+    with open(posixpath.join(dir, "configure.cmake"), 'w') as cm_fh:
         cm_fh.write("\n\n#### Inputs\n\n")
 
         processInputs(ctx, data, cm_fh)
