@@ -1294,7 +1294,8 @@ public:
 
     enum Flag {
         EnableProfiling = 1 << 0,
-        EnableDebugMarkers = 1 << 1
+        EnableDebugMarkers = 1 << 1,
+        PreferSoftwareRenderer = 1 << 2
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

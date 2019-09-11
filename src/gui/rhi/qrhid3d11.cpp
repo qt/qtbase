@@ -119,6 +119,11 @@ QT_BEGIN_NAMESPACE
     \c{ID3D11Texture2D *}.
  */
 
+// help mingw with its ancient sdk headers
+#ifndef DXGI_ADAPTER_FLAG_SOFTWARE
+#define DXGI_ADAPTER_FLAG_SOFTWARE 2
+#endif
+
 QRhiD3D11::QRhiD3D11(QRhiD3D11InitParams *params, QRhiD3D11NativeHandles *importDevice)
     : ofr(this),
       deviceCurse(this)
@@ -227,11 +232,29 @@ bool QRhiD3D11::create(QRhi::Flags flags)
         int requestedAdapterIndex = -1;
         if (qEnvironmentVariableIsSet("QT_D3D_ADAPTER_INDEX"))
             requestedAdapterIndex = qEnvironmentVariableIntValue("QT_D3D_ADAPTER_INDEX");
+
+        if (requestedAdapterIndex < 0 && flags.testFlag(QRhi::PreferSoftwareRenderer)) {
+            for (int adapterIndex = 0; dxgiFactory->EnumAdapters1(UINT(adapterIndex), &adapter) != DXGI_ERROR_NOT_FOUND; ++adapterIndex) {
+                DXGI_ADAPTER_DESC1 desc;
+                adapter->GetDesc1(&desc);
+                adapter->Release();
+                if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) {
+                    requestedAdapterIndex = adapterIndex;
+                    break;
+                }
+            }
+        }
+
         for (int adapterIndex = 0; dxgiFactory->EnumAdapters1(UINT(adapterIndex), &adapter) != DXGI_ERROR_NOT_FOUND; ++adapterIndex) {
             DXGI_ADAPTER_DESC1 desc;
             adapter->GetDesc1(&desc);
             const QString name = QString::fromUtf16(reinterpret_cast<char16_t *>(desc.Description));
-            qCDebug(QRHI_LOG_INFO, "Adapter %d: '%s' (flags 0x%x)", adapterIndex, qPrintable(name), desc.Flags);
+            qCDebug(QRHI_LOG_INFO, "Adapter %d: '%s' (vendor 0x%X device 0x%X flags 0x%X)",
+                    adapterIndex,
+                    qPrintable(name),
+                    desc.VendorId,
+                    desc.DeviceId,
+                    desc.Flags);
             if (!adapterToUse && (requestedAdapterIndex < 0 || requestedAdapterIndex == adapterIndex)) {
                 adapterToUse = adapter;
                 qCDebug(QRHI_LOG_INFO, "  using this adapter");

@@ -388,22 +388,42 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             qWarning("Failed to enumerate physical devices: %d", err);
             return false;
         }
+
         int physDevIndex = -1;
         int requestedPhysDevIndex = -1;
         if (qEnvironmentVariableIsSet("QT_VK_PHYSICAL_DEVICE_INDEX"))
             requestedPhysDevIndex = qEnvironmentVariableIntValue("QT_VK_PHYSICAL_DEVICE_INDEX");
+
+        if (requestedPhysDevIndex < 0 && flags.testFlag(QRhi::PreferSoftwareRenderer)) {
+            for (int i = 0; i < int(physDevCount); ++i) {
+                f->vkGetPhysicalDeviceProperties(physDevs[i], &physDevProperties);
+                if (physDevProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU) {
+                    requestedPhysDevIndex = i;
+                    break;
+                }
+            }
+        }
+
         for (int i = 0; i < int(physDevCount); ++i) {
             f->vkGetPhysicalDeviceProperties(physDevs[i], &physDevProperties);
-            qCDebug(QRHI_LOG_INFO, "Physical device %d: '%s' %d.%d.%d", i,
+            qCDebug(QRHI_LOG_INFO, "Physical device %d: '%s' %d.%d.%d (api %d.%d.%d vendor 0x%X device 0x%X type %d)",
+                    i,
                     physDevProperties.deviceName,
                     VK_VERSION_MAJOR(physDevProperties.driverVersion),
                     VK_VERSION_MINOR(physDevProperties.driverVersion),
-                    VK_VERSION_PATCH(physDevProperties.driverVersion));
+                    VK_VERSION_PATCH(physDevProperties.driverVersion),
+                    VK_VERSION_MAJOR(physDevProperties.apiVersion),
+                    VK_VERSION_MINOR(physDevProperties.apiVersion),
+                    VK_VERSION_PATCH(physDevProperties.apiVersion),
+                    physDevProperties.vendorID,
+                    physDevProperties.deviceID,
+                    physDevProperties.deviceType);
             if (physDevIndex < 0 && (requestedPhysDevIndex < 0 || requestedPhysDevIndex == int(i))) {
                 physDevIndex = i;
                 qCDebug(QRHI_LOG_INFO, "    using this physical device");
             }
         }
+
         if (physDevIndex < 0) {
             qWarning("No matching physical device");
             return false;
