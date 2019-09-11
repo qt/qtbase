@@ -2527,7 +2527,7 @@ def main() -> None:
         if new_current_dir:
             os.chdir(new_current_dir)
 
-        project_file_absolute_path = os.path.abspath(file)
+        project_file_absolute_path = os.path.abspath(file_relative_path)
         if not should_convert_project(project_file_absolute_path):
             print('Skipping conversion of project: "{}"'.format(project_file_absolute_path))
             continue
