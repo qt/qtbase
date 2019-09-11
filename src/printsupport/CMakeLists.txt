@@ -84,40 +84,60 @@ extend_target(PrintSupport CONDITION QT_FEATURE_printdialog
 )
 
 # Resources:
-add_qt_resource(PrintSupport "qprintdialog" PREFIX "/qt-project.org/dialogs/qprintpreviewdialog" BASE "dialogs" FILES
-    images/fit-page-24.png
-    images/fit-page-32.png
-    images/fit-width-24.png
-    images/fit-width-32.png
-    images/go-first-24.png
-    images/go-first-32.png
-    images/go-last-24.png
-    images/go-last-32.png
-    images/go-next-24.png
-    images/go-next-32.png
-    images/go-previous-24.png
-    images/go-previous-32.png
-    images/layout-landscape-24.png
-    images/layout-landscape-32.png
-    images/layout-portrait-24.png
-    images/layout-portrait-32.png
-    images/page-setup-24.png
-    images/page-setup-32.png
-    images/print-24.png
-    images/print-32.png
-    images/view-page-multi-24.png
-    images/view-page-multi-32.png
-    images/view-page-one-24.png
-    images/view-page-one-32.png
-    images/view-page-sided-24.png
-    images/view-page-sided-32.png
-    images/zoom-in-24.png
-    images/zoom-in-32.png
-    images/zoom-out-24.png
-    images/zoom-out-32.png)
-add_qt_resource(PrintSupport "qprintdialog1" PREFIX "/qt-project.org/dialogs/qprintdialog" BASE "dialogs" FILES
-    images/status-color.png
-    images/status-gray-scale.png)
+set(qprintdialog_resource_files
+    "images/fit-page-24.png"
+    "images/fit-page-32.png"
+    "images/fit-width-24.png"
+    "images/fit-width-32.png"
+    "images/go-first-24.png"
+    "images/go-first-32.png"
+    "images/go-last-24.png"
+    "images/go-last-32.png"
+    "images/go-next-24.png"
+    "images/go-next-32.png"
+    "images/go-previous-24.png"
+    "images/go-previous-32.png"
+    "images/layout-landscape-24.png"
+    "images/layout-landscape-32.png"
+    "images/layout-portrait-24.png"
+    "images/layout-portrait-32.png"
+    "images/page-setup-24.png"
+    "images/page-setup-32.png"
+    "images/print-24.png"
+    "images/print-32.png"
+    "images/view-page-multi-24.png"
+    "images/view-page-multi-32.png"
+    "images/view-page-one-24.png"
+    "images/view-page-one-32.png"
+    "images/view-page-sided-24.png"
+    "images/view-page-sided-32.png"
+    "images/zoom-in-24.png"
+    "images/zoom-in-32.png"
+    "images/zoom-out-24.png"
+    "images/zoom-out-32.png"
+)
+
+add_qt_resource(PrintSupport "qprintdialog"
+    PREFIX
+        "/qt-project.org/dialogs/qprintpreviewdialog"
+    BASE
+        "dialogs"
+    FILES
+        ${qprintdialog_resource_files}
+)
+set(qprintdialog1_resource_files
+    "images/status-color.png"
+    "images/status-gray-scale.png"
+)
+
+add_qt_resource(PrintSupport "qprintdialog1"
+    PREFIX
+        "/qt-project.org/dialogs/qprintdialog"
+    BASE
+        "dialogs"
+    FILES
+        ${qprintdialog1_resource_files}
+)
 
 
 extend_target(PrintSupport CONDITION APPLE_OSX AND QT_FEATURE_printdialog
@@ -142,7 +162,7 @@ extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND UNIX AND NOT APP
         dialogs/qprintsettingsoutput.ui
         dialogs/qprintwidget.ui
     INCLUDE_DIRECTORIES
-        ${PROJECT_SOURCE_DIR}/src/plugins/printsupport/cups
+        ${QT_SOURCE_TREE}/src/plugins/printsupport/cups
     ENABLE_AUTOGEN_TOOLS
         uic
 )
