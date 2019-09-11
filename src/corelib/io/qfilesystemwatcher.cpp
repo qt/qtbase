@@ -451,6 +451,12 @@ QStringList QFileSystemWatcher::removePaths(const QStringList &paths)
     This signal is emitted when the file at the specified \a path is
     modified, renamed or removed from disk.
 
+    \note As a safety measure, many applications save an open file by
+    writing a new file and then deleting the old one. In your slot
+    function, you can check \c watcher.files().contains(path).
+    If it returns \c false, check whether the file still exists
+    and then call \c addPath() to continue watching it.
+
     \sa directoryChanged()
 */
 
