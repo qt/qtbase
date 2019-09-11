@@ -50,12 +50,6 @@ extend_target(OpenGL CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
 #### Keys ignored in scope 3:.:.:opengl.pro:solaris-cc_x_:
 # QMAKE_CXXFLAGS_RELEASE = "--O2"
 
-#### Keys ignored in scope 4:.:.:opengl.pro:QT_FEATURE_opengl:
-# CONFIG = "opengl"
-
-#### Keys ignored in scope 5:.:.:opengl.pro:QT_FEATURE_opengles2:
-# CONFIG = "opengles2"
-
 extend_target(OpenGL CONDITION QT_FEATURE_graphicseffect
     SOURCES
         qgraphicsshadereffect.cpp qgraphicsshadereffect_p.h
