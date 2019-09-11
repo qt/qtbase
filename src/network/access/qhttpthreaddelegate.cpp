@@ -297,6 +297,11 @@ void QHttpThreadDelegate::startRequest()
         connectionType = QHttpNetworkConnection::ConnectionTypeHTTP2Direct;
     }
 
+#if QT_CONFIG(ssl)
+    // See qnetworkreplyhttpimpl, delegate's initialization code.
+    Q_ASSERT(!ssl || incomingSslConfiguration.data());
+#endif // QT_CONFIG(ssl)
+
     const bool isH2 = httpRequest.isHTTP2Allowed() || httpRequest.isHTTP2Direct();
     if (isH2) {
 #if QT_CONFIG(ssl)
@@ -316,9 +321,6 @@ void QHttpThreadDelegate::startRequest()
     }
 
 #ifndef QT_NO_SSL
-    if (ssl && !incomingSslConfiguration.data())
-        incomingSslConfiguration.reset(new QSslConfiguration);
-
     if (!isH2 && httpRequest.isSPDYAllowed() && ssl) {
         connectionType = QHttpNetworkConnection::ConnectionTypeSPDY;
         urlCopy.setScheme(QStringLiteral("spdy")); // to differentiate SPDY requests from HTTPS requests
