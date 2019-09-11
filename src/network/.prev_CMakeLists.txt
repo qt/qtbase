@@ -60,6 +60,8 @@ add_qt_module(Network
         ZLIB::ZLIB
     PUBLIC_LIBRARIES
         Qt::Core
+    PRECOMPILED_HEADER
+        "../corelib/global/qt_pch.h"
 )
 
 #### Keys ignored in scope 1:.:.:network.pro:<TRUE>:
