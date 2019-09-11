@@ -232,6 +232,10 @@ add_qt_module(Core
     LIBRARIES
         ZLIB::ZLIB
         doubleconversion
+    PRECOMPILED_HEADER
+        "global/qt_pch.h"
+    NO_PCH_SOURCES
+        "text/qstring_compat.cpp"
 )
 add_qt_simd_part(Core SIMD mips_dsp
     SOURCES
@@ -429,7 +433,7 @@ extend_target(Core CONDITION _ss_f16c_cxx
 #### Keys ignored in scope 27:.:global:global/global.pri:else:
 # F16C_SOURCES = "global/qfloat16_f16c.c"
 
-extend_target(Core CONDITION linux_x_ OR hurd_x_ AND NOT cross_compile AND NOT static AND NOT _x_-armcc_x_
+extend_target(Core CONDITION linux_x_ OR (hurd_x_ AND NOT _x_-armcc_x_ AND NOT cross_compile AND NOT static)
     DEFINES
         ELF_INTERPRETER=\\\"=Creadelf-l/bin/ls|perl-n-e\'['quote', ['if', ['/program', 'interpreter:', ['.*'], ']/'], '{', 'print', '$1;', '}']]\'\\\"
     LINK_OPTIONS
@@ -565,6 +569,8 @@ extend_target(Core CONDITION ICC
 extend_target(Core CONDITION MSVC
     SOURCES
         tools/qvector_msvc.cpp
+    NO_PCH_SOURCES
+        "tools/qvector_msvc.cpp"
 )
 
 extend_target(Core CONDITION QT_FEATURE_commandlineparser
