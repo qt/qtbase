@@ -89,12 +89,18 @@ public:
         DownloadBufferAttribute, // internal
         SynchronousRequestAttribute, // internal
         BackgroundRequestAttribute,
+#if QT_DEPRECATED_SINCE(5, 15)
         SpdyAllowedAttribute,
         SpdyWasUsedAttribute,
-        EmitAllUploadProgressSignalsAttribute,
+#endif // QT_DEPRECATED_SINCE(5, 15)
+        EmitAllUploadProgressSignalsAttribute = BackgroundRequestAttribute + 3,
         FollowRedirectsAttribute,
-        HTTP2AllowedAttribute,
-        HTTP2WasUsedAttribute,
+        Http2AllowedAttribute,
+        Http2WasUsedAttribute,
+#if QT_DEPRECATED_SINCE(5, 15)
+        HTTP2AllowedAttribute Q_DECL_ENUMERATOR_DEPRECATED_X("Use Http2AllowedAttribute") = Http2AllowedAttribute,
+        HTTP2WasUsedAttribute Q_DECL_ENUMERATOR_DEPRECATED_X("Use Http2WasUsedAttribute"),
+#endif // QT_DEPRECATED_SINCE(5, 15)
         OriginalContentLengthAttribute,
         RedirectPolicyAttribute,
         Http2DirectAttribute,
