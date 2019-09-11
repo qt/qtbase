@@ -3458,10 +3458,18 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
     Flag values to describe swapchain properties
 
     \value SurfaceHasPreMulAlpha Indicates that the target surface has
-    transparency with premultiplied alpha.
+    transparency with premultiplied alpha. For example, this is what Qt Quick
+    uses when the alpha channel is enabled on the target QWindow, because the
+    scenegraph rendrerer always outputs fragments with alpha multiplied into
+    the red, green, and blue values. To ensure identical behavior across
+    platforms, always set QSurfaceFormat::alphaBufferSize() to a non-zero value
+    on the target QWindow whenever this flag is set on the swapchain.
 
     \value SurfaceHasNonPreMulAlpha Indicates the target surface has
-    transparencyt with non-premultiplied alpha.
+    transparency with non-premultiplied alpha. Be aware that this may not be
+    supported on some systems, if the system compositor always expects content
+    with premultiplied alpha. In that case the behavior with this flag set is
+    expected to be equivalent to SurfaceHasPreMulAlpha.
 
     \value sRGB Requests to pick an sRGB format for the swapchain and/or its
     render target views, where applicable. Note that this implies that sRGB
