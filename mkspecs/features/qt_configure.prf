@@ -537,98 +537,23 @@ defineReplace(qtGccSysrootifiedPaths) {
     return($$sysrootified)
 }
 
-# libs-var, libs, in-paths, out-paths-var
+# libs-var, libs, in-paths
 defineTest(qtConfResolveLibs) {
-    ret = true
-    paths = $$3
-    out =
-    copy = false
-    for (l, 2) {
-        $$copy {
-            copy = false
-            out += $$l
-        } else: equals(l, "-s") {
-            # em++ flag to link libraries from emscripten-ports; passed on literally.
-            copy = true
-            out += $$l
-        } else: contains(l, "^-L.*") {
-            lp = $$replace(l, "^-L", )
-            gcc: lp = $$qtGccSysrootifiedPath($$lp)
-            !exists($$lp/.) {
-                qtLog("Library path $$val_escape(lp) is invalid.")
-                ret = false
-            } else {
-                paths += $$lp
-            }
-        } else: !android: contains(l, "^-l.*") {
-            lib = $$replace(l, "^-l", )
-            lcan =
-            integrity:contains(lib, "^.*\\.a") {
-                # INTEGRITY compiler searches for exact filename
-                # if -l argument has .a suffix
-                lcan += $${lib}
-            } else: contains(lib, "^:.*") {
-                # Use exact filename when -l:filename syntax is used.
-                lib ~= s/^://
-                lcan += $${lib}
-            } else: unix {
-                # Under UNIX, we look for actual shared libraries, in addition
-                # to static ones.
-                shexts = $$QMAKE_EXTENSION_SHLIB $$QMAKE_EXTENSIONS_AUX_SHLIB
-                for (ext, shexts) {
-                    lcan += $${QMAKE_PREFIX_SHLIB}$${lib}.$${ext}
-                }
-                lcan += \
-                    $${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
-            } else {
-                # Under Windows, we look only for static libraries, as even for DLLs
-                # one actually links against a static import library.
-                mingw {
-                    lcan += \
-                        # MinGW supports UNIX-style library naming in addition to
-                        # the MSVC style.
-                        lib$${lib}.dll.a lib$${lib}.a \
-                        # Fun fact: prefix-less libraries are also supported.
-                        $${lib}.dll.a $${lib}.a
-                }
-                lcan += $${lib}.lib
-            }
-            l = $$qtConfFindInPathList($$lcan, $$paths $$EXTRA_LIBDIR $$QMAKE_DEFAULT_LIBDIRS)
-            isEmpty(l) {
-                qtLog("None of [$$val_escape(lcan)] found in [$$val_escape(paths)] and global paths.")
-                ret = false
-            } else {
-                out += $$l
-            }
-        } else {
-            out += $$l
-        }
-    }
-    $$1 = $$out
+    for (path, 3): \
+        pre_lflags += -L$$path
+    $$1 = $$pre_lflags $$2
     export($$1)
-    !isEmpty(4) {
-        $$4 = $$paths
-        export($$4)
-    }
-    return($$ret)
-}
-
-# source-var
-defineTest(qtConfResolveAllLibs) {
-    ret = true
-    !qtConfResolveLibs($${1}.libs, $$eval($${1}.libs), , $${1}.libdirs): \
-        ret = false
-    for (b, $${1}.builds._KEYS_): \
-        !qtConfResolveLibs($${1}.builds.$${b}, $$eval($${1}.builds.$${b}), $$eval($${1}.libdirs), ): \
-            ret = false
-    return($$ret)
+    return(true)
 }
 
 # libs-var, in-paths, libs
 defineTest(qtConfResolvePathLibs) {
     ret = true
-    gcc: 2 = $$qtGccSysrootifiedPaths($$2)
-    for (libdir, 2) {
+    gcc: \
+        local_paths = $$qtGccSysrootifiedPaths($$2)
+    else: \
+        local_paths = $$2
+    for (libdir, local_paths) {
         !exists($$libdir/.) {
             qtLog("Library path $$val_escape(libdir) is invalid.")
             ret = false
@@ -678,8 +603,11 @@ defineReplace(qtConfGetTestIncludes) {
 # includes-var, in-paths, test-object-var
 defineTest(qtConfResolvePathIncs) {
     ret = true
-    gcc: 2 = $$qtGccSysrootifiedPaths($$2)
-    for (incdir, 2) {
+    gcc: \
+        local_paths = $$qtGccSysrootifiedPaths($$2)
+    else: \
+        local_paths = $$2
+    for (incdir, local_paths) {
         !exists($$incdir/.) {
             qtLog("Include path $$val_escape(incdir) is invalid.")
             ret = false
@@ -773,10 +701,8 @@ defineTest(qtConfLibrary_inline) {
         for (ld, libdir): \
             libs += -L$$ld
         $${1}.libs = $$libs $$eval($${1}.libs)
+        export($${1}.libs)
     }
-
-    !qtConfResolveAllLibs($$1): \
-        return(false)
 
     !qtConfResolvePathIncs($${1}.includedir, $$includes, $$2): \
         return(false)
