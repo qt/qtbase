@@ -109,8 +109,8 @@ public:
     void setControlType(ControlType type) noexcept;
 
     constexpr Qt::Orientations expandingDirections() const noexcept {
-        return ( (verticalPolicy()   & ExpandFlag) ? Qt::Vertical   : Qt::Orientations() )
-             | ( (horizontalPolicy() & ExpandFlag) ? Qt::Horizontal : Qt::Orientations() ) ;
+        return ( (verticalPolicy()   & int(ExpandFlag)) ? Qt::Vertical   : Qt::Orientations() )
+             | ( (horizontalPolicy() & int(ExpandFlag)) ? Qt::Horizontal : Qt::Orientations() ) ;
     }
 
     constexpr void setHeightForWidth(bool b) noexcept { bits.hfw = b;  }
