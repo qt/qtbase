@@ -65,6 +65,8 @@ private slots:
     void uncontended();
     void readOnly_data();
     void readOnly();
+    void writeOnly_data();
+    void writeOnly();
     // void readWrite();
 };
 
@@ -188,6 +190,67 @@ void tst_QReadWriteLock::readOnly_data()
 }
 
 void tst_QReadWriteLock::readOnly()
+{
+    QFETCH(FunctionPtrHolder, holder);
+    holder.value();
+}
+
+static QString global_string;
+
+template <typename Mutex, typename Locker>
+void testWriteOnly()
+{
+    struct Thread : QThread
+    {
+        Mutex *lock;
+        void run() override
+        {
+            for (int i = 0; i < Iterations; ++i) {
+                QString s = QString::number(i); // Do something outside the lock
+                Locker locker(lock);
+                global_string = s;
+            }
+        }
+    };
+    Mutex lock;
+    std::vector<std::unique_ptr<Thread>> threads;
+    for (int i = 0; i < threadCount; ++i) {
+        auto t = qt_make_unique<Thread>();
+        t->lock = &lock;
+        threads.push_back(std::move(t));
+    }
+    QBENCHMARK {
+        for (auto &t : threads) {
+            t->start();
+        }
+        for (auto &t : threads) {
+            t->wait();
+        }
+    }
+}
+
+void tst_QReadWriteLock::writeOnly_data()
+{
+    QTest::addColumn<FunctionPtrHolder>("holder");
+
+    // QTest::newRow("nothing") << FunctionPtrHolder(testWriteOnly<int, FakeLock>);
+    QTest::newRow("QMutex") << FunctionPtrHolder(testWriteOnly<QMutex, QMutexLocker>);
+    QTest::newRow("QReadWriteLock") << FunctionPtrHolder(testWriteOnly<QReadWriteLock, QWriteLocker>);
+    QTest::newRow("std::mutex") << FunctionPtrHolder(
+        testWriteOnly<std::mutex, LockerWrapper<std::unique_lock<std::mutex>>>);
+#ifdef __cpp_lib_shared_mutex
+    QTest::newRow("std::shared_mutex") << FunctionPtrHolder(
+        testWriteOnly<std::shared_mutex,
+                     LockerWrapper<std::unique_lock<std::shared_mutex>>>);
+#endif
+#if defined __cpp_lib_shared_timed_mutex
+    QTest::newRow("std::shared_timed_mutex") << FunctionPtrHolder(
+        testWriteOnly<std::shared_timed_mutex,
+                     LockerWrapper<std::unique_lock<std::shared_timed_mutex>>>);
+#endif
+}
+
+void tst_QReadWriteLock::writeOnly()
 {
     QFETCH(FunctionPtrHolder, holder);
     holder.value();
