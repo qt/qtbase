@@ -63,197 +63,224 @@ add_qt_module(Widgets
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
+    PRECOMPILED_HEADER
+        "kernel/qt_widgets_pch.h"
 )
 
 # Resources:
-add_qt_resource(Widgets "qstyle" PREFIX "/qt-project.org/styles/commonstyle" BASE "styles" FILES
-    images/cdr-128.png
-    images/cdr-16.png
-    images/cdr-32.png
-    images/cleartext-16.png
-    images/cleartext-32.png
-    images/closedock-10.png
-    images/closedock-16.png
-    images/closedock-20.png
-    images/closedock-32.png
-    images/closedock-48.png
-    images/closedock-64.png
-    images/computer-16.png
-    images/computer-32.png
-    images/desktop-16.png
-    images/desktop-32.png
-    images/dirclosed-128.png
-    images/dirclosed-16.png
-    images/dirclosed-32.png
-    images/dirlink-128.png
-    images/dirlink-16.png
-    images/dirlink-32.png
-    images/diropen-128.png
-    images/diropen-16.png
-    images/diropen-32.png
-    images/down-128.png
-    images/down-16.png
-    images/down-32.png
-    images/dvd-128.png
-    images/dvd-16.png
-    images/dvd-32.png
-    images/file-128.png
-    images/file-16.png
-    images/file-32.png
-    images/filecontents-128.png
-    images/filecontents-16.png
-    images/filecontents-32.png
-    images/fileinfo-128.png
-    images/fileinfo-16.png
-    images/fileinfo-32.png
-    images/filelink-128.png
-    images/filelink-16.png
-    images/filelink-32.png
-    images/floppy-128.png
-    images/floppy-16.png
-    images/floppy-32.png
-    images/fontbitmap-16.png
-    images/fonttruetype-16.png
-    images/fusion_groupbox.png
-    images/harddrive-128.png
-    images/harddrive-16.png
-    images/harddrive-32.png
-    images/left-128.png
-    images/left-16.png
-    images/left-32.png
-    images/media-pause-16.png
-    images/media-pause-32.png
-    images/media-play-16.png
-    images/media-play-32.png
-    images/media-seek-backward-16.png
-    images/media-seek-backward-32.png
-    images/media-seek-forward-16.png
-    images/media-seek-forward-32.png
-    images/media-skip-backward-16.png
-    images/media-skip-backward-32.png
-    images/media-skip-forward-16.png
-    images/media-skip-forward-32.png
-    images/media-stop-16.png
-    images/media-stop-32.png
-    images/media-volume-16.png
-    images/media-volume-muted-16.png
-    images/networkdrive-128.png
-    images/networkdrive-16.png
-    images/networkdrive-32.png
-    images/newdirectory-128.png
-    images/newdirectory-16.png
-    images/newdirectory-32.png
-    images/normalizedockup-10.png
-    images/normalizedockup-16.png
-    images/normalizedockup-20.png
-    images/normalizedockup-32.png
-    images/normalizedockup-48.png
-    images/normalizedockup-64.png
-    images/parentdir-128.png
-    images/parentdir-16.png
-    images/parentdir-32.png
-    images/refresh-24.png
-    images/refresh-32.png
-    images/right-128.png
-    images/right-16.png
-    images/right-32.png
-    images/standardbutton-apply-128.png
-    images/standardbutton-apply-16.png
-    images/standardbutton-apply-32.png
-    images/standardbutton-cancel-128.png
-    images/standardbutton-cancel-16.png
-    images/standardbutton-cancel-32.png
-    images/standardbutton-clear-128.png
-    images/standardbutton-clear-16.png
-    images/standardbutton-clear-32.png
-    images/standardbutton-close-128.png
-    images/standardbutton-close-16.png
-    images/standardbutton-close-32.png
-    images/standardbutton-closetab-16.png
-    images/standardbutton-closetab-down-16.png
-    images/standardbutton-closetab-hover-16.png
-    images/standardbutton-delete-128.png
-    images/standardbutton-delete-16.png
-    images/standardbutton-delete-32.png
-    images/standardbutton-help-128.png
-    images/standardbutton-help-16.png
-    images/standardbutton-help-32.png
-    images/standardbutton-no-128.png
-    images/standardbutton-no-16.png
-    images/standardbutton-no-32.png
-    images/standardbutton-ok-128.png
-    images/standardbutton-ok-16.png
-    images/standardbutton-ok-32.png
-    images/standardbutton-open-128.png
-    images/standardbutton-open-16.png
-    images/standardbutton-open-32.png
-    images/standardbutton-save-128.png
-    images/standardbutton-save-16.png
-    images/standardbutton-save-32.png
-    images/standardbutton-yes-128.png
-    images/standardbutton-yes-16.png
-    images/standardbutton-yes-32.png
-    images/stop-24.png
-    images/stop-32.png
-    images/titlebar-contexthelp-16.png
-    images/titlebar-contexthelp-32.png
-    images/titlebar-contexthelp-48.png
-    images/titlebar-max-16.png
-    images/titlebar-max-32.png
-    images/titlebar-max-48.png
-    images/titlebar-min-16.png
-    images/titlebar-min-32.png
-    images/titlebar-min-48.png
-    images/titlebar-shade-16.png
-    images/titlebar-shade-32.png
-    images/titlebar-shade-48.png
-    images/titlebar-unshade-16.png
-    images/titlebar-unshade-32.png
-    images/titlebar-unshade-48.png
-    images/toolbar-ext-h-16.png
-    images/toolbar-ext-h-32.png
-    images/toolbar-ext-h-8.png
-    images/toolbar-ext-h-rtl-16.png
-    images/toolbar-ext-h-rtl-32.png
-    images/toolbar-ext-h-rtl-8.png
-    images/toolbar-ext-v-10.png
-    images/toolbar-ext-v-20.png
-    images/toolbar-ext-v-5.png
-    images/trash-128.png
-    images/trash-16.png
-    images/trash-32.png
-    images/up-128.png
-    images/up-16.png
-    images/up-32.png
-    images/viewdetailed-128.png
-    images/viewdetailed-16.png
-    images/viewdetailed-32.png
-    images/viewlist-128.png
-    images/viewlist-16.png
-    images/viewlist-32.png)
+set(qstyle_resource_files
+    "images/cdr-128.png"
+    "images/cdr-16.png"
+    "images/cdr-32.png"
+    "images/cleartext-16.png"
+    "images/cleartext-32.png"
+    "images/closedock-10.png"
+    "images/closedock-16.png"
+    "images/closedock-20.png"
+    "images/closedock-32.png"
+    "images/closedock-48.png"
+    "images/closedock-64.png"
+    "images/computer-16.png"
+    "images/computer-32.png"
+    "images/desktop-16.png"
+    "images/desktop-32.png"
+    "images/dirclosed-128.png"
+    "images/dirclosed-16.png"
+    "images/dirclosed-32.png"
+    "images/dirlink-128.png"
+    "images/dirlink-16.png"
+    "images/dirlink-32.png"
+    "images/diropen-128.png"
+    "images/diropen-16.png"
+    "images/diropen-32.png"
+    "images/down-128.png"
+    "images/down-16.png"
+    "images/down-32.png"
+    "images/dvd-128.png"
+    "images/dvd-16.png"
+    "images/dvd-32.png"
+    "images/file-128.png"
+    "images/file-16.png"
+    "images/file-32.png"
+    "images/filecontents-128.png"
+    "images/filecontents-16.png"
+    "images/filecontents-32.png"
+    "images/fileinfo-128.png"
+    "images/fileinfo-16.png"
+    "images/fileinfo-32.png"
+    "images/filelink-128.png"
+    "images/filelink-16.png"
+    "images/filelink-32.png"
+    "images/floppy-128.png"
+    "images/floppy-16.png"
+    "images/floppy-32.png"
+    "images/fontbitmap-16.png"
+    "images/fonttruetype-16.png"
+    "images/fusion_groupbox.png"
+    "images/harddrive-128.png"
+    "images/harddrive-16.png"
+    "images/harddrive-32.png"
+    "images/left-128.png"
+    "images/left-16.png"
+    "images/left-32.png"
+    "images/media-pause-16.png"
+    "images/media-pause-32.png"
+    "images/media-play-16.png"
+    "images/media-play-32.png"
+    "images/media-seek-backward-16.png"
+    "images/media-seek-backward-32.png"
+    "images/media-seek-forward-16.png"
+    "images/media-seek-forward-32.png"
+    "images/media-skip-backward-16.png"
+    "images/media-skip-backward-32.png"
+    "images/media-skip-forward-16.png"
+    "images/media-skip-forward-32.png"
+    "images/media-stop-16.png"
+    "images/media-stop-32.png"
+    "images/media-volume-16.png"
+    "images/media-volume-muted-16.png"
+    "images/networkdrive-128.png"
+    "images/networkdrive-16.png"
+    "images/networkdrive-32.png"
+    "images/newdirectory-128.png"
+    "images/newdirectory-16.png"
+    "images/newdirectory-32.png"
+    "images/normalizedockup-10.png"
+    "images/normalizedockup-16.png"
+    "images/normalizedockup-20.png"
+    "images/normalizedockup-32.png"
+    "images/normalizedockup-48.png"
+    "images/normalizedockup-64.png"
+    "images/parentdir-128.png"
+    "images/parentdir-16.png"
+    "images/parentdir-32.png"
+    "images/refresh-24.png"
+    "images/refresh-32.png"
+    "images/right-128.png"
+    "images/right-16.png"
+    "images/right-32.png"
+    "images/standardbutton-apply-128.png"
+    "images/standardbutton-apply-16.png"
+    "images/standardbutton-apply-32.png"
+    "images/standardbutton-cancel-128.png"
+    "images/standardbutton-cancel-16.png"
+    "images/standardbutton-cancel-32.png"
+    "images/standardbutton-clear-128.png"
+    "images/standardbutton-clear-16.png"
+    "images/standardbutton-clear-32.png"
+    "images/standardbutton-close-128.png"
+    "images/standardbutton-close-16.png"
+    "images/standardbutton-close-32.png"
+    "images/standardbutton-closetab-16.png"
+    "images/standardbutton-closetab-down-16.png"
+    "images/standardbutton-closetab-hover-16.png"
+    "images/standardbutton-delete-128.png"
+    "images/standardbutton-delete-16.png"
+    "images/standardbutton-delete-32.png"
+    "images/standardbutton-help-128.png"
+    "images/standardbutton-help-16.png"
+    "images/standardbutton-help-32.png"
+    "images/standardbutton-no-128.png"
+    "images/standardbutton-no-16.png"
+    "images/standardbutton-no-32.png"
+    "images/standardbutton-ok-128.png"
+    "images/standardbutton-ok-16.png"
+    "images/standardbutton-ok-32.png"
+    "images/standardbutton-open-128.png"
+    "images/standardbutton-open-16.png"
+    "images/standardbutton-open-32.png"
+    "images/standardbutton-save-128.png"
+    "images/standardbutton-save-16.png"
+    "images/standardbutton-save-32.png"
+    "images/standardbutton-yes-128.png"
+    "images/standardbutton-yes-16.png"
+    "images/standardbutton-yes-32.png"
+    "images/stop-24.png"
+    "images/stop-32.png"
+    "images/titlebar-contexthelp-16.png"
+    "images/titlebar-contexthelp-32.png"
+    "images/titlebar-contexthelp-48.png"
+    "images/titlebar-max-16.png"
+    "images/titlebar-max-32.png"
+    "images/titlebar-max-48.png"
+    "images/titlebar-min-16.png"
+    "images/titlebar-min-32.png"
+    "images/titlebar-min-48.png"
+    "images/titlebar-shade-16.png"
+    "images/titlebar-shade-32.png"
+    "images/titlebar-shade-48.png"
+    "images/titlebar-unshade-16.png"
+    "images/titlebar-unshade-32.png"
+    "images/titlebar-unshade-48.png"
+    "images/toolbar-ext-h-16.png"
+    "images/toolbar-ext-h-32.png"
+    "images/toolbar-ext-h-8.png"
+    "images/toolbar-ext-h-rtl-16.png"
+    "images/toolbar-ext-h-rtl-32.png"
+    "images/toolbar-ext-h-rtl-8.png"
+    "images/toolbar-ext-v-10.png"
+    "images/toolbar-ext-v-20.png"
+    "images/toolbar-ext-v-5.png"
+    "images/trash-128.png"
+    "images/trash-16.png"
+    "images/trash-32.png"
+    "images/up-128.png"
+    "images/up-16.png"
+    "images/up-32.png"
+    "images/viewdetailed-128.png"
+    "images/viewdetailed-16.png"
+    "images/viewdetailed-32.png"
+    "images/viewlist-128.png"
+    "images/viewlist-16.png"
+    "images/viewlist-32.png"
+)
+
+add_qt_resource(Widgets "qstyle"
+    PREFIX
+        "/qt-project.org/styles/commonstyle"
+    BASE
+        "styles"
+    FILES
+        ${qstyle_resource_files}
+)
 set_source_files_properties("styles/images/closedock-down-macstyle-16.png"
-    PROPERTIES alias "images/closedock-down-16.png")
+    PROPERTIES QT_RESOURCE_ALIAS "images/closedock-down-16.png"
+)
 set_source_files_properties("styles/images/closedock-macstyle-16.png"
-    PROPERTIES alias "images/closedock-16.png")
+    PROPERTIES QT_RESOURCE_ALIAS "images/closedock-16.png"
+)
 set_source_files_properties("styles/images/dockdock-down-macstyle-16.png"
-    PROPERTIES alias "images/dockdock-down-16.png")
+    PROPERTIES QT_RESOURCE_ALIAS "images/dockdock-down-16.png"
+)
 set_source_files_properties("styles/images/dockdock-macstyle-16.png"
-    PROPERTIES alias "images/dockdock-16.png")
+    PROPERTIES QT_RESOURCE_ALIAS "images/dockdock-16.png"
+)
 set_source_files_properties("styles/images/toolbar-ext-macstyle.png"
-    PROPERTIES alias "images/toolbar-ext.png")
+    PROPERTIES QT_RESOURCE_ALIAS "images/toolbar-ext.png"
+)
 set_source_files_properties("styles/images/toolbar-ext-macstyle@2x.png"
-    PROPERTIES alias "images/toolbar-ext@2x.png")
-add_qt_resource(Widgets "qstyle1" PREFIX "/qt-project.org/styles/macstyle" BASE "styles" FILES
-    images/closedock-down-macstyle-16.png
-    images/closedock-macstyle-16.png
-    images/dockdock-down-macstyle-16.png
-    images/dockdock-macstyle-16.png
-    images/toolbar-ext-macstyle.png
-    images/toolbar-ext-macstyle@2x.png)
+    PROPERTIES QT_RESOURCE_ALIAS "images/toolbar-ext@2x.png"
+)
+set(qstyle1_resource_files
+    "images/closedock-down-macstyle-16.png"
+    "images/closedock-macstyle-16.png"
+    "images/dockdock-down-macstyle-16.png"
+    "images/dockdock-macstyle-16.png"
+    "images/toolbar-ext-macstyle.png"
+    "images/toolbar-ext-macstyle@2x.png"
+)
+
+add_qt_resource(Widgets "qstyle1"
+    PREFIX
+        "/qt-project.org/styles/macstyle"
+    BASE
+        "styles"
+    FILES
+        ${qstyle1_resource_files}
+)
 
 
 #### Keys ignored in scope 1:.:.:widgets.pro:<TRUE>:
-# CONFIG = "$$MODULE_CONFIG" "qt_tracepoints"
 # MODULE_CONFIG = "uic"
 # MODULE_PLUGIN_TYPES = "styles"
 # QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtWidgets.dynlist"
@@ -268,10 +295,14 @@ extend_target(Widgets CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386"
         "/BASE:0x65000000"
 )
 
+extend_target(Widgets CONDITION APPLE
+    SOURCES
+        util/qscroller_mac.mm
+)
+
 extend_target(Widgets CONDITION APPLE_OSX
     SOURCES
         kernel/qmacgesturerecognizer.cpp kernel/qmacgesturerecognizer_p.h
-        util/qscroller_mac.mm
         widgets/qmaccocoaviewcontainer_mac.h widgets/qmaccocoaviewcontainer_mac.mm
         widgets/qmacnativewidget_mac.h widgets/qmacnativewidget_mac.mm
     LIBRARIES
@@ -623,8 +654,18 @@ extend_target(Widgets CONDITION QT_FEATURE_messagebox
 )
 
 # Resources:
-add_qt_resource(Widgets "qmessagebox" PREFIX "/qt-project.org/qmessagebox" BASE "dialogs" FILES
-    images/qtlogo-64.png)
+set(qmessagebox_resource_files
+    "images/qtlogo-64.png"
+)
+
+add_qt_resource(Widgets "qmessagebox"
+    PREFIX
+        "/qt-project.org/qmessagebox"
+    BASE
+        "dialogs"
+    FILES
+        ${qmessagebox_resource_files}
+)
 
 
 extend_target(Widgets CONDITION QT_FEATURE_progressdialog
