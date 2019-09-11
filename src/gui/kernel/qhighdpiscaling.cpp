@@ -476,8 +476,10 @@ QHighDpiScaling::ScaleAndOrigin QHighDpiScaling::scaleAndOrigin(const QWindow *w
 {
     if (!m_active)
         return { qreal(1), QPoint() };
+
     QScreen *screen = window ? window->screen() : QGuiApplication::primaryScreen();
-    return scaleAndOrigin(screen, nativePosition);
+    const bool searchScreen = !window || window->isTopLevel();
+    return scaleAndOrigin(screen, searchScreen ? nativePosition : nullptr);
 }
 
 #endif //QT_NO_HIGHDPISCALING
