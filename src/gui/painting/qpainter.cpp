@@ -1710,8 +1710,8 @@ void QPainter::restore()
 
 static inline void qt_cleanup_painter_state(QPainterPrivate *d)
 {
+    qDeleteAll(d->states);
     d->states.clear();
-    delete d->state;
     d->state = 0;
     d->engine = 0;
     d->device = 0;
