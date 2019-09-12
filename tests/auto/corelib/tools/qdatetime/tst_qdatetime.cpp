@@ -3430,6 +3430,9 @@ void tst_QDateTime::timeZones() const
 
 void tst_QDateTime::systemTimeZoneChange() const
 {
+#ifdef Q_OS_WINRT
+    QSKIP("UWP applications cannot change the system`s time zone (sandboxing)");
+#endif
     // Set the timezone to Brisbane time
     TimeZoneRollback useZone(QByteArray("AEST-10:00"));
 
@@ -3447,9 +3450,6 @@ void tst_QDateTime::systemTimeZoneChange() const
     useZone.reset(QByteArray("IST-05:30"));
 
     QCOMPARE(localDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::LocalTime));
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "WinRT gets this wrong, QTBUG-71185", Continue);
-#endif
     QVERIFY(localMsecs != localDate.toMSecsSinceEpoch());
     QCOMPARE(utcDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::UTC));
     QCOMPARE(utcDate.toMSecsSinceEpoch(), utcMsecs);
