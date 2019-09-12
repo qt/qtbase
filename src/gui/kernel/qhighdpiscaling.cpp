@@ -265,7 +265,7 @@ static inline bool usePixelDensity()
     // reported by the platform plugin. There are several enablers and several
     // disablers. A single disable may veto all other enablers.
 
-    // First, check of there is an explicit disable.
+    // Check if there is an explicit disable
     if (QCoreApplication::testAttribute(Qt::AA_DisableHighDpiScaling))
         return false;
     bool screenEnvValueOk;
@@ -277,12 +277,8 @@ static inline bool usePixelDensity()
     if (enableEnvValueOk && enableEnvValue < 1)
         return false;
 
-    // Then return if there was an enable.
-    return QCoreApplication::testAttribute(Qt::AA_EnableHighDpiScaling)
-        || (screenEnvValueOk && screenEnvValue > 0)
-        || (enableEnvValueOk && enableEnvValue > 0)
-        || (qEnvironmentVariableIsSet(legacyDevicePixelEnvVar)
-            && qEnvironmentVariable(legacyDevicePixelEnvVar).compare(QLatin1String("auto"), Qt::CaseInsensitive) == 0);
+    // Enable by default
+    return true;
 }
 
 qreal QHighDpiScaling::rawScaleFactor(const QPlatformScreen *screen)
