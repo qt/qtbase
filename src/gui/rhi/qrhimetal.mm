@@ -583,9 +583,10 @@ void QRhiMetal::sendVMemStatsToProfiler()
     // nothing to do here
 }
 
-void QRhiMetal::makeThreadLocalNativeContextCurrent()
+bool QRhiMetal::makeThreadLocalNativeContextCurrent()
 {
-    // nothing to do here
+    // not applicable
+    return false;
 }
 
 void QRhiMetal::releaseCachedResources()

@@ -664,7 +664,7 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
-    void makeThreadLocalNativeContextCurrent() override;
+    bool makeThreadLocalNativeContextCurrent() override;
     void releaseCachedResources() override;
     bool isDeviceLost() const override;
 
@@ -770,6 +770,7 @@ public:
     QVector<GLint> supportedCompressedFormats;
     mutable QVector<int> supportedSampleCountList;
     QRhiGles2NativeHandles nativeHandlesStruct;
+    mutable bool contextLost = false;
 
     struct DeferredReleaseEntry {
         enum Type {

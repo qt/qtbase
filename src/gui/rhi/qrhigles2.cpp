@@ -371,7 +371,12 @@ bool QRhiGles2::ensureContext(QSurface *surface) const
         return true;
 
     if (!ctx->makeCurrent(surface)) {
-        qWarning("QRhiGles2: Failed to make context current. Expect bad things to happen.");
+        if (ctx->isValid()) {
+            qWarning("QRhiGles2: Failed to make context current. Expect bad things to happen.");
+        } else {
+            qWarning("QRhiGles2: Context is lost.");
+            contextLost = true;
+        }
         return false;
     }
 
@@ -490,6 +495,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
     } // else (with gles) these are always on
 
     nativeHandlesStruct.context = ctx;
+
+    contextLost = false;
 
     return true;
 }
@@ -753,12 +760,12 @@ void QRhiGles2::sendVMemStatsToProfiler()
     // nothing to do here
 }
 
-void QRhiGles2::makeThreadLocalNativeContextCurrent()
+bool QRhiGles2::makeThreadLocalNativeContextCurrent()
 {
     if (inFrame && !ofr.active)
-        ensureContext(currentSwapChain->surface);
+        return ensureContext(currentSwapChain->surface);
     else
-        ensureContext();
+        return ensureContext();
 }
 
 void QRhiGles2::releaseCachedResources()
@@ -774,7 +781,7 @@ void QRhiGles2::releaseCachedResources()
 
 bool QRhiGles2::isDeviceLost() const
 {
-    return false;
+    return contextLost;
 }
 
 QRhiRenderBuffer *QRhiGles2::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -1161,7 +1168,7 @@ QRhi::FrameOpResult QRhiGles2::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
 
     QGles2SwapChain *swapChainD = QRHI_RES(QGles2SwapChain, swapChain);
     if (!ensureContext(swapChainD->surface))
-        return QRhi::FrameOpError;
+        return contextLost ? QRhi::FrameOpDeviceLost : QRhi::FrameOpError;
 
     currentSwapChain = swapChainD;
 
@@ -1184,7 +1191,7 @@ QRhi::FrameOpResult QRhiGles2::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     addBoundaryCommand(&swapChainD->cb, QGles2CommandBuffer::Command::EndFrame);
 
     if (!ensureContext(swapChainD->surface))
-        return QRhi::FrameOpError;
+        return contextLost ? QRhi::FrameOpDeviceLost : QRhi::FrameOpError;
 
     executeCommandBuffer(&swapChainD->cb);
 
@@ -1208,7 +1215,7 @@ QRhi::FrameOpResult QRhiGles2::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
 {
     Q_UNUSED(flags);
     if (!ensureContext())
-        return QRhi::FrameOpError;
+        return contextLost ? QRhi::FrameOpDeviceLost : QRhi::FrameOpError;
 
     ofr.active = true;
 
@@ -1230,7 +1237,7 @@ QRhi::FrameOpResult QRhiGles2::endOffscreenFrame(QRhi::EndFrameFlags flags)
     addBoundaryCommand(&ofr.cbWrapper, QGles2CommandBuffer::Command::EndFrame);
 
     if (!ensureContext())
-        return QRhi::FrameOpError;
+        return contextLost ? QRhi::FrameOpDeviceLost : QRhi::FrameOpError;
 
     executeCommandBuffer(&ofr.cbWrapper);
 
@@ -1244,14 +1251,14 @@ QRhi::FrameOpResult QRhiGles2::finish()
             Q_ASSERT(!currentSwapChain);
             Q_ASSERT(ofr.cbWrapper.recordingPass == QGles2CommandBuffer::NoPass);
             if (!ensureContext())
-                return QRhi::FrameOpError;
+                return contextLost ? QRhi::FrameOpDeviceLost : QRhi::FrameOpError;
             executeCommandBuffer(&ofr.cbWrapper);
             ofr.cbWrapper.resetCommands();
         } else {
             Q_ASSERT(currentSwapChain);
             Q_ASSERT(currentSwapChain->cb.recordingPass == QGles2CommandBuffer::NoPass);
             if (!ensureContext(currentSwapChain->surface))
-                return QRhi::FrameOpError;
+                return contextLost ? QRhi::FrameOpDeviceLost : QRhi::FrameOpError;
             executeCommandBuffer(&currentSwapChain->cb);
             currentSwapChain->cb.resetCommands();
         }

@@ -1414,7 +1414,7 @@ public:
     int resourceLimit(ResourceLimit limit) const;
 
     const QRhiNativeHandles *nativeHandles();
-    void makeThreadLocalNativeContextCurrent();
+    bool makeThreadLocalNativeContextCurrent();
 
     QRhiProfiler *profiler();
 

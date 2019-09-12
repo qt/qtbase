@@ -468,7 +468,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value FrameOpDeviceLost The graphics device was lost. This can be
     recoverable by attempting to repeat the operation (such as, beginFrame())
     after releasing and reinitializing all objects backed by native graphics
-    resources.
+    resources. See isDeviceLost().
  */
 
 /*!
@@ -5022,10 +5022,17 @@ const QRhiNativeHandles *QRhi::nativeHandles()
     has to ensure external OpenGL code provided by the application can still
     run like it did before with direct usage of OpenGL, as long as the QRhi is
     using the OpenGL backend.
+
+    \return false when failed, similarly to QOpenGLContext::makeCurrent(). When
+    the operation failed, isDeviceLost() can be called to determine if there
+    was a loss of context situation. Such a check is equivalent to checking via
+    QOpenGLContext::isValid().
+
+    \sa QOpenGLContext::makeCurrent(), QOpenGLContext::isValid()
  */
-void QRhi::makeThreadLocalNativeContextCurrent()
+bool QRhi::makeThreadLocalNativeContextCurrent()
 {
-    d->makeThreadLocalNativeContextCurrent();
+    return d->makeThreadLocalNativeContextCurrent();
 }
 
 /*!
@@ -5092,6 +5099,12 @@ void QRhi::releaseCachedResources()
     reinitialized then. However, applications and libraries working directly
     with QRhi are expected to be prepared to check and handle device loss
     situations themselves.
+
+    \note With OpenGL, applications may need to opt-in to context reset
+    notifications by setting QSurfaceFormat::ResetNotification on the
+    QOpenGLContext. This is typically done by enabling the flag in
+    QRhiGles2InitParams::format. Keep in mind however that some systems may
+    generate context resets situations even when this flag is not set.
  */
 bool QRhi::isDeviceLost() const
 {
@@ -5259,7 +5272,17 @@ QRhiSwapChain *QRhi::newSwapChain()
 
     \endlist
 
-    \sa endFrame(), beginOffscreenFrame()
+    \return QRhi::FrameOpSuccess on success, or another QRhi::FrameOpResult
+    value on failure. Some of these should be treated as soft, "try again
+    later" type of errors: When QRhi::FrameOpSwapChainOutOfDate is returned,
+    the swapchain is to be resized or updated by calling
+    QRhiSwapChain::buildOrResize(). The application should then attempt to
+    generate a new frame. QRhi::FrameOpDeviceLost means the graphics device is
+    lost but this may also be recoverable by releasing all resources, including
+    the QRhi itself, and then recreating all resources. See isDeviceLost() for
+    further discussion.
+
+    \sa endFrame(), beginOffscreenFrame(), isDeviceLost()
  */
 QRhi::FrameOpResult QRhi::beginFrame(QRhiSwapChain *swapChain, BeginFrameFlags flags)
 {
@@ -5284,7 +5307,17 @@ QRhi::FrameOpResult QRhi::beginFrame(QRhiSwapChain *swapChain, BeginFrameFlags f
     Passing QRhi::SkipPresent skips queuing the Present command or calling
     swapBuffers.
 
-    \sa beginFrame()
+    \return QRhi::FrameOpSuccess on success, or another QRhi::FrameOpResult
+    value on failure. Some of these should be treated as soft, "try again
+    later" type of errors: When QRhi::FrameOpSwapChainOutOfDate is returned,
+    the swapchain is to be resized or updated by calling
+    QRhiSwapChain::buildOrResize(). The application should then attempt to
+    generate a new frame. QRhi::FrameOpDeviceLost means the graphics device is
+    lost but this may also be recoverable by releasing all resources, including
+    the QRhi itself, and then recreating all resources. See isDeviceLost() for
+    further discussion.
+
+    \sa beginFrame(), isDeviceLost()
  */
 QRhi::FrameOpResult QRhi::endFrame(QRhiSwapChain *swapChain, EndFrameFlags flags)
 {

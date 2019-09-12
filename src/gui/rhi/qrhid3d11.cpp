@@ -502,9 +502,10 @@ void QRhiD3D11::sendVMemStatsToProfiler()
     // nothing to do here
 }
 
-void QRhiD3D11::makeThreadLocalNativeContextCurrent()
+bool QRhiD3D11::makeThreadLocalNativeContextCurrent()
 {
-    // nothing to do here
+    // not applicable
+    return false;
 }
 
 void QRhiD3D11::releaseCachedResources()

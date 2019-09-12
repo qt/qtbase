@@ -156,7 +156,7 @@ public:
     virtual int resourceLimit(QRhi::ResourceLimit limit) const = 0;
     virtual const QRhiNativeHandles *nativeHandles() = 0;
     virtual void sendVMemStatsToProfiler() = 0;
-    virtual void makeThreadLocalNativeContextCurrent() = 0;
+    virtual bool makeThreadLocalNativeContextCurrent() = 0;
     virtual void releaseCachedResources() = 0;
     virtual bool isDeviceLost() const = 0;
 

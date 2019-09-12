@@ -3767,9 +3767,10 @@ void QRhiVulkan::sendVMemStatsToProfiler()
                          quint32(stats.total.usedBytes), quint32(stats.total.unusedBytes)));
 }
 
-void QRhiVulkan::makeThreadLocalNativeContextCurrent()
+bool QRhiVulkan::makeThreadLocalNativeContextCurrent()
 {
-    // nothing to do here
+    // not applicable
+    return false;
 }
 
 void QRhiVulkan::releaseCachedResources()
