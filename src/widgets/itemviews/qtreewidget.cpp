@@ -748,11 +748,14 @@ QMimeData *QTreeModel::internalMimeData()  const
 
 QMimeData *QTreeModel::mimeData(const QModelIndexList &indexes) const
 {
-    QList<QTreeWidgetItem*> items;
-    for (const auto &index : indexes) {
-        if (index.column() == 0) // only one item per row
-            items << item(index);
-    }
+    QList<QTreeWidgetItem *> items;
+    std::transform(indexes.begin(), indexes.end(), std::back_inserter(items),
+                   [this](const QModelIndex &idx) -> QTreeWidgetItem * { return item(idx); });
+
+    // Ensure we only have one item as an item may have more than
+    // one index selected if there is more than one column
+    std::sort(items.begin(), items.end());
+    items.erase(std::unique(items.begin(), items.end()), items.end());
 
     // cachedIndexes is a little hack to avoid copying from QModelIndexList to
     // QList<QTreeWidgetItem*> and back again in the view
