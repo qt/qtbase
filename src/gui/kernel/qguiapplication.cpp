@@ -149,13 +149,8 @@ QString QGuiApplicationPrivate::styleOverride;
 Qt::ApplicationState QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
 
 Qt::HighDpiScaleFactorRoundingPolicy QGuiApplicationPrivate::highDpiScaleFactorRoundingPolicy =
-#ifdef Q_OS_ANDROID
-    // On Android, Qt has newer rounded the scale factor. Preserve
-    // that behavior by disabling rounding by default.
     Qt::HighDpiScaleFactorRoundingPolicy::PassThrough;
-#else
-    Qt::HighDpiScaleFactorRoundingPolicy::Round;
-#endif
+
 bool QGuiApplicationPrivate::highDpiScalingUpdated = false;
 
 QPointer<QWindow> QGuiApplicationPrivate::currentDragWindow;
