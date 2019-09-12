@@ -92,6 +92,7 @@ protected:
 
 private:
     void populateFromDescriptor(CTFontDescriptorRef font, const QString &familyName = QString());
+    static QStringList fallbacksForFamily(const QString &family);
 
     mutable QString defaultFontName;
 
