@@ -1144,6 +1144,26 @@
 
     \snippet code/doc_src_qmake-manual.pro 27
 
+    \target DEFINES_DEBUG
+    \section1 DEFINES_DEBUG
+
+    Specifies preprocessor defines for the debug configuration. The values of
+    this variable get added to \l{DEFINES} before the project is loaded. This
+    variable is typically set in \l{#QMAKESPEC}{qmake.conf} and rarely needs
+    to be modified.
+
+    This variable was introduced in Qt 5.13.2.
+
+    \target DEFINES_RELEASE
+    \section1 DEFINES_RELEASE
+
+    Specifies preprocessor defines for the release configuration. The values of
+    this variable get added to \l{DEFINES} before the project is loaded. This
+    variable is typically set in \l{#QMAKESPEC}{qmake.conf} and rarely needs
+    to be modified.
+
+    This variable was introduced in Qt 5.13.2.
+
     \target DEF_FILE
     \section1 DEF_FILE
 

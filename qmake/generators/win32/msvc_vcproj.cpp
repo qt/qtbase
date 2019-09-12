@@ -1038,9 +1038,6 @@ void VcprojGenerator::initConfiguration()
         initDeploymentTool();
     initWinDeployQtTool();
     initPreLinkEventTools();
-
-    if (!isDebug)
-        conf.compiler.PreprocessorDefinitions += "NDEBUG";
 }
 
 void VcprojGenerator::initCompilerTool()

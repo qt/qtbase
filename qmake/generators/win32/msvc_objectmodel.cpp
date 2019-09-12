@@ -2125,7 +2125,6 @@ VCResourceCompilerTool::VCResourceCompilerTool()
         ShowProgress(linkProgressNotSet),
         SuppressStartupBanner(unset)
 {
-    PreprocessorDefinitions = QStringList("NDEBUG");
 }
 
 // VCDeploymentTool --------------------------------------------

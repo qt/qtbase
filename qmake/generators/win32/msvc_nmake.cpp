@@ -281,10 +281,6 @@ void NmakeMakefileGenerator::init()
     if (project->isActiveConfig("debug")) {
         project->values("QMAKE_CLEAN").append(targetBase + ".ilk");
         project->values("QMAKE_CLEAN").append(targetBase + ".idb");
-    } else {
-        ProStringList &defines = project->values("DEFINES");
-        if (!defines.contains("NDEBUG"))
-            defines.append("NDEBUG");
     }
 
     if (project->values("QMAKE_APP_FLAG").isEmpty() && project->isActiveConfig("dll")) {
