@@ -162,7 +162,7 @@ class QWindowsVistaAnimation : public QBlendStyleAnimation
 public:
     QWindowsVistaAnimation(Type type, QObject *target) : QBlendStyleAnimation(type, target) { }
 
-    virtual bool isUpdateNeeded() const;
+    bool isUpdateNeeded() const override;
     void paint(QPainter *painter, const QStyleOption *option);
 };
 

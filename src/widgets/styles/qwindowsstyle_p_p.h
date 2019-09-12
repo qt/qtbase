@@ -77,9 +77,9 @@ public:
 
     bool hasSeenAlt(const QWidget *widget) const;
     bool altDown() const { return alt_down; }
-    bool alt_down;
+    bool alt_down = false;
     QList<const QWidget *> seenAlt;
-    int menuBarTimer;
+    int menuBarTimer = 0;
 
     QColor inactiveCaptionText;
     QColor activeCaptionColor;
