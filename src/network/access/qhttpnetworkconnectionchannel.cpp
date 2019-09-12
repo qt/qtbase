@@ -1108,6 +1108,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
              || !connection->d_func()->lowPriorityQueue.isEmpty());
 
     if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
+        || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
 #ifndef QT_NO_SSL
         || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY
 #endif
