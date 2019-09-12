@@ -64,14 +64,8 @@ int main(int argc, char *argv[])
     commandLineParser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
     commandLineParser.addHelpOption();
     commandLineParser.addVersionOption();
-    QCommandLineOption noHighDpiPixmapOption("no-highdpi-pixmaps",
-                                             "Disable High DPI image loading (Qt::AA_UseHighDpiPixmaps)");
-    commandLineParser.addOption(noHighDpiPixmapOption);
         commandLineParser.addPositionalArgument(MainWindow::tr("[file]"), MainWindow::tr("Icon file(s) to open."));
     commandLineParser.process(QCoreApplication::arguments());
-
-    if (!commandLineParser.isSet(noHighDpiPixmapOption))
-        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
     MainWindow mainWin;
     if (!commandLineParser.positionalArguments().isEmpty())

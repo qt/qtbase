@@ -320,12 +320,6 @@ void MainWindow::loadImages(const QStringList &fileNames)
     }
 }
 
-void MainWindow::useHighDpiPixmapsChanged(int checkState)
-{
-    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, checkState == Qt::Checked);
-    changeIcon();
-}
-
 //! [20]
 void MainWindow::removeAllImages()
 {
@@ -444,10 +438,6 @@ QWidget *MainWindow::createHighDpiIconSizeGroupBox()
     screenNameLabel = new QLabel(highDpiGroupBox);
     layout->addRow(tr("Screen:"), screenNameLabel);
     layout->addRow(tr("Device pixel ratio:"), devicePixelRatioLabel);
-    QCheckBox *highDpiPixmapsCheckBox = new QCheckBox(QLatin1String("Qt::AA_UseHighDpiPixmaps"));
-    highDpiPixmapsCheckBox->setChecked(QCoreApplication::testAttribute(Qt::AA_UseHighDpiPixmaps));
-    connect(highDpiPixmapsCheckBox, &QCheckBox::stateChanged, this, &MainWindow::useHighDpiPixmapsChanged);
-    layout->addRow(highDpiPixmapsCheckBox);
     return highDpiGroupBox;
 }
 

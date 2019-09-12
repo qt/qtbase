@@ -62,7 +62,6 @@ int main(int argc, char *argv[])
     }
 
     if (useHighDpiScaling) {
-        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
         QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     } else {
         QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);

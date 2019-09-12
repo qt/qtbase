@@ -88,7 +88,6 @@ private slots:
     void addSampleImages();
     void addOtherImages();
     void removeAllImages();
-    void useHighDpiPixmapsChanged(int checkState);
     void screenChanged();
 
 private:
