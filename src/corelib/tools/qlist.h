@@ -1031,7 +1031,7 @@ int lastIndexOf(const QList<T> &list, const U &u, int from)
         Node *n = reinterpret_cast<Node *>(list.p.at(from + 1));
         while (n-- != b) {
             if (n->t() == u)
-                return typename QList<T>::difference_type(n - b);
+                return int(n - b);
         }
     }
     return -1;
