@@ -361,7 +361,8 @@ QAbstractEventDispatcher *QCoreApplicationPrivate::eventDispatcher = nullptr;
 QCoreApplication *QCoreApplication::self = nullptr;
 uint QCoreApplicationPrivate::attribs =
     (1 << Qt::AA_SynthesizeMouseForUnhandledTouchEvents) |
-    (1 << Qt::AA_SynthesizeMouseForUnhandledTabletEvents);
+    (1 << Qt::AA_SynthesizeMouseForUnhandledTabletEvents) |
+    (1 << Qt::AA_UseHighDpiPixmaps);
 
 struct QCoreApplicationData {
     QCoreApplicationData() noexcept {
