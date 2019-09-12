@@ -30,7 +30,12 @@
 #include <QTest>
 
 #include <math.h>
+#include <condition_variable>
+#include <mutex>
 
+#include <limits.h>
+
+using namespace std::chrono_literals;
 
 class tst_QWaitCondition : public QObject
 {
@@ -42,24 +47,67 @@ public:
     }
 
 private slots:
+    void oscillate_QWaitCondition_QMutex_data() { oscillate_mutex_data(); }
+    void oscillate_QWaitCondition_QMutex();
+    void oscillate_QWaitCondition_QReadWriteLock_data() { oscillate_mutex_data(); }
+    void oscillate_QWaitCondition_QReadWriteLock();
+    void oscillate_std_condition_variable_std_mutex_data() { oscillate_mutex_data(); }
+    void oscillate_std_condition_variable_std_mutex();
+    void oscillate_std_condition_variable_any_QMutex_data() { oscillate_mutex_data(); }
+    void oscillate_std_condition_variable_any_QMutex();
+    void oscillate_std_condition_variable_any_QReadWriteLock_data() { oscillate_mutex_data(); }
+    void oscillate_std_condition_variable_any_QReadWriteLock();
+
+private:
     void oscillate_mutex_data();
-    void oscillate_mutex();
-    void oscillate_writelock_data();
-    void oscillate_writelock();
 };
 
 
 int turn;
 const int threadCount = 10;
 QWaitCondition cond;
+std::condition_variable cv;
+std::condition_variable_any cva;
 
-template <class Mutex, class Locker>
+template <typename Cond>
+Cond *get();
+
+template <> std::condition_variable     *get() { return &cv; }
+template <> std::condition_variable_any *get() { return &cva; }
+
+template <class Cond, class Mutex, class Locker>
 class OscillateThread : public QThread
 {
 public:
     Mutex *mutex;
     int m_threadid;
-    int timeout;
+    unsigned long timeout;
+
+    void run() override
+    {
+        for (int count = 0; count < 5000; ++count) {
+            Locker lock(*mutex);
+            while (m_threadid != turn) {
+                if (timeout == ULONG_MAX)
+                    get<Cond>()->wait(lock);
+                else if (timeout == 0) // Windows doesn't unlock the mutex with a zero timeout
+                    get<Cond>()->wait_for(lock, 1ns);
+                else
+                    get<Cond>()->wait_for(lock, timeout * 1ms);
+            }
+            turn = (turn+1) % threadCount;
+            get<Cond>()->notify_all();
+        }
+    }
+};
+
+template <class Mutex, class Locker>
+class OscillateThread<QWaitCondition, Mutex, Locker> : public QThread
+{
+public:
+    Mutex *mutex;
+    int m_threadid;
+    unsigned long timeout;
 
     void run() override
     {
@@ -75,10 +123,10 @@ public:
     }
 };
 
-template <class Mutex, class Locker>
+template <class Cond, class Mutex, class Locker>
 void oscillate(unsigned long timeout) {
 
-    OscillateThread<Mutex, Locker> thrd[threadCount];
+    OscillateThread<Cond, Mutex, Locker> thrd[threadCount];
     Mutex m;
     for (int i = 0; i < threadCount; ++i) {
         thrd[i].mutex = &m;
@@ -107,21 +155,43 @@ void tst_QWaitCondition::oscillate_mutex_data()
     QTest::newRow("forever") << ULONG_MAX;
 }
 
-void tst_QWaitCondition::oscillate_mutex()
+void tst_QWaitCondition::oscillate_QWaitCondition_QMutex()
 {
     QFETCH(unsigned long, timeout);
-    oscillate<QMutex, QMutexLocker<QMutex>>(timeout);
+    oscillate<QWaitCondition, QMutex, QMutexLocker<QMutex>>(timeout);
 }
 
-void tst_QWaitCondition::oscillate_writelock_data()
-{
-    oscillate_mutex_data();
-}
-
-void tst_QWaitCondition::oscillate_writelock()
+void tst_QWaitCondition::oscillate_QWaitCondition_QReadWriteLock()
 {
     QFETCH(unsigned long, timeout);
-    oscillate<QReadWriteLock, QWriteLocker>(timeout);
+    oscillate<QWaitCondition, QReadWriteLock, QWriteLocker>(timeout);
+}
+
+void tst_QWaitCondition::oscillate_std_condition_variable_std_mutex()
+{
+    QFETCH(unsigned long, timeout);
+    oscillate<std::condition_variable, std::mutex, std::unique_lock<std::mutex>>(timeout);
+}
+
+
+void tst_QWaitCondition::oscillate_std_condition_variable_any_QMutex()
+{
+    QFETCH(unsigned long, timeout);
+    oscillate<std::condition_variable_any, QMutex, std::unique_lock<QMutex>>(timeout);
+}
+
+
+void tst_QWaitCondition::oscillate_std_condition_variable_any_QReadWriteLock()
+{
+    QFETCH(unsigned long, timeout);
+
+    struct WriteLocker : QWriteLocker {
+        // adapt to BasicLockable
+        explicit WriteLocker(QReadWriteLock &m) : QWriteLocker{&m} {}
+        void lock() { relock(); }
+    };
+
+    oscillate<std::condition_variable_any, QReadWriteLock, WriteLocker>(timeout);
 }
 
 QTEST_MAIN(tst_QWaitCondition)
