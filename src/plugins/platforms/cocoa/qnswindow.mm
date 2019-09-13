@@ -255,8 +255,8 @@ static bool isMouseEvent(NSEvent *ev)
 
 - (NSColor *)backgroundColor
 {
-    return self.styleMask & NSWindowStyleMaskTexturedBackground ?
-                [super backgroundColor] : [NSColor clearColor];
+    return self.styleMask == NSWindowStyleMaskBorderless ?
+        [NSColor clearColor] : [super backgroundColor];
 }
 
 - (void)sendEvent:(NSEvent*)theEvent
