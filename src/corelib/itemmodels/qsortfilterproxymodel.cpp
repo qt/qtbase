@@ -403,8 +403,8 @@ public:
         QVector<int> &source_to_proxy, QVector<int> &proxy_to_source,
         int proxy_start, int proxy_end, const QModelIndex &proxy_parent,
         Qt::Orientation orient, bool emit_signal = true);
-    void build_source_to_proxy_mapping(
-        const QVector<int> &proxy_to_source, QVector<int> &source_to_proxy) const;
+    static inline void build_source_to_proxy_mapping(
+        const QVector<int> &proxy_to_source, QVector<int> &source_to_proxy, int start = 0);
     void source_items_inserted(const QModelIndex &source_parent,
                                int start, int end, Qt::Orientation orient);
     void source_items_about_to_be_removed(const QModelIndex &source_parent,
@@ -798,9 +798,11 @@ void QSortFilterProxyModelPrivate::remove_proxy_interval(
     }
 
     // Remove items from proxy-to-source mapping
+    for (int i = proxy_start; i <= proxy_end; ++i)
+        source_to_proxy[proxy_to_source.at(i)] = -1;
     proxy_to_source.remove(proxy_start, proxy_end - proxy_start + 1);
 
-    build_source_to_proxy_mapping(proxy_to_source, source_to_proxy);
+    build_source_to_proxy_mapping(proxy_to_source, source_to_proxy, proxy_start);
 
     if (emit_signal) {
         if (orient == Qt::Vertical)
@@ -926,7 +928,7 @@ void QSortFilterProxyModelPrivate::insert_source_items(
         for (int i = 0; i < source_items.size(); ++i)
             proxy_to_source.insert(proxy_start + i, source_items.at(i));
 
-        build_source_to_proxy_mapping(proxy_to_source, source_to_proxy);
+        build_source_to_proxy_mapping(proxy_to_source, source_to_proxy, proxy_start);
 
         if (emit_signal) {
             if (orient == Qt::Vertical)
@@ -1208,11 +1210,12 @@ void QSortFilterProxyModelPrivate::proxy_item_range(
   \internal
 */
 void QSortFilterProxyModelPrivate::build_source_to_proxy_mapping(
-    const QVector<int> &proxy_to_source, QVector<int> &source_to_proxy) const
+    const QVector<int> &proxy_to_source, QVector<int> &source_to_proxy, int start)
 {
-    source_to_proxy.fill(-1);
-    int proxy_count = proxy_to_source.size();
-    for (int i = 0; i < proxy_count; ++i)
+    if (start == 0)
+        source_to_proxy.fill(-1);
+    const int proxy_count = proxy_to_source.size();
+    for (int i = start; i < proxy_count; ++i)
         source_to_proxy[proxy_to_source.at(i)] = i;
 }
 

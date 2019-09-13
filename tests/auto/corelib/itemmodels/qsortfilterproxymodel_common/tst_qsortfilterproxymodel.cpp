@@ -4940,6 +4940,107 @@ void tst_QSortFilterProxyModel::filterAndInsertRow()
     }
 }
 
+
+namespace CheckFilteredIndexes {
+class TableModel : public QAbstractTableModel
+{
+    Q_OBJECT
+public:
+    static const int s_rowCount = 1000;
+    static const int s_columnCount = 1;
+    TableModel(QObject *parent = nullptr) : QAbstractTableModel(parent)
+    {
+        m_data.resize(s_rowCount);
+        for (int r = 0; r < s_rowCount; ++r) {
+            auto &curRow = m_data[r];
+            curRow.resize(s_columnCount);
+            for (int c = 0; c < s_columnCount; ++c) {
+                curRow[c] = QVariant(QString::number(r % 100) +
+                                     QLatin1Char('_') + QString::number(r / 100) +
+                                     QString::number(c));
+            }
+        }
+    }
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override
+    {
+        return parent.isValid() ? 0 : s_rowCount;
+    }
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override
+    {
+        return parent.isValid() ? 0 : s_columnCount;
+    }
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override
+    {
+        if (role != Qt::DisplayRole || !index.isValid())
+            return QVariant();
+        return m_data[index.row()][index.column()];
+    }
+    QVector<QVector<QVariant>> m_data;
+};
+
+class SortFilterProxyModel final : public QSortFilterProxyModel
+{
+    Q_OBJECT
+public:
+    using QSortFilterProxyModel::QSortFilterProxyModel;
+    using QSortFilterProxyModel::invalidateFilter;
+
+    void setSourceModel(QAbstractItemModel *m) override
+    {
+        m_sourceModel = qobject_cast<TableModel*>(m);
+        QSortFilterProxyModel::setSourceModel(m);
+    }
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override
+    {
+        if (!left.isValid() || !right.isValid() || !m_sourceModel)
+            return QSortFilterProxyModel::lessThan(left, right);
+        return m_sourceModel->m_data.at(left.row()).at(left.column()).toString() <
+               m_sourceModel->m_data.at(right.row()).at(right.column()).toString();
+    }
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override
+    {
+        if (m_filteredRows == 0 || source_parent.isValid())
+            return true;
+        return (source_row % m_filteredRows) != 0;
+    }
+
+    TableModel *m_sourceModel = nullptr;
+    int m_filteredRows = 0;
+    bool m_bInverseFilter = false;
+};
+}
+
+void tst_QSortFilterProxyModel::checkFilteredIndexes()
+{
+    using namespace CheckFilteredIndexes;
+    auto checkIndexes = [](const SortFilterProxyModel &s)
+    {
+        for (int r = 0; r < s.rowCount(); ++r) {
+            const QModelIndex idxSFPM = s.index(r, 0);
+            const QModelIndex idxTM = s.mapToSource(idxSFPM);
+            QVERIFY(idxTM.isValid());
+            QVERIFY(idxTM.row() % s.m_filteredRows != 0);
+        }
+    };
+
+    TableModel m;
+    SortFilterProxyModel s;
+    s.m_filteredRows = 2; // every 2nd row is filtered
+    s.setSourceModel(&m);
+    s.sort(0);
+
+    s.invalidateFilter();
+    checkIndexes(s);
+
+    s.m_filteredRows = 5; // every 5th row is filtered
+    s.invalidateFilter();
+    checkIndexes(s);
+
+    s.m_filteredRows = 3; // every 3rd row is filtered
+    s.invalidateFilter();
+    checkIndexes(s);
+}
+
 void tst_QSortFilterProxyModel::invalidateColumnsOrRowsFilter()
 {
     class FilterProxy : public QSortFilterProxyModel

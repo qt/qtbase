@@ -159,6 +159,7 @@ private slots:
     void removeIntervals_data();
     void removeIntervals();
 
+    void checkFilteredIndexes();
     void invalidateColumnsOrRowsFilter();
 
 protected:
