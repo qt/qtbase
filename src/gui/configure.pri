@@ -3,7 +3,7 @@
 defineTest(qtConfLibrary_freetype) {
     TRY_INCLUDEPATHS = $$EXTRA_INCLUDEPATH $$QMAKE_INCDIR_X11
     haiku: TRY_INCLUDEPATHS += /system/develop/headers
-    TRY_INCLUDEPATHS += $$QMAKE_DEFAULT_INCDIR
+    TRY_INCLUDEPATHS += $$QMAKE_DEFAULT_INCDIRS
     for (p, TRY_INCLUDEPATHS) {
         includedir = $$p/freetype2
         exists($$includedir) {
