@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2022 The Qt Company Ltd.
 ** Copyright (C) 2018 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -39,12 +39,14 @@
 ****************************************************************************/
 
 #include "qsemaphore.h"
-#include "qmutex.h"
 #include "qfutex_p.h"
-#include "qwaitcondition.h"
 #include "qdeadlinetimer.h"
 #include "qdatetime.h"
 #include "qdebug.h"
+#include "qlocking_p.h"
+#include "qwaitcondition_p.h"
+
+#include <chrono>
 
 QT_BEGIN_NAMESPACE
 
@@ -275,10 +277,10 @@ template <bool IsTimed> bool futexSemaphoreTryAcquire(QBasicAtomicInteger<quintp
 
 class QSemaphorePrivate {
 public:
-    inline QSemaphorePrivate(int n) : avail(n) { }
+    explicit QSemaphorePrivate(int n) : avail(n) { }
 
-    QMutex mutex;
-    QWaitCondition cond;
+    QtPrivate::mutex mutex;
+    QtPrivate::condition_variable cond;
 
     int avail;
 };
@@ -330,9 +332,10 @@ void QSemaphore::acquire(int n)
         return;
     }
 
-    QMutexLocker locker(&d->mutex);
-    while (n > d->avail)
-        d->cond.wait(locker.mutex());
+    const auto sufficientResourcesAvailable = [this, n] { return d->avail >= n; };
+
+    auto locker = qt_unique_lock(d->mutex);
+    d->cond.wait(locker, sufficientResourcesAvailable);
     d->avail -= n;
 }
 
@@ -405,9 +408,9 @@ void QSemaphore::release(int n)
         return;
     }
 
-    QMutexLocker locker(&d->mutex);
+    const auto locker = qt_scoped_lock(d->mutex);
     d->avail += n;
-    d->cond.wakeAll();
+    d->cond.notify_all();
 }
 
 /*!
@@ -421,7 +424,7 @@ int QSemaphore::available() const
     if (futexAvailable())
         return futexAvailCounter(u.loadRelaxed());
 
-    QMutexLocker locker(&d->mutex);
+    const auto locker = qt_scoped_lock(d->mutex);
     return d->avail;
 }
 
@@ -443,7 +446,7 @@ bool QSemaphore::tryAcquire(int n)
     if (futexAvailable())
         return futexSemaphoreTryAcquire<false>(u, n, 0);
 
-    QMutexLocker locker(&d->mutex);
+    const auto locker = qt_scoped_lock(d->mutex);
     if (n > d->avail)
         return false;
     d->avail -= n;
@@ -468,22 +471,24 @@ bool QSemaphore::tryAcquire(int n)
 */
 bool QSemaphore::tryAcquire(int n, int timeout)
 {
-    Q_ASSERT_X(n >= 0, "QSemaphore::tryAcquire", "parameter 'n' must be non-negative");
+    if (timeout < 0) {
+        acquire(n);
+        return true;
+    }
 
-    // We're documented to accept any negative value as "forever"
-    // but QDeadlineTimer only accepts -1.
-    timeout = qMax(timeout, -1);
+    if (timeout == 0)
+        return tryAcquire(n);
+
+    Q_ASSERT_X(n >= 0, "QSemaphore::tryAcquire", "parameter 'n' must be non-negative");
 
     if (futexAvailable())
         return futexSemaphoreTryAcquire<true>(u, n, timeout);
 
-    QDeadlineTimer timer(timeout);
-    QMutexLocker locker(&d->mutex);
-    while (n > d->avail && !timer.hasExpired()) {
-        if (!d->cond.wait(locker.mutex(), timer))
-            return false;
-    }
-    if (n > d->avail)
+    using namespace std::chrono;
+    const auto sufficientResourcesAvailable = [this, n] { return d->avail >= n; };
+
+    auto locker = qt_unique_lock(d->mutex);
+    if (!d->cond.wait_for(locker, milliseconds{timeout}, sufficientResourcesAvailable))
         return false;
     d->avail -= n;
     return true;
