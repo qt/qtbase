@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -494,8 +494,10 @@ template<> void QSharedDataPointer<QNetworkProxyPrivate>::detach()
 }
 
 /*!
-    Constructs a QNetworkProxy with DefaultProxy type; the proxy type is
-    determined by applicationProxy(), which defaults to NoProxy.
+    Constructs a QNetworkProxy with DefaultProxy type.
+
+    The proxy type is determined by applicationProxy(), which defaults to
+    NoProxy or a system-wide proxy if one is configured.
 
     \sa setType(), setApplicationProxy()
 */
