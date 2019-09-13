@@ -818,6 +818,7 @@
         "rpath": {
             "label": "Build with RPATH",
             "autoDetect": "var.QMAKE_LFLAGS_RPATH != '' && features.shared",
+            "condition": "!config.android",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "rpath_dir": {
