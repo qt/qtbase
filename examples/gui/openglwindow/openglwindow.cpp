@@ -50,18 +50,13 @@
 
 #include "openglwindow.h"
 
-#include <QtCore/QCoreApplication>
-
-#include <QtGui/QOpenGLContext>
-#include <QtGui/QOpenGLPaintDevice>
-#include <QtGui/QPainter>
+#include <QOpenGLContext>
+#include <QOpenGLPaintDevice>
+#include <QPainter>
 
 //! [1]
 OpenGLWindow::OpenGLWindow(QWindow *parent)
     : QWindow(parent)
-    , m_animating(false)
-    , m_context(0)
-    , m_device(0)
 {
     setSurfaceType(QWindow::OpenGLSurface);
 }

@@ -69,7 +69,7 @@ class MainWidget : public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 
 public:
-    explicit MainWidget(QWidget *parent = 0);
+    using QOpenGLWidget::QOpenGLWidget;
     ~MainWidget();
 
 protected:
@@ -87,15 +87,15 @@ protected:
 private:
     QBasicTimer timer;
     QOpenGLShaderProgram program;
-    GeometryEngine *geometries;
+    GeometryEngine *geometries = nullptr;
 
-    QOpenGLTexture *texture;
+    QOpenGLTexture *texture = nullptr;
 
     QMatrix4x4 projection;
 
     QVector2D mousePressPosition;
     QVector3D rotationAxis;
-    qreal angularSpeed;
+    qreal angularSpeed = 0;
     QQuaternion rotation;
 };
 

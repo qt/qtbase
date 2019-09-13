@@ -90,23 +90,23 @@ public:
 private slots:
     void startSecondStage();
 private:
-    QOpenGLTexture *m_texture;
-    QOpenGLShaderProgram *m_program;
-    QOpenGLBuffer *m_vbo;
-    QOpenGLVertexArrayObject *m_vao;
+    QOpenGLTexture *m_texture = nullptr;
+    QOpenGLShaderProgram *m_program = nullptr;
+    QOpenGLBuffer *m_vbo = nullptr;
+    QOpenGLVertexArrayObject *m_vao = nullptr;
     Logo m_logo;
-    int m_projMatrixLoc;
-    int m_camMatrixLoc;
-    int m_worldMatrixLoc;
-    int m_myMatrixLoc;
-    int m_lightPosLoc;
+    int m_projMatrixLoc = 0;
+    int m_camMatrixLoc = 0;
+    int m_worldMatrixLoc = 0;
+    int m_myMatrixLoc = 0;
+    int m_lightPosLoc = 0;
     QMatrix4x4 m_proj;
     QMatrix4x4 m_world;
     QVector3D m_eye;
-    QVector3D m_target;
-    bool m_uniformsDirty;
-    float m_r;
-    float m_r2;
+    QVector3D m_target = {0, 0, -1};
+    bool m_uniformsDirty = true;
+    float m_r = 0;
+    float m_r2 = 0;
 };
 
 #endif

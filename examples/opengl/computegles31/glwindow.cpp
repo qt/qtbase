@@ -73,15 +73,6 @@
 #endif
 
 GLWindow::GLWindow()
-    : m_texImageInput(0),
-      m_texImageTmp(0),
-      m_texImageProcessed(0),
-      m_shaderDisplay(0),
-      m_shaderComputeV(0),
-      m_shaderComputeH(0),
-      m_blurRadius(0.0f),
-      m_animate(true),
-      m_vao(0)
 {
     const float animationStart = 0.0;
     const float animationEnd = 10.0;
@@ -324,27 +315,18 @@ void GLWindow::initializeGL()
              << ((ctx->format().renderableType() == QSurfaceFormat::OpenGLES) ? (" GLES") : (" GL"))
              << " context";
 
-    if (m_texImageInput) {
-        delete m_texImageInput;
-        m_texImageInput = 0;
-    }
     QImage img(":/Qt-logo-medium.png");
     Q_ASSERT(!img.isNull());
+    delete m_texImageInput;
     m_texImageInput = new QOpenGLTexture(img.convertToFormat(QImage::Format_RGBA8888).mirrored());
 
-    if (m_texImageTmp) {
-        delete m_texImageTmp;
-        m_texImageTmp = 0;
-    }
+    delete m_texImageTmp;
     m_texImageTmp = new QOpenGLTexture(QOpenGLTexture::Target2D);
     m_texImageTmp->setFormat(m_texImageInput->format());
     m_texImageTmp->setSize(m_texImageInput->width(),m_texImageInput->height());
     m_texImageTmp->allocateStorage(QOpenGLTexture::RGBA,QOpenGLTexture::UInt8); // WTF?
 
-    if (m_texImageProcessed) {
-        delete m_texImageProcessed;
-        m_texImageProcessed = 0;
-    }
+    delete m_texImageProcessed;
     m_texImageProcessed = new QOpenGLTexture(QOpenGLTexture::Target2D);
     m_texImageProcessed->setFormat(m_texImageInput->format());
     m_texImageProcessed->setSize(m_texImageInput->width(),m_texImageInput->height());
@@ -354,10 +336,7 @@ void GLWindow::initializeGL()
     m_texImageProcessed->setMinificationFilter(QOpenGLTexture::Linear);
     m_texImageProcessed->setWrapMode(QOpenGLTexture::ClampToEdge);
 
-    if (m_shaderDisplay) {
-        delete m_shaderDisplay;
-        m_shaderDisplay = 0;
-    }
+    delete m_shaderDisplay;
     m_shaderDisplay = new QOpenGLShaderProgram;
     // Prepend the correct version directive to the sources. The rest is the
     // same, thanks to the common GLSL syntax.
@@ -365,18 +344,12 @@ void GLWindow::initializeGL()
     m_shaderDisplay->addShaderFromSourceCode(QOpenGLShader::Fragment, versionedShaderCode(fsDisplaySource));
     m_shaderDisplay->link();
 
-    if (m_shaderComputeV) {
-        delete m_shaderComputeV;
-        m_shaderComputeV = 0;
-    }
+    delete m_shaderComputeV;
     m_shaderComputeV = new QOpenGLShaderProgram;
     m_shaderComputeV->addShaderFromSourceCode(QOpenGLShader::Compute, versionedShaderCode(csComputeSourceV));
     m_shaderComputeV->link();
 
-    if (m_shaderComputeH) {
-        delete m_shaderComputeH;
-        m_shaderComputeH = 0;
-    }
+    delete m_shaderComputeH;
     m_shaderComputeH = new QOpenGLShaderProgram;
     m_shaderComputeH->addShaderFromSourceCode(QOpenGLShader::Compute, versionedShaderCode(csComputeSourceH));
     m_shaderComputeH->link();

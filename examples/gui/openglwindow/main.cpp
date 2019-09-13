@@ -50,36 +50,30 @@
 
 #include "openglwindow.h"
 
-#include <QtGui/QGuiApplication>
-#include <QtGui/QMatrix4x4>
-#include <QtGui/QOpenGLShaderProgram>
-#include <QtGui/QScreen>
+#include <QGuiApplication>
+#include <QMatrix4x4>
+#include <QOpenGLShaderProgram>
+#include <QScreen>
+#include <QtMath>
 
-#include <QtCore/qmath.h>
 
 //! [1]
 class TriangleWindow : public OpenGLWindow
 {
 public:
-    TriangleWindow();
+    using OpenGLWindow::OpenGLWindow;
 
     void initialize() override;
     void render() override;
 
 private:
-    GLuint m_posAttr;
-    GLuint m_colAttr;
-    GLuint m_matrixUniform;
+    GLuint m_posAttr = 0;
+    GLuint m_colAttr = 0;
+    GLuint m_matrixUniform = 0;
 
-    QOpenGLShaderProgram *m_program;
-    int m_frame;
+    QOpenGLShaderProgram *m_program = nullptr;
+    int m_frame = 0;
 };
-
-TriangleWindow::TriangleWindow()
-    : m_program(0)
-    , m_frame(0)
-{
-}
 //! [1]
 
 //! [2]
@@ -144,7 +138,7 @@ void TriangleWindow::render()
     m_program->bind();
 
     QMatrix4x4 matrix;
-    matrix.perspective(60.0f, 4.0f/3.0f, 0.1f, 100.0f);
+    matrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
     matrix.translate(0, 0, -2);
     matrix.rotate(100.0f * m_frame / screen()->refreshRate(), 0, 1, 0);
 

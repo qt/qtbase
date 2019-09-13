@@ -53,17 +53,6 @@
 #include <QOpenGLTexture>
 #include <QMouseEvent>
 
-GLWidget::GLWidget(QWidget *parent)
-    : QOpenGLWidget(parent),
-      clearColor(Qt::black),
-      xRot(0),
-      yRot(0),
-      zRot(0),
-      program(0)
-{
-    memset(textures, 0, sizeof(textures));
-}
-
 GLWidget::~GLWidget()
 {
     makeCurrent();
