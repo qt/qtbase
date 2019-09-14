@@ -2255,6 +2255,16 @@ void tst_QSqlQuery::prepare_bind_exec()
             QCOMPARE(q.boundValues().at(1).toString(), utf8str);
         }
 
+        // Test binding more placeholders than the query contains placeholders
+        q.addBindValue(8);
+        q.addBindValue(9);
+        q.addBindValue(10);
+        QCOMPARE(q.boundValues().size(), 3);
+        QCOMPARE(q.boundValues().at(0).toInt(), 8);
+        QCOMPARE(q.boundValues().at(1).toInt(), 9);
+        QCOMPARE(q.boundValues().at(2).toInt(), 10);
+        QFAIL_SQL(q, exec());
+
         QVERIFY_SQL( q, exec( "SELECT * FROM " + qtest_prepare + " order by id" ) );
 
         for ( i = 0; i < 6; ++i ) {
