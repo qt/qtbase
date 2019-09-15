@@ -62,17 +62,16 @@ class QColorVector
 {
 public:
     QColorVector() = default;
-    Q_DECL_CONSTEXPR QColorVector(float x, float y, float z) : x(x), y(y), z(z), _unused(0.0f) { }
+    Q_DECL_CONSTEXPR QColorVector(float x, float y, float z) : x(x), y(y), z(z) { }
     explicit Q_DECL_CONSTEXPR QColorVector(const QPointF &chr) // from XY chromaticity
             : x(chr.x() / chr.y())
             , y(1.0f)
             , z((1.0 - chr.x() - chr.y()) / chr.y())
-            , _unused(0.0f)
     { }
-    float x; // X, x or red
-    float y; // Y, y or green
-    float z; // Z, Y or blue
-    float _unused;
+    float x = 0.0f; // X, x or red
+    float y = 0.0f; // Y, y or green
+    float z = 0.0f; // Z, Y or blue
+    float _unused = 0.0f;
 
     friend inline bool operator==(const QColorVector &v1, const QColorVector &v2);
     friend inline bool operator!=(const QColorVector &v1, const QColorVector &v2);
@@ -81,7 +80,6 @@ public:
         return !x && !y && !z;
     }
 
-    static Q_DECL_CONSTEXPR QColorVector null() { return QColorVector(0.0f, 0.0f, 0.0f); }
     static bool isValidChromaticity(const QPointF &chr)
     {
         if (chr.x() < qreal(0.0) || chr.x() > qreal(1.0))
@@ -187,10 +185,6 @@ public:
                               { r.z, g.z, b.z } };
     }
 
-    static QColorMatrix null()
-    {
-        return { QColorVector::null(), QColorVector::null(), QColorVector::null() };
-    }
     static QColorMatrix identity()
     {
         return { { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } };

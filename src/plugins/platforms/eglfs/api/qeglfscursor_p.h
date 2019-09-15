@@ -59,6 +59,8 @@
 #include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/private/qinputdevicemanager_p.h>
 
+#include <QtCore/qvector.h>
+
 QT_BEGIN_NAMESPACE
 
 class QOpenGLShaderProgram;
@@ -143,7 +145,7 @@ private:
         int cursorsPerRow;
         int width, height; // width and height of the atlas
         int cursorWidth, cursorHeight; // width and height of cursors inside the atlas
-        QList<QPoint> hotSpots;
+        QVector<QPoint> hotSpots;
         QImage image; // valid until it's uploaded
     } m_cursorAtlas;
 

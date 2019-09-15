@@ -50,10 +50,10 @@
 
 #include "basictoolsplugin.h"
 
+#include <QInputDialog>
+#include <QPainter>
+#include <QRandomGenerator>
 #include <QtMath>
-#include <QtWidgets>
-
-#include <stdlib.h>
 
 //! [0]
 QStringList BasicToolsPlugin::brushes() const

@@ -79,10 +79,10 @@ public:
     void endSwapChainFrame(QRhiSwapChain *sc, int frameCount);
     void swapChainFrameGpuTime(QRhiSwapChain *sc, float gpuTimeMs);
 
-    void newReadbackBuffer(quint64 id, QRhiResource *src, quint32 size);
-    void releaseReadbackBuffer(quint64 id);
+    void newReadbackBuffer(qint64 id, QRhiResource *src, quint32 size);
+    void releaseReadbackBuffer(qint64 id);
 
-    void vmemStat(int realAllocCount, int subAllocCount, quint32 totalSize, quint32 unusedSize);
+    void vmemStat(uint realAllocCount, uint subAllocCount, quint32 totalSize, quint32 unusedSize);
 
     void startEntry(QRhiProfiler::StreamOp op, qint64 timestamp, QRhiResource *res);
     void writeInt(const char *key, qint64 v);

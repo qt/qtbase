@@ -2693,7 +2693,14 @@ Q_GLOBAL_STATIC(QRecursiveMutex, libraryPathMutex)
 QStringList QCoreApplication::libraryPaths()
 {
     QMutexLocker locker(libraryPathMutex());
+    return libraryPathsLocked();
+}
 
+/*!
+    \internal
+*/
+QStringList QCoreApplication::libraryPathsLocked()
+{
     if (coreappdata()->manual_libpaths)
         return *(coreappdata()->manual_libpaths);
 
@@ -2769,7 +2776,7 @@ void QCoreApplication::setLibraryPaths(const QStringList &paths)
     // When the application is constructed it should still amend the paths. So we keep the originals
     // around, and even create them if they don't exist, yet.
     if (!coreappdata()->app_libpaths)
-        libraryPaths();
+        libraryPathsLocked();
 
     if (coreappdata()->manual_libpaths)
         *(coreappdata()->manual_libpaths) = paths;
@@ -2812,7 +2819,7 @@ void QCoreApplication::addLibraryPath(const QString &path)
             return;
     } else {
         // make sure that library paths are initialized
-        libraryPaths();
+        libraryPathsLocked();
         QStringList *app_libpaths = coreappdata()->app_libpaths.data();
         if (app_libpaths->contains(canonicalPath))
             return;
@@ -2851,7 +2858,7 @@ void QCoreApplication::removeLibraryPath(const QString &path)
             return;
     } else {
         // make sure that library paths is initialized
-        libraryPaths();
+        libraryPathsLocked();
         QStringList *app_libpaths = coreappdata()->app_libpaths.data();
         if (!app_libpaths->contains(canonicalPath))
             return;

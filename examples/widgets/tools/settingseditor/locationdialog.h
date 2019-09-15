@@ -68,7 +68,7 @@ class LocationDialog : public QDialog
     Q_OBJECT
 
 public:
-    LocationDialog(QWidget *parent = 0);
+    LocationDialog(QWidget *parent = nullptr);
 
     QSettings::Format format() const;
     QSettings::Scope scope() const;

@@ -50,18 +50,16 @@
 
 #include "commands.h"
 
-static const int setShapeRectCommandId = 1;
-static const int setShapeColorCommandId = 2;
+static constexpr int setShapeRectCommandId = 1;
+static constexpr int setShapeColorCommandId = 2;
 
 /******************************************************************************
 ** AddShapeCommand
 */
 
 AddShapeCommand::AddShapeCommand(Document *doc, const Shape &shape, QUndoCommand *parent)
-    : QUndoCommand(parent)
+    : QUndoCommand(parent), m_doc(doc), m_shape(shape)
 {
-    m_doc = doc;
-    m_shape = shape;
 }
 
 void AddShapeCommand::undo()
@@ -81,13 +79,11 @@ void AddShapeCommand::redo()
 */
 
 RemoveShapeCommand::RemoveShapeCommand(Document *doc, const QString &shapeName,
-                                        QUndoCommand *parent)
-    : QUndoCommand(parent)
+                                       QUndoCommand *parent)
+    : QUndoCommand(parent), m_doc(doc), m_shape(doc->shape(shapeName))
+    , m_shapeName(shapeName)
 {
     setText(QObject::tr("Remove %1").arg(shapeName));
-    m_doc = doc;
-    m_shape = doc->shape(shapeName);
-    m_shapeName = shapeName;
 }
 
 void RemoveShapeCommand::undo()
@@ -105,15 +101,11 @@ void RemoveShapeCommand::redo()
 */
 
 SetShapeColorCommand::SetShapeColorCommand(Document *doc, const QString &shapeName,
-                                            const QColor &color, QUndoCommand *parent)
-    : QUndoCommand(parent)
+                                           const QColor &color, QUndoCommand *parent)
+    : QUndoCommand(parent), m_doc(doc), m_shapeName(shapeName)
+    , m_oldColor(doc->shape(shapeName).color()), m_newColor(color)
 {
     setText(QObject::tr("Set %1's color").arg(shapeName));
-
-    m_doc = doc;
-    m_shapeName = shapeName;
-    m_oldColor = doc->shape(shapeName).color();
-    m_newColor = color;
 }
 
 void SetShapeColorCommand::undo()
@@ -149,15 +141,11 @@ int SetShapeColorCommand::id() const
 */
 
 SetShapeRectCommand::SetShapeRectCommand(Document *doc, const QString &shapeName,
-                                            const QRect &rect, QUndoCommand *parent)
-    : QUndoCommand(parent)
+                                         const QRect &rect, QUndoCommand *parent)
+    : QUndoCommand(parent), m_doc(doc), m_shapeName(shapeName)
+    , m_oldRect(doc->shape(shapeName).rect()), m_newRect(rect)
 {
     setText(QObject::tr("Change %1's geometry").arg(shapeName));
-
-    m_doc = doc;
-    m_shapeName = shapeName;
-    m_oldRect = doc->shape(shapeName).rect();
-    m_newRect = rect;
 }
 
 void SetShapeRectCommand::undo()

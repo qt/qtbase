@@ -51,13 +51,14 @@
 #ifndef ECHOINTERFACE_H
 #define ECHOINTERFACE_H
 
+#include <QObject>
 #include <QString>
 
 //! [0]
 class EchoInterface
 {
 public:
-    virtual ~EchoInterface() {}
+    virtual ~EchoInterface() = default;
     virtual QString echo(const QString &message) = 0;
 };
 

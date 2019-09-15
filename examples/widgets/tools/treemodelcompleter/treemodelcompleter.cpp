@@ -80,26 +80,20 @@ QString TreeModelCompleter::separator() const
 //! [3]
 QStringList TreeModelCompleter::splitPath(const QString &path) const
 {
-    if (sep.isNull()) {
-        return QCompleter::splitPath(path);
-    }
-
-    return path.split(sep);
+    return (sep.isNull() ? QCompleter::splitPath(path) : path.split(sep));
 }
 //! [3]
 
 //! [4]
 QString TreeModelCompleter::pathFromIndex(const QModelIndex &index) const
 {
-    if (sep.isNull()) {
+    if (sep.isNull())
         return QCompleter::pathFromIndex(index);
-    }
 
     // navigate up and accumulate data
     QStringList dataList;
-    for (QModelIndex i = index; i.isValid(); i = i.parent()) {
+    for (QModelIndex i = index; i.isValid(); i = i.parent())
         dataList.prepend(model()->data(i, completionRole()).toString());
-    }
 
     return dataList.join(sep);
 }

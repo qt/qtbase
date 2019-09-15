@@ -53,11 +53,6 @@
 
 #include <QStylePlugin>
 
-QT_BEGIN_NAMESPACE
-class QStringList;
-class QStyle;
-QT_END_NAMESPACE
-
 //! [0]
 class SimpleStylePlugin : public QStylePlugin
 {
@@ -65,7 +60,7 @@ class SimpleStylePlugin : public QStylePlugin
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QStyleFactoryInterface" FILE "simplestyle.json")
 
 public:
-    SimpleStylePlugin() {}
+    SimpleStylePlugin() = default;
 
     QStringList keys() const;
     QStyle *create(const QString &key) override;

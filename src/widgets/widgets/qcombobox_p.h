@@ -390,6 +390,16 @@ public:
 #ifdef Q_OS_MAC
     void cleanupNativePopup();
     bool showNativePopup();
+    struct IndexSetter {
+        int index;
+        QComboBox *cb;
+
+        void operator()(void)
+        {
+            cb->setCurrentIndex(index);
+            cb->d_func()->emitActivated(cb->d_func()->currentIndex);
+        }
+    };
 #endif
 
     QAbstractItemModel *model;

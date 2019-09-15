@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
 
 #include "echowindow.h"
 #include "echointerface.h"

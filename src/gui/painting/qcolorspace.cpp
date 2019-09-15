@@ -146,17 +146,11 @@ QColorMatrix QColorSpacePrimaries::toXyzMatrix() const
 }
 
 QColorSpacePrivate::QColorSpacePrivate()
-        : primaries(QColorSpace::Primaries::Custom)
-        , transferFunction(QColorSpace::TransferFunction::Custom)
-        , gamma(0.0f)
-        , whitePoint(QColorVector::null())
-        , toXyz(QColorMatrix::null())
 {
 }
 
 QColorSpacePrivate::QColorSpacePrivate(QColorSpace::NamedColorSpace namedColorSpace)
         : namedColorSpace(namedColorSpace)
-        , gamma(0.0f)
 {
     switch (namedColorSpace) {
     case QColorSpace::SRgb:
@@ -282,7 +276,7 @@ void QColorSpacePrivate::initialize()
 void QColorSpacePrivate::setToXyzMatrix()
 {
     if (primaries == QColorSpace::Primaries::Custom) {
-        toXyz = QColorMatrix::null();
+        toXyz = QColorMatrix();
         whitePoint = QColorVector::D50();
         return;
     }

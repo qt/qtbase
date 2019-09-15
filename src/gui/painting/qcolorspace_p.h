@@ -124,9 +124,9 @@ public:
     static constexpr QColorSpace::NamedColorSpace Unknown = QColorSpace::NamedColorSpace(0);
     QColorSpace::NamedColorSpace namedColorSpace = Unknown;
 
-    QColorSpace::Primaries primaries;
-    QColorSpace::TransferFunction transferFunction;
-    float gamma;
+    QColorSpace::Primaries primaries = QColorSpace::Primaries::Custom;
+    QColorSpace::TransferFunction transferFunction = QColorSpace::TransferFunction::Custom;
+    float gamma = 0.0f;
     QColorVector whitePoint;
 
     QColorTrc trc[3];

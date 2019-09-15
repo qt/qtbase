@@ -48,9 +48,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "diagramitem.h"
+
+#include <QBrush>
+#include <QRandomGenerator>
 
 DiagramItem::DiagramItem(DiagramType diagramType, QGraphicsItem *item)
     : QGraphicsPolygonItem(item)
@@ -65,7 +66,9 @@ DiagramItem::DiagramItem(DiagramType diagramType, QGraphicsItem *item)
         setPolygon(trianglePolygon);
     }
 
-    QColor color(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256));
+    QColor color(QRandomGenerator::global()->bounded(256),
+                 QRandomGenerator::global()->bounded(256),
+                 QRandomGenerator::global()->bounded(256));
     QBrush brush(color);
     setBrush(brush);
     setFlag(QGraphicsItem::ItemIsSelectable);

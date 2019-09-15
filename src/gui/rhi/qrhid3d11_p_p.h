@@ -631,8 +631,9 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
-    void makeThreadLocalNativeContextCurrent() override;
+    bool makeThreadLocalNativeContextCurrent() override;
     void releaseCachedResources() override;
+    bool isDeviceLost() const override;
 
     void enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,
                              int layer, int level, const QRhiTextureSubresourceUploadDescription &subresDesc);
@@ -658,6 +659,7 @@ public:
     IDXGIFactory1 *dxgiFactory = nullptr;
     bool hasDxgi2 = false;
     bool supportsFlipDiscardSwapchain = false;
+    bool deviceLost = false;
     QRhiD3D11NativeHandles nativeHandlesStruct;
 
     struct {
@@ -694,6 +696,19 @@ public:
         QByteArray bytecode;
     };
     QHash<QRhiShaderStage, Shader> m_shaderCache;
+
+    struct DeviceCurse {
+        DeviceCurse(QRhiD3D11 *impl) : q(impl) { }
+        QRhiD3D11 *q;
+        int framesToActivate = -1;
+        bool permanent = false;
+        int framesLeft = 0;
+        ID3D11ComputeShader *cs = nullptr;
+
+        void initResources();
+        void releaseResources();
+        void activate();
+    } deviceCurse;
 };
 
 Q_DECLARE_TYPEINFO(QRhiD3D11::ActiveReadback, Q_MOVABLE_TYPE);

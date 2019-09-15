@@ -228,7 +228,7 @@ TouchDevices::TouchDevices()
   */
 QList<const QTouchDevice *> QTouchDevice::devices()
 {
-    QMutexLocker lock(&devicesMutex);
+    const auto locker = qt_scoped_lock(devicesMutex);
     return deviceList->list;
 }
 
@@ -237,13 +237,13 @@ QList<const QTouchDevice *> QTouchDevice::devices()
   */
 bool QTouchDevicePrivate::isRegistered(const QTouchDevice *dev)
 {
-    QMutexLocker locker(&devicesMutex);
+    const auto locker = qt_scoped_lock(devicesMutex);
     return deviceList->list.contains(dev);
 }
 
 const QTouchDevice *QTouchDevicePrivate::deviceById(quint8 id)
 {
-    QMutexLocker locker(&devicesMutex);
+    const auto locker = qt_scoped_lock(devicesMutex);
     for (const QTouchDevice *dev : qAsConst(deviceList->list))
         if (QTouchDevicePrivate::get(const_cast<QTouchDevice *>(dev))->id == id)
             return dev;
@@ -255,7 +255,7 @@ const QTouchDevice *QTouchDevicePrivate::deviceById(quint8 id)
   */
 void QTouchDevicePrivate::registerDevice(const QTouchDevice *dev)
 {
-    QMutexLocker lock(&devicesMutex);
+    const auto locker = qt_scoped_lock(devicesMutex);
     deviceList->list.append(dev);
 }
 
@@ -264,7 +264,7 @@ void QTouchDevicePrivate::registerDevice(const QTouchDevice *dev)
   */
 void QTouchDevicePrivate::unregisterDevice(const QTouchDevice *dev)
 {
-    QMutexLocker lock(&devicesMutex);
+    const auto locker = qt_scoped_lock(devicesMutex);
     deviceList->list.removeOne(dev);
 }
 

@@ -61,7 +61,7 @@ class MainWindow : public QMainWindow, public Ui::MainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
+    MainWindow(QWidget *parent = nullptr);
 
     void addDocument(Document *doc);
     void removeDocument(Document *doc);
