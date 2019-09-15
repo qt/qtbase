@@ -48,15 +48,23 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "locationdialog.h"
 #include "mainwindow.h"
 #include "settingstree.h"
 
-MainWindow::MainWindow()
-    : settingsTree(new SettingsTree)
-    , locationDialog(nullptr)
+#include <QAction>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QLineEdit>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QStandardPaths>
+#include <QStatusBar>
+
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+    , settingsTree(new SettingsTree)
 {
     setCentralWidget(settingsTree);
 

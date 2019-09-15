@@ -1294,7 +1294,8 @@ public:
 
     enum Flag {
         EnableProfiling = 1 << 0,
-        EnableDebugMarkers = 1 << 1
+        EnableDebugMarkers = 1 << 1,
+        PreferSoftwareRenderer = 1 << 2
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -1413,7 +1414,7 @@ public:
     int resourceLimit(ResourceLimit limit) const;
 
     const QRhiNativeHandles *nativeHandles();
-    void makeThreadLocalNativeContextCurrent();
+    bool makeThreadLocalNativeContextCurrent();
 
     QRhiProfiler *profiler();
 
@@ -1421,6 +1422,8 @@ public:
     static const int MAX_LEVELS = 16; // a width and/or height of 65536 should be enough for everyone
 
     void releaseCachedResources();
+
+    bool isDeviceLost() const;
 
 protected:
     QRhi();

@@ -50,10 +50,7 @@
 
 #include "extrafiltersplugin.h"
 
-#include <QtWidgets>
-
-#include <math.h>
-#include <stdlib.h>
+#include <QInputDialog>
 
 QStringList ExtraFiltersPlugin::filters() const
 {

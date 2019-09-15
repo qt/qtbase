@@ -57,7 +57,8 @@
 class AddShapeCommand : public QUndoCommand
 {
 public:
-    AddShapeCommand(Document *doc, const Shape &shape, QUndoCommand *parent = 0);
+    AddShapeCommand(Document *doc, const Shape &shape,
+                    QUndoCommand *parent = nullptr);
     void undo() override;
     void redo() override;
 
@@ -70,7 +71,8 @@ private:
 class RemoveShapeCommand : public QUndoCommand
 {
 public:
-    RemoveShapeCommand(Document *doc, const QString &shapeName, QUndoCommand *parent = 0);
+    RemoveShapeCommand(Document *doc, const QString &shapeName,
+                       QUndoCommand *parent = nullptr);
     void undo() override;
     void redo() override;
 
@@ -83,8 +85,8 @@ private:
 class SetShapeColorCommand : public QUndoCommand
 {
 public:
-    SetShapeColorCommand(Document *doc, const QString &shapeName, const QColor &color,
-                            QUndoCommand *parent = 0);
+    SetShapeColorCommand(Document *doc, const QString &shapeName,
+                         const QColor &color, QUndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;
@@ -102,8 +104,8 @@ private:
 class SetShapeRectCommand : public QUndoCommand
 {
 public:
-    SetShapeRectCommand(Document *doc, const QString &shapeName, const QRect &rect,
-                            QUndoCommand *parent = 0);
+    SetShapeRectCommand(Document *doc, const QString &shapeName,
+                        const QRect &rect, QUndoCommand *parent = nullptr);
 
     void undo() override;
     void redo() override;

@@ -58,6 +58,7 @@
 #include <QtCore/private/qabstracteventdispatcher_p.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/private/qthread_p.h>
+#include <QtCore/private/qlocking_p.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qnumeric.h>
@@ -3305,7 +3306,7 @@ void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
 QFont QGuiApplication::font()
 {
     Q_ASSERT_X(QGuiApplicationPrivate::self, "QGuiApplication::font()", "no QGuiApplication instance");
-    QMutexLocker locker(&applicationFontMutex);
+    const auto locker = qt_scoped_lock(applicationFontMutex);
     initFontUnlocked();
     return *QGuiApplicationPrivate::app_font;
 }
@@ -3317,7 +3318,7 @@ QFont QGuiApplication::font()
 */
 void QGuiApplication::setFont(const QFont &font)
 {
-    QMutexLocker locker(&applicationFontMutex);
+    auto locker = qt_unique_lock(applicationFontMutex);
     const bool emitChange = !QGuiApplicationPrivate::app_font
                             || (*QGuiApplicationPrivate::app_font != font);
     if (!QGuiApplicationPrivate::app_font)
@@ -4081,7 +4082,7 @@ void QGuiApplicationPrivate::notifyThemeChanged()
             sendApplicationPaletteChange();
     }
     if (!(applicationResourceFlags & ApplicationFontExplicitlySet)) {
-        QMutexLocker locker(&applicationFontMutex);
+        const auto locker = qt_scoped_lock(applicationFontMutex);
         clearFontUnlocked();
         initFontUnlocked();
     }

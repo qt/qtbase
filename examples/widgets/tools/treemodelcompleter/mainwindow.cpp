@@ -48,13 +48,28 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include "treemodelcompleter.h"
 #include "mainwindow.h"
+#include "treemodelcompleter.h"
+
+#include <QAbstractProxyModel>
+#include <QAction>
+#include <QApplication>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QFile>
+#include <QGridLayout>
+#include <QHeaderView>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QStandardItemModel>
+#include <QStringListModel>
+#include <QTreeView>
 
 //! [0]
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), completer(0), lineEdit(0)
+    : QMainWindow(parent)
 {
     createMenu();
 
@@ -151,10 +166,10 @@ void MainWindow::createMenu()
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
     connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
 
-    QMenu* fileMenu = menuBar()->addMenu(tr("File"));
+    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
     fileMenu->addAction(exitAction);
 
-    QMenu* helpMenu = menuBar()->addMenu(tr("About"));
+    QMenu *helpMenu = menuBar()->addMenu(tr("About"));
     helpMenu->addAction(aboutAct);
     helpMenu->addAction(aboutQtAct);
 }
@@ -175,7 +190,7 @@ void MainWindow::changeMode(int index)
 }
 //! [5]
 
-QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
+QAbstractItemModel *MainWindow::modelFromFile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly))
@@ -184,39 +199,35 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
 #ifndef QT_NO_CURSOR
     QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 #endif
-    QStringList words;
 
     QStandardItemModel *model = new QStandardItemModel(completer);
     QVector<QStandardItem *> parents(10);
     parents[0] = model->invisibleRootItem();
 
+    QRegularExpression re("^\\s+");
     while (!file.atEnd()) {
-        QString line = file.readLine();
-        QString trimmedLine = line.trimmed();
-        if (line.isEmpty() || trimmedLine.isEmpty())
+        const QString line = QString::fromUtf8(file.readLine()).trimmed();
+        const QString trimmedLine = line.trimmed();
+        if (trimmedLine.isEmpty())
             continue;
 
-        QRegularExpression re("^\\s+");
-        QRegularExpressionMatch match = re.match(line);
+        const QRegularExpressionMatch match = re.match(line);
         int nonws = match.capturedStart();
         int level = 0;
         if (nonws == -1) {
             level = 0;
         } else {
-            if (line.startsWith("\t")) {
-                level = match.capturedLength();
-            } else {
-                level = match.capturedLength()/4;
-            }
+            const int capLen = match.capturedLength();
+            level = line.startsWith(QLatin1Char('\t')) ? capLen / 4 : capLen;
         }
 
-        if (level+1 >= parents.size())
-            parents.resize(parents.size()*2);
+        if (level + 1 >= parents.size())
+            parents.resize(parents.size() * 2);
 
         QStandardItem *item = new QStandardItem;
         item->setText(trimmedLine);
         parents[level]->appendRow(item);
-        parents[level+1] = item;
+        parents[level + 1] = item;
     }
 
 #ifndef QT_NO_CURSOR
@@ -252,7 +263,7 @@ void MainWindow::changeCase(int cs)
 }
 //! [7]
 
-void MainWindow::updateContentsLabel(const QString& sep)
+void MainWindow::updateContentsLabel(const QString &sep)
 {
     contentsLabel->setText(tr("Type path from model above with items at each level separated by a '%1'").arg(sep));
 }

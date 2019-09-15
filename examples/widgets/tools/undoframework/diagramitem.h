@@ -66,9 +66,10 @@ public:
     enum { Type = UserType + 1 };
     enum DiagramType { Box, Triangle };
 
-    explicit DiagramItem(DiagramType diagramType, QGraphicsItem *item = 0);
+    explicit DiagramItem(DiagramType diagramType, QGraphicsItem *item = nullptr);
 
-    DiagramType diagramType() const {
+    DiagramType diagramType() const
+    {
         return polygon() == boxPolygon ? Box : Triangle;
     }
     int type() const override { return Type; }

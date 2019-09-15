@@ -711,8 +711,9 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
-    void makeThreadLocalNativeContextCurrent() override;
+    bool makeThreadLocalNativeContextCurrent() override;
     void releaseCachedResources() override;
+    bool isDeviceLost() const override;
 
     VkResult createDescriptorPool(VkDescriptorPool *pool);
     bool allocateDescriptorSet(VkDescriptorSetAllocateInfo *allocInfo, VkDescriptorSet *result, int *resultPoolIndex);
@@ -804,6 +805,7 @@ public:
     VkDeviceSize ubufAlign;
     VkDeviceSize texbufAlign;
     bool hasWideLines = false;
+    bool deviceLost = false;
 
     bool debugMarkersAvailable = false;
     bool vertexAttribDivisorAvailable = false;

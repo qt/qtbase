@@ -48,13 +48,20 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
 #include "mainwindow.h"
 #include "textedit.h"
 
+#include <QAction>
+#include <QApplication>
+#include <QCompleter>
+#include <QFile>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QStringListModel>
+
 //! [0]
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), completer(0)
+    : QMainWindow(parent)
 {
     createMenu();
 
@@ -83,10 +90,10 @@ void MainWindow::createMenu()
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
     connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
 
-    QMenu* fileMenu = menuBar()->addMenu(tr("File"));
+    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
     fileMenu->addAction(exitAction);
 
-    QMenu* helpMenu = menuBar()->addMenu(tr("About"));
+    QMenu *helpMenu = menuBar()->addMenu(tr("About"));
     helpMenu->addAction(aboutAct);
     helpMenu->addAction(aboutQtAct);
 }
@@ -107,7 +114,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
     while (!file.atEnd()) {
         QByteArray line = file.readLine();
         if (!line.isEmpty())
-            words << line.trimmed();
+            words << QString::fromUtf8(line.trimmed());
     }
 
 #ifndef QT_NO_CURSOR

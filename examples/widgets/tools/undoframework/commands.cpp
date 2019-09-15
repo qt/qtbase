@@ -48,19 +48,17 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "commands.h"
 #include "diagramitem.h"
 
+#include <QGraphicsScene>
+
 //! [0]
 MoveCommand::MoveCommand(DiagramItem *diagramItem, const QPointF &oldPos,
-                 QUndoCommand *parent)
-    : QUndoCommand(parent)
+                         QUndoCommand *parent)
+    : QUndoCommand(parent), myDiagramItem(diagramItem)
+    , myOldPos(oldPos), newPos(diagramItem->pos())
 {
-    myDiagramItem = diagramItem;
-    newPos = diagramItem->pos();
-    myOldPos = oldPos;
 }
 //! [0]
 
@@ -71,7 +69,7 @@ bool MoveCommand::mergeWith(const QUndoCommand *command)
     DiagramItem *item = moveCommand->myDiagramItem;
 
     if (myDiagramItem != item)
-    return false;
+        return false;
 
     newPos = item->pos();
     setText(QObject::tr("Move %1")
@@ -102,9 +100,8 @@ void MoveCommand::redo()
 
 //! [4]
 DeleteCommand::DeleteCommand(QGraphicsScene *scene, QUndoCommand *parent)
-    : QUndoCommand(parent)
+    : QUndoCommand(parent), myGraphicsScene(scene)
 {
-    myGraphicsScene = scene;
     QList<QGraphicsItem *> list = myGraphicsScene->selectedItems();
     list.first()->setSelected(false);
     myDiagramItem = static_cast<DiagramItem *>(list.first());
@@ -131,11 +128,10 @@ void DeleteCommand::redo()
 //! [7]
 AddCommand::AddCommand(DiagramItem::DiagramType addType,
                        QGraphicsScene *scene, QUndoCommand *parent)
-    : QUndoCommand(parent)
+    : QUndoCommand(parent), myGraphicsScene(scene)
 {
     static int itemCount = 0;
 
-    myGraphicsScene = scene;
     myDiagramItem = new DiagramItem(addType);
     initialPosition = QPointF((itemCount * 15) % int(scene->width()),
                               (itemCount * 15) % int(scene->height()));

@@ -416,8 +416,9 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
-    void makeThreadLocalNativeContextCurrent() override;
+    bool makeThreadLocalNativeContextCurrent() override;
     void releaseCachedResources() override;
+    bool isDeviceLost() const override;
 
     void executeDeferredReleases(bool forced = false);
     void finishActiveReadbacks(bool forced = false);

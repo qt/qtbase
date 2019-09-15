@@ -48,12 +48,14 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "variantdelegate.h"
 
+#include <QDateTime>
+#include <QLineEdit>
+#include <QRegularExpressionValidator>
+
 VariantDelegate::VariantDelegate(QObject *parent)
-    : QItemDelegate(parent)
+    : QStyledItemDelegate(parent)
 {
     boolExp.setPattern("true|false");
     boolExp.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
@@ -82,12 +84,12 @@ void VariantDelegate::paint(QPainter *painter,
         if (!isSupportedType(value.type())) {
             QStyleOptionViewItem myOption = option;
             myOption.state &= ~QStyle::State_Enabled;
-            QItemDelegate::paint(painter, myOption, index);
+            QStyledItemDelegate::paint(painter, myOption, index);
             return;
         }
     }
 
-    QItemDelegate::paint(painter, option, index);
+    QStyledItemDelegate::paint(painter, option, index);
 }
 
 QWidget *VariantDelegate::createEditor(QWidget *parent,
@@ -95,11 +97,11 @@ QWidget *VariantDelegate::createEditor(QWidget *parent,
         const QModelIndex &index) const
 {
     if (index.column() != 2)
-        return 0;
+        return nullptr;
 
     QVariant originalValue = index.model()->data(index, Qt::UserRole);
     if (!isSupportedType(originalValue.type()))
-        return 0;
+        return nullptr;
 
     QLineEdit *lineEdit = new QLineEdit(parent);
     lineEdit->setFrame(false);
@@ -149,7 +151,7 @@ QWidget *VariantDelegate::createEditor(QWidget *parent,
         regExp = unsignedIntegerExp;
         break;
     default:
-        ;
+        break;
     }
 
     if (regExp.isValid()) {

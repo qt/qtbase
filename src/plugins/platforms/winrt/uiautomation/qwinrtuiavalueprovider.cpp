@@ -96,24 +96,22 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaValueProvider::SetValue(HSTRING value)
     qCDebug(lcQpaUiAutomation) << __FUNCTION__;
 
     auto accid = id();
-    auto tmpValue = QSharedPointer<QString>(new QString);
-    auto ptrValue = new QSharedPointer<QString>(tmpValue);
 
-    *tmpValue = hStrToQStr(value);
+    QString tmpValue = hStrToQStr(value);
 
-    QEventDispatcherWinRT::runOnMainThread([accid, ptrValue]() {
+    QEventDispatcherWinRT::runOnMainThread([accid, tmpValue]() {
 
         if (QAccessibleInterface *accessible = accessibleForId(accid)) {
 
             // First sets the value as a text.
-            accessible->setText(QAccessible::Value, **ptrValue);
+            accessible->setText(QAccessible::Value, tmpValue);
 
             // Then, if the control supports the value interface (range value)
             // and the supplied text can be converted to a number, and that number
             // lies within the min/max limits, sets it as the control's current (numeric) value.
             if (QAccessibleValueInterface *valueInterface = accessible->valueInterface()) {
                 bool ok = false;
-                double numval = (*ptrValue)->toDouble(&ok);
+                double numval = tmpValue.toDouble(&ok);
                 if (ok) {
                     double minimum = valueInterface->minimumValue().toDouble();
                     double maximum = valueInterface->maximumValue().toDouble();
@@ -124,7 +122,6 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaValueProvider::SetValue(HSTRING value)
             }
         }
         QWinRTUiaMetadataCache::instance()->load(accid);
-        delete ptrValue;
         return S_OK;
     }, 0);
 
