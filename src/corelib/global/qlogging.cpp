@@ -1487,11 +1487,8 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
     return message;
 }
 
-static void qDefaultMsgHandler(QtMsgType type, const char *buf);
 static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &buf);
 
-// pointer to QtMsgHandler debug handler (without context)
-static QBasicAtomicPointer<void (QtMsgType, const char*)> msgHandler = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 // pointer to QtMessageHandler debug handler (with context)
 static QBasicAtomicPointer<void (QtMsgType, const QMessageLogContext &, const QString &)> messageHandler = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 
@@ -1776,15 +1773,6 @@ static void qDefaultMessageHandler(QtMsgType type, const QMessageLogContext &con
         stderr_message_handler(type, context, message);
 }
 
-/*!
-    \internal
-*/
-static void qDefaultMsgHandler(QtMsgType type, const char *buf)
-{
-    QMessageLogContext emptyContext;
-    qDefaultMessageHandler(type, emptyContext, QString::fromLocal8Bit(buf));
-}
-
 #if defined(Q_COMPILER_THREAD_LOCAL)
 
 static thread_local bool msgHandlerGrabbed = false;
@@ -1826,14 +1814,8 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
     // itself, e.g. by using Qt API
     if (grabMessageHandler()) {
         const auto ungrab = qScopeGuard([]{ ungrabMessageHandler(); });
-        auto oldStyle = msgHandler.loadAcquire();
-        auto newStye = messageHandler.loadAcquire();
-        // prefer new message handler over the old one
-        if (newStye || !oldStyle) {
-            (newStye ? newStye : qDefaultMessageHandler)(msgType, context, message);
-        } else {
-            (oldStyle ? oldStyle : qDefaultMsgHandler)(msgType, message.toLocal8Bit().constData());
-        }
+        auto msgHandler = messageHandler.loadAcquire();
+        (msgHandler ? msgHandler : qDefaultMessageHandler)(msgType, context, message);
     } else {
         fprintf(stderr, "%s\n", message.toLocal8Bit().constData());
     }

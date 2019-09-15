@@ -80,15 +80,6 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext &context, con
     s_message = msg;
 }
 
-void customMsgHandler(QtMsgType type, const char *msg)
-{
-    s_type = type;
-    s_file = 0;
-    s_line = 0;
-    s_function = 0;
-    s_message = QString::fromLocal8Bit(msg);
-}
-
 tst_qmessagehandler::tst_qmessagehandler()
 {
     // ensure it's unset, otherwise we'll have trouble
