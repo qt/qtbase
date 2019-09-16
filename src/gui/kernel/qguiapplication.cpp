@@ -2843,10 +2843,12 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             if (touchPoint.state() == Qt::TouchPointStationary) {
                 if (touchInfo.touchPoint.velocity() != touchPoint.velocity()) {
                     touchInfo.touchPoint.setVelocity(touchPoint.velocity());
+                    touchPoint.d->stationaryWithModifiedProperty = true;
                     stationaryTouchPointChangedProperty = true;
                 }
                 if (!qFuzzyCompare(touchInfo.touchPoint.pressure(), touchPoint.pressure())) {
                     touchInfo.touchPoint.setPressure(touchPoint.pressure());
+                    touchPoint.d->stationaryWithModifiedProperty = true;
                     stationaryTouchPointChangedProperty = true;
                 }
             } else {
