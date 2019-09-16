@@ -100,20 +100,6 @@ static const char *languageForWritingSystem[] = {
 };
 enum { LanguageCount = sizeof(languageForWritingSystem) / sizeof(const char *) };
 
-#ifdef Q_OS_OSX
-static NSInteger languageMapSort(id obj1, id obj2, void *context)
-{
-    NSArray<NSString *> *map1 = reinterpret_cast<NSArray<NSString *> *>(obj1);
-    NSArray<NSString *> *map2 = reinterpret_cast<NSArray<NSString *> *>(obj2);
-    NSArray<NSString *> *languages = reinterpret_cast<NSArray<NSString *> *>(context);
-
-    NSString *lang1 = [map1 objectAtIndex:0];
-    NSString *lang2 = [map2 objectAtIndex:0];
-
-    return [languages indexOfObject:lang1] - [languages indexOfObject:lang2];
-}
-#endif
-
 QCoreTextFontDatabase::QCoreTextFontDatabase()
     : m_hasPopulatedAliases(false)
 {
@@ -406,142 +392,99 @@ template class QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>;
 template class QCoreTextFontDatabaseEngineFactory<QFontEngineFT>;
 #endif
 
-QFont::StyleHint styleHintFromNSString(NSString *style)
+QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family)
 {
-    if ([style isEqual: @"sans-serif"])
-        return QFont::SansSerif;
-    else if ([style isEqual: @"monospace"])
-        return QFont::Monospace;
-    else if ([style isEqual: @"cursive"])
-        return QFont::Cursive;
-    else if ([style isEqual: @"serif"])
-        return QFont::Serif;
-    else if ([style isEqual: @"fantasy"])
-        return QFont::Fantasy;
-    else // if ([style isEqual: @"default"])
-        return QFont::AnyStyle;
-}
+    if (family.isEmpty())
+        return QStringList();
 
-#ifdef Q_OS_OSX
-static QString familyNameFromPostScriptName(NSString *psName)
-{
-    QCFType<CTFontDescriptorRef> fontDescriptor = (CTFontDescriptorRef) CTFontDescriptorCreateWithNameAndSize((CFStringRef)psName, 12.0);
-    QCFString familyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontFamilyNameAttribute);
-    QString name = QString::fromCFString(familyName);
-    if (name.isEmpty())
-        qWarning() << "QCoreTextFontDatabase: Failed to resolve family name for PostScript name " << QString::fromCFString((CFStringRef)psName);
+    auto attributes = @{ id(kCTFontFamilyNameAttribute): family.toNSString() };
+    QCFType<CTFontDescriptorRef> fontDescriptor = CTFontDescriptorCreateWithAttributes(CFDictionaryRef(attributes));
+    if (!fontDescriptor) {
+        qWarning() << "Failed to create fallback font descriptor for" << family;
+        return QStringList();
+    }
 
-    return name;
-}
-#endif
+    QCFType<CTFontRef> font = CTFontCreateWithFontDescriptor(fontDescriptor, 12.0, 0);
+    if (!font) {
+        qWarning() << "Failed to create fallback font for" << family;
+        return QStringList();
+    }
 
-static void addExtraFallbacks(QStringList *fallbackList)
-{
-#if defined(Q_OS_MACOS)
-    // Since we are only returning a list of default fonts for the current language, we do not
-    // cover all unicode completely. This was especially an issue for some of the common script
-    // symbols such as mathematical symbols, currency or geometric shapes. To minimize the risk
-    // of missing glyphs, we add Arial Unicode MS as a final fail safe, since this covers most
-    // of Unicode 2.1.
-    if (!fallbackList->contains(QStringLiteral("Arial Unicode MS")))
-        fallbackList->append(QStringLiteral("Arial Unicode MS"));
-    // Since some symbols (specifically Braille) are not in Arial Unicode MS, we
-    // add Apple Symbols to cover those too.
-    if (!fallbackList->contains(QStringLiteral("Apple Symbols")))
-        fallbackList->append(QStringLiteral("Apple Symbols"));
-#else
-    Q_UNUSED(fallbackList)
-#endif
+    QCFType<CFArrayRef> cascadeList = CFArrayRef(CTFontCopyDefaultCascadeListForLanguages(font,
+        (CFArrayRef)[NSUserDefaults.standardUserDefaults stringArrayForKey:@"AppleLanguages"]));
+    if (!cascadeList) {
+        qWarning() << "Failed to create fallback cascade list for" << family;
+        return QStringList();
+    }
+
+    QStringList fallbackList;
+    const int numCascades = CFArrayGetCount(cascadeList);
+    for (int i = 0; i < numCascades; ++i) {
+        CTFontDescriptorRef fontFallback = CTFontDescriptorRef(CFArrayGetValueAtIndex(cascadeList, i));
+        QCFString fallbackFamilyName = CFStringRef(CTFontDescriptorCopyAttribute(fontFallback, kCTFontFamilyNameAttribute));
+        fallbackList.append(QString::fromCFString(fallbackFamilyName));
+    }
+
+    return fallbackList;
 }
 
 QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
     Q_UNUSED(style);
-    Q_UNUSED(script);
 
     QMacAutoReleasePool pool;
 
-    static QHash<QString, QStringList> fallbackLists;
+    QStringList fallbackList = fallbacksForFamily(family);
 
-    if (!family.isEmpty()) {
-        QCFType<CFMutableDictionaryRef> attributes = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-        CFDictionaryAddValue(attributes, kCTFontFamilyNameAttribute, QCFString(family));
-        if (QCFType<CTFontDescriptorRef> fontDescriptor = CTFontDescriptorCreateWithAttributes(attributes)) {
-            if (QCFType<CTFontRef> font = CTFontCreateWithFontDescriptor(fontDescriptor, 12.0, 0)) {
-                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                NSArray *languages = [defaults stringArrayForKey: @"AppleLanguages"];
-
-                QCFType<CFArrayRef> cascadeList = (CFArrayRef) CTFontCopyDefaultCascadeListForLanguages(font, (CFArrayRef) languages);
-                if (cascadeList) {
-                    QStringList fallbackList;
-                    const int numCascades = CFArrayGetCount(cascadeList);
-                    for (int i = 0; i < numCascades; ++i) {
-                        CTFontDescriptorRef fontFallback = (CTFontDescriptorRef) CFArrayGetValueAtIndex(cascadeList, i);
-                        QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontFallback, kCTFontFamilyNameAttribute);
-                        fallbackList.append(QString::fromCFString(fallbackFamilyName));
-                    }
-
-                    addExtraFallbacks(&fallbackList);
-                    extern QStringList qt_sort_families_by_writing_system(QChar::Script, const QStringList &);
-                    fallbackList = qt_sort_families_by_writing_system(script, fallbackList);
-
-                    return fallbackList;
+    if (fallbackList.isEmpty()) {
+        // We were not able to find a fallback for the specific family,
+        // or the family was empty, so we fall back to the style hint.
+        QString styleFamily = [styleHint]{
+            switch (styleHint) {
+                case QFont::SansSerif: return QStringLiteral("Helvetica");
+                case QFont::Serif: return QStringLiteral("Times New Roman");
+                case QFont::Monospace: return QStringLiteral("Menlo");
+#ifdef Q_OS_MACOS
+                case QFont::Cursive: return QStringLiteral("Apple Chancery");
+#endif
+                case QFont::Fantasy: return QStringLiteral("Zapfino");
+                case QFont::TypeWriter: return QStringLiteral("American Typewriter");
+                case QFont::AnyStyle: Q_FALLTHROUGH();
+                case QFont::System: {
+                    QCFType<CTFontRef> font = CTFontCreateUIFontForLanguage(kCTFontUIFontSystem, 12.0, NULL);
+                    return static_cast<QString>(QCFString(CTFontCopyFullName(font)));
                 }
+                default: return QString(); // No matching font on this platform
             }
+        }();
+        if (!styleFamily.isEmpty()) {
+            fallbackList = fallbacksForFamily(styleFamily);
+            if (!fallbackList.contains(styleFamily))
+                fallbackList.prepend(styleFamily);
         }
     }
 
-    // We were not able to find a fallback for the specific family,
-    // so we fall back to the stylehint.
+    if (fallbackList.isEmpty())
+        return fallbackList;
 
-    static const QString styleLookupKey = QString::fromLatin1(".QFontStyleHint_%1");
-
-    static bool didPopulateStyleFallbacks = false;
-    if (!didPopulateStyleFallbacks) {
-#if defined(Q_OS_MACX)
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        NSArray<NSString *> *languages = [defaults stringArrayForKey:@"AppleLanguages"];
-
-        NSDictionary<NSString *, id> *fallbackDict = [NSDictionary<NSString *, id> dictionaryWithContentsOfFile:@"/System/Library/Frameworks/ApplicationServices.framework/Frameworks/CoreText.framework/Resources/DefaultFontFallbacks.plist"];
-
-        for (NSString *style in [fallbackDict allKeys]) {
-            NSArray *list = [fallbackDict valueForKey:style];
-            QFont::StyleHint fallbackStyleHint = styleHintFromNSString(style);
-            QStringList fallbackList;
-            for (id item in list) {
-                // sort the array based on system language preferences
-                if ([item isKindOfClass:[NSArray class]]) {
-                    NSArray *langs = [reinterpret_cast<NSArray *>(item)
-                        sortedArrayUsingFunction:languageMapSort context:languages];
-                    for (NSArray<NSString *> *map in langs)
-                        fallbackList.append(familyNameFromPostScriptName([map objectAtIndex:1]));
-                }
-                else if ([item isKindOfClass: [NSString class]])
-                    fallbackList.append(familyNameFromPostScriptName(item));
-            }
-
-            fallbackList.append(QLatin1String("Apple Color Emoji"));
-
-            addExtraFallbacks(&fallbackList);
-            fallbackLists[styleLookupKey.arg(fallbackStyleHint)] = fallbackList;
-        }
-#else
-        QStringList staticFallbackList;
-        staticFallbackList << QString::fromLatin1("Helvetica,Apple Color Emoji,Geeza Pro,Arial Hebrew,Thonburi,Kailasa"
-            "Hiragino Kaku Gothic ProN,.Heiti J,Apple SD Gothic Neo,.Heiti K,Heiti SC,Heiti TC"
-            "Bangla Sangam MN,Devanagari Sangam MN,Gujarati Sangam MN,Gurmukhi MN,Kannada Sangam MN"
-            "Malayalam Sangam MN,Oriya Sangam MN,Sinhala Sangam MN,Tamil Sangam MN,Telugu Sangam MN"
-            "Euphemia UCAS,.PhoneFallback").split(QLatin1String(","));
-
-        for (int i = QFont::Helvetica; i <= QFont::Fantasy; ++i)
-            fallbackLists[styleLookupKey.arg(i)] = staticFallbackList;
+#if defined(Q_OS_MACOS)
+    // Since we are only returning a list of default fonts for the current language, we do not
+    // cover all Unicode completely. This was especially an issue for some of the common script
+    // symbols such as mathematical symbols, currency or geometric shapes. To minimize the risk
+    // of missing glyphs, we add Arial Unicode MS as a final fail safe, since this covers most
+    // of Unicode 2.1.
+    if (!fallbackList.contains(QStringLiteral("Arial Unicode MS")))
+        fallbackList.append(QStringLiteral("Arial Unicode MS"));
+    // Since some symbols (specifically Braille) are not in Arial Unicode MS, we
+    // add Apple Symbols to cover those too.
+    if (!fallbackList.contains(QStringLiteral("Apple Symbols")))
+        fallbackList.append(QStringLiteral("Apple Symbols"));
 #endif
 
-        didPopulateStyleFallbacks = true;
-    }
+    extern QStringList qt_sort_families_by_writing_system(QChar::Script, const QStringList &);
+    fallbackList = qt_sort_families_by_writing_system(script, fallbackList);
 
-    Q_ASSERT(!fallbackLists.isEmpty());
-    return fallbackLists[styleLookupKey.arg(styleHint)];
+    return fallbackList;
 }
 
 QStringList QCoreTextFontDatabase::addApplicationFont(const QByteArray &fontData, const QString &fileName)
