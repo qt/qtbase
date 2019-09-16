@@ -4816,6 +4816,11 @@
         \li The dependencies for the output only get generated from the depends
             member and from nowhere else.
     \row
+        \li dep_existing_only
+        \li Every dependency that is a result of .depend_command is checked for
+            existence. Non-existing dependencies are ignored.
+            This value was introduced in Qt 5.13.2.
+    \row
         \li dep_lines
         \li The output from the .depend_command is interpreted to be one file
             per line. The default is to split on whitespace and is maintained
