@@ -2295,6 +2295,9 @@ function(add_qt_test name)
         # assumptions about the location of helper processes, and those paths would be different
         # if a test is built as a bundle.
         set_property(TARGET "${name}" PROPERTY MACOSX_BUNDLE FALSE)
+        # The same goes for WIN32_EXECUTABLE, but because it will detach from the console window
+        # and not print anything.
+        set_property(TARGET "${name}" PROPERTY WIN32_EXECUTABLE FALSE)
 
         # QMLTest specifics
 
@@ -2331,7 +2334,10 @@ function(add_qt_test name)
 
     add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args} -o ${name}.xml,xml -o -,txt  WORKING_DIRECTORY "${test_working_dir}")
     set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}" LABELS "${label}")
-    set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "PATH=${path}${QT_PATH_SEPARATOR}${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}$ENV{PATH}")
+
+    # Get path to qtbase/bin, then prepend this path containing the shared libraries to PATH
+    set(INSTALL_PREFIX_BIN "${CMAKE_INSTALL_PREFIX}/bin")
+    set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "PATH=${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}${INSTALL_PREFIX_BIN}${QT_PATH_SEPARATOR}$ENV{PATH}")
 
     # Add the install prefix to list of plugin paths when doing a prefix build
     if(NOT QT_INSTALL_DIR)
