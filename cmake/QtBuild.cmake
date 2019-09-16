@@ -1431,7 +1431,7 @@ function(add_qt_module target)
     endif()
 
     if(DEFINED module_headers_private)
-        qt_internal_add_linker_version_script("${target}" PRIVATE_HEADERS ${module_headers_private})
+        qt_internal_add_linker_version_script("${target}" PRIVATE_HEADERS ${module_headers_private} ${module_headers_qpa})
     else()
         qt_internal_add_linker_version_script("${target}")
     endif()
