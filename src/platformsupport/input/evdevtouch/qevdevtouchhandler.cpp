@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Jolla Ltd, author: <gunnar.sletta@jollamobile.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -74,7 +74,7 @@ Q_LOGGING_CATEGORY(qLcEvdevTouch, "qt.qpa.input")
 #define ABS_MT_TOUCH_MAJOR      0x30    /* Major axis of touching ellipse */
 #endif
 #ifndef ABS_MT_POSITION_X
-#define ABS_MT_POSITION_X 0x35    /* Center X ellipse position */
+#define ABS_MT_POSITION_X       0x35    /* Center X ellipse position */
 #endif
 #ifndef ABS_MT_POSITION_Y
 #define ABS_MT_POSITION_Y       0x36    /* Center Y ellipse position */
@@ -87,6 +87,9 @@ Q_LOGGING_CATEGORY(qLcEvdevTouch, "qt.qpa.input")
 #endif
 #ifndef ABS_MT_TRACKING_ID
 #define ABS_MT_TRACKING_ID      0x39    /* Unique ID of initiated contact */
+#endif
+#ifndef ABS_MT_PRESSURE
+#define ABS_MT_PRESSURE         0x3a
 #endif
 #ifndef SYN_MT_REPORT
 #define SYN_MT_REPORT           2
