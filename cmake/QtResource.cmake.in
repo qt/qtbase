@@ -229,11 +229,11 @@ function(QT@PROJECT_VERSION_MAJOR@_PROCESS_RESOURCE target resourceName)
 
     if (NOT resources)
         if (rcc_OUTPUT_TARGETS)
-            set(${rcc_OUTPUT_TARGETS} "${output_target}" PARENT_SCOPE)
+            set(${rcc_OUTPUT_TARGETS} "${output_target_quick}" PARENT_SCOPE)
         endif()
         return()
     endif()
-    list(APPEND output_targets ${output_target})
+    list(APPEND output_targets ${output_target_quick})
     set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/generated_${newResourceName}.qrc")
     set(generatedSourceCode "${CMAKE_CURRENT_BINARY_DIR}/qrc_${newResourceName}.cpp")
 
