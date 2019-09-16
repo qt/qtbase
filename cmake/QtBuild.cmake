@@ -2005,14 +2005,16 @@ function(add_qt_resource target resourceName)
         LANG "${arg_LANG}"
         BASE "${arg_BASE}"
         FILES ${arg_FILES}
-        OUTPUT_TARGET out_target
+        OUTPUT_TARGETS out_targets
    )
 
-   if (out_target)
-        qt_install(TARGETS "${out_target}"
-            EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
-            DESTINATION ${INSTALL_LIBDIR}
-        )
+   if (out_targets)
+        foreach(out_target IN LISTS out_targets)
+            qt_install(TARGETS "${out_target}"
+                EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
+                DESTINATION ${INSTALL_LIBDIR}
+            )
+        endforeach()
    endif()
 
 endfunction()
