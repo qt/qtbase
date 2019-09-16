@@ -30,16 +30,12 @@
 
 from __future__ import annotations
 
-from argparse import ArgumentParser
-from textwrap import dedent
 import copy
-import xml.etree.ElementTree as ET
-from itertools import chain
 import os.path
 import posixpath
+import sys
 import re
 import io
-import typing
 import glob
 import collections
 
@@ -48,119 +44,164 @@ try:
 except AttributeError:
     collectionsAbc = collections
 
-from sympy.logic import (simplify_logic, And, Or, Not,)
 import pyparsing as pp
-from helper import _set_up_py_parsing_nicer_debug_output
-_set_up_py_parsing_nicer_debug_output(pp)
+import xml.etree.ElementTree as ET
 
-from helper import map_qt_library, map_3rd_party_library, is_known_3rd_party_library, \
-    featureName, map_platform, find_library_info_for_target, generate_find_package_info, \
-    LibraryMapping
-
+from argparse import ArgumentParser
+from textwrap import dedent
+from itertools import chain
 from shutil import copyfile
+from sympy.logic import simplify_logic, And, Or, Not
+from sympy.core.sympify import SympifyError
+from typing import List, Optional, Dict, Set, IO, Union, Mapping, Any, Callable, FrozenSet, Tuple
 from special_case_helper import SpecialCaseHandler
+from helper import (
+    map_qt_library,
+    map_3rd_party_library,
+    is_known_3rd_party_library,
+    featureName,
+    map_platform,
+    find_library_info_for_target,
+    generate_find_package_info,
+    LibraryMapping,
+)
+from helper import _set_up_py_parsing_nicer_debug_output
+
+_set_up_py_parsing_nicer_debug_output(pp)
 
 
 cmake_version_string = "3.15.0"
 
+
 def _parse_commandline():
-    parser = ArgumentParser(description='Generate CMakeLists.txt files from .'
-                            'pro files.',
-                            epilog='Requirements: pip install sympy pyparsing')
-    parser.add_argument('--debug', dest='debug', action='store_true',
-                        help='Turn on all debug output')
-    parser.add_argument('--debug-parser', dest='debug_parser',
-                        action='store_true',
-                        help='Print debug output from qmake parser.')
-    parser.add_argument('--debug-parse-result', dest='debug_parse_result',
-                        action='store_true',
-                        help='Dump the qmake parser result.')
-    parser.add_argument('--debug-parse-dictionary',
-                        dest='debug_parse_dictionary', action='store_true',
-                        help='Dump the qmake parser result as dictionary.')
-    parser.add_argument('--debug-pro-structure', dest='debug_pro_structure',
-                        action='store_true',
-                        help='Dump the structure of the qmake .pro-file.')
-    parser.add_argument('--debug-full-pro-structure',
-                        dest='debug_full_pro_structure', action='store_true',
-                        help='Dump the full structure of the qmake .pro-file '
-                        '(with includes).')
-    parser.add_argument('--debug-special-case-preservation',
-                        dest='debug_special_case_preservation', action='store_true',
-                        help='Show all git commands and file copies.')
+    parser = ArgumentParser(
+        description="Generate CMakeLists.txt files from ." "pro files.",
+        epilog="Requirements: pip install sympy pyparsing",
+    )
+    parser.add_argument(
+        "--debug", dest="debug", action="store_true", help="Turn on all debug output"
+    )
+    parser.add_argument(
+        "--debug-parser",
+        dest="debug_parser",
+        action="store_true",
+        help="Print debug output from qmake parser.",
+    )
+    parser.add_argument(
+        "--debug-parse-result",
+        dest="debug_parse_result",
+        action="store_true",
+        help="Dump the qmake parser result.",
+    )
+    parser.add_argument(
+        "--debug-parse-dictionary",
+        dest="debug_parse_dictionary",
+        action="store_true",
+        help="Dump the qmake parser result as dictionary.",
+    )
+    parser.add_argument(
+        "--debug-pro-structure",
+        dest="debug_pro_structure",
+        action="store_true",
+        help="Dump the structure of the qmake .pro-file.",
+    )
+    parser.add_argument(
+        "--debug-full-pro-structure",
+        dest="debug_full_pro_structure",
+        action="store_true",
+        help="Dump the full structure of the qmake .pro-file " "(with includes).",
+    )
+    parser.add_argument(
+        "--debug-special-case-preservation",
+        dest="debug_special_case_preservation",
+        action="store_true",
+        help="Show all git commands and file copies.",
+    )
 
-    parser.add_argument('--is-example', action='store_true',
-                        dest="is_example",
-                        help='Treat the input .pro file as an example.')
-    parser.add_argument('-s', '--skip-special-case-preservation',
-                        dest='skip_special_case_preservation', action='store_true',
-                        help='Skips behavior to reapply '
-                             'special case modifications (requires git in PATH)')
-    parser.add_argument('-k', '--keep-temporary-files',
-                        dest='keep_temporary_files', action='store_true',
-                        help='Don\'t automatically remove CMakeLists.gen.txt and other '
-                             'intermediate files.')
+    parser.add_argument(
+        "--is-example",
+        action="store_true",
+        dest="is_example",
+        help="Treat the input .pro file as an example.",
+    )
+    parser.add_argument(
+        "-s",
+        "--skip-special-case-preservation",
+        dest="skip_special_case_preservation",
+        action="store_true",
+        help="Skips behavior to reapply " "special case modifications (requires git in PATH)",
+    )
+    parser.add_argument(
+        "-k",
+        "--keep-temporary-files",
+        dest="keep_temporary_files",
+        action="store_true",
+        help="Don't automatically remove CMakeLists.gen.txt and other " "intermediate files.",
+    )
 
-    parser.add_argument('files', metavar='<.pro/.pri file>', type=str,
-                        nargs='+', help='The .pro/.pri file to process')
+    parser.add_argument(
+        "files",
+        metavar="<.pro/.pri file>",
+        type=str,
+        nargs="+",
+        help="The .pro/.pri file to process",
+    )
 
     return parser.parse_args()
 
 
-def is_top_level_repo_project(project_file_path: str = '') -> bool:
+def is_top_level_repo_project(project_file_path: str = "") -> bool:
     qmake_conf_path = find_qmake_conf(project_file_path)
     qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
     project_dir_path = os.path.dirname(project_file_path)
-    if qmake_conf_dir_path == project_dir_path:
-        return True
-    return False
+    return qmake_conf_dir_path == project_dir_path
 
 
-def is_top_level_repo_tests_project(project_file_path: str = '') -> bool:
-    qmake_conf_path = find_qmake_conf(project_file_path)
-    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
-    project_dir_path = os.path.dirname(project_file_path)
-    project_dir_name = os.path.basename(project_dir_path)
-    maybe_same_level_dir_path = os.path.join(project_dir_path, "..")
-    normalized_maybe_same_level_dir_path = os.path.normpath(maybe_same_level_dir_path)
-    if qmake_conf_dir_path == normalized_maybe_same_level_dir_path and project_dir_name == 'tests':
-        return True
-    return False
-
-
-def is_top_level_repo_examples_project(project_file_path: str = '') -> bool:
+def is_top_level_repo_tests_project(project_file_path: str = "") -> bool:
     qmake_conf_path = find_qmake_conf(project_file_path)
     qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
     project_dir_path = os.path.dirname(project_file_path)
     project_dir_name = os.path.basename(project_dir_path)
     maybe_same_level_dir_path = os.path.join(project_dir_path, "..")
     normalized_maybe_same_level_dir_path = os.path.normpath(maybe_same_level_dir_path)
-    if qmake_conf_dir_path == normalized_maybe_same_level_dir_path \
-            and project_dir_name == 'examples':
-        return True
-    return False
+    return (
+        qmake_conf_dir_path == normalized_maybe_same_level_dir_path and project_dir_name == "tests"
+    )
 
 
-def is_example_project(project_file_path: str = '') -> bool:
+def is_top_level_repo_examples_project(project_file_path: str = "") -> bool:
+    qmake_conf_path = find_qmake_conf(project_file_path)
+    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    project_dir_path = os.path.dirname(project_file_path)
+    project_dir_name = os.path.basename(project_dir_path)
+    maybe_same_level_dir_path = os.path.join(project_dir_path, "..")
+    normalized_maybe_same_level_dir_path = os.path.normpath(maybe_same_level_dir_path)
+    return (
+        qmake_conf_dir_path == normalized_maybe_same_level_dir_path
+        and project_dir_name == "examples"
+    )
+
+
+def is_example_project(project_file_path: str = "") -> bool:
     qmake_conf_path = find_qmake_conf(project_file_path)
     qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
 
     project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
     # If the project file is found in a subdir called 'examples'
     # relative to the repo source dir, then it must be an example.
-    if project_relative_path.startswith('examples'):
-        return True
-    return False
+    return project_relative_path.startswith("examples")
 
 
-def find_qmake_conf(project_file_path: str = '') -> typing.Optional[str]:
+def find_qmake_conf(project_file_path: str = "") -> Optional[str]:
     if not os.path.isabs(project_file_path):
-        print('Warning: could not find .qmake.conf file, given path is not an absolute path: {}'
-              .format(project_file_path))
+        print(
+            f"Warning: could not find .qmake.conf file, given path is not an "
+            f"absolute path: {project_file_path}"
+        )
         return None
 
     cwd = os.path.dirname(project_file_path)
-    file_name = '.qmake.conf'
+    file_name = ".qmake.conf"
 
     while os.path.isdir(cwd):
         maybe_file = posixpath.join(cwd, file_name)
@@ -172,13 +213,20 @@ def find_qmake_conf(project_file_path: str = '') -> typing.Optional[str]:
     return None
 
 
-def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_file_path: str = '', skip_qtquick_compiler: bool = False,
-        retain_qtquick_compiler: bool = False, is_example: bool = False) -> str:
-    assert(target)
+def process_qrc_file(
+    target: str,
+    filepath: str,
+    base_dir: str = "",
+    project_file_path: str = "",
+    skip_qtquick_compiler: bool = False,
+    retain_qtquick_compiler: bool = False,
+    is_example: bool = False,
+) -> str:
+    assert target
 
     # Hack to handle QT_SOURCE_TREE. Assume currently that it's the same
     # as the qtbase source path.
-    qt_source_tree_literal = '${QT_SOURCE_TREE}'
+    qt_source_tree_literal = "${QT_SOURCE_TREE}"
     if qt_source_tree_literal in filepath:
         qmake_conf = find_qmake_conf(project_file_path)
 
@@ -186,43 +234,44 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_fil
             qt_source_tree = os.path.dirname(qmake_conf)
             filepath = filepath.replace(qt_source_tree_literal, qt_source_tree)
         else:
-            print('Warning, could not determine QT_SOURCE_TREE location while trying to find: {}'
-                  .format(filepath))
-
+            print(
+                f"Warning, could not determine QT_SOURCE_TREE location while trying "
+                f"to find: {filepath}"
+            )
 
     resource_name = os.path.splitext(os.path.basename(filepath))[0]
     dir_name = os.path.dirname(filepath)
-    base_dir = posixpath.join('' if base_dir == '.' else base_dir, dir_name)
+    base_dir = posixpath.join("" if base_dir == "." else base_dir, dir_name)
 
     # Small not very thorough check to see if this a shared qrc resource
     # pattern is mostly used by the tests.
-    is_parent_path = dir_name.startswith('..')
+    is_parent_path = dir_name.startswith("..")
     if not os.path.isfile(filepath):
-        raise RuntimeError('Invalid file path given to process_qrc_file: {}'.format(filepath))
+        raise RuntimeError(f"Invalid file path given to process_qrc_file: {filepath}")
 
     tree = ET.parse(filepath)
     root = tree.getroot()
-    assert(root.tag == 'RCC')
+    assert root.tag == "RCC"
 
-    output = ''
+    output = ""
 
     resource_count = 0
     for resource in root:
-        assert(resource.tag == 'qresource')
-        lang = resource.get('lang', '')
-        prefix = resource.get('prefix', '/')
-        if not prefix.startswith('/'):
-            prefix = '/' + prefix
+        assert resource.tag == "qresource"
+        lang = resource.get("lang", "")
+        prefix = resource.get("prefix", "/")
+        if not prefix.startswith("/"):
+            prefix = "/" + prefix
 
-        full_resource_name = resource_name + (str(resource_count) if resource_count > 0 else '')
+        full_resource_name = resource_name + (str(resource_count) if resource_count > 0 else "")
 
-        files: typing.Dict[str, str] = {}
+        files: Dict[str, str] = {}
         for file in resource:
             path = file.text
             assert path
 
             # Get alias:
-            alias = file.get('alias', '')
+            alias = file.get("alias", "")
             # In cases where examples use shared resources, we set the alias
             # too the same name of the file, or the applications won't be
             # be able to locate the resource
@@ -230,58 +279,87 @@ def process_qrc_file(target: str, filepath: str, base_dir: str = '', project_fil
                 alias = path
             files[path] = alias
 
-        output += write_add_qt_resource_call(target, full_resource_name, prefix, base_dir, lang, files, skip_qtquick_compiler, retain_qtquick_compiler, is_example)
+        output += write_add_qt_resource_call(
+            target,
+            full_resource_name,
+            prefix,
+            base_dir,
+            lang,
+            files,
+            skip_qtquick_compiler,
+            retain_qtquick_compiler,
+            is_example,
+        )
         resource_count += 1
 
     return output
 
 
-def write_add_qt_resource_call(target: str, resource_name: str, prefix: typing.Optional[str], base_dir: typing.Optional[str],
-        lang: typing.Optional[str], files: typing.Dict[str, str], skip_qtquick_compiler: bool, retain_qtquick_compiler: bool, is_example :bool) -> str:
-    output = ''
+def write_add_qt_resource_call(
+    target: str,
+    resource_name: str,
+    prefix: Optional[str],
+    base_dir: Optional[str],
+    lang: Optional[str],
+    files: Dict[str, str],
+    skip_qtquick_compiler: bool,
+    retain_qtquick_compiler: bool,
+    is_example: bool,
+) -> str:
+    output = ""
 
     sorted_files = sorted(files.keys())
 
-    assert(sorted_files)
+    assert sorted_files
 
     for source in sorted_files:
         alias = files[source]
         if alias:
             full_source = posixpath.join(base_dir, source)
-            output += 'set_source_files_properties("{}"\n' \
-                      '    PROPERTIES QT_RESOURCE_ALIAS "{}"\n)\n'.format(full_source, alias)
+            output += (
+                f'set_source_files_properties("{full_source}"\n'
+                f'    PROPERTIES QT_RESOURCE_ALIAS "{alias}"\n)\n'
+            )
 
     # Quote file paths in case there are spaces.
     sorted_files_backup = sorted_files
     sorted_files = []
     for source in sorted_files_backup:
-        if source.startswith('${'):
+        if source.startswith("${"):
             sorted_files.append(source)
         else:
-            sorted_files.append('"{}"'.format(source))
+            sorted_files.append(f'"{source}"')
 
-    file_list = '\n    '.join(sorted_files)
-    output += 'set({}_resource_files\n    {}\n)\n\n'.format(resource_name, file_list)
-    file_list = "${{{}_resource_files}}".format(resource_name)
+    file_list = "\n    ".join(sorted_files)
+    output += f"set({resource_name}_resource_files\n    {file_list}\n)\n\n"
+    file_list = f"${{{resource_name}_resource_files}}"
     if skip_qtquick_compiler:
-        output += 'set_source_files_properties(${{{}_resource_files}} PROPERTIES QT_SKIP_QUICKCOMPILER 1)\n\n'.format(resource_name)
+        output += (
+            f"set_source_files_properties(${{{resource_name}_resource_files}}"
+            " PROPERTIES QT_SKIP_QUICKCOMPILER 1)\n\n"
+        )
 
     if retain_qtquick_compiler:
-        output += 'set_source_files_properties(${{{}_resource_files}} PROPERTIES QT_RETAIN_QUICKCOMPILER 1)\n\n'.format(resource_name)
+        output += (
+            f"set_source_files_properties(${{{resource_name}_resource_files}}"
+            "PROPERTIES QT_RETAIN_QUICKCOMPILER 1)\n\n"
+        )
 
-    params = ''
+    params = ""
     if lang:
-        params += '    LANG\n        "{}"\n'.format(lang)
-    params += '    PREFIX\n        "{}"\n'.format(prefix)
+        params += f'{spaces(1)}LANG\n{spaces(2)}"{lang}"\n'
+    params += f'{spaces(1)}PREFIX\n{spaces(2)}"{prefix}"\n'
     if base_dir:
-        params += '    BASE\n        "{}"\n'.format(base_dir)
-    add_resource_command = ''
+        params += f'{spaces(1)}BASE\n{spaces(2)}"{base_dir}"\n'
+    add_resource_command = ""
     if is_example:
-        add_resource_command = 'QT6_ADD_RESOURCES'
+        add_resource_command = "QT6_ADD_RESOURCES"
     else:
-        add_resource_command = 'add_qt_resource'
-    output += '{}({} "{}"\n{}    FILES\n        {}\n)\n'.format(add_resource_command,
-            target, resource_name, params, file_list)
+        add_resource_command = "add_qt_resource"
+    output += (
+        f'{add_resource_command}({target} "{resource_name}"\n{params}{spaces(1)}FILES\n'
+        f"{spaces(2)}{file_list}\n)\n"
+    )
 
     return output
 
@@ -291,8 +369,8 @@ def fixup_linecontinuation(contents: str) -> str:
     # a newline character with an arbitrary amount of whitespace
     # between the backslash and the newline.
     # This greatly simplifies the qmake parsing grammar.
-    contents = re.sub(r'([^\t ])\\[ \t]*\n', '\\1 ', contents)
-    contents = re.sub(r'\\[ \t]*\n', '', contents)
+    contents = re.sub(r"([^\t ])\\[ \t]*\n", "\\1 ", contents)
+    contents = re.sub(r"\\[ \t]*\n", "", contents)
     return contents
 
 
@@ -313,24 +391,24 @@ def fixup_comments(contents: str) -> str:
     # care of it as well, as if the commented line didn't exist in the
     # first place.
 
-    contents = re.sub(r'\n#[^\n]*?\n', '\n', contents, re.DOTALL)
+    contents = re.sub(r"\n#[^\n]*?\n", "\n", contents, re.DOTALL)
     return contents
 
 
 def spaces(indent: int) -> str:
-    return '    ' * indent
+    return "    " * indent
 
 
 def trim_leading_dot(file: str) -> str:
-    while file.startswith('./'):
+    while file.startswith("./"):
         file = file[2:]
     return file
 
 
 def map_to_file(f: str, scope: Scope, *, is_include: bool = False) -> str:
-    assert('$$' not in f)
+    assert "$$" not in f
 
-    if f.startswith('${'): # Some cmake variable is prepended
+    if f.startswith("${"):  # Some cmake variable is prepended
         return f
 
     base_dir = scope.currentdir if is_include else scope.basedir
@@ -339,11 +417,11 @@ def map_to_file(f: str, scope: Scope, *, is_include: bool = False) -> str:
     return trim_leading_dot(f)
 
 
-def handle_vpath(source: str, base_dir: str, vpath: typing.List[str]) -> str:
-    assert('$$' not in source)
+def handle_vpath(source: str, base_dir: str, vpath: List[str]) -> str:
+    assert "$$" not in source
 
     if not source:
-        return ''
+        return ""
 
     if not vpath:
         return source
@@ -351,7 +429,7 @@ def handle_vpath(source: str, base_dir: str, vpath: typing.List[str]) -> str:
     if os.path.exists(os.path.join(base_dir, source)):
         return source
 
-    variable_pattern = re.compile(r'\$\{[A-Za-z0-9_]+\}')
+    variable_pattern = re.compile(r"\$\{[A-Za-z0-9_]+\}")
     match = re.match(variable_pattern, source)
     if match:
         # a complex, variable based path, skipping validation
@@ -363,8 +441,8 @@ def handle_vpath(source: str, base_dir: str, vpath: typing.List[str]) -> str:
         if os.path.exists(fullpath):
             return trim_leading_dot(posixpath.relpath(fullpath, base_dir))
 
-    print('    XXXX: Source {}: Not found.'.format(source))
-    return '{}-NOTFOUND'.format(source)
+    print(f"    XXXX: Source {source}: Not found.")
+    return f"{source}-NOTFOUND"
 
 
 def flatten_list(l):
@@ -379,74 +457,91 @@ def flatten_list(l):
 def handle_function_value(group: pp.ParseResults):
     function_name = group[0]
     function_args = group[1]
-    if function_name == 'qtLibraryTarget':
+    if function_name == "qtLibraryTarget":
         if len(function_args) > 1:
-            raise RuntimeError('Don\'t know what to with more than one function argument for $$qtLibraryTarget().')
+            raise RuntimeError(
+                "Don't know what to with more than one function argument "
+                "for $$qtLibraryTarget()."
+            )
         return str(function_args[0])
 
-    if function_name == 'quote':
+    if function_name == "quote":
         # Do nothing, just return a string result
         return str(group)
 
-    if function_name == 'files':
+    if function_name == "files":
         if len(function_args) > 1:
-            raise RuntimeError('Don\'t know what to with more than one function argument for $$files().')
+            raise RuntimeError(
+                "Don't know what to with more than one function argument for $$files()."
+            )
         return str(function_args[0])
 
     if isinstance(function_args, pp.ParseResults):
         function_args = list(flatten_list(function_args.asList()))
 
     # Return the whole expression as a string.
-    if function_name in ['join', 'files', 'cmakeRelativePath', 'shell_quote', 'shadowed', 'cmakeTargetPath',
-                         'shell_path', 'cmakeProcessLibs', 'cmakeTargetPaths',
-                         'cmakePortablePaths', 'escape_expand', 'member']:
-        return 'join({})'.format(''.join(function_args))
+    if function_name in [
+        "join",
+        "files",
+        "cmakeRelativePath",
+        "shell_quote",
+        "shadowed",
+        "cmakeTargetPath",
+        "shell_path",
+        "cmakeProcessLibs",
+        "cmakeTargetPaths",
+        "cmakePortablePaths",
+        "escape_expand",
+        "member",
+    ]:
+        return f"join({''.join(function_args)})"
 
-
-    raise RuntimeError('No logic to handle function "{}", please add one in handle_function_value().'.format(function_name))
 
 class Operation:
-    def __init__(self, value: typing.Union[typing.List[str], str]):
+    def __init__(self, value: Union[List[str], str]):
         if isinstance(value, list):
             self._value = value
         else:
-            self._value = [str(value), ]
+            self._value = [str(value)]
 
-    def process(self, key: str, input: typing.List[str],
-                transformer: typing.Callable[[typing.List[str]], typing.List[str]]) -> typing.List[str]:
-        assert(False)
+    def process(
+        self, key: str, input: List[str], transformer: Callable[[List[str]], List[str]]
+    ) -> List[str]:
+        assert False
 
     def __repr__(self):
-        assert(False)
+        assert False
 
     def _dump(self):
         if not self._value:
-            return '<NOTHING>'
+            return "<NOTHING>"
 
         if not isinstance(self._value, list):
-            return '<NOT A LIST>'
+            return "<NOT A LIST>"
 
         result = []
         for i in self._value:
             if not i:
-                result.append('<NONE>')
+                result.append("<NONE>")
             else:
                 result.append(str(i))
         return '"' + '", "'.join(result) + '"'
 
 
 class AddOperation(Operation):
-    def process(self, key: str, input: typing.List[str],
-                transformer: typing.Callable[[typing.List[str]], typing.List[str]]) -> typing.List[str]:
+    def process(
+        self, key: str, input: List[str], transformer: Callable[[List[str]], List[str]]
+    ) -> List[str]:
         return input + transformer(self._value)
 
     def __repr__(self):
-        return '+({})'.format(self._dump())
+        return f"+({self._dump()})"
 
 
 class UniqueAddOperation(Operation):
-    def process(self, key: str, input: typing.List[str],
-                transformer: typing.Callable[[typing.List[str]], typing.List[str]]) -> typing.List[str]:
+    def process(
+        self, key: str, input: List[str], transformer: Callable[[List[str]], List[str]]
+    ) -> List[str]:
         result = input
         for v in transformer(self._value):
             if v not in result:
@@ -454,15 +549,16 @@ class UniqueAddOperation(Operation):
         return result
 
     def __repr__(self):
-        return '*({})'.format(self._dump())
+        return f"*({self._dump()})"
 
 
 class SetOperation(Operation):
-    def process(self, key: str, input: typing.List[str],
-                transformer: typing.Callable[[typing.List[str]], typing.List[str]]) -> typing.List[str]:
-        values = []  # typing.List[str]
+    def process(
+        self, key: str, input: List[str], transformer: Callable[[List[str]], List[str]]
+    ) -> List[str]:
+        values = []  # List[str]
         for v in self._value:
-            if v != '$${}'.format(key):
+            if v != f"$${key}":
                 values.append(v)
             else:
                 values += input
@@ -473,66 +569,70 @@ class SetOperation(Operation):
             return values
 
     def __repr__(self):
-        return '=({})'.format(self._dump())
+        return f"=({self._dump()})"
 
 
 class RemoveOperation(Operation):
     def __init__(self, value):
         super().__init__(value)
 
-    def process(self, key: str, input: typing.List[str],
-                transformer: typing.Callable[[typing.List[str]], typing.List[str]]) -> typing.List[str]:
+    def process(
+        self, key: str, input: List[str], transformer: Callable[[List[str]], List[str]]
+    ) -> List[str]:
         input_set = set(input)
         value_set = set(self._value)
-        result = []
+        result: List[str] = []
 
         # Add everything that is not going to get removed:
         for v in input:
             if v not in value_set:
-                result += [v,]
+                result += [v]
 
         # Add everything else with removal marker:
         for v in transformer(self._value):
             if v not in input_set:
-                result += ['-{}'.format(v), ]
+                result += [f"-{v}"]
 
         return result
 
     def __repr__(self):
-        return '-({})'.format(self._dump())
+        return f"-({self._dump()})"
 
 
 class Scope(object):
 
     SCOPE_ID: int = 1
 
-    def __init__(self, *,
-                 parent_scope: typing.Optional[Scope],
-                 file: typing.Optional[str] = None, condition: str = '',
-                 base_dir: str = '',
-                 operations: typing.Union[
-                               typing.Mapping[str, typing.List[Operation]], None] = None) -> None:
+    def __init__(
+        self,
+        *,
+        parent_scope: Optional[Scope],
+        file: Optional[str] = None,
+        condition: str = "",
+        base_dir: str = "",
+        operations: Union[Mapping[str, List[Operation]], None] = None,
+    ) -> None:
         if operations is None:
             operations = {
-                'QT_SOURCE_TREE': [SetOperation(['${QT_SOURCE_TREE}'])],
-                'QT_BUILD_TREE': [SetOperation(['${PROJECT_BUILD_DIR}'])],
+                "QT_SOURCE_TREE": [SetOperation(["${QT_SOURCE_TREE}"])],
+                "QT_BUILD_TREE": [SetOperation(["${PROJECT_BUILD_DIR}"])],
             }
 
         self._operations = copy.deepcopy(operations)
         if parent_scope:
             parent_scope._add_child(self)
         else:
-            self._parent = None  # type: typing.Optional[Scope]
+            self._parent = None  # type: Optional[Scope]
             # Only add the  "QT = core gui" Set operation once, on the
             # very top-level .pro scope, aka it's basedir is empty.
             if not base_dir:
-                self._operations['QT'] = [SetOperation(['core', 'gui'])]
+                self._operations["QT"] = [SetOperation(["core", "gui"])]
 
         self._basedir = base_dir
         if file:
             self._currentdir = os.path.dirname(file)
         if not self._currentdir:
-            self._currentdir = '.'
+            self._currentdir = "."
         if not self._basedir:
             self._basedir = self._currentdir
 
@@ -541,30 +641,31 @@ class Scope(object):
         self._file = file
         self._file_absolute_path = os.path.abspath(file)
         self._condition = map_condition(condition)
-        self._children = []  # type: typing.List[Scope]
-        self._included_children = []  # type: typing.List[Scope]
-        self._visited_keys = set()  # type: typing.Set[str]
-        self._total_condition = None  # type: typing.Optional[str]
+        self._children = []  # type: List[Scope]
+        self._included_children = []  # type: List[Scope]
+        self._visited_keys = set()  # type: Set[str]
+        self._total_condition = None  # type: Optional[str]
 
     def __repr__(self):
-        return '{}:{}:{}:{}:{}'.format(self._scope_id,
-                                       self._basedir, self._currentdir,
-                                       self._file, self._condition or '<TRUE>')
+        return (
+            f"{self._scope_id}:{self._basedir}:{self._currentdir}:{self._file}:"
+            f"{self._condition or '<TRUE>'}"
+        )
 
     def reset_visited_keys(self):
         self._visited_keys = set()
 
-    def merge(self, other: 'Scope') -> None:
+    def merge(self, other: "Scope") -> None:
         assert self != other
         self._included_children.append(other)
 
     @property
     def scope_debug(self) -> bool:
-        merge = self.get_string('PRO2CMAKE_SCOPE_DEBUG').lower()
-        return merge == '1' or merge == 'on' or merge == 'yes' or merge == 'true'
+        merge = self.get_string("PRO2CMAKE_SCOPE_DEBUG").lower()
+        return merge == "1" or merge == "on" or merge == "yes" or merge == "true"
 
     @property
-    def parent(self) -> typing.Optional[Scope]:
+    def parent(self) -> Optional[Scope]:
         return self._parent
 
     @property
@@ -576,7 +677,7 @@ class Scope(object):
         return self._currentdir
 
     def can_merge_condition(self):
-        if self._condition == 'else':
+        if self._condition == "else":
             return False
         if self._operations:
             return False
@@ -584,167 +685,162 @@ class Scope(object):
         child_count = len(self._children)
         if child_count == 0 or child_count > 2:
             return False
-        assert child_count != 1 or self._children[0]._condition != 'else'
-        return child_count == 1 or self._children[1]._condition == 'else'
+        assert child_count != 1 or self._children[0]._condition != "else"
+        return child_count == 1 or self._children[1]._condition == "else"
 
     def settle_condition(self):
-        new_children: typing.List[Scope] = []
+        new_children: List[Scope] = []
         for c in self._children:
             c.settle_condition()
 
             if c.can_merge_condition():
                 child = c._children[0]
-                child._condition = '({}) AND ({})'.format(c._condition, child._condition)
+                child._condition = "({c._condition}) AND ({child._condition})"
                 new_children += c._children
             else:
                 new_children.append(c)
         self._children = new_children
 
     @staticmethod
-    def FromDict(parent_scope: typing.Optional['Scope'],
-                 file: str, statements, cond: str = '', base_dir: str = '') -> Scope:
+    def FromDict(
+        parent_scope: Optional["Scope"], file: str, statements, cond: str = "", base_dir: str = ""
+    ) -> Scope:
         scope = Scope(parent_scope=parent_scope, file=file, condition=cond, base_dir=base_dir)
         for statement in statements:
             if isinstance(statement, list):  # Handle skipped parts...
                 assert not statement
                 continue
 
-            operation = statement.get('operation', None)
+            operation = statement.get("operation", None)
             if operation:
-                key = statement.get('key', '')
-                value = statement.get('value', [])
-                assert key != ''
+                key = statement.get("key", "")
+                value = statement.get("value", [])
+                assert key != ""
 
-                if operation == '=':
+                if operation == "=":
                     scope._append_operation(key, SetOperation(value))
-                elif operation == '-=':
+                elif operation == "-=":
                     scope._append_operation(key, RemoveOperation(value))
-                elif operation == '+=':
+                elif operation == "+=":
                     scope._append_operation(key, AddOperation(value))
-                elif operation == '*=':
+                elif operation == "*=":
                     scope._append_operation(key, UniqueAddOperation(value))
                 else:
-                    print('Unexpected operation "{}" in scope "{}".'
-                          .format(operation, scope))
-                    assert(False)
+                    print(f'Unexpected operation "{operation}" in scope "{scope}".')
+                    assert False
 
                 continue
 
-            condition = statement.get('condition', None)
+            condition = statement.get("condition", None)
             if condition:
-                Scope.FromDict(scope, file,
-                               statement.get('statements'), condition,
-                               scope.basedir)
+                Scope.FromDict(scope, file, statement.get("statements"), condition, scope.basedir)
 
-                else_statements = statement.get('else_statements')
+                else_statements = statement.get("else_statements")
                 if else_statements:
-                    Scope.FromDict(scope, file, else_statements,
-                                   'else', scope.basedir)
+                    Scope.FromDict(scope, file, else_statements, "else", scope.basedir)
                 continue
 
-            loaded = statement.get('loaded')
+            loaded = statement.get("loaded")
             if loaded:
-                scope._append_operation('_LOADED', UniqueAddOperation(loaded))
+                scope._append_operation("_LOADED", UniqueAddOperation(loaded))
                 continue
 
-            option = statement.get('option', None)
+            option = statement.get("option", None)
             if option:
-                scope._append_operation('_OPTION', UniqueAddOperation(option))
+                scope._append_operation("_OPTION", UniqueAddOperation(option))
                 continue
 
-            included = statement.get('included', None)
+            included = statement.get("included", None)
             if included:
-                scope._append_operation('_INCLUDED',
-                                        UniqueAddOperation(included))
+                scope._append_operation("_INCLUDED", UniqueAddOperation(included))
                 continue
 
         scope.settle_condition()
 
         if scope.scope_debug:
-            print('..... [SCOPE_DEBUG]: Created scope {}:'.format(scope))
+            print(f"..... [SCOPE_DEBUG]: Created scope {scope}:")
             scope.dump(indent=1)
-            print('..... [SCOPE_DEBUG]: <<END OF SCOPE>>')
+            print("..... [SCOPE_DEBUG]: <<END OF SCOPE>>")
         return scope
 
     def _append_operation(self, key: str, op: Operation) -> None:
         if key in self._operations:
             self._operations[key].append(op)
         else:
-            self._operations[key] = [op, ]
+            self._operations[key] = [op]
 
     @property
     def file(self) -> str:
-        return self._file or ''
+        return self._file or ""
 
     @property
     def file_absolute_path(self) -> str:
-        return self._file_absolute_path or ''
+        return self._file_absolute_path or ""
 
     @property
     def generated_cmake_lists_path(self) -> str:
         assert self.basedir
-        return os.path.join(self.basedir, 'CMakeLists.gen.txt')
+        return os.path.join(self.basedir, "CMakeLists.gen.txt")
 
     @property
     def original_cmake_lists_path(self) -> str:
         assert self.basedir
-        return os.path.join(self.basedir, 'CMakeLists.txt')
+        return os.path.join(self.basedir, "CMakeLists.txt")
 
     @property
     def condition(self) -> str:
         return self._condition
 
     @property
-    def total_condition(self) -> typing.Optional[str]:
+    def total_condition(self) -> Optional[str]:
         return self._total_condition
 
     @total_condition.setter
     def total_condition(self, condition: str) -> None:
         self._total_condition = condition
 
-    def _add_child(self, scope: 'Scope') -> None:
+    def _add_child(self, scope: "Scope") -> None:
         scope._parent = self
         self._children.append(scope)
 
     @property
-    def children(self) -> typing.List['Scope']:
+    def children(self) -> List["Scope"]:
         result = list(self._children)
         for include_scope in self._included_children:
             result += include_scope.children
         return result
 
     def dump(self, *, indent: int = 0) -> None:
-        ind = '    ' * indent
-        print('{}Scope "{}":'.format(ind, self))
+        ind = spaces(indent)
+        print(f'{ind}Scope "{self}":')
         if self.total_condition:
-            print('{}  Total condition = {}'.format(ind, self.total_condition))
-        print('{}  Keys:'.format(ind))
+            print(f"{ind}  Total condition = {self.total_condition}")
+        print(f"{ind}  Keys:")
         keys = self._operations.keys()
         if not keys:
-            print('{}    -- NONE --'.format(ind))
+            print(f"{ind}    -- NONE --")
         else:
             for k in sorted(keys):
-                print('{}    {} = "{}"'
-                      .format(ind, k, self._operations.get(k, [])))
-        print('{}  Children:'.format(ind))
+                print(f'{ind}    {k} = "{self._operations.get(k, [])}"')
+        print(f"{ind}  Children:")
         if not self._children:
-            print('{}    -- NONE --'.format(ind))
+            print(f"{ind}    -- NONE --")
         else:
             for c in self._children:
                 c.dump(indent=indent + 1)
-        print('{}  Includes:'.format(ind))
+        print(f"{ind}  Includes:")
         if not self._included_children:
-            print('{}    -- NONE --'.format(ind))
+            print(f"{ind}    -- NONE --")
         else:
             for c in self._included_children:
                 c.dump(indent=indent + 1)
 
-    def dump_structure(self, *, type: str = 'ROOT', indent: int = 0) -> None:
-        print('{}{}: {}'.format(spaces(indent), type, self))
+    def dump_structure(self, *, type: str = "ROOT", indent: int = 0) -> None:
+        print(f"{spaces(indent)}{type}: {self}")
         for i in self._included_children:
-            i.dump_structure(type='INCL', indent=indent + 1)
+            i.dump_structure(type="INCL", indent=indent + 1)
         for i in self._children:
-            i.dump_structure(type='CHLD', indent=indent + 1)
+            i.dump_structure(type="CHLD", indent=indent + 1)
 
     @property
     def keys(self):
@@ -754,10 +850,14 @@ class Scope(object):
     def visited_keys(self):
         return self._visited_keys
 
-    def _evalOps(self, key: str,
-                 transformer: typing.Optional[typing.Callable[[Scope, typing.List[str]], typing.List[str]]],
-                 result: typing.List[str], *, inherit: bool = False) \
-            -> typing.List[str]:
+    def _evalOps(
+        self,
+        key: str,
+        transformer: Optional[Callable[[Scope, List[str]], List[str]]],
+        result: List[str],
+        *,
+        inherit: bool = False,
+    ) -> List[str]:
         self._visited_keys.add(key)
 
         # Inherrit values from above:
@@ -765,9 +865,14 @@ class Scope(object):
             result = self._parent._evalOps(key, transformer, result)
 
         if transformer:
-            op_transformer = lambda files: transformer(self, files)
+
+            def op_transformer(files):
+                return transformer(self, files)
+
         else:
-            op_transformer = lambda files: files
+
+            def op_transformer(files):
+                return files
 
         for op in self._operations.get(key, []):
             result = op.process(key, result, op_transformer)
@@ -777,68 +882,83 @@ class Scope(object):
 
         return result
 
-    def get(self, key: str, *, ignore_includes: bool = False, inherit: bool = False) -> typing.List[str]:
+    def get(self, key: str, *, ignore_includes: bool = False, inherit: bool = False) -> List[str]:
 
         is_same_path = self.currentdir == self.basedir
+        if not is_same_path:
+            relative_path = os.path.relpath(self.currentdir, self.basedir)
 
-        if key == '_PRO_FILE_PWD_':
-                return ['${CMAKE_CURRENT_SOURCE_DIR}']
-        if key == 'PWD':
+        if key == "_PRO_FILE_PWD_":
+            return ["${CMAKE_CURRENT_SOURCE_DIR}"]
+        if key == "PWD":
             if is_same_path:
-                return ['${CMAKE_CURRENT_SOURCE_DIR}']
+                return ["${CMAKE_CURRENT_SOURCE_DIR}"]
             else:
-                return ['${CMAKE_CURRENT_SOURCE_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
-        if key == 'OUT_PWD':
+                return [f"${{CMAKE_CURRENT_SOURCE_DIR}}/{relative_path}"]
+        if key == "OUT_PWD":
             if is_same_path:
-                return ['${CMAKE_CURRENT_BINARY_DIR}']
+                return ["${CMAKE_CURRENT_BINARY_DIR}"]
             else:
-                return ['${CMAKE_CURRENT_BINARY_DIR}/' + os.path.relpath(self.currentdir, self.basedir),]
+                return [f"${{CMAKE_CURRENT_BINARY_DIR}}/{relative_path}"]
 
         return self._evalOps(key, None, [], inherit=inherit)
 
-    def get_string(self, key: str, default: str = '', inherit : bool = False) -> str:
-        v = self.get(key, inherit = inherit)
+    def get_string(self, key: str, default: str = "", inherit: bool = False) -> str:
+        v = self.get(key, inherit=inherit)
         if len(v) == 0:
             return default
         assert len(v) == 1
         return v[0]
 
-    def _map_files(self, files: typing.List[str], *,
-                   use_vpath: bool = True, is_include: bool = False) -> typing.List[str]:
+    def _map_files(
+        self, files: List[str], *, use_vpath: bool = True, is_include: bool = False
+    ) -> List[str]:
 
-        expanded_files = []  # type: typing.List[str]
+        expanded_files = []  # type: List[str]
         for f in files:
             r = self._expand_value(f)
             expanded_files += r
 
-        mapped_files = list(map(lambda f: map_to_file(f, self, is_include=is_include), expanded_files))
+        mapped_files = list(
+            map(lambda f: map_to_file(f, self, is_include=is_include), expanded_files)
+        )
 
         if use_vpath:
-            result = list(map(lambda f: handle_vpath(f, self.basedir, self.get('VPATH', inherit=True)), mapped_files))
+            result = list(
+                map(
+                    lambda f: handle_vpath(f, self.basedir, self.get("VPATH", inherit=True)),
+                    mapped_files,
+                )
+            )
         else:
             result = mapped_files
 
         # strip ${CMAKE_CURRENT_SOURCE_DIR}:
-        result = list(map(lambda f: f[28:] if f.startswith('${CMAKE_CURRENT_SOURCE_DIR}/') else f, result))
+        result = list(
+            map(lambda f: f[28:] if f.startswith("${CMAKE_CURRENT_SOURCE_DIR}/") else f, result)
+        )
 
         # strip leading ./:
         result = list(map(lambda f: trim_leading_dot(f), result))
 
         return result
 
-    def get_files(self, key: str, *, use_vpath: bool = False,
-                  is_include: bool = False) -> typing.List[str]:
-        transformer = lambda scope, files: scope._map_files(files, use_vpath=use_vpath, is_include=is_include)
+    def get_files(
+        self, key: str, *, use_vpath: bool = False, is_include: bool = False
+    ) -> List[str]:
+        def transformer(scope, files):
+            return scope._map_files(files, use_vpath=use_vpath, is_include=is_include)
+
         return list(self._evalOps(key, transformer, []))
 
-    def _expand_value(self, value: str) -> typing.List[str]:
+    def _expand_value(self, value: str) -> List[str]:
         result = value
-        pattern = re.compile(r'\$\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?')
+        pattern = re.compile(r"\$\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?")
         match = re.search(pattern, result)
         while match:
             old_result = result
             if match.group(0) == value:
-                get_result = self.get(match.group(1), inherit = True)
+                get_result = self.get(match.group(1), inherit=True)
                 if len(get_result) == 1:
                     result = get_result[0]
                 else:
@@ -849,21 +969,19 @@ class Scope(object):
                         result_list += self._expand_value(entry_value)
                     return result_list
             else:
-                replacement = self.get(match.group(1), inherit = True)
-                replacement_str = replacement[0] if replacement else ''
-                result = result[:match.start()] \
-                         + replacement_str \
-                         + result[match.end():]
+                replacement = self.get(match.group(1), inherit=True)
+                replacement_str = replacement[0] if replacement else ""
+                result = result[: match.start()] + replacement_str + result[match.end() :]
 
             if result == old_result:
-                return [result,] # Do not go into infinite loop
+                return [result]  # Do not go into infinite loop
 
             match = re.search(pattern, result)
-        return [result,]
+        return [result]
 
-    def expand(self, key: str) -> typing.List[str]:
+    def expand(self, key: str) -> List[str]:
         value = self.get(key)
-        result: typing.List[str] = []
+        result: List[str] = []
         assert isinstance(value, list)
         for v in value:
             result += self._expand_value(v)
@@ -876,20 +994,19 @@ class Scope(object):
 
     @property
     def TEMPLATE(self) -> str:
-        return self.get_string('TEMPLATE', 'app')
+        return self.get_string("TEMPLATE", "app")
 
     def _rawTemplate(self) -> str:
-        return self.get_string('TEMPLATE')
+        return self.get_string("TEMPLATE")
 
     @property
     def TARGET(self) -> str:
-        target =  self.expandString('TARGET') \
-            or os.path.splitext(os.path.basename(self.file))[0]
-        return re.sub('\.\./', '', target)
+        target = self.expandString("TARGET") or os.path.splitext(os.path.basename(self.file))[0]
+        return re.sub(r"\.\./", "", target)
 
     @property
-    def _INCLUDED(self) -> typing.List[str]:
-        return self.get('_INCLUDED')
+    def _INCLUDED(self) -> List[str]:
+        return self.get("_INCLUDED")
 
 
 class QmakeParser:
@@ -899,7 +1016,7 @@ class QmakeParser:
 
     def _generate_grammar(self):
         # Define grammar:
-        pp.ParserElement.setDefaultWhitespaceChars(' \t')
+        pp.ParserElement.setDefaultWhitespaceChars(" \t")
 
         def add_element(name: str, value: pp.ParserElement):
             nonlocal self
@@ -908,66 +1025,81 @@ class QmakeParser:
                 value.setDebug()
             return value
 
-        EOL = add_element('EOL', pp.Suppress(pp.LineEnd()))
-        Else = add_element('Else', pp.Keyword('else'))
-        Identifier = add_element('Identifier', pp.Word(pp.alphas + '_',
-                                                       bodyChars=pp.alphanums+'_-./'))
-        BracedValue = add_element('BracedValue',
-                                  pp.nestedExpr(
-                                      ignoreExpr=pp.quotedString |
-                                                 pp.QuotedString(quoteChar='$(',
-                                                                 endQuoteChar=')',
-                                                                 escQuote='\\',
-                                                                 unquoteResults=False)
-                                  ).setParseAction(lambda s, l, t: ['(', *t[0], ')']))
+        EOL = add_element("EOL", pp.Suppress(pp.LineEnd()))
+        Else = add_element("Else", pp.Keyword("else"))
+        Identifier = add_element(
+            "Identifier", pp.Word(f"{pp.alphas}_", bodyChars=pp.alphanums + "_-./")
+        )
+        BracedValue = add_element(
+            "BracedValue",
+            pp.nestedExpr(
+                ignoreExpr=pp.quotedString
+                | pp.QuotedString(
+                    quoteChar="$(", endQuoteChar=")", escQuote="\\", unquoteResults=False
+                )
+            ).setParseAction(lambda s, l, t: ["(", *t[0], ")"]),
+        )
 
-        Substitution \
-            = add_element('Substitution',
-                          pp.Combine(pp.Literal('$')
-                          + (((pp.Literal('$') + Identifier
-                               + pp.Optional(pp.nestedExpr()))
-                              | (pp.Literal('(') + Identifier + pp.Literal(')'))
-                              | (pp.Literal('{') + Identifier + pp.Literal('}'))
-                              | (pp.Literal('$') + pp.Literal('{')
-                                 + Identifier + pp.Optional(pp.nestedExpr())
-                                 + pp.Literal('}'))
-                              | (pp.Literal('$') + pp.Literal('[') + Identifier
-                                 + pp.Literal(']'))
-                              ))))
-        LiteralValuePart = add_element('LiteralValuePart',
-                                       pp.Word(pp.printables, excludeChars='$#{}()'))
-        SubstitutionValue \
-            = add_element('SubstitutionValue',
-                          pp.Combine(pp.OneOrMore(Substitution
-                                                  | LiteralValuePart
-                                                  | pp.Literal('$'))))
-        FunctionValue \
-                = add_element('FunctionValue',
-                        pp.Group(pp.Suppress(pp.Literal('$') + pp.Literal('$'))
+        Substitution = add_element(
+            "Substitution",
+            pp.Combine(
+                pp.Literal("$")
+                + (
+                    (
+                        (pp.Literal("$") + Identifier + pp.Optional(pp.nestedExpr()))
+                        | (pp.Literal("(") + Identifier + pp.Literal(")"))
+                        | (pp.Literal("{") + Identifier + pp.Literal("}"))
+                        | (
+                            pp.Literal("$")
+                            + pp.Literal("{")
                             + Identifier
-                            + pp.nestedExpr() #.setParseAction(lambda s, l, t: ['(', *t[0], ')'])
-                            ).setParseAction(lambda s, l, t: handle_function_value(*t)))
-        Value \
-            = add_element('Value',
-                          pp.NotAny(Else | pp.Literal('}') | EOL) \
-                          + (pp.QuotedString(quoteChar='"', escChar='\\')
-                              | FunctionValue
-                              | SubstitutionValue
-                              | BracedValue))
+                            + pp.Optional(pp.nestedExpr())
+                            + pp.Literal("}")
+                        )
+                        | (pp.Literal("$") + pp.Literal("[") + Identifier + pp.Literal("]"))
+                    )
+                )
+            ),
+        )
+        LiteralValuePart = add_element(
+            "LiteralValuePart", pp.Word(pp.printables, excludeChars="$#{}()")
+        )
+        SubstitutionValue = add_element(
+            "SubstitutionValue",
+            pp.Combine(pp.OneOrMore(Substitution | LiteralValuePart | pp.Literal("$"))),
+        )
+        FunctionValue = add_element(
+            "FunctionValue",
+            pp.Group(
+                pp.Suppress(pp.Literal("$") + pp.Literal("$"))
+                + Identifier
+                + pp.nestedExpr()  # .setParseAction(lambda s, l, t: ['(', *t[0], ')'])
+            ).setParseAction(lambda s, l, t: handle_function_value(*t)),
+        )
+        Value = add_element(
+            "Value",
+            pp.NotAny(Else | pp.Literal("}") | EOL)
+            + (
+                pp.QuotedString(quoteChar='"', escChar="\\")
+                | FunctionValue
+                | SubstitutionValue
+                | BracedValue
+            ),
+        )
 
-        Values = add_element('Values', pp.ZeroOrMore(Value)('value'))
+        Values = add_element("Values", pp.ZeroOrMore(Value)("value"))
 
-        Op = add_element('OP',
-                         pp.Literal('=') | pp.Literal('-=') | pp.Literal('+=') \
-                         | pp.Literal('*='))
+        Op = add_element(
+            "OP", pp.Literal("=") | pp.Literal("-=") | pp.Literal("+=") | pp.Literal("*=")
+        )
 
-        Key = add_element('Key', Identifier)
+        Key = add_element("Key", Identifier)
 
-        Operation = add_element('Operation', Key('key') + Op('operation') + Values('value'))
-        CallArgs = add_element('CallArgs', pp.nestedExpr())
+        Operation = add_element("Operation", Key("key") + Op("operation") + Values("value"))
+        CallArgs = add_element("CallArgs", pp.nestedExpr())
 
         def parse_call_args(results):
-            out = ''
+            out = ""
             for item in chain(*results):
                 if isinstance(item, str):
                     out += item
@@ -977,111 +1109,144 @@ class QmakeParser:
 
         CallArgs.setParseAction(parse_call_args)
 
-        Load = add_element('Load', pp.Keyword('load') + CallArgs('loaded'))
-        Include = add_element('Include', pp.Keyword('include') + CallArgs('included'))
-        Option = add_element('Option', pp.Keyword('option') + CallArgs('option'))
+        Load = add_element("Load", pp.Keyword("load") + CallArgs("loaded"))
+        Include = add_element("Include", pp.Keyword("include") + CallArgs("included"))
+        Option = add_element("Option", pp.Keyword("option") + CallArgs("option"))
 
         # ignore the whole thing...
         DefineTestDefinition = add_element(
-            'DefineTestDefinition',
-            pp.Suppress(pp.Keyword('defineTest') + CallArgs
-                        + pp.nestedExpr(opener='{', closer='}', ignoreExpr=pp.LineEnd())))
+            "DefineTestDefinition",
+            pp.Suppress(
+                pp.Keyword("defineTest")
+                + CallArgs
+                + pp.nestedExpr(opener="{", closer="}", ignoreExpr=pp.LineEnd())
+            ),
+        )
 
         # ignore the whole thing...
         ForLoop = add_element(
-            'ForLoop',
-            pp.Suppress(pp.Keyword('for') + CallArgs
-                        + pp.nestedExpr(opener='{', closer='}', ignoreExpr=pp.LineEnd())))
+            "ForLoop",
+            pp.Suppress(
+                pp.Keyword("for")
+                + CallArgs
+                + pp.nestedExpr(opener="{", closer="}", ignoreExpr=pp.LineEnd())
+            ),
+        )
 
         # ignore the whole thing...
         ForLoopSingleLine = add_element(
-            'ForLoopSingleLine',
-            pp.Suppress(pp.Keyword('for') + CallArgs + pp.Literal(':') + pp.SkipTo(EOL)))
+            "ForLoopSingleLine",
+            pp.Suppress(pp.Keyword("for") + CallArgs + pp.Literal(":") + pp.SkipTo(EOL)),
+        )
 
         # ignore the whole thing...
-        FunctionCall = add_element('FunctionCall', pp.Suppress(Identifier + pp.nestedExpr()))
+        FunctionCall = add_element("FunctionCall", pp.Suppress(Identifier + pp.nestedExpr()))
 
-        Scope = add_element('Scope', pp.Forward())
+        Scope = add_element("Scope", pp.Forward())
 
-        Statement = add_element('Statement',
-                                pp.Group(Load | Include | Option | ForLoop | ForLoopSingleLine
-                                         | DefineTestDefinition | FunctionCall | Operation))
-        StatementLine = add_element('StatementLine', Statement + (EOL | pp.FollowedBy('}')))
-        StatementGroup = add_element('StatementGroup',
-                                     pp.ZeroOrMore(StatementLine | Scope | pp.Suppress(EOL)))
+        Statement = add_element(
+            "Statement",
+            pp.Group(
+                Load
+                | Include
+                | Option
+                | ForLoop
+                | ForLoopSingleLine
+                | DefineTestDefinition
+                | FunctionCall
+                | Operation
+            ),
+        )
+        StatementLine = add_element("StatementLine", Statement + (EOL | pp.FollowedBy("}")))
+        StatementGroup = add_element(
+            "StatementGroup", pp.ZeroOrMore(StatementLine | Scope | pp.Suppress(EOL))
+        )
 
-        Block = add_element('Block',
-                            pp.Suppress('{')  + pp.Optional(EOL)
-                            + StatementGroup + pp.Optional(EOL)
-                            + pp.Suppress('}') + pp.Optional(EOL))
+        Block = add_element(
+            "Block",
+            pp.Suppress("{")
+            + pp.Optional(EOL)
+            + StatementGroup
+            + pp.Optional(EOL)
+            + pp.Suppress("}")
+            + pp.Optional(EOL),
+        )
 
-        ConditionEnd = add_element('ConditionEnd',
-                                   pp.FollowedBy((pp.Optional(pp.White())
-                                                  + (pp.Literal(':')
-                                                     | pp.Literal('{')
-                                                     | pp.Literal('|')))))
+        ConditionEnd = add_element(
+            "ConditionEnd",
+            pp.FollowedBy(
+                (pp.Optional(pp.White()) + (pp.Literal(":") | pp.Literal("{") | pp.Literal("|")))
+            ),
+        )
 
-        ConditionPart1 = add_element('ConditionPart1',
-                                     (pp.Optional('!') + Identifier + pp.Optional(BracedValue)))
-        ConditionPart2 = add_element('ConditionPart2', pp.CharsNotIn('#{}|:=\\\n'))
+        ConditionPart1 = add_element(
+            "ConditionPart1", (pp.Optional("!") + Identifier + pp.Optional(BracedValue))
+        )
+        ConditionPart2 = add_element("ConditionPart2", pp.CharsNotIn("#{}|:=\\\n"))
         ConditionPart = add_element(
-            'ConditionPart',
-            (ConditionPart1 ^ ConditionPart2) + ConditionEnd)
+            "ConditionPart", (ConditionPart1 ^ ConditionPart2) + ConditionEnd
+        )
 
-        ConditionOp = add_element('ConditionOp', pp.Literal('|') ^ pp.Literal(':'))
-        ConditionWhiteSpace = add_element('ConditionWhiteSpace',
-                                          pp.Suppress(pp.Optional(pp.White(' '))))
+        ConditionOp = add_element("ConditionOp", pp.Literal("|") ^ pp.Literal(":"))
+        ConditionWhiteSpace = add_element(
+            "ConditionWhiteSpace", pp.Suppress(pp.Optional(pp.White(" ")))
+        )
 
-        ConditionRepeated = add_element('ConditionRepeated',
-                                        pp.ZeroOrMore(ConditionOp
-                                                      + ConditionWhiteSpace + ConditionPart))
+        ConditionRepeated = add_element(
+            "ConditionRepeated", pp.ZeroOrMore(ConditionOp + ConditionWhiteSpace + ConditionPart)
+        )
 
-        Condition = add_element('Condition', pp.Combine(ConditionPart + ConditionRepeated))
-        Condition.setParseAction(lambda x: ' '.join(x).strip().replace(':', ' && ').strip(' && '))
+        Condition = add_element("Condition", pp.Combine(ConditionPart + ConditionRepeated))
+        Condition.setParseAction(lambda x: " ".join(x).strip().replace(":", " && ").strip(" && "))
 
         # Weird thing like write_file(a)|error() where error() is the alternative condition
         # which happens to be a function call. In this case there is no scope, but our code expects
         # a scope with a list of statements, so create a fake empty statement.
         ConditionEndingInFunctionCall = add_element(
-            'ConditionEndingInFunctionCall', pp.Suppress(ConditionOp) + FunctionCall
-                                             + pp.Empty().setParseAction(lambda x: [[]])
-                                             .setResultsName('statements'))
+            "ConditionEndingInFunctionCall",
+            pp.Suppress(ConditionOp)
+            + FunctionCall
+            + pp.Empty().setParseAction(lambda x: [[]]).setResultsName("statements"),
+        )
 
-        SingleLineScope = add_element('SingleLineScope',
-                                      pp.Suppress(pp.Literal(':'))
-                                      + pp.Group(Block | (Statement + EOL))('statements'))
-        MultiLineScope = add_element('MultiLineScope', Block('statements'))
+        SingleLineScope = add_element(
+            "SingleLineScope",
+            pp.Suppress(pp.Literal(":")) + pp.Group(Block | (Statement + EOL))("statements"),
+        )
+        MultiLineScope = add_element("MultiLineScope", Block("statements"))
 
-        SingleLineElse = add_element('SingleLineElse',
-                                     pp.Suppress(pp.Literal(':'))
-                                     + (Scope | Block | (Statement + pp.Optional(EOL))))
-        MultiLineElse = add_element('MultiLineElse', Block)
-        ElseBranch = add_element('ElseBranch', pp.Suppress(Else) + (SingleLineElse | MultiLineElse))
+        SingleLineElse = add_element(
+            "SingleLineElse",
+            pp.Suppress(pp.Literal(":")) + (Scope | Block | (Statement + pp.Optional(EOL))),
+        )
+        MultiLineElse = add_element("MultiLineElse", Block)
+        ElseBranch = add_element("ElseBranch", pp.Suppress(Else) + (SingleLineElse | MultiLineElse))
 
         # Scope is already add_element'ed in the forward declaration above.
-        Scope <<= \
-             pp.Group(Condition('condition')
-                      + (SingleLineScope | MultiLineScope | ConditionEndingInFunctionCall)
-                      + pp.Optional(ElseBranch)('else_statements'))
+        Scope <<= pp.Group(
+            Condition("condition")
+            + (SingleLineScope | MultiLineScope | ConditionEndingInFunctionCall)
+            + pp.Optional(ElseBranch)("else_statements")
+        )
 
-        Grammar = StatementGroup('statements')
+        Grammar = StatementGroup("statements")
         Grammar.ignore(pp.pythonStyleComment())
 
         return Grammar
 
     def parseFile(self, file: str):
-        print('Parsing \"{}\"...'.format(file))
+        print(f'Parsing "{file}"...')
         try:
-            with open(file, 'r') as file_fd:
+            with open(file, "r") as file_fd:
                 contents = file_fd.read()
 
-            old_contents = contents
+            # old_contents = contents
             contents = fixup_comments(contents)
             contents = fixup_linecontinuation(contents)
             result = self._Grammar.parseString(contents, parseAll=True)
         except pp.ParseException as pe:
             print(pe.line)
-            print(' '*(pe.col-1) + '^')
+            print(f"{' ' * (pe.col-1)}^")
             print(pe)
             raise pe
         return result
@@ -1094,30 +1259,32 @@ def parseProFile(file: str, *, debug=False):
 
 def map_condition(condition: str) -> str:
     # Some hardcoded cases that are too bothersome to generalize.
-    condition = re.sub(r'qtConfig\(opengl\(es1\|es2\)\?\)',
-                       r'QT_FEATURE_opengl OR QT_FEATURE_opengles2 OR QT_FEATURE_opengles3',
-                       condition)
-    condition = re.sub(r'qtConfig\(opengl\.\*\)', r'QT_FEATURE_opengl', condition)
-    condition = re.sub(r'^win\*$', r'win', condition)
-    condition = re.sub(r'^no-png$', r'NOT QT_FEATURE_png', condition)
-    condition = re.sub(r'contains\(CONFIG, static\)', r'NOT QT_BUILD_SHARED_LIBS', condition)
-    condition = re.sub(r'contains\(QT_CONFIG,\w*shared\)', r'QT_BUILD_SHARED_LIBS', condition)
+    condition = re.sub(
+        r"qtConfig\(opengl\(es1\|es2\)\?\)",
+        r"QT_FEATURE_opengl OR QT_FEATURE_opengles2 OR QT_FEATURE_opengles3",
+        condition,
+    )
+    condition = re.sub(r"qtConfig\(opengl\.\*\)", r"QT_FEATURE_opengl", condition)
+    condition = re.sub(r"^win\*$", r"win", condition)
+    condition = re.sub(r"^no-png$", r"NOT QT_FEATURE_png", condition)
+    condition = re.sub(r"contains\(CONFIG, static\)", r"NOT QT_BUILD_SHARED_LIBS", condition)
+    condition = re.sub(r"contains\(QT_CONFIG,\w*shared\)", r"QT_BUILD_SHARED_LIBS", condition)
 
     def gcc_version_handler(match_obj: re.Match):
         operator = match_obj.group(1)
         version_type = match_obj.group(2)
-        if operator == 'equals':
-            operator = 'STREQUAL'
-        elif operator == 'greaterThan':
-            operator = 'STRGREATER'
-        elif operator == 'lessThan':
-            operator = 'STRLESS'
+        if operator == "equals":
+            operator = "STREQUAL"
+        elif operator == "greaterThan":
+            operator = "STRGREATER"
+        elif operator == "lessThan":
+            operator = "STRLESS"
 
         version = match_obj.group(3)
-        return '(QT_COMPILER_VERSION_{} {} {})'.format(version_type, operator, version)
+        return f"(QT_COMPILER_VERSION_{version_type} {operator} {version})"
 
     # TODO: Possibly fix for other compilers.
-    pattern = r'(equals|greaterThan|lessThan)\(QT_GCC_([A-Z]+)_VERSION,[ ]*([0-9]+)\)'
+    pattern = r"(equals|greaterThan|lessThan)\(QT_GCC_([A-Z]+)_VERSION,[ ]*([0-9]+)\)"
     condition = re.sub(pattern, gcc_version_handler, condition)
 
     # TODO: the current if(...) replacement makes the parentheses
@@ -1125,108 +1292,104 @@ def map_condition(condition: str) -> str:
     # Need to fix this either with pypi regex recursive regexps,
     # using pyparsing, or some other proper means of handling
     # balanced parentheses.
-    condition = re.sub(r'\bif\s*\((.*?)\)', r'\1', condition)
+    condition = re.sub(r"\bif\s*\((.*?)\)", r"\1", condition)
 
-    condition = re.sub(r'\bisEmpty\s*\((.*?)\)', r'\1_ISEMPTY', condition)
-    condition = re.sub(r'\bcontains\s*\((.*?),\s*"?(.*?)"?\)',
-                       r'\1___contains___\2', condition)
-    condition = re.sub(r'\bequals\s*\((.*?),\s*"?(.*?)"?\)',
-                       r'\1___equals___\2', condition)
-    condition = re.sub(r'\bisEqual\s*\((.*?),\s*"?(.*?)"?\)',
-                       r'\1___equals___\2', condition)
-    condition = re.sub(r'\s*==\s*', '___STREQUAL___', condition)
-    condition = re.sub(r'\bexists\s*\((.*?)\)', r'EXISTS \1', condition)
+    condition = re.sub(r"\bisEmpty\s*\((.*?)\)", r"\1_ISEMPTY", condition)
+    condition = re.sub(r'\bcontains\s*\((.*?),\s*"?(.*?)"?\)', r"\1___contains___\2", condition)
+    condition = re.sub(r'\bequals\s*\((.*?),\s*"?(.*?)"?\)', r"\1___equals___\2", condition)
+    condition = re.sub(r'\bisEqual\s*\((.*?),\s*"?(.*?)"?\)', r"\1___equals___\2", condition)
+    condition = re.sub(r"\s*==\s*", "___STREQUAL___", condition)
+    condition = re.sub(r"\bexists\s*\((.*?)\)", r"EXISTS \1", condition)
 
-    pattern = r'CONFIG\((debug|release),debug\|release\)'
+    pattern = r"CONFIG\((debug|release),debug\|release\)"
     match_result = re.match(pattern, condition)
     if match_result:
         build_type = match_result.group(1)
-        if build_type == 'debug':
-            build_type = 'Debug'
-        elif build_type == 'release':
-            build_type = 'Release'
-        condition = re.sub(pattern, '(CMAKE_BUILD_TYPE STREQUAL {})'.format(build_type), condition)
+        if build_type == "debug":
+            build_type = "Debug"
+        elif build_type == "release":
+            build_type = "Release"
+        condition = re.sub(pattern, f"(CMAKE_BUILD_TYPE STREQUAL {build_type})", condition)
 
-    condition = condition.replace('*', '_x_')
-    condition = condition.replace('.$$', '__ss_')
-    condition = condition.replace('$$', '_ss_')
+    condition = condition.replace("*", "_x_")
+    condition = condition.replace(".$$", "__ss_")
+    condition = condition.replace("$$", "_ss_")
 
-    condition = condition.replace('!', 'NOT ')
-    condition = condition.replace('&&', ' AND ')
-    condition = condition.replace('|', ' OR ')
+    condition = condition.replace("!", "NOT ")
+    condition = condition.replace("&&", " AND ")
+    condition = condition.replace("|", " OR ")
 
-    cmake_condition = ''
+    cmake_condition = ""
     for part in condition.split():
         # some features contain e.g. linux, that should not be
         # turned upper case
-        feature = re.match(r"(qtConfig|qtHaveModule)\(([a-zA-Z0-9_-]+)\)",
-                           part)
+        feature = re.match(r"(qtConfig|qtHaveModule)\(([a-zA-Z0-9_-]+)\)", part)
         if feature:
-            if (feature.group(1) == "qtHaveModule"):
-                part = 'TARGET {}'.format(map_qt_library(feature.group(2)))
+            if feature.group(1) == "qtHaveModule":
+                part = f"TARGET {map_qt_library(feature.group(2))}"
             else:
                 feature_name = featureName(feature.group(2))
-                if feature_name.startswith('system_') and is_known_3rd_party_library(feature_name[7:]):
-                    part = 'ON'
-                elif feature == 'dlopen':
-                    part = 'ON'
+                if feature_name.startswith("system_") and is_known_3rd_party_library(
+                    feature_name[7:]
+                ):
+                    part = "ON"
+                elif feature == "dlopen":
+                    part = "ON"
                 else:
-                    part = 'QT_FEATURE_' + feature_name
+                    part = "QT_FEATURE_" + feature_name
         else:
             part = map_platform(part)
 
-        part = part.replace('true', 'ON')
-        part = part.replace('false', 'OFF')
-        cmake_condition += ' ' + part
+        part = part.replace("true", "ON")
+        part = part.replace("false", "OFF")
+        cmake_condition += " " + part
     return cmake_condition.strip()
 
 
-def handle_subdir(scope: Scope,
-                  cm_fh: typing.IO[str],
-                  *,
-                  indent: int = 0,
-                  is_example: bool = False) -> None:
+def handle_subdir(
+    scope: Scope, cm_fh: IO[str], *, indent: int = 0, is_example: bool = False
+) -> None:
 
     # Global nested dictionary that will contain sub_dir assignments and their conditions.
     # Declared as a global in order not to pollute the nested function signatures with giant
     # type hints.
-    sub_dirs: typing.Dict[str, typing.Dict[str, typing.Set[typing.FrozenSet[str]]]] = {}
+    sub_dirs: Dict[str, Dict[str, Set[FrozenSet[str]]]] = {}
 
     # Collects assignment conditions into global sub_dirs dict.
-    def collect_subdir_info(sub_dir_assignment: str,
-                            *,
-                            current_conditions: typing.FrozenSet[str] = None):
-        subtraction = sub_dir_assignment.startswith('-')
+    def collect_subdir_info(sub_dir_assignment: str, *, current_conditions: FrozenSet[str] = None):
+        subtraction = sub_dir_assignment.startswith("-")
         if subtraction:
             subdir_name = sub_dir_assignment[1:]
         else:
             subdir_name = sub_dir_assignment
         if subdir_name not in sub_dirs:
             sub_dirs[subdir_name] = {}
-        additions = sub_dirs[subdir_name].get('additions', set())
-        subtractions = sub_dirs[subdir_name].get('subtractions', set())
+        additions = sub_dirs[subdir_name].get("additions", set())
+        subtractions = sub_dirs[subdir_name].get("subtractions", set())
         if current_conditions:
             if subtraction:
                 subtractions.add(current_conditions)
             else:
                 additions.add(current_conditions)
         if additions:
-            sub_dirs[subdir_name]['additions'] = additions
+            sub_dirs[subdir_name]["additions"] = additions
         if subtractions:
-            sub_dirs[subdir_name]['subtractions'] = subtractions
+            sub_dirs[subdir_name]["subtractions"] = subtractions
 
     # Recursive helper that collects subdir info for given scope,
     # and the children of the given scope.
-    def handle_subdir_helper(scope: Scope,
-                             cm_fh: typing.IO[str],
-                             *,
-                             indent: int = 0,
-                             current_conditions: typing.FrozenSet[str] = None,
-                             is_example: bool = False):
-        for sd in scope.get_files('SUBDIRS'):
+    def handle_subdir_helper(
+        scope: Scope,
+        cm_fh: IO[str],
+        *,
+        indent: int = 0,
+        current_conditions: FrozenSet[str] = None,
+        is_example: bool = False,
+    ):
+        for sd in scope.get_files("SUBDIRS"):
             # Collect info about conditions and SUBDIR assignments in the
             # current scope.
-            if os.path.isdir(sd) or sd.startswith('-'):
+            if os.path.isdir(sd) or sd.startswith("-"):
                 collect_subdir_info(sd, current_conditions=current_conditions)
             # For the file case, directly write into the file handle.
             elif os.path.isfile(sd):
@@ -1239,15 +1402,14 @@ def handle_subdir(scope: Scope,
                     collect_subdir_info(dirname, current_conditions=current_conditions)
                 else:
                     subdir_result = parseProFile(sd, debug=False)
-                    subdir_scope \
-                        = Scope.FromDict(scope, sd,
-                                         subdir_result.asDict().get('statements'),
-                                         '', scope.basedir)
+                    subdir_scope = Scope.FromDict(
+                        scope, sd, subdir_result.asDict().get("statements"), "", scope.basedir
+                    )
 
                     do_include(subdir_scope)
                     cmakeify_scope(subdir_scope, cm_fh, indent=indent, is_example=is_example)
             else:
-                print('    XXXX: SUBDIR {} in {}: Not found.'.format(sd, scope))
+                print(f"    XXXX: SUBDIR {sd} in {scope}: Not found.")
 
         # Collect info about conditions and SUBDIR assignments in child
         # scopes, aka recursively call the same function, but with an
@@ -1255,12 +1417,14 @@ def handle_subdir(scope: Scope,
         for c in scope.children:
             # Use total_condition for 'else' conditions, otherwise just use the regular value to
             # simplify the logic.
-            child_condition = c.total_condition if c.condition == 'else' else c.condition
-            handle_subdir_helper(c, cm_fh,
-                                 indent=indent + 1,
-                                 is_example=is_example,
-                                 current_conditions=frozenset((*current_conditions,
-                                                               child_condition)))
+            child_condition = c.total_condition if c.condition == "else" else c.condition
+            handle_subdir_helper(
+                c,
+                cm_fh,
+                indent=indent + 1,
+                is_example=is_example,
+                current_conditions=frozenset((*current_conditions, child_condition)),
+            )
 
     def group_and_print_sub_dirs(indent: int = 0):
         # Simplify conditions, and group
@@ -1270,40 +1434,42 @@ def handle_subdir(scope: Scope,
         # Wraps each element in the given interable with parentheses,
         # to make sure boolean simplification happens correctly.
         def wrap_in_parenthesis(iterable):
-            return ['({})'.format(c) for c in iterable]
+            return [f"({c})" for c in iterable]
 
         def join_all_conditions(set_of_alternatives):
             # Elements within one frozen set represent one single
             # alternative whose pieces are ANDed together.
             # This is repeated for each alternative that would
             # enable a subdir, and are thus ORed together.
-            final_str = ''
+            final_str = ""
             if set_of_alternatives:
-                wrapped_set_of_alternatives = [wrap_in_parenthesis(alternative)
-                                               for alternative in set_of_alternatives]
-                alternatives = ['({})'.format(" AND ".join(alternative))
-                                for alternative in wrapped_set_of_alternatives]
-                final_str = ' OR '.join(sorted(alternatives))
+                wrapped_set_of_alternatives = [
+                    wrap_in_parenthesis(alternative) for alternative in set_of_alternatives
+                ]
+                alternatives = [
+                    f'({" AND ".join(alternative)})' for alternative in wrapped_set_of_alternatives
+                ]
+                final_str = " OR ".join(sorted(alternatives))
             return final_str
 
         for subdir_name in sub_dirs:
-            additions = sub_dirs[subdir_name].get('additions', set())
-            subtractions = sub_dirs[subdir_name].get('subtractions', set())
+            additions = sub_dirs[subdir_name].get("additions", set())
+            subtractions = sub_dirs[subdir_name].get("subtractions", set())
 
             # An empty condition key represents the group of sub dirs
             # that should be added unconditionally.
-            condition_key = ''
+            condition_key = ""
             if additions or subtractions:
                 addition_str = join_all_conditions(additions)
                 if addition_str:
-                    addition_str = '({})'.format(addition_str)
+                    addition_str = f"({addition_str})"
                 subtraction_str = join_all_conditions(subtractions)
                 if subtraction_str:
-                    subtraction_str = 'NOT ({})'.format(subtraction_str)
+                    subtraction_str = f"NOT ({subtraction_str})"
 
                 condition_str = addition_str
                 if condition_str and subtraction_str:
-                    condition_str += ' AND '
+                    condition_str += " AND "
                 condition_str += subtraction_str
                 condition_simplified = simplify_condition(condition_str)
                 condition_key = condition_simplified
@@ -1313,18 +1479,18 @@ def handle_subdir(scope: Scope,
             grouped_sub_dirs[condition_key] = sub_dir_list_by_key
 
         # Print the groups.
-        ind = '    ' * indent
+        ind = spaces(1)
         for condition_key in grouped_sub_dirs:
             cond_ind = ind
             if condition_key:
-                cm_fh.write(f'{ind}if({condition_key})\n')
+                cm_fh.write(f"{ind}if({condition_key})\n")
                 cond_ind += "    "
 
             sub_dir_list_by_key = grouped_sub_dirs.get(condition_key, [])
             for subdir_name in sub_dir_list_by_key:
-                cm_fh.write(f'{cond_ind}add_subdirectory({subdir_name})\n')
+                cm_fh.write(f"{cond_ind}add_subdirectory({subdir_name})\n")
             if condition_key:
-                cm_fh.write(f'{ind}endif()\n')
+                cm_fh.write(f"{ind}endif()\n")
 
     # A set of conditions which will be ANDed together. The set is recreated with more conditions
     # as the scope deepens.
@@ -1335,22 +1501,21 @@ def handle_subdir(scope: Scope,
     recursive_evaluate_scope(scope)
 
     # Do the work.
-    handle_subdir_helper(scope, cm_fh,
-                         indent=indent,
-                         current_conditions=current_conditions,
-                         is_example=is_example)
+    handle_subdir_helper(
+        scope, cm_fh, indent=indent, current_conditions=current_conditions, is_example=is_example
+    )
     group_and_print_sub_dirs(indent=indent)
 
 
-def sort_sources(sources: typing.List[str]) -> typing.List[str]:
-    to_sort = {}  # type: typing.Dict[str, typing.List[str]]
+def sort_sources(sources: List[str]) -> List[str]:
+    to_sort = {}  # type: Dict[str, List[str]]
     for s in sources:
         if s is None:
             continue
 
         dir = os.path.dirname(s)
         base = os.path.splitext(os.path.basename(s))[0]
-        if base.endswith('_p'):
+        if base.endswith("_p"):
             base = base[:-2]
         sort_name = posixpath.join(dir, base)
 
@@ -1361,245 +1526,280 @@ def sort_sources(sources: typing.List[str]) -> typing.List[str]:
 
     lines = []
     for k in sorted(to_sort.keys()):
-        lines.append(' '.join(sorted(to_sort[k])))
+        lines.append(" ".join(sorted(to_sort[k])))
 
     return lines
 
 
-def _map_libraries_to_cmake(libraries: typing.List[str],
-                            known_libraries: typing.Set[str]) -> typing.List[str]:
-    result = []  # type: typing.List[str]
+def _map_libraries_to_cmake(libraries: List[str], known_libraries: Set[str]) -> List[str]:
+    result = []  # type: List[str]
     is_framework = False
 
-    for l in libraries:
-        if l == '-framework':
+    for lib in libraries:
+        if lib == "-framework":
             is_framework = True
             continue
         if is_framework:
-            l = '${FW%s}' % l
-        if l.startswith('-l'):
-            l = l[2:]
+            lib = f"${{FW{lib}}}"
+        if lib.startswith("-l"):
+            lib = lib[2:]
 
-        if l.startswith('-'):
-            l = '# Remove: {}'.format(l[1:])
+        if lib.startswith("-"):
+            lib = f"# Remove: {lib[1:]}"
         else:
-            l = map_3rd_party_library(l)
+            lib = map_3rd_party_library(lib)
 
-        if not l or l in result or l in known_libraries:
+        if not lib or lib in result or lib in known_libraries:
             continue
 
-        result.append(l)
+        result.append(lib)
         is_framework = False
 
     return result
 
 
-def extract_cmake_libraries(scope: Scope, *, known_libraries: typing.Set[str]=set()) \
-        -> typing.Tuple[typing.List[str], typing.List[str]]:
-    public_dependencies = []  # type: typing.List[str]
-    private_dependencies = []  # type: typing.List[str]
+def extract_cmake_libraries(
+    scope: Scope, *, known_libraries: Set[str] = set()
+) -> Tuple[List[str], List[str]]:
+    public_dependencies = []  # type: List[str]
+    private_dependencies = []  # type: List[str]
 
-    for key in ['QMAKE_USE', 'LIBS',]:
+    for key in ["QMAKE_USE", "LIBS"]:
         public_dependencies += scope.expand(key)
-    for key in ['QMAKE_USE_PRIVATE', 'QMAKE_USE_FOR_PRIVATE', 'LIBS_PRIVATE',]:
+    for key in ["QMAKE_USE_PRIVATE", "QMAKE_USE_FOR_PRIVATE", "LIBS_PRIVATE"]:
         private_dependencies += scope.expand(key)
 
-    for key in ['QT_FOR_PRIVATE','QT_PRIVATE']:
+    for key in ["QT_FOR_PRIVATE", "QT_PRIVATE"]:
         private_dependencies += [map_qt_library(q) for q in scope.expand(key)]
 
-    for key in ['QT',]:
+    for key in ["QT"]:
         # Qt public libs: These may include FooPrivate in which case we get
         # a private dependency on FooPrivate as well as a public dependency on Foo
         for lib in scope.expand(key):
             mapped_lib = map_qt_library(lib)
 
-            if mapped_lib.endswith('Private'):
+            if mapped_lib.endswith("Private"):
                 private_dependencies.append(mapped_lib)
                 public_dependencies.append(mapped_lib[:-7])
             else:
                 public_dependencies.append(mapped_lib)
 
-    return (_map_libraries_to_cmake(public_dependencies, known_libraries),
-            _map_libraries_to_cmake(private_dependencies, known_libraries))
+    return (
+        _map_libraries_to_cmake(public_dependencies, known_libraries),
+        _map_libraries_to_cmake(private_dependencies, known_libraries),
+    )
 
 
-def write_header(cm_fh: typing.IO[str], name: str,
-                 typename: str, *, indent: int = 0):
-    cm_fh.write('{}###########################################'
-                '##########################\n'.format(spaces(indent)))
-    cm_fh.write('{}## {} {}:\n'.format(spaces(indent), name, typename))
-    cm_fh.write('{}###########################################'
-                '##########################\n\n'.format(spaces(indent)))
+def write_header(cm_fh: IO[str], name: str, typename: str, *, indent: int = 0):
+    ind = spaces(indent)
+    comment_line = "#" * 69
+    cm_fh.write(f"{ind}{comment_line}\n")
+    cm_fh.write(f"{ind}## {name} {typename}:\n")
+    cm_fh.write(f"{ind}{comment_line}\n\n")
 
 
-def write_scope_header(cm_fh: typing.IO[str], *, indent: int = 0):
-    cm_fh.write('\n{}## Scopes:\n'.format(spaces(indent)))
-    cm_fh.write('{}###########################################'
-                '##########################\n'.format(spaces(indent)))
+def write_scope_header(cm_fh: IO[str], *, indent: int = 0):
+    ind = spaces(indent)
+    comment_line = "#" * 69
+    cm_fh.write(f"\n{ind}## Scopes:\n")
+    cm_fh.write(f"{ind}{comment_line}\n")
 
 
-def write_list(cm_fh: typing.IO[str], entries: typing.List[str],
-               cmake_parameter: str,
-               indent: int = 0, *,
-               header: str = '', footer: str = ''):
+def write_list(
+    cm_fh: IO[str],
+    entries: List[str],
+    cmake_parameter: str,
+    indent: int = 0,
+    *,
+    header: str = "",
+    footer: str = "",
+):
     if not entries:
         return
 
     ind = spaces(indent)
-    extra_indent = ''
+    extra_indent = ""
 
     if header:
-        cm_fh.write('{}{}'.format(ind, header))
-        extra_indent += '    '
+        cm_fh.write(f"{ind}{header}")
+        extra_indent += "    "
     if cmake_parameter:
-        cm_fh.write('{}{}{}\n'.format(ind, extra_indent, cmake_parameter))
-        extra_indent += '    '
+        cm_fh.write(f"{ind}{extra_indent}{cmake_parameter}\n")
+        extra_indent += "    "
     for s in sort_sources(entries):
-        cm_fh.write('{}{}{}\n'.format(ind, extra_indent, s))
+        cm_fh.write(f"{ind}{extra_indent}{s}\n")
     if footer:
-        cm_fh.write('{}{}\n'.format(ind, footer))
+        cm_fh.write(f"{ind}{footer}\n")
 
 
-def write_source_file_list(cm_fh: typing.IO[str], scope, cmake_parameter: str,
-                           keys: typing.List[str], indent: int = 0, *,
-                           header: str = '', footer: str = ''):
+def write_source_file_list(
+    cm_fh: IO[str],
+    scope,
+    cmake_parameter: str,
+    keys: List[str],
+    indent: int = 0,
+    *,
+    header: str = "",
+    footer: str = "",
+):
     # collect sources
-    sources: typing.List[str] = []
+    sources: List[str] = []
     for key in keys:
         sources += scope.get_files(key, use_vpath=True)
 
     write_list(cm_fh, sources, cmake_parameter, indent, header=header, footer=footer)
 
 
-def write_all_source_file_lists(cm_fh: typing.IO[str], scope: Scope, header: str, *,
-                                indent: int = 0, footer: str = '',
-                                extra_keys: typing.Optional[typing.List[str]] = None):
+def write_all_source_file_lists(
+    cm_fh: IO[str],
+    scope: Scope,
+    header: str,
+    *,
+    indent: int = 0,
+    footer: str = "",
+    extra_keys: Optional[List[str]] = None,
+):
     if extra_keys is None:
         extra_keys = []
-    write_source_file_list(cm_fh, scope, header,
-                           ['SOURCES', 'HEADERS', 'OBJECTIVE_SOURCES', 'NO_PCH_SOURCES', 'FORMS'] + extra_keys,
-                           indent, footer=footer)
+    write_source_file_list(
+        cm_fh,
+        scope,
+        header,
+        ["SOURCES", "HEADERS", "OBJECTIVE_SOURCES", "NO_PCH_SOURCES", "FORMS"] + extra_keys,
+        indent,
+        footer=footer,
+    )
 
 
-def write_defines(cm_fh: typing.IO[str], scope: Scope, cmake_parameter: str, *,
-                  indent: int = 0, footer: str = ''):
-    defines = scope.expand('DEFINES')
-    defines += [d[2:] for d in scope.expand('QMAKE_CXXFLAGS') if d.startswith('-D')]
-    defines = [d.replace('=\\\\\\"$$PWD/\\\\\\"',
-                         '="${CMAKE_CURRENT_SOURCE_DIR}/"') for d in defines]
+def write_defines(
+    cm_fh: IO[str], scope: Scope, cmake_parameter: str, *, indent: int = 0, footer: str = ""
+):
+    defines = scope.expand("DEFINES")
+    defines += [d[2:] for d in scope.expand("QMAKE_CXXFLAGS") if d.startswith("-D")]
+    defines = [
+        d.replace('=\\\\\\"$$PWD/\\\\\\"', '="${CMAKE_CURRENT_SOURCE_DIR}/"') for d in defines
+    ]
 
-    if 'qml_debug' in scope.get('CONFIG'):
-        defines.append('QT_QML_DEBUG')
+    if "qml_debug" in scope.get("CONFIG"):
+        defines.append("QT_QML_DEBUG")
 
     write_list(cm_fh, defines, cmake_parameter, indent, footer=footer)
 
 
-def write_include_paths(cm_fh: typing.IO[str], scope: Scope, cmake_parameter: str, *,
-                        indent: int = 0, footer: str = ''):
-    includes = [i.rstrip('/') or ('/') for i in scope.get_files('INCLUDEPATH')]
+def write_include_paths(
+    cm_fh: IO[str], scope: Scope, cmake_parameter: str, *, indent: int = 0, footer: str = ""
+):
+    includes = [i.rstrip("/") or ("/") for i in scope.get_files("INCLUDEPATH")]
 
     write_list(cm_fh, includes, cmake_parameter, indent, footer=footer)
 
 
-def write_compile_options(cm_fh: typing.IO[str], scope: Scope, cmake_parameter: str, *,
-                          indent: int = 0, footer: str = ''):
-    compile_options = [d for d in scope.expand('QMAKE_CXXFLAGS') if not d.startswith('-D')]
+def write_compile_options(
+    cm_fh: IO[str], scope: Scope, cmake_parameter: str, *, indent: int = 0, footer: str = ""
+):
+    compile_options = [d for d in scope.expand("QMAKE_CXXFLAGS") if not d.startswith("-D")]
 
     write_list(cm_fh, compile_options, cmake_parameter, indent, footer=footer)
 
 
-def write_library_section(cm_fh: typing.IO[str], scope: Scope, *,
-                          indent: int = 0, known_libraries: typing.Set[str]=set()):
-    (public_dependencies, private_dependencies) \
-        = extract_cmake_libraries(scope, known_libraries=known_libraries)
+def write_library_section(
+    cm_fh: IO[str], scope: Scope, *, indent: int = 0, known_libraries: Set[str] = set()
+):
+    public_dependencies, private_dependencies = extract_cmake_libraries(
+        scope, known_libraries=known_libraries
+    )
 
-    write_list(cm_fh, private_dependencies, 'LIBRARIES', indent + 1)
-    write_list(cm_fh, public_dependencies, 'PUBLIC_LIBRARIES', indent + 1)
+    write_list(cm_fh, private_dependencies, "LIBRARIES", indent + 1)
+    write_list(cm_fh, public_dependencies, "PUBLIC_LIBRARIES", indent + 1)
 
 
-def write_autogen_section(cm_fh: typing.IO[str], scope: Scope, *,
-                          indent: int = 0):
-    forms = scope.get_files('FORMS')
+def write_autogen_section(cm_fh: IO[str], scope: Scope, *, indent: int = 0):
+    forms = scope.get_files("FORMS")
     if forms:
-        write_list(cm_fh, ['uic'], 'ENABLE_AUTOGEN_TOOLS', indent)
+        write_list(cm_fh, ["uic"], "ENABLE_AUTOGEN_TOOLS", indent)
 
 
-def write_sources_section(cm_fh: typing.IO[str], scope: Scope, *,
-                          indent: int = 0, known_libraries=set()):
+def write_sources_section(cm_fh: IO[str], scope: Scope, *, indent: int = 0, known_libraries=set()):
     ind = spaces(indent)
 
     # mark RESOURCES as visited:
-    scope.get('RESOURCES')
+    scope.get("RESOURCES")
 
-    write_all_source_file_lists(cm_fh, scope, 'SOURCES', indent=indent + 1)
+    write_all_source_file_lists(cm_fh, scope, "SOURCES", indent=indent + 1)
 
-    write_source_file_list(cm_fh, scope, 'DBUS_ADAPTOR_SOURCES', ['DBUS_ADAPTORS',], indent + 1)
-    dbus_adaptor_flags = scope.expand('QDBUSXML2CPP_ADAPTOR_HEADER_FLAGS')
+    write_source_file_list(cm_fh, scope, "DBUS_ADAPTOR_SOURCES", ["DBUS_ADAPTORS"], indent + 1)
+    dbus_adaptor_flags = scope.expand("QDBUSXML2CPP_ADAPTOR_HEADER_FLAGS")
     if dbus_adaptor_flags:
-        cm_fh.write('{}    DBUS_ADAPTOR_FLAGS\n'.format(ind))
-        cm_fh.write('{}        "{}"\n'.format(ind, '" "'.join(dbus_adaptor_flags)))
+        dbus_adaptor_flags_line = '" "'.join(dbus_adaptor_flags)
+        cm_fh.write(f"{ind}    DBUS_ADAPTOR_FLAGS\n")
+        cm_fh.write(f'{ind}        "{dbus_adaptor_flags_line}"\n')
 
-    write_source_file_list(cm_fh, scope, 'DBUS_INTERFACE_SOURCES', ['DBUS_INTERFACES',], indent + 1)
-    dbus_interface_flags = scope.expand('QDBUSXML2CPP_INTERFACE_HEADER_FLAGS')
+    write_source_file_list(cm_fh, scope, "DBUS_INTERFACE_SOURCES", ["DBUS_INTERFACES"], indent + 1)
+    dbus_interface_flags = scope.expand("QDBUSXML2CPP_INTERFACE_HEADER_FLAGS")
     if dbus_interface_flags:
-        cm_fh.write('{}    DBUS_INTERFACE_FLAGS\n'.format(ind))
-        cm_fh.write('{}        "{}"\n'.format(ind, '" "'.join(dbus_interface_flags)))
+        dbus_interface_flags_line = '" "'.join(dbus_interface_flags)
+        cm_fh.write(f"{ind}    DBUS_INTERFACE_FLAGS\n")
+        cm_fh.write(f'{ind}        "{dbus_interface_flags_line}"\n')
 
-    write_defines(cm_fh, scope, 'DEFINES', indent=indent + 1)
+    write_defines(cm_fh, scope, "DEFINES", indent=indent + 1)
 
-    write_include_paths(cm_fh, scope, 'INCLUDE_DIRECTORIES', indent=indent + 1)
+    write_include_paths(cm_fh, scope, "INCLUDE_DIRECTORIES", indent=indent + 1)
 
     write_library_section(cm_fh, scope, indent=indent, known_libraries=known_libraries)
 
-    write_compile_options(cm_fh, scope, 'COMPILE_OPTIONS', indent=indent + 1)
+    write_compile_options(cm_fh, scope, "COMPILE_OPTIONS", indent=indent + 1)
 
     write_autogen_section(cm_fh, scope, indent=indent + 1)
 
-    link_options = scope.get('QMAKE_LFLAGS')
+    link_options = scope.get("QMAKE_LFLAGS")
     if link_options:
-        cm_fh.write('{}    LINK_OPTIONS\n'.format(ind))
+        cm_fh.write(f"{ind}    LINK_OPTIONS\n")
         for lo in link_options:
-            cm_fh.write('{}        "{}"\n'.format(ind, lo))
+            cm_fh.write(f'{ind}        "{lo}"\n')
 
-    moc_options = scope.get('QMAKE_MOC_OPTIONS')
+    moc_options = scope.get("QMAKE_MOC_OPTIONS")
     if moc_options:
-        cm_fh.write('{}    MOC_OPTIONS\n'.format(ind))
+        cm_fh.write(f"{ind}    MOC_OPTIONS\n")
         for mo in moc_options:
-            cm_fh.write('{}        "{}"\n'.format(ind, mo))
+            cm_fh.write(f'{ind}        "{mo}"\n')
 
-    precompiled_header = scope.get('PRECOMPILED_HEADER')
+    precompiled_header = scope.get("PRECOMPILED_HEADER")
     if precompiled_header:
-        cm_fh.write('{}    PRECOMPILED_HEADER\n'.format(ind))
+        cm_fh.write(f"{ind}    PRECOMPILED_HEADER\n")
         for header in precompiled_header:
-            cm_fh.write('{}        "{}"\n'.format(ind, header))
+            cm_fh.write(f'{ind}        "{header}"\n')
 
-    no_pch_sources = scope.get('NO_PCH_SOURCES')
+    no_pch_sources = scope.get("NO_PCH_SOURCES")
     if no_pch_sources:
-        cm_fh.write('{}    NO_PCH_SOURCES\n'.format(ind))
+        cm_fh.write(f"{ind}    NO_PCH_SOURCES\n")
         for source in no_pch_sources:
-            cm_fh.write('{}        "{}"\n'.format(ind, source))
+            cm_fh.write(f'{ind}        "{source}"\n')
 
 
 def is_simple_condition(condition: str) -> bool:
-    return ' ' not in condition \
-        or (condition.startswith('NOT ') and ' ' not in condition[4:])
+    return " " not in condition or (condition.startswith("NOT ") and " " not in condition[4:])
 
 
 def write_ignored_keys(scope: Scope, indent: str) -> str:
-    result = ''
+    result = ""
     ignored_keys = scope.keys - scope.visited_keys
     for k in sorted(ignored_keys):
-        if k == '_INCLUDED' or k == 'TARGET' or k == 'QMAKE_DOCS' or k == 'QT_SOURCE_TREE' \
-                or k == 'QT_BUILD_TREE' or k == 'TRACEPOINT_PROVIDER':
+        if k in {
+            "_INCLUDED",
+            "TARGET",
+            "QMAKE_DOCS",
+            "QT_SOURCE_TREE",
+            "QT_BUILD_TREE",
+            "TRACEPOINT_PROVIDER",
+        }:
             # All these keys are actually reported already
             continue
         values = scope.get(k)
-        value_string = '<EMPTY>' if not values \
-            else '"' + '" "'.join(scope.get(k)) + '"'
-        result += '{}# {} = {}\n'.format(indent, k, value_string)
+        value_string = "<EMPTY>" if not values else '"' + '" "'.join(scope.get(k)) + '"'
+        result += f"{indent}# {k} = {value_string}\n"
 
     if result:
-        result = '\n#### Keys ignored in scope {}:\n{}'.format(scope, result)
+        result = f"\n#### Keys ignored in scope {scope}:\n{result}"
 
     return result
 
@@ -1620,8 +1820,7 @@ def _iterate_expr_tree(expr, op, matches):
 
 def _simplify_expressions(expr, op, matches, replacement):
     for arg in expr.args:
-        expr = expr.subs(arg, _simplify_expressions(arg, op, matches,
-                                                    replacement))
+        expr = expr.subs(arg, _simplify_expressions(arg, op, matches, replacement))
 
     if expr.func == op:
         (to_match, keepers) = tuple(_iterate_expr_tree(expr, op, matches))
@@ -1644,18 +1843,15 @@ def _simplify_expressions(expr, op, matches, replacement):
 
 
 def _simplify_flavors_in_condition(base: str, flavors, expr):
-    ''' Simplify conditions based on the knownledge of which flavors
-        belong to which OS. '''
+    """ Simplify conditions based on the knownledge of which flavors
+        belong to which OS. """
     base_expr = simplify_logic(base)
-    false_expr = simplify_logic('false')
+    false_expr = simplify_logic("false")
     for flavor in flavors:
         flavor_expr = simplify_logic(flavor)
-        expr = _simplify_expressions(expr, And, (base_expr, flavor_expr,),
-                                     flavor_expr)
-        expr = _simplify_expressions(expr, Or, (base_expr, flavor_expr),
-                                     base_expr)
-        expr = _simplify_expressions(expr, And, (Not(base_expr), flavor_expr,),
-                                     false_expr)
+        expr = _simplify_expressions(expr, And, (base_expr, flavor_expr), flavor_expr)
+        expr = _simplify_expressions(expr, Or, (base_expr, flavor_expr), base_expr)
+        expr = _simplify_expressions(expr, And, (Not(base_expr), flavor_expr), false_expr)
     return expr
 
 
@@ -1670,50 +1866,59 @@ def _simplify_os_families(expr, family_members, other_family_members):
 
             expr = _simplify_expressions(expr, And, (f_expr, Not(o_expr)), f_expr)
             expr = _simplify_expressions(expr, And, (Not(f_expr), o_expr), o_expr)
-            expr = _simplify_expressions(expr, And, (f_expr, o_expr), simplify_logic('false'))
+            expr = _simplify_expressions(expr, And, (f_expr, o_expr), simplify_logic("false"))
     return expr
 
 
 def _recursive_simplify(expr):
-    ''' Simplify the expression as much as possible based on
-        domain knowledge. '''
+    """ Simplify the expression as much as possible based on
+        domain knowledge. """
     input_expr = expr
 
     # Simplify even further, based on domain knowledge:
-    windowses = ('WIN32', 'WINRT')
-    apples = ('APPLE_OSX', 'APPLE_UIKIT', 'APPLE_IOS',
-              'APPLE_TVOS', 'APPLE_WATCHOS',)
-    bsds = ('FREEBSD', 'OPENBSD', 'NETBSD',)
-    androids = ('ANDROID', 'ANDROID_EMBEDDED')
-    unixes = ('APPLE', *apples, 'BSD', *bsds, 'LINUX',
-              *androids, 'HAIKU',
-              'INTEGRITY', 'VXWORKS', 'QNX', 'WASM')
+    # windowses = ('WIN32', 'WINRT')
+    apples = ("APPLE_OSX", "APPLE_UIKIT", "APPLE_IOS", "APPLE_TVOS", "APPLE_WATCHOS")
+    bsds = ("FREEBSD", "OPENBSD", "NETBSD")
+    androids = ("ANDROID", "ANDROID_EMBEDDED")
+    unixes = (
+        "APPLE",
+        *apples,
+        "BSD",
+        *bsds,
+        "LINUX",
+        *androids,
+        "HAIKU",
+        "INTEGRITY",
+        "VXWORKS",
+        "QNX",
+        "WASM",
+    )
 
-    unix_expr = simplify_logic('UNIX')
-    win_expr = simplify_logic('WIN32')
-    false_expr = simplify_logic('false')
-    true_expr = simplify_logic('true')
+    unix_expr = simplify_logic("UNIX")
+    win_expr = simplify_logic("WIN32")
+    false_expr = simplify_logic("false")
+    true_expr = simplify_logic("true")
 
     expr = expr.subs(Not(unix_expr), win_expr)  # NOT UNIX -> WIN32
     expr = expr.subs(Not(win_expr), unix_expr)  # NOT WIN32 -> UNIX
 
     # UNIX [OR foo ]OR WIN32 -> ON [OR foo]
-    expr = _simplify_expressions(expr, Or, (unix_expr, win_expr,), true_expr)
+    expr = _simplify_expressions(expr, Or, (unix_expr, win_expr), true_expr)
     # UNIX  [AND foo ]AND WIN32 -> OFF [AND foo]
-    expr = _simplify_expressions(expr, And, (unix_expr, win_expr,), false_expr)
+    expr = _simplify_expressions(expr, And, (unix_expr, win_expr), false_expr)
 
-    expr = _simplify_flavors_in_condition('WIN32', ('WINRT',), expr)
-    expr = _simplify_flavors_in_condition('APPLE', apples, expr)
-    expr = _simplify_flavors_in_condition('BSD', bsds, expr)
-    expr = _simplify_flavors_in_condition('UNIX', unixes, expr)
-    expr = _simplify_flavors_in_condition('ANDROID', ('ANDROID_EMBEDDED',), expr)
+    expr = _simplify_flavors_in_condition("WIN32", ("WINRT",), expr)
+    expr = _simplify_flavors_in_condition("APPLE", apples, expr)
+    expr = _simplify_flavors_in_condition("BSD", bsds, expr)
+    expr = _simplify_flavors_in_condition("UNIX", unixes, expr)
+    expr = _simplify_flavors_in_condition("ANDROID", ("ANDROID_EMBEDDED",), expr)
 
     # Simplify families of OSes against other families:
-    expr = _simplify_os_families(expr, ('WIN32', 'WINRT'), unixes)
+    expr = _simplify_os_families(expr, ("WIN32", "WINRT"), unixes)
     expr = _simplify_os_families(expr, androids, unixes)
-    expr = _simplify_os_families(expr, ('BSD', *bsds), unixes)
+    expr = _simplify_os_families(expr, ("BSD", *bsds), unixes)
 
-    for family in ('HAIKU', 'QNX', 'INTEGRITY', 'LINUX', 'VXWORKS'):
+    for family in ("HAIKU", "QNX", "INTEGRITY", "LINUX", "VXWORKS"):
         expr = _simplify_os_families(expr, (family,), unixes)
 
     # Now simplify further:
@@ -1730,21 +1935,21 @@ def simplify_condition(condition: str) -> str:
     input_condition = condition.strip()
 
     # Map to sympy syntax:
-    condition = ' ' + input_condition + ' '
-    condition = condition.replace('(', ' ( ')
-    condition = condition.replace(')', ' ) ')
+    condition = " " + input_condition + " "
+    condition = condition.replace("(", " ( ")
+    condition = condition.replace(")", " ) ")
 
-    tmp = ''
+    tmp = ""
     while tmp != condition:
         tmp = condition
 
-        condition = condition.replace(' NOT ', ' ~ ')
-        condition = condition.replace(' AND ', ' & ')
-        condition = condition.replace(' OR ', ' | ')
-        condition = condition.replace(' ON ', ' true ')
-        condition = condition.replace(' OFF ', ' false ')
+        condition = condition.replace(" NOT ", " ~ ")
+        condition = condition.replace(" AND ", " & ")
+        condition = condition.replace(" OR ", " | ")
+        condition = condition.replace(" ON ", " true ")
+        condition = condition.replace(" OFF ", " false ")
         # Replace dashes with a token
-        condition = condition.replace('-', '_dash_')
+        condition = condition.replace("-", "_dash_")
 
     # SymPy chokes on expressions that contain two tokens one next to
     # the other delimited by a space, which are not an operation.
@@ -1756,12 +1961,12 @@ def simplify_condition(condition: str) -> str:
     # token symbols.
     # Support both target names without double colons, and with double
     # colons.
-    pattern = re.compile(r'(TARGET [a-zA-Z]+(?:::[a-zA-Z]+)?)')
+    pattern = re.compile(r"(TARGET [a-zA-Z]+(?:::[a-zA-Z]+)?)")
     target_symbol_mapping = {}
     all_target_conditions = re.findall(pattern, condition)
     for target_condition in all_target_conditions:
         # Replace spaces and colons with underscores.
-        target_condition_symbol_name = re.sub('[ :]', '_', target_condition)
+        target_condition_symbol_name = re.sub("[ :]", "_", target_condition)
         target_symbol_mapping[target_condition_symbol_name] = target_condition
         condition = re.sub(target_condition, target_condition_symbol_name, condition)
 
@@ -1775,101 +1980,131 @@ def simplify_condition(condition: str) -> str:
             condition = re.sub(symbol_name, target_symbol_mapping[symbol_name], condition)
 
         # Map back to CMake syntax:
-        condition = condition.replace('~', 'NOT ')
-        condition = condition.replace('&', 'AND')
-        condition = condition.replace('|', 'OR')
-        condition = condition.replace('True', 'ON')
-        condition = condition.replace('False', 'OFF')
-        condition = condition.replace('_dash_', '-')
-    except:
+        condition = condition.replace("~", "NOT ")
+        condition = condition.replace("&", "AND")
+        condition = condition.replace("|", "OR")
+        condition = condition.replace("True", "ON")
+        condition = condition.replace("False", "OFF")
+        condition = condition.replace("_dash_", "-")
+    except (SympifyError, TypeError):
         # sympy did not like our input, so leave this condition alone:
         condition = input_condition
 
-    return condition or 'ON'
+    return condition or "ON"
 
 
-def recursive_evaluate_scope(scope: Scope, parent_condition: str = '',
-                             previous_condition: str = '') -> str:
+def recursive_evaluate_scope(
+    scope: Scope, parent_condition: str = "", previous_condition: str = ""
+) -> str:
     current_condition = scope.condition
     total_condition = current_condition
-    if total_condition == 'else':
-        assert previous_condition, \
-            "Else branch without previous condition in: %s" % scope.file
-        total_condition = 'NOT ({})'.format(previous_condition)
+    if total_condition == "else":
+        assert previous_condition, f"Else branch without previous condition in: {scope.file}"
+        total_condition = f"NOT ({previous_condition})"
     if parent_condition:
         if not total_condition:
             total_condition = parent_condition
         else:
-            total_condition = '({}) AND ({})'.format(parent_condition,
-                                                     total_condition)
+            total_condition = f"({parent_condition}) AND ({total_condition})"
 
     scope.total_condition = simplify_condition(total_condition)
 
-    prev_condition = ''
+    prev_condition = ""
     for c in scope.children:
-        prev_condition = recursive_evaluate_scope(c, total_condition,
-                                                  prev_condition)
+        prev_condition = recursive_evaluate_scope(c, total_condition, prev_condition)
 
     return current_condition
 
 
-def map_to_cmake_condition(condition: typing.Optional[str]) -> str:
+def map_to_cmake_condition(condition: str = "") -> str:
     condition = condition.replace("QTDIR_build", "QT_BUILDING_QT")
-    condition = re.sub(r'\bQT_ARCH___equals___([a-zA-Z_0-9]*)',
-                       r'(TEST_architecture_arch STREQUAL "\1")', condition or '')
-    condition = re.sub(r'\bQT_ARCH___contains___([a-zA-Z_0-9]*)',
-                       r'(TEST_architecture_arch STREQUAL "\1")', condition or '')
+    condition = re.sub(
+        r"\bQT_ARCH___equals___([a-zA-Z_0-9]*)",
+        r'(TEST_architecture_arch STREQUAL "\1")',
+        condition or "",
+    )
+    condition = re.sub(
+        r"\bQT_ARCH___contains___([a-zA-Z_0-9]*)",
+        r'(TEST_architecture_arch STREQUAL "\1")',
+        condition or "",
+    )
     return condition
 
 
 resource_file_expansion_counter = 0
-def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: int = 0, is_example = False):
-    vpath = scope.expand('VPATH')
+
+
+def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, is_example=False):
+    # vpath = scope.expand('VPATH')
 
     # Handle QRC files by turning them into add_qt_resource:
-    resources = scope.get_files('RESOURCES')
-    qtquickcompiler_skipped = scope.get_files('QTQUICK_COMPILER_SKIPPED_RESOURCES')
-    qtquickcompiler_retained = scope.get_files('QTQUICK_COMPILER_RETAINED_RESOURCES')
-    qrc_output = ''
+    resources = scope.get_files("RESOURCES")
+    qtquickcompiler_skipped = scope.get_files("QTQUICK_COMPILER_SKIPPED_RESOURCES")
+    qtquickcompiler_retained = scope.get_files("QTQUICK_COMPILER_RETAINED_RESOURCES")
+    qrc_output = ""
     if resources:
-        standalone_files: typing.List[str] = []
+        standalone_files: List[str] = []
         for r in resources:
             skip_qtquick_compiler = r in qtquickcompiler_skipped
             retain_qtquick_compiler = r in qtquickcompiler_retained
-            if r.endswith('.qrc'):
-                qrc_output += process_qrc_file(target, r, scope.basedir, scope.file_absolute_path,
-                        skip_qtquick_compiler, retain_qtquick_compiler, is_example)
+            if r.endswith(".qrc"):
+                qrc_output += process_qrc_file(
+                    target,
+                    r,
+                    scope.basedir,
+                    scope.file_absolute_path,
+                    skip_qtquick_compiler,
+                    retain_qtquick_compiler,
+                    is_example,
+                )
             else:
-                immediate_files = {f:"" for f in scope.get_files(r + ".files")}
+                immediate_files = {f: "" for f in scope.get_files(f"{r}.files")}
                 if immediate_files:
                     immediate_prefix = scope.get(r + ".prefix")
                     if immediate_prefix:
                         immediate_prefix = immediate_prefix[0]
                     else:
                         immediate_prefix = "/"
-                    immediate_base = scope.get(r + ".base")
+                    immediate_base = scope.get(f"{r}.base")
                     immediate_lang = None
-                    immediate_name = "qmake_" + r
-                    qrc_output += write_add_qt_resource_call(target, immediate_name, immediate_prefix, immediate_base, immediate_lang,
-                            immediate_files, skip_qtquick_compiler, retain_qtquick_compiler, is_example)
+                    immediate_name = f"qmake_{r}"
+                    qrc_output += write_add_qt_resource_call(
+                        target,
+                        immediate_name,
+                        immediate_prefix,
+                        immediate_base,
+                        immediate_lang,
+                        immediate_files,
+                        skip_qtquick_compiler,
+                        retain_qtquick_compiler,
+                        is_example,
+                    )
                 else:
-                    if '*' in r:
+                    if "*" in r:
                         global resource_file_expansion_counter
-                        r = r.replace('"','')
-                        qrc_output += '\nfile(GLOB resource_glob_{} RELATIVE "${{CMAKE_CURRENT_SOURCE_DIR}}" "{}")\n'.format(resource_file_expansion_counter, r)
-                        qrc_output +='foreach(file IN LISTS resource_glob_{})\n'.format(resource_file_expansion_counter)
-                        qrc_output += '    set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/${file}" PROPERTIES QT_RESOURCE_ALIAS "${file}")\n'
-                        qrc_output +='endforeach()\n'
-                        standalone_files.append('${{resource_glob_{}}}'.format(resource_file_expansion_counter))
+                        r = r.replace('"', "")
+
+                        qrc_output += dedent(
+                            f"""
+                            file(GLOB resource_glob_{resource_file_expansion_counter} RELATIVE "${{CMAKE_CURRENT_SOURCE_DIR}}" "{r}")
+                            foreach(file IN LISTS resource_glob_{resource_file_expansion_counter})
+                                set_source_files_properties("${{CMAKE_CURRENT_SOURCE_DIR}}/${{file}}" PROPERTIES QT_RESOURCE_ALIAS "${{file}}")
+                            endforeach()
+                            """
+                        )
+
+                        standalone_files.append(
+                            f"${{resource_glob_{resource_file_expansion_counter}}}"
+                        )
                         resource_file_expansion_counter += 1
                     else:
                         # stadalone source file properties need to be set as they
                         # are parsed.
                         if skip_qtquick_compiler:
-                            qrc_output += 'set_source_files_properties("{}" PROPERTIES QT_SKIP_QUICKCOMPILER 1)\n\n'.format(r)
+                            qrc_output += 'set_source_files_properties(f"{r}" PROPERTIES QT_SKIP_QUICKCOMPILER 1)\n\n'
 
                         if retain_qtquick_compiler:
-                            qrc_output += 'set_source_files_properties("{}" PROPERTIES QT_RETAIN_QUICKCOMPILER 1)\n\n'.format(r)
+                            qrc_output += 'set_source_files_properties(f"{r}" PROPERTIES QT_RETAIN_QUICKCOMPILER 1)\n\n'
                         standalone_files.append(r)
 
         if standalone_files:
@@ -1877,54 +2112,62 @@ def write_resources(cm_fh: typing.IO[str], target: str, scope: Scope, indent: in
             prefix = "/"
             base = None
             lang = None
-            files = {f:"" for f in standalone_files}
+            files = {f: "" for f in standalone_files}
             skip_qtquick_compiler = False
-            qrc_output += write_add_qt_resource_call(target, name, prefix, base, lang, files,
-                    skip_qtquick_compiler = False, retain_qtquick_compiler = False,
-                    is_example = is_example)
-
+            qrc_output += write_add_qt_resource_call(
+                target,
+                name,
+                prefix,
+                base,
+                lang,
+                files,
+                skip_qtquick_compiler=False,
+                retain_qtquick_compiler=False,
+                is_example=is_example,
+            )
 
     if qrc_output:
-        cm_fh.write('\n# Resources:\n')
-        for line in qrc_output.split('\n'):
-            cm_fh.write(' ' * indent + line + '\n')
+        cm_fh.write("\n# Resources:\n")
+        for line in qrc_output.split("\n"):
+            cm_fh.write(f"{' ' * indent}{line}\n")
 
 
-def write_extend_target(cm_fh: typing.IO[str], target: str,
-                        scope: Scope, indent: int = 0):
+def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
     ind = spaces(indent)
     extend_qt_io_string = io.StringIO()
     write_sources_section(extend_qt_io_string, scope)
     extend_qt_string = extend_qt_io_string.getvalue()
 
-    extend_scope = '\n{}extend_target({} CONDITION {}\n' \
-                   '{}{})\n'.format(ind, target,
-                                    map_to_cmake_condition(scope.total_condition),
-                                    extend_qt_string, ind)
+    extend_scope = (
+        f"\n{ind}extend_target({target} CONDITION"
+        f" {map_to_cmake_condition(scope.total_condition)}\n"
+        f"{extend_qt_string}{ind})\n"
+    )
 
     if not extend_qt_string:
-        extend_scope = ''  # Nothing to report, so don't!
+        extend_scope = ""  # Nothing to report, so don't!
 
     cm_fh.write(extend_scope)
 
     write_resources(cm_fh, target, scope, indent)
 
-def flatten_scopes(scope: Scope) -> typing.List[Scope]:
-    result = [scope]  # type: typing.List[Scope]
+
+def flatten_scopes(scope: Scope) -> List[Scope]:
+    result = [scope]  # type: List[Scope]
     for c in scope.children:
         result += flatten_scopes(c)
     return result
 
 
-def merge_scopes(scopes: typing.List[Scope]) -> typing.List[Scope]:
-    result = []  # type: typing.List[Scope]
+def merge_scopes(scopes: List[Scope]) -> List[Scope]:
+    result = []  # type: List[Scope]
 
     # Merge scopes with their parents:
-    known_scopes = {}  # type: typing.Mapping[str, Scope]
+    known_scopes = {}  # type: Mapping[str, Scope]
     for scope in scopes:
         total_condition = scope.total_condition
         assert total_condition
-        if total_condition == 'OFF':
+        if total_condition == "OFF":
             # ignore this scope entirely!
             pass
         elif total_condition in known_scopes:
@@ -1937,30 +2180,57 @@ def merge_scopes(scopes: typing.List[Scope]) -> typing.List[Scope]:
     return result
 
 
-def write_simd_part(cm_fh: typing.IO[str], target: str, scope: Scope, indent: int = 0):
-    simd_options = [ 'sse2', 'sse3', 'ssse3', 'sse4_1', 'sse4_2', 'aesni', 'shani', 'avx', 'avx2',
-                     'avx512f', 'avx512cd', 'avx512er', 'avx512pf', 'avx512dq', 'avx512bw',
-                     'avx512vl', 'avx512ifma', 'avx512vbmi', 'f16c', 'rdrnd', 'neon', 'mips_dsp',
-                     'mips_dspr2',
-                     'arch_haswell', 'avx512common', 'avx512core'];
+def write_simd_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
+    simd_options = [
+        "sse2",
+        "sse3",
+        "ssse3",
+        "sse4_1",
+        "sse4_2",
+        "aesni",
+        "shani",
+        "avx",
+        "avx2",
+        "avx512f",
+        "avx512cd",
+        "avx512er",
+        "avx512pf",
+        "avx512dq",
+        "avx512bw",
+        "avx512vl",
+        "avx512ifma",
+        "avx512vbmi",
+        "f16c",
+        "rdrnd",
+        "neon",
+        "mips_dsp",
+        "mips_dspr2",
+        "arch_haswell",
+        "avx512common",
+        "avx512core",
+    ]
     for simd in simd_options:
-        SIMD = simd.upper();
-        write_source_file_list(cm_fh, scope, 'SOURCES',
-                               ['{}_HEADERS'.format(SIMD),
-                                '{}_SOURCES'.format(SIMD),
-                                '{}_C_SOURCES'.format(SIMD),
-                                '{}_ASM'.format(SIMD)],
-                               indent,
-                               header = 'add_qt_simd_part({} SIMD {}\n'.format(target, simd),
-                               footer = ')\n\n')
+        SIMD = simd.upper()
+        write_source_file_list(
+            cm_fh,
+            scope,
+            "SOURCES",
+            [f"{SIMD}_HEADERS", f"{SIMD}_SOURCES", f"{SIMD}_C_SOURCES", f"{SIMD}_ASM"],
+            indent,
+            header=f"add_qt_simd_part({target} SIMD {simd}\n",
+            footer=")\n\n",
+        )
 
-def write_android_part(cm_fh: typing.IO[str], target: str, scope:Scope, indent: int = 0):
-    keys = [ 'ANDROID_BUNDLED_JAR_DEPENDENCIES'
-            , 'ANDROID_LIB_DEPENDENCIES'
-            , 'ANDROID_JAR_DEPENDENCIES'
-            , 'ANDROID_LIB_DEPENDENCY_REPLACEMENTS'
-            , 'ANDROID_BUNDLED_FILES'
-            , 'ANDROID_PERMISSIONS' ]
+
+def write_android_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
+    keys = [
+        "ANDROID_BUNDLED_JAR_DEPENDENCIES",
+        "ANDROID_LIB_DEPENDENCIES",
+        "ANDROID_JAR_DEPENDENCIES",
+        "ANDROID_LIB_DEPENDENCY_REPLACEMENTS",
+        "ANDROID_BUNDLED_FILES",
+        "ANDROID_PERMISSIONS",
+    ]
 
     has_no_values = True
     for key in keys:
@@ -1968,40 +2238,48 @@ def write_android_part(cm_fh: typing.IO[str], target: str, scope:Scope, indent: 
         if len(value) != 0:
             if has_no_values:
                 if scope.condition:
-                    cm_fh.write('\n{}if(ANDROID AND ({}))\n'.format(spaces(indent), scope.condition))
+                    cm_fh.write(f"\n{spaces(indent)}if(ANDROID AND ({scope.condition}))\n")
                 else:
-                    cm_fh.write('\n{}if(ANDROID)\n'.format(spaces(indent)))
+                    cm_fh.write(f"\n{spaces(indent)}if(ANDROID)\n")
                 indent += 1
                 has_no_values = False
-            cm_fh.write('{}set_property(TARGET {} APPEND PROPERTY QT_{}\n'.format(spaces(indent), target, key))
-            write_list(cm_fh, value, '', indent + 1)
-            cm_fh.write('{})\n'.format(spaces(indent)))
+            cm_fh.write(f"{spaces(indent)}set_property(TARGET {target} APPEND PROPERTY QT_{key}\n")
+            write_list(cm_fh, value, "", indent + 1)
+            cm_fh.write(f"{spaces(indent)})\n")
     indent -= 1
 
     if not has_no_values:
-        cm_fh.write('{}endif()\n'.format(spaces(indent)))
+        cm_fh.write(f"{spaces(indent)}endif()\n")
 
-def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
-                    cmake_function: str, scope: Scope, *,
-                    extra_lines: typing.List[str] = [],
-                    indent: int = 0, extra_keys: typing.List[str],
-                    **kwargs: typing.Any):
+
+def write_main_part(
+    cm_fh: IO[str],
+    name: str,
+    typename: str,
+    cmake_function: str,
+    scope: Scope,
+    *,
+    extra_lines: List[str] = [],
+    indent: int = 0,
+    extra_keys: List[str],
+    **kwargs: Any,
+):
     # Evaluate total condition of all scopes:
     recursive_evaluate_scope(scope)
 
-    is_qml_plugin = any('qml_plugin' == s for s in scope.get('_LOADED'))
+    is_qml_plugin = any("qml_plugin" == s for s in scope.get("_LOADED"))
 
-    if 'exceptions' in scope.get('CONFIG'):
-        extra_lines.append('EXCEPTIONS')
+    if "exceptions" in scope.get("CONFIG"):
+        extra_lines.append("EXCEPTIONS")
 
     # Get a flat list of all scopes but the main one:
     scopes = flatten_scopes(scope)
-    total_scopes = len(scopes)
+    # total_scopes = len(scopes)
     # Merge scopes based on their conditions:
     scopes = merge_scopes(scopes)
 
     assert len(scopes)
-    assert scopes[0].total_condition == 'ON'
+    assert scopes[0].total_condition == "ON"
 
     scopes[0].reset_visited_keys()
     for k in extra_keys:
@@ -2012,44 +2290,44 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
 
     # collect all testdata and insert globbing commands
     has_test_data = False
-    if typename == 'Test':
-        test_data = scope.expand('TESTDATA')
+    if typename == "Test":
+        test_data = scope.expand("TESTDATA")
         if test_data:
             has_test_data = True
-            cm_fh.write('# Collect test data\n')
+            cm_fh.write("# Collect test data\n")
             for data in test_data:
-                if '*' in data:
-                    cm_fh.write(dedent("""
-                        {indent}file(GLOB_RECURSE test_data_glob
-                        {indent1}RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}}
-                        {indent1}"{}")
-                        """).format(
-                        data,
-                        indent=spaces(indent),
-                        indent1=spaces(indent + 1)
-                    ))
-                    cm_fh.write('{}list(APPEND test_data ${{test_data_glob}})\n'.format(spaces(indent)))
+                if "*" in data:
+                    cm_fh.write(
+                        dedent(
+                            """
+                        {spaces(indent)}file(GLOB_RECURSE test_data_glob
+                        {spaces(indent+1)}RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}}
+                        {spaces(indent+1)}"{}")
+                        """
+                        )
+                    )
+                    cm_fh.write(f"{spaces(indent)}list(APPEND test_data ${{test_data_glob}})\n")
                 else:
-                    cm_fh.write('{}list(APPEND test_data "{}")\n'.format(spaces(indent), data))
-            cm_fh.write('\n')
+                    cm_fh.write(f'{spaces(indent)}list(APPEND test_data "{data}")\n')
+            cm_fh.write("\n")
 
     # Check for DESTDIR override
-    destdir = scope.get_string('DESTDIR')
+    destdir = scope.get_string("DESTDIR")
     if destdir:
-        if destdir.startswith('./') or destdir.startswith('../'):
-            destdir = '${CMAKE_CURRENT_BINARY_DIR}/' + destdir
-        extra_lines.append('OUTPUT_DIRECTORY "{}"'.format(destdir))
+        if destdir.startswith("./") or destdir.startswith("../"):
+            destdir = "${CMAKE_CURRENT_BINARY_DIR}/" + destdir
+        extra_lines.append(f'OUTPUT_DIRECTORY "{destdir}"')
 
-    cm_fh.write('{}{}({}\n'.format(spaces(indent), cmake_function, name))
+    cm_fh.write(f"{spaces(indent)}{cmake_function}({name}\n")
     for extra_line in extra_lines:
-        cm_fh.write('{}    {}\n'.format(spaces(indent), extra_line))
+        cm_fh.write(f"{spaces(indent)}    {extra_line}\n")
 
     write_sources_section(cm_fh, scopes[0], indent=indent, **kwargs)
 
     if has_test_data:
-        cm_fh.write('{}    TESTDATA ${{test_data}}\n'.format(spaces(indent)))
+        cm_fh.write(f"{spaces(indent)}    TESTDATA ${{test_data}}\n")
     # Footer:
-    cm_fh.write('{})\n'.format(spaces(indent)))
+    cm_fh.write(f"{spaces(indent)})\n")
 
     write_resources(cm_fh, name, scope, indent)
 
@@ -2063,7 +2341,6 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
     ignored_keys_report = write_ignored_keys(scopes[0], spaces(indent))
     if ignored_keys_report:
         cm_fh.write(ignored_keys_report)
-
 
     # Scopes:
     if len(scopes) == 1:
@@ -2079,121 +2356,151 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
         if ignored_keys_report:
             cm_fh.write(ignored_keys_report)
 
-def write_module(cm_fh: typing.IO[str], scope: Scope, *,
-                 indent: int = 0) -> str:
+
+def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     module_name = scope.TARGET
-    if not module_name.startswith('Qt'):
-        print('XXXXXX Module name {} does not start with Qt!'.format(module_name))
+    if not module_name.startswith("Qt"):
+        print(f"XXXXXX Module name {module_name} does not start with Qt!")
 
     extra = []
 
     # A module should be static when 'static' is in CONFIG
     # or when option(host_build) is used, as described in qt_module.prf.
-    is_static = 'static' in scope.get('CONFIG') or 'host_build' in scope.get('_OPTION')
+    is_static = "static" in scope.get("CONFIG") or "host_build" in scope.get("_OPTION")
 
     if is_static:
-        extra.append('STATIC')
-    if 'internal_module' in scope.get('CONFIG'):
-        extra.append('INTERNAL_MODULE')
-    if 'no_module_headers' in scope.get('CONFIG'):
-        extra.append('NO_MODULE_HEADERS')
-    if 'minimal_syncqt' in scope.get('CONFIG'):
-        extra.append('NO_SYNC_QT')
-    if 'no_private_module' in scope.get('CONFIG'):
-        extra.append('NO_PRIVATE_MODULE')
-    if 'header_module' in scope.get('CONFIG'):
-        extra.append('HEADER_MODULE')
+        extra.append("STATIC")
+    if "internal_module" in scope.get("CONFIG"):
+        extra.append("INTERNAL_MODULE")
+    if "no_module_headers" in scope.get("CONFIG"):
+        extra.append("NO_MODULE_HEADERS")
+    if "minimal_syncqt" in scope.get("CONFIG"):
+        extra.append("NO_SYNC_QT")
+    if "no_private_module" in scope.get("CONFIG"):
+        extra.append("NO_PRIVATE_MODULE")
+    if "header_module" in scope.get("CONFIG"):
+        extra.append("HEADER_MODULE")
 
     module_config = scope.get("MODULE_CONFIG")
     if len(module_config):
-        extra.append('QMAKE_MODULE_CONFIG {}'.format(" ".join(module_config)))
+        extra.append(f'QMAKE_MODULE_CONFIG {" ".join(module_config)}')
 
-    module_plugin_types = scope.get_files('MODULE_PLUGIN_TYPES')
+    module_plugin_types = scope.get_files("MODULE_PLUGIN_TYPES")
     if module_plugin_types:
-        extra.append('PLUGIN_TYPES {}'.format(" ".join(module_plugin_types)))
+        extra.append(f"PLUGIN_TYPES {' '.join(module_plugin_types)}")
 
     target_name = module_name[2:]
-    write_main_part(cm_fh, target_name, 'Module', 'add_qt_module', scope,
-                    extra_lines=extra, indent=indent,
-                    known_libraries={}, extra_keys=[])
+    write_main_part(
+        cm_fh,
+        target_name,
+        "Module",
+        "add_qt_module",
+        scope,
+        extra_lines=extra,
+        indent=indent,
+        known_libraries={},
+        extra_keys=[],
+    )
 
-    if 'qt_tracepoints' in scope.get('CONFIG'):
-        tracepoints = scope.get_files('TRACEPOINT_PROVIDER')
-        cm_fh.write('\n\n{}qt_create_tracepoints({} {})\n'
-                    .format(spaces(indent), module_name[2:], ' '.join(tracepoints)))
+    if "qt_tracepoints" in scope.get("CONFIG"):
+        tracepoints = scope.get_files("TRACEPOINT_PROVIDER")
+        cm_fh.write(
+            f"\n\n{spaces(indent)}qt_create_tracepoints({module_name[2:]} {' '.join(tracepoints)})\n"
+        )
 
     return target_name
 
 
-def write_tool(cm_fh: typing.IO[str], scope: Scope, *,
-               indent: int = 0) -> str:
+def write_tool(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     tool_name = scope.TARGET
 
-    extra = ['BOOTSTRAP'] if 'force_bootstrap' in scope.get('CONFIG') else []
+    extra = ["BOOTSTRAP"] if "force_bootstrap" in scope.get("CONFIG") else []
 
-    write_main_part(cm_fh, tool_name, 'Tool', 'add_qt_tool', scope,
-                    indent=indent, known_libraries={'Qt::Core', },
-                    extra_lines=extra, extra_keys=['CONFIG'])
+    write_main_part(
+        cm_fh,
+        tool_name,
+        "Tool",
+        "add_qt_tool",
+        scope,
+        indent=indent,
+        known_libraries={"Qt::Core"},
+        extra_lines=extra,
+        extra_keys=["CONFIG"],
+    )
 
     return tool_name
 
 
-def write_test(cm_fh: typing.IO[str], scope: Scope,
-                gui: bool = False, *, indent: int = 0) -> str:
+def write_test(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0) -> str:
     test_name = scope.TARGET
     assert test_name
 
-    extra = ['GUI',] if gui else []
-    libraries={'Qt::Core', 'Qt::Test'}
+    extra = ["GUI"] if gui else []
+    libraries = {"Qt::Core", "Qt::Test"}
 
-    if 'qmltestcase' in scope.get('CONFIG'):
-        libraries.add('Qt::QmlTest')
-        extra.append('QMLTEST')
-        importpath = scope.expand('IMPORTPATH')
+    if "qmltestcase" in scope.get("CONFIG"):
+        libraries.add("Qt::QmlTest")
+        extra.append("QMLTEST")
+        importpath = scope.expand("IMPORTPATH")
         if importpath:
-            extra.append('QML_IMPORTPATH')
+            extra.append("QML_IMPORTPATH")
             for path in importpath:
-                extra.append('    "{}"'.format(path))
+                extra.append(f'    "{path}"')
 
-    write_main_part(cm_fh, test_name, 'Test', 'add_qt_test', scope,
-                    indent=indent, known_libraries=libraries,
-                    extra_lines=extra, extra_keys=[])
+    write_main_part(
+        cm_fh,
+        test_name,
+        "Test",
+        "add_qt_test",
+        scope,
+        indent=indent,
+        known_libraries=libraries,
+        extra_lines=extra,
+        extra_keys=[],
+    )
 
     return test_name
 
 
-def write_binary(cm_fh: typing.IO[str], scope: Scope,
-                 gui: bool = False, *, indent: int = 0) -> None:
+def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0) -> None:
     binary_name = scope.TARGET
     assert binary_name
 
-    is_qt_test_helper = 'qt_test_helper' in scope.get('_LOADED')
+    is_qt_test_helper = "qt_test_helper" in scope.get("_LOADED")
 
-    extra = ['GUI'] if gui and not is_qt_test_helper else []
-    cmake_function_call = 'add_qt_executable'
+    extra = ["GUI"] if gui and not is_qt_test_helper else []
+    cmake_function_call = "add_qt_executable"
 
     if is_qt_test_helper:
-        binary_name += '_helper'
-        cmake_function_call = 'add_qt_test_helper'
+        binary_name += "_helper"
+        cmake_function_call = "add_qt_test_helper"
 
-    target_path = scope.get_string('target.path')
+    target_path = scope.get_string("target.path")
     if target_path:
-        target_path = target_path.replace('$$[QT_INSTALL_EXAMPLES]', '${INSTALL_EXAMPLESDIR}')
-        extra.append('OUTPUT_DIRECTORY "{}"'.format(target_path))
-        if 'target' in scope.get('INSTALLS'):
-            extra.append('INSTALL_DIRECTORY "{}"'.format(target_path))
+        target_path = target_path.replace("$$[QT_INSTALL_EXAMPLES]", "${INSTALL_EXAMPLESDIR}")
+        extra.append(f'OUTPUT_DIRECTORY "{target_path}"')
+        if "target" in scope.get("INSTALLS"):
+            extra.append(f'INSTALL_DIRECTORY "{target_path}"')
 
-    write_main_part(cm_fh, binary_name, 'Binary', cmake_function_call, scope,
-                    extra_lines=extra, indent=indent,
-                    known_libraries={'Qt::Core', }, extra_keys=['target.path', 'INSTALLS'])
+    write_main_part(
+        cm_fh,
+        binary_name,
+        "Binary",
+        cmake_function_call,
+        scope,
+        extra_lines=extra,
+        indent=indent,
+        known_libraries={"Qt::Core"},
+        extra_keys=["target.path", "INSTALLS"],
+    )
 
     return binary_name
 
 
-def write_find_package_section(cm_fh: typing.IO[str],
-                               public_libs: typing.List[str],
-                               private_libs: typing.List[str], *, indent: int=0):
-    packages = []  # type: typing.List[LibraryMapping]
+def write_find_package_section(
+    cm_fh: IO[str], public_libs: List[str], private_libs: List[str], *, indent: int = 0
+):
+    packages = []  # type: List[LibraryMapping]
     all_libs = public_libs + private_libs
 
     for l in all_libs:
@@ -2201,55 +2508,73 @@ def write_find_package_section(cm_fh: typing.IO[str],
         if info and info not in packages:
             packages.append(info)
 
-    ind = spaces(indent)
+    # ind = spaces(indent)
 
     for p in packages:
         cm_fh.write(generate_find_package_info(p, use_qt_find_package=False, indent=indent))
 
     if packages:
-        cm_fh.write('\n')
+        cm_fh.write("\n")
 
 
-def write_example(cm_fh: typing.IO[str], scope: Scope,
-                 gui: bool = False, *, indent: int = 0) -> str:
+def write_example(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0) -> str:
     binary_name = scope.TARGET
     assert binary_name
 
-    cm_fh.write('cmake_minimum_required(VERSION 3.14)\n' +
-                'project({} LANGUAGES CXX)\n\n'.format(binary_name) +
-                'set(CMAKE_INCLUDE_CURRENT_DIR ON)\n\n' +
-                'set(CMAKE_AUTOMOC ON)\n' +
-                'set(CMAKE_AUTORCC ON)\n' +
-                'set(CMAKE_AUTOUIC ON)\n\n' +
-                'set(INSTALL_EXAMPLEDIR "examples")\n\n')
+    cm_fh.write(
+        "cmake_minimum_required(VERSION 3.14)\n"
+        f"project({binary_name} LANGUAGES CXX)\n\n"
+        "set(CMAKE_INCLUDE_CURRENT_DIR ON)\n\n"
+        "set(CMAKE_AUTOMOC ON)\n"
+        "set(CMAKE_AUTORCC ON)\n"
+        "set(CMAKE_AUTOUIC ON)\n\n"
+        'set(INSTALL_EXAMPLEDIR "examples")\n\n'
+    )
 
     (public_libs, private_libs) = extract_cmake_libraries(scope)
     write_find_package_section(cm_fh, public_libs, private_libs, indent=indent)
 
-    add_executable = 'add_{}executable({}'.format("qt_gui_" if gui else "", binary_name);
+    add_executable = f'add_{"qt_gui_" if gui else ""}executable({binary_name}'
 
     write_all_source_file_lists(cm_fh, scope, add_executable, indent=0)
 
-    cm_fh.write(')\n')
+    cm_fh.write(")\n")
 
-    write_include_paths(cm_fh, scope, 'target_include_directories({} PUBLIC'.format(binary_name),
-                        indent=0, footer=')')
-    write_defines(cm_fh, scope, 'target_compile_definitions({} PUBLIC'.format(binary_name),
-                  indent=0, footer=')')
-    write_list(cm_fh, private_libs, '', indent=indent,
-               header='target_link_libraries({} PRIVATE\n'.format(binary_name), footer=')')
-    write_list(cm_fh, public_libs, '', indent=indent,
-               header='target_link_libraries({} PUBLIC\n'.format(binary_name), footer=')')
-    write_compile_options(cm_fh, scope, 'target_compile_options({}'.format(binary_name),
-                          indent=0, footer=')')
+    write_include_paths(
+        cm_fh, scope, f"target_include_directories({binary_name} PUBLIC", indent=0, footer=")"
+    )
+    write_defines(
+        cm_fh, scope, f"target_compile_definitions({binary_name} PUBLIC", indent=0, footer=")"
+    )
+    write_list(
+        cm_fh,
+        private_libs,
+        "",
+        indent=indent,
+        header=f"target_link_libraries({binary_name} PRIVATE\n",
+        footer=")",
+    )
+    write_list(
+        cm_fh,
+        public_libs,
+        "",
+        indent=indent,
+        header=f"target_link_libraries({binary_name} PUBLIC\n",
+        footer=")",
+    )
+    write_compile_options(
+        cm_fh, scope, f"target_compile_options({binary_name}", indent=0, footer=")"
+    )
 
-    write_resources(cm_fh, binary_name, scope, indent = indent, is_example = True)
+    write_resources(cm_fh, binary_name, scope, indent=indent, is_example=True)
 
-    cm_fh.write('\ninstall(TARGETS {}\n'.format(binary_name) +
-                '    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"\n' +
-                '    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"\n' +
-                '    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"\n' +
-                ')\n')
+    cm_fh.write(
+        f"\ninstall(TARGETS {binary_name}\n"
+        '    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"\n'
+        '    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"\n'
+        '    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"\n'
+        ")\n"
+    )
 
     return binary_name
 
@@ -2260,123 +2585,130 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
 
     extra = []
 
-    plugin_type = scope.get_string('PLUGIN_TYPE')
-    is_qml_plugin = any('qml_plugin' == s for s in scope.get('_LOADED'))
-    plugin_function_name = 'add_qt_plugin'
+    plugin_type = scope.get_string("PLUGIN_TYPE")
+    is_qml_plugin = any("qml_plugin" == s for s in scope.get("_LOADED"))
+    plugin_function_name = "add_qt_plugin"
     if plugin_type:
-        extra.append('TYPE {}'.format(plugin_type))
+        extra.append(f"TYPE {plugin_type}")
     elif is_qml_plugin:
-        plugin_function_name = 'add_qml_module'
+        plugin_function_name = "add_qml_module"
         write_qml_plugin(cm_fh, plugin_name, scope, indent=indent, extra_lines=extra)
 
-    plugin_class_name = scope.get_string('PLUGIN_CLASS_NAME')
+    plugin_class_name = scope.get_string("PLUGIN_CLASS_NAME")
     if plugin_class_name:
-        extra.append('CLASS_NAME {}'.format(plugin_class_name))
+        extra.append(f"CLASS_NAME {plugin_class_name}")
 
-    write_main_part(cm_fh, plugin_name, 'Plugin', plugin_function_name, scope,
-                    indent=indent, extra_lines=extra, known_libraries={}, extra_keys=[])
+    write_main_part(
+        cm_fh,
+        plugin_name,
+        "Plugin",
+        plugin_function_name,
+        scope,
+        indent=indent,
+        extra_lines=extra,
+        known_libraries={},
+        extra_keys=[],
+    )
     return plugin_name
 
 
-def write_qml_plugin(cm_fh: typing.IO[str],
-                     target: str,
-                     scope: Scope, *,
-                     extra_lines: typing.List[str] = [],
-                     indent: int = 0,
-                     **kwargs: typing.Any):
+def write_qml_plugin(
+    cm_fh: IO[str],
+    target: str,
+    scope: Scope,
+    *,
+    extra_lines: List[str] = [],
+    indent: int = 0,
+    **kwargs: Any,
+):
     # Collect other args if available
     indent += 2
-    scope_config = scope.get('CONFIG')
-    is_embedding_qml_files = False
+    # scope_config = scope.get('CONFIG')
+    # is_embedding_qml_files = False
 
-
-    sources = scope.get_files('SOURCES')
+    sources = scope.get_files("SOURCES")
     if len(sources) != 0:
-        extra_lines.append('CPP_PLUGIN')
+        extra_lines.append("CPP_PLUGIN")
 
-    target_path = scope.get_string('TARGETPATH')
+    target_path = scope.get_string("TARGETPATH")
     if target_path:
-        uri = target_path.replace('/','.')
-        import_name = scope.get_string('IMPORT_NAME')
+        uri = target_path.replace("/", ".")
+        import_name = scope.get_string("IMPORT_NAME")
         # Catch special cases such as foo.QtQuick.2.bar, which when converted
         # into a target path via cmake will result in foo/QtQuick/2/bar, which is
         # not what we want. So we supply the target path override.
-        target_path_from_uri = uri.replace('.', '/')
+        target_path_from_uri = uri.replace(".", "/")
         if target_path != target_path_from_uri:
-            extra_lines.append('TARGET_PATH "{}"'.format(target_path))
+            extra_lines.append(f'TARGET_PATH "{target_path}"')
         if import_name:
-            extra_lines.append('URI "{}"'.format(import_name))
+            extra_lines.append(f'URI "{import_name}"')
         else:
-            uri = re.sub('\\.\\d+', '', uri)
-            extra_lines.append('URI "{}"'.format(uri))
+            uri = re.sub("\\.\\d+", "", uri)
+            extra_lines.append(f'URI "{uri}"')
 
-    import_version = scope.get_string('IMPORT_VERSION')
+    import_version = scope.get_string("IMPORT_VERSION")
     if import_version:
-        import_version = import_version.replace("$$QT_MINOR_VERSION","${CMAKE_PROJECT_VERSION_MINOR}")
-        extra_lines.append('VERSION "{}"'.format(import_version))
+        import_version = import_version.replace(
+            "$$QT_MINOR_VERSION", "${CMAKE_PROJECT_VERSION_MINOR}"
+        )
+        extra_lines.append(f'VERSION "{import_version}"')
 
-    plugindump_dep = scope.get_string('QML_PLUGINDUMP_DEPENDENCIES')
+    plugindump_dep = scope.get_string("QML_PLUGINDUMP_DEPENDENCIES")
 
     if plugindump_dep:
-        extra_lines.append('QML_PLUGINDUMP_DEPENDENCIES "{}"'.format(plugindump_dep))
+        extra_lines.append(f'QML_PLUGINDUMP_DEPENDENCIES "{plugindump_dep}"')
 
 
-def write_qml_plugin_qml_files(cm_fh: typing.IO[str],
-                               target: str,
-                               scope: Scope,
-                               indent: int = 0):
+def write_qml_plugin_qml_files(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
 
-    qml_files = scope.get_files('QML_FILES', use_vpath=True)
+    qml_files = scope.get_files("QML_FILES", use_vpath=True)
     if qml_files:
 
         # Quote file paths in case there are spaces.
-        qml_files = ['"{}"'.format(f) for f in qml_files]
+        qml_files = [f'"{f}"' for f in qml_files]
 
-        cm_fh.write('\n{}set(qml_files\n{}{}\n)\n'.format(
-            spaces(indent),
-            spaces(indent + 1),
-            '\n{}'.format(spaces(indent + 1)).join(qml_files)))
+        qml_files_line = "\n{spaces(indent+1)}".join(qml_files)
+        cm_fh.write(f"\n{spaces(indent)}set(qml_files\n{spaces(indent+1)}{qml_files_line}\n)\n")
 
-        target_path = scope.get_string('TARGETPATH', inherit=True)
-        target_path_mangled = target_path.replace('/', '_')
-        target_path_mangled = target_path_mangled.replace('.', '_')
-        resource_name = 'qmake_' + target_path_mangled
-        cm_fh.write('\n{}add_qt_resource({} {}\n{}FILES\n{}${{qml_files}}\n)\n'.format(
-            spaces(indent),
-            target,
-            resource_name,
-            spaces(indent + 1),
-            spaces(indent + 2)))
+        target_path = scope.get_string("TARGETPATH", inherit=True)
+        target_path_mangled = target_path.replace("/", "_")
+        target_path_mangled = target_path_mangled.replace(".", "_")
+        resource_name = "qmake_" + target_path_mangled
+        cm_fh.write(
+            f"\n{spaces(indent)}add_qt_resource({target} {resource_name}\n"
+            f"{spaces(indent+1)}FILES\n{spaces(indent+2)}${{qml_files}}\n)\n"
+        )
 
-        cm_fh.write('\nqt_install_qml_files({}\n    FILES ${{qml_files}}\n)\n\n'.format(
-            target))
+        cm_fh.write(f"\nqt_install_qml_files({target}\n    FILES ${{qml_files}}\n)\n\n")
 
 
-def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
-                      indent: int = 0, is_example: bool=False) -> None:
-    assert scope.TEMPLATE in ('app', 'lib')
+def handle_app_or_lib(
+    scope: Scope, cm_fh: IO[str], *, indent: int = 0, is_example: bool = False
+) -> None:
+    assert scope.TEMPLATE in ("app", "lib")
 
-    config = scope.get('CONFIG')
-    is_lib = scope.TEMPLATE == 'lib'
-    is_qml_plugin = any('qml_plugin' == s for s in scope.get('_LOADED'))
-    is_plugin = any('qt_plugin' == s for s in scope.get('_LOADED')) or is_qml_plugin or 'plugin' in config
+    config = scope.get("CONFIG")
+    is_lib = scope.TEMPLATE == "lib"
+    is_qml_plugin = any("qml_plugin" == s for s in scope.get("_LOADED"))
+    is_plugin = (
+        any("qt_plugin" == s for s in scope.get("_LOADED")) or is_qml_plugin or "plugin" in config
+    )
     target = ""
 
     if is_plugin:
         assert not is_example
         target = write_plugin(cm_fh, scope, indent=indent)
-    elif is_lib or 'qt_module' in scope.get('_LOADED'):
+    elif is_lib or "qt_module" in scope.get("_LOADED"):
         assert not is_example
         target = write_module(cm_fh, scope, indent=indent)
-    elif 'qt_tool' in scope.get('_LOADED'):
+    elif "qt_tool" in scope.get("_LOADED"):
         assert not is_example
         target = write_tool(cm_fh, scope, indent=indent)
     else:
-        gui = all(val not in config for val in ['console', 'cmdline']) \
-              and 'testlib' not in scope.expand('QT')
-        if 'testcase' in config \
-                or 'testlib' in config \
-                or 'qmltestcase' in config:
+        gui = all(
+            val not in config for val in ["console", "cmdline"]
+        ) and "testlib" not in scope.expand("QT")
+        if "testcase" in config or "testlib" in config or "qmltestcase" in config:
             assert not is_example
             target = write_test(cm_fh, scope, gui, indent=indent)
         else:
@@ -2385,15 +2717,13 @@ def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
             else:
                 target = write_binary(cm_fh, scope, gui, indent=indent)
 
-    ind = spaces(indent)
-    write_source_file_list(cm_fh, scope, '',
-                           ['QMAKE_DOCS',],
-                           indent,
-                           header = f"add_qt_docs({target},\n",
-                           footer = ')\n')
+    # ind = spaces(indent)
+    write_source_file_list(
+        cm_fh, scope, "", ["QMAKE_DOCS"], indent, header=f"add_qt_docs({target},\n", footer=")\n"
+    )
 
 
-def handle_top_level_repo_project(scope: Scope, cm_fh: typing.IO[str]):
+def handle_top_level_repo_project(scope: Scope, cm_fh: IO[str]):
     # qtdeclarative
     project_file_name = os.path.splitext(os.path.basename(scope.file_absolute_path))[0]
 
@@ -2406,7 +2736,7 @@ def handle_top_level_repo_project(scope: Scope, cm_fh: typing.IO[str]):
     # Found a mapping, adjust name.
     if qt_lib != file_name_without_qt_prefix:
         # QtDeclarative
-        qt_lib = re.sub(r':', r'', qt_lib)
+        qt_lib = re.sub(r":", r"", qt_lib)
 
         # Declarative
         qt_lib_no_prefix = qt_lib[2:]
@@ -2414,36 +2744,39 @@ def handle_top_level_repo_project(scope: Scope, cm_fh: typing.IO[str]):
         qt_lib += "_FIXME"
         qt_lib_no_prefix = qt_lib
 
-    content = """cmake_minimum_required(VERSION {})
+    content = dedent(
+        f"""\
+                cmake_minimum_required(VERSION {cmake_version_string})
 
-project({}
-    VERSION 6.0.0
-    DESCRIPTION "Qt {} Libraries"
-    HOMEPAGE_URL "https://qt.io/"
-    LANGUAGES CXX C
-)
+                project({qt_lib}
+                    VERSION 6.0.0
+                    DESCRIPTION "Qt {qt_lib_no_prefix} Libraries"
+                    HOMEPAGE_URL "https://qt.io/"
+                    LANGUAGES CXX C
+                )
 
-find_package(Qt6 ${{PROJECT_VERSION}} CONFIG REQUIRED COMPONENTS BuildInternals Core SET_ME_TO_SOMETHING_USEFUL)
-find_package(Qt6 ${{PROJECT_VERSION}} CONFIG OPTIONAL_COMPONENTS SET_ME_TO_SOMETHING_USEFUL)
-qt_build_repo()
-""".format(cmake_version_string, qt_lib, qt_lib_no_prefix)
+                find_package(Qt6 ${{PROJECT_VERSION}} CONFIG REQUIRED COMPONENTS BuildInternals Core SET_ME_TO_SOMETHING_USEFUL)
+                find_package(Qt6 ${{PROJECT_VERSION}} CONFIG OPTIONAL_COMPONENTS SET_ME_TO_SOMETHING_USEFUL)
+                qt_build_repo()
+                """
+    )
 
-    cm_fh.write('{}'.format(content))
+    cm_fh.write(f"{content}")
 
 
-def find_top_level_repo_project_file(project_file_path: str = '') -> typing.Optional[str]:
+def find_top_level_repo_project_file(project_file_path: str = "") -> Optional[str]:
     qmake_conf_path = find_qmake_conf(project_file_path)
     qmake_dir = os.path.dirname(qmake_conf_path)
 
     # Hope to a programming god that there's only one .pro file at the
     # top level directory of repository.
-    glob_result = glob.glob(os.path.join(qmake_dir, '*.pro'))
+    glob_result = glob.glob(os.path.join(qmake_dir, "*.pro"))
     if len(glob_result) > 0:
         return glob_result[0]
     return None
 
 
-def handle_top_level_repo_tests_project(scope: Scope, cm_fh: typing.IO[str]):
+def handle_top_level_repo_tests_project(scope: Scope, cm_fh: IO[str]):
     top_level_project_path = find_top_level_repo_project_file(scope.file_absolute_path)
     if top_level_project_path:
         # qtdeclarative
@@ -2458,28 +2791,30 @@ def handle_top_level_repo_tests_project(scope: Scope, cm_fh: typing.IO[str]):
         # Found a mapping, adjust name.
         if qt_lib != file_name_without_qt:
             # QtDeclarative
-            qt_lib = re.sub(r':', r'', qt_lib) + "Tests"
+            qt_lib = re.sub(r":", r"", qt_lib) + "Tests"
         else:
             qt_lib += "Tests_FIXME"
     else:
         qt_lib = "Tests_FIXME"
 
-    content = """if(NOT TARGET Qt::Test)
-    cmake_minimum_required(VERSION {})
-    project({} VERSION 6.0.0 LANGUAGES C CXX)
-    find_package(Qt6 ${{PROJECT_VERSION}} REQUIRED COMPONENTS BuildInternals Core SET_ME_TO_SOMETHING_USEFUL)
-    find_package(Qt6 ${{PROJECT_VERSION}} OPTIONAL_COMPONENTS SET_ME_TO_SOMETHING_USEFUL)
-    qt_set_up_standalone_tests_build()
-endif()
+    content = dedent(
+        f"""\
+        if(NOT TARGET Qt::Test)
+            cmake_minimum_required(VERSION {cmake_version_string})
+            project({qt_lib} VERSION 6.0.0 LANGUAGES C CXX)
+            find_package(Qt6 ${{PROJECT_VERSION}} REQUIRED COMPONENTS BuildInternals Core SET_ME_TO_SOMETHING_USEFUL)
+            find_package(Qt6 ${{PROJECT_VERSION}} OPTIONAL_COMPONENTS SET_ME_TO_SOMETHING_USEFUL)
+            qt_set_up_standalone_tests_build()
+        endif()
+        qt_build_tests()"""
+    )
 
-qt_build_tests()
-""".format(cmake_version_string, qt_lib)
-
-    cm_fh.write('{}'.format(content))
+    cm_fh.write(f"{content}")
 
 
-def cmakeify_scope(scope: Scope, cm_fh: typing.IO[str], *,
-                   indent: int = 0, is_example: bool=False) -> None:
+def cmakeify_scope(
+    scope: Scope, cm_fh: IO[str], *, indent: int = 0, is_example: bool = False
+) -> None:
     template = scope.TEMPLATE
 
     temp_buffer = io.StringIO()
@@ -2490,13 +2825,12 @@ def cmakeify_scope(scope: Scope, cm_fh: typing.IO[str], *,
     # Same for top-level tests.
     elif is_top_level_repo_tests_project(scope.file_absolute_path):
         handle_top_level_repo_tests_project(scope, temp_buffer)
-    elif template == 'subdirs':
+    elif template == "subdirs":
         handle_subdir(scope, temp_buffer, indent=indent, is_example=is_example)
-    elif template in ('app', 'lib'):
+    elif template in ("app", "lib"):
         handle_app_or_lib(scope, temp_buffer, indent=indent, is_example=is_example)
     else:
-        print('    XXXX: {}: Template type {} not yet supported.'
-              .format(scope.file, template))
+        print(f"    XXXX: {scope.file}: Template type {template} not yet supported.")
 
     buffer_value = temp_buffer.getvalue()
 
@@ -2504,21 +2838,23 @@ def cmakeify_scope(scope: Scope, cm_fh: typing.IO[str], *,
         # Wrap top level examples project with some commands which
         # are necessary to build examples as part of the overall
         # build.
-        buffer_value = """qt_examples_build_begin()
+        buffer_value = dedent(
+            """\
+            qt_examples_build_begin()
 
-{}
-qt_examples_build_end()
-""".format(buffer_value)
+            {buffer_value}
+            qt_examples_build_end()
+            """
+        )
 
     cm_fh.write(buffer_value)
 
 
-def generate_new_cmakelists(scope: Scope, *, is_example: bool=False) -> None:
-    print('Generating CMakeLists.gen.txt')
-    with open(scope.generated_cmake_lists_path, 'w') as cm_fh:
+def generate_new_cmakelists(scope: Scope, *, is_example: bool = False) -> None:
+    print("Generating CMakeLists.gen.txt")
+    with open(scope.generated_cmake_lists_path, "w") as cm_fh:
         assert scope.file
-        cm_fh.write('# Generated from {}.\n\n'
-                    .format(os.path.basename(scope.file)))
+        cm_fh.write(f"# Generated from {os.path.basename(scope.file)}.\n\n")
 
         is_example_heuristic = is_example_project(scope.file_absolute_path)
         final_is_example_decision = is_example or is_example_heuristic
@@ -2529,18 +2865,17 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
     for c in scope.children:
         do_include(c)
 
-    for include_file in scope.get_files('_INCLUDED', is_include=True):
+    for include_file in scope.get_files("_INCLUDED", is_include=True):
         if not include_file:
             continue
         if not os.path.isfile(include_file):
-            print('    XXXX: Failed to include {}.'.format(include_file))
+            print(f"    XXXX: Failed to include {include_file}.")
             continue
 
         include_result = parseProFile(include_file, debug=debug)
-        include_scope \
-            = Scope.FromDict(None, include_file,
-                             include_result.asDict().get('statements'),
-                             '', scope.basedir)  # This scope will be merged into scope!
+        include_scope = Scope.FromDict(
+            None, include_file, include_result.asDict().get("statements"), "", scope.basedir
+        )  # This scope will be merged into scope!
 
         do_include(include_scope)
 
@@ -2548,31 +2883,33 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
 
 
 def copy_generated_file_to_final_location(scope: Scope, keep_temporary_files=False) -> None:
-    print('Copying {} to {}'.format(scope.generated_cmake_lists_path,
-                                    scope.original_cmake_lists_path))
+    print(f"Copying {scope.generated_cmake_lists_path} to {scope.original_cmake_lists_path}")
     copyfile(scope.generated_cmake_lists_path, scope.original_cmake_lists_path)
     if not keep_temporary_files:
         os.remove(scope.generated_cmake_lists_path)
 
 
-def should_convert_project(project_file_path: str = '') -> bool:
+def should_convert_project(project_file_path: str = "") -> bool:
     qmake_conf_path = find_qmake_conf(project_file_path)
     qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
 
     project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
 
     # Skip cmake auto tests, they should not be converted.
-    if project_relative_path.startswith('tests/auto/cmake'):
+    if project_relative_path.startswith("tests/auto/cmake"):
         return False
 
     # Skip qmake testdata projects.
-    if project_relative_path.startswith('tests/auto/tools/qmake/testdata'):
+    if project_relative_path.startswith("tests/auto/tools/qmake/testdata"):
         return False
 
     return True
 
 
 def main() -> None:
+    # Be sure of proper Python version
+    assert sys.version_info >= (3, 7)
+
     args = _parse_commandline()
 
     debug_parsing = args.debug_parser or args.debug
@@ -2587,53 +2924,57 @@ def main() -> None:
 
         project_file_absolute_path = os.path.abspath(file_relative_path)
         if not should_convert_project(project_file_absolute_path):
-            print('Skipping conversion of project: "{}"'.format(project_file_absolute_path))
+            print(f'Skipping conversion of project: "{project_file_absolute_path}"')
             continue
 
         parseresult = parseProFile(file_relative_path, debug=debug_parsing)
 
         if args.debug_parse_result or args.debug:
-            print('\n\n#### Parser result:')
+            print("\n\n#### Parser result:")
             print(parseresult)
-            print('\n#### End of parser result.\n')
+            print("\n#### End of parser result.\n")
         if args.debug_parse_dictionary or args.debug:
-            print('\n\n####Parser result dictionary:')
+            print("\n\n####Parser result dictionary:")
             print(parseresult.asDict())
-            print('\n#### End of parser result dictionary.\n')
+            print("\n#### End of parser result dictionary.\n")
 
-        file_scope = Scope.FromDict(None, file_relative_path,
-                                    parseresult.asDict().get('statements'))
+        file_scope = Scope.FromDict(
+            None, file_relative_path, parseresult.asDict().get("statements")
+        )
 
         if args.debug_pro_structure or args.debug:
-            print('\n\n#### .pro/.pri file structure:')
+            print("\n\n#### .pro/.pri file structure:")
             file_scope.dump()
-            print('\n#### End of .pro/.pri file structure.\n')
+            print("\n#### End of .pro/.pri file structure.\n")
 
         do_include(file_scope, debug=debug_parsing)
 
         if args.debug_full_pro_structure or args.debug:
-            print('\n\n#### Full .pro/.pri file structure:')
+            print("\n\n#### Full .pro/.pri file structure:")
             file_scope.dump()
-            print('\n#### End of full .pro/.pri file structure.\n')
+            print("\n#### End of full .pro/.pri file structure.\n")
 
         generate_new_cmakelists(file_scope, is_example=args.is_example)
 
         copy_generated_file = True
         if not args.skip_special_case_preservation:
             debug_special_case = args.debug_special_case_preservation or args.debug
-            handler = SpecialCaseHandler(file_scope.original_cmake_lists_path,
-                                         file_scope.generated_cmake_lists_path,
-                                         file_scope.basedir,
-                                         keep_temporary_files=args.keep_temporary_files,
-                                         debug=debug_special_case)
+            handler = SpecialCaseHandler(
+                file_scope.original_cmake_lists_path,
+                file_scope.generated_cmake_lists_path,
+                file_scope.basedir,
+                keep_temporary_files=args.keep_temporary_files,
+                debug=debug_special_case,
+            )
 
             copy_generated_file = handler.handle_special_cases()
 
         if copy_generated_file:
-            copy_generated_file_to_final_location(file_scope,
-                                                  keep_temporary_files=args.keep_temporary_files)
+            copy_generated_file_to_final_location(
+                file_scope, keep_temporary_files=args.keep_temporary_files
+            )
         os.chdir(backup_current_dir)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

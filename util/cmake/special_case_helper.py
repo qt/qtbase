@@ -93,31 +93,34 @@ import stat
 
 from shutil import copyfile
 from shutil import rmtree
+from textwrap import dedent
 
 
 def remove_special_cases(original: str) -> str:
     # Remove content between the following markers
     # '# special case begin' and '# special case end'.
     # This also remove the markers.
-    replaced = re.sub(r'\n[^#\n]*?#[^\n]*?special case begin.*?#[^\n]*special case end[^\n]*?\n',
-                      '\n',
-                      original,
-                      0,
-                      re.DOTALL)
+    replaced = re.sub(
+        r"\n[^#\n]*?#[^\n]*?special case begin.*?#[^\n]*special case end[^\n]*?\n",
+        "\n",
+        original,
+        0,
+        re.DOTALL,
+    )
 
     # Remove individual lines that have the "# special case" marker.
-    replaced = re.sub(r'\n.*#.*special case[^\n]*\n', '\n', replaced)
+    replaced = re.sub(r"\n.*#.*special case[^\n]*\n", "\n", replaced)
     return replaced
 
 
 def read_content_from_file(file_path: str) -> str:
-    with open(file_path, 'r') as file_fd:
+    with open(file_path, "r") as file_fd:
         content = file_fd.read()
         return content
 
 
 def write_content_to_file(file_path: str, content: str) -> None:
-    with open(file_path, 'w') as file_fd:
+    with open(file_path, "w") as file_fd:
         file_fd.write(content)
 
 
@@ -126,23 +129,23 @@ def resolve_simple_git_conflicts(file_path: str, debug=False) -> None:
     # If the conflict represents the addition of a new content hunk,
     # keep the content and remove the conflict markers.
     if debug:
-        print('Resolving simple conflicts automatically.')
-    replaced = re.sub(r'\n<<<<<<< HEAD\n=======(.+?)>>>>>>> master\n', r'\1', content, 0, re.DOTALL)
+        print("Resolving simple conflicts automatically.")
+    replaced = re.sub(r"\n<<<<<<< HEAD\n=======(.+?)>>>>>>> master\n", r"\1", content, 0, re.DOTALL)
     write_content_to_file(file_path, replaced)
 
 
 def copyfile_log(src: str, dst: str, debug=False):
     if debug:
-        print('Copying {} to {}.'.format(src, dst))
+        print(f"Copying {src} to {dst}.")
     copyfile(src, dst)
 
 
 def check_if_git_in_path() -> bool:
-    is_win = os.name == 'nt'
-    for path in os.environ['PATH'].split(os.pathsep):
-        git_path = os.path.join(path, 'git')
+    is_win = os.name == "nt"
+    for path in os.environ["PATH"].split(os.pathsep):
+        git_path = os.path.join(path, "git")
         if is_win:
-            git_path += '.exe'
+            git_path += ".exe"
         if os.path.isfile(git_path) and os.access(git_path, os.X_OK):
             return True
     return False
@@ -150,31 +153,38 @@ def check_if_git_in_path() -> bool:
 
 def run_process_quiet(args_string: str, debug=False) -> bool:
     if debug:
-        print('Running command: "{}\"'.format(args_string))
+        print(f'Running command: "{args_string}"')
     args_list = args_string.split()
     try:
         subprocess.run(args_list, check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         # git merge with conflicts returns with exit code 1, but that's not
         # an error for us.
-        if 'git merge' not in args_string:
-            print('Error while running: "{}"\n{}'.format(args_string, e.stdout))
+        if "git merge" not in args_string:
+            print(
+                dedent(
+                    f"""\
+                         Error while running: "{args_string}"
+                         {e.stdout}"""
+                )
+            )
             return False
     return True
 
 
 def does_file_have_conflict_markers(file_path: str, debug=False) -> bool:
     if debug:
-        print('Checking if {} has no leftover conflict markers.'.format(file_path))
+        print(f"Checking if {file_path} has no leftover conflict markers.")
     content_actual = read_content_from_file(file_path)
-    if '<<<<<<< HEAD' in content_actual:
-        print('Conflict markers found in {}. '
-              'Please remove or solve them first.'.format(file_path))
+    if "<<<<<<< HEAD" in content_actual:
+        print(f"Conflict markers found in {file_path}. " "Please remove or solve them first.")
         return True
     return False
 
 
-def create_file_with_no_special_cases(original_file_path: str, no_special_cases_file_path: str, debug=False):
+def create_file_with_no_special_cases(
+    original_file_path: str, no_special_cases_file_path: str, debug=False
+):
     """
     Reads content of original CMakeLists.txt, removes all content
     between "# special case" markers or lines, saves the result into a
@@ -182,35 +192,36 @@ def create_file_with_no_special_cases(original_file_path: str, no_special_cases_
     """
     content_actual = read_content_from_file(original_file_path)
     if debug:
-        print('Removing special case blocks from {}.'.format(original_file_path))
+        print(f"Removing special case blocks from {original_file_path}.")
     content_no_special_cases = remove_special_cases(content_actual)
 
     if debug:
-        print('Saving original contents of {} '
-              'with removed special case blocks to {}'.format(original_file_path,
-                                                          no_special_cases_file_path))
+        print(
+            f"Saving original contents of {original_file_path} "
+            f"with removed special case blocks to {no_special_cases_file_path}"
+        )
     write_content_to_file(no_special_cases_file_path, content_no_special_cases)
 
 
-def rm_tree_on_error_handler(func: typing.Callable[..., None],
-                             path: str, exception_info: tuple):
+def rm_tree_on_error_handler(func: typing.Callable[..., None], path: str, exception_info: tuple):
     # If the path is read only, try to make it writable, and try
     # to remove the path again.
     if not os.access(path, os.W_OK):
         os.chmod(path, stat.S_IWRITE)
         func(path)
     else:
-        print('Error while trying to remove path: {}. Exception: {}'.format(path, exception_info))
+        print(f"Error while trying to remove path: {path}. Exception: {exception_info}")
 
 
 class SpecialCaseHandler(object):
-
-    def __init__(self,
-                 original_file_path: str,
-                 generated_file_path: str,
-                 base_dir: str,
-                 keep_temporary_files=False,
-                 debug=False) -> None:
+    def __init__(
+        self,
+        original_file_path: str,
+        generated_file_path: str,
+        base_dir: str,
+        keep_temporary_files=False,
+        debug=False,
+    ) -> None:
         self.base_dir = base_dir
         self.original_file_path = original_file_path
         self.generated_file_path = generated_file_path
@@ -220,29 +231,28 @@ class SpecialCaseHandler(object):
 
     @property
     def prev_file_path(self) -> str:
-        return os.path.join(self.base_dir, '.prev_CMakeLists.txt')
+        return os.path.join(self.base_dir, ".prev_CMakeLists.txt")
 
     @property
     def post_merge_file_path(self) -> str:
-        return os.path.join(self.base_dir, 'CMakeLists-post-merge.txt')
+        return os.path.join(self.base_dir, "CMakeLists-post-merge.txt")
 
     @property
     def no_special_file_path(self) -> str:
-        return os.path.join(self.base_dir, 'CMakeLists.no-special.txt')
+        return os.path.join(self.base_dir, "CMakeLists.no-special.txt")
 
     def apply_git_merge_magic(self, no_special_cases_file_path: str) -> None:
         # Create new folder for temporary repo, and ch dir into it.
-        repo = os.path.join(self.base_dir, 'tmp_repo')
+        repo = os.path.join(self.base_dir, "tmp_repo")
         repo_absolute_path = os.path.abspath(repo)
-        txt = 'CMakeLists.txt'
+        txt = "CMakeLists.txt"
 
         try:
             os.mkdir(repo)
             current_dir = os.getcwd()
             os.chdir(repo)
         except Exception as e:
-            print('Failed to create temporary directory for temporary git repo. Exception: {}'
-                  .format(e))
+            print(f"Failed to create temporary directory for temporary git repo. Exception: {e}")
             raise e
 
         generated_file_path = os.path.join("..", self.generated_file_path)
@@ -252,34 +262,34 @@ class SpecialCaseHandler(object):
 
         try:
             # Create new repo with the "clean" CMakeLists.txt file.
-            run_process_quiet('git init .', debug=self.debug)
-            run_process_quiet('git config user.name fake', debug=self.debug)
-            run_process_quiet('git config user.email fake@fake', debug=self.debug)
+            run_process_quiet("git init .", debug=self.debug)
+            run_process_quiet("git config user.name fake", debug=self.debug)
+            run_process_quiet("git config user.email fake@fake", debug=self.debug)
             copyfile_log(no_special_cases_file_path, txt, debug=self.debug)
-            run_process_quiet('git add {}'.format(txt), debug=self.debug)
-            run_process_quiet('git commit -m no_special', debug=self.debug)
-            run_process_quiet('git checkout -b no_special', debug=self.debug)
+            run_process_quiet(f"git add {txt}", debug=self.debug)
+            run_process_quiet("git commit -m no_special", debug=self.debug)
+            run_process_quiet("git checkout -b no_special", debug=self.debug)
 
             # Copy the original "modified" file (with the special cases)
             # and make a new commit.
-            run_process_quiet('git checkout -b original', debug=self.debug)
+            run_process_quiet("git checkout -b original", debug=self.debug)
             copyfile_log(original_file_path, txt, debug=self.debug)
-            run_process_quiet('git add {}'.format(txt), debug=self.debug)
-            run_process_quiet('git commit -m original', debug=self.debug)
+            run_process_quiet(f"git add {txt}", debug=self.debug)
+            run_process_quiet("git commit -m original", debug=self.debug)
 
             # Checkout the commit with "clean" file again, and create a
             # new branch.
-            run_process_quiet('git checkout no_special', debug=self.debug)
-            run_process_quiet('git checkout -b newly_generated', debug=self.debug)
+            run_process_quiet("git checkout no_special", debug=self.debug)
+            run_process_quiet("git checkout -b newly_generated", debug=self.debug)
 
             # Copy the new "modified" file and make a commit.
             copyfile_log(generated_file_path, txt, debug=self.debug)
-            run_process_quiet('git add {}'.format(txt), debug=self.debug)
-            run_process_quiet('git commit -m newly_generated', debug=self.debug)
+            run_process_quiet(f"git add {txt}", debug=self.debug)
+            run_process_quiet("git commit -m newly_generated", debug=self.debug)
 
             # Merge the "old" branch with modifications into the "new"
             # branch with the newly generated file.
-            run_process_quiet('git merge original', debug=self.debug)
+            run_process_quiet("git merge original", debug=self.debug)
 
             # Resolve some simple conflicts (just remove the markers)
             # for cases that don't need intervention.
@@ -288,7 +298,7 @@ class SpecialCaseHandler(object):
             # Copy the resulting file from the merge.
             copyfile_log(txt, post_merge_file_path)
         except Exception as e:
-            print('Git merge conflict resolution process failed. Exception: {}'.format(e))
+            print(f"Git merge conflict resolution process failed. Exception: {e}")
             raise e
         finally:
             os.chdir(current_dir)
@@ -298,7 +308,7 @@ class SpecialCaseHandler(object):
                 if not self.keep_temporary_files:
                     rmtree(repo_absolute_path, onerror=rm_tree_on_error_handler)
             except Exception as e:
-                print('Error removing temporary repo. Exception: {}'.format(e))
+                print(f"Error removing temporary repo. Exception: {e}")
 
     def save_next_clean_file(self):
         files_are_equivalent = filecmp.cmp(self.generated_file_path, self.post_merge_file_path)
@@ -316,20 +326,18 @@ class SpecialCaseHandler(object):
             failed_once = False
             i = 0
             while not success and i < 20:
-                success = run_process_quiet("git add {}".format(self.prev_file_path),
-                                            debug=self.debug)
+                success = run_process_quiet(f"git add {self.prev_file_path}", debug=self.debug)
                 if not success:
                     failed_once = True
                     i += 1
                     time.sleep(0.1)
 
                 if failed_once and not success:
-                    print('Retrying git add, the index.lock was probably acquired.')
+                    print("Retrying git add, the index.lock was probably acquired.")
             if failed_once and success:
-                print('git add succeeded.')
+                print("git add succeeded.")
             elif failed_once and not success:
-                print('git add failed. Make sure to git add {} yourself.'.format(
-                    self.prev_file_path))
+                print(f"git add failed. Make sure to git add {self.prev_file_path} yourself.")
 
     def handle_special_cases_helper(self) -> bool:
         """
@@ -348,15 +356,18 @@ class SpecialCaseHandler(object):
                 return False
 
             if self.use_heuristic:
-                create_file_with_no_special_cases(self.original_file_path,
-                                                  self.no_special_file_path)
+                create_file_with_no_special_cases(
+                    self.original_file_path, self.no_special_file_path
+                )
                 no_special_cases_file_path = self.no_special_file_path
             else:
                 no_special_cases_file_path = self.prev_file_path
 
             if self.debug:
-                print('Using git to reapply special case modifications to newly generated {} '
-                      'file'.format(self.generated_file_path))
+                print(
+                    f"Using git to reapply special case modifications to newly "
+                    f"generated {self.generated_file_path} file"
+                )
 
             self.apply_git_merge_magic(no_special_cases_file_path)
             self.save_next_clean_file()
@@ -365,11 +376,13 @@ class SpecialCaseHandler(object):
             if not self.keep_temporary_files:
                 os.remove(self.post_merge_file_path)
 
-            print('Special case reapplication using git is complete. '
-                  'Make sure to fix remaining conflict markers.')
+            print(
+                "Special case reapplication using git is complete. "
+                "Make sure to fix remaining conflict markers."
+            )
 
         except Exception as e:
-            print('Error occurred while trying to reapply special case modifications: {}'.format(e))
+            print(f"Error occurred while trying to reapply special case modifications: {e}")
             return False
         finally:
             if not self.keep_temporary_files and self.use_heuristic:
@@ -386,8 +399,10 @@ class SpecialCaseHandler(object):
         keep_special_cases = original_file_exists and git_available
 
         if not git_available:
-            print('You need to have git in PATH in order to reapply the special '
-                  'case modifications.')
+            print(
+                "You need to have git in PATH in order to reapply the special "
+                "case modifications."
+            )
 
         copy_generated_file = True
 

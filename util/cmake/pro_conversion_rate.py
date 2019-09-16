@@ -47,9 +47,10 @@ from timeit import default_timer
 
 
 def _parse_commandline():
-    parser = ArgumentParser(description='Find pro files for which there are no CMakeLists.txt.')
-    parser.add_argument('source_directory', metavar='<src dir>', type=str,
-                        help='The source directory')
+    parser = ArgumentParser(description="Find pro files for which there are no CMakeLists.txt.")
+    parser.add_argument(
+        "source_directory", metavar="<src dir>", type=str, help="The source directory"
+    )
 
     return parser.parse_args()
 
@@ -68,6 +69,7 @@ class Blacklist:
         try:
             # If package is available, use Aho-Corasick algorithm,
             from ahocorapy.keywordtree import KeywordTree
+
             self.tree = KeywordTree(case_insensitive=True)
 
             for p in self.path_parts:
@@ -117,45 +119,58 @@ def check_for_cmake_project(pro_path: str) -> bool:
     return os.path.exists(cmake_project_path)
 
 
-def compute_stats(src_path: str, pros_with_missing_project: typing.List[str],
-                  total_pros: int, existing_pros: int, missing_pros: int) -> dict:
+def compute_stats(
+    src_path: str,
+    pros_with_missing_project: typing.List[str],
+    total_pros: int,
+    existing_pros: int,
+    missing_pros: int,
+) -> dict:
     stats = {}
-    stats['total projects'] = {'label': 'Total pro files found',
-                               'value': total_pros}
-    stats['existing projects'] = {'label': 'Existing CMakeLists.txt files found',
-                                  'value': existing_pros}
-    stats['missing projects'] = {'label': 'Missing CMakeLists.txt files found',
-                                 'value': missing_pros}
-    stats['missing examples'] = {'label': 'Missing examples', 'value': 0}
-    stats['missing tests'] = {'label': 'Missing tests', 'value': 0}
-    stats['missing src'] = {'label': 'Missing src/**/**', 'value': 0}
-    stats['missing plugins'] = {'label': 'Missing plugins', 'value': 0}
+    stats["total projects"] = {"label": "Total pro files found", "value": total_pros}
+    stats["existing projects"] = {
+        "label": "Existing CMakeLists.txt files found",
+        "value": existing_pros,
+    }
+    stats["missing projects"] = {
+        "label": "Missing CMakeLists.txt files found",
+        "value": missing_pros,
+    }
+    stats["missing examples"] = {"label": "Missing examples", "value": 0}
+    stats["missing tests"] = {"label": "Missing tests", "value": 0}
+    stats["missing src"] = {"label": "Missing src/**/**", "value": 0}
+    stats["missing plugins"] = {"label": "Missing plugins", "value": 0}
 
     for p in pros_with_missing_project:
         rel_path = os.path.relpath(p, src_path)
         if rel_path.startswith("examples"):
-            stats['missing examples']['value'] += 1
+            stats["missing examples"]["value"] += 1
         elif rel_path.startswith("tests"):
-            stats['missing tests']['value'] += 1
+            stats["missing tests"]["value"] += 1
         elif rel_path.startswith(os.path.join("src", "plugins")):
-            stats['missing plugins']['value'] += 1
+            stats["missing plugins"]["value"] += 1
         elif rel_path.startswith("src"):
-            stats['missing src']['value'] += 1
+            stats["missing src"]["value"] += 1
 
     for stat in stats:
-        if stats[stat]['value'] > 0:
-            stats[stat]['percentage'] = round(stats[stat]['value'] * 100 / total_pros, 2)
+        if stats[stat]["value"] > 0:
+            stats[stat]["percentage"] = round(stats[stat]["value"] * 100 / total_pros, 2)
     return stats
 
 
-def print_stats(src_path: str, pros_with_missing_project: typing.List[str], stats: dict,
-                scan_time: float, script_time: float):
+def print_stats(
+    src_path: str,
+    pros_with_missing_project: typing.List[str],
+    stats: dict,
+    scan_time: float,
+    script_time: float,
+):
 
-    if stats['total projects']['value'] == 0:
+    if stats["total projects"]["value"] == 0:
         print("No .pro files found. Did you specify a correct source path?")
         return
 
-    if stats['total projects']['value'] == stats['existing projects']['value']:
+    if stats["total projects"]["value"] == stats["existing projects"]["value"]:
         print("All projects were converted.")
     else:
         print("Missing CMakeLists.txt files for the following projects: \n")
@@ -167,10 +182,12 @@ def print_stats(src_path: str, pros_with_missing_project: typing.List[str], stat
     print("\nStatistics: \n")
 
     for stat in stats:
-        if stats[stat]['value'] > 0:
-            print("{:<40}: {} ({}%)".format(stats[stat]['label'],
-                                            stats[stat]['value'],
-                                            stats[stat]['percentage']))
+        if stats[stat]["value"] > 0:
+            print(
+                "{:<40}: {} ({}%)".format(
+                    stats[stat]["label"], stats[stat]["value"], stats[stat]["percentage"]
+                )
+            )
 
     print("\n{:<40}: {:.10f} seconds".format("Scan time", scan_time))
     print("{:<40}: {:.10f} seconds".format("Total script time", script_time))
@@ -184,9 +201,7 @@ def main():
     extension = ".pro"
 
     blacklist_names = ["config.tests", "doc", "3rdparty", "angle"]
-    blacklist_path_parts = [
-        os.path.join("util", "cmake")
-    ]
+    blacklist_path_parts = [os.path.join("util", "cmake")]
 
     script_start_time = default_timer()
     blacklist = Blacklist(blacklist_names, blacklist_path_parts)
@@ -206,13 +221,14 @@ def main():
     missing_pros = len(pros_with_missing_project)
     existing_pros = total_pros - missing_pros
 
-    stats = compute_stats(src_path, pros_with_missing_project, total_pros, existing_pros,
-                          missing_pros)
+    stats = compute_stats(
+        src_path, pros_with_missing_project, total_pros, existing_pros, missing_pros
+    )
     script_end_time = default_timer()
     script_time = script_end_time - script_start_time
 
     print_stats(src_path, pros_with_missing_project, stats, scan_time, script_time)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
