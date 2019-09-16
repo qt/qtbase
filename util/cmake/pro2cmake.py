@@ -811,7 +811,12 @@ class Scope(object):
                 if len(get_result) == 1:
                     result = get_result[0]
                 else:
-                    return get_result
+                    # Recursively expand each value from the result list
+                    # returned from self.get().
+                    result_list = []
+                    for entry_value in get_result:
+                        result_list += self._expand_value(entry_value)
+                    return result_list
             else:
                 replacement = self.get(match.group(1), inherit = True)
                 replacement_str = replacement[0] if replacement else ''
