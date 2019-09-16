@@ -935,6 +935,7 @@ public:
         friend class QGuiApplicationPrivate;
         friend class QApplication;
         friend class QApplicationPrivate;
+        friend class QQuickPointerTouchEvent;
     };
 
 #if QT_DEPRECATED_SINCE(5, 0)
