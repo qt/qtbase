@@ -201,7 +201,7 @@ QCalendar::System QCalendarBackend::calendarSystem() const
 }
 
 /*!
-  The primary name of this calendar.
+    The primary name of this calendar.
  */
 QString QCalendar::name() const
 {
@@ -440,101 +440,104 @@ int QCalendarBackend::dayOfWeek(qint64 jd) const
 
 // Month and week-day name look-ups (implemented in qlocale.cpp):
 /*!
-  \fn QString QCalendarBackend::monthName(const QLocale &locale, int month, int year,
-                                          QLocale::FormatType format) const
-
-  Returns the name of the specified \a month in the given \a year for the chosen
-  \a locale, using the given \a format to determine how complete the name is.
-
-  If \a year is Unspecified, return the name for the month that usually has this
-  number within a typical year. Calendars with a leap month that isn't always
-  the last may need to take account of the year to map the month number to the
-  particular year's month with that number.
-
-  \note Backends for which CLDR provides data can configure the default
-  implementation of the two month name look-up methods by arranging for
-  localeMonthIndexData() and localeMonthData() to provide access to the CLDR
-  data (see cldr2qlocalexml.py, qlocalexml2cpp.py and existing backends).
-  Conversely, backends that override both month name look-up methods need not
-  return anything meaningful from localeMonthIndexData() or localeMonthData().
-
-  \sa standaloneMonthName(), QLocale::monthName()
-*/
-
-/*!
-  \fn QString QCalendarBackend::standaloneMonthName(const QLocale &locale, int month, int year
-                                                    QLocale::FormatType format) const
-
-  Returns the standalone name of the specified \a month in the chosen \a locale,
-  using the specified \a format to determine how complete the name is.
-
-  If \a year is Unspecified, return the standalone name for the month that
-  usually has this number within a typical year. Calendars with a leap month
-  that isn't always the last may need to take account of the year to map the
-  month number to the particular year's month with that number.
-
-  \sa monthName(), QLocale::standaloneMonthName()
-*/
-
-/*!
-  \fn QString QCalendarBackend::weekDayName(const QLocale &locale, int day,
+    \fn QString QCalendarBackend::monthName(const QLocale &locale, int month, int year,
                                             QLocale::FormatType format) const
 
-  Returns the name of the specified \a day of the week in the chosen \a locale,
-  using the specified \a format to determine how complete the name is.
+    Returns the name of the specified \a month in the given \a year for the
+    chosen \a locale, using the given \a format to determine how complete the
+    name is.
 
-  The base implementation handles \a day values from 1 to 7 using the day names
-  CLDR provides, which are suitable for calendards that use the same
-  (Hebrew-derived) week as the Gregorian calendar.
+    If \a year is Unspecified, return the name for the month that usually has
+    this number within a typical year. Calendars with a leap month that isn't
+    always the last may need to take account of the year to map the month number
+    to the particular year's month with that number.
 
-  Calendars whose dayOfWeek() returns a value outside the range from 1 to 7 need
-  to reimplement this method to handle such extra week-day values. They can
-  assume that \a day is a value returned by the same calendar's dayOfWeek().
+    \note Backends for which CLDR provides data can configure the default
+    implementation of the two month name look-up methods by arranging for
+    localeMonthIndexData() and localeMonthData() to provide access to the CLDR
+    data (see cldr2qlocalexml.py, qlocalexml2cpp.py and existing backends).
+    Conversely, backends that override both month name look-up methods need not
+    return anything meaningful from localeMonthIndexData() or localeMonthData().
 
-  \sa dayOfWeek(), standaloneWeekDayName(), QLocale::dayName()
+    \sa standaloneMonthName(), QLocale::monthName()
 */
 
 /*!
-  \fn QString QCalendarBackend::standaloneWeekDayName(const QLocale &locale, int day,
+    \fn QString QCalendarBackend::standaloneMonthName(const QLocale &locale, int month, int year
                                                       QLocale::FormatType format) const
 
-  Returns the standalone name of the specified \a day of the week in the chosen
-  \a locale, using the specified \a format to determine how complete the name
-  is.
+    Returns the standalone name of the specified \a month in the chosen \a
+    locale, using the specified \a format to determine how complete the name is.
 
-  The base implementation handles \a day values from 1 to 7 using the standalone
-  day names CLDR provides, which are suitable for calendards that use the same
-  (Hebrew-derived) week as the Gregorian calendar.
+    If \a year is Unspecified, return the standalone name for the month that
+    usually has this number within a typical year. Calendars with a leap month
+    that isn't always the last may need to take account of the year to map the
+    month number to the particular year's month with that number.
 
-  Calendars whose dayOfWeek() returns a value outside the range from 1 to 7 need
-  to reimplement this method to handle such extra week-day values. They can
-  assume that \a day is a value returned by the same calendar's dayOfWeek().
-
-  \sa dayOfWeek(), weekDayName(), QLocale::standaloneDayName()
+    \sa monthName(), QLocale::standaloneMonthName()
 */
 
 /*!
-  \fn QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &datetime,
-                                                 const QDate &dateOnly, const QTime &timeOnly,
-                                                 const QLocale &locale) const
+    \fn QString QCalendarBackend::weekDayName(const QLocale &locale, int day,
+                                              QLocale::FormatType format) const
 
-  Returns a string representing a given date, time or date-time.
+    Returns the name of the specified \a day of the week in the chosen \a
+    locale, using the specified \a format to determine how complete the name is.
 
-  If \a datetime is specified and valid, it is used and both date and time
-  format tokens are converted to appropriate representations of the parts of the
-  datetime. Otherwise, if \a dateOnly is valid, only date format tokens are
-  converted; else, if \a timeOnly is valid, only time format tokens are
-  converted. If none are valid, an empty string is returned.
+    The base implementation handles \a day values from 1 to 7 using the day
+    names CLDR provides, which are suitable for calendards that use the same
+    (Hebrew-derived) week as the Gregorian calendar.
 
-  The specified \a locale influences how some format tokens are converted; for
-  example, when substituting day and month names and their short-forms. For the
-  supported formatting tokens, see QDate::toString() and QTime::toString(). As
-  described above, the provided date, time and date-time determine which of
-  these tokens are recognized: where these appear in \a format they are replaced
-  by data. Any text in \a format not recognized as a format token is copied
-  verbatim into the result string.
+    Calendars whose dayOfWeek() returns a value outside the range from 1 to 7
+    need to reimplement this method to handle such extra week-day values. They
+    can assume that \a day is a value returned by the same calendar's
+    dayOfWeek().
 
-  \sa QDate::toString(), QTime::toString(), QDateTime::toString()
+    \sa dayOfWeek(), standaloneWeekDayName(), QLocale::dayName()
+*/
+
+/*!
+    \fn QString QCalendarBackend::standaloneWeekDayName(const QLocale &locale, int day,
+                                                        QLocale::FormatType format) const
+
+    Returns the standalone name of the specified \a day of the week in the
+    chosen \a locale, using the specified \a format to determine how complete
+    the name is.
+
+    The base implementation handles \a day values from 1 to 7 using the
+    standalone day names CLDR provides, which are suitable for calendards that
+    use the same (Hebrew-derived) week as the Gregorian calendar.
+
+    Calendars whose dayOfWeek() returns a value outside the range from 1 to 7
+    need to reimplement this method to handle such extra week-day values. They
+    can assume that \a day is a value returned by the same calendar's
+    dayOfWeek().
+
+    \sa dayOfWeek(), weekDayName(), QLocale::standaloneDayName()
+*/
+
+/*!
+    \fn QString QCalendarBackend::dateTimeToString(QStringView format, const QDateTime &datetime,
+                                                   const QDate &dateOnly, const QTime &timeOnly,
+                                                   const QLocale &locale) const
+
+    Returns a string representing a given date, time or date-time.
+
+    If \a datetime is specified and valid, it is used and both date and time
+    format tokens are converted to appropriate representations of the parts of
+    the datetime. Otherwise, if \a dateOnly is valid, only date format tokens
+    are converted; else, if \a timeOnly is valid, only time format tokens are
+    converted. If none are valid, an empty string is returned.
+
+    The specified \a locale influences how some format tokens are converted; for
+    example, when substituting day and month names and their short-forms. For
+    the supported formatting tokens, see QDate::toString() and
+    QTime::toString(). As described above, the provided date, time and date-time
+    determine which of these tokens are recognized: where these appear in \a
+    format they are replaced by data. Any text in \a format not recognized as a
+    format token is copied verbatim into the result string.
+
+    \sa QDate::toString(), QTime::toString(), QDateTime::toString()
 */
 // End of methods implemented in qlocale.cpp
 
@@ -571,16 +574,16 @@ bool QCalendarBackend::registerAlias(const QString &name)
 }
 
 /*!
-  Returns a pointer to a named calendar backend.
+    Returns a pointer to a named calendar backend.
 
-  If the given \a name is present in availableCalendars(), the backend matching
-  it is returned; otherwise, \c nullptr is returned. Matching of names ignores
-  case. Note that this won't provoke construction of a calendar backend, it will
-  only return ones that have been instantiated (and not yet destroyed) by some
-  other means. However, calendars available via the QCalendar::System enum are
-  always registered when this is called.
+    If the given \a name is present in availableCalendars(), the backend
+    matching it is returned; otherwise, \c nullptr is returned. Matching of
+    names ignores case. Note that this won't provoke construction of a calendar
+    backend, it will only return ones that have been instantiated (and not yet
+    destroyed) by some other means. However, calendars available via the
+    QCalendar::System enum are always registered when this is called.
 
-  \sa availableCalendars(), registerAlias(), fromEnum()
+    \sa availableCalendars(), registerAlias(), fromEnum()
 */
 const QCalendarBackend *QCalendarBackend::fromName(QStringView name)
 {
@@ -592,7 +595,7 @@ const QCalendarBackend *QCalendarBackend::fromName(QStringView name)
 }
 
 /*!
-  \overload
+    \overload
  */
 const QCalendarBackend *QCalendarBackend::fromName(QLatin1String name)
 {
@@ -604,11 +607,11 @@ const QCalendarBackend *QCalendarBackend::fromName(QLatin1String name)
 }
 
 /*!
-  Returns a pointer to a calendar backend, specified by enum.
+    Returns a pointer to a calendar backend, specified by enum.
 
-  This will instantiate the indicated calendar (which will enable fromName() to
-  return it subsequently), but only for the Qt-supported calendars for which
-  (where relevant) the appropriate feature has been enabled.
+    This will instantiate the indicated calendar (which will enable fromName()
+    to return it subsequently), but only for the Qt-supported calendars for
+    which (where relevant) the appropriate feature has been enabled.
 */
 const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
 {
@@ -643,28 +646,29 @@ const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
 }
 
 /*!
-  \since 5.14
+    \since 5.14
 
-  \class QCalendar
-  \inmodule QtCore
-  \reentrant
-  \brief The QCalendar class describes calendar systems.
+    \class QCalendar
+    \inmodule QtCore
+    \reentrant
+    \brief The QCalendar class describes calendar systems.
 
-  A QCalendar object maps a year, month, and day-number to a specific day
-  (ultimately identified by its Julian day number), using the rules of a
-  particular system.
+    A QCalendar object maps a year, month, and day-number to a specific day
+    (ultimately identified by its Julian day number), using the rules of a
+    particular system.
 
-  The default QCalendar() is a proleptic Gregorian calendar, which has no year
-  zero. Other calendars may be supported by enabling suitable features or
-  loading plugins. Calendars supported as features can be constructed by passing
-  the QCalendar::System enumeration to the constructor. All supported calendars
-  may be constructed by name, once they have been constructed. (Thus plugins
-  instantiate their calendar backend to register it.) Built-in backends,
-  accessible via QCalendar::System, are also always available by name.
+    The default QCalendar() is a proleptic Gregorian calendar, which has no year
+    zero. Other calendars may be supported by enabling suitable features or
+    loading plugins. Calendars supported as features can be constructed by
+    passing the QCalendar::System enumeration to the constructor. All supported
+    calendars may be constructed by name, once they have been constructed. (Thus
+    plugins instantiate their calendar backend to register it.) Built-in
+    backends, accessible via QCalendar::System, are also always available by
+    name.
 
-  A QCalendar value is immutable.
+    A QCalendar value is immutable.
 
-  \sa QDate, QDateTime
+    \sa QDate, QDateTime
 */
 
 /*!
@@ -684,20 +688,20 @@ const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
 */
 
 /*!
-  \fn QCalendar::QCalendar()
-  \fn QCalendar::QCalendar(QCalendar::System system)
-  \fn QCalendar::QCalendar(QLatin1String name)
-  \fn QCalendar::QCalendar(QStringView name)
+    \fn QCalendar::QCalendar()
+    \fn QCalendar::QCalendar(QCalendar::System system)
+    \fn QCalendar::QCalendar(QLatin1String name)
+    \fn QCalendar::QCalendar(QStringView name)
 
-  Constructs a calendar object.
+    Constructs a calendar object.
 
-  The choice of calendar to use may be indicated as \a system, using the
-  enumeration QCalendar::System, or by \a name, using a string (either Unicode
-  or Latin 1). Construction by name may depend on an instance of the given
-  calendar being constructed by other means first. With no argument, the default
-  constructor returns the Gregorian calendar.
+    The choice of calendar to use may be indicated as \a system, using the
+    enumeration QCalendar::System, or by \a name, using a string (either Unicode
+    or Latin 1). Construction by name may depend on an instance of the given
+    calendar being constructed by other means first. With no argument, the
+    default constructor returns the Gregorian calendar.
 
-  \sa QCalendar, System
+    \sa QCalendar, System
 */
 
 QCalendar::QCalendar()
@@ -722,13 +726,13 @@ QCalendar::QCalendar(QStringView name)
 // Date queries:
 
 /*!
-  Returns the number of days in the given \a month of the given \a year.
+    Returns the number of days in the given \a month of the given \a year.
 
-  Months are numbered consecutively, starting with 1 for the first month of each
-  year. If \a year is \c Unspecified (its default, if not passed), the month's
-  length in a normal year is returned.
+    Months are numbered consecutively, starting with 1 for the first month of
+    each year. If \a year is \c Unspecified (its default, if not passed), the
+    month's length in a normal year is returned.
 
-  \sa maximumDaysInMonth(), minimumDaysInMonth()
+    \sa maximumDaysInMonth(), minimumDaysInMonth()
 */
 int QCalendar::daysInMonth(int month, int year) const
 {
@@ -736,7 +740,7 @@ int QCalendar::daysInMonth(int month, int year) const
 }
 
 /*!
-  Returns the number of days in the given \a year.
+    Returns the number of days in the given \a year.
 */
 int QCalendar::daysInYear(int year) const
 {
@@ -752,12 +756,12 @@ int QCalendar::monthsInYear(int year) const
 }
 
 /*!
-  Returns \c true precisely if the given \a year, \a month, and \a day specify a
-  valid date in this calendar.
+    Returns \c true precisely if the given \a year, \a month, and \a day specify
+    a valid date in this calendar.
 
-  Usually this means 1 <= month <= monthsInYear(year) and 1 <= day <=
-  daysInMonth(month, year). However, calendars with intercallary days or months
-  may complicate that.
+    Usually this means 1 <= month <= monthsInYear(year) and 1 <= day <=
+    daysInMonth(month, year). However, calendars with intercallary days or
+    months may complicate that.
 */
 bool QCalendar::isDateValid(int year, int month, int day) const
 {
@@ -777,13 +781,13 @@ bool QCalendar::isGregorian() const
 }
 
 /*!
-  Returns \c true if the given \a year is a leap year.
+    Returns \c true if the given \a year is a leap year.
 
-  Since the year is not a whole number of days long, some years are longer than
-  others. The difference may be a whole month or just a single day; the details
-  vary between calendars.
+    Since the year is not a whole number of days long, some years are longer
+    than others. The difference may be a whole month or just a single day; the
+    details vary between calendars.
 
-  \sa isDateValid()
+    \sa isDateValid()
 */
 bool QCalendar::isLeapYear(int year) const
 {
@@ -791,9 +795,9 @@ bool QCalendar::isLeapYear(int year) const
 }
 
 /*!
-  Returns \c true if this calendar is a lunar calendar.
+    Returns \c true if this calendar is a lunar calendar.
 
-  A lunar calendar is one based primarily on the phases of the moon.
+    A lunar calendar is one based primarily on the phases of the moon.
 */
 bool QCalendar::isLunar() const
 {
@@ -801,11 +805,11 @@ bool QCalendar::isLunar() const
 }
 
 /*!
-  Returns \c true if this calendar is luni-solar.
+    Returns \c true if this calendar is luni-solar.
 
-  A luni-solar calendar expresses the phases of the moon but adapts itself to
-  also keep track of the Sun's varying position in the sky, relative to the
-  fixed stars.
+    A luni-solar calendar expresses the phases of the moon but adapts itself to
+    also keep track of the Sun's varying position in the sky, relative to the
+    fixed stars.
 */
 bool QCalendar::isLuniSolar() const
 {
@@ -813,10 +817,10 @@ bool QCalendar::isLuniSolar() const
 }
 
 /*!
-  Returns \c true if this calendar is solar.
+    Returns \c true if this calendar is solar.
 
-  A solar calendar is based primarily on the Sun's varying position in the sky,
-  relative to the fixed stars.
+    A solar calendar is based primarily on the Sun's varying position in the
+    sky, relative to the fixed stars.
 */
 bool QCalendar::isSolar() const
 {
@@ -824,13 +828,13 @@ bool QCalendar::isSolar() const
 }
 
 /*!
-  Returns \c true if this calendar is proleptic.
+    Returns \c true if this calendar is proleptic.
 
-  A proleptic calendar is able to describe years arbitrarily long before its
-  first. These are represented by negative year numbers and possibly by a year
-  zero.
+    A proleptic calendar is able to describe years arbitrarily long before its
+    first. These are represented by negative year numbers and possibly by a year
+    zero.
 
-  \sa hasYearZero()
+    \sa hasYearZero()
 */
 bool QCalendar::isProleptic() const
 {
@@ -868,9 +872,9 @@ bool QCalendar::hasYearZero() const
 }
 
 /*!
-  Returns the number of days in the longest month in the calendar, in any year.
+    Returns the number of days in the longest month in the calendar, in any year.
 
-  \sa daysInMonth(), minimumDaysInMonth()
+    \sa daysInMonth(), minimumDaysInMonth()
 */
 int QCalendar::maximumDaysInMonth() const
 {
@@ -878,9 +882,9 @@ int QCalendar::maximumDaysInMonth() const
 }
 
 /*!
-  Returns the number of days in the shortest month in the calendar, in any year.
+    Returns the number of days in the shortest month in the calendar, in any year.
 
-  \sa daysInMonth(), maximumDaysInMonth()
+    \sa daysInMonth(), maximumDaysInMonth()
 */
 int QCalendar::minimumDaysInMonth() const
 {
@@ -888,9 +892,9 @@ int QCalendar::minimumDaysInMonth() const
 }
 
 /*!
-  Returns the largest number of months that any year may contain.
+    Returns the largest number of months that any year may contain.
 
-  \sa monthName(), standaloneMonthName(), monthsInYear()
+    \sa monthName(), standaloneMonthName(), monthsInYear()
 */
 int QCalendar::maximumMonthsInYear() const
 {
@@ -940,13 +944,13 @@ QCalendar::YearMonthDay QCalendar::partsFromDate(QDate date) const
 }
 
 /*!
-  Returns the day of the week number for the given \a date.
+    Returns the day of the week number for the given \a date.
 
-  Returns zero if the calendar is unable to represent the indicated date.
-  Returns 1 for Monday through 7 for Sunday. Calendars with intercallary days
-  may use other numbers to represent these.
+    Returns zero if the calendar is unable to represent the indicated date.
+    Returns 1 for Monday through 7 for Sunday. Calendars with intercallary days
+    may use other numbers to represent these.
 
-  \sa partsFromDate(), Qt::DayOfWeek
+    \sa partsFromDate(), Qt::DayOfWeek
 */
 int QCalendar::dayOfWeek(QDate date) const
 {
@@ -956,23 +960,23 @@ int QCalendar::dayOfWeek(QDate date) const
 // Locale data access
 
 /*!
-  Returns a suitably localised name for a month.
+    Returns a suitably localised name for a month.
 
-  The month is indicated by a number, with \a month = 1 meaning the first month
-  of the year and subsequent months numbered accordingly. Returns an empty
-  string if the \a month number is unrecognized.
+    The month is indicated by a number, with \a month = 1 meaning the first
+    month of the year and subsequent months numbered accordingly. Returns an
+    empty string if the \a month number is unrecognized.
 
-  The \a year may be Unspecified, in which case the mapping from numbers to
-  names for a typical year's months should be used. Some calendars have leap
-  months that aren't always at the end of the year; their mapping of month
-  numbers to names may then depend on the placement of a leap month. Thus the
-  year should normally be specified, if known.
+    The \a year may be Unspecified, in which case the mapping from numbers to
+    names for a typical year's months should be used. Some calendars have leap
+    months that aren't always at the end of the year; their mapping of month
+    numbers to names may then depend on the placement of a leap month. Thus the
+    year should normally be specified, if known.
 
-  The name is returned in the form that would normally be used in a full date,
-  in the specified \a locale; the \a format determines how fully it shall be
-  expressed (i.e. to what extent it is abbreviated).
+    The name is returned in the form that would normally be used in a full date,
+    in the specified \a locale; the \a format determines how fully it shall be
+    expressed (i.e. to what extent it is abbreviated).
 
-  \sa standaloneMonthName(), maximumMonthsInYear(), dateTimeToString()
+    \sa standaloneMonthName(), maximumMonthsInYear(), dateTimeToString()
 */
 QString QCalendar::monthName(const QLocale &locale, int month, int year,
                              QLocale::FormatType format) const
@@ -985,23 +989,23 @@ QString QCalendar::monthName(const QLocale &locale, int month, int year,
 }
 
 /*!
-  Returns a suitably localised standalone name for a month.
+    Returns a suitably localised standalone name for a month.
 
-  The month is indicated by a number, with \a month = 1 meaning the first month
-  of the year and subsequent months numbered accordingly. Returns an empty
-  string if the \a month number is unrecognized.
+    The month is indicated by a number, with \a month = 1 meaning the first
+    month of the year and subsequent months numbered accordingly. Returns an
+    empty string if the \a month number is unrecognized.
 
-  The \a year may be Unspecified, in which case the mapping from numbers to
-  names for a typical year's months should be used. Some calendars have leap
-  months that aren't always at the end of the year; their mapping of month
-  numbers to names may then depend on the placement of a leap month. Thus the
-  year should normally be specified, if known.
+    The \a year may be Unspecified, in which case the mapping from numbers to
+    names for a typical year's months should be used. Some calendars have leap
+    months that aren't always at the end of the year; their mapping of month
+    numbers to names may then depend on the placement of a leap month. Thus the
+    year should normally be specified, if known.
 
-  The name is returned in the form that would be used in isolation in the
-  specified \a locale; the \a format determines how fully it shall be expressed
-  (i.e. to what extent it is abbreviated).
+    The name is returned in the form that would be used in isolation in the
+    specified \a locale; the \a format determines how fully it shall be
+    expressed (i.e. to what extent it is abbreviated).
 
-  \sa monthName(), maximumMonthsInYear(), dateTimeToString()
+    \sa monthName(), maximumMonthsInYear(), dateTimeToString()
 */
 QString QCalendar::standaloneMonthName(const QLocale &locale, int month, int year,
                                        QLocale::FormatType format) const
@@ -1014,18 +1018,18 @@ QString QCalendar::standaloneMonthName(const QLocale &locale, int month, int yea
 }
 
 /*!
-  Returns a suitably localised name for a day of the week.
+    Returns a suitably localised name for a day of the week.
 
-  The days of the week are numbered from 1 for Monday through 7 for Sunday. Some
-  calendars may support higher numbers for other days (e.g. intercallary days,
-  that are not part of any week). Returns an empty string if the \a day number
-  is unrecognized.
+    The days of the week are numbered from 1 for Monday through 7 for
+    Sunday. Some calendars may support higher numbers for other days
+    (e.g. intercallary days, that are not part of any week). Returns an empty
+    string if the \a day number is unrecognized.
 
-  The name is returned in the form that would normally be used in a full date,
-  in the specified \a locale; the \a format determines how fully it shall be
-  expressed (i.e. to what extent it is abbreviated).
+    The name is returned in the form that would normally be used in a full date,
+    in the specified \a locale; the \a format determines how fully it shall be
+    expressed (i.e. to what extent it is abbreviated).
 
-  \sa standaloneWeekDayName(), dayOfWeek()
+    \sa standaloneWeekDayName(), dayOfWeek()
 */
 QString QCalendar::weekDayName(const QLocale &locale, int day,
                                QLocale::FormatType format) const
@@ -1034,19 +1038,20 @@ QString QCalendar::weekDayName(const QLocale &locale, int day,
 }
 
 /*!
-  Returns a suitably localised standalone name for a day of the week.
+    Returns a suitably localised standalone name for a day of the week.
 
-  The days of the week are numbered from 1 for Monday through 7 for Sunday. Some
-  calendars may support higher numbers for other days (e.g. intercallary days,
-  that are not part of any week). Returns an empty string if the \a day number
-  is unrecognized.
+    The days of the week are numbered from 1 for Monday through 7 for
+    Sunday. Some calendars may support higher numbers for other days
+    (e.g. intercallary days, that are not part of any week). Returns an empty
+    string if the \a day number is unrecognized.
 
-  The name is returned in the form that would be used in isolation (for example
-  as a column heading in a calendar's tabular display of a month with successive
-  weeks as rows) in the specified \a locale; the \a format determines how fully
-  it shall be expressed (i.e. to what extent it is abbreviated).
+    The name is returned in the form that would be used in isolation (for
+    example as a column heading in a calendar's tabular display of a month with
+    successive weeks as rows) in the specified \a locale; the \a format
+    determines how fully it shall be expressed (i.e. to what extent it is
+    abbreviated).
 
-  \sa weekDayName(), dayOfWeek()
+    \sa weekDayName(), dayOfWeek()
 */
 QString QCalendar::standaloneWeekDayName(const QLocale &locale, int day,
                                          QLocale::FormatType format) const
@@ -1055,23 +1060,23 @@ QString QCalendar::standaloneWeekDayName(const QLocale &locale, int day,
 }
 
 /*!
-  Returns a string representing a given date, time or date-time.
+    Returns a string representing a given date, time or date-time.
 
-  If \a datetime is valid, it is represented and format specifiers for both date
-  and time fields are recognized; otherwise, if \a dateOnly is valid, it is
-  represented and only format specifiers for date fields are recognized;
-  finally, if \a timeOnly is valid, it is represented and only format specifiers
-  for time fields are recognized. If none of these is valid, an empty string is
-  returned.
+    If \a datetime is valid, it is represented and format specifiers for both
+    date and time fields are recognized; otherwise, if \a dateOnly is valid, it
+    is represented and only format specifiers for date fields are recognized;
+    finally, if \a timeOnly is valid, it is represented and only format
+    specifiers for time fields are recognized. If none of these is valid, an
+    empty string is returned.
 
-  See QDate::toString and QTime::toString() for the supported field specifiers.
-  Characters in \a format that are recognized as field specifiers are replaced
-  by text representing appropriate data from the date and/or time being
-  represented. The texts to represent them may depend on the \a locale
-  specified. Other charagers in \a format are copied verbatim into the returned
-  string.
+    See QDate::toString and QTime::toString() for the supported field
+    specifiers.  Characters in \a format that are recognized as field specifiers
+    are replaced by text representing appropriate data from the date and/or time
+    being represented. The texts to represent them may depend on the \a locale
+    specified. Other charagers in \a format are copied verbatim into the
+    returned string.
 
-  \sa monthName(), weekDayName(), QDate::toString(), QTime::toString()
+    \sa monthName(), weekDayName(), QDate::toString(), QTime::toString()
 */
 QString QCalendar::dateTimeToString(QStringView format, const QDateTime &datetime,
                                     const QDate &dateOnly, const QTime &timeOnly,

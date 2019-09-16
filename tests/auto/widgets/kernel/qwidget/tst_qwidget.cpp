@@ -8906,7 +8906,8 @@ void tst_QWidget::translucentWidget()
     widgetSnapshot = label.grab(QRect(QPoint(0, 0), label.size()));
 #endif
     const QImage actual = widgetSnapshot.toImage().convertToFormat(QImage::Format_RGB32);
-    const QImage expected = pm.toImage().scaled(label.devicePixelRatioF() * pm.size());
+    QImage expected = pm.toImage().scaled(label.devicePixelRatioF() * pm.size());
+    expected.setDevicePixelRatio(label.devicePixelRatioF());
     if (m_platform == QStringLiteral("winrt"))
         QEXPECT_FAIL("", "WinRT: This fails. QTBUG-68297.", Abort);
     QCOMPARE(actual.size(),expected.size());
