@@ -156,7 +156,7 @@ machine you're building on, regardless of the architecure you are targeting.
 
 Build Qt regularly for your host system and install it into a directory of your choice using the
 ``CMAKE_INSTALL_PREFIX`` variable. You are free to disable the build of tests and examples by
-setting ``BUILD_EXAMPLES=OFF`` and ``BUILD_TESTING=OFF``.
+passing ``-DBUILD_EXAMPLES=OFF`` and ``-DBUILD_TESTING=OFF``.
 
 With this installation of Qt in place, which contains all tools needed, we can proceed to create a
 new build of Qt that is cross-compiled to the target architecture of choice. You may proceed by
