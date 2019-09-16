@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -2098,10 +2098,11 @@ uint qHash(const QFont &font, uint seed) Q_DECL_NOTHROW
  */
 bool QFont::fromString(const QString &descrip)
 {
-    const auto l = descrip.splitRef(QLatin1Char(','));
-
-    int count = l.count();
-    if (!count || (count > 2 && count < 9) || count > 11) {
+    const QStringRef sr = QStringRef(&descrip).trimmed();
+    const auto l = sr.split(QLatin1Char(','));
+    const int count = l.count();
+    if (!count || (count > 2 && count < 9) || count > 11 ||
+        l.first().isEmpty()) {
         qWarning("QFont::fromString: Invalid description '%s'",
                  descrip.isEmpty() ? "(empty)" : descrip.toLatin1().data());
         return false;

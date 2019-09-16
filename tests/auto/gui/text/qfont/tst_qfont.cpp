@@ -64,6 +64,8 @@ private slots:
     void defaultFamily();
     void toAndFromString();
     void fromStringWithoutStyleName();
+    void fromDegenerateString_data();
+    void fromDegenerateString();
 
     void sharing();
     void familyNameWithCommaQuote_data();
@@ -600,6 +602,25 @@ void tst_QFont::fromStringWithoutStyleName()
     QCOMPARE(font2.toString(), str);
 }
 
+void tst_QFont::fromDegenerateString_data()
+{
+    QTest::addColumn<QString>("string");
+
+    QTest::newRow("empty") << QString();
+    QTest::newRow("justAComma") << ",";
+    QTest::newRow("commasAndSpaces") << " , ,    ";
+    QTest::newRow("spaces") << "   ";
+    QTest::newRow("spacesTabsAndNewlines") << " \t  \n";
+}
+
+void tst_QFont::fromDegenerateString()
+{
+    QFETCH(QString, string);
+    QFont f;
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression(".*Invalid description.*"));
+    QCOMPARE(f.fromString(string), false);
+    QCOMPARE(f, QFont());
+}
 
 void tst_QFont::sharing()
 {
