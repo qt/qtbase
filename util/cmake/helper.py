@@ -103,6 +103,7 @@ _qt_library_map = [
     LibraryMapping('input', 'Qt6', 'Qt::InputSupport', extra = ['COMPONENTS', 'InputSupport']),
     LibraryMapping('input_support', 'Qt6', 'Qt::InputSupport', extra = ['COMPONENTS', 'InputSupport']),
     LibraryMapping('installer-lib', 'Qt6', 'Qt::AppManInstaller', extra = ['COMPONENTS', 'AppManInstaller']),
+    LibraryMapping('knx', 'Qt6', 'Qt::Knx', extra = ['COMPONENTS', 'Knx']),
     LibraryMapping('kmsconvenience', 'Qt6', 'Qt::KmsSupport', extra = ['COMPONENTS', 'KmsSupport']),
     LibraryMapping('kms_support', 'Qt6', 'Qt::KmsSupport', extra = ['COMPONENTS', 'KmsSupport']),
     LibraryMapping('launcher-lib', 'Qt6', 'Qt::AppManLauncher', extra = ['COMPONENTS', 'AppManLauncher']),
