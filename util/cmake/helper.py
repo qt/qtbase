@@ -155,6 +155,7 @@ _qt_library_map = [
     LibraryMapping('scripttools', 'Qt6', 'Qt::ScriptTools', extra = ['COMPONENTS', 'ScriptTools']),
     LibraryMapping('sensors', 'Qt6', 'Qt::Sensors', extra = ['COMPONENTS', 'Sensors']),
     LibraryMapping('serialport', 'Qt6', 'Qt::SerialPort', extra = ['COMPONENTS', 'SerialPort']),
+    LibraryMapping('serialbus', 'Qt6', 'Qt::SerialBus', extra = ['COMPONENTS', 'SerialBus']),
     LibraryMapping('services', 'Qt6', 'Qt::ServiceSupport', extra = ['COMPONENTS', 'ServiceSupport']),
     LibraryMapping('service_support', 'Qt6', 'Qt::ServiceSupport', extra = ['COMPONENTS', 'ServiceSupport']),
     LibraryMapping('sql', 'Qt6', 'Qt::Sql', extra = ['COMPONENTS', 'Sql']),
