@@ -311,6 +311,16 @@ static QString locatePlugin(const QString& fileName)
     for (const QString &path : qAsConst(paths)) {
         for (const QString &prefix : qAsConst(prefixes)) {
             for (const QString &suffix : qAsConst(suffixes)) {
+#ifdef Q_OS_ANDROID
+                {
+                    QString pluginPath = basePath + prefix + baseName + suffix;
+                    const QString fn = path + QLatin1String("/lib") + pluginPath.replace(QLatin1Char('/'), QLatin1Char('_'));
+                    if (debug)
+                        qDebug() << "Trying..." << fn;
+                    if (QFileInfo(fn).isFile())
+                        return fn;
+                }
+#endif
                 const QString fn = path + QLatin1Char('/') + basePath + prefix + baseName + suffix;
                 if (debug)
                     qDebug() << "Trying..." << fn;
