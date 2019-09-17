@@ -31,6 +31,7 @@ import glob
 import os
 import subprocess
 import concurrent.futures
+import sys
 import typing
 import argparse
 from argparse import ArgumentParser
@@ -123,12 +124,15 @@ def run(all_files: typing.List[str], pro2cmake: str, args: argparse.Namespace) -
         # qtbase main modules take longer than usual to process.
         workers = 2
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=workers, initializer=os.nice, initargs=(10,)) as pool:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers, initargs=(10,)) as pool:
         print('Firing up thread pool executor.')
 
         def _process_a_file(data: typing.Tuple[str, int, int]) -> typing.Tuple[int, str, str]:
             filename, index, total = data
-            pro2cmake_args = [pro2cmake]
+            pro2cmake_args = []
+            if sys.platform == "win32":
+                pro2cmake_args.append(sys.executable)
+            pro2cmake_args.append(pro2cmake)
             if args.is_example:
                 pro2cmake_args.append('--is-example')
             pro2cmake_args.append(os.path.basename(filename))
