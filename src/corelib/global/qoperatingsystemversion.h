@@ -60,7 +60,6 @@ public:
         Android
     };
 
-    static const QOperatingSystemVersion WindowsVista;
     static const QOperatingSystemVersion Windows7;
     static const QOperatingSystemVersion Windows8;
     static const QOperatingSystemVersion Windows8_1;

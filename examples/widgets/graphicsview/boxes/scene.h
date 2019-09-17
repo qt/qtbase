@@ -51,17 +51,12 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-//#include <GL/glew.h>
-#include "glextensions.h"
-
-#include <QtWidgets>
-#include <QtOpenGL>
-
-#include "roundedbox.h"
-#include "gltrianglemesh.h"
-#include "trackball.h"
 #include "glbuffers.h"
+#include "glextensions.h"
+#include "gltrianglemesh.h"
 #include "qtbox.h"
+#include "roundedbox.h"
+#include "trackball.h"
 
 QT_BEGIN_NAMESPACE
 class QMatrix4x4;
@@ -116,7 +111,7 @@ private:
 class GraphicsWidget : public QGraphicsProxyWidget
 {
 public:
-    GraphicsWidget() : QGraphicsProxyWidget(0, Qt::Window) {}
+    GraphicsWidget() : QGraphicsProxyWidget(nullptr, Qt::Window) {}
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
     void resizeEvent(QGraphicsSceneResizeEvent *event) override;
@@ -127,7 +122,7 @@ class TwoSidedGraphicsWidget : public QObject
 {
     Q_OBJECT
 public:
-    TwoSidedGraphicsWidget(QGraphicsScene *scene);
+    using QObject::QObject;
     void setWidget(int index, QWidget *widget);
     QWidget *widget(int index);
 public slots:
@@ -135,10 +130,10 @@ public slots:
 protected slots:
     void animateFlip();
 private:
-    GraphicsWidget *m_proxyWidgets[2];
-    int m_current;
-    int m_angle; // angle in degrees
-    int m_delta;
+    GraphicsWidget *m_proxyWidgets[2] = {nullptr, nullptr};
+    int m_current = 0;
+    int m_angle = 0; // angle in degrees
+    int m_delta = 0;
 };
 
 class RenderOptionsDialog : public QDialog

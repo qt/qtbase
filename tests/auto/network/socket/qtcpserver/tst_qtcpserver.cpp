@@ -881,11 +881,6 @@ void tst_QTcpServer::serverAddress_data()
 {
     QTest::addColumn<QHostAddress>("listenAddress");
     QTest::addColumn<QHostAddress>("serverAddress");
-#ifdef Q_OS_WIN
-    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::WindowsVista)
-        QTest::newRow("Any") << QHostAddress(QHostAddress::Any) << QHostAddress(QHostAddress::AnyIPv4); //windows XP doesn't support dual stack sockets
-    else
-#endif
     if (QtNetworkSettings::hasIPv6())
         QTest::newRow("Any") << QHostAddress(QHostAddress::Any) << QHostAddress(QHostAddress::Any);
     else

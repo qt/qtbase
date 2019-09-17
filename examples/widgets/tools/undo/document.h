@@ -70,7 +70,7 @@ public:
     QColor color() const;
 
     static QString typeToString(Type type);
-    static Type stringToType(const QString &s, bool *ok = 0);
+    static Type stringToType(const QString &s, bool *ok = nullptr);
 
     static const QSize minSize;
 
@@ -88,7 +88,7 @@ class Document : public QWidget
     Q_OBJECT
 
 public:
-    Document(QWidget *parent = 0);
+    Document(QWidget *parent = nullptr);
 
     QString addShape(const Shape &shape);
     void deleteShape(const QString &shapeName);
@@ -121,14 +121,13 @@ private:
     int indexAt(const QPoint &pos) const;
     QString uniqueName(const QString &name) const;
 
-    QList<Shape> m_shapeList;
-    int m_currentIndex;
-    int m_mousePressIndex;
+    QVector<Shape> m_shapeList;
     QPoint m_mousePressOffset;
-    bool m_resizeHandlePressed;
     QString m_fileName;
-
-    QUndoStack *m_undoStack;
+    QUndoStack *m_undoStack = nullptr;
+    int m_currentIndex = -1;
+    int m_mousePressIndex = -1;
+    bool m_resizeHandlePressed = false;
 };
 
 #endif // DOCUMENT_H

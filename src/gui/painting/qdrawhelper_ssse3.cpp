@@ -40,7 +40,7 @@
 
 #include <private/qdrawhelper_x86_p.h>
 
-#ifdef QT_COMPILER_SUPPORTS_SSSE3
+#if defined(QT_COMPILER_SUPPORTS_SSSE3)
 
 #include <private/qdrawingprimitive_sse2_p.h>
 
@@ -251,6 +251,49 @@ void qt_memfill24_ssse3(quint24 *dest, quint24 color, qsizetype count)
         // 1 or 2px left
         // store 8 bytes ending with the right values (will overwrite a bit)
         _mm_storel_epi64(reinterpret_cast<__m128i *>(ptr_end - 8), mval2);
+    }
+}
+
+void QT_FASTCALL rbSwap_888_ssse3(uchar *dst, const uchar *src, int count)
+{
+    int i = 0;
+
+    const static __m128i shuffleMask1 = _mm_setr_epi8(2, 1, 0, 5, 4, 3, 8, 7, 6, 11, 10, 9, 14, 13, 12, /*!!*/15);
+    const static __m128i shuffleMask2 = _mm_setr_epi8(0, /*!!*/1, 4, 3, 2, 7, 6, 5, 10, 9, 8, 13, 12, 11, /*!!*/14, 15);
+    const static __m128i shuffleMask3 = _mm_setr_epi8(/*!!*/0, 3, 2, 1, 6, 5, 4, 9, 8, 7, 12, 11, 10, 15, 14, 13);
+
+    for (; i + 15 < count; i += 16) {
+        __m128i s1 = _mm_loadu_si128((const __m128i *)src);
+        __m128i s2 = _mm_loadu_si128((const __m128i *)(src + 16));
+        __m128i s3 = _mm_loadu_si128((const __m128i *)(src + 32));
+        s1 = _mm_shuffle_epi8(s1, shuffleMask1);
+        s2 = _mm_shuffle_epi8(s2, shuffleMask2);
+        s3 = _mm_shuffle_epi8(s3, shuffleMask3);
+        _mm_storeu_si128((__m128i *)dst, s1);
+        _mm_storeu_si128((__m128i *)(dst + 16), s2);
+        _mm_storeu_si128((__m128i *)(dst + 32), s3);
+
+        // Now fix the last four misplaced values
+        std::swap(dst[15], dst[17]);
+        std::swap(dst[30], dst[32]);
+
+        src += 48;
+        dst += 48;
+    }
+
+    if (src != dst) {
+        SIMD_EPILOGUE(i, count, 15) {
+            dst[0] = src[2];
+            dst[1] = src[1];
+            dst[2] = src[0];
+            dst += 3;
+            src += 3;
+        }
+    } else {
+        SIMD_EPILOGUE(i, count, 15) {
+            std::swap(dst[0], dst[2]);
+            dst += 3;
+        }
     }
 }
 

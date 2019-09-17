@@ -48,6 +48,7 @@
 #include <QtGui/qaccessible.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qvarlengtharray.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -227,7 +228,7 @@ HRESULT QWindowsUiaTextRangeProvider::GetBoundingRectangles(SAFEARRAY **pRetVal)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
     int len = textInterface->characterCount();
-    QList<QRect> rectList;
+    QVarLengthArray<QRect> rectList;
 
     if ((m_startOffset >= 0) && (m_endOffset <= len) && (m_startOffset < m_endOffset)) {
         int start, end;

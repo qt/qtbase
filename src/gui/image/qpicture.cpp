@@ -57,6 +57,7 @@
 #include "qregexp.h"
 #include "qregion.h"
 #include "qdebug.h"
+#include <QtCore/private/qlocking_p.h>
 
 #include <algorithm>
 
@@ -1427,7 +1428,7 @@ void qt_init_picture_plugins()
     typedef PluginKeyMap::const_iterator PluginKeyMapConstIterator;
 
     static QBasicMutex mutex;
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     static QFactoryLoader loader(QPictureFormatInterface_iid,
                                  QStringLiteral("/pictureformats"));
 

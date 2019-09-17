@@ -64,6 +64,8 @@
 #include <QtCore/qfunctions_winrt.h>
 #include <QtCore/private/qeventdispatcher_winrt_p.h>
 
+#include <memory>
+
 using namespace QWinRTUiAutomation;
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
@@ -179,7 +181,7 @@ HRESULT QWinRTUiaMainProvider::rawProviderForAccessibleId(QAccessible::Id elemen
 }
 
 // Returns an array of IIRawElementProviderSimple instances for a list of accessible interface ids.
-HRESULT QWinRTUiaMainProvider::rawProviderArrayForAccessibleIdList(const QList<QAccessible::Id> &elementIds,
+HRESULT QWinRTUiaMainProvider::rawProviderArrayForAccessibleIdList(const QVarLengthArray<QAccessible::Id> &elementIds,
                                                                    UINT32 *returnValueSize,
                                                                    IIRawElementProviderSimple ***returnValue)
 {
@@ -190,7 +192,7 @@ HRESULT QWinRTUiaMainProvider::rawProviderArrayForAccessibleIdList(const QList<Q
 
     QList<IIRawElementProviderSimple *> rawProviderList;
 
-    for (auto elementId : qAsConst(elementIds)) {
+    for (auto elementId : elementIds) {
         IIRawElementProviderSimple *rawProvider;
         if (SUCCEEDED(rawProviderForAccessibleId(elementId, &rawProvider)))
             rawProviderList.append(rawProvider);
@@ -515,10 +517,9 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaMainProvider::GetChildrenCore(IVector<Automat
     *returnValue = nullptr;
 
     auto accid = id();
-    auto children = QSharedPointer<QList<QAccessible::Id>>(new QList<QAccessible::Id>);
-    auto ptrChildren = new QSharedPointer<QList<QAccessible::Id>>(children);
+    auto children = std::make_shared<QVarLengthArray<QAccessible::Id>>();
 
-    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, ptrChildren]() {
+    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, children]() {
         if (QAccessibleInterface *accessible = accessibleForId(accid)) {
             int childCount = accessible->childCount();
             for (int i = 0; i < childCount; ++i) {
@@ -526,11 +527,10 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaMainProvider::GetChildrenCore(IVector<Automat
                     QAccessible::Id childId = idForAccessible(childAcc);
                     QWinRTUiaMetadataCache::instance()->load(childId);
                     if (!childAcc->state().invisible)
-                        (*ptrChildren)->append(childId);
+                        children->append(childId);
                 }
             }
         }
-        delete ptrChildren;
         return S_OK;
     }))) {
         return E_FAIL;
@@ -538,7 +538,7 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaMainProvider::GetChildrenCore(IVector<Automat
 
     ComPtr<IVector<AutomationPeer *>> peerVector = Make<QWinRTUiaPeerVector>();
 
-    for (auto childId : qAsConst(*children)) {
+    for (auto childId : *children) {
         if (ComPtr<QWinRTUiaMainProvider> provider = providerForAccessibleId(childId)) {
             IAutomationPeer *peer;
             if (SUCCEEDED(provider.CopyTo(&peer)))
@@ -750,10 +750,9 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaMainProvider::GetPeerFromPointCore(ABI::Windo
     // Scale coordinates from High DPI screens?
 
     auto accid = id();
-    auto elementId = QSharedPointer<QAccessible::Id>(new QAccessible::Id(0));
-    auto ptrElementId = new QSharedPointer<QAccessible::Id>(elementId);
+    auto elementId = std::make_shared<QAccessible::Id>(0);
 
-    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, ptrElementId, point]() {
+    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, elementId, point]() {
         // Controls can be embedded within grouping elements. By default returns the innermost control.
         QAccessibleInterface *target = accessibleForId(accid);
         while (QAccessibleInterface *tmpacc = target->childAt(point.X, point.Y)) {
@@ -761,9 +760,8 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaMainProvider::GetPeerFromPointCore(ABI::Windo
             // For accessibility tools it may be better to return the text element instead of its subcomponents.
             if (target->textInterface()) break;
         }
-        **ptrElementId = idForAccessible(target);
-        QWinRTUiaMetadataCache::instance()->load(**ptrElementId);
-        delete ptrElementId;
+        *elementId = idForAccessible(target);
+        QWinRTUiaMetadataCache::instance()->load(*elementId);
         return S_OK;
     }))) {
         return E_FAIL;

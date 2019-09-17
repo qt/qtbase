@@ -538,7 +538,7 @@ void QHighDpiScaling::updateHighDpiScaling()
             ++i;
         }
     }
-    m_active = m_globalScalingActive || m_usePixelDensity;
+    m_active = m_globalScalingActive || m_screenFactorSet || m_usePixelDensity;
 }
 
 /*
@@ -680,8 +680,11 @@ QDpi QHighDpiScaling::logicalDpi(const QScreen *screen)
     if (!screen || !screen->handle())
         return QDpi(96, 96);
 
-    if (!m_usePixelDensity)
-        return QPlatformScreen::overrideDpi(screen->handle()->logicalDpi());
+    if (!m_usePixelDensity) {
+        const qreal screenScaleFactor = screenSubfactor(screen->handle());
+        const QDpi dpi = QPlatformScreen::overrideDpi(screen->handle()->logicalDpi());
+        return QDpi{ dpi.first / screenScaleFactor, dpi.second / screenScaleFactor };
+    }
 
     const qreal scaleFactor = rawScaleFactor(screen->handle());
     const qreal roundedScaleFactor = roundScaleFactor(scaleFactor);

@@ -664,7 +664,9 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
-    void makeThreadLocalNativeContextCurrent() override;
+    bool makeThreadLocalNativeContextCurrent() override;
+    void releaseCachedResources() override;
+    bool isDeviceLost() const override;
 
     bool ensureContext(QSurface *surface = nullptr) const;
     void executeDeferredReleases();
@@ -768,6 +770,7 @@ public:
     QVector<GLint> supportedCompressedFormats;
     mutable QVector<int> supportedSampleCountList;
     QRhiGles2NativeHandles nativeHandlesStruct;
+    mutable bool contextLost = false;
 
     struct DeferredReleaseEntry {
         enum Type {
@@ -804,6 +807,8 @@ public:
         bool active = false;
         QGles2CommandBuffer cbWrapper;
     } ofr;
+
+    QHash<QRhiShaderStage, uint> m_shaderCache;
 };
 
 Q_DECLARE_TYPEINFO(QRhiGles2::DeferredReleaseEntry, Q_MOVABLE_TYPE);

@@ -48,18 +48,26 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "mainwindow.h"
+
+#include <QAction>
+#include <QCoreApplication>
+#include <QGroupBox>
+#include <QListWidget>
+#include <QMenuBar>
+#include <QRadioButton>
+#include <QStatusBar>
+#include <QVBoxLayout>
 
 static const char * const listEntries[] = {
     QT_TRANSLATE_NOOP("MainWindow", "First"),
     QT_TRANSLATE_NOOP("MainWindow", "Second"),
     QT_TRANSLATE_NOOP("MainWindow", "Third"),
-    0
+    nullptr
 };
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
 {
     centralWidget = new QWidget;
     setCentralWidget(centralWidget);
@@ -67,8 +75,8 @@ MainWindow::MainWindow()
     createGroupBox();
 
     listWidget = new QListWidget;
-    for (int i = 0; listEntries[i]; ++i)
-        listWidget->addItem(tr(listEntries[i]));
+    for (const char *entry : listEntries)
+        listWidget->addItem(tr(entry));
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->addWidget(groupBox);
@@ -76,7 +84,7 @@ MainWindow::MainWindow()
     centralWidget->setLayout(mainLayout);
 
     exitAction = new QAction(tr("E&xit"), this);
-    connect(exitAction, &QAction::triggered, qApp, QApplication::quit);
+    connect(exitAction, &QAction::triggered, qApp, QCoreApplication::quit);
 
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->setPalette(QPalette(Qt::red));

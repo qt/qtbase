@@ -54,11 +54,11 @@
 #include <QGraphicsWidget>
 
 //! [0]
-class Window : public QGraphicsWidget {
+class Window : public QGraphicsWidget
+{
     Q_OBJECT
-
 public:
-    Window(QGraphicsWidget *parent = 0);
+    Window(QGraphicsWidget *parent = nullptr);
 
 };
 //! [0]

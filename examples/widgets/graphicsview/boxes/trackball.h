@@ -51,10 +51,9 @@
 #ifndef TRACKBALL_H
 #define TRACKBALL_H
 
-#include <QtWidgets>
-
-#include <QtGui/qvector3d.h>
-#include <QtGui/qquaternion.h>
+#include <QQuaternion>
+#include <QTime>
+#include <QVector3D>
 
 class TrackBall
 {
@@ -65,24 +64,24 @@ public:
         Sphere,
     };
     TrackBall(TrackMode mode = Sphere);
-    TrackBall(float angularVelocity, const QVector3D& axis, TrackMode mode = Sphere);
+    TrackBall(float angularVelocity, const QVector3D &axis, TrackMode mode = Sphere);
     // coordinates in [-1,1]x[-1,1]
-    void push(const QPointF& p, const QQuaternion &transformation);
-    void move(const QPointF& p, const QQuaternion &transformation);
-    void release(const QPointF& p, const QQuaternion &transformation);
+    void push(const QPointF &p, const QQuaternion &transformation);
+    void move(const QPointF &p, const QQuaternion &transformation);
+    void release(const QPointF &p, const QQuaternion &transformation);
     void start(); // starts clock
     void stop(); // stops clock
     QQuaternion rotation() const;
 private:
     QQuaternion m_rotation;
-    QVector3D m_axis;
-    float m_angularVelocity;
+    QVector3D m_axis = QVector3D(0, 1, 0);
+    float m_angularVelocity = 0;
 
     QPointF m_lastPos;
-    QTime m_lastTime;
-    bool m_paused;
-    bool m_pressed;
+    QTime m_lastTime = QTime::currentTime();
     TrackMode m_mode;
+    bool m_paused = false;
+    bool m_pressed = false;
 };
 
 #endif

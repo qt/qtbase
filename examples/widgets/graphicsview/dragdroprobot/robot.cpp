@@ -48,13 +48,17 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "robot.h"
+
+#include <QGraphicsSceneDragDropEvent>
+#include <QMimeData>
+#include <QPainter>
+#include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
 
 //! [0]
 RobotPart::RobotPart(QGraphicsItem *parent)
-    : QGraphicsObject(parent), color(Qt::lightGray), dragOver(false)
+    : QGraphicsObject(parent), color(Qt::lightGray) 
 {
     setAcceptDrops(true);
 }
@@ -156,11 +160,6 @@ void RobotHead::dropEvent(QGraphicsSceneDragDropEvent *event)
     }
 }
 //! [8]
-
-RobotTorso::RobotTorso(QGraphicsItem *parent)
-    : RobotPart(parent)
-{
-}
 
 QRectF RobotTorso::boundingRect() const
 {

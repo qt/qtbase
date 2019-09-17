@@ -48,9 +48,17 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "coloritem.h"
+
+#include <QApplication>
+#include <QBitmap>
+#include <QCursor>
+#include <QDrag>
+#include <QGraphicsSceneMouseEvent>
+#include <QMimeData>
+#include <QPainter>
+#include <QRandomGenerator>
+#include <QWidget>
 
 //! [0]
 ColorItem::ColorItem()
@@ -128,7 +136,7 @@ void ColorItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         QPainter painter(&pixmap);
         painter.translate(15, 15);
         painter.setRenderHint(QPainter::Antialiasing);
-        paint(&painter, 0, 0);
+        paint(&painter, nullptr, nullptr);
         painter.end();
 
         pixmap.setMask(pixmap.createHeuristicMask());

@@ -60,7 +60,7 @@
 
 //! [0]
 TextEdit::TextEdit(QWidget *parent)
-: QTextEdit(parent), c(0)
+    : QTextEdit(parent)
 {
     setPlainText(tr("This TextEdit provides autocompletions for words that have more than"
                     " 3 characters. You can trigger autocompletion using ") +
@@ -78,7 +78,7 @@ TextEdit::~TextEdit()
 void TextEdit::setCompleter(QCompleter *completer)
 {
     if (c)
-        QObject::disconnect(c, 0, this, 0);
+        c->disconnect(this);
 
     c = completer;
 
@@ -101,7 +101,7 @@ QCompleter *TextEdit::completer() const
 //! [3]
 
 //! [4]
-void TextEdit::insertCompletion(const QString& completion)
+void TextEdit::insertCompletion(const QString &completion)
 {
     if (c->widget() != this)
         return;
@@ -150,18 +150,19 @@ void TextEdit::keyPressEvent(QKeyEvent *e)
        }
     }
 
-    bool isShortcut = ((e->modifiers() & Qt::ControlModifier) && e->key() == Qt::Key_E); // CTRL+E
+    const bool isShortcut = (e->modifiers().testFlag(Qt::ControlModifier) && e->key() == Qt::Key_E); // CTRL+E
     if (!c || !isShortcut) // do not process the shortcut when we have a completer
         QTextEdit::keyPressEvent(e);
 //! [7]
 
 //! [8]
-    const bool ctrlOrShift = e->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
+    const bool ctrlOrShift = e->modifiers().testFlag(Qt::ControlModifier) ||
+                             e->modifiers().testFlag(Qt::ShiftModifier);
     if (!c || (ctrlOrShift && e->text().isEmpty()))
         return;
 
     static QString eow("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-="); // end of word
-    bool hasModifier = (e->modifiers() != Qt::NoModifier) && !ctrlOrShift;
+    const bool hasModifier = (e->modifiers() != Qt::NoModifier) && !ctrlOrShift;
     QString completionPrefix = textUnderCursor();
 
     if (!isShortcut && (hasModifier || e->text().isEmpty()|| completionPrefix.length() < 3

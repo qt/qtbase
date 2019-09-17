@@ -277,22 +277,29 @@ QT_BEGIN_NAMESPACE
         Indicates whether the QNetworkAccessManager code is
         allowed to use SPDY with this request. This applies only
         to SSL requests, and depends on the server supporting SPDY.
+        Obsolete, use Http2 instead of Spdy.
 
     \value SpdyWasUsedAttribute
         Replies only, type: QMetaType::Bool
         Indicates whether SPDY was used for receiving
-        this reply.
+        this reply. Obsolete, use Http2 instead of Spdy.
 
-    \value HTTP2AllowedAttribute
+    \value Http2AllowedAttribute
         Requests only, type: QMetaType::Bool (default: false)
         Indicates whether the QNetworkAccessManager code is
         allowed to use HTTP/2 with this request. This applies
         to SSL requests or 'cleartext' HTTP/2.
 
-    \value HTTP2WasUsedAttribute
+    \value Http2WasUsedAttribute
         Replies only, type: QMetaType::Bool (default: false)
         Indicates whether HTTP/2 was used for receiving this reply.
         (This value was introduced in 5.9.)
+
+    \value HTTP2AllowedAttribute
+        Obsolete alias for Http2AllowedAttribute.
+
+    \value HTTP2WasUsedAttribute
+        Obsolete alias for Http2WasUsedAttribute.
 
     \value EmitAllUploadProgressSignalsAttribute
         Requests only, type: QMetaType::Bool (default: false)

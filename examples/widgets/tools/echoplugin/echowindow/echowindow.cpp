@@ -48,9 +48,16 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "echowindow.h"
+
+#include <QCoreApplication>
+#include <QDir>
+#include <QLabel>
+#include <QLayout>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QPluginLoader>
+#include <QPushButton>
 
 //! [0]
 EchoWindow::EchoWindow()
@@ -101,7 +108,7 @@ void EchoWindow::createGUI()
 //! [3]
 bool EchoWindow::loadPlugin()
 {
-    QDir pluginsDir(qApp->applicationDirPath());
+    QDir pluginsDir(QCoreApplication::applicationDirPath());
 #if defined(Q_OS_WIN)
     if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")
         pluginsDir.cdUp();
@@ -121,6 +128,7 @@ bool EchoWindow::loadPlugin()
             echoInterface = qobject_cast<EchoInterface *>(plugin);
             if (echoInterface)
                 return true;
+            pluginLoader.unload();
         }
     }
 

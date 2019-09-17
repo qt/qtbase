@@ -169,9 +169,20 @@ void QRhiNull::sendVMemStatsToProfiler()
     // nothing to do here
 }
 
-void QRhiNull::makeThreadLocalNativeContextCurrent()
+bool QRhiNull::makeThreadLocalNativeContextCurrent()
+{
+    // not applicable
+    return false;
+}
+
+void QRhiNull::releaseCachedResources()
 {
     // nothing to do here
+}
+
+bool QRhiNull::isDeviceLost() const
+{
+    return false;
 }
 
 QRhiRenderBuffer *QRhiNull::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,

@@ -51,10 +51,10 @@
 #ifndef QTBOX_H
 #define QTBOX_H
 
-#include <QtWidgets>
-
-#include <QtGui/qvector3d.h>
 #include "glbuffers.h"
+
+#include <QtWidgets>
+#include <QVector3D>
 
 class ItemBase : public QGraphicsItem
 {
@@ -62,7 +62,6 @@ public:
     enum { Type = UserType + 1 };
 
     ItemBase(int size, int x, int y);
-    virtual ~ItemBase();
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 protected:
@@ -84,7 +83,7 @@ protected:
 
     int m_size;
     QTime m_startTime;
-    bool m_isResizing;
+    bool m_isResizing = false;
 };
 
 class QtBox : public ItemBase
@@ -99,7 +98,7 @@ private:
     QVector3D m_vertices[8];
     QVector3D m_texCoords[4];
     QVector3D m_normals[6];
-    GLTexture *m_texture;
+    GLTexture *m_texture = nullptr;
 };
 
 class CircleItem : public ItemBase

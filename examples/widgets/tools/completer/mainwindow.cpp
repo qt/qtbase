@@ -48,13 +48,28 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include "fsmodel.h"
 #include "mainwindow.h"
+#include "fsmodel.h"
+
+#include <QAction>
+#include <QApplication>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QCompleter>
+#include <QGridLayout>
+#include <QHeaderView>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QSpinBox>
+#include <QStandardItemModel>
+#include <QStringListModel>
+#include <QTreeView>
 
 //! [0]
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), completer(0), lineEdit(0)
+    : QMainWindow(parent)
 {
     createMenu();
 
@@ -64,8 +79,8 @@ MainWindow::MainWindow(QWidget *parent)
     modelLabel->setText(tr("Model"));
 
     modelCombo = new QComboBox;
-    modelCombo->addItem(tr("QFileSytemModel"));
-    modelCombo->addItem(tr("QFileSytemModel that shows full path"));
+    modelCombo->addItem(tr("QFileSystemModel"));
+    modelCombo->addItem(tr("QFileSystemModel that shows full path"));
     modelCombo->addItem(tr("Country list"));
     modelCombo->addItem(tr("Word list"));
     modelCombo->setCurrentIndex(0);
@@ -144,17 +159,17 @@ void MainWindow::createMenu()
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
     connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
 
-    QMenu* fileMenu = menuBar()->addMenu(tr("File"));
+    QMenu *fileMenu = menuBar()->addMenu(tr("File"));
     fileMenu->addAction(exitAction);
 
-    QMenu* helpMenu = menuBar()->addMenu(tr("About"));
+    QMenu *helpMenu = menuBar()->addMenu(tr("About"));
     helpMenu->addAction(aboutAct);
     helpMenu->addAction(aboutQtAct);
 }
 //! [4]
 
 //! [5]
-QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
+QAbstractItemModel *MainWindow::modelFromFile(const QString &fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly))
@@ -170,7 +185,7 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
     while (!file.atEnd()) {
         QByteArray line = file.readLine();
         if (!line.isEmpty())
-            words << line.trimmed();
+            words << QString::fromUtf8(line.trimmed());
     }
 
 #ifndef QT_NO_CURSOR
@@ -191,8 +206,8 @@ QAbstractItemModel *MainWindow::modelFromFile(const QString& fileName)
     for (int i = 0; i < words.count(); ++i) {
         QModelIndex countryIdx = m->index(i, 0);
         QModelIndex symbolIdx = m->index(i, 1);
-        QString country = words[i].mid(0, words[i].length() - 2).trimmed();
-        QString symbol = words[i].right(2);
+        QString country = words.at(i).mid(0, words[i].length() - 2).trimmed();
+        QString symbol = words.at(i).right(2);
         m->setData(countryIdx, country);
         m->setData(symbolIdx, symbol);
     }
@@ -233,7 +248,7 @@ void MainWindow::changeModel()
     case 0:
         { // Unsorted QFileSystemModel
             QFileSystemModel *fsModel = new QFileSystemModel(completer);
-            fsModel->setRootPath("");
+            fsModel->setRootPath(QString());
             completer->setModel(fsModel);
             contentsLabel->setText(tr("Enter file path"));
         }
@@ -243,7 +258,7 @@ void MainWindow::changeModel()
         {   // FileSystemModel that shows full paths
             FileSystemModel *fsModel = new FileSystemModel(completer);
             completer->setModel(fsModel);
-            fsModel->setRootPath("");
+            fsModel->setRootPath(QString());
             contentsLabel->setText(tr("Enter file path"));
         }
         break;

@@ -50,15 +50,14 @@
 
 #include <QApplication>
 #include <QLabel>
-#include <QPainter>
-#include <QPushButton>
-
 #include <QGraphicsAnchorLayout>
 #include <QGraphicsProxyWidget>
 #include <QGraphicsScene>
 #include <QGraphicsSceneResizeEvent>
 #include <QGraphicsView>
 #include <QGraphicsWidget>
+#include <QPainter>
+#include <QPushButton>
 
 
 class GraphicsView : public QGraphicsView
@@ -79,20 +78,18 @@ public:
 
 class PixmapWidget : public QGraphicsLayoutItem
 {
-
 public:
     PixmapWidget(const QPixmap &pix)
-        : QGraphicsLayoutItem()
+        : QGraphicsLayoutItem(), original(new QGraphicsPixmapItem(pix))
+        , r(QRectF(QPointF(0, 0), pix.size()))
     {
-        original = new QGraphicsPixmapItem(pix);
         setGraphicsItem(original);
         original->show();
-        r = QRectF(QPointF(0, 0), pix.size());
     }
 
     ~PixmapWidget()
     {
-        setGraphicsItem(0);
+        setGraphicsItem(nullptr);
         delete original;
     }
 
@@ -101,7 +98,7 @@ public:
         original->setZValue(z);
     }
 
-    void setGeometry (const QRectF &rect) override
+    void setGeometry(const QRectF &rect) override
     {
         original->setTransform(QTransform::fromScale(rect.width() / r.width(),
                                                      rect.height() / r.height()), true);
@@ -150,8 +147,7 @@ public:
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) override
     {
-        QPointF reflection = QPointF();
-        reflection.setY(scaled.height() + 2);
+        const QPointF reflection(0, scaled.height() + 2);
 
         painter->drawPixmap(QPointF(), scaled);
 
@@ -239,7 +235,7 @@ int main(int argc, char *argv[])
     layout->setSpacing(0);
 
     // setup the main widget
-    QGraphicsWidget *widget = new QGraphicsWidget(0, Qt::Window);
+    QGraphicsWidget *widget = new QGraphicsWidget(nullptr, Qt::Window);
     QPalette p;
     p.setColor(QPalette::Window, Qt::black);
     widget->setPalette(p);

@@ -325,20 +325,33 @@ QTimeZone::QTimeZone() noexcept
 /*!
     Creates an instance of the requested time zone \a ianaId.
 
-    The ID must be one of the available system IDs otherwise an invalid
-    time zone will be returned.
+    The ID must be one of the available system IDs or a valid UTC-with-offset
+    ID, otherwise an invalid time zone will be returned.
 
     \sa availableTimeZoneIds()
 */
 
 QTimeZone::QTimeZone(const QByteArray &ianaId)
 {
-    // Try and see if it's a valid UTC offset ID, just as quick to try create as look-up
+    // Try and see if it's a CLDR UTC offset ID - just as quick by creating as
+    // by looking up.
     d = new QUtcTimeZonePrivate(ianaId);
-    // If not a valid UTC offset ID then try create it with the system backend
-    // Relies on backend not creating valid tz with invalid name
+    // If not a CLDR UTC offset ID then try creating it with the system backend.
+    // Relies on backend not creating valid TZ with invalid name.
     if (!d->isValid())
         d = newBackendTimeZone(ianaId);
+    // Can also handle UTC with arbitrary (valid) offset, but only do so as
+    // fall-back, since either of the above may handle it more informatively.
+    if (!d->isValid()) {
+        qint64 offset = QUtcTimeZonePrivate::offsetFromUtcString(ianaId);
+        if (offset != QTimeZonePrivate::invalidSeconds()) {
+            // Should have abs(offset) < 24 * 60 * 60 = 86400.
+            qint32 seconds = qint32(offset);
+            Q_ASSERT(qint64(seconds) == offset);
+            // NB: this canonicalises the name, so it might not match ianaId
+            d = new QUtcTimeZonePrivate(seconds);
+        }
+    }
 }
 
 /*!

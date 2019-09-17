@@ -48,20 +48,20 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "settingstree.h"
 #include "variantdelegate.h"
 
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QHeaderView>
+#include <QSettings>
+
 SettingsTree::SettingsTree(QWidget *parent)
     : QTreeWidget(parent)
-    , autoRefresh(false)
 {
     setItemDelegate(new VariantDelegate(this));
 
-    QStringList labels;
-    labels << tr("Setting") << tr("Type") << tr("Value");
-    setHeaderLabels(labels);
+    setHeaderLabels({tr("Setting"), tr("Type"), tr("Value")});
     header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     header()->setSectionResizeMode(2, QHeaderView::Stretch);
@@ -75,10 +75,6 @@ SettingsTree::SettingsTree(QWidget *parent)
     keyIcon.addPixmap(style()->standardPixmap(QStyle::SP_FileIcon));
 
     connect(&refreshTimer, &QTimer::timeout, this, &SettingsTree::maybeRefresh);
-}
-
-SettingsTree::~SettingsTree()
-{
 }
 
 void SettingsTree::setSettingsObject(const SettingsPtr &newSettings)
@@ -137,7 +133,7 @@ void SettingsTree::refresh()
                this, &SettingsTree::updateSetting);
 
     settings->sync();
-    updateChildItems(0);
+    updateChildItems(nullptr);
 
     connect(this, &QTreeWidget::itemChanged,
             this, &SettingsTree::updateSetting);
@@ -228,7 +224,7 @@ void SettingsTree::updateChildItems(QTreeWidgetItem *parent)
 QTreeWidgetItem *SettingsTree::createItem(const QString &text,
                                           QTreeWidgetItem *parent, int index)
 {
-    QTreeWidgetItem *after = 0;
+    QTreeWidgetItem *after = nullptr;
     if (index != 0)
         after = childAt(parent, index - 1);
 
@@ -243,24 +239,18 @@ QTreeWidgetItem *SettingsTree::createItem(const QString &text,
     return item;
 }
 
-QTreeWidgetItem *SettingsTree::childAt(QTreeWidgetItem *parent, int index)
+QTreeWidgetItem *SettingsTree::childAt(QTreeWidgetItem *parent, int index) const
 {
-    if (parent)
-        return parent->child(index);
-    else
-        return topLevelItem(index);
+    return (parent ? parent->child(index) : topLevelItem(index));
 }
 
-int SettingsTree::childCount(QTreeWidgetItem *parent)
+int SettingsTree::childCount(QTreeWidgetItem *parent) const
 {
-    if (parent)
-        return parent->childCount();
-    else
-        return topLevelItemCount();
+    return (parent ? parent->childCount() : topLevelItemCount());
 }
 
 int SettingsTree::findChild(QTreeWidgetItem *parent, const QString &text,
-                            int startIndex)
+                            int startIndex) const
 {
     for (int i = startIndex; i < childCount(parent); ++i) {
         if (childAt(parent, i)->text(0) == text)

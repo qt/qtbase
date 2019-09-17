@@ -222,6 +222,21 @@
                 { "type": "pkgConfig", "args": "libudev" },
                 "-ludev"
             ]
+        },
+        "libdl": {
+            "label": "dlopen()",
+            "test": {
+                "main": [
+                    "dlclose(dlopen(0, 0));",
+                    "dlsym(RTLD_DEFAULT, 0);",
+                    "dlerror();"
+                ]
+            },
+            "headers": "dlfcn.h",
+            "sources": [
+                "",
+                "-ldl"
+            ]
         }
     },
 
@@ -1340,6 +1355,17 @@
             "autoDetect": false,
             "condition": "!features.shared",
             "output": [ "publicConfig", "publicQtConfig" ]
+        },
+        "dlopen": {
+            "label": "dlopen()",
+            "condition": "config.unix && libs.libdl",
+            "output": [ "privateFeature" ]
+        },
+        "relocatable": {
+            "label": "Relocatable",
+            "autoDetect": "features.shared",
+            "condition": "features.dlopen || config.win32 || !features.shared",
+            "output": [ "privateFeature" ]
         }
     },
 
@@ -1466,6 +1492,7 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                     "args": "enable_gdb_index",
                     "condition": "config.gcc && !config.clang && (features.debug || features.force_debug_info || features.debug_and_release)"
                 },
+                "relocatable",
                 "precompile_header",
                 "ltcg",
                 {

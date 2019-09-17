@@ -51,6 +51,8 @@
 #include <QtCore/QString>
 #include <QtCore/private/qeventdispatcher_winrt_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QWinRTUiAutomation;
@@ -105,19 +107,17 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaGridItemProvider::get_ContainingGrid(IIRawEle
     *value = nullptr;
 
     auto accid = id();
-    auto elementId = QSharedPointer<QAccessible::Id>(new QAccessible::Id(0));
-    auto ptrElementId = new QSharedPointer<QAccessible::Id>(elementId);
+    auto elementId = std::make_shared<QAccessible::Id>(0);
 
-    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, ptrElementId]() {
+    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, elementId]() {
         if (QAccessibleInterface *accessible = accessibleForId(accid)) {
             if (QAccessibleTableCellInterface *tableCellInterface = accessible->tableCellInterface()) {
                 if (QAccessibleInterface *table = tableCellInterface->table()) {
-                    **ptrElementId = idForAccessible(table);
-                    QWinRTUiaMetadataCache::instance()->load(**ptrElementId);
+                    *elementId = idForAccessible(table);
+                    QWinRTUiaMetadataCache::instance()->load(*elementId);
                 }
             }
         }
-        delete ptrElementId;
         return S_OK;
     }))) {
         return E_FAIL;

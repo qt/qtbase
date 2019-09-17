@@ -55,15 +55,24 @@ QT_END_NAMESPACE
 # include "qcoreapplication.h"
 #endif
 
+#ifndef QT_BUILD_QMAKE_BOOTSTRAP
+#  include "private/qglobal_p.h"
+#  include "qconfig.cpp"
+#endif
+
 #ifdef Q_OS_DARWIN
 #  include "private/qcore_mac_p.h"
-#endif
-
-#ifndef QT_BUILD_QMAKE_BOOTSTRAP
-# include "qconfig.cpp"
-#endif
+#endif // Q_OS_DARWIN
 
 #include "archdetect.cpp"
+
+#if !defined(QT_BUILD_QMAKE) && QT_CONFIG(relocatable) && QT_CONFIG(dlopen) && !QT_CONFIG(framework)
+#  include <dlfcn.h>
+#endif
+
+#if !defined(QT_BUILD_QMAKE) && QT_CONFIG(relocatable) && defined(Q_OS_WIN)
+#  include <qt_windows.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -453,6 +462,160 @@ void QLibraryInfo::sysrootify(QString *path)
 }
 #endif // QT_BUILD_QMAKE
 
+#ifndef QT_BUILD_QMAKE
+static QString prefixFromAppDirHelper()
+{
+    QString appDir;
+
+    if (QCoreApplication::instance()) {
+#ifdef Q_OS_DARWIN
+        CFBundleRef bundleRef = CFBundleGetMainBundle();
+        if (bundleRef) {
+            QCFType<CFURLRef> urlRef = CFBundleCopyBundleURL(bundleRef);
+            if (urlRef) {
+                QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
+#ifdef Q_OS_MACOS
+                QString bundleContentsDir = QString(path) + QLatin1String("/Contents/");
+                if (QDir(bundleContentsDir).exists())
+                    return QDir::cleanPath(bundleContentsDir);
+#else
+                return QDir::cleanPath(QString(path)); // iOS
+#endif // Q_OS_MACOS
+            }
+        }
+#endif // Q_OS_DARWIN
+        // We make the prefix path absolute to the executable's directory.
+        appDir = QCoreApplication::applicationDirPath();
+    } else {
+        appDir = QDir::currentPath();
+    }
+
+    return appDir;
+}
+#endif
+
+#if !defined(QT_BUILD_QMAKE) && QT_CONFIG(relocatable)
+static QString prefixFromQtCoreLibraryHelper(const QString &qtCoreLibraryPath)
+{
+    const QString qtCoreLibrary = QDir::fromNativeSeparators(qtCoreLibraryPath);
+    const QString libDir = QFileInfo(qtCoreLibrary).absolutePath();
+    const QString prefixDir = libDir + QLatin1Char('/')
+            + QLatin1String(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH);
+    return QDir::cleanPath(prefixDir);
+}
+
+#if defined(Q_OS_WIN)
+#if defined(Q_OS_WINRT)
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+static HMODULE getWindowsModuleHandle()
+{
+    return reinterpret_cast<HMODULE>(&__ImageBase);
+}
+#else  // Q_OS_WINRT
+static HMODULE getWindowsModuleHandle()
+{
+    HMODULE hModule = NULL;
+    GetModuleHandleEx(
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+        (LPCTSTR)&QLibraryInfo::isDebugBuild, &hModule);
+    return hModule;
+}
+#endif // !Q_OS_WINRT
+#endif // Q_OS_WIN
+
+static QString getRelocatablePrefix()
+{
+    QString prefixPath;
+
+    // For static builds, the prefix will be the app directory.
+    // For regular builds, the prefix will be relative to the location of the QtCore shared library.
+#if defined(QT_STATIC)
+    prefixPath = prefixFromAppDirHelper();
+#elif defined(Q_OS_DARWIN) && QT_CONFIG(framework)
+    CFBundleRef qtCoreBundle = CFBundleGetBundleWithIdentifier(
+            CFSTR("org.qt-project.QtCore"));
+    Q_ASSERT(qtCoreBundle);
+
+    QCFType<CFURLRef> qtCorePath = CFBundleCopyBundleURL(qtCoreBundle);
+    Q_ASSERT(qtCorePath);
+
+    QCFType<CFURLRef> qtCorePathAbsolute = CFURLCopyAbsoluteURL(qtCorePath);
+    Q_ASSERT(qtCorePathAbsolute);
+
+    QCFType<CFURLRef> libDirCFPath = CFURLCreateCopyDeletingLastPathComponent(NULL, qtCorePathAbsolute);
+
+    const QCFString libDirCFString = CFURLCopyFileSystemPath(libDirCFPath, kCFURLPOSIXPathStyle);
+
+    const QString prefixDir = QString(libDirCFString) + QLatin1Char('/')
+        + QLatin1String(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH);
+
+    prefixPath = QDir::cleanPath(prefixDir);
+#elif QT_CONFIG(dlopen)
+    Dl_info info;
+    int result = dladdr(reinterpret_cast<void *>(&QLibraryInfo::isDebugBuild), &info);
+    if (result > 0 && info.dli_fname)
+        prefixPath = prefixFromQtCoreLibraryHelper(QString::fromLatin1(info.dli_fname));
+#elif defined(Q_OS_WIN)
+    HMODULE hModule = getWindowsModuleHandle();
+    const int kBufferSize = 4096;
+    wchar_t buffer[kBufferSize];
+    const int pathSize = GetModuleFileName(hModule, buffer, kBufferSize);
+    if (pathSize > 0)
+        prefixPath = prefixFromQtCoreLibraryHelper(QString::fromWCharArray(buffer, pathSize));
+#else
+#error "The chosen platform / config does not support querying for a dynamic prefix."
+#endif
+
+    Q_ASSERT_X(!prefixPath.isEmpty(), "getRelocatablePrefix",
+                                      "Failed to find the Qt prefix path.");
+    return prefixPath;
+}
+#endif
+
+#if defined(QT_BUILD_QMAKE) && !defined(QT_BUILD_QMAKE_BOOTSTRAP)
+QString qmake_abslocation();
+
+static QString getPrefixFromHostBinDir(const char *hostBinDirToPrefixPath)
+{
+    const QFileInfo qmfi = QFileInfo(qmake_abslocation()).canonicalFilePath();
+    return QDir::cleanPath(qmfi.absolutePath() + QLatin1Char('/')
+                           + QLatin1String(hostBinDirToPrefixPath));
+}
+
+static QString getExtPrefixFromHostBinDir()
+{
+    return getPrefixFromHostBinDir(QT_CONFIGURE_HOSTBINDIR_TO_EXTPREFIX_PATH);
+}
+
+static QString getHostPrefixFromHostBinDir()
+{
+    return getPrefixFromHostBinDir(QT_CONFIGURE_HOSTBINDIR_TO_HOSTPREFIX_PATH);
+}
+#endif
+
+#ifndef QT_BUILD_QMAKE_BOOTSTRAP
+static const char *getPrefix(
+#ifdef QT_BUILD_QMAKE
+        QLibraryInfo::PathGroup group
+#endif
+        )
+{
+#if defined(QT_BUILD_QMAKE)
+#  if QT_CONFIGURE_CROSSBUILD
+    if (group == QLibraryInfo::DevicePaths)
+        return QT_CONFIGURE_PREFIX_PATH;
+#  endif
+    static QByteArray extPrefixPath = getExtPrefixFromHostBinDir().toLatin1();
+    return extPrefixPath.constData();
+#elif QT_CONFIG(relocatable)
+    static QByteArray prefixPath = getRelocatablePrefix().toLatin1();
+    return prefixPath.constData();
+#else
+    return QT_CONFIGURE_PREFIX_PATH;
+#endif
+}
+#endif // QT_BUILD_QMAKE_BOOTSTRAP
+
 /*!
   Returns the location specified by \a loc.
 */
@@ -564,12 +727,11 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     if (!fromConf) {
         const char * volatile path = 0;
         if (loc == PrefixPath) {
-            path =
-# ifdef QT_BUILD_QMAKE
-                (group != DevicePaths) ?
-                    QT_CONFIGURE_EXT_PREFIX_PATH :
-# endif
-                    QT_CONFIGURE_PREFIX_PATH;
+            path = getPrefix(
+#ifdef QT_BUILD_QMAKE
+                        group
+#endif
+                   );
         } else if (unsigned(loc) <= sizeof(qt_configure_str_offsets)/sizeof(qt_configure_str_offsets[0])) {
             path = qt_configure_strs + qt_configure_str_offsets[loc - 1];
 #ifndef Q_OS_WIN // On Windows we use the registry
@@ -578,7 +740,8 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 #endif
 # ifdef QT_BUILD_QMAKE
         } else if (loc == HostPrefixPath) {
-            path = QT_CONFIGURE_HOST_PREFIX_PATH;
+            static const QByteArray hostPrefixPath = getHostPrefixFromHostBinDir().toLatin1();
+            path = hostPrefixPath.constData();
 # endif
         }
 
@@ -612,28 +775,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
         }
 #else
         if (loc == PrefixPath) {
-            if (QCoreApplication::instance()) {
-#ifdef Q_OS_DARWIN
-                CFBundleRef bundleRef = CFBundleGetMainBundle();
-                if (bundleRef) {
-                    QCFType<CFURLRef> urlRef = CFBundleCopyBundleURL(bundleRef);
-                    if (urlRef) {
-                        QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
-#ifdef Q_OS_OSX
-                        QString bundleContentsDir = QString(path) + QLatin1String("/Contents/");
-                        if (QDir(bundleContentsDir).exists())
-                            return QDir::cleanPath(bundleContentsDir + ret);
-#else
-                        return QDir::cleanPath(QString(path) + QLatin1Char('/') + ret); // iOS
-#endif // Q_OS_OSX
-                    }
-                }
-#endif // Q_OS_DARWIN
-                // We make the prefix path absolute to the executable's directory.
-                baseDir = QCoreApplication::applicationDirPath();
-            } else {
-                baseDir = QDir::currentPath();
-            }
+            baseDir = prefixFromAppDirHelper();
         } else {
             // we make any other path absolute to the prefix directory
             baseDir = location(PrefixPath);

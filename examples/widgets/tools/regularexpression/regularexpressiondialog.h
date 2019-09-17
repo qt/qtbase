@@ -70,7 +70,7 @@ class RegularExpressionDialog : public QDialog
     Q_OBJECT
 
 public:
-    RegularExpressionDialog(QWidget *parent = 0);
+    RegularExpressionDialog(QWidget *parent = nullptr);
 
 private:
     void refresh();

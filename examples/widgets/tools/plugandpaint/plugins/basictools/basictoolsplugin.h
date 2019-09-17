@@ -54,12 +54,12 @@
 //! [0]
 #include <interfaces.h>
 
-#include <QRect>
-#include <QObject>
-#include <QtPlugin>
-#include <QStringList>
-#include <QPainterPath>
 #include <QImage>
+#include <QObject>
+#include <QPainterPath>
+#include <QRect>
+#include <QStringList>
+#include <QtPlugin>
 
 //! [1]
 class BasicToolsPlugin : public QObject,

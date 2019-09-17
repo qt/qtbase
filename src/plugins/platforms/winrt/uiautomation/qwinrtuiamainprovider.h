@@ -69,7 +69,7 @@ public:
     virtual ~QWinRTUiaMainProvider();
     static QWinRTUiaMainProvider *providerForAccessibleId(QAccessible::Id id);
     static HRESULT rawProviderForAccessibleId(QAccessible::Id elementId, ABI::Windows::UI::Xaml::Automation::Provider::IIRawElementProviderSimple **returnValue);
-    static HRESULT rawProviderArrayForAccessibleIdList(const QList<QAccessible::Id> &elementIds, UINT32 *returnValueSize, ABI::Windows::UI::Xaml::Automation::Provider::IIRawElementProviderSimple ***returnValue);
+    static HRESULT rawProviderArrayForAccessibleIdList(const QVarLengthArray<QAccessible::Id> &elementIds, UINT32 *returnValueSize, ABI::Windows::UI::Xaml::Automation::Provider::IIRawElementProviderSimple ***returnValue);
     static void notifyFocusChange(QAccessibleEvent *event);
     static void notifyVisibilityChange(QAccessibleEvent *event);
     static void notifyStateChange(QAccessibleStateChangeEvent *event);

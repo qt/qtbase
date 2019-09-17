@@ -58,12 +58,10 @@
 
 //! [0]
 DiagramItem::DiagramItem(DiagramType diagramType, QMenu *contextMenu,
-             QGraphicsItem *parent)
-    : QGraphicsPolygonItem(parent)
+                         QGraphicsItem *parent)
+    : QGraphicsPolygonItem(parent), myDiagramType(diagramType)
+    , myContextMenu(contextMenu)
 {
-    myDiagramType = diagramType;
-    myContextMenu = contextMenu;
-
     QPainterPath path;
     switch (myDiagramType) {
         case StartEnd:
@@ -101,17 +99,17 @@ DiagramItem::DiagramItem(DiagramType diagramType, QMenu *contextMenu,
 //! [1]
 void DiagramItem::removeArrow(Arrow *arrow)
 {
-    int index = arrows.indexOf(arrow);
-
-    if (index != -1)
-        arrows.removeAt(index);
+    arrows.removeAll(arrow);
 }
 //! [1]
 
 //! [2]
 void DiagramItem::removeArrows()
 {
-    for (Arrow *arrow : qAsConst(arrows)) {
+    // need a copy here since removeArrow() will
+    // modify the arrows container
+    const auto arrowsCopy = arrows;
+    for (Arrow *arrow : arrowsCopy) {
         arrow->startItem()->removeArrow(arrow);
         arrow->endItem()->removeArrow(arrow);
         scene()->removeItem(arrow);

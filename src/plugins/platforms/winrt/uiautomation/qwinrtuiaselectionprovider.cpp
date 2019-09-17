@@ -51,6 +51,8 @@
 #include <QtCore/QString>
 #include <QtCore/private/qeventdispatcher_winrt_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QWinRTUiAutomation;
@@ -89,10 +91,9 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaSelectionProvider::get_IsSelectionRequired(bo
     *value = false;
 
     auto accid = id();
-    auto selectionRequired = QSharedPointer<bool>(new bool(false));
-    auto ptrSelectionRequired = new QSharedPointer<bool>(selectionRequired);
+    auto selectionRequired = std::make_shared<bool>(false);
 
-    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, ptrSelectionRequired]() {
+    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, selectionRequired]() {
         // Initially returns false if none are selected. After the first selection, it may be required.
         bool anySelected = false;
         if (QAccessibleInterface *accessible = accessibleForId(accid)) {
@@ -105,9 +106,8 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaSelectionProvider::get_IsSelectionRequired(bo
                      }
                 }
             }
-            **ptrSelectionRequired = anySelected && !accessible->state().multiSelectable && !accessible->state().extSelectable;
+            *selectionRequired = anySelected && !accessible->state().multiSelectable && !accessible->state().extSelectable;
         }
-        delete ptrSelectionRequired;
         return S_OK;
     }))) {
         return E_FAIL;
@@ -128,10 +128,9 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaSelectionProvider::GetSelection(UINT32 *retur
     *returnValue = nullptr;
 
     auto accid = id();
-    auto elementIds = QSharedPointer<QList<QAccessible::Id>>(new QList<QAccessible::Id>);
-    auto ptrElementIds = new QSharedPointer<QList<QAccessible::Id>>(elementIds);
+    auto elementIds = std::make_shared<QVarLengthArray<QAccessible::Id>>();
 
-    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, ptrElementIds]() {
+    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, elementIds]() {
         if (QAccessibleInterface *accessible = accessibleForId(accid)) {
             int childCount = accessible->childCount();
             for (int i = 0; i < childCount; ++i) {
@@ -139,12 +138,11 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaSelectionProvider::GetSelection(UINT32 *retur
                      if (childAcc->state().selected) {
                          QAccessible::Id childId = idForAccessible(childAcc);
                          QWinRTUiaMetadataCache::instance()->load(childId);
-                         (*ptrElementIds)->append(childId);
+                         elementIds->append(childId);
                      }
                 }
             }
         }
-        delete ptrElementIds;
         return S_OK;
     }))) {
         return E_FAIL;

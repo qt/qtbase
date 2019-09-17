@@ -139,6 +139,7 @@ private slots:
     void superscriptCrash_qtbug53911();
     void showLineAndParagraphSeparatorsCrash();
     void koreanWordWrap();
+    void tooManyDirectionalCharctersCrash_qtbug77819();
 
 private:
     QFont testFont;
@@ -2328,6 +2329,22 @@ void tst_QTextLayout::koreanWordWrap()
     QCOMPARE(layout.lineCount(), 2);
     QCOMPARE(layout.lineAt(0).textLength(), 6);
     QCOMPARE(layout.lineAt(1).textLength(), 4);
+}
+
+void tst_QTextLayout::tooManyDirectionalCharctersCrash_qtbug77819()
+{
+    QString data;
+    data += QString::fromUtf8("\xe2\x81\xa8"); // U+2068 FSI character
+    data += QString::fromUtf8("\xe2\x81\xa7"); // U+2067 RLI character
+
+    // duplicating the text
+    for (int i = 0; i < 10; i++)
+        data += data;
+
+    // Nothing to test. It must not crash in beginLayout().
+    QTextLayout tl(data);
+    tl.beginLayout();
+    tl.endLayout();
 }
 
 QTEST_MAIN(tst_QTextLayout)

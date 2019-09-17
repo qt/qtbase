@@ -53,16 +53,12 @@
 
 #include <QProxyStyle>
 
-QT_BEGIN_NAMESPACE
-class QPalette;
-QT_END_NAMESPACE
-
 class SimpleStyle : public QProxyStyle
 {
     Q_OBJECT
 
 public:
-    SimpleStyle() {};
+    SimpleStyle() = default;
 
     void polish(QPalette &palette) override;
 };

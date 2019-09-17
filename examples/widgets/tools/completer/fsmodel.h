@@ -62,7 +62,7 @@
 class FileSystemModel : public QFileSystemModel
 {
 public:
-    FileSystemModel(QObject *parent = 0);
+    FileSystemModel(QObject *parent = nullptr);
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 };
 //! [0]

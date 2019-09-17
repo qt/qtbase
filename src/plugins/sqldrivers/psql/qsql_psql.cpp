@@ -428,12 +428,14 @@ static QVariant::Type qDecodePSQLType(int t)
 
 void QPSQLResultPrivate::deallocatePreparedStmt()
 {
-    const QString stmt = QStringLiteral("DEALLOCATE ") + preparedStmtId;
-    PGresult *result = drv_d_func()->exec(stmt);
+    if (drv_d_func()) {
+        const QString stmt = QStringLiteral("DEALLOCATE ") + preparedStmtId;
+        PGresult *result = drv_d_func()->exec(stmt);
 
-    if (PQresultStatus(result) != PGRES_COMMAND_OK)
-        qWarning("Unable to free statement: %s", PQerrorMessage(drv_d_func()->connection));
-    PQclear(result);
+        if (PQresultStatus(result) != PGRES_COMMAND_OK)
+            qWarning("Unable to free statement: %s", PQerrorMessage(drv_d_func()->connection));
+        PQclear(result);
+    }
     preparedStmtId.clear();
 }
 

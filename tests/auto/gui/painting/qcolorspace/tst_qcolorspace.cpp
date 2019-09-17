@@ -123,9 +123,6 @@ void tst_QColorSpace::namedColorSpaces_data()
     QTest::newRow("ProPhoto RGB") << QColorSpace::ProPhotoRgb
                                   << QColorSpace::Primaries::ProPhotoRgb
                                   << QColorSpace::TransferFunction::ProPhotoRgb;
-    QTest::newRow("BT.2020") << QColorSpace::Bt2020
-                             << QColorSpace::Primaries::Bt2020
-                             << QColorSpace::TransferFunction::Bt2020;
 }
 
 void tst_QColorSpace::namedColorSpaces()
@@ -220,7 +217,6 @@ void tst_QColorSpace::imageConversion_data()
     QTest::newRow("Display-P3 -> sRGB") << QColorSpace::DisplayP3 << QColorSpace::SRgb << 0;
     QTest::newRow("Adobe RGB -> sRGB") << QColorSpace::AdobeRgb << QColorSpace::SRgb << 2;
     QTest::newRow("Display-P3 -> Adobe RGB") << QColorSpace::DisplayP3 << QColorSpace::AdobeRgb << 2;
-    QTest::newRow("Display-P3 -> BT.2020") << QColorSpace::DisplayP3 << QColorSpace::Bt2020 << 4;
     QTest::newRow("sRGB -> sRGB Linear") << QColorSpace::SRgb << QColorSpace::SRgbLinear << 0;
 }
 
@@ -351,14 +347,12 @@ void tst_QColorSpace::primariesXyz()
     QColorSpace adobeRgb = QColorSpace::AdobeRgb;
     QColorSpace displayP3 = QColorSpace::DisplayP3;
     QColorSpace proPhotoRgb = QColorSpace::ProPhotoRgb;
-    QColorSpace bt2020 = QColorSpace::Bt2020;
 
     // Check if our calculated matrices, match the precalculated ones.
     QCOMPARE(QColorSpacePrivate::get(sRgb)->toXyz, QColorMatrix::toXyzFromSRgb());
     QCOMPARE(QColorSpacePrivate::get(adobeRgb)->toXyz, QColorMatrix::toXyzFromAdobeRgb());
     QCOMPARE(QColorSpacePrivate::get(displayP3)->toXyz, QColorMatrix::toXyzFromDciP3D65());
     QCOMPARE(QColorSpacePrivate::get(proPhotoRgb)->toXyz, QColorMatrix::toXyzFromProPhotoRgb());
-    QCOMPARE(QColorSpacePrivate::get(bt2020)->toXyz, QColorMatrix::toXyzFromBt2020());
 }
 
 #ifdef QT_BUILD_INTERNAL
@@ -370,7 +364,6 @@ void tst_QColorSpace::primaries2_data()
     QTest::newRow("DCI-P3 (D65)") << QColorSpace::Primaries::DciP3D65;
     QTest::newRow("Adobe RGB (1998)") << QColorSpace::Primaries::AdobeRgb;
     QTest::newRow("ProPhoto RGB") << QColorSpace::Primaries::ProPhotoRgb;
-    QTest::newRow("BT.2020") << QColorSpace::Primaries::Bt2020;
 }
 
 void tst_QColorSpace::primaries2()

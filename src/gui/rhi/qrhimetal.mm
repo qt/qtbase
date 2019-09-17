@@ -138,6 +138,20 @@ QT_BEGIN_NAMESPACE
     \l{QRhiCommandBuffer::endPass()}.
  */
 
+struct QMetalShader
+{
+    id<MTLLibrary> lib = nil;
+    id<MTLFunction> func = nil;
+    std::array<uint, 3> localSize;
+
+    void release() {
+        [lib release];
+        lib = nil;
+        [func release];
+        func = nil;
+    }
+};
+
 struct QRhiMetalData
 {
     QRhiMetalData(QRhiImplementation *rhi) : ofr(rhi) { }
@@ -206,6 +220,8 @@ struct QRhiMetalData
     API_AVAILABLE(macos(10.13), ios(11.0)) id<MTLCaptureScope> captureScope = nil;
 
     static const int TEXBUF_ALIGN = 256; // probably not accurate
+
+    QHash<QRhiShaderStage, QMetalShader> shaderCache;
 };
 
 Q_DECLARE_TYPEINFO(QRhiMetalData::DeferredReleaseEntry, Q_MOVABLE_TYPE);
@@ -289,17 +305,14 @@ struct QMetalGraphicsPipelineData
     MTLPrimitiveType primitiveType;
     MTLWinding winding;
     MTLCullMode cullMode;
-    id<MTLLibrary> vsLib = nil;
-    id<MTLFunction> vsFunc = nil;
-    id<MTLLibrary> fsLib = nil;
-    id<MTLFunction> fsFunc = nil;
+    QMetalShader vs;
+    QMetalShader fs;
 };
 
 struct QMetalComputePipelineData
 {
     id<MTLComputePipelineState> ps = nil;
-    id<MTLLibrary> csLib = nil;
-    id<MTLFunction> csFunc = nil;
+    QMetalShader cs;
     MTLSize localSize;
 };
 
@@ -339,7 +352,8 @@ QRhiMetal::~QRhiMetal()
     delete d;
 }
 
-static inline uint aligned(uint v, uint byteAlign)
+template <class Int>
+inline Int aligned(Int v, Int byteAlign)
 {
     return (v + byteAlign - 1) & ~(byteAlign - 1);
 }
@@ -403,6 +417,10 @@ void QRhiMetal::destroy()
 {
     executeDeferredReleases(true);
     finishActiveReadbacks(true);
+
+    for (QMetalShader &s : d->shaderCache)
+        s.release();
+    d->shaderCache.clear();
 
     if (@available(macOS 10.13, iOS 11.0, *)) {
         [d->captureScope release];
@@ -565,9 +583,23 @@ void QRhiMetal::sendVMemStatsToProfiler()
     // nothing to do here
 }
 
-void QRhiMetal::makeThreadLocalNativeContextCurrent()
+bool QRhiMetal::makeThreadLocalNativeContextCurrent()
 {
-    // nothing to do here
+    // not applicable
+    return false;
+}
+
+void QRhiMetal::releaseCachedResources()
+{
+    for (QMetalShader &s : d->shaderCache)
+        s.release();
+
+    d->shaderCache.clear();
+}
+
+bool QRhiMetal::isDeviceLost() const
+{
+    return false;
 }
 
 QRhiRenderBuffer *QRhiMetal::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -630,7 +662,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.ubuf.buf);
             id<MTLBuffer> mtlbuf = bufD->d->buf[bufD->d->slotted ? currentFrameSlot : 0];
-            uint offset = b->u.ubuf.offset;
+            uint offset = uint(b->u.ubuf.offset);
             for (int i = 0; i < dynamicOffsetCount; ++i) {
                 const QRhiCommandBuffer::DynamicOffset &dynOfs(dynamicOffsets[i]);
                 if (dynOfs.first == b->binding) {
@@ -694,7 +726,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
             id<MTLBuffer> mtlbuf = bufD->d->buf[0];
-            uint offset = b->u.sbuf.offset;
+            uint offset = uint(b->u.sbuf.offset);
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
                 res[0].buffers.feed(b->binding, mtlbuf);
                 res[0].bufferOffsets.feed(b->binding, offset);
@@ -726,17 +758,17 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             case 0:
                 [cbD->d->currentRenderPassEncoder setVertexBuffers: bufferBatch.resources.constData()
                   offsets: offsetBatch.resources.constData()
-                  withRange: NSMakeRange(bufferBatch.startBinding, bufferBatch.resources.count())];
+                  withRange: NSMakeRange(bufferBatch.startBinding, NSUInteger(bufferBatch.resources.count()))];
                 break;
             case 1:
                 [cbD->d->currentRenderPassEncoder setFragmentBuffers: bufferBatch.resources.constData()
                   offsets: offsetBatch.resources.constData()
-                  withRange: NSMakeRange(bufferBatch.startBinding, bufferBatch.resources.count())];
+                  withRange: NSMakeRange(bufferBatch.startBinding, NSUInteger(bufferBatch.resources.count()))];
                 break;
             case 2:
                 [cbD->d->currentComputePassEncoder setBuffers: bufferBatch.resources.constData()
                   offsets: offsetBatch.resources.constData()
-                  withRange: NSMakeRange(bufferBatch.startBinding, bufferBatch.resources.count())];
+                  withRange: NSMakeRange(bufferBatch.startBinding, NSUInteger(bufferBatch.resources.count()))];
                 break;
             default:
                 Q_UNREACHABLE();
@@ -755,15 +787,15 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             switch (idx) {
             case 0:
                 [cbD->d->currentRenderPassEncoder setVertexTextures: batch.resources.constData()
-                  withRange: NSMakeRange(batch.startBinding, batch.resources.count())];
+                  withRange: NSMakeRange(batch.startBinding, NSUInteger(batch.resources.count()))];
                 break;
             case 1:
                 [cbD->d->currentRenderPassEncoder setFragmentTextures: batch.resources.constData()
-                  withRange: NSMakeRange(batch.startBinding, batch.resources.count())];
+                  withRange: NSMakeRange(batch.startBinding, NSUInteger(batch.resources.count()))];
                 break;
             case 2:
                 [cbD->d->currentComputePassEncoder setTextures: batch.resources.constData()
-                  withRange: NSMakeRange(batch.startBinding, batch.resources.count())];
+                  withRange: NSMakeRange(batch.startBinding, NSUInteger(batch.resources.count()))];
                 break;
             default:
                 Q_UNREACHABLE();
@@ -775,15 +807,15 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             switch (idx) {
             case 0:
                 [cbD->d->currentRenderPassEncoder setVertexSamplerStates: batch.resources.constData()
-                  withRange: NSMakeRange(batch.startBinding, batch.resources.count())];
+                  withRange: NSMakeRange(batch.startBinding, NSUInteger(batch.resources.count()))];
                 break;
             case 1:
                 [cbD->d->currentRenderPassEncoder setFragmentSamplerStates: batch.resources.constData()
-                  withRange: NSMakeRange(batch.startBinding, batch.resources.count())];
+                  withRange: NSMakeRange(batch.startBinding, NSUInteger(batch.resources.count()))];
                 break;
             case 2:
                 [cbD->d->currentComputePassEncoder setSamplerStates: batch.resources.constData()
-                  withRange: NSMakeRange(batch.startBinding, batch.resources.count())];
+                  withRange: NSMakeRange(batch.startBinding, NSUInteger(batch.resources.count()))];
                 break;
             default:
                 Q_UNREACHABLE();
@@ -981,7 +1013,7 @@ void QRhiMetal::setVertexInput(QRhiCommandBuffer *cb,
             [cbD->d->currentRenderPassEncoder setVertexBuffers:
                 bufferBatch.resources.constData()
               offsets: offsetBatch.resources.constData()
-              withRange: NSMakeRange(firstVertexBinding + bufferBatch.startBinding, bufferBatch.resources.count())];
+              withRange: NSMakeRange(uint(firstVertexBinding) + bufferBatch.startBinding, NSUInteger(bufferBatch.resources.count()))];
         }
     }
 
@@ -997,11 +1029,44 @@ void QRhiMetal::setVertexInput(QRhiCommandBuffer *cb,
     }
 }
 
+QSize safeOutputSize(QRhiMetal *rhiD, QMetalCommandBuffer *cbD)
+{
+    QSize size = cbD->currentTarget->pixelSize();
+
+    // So now we have the issue that the texture (drawable) size may have
+    // changed again since swapchain buildOrResize() was called. This can
+    // happen for example when interactively resizing the window a lot in one
+    // go, and command buffer building happens on a dedicated thread (f.ex.
+    // using the threaded render loop of Qt Quick).
+    //
+    // This is only an issue when running in debug mode with XCode because Metal
+    // validation will fail when setting viewport or scissor with the real size
+    // being smaller than what we think it is. So query the drawable size right
+    // here, in debug mode at least.
+    //
+    // In addition, we have to take the smaller of the two widths and heights
+    // to be safe, apparently. In some cases validation seems to think that the
+    // "render pass width" (or height) is the old(?) value.
+
+#ifdef QT_DEBUG
+    if (cbD->currentTarget->resourceType() == QRhiResource::RenderTarget) {
+        Q_ASSERT(rhiD->currentSwapChain);
+        const QSize otherSize = rhiD->currentSwapChain->surfacePixelSize();
+        size.setWidth(qMin(size.width(), otherSize.width()));
+        size.setHeight(qMin(size.height(), otherSize.height()));
+    }
+#else
+    Q_UNUSED(rhiD);
+#endif
+
+    return size;
+}
+
 void QRhiMetal::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 {
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
-    const QSize outputSize = cbD->currentTarget->pixelSize();
+    const QSize outputSize = safeOutputSize(this, cbD);
 
     // x,y is top-left in MTLViewportRect but bottom-left in QRhiViewport
     float x, y, w, h;
@@ -1009,21 +1074,21 @@ void QRhiMetal::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
         return;
 
     MTLViewport vp;
-    vp.originX = x;
-    vp.originY = y;
-    vp.width = w;
-    vp.height = h;
-    vp.znear = viewport.minDepth();
-    vp.zfar = viewport.maxDepth();
+    vp.originX = double(x);
+    vp.originY = double(y);
+    vp.width = double(w);
+    vp.height = double(h);
+    vp.znear = double(viewport.minDepth());
+    vp.zfar = double(viewport.maxDepth());
 
     [cbD->d->currentRenderPassEncoder setViewport: vp];
 
     if (!QRHI_RES(QMetalGraphicsPipeline, cbD->currentGraphicsPipeline)->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor)) {
         MTLScissorRect s;
-        s.x = x;
-        s.y = y;
-        s.width = w;
-        s.height = h;
+        s.x = NSUInteger(x);
+        s.y = NSUInteger(y);
+        s.width = NSUInteger(w);
+        s.height = NSUInteger(h);
         [cbD->d->currentRenderPassEncoder setScissorRect: s];
     }
 }
@@ -1033,7 +1098,7 @@ void QRhiMetal::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
     Q_ASSERT(QRHI_RES(QMetalGraphicsPipeline, cbD->currentGraphicsPipeline)->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor));
-    const QSize outputSize = cbD->currentTarget->pixelSize();
+    const QSize outputSize = safeOutputSize(this, cbD);
 
     // x,y is top-left in MTLScissorRect but bottom-left in QRhiScissor
     int x, y, w, h;
@@ -1041,10 +1106,10 @@ void QRhiMetal::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
         return;
 
     MTLScissorRect s;
-    s.x = x;
-    s.y = y;
-    s.width = w;
-    s.height = h;
+    s.x = NSUInteger(x);
+    s.y = NSUInteger(y);
+    s.width = NSUInteger(w);
+    s.height = NSUInteger(h);
 
     [cbD->d->currentRenderPassEncoder setScissorRect: s];
 }
@@ -1054,7 +1119,8 @@ void QRhiMetal::setBlendConstants(QRhiCommandBuffer *cb, const QColor &c)
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
 
-    [cbD->d->currentRenderPassEncoder setBlendColorRed: c.redF() green: c.greenF() blue: c.blueF() alpha: c.alphaF()];
+    [cbD->d->currentRenderPassEncoder setBlendColorRed: float(c.redF())
+      green: float(c.greenF()) blue: float(c.blueF()) alpha: float(c.alphaF())];
 }
 
 void QRhiMetal::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
@@ -1086,7 +1152,7 @@ void QRhiMetal::drawIndexed(QRhiCommandBuffer *cb, quint32 indexCount,
         return;
 
     const quint32 indexOffset = cbD->currentIndexOffset + firstIndex * (cbD->currentIndexFormat == QRhiCommandBuffer::IndexUInt16 ? 2 : 4);
-    Q_ASSERT(indexOffset == aligned(indexOffset, 4));
+    Q_ASSERT(indexOffset == aligned<quint32>(indexOffset, 4));
 
     QMetalBuffer *ibufD = QRHI_RES(QMetalBuffer, cbD->currentIndexBuffer);
     id<MTLBuffer> mtlbuf = ibufD->d->buf[ibufD->d->slotted ? currentFrameSlot : 0];
@@ -1344,7 +1410,7 @@ MTLRenderPassDescriptor *QRhiMetalData::createDefaultRenderPass(bool hasDepthSte
     MTLClearColor c = MTLClearColorMake(colorClearValue.redF(), colorClearValue.greenF(), colorClearValue.blueF(),
                                         colorClearValue.alphaF());
 
-    for (int i = 0; i < colorAttCount; ++i) {
+    for (uint i = 0; i < uint(colorAttCount); ++i) {
         rp.colorAttachments[i].loadAction = MTLLoadActionClear;
         rp.colorAttachments[i].storeAction = MTLStoreActionStore;
         rp.colorAttachments[i].clearColor = c;
@@ -1355,7 +1421,7 @@ MTLRenderPassDescriptor *QRhiMetalData::createDefaultRenderPass(bool hasDepthSte
         rp.depthAttachment.storeAction = MTLStoreActionDontCare;
         rp.stencilAttachment.loadAction = MTLLoadActionClear;
         rp.stencilAttachment.storeAction = MTLStoreActionDontCare;
-        rp.depthAttachment.clearDepth = depthStencilClearValue.depthClearValue();
+        rp.depthAttachment.clearDepth = double(depthStencilClearValue.depthClearValue());
         rp.stencilAttachment.clearStencil = depthStencilClearValue.stencilClearValue();
     }
 
@@ -1368,7 +1434,7 @@ qsizetype QRhiMetal::subresUploadByteSize(const QRhiTextureSubresourceUploadDesc
     const qsizetype imageSizeBytes = subresDesc.image().isNull() ?
                 subresDesc.data().size() : subresDesc.image().sizeInBytes();
     if (imageSizeBytes > 0)
-        size += aligned(imageSizeBytes, QRhiMetalData::TEXBUF_ALIGN);
+        size += aligned<qsizetype>(imageSizeBytes, QRhiMetalData::TEXBUF_ALIGN);
     return size;
 }
 
@@ -1396,31 +1462,31 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
                 h = subresDesc.sourceSize().height();
             }
             if (img.depth() == 32) {
-                memcpy(reinterpret_cast<char *>(mp) + *curOfs, img.constBits(), fullImageSizeBytes);
+                memcpy(reinterpret_cast<char *>(mp) + *curOfs, img.constBits(), size_t(fullImageSizeBytes));
                 srcOffset = sy * bpl + sx * 4;
                 // bpl remains set to the original image's row stride
             } else {
                 img = img.copy(sx, sy, w, h);
                 bpl = img.bytesPerLine();
                 Q_ASSERT(img.sizeInBytes() <= fullImageSizeBytes);
-                memcpy(reinterpret_cast<char *>(mp) + *curOfs, img.constBits(), img.sizeInBytes());
+                memcpy(reinterpret_cast<char *>(mp) + *curOfs, img.constBits(), size_t(img.sizeInBytes()));
             }
         } else {
-            memcpy(reinterpret_cast<char *>(mp) + *curOfs, img.constBits(), fullImageSizeBytes);
+            memcpy(reinterpret_cast<char *>(mp) + *curOfs, img.constBits(), size_t(fullImageSizeBytes));
         }
 
         [blitEnc copyFromBuffer: texD->d->stagingBuf[currentFrameSlot]
-                                 sourceOffset: *curOfs + srcOffset
-                                 sourceBytesPerRow: bpl
+                                 sourceOffset: NSUInteger(*curOfs + srcOffset)
+                                 sourceBytesPerRow: NSUInteger(bpl)
                                  sourceBytesPerImage: 0
-                                 sourceSize: MTLSizeMake(w, h, 1)
+                                 sourceSize: MTLSizeMake(NSUInteger(w), NSUInteger(h), 1)
           toTexture: texD->d->tex
-          destinationSlice: layer
-          destinationLevel: level
-          destinationOrigin: MTLOriginMake(dp.x(), dp.y(), 0)
+          destinationSlice: NSUInteger(layer)
+          destinationLevel: NSUInteger(level)
+          destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), 0)
           options: MTLBlitOptionNone];
 
-        *curOfs += aligned(fullImageSizeBytes, QRhiMetalData::TEXBUF_ALIGN);
+        *curOfs += aligned<qsizetype>(fullImageSizeBytes, QRhiMetalData::TEXBUF_ALIGN);
     } else if (!rawData.isEmpty() && isCompressedFormat(texD->m_format)) {
         const QSize subresSize = q->sizeForMipLevel(level, texD->m_pixelSize);
         const int subresw = subresSize.width();
@@ -1445,17 +1511,17 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
         if (dy + h != subresh)
             h = aligned(h, blockDim.height());
 
-        memcpy(reinterpret_cast<char *>(mp) + *curOfs, rawData.constData(), rawData.size());
+        memcpy(reinterpret_cast<char *>(mp) + *curOfs, rawData.constData(), size_t(rawData.size()));
 
         [blitEnc copyFromBuffer: texD->d->stagingBuf[currentFrameSlot]
-                                 sourceOffset: *curOfs
+                                 sourceOffset: NSUInteger(*curOfs)
                                  sourceBytesPerRow: bpl
                                  sourceBytesPerImage: 0
-                                 sourceSize: MTLSizeMake(w, h, 1)
+                                 sourceSize: MTLSizeMake(NSUInteger(w), NSUInteger(h), 1)
           toTexture: texD->d->tex
-          destinationSlice: layer
-          destinationLevel: level
-          destinationOrigin: MTLOriginMake(dx, dy, 0)
+          destinationSlice: NSUInteger(layer)
+          destinationLevel: NSUInteger(level)
+          destinationOrigin: MTLOriginMake(NSUInteger(dx), NSUInteger(dy), 0)
           options: MTLBlitOptionNone];
 
         *curOfs += aligned(rawData.size(), QRhiMetalData::TEXBUF_ALIGN);
@@ -1474,17 +1540,17 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
 
         quint32 bpl = 0;
         textureFormatInfo(texD->m_format, QSize(w, h), &bpl, nullptr);
-        memcpy(reinterpret_cast<char *>(mp) + *curOfs, rawData.constData(), rawData.size());
+        memcpy(reinterpret_cast<char *>(mp) + *curOfs, rawData.constData(), size_t(rawData.size()));
 
         [blitEnc copyFromBuffer: texD->d->stagingBuf[currentFrameSlot]
-                                 sourceOffset: *curOfs
+                                 sourceOffset: NSUInteger(*curOfs)
                                  sourceBytesPerRow: bpl
                                  sourceBytesPerImage: 0
-                                 sourceSize: MTLSizeMake(w, h, 1)
+                                 sourceSize: MTLSizeMake(NSUInteger(w), NSUInteger(h), 1)
           toTexture: texD->d->tex
-          destinationSlice: layer
-          destinationLevel: level
-          destinationOrigin: MTLOriginMake(dp.x(), dp.y(), 0)
+          destinationSlice: NSUInteger(layer)
+          destinationLevel: NSUInteger(level)
+          destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), 0)
           options: MTLBlitOptionNone];
 
         *curOfs += aligned(rawData.size(), QRhiMetalData::TEXBUF_ALIGN);
@@ -1538,9 +1604,9 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 
             ensureBlit();
             Q_ASSERT(!utexD->d->stagingBuf[currentFrameSlot]);
-            utexD->d->stagingBuf[currentFrameSlot] = [d->dev newBufferWithLength: stagingSize
+            utexD->d->stagingBuf[currentFrameSlot] = [d->dev newBufferWithLength: NSUInteger(stagingSize)
                         options: MTLResourceStorageModeShared];
-            QRHI_PROF_F(newTextureStagingArea(utexD, currentFrameSlot, stagingSize));
+            QRHI_PROF_F(newTextureStagingArea(utexD, currentFrameSlot, quint32(stagingSize)));
 
             void *mp = [utexD->d->stagingBuf[currentFrameSlot] contents];
             qsizetype curOfs = 0;
@@ -1570,14 +1636,14 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 
             ensureBlit();
             [blitEnc copyFromTexture: srcD->d->tex
-                                      sourceSlice: u.copy.desc.sourceLayer()
-                                      sourceLevel: u.copy.desc.sourceLevel()
-                                      sourceOrigin: MTLOriginMake(sp.x(), sp.y(), 0)
-                                      sourceSize: MTLSizeMake(size.width(), size.height(), 1)
+                                      sourceSlice: NSUInteger(u.copy.desc.sourceLayer())
+                                      sourceLevel: NSUInteger(u.copy.desc.sourceLevel())
+                                      sourceOrigin: MTLOriginMake(NSUInteger(sp.x()), NSUInteger(sp.y()), 0)
+                                      sourceSize: MTLSizeMake(NSUInteger(size.width()), NSUInteger(size.height()), 1)
                                       toTexture: dstD->d->tex
-                                      destinationSlice: u.copy.desc.destinationLayer()
-                                      destinationLevel: u.copy.desc.destinationLevel()
-                                      destinationOrigin: MTLOriginMake(dp.x(), dp.y(), 0)];
+                                      destinationSlice: NSUInteger(u.copy.desc.destinationLayer())
+                                      destinationLevel: NSUInteger(u.copy.desc.destinationLevel())
+                                      destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), 0)];
 
             srcD->lastActiveFrameSlot = dstD->lastActiveFrameSlot = currentFrameSlot;
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Read) {
@@ -1617,16 +1683,16 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             textureFormatInfo(aRb.format, aRb.pixelSize, &bpl, &aRb.bufSize);
             aRb.buf = [d->dev newBufferWithLength: aRb.bufSize options: MTLResourceStorageModeShared];
 
-            QRHI_PROF_F(newReadbackBuffer(quint64(quintptr(aRb.buf)),
+            QRHI_PROF_F(newReadbackBuffer(qint64(qintptr(aRb.buf)),
                                           texD ? static_cast<QRhiResource *>(texD) : static_cast<QRhiResource *>(swapChainD),
                                           aRb.bufSize));
 
             ensureBlit();
             [blitEnc copyFromTexture: src
-                                      sourceSlice: u.read.rb.layer()
-                                      sourceLevel: u.read.rb.level()
+                                      sourceSlice: NSUInteger(u.read.rb.layer())
+                                      sourceLevel: NSUInteger(u.read.rb.level())
                                       sourceOrigin: MTLOriginMake(0, 0, 0)
-                                      sourceSize: MTLSizeMake(srcSize.width(), srcSize.height(), 1)
+                                      sourceSize: MTLSizeMake(NSUInteger(srcSize.width()), NSUInteger(srcSize.height()), 1)
                                       toBuffer: aRb.buf
                                       destinationOffset: 0
                                       destinationBytesPerRow: bpl
@@ -1664,14 +1730,14 @@ void QRhiMetal::executeBufferHostWritesForCurrentFrame(QMetalBuffer *bufD)
     int changeEnd = -1;
     for (const QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate &u : updates) {
         Q_ASSERT(bufD == QRHI_RES(QMetalBuffer, u.buf));
-        memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), u.data.size());
+        memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
         if (changeBegin == -1 || u.offset < changeBegin)
             changeBegin = u.offset;
         if (changeEnd == -1 || u.offset + u.data.size() > changeEnd)
             changeEnd = u.offset + u.data.size();
     }
     if (changeBegin >= 0 && bufD->d->managed)
-        [bufD->d->buf[idx] didModifyRange: NSMakeRange(changeBegin, changeEnd - changeBegin)];
+        [bufD->d->buf[idx] didModifyRange: NSMakeRange(NSUInteger(changeBegin), NSUInteger(changeEnd - changeBegin))];
 
     updates.clear();
 }
@@ -1728,7 +1794,7 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         rtD = rtTex->d;
         cbD->d->currentPassRpDesc = d->createDefaultRenderPass(rtD->dsAttCount, colorClearValue, depthStencilClearValue, rtD->colorAttCount);
         if (rtTex->m_flags.testFlag(QRhiTextureRenderTarget::PreserveColorContents)) {
-            for (int i = 0; i < rtD->colorAttCount; ++i)
+            for (uint i = 0; i < uint(rtD->colorAttCount); ++i)
                 cbD->d->currentPassRpDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
         }
         if (rtD->dsAttCount && rtTex->m_flags.testFlag(QRhiTextureRenderTarget::PreserveDepthStencilContents)) {
@@ -1755,15 +1821,15 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         break;
     }
 
-    for (int i = 0; i < rtD->colorAttCount; ++i) {
+    for (uint i = 0; i < uint(rtD->colorAttCount); ++i) {
         cbD->d->currentPassRpDesc.colorAttachments[i].texture = rtD->fb.colorAtt[i].tex;
-        cbD->d->currentPassRpDesc.colorAttachments[i].slice = rtD->fb.colorAtt[i].layer;
-        cbD->d->currentPassRpDesc.colorAttachments[i].level = rtD->fb.colorAtt[i].level;
+        cbD->d->currentPassRpDesc.colorAttachments[i].slice = NSUInteger(rtD->fb.colorAtt[i].layer);
+        cbD->d->currentPassRpDesc.colorAttachments[i].level = NSUInteger(rtD->fb.colorAtt[i].level);
         if (rtD->fb.colorAtt[i].resolveTex) {
             cbD->d->currentPassRpDesc.colorAttachments[i].storeAction = MTLStoreActionMultisampleResolve;
             cbD->d->currentPassRpDesc.colorAttachments[i].resolveTexture = rtD->fb.colorAtt[i].resolveTex;
-            cbD->d->currentPassRpDesc.colorAttachments[i].resolveSlice = rtD->fb.colorAtt[i].resolveLayer;
-            cbD->d->currentPassRpDesc.colorAttachments[i].resolveLevel = rtD->fb.colorAtt[i].resolveLevel;
+            cbD->d->currentPassRpDesc.colorAttachments[i].resolveSlice = NSUInteger(rtD->fb.colorAtt[i].resolveLayer);
+            cbD->d->currentPassRpDesc.colorAttachments[i].resolveLevel = NSUInteger(rtD->fb.colorAtt[i].resolveLevel);
         }
     }
 
@@ -1845,7 +1911,7 @@ void QRhiMetal::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::ComputePass);
     QMetalComputePipeline *psD = QRHI_RES(QMetalComputePipeline, cbD->currentComputePipeline);
 
-    [cbD->d->currentComputePassEncoder dispatchThreadgroups: MTLSizeMake(x, y, z)
+    [cbD->d->currentComputePassEncoder dispatchThreadgroups: MTLSizeMake(NSUInteger(x), NSUInteger(y), NSUInteger(z))
       threadsPerThreadgroup: psD->d->localSize];
 }
 
@@ -1913,12 +1979,12 @@ void QRhiMetal::finishActiveReadbacks(bool forced)
         if (forced || currentFrameSlot == aRb.activeFrameSlot || aRb.activeFrameSlot < 0) {
             aRb.result->format = aRb.format;
             aRb.result->pixelSize = aRb.pixelSize;
-            aRb.result->data.resize(aRb.bufSize);
+            aRb.result->data.resize(int(aRb.bufSize));
             void *p = [aRb.buf contents];
             memcpy(aRb.result->data.data(), p, aRb.bufSize);
             [aRb.buf release];
 
-            QRHI_PROF_F(releaseReadbackBuffer(quint64(quintptr(aRb.buf))));
+            QRHI_PROF_F(releaseReadbackBuffer(qint64(qintptr(aRb.buf))));
 
             if (aRb.result->completed)
                 completedCallbacks.append(aRb.result->completed);
@@ -1977,8 +2043,8 @@ bool QMetalBuffer::build()
         return false;
     }
 
-    const int nonZeroSize = m_size <= 0 ? 256 : m_size;
-    const int roundedSize = m_usage.testFlag(QRhiBuffer::UniformBuffer) ? aligned(nonZeroSize, 256) : nonZeroSize;
+    const uint nonZeroSize = m_size <= 0 ? 256 : uint(m_size);
+    const uint roundedSize = m_usage.testFlag(QRhiBuffer::UniformBuffer) ? aligned<uint>(nonZeroSize, 256) : nonZeroSize;
 
     d->managed = false;
     MTLResourceOptions opts = MTLResourceStorageModeShared;
@@ -2065,10 +2131,10 @@ bool QMetalRenderBuffer::build()
 
     MTLTextureDescriptor *desc = [[MTLTextureDescriptor alloc] init];
     desc.textureType = samples > 1 ? MTLTextureType2DMultisample : MTLTextureType2D;
-    desc.width = m_pixelSize.width();
-    desc.height = m_pixelSize.height();
+    desc.width = NSUInteger(m_pixelSize.width());
+    desc.height = NSUInteger(m_pixelSize.height());
     if (samples > 1)
-        desc.sampleCount = samples;
+        desc.sampleCount = NSUInteger(samples);
     desc.resourceOptions = MTLResourceStorageModePrivate;
     desc.usage = MTLTextureUsageRenderTarget;
 
@@ -2335,11 +2401,11 @@ bool QMetalTexture::build()
     else
         desc.textureType = samples > 1 ? MTLTextureType2DMultisample : MTLTextureType2D;
     desc.pixelFormat = d->format;
-    desc.width = size.width();
-    desc.height = size.height();
-    desc.mipmapLevelCount = mipLevelCount;
+    desc.width = NSUInteger(size.width());
+    desc.height = NSUInteger(size.height());
+    desc.mipmapLevelCount = NSUInteger(mipLevelCount);
     if (samples > 1)
-        desc.sampleCount = samples;
+        desc.sampleCount = NSUInteger(samples);
     desc.resourceOptions = MTLResourceStorageModePrivate;
     desc.storageMode = MTLStorageModePrivate;
     desc.usage = MTLTextureUsageShaderRead;
@@ -2405,7 +2471,7 @@ id<MTLTexture> QMetalTextureData::viewForLevel(int level)
     const MTLTextureType type = [tex textureType];
     const bool isCube = q->m_flags.testFlag(QRhiTexture::CubeMap);
     id<MTLTexture> view = [tex newTextureViewWithPixelFormat: format textureType: type
-            levels: NSMakeRange(level, 1) slices: NSMakeRange(0, isCube ? 6 : 1)];
+            levels: NSMakeRange(NSUInteger(level), 1) slices: NSMakeRange(0, isCube ? 6 : 1)];
 
     perLevelViews[level] = view;
     return view;
@@ -2615,13 +2681,13 @@ QRhiRenderPassDescriptor *QMetalTextureRenderTarget::newCompatibleRenderPassDesc
     for (int i = 0, ie = colorAttachments.count(); i != ie; ++i) {
         QMetalTexture *texD = QRHI_RES(QMetalTexture, colorAttachments[i].texture());
         QMetalRenderBuffer *rbD = QRHI_RES(QMetalRenderBuffer, colorAttachments[i].renderBuffer());
-        rpD->colorFormat[i] = texD ? texD->d->format : rbD->d->format;
+        rpD->colorFormat[i] = int(texD ? texD->d->format : rbD->d->format);
     }
 
     if (m_desc.depthTexture())
-        rpD->dsFormat = QRHI_RES(QMetalTexture, m_desc.depthTexture())->d->format;
+        rpD->dsFormat = int(QRHI_RES(QMetalTexture, m_desc.depthTexture())->d->format);
     else if (m_desc.depthStencilBuffer())
-        rpD->dsFormat = QRHI_RES(QMetalRenderBuffer, m_desc.depthStencilBuffer())->d->format;
+        rpD->dsFormat = int(QRHI_RES(QMetalRenderBuffer, m_desc.depthStencilBuffer())->d->format);
 
     return rpD;
 }
@@ -2810,36 +2876,17 @@ void QMetalGraphicsPipeline::release()
 {
     QRHI_RES_RHI(QRhiMetal);
 
+    d->vs.release();
+    d->fs.release();
+
+    [d->ds release];
+    d->ds = nil;
+
     if (!d->ps)
         return;
 
-    if (d->ps) {
-        [d->ps release];
-        d->ps = nil;
-    }
-
-    if (d->ds) {
-        [d->ds release];
-        d->ds = nil;
-    }
-
-    if (d->vsFunc) {
-        [d->vsFunc release];
-        d->vsFunc = nil;
-    }
-    if (d->vsLib) {
-        [d->vsLib release];
-        d->vsLib = nil;
-    }
-
-    if (d->fsFunc) {
-        [d->fsFunc release];
-        d->fsFunc = nil;
-    }
-    if (d->fsLib) {
-        [d->fsLib release];
-        d->fsLib = nil;
-    }
+    [d->ps release];
+    d->ps = nil;
 
     rhiD->unregisterResource(this);
 }
@@ -3040,7 +3087,7 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
     QShaderCode mtllib = shader.shader({ QShader::MetalLibShader, 12, shaderVariant });
     if (!mtllib.shader().isEmpty()) {
         dispatch_data_t data = dispatch_data_create(mtllib.shader().constData(),
-                                                    mtllib.shader().size(),
+                                                    size_t(mtllib.shader().size()),
                                                     dispatch_get_global_queue(0, 0),
                                                     DISPATCH_DATA_DESTRUCTOR_DEFAULT);
         NSError *err = nil;
@@ -3100,19 +3147,19 @@ bool QMetalGraphicsPipeline::build()
     MTLVertexDescriptor *inputLayout = [MTLVertexDescriptor vertexDescriptor];
     const QVector<QRhiVertexInputAttribute> attributes = m_vertexInputLayout.attributes();
     for (const QRhiVertexInputAttribute &attribute : attributes) {
-        const int loc = attribute.location();
+        const uint loc = uint(attribute.location());
         inputLayout.attributes[loc].format = toMetalAttributeFormat(attribute.format());
-        inputLayout.attributes[loc].offset = attribute.offset();
-        inputLayout.attributes[loc].bufferIndex = firstVertexBinding + attribute.binding();
+        inputLayout.attributes[loc].offset = NSUInteger(attribute.offset());
+        inputLayout.attributes[loc].bufferIndex = NSUInteger(firstVertexBinding + attribute.binding());
     }
     const QVector<QRhiVertexInputBinding> bindings = m_vertexInputLayout.bindings();
     for (int i = 0, ie = bindings.count(); i != ie; ++i) {
         const QRhiVertexInputBinding &binding(bindings[i]);
-        const int layoutIdx = firstVertexBinding + i;
+        const uint layoutIdx = uint(firstVertexBinding + i);
         inputLayout.layouts[layoutIdx].stepFunction =
                 binding.classification() == QRhiVertexInputBinding::PerInstance
                 ? MTLVertexStepFunctionPerInstance : MTLVertexStepFunctionPerVertex;
-        inputLayout.layouts[layoutIdx].stepRate = binding.instanceStepRate();
+        inputLayout.layouts[layoutIdx].stepRate = NSUInteger(binding.instanceStepRate());
         inputLayout.layouts[layoutIdx].stride = binding.stride();
     }
 
@@ -3126,34 +3173,66 @@ bool QMetalGraphicsPipeline::build()
     // buffers not just the resource binding layout) so leave it at the default
 
     for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
-        QString error;
-        QByteArray entryPoint;
-        id<MTLLibrary> lib = rhiD->d->createMetalLib(shaderStage.shader(), shaderStage.shaderVariant(), &error, &entryPoint);
-        if (!lib) {
-            qWarning("MSL shader compilation failed: %s", qPrintable(error));
-            return false;
-        }
-        id<MTLFunction> func = rhiD->d->createMSLShaderFunction(lib, entryPoint);
-        if (!func) {
-            qWarning("MSL function for entry point %s not found", entryPoint.constData());
-            [lib release];
-            return false;
-        }
-        switch (shaderStage.type()) {
-        case QRhiShaderStage::Vertex:
-            rpDesc.vertexFunction = func;
-            d->vsLib = lib;
-            d->vsFunc = func;
-            break;
-        case QRhiShaderStage::Fragment:
-            rpDesc.fragmentFunction = func;
-            d->fsLib = lib;
-            d->fsFunc = func;
-            break;
-        default:
-            [func release];
-            [lib release];
-            break;
+        auto cacheIt = rhiD->d->shaderCache.constFind(shaderStage);
+        if (cacheIt != rhiD->d->shaderCache.constEnd()) {
+            switch (shaderStage.type()) {
+            case QRhiShaderStage::Vertex:
+                d->vs = *cacheIt;
+                [d->vs.lib retain];
+                [d->vs.func retain];
+                rpDesc.vertexFunction = d->vs.func;
+                break;
+            case QRhiShaderStage::Fragment:
+                d->fs = *cacheIt;
+                [d->fs.lib retain];
+                [d->fs.func retain];
+                rpDesc.fragmentFunction = d->fs.func;
+                break;
+            default:
+                break;
+            }
+        } else {
+            QString error;
+            QByteArray entryPoint;
+            id<MTLLibrary> lib = rhiD->d->createMetalLib(shaderStage.shader(), shaderStage.shaderVariant(), &error, &entryPoint);
+            if (!lib) {
+                qWarning("MSL shader compilation failed: %s", qPrintable(error));
+                return false;
+            }
+            id<MTLFunction> func = rhiD->d->createMSLShaderFunction(lib, entryPoint);
+            if (!func) {
+                qWarning("MSL function for entry point %s not found", entryPoint.constData());
+                [lib release];
+                return false;
+            }
+            if (rhiD->d->shaderCache.count() >= QRhiMetal::MAX_SHADER_CACHE_ENTRIES) {
+                // Use the simplest strategy: too many cached shaders -> drop them all.
+                for (QMetalShader &s : rhiD->d->shaderCache)
+                    s.release();
+                rhiD->d->shaderCache.clear();
+            }
+            switch (shaderStage.type()) {
+            case QRhiShaderStage::Vertex:
+                d->vs.lib = lib;
+                d->vs.func = func;
+                rhiD->d->shaderCache.insert(shaderStage, d->vs);
+                [d->vs.lib retain];
+                [d->vs.func retain];
+                rpDesc.vertexFunction = func;
+                break;
+            case QRhiShaderStage::Fragment:
+                d->fs.lib = lib;
+                d->fs.func = func;
+                rhiD->d->shaderCache.insert(shaderStage, d->fs);
+                [d->fs.lib retain];
+                [d->fs.func retain];
+                rpDesc.fragmentFunction = func;
+                break;
+            default:
+                [func release];
+                [lib release];
+                break;
+            }
         }
     }
 
@@ -3168,8 +3247,8 @@ bool QMetalGraphicsPipeline::build()
         Q_ASSERT(m_targetBlends.count() == rpD->colorAttachmentCount
                  || (m_targetBlends.isEmpty() && rpD->colorAttachmentCount == 1));
 
-        for (int i = 0, ie = m_targetBlends.count(); i != ie; ++i) {
-            const QRhiGraphicsPipeline::TargetBlend &b(m_targetBlends[i]);
+        for (uint i = 0, ie = uint(m_targetBlends.count()); i != ie; ++i) {
+            const QRhiGraphicsPipeline::TargetBlend &b(m_targetBlends[int(i)]);
             rpDesc.colorAttachments[i].pixelFormat = MTLPixelFormat(rpD->colorFormat[i]);
             rpDesc.colorAttachments[i].blendingEnabled = b.enable;
             rpDesc.colorAttachments[i].sourceRGBBlendFactor = toMetalBlendFactor(b.srcColor);
@@ -3191,7 +3270,7 @@ bool QMetalGraphicsPipeline::build()
             rpDesc.stencilAttachmentPixelFormat = fmt;
     }
 
-    rpDesc.sampleCount = rhiD->effectiveSampleCount(m_sampleCount);
+    rpDesc.sampleCount = NSUInteger(rhiD->effectiveSampleCount(m_sampleCount));
 
     NSError *err = nil;
     d->ps = [rhiD->d->dev newRenderPipelineStateWithDescriptor: rpDesc error: &err];
@@ -3253,22 +3332,13 @@ void QMetalComputePipeline::release()
 {
     QRHI_RES_RHI(QRhiMetal);
 
-    if (d->csFunc) {
-        [d->csFunc release];
-        d->csFunc = nil;
-    }
-    if (d->csLib) {
-        [d->csLib release];
-        d->csLib = nil;
-    }
+    d->cs.release();
 
     if (!d->ps)
         return;
 
-    if (d->ps) {
-        [d->ps release];
-        d->ps = nil;
-    }
+    [d->ps release];
+    d->ps = nil;
 
     rhiD->unregisterResource(this);
 }
@@ -3280,28 +3350,44 @@ bool QMetalComputePipeline::build()
 
     QRHI_RES_RHI(QRhiMetal);
 
-    const QShader shader = m_shaderStage.shader();
-    QString error;
-    QByteArray entryPoint;
-    id<MTLLibrary> lib = rhiD->d->createMetalLib(shader, m_shaderStage.shaderVariant(),
-                                                 &error, &entryPoint);
-    if (!lib) {
-        qWarning("MSL shader compilation failed: %s", qPrintable(error));
-        return false;
+    auto cacheIt = rhiD->d->shaderCache.constFind(m_shaderStage);
+    if (cacheIt != rhiD->d->shaderCache.constEnd()) {
+        d->cs = *cacheIt;
+    } else {
+        const QShader shader = m_shaderStage.shader();
+        QString error;
+        QByteArray entryPoint;
+        id<MTLLibrary> lib = rhiD->d->createMetalLib(shader, m_shaderStage.shaderVariant(),
+                                                     &error, &entryPoint);
+        if (!lib) {
+            qWarning("MSL shader compilation failed: %s", qPrintable(error));
+            return false;
+        }
+        id<MTLFunction> func = rhiD->d->createMSLShaderFunction(lib, entryPoint);
+        if (!func) {
+            qWarning("MSL function for entry point %s not found", entryPoint.constData());
+            [lib release];
+            return false;
+        }
+        d->cs.lib = lib;
+        d->cs.func = func;
+        d->cs.localSize = shader.description().computeShaderLocalSize();
+
+        if (rhiD->d->shaderCache.count() >= QRhiMetal::MAX_SHADER_CACHE_ENTRIES) {
+            for (QMetalShader &s : rhiD->d->shaderCache)
+                s.release();
+            rhiD->d->shaderCache.clear();
+        }
+        rhiD->d->shaderCache.insert(m_shaderStage, d->cs);
     }
-    id<MTLFunction> func = rhiD->d->createMSLShaderFunction(lib, entryPoint);
-    if (!func) {
-        qWarning("MSL function for entry point %s not found", entryPoint.constData());
-        [lib release];
-        return false;
-    }
-    d->csLib = lib;
-    d->csFunc = func;
-    std::array<uint, 3> localSize = shader.description().computeShaderLocalSize();
-    d->localSize = MTLSizeMake(localSize[0], localSize[1], localSize[2]);
+
+    [d->cs.lib retain];
+    [d->cs.func retain];
+
+    d->localSize = MTLSizeMake(d->cs.localSize[0], d->cs.localSize[1], d->cs.localSize[2]);
 
     NSError *err = nil;
-    d->ps = [rhiD->d->dev newComputePipelineStateWithFunction: d->csFunc error: &err];
+    d->ps = [rhiD->d->dev newComputePipelineStateWithFunction: d->cs.func error: &err];
     if (!d->ps) {
         const QString msg = QString::fromNSString(err.localizedDescription);
         qWarning("Failed to create render pipeline state: %s", qPrintable(msg));
@@ -3439,7 +3525,7 @@ QSize QMetalSwapChain::surfacePixelSize()
         CAMetalLayer *layer = (CAMetalLayer *) [v layer];
         if (layer) {
             CGSize size = [layer drawableSize];
-            return QSize(size.width, size.height);
+            return QSize(int(size.width), int(size.height));
         }
     }
     return QSize();
@@ -3454,7 +3540,7 @@ QRhiRenderPassDescriptor *QMetalSwapChain::newCompatibleRenderPassDescriptor()
     rpD->colorAttachmentCount = 1;
     rpD->hasDepthStencil = m_depthStencil != nullptr;
 
-    rpD->colorFormat[0] = d->colorFormat;
+    rpD->colorFormat[0] = int(d->colorFormat);
 
     // m_depthStencil may not be built yet so cannot rely on computed fields in it
     rpD->dsFormat = rhiD->d->dev.depth24Stencil8PixelFormatSupported
@@ -3511,6 +3597,18 @@ bool QMetalSwapChain::buildOrResize()
     }
 #endif
 
+    if (m_flags.testFlag(SurfaceHasPreMulAlpha)) {
+        d->layer.opaque = NO;
+    } else if (m_flags.testFlag(SurfaceHasNonPreMulAlpha)) {
+        // The CoreAnimation compositor is said to expect premultiplied alpha,
+        // so this is then wrong when it comes to the blending operations but
+        // there's nothing we can do. Fortunately Qt Quick always outputs
+        // premultiplied alpha so it is not a problem there.
+        d->layer.opaque = NO;
+    } else {
+        d->layer.opaque = YES;
+    }
+
     m_currentPixelSize = surfacePixelSize();
     pixelSize = m_currentPixelSize;
 
@@ -3538,7 +3636,7 @@ bool QMetalSwapChain::buildOrResize()
     }
 
     rtWrapper.d->pixelSize = pixelSize;
-    rtWrapper.d->dpr = window->devicePixelRatio();
+    rtWrapper.d->dpr = float(window->devicePixelRatio());
     rtWrapper.d->sampleCount = samples;
     rtWrapper.d->colorAttCount = 1;
     rtWrapper.d->dsAttCount = ds ? 1 : 0;
@@ -3549,9 +3647,9 @@ bool QMetalSwapChain::buildOrResize()
         MTLTextureDescriptor *desc = [[MTLTextureDescriptor alloc] init];
         desc.textureType = MTLTextureType2DMultisample;
         desc.pixelFormat = d->colorFormat;
-        desc.width = pixelSize.width();
-        desc.height = pixelSize.height();
-        desc.sampleCount = samples;
+        desc.width = NSUInteger(pixelSize.width());
+        desc.height = NSUInteger(pixelSize.height());
+        desc.sampleCount = NSUInteger(samples);
         desc.resourceOptions = MTLResourceStorageModePrivate;
         desc.storageMode = MTLStorageModePrivate;
         desc.usage = MTLTextureUsageRenderTarget;
