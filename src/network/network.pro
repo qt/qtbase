@@ -26,7 +26,7 @@ qtConfig(bearermanagement) {
     ANDROID_BUNDLED_JAR_DEPENDENCIES = \
         jar/QtAndroidBearer.jar
     ANDROID_LIB_DEPENDENCIES = \
-        plugins/bearer/libqandroidbearer.so
+        plugins/bearer/libplugins_bearer_qandroidbearer.so
     MODULE_PLUGIN_TYPES = \
         bearer
     ANDROID_PERMISSIONS += \

@@ -314,10 +314,8 @@ static QString shellQuote(const QString &arg)
 
 QString architecureFromName(const QString &name)
 {
-    const QFileInfo fi(name);
-    const QString extractedFileName = fi.fileName();
-    QRegExp architecture(QStringLiteral(".*_(.*)\\.so"));
-    if (!architecture.exactMatch(extractedFileName))
+    QRegExp architecture(QStringLiteral(".*_(armeabi-v7a|arm64-v8a|x86|x86_64).so"));
+    if (!architecture.exactMatch(name))
         return {};
     return architecture.capturedTexts().last();
 }
@@ -1177,7 +1175,7 @@ bool copyAndroidExtraResources(Options *options)
             } else {
                 if (!checkArchitecture(*options, originFile))
                     continue;
-                destinationFile = libsDir + QLatin1String("/lib") + QString(resourceDir.dirName() + QLatin1Char('/') + resourceFile).replace(QLatin1Char('/'), QLatin1Char('_'));
+                destinationFile = libsDir + resourceFile;
                 options->archExtraPlugins[options->currentArchitecture] += resourceFile;
             }
             if (!copyFileIfNewer(originFile, destinationFile, *options))
@@ -1330,9 +1328,13 @@ bool updateLibsXml(Options *options)
             if (options->verbose)
                 fprintf(stdout, "  -- Using platform plugin %s\n", qPrintable(plugin));
         }
-        allLocalLibs += QLatin1String("        <item>%1;%2</item>\n").arg(it.key(), localLibs.join(QLatin1Char(':'))
-                                                                                              .replace(QLatin1String("lib/"), QString{})
-                                                                                              .replace(QLatin1Char('/'), QLatin1Char('_')));
+
+        // remove all paths
+        for (auto &lib : localLibs) {
+            if (lib.endsWith(QLatin1String(".so")))
+                lib = lib.mid(lib.lastIndexOf(QLatin1Char('/')) + 1);
+        }
+        allLocalLibs += QLatin1String("        <item>%1;%2</item>\n").arg(it.key(), localLibs.join(QLatin1Char(':')));
     }
 
     QHash<QString, QString> replacements;
@@ -2033,7 +2035,7 @@ bool copyQtFiles(Options *options)
             if (qtDependency.relativePath.startsWith(QLatin1String("lib/"))) {
                 garbledFileName = qtDependency.relativePath.mid(sizeof("lib/") - 1);
             } else {
-                garbledFileName = QString(qtDependency.relativePath).replace(QLatin1Char('/'), QLatin1Char('_'));
+                garbledFileName = qtDependency.relativePath.mid(qtDependency.relativePath.lastIndexOf(QLatin1Char('/')) + 1);
             }
             destinationFileName = libsDirectory + options->currentArchitecture + QLatin1Char('/') + garbledFileName;
         } else if (qtDependency.relativePath.startsWith(QLatin1String("jar/"))) {
