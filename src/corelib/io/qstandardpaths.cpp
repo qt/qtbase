@@ -345,6 +345,8 @@ QT_BEGIN_NAMESPACE
     \note On Android, applications with open files on the external storage (<USER> locations),
           will be killed if the external storage is unmounted.
 
+    \note On Android, reading/writing to GenericDataLocation needs the READ_EXTERNAL_STORAGE/WRITE_EXTERNAL_STORAGE permission granted.
+
     \note On iOS, if you do pass \c {QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).last()}
         as argument to \l{QFileDialog::setDirectory()},
         a native image picker dialog will be used for accessing the user's photo album.
