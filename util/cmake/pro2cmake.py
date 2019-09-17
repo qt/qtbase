@@ -2125,11 +2125,11 @@ def write_test(cm_fh: typing.IO[str], scope: Scope,
     if 'qmltestcase' in scope.get('CONFIG'):
         libraries.add('Qt::QmlTest')
         extra.append('QMLTEST')
-        importpath = scope.get('IMPORTPATH')
+        importpath = scope.expand('IMPORTPATH')
         if importpath:
-            qml_importpath = scope.expandString(importpath)
-            if qml_importpath:
-                extra.append('QML_IMPORTPATH "{}"'.format(qml_importpath))
+            extra.append('QML_IMPORTPATH')
+            for path in importpath:
+                extra.append('    "{}"'.format(path))
 
     write_main_part(cm_fh, test_name, 'Test', 'add_qt_test', scope,
                     indent=indent, known_libraries=libraries,

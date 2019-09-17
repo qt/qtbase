@@ -2247,7 +2247,7 @@ endfunction()
 function(add_qt_test name)
     qt_parse_all_arguments(arg "add_qt_test"
         "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST"
-        "QML_IMPORTPATH;OUTPUT_DIRECTORY" "TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN})
+        "OUTPUT_DIRECTORY" "QML_IMPORTPATH;TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN})
 
     if (NOT arg_OUTPUT_DIRECTORY)
         set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
@@ -2313,9 +2313,9 @@ function(add_qt_test name)
         )
     endif()
 
-    if (arg_QML_IMPORTPATH)
-        set(extra_test_args "-import" "${arg_QML_IMPORTPATH}")
-    endif()
+    foreach(path IN LISTS arg_QML_IMPORTPATH)
+        list(APPEND extra_test_args "-import" "${path}")
+    endforeach()
 
     # Generate a label in the form tests/auto/foo/bar/tst_baz
     # and use it also for XML output
