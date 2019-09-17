@@ -84,6 +84,9 @@ public:
     bool isNaN() const noexcept { return ((b16 >> 8) & 0x7e) == 0x7e; }
     bool isFinite() const noexcept { return ((b16 >> 8) & 0x7c) != 0x7c; }
     Q_CORE_EXPORT int fpClassify() const noexcept;
+    // Can't specialize std::copysign() for qfloat16
+    qfloat16 copySign(qfloat16 sign) const noexcept
+    { return qfloat16(Wrap((sign.b16 & 0x8000) | (b16 & 0x7fff))); }
     // Support for std::numeric_limits<qfloat16>
     static constexpr qfloat16 _limit_epsilon()    noexcept { return qfloat16(Wrap(0x1400)); }
     static constexpr qfloat16 _limit_min()        noexcept { return qfloat16(Wrap(0x400)); }
