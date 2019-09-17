@@ -1059,10 +1059,6 @@ class QmakeParser:
             old_contents = contents
             contents = fixup_comments(contents)
             contents = fixup_linecontinuation(contents)
-
-            if old_contents != contents:
-                print('Warning: Fixed line continuation in .pro-file!\n'
-                      '         Position information in Parsing output might be wrong!')
             result = self._Grammar.parseString(contents, parseAll=True)
         except pp.ParseException as pe:
             print(pe.line)
