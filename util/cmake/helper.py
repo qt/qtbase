@@ -199,6 +199,8 @@ _library_map = [
     LibraryMapping('doubleconversion', None, None),
     LibraryMapping('drm', 'Libdrm', 'Libdrm::Libdrm'),
     LibraryMapping('egl', 'EGL', 'EGL::EGL'),
+    LibraryMapping('flite', 'Flite', 'Flite::Flite'),
+    LibraryMapping('flite_alsa', 'ALSA', 'ALSA::ALSA'),
     LibraryMapping('fontconfig', 'Fontconfig', 'Fontconfig::Fontconfig', resultVariable="FONTCONFIG"),
     LibraryMapping('freetype', 'WrapFreetype', 'WrapFreetype::WrapFreetype', extra=['REQUIRED']),
     LibraryMapping('gbm', 'gbm', 'gbm::gbm'),
@@ -233,6 +235,7 @@ _library_map = [
     LibraryMapping('pps', 'PPS', 'PPS::PPS'),
     LibraryMapping('psql', 'PostgreSQL', 'PostgreSQL::PostgreSQL'),
     LibraryMapping('slog2', 'Slog2', 'Slog2::Slog2'),
+    LibraryMapping('speechd', 'SpeechDispatcher', 'SpeechDispatcher::SpeechDispatcher'),
     LibraryMapping('sqlite2', None, None), # No more sqlite2 support in Qt6!
     LibraryMapping('sqlite3', 'SQLite3', 'SQLite::SQLite3'),
     LibraryMapping('sun_iconv', None, None),
