@@ -499,6 +499,7 @@ def parseTest(ctx, test, data, cm_fh):
        'separate_debug_info',  # FIXME: see if cmake can do this
        'gc_binaries',
        'libinput_axis_api',
+       'wayland-scanner',
        'xlib',
     }
 
