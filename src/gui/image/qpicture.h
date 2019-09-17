@@ -48,7 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 #ifndef QT_NO_PICTURE
 
 class QPicturePrivate;
@@ -69,10 +68,10 @@ public:
 
     bool play(QPainter *p);
 
-    bool load(QIODevice *dev, const char *format = nullptr);
-    bool load(const QString &fileName, const char *format = nullptr);
-    bool save(QIODevice *dev, const char *format = nullptr);
-    bool save(const QString &fileName, const char *format = nullptr);
+    bool load(QIODevice *dev);
+    bool load(const QString &fileName);
+    bool save(QIODevice *dev);
+    bool save(const QString &fileName);
 
     QRect boundingRect() const;
     void setBoundingRect(const QRect &r);
@@ -87,14 +86,6 @@ public:
 
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &in, const QPicture &p);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &in, QPicture &p);
-
-#if QT_DEPRECATED_SINCE(5, 10)
-    static QT_DEPRECATED const char* pictureFormat(const QString &fileName);
-    static QT_DEPRECATED QList<QByteArray> inputFormats();
-    static QT_DEPRECATED QList<QByteArray> outputFormats();
-    static QT_DEPRECATED QStringList inputFormatList();
-    static QT_DEPRECATED QStringList outputFormatList();
-#endif // QT_DEPRECATED_SINCE(5, 10)
 
     QPaintEngine *paintEngine() const override;
 
@@ -117,67 +108,6 @@ public:
 };
 
 Q_DECLARE_SHARED(QPicture)
-
-
-#ifndef QT_NO_PICTUREIO
-class QIODevice;
-class QPictureIO;
-typedef void (*picture_io_handler)(QPictureIO *); // picture IO handler
-
-struct QPictureIOData;
-
-class Q_GUI_EXPORT QPictureIO
-{
-public:
-    QPictureIO();
-    QPictureIO(QIODevice *ioDevice, const char *format);
-    QPictureIO(const QString &fileName, const char *format);
-    ~QPictureIO();
-
-    const QPicture &picture() const;
-    int status() const;
-    const char *format() const;
-    QIODevice *ioDevice() const;
-    QString fileName() const;
-    int quality() const;
-    QString description() const;
-    const char *parameters() const;
-    float gamma() const;
-
-    void setPicture(const QPicture &);
-    void setStatus(int);
-    void setFormat(const char *);
-    void setIODevice(QIODevice *);
-    void setFileName(const QString &);
-    void setQuality(int);
-    void setDescription(const QString &);
-    void setParameters(const char *);
-    void setGamma(float);
-
-    bool read();
-    bool write();
-
-    static QByteArray pictureFormat(const QString &fileName);
-    static QByteArray pictureFormat(QIODevice *);
-    static QList<QByteArray> inputFormats();
-    static QList<QByteArray> outputFormats();
-
-    static void defineIOHandler(const char *format,
-                                const char *header,
-                                const char *flags,
-                                picture_io_handler read_picture,
-                                picture_io_handler write_picture);
-
-private:
-    Q_DISABLE_COPY(QPictureIO)
-
-    void init();
-
-    QPictureIOData *d;
-};
-
-#endif //QT_NO_PICTUREIO
-
 
 /*****************************************************************************
   QPicture stream functions

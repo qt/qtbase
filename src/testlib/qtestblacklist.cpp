@@ -190,10 +190,20 @@ static QSet<QByteArray> activeConditions()
     if (!distributionName.isEmpty()) {
         if (result.find(distributionName) == result.end())
             result.insert(distributionName);
+        // backwards compatibility with Qt 5
+        if (distributionName == "macos") {
+            if (result.find(distributionName) == result.end())
+                result.insert("osx");
+        }
         if (!distributionRelease.isEmpty()) {
             QByteArray versioned = distributionName + "-" + distributionRelease;
             if (result.find(versioned) == result.end())
                 result.insert(versioned);
+            if (distributionName == "macos") {
+                QByteArray versioned = "osx-" + distributionRelease;
+                if (result.find(versioned) == result.end())
+                    result.insert(versioned);
+            }
         }
     }
 

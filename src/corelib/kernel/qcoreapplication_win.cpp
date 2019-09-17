@@ -772,7 +772,7 @@ QString decodeMSG(const MSG& msg)
             auto rect = reinterpret_cast<const RECT *>(lParam);
             QTextStream(&parameters) << "DPI: " << HIWORD(wParam) << ','
                 << LOWORD(wParam) << ' ' << (rect->right - rect->left) << 'x'
-                << (rect->bottom - rect->top) << forcesign << rect->left << rect->top;
+                << (rect->bottom - rect->top) << Qt::forcesign << rect->left << rect->top;
             }
             break;
         case WM_IME_NOTIFY:

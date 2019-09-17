@@ -46,10 +46,6 @@ QT_REQUIRE_CONFIG(easingcurve);
 
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qvector.h>
-#if QT_DEPRECATED_SINCE(5, 0)
-# include <QtCore/qlist.h>
-# include <QtCore/qpoint.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -105,9 +101,6 @@ public:
     void addCubicBezierSegment(const QPointF & c1, const QPointF & c2, const QPointF & endPoint);
     void addTCBSegment(const QPointF &nextPoint, qreal t, qreal c, qreal b);
     QVector<QPointF> toCubicSpline() const;
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED QList<QPointF> cubicBezierSpline() const { return toCubicSpline().toList(); }
-#endif
 
     Type type() const;
     void setType(Type type);

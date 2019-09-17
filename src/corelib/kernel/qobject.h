@@ -78,12 +78,6 @@ class QRegExp;
 #if QT_CONFIG(regularexpression)
 class QRegularExpression;
 #endif
-#if !QT_DEPRECATED_SINCE(5, 14) || QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-# define QT_NO_USERDATA
-#endif
-#ifndef QT_NO_USERDATA
-class QObjectUserData;
-#endif
 struct QDynamicMetaObjectData;
 
 typedef QList<QObject*> QObjectList;
@@ -408,15 +402,6 @@ public:
     QList<QByteArray> dynamicPropertyNames() const;
 #endif // QT_NO_PROPERTIES
 
-#ifndef QT_NO_USERDATA
-    QT_DEPRECATED_VERSION_5_14
-    static uint registerUserData();
-    QT_DEPRECATED_VERSION_X_5_14("Use setProperty()")
-    void setUserData(uint id, QObjectUserData* data);
-    QT_DEPRECATED_VERSION_X_5_14("Use property()")
-    QObjectUserData* userData(uint id) const;
-#endif // QT_NO_USERDATA
-
 Q_SIGNALS:
     void destroyed(QObject * = nullptr);
     void objectNameChanged(const QString &objectName, QPrivateSignal);
@@ -484,15 +469,6 @@ inline QMetaObject::Connection QObject::connect(const QObject *asender, const ch
 
 inline const QMetaObject *qt_getQtMetaObject() noexcept
 { return &QObject::staticQtMetaObject; }
-
-#ifndef QT_NO_USERDATA
-class Q_CORE_EXPORT QObjectUserData {
-    Q_DISABLE_COPY(QObjectUserData)
-public:
-    QObjectUserData() = default;
-    virtual ~QObjectUserData();
-};
-#endif
 
 #if QT_DEPRECATED_SINCE(5, 0)
 template<typename T>
