@@ -75,6 +75,7 @@ static jclass m_applicationClass  = nullptr;
 static jobject m_classLoaderObject = nullptr;
 static jmethodID m_loadClassMethodID = nullptr;
 static AAssetManager *m_assetManager = nullptr;
+static jobject m_assets = nullptr;
 static jobject m_resourcesObj = nullptr;
 static jobject m_activityObject = nullptr;
 static jmethodID m_createSurfaceMethodID = nullptr;
@@ -439,6 +440,11 @@ namespace QtAndroid
         return block;
     }
 
+    jobject assets()
+    {
+        return m_assets;
+    }
+
 } // namespace QtAndroid
 
 static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring paramsString, jstring environmentString)
@@ -588,6 +594,8 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
         env->DeleteGlobalRef(m_RGB_565_BitmapConfigValue);
     if (m_bitmapDrawableClass)
         env->DeleteGlobalRef(m_bitmapDrawableClass);
+    if (m_assets)
+        env->DeleteGlobalRef(m_assets);
     m_androidPlatformIntegration = nullptr;
     delete m_androidAssetsFileEngineHandler;
     m_androidAssetsFileEngineHandler = nullptr;
@@ -840,7 +848,8 @@ static int registerNatives(JNIEnv *env)
     if (object) {
         FIND_AND_CHECK_CLASS("android/content/ContextWrapper");
         GET_AND_CHECK_METHOD(methodID, clazz, "getAssets", "()Landroid/content/res/AssetManager;");
-        m_assetManager = AAssetManager_fromJava(env, env->CallObjectMethod(object, methodID));
+        m_assets = env->NewGlobalRef(env->CallObjectMethod(object, methodID));
+        m_assetManager = AAssetManager_fromJava(env, m_assets);
 
         GET_AND_CHECK_METHOD(methodID, clazz, "getResources", "()Landroid/content/res/Resources;");
         m_resourcesObj = env->NewGlobalRef(env->CallObjectMethod(object, methodID));

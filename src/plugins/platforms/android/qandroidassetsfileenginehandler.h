@@ -49,22 +49,14 @@
 
 QT_BEGIN_NAMESPACE
 
-struct AndroidAssetDir;
 class AndroidAssetsFileEngineHandler: public QAbstractFileEngineHandler
 {
 public:
     AndroidAssetsFileEngineHandler();
-    virtual ~AndroidAssetsFileEngineHandler();
     QAbstractFileEngine *create(const QString &fileName) const override;
 
 private:
-    void prepopulateCache() const;
-
     AAssetManager *m_assetManager;
-    mutable QCache<QByteArray, QSharedPointer<AndroidAssetDir>> m_assetsCache;
-    mutable QMutex m_assetsCacheMutext;
-    mutable bool m_hasPrepopulatedCache;
-    mutable bool m_hasTriedPrepopulatingCache;
 };
 
 QT_END_NAMESPACE

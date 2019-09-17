@@ -39,40 +39,139 @@
 
 #include "qandroidassetsfileenginehandler.h"
 #include "androidjnimain.h"
+#include <optional>
 
 #include <QCoreApplication>
 #include <QVector>
+#include <QtCore/private/qjni_p.h>
 
 QT_BEGIN_NAMESPACE
 
-typedef QVector<QString> FilesList;
+static const QLatin1String assetsPrefix("assets:");
+const static int prefixSize = 7;
 
-struct AndroidAssetDir
+static inline QString cleanedAssetPath(QString file)
 {
-    AndroidAssetDir(AAssetDir* ad)
+    if (file.startsWith(assetsPrefix))
+        file.remove(0, prefixSize);
+    file.replace(QLatin1String("//"), QLatin1String("/"));
+    if (file.startsWith(QLatin1Char('/')))
+        file.remove(0, 1);
+    if (file.endsWith(QLatin1Char('/')))
+        file.chop(1);
+    return file;
+}
+
+static inline QString prefixedPath(QString path)
+{
+    path = assetsPrefix + QLatin1Char('/') + path;
+    path.replace(QLatin1String("//"), QLatin1String("/"));
+    return path;
+}
+
+struct AssetItem {
+    enum class Type {
+        File,
+        Folder
+    };
+
+    AssetItem (const QString &rawName)
+        : name(rawName)
     {
-        if (ad) {
-            const char *fileName;
-            while ((fileName = AAssetDir_getNextFileName(ad)))
-                m_items.push_back(QString::fromUtf8(fileName));
-            AAssetDir_close(ad);
+        if (name.endsWith(QLatin1Char('/'))) {
+            type = Type::Folder;
+            name.chop(1);
         }
     }
-    FilesList m_items;
+    Type type = Type::File;
+    QString name;
 };
+
+using AssetItemList = QVector<AssetItem>;
+
+class FolderIterator : public AssetItemList
+{
+public:
+    static QSharedPointer<FolderIterator> fromCache(const QString &path)
+    {
+        QMutexLocker lock(&m_assetsCacheMutex);
+        QSharedPointer<FolderIterator> *folder = m_assetsCache.object(path);
+        if (!folder) {
+            folder = new QSharedPointer<FolderIterator>{new FolderIterator{path}};
+            if (!m_assetsCache.insert(path, folder)) {
+                QSharedPointer<FolderIterator> res = *folder;
+                delete folder;
+                return res;
+            }
+        }
+        return *folder;
+    }
+
+    FolderIterator(const QString &path)
+        : m_path(path)
+    {
+        QJNIObjectPrivate files = QJNIObjectPrivate::callStaticObjectMethod(QtAndroid::applicationClass(),
+                                                                            "listAssetContent",
+                                                                            "(Landroid/content/res/AssetManager;Ljava/lang/String;)[Ljava/lang/String;",
+                                                                            QtAndroid::assets(), QJNIObjectPrivate::fromString(path).object());
+        if (files.isValid()) {
+            QJNIEnvironmentPrivate env;
+            jobjectArray jFiles = static_cast<jobjectArray>(files.object());
+            const jint nFiles = env->GetArrayLength(jFiles);
+            for (int i = 0; i < nFiles; ++i)
+                push_back({QJNIObjectPrivate(env->GetObjectArrayElement(jFiles, i)).toString()});
+        }
+        m_path = assetsPrefix + QLatin1Char('/') + m_path + QLatin1Char('/');
+        m_path.replace(QLatin1String("//"), QLatin1String("/"));
+    }
+
+    QString currentFileName() const
+    {
+        if (m_index < 0 || m_index >= size())
+            return {};
+        return at(m_index).name;
+    }
+    QString currentFilePath() const
+    {
+        if (m_index < 0 || m_index >= size())
+            return {};
+        return m_path + at(m_index).name;
+    }
+
+    bool hasNext() const
+    {
+        return !empty() && m_index + 1 < size();
+    }
+
+    std::optional<std::pair<QString, AssetItem>> next()
+    {
+        if (!hasNext())
+            return {};
+        ++m_index;
+        return std::pair<QString, AssetItem>(currentFileName(), at(m_index));
+    }
+
+private:
+    int m_index = -1;
+    QString m_path;
+    static QCache<QString, QSharedPointer<FolderIterator>> m_assetsCache;
+    static QMutex m_assetsCacheMutex;
+};
+
+QCache<QString, QSharedPointer<FolderIterator>> FolderIterator::m_assetsCache(std::max(50, qEnvironmentVariableIntValue("QT_ANDROID_MAX_ASSETS_CACHE_SIZE")));
+QMutex FolderIterator::m_assetsCacheMutex;
 
 class AndroidAbstractFileEngineIterator: public QAbstractFileEngineIterator
 {
 public:
     AndroidAbstractFileEngineIterator(QDir::Filters filters,
                                       const QStringList &nameFilters,
-                                      QSharedPointer<AndroidAssetDir> asset,
                                       const QString &path)
         : QAbstractFileEngineIterator(filters, nameFilters)
     {
-        m_items = asset->m_items;
-        m_index = -1;
-        m_path = path;
+        m_stack.push_back(FolderIterator::fromCache(cleanedAssetPath(path)));
+        if (m_stack.last()->empty())
+            m_stack.pop_back();
     }
 
     QFileInfo currentFileInfo() const override
@@ -82,54 +181,59 @@ public:
 
     QString currentFileName() const override
     {
-        if (m_index < 0 || m_index >= m_items.size())
-            return QString();
-        QString fileName = m_items[m_index];
-        if (fileName.endsWith(QLatin1Char('/')))
-            fileName.chop(1);
-        return fileName;
+        if (!m_currentIterator)
+            return {};
+        return m_currentIterator->currentFileName();
     }
 
     virtual QString currentFilePath() const
     {
-        return m_path + currentFileName();
+        if (!m_currentIterator)
+            return {};
+        return m_currentIterator->currentFilePath();
     }
 
     bool hasNext() const override
     {
-        return m_items.size() && (m_index < m_items.size() - 1);
+        if (m_stack.empty())
+            return false;
+        if (!m_stack.last()->hasNext()) {
+            m_stack.pop_back();
+            return hasNext();
+        }
+        return true;
     }
 
     QString next() override
     {
-        if (!hasNext())
-            return QString();
-        m_index++;
-        return currentFileName();
+        if (m_stack.empty()) {
+            m_currentIterator.reset();
+            return {};
+        }
+        m_currentIterator = m_stack.last();
+        auto res = m_currentIterator->next();
+        if (!res)
+            return {};
+        if (res->second.type == AssetItem::Type::Folder) {
+            m_stack.push_back(FolderIterator::fromCache(cleanedAssetPath(currentFilePath())));
+            if (m_stack.last()->empty())
+                m_stack.pop_back();
+        }
+        return res->first;
     }
 
 private:
-    QString     m_path;
-    FilesList   m_items;
-    int         m_index;
+    mutable QSharedPointer<FolderIterator> m_currentIterator;
+    mutable QVector<QSharedPointer<FolderIterator>> m_stack;
 };
 
 class AndroidAbstractFileEngine: public QAbstractFileEngine
 {
 public:
-    explicit AndroidAbstractFileEngine(AAsset *asset, const QString &fileName)
+    explicit AndroidAbstractFileEngine(AAssetManager *assetManager, const QString &fileName)
+        : m_assetManager(assetManager)
     {
-        m_assetFile = asset;
-        m_fileName = fileName;
-    }
-
-    explicit AndroidAbstractFileEngine(QSharedPointer<AndroidAssetDir> asset, const QString &fileName)
-    {
-        m_assetFile = 0;
-        m_assetDir = asset;
-        m_fileName =  fileName;
-        if (!m_fileName.endsWith(QLatin1Char('/')))
-            m_fileName += QLatin1Char('/');
+        setFileName(fileName);
     }
 
     ~AndroidAbstractFileEngine()
@@ -139,7 +243,11 @@ public:
 
     bool open(QIODevice::OpenMode openMode) override
     {
-        return m_assetFile != 0 && (openMode & QIODevice::WriteOnly) == 0;
+        if (m_isFolder || (openMode & QIODevice::WriteOnly))
+            return false;
+        close();
+        m_assetFile = AAssetManager_open(m_assetManager, m_fileName.toUtf8(), AASSET_MODE_BUFFER);
+        return m_assetFile;
     }
 
     bool close() override
@@ -200,7 +308,7 @@ public:
         FileFlags flags(ReadOwnerPerm|ReadUserPerm|ReadGroupPerm|ReadOtherPerm|ExistsFlag);
         if (m_assetFile)
             flags |= FileType;
-        if (!m_assetDir.isNull())
+        else if (m_isFolder)
             flags |= DirectoryType;
 
         return type & flags;
@@ -213,19 +321,19 @@ public:
         case DefaultName:
         case AbsoluteName:
         case CanonicalName:
-                return m_fileName;
+                return prefixedPath(m_fileName);
         case BaseName:
             if ((pos = m_fileName.lastIndexOf(QChar(QLatin1Char('/')))) != -1)
-                return m_fileName.mid(pos);
+                return prefixedPath(m_fileName.mid(pos));
             else
-                return m_fileName;
+                return prefixedPath(m_fileName);
         case PathName:
         case AbsolutePathName:
         case CanonicalPathName:
             if ((pos = m_fileName.lastIndexOf(QChar(QLatin1Char('/')))) != -1)
-                return m_fileName.left(pos);
+                return prefixedPath(m_fileName.left(pos));
             else
-                return m_fileName;
+                return prefixedPath(m_fileName);
         default:
             return QString();
         }
@@ -233,164 +341,46 @@ public:
 
     void setFileName(const QString &file) override
     {
-        if (file == m_fileName)
-            return;
-
-        m_fileName = file;
-        if (!m_fileName.endsWith(QLatin1Char('/')))
-            m_fileName += QLatin1Char('/');
-
         close();
+        m_fileName = cleanedAssetPath(file);
+        m_isFolder = !open(QIODevice::ReadOnly) && !FolderIterator::fromCache(m_fileName)->empty();
     }
 
     Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override
     {
-        if (!m_assetDir.isNull())
-            return new AndroidAbstractFileEngineIterator(filters, filterNames, m_assetDir, m_fileName);
-        return 0;
+        if (m_isFolder)
+            return new AndroidAbstractFileEngineIterator(filters, filterNames, m_fileName);
+        return nullptr;
     }
 
 private:
-    AAsset *m_assetFile;
-    QSharedPointer<AndroidAssetDir> m_assetDir;
+    AAsset *m_assetFile = nullptr;
+    AAssetManager *m_assetManager;
     QString m_fileName;
+    bool m_isFolder;
 };
 
 
 AndroidAssetsFileEngineHandler::AndroidAssetsFileEngineHandler()
-    : m_assetsCache(std::max(5, qEnvironmentVariableIntValue("QT_ANDROID_MAX_ASSETS_CACHE_SIZE")))
-    , m_hasPrepopulatedCache(false)
-    , m_hasTriedPrepopulatingCache(false)
 {
     m_assetManager = QtAndroid::assetManager();
-}
-
-AndroidAssetsFileEngineHandler::~AndroidAssetsFileEngineHandler()
-{
-}
-
-void AndroidAssetsFileEngineHandler::prepopulateCache() const
-{
-    Q_ASSERT(!m_hasTriedPrepopulatingCache);
-    m_hasTriedPrepopulatingCache = true;
-
-    Q_ASSERT(m_assetsCache.isEmpty());
-
-    // Failsafe: Don't read cache files that are larger than 1MB
-    static qint64 maxPrepopulatedCacheSize = qMax(1024LL * 1024LL,
-                                                  qgetenv("QT_ANDROID_MAX_PREPOPULATED_ASSETS_CACHE_SIZE").toLongLong());
-
-    const char *fileName = "--Added-by-androiddeployqt--/qt_cache_pregenerated_file_list";
-    AAsset *asset = AAssetManager_open(m_assetManager, fileName, AASSET_MODE_BUFFER);
-    if (asset) {
-        m_hasPrepopulatedCache = true;
-        AndroidAbstractFileEngine fileEngine(asset, QString::fromLatin1(fileName));
-        if (fileEngine.open(QIODevice::ReadOnly)) {
-            qint64 size = fileEngine.size();
-
-            if (size <= maxPrepopulatedCacheSize) {
-                QByteArray bytes(size, Qt::Uninitialized);
-                qint64 read = fileEngine.read(bytes.data(), size);
-                if (read != size) {
-                    qWarning("Failed to read prepopulated cache");
-                    return;
-                }
-
-                QDataStream stream(&bytes, QIODevice::ReadOnly);
-                stream.setVersion(QDataStream::Qt_5_3);
-                if (stream.status() != QDataStream::Ok) {
-                    qWarning("Failed to read prepopulated cache");
-                    return;
-                }
-
-                while (!stream.atEnd()) {
-                    QString directoryName;
-                    stream >> directoryName;
-
-                    int fileCount;
-                    stream >> fileCount;
-
-                    QVector<QString> fileList;
-                    fileList.reserve(fileCount);
-                    while (fileCount--) {
-                        QString fileName;
-                        stream >> fileName;
-                        fileList.append(fileName);
-                    }
-
-                    QSharedPointer<AndroidAssetDir> *aad = new QSharedPointer<AndroidAssetDir>(new AndroidAssetDir(0));
-                    (*aad)->m_items = fileList;
-
-                    // Cost = 0, because we should always cache everything if there's a prepopulated cache
-                    QByteArray key = directoryName != QLatin1String("/")
-                            ? QByteArray("assets:/") + directoryName.toUtf8()
-                            : QByteArray("assets:");
-
-                    bool ok = m_assetsCache.insert(key, aad, 0);
-                    if (!ok)
-                        qWarning("Failed to insert in cache: %s", qPrintable(directoryName));
-                }
-            } else {
-                qWarning("Prepopulated cache is too large to read.\n"
-                         "Use environment variable QT_ANDROID_MAX_PREPOPULATED_ASSETS_CACHE_SIZE to adjust size.");
-            }
-        }
-    }
 }
 
 QAbstractFileEngine * AndroidAssetsFileEngineHandler::create(const QString &fileName) const
 {
     if (fileName.isEmpty())
-        return 0;
+        return nullptr;
 
-    static QLatin1String assetsPrefix("assets:");
     if (!fileName.startsWith(assetsPrefix))
-        return 0;
+        return nullptr;
 
-    static int prefixSize = assetsPrefix.size() + 1;
-
-    QByteArray path;
-    if (!fileName.endsWith(QLatin1Char('/'))) {
-        path = fileName.toUtf8();
-        if (path.size() > prefixSize) {
-            AAsset *asset = AAssetManager_open(m_assetManager,
-                                               path.constData() + prefixSize,
-                                               AASSET_MODE_BUFFER);
-            if (asset)
-                return new AndroidAbstractFileEngine(asset, fileName);
-        }
-    }
-
-    if (!path.size())
-         path = fileName.left(fileName.length() - 1).toUtf8();
-
-
-    m_assetsCacheMutext.lock();
-    if (!m_hasTriedPrepopulatingCache)
-        prepopulateCache();
-
-    QSharedPointer<AndroidAssetDir> *aad = m_assetsCache.object(path);
-    m_assetsCacheMutext.unlock();
-    if (!aad) {
-        if (!m_hasPrepopulatedCache && path.size() > prefixSize) {
-            AAssetDir *assetDir = AAssetManager_openDir(m_assetManager, path.constData() + prefixSize);
-            if (assetDir) {
-                if (AAssetDir_getNextFileName(assetDir)) {
-                    AAssetDir_rewind(assetDir);
-                    aad = new QSharedPointer<AndroidAssetDir>(new AndroidAssetDir(assetDir));
-                    m_assetsCacheMutext.lock();
-                    m_assetsCache.insert(path, aad);
-                    m_assetsCacheMutext.unlock();
-                    return new AndroidAbstractFileEngine(*aad, fileName);
-                } else {
-                    AAssetDir_close(assetDir);
-                }
-            }
-        }
-    } else {
-        return new AndroidAbstractFileEngine(*aad, fileName);
-    }
-    return 0;
+    QString path = fileName.mid(prefixSize);
+    path.replace(QLatin1String("//"), QLatin1String("/"));
+    if (path.startsWith(QLatin1Char('/')))
+        path.remove(0, 1);
+    if (path.endsWith(QLatin1Char('/')))
+        path.chop(1);
+    return new AndroidAbstractFileEngine(m_assetManager, path);
 }
 
 QT_END_NAMESPACE
