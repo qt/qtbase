@@ -48,34 +48,39 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "languagechooser.h"
 #include "mainwindow.h"
 
-LanguageChooser::LanguageChooser(const QString& defaultLang, QWidget *parent)
+#include <QCoreApplication>
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QDir>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QPushButton>
+#include <QTranslator>
+
+LanguageChooser::LanguageChooser(const QString &defaultLang, QWidget *parent)
     : QDialog(parent, Qt::WindowStaysOnTopHint)
 {
     groupBox = new QGroupBox("Languages");
 
     QGridLayout *groupBoxLayout = new QGridLayout;
 
-    QStringList qmFiles = findQmFiles();
+    const QStringList qmFiles = findQmFiles();
     for (int i = 0; i < qmFiles.size(); ++i) {
-        QCheckBox *checkBox = new QCheckBox(languageName(qmFiles[i]));
-        qmFileForCheckBoxMap.insert(checkBox, qmFiles[i]);
-        connect(checkBox,
-                QOverload<bool>::of(&QCheckBox::toggled),
-                this,
-                &LanguageChooser::checkBoxToggled);
-        if (languageMatch(defaultLang, qmFiles[i]))
-                checkBox->setCheckState(Qt::Checked);
+        const QString &qmlFile = qmFiles.at(i);
+        QCheckBox *checkBox = new QCheckBox(languageName(qmlFile));
+        qmFileForCheckBoxMap.insert(checkBox, qmlFile);
+        connect(checkBox, &QCheckBox::toggled,
+                this, &LanguageChooser::checkBoxToggled);
+        if (languageMatch(defaultLang, qmlFile))
+            checkBox->setCheckState(Qt::Checked);
         groupBoxLayout->addWidget(checkBox, i / 2, i % 2);
     }
     groupBox->setLayout(groupBoxLayout);
 
     buttonBox = new QDialogButtonBox;
-
     showAllButton = buttonBox->addButton("Show All",
                                          QDialogButtonBox::ActionRole);
     hideAllButton = buttonBox->addButton("Hide All",
@@ -92,7 +97,7 @@ LanguageChooser::LanguageChooser(const QString& defaultLang, QWidget *parent)
     setWindowTitle("I18N");
 }
 
-bool LanguageChooser::languageMatch(const QString& lang, const QString& qmFile)
+bool LanguageChooser::languageMatch(const QString &lang, const QString &qmFile)
 {
     //qmFile: i18n_xx.qm
     const QString prefix = "i18n_";
@@ -110,21 +115,21 @@ bool LanguageChooser::eventFilter(QObject *object, QEvent *event)
                 checkBox->setChecked(false);
         }
     }
-    return QWidget::eventFilter(object, event);
+    return QDialog::eventFilter(object, event);
 }
 
 void LanguageChooser::closeEvent(QCloseEvent * /* event */)
 {
-    qApp->quit();
+    QCoreApplication::quit();
 }
 
 void LanguageChooser::checkBoxToggled()
 {
     QCheckBox *checkBox = qobject_cast<QCheckBox *>(sender());
-    MainWindow *window = mainWindowForCheckBoxMap[checkBox];
+    MainWindow *window = mainWindowForCheckBoxMap.value(checkBox);
     if (!window) {
         QTranslator translator;
-        translator.load(qmFileForCheckBoxMap[checkBox]);
+        translator.load(qmFileForCheckBoxMap.value(checkBox));
         qApp->installTranslator(&translator);
 
         window = new MainWindow;

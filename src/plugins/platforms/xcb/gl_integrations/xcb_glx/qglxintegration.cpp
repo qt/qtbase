@@ -63,6 +63,7 @@
 QT_BEGIN_NAMESPACE
 
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+typedef const GLubyte *(*glGetStringiProc)(GLenum, GLuint);
 
 #ifndef GLX_CONTEXT_CORE_PROFILE_BIT_ARB
 #define GLX_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
@@ -145,6 +146,27 @@ static inline QByteArray getGlString(GLenum param)
     return QByteArray();
 }
 
+static bool hasGlExtension(const QSurfaceFormat &format, const char *ext)
+{
+    if (format.majorVersion() < 3) {
+        auto exts = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+        return exts && strstr(exts, ext);
+    } else {
+        auto glGetStringi = reinterpret_cast<glGetStringiProc>(
+                glXGetProcAddress(reinterpret_cast<const GLubyte*>("glGetStringi")));
+        if (glGetStringi) {
+            GLint n = 0;
+            glGetIntegerv(GL_NUM_EXTENSIONS, &n);
+            for (GLint i = 0; i < n; ++i) {
+                const char *p = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
+                if (p && !strcmp(p, ext))
+                    return true;
+            }
+        }
+        return false;
+    }
+}
+
 static void updateFormatFromContext(QSurfaceFormat &format)
 {
     // Update the version, profile, and context bit of the format
@@ -163,7 +185,7 @@ static void updateFormatFromContext(QSurfaceFormat &format)
         format.setOption(QSurfaceFormat::StereoBuffers);
 
     if (format.renderableType() == QSurfaceFormat::OpenGL) {
-        if (format.version() >= qMakePair(4, 0)) {
+        if (hasGlExtension(format, "GL_ARB_robustness")) {
             GLint value = 0;
             glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY_ARB, &value);
             if (value == GL_LOSE_CONTEXT_ON_RESET_ARB)

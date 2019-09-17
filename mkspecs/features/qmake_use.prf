@@ -22,6 +22,8 @@ for(ever) {
         !defined(QMAKE_LIBS_$$nu, var): \
             error("Library '$$lower($$replace(nu, _, -))' is not defined.")
 
+        QMAKE_LIBDIR += $$eval(QMAKE_LIBDIR_$$nu)
+
         android {
             ABI_LIBS = $$eval(QMAKE_LIBS_$${nu}_$${QT_ARCH})
             isEmpty(ABI_LIBS): ABI_LIBS = $$eval(QMAKE_LIBS_$${nu})

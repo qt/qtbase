@@ -59,7 +59,6 @@ class QComboBox;
 class QCompleter;
 class QLabel;
 class QLineEdit;
-class QProgressBar;
 class QCheckBox;
 class QSpinBox;
 QT_END_NAMESPACE
@@ -70,7 +69,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
+    MainWindow(QWidget *parent = nullptr);
 
 private slots:
     void about();
@@ -83,16 +82,16 @@ private slots:
 //! [1]
 private:
     void createMenu();
-    QAbstractItemModel *modelFromFile(const QString& fileName);
+    QAbstractItemModel *modelFromFile(const QString &fileName);
 
-    QComboBox *caseCombo;
-    QComboBox *modeCombo;
-    QComboBox *modelCombo;
-    QSpinBox *maxVisibleSpinBox;
-    QCheckBox *wrapCheckBox;
-    QCompleter *completer;
-    QLabel *contentsLabel;
-    QLineEdit *lineEdit;
+    QComboBox *caseCombo = nullptr;
+    QComboBox *modeCombo = nullptr;
+    QComboBox *modelCombo = nullptr;
+    QSpinBox *maxVisibleSpinBox = nullptr;
+    QCheckBox *wrapCheckBox = nullptr;
+    QCompleter *completer = nullptr;
+    QLabel *contentsLabel = nullptr;
+    QLineEdit *lineEdit = nullptr;
 };
 //! [1]
 

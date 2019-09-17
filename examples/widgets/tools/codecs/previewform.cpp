@@ -48,9 +48,18 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "previewform.h"
+
+#include <QApplication>
+#include <QComboBox>
+#include <QDesktopWidget>
+#include <QDialogButtonBox>
+#include <QGridLayout>
+#include <QLabel>
+#include <QPlainTextEdit>
+#include <QPushButton>
+#include <QTextCodec>
+#include <QTextStream>
 
 // Helpers for creating hex dumps
 static void indent(QTextStream &str, int indent)
@@ -83,8 +92,7 @@ static void formatHex(QTextStream &str, const QByteArray &data)
 
 static void formatPrintableCharacters(QTextStream &str, const QByteArray &data)
 {
-    for (int i = 0, size = data.size(); i < size; ++i) {
-        const char c = data.at(i);
+    for (const char c : data) {
         switch (c) {
         case '\0':
             str << "\\0";
@@ -179,7 +187,7 @@ PreviewForm::PreviewForm(QWidget *parent)
     resize(screenGeometry.width() * 2 / 5, screenGeometry.height() / 2);
 }
 
-void PreviewForm::setCodecList(const QList<QTextCodec *> &list)
+void PreviewForm::setCodecList(const QVector<QTextCodec *> &list)
 {
     encodingComboBox->clear();
     for (const QTextCodec *codec : list) {
@@ -226,10 +234,10 @@ void PreviewForm::updateTextEdit()
         statusLabel->setText(message);
         statusLabel->setStyleSheet(QStringLiteral("background-color: \"red\";"));
     } else if (state.invalidChars) {
-        statusLabel->setText(tr("%1: %n invalid characters", 0, state.invalidChars).arg(name));
+        statusLabel->setText(tr("%1: %n invalid characters", nullptr, state.invalidChars).arg(name));
         statusLabel->setStyleSheet(QStringLiteral("background-color: \"yellow\";"));
     } else {
-        statusLabel->setText(tr("%1: %n bytes converted", 0, encodedData.size()).arg(name));
+        statusLabel->setText(tr("%1: %n bytes converted", nullptr, encodedData.size()).arg(name));
         statusLabel->setStyleSheet(QString());
     }
     if (success)

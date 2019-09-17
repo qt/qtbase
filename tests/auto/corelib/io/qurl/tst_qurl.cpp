@@ -3389,8 +3389,15 @@ void tst_QUrl::acceptEmptyAuthoritySegments()
 
 void tst_QUrl::effectiveTLDs_data()
 {
+    // See also: tst_QNetworkCookieJar::setCookiesFromUrl().
+    // in tests/auto/network/access/qnetworkcookiejar/tst_qnetworkcookiejar.cpp
     QTest::addColumn<QUrl>("domain");
     QTest::addColumn<QString>("TLD");
+    // TODO: autogenerate test-cases from:
+    // https://raw.githubusercontent.com/publicsuffix/list/master/tests/test_psl.txt
+    // checkPublicSuffix(domain, tail) appears in the list if
+    // either tail is null and domain is public or
+    // tail is the "registrable" part of domain; i.e. its minimal non-public tail.
 
     QTest::newRow("yes0") << QUrl::fromEncoded("http://test.co.uk") << ".co.uk";
     QTest::newRow("yes1") << QUrl::fromEncoded("http://test.com") << ".com";

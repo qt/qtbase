@@ -612,6 +612,15 @@ static void storeOpaque(QRgba64 *dst, const QRgba64 *src, const QColorVector *bu
 
 static constexpr qsizetype WorkBlockSize = 256;
 
+template <typename T, int Count = 1>
+class QUninitialized
+{
+public:
+    operator T*() { return reinterpret_cast<T *>(this); }
+private:
+    alignas(T) char data[sizeof(T) * Count];
+};
+
 template<typename T>
 void QColorTransformPrivate::apply(T *dst, const T *src, qsizetype count, TransformFlags flags) const
 {
@@ -623,7 +632,8 @@ void QColorTransformPrivate::apply(T *dst, const T *src, qsizetype count, Transf
 
     bool doApplyMatrix = (colorMatrix != QColorMatrix::identity());
 
-    QColorVector buffer[WorkBlockSize];
+    QUninitialized<QColorVector, WorkBlockSize> buffer;
+
     qsizetype i = 0;
     while (i < count) {
         const qsizetype len = qMin(count - i, WorkBlockSize);

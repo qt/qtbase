@@ -51,16 +51,12 @@
 #ifndef ROUNDEDBOX_H
 #define ROUNDEDBOX_H
 
-//#include <GL/glew.h>
-#include "glextensions.h"
-
-#include <QtWidgets>
-#include <QtOpenGL>
-
-#include "gltrianglemesh.h"
-#include <QtGui/qvector3d.h>
-#include <QtGui/qvector2d.h>
 #include "glbuffers.h"
+#include "glextensions.h"
+#include "gltrianglemesh.h"
+
+#include <QVector2D>
+#include <QVector3D>
 
 struct P3T2N3Vertex
 {

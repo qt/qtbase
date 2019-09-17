@@ -48,7 +48,7 @@ class QWindowsVistaStylePlugin : public QStylePlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QStyleFactoryInterface" FILE "windowsvistastyle.json")
 public:
-    QStyle *create(const QString &key);
+    QStyle *create(const QString &key) override;
 };
 
 QStyle *QWindowsVistaStylePlugin::create(const QString &key)
@@ -56,7 +56,7 @@ QStyle *QWindowsVistaStylePlugin::create(const QString &key)
     if (key.compare(QLatin1String("windowsvista"), Qt::CaseInsensitive) == 0)
         return new QWindowsVistaStyle();
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

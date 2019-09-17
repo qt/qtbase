@@ -58,10 +58,10 @@ class SplashItem : public QGraphicsObject
 {
     Q_OBJECT
 public:
-    explicit SplashItem(QGraphicsItem *parent = 0);
+    explicit SplashItem(QGraphicsItem *parent = nullptr);
 
     QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
 
 private:
     QString text;

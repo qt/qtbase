@@ -56,12 +56,10 @@
 #include <QSplitter>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), scene(new QGraphicsScene(this))
+    , h1Splitter(new QSplitter(this)), h2Splitter(new QSplitter(this))
 {
     populateScene();
-
-    h1Splitter = new QSplitter;
-    h2Splitter = new QSplitter;
 
     QSplitter *vSplitter = new QSplitter;
     vSplitter->setOrientation(Qt::Vertical);
@@ -93,8 +91,6 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::populateScene()
 {
-    scene = new QGraphicsScene(this);
-
     QImage image(":/qt4logo.png");
 
     // Populate scene

@@ -44,12 +44,13 @@
 #include <QtCore/QHash>
 #include <QtCore/QMutex>
 #include <QtCore/QSemaphore>
-#include <QtCore/QSharedPointer>
 #include <QtCore/qfunctions_winrt.h>
 #include <private/qabstracteventdispatcher_p.h>
 #include <private/qcoreapplication_p.h>
 
 #include <functional>
+#include <memory>
+
 #include <wrl.h>
 #include <windows.foundation.h>
 #include <windows.system.threading.h>
@@ -300,19 +301,19 @@ HRESULT QEventDispatcherWinRT::runOnMainThread(const std::function<HRESULT()> &d
     if (QThread::currentThread() == QCoreApplication::instance()->thread())
         return delegate();
 
-    auto semaphore = QSharedPointer<QSemaphore>(new QSemaphore);
-    auto ptrSemaphore = new QSharedPointer<QSemaphore>(semaphore);
-    auto result = QSharedPointer<HRESULT>(new HRESULT);
-    auto ptrResult = new QSharedPointer<HRESULT>(result);
+    struct State {
+        QSemaphore semaphore;
+        HRESULT result;
+    };
 
-    QMetaObject::invokeMethod(QCoreApplication::instance(), [delegate, ptrSemaphore, ptrResult]() {
-        **ptrResult = delegate();
-        delete ptrResult;
-        (*ptrSemaphore)->release();
-        delete ptrSemaphore;
+    const auto state = std::make_shared<State>();
+
+    QMetaObject::invokeMethod(QCoreApplication::instance(), [delegate, state]() {
+        const QSemaphoreReleaser releaser{state->semaphore};
+        state->result = delegate();
     }, nullptr);
 
-    return semaphore->tryAcquire(1, timeout) ? *result : E_FAIL;
+    return state->semaphore.tryAcquire(1, timeout) ? state->result : E_FAIL;
 }
 
 bool QEventDispatcherWinRT::processEvents(QEventLoop::ProcessEventsFlags flags)

@@ -71,3 +71,10 @@ int main(int argc, char *argv[])
     return app.exec();
 }
 //! [1]
+
+//! [2]
+QScreen *screen = QGuiApplication::screens().at(1);
+QPixmap pixmap(":/splash.png");
+QSplashScreen splash(screen, pixmap);
+splash.show();
+//! [2]

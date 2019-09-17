@@ -120,10 +120,7 @@ enum QSliderDirection { SlUp, SlDown, SlLeft, SlRight };
     \internal
 */
 
-QWindowsStylePrivate::QWindowsStylePrivate()
-    : alt_down(false), menuBarTimer(0)
-{
-}
+QWindowsStylePrivate::QWindowsStylePrivate() = default;
 
 qreal QWindowsStylePrivate::appDevicePixelRatio()
 {
@@ -157,7 +154,7 @@ bool QWindowsStyle::eventFilter(QObject *o, QEvent *e)
             QList<QWidget *> l = widget->findChildren<QWidget *>();
             auto ignorable = [](QWidget *w) {
                 return w->isWindow() || !w->isVisible()
-                        || w->style()->styleHint(SH_UnderlineShortcut, 0, w);
+                        || w->style()->styleHint(SH_UnderlineShortcut, nullptr, w);
             };
             l.erase(std::remove_if(l.begin(), l.end(), ignorable), l.end());
             // Update states before repainting
@@ -242,7 +239,7 @@ void QWindowsStyle::polish(QApplication *app)
     QCommonStyle::polish(app);
     QWindowsStylePrivate *d = const_cast<QWindowsStylePrivate*>(d_func());
     // We only need the overhead when shortcuts are sometimes hidden
-    if (!proxy()->styleHint(SH_UnderlineShortcut, 0) && app)
+    if (!proxy()->styleHint(SH_UnderlineShortcut, nullptr) && app)
         app->installEventFilter(this);
 
     const auto &palette = QGuiApplication::palette();
@@ -343,7 +340,6 @@ int QWindowsStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
     case QStyle::PM_MenuVMargin:
     case QStyle::PM_ToolBarItemMargin:
         return 1;
-        break;
     case QStyle::PM_DockWidgetSeparatorExtent:
         return 4;
 #if QT_CONFIG(tabbar)
@@ -396,8 +392,6 @@ static QScreen *screenOf(const QWidget *w)
 // and account for secondary screens with differing logical DPI.
 qreal QWindowsStylePrivate::nativeMetricScaleFactor(const QWidget *widget)
 {
-    if (!QHighDpiScaling::isActive())
-        return 1;
     qreal result = qreal(1) / QWindowsStylePrivate::devicePixelRatio(widget);
     if (QGuiApplicationPrivate::screen_list.size() > 1) {
         const QScreen *primaryScreen = QGuiApplication::primaryScreen();
@@ -698,17 +692,17 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                 x -= 2;
             if (opt->rect.height() > 4) {
                 qDrawShadePanel(p, x, 2, 3, opt->rect.height() - 4,
-                                opt->palette, false, 1, 0);
+                                opt->palette, false, 1, nullptr);
                 qDrawShadePanel(p, x + 3, 2, 3, opt->rect.height() - 4,
-                                opt->palette, false, 1, 0);
+                                opt->palette, false, 1, nullptr);
             }
         } else {
             if (opt->rect.width() > 4) {
                 int y = opt->rect.height() / 2 - 4;
                 qDrawShadePanel(p, 2, y, opt->rect.width() - 4, 3,
-                                opt->palette, false, 1, 0);
+                                opt->palette, false, 1, nullptr);
                 qDrawShadePanel(p, 2, y + 3, opt->rect.width() - 4, 3,
-                                opt->palette, false, 1, 0);
+                                opt->palette, false, 1, nullptr);
             }
         }
         p->restore();
@@ -759,7 +753,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
                 }
             } else {
                 qDrawWinButton(p, opt->rect, opt->palette,
-                               opt->state & (State_Sunken | State_On), panel ? &fill : 0);
+                               opt->state & (State_Sunken | State_On), panel ? &fill : nullptr);
             }
         } else {
             p->fillRect(opt->rect, fill);
@@ -980,7 +974,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
 
         if (opt->state & (State_Raised | State_On | State_Sunken)) {
             qDrawWinButton(p, opt->rect, opt->palette, opt->state & (State_Sunken | State_On),
-                           panel ? &fill : 0);
+                           panel ? &fill : nullptr);
         } else {
             if (panel)
                 p->fillRect(opt->rect, fill);
@@ -1005,7 +999,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
 #endif // QT_CONFIG(dockwidget)
 
     case PE_FrameStatusBarItem:
-        qDrawShadePanel(p, opt->rect, opt->palette, true, 1, 0);
+        qDrawShadePanel(p, opt->rect, opt->palette, true, 1, nullptr);
         break;
 
     case PE_IndicatorProgressChunk:
@@ -1043,7 +1037,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         break;
 
     case PE_FrameTabWidget: {
-        qDrawWinButton(p, opt->rect, opt->palette, false, 0);
+        qDrawWinButton(p, opt->rect, opt->palette, false, nullptr);
         break;
     }
     default:
@@ -1585,6 +1579,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 case QStyleOptionToolBar::Beginning:
                 case QStyleOptionToolBar::OnlyOne:
                     paintBottomBorder = false;
+                    break;
                 default:
                     break;
                 }
@@ -1600,6 +1595,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 case QStyleOptionToolBar::OnlyOne:
                     paintRightBorder = false;
                     paintLeftBorder = false;
+                    break;
                 default:
                     break;
                 }

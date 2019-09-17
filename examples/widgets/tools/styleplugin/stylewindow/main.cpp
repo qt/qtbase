@@ -48,7 +48,8 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QStyleFactory>
 
 #include "stylewindow.h"
 

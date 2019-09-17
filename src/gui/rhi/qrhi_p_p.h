@@ -156,7 +156,9 @@ public:
     virtual int resourceLimit(QRhi::ResourceLimit limit) const = 0;
     virtual const QRhiNativeHandles *nativeHandles() = 0;
     virtual void sendVMemStatsToProfiler() = 0;
-    virtual void makeThreadLocalNativeContextCurrent() = 0;
+    virtual bool makeThreadLocalNativeContextCurrent() = 0;
+    virtual void releaseCachedResources() = 0;
+    virtual bool isDeviceLost() const = 0;
 
     bool isCompressedFormat(QRhiTexture::Format format) const;
     void compressedFormatInfo(QRhiTexture::Format format, const QSize &size,
@@ -204,6 +206,8 @@ public:
     }
 
     QRhi *q;
+
+    static const int MAX_SHADER_CACHE_ENTRIES = 128;
 
 protected:
     bool debugMarkers = false;

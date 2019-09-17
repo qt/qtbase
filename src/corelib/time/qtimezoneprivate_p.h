@@ -188,6 +188,9 @@ public:
     QUtcTimeZonePrivate(const QUtcTimeZonePrivate &other);
     virtual ~QUtcTimeZonePrivate();
 
+    // Fall-back for UTC[+-]\d+(:\d+){,2} IDs.
+    static qint64 offsetFromUtcString(const QByteArray &id);
+
     QUtcTimeZonePrivate *clone() const override;
 
     Data data(qint64 forMSecsSinceEpoch) const override;

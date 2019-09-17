@@ -64,7 +64,7 @@ class EmbeddedDialog : public QDialog
     Q_OBJECT
 
 public:
-    EmbeddedDialog(QWidget *parent = 0);
+    EmbeddedDialog(QWidget *parent = nullptr);
     ~EmbeddedDialog();
 
 private slots:

@@ -150,7 +150,7 @@
 // factory loader
 #include <qcoreapplication.h>
 #include <private/qfactoryloader_p.h>
-#include <QMutexLocker>
+#include <QtCore/private/qlocking_p.h>
 
 // for qt_getImageText
 #include <private/qimage_p.h>
@@ -186,8 +186,8 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
     QByteArray suffix;
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
-    static QMutex mutex;
-    QMutexLocker locker(&mutex);
+    static QBasicMutex mutex;
+    const auto locker = qt_scoped_lock(mutex);
 
     typedef QMultiMap<int, QString> PluginKeyMap;
 

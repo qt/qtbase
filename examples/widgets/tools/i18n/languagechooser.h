@@ -52,7 +52,7 @@
 #define LANGUAGECHOOSER_H
 
 #include <QDialog>
-#include <QMap>
+#include <QHash>
 #include <QStringList>
 
 QT_BEGIN_NAMESPACE
@@ -68,7 +68,7 @@ class LanguageChooser : public QDialog
     Q_OBJECT
 
 public:
-    explicit LanguageChooser(const QString& defaultLang = QString(), QWidget *parent = 0);
+    explicit LanguageChooser(const QString &defaultLang = QString(), QWidget *parent = nullptr);
 
 protected:
     bool eventFilter(QObject *object, QEvent *event) override;
@@ -80,17 +80,17 @@ private slots:
     void hideAll();
 
 private:
-    QStringList findQmFiles();
-    QString languageName(const QString &qmFile);
-    QColor colorForLanguage(const QString &language);
-    static bool languageMatch(const QString& lang, const QString& qmFile);
+    static QStringList findQmFiles();
+    static QString languageName(const QString &qmFile);
+    static QColor colorForLanguage(const QString &language);
+    static bool languageMatch(const QString &lang, const QString &qmFile);
 
     QGroupBox *groupBox;
     QDialogButtonBox *buttonBox;
     QAbstractButton *showAllButton;
     QAbstractButton *hideAllButton;
-    QMap<QCheckBox *, QString> qmFileForCheckBoxMap;
-    QMap<QCheckBox *, MainWindow *> mainWindowForCheckBoxMap;
+    QHash<QCheckBox *, QString> qmFileForCheckBoxMap;
+    QHash<QCheckBox *, MainWindow *> mainWindowForCheckBoxMap;
 };
 
 #endif

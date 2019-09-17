@@ -48,6 +48,9 @@
 #include "qreadwritelock_p.h"
 #include "qelapsedtimer.h"
 #include "private/qfreelist_p.h"
+#include "private/qlocking_p.h"
+
+#include <chrono>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,6 +67,9 @@ QT_BEGIN_NAMESPACE
  */
 
 namespace {
+
+using ms = std::chrono::milliseconds;
+
 enum {
     StateMask = 0x3,
     StateLockedForRead = 0x1,
@@ -262,7 +268,7 @@ bool QReadWriteLock::tryLockForRead(int timeout)
         if (d->recursive)
             return d->recursiveLockForRead(timeout);
 
-        QMutexLocker lock(&d->mutex);
+        auto lock = qt_unique_lock(d->mutex);
         if (d != d_ptr.loadRelaxed()) {
             // d_ptr has changed: this QReadWriteLock was unlocked before we had
             // time to lock d->mutex.
@@ -273,7 +279,7 @@ bool QReadWriteLock::tryLockForRead(int timeout)
             d = d_ptr.loadAcquire();
             continue;
         }
-        return d->lockForRead(timeout);
+        return d->lockForRead(lock, timeout);
     }
 }
 
@@ -369,7 +375,7 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
         if (d->recursive)
             return d->recursiveLockForWrite(timeout);
 
-        QMutexLocker lock(&d->mutex);
+        auto lock = qt_unique_lock(d->mutex);
         if (d != d_ptr.loadRelaxed()) {
             // The mutex was unlocked before we had time to lock the mutex.
             // We are holding to a mutex within a QReadWriteLockPrivate that is already released
@@ -377,7 +383,7 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
             d = d_ptr.loadAcquire();
             continue;
         }
-        return d->lockForWrite(timeout);
+        return d->lockForWrite(lock, timeout);
     }
 }
 
@@ -418,7 +424,7 @@ void QReadWriteLock::unlock()
             return;
         }
 
-        QMutexLocker locker(&d->mutex);
+        const auto lock = qt_scoped_lock(d->mutex);
         if (d->writerCount) {
             Q_ASSERT(d->writerCount == 1);
             Q_ASSERT(d->readerCount == 0);
@@ -460,9 +466,9 @@ QReadWriteLock::StateForWaitCondition QReadWriteLock::stateForWaitCondition() co
 
 }
 
-bool QReadWriteLockPrivate::lockForRead(int timeout)
+bool QReadWriteLockPrivate::lockForRead(std::unique_lock<std::mutex> &lock, int timeout)
 {
-    Q_ASSERT(!mutex.tryLock()); // mutex must be locked when entering this function
+    Q_ASSERT(!mutex.try_lock()); // mutex must be locked when entering this function
 
     QElapsedTimer t;
     if (timeout > 0)
@@ -476,10 +482,10 @@ bool QReadWriteLockPrivate::lockForRead(int timeout)
             if (elapsed > timeout)
                 return false;
             waitingReaders++;
-            readerCond.wait(&mutex, timeout - elapsed);
+            readerCond.wait_for(lock, ms{timeout - elapsed});
         } else {
             waitingReaders++;
-            readerCond.wait(&mutex);
+            readerCond.wait(lock);
         }
         waitingReaders--;
     }
@@ -488,9 +494,9 @@ bool QReadWriteLockPrivate::lockForRead(int timeout)
     return true;
 }
 
-bool QReadWriteLockPrivate::lockForWrite(int timeout)
+bool QReadWriteLockPrivate::lockForWrite(std::unique_lock<std::mutex> &lock, int timeout)
 {
-    Q_ASSERT(!mutex.tryLock()); // mutex must be locked when entering this function
+    Q_ASSERT(!mutex.try_lock()); // mutex must be locked when entering this function
 
     QElapsedTimer t;
     if (timeout > 0)
@@ -505,15 +511,15 @@ bool QReadWriteLockPrivate::lockForWrite(int timeout)
                 if (waitingReaders && !waitingWriters && !writerCount) {
                     // We timed out and now there is no more writers or waiting writers, but some
                     // readers were queueud (probably because of us). Wake the waiting readers.
-                    readerCond.wakeAll();
+                    readerCond.notify_all();
                 }
                 return false;
             }
             waitingWriters++;
-            writerCond.wait(&mutex, timeout - elapsed);
+            writerCond.wait_for(lock, ms{timeout - elapsed});
         } else {
             waitingWriters++;
-            writerCond.wait(&mutex);
+            writerCond.wait(lock);
         }
         waitingWriters--;
     }
@@ -526,17 +532,17 @@ bool QReadWriteLockPrivate::lockForWrite(int timeout)
 
 void QReadWriteLockPrivate::unlock()
 {
-    Q_ASSERT(!mutex.tryLock()); // mutex must be locked when entering this function
+    Q_ASSERT(!mutex.try_lock()); // mutex must be locked when entering this function
     if (waitingWriters)
-        writerCond.wakeOne();
+        writerCond.notify_one();
     else if (waitingReaders)
-        readerCond.wakeAll();
+        readerCond.notify_all();
 }
 
 bool QReadWriteLockPrivate::recursiveLockForRead(int timeout)
 {
     Q_ASSERT(recursive);
-    QMutexLocker lock(&mutex);
+    auto lock = qt_unique_lock(mutex);
 
     Qt::HANDLE self = QThread::currentThreadId();
 
@@ -546,7 +552,7 @@ bool QReadWriteLockPrivate::recursiveLockForRead(int timeout)
         return true;
     }
 
-    if (!lockForRead(timeout))
+    if (!lockForRead(lock, timeout))
         return false;
 
     currentReaders.insert(self, 1);
@@ -556,7 +562,7 @@ bool QReadWriteLockPrivate::recursiveLockForRead(int timeout)
 bool QReadWriteLockPrivate::recursiveLockForWrite(int timeout)
 {
     Q_ASSERT(recursive);
-    QMutexLocker lock(&mutex);
+    auto lock = qt_unique_lock(mutex);
 
     Qt::HANDLE self = QThread::currentThreadId();
     if (currentWriter == self) {
@@ -564,7 +570,7 @@ bool QReadWriteLockPrivate::recursiveLockForWrite(int timeout)
         return true;
     }
 
-    if (!lockForWrite(timeout))
+    if (!lockForWrite(lock, timeout))
         return false;
 
     currentWriter = self;
@@ -574,7 +580,7 @@ bool QReadWriteLockPrivate::recursiveLockForWrite(int timeout)
 void QReadWriteLockPrivate::recursiveUnlock()
 {
     Q_ASSERT(recursive);
-    QMutexLocker lock(&mutex);
+    auto lock = qt_unique_lock(mutex);
 
     Qt::HANDLE self = QThread::currentThreadId();
     if (self == currentWriter) {

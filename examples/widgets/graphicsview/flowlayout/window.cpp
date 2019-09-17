@@ -48,23 +48,21 @@
 **
 ****************************************************************************/
 
-#include "flowlayout.h"
 #include "window.h"
+#include "flowlayout.h"
 
 #include <QGraphicsProxyWidget>
 #include <QLabel>
 
-Window::Window()
-: QGraphicsWidget(0, Qt::Window)
+Window::Window(QGraphicsItem *parent) : QGraphicsWidget(parent, Qt::Window)
 {
     FlowLayout *lay = new FlowLayout;
-    QLatin1String wiseWords("I am not bothered by the fact that I am unknown."
-                            " I am bothered when I do not know others. (Confucius)");
-    QString sentence(wiseWords);
-    QStringList words = sentence.split(QLatin1Char(' '), QString::SkipEmptyParts);
-    for (int i = 0; i < words.count(); ++i) {
+    const QString sentence(QLatin1String("I am not bothered by the fact that I am unknown."
+                                         " I am bothered when I do not know others. (Confucius)"));
+    const QVector<QStringRef> words = sentence.splitRef(QLatin1Char(' '), QString::SkipEmptyParts);
+    for (const QStringRef &word : words) {
         QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(this);
-        QLabel *label = new QLabel(words.at(i));
+        QLabel *label = new QLabel(word.toString());
         label->setFrameStyle(QFrame::Box | QFrame::Plain);
         proxy->setWidget(label);
         lay->addItem(proxy);

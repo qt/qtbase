@@ -51,8 +51,8 @@
 #include "diagramscene.h"
 #include "arrow.h"
 
-#include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
+#include <QTextCursor>
 
 //! [0]
 DiagramScene::DiagramScene(QMenu *itemMenu, QObject *parent)
@@ -61,8 +61,8 @@ DiagramScene::DiagramScene(QMenu *itemMenu, QObject *parent)
     myItemMenu = itemMenu;
     myMode = MoveItem;
     myItemType = DiagramItem::Step;
-    line = 0;
-    textItem = 0;
+    line = nullptr;
+    textItem = nullptr;
     myItemColor = Qt::white;
     myTextColor = Qt::black;
     myLineColor = Qt::black;
@@ -188,7 +188,7 @@ void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 //! [10]
 void DiagramScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
-    if (myMode == InsertLine && line != 0) {
+    if (myMode == InsertLine && line != nullptr) {
         QLineF newLine(line->line().p1(), mouseEvent->scenePos());
         line->setLine(newLine);
     } else if (myMode == MoveItem) {
@@ -200,7 +200,7 @@ void DiagramScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
 //! [11]
 void DiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
-    if (line != 0 && myMode == InsertLine) {
+    if (line != nullptr && myMode == InsertLine) {
         QList<QGraphicsItem *> startItems = items(line->line().p1());
         if (startItems.count() && startItems.first() == line)
             startItems.removeFirst();
@@ -228,7 +228,7 @@ void DiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
         }
     }
 //! [12] //! [13]
-    line = 0;
+    line = nullptr;
     QGraphicsScene::mouseReleaseEvent(mouseEvent);
 }
 //! [13]

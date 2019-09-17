@@ -2098,8 +2098,7 @@ void tst_QFileInfo::owner()
     DWORD  bufSize = 1024;
     if (GetUserNameW(usernameBuf, &bufSize)) {
         userName = QString::fromWCharArray(usernameBuf);
-        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::WindowsVista
-                && IsUserAdmin()) {
+        if (IsUserAdmin()) {
             // Special case : If the user is a member of Administrators group, all files
             // created by the current user are owned by the Administrators group.
             LPLOCALGROUP_USERS_INFO_0 pBuf = NULL;

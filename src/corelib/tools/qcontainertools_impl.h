@@ -49,8 +49,6 @@
 #include <QtCore/qglobal.h>
 #include <iterator>
 
-#ifndef Q_QDOC
-
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate
@@ -130,7 +128,5 @@ using IfAssociativeIteratorHasFirstAndSecond =
 } // namespace QtPrivate
 
 QT_END_NAMESPACE
-
-#endif // Q_QDOC
 
 #endif // QCONTAINERTOOLS_IMPL_H

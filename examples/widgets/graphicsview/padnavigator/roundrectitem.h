@@ -61,13 +61,13 @@ class RoundRectItem : public QGraphicsObject
     Q_PROPERTY(bool fill READ fill WRITE setFill)
 public:
     RoundRectItem(const QRectF &bounds, const QColor &color,
-                  QGraphicsItem *parent = 0);
+                  QGraphicsItem *parent = nullptr);
 
     QPixmap pixmap() const;
     void setPixmap(const QPixmap &pixmap);
 
     QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
 
     bool fill() const;
     void setFill(bool fill);

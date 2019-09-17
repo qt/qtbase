@@ -70,12 +70,6 @@ QColorSpacePrimaries::QColorSpacePrimaries(QColorSpace::Primaries primaries)
         bluePoint  = QPointF(0.150, 0.060);
         whitePoint = QColorVector::D65Chromaticity();
         break;
-    case QColorSpace::Primaries::Bt2020:
-        redPoint   = QPointF(0.708, 0.292);
-        greenPoint = QPointF(0.190, 0.797);
-        bluePoint  = QPointF(0.131, 0.046);
-        whitePoint = QColorVector::D65Chromaticity();
-        break;
     case QColorSpace::Primaries::AdobeRgb:
         redPoint   = QPointF(0.640, 0.330);
         greenPoint = QPointF(0.210, 0.710);
@@ -152,17 +146,11 @@ QColorMatrix QColorSpacePrimaries::toXyzMatrix() const
 }
 
 QColorSpacePrivate::QColorSpacePrivate()
-        : primaries(QColorSpace::Primaries::Custom)
-        , transferFunction(QColorSpace::TransferFunction::Custom)
-        , gamma(0.0f)
-        , whitePoint(QColorVector::null())
-        , toXyz(QColorMatrix::null())
 {
 }
 
 QColorSpacePrivate::QColorSpacePrivate(QColorSpace::NamedColorSpace namedColorSpace)
         : namedColorSpace(namedColorSpace)
-        , gamma(0.0f)
 {
     switch (namedColorSpace) {
     case QColorSpace::SRgb:
@@ -190,11 +178,6 @@ QColorSpacePrivate::QColorSpacePrivate(QColorSpace::NamedColorSpace namedColorSp
         primaries = QColorSpace::Primaries::ProPhotoRgb;
         transferFunction = QColorSpace::TransferFunction::ProPhotoRgb;
         description = QStringLiteral("ProPhoto RGB");
-        break;
-    case QColorSpace::Bt2020:
-        primaries = QColorSpace::Primaries::Bt2020;
-        transferFunction = QColorSpace::TransferFunction::Bt2020;
-        description = QStringLiteral("BT.2020");
         break;
     default:
         Q_UNREACHABLE();
@@ -277,14 +260,6 @@ void QColorSpacePrivate::identifyColorSpace()
             }
         }
         break;
-    case QColorSpace::Primaries::Bt2020:
-        if (transferFunction == QColorSpace::TransferFunction::Bt2020) {
-            namedColorSpace = QColorSpace::Bt2020;
-            if (description.isEmpty())
-                description = QStringLiteral("BT.2020");
-            return;
-        }
-        break;
     default:
         break;
     }
@@ -301,7 +276,7 @@ void QColorSpacePrivate::initialize()
 void QColorSpacePrivate::setToXyzMatrix()
 {
     if (primaries == QColorSpace::Primaries::Custom) {
-        toXyz = QColorMatrix::null();
+        toXyz = QColorMatrix();
         whitePoint = QColorVector::D50();
         return;
     }
@@ -334,12 +309,6 @@ void QColorSpacePrivate::setTransferFunction()
         trc[0].m_fun = QColorTransferFunction::fromProPhotoRgb();
         if (qFuzzyIsNull(gamma))
             gamma = 1.8f;
-        break;
-    case QColorSpace::TransferFunction::Bt2020:
-        trc[0].m_type = QColorTrc::Type::Function;
-        trc[0].m_fun = QColorTransferFunction::fromBt2020();
-        if (qFuzzyIsNull(gamma))
-            gamma = 1.961f;
         break;
     case QColorSpace::TransferFunction::Custom:
         break;
@@ -415,8 +384,6 @@ QColorTransform QColorSpacePrivate::transformationToColorSpace(const QColorSpace
     \l{http://www.color.org/chardata/rgb/DCIP3.xalter}{ICC registration of DCI-P3}
     \value ProPhotoRgb The Pro Photo RGB color space, also known as ROMM RGB is a very wide gamut color space.
     \l{http://www.color.org/chardata/rgb/rommrgb.xalter}{ICC registration of ROMM RGB}
-    \value Bt2020 BT.2020 also known as Rec.2020 is the color space of HDR TVs.
-    \l{http://www.color.org/chardata/rgb/BT2020.xalter}{ICC registration of BT.2020}
 */
 
 /*!
@@ -429,7 +396,6 @@ QColorTransform QColorSpacePrivate::transformationToColorSpace(const QColorSpace
     \value AdobeRgb The Adobe RGB primaries
     \value DciP3D65 The DCI-P3 primaries with the D65 whitepoint
     \value ProPhotoRgb The ProPhoto RGB primaries with the D50 whitepoint
-    \value Bt2020 The BT.2020 primaries
 */
 
 /*!
@@ -442,7 +408,6 @@ QColorTransform QColorSpacePrivate::transformationToColorSpace(const QColorSpace
     \value Gamma A transfer function that is a real gamma curve based on the value of gamma()
     \value SRgb The sRGB transfer function, composed of linear and gamma parts
     \value ProPhotoRgb The ProPhoto RGB transfer function, composed of linear and gamma parts
-    \value Bt2020 The BT.2020 transfer function, composed of linear and gamma parts
 */
 
 /*!
@@ -457,7 +422,7 @@ QColorSpace::QColorSpace()
  */
 QColorSpace::QColorSpace(NamedColorSpace namedColorSpace)
 {
-    static QColorSpacePrivate *predefinedColorspacePrivates[QColorSpace::Bt2020 + 1];
+    static QColorSpacePrivate *predefinedColorspacePrivates[QColorSpace::ProPhotoRgb + 1];
     if (!predefinedColorspacePrivates[namedColorSpace]) {
         predefinedColorspacePrivates[namedColorSpace] = new QColorSpacePrivate(namedColorSpace);
         predefinedColorspacePrivates[namedColorSpace]->ref.ref();

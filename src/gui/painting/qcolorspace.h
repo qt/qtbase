@@ -59,8 +59,7 @@ public:
         SRgbLinear,
         AdobeRgb,
         DisplayP3,
-        ProPhotoRgb,
-        Bt2020,
+        ProPhotoRgb
     };
     Q_ENUM(NamedColorSpace)
     enum class Primaries {
@@ -68,8 +67,7 @@ public:
         SRgb,
         AdobeRgb,
         DciP3D65,
-        ProPhotoRgb,
-        Bt2020,
+        ProPhotoRgb
     };
     Q_ENUM(Primaries)
     enum class TransferFunction {
@@ -77,8 +75,7 @@ public:
         Linear,
         Gamma,
         SRgb,
-        ProPhotoRgb,
-        Bt2020,
+        ProPhotoRgb
     };
     Q_ENUM(TransferFunction)
 

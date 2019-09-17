@@ -54,20 +54,11 @@ class QPointer
 {
     Q_STATIC_ASSERT_X(!std::is_pointer<T>::value, "QPointer's template type must not be a pointer type");
 
-    template<typename U>
-    struct TypeSelector
-    {
-        typedef QObject Type;
-    };
-    template<typename U>
-    struct TypeSelector<const U>
-    {
-        typedef const QObject Type;
-    };
-    typedef typename TypeSelector<T>::Type QObjectType;
+    using QObjectType =
+        typename std::conditional<std::is_const<T>::value, const QObject, QObject>::type;
     QWeakPointer<QObjectType> wp;
 public:
-    inline QPointer() { }
+    QPointer() = default;
     inline QPointer(T *p) : wp(p, true) { }
     // compiler-generated copy/move ctor/assignment operators are fine!
     // compiler-generated dtor is fine!

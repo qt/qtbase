@@ -55,11 +55,7 @@
 
 QT_BEGIN_NAMESPACE
 class QAbstractItemModel;
-class QComboBox;
 class QCompleter;
-class QLabel;
-class QLineEdit;
-class QProgressBar;
 QT_END_NAMESPACE
 class TextEdit;
 
@@ -69,7 +65,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
+    MainWindow(QWidget *parent = nullptr);
 
 private slots:
     void about();
@@ -78,7 +74,7 @@ private:
     void createMenu();
     QAbstractItemModel *modelFromFile(const QString& fileName);
 
-    QCompleter *completer;
+    QCompleter *completer = nullptr;
     TextEdit *completingTextEdit;
 };
 //! [0]

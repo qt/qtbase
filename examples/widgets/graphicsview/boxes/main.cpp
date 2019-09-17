@@ -48,13 +48,11 @@
 **
 ****************************************************************************/
 
-//#include <GL/glew.h>
 #include "glextensions.h"
-
 #include "scene.h"
 
-#include <QtWidgets>
 #include <QGLWidget>
+#include <QtWidgets>
 
 class GraphicsView : public QGraphicsView
 {
@@ -114,7 +112,7 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
 
     if ((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_5) == 0) {
-        QMessageBox::critical(0, "OpenGL features missing",
+        QMessageBox::critical(nullptr, "OpenGL features missing",
             "OpenGL version 1.5 or higher is required to run this demo.\n"
             "The program will now exit.");
         return -1;
@@ -125,7 +123,7 @@ int main(int argc, char **argv)
     widget->makeCurrent();
 
     if (!necessaryExtensionsSupported()) {
-        QMessageBox::critical(0, "OpenGL features missing",
+        QMessageBox::critical(nullptr, "OpenGL features missing",
             "The OpenGL extensions required to run this demo are missing.\n"
             "The program will now exit.");
         delete widget;
@@ -134,7 +132,7 @@ int main(int argc, char **argv)
 
     // Check if all the necessary functions are resolved.
     if (!getGLExtensionFunctions().resolve(widget->context())) {
-        QMessageBox::critical(0, "OpenGL features missing",
+        QMessageBox::critical(nullptr, "OpenGL features missing",
             "Failed to resolve OpenGL functions required to run this demo.\n"
             "The program will now exit.");
         delete widget;
@@ -142,7 +140,7 @@ int main(int argc, char **argv)
     }
 
     // TODO: Make conditional for final release
-    QMessageBox::information(0, "For your information",
+    QMessageBox::information(nullptr, "For your information",
         "This demo can be GPU and CPU intensive and may\n"
         "work poorly or not at all on your system.");
 

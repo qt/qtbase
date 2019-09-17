@@ -862,6 +862,16 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     when the choice is not changed. If you need to know when the
     choice actually changes, use signal currentIndexChanged().
 
+    \obsolete Use QComboBox::textActivated() instead
+*/
+/*!
+    \fn void QComboBox::textActivated(const QString &text)
+    \since 5.14
+
+    This signal is sent when the user chooses an item in the combobox.
+    The item's \a text is passed. Note that this signal is sent even
+    when the choice is not changed. If you need to know when the
+    choice actually changes, use signal currentIndexChanged().
 */
 
 /*!
@@ -873,6 +883,15 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
 
 /*!
     \fn void QComboBox::highlighted(const QString &text)
+
+    This signal is sent when an item in the combobox popup list is
+    highlighted by the user. The item's \a text is passed.
+
+    \obsolete Use textHighlighted() instead
+*/
+/*!
+    \fn void QComboBox::textHighlighted(const QString &text)
+    \since 5.14
 
     This signal is sent when an item in the combobox popup list is
     highlighted by the user. The item's \a text is passed.
@@ -888,7 +907,6 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     currentIndex was reset.
 */
 
-#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \fn void QComboBox::currentIndexChanged(const QString &text)
     \since 4.1
@@ -897,7 +915,6 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     changes either through user interaction or programmatically.  The
     item's \a text is passed.
 */
-#endif
 
 /*!
     \fn void QComboBox::currentTextChanged(const QString &text)
@@ -2522,21 +2539,6 @@ QSize QComboBox::sizeHint() const
 }
 
 #ifdef Q_OS_MAC
-
-namespace {
-struct IndexSetter {
-    int index;
-    QComboBox *cb;
-
-    void operator()(void)
-    {
-        cb->setCurrentIndex(index);
-        emit cb->activated(index);
-        emit cb->activated(cb->itemText(index));
-    }
-};
-}
-
 void QComboBoxPrivate::cleanupNativePopup()
 {
     if (!m_platformMenu)

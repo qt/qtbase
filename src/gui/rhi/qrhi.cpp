@@ -439,6 +439,18 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     visible in external GPU debugging tools will not be available and functions
     like QRhiCommandBuffer::debugMarkBegin() will become a no-op. Avoid
     enabling in production builds as it may involve a performance penalty.
+
+    \value PreferSoftwareRenderer Indicates that backends should prefer
+    choosing an adapter or physical device that renders in software on the CPU.
+    For example, with Direct3D there is typically a "Basic Render Driver"
+    adapter available with \c{DXGI_ADAPTER_FLAG_SOFTWARE}. Setting this flag
+    requests the backend to choose that adapter over any other, as long as no
+    specific adapter was forced by other backend-specific means. With Vulkan
+    this maps to preferring physical devices with
+    \c{VK_PHYSICAL_DEVICE_TYPE_CPU}. When not available, or when it is not
+    possible to decide if an adapter/device is software-based, this flag is
+    ignored. It may also be ignored with graphics APIs that have no concept and
+    means of enumerating adapters/devices.
  */
 
 /*!
@@ -455,8 +467,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
     \value FrameOpDeviceLost The graphics device was lost. This can be
     recoverable by attempting to repeat the operation (such as, beginFrame())
-    and releasing and reinitializing all objects backed by native graphics
-    resources.
+    after releasing and reinitializing all objects backed by native graphics
+    resources. See isDeviceLost().
  */
 
 /*!
@@ -673,7 +685,7 @@ bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClear
  */
 uint qHash(const QRhiDepthStencilClearValue &v, uint seed) Q_DECL_NOTHROW
 {
-    return seed * (qFloor(v.depthClearValue() * 100) + v.stencilClearValue());
+    return seed * (uint(qFloor(qreal(v.depthClearValue()) * 100)) + v.stencilClearValue());
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -768,7 +780,8 @@ bool operator!=(const QRhiViewport &a, const QRhiViewport &b) Q_DECL_NOTHROW
 uint qHash(const QRhiViewport &v, uint seed) Q_DECL_NOTHROW
 {
     const std::array<float, 4> r = v.viewport();
-    return seed + r[0] + r[1] + r[2] + r[3] + qFloor(v.minDepth() * 100) + qFloor(v.maxDepth() * 100);
+    return seed + uint(r[0]) + uint(r[1]) + uint(r[2]) + uint(r[3])
+            + uint(qFloor(qreal(v.minDepth()) * 100)) + uint(qFloor(qreal(v.maxDepth()) * 100));
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -850,7 +863,7 @@ bool operator!=(const QRhiScissor &a, const QRhiScissor &b) Q_DECL_NOTHROW
 uint qHash(const QRhiScissor &v, uint seed) Q_DECL_NOTHROW
 {
     const std::array<int, 4> r = v.scissor();
-    return seed + r[0] + r[1] + r[2] + r[3];
+    return seed + uint(r[0]) + uint(r[1]) + uint(r[2]) + uint(r[3]);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -1136,7 +1149,7 @@ bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribut
  */
 uint qHash(const QRhiVertexInputAttribute &v, uint seed) Q_DECL_NOTHROW
 {
-    return seed + v.binding() + v.location() + v.format() + v.offset();
+    return seed + uint(v.binding()) + uint(v.location()) + uint(v.format()) + v.offset();
 }
 
 #ifndef QT_NO_DEBUG_STREAM
@@ -3001,7 +3014,7 @@ bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
 uint qHash(const QRhiShaderResourceBinding &b, uint seed) Q_DECL_NOTHROW
 {
     const char *u = reinterpret_cast<const char *>(&b.d->u);
-    return seed + b.d->binding + 10 * b.d->stage + 100 * b.d->type
+    return seed + uint(b.d->binding) + 10 * uint(b.d->stage) + 100 * uint(b.d->type)
             + qHash(QByteArray::fromRawData(u, sizeof(b.d->u)), seed);
 }
 
@@ -3457,10 +3470,18 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
     Flag values to describe swapchain properties
 
     \value SurfaceHasPreMulAlpha Indicates that the target surface has
-    transparency with premultiplied alpha.
+    transparency with premultiplied alpha. For example, this is what Qt Quick
+    uses when the alpha channel is enabled on the target QWindow, because the
+    scenegraph rendrerer always outputs fragments with alpha multiplied into
+    the red, green, and blue values. To ensure identical behavior across
+    platforms, always set QSurfaceFormat::alphaBufferSize() to a non-zero value
+    on the target QWindow whenever this flag is set on the swapchain.
 
     \value SurfaceHasNonPreMulAlpha Indicates the target surface has
-    transparencyt with non-premultiplied alpha.
+    transparency with non-premultiplied alpha. Be aware that this may not be
+    supported on some systems, if the system compositor always expects content
+    with premultiplied alpha. In that case the behavior with this flag set is
+    expected to be equivalent to SurfaceHasPreMulAlpha.
 
     \value sRGB Requests to pick an sRGB format for the swapchain and/or its
     render target views, where applicable. Note that this implies that sRGB
@@ -3823,8 +3844,8 @@ void QRhiImplementation::compressedFormatInfo(QRhiTexture::Format format, const 
         break;
     }
 
-    const quint32 wblocks = (size.width() + xdim - 1) / xdim;
-    const quint32 hblocks = (size.height() + ydim - 1) / ydim;
+    const quint32 wblocks = uint((size.width() + xdim - 1) / xdim);
+    const quint32 hblocks = uint((size.height() + ydim - 1) / ydim);
 
     if (bpl)
         *bpl = wblocks * blockSize;
@@ -3880,9 +3901,9 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
     }
 
     if (bpl)
-        *bpl = size.width() * bpc;
+        *bpl = uint(size.width()) * bpc;
     if (byteSize)
-        *byteSize = size.width() * size.height() * bpc;
+        *byteSize = uint(size.width() * size.height()) * bpc;
 }
 
 // Approximate because it excludes subresource alignment or multisampling.
@@ -3892,12 +3913,12 @@ quint32 QRhiImplementation::approxByteSizeForTexture(QRhiTexture::Format format,
     quint32 approxSize = 0;
     for (int level = 0; level < mipCount; ++level) {
         quint32 byteSize = 0;
-        const QSize size(qFloor(float(qMax(1, baseSize.width() >> level))),
-                         qFloor(float(qMax(1, baseSize.height() >> level))));
+        const QSize size(qFloor(qreal(qMax(1, baseSize.width() >> level))),
+                         qFloor(qreal(qMax(1, baseSize.height() >> level))));
         textureFormatInfo(format, size, nullptr, &byteSize);
         approxSize += byteSize;
     }
-    approxSize *= layerCount;
+    approxSize *= uint(layerCount);
     return approxSize;
 }
 
@@ -5001,10 +5022,17 @@ const QRhiNativeHandles *QRhi::nativeHandles()
     has to ensure external OpenGL code provided by the application can still
     run like it did before with direct usage of OpenGL, as long as the QRhi is
     using the OpenGL backend.
+
+    \return false when failed, similarly to QOpenGLContext::makeCurrent(). When
+    the operation failed, isDeviceLost() can be called to determine if there
+    was a loss of context situation. Such a check is equivalent to checking via
+    QOpenGLContext::isValid().
+
+    \sa QOpenGLContext::makeCurrent(), QOpenGLContext::isValid()
  */
-void QRhi::makeThreadLocalNativeContextCurrent()
+bool QRhi::makeThreadLocalNativeContextCurrent()
 {
-    d->makeThreadLocalNativeContextCurrent();
+    return d->makeThreadLocalNativeContextCurrent();
 }
 
 /*!
@@ -5017,6 +5045,70 @@ void QRhi::makeThreadLocalNativeContextCurrent()
 QRhiProfiler *QRhi::profiler()
 {
     return &d->profiler;
+}
+
+/*!
+    Attempts to release resources in the backend's caches. This can include both
+    CPU and GPU resources.  Only memory and resources that can be recreated
+    automatically are in scope. As an example, if the backend's
+    QRhiGraphicsPipeline implementation maintains a cache of shader compilation
+    results, calling this function leads to emptying that cache, thus
+    potentially freeing up memory and graphics resources.
+
+    Calling this function makes sense in resource constrained environments,
+    where at a certain point there is a need to ensure minimal resource usage,
+    at the expense of performance.
+ */
+void QRhi::releaseCachedResources()
+{
+    d->releaseCachedResources();
+}
+
+/*!
+    \return true if the graphics device was lost.
+
+    The loss of the device is typically detected in beginFrame(), endFrame() or
+    QRhiSwapChain::buildOrResize(), depending on the backend and the underlying
+    native APIs. The most common is endFrame() because that is where presenting
+    happens. With some backends QRhiSwapChain::buildOrResize() can also fail
+    due to a device loss. Therefore this function is provided as a generic way
+    to check if a device loss was detected by a previous operation.
+
+    When the device is lost, no further operations should be done via the QRhi.
+    Rather, all QRhi resources should be released, followed by destroying the
+    QRhi. A new QRhi can then be attempted to be created. If successful, all
+    graphics resources must be reinitialized. If not, try again later,
+    repeatedly.
+
+    While simple applications may decide to not care about device loss,
+    on the commonly used desktop platforms a device loss can happen
+    due to a variety of reasons, including physically disconnecting the
+    graphics adapter, disabling the device or driver, uninstalling or upgrading
+    the graphics driver, or due to errors that lead to a graphics device reset.
+    Some of these can happen under perfectly normal circumstances as well, for
+    example the upgrade of the graphics driver to a newer version is a common
+    task that can happen at any time while a Qt application is running. Users
+    may very well expect applications to be able to survive this, even when the
+    application is actively using an API like OpenGL or Direct3D.
+
+    Qt's own frameworks built on top of QRhi, such as, Qt Quick, can be
+    expected to handle and take appropriate measures when a device loss occurs.
+    If the data for graphics resources, such as textures and buffers, are still
+    available on the CPU side, such an event may not be noticeable on the
+    application level at all since graphics resources can seamlessly be
+    reinitialized then. However, applications and libraries working directly
+    with QRhi are expected to be prepared to check and handle device loss
+    situations themselves.
+
+    \note With OpenGL, applications may need to opt-in to context reset
+    notifications by setting QSurfaceFormat::ResetNotification on the
+    QOpenGLContext. This is typically done by enabling the flag in
+    QRhiGles2InitParams::format. Keep in mind however that some systems may
+    generate context resets situations even when this flag is not set.
+ */
+bool QRhi::isDeviceLost() const
+{
+    return d->isDeviceLost();
 }
 
 /*!
@@ -5180,7 +5272,17 @@ QRhiSwapChain *QRhi::newSwapChain()
 
     \endlist
 
-    \sa endFrame(), beginOffscreenFrame()
+    \return QRhi::FrameOpSuccess on success, or another QRhi::FrameOpResult
+    value on failure. Some of these should be treated as soft, "try again
+    later" type of errors: When QRhi::FrameOpSwapChainOutOfDate is returned,
+    the swapchain is to be resized or updated by calling
+    QRhiSwapChain::buildOrResize(). The application should then attempt to
+    generate a new frame. QRhi::FrameOpDeviceLost means the graphics device is
+    lost but this may also be recoverable by releasing all resources, including
+    the QRhi itself, and then recreating all resources. See isDeviceLost() for
+    further discussion.
+
+    \sa endFrame(), beginOffscreenFrame(), isDeviceLost()
  */
 QRhi::FrameOpResult QRhi::beginFrame(QRhiSwapChain *swapChain, BeginFrameFlags flags)
 {
@@ -5205,7 +5307,17 @@ QRhi::FrameOpResult QRhi::beginFrame(QRhiSwapChain *swapChain, BeginFrameFlags f
     Passing QRhi::SkipPresent skips queuing the Present command or calling
     swapBuffers.
 
-    \sa beginFrame()
+    \return QRhi::FrameOpSuccess on success, or another QRhi::FrameOpResult
+    value on failure. Some of these should be treated as soft, "try again
+    later" type of errors: When QRhi::FrameOpSwapChainOutOfDate is returned,
+    the swapchain is to be resized or updated by calling
+    QRhiSwapChain::buildOrResize(). The application should then attempt to
+    generate a new frame. QRhi::FrameOpDeviceLost means the graphics device is
+    lost but this may also be recoverable by releasing all resources, including
+    the QRhi itself, and then recreating all resources. See isDeviceLost() for
+    further discussion.
+
+    \sa beginFrame(), isDeviceLost()
  */
 QRhi::FrameOpResult QRhi::endFrame(QRhiSwapChain *swapChain, EndFrameFlags flags)
 {

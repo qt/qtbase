@@ -166,6 +166,10 @@ void tst_QNetworkCookieJar::setCookiesFromUrl_data()
     // 2. anything .ck is an effective TLD ('*.ck'), but 'www.ck' is an exception
     result.clear();
     preset.clear();
+    cookie.setDomain(".ck");
+    QTest::newRow("effective-tld.ck-denied") << preset << cookie << "http://foo.ck" << result << false;
+    result.clear();
+    preset.clear();
     cookie.setDomain(".foo.ck");
     result += cookie;
     QTest::newRow("effective-tld2-accepted2") << preset << cookie << "http://foo.ck" << result << true;

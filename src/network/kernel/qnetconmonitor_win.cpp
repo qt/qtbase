@@ -103,7 +103,7 @@ class QNetworkConnectionEvents : public INetworkConnectionEvents
 {
 public:
     QNetworkConnectionEvents(QNetworkConnectionMonitorPrivate *monitor);
-    ~QNetworkConnectionEvents();
+    virtual ~QNetworkConnectionEvents();
 
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override;
 
@@ -471,7 +471,7 @@ class QNetworkListManagerEvents : public INetworkListManagerEvents
 {
 public:
     QNetworkListManagerEvents(QNetworkStatusMonitorPrivate *monitor);
-    ~QNetworkListManagerEvents();
+    virtual ~QNetworkListManagerEvents();
 
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override;
 
