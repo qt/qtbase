@@ -75,7 +75,32 @@ macro(qt_build_repo_end)
                          OPTIONAL_PACKAGES_NOT_FOUND
                          RUNTIME_PACKAGES_NOT_FOUND
                          FATAL_ON_MISSING_REQUIRED_PACKAGES)
+
+    qt_print_build_instructions()
 endmacro()
+
+function(qt_print_build_instructions)
+    if(NOT PROJECT_NAME STREQUAL "QtBase")
+        return()
+    endif()
+
+    set(build_command "cmake --build . --parallel")
+    set(install_command "cmake --install .")
+
+    message("Qt is now configured for building. Just run '${build_command}'.")
+    if(QT_WILL_INSTALL)
+        message("Once everything is built, you must run '${install_command}'.")
+        message("Qt will be installed into '${CMAKE_INSTALL_PREFIX}'")
+    else()
+        message("Once everything is built, Qt is installed.")
+        message("You should NOT run '${install_command}'")
+        message("Note that this build cannot be deployed to other machines or devices.")
+    endif()
+    message("To configure and build other modules, you can use the following convenience script:
+        ${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qt-cmake")
+    message("\nIf reconfiguration fails for some reason, try to remove 'CMakeCache.txt' \
+from the build directory \n")
+endfunction()
 
 macro(qt_build_repo)
     qt_build_repo_begin(${ARGN})
