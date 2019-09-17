@@ -1182,14 +1182,18 @@ Q_LOGGING_CATEGORY(lcQpaPluginLoading, "qt.qpa.plugin");
 
 static void init_platform(const QString &pluginNamesWithArguments, const QString &platformPluginPath, const QString &platformThemeName, int &argc, char **argv)
 {
-    QStringList plugins = pluginNamesWithArguments.split(QLatin1Char(';'));
+    QStringList plugins = pluginNamesWithArguments.split(QLatin1Char(';'), QString::SkipEmptyParts);
     QStringList platformArguments;
     QStringList availablePlugins = QPlatformIntegrationFactory::keys(platformPluginPath);
     for (const auto &pluginArgument : plugins) {
         // Split into platform name and arguments
-        QStringList arguments = pluginArgument.split(QLatin1Char(':'));
+        QStringList arguments = pluginArgument.split(QLatin1Char(':'), QString::SkipEmptyParts);
+        if (arguments.isEmpty())
+            continue;
         const QString name = arguments.takeFirst().toLower();
         QString argumentsKey = name;
+        if (name.isEmpty())
+            continue;
         argumentsKey[0] = argumentsKey.at(0).toUpper();
         arguments.append(QLibraryInfo::platformPluginArguments(argumentsKey));
 

@@ -3270,7 +3270,11 @@ void QAbstractItemModel::endResetModel()
 {
     Q_D(QAbstractItemModel);
     d->invalidatePersistentIndexes();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    resetInternalData();
+#else
     QMetaObject::invokeMethod(this, "resetInternalData");
+#endif
     emit modelReset(QPrivateSignal());
 }
 

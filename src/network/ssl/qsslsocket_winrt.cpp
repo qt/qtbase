@@ -275,7 +275,7 @@ void QSslSocketBackendPrivate::startClientEncryption()
     }
 
     // Sync custom certificates
-    const QSet<QSslCertificate> caCertificates = configuration.caCertificates.toSet();
+    const QSet<QSslCertificate> caCertificates(configuration.caCertificates.constBegin(), configuration.caCertificates.constEnd());
     const QSet<QSslCertificate> newCertificates = caCertificates - previousCaCertificates;
     const QSet<QSslCertificate> oldCertificates = previousCaCertificates - caCertificates;
     g->syncCaCertificates(newCertificates, oldCertificates);
@@ -398,7 +398,7 @@ void QSslSocketBackendPrivate::continueHandshake()
     hr = control2->get_IgnorableServerCertificateErrors(&ignoreList);
     Q_ASSERT_SUCCEEDED(hr);
 
-    QSet<QSslError> ignoreErrors = ignoreErrorsList.toSet();
+    QSet<QSslError> ignoreErrors(ignoreErrorsList.constBegin(), ignoreErrorsList.constEnd());
     for (int i = ChainValidationResult_Untrusted; i < ChainValidationResult_OtherErrors + 1; ++i) {
         // Populate the native ignore list - break to add, continue to skip
         switch (i) {
@@ -601,7 +601,7 @@ HRESULT QSslSocketBackendPrivate::onSslUpgrade(IAsyncAction *action, AsyncStatus
         }
     }
 
-    sslErrors = errors.toList();
+    sslErrors = QList<QSslError>(errors.constBegin(), errors.constEnd());
 
     // Peer validation
     if (!configuration.peerCertificate.isNull()) {

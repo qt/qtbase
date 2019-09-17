@@ -14,7 +14,6 @@ HEADERS += \
         image/qpaintengine_pic_p.h \
         image/qpicture.h \
         image/qpicture_p.h \
-        image/qpictureformatplugin.h \
         image/qpixmap.h \
         image/qpixmap_raster_p.h \
         image/qpixmap_blitter_p.h \
@@ -38,7 +37,6 @@ SOURCES += \
         image/qimagewriter.cpp \
         image/qpaintengine_pic.cpp \
         image/qpicture.cpp \
-        image/qpictureformatplugin.cpp \
         image/qpixmap.cpp \
         image/qpixmapcache.cpp \
         image/qplatformpixmap.cpp \
@@ -58,9 +56,6 @@ qtConfig(movie) {
 win32:!winrt: SOURCES += image/qpixmap_win.cpp
 
 darwin: OBJECTIVE_SOURCES += image/qimage_darwin.mm
-
-NO_PCH_SOURCES += image/qimage_compat.cpp
-false: SOURCES += $$NO_PCH_SOURCES # Hack for QtCreator
 
 # Built-in image format support
 HEADERS += \

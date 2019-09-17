@@ -1,65 +1,51 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/">
-   <file>extras/test</file>
-   <file>extras/test2</file>
-   <file>extras/+custom1/test</file>
-   <file>extras/+custom1/test3</file>
-   <file>extras/+custom2/test</file>
-   <file>extras/+custom3/test</file>
-   <file>extras/+custom3/+custom2/test</file>
-   <file>extras/+custom3/+custom4/test</file>
-   <file>extras/+custom3/+custom5/test</file>
-   <file>extras/+custom5/+custom3/test</file>
-
-   <!-- platforms/test: deepest possible selection -->
-   <file>platforms/test</file>
-   <file>platforms/+unix/+android/test</file>
-   <file>platforms/+unix/+darwin/+mac/+ios/test</file>
-   <file>platforms/+unix/+darwin/+mac/+osx/+macos/test</file>
-   <file>platforms/+unix/+darwin/+mac/+osx/test</file>
-   <file>platforms/+unix/+darwin/+mac/test</file>
-   <file>platforms/+unix/+darwin/test</file>
-   <file>platforms/+unix/+haiku/test</file>
-   <file>platforms/+unix/+linux/test</file>
-   <file>platforms/+unix/+qnx/test</file>
-   <file>platforms/+unix/test</file>
-   <file>platforms/+windows/+wince/test</file>
-   <file>platforms/+windows/+winnt/test</file>
-   <file>platforms/+windows/+winrt/test</file>
-   <file>platforms/+windows/test</file>
-   <file>platforms/+android/test</file>
-   <file>platforms/+ios/test</file>
-   <file>platforms/+macos/test</file>
-   <file>platforms/+osx/test</file>
-   <file>platforms/+darwin/test</file>
-   <file>platforms/+mac/test</file>
-   <file>platforms/+haiku/test</file>
-   <file>platforms/+linux/test</file>
-   <file>platforms/+qnx/test</file>
-   <file>platforms/+wince/test</file>
-   <file>platforms/+winrt/test</file>
-
-   <!-- platforms/test2: shallow selection for the deepest selector -->
-   <file>platforms/test2</file>
-   <file>platforms/+android/test2</file>
-   <file>platforms/+ios/test2</file>
-   <file>platforms/+macos/test2</file>
-   <file>platforms/+haiku/test2</file>
-   <file>platforms/+linux/test2</file>
-   <file>platforms/+qnx/test2</file>
-   <file>platforms/+wince/test2</file>
-   <file>platforms/+winnt/test2</file>
-   <file>platforms/+winrt/test2</file>
-
-   <!-- platforms/test3: selection for the family only -->
-   <file>platforms/test3</file>
-   <file>platforms/+windows/test3</file>
-   <file>platforms/+unix/test3</file>
-
-   <!-- platforms/test4 and 5: special cases for macOS -->
-   <file>platforms/test4</file>
-   <file>platforms/+osx/test4</file>
-   <file>platforms/test5</file>
-   <file>platforms/+mac/test5</file>
-</qresource>
+<RCC>
+    <qresource prefix="/">
+        <file>extras/test</file>
+        <file>extras/test2</file>
+        <file>extras/+custom1/test</file>
+        <file>extras/+custom1/test3</file>
+        <file>extras/+custom2/test</file>
+        <file>extras/+custom3/test</file>
+        <file>extras/+custom3/+custom2/test</file>
+        <file>extras/+custom3/+custom4/test</file>
+        <file>extras/+custom3/+custom5/test</file>
+        <file>extras/+custom5/+custom3/test</file>
+        <file>platforms/test</file>
+        <file>platforms/+unix/+android/test</file>
+        <file>platforms/+unix/+darwin/test</file>
+        <file>platforms/+unix/+haiku/test</file>
+        <file>platforms/+unix/+linux/test</file>
+        <file>platforms/+unix/+qnx/test</file>
+        <file>platforms/+unix/test</file>
+        <file>platforms/+windows/+wince/test</file>
+        <file>platforms/+windows/+winnt/test</file>
+        <file>platforms/+windows/+winrt/test</file>
+        <file>platforms/+windows/test</file>
+        <file>platforms/+android/test</file>
+        <file>platforms/+ios/test</file>
+        <file>platforms/+macos/test</file>
+        <file>platforms/+darwin/test</file>
+        <file>platforms/+haiku/test</file>
+        <file>platforms/+linux/test</file>
+        <file>platforms/+qnx/test</file>
+        <file>platforms/+wince/test</file>
+        <file>platforms/+winrt/test</file>
+        <file>platforms/test2</file>
+        <file>platforms/+android/test2</file>
+        <file>platforms/+ios/test2</file>
+        <file>platforms/+macos/test2</file>
+        <file>platforms/+haiku/test2</file>
+        <file>platforms/+linux/test2</file>
+        <file>platforms/+qnx/test2</file>
+        <file>platforms/+wince/test2</file>
+        <file>platforms/+winnt/test2</file>
+        <file>platforms/+winrt/test2</file>
+        <file>platforms/test3</file>
+        <file>platforms/+windows/test3</file>
+        <file>platforms/+unix/test3</file>
+        <file>platforms/test4</file>
+        <file>platforms/test5</file>
+        <file>platforms/+unix/+darwin/+macos/test</file>
+        <file>platforms/+unix/+darwin/+ios/test</file>
+    </qresource>
 </RCC>
