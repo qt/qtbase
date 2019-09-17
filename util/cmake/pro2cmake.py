@@ -41,6 +41,12 @@ import re
 import io
 import typing
 import glob
+import collections
+
+try:
+    collectionsAbc = collections.abc
+except AttributeError:
+    collectionsAbc = collections
 
 from sympy.logic import (simplify_logic, And, Or, Not,)
 import pyparsing as pp
@@ -361,6 +367,15 @@ def handle_vpath(source: str, base_dir: str, vpath: typing.List[str]) -> str:
     return '{}-NOTFOUND'.format(source)
 
 
+def flatten_list(l):
+    """ Flattens an irregular nested list into a simple list."""
+    for el in l:
+        if isinstance(el, collectionsAbc.Iterable) and not isinstance(el, (str, bytes)):
+            yield from flatten_list(el)
+        else:
+            yield el
+
+
 def handle_function_value(group: pp.ParseResults):
     function_name = group[0]
     function_args = group[1]
@@ -378,10 +393,13 @@ def handle_function_value(group: pp.ParseResults):
             raise RuntimeError('Don\'t know what to with more than one function argument for $$files().')
         return str(function_args[0])
 
+    if isinstance(function_args, pp.ParseResults):
+        function_args = list(flatten_list(function_args.asList()))
+
     # Return the whole expression as a string.
     if function_name in ['join', 'files', 'cmakeRelativePath', 'shell_quote', 'shadowed', 'cmakeTargetPath',
                          'shell_path', 'cmakeProcessLibs', 'cmakeTargetPaths',
-                         'cmakePortablePaths', 'escape_expand']:
+                         'cmakePortablePaths', 'escape_expand', 'member']:
         return 'join({})'.format(''.join(function_args))
 
 
