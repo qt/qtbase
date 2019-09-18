@@ -60,7 +60,7 @@ add_qt_module(Test
     PUBLIC_LIBRARIES
         Qt::Core
     COMPILE_OPTIONS
-        --cs-exclude-file-abs-wildcard=$$QT_SOURCE_TREE/*
+        --cs-exclude-file-abs-wildcard=${QT_SOURCE_TREE}/*
         --cs-include-file-abs-wildcard=*/src/testlib/*
         --cs-mcc
         --cs-mcdc
@@ -141,7 +141,7 @@ extend_target(Test CONDITION ((APPLE) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERS
 
 #### Keys ignored in scope 12:.:.:testlib.pro:NOT TARGET Qt::Network:
 # HEADERSCLEAN_EXCLUDE = "qtest_network.h"
-add_qt_docs(
+add_qt_docs(Test,
     doc/qttestlib.qdocconf
 )
 

@@ -171,7 +171,7 @@ extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewdialog
     SOURCES
         dialogs/qprintpreviewdialog.cpp dialogs/qprintpreviewdialog.h
 )
-add_qt_docs(
+add_qt_docs(PrintSupport,
     doc/qtprintsupport.qdocconf
 )
 

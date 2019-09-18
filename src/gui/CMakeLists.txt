@@ -743,7 +743,7 @@ extend_target(Gui CONDITION WASM
 )
 
 qt_create_tracepoints(Gui qtgui.tracepoints)
-add_qt_docs(
+add_qt_docs(Gui,
     doc/qtgui.qdocconf
 )
 

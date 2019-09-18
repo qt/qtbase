@@ -839,7 +839,7 @@ extend_target(Widgets CONDITION QT_FEATURE_qeventtransition
 
 
 qt_create_tracepoints(Widgets qtwidgets.tracepoints)
-add_qt_docs(
+add_qt_docs(Widgets,
     doc/qtwidgets.qdocconf
 )
 

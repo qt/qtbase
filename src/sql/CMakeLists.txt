@@ -51,7 +51,7 @@ extend_target(Sql CONDITION QT_FEATURE_sqlmodel
         models/qsqlrelationaltablemodel.cpp models/qsqlrelationaltablemodel.h
         models/qsqltablemodel.cpp models/qsqltablemodel.h models/qsqltablemodel_p.h
 )
-add_qt_docs(
+add_qt_docs(Sql,
     doc/qtsql.qdocconf
 )
 

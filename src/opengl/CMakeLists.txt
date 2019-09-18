@@ -54,7 +54,7 @@ extend_target(OpenGL CONDITION QT_FEATURE_graphicseffect
     SOURCES
         qgraphicsshadereffect.cpp qgraphicsshadereffect_p.h
 )
-add_qt_docs(
+add_qt_docs(OpenGL,
     doc/qtopengl.qdocconf
 )
 

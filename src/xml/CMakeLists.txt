@@ -28,7 +28,7 @@ extend_target(Xml CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x61000000"
 )
-add_qt_docs(
+add_qt_docs(Xml,
     doc/qtxml.qdocconf
 )
 

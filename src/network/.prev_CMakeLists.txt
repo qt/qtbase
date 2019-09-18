@@ -445,7 +445,7 @@ extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND WIN32
     LIBRARIES
         crypt32
 )
-add_qt_docs(
+add_qt_docs(Network,
     doc/qtnetwork.qdocconf
 )
 

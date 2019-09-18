@@ -43,7 +43,7 @@ extend_target(Concurrent CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i3
     LINK_OPTIONS
         "/BASE:0x66000000"
 )
-add_qt_docs(
+add_qt_docs(Concurrent,
     doc/qtconcurrent.qdocconf
 )
 

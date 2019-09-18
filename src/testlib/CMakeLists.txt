@@ -127,7 +127,7 @@ extend_target(Test CONDITION APPLE_OSX
 
 #### Keys ignored in scope 12:.:.:testlib.pro:NOT TARGET Qt::Network:
 # HEADERSCLEAN_EXCLUDE = "qtest_network.h"
-add_qt_docs(
+add_qt_docs(Test,
     doc/qttestlib.qdocconf
 )
 

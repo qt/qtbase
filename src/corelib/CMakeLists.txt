@@ -1119,7 +1119,7 @@ endif()
 # special case end
 
 qt_create_tracepoints(Core qtcore.tracepoints)
-add_qt_docs(
+add_qt_docs(Core,
     doc/qtcore.qdocconf
 )
 
