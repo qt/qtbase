@@ -162,6 +162,7 @@ _qt_library_map = [
     LibraryMapping('sql', 'Qt6', 'Qt::Sql', extra = ['COMPONENTS', 'Sql']),
     LibraryMapping('svg', 'Qt6', 'Qt::Svg', extra = ['COMPONENTS', 'Svg']),
     LibraryMapping('testlib', 'Qt6', 'Qt::Test', extra = ['COMPONENTS', 'Test']),
+    LibraryMapping('texttospeech', 'Qt6', 'Qt::TextToSpeech', extra = ['COMPONENTS', 'TextToSpeech']),
     LibraryMapping('theme_support', 'Qt6', 'Qt::ThemeSupport', extra = ['COMPONENTS', 'ThemeSupport']),
     LibraryMapping('tts', 'Qt6', 'Qt::TextToSpeech', extra = ['COMPONENTS', 'TextToSpeech']),
     LibraryMapping('uiplugin', 'Qt6', 'Qt::UiPlugin', extra = ['COMPONENTS', 'UiPlugin']),
