@@ -951,32 +951,49 @@ class Scope(object):
 
         return list(self._evalOps(key, transformer, []))
 
+    @staticmethod
+    def _replace_env_var_value(value: Any) -> str:
+        if not isinstance(value, str):
+            return value
+
+        pattern = re.compile(r"\$\$\(?([A-Za-z_][A-Za-z0-9_]*)\)?")
+        match = re.search(pattern, value)
+        if match:
+            value = re.sub(pattern, r"$ENV{\1}", value)
+
+        return value
+
     def _expand_value(self, value: str) -> List[str]:
         result = value
         pattern = re.compile(r"\$\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?")
         match = re.search(pattern, result)
         while match:
             old_result = result
-            if match.group(0) == value:
+            match_group_0 = match.group(0)
+            if match_group_0 == value:
                 get_result = self.get(match.group(1), inherit=True)
                 if len(get_result) == 1:
                     result = get_result[0]
+                    result = self._replace_env_var_value(result)
                 else:
                     # Recursively expand each value from the result list
                     # returned from self.get().
                     result_list = []
                     for entry_value in get_result:
-                        result_list += self._expand_value(entry_value)
+                        result_list += self._expand_value(self._replace_env_var_value(entry_value))
                     return result_list
             else:
                 replacement = self.get(match.group(1), inherit=True)
                 replacement_str = replacement[0] if replacement else ""
                 result = result[: match.start()] + replacement_str + result[match.end() :]
+                result = self._replace_env_var_value(result)
 
             if result == old_result:
                 return [result]  # Do not go into infinite loop
 
             match = re.search(pattern, result)
+
+        result = self._replace_env_var_value(result)
         return [result]
 
     def expand(self, key: str) -> List[str]:
