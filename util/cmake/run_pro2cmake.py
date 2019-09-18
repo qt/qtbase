@@ -48,6 +48,12 @@ def parse_command_line():
         help="Run pro2cmake only on .pro files that already have a CMakeLists.txt.",
     )
     parser.add_argument(
+        "--only-missing",
+        dest="only_missing",
+        action="store_true",
+        help="Run pro2cmake only on .pro files that do not have a CMakeLists.txt.",
+    )
+    parser.add_argument(
         "--only-qtbase-main-modules",
         dest="only_qtbase_main_modules",
         action="store_true",
@@ -87,6 +93,9 @@ def find_all_pro_files(base_path: str, args: argparse.Namespace):
             return True
         return False
 
+    def cmake_lists_missing_filter(path):
+        return not cmake_lists_exists_filter(path)
+
     def qtbase_main_modules_filter(path):
         main_modules = [
             "corelib",
@@ -112,6 +121,8 @@ def find_all_pro_files(base_path: str, args: argparse.Namespace):
     filter_func = None
     if args.only_existing:
         filter_func = cmake_lists_exists_filter
+    elif args.only_missing:
+        filter_func = cmake_lists_missing_filter
     elif args.only_qtbase_main_modules:
         filter_func = qtbase_main_modules_filter
 
