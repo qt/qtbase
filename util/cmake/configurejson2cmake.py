@@ -128,6 +128,8 @@ def map_tests(test: str) -> str:
         "reduce_exports": "CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY",
         "libinput_axis_api": "ON",
         "xlib": "X11_FOUND",
+
+        'wayland-scanner': 'WaylandScanner_FOUND',
     }
     if test in testmap:
         return testmap.get(test, None)
