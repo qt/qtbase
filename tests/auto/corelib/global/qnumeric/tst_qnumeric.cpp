@@ -42,7 +42,11 @@ class tst_QNumeric: public QObject
 private slots:
     void fuzzyCompare_data();
     void fuzzyCompare();
-    void qNanInf();
+    void rawNaN_data();
+    void rawNaN();
+    void generalNaN_data();
+    void generalNaN();
+    void infinity();
     void classifyfp();
     void floatDistance_data();
     void floatDistance();
@@ -53,6 +57,8 @@ private slots:
     void mulOverflow_data();
     void mulOverflow();
     void signedOverflow();
+private:
+    void checkNaN(double nan);
 };
 
 void tst_QNumeric::fuzzyCompare_data()
@@ -92,44 +98,89 @@ void tst_QNumeric::fuzzyCompare()
 #  pragma GCC optimize "no-fast-math"
 #endif
 
-void tst_QNumeric::qNanInf()
+void tst_QNumeric::checkNaN(double nan)
 {
-#if defined __FAST_MATH__ && (__GNUC__ * 100 + __GNUC_MINOR__ < 404)
-    QSKIP("Non-conformant fast math mode is enabled, cannot run test");
-#endif
-    double nan = qQNaN();
+#define CHECKNAN(value) \
+    do { \
+        const double v = (value); \
+        QCOMPARE(qFpClassify(v), FP_NAN); \
+        QVERIFY(qIsNaN(v)); \
+        QVERIFY(!qIsFinite(v)); \
+        QVERIFY(!qIsInf(v)); \
+    } while (0)
+
     QVERIFY(!(0 > nan));
     QVERIFY(!(0 < nan));
     QVERIFY(!(0 == nan));
     QVERIFY(!(nan == nan));
-    QVERIFY(qIsNaN(nan));
-    QVERIFY(qIsNaN(nan + 1));
-    QVERIFY(qIsNaN(-nan));
-    QVERIFY(qIsNaN(1.0 / nan));
-    QVERIFY(qIsNaN(0.0 / nan));
-    QVERIFY(qIsNaN(0.0 * nan));
-    QCOMPARE(nan, nan);
-    QCOMPARE(nan, -nan);
 
-    Q_STATIC_ASSERT(sizeof(double) == 8);
-#ifdef Q_LITTLE_ENDIAN
-    const uchar bytes[] = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0, 0x7f };
-#else
-    const uchar bytes[] = { 0x7f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 };
-#endif
-    memcpy(&nan, bytes, 8);
-    QVERIFY(!qIsFinite(nan));
-    QVERIFY(!qIsInf(nan));
-    QVERIFY(qIsNaN(nan));
-    QVERIFY(qIsNaN(-nan));
-    QVERIFY(!(nan == nan));
-    QVERIFY(qIsNaN(0.0 * nan));
-    QCOMPARE(qFpClassify(nan), FP_NAN);
+    CHECKNAN(nan);
+    CHECKNAN(nan + 1);
+    CHECKNAN(nan - 1);
+    CHECKNAN(-nan);
+    CHECKNAN(nan * 2.0);
+    CHECKNAN(nan / 2.0);
+    CHECKNAN(1.0 / nan);
+    CHECKNAN(0.0 / nan);
+    CHECKNAN(0.0 * nan);
+
+    // When any NaN is expected, any NaN will do:
     QCOMPARE(nan, nan);
     QCOMPARE(nan, -nan);
     QCOMPARE(nan, qQNaN());
+#undef CHECKNAN
+}
 
-    double inf = qInf();
+void tst_QNumeric::rawNaN_data()
+{
+#if defined __FAST_MATH__ && (__GNUC__ * 100 + __GNUC_MINOR__ < 404)
+    QSKIP("Non-conformant fast math mode is enabled, cannot run test");
+#endif
+    QTest::addColumn<double>("nan");
+
+    QTest::newRow("quiet") << qQNaN();
+}
+
+void tst_QNumeric::rawNaN()
+{
+    QFETCH(double, nan);
+    checkNaN(nan);
+}
+
+void tst_QNumeric::generalNaN_data()
+{
+    QTest::addColumn<int>("most");
+    QTest::addColumn<int>("next");
+    QTest::addColumn<int>("least");
+    // Every value with every bit of the exponent set is a NaN.
+    // Sign and mantissa can be anything without interfering with that.
+    // The 0x7f bits of most and the 0xf0 bits of next are the exponent.
+
+    QTest::newRow("lowload") << 0x7f << 0xf0 << 1;
+    QTest::newRow("sign-lowload") << 0xff << 0xf0 << 1;
+    QTest::newRow("highload") << 0x7f << 0xf1 << 0;
+    QTest::newRow("sign-highload") << 0xff << 0xf1 << 0;
+}
+
+void tst_QNumeric::generalNaN()
+{
+    QFETCH(int, most);
+    QFETCH(int, next);
+    QFETCH(int, least);
+    double nan;
+    Q_STATIC_ASSERT(sizeof(double) == 8);
+#ifdef Q_LITTLE_ENDIAN
+    const uchar bytes[] = { uchar(least), 0, 0, 0, 0, 0, uchar(next), uchar(most) };
+#else
+    const uchar bytes[] = { uchar(most), uchar(next), 0, 0, 0, 0, 0, uchar(least) };
+#endif
+    memcpy(&nan, bytes, 8);
+    checkNaN(nan);
+}
+
+void tst_QNumeric::infinity()
+{
+    const double inf = qInf();
     QVERIFY(inf > 0);
     QVERIFY(-inf < 0);
     QVERIFY(qIsInf(inf));
@@ -138,16 +189,23 @@ void tst_QNumeric::qNanInf()
     QVERIFY(qIsInf(-inf));
     QVERIFY(qIsInf(inf + 1));
     QVERIFY(qIsInf(inf - 1));
+    QVERIFY(qIsInf(-inf - 1));
+    QVERIFY(qIsInf(-inf + 1));
     QVERIFY(qIsInf(inf * 2.0));
+    QVERIFY(qIsInf(-inf * 2.0));
     QVERIFY(qIsInf(inf / 2.0));
+    QVERIFY(qIsInf(-inf / 2.0));
     QVERIFY(qFuzzyCompare(1.0 / inf, 0.0));
     QCOMPARE(1.0 / inf, 0.0);
+    QVERIFY(qFuzzyCompare(1.0 / -inf, 0.0));
+    QCOMPARE(1.0 / -inf, 0.0);
     QVERIFY(qIsNaN(0.0 * inf));
+    QVERIFY(qIsNaN(0.0 * -inf));
 }
 
 void tst_QNumeric::classifyfp()
 {
-    QCOMPARE(qFpClassify(qQNaN()), FP_NAN);
+    // NaNs already handled, see checkNaN()'s callers.
 
     QCOMPARE(qFpClassify(qInf()), FP_INFINITE);
     QCOMPARE(qFpClassify(-qInf()), FP_INFINITE);
