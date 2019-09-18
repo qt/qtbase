@@ -310,6 +310,9 @@ _qt_library_map = [
     LibraryMapping(
         "waylandclient", "Qt6", "Qt::WaylandClient", extra=["COMPONENTS", "WaylandClient"]
     ),
+    LibraryMapping(
+        "waylandcompositor", "Qt6", "Qt::WaylandCompositor", extra=["COMPONENTS", "WaylandCompositor"]
+    ),
     LibraryMapping("webchannel", "Qt6", "Qt::WebChannel", extra=["COMPONENTS", "WebChannel"]),
     LibraryMapping("webengine", "Qt6", "Qt::WebEngine", extra=["COMPONENTS", "WebEngine"]),
     LibraryMapping(
@@ -411,6 +414,8 @@ _library_map = [
     LibraryMapping("wayland-client", "Wayland", "Wayland::Client"),
     LibraryMapping("wayland-cursor", "Wayland", "Wayland::Cursor"),
     LibraryMapping("wayland-egl", "Wayland", "Wayland::Egl"),
+    LibraryMapping('wayland-kms', 'Waylandkms', 'PkgConfig::Waylandkms'), #TODO: check if this actually works
+    LibraryMapping("x11", "X11", "X11::X11"),
     LibraryMapping("x11sm", "X11", "${X11_SM_LIB} ${X11_ICE_LIB}", resultVariable="X11_SM"),
     LibraryMapping(
         "xcb",
@@ -487,6 +492,7 @@ _library_map = [
         "xcb_xkb", "XCB", "XCB::XKB", extra=["COMPONENTS", "XKB"], resultVariable="XCB_XKB"
     ),
     LibraryMapping("xcb_xlib", "X11_XCB", "X11::XCB"),
+    LibraryMapping('xcomposite', 'XComposite', 'PkgConfig::XComposite'),
     LibraryMapping("xkbcommon_evdev", "XKB", "XKB::XKB", extra=["0.4.1"]),  # see also xkbcommon
     LibraryMapping("xkbcommon_x11", "XKB", "XKB::XKB", extra=["0.4.1"]),  # see also xkbcommon
     LibraryMapping("xkbcommon", "XKB", "XKB::XKB", extra=["0.4.1"]),
