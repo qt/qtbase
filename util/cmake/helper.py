@@ -496,6 +496,7 @@ _library_map = [
     LibraryMapping("tiff", "TIFF", "TIFF::TIFF"),
     LibraryMapping("webp", "WrapWebP", "WrapWebP::WrapWebP"),
     LibraryMapping("jasper", "WrapJasper", "WrapJasper::WrapJasper"),
+    LibraryMapping('sdl2', 'SDL2', 'SDL2::SDL2'),
 ]
 
 
