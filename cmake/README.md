@@ -187,7 +187,7 @@ Vcpkg for Android can be set up using the following steps:
 
   * ```git clone -b qt https://github.com/tronical/vcpkg```
   * Run ```bootstrap-vcpkg.bat``` or ```bootstrap-vcpkg.sh```
-  * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to on of the following values:
+  * Set the ``VCPKG_DEFAULT_TRIPLET`` environment variable to one of the following values:
     * ``arm-android`` (armeabi-v7a)
     * ``arm64-android`` (arm64v8)
     * ``x86-android`` (x86)
