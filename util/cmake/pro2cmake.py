@@ -1479,7 +1479,7 @@ def handle_subdir(
             grouped_sub_dirs[condition_key] = sub_dir_list_by_key
 
         # Print the groups.
-        ind = spaces(1)
+        ind = spaces(indent)
         for condition_key in grouped_sub_dirs:
             cond_ind = ind
             if condition_key:
@@ -2838,14 +2838,7 @@ def cmakeify_scope(
         # Wrap top level examples project with some commands which
         # are necessary to build examples as part of the overall
         # build.
-        buffer_value = dedent(
-            """\
-            qt_examples_build_begin()
-
-            {buffer_value}
-            qt_examples_build_end()
-            """
-        )
+        buffer_value = f"\nqt_examples_build_begin()\n\n{buffer_value}\nqt_examples_build_end()"
 
     cm_fh.write(buffer_value)
 
