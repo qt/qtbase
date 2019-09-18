@@ -2779,7 +2779,17 @@ function(qt_compute_injection_forwarding_header target)
 endfunction()
 
 
-function(add_qt_docs qdocFile)
+function(add_qt_docs)
+    if(${ARGC} EQUAL 1)
+        # Function called from old generated CMakeLists.txt that was missing the target parameter
+        return()
+    endif()
+    if(NOT ${ARGC} EQUAL 2)
+        message(FATAL_ERROR "add_qt_docs called with the wrong number of arguments. Should be add_qt_docs(target path_to_project.qdocconf).")
+        return()
+    endif()
+    set(target ${ARGV0})
+    set(doc_project ${ARGV1})
     # TODO
 endfunction()
 

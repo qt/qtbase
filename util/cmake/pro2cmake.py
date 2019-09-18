@@ -2080,7 +2080,7 @@ def write_main_part(cm_fh: typing.IO[str], name: str, typename: str,
             cm_fh.write(ignored_keys_report)
 
 def write_module(cm_fh: typing.IO[str], scope: Scope, *,
-                 indent: int = 0) -> None:
+                 indent: int = 0) -> str:
     module_name = scope.TARGET
     if not module_name.startswith('Qt'):
         print('XXXXXX Module name {} does not start with Qt!'.format(module_name))
@@ -2112,7 +2112,8 @@ def write_module(cm_fh: typing.IO[str], scope: Scope, *,
     if module_plugin_types:
         extra.append('PLUGIN_TYPES {}'.format(" ".join(module_plugin_types)))
 
-    write_main_part(cm_fh, module_name[2:], 'Module', 'add_qt_module', scope,
+    target_name = module_name[2:]
+    write_main_part(cm_fh, target_name, 'Module', 'add_qt_module', scope,
                     extra_lines=extra, indent=indent,
                     known_libraries={}, extra_keys=[])
 
@@ -2121,9 +2122,11 @@ def write_module(cm_fh: typing.IO[str], scope: Scope, *,
         cm_fh.write('\n\n{}qt_create_tracepoints({} {})\n'
                     .format(spaces(indent), module_name[2:], ' '.join(tracepoints)))
 
+    return target_name
+
 
 def write_tool(cm_fh: typing.IO[str], scope: Scope, *,
-               indent: int = 0) -> None:
+               indent: int = 0) -> str:
     tool_name = scope.TARGET
 
     extra = ['BOOTSTRAP'] if 'force_bootstrap' in scope.get('CONFIG') else []
@@ -2132,9 +2135,11 @@ def write_tool(cm_fh: typing.IO[str], scope: Scope, *,
                     indent=indent, known_libraries={'Qt::Core', },
                     extra_lines=extra, extra_keys=['CONFIG'])
 
+    return tool_name
+
 
 def write_test(cm_fh: typing.IO[str], scope: Scope,
-                gui: bool = False, *, indent: int = 0) -> None:
+                gui: bool = False, *, indent: int = 0) -> str:
     test_name = scope.TARGET
     assert test_name
 
@@ -2153,6 +2158,8 @@ def write_test(cm_fh: typing.IO[str], scope: Scope,
     write_main_part(cm_fh, test_name, 'Test', 'add_qt_test', scope,
                     indent=indent, known_libraries=libraries,
                     extra_lines=extra, extra_keys=[])
+
+    return test_name
 
 
 def write_binary(cm_fh: typing.IO[str], scope: Scope,
@@ -2180,6 +2187,8 @@ def write_binary(cm_fh: typing.IO[str], scope: Scope,
                     extra_lines=extra, indent=indent,
                     known_libraries={'Qt::Core', }, extra_keys=['target.path', 'INSTALLS'])
 
+    return binary_name
+
 
 def write_find_package_section(cm_fh: typing.IO[str],
                                public_libs: typing.List[str],
@@ -2202,7 +2211,7 @@ def write_find_package_section(cm_fh: typing.IO[str],
 
 
 def write_example(cm_fh: typing.IO[str], scope: Scope,
-                 gui: bool = False, *, indent: int = 0) -> None:
+                 gui: bool = False, *, indent: int = 0) -> str:
     binary_name = scope.TARGET
     assert binary_name
 
@@ -2242,8 +2251,10 @@ def write_example(cm_fh: typing.IO[str], scope: Scope,
                 '    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"\n' +
                 ')\n')
 
+    return binary_name
 
-def write_plugin(cm_fh, scope, *, indent: int = 0):
+
+def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
     plugin_name = scope.TARGET
     assert plugin_name
 
@@ -2264,6 +2275,7 @@ def write_plugin(cm_fh, scope, *, indent: int = 0):
 
     write_main_part(cm_fh, plugin_name, 'Plugin', plugin_function_name, scope,
                     indent=indent, extra_lines=extra, known_libraries={}, extra_keys=[])
+    return plugin_name
 
 
 def write_qml_plugin(cm_fh: typing.IO[str],
@@ -2348,34 +2360,35 @@ def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
     is_lib = scope.TEMPLATE == 'lib'
     is_qml_plugin = any('qml_plugin' == s for s in scope.get('_LOADED'))
     is_plugin = any('qt_plugin' == s for s in scope.get('_LOADED')) or is_qml_plugin or 'plugin' in config
+    target = ""
 
     if is_plugin:
         assert not is_example
-        write_plugin(cm_fh, scope, indent=indent)
+        target = write_plugin(cm_fh, scope, indent=indent)
     elif is_lib or 'qt_module' in scope.get('_LOADED'):
         assert not is_example
-        write_module(cm_fh, scope, indent=indent)
+        target = write_module(cm_fh, scope, indent=indent)
     elif 'qt_tool' in scope.get('_LOADED'):
         assert not is_example
-        write_tool(cm_fh, scope, indent=indent)
+        target = write_tool(cm_fh, scope, indent=indent)
     else:
         gui = all(val not in config for val in ['console', 'cmdline'])
         if 'testcase' in config \
                 or 'testlib' in config \
                 or 'qmltestcase' in config:
             assert not is_example
-            write_test(cm_fh, scope, gui, indent=indent)
+            target = write_test(cm_fh, scope, gui, indent=indent)
         else:
             if is_example:
-                write_example(cm_fh, scope, gui, indent=indent)
+                target = write_example(cm_fh, scope, gui, indent=indent)
             else:
-                write_binary(cm_fh, scope, gui, indent=indent)
+                target = write_binary(cm_fh, scope, gui, indent=indent)
 
     ind = spaces(indent)
     write_source_file_list(cm_fh, scope, '',
                            ['QMAKE_DOCS',],
                            indent,
-                           header = 'add_qt_docs(\n',
+                           header = f"add_qt_docs({target},\n",
                            footer = ')\n')
 
 
