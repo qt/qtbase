@@ -2009,12 +2009,10 @@ function(add_qt_resource target resourceName)
    )
 
    if (out_targets)
-        foreach(out_target IN LISTS out_targets)
-            qt_install(TARGETS "${out_target}"
-                EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
-                DESTINATION ${INSTALL_LIBDIR}
-            )
-        endforeach()
+        qt_install(TARGETS ${out_targets}
+            EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
+            DESTINATION ${INSTALL_LIBDIR}
+        )
    endif()
 
 endfunction()

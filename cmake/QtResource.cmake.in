@@ -224,7 +224,7 @@ function(QT@PROJECT_VERSION_MAJOR@_PROCESS_RESOURCE target resourceName)
         PREFIX ${rcc_PREFIX}
         OUTPUT_REMAINING_RESOURCES resources
         OUTPUT_RESOURCE_NAME newResourceName
-        OUTPUT_GENERATED_TARGET output_target
+        OUTPUT_GENERATED_TARGET output_target_quick
     )
 
     if (NOT resources)
