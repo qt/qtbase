@@ -3267,7 +3267,10 @@ bool QWizard::nativeEvent(const QByteArray &eventType, void *message, long *resu
         if (QVistaHelper::vistaState() != d->vistaState) {
             d->vistaState = QVistaHelper::vistaState();
             d->vistaStateChanged = true;
-            setWizardStyle(AeroStyle);
+            // QTBUG-78300: When Qt::AA_NativeWindows is set, delay further
+            // window creation until after the platform window creation events.
+            if (windowsMessage->message == WM_GETICON)
+                setWizardStyle(AeroStyle);
         }
         return winEventResult;
     } else {
