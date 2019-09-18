@@ -2372,7 +2372,8 @@ def handle_app_or_lib(scope: Scope, cm_fh: typing.IO[str], *,
         assert not is_example
         target = write_tool(cm_fh, scope, indent=indent)
     else:
-        gui = all(val not in config for val in ['console', 'cmdline'])
+        gui = all(val not in config for val in ['console', 'cmdline']) \
+              and 'testlib' not in scope.expand('QT')
         if 'testcase' in config \
                 or 'testlib' in config \
                 or 'qmltestcase' in config:
