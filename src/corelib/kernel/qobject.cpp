@@ -3908,11 +3908,12 @@ void doActivate(QObject *sender, int signal_index, void **argv)
         if (connections->currentConnectionId.loadRelaxed() == 0)
             senderDeleted = true;
     }
-    if (!senderDeleted)
+    if (!senderDeleted) {
         sp->connections.loadRelaxed()->cleanOrphanedConnections(sender);
 
-    if (callbacks_enabled && signal_spy_set->signal_end_callback != nullptr)
-        signal_spy_set->signal_end_callback(sender, signal_index);
+        if (callbacks_enabled && signal_spy_set->signal_end_callback != nullptr)
+            signal_spy_set->signal_end_callback(sender, signal_index);
+    }
 }
 
 /*!

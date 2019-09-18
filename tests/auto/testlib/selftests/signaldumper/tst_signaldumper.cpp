@@ -56,6 +56,8 @@ private slots:
     void slotEmittingSignalOldSyntax();
 
     void variousTypes();
+
+    void deletingSender();
 };
 
 void tst_Signaldumper::addConnectionTypeData()
@@ -411,6 +413,15 @@ void tst_Signaldumper::variousTypes()
     emit signalSlotOwner.qVariantSignal(variant);
     variant = QVariant(string);
     emit signalSlotOwner.qVariantSignal(variant);
+}
+
+void tst_Signaldumper::deletingSender()
+{
+    SignalSlotClass *signalSlotOwner = new SignalSlotClass();
+    connect(signalSlotOwner, &SignalSlotClass::signalWithoutParameters, [signalSlotOwner]() {
+        delete signalSlotOwner;
+    });
+    emit signalSlotOwner->signalWithoutParameters();
 }
 
 QTEST_MAIN(tst_Signaldumper)

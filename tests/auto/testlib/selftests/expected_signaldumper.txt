@@ -143,7 +143,9 @@ INFO   : tst_Signaldumper::variousTypes() Signal: SignalSlotClass(_POINTER_) qVe
 INFO   : tst_Signaldumper::variousTypes() Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())
 INFO   : tst_Signaldumper::variousTypes() Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())
 PASS   : tst_Signaldumper::variousTypes()
+INFO   : tst_Signaldumper::deletingSender() Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
+PASS   : tst_Signaldumper::deletingSender()
 PASS   : tst_Signaldumper::cleanupTestCase()
-INFO   : tst_Signaldumper::UnknownTestFunc() Signal: QThread(_POINTER_) finished ()
-Totals: 20 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
+INFO   : tst_Signaldumper::UnknownTestFunc()     Signal: QThread(_POINTER_) finished ()
+Totals: 21 passed, 0 failed, 0 skipped, 0 blacklisted, 0ms
 ********* Finished testing of tst_Signaldumper *********
