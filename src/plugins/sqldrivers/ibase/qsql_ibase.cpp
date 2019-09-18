@@ -1914,7 +1914,12 @@ void QIBaseDriver::qHandleEventNotification(void *updatedResultBuffer)
         if (counts[0]) {
 
             if (eBuffer->subscriptionState == QIBaseEventBuffer::Subscribed) {
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
                 emit notification(i.key());
+QT_WARNING_POP
+#endif
                 emit notification(i.key(), QSqlDriver::UnknownSource, QVariant());
             }
             else if (eBuffer->subscriptionState == QIBaseEventBuffer::Starting)
