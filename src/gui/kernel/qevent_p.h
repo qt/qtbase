@@ -67,7 +67,8 @@ public:
           state(Qt::TouchPointReleased),
           pressure(-1),
           rotation(0),
-          ellipseDiameters(0, 0)
+          ellipseDiameters(0, 0),
+          stationaryWithModifiedProperty(false)
     { }
 
     inline QTouchEventTouchPointPrivate *detach()
@@ -91,6 +92,7 @@ public:
     QSizeF ellipseDiameters;
     QVector2D velocity;
     QTouchEvent::TouchPoint::InfoFlags flags;
+    bool stationaryWithModifiedProperty : 1;
     QVector<QPointF> rawScreenPositions;
 };
 

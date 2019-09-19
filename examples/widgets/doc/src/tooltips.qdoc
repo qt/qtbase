@@ -95,7 +95,7 @@
 
     \snippet widgets/tooltips/sortingbox.h 2
 
-    We keep all the shape items in a QList, and we keep three
+    We keep all the shape items in a QVector, and we keep three
     QPainterPath objects holding the shapes of a circle, a square and
     a triangle. We also need to have a pointer to an item when it is
     moving, and we need to know its previous position.

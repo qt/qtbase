@@ -50,8 +50,6 @@
 
 #include "button.h"
 
-#include <QtWidgets>
-
 //! [0]
 Button::Button(const QString &text, QWidget *parent)
     : QToolButton(parent)

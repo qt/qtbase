@@ -22,7 +22,7 @@ android:!android-embedded {
     RESOURCES += android_testdata.qrc
 }
 
-win32 {
+win32:debug_and_release {
     CONFIG(debug, debug|release): LIBS += -Lstaticplugin/debug
     else: LIBS += -Lstaticplugin/release
 } else {

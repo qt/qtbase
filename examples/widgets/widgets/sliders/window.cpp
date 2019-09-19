@@ -48,10 +48,15 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "slidersgroup.h"
 #include "window.h"
+
+#include <QCheckBox>
+#include <QComboBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QSpinBox>
+#include <QStackedWidget>
 
 //! [0]
 Window::Window(QWidget *parent)

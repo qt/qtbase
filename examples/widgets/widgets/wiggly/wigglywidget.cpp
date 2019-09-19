@@ -50,11 +50,13 @@
 
 #include "wigglywidget.h"
 
-#include <QtWidgets>
+#include <QFontMetrics>
+#include <QPainter>
+#include <QTimerEvent>
 
 //! [0]
 WigglyWidget::WigglyWidget(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), step(0)
 {
     setBackgroundRole(QPalette::Midlight);
     setAutoFillBackground(true);
@@ -63,7 +65,6 @@ WigglyWidget::WigglyWidget(QWidget *parent)
     newFont.setPointSize(newFont.pointSize() + 20);
     setFont(newFont);
 
-    step = 0;
     timer.start(60, this);
 }
 //! [0]
@@ -72,7 +73,7 @@ WigglyWidget::WigglyWidget(QWidget *parent)
 void WigglyWidget::paintEvent(QPaintEvent * /* event */)
 //! [1] //! [2]
 {
-    static const int sineTable[16] = {
+    static constexpr int sineTable[16] = {
         0, 38, 71, 92, 100, 92, 71, 38, 0, -38, -71, -92, -100, -92, -71, -38
     };
 

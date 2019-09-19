@@ -27,13 +27,28 @@
 ****************************************************************************/
 
 #include "../../../../shared/fakedirmodel.h"
-#include <qabstractitemview.h>
-#include <QtTest/QtTest>
-#include <QtGui/QtGui>
-#include <QtWidgets/QtWidgets>
-#include <private/qtreeview_p.h>
 
-#include <QtTest/private/qtesthelpers_p.h>
+#include <QDesktopWidget>
+#include <QHeaderView>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMainWindow>
+#include <QProxyStyle>
+#include <QPushButton>
+#include <QScrollBar>
+#include <QSignalSpy>
+#include <QSortFilterProxyModel>
+#include <QStatusBar>
+#include <QStringListModel>
+#include <QStyledItemDelegate>
+#include <QTextEdit>
+#include <QTimer>
+#include <QToolButton>
+#include <QTreeWidget>
+#include <QTest>
+#include <QVBoxLayout>
+#include <private/qtreeview_p.h>
+#include <private/qtesthelpers_p.h>
 
 using namespace QTestPrivate;
 
@@ -43,6 +58,7 @@ Q_DECLARE_METATYPE(QAbstractItemView::DragDropMode)
 Q_DECLARE_METATYPE(QAbstractItemView::EditTriggers)
 Q_DECLARE_METATYPE(QAbstractItemView::EditTrigger)
 
+using IntBounds = std::numeric_limits<int>;
 static void initStandardTreeModel(QStandardItemModel *model)
 {
     QStandardItem *item;
@@ -206,18 +222,11 @@ private slots:
 
 class QtTestModel: public QAbstractItemModel
 {
+    Q_OBJECT
 public:
-    QtTestModel(QObject *parent = 0): QAbstractItemModel(parent),
-       fetched(false), rows(0), cols(0), levels(INT_MAX), wrongIndex(false) { init(); }
-
-    QtTestModel(int _rows, int _cols, QObject *parent = 0): QAbstractItemModel(parent),
-       fetched(false), rows(_rows), cols(_cols), levels(INT_MAX), wrongIndex(false) { init(); }
-
-    void init()
-    {
-        decorationsEnabled = false;
-        statusTipsEnabled = false;
-    }
+    QtTestModel(int _rows, int _cols, QObject *parent = nullptr)
+        : QAbstractItemModel(parent), rows(_rows), cols(_cols)
+    {}
 
     inline qint32 level(const QModelIndex &index) const
     {
@@ -264,7 +273,7 @@ public:
         if (row < 0 || column < 0 || (level(parent) > levels) || column >= cols || row >= rows) {
             return QModelIndex();
         }
-        QModelIndex i = createIndex(row, column, level(parent) + 1);
+        QModelIndex i = createIndex(row, column, quintptr(level(parent) + 1));
         parentHash[i] = parent;
         return i;
     }
@@ -361,13 +370,14 @@ public:
         decorationsEnabled = enable;
     }
 
-    mutable bool fetched;
-    bool decorationsEnabled;
-    bool statusTipsEnabled;
-    int rows, cols;
-    int levels;
-    mutable bool wrongIndex;
     mutable QMap<QModelIndex,QModelIndex> parentHash;
+    int rows = 0;
+    int cols = 0;
+    int levels = IntBounds::max();
+    mutable bool wrongIndex = false;
+    mutable bool fetched = false;
+    bool decorationsEnabled = false;
+    bool statusTipsEnabled = false;
 };
 
 // Testing get/set functions
@@ -377,14 +387,15 @@ void tst_QTreeView::getSetCheck()
 
     // int QTreeView::indentation()
     // void QTreeView::setIndentation(int)
-    const int styledIndentation = obj1.style()->pixelMetric(QStyle::PM_TreeViewIndentation, 0, &obj1);
+    const int styledIndentation = obj1.style()->pixelMetric(
+          QStyle::PM_TreeViewIndentation, nullptr, &obj1);
     QCOMPARE(obj1.indentation(), styledIndentation);
     obj1.setIndentation(0);
     QCOMPARE(obj1.indentation(), 0);
-    obj1.setIndentation(INT_MIN);
-    QCOMPARE(obj1.indentation(), INT_MIN);
-    obj1.setIndentation(INT_MAX);
-    QCOMPARE(obj1.indentation(), INT_MAX);
+    obj1.setIndentation(IntBounds::min());
+    QCOMPARE(obj1.indentation(), IntBounds::min());
+    obj1.setIndentation(IntBounds::max());
+    QCOMPARE(obj1.indentation(), IntBounds::max());
 
     // bool QTreeView::rootIsDecorated()
     // void QTreeView::setRootIsDecorated(bool)
@@ -477,7 +488,8 @@ void tst_QTreeView::construction()
     QCOMPARE(view.sizeHintForRow(1), -1);
     QVERIFY(!view.tabKeyNavigation());
     QCOMPARE(view.textElideMode(), Qt::ElideRight);
-    QCOMPARE(static_cast<int>(view.verticalScrollMode()), view.style()->styleHint(QStyle::SH_ItemView_ScrollMode, 0, &view));
+    QCOMPARE(static_cast<int>(view.verticalScrollMode()),
+             view.style()->styleHint(QStyle::SH_ItemView_ScrollMode, nullptr, &view));
     QCOMPARE(view.visualRect(QModelIndex()), QRect());
 
     // QTreeView properties
@@ -493,8 +505,8 @@ void tst_QTreeView::construction()
     QCOMPARE(view.columnWidth(0), 0);
     QCOMPARE(view.columnWidth(1), 0);
     QVERIFY(view.header());
-    const int styledIndentation = view.style()->pixelMetric(QStyle::PM_TreeViewIndentation, 0, &view);
-    QCOMPARE(view.indentation(), styledIndentation);
+    QCOMPARE(view.indentation(),
+             view.style()->pixelMetric(QStyle::PM_TreeViewIndentation, nullptr, &view));
     QCOMPARE(view.indexAbove(QModelIndex()), QModelIndex());
     QCOMPARE(view.indexBelow(QModelIndex()), QModelIndex());
     QVERIFY(!view.isAnimated());
@@ -781,17 +793,17 @@ void tst_QTreeView::editTriggers()
         break;
     case QAbstractItemView::DoubleClicked:
         // Doubleclick the center of the current cell
-        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0,
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, {},
                           view.visualRect(view.model()->index(0, 0)).center());
-        QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0,
+        QTest::mouseDClick(view.viewport(), Qt::LeftButton, {},
                            view.visualRect(view.model()->index(0, 0)).center());
         break;
     case QAbstractItemView::SelectedClicked:
         // Click the center of the current cell
         view.selectionModel()->select(view.model()->index(0, 0), QItemSelectionModel::Select);
-        QTest::mouseClick(view.viewport(), Qt::LeftButton, 0,
+        QTest::mouseClick(view.viewport(), Qt::LeftButton, {},
                           view.visualRect(view.model()->index(0, 0)).center());
-        QTest::qWait(int(QApplication::doubleClickInterval() * 1.5));
+        QTest::qWait(qRound(QApplication::doubleClickInterval() * 1.5));
         break;
     case QAbstractItemView::EditKeyPressed:
         view.setFocus();
@@ -808,7 +820,7 @@ void tst_QTreeView::editTriggers()
     }
 
     // Check if we got an editor
-    QTRY_COMPARE(view.findChild<QLineEdit *>(QString()) != 0, editorOpened);
+    QTRY_COMPARE(view.findChild<QLineEdit *>(QString()) != nullptr, editorOpened);
 }
 
 void tst_QTreeView::hasAutoScroll()
@@ -860,11 +872,11 @@ void tst_QTreeView::horizontalScrollMode()
 class RepaintTreeView : public QTreeView
 {
 public:
-    RepaintTreeView() : repainted(false) { }
-    bool repainted;
+    using QTreeView::QTreeView;
+    bool repainted = false;
 
 protected:
-    void paintEvent(QPaintEvent *event)
+    void paintEvent(QPaintEvent *event) override
     { repainted = true; QTreeView::paintEvent(event); }
 };
 
@@ -902,8 +914,7 @@ void tst_QTreeView::iconSize()
 
 void tst_QTreeView::indexAt()
 {
-    QtTestModel model;
-    model.rows = model.cols = 5;
+    QtTestModel model(5, 5);
 
     QTreeView view;
     QCOMPARE(view.indexAt(QPoint()), QModelIndex());
@@ -985,21 +996,21 @@ void tst_QTreeView::indexWidget()
 void tst_QTreeView::itemDelegate()
 {
     QPointer<QAbstractItemDelegate> oldDelegate;
-    QPointer<QItemDelegate> otherItemDelegate;
+    QPointer<QStyledItemDelegate> otherItemDelegate;
 
     {
         QTreeView view;
         QVERIFY(qobject_cast<QStyledItemDelegate *>(view.itemDelegate()));
         QPointer<QAbstractItemDelegate> oldDelegate = view.itemDelegate();
 
-        otherItemDelegate = new QItemDelegate;
+        otherItemDelegate = new QStyledItemDelegate;
         view.setItemDelegate(otherItemDelegate);
         QVERIFY(!otherItemDelegate->parent());
         QVERIFY(oldDelegate);
 
-        QCOMPARE(view.itemDelegate(), (QAbstractItemDelegate *)otherItemDelegate);
+        QCOMPARE(view.itemDelegate(), otherItemDelegate);
 
-        view.setItemDelegate(0);
+        view.setItemDelegate(nullptr);
         QVERIFY(!view.itemDelegate()); // <- view does its own drawing?
         QVERIFY(otherItemDelegate);
     }
@@ -1038,29 +1049,29 @@ void tst_QTreeView::itemDelegateForColumnOrRow()
     QCOMPARE(view.itemDelegate(QModelIndex()), defaultDelegate);
     QCOMPARE(view.itemDelegate(view.model()->index(0, 0)), defaultDelegate);
 
-    QPointer<QAbstractItemDelegate> rowDelegate = new QItemDelegate;
+    QPointer<QAbstractItemDelegate> rowDelegate = new QStyledItemDelegate;
     view.setItemDelegateForRow(0, rowDelegate);
     QVERIFY(!rowDelegate->parent());
-    QCOMPARE(view.itemDelegateForRow(0), (QAbstractItemDelegate *)rowDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(0, 0)), (QAbstractItemDelegate *)rowDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(0, 1)), (QAbstractItemDelegate *)rowDelegate);
+    QCOMPARE(view.itemDelegateForRow(0), rowDelegate);
+    QCOMPARE(view.itemDelegate(view.model()->index(0, 0)), rowDelegate);
+    QCOMPARE(view.itemDelegate(view.model()->index(0, 1)), rowDelegate);
     QCOMPARE(view.itemDelegate(view.model()->index(1, 0)), defaultDelegate);
     QCOMPARE(view.itemDelegate(view.model()->index(1, 1)), defaultDelegate);
 
-    QPointer<QAbstractItemDelegate> columnDelegate = new QItemDelegate;
+    QPointer<QAbstractItemDelegate> columnDelegate = new QStyledItemDelegate;
     view.setItemDelegateForColumn(1, columnDelegate);
     QVERIFY(!columnDelegate->parent());
-    QCOMPARE(view.itemDelegateForColumn(1), (QAbstractItemDelegate *)columnDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(0, 0)), (QAbstractItemDelegate *)rowDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(0, 1)), (QAbstractItemDelegate *)rowDelegate); // row wins
+    QCOMPARE(view.itemDelegateForColumn(1), columnDelegate);
+    QCOMPARE(view.itemDelegate(view.model()->index(0, 0)), rowDelegate);
+    QCOMPARE(view.itemDelegate(view.model()->index(0, 1)), rowDelegate); // row wins
     QCOMPARE(view.itemDelegate(view.model()->index(1, 0)), defaultDelegate);
-    QCOMPARE(view.itemDelegate(view.model()->index(1, 1)), (QAbstractItemDelegate *)columnDelegate);
+    QCOMPARE(view.itemDelegate(view.model()->index(1, 1)), columnDelegate);
 
-    view.setItemDelegateForRow(0, 0);
+    view.setItemDelegateForRow(0, nullptr);
     QVERIFY(!view.itemDelegateForRow(0));
     QVERIFY(rowDelegate); // <- wasn't deleted
 
-    view.setItemDelegateForColumn(1, 0);
+    view.setItemDelegateForColumn(1, nullptr);
     QVERIFY(!view.itemDelegateForColumn(1));
     QVERIFY(columnDelegate); // <- wasn't deleted
 
@@ -1130,12 +1141,9 @@ void tst_QTreeView::keyboardSearch()
     QTest::qWait(QApplication::keyboardInputInterval() * 2);
     model.clear();
     view.setCurrentIndex(QModelIndex());
-    QList<QStandardItem *> items = { new QStandardItem("Andreas"), new QStandardItem("Alicia") };
-    model.appendRow(items);
-    items = { new QStandardItem("Baldrian"), new QStandardItem("Belinda") };
-    model.appendRow(items);
-    items = { new QStandardItem("Cecilie"), new QStandardItem("Claire") };
-    model.appendRow(items);
+    model.appendRow({ new QStandardItem("Andreas"), new QStandardItem("Alicia") });
+    model.appendRow({ new QStandardItem("Baldrian"), new QStandardItem("Belinda") });
+    model.appendRow({ new QStandardItem("Cecilie"), new QStandardItem("Claire") });
     QVERIFY(!view.selectionModel()->hasSelection());
     QVERIFY(!view.selectionModel()->isSelected(model.index(0, 0)));
 
@@ -1166,8 +1174,7 @@ void tst_QTreeView::keyboardSearch()
     QCOMPARE(view.currentIndex(), model.index(1, 1));
 
     // Test that it wraps round
-    items = { new QStandardItem("Andy"), new QStandardItem("Adele") };
-    model.appendRow(items);
+    model.appendRow({ new QStandardItem("Andy"), new QStandardItem("Adele") });
     QTest::qWait(QApplication::keyboardInputInterval() * 2);
     view.keyboardSearch(QLatin1String("A"));
     QVERIFY(view.selectionModel()->isSelected(model.index(3, 1)));
@@ -1202,17 +1209,16 @@ void tst_QTreeView::keyboardSearch()
 void tst_QTreeView::keyboardSearchMultiColumn()
 {
     QTreeView view;
-
     QStandardItemModel model(4, 2);
 
     model.setItem(0, 0, new QStandardItem("1"));    model.setItem(0, 1, new QStandardItem("green"));
-    model.setItem(1, 0, new QStandardItem("bad"));    model.setItem(1, 1, new QStandardItem("eggs"));
-    model.setItem(2, 0, new QStandardItem("moof"));    model.setItem(2, 1, new QStandardItem("and"));
-    model.setItem(3, 0, new QStandardItem("elf"));    model.setItem(3, 1, new QStandardItem("ham"));
+    model.setItem(1, 0, new QStandardItem("bad"));  model.setItem(1, 1, new QStandardItem("eggs"));
+    model.setItem(2, 0, new QStandardItem("moof")); model.setItem(2, 1, new QStandardItem("and"));
+    model.setItem(3, 0, new QStandardItem("elf"));  model.setItem(3, 1, new QStandardItem("ham"));
 
     view.setModel(&model);
     view.show();
-    qApp->setActiveWindow(&view);
+    QApplication::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     view.setCurrentIndex(model.index(0, 1));
@@ -1240,22 +1246,22 @@ void tst_QTreeView::setModel()
     for (int x = 0; x < 2; ++x) {
         QtTestModel *model = new QtTestModel(10, 8);
         QAbstractItemModel *oldModel = view.model();
-        QSignalSpy modelDestroyedSpy(oldModel ? oldModel : model, SIGNAL(destroyed()));
+        QSignalSpy modelDestroyedSpy(oldModel ? oldModel : model, &QObject::destroyed);
         // set the same model twice
         for (int i = 0; i < 2; ++i) {
             QItemSelectionModel *oldSelectionModel = view.selectionModel();
             QItemSelectionModel *dummy = new QItemSelectionModel(model);
             QSignalSpy selectionModelDestroyedSpy(
-                oldSelectionModel ? oldSelectionModel : dummy, SIGNAL(destroyed()));
+                oldSelectionModel ? oldSelectionModel : dummy, &QObject::destroyed);
             view.setModel(model);
 //                QCOMPARE(selectionModelDestroyedSpy.count(), (x == 0 || i == 1) ? 0 : 1);
-            QCOMPARE(view.model(), (QAbstractItemModel *)model);
-            QCOMPARE(view.header()->model(), (QAbstractItemModel *)model);
+            QCOMPARE(view.model(), model);
+            QCOMPARE(view.header()->model(), model);
             QCOMPARE(view.selectionModel() != oldSelectionModel, (i == 0));
         }
         QTRY_COMPARE(modelDestroyedSpy.count(), 0);
 
-        view.setModel(0);
+        view.setModel(nullptr);
         QCOMPARE(view.model(), nullptr);
         // ### shouldn't selectionModel also be 0 now?
 //        QCOMPARE(view.selectionModel(), nullptr);
@@ -1278,7 +1284,7 @@ void tst_QTreeView::openPersistentEditor()
     view.closePersistentEditor(view.model()->index(0, 0));
     QVERIFY(!view.viewport()->findChild<QLineEdit *>()->isVisible());
 
-    qApp->sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
     QVERIFY(!view.viewport()->findChild<QLineEdit *>());
 }
 
@@ -1300,21 +1306,20 @@ void tst_QTreeView::rootIndex()
 void tst_QTreeView::setHeader()
 {
     QTreeView view;
-    QVERIFY(view.header() != 0);
+    QVERIFY(view.header() != nullptr);
     QCOMPARE(view.header()->orientation(), Qt::Horizontal);
-    QCOMPARE(view.header()->parent(), (QObject *)&view);
+    QCOMPARE(view.header()->parent(), &view);
     for (int x = 0; x < 2; ++x) {
-        QSignalSpy destroyedSpy(view.header(), SIGNAL(destroyed()));
+        QSignalSpy destroyedSpy(view.header(), &QObject::destroyed);
         Qt::Orientation orient = x ? Qt::Vertical : Qt::Horizontal;
         QHeaderView *head = new QHeaderView(orient);
         view.setHeader(head);
         QCOMPARE(destroyedSpy.count(), 1);
-        QCOMPARE(head->parent(), (QObject *)&view);
+        QCOMPARE(head->parent(), &view);
         QCOMPARE(view.header(), head);
         view.setHeader(head);
         QCOMPARE(view.header(), head);
-        // Itemviews in Qt < 4.2 have asserts for this. Qt >= 4.2 should handle this gracefully
-        view.setHeader((QHeaderView *)0);
+        view.setHeader(nullptr);
         QCOMPARE(view.header(), head);
     }
 }
@@ -1328,13 +1333,13 @@ void tst_QTreeView::columnHidden()
     for (int c = 0; c < model.columnCount(); ++c)
         QCOMPARE(view.isColumnHidden(c), false);
     // hide even columns
-    for (int c = 0; c < model.columnCount(); c+=2)
+    for (int c = 0; c < model.columnCount(); c += 2)
         view.setColumnHidden(c, true);
     for (int c = 0; c < model.columnCount(); ++c)
         QCOMPARE(view.isColumnHidden(c), (c & 1) == 0);
     view.update();
     // hide odd columns too
-    for (int c = 1; c < model.columnCount(); c+=2)
+    for (int c = 1; c < model.columnCount(); c += 2)
         view.setColumnHidden(c, true);
     for (int c = 0; c < model.columnCount(); ++c)
         QCOMPARE(view.isColumnHidden(c), true);
@@ -1418,7 +1423,7 @@ void tst_QTreeView::noDelegate()
     QtTestModel model(10, 7);
     QTreeView view;
     view.setModel(&model);
-    view.setItemDelegate(0);
+    view.setItemDelegate(nullptr);
     QCOMPARE(view.itemDelegate(), nullptr);
 }
 
@@ -1427,11 +1432,13 @@ void tst_QTreeView::noModel()
     QTreeView view;
     view.show();
     view.setRowHidden(0, QModelIndex(), true);
+    // no model -> not able to hide a row
+    QVERIFY(!view.isRowHidden(0, QModelIndex()));
 }
 
 void tst_QTreeView::emptyModel()
 {
-    QtTestModel model;
+    QtTestModel model(0, 0);
     QTreeView view;
     view.setModel(&model);
     view.show();
@@ -1486,7 +1493,7 @@ void tst_QTreeView::limitedExpand()
         QTreeView view;
         view.setModel(&model);
 
-        QSignalSpy spy(&view, SIGNAL(expanded(QModelIndex)));
+        QSignalSpy spy(&view, &QTreeView::expanded);
         QVERIFY(spy.isValid());
 
         view.expand(model.index(0, 0));
@@ -1500,7 +1507,7 @@ void tst_QTreeView::limitedExpand()
         QTreeView view;
         view.setModel(&model);
 
-        QSignalSpy spy(&view, SIGNAL(expanded(QModelIndex)));
+        QSignalSpy spy(&view, &QTreeView::expanded);
         QVERIFY(spy.isValid());
 
         view.expand(model.index(0, 0));
@@ -1515,7 +1522,6 @@ void tst_QTreeView::expandAndCollapse_data()
     QTest::addColumn<bool>("animationEnabled");
     QTest::newRow("normal") << false;
     QTest::newRow("animated") << true;
-
 }
 
 void tst_QTreeView::expandAndCollapse()
@@ -1533,8 +1539,8 @@ void tst_QTreeView::expandAndCollapse()
     QModelIndex a = model.index(0, 0, QModelIndex());
     QModelIndex b = model.index(0, 0, a);
 
-    QSignalSpy expandedSpy(&view, SIGNAL(expanded(QModelIndex)));
-    QSignalSpy collapsedSpy(&view, SIGNAL(collapsed(QModelIndex)));
+    QSignalSpy expandedSpy(&view, &QTreeView::expanded);
+    QSignalSpy collapsedSpy(&view, &QTreeView::collapsed);
     QVariantList args;
 
     for (int y = 0; y < 2; ++y) {
@@ -1744,7 +1750,7 @@ void tst_QTreeView::expandAndCollapseAll()
 void tst_QTreeView::expandWithNoChildren()
 {
     QTreeView tree;
-    QStandardItemModel model(1,1);
+    QStandardItemModel model(1, 1);
     tree.setModel(&model);
     tree.setAnimated(true);
     tree.doItemsLayout();
@@ -1765,14 +1771,15 @@ void tst_QTreeView::keyboardNavigation()
     view.setModel(&model);
     view.show();
 
-    QVector<Qt::Key> keymoves;
-    keymoves << Qt::Key_Down << Qt::Key_Right << Qt::Key_Right << Qt::Key_Right
-             << Qt::Key_Down << Qt::Key_Down << Qt::Key_Down << Qt::Key_Down
-             << Qt::Key_Right << Qt::Key_Right << Qt::Key_Right
-             << Qt::Key_Left << Qt::Key_Up << Qt::Key_Left << Qt::Key_Left
-             << Qt::Key_Up << Qt::Key_Down << Qt::Key_Up << Qt::Key_Up
-             << Qt::Key_Up << Qt::Key_Up << Qt::Key_Up << Qt::Key_Up
-             << Qt::Key_Left << Qt::Key_Left << Qt::Key_Up << Qt::Key_Down;
+    const auto keymoves = {
+        Qt::Key_Down, Qt::Key_Right, Qt::Key_Right, Qt::Key_Right,
+        Qt::Key_Down, Qt::Key_Down, Qt::Key_Down, Qt::Key_Down,
+        Qt::Key_Right, Qt::Key_Right, Qt::Key_Right,
+        Qt::Key_Left, Qt::Key_Up, Qt::Key_Left, Qt::Key_Left,
+        Qt::Key_Up, Qt::Key_Down, Qt::Key_Up, Qt::Key_Up,
+        Qt::Key_Up, Qt::Key_Up, Qt::Key_Up, Qt::Key_Up,
+        Qt::Key_Left, Qt::Key_Left, Qt::Key_Up, Qt::Key_Down
+    };
 
     int row    = 0;
     int column = 0;
@@ -1780,8 +1787,7 @@ void tst_QTreeView::keyboardNavigation()
     view.setCurrentIndex(index);
     QCOMPARE(view.currentIndex(), index);
 
-    for (int i = 0; i < keymoves.size(); ++i) {
-        Qt::Key key = keymoves.at(i);
+    for (Qt::Key key : keymoves) {
         QTest::keyClick(&view, key);
 
         switch (key) {
@@ -1838,10 +1844,10 @@ void tst_QTreeView::keyboardNavigation()
 
 class Dmodel : public QtTestModel
 {
+    Q_OBJECT
 public:
-    Dmodel() : QtTestModel(10, 10){}
-
-    int columnCount(const QModelIndex &parent) const
+    using QtTestModel::QtTestModel;
+    int columnCount(const QModelIndex &parent) const override
     {
         if (parent.row() == 5)
             return 1;
@@ -1851,7 +1857,7 @@ public:
 
 void tst_QTreeView::headerSections()
 {
-    Dmodel model;
+    Dmodel model(10, 10);
 
     QTreeView view;
     QHeaderView *header = view.header();
@@ -1895,7 +1901,8 @@ void tst_QTreeView::moveCursor()
     view.setColumnHidden(0, true);
     QVERIFY(view.isColumnHidden(0));
     view.show();
-    qApp->setActiveWindow(&view);
+    QApplication::setActiveWindow(&view);
+    QVERIFY(QTest::qWaitForWindowActive(&view));
 
     //here the first visible index should be selected
     //because the view got the focus
@@ -1938,73 +1945,60 @@ void tst_QTreeView::moveCursor()
     QCOMPARE(view.currentIndex(), expected);
 }
 
-class TestDelegate : public QItemDelegate
+class TestDelegate : public QStyledItemDelegate
 {
+    Q_OBJECT
 public:
-    TestDelegate(QObject *parent) : QItemDelegate(parent) {}
-    QSize sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const { return QSize(200, 50); }
+    using QStyledItemDelegate::QStyledItemDelegate;
+    QSize sizeHint(const QStyleOptionViewItem &, const QModelIndex &) const override
+    { return QSize(200, 50); }
 };
 
-typedef QList<QPoint> PointList;
+typedef QVector<QPoint> PointList;
 
 void tst_QTreeView::setSelection_data()
 {
     QTest::addColumn<QRect>("selectionRect");
-    QTest::addColumn<int>("selectionMode");
-    QTest::addColumn<int>("selectionCommand");
+    QTest::addColumn<QAbstractItemView::SelectionMode>("selectionMode");
+    QTest::addColumn<QItemSelectionModel::SelectionFlags>("selectionCommand");
     QTest::addColumn<PointList>("expectedItems");
     QTest::addColumn<int>("verticalOffset");
 
-    QTest::newRow("(0,0,50,20),rows") << QRect(0,0,50,20)
-                                 << int(QAbstractItemView::SingleSelection)
-                                 << int(QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows)
-                                 << (PointList()
-                                    << QPoint(0,0) << QPoint(1,0) << QPoint(2,0) << QPoint(3,0) << QPoint(4,0)
-                                    )
-                                 << 0;
+    const PointList pl1{QPoint(0, 0), QPoint(1, 0), QPoint(2, 0), QPoint(3, 0), QPoint(4, 0)};
+    const PointList pl2{QPoint(0, 0), QPoint(1, 0), QPoint(2, 0), QPoint(3, 0), QPoint(4, 0),
+                        QPoint(0, 1), QPoint(1, 1), QPoint(2, 1), QPoint(3, 1), QPoint(4, 1)};
+    const QItemSelectionModel::SelectionFlags selFlags(QItemSelectionModel::ClearAndSelect |
+                                                       QItemSelectionModel::Rows);
+    QTest::newRow("(0,0,50,20),rows")
+       << QRect(0, 0, 50, 20)
+       << QAbstractItemView::SingleSelection
+       << selFlags << pl1 << 0;
 
-    QTest::newRow("(0,0,50,90),rows") << QRect(0,0,50,90)
-                                 << int(QAbstractItemView::ExtendedSelection)
-                                 << int(QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows)
-                                 << (PointList()
-                                    << QPoint(0,0) << QPoint(1,0) << QPoint(2,0) << QPoint(3,0) << QPoint(4,0)
-                                    << QPoint(0,1) << QPoint(1,1) << QPoint(2,1) << QPoint(3,1) << QPoint(4,1)
-                                    )
-                                 << 0;
+    QTest::newRow("(0,0,50,90),rows")
+       << QRect(0, 0, 50, 90)
+       << QAbstractItemView::ExtendedSelection
+       << selFlags << pl2 << 0;
 
-    QTest::newRow("(50,0,0,90),rows,invalid rect") << QRect(QPoint(50, 0), QPoint(0, 90))
-                                 << int(QAbstractItemView::ExtendedSelection)
-                                 << int(QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows)
-                                 << (PointList()
-                                    << QPoint(0,0) << QPoint(1,0) << QPoint(2,0) << QPoint(3,0) << QPoint(4,0)
-                                    << QPoint(0,1) << QPoint(1,1) << QPoint(2,1) << QPoint(3,1) << QPoint(4,1)
-                                    )
-                                 << 0;
+    QTest::newRow("(50,0,0,90),rows,invalid rect")
+       << QRect(QPoint(50, 0), QPoint(0, 90))
+       << QAbstractItemView::ExtendedSelection
+       << selFlags << pl2 << 0;
 
-    QTest::newRow("(0,-20,20,50),rows") << QRect(0,-20,20,50)
-                                 << int(QAbstractItemView::ExtendedSelection)
-                                 << int(QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows)
-                                 << (PointList()
-                                    << QPoint(0,0) << QPoint(1,0) << QPoint(2,0) << QPoint(3,0) << QPoint(4,0)
-                                    << QPoint(0,1) << QPoint(1,1) << QPoint(2,1) << QPoint(3,1) << QPoint(4,1)
-                                    )
-                                 << 1;
-    QTest::newRow("(0,-50,20,90),rows") << QRect(0,-50,20,90)
-                                 << int(QAbstractItemView::ExtendedSelection)
-                                 << int(QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows)
-                                 << (PointList()
-                                    << QPoint(0,0) << QPoint(1,0) << QPoint(2,0) << QPoint(3,0) << QPoint(4,0)
-                                    << QPoint(0,1) << QPoint(1,1) << QPoint(2,1) << QPoint(3,1) << QPoint(4,1)
-                                    )
-                                 << 1;
-
+    QTest::newRow("(0,-20,20,50),rows")
+       << QRect(0, -20, 20, 50)
+       << QAbstractItemView::ExtendedSelection
+       << selFlags << pl2 << 1;
+    QTest::newRow("(0,-50,20,90),rows")
+       << QRect(0, -50, 20, 90)
+       << QAbstractItemView::ExtendedSelection
+       << selFlags << pl2 << 1;
 }
 
 void tst_QTreeView::setSelection()
 {
     QFETCH(QRect, selectionRect);
-    QFETCH(int, selectionMode);
-    QFETCH(int, selectionCommand);
+    QFETCH(QAbstractItemView::SelectionMode, selectionMode);
+    QFETCH(QItemSelectionModel::SelectionFlags, selectionCommand);
     QFETCH(PointList, expectedItems);
     QFETCH(int, verticalOffset);
 
@@ -2016,25 +2010,23 @@ void tst_QTreeView::setSelection()
     view.show();
     view.setRootIsDecorated(false);
     view.setItemDelegate(new TestDelegate(&view));
-    view.setSelectionMode(QAbstractItemView::SelectionMode(selectionMode));
+    view.setSelectionMode(selectionMode);
     view.setModel(&model);
     view.setUniformRowHeights(true);
     view.setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
     view.scrollTo(model.index(verticalOffset, 0), QAbstractItemView::PositionAtTop);
-    view.setSelection(selectionRect, QItemSelectionModel::SelectionFlags(selectionCommand));
+    view.setSelection(selectionRect, selectionCommand);
     QItemSelectionModel *selectionModel = view.selectionModel();
     QVERIFY(selectionModel);
 
-    QModelIndexList selectedIndexes = selectionModel->selectedIndexes();
+    const QModelIndexList selectedIndexes = selectionModel->selectedIndexes();
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("(0,-20,20,50),rows", "Fails on WinRT - QTBUG-68297", Abort);
     QEXPECT_FAIL("(0,-50,20,90),rows", "Fails on WinRT - QTBUG-68297", Abort);
 #endif
     QCOMPARE(selectedIndexes.count(), expectedItems.count());
-    for (int i = 0; i < selectedIndexes.count(); ++i) {
-        QModelIndex idx = selectedIndexes.at(i);
+    for (const QModelIndex &idx : selectedIndexes)
         QVERIFY(expectedItems.contains(QPoint(idx.column(), idx.row())));
-    }
 }
 
 void tst_QTreeView::indexAbove()
@@ -2134,7 +2126,7 @@ void tst_QTreeView::clicked()
         QModelIndex index = view.indexAt(p);
         if (!index.isValid())
             continue;
-        QSignalSpy spy(&view, SIGNAL(clicked(QModelIndex)));
+        QSignalSpy spy(&view, &QTreeView::clicked);
         QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, p);
         QTRY_COMPARE(spy.count(), 1);
     }
@@ -2149,9 +2141,9 @@ void tst_QTreeView::mouseDoubleClick()
     for (int i = 0; i < model.rowCount(); i++) {
         QModelIndex index = model.index(i, 0, QModelIndex());
         model.insertRows(0, 20, index);
-        model.insertColumns(0,2,index);
+        model.insertColumns(0, 2,index);
         for (int i1 = 0; i1 <  model.rowCount(index); i1++) {
-            (void)model.index(i1, 0, index);
+            QVERIFY(model.index(i1, 0, index).isValid());
         }
     }
 
@@ -2159,8 +2151,8 @@ void tst_QTreeView::mouseDoubleClick()
     view.setModel(&model);
 
     // make sure the viewport height is smaller than the contents height.
-    view.resize(200,200);
-    view.move(0,0);
+    view.resize(200, 200);
+    view.move(0, 0);
     view.show();
     QModelIndex index = model.index(0, 0, QModelIndex());
     view.setCurrentIndex(index);
@@ -2170,9 +2162,8 @@ void tst_QTreeView::mouseDoubleClick()
     view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     // Make sure all items are collapsed
-    for (int i = 0; i < model.rowCount(QModelIndex()); i++) {
-        view.setExpanded(model.index(i,0, QModelIndex()), false);
-    }
+    for (int i = 0; i < model.rowCount(QModelIndex()); i++)
+        view.setExpanded(model.index(i, 0, QModelIndex()), false);
 
     int maximum = view.verticalScrollBar()->maximum();
 
@@ -2210,14 +2201,13 @@ void tst_QTreeView::rowsAboutToBeRemoved()
     view.setCurrentIndex(index);
     view.setExpanded(model.index(0,0, QModelIndex()), true);
 
-    for (int i = 0; i < model.rowCount(QModelIndex()); i++) {
-        view.setExpanded(model.index(i,0, QModelIndex()), true);
-    }
+    for (int i = 0; i < model.rowCount(QModelIndex()); i++)
+        view.setExpanded(model.index(i, 0, QModelIndex()), true);
 
-    QSignalSpy spy1(&model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
+    QSignalSpy spy1(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
 
     model.removeRows(1,1);
-    QCOMPARE(int(view.state()), 0);
+    QCOMPARE((view.state()), 0);
     // Should not be 5 (or any other number for that sake :)
     QCOMPARE(spy1.count(), 1);
 
@@ -2241,8 +2231,7 @@ void tst_QTreeView::headerSections_unhideSection()
 
 void tst_QTreeView::columnAt()
 {
-    QtTestModel model;
-    model.rows = model.cols = 10;
+    QtTestModel model(10, 10);
     QTreeView view;
     view.resize(500,500);
     view.setModel(&model);
@@ -2256,8 +2245,7 @@ void tst_QTreeView::scrollTo()
 #define CHECK_VISIBLE(ROW,COL) QVERIFY(QRect(QPoint(),view.viewport()->size()).contains(\
                     view.visualRect(model.index((ROW),(COL),QModelIndex()))))
 
-    QtTestModel model;
-    model.rows = model.cols = 100;
+    QtTestModel model(100, 100);
     QTreeView view;
     view.setUniformRowHeights(true);
     view.scrollTo(QModelIndex(), QTreeView::PositionAtTop);
@@ -2268,19 +2256,18 @@ void tst_QTreeView::scrollTo()
     // ### create a data function for this test
 
     view.scrollTo(QModelIndex());
-    view.scrollTo(model.index(0,0,QModelIndex()));
-    view.scrollTo(model.index(0,0,QModelIndex()), QTreeView::PositionAtTop);
-    view.scrollTo(model.index(0,0,QModelIndex()), QTreeView::PositionAtBottom);
-
-    //
+    view.scrollTo(model.index(0, 0, QModelIndex()));
+    view.scrollTo(model.index(0, 0, QModelIndex()), QTreeView::PositionAtTop);
+    view.scrollTo(model.index(0, 0, QModelIndex()), QTreeView::PositionAtBottom);
 
     view.show();
     view.setVerticalScrollMode(QAbstractItemView::ScrollPerItem); //some styles change that in Polish
-
     view.resize(300, 200);
+
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     //view.verticalScrollBar()->setValue(0);
 
-    view.scrollTo(model.index(0,0,QModelIndex()));
+    view.scrollTo(model.index(0, 0, QModelIndex()));
     CHECK_VISIBLE(0,0);
     QCOMPARE(view.verticalScrollBar()->value(), 0);
 
@@ -2305,22 +2292,23 @@ void tst_QTreeView::rowsAboutToBeRemoved_move()
     QTreeView view;
     view.setModel(&model);
     QModelIndex indexThatWantsToLiveButWillDieDieITellYou;
-    QModelIndex parent = model.index(2, 0 );
+    QModelIndex parent = model.index(2, 0);
     view.expand(parent);
     for (int i = 0; i < 6; ++i) {
         model.insertRows(0, 1, parent);
         model.insertColumns(0, 1, parent);
         QModelIndex index = model.index(0, 0, parent);
         view.expand(index);
-        if ( i == 3 )
+        if (i == 3)
             indexThatWantsToLiveButWillDieDieITellYou = index;
         model.setData(index, i);
         parent = index;
     }
     view.resize(600,800);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     view.doItemsLayout();
-    static_cast<QTreeView *>(&view)->executeDelayedItemsLayout();
+    view.executeDelayedItemsLayout();
     parent = indexThatWantsToLiveButWillDieDieITellYou.parent();
     QCOMPARE(view.isExpanded(indexThatWantsToLiveButWillDieDieITellYou), true);
     QCOMPARE(parent.isValid(), true);
@@ -2354,7 +2342,8 @@ void tst_QTreeView::resizeColumnToContents()
     QTreeView view;
     view.setModel(&model);
     view.show();
-    qApp->processEvents(); //must have this, or else it will not scroll
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
     view.scrollToBottom();
     view.resizeColumnToContents(0);
     int oldColumnSize = view.header()->sectionSize(0);
@@ -2365,11 +2354,12 @@ void tst_QTreeView::resizeColumnToContents()
 
 void tst_QTreeView::insertAfterSelect()
 {
-    QtTestModel model;
-    model.rows = model.cols = 10;
+    QtTestModel model(10, 10);
     QTreeView view;
     view.setModel(&model);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
     QModelIndex firstIndex = model.index(0, 0, QModelIndex());
     QVERIFY(firstIndex.isValid());
     int itemOffset = view.visualRect(firstIndex).width() / 2;
@@ -2382,11 +2372,12 @@ void tst_QTreeView::insertAfterSelect()
 
 void tst_QTreeView::removeAfterSelect()
 {
-    QtTestModel model;
-    model.rows = model.cols = 10;
+    QtTestModel model(10, 10);
     QTreeView view;
     view.setModel(&model);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
     QModelIndex firstIndex = model.index(0, 0, QModelIndex());
     QVERIFY(firstIndex.isValid());
     int itemOffset = view.visualRect(firstIndex).width() / 2;
@@ -2399,17 +2390,17 @@ void tst_QTreeView::removeAfterSelect()
 
 void tst_QTreeView::hiddenItems()
 {
-    QtTestModel model;
-    model.rows = model.cols = 10;
+    QtTestModel model(10, 10);
     QTreeView view;
     view.setModel(&model);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     QModelIndex firstIndex = model.index(1, 0, QModelIndex());
     QVERIFY(firstIndex.isValid());
     if (model.canFetchMore(firstIndex))
         model.fetchMore(firstIndex);
-    for (int i=0; i < model.rowCount(firstIndex); i++)
+    for (int i = 0; i < model.rowCount(firstIndex); i++)
         view.setRowHidden(i , firstIndex, true );
 
     int itemOffset = view.visualRect(firstIndex).width() / 2;
@@ -2419,18 +2410,18 @@ void tst_QTreeView::hiddenItems()
     QTest::mouseDClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, p);
     QCOMPARE(view.isExpanded(firstIndex), false);
 
-    p.setX( 5 );
+    p.setX(5);
     QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, p);
     QCOMPARE(view.isExpanded(firstIndex), false);
 }
 
 void tst_QTreeView::spanningItems()
 {
-    QtTestModel model;
-    model.rows = model.cols = 10;
+    QtTestModel model(10, 10);
     QTreeView view;
     view.setModel(&model);
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     int itemWidth = view.header()->sectionSize(0);
     int itemHeight = view.visualRect(model.index(0, 0, QModelIndex())).height();
@@ -2470,7 +2461,7 @@ void tst_QTreeView::spanningItems()
 
 void tst_QTreeView::selectionOrderTest()
 {
-    QVERIFY(((QItemSelectionModel*)sender())->currentIndex().row() != -1);
+    QVERIFY(static_cast<QItemSelectionModel*>(sender())->currentIndex().row() != -1);
 }
 
 void tst_QTreeView::selection()
@@ -2489,12 +2480,11 @@ void tst_QTreeView::selection()
     treeView.setSelectionBehavior(QAbstractItemView::SelectRows);
     treeView.setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-    connect(treeView.selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
-            this, SLOT(selectionOrderTest()));
+    connect(treeView.selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &tst_QTreeView::selectionOrderTest);
 
-    treeView.show();
-
-    QTest::mousePress(treeView.viewport(), Qt::LeftButton, 0, treeView.visualRect(m.index(1, 0)).center());
+    QTest::mousePress(treeView.viewport(), Qt::LeftButton, {},
+                      treeView.visualRect(m.index(1, 0)).center());
     QTest::keyPress(treeView.viewport(), Qt::Key_Down);
     auto selectedRows = treeView.selectionModel()->selectedRows();
     QCOMPARE(selectedRows.size(), 1);
@@ -2509,23 +2499,21 @@ void tst_QTreeView::selection()
 void tst_QTreeView::selectionWithHiddenItems()
 {
     QStandardItemModel model;
-    for (int i = 0; i < model.rowCount(); ++i)
-        model.setData(model.index(i,0), QLatin1String("row ") + QString::number(i));
 
     QStandardItem item0("row 0");
     QStandardItem item1("row 1");
     QStandardItem item2("row 2");
     QStandardItem item3("row 3");
-    model.appendColumn( QList<QStandardItem*>() << &item0 << &item1 << &item2 << &item3);
+    model.appendColumn({&item0, &item1, &item2, &item3});
 
     QStandardItem child("child");
-    item1.appendRow( &child);
+    item1.appendRow(&child);
 
     QTreeView view;
     view.setModel(&model);
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);
     view.show();
-    qApp->processEvents();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     //child should not be selected as it is hidden (its parent is not expanded)
     view.selectAll();
@@ -2548,12 +2536,11 @@ void tst_QTreeView::selectionWithHiddenItems()
     //we hide the node with a child (there should then be 3 items selected in 2 ranges)
     view.setRowHidden(1, QModelIndex(), true);
     QVERIFY(view.isExpanded(item1.index()));
-    qApp->processEvents();
     view.selectAll();
     QCOMPARE(view.selectionModel()->selection().count(), 2);
     QCOMPARE(view.selectionModel()->selectedRows().count(), 3);
-    QVERIFY( !view.selectionModel()->isSelected(model.indexFromItem(&item1)));
-    QVERIFY( !view.selectionModel()->isSelected(model.indexFromItem(&child)));
+    QVERIFY(!view.selectionModel()->isSelected(model.indexFromItem(&item1)));
+    QVERIFY(!view.selectionModel()->isSelected(model.indexFromItem(&child)));
 
     view.setRowHidden(1, QModelIndex(), false);
     QVERIFY(view.isExpanded(item1.index()));
@@ -2561,7 +2548,6 @@ void tst_QTreeView::selectionWithHiddenItems()
 
     //we hide a node without children (there should then be 4 items selected in 3 ranges)
     view.setRowHidden(2, QModelIndex(), true);
-    qApp->processEvents();
     QVERIFY(view.isExpanded(item1.index()));
     view.selectAll();
     QVERIFY(view.isExpanded(item1.index()));
@@ -2575,7 +2561,7 @@ void tst_QTreeView::selectionWithHiddenItems()
 
 void tst_QTreeView::selectAll()
 {
-    QStandardItemModel model(4,4);
+    QStandardItemModel model(4, 4);
     QTreeView view2;
     view2.setModel(&model);
     view2.setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -2619,7 +2605,8 @@ void tst_QTreeView::extendedSelection()
     view.setModel(&model);
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);
     topLevel.show();
-    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, mousePressPos);
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QTest::mousePress(view.viewport(), Qt::LeftButton, {}, mousePressPos);
     QCOMPARE(view.selectionModel()->selectedIndexes().count(), selectedCount);
 }
 
@@ -2627,21 +2614,22 @@ void tst_QTreeView::rowSizeHint()
 {
     //tests whether the correct visible columns are taken into account when
     //calculating the height of a line
-    QStandardItemModel model(1,3);
-    model.setData( model.index(0,0), QSize(20,40), Qt::SizeHintRole);
-    model.setData( model.index(0,1), QSize(20,10), Qt::SizeHintRole);
-    model.setData( model.index(0,2), QSize(20,10), Qt::SizeHintRole);
+    QStandardItemModel model(1, 3);
+    model.setData(model.index(0, 0), QSize(20, 40), Qt::SizeHintRole);
+    model.setData(model.index(0, 1), QSize(20, 10), Qt::SizeHintRole);
+    model.setData(model.index(0, 2), QSize(20, 10), Qt::SizeHintRole);
     QTreeView view;
     view.setModel(&model);
 
     view.header()->moveSection(1, 0); //the 2nd column goes to the 1st place
 
     view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     //it must be 40 since the tallest item that defines the height of a line
-    QCOMPARE( view.visualRect(model.index(0,0)).height(), 40);
-    QCOMPARE( view.visualRect(model.index(0,1)).height(), 40);
-    QCOMPARE( view.visualRect(model.index(0,2)).height(), 40);
+    QCOMPARE(view.visualRect(model.index(0,0)).height(), 40);
+    QCOMPARE(view.visualRect(model.index(0,1)).height(), 40);
+    QCOMPARE(view.visualRect(model.index(0,2)).height(), 40);
 }
 
 
@@ -2651,7 +2639,7 @@ void tst_QTreeView::rowSizeHint()
 void tst_QTreeView::setSortingEnabledTopLevel()
 {
     QTreeView view;
-    QStandardItemModel model(1,1);
+    QStandardItemModel model(1, 1);
     view.setModel(&model);
     const int size = view.header()->sectionSize(0);
     view.setSortingEnabled(true);
@@ -2665,7 +2653,7 @@ void tst_QTreeView::setSortingEnabledChild()
     QMainWindow win;
     QTreeView view;
     // two columns to not get in trouble with stretchLastSection
-    QStandardItemModel model(1,2);
+    QStandardItemModel model(1, 2);
     view.setModel(&model);
     view.header()->setDefaultSectionSize(92);
     win.setCentralWidget(&view);
@@ -2690,16 +2678,18 @@ void tst_QTreeView::headerHidden()
 
 class TestTreeViewStyle : public QProxyStyle
 {
+    Q_OBJECT
 public:
-    TestTreeViewStyle() : indentation(20) {}
-    int pixelMetric(PixelMetric metric, const QStyleOption *option = 0, const QWidget *widget = 0) const override
+    using QProxyStyle::QProxyStyle;
+    int pixelMetric(PixelMetric metric, const QStyleOption *option = nullptr,
+                    const QWidget *widget = nullptr) const override
     {
         if (metric == QStyle::PM_TreeViewIndentation)
             return indentation;
         else
             return QProxyStyle::pixelMetric(metric, option, widget);
     }
-    int indentation;
+    int indentation = 20;
 };
 
 void tst_QTreeView::indentation()
@@ -2745,7 +2735,7 @@ void tst_QTreeView::removeAndInsertExpandedCol0()
     model.insertColumns(0, 1);
 
     view.show();
-    qApp->processEvents();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
 }
 
 void tst_QTreeView::disabledButCheckable()
@@ -2782,7 +2772,7 @@ void tst_QTreeView::sortByColumn()
 {
     QFETCH(bool, sortingEnabled);
     QTreeView view;
-    QStandardItemModel model(4,2);
+    QStandardItemModel model(4, 2);
     QSortFilterProxyModel sfpm; // default QStandardItemModel does not support 'unsorted' state
     sfpm.setSourceModel(&model);
     model.setItem(0, 0, new QStandardItem("b"));
@@ -2825,11 +2815,13 @@ void tst_QTreeView::sortByColumn()
  */
 class EvilModel: public QAbstractItemModel
 {
-
+    Q_OBJECT
 public:
-    class Node {
+    class Node
+    {
     public:
-        Node(Node *p = 0, int level = 0) : parent(p), isDead(false) {
+        Node(Node *p = nullptr, int level = 0) : parent(p)
+        {
             populate(level);
         }
         ~Node()
@@ -2838,20 +2830,23 @@ public:
             qDeleteAll(deadChildren.begin(), deadChildren.end());
         }
 
-        void populate(int level = 0) {
-            if (level < 4)
+        void populate(int level = 0)
+        {
+            if (level < 4) {
                 for (int i = 0; i < 5; ++i)
                     children.append(new Node(this, level + 1));
+            }
         }
-        void kill() {
+        void kill()
+        {
             for (int i = children.count() -1; i >= 0; --i) {
                 children.at(i)->kill();
-                if (parent == 0) {
+                if (parent == nullptr) {
                     deadChildren.append(children.at(i));
                     children.removeAt(i);
                 }
             }
-            if (parent == 0) {
+            if (parent == nullptr) {
                 if (!children.isEmpty())
                     qFatal("%s: children should be empty when parent is null", Q_FUNC_INFO);
                 populate();
@@ -2860,17 +2855,16 @@ public:
             }
         }
 
-        QList<Node*> children;
-        QList<Node*> deadChildren;
+        QVector<Node *> children;
+        QVector<Node *> deadChildren;
         Node *parent;
-        bool isDead;
+        bool isDead = false;
     };
 
     Node *root;
 
-    EvilModel(QObject *parent = 0): QAbstractItemModel(parent), root(new Node)
-    {
-    }
+    EvilModel(QObject *parent = nullptr): QAbstractItemModel(parent), root(new Node)
+    {}
     ~EvilModel()
     {
         delete root;
@@ -2880,7 +2874,7 @@ public:
     {
         emit layoutAboutToBeChanged();
         QModelIndexList oldList = persistentIndexList();
-        QList<QStack<int> > oldListPath;
+        QVector<QStack<int>> oldListPath;
         for (int i = 0; i < oldList.count(); ++i) {
             QModelIndex idx = oldList.at(i);
             QStack<int> path;
@@ -2893,12 +2887,10 @@ public:
         root->kill();
 
         QModelIndexList newList;
-        for (int i = 0; i < oldListPath.count(); ++i) {
-            QStack<int> path = oldListPath[i];
+        for (auto path : qAsConst(oldListPath)) {
             QModelIndex idx;
-            while(!path.isEmpty()) {
+            while (!path.isEmpty())
                 idx = index(path.pop(), 0, idx);
-            }
             newList.append(idx);
         }
 
@@ -2906,7 +2898,8 @@ public:
         emit layoutChanged();
     }
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const {
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override
+    {
         Node *parentNode = root;
         if (parent.isValid()) {
             parentNode = static_cast<Node*>(parent.internalPointer());
@@ -2915,13 +2908,12 @@ public:
         }
         return parentNode->children.count();
     }
-    int columnCount(const QModelIndex& parent = QModelIndex()) const {
-        if (parent.column() > 0)
-            return 0;
-        return 1;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override
+    {
+        return parent.column() > 0 ? 0 : 1;
     }
 
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override
     {
         Node *grandparentNode = static_cast<Node*>(parent.internalPointer());
         Node *parentNode = root;
@@ -2935,7 +2927,7 @@ public:
         return createIndex(row, column, parentNode);
     }
 
-    QModelIndex parent(const QModelIndex &index) const
+    QModelIndex parent(const QModelIndex &index) const override
     {
         Node *parent = static_cast<Node*>(index.internalPointer());
         Node *grandparent = parent->parent;
@@ -2944,7 +2936,7 @@ public:
         return createIndex(grandparent->children.indexOf(parent), 0, grandparent);
     }
 
-    QVariant data(const QModelIndex &idx, int role) const
+    QVariant data(const QModelIndex &idx, int role) const override
     {
         if (idx.isValid() && role == Qt::DisplayRole) {
             Node *parentNode = root;
@@ -2987,7 +2979,6 @@ void tst_QTreeView::evilModel()
     view.setRowHidden(0, firstLevel, true);
     model.change();
 
-    return;
     view.setFirstColumnSpanned(1, QModelIndex(), true);
     model.change();
 
@@ -3167,7 +3158,7 @@ void tst_QTreeView::filterProxyModelCrash()
     QTreeView view;
     view.setModel(&proxy);
     view.show();
-    QTest::qWait(30);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     proxy.invalidate();
     view.verticalScrollBar()->setValue(15);
     QTest::qWait(20);
@@ -3190,7 +3181,7 @@ void tst_QTreeView::renderToPixmap()
     QStandardItemModel model;
 
     model.appendRow(new QStandardItem("Spanning"));
-    model.appendRow(QList<QStandardItem*>() << new QStandardItem("Not") << new QStandardItem("Spanning"));
+    model.appendRow({ new QStandardItem("Not"), new QStandardItem("Spanning") });
 
     view.setModel(&model);
     view.setFirstColumnSpanned(0, QModelIndex(), true);
@@ -3211,57 +3202,60 @@ void tst_QTreeView::styleOptionViewItem()
 {
     class MyDelegate : public QStyledItemDelegate
     {
-        static QString posToString(QStyleOptionViewItem::ViewItemPosition pos) {
+        static QString posToString(QStyleOptionViewItem::ViewItemPosition pos)
+        {
             static const char* s_pos[] = { "Invalid", "Beginning", "Middle", "End", "OnlyOne" };
             return s_pos[pos];
         }
     public:
-        MyDelegate()
-            : QStyledItemDelegate(),
-              count(0),
-              allCollapsed(false)
-        {}
+        using QStyledItemDelegate::QStyledItemDelegate;
+        void paint(QPainter *painter, const QStyleOptionViewItem &option,
+                   const QModelIndex &index) const override
+        {
+            QStyleOptionViewItem opt(option);
+            initStyleOption(&opt, index);
 
-            void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const
-            {
-                QStyleOptionViewItem opt(option);
-                initStyleOption(&opt, index);
+            QVERIFY(!opt.text.isEmpty());
+            QCOMPARE(opt.index, index);
+            //qDebug() << index << opt.text;
 
-                QVERIFY(!opt.text.isEmpty());
-                QCOMPARE(opt.index, index);
-                //qDebug() << index << opt.text;
-
-                if (allCollapsed)
-                    QCOMPARE(!(opt.features & QStyleOptionViewItem::Alternate), !(index.row() % 2));
-                QCOMPARE(!(opt.features & QStyleOptionViewItem::HasCheckIndicator), !opt.text.contains("Checkable"));
-
-                if (opt.text.contains("Beginning"))
-                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItem::Beginning));
-
-                if (opt.text.contains("Middle"))
-                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItem::Middle));
-
-                if (opt.text.contains("End"))
-                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItem::End));
-
-                if (opt.text.contains("OnlyOne"))
-                    QCOMPARE(posToString(opt.viewItemPosition), posToString(QStyleOptionViewItem::OnlyOne));
-
-                if (opt.text.contains("Checked"))
-                    QCOMPARE(opt.checkState, Qt::Checked);
-                else
-                    QCOMPARE(opt.checkState, Qt::Unchecked);
-
-                QCOMPARE(!(opt.state & QStyle::State_Children) , !opt.text.contains("HasChildren"));
-                QCOMPARE(!!(opt.state & QStyle::State_Sibling) , !opt.text.contains("Last"));
-
-                QVERIFY(!opt.text.contains("Assert"));
-
-                QStyledItemDelegate::paint(painter, option, index);
-                count++;
+            if (allCollapsed) {
+                QCOMPARE(!opt.features.testFlag(QStyleOptionViewItem::Alternate),
+                         !(index.row() % 2));
             }
-            mutable int count;
-            bool allCollapsed;
+            QCOMPARE(!opt.features.testFlag(QStyleOptionViewItem::HasCheckIndicator),
+                     !opt.text.contains("Checkable"));
+
+            const QString posStr(posToString(opt.viewItemPosition));
+            if (opt.text.contains("Beginning"))
+                QCOMPARE(posStr, posToString(QStyleOptionViewItem::Beginning));
+
+            if (opt.text.contains("Middle"))
+                QCOMPARE(posStr, posToString(QStyleOptionViewItem::Middle));
+
+            if (opt.text.contains("End"))
+                QCOMPARE(posStr, posToString(QStyleOptionViewItem::End));
+
+            if (opt.text.contains("OnlyOne"))
+                QCOMPARE(posStr, posToString(QStyleOptionViewItem::OnlyOne));
+
+            if (opt.text.contains("Checked"))
+                QCOMPARE(opt.checkState, Qt::Checked);
+            else
+                QCOMPARE(opt.checkState, Qt::Unchecked);
+
+            QCOMPARE(!opt.state.testFlag(QStyle::State_Children),
+                     !opt.text.contains("HasChildren"));
+            QCOMPARE(opt.state.testFlag(QStyle::State_Sibling),
+                     !opt.text.contains("Last"));
+
+            QVERIFY(!opt.text.contains("Assert"));
+
+            QStyledItemDelegate::paint(painter, option, index);
+            count++;
+        }
+        mutable int count = 0;
+        bool allCollapsed = false;
     };
 
     QTreeView view;
@@ -3269,39 +3263,68 @@ void tst_QTreeView::styleOptionViewItem()
     view.setModel(&model);
     MyDelegate delegate;
     view.setItemDelegate(&delegate);
-    model.appendRow(QList<QStandardItem*>()
-        << new QStandardItem("Beginning") << new QStandardItem("Hidden") << new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+    model.appendRow({ new QStandardItem("Beginning"),
+                      new QStandardItem("Hidden"),
+                      new QStandardItem("Middle"),
+                      new QStandardItem("Middle"),
+                      new QStandardItem("End") });
     QStandardItem *par1 = new QStandardItem("Beginning HasChildren");
-    model.appendRow(QList<QStandardItem*>()
-        << par1 << new QStandardItem("Hidden") << new QStandardItem("Middle HasChildren") << new QStandardItem("Middle HasChildren") << new QStandardItem("End HasChildren") );
-    model.appendRow(QList<QStandardItem*>()
-        << new QStandardItem("OnlyOne") << new QStandardItem("Hidden") << new QStandardItem("Assert") << new QStandardItem("Assert") << new QStandardItem("Assert") );
+    model.appendRow({ par1,
+                      new QStandardItem("Hidden"),
+                      new QStandardItem("Middle HasChildren"),
+                      new QStandardItem("Middle HasChildren"),
+                      new QStandardItem("End HasChildren") });
+    model.appendRow({ new QStandardItem("OnlyOne"),
+                      new QStandardItem("Hidden"),
+                      new QStandardItem("Assert"),
+                      new QStandardItem("Assert"),
+                      new QStandardItem("Assert") });
     QStandardItem *checkable = new QStandardItem("Checkable");
     checkable->setCheckable(true);
     QStandardItem *checked = new QStandardItem("Checkable Checked");
     checked->setCheckable(true);
     checked->setCheckState(Qt::Checked);
-    model.appendRow(QList<QStandardItem*>()
-        << new QStandardItem("Beginning") << new QStandardItem("Hidden") << checkable << checked << new QStandardItem("End") );
-    model.appendRow(QList<QStandardItem*>()
-        << new QStandardItem("Beginning Last") << new QStandardItem("Hidden") << new QStandardItem("Middle Last") << new QStandardItem("Middle Last") << new QStandardItem("End Last") );
-
-    par1->appendRow(QList<QStandardItem*>()
-        << new QStandardItem("Beginning") << new QStandardItem("Hidden") << new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+    model.appendRow({ new QStandardItem("Beginning"),
+                      new QStandardItem("Hidden"),
+                      checkable, checked,
+                      new QStandardItem("End") });
+    model.appendRow({ new QStandardItem("Beginning Last"),
+                      new QStandardItem("Hidden"),
+                      new QStandardItem("Middle Last"),
+                      new QStandardItem("Middle Last"),
+                      new QStandardItem("End Last") });
+    par1->appendRow({ new QStandardItem("Beginning"),
+                      new QStandardItem("Hidden"),
+                      new QStandardItem("Middle"),
+                      new QStandardItem("Middle"),
+                      new QStandardItem("End") });
     QStandardItem *par2 = new QStandardItem("Beginning HasChildren");
-    par1->appendRow(QList<QStandardItem*>()
-        << par2 << new QStandardItem("Hidden") << new QStandardItem("Middle HasChildren") << new QStandardItem("Middle HasChildren") << new QStandardItem("End HasChildren") );
-    par2->appendRow(QList<QStandardItem*>()
-        << new QStandardItem("Beginning Last") << new QStandardItem("Hidden") << new QStandardItem("Middle Last") << new QStandardItem("Middle Last") << new QStandardItem("End Last") );
-
+    par1->appendRow({ par2,
+                      new QStandardItem("Hidden"),
+                      new QStandardItem("Middle HasChildren"),
+                      new QStandardItem("Middle HasChildren"),
+                      new QStandardItem("End HasChildren") });
+    par2->appendRow({ new QStandardItem("Beginning Last"),
+                      new QStandardItem("Hidden"),
+                      new QStandardItem("Middle Last"),
+                      new QStandardItem("Middle Last"),
+                      new QStandardItem("End Last") });
     QStandardItem *par3 = new QStandardItem("Beginning Last");
-    par1->appendRow(QList<QStandardItem*>()
-        << par3 << new QStandardItem("Hidden") << new QStandardItem("Middle Last") << new QStandardItem("Middle Last") << new QStandardItem("End Last") );
-    par3->appendRow(QList<QStandardItem*>()
-        << new QStandardItem("Assert") << new QStandardItem("Hidden") << new QStandardItem("Assert") << new QStandardItem("Assert") << new QStandardItem("Asser") );
+    par1->appendRow({ par3, new QStandardItem("Hidden"),
+                      new QStandardItem("Middle Last"),
+                      new QStandardItem("Middle Last"),
+                      new QStandardItem("End Last") });
+    par3->appendRow({ new QStandardItem("Assert"),
+                      new QStandardItem("Hidden"),
+                      new QStandardItem("Assert"),
+                      new QStandardItem("Assert"),
+                      new QStandardItem("Asser") });
     view.setRowHidden(0, par3->index(), true);
-    par1->appendRow(QList<QStandardItem*>()
-        << new QStandardItem("Assert") << new QStandardItem("Hidden") << new QStandardItem("Assert") << new QStandardItem("Assert") << new QStandardItem("Asser") );
+    par1->appendRow({ new QStandardItem("Assert"),
+                      new QStandardItem("Hidden"),
+                      new QStandardItem("Assert"),
+                      new QStandardItem("Assert"),
+                      new QStandardItem("Asser") });
     view.setRowHidden(3, par1->index(), true);
 
     view.setColumnHidden(1, true);
@@ -3331,16 +3354,14 @@ void tst_QTreeView::styleOptionViewItem()
     delegate.count = 0;
     delegate.allCollapsed = true;
     view.showMaximized();
-    QApplication::processEvents();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(delegate.count >= 13);
     delegate.count = 0;
     delegate.allCollapsed = false;
     view.expandAll();
-    QApplication::processEvents();
     QTRY_VERIFY(delegate.count >= 13);
     delegate.count = 0;
     view.collapse(par2->index());
-    QApplication::processEvents();
     QTRY_VERIFY(delegate.count >= 4);
 
     // test that the rendering of drag pixmap sets the correct options too (QTBUG-15834)
@@ -3360,96 +3381,73 @@ void tst_QTreeView::styleOptionViewItem()
         delegate.count = 0;
         QStandardItemModel model2;
         QStandardItem *item0 = new QStandardItem("OnlyOne Last");
-        model2.appendRow(QList<QStandardItem*>() << item0);
+        model2.appendRow(item0);
         view.setModel(&model2);
-        QApplication::processEvents();
         QTRY_VERIFY(delegate.count >= 1);
-        QApplication::processEvents();
 
         QStandardItem *item00 = new QStandardItem("OnlyOne Last");
-        item0->appendRow(QList<QStandardItem*>() << item00);
+        item0->appendRow(item00);
         item0->setText("OnlyOne Last HasChildren");
-        QApplication::processEvents();
         delegate.count = 0;
         view.expandAll();
-        QApplication::processEvents();
         QTRY_VERIFY(delegate.count >= 2);
-        QApplication::processEvents();
 
         QStandardItem *item1 = new QStandardItem("OnlyOne Last");
         delegate.count = 0;
         item0->setText("OnlyOne HasChildren");
-        model2.appendRow(QList<QStandardItem*>() << item1);
-        QApplication::processEvents();
+        model2.appendRow(item1);
         QTRY_VERIFY(delegate.count >= 3);
-        QApplication::processEvents();
 
         QStandardItem *item01 = new QStandardItem("OnlyOne Last");
         delegate.count = 0;
         item00->setText("OnlyOne");
-        item0->appendRow(QList<QStandardItem*>() << item01);
-        QApplication::processEvents();
+        item0->appendRow(item01);
         QTRY_VERIFY(delegate.count >= 4);
-        QApplication::processEvents();
 
         QStandardItem *item000 = new QStandardItem("OnlyOne Last");
         delegate.count = 0;
         item00->setText("OnlyOne HasChildren");
-        item00->appendRow(QList<QStandardItem*>() << item000);
-        QApplication::processEvents();
+        item00->appendRow(item000);
         QTRY_VERIFY(delegate.count >= 5);
-        QApplication::processEvents();
 
         delegate.count = 0;
         item0->removeRow(0);
-        QApplication::processEvents();
         QTRY_VERIFY(delegate.count >= 3);
-        QApplication::processEvents();
 
         item00 = new QStandardItem("OnlyOne");
-        item0->insertRow(0, QList<QStandardItem*>() << item00);
-        QApplication::processEvents();
+        item0->insertRow(0, item00);
+
         delegate.count = 0;
         view.expandAll();
-        QApplication::processEvents();
         QTRY_VERIFY(delegate.count >= 4);
-        QApplication::processEvents();
 
         delegate.count = 0;
         item0->removeRow(1);
         item00->setText("OnlyOne Last");
-        QApplication::processEvents();
         QTRY_VERIFY(delegate.count >= 3);
-        QApplication::processEvents();
 
         delegate.count = 0;
         item0->removeRow(0);
         item0->setText("OnlyOne");
-        QApplication::processEvents();
         QTRY_VERIFY(delegate.count >= 2);
-        QApplication::processEvents();
 
         //with hidden items
         item0->setText("OnlyOne HasChildren");
         item00 = new QStandardItem("OnlyOne");
-        item0->appendRow(QList<QStandardItem*>() << item00);
+        item0->appendRow(item00);
         item01 = new QStandardItem("Assert");
-        item0->appendRow(QList<QStandardItem*>() << item01);
+        item0->appendRow(item01);
         view.setRowHidden(1, item0->index(), true);
         view.expandAll();
         QStandardItem *item02 = new QStandardItem("OnlyOne Last");
-        item0->appendRow(QList<QStandardItem*>() << item02);
+        item0->appendRow(item02);
         delegate.count = 0;
-        QApplication::processEvents();
         QTRY_VERIFY(delegate.count >= 4);
-        QApplication::processEvents();
 
         item0->removeRow(2);
         item00->setText("OnlyOne Last");
         delegate.count = 0;
-        QApplication::processEvents();
         QTRY_VERIFY(delegate.count >= 3);
-        QApplication::processEvents();
 
         item00->setText("OnlyOne");
         item0->insertRow(2, new QStandardItem("OnlyOne Last"));
@@ -3457,13 +3455,11 @@ void tst_QTreeView::styleOptionViewItem()
         item0->removeRow(0);
         delegate.count = 0;
         QTRY_VERIFY(delegate.count >= 2);
-        QApplication::processEvents();
 
         item0->removeRow(1);
         item0->setText("OnlyOne");
         delegate.count = 0;
         QTRY_VERIFY(delegate.count >= 2);
-        QApplication::processEvents();
     }
 }
 
@@ -3471,10 +3467,10 @@ class task174627_TreeView : public QTreeView
 {
     Q_OBJECT
 protected slots:
-    void currentChanged(const QModelIndex &current, const QModelIndex &)
-    { emit currentChanged(current); }
+    void currentChanged(const QModelIndex &current, const QModelIndex &) override
+    { emit signalCurrentChanged(current); }
 signals:
-    void currentChanged(const QModelIndex &);
+    void signalCurrentChanged(const QModelIndex &);
 };
 
 void tst_QTreeView::task174627_moveLeftToRoot()
@@ -3490,7 +3486,7 @@ void tst_QTreeView::task174627_moveLeftToRoot()
     view.setRootIndex(item1->index());
     view.setCurrentIndex(item2->index());
 
-    QSignalSpy spy(&view, SIGNAL(currentChanged(QModelIndex)));
+    QSignalSpy spy(&view, &task174627_TreeView::signalCurrentChanged);
     QTest::keyClick(&view, Qt::Key_Left);
     QCOMPARE(spy.count(), 0);
 }
@@ -3503,9 +3499,9 @@ void tst_QTreeView::task171902_expandWith1stColHidden()
         subitem("subitem"), subitem2("subitem"),
         subsubitem("subsubitem"), subsubitem2("subsubitem");
 
-    model.appendRow( QList<QStandardItem *>() << &root << &root2);
-    root.appendRow( QList<QStandardItem *>() << &subitem << &subitem2);
-    subitem.appendRow( QList<QStandardItem *>() << &subsubitem << &subsubitem2);
+    model.appendRow({ &root, &root2 });
+    root.appendRow({ &subitem, &subitem2 });
+    subitem.appendRow({ &subsubitem, &subsubitem2 });
 
     QTreeView view;
     view.setModel(&model);
@@ -3523,18 +3519,18 @@ void tst_QTreeView::task171902_expandWith1stColHidden()
 void tst_QTreeView::task203696_hidingColumnsAndRowsn()
 {
     QTreeView view;
-    QStandardItemModel *model = new QStandardItemModel(0, 3, &view);
+    QStandardItemModel model(0, 3);
     for (int i = 0; i < 3; ++i) {
         const QString prefix = QLatin1String("row ") + QString::number(i) + QLatin1String(" col ");
-        model->insertRow(model->rowCount());
-        for (int j = 0; j < model->columnCount(); ++j)
-            model->setData(model->index(i, j), prefix + QString::number(j));
+        model.insertRow(model.rowCount());
+        for (int j = 0; j < model.columnCount(); ++j)
+            model.setData(model.index(i, j), prefix + QString::number(j));
     }
-    view.setModel(model);
+    view.setModel(&model);
     view.show();
     view.setColumnHidden(0, true);
     view.setRowHidden(0, QModelIndex(), true);
-    QCOMPARE(view.indexAt(QPoint(0, 0)), model->index(1, 1));
+    QCOMPARE(view.indexAt(QPoint(0, 0)), model.index(1, 1));
 }
 
 
@@ -3547,27 +3543,23 @@ void tst_QTreeView::addRowsWhileSectionsAreHidden()
         view.show();
         QVERIFY(QTest::qWaitForWindowActive(&view));
 
-        int i;
-        for (i = 0; i < 3; ++i)
+        for (int i = 0; i < 3; ++i)
         {
             model->insertRow(model->rowCount());
             const QString prefix = QLatin1String("row ") + QString::number(i) + QLatin1String(" col ");
-            for (int j = 0; j < model->columnCount(); ++j) {
+            for (int j = 0; j < model->columnCount(); ++j)
                 model->setData(model->index(i, j), prefix + QString::number(j));
-            }
         }
-        int col;
-        for (col = 0; col < pass; ++col)
+        for (int col = 0; col < pass; ++col)
             view.setColumnHidden(col, true);
-        for (i = 3; i < 6; ++i)
+        for (int i = 3; i < 6; ++i)
         {
             model->insertRow(model->rowCount());
             const QString prefix = QLatin1String("row ") + QString::number(i) + QLatin1String(" col ");
-            for (int j = 0; j < model->columnCount(); ++j) {
+            for (int j = 0; j < model->columnCount(); ++j)
                 model->setData(model->index(i, j), prefix + QString::number(j));
-            }
         }
-        for (col = 0; col < pass; ++col)
+        for (int col = 0; col < pass; ++col)
             view.setColumnHidden(col, false);
 
         auto allVisualRectsValid = [](QTreeView *view, QStandardItemModel *model) {
@@ -3585,24 +3577,25 @@ void tst_QTreeView::addRowsWhileSectionsAreHidden()
 
 void tst_QTreeView::task216717_updateChildren()
 {
-    class Tree : public QTreeWidget {
+    class Tree : public QTreeWidget
+    {
         protected:
-            void paintEvent(QPaintEvent *e)
+            void paintEvent(QPaintEvent *e) override
             {
                 QTreeWidget::paintEvent(e);
-                refreshed=true;
+                refreshed = true;
             }
         public:
-            bool refreshed;
+            bool refreshed = false;
     } tree;
     tree.show();
     QVERIFY(QTest::qWaitForWindowExposed(&tree));
     tree.refreshed = false;
-    QTreeWidgetItem *parent = new QTreeWidgetItem(QStringList() << "parent");
+    QTreeWidgetItem *parent = new QTreeWidgetItem({ "parent" });
     tree.addTopLevelItem(parent);
     QTRY_VERIFY(tree.refreshed);
     tree.refreshed = false;
-    parent->addChild(new QTreeWidgetItem(QStringList() << "child"));
+    parent->addChild(new QTreeWidgetItem({ "child" }));
     QTRY_VERIFY(tree.refreshed);
 
 }
@@ -3611,13 +3604,14 @@ void tst_QTreeView::task220298_selectColumns()
 {
     //this is a very simple 3x3 model where the internalId of the index are different for each cell
     class Model : public QAbstractTableModel
-    { public:
-            virtual int columnCount ( const QModelIndex & parent = QModelIndex() ) const
+    {
+        public:
+            int columnCount(const QModelIndex & parent = QModelIndex()) const override
             { return parent.isValid() ? 0 : 3; }
-            virtual int rowCount ( const QModelIndex & parent = QModelIndex() ) const
+            int rowCount(const QModelIndex & parent = QModelIndex()) const override
             { return parent.isValid() ? 0 : 3; }
 
-            virtual QVariant data ( const QModelIndex & index, int role = Qt::DisplayRole ) const
+            QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const override
             {
                 if (role == Qt::DisplayRole) {
                     return QVariant(QString::number(index.column()) + QLatin1Char('-')
@@ -3626,18 +3620,21 @@ void tst_QTreeView::task220298_selectColumns()
                 return QVariant();
             }
 
-            virtual QModelIndex index ( int row, int column, const QModelIndex & parent = QModelIndex() ) const
+            QModelIndex index(int row, int column, const QModelIndex & parent = QModelIndex()) const override
             {
-                return hasIndex(row, column, parent) ? createIndex(row, column, column*10+row) : QModelIndex();
+                return hasIndex(row, column, parent) ? createIndex(row, column, quintptr(column * 10 + row)) : QModelIndex();
             }
     };
 
-    class TreeView : public QTreeView { public: QModelIndexList selectedIndexes () const { return QTreeView::selectedIndexes(); } } view;
+    class TreeView : public QTreeView {
+        public:
+            using QTreeView::selectedIndexes;
+    } view;
     Model model;
     view.setModel(&model);
     view.show();
     QVERIFY(QTest::qWaitForWindowActive(&view));
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0,
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, {},
                       view.visualRect(view.model()->index(1, 1)).center());
     QTRY_VERIFY(view.selectedIndexes().contains(view.model()->index(1, 2)));
     QVERIFY(view.selectedIndexes().contains(view.model()->index(1, 1)));
@@ -3653,8 +3650,8 @@ void tst_QTreeView::task224091_appendColumns()
     QTreeView *treeView = new QTreeView(topLevel);
     treeView->setModel(model);
     topLevel->show();
-    treeView->resize(50,50);
-    qApp->setActiveWindow(topLevel);
+    treeView->resize(50, 50);
+    QApplication::setActiveWindow(topLevel);
     QVERIFY(QTest::qWaitForWindowActive(topLevel));
 
     QVERIFY(!treeView->verticalScrollBar()->isVisible());
@@ -3705,9 +3702,8 @@ void tst_QTreeView::task211293_removeRootIndex()
     view.setCurrentIndex(model.indexFromItem(E11314));
     view.setExpanded(model.indexFromItem(E11314), true);
     view.show();
-    qApp->processEvents();
-    model.removeRows(0, 1);
-    qApp->processEvents();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QVERIFY(model.removeRows(0, 1));
 }
 
 void tst_QTreeView::task225539_deleteModel()
@@ -3716,8 +3712,8 @@ void tst_QTreeView::task225539_deleteModel()
     treeView.show();
     QStandardItemModel *model = new QStandardItemModel(&treeView);
 
-    QStandardItem* parentItem = model->invisibleRootItem();
-    QStandardItem* item = new QStandardItem(QString("item"));
+    QStandardItem *parentItem = model->invisibleRootItem();
+    QStandardItem *item = new QStandardItem(QString("item"));
     parentItem->appendRow(item);
 
     treeView.setModel(model);
@@ -3767,7 +3763,7 @@ void tst_QTreeView::task230123_setItemsExpandable()
     QTest::keyClick(&tree, Qt::Key_Right);
     QVERIFY(root.isExpanded());
 
-    const bool navToChild = tree.style()->styleHint(QStyle::SH_ItemView_ArrowKeysNavigateIntoChildren, 0, &tree);
+    const bool navToChild = tree.style()->styleHint(QStyle::SH_ItemView_ArrowKeysNavigateIntoChildren, nullptr, &tree);
     QTest::keyClick(&tree, Qt::Key_Right);
     QCOMPARE(tree.currentItem(), navToChild ? &child : &root);
 
@@ -3784,13 +3780,13 @@ void tst_QTreeView::task230123_setItemsExpandable()
 
 void tst_QTreeView::task202039_closePersistentEditor()
 {
-    QStandardItemModel model(1,1);
+    QStandardItemModel model(1, 1);
     QTreeView view;
     view.setModel(&model);
 
     QModelIndex current = model.index(0,0);
-    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.visualRect(current).center());
-    QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(current).center());
+    QTest::mousePress(view.viewport(), Qt::LeftButton, {}, view.visualRect(current).center());
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton, {}, view.visualRect(current).center());
     QCOMPARE(view.currentIndex(), current);
     QVERIFY(view.indexWidget(current));
 
@@ -3799,8 +3795,8 @@ void tst_QTreeView::task202039_closePersistentEditor()
 
     //here was the bug: closing the persistent editor would not reset the state
     //and it was impossible to go into editinon again
-    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.visualRect(current).center());
-    QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(current).center());
+    QTest::mousePress(view.viewport(), Qt::LeftButton, {}, view.visualRect(current).center());
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton, {}, view.visualRect(current).center());
     QCOMPARE(view.currentIndex(), current);
     QVERIFY(view.indexWidget(current));
 }
@@ -3824,13 +3820,12 @@ void tst_QTreeView::task238873_avoidAutoReopening()
     view.expandAll();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(child.index()).center());
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, {}, view.visualRect(child.index()).center());
     QTRY_COMPARE(view.currentIndex(), child.index());
 
     view.setExpanded(item1.index(), false);
 
-    QTest::qWait(500); //enough to trigger the delayedAutoScroll timer
-    QVERIFY(!view.isExpanded(item1.index()));
+    QTRY_VERIFY(!view.isExpanded(item1.index()));
 }
 
 void tst_QTreeView::task244304_clickOnDecoration()
@@ -3841,39 +3836,38 @@ void tst_QTreeView::task244304_clickOnDecoration()
     QStandardItem item00("row 0");
     item0.appendRow(&item00);
     QStandardItem item1("row 1");
-    model.appendColumn(QList<QStandardItem*>() << &item0 << &item1);
+    model.appendColumn({ &item0, &item1 });
     view.setModel(&model);
 
     QVERIFY(!view.currentIndex().isValid());
     QRect rect = view.visualRect(item0.index());
     //we click on the decoration
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, rect.topLeft()+QPoint(-rect.left()/2,rect.height()/2));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, {},
+                      rect.topLeft() + QPoint(-rect.left() / 2, rect.height() / 2));
     QVERIFY(!view.currentIndex().isValid());
     QVERIFY(view.isExpanded(item0.index()));
 
     rect = view.visualRect(item1.index());
     //the item has no decoration, it should get selected
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, rect.topLeft()+QPoint(-rect.left()/2,rect.height()/2));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, {},
+                      rect.topLeft() + QPoint(-rect.left() / 2, rect.height() / 2));
     QCOMPARE(view.currentIndex(), item1.index());
 }
 
 void tst_QTreeView::task246536_scrollbarsNotWorking()
 {
-    struct MyObject : public QObject
+    class MyObject : public QObject
     {
-        MyObject() : count(0)
-        {
-        }
-
-        bool eventFilter(QObject*, QEvent *e)
+    public:
+        using QObject::QObject;
+        bool eventFilter(QObject*, QEvent *e) override
         {
             if (e->type() == QEvent::Paint)
                 count++;
 
             return false;
         }
-
-        int count;
+        int count = 0;
     };
     QTreeView tree;
     MyObject o;
@@ -3883,11 +3877,11 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
     tree.show();
     QVERIFY(QTest::qWaitForWindowExposed(&tree));
     QList<QStandardItem *> items;
-    for(int i=0; i<100; ++i){
+    for (int i = 0; i < 100; ++i)
         items << new QStandardItem(QLatin1String("item ") + QString::number(i));
-    }
+    o.count = 0;
     model.invisibleRootItem()->appendColumn(items);
-    QTest::qWait(100);
+    QTRY_VERIFY(o.count > 0);
     o.count = 0;
     tree.verticalScrollBar()->setValue(50);
     QTRY_VERIFY(o.count > 0);
@@ -3915,12 +3909,12 @@ void tst_QTreeView::task239271_addRowsWithFirstColumnHidden()
     class MyDelegate : public QStyledItemDelegate
     {
     public:
-        void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const
+        void paint(QPainter *painter, const QStyleOptionViewItem &option,
+                   const QModelIndex &index) const override
         {
             paintedIndexes << index;
             QStyledItemDelegate::paint(painter, option, index);
         }
-
         mutable QSet<QModelIndex> paintedIndexes;
     };
 
@@ -3953,15 +3947,15 @@ void tst_QTreeView::task254234_proxySort()
     //based on tst_QTreeView::sortByColumn
     // it used not to work when setting the source of a proxy after enabling sorting
     QTreeView view;
-    QStandardItemModel model(4,2);
-    model.setItem(0,0,new QStandardItem("b"));
-    model.setItem(1,0,new QStandardItem("d"));
-    model.setItem(2,0,new QStandardItem("c"));
-    model.setItem(3,0,new QStandardItem("a"));
-    model.setItem(0,1,new QStandardItem("e"));
-    model.setItem(1,1,new QStandardItem("g"));
-    model.setItem(2,1,new QStandardItem("h"));
-    model.setItem(3,1,new QStandardItem("f"));
+    QStandardItemModel model(4, 2);
+    model.setItem(0, 0, new QStandardItem("b"));
+    model.setItem(1, 0, new QStandardItem("d"));
+    model.setItem(2, 0, new QStandardItem("c"));
+    model.setItem(3, 0, new QStandardItem("a"));
+    model.setItem(0, 1, new QStandardItem("e"));
+    model.setItem(1, 1, new QStandardItem("g"));
+    model.setItem(2, 1, new QStandardItem("h"));
+    model.setItem(3, 1, new QStandardItem("f"));
 
     view.sortByColumn(1, Qt::DescendingOrder);
     view.setSortingEnabled(true);
@@ -3971,8 +3965,8 @@ void tst_QTreeView::task254234_proxySort()
     view.setModel(&proxy);
     proxy.setSourceModel(&model);
     QCOMPARE(view.header()->sortIndicatorSection(), 1);
-    QCOMPARE(view.model()->data(view.model()->index(0,1)).toString(), QString::fromLatin1("h"));
-    QCOMPARE(view.model()->data(view.model()->index(1,1)).toString(), QString::fromLatin1("g"));
+    QCOMPARE(view.model()->data(view.model()->index(0, 1)).toString(), QString::fromLatin1("h"));
+    QCOMPARE(view.model()->data(view.model()->index(1, 1)).toString(), QString::fromLatin1("g"));
 }
 
 class TreeView : public QTreeView
@@ -3984,7 +3978,8 @@ public slots:
         //let's select the last item
         QModelIndex idx = model()->index(0, 0);
         selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
-        disconnect(selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this, SLOT(handleSelectionChanged()));
+        disconnect(selectionModel(), &QItemSelectionModel::selectionChanged,
+                   this, &TreeView::handleSelectionChanged);
     }
 };
 
@@ -3993,12 +3988,14 @@ void tst_QTreeView::task248022_changeSelection()
     //we check that changing the selection between the mouse press and the mouse release
     //works correctly
     TreeView view;
-    QStringList list = QStringList() << "1" << "2";
+    const QStringList list({"1", "2"});
     QStringListModel model(list);
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);
     view.setModel(&model);
-    view.connect(view.selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), SLOT(handleSelectionChanged()));
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(model.index(1)).center());
+    connect(view.selectionModel(), &QItemSelectionModel::selectionChanged,
+            &view, &TreeView::handleSelectionChanged);
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, {},
+                      view.visualRect(model.index(1)).center());
     QCOMPARE(view.selectionModel()->selectedIndexes().count(), list.count());
 }
 
@@ -4012,8 +4009,9 @@ void tst_QTreeView::task245654_changeModelAndExpandAll()
     model->appendRow(top);
     view.setModel(model.data());
     view.expandAll();
-    QApplication::processEvents();
-    QVERIFY(view.isExpanded(top->index()));
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QTRY_VERIFY(view.isExpanded(top->index()));
 
     //now let's try to delete the model
     //then repopulate and expand again
@@ -4024,9 +4022,7 @@ void tst_QTreeView::task245654_changeModelAndExpandAll()
     model->appendRow(top);
     view.setModel(model.data());
     view.expandAll();
-    QApplication::processEvents();
-    QVERIFY(view.isExpanded(top->index()));
-
+    QTRY_VERIFY(view.isExpanded(top->index()));
 }
 
 void tst_QTreeView::doubleClickedWithSpans()
@@ -4042,10 +4038,10 @@ void tst_QTreeView::doubleClickedWithSpans()
 
     QPoint p(10, 10);
     QCOMPARE(view.indexAt(p), model.index(0, 0));
-    QSignalSpy spy(&view, SIGNAL(doubleClicked(QModelIndex)));
-    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, p);
-    QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, p);
-    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, p);
+    QSignalSpy spy(&view, &QAbstractItemView::doubleClicked);
+    QTest::mousePress(view.viewport(), Qt::LeftButton, {}, p);
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton, {}, p);
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, {}, p);
     QCOMPARE(spy.count(), 1);
 
     //let's click on the 2nd column
@@ -4053,10 +4049,10 @@ void tst_QTreeView::doubleClickedWithSpans()
     QCOMPARE(view.indexAt(p), model.index(0, 0));
 
     //end the previous edition
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
-    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, p);
-    QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, p);
-    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, p);
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, {}, p);
+    QTest::mousePress(view.viewport(), Qt::LeftButton, {}, p);
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton, {}, p);
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, {}, p);
     QTRY_COMPARE(spy.count(), 2);
 }
 
@@ -4069,7 +4065,8 @@ void tst_QTreeView::taskQTBUG_6450_selectAllWith1stColumnHidden()
     const int nrRows = 10;
     for (int i = 0; i < nrRows; ++i) {
         const QString text = QLatin1String("item: ") + QString::number(i);
-        items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(text)));
+        items.append(new QTreeWidgetItem(static_cast<QTreeWidget *>(nullptr),
+                                         QStringList(text)));
         items.last()->setText(1, QString("is an item"));
     }
     tree.insertTopLevelItems(0, items);
@@ -4086,15 +4083,15 @@ class TreeViewQTBUG_9216 : public QTreeView
 {
     Q_OBJECT
 public:
-    void paintEvent(QPaintEvent *event)
+    void paintEvent(QPaintEvent *event) override
     {
         if (doCompare)
             QCOMPARE(event->rect(), viewport()->rect());
         QTreeView::paintEvent(event);
         painted++;
     }
-    int painted;
-    bool doCompare;
+    int painted = 0;
+    bool doCompare = false;
 };
 
 void tst_QTreeView::taskQTBUG_9216_setSizeAndUniformRowHeightsWrongRepaint()
@@ -4128,7 +4125,7 @@ void tst_QTreeView::keyboardNavigationWithDisabled()
     QStandardItemModel model(90, 0);
     for (int i = 0; i < 90; i ++) {
         model.setItem(i, new QStandardItem(QString::number(i)));
-        model.item(i)->setEnabled(i%6 == 0);
+        model.item(i)->setEnabled(i % 6 == 0);
     }
     view.setModel(&model);
 
@@ -4179,6 +4176,7 @@ void tst_QTreeView::keyboardNavigationWithDisabled()
 
 class RemoveColumnOne : public QSortFilterProxyModel
 {
+    Q_OBJECT
 public:
     bool filterAcceptsColumn(int source_column, const QModelIndex &) const override
     {
@@ -4200,9 +4198,9 @@ void tst_QTreeView::saveRestoreState()
 {
     QStandardItemModel model;
     for (int i = 0; i < 100; i++) {
-        QList<QStandardItem *> items;
-        items << new QStandardItem(QLatin1String("item ") + QString::number(i)) << new QStandardItem(QStringLiteral("hidden by proxy")) << new QStandardItem(QStringLiteral("hidden by user"));
-        model.appendRow(items);
+        model.appendRow({new QStandardItem(QStringLiteral("item ") + QString::number(i)),
+                         new QStandardItem(QStringLiteral("hidden by proxy")),
+                         new QStandardItem(QStringLiteral("hidden by user")) });
     }
     QCOMPARE(model.columnCount(), 3);
 
@@ -4233,32 +4231,29 @@ class Model_11466 : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    Model_11466(QObject * /* parent */) :
-        m_block(false)
+    Model_11466(QObject *parent = nullptr) : QAbstractItemModel(parent)
+        , m_selectionModel(new QItemSelectionModel(this, this))
     {
-        // set up the model to have two top level items and a few others
-        m_selectionModel = new QItemSelectionModel(this, this); // owned by this
+        connect(m_selectionModel, &QItemSelectionModel::currentChanged,
+                this, &Model_11466::slotCurrentChanged);
+    }
 
-        connect(m_selectionModel, SIGNAL(currentChanged(QModelIndex,QModelIndex)),
-                this, SLOT(slotCurrentChanged(QModelIndex,QModelIndex)));
-    };
-
-    int rowCount(const QModelIndex &parent) const
+    int rowCount(const QModelIndex &parent) const override
     {
         if (parent.isValid())
             return (parent.internalId() == 0) ? 4 : 0;
         return 2; // two top level items
     }
 
-    int columnCount(const QModelIndex & /* parent */) const
+    int columnCount(const QModelIndex & /* parent */) const override
     {
         return 2;
     }
 
-    QVariant data(const QModelIndex &index, int role) const
+    QVariant data(const QModelIndex &index, int role) const override
     {
         if (role == Qt::DisplayRole && index.isValid()) {
-            qint64 parentRowPlusOne = index.internalId();
+            qint64 parentRowPlusOne = qint64(index.internalId());
             QString str;
             QTextStream stream(&str);
             if (parentRowPlusOne > 0)
@@ -4270,10 +4265,10 @@ public:
         return QVariant();
     }
 
-    QModelIndex parent(const QModelIndex &index) const
+    QModelIndex parent(const QModelIndex &index) const override
     {
         if (index.isValid()) {
-            qint64 parentRowPlusOne = index.internalId();
+            qint64 parentRowPlusOne = qint64(index.internalId());
             if (parentRowPlusOne > 0) {
                 int row = static_cast<int>(parentRowPlusOne - 1);
                 return createIndex(row, 0);
@@ -4294,9 +4289,9 @@ public:
         delete oldModel;
     }
 
-    QModelIndex index(int row, int column, const QModelIndex &parent) const
+    QModelIndex index(int row, int column, const QModelIndex &parent) const override
     {
-        return createIndex(row, column, parent.isValid() ? (quintptr)(parent.row() + 1) : (quintptr)0);
+        return createIndex(row, column, parent.isValid() ? quintptr(parent.row() + 1) : quintptr(0));
     }
 
 public slots:
@@ -4333,7 +4328,7 @@ public slots:
     }
 
 private:
-    bool m_block;
+    bool m_block = false;
     QItemSelectionModel *m_selectionModel;
 };
 
@@ -4388,9 +4383,9 @@ void tst_QTreeView::taskQTBUG_25333_adjustViewOptionsForIndex()
     QStandardItem *data3 = new QStandardItem("Data3");
 
     // Create a treeview
-    model.appendRow(QList<QStandardItem*>() << item1 << data1 );
-    model.appendRow(QList<QStandardItem*>() << item2 << data2 );
-    model.appendRow(QList<QStandardItem*>() << item3 << data3 );
+    model.appendRow({ item1, data1 });
+    model.appendRow({ item2, data2 });
+    model.appendRow({ item3, data3 });
 
     view.setModel(&model);
 
@@ -4414,6 +4409,9 @@ void tst_QTreeView::taskQTBUG_25333_adjustViewOptionsForIndex()
 
 void tst_QTreeView::taskQTBUG_18539_emitLayoutChanged()
 {
+    qRegisterMetaType<QList<QPersistentModelIndex>>();
+    qRegisterMetaType<QAbstractItemModel::LayoutChangeHint>();
+
     QTreeView view;
 
     QStandardItem* item = new QStandardItem("Orig");
@@ -4430,14 +4428,14 @@ void tst_QTreeView::taskQTBUG_18539_emitLayoutChanged()
 
     replacementItem->setChild(0, 0, replacementChild);
 
-    QSignalSpy beforeSpy(&model, SIGNAL(layoutAboutToBeChanged()));
-    QSignalSpy afterSpy(&model, SIGNAL(layoutChanged()));
+    QSignalSpy beforeSpy(&model, &QAbstractItemModel::layoutAboutToBeChanged);
+    QSignalSpy afterSpy(&model, &QAbstractItemModel::layoutChanged);
 
-    QSignalSpy beforeRISpy(&model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)));
-    QSignalSpy afterRISpy(&model, SIGNAL(rowsInserted(QModelIndex,int,int)));
+    QSignalSpy beforeRISpy(&model, &QAbstractItemModel::rowsAboutToBeInserted);
+    QSignalSpy afterRISpy(&model, &QAbstractItemModel::rowsInserted);
 
-    QSignalSpy beforeRRSpy(&model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)));
-    QSignalSpy afterRRSpy(&model, SIGNAL(rowsRemoved(QModelIndex,int,int)));
+    QSignalSpy beforeRRSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
+    QSignalSpy afterRRSpy(&model, &QAbstractItemModel::rowsRemoved);
 
     model.setItem(0, 0, replacementItem);
 
@@ -4460,7 +4458,7 @@ void tst_QTreeView::taskQTBUG_8176_emitOnExpandAll()
     new QTreeWidgetItem(item2, QStringList(QString("item 4")));
     QTreeWidgetItem *item5 = new QTreeWidgetItem(&tw, QStringList(QString("item 5")));
     new QTreeWidgetItem(item5, QStringList(QString("item 6")));
-    QSignalSpy spy(&tw, SIGNAL(expanded(const QModelIndex&)));
+    QSignalSpy spy(&tw, &QTreeView::expanded);
 
     // expand all
     tw.expandAll();
@@ -4473,7 +4471,7 @@ void tst_QTreeView::taskQTBUG_8176_emitOnExpandAll()
     QCOMPARE(spy.size(), 5);
 
     // collapse all
-    QSignalSpy spy2(&tw, SIGNAL(collapsed(const QModelIndex&)));
+    QSignalSpy spy2(&tw, &QTreeView::collapsed);
     tw.collapseAll();
     QCOMPARE(spy2.size(), 6);
     tw.expandAll();
@@ -4496,14 +4494,13 @@ void tst_QTreeView::testInitialFocus()
 {
     QTreeWidget treeWidget;
     treeWidget.setColumnCount(5);
-    new QTreeWidgetItem(&treeWidget, QStringList(QString("1;2;3;4;5").split(QLatin1Char(';'))));
+    new QTreeWidgetItem(&treeWidget, QString("1;2;3;4;5").split(QLatin1Char(';')));
     treeWidget.setTreePosition(2);
     treeWidget.header()->hideSection(0);      // make sure we skip hidden section(s)
     treeWidget.header()->swapSections(1, 2);  // make sure that we look for first visual index (and not first logical)
     treeWidget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&treeWidget));
-    QApplication::processEvents();
-    QCOMPARE(treeWidget.currentIndex().column(), 2);
+    QTRY_COMPARE(treeWidget.currentIndex().column(), 2);
 }
 
 #if QT_CONFIG(animation)
@@ -4534,9 +4531,8 @@ void tst_QTreeView::quickExpandCollapse()
     tree.collapse(rootIndex);
     QCOMPARE(tree.state(), QTreeView::AnimatingState);
 
-    QTest::qWait(500); //the animation lasts for 250ms max so 500 should be enough
-
-    QCOMPARE(tree.state(), initialState);
+    //the animation lasts for 250ms max so 5000 (default) should be enough
+    QTRY_COMPARE(tree.state(), initialState);
 }
 #endif // animation
 
@@ -4576,7 +4572,7 @@ class Qtbug45697TestWidget : public QWidget
 public:
     static const int columnCount = 3;
 
-    explicit Qtbug45697TestWidget();
+    explicit Qtbug45697TestWidget(QWidget *parent = nullptr);
     int timerTick() const { return m_timerTick; }
 
 public slots:
@@ -4586,14 +4582,13 @@ private:
    QTreeView *m_treeView;
    QStandardItemModel *m_model;
    QSortFilterProxyModel *m_sortFilterProxyModel;
-   int m_timerTick;
+   int m_timerTick = 0;
 };
 
-Qtbug45697TestWidget::Qtbug45697TestWidget()
-    : m_treeView(new QTreeView(this))
+Qtbug45697TestWidget::Qtbug45697TestWidget(QWidget *parent)
+    : QWidget(parent), m_treeView(new QTreeView(this))
     , m_model(new QStandardItemModel(0, Qtbug45697TestWidget::columnCount, this))
     , m_sortFilterProxyModel(new QSortFilterProxyModel(this))
-    , m_timerTick(0)
  {
    QVBoxLayout *vBoxLayout = new QVBoxLayout(this);
    vBoxLayout->addWidget(m_treeView);
@@ -4611,7 +4606,7 @@ Qtbug45697TestWidget::Qtbug45697TestWidget()
    m_treeView->setModel(m_sortFilterProxyModel);
 
    QHeaderView *headerView = m_treeView->header();
-   for (int s = 1, lastSection = headerView->count() - 1; s < lastSection; ++s )
+   for (int s = 1, lastSection = headerView->count() - 1; s < lastSection; ++s)
        headerView->setSectionResizeMode(s, QHeaderView::ResizeToContents);
 
    QTimer *timer = new QTimer(this);
@@ -4697,9 +4692,8 @@ void tst_QTreeView::statusTip()
 {
     QFETCH(bool, intermediateParent);
     QMainWindow mw;
-    QtTestModel model;
+    QtTestModel model(5, 5);
     model.statusTipsEnabled = true;
-    model.rows = model.cols = 5;
     QTreeView *view = new QTreeView;
     view->setModel(&model);
     view->viewport()->setMouseTracking(true);
@@ -4717,7 +4711,7 @@ void tst_QTreeView::statusTip()
     mw.setGeometry(QRect(QPoint(QApplication::desktop()->geometry().center() - QPoint(250, 250)),
                                 QSize(500, 500)));
     mw.show();
-    qApp->setActiveWindow(&mw);
+    QApplication::setActiveWindow(&mw);
     QVERIFY(QTest::qWaitForWindowActive(&mw));
     // Ensure it is moved away first and then moved to the relevant section
     QTest::mouseMove(mw.windowHandle(), view->mapTo(&mw, view->rect().bottomLeft() + QPoint(20, 20)));
@@ -4736,8 +4730,9 @@ void tst_QTreeView::statusTip()
 
 class FetchMoreModel : public QStandardItemModel
 {
+    Q_OBJECT
 public:
-    FetchMoreModel() : QStandardItemModel(), canFetchReady(false)
+    FetchMoreModel(QObject *parent = nullptr) : QStandardItemModel(parent)
     {
         for (int i = 0; i < 20; ++i) {
             QStandardItem *item = new QStandardItem("Row");
@@ -4757,9 +4752,9 @@ public:
     {
         QStandardItem *item = itemFromIndex(parent);
         for (int i = 0; i < 19; ++i)
-            item->appendRow(new QStandardItem(QString("New Child %1").arg(i)));
+            item->appendRow(new QStandardItem(QStringLiteral("New Child ") + QString::number(i)));
     }
-    bool canFetchReady;
+    bool canFetchReady = false;
 };
 
 void tst_QTreeView::fetchMoreOnScroll()
@@ -4865,12 +4860,12 @@ void tst_QTreeView::taskQTBUG_61476()
     const QRect rect = priv->itemDecorationRect(mi);
     const QPoint pos = rect.center();
 
-    QTest::mousePress(tv.viewport(), Qt::LeftButton, 0, pos);
-    if (tv.style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, 0, &tv) ==
+    QTest::mousePress(tv.viewport(), Qt::LeftButton, {}, pos);
+    if (tv.style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, nullptr, &tv) ==
         QEvent::MouseButtonPress)
         QTRY_VERIFY(!tv.isExpanded(mi));
 
-    QTest::mouseRelease(tv.viewport(), Qt::LeftButton, 0, pos);
+    QTest::mouseRelease(tv.viewport(), Qt::LeftButton, nullptr, pos);
     QTRY_VERIFY(!tv.isExpanded(mi));
     QCOMPARE(lastTopLevel->checkState(), Qt::Checked);
 }

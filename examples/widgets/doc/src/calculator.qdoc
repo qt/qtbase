@@ -142,6 +142,9 @@
     pendingAdditiveOperator and \c pendingMultiplicativeOperator
     variables don't need to be initialized explicitly, because the
     QString constructor initializes them to empty strings.
+    It is also possible to initialize those variable directly in the
+    header. This is called \c member-initializaton and avoids a long
+    initialization list.
 
     \snippet widgets/calculator/calculator.cpp 1
     \snippet widgets/calculator/calculator.cpp 2

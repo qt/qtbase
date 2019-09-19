@@ -64,6 +64,7 @@ private:
     QImage m_image;
     QScopedPointer<QOpenGLTexture> m_texture;
     QRegion m_dirty;
+    bool m_recreateTexture = false;
 };
 
 QT_END_NAMESPACE

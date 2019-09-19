@@ -48,9 +48,17 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "window.h"
+
+#include <QCalendarWidget>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDateEdit>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLocale>
+#include <QTextCharFormat>
 
 //! [0]
 Window::Window(QWidget *parent)
@@ -166,13 +174,12 @@ void Window::reformatHeaders()
     QString text = headerTextFormatCombo->currentText();
     QTextCharFormat format;
 
-    if (text == tr("Bold")) {
+    if (text == tr("Bold"))
         format.setFontWeight(QFont::Bold);
-    } else if (text == tr("Italic")) {
+    else if (text == tr("Italic"))
         format.setFontItalic(true);
-    } else if (text == tr("Green")) {
+    else if (text == tr("Green"))
         format.setForeground(Qt::green);
-    }
     calendar->setHeaderTextFormat(format);
 }
 //! [7]

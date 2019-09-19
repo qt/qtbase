@@ -48,9 +48,14 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "shapedclock.h"
+
+#include <QAction>
+#include <QCoreApplication>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QTime>
+#include <QTimer>
 
 //! [0]
 ShapedClock::ShapedClock(QWidget *parent)
