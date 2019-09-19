@@ -976,8 +976,18 @@ function(extend_target target)
             list(APPEND dbus_sources "${sources}")
         endforeach()
 
+        get_target_property(target_type ${target} TYPE)
+        set(is_library FALSE)
+        if (${target_type} STREQUAL "STATIC_LIBRARY" OR ${target_type} STREQUAL "SHARED_LIBRARY")
+            set(is_library TRUE)
+        endif()
         foreach(lib ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
-            qt_update_precompiled_header_with_library("${target}" "${lib}")
+            # Automatically generate PCH for 'target' using dependencies
+            # if 'target' is a library/module!
+            if (${is_library})
+                qt_update_precompiled_header_with_library("${target}" "${lib}")
+            endif()
+
             string(REGEX REPLACE "_nolink$" "" base_lib "${lib}")
             if(NOT base_lib STREQUAL lib)
                 qt_create_nolink_target("${base_lib}" ${target})
