@@ -63,6 +63,34 @@ macro(qt_build_repo_begin)
 
     # Decide whether tools will be built.
     qt_check_if_tools_will_be_built()
+
+
+    string(TOLOWER ${PROJECT_NAME} project_name_lower)
+
+    set(qt_docs_target_name docs_${project_name_lower})
+    set(qt_docs_prepare_target_name prepare_docs_${project_name_lower})
+    set(qt_docs_generate_target_name generate_docs_${project_name_lower})
+    set(qt_docs_html_target_name html_docs_${project_name_lower})
+    set(qt_docs_qch_target_name qch_docs_${project_name_lower})
+    set(qt_docs_install_html_target_name install_html_docs_${project_name_lower})
+    set(qt_docs_install_qch_target_name install_qch_docs_${project_name_lower})
+    set(qt_docs_install_target_name install_docs_${project_name_lower})
+
+    add_custom_target(${qt_docs_target_name})
+    add_custom_target(${qt_docs_prepare_target_name})
+    add_custom_target(${qt_docs_generate_target_name})
+    add_custom_target(${qt_docs_qch_target_name})
+    add_custom_target(${qt_docs_html_target_name})
+    add_custom_target(${qt_docs_install_html_target_name})
+    add_custom_target(${qt_docs_install_qch_target_name})
+    add_custom_target(${qt_docs_install_target_name})
+
+    add_dependencies(${qt_docs_generate_target_name} ${qt_docs_prepare_target_name})
+    add_dependencies(${qt_docs_html_target_name} ${qt_docs_generate_target_name})
+    add_dependencies(${qt_docs_target_name} ${qt_docs_html_target_name} ${qt_docs_qch_target_name})
+    add_dependencies(${qt_docs_install_html_target_name} ${qt_docs_html_target_name})
+    add_dependencies(${qt_docs_install_qch_target_name} ${qt_docs_qch_target_name})
+    add_dependencies(${qt_docs_install_target_name} ${qt_docs_install_html_target_name} ${qt_docs_install_qch_target_name})
 endmacro()
 
 macro(qt_build_repo_end)
