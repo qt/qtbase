@@ -1598,6 +1598,8 @@ def handle_subdir(
                 if condition_str and subtraction_str:
                     condition_str += " AND "
                 condition_str += subtraction_str
+                if not condition_str.rstrip("()").strip():
+                    continue
                 condition_simplified = simplify_condition(condition_str)
                 condition_key = condition_simplified
 
