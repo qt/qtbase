@@ -2163,6 +2163,26 @@ def map_to_cmake_condition(condition: str = "") -> str:
 resource_file_expansion_counter = 0
 
 
+def expand_resource_glob(cm_fh: IO[str], expression: str) -> str:
+    global resource_file_expansion_counter
+    r = expression.replace('"', "")
+
+    cm_fh.write(
+        dedent(
+            f"""
+        file(GLOB resource_glob_{resource_file_expansion_counter} RELATIVE "${{CMAKE_CURRENT_SOURCE_DIR}}" "{r}")
+        foreach(file IN LISTS resource_glob_{resource_file_expansion_counter})
+            set_source_files_properties("${{CMAKE_CURRENT_SOURCE_DIR}}/${{file}}" PROPERTIES QT_RESOURCE_ALIAS "${{file}}")
+        endforeach()
+        """
+        )
+    )
+
+    expanded_var = f"${{resource_glob_{resource_file_expansion_counter}}}"
+    resource_file_expansion_counter += 1
+    return expanded_var
+
+
 def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, is_example=False):
     # vpath = scope.expand('VPATH')
 
@@ -2189,6 +2209,13 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
             else:
                 immediate_files = {f: "" for f in scope.get_files(f"{r}.files")}
                 if immediate_files:
+                    immediate_files_filtered = []
+                    for f in immediate_files:
+                        if "*" in f:
+                            immediate_files_filtered.append(expand_resource_glob(cm_fh, f))
+                        else:
+                            immediate_files_filtered.append(f)
+                    immediate_files = {f: "" for f in immediate_files_filtered}
                     immediate_prefix = scope.get(r + ".prefix")
                     if immediate_prefix:
                         immediate_prefix = immediate_prefix[0]
@@ -2210,22 +2237,7 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                     )
                 else:
                     if "*" in r:
-                        global resource_file_expansion_counter
-                        r = r.replace('"', "")
-
-                        qrc_output += dedent(
-                            f"""
-                            file(GLOB resource_glob_{resource_file_expansion_counter} RELATIVE "${{CMAKE_CURRENT_SOURCE_DIR}}" "{r}")
-                            foreach(file IN LISTS resource_glob_{resource_file_expansion_counter})
-                                set_source_files_properties("${{CMAKE_CURRENT_SOURCE_DIR}}/${{file}}" PROPERTIES QT_RESOURCE_ALIAS "${{file}}")
-                            endforeach()
-                            """
-                        )
-
-                        standalone_files.append(
-                            f"${{resource_glob_{resource_file_expansion_counter}}}"
-                        )
-                        resource_file_expansion_counter += 1
+                        standalone_files.append(expand_resource_glob(cm_fh, r))
                     else:
                         # stadalone source file properties need to be set as they
                         # are parsed.
