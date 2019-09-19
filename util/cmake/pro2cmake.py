@@ -188,8 +188,11 @@ def is_example_project(project_file_path: str = "") -> bool:
 
     project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
     # If the project file is found in a subdir called 'examples'
-    # relative to the repo source dir, then it must be an example.
-    return project_relative_path.startswith("examples")
+    # relative to the repo source dir, then it must be an example, but
+    # some examples contain 3rdparty libraries that do not need to be
+    # built as examples.
+    return (project_relative_path.startswith("examples")
+            and "3rdparty" not in project_relative_path)
 
 
 def find_qmake_conf(project_file_path: str = "") -> Optional[str]:
