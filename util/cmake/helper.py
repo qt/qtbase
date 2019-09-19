@@ -283,6 +283,7 @@ _qt_library_map = [
     LibraryMapping("render", "Qt6", "Qt::3DRender", extra=["COMPONENTS", "3DRender"]),
     LibraryMapping("script", "Qt6", "Qt::Script", extra=["COMPONENTS", "Script"]),
     LibraryMapping("scripttools", "Qt6", "Qt::ScriptTools", extra=["COMPONENTS", "ScriptTools"]),
+    LibraryMapping("scxml", "Qt6", "Qt::Scxml", extra=["COMPONENTS", "Scxml"]),
     LibraryMapping("sensors", "Qt6", "Qt::Sensors", extra=["COMPONENTS", "Sensors"]),
     LibraryMapping("serialport", "Qt6", "Qt::SerialPort", extra=["COMPONENTS", "SerialPort"]),
     LibraryMapping("serialbus", "Qt6", "Qt::SerialBus", extra=["COMPONENTS", "SerialBus"]),
