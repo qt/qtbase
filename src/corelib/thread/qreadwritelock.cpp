@@ -50,8 +50,6 @@
 #include "private/qfreelist_p.h"
 #include "private/qlocking_p.h"
 
-#include <chrono>
-
 QT_BEGIN_NAMESPACE
 
 /*
@@ -67,9 +65,6 @@ QT_BEGIN_NAMESPACE
  */
 
 namespace {
-
-using ms = std::chrono::milliseconds;
-
 enum {
     StateMask = 0x3,
     StateLockedForRead = 0x1,
@@ -279,7 +274,7 @@ bool QReadWriteLock::tryLockForRead(int timeout)
             d = d_ptr.loadAcquire();
             continue;
         }
-        return d->lockForRead(lock, timeout);
+        return d->lockForRead(timeout);
     }
 }
 
@@ -383,7 +378,7 @@ bool QReadWriteLock::tryLockForWrite(int timeout)
             d = d_ptr.loadAcquire();
             continue;
         }
-        return d->lockForWrite(lock, timeout);
+        return d->lockForWrite(timeout);
     }
 }
 
@@ -466,9 +461,9 @@ QReadWriteLock::StateForWaitCondition QReadWriteLock::stateForWaitCondition() co
 
 }
 
-bool QReadWriteLockPrivate::lockForRead(std::unique_lock<std::mutex> &lock, int timeout)
+bool QReadWriteLockPrivate::lockForRead(int timeout)
 {
-    Q_ASSERT(!mutex.try_lock()); // mutex must be locked when entering this function
+    Q_ASSERT(!mutex.tryLock()); // mutex must be locked when entering this function
 
     QElapsedTimer t;
     if (timeout > 0)
@@ -482,10 +477,10 @@ bool QReadWriteLockPrivate::lockForRead(std::unique_lock<std::mutex> &lock, int 
             if (elapsed > timeout)
                 return false;
             waitingReaders++;
-            readerCond.wait_for(lock, ms{timeout - elapsed});
+            readerCond.wait(&mutex, timeout - elapsed);
         } else {
             waitingReaders++;
-            readerCond.wait(lock);
+            readerCond.wait(&mutex);
         }
         waitingReaders--;
     }
@@ -494,9 +489,9 @@ bool QReadWriteLockPrivate::lockForRead(std::unique_lock<std::mutex> &lock, int 
     return true;
 }
 
-bool QReadWriteLockPrivate::lockForWrite(std::unique_lock<std::mutex> &lock, int timeout)
+bool QReadWriteLockPrivate::lockForWrite(int timeout)
 {
-    Q_ASSERT(!mutex.try_lock()); // mutex must be locked when entering this function
+    Q_ASSERT(!mutex.tryLock()); // mutex must be locked when entering this function
 
     QElapsedTimer t;
     if (timeout > 0)
@@ -511,15 +506,15 @@ bool QReadWriteLockPrivate::lockForWrite(std::unique_lock<std::mutex> &lock, int
                 if (waitingReaders && !waitingWriters && !writerCount) {
                     // We timed out and now there is no more writers or waiting writers, but some
                     // readers were queueud (probably because of us). Wake the waiting readers.
-                    readerCond.notify_all();
+                    readerCond.wakeAll();
                 }
                 return false;
             }
             waitingWriters++;
-            writerCond.wait_for(lock, ms{timeout - elapsed});
+            writerCond.wait(&mutex, timeout - elapsed);
         } else {
             waitingWriters++;
-            writerCond.wait(lock);
+            writerCond.wait(&mutex);
         }
         waitingWriters--;
     }
@@ -532,11 +527,11 @@ bool QReadWriteLockPrivate::lockForWrite(std::unique_lock<std::mutex> &lock, int
 
 void QReadWriteLockPrivate::unlock()
 {
-    Q_ASSERT(!mutex.try_lock()); // mutex must be locked when entering this function
+    Q_ASSERT(!mutex.tryLock()); // mutex must be locked when entering this function
     if (waitingWriters)
-        writerCond.notify_one();
+        writerCond.wakeOne();
     else if (waitingReaders)
-        readerCond.notify_all();
+        readerCond.wakeAll();
 }
 
 bool QReadWriteLockPrivate::recursiveLockForRead(int timeout)
@@ -552,7 +547,7 @@ bool QReadWriteLockPrivate::recursiveLockForRead(int timeout)
         return true;
     }
 
-    if (!lockForRead(lock, timeout))
+    if (!lockForRead(timeout))
         return false;
 
     currentReaders.insert(self, 1);
@@ -570,7 +565,7 @@ bool QReadWriteLockPrivate::recursiveLockForWrite(int timeout)
         return true;
     }
 
-    if (!lockForWrite(lock, timeout))
+    if (!lockForWrite(timeout))
         return false;
 
     currentWriter = self;

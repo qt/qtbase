@@ -50,7 +50,15 @@
 
 #include "movieplayer.h"
 
-#include <QtWidgets>
+#include <QCheckBox>
+#include <QFileDialog>
+#include <QLabel>
+#include <QMovie>
+#include <QSlider>
+#include <QSpinBox>
+#include <QStyle>
+#include <QToolButton>
+#include <QVBoxLayout>
 
 MoviePlayer::MoviePlayer(QWidget *parent)
     : QWidget(parent)

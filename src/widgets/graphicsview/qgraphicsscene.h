@@ -115,7 +115,7 @@ public:
         BspTreeIndex,
         NoIndex = -1
     };
-
+    Q_ENUM(ItemIndexMethod)
     enum SceneLayer {
         ItemLayer = 0x1,
         BackgroundLayer = 0x2,

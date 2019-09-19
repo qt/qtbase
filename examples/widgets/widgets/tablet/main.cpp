@@ -48,8 +48,6 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "mainwindow.h"
 #include "tabletapplication.h"
 #include "tabletcanvas.h"

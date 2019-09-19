@@ -88,9 +88,9 @@ private:
     void calculateSquareSize();
 
     QFont displayFont;
-    int columns;
-    int lastKey;
-    int squareSize;
+    int columns = 16;
+    int lastKey = -1;
+    int squareSize = 0;
 };
 //! [0]
 

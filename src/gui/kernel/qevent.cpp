@@ -931,6 +931,30 @@ QWheelEvent::~QWheelEvent()
     \endlist
 */
 
+/*!
+    \fn QPoint QWheelEvent::position() const
+
+    Returns the position of the mouse cursor relative to the widget
+    that received the event.
+
+    If you move your widgets around in response to mouse events,
+    use globalPosition() instead of this function.
+
+    \sa globalPosition()
+*/
+
+/*!
+    \fn QPoint QWheelEvent::globalPosition() const
+
+    Returns the global position of the mouse pointer \e{at the time
+    of the event}. This is important on asynchronous window systems
+    such as X11; whenever you move your widgets around in response to
+    mouse events, globalPosition() can differ a lot from the current
+    cursor position returned by QCursor::pos().
+
+    \sa position()
+*/
+
 #if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \fn int QWheelEvent::delta() const

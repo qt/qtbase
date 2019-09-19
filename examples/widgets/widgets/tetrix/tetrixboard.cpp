@@ -50,16 +50,16 @@
 
 #include "tetrixboard.h"
 
-#include <QtWidgets>
+#include <QKeyEvent>
+#include <QLabel>
+#include <QPainter>
 
 //! [0]
 TetrixBoard::TetrixBoard(QWidget *parent)
-    : QFrame(parent)
+    : QFrame(parent), isStarted(false), isPaused(false)
 {
     setFrameStyle(QFrame::Panel | QFrame::Sunken);
     setFocusPolicy(Qt::StrongFocus);
-    isStarted = false;
-    isPaused = false;
     clearBoard();
 
     nextPiece.setRandomShape();
@@ -396,7 +396,7 @@ bool TetrixBoard::tryMove(const TetrixPiece &newPiece, int newX, int newY)
 //! [36]
 void TetrixBoard::drawSquare(QPainter &painter, int x, int y, TetrixShape shape)
 {
-    static const QRgb colorTable[8] = {
+    static constexpr QRgb colorTable[8] = {
         0x000000, 0xCC6666, 0x66CC66, 0x6666CC,
         0xCCCC66, 0xCC66CC, 0x66CCCC, 0xDAAA00
     };

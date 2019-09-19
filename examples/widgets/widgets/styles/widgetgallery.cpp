@@ -51,7 +51,24 @@
 #include "widgetgallery.h"
 #include "norwegianwoodstyle.h"
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDateTimeEdit>
+#include <QDial>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QProgressBar>
+#include <QPushButton>
+#include <QRadioButton>
+#include <QScrollBar>
+#include <QSpinBox>
+#include <QStyleFactory>
+#include <QTableWidget>
+#include <QTextEdit>
+#include <QTimer>
 
 //! [0]
 WidgetGallery::WidgetGallery(QWidget *parent)

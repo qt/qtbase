@@ -48,9 +48,13 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "window.h"
+
+#include <QComboBox>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
 
 //! [0]
 Window::Window(QWidget *parent)
@@ -197,6 +201,7 @@ void Window::echoChanged(int index)
         break;
     case 3:
         echoLineEdit->setEchoMode(QLineEdit::NoEcho);
+        break;
     }
 }
 //! [9]
@@ -215,6 +220,7 @@ void Window::validatorChanged(int index)
     case 2:
         validatorLineEdit->setValidator(new QDoubleValidator(-999.0,
             999.0, 2, validatorLineEdit));
+        break;
     }
 
     validatorLineEdit->clear();
@@ -233,6 +239,7 @@ void Window::alignmentChanged(int index)
         break;
     case 2:
         alignmentLineEdit->setAlignment(Qt::AlignRight);
+        break;
     }
 }
 //! [11]
@@ -254,6 +261,7 @@ void Window::inputMaskChanged(int index)
         break;
     case 3:
         inputMaskLineEdit->setInputMask(">AAAAA-AAAAA-AAAAA-AAAAA-AAAAA;#");
+        break;
     }
 }
 //! [12]
@@ -267,6 +275,7 @@ void Window::accessChanged(int index)
         break;
     case 1:
         accessLineEdit->setReadOnly(true);
+        break;
     }
 }
 //! [13]

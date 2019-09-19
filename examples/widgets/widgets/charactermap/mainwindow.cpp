@@ -48,13 +48,27 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
-#include "characterwidget.h"
 #include "mainwindow.h"
+#include "characterwidget.h"
+
+#include <QApplication>
+#include <QBoxLayout>
+#include <QCheckBox>
+#include <QClipboard>
+#include <QDesktopWidget>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFontComboBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMenuBar>
+#include <QPlainTextEdit>
+#include <QPushButton>
+#include <QScrollArea>
+#include <QStatusBar>
+#include <QTextStream>
 
 //! [0]
-
 Q_DECLARE_METATYPE(QFontComboBox::FontFilter)
 
 MainWindow::MainWindow(QWidget *parent)
