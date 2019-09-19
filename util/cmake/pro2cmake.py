@@ -353,7 +353,7 @@ def write_add_qt_resource_call(
         params += f'{spaces(1)}BASE\n{spaces(2)}"{base_dir}"\n'
     add_resource_command = ""
     if is_example:
-        add_resource_command = "QT6_ADD_RESOURCES"
+        add_resource_command = "qt6_add_resources"
     else:
         add_resource_command = "add_qt_resource"
     output += (
