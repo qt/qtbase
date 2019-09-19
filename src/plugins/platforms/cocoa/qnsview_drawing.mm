@@ -211,17 +211,21 @@
 
 - (void)viewDidChangeBackingProperties
 {
-    CALayer *layer = self.layer;
-    if (!layer)
-        return;
+    qCDebug(lcQpaDrawing) << "Backing properties changed for" << self;
 
-    layer.contentsScale = self.window.backingScaleFactor;
+    if (CALayer *layer = self.layer) {
+        layer.contentsScale = self.window.backingScaleFactor;
 
-    // Metal layers must be manually updated on e.g. screen change
-    if ([layer isKindOfClass:CAMetalLayer.class]) {
-        [self updateMetalLayerDrawableSize:static_cast<CAMetalLayer* >(layer)];
-        [self setNeedsDisplay:YES];
+        // Metal layers must be manually updated on e.g. screen change
+        if ([layer isKindOfClass:CAMetalLayer.class])
+            [self updateMetalLayerDrawableSize:static_cast<CAMetalLayer* >(layer)];
     }
+
+    // Ideally we would plumb this situation through QPA in a way that lets
+    // clients invalidate their own caches, recreate QBackingStore, etc.
+    // For now we trigger an expose, and let QCocoaBackingStore deal with
+    // buffer invalidation internally.
+    [self setNeedsDisplay:YES];
 }
 
 @end

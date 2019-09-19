@@ -1262,17 +1262,6 @@ void QCocoaWindow::windowDidChangeScreen()
         currentScreen->requestUpdate();
     }
 }
-/*
-    The window's backing scale factor or color space has changed.
-*/
-void QCocoaWindow::windowDidChangeBackingProperties()
-{
-    // Ideally we would plumb this thought QPA in a way that lets clients
-    // invalidate their own caches, and recreate QBackingStore. For now we
-    // trigger an expose, and let QCocoaBackingStore deal with its own
-    // buffer invalidation.
-    [m_view setNeedsDisplay:YES];
-}
 
 void QCocoaWindow::windowWillClose()
 {
