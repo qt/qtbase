@@ -2423,10 +2423,10 @@ def write_main_part(
                 if "*" in data:
                     cm_fh.write(
                         dedent(
-                            """
+                            f"""\
                         {spaces(indent)}file(GLOB_RECURSE test_data_glob
                         {spaces(indent+1)}RELATIVE ${{CMAKE_CURRENT_SOURCE_DIR}}
-                        {spaces(indent+1)}"{}")
+                        {spaces(indent+1)}{data})
                         """
                         )
                     )
