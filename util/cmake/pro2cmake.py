@@ -2736,7 +2736,7 @@ def handle_app_or_lib(
 
     # ind = spaces(indent)
     write_source_file_list(
-        cm_fh, scope, "", ["QMAKE_DOCS"], indent, header=f"add_qt_docs({target},\n", footer=")\n"
+        cm_fh, scope, "", ["QMAKE_DOCS"], indent, header=f"add_qt_docs({target}\n", footer=")\n"
     )
 
 

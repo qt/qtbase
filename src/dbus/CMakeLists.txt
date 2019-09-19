@@ -72,7 +72,7 @@ extend_target(DBus CONDITION WIN32
         user32
         ws2_32
 )
-add_qt_docs(DBus,
+add_qt_docs(DBus
     doc/qtdbus.qdocconf
 )
 
