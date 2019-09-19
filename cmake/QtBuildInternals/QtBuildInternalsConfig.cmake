@@ -151,8 +151,13 @@ macro(qt_build_tests)
 endmacro()
 
 macro(qt_examples_build_begin)
-    # It is part of a Qt build => Use the CMake config files from the binary dir
+    # Examples that are built as part of the Qt build need to use the CMake config files from the
+    # build dir, because they are not installed yet in a prefix build.
+    # Appending to CMAKE_PREFIX_PATH helps find the initial Qt6Config.cmake.
+    # Appending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find components of Qt6, because those
+    # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
     list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
+    list(APPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
     # Also make sure the CMake config files do not recreate the already-existing targets
     set(QT_NO_CREATE_TARGETS TRUE)
     set(BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})

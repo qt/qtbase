@@ -6,6 +6,7 @@ if (CMAKE_VERSION VERSION_LESS 3.1.0)
 endif()
 
 get_filename_component(_qt_cmake_dir "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
+set(_qt_@PROJECT_VERSION_MAJOR@_config_cmake_dir "${CMAKE_CURRENT_LIST_DIR}")
 
 if (NOT QT_NO_CREATE_TARGETS)
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Targets.cmake")
@@ -28,7 +29,7 @@ foreach(module ${@INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS})
     find_package(@INSTALL_CMAKE_NAMESPACE@${module}
         ${_@INSTALL_CMAKE_NAMESPACE@_FIND_PARTS_QUIET}
         ${_@INSTALL_CMAKE_NAMESPACE@_FIND_PARTS_REQUIRED}
-        PATHS ${_qt_cmake_dir} NO_DEFAULT_PATH
+        PATHS ${_qt_cmake_dir} ${QT_EXAMPLES_CMAKE_PREFIX_PATH} NO_DEFAULT_PATH
     )
     if (NOT @INSTALL_CMAKE_NAMESPACE@${module}_FOUND)
         string(CONFIGURE ${_qt5_module_location_template} _expected_module_location @ONLY)
