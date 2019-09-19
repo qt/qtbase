@@ -504,6 +504,13 @@ function(qt_config_compile_test_x86simd extension label)
         "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/x86_simd"
         x86_simd
         CMAKE_FLAGS "-DSIMD:string=${extension}")
+
+    if(${TEST_X86SIMD_${extension}})
+        set(status_label "Success")
+    else()
+        set(status_label "Failed")
+    endif()
+    message(STATUS "Performing SIMD Test ${label} - ${status_label}")
     set(TEST_subarch_${extension} "${TEST_X86SIMD_${extension}}" CACHE INTERNAL "${label}")
 endfunction()
 
