@@ -1856,7 +1856,8 @@ void MakefileGenerator::callExtraCompilerDependCommand(const ProString &extraCom
                                                        const QString &inpf,
                                                        const QString &tmp_out,
                                                        bool dep_lines,
-                                                       QStringList *deps)
+                                                       QStringList *deps,
+                                                       bool existingDepsOnly)
 {
     char buff[256];
     QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, inpf, tmp_out, LocalShell);
@@ -1885,6 +1886,8 @@ void MakefileGenerator::callExtraCompilerDependCommand(const ProString &extraCom
                         warn_msg(WarnDeprecated, ".depend_command for extra compiler %s"
                                  " prints paths relative to source directory",
                                  extraCompiler.toLatin1().constData());
+                    } else if (existingDepsOnly) {
+                        file.clear();
                     } else {
                         file = absFile;  // fallback for generated resources
                     }
@@ -2013,6 +2016,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             }
             t << Qt::endl;
         }
+        const bool existingDepsOnly = config.contains("dep_existing_only");
         QStringList tmp_dep = project->values(ProKey(*it + ".depends")).toQStringList();
         if (config.indexOf("combine") != -1) {
             if (tmp_out.contains(QRegExp("(^|[^$])\\$\\{QMAKE_(?!VAR_)"))) {
@@ -2029,7 +2033,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 inputs += Option::fixPathToTargetOS(inpf, false);
                 if(!tmp_dep_cmd.isEmpty() && doDepends()) {
                     callExtraCompilerDependCommand(*it, dep_cd_cmd, tmp_dep_cmd, inpf,
-                                                   tmp_out, dep_lines, &deps);
+                                                   tmp_out, dep_lines, &deps, existingDepsOnly);
                 }
             }
             for(int i = 0; i < inputs.size(); ) {
@@ -2078,7 +2082,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 cmd.replace("$(" + (*it3) + ")", "$(QMAKE_COMP_" + (*it3)+")");
             if(!tmp_dep_cmd.isEmpty() && doDepends()) {
                 callExtraCompilerDependCommand(*it, dep_cd_cmd, tmp_dep_cmd, inpf,
-                                               tmp_out, dep_lines, &deps);
+                                               tmp_out, dep_lines, &deps, existingDepsOnly);
                 //use the depend system to find includes of these included files
                 QStringList inc_deps;
                 for(int i = 0; i < deps.size(); ++i) {

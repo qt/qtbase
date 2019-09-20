@@ -1,18 +1,22 @@
 # custom tests
 
 defineTest(qtConfLibrary_freetype) {
-    TRY_INCLUDEPATHS = $$EXTRA_INCLUDEPATH $$QMAKE_INCDIR_X11
-    haiku: TRY_INCLUDEPATHS += /system/develop/headers
-    TRY_INCLUDEPATHS += $$QMAKE_DEFAULT_INCDIR
-    for (p, TRY_INCLUDEPATHS) {
-        includedir = $$p/freetype2
-        exists($$includedir) {
-            $${1}.includedir = $$includedir
-            export($${1}.includedir)
-            return(true)
+    input = $$eval($${2}.alias)
+    isEmpty(config.input.$${input}.incdir) {
+        TRY_INCLUDEPATHS = $$EXTRA_INCLUDEPATH $$QMAKE_INCDIR_X11
+        haiku: TRY_INCLUDEPATHS += /system/develop/headers
+        TRY_INCLUDEPATHS += $$QMAKE_DEFAULT_INCDIRS
+        for (p, TRY_INCLUDEPATHS) {
+            includedir = $$p/freetype2
+            exists($$includedir) {
+                config.input.$${input}.incdir = $$includedir
+                export(config.input.$${input}.incdir)
+                break()
+            }
         }
     }
-    return(true)
+    qtConfLibrary_inline($$1, $$2): return(true)
+    return(false)
 }
 
 # Check for Direct X shader compiler 'fxc'.
