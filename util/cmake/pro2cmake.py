@@ -2282,12 +2282,15 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
         for line in qrc_output.split("\n"):
             cm_fh.write(f"{' ' * indent}{line}\n")
 
-def write_statecharts(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
+def write_statecharts(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, is_example=False):
     sources = scope.get("STATECHARTS")
     if not sources:
         return
     cm_fh.write("\n# Statecharts:\n")
-    cm_fh.write(f"qt6_add_statecharts({target}\n")
+    if is_example:
+        cm_fh.write(f"qt6_add_statecharts({target}\n")
+    else:
+        cm_fh.write(f"add_qt_statecharts({target} FILES\n")
     indent += 1
     for f in sources:
         cm_fh.write(f"{spaces(indent)}{f}\n")
