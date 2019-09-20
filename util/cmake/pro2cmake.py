@@ -865,6 +865,10 @@ class Scope(object):
                 scope._append_operation("_INCLUDED", UniqueAddOperation(included))
                 continue
 
+            project_required_condition = statement.get("project_required_condition")
+            if project_required_condition:
+                scope._append_operation("_REQUIREMENTS", AddOperation(project_required_condition))
+
         scope.settle_condition()
 
         if scope.scope_debug:
@@ -1239,6 +1243,7 @@ class QmakeParser:
         Load = add_element("Load", pp.Keyword("load") + CallArgs("loaded"))
         Include = add_element("Include", pp.Keyword("include") + CallArgs("included"))
         Option = add_element("Option", pp.Keyword("option") + CallArgs("option"))
+        Requires = add_element("Requires", pp.Keyword("requires") + CallArgs("project_required_condition"))
 
         # ignore the whole thing...
         DefineTestDefinition = add_element(
@@ -1277,6 +1282,7 @@ class QmakeParser:
                 Load
                 | Include
                 | Option
+                | Requires
                 | ForLoop
                 | ForLoopSingleLine
                 | DefineTestDefinition
@@ -2287,6 +2293,21 @@ def write_statecharts(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0
         cm_fh.write(f"{spaces(indent)}{f}\n")
     cm_fh.write(")\n")
 
+def expand_project_requirements(scope: Scope) -> str:
+    requirements = ""
+    for requirement in scope.get("_REQUIREMENTS"):
+        original_condition = simplify_condition(map_condition(requirement))
+        inverted_requirement = simplify_condition(f"NOT {map_condition(requirement)}")
+        requirements += dedent(f"""\
+                        if({inverted_requirement})
+                            message(NOTICE "Skipping the build as the condition \\"{original_condition}\\" is not met.")
+                            return()
+                        endif()
+
+                        """)
+    return requirements
+
+
 def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
     ind = spaces(indent)
     extend_qt_io_string = io.StringIO()
@@ -2996,7 +3017,7 @@ def handle_top_level_repo_project(scope: Scope, cm_fh: IO[str]):
         qt_lib += "_FIXME"
         qt_lib_no_prefix = qt_lib
 
-    content = dedent(
+    header = dedent(
         f"""\
                 cmake_minimum_required(VERSION {cmake_version_string})
 
@@ -3009,11 +3030,17 @@ def handle_top_level_repo_project(scope: Scope, cm_fh: IO[str]):
 
                 find_package(Qt6 ${{PROJECT_VERSION}} CONFIG REQUIRED COMPONENTS BuildInternals Core SET_ME_TO_SOMETHING_USEFUL)
                 find_package(Qt6 ${{PROJECT_VERSION}} CONFIG OPTIONAL_COMPONENTS SET_ME_TO_SOMETHING_USEFUL)
+
+                """
+    )
+
+    build_repo = dedent(
+        f"""\
                 qt_build_repo()
                 """
     )
 
-    cm_fh.write(f"{content}")
+    cm_fh.write(f"{header}{expand_project_requirements(scope)}{build_repo}")
 
 
 def find_top_level_repo_project_file(project_file_path: str = "") -> Optional[str]:
