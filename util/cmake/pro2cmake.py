@@ -1068,6 +1068,12 @@ class Scope(object):
         if not is_same_path:
             relative_path = os.path.relpath(self.currentdir, self.basedir)
 
+        if key == "QQC2_SOURCE_TREE":
+            qmake_conf_path = find_qmake_conf(os.path.abspath(self.currentdir))
+            qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+            project_relative_path = os.path.relpath(qmake_conf_dir_path, self.currentdir)
+            return ['${CMAKE_CURRENT_SOURCE_DIR}/'+ project_relative_path]
+
         if key == "_PRO_FILE_PWD_":
             return ["${CMAKE_CURRENT_SOURCE_DIR}"]
         if key == "PWD":
