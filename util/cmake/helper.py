@@ -585,6 +585,7 @@ platform_mapping = {
     "watchos": "APPLE_WATCHOS",
     "winrt": "WINRT",
     "wasm": "WASM",
+    "emscripten": "EMSCRIPTEN",
     "msvc": "MSVC",
     "clang": "CLANG",
     "gcc": "GCC",
