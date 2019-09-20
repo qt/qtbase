@@ -1794,7 +1794,7 @@ def write_all_source_file_lists(
         cm_fh,
         scope,
         header,
-        ["SOURCES", "HEADERS", "OBJECTIVE_SOURCES", "NO_PCH_SOURCES", "FORMS"] + extra_keys,
+        ["SOURCES", "HEADERS", "OBJECTIVE_SOURCES", "OBJECTIVE_HEADERS", "NO_PCH_SOURCES", "FORMS"] + extra_keys,
         indent,
         footer=footer,
     )
