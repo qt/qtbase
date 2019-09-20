@@ -1144,6 +1144,26 @@
 
     \snippet code/doc_src_qmake-manual.pro 27
 
+    \target DEFINES_DEBUG
+    \section1 DEFINES_DEBUG
+
+    Specifies preprocessor defines for the debug configuration. The values of
+    this variable get added to \l{DEFINES} before the project is loaded. This
+    variable is typically set in \l{#QMAKESPEC}{qmake.conf} and rarely needs
+    to be modified.
+
+    This variable was introduced in Qt 5.13.2.
+
+    \target DEFINES_RELEASE
+    \section1 DEFINES_RELEASE
+
+    Specifies preprocessor defines for the release configuration. The values of
+    this variable get added to \l{DEFINES} before the project is loaded. This
+    variable is typically set in \l{#QMAKESPEC}{qmake.conf} and rarely needs
+    to be modified.
+
+    This variable was introduced in Qt 5.13.2.
+
     \target DEF_FILE
     \section1 DEF_FILE
 
@@ -4795,6 +4815,11 @@
         \li explicit_dependencies
         \li The dependencies for the output only get generated from the depends
             member and from nowhere else.
+    \row
+        \li dep_existing_only
+        \li Every dependency that is a result of .depend_command is checked for
+            existence. Non-existing dependencies are ignored.
+            This value was introduced in Qt 5.13.2.
     \row
         \li dep_lines
         \li The output from the .depend_command is interpreted to be one file
