@@ -1937,8 +1937,10 @@ void QWindowsWindow::handleGeometryChange()
 {
     const QRect previousGeometry = m_data.geometry;
     m_data.geometry = geometry_sys();
-    if (testFlag(WithinDpiChanged))
-        return;  // QGuiApplication will send resize
+    if (testFlag(WithinDpiChanged)
+        && QWindowsContext::instance()->screenManager().screenForHwnd(m_data.hwnd) != screen()) {
+        return; // QGuiApplication will send resize when screen actually changes
+    }
     QWindowSystemInterface::handleGeometryChange(window(), m_data.geometry);
     // QTBUG-32121: OpenGL/normal windows (with exception of ANGLE) do not receive
     // expose events when shrinking, synthesize.
