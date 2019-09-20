@@ -1839,6 +1839,7 @@ def write_list(
     *,
     header: str = "",
     footer: str = "",
+    prefix: str = "",
 ):
     if not entries:
         return
@@ -1853,7 +1854,7 @@ def write_list(
         cm_fh.write(f"{ind}{extra_indent}{cmake_parameter}\n")
         extra_indent += "    "
     for s in sort_sources(entries):
-        cm_fh.write(f"{ind}{extra_indent}{s}\n")
+        cm_fh.write(f"{ind}{extra_indent}{prefix}{s}\n")
     if footer:
         cm_fh.write(f"{ind}{footer}\n")
 
@@ -2545,6 +2546,32 @@ def write_android_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
         cm_fh.write(f"{spaces(indent)}endif()\n")
 
 
+def write_wayland_part(cm_fh: typing.IO[str], target: str, scope:Scope, indent: int = 0):
+    client_sources = scope.get_files('WAYLANDCLIENTSOURCES', use_vpath=True)
+    server_sources = scope.get_files('WAYLANDSERVERSOURCES', use_vpath=True)
+    if len(client_sources) == 0 and len(server_sources) == 0:
+        return
+
+    condition = map_to_cmake_condition(scope.total_condition)
+    if condition != "ON":
+        cm_fh.write(f"\n{spaces(indent)}if({condition})\n")
+        indent += 1
+
+    if len(client_sources) != 0:
+        cm_fh.write(f"\n{spaces(indent)}qt6_generate_wayland_protocol_client_sources({target}\n")
+        write_list(cm_fh, client_sources, 'FILES', indent + 1, prefix='${CMAKE_CURRENT_SOURCE_DIR}/')
+        cm_fh.write(f"{spaces(indent)})\n")
+
+    if len(server_sources) != 0:
+        cm_fh.write(f"\n{spaces(indent)}qt6_generate_wayland_protocol_server_sources({target}\n")
+        write_list(cm_fh, server_sources, 'FILES', indent + 1, prefix='${CMAKE_CURRENT_SOURCE_DIR}/')
+        cm_fh.write(f"{spaces(indent)})\n")
+
+    if condition != "ON":
+        indent -= 1
+        cm_fh.write(f"\n{spaces(indent)}endif()\n")
+
+
 def write_main_part(
     cm_fh: IO[str],
     name: str,
@@ -2630,6 +2657,8 @@ def write_main_part(
 
     write_android_part(cm_fh, name, scopes[0], indent)
 
+    write_wayland_part(cm_fh, name, scopes[0], indent)
+
     ignored_keys_report = write_ignored_keys(scopes[0], spaces(indent))
     if ignored_keys_report:
         cm_fh.write(ignored_keys_report)
@@ -2643,6 +2672,7 @@ def write_main_part(
     for c in scopes[1:]:
         c.reset_visited_keys()
         write_android_part(cm_fh, name, c, indent=indent)
+        write_wayland_part(cm_fh, name, c, indent=indent)
         write_extend_target(cm_fh, name, c, indent=indent)
         ignored_keys_report = write_ignored_keys(c, spaces(indent))
         if ignored_keys_report:
