@@ -2276,6 +2276,16 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
         for line in qrc_output.split("\n"):
             cm_fh.write(f"{' ' * indent}{line}\n")
 
+def write_statecharts(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
+    sources = scope.get("STATECHARTS")
+    if not sources:
+        return
+    cm_fh.write("\n# Statecharts:\n")
+    cm_fh.write(f"qt6_add_statecharts({target}\n")
+    indent += 1
+    for f in sources:
+        cm_fh.write(f"{spaces(indent)}{f}\n")
+    cm_fh.write(")\n")
 
 def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
     ind = spaces(indent)
@@ -2475,6 +2485,8 @@ def write_main_part(
     cm_fh.write(f"{spaces(indent)})\n")
 
     write_resources(cm_fh, name, scope, indent)
+
+    write_statecharts(cm_fh, name, scope, indent)
 
     write_simd_part(cm_fh, name, scope, indent)
 
@@ -2759,6 +2771,7 @@ def write_example(
     )
 
     write_resources(cm_fh, binary_name, scope, indent=indent, is_example=True)
+    write_statecharts(cm_fh, binary_name, scope, indent=indent)
 
     if qmldir:
         write_qml_plugin_epilogue(cm_fh, binary_name, scope, qmldir, indent)
