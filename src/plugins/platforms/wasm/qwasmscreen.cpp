@@ -139,6 +139,8 @@ QPlatformCursor *QWasmScreen::cursor() const
 
 void QWasmScreen::resizeMaximizedWindows()
 {
+    if (!screen())
+        return;
     QPlatformScreen::resizeMaximizedWindows();
 }
 
