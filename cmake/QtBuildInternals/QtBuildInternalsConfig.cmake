@@ -175,7 +175,10 @@ macro(qt_examples_build_end)
     get_all_targets(targets "${CMAKE_CURRENT_SOURCE_DIR}")
 
     foreach(target ${targets})
-        qt_autogen_tools(${target} ENABLE_AUTOGEN_TOOLS "moc" "uic" "rcc")
+        qt_autogen_tools(${target} ENABLE_AUTOGEN_TOOLS "moc" "rcc")
+        if(TARGET Qt::Widgets)
+            qt_autogen_tools(${target} ENABLE_AUTOGEN_TOOLS "uic")
+        endif()
     endforeach()
 
     set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})
