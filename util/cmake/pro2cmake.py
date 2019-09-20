@@ -1920,6 +1920,10 @@ def write_ignored_keys(scope: Scope, indent: str) -> str:
             "QT_SOURCE_TREE",
             "QT_BUILD_TREE",
             "TRACEPOINT_PROVIDER",
+            "PLUGIN_TYPE",
+            "PLUGIN_CLASS_NAME",
+            "CLASS_NAME",
+            "MODULE_PLUGIN_TYPES",
         }:
             # All these keys are actually reported already
             continue
