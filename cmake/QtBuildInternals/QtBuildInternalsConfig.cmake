@@ -32,6 +32,11 @@ macro(qt_set_up_build_internals_paths)
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
         list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
     endif()
+
+    # Find the cmake files when doing a standalone tests build.
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../cmake")
+        list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake")
+    endif()
 endmacro()
 
 macro(qt_build_repo_begin)
@@ -47,6 +52,7 @@ macro(qt_build_repo_begin)
 
     # Optionally include a repo specific Setup module.
     include(${PROJECT_NAME}Setup OPTIONAL)
+    include(QtRepoSetup OPTIONAL)
 
     # Find Apple frameworks if needed.
     qt_find_apple_system_frameworks()
@@ -137,6 +143,10 @@ endmacro()
 macro(qt_set_up_standalone_tests_build)
     qt_set_up_build_internals_paths()
     include(QtSetup)
+
+    # Optionally include a repo specific Setup module.
+    include(QtRepoSetup OPTIONAL)
+
     qt_find_apple_system_frameworks()
     qt_check_if_tools_will_be_built()
 endmacro()
