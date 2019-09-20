@@ -40,7 +40,7 @@ class LibraryMapping:
         resultVariable: typing.Optional[str] = None,
         extra: typing.List[str] = [],
         appendFoundSuffix: bool = True,
-        emit_if: str = ""
+        emit_if: str = "",
     ) -> None:
         self.soName = soName
         self.packageName = packageName
@@ -497,7 +497,7 @@ _library_map = [
     LibraryMapping("tiff", "TIFF", "TIFF::TIFF"),
     LibraryMapping("webp", "WrapWebP", "WrapWebP::WrapWebP"),
     LibraryMapping("jasper", "WrapJasper", "WrapJasper::WrapJasper"),
-    LibraryMapping('sdl2', 'SDL2', 'SDL2::SDL2'),
+    LibraryMapping("sdl2", "SDL2", "SDL2::SDL2"),
 ]
 
 
@@ -656,26 +656,22 @@ def generate_find_package_info(
 
     if use_qt_find_package:
         if extra:
-            result = "{}qt_find_package({} {})\n".format(ind, lib.packageName, " ".join(extra))
+            result = f"{ind}qt_find_package({lib.packageName} {' '.join(extra)})\n"
         else:
-            result = "{}qt_find_package({})\n".format(ind, lib.packageName)
+            result = f"{ind}qt_find_package({lib.packageName})\n"
 
         if isRequired:
-            result += "{}set_package_properties({} PROPERTIES TYPE REQUIRED)\n".format(
-                ind, lib.packageName
-            )
+            result += f"{ind}set_package_properties({lib.packageName} PROPERTIES TYPE REQUIRED)\n"
     else:
         if extra:
-            result = "{}find_package({} {})\n".format(ind, lib.packageName, " ".join(extra))
+            result = f"{ind}find_package({lib.packageName} {' '.join(extra)})\n"
         else:
-            result = "{}find_package({})\n".format(ind, lib.packageName)
+            result = f"{ind}find_package({lib.packageName})\n"
 
     # If a package should be found only in certain conditions, wrap
     # the find_package call within that condition.
     if emit_if:
-        result = "if(({emit_if}) OR QT_FIND_ALL_PACKAGES_ALWAYS)\n" "{ind}{result}endif()\n".format(
-            emit_if=emit_if, result=result, ind=one_ind
-        )
+        result = f"if(({emit_if}) OR QT_FIND_ALL_PACKAGES_ALWAYS)\n{one_ind}{result}endif()\n"
 
     return result
 

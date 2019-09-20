@@ -306,7 +306,6 @@ add_qt_simd_part(Gui SIMD arch_haswell
 
 
 #### Keys ignored in scope 1:.:.:gui.pro:<TRUE>:
-# MODULE_PLUGIN_TYPES = "platforms" "platforms/darwin" "xcbglintegrations" "platformthemes" "platforminputcontexts" "generic" "iconengines" "imageformats" "egldeviceintegrations"
 # QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtGui.dynlist"
 # QMAKE_LIBS = "$$QMAKE_LIBS_GUI"
 # _LOADED = "qt_module" "cmake_functions"
@@ -620,7 +619,7 @@ extend_target(Gui CONDITION WASM
 
 
 qt_create_tracepoints(Gui qtgui.tracepoints)
-add_qt_docs(Gui,
+add_qt_docs(Gui
     doc/qtgui.qdocconf
 )
 

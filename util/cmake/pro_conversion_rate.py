@@ -184,13 +184,11 @@ def print_stats(
     for stat in stats:
         if stats[stat]["value"] > 0:
             print(
-                "{:<40}: {} ({}%)".format(
-                    stats[stat]["label"], stats[stat]["value"], stats[stat]["percentage"]
-                )
+                f"{stats[stat]['label']:<40}: {stats[stat]['value']} ({stats[stat]['percentage']}%)"
             )
 
-    print("\n{:<40}: {:.10f} seconds".format("Scan time", scan_time))
-    print("{:<40}: {:.10f} seconds".format("Total script time", script_time))
+    print(f"\n{'Scan time':<40}: {scan_time:.10f} seconds")
+    print(f"{'Total script time':<40}: {script_time:.10f} seconds")
 
 
 def main():

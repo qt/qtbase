@@ -134,7 +134,7 @@ def map_tests(test: str) -> str:
     if test in testmap:
         return testmap.get(test, None)
     if test in knownTests:
-        return "TEST_{}".format(featureName(test))
+        return f"TEST_{featureName(test)}"
     return None
 
 
@@ -151,7 +151,7 @@ def cm(ctx, *output):
 def readJsonFromDir(dir):
     path = posixpath.join(dir, "configure.json")
 
-    print("Reading {}...".format(path))
+    print(f"Reading {path}...")
     assert posixpath.exists(path)
 
     parser = json_parser.QMakeSpecificJSONParser()
@@ -169,14 +169,14 @@ def processFiles(ctx, data):
 def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
     newlib = find_3rd_party_library_mapping(lib)
     if not newlib:
-        print('    XXXX Unknown library "{}".'.format(lib))
+        print(f'    XXXX Unknown library "{lib}".')
         return
 
     if newlib.packageName is None:
-        print('    **** Skipping library "{}" -- was masked.'.format(lib))
+        print(f'    **** Skipping library "{lib}" -- was masked.')
         return
 
-    print("    mapped library {} to {}.".format(lib, newlib.targetName))
+    print(f"    mapped library {lib} to {newlib.targetName}.")
 
     # Avoid duplicate find_package calls.
     if newlib.targetName in cmake_find_packages_set:
@@ -194,7 +194,7 @@ def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
             feature_data = data["features"][feature]
             if (
                 "condition" in feature_data
-                and "libs.{}".format(lib) in feature_data["condition"]
+                and f"libs.{lib}" in feature_data["condition"]
                 and "emitIf" in feature_data
                 and "config." in feature_data["emitIf"]
             ):
@@ -212,8 +212,9 @@ def parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set):
 def lineify(label, value, quote=True):
     if value:
         if quote:
-            return '    {} "{}"\n'.format(label, value.replace('"', '\\"'))
-        return "    {} {}\n".format(label, value)
+            escaped_value = value.replace('"', '\\"')
+            return f'    {label} "{escaped_value}"\n'
+        return f"    {label} {value}\n"
     return ""
 
 
@@ -267,12 +268,10 @@ def map_condition(condition):
             if feature in mapped_features:
                 substitution = mapped_features.get(feature)
             else:
-                substitution = "QT_FEATURE_{}".format(featureName(match.group(2)))
+                substitution = f"QT_FEATURE_{featureName(match.group(2))}"
 
         elif match.group(1) == "subarch":
-            substitution = "TEST_arch_{}_subarch_{}".format(
-                "${TEST_architecture_arch}", match.group(2)
-            )
+            substitution = f"TEST_arch_{'${TEST_architecture_arch}'}_subarch_{match.group(2)}"
 
         elif match.group(1) == "call":
             if match.group(2) == "crossCompile":
@@ -282,12 +281,12 @@ def map_condition(condition):
             substitution = map_tests(match.group(2))
 
         elif match.group(1) == "input":
-            substitution = "INPUT_{}".format(featureName(match.group(2)))
+            substitution = f"INPUT_{featureName(match.group(2))}"
 
         elif match.group(1) == "config":
             substitution = map_platform(match.group(2))
         elif match.group(1) == "module":
-            substitution = "TARGET {}".format(map_qt_library(match.group(2)))
+            substitution = f"TARGET {map_qt_library(match.group(2))}"
 
         elif match.group(1) == "arch":
             if match.group(2) == "i386":
@@ -306,7 +305,7 @@ def map_condition(condition):
                 substitution = "(TEST_architecture_arch STREQUAL mips)"
 
         if substitution is None:
-            print('    XXXX Unknown condition "{}".'.format(match.group(0)))
+            print(f'    XXXX Unknown condition "{match.group(0)}"')
             has_failed = True
         else:
             mapped_condition += condition[last_pos : match.start(1)] + substitution
@@ -919,7 +918,7 @@ def parseFeature(ctx, feature, data, cm_fh):
         if outputArgs.get("negative", False):
             cm_fh.write(" NEGATE")
         if outputArgs.get("value") is not None:
-            cm_fh.write(' VALUE "{}"'.format(outputArgs.get("value")))
+            cm_fh.write(f' VALUE "{outputArgs.get("value")}"')
         cm_fh.write(")\n")
 
 
@@ -1015,7 +1014,7 @@ def main():
 
     directory = sys.argv[1]
 
-    print("Processing: {}.".format(directory))
+    print(f"Processing: {directory}.")
 
     data = readJsonFromDir(directory)
     processJson(directory, {}, data)

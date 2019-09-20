@@ -191,8 +191,7 @@ def is_example_project(project_file_path: str = "") -> bool:
     # relative to the repo source dir, then it must be an example, but
     # some examples contain 3rdparty libraries that do not need to be
     # built as examples.
-    return (project_relative_path.startswith("examples")
-            and "3rdparty" not in project_relative_path)
+    return project_relative_path.startswith("examples") and "3rdparty" not in project_relative_path
 
 
 def find_qmake_conf(project_file_path: str = "") -> Optional[str]:
@@ -264,7 +263,7 @@ def process_qrc_file(
         lang = resource.get("lang", "")
         prefix = resource.get("prefix", "/")
         if not prefix.startswith("/"):
-            prefix = "/" + prefix
+            prefix = f"/{prefix}"
 
         full_resource_name = resource_name + (str(resource_count) if resource_count > 0 else "")
 
@@ -319,10 +318,11 @@ def write_add_qt_resource_call(
         alias = files[source]
         if alias:
             full_source = posixpath.join(base_dir, source)
-            output += (
-                f'set_source_files_properties("{full_source}"\n'
-                f'    PROPERTIES QT_RESOURCE_ALIAS "{alias}"\n)\n'
-            )
+            output += dedent(f"""\
+                set_source_files_properties("{full_source}"
+                    PROPERTIES QT_RESOURCE_ALIAS "{alias}"
+                )
+            """)
 
     # Quote file paths in case there are spaces.
     sorted_files_backup = sorted_files
@@ -333,8 +333,12 @@ def write_add_qt_resource_call(
         else:
             sorted_files.append(f'"{source}"')
 
-    file_list = "\n    ".join(sorted_files)
-    output += f"set({resource_name}_resource_files\n    {file_list}\n)\n\n"
+    file_list = "\n            ".join(sorted_files)
+    output += dedent(f"""\
+        set({resource_name}_resource_files
+            {file_list}
+        )\n
+        """)
     file_list = f"${{{resource_name}_resource_files}}"
     if skip_qtquick_compiler:
         output += (
@@ -389,27 +393,30 @@ class QmlDir:
         self.designer_supported = False
 
     def __str__(self):
-        str = "module: {}\n".format(self.module)
-        str += "plugin: {} {}\n".format(self.plugin_name, self.plugin_path)
-        str += "classname: {}\n".format(self.classname)
-        str += "type_infos:{}\n".format("    \n".join(self.type_infos))
-        str += "imports:{}\n".format("    \n".join(self.imports))
-        str += "dependends: \n"
+        types_infos_line = "    \n".join(self.types_infos)
+        imports_line = "    \n".join(self.imports)
+        string = f"""\
+            module: {self.module}
+            plugin: {self.plugin_name} {self.plugin_path}
+            classname: {self.classname}
+            type_infos:{type_infos_line}
+            imports:{imports_line}
+            dependends:
+            """
         for dep in self.depends:
-            str += "    {} {}\n".format(dep[0], dep[1])
-        str += "designer supported: {}\n".format(self.designer_supported)
-        str += "type_names:\n"
+            string += f"    {dep[0]} {dep[1]}\n"
+        string += f"designer supported: {self.designer_supported}\n"
+        string += "type_names:\n"
         for key in self.type_names:
             file_info = self.type_names[key]
-            str += "    type:{} version:{} path:{} internal:{} singleton:{}\n".format(
-                file_info.type_name,
-                file_info.version,
-                file_info.type_name,
-                file_info.file_path,
-                file_info.internal,
-                file_info.singleton,
+            string += (
+                f"    type:{file_info.type_name} "
+                f"version:{file_info.version} "
+                f"path:{file_info.file_path} "
+                f"internal:{file_info.internal} "
+                f"singleton:{file_info.singleton}\n"
             )
-        return str
+        return string
 
     def get_or_create_file_info(self, path: str, type_name: str) -> QmlDirFileInfo:
         if not path in self.type_names:
@@ -437,7 +444,7 @@ class QmlDir:
     def from_file(self, path: str):
         f = open(path, "r")
         if not f:
-            raise RuntimeError("Failed to open qmldir file at: {}".format(str))
+            raise RuntimeError(f"Failed to open qmldir file at: {path}")
         for line in f:
             if line.startswith("#"):
                 continue
@@ -471,7 +478,7 @@ class QmlDir:
             elif len(entries) == 3:
                 self.handle_file(entries[0], entries[1], entries[2])
             else:
-                raise RuntimeError("Uhandled qmldir entry {}".format(line))
+                raise RuntimeError(f"Uhandled qmldir entry {line}")
 
 
 def fixup_linecontinuation(contents: str) -> str:
@@ -640,9 +647,9 @@ class Operation:
 
 class AddOperation(Operation):
     def process(
-        self, key: str, input: List[str], transformer: Callable[[List[str]], List[str]]
+        self, key: str, sinput: List[str], transformer: Callable[[List[str]], List[str]]
     ) -> List[str]:
-        return input + transformer(self._value)
+        return sinput + transformer(self._value)
 
     def __repr__(self):
         return f"+({self._dump()})"
@@ -650,9 +657,9 @@ class AddOperation(Operation):
 
 class UniqueAddOperation(Operation):
     def process(
-        self, key: str, input: List[str], transformer: Callable[[List[str]], List[str]]
+        self, key: str, sinput: List[str], transformer: Callable[[List[str]], List[str]]
     ) -> List[str]:
-        result = input
+        result = sinput
         for v in transformer(self._value):
             if v not in result:
                 result.append(v)
@@ -664,14 +671,14 @@ class UniqueAddOperation(Operation):
 
 class SetOperation(Operation):
     def process(
-        self, key: str, input: List[str], transformer: Callable[[List[str]], List[str]]
+        self, key: str, sinput: List[str], transformer: Callable[[List[str]], List[str]]
     ) -> List[str]:
         values = []  # List[str]
         for v in self._value:
             if v != f"$${key}":
                 values.append(v)
             else:
-                values += input
+                values += sinput
 
         if transformer:
             return list(transformer(values))
@@ -687,20 +694,20 @@ class RemoveOperation(Operation):
         super().__init__(value)
 
     def process(
-        self, key: str, input: List[str], transformer: Callable[[List[str]], List[str]]
+        self, key: str, sinput: List[str], transformer: Callable[[List[str]], List[str]]
     ) -> List[str]:
-        input_set = set(input)
+        sinput_set = set(sinput)
         value_set = set(self._value)
         result: List[str] = []
 
         # Add everything that is not going to get removed:
-        for v in input:
+        for v in sinput:
             if v not in value_set:
                 result += [v]
 
         # Add everything else with removal marker:
         for v in transformer(self._value):
-            if v not in input_set:
+            if v not in sinput_set:
                 result += [f"-{v}"]
 
         return result
@@ -2226,7 +2233,7 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                         else:
                             immediate_files_filtered.append(f)
                     immediate_files = {f: "" for f in immediate_files_filtered}
-                    immediate_prefix = scope.get(r + ".prefix")
+                    immediate_prefix = scope.get(f"{r}.prefix")
                     if immediate_prefix:
                         immediate_prefix = immediate_prefix[0]
                     else:
@@ -2252,10 +2259,16 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                         # stadalone source file properties need to be set as they
                         # are parsed.
                         if skip_qtquick_compiler:
-                            qrc_output += 'set_source_files_properties(f"{r}" PROPERTIES QT_SKIP_QUICKCOMPILER 1)\n\n'
+                            qrc_output += (
+                                f'set_source_files_properties("{r}" PROPERTIES '
+                                f"QT_SKIP_QUICKCOMPILER 1)\n\n"
+                            )
 
                         if retain_qtquick_compiler:
-                            qrc_output += 'set_source_files_properties(f"{r}" PROPERTIES QT_RETAIN_QUICKCOMPILER 1)\n\n'
+                            qrc_output += (
+                                f'set_source_files_properties("{r}" PROPERTIES '
+                                f"QT_RETAIN_QUICKCOMPILER 1)\n\n"
+                            )
                         standalone_files.append(r)
 
         if standalone_files:
@@ -2494,7 +2507,7 @@ def write_main_part(
     destdir = scope.get_string("DESTDIR")
     if destdir:
         if destdir.startswith("./") or destdir.startswith("../"):
-            destdir = "${CMAKE_CURRENT_BINARY_DIR}/" + destdir
+            destdir = f"${{CMAKE_CURRENT_BINARY_DIR}}/{destdir}"
         extra_lines.append(f'OUTPUT_DIRECTORY "{destdir}"')
 
     cm_fh.write(f"{spaces(indent)}{cmake_function}({name}\n")
@@ -2725,12 +2738,14 @@ def write_example(
                 dest_dir = "${CMAKE_CURRENT_BINARY_DIR}"
             else:
                 uri = os.path.basename(dest_dir)
-                dest_dir = "${CMAKE_CURRENT_BINARY_DIR}/" + dest_dir
+                dest_dir = f"${{CMAKE_CURRENT_BINARY_DIR}}/{dest_dir}"
 
-            add_target = f"qt6_add_qml_module({binary_name}\n"
-            add_target += f'    OUTPUT_DIRECTORY "{dest_dir}"\n'
-            add_target += "    VERSION 1.0\n"
-            add_target += '    URI "{}"\n'.format(uri)
+            add_target = dedent(f"""\
+                qt6_add_qml_module({binary_name}
+                    OUTPUT_DIRECTORY "{dest_dir}"
+                    VERSION 1.0
+                    URI "{uri}"
+                    """)
 
             qmldir_file_path = scope.get_files("qmldir.files")
             if qmldir_file_path:
@@ -2746,7 +2761,8 @@ def write_example(
                 if len(qml_dir.classname) != 0:
                     add_target += f"    CLASSNAME {qml_dir.classname}\n"
                 if len(qml_dir.imports) != 0:
-                    add_target += "    IMPORTS\n{}".format("        \n".join(qml_dir.imports))
+                    qml_dir_imports_line = "        \n".join(qml_dir.imports)
+                    add_target += f"    IMPORTS\n{qml_dir_imports_line}"
                 if len(qml_dir.depends) != 0:
                     add_target += "    DEPENDENCIES\n"
                     for dep in qml_dir.depends:
@@ -2768,18 +2784,14 @@ def write_example(
         cm_fh, scope, f"target_include_directories({binary_name} PUBLIC", indent=0, footer=")"
     )
     write_defines(
-        cm_fh,
-        scope,
-        "target_compile_definitions({} PUBLIC".format(binary_name),
-        indent=0,
-        footer=")",
+        cm_fh, scope, f"target_compile_definitions({binary_name} PUBLIC", indent=0, footer=")"
     )
     write_list(
         cm_fh,
         private_libs,
         "",
         indent=indent,
-        header="target_link_libraries({} PRIVATE\n".format(binary_name),
+        header=f"target_link_libraries({binary_name} PRIVATE\n",
         footer=")",
     )
     write_list(
@@ -2787,11 +2799,11 @@ def write_example(
         public_libs,
         "",
         indent=indent,
-        header="target_link_libraries({} PUBLIC\n".format(binary_name),
+        header=f"target_link_libraries({binary_name} PUBLIC\n",
         footer=")",
     )
     write_compile_options(
-        cm_fh, scope, "target_compile_options({}".format(binary_name), indent=0, footer=")"
+        cm_fh, scope, f"target_compile_options({binary_name}", indent=0, footer=")"
     )
 
     write_resources(cm_fh, binary_name, scope, indent=indent, is_example=True)
@@ -2801,11 +2813,11 @@ def write_example(
         write_qml_plugin_epilogue(cm_fh, binary_name, scope, qmldir, indent)
 
     cm_fh.write(
-        "\ninstall(TARGETS {}\n".format(binary_name)
-        + '    RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"\n'
-        + '    BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"\n'
-        + '    LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"\n'
-        + ")\n"
+        f"\ninstall(TARGETS {binary_name}\n"
+        f'    RUNTIME DESTINATION "${{INSTALL_EXAMPLEDIR}}"\n'
+        f'    BUNDLE DESTINATION "${{INSTALL_EXAMPLEDIR}}"\n'
+        f'    LIBRARY DESTINATION "${{INSTALL_EXAMPLEDIR}}"\n'
+        f")\n"
     )
 
     return binary_name
@@ -2829,7 +2841,7 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
 
     plugin_class_name = scope.get_string("PLUGIN_CLASS_NAME")
     if plugin_class_name:
-        extra.append("CLASS_NAME {}".format(plugin_class_name))
+        extra.append(f"CLASS_NAME {plugin_class_name}")
 
     write_main_part(
         cm_fh,
@@ -2898,7 +2910,9 @@ def write_qml_plugin(
         if len(qml_dir.classname) != 0:
             extra_lines.append(f"CLASSNAME {qml_dir.classname}")
         if len(qml_dir.imports) != 0:
-            extra_lines.append("IMPORTS\n        {}".format("\n        ".join(qml_dir.imports)))
+            qml_dir_imports_line = "\n        ".join(qml_dir.imports)
+            extra_lines.append("IMPORTS\n        "
+                               f"{qml_dir_imports_line}")
         if len(qml_dir.depends) != 0:
             extra_lines.append("DEPENDENCIES")
             for dep in qml_dir.depends:
@@ -2919,43 +2933,33 @@ def write_qml_plugin_epilogue(
         indent_0 = spaces(indent)
         indent_1 = spaces(indent + 1)
         # Quote file paths in case there are spaces.
-        qml_files_quoted = ['"{}"'.format(f) for f in qml_files]
+        qml_files_quoted = [f'"{qf}"' for qf in qml_files]
 
-        cm_fh.write(
-            "\n{}set(qml_files\n{}{}\n)\n".format(
-                indent_0, indent_1, "\n{}".format(indent_1).join(qml_files_quoted)
-            )
-        )
+        indented_qml_files = f"\n{indent_1}".join(qml_files_quoted)
+        cm_fh.write(f"\n{indent_0}set(qml_files\n{indent_1}" f"{indented_qml_files}\n)\n")
 
         for qml_file in qml_files:
             if qml_file in qmldir.type_names:
                 qmldir_file_info = qmldir.type_names[qml_file]
-                cm_fh.write(
-                    "{}set_source_files_properties({} PROPERTIES\n".format(indent_0, qml_file)
-                )
-                cm_fh.write(
-                    '{}QT_QML_SOURCE_VERSION "{}"\n'.format(indent_1, qmldir_file_info.version)
-                )
+                cm_fh.write(f"{indent_0}set_source_files_properties({qml_file} PROPERTIES\n")
+                cm_fh.write(f'{indent_1}QT_QML_SOURCE_VERSION "{qmldir_file_info.version}"\n')
                 # Only write typename if they are different, CMake will infer
                 # the name by default
                 if (
                     os.path.splitext(os.path.basename(qmldir_file_info.path))[0]
                     != qmldir_file_info.type_name
                 ):
-                    cm_fh.write(
-                        "{}QT_QML_SOURCE_TYPENAME {}\n".format(indent_1, qmldir_file_info.type_name)
-                    )
-                cm_fh.write("{}QT_QML_SOURCE_INSTALL TRUE\n".format(indent_1))
+                    cm_fh.write(f"{indent_1}QT_QML_SOURCE_TYPENAME {qmldir_file_info.type_name}\n")
+                cm_fh.write(f"{indent_1}QT_QML_SOURCE_INSTALL TRUE\n")
                 if qmldir_file_info.singleton:
-                    cm_fh.write("{}QT_QML_SINGLETON_TYPE TRUE\n".format(indent_1))
+                    cm_fh.write(f"{indent_1}QT_QML_SINGLETON_TYPE TRUE\n")
                 if qmldir_file_info.internal:
-                    cm_fh.write("{}QT_QML_INTERNAL_TYPE TRUE\n".format(indent_1))
-                cm_fh.write("{})\n".format(indent_0))
+                    cm_fh.write(f"{indent_1}QT_QML_INTERNAL_TYPE TRUE\n")
+                cm_fh.write(f"{indent_0})\n")
 
         cm_fh.write(
-            "\n{}qt6_target_qml_files({}\n{}FILES\n{}${{qml_files}}\n)\n".format(
-                indent_0, target, indent_1, spaces(indent + 2)
-            )
+            f"\n{indent_0}qt6_target_qml_files({target}\n{indent_1}FILES\n"
+            f"{spaces(indent+2)}${{qml_files}}\n)\n"
         )
 
 
@@ -3073,7 +3077,7 @@ def handle_top_level_repo_tests_project(scope: Scope, cm_fh: IO[str]):
         # Found a mapping, adjust name.
         if qt_lib != file_name_without_qt:
             # QtDeclarative
-            qt_lib = re.sub(r":", r"", qt_lib) + "Tests"
+            qt_lib = f'{re.sub(r":", r"", qt_lib)}{"Tests"}'
         else:
             qt_lib += "Tests_FIXME"
     else:
@@ -3120,7 +3124,7 @@ def cmakeify_scope(
         # Wrap top level examples project with some commands which
         # are necessary to build examples as part of the overall
         # build.
-        buffer_value = f"\nqt_examples_build_begin()\n\n{buffer_value}\nqt_examples_build_end()"
+        buffer_value = f"qt_examples_build_begin()\n\n{buffer_value}\nqt_examples_build_end()\n"
 
     cm_fh.write(buffer_value)
 
