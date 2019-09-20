@@ -2642,10 +2642,16 @@ bool QWindowsWindow::handleNonClientHitTest(const QPoint &globalPos, LRESULT *re
             return true;
         }
         if (localPos.y() < 0) {
-            const int topResizeBarPos = -frameMargins().top();
-            if (localPos.y() >= topResizeBarPos)
+            // We want to return HTCAPTION/true only over the outer sizing frame, not the entire title bar,
+            // otherwise the title bar buttons (close, etc.) become unresponsive on Windows 7 (QTBUG-78262).
+            // However, neither frameMargins() nor GetSystemMetrics(SM_CYSIZEFRAME), etc., give the correct
+            // sizing frame height in all Windows versions/scales. This empirical constant seems to work, though.
+            const int sizingHeight = 9;
+            const int topResizeBarPos = sizingHeight - frameMargins().top();
+            if (localPos.y() < topResizeBarPos) {
                 *result = HTCAPTION; // Extend caption over top resize bar, let's user move the window.
-            return true;
+                return true;
+            }
         }
     }
     if (fixedWidth && (localPos.x() < 0 || localPos.x() >= size.width())) {
