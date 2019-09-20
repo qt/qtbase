@@ -186,7 +186,7 @@ endfunction()
 #
 function(QT@PROJECT_VERSION_MAJOR@_PROCESS_RESOURCE target resourceName)
 
-    cmake_parse_arguments(rcc "" "PREFIX;LANG;BASE;OUTPUT_TARGETS" "FILES" ${ARGN})
+    cmake_parse_arguments(rcc "" "PREFIX;LANG;BASE;OUTPUT_TARGETS" "FILES;OPTIONS" ${ARGN})
 
     string(REPLACE "/" "_" resourceName ${resourceName})
     string(REPLACE "." "_" resourceName ${resourceName})
@@ -268,11 +268,16 @@ function(QT@PROJECT_VERSION_MAJOR@_PROCESS_RESOURCE target resourceName)
 
     file(GENERATE OUTPUT "${generatedResourceFile}" CONTENT "${qrcContents}")
 
+    set(rccArgs --name "${newResourceName}"
+        --output "${generatedSourceCode}" "${generatedResourceFile}")
+    if(rcc_OPTIONS)
+        list(APPEND rccArgs ${rcc_OPTIONS})
+    endif()
+
     # Process .qrc file:
     add_custom_command(OUTPUT "${generatedSourceCode}"
                        COMMAND "@QT_CMAKE_EXPORT_NAMESPACE@::rcc"
-                       ARGS --name "${newResourceName}"
-                           --output "${generatedSourceCode}" "${generatedResourceFile}"
+                       ARGS ${rccArgs}
                        DEPENDS ${resources} ${generatedResourceFile}
                        COMMENT "RCC ${newResourceName}"
                        VERBATIM)
