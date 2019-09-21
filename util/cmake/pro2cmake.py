@@ -1738,8 +1738,10 @@ def _map_libraries_to_cmake(libraries: List[str], known_libraries: Set[str]) -> 
 
 
 def extract_cmake_libraries(
-    scope: Scope, *, known_libraries: Set[str] = set()
+    scope: Scope, *, known_libraries: Optional[Set[str]] = None
 ) -> Tuple[List[str], List[str]]:
+    if known_libraries is None:
+        known_libraries = set()
     public_dependencies = []  # type: List[str]
     private_dependencies = []  # type: List[str]
 
@@ -1883,8 +1885,10 @@ def write_compile_options(
 
 
 def write_library_section(
-    cm_fh: IO[str], scope: Scope, *, indent: int = 0, known_libraries: Set[str] = set()
+    cm_fh: IO[str], scope: Scope, *, indent: int = 0, known_libraries: Optional[Set[str]] = None
 ):
+    if known_libraries is None:
+        known_libraries = set()
     public_dependencies, private_dependencies = extract_cmake_libraries(
         scope, known_libraries=known_libraries
     )
@@ -1899,7 +1903,11 @@ def write_autogen_section(cm_fh: IO[str], scope: Scope, *, indent: int = 0):
         write_list(cm_fh, ["uic"], "ENABLE_AUTOGEN_TOOLS", indent)
 
 
-def write_sources_section(cm_fh: IO[str], scope: Scope, *, indent: int = 0, known_libraries=set()):
+def write_sources_section(
+    cm_fh: IO[str], scope: Scope, *, indent: int = 0, known_libraries: Optional[Set[str]] = None
+):
+    if known_libraries is None:
+        known_libraries = set()
     ind = spaces(indent)
 
     # mark RESOURCES as visited:
@@ -2493,12 +2501,14 @@ def write_main_part(
     cmake_function: str,
     scope: Scope,
     *,
-    extra_lines: List[str] = [],
+    extra_lines: Optional[List[str]] = None,
     indent: int = 0,
     extra_keys: List[str],
     **kwargs: Any,
 ):
     # Evaluate total condition of all scopes:
+    if extra_lines is None:
+        extra_lines = []
     recursive_evaluate_scope(scope)
 
     if "exceptions" in scope.get("CONFIG"):
@@ -2908,11 +2918,13 @@ def write_qml_plugin(
     target: str,
     scope: Scope,
     *,
-    extra_lines: List[str] = [],
+    extra_lines: Optional[List[str]] = None,
     indent: int = 0,
     **kwargs: Any,
 ) -> Optional[QmlDir]:
     # Collect other args if available
+    if extra_lines is None:
+        extra_lines = []
     indent += 2
 
     target_path = scope.get_string("TARGETPATH")
