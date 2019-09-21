@@ -205,7 +205,10 @@ def is_config_test_project(project_file_path: str = "") -> bool:
     # relative to the repo source dir, then it's probably a config test.
     # Also if the .qmake.conf is found within config.tests dir (like in qtbase)
     # then the project is probably a config .test
-    return project_relative_path.startswith("config.tests") or dir_name_with_qmake_confg == "config.tests"
+    return (
+        project_relative_path.startswith("config.tests")
+        or dir_name_with_qmake_confg == "config.tests"
+    )
 
 
 @lru_cache(maxsize=None)
@@ -333,11 +336,13 @@ def write_add_qt_resource_call(
         alias = files[source]
         if alias:
             full_source = posixpath.join(base_dir, source)
-            output += dedent(f"""\
+            output += dedent(
+                f"""\
                 set_source_files_properties("{full_source}"
                     PROPERTIES QT_RESOURCE_ALIAS "{alias}"
                 )
-            """)
+            """
+            )
 
     # Quote file paths in case there are spaces.
     sorted_files_backup = sorted_files
@@ -349,11 +354,13 @@ def write_add_qt_resource_call(
             sorted_files.append(f'"{source}"')
 
     file_list = "\n            ".join(sorted_files)
-    output += dedent(f"""\
+    output += dedent(
+        f"""\
         set({resource_name}_resource_files
             {file_list}
         )\n
-        """)
+        """
+    )
     file_list = f"${{{resource_name}_resource_files}}"
     if skip_qtquick_compiler:
         output += (
@@ -1265,7 +1272,9 @@ class QmakeParser:
         Load = add_element("Load", pp.Keyword("load") + CallArgs("loaded"))
         Include = add_element("Include", pp.Keyword("include") + CallArgs("included"))
         Option = add_element("Option", pp.Keyword("option") + CallArgs("option"))
-        Requires = add_element("Requires", pp.Keyword("requires") + CallArgs("project_required_condition"))
+        Requires = add_element(
+            "Requires", pp.Keyword("requires") + CallArgs("project_required_condition")
+        )
 
         # ignore the whole thing...
         DefineTestDefinition = add_element(
@@ -1822,7 +1831,8 @@ def write_all_source_file_lists(
         cm_fh,
         scope,
         header,
-        ["SOURCES", "HEADERS", "OBJECTIVE_SOURCES", "OBJECTIVE_HEADERS", "NO_PCH_SOURCES", "FORMS"] + extra_keys,
+        ["SOURCES", "HEADERS", "OBJECTIVE_SOURCES", "OBJECTIVE_HEADERS", "NO_PCH_SOURCES", "FORMS"]
+        + extra_keys,
         indent,
         footer=footer,
     )
@@ -2310,6 +2320,7 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
         for line in qrc_output.split("\n"):
             cm_fh.write(f"{' ' * indent}{line}\n")
 
+
 def write_statecharts(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, is_example=False):
     sources = scope.get("STATECHARTS")
     if not sources:
@@ -2324,18 +2335,21 @@ def write_statecharts(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0
         cm_fh.write(f"{spaces(indent)}{f}\n")
     cm_fh.write(")\n")
 
+
 def expand_project_requirements(scope: Scope) -> str:
     requirements = ""
     for requirement in scope.get("_REQUIREMENTS"):
         original_condition = simplify_condition(map_condition(requirement))
         inverted_requirement = simplify_condition(f"NOT {map_condition(requirement)}")
-        requirements += dedent(f"""\
+        requirements += dedent(
+            f"""\
                         if({inverted_requirement})
                             message(NOTICE "Skipping the build as the condition \\"{original_condition}\\" is not met.")
                             return()
                         endif()
 
-                        """)
+                        """
+        )
     return requirements
 
 
@@ -2755,12 +2769,14 @@ def write_example(
                 uri = os.path.basename(dest_dir)
                 dest_dir = f"${{CMAKE_CURRENT_BINARY_DIR}}/{dest_dir}"
 
-            add_target = dedent(f"""\
+            add_target = dedent(
+                f"""\
                 qt6_add_qml_module({binary_name}
                     OUTPUT_DIRECTORY "{dest_dir}"
                     VERSION 1.0
                     URI "{uri}"
-                    """)
+                    """
+            )
 
             qmldir_file_path = scope.get_files("qmldir.files")
             if qmldir_file_path:
@@ -2926,8 +2942,7 @@ def write_qml_plugin(
             extra_lines.append(f"CLASSNAME {qml_dir.classname}")
         if len(qml_dir.imports) != 0:
             qml_dir_imports_line = "\n        ".join(qml_dir.imports)
-            extra_lines.append("IMPORTS\n        "
-                               f"{qml_dir_imports_line}")
+            extra_lines.append("IMPORTS\n        " f"{qml_dir_imports_line}")
         if len(qml_dir.depends) != 0:
             extra_lines.append("DEPENDENCIES")
             for dep in qml_dir.depends:
@@ -3113,19 +3128,26 @@ def handle_top_level_repo_tests_project(scope: Scope, cm_fh: IO[str]):
     cm_fh.write(f"{content}")
 
 
-def write_regular_cmake_target_scope_section(scope: Scope,
-                                             cm_fh: IO[str],
-                                             indent: int = 0,
-                                             skip_sources: bool = False):
+def write_regular_cmake_target_scope_section(
+    scope: Scope, cm_fh: IO[str], indent: int = 0, skip_sources: bool = False
+):
     if not skip_sources:
         target_sources = "target_sources(${PROJECT_NAME} PUBLIC"
         write_all_source_file_lists(cm_fh, scope, target_sources, indent=indent, footer=")")
 
     write_include_paths(
-        cm_fh, scope, f"target_include_directories(${{PROJECT_NAME}} PUBLIC", indent=indent, footer=")"
+        cm_fh,
+        scope,
+        f"target_include_directories(${{PROJECT_NAME}} PUBLIC",
+        indent=indent,
+        footer=")",
     )
     write_defines(
-        cm_fh, scope, f"target_compile_definitions(${{PROJECT_NAME}} PUBLIC", indent=indent, footer=")"
+        cm_fh,
+        scope,
+        f"target_compile_definitions(${{PROJECT_NAME}} PUBLIC",
+        indent=indent,
+        footer=")",
     )
     (public_libs, private_libs) = extract_cmake_libraries(scope)
     write_list(
@@ -3163,7 +3185,7 @@ def handle_config_test_project(scope: Scope, cm_fh: IO[str]):
     config = scope.get("CONFIG")
     gui = all(val not in config for val in ["console", "cmdline"])
 
-    add_target = f'add_executable(${{PROJECT_NAME}}'
+    add_target = f"add_executable(${{PROJECT_NAME}}"
 
     if gui:
         add_target += " WIN32 MACOSX_BUNDLE"
@@ -3190,7 +3212,7 @@ def handle_config_test_project(scope: Scope, cm_fh: IO[str]):
 
     for c in scopes[1:]:
         extend_scope_io_string = io.StringIO()
-        write_regular_cmake_target_scope_section(c, extend_scope_io_string, indent=indent+1)
+        write_regular_cmake_target_scope_section(c, extend_scope_io_string, indent=indent + 1)
         extend_string = extend_scope_io_string.getvalue()
 
         if extend_string:

@@ -128,8 +128,7 @@ def map_tests(test: str) -> str:
         "reduce_exports": "CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY",
         "libinput_axis_api": "ON",
         "xlib": "X11_FOUND",
-
-        'wayland-scanner': 'WaylandScanner_FOUND',
+        "wayland-scanner": "WaylandScanner_FOUND",
     }
     if test in testmap:
         return testmap.get(test, None)
@@ -516,16 +515,18 @@ def parseTest(ctx, test, data, cm_fh):
         details = data["test"]
 
         if isinstance(details, str):
-            if not ctx['test_dir']:
+            if not ctx["test_dir"]:
                 print(f"    XXXX UNHANDLED TEST SUB-TYPE {details} in test description")
                 return
 
-            cm_fh.write(f"""
+            cm_fh.write(
+                f"""
 if(EXISTS "${{CMAKE_CURRENT_SOURCE_DIR}}/{ctx['test_dir']}/{data['test']}/CMakeLists.txt")
     qt_config_compile_test("{data['test']}"
                            PROJECT_PATH "${{CMAKE_CURRENT_SOURCE_DIR}}/{ctx['test_dir']}/{data['test']}")
 endif()
-""")
+"""
+            )
             return
 
         head = details.get("head", "")
