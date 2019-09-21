@@ -1589,16 +1589,11 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     if(NOT ${arg_NO_PRIVATE_MODULE})
         target_include_directories("${target_private}" INTERFACE ${interface_includes})
     endif()
-
-    if(NOT ${arg_DISABLE_TOOLS_EXPORT})
-        qt_export_tools(${target})
-    endif()
 endfunction()
 
 function(qt_export_tools module_name)
     # If no tools were defined belonging to this module, don't create a config and targets file.
-    # Guards against the case when doing a cross-build and the function is called manually and not
-    # by add_qt_module.
+    # Guards against the case when doing a cross-build.
 
     if(NOT "${module_name}" IN_LIST QT_KNOWN_MODULES_WITH_TOOLS OR CMAKE_CROSSCOMPILING)
         return()

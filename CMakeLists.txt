@@ -58,9 +58,6 @@ if (QT_WILL_BUILD_TOOLS)
     add_subdirectory(qmake)
 endif()
 
-# Need to build qmake and other Core tools before exporting them.
-qt_export_tools(Core)
-
 # As long as we use the mkspecs (for qplatformdefs.h), we need to always
 # install it, especially when cross-compiling.
 set(mkspecs_install_dir "${INSTALL_DATADIR}")

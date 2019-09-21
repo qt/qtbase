@@ -253,7 +253,6 @@ add_qt_module(Core
         WrapDoubleConversion::WrapDoubleConversion # special case
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
-    DISABLE_TOOLS_EXPORT # special case:
     # special case begin
     # Generated in QtBaseGlobalTargets
     EXTRA_CMAKE_FILES ${QT_CORE_RESOURCE_GENERATED_FILE_PATH}

@@ -332,6 +332,14 @@ function(qt_modules_process_android_dependencies)
     endforeach()
 endfunction()
 
+function(qt_create_tools_config_files)
+    # Create packages like Qt6CoreTools/Qt6CoreToolsConfig.cmake.
+    foreach(module_name ${QT_KNOWN_MODULES_WITH_TOOLS})
+        qt_export_tools("${module_name}")
+    endforeach()
+endfunction()
+
+qt_create_tools_config_files()
 qt_internal_create_depends_files()
 qt_generate_build_internals_extra_cmake_code()
 qt_internal_create_plugins_files()
