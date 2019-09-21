@@ -516,7 +516,16 @@ def parseTest(ctx, test, data, cm_fh):
         details = data["test"]
 
         if isinstance(details, str):
-            print(f"    XXXX UNHANDLED TEST SUB-TYPE {details} in test description")
+            if not ctx['test_dir']:
+                print(f"    XXXX UNHANDLED TEST SUB-TYPE {details} in test description")
+                return
+
+            cm_fh.write(f"""
+if(EXISTS "${{CMAKE_CURRENT_SOURCE_DIR}}/{ctx['test_dir']}/{data['test']}/CMakeLists.txt")
+    qt_config_compile_test("{data['test']}"
+                           PROJECT_PATH "${{CMAKE_CURRENT_SOURCE_DIR}}/{ctx['test_dir']}/{data['test']}")
+endif()
+""")
             return
 
         head = details.get("head", "")
@@ -975,6 +984,7 @@ def processSubconfigs(dir, ctx, data):
 
 def processJson(dir, ctx, data):
     ctx["module"] = data.get("module", "global")
+    ctx["test_dir"] = data.get("testDir", "")
 
     ctx = processFiles(ctx, data)
 
