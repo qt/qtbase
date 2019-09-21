@@ -54,7 +54,20 @@ from functools import lru_cache
 from shutil import copyfile
 from sympy.logic import simplify_logic, And, Or, Not
 from sympy.core.sympify import SympifyError
-from typing import List, Optional, Dict, Set, IO, Union, Mapping, Any, Callable, FrozenSet, Tuple
+from typing import (
+    List,
+    Optional,
+    Dict,
+    Set,
+    IO,
+    Union,
+    Mapping,
+    Any,
+    Callable,
+    FrozenSet,
+    Tuple,
+    Match,
+)
 from special_case_helper import SpecialCaseHandler
 from helper import (
     map_qt_library,
@@ -415,7 +428,7 @@ class QmlDir:
         self.designer_supported = False
 
     def __str__(self):
-        types_infos_line = "    \n".join(self.types_infos)
+        type_infos_line = "    \n".join(self.type_infos)
         imports_line = "    \n".join(self.imports)
         string = f"""\
             module: {self.module}
@@ -441,7 +454,7 @@ class QmlDir:
         return string
 
     def get_or_create_file_info(self, path: str, type_name: str) -> QmlDirFileInfo:
-        if not path in self.type_names:
+        if path not in self.type_names:
             self.type_names[path] = QmlDirFileInfo(path, type_name)
         qmldir_file = self.type_names[path]
         if qmldir_file.type_name != type_name:
@@ -1434,7 +1447,7 @@ def map_condition(condition: str) -> str:
     condition = re.sub(r"contains\(CONFIG, static\)", r"NOT QT_BUILD_SHARED_LIBS", condition)
     condition = re.sub(r"contains\(QT_CONFIG,\w*shared\)", r"QT_BUILD_SHARED_LIBS", condition)
 
-    def gcc_version_handler(match_obj: re.Match):
+    def gcc_version_handler(match_obj: Match):
         operator = match_obj.group(1)
         version_type = match_obj.group(2)
         if operator == "equals":
@@ -2488,8 +2501,6 @@ def write_main_part(
     # Evaluate total condition of all scopes:
     recursive_evaluate_scope(scope)
 
-    is_qml_plugin = any("qml_plugin" == s for s in scope.get("_LOADED"))
-
     if "exceptions" in scope.get("CONFIG"):
         extra_lines.append("EXCEPTIONS")
 
@@ -2682,7 +2693,7 @@ def write_test(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int =
     return test_name
 
 
-def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0) -> None:
+def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0) -> str:
     binary_name = scope.TARGET
     assert binary_name
 
@@ -2897,10 +2908,10 @@ def write_qml_plugin(
     target: str,
     scope: Scope,
     *,
-    extra_lines: typing.List[str] = [],
+    extra_lines: List[str] = [],
     indent: int = 0,
-    **kwargs: typing.Any,
-) -> QmlDir:
+    **kwargs: Any,
+) -> Optional[QmlDir]:
     # Collect other args if available
     indent += 2
 
@@ -2954,7 +2965,7 @@ def write_qml_plugin(
 
 
 def write_qml_plugin_epilogue(
-    cm_fh: typing.IO[str], target: str, scope: Scope, qmldir: QmlDir, indent: int = 0
+    cm_fh: IO[str], target: str, scope: Scope, qmldir: QmlDir, indent: int = 0
 ):
 
     qml_files = scope.get_files("QML_FILES", use_vpath=True)
