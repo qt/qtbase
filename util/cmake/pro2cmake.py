@@ -3177,6 +3177,8 @@ def should_convert_project(project_file_path: str = "") -> bool:
     # Skip cmake auto tests, they should not be converted.
     if project_relative_path.startswith("tests/auto/cmake"):
         return False
+    if project_relative_path.startswith("tests/auto/installed_cmake"):
+        return False
 
     # Skip qmake testdata projects.
     if project_relative_path.startswith("tests/auto/tools/qmake/testdata"):
