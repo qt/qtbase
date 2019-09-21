@@ -50,6 +50,7 @@ import xml.etree.ElementTree as ET
 from argparse import ArgumentParser
 from textwrap import dedent
 from itertools import chain
+from functools import lru_cache
 from shutil import copyfile
 from sympy.logic import simplify_logic, And, Or, Not
 from sympy.core.sympify import SympifyError
@@ -194,6 +195,20 @@ def is_example_project(project_file_path: str = "") -> bool:
     return project_relative_path.startswith("examples") and "3rdparty" not in project_relative_path
 
 
+def is_config_test_project(project_file_path: str = "") -> bool:
+    qmake_conf_path = find_qmake_conf(project_file_path)
+    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+    dir_name_with_qmake_confg = os.path.basename(qmake_conf_dir_path)
+
+    project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
+    # If the project file is found in a subdir called 'config.tests'
+    # relative to the repo source dir, then it's probably a config test.
+    # Also if the .qmake.conf is found within config.tests dir (like in qtbase)
+    # then the project is probably a config .test
+    return project_relative_path.startswith("config.tests") or dir_name_with_qmake_confg == "config.tests"
+
+
+@lru_cache(maxsize=None)
 def find_qmake_conf(project_file_path: str = "") -> Optional[str]:
     if not os.path.isabs(project_file_path):
         print(
@@ -1073,7 +1088,7 @@ class Scope(object):
         return list(self._evalOps(key, transformer, []))
 
     @staticmethod
-    def _replace_env_var_value(value: Any) -> str:
+    def _replace_env_var_value(value: Any) -> Any:
         if not isinstance(value, str):
             return value
 
@@ -3098,6 +3113,95 @@ def handle_top_level_repo_tests_project(scope: Scope, cm_fh: IO[str]):
     cm_fh.write(f"{content}")
 
 
+def write_regular_cmake_target_scope_section(scope: Scope,
+                                             cm_fh: IO[str],
+                                             indent: int = 0,
+                                             skip_sources: bool = False):
+    if not skip_sources:
+        target_sources = "target_sources(${PROJECT_NAME} PUBLIC"
+        write_all_source_file_lists(cm_fh, scope, target_sources, indent=indent, footer=")")
+
+    write_include_paths(
+        cm_fh, scope, f"target_include_directories(${{PROJECT_NAME}} PUBLIC", indent=indent, footer=")"
+    )
+    write_defines(
+        cm_fh, scope, f"target_compile_definitions(${{PROJECT_NAME}} PUBLIC", indent=indent, footer=")"
+    )
+    (public_libs, private_libs) = extract_cmake_libraries(scope)
+    write_list(
+        cm_fh,
+        private_libs,
+        "",
+        indent=indent,
+        header=f"target_link_libraries(${{PROJECT_NAME}} PRIVATE\n",
+        footer=")",
+    )
+    write_list(
+        cm_fh,
+        public_libs,
+        "",
+        indent=indent,
+        header=f"target_link_libraries(${{PROJECT_NAME}} PUBLIC\n",
+        footer=")",
+    )
+    write_compile_options(
+        cm_fh, scope, f"target_compile_options(${{PROJECT_NAME}}", indent=indent, footer=")"
+    )
+
+
+def handle_config_test_project(scope: Scope, cm_fh: IO[str]):
+    project_name = os.path.splitext(os.path.basename(scope.file_absolute_path))[0]
+    content = (
+        f"cmake_minimum_required(VERSION 3.14.0)\n"
+        f"project(config_test_{project_name} LANGUAGES CXX)\n"
+    )
+    cm_fh.write(f"{content}\n")
+
+    # Remove default QT libs.
+    scope._append_operation("QT", RemoveOperation(["core", "gui"]))
+
+    config = scope.get("CONFIG")
+    gui = all(val not in config for val in ["console", "cmdline"])
+
+    add_target = f'add_executable(${{PROJECT_NAME}}'
+
+    if gui:
+        add_target += " WIN32 MACOSX_BUNDLE"
+
+    temp_buffer = io.StringIO()
+    write_all_source_file_lists(temp_buffer, scope, add_target, indent=0)
+    buffer_value = temp_buffer.getvalue()
+
+    if buffer_value:
+        cm_fh.write(buffer_value)
+    else:
+        cm_fh.write(add_target)
+    cm_fh.write(")\n")
+
+    indent = 0
+    write_regular_cmake_target_scope_section(scope, cm_fh, indent, skip_sources=True)
+
+    recursive_evaluate_scope(scope)
+    scopes = flatten_scopes(scope)
+    scopes = merge_scopes(scopes)
+
+    assert len(scopes)
+    assert scopes[0].total_condition == "ON"
+
+    for c in scopes[1:]:
+        extend_scope_io_string = io.StringIO()
+        write_regular_cmake_target_scope_section(c, extend_scope_io_string, indent=indent+1)
+        extend_string = extend_scope_io_string.getvalue()
+
+        if extend_string:
+            extend_scope = (
+                f"\nif({map_to_cmake_condition(c.total_condition)})\n"
+                f"{extend_string}"
+                f"endif()\n"
+            )
+            cm_fh.write(extend_scope)
+
+
 def cmakeify_scope(
     scope: Scope, cm_fh: IO[str], *, indent: int = 0, is_example: bool = False
 ) -> None:
@@ -3111,6 +3215,8 @@ def cmakeify_scope(
     # Same for top-level tests.
     elif is_top_level_repo_tests_project(scope.file_absolute_path):
         handle_top_level_repo_tests_project(scope, temp_buffer)
+    elif is_config_test_project(scope.file_absolute_path):
+        handle_config_test_project(scope, temp_buffer)
     elif template == "subdirs":
         handle_subdir(scope, temp_buffer, indent=indent, is_example=is_example)
     elif template in ("app", "lib"):
@@ -3182,6 +3288,21 @@ def should_convert_project(project_file_path: str = "") -> bool:
 
     # Skip qmake testdata projects.
     if project_relative_path.startswith("tests/auto/tools/qmake/testdata"):
+        return False
+
+    # Skip certain config tests.
+    config_tests = [
+        # Relative to qtbase/config.tests
+        "arch/arch.pro",
+        "avx512/avx512.pro",
+        "stl/stl.pro",
+        "verifyspec/verifyspec.pro",
+        "x86_simd/x86_simd.pro",
+        # Relative to repo src dir
+        "config.tests/hostcompiler/hostcompiler.pro",
+    ]
+    skip_certain_tests = any(project_relative_path.startswith(c) for c in config_tests)
+    if skip_certain_tests:
         return False
 
     return True
