@@ -291,14 +291,12 @@ void QSpacerItem::changeSize(int w, int h, QSizePolicy::Policy hPolicy,
 /*!
     Destructor.
 */
-QWidgetItem::~QWidgetItem() {}
+QWidgetItem::~QWidgetItem() = default;
 
 /*!
     Destroys the QLayoutItem.
 */
-QLayoutItem::~QLayoutItem()
-{
-}
+QLayoutItem::~QLayoutItem() = default;
 
 /*!
     Invalidates any cached information in this layout item.
@@ -362,7 +360,11 @@ QSpacerItem * QSpacerItem::spacerItem()
 
     \sa layout(), spacerItem()
 */
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QWidget *QLayoutItem::widget()
+#else
+QWidget *QLayoutItem::widget() const
+#endif
 {
     return nullptr;
 }
@@ -370,7 +372,11 @@ QWidget *QLayoutItem::widget()
 /*!
     Returns the widget managed by this item.
 */
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QWidget *QWidgetItem::widget()
+#else
+QWidget *QWidgetItem::widget() const
+#endif
 {
     return wid;
 }
