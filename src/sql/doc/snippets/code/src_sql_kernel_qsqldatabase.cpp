@@ -79,7 +79,7 @@ QSqlDatabase db = QSqlDatabase::addDatabase("MYDRIVER");
 //! [3]
 ...
 db = QSqlDatabase::addDatabase("QODBC");
-db.setDatabaseName("DRIVER={Microsoft Access Driver (*.mdb)};FIL={MS Access};DBQ=myaccessfile.mdb");
+db.setDatabaseName("DRIVER={Microsoft Access Driver (*.mdb, *.accdb)};FIL={MS Access};DBQ=myaccessfile.mdb");
 if (db.open()) {
     // success!
 }
