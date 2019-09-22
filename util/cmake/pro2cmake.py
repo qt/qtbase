@@ -1098,7 +1098,7 @@ class Scope(object):
         if not isinstance(value, str):
             return value
 
-        pattern = re.compile(r"\$\$\(?([A-Za-z_][A-Za-z0-9_]*)\)?")
+        pattern = re.compile(r"\$\$\(([A-Za-z_][A-Za-z0-9_]*)\)")
         match = re.search(pattern, value)
         if match:
             value = re.sub(pattern, r"$ENV{\1}", value)
