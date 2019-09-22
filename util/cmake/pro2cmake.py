@@ -631,22 +631,8 @@ def handle_function_value(group: pp.ParseResults):
     if isinstance(function_args, pp.ParseResults):
         function_args = list(flatten_list(function_args.asList()))
 
-    # Return the whole expression as a string.
-    if function_name in [
-        "join",
-        "files",
-        "cmakeRelativePath",
-        "shell_quote",
-        "shadowed",
-        "cmakeTargetPath",
-        "shell_path",
-        "cmakeProcessLibs",
-        "cmakeTargetPaths",
-        "cmakePortablePaths",
-        "escape_expand",
-        "member",
-    ]:
-        return f"join({''.join(function_args)})"
+    # For other functions, return the whole expression as a string.
+    return f"$${function_name}({' '.join(function_args)})"
 
 
 class Operation:
@@ -2178,7 +2164,7 @@ def simplify_condition(condition: str) -> str:
         condition = condition.replace("True", "ON")
         condition = condition.replace("False", "OFF")
         condition = condition.replace("_dash_", "-")
-    except (SympifyError, TypeError):
+    except (SympifyError, TypeError, AttributeError):
         # sympy did not like our input, so leave this condition alone:
         condition = input_condition
 
