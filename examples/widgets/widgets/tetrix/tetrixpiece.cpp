@@ -62,7 +62,7 @@ void TetrixPiece::setRandomShape()
 //! [1]
 void TetrixPiece::setShape(TetrixShape shape)
 {
-    static const int coordsTable[8][4][2] = {
+    static constexpr int coordsTable[8][4][2] = {
         { { 0, 0 },   { 0, 0 },   { 0, 0 },   { 0, 0 } },
         { { 0, -1 },  { 0, 0 },   { -1, 0 },  { -1, 1 } },
         { { 0, -1 },  { 0, 0 },   { 1, 0 },   { 1, 1 } },

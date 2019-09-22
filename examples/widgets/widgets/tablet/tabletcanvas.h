@@ -51,14 +51,13 @@
 #ifndef TABLETCANVAS_H
 #define TABLETCANVAS_H
 
-#include <QWidget>
+#include <QBrush>
+#include <QColor>
+#include <QPen>
 #include <QPixmap>
 #include <QPoint>
 #include <QTabletEvent>
-#include <QColor>
-#include <QBrush>
-#include <QPen>
-#include <QPoint>
+#include <QWidget>
 
 QT_BEGIN_NAMESPACE
 class QPaintEvent;
@@ -92,8 +91,6 @@ public:
         { return m_color; }
     void setTabletDevice(QTabletEvent *event)
         { updateCursor(event); }
-    int maximum(int a, int b)
-        { return a > b ? a : b; }
 
 protected:
     void tabletEvent(QTabletEvent *event) override;
@@ -108,19 +105,19 @@ private:
     void updateBrush(const QTabletEvent *event);
     void updateCursor(const QTabletEvent *event);
 
-    Valuator m_alphaChannelValuator;
-    Valuator m_colorSaturationValuator;
-    Valuator m_lineWidthValuator;
-    QColor m_color;
+    Valuator m_alphaChannelValuator = TangentialPressureValuator;
+    Valuator m_colorSaturationValuator = NoValuator;
+    Valuator m_lineWidthValuator = PressureValuator;
+    QColor m_color = Qt::red;
     QPixmap m_pixmap;
     QBrush m_brush;
     QPen m_pen;
-    bool m_deviceDown;
+    bool m_deviceDown = false;
 
     struct Point {
         QPointF pos;
-        qreal pressure;
-        qreal rotation;
+        qreal pressure = 0;
+        qreal rotation = 0;
     } lastPoint;
 };
 //! [0]

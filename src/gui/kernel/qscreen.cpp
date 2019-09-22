@@ -700,6 +700,25 @@ void QScreenPrivate::updatePrimaryOrientation()
 }
 
 /*!
+    Returns the screen at \a point within the set of \l QScreen::virtualSiblings(),
+    or \c nullptr if outside of any screen.
+
+    The \a point is in relation to the virtualGeometry() of each set of virtual
+    siblings.
+
+    \since 5.15
+*/
+QScreen *QScreen::virtualSiblingAt(const QPoint &point)
+{
+    const auto &siblings = virtualSiblings();
+    for (QScreen *sibling : siblings) {
+        if (sibling->geometry().contains(point))
+            return sibling;
+    }
+    return nullptr;
+}
+
+/*!
     Creates and returns a pixmap constructed by grabbing the contents
     of the given \a window restricted by QRect(\a x, \a y, \a width,
     \a height).

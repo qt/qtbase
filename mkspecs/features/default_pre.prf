@@ -26,4 +26,10 @@ CONFIG = \
     unset(today)
 }
 
+CONFIG(debug, debug|release) {
+    DEFINES += $$DEFINES_DEBUG
+} else {
+    DEFINES += $$DEFINES_RELEASE
+}
+
 load(toolchain)

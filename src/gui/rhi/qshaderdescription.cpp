@@ -1022,7 +1022,7 @@ void QShaderDescriptionPrivate::loadDoc(const QJsonDocument &doc)
         return;
     }
 
-    Q_ASSERT(ref.load() == 1); // must be detached
+    Q_ASSERT(ref.loadRelaxed() == 1); // must be detached
 
     inVars.clear();
     outVars.clear();

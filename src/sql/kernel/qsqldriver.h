@@ -135,7 +135,10 @@ public Q_SLOTS:
     virtual bool cancelQuery();
 
 Q_SIGNALS:
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use the 3-args version of notification() instead.")
     void notification(const QString &name);
+#endif
     void notification(const QString &name, QSqlDriver::NotificationSource source, const QVariant &payload);
 
 protected:

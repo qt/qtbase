@@ -110,6 +110,9 @@ QSqlDriver::~QSqlDriver()
     that the driver subscribes to. \a name identifies the event notification.
 
     \sa subscribeToNotification()
+
+    \obsolete use QSqlDriver::notification(const QString &name, QSqlDriver::NotificationSource source, const QVariant &payload)
+              instead
 */
 
 /*!

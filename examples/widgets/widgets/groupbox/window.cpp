@@ -48,9 +48,14 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "window.h"
+
+#include <QCheckBox>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QMenu>
+#include <QPushButton>
+#include <QRadioButton>
 
 //! [0]
 Window::Window(QWidget *parent)

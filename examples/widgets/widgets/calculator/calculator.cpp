@@ -48,21 +48,18 @@
 **
 ****************************************************************************/
 
-#include "button.h"
 #include "calculator.h"
+#include "button.h"
 
-#include <QtWidgets>
-
-#include <cmath>
+#include <QGridLayout>
+#include <QLineEdit>
+#include <QtMath>
 
 //! [0]
 Calculator::Calculator(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), sumInMemory(0.0), sumSoFar(0.0)
+    , factorSoFar(0.0), waitingForOperand(true)
 {
-    sumInMemory = 0.0;
-    sumSoFar = 0.0;
-    factorSoFar = 0.0;
-    waitingForOperand = true;
 //! [0]
 
 //! [1]
@@ -78,9 +75,8 @@ Calculator::Calculator(QWidget *parent)
 //! [2]
 
 //! [4]
-    for (int i = 0; i < NumDigitButtons; ++i) {
+    for (int i = 0; i < NumDigitButtons; ++i)
         digitButtons[i] = createButton(QString::number(i), SLOT(digitClicked()));
-    }
 
     Button *pointButton = createButton(tr("."), SLOT(pointClicked()));
     Button *changeSignButton = createButton(tr("\302\261"), SLOT(changeSignClicked()));
@@ -194,6 +190,8 @@ void Calculator::additiveOperatorClicked()
 //! [10] //! [11]
 {
     Button *clickedButton = qobject_cast<Button *>(sender());
+    if (!clickedButton)
+      return;
     QString clickedOperator = clickedButton->text();
     double operand = display->text().toDouble();
 
@@ -233,6 +231,8 @@ void Calculator::additiveOperatorClicked()
 void Calculator::multiplicativeOperatorClicked()
 {
     Button *clickedButton = qobject_cast<Button *>(sender());
+    if (!clickedButton)
+      return;
     QString clickedOperator = clickedButton->text();
     double operand = display->text().toDouble();
 

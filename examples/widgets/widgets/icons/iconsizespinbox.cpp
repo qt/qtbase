@@ -50,7 +50,7 @@
 
 #include "iconsizespinbox.h"
 
-#include <QtWidgets>
+#include <QRegularExpression>
 
 //! [0]
 IconSizeSpinBox::IconSizeSpinBox(QWidget *parent)

@@ -58,8 +58,7 @@
 #include <QtCore/qdiriterator.h>
 #include <QtCore/qtemporarydir.h>
 #include <QtCore/qthread.h>
-#include <QtCore/qwaitcondition.h>
-#include <QtCore/qmutex.h>
+#include <QtCore/private/qlocking_p.h>
 
 #include <QtCore/qtestsupport_core.h>
 
@@ -85,6 +84,9 @@
 #include <cmath>
 #include <numeric>
 #include <algorithm>
+#include <condition_variable>
+#include <mutex>
+#include <chrono>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -406,7 +408,7 @@ int Q_TESTLIB_EXPORT defaultKeyDelay()
     return keyDelay;
 }
 #if QT_CONFIG(thread)
-static int defaultTimeout()
+static std::chrono::milliseconds defaultTimeout()
 {
     if (timeout == -1) {
         bool ok = false;
@@ -415,7 +417,7 @@ static int defaultTimeout()
         if (!ok || timeout <= 0)
             timeout = 5*60*1000;
     }
-    return timeout;
+    return std::chrono::milliseconds{timeout};
 }
 #endif
 
@@ -1008,53 +1010,81 @@ void TestMethods::invokeTestOnData(int index) const
 
 class WatchDog : public QThread
 {
+    enum Expectation {
+        ThreadStart,
+        TestFunctionStart,
+        TestFunctionEnd,
+        ThreadEnd,
+    };
+
+    bool waitFor(std::unique_lock<std::mutex> &m, Expectation e) {
+        auto expectation = [this, e] { return expecting != e; };
+        switch (e) {
+        case TestFunctionEnd:
+            return waitCondition.wait_for(m, defaultTimeout(), expectation);
+        case ThreadStart:
+        case ThreadEnd:
+        case TestFunctionStart:
+            waitCondition.wait(m, expectation);
+            return true;
+        }
+        Q_UNREACHABLE();
+        return false;
+    }
+
 public:
     WatchDog()
     {
-        QMutexLocker locker(&mutex);
-        timeout.storeRelaxed(-1);
+        std::unique_lock<std::mutex> locker(mutex);
+        expecting = ThreadStart;
         start();
-        waitCondition.wait(&mutex);
+        waitFor(locker, ThreadStart);
     }
     ~WatchDog() {
         {
-            QMutexLocker locker(&mutex);
-            timeout.storeRelaxed(0);
-            waitCondition.wakeAll();
+            const auto locker = qt_scoped_lock(mutex);
+            expecting = ThreadEnd;
+            waitCondition.notify_all();
         }
         wait();
     }
 
     void beginTest() {
-        QMutexLocker locker(&mutex);
-        timeout.storeRelaxed(defaultTimeout());
-        waitCondition.wakeAll();
+        const auto locker = qt_scoped_lock(mutex);
+        expecting = TestFunctionEnd;
+        waitCondition.notify_all();
     }
 
     void testFinished() {
-        QMutexLocker locker(&mutex);
-        timeout.storeRelaxed(-1);
-        waitCondition.wakeAll();
+        const auto locker = qt_scoped_lock(mutex);
+        expecting = TestFunctionStart;
+        waitCondition.notify_all();
     }
 
     void run() override {
-        QMutexLocker locker(&mutex);
-        waitCondition.wakeAll();
+        std::unique_lock<std::mutex> locker(mutex);
+        expecting = TestFunctionStart;
+        waitCondition.notify_all();
         while (true) {
-            int t = timeout.loadRelaxed();
-            if (!t)
-                break;
-            if (Q_UNLIKELY(!waitCondition.wait(&mutex, t))) {
-                stackTrace();
-                qFatal("Test function timed out");
+            switch (expecting) {
+            case ThreadEnd:
+                return;
+            case ThreadStart:
+                Q_UNREACHABLE();
+            case TestFunctionStart:
+            case TestFunctionEnd:
+                if (Q_UNLIKELY(!waitFor(locker, expecting))) {
+                    stackTrace();
+                    qFatal("Test function timed out");
+                }
             }
         }
     }
 
 private:
-    QBasicAtomicInt timeout;
-    QMutex mutex;
-    QWaitCondition waitCondition;
+    std::mutex mutex;
+    std::condition_variable waitCondition;
+    Expectation expecting;
 };
 
 #else // !QT_CONFIG(thread)
