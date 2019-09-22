@@ -50,7 +50,9 @@
 
 #include "analogclock.h"
 
-#include <QtWidgets>
+#include <QPainter>
+#include <QTime>
+#include <QTimer>
 
 //! [0] //! [1]
 AnalogClock::AnalogClock(QWidget *parent)

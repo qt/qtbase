@@ -50,8 +50,6 @@
 
 #include "tabletapplication.h"
 
-#include <QtWidgets>
-
 //! [0]
 bool TabletApplication::event(QEvent *event)
 {

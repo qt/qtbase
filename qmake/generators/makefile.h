@@ -86,7 +86,8 @@ protected:
     QString resolveDependency(const QDir &outDir, const QString &file);
     void callExtraCompilerDependCommand(const ProString &extraCompiler, const QString &dep_cd_cmd,
                                         const QString &tmp_dep_cmd, const QString &inpf,
-                                        const QString &tmp_out, bool dep_lines, QStringList *deps);
+                                        const QString &tmp_out, bool dep_lines, QStringList *deps,
+                                        bool existingDepsOnly);
     void writeExtraCompilerTargets(QTextStream &t);
     void writeExtraCompilerVariables(QTextStream &t);
     bool writeDummyMakefile(QTextStream &t);

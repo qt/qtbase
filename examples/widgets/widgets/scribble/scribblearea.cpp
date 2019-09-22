@@ -50,7 +50,9 @@
 
 #include "scribblearea.h"
 
-#include <QtWidgets>
+#include <QMouseEvent>
+#include <QPainter>
+
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #if QT_CONFIG(printdialog)
@@ -64,10 +66,6 @@ ScribbleArea::ScribbleArea(QWidget *parent)
     : QWidget(parent)
 {
     setAttribute(Qt::WA_StaticContents);
-    modified = false;
-    scribbling = false;
-    myPenWidth = 1;
-    myPenColor = Qt::blue;
 }
 //! [0]
 
@@ -98,9 +96,8 @@ bool ScribbleArea::saveImage(const QString &fileName, const char *fileFormat)
     if (visibleImage.save(fileName, fileFormat)) {
         modified = false;
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 //! [4]
 

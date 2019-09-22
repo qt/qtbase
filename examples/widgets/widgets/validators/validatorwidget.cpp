@@ -50,7 +50,7 @@
 
 #include "validatorwidget.h"
 
-#include <QtWidgets>
+#include <QIntValidator>
 
 ValidatorWidget::ValidatorWidget(QWidget *parent)
     : QWidget(parent)

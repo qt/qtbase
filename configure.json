@@ -766,7 +766,7 @@
         "debug_and_release": {
             "label": "Compile libs in debug and release mode",
             "autoDetect": "input.debug == ''",
-            "condition": "config.darwin || config.win32",
+            "condition": "config.darwin || (config.win32 && !config.gcc)",
             "output": [ "publicFeature", "publicQtConfig", "debugAndRelease" ]
         },
         "force_debug_info": {

@@ -1692,7 +1692,12 @@ void QPSQLDriver::_q_handleNotification(int)
             if (notify->extra)
                 payload = d->isUtf8 ? QString::fromUtf8(notify->extra) : QString::fromLatin1(notify->extra);
 #endif
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
             emit notification(name);
+QT_WARNING_POP
+#endif
             QSqlDriver::NotificationSource source = (notify->be_pid == PQbackendPID(d->connection)) ? QSqlDriver::SelfSource : QSqlDriver::OtherSource;
             emit notification(name, source, payload);
         }

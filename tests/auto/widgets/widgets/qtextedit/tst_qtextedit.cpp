@@ -1978,8 +1978,23 @@ void tst_QTextEdit::fullWidthSelection_data()
 #endif
 
 #ifdef QT_BUILD_INTERNAL
+
+// With the fix for QTBUG-78318 scaling of documentMargin is added. The testing framework
+// forces qt_defaultDpi() to always return 96 DPI. For systems where the actual DPI differs
+// (typically 72 DPI) this would now cause scaling of the documentMargin when
+// drawing QTextEdit into QImage. In order to avoid the need of multiple reference PNGs
+// for comparison we disable the Qt::AA_Use96Dpi attribute for these tests.
+
+struct ForceSystemDpiHelper {
+  ForceSystemDpiHelper() { QCoreApplication::setAttribute(Qt::AA_Use96Dpi, false); }
+  ~ForceSystemDpiHelper() { QCoreApplication::setAttribute(Qt::AA_Use96Dpi, old); }
+  bool old = QCoreApplication::testAttribute(Qt::AA_Use96Dpi);
+};
+
 void tst_QTextEdit::fullWidthSelection()
 {
+    ForceSystemDpiHelper useSystemDpi;
+
     QFETCH(int, cursorFrom);
     QFETCH(int, cursorTo);
     QFETCH(QString, imageFileName);
@@ -2048,6 +2063,8 @@ void tst_QTextEdit::fullWidthSelection()
 #ifdef QT_BUILD_INTERNAL
 void tst_QTextEdit::fullWidthSelection2()
 {
+    ForceSystemDpiHelper useSystemDpi;
+
     QPalette myPalette;
     myPalette.setColor(QPalette::All, QPalette::HighlightedText, QColor(0,0,0,0));
     myPalette.setColor(QPalette::All, QPalette::Highlight, QColor(239,221,85));

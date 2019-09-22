@@ -50,11 +50,14 @@
 
 #include "characterwidget.h"
 
-#include <QtWidgets>
+#include <QFontDatabase>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QToolTip>
 
 //! [0]
 CharacterWidget::CharacterWidget(QWidget *parent)
-    : QWidget(parent), columns(16), lastKey(-1)
+    : QWidget(parent)
 {
     calculateSquareSize();
     setMouseTracking(true);
@@ -110,7 +113,7 @@ void CharacterWidget::calculateSquareSize()
 //! [3]
 QSize CharacterWidget::sizeHint() const
 {
-    return QSize(columns*squareSize, (65536/columns)*squareSize);
+    return QSize(columns*squareSize, (65536 / columns) * squareSize);
 }
 //! [3]
 
@@ -118,7 +121,7 @@ QSize CharacterWidget::sizeHint() const
 void CharacterWidget::mouseMoveEvent(QMouseEvent *event)
 {
     QPoint widgetPosition = mapFromGlobal(event->globalPos());
-    uint key = (widgetPosition.y()/squareSize)*columns + widgetPosition.x()/squareSize;
+    uint key = (widgetPosition.y() / squareSize) * columns + widgetPosition.x() / squareSize;
 
     QString text = QString::fromLatin1("<p>Character: <span style=\"font-size: 24pt; font-family: %1\">").arg(displayFont.family())
                   + QChar(key)
@@ -132,7 +135,7 @@ void CharacterWidget::mouseMoveEvent(QMouseEvent *event)
 void CharacterWidget::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
-        lastKey = (event->y()/squareSize)*columns + event->x()/squareSize;
+        lastKey = (event->y() / squareSize) * columns + event->x() / squareSize;
         if (QChar(lastKey).category() != QChar::Other_NotAssigned)
             emit characterSelected(QString(QChar(lastKey)));
         update();
@@ -152,17 +155,17 @@ void CharacterWidget::paintEvent(QPaintEvent *event)
 
 //! [7]
     QRect redrawRect = event->rect();
-    int beginRow = redrawRect.top()/squareSize;
-    int endRow = redrawRect.bottom()/squareSize;
-    int beginColumn = redrawRect.left()/squareSize;
-    int endColumn = redrawRect.right()/squareSize;
+    int beginRow = redrawRect.top() / squareSize;
+    int endRow = redrawRect.bottom() / squareSize;
+    int beginColumn = redrawRect.left() / squareSize;
+    int endColumn = redrawRect.right() / squareSize;
 //! [7]
 
 //! [8]
     painter.setPen(QPen(Qt::gray));
     for (int row = beginRow; row <= endRow; ++row) {
         for (int column = beginColumn; column <= endColumn; ++column) {
-            painter.drawRect(column*squareSize, row*squareSize, squareSize, squareSize);
+            painter.drawRect(column * squareSize, row * squareSize, squareSize, squareSize);
         }
 //! [8] //! [9]
     }
@@ -172,17 +175,17 @@ void CharacterWidget::paintEvent(QPaintEvent *event)
     QFontMetrics fontMetrics(displayFont);
     painter.setPen(QPen(Qt::black));
     for (int row = beginRow; row <= endRow; ++row) {
-
         for (int column = beginColumn; column <= endColumn; ++column) {
-
-            int key = row*columns + column;
-            painter.setClipRect(column*squareSize, row*squareSize, squareSize, squareSize);
+            int key = row * columns + column;
+            painter.setClipRect(column * squareSize, row * squareSize, squareSize, squareSize);
 
             if (key == lastKey)
-                painter.fillRect(column*squareSize + 1, row*squareSize + 1, squareSize, squareSize, QBrush(Qt::red));
+                painter.fillRect(column * squareSize + 1, row * squareSize + 1,
+                                 squareSize, squareSize, QBrush(Qt::red));
 
-            painter.drawText(column*squareSize + (squareSize / 2) - fontMetrics.horizontalAdvance(QChar(key))/2,
-                             row*squareSize + 4 + fontMetrics.ascent(),
+            painter.drawText(column * squareSize + (squareSize / 2) -
+                                 fontMetrics.horizontalAdvance(QChar(key)) / 2,
+                             row * squareSize + 4 + fontMetrics.ascent(),
                              QString(QChar(key)));
         }
     }

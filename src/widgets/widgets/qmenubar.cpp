@@ -324,15 +324,10 @@ void QMenuBarPrivate::popupAction(QAction *action, bool activateFirst)
         QPoint pos(q->mapToGlobal(QPoint(adjustedActionRect.left(), adjustedActionRect.bottom() + 1)));
         QSize popup_size = activeMenu->sizeHint();
         //we put the popup menu on the screen containing the bottom-center of the action rect
-        QScreen *popupScreen = q->window()->windowHandle()->screen();
-        QPoint bottomMiddlePos = pos + QPoint(adjustedActionRect.width() / 2, 0);
-        const auto &siblings = popupScreen->virtualSiblings();
-        for (QScreen *sibling : siblings) {
-            if (sibling->geometry().contains(bottomMiddlePos)) {
-                popupScreen = sibling;
-                break;
-            }
-        }
+        QScreen *menubarScreen = q->window()->windowHandle()->screen();
+        QScreen *popupScreen = menubarScreen->virtualSiblingAt(pos + QPoint(adjustedActionRect.width() / 2, 0));
+        if (!popupScreen)
+            popupScreen = menubarScreen;
         QRect screenRect = popupScreen->geometry();
         pos = QPoint(qMax(pos.x(), screenRect.x()), qMax(pos.y(), screenRect.y()));
         const bool fitUp = (pos.y() - popup_size.height() >= screenRect.top());

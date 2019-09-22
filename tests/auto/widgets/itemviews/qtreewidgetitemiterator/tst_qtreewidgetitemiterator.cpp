@@ -27,20 +27,19 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QTreeWidget>
+#include <QTreeWidgetItemIterator>
+#include <QTest>
 
-#include <qtreewidget.h>
-#include <qtreewidgetitemiterator.h>
-#include <qapplication.h>
-#include <qeventloop.h>
-#include <qdebug.h>
+Q_DECLARE_METATYPE(QTreeWidgetItemIterator::IteratorFlag)
+Q_DECLARE_METATYPE(QTreeWidgetItemIterator::IteratorFlags)
 
 class tst_QTreeWidgetItemIterator : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QTreeWidgetItemIterator();
+    using QObject::QObject;
 
 private slots:
     void initTestCase();
@@ -65,12 +64,8 @@ private slots:
     void initializeIterator();
     void sortingEnabled();
 private:
-    QTreeWidget *testWidget;
+    QTreeWidget *testWidget = nullptr;
 };
-
-tst_QTreeWidgetItemIterator::tst_QTreeWidgetItemIterator(): testWidget(0)
-{
-}
 
 void tst_QTreeWidgetItemIterator::initTestCase()
 {
@@ -90,7 +85,7 @@ void tst_QTreeWidgetItemIterator::initTestCase()
      *          |Qt::ItemIsDropEnabled
      *
      */
-    for (int i=0; i <= 16; ++i) {
+    for (int i = 0; i <= 16; ++i) {
         QTreeWidgetItem *top = new QTreeWidgetItem(testWidget);
         const QString topS = QLatin1String("top") + QString::number(i);
         top->setText(0, topS);
@@ -111,9 +106,7 @@ void tst_QTreeWidgetItemIterator::initTestCase()
             case 9:  top->setFlags(Qt::ItemIsEnabled);break;
 
             case 10:  top->setFlags(Qt::ItemIsEnabled);break;
-            case 11:
-                top->setFlags(0);
-                break;
+            case 11:  top->setFlags({});break;
 
             case 12:  top->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable);break;
             case 13:  top->setFlags(Qt::ItemIsEnabled);break;
@@ -142,7 +135,7 @@ void tst_QTreeWidgetItemIterator::initTestCase()
                 case 9:  child->setFlags(Qt::ItemIsEnabled);break;
 
                 case 10:  child->setFlags(Qt::ItemIsEnabled);break;
-                case 11:  child->setFlags(0);break;
+                case 11:  child->setFlags({});break;
 
                 case 12:  child->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable);break;
                 case 13:  child->setFlags(Qt::ItemIsEnabled);break;
@@ -188,10 +181,10 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
         NotEditable   = 0x00020000
 */
     QTest::addColumn<int>("start");
-    QTest::addColumn<int>("iteratorflags");
+    QTest::addColumn<QTreeWidgetItemIterator::IteratorFlags>("iteratorflags");
     QTest::addColumn<QStringList>("matches");
 
-    QTest::newRow("Match all") << 0 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Match all") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::All)
                                << (QStringList()
                                                                 << "top0"   << "top0,child0"  << "top0,child1"  << "top0,child2"  << "top0,child3"
                                                                             << "top0,child4"  << "top0,child5"  << "top0,child6"  << "top0,child7"
@@ -279,7 +272,7 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
                                                                             << "top16,child12" << "top16,child13" << "top16,child14" << "top16,child15"
                                                                             << "top16,child16");
 
-    QTest::newRow("Match hidden") << 0 << (int)QTreeWidgetItemIterator::Hidden
+    QTest::newRow("Match hidden") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::Hidden)
                                   << (QStringList()
                                                                 << "top0" << "top0,child0"  // fails due to hidden row
                                                                 << "top1,child0"
@@ -299,7 +292,7 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
                                                                 << "top15,child0"
                                       << "top16,child0");
 
-    QTest::newRow("Match not hidden") << 0 << (int)QTreeWidgetItemIterator::NotHidden
+    QTest::newRow("Match not hidden") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::NotHidden)
                                       << (QStringList()
                                                                             << "top0,child1"  << "top0,child2"  << "top0,child3"
                                                                             << "top0,child4"  << "top0,child5"  << "top0,child6"  << "top0,child7"
@@ -387,7 +380,7 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
                                                                             << "top16,child12" << "top16,child13" << "top16,child14" << "top16,child15"
                                                                             << "top16,child16");
 
-    QTest::newRow("Match selected") << 0 << (int)QTreeWidgetItemIterator::Selected
+    QTest::newRow("Match selected") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::Selected)
                                     << (QStringList()
                                                                 << "top0,child2"
                                                                 << "top1,child2"
@@ -407,7 +400,7 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
                                                                 << "top15,child2"
                                         << "top16,child2");
 
-    QTest::newRow("Match selectable") << 0 << (int)QTreeWidgetItemIterator::Selectable
+    QTest::newRow("Match selectable") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::Selectable)
                                       << (QStringList()
                                                                 << "top0"   << "top0,child0"  << "top0,child1"    << "top0,child2"  << "top0,child3"
                                                                             << "top0,child4"
@@ -479,7 +472,7 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
                                           << "top16,child16");
 
 
-    QTest::newRow("Match DragEnabled") << 0 << (int)QTreeWidgetItemIterator::DragEnabled
+    QTest::newRow("Match DragEnabled") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::DragEnabled)
                                        << (QStringList()
                                                                 << "top0"   << "top0,child0"  << "top0,child1"    << "top0,child2"  << "top0,child3"
                                                                             << "top0,child6"
@@ -550,7 +543,7 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
                                                                                                                   << "top16,child14" << "top16,child15"
                                            << "top16,child16");
 
-    QTest::newRow("Match DragDisabled") << 0 << (int)QTreeWidgetItemIterator::DragDisabled
+    QTest::newRow("Match DragDisabled") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::DragDisabled)
                                         << (QStringList()
 
                                                                 /* top0  */
@@ -623,7 +616,7 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
                                                                             << "top16,child13" );
 
 
-    QTest::newRow("Match DropEnabled") << 0 << (int)QTreeWidgetItemIterator::DropEnabled
+    QTest::newRow("Match DropEnabled") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::DropEnabled)
                                        << (QStringList()
                                                                 << "top0"   << "top0,child0"  << "top0,child1"    << "top0,child2"  << "top0,child3"
                                                                             << "top0,child8"
@@ -694,12 +687,12 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
                                                                                                                   << "top16,child14" << "top16,child15"
                                            << "top16,child16");
 
-    QTest::newRow("Match HasChildren") << 0 << (int)QTreeWidgetItemIterator::HasChildren
+    QTest::newRow("Match HasChildren") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::HasChildren)
                                        << (QStringList() << "top0" << "top1" << "top2" << "top3" << "top4" << "top5"
                                            << "top6" << "top7" << "top8" << "top9" << "top10" << "top11" << "top12"
                                            << "top13" << "top14" << "top15" << "top16");
 
-    QTest::newRow("Match Checked") << 0 << (int)QTreeWidgetItemIterator::Checked
+    QTest::newRow("Match Checked") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::Checked)
                                    << (QStringList()
                                                                             << "top0,child14"  << "top0,child16"
                                                                             << "top1,child14"  << "top1,child16"
@@ -721,7 +714,7 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
                                                                 << "top16"
                                        << "top16,child14" << "top16,child16");
 
-    QTest::newRow("Match NotChecked") << 0 << (int)QTreeWidgetItemIterator::NotChecked
+    QTest::newRow("Match NotChecked") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::NotChecked)
                                       << (QStringList()
                                                                 << "top0"   << "top0,child0"  << "top0,child1"  << "top0,child2"  << "top0,child3"
                                                                             << "top0,child4"  << "top0,child5"  << "top0,child6"  << "top0,child7"
@@ -810,7 +803,7 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
 
 
 
-    QTest::newRow("Match Disabled") << 0 << (int)QTreeWidgetItemIterator::Disabled
+    QTest::newRow("Match Disabled") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::Disabled)
                                     << (QStringList()
                                                                             << "top0,child11"
                                                                             << "top1,child11"
@@ -848,7 +841,7 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
                                                                             << "top15,child11"
                                         << "top16,child11");
 
-    QTest::newRow("Match Editable") << 0 << (int)QTreeWidgetItemIterator::Editable
+    QTest::newRow("Match Editable") << 0 << QTreeWidgetItemIterator::IteratorFlags(QTreeWidgetItemIterator::Editable)
                                     << (QStringList()
                                                                             << "top0,child12"
                                                                             << "top1,child12"
@@ -869,34 +862,34 @@ void tst_QTreeWidgetItemIterator::iteratorflags_data()
                                                                             << "top15,child12"
                                         << "top16,child12");
 
-    QTest::newRow("Match mutually exclusive Hidden|NotHidden") << 0 << (int)(QTreeWidgetItemIterator::Hidden|QTreeWidgetItemIterator::NotHidden)
+    QTest::newRow("Match mutually exclusive Hidden|NotHidden") << 0 << (QTreeWidgetItemIterator::Hidden|QTreeWidgetItemIterator::NotHidden)
                                                                << QStringList();
-    QTest::newRow("Match mutually exclusive Selected|Unselected") << 0 << (int)(QTreeWidgetItemIterator::Selected|QTreeWidgetItemIterator::Unselected)
+    QTest::newRow("Match mutually exclusive Selected|Unselected") << 0 << (QTreeWidgetItemIterator::Selected|QTreeWidgetItemIterator::Unselected)
                                                                   << QStringList();
-    QTest::newRow("Match mutually exclusive Selectable|NotSelectable") << 0 << (int)(QTreeWidgetItemIterator::Selectable|QTreeWidgetItemIterator::NotSelectable)
+    QTest::newRow("Match mutually exclusive Selectable|NotSelectable") << 0 << (QTreeWidgetItemIterator::Selectable|QTreeWidgetItemIterator::NotSelectable)
                                                                        << QStringList();
-    QTest::newRow("Match mutually exclusive DragEnabled|DragDisabled") << 0 << (int)(QTreeWidgetItemIterator::DragEnabled|QTreeWidgetItemIterator::DragDisabled)
+    QTest::newRow("Match mutually exclusive DragEnabled|DragDisabled") << 0 << (QTreeWidgetItemIterator::DragEnabled|QTreeWidgetItemIterator::DragDisabled)
                                                                        << QStringList();
-    QTest::newRow("Match mutually exclusive DropEnabled|DropDisabled") << 0 << (int)(QTreeWidgetItemIterator::DropEnabled|QTreeWidgetItemIterator::DropDisabled)
+    QTest::newRow("Match mutually exclusive DropEnabled|DropDisabled") << 0 << (QTreeWidgetItemIterator::DropEnabled|QTreeWidgetItemIterator::DropDisabled)
                                                                        << QStringList();
-    QTest::newRow("Match mutually exclusive HasChildren|NoChildren") << 0 << (int)(QTreeWidgetItemIterator::HasChildren|QTreeWidgetItemIterator::NoChildren)
+    QTest::newRow("Match mutually exclusive HasChildren|NoChildren") << 0 << (QTreeWidgetItemIterator::HasChildren|QTreeWidgetItemIterator::NoChildren)
                                                                      << QStringList();
-    QTest::newRow("Match mutually exclusive Checked|NotChecked") << 0 << (int)(QTreeWidgetItemIterator::Checked|QTreeWidgetItemIterator::NotChecked)
+    QTest::newRow("Match mutually exclusive Checked|NotChecked") << 0 << (QTreeWidgetItemIterator::Checked|QTreeWidgetItemIterator::NotChecked)
                                                                  << QStringList();
-    QTest::newRow("Match mutually exclusive Disabled|Enabled") << 0 << (int)(QTreeWidgetItemIterator::Disabled|QTreeWidgetItemIterator::Enabled)
+    QTest::newRow("Match mutually exclusive Disabled|Enabled") << 0 << (QTreeWidgetItemIterator::Disabled|QTreeWidgetItemIterator::Enabled)
                                                                << QStringList();
-    QTest::newRow("Match mutually exclusive Editable|NotEditable") << 0 << (int)(QTreeWidgetItemIterator::Editable|QTreeWidgetItemIterator::NotEditable)
+    QTest::newRow("Match mutually exclusive Editable|NotEditable") << 0 << (QTreeWidgetItemIterator::Editable|QTreeWidgetItemIterator::NotEditable)
                                                                    << QStringList();
 }
 
 void tst_QTreeWidgetItemIterator::iteratorflags()
 {
     QFETCH(int, start);
-    QFETCH(int, iteratorflags);
+    QFETCH(QTreeWidgetItemIterator::IteratorFlags, iteratorflags);
     QFETCH(QStringList, matches);
 
-    QTreeWidgetItemIterator it(testWidget, QTreeWidgetItemIterator::IteratorFlags(iteratorflags));
-    it+=start;
+    QTreeWidgetItemIterator it(testWidget, iteratorflags);
+    it += start;
     int iMatch = 0;
     while (*it && iMatch < matches.count()) {
         QTreeWidgetItem *item = *it;
@@ -953,26 +946,26 @@ void tst_QTreeWidgetItemIterator::plus_eq_data()
 {
     QTest::addColumn<int>("start");
     QTest::addColumn<int>("addition");
-    QTest::addColumn<int>("iteratorflags");
+    QTest::addColumn<QTreeWidgetItemIterator::IteratorFlag>("iteratorflags");
     QTest::addColumn<QString>("expecteditem");
 
-    QTest::newRow("+=0") << 0 << 0 << (int)QTreeWidgetItemIterator::All << QString("top0");
-    QTest::newRow("+=1") << 0 << 1 << (int)QTreeWidgetItemIterator::All << QString("top0,child0");
-    QTest::newRow("+=2") << 0 << 2 << (int)QTreeWidgetItemIterator::All << QString("top0,child1");
-    QTest::newRow("+=(-1)") << 1 << -1 << (int)QTreeWidgetItemIterator::All << QString("top0");
-    QTest::newRow("+=(-2)") << 3 << -2 << (int)QTreeWidgetItemIterator::All << QString("top0,child0");
+    QTest::newRow("+=0") << 0 << 0 << QTreeWidgetItemIterator::All << QString("top0");
+    QTest::newRow("+=1") << 0 << 1 << QTreeWidgetItemIterator::All << QString("top0,child0");
+    QTest::newRow("+=2") << 0 << 2 << QTreeWidgetItemIterator::All << QString("top0,child1");
+    QTest::newRow("+=(-1)") << 1 << -1 << QTreeWidgetItemIterator::All << QString("top0");
+    QTest::newRow("+=(-2)") << 3 << -2 << QTreeWidgetItemIterator::All << QString("top0,child0");
 }
 
 void tst_QTreeWidgetItemIterator::plus_eq()
 {
     QFETCH(int, start);
     QFETCH(int, addition);
-    QFETCH(int, iteratorflags);
+    QFETCH(QTreeWidgetItemIterator::IteratorFlag, iteratorflags);
     QFETCH(QString, expecteditem);
 
-    QTreeWidgetItemIterator it(testWidget, QTreeWidgetItemIterator::IteratorFlags(iteratorflags));
-    it+=start;
-    it+=addition;
+    QTreeWidgetItemIterator it(testWidget, iteratorflags);
+    it += start;
+    it += addition;
     QTreeWidgetItem *item = *it;
 
     QVERIFY(item);
@@ -984,28 +977,28 @@ void tst_QTreeWidgetItemIterator::minus_eq_data()
 {
     QTest::addColumn<int>("start");
     QTest::addColumn<int>("subtraction");
-    QTest::addColumn<int>("iteratorflags");
+    QTest::addColumn<QTreeWidgetItemIterator::IteratorFlag>("iteratorflags");
     QTest::addColumn<QString>("expecteditem");
 
-    QTest::newRow("0-=0") << 0 << 0 << (int)QTreeWidgetItemIterator::All << QString("top0");
-    QTest::newRow("2-=1") << 2 << 1 << (int)QTreeWidgetItemIterator::All << QString("top0,child0");
-    QTest::newRow("4-=2") << 4 << 2 << (int)QTreeWidgetItemIterator::All << QString("top0,child1");
-    QTest::newRow("0-=(-1)") << 0 << -1 << (int)QTreeWidgetItemIterator::All << QString("top0,child0");
-    QTest::newRow("0-=(-2)") << 0 << -2 << (int)QTreeWidgetItemIterator::All << QString("top0,child1");
-    QTest::newRow("18-=1") << 18 << 1 << (int)QTreeWidgetItemIterator::All << QString("top0,child16");
-    QTest::newRow("1-=1") << 1 << 1 << (int)QTreeWidgetItemIterator::All << QString("top0");
+    QTest::newRow("0-=0") << 0 << 0 << QTreeWidgetItemIterator::All << QString("top0");
+    QTest::newRow("2-=1") << 2 << 1 << QTreeWidgetItemIterator::All << QString("top0,child0");
+    QTest::newRow("4-=2") << 4 << 2 << QTreeWidgetItemIterator::All << QString("top0,child1");
+    QTest::newRow("0-=(-1)") << 0 << -1 << QTreeWidgetItemIterator::All << QString("top0,child0");
+    QTest::newRow("0-=(-2)") << 0 << -2 << QTreeWidgetItemIterator::All << QString("top0,child1");
+    QTest::newRow("18-=1") << 18 << 1 << QTreeWidgetItemIterator::All << QString("top0,child16");
+    QTest::newRow("1-=1") << 1 << 1 << QTreeWidgetItemIterator::All << QString("top0");
 }
 
 void tst_QTreeWidgetItemIterator::minus_eq()
 {
     QFETCH(int, start);
     QFETCH(int, subtraction);
-    QFETCH(int, iteratorflags);
+    QFETCH(QTreeWidgetItemIterator::IteratorFlag, iteratorflags);
     QFETCH(QString, expecteditem);
 
-    QTreeWidgetItemIterator it(testWidget, QTreeWidgetItemIterator::IteratorFlags(iteratorflags));
-    it+=start;
-    it-=subtraction;
+    QTreeWidgetItemIterator it(testWidget, iteratorflags);
+    it += start;
+    it -= subtraction;
     QTreeWidgetItem *item = *it;
     // should be the first one
     QVERIFY(item);
@@ -1017,41 +1010,41 @@ void tst_QTreeWidgetItemIterator::updateIfModifiedFromWidget_data()
     QTest::addColumn<int>("topLevelItems");
     QTest::addColumn<int>("childItems");
     QTest::addColumn<int>("grandChildItems");
-    QTest::addColumn<int>("iteratorflags");
+    QTest::addColumn<QTreeWidgetItemIterator::IteratorFlag>("iteratorflags");
     QTest::addColumn<int>("removeindex");
     QTest::addColumn<int>("expecteditemindex");
     QTest::addColumn<QString>("expecteditemvalue");
     QTest::addColumn<QString>("expectedUpdatedCurrent");
     QTest::addColumn<int>("expecteditemIsNull");
 
-    QTest::newRow("Remove 3, check 1") << 3 << 3 << 0 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Remove 3, check 1") << 3 << 3 << 0 << QTreeWidgetItemIterator::All
                 << 3 << 1 << QString("top0,child0") << QString("top1") << 0;
-    QTest::newRow("Remove 1, check 0") << 3 << 3 << 0 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Remove 1, check 0") << 3 << 3 << 0 << QTreeWidgetItemIterator::All
                 << 1 << 0 << QString("top0") << QString("top0,child1") << 0;
-    QTest::newRow("Remove 2, check 2") << 3 << 3 << 0 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Remove 2, check 2") << 3 << 3 << 0 << QTreeWidgetItemIterator::All
                 << 2 << 2 << QString("top0,child2") << QString("top0,child2") << 0;
-    QTest::newRow("Remove 0, check 0") << 3 << 3 << 3 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Remove 0, check 0") << 3 << 3 << 3 << QTreeWidgetItemIterator::All
                 << 0 << 0 << QString("top1") << QString("top1") << 0;
-    QTest::newRow("Remove top1, check top1") << 3 << 3 << 3 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Remove top1, check top1") << 3 << 3 << 3 << QTreeWidgetItemIterator::All
                 << 13 << 13 << QString("top2") << QString("top2") << 0;
-    QTest::newRow("Remove top0, check top1") << 3 << 3 << 3 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Remove top0, check top1") << 3 << 3 << 3 << QTreeWidgetItemIterator::All
                 << 0 << 13 << QString("top1") << QString("top1") << 0;
-    QTest::newRow("Remove (top0,child1), check (top0,child1)") << 3 << 3 << 3 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Remove (top0,child1), check (top0,child1)") << 3 << 3 << 3 << QTreeWidgetItemIterator::All
                 << 5 << 5 << QString("top0,child2") << QString("top0,child2") << 0;
-    QTest::newRow("Remove (t0,c0) check (t0,c0)") << 3 << 3 << 3 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Remove (t0,c0) check (t0,c0)") << 3 << 3 << 3 << QTreeWidgetItemIterator::All
                 << 1 << 1 << QString("top0,child1") << QString("top0,child1") << 0;
-    QTest::newRow("Remove (t0,c1) check (t0,c1)") << 3 << 3 << 3 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Remove (t0,c1) check (t0,c1)") << 3 << 3 << 3 << QTreeWidgetItemIterator::All
                 << 5 << 5 << QString("top0,child2") << QString("top0,child2") << 0;
-    QTest::newRow("Remove (t0) check (t0,c1)") << 3 << 3 << 0 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Remove (t0) check (t0,c1)") << 3 << 3 << 0 << QTreeWidgetItemIterator::All
                 << 0 << 4 << QString("top1") << QString("top1") << 0;
-    QTest::newRow("Remove (t0) check (t0,c0,g1)") << 3 << 3 << 3 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Remove (t0) check (t0,c0,g1)") << 3 << 3 << 3 << QTreeWidgetItemIterator::All
                 << 0 << 3 << QString("top1") << QString("top1") << 0;
-    QTest::newRow("Remove (top2), check if top2 is null") << 3 << 3 << 3 << (int)QTreeWidgetItemIterator::All
+    QTest::newRow("Remove (top2), check if top2 is null") << 3 << 3 << 3 << QTreeWidgetItemIterator::All
                 << 2*13 << 2*13 << QString() << QString() << 1;
     QTest::newRow("Remove last item, check if iterator::current returns 0")
-                << 3 << 0 << 0 << (int)QTreeWidgetItemIterator::All << 2 << 2 << QString() << QString() << 1;
+                << 3 << 0 << 0 << QTreeWidgetItemIterator::All << 2 << 2 << QString() << QString() << 1;
     QTest::newRow("remove 1, iterator points to 3, should move to 1")
-                << 3 << 3 << 3 << (int)QTreeWidgetItemIterator::All << 1 << 3 << QString("top0,child1") << QString("top0,child1") << 0;
+                << 3 << 3 << 3 << QTreeWidgetItemIterator::All << 1 << 3 << QString("top0,child1") << QString("top0,child1") << 0;
 }
 
 static void populate3Levels(QTreeWidget &tw, int topLevelItems, int childItems, int grandChildItems)
@@ -1077,7 +1070,7 @@ void tst_QTreeWidgetItemIterator::updateIfModifiedFromWidget()
     QFETCH(int, topLevelItems);
     QFETCH(int, childItems);
     QFETCH(int, grandChildItems);
-    QFETCH(int, iteratorflags);
+    QFETCH(QTreeWidgetItemIterator::IteratorFlag, iteratorflags);
     QFETCH(int, removeindex);
     QFETCH(int, expecteditemindex);
     QFETCH(QString, expecteditemvalue);
@@ -1089,12 +1082,11 @@ void tst_QTreeWidgetItemIterator::updateIfModifiedFromWidget()
     tw.setColumnCount(2);
     populate3Levels(tw, topLevelItems, childItems, grandChildItems);
 
-    QTreeWidgetItemIterator it(&tw, QTreeWidgetItemIterator::IteratorFlags(iteratorflags));
+    QTreeWidgetItemIterator it(&tw, iteratorflags);
     it+=expecteditemindex;
-    QTreeWidgetItem *item = 0;
     QTreeWidgetItemIterator itRemove(&tw, QTreeWidgetItemIterator::IteratorFlags(iteratorflags));
     itRemove+=removeindex;
-    item = *itRemove;
+    QTreeWidgetItem *item = *itRemove;
     QVERIFY(item);
     delete item;
     item = *it;
@@ -1104,11 +1096,10 @@ void tst_QTreeWidgetItemIterator::updateIfModifiedFromWidget()
         QVERIFY(item);
         QCOMPARE(item->text(0), expecteditemvalue);
         item = *itRemove;
-        if (expectedUpdatedCurrent.isNull()) {
+        if (expectedUpdatedCurrent.isNull())
             QVERIFY(!item);
-        } else {
+        else
             QCOMPARE(item->text(0), expectedUpdatedCurrent);
-        }
     }
 }
 
@@ -1152,38 +1143,36 @@ void tst_QTreeWidgetItemIterator::updateIteratorAfterDeletedItem_and_ContinueIte
 
     QTreeWidgetItemIterator it(&tw, QTreeWidgetItemIterator::All);
     it += iterator_initial_index;
-    QTreeWidgetItem *item = 0;
     QTreeWidgetItemIterator itRemove(&tw, QTreeWidgetItemIterator::All);
     itRemove+=removeindex;
-    item = *itRemove;
+    QTreeWidgetItem *item = *itRemove;
     QVERIFY(item);
     delete item;
     it+=iterator_advance_after_removal;
-    if (iterator_new_value.isNull()) {
+    if (iterator_new_value.isNull())
         QCOMPARE((*it), nullptr);
-    } else {
+    else
         QCOMPARE((*it)->text(0), iterator_new_value);
-    }
 }
 
 void tst_QTreeWidgetItemIterator::constructIteratorWithItem_data()
 {
     QTest::addColumn<int>("indextoitem");
-    QTest::addColumn<int>("iteratorflags");
+    QTest::addColumn<QTreeWidgetItemIterator::IteratorFlag>("iteratorflags");
     QTest::addColumn<QString>("expecteditem");
 
-    QTest::newRow("index 0")            << 0 << 0 << QString("top0");
-    QTest::newRow("index 1")            << 1 << 0 << QString("top0,child0");
-    QTest::newRow("index 2")            << 2 << 0 << QString("top0,child1");
-    QTest::newRow("index 30")           << 30 << 0 << QString("top1,child11");
-    QTest::newRow("305 (last item)")    << 305 << 0 << QString("top16,child16");
-    QTest::newRow("index 0, advance to next matching node") << 0 << (int)QTreeWidgetItemIterator::NotHidden << QString("top0,child1");
+    QTest::newRow("index 0")            << 0 << QTreeWidgetItemIterator::All << QString("top0");
+    QTest::newRow("index 1")            << 1 << QTreeWidgetItemIterator::All << QString("top0,child0");
+    QTest::newRow("index 2")            << 2 << QTreeWidgetItemIterator::All << QString("top0,child1");
+    QTest::newRow("index 30")           << 30 << QTreeWidgetItemIterator::All << QString("top1,child11");
+    QTest::newRow("305 (last item)")    << 305 << QTreeWidgetItemIterator::All << QString("top16,child16");
+    QTest::newRow("index 0, advance to next matching node") << 0 << QTreeWidgetItemIterator::NotHidden << QString("top0,child1");
 }
 
 void tst_QTreeWidgetItemIterator::constructIteratorWithItem()
 {
     QFETCH(int, indextoitem);
-    QFETCH(int, iteratorflags);
+    QFETCH(QTreeWidgetItemIterator::IteratorFlag, iteratorflags);
     QFETCH(QString, expecteditem);
 
     QTreeWidgetItemIterator it(testWidget);

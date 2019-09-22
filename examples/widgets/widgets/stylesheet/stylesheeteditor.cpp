@@ -50,7 +50,9 @@
 
 #include "stylesheeteditor.h"
 
-#include <QtWidgets>
+#include <QFile>
+#include <QRegularExpression>
+#include <QStyleFactory>
 
 StyleSheetEditor::StyleSheetEditor(QWidget *parent)
     : QDialog(parent)

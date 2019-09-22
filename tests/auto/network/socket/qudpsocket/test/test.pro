@@ -6,7 +6,7 @@ QT = core network testlib
 
 MOC_DIR=tmp
 
-win32 {
+win32:debug_and_release {
   CONFIG(debug, debug|release) {
     DESTDIR = ../debug
 } else {

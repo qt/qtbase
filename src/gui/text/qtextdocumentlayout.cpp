@@ -2915,24 +2915,24 @@ QRectF QTextDocumentLayoutPrivate::layoutFrame(QTextFrame *f, int layoutFrom, in
     {
         QTextFrameFormat fformat = f->frameFormat();
         // set sizes of this frame from the format
-        QFixed tm = QFixed::fromReal(fformat.topMargin());
+        QFixed tm = QFixed::fromReal(scaleToDevice(fformat.topMargin())).round();
         if (tm != fd->topMargin) {
             fd->topMargin = tm;
             fullLayout = true;
         }
-        QFixed bm = QFixed::fromReal(fformat.bottomMargin());
+        QFixed bm = QFixed::fromReal(scaleToDevice(fformat.bottomMargin())).round();
         if (bm != fd->bottomMargin) {
             fd->bottomMargin = bm;
             fullLayout = true;
         }
-        fd->leftMargin = QFixed::fromReal(fformat.leftMargin());
-        fd->rightMargin = QFixed::fromReal(fformat.rightMargin());
-        QFixed b = QFixed::fromReal(fformat.border());
+        fd->leftMargin = QFixed::fromReal(scaleToDevice(fformat.leftMargin())).round();
+        fd->rightMargin = QFixed::fromReal(scaleToDevice(fformat.rightMargin())).round();
+        QFixed b = QFixed::fromReal(scaleToDevice(fformat.border())).round();
         if (b != fd->border) {
             fd->border = b;
             fullLayout = true;
         }
-        QFixed p = QFixed::fromReal(fformat.padding());
+        QFixed p = QFixed::fromReal(scaleToDevice(fformat.padding())).round();
         if (p != fd->padding) {
             fd->padding = p;
             fullLayout = true;
