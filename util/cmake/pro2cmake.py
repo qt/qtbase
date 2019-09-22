@@ -49,6 +49,7 @@ import xml.etree.ElementTree as ET
 
 from argparse import ArgumentParser
 from textwrap import dedent
+from textwrap import indent as textwrap_indent
 from itertools import chain
 from functools import lru_cache
 from shutil import copyfile
@@ -1271,8 +1272,22 @@ class QmakeParser:
         Load = add_element("Load", pp.Keyword("load") + CallArgs("loaded"))
         Include = add_element("Include", pp.Keyword("include") + CallArgs("included"))
         Option = add_element("Option", pp.Keyword("option") + CallArgs("option"))
+        RequiresCondition = add_element("RequiresCondition", pp.originalTextFor(pp.nestedExpr()))
+
+        def parse_requires_condition(s, l, t):
+            # The following expression unwraps the condition via the additional info
+            # set by originalTextFor.
+            condition_without_parentheses = s[t._original_start + 1 : t._original_end - 1]
+
+            # And this replaces the colons with '&&' similar how it's done for 'Condition'.
+            condition_without_parentheses = (
+                condition_without_parentheses.strip().replace(":", " && ").strip(" && ")
+            )
+            return condition_without_parentheses
+
+        RequiresCondition.setParseAction(parse_requires_condition)
         Requires = add_element(
-            "Requires", pp.Keyword("requires") + CallArgs("project_required_condition")
+            "Requires", pp.Keyword("requires") + RequiresCondition("project_required_condition")
         )
 
         # ignore the whole thing...
@@ -1598,7 +1613,7 @@ def handle_subdir(
                 current_conditions=frozenset((*current_conditions, child_condition)),
             )
 
-    def group_and_print_sub_dirs(indent: int = 0):
+    def group_and_print_sub_dirs(scope: Scope, indent: int = 0):
         # Simplify conditions, and group
         # subdirectories with the same conditions.
         grouped_sub_dirs = {}
@@ -1652,6 +1667,9 @@ def handle_subdir(
             sub_dir_list_by_key.append(subdir_name)
             grouped_sub_dirs[condition_key] = sub_dir_list_by_key
 
+        # Print any requires() blocks.
+        cm_fh.write(expand_project_requirements(scope))
+
         # Print the groups.
         ind = spaces(indent)
         for condition_key in grouped_sub_dirs:
@@ -1678,7 +1696,7 @@ def handle_subdir(
     handle_subdir_helper(
         scope, cm_fh, indent=indent, current_conditions=current_conditions, is_example=is_example
     )
-    group_and_print_sub_dirs(indent=indent)
+    group_and_print_sub_dirs(scope, indent=indent)
 
 
 def sort_sources(sources: List[str]) -> List[str]:
@@ -2352,19 +2370,22 @@ def write_statecharts(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0
     cm_fh.write(")\n")
 
 
-def expand_project_requirements(scope: Scope) -> str:
+def expand_project_requirements(scope: Scope, skip_message: bool = False) -> str:
     requirements = ""
     for requirement in scope.get("_REQUIREMENTS"):
         original_condition = simplify_condition(map_condition(requirement))
-        inverted_requirement = simplify_condition(f"NOT {map_condition(requirement)}")
+        inverted_requirement = simplify_condition(f"NOT ({map_condition(requirement)})")
+        if not skip_message:
+            message = f"""
+{spaces(7)}message(NOTICE "Skipping the build as the condition \\"{original_condition}\\" is not met.")"""
+        else:
+            message = ""
         requirements += dedent(
             f"""\
-                        if({inverted_requirement})
-                            message(NOTICE "Skipping the build as the condition \\"{original_condition}\\" is not met.")
+                        if({inverted_requirement}){message}
                             return()
                         endif()
-
-                        """
+"""
         )
     return requirements
 
@@ -2682,6 +2703,11 @@ def write_test(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int =
             extra.append("QML_IMPORTPATH")
             for path in importpath:
                 extra.append(f'    "{path}"')
+
+    requires_content = expand_project_requirements(scope, skip_message=True)
+    if requires_content:
+        requires_content += "\n"
+        cm_fh.write(requires_content)
 
     write_main_part(
         cm_fh,
@@ -3131,16 +3157,21 @@ def handle_top_level_repo_tests_project(scope: Scope, cm_fh: IO[str]):
     else:
         qt_lib = "Tests_FIXME"
 
+    requires_content = expand_project_requirements(scope, skip_message=True)
+    if requires_content:
+        requires_content = f"\n\n{textwrap_indent(requires_content, spaces(3))}"
+
     content = dedent(
         f"""\
         if(NOT TARGET Qt::Test)
             cmake_minimum_required(VERSION {cmake_version_string})
             project({qt_lib} VERSION 6.0.0 LANGUAGES C CXX)
             find_package(Qt6 ${{PROJECT_VERSION}} REQUIRED COMPONENTS BuildInternals Core SET_ME_TO_SOMETHING_USEFUL)
-            find_package(Qt6 ${{PROJECT_VERSION}} OPTIONAL_COMPONENTS SET_ME_TO_SOMETHING_USEFUL)
+            find_package(Qt6 ${{PROJECT_VERSION}} OPTIONAL_COMPONENTS SET_ME_TO_SOMETHING_USEFUL){requires_content}
             qt_set_up_standalone_tests_build()
         endif()
-        qt_build_tests()"""
+        qt_build_tests()
+"""
     )
 
     cm_fh.write(f"{content}")
