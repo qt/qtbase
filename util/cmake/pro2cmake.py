@@ -1420,6 +1420,19 @@ def parseProFile(file: str, *, debug=False):
     return parser.parseFile(file)
 
 
+# Given "if(a|b):c" returns "(a|b):c". Uses pyparsing to keep the parentheses
+# balanced.
+def unwrap_if(input_string):
+    # Compute the grammar only once.
+    if not hasattr(unwrap_if, "if_grammar"):
+        expr_with_parentheses = pp.originalTextFor(pp.nestedExpr())
+        if_keyword = pp.Suppress(pp.Keyword("if"))
+        unwrap_if.if_grammar = if_keyword + expr_with_parentheses
+
+    output_string = unwrap_if.if_grammar.transformString(input_string)
+    return output_string
+
+
 def map_condition(condition: str) -> str:
     # Some hardcoded cases that are too bothersome to generalize.
     condition = re.sub(
@@ -1450,12 +1463,8 @@ def map_condition(condition: str) -> str:
     pattern = r"(equals|greaterThan|lessThan)\(QT_GCC_([A-Z]+)_VERSION,[ ]*([0-9]+)\)"
     condition = re.sub(pattern, gcc_version_handler, condition)
 
-    # TODO: the current if(...) replacement makes the parentheses
-    # unbalanced when there are nested expressions.
-    # Need to fix this either with pypi regex recursive regexps,
-    # using pyparsing, or some other proper means of handling
-    # balanced parentheses.
-    condition = re.sub(r"\bif\s*\((.*?)\)", r"\1", condition)
+    # Handle if(...) conditions.
+    condition = unwrap_if(condition)
 
     condition = re.sub(r"\bisEmpty\s*\((.*?)\)", r"\1_ISEMPTY", condition)
     condition = re.sub(r'\bcontains\s*\((.*?),\s*"?(.*?)"?\)', r"\1___contains___\2", condition)
