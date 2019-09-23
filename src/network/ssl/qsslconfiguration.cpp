@@ -631,11 +631,10 @@ QList<QSslCipher> QSslConfiguration::supportedCiphers()
   Returns this connection's CA certificate database. The CA certificate
   database is used by the socket during the handshake phase to
   validate the peer's certificate. It can be modified prior to the
-  handshake with setCaCertificates(), or with \l{QSslSocket}'s
-  \l{QSslSocket::}{addCaCertificate()} and
-  \l{QSslSocket::}{addCaCertificates()}.
+  handshake with setCaCertificates(), or with addCaCertificate() and
+  addCaCertificates().
 
-  \sa setCaCertificates()
+  \sa setCaCertificates(), addCaCertificate(), addCaCertificates()
 */
 QList<QSslCertificate> QSslConfiguration::caCertificates() const
 {
@@ -652,11 +651,77 @@ QList<QSslCertificate> QSslConfiguration::caCertificates() const
   that is not available (as is commonly the case on iOS), the default database
   is empty.
 
-  \sa caCertificates()
+  \sa caCertificates(), addCaCertificates(), addCaCertificate()
 */
 void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certificates)
 {
     d->caCertificates = certificates;
+    d->allowRootCertOnDemandLoading = false;
+}
+
+/*!
+  Searches all files in the \a path for certificates encoded in the
+  specified \a format and adds them to this socket's CA certificate
+  database. \a path must be a file or a pattern matching one or more
+  files, as specified by \a syntax. Returns \c true if one or more
+  certificates are added to the socket's CA certificate database;
+  otherwise returns \c false.
+
+  The CA certificate database is used by the socket during the
+  handshake phase to validate the peer's certificate.
+
+  For more precise control, use addCaCertificate().
+
+  \sa addCaCertificate(), QSslCertificate::fromPath()
+*/
+bool QSslConfiguration::addCaCertificates(const QString &path, QSsl::EncodingFormat format,
+                                          QRegExp::PatternSyntax syntax)
+{
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(path, format, syntax);
+    if (certs.isEmpty())
+        return false;
+
+    d->caCertificates += certs;
+    return true;
+}
+
+/*!
+    \since 5.15
+
+    Adds \a certificate to this configuration's CA certificate database.
+    The certificate database must be set prior to the SSL handshake.
+    The CA certificate database is used by the socket during the
+    handshake phase to validate the peer's certificate.
+
+    \note The default configuration uses the system CA certificate database. If
+    that is not available (as is commonly the case on iOS), the default database
+    is empty.
+
+  \sa caCertificates(), setCaCertificates(), addCaCertificates()
+*/
+void QSslConfiguration::addCaCertificate(const QSslCertificate &certificate)
+{
+    d->caCertificates += certificate;
+    d->allowRootCertOnDemandLoading = false;
+}
+
+/*!
+    \since 5.15
+
+    Adds \a certificates to this configuration's CA certificate database.
+    The certificate database must be set prior to the SSL handshake.
+    The CA certificate database is used by the socket during the
+    handshake phase to validate the peer's certificate.
+
+    \note The default configuration uses the system CA certificate database. If
+    that is not available (as is commonly the case on iOS), the default database
+    is empty.
+
+  \sa caCertificates(), setCaCertificates(), addCaCertificate()
+*/
+void QSslConfiguration::addCaCertificates(const QList<QSslCertificate> &certificates)
+{
+    d->caCertificates += certificates;
     d->allowRootCertOnDemandLoading = false;
 }
 
@@ -668,7 +733,8 @@ void QSslConfiguration::setCaCertificates(const QList<QSslCertificate> &certific
     returned by this function is used to initialize the database
     returned by caCertificates() on the default QSslConfiguration.
 
-    \sa caCertificates(), setCaCertificates(), defaultConfiguration()
+    \sa caCertificates(), setCaCertificates(), defaultConfiguration(),
+    addCaCertificate(), addCaCertificates()
 */
 QList<QSslCertificate> QSslConfiguration::systemCaCertificates()
 {
