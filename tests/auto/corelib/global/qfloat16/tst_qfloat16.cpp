@@ -107,6 +107,7 @@ void tst_qfloat16::ltgt_data()
     QTest::addColumn<float>("val2");
 
     QTest::newRow("zero")  << 0.0f << 0.0f;
+    QTest::newRow("-zero") << -0.0f << 0.0f;
     QTest::newRow("ten")   << 10.0f << 10.0f;
     QTest::newRow("large") << 100000.0f << 100000.0f;
     QTest::newRow("small") << 0.0000001f << 0.0000001f;
@@ -405,6 +406,7 @@ void tst_qfloat16::finite_data()
     QTest::addColumn<int>("mode");
 
     QTest::newRow("zero") << qfloat16(0) << FP_ZERO;
+    QTest::newRow("-zero") << -qfloat16(0) << FP_ZERO;
     QTest::newRow("one") << qfloat16(1) << FP_NORMAL;
     QTest::newRow("-one") << qfloat16(-1) << FP_NORMAL;
     QTest::newRow("ten") << qfloat16(10) << FP_NORMAL;
@@ -458,6 +460,12 @@ void tst_qfloat16::limits() // See also: qNaN() and infinity()
 
     // A few useful values:
     const qfloat16 zero(0), one(1), ten(10);
+
+    // The specifics of minus zero:
+    // (IEEE 754 seems to want -zero < zero, but -0. == 0. and -0.f == 0.f in C++.)
+    QVERIFY(-zero <= zero);
+    QVERIFY(-zero == zero);
+    QVERIFY(!(-zero > zero));
 
     // digits in the mantissa, including the implicit 1 before the binary dot at its left:
     QVERIFY(qfloat16(1 << (Bounds::digits - 1)) + one > qfloat16(1 << (Bounds::digits - 1)));
@@ -523,7 +531,10 @@ void tst_qfloat16::limits() // See also: qNaN() and infinity()
     QVERIFY(Bounds::denorm_min() > zero);
     if (overOptimized)
         QEXPECT_FAIL("", "Over-optimized on ARM", Continue);
-    QCOMPARE(Bounds::denorm_min() / rose, zero);
+    QVERIFY(Bounds::denorm_min() / rose == zero);
+    if (overOptimized)
+        QEXPECT_FAIL("", "Over-optimized on ARM", Continue);
+    QVERIFY(-Bounds::denorm_min() / rose == -zero);
 }
 
 QTEST_APPLESS_MAIN(tst_qfloat16)
