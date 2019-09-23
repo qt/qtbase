@@ -1649,10 +1649,11 @@ endif()
                NAMESPACE "${QT_CMAKE_EXPORT_NAMESPACE}::"
                DESTINATION "${config_install_dir}")
 
-
-    qt_internal_export_modern_cmake_config_targets_file(TARGETS ${QT_KNOWN_MODULE_${module_name}_TOOLS}
-                                                        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
-                                                        CONFIG_INSTALL_DIR ${config_install_dir})
+    # Temporarily disable creation of versionless targets for tools,
+    # because it breaks qtdeclarative build.
+    #qt_internal_export_modern_cmake_config_targets_file(TARGETS ${QT_KNOWN_MODULE_${module_name}_TOOLS}
+    #                                                    EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
+    #                                                    CONFIG_INSTALL_DIR ${config_install_dir})
 endfunction()
 
 function(qt_internal_check_directory_or_type name dir type default result_var)
