@@ -370,7 +370,7 @@ void TiledPixmapPainter::paintEvent(QPaintEvent *event)
     // large pixmap: 2 x 2 tiles
     // 2x pixmap   : 4 x 4 tiles
     //
-    // On a 2x display the 2x pimxap tiles
+    // On a 2x display the 2x pixmap tiles
     // will be drawn in high resolution.
     p.drawTiledPixmap(QRect(xoff, yoff, tileAreaEdge, tileAreaEdge), pixmap1X);
     yoff += tiles * pixmapEdge + 10;
