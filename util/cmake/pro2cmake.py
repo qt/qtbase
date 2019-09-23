@@ -2273,6 +2273,9 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
             skip_qtquick_compiler = r in qtquickcompiler_skipped
             retain_qtquick_compiler = r in qtquickcompiler_retained
             if r.endswith(".qrc"):
+                if "${CMAKE_CURRENT_BINARY_DIR}" in r:
+                    cm_fh.write(f"#### Ignored generated resource: {r}")
+                    continue
                 qrc_output += process_qrc_file(
                     target,
                     r,
