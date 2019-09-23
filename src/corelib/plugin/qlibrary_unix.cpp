@@ -236,6 +236,14 @@ bool QLibraryPrivate::load_sys()
                 auto attemptFromBundle = attempt;
                 pHnd = dlopen(QFile::encodeName(attemptFromBundle.replace(QLatin1Char('/'), QLatin1Char('_'))), dlFlags);
             }
+            if (pHnd) {
+                using JniOnLoadPtr = jint (*)(JavaVM *vm, void *reserved);
+                JniOnLoadPtr jniOnLoad = reinterpret_cast<JniOnLoadPtr>(dlsym(pHnd, "JNI_OnLoad"));
+                if (jniOnLoad && jniOnLoad(QtAndroidPrivate::javaVM(), nullptr) == JNI_ERR) {
+                    dlclose(pHnd);
+                    pHnd = nullptr;
+                }
+            }
 #endif
 
             if (!pHnd && fileName.startsWith(QLatin1Char('/')) && QFile::exists(attempt)) {

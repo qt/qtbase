@@ -1726,7 +1726,7 @@ void QAbstractSpinBox::initStyleOption(QStyleOptionSpinBox *option) const
         option->activeSubControls = d->hoverControl;
     }
 
-    option->stepEnabled = style()->styleHint(QStyle::SH_SpinControls_DisableOnBounds)
+    option->stepEnabled = style()->styleHint(QStyle::SH_SpinControls_DisableOnBounds, nullptr, this)
                       ? stepEnabled()
                       : (QAbstractSpinBox::StepDownEnabled|QAbstractSpinBox::StepUpEnabled);
 

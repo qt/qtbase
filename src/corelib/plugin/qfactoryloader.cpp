@@ -193,7 +193,11 @@ void QFactoryLoader::update()
             continue;
         d->loadedPaths << pluginDir;
 
+#ifdef Q_OS_ANDROID
+        QString path = pluginDir;
+#else
         QString path = pluginDir + d->suffix;
+#endif
 
         if (qt_debug_component())
             qDebug() << "QFactoryLoader::QFactoryLoader() checking directory path" << path << "...";
@@ -202,8 +206,10 @@ void QFactoryLoader::update()
             continue;
 
         QStringList plugins = QDir(path).entryList(
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
                     QStringList(QStringLiteral("*.dll")),
+#elif defined(Q_OS_ANDROID)
+                    QStringList(QLatin1String("plugins_%1_*.so").arg(d->suffix)),
 #endif
                     QDir::Files);
         QLibraryPrivate *library = 0;
@@ -339,6 +345,10 @@ QFactoryLoader::QFactoryLoader(const char *iid,
 #if QT_CONFIG(library)
     d->cs = cs;
     d->suffix = suffix;
+# ifdef Q_OS_ANDROID
+    if (!d->suffix.isEmpty() && d->suffix.at(0) == QLatin1Char('/'))
+        d->suffix.remove(0, 1);
+# endif
 
     QMutexLocker locker(qt_factoryloader_mutex());
     update();
