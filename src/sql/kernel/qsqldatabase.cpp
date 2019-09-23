@@ -881,6 +881,14 @@ bool QSqlDatabase::rollback()
     connection name must be passed to addDatabase() at connection
     object create time.
 
+    For the QSQLITE driver, if the database name specified does not
+    exist, then it will create the file for you unless the
+    QSQLITE_OPEN_READONLY option is set.
+
+    Additionally, \a name can be set to \c ":memory:" which will
+    create a temporary database which is only available for the
+    lifetime of the application.
+
     For the QOCI (Oracle) driver, the database name is the TNS
     Service Name.
 
