@@ -30,6 +30,16 @@ define_property(TARGET
 
 define_property(TARGET
     PROPERTY
+        QT_PLUGIN_TYPE
+    BRIEF_DOCS
+        "Type of the Qt plug-in"
+    FULL_DOCS
+        "This is a property on Qt plug-ins.
+        For example, the value of the QT_PLUGIN_TYPE property on the qico plugin is \"imageformats\""
+)
+
+define_property(TARGET
+    PROPERTY
         QT_MODULE
     BRIEF_DOCS
         "Qt module associated with a plug-in."

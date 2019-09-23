@@ -40,3 +40,8 @@ endif()
 unset(_QT_NEED_TO_INCLUDE_PLUGINS_@target@)
 
 list(APPEND QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE "@target@")
+
+get_target_property(_qt_module_plugin_types @INSTALL_CMAKE_NAMESPACE@::@target@ MODULE_PLUGIN_TYPES)
+if(_qt_module_plugin_types)
+  list(APPEND QT_ALL_PLUGIN_TYPES_FOUND_VIA_FIND_PACKAGE "${_qt_module_plugin_types}")
+endif()

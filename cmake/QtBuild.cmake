@@ -159,8 +159,32 @@ macro(qt_internal_set_qt_known_plugins)
     set(QT_KNOWN_PLUGINS ${ARGN} CACHE INTERNAL "Known Qt plugins" FORCE)
 endmacro()
 
+### Global plug-in types handling ###
+# QT_REPO_KNOWN_PLUGIN_TYPES and QT_ALL_PLUGIN_TYPES_FOUND_VIA_FIND_PACKAGE
+# hold a list of plug-in types (e.G. "imageformats;bearer")
+function(qt_internal_clear_qt_repo_known_plugin_types)
+    set(QT_REPO_KNOWN_PLUGIN_TYPES "" CACHE INTERNAL "Known current repo Qt plug-in types" FORCE)
+endfunction()
+
+function(qt_internal_add_qt_repo_known_plugin_types)
+    set(QT_REPO_KNOWN_PLUGIN_TYPES ${QT_REPO_KNOWN_PLUGIN_TYPES} ${ARGN}
+        CACHE INTERNAL "Known current repo Qt plug-in types" FORCE)
+endfunction()
+
+function(qt_internal_get_qt_repo_known_plugin_types out_var)
+    set("${out_var}" "${QT_REPO_KNOWN_PLUGIN_TYPES}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_get_qt_all_known_plugin_types out_var)
+    qt_internal_get_qt_repo_known_plugin_types(repo_known_plugin_types)
+    set(known ${QT_ALL_PLUGIN_TYPES_FOUND_VIA_FIND_PACKAGE} ${repo_known_plugin_types})
+    list(REMOVE_DUPLICATES known)
+    set("${out_var}" "${known}" PARENT_SCOPE)
+endfunction()
+
 # Reset:
-qt_internal_clear_qt_repo_known_modules("")
+qt_internal_clear_qt_repo_known_modules()
+qt_internal_clear_qt_repo_known_plugin_types()
 qt_internal_set_qt_known_plugins("")
 
 set(QT_KNOWN_MODULES_WITH_TOOLS "" CACHE INTERNAL "Known Qt modules with tools" FORCE)
@@ -1342,7 +1366,14 @@ function(add_qt_module target)
     if(NOT arg_HEADER_MODULE)
         # Plugin types associated to a module
         if(NOT "x${arg_PLUGIN_TYPES}" STREQUAL "x")
-            set_target_properties("${target}" PROPERTIES MODULE_PLUGIN_TYPES "${arg_PLUGIN_TYPES}")
+            # Reset the variable containing the list of plugins for the given plugin type
+            foreach(plugin_type ${arg_PLUGIN_TYPES})
+                # Used to handle some edge cases such as platforms/darwin
+                string(REGEX REPLACE "[-/]" "_" plugin_type "${plugin_type}")
+
+                set_property(TARGET "${target}" APPEND PROPERTY MODULE_PLUGIN_TYPES "${plugin_type}")
+                qt_internal_add_qt_repo_known_plugin_types("${plugin_type}")
+            endforeach()
         endif()
 
         set_target_properties("${target}" PROPERTIES
@@ -1806,7 +1837,7 @@ function(add_qt_plugin target)
     endif()
 
     set_property(TARGET "${target}" PROPERTY QT_DEFAULT_PLUGIN "${_default_plugin}")
-    set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "QT_PLUGIN_CLASS_NAME;QT_MODULE;QT_DEFAULT_PLUGIN")
+    set_property(TARGET "${target}" APPEND PROPERTY EXPORT_PROPERTIES "QT_PLUGIN_CLASS_NAME;QT_PLUGIN_TYPE;QT_MODULE;QT_DEFAULT_PLUGIN")
 
     set(private_includes
         "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -1908,6 +1939,9 @@ function(add_qt_plugin target)
                NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
                DESTINATION "${config_install_dir}"
     )
+
+    # Store the plug-in type in the target property
+    set_property(TARGET "${target}" PROPERTY QT_PLUGIN_TYPE "${arg_TYPE}")
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.

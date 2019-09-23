@@ -430,35 +430,70 @@ macro(_qt_import_plugin target plugin)
     get_target_property(plugin_class_name "${plugin}" QT_PLUGIN_CLASS_NAME)
     if(plugin_class_name)
         set_property(TARGET "${target}" APPEND PROPERTY QT_PLUGINS "${plugin}")
-        # TODO mark it for installation
-        # TODO also in shared builds
     endif()
 endmacro()
 
 # This function is used to indicate which plug-ins are going to be
 # used by a given target.
-# This allows both automatic static linking, and automatic installation of relevant
-# plug-ins.
+# This allows static linking to a correct set of plugins.
 # Options :
-#    NO_DEFAULT: won't link against any plug-in by default for that target, e.g. no platform plug-in.
-#    INCLUDE: list of additional plug-ins to be linked against.
-#    EXCLUDE: list of plug-ins to be removed from the default set.
+#    NO_DEFAULT: disable linking against any plug-in by default for that target, e.g. no platform plug-in.
+#    INCLUDE <list of additional plug-ins to be linked against>
+#    EXCLUDE <list of plug-ins to be removed from the default set>
+#    INCLUDE_BY_TYPE <type> <included plugins>
+#    EXCLUDE_BY_TYPE <type to be excluded>
+#
+# Example :
+# qt_import_plugins(myapp
+#     INCLUDE Qt::QCocoaIntegrationPlugin
+#     EXCLUDE Qt::QMinimalIntegrationPlugin
+#     INCLUDE_BY_TYPE imageformats Qt::QGifPlugin Qt::QJpegPlugin
+#     EXCLUDE_BY_TYPE sqldrivers
+# )
+
 # TODO : support qml plug-ins.
 function(qt_import_plugins target)
-    cmake_parse_arguments(arg "NO_DEFAULT" "" "INCLUDE;EXCLUDE" ${ARGN})
+    cmake_parse_arguments(arg "NO_DEFAULT" "" "INCLUDE;EXCLUDE;INCLUDE_BY_TYPE;EXCLUDE_BY_TYPE" ${ARGN})
 
+    # Handle NO_DEFAULT
     if(${arg_NO_DEFAULT})
         set_target_properties(${target} PROPERTIES QT_DEFAULT_PLUGINS 0)
-    else()
-        set_target_properties(${target} PROPERTIES QT_DEFAULT_PLUGINS 1)
     endif()
 
+    # Handle INCLUDE
     foreach(plugin ${arg_INCLUDE})
         _qt_import_plugin("${target}" "${plugin}")
     endforeach()
 
+    # Handle EXCLUDE
     foreach(plugin ${arg_EXCLUDE})
         set_property(TARGET "${target}" APPEND PROPERTY QT_NO_PLUGINS "${plugin}")
     endforeach()
-endfunction()
 
+    # Handle INCLUDE_BY_TYPE
+    set(_current_type "")
+    foreach(_arg ${arg_INCLUDE_BY_TYPE})
+        string(REGEX REPLACE "[-/]" "_" _plugin_type "${_arg}")
+        list(FIND QT_ALL_PLUGIN_TYPES_FOUND_VIA_FIND_PACKAGE "${_plugin_type}" _has_plugin_type)
+
+        if(${_has_plugin_type} GREATER_EQUAL 0)
+           set(_current_type "${_plugin_type}")
+        else()
+            if("${_current_type}" STREQUAL "")
+                message(FATAL_ERROR "qt_import_plugins: invalid syntax for INCLUDE_BY_TYPE")
+            endif()
+
+            if(TARGET "${_arg}")
+                set_property(TARGET "${target}" APPEND PROPERTY "QT_PLUGINS_${_current_type}" "${_arg}")
+            else()
+                message("Warning: plug-in ${_arg} is not known to the current Qt installation.")
+            endif()
+        endif()
+    endforeach()
+
+    # Handle EXCLUDE_BY_TYPE
+    foreach(_arg ${arg_EXCLUDE_BY_TYPE})
+        string(REGEX REPLACE "[-/]" "_" _plugin_type "${_arg}")
+        set_property(TARGET "${target}" PROPERTY "QT_PLUGINS_${_plugin_type}" "-")
+    endforeach()
+endfunction()

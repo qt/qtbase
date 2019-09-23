@@ -10,13 +10,14 @@ if(NOT @BUILD_SHARED_LIBS@)
     endif()
     unset(_aliased_target)
 
-    set(_default_plugins_are_enabled "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_DEFAULT_PLUGINS>>")
+    set(_default_plugins_are_enabled "$<NOT:$<STREQUAL:$<GENEX_EVAL:$<TARGET_PROPERTY:QT_DEFAULT_PLUGINS>>,0>>")
     # Make sure to boolify the result of the expression, in case if the returned property value
     # is empty.
     set(_default_plugins_are_enabled_wrapped "$<BOOL:${_default_plugins_are_enabled}>")
     set(_manual_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_PLUGINS>>")
     set(_no_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_NO_PLUGINS>>")
 
+    # The code in here uses the properties defined in qt_import_plugins (Qt6CoreMacros.cmake)
     foreach(target @qt_plugins@)
         set(_plugin_target "@INSTALL_CMAKE_NAMESPACE@::${target}")
         get_target_property(_classname "${_plugin_target}" QT_PLUGIN_CLASS_NAME)
@@ -25,22 +26,60 @@ if(NOT @BUILD_SHARED_LIBS@)
           continue()
         endif()
 
+        get_target_property(_plugin_type "${_plugin_target}" QT_PLUGIN_TYPE)
+        if(NOT _plugin_type)
+          message("Warning: plugin ${_plugin_target} has no type ('${_plugin_type}'), skipping.")
+          continue()
+        endif()
+
+        list(APPEND "QT_ALL_PLUGINS_FOUND_BY_FIND_PACKAGE_${_plugin_type}" "${target}")
+
         set(_plugin_is_default "$<TARGET_PROPERTY:${_plugin_target},QT_DEFAULT_PLUGIN>")
-        set(_plugin_is_not_blacklisted "$<NOT:$<IN_LIST:${_plugin_target},${_no_plugins_genex}>>")
+
+        # INCLUDE
         set(_plugin_is_whitelisted "$<IN_LIST:${_plugin_target},${_manual_plugins_genex}>")
 
-        string(CONCAT _plugin_condition
-                    "$<BOOL:$<OR:"
-                        "${_plugin_is_whitelisted},"
-                        "$<AND:"
-                            "${_default_plugins_are_enabled_wrapped},"
-                            "${_plugin_is_default},"
-                            "${_plugin_is_not_blacklisted}"
-                        ">"
-                    ">>"
+        # Note: qt_import_plugins sets the QT_PLUGINS_${_plugin_type} to "-"
+        # when excluding it with EXCLUDE_BY_TYPE,
+        # which ensures that no plug-in will be supported unless explicitly re-added afterwards.
+        string(CONCAT _plugin_is_not_blacklisted
+            "$<AND:"
+                "$<NOT:" # EXCLUDE
+                    "$<IN_LIST:${_plugin_target},${_no_plugins_genex}>"
+                ">,"
+                # excludes both plugins targeted by EXCLUDE_BY_TYPE and not included in INCLUDE_BY_TYPE
+                "$<STREQUAL:,$<GENEX_EVAL:$<TARGET_PROPERTY:QT_PLUGINS_${_plugin_type}>>>"
+            ">"
         )
+
+        # Support INCLUDE_BY_TYPE
+        string(CONCAT _plugin_is_in_type_whitelist
+            "$<IN_LIST:"
+                "${_plugin_target},"
+                "$<GENEX_EVAL:"
+                    "$<TARGET_PROPERTY:QT_PLUGINS_${_plugin_type}>"
+                ">"
+            ">"
+        )
+
+        # Complete condition that defines whether a static plugin is linked
+        string(CONCAT _plugin_condition
+            "$<BOOL:$<OR:"
+                "${_plugin_is_whitelisted},"
+                "${_plugin_is_in_type_whitelist},"
+                "$<AND:"
+                    "${_default_plugins_are_enabled_wrapped},"
+                    "${_plugin_is_default},"
+                    "${_plugin_is_not_blacklisted}"
+                ">"
+            ">>"
+        )
+
+        # If this condition is true, we link against the plug-in
         set(_plugin_genex "$<${_plugin_condition}:${_plugin_target}>")
         target_link_libraries(${_module_target} INTERFACE "${_plugin_genex}")
+
+        # Generate a source file to import that plug-in
         file(GENERATE
             OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/qt_@QT_MODULE@_${target}.cpp"
             CONTENT "#include <QtPlugin>\nQ_IMPORT_PLUGIN(${_classname})"
