@@ -623,10 +623,6 @@ def handle_function_value(group: pp.ParseResults):
         return str(group)
 
     if function_name == "files":
-        if len(function_args) > 1:
-            raise RuntimeError(
-                "Don't know what to with more than one function argument for $$files()."
-            )
         return str(function_args[0])
 
     if isinstance(function_args, pp.ParseResults):
