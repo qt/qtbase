@@ -1700,7 +1700,7 @@ def handle_subdir(
             grouped_sub_dirs[condition_key] = sub_dir_list_by_key
 
         # Print any requires() blocks.
-        cm_fh.write(expand_project_requirements(scope))
+        cm_fh.write(expand_project_requirements(scope, skip_message=True))
 
         # Print the groups.
         ind = spaces(indent)
