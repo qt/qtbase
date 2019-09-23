@@ -2708,18 +2708,22 @@ QStringList QCoreApplication::libraryPathsLocked()
         QStringList *app_libpaths = new QStringList;
         coreappdata()->app_libpaths.reset(app_libpaths);
 
-        QString libPathEnv = qEnvironmentVariable("QT_PLUGIN_PATH");
-        if (!libPathEnv.isEmpty()) {
-            QStringList paths = libPathEnv.split(QDir::listSeparator(), QString::SkipEmptyParts);
-            for (QStringList::const_iterator it = paths.constBegin(); it != paths.constEnd(); ++it) {
-                QString canonicalPath = QDir(*it).canonicalPath();
-                if (!canonicalPath.isEmpty()
-                    && !app_libpaths->contains(canonicalPath)) {
-                    app_libpaths->append(canonicalPath);
+        auto setPathsFromEnv = [&](QString libPathEnv) {
+            if (!libPathEnv.isEmpty()) {
+                QStringList paths = libPathEnv.split(QDir::listSeparator(), QString::SkipEmptyParts);
+                for (QStringList::const_iterator it = paths.constBegin(); it != paths.constEnd(); ++it) {
+                    QString canonicalPath = QDir(*it).canonicalPath();
+                    if (!canonicalPath.isEmpty()
+                        && !app_libpaths->contains(canonicalPath)) {
+                        app_libpaths->append(canonicalPath);
+                    }
                 }
             }
-        }
-
+        };
+        setPathsFromEnv(qEnvironmentVariable("QT_PLUGIN_PATH"));
+#ifdef Q_OS_ANDROID
+        setPathsFromEnv(qEnvironmentVariable("QT_BUNDLED_LIBS_PATH"));
+#endif
 #ifdef Q_OS_DARWIN
         // Check the main bundle's PlugIns directory as this is a standard location for Apple OSes.
         // Note that the QLibraryInfo::PluginsPath below will coincidentally be the same as this value

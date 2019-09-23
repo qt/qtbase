@@ -68,8 +68,6 @@
 
 #include <qpa/qwindowsysteminterface.h>
 
-Q_IMPORT_PLUGIN(QAndroidPlatformIntegrationPlugin)
-
 QT_BEGIN_NAMESPACE
 
 static JavaVM *m_javaVM = nullptr;
