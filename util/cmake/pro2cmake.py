@@ -676,7 +676,6 @@ class AddOperation(Operation):
     def __repr__(self):
         return f"+({self._dump()})"
 
-
 class UniqueAddOperation(Operation):
     def process(
         self, key: str, sinput: List[str], transformer: Callable[[List[str]], List[str]]
@@ -690,6 +689,37 @@ class UniqueAddOperation(Operation):
     def __repr__(self):
         return f"*({self._dump()})"
 
+class ReplaceOperation(Operation):
+    def process(
+        self, key: str, sinput: List[str], transformer: Callable[[List[str]], List[str]]
+    ) -> List[str]:
+        result = []
+        for s in sinput:
+            for v in transformer(self._value):
+                pattern, replacement = self.split_rex(v)
+                result.append(re.sub(pattern, replacement, s))
+        return result
+
+    def split_rex(self, s):
+        pattern = ""
+        replacement = ""
+        if len(s) < 4:
+            return pattern, replacement
+        sep = s[1]
+        s = s[2:]
+        rex = re.compile(f"[^\\\\]{sep}")
+        m = rex.search(s)
+        if not m:
+            return pattern, replacement
+        pattern = s[:m.start() + 1]
+        replacement = s[m.end():]
+        m = rex.search(replacement)
+        if m:
+            replacement = replacement[:m.start() + 1]
+        return pattern, replacement
+
+    def __repr__(self):
+        return f"*({self._dump()})"
 
 class SetOperation(Operation):
     def process(
@@ -864,6 +894,8 @@ class Scope(object):
                     scope._append_operation(key, AddOperation(value))
                 elif operation == "*=":
                     scope._append_operation(key, UniqueAddOperation(value))
+                elif operation == "~=":
+                    scope._append_operation(key, ReplaceOperation(value))
                 else:
                     print(f'Unexpected operation "{operation}" in scope "{scope}".')
                     assert False
@@ -1250,7 +1282,7 @@ class QmakeParser:
         Values = add_element("Values", pp.ZeroOrMore(Value)("value"))
 
         Op = add_element(
-            "OP", pp.Literal("=") | pp.Literal("-=") | pp.Literal("+=") | pp.Literal("*=")
+            "OP", pp.Literal("=") | pp.Literal("-=") | pp.Literal("+=") | pp.Literal("*=") | pp.Literal("~=")
         )
 
         Key = add_element("Key", Identifier)
