@@ -1036,44 +1036,11 @@ void QRhiMetal::setVertexInput(QRhiCommandBuffer *cb,
     }
 }
 
-QSize safeOutputSize(QRhiMetal *rhiD, QMetalCommandBuffer *cbD)
-{
-    QSize size = cbD->currentTarget->pixelSize();
-
-    // So now we have the issue that the texture (drawable) size may have
-    // changed again since swapchain buildOrResize() was called. This can
-    // happen for example when interactively resizing the window a lot in one
-    // go, and command buffer building happens on a dedicated thread (f.ex.
-    // using the threaded render loop of Qt Quick).
-    //
-    // This is only an issue when running in debug mode with XCode because Metal
-    // validation will fail when setting viewport or scissor with the real size
-    // being smaller than what we think it is. So query the drawable size right
-    // here, in debug mode at least.
-    //
-    // In addition, we have to take the smaller of the two widths and heights
-    // to be safe, apparently. In some cases validation seems to think that the
-    // "render pass width" (or height) is the old(?) value.
-
-#ifdef QT_DEBUG
-    if (cbD->currentTarget->resourceType() == QRhiResource::RenderTarget) {
-        Q_ASSERT(rhiD->currentSwapChain);
-        const QSize otherSize = rhiD->currentSwapChain->surfacePixelSize();
-        size.setWidth(qMin(size.width(), otherSize.width()));
-        size.setHeight(qMin(size.height(), otherSize.height()));
-    }
-#else
-    Q_UNUSED(rhiD);
-#endif
-
-    return size;
-}
-
 void QRhiMetal::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
 {
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
-    const QSize outputSize = safeOutputSize(this, cbD);
+    const QSize outputSize = cbD->currentTarget->pixelSize();
 
     // x,y is top-left in MTLViewportRect but bottom-left in QRhiViewport
     float x, y, w, h;
@@ -1105,7 +1072,7 @@ void QRhiMetal::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QMetalCommandBuffer::RenderPass);
     Q_ASSERT(QRHI_RES(QMetalGraphicsPipeline, cbD->currentGraphicsPipeline)->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor));
-    const QSize outputSize = safeOutputSize(this, cbD);
+    const QSize outputSize = cbD->currentTarget->pixelSize();
 
     // x,y is top-left in MTLScissorRect but bottom-left in QRhiScissor
     int x, y, w, h;
@@ -3529,20 +3496,8 @@ QRhiRenderTarget *QMetalSwapChain::currentFrameRenderTarget()
 
 QSize QMetalSwapChain::surfacePixelSize()
 {
-    // may be called before build, must not access other than m_*
-
-    NSView *v = (NSView *) m_window->winId();
-    if (v) {
-        CAMetalLayer *layer = (CAMetalLayer *) [v layer];
-        if (layer) {
-            CGSize size = layer.bounds.size;
-            size.width *= layer.contentsScale;
-            size.height *= layer.contentsScale;
-            layer.drawableSize = size;
-            return QSize(int(size.width), int(size.height));
-        }
-    }
-    return QSize();
+    Q_ASSERT(m_window);
+    return m_window->size() * m_window->devicePixelRatio();
 }
 
 QRhiRenderPassDescriptor *QMetalSwapChain::newCompatibleRenderPassDescriptor()
@@ -3593,8 +3548,9 @@ bool QMetalSwapChain::buildOrResize()
         return false;
     }
 
-    NSView *v = (NSView *) window->winId();
-    d->layer = (CAMetalLayer *) [v layer];
+    NSView *view = reinterpret_cast<NSView *>(window->winId());
+    Q_ASSERT(view);
+    d->layer = static_cast<CAMetalLayer *>(view.layer);
     Q_ASSERT(d->layer);
 
     chooseFormats();
@@ -3623,7 +3579,15 @@ bool QMetalSwapChain::buildOrResize()
         d->layer.opaque = YES;
     }
 
-    m_currentPixelSize = surfacePixelSize();
+    // Now set the layer's drawableSize which will stay set to the same value
+    // until the next buildOrResize(), thus ensuring atomicity with regards to
+    // the drawable size in frames.
+    CGSize layerSize = d->layer.bounds.size;
+    layerSize.width *= d->layer.contentsScale;
+    layerSize.height *= d->layer.contentsScale;
+    d->layer.drawableSize = layerSize;
+
+    m_currentPixelSize = QSizeF::fromCGSize(layerSize).toSize();
     pixelSize = m_currentPixelSize;
 
     [d->layer setDevice: rhiD->d->dev];
@@ -3644,9 +3608,16 @@ bool QMetalSwapChain::buildOrResize()
                  m_depthStencil->sampleCount(), m_sampleCount);
     }
     if (m_depthStencil && m_depthStencil->pixelSize() != pixelSize) {
-        qWarning("Depth-stencil buffer's size (%dx%d) does not match the layer size (%dx%d). Expect problems.",
-                 m_depthStencil->pixelSize().width(), m_depthStencil->pixelSize().height(),
-                 pixelSize.width(), pixelSize.height());
+        if (m_depthStencil->flags().testFlag(QRhiRenderBuffer::UsedWithSwapChainOnly)) {
+            m_depthStencil->setPixelSize(pixelSize);
+            if (!m_depthStencil->build())
+                qWarning("Failed to rebuild swapchain's associated depth-stencil buffer for size %dx%d",
+                         pixelSize.width(), pixelSize.height());
+        } else {
+            qWarning("Depth-stencil buffer's size (%dx%d) does not match the layer size (%dx%d). Expect problems.",
+                     m_depthStencil->pixelSize().width(), m_depthStencil->pixelSize().height(),
+                     pixelSize.width(), pixelSize.height());
+        }
     }
 
     rtWrapper.d->pixelSize = pixelSize;

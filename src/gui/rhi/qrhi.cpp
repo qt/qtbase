@@ -1981,6 +1981,14 @@ QRhiResource::Type QRhiBuffer::resourceType() const
     How the renderbuffer is implemented by a backend is not exposed to the
     applications. In some cases it may be backed by ordinary textures, while in
     others there may be a different kind of native resource used.
+
+    Renderbuffers that are used as (and are only used as) depth-stencil buffers
+    in combination with a QRhiSwapChain's color buffers should have the
+    UsedWithSwapChainOnly flag set. This serves a double purpose: such buffers,
+    depending on the backend and the underlying APIs, be more efficient, and
+    QRhi provides automatic sizing behavior to match the color buffers, which
+    means calling setPixelSize() and build() are not necessary for such
+    renderbuffers.
  */
 
 /*!
@@ -1996,12 +2004,15 @@ QRhiResource::Type QRhiBuffer::resourceType() const
     Flag values for flags() and setFlags()
 
     \value UsedWithSwapChainOnly For DepthStencil renderbuffers this indicates
-    that the renderbuffer is only used in combination with a QRhiSwapChain and
-    never in other ways. Relevant with some backends, while others ignore it.
-    With OpenGL where a separate windowing system interface API is in use (EGL,
-    GLX, etc.), the flag is important since it avoids creating any actual
-    resource as there is already a windowing system provided depth/stencil
-    buffer as requested by QSurfaceFormat.
+    that the renderbuffer is only used in combination with a QRhiSwapChain, and
+    never in any other way. This provides automatic sizing and resource
+    rebuilding, so calling setPixelSize() or build() is not needed whenever
+    this flag is set. This flag value may also trigger backend-specific
+    behavior, for example with OpenGL, where a separate windowing system
+    interface API is in use (EGL, GLX, etc.), the flag is especially important
+    as it avoids creating any actual renderbuffer resource as there is already
+    a windowing system provided depth/stencil buffer as requested by
+    QSurfaceFormat.
  */
 
 /*!
@@ -3351,7 +3362,7 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
       {
           sc = rhi->newSwapChain();
           ds = rhi->newRenderBuffer(QRhiRenderBuffer::DepthStencil,
-                                    QSize(), // no need to set the size yet
+                                    QSize(), // no need to set the size here due to UsedWithSwapChainOnly
                                     1,
                                     QRhiRenderBuffer::UsedWithSwapChainOnly);
           sc->setWindow(window);
@@ -3363,9 +3374,6 @@ QRhiResource::Type QRhiGraphicsPipeline::resourceType() const
 
       void resizeSwapChain()
       {
-          const QSize outputSize = sc->surfacePixelSize();
-          ds->setPixelSize(outputSize);
-          ds->build();
           hasSwapChain = sc->buildOrResize();
       }
 
@@ -3559,10 +3567,24 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     \return The size of the window's associated surface or layer. Do not assume
     this is the same as QWindow::size() * QWindow::devicePixelRatio().
 
-    Can be called before buildOrResize() (but with window() already set), which
-    allows setting the correct size for the depth-stencil buffer that is then
-    used together with the swapchain's color buffers. Also used in combination
-    with currentPixelSize() to detect size changes.
+    \note Can also be called before buildOrResize(), if at least window() is
+    already set) This in combination with currentPixelSize() allows to detect
+    when a swapchain needs to be resized. However, watch out for the fact that
+    the size of the underlying native object (surface, layer, or similar) is
+    "live", so whenever this function is called, it returns the latest value
+    reported by the underlying implementation, without any atomicity guarantee.
+    Therefore, using this function to determine pixel sizes for graphics
+    resources that are used in a frame is strongly discouraged. Rely on
+    currentPixelSize() instead which returns a size that is atomic and will not
+    change between buildOrResize() invocations.
+
+    \note For depth-stencil buffers used in combination with the swapchain's
+    color buffers, it is strongly recommended to rely on the automatic sizing
+    and rebuilding behavior provided by the
+    QRhiRenderBuffer:UsedWithSwapChainOnly flag. Avoid querying the surface
+    size via this function just to get a size that can be passed to
+    QRhiRenderBuffer::setPixelSize() as that would suffer from the lack of
+    atomicity as described above.
 
     \sa currentPixelSize()
   */

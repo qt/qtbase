@@ -3707,6 +3707,13 @@ bool QGles2SwapChain::buildOrResize()
     m_currentPixelSize = surfacePixelSize();
     pixelSize = m_currentPixelSize;
 
+    if (m_depthStencil && m_depthStencil->flags().testFlag(QRhiRenderBuffer::UsedWithSwapChainOnly)
+            && m_depthStencil->pixelSize() != pixelSize)
+    {
+        m_depthStencil->setPixelSize(pixelSize);
+        m_depthStencil->build();
+    }
+
     rt.d.rp = QRHI_RES(QGles2RenderPassDescriptor, m_renderPassDesc);
     rt.d.pixelSize = pixelSize;
     rt.d.dpr = float(m_window->devicePixelRatio());

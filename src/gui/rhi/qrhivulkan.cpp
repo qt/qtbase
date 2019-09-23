@@ -6315,9 +6315,16 @@ bool QVkSwapChain::buildOrResize()
                  m_depthStencil->sampleCount(), m_sampleCount);
     }
     if (m_depthStencil && m_depthStencil->pixelSize() != pixelSize) {
-        qWarning("Depth-stencil buffer's size (%dx%d) does not match the surface size (%dx%d). Expect problems.",
-                 m_depthStencil->pixelSize().width(), m_depthStencil->pixelSize().height(),
-                 pixelSize.width(), pixelSize.height());
+        if (m_depthStencil->flags().testFlag(QRhiRenderBuffer::UsedWithSwapChainOnly)) {
+            m_depthStencil->setPixelSize(pixelSize);
+            if (!m_depthStencil->build())
+                qWarning("Failed to rebuild swapchain's associated depth-stencil buffer for size %dx%d",
+                         pixelSize.width(), pixelSize.height());
+        } else {
+            qWarning("Depth-stencil buffer's size (%dx%d) does not match the surface size (%dx%d). Expect problems.",
+                     m_depthStencil->pixelSize().width(), m_depthStencil->pixelSize().height(),
+                     pixelSize.width(), pixelSize.height());
+        }
     }
 
     if (!m_renderPassDesc)
