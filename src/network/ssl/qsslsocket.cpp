@@ -139,9 +139,20 @@
     before the handshake phase with setLocalCertificate() and
     setPrivateKey().
     \li The CA certificate database can be extended and customized with
-    addCaCertificate(), addCaCertificates(), addDefaultCaCertificate(),
-    addDefaultCaCertificates(), and QSslConfiguration::defaultConfiguration().setCaCertificates().
+    QSslConfiguration::addCaCertificate(),
+    QSslConfiguration::addCaCertificates().
     \endlist
+
+    To extend the list of \e default CA certificates used by the SSL sockets
+    during the SSL handshake you must update the default configuration, as
+    in the snippet below:
+
+    \code
+        QList<QSslCertificate> certificates = getCertificates();
+        QSslConfiguration configuration = QSslConfiguration::defaultConfiguration();
+        configuration.addCaCertificates(certificates);
+        QSslConfiguration::setDefaultConfiguration(configuration);
+    \endcode
 
     \note If available, root certificates on Unix (excluding \macos) will be
     loaded on demand from the standard certificate directories. If you do not
@@ -1384,6 +1395,10 @@ QList<QSslCipher> QSslSocket::supportedCiphers()
 #endif  // #if QT_DEPRECATED_SINCE(5, 5)
 
 /*!
+  \deprecated
+
+  Use QSslConfiguration::addCaCertificates() instead.
+
   Searches all files in the \a path for certificates encoded in the
   specified \a format and adds them to this socket's CA certificate
   database. \a path must be a file or a pattern matching one or more
@@ -1411,6 +1426,10 @@ bool QSslSocket::addCaCertificates(const QString &path, QSsl::EncodingFormat for
 }
 
 /*!
+  \deprecated
+
+  Use QSslConfiguration::addCaCertificate() instead.
+
   Adds the \a certificate to this socket's CA certificate database.
   The CA certificate database is used by the socket during the
   handshake phase to validate the peer's certificate.
@@ -1427,6 +1446,10 @@ void QSslSocket::addCaCertificate(const QSslCertificate &certificate)
 }
 
 /*!
+  \deprecated
+
+  Use QSslConfiguration::addCaCertificates() instead.
+
   Adds the \a certificates to this socket's CA certificate database.
   The CA certificate database is used by the socket during the
   handshake phase to validate the peer's certificate.
@@ -1489,6 +1512,10 @@ QList<QSslCertificate> QSslSocket::caCertificates() const
 #endif  // #if QT_DEPRECATED_SINCE(5, 5)
 
 /*!
+    \deprecated
+
+    Use QSslConfiguration::addCaCertificates() on the default QSslConfiguration instead.
+
     Searches all files in the \a path for certificates with the
     specified \a encoding and adds them to the default CA certificate
     database. \a path can be an explicit file, or it can contain
@@ -1498,8 +1525,8 @@ QList<QSslCertificate> QSslSocket::caCertificates() const
     Each SSL socket's CA certificate database is initialized to the
     default CA certificate database.
 
-    \sa QSslConfiguration::caCertificates(), addCaCertificates(),
-        addDefaultCaCertificate()
+    \sa QSslConfiguration::caCertificates(), QSslConfiguration::addCaCertificates(),
+        QSslConfiguration::addDefaultCaCertificate()
 */
 bool QSslSocket::addDefaultCaCertificates(const QString &path, QSsl::EncodingFormat encoding,
                                           QRegExp::PatternSyntax syntax)
@@ -1508,11 +1535,15 @@ bool QSslSocket::addDefaultCaCertificates(const QString &path, QSsl::EncodingFor
 }
 
 /*!
+    \deprecated
+
+    Use QSslConfiguration::addCaCertificate() on the default QSslConfiguration instead.
+
     Adds \a certificate to the default CA certificate database.  Each
     SSL socket's CA certificate database is initialized to the default
     CA certificate database.
 
-    \sa QSslConfiguration::caCertificates(), addCaCertificates()
+    \sa QSslConfiguration::caCertificates(), QSslConfiguration::addCaCertificates()
 */
 void QSslSocket::addDefaultCaCertificate(const QSslCertificate &certificate)
 {
@@ -1520,11 +1551,15 @@ void QSslSocket::addDefaultCaCertificate(const QSslCertificate &certificate)
 }
 
 /*!
+    \deprecated
+
+    Use QSslConfiguration::addCaCertificates() on the default QSslConfiguration instead.
+
     Adds \a certificates to the default CA certificate database.  Each
     SSL socket's CA certificate database is initialized to the default
     CA certificate database.
 
-    \sa QSslConfiguration::caCertificates(), addCaCertificates()
+    \sa QSslConfiguration::caCertificates(), QSslConfiguration::addCaCertificates()
 */
 void QSslSocket::addDefaultCaCertificates(const QList<QSslCertificate> &certificates)
 {
