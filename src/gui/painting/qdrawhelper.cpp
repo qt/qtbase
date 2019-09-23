@@ -5670,7 +5670,8 @@ static inline void alphamapblend_argb32(quint32 *dst, int coverage, QRgba64 srcL
         QRgb s = *dst;
         blend_pixel(s, src);
         // Then gamma-corrected blend with glyph shape
-        grayBlendPixel(dst, coverage, colorProfile->toLinear64(s), colorProfile);
+        QRgba64 s64 = colorProfile ? colorProfile->toLinear64(s) : QRgba64::fromArgb32(s);
+        grayBlendPixel(dst, coverage, s64, colorProfile);
     }
 }
 
@@ -5711,7 +5712,9 @@ static inline void alphamapblend_generic(int coverage, QRgba64 *dest, int x, con
         QRgba64 s = dest[x];
         blend_pixel(s, src);
         // Then gamma-corrected blend with glyph shape
-        grayBlendPixel(dest[x], coverage, colorProfile->toLinear(s), colorProfile);
+        if (colorProfile)
+            s = colorProfile->toLinear(s);
+        grayBlendPixel(dest[x], coverage, s, colorProfile);
     }
 }
 
@@ -6053,7 +6056,8 @@ static inline void alphargbblend_argb32(quint32 *dst, uint coverage, const QRgba
         QRgb s = *dst;
         blend_pixel(s, src);
         // Then gamma-corrected blend with glyph shape
-        rgbBlendPixel(dst, coverage, colorProfile->toLinear64(s), colorProfile);
+        QRgba64 s64 = colorProfile ? colorProfile->toLinear64(s) : QRgba64::fromArgb32(s);
+        rgbBlendPixel(dst, coverage, s64, colorProfile);
     }
 }
 
@@ -6084,7 +6088,9 @@ static inline void alphargbblend_generic(uint coverage, QRgba64 *dest, int x, co
         QRgba64 s = dest[x];
         blend_pixel(s, src);
         // Then gamma-corrected blend with glyph shape
-        rgbBlendPixel(dest[x], coverage, colorProfile->toLinear(s), colorProfile);
+        if (colorProfile)
+            s = colorProfile->toLinear(s);
+        rgbBlendPixel(dest[x], coverage, s, colorProfile);
     }
 }
 
