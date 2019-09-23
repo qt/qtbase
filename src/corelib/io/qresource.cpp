@@ -1109,14 +1109,8 @@ bool QDynamicFileResourceRoot::registerSelf(const QString &f)
     uchar *data = nullptr;
     qsizetype data_len = 0;
 
-#ifdef QT_USE_MMAP
-    int fd = QT_OPEN(QFile::encodeName(f), O_RDONLY,
-#if defined(Q_OS_WIN)
-                     _S_IREAD | _S_IWRITE
-#else
-                     0666
-#endif
-                     );
+#if defined(QT_USE_MMAP)
+    int fd = QT_OPEN(QFile::encodeName(f), O_RDONLY, 0666);
     if (fd >= 0) {
         QT_STATBUF st;
         if (!QT_FSTAT(fd, &st) && st.st_size <= std::numeric_limits<qsizetype>::max()) {
