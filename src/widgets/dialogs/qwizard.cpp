@@ -55,10 +55,14 @@
 #if QT_CONFIG(lineedit)
 #include "qlineedit.h"
 #endif
+#include <qpointer.h>
 #include "qpainter.h"
 #include "qwindow.h"
 #include "qpushbutton.h"
 #include "qset.h"
+#if QT_CONFIG(shortcut)
+#  include "qshortcut.h"
+#endif
 #include "qstyle.h"
 #include "qvarlengtharray.h"
 #if defined(Q_OS_MACX)
@@ -631,6 +635,9 @@ public:
 
 #if QT_CONFIG(style_windowsvista)
     QVistaHelper *vistaHelper = nullptr;
+#  if QT_CONFIG(shortcut)
+    QPointer<QShortcut> vistaNextShortcut;
+#  endif
     bool vistaInitPending = true;
     QVistaHelper::VistaState vistaState = QVistaHelper::Dirty;
     bool vistaStateChanged = false;
@@ -1417,10 +1424,17 @@ void QWizardPrivate::updateButtonTexts()
     // Vista: Add shortcut for 'next'. Note: native dialogs use ALT-Right
     // even in RTL mode, so do the same, even if it might be counter-intuitive.
     // The shortcut for 'back' is set in class QVistaBackButton.
-#if QT_CONFIG(shortcut)
-    if (btns[QWizard::NextButton] && isVistaThemeEnabled())
-        btns[QWizard::NextButton]->setShortcut(QKeySequence(Qt::ALT | Qt::Key_Right));
-#endif
+#if QT_CONFIG(shortcut) && QT_CONFIG(style_windowsvista)
+    if (btns[QWizard::NextButton] && isVistaThemeEnabled()) {
+        if (vistaNextShortcut.isNull()) {
+            vistaNextShortcut =
+                new QShortcut(QKeySequence(Qt::ALT | Qt::Key_Right),
+                              btns[QWizard::NextButton], SLOT(animateClick()));
+        }
+    } else {
+        delete vistaNextShortcut;
+    }
+#endif // shortcut && style_windowsvista
 }
 
 void QWizardPrivate::updateButtonLayout()
