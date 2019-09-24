@@ -233,27 +233,37 @@ bool qrhi_toTopLeftRenderTargetRect(const QSize &outputSize, const std::array<T,
                                     T *x, T *y, T *w, T *h)
 {
     // x,y are bottom-left in QRhiScissor and QRhiViewport but top-left in
-    // Vulkan/Metal/D3D. We also need proper clamping since some
-    // validation/debug layers are allergic to out of bounds scissor or
-    // viewport rects.
+    // Vulkan/Metal/D3D. Our input is an OpenGL-style scissor rect where both
+    // negative x or y, and partly or completely out of bounds rects are
+    // allowed. The only thing the input here cannot have is a negative width
+    // or height. We must handle all other input gracefully, clamping to a zero
+    // width or height rect in the worst case, and ensuring the resulting rect
+    // is inside the rendertarget's bounds because some APIs' validation/debug
+    // layers are allergic to out of bounds scissor or viewport rects.
 
     const T outputWidth = outputSize.width();
     const T outputHeight = outputSize.height();
     const T inputWidth = r[2];
     const T inputHeight = r[3];
 
-    *x = qMax<T>(0, r[0]);
-    *y = qMax<T>(0, outputHeight - (r[1] + inputHeight));
-    *w = inputWidth;
-    *h = inputHeight;
-
-    if (*x >= outputWidth || *y >= outputHeight)
+    if (inputWidth < 0 || inputHeight < 0)
         return false;
 
+    *x = r[0];
+    *y = outputHeight - (r[1] + inputHeight);
+
+    const T widthOffset = *x < 0 ? -*x : 0;
+    const T heightOffset = *y < 0 ? -*y : 0;
+
+    *x = qBound<T>(0, *x, outputWidth - 1);
+    *y = qBound<T>(0, *y, outputHeight - 1);
+    *w = qMax<T>(0, inputWidth - widthOffset);
+    *h = qMax<T>(0, inputHeight - heightOffset);
+
     if (*x + *w > outputWidth)
-        *w = outputWidth - *x;
+        *w = qMax<T>(0, outputWidth - *x - 1);
     if (*y + *h > outputHeight)
-        *h = outputHeight - *y;
+        *h = qMax<T>(0, outputHeight - *y - 1);
 
     return true;
 }
