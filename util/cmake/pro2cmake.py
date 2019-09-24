@@ -3296,13 +3296,7 @@ def handle_config_test_project(scope: Scope, cm_fh: IO[str]):
     # Remove default QT libs.
     scope._append_operation("QT", RemoveOperation(["core", "gui"]))
 
-    config = scope.get("CONFIG")
-    gui = all(val not in config for val in ["console", "cmdline"])
-
     add_target = f"add_executable(${{PROJECT_NAME}}"
-
-    if gui:
-        add_target += " WIN32 MACOSX_BUNDLE"
 
     temp_buffer = io.StringIO()
     write_all_source_file_lists(temp_buffer, scope, add_target, indent=0)
