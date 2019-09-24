@@ -352,6 +352,7 @@ _library_map = [
     LibraryMapping("bluez", "BlueZ", "PkgConfig::BlueZ"),
     LibraryMapping("corewlan", None, None),
     LibraryMapping("cups", "Cups", "Cups::Cups"),
+    LibraryMapping("directfb", "DirectFB", "PkgConfig::DirectFB"),
     LibraryMapping("db2", "DB2", "DB2::DB2"),
     LibraryMapping("dbus", "WrapDBus1", "dbus-1", resultVariable="DBus1"),
     LibraryMapping("doubleconversion", None, None),

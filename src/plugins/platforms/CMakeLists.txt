@@ -44,7 +44,7 @@ if(QT_FEATURE_eglfs)
 endif()
 
 if(QT_FEATURE_directfb)
-#    TODO   add_subdirectory(directfb)
+    add_subdirectory(directfb)
 endif()
 
 if(QT_FEATURE_linuxfb)

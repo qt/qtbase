@@ -27,6 +27,7 @@ set_property(CACHE INPUT_xcb PROPERTY STRINGS undefined no yes qt system)
 #### Libraries
 
 qt_find_package(ATSPI2 PROVIDED_TARGETS PkgConfig::ATSPI2)
+qt_find_package(DirectFB PROVIDED_TARGETS PkgConfig::DirectFB)
 qt_find_package(Libdrm PROVIDED_TARGETS Libdrm::Libdrm)
 qt_find_package(EGL PROVIDED_TARGETS EGL::EGL)
 qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype)
@@ -499,7 +500,7 @@ qt_feature("directfb" PRIVATE
     SECTION "Platform plugins"
     LABEL "DirectFB"
     AUTODETECT OFF
-    CONDITION libs.directfb OR FIXME
+    CONDITION DirectFB_FOUND
 )
 qt_feature("directwrite" PRIVATE
     LABEL "DirectWrite"
