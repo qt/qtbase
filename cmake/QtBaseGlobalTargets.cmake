@@ -174,6 +174,7 @@ qt_internal_export_modern_cmake_config_targets_file(TARGETS ${__export_targets}
 
 ## Install some QtBase specific CMake files:
 qt_copy_or_install(FILES
+                   cmake/ModuleDescription.json.in
                    cmake/QtBuild.cmake
                    cmake/QtCompilerFlags.cmake
                    cmake/QtCompilerOptimization.cmake

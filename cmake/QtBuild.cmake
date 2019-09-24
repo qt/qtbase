@@ -35,6 +35,7 @@ set(INSTALL_SYSCONFDIR "etc/xdg" CACHE PATH
     "Settings used by Qt programs [PREFIX/etc/xdg]")
 set(INSTALL_EXAMPLESDIR "examples" CACHE PATH "Examples [PREFIX/examples]")
 set(INSTALL_TESTSDIR "tests" CACHE PATH "Tests [PREFIX/tests]")
+set(INSTALL_DESCRIPTIONSDIR "${INSTALL_DATADIR}/modules" CACHE PATH "Module description files directory")
 
 # The variables might have already been set in QtBuildInternalsExtra.cmake if the file is included
 # while building a new module and not QtBase. In that case, stop overriding the value.
@@ -62,6 +63,23 @@ SET(CMAKE_INSTALL_RPATH "${_default_install_rpath}" CACHE PATH "RPATH for instal
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# Generate a module description file based on the template in ModuleDescription.json.in
+function(qt_describe_module target)
+    set(path_suffix "${INSTALL_DESCRIPTIONSDIR}")
+    qt_path_join(build_dir ${QT_BUILD_DIR} ${path_suffix})
+    qt_path_join(install_dir ${QT_INSTALL_DIR} ${path_suffix})
+
+    set(descfile_in "${QT_CMAKE_DIR}/ModuleDescription.json.in")
+    set(descfile_out "${build_dir}/${target}.json")
+    set(cross_compilation "false")
+    if(CMAKE_CROSSCOMPILE)
+        set(cross_compilation "true")
+    endif()
+    configure_file("${descfile_in}" "${descfile_out}")
+
+    qt_install(FILES "${descfile_out}" DESTINATION "${install_dir}")
+endfunction()
 
 function(qt_setup_tool_path_command)
     if(NOT WIN32)
@@ -1632,6 +1650,8 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     if(NOT ${arg_NO_PRIVATE_MODULE})
         target_include_directories("${target_private}" INTERFACE ${interface_includes})
     endif()
+
+    qt_describe_module(${target})
 endfunction()
 
 function(qt_export_tools module_name)
