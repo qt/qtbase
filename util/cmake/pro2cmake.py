@@ -2905,6 +2905,8 @@ def write_example(
                     add_target += "    DEPENDENCIES\n"
                     for dep in qml_dir.depends:
                         add_target += f"        {dep[0]}/{dep[1]}\n"
+                if len(qml_dir.type_names) == 0:
+                    add_target += "    SKIP_TYPE_REGISTRATION\n"
 
             add_target += "    INSTALL_LOCATION ${INSTALL_EXAMPLEDIR}\n)\n\n"
             add_target += f"target_sources({binary_name} PRIVATE"
@@ -3056,6 +3058,8 @@ def write_qml_plugin(
             extra_lines.append("DEPENDENCIES")
             for dep in qml_dir.depends:
                 extra_lines.append(f"    {dep[0]}/{dep[1]}")
+        if len(qml_dir.type_names) == 0:
+            extra_lines.append("SKIP_TYPE_REGISTRATION")
 
         return qml_dir
 
