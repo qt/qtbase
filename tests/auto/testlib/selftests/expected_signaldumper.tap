@@ -143,9 +143,11 @@ ok 18 - slotEmittingSignalOldSyntax(queued)
 # Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())
 # Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())
 ok 19 - variousTypes()
-ok 20 - cleanupTestCase()
-# Signal: QThread(_POINTER_) finished ()
-1..20
-# tests 20
-# pass 20
+# Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()
+ok 20 - deletingSender()
+ok 21 - cleanupTestCase()
+#     Signal: QThread(_POINTER_) finished ()
+1..21
+# tests 21
+# pass 21
 # fail 0

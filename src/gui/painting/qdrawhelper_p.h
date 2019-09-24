@@ -671,6 +671,8 @@ static Q_ALWAYS_INLINE void blend_pixel(quint32 &dst, const quint32 src)
 
 static Q_ALWAYS_INLINE void blend_pixel(quint32 &dst, const quint32 src, const int const_alpha)
 {
+    if (const_alpha == 255)
+        return blend_pixel(dst, src);
     if (src != 0) {
         const quint32 s = BYTE_MUL(src, const_alpha);
         dst = s + BYTE_MUL(dst, qAlpha(~s));

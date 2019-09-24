@@ -568,11 +568,18 @@
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
 </TestFunction>
+<TestFunction name="deletingSender">
+<Message type="info" file="" line="0">
+    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]></Description>
+</Message>
+<Incident type="pass" file="" line="0" />
+    <Duration msecs="0"/>
+</TestFunction>
 <TestFunction name="cleanupTestCase">
 <Incident type="pass" file="" line="0" />
     <Duration msecs="0"/>
 </TestFunction>
 <Message type="info" file="" line="0">
-    <Description><![CDATA[Signal: QThread(_POINTER_) finished ()]]></Description>
+    <Description><![CDATA[    Signal: QThread(_POINTER_) finished ()]]></Description>
 </Message>
 <Duration msecs="0"/>
