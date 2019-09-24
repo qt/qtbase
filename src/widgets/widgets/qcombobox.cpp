@@ -91,30 +91,11 @@ QT_BEGIN_NAMESPACE
 
 QComboBoxPrivate::QComboBoxPrivate()
     : QWidgetPrivate(),
-      model(0),
-      lineEdit(0),
-      container(0),
-      insertPolicy(QComboBox::InsertAtBottom),
-      sizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow),
-      minimumContentsLength(0),
       shownOnce(false),
       autoCompletion(true),
       duplicatesEnabled(false),
       frame(true),
-      maxVisibleItems(10),
-      maxCount(INT_MAX),
-      modelColumn(0),
-      inserting(false),
-      arrowState(QStyle::State_None),
-      hoverControl(QStyle::SC_None),
-      autoCompletionCaseSensitivity(Qt::CaseInsensitive),
-      indexBeforeChange(-1)
-#ifdef Q_OS_MAC
-      , m_platformMenu(0)
-#endif
-#if QT_CONFIG(completer)
-      , completer(0)
-#endif
+      inserting(false)
 {
 }
 
@@ -447,12 +428,8 @@ void QComboBoxPrivateContainer::paintEvent(QPaintEvent *e)
     QFrame::paintEvent(e);
 }
 
-void QComboBoxPrivateContainer::leaveEvent(QEvent *)
-{
-}
-
 QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView, QComboBox *parent)
-    : QFrame(parent, Qt::Popup), combo(parent), view(0), top(0), bottom(0), maybeIgnoreMouseButtonRelease(false)
+    : QFrame(parent, Qt::Popup), combo(parent)
 {
     // we need the combobox and itemview
     Q_ASSERT(parent);
@@ -557,7 +534,7 @@ void QComboBoxPrivateContainer::updateScrollers()
 */
 void QComboBoxPrivateContainer::viewDestroyed()
 {
-    view = 0;
+    view = nullptr;
     setItemView(new QComboBoxListView());
 }
 
@@ -591,7 +568,7 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
 
         if (isAncestorOf(view))
             delete view;
-        view = 0;
+        view = nullptr;
     }
 
     // setup the item view
@@ -1568,7 +1545,7 @@ void QComboBox::setAutoCompletion(bool enable)
         d->lineEdit->setCompleter(d->completer);
         d->completer->setWidget(this);
     } else {
-        d->lineEdit->setCompleter(0);
+        d->lineEdit->setCompleter(nullptr);
     }
 }
 
@@ -1757,7 +1734,7 @@ QSize QComboBox::iconSize() const
     if (d->iconSize.isValid())
         return d->iconSize;
 
-    int iconWidth = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
+    int iconWidth = style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, this);
     return QSize(iconWidth, iconWidth);
 }
 
@@ -1827,7 +1804,7 @@ QString QComboBox::placeholderText() const
 bool QComboBox::isEditable() const
 {
     Q_D(const QComboBox);
-    return d->lineEdit != 0;
+    return d->lineEdit != nullptr;
 }
 
 /*! \internal
@@ -1883,7 +1860,7 @@ void QComboBox::setEditable(bool editable)
         setAttribute(Qt::WA_InputMethodEnabled, false);
         d->lineEdit->hide();
         d->lineEdit->deleteLater();
-        d->lineEdit = 0;
+        d->lineEdit = nullptr;
     }
 
     d->updateDelegate();
@@ -1932,6 +1909,8 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     d->lineEdit->setFocusProxy(this);
     d->lineEdit->setAttribute(Qt::WA_MacShowFocusRect, false);
 #if QT_DEPRECATED_SINCE(5, 13)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 #if QT_CONFIG(completer)
     setAutoCompletion(d->autoCompletion);
 
@@ -1948,6 +1927,7 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     }
 #endif
 #endif
+QT_WARNING_POP
 #endif
 
     setAttribute(Qt::WA_InputMethodEnabled);
@@ -1996,7 +1976,7 @@ void QComboBox::setValidator(const QValidator *v)
 const QValidator *QComboBox::validator() const
 {
     Q_D(const QComboBox);
-    return d->lineEdit ? d->lineEdit->validator() : 0;
+    return d->lineEdit ? d->lineEdit->validator() : nullptr;
 }
 #endif // QT_NO_VALIDATOR
 
@@ -2040,7 +2020,7 @@ void QComboBox::setCompleter(QCompleter *c)
 QCompleter *QComboBox::completer() const
 {
     Q_D(const QComboBox);
-    return d->lineEdit ? d->lineEdit->completer() : 0;
+    return d->lineEdit ? d->lineEdit->completer() : nullptr;
 }
 
 #endif // QT_CONFIG(completer)
@@ -2927,7 +2907,7 @@ void QComboBox::hidePopup()
         QSignalBlocker containerBlocker(d->container);
         // Flash selected/triggered item (if any).
         if (style()->styleHint(QStyle::SH_Menu_FlashTriggeredItem)) {
-            QItemSelectionModel *selectionModel = view() ? view()->selectionModel() : 0;
+            QItemSelectionModel *selectionModel = view() ? view()->selectionModel() : nullptr;
             if (selectionModel && selectionModel->hasSelection()) {
                 QEventLoop eventLoop;
                 const QItemSelection selection = selectionModel->selection();
