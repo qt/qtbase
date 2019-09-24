@@ -2945,7 +2945,7 @@ def write_example(
     )
 
     write_resources(cm_fh, binary_name, scope, indent=indent, is_example=True)
-    write_statecharts(cm_fh, binary_name, scope, indent=indent)
+    write_statecharts(cm_fh, binary_name, scope, indent=indent, is_example=True)
 
     if qmldir:
         write_qml_plugin_epilogue(cm_fh, binary_name, scope, qmldir, indent)
