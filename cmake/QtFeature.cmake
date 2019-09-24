@@ -474,8 +474,16 @@ function(qt_config_compile_test name)
     cmake_parse_arguments(arg "" "LABEL;PROJECT_PATH" "LIBRARIES;CODE" ${ARGN})
 
     if(arg_PROJECT_PATH)
+        message(STATUS "Performing Test ${arg_LABEL}")
         try_compile(HAVE_${name} "${CMAKE_BINARY_DIR}/config.tests/${name}" "${arg_PROJECT_PATH}"
                     "${name}")
+
+        if(${HAVE_${name}})
+            set(status_label "Success")
+        else()
+            set(status_label "Failed")
+        endif()
+        message(STATUS "Performing Test ${arg_LABEL} - ${status_label}")
     else()
         foreach(library IN ITEMS ${arg_LIBRARIES})
             if(NOT TARGET "${library}")
@@ -505,6 +513,7 @@ function(qt_config_compile_test_x86simd extension label)
         return()
     endif()
 
+    message(STATUS "Performing SIMD Test ${label}")
     try_compile("TEST_X86SIMD_${extension}"
         "${CMAKE_CURRENT_BINARY_DIR}/config.tests/x86_simd_${extension}"
         "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/x86_simd"
