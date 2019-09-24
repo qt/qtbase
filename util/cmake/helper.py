@@ -349,6 +349,7 @@ _qt_library_map = [
 _library_map = [
     # 3rd party:
     LibraryMapping("atspi", "ATSPI2", "PkgConfig::ATSPI2"),
+    LibraryMapping("bluez", "BlueZ", "PkgConfig::BlueZ"),
     LibraryMapping("corewlan", None, None),
     LibraryMapping("cups", "Cups", "Cups::Cups"),
     LibraryMapping("db2", "DB2", "DB2::DB2"),
