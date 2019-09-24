@@ -1,5 +1,5 @@
 if (APPLE_OSX)
-#     TODO add_subdirectory(cocoa)
+    add_subdirectory(cocoa)
 endif()
 
 if (WIN32)
