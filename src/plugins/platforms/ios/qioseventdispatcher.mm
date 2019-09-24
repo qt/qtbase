@@ -211,6 +211,8 @@ namespace
     } logActivity;
 }
 
+using namespace QT_PREPEND_NAMESPACE(QtPrivate);
+
 extern "C" int qt_main_wrapper(int argc, char *argv[])
 {
     @autoreleasepool {
