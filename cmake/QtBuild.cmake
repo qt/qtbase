@@ -1,11 +1,11 @@
 include(CMakePackageConfigHelpers)
 
 # Install locations:
-set(INSTALL_BINDIR "bin" CACHE PATH "Executables [PREFIX/bin]")
-set(INSTALL_INCLUDEDIR "include" CACHE PATH "Header files [PREFIX/include]")
-set(INSTALL_LIBDIR "lib" CACHE PATH "Libraries [PREFIX/lib]")
-set(INSTALL_ARCHDATADIR "." CACHE PATH "Arch-dependent data [PREFIX]")
-set(INSTALL_PLUGINSDIR "${INSTALL_ARCHDATADIR}/plugins" CACHE PATH
+set(INSTALL_BINDIR "bin" CACHE STRING "Executables [PREFIX/bin]")
+set(INSTALL_INCLUDEDIR "include" CACHE STRING "Header files [PREFIX/include]")
+set(INSTALL_LIBDIR "lib" CACHE STRING "Libraries [PREFIX/lib]")
+set(INSTALL_ARCHDATADIR "." CACHE STRING "Arch-dependent data [PREFIX]")
+set(INSTALL_PLUGINSDIR "${INSTALL_ARCHDATADIR}/plugins" CACHE STRING
     "Plugins [ARCHDATADIR/plugins]")
 
 set(INSTALL_TARGETS_DEFAULT_ARGS
@@ -21,21 +21,22 @@ else()
     set(_default_libexec "${INSTALL_ARCHDATADIR}/libexec")
 endif()
 
-set(INSTALL_LIBEXECDIR "${_default_libexec}" CACHE PATH
+set(INSTALL_LIBEXECDIR "${_default_libexec}" CACHE STRING
     "Helper programs [ARCHDATADIR/bin on Windows, ARCHDATADIR/libexec otherwise]")
-set(INSTALL_IMPORTDIR "${INSTALL_ARCHDATADIR}/imports" CACHE PATH
+set(INSTALL_IMPORTDIR "${INSTALL_ARCHDATADIR}/imports" CACHE STRING
     "QML1 imports [ARCHDATADIR/imports]")
-set(INSTALL_QMLDIR "${INSTALL_ARCHDATADIR}/qml" CACHE PATH
+set(INSTALL_QMLDIR "${INSTALL_ARCHDATADIR}/qml" CACHE STRING
     "QML2 imports [ARCHDATADIR/qml]")
-set(INSTALL_DATADIR "." CACHE PATH  "Arch-independent data [PREFIX]")
-set(INSTALL_DOCDIR "${INSTALL_DATADIR}/doc" CACHE PATH "Documentation [DATADIR/doc]")
-set(INSTALL_TRANSLATIONSDIR "${INSTALL_DATADIR}/translations" CACHE PATH
+set(INSTALL_DATADIR "." CACHE STRING  "Arch-independent data [PREFIX]")
+set(INSTALL_DOCDIR "${INSTALL_DATADIR}/doc" CACHE STRING "Documentation [DATADIR/doc]")
+set(INSTALL_TRANSLATIONSDIR "${INSTALL_DATADIR}/translations" CACHE STRING
     "Translations [DATADIR/translations]")
-set(INSTALL_SYSCONFDIR "etc/xdg" CACHE PATH
+set(INSTALL_SYSCONFDIR "etc/xdg" CACHE STRING
     "Settings used by Qt programs [PREFIX/etc/xdg]")
-set(INSTALL_EXAMPLESDIR "examples" CACHE PATH "Examples [PREFIX/examples]")
-set(INSTALL_TESTSDIR "tests" CACHE PATH "Tests [PREFIX/tests]")
-set(INSTALL_DESCRIPTIONSDIR "${INSTALL_DATADIR}/modules" CACHE PATH "Module description files directory")
+set(INSTALL_EXAMPLESDIR "examples" CACHE STRING "Examples [PREFIX/examples]")
+set(INSTALL_TESTSDIR "tests" CACHE STRING "Tests [PREFIX/tests]")
+set(INSTALL_DESCRIPTIONSDIR "${INSTALL_DATADIR}/modules" CACHE STRING
+    "Module description files directory")
 
 # The variables might have already been set in QtBuildInternalsExtra.cmake if the file is included
 # while building a new module and not QtBase. In that case, stop overriding the value.
