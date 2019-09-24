@@ -368,6 +368,8 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
         }
         if (minimumContentsLength > 0)
             sh.setWidth(qMax(sh.width(), minimumContentsLength * fm.horizontalAdvance(QLatin1Char('X')) + (hasIcon ? iconSize.width() + 4 : 0)));
+        if (!placeholderText.isEmpty())
+            sh.setWidth(qMax(sh.width(), fm.boundingRect(placeholderText).width()));
 
 
         // height
@@ -1110,8 +1112,9 @@ void QComboBoxPrivate::_q_rowsInserted(const QModelIndex &parent, int start, int
         q->updateGeometry();
     }
 
-    // set current index if combo was previously empty
-    if (start == 0 && (end - start + 1) == q->count() && !currentIndex.isValid()) {
+    // set current index if combo was previously empty and there is no placeholderText
+    if (start == 0 && (end - start + 1) == q->count() && !currentIndex.isValid() &&
+        placeholderText.isEmpty()) {
         q->setCurrentIndex(0);
         // need to emit changed if model updated index "silently"
     } else if (currentIndex.row() != indexBeforeChange) {
@@ -1214,10 +1217,9 @@ void QComboBox::initStyleOption(QStyleOptionComboBox *option) const
     } else {
         option->activeSubControls = d->hoverControl;
     }
-    if (d->currentIndex.isValid()) {
-        option->currentText = currentText();
+    option->currentText = currentText();
+    if (d->currentIndex.isValid())
         option->currentIcon = d->itemIcon(d->currentIndex);
-    }
     option->iconSize = iconSize();
     if (d->container && d->container->isVisible())
         option->state |= QStyle::State_On;
@@ -1772,6 +1774,45 @@ void QComboBox::setIconSize(const QSize &size)
 }
 
 /*!
+    \property QComboBox::placeholderText
+    \brief Sets a \a placeholderText text shown when no valid index is set
+
+    The \a placeholderText will be shown when an invalid index is set. The
+    text is not accessible in the dropdown list. When this function is called
+    before items are added the placeholder text will be shown, otherwise you
+    have to call setCurrentIndex(-1) programmatically if you want to show the
+    placeholder text.
+    Set an empty placeholder text to reset the setting.
+
+    When the QComboBox is editable, use QLineEdit::setPlaceholderText()
+    instead.
+
+    \since 5.15
+*/
+void QComboBox::setPlaceholderText(const QString &placeholderText)
+{
+    Q_D(QComboBox);
+    if (placeholderText == d->placeholderText)
+        return;
+
+    d->placeholderText = placeholderText;
+    if (currentIndex() == -1) {
+      if (d->placeholderText.isEmpty() && currentIndex() == -1)
+        setCurrentIndex(0);
+      else
+        update();
+    } else {
+      updateGeometry();
+    }
+}
+
+QString QComboBox::placeholderText() const
+{
+    Q_D(const QComboBox);
+    return d->placeholderText;
+}
+
+/*!
     \property QComboBox::editable
     \brief whether the combo box can be edited by the user
 
@@ -2249,7 +2290,7 @@ QString QComboBox::currentText() const
     else if (d->currentIndex.isValid())
         return d->itemText(d->currentIndex);
     else
-        return QString();
+        return d->placeholderText;
 }
 
 /*!
@@ -3078,6 +3119,9 @@ void QComboBox::paintEvent(QPaintEvent *)
     QStyleOptionComboBox opt;
     initStyleOption(&opt);
     painter.drawComplexControl(QStyle::CC_ComboBox, opt);
+
+    if (currentIndex() < 0)
+        opt.palette.setBrush(QPalette::ButtonText, opt.palette.brush(QPalette::ButtonText).color().lighter());
 
     // draw the icon and text
     painter.drawControl(QStyle::CE_ComboBoxLabel, opt);

@@ -417,6 +417,7 @@ public:
     int maxVisibleItems;
     int maxCount;
     int modelColumn;
+    QString placeholderText;
     bool inserting;
     mutable QSize minimumSizeHint;
     mutable QSize sizeHint;
