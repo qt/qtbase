@@ -284,6 +284,8 @@ static Q_ALWAYS_INLINE void blend_pixel(QRgba64 &dst, QRgba64 src)
 
 static Q_ALWAYS_INLINE void blend_pixel(QRgba64 &dst, QRgba64 src, const int const_alpha)
 {
+    if (const_alpha == 255)
+        return blend_pixel(dst, src);
     if (!src.isTransparent()) {
         src = multiplyAlpha255(src, const_alpha);
         dst = src + multiplyAlpha65535(dst, 65535 - src.alpha());

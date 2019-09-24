@@ -3524,7 +3524,10 @@ QSize QMetalSwapChain::surfacePixelSize()
     if (v) {
         CAMetalLayer *layer = (CAMetalLayer *) [v layer];
         if (layer) {
-            CGSize size = [layer drawableSize];
+            CGSize size = layer.bounds.size;
+            size.width *= layer.contentsScale;
+            size.height *= layer.contentsScale;
+            layer.drawableSize = size;
             return QSize(int(size.width), int(size.height));
         }
     }

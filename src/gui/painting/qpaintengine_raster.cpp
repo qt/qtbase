@@ -842,8 +842,8 @@ void QRasterPaintEngine::updateRasterState()
         const QPainter::CompositionMode mode = s->composition_mode;
         s->flags.fast_text = (s->penData.type == QSpanData::Solid)
                        && s->intOpacity == 256
-                       && (mode == QPainter::CompositionMode_Source
-                           || (mode == QPainter::CompositionMode_SourceOver
+                       && (mode == QPainter::CompositionMode_SourceOver
+                           || (mode == QPainter::CompositionMode_Source
                                && s->penData.solidColor.isOpaque()));
     }
 

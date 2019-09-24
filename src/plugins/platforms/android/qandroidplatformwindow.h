@@ -65,8 +65,8 @@ public:
     void setParent(const QPlatformWindow *window) override;
     WId winId() const override { return m_windowId; }
 
-    bool setMouseGrabEnabled(bool grab) override { return false; }
-    bool setKeyboardGrabEnabled(bool grab) override { return false; }
+    bool setMouseGrabEnabled(bool grab) override { Q_UNUSED(grab); return false; }
+    bool setKeyboardGrabEnabled(bool grab) override { Q_UNUSED(grab); return false; }
 
     QAndroidPlatformScreen *platformScreen() const;
 
