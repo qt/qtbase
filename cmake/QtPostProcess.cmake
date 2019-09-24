@@ -12,13 +12,20 @@ function(qt_internal_write_depends_file target)
     file(GENERATE OUTPUT "${outfile}" CONTENT "${contents}")
 endfunction()
 
-macro(qt_collect_third_party_deps)
+macro(qt_collect_third_party_deps target)
+    set(_target_is_static OFF)
+    get_target_property(_target_type ${target} TYPE)
+    if (${_target_type} STREQUAL "STATIC_LIBRARY")
+        set(_target_is_static ON)
+    endif()
+    unset(_target_type)
     # If we are doing a non-static Qt build, we only want to propagate public dependencies.
     # If we are doing a static Qt build, we need to propagate all dependencies.
     set(depends_var "public_depends")
-    if(NOT QT_BUILD_SHARED_LIBS)
+    if(_target_is_static)
         set(depends_var "depends")
     endif()
+    unset(_target_is_static)
 
     foreach(dep ${${depends_var}})
         # Gather third party packages that should be found when using the Qt module.
@@ -121,7 +128,7 @@ function(qt_internal_create_module_depends_file target)
         endif()
     endforeach()
 
-    qt_collect_third_party_deps()
+    qt_collect_third_party_deps(${target})
 
     # Add dependency to the main ModuleTool package to ModuleDependencies file.
     if(${target} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
@@ -203,7 +210,7 @@ function(qt_internal_create_plugin_depends_file target)
     get_target_property(target_deps "${target}" _qt_target_deps)
     set(target_deps_seen "")
 
-    qt_collect_third_party_deps()
+    qt_collect_third_party_deps(${target})
 
     # Dirty hack because https://gitlab.kitware.com/cmake/cmake/issues/19200
     foreach(dep ${target_deps})
