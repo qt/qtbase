@@ -523,6 +523,7 @@ def parseTest(ctx, test, data, cm_fh):
                 f"""
 if(EXISTS "${{CMAKE_CURRENT_SOURCE_DIR}}/{ctx['test_dir']}/{data['test']}/CMakeLists.txt")
     qt_config_compile_test("{data['test']}"
+                           LABEL "{data['label']}"
                            PROJECT_PATH "${{CMAKE_CURRENT_SOURCE_DIR}}/{ctx['test_dir']}/{data['test']}")
 endif()
 """
