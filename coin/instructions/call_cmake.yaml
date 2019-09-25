@@ -2,6 +2,7 @@ type: Group
 instructions:
   - type: ExecuteCommand
     command: "{{.Env.ENV_PREFIX}} {{.InstallDir}}\\bin\\qt-cmake {{.Env.COIN_CMAKE_ARGS}}"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
     maxTimeInSeconds: 6000
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
