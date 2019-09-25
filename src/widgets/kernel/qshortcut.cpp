@@ -419,6 +419,76 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
     \sa activated()
 */
 
+/*!
+    \fn template<typename Functor>
+        QShortcut(const QKeySequence &key, QWidget *parent,
+                  Functor functor,
+                  Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+    \since 5.15
+    \overload
+
+    This is a QShortcut convenience constructor which connects the shortcut's
+    \l{QShortcut::activated()}{activated()} signal to the \a functor.
+*/
+/*!
+    \fn template<typename Functor>
+        QShortcut(const QKeySequence &key, QWidget *parent,
+                  const QObject *context, Functor functor,
+                  Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+    \since 5.15
+    \overload
+
+    This is a QShortcut convenience constructor which connects the shortcut's
+    \l{QShortcut::activated()}{activated()} signal to the \a functor.
+
+    The \a functor can be a pointer to a member function of the \a context object.
+
+    If the \a context object is destroyed, the \a functor will not be called.
+*/
+/*!
+    \fn template<typename Functor, typename FunctorAmbiguous>
+        QShortcut(const QKeySequence &key, QWidget *parent,
+                  const QObject *context1, Functor functor,
+                  FunctorAmbiguous functorAmbiguous,
+                  Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+    \since 5.15
+    \overload
+
+    This is a QShortcut convenience constructor which connects the shortcut's
+    \l{QShortcut::activated()}{activated()} signal to the \a functor and
+    \l{QShortcut::activatedAmbiguously()}{activatedAmbiguously()}
+    signal to the \a FunctorAmbiguous.
+
+    The \a functor and \a FunctorAmbiguous can be a pointer to a member
+    function of the \a context object.
+
+    If the \a context object is destroyed, the \a functor and
+    \a FunctorAmbiguous will not be called.
+*/
+/*!
+    \fn template<typename Functor, typename FunctorAmbiguous>
+        QShortcut(const QKeySequence &key, QWidget *parent,
+                  const QObject *context1, Functor functor,
+                  const QObject *context2, FunctorAmbiguous functorAmbiguous,
+                  Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+    \since 5.15
+    \overload
+
+    This is a QShortcut convenience constructor which connects the shortcut's
+    \l{QShortcut::activated()}{activated()} signal to the \a functor and
+    \l{QShortcut::activatedAmbiguously()}{activatedAmbiguously()}
+    signal to the \a FunctorAmbiguous.
+
+    The \a functor can be a pointer to a member function of the
+    \a context1 object.
+    The \a FunctorAmbiguous can be a pointer to a member function of the
+    \a context2 object.
+
+    If the \a context1 object is destroyed, the \a functor will not be called.
+    If the \a context2 object is destroyed, the \a FunctorAmbiguous
+    will not be called.
+*/
+
 /*
     \internal
     Private data accessed through d-pointer.
@@ -479,13 +549,13 @@ QShortcut::QShortcut(QWidget *parent)
 */
 QShortcut::QShortcut(const QKeySequence &key, QWidget *parent,
                      const char *member, const char *ambiguousMember,
-                     Qt::ShortcutContext context)
+                     Qt::ShortcutContext shortcutContext)
     : QShortcut(parent)
 {
     QAPP_CHECK("QShortcut");
 
     Q_D(QShortcut);
-    d->sc_context = context;
+    d->sc_context = shortcutContext;
     d->sc_sequence = key;
     d->redoGrab(QGuiApplicationPrivate::instance()->shortcutMap);
     if (member)
