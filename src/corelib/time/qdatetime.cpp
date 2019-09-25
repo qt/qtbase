@@ -3548,6 +3548,7 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 */
 
 /*!
+    \since 5.14
     \enum QDateTime::YearRange
 
     This enumerated type describes the range of years (in the Gregorian
