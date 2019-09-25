@@ -110,7 +110,7 @@ def find_all_pro_files(base_path: str, args: argparse.Namespace):
             "concurrent",
             "xml",
         ]
-        path_suffixes = ["src/{m}/{m}.pro" for m in main_modules]
+        path_suffixes = [f"src/{m}/{m}.pro" for m in main_modules]
 
         for path_suffix in path_suffixes:
             if path.endswith(path_suffix):
