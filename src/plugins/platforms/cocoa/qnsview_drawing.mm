@@ -71,24 +71,6 @@
     return YES;
 }
 
-- (void)drawRect:(NSRect)dirtyRect
-{
-    Q_UNUSED(dirtyRect);
-
-    if (!m_platformWindow)
-        return;
-
-    QRegion exposedRegion;
-    const NSRect *dirtyRects;
-    NSInteger numDirtyRects;
-    [self getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
-    for (int i = 0; i < numDirtyRects; ++i)
-        exposedRegion += QRectF::fromCGRect(dirtyRects[i]).toRect();
-
-    qCDebug(lcQpaDrawing) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
-    m_platformWindow->handleExposeEvent(exposedRegion);
-}
-
 - (BOOL)layerEnabledByMacOS
 {
     // AppKit has its own logic for this, but if we rely on that, our layers are created
@@ -173,28 +155,6 @@
 }
 #endif
 
-- (void)displayLayer:(CALayer *)layer
-{
-    if (!NSThread.isMainThread) {
-        // Qt is calling AppKit APIs such as -[NSOpenGLContext setView:] on secondary threads,
-        // which we shouldn't do. This may result in AppKit (wrongly) triggering a display on
-        // the thread where we made the call, so block it here and defer to the main thread.
-        qCWarning(lcQpaDrawing) << "Display non non-main thread! Deferring to main thread";
-        dispatch_async(dispatch_get_main_queue(), ^{ self.needsDisplay = YES; });
-        return;
-    }
-
-    Q_ASSERT(layer == self.layer);
-
-    if (!m_platformWindow)
-        return;
-
-    qCDebug(lcQpaDrawing) << "[QNSView displayLayer]" << m_platformWindow->window();
-
-    // FIXME: Find out if there's a way to resolve the dirty rect like in drawRect:
-    m_platformWindow->handleExposeEvent(QRectF::fromCGRect(self.bounds).toRect());
-}
-
 - (void)viewDidChangeBackingProperties
 {
     qCDebug(lcQpaDrawing) << "Backing properties changed for" << self;
@@ -207,6 +167,58 @@
     // For now we trigger an expose, and let QCocoaBackingStore deal with
     // buffer invalidation internally.
     [self setNeedsDisplay:YES];
+}
+
+// ----------------------- Draw callbacks -----------------------
+
+/*
+    This method is called by AppKit for the non-layer case, where we are
+    drawing into the NSWindow's surface.
+*/
+- (void)drawRect:(NSRect)dirtyRect
+{
+    Q_UNUSED(dirtyRect);
+
+    Q_ASSERT_X(!self.layer, "QNSView",
+        "The drawRect code path should not be hit when we are layer backed");
+
+    if (!m_platformWindow)
+        return;
+
+    QRegion exposedRegion;
+    const NSRect *dirtyRects;
+    NSInteger numDirtyRects;
+    [self getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
+    for (int i = 0; i < numDirtyRects; ++i)
+        exposedRegion += QRectF::fromCGRect(dirtyRects[i]).toRect();
+
+    qCDebug(lcQpaDrawing) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
+    m_platformWindow->handleExposeEvent(exposedRegion);
+}
+
+/*
+    This method is called by AppKit when we are layer-backed, where
+    we are drawing into the layer.
+*/
+- (void)displayLayer:(CALayer *)layer
+{
+    Q_ASSERT_X(self.layer && layer == self.layer, "QNSView",
+        "The displayLayer code path should only be hit for our own layer");
+
+    if (!m_platformWindow)
+        return;
+
+    if (!NSThread.isMainThread) {
+        // Qt is calling AppKit APIs such as -[NSOpenGLContext setView:] on secondary threads,
+        // which we shouldn't do. This may result in AppKit (wrongly) triggering a display on
+        // the thread where we made the call, so block it here and defer to the main thread.
+        qCWarning(lcQpaDrawing) << "Display non non-main thread! Deferring to main thread";
+        dispatch_async(dispatch_get_main_queue(), ^{ self.needsDisplay = YES; });
+        return;
+    }
+
+    qCDebug(lcQpaDrawing) << "[QNSView displayLayer]" << m_platformWindow->window();
+    m_platformWindow->handleExposeEvent(QRectF::fromCGRect(self.bounds).toRect());
 }
 
 @end
