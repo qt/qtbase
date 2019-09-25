@@ -793,6 +793,13 @@ QString qt_resolveFontFamilyAlias(const QString &alias)
     return alias;
 }
 
+Q_GUI_EXPORT bool qt_isFontFamilyPopulated(const QString &familyName)
+{
+    QFontDatabasePrivate *d = privateDb();
+    QtFontFamily *f = d->family(familyName, QFontDatabasePrivate::RequestFamily);
+    return f != nullptr && f->populated;
+}
+
 /*!
     Returns a list of alternative fonts for the specified \a family and
     \a style and \a script using the \a styleHint given.

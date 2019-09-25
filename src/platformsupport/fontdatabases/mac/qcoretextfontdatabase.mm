@@ -454,6 +454,9 @@ static void addExtraFallbacks(QStringList *fallbackList)
 #endif
 }
 
+// ### Replace this with QPlatformFontDatabase::isFamilyPopulated() in Qt 5.14
+Q_GUI_EXPORT extern bool qt_isFontFamilyPopulated(const QString &familyName);
+
 QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const
 {
     Q_UNUSED(style);
@@ -481,7 +484,25 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                         fallbackList.append(QString::fromCFString(fallbackFamilyName));
                     }
 
+                    // .Apple Symbols Fallback will be at the beginning of the list and we will
+                    // detect that this has glyphs for Arabic and other writing systems.
+                    // Since it is a symbol font, it should be the last resort, so that
+                    // the proper fonts for these writing systems are preferred.
+                    int symbolIndex = fallbackList.indexOf(QLatin1String(".Apple Symbols Fallback"));
+                    if (symbolIndex >= 0)
+                        fallbackList.move(symbolIndex, fallbackList.size() - 1);
+
                     addExtraFallbacks(&fallbackList);
+
+                    // Since iOS 13, the cascade list may contain meta-fonts which have not been
+                    // populated to the database, such as ".AppleJapaneseFont". It is important that we
+                    // include this in the fallback list, in order to get fallback support for all
+                    // languages
+                    for (const QString &fallback : fallbackList) {
+                        if (!qt_isFontFamilyPopulated(fallback))
+                            const_cast<QCoreTextFontDatabase *>(this)->populateFamily(fallback);
+                    }
+
                     extern QStringList qt_sort_families_by_writing_system(QChar::Script, const QStringList &);
                     fallbackList = qt_sort_families_by_writing_system(script, fallbackList);
 
