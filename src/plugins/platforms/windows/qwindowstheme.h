@@ -88,11 +88,11 @@ public:
     static bool queryHighContrast();
 
     void refreshFonts();
+    void refresh();
 
     static const char *name;
 
 private:
-    void refresh() { refreshPalettes(); refreshFonts(); }
     void clearPalettes();
     void refreshPalettes();
     void clearFonts();

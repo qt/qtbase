@@ -1226,6 +1226,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
                 for (QWindowsWindow *w : d->m_windows)
                     w->setDarkBorder(QWindowsContextPrivate::m_darkMode);
             }
+            if ((options & QWindowsIntegration::DarkModeStyle) != 0) {
+                QWindowsTheme::instance()->refresh();
+                for (QWindowsWindow *w : d->m_windows)
+                    QWindowSystemInterface::handleThemeChange(w->window());
+            }
         }
         return d->m_screenManager.handleScreenChanges();
     }
