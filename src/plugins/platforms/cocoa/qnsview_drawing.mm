@@ -43,9 +43,7 @@
 
 - (void)initDrawing
 {
-    self.wantsLayer = [self layerExplicitlyRequested]
-        || [self shouldUseMetalLayer]
-        || [self layerEnabledByMacOS];
+    [self updateLayerBacking];
 
     // Enable high-DPI OpenGL for retina displays. Enabling has the side
     // effect that Cocoa will start calling glViewport(0, 0, width, height),
@@ -69,6 +67,15 @@
 - (BOOL)isFlipped
 {
     return YES;
+}
+
+// ----------------------- Layer setup -----------------------
+
+- (void)updateLayerBacking
+{
+    self.wantsLayer = [self layerEnabledByMacOS]
+        || [self layerExplicitlyRequested]
+        || [self shouldUseMetalLayer];
 }
 
 - (BOOL)layerEnabledByMacOS
@@ -105,38 +112,63 @@
     return surfaceType == QWindow::MetalSurface || surfaceType == QWindow::VulkanSurface;
 }
 
+/*
+    This method is called by AppKit when layer-backing is requested by
+    setting wantsLayer too YES (via -[NSView _updateLayerBackedness]),
+    or in cases where AppKit itself decides that a view should be
+    layer-backed.
+
+    Note however that some code paths in AppKit will not go via this
+    method for creating the backing layer, and will instead create the
+    layer manually, and just call setLayer. An example of this is when
+    an NSOpenGLContext is attached to a view, in which case AppKit will
+    create a new layer in NSOpenGLContextSetLayerOnViewIfNecessary.
+
+    For this reason we leave the implementation of this override as
+    minimal as possible, only focusing on creating the appropriate
+    layer type, and then leave it up to setLayer to do the work of
+    making sure the layer is set up correctly.
+*/
 - (CALayer *)makeBackingLayer
 {
     if ([self shouldUseMetalLayer]) {
         // Check if Metal is supported. If it isn't then it's most likely
         // too late at this point and the QWindow will be non-functional,
         // but we can at least print a warning.
-        if (![MTLCreateSystemDefaultDevice() autorelease]) {
-            qWarning() << "QWindow initialization error: Metal is not supported";
-            return [super makeBackingLayer];
+        if ([MTLCreateSystemDefaultDevice() autorelease]) {
+            return [CAMetalLayer layer];
+        } else {
+            qCWarning(lcQpaDrawing) << "Failed to create QWindow::MetalSurface."
+                << "Metal is not supported by any of the GPUs in this system.";
         }
-
-        CAMetalLayer *layer = [CAMetalLayer layer];
-
-        // Set the contentsScale for the layer. This is normally done in
-        // viewDidChangeBackingProperties, however on startup that function
-        // is called before the layer is created here. The layer's drawableSize
-        // is updated from layoutSublayersOfLayer as usual.
-        layer.contentsScale = self.window.backingScaleFactor;
-
-        return layer;
     }
 
     return [super makeBackingLayer];
 }
 
+/*
+    This method is called by AppKit whenever the view is asked to change
+    its layer, which can happen both as a result of enabling layer-backing,
+    or when a layer is set explicitly. The latter can happen both when a
+    view is layer-hosting, or when AppKit internals are switching out the
+    layer-backed view, as described above for makeBackingLayer.
+*/
 - (void)setLayer:(CALayer *)layer
 {
-    qCDebug(lcQpaDrawing) << "Making" << self << "layer-backed with" << layer
-        << "due to being" << ([self layerExplicitlyRequested] ? "explicitly requested"
+    qCDebug(lcQpaDrawing) << "Making" << self
+        << (self.wantsLayer ? "layer-backed" : "layer-hosted")
+        << "with" << layer << "due to being" << ([self layerExplicitlyRequested] ? "explicitly requested"
             : [self shouldUseMetalLayer] ? "needed by surface type" : "enabled by macOS");
+
     [super setLayer:layer];
     layer.delegate = self;
+
+    // When adding a view to a view hierarchy the backing properties will change
+    // which results in updating the contents scale, but in case of switching the
+    // layer on a view that's already in a view hierarchy we need to manually ensure
+    // the scale is up to date.
+    if (self.superview)
+        layer.contentsScale = self.window.backingScaleFactor;
 }
 
 - (NSViewLayerContentsRedrawPolicy)layerContentsRedrawPolicy
