@@ -175,10 +175,8 @@
     This method is called by AppKit for the non-layer case, where we are
     drawing into the NSWindow's surface.
 */
-- (void)drawRect:(NSRect)dirtyRect
+- (void)drawRect:(NSRect)dirtyBoundingRect
 {
-    Q_UNUSED(dirtyRect);
-
     Q_ASSERT_X(!self.layer, "QNSView",
         "The drawRect code path should not be hit when we are layer backed");
 
@@ -191,6 +189,9 @@
     [self getRectsBeingDrawn:&dirtyRects count:&numDirtyRects];
     for (int i = 0; i < numDirtyRects; ++i)
         exposedRegion += QRectF::fromCGRect(dirtyRects[i]).toRect();
+
+    if (exposedRegion.isEmpty())
+        exposedRegion = QRectF::fromCGRect(dirtyBoundingRect).toRect();
 
     qCDebug(lcQpaDrawing) << "[QNSView drawRect:]" << m_platformWindow->window() << exposedRegion;
     m_platformWindow->handleExposeEvent(exposedRegion);
