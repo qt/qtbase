@@ -838,8 +838,15 @@ void QRhiMetal::setGraphicsPipeline(QRhiCommandBuffer *cb, QRhiGraphicsPipeline 
 
         [cbD->d->currentRenderPassEncoder setRenderPipelineState: psD->d->ps];
         [cbD->d->currentRenderPassEncoder setDepthStencilState: psD->d->ds];
-        [cbD->d->currentRenderPassEncoder setCullMode: psD->d->cullMode];
-        [cbD->d->currentRenderPassEncoder setFrontFacingWinding: psD->d->winding];
+
+        if (cbD->currentCullMode == -1 || psD->d->cullMode != uint(cbD->currentCullMode)) {
+            [cbD->d->currentRenderPassEncoder setCullMode: psD->d->cullMode];
+            cbD->currentCullMode = int(psD->d->cullMode);
+        }
+        if (cbD->currentFrontFaceWinding == -1 || psD->d->winding != uint(cbD->currentFrontFaceWinding)) {
+            [cbD->d->currentRenderPassEncoder setFrontFacingWinding: psD->d->winding];
+            cbD->currentFrontFaceWinding = int(psD->d->winding);
+        }
     }
 
     psD->lastActiveFrameSlot = currentFrameSlot;
@@ -3450,6 +3457,10 @@ void QMetalCommandBuffer::resetPerPassCachedState()
     currentSrbGeneration = 0;
     currentResSlot = -1;
     currentIndexBuffer = nullptr;
+    currentIndexOffset = 0;
+    currentIndexFormat = QRhiCommandBuffer::IndexUInt16;
+    currentCullMode = -1;
+    currentFrontFaceWinding = -1;
 
     d->currentFirstVertexBinding = -1;
     d->currentVertexInputsBuffers.clear();
