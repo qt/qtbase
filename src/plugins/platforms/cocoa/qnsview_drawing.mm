@@ -160,8 +160,14 @@
         << "with" << layer << "due to being" << ([self layerExplicitlyRequested] ? "explicitly requested"
             : [self shouldUseMetalLayer] ? "needed by surface type" : "enabled by macOS");
 
+    if (layer.delegate && layer.delegate != self) {
+        qCWarning(lcQpaDrawing) << "Layer already has delegate" << layer.delegate
+            << "This delegate is responsible for all view updates for" << self;
+    } else {
+        layer.delegate = self;
+    }
+
     [super setLayer:layer];
-    layer.delegate = self;
 
     // When adding a view to a view hierarchy the backing properties will change
     // which results in updating the contents scale, but in case of switching the
