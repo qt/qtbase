@@ -1507,6 +1507,21 @@ def map_condition(condition: str) -> str:
     pattern = r"(equals|greaterThan|lessThan)\(QT_GCC_([A-Z]+)_VERSION,[ ]*([0-9]+)\)"
     condition = re.sub(pattern, gcc_version_handler, condition)
 
+    def windows_sdk_version_handler(match_obj: Match):
+        operator = match_obj.group(1)
+        if operator == "equals":
+            operator = "STREQUAL"
+        elif operator == "greaterThan":
+            operator = "STRGREATER"
+        elif operator == "lessThan":
+            operator = "STRLESS"
+
+        version = match_obj.group(2)
+        return f"(QT_WINDOWS_SDK_VERSION {operator} {version})"
+
+    pattern = r"(equals|greaterThan|lessThan)\(WINDOWS_SDK_VERSION,[ ]*([0-9]+)\)"
+    condition = re.sub(pattern, windows_sdk_version_handler, condition)
+
     # Handle if(...) conditions.
     condition = unwrap_if(condition)
 
@@ -2205,6 +2220,16 @@ def simplify_condition(condition: str) -> str:
         target_symbol_mapping[target_condition_symbol_name] = target_condition
         condition = re.sub(target_condition, target_condition_symbol_name, condition)
 
+    # Do similar token mapping for comparison operators.
+    pattern = re.compile(r"([a-zA-Z_0-9]+ (?:STRLESS|STREQUAL|STRGREATER) [a-zA-Z_0-9]+)")
+    comparison_symbol_mapping = {}
+    all_comparisons = re.findall(pattern, condition)
+    for comparison in all_comparisons:
+        # Replace spaces and colons with underscores.
+        comparison_symbol_name = re.sub("[ ]", "_", comparison)
+        comparison_symbol_mapping[comparison_symbol_name] = comparison
+        condition = re.sub(comparison, comparison_symbol_name, condition)
+
     try:
         # Generate and simplify condition using sympy:
         condition_expr = simplify_logic(condition)
@@ -2213,6 +2238,10 @@ def simplify_condition(condition: str) -> str:
         # Restore the target conditions.
         for symbol_name in target_symbol_mapping:
             condition = re.sub(symbol_name, target_symbol_mapping[symbol_name], condition)
+
+        # Restore comparisons.
+        for comparison in comparison_symbol_mapping:
+            condition = re.sub(comparison, comparison_symbol_mapping[comparison], condition)
 
         # Map back to CMake syntax:
         condition = condition.replace("~", "NOT ")
