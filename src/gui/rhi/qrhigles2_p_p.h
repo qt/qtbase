@@ -692,13 +692,23 @@ public:
                                                    bool *wantsColorClear = nullptr, bool *wantsDsClear = nullptr);
     void enqueueBarriersForPass(QGles2CommandBuffer *cbD);
     int effectiveSampleCount(int sampleCount) const;
-    bool compileShader(GLuint program, const QRhiShaderStage &shaderStage,
-                       QShaderDescription *desc, int *glslVersionUsed);
+    QByteArray shaderSource(const QRhiShaderStage &shaderStage, int *glslVersion);
+    bool compileShader(GLuint program, const QRhiShaderStage &shaderStage, int *glslVersion);
     bool linkProgram(GLuint program);
     void gatherUniforms(GLuint program, const QShaderDescription::UniformBlock &ub,
                         QVector<QGles2UniformDescription> *dst);
     void gatherSamplers(GLuint program, const QShaderDescription::InOutVariable &v,
                         QVector<QGles2SamplerDescription> *dst);
+    bool isProgramBinaryDiskCacheEnabled() const;
+
+    enum DiskCacheResult {
+        DiskCacheHit,
+        DiskCacheMiss,
+        DiskCacheError
+    };
+    DiskCacheResult tryLoadFromDiskCache(const QRhiShaderStage *stages, int stageCount,
+                                         GLuint program, QByteArray *cacheKey);
+    void trySaveToDiskCache(GLuint program, const QByteArray &cacheKey);
 
     QOpenGLContext *ctx = nullptr;
     bool importedContext = false;

@@ -39,6 +39,7 @@
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QtGui/private/qopenglextensions_p.h>
+#include <QtGui/private/qopenglprogrambinarycache_p.h>
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
@@ -274,6 +275,8 @@ QT_BEGIN_NAMESPACE
 #ifndef GL_POINT_SPRITE
 #define GL_POINT_SPRITE                   0x8861
 #endif
+
+Q_DECLARE_LOGGING_CATEGORY(lcOpenGLProgramDiskCache)
 
 /*!
     Constructs a new QRhiGles2InitParams.
@@ -2709,8 +2712,7 @@ static inline GLenum toGlShaderType(QRhiShaderStage::Type type)
     }
 }
 
-bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage,
-                              QShaderDescription *desc, int *glslVersionUsed)
+QByteArray QRhiGles2::shaderSource(const QRhiShaderStage &shaderStage, int *glslVersion)
 {
     const QShader bakedShader = shaderStage.shader();
     QVector<int> versionsToTry;
@@ -2729,8 +2731,8 @@ bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage
             QShaderVersion ver(v, QShaderVersion::GlslEs);
             source = bakedShader.shader({ QShader::GlslShader, ver, shaderStage.shaderVariant() }).shader();
             if (!source.isEmpty()) {
-                if (glslVersionUsed)
-                    *glslVersionUsed = v;
+                if (glslVersion)
+                    *glslVersion = v;
                 break;
             }
         }
@@ -2759,8 +2761,8 @@ bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage
         for (int v : versionsToTry) {
             source = bakedShader.shader({ QShader::GlslShader, v, shaderStage.shaderVariant() }).shader();
             if (!source.isEmpty()) {
-                if (glslVersionUsed)
-                    *glslVersionUsed = v;
+                if (glslVersion)
+                    *glslVersion = v;
                 break;
             }
         }
@@ -2768,8 +2770,15 @@ bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage
     if (source.isEmpty()) {
         qWarning() << "No GLSL shader code found (versions tried: " << versionsToTry
                    << ") in baked shader" << bakedShader;
-        return false;
     }
+    return source;
+}
+
+bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage, int *glslVersion)
+{
+    const QByteArray source = shaderSource(shaderStage, glslVersion);
+    if (source.isEmpty())
+        return false;
 
     GLuint shader;
     auto cacheIt = m_shaderCache.constFind(shaderStage);
@@ -2806,7 +2815,6 @@ bool QRhiGles2::compileShader(GLuint program, const QRhiShaderStage &shaderStage
 
     f->glAttachShader(program, shader);
 
-    *desc = bakedShader.description();
     return true;
 }
 
@@ -2858,6 +2866,68 @@ void QRhiGles2::gatherSamplers(GLuint program, const QShaderDescription::InOutVa
     if (sampler.glslLocation >= 0) {
         sampler.binding = v.binding;
         dst->append(sampler);
+    }
+}
+
+bool QRhiGles2::isProgramBinaryDiskCacheEnabled() const
+{
+    static QOpenGLProgramBinarySupportCheckWrapper checker;
+    return checker.get(ctx)->isSupported();
+}
+
+static QOpenGLProgramBinaryCache qrhi_programBinaryCache;
+
+static inline QShader::Stage toShaderStage(QRhiShaderStage::Type type)
+{
+    switch (type) {
+    case QRhiShaderStage::Vertex:
+        return QShader::VertexStage;
+    case QRhiShaderStage::Fragment:
+        return QShader::FragmentStage;
+    case QRhiShaderStage::Compute:
+        return QShader::ComputeStage;
+    default:
+        Q_UNREACHABLE();
+        return QShader::VertexStage;
+    }
+}
+
+QRhiGles2::DiskCacheResult QRhiGles2::tryLoadFromDiskCache(const QRhiShaderStage *stages, int stageCount,
+                                                           GLuint program, QByteArray *cacheKey)
+{
+    QRhiGles2::DiskCacheResult result = QRhiGles2::DiskCacheMiss;
+    QByteArray diskCacheKey;
+
+    if (isProgramBinaryDiskCacheEnabled()) {
+        QOpenGLProgramBinaryCache::ProgramDesc binaryProgram;
+        for (int i = 0; i < stageCount; ++i) {
+            const QRhiShaderStage &stage(stages[i]);
+            const QByteArray source = shaderSource(stage, nullptr);
+            if (source.isEmpty())
+                return QRhiGles2::DiskCacheError;
+            binaryProgram.shaders.append(QOpenGLProgramBinaryCache::ShaderDesc(toShaderStage(stage.type()), source));
+        }
+
+        diskCacheKey = binaryProgram.cacheKey();
+        if (qrhi_programBinaryCache.load(diskCacheKey, program)) {
+            qCDebug(lcOpenGLProgramDiskCache, "Program binary received from cache, program %u, key %s",
+                    program, diskCacheKey.constData());
+            result = QRhiGles2::DiskCacheHit;
+        }
+    }
+
+    if (cacheKey)
+        *cacheKey = diskCacheKey;
+
+    return result;
+}
+
+void QRhiGles2::trySaveToDiskCache(GLuint program, const QByteArray &cacheKey)
+{
+    if (isProgramBinaryDiskCacheEnabled()) {
+        qCDebug(lcOpenGLProgramDiskCache, "Saving program binary, program %u, key %s",
+                program, cacheKey.constData());
+        qrhi_programBinaryCache.save(cacheKey, program);
     }
 }
 
@@ -3547,17 +3617,29 @@ bool QGles2GraphicsPipeline::build()
 
     program = rhiD->f->glCreateProgram();
 
+    QByteArray diskCacheKey;
+    QRhiGles2::DiskCacheResult diskCacheResult = rhiD->tryLoadFromDiskCache(m_shaderStages.constData(),
+                                                                            m_shaderStages.count(),
+                                                                            program,
+                                                                            &diskCacheKey);
+    if (diskCacheResult == QRhiGles2::DiskCacheError)
+        return false;
+
+    const bool needsCompile = diskCacheResult == QRhiGles2::DiskCacheMiss;
+
     QShaderDescription vsDesc;
     QShaderDescription fsDesc;
     for (const QRhiShaderStage &shaderStage : qAsConst(m_shaderStages)) {
         const bool isVertex = shaderStage.type() == QRhiShaderStage::Vertex;
         const bool isFragment = shaderStage.type() == QRhiShaderStage::Fragment;
         if (isVertex) {
-            if (!rhiD->compileShader(program, shaderStage, &vsDesc, nullptr))
+            if (needsCompile && !rhiD->compileShader(program, shaderStage, nullptr))
                 return false;
+            vsDesc = shaderStage.shader().description();
         } else if (isFragment) {
-            if (!rhiD->compileShader(program, shaderStage, &fsDesc, nullptr))
+            if (needsCompile && !rhiD->compileShader(program, shaderStage, nullptr))
                 return false;
+            fsDesc = shaderStage.shader().description();
         }
     }
 
@@ -3566,8 +3648,11 @@ bool QGles2GraphicsPipeline::build()
         rhiD->f->glBindAttribLocation(program, GLuint(inVar.location), name.constData());
     }
 
-    if (!rhiD->linkProgram(program))
+    if (needsCompile && !rhiD->linkProgram(program))
         return false;
+
+    if (needsCompile)
+        rhiD->trySaveToDiskCache(program, diskCacheKey);
 
     for (const QShaderDescription::UniformBlock &ub : vsDesc.uniformBlocks())
         rhiD->gatherUniforms(program, ub, &uniforms);
@@ -3629,10 +3714,23 @@ bool QGles2ComputePipeline::build()
     program = rhiD->f->glCreateProgram();
     QShaderDescription csDesc;
 
-    if (!rhiD->compileShader(program, m_shaderStage, &csDesc, nullptr))
+    QByteArray diskCacheKey;
+    QRhiGles2::DiskCacheResult diskCacheResult = rhiD->tryLoadFromDiskCache(&m_shaderStage, 1, program, &diskCacheKey);
+    if (diskCacheResult == QRhiGles2::DiskCacheError)
         return false;
-    if (!rhiD->linkProgram(program))
+
+    const bool needsCompile = diskCacheResult == QRhiGles2::DiskCacheMiss;
+
+    if (needsCompile && !rhiD->compileShader(program, m_shaderStage, nullptr))
         return false;
+
+    csDesc = m_shaderStage.shader().description();
+
+    if (needsCompile && !rhiD->linkProgram(program))
+        return false;
+
+    if (needsCompile)
+        rhiD->trySaveToDiskCache(program, diskCacheKey);
 
     for (const QShaderDescription::UniformBlock &ub : csDesc.uniformBlocks())
         rhiD->gatherUniforms(program, ub, &uniforms);
