@@ -168,7 +168,7 @@ void Window::customRender()
     // no translation
     u->updateDynamicBuffer(d.ubuf, 0, 64, mvp.constData());
 
-    cb->beginPass(m_sc->currentFrameRenderTarget(), QColor::fromRgbF(0.4f, 0.7f, 0.0f, 1.0f), { 1.0f, 0 }, u);
+    cb->beginPass(m_sc->currentFrameRenderTarget(), m_clearColor, { 1.0f, 0 }, u);
     cb->setGraphicsPipeline(d.ps);
     cb->setViewport(QRhiViewport(0, 0, outputSizeInPixels.width(), outputSizeInPixels.height()));
     cb->setShaderResources();

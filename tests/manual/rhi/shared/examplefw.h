@@ -127,6 +127,7 @@ QRhiSwapChain::Flags scFlags = 0;
 QRhi::BeginFrameFlags beginFrameFlags = 0;
 QRhi::EndFrameFlags endFrameFlags = 0;
 int framesUntilTdr = -1;
+bool transparentBackground = false;
 
 class Window : public QWindow
 {
@@ -167,6 +168,8 @@ protected:
     QOffscreenSurface *m_fallbackSurface = nullptr;
 #endif
 
+    QColor m_clearColor;
+
     friend int main(int, char**);
 };
 
@@ -194,6 +197,8 @@ Window::Window()
     default:
         break;
     }
+
+    m_clearColor = transparentBackground ? Qt::transparent : QColor::fromRgbF(0.4f, 0.7f, 0.0f, 1.0f);
 }
 
 Window::~Window()
@@ -477,6 +482,9 @@ int main(int argc, char **argv)
     QCommandLineOption swOption(QLatin1String("software"), QLatin1String("Prefer a software renderer when choosing the adapter. "
                                                                          "Only applicable with some APIs and platforms."));
     cmdLineParser.addOption(swOption);
+    // Allow testing having a semi-transparent window.
+    QCommandLineOption transparentOption(QLatin1String("transparent"), QLatin1String("Make background transparent"));
+    cmdLineParser.addOption(transparentOption);
 
     cmdLineParser.process(app);
     if (cmdLineParser.isSet(nullOption))
@@ -493,6 +501,11 @@ int main(int argc, char **argv)
     qDebug("Selected graphics API is %s", qPrintable(graphicsApiName()));
     qDebug("This is a multi-api example, use command line arguments to override:\n%s", qPrintable(cmdLineParser.helpText()));
 
+    if (cmdLineParser.isSet(transparentOption)) {
+        transparentBackground = true;
+        scFlags |= QRhiSwapChain::SurfaceHasPreMulAlpha;
+    }
+
 #ifdef EXAMPLEFW_PREINIT
     void preInit();
     preInit();
@@ -508,6 +521,9 @@ int main(int argc, char **argv)
         fmt.setSwapInterval(0);
     if (scFlags.testFlag(QRhiSwapChain::sRGB))
         fmt.setColorSpace(QSurfaceFormat::sRGBColorSpace);
+    // Exception: The alpha size is not necessarily OpenGL specific.
+    if (transparentBackground)
+        fmt.setAlphaBufferSize(8);
     QSurfaceFormat::setDefaultFormat(fmt);
 
     // Vulkan setup.
