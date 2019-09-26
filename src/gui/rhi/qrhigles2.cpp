@@ -2258,6 +2258,7 @@ void QRhiGles2::executeBindGraphicsPipeline(QRhiGraphicsPipeline *ps)
         }
     } else {
         f->glDisable(GL_BLEND);
+        f->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     }
     if (psD->m_depthTest)
         f->glEnable(GL_DEPTH_TEST);
