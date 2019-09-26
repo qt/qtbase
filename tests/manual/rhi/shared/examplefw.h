@@ -58,6 +58,7 @@
 #include <QPlatformSurfaceEvent>
 #include <QElapsedTimer>
 #include <QTimer>
+#include <QLoggingCategory>
 
 #include <QtGui/private/qshader_p.h>
 #include <QFile>
@@ -70,7 +71,6 @@
 #endif
 
 #if QT_CONFIG(vulkan)
-#include <QLoggingCategory>
 #include <QtGui/private/qrhivulkan_p.h>
 #endif
 
@@ -443,6 +443,8 @@ int main(int argc, char **argv)
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
+
+    QLoggingCategory::setFilterRules(QLatin1String("qt.rhi.*=true"));
 
     // Defaults.
 #if defined(Q_OS_WIN)
