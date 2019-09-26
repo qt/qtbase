@@ -90,9 +90,6 @@ enable_testing()
 # Set up building of examples.
 option(BUILD_EXAMPLES "Build Qt examples" ON)
 
-## Define some constants to check for certain platforms, etc:
-include(QtPlatformSupport)
-
 ## Android platform settings
 if(ANDROID)
     include(QtPlatformAndroid)

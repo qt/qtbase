@@ -18,12 +18,13 @@ list(PREPEND CMAKE_MODULE_PATH
 )
 
 ## Find the build internals package.
+set(QT_BUILD_INTERNALS_SKIP_CMAKE_MODULE_PATH_ADDITION TRUE)
 list(PREPEND CMAKE_PREFIX_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
 )
 find_package(QtBuildInternals CMAKE_FIND_ROOT_PATH_BOTH)
-
-qt_build_repo_begin(SKIP_CMAKE_MODULE_PATH_ADDITION)
+unset(QT_BUILD_INTERNALS_SKIP_CMAKE_MODULE_PATH_ADDITION)
+qt_build_repo_begin()
 
 ## QtBase specific configure tests:
 include(QtBaseConfigureTests)

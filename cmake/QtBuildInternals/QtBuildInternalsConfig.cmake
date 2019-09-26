@@ -13,7 +13,7 @@ if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake")
 endif()
 
 macro(qt_set_up_build_internals_paths)
-    # Set up the paths for the cmake modules located in the build dir. Prepend, so the paths are
+    # Set up the paths for the cmake modules located in the prefix dir. Prepend, so the paths are
     # least important compared to the source dir ones, but more important than command line
     # provided ones.
     set(QT_CMAKE_MODULE_PATH "${QT_BUILD_INTERNALS_PATH}/../${QT_CMAKE_EXPORT_NAMESPACE}")
@@ -39,13 +39,17 @@ macro(qt_set_up_build_internals_paths)
     endif()
 endmacro()
 
-macro(qt_build_repo_begin)
-    if(${ARGC} EQUAL 1 AND "${ARGV0}" STREQUAL "SKIP_CMAKE_MODULE_PATH_ADDITION")
-        # No-op.
-    else()
-        qt_set_up_build_internals_paths()
-    endif()
+# Set up the build internal paths unless explicitly requested not to.
+if(NOT QT_BUILD_INTERNALS_SKIP_CMAKE_MODULE_PATH_ADDITION)
+    qt_set_up_build_internals_paths()
+endif()
 
+# Define some constants to check for certain platforms, etc.
+# Needs to be loaded before qt_repo_build() to handle require() clauses before even starting a repo
+# build.
+include(QtPlatformSupport)
+
+macro(qt_build_repo_begin)
     # Qt specific setup common for all modules:
     include(QtSetup)
     include(FeatureSummary)
