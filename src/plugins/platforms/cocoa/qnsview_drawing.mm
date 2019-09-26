@@ -174,8 +174,10 @@
     // layer on a view that's already in a view hierarchy we need to manually ensure
     // the scale is up to date.
     if (self.superview)
-        layer.contentsScale = self.window.backingScaleFactor;
+        [self updateLayerContentsScale];
 }
+
+// ----------------------- Layer updates -----------------------
 
 - (NSViewLayerContentsRedrawPolicy)layerContentsRedrawPolicy
 {
@@ -198,13 +200,39 @@
     qCDebug(lcQpaDrawing) << "Backing properties changed for" << self;
 
     if (self.layer)
-        self.layer.contentsScale = self.window.backingScaleFactor;
+        [self updateLayerContentsScale];
 
     // Ideally we would plumb this situation through QPA in a way that lets
     // clients invalidate their own caches, recreate QBackingStore, etc.
     // For now we trigger an expose, and let QCocoaBackingStore deal with
     // buffer invalidation internally.
     [self setNeedsDisplay:YES];
+}
+
+- (void)updateLayerContentsScale
+{
+    // We expect clients to fill the layer with retina aware content,
+    // based on the devicePixelRatio of the QWindow, so we set the
+    // layer's content scale to match that. By going via devicePixelRatio
+    // instead of applying the NSWindow's backingScaleFactor, we also take
+    // into account OpenGL views with wantsBestResolutionOpenGLSurface set
+    // to NO. In this case the window will have a backingScaleFactor of 2,
+    // but the QWindow will have a devicePixelRatio of 1.
+    auto devicePixelRatio = m_platformWindow->devicePixelRatio();
+    qCDebug(lcQpaDrawing) << "Updating" << self.layer << "content scale to" << devicePixelRatio;
+    self.layer.contentsScale = devicePixelRatio;
+}
+
+/*
+    This method is called by AppKit to determine whether it should update
+    the contentScale of the layer to match the window backing scale.
+
+    We always return NO since we're updating the contents scale manually.
+*/
+- (BOOL)layer:(CALayer *)layer shouldInheritContentsScale:(CGFloat)scale fromWindow:(NSWindow *)window
+{
+    Q_UNUSED(layer); Q_UNUSED(scale); Q_UNUSED(window);
+    return NO;
 }
 
 // ----------------------- Draw callbacks -----------------------
