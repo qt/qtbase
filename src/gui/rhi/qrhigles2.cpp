@@ -583,7 +583,9 @@ QRhiBuffer *QRhiGles2::createBuffer(QRhiBuffer::Type type, QRhiBuffer::UsageFlag
 
 int QRhiGles2::ubufAlignment() const
 {
-    return 256;
+    // No real uniform buffers are used so no need to pretend there is any
+    // alignment requirement.
+    return 1;
 }
 
 bool QRhiGles2::isYUpInFramebuffer() const
