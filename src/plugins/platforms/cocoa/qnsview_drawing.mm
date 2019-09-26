@@ -175,6 +175,14 @@
     // the scale is up to date.
     if (self.superview)
         [self updateLayerContentsScale];
+
+    if (self.opaque && lcQpaDrawing().isDebugEnabled()) {
+        // If the view claims to be opaque we expect it to fill the entire
+        // layer with content, in which case we want to detect any areas
+        // where it doesn't.
+        layer.backgroundColor = NSColor.magentaColor.CGColor;
+    }
+
 }
 
 // ----------------------- Layer updates -----------------------
@@ -186,14 +194,14 @@
     return NSViewLayerContentsRedrawDuringViewResize;
 }
 
-#if 0 // Disabled until we enable lazy backingstore resizing
 - (NSViewLayerContentsPlacement)layerContentsPlacement
 {
-    // Always place the layer at top left without any automatic scaling,
-    // so that we can re-use larger layers when resizing a window down.
+    // Always place the layer at top left without any automatic scaling.
+    // This will highlight situations where we're missing content for the
+    // layer by not responding to the displayLayer: request synchronously.
+    // It also allows us to re-use larger layers when resizing a window down.
     return NSViewLayerContentsPlacementTopLeft;
 }
-#endif
 
 - (void)viewDidChangeBackingProperties
 {
