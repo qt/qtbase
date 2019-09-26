@@ -71,6 +71,7 @@ public:
     };
     struct ProgramDesc {
         QVector<ShaderDesc> shaders;
+        QByteArray cacheKey() const;
     };
 
     QOpenGLProgramBinaryCache();
