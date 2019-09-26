@@ -163,7 +163,8 @@ function(qt_feature_set_cache_value resultVar feature emit_if calculated label)
 
         # Revisit value:
         set(cache "${FEATURE_${feature}}")
-        if ((cache STREQUAL "ON") OR (cache STREQUAL "OFF"))
+        set(booly_values OFF NO FALSE N ON YES TRUE Y)
+        if ((cache IN_LIST booly_values) OR (cache GREATER_EQUAL 0))
             set(result "${cache}")
         else()
             message(FATAL_ERROR "Sanity check failed: FEATURE_${feature} has invalid value \"${cache}\"!")
