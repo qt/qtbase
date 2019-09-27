@@ -365,7 +365,6 @@
 #        define Q_COMPILER_ATTRIBUTES
 #        define Q_COMPILER_AUTO_FUNCTION
 #        define Q_COMPILER_CLASS_ENUM
-#        define Q_COMPILER_CONSTEXPR
 #        define Q_COMPILER_DECLTYPE
 #        define Q_COMPILER_DEFAULT_MEMBERS
 #        define Q_COMPILER_DELETE_MEMBERS
