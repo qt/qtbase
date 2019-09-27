@@ -2578,7 +2578,10 @@ def write_wayland_part(cm_fh: typing.IO[str], target: str, scope:Scope, indent: 
     if len(client_sources) == 0 and len(server_sources) == 0:
         return
 
-    condition = map_to_cmake_condition(scope.total_condition)
+    condition = "ON"
+    if scope.total_condition:
+        condition = map_to_cmake_condition(scope.total_condition)
+
     if condition != "ON":
         cm_fh.write(f"\n{spaces(indent)}if({condition})\n")
         indent += 1
@@ -2945,6 +2948,8 @@ def write_example(
     write_all_source_file_lists(cm_fh, scope, add_target, indent=0)
 
     cm_fh.write(")\n")
+
+    write_wayland_part(cm_fh, binary_name, scope, indent=0)
 
     write_include_paths(
         cm_fh, scope, f"target_include_directories({binary_name} PUBLIC", indent=0, footer=")"
