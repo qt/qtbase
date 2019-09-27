@@ -29,3 +29,7 @@ if(DEFINED __qt_dbus_pcl)
 else()
     unset(ENV{PKG_CONFIG_LIBDIR})
 endif()
+
+if(DBus1_FOUND)
+    set(WrapDBus1_FOUND 1)
+endif()
