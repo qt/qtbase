@@ -2940,11 +2940,10 @@ QString QSysInfo::prettyProductName()
     if (!name)
         return result + versionString;
     result += QLatin1String(name);
-#    if !defined(Q_OS_WIN)
-        return result + QLatin1String(" (") + versionString + QLatin1Char(')');
-#    else
+#  if !defined(Q_OS_WIN) || defined(Q_OS_WINRT)
+    return result + QLatin1String(" (") + versionString + QLatin1Char(')');
+#  else
     // (resembling winver.exe): Windows 10 "Windows 10 Version 1809"
-    result += QLatin1String(" Version ");
     if (majorVersion >= 10) {
         const auto releaseId = windows10ReleaseId();
         if (!releaseId.isEmpty())
@@ -2952,7 +2951,7 @@ QString QSysInfo::prettyProductName()
         return result;
     }
     // Windows 7: "Windows 7 Version 6.1 (Build 7601: Service Pack 1)"
-    result += versionString + QLatin1String(" (");
+    result += QLatin1String(" Version ") + versionString + QLatin1String(" (");
     const auto build = windows7Build();
     if (!build.isEmpty())
         result += QLatin1String("Build ") + build;
@@ -2960,7 +2959,7 @@ QString QSysInfo::prettyProductName()
     if (!servicePack.isEmpty())
         result += QLatin1String(": ") + servicePack;
     return result + QLatin1Char(')');
-#    endif // Windows
+#  endif // Windows
 #elif defined(Q_OS_HAIKU)
     return QLatin1String("Haiku ") + productVersion();
 #elif defined(Q_OS_UNIX)
