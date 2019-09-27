@@ -6,6 +6,7 @@
 
 add_qt_plugin(qlibinputplugin
     TYPE generic
+    CLASS_NAME QLibInputPlugin
     SOURCES
         main.cpp
     LIBRARIES

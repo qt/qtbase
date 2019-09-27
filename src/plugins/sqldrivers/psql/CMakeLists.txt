@@ -9,6 +9,7 @@ qt_find_package(PostgreSQL) # special case
 
 add_qt_plugin(qsqlpsql
     TYPE sqldrivers
+    CLASS_NAME QPSQLDriverPlugin
     SOURCES
         main.cpp
         qsql_psql.cpp qsql_psql_p.h

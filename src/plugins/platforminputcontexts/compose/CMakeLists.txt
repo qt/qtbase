@@ -10,6 +10,7 @@ pkg_get_variable(PKG_X11_PREFIX x11 prefix) # special case
 
 add_qt_plugin(composeplatforminputcontextplugin
     TYPE platforminputcontexts
+    CLASS_NAME QComposePlatformInputContextPlugin
     SOURCES
         qcomposeplatforminputcontext.cpp qcomposeplatforminputcontext.h
         qcomposeplatforminputcontextmain.cpp

@@ -8,6 +8,7 @@ qt_find_package(Tslib) # special case
 
 add_qt_plugin(qtslibplugin
     TYPE generic
+    CLASS_NAME QTsLibPlugin
     SOURCES
         main.cpp
     LIBRARIES

@@ -6,6 +6,7 @@
 
 add_qt_plugin(qevdevkeyboardplugin
     TYPE generic
+    CLASS_NAME QEvdevKeyboardPlugin
     SOURCES
         main.cpp
     LIBRARIES

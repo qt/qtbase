@@ -6,6 +6,7 @@
 
 add_qt_plugin(qevdevtabletplugin
     TYPE generic
+    CLASS_NAME QEvdevTabletPlugin
     SOURCES
         main.cpp
     LIBRARIES

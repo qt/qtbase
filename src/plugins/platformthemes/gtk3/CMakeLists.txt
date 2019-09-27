@@ -9,6 +9,7 @@ qt_find_package(X11)
 
 add_qt_plugin(qgtk3
     TYPE platformthemes
+    CLASS_NAME QGtk3ThemePlugin
     SOURCES
         main.cpp
         qgtk3dialoghelpers.cpp qgtk3dialoghelpers.h

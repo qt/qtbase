@@ -6,6 +6,7 @@
 
 add_qt_plugin(qevdevmouseplugin
     TYPE generic
+    CLASS_NAME QEvdevMousePlugin
     SOURCES
         main.cpp
     LIBRARIES

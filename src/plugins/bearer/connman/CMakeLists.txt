@@ -6,6 +6,7 @@
 
 add_qt_plugin(qconnmanbearer
     TYPE bearer
+    CLASS_NAME QConnmanEnginePlugin
     SOURCES
         ../linux_common/qofonoservice_linux.cpp ../linux_common/qofonoservice_linux_p.h
         ../qbearerengine_impl.h

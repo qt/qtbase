@@ -6,6 +6,7 @@ qt_find_package(ODBC) # special case
 
 add_qt_plugin(qsqlodbc
     TYPE sqldrivers
+    CLASS_NAME QODBCDriverPlugin
     SOURCES
         main.cpp
         qsql_odbc.cpp qsql_odbc_p.h

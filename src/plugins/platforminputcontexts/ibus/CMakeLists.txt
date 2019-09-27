@@ -6,6 +6,7 @@
 
 add_qt_plugin(ibusplatforminputcontextplugin
     TYPE platforminputcontexts
+    CLASS_NAME QIbusPlatformInputContextPlugin
     SOURCES
         main.cpp
         qibusinputcontextproxy.cpp qibusinputcontextproxy.h

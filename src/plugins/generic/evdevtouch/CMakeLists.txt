@@ -6,6 +6,7 @@
 
 add_qt_plugin(qevdevtouchplugin
     TYPE generic
+    CLASS_NAME QEvdevTouchScreenPlugin
     SOURCES
         main.cpp
     LIBRARIES
