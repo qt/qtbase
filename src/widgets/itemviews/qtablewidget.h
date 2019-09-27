@@ -49,13 +49,16 @@ QT_REQUIRE_CONFIG(tablewidget);
 
 QT_BEGIN_NAMESPACE
 
+// ### Qt6 unexport the class, remove the user-defined special 3 and make it a literal type.
 class Q_WIDGETS_EXPORT QTableWidgetSelectionRange
 {
 public:
     QTableWidgetSelectionRange();
     QTableWidgetSelectionRange(int top, int left, int bottom, int right);
-    QTableWidgetSelectionRange(const QTableWidgetSelectionRange &other);
     ~QTableWidgetSelectionRange();
+
+    QTableWidgetSelectionRange(const QTableWidgetSelectionRange &other);
+    QTableWidgetSelectionRange &operator=(const QTableWidgetSelectionRange &other);
 
     inline int topRow() const { return top; }
     inline int bottomRow() const { return bottom; }
