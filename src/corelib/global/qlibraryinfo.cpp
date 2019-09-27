@@ -495,6 +495,8 @@ static QString prefixFromAppDirHelper()
 #endif
 
 #if !defined(QT_BUILD_QMAKE) && QT_CONFIG(relocatable)
+#if !defined(QT_STATIC) && !(defined(Q_OS_DARWIN) && QT_CONFIG(framework)) \
+        && (QT_CONFIG(dlopen) || defined(Q_OS_WIN))
 static QString prefixFromQtCoreLibraryHelper(const QString &qtCoreLibraryPath)
 {
     const QString qtCoreLibrary = QDir::fromNativeSeparators(qtCoreLibraryPath);
@@ -503,6 +505,7 @@ static QString prefixFromQtCoreLibraryHelper(const QString &qtCoreLibraryPath)
             + QLatin1String(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH);
     return QDir::cleanPath(prefixDir);
 }
+#endif
 
 #if defined(Q_OS_WIN)
 #if defined(Q_OS_WINRT)
