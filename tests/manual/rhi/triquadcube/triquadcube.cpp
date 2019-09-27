@@ -230,7 +230,7 @@ void Window::customRender()
     if (!d.onScreenOnly)
         d.liveTexCubeRenderer.queueResourceUpdates(u);
 
-    cb->beginPass(m_sc->currentFrameRenderTarget(), QColor::fromRgbF(0.4f, 0.7f, 0.0f, 1.0f), { 1.0f, 0 }, u);
+    cb->beginPass(m_sc->currentFrameRenderTarget(), m_clearColor, { 1.0f, 0 }, u);
     cb->debugMarkBegin(QByteArrayLiteral("Triangle"));
     d.triRenderer.queueDraw(cb, outputSize);
     cb->debugMarkEnd();

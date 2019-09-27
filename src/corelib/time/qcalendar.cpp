@@ -701,7 +701,7 @@ const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
     calendar being constructed by other means first. With no argument, the
     default constructor returns the Gregorian calendar.
 
-    \sa QCalendar, System
+    \sa QCalendar, System, isValid()
 */
 
 QCalendar::QCalendar()
@@ -722,6 +722,15 @@ QCalendar::QCalendar(QLatin1String name)
 
 QCalendar::QCalendar(QStringView name)
     : d(QCalendarBackend::fromName(name)) {}
+
+/*
+    \fn bool QCalendar::isValid() const
+
+    Returns true if this is a valid calendar object.
+
+    Constructing a calendar with an unrecognised calendar name may result in an
+    invalid object. Use this method to check after creating a calendar by name.
+*/
 
 // Date queries:
 

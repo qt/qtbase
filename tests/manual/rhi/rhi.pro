@@ -8,6 +8,7 @@ SUBDIRS += \
     msaatexture \
     msaarenderbuffer \
     cubemap \
+    cubemap_scissor \
     multiwindow \
     multiwindow_threaded \
     triquadcube \

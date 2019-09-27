@@ -707,8 +707,8 @@ QDebug operator<<(QDebug dbg, const QRhiDepthStencilClearValue &v)
 
     Used with QRhiCommandBuffer::setViewport().
 
-    \note QRhi assumes OpenGL-style viewport coordinates, meaning x and y are
-    bottom-left.
+    QRhi assumes OpenGL-style viewport coordinates, meaning x and y are
+    bottom-left. Negative width or height are not allowed.
 
     Typical usage is like the following:
 
@@ -737,7 +737,9 @@ QDebug operator<<(QDebug dbg, const QRhiDepthStencilClearValue &v)
     Constructs a viewport description with the rectangle specified by \a x, \a
     y, \a w, \a h and the depth range \a minDepth and \a maxDepth.
 
-    \note x and y are assumed to be the bottom-left position.
+    \note \a x and \a y are assumed to be the bottom-left position. \a w and \a
+    h should not be negative, the viewport will be ignored by
+    QRhiCommandBuffer::setViewport() otherwise.
 
     \sa QRhi::clipSpaceCorrMatrix()
  */
@@ -810,8 +812,12 @@ QDebug operator<<(QDebug dbg, const QRhiViewport &v)
     only possible with a QRhiGraphicsPipeline that has
     QRhiGraphicsPipeline::UsesScissor set.
 
-    \note QRhi assumes OpenGL-style scissor coordinates, meaning x and y are
-    bottom-left.
+    QRhi assumes OpenGL-style scissor coordinates, meaning x and y are
+    bottom-left. Negative width or height are not allowed. However, apart from
+    that, the flexible OpenGL semantics apply: negative x and y, partially out
+    of bounds rectangles, etc. will be handled gracefully, clamping as
+    appropriate. Therefore, any rendering logic targeting OpenGL can feed
+    scissor rectangles into QRhiScissor as-is, without any adaptation.
 
     \sa QRhiCommandBuffer::setScissor(), QRhiViewport
  */
@@ -826,7 +832,11 @@ QDebug operator<<(QDebug dbg, const QRhiViewport &v)
     Constructs a scissor with the rectangle specified by \a x, \a y, \a w, and
     \a h.
 
-    \note x and y are assumed to be the bottom-left position.
+    \note \a x and \a y are assumed to be the bottom-left position. Negative \a w
+    or \a h are not allowed, such scissor rectangles will be ignored by
+    QRhiCommandBuffer. Other than that, the flexible OpenGL semantics apply:
+    negative x and y, partially out of bounds rectangles, etc. will be handled
+    gracefully, clamping as appropriate.
  */
 QRhiScissor::QRhiScissor(int x, int y, int w, int h)
     : m_rect { { x, y, w, h } }

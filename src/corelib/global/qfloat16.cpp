@@ -107,10 +107,51 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-  \internal
-  Implements qFpClassify() for qfloat16.
- */
+    \internal
+    \since 5.14
+    bool qfloat16::isInf() const noexcept
 
+    Tests whether this \c qfloat16 value is an infinity.
+
+    \sa qIsInf()
+*/
+
+/*!
+    \internal
+    \since 5.14
+    bool qfloat16::isNaN() const noexcept
+
+    Tests whether this \c qfloat16 value is "not a number".
+
+    \sa qIsNaN()
+*/
+
+/*!
+    \since 5.14
+    bool qfloat16::isNormal() const noexcept
+
+    Tests whether this \c qfloat16 value is finite and in normal form.
+
+    \sa qFpClassify()
+*/
+
+/*!
+    \internal
+    \since 5.14
+    bool qfloat16::isFinite() const noexcept
+
+    Tests whether this \c qfloat16 value is finite.
+
+    \sa qIsFinite()
+*/
+
+/*!
+    \internal
+    \since 5.14
+    Implements qFpClassify() for qfloat16.
+
+    \sa qFpClassify()
+*/
 int qfloat16::fpClassify() const noexcept
 {
     return isInf() ? FP_INFINITE : isNaN() ? FP_NAN

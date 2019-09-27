@@ -48,6 +48,13 @@
 **
 ****************************************************************************/
 
+// This is a test for scissoring. Based on the cubemap test (because there the
+// rendering covers the entire viewport which is what we need here). The
+// scissor rectangle moves first up, then down, then from the center to the
+// left and then to right. The important part is to ensure that the behavior
+// identical between all backends, especially when the rectangle is partly or
+// fully off window.
+
 #include "../shared/examplefw.h"
 #include "../shared/cube.h"
 
@@ -60,6 +67,11 @@ struct {
     QRhiShaderResourceBindings *srb = nullptr;
     QRhiGraphicsPipeline *ps = nullptr;
     QRhiResourceUpdateBatch *initialUpdates = nullptr;
+
+    QPoint scissorBottomLeft;
+    QSize scissorSize;
+    int scissorAnimState = 0;
+    QSize outputSize;
 } d;
 
 void Window::customInit()
@@ -109,6 +121,8 @@ void Window::customInit()
     d.ps = m_r->newGraphicsPipeline();
     d.releasePool << d.ps;
 
+    d.ps->setFlags(QRhiGraphicsPipeline::UsesScissor);
+
     d.ps->setDepthTest(true);
     d.ps->setDepthWrite(true);
     d.ps->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
@@ -138,12 +152,44 @@ void Window::customInit()
     d.ps->setRenderPassDescriptor(m_rp);
 
     d.ps->build();
+
+    d.scissorAnimState = 0;
 }
 
 void Window::customRelease()
 {
     qDeleteAll(d.releasePool);
     d.releasePool.clear();
+}
+
+static void advanceScissor()
+{
+    switch (d.scissorAnimState) {
+    case 1: // up
+        d.scissorBottomLeft.setX(d.outputSize.width() / 4);
+        d.scissorBottomLeft.ry() += 1;
+        if (d.scissorBottomLeft.y() > d.outputSize.height() + 100)
+            d.scissorAnimState = 2;
+        break;
+    case 2: // down
+        d.scissorBottomLeft.ry() -= 1;
+        if (d.scissorBottomLeft.y() < -d.scissorSize.height() - 100)
+            d.scissorAnimState = 3;
+        break;
+    case 3: // left
+        d.scissorBottomLeft.setY(d.outputSize.height() / 4);
+        d.scissorBottomLeft.rx() += 1;
+        if (d.scissorBottomLeft.x() > d.outputSize.width() + 100)
+            d.scissorAnimState = 4;
+        break;
+    case 4: // right
+        d.scissorBottomLeft.rx() -= 1;
+        if (d.scissorBottomLeft.x() < -d.scissorSize.width() - 100)
+            d.scissorAnimState = 1;
+        break;
+    }
+
+    qDebug() << "scissor bottom-left" << d.scissorBottomLeft << "size" << d.scissorSize;
 }
 
 void Window::customRender()
@@ -156,6 +202,13 @@ void Window::customRender()
         u->merge(d.initialUpdates);
         d.initialUpdates->release();
         d.initialUpdates = nullptr;
+    }
+
+    d.outputSize = outputSizeInPixels;
+    if (d.scissorAnimState == 0) {
+        d.scissorBottomLeft = QPoint(outputSizeInPixels.width() / 4, 0);
+        d.scissorSize = QSize(outputSizeInPixels.width() / 2, outputSizeInPixels.height() / 2);
+        d.scissorAnimState = 1;
     }
 
     QMatrix4x4 mvp = m_r->clipSpaceCorrMatrix();
@@ -171,9 +224,18 @@ void Window::customRender()
     cb->beginPass(m_sc->currentFrameRenderTarget(), m_clearColor, { 1.0f, 0 }, u);
     cb->setGraphicsPipeline(d.ps);
     cb->setViewport(QRhiViewport(0, 0, outputSizeInPixels.width(), outputSizeInPixels.height()));
+
+    // Apply a scissor rectangle that moves around on the screen, also
+    // exercising the out of screen (negative x or y) case.
+    cb->setScissor(QRhiScissor(d.scissorBottomLeft.x(), d.scissorBottomLeft.y(),
+                               d.scissorSize.width(), d.scissorSize.height()));
+
     cb->setShaderResources();
+
     const QRhiCommandBuffer::VertexInput vbufBinding(d.vbuf, 0);
     cb->setVertexInput(0, 1, &vbufBinding);
     cb->draw(36);
     cb->endPass();
+
+    advanceScissor();
 }

@@ -296,7 +296,7 @@ void Window::customRender()
     cb->endPass();
 
     // main pass
-    cb->beginPass(m_sc->currentFrameRenderTarget(), QColor::fromRgbF(0.4f, 0.7f, 0.0f, 1.0f), { 1.0f, 0 });
+    cb->beginPass(m_sc->currentFrameRenderTarget(), m_clearColor, { 1.0f, 0 });
     cb->setGraphicsPipeline(d.ps);
     cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
     enqueueScene(cb, d.srb, oneRoundedUniformBlockSize, 0);
