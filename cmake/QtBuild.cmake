@@ -2876,6 +2876,13 @@ macro(qt_find_package)
     endforeach()
 
     if (NOT ${ARGV0}_FOUND)
+        # Unset the NOTFOUND ${package}_DIR var that might have been set by the previous
+        # find_package call, to get rid of "not found" messagees in the feature summary
+        # if the package is found by the next find_package call.
+        if(DEFINED CACHE{${ARGV0}_DIR} AND NOT ${ARGV0}_DIR)
+            unset(${ARGV0}_DIR CACHE)
+        endif()
+
         # Call original function without our custom arguments.
         find_package(${arg_UNPARSED_ARGUMENTS})
     endif()
