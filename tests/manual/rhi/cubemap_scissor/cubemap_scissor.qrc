@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  <file alias="cubemap.vert.qsb">../cubemap/cubemap.vert.qsb</file>
+  <file alias="cubemap.frag.qsb">../cubemap/cubemap.frag.qsb</file>
+  <file alias="c.png">../cubemap/c.png</file>
+</qresource>
+</RCC>

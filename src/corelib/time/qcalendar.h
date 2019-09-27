@@ -137,7 +137,7 @@ public:
     explicit QCalendar(QStringView name);
 
     // QCalendar is a trivially copyable value type.
-    bool isValid() { return d != nullptr; }
+    bool isValid() const { return d != nullptr; }
 
     // Date queries:
     int daysInMonth(int month, int year = Unspecified) const;

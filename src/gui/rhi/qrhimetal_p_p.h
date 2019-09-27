@@ -271,8 +271,11 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
         ComputePass
     };
 
+    // per-pass (render or compute command encoder) persistent state
     PassType recordingPass;
     QRhiRenderTarget *currentTarget;
+
+    // per-pass (render or compute command encoder) volatile (cached) state
     QRhiGraphicsPipeline *currentGraphicsPipeline;
     QRhiComputePipeline *currentComputePipeline;
     uint currentPipelineGeneration;
@@ -283,6 +286,8 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     QRhiBuffer *currentIndexBuffer;
     quint32 currentIndexOffset;
     QRhiCommandBuffer::IndexFormat currentIndexFormat;
+    int currentCullMode;
+    int currentFrontFaceWinding;
 
     const QRhiNativeHandles *nativeHandles();
     void resetState();

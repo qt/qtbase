@@ -47,7 +47,6 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qloggingcategory.h>
-#include <QtCore/qcryptographichash.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtGui/qtransform.h>
 #include <QtGui/QColor>
@@ -3819,11 +3818,7 @@ bool QOpenGLShaderProgramPrivate::linkBinary()
 
     Q_Q(QOpenGLShaderProgram);
 
-    QCryptographicHash keyBuilder(QCryptographicHash::Sha1);
-    for (const QOpenGLProgramBinaryCache::ShaderDesc &shader : qAsConst(binaryProgram.shaders))
-        keyBuilder.addData(shader.source);
-
-    const QByteArray cacheKey = keyBuilder.result().toHex();
+    const QByteArray cacheKey = binaryProgram.cacheKey();
     if (DBG_SHADER_CACHE().isEnabled(QtDebugMsg))
         qCDebug(DBG_SHADER_CACHE, "program with %d shaders, cache key %s",
                 binaryProgram.shaders.count(), cacheKey.constData());

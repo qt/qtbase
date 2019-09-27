@@ -1110,16 +1110,32 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
     glyph_buffer.reset(new uchar[glyph_buffer_size]);
 
     if (slot->bitmap.pixel_mode == FT_PIXEL_MODE_MONO) {
-        Q_ASSERT(format == Format_Mono);
         uchar *src = slot->bitmap.buffer;
         uchar *dst = glyph_buffer.data();
         int h = slot->bitmap.rows;
-
-        int bytes = ((info.width + 7) & ~7) >> 3;
-        while (h--) {
-            memcpy (dst, src, bytes);
-            dst += pitch;
-            src += slot->bitmap.pitch;
+        // Some fonts return bitmaps even when we requested something else:
+        if (format == Format_Mono) {
+            int bytes = ((info.width + 7) & ~7) >> 3;
+            while (h--) {
+                memcpy (dst, src, bytes);
+                dst += pitch;
+                src += slot->bitmap.pitch;
+            }
+        } else if (format == Format_A8) {
+            while (h--) {
+                for (int x = 0; x < int{info.width}; x++)
+                    dst[x] = ((src[x >> 3] & (0x80 >> (x & 7))) ? 0xff : 0x00);
+                dst += pitch;
+                src += slot->bitmap.pitch;
+            }
+        } else {
+            while (h--) {
+                uint *dd = reinterpret_cast<uint *>(dst);
+                for (int x = 0; x < int{info.width}; x++)
+                    dd[x] = ((src[x >> 3] & (0x80 >> (x & 7))) ? 0xffffffff : 0x00000000);
+                dst += pitch;
+                src += slot->bitmap.pitch;
+            }
         }
     } else if (slot->bitmap.pixel_mode == 7 /*FT_PIXEL_MODE_BGRA*/) {
         Q_ASSERT(format == Format_ARGB);

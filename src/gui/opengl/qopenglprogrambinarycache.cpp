@@ -45,6 +45,7 @@
 #include <QDir>
 #include <QSaveFile>
 #include <QLoggingCategory>
+#include <QCryptographicHash>
 
 #ifdef Q_OS_UNIX
 #include <sys/mman.h>
@@ -92,6 +93,15 @@ GLEnvInfo::GLEnvInfo()
         glrenderer = QByteArray(renderer);
     if (version)
         glversion = QByteArray(version);
+}
+
+QByteArray QOpenGLProgramBinaryCache::ProgramDesc::cacheKey() const
+{
+    QCryptographicHash keyBuilder(QCryptographicHash::Sha1);
+    for (const QOpenGLProgramBinaryCache::ShaderDesc &shader : shaders)
+        keyBuilder.addData(shader.source);
+
+    return keyBuilder.result().toHex();
 }
 
 static inline bool qt_ensureWritableDir(const QString &name)

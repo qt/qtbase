@@ -1004,8 +1004,12 @@ void QRhiGles2::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport)
     QGles2CommandBuffer::Command cmd;
     cmd.cmd = QGles2CommandBuffer::Command::Viewport;
     const std::array<float, 4> r = viewport.viewport();
-    cmd.args.viewport.x = qMax(0.0f, r[0]);
-    cmd.args.viewport.y = qMax(0.0f, r[1]);
+    // A negative width or height is an error. A negative x or y is not.
+    if (r[2] < 0.0f || r[3] < 0.0f)
+        return;
+
+    cmd.args.viewport.x = r[0];
+    cmd.args.viewport.y = r[1];
     cmd.args.viewport.w = r[2];
     cmd.args.viewport.h = r[3];
     cmd.args.viewport.d0 = viewport.minDepth();
@@ -1021,8 +1025,12 @@ void QRhiGles2::setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor)
     QGles2CommandBuffer::Command cmd;
     cmd.cmd = QGles2CommandBuffer::Command::Scissor;
     const std::array<int, 4> r = scissor.scissor();
-    cmd.args.scissor.x = qMax(0, r[0]);
-    cmd.args.scissor.y = qMax(0, r[1]);
+    // A negative width or height is an error. A negative x or y is not.
+    if (r[2] < 0 || r[3] < 0)
+        return;
+
+    cmd.args.scissor.x = r[0];
+    cmd.args.scissor.y = r[1];
     cmd.args.scissor.w = r[2];
     cmd.args.scissor.h = r[3];
     cbD->commands.append(cmd);
@@ -2250,6 +2258,7 @@ void QRhiGles2::executeBindGraphicsPipeline(QRhiGraphicsPipeline *ps)
         }
     } else {
         f->glDisable(GL_BLEND);
+        f->glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     }
     if (psD->m_depthTest)
         f->glEnable(GL_DEPTH_TEST);
