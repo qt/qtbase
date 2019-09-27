@@ -49,6 +49,7 @@
 #ifdef Q_OS_WIN
 #include <qt_windows.h>
 #if !defined(Q_OS_WINRT)
+#include <private/qwinregistry_p.h>
 #include <lm.h>
 #endif
 #endif
@@ -1243,17 +1244,12 @@ void tst_QFileInfo::fileTimes()
     //In Vista the last-access timestamp is not updated when the file is accessed/touched (by default).
     //To enable this the HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsDisableLastAccessUpdate
     //is set to 0, in the test machine.
-    HKEY key;
-    if (ERROR_SUCCESS == RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\FileSystem",
-        0, KEY_READ, &key)) {
-            DWORD disabledAccessTimes = 0;
-            DWORD size = sizeof(DWORD);
-            LONG error = RegQueryValueEx(key, L"NtfsDisableLastAccessUpdate"
-                , NULL, NULL, (LPBYTE)&disabledAccessTimes, &size);
-            if (ERROR_SUCCESS == error && disabledAccessTimes)
-                noAccessTime = true;
-            RegCloseKey(key);
-    }
+    const auto disabledAccessTimes =
+        QWinRegistryKey(HKEY_LOCAL_MACHINE,
+                        LR"(SYSTEM\CurrentControlSet\Control\FileSystem)")
+        .dwordValue(L"NtfsDisableLastAccessUpdate");
+    if (disabledAccessTimes.second && disabledAccessTimes.first != 0)
+        noAccessTime = true;
 #endif
 
     if (noAccessTime)
