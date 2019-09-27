@@ -36,7 +36,7 @@
 
 #include "qrhid3d11_p_p.h"
 #include "qshader_p.h"
-#include "cs_tdr.h"
+#include "cs_tdr_p.h"
 #include <QWindow>
 #include <QOperatingSystemVersion>
 #include <qmath.h>
