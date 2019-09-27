@@ -837,10 +837,6 @@ void tst_QDtls::verifyServerCertificate()
 
 void tst_QDtls::verifyClientCertificate_data()
 {
-#if !QT_CONFIG(opensslv11)
-    QSKIP("This test is not supposed to work with OpenSSL version below 1.1");
-#endif
-
     QTest::addColumn<QSslSocket::PeerVerifyMode>("verifyMode");
     QTest::addColumn<QList<QSslCertificate>>("clientCerts");
     QTest::addColumn<QSslKey>("clientKey");

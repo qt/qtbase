@@ -127,7 +127,6 @@ public:
     static long sslLibraryBuildVersionNumber();
     static QString sslLibraryBuildVersionString();
     static void ensureInitialized();
-    static void deinitialize();
     static QList<QSslCipher> defaultCiphers();
     static QList<QSslCipher> supportedCiphers();
     static void setDefaultCiphers(const QList<QSslCipher> &ciphers);
