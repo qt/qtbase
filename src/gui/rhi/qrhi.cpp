@@ -2645,43 +2645,10 @@ bool QRhiShaderResourceBindings::isLayoutCompatible(const QRhiShaderResourceBind
     \internal
  */
 QRhiShaderResourceBinding::QRhiShaderResourceBinding()
-    : d(new QRhiShaderResourceBindingPrivate)
 {
-}
-
-/*!
-    \internal
- */
-void QRhiShaderResourceBinding::detach()
-{
-    qAtomicDetach(d);
-}
-
-/*!
-    \internal
- */
-QRhiShaderResourceBinding::QRhiShaderResourceBinding(const QRhiShaderResourceBinding &other)
-    : d(other.d)
-{
-    d->ref.ref();
-}
-
-/*!
-    \internal
- */
-QRhiShaderResourceBinding &QRhiShaderResourceBinding::operator=(const QRhiShaderResourceBinding &other)
-{
-    qAtomicAssign(d, other.d);
-    return *this;
-}
-
-/*!
-    Destructor.
- */
-QRhiShaderResourceBinding::~QRhiShaderResourceBinding()
-{
-    if (!d->ref.deref())
-        delete d;
+    // Zero out everything, including possible padding, because will use
+    // qHashBits on it.
+    memset(&d.u, 0, sizeof(d.u));
 }
 
 /*!
@@ -2698,8 +2665,7 @@ QRhiShaderResourceBinding::~QRhiShaderResourceBinding()
  */
 bool QRhiShaderResourceBinding::isLayoutCompatible(const QRhiShaderResourceBinding &other) const
 {
-    return (d == other.d)
-            || (d->binding == other.d->binding && d->stage == other.d->stage && d->type == other.d->type);
+    return d.binding == other.d.binding && d.stage == other.d.stage && d.type == other.d.type;
 }
 
 /*!
@@ -2712,15 +2678,13 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
         int binding, StageFlags stage, QRhiBuffer *buf)
 {
     QRhiShaderResourceBinding b;
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.loadRelaxed() == 1);
-    d->binding = binding;
-    d->stage = stage;
-    d->type = UniformBuffer;
-    d->u.ubuf.buf = buf;
-    d->u.ubuf.offset = 0;
-    d->u.ubuf.maybeSize = 0; // entire buffer
-    d->u.ubuf.hasDynamicOffset = false;
+    b.d.binding = binding;
+    b.d.stage = stage;
+    b.d.type = UniformBuffer;
+    b.d.u.ubuf.buf = buf;
+    b.d.u.ubuf.offset = 0;
+    b.d.u.ubuf.maybeSize = 0; // entire buffer
+    b.d.u.ubuf.hasDynamicOffset = false;
     return b;
 }
 
@@ -2741,9 +2705,8 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBuffer(
 {
     Q_ASSERT(size > 0);
     QRhiShaderResourceBinding b = uniformBuffer(binding, stage, buf);
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    d->u.ubuf.offset = offset;
-    d->u.ubuf.maybeSize = size;
+    b.d.u.ubuf.offset = offset;
+    b.d.u.ubuf.maybeSize = size;
     return b;
 }
 
@@ -2762,8 +2725,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBufferWithDynamicOff
         int binding, StageFlags stage, QRhiBuffer *buf, int size)
 {
     QRhiShaderResourceBinding b = uniformBuffer(binding, stage, buf, 0, size);
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    d->u.ubuf.hasDynamicOffset = true;
+    b.d.u.ubuf.hasDynamicOffset = true;
     return b;
 }
 
@@ -2776,13 +2738,11 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTexture(
         int binding, StageFlags stage, QRhiTexture *tex, QRhiSampler *sampler)
 {
     QRhiShaderResourceBinding b;
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.loadRelaxed() == 1);
-    d->binding = binding;
-    d->stage = stage;
-    d->type = SampledTexture;
-    d->u.stex.tex = tex;
-    d->u.stex.sampler = sampler;
+    b.d.binding = binding;
+    b.d.stage = stage;
+    b.d.type = SampledTexture;
+    b.d.u.stex.tex = tex;
+    b.d.u.stex.sampler = sampler;
     return b;
 }
 
@@ -2798,13 +2758,11 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoad(
         int binding, StageFlags stage, QRhiTexture *tex, int level)
 {
     QRhiShaderResourceBinding b;
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.loadRelaxed() == 1);
-    d->binding = binding;
-    d->stage = stage;
-    d->type = ImageLoad;
-    d->u.simage.tex = tex;
-    d->u.simage.level = level;
+    b.d.binding = binding;
+    b.d.stage = stage;
+    b.d.type = ImageLoad;
+    b.d.u.simage.tex = tex;
+    b.d.u.simage.level = level;
     return b;
 }
 
@@ -2820,8 +2778,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageStore(
         int binding, StageFlags stage, QRhiTexture *tex, int level)
 {
     QRhiShaderResourceBinding b = imageLoad(binding, stage, tex, level);
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    d->type = ImageStore;
+    b.d.type = ImageStore;
     return b;
 }
 
@@ -2837,8 +2794,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::imageLoadStore(
         int binding, StageFlags stage, QRhiTexture *tex, int level)
 {
     QRhiShaderResourceBinding b = imageLoad(binding, stage, tex, level);
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    d->type = ImageLoadStore;
+    b.d.type = ImageLoadStore;
     return b;
 }
 
@@ -2852,14 +2808,12 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
         int binding, StageFlags stage, QRhiBuffer *buf)
 {
     QRhiShaderResourceBinding b;
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    Q_ASSERT(d->ref.loadRelaxed() == 1);
-    d->binding = binding;
-    d->stage = stage;
-    d->type = BufferLoad;
-    d->u.sbuf.buf = buf;
-    d->u.sbuf.offset = 0;
-    d->u.sbuf.maybeSize = 0; // entire buffer
+    b.d.binding = binding;
+    b.d.stage = stage;
+    b.d.type = BufferLoad;
+    b.d.u.sbuf.buf = buf;
+    b.d.u.sbuf.offset = 0;
+    b.d.u.sbuf.maybeSize = 0; // entire buffer
     return b;
 }
 
@@ -2875,9 +2829,8 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoad(
 {
     Q_ASSERT(size > 0);
     QRhiShaderResourceBinding b = bufferLoad(binding, stage, buf);
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    d->u.sbuf.offset = offset;
-    d->u.sbuf.maybeSize = size;
+    b.d.u.sbuf.offset = offset;
+    b.d.u.sbuf.maybeSize = size;
     return b;
 }
 
@@ -2891,8 +2844,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
         int binding, StageFlags stage, QRhiBuffer *buf)
 {
     QRhiShaderResourceBinding b = bufferLoad(binding, stage, buf);
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    d->type = BufferStore;
+    b.d.type = BufferStore;
     return b;
 }
 
@@ -2908,9 +2860,8 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferStore(
 {
     Q_ASSERT(size > 0);
     QRhiShaderResourceBinding b = bufferStore(binding, stage, buf);
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    d->u.sbuf.offset = offset;
-    d->u.sbuf.maybeSize = size;
+    b.d.u.sbuf.offset = offset;
+    b.d.u.sbuf.maybeSize = size;
     return b;
 }
 
@@ -2924,8 +2875,7 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
         int binding, StageFlags stage, QRhiBuffer *buf)
 {
     QRhiShaderResourceBinding b = bufferLoad(binding, stage, buf);
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    d->type = BufferLoadStore;
+    b.d.type = BufferLoadStore;
     return b;
 }
 
@@ -2941,9 +2891,8 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
 {
     Q_ASSERT(size > 0);
     QRhiShaderResourceBinding b = bufferLoadStore(binding, stage, buf);
-    QRhiShaderResourceBindingPrivate *d = QRhiShaderResourceBindingPrivate::get(&b);
-    d->u.sbuf.offset = offset;
-    d->u.sbuf.maybeSize = size;
+    b.d.u.sbuf.offset = offset;
+    b.d.u.sbuf.maybeSize = size;
     return b;
 }
 
@@ -2959,28 +2908,32 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
  */
 bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) Q_DECL_NOTHROW
 {
-    if (a.d == b.d)
+    const QRhiShaderResourceBinding::Data *da = a.data();
+    const QRhiShaderResourceBinding::Data *db = b.data();
+
+    if (da == db)
         return true;
 
-    if (a.d->binding != b.d->binding
-            || a.d->stage != b.d->stage
-            || a.d->type != b.d->type)
+
+    if (da->binding != db->binding
+            || da->stage != db->stage
+            || da->type != db->type)
     {
         return false;
     }
 
-    switch (a.d->type) {
+    switch (da->type) {
     case QRhiShaderResourceBinding::UniformBuffer:
-        if (a.d->u.ubuf.buf != b.d->u.ubuf.buf
-                || a.d->u.ubuf.offset != b.d->u.ubuf.offset
-                || a.d->u.ubuf.maybeSize != b.d->u.ubuf.maybeSize)
+        if (da->u.ubuf.buf != db->u.ubuf.buf
+                || da->u.ubuf.offset != db->u.ubuf.offset
+                || da->u.ubuf.maybeSize != db->u.ubuf.maybeSize)
         {
             return false;
         }
         break;
     case QRhiShaderResourceBinding::SampledTexture:
-        if (a.d->u.stex.tex != b.d->u.stex.tex
-                || a.d->u.stex.sampler != b.d->u.stex.sampler)
+        if (da->u.stex.tex != db->u.stex.tex
+                || da->u.stex.sampler != db->u.stex.sampler)
         {
             return false;
         }
@@ -2990,8 +2943,8 @@ bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
     case QRhiShaderResourceBinding::ImageStore:
         Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::ImageLoadStore:
-        if (a.d->u.simage.tex != b.d->u.simage.tex
-                || a.d->u.simage.level != b.d->u.simage.level)
+        if (da->u.simage.tex != db->u.simage.tex
+                || da->u.simage.level != db->u.simage.level)
         {
             return false;
         }
@@ -3001,9 +2954,9 @@ bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
     case QRhiShaderResourceBinding::BufferStore:
         Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::BufferLoadStore:
-        if (a.d->u.sbuf.buf != b.d->u.sbuf.buf
-                || a.d->u.sbuf.offset != b.d->u.sbuf.offset
-                || a.d->u.sbuf.maybeSize != b.d->u.sbuf.maybeSize)
+        if (da->u.sbuf.buf != db->u.sbuf.buf
+                || da->u.sbuf.offset != db->u.sbuf.offset
+                || da->u.sbuf.maybeSize != db->u.sbuf.maybeSize)
         {
             return false;
         }
@@ -3034,16 +2987,16 @@ bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
  */
 uint qHash(const QRhiShaderResourceBinding &b, uint seed) Q_DECL_NOTHROW
 {
-    const char *u = reinterpret_cast<const char *>(&b.d->u);
-    return seed + uint(b.d->binding) + 10 * uint(b.d->stage) + 100 * uint(b.d->type)
-            + qHash(QByteArray::fromRawData(u, sizeof(b.d->u)), seed);
+    const QRhiShaderResourceBinding::Data *d = b.data();
+    return seed + uint(d->binding) + 10 * uint(d->stage) + 100 * uint(d->type)
+            + qHashBits(&d->u, sizeof(d->u), seed);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiShaderResourceBinding &b)
 {
-    const QRhiShaderResourceBindingPrivate *d = b.d;
     QDebugStateSaver saver(dbg);
+    const QRhiShaderResourceBinding::Data *d = b.data();
     dbg.nospace() << "QRhiShaderResourceBinding("
                   << "binding=" << d->binding
                   << " stage=" << d->stage

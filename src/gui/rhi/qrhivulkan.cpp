@@ -2313,7 +2313,7 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
     while (frameSlot < (updateAll ? QVK_FRAMES_IN_FLIGHT : descSetIdx + 1)) {
         srbD->boundResourceData[frameSlot].resize(srbD->sortedBindings.count());
         for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
-            const QRhiShaderResourceBindingPrivate *b = QRhiShaderResourceBindingPrivate::get(&srbD->sortedBindings[i]);
+            const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings.at(i).data();
             QVkShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[frameSlot][i]);
 
             VkWriteDescriptorSet writeInfo;
@@ -3870,7 +3870,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
     bool hasDynamicOffsetInSrb = false;
 
     for (const QRhiShaderResourceBinding &binding : qAsConst(srbD->sortedBindings)) {
-        const QRhiShaderResourceBindingPrivate *b = QRhiShaderResourceBindingPrivate::get(&binding);
+        const QRhiShaderResourceBinding::Data *b = binding.data();
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
             if (QRHI_RES(QVkBuffer, b->u.ubuf.buf)->m_type == QRhiBuffer::Dynamic)
@@ -3889,7 +3889,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
     // Do host writes and mark referenced shader resources as in-use.
     // Also prepare to ensure the descriptor set we are going to bind refers to up-to-date Vk objects.
     for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
-        const QRhiShaderResourceBindingPrivate *b = QRhiShaderResourceBindingPrivate::get(&srbD->sortedBindings[i]);
+        const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings.at(i).data();
         QVkShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[descSetIdx][i]);
         QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
         switch (b->type) {
@@ -4022,7 +4022,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             // and neither srb nor dynamicOffsets has any such ordering
             // requirement.
             for (const QRhiShaderResourceBinding &binding : qAsConst(srbD->sortedBindings)) {
-                const QRhiShaderResourceBindingPrivate *b = QRhiShaderResourceBindingPrivate::get(&binding);
+                const QRhiShaderResourceBinding::Data *b = binding.data();
                 if (b->type == QRhiShaderResourceBinding::UniformBuffer && b->u.ubuf.hasDynamicOffset) {
                     uint32_t offset = 0;
                     for (int i = 0; i < dynamicOffsetCount; ++i) {
@@ -4750,7 +4750,7 @@ static inline void fillVkStencilOpState(VkStencilOpState *dst, const QRhiGraphic
     dst->compareOp = toVkCompareOp(src.compareOp);
 }
 
-static inline VkDescriptorType toVkDescriptorType(const QRhiShaderResourceBindingPrivate *b)
+static inline VkDescriptorType toVkDescriptorType(const QRhiShaderResourceBinding::Data *b)
 {
     switch (b->type) {
     case QRhiShaderResourceBinding::UniformBuffer:
@@ -5701,12 +5701,12 @@ bool QVkShaderResourceBindings::build()
     std::sort(sortedBindings.begin(), sortedBindings.end(),
               [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
     {
-        return QRhiShaderResourceBindingPrivate::get(&a)->binding < QRhiShaderResourceBindingPrivate::get(&b)->binding;
+        return a.data()->binding < b.data()->binding;
     });
 
     QVarLengthArray<VkDescriptorSetLayoutBinding, 4> vkbindings;
     for (const QRhiShaderResourceBinding &binding : qAsConst(sortedBindings)) {
-        const QRhiShaderResourceBindingPrivate *b = QRhiShaderResourceBindingPrivate::get(&binding);
+        const QRhiShaderResourceBinding::Data *b = binding.data();
         VkDescriptorSetLayoutBinding vkbinding;
         memset(&vkbinding, 0, sizeof(vkbinding));
         vkbinding.binding = uint32_t(b->binding);

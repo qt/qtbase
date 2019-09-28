@@ -381,57 +381,6 @@ Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate, Q_MOVABL
 Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::StaticBufferUpload, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::TextureOp, Q_MOVABLE_TYPE);
 
-class Q_GUI_EXPORT QRhiShaderResourceBindingPrivate
-{
-public:
-    QRhiShaderResourceBindingPrivate()
-        : ref(1)
-    {
-    }
-
-    QRhiShaderResourceBindingPrivate(const QRhiShaderResourceBindingPrivate *other)
-        : ref(1),
-          binding(other->binding),
-          stage(other->stage),
-          type(other->type),
-          u(other->u)
-    {
-    }
-
-    static QRhiShaderResourceBindingPrivate *get(QRhiShaderResourceBinding *s) { return s->d; }
-    static const QRhiShaderResourceBindingPrivate *get(const QRhiShaderResourceBinding *s) { return s->d; }
-
-    QAtomicInt ref;
-    int binding;
-    QRhiShaderResourceBinding::StageFlags stage;
-    QRhiShaderResourceBinding::Type type;
-    struct UniformBufferData {
-        QRhiBuffer *buf;
-        int offset;
-        int maybeSize;
-        bool hasDynamicOffset;
-    };
-    struct SampledTextureData {
-        QRhiTexture *tex;
-        QRhiSampler *sampler;
-    };
-    struct StorageImageData {
-        QRhiTexture *tex;
-        int level;
-    };
-    struct StorageBufferData {
-        QRhiBuffer *buf;
-        int offset;
-        int maybeSize;
-    };
-    union {
-        UniformBufferData ubuf;
-        SampledTextureData stex;
-        StorageImageData simage;
-        StorageBufferData sbuf;
-    } u;
-};
-
 template<typename T>
 struct QRhiBatchedBindings
 {

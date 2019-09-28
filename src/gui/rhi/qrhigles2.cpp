@@ -868,7 +868,7 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
     QGles2ShaderResourceBindings *srbD = QRHI_RES(QGles2ShaderResourceBindings, srb);
     bool hasDynamicOffsetInSrb = false;
     for (int i = 0, ie = srbD->m_bindings.count(); i != ie; ++i) {
-        const QRhiShaderResourceBindingPrivate *b = QRhiShaderResourceBindingPrivate::get(&srbD->m_bindings[i]);
+        const QRhiShaderResourceBinding::Data *b = srbD->m_bindings.at(i).data();
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
             // no BufUniformRead / AccessUniform because no real uniform buffers are used
@@ -2306,7 +2306,7 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
     int texUnit = 0;
 
     for (int i = 0, ie = srbD->m_bindings.count(); i != ie; ++i) {
-        const QRhiShaderResourceBindingPrivate *b = QRhiShaderResourceBindingPrivate::get(&srbD->m_bindings[i]);
+        const QRhiShaderResourceBinding::Data *b = srbD->m_bindings.at(i).data();
 
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:

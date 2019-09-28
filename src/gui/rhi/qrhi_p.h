@@ -320,10 +320,6 @@ public:
     Q_DECLARE_FLAGS(StageFlags, StageFlag)
 
     QRhiShaderResourceBinding();
-    QRhiShaderResourceBinding(const QRhiShaderResourceBinding &other);
-    QRhiShaderResourceBinding &operator=(const QRhiShaderResourceBinding &other);
-    ~QRhiShaderResourceBinding();
-    void detach();
 
     bool isLayoutCompatible(const QRhiShaderResourceBinding &other) const;
 
@@ -344,18 +340,48 @@ public:
     static QRhiShaderResourceBinding bufferLoadStore(int binding, StageFlags stage, QRhiBuffer *buf);
     static QRhiShaderResourceBinding bufferLoadStore(int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size);
 
+    struct Data
+    {
+        int binding;
+        QRhiShaderResourceBinding::StageFlags stage;
+        QRhiShaderResourceBinding::Type type;
+        struct UniformBufferData {
+            QRhiBuffer *buf;
+            int offset;
+            int maybeSize;
+            bool hasDynamicOffset;
+        };
+        struct SampledTextureData {
+            QRhiTexture *tex;
+            QRhiSampler *sampler;
+        };
+        struct StorageImageData {
+            QRhiTexture *tex;
+            int level;
+        };
+        struct StorageBufferData {
+            QRhiBuffer *buf;
+            int offset;
+            int maybeSize;
+        };
+        union {
+            UniformBufferData ubuf;
+            SampledTextureData stex;
+            StorageImageData simage;
+            StorageBufferData sbuf;
+        } u;
+    };
+
+    Data *data() { return &d; }
+    const Data *data() const { return &d; }
+
 private:
-    QRhiShaderResourceBindingPrivate *d;
-    friend class QRhiShaderResourceBindingPrivate;
-    friend Q_GUI_EXPORT bool operator==(const QRhiShaderResourceBinding &, const QRhiShaderResourceBinding &) Q_DECL_NOTHROW;
-    friend Q_GUI_EXPORT bool operator!=(const QRhiShaderResourceBinding &, const QRhiShaderResourceBinding &) Q_DECL_NOTHROW;
-    friend Q_GUI_EXPORT uint qHash(const QRhiShaderResourceBinding &, uint) Q_DECL_NOTHROW;
-#ifndef QT_NO_DEBUG_STREAM
-    friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiShaderResourceBinding &);
-#endif
+    Data d;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiShaderResourceBinding::StageFlags)
+
+Q_DECLARE_TYPEINFO(QRhiShaderResourceBinding, Q_MOVABLE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) Q_DECL_NOTHROW;
 Q_GUI_EXPORT bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) Q_DECL_NOTHROW;
