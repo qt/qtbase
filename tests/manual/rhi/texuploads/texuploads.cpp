@@ -68,6 +68,8 @@ struct {
     QRhiTexture *newTex = nullptr;
     QRhiTexture *importedTex = nullptr;
     int testStage = 0;
+
+    QRhiShaderResourceBinding bindings[2];
 } d;
 
 void Window::customInit()
@@ -100,10 +102,10 @@ void Window::customInit()
 
     d.srb = m_r->newShaderResourceBindings();
     d.releasePool << d.srb;
-    d.srb->setBindings({
-        QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf),
-        QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.tex, d.sampler)
-    });
+
+    d.bindings[0] = QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, d.ubuf);
+    d.bindings[1] = QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.tex, d.sampler);
+    d.srb->setBindings(d.bindings, d.bindings + 2);
     d.srb->build();
 
     d.ps = m_r->newGraphicsPipeline();
@@ -211,9 +213,8 @@ void Window::customRender()
             u->copyTexture(d.newTex, d.tex, desc);
 
             // Now replace d.tex with d.newTex as the shader resource.
-            auto bindings = d.srb->bindings();
-            bindings[1] = QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.newTex, d.sampler);
-            d.srb->setBindings(bindings);
+            d.bindings[1] = QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.newTex, d.sampler);
+            d.srb->setBindings(d.bindings, d.bindings + 2);
             // "rebuild", whatever that means for a given backend. This srb is
             // already live as the ps in the setGraphicsPipeline references it,
             // but that's fine. Changes will be picked up automatically.
@@ -259,9 +260,8 @@ void Window::customRender()
                 // underneath (owned by d.tex)
 
                 // switch to showing d.importedTex
-                auto bindings = d.srb->bindings();
-                bindings[1] = QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.importedTex, d.sampler);
-                d.srb->setBindings(bindings);
+                d.bindings[1] = QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.importedTex, d.sampler);
+                d.srb->setBindings(d.bindings, d.bindings + 2);
                 d.srb->build();
             } else {
                 qWarning("Accessing native texture object is not supported");
@@ -270,9 +270,8 @@ void Window::customRender()
 
         // Exercise uploading uncompressed data without a QImage.
         if (d.testStage == 7) {
-            auto bindings = d.srb->bindings();
-            bindings[1] = QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.newTex, d.sampler);
-            d.srb->setBindings(bindings);
+            d.bindings[1] = QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, d.newTex, d.sampler);
+            d.srb->setBindings(d.bindings, d.bindings + 2);
             d.srb->build();
 
             const QSize sz(221, 139);

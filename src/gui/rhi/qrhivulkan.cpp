@@ -5697,7 +5697,8 @@ bool QVkShaderResourceBindings::build()
     for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
         descSets[i] = VK_NULL_HANDLE;
 
-    sortedBindings = m_bindings;
+    sortedBindings.clear();
+    std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
     std::sort(sortedBindings.begin(), sortedBindings.end(),
               [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
     {

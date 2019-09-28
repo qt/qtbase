@@ -2768,7 +2768,7 @@ bool QMetalShaderResourceBindings::build()
     if (!sortedBindings.isEmpty())
         release();
 
-    sortedBindings = m_bindings;
+    std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
     std::sort(sortedBindings.begin(), sortedBindings.end(),
               [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
     {
@@ -2782,7 +2782,7 @@ bool QMetalShaderResourceBindings::build()
     boundResourceData.resize(sortedBindings.count());
 
     for (int i = 0, ie = sortedBindings.count(); i != ie; ++i) {
-        const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings.at(i).data();
+        const QRhiShaderResourceBinding::Data *b = sortedBindings.at(i).data();
         QMetalShaderResourceBindings::BoundResourceData &bd(boundResourceData[i]);
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:

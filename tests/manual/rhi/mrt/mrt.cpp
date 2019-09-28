@@ -200,12 +200,10 @@ void Window::customInit()
         { QRhiShaderStage::Vertex, getShader(QLatin1String(":/mrt.vert.qsb")) },
         { QRhiShaderStage::Fragment, getShader(QLatin1String(":/mrt.frag.qsb")) }
     });
-    QVector<QRhiGraphicsPipeline::TargetBlend> blends;
-    for (int i = 0; i < ATTCOUNT; ++i) {
-        QRhiGraphicsPipeline::TargetBlend blend;
-        blends.append(blend);
-    }
-    d.triPs->setTargetBlends(blends);
+
+    QRhiGraphicsPipeline::TargetBlend blends[ATTCOUNT]; // defaults to blending == false
+    d.triPs->setTargetBlends(blends, blends + ATTCOUNT);
+
     inputLayout.setBindings({
         { 5 * sizeof(float) }
     });

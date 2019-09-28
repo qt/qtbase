@@ -2534,16 +2534,8 @@ QRhiResource::Type QRhiTextureRenderTarget::resourceType() const
     be used with the same pipeline, assuming the pipeline was built with one of
     them in the first place.
 
-    Creating and then using a new \c srb2 that is very similar to \c srb with
-    the exception of referencing another texture could be implemented like the
-    following:
-
     \badcode
         srb2 = rhi->newShaderResourceBindings();
-        QVector<QRhiShaderResourceBinding> bindings = srb->bindings();
-        bindings[1] = QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, anotherTexture, sampler);
-        srb2->setBindings(bindings);
-        srb2->build();
         ...
         cb->setGraphicsPipeline(ps);
         cb->setShaderResources(srb2); // binds srb2
@@ -3064,6 +3056,11 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBinding &b)
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QVarLengthArray<QRhiShaderResourceBinding, 8> &bindings)
+{
+    return QtPrivate::printSequentialContainer(dbg, "Bindings", bindings);
+}
+
 QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 {
     QDebugStateSaver saver(dbg);

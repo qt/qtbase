@@ -3082,7 +3082,7 @@ bool QD3D11ShaderResourceBindings::build()
     if (!sortedBindings.isEmpty())
         release();
 
-    sortedBindings = m_bindings;
+    std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
     std::sort(sortedBindings.begin(), sortedBindings.end(),
               [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
     {

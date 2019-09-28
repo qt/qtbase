@@ -240,7 +240,7 @@ void Window::customInit()
 #else
     d.msaaTriPs->setSampleCount(1);
 #endif
-    d.msaaTriPs->setShaderStages(d.triPs->shaderStages());
+    d.msaaTriPs->setShaderStages(d.triPs->cbeginShaderStages(), d.triPs->cendShaderStages());
     d.msaaTriPs->setVertexInputLayout(d.triPs->vertexInputLayout());
     d.msaaTriPs->setShaderResourceBindings(d.triSrb);
     d.msaaTriPs->setRenderPassDescriptor(d.msaaRtRp);
