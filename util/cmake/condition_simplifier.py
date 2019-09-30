@@ -29,8 +29,8 @@
 
 
 import re
-
 from sympy import simplify_logic, And, Or, Not, SympifyError
+from condition_simplifier_cache import simplify_condition_memoize
 
 
 def _iterate_expr_tree(expr, op, matches):
@@ -160,6 +160,7 @@ def _recursive_simplify(expr):
     return expr
 
 
+@simplify_condition_memoize
 def simplify_condition(condition: str) -> str:
     input_condition = condition.strip()
 
