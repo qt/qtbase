@@ -1,10 +1,3 @@
-# Save old module path, and append a new path that points to the copied over Find modules
-# so that find_dependency() can find the third party packages.
-set(old_CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}")
-list(APPEND CMAKE_MODULE_PATH "${_import_prefix}/../@INSTALL_CMAKE_NAMESPACE@")
-list(APPEND CMAKE_MODULE_PATH "${_import_prefix}/../@INSTALL_CMAKE_NAMESPACE@/3rdparty/extra-cmake-modules/find-modules")
-list(APPEND CMAKE_MODULE_PATH "${_import_prefix}/../@INSTALL_CMAKE_NAMESPACE@/3rdparty/kwin")
-
 # note: _third_party_deps example: "ICU\\;1.0\\;i18n uc data;ZLIB\\;\\;"
 set(_third_party_deps "@third_party_deps@")
 
@@ -29,9 +22,6 @@ foreach(_target_dep ${_third_party_deps})
         return()
     endif()
 endforeach()
-
-# Restore old module path.
-set(CMAKE_MODULE_PATH "${old_CMAKE_MODULE_PATH}")
 
 # Find Qt tool package.
 set(_tool_deps "@main_module_tool_deps@")
