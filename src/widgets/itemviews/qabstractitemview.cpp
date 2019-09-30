@@ -1775,8 +1775,8 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
     d->noSelectionOnMousePress = command == QItemSelectionModel::NoUpdate || !index.isValid();
     QPoint offset = d->offset();
+    d->pressedPosition = pos + offset;
     if ((command & QItemSelectionModel::Current) == 0) {
-        d->pressedPosition = pos + offset;
         d->currentSelectionStartIndex = index;
     }
     else if (!d->currentSelectionStartIndex.isValid())
