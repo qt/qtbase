@@ -493,15 +493,15 @@ public:
     QDomNodeList elementsByTagName(const QString& tagname) const;
     bool hasAttribute(const QString& name) const;
 
-    QString attributeNS(const QString nsURI, const QString& localName, const QString& defValue = QString()) const;
-    void setAttributeNS(const QString nsURI, const QString& qName, const QString& value);
-    inline void setAttributeNS(const QString nsURI, const QString& qName, int value)
+    QString attributeNS(const QString& nsURI, const QString& localName, const QString& defValue = QString()) const;
+    void setAttributeNS(const QString& nsURI, const QString& qName, const QString& value);
+    inline void setAttributeNS(const QString& nsURI, const QString& qName, int value)
         { setAttributeNS(nsURI, qName, qlonglong(value)); }
-    inline void setAttributeNS(const QString nsURI, const QString& qName, uint value)
+    inline void setAttributeNS(const QString& nsURI, const QString& qName, uint value)
         { setAttributeNS(nsURI, qName, qulonglong(value)); }
-    void setAttributeNS(const QString nsURI, const QString& qName, qlonglong value);
-    void setAttributeNS(const QString nsURI, const QString& qName, qulonglong value);
-    void setAttributeNS(const QString nsURI, const QString& qName, double value);
+    void setAttributeNS(const QString& nsURI, const QString& qName, qlonglong value);
+    void setAttributeNS(const QString& nsURI, const QString& qName, qulonglong value);
+    void setAttributeNS(const QString& nsURI, const QString& qName, double value);
     void removeAttributeNS(const QString& nsURI, const QString& localName);
     QDomAttr attributeNodeNS(const QString& nsURI, const QString& localName);
     QDomAttr setAttributeNodeNS(const QDomAttr& newAttr);
