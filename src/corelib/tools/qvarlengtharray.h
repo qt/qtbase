@@ -104,7 +104,7 @@ public:
 
     QVarLengthArray<T, Prealloc> &operator=(std::initializer_list<T> list)
     {
-        resize(list.size());
+        resize(int(list.size())); // ### q6sizetype
         std::copy(list.begin(), list.end(),
                   QT_MAKE_CHECKED_ARRAY_ITERATOR(this->begin(), this->size()));
         return *this;
