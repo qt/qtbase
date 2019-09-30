@@ -97,6 +97,21 @@ fi
 CFG_TOPLEVEL=
 outpathPrefix=
 
+checkTopLevelBuild()
+{
+    relpathMangled=$relpath
+    if [ x"$1" = x"-top-level" ]; then
+        CFG_TOPLEVEL=yes
+        relpathMangled=`dirname "$relpath"`
+        outpathPrefix=../
+    else
+        if [ -f ../.qmake.super ]; then
+            echo >&2 "ERROR: You cannot configure qtbase separately within a top-level build."
+            exit 1
+        fi
+    fi
+}
+
 CMAKE_CMDLINE=
 getCMakeCmdLine()
 {
@@ -157,6 +172,9 @@ SAVED_IFS=$IFS
 IFS='
 '
 for i in "$@"; do
+    if [ x"$i" = x"-top-level" ]; then
+        continue
+    fi
     case $i in
         -redo|--redo)
             optfile=${outpathPrefix}config.opt
@@ -967,20 +985,7 @@ else
     findAwk
     findMake
     checkQMakeEnv
-
-    relpathMangled=$relpath
-    if [ x"$1" = x"-top-level" ]; then
-        CFG_TOPLEVEL=yes
-        relpathMangled=`dirname "$relpath"`
-        outpathPrefix=../
-        shift
-    else
-        if [ -f ../.qmake.super ]; then
-            echo >&2 "ERROR: You cannot configure qtbase separately within a top-level build."
-            exit 1
-        fi
-    fi
-
+    checkTopLevelBuild $@
     getOptAndQMakeCmdLines $@
     detectOperatingSystem
     maybeVerifyXcode
