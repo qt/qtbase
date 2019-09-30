@@ -2186,7 +2186,6 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         {
             GLbitfield barriers = 0;
             QRhiPassResourceTracker &tracker(cbD->passResTrackers[cmd.args.barriersForPass.trackerIndex]);
-            const QVector<QRhiPassResourceTracker::Buffer> *buffers = tracker.buffers();
             // we only care about after-write, not any other accesses, and
             // cannot tell if something was written in a shader several passes
             // ago: now the previously written resource may be used with an
@@ -2194,17 +2193,16 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             // barrier in theory. Hence setting all barrier bits whenever
             // something previously written is used for the first time in a
             // subsequent pass.
-            for (const QRhiPassResourceTracker::Buffer &b : *buffers) {
-                QGles2Buffer::Access accessBeforePass = QGles2Buffer::Access(b.stateAtPassBegin.access);
+            for (auto it = tracker.cbeginBuffers(), itEnd = tracker.cendBuffers(); it != itEnd; ++it) {
+                QGles2Buffer::Access accessBeforePass = QGles2Buffer::Access(it->stateAtPassBegin.access);
                 if (accessBeforePass == QGles2Buffer::AccessStorageWrite
                         || accessBeforePass == QGles2Buffer::AccessStorageReadWrite)
                 {
                     barriers |= GL_ALL_BARRIER_BITS;
                 }
             }
-            const QVector<QRhiPassResourceTracker::Texture> *textures = tracker.textures();
-            for (const QRhiPassResourceTracker::Texture &t : *textures) {
-                QGles2Texture::Access accessBeforePass = QGles2Texture::Access(t.stateAtPassBegin.access);
+            for (auto it = tracker.cbeginTextures(), itEnd = tracker.cendTextures(); it != itEnd; ++it) {
+                QGles2Texture::Access accessBeforePass = QGles2Texture::Access(it->stateAtPassBegin.access);
                 if (accessBeforePass == QGles2Texture::AccessStorageWrite
                         || accessBeforePass == QGles2Texture::AccessStorageReadWrite)
                 {

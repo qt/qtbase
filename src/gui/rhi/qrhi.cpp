@@ -5513,7 +5513,7 @@ static inline QRhiPassResourceTracker::BufferStage earlierStage(QRhiPassResource
 void QRhiPassResourceTracker::registerBuffer(QRhiBuffer *buf, int slot, BufferAccess *access, BufferStage *stage,
                                              const UsageState &state)
 {
-    auto it = std::find_if(m_buffers.begin(), m_buffers.end(), [buf](const Buffer &b) { return b.buf == buf; });
+    auto it = m_buffers.find(buf);
     if (it != m_buffers.end()) {
         if (it->access != *access) {
             const QByteArray name = buf->name();
@@ -5529,12 +5529,11 @@ void QRhiPassResourceTracker::registerBuffer(QRhiBuffer *buf, int slot, BufferAc
     }
 
     Buffer b;
-    b.buf = buf;
     b.slot = slot;
     b.access = *access;
     b.stage = *stage;
     b.stateAtPassBegin = state; // first use -> initial state
-    m_buffers.append(b);
+    m_buffers.insert(buf, b);
 }
 
 static inline QRhiPassResourceTracker::TextureStage earlierStage(QRhiPassResourceTracker::TextureStage a,
@@ -5553,7 +5552,7 @@ static inline bool isImageLoadStore(QRhiPassResourceTracker::TextureAccess acces
 void QRhiPassResourceTracker::registerTexture(QRhiTexture *tex, TextureAccess *access, TextureStage *stage,
                                               const UsageState &state)
 {
-    auto it = std::find_if(m_textures.begin(), m_textures.end(), [tex](const Texture &t) { return t.tex == tex; });
+    auto it = m_textures.find(tex);
     if (it != m_textures.end()) {
         if (it->access != *access) {
             // Different subresources of a texture may be used for both load
@@ -5577,11 +5576,10 @@ void QRhiPassResourceTracker::registerTexture(QRhiTexture *tex, TextureAccess *a
     }
 
     Texture t;
-    t.tex = tex;
     t.access = *access;
     t.stage = *stage;
     t.stateAtPassBegin = state; // first use -> initial state
-    m_textures.append(t);
+    m_textures.insert(tex, t);
 }
 
 QRhiPassResourceTracker::BufferStage QRhiPassResourceTracker::toPassTrackerBufferStage(QRhiShaderResourceBinding::StageFlags stages)

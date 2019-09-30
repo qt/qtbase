@@ -3556,12 +3556,11 @@ void QRhiVulkan::recordTransitionPassResources(QVkCommandBuffer *cbD, const QRhi
     if (tracker.isEmpty())
         return;
 
-    const QVector<QRhiPassResourceTracker::Buffer> *buffers = tracker.buffers();
-    for (const QRhiPassResourceTracker::Buffer &b : *buffers) {
-        QVkBuffer *bufD = QRHI_RES(QVkBuffer, b.buf);
-        VkAccessFlags access = toVkAccess(b.access);
-        VkPipelineStageFlags stage = toVkPipelineStage(b.stage);
-        QVkBuffer::UsageState s = toVkBufferUsageState(b.stateAtPassBegin);
+    for (auto it = tracker.cbeginBuffers(), itEnd = tracker.cendBuffers(); it != itEnd; ++it) {
+        QVkBuffer *bufD = QRHI_RES(QVkBuffer, it.key());
+        VkAccessFlags access = toVkAccess(it->access);
+        VkPipelineStageFlags stage = toVkPipelineStage(it->stage);
+        QVkBuffer::UsageState s = toVkBufferUsageState(it->stateAtPassBegin);
         if (!s.stage)
             continue;
         if (s.access == access && s.stage == stage) {
@@ -3575,7 +3574,7 @@ void QRhiVulkan::recordTransitionPassResources(QVkCommandBuffer *cbD, const QRhi
         bufMemBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         bufMemBarrier.srcAccessMask = s.access;
         bufMemBarrier.dstAccessMask = access;
-        bufMemBarrier.buffer = bufD->buffers[b.slot];
+        bufMemBarrier.buffer = bufD->buffers[it->slot];
         bufMemBarrier.size = VK_WHOLE_SIZE;
         df->vkCmdPipelineBarrier(cbD->cb, s.stage, stage, 0,
                                  0, nullptr,
@@ -3583,13 +3582,12 @@ void QRhiVulkan::recordTransitionPassResources(QVkCommandBuffer *cbD, const QRhi
                                  0, nullptr);
     }
 
-    const QVector<QRhiPassResourceTracker::Texture> *textures = tracker.textures();
-    for (const QRhiPassResourceTracker::Texture &t : *textures) {
-        QVkTexture *texD = QRHI_RES(QVkTexture, t.tex);
-        VkImageLayout layout = toVkLayout(t.access);
-        VkAccessFlags access = toVkAccess(t.access);
-        VkPipelineStageFlags stage = toVkPipelineStage(t.stage);
-        QVkTexture::UsageState s = toVkTextureUsageState(t.stateAtPassBegin);
+    for (auto it = tracker.cbeginTextures(), itEnd = tracker.cendTextures(); it != itEnd; ++it) {
+        QVkTexture *texD = QRHI_RES(QVkTexture, it.key());
+        VkImageLayout layout = toVkLayout(it->access);
+        VkAccessFlags access = toVkAccess(it->access);
+        VkPipelineStageFlags stage = toVkPipelineStage(it->stage);
+        QVkTexture::UsageState s = toVkTextureUsageState(it->stateAtPassBegin);
         if (s.access == access && s.stage == stage && s.layout == layout) {
             if (!accessIsWrite(access))
                 continue;

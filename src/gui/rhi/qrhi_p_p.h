@@ -503,28 +503,32 @@ public:
                          const UsageState &state);
 
     struct Buffer {
-        QRhiBuffer *buf;
         int slot;
         BufferAccess access;
         BufferStage stage;
         UsageState stateAtPassBegin;
     };
-    const QVector<Buffer> *buffers() const { return &m_buffers; }
+
+    using BufferIterator = QHash<QRhiBuffer *, Buffer>::const_iterator;
+    BufferIterator cbeginBuffers() const { return m_buffers.cbegin(); }
+    BufferIterator cendBuffers() const { return m_buffers.cend(); }
 
     struct Texture {
-        QRhiTexture *tex;
         TextureAccess access;
         TextureStage stage;
         UsageState stateAtPassBegin;
     };
-    const QVector<Texture> *textures() const { return &m_textures; }
+
+    using TextureIterator = QHash<QRhiTexture *, Texture>::const_iterator;
+    TextureIterator cbeginTextures() const { return m_textures.cbegin(); }
+    TextureIterator cendTextures() const { return m_textures.cend(); }
 
     static BufferStage toPassTrackerBufferStage(QRhiShaderResourceBinding::StageFlags stages);
     static TextureStage toPassTrackerTextureStage(QRhiShaderResourceBinding::StageFlags stages);
 
 private:
-    QVector<Buffer> m_buffers;
-    QVector<Texture> m_textures;
+    QHash<QRhiBuffer *, Buffer> m_buffers;
+    QHash<QRhiTexture *, Texture> m_textures;
 };
 
 Q_DECLARE_TYPEINFO(QRhiPassResourceTracker::Buffer, Q_MOVABLE_TYPE);
