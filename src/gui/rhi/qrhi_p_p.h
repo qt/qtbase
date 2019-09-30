@@ -381,57 +381,6 @@ Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate, Q_MOVABL
 Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::StaticBufferUpload, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::TextureOp, Q_MOVABLE_TYPE);
 
-class Q_GUI_EXPORT QRhiShaderResourceBindingPrivate
-{
-public:
-    QRhiShaderResourceBindingPrivate()
-        : ref(1)
-    {
-    }
-
-    QRhiShaderResourceBindingPrivate(const QRhiShaderResourceBindingPrivate *other)
-        : ref(1),
-          binding(other->binding),
-          stage(other->stage),
-          type(other->type),
-          u(other->u)
-    {
-    }
-
-    static QRhiShaderResourceBindingPrivate *get(QRhiShaderResourceBinding *s) { return s->d; }
-    static const QRhiShaderResourceBindingPrivate *get(const QRhiShaderResourceBinding *s) { return s->d; }
-
-    QAtomicInt ref;
-    int binding;
-    QRhiShaderResourceBinding::StageFlags stage;
-    QRhiShaderResourceBinding::Type type;
-    struct UniformBufferData {
-        QRhiBuffer *buf;
-        int offset;
-        int maybeSize;
-        bool hasDynamicOffset;
-    };
-    struct SampledTextureData {
-        QRhiTexture *tex;
-        QRhiSampler *sampler;
-    };
-    struct StorageImageData {
-        QRhiTexture *tex;
-        int level;
-    };
-    struct StorageBufferData {
-        QRhiBuffer *buf;
-        int offset;
-        int maybeSize;
-    };
-    union {
-        UniformBufferData ubuf;
-        SampledTextureData stex;
-        StorageImageData simage;
-        StorageBufferData sbuf;
-    } u;
-};
-
 template<typename T>
 struct QRhiBatchedBindings
 {
@@ -554,28 +503,32 @@ public:
                          const UsageState &state);
 
     struct Buffer {
-        QRhiBuffer *buf;
         int slot;
         BufferAccess access;
         BufferStage stage;
         UsageState stateAtPassBegin;
     };
-    const QVector<Buffer> *buffers() const { return &m_buffers; }
+
+    using BufferIterator = QHash<QRhiBuffer *, Buffer>::const_iterator;
+    BufferIterator cbeginBuffers() const { return m_buffers.cbegin(); }
+    BufferIterator cendBuffers() const { return m_buffers.cend(); }
 
     struct Texture {
-        QRhiTexture *tex;
         TextureAccess access;
         TextureStage stage;
         UsageState stateAtPassBegin;
     };
-    const QVector<Texture> *textures() const { return &m_textures; }
+
+    using TextureIterator = QHash<QRhiTexture *, Texture>::const_iterator;
+    TextureIterator cbeginTextures() const { return m_textures.cbegin(); }
+    TextureIterator cendTextures() const { return m_textures.cend(); }
 
     static BufferStage toPassTrackerBufferStage(QRhiShaderResourceBinding::StageFlags stages);
     static TextureStage toPassTrackerTextureStage(QRhiShaderResourceBinding::StageFlags stages);
 
 private:
-    QVector<Buffer> m_buffers;
-    QVector<Texture> m_textures;
+    QHash<QRhiBuffer *, Buffer> m_buffers;
+    QHash<QRhiTexture *, Texture> m_textures;
 };
 
 Q_DECLARE_TYPEINFO(QRhiPassResourceTracker::Buffer, Q_MOVABLE_TYPE);

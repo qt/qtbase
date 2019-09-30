@@ -467,6 +467,14 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     if (fallbackList.isEmpty())
         return fallbackList;
 
+    // .Apple Symbols Fallback will be at the beginning of the list and we will
+    // detect that this has glyphs for Arabic and other writing systems.
+    // Since it is a symbol font, it should be the last resort, so that
+    // the proper fonts for these writing systems are preferred.
+    int symbolIndex = fallbackList.indexOf(QLatin1String(".Apple Symbols Fallback"));
+    if (symbolIndex >= 0)
+        fallbackList.move(symbolIndex, fallbackList.size() - 1);
+
 #if defined(Q_OS_MACOS)
     // Since we are only returning a list of default fonts for the current language, we do not
     // cover all Unicode completely. This was especially an issue for some of the common script
@@ -480,6 +488,15 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     if (!fallbackList.contains(QStringLiteral("Apple Symbols")))
         fallbackList.append(QStringLiteral("Apple Symbols"));
 #endif
+
+    // Since iOS 13, the cascade list may contain meta-fonts which have not been
+    // populated to the database, such as ".AppleJapaneseFont". It is important that we
+    // include this in the fallback list, in order to get fallback support for all
+    // languages
+    for (const QString &fallback : fallbackList) {
+        if (!QPlatformFontDatabase::isFamilyPopulated(fallback))
+            const_cast<QCoreTextFontDatabase *>(this)->populateFamily(fallback);
+    }
 
     extern QStringList qt_sort_families_by_writing_system(QChar::Script, const QStringList &);
     fallbackList = qt_sort_families_by_writing_system(script, fallbackList);

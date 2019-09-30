@@ -69,7 +69,9 @@ static bool checkNameDecodable(const char *d_name, qsizetype len)
 #  ifdef QT_LOCALE_IS_UTF8
     int mibEnum = 106;
 #  else
-    int mibEnum = codec->mibEnum();
+    int mibEnum = 4;                // Latin 1
+    if (codec)
+        mibEnum = codec->mibEnum();
 #  endif
     if (Q_LIKELY(mibEnum == 106))   // UTF-8
         return QUtf8::isValidUtf8(d_name, len).isValidUtf8;

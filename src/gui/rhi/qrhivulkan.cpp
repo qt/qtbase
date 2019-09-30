@@ -2313,7 +2313,7 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
     while (frameSlot < (updateAll ? QVK_FRAMES_IN_FLIGHT : descSetIdx + 1)) {
         srbD->boundResourceData[frameSlot].resize(srbD->sortedBindings.count());
         for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
-            const QRhiShaderResourceBindingPrivate *b = QRhiShaderResourceBindingPrivate::get(&srbD->sortedBindings[i]);
+            const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings.at(i).data();
             QVkShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[frameSlot][i]);
 
             VkWriteDescriptorSet writeInfo;
@@ -3556,12 +3556,11 @@ void QRhiVulkan::recordTransitionPassResources(QVkCommandBuffer *cbD, const QRhi
     if (tracker.isEmpty())
         return;
 
-    const QVector<QRhiPassResourceTracker::Buffer> *buffers = tracker.buffers();
-    for (const QRhiPassResourceTracker::Buffer &b : *buffers) {
-        QVkBuffer *bufD = QRHI_RES(QVkBuffer, b.buf);
-        VkAccessFlags access = toVkAccess(b.access);
-        VkPipelineStageFlags stage = toVkPipelineStage(b.stage);
-        QVkBuffer::UsageState s = toVkBufferUsageState(b.stateAtPassBegin);
+    for (auto it = tracker.cbeginBuffers(), itEnd = tracker.cendBuffers(); it != itEnd; ++it) {
+        QVkBuffer *bufD = QRHI_RES(QVkBuffer, it.key());
+        VkAccessFlags access = toVkAccess(it->access);
+        VkPipelineStageFlags stage = toVkPipelineStage(it->stage);
+        QVkBuffer::UsageState s = toVkBufferUsageState(it->stateAtPassBegin);
         if (!s.stage)
             continue;
         if (s.access == access && s.stage == stage) {
@@ -3575,7 +3574,7 @@ void QRhiVulkan::recordTransitionPassResources(QVkCommandBuffer *cbD, const QRhi
         bufMemBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         bufMemBarrier.srcAccessMask = s.access;
         bufMemBarrier.dstAccessMask = access;
-        bufMemBarrier.buffer = bufD->buffers[b.slot];
+        bufMemBarrier.buffer = bufD->buffers[it->slot];
         bufMemBarrier.size = VK_WHOLE_SIZE;
         df->vkCmdPipelineBarrier(cbD->cb, s.stage, stage, 0,
                                  0, nullptr,
@@ -3583,13 +3582,12 @@ void QRhiVulkan::recordTransitionPassResources(QVkCommandBuffer *cbD, const QRhi
                                  0, nullptr);
     }
 
-    const QVector<QRhiPassResourceTracker::Texture> *textures = tracker.textures();
-    for (const QRhiPassResourceTracker::Texture &t : *textures) {
-        QVkTexture *texD = QRHI_RES(QVkTexture, t.tex);
-        VkImageLayout layout = toVkLayout(t.access);
-        VkAccessFlags access = toVkAccess(t.access);
-        VkPipelineStageFlags stage = toVkPipelineStage(t.stage);
-        QVkTexture::UsageState s = toVkTextureUsageState(t.stateAtPassBegin);
+    for (auto it = tracker.cbeginTextures(), itEnd = tracker.cendTextures(); it != itEnd; ++it) {
+        QVkTexture *texD = QRHI_RES(QVkTexture, it.key());
+        VkImageLayout layout = toVkLayout(it->access);
+        VkAccessFlags access = toVkAccess(it->access);
+        VkPipelineStageFlags stage = toVkPipelineStage(it->stage);
+        QVkTexture::UsageState s = toVkTextureUsageState(it->stateAtPassBegin);
         if (s.access == access && s.stage == stage && s.layout == layout) {
             if (!accessIsWrite(access))
                 continue;
@@ -3870,7 +3868,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
     bool hasDynamicOffsetInSrb = false;
 
     for (const QRhiShaderResourceBinding &binding : qAsConst(srbD->sortedBindings)) {
-        const QRhiShaderResourceBindingPrivate *b = QRhiShaderResourceBindingPrivate::get(&binding);
+        const QRhiShaderResourceBinding::Data *b = binding.data();
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
             if (QRHI_RES(QVkBuffer, b->u.ubuf.buf)->m_type == QRhiBuffer::Dynamic)
@@ -3889,7 +3887,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
     // Do host writes and mark referenced shader resources as in-use.
     // Also prepare to ensure the descriptor set we are going to bind refers to up-to-date Vk objects.
     for (int i = 0, ie = srbD->sortedBindings.count(); i != ie; ++i) {
-        const QRhiShaderResourceBindingPrivate *b = QRhiShaderResourceBindingPrivate::get(&srbD->sortedBindings[i]);
+        const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings.at(i).data();
         QVkShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[descSetIdx][i]);
         QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
         switch (b->type) {
@@ -4022,7 +4020,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             // and neither srb nor dynamicOffsets has any such ordering
             // requirement.
             for (const QRhiShaderResourceBinding &binding : qAsConst(srbD->sortedBindings)) {
-                const QRhiShaderResourceBindingPrivate *b = QRhiShaderResourceBindingPrivate::get(&binding);
+                const QRhiShaderResourceBinding::Data *b = binding.data();
                 if (b->type == QRhiShaderResourceBinding::UniformBuffer && b->u.ubuf.hasDynamicOffset) {
                     uint32_t offset = 0;
                     for (int i = 0; i < dynamicOffsetCount; ++i) {
@@ -4750,7 +4748,7 @@ static inline void fillVkStencilOpState(VkStencilOpState *dst, const QRhiGraphic
     dst->compareOp = toVkCompareOp(src.compareOp);
 }
 
-static inline VkDescriptorType toVkDescriptorType(const QRhiShaderResourceBindingPrivate *b)
+static inline VkDescriptorType toVkDescriptorType(const QRhiShaderResourceBinding::Data *b)
 {
     switch (b->type) {
     case QRhiShaderResourceBinding::UniformBuffer:
@@ -5697,16 +5695,17 @@ bool QVkShaderResourceBindings::build()
     for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
         descSets[i] = VK_NULL_HANDLE;
 
-    sortedBindings = m_bindings;
+    sortedBindings.clear();
+    std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
     std::sort(sortedBindings.begin(), sortedBindings.end(),
               [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
     {
-        return QRhiShaderResourceBindingPrivate::get(&a)->binding < QRhiShaderResourceBindingPrivate::get(&b)->binding;
+        return a.data()->binding < b.data()->binding;
     });
 
     QVarLengthArray<VkDescriptorSetLayoutBinding, 4> vkbindings;
     for (const QRhiShaderResourceBinding &binding : qAsConst(sortedBindings)) {
-        const QRhiShaderResourceBindingPrivate *b = QRhiShaderResourceBindingPrivate::get(&binding);
+        const QRhiShaderResourceBinding::Data *b = binding.data();
         VkDescriptorSetLayoutBinding vkbinding;
         memset(&vkbinding, 0, sizeof(vkbinding));
         vkbinding.binding = uint32_t(b->binding);
@@ -6315,9 +6314,16 @@ bool QVkSwapChain::buildOrResize()
                  m_depthStencil->sampleCount(), m_sampleCount);
     }
     if (m_depthStencil && m_depthStencil->pixelSize() != pixelSize) {
-        qWarning("Depth-stencil buffer's size (%dx%d) does not match the surface size (%dx%d). Expect problems.",
-                 m_depthStencil->pixelSize().width(), m_depthStencil->pixelSize().height(),
-                 pixelSize.width(), pixelSize.height());
+        if (m_depthStencil->flags().testFlag(QRhiRenderBuffer::UsedWithSwapChainOnly)) {
+            m_depthStencil->setPixelSize(pixelSize);
+            if (!m_depthStencil->build())
+                qWarning("Failed to rebuild swapchain's associated depth-stencil buffer for size %dx%d",
+                         pixelSize.width(), pixelSize.height());
+        } else {
+            qWarning("Depth-stencil buffer's size (%dx%d) does not match the surface size (%dx%d). Expect problems.",
+                     m_depthStencil->pixelSize().width(), m_depthStencil->pixelSize().height(),
+                     pixelSize.width(), pixelSize.height());
+        }
     }
 
     if (!m_renderPassDesc)

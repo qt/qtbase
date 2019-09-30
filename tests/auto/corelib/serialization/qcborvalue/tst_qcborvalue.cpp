@@ -1413,10 +1413,12 @@ void tst_QCborValue::toCbor_data()
     // The rest of these tests are conversions whose decoding does not yield
     // back the same QCborValue.
 
+#if QT_CONFIG(signaling_nan)
     // Signalling NaN get normalized to quiet ones
     QTest::newRow("Double:snan") << QCborValue(qSNaN()) << raw("\xfb\x7f\xf8\0""\0\0\0\0\0") << QCborValue::EncodingOptions();
     QTest::newRow("Float:snan") << QCborValue(qSNaN()) << raw("\xfa\x7f\xc0\0\0") << QCborValue::EncodingOptions(QCborValue::UseFloat);
     QTest::newRow("Float16:snan") << QCborValue(qSNaN()) << raw("\xf9\x7e\0") << QCborValue::EncodingOptions(QCborValue::UseFloat16);
+#endif
 
     // Floating point written as integers are read back as integers
     QTest::newRow("UseInteger:0") << QCborValue(0.) << raw("\x00") << QCborValue::EncodingOptions(QCborValue::UseIntegers);

@@ -881,7 +881,7 @@ void QCocoaEventDispatcherPrivate::processPostedEvents()
         return;
     }
 
-    int serial = serialNumber.load();
+    int serial = serialNumber.loadRelaxed();
     if (!threadData->canWait || (serial != lastSerial)) {
         lastSerial = serial;
         QCoreApplication::sendPostedEvents();

@@ -94,11 +94,11 @@ void TriangleRenderer::initResources(QRhiRenderPassDescriptor *rp)
 
     QRhiGraphicsPipeline::TargetBlend premulAlphaBlend; // convenient defaults...
     premulAlphaBlend.enable = true;
-    QVector<QRhiGraphicsPipeline::TargetBlend> rtblends;
+    QVarLengthArray<QRhiGraphicsPipeline::TargetBlend, 4> rtblends;
     for (int i = 0; i < m_colorAttCount; ++i)
         rtblends << premulAlphaBlend;
 
-    m_ps->setTargetBlends(rtblends);
+    m_ps->setTargetBlends(rtblends.cbegin(), rtblends.cend());
     m_ps->setSampleCount(m_sampleCount);
 
     if (m_depthWrite) { // TriangleOnCube may want to exercise this

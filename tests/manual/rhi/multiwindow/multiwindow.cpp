@@ -400,7 +400,7 @@ void Window::init()
 {
     m_sc = r.r->newSwapChain();
     m_ds = r.r->newRenderBuffer(QRhiRenderBuffer::DepthStencil,
-                                QSize(), // no need to set the size yet
+                                QSize(),
                                 1,
                                 QRhiRenderBuffer::UsedWithSwapChainOnly);
     m_releasePool << m_ds;
@@ -427,13 +427,9 @@ void Window::releaseResources()
 
 void Window::resizeSwapChain()
 {
-    const QSize outputSize = m_sc->surfacePixelSize();
-
-    m_ds->setPixelSize(outputSize);
-    m_ds->build();
-
     m_hasSwapChain = m_sc->buildOrResize();
 
+    const QSize outputSize = m_sc->currentPixelSize();
     m_proj = r.r->clipSpaceCorrMatrix();
     m_proj.perspective(45.0f, outputSize.width() / (float) outputSize.height(), 0.01f, 1000.0f);
     m_proj.translate(0, 0, -4);

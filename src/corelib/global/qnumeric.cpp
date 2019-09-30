@@ -81,11 +81,13 @@ Q_CORE_EXPORT bool qIsNaN(float f) { return qt_is_nan(f); }
 */
 Q_CORE_EXPORT bool qIsFinite(float f) { return qt_is_finite(f); }
 
+#if QT_CONFIG(signaling_nan)
 /*!
     Returns the bit pattern of a signalling NaN as a double.
     \relates <QtGlobal>
 */
 Q_CORE_EXPORT double qSNaN() { return qt_snan(); }
+#endif
 
 /*!
     Returns the bit pattern of a quiet NaN as a double.

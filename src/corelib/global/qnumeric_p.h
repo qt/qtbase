@@ -133,13 +133,14 @@ Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_inf() noexcept
     return std::numeric_limits<double>::infinity();
 }
 
-// Signaling NaN
+#if QT_CONFIG(signaling_nan)
 Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_snan() noexcept
 {
     Q_STATIC_ASSERT_X(std::numeric_limits<double>::has_signaling_NaN,
                       "platform has no definition for signaling NaN for type double");
     return std::numeric_limits<double>::signaling_NaN();
 }
+#endif
 
 // Quiet NaN
 Q_DECL_CONSTEXPR Q_DECL_CONST_FUNCTION static inline double qt_qnan() noexcept

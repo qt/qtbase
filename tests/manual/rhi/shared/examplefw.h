@@ -58,6 +58,7 @@
 #include <QPlatformSurfaceEvent>
 #include <QElapsedTimer>
 #include <QTimer>
+#include <QLoggingCategory>
 
 #include <QtGui/private/qshader_p.h>
 #include <QFile>
@@ -70,7 +71,6 @@
 #endif
 
 #if QT_CONFIG(vulkan)
-#include <QLoggingCategory>
 #include <QtGui/private/qrhivulkan_p.h>
 #endif
 
@@ -307,7 +307,7 @@ void Window::init()
     m_sc = m_r->newSwapChain();
     // allow depth-stencil, although we do not actually enable depth test/write for the triangle
     m_ds = m_r->newRenderBuffer(QRhiRenderBuffer::DepthStencil,
-                                QSize(), // no need to set the size yet
+                                QSize(), // no need to set the size here, due to UsedWithSwapChainOnly
                                 sampleCount,
                                 QRhiRenderBuffer::UsedWithSwapChainOnly);
     m_sc->setWindow(this);
@@ -344,16 +344,12 @@ void Window::releaseResources()
 
 void Window::resizeSwapChain()
 {
-    const QSize outputSize = m_sc->surfacePixelSize();
-
-    m_ds->setPixelSize(outputSize);
-    m_ds->build(); // == m_ds->release(); m_ds->build();
-
-    m_hasSwapChain = m_sc->buildOrResize();
+    m_hasSwapChain = m_sc->buildOrResize(); // also handles m_ds
 
     m_frameCount = 0;
     m_timer.restart();
 
+    const QSize outputSize = m_sc->currentPixelSize();
     m_proj = m_r->clipSpaceCorrMatrix();
     m_proj.perspective(45.0f, outputSize.width() / (float) outputSize.height(), 0.01f, 1000.0f);
     m_proj.translate(0, 0, -4);
@@ -443,6 +439,8 @@ int main(int argc, char **argv)
 {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
+
+    QLoggingCategory::setFilterRules(QLatin1String("qt.rhi.*=true"));
 
     // Defaults.
 #if defined(Q_OS_WIN)
