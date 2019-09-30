@@ -284,7 +284,6 @@ add_qt_resource(Widgets "qstyle1"
 
 #### Keys ignored in scope 1:.:.:widgets.pro:<TRUE>:
 # MODULE_CONFIG = "uic"
-# MODULE_PLUGIN_TYPES = "styles"
 # QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtWidgets.dynlist"
 # QMAKE_LIBS = "$$QMAKE_LIBS_GUI"
 # _LOADED = "qt_module"

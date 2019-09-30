@@ -65,7 +65,6 @@ add_qt_module(Network
 )
 
 #### Keys ignored in scope 1:.:.:network.pro:<TRUE>:
-# MODULE_PLUGIN_TYPES = "bearer"
 # MODULE_WINRT_CAPABILITIES = "internetClient" "internetClientServer" "privateNetworkClientServer"
 # QMAKE_LIBS = "$$QMAKE_LIBS_NETWORK"
 # _LOADED = "qt_module"
@@ -89,9 +88,6 @@ if(ANDROID AND (QT_FEATURE_bearermanagement))
         android.permission.ACCESS_NETWORK_STATE
     )
 endif()
-
-#### Keys ignored in scope 3:.:.:network.pro:QT_FEATURE_bearermanagement:
-# MODULE_PLUGIN_TYPES = "bearer"
 
 extend_target(Network CONDITION QT_FEATURE_ftp
     SOURCES

@@ -344,9 +344,9 @@ if(ANDROID)
 endif()
 
 #### Keys ignored in scope 1:.:.:corelib.pro:<TRUE>:
-# CMAKE_DISABLED_FEATURES = "join(QT_DISABLED_FEATURES,"$$escape_expand(\\n)    ")"
-# CMAKE_HOST_DATA_DIR = "join($$[QT_HOST_DATA/src],$$[QT_INSTALL_PREFIX])"
-# CMAKE_INSTALL_DATA_DIR = "join($$[QT_HOST_DATA],$$[QT_INSTALL_PREFIX])"
+# CMAKE_DISABLED_FEATURES = "$$join(QT_DISABLED_FEATURES, "$$escape_expand(\\n)    ")"
+# CMAKE_HOST_DATA_DIR = "$$cmakeRelativePath($$[QT_HOST_DATA/src], $$[QT_INSTALL_PREFIX])"
+# CMAKE_INSTALL_DATA_DIR = "$$cmakeRelativePath($$[QT_HOST_DATA], $$[QT_INSTALL_PREFIX])"
 # HOST_BINS = "$$[QT_HOST_BINS]"
 # INSTALLS = "ctest_qt5_module_files" "cmake_qt5_umbrella_module_files"
 # MODULE = "core"
@@ -517,7 +517,7 @@ extend_target(Core CONDITION INTEGRITY
 
 # special case begin
 # Remove this because it's handled manually
-#extend_target(Core CONDITION linux_x_ OR hurd_x_ AND NOT cross_compile AND NOT static AND NOT _x_-armcc_x_
+#extend_target(Core CONDITION NOT _x_-armcc_x_ AND NOT cross_compile AND NOT static AND (hurd_x_ OR linux_x_)
 #    DEFINES
 #        ELF_INTERPRETER=\\\"=Creadelf-l/bin/ls|perl-n-e\'['quote', ['if', ['/program', 'interpreter:', ['.*'], ']/'], '{', 'print', '$1;', '}']]\'\\\"
 #    LINK_OPTIONS

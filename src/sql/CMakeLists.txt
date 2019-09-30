@@ -32,7 +32,6 @@ add_qt_module(Sql
 )
 
 #### Keys ignored in scope 1:.:.:sql.pro:<TRUE>:
-# MODULE_PLUGIN_TYPES = "sqldrivers"
 # SQL_P = "sql"
 # _LOADED = "qt_module"
 

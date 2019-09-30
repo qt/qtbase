@@ -141,7 +141,7 @@ extend_target(Test CONDITION ((APPLE) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERS
 
 #### Keys ignored in scope 12:.:.:testlib.pro:NOT TARGET Qt::Network:
 # HEADERSCLEAN_EXCLUDE = "qtest_network.h"
-add_qt_docs(Test,
+add_qt_docs(Test
     doc/qttestlib.qdocconf
 )
 

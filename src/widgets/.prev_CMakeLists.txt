@@ -282,7 +282,6 @@ add_qt_resource(Widgets "qstyle1"
 
 #### Keys ignored in scope 1:.:.:widgets.pro:<TRUE>:
 # MODULE_CONFIG = "uic"
-# MODULE_PLUGIN_TYPES = "styles"
 # QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtWidgets.dynlist"
 # QMAKE_LIBS = "$$QMAKE_LIBS_GUI"
 # _LOADED = "qt_module"
@@ -835,7 +834,7 @@ extend_target(Widgets CONDITION QT_FEATURE_qeventtransition
 
 
 qt_create_tracepoints(Widgets qtwidgets.tracepoints)
-add_qt_docs(Widgets,
+add_qt_docs(Widgets
     doc/qtwidgets.qdocconf
 )
 

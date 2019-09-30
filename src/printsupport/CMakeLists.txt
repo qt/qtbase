@@ -35,7 +35,6 @@ add_qt_module(PrintSupport
 )
 
 #### Keys ignored in scope 1:.:.:printsupport.pro:<TRUE>:
-# MODULE_PLUGIN_TYPES = "printsupport"
 # QMAKE_LIBS = "$$QMAKE_LIBS_PRINTSUPPORT"
 # _LOADED = "qt_module"
 
