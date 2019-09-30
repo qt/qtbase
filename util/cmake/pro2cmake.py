@@ -68,6 +68,7 @@ from typing import (
     FrozenSet,
     Tuple,
     Match,
+    Type,
 )
 from special_case_helper import SpecialCaseHandler
 from helper import (
@@ -1886,6 +1887,12 @@ def write_source_file_list(
     for key in keys:
         sources += scope.get_files(key, use_vpath=True)
 
+    # Remove duplicates, like in the case when NO_PCH_SOURCES ends up
+    # adding the file to SOURCES, but SOURCES might have already
+    # contained it before. Preserves order in Python 3.7+ because
+    # dict keys are ordered.
+    sources = list(dict.fromkeys(sources))
+
     write_list(cm_fh, sources, cmake_parameter, indent, header=header, footer=footer)
 
 
@@ -2398,6 +2405,144 @@ def write_wayland_part(cm_fh: typing.IO[str], target: str, scope:Scope, indent: 
         cm_fh.write(f"\n{spaces(indent)}endif()\n")
 
 
+def handle_source_subtractions(scopes: List[Scope]):
+    """
+    Handles source subtractions like SOURCES -= painting/qdrawhelper.cpp
+    by creating a new scope with a new condition containing all addition
+    and subtraction conditions.
+
+    Algorithm is as follows:
+    - Go through each scope and find files in SOURCES starting with "-"
+    - Save that file and the scope condition in modified_sources dict.
+    - Remove the file from the found scope (optionally remove the
+      NO_PCH_SOURCES entry for that file as well).
+    - Go through each file in modified_sources dict.
+    - Find scopes where the file is added, remove the file from that
+      scope and save the condition.
+    - Create a new scope just for that file with a new simplified
+      condition that takes all the other conditions into account.
+    """
+
+    def remove_file_from_operation(
+        scope: Scope, ops_key: str, file: str, op_type: Type[Operation]
+    ) -> bool:
+        """
+        Remove a source file from an operation in a scope.
+        Example: remove foo.cpp from any operations that have
+                 ops_key="SOURCES" in "scope", where the operation is of
+                 type "op_type".
+
+        The implementation is very rudimentary and might not work in
+        all cases.
+
+        Returns True if a file was found and removed in any operation.
+        """
+        file_removed = False
+        ops = scope._operations.get(ops_key, list())
+        for op in ops:
+            if not isinstance(op, op_type):
+                continue
+            if file in op._value:
+                op._value.remove(file)
+                file_removed = True
+        for include_child_scope in scope._included_children:
+            file_removed = file_removed or remove_file_from_operation(
+                include_child_scope, ops_key, file, op_type
+            )
+        return file_removed
+
+    def join_all_conditions(set_of_alternatives: Set[str]):
+        final_str = ""
+        if set_of_alternatives:
+            alternatives = [f"({alternative})" for alternative in set_of_alternatives]
+            final_str = " OR ".join(sorted(alternatives))
+        return final_str
+
+    modified_sources: Dict[str, Dict[str, Union[Set[str], bool]]] = {}
+
+    new_scopes = []
+    top_most_scope = scopes[0]
+
+    for scope in scopes:
+        sources = scope.get_files("SOURCES")
+        for file in sources:
+            # Find subtractions.
+            if file.startswith("-"):
+                file_without_minus = file[1:]
+
+                if file_without_minus not in modified_sources:
+                    modified_sources[file_without_minus] = {}
+
+                subtractions = modified_sources[file_without_minus].get("subtractions", set())
+
+                # Add the condition to the set of conditions and remove
+                # the file subtraction from the processed scope, which
+                # will be later re-added in a new scope.
+                if scope.condition:
+                    subtractions.add(scope.total_condition)
+                remove_file_from_operation(scope, "SOURCES", file_without_minus, RemoveOperation)
+                if subtractions:
+                    modified_sources[file_without_minus]["subtractions"] = subtractions
+
+                # In case if the source is also listed in a
+                # NO_PCH_SOURCES operation, remove it from there as
+                # well, and add it back later.
+                no_pch_source_removed = remove_file_from_operation(
+                    scope, "NO_PCH_SOURCES", file_without_minus, AddOperation
+                )
+                if no_pch_source_removed:
+                    modified_sources[file_without_minus]["add_to_no_pch_sources"] = True
+
+    for modified_source in modified_sources:
+        additions = modified_sources[modified_source].get("additions", set())
+        subtractions = modified_sources[modified_source].get("subtractions", set())
+        add_to_no_pch_sources = modified_sources[modified_source].get(
+            "add_to_no_pch_sources", False
+        )
+
+        for scope in scopes:
+            sources = scope.get_files("SOURCES")
+            if modified_source in sources:
+                # Remove the source file from any addition operations
+                # that mention it.
+                remove_file_from_operation(scope, "SOURCES", modified_source, AddOperation)
+                if scope.total_condition:
+                    additions.add(scope.total_condition)
+
+        # Construct a condition that takes into account all addition
+        # and subtraction conditions.
+        addition_str = join_all_conditions(additions)
+        if addition_str:
+            addition_str = f"({addition_str})"
+        subtraction_str = join_all_conditions(subtractions)
+        if subtraction_str:
+            subtraction_str = f"NOT ({subtraction_str})"
+
+        condition_str = addition_str
+        if condition_str and subtraction_str:
+            condition_str += " AND "
+        condition_str += subtraction_str
+        condition_simplified = simplify_condition(condition_str)
+
+        # Create a new scope with that condition and add the source
+        # operations.
+        new_scope = Scope(
+            parent_scope=top_most_scope,
+            file=top_most_scope.file,
+            condition=condition_simplified,
+            base_dir=top_most_scope.basedir,
+        )
+        new_scope.total_condition = condition_simplified
+        new_scope._append_operation("SOURCES", AddOperation([modified_source]))
+        if add_to_no_pch_sources:
+            new_scope._append_operation("NO_PCH_SOURCES", AddOperation([modified_source]))
+
+        new_scopes.append(new_scope)
+
+    # Add all the newly created scopes.
+    scopes += new_scopes
+
+
 def write_main_part(
     cm_fh: IO[str],
     name: str,
@@ -2422,6 +2567,12 @@ def write_main_part(
     scopes = flatten_scopes(scope)
     # total_scopes = len(scopes)
     # Merge scopes based on their conditions:
+    scopes = merge_scopes(scopes)
+
+    # Handle SOURCES -= foo calls, and merge scopes one more time
+    # because there might have been several files removed with the same
+    # scope condition.
+    handle_source_subtractions(scopes)
     scopes = merge_scopes(scopes)
 
     assert len(scopes)
