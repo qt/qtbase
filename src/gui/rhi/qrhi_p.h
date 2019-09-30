@@ -52,6 +52,7 @@
 #include <QSize>
 #include <QMatrix4x4>
 #include <QVector>
+#include <QVarLengthArray>
 #include <QThread>
 #include <QColor>
 #include <QImage>
@@ -320,10 +321,6 @@ public:
     Q_DECLARE_FLAGS(StageFlags, StageFlag)
 
     QRhiShaderResourceBinding();
-    QRhiShaderResourceBinding(const QRhiShaderResourceBinding &other);
-    QRhiShaderResourceBinding &operator=(const QRhiShaderResourceBinding &other);
-    ~QRhiShaderResourceBinding();
-    void detach();
 
     bool isLayoutCompatible(const QRhiShaderResourceBinding &other) const;
 
@@ -344,18 +341,48 @@ public:
     static QRhiShaderResourceBinding bufferLoadStore(int binding, StageFlags stage, QRhiBuffer *buf);
     static QRhiShaderResourceBinding bufferLoadStore(int binding, StageFlags stage, QRhiBuffer *buf, int offset, int size);
 
+    struct Data
+    {
+        int binding;
+        QRhiShaderResourceBinding::StageFlags stage;
+        QRhiShaderResourceBinding::Type type;
+        struct UniformBufferData {
+            QRhiBuffer *buf;
+            int offset;
+            int maybeSize;
+            bool hasDynamicOffset;
+        };
+        struct SampledTextureData {
+            QRhiTexture *tex;
+            QRhiSampler *sampler;
+        };
+        struct StorageImageData {
+            QRhiTexture *tex;
+            int level;
+        };
+        struct StorageBufferData {
+            QRhiBuffer *buf;
+            int offset;
+            int maybeSize;
+        };
+        union {
+            UniformBufferData ubuf;
+            SampledTextureData stex;
+            StorageImageData simage;
+            StorageBufferData sbuf;
+        } u;
+    };
+
+    Data *data() { return &d; }
+    const Data *data() const { return &d; }
+
 private:
-    QRhiShaderResourceBindingPrivate *d;
-    friend class QRhiShaderResourceBindingPrivate;
-    friend Q_GUI_EXPORT bool operator==(const QRhiShaderResourceBinding &, const QRhiShaderResourceBinding &) Q_DECL_NOTHROW;
-    friend Q_GUI_EXPORT bool operator!=(const QRhiShaderResourceBinding &, const QRhiShaderResourceBinding &) Q_DECL_NOTHROW;
-    friend Q_GUI_EXPORT uint qHash(const QRhiShaderResourceBinding &, uint) Q_DECL_NOTHROW;
-#ifndef QT_NO_DEBUG_STREAM
-    friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiShaderResourceBinding &);
-#endif
+    Data d;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiShaderResourceBinding::StageFlags)
+
+Q_DECLARE_TYPEINFO(QRhiShaderResourceBinding, Q_MOVABLE_TYPE);
 
 Q_GUI_EXPORT bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) Q_DECL_NOTHROW;
 Q_GUI_EXPORT bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) Q_DECL_NOTHROW;
@@ -900,8 +927,22 @@ class Q_GUI_EXPORT QRhiShaderResourceBindings : public QRhiResource
 public:
     QRhiResource::Type resourceType() const override;
 
-    QVector<QRhiShaderResourceBinding> bindings() const { return m_bindings; }
-    void setBindings(const QVector<QRhiShaderResourceBinding> &b) { m_bindings = b; }
+    void setBindings(std::initializer_list<QRhiShaderResourceBinding> list) { m_bindings = list; }
+
+    template<typename InputIterator>
+    void setBindings(InputIterator first, InputIterator last)
+    {
+        m_bindings.clear();
+        std::copy(first, last, std::back_inserter(m_bindings));
+    }
+
+    void setBindings(const QVector<QRhiShaderResourceBinding> &bindings) // compat., to be removed
+    {
+        setBindings(bindings.cbegin(), bindings.cend());
+    }
+
+    const QRhiShaderResourceBinding *cbeginBindings() const { return m_bindings.cbegin(); }
+    const QRhiShaderResourceBinding *cendBindings() const { return m_bindings.cend(); }
 
     bool isLayoutCompatible(const QRhiShaderResourceBindings *other) const;
 
@@ -909,7 +950,7 @@ public:
 
 protected:
     QRhiShaderResourceBindings(QRhiImplementation *rhi);
-    QVector<QRhiShaderResourceBinding> m_bindings;
+    QVarLengthArray<QRhiShaderResourceBinding, 8> m_bindings;
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiShaderResourceBindings &);
 #endif
@@ -1040,8 +1081,15 @@ public:
     FrontFace frontFace() const { return m_frontFace; }
     void setFrontFace(FrontFace f) { m_frontFace = f; }
 
-    QVector<TargetBlend> targetBlends() const { return m_targetBlends; }
-    void setTargetBlends(const QVector<TargetBlend> &blends) { m_targetBlends = blends; }
+    void setTargetBlends(std::initializer_list<TargetBlend> list) { m_targetBlends = list; }
+    template<typename InputIterator>
+    void setTargetBlends(InputIterator first, InputIterator last)
+    {
+        m_targetBlends.clear();
+        std::copy(first, last, std::back_inserter(m_targetBlends));
+    }
+    const TargetBlend *cbeginTargetBlends() const { return m_targetBlends.cbegin(); }
+    const TargetBlend *cendTargetBlends() const { return m_targetBlends.cend(); }
 
     bool hasDepthTest() const { return m_depthTest; }
     void setDepthTest(bool enable) { m_depthTest = enable; }
@@ -1073,8 +1121,19 @@ public:
     float lineWidth() const { return m_lineWidth; }
     void setLineWidth(float width) { m_lineWidth = width; }
 
-    QVector<QRhiShaderStage> shaderStages() const { return m_shaderStages; }
-    void setShaderStages(const QVector<QRhiShaderStage> &stages) { m_shaderStages = stages; }
+    void setShaderStages(std::initializer_list<QRhiShaderStage> list) { m_shaderStages = list; }
+    template<typename InputIterator>
+    void setShaderStages(InputIterator first, InputIterator last)
+    {
+        m_shaderStages.clear();
+        std::copy(first, last, std::back_inserter(m_shaderStages));
+    }
+    void setShaderStages(const QVector<QRhiShaderStage> &stages) // compat., to be removed
+    {
+        setShaderStages(stages.cbegin(), stages.cend());
+    }
+    const QRhiShaderStage *cbeginShaderStages() const { return m_shaderStages.cbegin(); }
+    const QRhiShaderStage *cendShaderStages() const { return m_shaderStages.cend(); }
 
     QRhiVertexInputLayout vertexInputLayout() const { return m_vertexInputLayout; }
     void setVertexInputLayout(const QRhiVertexInputLayout &layout) { m_vertexInputLayout = layout; }
@@ -1093,7 +1152,7 @@ protected:
     Topology m_topology = Triangles;
     CullMode m_cullMode = None;
     FrontFace m_frontFace = CCW;
-    QVector<TargetBlend> m_targetBlends;
+    QVarLengthArray<TargetBlend, 8> m_targetBlends;
     bool m_depthTest = false;
     bool m_depthWrite = false;
     CompareOp m_depthOp = Less;
@@ -1104,7 +1163,7 @@ protected:
     quint32 m_stencilWriteMask = 0xFF;
     int m_sampleCount = 1;
     float m_lineWidth = 1.0f;
-    QVector<QRhiShaderStage> m_shaderStages;
+    QVarLengthArray<QRhiShaderStage, 4> m_shaderStages;
     QRhiVertexInputLayout m_vertexInputLayout;
     QRhiShaderResourceBindings *m_shaderResourceBindings = nullptr;
     QRhiRenderPassDescriptor *m_renderPassDesc = nullptr;

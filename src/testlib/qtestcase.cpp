@@ -2805,8 +2805,11 @@ template <> Q_TESTLIB_EXPORT char *QTest::toString<char>(const char &t)
  */
 char *QTest::toString(const char *str)
 {
-    if (!str)
-        return nullptr;
+    if (!str) {
+        char *msg = new char[1];
+        *msg = '\0';
+        return msg;
+    }
     char *msg = new char[strlen(str) + 1];
     return qstrcpy(msg, str);
 }

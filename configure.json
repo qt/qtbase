@@ -484,6 +484,17 @@
                 ]
             }
         },
+        "signaling_nan": {
+            "label": "Signaling NaN for doubles",
+            "type": "compile",
+            "test": {
+                "head": [ "#include <limits>" ],
+                "main": [
+                    "using B = std::numeric_limits<double>;",
+                    "static_assert(B::has_signaling_NaN, \"System lacks signaling NaN\");"
+                ]
+            }
+        },
         "sse2": {
             "label": "SSE2 instructions",
             "type": "x86Simd"
@@ -1004,6 +1015,11 @@
                 "publicQtConfig",
                 { "type": "define", "name": "QT_REDUCE_RELOCATIONS" }
             ]
+        },
+        "signaling_nan": {
+            "label": "Signaling NaN",
+            "condition": "tests.signaling_nan",
+            "output": [ "publicFeature" ]
         },
         "sse2": {
             "label": "SSE2",

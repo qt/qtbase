@@ -44,6 +44,9 @@ private slots:
     void fuzzyCompare();
     void rawNaN_data();
     void rawNaN();
+#if QT_CONFIG(signaling_nan)
+    void distinctNaN();
+#endif
     void generalNaN_data();
     void generalNaN();
     void infinity();
@@ -139,6 +142,9 @@ void tst_QNumeric::rawNaN_data()
     QTest::addColumn<double>("nan");
 
     QTest::newRow("quiet") << qQNaN();
+#if QT_CONFIG(signaling_nan)
+    QTest::newRow("signaling") << qSNaN();
+#endif
 }
 
 void tst_QNumeric::rawNaN()
@@ -146,6 +152,15 @@ void tst_QNumeric::rawNaN()
     QFETCH(double, nan);
     checkNaN(nan);
 }
+
+#if QT_CONFIG(signaling_nan)
+void tst_QNumeric::distinctNaN()
+{
+    const double qnan = qQNaN();
+    const double snan = qSNaN();
+    QVERIFY(memcmp(&qnan, &snan, sizeof(double)) != 0);
+}
+#endif
 
 void tst_QNumeric::generalNaN_data()
 {

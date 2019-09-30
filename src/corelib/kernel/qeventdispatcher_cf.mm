@@ -423,7 +423,7 @@ bool QEventDispatcherCoreFoundation::processPostedEvents()
     m_processEvents.processedPostedEvents = true;
 
     qCDebug(lcEventDispatcher) << "Sending posted events for"
-        << QEventLoop::ProcessEventsFlags(m_processEvents.flags.load());
+        << QEventLoop::ProcessEventsFlags(m_processEvents.flags.loadRelaxed());
     QCoreApplication::sendPostedEvents();
 
     return true;

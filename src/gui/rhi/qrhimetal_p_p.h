@@ -188,7 +188,7 @@ struct QMetalShaderResourceBindings : public QRhiShaderResourceBindings
     void release() override;
     bool build() override;
 
-    QVector<QRhiShaderResourceBinding> sortedBindings;
+    QVarLengthArray<QRhiShaderResourceBinding, 8> sortedBindings;
     int maxBinding = -1;
 
     struct BoundUniformBufferData {
@@ -217,7 +217,7 @@ struct QMetalShaderResourceBindings : public QRhiShaderResourceBindings
             BoundStorageBufferData sbuf;
         };
     };
-    QVector<BoundResourceData> boundResourceData;
+    QVarLengthArray<BoundResourceData, 8> boundResourceData;
 
     uint generation = 0;
     friend class QRhiMetal;
