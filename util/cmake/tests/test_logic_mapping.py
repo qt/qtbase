@@ -27,7 +27,7 @@
 ##
 #############################################################################
 
-from pro2cmake import simplify_condition
+from condition_simplifier import simplify_condition
 
 
 def validate_simplify(input: str, expected: str) -> None:
