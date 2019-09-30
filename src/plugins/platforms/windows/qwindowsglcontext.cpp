@@ -885,13 +885,6 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
         result.profile = QSurfaceFormat::CoreProfile;
     else if (value & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
         result.profile = QSurfaceFormat::CompatibilityProfile;
-    if (result.version < 0x0400)
-        return result;
-    // v4.0 onwards
-    value = 0;
-    QOpenGLStaticContext::opengl32.glGetIntegerv(RESET_NOTIFICATION_STRATEGY_ARB, &value);
-    if (value == LOSE_CONTEXT_ON_RESET_ARB)
-        result.options |= QSurfaceFormat::ResetNotification;
     return result;
 }
 
@@ -969,6 +962,7 @@ QOpenGLTemporaryContext::~QOpenGLTemporaryContext()
 */
 
 #define SAMPLE_BUFFER_EXTENSION "GL_ARB_multisample"
+#define ROBUSTNESS_EXTENSION "GL_ARB_robustness"
 
 QOpenGLStaticContext::QOpenGLStaticContext() :
     vendor(QOpenGLStaticContext::getGlString(GL_VENDOR)),
@@ -989,9 +983,31 @@ QOpenGLStaticContext::QOpenGLStaticContext() :
     wglGetExtensionsStringARB(reinterpret_cast<WglGetExtensionsStringARB>(
         reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("wglGetExtensionsStringARB"))))
 {
-    if (extensionNames.startsWith(SAMPLE_BUFFER_EXTENSION " ")
-            || extensionNames.indexOf(" " SAMPLE_BUFFER_EXTENSION " ") != -1)
-        extensions |= SampleBuffers;
+    if (defaultFormat.version < 0x0300) {
+        if (extensionNames.startsWith(SAMPLE_BUFFER_EXTENSION " ")
+                || extensionNames.indexOf(" " SAMPLE_BUFFER_EXTENSION " ") != -1)
+            extensions |= SampleBuffers;
+        if (extensionNames.startsWith(ROBUSTNESS_EXTENSION " ")
+                || extensionNames.indexOf(" " ROBUSTNESS_EXTENSION " ") != -1)
+            extensions |= Robustness;
+    } else {
+        typedef const GLubyte * (APIENTRY *glGetStringi_t)(GLenum, GLuint);
+        auto glGetStringi = reinterpret_cast<glGetStringi_t>(
+            reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("glGetStringi")));
+        if (glGetStringi) {
+            GLint n = 0;
+            QOpenGLStaticContext::opengl32.glGetIntegerv(GL_NUM_EXTENSIONS, &n);
+            for (GLint i = 0; i < n; ++i) {
+                const char *p = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
+                if (p) {
+                    if (!strcmp(p, SAMPLE_BUFFER_EXTENSION))
+                        extensions |= SampleBuffers;
+                    else if (!strcmp(p, ROBUSTNESS_EXTENSION))
+                        extensions |= Robustness;
+                }
+            }
+        }
+    }
 }
 
 QByteArray QOpenGLStaticContext::getGlString(unsigned int which)
@@ -1230,27 +1246,11 @@ bool QWindowsGLContext::updateObtainedParams(HDC hdc, int *obtainedSwapInterval)
     if (m_staticContext->wglGetSwapInternalExt && obtainedSwapInterval)
         *obtainedSwapInterval = m_staticContext->wglGetSwapInternalExt();
 
-    bool hasRobustness = false;
-    if (m_obtainedFormat.majorVersion() < 3) {
-        const char *exts = reinterpret_cast<const char *>(QOpenGLStaticContext::opengl32.glGetString(GL_EXTENSIONS));
-        hasRobustness = exts && strstr(exts, "GL_ARB_robustness");
-    } else {
-        typedef const GLubyte * (APIENTRY *glGetStringi_t)(GLenum, GLuint);
-        auto glGetStringi = reinterpret_cast<glGetStringi_t>(
-            reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("glGetStringi")));
-        if (glGetStringi) {
-            GLint n = 0;
-            QOpenGLStaticContext::opengl32.glGetIntegerv(GL_NUM_EXTENSIONS, &n);
-            for (GLint i = 0; i < n; ++i) {
-                const char *p = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
-                if (p && !strcmp(p, "GL_ARB_robustness")) {
-                    hasRobustness = true;
-                    break;
-                }
-            }
-        }
-    }
-    if (hasRobustness) {
+    if (testFlag(m_staticContext->extensions, QOpenGLStaticContext::Robustness)) {
+        GLint value = 0;
+        QOpenGLStaticContext::opengl32.glGetIntegerv(RESET_NOTIFICATION_STRATEGY_ARB, &value);
+        if (value == LOSE_CONTEXT_ON_RESET_ARB)
+            m_obtainedFormat.setOption(QSurfaceFormat::ResetNotification);
         m_getGraphicsResetStatus = reinterpret_cast<GlGetGraphicsResetStatusArbType>(
             reinterpret_cast<QFunctionPointer>(QOpenGLStaticContext::opengl32.wglGetProcAddress("glGetGraphicsResetStatusARB")));
     }

@@ -416,7 +416,7 @@ public:
         LoadArchiveMemberHint = 0x04
     };
     Q_DECLARE_FLAGS(LoadHints, LoadHint)
-    Q_FLAG(LoadHints)
+    Q_FLAG(LoadHint)
     ...
 }
 //! [39]

@@ -140,7 +140,8 @@ public:
     enum Extensions
     {
         SampleBuffers = 0x1,
-        sRGBCapableFramebuffer = 0x2
+        sRGBCapableFramebuffer = 0x2,
+        Robustness = 0x4,
     };
 
     typedef bool
