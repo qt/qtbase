@@ -522,8 +522,8 @@ QDialogButtonBox::~QDialogButtonBox()
 
 /*!
     \enum QDialogButtonBox::ButtonRole
-    \enum QMessageBox::ButtonRole
 
+//! [buttonrole-enum]
     This enum describes the roles that can be used to describe buttons in
     the button box. Combinations of these roles are as flags used to
     describe different aspects of their behavior.
@@ -546,6 +546,7 @@ QDialogButtonBox::~QDialogButtonBox()
     \omitvalue NRoles
 
     \sa StandardButton
+//! [buttonrole-enum]
 */
 
 /*!

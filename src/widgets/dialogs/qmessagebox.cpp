@@ -756,6 +756,12 @@ void QMessageBoxPrivate::_q_clicked(QPlatformDialogHelper::StandardButton button
 */
 
 /*!
+    \enum QMessageBox::ButtonRole
+
+    \include qdialogbuttonbox.cpp buttonrole-enum
+*/
+
+/*!
     \enum QMessageBox::StandardButton
     \since 4.2
 
