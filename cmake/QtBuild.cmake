@@ -2829,6 +2829,30 @@ macro(qt_find_package)
     set(multiValueArgs PROVIDED_TARGETS COMPONENTS)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+    # If some Qt internal project calls qt_find_package(WrapFreeType), but WrapFreeType was already
+    # found as part of a find_dependency() call from a ModuleDependencies.cmake file (or similar),
+    # and the provided target is also found, that means this might have been an unnecessary
+    # qt_find_package() call, because the dependency was already found via some other transitive
+    # dependency. Return early, so that CMake doesn't fail wiht an error with trying to promote the
+    # targets to be global. This behavior is not enabled by default, because there are cases
+    # when a regular find_package() (non qt_) can find a package (Freetype -> PNG), and a subsequent
+    # qt_find_package(PNG PROVIDED_TARGET PNG::PNG) still needs to succeed and register the provided
+    # targets. To enable the debugging behavior, set QT_DEBUG_QT_FIND_PACKAGE to 1.
+    set(_qt_find_package_skip_find_package FALSE)
+    if(QT_DEBUG_QT_FIND_PACKAGE AND ${ARGV0}_FOUND AND arg_PROVIDED_TARGETS)
+        set(_qt_find_package_skip_find_package TRUE)
+        foreach(qt_find_package_target_name ${arg_PROVIDED_TARGETS})
+            if(NOT TARGET ${qt_find_package_target_name})
+                set(_qt_find_package_skip_find_package FALSE)
+            endif()
+        endforeach()
+
+        if(_qt_find_package_skip_find_package)
+            message(AUTHOR_WARNING "qt_find_package(${ARGV0}) called even though the package "
+                   "was already found. Consider removing the call.")
+        endif()
+    endif()
+
     # Get the version if specified.
     set(package_version "")
     if(${ARGC} GREATER_EQUAL 2)
@@ -2842,7 +2866,7 @@ macro(qt_find_package)
         list(APPEND arg_UNPARSED_ARGUMENTS "COMPONENTS;${arg_COMPONENTS}")
     endif()
 
-    if(NOT (arg_CONFIG OR arg_NO_MODULE OR arg_MODULE))
+    if(NOT (arg_CONFIG OR arg_NO_MODULE OR arg_MODULE) AND NOT _qt_find_package_skip_find_package)
         # Try to find a config package first in quiet mode
         set(config_package_arg ${arg_UNPARSED_ARGUMENTS})
         list(APPEND config_package_arg "CONFIG;QUIET")
@@ -2875,7 +2899,7 @@ macro(qt_find_package)
         endif()
     endforeach()
 
-    if (NOT ${ARGV0}_FOUND)
+    if (NOT ${ARGV0}_FOUND AND NOT _qt_find_package_skip_find_package)
         # Unset the NOTFOUND ${package}_DIR var that might have been set by the previous
         # find_package call, to get rid of "not found" messagees in the feature summary
         # if the package is found by the next find_package call.
@@ -2887,7 +2911,7 @@ macro(qt_find_package)
         find_package(${arg_UNPARSED_ARGUMENTS})
     endif()
 
-    if(${ARGV0}_FOUND AND arg_PROVIDED_TARGETS)
+    if(${ARGV0}_FOUND AND arg_PROVIDED_TARGETS AND NOT _qt_find_package_skip_find_package)
         # If package was found, associate each target with its package name. This will be used
         # later when creating Config files for Qt libraries, to generate correct find_dependency()
         # calls. Also make the provided targets global, so that the properties can be read in
