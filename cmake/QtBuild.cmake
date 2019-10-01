@@ -3025,6 +3025,7 @@ macro(qt_find_apple_system_frameworks)
         find_library(FWSystemConfiguration SystemConfiguration)
         find_library(FWUIKit UIKit)
         find_library(FWWatchKit WatchKit)
+        find_library(FWGameController GameController)
     endif()
 endmacro()
 
