@@ -219,12 +219,12 @@ void tst_Http2::singleRequest_data()
 
     // 'Clear text' that should always work, either via the protocol upgrade
     // or as direct.
-    QTest::addRow("h2c-upgrade") << QNetworkRequest::HTTP2AllowedAttribute << H2Type::h2c;
+    QTest::addRow("h2c-upgrade") << QNetworkRequest::Http2AllowedAttribute << H2Type::h2c;
     QTest::addRow("h2c-direct") << QNetworkRequest::Http2DirectAttribute << H2Type::h2cDirect;
 
     if (!clearTextHTTP2) {
         // Qt with TLS where TLS-backend supports ALPN.
-        QTest::addRow("h2-ALPN") << QNetworkRequest::HTTP2AllowedAttribute << H2Type::h2Alpn;
+        QTest::addRow("h2-ALPN") << QNetworkRequest::Http2AllowedAttribute << H2Type::h2Alpn;
     }
 
 #if QT_CONFIG(ssl)
@@ -429,7 +429,7 @@ void tst_Http2::pushPromise()
     url.setPath("/index.html");
 
     QNetworkRequest request(url);
-    request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
+    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
     request.setHttp2Configuration(params);
 
     auto reply = manager->get(request);
@@ -455,7 +455,7 @@ void tst_Http2::pushPromise()
 
     url.setPath("/script.js");
     QNetworkRequest promisedRequest(url);
-    promisedRequest.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
+    promisedRequest.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
     reply = manager->get(promisedRequest);
     connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
     reply->ignoreSslErrors();
@@ -509,7 +509,7 @@ void tst_Http2::goaway()
     for (int i = 0; i < nRequests; ++i) {
         url.setPath(QString("/%1").arg(i));
         QNetworkRequest request(url);
-        request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
+        request.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
         replies[i] = manager->get(request);
         QCOMPARE(replies[i]->error(), QNetworkReply::NoError);
         void (QNetworkReply::*errorSignal)(QNetworkReply::NetworkError) =
@@ -582,7 +582,7 @@ void tst_Http2::connectToHost_data()
 #if QT_CONFIG(ssl)
     QTest::addRow("encrypted-h2-direct") << QNetworkRequest::Http2DirectAttribute << H2Type::h2Direct;
     if (!clearTextHTTP2)
-        QTest::addRow("encrypted-h2-ALPN") << QNetworkRequest::HTTP2AllowedAttribute << H2Type::h2Alpn;
+        QTest::addRow("encrypted-h2-ALPN") << QNetworkRequest::Http2AllowedAttribute << H2Type::h2Alpn;
 #endif // QT_CONFIG(ssl)
     // This works for all configurations, tests 'preconnect-http' scheme:
     // h2 with protocol upgrade is not working for now (the logic is a bit
@@ -725,7 +725,7 @@ void tst_Http2::maxFrameSize()
 #endif // QT_CONFIG(securetransport)
 
     auto connectionType = H2Type::h2Alpn;
-    auto attribute = QNetworkRequest::HTTP2AllowedAttribute;
+    auto attribute = QNetworkRequest::Http2AllowedAttribute;
     if (clearTextHTTP2) {
         connectionType = H2Type::h2Direct;
         attribute = QNetworkRequest::Http2DirectAttribute;
@@ -825,7 +825,7 @@ void tst_Http2::sendRequest(int streamNumber,
     url.setPath(QString("/stream%1.html").arg(streamNumber));
 
     QNetworkRequest request(url);
-    request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, QVariant(true));
+    request.setAttribute(QNetworkRequest::Http2AllowedAttribute, QVariant(true));
     request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, QVariant(true));
     request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
     request.setPriority(priority);
@@ -932,7 +932,7 @@ void tst_Http2::replyFinished()
 
         QCOMPARE(reply->error(), QNetworkReply::NoError);
 
-        const QVariant http2Used(reply->attribute(QNetworkRequest::HTTP2WasUsedAttribute));
+        const QVariant http2Used(reply->attribute(QNetworkRequest::Http2WasUsedAttribute));
         if (!http2Used.isValid() || !http2Used.toBool())
             stopEventLoop();
 

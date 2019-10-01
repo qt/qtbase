@@ -336,7 +336,7 @@ QT_BEGIN_NAMESPACE
         server supports HTTP/2. The attribute works with SSL or 'cleartext'
         HTTP/2. If a server turns out to not support HTTP/2, when HTTP/2 direct
         was specified, QNetworkAccessManager gives up, without attempting to
-        fall back to HTTP/1.1. If both HTTP2AllowedAttribute and
+        fall back to HTTP/1.1. If both Http2AllowedAttribute and
         Http2DirectAttribute are set, Http2DirectAttribute takes priority.
         (This value was introduced in 5.11.)
 

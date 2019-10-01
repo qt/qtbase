@@ -1240,7 +1240,7 @@ void QNetworkAccessManager::connectToHostEncrypted(const QString &hostName, quin
     // There is no way to enable SPDY/HTTP2 via a request, so we need to check
     // the ssl configuration whether SPDY/HTTP2 is allowed here.
     if (sslConfiguration.allowedNextProtocols().contains(QSslConfiguration::ALPNProtocolHTTP2))
-        request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, true);
+        request.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
     else if (sslConfiguration.allowedNextProtocols().contains(QSslConfiguration::NextProtocolSpdy3_0))
         request.setAttribute(QNetworkRequest::SpdyAllowedAttribute, true);
 
