@@ -2296,6 +2296,17 @@ def write_statecharts(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0
         cm_fh.write(f"{spaces(indent)}{f}\n")
     cm_fh.write(")\n")
 
+def write_qlalrsources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
+    sources = scope.get_files("QLALRSOURCES", use_vpath=True)
+    if not sources:
+        return
+    cm_fh.write("\n# QLALR Grammars:\n")
+    cm_fh.write(f"qt_process_qlalr(\n")
+    indent += 1
+    cm_fh.write(f"{spaces(indent)}{';'.join(sources)}\n")
+    cm_fh.write(f"{spaces(indent)}{target}\n")
+    cm_fh.write(f"{spaces(indent)}\"\"\n")
+    cm_fh.write(")\n")
 
 def expand_project_requirements(scope: Scope, skip_message: bool = False) -> str:
     requirements = ""
@@ -2689,6 +2700,8 @@ def write_main_part(
     write_resources(cm_fh, name, scope, indent)
 
     write_statecharts(cm_fh, name, scope, indent)
+
+    write_qlalrsources(cm_fh, name, scope, indent)
 
     write_simd_part(cm_fh, name, scope, indent)
 
