@@ -647,18 +647,40 @@ void QVulkanWindowPrivate::init()
 #endif
     qCDebug(lcGuiVk, "Using queue families: graphics = %u present = %u", gfxQueueFamilyIdx, presQueueFamilyIdx);
 
-    VkDeviceQueueCreateInfo queueInfo[2];
+    QVector<VkDeviceQueueCreateInfo> queueInfo;
+    queueInfo.reserve(2);
     const float prio[] = { 0 };
-    memset(queueInfo, 0, sizeof(queueInfo));
-    queueInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueInfo[0].queueFamilyIndex = gfxQueueFamilyIdx;
-    queueInfo[0].queueCount = 1;
-    queueInfo[0].pQueuePriorities = prio;
+    VkDeviceQueueCreateInfo addQueueInfo;
+    memset(&addQueueInfo, 0, sizeof(addQueueInfo));
+    addQueueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    addQueueInfo.queueFamilyIndex = gfxQueueFamilyIdx;
+    addQueueInfo.queueCount = 1;
+    addQueueInfo.pQueuePriorities = prio;
+    queueInfo.append(addQueueInfo);
     if (gfxQueueFamilyIdx != presQueueFamilyIdx) {
-        queueInfo[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueInfo[1].queueFamilyIndex = presQueueFamilyIdx;
-        queueInfo[1].queueCount = 1;
-        queueInfo[1].pQueuePriorities = prio;
+        addQueueInfo.queueFamilyIndex = presQueueFamilyIdx;
+        addQueueInfo.queueCount = 1;
+        addQueueInfo.pQueuePriorities = prio;
+        queueInfo.append(addQueueInfo);
+    }
+    if (queueCreateInfoModifier) {
+        queueCreateInfoModifier(queueFamilyProps.constData(), queueCount, queueInfo);
+        bool foundGfxQueue = false;
+        bool foundPresQueue = false;
+        for (const VkDeviceQueueCreateInfo& createInfo : qAsConst(queueInfo)) {
+            foundGfxQueue |= createInfo.queueFamilyIndex == gfxQueueFamilyIdx;
+            foundPresQueue |= createInfo.queueFamilyIndex == presQueueFamilyIdx;
+        }
+        if (!foundGfxQueue) {
+            qWarning("QVulkanWindow: Graphics queue missing after call to queueCreateInfoModifier");
+            status = StatusFail;
+            return;
+        }
+        if (!foundPresQueue) {
+            qWarning("QVulkanWindow: Present queue missing after call to queueCreateInfoModifier");
+            status = StatusFail;
+            return;
+        }
     }
 
     // Filter out unsupported extensions in order to keep symmetry
@@ -676,8 +698,8 @@ void QVulkanWindowPrivate::init()
     VkDeviceCreateInfo devInfo;
     memset(&devInfo, 0, sizeof(devInfo));
     devInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    devInfo.queueCreateInfoCount = gfxQueueFamilyIdx == presQueueFamilyIdx ? 1 : 2;
-    devInfo.pQueueCreateInfos = queueInfo;
+    devInfo.queueCreateInfoCount = queueInfo.size();
+    devInfo.pQueueCreateInfos = queueInfo.constData();
     devInfo.enabledExtensionCount = devExts.count();
     devInfo.ppEnabledExtensionNames = devExts.constData();
 
@@ -1544,6 +1566,52 @@ bool QVulkanWindow::event(QEvent *e)
 
     return QWindow::event(e);
 }
+
+/*!
+    \typedef QVulkanWindow::QueueCreateInfoModifier
+
+    A function function that is called during graphics initialization to add
+    additAional queues that should be created.
+
+    Set if the renderer needs additional queues besides the default graphics
+    queue (e.g. a transfer queue).
+    The provided queue family properties can be used to select the indices for
+    the additional queues.
+    The renderer can subsequently request the actual queue in initResources().
+
+    Note when requesting additional graphics queues: Qt itself always requests
+    a graphics queue, you'll need to search queueCreateInfo for the appropriate
+    entry and manipulate it to obtain the additional queue.
+
+    \sa setQueueCreateInfoModifier()
+ */
+
+/*!
+    Return a previously set queue create info modification function.
+
+    \sa setQueueCreateInfoModifier()
+
+    \since 5.15
+ */
+QVulkanWindow::QueueCreateInfoModifier QVulkanWindow::queueCreateInfoModifier() const
+{
+    Q_D(const QVulkanWindow);
+    return d->queueCreateInfoModifier;
+}
+
+/*!
+    Set a queue create info modification function.
+
+    \sa queueCreateInfoModifier()
+
+    \since 5.15
+ */
+void QVulkanWindow::setQueueCreateInfoModifier(QueueCreateInfoModifier modifier)
+{
+    Q_D(QVulkanWindow);
+    d->queueCreateInfoModifier = modifier;
+}
+
 
 /*!
     Returns true if this window has successfully initialized all Vulkan

@@ -80,7 +80,7 @@ private:
     qreal radius;
     QColor innerColor;
     QColor outerColor;
-    QImage *cache;
+    QImage *cache = nullptr;
 };
 
 #endif

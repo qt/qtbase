@@ -47,7 +47,6 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qstandardpaths.h>
-#include <QtCore/qlibrary.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qhash.h>
 
@@ -58,8 +57,6 @@
 #include <QtCore/qt_windows.h>
 #include <private/qsystemlibrary_p.h>
 #include <d3d9.h>
-#include <d3d10.h>
-#include <dxgi.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -83,259 +80,52 @@ static GpuDescription adapterIdentifierToGpuDescription(const D3DADAPTER_IDENTIF
     return result;
 }
 
-class QGraphicsAdapterInfo
+class QDirect3D9Handle
 {
 public:
-    Q_DISABLE_COPY_MOVE(QGraphicsAdapterInfo)
+    Q_DISABLE_COPY_MOVE(QDirect3D9Handle)
 
-    QGraphicsAdapterInfo();
-    ~QGraphicsAdapterInfo();
+    QDirect3D9Handle();
+    ~QDirect3D9Handle();
 
-    bool isValid() const;
+    bool isValid() const { return m_direct3D9 != nullptr; }
 
-    UINT adapterCount() const;
+    UINT adapterCount() const { return m_direct3D9 ? m_direct3D9->GetAdapterCount() : 0u; }
     bool retrieveAdapterIdentifier(UINT n, D3DADAPTER_IDENTIFIER9 *adapterIdentifier) const;
 
 private:
-    QSystemLibrary m_dxgilib;
-    IDXGIFactory1 *m_dxgiFactory1 = nullptr;
-
     QSystemLibrary m_d3d9lib;
     IDirect3D9 *m_direct3D9 = nullptr;
-
-    /* This is a value from the DXGI_ADAPTER_FLAG enum.
-     * However, it's not available in dxgi.h from MinGW,
-     * so define it here in any case. */
-    enum { DXGI_ADAPTER_FLAG_SOFTWARE = 2 };
-
-    UINT adapterCountDXGI() const;
-    bool retrieveAdapterIdentifierDXGI(UINT n, D3DADAPTER_IDENTIFIER9 *adapterIdentifier) const;
-
-    UINT adapterCountD3D9() const;
-    bool retrieveAdapterIdentifierD3D9(UINT n, D3DADAPTER_IDENTIFIER9 *adapterIdentifier) const;
 };
 
-QGraphicsAdapterInfo::QGraphicsAdapterInfo() :
-    m_dxgilib(QStringLiteral("dxgi")),
+QDirect3D9Handle::QDirect3D9Handle() :
     m_d3d9lib(QStringLiteral("d3d9"))
 {
-    using PtrCreateDXGIFactory1 = HRESULT (WINAPI *)(REFIID, void**);
+    using PtrDirect3DCreate9 = IDirect3D9 *(WINAPI *)(UINT);
 
-    if (m_dxgilib.load()) {
-        if (auto createDXGIFactory1 = (PtrCreateDXGIFactory1)m_dxgilib.resolve("CreateDXGIFactory1"))
-            createDXGIFactory1(IID_PPV_ARGS(&m_dxgiFactory1));
-    }
-
-    if (!m_dxgiFactory1) {
-        using PtrDirect3DCreate9 = IDirect3D9 *(WINAPI *)(UINT);
-
-        if (m_d3d9lib.load()) {
-            if (auto direct3DCreate9 = (PtrDirect3DCreate9)m_d3d9lib.resolve("Direct3DCreate9"))
-                m_direct3D9 = direct3DCreate9(D3D_SDK_VERSION);
-        }
+    if (m_d3d9lib.load()) {
+        if (auto direct3DCreate9 = (PtrDirect3DCreate9)m_d3d9lib.resolve("Direct3DCreate9"))
+            m_direct3D9 = direct3DCreate9(D3D_SDK_VERSION);
     }
 }
 
-QGraphicsAdapterInfo::~QGraphicsAdapterInfo()
+QDirect3D9Handle::~QDirect3D9Handle()
 {
-    if (m_dxgiFactory1)
-       m_dxgiFactory1->Release();
     if (m_direct3D9)
        m_direct3D9->Release();
 }
 
-bool QGraphicsAdapterInfo::isValid() const
+bool QDirect3D9Handle::retrieveAdapterIdentifier(UINT n, D3DADAPTER_IDENTIFIER9 *adapterIdentifier) const
 {
-    return m_dxgiFactory1 != nullptr || m_direct3D9 != nullptr;
-}
-
-UINT QGraphicsAdapterInfo::adapterCount() const
-{
-    if (m_dxgiFactory1)
-        return adapterCountDXGI();
-    if (m_direct3D9)
-        return adapterCountD3D9();
-    return 0;
-}
-
-bool QGraphicsAdapterInfo::retrieveAdapterIdentifier(UINT n, D3DADAPTER_IDENTIFIER9 *adapterIdentifier) const
-{
-    if (m_dxgiFactory1)
-        return retrieveAdapterIdentifierDXGI(n, adapterIdentifier);
-    if (m_direct3D9)
-        return retrieveAdapterIdentifierD3D9(n, adapterIdentifier);
-    return false;
-}
-
-UINT QGraphicsAdapterInfo::adapterCountDXGI() const
-{
-    /* DXGI doesn't have an adapterCount(), instead we have to call EnumAdapters1()
-     * until DXGI_ERROR_NOT_FOUND is returned. */
-    UINT n = 0;
-
-    IDXGIAdapter1 *adapter;
-    while (SUCCEEDED(m_dxgiFactory1->EnumAdapters1(n, &adapter))) {
-        adapter->Release();
-        ++n;
-    }
-
-    return n;
-}
-
-// Detect whether we are running under 64-bit Windows.
-static bool isWow64Process()
-{
-    typedef BOOL (WINAPI *IsWow64ProcessPtr)(HANDLE hProcess, PBOOL Wow64Process);
-    IsWow64ProcessPtr IsWow64Process = (IsWow64ProcessPtr)QLibrary::resolve(
-                QStringLiteral("kernel32.dll"), "IsWow64Process");
-
-    if (IsWow64Process) {
-        BOOL IsWow64 = FALSE;
-        if (IsWow64Process(GetCurrentProcess(), &IsWow64))
-            return IsWow64;
-    }
-    return false;
-}
-
-// Read a string value from registry
-static QString regGetString(HKEY key, const wchar_t* valueName)
-{
-    QVarLengthArray<wchar_t, MAX_PATH> buf (MAX_PATH);
-    LRESULT res;
-    DWORD bufSize = buf.size() * sizeof(wchar_t);
-    res = RegGetValue(key, nullptr, valueName,
-                      RRF_RT_REG_SZ | RRF_RT_REG_MULTI_SZ, nullptr,
-                      buf.data(), &bufSize);
-    if (res == ERROR_MORE_DATA) {
-        buf.resize(bufSize / sizeof(wchar_t));
-        bufSize = buf.size() * sizeof(wchar_t);
-        res = RegGetValue(key, nullptr, valueName,
-                        RRF_RT_REG_SZ | RRF_RT_REG_MULTI_SZ, nullptr,
-                        buf.data(), &bufSize);
-    }
-    /* In case of REG_MULTI_SZ, this returns just the first string,
-     * but that is sufficient for our purposes. */
-    if (res == ERROR_SUCCESS)
-        return QString::fromWCharArray(buf.data());
-    return QString();
-}
-
-// Read driver name given a DeviceKey
-static QString retrieveDriverName(const wchar_t *driverKey)
-{
-    /* Kernel-style prefix, maps to HKLM
-     * (see https://docs.microsoft.com/en-us/windows-hardware/drivers/kernel/registry-key-object-routines) */
-    static const wchar_t prefixMappingHKLM[] = L"\\Registry\\Machine\\";
-    const size_t prefixMappingHKLMLen = wcslen(prefixMappingHKLM);
-    if (wcsnicmp(driverKey, prefixMappingHKLM, prefixMappingHKLMLen) != 0)
-        return QString();
-
-    driverKey += prefixMappingHKLMLen;
-    QString driverPath;
-    HKEY key;
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, driverKey, 0, KEY_READ | KEY_WOW64_64KEY, &key) == ERROR_SUCCESS) {
-        const wchar_t *valueName =
-                isWow64Process() ? L"UserModeDriverNameWow" : L"UserModeDriverName";
-        driverPath = regGetString(key, valueName);
-        RegCloseKey(key);
-    }
-    if (!driverPath.isEmpty()) {
-        int fileNameSep = driverPath.lastIndexOf(QLatin1Char('\\'));
-        if (fileNameSep >= 0)
-            driverPath = driverPath.mid(fileNameSep + 1);
-        return driverPath;
-    }
-    return QString();
-}
-
-// Retrieve driver name for a display device from registry.
-static QString driverNameForDevice(const wchar_t *displayDevice)
-{
-    QString driverName;
-    DISPLAY_DEVICE dd;
-    memset(&dd, 0, sizeof(dd));
-    dd.cb = sizeof(dd);
-    for (int dev = 0; EnumDisplayDevices(nullptr, dev, &dd, 0); ++dev) {
-        if (wcsicmp(displayDevice, dd.DeviceName) == 0) {
-            // DeviceKey is documented as "internal", but it's a registry key in kernel format
-            driverName = retrieveDriverName(dd.DeviceKey);
-            break;
-        }
-    }
-    if (driverName.isEmpty()) {
-        /* Fall back to driver name from EnumDisplaySettings.
-         * This is only a fallback as on Windows 10 this just returns an device-independent
-         * name. OTOH, it's possible to recognize RDP connections from the driver name. */
-        DEVMODE devMode;
-        if (EnumDisplaySettings(displayDevice, ENUM_CURRENT_SETTINGS, &devMode))
-            driverName = QString::fromWCharArray(devMode.dmDeviceName);
-    }
-    return driverName;
-}
-
-bool QGraphicsAdapterInfo::retrieveAdapterIdentifierDXGI(UINT n, D3DADAPTER_IDENTIFIER9 *adapterIdentifier) const
-{
-    IDXGIAdapter1 *adapter;
-    if (FAILED(m_dxgiFactory1->EnumAdapters1(n, &adapter)))
-        return false;
-
-    bool result = false;
-
-    DXGI_ADAPTER_DESC1 adapterDesc;
-    if (SUCCEEDED(adapter->GetDesc1(&adapterDesc))) {
-        if ((adapterDesc.VendorId != 0) && (adapterDesc.DeviceId != 0) // Don't use adapter description of Software Devices
-            && ((adapterDesc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) == 0)) {
-            memset(adapterIdentifier, 0, sizeof(*adapterIdentifier));
-            WideCharToMultiByte(1252, 0, adapterDesc.Description, -1,
-                                adapterIdentifier->Description,
-                                sizeof(adapterIdentifier->Description), nullptr, nullptr);
-            adapterIdentifier->Description[sizeof(adapterIdentifier->Description) - 1] = 0;
-            adapterIdentifier->VendorId = adapterDesc.VendorId;
-            adapterIdentifier->DeviceId = adapterDesc.DeviceId;
-            adapterIdentifier->SubSysId = adapterDesc.SubSysId;
-            adapterIdentifier->Revision = adapterDesc.Revision;
-
-            LARGE_INTEGER umdVersion;
-            if (SUCCEEDED(adapter->CheckInterfaceSupport(__uuidof(ID3D10Device), &umdVersion))) {
-                adapterIdentifier->DriverVersion = umdVersion;
-                result = true;
-            }
-
-            /* DXGI doesn't expose the driver name, but we can get it from the registry.
-             * But we need a device name to follow. */
-            IDXGIOutput *output = nullptr;
-            if (SUCCEEDED(adapter->EnumOutputs (0, &output))) {
-                DXGI_OUTPUT_DESC outputDesc;
-                if (SUCCEEDED(output->GetDesc (&outputDesc))) {
-                    QString driverName = driverNameForDevice(outputDesc.DeviceName);
-                    qstrncpy(adapterIdentifier->Driver, driverName.toLatin1().constData(),
-                             sizeof(adapterIdentifier->Driver));
-                }
-                output->Release();
-            }
-        }
-    }
-
-    adapter->Release();
-
-    return result;
-}
-
-UINT QGraphicsAdapterInfo::adapterCountD3D9() const
-{
-    return m_direct3D9->GetAdapterCount();
-}
-
-bool QGraphicsAdapterInfo::retrieveAdapterIdentifierD3D9(UINT n, D3DADAPTER_IDENTIFIER9 *adapterIdentifier) const
-{
-    return SUCCEEDED(m_direct3D9->GetAdapterIdentifier(n, 0, adapterIdentifier));
+    return m_direct3D9
+        && SUCCEEDED(m_direct3D9->GetAdapterIdentifier(n, 0, adapterIdentifier));
 }
 
 GpuDescription GpuDescription::detect()
 {
     GpuDescription result;
-    QGraphicsAdapterInfo adapterInfo;
-    if (!adapterInfo.isValid())
+    QDirect3D9Handle direct3D9;
+    if (!direct3D9.isValid())
         return result;
 
     D3DADAPTER_IDENTIFIER9 adapterIdentifier;
@@ -346,7 +136,7 @@ GpuDescription GpuDescription::detect()
     // and D3D uses by default. Therefore querying any additional adapters is
     // futile and not useful for our purposes in general, except for
     // identifying a few special cases later on.
-    if (adapterInfo.retrieveAdapterIdentifier(0, &adapterIdentifier)) {
+    if (direct3D9.retrieveAdapterIdentifier(0, &adapterIdentifier)) {
         result = adapterIdentifierToGpuDescription(adapterIdentifier);
         isAMD = result.vendorId == VENDOR_ID_AMD;
     }
@@ -355,9 +145,9 @@ GpuDescription GpuDescription::detect()
     // when starting apps on a screen connected to the Intel card) by looking
     // for a default AMD adapter and an additional non-AMD one.
     if (isAMD) {
-        const UINT adapterCount = adapterInfo.adapterCount();
+        const UINT adapterCount = direct3D9.adapterCount();
         for (UINT adp = 1; adp < adapterCount; ++adp) {
-            if (adapterInfo.retrieveAdapterIdentifier(adp, &adapterIdentifier)
+            if (direct3D9.retrieveAdapterIdentifier(adp, &adapterIdentifier)
                 && adapterIdentifier.VendorId != VENDOR_ID_AMD) {
                 // Bingo. Now figure out the display for the AMD card.
                 DISPLAY_DEVICE dd;
@@ -382,11 +172,11 @@ GpuDescription GpuDescription::detect()
 QVector<GpuDescription> GpuDescription::detectAll()
 {
     QVector<GpuDescription> result;
-    QGraphicsAdapterInfo adapterInfo;
-    if (const UINT adapterCount = adapterInfo.adapterCount()) {
+    QDirect3D9Handle direct3D9;
+    if (const UINT adapterCount = direct3D9.adapterCount()) {
         for (UINT adp = 0; adp < adapterCount; ++adp) {
             D3DADAPTER_IDENTIFIER9 adapterIdentifier;
-            if (adapterInfo.retrieveAdapterIdentifier(adp, &adapterIdentifier))
+            if (direct3D9.retrieveAdapterIdentifier(adp, &adapterIdentifier))
                 result.append(adapterIdentifierToGpuDescription(adapterIdentifier));
         }
     }

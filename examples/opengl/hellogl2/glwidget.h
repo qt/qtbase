@@ -65,7 +65,7 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 
 public:
-    GLWidget(QWidget *parent = 0);
+    GLWidget(QWidget *parent = nullptr);
     ~GLWidget();
 
     static bool isTransparent() { return m_transparent; }
@@ -96,18 +96,18 @@ private:
     void setupVertexAttribs();
 
     bool m_core;
-    int m_xRot;
-    int m_yRot;
-    int m_zRot;
+    int m_xRot = 0;
+    int m_yRot = 0;
+    int m_zRot = 0;
     QPoint m_lastPos;
     Logo m_logo;
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_logoVbo;
-    QOpenGLShaderProgram *m_program;
-    int m_projMatrixLoc;
-    int m_mvMatrixLoc;
-    int m_normalMatrixLoc;
-    int m_lightPosLoc;
+    QOpenGLShaderProgram *m_program = nullptr;
+    int m_projMatrixLoc = 0;
+    int m_mvMatrixLoc = 0;
+    int m_normalMatrixLoc = 0;
+    int m_lightPosLoc = 0;
     QMatrix4x4 m_proj;
     QMatrix4x4 m_camera;
     QMatrix4x4 m_world;

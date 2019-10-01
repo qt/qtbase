@@ -58,6 +58,7 @@
 #include <QPlatformSurfaceEvent>
 #include <QElapsedTimer>
 #include <QTimer>
+#include <QLoggingCategory>
 
 #include <QtGui/private/qshader_p.h>
 #include <QFile>
@@ -70,7 +71,6 @@
 #endif
 
 #if QT_CONFIG(vulkan)
-#include <QLoggingCategory>
 #include <QtGui/private/qrhivulkan_p.h>
 #endif
 
@@ -127,6 +127,7 @@ QRhiSwapChain::Flags scFlags = 0;
 QRhi::BeginFrameFlags beginFrameFlags = 0;
 QRhi::EndFrameFlags endFrameFlags = 0;
 int framesUntilTdr = -1;
+bool transparentBackground = false;
 
 class Window : public QWindow
 {
@@ -167,6 +168,8 @@ protected:
     QOffscreenSurface *m_fallbackSurface = nullptr;
 #endif
 
+    QColor m_clearColor;
+
     friend int main(int, char**);
 };
 
@@ -194,6 +197,8 @@ Window::Window()
     default:
         break;
     }
+
+    m_clearColor = transparentBackground ? Qt::transparent : QColor::fromRgbF(0.4f, 0.7f, 0.0f, 1.0f);
 }
 
 Window::~Window()
@@ -302,7 +307,7 @@ void Window::init()
     m_sc = m_r->newSwapChain();
     // allow depth-stencil, although we do not actually enable depth test/write for the triangle
     m_ds = m_r->newRenderBuffer(QRhiRenderBuffer::DepthStencil,
-                                QSize(), // no need to set the size yet
+                                QSize(), // no need to set the size here, due to UsedWithSwapChainOnly
                                 sampleCount,
                                 QRhiRenderBuffer::UsedWithSwapChainOnly);
     m_sc->setWindow(this);
@@ -339,16 +344,12 @@ void Window::releaseResources()
 
 void Window::resizeSwapChain()
 {
-    const QSize outputSize = m_sc->surfacePixelSize();
-
-    m_ds->setPixelSize(outputSize);
-    m_ds->build(); // == m_ds->release(); m_ds->build();
-
-    m_hasSwapChain = m_sc->buildOrResize();
+    m_hasSwapChain = m_sc->buildOrResize(); // also handles m_ds
 
     m_frameCount = 0;
     m_timer.restart();
 
+    const QSize outputSize = m_sc->currentPixelSize();
     m_proj = m_r->clipSpaceCorrMatrix();
     m_proj.perspective(45.0f, outputSize.width() / (float) outputSize.height(), 0.01f, 1000.0f);
     m_proj.translate(0, 0, -4);
@@ -439,6 +440,8 @@ int main(int argc, char **argv)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
 
+    QLoggingCategory::setFilterRules(QLatin1String("qt.rhi.*=true"));
+
     // Defaults.
 #if defined(Q_OS_WIN)
     graphicsApi = D3D11;
@@ -477,6 +480,9 @@ int main(int argc, char **argv)
     QCommandLineOption swOption(QLatin1String("software"), QLatin1String("Prefer a software renderer when choosing the adapter. "
                                                                          "Only applicable with some APIs and platforms."));
     cmdLineParser.addOption(swOption);
+    // Allow testing having a semi-transparent window.
+    QCommandLineOption transparentOption(QLatin1String("transparent"), QLatin1String("Make background transparent"));
+    cmdLineParser.addOption(transparentOption);
 
     cmdLineParser.process(app);
     if (cmdLineParser.isSet(nullOption))
@@ -493,6 +499,11 @@ int main(int argc, char **argv)
     qDebug("Selected graphics API is %s", qPrintable(graphicsApiName()));
     qDebug("This is a multi-api example, use command line arguments to override:\n%s", qPrintable(cmdLineParser.helpText()));
 
+    if (cmdLineParser.isSet(transparentOption)) {
+        transparentBackground = true;
+        scFlags |= QRhiSwapChain::SurfaceHasPreMulAlpha;
+    }
+
 #ifdef EXAMPLEFW_PREINIT
     void preInit();
     preInit();
@@ -508,6 +519,9 @@ int main(int argc, char **argv)
         fmt.setSwapInterval(0);
     if (scFlags.testFlag(QRhiSwapChain::sRGB))
         fmt.setColorSpace(QSurfaceFormat::sRGBColorSpace);
+    // Exception: The alpha size is not necessarily OpenGL specific.
+    if (transparentBackground)
+        fmt.setAlphaBufferSize(8);
     QSurfaceFormat::setDefaultFormat(fmt);
 
     // Vulkan setup.

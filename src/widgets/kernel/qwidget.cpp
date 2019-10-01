@@ -6204,7 +6204,7 @@ void QWidget::setFocusProxy(QWidget * w)
 
     if (changingAppFocusWidget) {
         QWidget *newDeepestFocusProxy = d_func()->deepestFocusProxy();
-        QApplicationPrivate::focus_widget = newDeepestFocusProxy ? newDeepestFocusProxy : this;
+        QApplicationPrivate::setFocusWidget(newDeepestFocusProxy ? newDeepestFocusProxy : this, Qt::NoFocusReason);
     }
 }
 

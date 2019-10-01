@@ -98,7 +98,7 @@ public:
     QPoint delta;
     QPoint speed;
     FlickableTicker *ticker;
-    QTime timeStamp;
+    QElapsedTimer timeStamp;
     QWidget *target;
     QList<QEvent*> ignoreList;
 };
@@ -109,7 +109,7 @@ Flickable::Flickable()
     d->state = FlickablePrivate::Steady;
     d->threshold = 10;
     d->ticker = new FlickableTicker(this);
-    d->timeStamp = QTime::currentTime();
+    d->timeStamp.start();
     d->target = 0;
 }
 
@@ -208,7 +208,7 @@ void Flickable::handleMouseRelease(QMouseEvent *event)
         event->accept();
         delta = event->pos() - d->pressPos;
         if (d->timeStamp.elapsed() > 100) {
-            d->timeStamp = QTime::currentTime();
+            d->timeStamp.start();
             d->speed = delta - d->delta;
             d->delta = delta;
         }
@@ -253,7 +253,7 @@ void Flickable::handleMouseMove(QMouseEvent *event)
         delta = event->pos() - d->pressPos;
         if (delta.x() > d->threshold || delta.x() < -d->threshold ||
                 delta.y() > d->threshold || delta.y() < -d->threshold) {
-            d->timeStamp = QTime::currentTime();
+            d->timeStamp.start();
             d->state = FlickablePrivate::ManualScroll;
             d->delta = QPoint(0, 0);
             d->pressPos = event->pos();
@@ -266,7 +266,7 @@ void Flickable::handleMouseMove(QMouseEvent *event)
         delta = event->pos() - d->pressPos;
         setScrollOffset(d->offset - delta);
         if (d->timeStamp.elapsed() > 100) {
-            d->timeStamp = QTime::currentTime();
+            d->timeStamp.start();
             d->speed = delta - d->delta;
             d->delta = delta;
         }

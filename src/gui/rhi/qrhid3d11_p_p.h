@@ -199,7 +199,7 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
     void release() override;
     bool build() override;
 
-    QVector<QRhiShaderResourceBinding> sortedBindings;
+    QVarLengthArray<QRhiShaderResourceBinding, 8> sortedBindings;
     uint generation = 0;
 
     // Keep track of the generation number of each referenced QRhi* to be able
@@ -230,7 +230,7 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
             BoundStorageBufferData sbuf;
         };
     };
-    QVector<BoundResourceData> boundResourceData;
+    QVarLengthArray<BoundResourceData, 8> boundResourceData;
 
     QRhiBatchedBindings<ID3D11Buffer *> vsubufs;
     QRhiBatchedBindings<UINT> vsubufoffsets;

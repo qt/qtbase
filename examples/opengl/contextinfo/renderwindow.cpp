@@ -56,7 +56,7 @@
 #include <QOpenGLFunctions>
 
 RenderWindow::RenderWindow(const QSurfaceFormat &format)
-    : m_context(0),
+    : m_context(nullptr),
       m_initialized(false),
       m_forceGLSL110(false),
       m_angle(0.0f)
@@ -67,7 +67,7 @@ RenderWindow::RenderWindow(const QSurfaceFormat &format)
     m_context->setFormat(requestedFormat());
     if (!m_context->create()) {
         delete m_context;
-        m_context = 0;
+        m_context = nullptr;
     }
 }
 

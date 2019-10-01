@@ -5967,6 +5967,7 @@ QIcon QCommonStyle::standardIcon(StandardPixmap standardIcon, const QStyleOption
         case SP_ArrowLeft:
                 icon = QIcon::fromTheme(QLatin1String("go-previous"));
                 break;
+        case SP_DialogNoButton:
         case SP_DialogCancelButton:
                 icon = QIcon::fromTheme(QLatin1String("dialog-cancel"),
                                         QIcon::fromTheme(QLatin1String("process-stop")));

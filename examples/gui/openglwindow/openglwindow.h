@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-#include <QtGui/QWindow>
-#include <QtGui/QOpenGLFunctions>
+#include <QWindow>
+#include <QOpenGLFunctions>
 
 QT_BEGIN_NAMESPACE
 class QPainter;
@@ -62,7 +62,7 @@ class OpenGLWindow : public QWindow, protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
-    explicit OpenGLWindow(QWindow *parent = 0);
+    explicit OpenGLWindow(QWindow *parent = nullptr);
     ~OpenGLWindow();
 
     virtual void render(QPainter *painter);
@@ -82,10 +82,10 @@ protected:
     void exposeEvent(QExposeEvent *event) override;
 
 private:
-    bool m_animating;
+    bool m_animating = false;
 
-    QOpenGLContext *m_context;
-    QOpenGLPaintDevice *m_device;
+    QOpenGLContext *m_context = nullptr;
+    QOpenGLPaintDevice *m_device = nullptr;
 };
 //! [1]
 

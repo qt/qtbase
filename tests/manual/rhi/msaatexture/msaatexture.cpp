@@ -240,7 +240,7 @@ void Window::customInit()
 #else
     d.msaaTriPs->setSampleCount(1);
 #endif
-    d.msaaTriPs->setShaderStages(d.triPs->shaderStages());
+    d.msaaTriPs->setShaderStages(d.triPs->cbeginShaderStages(), d.triPs->cendShaderStages());
     d.msaaTriPs->setVertexInputLayout(d.triPs->vertexInputLayout());
     d.msaaTriPs->setShaderResourceBindings(d.triSrb);
     d.msaaTriPs->setRenderPassDescriptor(d.msaaRtRp);
@@ -315,7 +315,7 @@ void Window::customRender()
 
     // onscreen
     const QSize outputSizeInPixels = m_sc->currentPixelSize();
-    cb->beginPass(m_sc->currentFrameRenderTarget(), QColor::fromRgbF(0.4f, 0.7f, 0.0f, 1.0f), { 1.0f, 0 });
+    cb->beginPass(m_sc->currentFrameRenderTarget(), m_clearColor, { 1.0f, 0 });
     cb->setGraphicsPipeline(d.psLeft); // showing the non-msaa version
     cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
     cb->setShaderResources();

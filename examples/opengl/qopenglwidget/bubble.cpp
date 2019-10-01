@@ -57,15 +57,13 @@ Bubble::Bubble(const QPointF &position, qreal radius, const QPointF &velocity)
 {
     innerColor = randomColor();
     outerColor = randomColor();
-    cache = 0;
     updateBrush();
 }
 
 //! [0]
 void Bubble::updateCache()
 {
-    if (cache)
-        delete cache;
+    delete cache;
     cache = new QImage(qRound(radius * 2 + 2), qRound(radius * 2 + 2), QImage::Format_ARGB32_Premultiplied);
     cache->fill(0x00000000);
     QPainter p(cache);
@@ -80,8 +78,7 @@ void Bubble::updateCache()
 
 Bubble::~Bubble()
 {
-    if (cache)
-        delete cache;
+    delete cache;
 }
 
 void Bubble::updateBrush()

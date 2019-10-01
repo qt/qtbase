@@ -2712,13 +2712,8 @@ void tst_QWizard::taskQTBUG_46894_nextButtonShortcut()
         wizard.show();
         QVERIFY(QTest::qWaitForWindowExposed(&wizard));
 
-        if (wizard.button(QWizard::NextButton)->text() == "&Next") {
-            QCOMPARE(wizard.button(QWizard::NextButton)->shortcut(),
-                     QKeySequence(Qt::ALT | Qt::Key_Right));
-        } else {
-            QCOMPARE(wizard.button(QWizard::NextButton)->shortcut(),
-                     QKeySequence::mnemonic(wizard.button(QWizard::NextButton)->text()));
-        }
+        QCOMPARE(wizard.button(QWizard::NextButton)->shortcut(),
+                 QKeySequence::mnemonic(wizard.button(QWizard::NextButton)->text()));
     }
 }
 

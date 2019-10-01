@@ -59,6 +59,7 @@
 #include <QtCore/qtemporarydir.h>
 #include <QtCore/qthread.h>
 #include <QtCore/private/qlocking_p.h>
+#include <QtCore/private/qwaitcondition_p.h>
 
 #include <QtCore/qtestsupport_core.h>
 
@@ -1017,15 +1018,15 @@ class WatchDog : public QThread
         ThreadEnd,
     };
 
-    bool waitFor(std::unique_lock<std::mutex> &m, Expectation e) {
-        auto expectation = [this, e] { return expecting != e; };
+    bool waitFor(std::unique_lock<QtPrivate::mutex> &m, Expectation e) {
+        auto expectationChanged = [this, e] { return expecting != e; };
         switch (e) {
         case TestFunctionEnd:
-            return waitCondition.wait_for(m, defaultTimeout(), expectation);
+            return waitCondition.wait_for(m, defaultTimeout(), expectationChanged);
         case ThreadStart:
         case ThreadEnd:
         case TestFunctionStart:
-            waitCondition.wait(m, expectation);
+            waitCondition.wait(m, expectationChanged);
             return true;
         }
         Q_UNREACHABLE();
@@ -1035,7 +1036,7 @@ class WatchDog : public QThread
 public:
     WatchDog()
     {
-        std::unique_lock<std::mutex> locker(mutex);
+        auto locker = qt_unique_lock(mutex);
         expecting = ThreadStart;
         start();
         waitFor(locker, ThreadStart);
@@ -1062,7 +1063,7 @@ public:
     }
 
     void run() override {
-        std::unique_lock<std::mutex> locker(mutex);
+        auto locker = qt_unique_lock(mutex);
         expecting = TestFunctionStart;
         waitCondition.notify_all();
         while (true) {
@@ -1082,8 +1083,8 @@ public:
     }
 
 private:
-    std::mutex mutex;
-    std::condition_variable waitCondition;
+    QtPrivate::mutex mutex;
+    QtPrivate::condition_variable waitCondition;
     Expectation expecting;
 };
 
@@ -2804,8 +2805,11 @@ template <> Q_TESTLIB_EXPORT char *QTest::toString<char>(const char &t)
  */
 char *QTest::toString(const char *str)
 {
-    if (!str)
-        return nullptr;
+    if (!str) {
+        char *msg = new char[1];
+        *msg = '\0';
+        return msg;
+    }
     char *msg = new char[strlen(str) + 1];
     return qstrcpy(msg, str);
 }

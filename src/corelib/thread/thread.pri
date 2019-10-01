@@ -6,6 +6,7 @@ HEADERS += \
     thread/qrunnable.h \
     thread/qthread.h \
     thread/qthreadstorage.h \
+    thread/qwaitcondition_p.h \
     thread/qwaitcondition.h
 
 SOURCES += \

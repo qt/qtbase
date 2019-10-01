@@ -90,21 +90,21 @@ protected:
     void setAnimating(bool animate);
 
 private:
-    QPropertyAnimation *m_animationForward;
-    QPropertyAnimation *m_animationBackward;
+    QPropertyAnimation *m_animationForward = nullptr;
+    QPropertyAnimation *m_animationBackward = nullptr;
     QSequentialAnimationGroup *m_animationGroup;
-    QOpenGLTexture *m_texImageInput;
-    QOpenGLTexture *m_texImageTmp;
-    QOpenGLTexture *m_texImageProcessed;
-    QOpenGLShaderProgram *m_shaderDisplay;
-    QOpenGLShaderProgram *m_shaderComputeV;
-    QOpenGLShaderProgram *m_shaderComputeH;
+    QOpenGLTexture *m_texImageInput = nullptr;
+    QOpenGLTexture *m_texImageTmp = nullptr;
+    QOpenGLTexture *m_texImageProcessed = nullptr;
+    QOpenGLShaderProgram *m_shaderDisplay = nullptr;
+    QOpenGLShaderProgram *m_shaderComputeV = nullptr;
+    QOpenGLShaderProgram *m_shaderComputeH = nullptr;
     QMatrix4x4 m_proj;
     QSizeF     m_quadSize;
 
-    int m_blurRadius;
-    bool m_animate;
-    QOpenGLVertexArrayObject *m_vao;
+    int m_blurRadius = 0;
+    bool m_animate = true;
+    QOpenGLVertexArrayObject *m_vao = nullptr;
 };
 
 #endif

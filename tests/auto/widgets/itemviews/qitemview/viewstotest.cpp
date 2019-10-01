@@ -26,11 +26,10 @@
 **
 ****************************************************************************/
 
-
-#include <QtTest/QtTest>
-#include <QtCore/QtCore>
-#include <QtGui/QtGui>
-#include <QtWidgets/QtWidgets>
+#include <QHeaderView>
+#include <QListView>
+#include <QTableView>
+#include <QTreeView>
 
 /*
     To add a view to be tested add the header file to the includes
@@ -54,12 +53,12 @@ public:
     enum Display { DisplayNone, DisplayRoot };
 
     struct test {
-        test(QString m, Display d) : viewType(m), display(d){};
+        test(const QString &m, Display d) : viewType(m), display(d) {}
         QString viewType;
         Display display;
     };
 
-    QList<test> tests;
+    QVector<test> tests;
 };
 
 
@@ -84,7 +83,7 @@ ViewsToTest::ViewsToTest()
  */
 QAbstractItemView *ViewsToTest::createView(const QString &viewType)
 {
-    QAbstractItemView *view = 0;
+    QAbstractItemView *view = nullptr;
     if (viewType == "QListView_ScrollPerItem") {
         view = new QListView();
         view->setObjectName("QListView");
@@ -137,16 +136,16 @@ void ViewsToTest::hideIndexes(QAbstractItemView *view)
     if (QTableView *tableView = qobject_cast<QTableView *>(view)) {
         tableView->setColumnHidden(1, true);
         tableView->setRowHidden(1, true);
-        tableView->setRowHidden(tableView->model()->rowCount()-2, true);
+        tableView->setRowHidden(tableView->model()->rowCount() - 2, true);
     }
     if (QTreeView *treeView = qobject_cast<QTreeView *>(view)) {
         treeView->setColumnHidden(1, true);
         treeView->setRowHidden(1, QModelIndex(), true);
-        treeView->setRowHidden(treeView->model()->rowCount()-2, QModelIndex(), true);
+        treeView->setRowHidden(treeView->model()->rowCount() - 2, QModelIndex(), true);
     }
     if (QListView *listView = qobject_cast<QListView *>(view)) {
         listView->setRowHidden(1, true);
-        listView->setRowHidden(listView->model()->rowCount()-2, true);
+        listView->setRowHidden(listView->model()->rowCount() - 2, true);
     }
 }
 

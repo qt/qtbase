@@ -57,19 +57,10 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLExtraFunctions>
 #include <QPropertyAnimation>
-#include <QPauseAnimation>
 #include <QSequentialAnimationGroup>
 #include <QTimer>
 
 GLWindow::GLWindow()
-    : m_texture(0),
-      m_program(0),
-      m_vbo(0),
-      m_vao(0),
-      m_target(0, 0, -1),
-      m_uniformsDirty(true),
-      m_r(0),
-      m_r2(0)
 {
     m_world.setToIdentity();
     m_world.translate(0, 0, -1);
@@ -197,18 +188,12 @@ void GLWindow::initializeGL()
 {
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
 
-    if (m_texture) {
-        delete m_texture;
-        m_texture = 0;
-    }
     QImage img(":/qtlogo.png");
     Q_ASSERT(!img.isNull());
+    delete m_texture;
     m_texture = new QOpenGLTexture(img.scaled(32, 36).mirrored());
 
-    if (m_program) {
-        delete m_program;
-        m_program = 0;
-    }
+    delete m_program;
     m_program = new QOpenGLShaderProgram;
     // Prepend the correct version directive to the sources. The rest is the
     // same, thanks to the common GLSL syntax.
@@ -223,26 +208,21 @@ void GLWindow::initializeGL()
     m_lightPosLoc = m_program->uniformLocation("lightPos");
 
     // Create a VAO. Not strictly required for ES 3, but it is for plain OpenGL.
-    if (m_vao) {
-        delete m_vao;
-        m_vao = 0;
-    }
+    delete m_vao;
     m_vao = new QOpenGLVertexArrayObject;
     if (m_vao->create())
         m_vao->bind();
 
-    if (m_vbo) {
-        delete m_vbo;
-        m_vbo = 0;
-    }
     m_program->bind();
+    delete m_vbo;
     m_vbo = new QOpenGLBuffer;
     m_vbo->create();
     m_vbo->bind();
     m_vbo->allocate(m_logo.constData(), m_logo.count() * sizeof(GLfloat));
     f->glEnableVertexAttribArray(0);
     f->glEnableVertexAttribArray(1);
-    f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), 0);
+    f->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
+                             nullptr);
     f->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
                              reinterpret_cast<void *>(3 * sizeof(GLfloat)));
     m_vbo->release();
