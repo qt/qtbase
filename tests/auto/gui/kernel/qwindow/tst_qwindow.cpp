@@ -893,7 +893,13 @@ void tst_QWindow::isActive()
     QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
     QCoreApplication::processEvents();
     QTRY_COMPARE(dialog.received(QEvent::FocusOut), 1);
-    QTRY_COMPARE(window.received(QEvent::FocusIn), 3);
+    // We should be checking for exactly three, but since this is a try-compare _loop_, we might
+    // loose and regain focus multiple times in the event of a system popup. This has been observed
+    // to fail on Windows, see QTBUG-77769.
+    QTRY_VERIFY2(window.received(QEvent::FocusIn) >= 3,
+                 qPrintable(
+                 QStringLiteral("Expected more than three focus in events, received: %1")
+                 .arg(window.received(QEvent::FocusIn))));
 
     QVERIFY(window.isActive());
 
