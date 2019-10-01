@@ -2308,6 +2308,17 @@ def write_qlalrsources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
     cm_fh.write(f"{spaces(indent)}\"\"\n")
     cm_fh.write(")\n")
 
+def write_repc_files(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
+    for t in ["SOURCE", "REPLICA", "MERGED"]:
+        sources = scope.get_files("REPC_" + t, use_vpath=True)
+        if not sources:
+            continue
+        cm_fh.write(f"qt6_add_repc_{t.lower()}({target}\n")
+        indent += 1
+        for f in sources:
+            cm_fh.write(f"{spaces(indent)}{f}\n")
+        cm_fh.write(")\n")
+
 def expand_project_requirements(scope: Scope, skip_message: bool = False) -> str:
     requirements = ""
     for requirement in scope.get("_REQUIREMENTS"):
@@ -2703,6 +2714,8 @@ def write_main_part(
 
     write_qlalrsources(cm_fh, name, scope, indent)
 
+    write_repc_files(cm_fh, name, scope, indent)
+
     write_simd_part(cm_fh, name, scope, indent)
 
     write_android_part(cm_fh, name, scopes[0], indent)
@@ -3007,6 +3020,7 @@ def write_example(
 
     write_resources(cm_fh, binary_name, scope, indent=indent, is_example=True)
     write_statecharts(cm_fh, binary_name, scope, indent=indent, is_example=True)
+    write_repc_files(cm_fh, binary_name, scope, indent=indent)
 
     if qmldir:
         write_qml_plugin_epilogue(cm_fh, binary_name, scope, qmldir, indent)
