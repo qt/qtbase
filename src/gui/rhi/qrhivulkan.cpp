@@ -568,6 +568,9 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 
         VmaAllocatorCreateInfo allocatorInfo;
         memset(&allocatorInfo, 0, sizeof(allocatorInfo));
+        // A QRhi is supposed to be used from one single thread only. Disable
+        // the allocator's own mutexes. This gives a performance boost.
+        allocatorInfo.flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT;
         allocatorInfo.physicalDevice = physDev;
         allocatorInfo.device = dev;
         allocatorInfo.pVulkanFunctions = &afuncs;
