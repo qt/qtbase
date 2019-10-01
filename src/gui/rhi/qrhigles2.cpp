@@ -732,6 +732,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.baseVertex;
     case QRhi::BaseInstance:
         return false; // not in ES 3.2, so won't bother
+    case QRhi::TriangleFanTopology:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1539,6 +1541,8 @@ static inline GLenum toGlTopology(QRhiGraphicsPipeline::Topology t)
         return GL_TRIANGLES;
     case QRhiGraphicsPipeline::TriangleStrip:
         return GL_TRIANGLE_STRIP;
+    case QRhiGraphicsPipeline::TriangleFan:
+        return GL_TRIANGLE_FAN;
     case QRhiGraphicsPipeline::Lines:
         return GL_LINES;
     case QRhiGraphicsPipeline::LineStrip:

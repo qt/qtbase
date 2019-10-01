@@ -1017,6 +1017,7 @@ public:
     enum Topology {
         Triangles,
         TriangleStrip,
+        TriangleFan,
         Lines,
         LineStrip,
         Points
@@ -1426,7 +1427,8 @@ public:
         WideLines,
         VertexShaderPointSize,
         BaseVertex,
-        BaseInstance
+        BaseInstance,
+        TriangleFanTopology
     };
 
     enum BeginFrameFlag {

@@ -563,7 +563,10 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value BaseInstance Indicates that instanced draw commands support the \c
     firstInstance argument. When reported as not supported, the firstInstance
     value is ignored and the instance ID starts from 0.
- */
+
+    \value TriangleFanTopology Indicates that QRhiGraphicsPipeline::setTopology()
+    supports QRhiGraphicsPipeline::TriangleFan.
+*/
 
 /*!
     \enum QRhi::BeginFrameFlag
@@ -3123,6 +3126,7 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 
     \value Triangles (default)
     \value TriangleStrip
+    \value TriangleFan (only available if QRhi::TriangleFanTopology is supported)
     \value Lines
     \value LineStrip
     \value Points

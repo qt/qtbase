@@ -469,6 +469,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::BaseInstance:
         return true;
+    case QRhi::TriangleFanTopology:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;
