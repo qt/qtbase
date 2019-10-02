@@ -40,6 +40,7 @@
 #include "qsql_ibase_p.h"
 #include <qcoreapplication.h>
 #include <qdatetime.h>
+#include <qdeadlinetimer.h>
 #include <qvariant.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
@@ -1570,10 +1571,9 @@ void QIBaseDriver::close()
             d->eventBuffers.clear();
 
 #if defined(FB_API_VER)
-            // Workaround for Firebird crash
-            QTime timer;
-            timer.start();
-            while (timer.elapsed() < 500)
+            // TODO check whether this workaround for Firebird crash is still needed
+            QDeadlineTimer timer(500);
+            while (!timer.hasExpired())
                 QCoreApplication::processEvents();
 #endif
         }
