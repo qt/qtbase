@@ -2157,7 +2157,9 @@ void QObjectPrivate::setParent_helper(QObject *o)
             // cleared our entry in parentD->children.
         } else {
             const int index = parentD->children.indexOf(q);
-            if (parentD->isDeletingChildren) {
+            if (index < 0) {
+                // we're probably recursing into setParent() from a ChildRemoved event, don't do anything
+            } else if (parentD->isDeletingChildren) {
                 parentD->children[index] = 0;
             } else {
                 parentD->children.removeAt(index);
