@@ -709,10 +709,14 @@ QT_END_NAMESPACE
 
 #include "private/qcoreapplication_p.h"
 
+QT_WARNING_DISABLE_GCC("-Wattributes")
+QT_WARNING_DISABLE_CLANG("-Wattributes")
+QT_WARNING_DISABLE_INTEL(2621)
+
 extern const char qt_core_interpreter[] __attribute__((section(".interp")))
     = ELF_INTERPRETER;
 
-extern "C" void qt_core_boilerplate();
+extern "C" void qt_core_boilerplate() __attribute__((force_align_arg_pointer));
 void qt_core_boilerplate()
 {
     printf("This is the QtCore library version " QT_BUILD_STR "\n"
