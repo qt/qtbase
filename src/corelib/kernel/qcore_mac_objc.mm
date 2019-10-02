@@ -211,6 +211,12 @@ QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool)
     debug << "QMacAutoReleasePool(" << (const void *)pool << ')';
     return debug;
 }
+
+QDebug operator<<(QDebug debug, const QCFString &string)
+{
+    debug << static_cast<QString>(string);
+    return debug;
+}
 #endif // !QT_NO_DEBUG_STREAM
 
 #ifdef Q_OS_MACOS
