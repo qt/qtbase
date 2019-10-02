@@ -43,6 +43,7 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qiodevice.h>
 #include <QtCore/qpair.h>
+#include <QtCore/qcontainerfwd.h>
 
 #ifdef Status
 #error qdatastream.h must be included before any header file that defines Status
@@ -53,12 +54,6 @@ QT_BEGIN_NAMESPACE
 class qfloat16;
 class QByteArray;
 class QIODevice;
-
-template <typename T> class QList;
-template <typename T> class QVector;
-template <typename T> class QSet;
-template <class Key, class T> class QHash;
-template <class Key, class T> class QMap;
 
 #if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
 class QDataStreamPrivate;

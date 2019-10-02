@@ -43,6 +43,7 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qcontainerfwd.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -80,7 +81,6 @@ class QString;
 class QByteArray;
 class QApplication;
 
-template<typename T> class QList;
 typedef QList<QWidget *> QWidgetList;
 typedef QList<QWindow *> QWindowList;
 

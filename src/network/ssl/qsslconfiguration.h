@@ -66,7 +66,6 @@
 
 QT_BEGIN_NAMESPACE
 
-template<typename T> class QList;
 class QSslCertificate;
 class QSslCipher;
 class QSslKey;

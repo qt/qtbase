@@ -52,7 +52,6 @@ QT_BEGIN_NAMESPACE
 class QIODevice;
 class QDateTime;
 class QUrl;
-template<class T> class QList;
 
 class QNetworkCacheMetaDataPrivate;
 class Q_NETWORK_EXPORT QNetworkCacheMetaData

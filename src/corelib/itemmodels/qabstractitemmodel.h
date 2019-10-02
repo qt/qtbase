@@ -156,7 +156,6 @@ inline uint qHash(const QPersistentModelIndex &index, uint seed) noexcept
 Q_CORE_EXPORT QDebug operator<<(QDebug, const QPersistentModelIndex &);
 #endif
 
-template<typename T> class QList;
 typedef QList<QModelIndex> QModelIndexList;
 
 class QMimeData;

@@ -49,7 +49,6 @@ QT_BEGIN_NAMESPACE
 
 
 class QStringList;
-template <class T> class QList;
 struct QFontDef;
 class QFontEngine;
 

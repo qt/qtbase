@@ -56,7 +56,6 @@ class QIODevice;
 class QAbstractNetworkCache;
 class QAuthenticator;
 class QByteArray;
-template<typename T> class QList;
 class QNetworkCookie;
 class QNetworkCookieJar;
 class QNetworkReply;

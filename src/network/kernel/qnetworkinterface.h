@@ -50,7 +50,6 @@
 QT_BEGIN_NAMESPACE
 
 class QDeadlineTimer;
-template<typename T> class QList;
 
 class QNetworkAddressEntryPrivate;
 class Q_NETWORK_EXPORT QNetworkAddressEntry

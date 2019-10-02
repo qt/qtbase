@@ -50,7 +50,6 @@ QT_BEGIN_NAMESPACE
 
 class QSplitterPrivate;
 class QTextStream;
-template <typename T> class QList;
 
 class QSplitterHandle;
 

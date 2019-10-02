@@ -54,7 +54,6 @@ QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE
 
-template<typename T> class QList;
 class QFocusEvent;
 class QFont;
 class QFontMetrics;
