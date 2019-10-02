@@ -2245,8 +2245,11 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
     }
 
 #if QT_DEPRECATED_SINCE(5, 14)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
      QWheelEvent ev(localPoint, globalPoint, e->pixelDelta, e->angleDelta, e->qt4Delta, e->qt4Orientation,
                     mouse_buttons, e->modifiers, e->phase, e->source, e->inverted);
+QT_WARNING_POP
 #else
     QWheelEvent ev(localPoint, globalPoint, e->pixelDelta, e->angleDelta,
                    mouse_buttons, e->modifiers, e->phase, e->inverted, e->source);
