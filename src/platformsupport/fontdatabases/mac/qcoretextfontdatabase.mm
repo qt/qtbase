@@ -481,7 +481,12 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                     for (int i = 0; i < numCascades; ++i) {
                         CTFontDescriptorRef fontFallback = (CTFontDescriptorRef) CFArrayGetValueAtIndex(cascadeList, i);
                         QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontFallback, kCTFontFamilyNameAttribute);
-                        fallbackList.append(QString::fromCFString(fallbackFamilyName));
+
+                        QString fallbackName = QString::fromCFString(fallbackFamilyName);
+                        fallbackList.append(fallbackName);
+
+                        if (!qt_isFontFamilyPopulated(fallbackName))
+                            const_cast<QCoreTextFontDatabase *>(this)->populateFromDescriptor(fontFallback, fallbackName);
                     }
 
                     // .Apple Symbols Fallback will be at the beginning of the list and we will
@@ -493,15 +498,6 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                         fallbackList.move(symbolIndex, fallbackList.size() - 1);
 
                     addExtraFallbacks(&fallbackList);
-
-                    // Since iOS 13, the cascade list may contain meta-fonts which have not been
-                    // populated to the database, such as ".AppleJapaneseFont". It is important that we
-                    // include this in the fallback list, in order to get fallback support for all
-                    // languages
-                    for (const QString &fallback : fallbackList) {
-                        if (!qt_isFontFamilyPopulated(fallback))
-                            const_cast<QCoreTextFontDatabase *>(this)->populateFamily(fallback);
-                    }
 
                     extern QStringList qt_sort_families_by_writing_system(QChar::Script, const QStringList &);
                     fallbackList = qt_sort_families_by_writing_system(script, fallbackList);
