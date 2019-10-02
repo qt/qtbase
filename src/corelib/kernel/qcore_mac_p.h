@@ -168,7 +168,7 @@ Q_CORE_EXPORT bool qt_mac_applicationIsInDarkMode();
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool);
+Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool);
 #endif
 
 Q_CORE_EXPORT bool qt_apple_isApplicationExtension();
