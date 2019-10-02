@@ -237,7 +237,7 @@ void QTextEditPrivate::_q_hoveredBlockWithMarkerChanged(const QTextBlock &block)
     Qt::CursorShape cursor = cursorToRestoreAfterHover;
     if (block.isValid() && !q->isReadOnly()) {
         QTextBlockFormat::MarkerType marker = block.blockFormat().marker();
-        if (marker != QTextBlockFormat::NoMarker) {
+        if (marker != QTextBlockFormat::MarkerType::NoMarker) {
             if (viewport->cursor().shape() != Qt::PointingHandCursor)
                 cursorToRestoreAfterHover = viewport->cursor().shape();
             cursor = Qt::PointingHandCursor;

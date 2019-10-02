@@ -159,7 +159,7 @@ void tst_QTextMarkdownWriter::testWriteNestedBulletLists()
     QTextCursor cursor(document);
     QTextBlockFormat blockFmt = cursor.blockFormat();
     if (checkbox) {
-        blockFmt.setMarker(checked ? QTextBlockFormat::Checked : QTextBlockFormat::Unchecked);
+        blockFmt.setMarker(checked ? QTextBlockFormat::MarkerType::Checked : QTextBlockFormat::MarkerType::Unchecked);
         cursor.setBlockFormat(blockFmt);
     }
 

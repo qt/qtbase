@@ -128,7 +128,7 @@ private:
     Features m_features;
     QTextImageFormat m_imageFormat;
     QTextListFormat m_listFormat;
-    QTextBlockFormat::MarkerType m_markerType = QTextBlockFormat::NoMarker;
+    QTextBlockFormat::MarkerType m_markerType = QTextBlockFormat::MarkerType::NoMarker;
     bool m_needsInsertBlock = false;
     bool m_needsInsertList = false;
     bool m_listItem = false; // true from the beginning of LI to the end of the first P
