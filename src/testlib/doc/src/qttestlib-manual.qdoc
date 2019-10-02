@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -89,12 +89,14 @@
     private slot is a test function in your test. QTest::qExec() can be used to execute
     all test functions in the test object.
 
-    In addition, there are four private slots that are \e not treated as test functions.
-    They will be executed by the testing framework and can be used to initialize and
-    clean up either the entire test or the current test function.
+    In addition, you can define the following private slots that are \e not
+    treated as test functions. When present, they will be executed by the
+    testing framework and can be used to initialize and clean up either the
+    entire test or the current test function.
 
     \list
     \li \c{initTestCase()} will be called before the first test function is executed.
+    \li \c{initTestCase_data()} will be called to create a global test data table.
     \li \c{cleanupTestCase()} will be called after the last test function was executed.
     \li \c{init()} will be called before each test function is executed.
     \li \c{cleanup()} will be called after every test function.
@@ -365,6 +367,34 @@
 
     See \l {Chapter 5: Writing a Benchmark}{Writing a Benchmark} in the Qt Test
     Tutorial for more benchmarking examples.
+
+    \section1 Using Global Test Data
+
+    You can define \c{initTestCase_data()} to set up a global test data table.
+    Each test is run once for each row in the global test data table. When the
+    test function itself \l{Chapter 2: Data-driven Testing}{is data-driven},
+    it is run for each local data row, for each global data row. So, if there
+    are \c g rows in the global data table and \c d rows in the test's own
+    data-table, the number of runs of this test is \c g times \c d.
+
+    Global data is fetched from the table using the \l QFETCH_GLOBAL() macro.
+
+    The following are typical use cases for global test data:
+
+    \list
+        \li Selecting among the available database backends in QSql tests to run
+            every test against every database.
+        \li Doing all networking tests with and without SSL (HTTP versus HTTPS)
+            and proxying.
+        \li Testing a timer with a high precision clock and with a coarse one.
+        \li Selecting whether a parser shall read from a QByteArray or from a
+            QIODevice.
+    \endlist
+
+    For example, to test each number provided by \c {roundTripInt_data()} with
+    each locale provided by \c {initTestCase_data()}:
+
+    \snippet code/src_qtestlib_qtestcase.cpp 31
 */
 
 /*!
@@ -508,10 +538,9 @@
     QTest::newRow() function. Each set of data will become a
     separate row in the test table.
 
-    \l QTest::newRow() takes one argument: a name that will be
-    associated with the data set. If the test fails, the name will be
-    used in the test log, referencing the failed data. Then we
-    stream the data set into the new table row. First an arbitrary
+    \l QTest::newRow() takes one argument: a name that will be associated
+    with the data set and used in the test log to identify the data set.
+    Then we stream the data set into the new table row. First an arbitrary
     string, and then the expected result of applying the
     QString::toUpper() function to that string.
 
@@ -542,6 +571,10 @@
         \li "HELLO"
         \li HELLO
     \endtable
+
+    When data is streamed into the row, each datum is asserted to match
+    the type of the column whose value it supplies. If any assertion fails,
+    the test is aborted.
 
     \section1 Rewriting the Test Function
 

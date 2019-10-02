@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -220,8 +220,8 @@
    \relates QTest
 
    The fetch macro creates a local variable named \a name with the type \a type
-   on the stack. \a name has to match the element name from the test's data.
-   If no such element exists, the test will assert.
+   on the stack. The \a name and \a type must match a column from the test's
+   data table. This is asserted and the test will abort if the assertion fails.
 
    Assuming a test has the following data:
 
@@ -237,6 +237,33 @@
 
    \b {Note:} This macro can only be used in a test function that is invoked
    by the test framework. The test function must have a _data function.
+*/
+
+/*! \macro QFETCH_GLOBAL(type, name)
+
+   \relates QTest
+
+   This macro fetches a variable named \a name with the type \a type from
+   a row in the global data table. The \a name and \a type must match a
+   column in the global data table. This is asserted and the test will abort
+   if the assertion fails.
+
+   Assuming a test has the following data:
+
+   \snippet code/src_qtestlib_qtestcase.cpp 30
+
+   The test's own data is a single number per row. In this case,
+   \c initTestCase_data() also supplies a locale per row. Therefore,
+   this test will be run with every combination of locale from the
+   latter and number from the former.
+
+   \snippet code/src_qtestlib_qtestcase.cpp 31
+
+   The locale is read from the global data table using QFETCH_GLOBAL(),
+   and the number is read from the local data table using QFETCH().
+
+   \note This macro can only be used in test methods of a class with an
+   \c initTestCase_data() method.
 */
 
 /*! \macro QWARN(message)
