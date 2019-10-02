@@ -165,11 +165,13 @@ void Window::customRender()
         u->updateDynamicBuffer(d.ubuf, 64, 4, &flip);
     }
     if (!d.compressedData.isEmpty()) {
-        QRhiTextureUploadDescription desc;
+        QVarLengthArray<QRhiTextureUploadEntry, 16> descEntries;
         for (int i = 0; i < d.compressedData.count(); ++i) {
             QRhiTextureSubresourceUploadDescription image(d.compressedData[i].constData(), d.compressedData[i].size());
-            desc.append({ 0, i, image });
+            descEntries.append({ 0, i, image });
         }
+        QRhiTextureUploadDescription desc;
+        desc.setEntries(descEntries.cbegin(), descEntries.cend());
         u->uploadTexture(d.tex, desc);
         d.compressedData.clear();
     }

@@ -742,13 +742,14 @@ void QRhiD3D11::setVertexInput(QRhiCommandBuffer *cb,
         cmd.cmd = QD3D11CommandBuffer::Command::BindVertexBuffers;
         cmd.args.bindVertexBuffers.startSlot = startBinding;
         cmd.args.bindVertexBuffers.slotCount = bindingCount;
-        const QVector<QRhiVertexInputBinding> inputBindings =
-                QRHI_RES(QD3D11GraphicsPipeline, cbD->currentGraphicsPipeline)->m_vertexInputLayout.bindings();
-        for (int i = 0, ie = qMin(bindingCount, inputBindings.count()); i != ie; ++i) {
+        QD3D11GraphicsPipeline *psD = QRHI_RES(QD3D11GraphicsPipeline, cbD->currentGraphicsPipeline);
+        const QRhiVertexInputLayout &inputLayout(psD->m_vertexInputLayout);
+        const int inputBindingCount = inputLayout.cendBindings() - inputLayout.cbeginBindings();
+        for (int i = 0, ie = qMin(bindingCount, inputBindingCount); i != ie; ++i) {
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, bindings[i].first);
             cmd.args.bindVertexBuffers.buffers[i] = bufD->buffer;
             cmd.args.bindVertexBuffers.offsets[i] = bindings[i].second;
-            cmd.args.bindVertexBuffers.strides[i] = inputBindings[i].stride();
+            cmd.args.bindVertexBuffers.strides[i] = inputLayout.bindingAt(i)->stride();
         }
         cbD->commands.append(cmd);
     }
@@ -1606,9 +1607,10 @@ void QRhiD3D11::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
 
     if (cbD->currentTarget->resourceType() == QRhiResource::TextureRenderTarget) {
         QD3D11TextureRenderTarget *rtTex = QRHI_RES(QD3D11TextureRenderTarget, cbD->currentTarget);
-        const QVector<QRhiColorAttachment> colorAttachments = rtTex->m_desc.colorAttachments();
-        for (int att = 0, attCount = colorAttachments.count(); att != attCount; ++att) {
-            const QRhiColorAttachment &colorAtt(colorAttachments[att]);
+        for (auto it = rtTex->m_desc.cbeginColorAttachments(), itEnd = rtTex->m_desc.cendColorAttachments();
+             it != itEnd; ++it)
+        {
+            const QRhiColorAttachment &colorAtt(*it);
             if (!colorAtt.resolveTexture())
                 continue;
 
@@ -2953,17 +2955,20 @@ bool QD3D11TextureRenderTarget::build()
     if (rtv[0] || dsv)
         release();
 
-    const QVector<QRhiColorAttachment> colorAttachments = m_desc.colorAttachments();
-    Q_ASSERT(!colorAttachments.isEmpty() || m_desc.depthTexture());
+    const bool hasColorAttachments = m_desc.cbeginColorAttachments() != m_desc.cendColorAttachments();
+    Q_ASSERT(hasColorAttachments || m_desc.depthTexture());
     Q_ASSERT(!m_desc.depthStencilBuffer() || !m_desc.depthTexture());
     const bool hasDepthStencil = m_desc.depthStencilBuffer() || m_desc.depthTexture();
 
     QRHI_RES_RHI(QRhiD3D11);
 
-    d.colorAttCount = colorAttachments.count();
-    for (int i = 0; i < d.colorAttCount; ++i) {
-        QRhiTexture *texture = colorAttachments[i].texture();
-        QRhiRenderBuffer *rb = colorAttachments[i].renderBuffer();
+    d.colorAttCount = 0;
+    int attIndex = 0;
+    for (auto it = m_desc.cbeginColorAttachments(), itEnd = m_desc.cendColorAttachments(); it != itEnd; ++it, ++attIndex) {
+        d.colorAttCount += 1;
+        const QRhiColorAttachment &colorAtt(*it);
+        QRhiTexture *texture = colorAtt.texture();
+        QRhiRenderBuffer *rb = colorAtt.renderBuffer();
         Q_ASSERT(texture || rb);
         if (texture) {
             QD3D11Texture *texD = QRHI_RES(QD3D11Texture, texture);
@@ -2972,32 +2977,32 @@ bool QD3D11TextureRenderTarget::build()
             rtvDesc.Format = toD3DTextureFormat(texD->format(), texD->flags());
             if (texD->flags().testFlag(QRhiTexture::CubeMap)) {
                 rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-                rtvDesc.Texture2DArray.MipSlice = UINT(colorAttachments[i].level());
-                rtvDesc.Texture2DArray.FirstArraySlice = UINT(colorAttachments[i].layer());
+                rtvDesc.Texture2DArray.MipSlice = UINT(colorAtt.level());
+                rtvDesc.Texture2DArray.FirstArraySlice = UINT(colorAtt.layer());
                 rtvDesc.Texture2DArray.ArraySize = 1;
             } else {
                 if (texD->sampleDesc.Count > 1) {
                     rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMS;
                 } else {
                     rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-                    rtvDesc.Texture2D.MipSlice = UINT(colorAttachments[i].level());
+                    rtvDesc.Texture2D.MipSlice = UINT(colorAtt.level());
                 }
             }
-            HRESULT hr = rhiD->dev->CreateRenderTargetView(texD->tex, &rtvDesc, &rtv[i]);
+            HRESULT hr = rhiD->dev->CreateRenderTargetView(texD->tex, &rtvDesc, &rtv[attIndex]);
             if (FAILED(hr)) {
                 qWarning("Failed to create rtv: %s", qPrintable(comErrorMessage(hr)));
                 return false;
             }
-            ownsRtv[i] = true;
-            if (i == 0) {
+            ownsRtv[attIndex] = true;
+            if (attIndex == 0) {
                 d.pixelSize = texD->pixelSize();
                 d.sampleCount = int(texD->sampleDesc.Count);
             }
         } else if (rb) {
             QD3D11RenderBuffer *rbD = QRHI_RES(QD3D11RenderBuffer, rb);
-            ownsRtv[i] = false;
-            rtv[i] = rbD->rtv;
-            if (i == 0) {
+            ownsRtv[attIndex] = false;
+            rtv[attIndex] = rbD->rtv;
+            if (attIndex == 0) {
                 d.pixelSize = rbD->pixelSize();
                 d.sampleCount = int(rbD->sampleDesc.Count);
             }
@@ -3542,22 +3547,22 @@ bool QD3D11GraphicsPipeline::build()
     d3dTopology = toD3DTopology(m_topology);
 
     if (!vsByteCode.isEmpty()) {
-        const QVector<QRhiVertexInputBinding> bindings = m_vertexInputLayout.bindings();
-        const QVector<QRhiVertexInputAttribute> attributes = m_vertexInputLayout.attributes();
         QVarLengthArray<D3D11_INPUT_ELEMENT_DESC, 4> inputDescs;
-        for (const QRhiVertexInputAttribute &attribute : attributes) {
+        for (auto it = m_vertexInputLayout.cbeginAttributes(), itEnd = m_vertexInputLayout.cendAttributes();
+             it != itEnd; ++it)
+        {
             D3D11_INPUT_ELEMENT_DESC desc;
             memset(&desc, 0, sizeof(desc));
             // the output from SPIRV-Cross uses TEXCOORD<location> as the semantic
             desc.SemanticName = "TEXCOORD";
-            desc.SemanticIndex = UINT(attribute.location());
-            desc.Format = toD3DAttributeFormat(attribute.format());
-            desc.InputSlot = UINT(attribute.binding());
-            desc.AlignedByteOffset = attribute.offset();
-            const QRhiVertexInputBinding &binding(bindings[attribute.binding()]);
-            if (binding.classification() == QRhiVertexInputBinding::PerInstance) {
+            desc.SemanticIndex = UINT(it->location());
+            desc.Format = toD3DAttributeFormat(it->format());
+            desc.InputSlot = UINT(it->binding());
+            desc.AlignedByteOffset = it->offset();
+            const QRhiVertexInputBinding *inputBinding = m_vertexInputLayout.bindingAt(it->binding());
+            if (inputBinding->classification() == QRhiVertexInputBinding::PerInstance) {
                 desc.InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
-                desc.InstanceDataStepRate = UINT(binding.instanceStepRate());
+                desc.InstanceDataStepRate = UINT(inputBinding->instanceStepRate());
             } else {
                 desc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
             }

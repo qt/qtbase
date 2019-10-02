@@ -1775,14 +1775,15 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
             cbD->d->currentPassRpDesc.depthAttachment.loadAction = MTLLoadActionLoad;
             cbD->d->currentPassRpDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
         }
-        const QVector<QRhiColorAttachment> colorAttachments = rtTex->m_desc.colorAttachments();
-        for (const QRhiColorAttachment &colorAttachment : colorAttachments) {
-            if (colorAttachment.texture())
-                QRHI_RES(QMetalTexture, colorAttachment.texture())->lastActiveFrameSlot = currentFrameSlot;
-            else if (colorAttachment.renderBuffer())
-                QRHI_RES(QMetalRenderBuffer, colorAttachment.renderBuffer())->lastActiveFrameSlot = currentFrameSlot;
-            if (colorAttachment.resolveTexture())
-                QRHI_RES(QMetalTexture, colorAttachment.resolveTexture())->lastActiveFrameSlot = currentFrameSlot;
+        for (auto it = rtTex->m_desc.cbeginColorAttachments(), itEnd = rtTex->m_desc.cendColorAttachments();
+             it != itEnd; ++it)
+        {
+            if (it->texture())
+                QRHI_RES(QMetalTexture, it->texture())->lastActiveFrameSlot = currentFrameSlot;
+            else if (it->renderBuffer())
+                QRHI_RES(QMetalRenderBuffer, it->renderBuffer())->lastActiveFrameSlot = currentFrameSlot;
+            if (it->resolveTexture())
+                QRHI_RES(QMetalTexture, it->resolveTexture())->lastActiveFrameSlot = currentFrameSlot;
         }
         if (rtTex->m_desc.depthStencilBuffer())
             QRHI_RES(QMetalRenderBuffer, rtTex->m_desc.depthStencilBuffer())->lastActiveFrameSlot = currentFrameSlot;
@@ -2647,14 +2648,15 @@ void QMetalTextureRenderTarget::release()
 
 QRhiRenderPassDescriptor *QMetalTextureRenderTarget::newCompatibleRenderPassDescriptor()
 {
-    const QVector<QRhiColorAttachment> colorAttachments = m_desc.colorAttachments();
+    const int colorAttachmentCount = m_desc.cendColorAttachments() - m_desc.cbeginColorAttachments();
     QMetalRenderPassDescriptor *rpD = new QMetalRenderPassDescriptor(m_rhi);
-    rpD->colorAttachmentCount = colorAttachments.count();
+    rpD->colorAttachmentCount = colorAttachmentCount;
     rpD->hasDepthStencil = m_desc.depthStencilBuffer() || m_desc.depthTexture();
 
-    for (int i = 0, ie = colorAttachments.count(); i != ie; ++i) {
-        QMetalTexture *texD = QRHI_RES(QMetalTexture, colorAttachments[i].texture());
-        QMetalRenderBuffer *rbD = QRHI_RES(QMetalRenderBuffer, colorAttachments[i].renderBuffer());
+    for (int i = 0; i < colorAttachmentCount; ++i) {
+        const QRhiColorAttachment *colorAtt = m_desc.colorAttachmentAt(i);
+        QMetalTexture *texD = QRHI_RES(QMetalTexture, colorAtt->texture());
+        QMetalRenderBuffer *rbD = QRHI_RES(QMetalRenderBuffer, colorAtt->renderBuffer());
         rpD->colorFormat[i] = int(texD ? texD->d->format : rbD->d->format);
     }
 
@@ -2668,39 +2670,41 @@ QRhiRenderPassDescriptor *QMetalTextureRenderTarget::newCompatibleRenderPassDesc
 
 bool QMetalTextureRenderTarget::build()
 {
-    const QVector<QRhiColorAttachment> colorAttachments = m_desc.colorAttachments();
-    Q_ASSERT(!colorAttachments.isEmpty() || m_desc.depthTexture());
+    const bool hasColorAttachments = m_desc.cbeginColorAttachments() != m_desc.cendColorAttachments();
+    Q_ASSERT(hasColorAttachments || m_desc.depthTexture());
     Q_ASSERT(!m_desc.depthStencilBuffer() || !m_desc.depthTexture());
     const bool hasDepthStencil = m_desc.depthStencilBuffer() || m_desc.depthTexture();
 
-    d->colorAttCount = colorAttachments.count();
-    for (int i = 0; i < d->colorAttCount; ++i) {
-        QMetalTexture *texD = QRHI_RES(QMetalTexture, colorAttachments[i].texture());
-        QMetalRenderBuffer *rbD = QRHI_RES(QMetalRenderBuffer, colorAttachments[i].renderBuffer());
+    d->colorAttCount = 0;
+    int attIndex = 0;
+    for (auto it = m_desc.cbeginColorAttachments(), itEnd = m_desc.cendColorAttachments(); it != itEnd; ++it, ++attIndex) {
+        d->colorAttCount += 1;
+        QMetalTexture *texD = QRHI_RES(QMetalTexture, it->texture());
+        QMetalRenderBuffer *rbD = QRHI_RES(QMetalRenderBuffer, it->renderBuffer());
         Q_ASSERT(texD || rbD);
         id<MTLTexture> dst = nil;
         if (texD) {
             dst = texD->d->tex;
-            if (i == 0) {
+            if (attIndex == 0) {
                 d->pixelSize = texD->pixelSize();
                 d->sampleCount = texD->samples;
             }
         } else if (rbD) {
             dst = rbD->d->tex;
-            if (i == 0) {
+            if (attIndex == 0) {
                 d->pixelSize = rbD->pixelSize();
                 d->sampleCount = rbD->samples;
             }
         }
         QMetalRenderTargetData::ColorAtt colorAtt;
         colorAtt.tex = dst;
-        colorAtt.layer = colorAttachments[i].layer();
-        colorAtt.level = colorAttachments[i].level();
-        QMetalTexture *resTexD = QRHI_RES(QMetalTexture, colorAttachments[i].resolveTexture());
+        colorAtt.layer = it->layer();
+        colorAtt.level = it->level();
+        QMetalTexture *resTexD = QRHI_RES(QMetalTexture, it->resolveTexture());
         colorAtt.resolveTex = resTexD ? resTexD->d->tex : nil;
-        colorAtt.resolveLayer = colorAttachments[i].resolveLayer();
-        colorAtt.resolveLevel = colorAttachments[i].resolveLevel();
-        d->fb.colorAtt[i] = colorAtt;
+        colorAtt.resolveLayer = it->resolveLayer();
+        colorAtt.resolveLevel = it->resolveLevel();
+        d->fb.colorAtt[attIndex] = colorAtt;
     }
     d->dpr = 1;
 
@@ -3119,22 +3123,24 @@ bool QMetalGraphicsPipeline::build()
     const int firstVertexBinding = QRHI_RES(QMetalShaderResourceBindings, m_shaderResourceBindings)->maxBinding + 1;
 
     MTLVertexDescriptor *inputLayout = [MTLVertexDescriptor vertexDescriptor];
-    const QVector<QRhiVertexInputAttribute> attributes = m_vertexInputLayout.attributes();
-    for (const QRhiVertexInputAttribute &attribute : attributes) {
-        const uint loc = uint(attribute.location());
-        inputLayout.attributes[loc].format = toMetalAttributeFormat(attribute.format());
-        inputLayout.attributes[loc].offset = NSUInteger(attribute.offset());
-        inputLayout.attributes[loc].bufferIndex = NSUInteger(firstVertexBinding + attribute.binding());
+    for (auto it = m_vertexInputLayout.cbeginAttributes(), itEnd = m_vertexInputLayout.cendAttributes();
+         it != itEnd; ++it)
+    {
+        const uint loc = uint(it->location());
+        inputLayout.attributes[loc].format = toMetalAttributeFormat(it->format());
+        inputLayout.attributes[loc].offset = NSUInteger(it->offset());
+        inputLayout.attributes[loc].bufferIndex = NSUInteger(firstVertexBinding + it->binding());
     }
-    const QVector<QRhiVertexInputBinding> bindings = m_vertexInputLayout.bindings();
-    for (int i = 0, ie = bindings.count(); i != ie; ++i) {
-        const QRhiVertexInputBinding &binding(bindings[i]);
-        const uint layoutIdx = uint(firstVertexBinding + i);
+    int bindingIndex = 0;
+    for (auto it = m_vertexInputLayout.cbeginBindings(), itEnd = m_vertexInputLayout.cendBindings();
+         it != itEnd; ++it, ++bindingIndex)
+    {
+        const uint layoutIdx = uint(firstVertexBinding + bindingIndex);
         inputLayout.layouts[layoutIdx].stepFunction =
-                binding.classification() == QRhiVertexInputBinding::PerInstance
+                it->classification() == QRhiVertexInputBinding::PerInstance
                 ? MTLVertexStepFunctionPerInstance : MTLVertexStepFunctionPerVertex;
-        inputLayout.layouts[layoutIdx].stepRate = NSUInteger(binding.instanceStepRate());
-        inputLayout.layouts[layoutIdx].stride = binding.stride();
+        inputLayout.layouts[layoutIdx].stepRate = NSUInteger(it->instanceStepRate());
+        inputLayout.layouts[layoutIdx].stride = it->stride();
     }
 
     MTLRenderPipelineDescriptor *rpDesc = [[MTLRenderPipelineDescriptor alloc] init];

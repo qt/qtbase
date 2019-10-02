@@ -1898,21 +1898,22 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         {
             QGles2GraphicsPipeline *psD = QRHI_RES(QGles2GraphicsPipeline, cmd.args.bindVertexBuffer.ps);
             if (psD) {
-                const QVector<QRhiVertexInputBinding> bindings = psD->m_vertexInputLayout.bindings();
-                const QVector<QRhiVertexInputAttribute> attributes = psD->m_vertexInputLayout.attributes();
-                for (const QRhiVertexInputAttribute &a : attributes) {
-                    const int bindingIdx = a.binding();
+                for (auto it = psD->m_vertexInputLayout.cbeginAttributes(), itEnd = psD->m_vertexInputLayout.cendAttributes();
+                     it != itEnd; ++it)
+                {
+                    const int bindingIdx = it->binding();
                     if (bindingIdx != cmd.args.bindVertexBuffer.binding)
                         continue;
 
                     // we do not support more than one vertex buffer
                     f->glBindBuffer(GL_ARRAY_BUFFER, cmd.args.bindVertexBuffer.buffer);
 
-                    const int stride = int(bindings[bindingIdx].stride());
+                    const QRhiVertexInputBinding *inputBinding = psD->m_vertexInputLayout.bindingAt(bindingIdx);
+                    const int stride = int(inputBinding->stride());
                     int size = 1;
                     GLenum type = GL_FLOAT;
                     bool normalize = false;
-                    switch (a.format()) {
+                    switch (it->format()) {
                     case QRhiVertexInputAttribute::Float4:
                         type = GL_FLOAT;
                         size = 4;
@@ -1948,16 +1949,13 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                         break;
                     }
 
-                    const int locationIdx = a.location();
-                    quint32 ofs = a.offset() + cmd.args.bindVertexBuffer.offset;
+                    const int locationIdx = it->location();
+                    quint32 ofs = it->offset() + cmd.args.bindVertexBuffer.offset;
                     f->glVertexAttribPointer(GLuint(locationIdx), size, type, normalize, stride,
                                              reinterpret_cast<const GLvoid *>(quintptr(ofs)));
                     f->glEnableVertexAttribArray(GLuint(locationIdx));
-                    if (bindings[bindingIdx].classification() == QRhiVertexInputBinding::PerInstance
-                            && caps.instancing)
-                    {
-                        f->glVertexAttribDivisor(GLuint(locationIdx), GLuint(bindings[bindingIdx].instanceStepRate()));
-                    }
+                    if (inputBinding->classification() == QRhiVertexInputBinding::PerInstance && caps.instancing)
+                        f->glVertexAttribDivisor(GLuint(locationIdx), GLuint(inputBinding->instanceStepRate()));
                 }
             } else {
                 qWarning("No graphics pipeline active for setVertexInput; ignored");
@@ -2510,10 +2508,12 @@ QGles2RenderTargetData *QRhiGles2::enqueueBindFramebuffer(QRhiRenderTarget *rt, 
         fbCmd.args.bindFramebuffer.fbo = rtTex->framebuffer;
         fbCmd.args.bindFramebuffer.colorAttCount = rtD->colorAttCount;
 
-        const QVector<QRhiColorAttachment> colorAttachments = rtTex->m_desc.colorAttachments();
-        for (const QRhiColorAttachment &colorAttachment : colorAttachments) {
-            QGles2Texture *texD = QRHI_RES(QGles2Texture, colorAttachment.texture());
-            QGles2Texture *resolveTexD = QRHI_RES(QGles2Texture, colorAttachment.resolveTexture());
+        for (auto it = rtTex->m_desc.cbeginColorAttachments(), itEnd = rtTex->m_desc.cendColorAttachments();
+             it != itEnd; ++it)
+        {
+            const QRhiColorAttachment &colorAtt(*it);
+            QGles2Texture *texD = QRHI_RES(QGles2Texture, colorAtt.texture());
+            QGles2Texture *resolveTexD = QRHI_RES(QGles2Texture, colorAtt.resolveTexture());
             if (texD) {
                 trackedRegisterTexture(&passResTracker, texD,
                                        QRhiPassResourceTracker::TexColorOutput,
@@ -2602,10 +2602,9 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
 
     if (cbD->currentTarget->resourceType() == QRhiResource::TextureRenderTarget) {
         QGles2TextureRenderTarget *rtTex = QRHI_RES(QGles2TextureRenderTarget, cbD->currentTarget);
-        const QVector<QRhiColorAttachment> colorAttachments = rtTex->m_desc.colorAttachments();
-        if (!colorAttachments.isEmpty()) {
+        if (rtTex->m_desc.cbeginColorAttachments() != rtTex->m_desc.cendColorAttachments()) {
             // handle only 1 color attachment and only (msaa) renderbuffer
-            const QRhiColorAttachment &colorAtt(colorAttachments[0]);
+            const QRhiColorAttachment &colorAtt(*rtTex->m_desc.cbeginColorAttachments());
             if (colorAtt.resolveTexture()) {
                 Q_ASSERT(colorAtt.renderBuffer());
                 QGles2RenderBuffer *rbD = QRHI_RES(QGles2RenderBuffer, colorAtt.renderBuffer());
@@ -3446,14 +3445,18 @@ bool QGles2TextureRenderTarget::build()
     if (framebuffer)
         release();
 
-    const QVector<QRhiColorAttachment> colorAttachments = m_desc.colorAttachments();
-    Q_ASSERT(!colorAttachments.isEmpty() || m_desc.depthTexture());
+    const bool hasColorAttachments = m_desc.cbeginColorAttachments() != m_desc.cendColorAttachments();
+    Q_ASSERT(hasColorAttachments || m_desc.depthTexture());
     Q_ASSERT(!m_desc.depthStencilBuffer() || !m_desc.depthTexture());
     const bool hasDepthStencil = m_desc.depthStencilBuffer() || m_desc.depthTexture();
 
-    if (colorAttachments.count() > rhiD->caps.maxDrawBuffers)
-        qWarning("QGles2TextureRenderTarget: Too many color attachments (%d, max is %d)",
-                 colorAttachments.count(), rhiD->caps.maxDrawBuffers);
+    if (hasColorAttachments) {
+        const int count = m_desc.cendColorAttachments() - m_desc.cbeginColorAttachments();
+        if (count > rhiD->caps.maxDrawBuffers) {
+            qWarning("QGles2TextureRenderTarget: Too many color attachments (%d, max is %d)",
+                     count, rhiD->caps.maxDrawBuffers);
+        }
+    }
     if (m_desc.depthTexture() && !rhiD->caps.depthTexture)
         qWarning("QGles2TextureRenderTarget: Depth texture is not supported and will be ignored");
 
@@ -3463,9 +3466,11 @@ bool QGles2TextureRenderTarget::build()
     rhiD->f->glGenFramebuffers(1, &framebuffer);
     rhiD->f->glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-    d.colorAttCount = colorAttachments.count();
-    for (int i = 0; i < d.colorAttCount; ++i) {
-        const QRhiColorAttachment &colorAtt(colorAttachments[i]);
+    d.colorAttCount = 0;
+    int attIndex = 0;
+    for (auto it = m_desc.cbeginColorAttachments(), itEnd = m_desc.cendColorAttachments(); it != itEnd; ++it, ++attIndex) {
+        d.colorAttCount += 1;
+        const QRhiColorAttachment &colorAtt(*it);
         QRhiTexture *texture = colorAtt.texture();
         QRhiRenderBuffer *renderBuffer = colorAtt.renderBuffer();
         Q_ASSERT(texture || renderBuffer);
@@ -3473,16 +3478,16 @@ bool QGles2TextureRenderTarget::build()
             QGles2Texture *texD = QRHI_RES(QGles2Texture, texture);
             Q_ASSERT(texD->texture && texD->specified);
             const GLenum faceTargetBase = texD->flags().testFlag(QRhiTexture::CubeMap) ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : texD->target;
-            rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(i), faceTargetBase + uint(colorAtt.layer()),
+            rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), faceTargetBase + uint(colorAtt.layer()),
                                             texD->texture, colorAtt.level());
-            if (i == 0) {
+            if (attIndex == 0) {
                 d.pixelSize = texD->pixelSize();
                 d.sampleCount = 1;
             }
         } else if (renderBuffer) {
             QGles2RenderBuffer *rbD = QRHI_RES(QGles2RenderBuffer, renderBuffer);
-            rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(i), GL_RENDERBUFFER, rbD->renderbuffer);
-            if (i == 0) {
+            rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), GL_RENDERBUFFER, rbD->renderbuffer);
+            if (attIndex == 0) {
                 d.pixelSize = rbD->pixelSize();
                 d.sampleCount = rbD->samples;
             }

@@ -143,10 +143,10 @@ void Window::customInit()
     }
 
     QRhiTextureRenderTargetDescription rtDesc;
-    QVector<QRhiColorAttachment> att;
+    QRhiColorAttachment att[ATTCOUNT];
     for (int i = 0; i < ATTCOUNT; ++i)
-        att.append(QRhiColorAttachment(d.colData[i].tex));
-    rtDesc.setColorAttachments(att);
+        att[i] = QRhiColorAttachment(d.colData[i].tex);
+    rtDesc.setColorAttachments(att, att + ATTCOUNT);
     d.rt = m_r->newTextureRenderTarget(rtDesc);
     d.releasePool << d.rt;
     d.rtRp = d.rt->newCompatibleRenderPassDescriptor();

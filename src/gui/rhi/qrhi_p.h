@@ -240,15 +240,42 @@ class Q_GUI_EXPORT QRhiVertexInputLayout
 public:
     QRhiVertexInputLayout() = default;
 
-    QVector<QRhiVertexInputBinding> bindings() const { return m_bindings; }
-    void setBindings(const QVector<QRhiVertexInputBinding> &v) { m_bindings = v; }
+    void setBindings(std::initializer_list<QRhiVertexInputBinding> list) { m_bindings = list; }
+    template<typename InputIterator>
+    void setBindings(InputIterator first, InputIterator last)
+    {
+        m_bindings.clear();
+        std::copy(first, last, std::back_inserter(m_bindings));
+    }
+    void setBindings(const QVector<QRhiVertexInputBinding> &bindings) // compat., to be removed
+    {
+        setBindings(bindings.cbegin(), bindings.cend());
+    }
+    const QRhiVertexInputBinding *cbeginBindings() const { return m_bindings.cbegin(); }
+    const QRhiVertexInputBinding *cendBindings() const { return m_bindings.cend(); }
+    const QRhiVertexInputBinding *bindingAt(int index) const { return &m_bindings.at(index); }
 
-    QVector<QRhiVertexInputAttribute> attributes() const { return m_attributes; }
-    void setAttributes(const QVector<QRhiVertexInputAttribute> &v) { m_attributes = v; }
+    void setAttributes(std::initializer_list<QRhiVertexInputAttribute> list) { m_attributes = list; }
+    template<typename InputIterator>
+    void setAttributes(InputIterator first, InputIterator last)
+    {
+        m_attributes.clear();
+        std::copy(first, last, std::back_inserter(m_attributes));
+    }
+    void setAttributes(const QVector<QRhiVertexInputAttribute> &attributes) // compat., to be removed
+    {
+        setAttributes(attributes.cbegin(), attributes.cend());
+    }
+    const QRhiVertexInputAttribute *cbeginAttributes() const { return m_attributes.cbegin(); }
+    const QRhiVertexInputAttribute *cendAttributes() const { return m_attributes.cend(); }
 
 private:
-    QVector<QRhiVertexInputBinding> m_bindings;
-    QVector<QRhiVertexInputAttribute> m_attributes;
+    QVarLengthArray<QRhiVertexInputBinding, 8> m_bindings;
+    QVarLengthArray<QRhiVertexInputAttribute, 8> m_attributes;
+
+    friend Q_GUI_EXPORT bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) Q_DECL_NOTHROW;
+    friend Q_GUI_EXPORT uint qHash(const QRhiVertexInputLayout &v, uint seed) Q_DECL_NOTHROW;
+    friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiVertexInputLayout &);
 };
 
 Q_DECLARE_TYPEINFO(QRhiVertexInputLayout, Q_MOVABLE_TYPE);
@@ -439,8 +466,16 @@ public:
     QRhiTextureRenderTargetDescription(const QRhiColorAttachment &colorAttachment, QRhiRenderBuffer *depthStencilBuffer);
     QRhiTextureRenderTargetDescription(const QRhiColorAttachment &colorAttachment, QRhiTexture *depthTexture);
 
-    QVector<QRhiColorAttachment> colorAttachments() const { return m_colorAttachments; }
-    void setColorAttachments(const QVector<QRhiColorAttachment> &att) { m_colorAttachments = att; }
+    void setColorAttachments(std::initializer_list<QRhiColorAttachment> list) { m_colorAttachments = list; }
+    template<typename InputIterator>
+    void setColorAttachments(InputIterator first, InputIterator last)
+    {
+        m_colorAttachments.clear();
+        std::copy(first, last, std::back_inserter(m_colorAttachments));
+    }
+    const QRhiColorAttachment *cbeginColorAttachments() const { return m_colorAttachments.cbegin(); }
+    const QRhiColorAttachment *cendColorAttachments() const { return m_colorAttachments.cend(); }
+    const QRhiColorAttachment *colorAttachmentAt(int index) const { return &m_colorAttachments.at(index); }
 
     QRhiRenderBuffer *depthStencilBuffer() const { return m_depthStencilBuffer; }
     void setDepthStencilBuffer(QRhiRenderBuffer *renderBuffer) { m_depthStencilBuffer = renderBuffer; }
@@ -449,7 +484,7 @@ public:
     void setDepthTexture(QRhiTexture *texture) { m_depthTexture = texture; }
 
 private:
-    QVector<QRhiColorAttachment> m_colorAttachments;
+    QVarLengthArray<QRhiColorAttachment, 8> m_colorAttachments;
     QRhiRenderBuffer *m_depthStencilBuffer = nullptr;
     QRhiTexture *m_depthTexture = nullptr;
 };
@@ -516,14 +551,23 @@ class Q_GUI_EXPORT QRhiTextureUploadDescription
 public:
     QRhiTextureUploadDescription() = default;
     QRhiTextureUploadDescription(const QRhiTextureUploadEntry &entry);
-    QRhiTextureUploadDescription(const QVector<QRhiTextureUploadEntry> &entries);
+    QRhiTextureUploadDescription(std::initializer_list<QRhiTextureUploadEntry> list);
+    QRhiTextureUploadDescription(const QVector<QRhiTextureUploadEntry> &entries) // compat., to be removed
+        : m_entries(entries.cbegin(), entries.cend())
+    { }
 
-    QVector<QRhiTextureUploadEntry> entries() const { return m_entries; }
-    void setEntries(const QVector<QRhiTextureUploadEntry> &entries) { m_entries = entries; }
-    void append(const QRhiTextureUploadEntry &entry);
+    void setEntries(std::initializer_list<QRhiTextureUploadEntry> list) { m_entries = list; }
+    template<typename InputIterator>
+    void setEntries(InputIterator first, InputIterator last)
+    {
+        m_entries.clear();
+        std::copy(first, last, std::back_inserter(m_entries));
+    }
+    const QRhiTextureUploadEntry *cbeginEntries() const { return m_entries.cbegin(); }
+    const QRhiTextureUploadEntry *cendEntries() const { return m_entries.cend(); }
 
 private:
-    QVector<QRhiTextureUploadEntry> m_entries;
+    QVarLengthArray<QRhiTextureUploadEntry, 16> m_entries;
 };
 
 Q_DECLARE_TYPEINFO(QRhiTextureUploadDescription, Q_MOVABLE_TYPE);

@@ -1199,8 +1199,7 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputAttribute &a)
  */
 bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) Q_DECL_NOTHROW
 {
-    return a.bindings() == b.bindings()
-            && a.attributes() == b.attributes();
+    return a.m_bindings == b.m_bindings && a.m_attributes == b.m_attributes;
 }
 
 /*!
@@ -1221,15 +1220,21 @@ bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) 
  */
 uint qHash(const QRhiVertexInputLayout &v, uint seed) Q_DECL_NOTHROW
 {
-    return qHash(v.bindings(), seed) + qHash(v.attributes(), seed);
+    return qHash(v.m_bindings, seed) + qHash(v.m_attributes, seed);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
+template<typename T, int N>
+QDebug operator<<(QDebug dbg, const QVarLengthArray<T, N> &vla)
+{
+    return QtPrivate::printSequentialContainer(dbg, "VLA", vla);
+}
+
 QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
 {
     QDebugStateSaver saver(dbg);
-    dbg.nospace() << "QRhiVertexInputLayout(bindings=" << v.bindings()
-                  << " attributes=" << v.attributes()
+    dbg.nospace() << "QRhiVertexInputLayout(bindings=" << v.m_bindings
+                  << " attributes=" << v.m_attributes
                   << ')';
     return dbg;
 }
@@ -1630,25 +1635,17 @@ QRhiTextureUploadDescription::QRhiTextureUploadDescription(const QRhiTextureUplo
 }
 
 /*!
-    Constructs a texture upload description with the specified list of \a entries.
+    Constructs a texture upload description with the specified \a list of entries.
 
-    \note \a entries can also contain multiple QRhiTextureUploadEntry elements
+    \note \a list can also contain multiple QRhiTextureUploadEntry elements
     with the the same layer and level. This makes sense when those uploads are
     partial, meaning their subresource description has a source size or image
     smaller than the subresource dimensions, and can be more efficient than
     issuing separate uploadTexture()'s.
  */
-QRhiTextureUploadDescription::QRhiTextureUploadDescription(const QVector<QRhiTextureUploadEntry> &entries)
-    : m_entries(entries)
+QRhiTextureUploadDescription::QRhiTextureUploadDescription(std::initializer_list<QRhiTextureUploadEntry> list)
+    : m_entries(list)
 {
-}
-
-/*!
-    Adds \a entry to the list of subresource uploads.
- */
-void QRhiTextureUploadDescription::append(const QRhiTextureUploadEntry &entry)
-{
-    m_entries.append(entry);
 }
 
 /*!
@@ -3056,11 +3053,6 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBinding &b)
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QVarLengthArray<QRhiShaderResourceBinding, 8> &bindings)
-{
-    return QtPrivate::printSequentialContainer(dbg, "Bindings", bindings);
-}
-
 QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
 {
     QDebugStateSaver saver(dbg);
@@ -4215,7 +4207,7 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, const void *da
  */
 void QRhiResourceUpdateBatch::uploadTexture(QRhiTexture *tex, const QRhiTextureUploadDescription &desc)
 {
-    if (!desc.entries().isEmpty())
+    if (desc.cbeginEntries() != desc.cendEntries())
         d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::textureUpload(tex, desc));
 }
 

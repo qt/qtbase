@@ -732,7 +732,8 @@ public:
                                  VkSampleCountFlagBits samples,
                                  VkFormat colorFormat);
     bool createOffscreenRenderPass(VkRenderPass *rp,
-                                   const QVector<QRhiColorAttachment> &colorAttachments,
+                                   const QRhiColorAttachment *firstColorAttachment,
+                                   const QRhiColorAttachment *lastColorAttachment,
                                    bool preserveColor,
                                    bool preserveDs,
                                    QRhiRenderBuffer *depthStencilBuffer,
