@@ -573,6 +573,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         m_lastTouchPoints = m_touchPoints;
         m_touchPoints.clear();
         Qt::TouchPointStates combinedStates;
+        bool hasPressure = false;
 
         QMutableHashIterator<int, Contact> it(m_contacts);
         while (it.hasNext()) {
@@ -602,6 +603,9 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 it.remove();
                 continue;
             }
+
+            if (contact.pressure)
+                hasPressure = true;
 
             addTouchPoint(contact, &combinedStates);
         }
@@ -649,7 +653,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             m_contacts.clear();
 
 
-        if (!m_touchPoints.isEmpty() && combinedStates != Qt::TouchPointStationary)
+        if (!m_touchPoints.isEmpty() && (hasPressure || combinedStates != Qt::TouchPointStationary))
             reportPoints();
 
         if (m_filtered)
