@@ -1,15 +1,14 @@
-# Generated from qfuture.pro.
+# Generated from qfuturewatcher.pro.
 
 #####################################################################
-## tst_qfuture Test:
+## tst_qfuturewatcher Test:
 #####################################################################
 
-add_qt_test(tst_qfuture
+add_qt_test(tst_qfuturewatcher
     SOURCES
-        tst_qfuture.cpp
-    DEFINES
-        # -QT_NO_JAVA_STYLE_ITERATORS # special case
-        QT_STRICT_ITERATORS
+        tst_qfuturewatcher.cpp
     LIBRARIES
         Qt::CorePrivate
+    PUBLIC_LIBRARIES
+        Qt::Concurrent
 )

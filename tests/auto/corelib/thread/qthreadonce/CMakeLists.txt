@@ -1,10 +1,11 @@
-# Generated from qwritelocker.pro.
+# Generated from qthreadonce.pro.
 
 #####################################################################
-## tst_qwritelocker Test:
+## tst_qthreadonce Test:
 #####################################################################
 
-add_qt_test(tst_qwritelocker
+add_qt_test(tst_qthreadonce
     SOURCES
-        tst_qwritelocker.cpp
+        qthreadonce.cpp
+        tst_qthreadonce.cpp
 )

@@ -626,6 +626,14 @@ def handle_function_value(group: pp.ParseResults):
     if function_name == "files":
         return str(function_args[0])
 
+    if function_name == "basename":
+        if len(function_args) != 1:
+            print(f"XXXX basename with more than one argument")
+        if function_args[0] == '_PRO_FILE_PWD_':
+            return os.path.basename(os.getcwd())
+        print(f"XXXX basename with value other than _PRO_FILE_PWD_")
+        return os.path.basename(str(function_args[0]))
+
     if isinstance(function_args, pp.ParseResults):
         function_args = list(flatten_list(function_args.asList()))
 
