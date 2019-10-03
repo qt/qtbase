@@ -444,6 +444,14 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family)
         return QStringList();
     }
 
+    // If the font is not available we want to fall back to the style hint.
+    // By creating a matching font descriptor we can verify whether the font
+    // is available or not, and avoid CTFontCreateWithFontDescriptor picking
+    // a default font for us based on incomplete information.
+    fontDescriptor = CTFontDescriptorCreateMatchingFontDescriptor(fontDescriptor, 0);
+    if (!fontDescriptor)
+        return QStringList();
+
     QCFType<CTFontRef> font = CTFontCreateWithFontDescriptor(fontDescriptor, 12.0, 0);
     if (!font) {
         qCWarning(lcQpaFonts) << "Failed to create fallback font for" << family;
@@ -472,6 +480,10 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
 {
     Q_UNUSED(style);
 
+    qCDebug(lcQpaFonts).nospace() << "Resolving fallbacks for"
+        << (!family.isEmpty() ? qPrintable(QLatin1String(" family '%1' with").arg(family)) : "")
+        << " style hint " << styleHint;
+
     QMacAutoReleasePool pool;
 
     QStringList fallbackList = fallbacksForFamily(family);
@@ -479,6 +491,9 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
     if (fallbackList.isEmpty()) {
         // We were not able to find a fallback for the specific family,
         // or the family was empty, so we fall back to the style hint.
+        if (!family.isEmpty())
+            qCDebug(lcQpaFonts) << "No fallbacks found. Using style hint instead";
+
         QString styleFamily = [styleHint]{
             switch (styleHint) {
                 case QFont::SansSerif: return QStringLiteral("Helvetica");
@@ -540,6 +555,8 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
 
     extern QStringList qt_sort_families_by_writing_system(QChar::Script, const QStringList &);
     fallbackList = qt_sort_families_by_writing_system(script, fallbackList);
+
+    qCDebug(lcQpaFonts).nospace() << "Resolved fallbacks ordered by script " << script << ": " << fallbackList;
 
     return fallbackList;
 }
