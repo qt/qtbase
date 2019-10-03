@@ -69,6 +69,7 @@ extern "C" {
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcEvdevTouch, "qt.qpa.input")
+Q_LOGGING_CATEGORY(qLcEvents, "qt.qpa.input.events")
 
 /* android (and perhaps some other linux-derived stuff) don't define everything
  * in linux/input.h, so we'll need to do that ourselves.
@@ -539,6 +540,9 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             if (m_typeB)
                 m_contacts[m_currentSlot].maj = m_currentData.maj;
         } else if (data->code == ABS_PRESSURE || data->code == ABS_MT_PRESSURE) {
+            if (Q_UNLIKELY(qLcEvents().isDebugEnabled()))
+                qCDebug(qLcEvents, "EV_ABS code 0x%x: pressure %d; bounding to [%d,%d]",
+                        data->code, data->value, hw_pressure_min, hw_pressure_max);
             m_currentData.pressure = qBound(hw_pressure_min, data->value, hw_pressure_max);
             if (m_typeB || m_singleTouch)
                 m_contacts[m_currentSlot].pressure = m_currentData.pressure;
@@ -781,6 +785,9 @@ void QEvdevTouchScreenData::reportPoints()
             tp.pressure = tp.state == Qt::TouchPointReleased ? 0 : 1;
         else
             tp.pressure = (tp.pressure - hw_pressure_min) / qreal(hw_pressure_max - hw_pressure_min);
+
+        if (Q_UNLIKELY(qLcEvents().isDebugEnabled()))
+            qCDebug(qLcEvents) << "reporting" << tp;
     }
 
     // Let qguiapp pick the target window.
