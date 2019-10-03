@@ -62,7 +62,7 @@ FlowLayout::FlowLayout(QGraphicsLayoutItem *parent) : QGraphicsLayout(parent)
 void FlowLayout::insertItem(int index, QGraphicsLayoutItem *item)
 {
     item->setParentLayoutItem(this);
-    if (index > m_items.count())
+    if (index > m_items.count() || index < 0)
         index = m_items.count();
     m_items.insert(index, item);
     invalidate();

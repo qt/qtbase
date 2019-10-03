@@ -21,7 +21,13 @@ defineReplace(qtLibraryTarget) {
 }
 
 defineReplace(qt5LibraryTarget) {
-   LIBRARY_NAME = $$qtLibraryTarget($$1)
+   android {
+        LIBRARY_NAME_PREFIX = $$2
+        LIBRARY_NAME_PREFIX = $$replace(LIBRARY_NAME_PREFIX, "//", "/")
+        LIBRARY_NAME_PREFIX = $$replace(LIBRARY_NAME_PREFIX, "/", "_")
+        LIBRARY_NAME = $$LIBRARY_NAME_PREFIX$$qtLibraryTarget($$1)
+        unset(LIBRARY_NAME_PREFIX)
+   } else: LIBRARY_NAME = $$qtLibraryTarget($$1)
    isEmpty(QMAKE_FRAMEWORK_BUNDLE_NAME) {
        # Insert the major version of Qt in the library name
        # unless it's a framework build.

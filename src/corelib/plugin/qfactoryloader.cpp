@@ -209,7 +209,7 @@ void QFactoryLoader::update()
 #if defined(Q_OS_WIN)
                     QStringList(QStringLiteral("*.dll")),
 #elif defined(Q_OS_ANDROID)
-                    QStringList(QLatin1String("plugins_%1_*.so").arg(d->suffix)),
+                    QStringList(QLatin1String("libplugins_%1_*.so").arg(d->suffix)),
 #endif
                     QDir::Files);
         QLibraryPrivate *library = 0;

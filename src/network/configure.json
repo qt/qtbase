@@ -98,6 +98,20 @@
                     "condition": "!config.msvc"
                 }
             ]
+        },
+        "gssapi": {
+            "label": "KRB5 GSSAPI Support",
+            "test": {
+                "main": [
+                  "gss_ctx_id_t ctx;",
+                  "gss_context_time(nullptr, ctx, nullptr);"
+                ]
+            },
+            "headers": [ "gssapi/gssapi.h" ],
+            "sources": [
+                { "type": "pkgConfig", "args": "krb5-gssapi" },
+                "-lgssapi_krb5"
+            ]
         }
     },
 
@@ -199,15 +213,6 @@
                 ]
             },
             "use": "openssl"
-        },
-        "gssapi": {
-            "label": "KRB5 GSSAPI support",
-            "type": "compile",
-            "test": {
-                "include": [ "gssapi/gssapi.h" ],
-                "main": ["gss_ctx_id_t ctx;"],
-                "qmake": "LIBS += -lgssapi_krb5"
-            }
         },
         "netlistmgr": {
             "label": "Network List Manager",
@@ -408,7 +413,7 @@
             "label": "GSSAPI",
             "purpose": "Enable SPNEGO authentication through GSSAPI",
             "section": "Networking",
-            "condition": "!config.win32 && tests.gssapi",
+            "condition": "!config.win32 && libs.gssapi",
             "output": [ "publicFeature", "feature" ]
         },
         "sspi": {

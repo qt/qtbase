@@ -791,37 +791,44 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
     \obsolete
     This constructor has been deprecated.
 */
-
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
             QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
     : QWheelEvent(pos, globalPos, pixelDelta, angleDelta, qt4Delta, qt4Orientation,
                   buttons, modifiers, Qt::NoScrollPhase)
 {}
+QT_WARNING_POP
 
 /*!
     \obsolete
     This constructor has been deprecated.
 */
-
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
             QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase)
     : QWheelEvent(pos, globalPos, pixelDelta, angleDelta, qt4Delta, qt4Orientation,
                   buttons, modifiers, phase, Qt::MouseEventNotSynthesized)
 {}
+QT_WARNING_POP
 
 /*!
     \obsolete
     This constructor has been deprecated.
 */
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
             QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase, Qt::MouseEventSource source)
     : QWheelEvent(pos, globalPos, pixelDelta, angleDelta, qt4Delta, qt4Orientation,
                   buttons, modifiers, phase, source, false)
 {}
+QT_WARNING_POP
 
 /*!
     \obsolete
@@ -3930,12 +3937,15 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     case QEvent::Wheel: {
         const QWheelEvent *we = static_cast<const QWheelEvent *>(e);
         dbg << "QWheelEvent(" << we->phase();
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED // delta() and orientation()
         if (!we->pixelDelta().isNull() || !we->angleDelta().isNull())
             dbg << ", pixelDelta=" << we->pixelDelta() << ", angleDelta=" << we->angleDelta();
 #if QT_DEPRECATED_SINCE(5, 14)
         else if (int qt4Delta = we->delta())
             dbg << ", delta=" << qt4Delta << ", orientation=" << we->orientation();
 #endif
+QT_WARNING_POP
         dbg << ')';
     }
         break;

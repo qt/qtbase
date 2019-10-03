@@ -82,6 +82,7 @@ namespace QtAndroid
     double scaledDensity();
     double pixelDensity();
     JavaVM *javaVM();
+    jobject assets();
     AAssetManager *assetManager();
     jclass applicationClass();
     jobject activity();

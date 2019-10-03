@@ -1013,6 +1013,25 @@ public class QtNative
         });
     }
 
+    private static String[] listAssetContent(android.content.res.AssetManager asset, String path) {
+        String [] list;
+        ArrayList<String> res = new ArrayList<String>();
+        try {
+            list = asset.list(path);
+            if (list.length > 0) {
+                for (String file : list) {
+                    try {
+                        String[] isDir = asset.list(path.length() > 0 ? path + "/" + file : file);
+                        if (isDir != null && isDir.length > 0)
+                            file += "/";
+                        res.add(file);
+                    } catch (Exception e) {}
+                }
+            }
+        } catch (Exception e) {}
+        return res.toArray(new String[res.size()]);
+    }
+
     // screen methods
     public static native void setDisplayMetrics(int screenWidthPixels,
                                                 int screenHeightPixels,

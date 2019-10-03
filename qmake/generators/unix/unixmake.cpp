@@ -448,15 +448,21 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                             opt.remove(suffixMarker); // Apply suffix by removing marker
                         }
                         for (const QMakeLocalFileName &dir : qAsConst(frameworkdirs)) {
+                            auto processPrlIfFound = [&](QString directory) {
+                                QString suffixedPrl = directory + opt;
+                                if (processPrlFile(suffixedPrl, true))
+                                    return true;
+                                if (hasSuffix) {
+                                    QString unsuffixedPrl = directory + frameworkName;
+                                    if (processPrlFile(unsuffixedPrl, true))
+                                        return true;
+                                }
+                                return false;
+                            };
                             QString frameworkDirectory = dir.local() + "/" + frameworkName + + ".framework/";
-                            QString suffixedPrl = frameworkDirectory + opt;
-                            if (processPrlFile(suffixedPrl, true))
+                            if (processPrlIfFound(frameworkDirectory + "Resources/")
+                             || processPrlIfFound(frameworkDirectory))
                                 break;
-                            if (hasSuffix) {
-                                QString unsuffixedPrl = frameworkDirectory + frameworkName;
-                                if (processPrlFile(unsuffixedPrl, true))
-                                    break;
-                            }
                         }
                     } else {
                         if (opt.length() == 10)

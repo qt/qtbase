@@ -116,7 +116,6 @@ struct Options
         : helpRequested(false)
         , verbose(false)
         , timing(false)
-        , generateAssetsFileList(true)
         , build(true)
         , auxMode(false)
         , deploymentMechanism(Bundled)
@@ -146,7 +145,6 @@ struct Options
     bool helpRequested;
     bool verbose;
     bool timing;
-    bool generateAssetsFileList;
     bool build;
     bool auxMode;
     ActionTimer timer;
@@ -314,10 +312,8 @@ static QString shellQuote(const QString &arg)
 
 QString architecureFromName(const QString &name)
 {
-    const QFileInfo fi(name);
-    const QString extractedFileName = fi.fileName();
-    QRegExp architecture(QStringLiteral(".*_(.*)\\.so"));
-    if (!architecture.exactMatch(extractedFileName))
+    QRegExp architecture(QStringLiteral(".*_(armeabi-v7a|arm64-v8a|x86|x86_64).so"));
+    if (!architecture.exactMatch(name))
         return {};
     return architecture.capturedTexts().last();
 }
@@ -523,8 +519,6 @@ Options parseOptions()
             options.protectedAuthenticationPath = true;
         } else if (argument.compare(QLatin1String("--jarsigner"), Qt::CaseInsensitive) == 0) {
             options.jarSigner = true;
-        } else if (argument.compare(QLatin1String("--no-generated-assets-cache"), Qt::CaseInsensitive) == 0) {
-            options.generateAssetsFileList = false;
         } else if (argument.compare(QLatin1String("--aux-mode"), Qt::CaseInsensitive) == 0) {
             options.auxMode = true;
         }
@@ -1177,7 +1171,7 @@ bool copyAndroidExtraResources(Options *options)
             } else {
                 if (!checkArchitecture(*options, originFile))
                     continue;
-                destinationFile = libsDir + QLatin1String("/lib") + QString(resourceDir.dirName() + QLatin1Char('/') + resourceFile).replace(QLatin1Char('/'), QLatin1Char('_'));
+                destinationFile = libsDir + resourceFile;
                 options->archExtraPlugins[options->currentArchitecture] += resourceFile;
             }
             if (!copyFileIfNewer(originFile, destinationFile, *options))
@@ -1244,8 +1238,6 @@ bool updateLibsXml(Options *options)
     }
 
     QString qtLibs;
-    QString bundledInLibs;
-    QString bundledInAssets;
     QString allLocalLibs;
     QString extraLibs;
 
@@ -1258,33 +1250,6 @@ bool updateLibsXml(Options *options)
                 QString s = bundledFile.second.mid(sizeof("lib/lib") - 1);
                 s.chop(sizeof(".so") - 1);
                 qtLibs += QLatin1String("        <item>%1;%2</item>\n").arg(it.key(), s);
-            } else if (bundledFile.first.startsWith(libsPath)) {
-                QString s = bundledFile.first.mid(libsPath.length());
-                bundledInLibs += QString::fromLatin1("        <item>%1;%2:%3</item>\n")
-                        .arg(it.key(), s, bundledFile.second);
-            } else if (bundledFile.first.startsWith(QLatin1String("assets/"))) {
-                QString s = bundledFile.first.mid(sizeof("assets/") - 1);
-                bundledInAssets += QString::fromLatin1("        <item>%1:%2</item>\n")
-                        .arg(s, bundledFile.second);
-            }
-        }
-
-        if (!options->archExtraPlugins[it.key()].isEmpty()) {
-            for (const QString &extraRes : options->archExtraPlugins[it.key()]) {
-                QDir resourceDir(extraRes);
-                const QStringList files = allFilesInside(resourceDir, resourceDir);
-                for (const QString &file : files) {
-                    QString destinationPath = resourceDir.dirName() + QLatin1Char('/') + file;
-                    if (!file.endsWith(QLatin1String(".so"))) {
-                        bundledInAssets += QLatin1String("        <item>%1:%1</item>\n")
-                            .arg(destinationPath);
-                    } else {
-                        bundledInLibs += QLatin1String("        <item>%1;lib%2:%3</item>\n")
-                                .arg(it.key(),
-                                     QString(destinationPath).replace(QLatin1Char('/'), QLatin1Char('_')),
-                                     destinationPath);
-                    }
-                }
             }
         }
 
@@ -1330,20 +1295,19 @@ bool updateLibsXml(Options *options)
             if (options->verbose)
                 fprintf(stdout, "  -- Using platform plugin %s\n", qPrintable(plugin));
         }
-        allLocalLibs += QLatin1String("        <item>%1;%2</item>\n").arg(it.key(), localLibs.join(QLatin1Char(':'))
-                                                                                              .replace(QLatin1String("lib/"), QString{})
-                                                                                              .replace(QLatin1Char('/'), QLatin1Char('_')));
+
+        // remove all paths
+        for (auto &lib : localLibs) {
+            if (lib.endsWith(QLatin1String(".so")))
+                lib = lib.mid(lib.lastIndexOf(QLatin1Char('/')) + 1);
+        }
+        allLocalLibs += QLatin1String("        <item>%1;%2</item>\n").arg(it.key(), localLibs.join(QLatin1Char(':')));
     }
 
     QHash<QString, QString> replacements;
     replacements[QStringLiteral("<!-- %%INSERT_QT_LIBS%% -->")] += qtLibs.trimmed();
     replacements[QStringLiteral("<!-- %%INSERT_LOCAL_LIBS%% -->")] = allLocalLibs.trimmed();
     replacements[QStringLiteral("<!-- %%INSERT_EXTRA_LIBS%% -->")] = extraLibs.trimmed();
-
-    if (options->deploymentMechanism == Options::Bundled) {
-        replacements[QStringLiteral("<!-- %%INSERT_BUNDLED_IN_LIB%% -->")] += bundledInLibs.trimmed();
-        replacements[QStringLiteral("<!-- %%INSERT_BUNDLED_IN_ASSETS%% -->")] += bundledInAssets.trimmed();
-    }
 
     if (!updateFile(fileName, replacements))
         return false;
@@ -1869,6 +1833,70 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
     return true;
 }
 
+bool runCommand(const Options &options, const QString &command)
+{
+    if (options.verbose)
+        fprintf(stdout, "Running command '%s'\n", qPrintable(command));
+
+    FILE *runCommand = openProcess(command);
+    if (runCommand == nullptr) {
+        fprintf(stderr, "Cannot run command '%s'\n", qPrintable(command));
+        return false;
+    }
+    char buffer[4096];
+    while (fgets(buffer, sizeof(buffer), runCommand) != nullptr) {
+        if (options.verbose)
+            fprintf(stdout, "%s", buffer);
+    }
+    pclose(runCommand);
+    fflush(stdout);
+    fflush(stderr);
+    return true;
+}
+
+bool createRcc(const Options &options)
+{
+    auto assetsDir = QLatin1String("%1/assets").arg(options.outputDirectory);
+    if (!QDir{QLatin1String("%1/android_rcc_bundle").arg(assetsDir)}.exists()) {
+        fprintf(stdout, "Skipping createRCC\n");
+        return true;
+    }
+
+    if (options.verbose)
+        fprintf(stdout, "Create rcc bundle.\n");
+
+    QString rcc = options.qtInstallDirectory + QLatin1String("/bin/rcc");
+#if defined(Q_OS_WIN32)
+    rcc += QLatin1String(".exe");
+#endif
+
+    if (!QFile::exists(rcc)) {
+        fprintf(stderr, "rcc not found: %s\n", qPrintable(rcc));
+        return false;
+    }
+    auto currentDir = QDir::currentPath();
+    if (!QDir::setCurrent(QLatin1String("%1/android_rcc_bundle").arg(assetsDir))) {
+        fprintf(stderr, "Cannot set current dir to: %s\n", qPrintable(QLatin1String("%1/android_rcc_bundle").arg(assetsDir)));
+        return false;
+    }
+
+    bool res = runCommand(options, QLatin1String("%1 --project -o %2").arg(rcc, shellQuote(QLatin1String("%1/android_rcc_bundle.qrc").arg(assetsDir))));
+    if (!res)
+        return false;
+
+    QFile::rename(QLatin1String("%1/android_rcc_bundle.qrc").arg(assetsDir), QLatin1String("%1/android_rcc_bundle/android_rcc_bundle.qrc").arg(assetsDir));
+
+    res = runCommand(options, QLatin1String("%1 %2 --binary -o %3 android_rcc_bundle.qrc").arg(rcc, shellQuote(QLatin1String("--root=/android_rcc_bundle/")),
+                                                                                               shellQuote(QLatin1String("%1/android_rcc_bundle.rcc").arg(assetsDir))));
+    if (!QDir::setCurrent(currentDir)) {
+        fprintf(stderr, "Cannot set current dir to: %s\n", qPrintable(currentDir));
+        return false;
+    }
+    QFile::remove(QLatin1String("%1/android_rcc_bundle.qrc").arg(assetsDir));
+    QDir{QLatin1String("%1/android_rcc_bundle").arg(assetsDir)}.removeRecursively();
+    return res;
+}
+
 bool readDependencies(Options *options)
 {
     if (options->verbose)
@@ -2023,7 +2051,7 @@ bool copyQtFiles(Options *options)
     QString libsDirectory = QLatin1String("libs/");
 
     // Copy other Qt dependencies
-    auto assetsDestinationDirectory = QLatin1String("assets/--Added-by-androiddeployqt--/");
+    auto assetsDestinationDirectory = QLatin1String("assets/android_rcc_bundle/");
     for (const QtDependency &qtDependency : qAsConst(options->qtDependencies[options->currentArchitecture])) {
         QString sourceFileName = qtDependency.absolutePath;
         QString destinationFileName;
@@ -2033,7 +2061,7 @@ bool copyQtFiles(Options *options)
             if (qtDependency.relativePath.startsWith(QLatin1String("lib/"))) {
                 garbledFileName = qtDependency.relativePath.mid(sizeof("lib/") - 1);
             } else {
-                garbledFileName = QString(qtDependency.relativePath).replace(QLatin1Char('/'), QLatin1Char('_'));
+                garbledFileName = qtDependency.relativePath.mid(qtDependency.relativePath.lastIndexOf(QLatin1Char('/')) + 1);
             }
             destinationFileName = libsDirectory + options->currentArchitecture + QLatin1Char('/') + garbledFileName;
         } else if (qtDependency.relativePath.startsWith(QLatin1String("jar/"))) {
@@ -2679,57 +2707,6 @@ bool signPackage(const Options &options)
     return apkSignerRunner() && QFile::remove(packagePath(options, UnsignedAPK));
 }
 
-bool generateAssetsFileList(const Options &options)
-{
-    if (options.verbose)
-        fprintf(stdout, "Pregenerating entry list for assets file engine.\n");
-
-    QString assetsPath = options.outputDirectory + QLatin1String("/assets/");
-    QString addedByAndroidDeployQtPath = assetsPath + QLatin1String("--Added-by-androiddeployqt--/");
-    if (!QDir().mkpath(addedByAndroidDeployQtPath)) {
-        fprintf(stderr, "Failed to create directory '%s'", qPrintable(addedByAndroidDeployQtPath));
-        return false;
-    }
-
-    QFile file(addedByAndroidDeployQtPath + QLatin1String("/qt_cache_pregenerated_file_list"));
-    if (file.open(QIODevice::WriteOnly)) {
-        QDirIterator dirIterator(assetsPath,
-                                 QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot,
-                                 QDirIterator::Subdirectories);
-
-        QHash<QString, QStringList> directoryContents;
-        while (dirIterator.hasNext()) {
-            const QString name = dirIterator.next().mid(assetsPath.length());
-
-            int slashIndex = name.lastIndexOf(QLatin1Char('/'));
-            QString pathName = slashIndex >= 0 ? name.left(slashIndex) : QStringLiteral("/");
-            QString fileName = slashIndex >= 0 ? name.mid(pathName.length() + 1) : name;
-
-            if (!fileName.isEmpty() && dirIterator.fileInfo().isDir() && !fileName.endsWith(QLatin1Char('/')))
-                fileName += QLatin1Char('/');
-
-            if (fileName.isEmpty() && !directoryContents.contains(pathName))
-                directoryContents[pathName] = QStringList();
-            else if (!fileName.isEmpty())
-                directoryContents[pathName].append(fileName);
-        }
-
-        QDataStream stream(&file);
-        stream.setVersion(QDataStream::Qt_5_3);
-        for (auto it = directoryContents.cbegin(), end = directoryContents.cend(); it != end; ++it) {
-            const QStringList &entryList = it.value();
-            stream << it.key() << entryList.size();
-            for (const QString &entry : entryList)
-                stream << entry;
-        }
-    } else {
-        fprintf(stderr, "Pregenerating entry list for assets file engine failed!\n");
-        return false;
-    }
-
-    return true;
-}
-
 enum ErrorCode
 {
     Success,
@@ -2747,9 +2724,9 @@ enum ErrorCode
     CannotBuildAndroidProject = 14,
     CannotSignPackage = 15,
     CannotInstallApk = 16,
-    CannotGenerateAssetsFileList = 18,
     CannotCopyAndroidExtraResources = 19,
-    CannotCopyApk = 20
+    CannotCopyApk = 20,
+    CannotCreateRcc = 21
 };
 
 int main(int argc, char *argv[])
@@ -2846,13 +2823,15 @@ int main(int argc, char *argv[])
         }
     }
 
+    if (!createRcc(options))
+        return CannotCreateRcc;
+
     if (options.auxMode) {
         if (!updateAndroidFiles(options))
             return CannotUpdateAndroidFiles;
-        if (options.generateAssetsFileList && !generateAssetsFileList(options))
-            return CannotGenerateAssetsFileList;
         return 0;
     }
+
 
     if (options.build) {
         if (!copyAndroidSources(options))
@@ -2863,9 +2842,6 @@ int main(int argc, char *argv[])
 
         if (!updateAndroidFiles(options))
             return CannotUpdateAndroidFiles;
-
-        if (options.generateAssetsFileList && !generateAssetsFileList(options))
-            return CannotGenerateAssetsFileList;
 
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %d ms: Updated files\n", options.timer.elapsed());
