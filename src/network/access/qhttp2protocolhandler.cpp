@@ -1339,14 +1339,13 @@ void QHttp2ProtocolHandler::markAsReset(quint32 streamID)
 quint32 QHttp2ProtocolHandler::popStreamToResume()
 {
     quint32 streamID = connectionStreamID;
-    const int nQ = sizeof suspendedStreams / sizeof suspendedStreams[0];
     using QNR = QHttpNetworkRequest;
-    const QNR::Priority ranks[nQ] = {QNR::HighPriority,
-                                     QNR::NormalPriority,
-                                     QNR::LowPriority};
+    const QNR::Priority ranks[] = {QNR::HighPriority,
+                                   QNR::NormalPriority,
+                                   QNR::LowPriority};
 
-    for (int i = 0; i < nQ; ++i) {
-        auto &queue = suspendedStreams[ranks[i]];
+    for (const QNR::Priority rank : ranks) {
+        auto &queue = suspendedStreams[rank];
         auto it = queue.begin();
         for (; it != queue.end(); ++it) {
             if (!activeStreams.contains(*it))
@@ -1367,9 +1366,7 @@ quint32 QHttp2ProtocolHandler::popStreamToResume()
 
 void QHttp2ProtocolHandler::removeFromSuspended(quint32 streamID)
 {
-    const int nQ = sizeof suspendedStreams / sizeof suspendedStreams[0];
-    for (int i = 0; i < nQ; ++i) {
-        auto &q = suspendedStreams[i];
+    for (auto &q : suspendedStreams) {
         q.erase(std::remove(q.begin(), q.end(), streamID), q.end());
     }
 }

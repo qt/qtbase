@@ -498,12 +498,12 @@ QVector<int> QVulkanWindow::supportedSampleCounts()
     VkSampleCountFlags depth = limits->framebufferDepthSampleCounts;
     VkSampleCountFlags stencil = limits->framebufferStencilSampleCounts;
 
-    for (size_t i = 0; i < sizeof(qvk_sampleCounts) / sizeof(qvk_sampleCounts[0]); ++i) {
-        if ((color & qvk_sampleCounts[i].mask)
-                && (depth & qvk_sampleCounts[i].mask)
-                && (stencil & qvk_sampleCounts[i].mask))
+    for (const auto &qvk_sampleCount : qvk_sampleCounts) {
+        if ((color & qvk_sampleCount.mask)
+                && (depth & qvk_sampleCount.mask)
+                && (stencil & qvk_sampleCount.mask))
         {
-            result.append(qvk_sampleCounts[i].count);
+            result.append(qvk_sampleCount.count);
         }
     }
 
@@ -547,9 +547,9 @@ void QVulkanWindow::setSampleCount(int sampleCount)
         return;
     }
 
-    for (size_t i = 0; i < sizeof(qvk_sampleCounts) / sizeof(qvk_sampleCounts[0]); ++i) {
-        if (qvk_sampleCounts[i].count == sampleCount) {
-            d->sampleCount = qvk_sampleCounts[i].mask;
+    for (const auto &qvk_sampleCount : qvk_sampleCounts) {
+        if (qvk_sampleCount.count == sampleCount) {
+            d->sampleCount = qvk_sampleCount.mask;
             return;
         }
     }
