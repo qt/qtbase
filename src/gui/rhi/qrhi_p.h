@@ -1355,6 +1355,12 @@ struct Q_GUI_EXPORT QRhiReadbackResult
     QByteArray data;
 }; // non-movable due to the std::function
 
+struct Q_GUI_EXPORT QRhiBufferReadbackResult
+{
+    std::function<void()> completed = nullptr;
+    QByteArray data;
+};
+
 class Q_GUI_EXPORT QRhiResourceUpdateBatch
 {
 public:
@@ -1367,6 +1373,7 @@ public:
     void updateDynamicBuffer(QRhiBuffer *buf, int offset, int size, const void *data);
     void uploadStaticBuffer(QRhiBuffer *buf, int offset, int size, const void *data);
     void uploadStaticBuffer(QRhiBuffer *buf, const void *data);
+    void readBackBuffer(QRhiBuffer *buf, int offset, int size, QRhiBufferReadbackResult *result);
     void uploadTexture(QRhiTexture *tex, const QRhiTextureUploadDescription &desc);
     void uploadTexture(QRhiTexture *tex, const QImage &image);
     void copyTexture(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc = QRhiTextureCopyDescription());
@@ -1428,7 +1435,8 @@ public:
         VertexShaderPointSize,
         BaseVertex,
         BaseInstance,
-        TriangleFanTopology
+        TriangleFanTopology,
+        ReadBackNonUniformBuffer
     };
 
     enum BeginFrameFlag {

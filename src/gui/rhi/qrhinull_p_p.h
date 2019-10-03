@@ -59,6 +59,8 @@ struct QNullBuffer : public QRhiBuffer
     ~QNullBuffer();
     void release() override;
     bool build() override;
+
+    QByteArray data;
 };
 
 struct QNullRenderBuffer : public QRhiRenderBuffer

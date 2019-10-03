@@ -71,6 +71,8 @@ private slots:
     void create();
     void nativeHandles_data();
     void nativeHandles();
+    void resourceUpdateBatchBuffer_data();
+    void resourceUpdateBatchBuffer();
 
 private:
     struct {
@@ -103,8 +105,25 @@ void tst_QRhi::initTestCase()
 #endif
 
 #ifdef TST_VK
+#ifndef Q_OS_ANDROID
+    vulkanInstance.setLayers({ QByteArrayLiteral("VK_LAYER_LUNARG_standard_validation") });
+#else
+    vulkanInstance.setLayers({ QByteArrayLiteral("VK_LAYER_GOOGLE_threading"),
+                               QByteArrayLiteral("VK_LAYER_LUNARG_parameter_validation"),
+                               QByteArrayLiteral("VK_LAYER_LUNARG_object_tracker"),
+                               QByteArrayLiteral("VK_LAYER_LUNARG_core_validation"),
+                               QByteArrayLiteral("VK_LAYER_LUNARG_image"),
+                               QByteArrayLiteral("VK_LAYER_LUNARG_swapchain"),
+                               QByteArrayLiteral("VK_LAYER_GOOGLE_unique_objects") });
+#endif
+    vulkanInstance.setExtensions(QByteArrayList()
+                                 << "VK_KHR_get_physical_device_properties2");
     vulkanInstance.create();
     initParams.vk.inst = &vulkanInstance;
+#endif
+
+#ifdef TST_D3D11
+    initParams.d3d.enableDebugLayer = true;
 #endif
 }
 
@@ -248,7 +267,9 @@ void tst_QRhi::create()
             QRhi::WideLines,
             QRhi::VertexShaderPointSize,
             QRhi::BaseVertex,
-            QRhi::BaseInstance
+            QRhi::BaseInstance,
+            QRhi::TriangleFanTopology,
+            QRhi::ReadBackNonUniformBuffer
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);
@@ -480,6 +501,92 @@ void tst_QRhi::nativeHandles()
 #endif
         default:
             Q_ASSERT(false);
+        }
+    }
+}
+
+void tst_QRhi::resourceUpdateBatchBuffer_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchBuffer()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing resource updates");
+
+    const int bufferSize = 23;
+    const QByteArray a(bufferSize, 'A');
+    const QByteArray b(bufferSize, 'B');
+
+    // dynamic buffer, updates, readback
+    {
+        QScopedPointer<QRhiBuffer> dynamicBuffer(rhi->newBuffer(QRhiBuffer::Dynamic, QRhiBuffer::UniformBuffer, bufferSize));
+        QVERIFY(dynamicBuffer->build());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        QVERIFY(batch);
+
+        batch->updateDynamicBuffer(dynamicBuffer.data(), 10, bufferSize - 10, a.constData());
+        batch->updateDynamicBuffer(dynamicBuffer.data(), 0, 12, b.constData());
+
+        QRhiBufferReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch->readBackBuffer(dynamicBuffer.data(), 5, 10, &readResult);
+
+        QRhiCommandBuffer *cb = nullptr;
+        QRhi::FrameOpResult result = rhi->beginOffscreenFrame(&cb);
+        QVERIFY(result == QRhi::FrameOpSuccess);
+        QVERIFY(cb);
+        cb->resourceUpdate(batch);
+        rhi->endOffscreenFrame();
+
+        // Offscreen frames are synchronous, so the readback must have
+        // completed at this point. With swapchain frames this would not be the
+        // case.
+        QVERIFY(readCompleted);
+        QVERIFY(readResult.data.size() == 10);
+        QCOMPARE(readResult.data.left(7), QByteArrayLiteral("BBBBBBB"));
+        QCOMPARE(readResult.data.mid(7), QByteArrayLiteral("AAA"));
+    }
+
+    // static buffer, updates, readback
+    {
+        QScopedPointer<QRhiBuffer> dynamicBuffer(rhi->newBuffer(QRhiBuffer::Static, QRhiBuffer::VertexBuffer, bufferSize));
+        QVERIFY(dynamicBuffer->build());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        QVERIFY(batch);
+
+        batch->uploadStaticBuffer(dynamicBuffer.data(), 10, bufferSize - 10, a.constData());
+        batch->uploadStaticBuffer(dynamicBuffer.data(), 0, 12, b.constData());
+
+        QRhiBufferReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+
+        if (rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer))
+            batch->readBackBuffer(dynamicBuffer.data(), 5, 10, &readResult);
+
+        QRhiCommandBuffer *cb = nullptr;
+        QRhi::FrameOpResult result = rhi->beginOffscreenFrame(&cb);
+        QVERIFY(result == QRhi::FrameOpSuccess);
+        QVERIFY(cb);
+        cb->resourceUpdate(batch);
+        rhi->endOffscreenFrame();
+
+        if (rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer)) {
+            QVERIFY(readCompleted);
+            QVERIFY(readResult.data.size() == 10);
+            QCOMPARE(readResult.data.left(7), QByteArrayLiteral("BBBBBBB"));
+            QCOMPARE(readResult.data.mid(7), QByteArrayLiteral("AAA"));
+        } else {
+            qDebug("Skipping verifying buffer contents because readback is not supported");
         }
     }
 }

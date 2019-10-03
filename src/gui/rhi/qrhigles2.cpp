@@ -492,6 +492,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
     else
         caps.textureCompareMode = true;
 
+    caps.mapBuffer = f->hasOpenGLExtension(QOpenGLExtensions::MapBuffer);
+
     if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         f->glEnable(GL_POINT_SPRITE);
@@ -734,6 +736,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return false; // not in ES 3.2, so won't bother
     case QRhi::TriangleFanTopology:
         return true;
+    case QRhi::ReadBackNonUniformBuffer:
+        return !caps.gles || caps.mapBuffer;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1417,65 +1421,82 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
     QRhiResourceUpdateBatchPrivate *ud = QRhiResourceUpdateBatchPrivate::get(resourceUpdates);
 
-    for (const QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate &u : ud->dynamicBufferUpdates) {
-        QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, u.buf);
-        Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
-        if (bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer)) {
-            memcpy(bufD->ubuf.data() + u.offset, u.data.constData(), size_t(u.data.size()));
-        } else {
-            trackedBufferBarrier(cbD, bufD, QGles2Buffer::AccessUpdate);
-            QGles2CommandBuffer::Command cmd;
-            cmd.cmd = QGles2CommandBuffer::Command::BufferSubData;
-            cmd.args.bufferSubData.target = bufD->targetForDataOps;
-            cmd.args.bufferSubData.buffer = bufD->buffer;
-            cmd.args.bufferSubData.offset = u.offset;
-            cmd.args.bufferSubData.size = u.data.size();
-            cmd.args.bufferSubData.data = cbD->retainData(u.data);
-            cbD->commands.append(cmd);
-        }
-    }
-
-    for (const QRhiResourceUpdateBatchPrivate::StaticBufferUpload &u : ud->staticBufferUploads) {
-        QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, u.buf);
-        Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
-        Q_ASSERT(u.offset + u.data.size() <= bufD->m_size);
-        if (bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer)) {
-            memcpy(bufD->ubuf.data() + u.offset, u.data.constData(), size_t(u.data.size()));
-        } else {
-            trackedBufferBarrier(cbD, bufD, QGles2Buffer::AccessUpdate);
-            QGles2CommandBuffer::Command cmd;
-            cmd.cmd = QGles2CommandBuffer::Command::BufferSubData;
-            cmd.args.bufferSubData.target = bufD->targetForDataOps;
-            cmd.args.bufferSubData.buffer = bufD->buffer;
-            cmd.args.bufferSubData.offset = u.offset;
-            cmd.args.bufferSubData.size = u.data.size();
-            cmd.args.bufferSubData.data = cbD->retainData(u.data);
-            cbD->commands.append(cmd);
+    for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : ud->bufferOps) {
+        if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::DynamicUpdate) {
+            QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, u.buf);
+            Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
+            if (bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer)) {
+                memcpy(bufD->ubuf.data() + u.offset, u.data.constData(), size_t(u.data.size()));
+            } else {
+                trackedBufferBarrier(cbD, bufD, QGles2Buffer::AccessUpdate);
+                QGles2CommandBuffer::Command cmd;
+                cmd.cmd = QGles2CommandBuffer::Command::BufferSubData;
+                cmd.args.bufferSubData.target = bufD->targetForDataOps;
+                cmd.args.bufferSubData.buffer = bufD->buffer;
+                cmd.args.bufferSubData.offset = u.offset;
+                cmd.args.bufferSubData.size = u.data.size();
+                cmd.args.bufferSubData.data = cbD->retainData(u.data);
+                cbD->commands.append(cmd);
+            }
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload) {
+            QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, u.buf);
+            Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
+            Q_ASSERT(u.offset + u.data.size() <= bufD->m_size);
+            if (bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer)) {
+                memcpy(bufD->ubuf.data() + u.offset, u.data.constData(), size_t(u.data.size()));
+            } else {
+                trackedBufferBarrier(cbD, bufD, QGles2Buffer::AccessUpdate);
+                QGles2CommandBuffer::Command cmd;
+                cmd.cmd = QGles2CommandBuffer::Command::BufferSubData;
+                cmd.args.bufferSubData.target = bufD->targetForDataOps;
+                cmd.args.bufferSubData.buffer = bufD->buffer;
+                cmd.args.bufferSubData.offset = u.offset;
+                cmd.args.bufferSubData.size = u.data.size();
+                cmd.args.bufferSubData.data = cbD->retainData(u.data);
+                cbD->commands.append(cmd);
+            }
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {
+            QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, u.buf);
+            if (bufD->m_usage.testFlag(QRhiBuffer::UniformBuffer)) {
+                u.result->data.resize(u.readSize);
+                memcpy(u.result->data.data(), bufD->ubuf.constData() + u.offset, size_t(u.readSize));
+                if (u.result->completed)
+                    u.result->completed();
+            } else {
+                QGles2CommandBuffer::Command cmd;
+                cmd.cmd = QGles2CommandBuffer::Command::GetBufferSubData;
+                cmd.args.getBufferSubData.result = u.result;
+                cmd.args.getBufferSubData.target = bufD->targetForDataOps;
+                cmd.args.getBufferSubData.buffer = bufD->buffer;
+                cmd.args.getBufferSubData.offset = u.offset;
+                cmd.args.getBufferSubData.size = u.readSize;
+                cbD->commands.append(cmd);
+            }
         }
     }
 
     for (const QRhiResourceUpdateBatchPrivate::TextureOp &u : ud->textureOps) {
         if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Upload) {
-            QGles2Texture *texD = QRHI_RES(QGles2Texture, u.upload.tex);
+            QGles2Texture *texD = QRHI_RES(QGles2Texture, u.dst);
             for (int layer = 0; layer < QRhi::MAX_LAYERS; ++layer) {
                 for (int level = 0; level < QRhi::MAX_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.upload.subresDesc[layer][level]))
+                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
                         enqueueSubresUpload(texD, cbD, layer, level, subresDesc);
                 }
             }
             texD->specified = true;
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Copy) {
-            Q_ASSERT(u.copy.src && u.copy.dst);
-            QGles2Texture *srcD = QRHI_RES(QGles2Texture, u.copy.src);
-            QGles2Texture *dstD = QRHI_RES(QGles2Texture, u.copy.dst);
+            Q_ASSERT(u.src && u.dst);
+            QGles2Texture *srcD = QRHI_RES(QGles2Texture, u.src);
+            QGles2Texture *dstD = QRHI_RES(QGles2Texture, u.dst);
 
             trackedImageBarrier(cbD, srcD, QGles2Texture::AccessRead);
             trackedImageBarrier(cbD, dstD, QGles2Texture::AccessUpdate);
 
-            const QSize size = u.copy.desc.pixelSize().isEmpty() ? srcD->m_pixelSize : u.copy.desc.pixelSize();
+            const QSize size = u.desc.pixelSize().isEmpty() ? srcD->m_pixelSize : u.desc.pixelSize();
             // do not translate coordinates, even if sp is bottom-left from gl's pov
-            const QPoint sp = u.copy.desc.sourceTopLeft();
-            const QPoint dp = u.copy.desc.destinationTopLeft();
+            const QPoint sp = u.desc.sourceTopLeft();
+            const QPoint dp = u.desc.destinationTopLeft();
 
             const GLenum srcFaceTargetBase = srcD->m_flags.testFlag(QRhiTexture::CubeMap)
                     ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : srcD->target;
@@ -1485,16 +1506,16 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QGles2CommandBuffer::Command cmd;
             cmd.cmd = QGles2CommandBuffer::Command::CopyTex;
 
-            cmd.args.copyTex.srcFaceTarget = srcFaceTargetBase + uint(u.copy.desc.sourceLayer());
+            cmd.args.copyTex.srcFaceTarget = srcFaceTargetBase + uint(u.desc.sourceLayer());
             cmd.args.copyTex.srcTexture = srcD->texture;
-            cmd.args.copyTex.srcLevel = u.copy.desc.sourceLevel();
+            cmd.args.copyTex.srcLevel = u.desc.sourceLevel();
             cmd.args.copyTex.srcX = sp.x();
             cmd.args.copyTex.srcY = sp.y();
 
             cmd.args.copyTex.dstTarget = dstD->target;
             cmd.args.copyTex.dstTexture = dstD->texture;
-            cmd.args.copyTex.dstFaceTarget = dstFaceTargetBase + uint(u.copy.desc.destinationLayer());
-            cmd.args.copyTex.dstLevel = u.copy.desc.destinationLevel();
+            cmd.args.copyTex.dstFaceTarget = dstFaceTargetBase + uint(u.desc.destinationLayer());
+            cmd.args.copyTex.dstLevel = u.desc.destinationLevel();
             cmd.args.copyTex.dstX = dp.x();
             cmd.args.copyTex.dstY = dp.y();
 
@@ -1505,8 +1526,8 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Read) {
             QGles2CommandBuffer::Command cmd;
             cmd.cmd = QGles2CommandBuffer::Command::ReadPixels;
-            cmd.args.readPixels.result = u.read.result;
-            QGles2Texture *texD = QRHI_RES(QGles2Texture, u.read.rb.texture());
+            cmd.args.readPixels.result = u.result;
+            QGles2Texture *texD = QRHI_RES(QGles2Texture, u.rb.texture());
             if (texD)
                 trackedImageBarrier(cbD, texD, QGles2Texture::AccessRead);
             cmd.args.readPixels.texture = texD ? texD->texture : 0;
@@ -1516,12 +1537,12 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 cmd.args.readPixels.format = texD->m_format;
                 const GLenum faceTargetBase = texD->m_flags.testFlag(QRhiTexture::CubeMap)
                         ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : texD->target;
-                cmd.args.readPixels.readTarget = faceTargetBase + uint(u.read.rb.layer());
-                cmd.args.readPixels.level = u.read.rb.level();
+                cmd.args.readPixels.readTarget = faceTargetBase + uint(u.rb.layer());
+                cmd.args.readPixels.level = u.rb.level();
             }
             cbD->commands.append(cmd);
-        } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::MipGen) {
-            QGles2Texture *texD = QRHI_RES(QGles2Texture, u.mipgen.tex);
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::GenMips) {
+            QGles2Texture *texD = QRHI_RES(QGles2Texture, u.dst);
             trackedImageBarrier(cbD, texD, QGles2Texture::AccessFramebuffer);
             QGles2CommandBuffer::Command cmd;
             cmd.cmd = QGles2CommandBuffer::Command::GenMip;
@@ -2079,6 +2100,32 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             f->glBindBuffer(cmd.args.bufferSubData.target, cmd.args.bufferSubData.buffer);
             f->glBufferSubData(cmd.args.bufferSubData.target, cmd.args.bufferSubData.offset, cmd.args.bufferSubData.size,
                                cmd.args.bufferSubData.data);
+            break;
+        case QGles2CommandBuffer::Command::GetBufferSubData:
+        {
+            QRhiBufferReadbackResult *result = cmd.args.getBufferSubData.result;
+            f->glBindBuffer(cmd.args.getBufferSubData.target, cmd.args.getBufferSubData.buffer);
+            if (caps.gles) {
+                if (caps.mapBuffer) {
+                    void *p = f->glMapBuffer(cmd.args.getBufferSubData.target, GL_READ_ONLY);
+                    if (p) {
+                        result->data.resize(cmd.args.getBufferSubData.size);
+                        memcpy(result->data.data(),
+                               reinterpret_cast<char *>(p) + cmd.args.getBufferSubData.offset,
+                               size_t(cmd.args.getBufferSubData.size));
+                        f->glUnmapBuffer(cmd.args.getBufferSubData.target);
+                    }
+                }
+            } else {
+                result->data.resize(cmd.args.getBufferSubData.size);
+                f->glGetBufferSubData(cmd.args.getBufferSubData.target,
+                                      cmd.args.getBufferSubData.offset,
+                                      cmd.args.getBufferSubData.size,
+                                      result->data.data());
+            }
+            if (result->completed)
+                result->completed();
+        }
             break;
         case QGles2CommandBuffer::Command::CopyTex:
         {

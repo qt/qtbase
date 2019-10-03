@@ -389,13 +389,28 @@ void QRhiNull::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *re
 {
     Q_UNUSED(cb);
     QRhiResourceUpdateBatchPrivate *ud = QRhiResourceUpdateBatchPrivate::get(resourceUpdates);
+    for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : ud->bufferOps) {
+        if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::DynamicUpdate
+                || u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload)
+        {
+            QNullBuffer *bufD = QRHI_RES(QNullBuffer, u.buf);
+            memcpy(bufD->data.data() + u.offset, u.data.constData(), size_t(u.data.size()));
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {
+            QRhiBufferReadbackResult *result = u.result;
+            result->data.resize(u.readSize);
+            QNullBuffer *bufD = QRHI_RES(QNullBuffer, u.buf);
+            memcpy(result->data.data(), bufD->data.constData() + u.offset, size_t(u.readSize));
+            if (result->completed)
+                result->completed();
+        }
+    }
     for (const QRhiResourceUpdateBatchPrivate::TextureOp &u : ud->textureOps) {
         if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Read) {
-            QRhiReadbackResult *result = u.read.result;
-            QRhiTexture *tex = u.read.rb.texture();
+            QRhiReadbackResult *result = u.result;
+            QRhiTexture *tex = u.rb.texture();
             if (tex) {
                 result->format = tex->format();
-                result->pixelSize = q->sizeForMipLevel(u.read.rb.level(), tex->pixelSize());
+                result->pixelSize = q->sizeForMipLevel(u.rb.level(), tex->pixelSize());
             } else {
                 Q_ASSERT(currentSwapChain);
                 result->format = QRhiTexture::RGBA8;
@@ -403,7 +418,7 @@ void QRhiNull::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *re
             }
             quint32 byteSize = 0;
             textureFormatInfo(result->format, result->pixelSize, nullptr, &byteSize);
-            result->data.fill(0, byteSize);
+            result->data.fill(0, int(byteSize));
             if (result->completed)
                 result->completed();
         }
@@ -454,14 +469,18 @@ QNullBuffer::~QNullBuffer()
 
 void QNullBuffer::release()
 {
+    data.clear();
+
     QRHI_PROF;
     QRHI_PROF_F(releaseBuffer(this));
 }
 
 bool QNullBuffer::build()
 {
+    data.fill('\0', m_size);
+
     QRHI_PROF;
-    QRHI_PROF_F(newBuffer(this, m_size, 1, 0));
+    QRHI_PROF_F(newBuffer(this, uint(m_size), 1, 0));
     return true;
 }
 

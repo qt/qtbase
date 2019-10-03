@@ -363,6 +363,11 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     Q_UNUSED(flags);
     Q_ASSERT(inst);
 
+    if (!inst->isValid()) {
+        qWarning("Vulkan instance is not valid");
+        return false;
+    }
+
     globalVulkanInstance = inst; // assume this will not change during the lifetime of the entire application
 
     f = inst->functions();
@@ -2645,100 +2650,164 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
     QRhiResourceUpdateBatchPrivate *ud = QRhiResourceUpdateBatchPrivate::get(resourceUpdates);
     QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
-    for (const QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate &u : ud->dynamicBufferUpdates) {
-        QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
-        Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
-        for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
-            bufD->pendingDynamicUpdates[i].append(u);
-    }
+    for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : ud->bufferOps) {
+        if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::DynamicUpdate) {
+            QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
+            Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
+            for (int i = 0; i < QVK_FRAMES_IN_FLIGHT; ++i)
+                bufD->pendingDynamicUpdates[i].append(u);
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload) {
+            QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
+            Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
+            Q_ASSERT(u.offset + u.data.size() <= bufD->m_size);
 
-    for (const QRhiResourceUpdateBatchPrivate::StaticBufferUpload &u : ud->staticBufferUploads) {
-        QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
-        Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
-        Q_ASSERT(u.offset + u.data.size() <= bufD->m_size);
+            if (!bufD->stagingBuffers[currentFrameSlot]) {
+                VkBufferCreateInfo bufferInfo;
+                memset(&bufferInfo, 0, sizeof(bufferInfo));
+                bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+                // must cover the entire buffer - this way multiple, partial updates per frame
+                // are supported even when the staging buffer is reused (Static)
+                bufferInfo.size = VkDeviceSize(bufD->m_size);
+                bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-        if (!bufD->stagingBuffers[currentFrameSlot]) {
-            VkBufferCreateInfo bufferInfo;
-            memset(&bufferInfo, 0, sizeof(bufferInfo));
-            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            // must cover the entire buffer - this way multiple, partial updates per frame
-            // are supported even when the staging buffer is reused (Static)
-            bufferInfo.size = VkDeviceSize(bufD->m_size);
-            bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+                VmaAllocationCreateInfo allocInfo;
+                memset(&allocInfo, 0, sizeof(allocInfo));
+                allocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
 
-            VmaAllocationCreateInfo allocInfo;
-            memset(&allocInfo, 0, sizeof(allocInfo));
-            allocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+                VmaAllocation allocation;
+                VkResult err = vmaCreateBuffer(toVmaAllocator(allocator), &bufferInfo, &allocInfo,
+                                               &bufD->stagingBuffers[currentFrameSlot], &allocation, nullptr);
+                if (err == VK_SUCCESS) {
+                    bufD->stagingAllocations[currentFrameSlot] = allocation;
+                    QRHI_PROF_F(newBufferStagingArea(bufD, currentFrameSlot, quint32(bufD->m_size)));
+                } else {
+                    qWarning("Failed to create staging buffer of size %d: %d", bufD->m_size, err);
+                    continue;
+                }
+            }
 
-            VmaAllocation allocation;
-            VkResult err = vmaCreateBuffer(toVmaAllocator(allocator), &bufferInfo, &allocInfo,
-                                           &bufD->stagingBuffers[currentFrameSlot], &allocation, nullptr);
-            if (err == VK_SUCCESS) {
-                bufD->stagingAllocations[currentFrameSlot] = allocation;
-                QRHI_PROF_F(newBufferStagingArea(bufD, currentFrameSlot, quint32(bufD->m_size)));
-            } else {
-                qWarning("Failed to create staging buffer of size %d: %d", bufD->m_size, err);
+            void *p = nullptr;
+            VmaAllocation a = toVmaAllocation(bufD->stagingAllocations[currentFrameSlot]);
+            VkResult err = vmaMapMemory(toVmaAllocator(allocator), a, &p);
+            if (err != VK_SUCCESS) {
+                qWarning("Failed to map buffer: %d", err);
                 continue;
             }
-        }
+            memcpy(static_cast<uchar *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
+            vmaUnmapMemory(toVmaAllocator(allocator), a);
+            vmaFlushAllocation(toVmaAllocator(allocator), a, VkDeviceSize(u.offset), VkDeviceSize(u.data.size()));
 
-        void *p = nullptr;
-        VmaAllocation a = toVmaAllocation(bufD->stagingAllocations[currentFrameSlot]);
-        VkResult err = vmaMapMemory(toVmaAllocator(allocator), a, &p);
-        if (err != VK_SUCCESS) {
-            qWarning("Failed to map buffer: %d", err);
-            continue;
-        }
-        memcpy(static_cast<uchar *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
-        vmaUnmapMemory(toVmaAllocator(allocator), a);
-        vmaFlushAllocation(toVmaAllocator(allocator), a, VkDeviceSize(u.offset), VkDeviceSize(u.data.size()));
+            trackedBufferBarrier(cbD, bufD, 0,
+                                 VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
 
-        trackedBufferBarrier(cbD, bufD, 0,
-                             VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+            VkBufferCopy copyInfo;
+            memset(&copyInfo, 0, sizeof(copyInfo));
+            copyInfo.srcOffset = VkDeviceSize(u.offset);
+            copyInfo.dstOffset = VkDeviceSize(u.offset);
+            copyInfo.size = VkDeviceSize(u.data.size());
 
-        VkBufferCopy copyInfo;
-        memset(&copyInfo, 0, sizeof(copyInfo));
-        copyInfo.srcOffset = VkDeviceSize(u.offset);
-        copyInfo.dstOffset = VkDeviceSize(u.offset);
-        copyInfo.size = VkDeviceSize(u.data.size());
+            QVkCommandBuffer::Command cmd;
+            cmd.cmd = QVkCommandBuffer::Command::CopyBuffer;
+            cmd.args.copyBuffer.src = bufD->stagingBuffers[currentFrameSlot];
+            cmd.args.copyBuffer.dst = bufD->buffers[0];
+            cmd.args.copyBuffer.desc = copyInfo;
+            cbD->commands.append(cmd);
 
-        QVkCommandBuffer::Command cmd;
-        cmd.cmd = QVkCommandBuffer::Command::CopyBuffer;
-        cmd.args.copyBuffer.src = bufD->stagingBuffers[currentFrameSlot];
-        cmd.args.copyBuffer.dst = bufD->buffers[0];
-        cmd.args.copyBuffer.desc = copyInfo;
-        cbD->commands.append(cmd);
+            // Where's the barrier for read-after-write? (assuming the common case
+            // of binding this buffer as vertex/index, or, less likely, as uniform
+            // buffer, in a renderpass later on) That is handled by the pass
+            // resource tracking: the appropriate pipeline barrier will be
+            // generated and recorded right before the renderpass, that binds this
+            // buffer in one of its commands, gets its BeginRenderPass recorded.
 
-        // Where's the barrier for read-after-write? (assuming the common case
-        // of binding this buffer as vertex/index, or, less likely, as uniform
-        // buffer, in a renderpass later on) That is handled by the pass
-        // resource tracking: the appropriate pipeline barrier will be
-        // generated and recorded right before the renderpass, that binds this
-        // buffer in one of its commands, gets its BeginRenderPass recorded.
+            bufD->lastActiveFrameSlot = currentFrameSlot;
 
-        bufD->lastActiveFrameSlot = currentFrameSlot;
+            if (bufD->m_type == QRhiBuffer::Immutable) {
+                QRhiVulkan::DeferredReleaseEntry e;
+                e.type = QRhiVulkan::DeferredReleaseEntry::StagingBuffer;
+                e.lastActiveFrameSlot = currentFrameSlot;
+                e.stagingBuffer.stagingBuffer = bufD->stagingBuffers[currentFrameSlot];
+                e.stagingBuffer.stagingAllocation = bufD->stagingAllocations[currentFrameSlot];
+                bufD->stagingBuffers[currentFrameSlot] = VK_NULL_HANDLE;
+                bufD->stagingAllocations[currentFrameSlot] = nullptr;
+                releaseQueue.append(e);
+                QRHI_PROF_F(releaseBufferStagingArea(bufD, currentFrameSlot));
+            }
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {
+            QVkBuffer *bufD = QRHI_RES(QVkBuffer, u.buf);
+            if (bufD->m_type == QRhiBuffer::Dynamic) {
+                executeBufferHostWritesForCurrentFrame(bufD);
+                void *p = nullptr;
+                VmaAllocation a = toVmaAllocation(bufD->allocations[currentFrameSlot]);
+                VkResult err = vmaMapMemory(toVmaAllocator(allocator), a, &p);
+                if (err == VK_SUCCESS) {
+                    u.result->data.resize(u.readSize);
+                    memcpy(u.result->data.data(), reinterpret_cast<char *>(p) + u.offset, size_t(u.readSize));
+                    vmaUnmapMemory(toVmaAllocator(allocator), a);
+                }
+                if (u.result->completed)
+                    u.result->completed();
+            } else {
+                // Non-Dynamic buffers may not be host visible, so have to
+                // create a readback buffer, enqueue a copy from
+                // bufD->buffers[0] to this buffer, and then once the command
+                // buffer completes, copy the data out of the host visible
+                // readback buffer. Quite similar to what we do for texture
+                // readbacks.
+                BufferReadback readback;
+                readback.activeFrameSlot = currentFrameSlot;
+                readback.result = u.result;
+                readback.byteSize = u.readSize;
 
-        if (bufD->m_type == QRhiBuffer::Immutable) {
-            QRhiVulkan::DeferredReleaseEntry e;
-            e.type = QRhiVulkan::DeferredReleaseEntry::StagingBuffer;
-            e.lastActiveFrameSlot = currentFrameSlot;
-            e.stagingBuffer.stagingBuffer = bufD->stagingBuffers[currentFrameSlot];
-            e.stagingBuffer.stagingAllocation = bufD->stagingAllocations[currentFrameSlot];
-            bufD->stagingBuffers[currentFrameSlot] = VK_NULL_HANDLE;
-            bufD->stagingAllocations[currentFrameSlot] = nullptr;
-            releaseQueue.append(e);
-            QRHI_PROF_F(releaseBufferStagingArea(bufD, currentFrameSlot));
+                VkBufferCreateInfo bufferInfo;
+                memset(&bufferInfo, 0, sizeof(bufferInfo));
+                bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+                bufferInfo.size = VkDeviceSize(readback.byteSize);
+                bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
+                VmaAllocationCreateInfo allocInfo;
+                memset(&allocInfo, 0, sizeof(allocInfo));
+                allocInfo.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
+
+                VmaAllocation allocation;
+                VkResult err = vmaCreateBuffer(toVmaAllocator(allocator), &bufferInfo, &allocInfo, &readback.stagingBuf, &allocation, nullptr);
+                if (err == VK_SUCCESS) {
+                    readback.stagingAlloc = allocation;
+                    QRHI_PROF_F(newReadbackBuffer(qint64(readback.stagingBuf), bufD, uint(readback.byteSize)));
+                } else {
+                    qWarning("Failed to create readback buffer of size %u: %d", readback.byteSize, err);
+                    continue;
+                }
+
+                trackedBufferBarrier(cbD, bufD, 0, VK_ACCESS_TRANSFER_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+
+                VkBufferCopy copyInfo;
+                memset(&copyInfo, 0, sizeof(copyInfo));
+                copyInfo.srcOffset = VkDeviceSize(u.offset);
+                copyInfo.size = VkDeviceSize(u.readSize);
+
+                QVkCommandBuffer::Command cmd;
+                cmd.cmd = QVkCommandBuffer::Command::CopyBuffer;
+                cmd.args.copyBuffer.src = bufD->buffers[0];
+                cmd.args.copyBuffer.dst = readback.stagingBuf;
+                cmd.args.copyBuffer.desc = copyInfo;
+                cbD->commands.append(cmd);
+
+                bufD->lastActiveFrameSlot = currentFrameSlot;
+
+                activeBufferReadbacks.append(readback);
+            }
         }
     }
 
     for (const QRhiResourceUpdateBatchPrivate::TextureOp &u : ud->textureOps) {
         if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Upload) {
-            QVkTexture *utexD = QRHI_RES(QVkTexture, u.upload.tex);
+            QVkTexture *utexD = QRHI_RES(QVkTexture, u.dst);
             // batch into a single staging buffer and a single CopyBufferToImage with multiple copyInfos
             VkDeviceSize stagingSize = 0;
             for (int layer = 0; layer < QRhi::MAX_LAYERS; ++layer) {
                 for (int level = 0; level < QRhi::MAX_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.upload.subresDesc[layer][level]))
+                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
                         stagingSize += subresUploadByteSize(subresDesc);
                 }
             }
@@ -2776,7 +2845,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
 
             for (int layer = 0; layer < QRhi::MAX_LAYERS; ++layer) {
                 for (int level = 0; level < QRhi::MAX_LEVELS; ++level) {
-                    const QVector<QRhiTextureSubresourceUploadDescription> &srd(u.upload.subresDesc[layer][level]);
+                    const QVector<QRhiTextureSubresourceUploadDescription> &srd(u.subresDesc[layer][level]);
                     if (srd.isEmpty())
                         continue;
                     for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(srd)) {
@@ -2817,34 +2886,34 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
 
             utexD->lastActiveFrameSlot = currentFrameSlot;
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Copy) {
-            Q_ASSERT(u.copy.src && u.copy.dst);
-            if (u.copy.src == u.copy.dst) {
+            Q_ASSERT(u.src && u.dst);
+            if (u.src == u.dst) {
                 qWarning("Texture copy with matching source and destination is not supported");
                 continue;
             }
-            QVkTexture *srcD = QRHI_RES(QVkTexture, u.copy.src);
-            QVkTexture *dstD = QRHI_RES(QVkTexture, u.copy.dst);
+            QVkTexture *srcD = QRHI_RES(QVkTexture, u.src);
+            QVkTexture *dstD = QRHI_RES(QVkTexture, u.dst);
 
             VkImageCopy region;
             memset(&region, 0, sizeof(region));
 
             region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            region.srcSubresource.mipLevel = uint32_t(u.copy.desc.sourceLevel());
-            region.srcSubresource.baseArrayLayer = uint32_t(u.copy.desc.sourceLayer());
+            region.srcSubresource.mipLevel = uint32_t(u.desc.sourceLevel());
+            region.srcSubresource.baseArrayLayer = uint32_t(u.desc.sourceLayer());
             region.srcSubresource.layerCount = 1;
 
-            region.srcOffset.x = u.copy.desc.sourceTopLeft().x();
-            region.srcOffset.y = u.copy.desc.sourceTopLeft().y();
+            region.srcOffset.x = u.desc.sourceTopLeft().x();
+            region.srcOffset.y = u.desc.sourceTopLeft().y();
 
             region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            region.dstSubresource.mipLevel = uint32_t(u.copy.desc.destinationLevel());
-            region.dstSubresource.baseArrayLayer = uint32_t(u.copy.desc.destinationLayer());
+            region.dstSubresource.mipLevel = uint32_t(u.desc.destinationLevel());
+            region.dstSubresource.baseArrayLayer = uint32_t(u.desc.destinationLayer());
             region.dstSubresource.layerCount = 1;
 
-            region.dstOffset.x = u.copy.desc.destinationTopLeft().x();
-            region.dstOffset.y = u.copy.desc.destinationTopLeft().y();
+            region.dstOffset.x = u.desc.destinationTopLeft().x();
+            region.dstOffset.y = u.desc.destinationTopLeft().y();
 
-            const QSize size = u.copy.desc.pixelSize().isEmpty() ? srcD->m_pixelSize : u.copy.desc.pixelSize();
+            const QSize size = u.desc.pixelSize().isEmpty() ? srcD->m_pixelSize : u.desc.pixelSize();
             region.extent.width = uint32_t(size.width());
             region.extent.height = uint32_t(size.height());
             region.extent.depth = 1;
@@ -2865,21 +2934,21 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
 
             srcD->lastActiveFrameSlot = dstD->lastActiveFrameSlot = currentFrameSlot;
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Read) {
-            ActiveReadback aRb;
-            aRb.activeFrameSlot = currentFrameSlot;
-            aRb.desc = u.read.rb;
-            aRb.result = u.read.result;
+            TextureReadback readback;
+            readback.activeFrameSlot = currentFrameSlot;
+            readback.desc = u.rb;
+            readback.result = u.result;
 
-            QVkTexture *texD = QRHI_RES(QVkTexture, u.read.rb.texture());
+            QVkTexture *texD = QRHI_RES(QVkTexture, u.rb.texture());
             QVkSwapChain *swapChainD = nullptr;
             if (texD) {
                 if (texD->samples > VK_SAMPLE_COUNT_1_BIT) {
                     qWarning("Multisample texture cannot be read back");
                     continue;
                 }
-                aRb.pixelSize = u.read.rb.level() > 0 ? q->sizeForMipLevel(u.read.rb.level(), texD->m_pixelSize)
-                                                 : texD->m_pixelSize;
-                aRb.format = texD->m_format;
+                readback.pixelSize = u.rb.level() > 0 ? q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize)
+                                                      : texD->m_pixelSize;
+                readback.format = texD->m_format;
                 texD->lastActiveFrameSlot = currentFrameSlot;
             } else {
                 Q_ASSERT(currentSwapChain);
@@ -2888,21 +2957,21 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                     qWarning("Swapchain does not support readback");
                     continue;
                 }
-                aRb.pixelSize = swapChainD->pixelSize;
-                aRb.format = colorTextureFormatFromVkFormat(swapChainD->colorFormat, nullptr);
-                if (aRb.format == QRhiTexture::UnknownFormat)
+                readback.pixelSize = swapChainD->pixelSize;
+                readback.format = colorTextureFormatFromVkFormat(swapChainD->colorFormat, nullptr);
+                if (readback.format == QRhiTexture::UnknownFormat)
                     continue;
 
                 // Multisample swapchains need nothing special since resolving
                 // happens when ending a renderpass.
             }
-            textureFormatInfo(aRb.format, aRb.pixelSize, nullptr, &aRb.bufSize);
+            textureFormatInfo(readback.format, readback.pixelSize, nullptr, &readback.byteSize);
 
-            // Create a host visible buffer.
+            // Create a host visible readback buffer.
             VkBufferCreateInfo bufferInfo;
             memset(&bufferInfo, 0, sizeof(bufferInfo));
             bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            bufferInfo.size = aRb.bufSize;
+            bufferInfo.size = readback.byteSize;
             bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
             VmaAllocationCreateInfo allocInfo;
@@ -2910,14 +2979,14 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             allocInfo.usage = VMA_MEMORY_USAGE_GPU_TO_CPU;
 
             VmaAllocation allocation;
-            VkResult err = vmaCreateBuffer(toVmaAllocator(allocator), &bufferInfo, &allocInfo, &aRb.buf, &allocation, nullptr);
+            VkResult err = vmaCreateBuffer(toVmaAllocator(allocator), &bufferInfo, &allocInfo, &readback.stagingBuf, &allocation, nullptr);
             if (err == VK_SUCCESS) {
-                aRb.bufAlloc = allocation;
-                QRHI_PROF_F(newReadbackBuffer(qint64(aRb.buf),
+                readback.stagingAlloc = allocation;
+                QRHI_PROF_F(newReadbackBuffer(qint64(readback.stagingBuf),
                                               texD ? static_cast<QRhiResource *>(texD) : static_cast<QRhiResource *>(swapChainD),
-                                              aRb.bufSize));
+                                              readback.byteSize));
             } else {
-                qWarning("Failed to create readback buffer of size %u: %d", aRb.bufSize, err);
+                qWarning("Failed to create readback buffer of size %u: %d", readback.byteSize, err);
                 continue;
             }
 
@@ -2926,11 +2995,11 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             memset(&copyDesc, 0, sizeof(copyDesc));
             copyDesc.bufferOffset = 0;
             copyDesc.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            copyDesc.imageSubresource.mipLevel = uint32_t(u.read.rb.level());
-            copyDesc.imageSubresource.baseArrayLayer = uint32_t(u.read.rb.layer());
+            copyDesc.imageSubresource.mipLevel = uint32_t(u.rb.level());
+            copyDesc.imageSubresource.baseArrayLayer = uint32_t(u.rb.layer());
             copyDesc.imageSubresource.layerCount = 1;
-            copyDesc.imageExtent.width = uint32_t(aRb.pixelSize.width());
-            copyDesc.imageExtent.height = uint32_t(aRb.pixelSize.height());
+            copyDesc.imageExtent.width = uint32_t(readback.pixelSize.width());
+            copyDesc.imageExtent.height = uint32_t(readback.pixelSize.height());
             copyDesc.imageExtent.depth = 1;
 
             if (texD) {
@@ -2940,7 +3009,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 cmd.cmd = QVkCommandBuffer::Command::CopyImageToBuffer;
                 cmd.args.copyImageToBuffer.src = texD->image;
                 cmd.args.copyImageToBuffer.srcLayout = texD->usageState.layout;
-                cmd.args.copyImageToBuffer.dst = aRb.buf;
+                cmd.args.copyImageToBuffer.dst = readback.stagingBuf;
                 cmd.args.copyImageToBuffer.desc = copyDesc;
                 cbD->commands.append(cmd);
             } else {
@@ -2965,14 +3034,14 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                 cmd.cmd = QVkCommandBuffer::Command::CopyImageToBuffer;
                 cmd.args.copyImageToBuffer.src = image;
                 cmd.args.copyImageToBuffer.srcLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-                cmd.args.copyImageToBuffer.dst = aRb.buf;
+                cmd.args.copyImageToBuffer.dst = readback.stagingBuf;
                 cmd.args.copyImageToBuffer.desc = copyDesc;
                 cbD->commands.append(cmd);
             }
 
-            activeReadbacks.append(aRb);
-        } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::MipGen) {
-            QVkTexture *utexD = QRHI_RES(QVkTexture, u.mipgen.tex);
+            activeTextureReadbacks.append(readback);
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::GenMips) {
+            QVkTexture *utexD = QRHI_RES(QVkTexture, u.dst);
             Q_ASSERT(utexD->m_flags.testFlag(QRhiTexture::UsedWithGenerateMips));
             int w = utexD->m_pixelSize.width();
             int h = utexD->m_pixelSize.height();
@@ -2989,14 +3058,14 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                                        origLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                                        origAccess, VK_ACCESS_TRANSFER_READ_BIT,
                                        origStage, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                       u.mipgen.layer, 1,
+                                       u.layer, 1,
                                        level - 1, 1);
                 } else {
                     subresourceBarrier(cbD, utexD->image,
                                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                                        VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
                                        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                       u.mipgen.layer, 1,
+                                       u.layer, 1,
                                        level - 1, 1);
                 }
 
@@ -3004,7 +3073,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                                    origLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                    origAccess, VK_ACCESS_TRANSFER_WRITE_BIT,
                                    origStage, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                   u.mipgen.layer, 1,
+                                   u.layer, 1,
                                    level, 1);
 
                 VkImageBlit region;
@@ -3012,7 +3081,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
 
                 region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 region.srcSubresource.mipLevel = uint32_t(level) - 1;
-                region.srcSubresource.baseArrayLayer = uint32_t(u.mipgen.layer);
+                region.srcSubresource.baseArrayLayer = uint32_t(u.layer);
                 region.srcSubresource.layerCount = 1;
 
                 region.srcOffsets[1].x = qMax(1, w);
@@ -3021,7 +3090,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
 
                 region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 region.dstSubresource.mipLevel = uint32_t(level);
-                region.dstSubresource.baseArrayLayer = uint32_t(u.mipgen.layer);
+                region.dstSubresource.baseArrayLayer = uint32_t(u.layer);
                 region.dstSubresource.layerCount = 1;
 
                 region.dstOffsets[1].x = qMax(1, w >> 1);
@@ -3047,13 +3116,13 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, origLayout,
                                    VK_ACCESS_TRANSFER_READ_BIT, origAccess,
                                    VK_PIPELINE_STAGE_TRANSFER_BIT, origStage,
-                                   u.mipgen.layer, 1,
+                                   u.layer, 1,
                                    0, int(utexD->mipLevelCount) - 1);
                 subresourceBarrier(cbD, utexD->image,
                                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, origLayout,
                                    VK_ACCESS_TRANSFER_WRITE_BIT, origAccess,
                                    VK_PIPELINE_STAGE_TRANSFER_BIT, origStage,
-                                   u.mipgen.layer, 1,
+                                   u.layer, 1,
                                    int(utexD->mipLevelCount) - 1, 1);
             }
 
@@ -3066,8 +3135,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
 
 void QRhiVulkan::executeBufferHostWritesForCurrentFrame(QVkBuffer *bufD)
 {
-    QVector<QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate> &updates(bufD->pendingDynamicUpdates[currentFrameSlot]);
-    if (updates.isEmpty())
+    if (bufD->pendingDynamicUpdates[currentFrameSlot].isEmpty())
         return;
 
     Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
@@ -3083,7 +3151,7 @@ void QRhiVulkan::executeBufferHostWritesForCurrentFrame(QVkBuffer *bufD)
     }
     int changeBegin = -1;
     int changeEnd = -1;
-    for (const QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate &u : updates) {
+    for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : qAsConst(bufD->pendingDynamicUpdates[currentFrameSlot])) {
         Q_ASSERT(bufD == QRHI_RES(QVkBuffer, u.buf));
         memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
         if (changeBegin == -1 || u.offset < changeBegin)
@@ -3095,7 +3163,7 @@ void QRhiVulkan::executeBufferHostWritesForCurrentFrame(QVkBuffer *bufD)
     if (changeBegin >= 0)
         vmaFlushAllocation(toVmaAllocator(allocator), a, VkDeviceSize(changeBegin), VkDeviceSize(changeEnd - changeBegin));
 
-    updates.clear();
+    bufD->pendingDynamicUpdates[currentFrameSlot].clear();
 }
 
 static void qrhivk_releaseBuffer(const QRhiVulkan::DeferredReleaseEntry &e, void *allocator)
@@ -3189,29 +3257,53 @@ void QRhiVulkan::finishActiveReadbacks(bool forced)
     QVarLengthArray<std::function<void()>, 4> completedCallbacks;
     QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
-    for (int i = activeReadbacks.count() - 1; i >= 0; --i) {
-        const QRhiVulkan::ActiveReadback &aRb(activeReadbacks[i]);
-        if (forced || currentFrameSlot == aRb.activeFrameSlot || aRb.activeFrameSlot < 0) {
-            aRb.result->format = aRb.format;
-            aRb.result->pixelSize = aRb.pixelSize;
-            aRb.result->data.resize(int(aRb.bufSize));
+    for (int i = activeTextureReadbacks.count() - 1; i >= 0; --i) {
+        const QRhiVulkan::TextureReadback &readback(activeTextureReadbacks[i]);
+        if (forced || currentFrameSlot == readback.activeFrameSlot || readback.activeFrameSlot < 0) {
+            readback.result->format = readback.format;
+            readback.result->pixelSize = readback.pixelSize;
+            VmaAllocation a = toVmaAllocation(readback.stagingAlloc);
             void *p = nullptr;
-            VmaAllocation a = toVmaAllocation(aRb.bufAlloc);
             VkResult err = vmaMapMemory(toVmaAllocator(allocator), a, &p);
-            if (err != VK_SUCCESS) {
-                qWarning("Failed to map readback buffer: %d", err);
-                continue;
+            if (err == VK_SUCCESS && p) {
+                readback.result->data.resize(int(readback.byteSize));
+                memcpy(readback.result->data.data(), p, readback.byteSize);
+                vmaUnmapMemory(toVmaAllocator(allocator), a);
+            } else {
+                qWarning("Failed to map texture readback buffer of size %u: %d", readback.byteSize, err);
             }
-            memcpy(aRb.result->data.data(), p, aRb.bufSize);
-            vmaUnmapMemory(toVmaAllocator(allocator), a);
 
-            vmaDestroyBuffer(toVmaAllocator(allocator), aRb.buf, a);
-            QRHI_PROF_F(releaseReadbackBuffer(qint64(aRb.buf)));
+            vmaDestroyBuffer(toVmaAllocator(allocator), readback.stagingBuf, a);
+            QRHI_PROF_F(releaseReadbackBuffer(qint64(readback.stagingBuf)));
 
-            if (aRb.result->completed)
-                completedCallbacks.append(aRb.result->completed);
+            if (readback.result->completed)
+                completedCallbacks.append(readback.result->completed);
 
-            activeReadbacks.removeAt(i);
+            activeTextureReadbacks.removeAt(i);
+        }
+    }
+
+    for (int i = activeBufferReadbacks.count() - 1; i >= 0; --i) {
+        const QRhiVulkan::BufferReadback &readback(activeBufferReadbacks[i]);
+        if (forced || currentFrameSlot == readback.activeFrameSlot || readback.activeFrameSlot < 0) {
+            VmaAllocation a = toVmaAllocation(readback.stagingAlloc);
+            void *p = nullptr;
+            VkResult err = vmaMapMemory(toVmaAllocator(allocator), a, &p);
+            if (err == VK_SUCCESS && p) {
+                readback.result->data.resize(readback.byteSize);
+                memcpy(readback.result->data.data(), p, size_t(readback.byteSize));
+                vmaUnmapMemory(toVmaAllocator(allocator), a);
+            } else {
+                qWarning("Failed to map buffer readback buffer of size %d: %d", readback.byteSize, err);
+            }
+
+            vmaDestroyBuffer(toVmaAllocator(allocator), readback.stagingBuf, a);
+            QRHI_PROF_F(releaseReadbackBuffer(qint64(readback.stagingBuf)));
+
+            if (readback.result->completed)
+                completedCallbacks.append(readback.result->completed);
+
+            activeBufferReadbacks.removeAt(i);
         }
     }
 
@@ -3728,6 +3820,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::BaseInstance:
         return true;
     case QRhi::TriangleFanTopology:
+        return true;
+    case QRhi::ReadBackNonUniformBuffer:
         return true;
     default:
         Q_UNREACHABLE();
@@ -4898,7 +4992,7 @@ bool QVkBuffer::build()
         allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
     } else {
         allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-        bufferInfo.usage |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        bufferInfo.usage |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     }
 
     QRHI_RES_RHI(QRhiVulkan);
@@ -4912,11 +5006,7 @@ bool QVkBuffer::build()
             err = vmaCreateBuffer(toVmaAllocator(rhiD->allocator), &bufferInfo, &allocInfo, &buffers[i], &allocation, nullptr);
             if (err != VK_SUCCESS)
                 break;
-
             allocations[i] = allocation;
-            if (m_type == Dynamic)
-                pendingDynamicUpdates[i].reserve(16);
-
             rhiD->setObjectName(uint64_t(buffers[i]), VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT, m_objectName,
                                 m_type == Dynamic ? i : -1);
         }
