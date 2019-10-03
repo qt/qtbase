@@ -10,6 +10,3 @@ add_qt_test(tst_qdate
     LIBRARIES
         Qt::CorePrivate
 )
-
-#### Keys ignored in scope 1:.:.:qdate.pro:<TRUE>:
-# CONFIG = "testcase"
