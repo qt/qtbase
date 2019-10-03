@@ -367,6 +367,11 @@ bool QRhiMetal::create(QRhi::Flags flags)
     else
         d->dev = MTLCreateSystemDefaultDevice();
 
+    if (!d->dev) {
+        qWarning("No MTLDevice");
+        return false;
+    }
+
     qCDebug(QRHI_LOG_INFO, "Metal device: %s", qPrintable(QString::fromNSString([d->dev name])));
 
     if (importedCmdQueue)
