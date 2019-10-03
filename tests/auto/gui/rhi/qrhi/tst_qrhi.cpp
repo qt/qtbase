@@ -34,6 +34,7 @@
 #include <QtGui/private/qrhinull_p.h>
 
 #if QT_CONFIG(opengl)
+# include <QOpenGLContext>
 # include <QtGui/private/qrhigles2_p.h>
 # define TST_GL
 #endif
@@ -65,8 +66,11 @@ private slots:
     void initTestCase();
     void cleanupTestCase();
 
+    void rhiTestData();
     void create_data();
     void create();
+    void nativeHandles_data();
+    void nativeHandles();
 
 private:
     struct {
@@ -113,7 +117,7 @@ void tst_QRhi::cleanupTestCase()
     delete fallbackSurface;
 }
 
-void tst_QRhi::create_data()
+void tst_QRhi::rhiTestData()
 {
     QTest::addColumn<QRhi::Implementation>("impl");
     QTest::addColumn<QRhiInitParams *>("initParams");
@@ -132,6 +136,11 @@ void tst_QRhi::create_data()
 #ifdef TST_MTL
     QTest::newRow("Metal") << QRhi::Metal << static_cast<QRhiInitParams *>(&initParams.mtl);
 #endif
+}
+
+void tst_QRhi::create_data()
+{
+    rhiTestData();
 }
 
 static int aligned(int v, int a)
@@ -153,6 +162,8 @@ void tst_QRhi::create()
     if (rhi) {
         QCOMPARE(rhi->backend(), impl);
         QCOMPARE(rhi->thread(), QThread::currentThread());
+
+        // do a basic smoke test for the apis that do not directly render anything
 
         int cleanupOk = 0;
         QRhi *rhiPtr = rhi.data();
@@ -211,9 +222,11 @@ void tst_QRhi::create()
         const int texMin = rhi->resourceLimit(QRhi::TextureSizeMin);
         const int texMax = rhi->resourceLimit(QRhi::TextureSizeMax);
         const int maxAtt = rhi->resourceLimit(QRhi::MaxColorAttachments);
+        const int framesInFlight = rhi->resourceLimit(QRhi::FramesInFlight);
         QVERIFY(texMin >= 1);
         QVERIFY(texMax >= texMin);
         QVERIFY(maxAtt >= 1);
+        QVERIFY(framesInFlight >= 1);
 
         QVERIFY(rhi->nativeHandles());
         QVERIFY(rhi->profiler());
@@ -230,15 +243,244 @@ void tst_QRhi::create()
             QRhi::NonFourAlignedEffectiveIndexBufferOffset,
             QRhi::NPOTTextureRepeat,
             QRhi::RedOrAlpha8IsRed,
-            QRhi::ElementIndexUint
+            QRhi::ElementIndexUint,
+            QRhi::Compute,
+            QRhi::WideLines,
+            QRhi::VertexShaderPointSize,
+            QRhi::BaseVertex,
+            QRhi::BaseInstance
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);
 
         QVERIFY(rhi->isTextureFormatSupported(QRhiTexture::RGBA8));
 
+        rhi->releaseCachedResources();
+
+        QVERIFY(!rhi->isDeviceLost());
+
         rhi.reset();
         QCOMPARE(cleanupOk, 1);
+    }
+}
+
+void tst_QRhi::nativeHandles_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::nativeHandles()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing native handles");
+
+    // QRhi::nativeHandles()
+    {
+        const QRhiNativeHandles *rhiHandles = rhi->nativeHandles();
+        Q_ASSERT(rhiHandles);
+
+        switch (impl) {
+        case QRhi::Null:
+            break;
+#ifdef TST_VK
+        case QRhi::Vulkan:
+        {
+            const QRhiVulkanNativeHandles *vkHandles = static_cast<const QRhiVulkanNativeHandles *>(rhiHandles);
+            QVERIFY(vkHandles->physDev);
+            QVERIFY(vkHandles->dev);
+            QVERIFY(vkHandles->gfxQueueFamilyIdx >= 0);
+            QVERIFY(vkHandles->gfxQueue);
+            QVERIFY(vkHandles->cmdPool);
+            QVERIFY(vkHandles->vmemAllocator);
+        }
+            break;
+#endif
+#ifdef TST_GL
+        case QRhi::OpenGLES2:
+        {
+            const QRhiGles2NativeHandles *glHandles = static_cast<const QRhiGles2NativeHandles *>(rhiHandles);
+            QVERIFY(glHandles->context);
+            QVERIFY(glHandles->context->isValid());
+            glHandles->context->doneCurrent();
+            QVERIFY(!QOpenGLContext::currentContext());
+            rhi->makeThreadLocalNativeContextCurrent();
+            QVERIFY(QOpenGLContext::currentContext() == glHandles->context);
+        }
+            break;
+#endif
+#ifdef TST_D3D11
+        case QRhi::D3D11:
+        {
+            const QRhiD3D11NativeHandles *d3dHandles = static_cast<const QRhiD3D11NativeHandles *>(rhiHandles);
+            QVERIFY(d3dHandles->dev);
+            QVERIFY(d3dHandles->context);
+        }
+            break;
+#endif
+#ifdef TST_MTL
+        case QRhi::Metal:
+        {
+            const QRhiMetalNativeHandles *mtlHandles = static_cast<const QRhiMetalNativeHandles *>(rhiHandles);
+            QVERIFY(mtlHandles->dev);
+            QVERIFY(mtlHandles->cmdQueue);
+        }
+            break;
+#endif
+        default:
+            Q_ASSERT(false);
+        }
+    }
+
+    // QRhiTexture::nativeHandles()
+    {
+        QScopedPointer<QRhiTexture> tex(rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 256)));
+        QVERIFY(tex->build());
+
+        const QRhiNativeHandles *texHandles = tex->nativeHandles();
+        QVERIFY(texHandles);
+
+        switch (impl) {
+        case QRhi::Null:
+            break;
+#ifdef TST_VK
+        case QRhi::Vulkan:
+        {
+            const QRhiVulkanTextureNativeHandles *vkHandles = static_cast<const QRhiVulkanTextureNativeHandles *>(texHandles);
+            QVERIFY(vkHandles->image);
+            QVERIFY(vkHandles->layout >= 1); // VK_IMAGE_LAYOUT_GENERAL
+            QVERIFY(vkHandles->layout <= 8); // VK_IMAGE_LAYOUT_PREINITIALIZED
+        }
+            break;
+#endif
+#ifdef TST_GL
+        case QRhi::OpenGLES2:
+        {
+            const QRhiGles2TextureNativeHandles *glHandles = static_cast<const QRhiGles2TextureNativeHandles *>(texHandles);
+            QVERIFY(glHandles->texture);
+        }
+            break;
+#endif
+#ifdef TST_D3D11
+        case QRhi::D3D11:
+        {
+            const QRhiD3D11TextureNativeHandles *d3dHandles = static_cast<const QRhiD3D11TextureNativeHandles *>(texHandles);
+            QVERIFY(d3dHandles->texture);
+        }
+            break;
+#endif
+#ifdef TST_MTL
+        case QRhi::Metal:
+        {
+            const QRhiMetalTextureNativeHandles *mtlHandles = static_cast<const QRhiMetalTextureNativeHandles *>(texHandles);
+            QVERIFY(mtlHandles->texture);
+        }
+            break;
+#endif
+        default:
+            Q_ASSERT(false);
+        }
+    }
+
+    // QRhiCommandBuffer::nativeHandles()
+    {
+        QRhiCommandBuffer *cb = nullptr;
+        QRhi::FrameOpResult result = rhi->beginOffscreenFrame(&cb);
+        QVERIFY(result == QRhi::FrameOpSuccess);
+        QVERIFY(cb);
+
+        const QRhiNativeHandles *cbHandles = cb->nativeHandles();
+        // no null check here, backends where not applicable will return null
+
+        switch (impl) {
+        case QRhi::Null:
+            break;
+#ifdef TST_VK
+        case QRhi::Vulkan:
+        {
+            const QRhiVulkanCommandBufferNativeHandles *vkHandles = static_cast<const QRhiVulkanCommandBufferNativeHandles *>(cbHandles);
+            QVERIFY(vkHandles);
+            QVERIFY(vkHandles->commandBuffer);
+        }
+            break;
+#endif
+#ifdef TST_GL
+        case QRhi::OpenGLES2:
+            break;
+#endif
+#ifdef TST_D3D11
+        case QRhi::D3D11:
+            break;
+#endif
+#ifdef TST_MTL
+        case QRhi::Metal:
+        {
+            const QRhiMetalCommandBufferNativeHandles *mtlHandles = static_cast<const QRhiMetalCommandBufferNativeHandles *>(cbHandles);
+            QVERIFY(mtlHandles);
+            QVERIFY(mtlHandles->commandBuffer);
+            QVERIFY(!mtlHandles->encoder);
+
+            QScopedPointer<QRhiTexture> tex(rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 512), 1, QRhiTexture::RenderTarget));
+            QVERIFY(tex->build());
+            QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ tex.data() }));
+            QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+            QVERIFY(rpDesc);
+            rt->setRenderPassDescriptor(rpDesc.data());
+            QVERIFY(rt->build());
+            cb->beginPass(rt.data(), Qt::red, { 1.0f, 0 });
+            QVERIFY(static_cast<const QRhiMetalCommandBufferNativeHandles *>(cb->nativeHandles())->encoder);
+            cb->endPass();
+        }
+            break;
+#endif
+        default:
+            Q_ASSERT(false);
+        }
+
+        rhi->endOffscreenFrame();
+    }
+
+    // QRhiRenderPassDescriptor::nativeHandles()
+    {
+        QScopedPointer<QRhiTexture> tex(rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 512), 1, QRhiTexture::RenderTarget));
+        QVERIFY(tex->build());
+        QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ tex.data() }));
+        QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+        QVERIFY(rpDesc);
+        rt->setRenderPassDescriptor(rpDesc.data());
+        QVERIFY(rt->build());
+
+        const QRhiNativeHandles *rpHandles = rpDesc->nativeHandles();
+        switch (impl) {
+        case QRhi::Null:
+            break;
+#ifdef TST_VK
+        case QRhi::Vulkan:
+        {
+            const QRhiVulkanRenderPassNativeHandles *vkHandles = static_cast<const QRhiVulkanRenderPassNativeHandles *>(rpHandles);
+            QVERIFY(vkHandles);
+            QVERIFY(vkHandles->renderPass);
+        }
+            break;
+#endif
+#ifdef TST_GL
+        case QRhi::OpenGLES2:
+            break;
+#endif
+#ifdef TST_D3D11
+        case QRhi::D3D11:
+            break;
+#endif
+#ifdef TST_MTL
+        case QRhi::Metal:
+            break;
+#endif
+        default:
+            Q_ASSERT(false);
+        }
     }
 }
 
