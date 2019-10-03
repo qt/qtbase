@@ -577,6 +577,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         m_lastTouchPoints = m_touchPoints;
         m_touchPoints.clear();
         Qt::TouchPointStates combinedStates;
+        bool hasPressure = false;
 
         for (auto i = m_contacts.begin(), end = m_contacts.end(); i != end; /*erasing*/) {
             auto it = i++;
@@ -606,6 +607,9 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 m_contacts.erase(it);
                 continue;
             }
+
+            if (contact.pressure)
+                hasPressure = true;
 
             addTouchPoint(contact, &combinedStates);
         }
@@ -651,7 +655,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             m_contacts.clear();
 
 
-        if (!m_touchPoints.isEmpty() && combinedStates != Qt::TouchPointStationary)
+        if (!m_touchPoints.isEmpty() && (hasPressure || combinedStates != Qt::TouchPointStationary))
             reportPoints();
     }
 
