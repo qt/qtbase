@@ -36,6 +36,7 @@
 
 #include "qrhinull_p_p.h"
 #include <qmath.h>
+#include <QPainter>
 
 QT_BEGIN_NAMESPACE
 
@@ -385,6 +386,67 @@ QRhi::FrameOpResult QRhiNull::finish()
     return QRhi::FrameOpSuccess;
 }
 
+void QRhiNull::simulateTextureUpload(const QRhiResourceUpdateBatchPrivate::TextureOp &u)
+{
+    QNullTexture *texD = QRHI_RES(QNullTexture, u.dst);
+    for (int layer = 0; layer < QRhi::MAX_LAYERS; ++layer) {
+        for (int level = 0; level < QRhi::MAX_LEVELS; ++level) {
+            for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level])) {
+                if (!subresDesc.image().isNull()) {
+                    const QImage src = subresDesc.image();
+                    QPainter painter(&texD->image[layer][level]);
+                    const QSize srcSize = subresDesc.sourceSize().isEmpty()
+                            ? src.size() : subresDesc.sourceSize();
+                    painter.drawImage(subresDesc.destinationTopLeft(), src,
+                                      QRect(subresDesc.sourceTopLeft(), srcSize));
+                } else if (!subresDesc.data().isEmpty()) {
+                    const QSize subresSize = q->sizeForMipLevel(level, texD->pixelSize());
+                    int w = subresSize.width();
+                    int h = subresSize.height();
+                    if (!subresDesc.sourceSize().isEmpty()) {
+                        w = subresDesc.sourceSize().width();
+                        h = subresDesc.sourceSize().height();
+                    }
+                    // sourceTopLeft is not supported on this path as per QRhi docs
+                    const char *src = subresDesc.data().constData();
+                    const int srcBpl = w * 4;
+                    const QPoint dstOffset = subresDesc.destinationTopLeft();
+                    uchar *dst = texD->image[layer][level].bits();
+                    const int dstBpl = texD->image[layer][level].bytesPerLine();
+                    for (int y = 0; y < h; ++y) {
+                        memcpy(dst + dstOffset.x() * 4 + (y + dstOffset.y()) * dstBpl,
+                               src + y * srcBpl,
+                               size_t(srcBpl));
+                    }
+                }
+            }
+        }
+    }
+}
+
+void QRhiNull::simulateTextureCopy(const QRhiResourceUpdateBatchPrivate::TextureOp &u)
+{
+    QNullTexture *srcD = QRHI_RES(QNullTexture, u.src);
+    QNullTexture *dstD = QRHI_RES(QNullTexture, u.dst);
+    const QImage &srcImage(srcD->image[u.desc.sourceLayer()][u.desc.sourceLevel()]);
+    QImage &dstImage(dstD->image[u.desc.destinationLayer()][u.desc.destinationLevel()]);
+    const QPoint dstPos = u.desc.destinationTopLeft();
+    const QSize size = u.desc.pixelSize().isEmpty() ? srcD->pixelSize() : u.desc.pixelSize();
+    const QPoint srcPos = u.desc.sourceTopLeft();
+
+    QPainter painter(&dstImage);
+    painter.drawImage(QRect(dstPos, size), srcImage, QRect(srcPos, size));
+}
+
+void QRhiNull::simulateTextureGenMips(const QRhiResourceUpdateBatchPrivate::TextureOp &u)
+{
+    QNullTexture *texD = QRHI_RES(QNullTexture, u.dst);
+    const QSize baseSize = texD->pixelSize();
+    const int levelCount = q->mipLevelsForSize(baseSize);
+    for (int level = 1; level < levelCount; ++level)
+        texD->image[0][level] = texD->image[0][0].scaled(q->sizeForMipLevel(level, baseSize));
+}
+
 void QRhiNull::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
 {
     Q_UNUSED(cb);
@@ -405,22 +467,42 @@ void QRhiNull::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *re
         }
     }
     for (const QRhiResourceUpdateBatchPrivate::TextureOp &u : ud->textureOps) {
-        if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Read) {
+        if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Upload) {
+            if (u.dst->format() == QRhiTexture::RGBA8)
+                simulateTextureUpload(u);
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Copy) {
+            if (u.src->format() == QRhiTexture::RGBA8 && u.dst->format() == QRhiTexture::RGBA8)
+                simulateTextureCopy(u);
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Read) {
             QRhiReadbackResult *result = u.result;
-            QRhiTexture *tex = u.rb.texture();
-            if (tex) {
-                result->format = tex->format();
-                result->pixelSize = q->sizeForMipLevel(u.rb.level(), tex->pixelSize());
+            QNullTexture *texD = QRHI_RES(QNullTexture, u.rb.texture());
+            if (texD) {
+                result->format = texD->format();
+                result->pixelSize = q->sizeForMipLevel(u.rb.level(), texD->pixelSize());
             } else {
                 Q_ASSERT(currentSwapChain);
                 result->format = QRhiTexture::RGBA8;
                 result->pixelSize = currentSwapChain->currentPixelSize();
             }
+            quint32 bytesPerLine = 0;
             quint32 byteSize = 0;
-            textureFormatInfo(result->format, result->pixelSize, nullptr, &byteSize);
-            result->data.fill(0, int(byteSize));
+            textureFormatInfo(result->format, result->pixelSize, &bytesPerLine, &byteSize);
+            if (result->format == QRhiTexture::RGBA8) {
+                result->data.resize(int(byteSize));
+                const QImage &src(texD->image[u.rb.layer()][u.rb.level()]);
+                char *dst = result->data.data();
+                for (int y = 0, h = src.height(); y < h; ++y) {
+                    memcpy(dst, src.constScanLine(y), bytesPerLine);
+                    dst += bytesPerLine;
+                }
+            } else {
+                result->data.fill(0, int(byteSize));
+            }
             if (result->completed)
                 result->completed();
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::GenMips) {
+            if (u.dst->format() == QRhiTexture::RGBA8)
+                simulateTextureGenMips(u);
         }
     }
     ud->free();
@@ -532,22 +614,36 @@ void QNullTexture::release()
 
 bool QNullTexture::build()
 {
+    QRHI_RES_RHI(QRhiNull);
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
     QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
-    const int mipLevelCount = hasMipMaps ? qCeil(log2(qMax(size.width(), size.height()))) + 1 : 1;
+    const int mipLevelCount = hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1;
+    const int layerCount = isCube ? 6 : 1;
+
+    if (m_format == RGBA8) {
+        for (int layer = 0; layer < layerCount; ++layer) {
+            for (int level = 0; level < mipLevelCount; ++level) {
+                image[layer][level] = QImage(rhiD->q->sizeForMipLevel(level, size),
+                                             QImage::Format_RGBA8888_Premultiplied);
+                image[layer][level].fill(Qt::yellow);
+            }
+        }
+    }
+
     QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, true, mipLevelCount, isCube ? 6 : 1, 1));
+    QRHI_PROF_F(newTexture(this, true, mipLevelCount, layerCount, 1));
     return true;
 }
 
 bool QNullTexture::buildFrom(const QRhiNativeHandles *src)
 {
     Q_UNUSED(src);
+    QRHI_RES_RHI(QRhiNull);
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool hasMipMaps = m_flags.testFlag(MipMapped);
     QSize size = m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize;
-    const int mipLevelCount = hasMipMaps ? qCeil(log2(qMax(size.width(), size.height()))) + 1 : 1;
+    const int mipLevelCount = hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1;
     QRHI_PROF;
     QRHI_PROF_F(newTexture(this, false, mipLevelCount, isCube ? 6 : 1, 1));
     return true;

@@ -84,6 +84,7 @@ struct QNullTexture : public QRhiTexture
     const QRhiNativeHandles *nativeHandles() override;
 
     QRhiNullTextureNativeHandles nativeHandlesStruct;
+    QImage image[QRhi::MAX_LAYERS][QRhi::MAX_LEVELS];
 };
 
 struct QNullSampler : public QRhiSampler
@@ -287,6 +288,10 @@ public:
     bool makeThreadLocalNativeContextCurrent() override;
     void releaseCachedResources() override;
     bool isDeviceLost() const override;
+
+    void simulateTextureUpload(const QRhiResourceUpdateBatchPrivate::TextureOp &u);
+    void simulateTextureCopy(const QRhiResourceUpdateBatchPrivate::TextureOp &u);
+    void simulateTextureGenMips(const QRhiResourceUpdateBatchPrivate::TextureOp &u);
 
     QRhiNullNativeHandles nativeHandlesStruct;
     QRhiSwapChain *currentSwapChain = nullptr;

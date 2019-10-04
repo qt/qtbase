@@ -1532,8 +1532,9 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 trackedImageBarrier(cbD, texD, QGles2Texture::AccessRead);
             cmd.args.readPixels.texture = texD ? texD->texture : 0;
             if (texD) {
-                cmd.args.readPixels.w = texD->m_pixelSize.width();
-                cmd.args.readPixels.h = texD->m_pixelSize.height();
+                const QSize readImageSize = q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize);
+                cmd.args.readPixels.w = readImageSize.width();
+                cmd.args.readPixels.h = readImageSize.height();
                 cmd.args.readPixels.format = texD->m_format;
                 const GLenum faceTargetBase = texD->m_flags.testFlag(QRhiTexture::CubeMap)
                         ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : texD->target;

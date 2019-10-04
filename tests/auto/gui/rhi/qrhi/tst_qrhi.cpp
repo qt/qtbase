@@ -30,6 +30,8 @@
 #include <QThread>
 #include <QFile>
 #include <QOffscreenSurface>
+#include <QPainter>
+
 #include <QtGui/private/qrhi_p.h>
 #include <QtGui/private/qrhinull_p.h>
 
@@ -73,6 +75,12 @@ private slots:
     void nativeHandles();
     void resourceUpdateBatchBuffer_data();
     void resourceUpdateBatchBuffer();
+    void resourceUpdateBatchRGBATextureUpload_data();
+    void resourceUpdateBatchRGBATextureUpload();
+    void resourceUpdateBatchRGBATextureCopy_data();
+    void resourceUpdateBatchRGBATextureCopy();
+    void resourceUpdateBatchRGBATextureMip_data();
+    void resourceUpdateBatchRGBATextureMip();
 
 private:
     struct {
@@ -505,6 +513,23 @@ void tst_QRhi::nativeHandles()
     }
 }
 
+static bool submitResourceUpdates(QRhi *rhi, QRhiResourceUpdateBatch *batch)
+{
+    QRhiCommandBuffer *cb = nullptr;
+    QRhi::FrameOpResult result = rhi->beginOffscreenFrame(&cb);
+    if (result != QRhi::FrameOpSuccess) {
+        qWarning("beginOffscreenFrame returned %d", result);
+        return false;
+    }
+    if (!cb) {
+        qWarning("No command buffer from beginOffscreenFrame");
+        return false;
+    }
+    cb->resourceUpdate(batch);
+    rhi->endOffscreenFrame();
+    return true;
+}
+
 void tst_QRhi::resourceUpdateBatchBuffer_data()
 {
     rhiTestData();
@@ -517,7 +542,7 @@ void tst_QRhi::resourceUpdateBatchBuffer()
 
     QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
     if (!rhi)
-        QSKIP("QRhi could not be created, skipping testing resource updates");
+        QSKIP("QRhi could not be created, skipping testing buffer resource updates");
 
     const int bufferSize = 23;
     const QByteArray a(bufferSize, 'A');
@@ -539,12 +564,7 @@ void tst_QRhi::resourceUpdateBatchBuffer()
         readResult.completed = [&readCompleted] { readCompleted = true; };
         batch->readBackBuffer(dynamicBuffer.data(), 5, 10, &readResult);
 
-        QRhiCommandBuffer *cb = nullptr;
-        QRhi::FrameOpResult result = rhi->beginOffscreenFrame(&cb);
-        QVERIFY(result == QRhi::FrameOpSuccess);
-        QVERIFY(cb);
-        cb->resourceUpdate(batch);
-        rhi->endOffscreenFrame();
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
 
         // Offscreen frames are synchronous, so the readback must have
         // completed at this point. With swapchain frames this would not be the
@@ -573,12 +593,7 @@ void tst_QRhi::resourceUpdateBatchBuffer()
         if (rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer))
             batch->readBackBuffer(dynamicBuffer.data(), 5, 10, &readResult);
 
-        QRhiCommandBuffer *cb = nullptr;
-        QRhi::FrameOpResult result = rhi->beginOffscreenFrame(&cb);
-        QVERIFY(result == QRhi::FrameOpSuccess);
-        QVERIFY(cb);
-        cb->resourceUpdate(batch);
-        rhi->endOffscreenFrame();
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
 
         if (rhi->isFeatureSupported(QRhi::ReadBackNonUniformBuffer)) {
             QVERIFY(readCompleted);
@@ -588,6 +603,373 @@ void tst_QRhi::resourceUpdateBatchBuffer()
         } else {
             qDebug("Skipping verifying buffer contents because readback is not supported");
         }
+    }
+}
+
+inline bool imageRGBAEquals(const QImage &a, const QImage &b)
+{
+    const int maxFuzz = 1;
+
+    if (a.size() != b.size())
+        return false;
+
+    const QImage image0 = a.convertToFormat(QImage::Format_RGBA8888_Premultiplied);
+    const QImage image1 = b.convertToFormat(QImage::Format_RGBA8888_Premultiplied);
+
+    const int width = image0.width();
+    const int height = image0.height();
+    for (int y = 0; y < height; ++y) {
+        const quint32 *p0 = reinterpret_cast<const quint32 *>(image0.constScanLine(y));
+        const quint32 *p1 = reinterpret_cast<const quint32 *>(image1.constScanLine(y));
+        int x = width - 1;
+        while (x-- >= 0) {
+            const QRgb c0(*p0++);
+            const QRgb c1(*p1++);
+            const int red = qAbs(qRed(c0) - qRed(c1));
+            const int green = qAbs(qGreen(c0) - qGreen(c1));
+            const int blue = qAbs(qBlue(c0) - qBlue(c1));
+            const int alpha = qAbs(qAlpha(c0) - qAlpha(c1));
+            if (red > maxFuzz || green > maxFuzz || blue > maxFuzz || alpha > maxFuzz)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+void tst_QRhi::resourceUpdateBatchRGBATextureUpload_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchRGBATextureUpload()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing texture resource updates");
+
+    QImage image(234, 123, QImage::Format_RGBA8888_Premultiplied);
+    image.fill(Qt::red);
+    QPainter painter;
+    const QPoint greenRectPos(35, 50);
+    const QSize greenRectSize(100, 50);
+    painter.begin(&image);
+    painter.fillRect(QRect(greenRectPos, greenRectSize), Qt::green);
+    painter.end();
+
+    // simple image upload; uploading and reading back RGBA8 is supported by the Null backend even
+    {
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, image.size(),
+                                                            1, QRhiTexture::UsedAsTransferSource));
+        QVERIFY(texture->build());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        batch->uploadTexture(texture.data(), image);
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch->readBackTexture(texture.data(), &readResult);
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        // like with buffers, the readback is now complete due to endOffscreenFrame()
+        QVERIFY(readCompleted);
+        QCOMPARE(readResult.format, QRhiTexture::RGBA8);
+        QCOMPARE(readResult.pixelSize, image.size());
+
+        QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                            readResult.pixelSize.width(), readResult.pixelSize.height(),
+                            image.format());
+
+        QVERIFY(imageRGBAEquals(image, wrapperImage));
+    }
+
+    // the same with raw data
+    {
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, image.size(),
+                                                            1, QRhiTexture::UsedAsTransferSource));
+        QVERIFY(texture->build());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+
+        QRhiTextureUploadEntry upload(0, 0, { image.constBits(), int(image.sizeInBytes()) });
+        QRhiTextureUploadDescription uploadDesc(upload);
+        batch->uploadTexture(texture.data(), uploadDesc);
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch->readBackTexture(texture.data(), &readResult);
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(readCompleted);
+        QCOMPARE(readResult.format, QRhiTexture::RGBA8);
+        QCOMPARE(readResult.pixelSize, image.size());
+
+        QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                            readResult.pixelSize.width(), readResult.pixelSize.height(),
+                            image.format());
+
+        QVERIFY(imageRGBAEquals(image, wrapperImage));
+    }
+
+    // partial image upload at a non-zero destination position
+    {
+        const QSize copySize(30, 40);
+        const int gap = 10;
+        const QSize fullSize(copySize.width() + gap, copySize.height() + gap);
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, fullSize,
+                                                            1, QRhiTexture::UsedAsTransferSource));
+        QVERIFY(texture->build());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+
+        QImage clearImage(fullSize, image.format());
+        clearImage.fill(Qt::black);
+        batch->uploadTexture(texture.data(), clearImage);
+
+        // copy green pixels of copySize to (gap, gap), leaving a black bar of
+        // gap pixels on the left and top
+        QRhiTextureSubresourceUploadDescription desc;
+        desc.setImage(image);
+        desc.setSourceSize(copySize);
+        desc.setDestinationTopLeft(QPoint(gap, gap));
+        desc.setSourceTopLeft(greenRectPos);
+
+        batch->uploadTexture(texture.data(), QRhiTextureUploadDescription({ 0, 0, desc }));
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch->readBackTexture(texture.data(), &readResult);
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(readCompleted);
+        QCOMPARE(readResult.format, QRhiTexture::RGBA8);
+        QCOMPARE(readResult.pixelSize, clearImage.size());
+
+        QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                            readResult.pixelSize.width(), readResult.pixelSize.height(),
+                            image.format());
+
+        QVERIFY(!imageRGBAEquals(clearImage, wrapperImage));
+
+        QImage expectedImage = clearImage;
+        QPainter painter(&expectedImage);
+        painter.fillRect(QRect(QPoint(gap, gap), QSize(copySize)), Qt::green);
+        painter.end();
+
+        QVERIFY(imageRGBAEquals(expectedImage, wrapperImage));
+    }
+
+    // the same (partial upload) with raw data as source
+    {
+        const QSize copySize(30, 40);
+        const int gap = 10;
+        const QSize fullSize(copySize.width() + gap, copySize.height() + gap);
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, fullSize,
+                                                            1, QRhiTexture::UsedAsTransferSource));
+        QVERIFY(texture->build());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+
+        QImage clearImage(fullSize, image.format());
+        clearImage.fill(Qt::black);
+        batch->uploadTexture(texture.data(), clearImage);
+
+        // SourceTopLeft is not supported for non-QImage-based uploads.
+        const QImage im = image.copy(QRect(greenRectPos, copySize));
+        QRhiTextureSubresourceUploadDescription desc;
+        desc.setData(QByteArray::fromRawData(reinterpret_cast<const char *>(im.constBits()),
+                                             int(im.sizeInBytes())));
+        desc.setSourceSize(copySize);
+        desc.setDestinationTopLeft(QPoint(gap, gap));
+
+        batch->uploadTexture(texture.data(), QRhiTextureUploadDescription({ 0, 0, desc }));
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch->readBackTexture(texture.data(), &readResult);
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(readCompleted);
+        QCOMPARE(readResult.format, QRhiTexture::RGBA8);
+        QCOMPARE(readResult.pixelSize, clearImage.size());
+
+        QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                            readResult.pixelSize.width(), readResult.pixelSize.height(),
+                            image.format());
+
+        QVERIFY(!imageRGBAEquals(clearImage, wrapperImage));
+
+        QImage expectedImage = clearImage;
+        QPainter painter(&expectedImage);
+        painter.fillRect(QRect(QPoint(gap, gap), QSize(copySize)), Qt::green);
+        painter.end();
+
+        QVERIFY(imageRGBAEquals(expectedImage, wrapperImage));
+    }
+}
+
+void tst_QRhi::resourceUpdateBatchRGBATextureCopy_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchRGBATextureCopy()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing texture resource updates");
+
+    QImage red(256, 256, QImage::Format_RGBA8888_Premultiplied);
+    red.fill(Qt::red);
+
+    QImage green(35, 73, red.format());
+    green.fill(Qt::green);
+
+    QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+
+    QScopedPointer<QRhiTexture> redTexture(rhi->newTexture(QRhiTexture::RGBA8, red.size(),
+                                                           1, QRhiTexture::UsedAsTransferSource));
+    QVERIFY(redTexture->build());
+    batch->uploadTexture(redTexture.data(), red);
+
+    QScopedPointer<QRhiTexture> greenTexture(rhi->newTexture(QRhiTexture::RGBA8, green.size(),
+                                                             1, QRhiTexture::UsedAsTransferSource));
+    QVERIFY(greenTexture->build());
+    batch->uploadTexture(greenTexture.data(), green);
+
+    // 1. simple copy red -> texture; 2. subimage copy green -> texture; 3. partial subimage copy green -> texture
+    {
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, red.size(),
+                                                            1, QRhiTexture::UsedAsTransferSource));
+        QVERIFY(texture->build());
+
+        // 1.
+        batch->copyTexture(texture.data(), redTexture.data());
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch->readBackTexture(texture.data(), &readResult);
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(readCompleted);
+        QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                            readResult.pixelSize.width(), readResult.pixelSize.height(),
+                            red.format());
+        QVERIFY(imageRGBAEquals(red, wrapperImage));
+
+        batch = rhi->nextResourceUpdateBatch();
+        readCompleted = false;
+
+        // 2.
+        QRhiTextureCopyDescription copyDesc;
+        copyDesc.setDestinationTopLeft(QPoint(15, 23));
+        batch->copyTexture(texture.data(), greenTexture.data(), copyDesc);
+
+        batch->readBackTexture(texture.data(), &readResult);
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(readCompleted);
+        wrapperImage = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                              readResult.pixelSize.width(), readResult.pixelSize.height(),
+                              red.format());
+
+        QImage expectedImage = red;
+        QPainter painter(&expectedImage);
+        painter.drawImage(copyDesc.destinationTopLeft(), green);
+        painter.end();
+
+        QVERIFY(imageRGBAEquals(expectedImage, wrapperImage));
+
+        batch = rhi->nextResourceUpdateBatch();
+        readCompleted = false;
+
+        // 3.
+        copyDesc.setDestinationTopLeft(QPoint(125, 89));
+        copyDesc.setSourceTopLeft(QPoint(5, 5));
+        copyDesc.setPixelSize(QSize(26, 45));
+        batch->copyTexture(texture.data(), greenTexture.data(), copyDesc);
+
+        batch->readBackTexture(texture.data(), &readResult);
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(readCompleted);
+        wrapperImage = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                              readResult.pixelSize.width(), readResult.pixelSize.height(),
+                              red.format());
+
+        painter.begin(&expectedImage);
+        painter.drawImage(copyDesc.destinationTopLeft(), green,
+                          QRect(copyDesc.sourceTopLeft(), copyDesc.pixelSize()));
+        painter.end();
+
+        QVERIFY(imageRGBAEquals(expectedImage, wrapperImage));
+    }
+}
+
+void tst_QRhi::resourceUpdateBatchRGBATextureMip_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::resourceUpdateBatchRGBATextureMip()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing texture resource updates");
+
+
+    QImage red(512, 512, QImage::Format_RGBA8888_Premultiplied);
+    red.fill(Qt::red);
+
+    const QRhiTexture::Flags textureFlags =
+            QRhiTexture::UsedAsTransferSource
+            | QRhiTexture::MipMapped
+            | QRhiTexture::UsedWithGenerateMips;
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, red.size(), 1, textureFlags));
+    QVERIFY(texture->build());
+
+    QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+    batch->uploadTexture(texture.data(), red);
+    batch->generateMips(texture.data());
+    QVERIFY(submitResourceUpdates(rhi.data(), batch));
+
+    const int levelCount = rhi->mipLevelsForSize(red.size());
+    QCOMPARE(levelCount, 10);
+    for (int level = 0; level < levelCount; ++level) {
+        batch = rhi->nextResourceUpdateBatch();
+
+        QRhiReadbackDescription readDesc(texture.data());
+        readDesc.setLevel(level);
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch->readBackTexture(readDesc, &readResult);
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(readCompleted);
+
+        const QSize expectedSize = rhi->sizeForMipLevel(level, texture->pixelSize());
+        QCOMPARE(readResult.pixelSize, expectedSize);
+
+        QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                            readResult.pixelSize.width(), readResult.pixelSize.height(),
+                            red.format());
+
+        // Compare to a scaled version; we can do this safely only because we
+        // only have plain red pixels in the source image.
+        QImage expectedImage = red.scaled(expectedSize);
+        QVERIFY(imageRGBAEquals(expectedImage, wrapperImage));
     }
 }
 
