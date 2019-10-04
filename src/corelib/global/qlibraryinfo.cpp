@@ -728,6 +728,11 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
 
 #ifndef QT_BUILD_QMAKE_BOOTSTRAP
     if (!fromConf) {
+        // "volatile" here is a hack to prevent compilers from doing a
+        // compile-time strlen() on "path". The issue is that Qt installers
+        // will binary-patch the Qt installation paths -- in such scenarios, Qt
+        // will be built with a dummy path, thus the compile-time result of
+        // strlen is meaningless.
         const char * volatile path = 0;
         if (loc == PrefixPath) {
             path = getPrefix(
