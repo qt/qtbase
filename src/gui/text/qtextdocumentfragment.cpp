@@ -1062,6 +1062,7 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processBlockNode()
                     fmt.setLeftPadding(leftPadding(currentNodeIdx));
                 if (rightPadding(currentNodeIdx) >= 0)
                     fmt.setRightPadding(rightPadding(currentNodeIdx));
+#ifndef QT_NO_CSSPARSER
                 if (tableCellBorder(currentNodeIdx, QCss::TopEdge) > 0)
                     fmt.setTopBorder(tableCellBorder(currentNodeIdx, QCss::TopEdge));
                 if (tableCellBorder(currentNodeIdx, QCss::RightEdge) > 0)
@@ -1086,6 +1087,7 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processBlockNode()
                     fmt.setBottomBorderBrush(tableCellBorderBrush(currentNodeIdx, QCss::BottomEdge));
                 if (tableCellBorderBrush(currentNodeIdx, QCss::LeftEdge) != Qt::NoBrush)
                     fmt.setLeftBorderBrush(tableCellBorderBrush(currentNodeIdx, QCss::LeftEdge));
+#endif
 
                 cell.setFormat(fmt);
 
