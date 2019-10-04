@@ -161,7 +161,7 @@ struct QRelation
 class QRelatedTableModel : public QSqlTableModel
 {
 public:
-    QRelatedTableModel(QRelation *rel, QObject *parent = 0, QSqlDatabase db = QSqlDatabase());
+    QRelatedTableModel(QRelation *rel, QObject *parent = 0, const QSqlDatabase &db = QSqlDatabase());
     bool select() override;
 private:
     bool firstSelect;
@@ -245,7 +245,7 @@ bool QRelation::isValid()
 
 
 
-QRelatedTableModel::QRelatedTableModel(QRelation *rel, QObject *parent, QSqlDatabase db) :
+QRelatedTableModel::QRelatedTableModel(QRelation *rel, QObject *parent, const QSqlDatabase &db) :
     QSqlTableModel(parent, db), firstSelect(true), relation(rel)
 {
 }
@@ -410,7 +410,7 @@ void QSqlRelationalTableModelPrivate::clearCache()
     and the database connection to \a db. If \a db is not valid, the
     default database connection will be used.
 */
-QSqlRelationalTableModel::QSqlRelationalTableModel(QObject *parent, QSqlDatabase db)
+QSqlRelationalTableModel::QSqlRelationalTableModel(QObject *parent, const QSqlDatabase &db)
     : QSqlTableModel(*new QSqlRelationalTableModelPrivate, parent, db)
 {
 }

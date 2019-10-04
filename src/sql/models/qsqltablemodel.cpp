@@ -291,7 +291,7 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
 
     The default edit strategy is \l OnRowChange.
 */
-QSqlTableModel::QSqlTableModel(QObject *parent, QSqlDatabase db)
+QSqlTableModel::QSqlTableModel(QObject *parent, const QSqlDatabase &db)
     : QSqlQueryModel(*new QSqlTableModelPrivate, parent)
 {
     Q_D(QSqlTableModel);
@@ -300,7 +300,7 @@ QSqlTableModel::QSqlTableModel(QObject *parent, QSqlDatabase db)
 
 /*!  \internal
 */
-QSqlTableModel::QSqlTableModel(QSqlTableModelPrivate &dd, QObject *parent, QSqlDatabase db)
+QSqlTableModel::QSqlTableModel(QSqlTableModelPrivate &dd, QObject *parent, const QSqlDatabase &db)
     : QSqlQueryModel(dd, parent)
 {
     Q_D(QSqlTableModel);
