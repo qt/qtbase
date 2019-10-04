@@ -2627,6 +2627,7 @@ def write_main_part(
     if destdir:
         if destdir.startswith("./") or destdir.startswith("../"):
             destdir = f"${{CMAKE_CURRENT_BINARY_DIR}}/{destdir}"
+        destdir = destdir.replace("$$[QT_INSTALL_PREFIX]", "${INSTALL_DIRECTORY}")
         extra_lines.append(f'OUTPUT_DIRECTORY "{destdir}"')
 
     cm_fh.write(f"{spaces(indent)}{cmake_function}({name}\n")
@@ -2795,6 +2796,7 @@ def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int
 
     target_path = scope.get_string("target.path")
     if target_path:
+        target_path = target_path.replace("$$[QT_INSTALL_PREFIX]", "${INSTALL_DIRECTORY}")
         target_path = target_path.replace("$$[QT_INSTALL_EXAMPLES]", "${INSTALL_EXAMPLESDIR}")
         target_path = target_path.replace("$$[QT_INSTALL_TESTS]", "${INSTALL_TESTSDIR}")
         target_path = target_path.replace("$$TARGET", scope.TARGET)
