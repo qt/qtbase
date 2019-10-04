@@ -45,7 +45,7 @@ if(TARGET Qt::Gui)
     endif()
 
     if(QT_FEATURE_vulkan)
-#         add_subdirectory(vulkan) # special case: removed
+        add_subdirectory(vulkan)
     endif()
 endif()
 
