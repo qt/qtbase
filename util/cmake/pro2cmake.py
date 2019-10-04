@@ -2796,7 +2796,10 @@ def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int
     target_path = scope.get_string("target.path")
     if target_path:
         target_path = target_path.replace("$$[QT_INSTALL_EXAMPLES]", "${INSTALL_EXAMPLESDIR}")
-        extra.append(f'OUTPUT_DIRECTORY "{target_path}"')
+        target_path = target_path.replace("$$[QT_INSTALL_TESTS]", "${INSTALL_TESTSDIR}")
+        target_path = target_path.replace("$$TARGET", scope.TARGET)
+        if not scope.get("DESTDIR"):
+            extra.append(f'OUTPUT_DIRECTORY "{target_path}"')
         if "target" in scope.get("INSTALLS"):
             extra.append(f'INSTALL_DIRECTORY "{target_path}"')
 

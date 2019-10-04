@@ -1,0 +1,32 @@
+# Generated from qdatastream.pro.
+
+#####################################################################
+## tst_qdatastream Test:
+#####################################################################
+
+# Collect test data
+list(APPEND test_data "datastream.q42")
+
+add_qt_test(tst_qdatastream
+    SOURCES
+        tst_qdatastream.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+    TESTDATA ${test_data}
+)
+
+## Scopes:
+#####################################################################
+
+# Resources:
+set(testdata_resource_files
+    "datastream.q42"
+)
+
+add_qt_resource(tst_qdatastream "testdata"
+    PREFIX
+        "/"
+    FILES
+        ${testdata_resource_files}
+)
+
