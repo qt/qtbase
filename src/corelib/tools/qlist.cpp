@@ -847,9 +847,10 @@ void **QListData::erase(void **xi)
 
 /*! \fn template <class T> void QList<T>::insert(int i, const T &value)
 
-    Inserts \a value at index position \a i in the list. If \a i <= 0,
-    the value is prepended to the list. If \a i >= size(), the
-    value is appended to the list.
+    Inserts \a value at index position \a i in the list.
+
+    If \a i == 0, the value is prepended to the list. If \a i == size(),
+    the value is appended to the list.
 
     Example:
     \snippet code/src_corelib_tools_qlistdata.cpp 8

@@ -580,8 +580,16 @@ inline T &QList<T>::operator[](int i)
   detach(); return reinterpret_cast<Node *>(p.at(i))->t(); }
 template <typename T>
 inline void QList<T>::removeAt(int i)
-{ if(i >= 0 && i < p.size()) { detach();
- node_destruct(reinterpret_cast<Node *>(p.at(i))); p.remove(i); } }
+{
+#if !QT_DEPRECATED_SINCE(5, 15)
+    Q_ASSERT_X(i >= 0 && i < p.size(), "QList<T>::removeAt", "index out of range");
+#elif !defined(QT_NO_DEBUG)
+    if (i < 0 || i >= p.size())
+        qWarning("QList::removeAt(): Index out of range.");
+#endif
+    detach();
+    node_destruct(reinterpret_cast<Node *>(p.at(i))); p.remove(i);
+}
 template <typename T>
 inline T QList<T>::takeAt(int i)
 { Q_ASSERT_X(i >= 0 && i < p.size(), "QList<T>::take", "index out of range");
@@ -676,6 +684,12 @@ inline void QList<T>::prepend(const T &t)
 template <typename T>
 inline void QList<T>::insert(int i, const T &t)
 {
+#if !QT_DEPRECATED_SINCE(5, 15)
+    Q_ASSERT_X(i >= 0 && i <= p.size(), "QList<T>::insert", "index out of range");
+#elif !defined(QT_NO_DEBUG)
+    if (i < 0 || i > p.size())
+        qWarning("QList::insert(): Index out of range.");
+#endif
     if (d->ref.isShared()) {
         Node *n = detach_helper_grow(i, 1);
         QT_TRY {
