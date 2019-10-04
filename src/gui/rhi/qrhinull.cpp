@@ -628,10 +628,9 @@ QRhiRenderPassDescriptor *QNullTextureRenderTarget::newCompatibleRenderPassDescr
 bool QNullTextureRenderTarget::build()
 {
     d.rp = QRHI_RES(QNullRenderPassDescriptor, m_renderPassDesc);
-    const QVector<QRhiColorAttachment> colorAttachments = m_desc.colorAttachments();
-    if (!colorAttachments.isEmpty()) {
-        QRhiTexture *tex = colorAttachments.first().texture();
-        QRhiRenderBuffer *rb = colorAttachments.first().renderBuffer();
+    if (m_desc.cbeginColorAttachments() != m_desc.cendColorAttachments()) {
+        QRhiTexture *tex = m_desc.cbeginColorAttachments()->texture();
+        QRhiRenderBuffer *rb = m_desc.cbeginColorAttachments()->renderBuffer();
         d.pixelSize = tex ? tex->pixelSize() : rb->pixelSize();
     } else if (m_desc.depthStencilBuffer()) {
         d.pixelSize = m_desc.depthStencilBuffer()->pixelSize();

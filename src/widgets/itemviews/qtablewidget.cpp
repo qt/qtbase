@@ -923,10 +923,8 @@ QTableWidgetSelectionRange::QTableWidgetSelectionRange(int top, int left, int bo
     Constructs a the table selection range by copying the given \a
     other table selection range.
 */
-QTableWidgetSelectionRange::QTableWidgetSelectionRange(const QTableWidgetSelectionRange &other)
-    : top(other.top), left(other.left), bottom(other.bottom), right(other.right)
-{
-}
+QTableWidgetSelectionRange::QTableWidgetSelectionRange(const QTableWidgetSelectionRange &other) = default;
+QTableWidgetSelectionRange &QTableWidgetSelectionRange::operator=(const QTableWidgetSelectionRange &other) = default;
 
 /*!
     Destroys the table selection range.

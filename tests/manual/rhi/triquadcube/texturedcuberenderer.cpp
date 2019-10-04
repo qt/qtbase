@@ -181,16 +181,18 @@ void TexturedCubeRenderer::queueResourceUpdates(QRhiResourceUpdateBatch *resourc
 
     if (!m_image.isNull()) {
         if (MIPMAP) {
-            QRhiTextureUploadDescription desc;
+            QVarLengthArray<QRhiTextureUploadEntry, 16> descEntries;
             if (!AUTOGENMIPMAP) {
                 // the ghetto mipmap generator...
                 for (int i = 0, ie = m_r->mipLevelsForSize(m_image.size()); i != ie; ++i) {
                     QImage image = m_image.scaled(m_r->sizeForMipLevel(i, m_image.size()));
-                    desc.append({ 0, i, image });
+                    descEntries.append({ 0, i, image });
                 }
             } else {
-                desc.append({ 0, 0, m_image });
+                descEntries.append({ 0, 0, m_image });
             }
+            QRhiTextureUploadDescription desc;
+            desc.setEntries(descEntries.cbegin(), descEntries.cend());
             resourceUpdates->uploadTexture(m_tex, desc);
             if (AUTOGENMIPMAP)
                 resourceUpdates->generateMips(m_tex);

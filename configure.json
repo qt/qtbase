@@ -336,13 +336,13 @@
                 "qmake": "CONFIG += c++11 c++14"
             }
         },
-        "c++1z": {
+        "c++17": {
             "label": "C++17 support",
             "type": "compile",
             "test": {
                 "head": [
                     "#if __cplusplus > 201402L",
-                    "// Compiler claims to support experimental C++1z, trust it",
+                    "// Compiler claims to support C++17, trust it",
                     "#else",
                     "#  error __cplusplus must be > 201402L (the value for C++14)",
                     "#endif",
@@ -354,7 +354,7 @@
                     "int i = std::get<int>(v);",
                     "std::visit([](const auto &) { return 1; }, v);"
                 ],
-                "qmake": "CONFIG += c++11 c++14 c++1z"
+                "qmake": "CONFIG += c++11 c++14 c++17"
             }
         },
         "c++2a": {
@@ -368,7 +368,7 @@
                     "#  error __cplusplus must be > 201703L (the value for C++17)",
                     "#endif"
                 ],
-                "qmake": "CONFIG += c++11 c++14 c++1z c++2a"
+                "qmake": "CONFIG += c++11 c++14 c++17 c++2a"
             }
         },
         "precompile_header": {
@@ -818,6 +818,7 @@
         "rpath": {
             "label": "Build with RPATH",
             "autoDetect": "var.QMAKE_LFLAGS_RPATH != '' && features.shared",
+            "condition": "!config.android",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "rpath_dir": {
@@ -950,15 +951,20 @@
             "condition": "features.c++11 && tests.c++14",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
+        "c++17": {
+            "label": "C++17",
+            "condition": "features.c++14 && tests.c++17",
+            "output": [ "publicFeature", "publicQtConfig" ]
+        },
         "c++1z": {
             "label": "C++17",
-            "condition": "features.c++14 && tests.c++1z",
+            "condition": "features.c++17",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c++2a": {
             "label": "C++2a",
             "autoDetect": false,
-            "condition": "features.c++1z && tests.c++2a",
+            "condition": "features.c++17 && tests.c++2a",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c89": {
@@ -1485,7 +1491,7 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                 {
                     "message": "Using C++ standard",
                     "type": "firstAvailableFeature",
-                    "args": "c++2a c++1z c++14 c++11"
+                    "args": "c++2a c++17 c++14 c++11"
                 },
                 {
                     "type": "feature",

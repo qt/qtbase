@@ -328,9 +328,8 @@ public:
             TextureOp op;
             op.type = Upload;
             op.upload.tex = tex;
-            const QVector<QRhiTextureUploadEntry> &entries(desc.entries());
-            for (const QRhiTextureUploadEntry &entry : entries)
-                op.upload.subresDesc[entry.layer()][entry.level()].append(entry.description());
+            for (auto it = desc.cbeginEntries(), itEnd = desc.cendEntries(); it != itEnd; ++it)
+                op.upload.subresDesc[it->layer()][it->level()].append(it->description());
             return op;
         }
 

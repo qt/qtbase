@@ -812,8 +812,8 @@ QSqlRecord QPSQLResult::record() const
         return info;
 
     int count = PQnfields(d->result);
+    QSqlField f;
     for (int i = 0; i < count; ++i) {
-        QSqlField f;
         if (d->drv_d_func()->isUtf8)
             f.setName(QString::fromUtf8(PQfname(d->result, i)));
         else
@@ -833,6 +833,8 @@ QSqlRecord QPSQLResult::record() const
                 }
             }
             f.setTableName(tableName);
+        } else {
+            f.setTableName(QString());
         }
         int ptype = PQftype(d->result, i);
         f.setType(qDecodePSQLType(ptype));

@@ -21,7 +21,7 @@ CONFIG += simd optimize_full
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
 
 ANDROID_LIB_DEPENDENCIES = \
-    plugins/platforms/libqtforandroid.so
+    plugins/platforms/libplugins_platforms_qtforandroid.so
 ANDROID_BUNDLED_JAR_DEPENDENCIES = \
     jar/QtAndroid.jar
 ANDROID_PERMISSIONS = \
