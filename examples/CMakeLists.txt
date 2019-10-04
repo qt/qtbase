@@ -41,7 +41,7 @@ if(TARGET Qt::Gui)
     add_subdirectory(gui)
 
     if(QT_FEATURE_opengl)
-#         add_subdirectory(opengl) # special case: removed
+        add_subdirectory(opengl)
     endif()
 
     if(QT_FEATURE_vulkan)
