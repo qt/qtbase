@@ -621,7 +621,7 @@ public:
     void setWrapMode(CoordinateDirection direction, WrapMode mode);
     WrapMode wrapMode(CoordinateDirection direction) const;
 
-    void setBorderColor(QColor color);
+    void setBorderColor(const QColor &color);
     void setBorderColor(float r, float g, float b, float a);
     void setBorderColor(int r, int g, int b, int a);
     void setBorderColor(uint r, uint g, uint b, uint a);
