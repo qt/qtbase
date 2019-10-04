@@ -2283,7 +2283,7 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
 
 
 def write_statecharts(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, is_example=False):
-    sources = scope.get("STATECHARTS")
+    sources = scope.get_files("STATECHARTS", use_vpath=True)
     if not sources:
         return
     cm_fh.write("\n# Statecharts:\n")
