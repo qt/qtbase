@@ -29,6 +29,6 @@
 #include <QTextDocument>
 
 extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size) {
-    QTextDocument().setMarkdown(QByteArray(Data, Size));
+    QTextDocument().setMarkdown(QByteArray::fromRawData(Data, Size));
     return 0;
 }
