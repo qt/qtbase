@@ -155,7 +155,7 @@ QT_BEGIN_NAMESPACE
 int qfloat16::fpClassify() const noexcept
 {
     return isInf() ? FP_INFINITE : isNaN() ? FP_NAN
-        : !b16 ? FP_ZERO : isNormal() ? FP_NORMAL : FP_SUBNORMAL;
+        : !(b16 & 0x7fff) ? FP_ZERO : isNormal() ? FP_NORMAL : FP_SUBNORMAL;
 }
 
 /*! \fn int qRound(qfloat16 value)

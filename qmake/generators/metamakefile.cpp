@@ -252,6 +252,10 @@ void BuildsMetaMakefileGenerator::checkForConflictingTargets() const
         // and the last entry in makefiles is the "glue" Build.
         return;
     }
+    if (!project->isActiveConfig("build_all")) {
+        // Only complain if we're about to build all configurations.
+        return;
+    }
     using TargetInfo = std::pair<Build *, ProString>;
     QVector<TargetInfo> targets;
     const int last = makefiles.count() - 1;

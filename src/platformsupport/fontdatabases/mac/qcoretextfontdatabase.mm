@@ -159,7 +159,7 @@ void QCoreTextFontDatabase::populateFamily(const QString &familyName)
     // A single family might match several different fonts with different styles eg.
     QCFType<CFArrayRef> matchingFonts = (CFArrayRef) CTFontDescriptorCreateMatchingFontDescriptors(nameOnlyDescriptor, 0);
     if (!matchingFonts) {
-        qWarning() << "QCoreTextFontDatabase: Found no matching fonts for family" << familyName;
+        qCWarning(lcQpaFonts) << "QCoreTextFontDatabase: Found no matching fonts for family" << familyName;
         return;
     }
 
@@ -400,20 +400,20 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family)
     auto attributes = @{ id(kCTFontFamilyNameAttribute): family.toNSString() };
     QCFType<CTFontDescriptorRef> fontDescriptor = CTFontDescriptorCreateWithAttributes(CFDictionaryRef(attributes));
     if (!fontDescriptor) {
-        qWarning() << "Failed to create fallback font descriptor for" << family;
+        qCWarning(lcQpaFonts) << "Failed to create fallback font descriptor for" << family;
         return QStringList();
     }
 
     QCFType<CTFontRef> font = CTFontCreateWithFontDescriptor(fontDescriptor, 12.0, 0);
     if (!font) {
-        qWarning() << "Failed to create fallback font for" << family;
+        qCWarning(lcQpaFonts) << "Failed to create fallback font for" << family;
         return QStringList();
     }
 
     QCFType<CFArrayRef> cascadeList = CFArrayRef(CTFontCopyDefaultCascadeListForLanguages(font,
         (CFArrayRef)[NSUserDefaults.standardUserDefaults stringArrayForKey:@"AppleLanguages"]));
     if (!cascadeList) {
-        qWarning() << "Failed to create fallback cascade list for" << family;
+        qCWarning(lcQpaFonts) << "Failed to create fallback cascade list for" << family;
         return QStringList();
     }
 

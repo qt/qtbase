@@ -495,6 +495,8 @@ static QString prefixFromAppDirHelper()
 #endif
 
 #if !defined(QT_BUILD_QMAKE) && QT_CONFIG(relocatable)
+#if !defined(QT_STATIC) && !(defined(Q_OS_DARWIN) && QT_CONFIG(framework)) \
+        && (QT_CONFIG(dlopen) || defined(Q_OS_WIN))
 static QString prefixFromQtCoreLibraryHelper(const QString &qtCoreLibraryPath)
 {
     const QString qtCoreLibrary = QDir::fromNativeSeparators(qtCoreLibraryPath);
@@ -503,6 +505,7 @@ static QString prefixFromQtCoreLibraryHelper(const QString &qtCoreLibraryPath)
             + QLatin1String(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH);
     return QDir::cleanPath(prefixDir);
 }
+#endif
 
 #if defined(Q_OS_WIN)
 #if defined(Q_OS_WINRT)
@@ -851,10 +854,14 @@ QT_END_NAMESPACE
 
 #include "private/qcoreapplication_p.h"
 
+QT_WARNING_DISABLE_GCC("-Wattributes")
+QT_WARNING_DISABLE_CLANG("-Wattributes")
+QT_WARNING_DISABLE_INTEL(2621)
+
 extern const char qt_core_interpreter[] __attribute__((section(".interp")))
     = ELF_INTERPRETER;
 
-extern "C" void qt_core_boilerplate();
+extern "C" void qt_core_boilerplate() __attribute__((force_align_arg_pointer));
 void qt_core_boilerplate()
 {
     printf("This is the QtCore library version " QT_BUILD_STR "\n"

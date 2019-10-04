@@ -46,6 +46,8 @@ if (NOT TARGET Qt5::rcc)
     )
 endif()
 
+set(CMAKE_AUTOMOC_MACRO_NAMES "Q_OBJECT" "Q_GADGET" "Q_NAMESPACE" "Q_NAMESPACE_EXPORT")
+
 set(Qt5Core_QMAKE_EXECUTABLE Qt5::qmake)
 set(Qt5Core_MOC_EXECUTABLE Qt5::moc)
 set(Qt5Core_RCC_EXECUTABLE Qt5::rcc)

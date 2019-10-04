@@ -42,8 +42,6 @@
 #include "qedidparser_p.h"
 #include "qedidvendortable_p.h"
 
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
-
 #define EDID_DESCRIPTOR_ALPHANUMERIC_STRING 0xfe
 #define EDID_DESCRIPTOR_PRODUCT_NAME 0xfc
 #define EDID_DESCRIPTOR_SERIAL_NUMBER 0xff
@@ -139,9 +137,9 @@ bool QEdidParser::parse(const QByteArray &blob)
     manufacturer = m_vendorCache.value(pnpIdString);
     if (manufacturer.isEmpty()) {
         // Find the manufacturer from the vendor lookup table
-        for (size_t i = 0; i < ARRAY_LENGTH(q_edidVendorTable); i++) {
-            if (strncmp(q_edidVendorTable[i].id, pnpId, 3) == 0) {
-                manufacturer = QString::fromUtf8(q_edidVendorTable[i].name);
+        for (const auto &vendor : q_edidVendorTable) {
+            if (strncmp(vendor.id, pnpId, 3) == 0) {
+                manufacturer = QString::fromUtf8(vendor.name);
                 break;
             }
         }

@@ -1275,14 +1275,11 @@ void QCocoaWindow::windowWillClose()
 bool QCocoaWindow::windowShouldClose()
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::windowShouldClose" << window();
-   // This callback should technically only determine if the window
-   // should (be allowed to) close, but since our QPA API to determine
-   // that also involves actually closing the window we do both at the
-   // same time, instead of doing the latter in windowWillClose.
-    bool accepted = false;
-    QWindowSystemInterface::handleCloseEvent(window(), &accepted);
-    QWindowSystemInterface::flushWindowSystemEvents();
-    return accepted;
+    // This callback should technically only determine if the window
+    // should (be allowed to) close, but since our QPA API to determine
+    // that also involves actually closing the window we do both at the
+    // same time, instead of doing the latter in windowWillClose.
+    return QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::SynchronousDelivery>(window());
 }
 
 // ----------------------------- QPA forwarding -----------------------------
