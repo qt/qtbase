@@ -96,6 +96,10 @@ function(__qt_quick_compiler_process_resources target resource_name)
             string(REGEX REPLACE "\.qml$" "_qml" compiled_file ${compiled_file})
             string(REGEX REPLACE "[\$#\?]+" "_" compiled_file ${compiled_file})
             set(compiled_file "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qmlcache/${resource_name}/${compiled_file}.cpp")
+            get_filename_component(out_dir ${compiled_file} DIRECTORY)
+            if(NOT EXISTS ${out_dir})
+                file(MAKE_DIRECTORY ${out_dir})
+            endif()
             add_custom_command(
                 OUTPUT ${compiled_file}
                 DEPENDS ${file_absolute}
