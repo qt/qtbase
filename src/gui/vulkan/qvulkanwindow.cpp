@@ -2018,6 +2018,10 @@ void QVulkanWindowPrivate::endFrame()
     presInfo.waitSemaphoreCount = 1;
     presInfo.pWaitSemaphores = gfxQueueFamilyIdx == presQueueFamilyIdx ? &frame.drawSem : &frame.presTransSem;
 
+    // Do platform-specific WM notification. F.ex. essential on Wayland in
+    // order to circumvent driver frame callbacks
+    inst->presentAboutToBeQueued(q);
+
     err = vkQueuePresentKHR(gfxQueue, &presInfo);
     if (err != VK_SUCCESS) {
         if (err == VK_ERROR_OUT_OF_DATE_KHR) {

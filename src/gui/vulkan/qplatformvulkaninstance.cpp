@@ -80,6 +80,11 @@ QPlatformVulkanInstance::~QPlatformVulkanInstance()
 {
 }
 
+void QPlatformVulkanInstance::presentAboutToBeQueued(QWindow *window)
+{
+    Q_UNUSED(window);
+}
+
 void QPlatformVulkanInstance::presentQueued(QWindow *window)
 {
     Q_UNUSED(window);
