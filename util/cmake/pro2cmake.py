@@ -806,6 +806,7 @@ class Scope(object):
             operations = {
                 "QT_SOURCE_TREE": [SetOperation(["${QT_SOURCE_TREE}"])],
                 "QT_BUILD_TREE": [SetOperation(["${PROJECT_BINARY_DIR}"])],
+                "QTRO_SOURCE_TREE": [SetOperation(["${CMAKE_SOURCE_DIR}"])],
             }
 
         self._operations = copy.deepcopy(operations)
