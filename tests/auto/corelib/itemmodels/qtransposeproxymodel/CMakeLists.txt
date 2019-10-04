@@ -1,12 +1,12 @@
-# Generated from qitemselectionmodel.pro.
+# Generated from qtransposeproxymodel.pro.
 
 #####################################################################
-## tst_qitemselectionmodel Test:
+## tst_qtransposeproxymodel Test:
 #####################################################################
 
-add_qt_test(tst_qitemselectionmodel
+add_qt_test(tst_qtransposeproxymodel
     SOURCES
-        tst_qitemselectionmodel.cpp
+        tst_qtransposeproxymodel.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
 )

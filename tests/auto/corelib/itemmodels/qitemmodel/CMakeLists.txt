@@ -1,12 +1,14 @@
-# Generated from qitemselectionmodel.pro.
+# Generated from qitemmodel.pro.
 
 #####################################################################
-## tst_qitemselectionmodel Test:
+## tst_qitemmodel Test:
 #####################################################################
 
-add_qt_test(tst_qitemselectionmodel
+add_qt_test(tst_qitemmodel
     SOURCES
-        tst_qitemselectionmodel.cpp
+        tst_qitemmodel.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Sql
+        Qt::Widgets
 )

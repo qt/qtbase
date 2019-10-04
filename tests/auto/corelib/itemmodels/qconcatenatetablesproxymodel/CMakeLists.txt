@@ -1,12 +1,12 @@
-# Generated from qitemselectionmodel.pro.
+# Generated from qconcatenatetablesproxymodel.pro.
 
 #####################################################################
-## tst_qitemselectionmodel Test:
+## tst_qconcatenatetablesproxymodel Test:
 #####################################################################
 
-add_qt_test(tst_qitemselectionmodel
+add_qt_test(tst_qconcatenatetablesproxymodel
     SOURCES
-        tst_qitemselectionmodel.cpp
+        tst_qconcatenatetablesproxymodel.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
 )
