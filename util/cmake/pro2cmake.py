@@ -1592,6 +1592,24 @@ def map_condition(condition: str) -> str:
     return cmake_condition.strip()
 
 
+_path_replacements = {
+    "$$[QT_INSTALL_PREFIX]": "${INSTALL_DIRECTORY}",
+    "$$[QT_INSTALL_EXAMPLES]": "${INSTALL_EXAMPLESDIR}",
+    "$$[QT_INSTALL_TESTS]": "${INSTALL_TESTSDIR}",
+ }
+
+def replace_path_constants(path: str, scope: Scope) -> str:
+    """ Clean up DESTDIR and target.path """
+    if path.startswith("./"):
+        path = f"${{CMAKE_CURRENT_BINARY_DIR}}/{path[2:]}"
+    elif path.startswith("../"):
+        path = f"${{CMAKE_CURRENT_BINARY_DIR}}/{path}"
+    for original, replacement in _path_replacements:
+        path = path.replace(original, replacement)
+    path = path.replace("$$TARGET", scope.TARGET)
+    return path
+
+
 def handle_subdir(
     scope: Scope, cm_fh: IO[str], *, indent: int = 0, is_example: bool = False
 ) -> None:
@@ -2625,9 +2643,7 @@ def write_main_part(
     # Check for DESTDIR override
     destdir = scope.get_string("DESTDIR")
     if destdir:
-        if destdir.startswith("./") or destdir.startswith("../"):
-            destdir = f"${{CMAKE_CURRENT_BINARY_DIR}}/{destdir}"
-        destdir = destdir.replace("$$[QT_INSTALL_PREFIX]", "${INSTALL_DIRECTORY}")
+        destdir = replace_path_constants(destdir, scope)
         extra_lines.append(f'OUTPUT_DIRECTORY "{destdir}"')
 
     cm_fh.write(f"{spaces(indent)}{cmake_function}({name}\n")
@@ -2796,10 +2812,7 @@ def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int
 
     target_path = scope.get_string("target.path")
     if target_path:
-        target_path = target_path.replace("$$[QT_INSTALL_PREFIX]", "${INSTALL_DIRECTORY}")
-        target_path = target_path.replace("$$[QT_INSTALL_EXAMPLES]", "${INSTALL_EXAMPLESDIR}")
-        target_path = target_path.replace("$$[QT_INSTALL_TESTS]", "${INSTALL_TESTSDIR}")
-        target_path = target_path.replace("$$TARGET", scope.TARGET)
+        target_path = replace_path_constants(target_path, scope)
         if not scope.get("DESTDIR"):
             extra.append(f'OUTPUT_DIRECTORY "{target_path}"')
         if "target" in scope.get("INSTALLS"):
