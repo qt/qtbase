@@ -86,6 +86,8 @@ static bool checkNameDecodable(const char *d_name, qsizetype len)
     return cs.invalidChars == 0 && cs.remainingChars == 0;
 #else
     // if we have no text codecs, then QString::fromLocal8Bit is fromLatin1
+    Q_UNUSED(d_name)
+    Q_UNUSED(len)
     return true;
 #endif
 }
