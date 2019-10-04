@@ -340,13 +340,11 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleExposeEvent, QWindow *window, const QReg
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
-QT_DEFINE_QPA_EVENT_HANDLER(void, handleCloseEvent, QWindow *window, bool *accepted)
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleCloseEvent, QWindow *window)
 {
-    if (window) {
-        QWindowSystemInterfacePrivate::CloseEvent *e =
-                new QWindowSystemInterfacePrivate::CloseEvent(window, accepted);
-        QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
-    }
+    Q_ASSERT(window);
+    auto *event = new QWindowSystemInterfacePrivate::CloseEvent(window);
+    return QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(event);
 }
 
 /*!

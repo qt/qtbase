@@ -348,9 +348,7 @@ void QPlatformWindow::setWindowIcon(const QIcon &icon) { Q_UNUSED(icon); }
 */
 bool QPlatformWindow::close()
 {
-    bool accepted = false;
-    QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::SynchronousDelivery>(window(), &accepted);
-    return accepted;
+    return QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::SynchronousDelivery>(window());
 }
 
 /*!
