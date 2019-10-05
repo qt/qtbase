@@ -500,6 +500,11 @@ bool QRhiGles2::create(QRhi::Flags flags)
     // extension(s) (which is not in ES 3.0...messy)
     caps.properMapBuffer = f->hasOpenGLExtension(QOpenGLExtensions::MapBufferRange);
 
+    if (caps.gles)
+        caps.nonBaseLevelFramebufferTexture = caps.ctxMajor >= 3; // ES 3.0
+    else
+        caps.nonBaseLevelFramebufferTexture = true;
+
     if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
         f->glEnable(GL_POINT_SPRITE);
@@ -744,6 +749,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ReadBackNonUniformBuffer:
         return !caps.gles || caps.properMapBuffer;
+    case QRhi::ReadBackNonBaseMipLevel:
+        return caps.nonBaseLevelFramebufferTexture;
     default:
         Q_UNREACHABLE();
         return false;
@@ -2156,23 +2163,31 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             QRhiReadbackResult *result = cmd.args.readPixels.result;
             GLuint tex = cmd.args.readPixels.texture;
             GLuint fbo = 0;
+            int mipLevel = 0;
             if (tex) {
                 result->pixelSize = QSize(cmd.args.readPixels.w, cmd.args.readPixels.h);
                 result->format = cmd.args.readPixels.format;
-                f->glGenFramebuffers(1, &fbo);
-                f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-                f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                          cmd.args.readPixels.readTarget, cmd.args.readPixels.texture, cmd.args.readPixels.level);
+                mipLevel = cmd.args.readPixels.level;
+                if (mipLevel == 0 || caps.nonBaseLevelFramebufferTexture) {
+                    f->glGenFramebuffers(1, &fbo);
+                    f->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+                    f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                              cmd.args.readPixels.readTarget, cmd.args.readPixels.texture, mipLevel);
+                }
             } else {
                 result->pixelSize = currentSwapChain->pixelSize;
                 result->format = QRhiTexture::RGBA8;
                 // readPixels handles multisample resolving implicitly
             }
             result->data.resize(result->pixelSize.width() * result->pixelSize.height() * 4);
-            // With GLES (2.0?) GL_RGBA is the only mandated readback format, so stick with it.
-            f->glReadPixels(0, 0, result->pixelSize.width(), result->pixelSize.height(),
-                            GL_RGBA, GL_UNSIGNED_BYTE,
-                            result->data.data());
+            if (mipLevel == 0 || caps.nonBaseLevelFramebufferTexture) {
+                // With GLES (2.0?) GL_RGBA is the only mandated readback format, so stick with it.
+                f->glReadPixels(0, 0, result->pixelSize.width(), result->pixelSize.height(),
+                                GL_RGBA, GL_UNSIGNED_BYTE,
+                                result->data.data());
+            } else {
+                result->data.fill('\0');
+            }
             if (fbo) {
                 f->glBindFramebuffer(GL_FRAMEBUFFER, ctx->defaultFramebufferObject());
                 f->glDeleteFramebuffers(1, &fbo);

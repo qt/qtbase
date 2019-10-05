@@ -572,7 +572,13 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     supported for QRhiBuffer instances with a usage different than
     UniformBuffer. While this is supported in the majority of cases, it will be
     unsupported with OpenGL ES older than 3.0.
-*/
+
+    \value ReadBackNonBaseMipLevel Indicates that specifying a mip level other
+    than 0 is supported when reading back texture contents. When not supported,
+    specifying a non-zero level in QRhiReadbackDescription leads to returning
+    an all-zero image. In practice this feature will be unsupported with OpenGL
+    ES 2.0, while it will likely be supported everywhere else.
+ */
 
 /*!
     \enum QRhi::BeginFrameFlag

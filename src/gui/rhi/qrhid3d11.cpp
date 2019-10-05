@@ -473,6 +473,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::ReadBackNonUniformBuffer:
         return true;
+    case QRhi::ReadBackNonBaseMipLevel:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;

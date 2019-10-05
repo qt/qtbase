@@ -277,7 +277,8 @@ void tst_QRhi::create()
             QRhi::BaseVertex,
             QRhi::BaseInstance,
             QRhi::TriangleFanTopology,
-            QRhi::ReadBackNonUniformBuffer
+            QRhi::ReadBackNonUniformBuffer,
+            QRhi::ReadBackNonBaseMipLevel
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);
@@ -965,10 +966,16 @@ void tst_QRhi::resourceUpdateBatchRGBATextureMip()
         QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
                             readResult.pixelSize.width(), readResult.pixelSize.height(),
                             red.format());
-
-        // Compare to a scaled version; we can do this safely only because we
-        // only have plain red pixels in the source image.
-        QImage expectedImage = red.scaled(expectedSize);
+        QImage expectedImage;
+        if (level == 0 || rhi->isFeatureSupported(QRhi::ReadBackNonBaseMipLevel)) {
+            // Compare to a scaled version; we can do this safely only because we
+            // only have plain red pixels in the source image.
+            expectedImage = red.scaled(expectedSize);
+        } else {
+            qDebug("Expecting all-zero image for level %d because reading back a level other than 0 is not supported", level);
+            expectedImage = QImage(readResult.pixelSize, red.format());
+            expectedImage.fill(0);
+        }
         QVERIFY(imageRGBAEquals(expectedImage, wrapperImage));
     }
 }

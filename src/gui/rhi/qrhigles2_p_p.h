@@ -753,7 +753,8 @@ public:
               baseVertex(false),
               compute(false),
               textureCompareMode(false),
-              properMapBuffer(false)
+              properMapBuffer(false),
+              nonBaseLevelFramebufferTexture(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -785,6 +786,7 @@ public:
         uint compute : 1;
         uint textureCompareMode : 1;
         uint properMapBuffer : 1;
+        uint nonBaseLevelFramebufferTexture : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QVector<GLint> supportedCompressedFormats;

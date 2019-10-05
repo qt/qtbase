@@ -3823,6 +3823,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ReadBackNonUniformBuffer:
         return true;
+    case QRhi::ReadBackNonBaseMipLevel:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
