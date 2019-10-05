@@ -276,6 +276,10 @@ QT_BEGIN_NAMESPACE
 #define GL_POINT_SPRITE                   0x8861
 #endif
 
+#ifndef GL_MAP_READ_BIT
+#define GL_MAP_READ_BIT                   0x0001
+#endif
+
 Q_DECLARE_LOGGING_CATEGORY(lcOpenGLProgramDiskCache)
 
 /*!
@@ -492,7 +496,9 @@ bool QRhiGles2::create(QRhi::Flags flags)
     else
         caps.textureCompareMode = true;
 
-    caps.mapBuffer = f->hasOpenGLExtension(QOpenGLExtensions::MapBuffer);
+    // proper as in ES 3.0 (glMapBufferRange), not the old glMapBuffer
+    // extension(s) (which is not in ES 3.0...messy)
+    caps.properMapBuffer = f->hasOpenGLExtension(QOpenGLExtensions::MapBufferRange);
 
     if (!caps.gles) {
         f->glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -737,7 +743,7 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::TriangleFanTopology:
         return true;
     case QRhi::ReadBackNonUniformBuffer:
-        return !caps.gles || caps.mapBuffer;
+        return !caps.gles || caps.properMapBuffer;
     default:
         Q_UNREACHABLE();
         return false;
@@ -2107,13 +2113,14 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             QRhiBufferReadbackResult *result = cmd.args.getBufferSubData.result;
             f->glBindBuffer(cmd.args.getBufferSubData.target, cmd.args.getBufferSubData.buffer);
             if (caps.gles) {
-                if (caps.mapBuffer) {
-                    void *p = f->glMapBuffer(cmd.args.getBufferSubData.target, GL_READ_ONLY);
+                if (caps.properMapBuffer) {
+                    void *p = f->glMapBufferRange(cmd.args.getBufferSubData.target,
+                                                  cmd.args.getBufferSubData.offset,
+                                                  cmd.args.getBufferSubData.size,
+                                                  GL_MAP_READ_BIT);
                     if (p) {
                         result->data.resize(cmd.args.getBufferSubData.size);
-                        memcpy(result->data.data(),
-                               reinterpret_cast<char *>(p) + cmd.args.getBufferSubData.offset,
-                               size_t(cmd.args.getBufferSubData.size));
+                        memcpy(result->data.data(), p, size_t(cmd.args.getBufferSubData.size));
                         f->glUnmapBuffer(cmd.args.getBufferSubData.target);
                     }
                 }

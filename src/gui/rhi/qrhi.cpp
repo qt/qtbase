@@ -568,11 +568,10 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     supports QRhiGraphicsPipeline::TriangleFan.
 
     \value ReadBackNonUniformBuffer Indicates that
-    {QRhiResourceUpdateBatch::readBackBuffer()}{reading buffer contents} is
+    \l{QRhiResourceUpdateBatch::readBackBuffer()}{reading buffer contents} is
     supported for QRhiBuffer instances with a usage different than
-    UniformBuffer. While this is supported in the majority of cases, it can be
-    unsupported, for example, on OpenGL ES 2.0 implementations without the
-    MapBuffer extension.
+    UniformBuffer. While this is supported in the majority of cases, it will be
+    unsupported with OpenGL ES older than 3.0.
 */
 
 /*!
