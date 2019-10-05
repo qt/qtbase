@@ -746,7 +746,6 @@ bool QSettingsPrivate::iniUnescapedStringList(const QByteArray &str, int from, i
         { '\'', '\'' },
         { '\\', '\\' }
     };
-    static const int numEscapeCodes = sizeof(escapeCodes) / sizeof(escapeCodes[0]);
 
     bool isStringList = false;
     bool inQuotedString = false;
@@ -770,9 +769,9 @@ StNormal:
                 goto end;
 
             ch = str.at(i++);
-            for (int j = 0; j < numEscapeCodes; ++j) {
-                if (ch == escapeCodes[j][0]) {
-                    stringResult += QLatin1Char(escapeCodes[j][1]);
+            for (const auto &escapeCode : escapeCodes) {
+                if (ch == escapeCode[0]) {
+                    stringResult += QLatin1Char(escapeCode[1]);
                     goto StNormal;
                 }
             }

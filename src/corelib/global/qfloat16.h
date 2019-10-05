@@ -94,7 +94,7 @@ public:
     static constexpr qfloat16 _limit_quiet_NaN()  noexcept { return qfloat16(Wrap(0x7e00)); }
     // Signalling NaN is 0x7f00
     inline constexpr bool isNormal() const noexcept
-    { return b16 == 0 || ((b16 & 0x7c00) && (b16 & 0x7c00) != 0x7c00); }
+    { return (b16 & 0x7fff) == 0 || ((b16 & 0x7c00) && (b16 & 0x7c00) != 0x7c00); }
 private:
     quint16 b16;
     constexpr inline explicit qfloat16(Wrap nibble) noexcept : b16(nibble.b16) {}
@@ -296,7 +296,7 @@ class numeric_limits<QT_PREPEND_NAMESPACE(qfloat16)> : public numeric_limits<flo
 public:
     /*
       Treat quint16 b16 as if it were:
-      uint S: 1; // b16 >> 15 (sign)
+      uint S: 1; // b16 >> 15 (sign); can be set for zero
       uint E: 5; // (b16 >> 10) & 0x1f (offset exponent)
       uint M: 10; // b16 & 0x3ff (adjusted mantissa)
 

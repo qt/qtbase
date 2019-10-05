@@ -123,11 +123,10 @@ public:
 
     class CloseEvent : public WindowSystemEvent {
     public:
-        explicit CloseEvent(QWindow *w, bool *a = nullptr)
-            : WindowSystemEvent(Close), window(w), accepted(a)
+        explicit CloseEvent(QWindow *w)
+            : WindowSystemEvent(Close), window(w)
             { }
         QPointer<QWindow> window;
-        bool *accepted;
     };
 
     class GeometryChangeEvent : public WindowSystemEvent {

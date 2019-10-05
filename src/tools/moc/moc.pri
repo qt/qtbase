@@ -10,9 +10,12 @@ HEADERS =  $$PWD/moc.h \
            $$PWD/utils.h \
            $$PWD/generator.h \
            $$PWD/outputrevision.h \
-           $$PWD/cbordevice.h
+           $$PWD/cbordevice.h \
+           $$PWD/collectjson.h
+
 SOURCES =  $$PWD/moc.cpp \
            $$PWD/preprocessor.cpp \
            $$PWD/generator.cpp \
            $$PWD/parser.cpp \
-           $$PWD/token.cpp
+           $$PWD/token.cpp \
+           $$PWD/collectjson.cpp

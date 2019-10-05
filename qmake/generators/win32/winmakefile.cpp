@@ -38,6 +38,8 @@
 #include <qdir.h>
 #include <stdlib.h>
 
+#include <algorithm>
+
 QT_BEGIN_NAMESPACE
 
 ProString Win32MakefileGenerator::fixLibFlag(const ProString &lib)
@@ -73,16 +75,37 @@ Win32MakefileGenerator::parseLibFlag(const ProString &flag, ProString *arg)
     return LibFlagFile;
 }
 
+class LibrarySearchPath : public QMakeLocalFileName
+{
+public:
+    LibrarySearchPath() = default;
+
+    LibrarySearchPath(const QString &s)
+        : QMakeLocalFileName(s)
+    {
+    }
+
+    LibrarySearchPath(QString &&s, bool isDefault = false)
+        : QMakeLocalFileName(std::move(s)), _default(isDefault)
+    {
+    }
+
+    bool isDefault() const { return _default; }
+
+private:
+    bool _default = false;
+};
+
 bool
 Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
 {
     ProStringList impexts = project->values("QMAKE_LIB_EXTENSIONS");
     if (impexts.isEmpty())
         impexts = project->values("QMAKE_EXTENSION_STATICLIB");
-    QVector<QMakeLocalFileName> dirs;
+    QVector<LibrarySearchPath> dirs;
     int libidx = 0;
     for (const ProString &dlib : project->values("QMAKE_DEFAULT_LIBDIRS"))
-        dirs.append(QMakeLocalFileName(dlib.toQString()));
+        dirs.append(LibrarySearchPath(dlib.toQString(), true));
   static const char * const lflags[] = { "LIBS", "LIBS_PRIVATE",
                                          "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", nullptr };
   for (int i = 0; lflags[i]; i++) {
@@ -92,12 +115,20 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
         ProString arg;
         LibFlagType type = parseLibFlag(opt, &arg);
         if (type == LibFlagPath) {
-            QMakeLocalFileName lp(arg.toQString());
-            int idx = dirs.indexOf(lp);
+            const QString argqstr = arg.toQString();
+            auto dit = std::find_if(dirs.cbegin(), dirs.cend(),
+                                 [&argqstr](const LibrarySearchPath &p)
+                                 {
+                                     return p.real() == argqstr;
+                                 });
+            int idx = dit == dirs.cend()
+                    ? -1
+                    : std::distance(dirs.cbegin(), dit);
             if (idx >= 0 && idx < libidx) {
                 it = l.erase(it);
                 continue;
             }
+            const LibrarySearchPath lp(argqstr);
             dirs.insert(libidx++, lp);
             (*it) = "-L" + lp.real();
         } else if (type == LibFlagLib) {
@@ -114,7 +145,8 @@ Win32MakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                 for (ProStringList::ConstIterator extit = impexts.cbegin();
                      extit != impexts.cend(); ++extit) {
                     if (exists(libBase + '.' + *extit)) {
-                        (*it) = cand + verovr + '.' + *extit;
+                        *it = (dir_it->isDefault() ? lib : cand)
+                                + verovr + '.' + *extit;
                         goto found;
                     }
                 }

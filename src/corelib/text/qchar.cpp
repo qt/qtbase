@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QLatin1Char
     \inmodule QtCore
+    \reentrant
     \brief The QLatin1Char class provides an 8-bit ASCII/Latin-1 character.
 
     \ingroup string-processing

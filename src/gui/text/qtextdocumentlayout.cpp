@@ -265,6 +265,9 @@ public:
 
     inline QFixed topPadding(QTextTable *table, const QTextTableCell &cell) const
     {
+#ifdef QT_NO_CSSPARSER
+        Q_UNUSED(table);
+#endif
         return paddingProperty(cell.format(), QTextFormat::TableCellTopPadding)
 #ifndef QT_NO_CSSPARSER
                 + cellBorderWidth(table, cell, QCss::TopEdge)
@@ -274,6 +277,9 @@ public:
 
     inline QFixed bottomPadding(QTextTable *table, const QTextTableCell &cell) const
     {
+#ifdef QT_NO_CSSPARSER
+        Q_UNUSED(table);
+#endif
         return paddingProperty(cell.format(), QTextFormat::TableCellBottomPadding)
 #ifndef QT_NO_CSSPARSER
                 + cellBorderWidth(table, cell, QCss::BottomEdge)
@@ -283,6 +289,9 @@ public:
 
     inline QFixed leftPadding(QTextTable *table, const QTextTableCell &cell) const
     {
+#ifdef QT_NO_CSSPARSER
+        Q_UNUSED(table);
+#endif
         return paddingProperty(cell.format(), QTextFormat::TableCellLeftPadding)
 #ifndef QT_NO_CSSPARSER
                 + cellBorderWidth(table, cell, QCss::LeftEdge)
@@ -292,6 +301,9 @@ public:
 
     inline QFixed rightPadding(QTextTable *table, const QTextTableCell &cell) const
     {
+#ifdef QT_NO_CSSPARSER
+        Q_UNUSED(table);
+#endif
         return paddingProperty(cell.format(), QTextFormat::TableCellRightPadding)
 #ifndef QT_NO_CSSPARSER
                 + cellBorderWidth(table, cell, QCss::RightEdge)
@@ -1034,15 +1046,22 @@ static bool cellClipTest(QTextTable *table, QTextTableData *td,
                          const QTextTableCell &cell,
                          QRectF cellRect)
 {
+#ifdef QT_NO_CSSPARSER
+    Q_UNUSED(table);
+    Q_UNUSED(cell);
+#endif
+
     if (!cell_context.clip.isValid())
         return false;
 
     if (td->borderCollapse) {
         // we need to account for the cell borders in the clipping test
+#ifndef QT_NO_CSSPARSER
         cellRect.adjust(-axisEdgeData(table, td, cell, QCss::LeftEdge).width / 2,
                         -axisEdgeData(table, td, cell, QCss::TopEdge).width / 2,
                         axisEdgeData(table, td, cell, QCss::RightEdge).width / 2,
                         axisEdgeData(table, td, cell, QCss::BottomEdge).width / 2);
+#endif
     } else {
         qreal border = td->border.toReal();
         cellRect.adjust(-border, -border, border, border);
@@ -1798,6 +1817,13 @@ void QTextDocumentLayoutPrivate::drawTableCellBorder(const QRectF &cellRect, QPa
 
     if (turn_off_antialiasing)
         painter->setRenderHint(QPainter::Antialiasing, false);
+#else
+    Q_UNUSED(cell);
+    Q_UNUSED(cellRect);
+    Q_UNUSED(painter);
+    Q_UNUSED(table);
+    Q_UNUSED(td);
+    Q_UNUSED(cell);
 #endif
 }
 
@@ -2285,12 +2311,14 @@ QTextLayoutStruct QTextDocumentLayoutPrivate::layoutCell(QTextTable *t, const QT
             + td->border
             + td->paddingProperty(cell.format(), QTextFormat::TableCellTopPadding); // top cell-border is not repeated
 
+#ifndef QT_NO_CSSPARSER
     const int headerRowCount = t->format().headerRowCount();
     if (td->borderCollapse && headerRowCount > 0) {
         // consider the header row's bottom edge width
         qreal headerRowBottomBorderWidth = axisEdgeData(t, td, t->cellAt(headerRowCount - 1, cell.column()), QCss::BottomEdge).width;
         layoutStruct.pageTopMargin += QFixed::fromReal(scaleToDevice(headerRowBottomBorderWidth) / 2);
     }
+#endif
 
     layoutStruct.pageBottomMargin = td->effectiveBottomMargin + td->cellSpacing + td->effectiveBottomBorder + td->bottomPadding(t, cell);
     layoutStruct.pageBottom = (currentPage + 1) * layoutStruct.pageHeight - layoutStruct.pageBottomMargin;

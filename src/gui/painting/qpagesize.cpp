@@ -222,8 +222,6 @@ static const int qt_windowsConversion[][2] = {
     {DMPAPER_PENV_10_ROTATED,               DMPAPER_PENV_10}  // Is = DMPAPER_LAST, use as loop terminator
 };
 
-static const int windowsConversionCount = int(sizeof(qt_windowsConversion) / sizeof(qt_windowsConversion[0]));
-
 // Standard sizes data
 struct StandardPageSize {
     QPageSize::PageSizeId id;
@@ -423,9 +421,9 @@ static QPageSize::PageSizeId qt_idForWindowsID(int windowsId, QSize *match = 0)
     if (windowsId <= DMPAPER_NONE || windowsId > DMPAPER_LAST)
         return QPageSize::Custom;
     // Check if one of the unsupported values, convert to valid value if is
-    for (int i = 0; i < windowsConversionCount; ++i) {
-        if (qt_windowsConversion[i][0] == windowsId) {
-            windowsId = qt_windowsConversion[i][1];
+    for (const auto &it : qt_windowsConversion) {
+        if (it[0] == windowsId) {
+            windowsId = it[1];
             break;
         }
     }
