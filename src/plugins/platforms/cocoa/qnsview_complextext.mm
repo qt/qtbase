@@ -39,7 +39,7 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) (ComplexTextAPI)
+@implementation QNSView (ComplexTextAPI)
 
 - (void)cancelComposingText
 {
@@ -80,7 +80,7 @@
 
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) (ComplexText)
+@implementation QNSView (ComplexText)
 
 - (void)insertNewline:(id)sender
 {

@@ -80,6 +80,8 @@
 #include <qimagewriter.h>
 #include <qdebug.h>
 
+#include <QtCore/private/qcore_mac_p.h>
+
 #include "qcocoamenu.h"
 
 #include "qt_mac_p.h"
@@ -92,8 +94,6 @@
 
 QT_USE_NAMESPACE
 
-@class QT_MANGLE_NAMESPACE(QNSImageView);
-
 @interface QT_MANGLE_NAMESPACE(QNSStatusItem) : NSObject <NSUserNotificationCenterDelegate>
 @property (nonatomic, assign) QCocoaMenu *menu;
 @property (nonatomic, assign) QIcon icon;
@@ -104,12 +104,13 @@ QT_USE_NAMESPACE
 - (void)doubleClickSelector:(id)sender;
 @end
 
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSStatusItem);
+
 @interface QT_MANGLE_NAMESPACE(QNSImageView) : NSImageView
 @property (nonatomic, assign) BOOL down;
-@property (nonatomic, assign) QT_MANGLE_NAMESPACE(QNSStatusItem) *parent;
+@property (nonatomic, assign) QNSStatusItem *parent;
 @end
 
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSStatusItem);
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSImageView);
 
 QT_BEGIN_NAMESPACE
@@ -360,7 +361,7 @@ QT_END_NAMESPACE
 @implementation QNSStatusItem {
     QCocoaSystemTrayIcon *systray;
     NSStatusItem *item;
-    QT_MANGLE_NAMESPACE(QNSImageView) *imageCell;
+    QNSImageView *imageCell;
 }
 
 @synthesize menu = menu;

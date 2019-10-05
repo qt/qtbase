@@ -89,8 +89,7 @@
 
 #include <qglobal.h>
 #include <private/qcore_mac_p.h>
-
-Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QCocoaNSMenuItem));
+#include "qcocoansmenu.h"
 
 @interface QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) : NSObject <NSApplicationDelegate>
 @property (nonatomic, retain) NSMenu *dockMenu;
@@ -100,8 +99,9 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QCocoaNSMenuItem));
 - (bool)inLaunch;
 @end
 
-@interface QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) (MenuAPI)
-- (void)qt_itemFired:(QT_MANGLE_NAMESPACE(QCocoaNSMenuItem) *)item;
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaApplicationDelegate);
+
+@interface QCocoaApplicationDelegate (MenuAPI)
+- (void)qt_itemFired:(QCocoaNSMenuItem *)item;
 @end
 
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaApplicationDelegate);

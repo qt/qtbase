@@ -54,7 +54,7 @@ struct QCocoaTabletDeviceData
 typedef QHash<uint, QCocoaTabletDeviceData> QCocoaTabletDeviceDataHash;
 Q_GLOBAL_STATIC(QCocoaTabletDeviceDataHash, tabletDeviceDataHash)
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) (Tablet)
+@implementation QNSView (Tablet)
 
 - (bool)handleTabletEvent:(NSEvent *)theEvent
 {

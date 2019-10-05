@@ -44,8 +44,7 @@
 #include <QtCore/QList>
 #include <qpa/qplatformmenu.h>
 #include "qcocoamenuitem.h"
-
-Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QCocoaNSMenu));
+#include "qcocoansmenu.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -107,7 +106,7 @@ private:
     void scheduleUpdate();
 
     QList<QCocoaMenuItem *> m_menuItems;
-    QT_MANGLE_NAMESPACE(QCocoaNSMenu) *m_nativeMenu;
+    QCocoaNSMenu *m_nativeMenu;
     NSMenuItem *m_attachedItem;
     int m_updateTimer;
     bool m_enabled:1;
