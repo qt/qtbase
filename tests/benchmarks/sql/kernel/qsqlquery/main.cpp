@@ -238,9 +238,6 @@ void tst_QSqlQuery::benchmark()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
-    if ( tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-        QSKIP( "Test requires MySQL >= 5.0");
-
     QSqlQuery q(db);
     const QString tableName(qTableName("benchmark", __FILE__, db));
 
@@ -266,9 +263,6 @@ void tst_QSqlQuery::benchmarkSelectPrepared()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    if (tst_Databases::getMySqlVersion(db).section(QChar('.'), 0, 0).toInt() < 5)
-        QSKIP("Test requires MySQL >= 5.0");
-
     QSqlQuery q(db);
     const QString tableName(qTableName("benchmark", __FILE__, db));
 
