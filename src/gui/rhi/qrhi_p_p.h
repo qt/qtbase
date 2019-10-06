@@ -205,6 +205,8 @@ public:
         cleanupCallbacks.append(callback);
     }
 
+    bool sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps);
+
     QRhi *q;
 
     static const int MAX_SHADER_CACHE_ENTRIES = 128;

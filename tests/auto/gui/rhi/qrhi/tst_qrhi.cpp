@@ -81,6 +81,10 @@ private slots:
     void resourceUpdateBatchRGBATextureCopy();
     void resourceUpdateBatchRGBATextureMip_data();
     void resourceUpdateBatchRGBATextureMip();
+    void invalidPipeline_data();
+    void invalidPipeline();
+    void renderToTextureSimple_data();
+    void renderToTextureSimple();
 
 private:
     struct {
@@ -978,6 +982,223 @@ void tst_QRhi::resourceUpdateBatchRGBATextureMip()
         }
         QVERIFY(imageRGBAEquals(expectedImage, wrapperImage));
     }
+}
+
+static QShader loadShader(const char *name)
+{
+    QFile f(QString::fromUtf8(name));
+    if (f.open(QIODevice::ReadOnly)) {
+        const QByteArray contents = f.readAll();
+        return QShader::fromSerialized(contents);
+    }
+    return QShader();
+}
+
+void tst_QRhi::invalidPipeline_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::invalidPipeline()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing empty shader");
+
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, QSize(256, 256), 1, QRhiTexture::RenderTarget));
+    QVERIFY(texture->build());
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->build());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    QVERIFY(srb->build());
+
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 2 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+
+    // no stages
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(!pipeline->build());
+
+    QShader vs;
+    QShader fs;
+
+    // no shaders in the stages
+    pipeline.reset(rhi->newGraphicsPipeline());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(!pipeline->build());
+
+    vs = loadShader(":/data/simple.vert.qsb");
+    QVERIFY(vs.isValid());
+    fs = loadShader(":/data/simple.frag.qsb");
+    QVERIFY(fs.isValid());
+
+    // no vertex stage
+    pipeline.reset(rhi->newGraphicsPipeline());
+    pipeline->setShaderStages({ { QRhiShaderStage::Fragment, fs } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(!pipeline->build());
+
+    // no vertex inputs
+    pipeline.reset(rhi->newGraphicsPipeline());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+    pipeline->setShaderResourceBindings(srb.data());
+    QVERIFY(!pipeline->build());
+
+    // no renderpass descriptor
+    pipeline.reset(rhi->newGraphicsPipeline());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    QVERIFY(!pipeline->build());
+
+    // no shader resource bindings
+    pipeline.reset(rhi->newGraphicsPipeline());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(!pipeline->build());
+
+    // correct
+    pipeline.reset(rhi->newGraphicsPipeline());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+    pipeline->setShaderResourceBindings(srb.data());
+    QVERIFY(pipeline->build());
+}
+
+void tst_QRhi::renderToTextureSimple_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToTextureSimple()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    const QSize outputSize(1920, 1080);
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, outputSize, 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->build());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->build());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    static const float vertices[] = {
+        -1.0f, -1.0f,
+        1.0f, -1.0f,
+        0.0f, 1.0f
+    };
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertices)));
+    QVERIFY(vbuf->build());
+    updates->uploadStaticBuffer(vbuf.data(), vertices);
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    QVERIFY(srb->build());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/simple.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/simple.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 2 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+
+    QVERIFY(pipeline->build());
+
+    cb->beginPass(rt.data(), Qt::blue, { 1.0f, 0 }, updates);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setViewport({ 0, 0, float(outputSize.width()), float(outputSize.height()) });
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->draw(3);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied); // non-owning, no copy needed because readResult outlives result
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+    // Offscreen frames are synchronous, so the readback is guaranteed to
+    // complete at this point. This would not be the case with swapchain-based
+    // frames.
+    QCOMPARE(result.size(), texture->pixelSize());
+
+    if (impl == QRhi::Null)
+        return;
+
+    // Now we have a red rectangle on blue background.
+    const int y = 100;
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
+    int x = result.width() - 1;
+    int redCount = 0;
+    int blueCount = 0;
+    const int maxFuzz = 1;
+    while (x-- >= 0) {
+        const QRgb c(*p++);
+        if (qRed(c) >= (255 - maxFuzz) && qGreen(c) == 0 && qBlue(c) == 0)
+            ++redCount;
+        else if (qRed(c) == 0 && qGreen(c) == 0 && qBlue(c) >= (255 - maxFuzz))
+            ++blueCount;
+        else
+            QFAIL("Encountered a pixel that is neither red or blue");
+    }
+
+    QCOMPARE(redCount + blueCount, texture->pixelSize().width());
+
+    // The triangle is "pointing up" in the resulting image with OpenGL
+    // (because Y is up both in normalized device coordinates and in images)
+    // and Vulkan (because Y is down in both and the vertex data was specified
+    // with Y up in mind), but "pointing down" with D3D (because Y is up in NDC
+    // but down in images).
+    if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
+        QVERIFY(redCount < blueCount);
+    else
+        QVERIFY(redCount > blueCount);
 }
 
 #include <tst_qrhi.moc>

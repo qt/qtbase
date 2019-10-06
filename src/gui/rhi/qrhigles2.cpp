@@ -3690,6 +3690,9 @@ bool QGles2GraphicsPipeline::build()
     if (!rhiD->ensureContext())
         return false;
 
+    if (!rhiD->sanityCheckGraphicsPipeline(this))
+        return false;
+
     drawMode = toGlTopology(m_topology);
 
     program = rhiD->f->glCreateProgram();

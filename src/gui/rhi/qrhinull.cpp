@@ -805,6 +805,10 @@ void QNullGraphicsPipeline::release()
 
 bool QNullGraphicsPipeline::build()
 {
+    QRHI_RES_RHI(QRhiNull);
+    if (!rhiD->sanityCheckGraphicsPipeline(this))
+        return false;
+
     return true;
 }
 

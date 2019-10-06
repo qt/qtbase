@@ -3491,6 +3491,8 @@ bool QD3D11GraphicsPipeline::build()
         release();
 
     QRHI_RES_RHI(QRhiD3D11);
+    if (!rhiD->sanityCheckGraphicsPipeline(this))
+        return false;
 
     D3D11_RASTERIZER_DESC rastDesc;
     memset(&rastDesc, 0, sizeof(rastDesc));

@@ -72,7 +72,6 @@ class QRhiCommandBuffer;
 class QRhiResourceUpdateBatch;
 class QRhiResourceUpdateBatchPrivate;
 class QRhiProfiler;
-class QRhiShaderResourceBindingPrivate;
 
 class Q_GUI_EXPORT QRhiDepthStencilClearValue
 {

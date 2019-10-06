@@ -3139,6 +3139,8 @@ bool QMetalGraphicsPipeline::build()
         release();
 
     QRHI_RES_RHI(QRhiMetal);
+    if (!rhiD->sanityCheckGraphicsPipeline(this))
+        return false;
 
     // same binding space for vertex and constant buffers - work it around
     const int firstVertexBinding = QRHI_RES(QMetalShaderResourceBindings, m_shaderResourceBindings)->maxBinding + 1;

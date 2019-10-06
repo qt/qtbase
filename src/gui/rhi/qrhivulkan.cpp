@@ -5886,6 +5886,9 @@ bool QVkGraphicsPipeline::build()
         release();
 
     QRHI_RES_RHI(QRhiVulkan);
+    if (!rhiD->sanityCheckGraphicsPipeline(this))
+        return false;
+
     if (!rhiD->ensurePipelineCache())
         return false;
 

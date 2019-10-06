@@ -3084,9 +3084,13 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     \inmodule QtGui
     \brief Graphics pipeline state resource.
 
+    \note Setting the shader stages is mandatory. There must be at least one
+    stage, and there must be a vertex stage.
+
     \note Setting the shader resource bindings is mandatory. The referenced
     QRhiShaderResourceBindings must already be built by the time build() is
-    called.
+    called. Associating with a QRhiShaderResourceBindings that has no bindings
+    is also valid, as long as no shader in any stage expects any resources.
 
     \note Setting the render pass descriptor is mandatory. To obtain a
     QRhiRenderPassDescriptor that can be passed to setRenderPassDescriptor(),
@@ -3094,8 +3098,6 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     QRhiSwapChain::newCompatibleRenderPassDescriptor().
 
     \note Setting the vertex input layout is mandatory.
-
-    \note Setting the shader stages is mandatory.
 
     \note sampleCount() defaults to 1 and must match the sample count of the
     render target's color and depth stencil attachments.
@@ -3910,6 +3912,46 @@ quint32 QRhiImplementation::approxByteSizeForTexture(QRhiTexture::Format format,
     }
     approxSize *= uint(layerCount);
     return approxSize;
+}
+
+bool QRhiImplementation::sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps)
+{
+    if (ps->cbeginShaderStages() == ps->cendShaderStages()) {
+        qWarning("Cannot build a graphics pipeline without any stages");
+        return false;
+    }
+
+    bool hasVertexStage = false;
+    for (auto it = ps->cbeginShaderStages(), itEnd = ps->cendShaderStages(); it != itEnd; ++it) {
+        if (!it->shader().isValid()) {
+            qWarning("Empty shader passed to graphics pipeline");
+            return false;
+        }
+        if (it->type() == QRhiShaderStage::Vertex) {
+            hasVertexStage = true;
+            const QRhiVertexInputLayout inputLayout = ps->vertexInputLayout();
+            if (inputLayout.cbeginAttributes() == inputLayout.cendAttributes()) {
+                qWarning("Vertex stage present without any vertex inputs");
+                return false;
+            }
+        }
+    }
+    if (!hasVertexStage) {
+        qWarning("Cannot build a graphics pipeline without a vertex stage");
+        return false;
+    }
+
+    if (!ps->renderPassDescriptor()) {
+        qWarning("Cannot build a graphics pipeline without a QRhiRenderPassDescriptor");
+        return false;
+    }
+
+    if (!ps->shaderResourceBindings()) {
+        qWarning("Cannot build a graphics pipeline without QRhiShaderResourceBindings");
+        return false;
+    }
+
+    return true;
 }
 
 /*!
