@@ -2765,7 +2765,13 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
 def write_tool(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     tool_name = scope.TARGET
 
-    extra = ["BOOTSTRAP"] if "force_bootstrap" in scope.get("CONFIG") else []
+    if "force_bootstrap" in scope.get("CONFIG"):
+        extra = ["BOOTSTRAP"]
+
+        # Remove default QT libs.
+        scope._append_operation("QT", RemoveOperation(["core", "gui"]))
+    else:
+        extra = []
 
     write_main_part(
         cm_fh,
