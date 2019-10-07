@@ -91,6 +91,7 @@ add_qt_executable(qmake
         qstringmatcher.h-NOTFOUND
         qvsnprintf.cpp-NOTFOUND
     DEFINES
+        (QT_VERSION_STR=\"\")
         PROEVALUATOR_FULL
         QT_BOOTSTRAPPED
         QT_BUILD_QMAKE
@@ -98,24 +99,24 @@ add_qt_executable(qmake
         QT_VERSION_MAJOR=
         QT_VERSION_MINOR=
         QT_VERSION_PATCH=
-        join(QT_VERSION_STR=\"\")
     INCLUDE_DIRECTORIES
+        (..)/include
+        (..)/include/QtCore (..)/include/QtCore
+        (..)/include/QtCore//QtCore
+        (..)/src/corelib/global
         .
         generators
         generators/mac
         generators/unix
         generators/win32
-        join(..)/include
-        join(..)/include/QtCore join(..)/include/QtCore
-        join(..)/include/QtCore//QtCore
-        join(..)/src/corelib/global
         library
     PUBLIC_LIBRARIES
         Qt::Gui
+    PRECOMPILED_HEADER
+        "qmake_pch.h"
 )
 
 #### Keys ignored in scope 1:.:.:qmake.pro:<TRUE>:
-# PRECOMPILED_HEADER = "qmake_pch.h"
 # _OPTION = "host_build"
 
 ## Scopes:

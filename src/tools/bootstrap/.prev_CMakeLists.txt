@@ -97,10 +97,10 @@ add_qt_module(Bootstrap
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
         QT_NO_FOREACH
-        QT_VERSION_MAJOR=$$QT_MAJOR_VERSION
-        QT_VERSION_MINOR=$$QT_MINOR_VERSION
-        QT_VERSION_PATCH=$$QT_PATCH_VERSION
-        QT_VERSION_STR=$$shell_quote\"$$QT_VERSION\"
+        QT_VERSION_MAJOR=
+        QT_VERSION_MINOR=
+        QT_VERSION_PATCH=
+        QT_VERSION_STR=\"\"
 )
 
 #### Keys ignored in scope 1:.:.:bootstrap.pro:<TRUE>:
