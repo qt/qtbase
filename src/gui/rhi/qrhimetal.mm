@@ -1628,7 +1628,8 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             QMetalTexture *srcD = QRHI_RES(QMetalTexture, u.src);
             QMetalTexture *dstD = QRHI_RES(QMetalTexture, u.dst);
             const QPoint dp = u.desc.destinationTopLeft();
-            const QSize size = u.desc.pixelSize().isEmpty() ? srcD->m_pixelSize : u.desc.pixelSize();
+            const QSize mipSize = q->sizeForMipLevel(u.desc.sourceLevel(), srcD->m_pixelSize);
+            const QSize copySize = u.desc.pixelSize().isEmpty() ? mipSize : u.desc.pixelSize();
             const QPoint sp = u.desc.sourceTopLeft();
 
             ensureBlit();
@@ -1636,7 +1637,7 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                                       sourceSlice: NSUInteger(u.desc.sourceLayer())
                                       sourceLevel: NSUInteger(u.desc.sourceLevel())
                                       sourceOrigin: MTLOriginMake(NSUInteger(sp.x()), NSUInteger(sp.y()), 0)
-                                      sourceSize: MTLSizeMake(NSUInteger(size.width()), NSUInteger(size.height()), 1)
+                                      sourceSize: MTLSizeMake(NSUInteger(copySize.width()), NSUInteger(copySize.height()), 1)
                                       toTexture: dstD->d->tex
                                       destinationSlice: NSUInteger(u.desc.destinationLayer())
                                       destinationLevel: NSUInteger(u.desc.destinationLevel())
@@ -1658,11 +1659,10 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                     qWarning("Multisample texture cannot be read back");
                     continue;
                 }
-                readback.pixelSize = u.rb.level() > 0 ? q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize)
-                                                      : texD->m_pixelSize;
+                readback.pixelSize = q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize);
                 readback.format = texD->m_format;
                 src = texD->d->tex;
-                srcSize = texD->m_pixelSize;
+                srcSize = readback.pixelSize;
                 texD->lastActiveFrameSlot = currentFrameSlot;
             } else {
                 Q_ASSERT(currentSwapChain);

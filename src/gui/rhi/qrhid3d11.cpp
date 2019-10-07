@@ -1416,15 +1416,16 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             UINT srcSubRes = D3D11CalcSubresource(UINT(u.desc.sourceLevel()), UINT(u.desc.sourceLayer()), srcD->mipLevelCount);
             UINT dstSubRes = D3D11CalcSubresource(UINT(u.desc.destinationLevel()), UINT(u.desc.destinationLayer()), dstD->mipLevelCount);
             const QPoint dp = u.desc.destinationTopLeft();
-            const QSize size = u.desc.pixelSize().isEmpty() ? srcD->m_pixelSize : u.desc.pixelSize();
+            const QSize mipSize = q->sizeForMipLevel(u.desc.sourceLevel(), srcD->m_pixelSize);
+            const QSize copySize = u.desc.pixelSize().isEmpty() ? mipSize : u.desc.pixelSize();
             const QPoint sp = u.desc.sourceTopLeft();
             D3D11_BOX srcBox;
             srcBox.left = UINT(sp.x());
             srcBox.top = UINT(sp.y());
             srcBox.front = 0;
             // back, right, bottom are exclusive
-            srcBox.right = srcBox.left + UINT(size.width());
-            srcBox.bottom = srcBox.top + UINT(size.height());
+            srcBox.right = srcBox.left + UINT(copySize.width());
+            srcBox.bottom = srcBox.top + UINT(copySize.height());
             srcBox.back = 1;
             QD3D11CommandBuffer::Command cmd;
             cmd.cmd = QD3D11CommandBuffer::Command::CopySubRes;
@@ -1457,7 +1458,7 @@ void QRhiD3D11::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 }
                 src = texD->tex;
                 dxgiFormat = texD->dxgiFormat;
-                pixelSize = u.rb.level() > 0 ? q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize) : texD->m_pixelSize;
+                pixelSize = q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize);
                 format = texD->m_format;
                 subres = D3D11CalcSubresource(UINT(u.rb.level()), UINT(u.rb.layer()), texD->mipLevelCount);
             } else {

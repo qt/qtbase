@@ -2913,9 +2913,10 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
             region.dstOffset.x = u.desc.destinationTopLeft().x();
             region.dstOffset.y = u.desc.destinationTopLeft().y();
 
-            const QSize size = u.desc.pixelSize().isEmpty() ? srcD->m_pixelSize : u.desc.pixelSize();
-            region.extent.width = uint32_t(size.width());
-            region.extent.height = uint32_t(size.height());
+            const QSize mipSize = q->sizeForMipLevel(u.desc.sourceLevel(), srcD->m_pixelSize);
+            const QSize copySize = u.desc.pixelSize().isEmpty() ? mipSize : u.desc.pixelSize();
+            region.extent.width = uint32_t(copySize.width());
+            region.extent.height = uint32_t(copySize.height());
             region.extent.depth = 1;
 
             trackedImageBarrier(cbD, srcD, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -2946,8 +2947,7 @@ void QRhiVulkan::enqueueResourceUpdates(QVkCommandBuffer *cbD, QRhiResourceUpdat
                     qWarning("Multisample texture cannot be read back");
                     continue;
                 }
-                readback.pixelSize = u.rb.level() > 0 ? q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize)
-                                                      : texD->m_pixelSize;
+                readback.pixelSize = q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize);
                 readback.format = texD->m_format;
                 texD->lastActiveFrameSlot = currentFrameSlot;
             } else {

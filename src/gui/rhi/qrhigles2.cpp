@@ -1506,7 +1506,8 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             trackedImageBarrier(cbD, srcD, QGles2Texture::AccessRead);
             trackedImageBarrier(cbD, dstD, QGles2Texture::AccessUpdate);
 
-            const QSize size = u.desc.pixelSize().isEmpty() ? srcD->m_pixelSize : u.desc.pixelSize();
+            const QSize mipSize = q->sizeForMipLevel(u.desc.sourceLevel(), srcD->m_pixelSize);
+            const QSize copySize = u.desc.pixelSize().isEmpty() ? mipSize : u.desc.pixelSize();
             // do not translate coordinates, even if sp is bottom-left from gl's pov
             const QPoint sp = u.desc.sourceTopLeft();
             const QPoint dp = u.desc.destinationTopLeft();
@@ -1532,8 +1533,8 @@ void QRhiGles2::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             cmd.args.copyTex.dstX = dp.x();
             cmd.args.copyTex.dstY = dp.y();
 
-            cmd.args.copyTex.w = size.width();
-            cmd.args.copyTex.h = size.height();
+            cmd.args.copyTex.w = copySize.width();
+            cmd.args.copyTex.h = copySize.height();
 
             cbD->commands.append(cmd);
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Read) {
