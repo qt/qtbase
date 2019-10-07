@@ -115,12 +115,21 @@ static QDebug operator<<(QDebug d, const QMimeData *mimeData)
 
 IDataObject *QWindowsClipboardRetrievalMimeData::retrieveDataObject() const
 {
+    enum : int { attempts = 3 };
     IDataObject * pDataObj = nullptr;
-    if (OleGetClipboard(&pDataObj) == S_OK) {
-        if (QWindowsContext::verbose > 1)
-            qCDebug(lcQpaMime) << __FUNCTION__ << pDataObj;
-        return pDataObj;
+    // QTBUG-53979, retry in case the other application has clipboard locked
+    for (int i = 1; i <= attempts; ++i) {
+        if (SUCCEEDED(OleGetClipboard(&pDataObj))) {
+            if (QWindowsContext::verbose > 1)
+                qCDebug(lcQpaMime) << __FUNCTION__ << pDataObj;
+            return pDataObj;
+        }
+        qCWarning(lcQpaMime, i == attempts
+                  ? "Unable to obtain clipboard."
+                  : "Retrying to obtain clipboard.");
+        QThread::msleep(50);
     }
+
     return nullptr;
 }
 
