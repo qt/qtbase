@@ -21,6 +21,5 @@ add_qt_module(PlatformCompositorSupport
 )
 
 #### Keys ignored in scope 1:.:.:platformcompositor.pro:<TRUE>:
-# CONFIG = "static" "internal_module"
 # MODULE = "platformcompositor_support"
 # _LOADED = "qt_module"

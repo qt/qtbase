@@ -19,12 +19,14 @@ add_qt_module(EglSupport
         Qt::CorePrivate
         Qt::GuiPrivate
         EGL::EGL # special case
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
     PRECOMPILED_HEADER
         "../../corelib/global/qt_pch.h"
 )
 
-#### Keys ignored in scope 1:.:eglconvenience.pro:<NONE>:
-# CONFIG = "static" "internal_module" "egl"
+#### Keys ignored in scope 1:.:.:eglconvenience.pro:<TRUE>:
 # MODULE = "egl_support"
 # _LOADED = "qt_module"
 

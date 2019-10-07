@@ -20,6 +20,5 @@ add_qt_module(AccessibilitySupport
 )
 
 #### Keys ignored in scope 1:.:.:accessibility.pro:<TRUE>:
-# CONFIG = "static" "internal_module"
 # MODULE = "accessibility_support"
 # _LOADED = "qt_module"

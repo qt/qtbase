@@ -27,7 +27,6 @@ add_qt_module(InputSupport
 )
 
 #### Keys ignored in scope 3:.:.:input-support.pro:<TRUE>:
-# CONFIG = "static" "internal_module"
 # MODULE = "input_support"
 # _LOADED = "qt_module"
 
@@ -109,7 +108,6 @@ extend_target(InputSupport CONDITION QT_FEATURE_integrityhid
     LIBRARIES
         integrityhid
 )
-
 if(QT_FEATURE_xkbcommon)
     add_subdirectory(xkbcommon)
 endif()

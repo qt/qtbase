@@ -44,6 +44,5 @@ add_qt_module(LinuxAccessibilitySupport
 )
 
 #### Keys ignored in scope 1:.:.:linuxaccessibility.pro:<TRUE>:
-# CONFIG = "static" "internal_module"
 # MODULE = "linuxaccessibility_support"
 # _LOADED = "qt_module"

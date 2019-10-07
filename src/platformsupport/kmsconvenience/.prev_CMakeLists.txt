@@ -21,6 +21,5 @@ add_qt_module(KmsSupport
 )
 
 #### Keys ignored in scope 1:.:.:kmsconvenience.pro:<TRUE>:
-# CONFIG = "static" "internal_module"
 # MODULE = "kms_support"
 # _LOADED = "qt_module"

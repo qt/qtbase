@@ -22,7 +22,6 @@ add_qt_module(ServiceSupport
 )
 
 #### Keys ignored in scope 1:.:.:services.pro:<TRUE>:
-# CONFIG = "static" "internal_module"
 # MODULE = "service_support"
 # _LOADED = "qt_module"
 

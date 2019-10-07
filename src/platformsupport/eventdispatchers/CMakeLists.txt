@@ -22,7 +22,6 @@ add_qt_module(EventDispatcherSupport
 )
 
 #### Keys ignored in scope 1:.:.:eventdispatchers.pro:<TRUE>:
-# CONFIG = "static" "internal_module"
 # MODULE = "eventdispatcher_support"
 # _LOADED = "qt_module"
 

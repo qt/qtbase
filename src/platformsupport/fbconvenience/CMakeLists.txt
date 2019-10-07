@@ -26,6 +26,5 @@ add_qt_module(FbSupport
 )
 
 #### Keys ignored in scope 1:.:.:fbconvenience.pro:<TRUE>:
-# CONFIG = "static" "internal_module"
 # MODULE = "fb_support"
 # _LOADED = "qt_module"

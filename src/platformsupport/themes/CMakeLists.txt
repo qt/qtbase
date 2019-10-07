@@ -20,7 +20,6 @@ add_qt_module(ThemeSupport
 )
 
 #### Keys ignored in scope 1:.:.:themes.pro:<TRUE>:
-# CONFIG = "static" "internal_module"
 # MODULE = "theme_support"
 # _LOADED = "qt_module"
 

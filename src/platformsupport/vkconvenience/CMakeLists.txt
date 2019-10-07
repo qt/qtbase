@@ -25,6 +25,5 @@ add_qt_module(VulkanSupport
 )
 
 #### Keys ignored in scope 1:.:.:vkconvenience.pro:<TRUE>:
-# CONFIG = "static" "internal_module"
 # MODULE = "vulkan_support"
 # _LOADED = "qt_module"
