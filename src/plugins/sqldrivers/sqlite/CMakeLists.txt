@@ -11,23 +11,25 @@ add_qt_plugin(qsqlite
         qsql_sqlite.cpp qsql_sqlite_p.h
         smain.cpp
     DEFINES
-        QT_NO_CAST_TO_ASCII
         QT_NO_CAST_FROM_ASCII
+        QT_NO_CAST_TO_ASCII
     LIBRARIES
-        Qt::Core
         Qt::CorePrivate
         Qt::SqlPrivate
-        SQLite::SQLite3
+        SQLite::SQLite3 # special case
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Sql
 )
 
-#### Keys ignored in scope 1:.:sqlite.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:sqlite.pro:<TRUE>:
 # OTHER_FILES = "sqlite.json"
-# PLUGIN_CLASS_NAME = "QSQLiteDriverPlugin"
 # QT_FOR_CONFIG = "sqldrivers-private"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################
 
-# special case: Remove dead stuff
-# extend_target(qsqlite CONDITION (NOT (ON)) AND (CONFIG(release,debug OR release)) ...
+# special case begin
+# Remove non-system-sqlite code
+# extend_target(qsqlite CONDITION QT_FEATURE_system_sqlite
+# special case end

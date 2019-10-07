@@ -1,5 +1,8 @@
 # Generated from sqldrivers.pro.
 
+# special case begin
+# Currently handled completely manually.
+
 # TODO sqldrivers_standalone {
 #     _QMAKE_CACHE_ = $$shadowed($$SQLDRV_SRC_TREE)/.qmake.conf
 #     load(qt_configure)
@@ -49,3 +52,4 @@ endif()
 if(QT_FEATURE_sql_ibase)
 #     TODO add_subdirectory(ibase)
 endif()
+# special case end

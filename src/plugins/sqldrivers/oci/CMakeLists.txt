@@ -24,7 +24,6 @@ add_qt_plugin(qsqloci
 
 #### Keys ignored in scope 1:.:.:oci.pro:<TRUE>:
 # OTHER_FILES = "oci.json"
-# PLUGIN_CLASS_NAME = "QOCIDriverPlugin"
 
 ## Scopes:
 #####################################################################

@@ -1,0 +1,90 @@
+# Generated from sqlite.pro.
+
+#####################################################################
+## qsqlite Plugin:
+#####################################################################
+
+add_qt_plugin(qsqlite
+    TYPE sqldrivers
+    CLASS_NAME QSQLiteDriverPlugin
+    SOURCES
+        qsql_sqlite.cpp qsql_sqlite_p.h
+        smain.cpp
+    DEFINES
+        QT_NO_CAST_FROM_ASCII
+        QT_NO_CAST_TO_ASCII
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::SqlPrivate
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Sql
+)
+
+#### Keys ignored in scope 1:.:.:sqlite.pro:<TRUE>:
+# OTHER_FILES = "sqlite.json"
+# QT_FOR_CONFIG = "sqldrivers-private"
+
+## Scopes:
+#####################################################################
+
+extend_target(qsqlite CONDITION QT_FEATURE_system_sqlite
+    PUBLIC_LIBRARIES
+        sqlite
+)
+
+extend_target(qsqlite CONDITION NOT QT_FEATURE_system_sqlite
+    SOURCES
+        ../../../3rdparty/sqlite/sqlite3.c
+    DEFINES
+        SQLITE_ENABLE_COLUMN_METADATA
+        SQLITE_ENABLE_FTS3
+        SQLITE_ENABLE_FTS3_PARENTHESIS
+        SQLITE_ENABLE_FTS5
+        SQLITE_ENABLE_JSON1
+        SQLITE_ENABLE_RTREE
+        SQLITE_OMIT_COMPLETE
+    INCLUDE_DIRECTORIES
+        ../../../3rdparty/sqlite
+)
+
+extend_target(qsqlite CONDITION CMAKE_BUILD_TYPE STREQUAL Release AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        NDEBUG
+)
+
+extend_target(qsqlite CONDITION NOT CONFIG___contains___largefile AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        SQLITE_DISABLE_LFS
+)
+
+extend_target(qsqlite CONDITION QT_FEATURE_posix_fallocate AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        HAVE_POSIX_FALLOCATE=1
+)
+
+extend_target(qsqlite CONDITION WINRT AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        SQLITE_OS_WINRT
+)
+
+#### Keys ignored in scope 8:.:../../../3rdparty:../../../3rdparty/sqlite.pri:WINRT:
+# QMAKE_CFLAGS = "-Gy"
+
+extend_target(qsqlite CONDITION QNX AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        _QNX_SOURCE
+)
+
+extend_target(qsqlite CONDITION UNIX AND NOT QT_FEATURE_system_sqlite AND NOT WINRT AND NOT winphone
+    DEFINES
+        HAVE_USLEEP=1
+)
+
+extend_target(qsqlite CONDITION QT_FEATURE_dlopen AND NOT QT_FEATURE_system_sqlite
+    PUBLIC_LIBRARIES
+        ${CMAKE_DL_LIBS}
+)
+
+#### Keys ignored in scope 12:.:../../../3rdparty:../../../3rdparty/sqlite.pri:INTEGRITY:
+# QMAKE_CFLAGS = "-include" "qplatformdefs.h"

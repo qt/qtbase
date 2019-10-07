@@ -1,3 +1,5 @@
+# Generated from psql.pro.
+
 # FIXME cmake FindPostgreSQL is more exhaustive than the check we have for libpq-fe.h
 # it also checks for catalog/pg_type.h which is a more internal include, we should
 # add a way to tell cmake FindPostgreSQL to optionally only look for the libpq-fe.h one
@@ -14,16 +16,16 @@ add_qt_plugin(qsqlpsql
         main.cpp
         qsql_psql.cpp qsql_psql_p.h
     DEFINES
-        QT_NO_CAST_TO_ASCII
         QT_NO_CAST_FROM_ASCII
+        QT_NO_CAST_TO_ASCII
     LIBRARIES
-        PostgreSQL::PostgreSQL
-        Qt::Core
         Qt::CorePrivate
         Qt::SqlPrivate
+    PUBLIC_LIBRARIES
+        PostgreSQL::PostgreSQL
+        Qt::Core
+        Qt::Sql
 )
 
-#### Keys ignored in scope 1:.:psql.pro:<NONE>:
+#### Keys ignored in scope 1:.:.:psql.pro:<TRUE>:
 # OTHER_FILES = "psql.json"
-# PLUGIN_CLASS_NAME = "QPSQLDriverPlugin"
-# _LOADED = "qt_plugin"

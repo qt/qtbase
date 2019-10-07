@@ -4,8 +4,6 @@
 ## qsqlodbc Plugin:
 #####################################################################
 
-qt_find_package(ODBC) # special case
-
 add_qt_plugin(qsqlodbc
     TYPE sqldrivers
     CLASS_NAME QODBCDriverPlugin

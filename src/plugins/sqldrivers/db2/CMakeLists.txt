@@ -24,7 +24,6 @@ add_qt_plugin(qsqldb2
 
 #### Keys ignored in scope 1:.:.:db2.pro:<TRUE>:
 # OTHER_FILES = "db2.json"
-# PLUGIN_CLASS_NAME = "QDB2DriverPlugin"
 
 ## Scopes:
 #####################################################################

@@ -1,15 +1,15 @@
-# Generated from mysql.pro.
+# Generated from psql.pro.
 
 #####################################################################
-## qsqlmysql Plugin:
+## qsqlpsql Plugin:
 #####################################################################
 
-add_qt_plugin(qsqlmysql
+add_qt_plugin(qsqlpsql
     TYPE sqldrivers
-    CLASS_NAME QMYSQLDriverPlugin
+    CLASS_NAME QPSQLDriverPlugin
     SOURCES
         main.cpp
-        qsql_mysql.cpp qsql_mysql_p.h
+        qsql_psql.cpp qsql_psql_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
@@ -17,10 +17,10 @@ add_qt_plugin(qsqlmysql
         Qt::CorePrivate
         Qt::SqlPrivate
     PUBLIC_LIBRARIES
-        MySQL::MySQL
+        PostgreSQL::PostgreSQL
         Qt::Core
         Qt::Sql
 )
 
-#### Keys ignored in scope 1:.:.:mysql.pro:<TRUE>:
-# OTHER_FILES = "mysql.json"
+#### Keys ignored in scope 1:.:.:psql.pro:<TRUE>:
+# OTHER_FILES = "psql.json"
