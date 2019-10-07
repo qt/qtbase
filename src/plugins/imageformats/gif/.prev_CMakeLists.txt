@@ -1,22 +1,20 @@
-# Generated from ico.pro.
+# Generated from gif.pro.
 
 #####################################################################
-## qico Plugin:
+## qgif Plugin:
 #####################################################################
 
-add_qt_plugin(qico
+add_qt_plugin(qgif
     TYPE imageformats
-    CLASS_NAME QICOPlugin
+    CLASS_NAME QGifPlugin
     SOURCES
         main.cpp main.h
-        qicohandler.cpp qicohandler.h
-    LIBRARIES
-        Qt::CorePrivate
+        qgifhandler.cpp qgifhandler_p.h
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:.:ico.pro:<TRUE>:
-# OTHER_FILES = "ico.json"
+#### Keys ignored in scope 1:.:.:gif.pro:<TRUE>:
+# OTHER_FILES = "gif.json"
 # _LOADED = "qt_plugin"

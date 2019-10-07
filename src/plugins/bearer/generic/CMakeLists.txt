@@ -23,7 +23,6 @@ add_qt_plugin(qgenericbearer
 
 #### Keys ignored in scope 1:.:.:generic.pro:<TRUE>:
 # OTHER_FILES = "generic.json"
-# PLUGIN_CLASS_NAME = "QGenericEnginePlugin"
 # _LOADED = "qt_plugin"
 
 ## Scopes:

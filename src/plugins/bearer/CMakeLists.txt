@@ -1,11 +1,14 @@
 # Generated from bearer.pro.
 
-if(NOT ANDROID AND LINUX AND TARGET Qt::DBus) # special case
+# special case begin
+# The whole block is manual.
+if(NOT ANDROID AND LINUX AND TARGET Qt::DBus)
     add_subdirectory(generic)
     add_subdirectory(connman)
     add_subdirectory(networkmanager)
-elseif(ANDROID AND NOT ANDROID_EMBEDDED) # special case
+elseif(ANDROID AND NOT ANDROID_EMBEDDED)
     add_subdirectory(android)
-else() # special case
+else()
     add_subdirectory(generic)
 endif()
+# special case end

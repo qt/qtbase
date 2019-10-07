@@ -1,32 +1,25 @@
 # Generated from plugins.pro.
 
-
 if(TARGET Qt::Sql)
     add_subdirectory(sqldrivers)
 endif()
-
-if(TARGET Qt::Network AND QT_FEATURE_bearermanagement)
+if(QT_FEATURE_bearermanagement AND TARGET Qt::Network)
     add_subdirectory(bearer)
 endif()
-
 if(TARGET Qt::Gui)
     add_subdirectory(platforms)
     add_subdirectory(platforminputcontexts)
     add_subdirectory(platformthemes)
-
-    if(QT_FEATURE_imageformatplugin)
-        add_subdirectory(imageformats)
-    endif()
-
-    if(NOT ANDROID AND QT_FEATURE_library)
-        add_subdirectory(generic)
-    endif()
 endif()
-
+if(QT_FEATURE_imageformatplugin AND TARGET Qt::Gui)
+    add_subdirectory(imageformats)
+endif()
+if(QT_FEATURE_library AND TARGET Qt::Gui AND NOT ANDROID)
+    add_subdirectory(generic)
+endif()
 if(TARGET Qt::Widgets)
     add_subdirectory(styles)
 endif()
-
-if(NOT WINRT AND TARGET Qt::PrintSupport)
+if(TARGET Qt::PrintSupport AND NOT WINRT)
     add_subdirectory(printsupport)
 endif()

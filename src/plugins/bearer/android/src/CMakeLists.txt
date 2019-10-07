@@ -6,6 +6,7 @@
 
 add_qt_plugin(qandroidbearer
     TYPE bearer
+    CLASS_NAME QAndroidBearerEnginePlugin
     SOURCES
         ../../qbearerengine_impl.h
         ../../qnetworksession_impl.cpp ../../qnetworksession_impl.h
@@ -23,5 +24,4 @@ add_qt_plugin(qandroidbearer
 )
 
 #### Keys ignored in scope 1:.:.:src.pro:<TRUE>:
-# PLUGIN_CLASS_NAME = "QAndroidBearerEnginePlugin"
 # _LOADED = "qt_plugin"

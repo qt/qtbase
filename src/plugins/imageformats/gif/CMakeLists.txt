@@ -18,5 +18,4 @@ add_qt_plugin(qgif
 
 #### Keys ignored in scope 1:.:.:gif.pro:<TRUE>:
 # OTHER_FILES = "gif.json"
-# PLUGIN_CLASS_NAME = "QGifPlugin"
 # _LOADED = "qt_plugin"
