@@ -29,7 +29,7 @@
 
 
 import re
-from sympy import simplify_logic, And, Or, Not, SympifyError
+from sympy import simplify_logic, And, Or, Not, SympifyError  # type: ignore
 from condition_simplifier_cache import simplify_condition_memoize
 
 

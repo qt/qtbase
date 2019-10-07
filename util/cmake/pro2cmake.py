@@ -42,12 +42,7 @@ import collections
 from condition_simplifier import simplify_condition
 from condition_simplifier_cache import set_condition_simplified_cache_enabled
 
-try:
-    collectionsAbc = collections.abc
-except AttributeError:
-    collectionsAbc = collections
-
-import pyparsing as pp
+import pyparsing as pp  # type: ignore
 import xml.etree.ElementTree as ET
 
 from argparse import ArgumentParser
@@ -63,7 +58,6 @@ from typing import (
     Set,
     IO,
     Union,
-    Mapping,
     Any,
     Callable,
     FrozenSet,
@@ -243,13 +237,13 @@ def is_config_test_project(project_file_path: str = "") -> bool:
 
 
 @lru_cache(maxsize=None)
-def find_qmake_conf(project_file_path: str = "") -> Optional[str]:
+def find_qmake_conf(project_file_path: str = "") -> str:
     if not os.path.isabs(project_file_path):
         print(
             f"Warning: could not find .qmake.conf file, given path is not an "
             f"absolute path: {project_file_path}"
         )
-        return None
+        return ""
 
     cwd = os.path.dirname(project_file_path)
     file_name = ".qmake.conf"
@@ -261,7 +255,8 @@ def find_qmake_conf(project_file_path: str = "") -> Optional[str]:
         else:
             cwd = os.path.dirname(cwd)
 
-    return None
+    print(f"Warning: could not find .qmake.conf file")
+    return ""
 
 
 def process_qrc_file(
@@ -350,7 +345,7 @@ def write_add_qt_resource_call(
     target: str,
     resource_name: str,
     prefix: Optional[str],
-    base_dir: Optional[str],
+    base_dir: str,
     lang: Optional[str],
     files: Dict[str, str],
     skip_qtquick_compiler: bool,
@@ -425,27 +420,28 @@ def write_add_qt_resource_call(
 
 
 class QmlDirFileInfo:
-    def __init__(self, file_path: str, type_name: str):
+    def __init__(self, file_path: str, type_name: str) -> None:
         self.file_path = file_path
         self.version = ""
         self.type_name = type_name
         self.internal = False
         self.singleton = False
+        self.path = ""
 
 
 class QmlDir:
-    def __init__(self):
+    def __init__(self) -> None:
         self.module = ""
         self.plugin_name = ""
         self.plugin_path = ""
         self.classname = ""
-        self.imports = []  # typing.List[str]
-        self.type_names = {}  # typing.Dict[str, QmlDirFileInfo]
-        self.type_infos = []  # typing.List[str]
-        self.depends = []  # typing.List[[str,str]]
+        self.imports: List[str] = []
+        self.type_names: Dict[str, QmlDirFileInfo] = {}
+        self.type_infos: List[str] = []
+        self.depends: List[str] = []
         self.designer_supported = False
 
-    def __str__(self):
+    def __str__(self) -> str:
         type_infos_line = "    \n".join(self.type_infos)
         imports_line = "    \n".join(self.imports)
         string = f"""\
@@ -522,8 +518,6 @@ class QmlDir:
                 self.classname = entries[1]
             elif entries[0] == "typeinfo":
                 self.type_infos.append(entries[1])
-            elif entries[0] == "depends":
-                self.depends.append((entries[1], entries[2]))
             elif entries[0] == "designersupported":
                 self.designer_supported = True
             elif entries[0] == "import":
@@ -618,7 +612,7 @@ def handle_vpath(source: str, base_dir: str, vpath: List[str]) -> str:
 def flatten_list(l):
     """ Flattens an irregular nested list into a simple list."""
     for el in l:
-        if isinstance(el, collectionsAbc.Iterable) and not isinstance(el, (str, bytes)):
+        if isinstance(el, collections.abc.Iterable) and not isinstance(el, (str, bytes)):
             yield from flatten_list(el)
         else:
             yield el
@@ -658,7 +652,7 @@ def handle_function_value(group: pp.ParseResults):
 
 
 class Operation:
-    def __init__(self, value: Union[List[str], str]):
+    def __init__(self, value: Union[List[str], str]) -> None:
         if isinstance(value, list):
             self._value = value
         else:
@@ -797,19 +791,19 @@ class Scope(object):
         self,
         *,
         parent_scope: Optional[Scope],
-        file: Optional[str] = None,
+        qmake_file: str,
         condition: str = "",
         base_dir: str = "",
-        operations: Union[Mapping[str, List[Operation]], None] = None,
+        operations: Union[Dict[str, List[Operation]], None] = None,
     ) -> None:
-        if operations is None:
+        if not operations:
             operations = {
                 "QT_SOURCE_TREE": [SetOperation(["${QT_SOURCE_TREE}"])],
                 "QT_BUILD_TREE": [SetOperation(["${PROJECT_BINARY_DIR}"])],
                 "QTRO_SOURCE_TREE": [SetOperation(["${CMAKE_SOURCE_DIR}"])],
             }
 
-        self._operations = copy.deepcopy(operations)
+        self._operations: Dict[str, List[Operation]] = copy.deepcopy(operations)
         if parent_scope:
             parent_scope._add_child(self)
         else:
@@ -820,17 +814,15 @@ class Scope(object):
                 self._operations["QT"] = [SetOperation(["core", "gui"])]
 
         self._basedir = base_dir
-        if file:
-            self._currentdir = os.path.dirname(file)
-        if not self._currentdir:
-            self._currentdir = "."
+        if qmake_file:
+            self._currentdir = os.path.dirname(qmake_file) or "."
         if not self._basedir:
             self._basedir = self._currentdir
 
         self._scope_id = Scope.SCOPE_ID
         Scope.SCOPE_ID += 1
-        self._file = file
-        self._file_absolute_path = os.path.abspath(file)
+        self._file = qmake_file
+        self._file_absolute_path = os.path.abspath(qmake_file)
         self._condition = map_condition(condition)
         self._children = []  # type: List[Scope]
         self._included_children = []  # type: List[Scope]
@@ -896,7 +888,7 @@ class Scope(object):
     def FromDict(
         parent_scope: Optional["Scope"], file: str, statements, cond: str = "", base_dir: str = ""
     ) -> Scope:
-        scope = Scope(parent_scope=parent_scope, file=file, condition=cond, base_dir=base_dir)
+        scope = Scope(parent_scope=parent_scope, qmake_file=file, condition=cond, base_dir=base_dir)
         for statement in statements:
             if isinstance(statement, list):  # Handle skipped parts...
                 assert not statement
@@ -1181,7 +1173,7 @@ class Scope(object):
                 else:
                     # Recursively expand each value from the result list
                     # returned from self.get().
-                    result_list = []
+                    result_list: List[str] = []
                     for entry_value in get_result:
                         result_list += self._expand_value(self._replace_env_var_value(entry_value))
                     return result_list
@@ -1716,14 +1708,14 @@ def handle_subdir(
                 c,
                 cm_fh,
                 indent=indent + 1,
-                is_example=is_example,
                 current_conditions=frozenset((*current_conditions, child_condition)),
+                is_example=is_example,
             )
 
-    def group_and_print_sub_dirs(scope: Scope, indent: int = 0):
+    def group_and_print_sub_dirs(scope: Scope, indent: int = 0) -> None:
         # Simplify conditions, and group
         # subdirectories with the same conditions.
-        grouped_sub_dirs = {}
+        grouped_sub_dirs: Dict[str, List[str]] = {}
 
         # Wraps each element in the given interable with parentheses,
         # to make sure boolean simplification happens correctly.
@@ -1770,7 +1762,7 @@ def handle_subdir(
                 condition_simplified = simplify_condition(condition_str)
                 condition_key = condition_simplified
 
-            sub_dir_list_by_key = grouped_sub_dirs.get(condition_key, [])
+            sub_dir_list_by_key: List[str] = grouped_sub_dirs.get(condition_key, [])
             sub_dir_list_by_key.append(subdir_name)
             grouped_sub_dirs[condition_key] = sub_dir_list_by_key
 
@@ -1793,7 +1785,7 @@ def handle_subdir(
 
     # A set of conditions which will be ANDed together. The set is recreated with more conditions
     # as the scope deepens.
-    current_conditions = frozenset()
+    current_conditions: FrozenSet[str] = frozenset()
 
     # Compute the total condition for scopes. Needed for scopes that
     # have 'else' as a condition.
@@ -2221,24 +2213,26 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                         else:
                             immediate_files_filtered.append(f)
                     immediate_files = {f: "" for f in immediate_files_filtered}
-                    immediate_prefix = scope.get(f"{r}.prefix")
-                    if immediate_prefix:
-                        immediate_prefix = immediate_prefix[0]
+                    scope_prefix = scope.get(f"{r}.prefix")
+                    if scope_prefix:
+                        immediate_prefix = scope_prefix[0]
                     else:
                         immediate_prefix = "/"
-                    immediate_base = scope.get(f"{r}.base")
+                    immediate_base_list = scope.get(f"{r}.base")
+                    assert len(immediate_base_list) < 2, f"immediate base directory must be at most one entry"
+                    immediate_base = "".join(immediate_base_list)
                     immediate_lang = None
                     immediate_name = f"qmake_{r}"
                     qrc_output += write_add_qt_resource_call(
-                        target,
-                        immediate_name,
-                        immediate_prefix,
-                        immediate_base,
-                        immediate_lang,
-                        immediate_files,
-                        skip_qtquick_compiler,
-                        retain_qtquick_compiler,
-                        is_example,
+                        target=target,
+                        resource_name=immediate_name,
+                        prefix=immediate_prefix,
+                        base_dir=immediate_base,
+                        lang=immediate_lang,
+                        files=immediate_files,
+                        skip_qtquick_compiler=skip_qtquick_compiler,
+                        retain_qtquick_compiler=retain_qtquick_compiler,
+                        is_example=is_example,
                     )
                 else:
                     if "*" in r:
@@ -2262,17 +2256,17 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
         if standalone_files:
             name = "qmake_immediate"
             prefix = "/"
-            base = None
+            base = ""
             lang = None
             files = {f: "" for f in standalone_files}
             skip_qtquick_compiler = False
             qrc_output += write_add_qt_resource_call(
-                target,
-                name,
-                prefix,
-                base,
-                lang,
-                files,
+                target=target,
+                resource_name=name,
+                prefix=prefix,
+                base_dir=base,
+                lang=lang,
+                files=files,
                 skip_qtquick_compiler=False,
                 retain_qtquick_compiler=False,
                 is_example=is_example,
@@ -2347,6 +2341,7 @@ def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int =
     write_sources_section(extend_qt_io_string, scope)
     extend_qt_string = extend_qt_io_string.getvalue()
 
+    assert scope.total_condition, "Cannot write CONDITION when scope.condition is None"
     extend_scope = (
         f"\n{ind}extend_target({target} CONDITION"
         f" {map_to_cmake_condition(scope.total_condition)}\n"
@@ -2372,7 +2367,7 @@ def merge_scopes(scopes: List[Scope]) -> List[Scope]:
     result = []  # type: List[Scope]
 
     # Merge scopes with their parents:
-    known_scopes = {}  # type: Mapping[str, Scope]
+    known_scopes = {}  # type: Dict[str, Scope]
     for scope in scopes:
         total_condition = scope.total_condition
         assert total_condition
@@ -2461,7 +2456,7 @@ def write_android_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
         cm_fh.write(f"{spaces(indent)}endif()\n")
 
 
-def write_wayland_part(cm_fh: typing.IO[str], target: str, scope:Scope, indent: int = 0):
+def write_wayland_part(cm_fh: IO[str], target: str, scope:Scope, indent: int = 0):
     client_sources = scope.get_files('WAYLANDCLIENTSOURCES', use_vpath=True)
     server_sources = scope.get_files('WAYLANDSERVERSOURCES', use_vpath=True)
     if len(client_sources) == 0 and len(server_sources) == 0:
@@ -2559,11 +2554,13 @@ def handle_source_subtractions(scopes: List[Scope]):
                     modified_sources[file_without_minus] = {}
 
                 subtractions = modified_sources[file_without_minus].get("subtractions", set())
+                assert isinstance(subtractions, set)
 
                 # Add the condition to the set of conditions and remove
                 # the file subtraction from the processed scope, which
                 # will be later re-added in a new scope.
                 if scope.condition:
+                    assert scope.total_condition
                     subtractions.add(scope.total_condition)
                 remove_file_from_operation(scope, "SOURCES", file_without_minus, RemoveOperation)
                 if subtractions:
@@ -2580,7 +2577,9 @@ def handle_source_subtractions(scopes: List[Scope]):
 
     for modified_source in modified_sources:
         additions = modified_sources[modified_source].get("additions", set())
+        assert isinstance(additions, set), f"Additions must be a set, got {additions} instead."
         subtractions = modified_sources[modified_source].get("subtractions", set())
+        assert isinstance(subtractions, set), f"Subtractions must be a set, got {additions} instead."
         add_to_no_pch_sources = modified_sources[modified_source].get(
             "add_to_no_pch_sources", False
         )
@@ -2613,7 +2612,7 @@ def handle_source_subtractions(scopes: List[Scope]):
         # operations.
         new_scope = Scope(
             parent_scope=top_most_scope,
-            file=top_most_scope.file,
+            qmake_file=top_most_scope.file,
             condition=condition_simplified,
             base_dir=top_most_scope.basedir,
         )
@@ -2957,11 +2956,10 @@ def write_example(
                     """
             )
 
-            qmldir_file_path = scope.get_files("qmldir.files")
-            if qmldir_file_path:
-                qmldir_file_path = os.path.join(os.getcwd(), qmldir_file_path[0])
-            else:
-                qmldir_file_path = os.path.join(os.getcwd(), "qmldir")
+            qmldir_file_path_list = scope.get_files("qmldir.files")
+            assert len(qmldir_file_path_list) < 2, "File path must only contain one path"
+            qmldir_file_path = qmldir_file_path_list[0] if qmldir_file_path_list else "qmldir"
+            qmldir_file_path = os.path.join(os.getcwd(), qmldir_file_path[0])
 
             if os.path.exists(qmldir_file_path):
                 qml_dir = QmlDir()
@@ -3402,6 +3400,7 @@ def handle_config_test_project(scope: Scope, cm_fh: IO[str]):
         extend_string = extend_scope_io_string.getvalue()
 
         if extend_string:
+            assert c.total_condition, "Cannot write if with empty condition"
             extend_scope = (
                 f"\nif({map_to_cmake_condition(c.total_condition)})\n"
                 f"{extend_string}"

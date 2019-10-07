@@ -35,7 +35,7 @@ import os
 import sys
 import time
 
-from typing import Callable
+from typing import Any, Callable, Dict, Union
 
 condition_simplifier_cache_enabled = True
 
@@ -66,7 +66,7 @@ def get_file_checksum(file_path: str) -> str:
         with open(file_path, "r") as content_file:
             content = content_file.read()
     except IOError:
-        content = time.time()
+        content = str(time.time())
     checksum = hashlib.md5(content.encode("utf-8")).hexdigest()
     return checksum
 
@@ -88,7 +88,7 @@ def init_cache_dict():
 
 def simplify_condition_memoize(f: Callable[[str], str]):
     cache_path = get_cache_location()
-    cache_file_content = None
+    cache_file_content: Dict[str, Any] = {}
 
     if os.path.exists(cache_path):
         try:
