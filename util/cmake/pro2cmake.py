@@ -1491,7 +1491,20 @@ def parseProFile(file: str, *, debug=False):
 def unwrap_if(input_string):
     # Compute the grammar only once.
     if not hasattr(unwrap_if, "if_grammar"):
+        def handle_expr_with_parentheses(s, l, t):
+            # The following expression unwraps the condition via the
+            # additional info set by originalTextFor, thus returning the
+            # condition without parentheses.
+            condition_without_parentheses = s[t._original_start + 1 : t._original_end - 1]
+
+            # Re-add the parentheses, but with spaces in-between. This
+            # fixes map_condition -> map_platform to apply properly.
+            condition_with_parentheses = "( " + condition_without_parentheses + " )"
+            return condition_with_parentheses
+
         expr_with_parentheses = pp.originalTextFor(pp.nestedExpr())
+        expr_with_parentheses.setParseAction(handle_expr_with_parentheses)
+
         if_keyword = pp.Suppress(pp.Keyword("if"))
         unwrap_if.if_grammar = if_keyword + expr_with_parentheses
 
