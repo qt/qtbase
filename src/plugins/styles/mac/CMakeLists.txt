@@ -15,11 +15,11 @@ add_qt_plugin(qmacstyle
         ${FWAppKit}
         Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::Gui
         Qt::Widgets
 )
 
 #### Keys ignored in scope 1:.:.:mac.pro:<TRUE>:
 # DISTFILES = "macstyle.json"
-# PLUGIN_CLASS_NAME = "QMacStylePlugin"
-# PLUGIN_TYPE = "styles"
 # _LOADED = "qt_plugin"
