@@ -478,6 +478,9 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                 if (cascadeList) {
                     QStringList fallbackList;
                     const int numCascades = CFArrayGetCount(cascadeList);
+
+                    int symbolIndex = -1;
+                    int notoSansUniversalIndex = -1;
                     for (int i = 0; i < numCascades; ++i) {
                         CTFontDescriptorRef fontFallback = (CTFontDescriptorRef) CFArrayGetValueAtIndex(cascadeList, i);
                         QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontFallback, kCTFontFamilyNameAttribute);
@@ -487,15 +490,28 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
 
                         if (!qt_isFontFamilyPopulated(fallbackName))
                             const_cast<QCoreTextFontDatabase *>(this)->populateFromDescriptor(fontFallback, fallbackName);
+
+                        if (fallbackName == QLatin1String(".Apple Symbols Fallback"))
+                            symbolIndex = fallbackList.size() - 1;
+                        else if (fallbackName == QLatin1String(".Noto Sans Universal"))
+                            notoSansUniversalIndex = fallbackList.size() - 1;
                     }
 
                     // .Apple Symbols Fallback will be at the beginning of the list and we will
                     // detect that this has glyphs for Arabic and other writing systems.
                     // Since it is a symbol font, it should be the last resort, so that
                     // the proper fonts for these writing systems are preferred.
-                    int symbolIndex = fallbackList.indexOf(QLatin1String(".Apple Symbols Fallback"));
-                    if (symbolIndex >= 0)
+                    if (symbolIndex >= 0) {
                         fallbackList.move(symbolIndex, fallbackList.size() - 1);
+                        if (notoSansUniversalIndex > symbolIndex)
+                            --notoSansUniversalIndex;
+                    }
+
+                    // .Noto Sans Universal appears to have a bug when the application
+                    // does not have a valid Info.plist, which causes it to return glyph #4
+                    // (a question mark) for any character.
+                    if (notoSansUniversalIndex >= 0)
+                        fallbackList.move(notoSansUniversalIndex, fallbackList.size() - 1);
 
                     addExtraFallbacks(&fallbackList);
 
