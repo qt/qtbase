@@ -1,3 +1,4 @@
+
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
@@ -59,8 +60,12 @@
 #define SECURITY_WIN32 1
 #include <security.h>
 #elif QT_CONFIG(gssapi) // GSSAPI
+#if defined(Q_OS_DARWIN)
+#include <GSS/GSS.h>
+#else
 #include <gssapi/gssapi.h>
-#endif
+#endif // Q_OS_DARWIN
+#endif // Q_CONFIG(sspi)
 
 QT_BEGIN_NAMESPACE
 
