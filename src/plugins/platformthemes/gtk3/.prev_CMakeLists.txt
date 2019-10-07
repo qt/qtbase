@@ -1,8 +1,5 @@
 # Generated from gtk3.pro.
 
-qt_find_package(GTK3) # special case
-qt_find_package(X11) # special case
-
 #####################################################################
 ## qgtk3 Plugin:
 #####################################################################
@@ -21,7 +18,6 @@ add_qt_plugin(qgtk3
         Qt::CorePrivate
         Qt::GuiPrivate
         Qt::ThemeSupportPrivate
-        X11::X11 # special case
     PUBLIC_LIBRARIES
         PkgConfig::GTK3
         Qt::Core
