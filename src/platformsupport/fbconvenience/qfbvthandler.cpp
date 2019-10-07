@@ -70,6 +70,10 @@ QT_BEGIN_NAMESPACE
 #ifdef VTH_ENABLED
 static void setTTYCursor(bool enable)
 {
+    static bool ignore = qEnvironmentVariableIntValue("QT_QPA_PRESERVE_CONSOLE_STATE");
+    if (ignore)
+        return;
+
     const char * const devs[] = { "/dev/tty0", "/dev/tty", "/dev/console", 0 };
     int fd = -1;
     for (const char * const *dev = devs; *dev; ++dev) {
