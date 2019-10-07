@@ -346,7 +346,7 @@ extern Q_CORE_EXPORT QBasicAtomicInteger<unsigned> qt_cpu_features[2];
 #endif
 Q_CORE_EXPORT void qDetectCpuFeatures();
 
-#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
+#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND) && !defined(QT_BOOTSTRAPPED)
 Q_CORE_EXPORT qsizetype qRandomCpu(void *, qsizetype) Q_DECL_NOTHROW;
 #else
 static inline qsizetype qRandomCpu(void *, qsizetype) Q_DECL_NOTHROW
