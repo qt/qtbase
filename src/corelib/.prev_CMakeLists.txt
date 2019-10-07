@@ -223,7 +223,7 @@ add_qt_module(Core
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
     INCLUDE_DIRECTORIES
-        ${PROJECT_BUILD_DIR}/src/corelib/global
+        ${PROJECT_BINARY_DIR}/src/corelib/global
         ../3rdparty/harfbuzz/src
         ../3rdparty/md4
         ../3rdparty/md5
