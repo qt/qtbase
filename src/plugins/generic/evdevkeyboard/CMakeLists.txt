@@ -21,6 +21,5 @@ add_qt_plugin(qevdevkeyboardplugin
 
 #### Keys ignored in scope 1:.:.:evdevkeyboard.pro:<TRUE>:
 # OTHER_FILES = "evdevkeyboard.json"
-# PLUGIN_CLASS_NAME = "QEvdevKeyboardPlugin"
 # PLUGIN_EXTENDS = "-"
 # _LOADED = "qt_plugin"

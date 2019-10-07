@@ -27,6 +27,5 @@ add_qt_plugin(qtuiotouchplugin
 
 #### Keys ignored in scope 1:.:.:tuiotouch.pro:<TRUE>:
 # OTHER_FILES = "tuiotouch.json"
-# PLUGIN_CLASS_NAME = "QTuioTouchPlugin"
 # PLUGIN_EXTENDS = "-"
 # _LOADED = "qt_plugin"

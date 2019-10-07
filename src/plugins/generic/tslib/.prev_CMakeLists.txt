@@ -1,12 +1,12 @@
-# Generated from evdevtablet.pro.
+# Generated from tslib.pro.
 
 #####################################################################
-## qevdevtabletplugin Plugin:
+## qtslibplugin Plugin:
 #####################################################################
 
-add_qt_plugin(qevdevtabletplugin
+add_qt_plugin(qtslibplugin
     TYPE generic
-    CLASS_NAME QEvdevTabletPlugin
+    CLASS_NAME QTsLibPlugin
     SOURCES
         main.cpp
     LIBRARIES
@@ -14,12 +14,13 @@ add_qt_plugin(qevdevtabletplugin
         Qt::GuiPrivate
         Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
+        PkgConfig::Tslib
         Qt::Core
         Qt::Gui
         Qt::InputSupport
 )
 
-#### Keys ignored in scope 1:.:.:evdevtablet.pro:<TRUE>:
-# OTHER_FILES = "evdevtablet.json"
+#### Keys ignored in scope 1:.:.:tslib.pro:<TRUE>:
+# OTHER_FILES = "tslib.json"
 # PLUGIN_EXTENDS = "-"
 # _LOADED = "qt_plugin"

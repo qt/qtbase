@@ -21,6 +21,5 @@ add_qt_plugin(qevdevtouchplugin
 
 #### Keys ignored in scope 1:.:.:evdevtouch.pro:<TRUE>:
 # OTHER_FILES = "evdevtouch.json"
-# PLUGIN_CLASS_NAME = "QEvdevTouchScreenPlugin"
 # PLUGIN_EXTENDS = "-"
 # _LOADED = "qt_plugin"
