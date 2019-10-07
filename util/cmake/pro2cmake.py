@@ -797,7 +797,7 @@ class Scope(object):
         if operations is None:
             operations = {
                 "QT_SOURCE_TREE": [SetOperation(["${QT_SOURCE_TREE}"])],
-                "QT_BUILD_TREE": [SetOperation(["${PROJECT_BUILD_DIR}"])],
+                "QT_BUILD_TREE": [SetOperation(["${PROJECT_BINARY_DIR}"])],
             }
 
         self._operations = copy.deepcopy(operations)
