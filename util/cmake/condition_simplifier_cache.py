@@ -37,6 +37,13 @@ import time
 
 from typing import Callable
 
+condition_simplifier_cache_enabled = True
+
+
+def set_condition_simplified_cache_enabled(value: bool):
+    global condition_simplifier_cache_enabled
+    condition_simplifier_cache_enabled = value
+
 
 def get_current_file_path() -> str:
     try:
@@ -106,7 +113,7 @@ def simplify_condition_memoize(f: Callable[[str], str]):
     atexit.register(update_cache_file)
 
     def helper(condition: str) -> str:
-        if condition not in cache_file_content["cache"]["conditions"]:
+        if condition not in cache_file_content["cache"]["conditions"] or not condition_simplifier_cache_enabled:
             cache_file_content["cache"]["conditions"][condition] = f(condition)
         return cache_file_content["cache"]["conditions"][condition]
 

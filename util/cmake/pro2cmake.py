@@ -40,6 +40,7 @@ import glob
 import collections
 
 from condition_simplifier import simplify_condition
+from condition_simplifier_cache import set_condition_simplified_cache_enabled
 
 try:
     collectionsAbc = collections.abc
@@ -156,13 +157,20 @@ def _parse_commandline():
     )
 
     parser.add_argument(
+        "-e",
+        "--skip-condition-cache",
+        dest="skip_condition_cache",
+        action="store_true",
+        help="Don't use condition simplifier cache (conversion speed may decrease).",
+    )
+
+    parser.add_argument(
         "files",
         metavar="<.pro/.pri file>",
         type=str,
         nargs="+",
         help="The .pro/.pri file to process",
     )
-
     return parser.parse_args()
 
 
@@ -3460,6 +3468,8 @@ def main() -> None:
     args = _parse_commandline()
 
     debug_parsing = args.debug_parser or args.debug
+    if args.skip_condition_cache:
+        set_condition_simplified_cache_enabled(False)
 
     backup_current_dir = os.getcwd()
 
