@@ -15,7 +15,7 @@ if(QT_FEATURE_thread)
     add_subdirectory(qthread)
     add_subdirectory(qthreadonce)
     add_subdirectory(qthreadpool)
-    # add_subdirectory(qthreadstorage) ### FIXME
+    add_subdirectory(qthreadstorage)
     add_subdirectory(qwaitcondition)
     add_subdirectory(qwritelocker)
 endif()

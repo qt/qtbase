@@ -1,18 +1,21 @@
-# Generated from qthread.pro.
+# special case skip regeneration
+# Generated from qthreadstorage.pro.
 
 #####################################################################
-## tst_qthread Test:
+## tst_qthreadstorage Test:
 #####################################################################
 
-add_qt_test(tst_qthread
+add_qt_test(tst_qthreadstorage
     SOURCES
-        ../../../../shared/emulationdetector.h
-        tst_qthread.cpp
-    INCLUDE_DIRECTORIES
-        ../../../../shared
+        tst_qthreadstorage.cpp
     LIBRARIES # special case
         Threads::Threads # special case
+
 )
 
 ## Scopes:
 #####################################################################
+
+if(NOT ANDROID AND NOT WINRT)
+    add_subdirectory(crashonexit)
+endif()
