@@ -397,6 +397,7 @@ void QRhiNull::simulateTextureUpload(const QRhiResourceUpdateBatchPrivate::Textu
                     QPainter painter(&texD->image[layer][level]);
                     const QSize srcSize = subresDesc.sourceSize().isEmpty()
                             ? src.size() : subresDesc.sourceSize();
+                    painter.setCompositionMode(QPainter::CompositionMode_Source);
                     painter.drawImage(subresDesc.destinationTopLeft(), src,
                                       QRect(subresDesc.sourceTopLeft(), srcSize));
                 } else if (!subresDesc.data().isEmpty()) {
@@ -435,6 +436,7 @@ void QRhiNull::simulateTextureCopy(const QRhiResourceUpdateBatchPrivate::Texture
     const QPoint srcPos = u.desc.sourceTopLeft();
 
     QPainter painter(&dstImage);
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
     painter.drawImage(QRect(dstPos, size), srcImage, QRect(srcPos, size));
 }
 

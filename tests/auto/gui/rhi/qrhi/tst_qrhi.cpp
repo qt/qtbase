@@ -85,6 +85,8 @@ private slots:
     void invalidPipeline();
     void renderToTextureSimple_data();
     void renderToTextureSimple();
+    void renderToTextureTexturedQuad_data();
+    void renderToTextureTexturedQuad();
 
 private:
     struct {
@@ -818,6 +820,34 @@ void tst_QRhi::resourceUpdateBatchRGBATextureUpload()
 
         QVERIFY(imageRGBAEquals(expectedImage, wrapperImage));
     }
+
+    // now a QImage from an actual file
+    {
+        QImage inputImage;
+        inputImage.load(QLatin1String(":/data/qt256.png"));
+        QVERIFY(!inputImage.isNull());
+        inputImage = std::move(inputImage).convertToFormat(image.format());
+
+        QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size(),
+                                                            1, QRhiTexture::UsedAsTransferSource));
+        QVERIFY(texture->build());
+
+        QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
+        batch->uploadTexture(texture.data(), inputImage);
+
+        QRhiReadbackResult readResult;
+        bool readCompleted = false;
+        readResult.completed = [&readCompleted] { readCompleted = true; };
+        batch->readBackTexture(texture.data(), &readResult);
+
+        QVERIFY(submitResourceUpdates(rhi.data(), batch));
+        QVERIFY(readCompleted);
+        QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                            readResult.pixelSize.width(), readResult.pixelSize.height(),
+                            inputImage.format());
+
+        QVERIFY(imageRGBAEquals(inputImage, wrapperImage));
+    }
 }
 
 void tst_QRhi::resourceUpdateBatchRGBATextureCopy_data()
@@ -1199,6 +1229,135 @@ void tst_QRhi::renderToTextureSimple()
         QVERIFY(redCount < blueCount);
     else
         QVERIFY(redCount > blueCount);
+}
+
+void tst_QRhi::renderToTextureTexturedQuad_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToTextureTexturedQuad()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    QImage inputImage;
+    inputImage.load(QLatin1String(":/data/qt256.png"));
+    QVERIFY(!inputImage.isNull());
+
+    QScopedPointer<QRhiTexture> texture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size(), 1,
+                                                        QRhiTexture::RenderTarget | QRhiTexture::UsedAsTransferSource));
+    QVERIFY(texture->build());
+
+    QScopedPointer<QRhiTextureRenderTarget> rt(rhi->newTextureRenderTarget({ texture.data() }));
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(rt->newCompatibleRenderPassDescriptor());
+    rt->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(rt->build());
+
+    QRhiCommandBuffer *cb = nullptr;
+    QVERIFY(rhi->beginOffscreenFrame(&cb) == QRhi::FrameOpSuccess);
+    QVERIFY(cb);
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    static const float verticesUvs[] = {
+        -1.0f, -1.0f,   0.0f, 0.0f,
+        1.0f, -1.0f,    1.0f, 0.0f,
+        -1.0f, 1.0f,    0.0f, 1.0f,
+        1.0f, 1.0f,     1.0f, 1.0f
+    };
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(verticesUvs)));
+    QVERIFY(vbuf->build());
+    updates->uploadStaticBuffer(vbuf.data(), verticesUvs);
+
+    QScopedPointer<QRhiTexture> inputTexture(rhi->newTexture(QRhiTexture::RGBA8, inputImage.size()));
+    QVERIFY(inputTexture->build());
+    updates->uploadTexture(inputTexture.data(), inputImage);
+
+    QScopedPointer<QRhiSampler> sampler(rhi->newSampler(QRhiSampler::Nearest, QRhiSampler::Nearest, QRhiSampler::None,
+                                                        QRhiSampler::ClampToEdge, QRhiSampler::ClampToEdge));
+    QVERIFY(sampler->build());
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    srb->setBindings({
+                         QRhiShaderResourceBinding::sampledTexture(0, QRhiShaderResourceBinding::FragmentStage, inputTexture.data(), sampler.data())
+                     });
+    QVERIFY(srb->build());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    pipeline->setTopology(QRhiGraphicsPipeline::TriangleStrip);
+    QShader vs = loadShader(":/data/simpletextured.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/simpletextured.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 4 * sizeof(float) } });
+    inputLayout.setAttributes({
+                                  { 0, 0, QRhiVertexInputAttribute::Float2, 0 },
+                                  { 0, 1, QRhiVertexInputAttribute::Float2, 2 * sizeof(float) }
+                              });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+
+    QVERIFY(pipeline->build());
+
+    cb->beginPass(rt.data(), Qt::black, { 1.0f, 0 }, updates);
+    cb->setGraphicsPipeline(pipeline.data());
+    cb->setShaderResources();
+    cb->setViewport({ 0, 0, float(texture->pixelSize().width()), float(texture->pixelSize().height()) });
+    QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+    cb->setVertexInput(0, 1, &vbindings);
+    cb->draw(4);
+
+    QRhiReadbackResult readResult;
+    QImage result;
+    readResult.completed = [&readResult, &result] {
+        result = QImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                        readResult.pixelSize.width(), readResult.pixelSize.height(),
+                        QImage::Format_RGBA8888_Premultiplied);
+    };
+    QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+    readbackBatch->readBackTexture({ texture.data() }, &readResult);
+    cb->endPass(readbackBatch);
+
+    rhi->endOffscreenFrame();
+
+    QVERIFY(!result.isNull());
+
+    if (impl == QRhi::Null)
+        return;
+
+    // Flip with D3D and Metal because these have Y down in images. Vulkan does
+    // not need this because there Y is down both in images and in NDC, which
+    // just happens to give correct results with our OpenGL-targeted vertex and
+    // UV data.
+    if (rhi->isYUpInFramebuffer() != rhi->isYUpInNDC())
+        result = std::move(result).mirrored();
+
+    // check a few points that are expected to match regardless of the implementation
+    QRgb white = qRgba(255, 255, 255, 255);
+    QCOMPARE(result.pixel(79, 77), white);
+    QCOMPARE(result.pixel(124, 81), white);
+    QCOMPARE(result.pixel(128, 149), white);
+    QCOMPARE(result.pixel(120, 189), white);
+    QCOMPARE(result.pixel(116, 185), white);
+
+    QRgb empty = qRgba(0, 0, 0, 0);
+    QCOMPARE(result.pixel(11, 45), empty);
+    QCOMPARE(result.pixel(246, 202), empty);
+    QCOMPARE(result.pixel(130, 18), empty);
+    QCOMPARE(result.pixel(4, 227), empty);
+
+    QVERIFY(qGreen(result.pixel(32, 52)) > 2 * qRed(result.pixel(32, 52)));
+    QVERIFY(qGreen(result.pixel(32, 52)) > 2 * qBlue(result.pixel(32, 52)));
+    QVERIFY(qGreen(result.pixel(214, 191)) > 2 * qRed(result.pixel(214, 191)));
+    QVERIFY(qGreen(result.pixel(214, 191)) > 2 * qBlue(result.pixel(214, 191)));
 }
 
 #include <tst_qrhi.moc>
