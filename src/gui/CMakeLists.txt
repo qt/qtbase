@@ -152,7 +152,7 @@ add_qt_module(Gui
         painting/qcompositionfunctions.cpp
         painting/qcosmeticstroker.cpp painting/qcosmeticstroker_p.h
         painting/qdatabuffer_p.h
-        painting/qdrawhelper.cpp painting/qdrawhelper_p.h
+        painting/qdrawhelper_p.h
         painting/qdrawhelper_x86_p.h
         painting/qdrawingprimitive_sse2_p.h
         painting/qemulationpaintengine.cpp painting/qemulationpaintengine_p.h
@@ -603,8 +603,6 @@ extend_target(Gui CONDITION QT_FEATURE_cssparser
         text/qcssparser.cpp text/qcssparser_p.h
 )
 
-# extend_target(Gui CONDITION GCC AND (QT_COMPILER_VERSION_MAJOR STREQUAL 5) ... # special case: remove
-
 extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64")
     DEFINES
         ENABLE_PIXMAN_DRAWHELPERS
@@ -741,6 +739,14 @@ extend_target(Gui CONDITION WASM
     SOURCES
         platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
 )
+
+extend_target(Gui CONDITION NOT GCC OR NOT QT_COMPILER_VERSION_MAJOR STREQUAL 5
+    SOURCES
+        painting/qdrawhelper.cpp
+    NO_PCH_SOURCES
+        "painting/qdrawhelper.cpp"
+)
+
 
 qt_create_tracepoints(Gui qtgui.tracepoints)
 add_qt_docs(Gui

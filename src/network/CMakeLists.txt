@@ -157,11 +157,6 @@ extend_target(Network CONDITION UNIX
         socket/qnet_unix_p.h
 )
 
-extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT INTEGRITY AND NOT ANDROID
-    SOURCES
-        kernel/qdnslookup_unix.cpp
-)
-
 extend_target(Network CONDITION QT_FEATURE_dlopen AND UNIX
     LIBRARIES
         ${CMAKE_DL_LIBS}
@@ -443,9 +438,13 @@ extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND WIN32
         crypt32
 )
 
-extend_target(Network CONDITION WIN32 PUBLIC_LIBRARIES ws2_32) # special case: mkspecs/common/msvc-desktop.conf
+extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT ANDROID AND NOT INTEGRITY
+    SOURCES
+        kernel/qdnslookup_unix.cpp
+)
 
 add_qt_docs(Network
     doc/qtnetwork.qdocconf
 )
 
+extend_target(Network CONDITION WIN32 PUBLIC_LIBRARIES ws2_32) # special case: mkspecs/common/msvc-desktop.conf

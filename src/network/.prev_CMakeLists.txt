@@ -157,11 +157,6 @@ extend_target(Network CONDITION UNIX
         socket/qnet_unix_p.h
 )
 
-extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT INTEGRITY
-    SOURCES
-        kernel/qdnslookup_unix.cpp
-)
-
 extend_target(Network CONDITION QT_FEATURE_dlopen AND UNIX
     LIBRARIES
         ${CMAKE_DL_LIBS}
@@ -179,7 +174,6 @@ extend_target(Network CONDITION UNIX AND NOT QT_FEATURE_linux_netlink
 
 extend_target(Network CONDITION ANDROID AND QT_FEATURE_dnslookup
     SOURCES
-        -kernel/qdnslookup_unix.cpp
         kernel/qdnslookup_android.cpp
 )
 
@@ -440,6 +434,11 @@ extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND WIN32
         ssl/qwindowscarootfetcher.cpp ssl/qwindowscarootfetcher_p.h
     LIBRARIES
         crypt32
+)
+
+extend_target(Network CONDITION QT_FEATURE_dnslookup AND UNIX AND NOT ANDROID AND NOT INTEGRITY
+    SOURCES
+        kernel/qdnslookup_unix.cpp
 )
 add_qt_docs(Network
     doc/qtnetwork.qdocconf
