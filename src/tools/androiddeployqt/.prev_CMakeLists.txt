@@ -12,7 +12,7 @@ add_qt_executable(androiddeployqt
         QT_NO_CAST_TO_ASCII
         QT_NO_FOREACH
     PUBLIC_LIBRARIES
-        Qt::Core # special case
+        Qt::Gui
 )
 
 #### Keys ignored in scope 1:.:.:androiddeployqt.pro:<TRUE>:

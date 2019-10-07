@@ -33,9 +33,16 @@ add_qt_tool(qdbuscpp2xml
     # _OPTION = "host_build"
 )
 
+#### Keys ignored in scope 1:.:.:qdbuscpp2xml.pro:<TRUE>:
+# QMAKE_TARGET_DESCRIPTION = "Qt D-Bus C++ to XML Compiler"
+# _LOADED = "qt_tool"
+# _OPTION = "host_build"
+
 ## Scopes:
 #####################################################################
 
-# special case:
+# special case begin
 # extend_target(qdbuscpp2xml CONDITION force_bootstrap [...])
 # extend_target(qdbuscpp2xml CONDITION NOT force_bootstrap [...])
+# special case end
+

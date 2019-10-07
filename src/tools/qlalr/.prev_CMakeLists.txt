@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_tool(qlalr
-    TOOLS_TARGET Core # special case
     SOURCES
         compress.cpp compress.h
         cppgenerator.cpp cppgenerator.h
@@ -18,7 +17,7 @@ add_qt_tool(qlalr
     DEFINES
         QT_NO_FOREACH
     PUBLIC_LIBRARIES
-        Qt::Core # special case
+        Qt::Gui
 )
 
 #### Keys ignored in scope 1:.:.:qlalr.pro:<TRUE>:
