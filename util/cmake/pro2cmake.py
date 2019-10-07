@@ -1604,7 +1604,7 @@ def replace_path_constants(path: str, scope: Scope) -> str:
         path = f"${{CMAKE_CURRENT_BINARY_DIR}}/{path[2:]}"
     elif path.startswith("../"):
         path = f"${{CMAKE_CURRENT_BINARY_DIR}}/{path}"
-    for original, replacement in _path_replacements:
+    for original, replacement in _path_replacements.items():
         path = path.replace(original, replacement)
     path = path.replace("$$TARGET", scope.TARGET)
     return path
