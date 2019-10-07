@@ -28,7 +28,9 @@
 #############################################################################
 
 import os
+from pro2cmake import map_condition
 from qmake_parser import QmakeParser
+from condition_simplifier import simplify_condition
 
 
 _tests_path = os.path.dirname(os.path.abspath(__file__))
@@ -352,3 +354,15 @@ def test_value_function():
     assert target == 'Dummy'
     value = result[1]['value']
     assert value[0] == '$$TARGET'
+
+
+def test_condition_operator_precedence():
+    result = parse_file(_tests_path + '/data/condition_operator_precedence.pro')
+
+    def validate_simplify(input_str: str, expected: str) -> None:
+        output = simplify_condition(map_condition(input_str))
+        assert output == expected
+
+    validate_simplify(result[0]["condition"], "a1 OR a2")
+    validate_simplify(result[1]["condition"], "b3 AND (b1 OR b2)")
+    validate_simplify(result[2]["condition"], "c4 OR (c1 AND c3) OR (c2 AND c3)")

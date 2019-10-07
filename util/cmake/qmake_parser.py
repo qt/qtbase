@@ -333,12 +333,61 @@ class QmakeParser:
             "ConditionWhiteSpace", pp.Suppress(pp.Optional(pp.White(" ")))
         )
 
+        # Unfortunately qmake condition operators have no precedence,
+        # and are simply evaluated left to right. To emulate that, wrap
+        # each condition sub-expression in parentheses.
+        # So c1|c2:c3 is evaluated by qmake as (c1|c2):c3.
+        # The following variable keeps count on how many parentheses
+        # should be added to the beginning of the condition. Each
+        # condition sub-expression always gets an ")", and in the
+        # end the whole condition gets many "(". Note that instead
+        # inserting the actual parentheses, we insert special markers
+        # which get replaced in the end.
+        condition_parts_count = 0
+        # Whitespace in the markers is important. Assumes the markers
+        # never appear in .pro files.
+        l_paren_marker = "_(_ "
+        r_paren_marker = " _)_"
+
+        def handle_condition_part(condition_part_parse_result: pp.ParseResults) -> str:
+            condition_part_list = [*condition_part_parse_result]
+            nonlocal condition_parts_count
+            condition_parts_count += 1
+            condition_part_joined = "".join(condition_part_list)
+            # Add ending parenthesis marker. The counterpart is added
+            # in handle_condition.
+            return f"{condition_part_joined}{r_paren_marker}"
+
+        ConditionPart.setParseAction(handle_condition_part)
         ConditionRepeated = add_element(
             "ConditionRepeated", pp.ZeroOrMore(ConditionOp + ConditionWhiteSpace + ConditionPart)
         )
 
+        def handle_condition(condition_parse_results: pp.ParseResults) -> str:
+            nonlocal condition_parts_count
+            prepended_parentheses = l_paren_marker * condition_parts_count
+            result = prepended_parentheses + " ".join(condition_parse_results).strip().replace(
+                ":", " && "
+            ).strip(" && ")
+            # If there are only 2 condition sub-expressions, there is no
+            # need for parentheses.
+            if condition_parts_count < 3:
+                result = result.replace(l_paren_marker, "")
+                result = result.replace(r_paren_marker, "")
+                result = result.strip(" ")
+            else:
+                result = result.replace(l_paren_marker, "( ")
+                result = result.replace(r_paren_marker, " )")
+                # Strip parentheses and spaces around the final
+                # condition.
+                result = result[1:-1]
+                result = result.strip(" ")
+            # Reset the parenthesis count for the next condition.
+            condition_parts_count = 0
+            return result
+
         Condition = add_element("Condition", pp.Combine(ConditionPart + ConditionRepeated))
-        Condition.setParseAction(lambda x: " ".join(x).strip().replace(":", " && ").strip(" && "))
+        Condition.setParseAction(handle_condition)
 
         # Weird thing like write_file(a)|error() where error() is the alternative condition
         # which happens to be a function call. In this case there is no scope, but our code expects
