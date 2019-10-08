@@ -72,7 +72,7 @@ HB_UChar16 HB_GetMirroredChar(HB_UChar16 ch)
 
 void (*HB_Library_Resolve(const char *library, int version, const char *symbol))()
 {
-#if !QT_CONFIG(library)
+#if !QT_CONFIG(library) || defined(Q_OS_WASM)
     Q_UNUSED(library);
     Q_UNUSED(version);
     Q_UNUSED(symbol);
