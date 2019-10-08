@@ -885,7 +885,7 @@ void QWidgetWindow::handleDragEnterEvent(QDragEnterEvent *event, QWidget *widget
 
 void QWidgetWindow::handleDragMoveEvent(QDragMoveEvent *event)
 {
-    auto *widget = findDnDTarget(m_widget, event->pos());
+    QPointer<QWidget> widget = findDnDTarget(m_widget, event->pos());
     if (!widget) {
         event->ignore();
         if (m_dragTarget) { // Send DragLeave to previous
@@ -908,14 +908,18 @@ void QWidgetWindow::handleDragMoveEvent(QDragMoveEvent *event)
                 QGuiApplication::forwardEvent(m_dragTarget, &leaveEvent, event);
                 m_dragTarget = nullptr;
             }
-            // Send DragEnter to new widget.
-            handleDragEnterEvent(static_cast<QDragEnterEvent*>(event), widget);
-            // Handling 'DragEnter' should suffice for the application.
-            translated.setDropAction(event->dropAction());
-            translated.setAccepted(event->isAccepted());
-            // The drag enter event is always immediately followed by a drag move event,
-            // see QDragEnterEvent documentation.
-            QGuiApplication::forwardEvent(m_dragTarget, &translated, event);
+            // widget might have been deleted when handling the leaveEvent
+            if (widget) {
+                // Send DragEnter to new widget.
+                handleDragEnterEvent(static_cast<QDragEnterEvent*>(event), widget);
+                // Handling 'DragEnter' should suffice for the application.
+                translated.setDropAction(event->dropAction());
+                translated.setAccepted(event->isAccepted());
+                // The drag enter event is always immediately followed by a drag move event,
+                // see QDragEnterEvent documentation.
+                if (m_dragTarget)
+                    QGuiApplication::forwardEvent(m_dragTarget, &translated, event);
+            }
         }
         event->setAccepted(translated.isAccepted());
         event->setDropAction(translated.dropAction());
