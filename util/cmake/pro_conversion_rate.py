@@ -68,7 +68,7 @@ class Blacklist:
 
         try:
             # If package is available, use Aho-Corasick algorithm,
-            from ahocorapy.keywordtree import KeywordTree
+            from ahocorapy.keywordtree import KeywordTree  # type: ignore
 
             self.tree = KeywordTree(case_insensitive=True)
 
@@ -101,8 +101,6 @@ def recursive_scan(path: str, extension: str, result_paths: typing.List[str], bl
     """ Find files ending with a certain extension, filtering out blacklisted entries """
     try:
         for entry in os.scandir(path):
-            entry: os.DirEntry = entry
-
             if entry.is_file() and entry.path.endswith(extension):
                 result_paths.append(entry.path)
             elif entry.is_dir():

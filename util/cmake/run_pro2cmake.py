@@ -84,7 +84,7 @@ def find_all_pro_files(base_path: str, args: argparse.Namespace):
         return dir_name + "/__" + pro_file
 
     all_files = []
-    previous_dir_name: str = None
+    previous_dir_name: typing.Optional[str] = None
 
     print("Finding .pro files.")
     glob_result = glob.glob(os.path.join(base_path, "**/*.pro"), recursive=True)

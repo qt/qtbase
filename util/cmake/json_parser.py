@@ -27,7 +27,7 @@
 ##
 #############################################################################
 
-import pyparsing as pp
+import pyparsing as pp  # type: ignore
 import json
 import re
 from helper import _set_up_py_parsing_nicer_debug_output

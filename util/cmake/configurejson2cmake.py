@@ -31,7 +31,7 @@ import json_parser
 import posixpath
 import re
 import sys
-from typing import Set
+from typing import Optional, Set
 from textwrap import dedent
 
 from helper import (
@@ -52,7 +52,7 @@ class LibraryMapping:
         self.appendFoundSuffix = appendFoundSuffix
 
 
-def map_tests(test: str) -> str:
+def map_tests(test: str) -> Optional[str]:
     testmap = {
         "c++11": "$<COMPILE_FEATURES:cxx_std_11>",
         "c++14": "$<COMPILE_FEATURES:cxx_std_14>",
