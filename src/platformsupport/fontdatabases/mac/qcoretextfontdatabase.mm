@@ -48,6 +48,8 @@
 #import <UIKit/UIFont.h>
 #endif
 
+#include <QtCore/qelapsedtimer.h>
+
 #include "qcoretextfontdatabase_p.h"
 #include "qfontengine_coretext_p.h"
 #if QT_CONFIG(settings)
@@ -113,39 +115,77 @@ QCoreTextFontDatabase::~QCoreTextFontDatabase()
 
 void QCoreTextFontDatabase::populateFontDatabase()
 {
+    qCDebug(lcQpaFonts) << "Populating font database...";
+    QElapsedTimer elapsed;
+    if (lcQpaFonts().isDebugEnabled())
+        elapsed.start();
+
     QCFType<CFArrayRef> familyNames = CTFontManagerCopyAvailableFontFamilyNames();
     for (NSString *familyName in familyNames.as<const NSArray *>())
         QPlatformFontDatabase::registerFontFamily(QString::fromNSString(familyName));
+
+    qCDebug(lcQpaFonts) << "Populating available families took" << elapsed.restart() << "ms";
 
     // Force creating the theme fonts to get the descriptors in m_systemFontDescriptors
     if (m_themeFonts.isEmpty())
         (void)themeFonts();
 
+    qCDebug(lcQpaFonts) << "Resolving theme fonts took" << elapsed.restart() << "ms";
+
     Q_FOREACH (CTFontDescriptorRef fontDesc, m_systemFontDescriptors)
         populateFromDescriptor(fontDesc);
+
+    qCDebug(lcQpaFonts) << "Populating system descriptors took" << elapsed.restart() << "ms";
 
     Q_ASSERT(!m_hasPopulatedAliases);
 }
 
-bool QCoreTextFontDatabase::populateFamilyAliases()
+bool QCoreTextFontDatabase::populateFamilyAliases(const QString &missingFamily)
 {
 #if defined(Q_OS_MACOS)
     if (m_hasPopulatedAliases)
         return false;
 
+    // There's no API to go from a localized family name to its non-localized
+    // name, so we have to resort to enumerating all the available fonts and
+    // doing a reverse lookup.
+
+    qCDebug(lcQpaFonts) << "Populating family aliases...";
+    QElapsedTimer elapsed;
+    elapsed.start();
+
+    QString nonLocalizedMatch;
     QCFType<CFArrayRef> familyNames = CTFontManagerCopyAvailableFontFamilyNames();
+    NSFontManager *fontManager = NSFontManager.sharedFontManager;
     for (NSString *familyName in familyNames.as<const NSArray *>()) {
-        NSFontManager *fontManager = [NSFontManager sharedFontManager];
         NSString *localizedFamilyName = [fontManager localizedNameForFamily:familyName face:nil];
         if (![localizedFamilyName isEqual:familyName]) {
-            QPlatformFontDatabase::registerAliasToFontFamily(
-                QString::fromNSString(familyName),
-                QString::fromNSString(localizedFamilyName));
+            QString nonLocalizedFamily = QString::fromNSString(familyName);
+            QString localizedFamily = QString::fromNSString(localizedFamilyName);
+            QPlatformFontDatabase::registerAliasToFontFamily(nonLocalizedFamily, localizedFamily);
+            if (localizedFamily == missingFamily)
+                nonLocalizedMatch = nonLocalizedFamily;
         }
     }
     m_hasPopulatedAliases = true;
+
+    if (lcQpaFonts().isWarningEnabled()) {
+        QString warningMessage;
+        QDebug msg(&warningMessage);
+
+        msg << "Populating font family aliases took" << elapsed.restart() << "ms.";
+        if (!nonLocalizedMatch.isNull())
+            msg << "Replace uses of" << missingFamily << "with its non-localized name" << nonLocalizedMatch;
+        else
+            msg << "Replace uses of missing font family" << missingFamily << "with one that exists";
+        msg << "to avoid this cost.";
+
+        qCWarning(lcQpaFonts) << qPrintable(warningMessage);
+    }
+
     return true;
 #else
+    Q_UNUSED(missingFamily);
     return false;
 #endif
 }

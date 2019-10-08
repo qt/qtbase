@@ -71,7 +71,7 @@ public:
     QCoreTextFontDatabase();
     ~QCoreTextFontDatabase();
     void populateFontDatabase() override;
-    bool populateFamilyAliases() override;
+    bool populateFamilyAliases(const QString &missingFamily) override;
     void populateFamily(const QString &familyName) override;
     void invalidate() override;
 
