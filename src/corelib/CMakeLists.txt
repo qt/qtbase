@@ -238,6 +238,7 @@ add_qt_module(Core
         QT_NO_USING_NAMESPACE
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_BINARY_DIR}/global # special case
+        ../3rdparty/tinycbor/src
         # special case: remove ../3rdparty/...
     PRECOMPILED_HEADER
         global/qt_pch.h
@@ -249,7 +250,6 @@ add_qt_module(Core
         Qt::GlobalConfigPrivate # special case
         QtHarfBuzz # special case
         Threads::Threads # special case
-        tinycbor # special case
         WrapDoubleConversion::WrapDoubleConversion # special case
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:

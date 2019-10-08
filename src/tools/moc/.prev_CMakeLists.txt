@@ -6,11 +6,9 @@
 
 add_qt_tool(moc
     BOOTSTRAP
-    TOOLS_TARGET Core # special case
     SOURCES
         cbordevice.h
         generator.cpp generator.h
-        main.cpp  # special case
         moc.cpp moc.h
         outputrevision.h
         parser.cpp parser.h

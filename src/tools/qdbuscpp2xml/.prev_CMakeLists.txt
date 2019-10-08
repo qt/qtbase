@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_tool(qdbuscpp2xml
-    TOOLS_TARGET DBus # special case
     SOURCES
         ../moc/cbordevice.h
         ../moc/generator.cpp ../moc/generator.h
@@ -16,7 +15,6 @@ add_qt_tool(qdbuscpp2xml
         ../moc/symbols.h
         ../moc/token.cpp ../moc/token.h
         ../moc/utils.h
-        qdbuscpp2xml.cpp  # special case
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_FOREACH
@@ -25,17 +23,26 @@ add_qt_tool(qdbuscpp2xml
         ../moc/../../3rdparty/tinycbor/src
     LIBRARIES
         Qt::CorePrivate
-        Qt::DBusPrivate
-    # COMPILE_OPTIONS  # special case
-    #     "$$QT_HOST_CFLAGS_DBUS"
-    # QMAKE_TARGET_DESCRIPTION = "Qt D-Bus C++ to XML Compiler"
-    # _LOADED = "qt_tool"
-    # _OPTION = "host_build"
 )
+
+#### Keys ignored in scope 1:.:.:qdbuscpp2xml.pro:<TRUE>:
+# QMAKE_TARGET_DESCRIPTION = "Qt D-Bus C++ to XML Compiler"
+# _LOADED = "qt_tool"
+# _OPTION = "host_build"
 
 ## Scopes:
 #####################################################################
 
-# special case:
-# extend_target(qdbuscpp2xml CONDITION force_bootstrap [...])
-# extend_target(qdbuscpp2xml CONDITION NOT force_bootstrap [...])
+extend_target(qdbuscpp2xml CONDITION force_bootstrap
+    LIBRARIES
+        bootstrap_dbusPrivate
+    PUBLIC_LIBRARIES
+        bootstrap_dbus
+)
+
+extend_target(qdbuscpp2xml CONDITION NOT force_bootstrap
+    LIBRARIES
+        Qt::DBusPrivate
+    PUBLIC_LIBRARIES
+        Qt::DBus
+)
