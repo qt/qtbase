@@ -31,8 +31,6 @@ add_qt_plugin(qxcb-glx-integration
 )
 
 #### Keys ignored in scope 1:.:.:xcb_glx.pro:<TRUE>:
-# PLUGIN_CLASS_NAME = "QXcbGlxIntegrationPlugin"
-# PLUGIN_TYPE = "xcbglintegrations"
 # _LOADED = "qt_plugin" "qt_build_paths"
 
 ## Scopes:

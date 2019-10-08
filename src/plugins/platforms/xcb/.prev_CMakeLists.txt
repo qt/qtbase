@@ -69,7 +69,6 @@ add_qt_module(XcbQpa
 )
 
 #### Keys ignored in scope 3:.:.:xcb_qpa_lib.pro:<TRUE>:
-# CONFIG = "no_module_headers" "internal_module"
 # _LOADED = "qt_build_paths" "qt_module"
 
 ## Scopes:
@@ -182,83 +181,14 @@ add_qt_plugin(qxcb
 
 #### Keys ignored in scope 24:.:.:xcb-plugin.pro:<TRUE>:
 # OTHER_FILES = "xcb.json" "README"
-# PLUGIN_CLASS_NAME = "QXcbIntegrationPlugin"
-# PLUGIN_TYPE = "platforms"
 # _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 25:.:.:xcb-plugin.pro:APPLE_OSX:
-# CONFIG = "no_app_extension_api_only"
-
 #### Keys ignored in scope 26:.:.:xcb-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 add_subdirectory(gl_integrations)
-
-if(NOT ON)
+if(OFF)
     add_subdirectory(xcb-static)
 endif()
-
-    if(TARGET Qt::LinuxAccessibilitySupportPrivate)
-    endif()
-
-    if(QT_FEATURE_vulkan)
-    endif()
-
-    if(QT_FEATURE_glib)
-    endif()
-
-    if(QT_FEATURE_draganddrop)
-    endif()
-
-    if(QT_FEATURE_xcb_xlib)
-    endif()
-
-    if(QT_FEATURE_xcb_xinput)
-    endif()
-
-    if(QT_FEATURE_xcb_sm)
-    endif()
-
-    if(QT_FEATURE_vulkan)
-    endif()
-
-    if(NOT ON)
-    endif()
-
-    else()
-
-        if(QT_FEATURE_xcb_xinput)
-        endif()
-    endif()
-
-    if(QT_FEATURE_xkb)
-
-        if(ON)
-        endif()
-    endif()
-
-    if(QT_FEATURE_dlopen)
-    endif()
-
-    if(CLANG AND NOT ICC)
-    endif()
-
-    if(QT_FEATURE_xcb_native_painting)
-
-        if(QT_FEATURE_xrender)
-        endif()
-
-        if(QT_FEATURE_fontconfig)
-        endif()
-    endif()
-
-    if(QT_FEATURE_xcb_xinput)
-    endif()
-
-    if(APPLE_OSX)
-    endif()
-
-    if(NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN)
-    endif()

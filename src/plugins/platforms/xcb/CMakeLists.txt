@@ -92,7 +92,6 @@ add_qt_module(XcbQpa
 )
 
 #### Keys ignored in scope 3:.:.:xcb_qpa_lib.pro:<TRUE>:
-# CONFIG = "no_module_headers" "internal_module"
 # _LOADED = "qt_build_paths" "qt_module"
 
 ## Scopes:
@@ -207,18 +206,15 @@ add_qt_plugin(qxcb
 
 #### Keys ignored in scope 24:.:.:xcb-plugin.pro:<TRUE>:
 # OTHER_FILES = "xcb.json" "README"
-# PLUGIN_CLASS_NAME = "QXcbIntegrationPlugin"
-# PLUGIN_TYPE = "platforms"
 # _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 25:.:.:xcb-plugin.pro:APPLE_OSX:
-# CONFIG = "no_app_extension_api_only"
-
 #### Keys ignored in scope 26:.:.:xcb-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 add_subdirectory(gl_integrations)
+if(OFF)
+    add_subdirectory(xcb-static) # special case TODO: xcb-static sub folder
+endif()
 
-#### TODO: xcb-static sub folder # special case
