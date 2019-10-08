@@ -13,22 +13,22 @@ if(QT_FEATURE_xcb)
     add_subdirectory(xcb)
 endif()
 if(APPLE_UIKIT AND NOT APPLE_WATCHOS)
-    # add_subdirectory(ios) special case TODO
+    add_subdirectory(ios)
 endif()
 if(APPLE_OSX)
     add_subdirectory(cocoa)
 endif()
-if(WIN32 AND NOT WINRT) # special case TODO fix direct3d9 test
+if(QT_FEATURE_direct3d9 AND WIN32 AND NOT WINRT)
     add_subdirectory(windows)
 endif()
 if(QT_FEATURE_direct3d11 AND WINRT)
-    # add_subdirectory(winrt) # special case TODO
+    add_subdirectory(winrt)
 endif()
 if(QT_FEATURE_direct2d1_1 AND QT_FEATURE_direct3d11_1 AND QT_FEATURE_directwrite1)
-    # add_subdirectory(direct2d) # special case TODO
+    add_subdirectory(direct2d)
 endif()
 if(QNX)
-    # add_subdirectory(qnx) # special case TODO
+    add_subdirectory(qnx)
 endif()
 if(QT_FEATURE_eglfs)
     add_subdirectory(eglfs)
@@ -44,14 +44,14 @@ if(QT_FEATURE_vnc AND TARGET Qt::Network)
     add_subdirectory(vnc)
 endif()
 if(FREEBSD)
-    # add_subdirectory(bsdfb) # special case TODO
+    add_subdirectory(bsdfb)
 endif()
 if(HAIKU)
-    # add_subdirectory(haiku) # special case TODO
+    add_subdirectory(haiku)
 endif()
 if(WASM)
-    # add_subdirectory(wasm) # special case TODO
+    add_subdirectory(wasm)
 endif()
 if(QT_FEATURE_integrityfb)
-    # add_subdirectory(integrity) # special case TODO
+    add_subdirectory(integrity)
 endif()

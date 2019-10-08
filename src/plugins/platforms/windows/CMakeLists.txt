@@ -70,15 +70,22 @@ add_qt_plugin(qwindows
 
 # Resources:
 set_source_files_properties("openglblacklists/default.json"
-    PROPERTIES QT_RESOURCE_ALIAS "default.json")
-add_qt_resource(qwindows "openglblacklists" PREFIX "/qt-project.org/windows/openglblacklists" FILES
-    openglblacklists/default.json)
+    PROPERTIES QT_RESOURCE_ALIAS "default.json"
+)
+set(openglblacklists_resource_files
+    "openglblacklists/default.json"
+)
+
+add_qt_resource(qwindows "openglblacklists"
+    PREFIX
+        "/qt-project.org/windows/openglblacklists"
+    FILES
+        ${openglblacklists_resource_files}
+)
 
 
 #### Keys ignored in scope 1:.:.:windows.pro:<TRUE>:
 # OTHER_FILES = "windows.json"
-# PLUGIN_CLASS_NAME = "QWindowsIntegrationPlugin"
-# PLUGIN_TYPE = "platforms"
 # _LOADED = "qt_plugin"
 
 ## Scopes:
@@ -171,7 +178,7 @@ extend_target(qwindows CONDITION QT_FEATURE_tabletevent
     SOURCES
         qwindowstabletsupport.cpp qwindowstabletsupport.h
     INCLUDE_DIRECTORIES
-        ${PROJECT_SOURCE_DIR}/src/3rdparty/wintab
+        ${QT_SOURCE_TREE}/src/3rdparty/wintab
 )
 
 extend_target(qwindows CONDITION QT_FEATURE_sessionmanager
@@ -180,31 +187,39 @@ extend_target(qwindows CONDITION QT_FEATURE_sessionmanager
 )
 
 # Resources:
-add_qt_resource(qwindows "cursors" PREFIX "/qt-project.org/windows/cursors" FILES
-    images/closedhandcursor_32.png
-    images/closedhandcursor_48.png
-    images/closedhandcursor_64.png
-    images/dragcopycursor_32.png
-    images/dragcopycursor_48.png
-    images/dragcopycursor_64.png
-    images/draglinkcursor_32.png
-    images/draglinkcursor_48.png
-    images/draglinkcursor_64.png
-    images/dragmovecursor_32.png
-    images/dragmovecursor_48.png
-    images/dragmovecursor_64.png
-    images/openhandcursor_32.png
-    images/openhandcursor_48.png
-    images/openhandcursor_64.png
-    images/splithcursor_32.png
-    images/splithcursor_48.png
-    images/splithcursor_64.png
-    images/splitvcursor_32.png
-    images/splitvcursor_48.png
-    images/splitvcursor_64.png)
+set(cursors_resource_files
+    "images/closedhandcursor_32.png"
+    "images/closedhandcursor_48.png"
+    "images/closedhandcursor_64.png"
+    "images/dragcopycursor_32.png"
+    "images/dragcopycursor_48.png"
+    "images/dragcopycursor_64.png"
+    "images/draglinkcursor_32.png"
+    "images/draglinkcursor_48.png"
+    "images/draglinkcursor_64.png"
+    "images/dragmovecursor_32.png"
+    "images/dragmovecursor_48.png"
+    "images/dragmovecursor_64.png"
+    "images/openhandcursor_32.png"
+    "images/openhandcursor_48.png"
+    "images/openhandcursor_64.png"
+    "images/splithcursor_32.png"
+    "images/splithcursor_48.png"
+    "images/splithcursor_64.png"
+    "images/splitvcursor_32.png"
+    "images/splitvcursor_48.png"
+    "images/splitvcursor_64.png"
+)
+
+add_qt_resource(qwindows "cursors"
+    PREFIX
+        "/qt-project.org/windows/cursors"
+    FILES
+        ${cursors_resource_files}
+)
 
 
-extend_target(qwindows CONDITION (QT_FEATURE_accessibility) AND (TARGET Qt::WindowsUIAutomationSupportPrivate)
+extend_target(qwindows CONDITION QT_FEATURE_accessibility AND TARGET Qt::WindowsUIAutomationSupportPrivate
     LIBRARIES
         Qt::WindowsUIAutomationSupportPrivate
     PUBLIC_LIBRARIES
