@@ -32,8 +32,6 @@ add_qt_plugin(qlinuxfb
 
 #### Keys ignored in scope 1:.:.:linuxfb.pro:<TRUE>:
 # OTHER_FILES = "linuxfb.json"
-# PLUGIN_CLASS_NAME = "QLinuxFbIntegrationPlugin"
-# PLUGIN_TYPE = "platforms"
 # _LOADED = "qt_plugin"
 
 ## Scopes:

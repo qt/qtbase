@@ -1,9 +1,5 @@
 # Generated from directfb.pro.
 
-# begin special case:
-qt_find_package(DirectFB)
-# end special case:
-
 #####################################################################
 ## qdirectfb Plugin:
 #####################################################################

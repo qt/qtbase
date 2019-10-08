@@ -7,7 +7,6 @@
 add_qt_plugin(qoffscreen
     TYPE platforms
     CLASS_NAME QOffscreenIntegrationPlugin
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES offscreen # special case
     SOURCES
         main.cpp
         qoffscreencommon.cpp qoffscreencommon.h

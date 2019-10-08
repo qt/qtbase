@@ -7,7 +7,6 @@
 add_qt_plugin(qminimal
     TYPE platforms
     CLASS_NAME QMinimalIntegrationPlugin
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES minimal # special case
     SOURCES
         main.cpp
         qminimalbackingstore.cpp qminimalbackingstore.h
