@@ -1144,11 +1144,14 @@ void QAbstractScrollArea::paintEvent(QPaintEvent*)
     mouse press events for the viewport() widget. The event is passed
     in \a e.
 
+    The default implementation calls QWidget::mousePressEvent() for
+    default popup handling.
+
     \sa QWidget::mousePressEvent()
 */
 void QAbstractScrollArea::mousePressEvent(QMouseEvent *e)
 {
-    e->ignore();
+    QWidget::mousePressEvent(e);
 }
 
 /*!
