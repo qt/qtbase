@@ -34,7 +34,6 @@ add_qt_module(EglFSDeviceIntegration
 )
 
 #### Keys ignored in scope 2:.:.:eglfsdeviceintegration.pro:<TRUE>:
-# CONFIG = "internal_module" "egl"
 # MODULE = "eglfsdeviceintegration"
 # _LOADED = "qt_module"
 
@@ -59,16 +58,17 @@ extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::PlatformCompositorSupp
 # extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY ...
 # extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY ...
 
-#### Keys ignored in scope 7:.:.:eglfsdeviceintegration.pro:use_gold_linker:
-# CONFIG = "no_linker_version_script"
-
 # Resources:
+set(cursor_resource_files
+    "cursor-atlas.png"
+    "cursor.json"
+)
+
 add_qt_resource(EglFSDeviceIntegration "cursor"
     PREFIX
         "/"
     FILES
-        cursor-atlas.png
-        cursor.json
+        ${cursor_resource_files}
 )
 
 
@@ -98,10 +98,7 @@ add_qt_plugin(qeglfs
 )
 
 #### Keys ignored in scope 11:.:.:eglfs-plugin.pro:<TRUE>:
-# CONFIG = "egl"
 # OTHER_FILES = "$$PWD/eglfs.json"
-# PLUGIN_CLASS_NAME = "QEglFSIntegrationPlugin"
-# PLUGIN_TYPE = "platforms"
 # _LOADED = "qt_plugin"
 
 ## Scopes:

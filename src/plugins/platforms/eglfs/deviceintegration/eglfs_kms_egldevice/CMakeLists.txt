@@ -35,8 +35,5 @@ add_qt_plugin(qeglfs-kms-egldevice-integration
 )
 
 #### Keys ignored in scope 1:.:.:eglfs_kms_egldevice.pro:<TRUE>:
-# CONFIG = "egl"
 # OTHER_FILES = "$$PWD/eglfs_kms_egldevice.json"
-# PLUGIN_CLASS_NAME = "QEglFSKmsEglDeviceIntegrationPlugin"
-# PLUGIN_TYPE = "egldeviceintegrations"
 # _LOADED = "qt_plugin"

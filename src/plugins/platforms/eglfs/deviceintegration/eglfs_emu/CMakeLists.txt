@@ -26,9 +26,6 @@ add_qt_plugin(qeglfs-emu-integration
 )
 
 #### Keys ignored in scope 1:.:.:eglfs_emu.pro:<TRUE>:
-# CONFIG = "egl"
 # DISTFILES = "eglfs_emu.json"
 # OTHER_FILES = "$$PWD/eglfs_emu.json"
-# PLUGIN_CLASS_NAME = "QEglFSEmulatorIntegrationPlugin"
-# PLUGIN_TYPE = "egldeviceintegrations"
 # _LOADED = "qt_plugin"

@@ -32,5 +32,4 @@ add_qt_module(EglFsKmsSupport
 )
 
 #### Keys ignored in scope 1:.:.:eglfs_kms_support.pro:<TRUE>:
-# CONFIG = "no_module_headers" "internal_module" "egl"
 # _LOADED = "qt_module"
