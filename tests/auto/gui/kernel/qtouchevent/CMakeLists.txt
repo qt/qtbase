@@ -1,12 +1,15 @@
-# Generated from qpalette.pro.
+# Generated from qtouchevent.pro.
 
 #####################################################################
-## tst_qpalette Test:
+## tst_qtouchevent Test:
 #####################################################################
 
-add_qt_test(tst_qpalette
+add_qt_test(tst_qtouchevent
     SOURCES
-        tst_qpalette.cpp
+        tst_qtouchevent.cpp
+    LIBRARIES
+        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )

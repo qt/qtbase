@@ -1,10 +1,12 @@
-# Generated from qevent.pro.
+# Generated from qguimetatype.pro.
 
 #####################################################################
-## tst_qevent Test:
+## tst_qguimetatype Test:
 #####################################################################
 
-add_qt_test(tst_qevent
+add_qt_test(tst_qguimetatype
     SOURCES
-        tst_qevent.cpp
+        tst_qguimetatype.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
 )

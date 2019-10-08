@@ -1,12 +1,12 @@
-# Generated from qpalette.pro.
+# Generated from qguieventdispatcher.pro.
 
 #####################################################################
-## tst_qpalette Test:
+## tst_qguieventdispatcher Test:
 #####################################################################
 
-add_qt_test(tst_qpalette
+add_qt_test(tst_qguieventdispatcher
     SOURCES
-        tst_qpalette.cpp
+        ../../../corelib/kernel/qeventdispatcher/tst_qeventdispatcher.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
 )

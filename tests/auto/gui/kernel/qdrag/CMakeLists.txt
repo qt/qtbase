@@ -1,10 +1,12 @@
-# Generated from qevent.pro.
+# Generated from qdrag.pro.
 
 #####################################################################
-## tst_qevent Test:
+## tst_qdrag Test:
 #####################################################################
 
-add_qt_test(tst_qevent
+add_qt_test(tst_qdrag
     SOURCES
-        tst_qevent.cpp
+        tst_qdrag.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
 )

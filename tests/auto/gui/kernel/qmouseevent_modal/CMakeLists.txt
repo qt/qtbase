@@ -1,12 +1,13 @@
-# Generated from qpalette.pro.
+# Generated from qmouseevent_modal.pro.
 
 #####################################################################
-## tst_qpalette Test:
+## tst_qmouseevent_modal Test:
 #####################################################################
 
-add_qt_test(tst_qpalette
+add_qt_test(tst_qmouseevent_modal
     SOURCES
-        tst_qpalette.cpp
+        tst_qmouseevent_modal.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )

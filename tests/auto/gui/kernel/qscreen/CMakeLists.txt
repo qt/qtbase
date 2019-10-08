@@ -1,12 +1,15 @@
-# Generated from qpalette.pro.
+# Generated from qscreen.pro.
 
 #####################################################################
-## tst_qpalette Test:
+## tst_qscreen Test:
 #####################################################################
 
-add_qt_test(tst_qpalette
+add_qt_test(tst_qscreen
     SOURCES
-        tst_qpalette.cpp
+        tst_qscreen.cpp
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
 )

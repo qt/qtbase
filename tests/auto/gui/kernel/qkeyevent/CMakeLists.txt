@@ -1,10 +1,12 @@
-# Generated from qevent.pro.
+# Generated from qkeyevent.pro.
 
 #####################################################################
-## tst_qevent Test:
+## tst_qkeyevent Test:
 #####################################################################
 
-add_qt_test(tst_qevent
+add_qt_test(tst_qkeyevent
     SOURCES
-        tst_qevent.cpp
+        tst_qkeyevent.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
 )

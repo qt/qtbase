@@ -1,10 +1,12 @@
-# Generated from qevent.pro.
+# Generated from qpixelformat.pro.
 
 #####################################################################
-## tst_qevent Test:
+## tst_qpixelformat Test:
 #####################################################################
 
-add_qt_test(tst_qevent
+add_qt_test(tst_qpixelformat
     SOURCES
-        tst_qevent.cpp
+        tst_qpixelformat.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
 )
