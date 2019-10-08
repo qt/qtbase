@@ -2105,6 +2105,7 @@ def write_ignored_keys(scope: Scope, indent: str) -> str:
             "QMAKE_DOCS",
             "QT_SOURCE_TREE",
             "QT_BUILD_TREE",
+            "QTRO_SOURCE_TREE",
             "TRACEPOINT_PROVIDER",
             "PLUGIN_TYPE",
             "PLUGIN_CLASS_NAME",
