@@ -1,5 +1,6 @@
 # Android Java Resource files
 
+# special case skip regeneration
 # special case begin
 set(resource_directories
     res

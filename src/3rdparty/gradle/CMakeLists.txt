@@ -1,4 +1,5 @@
 # special case begin
+# special case skip regeneration
 
 install(
     FILES

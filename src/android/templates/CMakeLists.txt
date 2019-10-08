@@ -1,5 +1,6 @@
 # Android template files
 
+# special case skip regeneration
 # special case begin
 set(template_files
     AndroidManifest.xml

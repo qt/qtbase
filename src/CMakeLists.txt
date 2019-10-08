@@ -1,3 +1,4 @@
+# special case skip regeneration
 add_subdirectory(3rdparty)
 
 function(find_or_build_bootstrap_names)

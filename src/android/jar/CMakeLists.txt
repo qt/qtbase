@@ -1,5 +1,6 @@
 # QtAndroid Jar
 
+# special case skip regeneration
 # special case begin
 set(path_prefix ${CMAKE_CURRENT_SOURCE_DIR}/src/org/qtproject/qt5/android/)
 
