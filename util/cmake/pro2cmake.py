@@ -165,6 +165,14 @@ def _parse_commandline():
     )
 
     parser.add_argument(
+        "-i",
+        "--ignore-skip-marker",
+        dest="ignore_skip_marker",
+        action="store_true",
+        help="If set, pro file will be converted even if skip marker is found in CMakeLists.txt.",
+    )
+
+    parser.add_argument(
         "files",
         metavar="<.pro/.pri file>",
         type=str,
@@ -3446,7 +3454,22 @@ def copy_generated_file_to_final_location(scope: Scope, keep_temporary_files=Fal
         os.remove(scope.generated_cmake_lists_path)
 
 
-def should_convert_project(project_file_path: str = "") -> bool:
+def cmake_project_has_skip_marker(project_file_path: str = "") -> bool:
+    dir_path = os.path.dirname(project_file_path)
+    cmake_project_path = os.path.join(dir_path, "CMakeLists.txt")
+    if not os.path.exists(cmake_project_path):
+        return False
+
+    with open(cmake_project_path, "r") as file_fd:
+        contents = file_fd.read()
+
+    if "# special case skip regeneration" in contents:
+        return True
+
+    return False
+
+
+def should_convert_project(project_file_path: str = "", ignore_skip_marker: bool = False) -> bool:
     qmake_conf_path = find_qmake_conf(project_file_path)
     qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
 
@@ -3477,6 +3500,11 @@ def should_convert_project(project_file_path: str = "") -> bool:
     if skip_certain_tests:
         return False
 
+    # Skip if CMakeLists.txt in the same path as project_file_path has a
+    # special skip marker.
+    if not ignore_skip_marker and cmake_project_has_skip_marker(project_file_path):
+        return False
+
     return True
 
 
@@ -3499,7 +3527,7 @@ def main() -> None:
             os.chdir(new_current_dir)
 
         project_file_absolute_path = os.path.abspath(file_relative_path)
-        if not should_convert_project(project_file_absolute_path):
+        if not should_convert_project(project_file_absolute_path, args.ignore_skip_marker):
             print(f'Skipping conversion of project: "{project_file_absolute_path}"')
             continue
 
