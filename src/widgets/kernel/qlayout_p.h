@@ -73,7 +73,7 @@ public:
     QLayoutPrivate();
 
     void getMargin(int *result, int userMargin, QStyle::PixelMetric pm) const;
-    void doResize(const QSize &);
+    void doResize();
     void reparentChildWidgets(QWidget *mw);
     bool checkWidget(QWidget *widget) const;
     bool checkLayout(QLayout *otherLayout) const;
