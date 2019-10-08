@@ -2151,6 +2151,7 @@ function(add_qml_module target)
         TYPEINFO "${arg_TYPEINFO}"
         DO_NOT_INSTALL_METADATA
         DO_NOT_CREATE_TARGET
+        INSTALL_QML_FILES
         DEPENDENCIES ${arg_DEPENDENCIES}
         RESOURCE_EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
     )

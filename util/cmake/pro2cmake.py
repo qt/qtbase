@@ -3139,7 +3139,6 @@ def write_qml_plugin_epilogue(
                     != qmldir_file_info.type_name
                 ):
                     cm_fh.write(f"{indent_1}QT_QML_SOURCE_TYPENAME {qmldir_file_info.type_name}\n")
-                cm_fh.write(f"{indent_1}QT_QML_SOURCE_INSTALL TRUE\n")
                 if qmldir_file_info.singleton:
                     cm_fh.write(f"{indent_1}QT_QML_SINGLETON_TYPE TRUE\n")
                 if qmldir_file_info.internal:
