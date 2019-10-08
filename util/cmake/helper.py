@@ -554,11 +554,11 @@ def find_library_info_for_target(targetName: str) -> typing.Optional[LibraryMapp
     return None
 
 
-def featureName(input: str) -> str:
+def featureName(name: str) -> str:
     replacement_char = "_"
-    if input.startswith("c++"):
+    if name.startswith("c++"):
         replacement_char = "x"
-    return re.sub(r"[^a-zA-Z0-9_]", replacement_char, input)
+    return re.sub(r"[^a-zA-Z0-9_]", replacement_char, name)
 
 
 def map_qt_library(lib: str) -> str:

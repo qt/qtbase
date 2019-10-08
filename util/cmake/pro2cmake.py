@@ -665,7 +665,7 @@ class Operation:
             self._value = [str(value)]
 
     def process(
-        self, key: str, input: List[str], transformer: Callable[[List[str]], List[str]]
+        self, key: str, sinput: List[str], transformer: Callable[[List[str]], List[str]]
     ) -> List[str]:
         assert False
 
@@ -1032,12 +1032,12 @@ class Scope(object):
             for c in self._included_children:
                 c.dump(indent=indent + 1)
 
-    def dump_structure(self, *, type: str = "ROOT", indent: int = 0) -> None:
-        print(f"{spaces(indent)}{type}: {self}")
+    def dump_structure(self, *, structure_type: str = "ROOT", indent: int = 0) -> None:
+        print(f"{spaces(indent)}{structure_type}: {self}")
         for i in self._included_children:
-            i.dump_structure(type="INCL", indent=indent + 1)
+            i.dump_structure(structure_type="INCL", indent=indent + 1)
         for i in self._children:
-            i.dump_structure(type="CHLD", indent=indent + 1)
+            i.dump_structure(structure_type="CHLD", indent=indent + 1)
 
     @property
     def keys(self):
@@ -1812,11 +1812,11 @@ def sort_sources(sources: List[str]) -> List[str]:
         if s is None:
             continue
 
-        dir = os.path.dirname(s)
+        path = os.path.dirname(s)
         base = os.path.splitext(os.path.basename(s))[0]
         if base.endswith("_p"):
             base = base[:-2]
-        sort_name = posixpath.join(dir, base)
+        sort_name = posixpath.join(path, base)
 
         array = to_sort.get(sort_name, [])
         array.append(s)

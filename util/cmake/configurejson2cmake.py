@@ -147,8 +147,8 @@ def cm(ctx, *output):
     return ctx
 
 
-def readJsonFromDir(dir):
-    path = posixpath.join(dir, "configure.json")
+def readJsonFromDir(path: str) -> str:
+    path = posixpath.join(path, "configure.json")
 
     print(f"Reading {path}...")
     assert posixpath.exists(path)
@@ -942,8 +942,8 @@ def processInputs(ctx, data, cm_fh):
     if "options" not in commandLine:
         return
 
-    for input in commandLine["options"]:
-        parseInput(ctx, input, commandLine["options"][input], cm_fh)
+    for input_option in commandLine["options"]:
+        parseInput(ctx, input_option, commandLine["options"][input_option], cm_fh)
 
 
 def processTests(ctx, data, cm_fh):
@@ -974,23 +974,23 @@ def processLibraries(ctx, data, cm_fh):
         parseLib(ctx, lib, data, cm_fh, cmake_find_packages_set)
 
 
-def processSubconfigs(dir, ctx, data):
+def processSubconfigs(path, ctx, data):
     assert ctx is not None
     if "subconfigs" in data:
         for subconf in data["subconfigs"]:
-            subconfDir = posixpath.join(dir, subconf)
+            subconfDir = posixpath.join(path, subconf)
             subconfData = readJsonFromDir(subconfDir)
             subconfCtx = ctx
             processJson(subconfDir, subconfCtx, subconfData)
 
 
-def processJson(dir, ctx, data):
+def processJson(path, ctx, data):
     ctx["module"] = data.get("module", "global")
     ctx["test_dir"] = data.get("testDir", "")
 
     ctx = processFiles(ctx, data)
 
-    with open(posixpath.join(dir, "configure.cmake"), "w") as cm_fh:
+    with open(posixpath.join(path, "configure.cmake"), "w") as cm_fh:
         cm_fh.write("\n\n#### Inputs\n\n")
 
         processInputs(ctx, data, cm_fh)
@@ -1016,7 +1016,7 @@ def processJson(dir, ctx, data):
             cm_fh.write('qt_extra_definition("QT_VERSION_PATCH" ${PROJECT_VERSION_PATCH} PUBLIC)\n')
 
     # do this late:
-    processSubconfigs(dir, ctx, data)
+    processSubconfigs(path, ctx, data)
 
 
 def main():
