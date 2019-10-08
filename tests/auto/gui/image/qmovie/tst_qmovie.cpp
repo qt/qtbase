@@ -62,6 +62,7 @@ private slots:
 #ifndef QT_NO_WIDGETS
     void infiniteLoop();
 #endif
+    void emptyMovie();
 };
 
 // Testing get/set functions
@@ -219,6 +220,14 @@ void tst_QMovie::infiniteLoop()
     QTestEventLoop::instance().timeout();
 }
 #endif
+
+void tst_QMovie::emptyMovie()
+{
+    QMovie movie;
+    movie.setCacheMode(QMovie::CacheAll);
+    movie.jumpToFrame(100);
+    QCOMPARE(movie.currentFrameNumber(), -1);
+}
 
 QTEST_MAIN(tst_QMovie)
 #include "tst_qmovie.moc"
