@@ -2149,7 +2149,7 @@ function(add_qml_module target)
         QML_FILES ${arg_QML_FILES}
         IMPORTS "${arg_IMPORTS}"
         TYPEINFO "${arg_TYPEINFO}"
-        DO_NOT_INSTALL
+        DO_NOT_INSTALL_METADATA
         DO_NOT_CREATE_TARGET
         DEPENDENCIES ${arg_DEPENDENCIES}
         RESOURCE_EXPORT "${INSTALL_CMAKE_NAMESPACE}${target}Targets"
