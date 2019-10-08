@@ -1,10 +1,8 @@
+# Generated from platforminputcontexts.pro.
 
-if(QT_FEATURE_dbus AND (NOT APPLE_OSX) AND (NOT WIN32) AND (NOT EMSCRIPTEN))
-    add_subdirectory(ibus)
-endif()
-
-if(QT_FEATURE_xcb)
+if(QT_FEATURE_xkbcommon)
     add_subdirectory(compose)
 endif()
-
-
+if(QT_FEATURE_xkbcommon AND TARGET Qt::DBus AND UNIX AND NOT APPLE_OSX)
+    add_subdirectory(ibus)
+endif()

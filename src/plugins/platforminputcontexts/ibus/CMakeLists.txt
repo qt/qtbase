@@ -18,6 +18,7 @@ add_qt_plugin(ibusplatforminputcontextplugin
         Qt::GuiPrivate
         Qt::XkbCommonSupportPrivate
     PUBLIC_LIBRARIES
+        Qt::Core
         Qt::DBus
         Qt::Gui
         Qt::XkbCommonSupport
@@ -25,6 +26,5 @@ add_qt_plugin(ibusplatforminputcontextplugin
 
 #### Keys ignored in scope 1:.:.:ibus.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/ibus.json"
-# PLUGIN_CLASS_NAME = "QIbusPlatformInputContextPlugin"
 # PLUGIN_EXTENDS = "-"
 # _LOADED = "qt_plugin"
