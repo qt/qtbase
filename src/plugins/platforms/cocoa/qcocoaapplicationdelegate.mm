@@ -142,8 +142,6 @@ QT_USE_NAMESPACE
 
 - (BOOL)canQuit
 {
-    [[NSApp mainMenu] cancelTracking];
-
     bool handle_quit = true;
     NSMenuItem *quitMenuItem = [[QCocoaMenuLoader sharedMenuLoader] quitMenuItem];
     if (!QGuiApplicationPrivate::instance()->modalWindowList.isEmpty()
