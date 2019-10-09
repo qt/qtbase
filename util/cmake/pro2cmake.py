@@ -438,7 +438,7 @@ class QmlDir:
         self.imports: List[str] = []
         self.type_names: Dict[str, QmlDirFileInfo] = {}
         self.type_infos: List[str] = []
-        self.depends: List[str] = []
+        self.depends: List[Tuple[str, str]] = []
         self.designer_supported = False
 
     def __str__(self) -> str:
@@ -518,6 +518,8 @@ class QmlDir:
                 self.classname = entries[1]
             elif entries[0] == "typeinfo":
                 self.type_infos.append(entries[1])
+            elif entries[0] == "depends":
+                self.depends.append((entries[1], entries[2]))
             elif entries[0] == "designersupported":
                 self.designer_supported = True
             elif entries[0] == "import":
