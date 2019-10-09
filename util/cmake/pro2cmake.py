@@ -1828,7 +1828,8 @@ def sort_sources(sources: List[str]) -> List[str]:
     return lines
 
 
-def _map_libraries_to_cmake(libraries: List[str], known_libraries: Set[str]) -> List[str]:
+def _map_libraries_to_cmake(libraries: List[str], known_libraries: Set[str],
+        is_example : bool = False) -> List[str]:
     result = []  # type: List[str]
     is_framework = False
 
@@ -1837,7 +1838,10 @@ def _map_libraries_to_cmake(libraries: List[str], known_libraries: Set[str]) -> 
             is_framework = True
             continue
         if is_framework:
-            lib = f"${{FW{lib}}}"
+            if is_example:
+                lib = f'"-framework {lib}"'
+            else:
+                lib = f"${{FW{lib}}}"
         if lib.startswith("-l"):
             lib = lib[2:]
 
@@ -1856,7 +1860,8 @@ def _map_libraries_to_cmake(libraries: List[str], known_libraries: Set[str]) -> 
 
 
 def extract_cmake_libraries(
-    scope: Scope, *, known_libraries: Optional[Set[str]] = None
+    scope: Scope, *, known_libraries: Optional[Set[str]] = None,
+    is_example: bool = False
 ) -> Tuple[List[str], List[str]]:
     if known_libraries is None:
         known_libraries = set()
@@ -1884,8 +1889,8 @@ def extract_cmake_libraries(
                 public_dependencies.append(mapped_lib)
 
     return (
-        _map_libraries_to_cmake(public_dependencies, known_libraries),
-        _map_libraries_to_cmake(private_dependencies, known_libraries),
+        _map_libraries_to_cmake(public_dependencies, known_libraries, is_example=is_example),
+        _map_libraries_to_cmake(private_dependencies, known_libraries, is_example=is_example),
     )
 
 
@@ -2954,7 +2959,7 @@ def write_example(
     handle_source_subtractions(scopes)
     scopes = merge_scopes(scopes)
 
-    (public_libs, private_libs) = extract_cmake_libraries(scope)
+    (public_libs, private_libs) = extract_cmake_libraries(scope, is_example = True)
     write_find_package_section(cm_fh, public_libs, private_libs, indent=indent)
 
     add_target = ""
@@ -3034,7 +3039,7 @@ def write_example(
             cm_fh, scope, f"target_compile_definitions({binary_name} PUBLIC", indent=indent, footer=")"
         )
 
-        (scope_public_libs, scope_private_libs) = extract_cmake_libraries(scope)
+        (scope_public_libs, scope_private_libs) = extract_cmake_libraries(scope, is_example = True)
 
         write_list(
             cm_fh,
