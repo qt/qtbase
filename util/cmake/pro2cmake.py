@@ -1571,6 +1571,13 @@ def map_condition(condition: str) -> str:
     condition = re.sub(r"\s*==\s*", "___STREQUAL___", condition)
     condition = re.sub(r"\bexists\s*\((.*?)\)", r"EXISTS \1", condition)
 
+    # checking mkspec, predating gcc scope in qmake, will then be replaced by platform_mapping in helper.py
+    condition = condition.replace("*-g++*", "GCC")
+    condition = condition.replace("*-icc*", "ICC")
+    condition = condition.replace("*-clang*", "CLANG")
+    condition = condition.replace("*-llvm", "CLANG")
+    condition = condition.replace("win32-*", "WIN32")
+
     pattern = r"CONFIG\((debug|release),debug\|release\)"
     match_result = re.match(pattern, condition)
     if match_result:
