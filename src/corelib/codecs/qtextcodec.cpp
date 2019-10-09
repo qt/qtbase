@@ -103,10 +103,13 @@ typedef QList<QByteArray>::ConstIterator ByteArrayListConstIt;
 
 Q_GLOBAL_STATIC(QRecursiveMutex, textCodecsMutex);
 
-class TextCodecsMutexLocker {
+class TextCodecsMutexLocker
+{
     using Lock = decltype(qt_unique_lock(std::declval<QRecursiveMutex&>()));
     // ### FIXME: this is used when textCodecsMutex already == nullptr
     const Lock lock = qt_unique_lock(textCodecsMutex());
+public:
+    TextCodecsMutexLocker() {} // required d/t an ICC 19 bug
 };
 
 #if !QT_CONFIG(icu)

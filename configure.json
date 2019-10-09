@@ -527,6 +527,10 @@
             "label": "RDRAND instruction",
             "type": "x86Simd"
         },
+        "rdseed": {
+            "label": "RDSEED instruction",
+            "type": "x86Simd"
+        },
         "shani": {
             "label": "SHA new instructions",
             "type": "x86Simd"
@@ -1179,6 +1183,14 @@
             "output": [
                 "privateConfig",
                 { "type": "define", "name": "QT_COMPILER_SUPPORTS_RDRND", "value": 1 }
+            ]
+        },
+        "rdseed": {
+            "label": "RDSEED",
+            "condition": "tests.rdseed",
+            "output": [
+                "privateConfig",
+                { "type": "define", "name": "QT_COMPILER_SUPPORTS_RDSEED", "value": 1 }
             ]
         },
         "shani": {

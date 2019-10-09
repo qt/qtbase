@@ -626,8 +626,40 @@ void qDumpCPUFeatures()
 
 #  ifdef Q_PROCESSOR_X86_64
 #    define _rdrandXX_step _rdrand64_step
+#    define _rdseedXX_step _rdseed64_step
 #  else
 #    define _rdrandXX_step _rdrand32_step
+#    define _rdseedXX_step _rdseed32_step
+#  endif
+
+#  if QT_COMPILER_SUPPORTS_HERE(RDSEED)
+static QT_FUNCTION_TARGET(RDSEED) unsigned *qt_random_rdseed(unsigned *ptr, unsigned *end) noexcept
+{
+    // Unlike for the RDRAND code below, the Intel whitepaper describing the
+    // use of the RDSEED instruction indicates we should not retry in a loop.
+    // If the independent bit generator used by RDSEED is out of entropy, it
+    // may take time to replenish.
+    // https://software.intel.com/en-us/articles/intel-digital-random-number-generator-drng-software-implementation-guide
+    while (ptr + sizeof(qregisteruint)/sizeof(*ptr) <= end) {
+        if (_rdseedXX_step(reinterpret_cast<qregisteruint *>(ptr)) == 0)
+            goto out;
+        ptr += sizeof(qregisteruint)/sizeof(*ptr);
+    }
+
+    if (sizeof(*ptr) != sizeof(qregisteruint) && ptr != end) {
+        if (_rdseed32_step(ptr) == 0)
+            goto out;
+        ++ptr;
+    }
+
+out:
+    return ptr;
+}
+#  else
+static unsigned *qt_random_rdseed(unsigned *ptr, unsigned *)
+{
+    return ptr;
+}
 #  endif
 
 QT_FUNCTION_TARGET(RDRND) qsizetype qRandomCpu(void *buffer, qsizetype count) noexcept
@@ -635,6 +667,9 @@ QT_FUNCTION_TARGET(RDRND) qsizetype qRandomCpu(void *buffer, qsizetype count) no
     unsigned *ptr = reinterpret_cast<unsigned *>(buffer);
     unsigned *end = ptr + count;
     int retries = 10;
+
+    if (qCpuHasFeature(RDSEED))
+        ptr = qt_random_rdseed(ptr, end);
 
     while (ptr + sizeof(qregisteruint)/sizeof(*ptr) <= end) {
         if (_rdrandXX_step(reinterpret_cast<qregisteruint *>(ptr)))
@@ -656,6 +691,5 @@ out:
     return ptr - reinterpret_cast<unsigned *>(buffer);
 }
 #endif
-
 
 QT_END_NAMESPACE

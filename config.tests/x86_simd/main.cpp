@@ -132,6 +132,23 @@ attribute_target("rdrnd") int test_rdrnd()
 }
 #endif
 
+#if T(RDSEED)
+attribute_target("rdseed") int test_rdseed()
+{
+    unsigned short us;
+    unsigned int ui;
+    if (_rdseed16_step(&us))
+        return 1;
+    if (_rdseed32_step(&ui))
+        return 1;
+#  if defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(_M_X64)
+    unsigned long long ull;
+    if (_rdseed64_step(&ull))
+        return 1;
+#  endif
+}
+#endif
+
 #if T(SHANI)
 attribute_target("sha") void test_shani()
 {

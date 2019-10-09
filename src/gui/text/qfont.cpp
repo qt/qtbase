@@ -3176,8 +3176,7 @@ QDebug operator<<(QDebug stream, const QFont &font)
     QDebug debug(&fontDescription);
     debug.nospace();
 
-    QFontPrivate priv;
-    const QFont defaultFont(&priv);
+    const QFont defaultFont(new QFontPrivate);
 
     for (int property = QFont::FamilyResolved; property < QFont::AllPropertiesResolved; property <<= 1) {
         const bool resolved = (font.resolve_mask & property) != 0;

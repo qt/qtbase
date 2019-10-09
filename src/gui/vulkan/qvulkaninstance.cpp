@@ -775,6 +775,20 @@ bool QVulkanInstance::supportsPresent(VkPhysicalDevice physicalDevice, uint32_t 
 }
 
 /*!
+    This function should be called by the application's renderer before queuing
+    a present operation for \a window.
+
+    While on some platforms this will be a no-op, some may perform windowing
+    system dependent synchronization. For example, on Wayland this will
+    add send a wl_surface.frame request in order to prevent the driver from
+    blocking for minimized windows.
+ */
+void QVulkanInstance::presentAboutToBeQueued(QWindow *window)
+{
+    d_ptr->platformInst->presentAboutToBeQueued(window);
+}
+
+/*!
     This function should be called by the application's renderer after queuing
     a present operation for \a window.
 
