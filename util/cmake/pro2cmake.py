@@ -2921,6 +2921,11 @@ def write_example(
     binary_name = scope.TARGET
     assert binary_name
 
+    example_install_dir = scope.get_string('target.path')
+    if not example_install_dir:
+        example_install = 'examples'
+    example_install_dir = example_install_dir.replace('$$[QT_INSTALL_EXAMPLES]', 'examples')
+
     cm_fh.write(
         "cmake_minimum_required(VERSION 3.14)\n"
         f"project({binary_name} LANGUAGES CXX)\n\n"
@@ -2928,7 +2933,7 @@ def write_example(
         "set(CMAKE_AUTOMOC ON)\n"
         "set(CMAKE_AUTORCC ON)\n"
         "set(CMAKE_AUTOUIC ON)\n\n"
-        'set(INSTALL_EXAMPLEDIR "examples")\n\n'
+        f'set(INSTALL_EXAMPLEDIR "{example_install_dir}")\n\n'
     )
 
     (public_libs, private_libs) = extract_cmake_libraries(scope)
