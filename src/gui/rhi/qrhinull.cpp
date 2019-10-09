@@ -489,7 +489,7 @@ void QRhiNull::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *re
             quint32 bytesPerLine = 0;
             quint32 byteSize = 0;
             textureFormatInfo(result->format, result->pixelSize, &bytesPerLine, &byteSize);
-            if (result->format == QRhiTexture::RGBA8) {
+            if (texD && texD->format() == QRhiTexture::RGBA8) {
                 result->data.resize(int(byteSize));
                 const QImage &src(texD->image[u.rb.layer()][u.rb.level()]);
                 char *dst = result->data.data();

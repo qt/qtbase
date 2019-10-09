@@ -89,6 +89,8 @@ private slots:
     void renderToTextureTexturedQuad();
     void renderToTextureTexturedQuadAndUniformBuffer_data();
     void renderToTextureTexturedQuadAndUniformBuffer();
+    void renderToWindowSimple_data();
+    void renderToWindowSimple();
 
 private:
     struct {
@@ -1564,6 +1566,163 @@ void tst_QRhi::renderToTextureTexturedQuadAndUniformBuffer()
 
     QCOMPARE(result1.pixel(204, 45), empty);
     QCOMPARE(result1.pixel(28, 178), empty);
+}
+
+void tst_QRhi::renderToWindowSimple_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::renderToWindowSimple()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+#ifdef Q_OS_WINRT
+    if (impl == QRhi::D3D11)
+        QSKIP("Skipping window-based QRhi rendering on WinRT as the platform and the D3D11 backend are not prepared for this yet");
+#endif
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing rendering");
+
+    QScopedPointer<QWindow> window(new QWindow);
+    switch (impl) {
+    case QRhi::OpenGLES2:
+        Q_FALLTHROUGH();
+    case QRhi::D3D11:
+        window->setSurfaceType(QSurface::OpenGLSurface);
+        break;
+    case QRhi::Metal:
+        window->setSurfaceType(QSurface::MetalSurface);
+        break;
+    case QRhi::Vulkan:
+        window->setSurfaceType(QSurface::VulkanSurface);
+#if QT_CONFIG(vulkan)
+        window->setVulkanInstance(&vulkanInstance);
+#endif
+        break;
+    default:
+        break;
+    }
+
+    window->setGeometry(0, 0, 640, 480);
+    window->show();
+    QVERIFY(QTest::qWaitForWindowExposed(window.data()));
+
+    QScopedPointer<QRhiSwapChain> swapChain(rhi->newSwapChain());
+    swapChain->setWindow(window.data());
+    swapChain->setFlags(QRhiSwapChain::UsedAsTransferSource);
+    QScopedPointer<QRhiRenderPassDescriptor> rpDesc(swapChain->newCompatibleRenderPassDescriptor());
+    swapChain->setRenderPassDescriptor(rpDesc.data());
+    QVERIFY(swapChain->buildOrResize());
+
+    QRhiResourceUpdateBatch *updates = rhi->nextResourceUpdateBatch();
+
+    static const float vertices[] = {
+        -1.0f, -1.0f,
+        1.0f, -1.0f,
+        0.0f, 1.0f
+    };
+    QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertices)));
+    QVERIFY(vbuf->build());
+    updates->uploadStaticBuffer(vbuf.data(), vertices);
+
+    QScopedPointer<QRhiShaderResourceBindings> srb(rhi->newShaderResourceBindings());
+    QVERIFY(srb->build());
+
+    QScopedPointer<QRhiGraphicsPipeline> pipeline(rhi->newGraphicsPipeline());
+    QShader vs = loadShader(":/data/simple.vert.qsb");
+    QVERIFY(vs.isValid());
+    QShader fs = loadShader(":/data/simple.frag.qsb");
+    QVERIFY(fs.isValid());
+    pipeline->setShaderStages({ { QRhiShaderStage::Vertex, vs }, { QRhiShaderStage::Fragment, fs } });
+    QRhiVertexInputLayout inputLayout;
+    inputLayout.setBindings({ { 2 * sizeof(float) } });
+    inputLayout.setAttributes({ { 0, 0, QRhiVertexInputAttribute::Float2, 0 } });
+    pipeline->setVertexInputLayout(inputLayout);
+    pipeline->setShaderResourceBindings(srb.data());
+    pipeline->setRenderPassDescriptor(rpDesc.data());
+
+    QVERIFY(pipeline->build());
+
+    const int framesInFlight = rhi->resourceLimit(QRhi::FramesInFlight);
+    QVERIFY(framesInFlight >= 1);
+    const int FRAME_COUNT = framesInFlight + 1;
+    bool readCompleted = false;
+    QRhiReadbackResult readResult;
+    QImage result;
+    int readbackWidth = 0;
+
+    for (int frameNo = 0; frameNo < FRAME_COUNT; ++frameNo) {
+        QVERIFY(rhi->beginFrame(swapChain.data()) == QRhi::FrameOpSuccess);
+        QRhiCommandBuffer *cb = swapChain->currentFrameCommandBuffer();
+        QRhiRenderTarget *rt = swapChain->currentFrameRenderTarget();
+        const QSize outputSize = swapChain->currentPixelSize();
+        QCOMPARE(rt->pixelSize(), outputSize);
+        QRhiViewport viewport(0, 0, float(outputSize.width()), float(outputSize.height()));
+
+        cb->beginPass(rt, Qt::blue, { 1.0f, 0 }, updates);
+        updates = nullptr;
+        cb->setGraphicsPipeline(pipeline.data());
+        cb->setViewport(viewport);
+        QRhiCommandBuffer::VertexInput vbindings(vbuf.data(), 0);
+        cb->setVertexInput(0, 1, &vbindings);
+        cb->draw(3);
+
+        if (frameNo == 0) {
+            readResult.completed = [&readCompleted, &readResult, &result, &rhi] {
+                readCompleted = true;
+                QImage wrapperImage(reinterpret_cast<const uchar *>(readResult.data.constData()),
+                                    readResult.pixelSize.width(), readResult.pixelSize.height(),
+                                    QImage::Format_ARGB32_Premultiplied);
+                if (readResult.format == QRhiTexture::RGBA8)
+                    wrapperImage = wrapperImage.rgbSwapped();
+                if (rhi->isYUpInFramebuffer() == rhi->isYUpInNDC())
+                    result = wrapperImage.mirrored();
+                else
+                    result = wrapperImage.copy();
+            };
+            QRhiResourceUpdateBatch *readbackBatch = rhi->nextResourceUpdateBatch();
+            readbackBatch->readBackTexture({}, &readResult); // read back the current backbuffer
+            readbackWidth = outputSize.width();
+            cb->endPass(readbackBatch);
+        } else {
+            cb->endPass();
+        }
+
+        rhi->endFrame(swapChain.data());
+    }
+
+    // The readback is asynchronous here. However it is guaranteed that it
+    // finished at latest after rendering QRhi::FramesInFlight frames after the
+    // one that enqueues the readback.
+    QVERIFY(readCompleted);
+    QVERIFY(readbackWidth > 0);
+
+    if (impl == QRhi::Null)
+        return;
+
+    // Now we have a red rectangle on blue background.
+    const int y = 50;
+    const quint32 *p = reinterpret_cast<const quint32 *>(result.constScanLine(y));
+    int x = result.width() - 1;
+    int redCount = 0;
+    int blueCount = 0;
+    const int maxFuzz = 1;
+    while (x-- >= 0) {
+        const QRgb c(*p++);
+        if (qRed(c) >= (255 - maxFuzz) && qGreen(c) == 0 && qBlue(c) == 0)
+            ++redCount;
+        else if (qRed(c) == 0 && qGreen(c) == 0 && qBlue(c) >= (255 - maxFuzz))
+            ++blueCount;
+        else
+            QFAIL("Encountered a pixel that is neither red or blue");
+    }
+
+    QCOMPARE(redCount + blueCount, readbackWidth);
+    QVERIFY(redCount < blueCount);
 }
 
 #include <tst_qrhi.moc>
