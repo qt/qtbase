@@ -1620,6 +1620,7 @@ _path_replacements = {
     "$$[QT_INSTALL_PREFIX]": "${INSTALL_DIRECTORY}",
     "$$[QT_INSTALL_EXAMPLES]": "${INSTALL_EXAMPLESDIR}",
     "$$[QT_INSTALL_TESTS]": "${INSTALL_TESTSDIR}",
+    "$$OUT_PWD": "${CMAKE_CURRENT_BINARY_DIR}",
  }
 
 def replace_path_constants(path: str, scope: Scope) -> str:
@@ -2231,7 +2232,7 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                         immediate_prefix = "/"
                     immediate_base_list = scope.get(f"{r}.base")
                     assert len(immediate_base_list) < 2, f"immediate base directory must be at most one entry"
-                    immediate_base = "".join(immediate_base_list)
+                    immediate_base = replace_path_constants("".join(immediate_base_list), scope)
                     immediate_lang = None
                     immediate_name = f"qmake_{r}"
                     qrc_output += write_add_qt_resource_call(
