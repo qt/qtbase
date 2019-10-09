@@ -583,6 +583,13 @@ struct BezierEase : public QEasingCurveFunction
             qWarning("QEasingCurve: Invalid bezier curve");
             return x;
         }
+
+        // The bezier computation is not always precise on the endpoints, so handle explicitly
+        if (!(x > 0))
+            return 0;
+        if (!(x < 1))
+            return 1;
+
         SingleCubicBezier *singleCubicBezier = 0;
         getBezierSegment(singleCubicBezier, x);
 
@@ -998,6 +1005,11 @@ struct BackEase : public QEasingCurveFunction
 
     qreal value(qreal t) override
     {
+        // The *Back() functions are not always precise on the endpoints, so handle explicitly
+        if (!(t > 0))
+            return 0;
+        if (!(t < 1))
+            return 1;
         qreal o = (_o < 0) ? qreal(1.70158) : _o;
         switch(_t) {
         case QEasingCurve::InBack:
