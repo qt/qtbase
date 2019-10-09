@@ -1671,7 +1671,7 @@ def handle_subdir(
         cm_fh: IO[str],
         *,
         indent: int = 0,
-        current_conditions: FrozenSet[str] = None,
+        current_conditions: FrozenSet[str] = frozenset(),
         is_example: bool = False,
     ):
         for sd in scope.get_files("SUBDIRS"):
@@ -1705,12 +1705,16 @@ def handle_subdir(
         for c in scope.children:
             # Use total_condition for 'else' conditions, otherwise just use the regular value to
             # simplify the logic.
+            child_conditions = current_conditions
             child_condition = c.total_condition if c.condition == "else" else c.condition
+            if child_condition:
+                child_conditions = frozenset((*child_conditions, child_condition))
+
             handle_subdir_helper(
                 c,
                 cm_fh,
                 indent=indent + 1,
-                current_conditions=frozenset((*current_conditions, child_condition)),
+                current_conditions=child_conditions,
                 is_example=is_example,
             )
 
