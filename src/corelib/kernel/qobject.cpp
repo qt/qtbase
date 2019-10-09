@@ -906,30 +906,8 @@ static bool check_parent_thread(QObject *parent,
 */
 
 QObject::QObject(QObject *parent)
-    : d_ptr(new QObjectPrivate)
+    : QObject(*new QObjectPrivate, parent)
 {
-    Q_ASSERT_X(this != parent, Q_FUNC_INFO, "Cannot parent a QObject to itself");
-
-    Q_D(QObject);
-    d_ptr->q_ptr = this;
-    d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
-    d->threadData->ref();
-    if (parent) {
-        QT_TRY {
-            if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
-                parent = 0;
-            setParent(parent);
-        } QT_CATCH(...) {
-            d->threadData->deref();
-            QT_RETHROW;
-        }
-    }
-#if QT_VERSION < 0x60000
-    qt_addObject(this);
-#endif
-    if (Q_UNLIKELY(qtHookData[QHooks::AddQObject]))
-        reinterpret_cast<QHooks::AddQObjectCallback>(qtHookData[QHooks::AddQObject])(this);
-    Q_TRACE(QObject_ctor, this);
 }
 
 /*!
