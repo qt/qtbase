@@ -2942,6 +2942,18 @@ def write_example(
         f'set(INSTALL_EXAMPLEDIR "{example_install_dir}")\n\n'
     )
 
+    recursive_evaluate_scope(scope)
+
+    # Get a flat list of all scopes but the main one:
+    scopes = flatten_scopes(scope)
+    # Merge scopes based on their conditions:
+    scopes = merge_scopes(scopes)
+    # Handle SOURCES -= foo calls, and merge scopes one more time
+    # because there might have been several files removed with the same
+    # scope condition.
+    handle_source_subtractions(scopes)
+    scopes = merge_scopes(scopes)
+
     (public_libs, private_libs) = extract_cmake_libraries(scope)
     write_find_package_section(cm_fh, public_libs, private_libs, indent=indent)
 
@@ -2997,41 +3009,57 @@ def write_example(
     else:
         add_target = f'add_{"qt_gui_" if gui else ""}executable({binary_name}'
 
+
     write_all_source_file_lists(cm_fh, scope, add_target, indent=0)
 
     cm_fh.write(")\n")
 
-    write_wayland_part(cm_fh, binary_name, scope, indent=0)
+    for scope in scopes :
+        # write wayland already has condition scope handling
+        write_wayland_part(cm_fh, binary_name, scope, indent=0)
 
-    write_include_paths(
-        cm_fh, scope, f"target_include_directories({binary_name} PUBLIC", indent=0, footer=")"
-    )
-    write_defines(
-        cm_fh, scope, f"target_compile_definitions({binary_name} PUBLIC", indent=0, footer=")"
-    )
-    write_list(
-        cm_fh,
-        private_libs,
-        "",
-        indent=indent,
-        header=f"target_link_libraries({binary_name} PRIVATE\n",
-        footer=")",
-    )
-    write_list(
-        cm_fh,
-        public_libs,
-        "",
-        indent=indent,
-        header=f"target_link_libraries({binary_name} PUBLIC\n",
-        footer=")",
-    )
-    write_compile_options(
-        cm_fh, scope, f"target_compile_options({binary_name}", indent=0, footer=")"
-    )
+        # The following options do not
+        condition = "ON"
+        if scope.total_condition:
+            condition = map_to_cmake_condition(scope.total_condition)
 
-    write_resources(cm_fh, binary_name, scope, indent=indent, is_example=True)
-    write_statecharts(cm_fh, binary_name, scope, indent=indent, is_example=True)
-    write_repc_files(cm_fh, binary_name, scope, indent=indent)
+        if condition != "ON":
+            cm_fh.write(f"\n{spaces(indent)}if({condition})\n")
+            indent += 1
+
+        write_include_paths(
+            cm_fh, scope, f"target_include_directories({binary_name} PUBLIC", indent=indent, footer=")"
+        )
+        write_defines(
+            cm_fh, scope, f"target_compile_definitions({binary_name} PUBLIC", indent=indent, footer=")"
+        )
+        write_list(
+            cm_fh,
+            private_libs,
+            "",
+            indent=indent,
+            header=f"target_link_libraries({binary_name} PRIVATE\n",
+            footer=")",
+        )
+        write_list(
+            cm_fh,
+            public_libs,
+            "",
+            indent=indent,
+            header=f"target_link_libraries({binary_name} PUBLIC\n",
+            footer=")",
+        )
+        write_compile_options(
+            cm_fh, scope, f"target_compile_options({binary_name}", indent=indent, footer=")"
+        )
+
+        write_resources(cm_fh, binary_name, scope, indent=indent, is_example=True)
+        write_statecharts(cm_fh, binary_name, scope, indent=indent, is_example=True)
+        write_repc_files(cm_fh, binary_name, scope, indent=indent)
+
+        if condition != "ON":
+            indent -= 1
+            cm_fh.write(f"\n{spaces(indent)}endif()\n")
 
     if qmldir:
         write_qml_plugin_epilogue(cm_fh, binary_name, scope, qmldir, indent)
