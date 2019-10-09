@@ -105,6 +105,8 @@ public:
     QPlatformScreen();
     virtual ~QPlatformScreen();
 
+    virtual bool isPlaceholder() const { return false; };
+
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
     virtual QRect geometry() const = 0;
@@ -170,6 +172,16 @@ protected:
 
 private:
     friend class QScreenPrivate;
+};
+
+// Qt doesn't currently support running with no platform screen
+// QPA plugins can use this class to create a fake screen
+class QPlatformPlaceholderScreen : public QPlatformScreen {
+    bool isPlaceholder() const override { return true; };
+    QRect geometry() const override { return QRect(); }
+    QRect availableGeometry() const override { return QRect(); }
+    int depth() const override { return 32; }
+    QImage::Format format() const override { return QImage::Format::Format_RGB32; }
 };
 
 QT_END_NAMESPACE
