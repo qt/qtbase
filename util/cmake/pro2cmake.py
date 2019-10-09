@@ -3033,9 +3033,12 @@ def write_example(
         write_defines(
             cm_fh, scope, f"target_compile_definitions({binary_name} PUBLIC", indent=indent, footer=")"
         )
+
+        (scope_public_libs, scope_private_libs) = extract_cmake_libraries(scope)
+
         write_list(
             cm_fh,
-            private_libs,
+            scope_private_libs,
             "",
             indent=indent,
             header=f"target_link_libraries({binary_name} PRIVATE\n",
@@ -3043,7 +3046,7 @@ def write_example(
         )
         write_list(
             cm_fh,
-            public_libs,
+            scope_public_libs,
             "",
             indent=indent,
             header=f"target_link_libraries({binary_name} PUBLIC\n",
