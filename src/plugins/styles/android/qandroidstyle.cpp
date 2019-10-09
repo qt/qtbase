@@ -248,7 +248,7 @@ QAndroidStyle::ItemType QAndroidStyle::qtControl(QStyle::PrimitiveElement primit
     case QStyle::PE_FrameLineEdit:
         return QC_EditText;
 
-    case QStyle::PE_IndicatorViewItemCheck:
+    case QStyle::PE_IndicatorItemViewItemCheck:
     case QStyle::PE_IndicatorCheckBox:
         return QC_Checkbox;
 

@@ -3211,7 +3211,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
 
         CGContextRestoreGState(cg);
         break; }
-    case PE_IndicatorViewItemCheck:
+    case PE_IndicatorItemViewItemCheck:
     case PE_IndicatorRadioButton:
     case PE_IndicatorCheckBox: {
         const bool isEnabled = opt->state & State_Enabled;

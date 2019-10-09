@@ -2130,7 +2130,7 @@ void JavaStyle::drawPrimitive(PrimitiveElement element,
             painter->restore();
             break;
         }
-        case PE_IndicatorViewItemCheck: {
+        case PE_IndicatorItemViewItemCheck: {
             break;
         }
         case PE_FrameWindow: {

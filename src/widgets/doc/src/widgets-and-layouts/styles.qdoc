@@ -1837,7 +1837,7 @@
     item views keep the dimensions on individual sections. Also
     note that the delegates may use the style to paint decorations
     and frames around items. QItemDelegate, for instance, draws
-    \c PE_FrameFocusRect and \c PE_IndicatorViewItemCheck.
+    \c PE_FrameFocusRect and \c PE_IndicatorItemViewItemCheck.
 
     \image javastyle/header.png
 
