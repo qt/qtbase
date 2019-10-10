@@ -417,7 +417,7 @@ _library_map = [
     LibraryMapping("wayland-client", "Wayland", "Wayland::Client"),
     LibraryMapping("wayland-cursor", "Wayland", "Wayland::Cursor"),
     LibraryMapping("wayland-egl", "Wayland", "Wayland::Egl"),
-    LibraryMapping('wayland-kms', 'Waylandkms', 'PkgConfig::Waylandkms'), #TODO: check if this actually works
+    LibraryMapping('wayland-kms', 'Waylandkms', 'PkgConfig::Waylandkms'),  # TODO: check if this actually works
     LibraryMapping("x11", "X11", "X11::X11"),
     LibraryMapping("x11sm", "X11", "${X11_SM_LIB} ${X11_ICE_LIB}", resultVariable="X11_SM"),
     LibraryMapping(

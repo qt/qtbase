@@ -307,7 +307,7 @@ def map_condition(condition):
             print(f'    XXXX Unknown condition "{match.group(0)}"')
             has_failed = True
         else:
-            mapped_condition += condition[last_pos : match.start(1)] + substitution
+            mapped_condition += condition[last_pos: match.start(1)] + substitution
             last_pos = match.end(2)
 
     mapped_condition += condition[last_pos:]

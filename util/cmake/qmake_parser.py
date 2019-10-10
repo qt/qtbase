@@ -219,7 +219,7 @@ class QmakeParser:
         def parse_requires_condition(s, l, t):
             # The following expression unwraps the condition via the additional info
             # set by originalTextFor.
-            condition_without_parentheses = s[t._original_start + 1 : t._original_end - 1]
+            condition_without_parentheses = s[t._original_start + 1: t._original_end - 1]
 
             # And this replaces the colons with '&&' similar how it's done for 'Condition'.
             condition_without_parentheses = (

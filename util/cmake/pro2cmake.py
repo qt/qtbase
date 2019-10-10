@@ -37,7 +37,6 @@ import sys
 import re
 import io
 import glob
-import collections
 
 from condition_simplifier import simplify_condition
 from condition_simplifier_cache import set_condition_simplified_cache_enabled
@@ -618,6 +617,7 @@ class AddOperation(Operation):
     def __repr__(self):
         return f"+({self._dump()})"
 
+
 class UniqueAddOperation(Operation):
     def process(
         self, key: str, sinput: List[str], transformer: Callable[[List[str]], List[str]]
@@ -630,6 +630,7 @@ class UniqueAddOperation(Operation):
 
     def __repr__(self):
         return f"*({self._dump()})"
+
 
 class ReplaceOperation(Operation):
     def process(
@@ -662,6 +663,7 @@ class ReplaceOperation(Operation):
 
     def __repr__(self):
         return f"*({self._dump()})"
+
 
 class SetOperation(Operation):
     def process(
@@ -1008,7 +1010,7 @@ class Scope(object):
             qmake_conf_path = find_qmake_conf(os.path.abspath(self.currentdir))
             qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
             project_relative_path = os.path.relpath(qmake_conf_dir_path, self.currentdir)
-            return ['${CMAKE_CURRENT_SOURCE_DIR}/'+ project_relative_path]
+            return ['${CMAKE_CURRENT_SOURCE_DIR}/' + project_relative_path]
 
         if key == "_PRO_FILE_PWD_":
             return ["${CMAKE_CURRENT_SOURCE_DIR}"]
@@ -1107,7 +1109,7 @@ class Scope(object):
             else:
                 replacement = self.get(match.group(1), inherit=True)
                 replacement_str = replacement[0] if replacement else ""
-                result = result[: match.start()] + replacement_str + result[match.end() :]
+                result = result[: match.start()] + replacement_str + result[match.end():]
                 result = self._replace_env_var_value(result)
 
             if result == old_result:
@@ -1157,7 +1159,7 @@ def unwrap_if(input_string):
             # The following expression unwraps the condition via the
             # additional info set by originalTextFor, thus returning the
             # condition without parentheses.
-            condition_without_parentheses = s[t._original_start + 1 : t._original_end - 1]
+            condition_without_parentheses = s[t._original_start + 1: t._original_end - 1]
 
             # Re-add the parentheses, but with spaces in-between. This
             # fixes map_condition -> map_platform to apply properly.
@@ -1287,7 +1289,8 @@ _path_replacements = {
     "$$[QT_INSTALL_EXAMPLES]": "${INSTALL_EXAMPLESDIR}",
     "$$[QT_INSTALL_TESTS]": "${INSTALL_TESTSDIR}",
     "$$OUT_PWD": "${CMAKE_CURRENT_BINARY_DIR}",
- }
+}
+
 
 def replace_path_constants(path: str, scope: Scope) -> str:
     """ Clean up DESTDIR and target.path """
@@ -1496,7 +1499,7 @@ def sort_sources(sources: List[str]) -> List[str]:
 
 
 def _map_libraries_to_cmake(libraries: List[str], known_libraries: Set[str],
-        is_example : bool = False) -> List[str]:
+                            is_example: bool = False) -> List[str]:
     result = []  # type: List[str]
     is_framework = False
 
@@ -1970,6 +1973,7 @@ def write_statecharts(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0
         cm_fh.write(f"{spaces(indent)}{f}\n")
     cm_fh.write(")\n")
 
+
 def write_qlalrsources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
     sources = scope.get_files("QLALRSOURCES", use_vpath=True)
     if not sources:
@@ -1982,6 +1986,7 @@ def write_qlalrsources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
     cm_fh.write(f"{spaces(indent)}\"\"\n")
     cm_fh.write(")\n")
 
+
 def write_repc_files(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
     for t in ["SOURCE", "REPLICA", "MERGED"]:
         sources = scope.get_files("REPC_" + t, use_vpath=True)
@@ -1992,6 +1997,7 @@ def write_repc_files(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0)
         for f in sources:
             cm_fh.write(f"{spaces(indent)}{f}\n")
         cm_fh.write(")\n")
+
 
 def expand_project_requirements(scope: Scope, skip_message: bool = False) -> str:
     requirements = ""
@@ -2134,7 +2140,7 @@ def write_android_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
         cm_fh.write(f"{spaces(indent)}endif()\n")
 
 
-def write_wayland_part(cm_fh: IO[str], target: str, scope:Scope, indent: int = 0):
+def write_wayland_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
     client_sources = scope.get_files('WAYLANDCLIENTSOURCES', use_vpath=True)
     server_sources = scope.get_files('WAYLANDSERVERSOURCES', use_vpath=True)
     if len(client_sources) == 0 and len(server_sources) == 0:
@@ -2637,7 +2643,7 @@ def write_example(
 
     example_install_dir = scope.get_string('target.path')
     if not example_install_dir:
-        example_install = 'examples'
+        example_install_dir = 'examples'
     example_install_dir = example_install_dir.replace('$$[QT_INSTALL_EXAMPLES]', 'examples')
 
     cm_fh.write(
@@ -2662,7 +2668,7 @@ def write_example(
     handle_source_subtractions(scopes)
     scopes = merge_scopes(scopes)
 
-    (public_libs, private_libs) = extract_cmake_libraries(scope, is_example = True)
+    (public_libs, private_libs) = extract_cmake_libraries(scope, is_example=True)
     write_find_package_section(cm_fh, public_libs, private_libs, indent=indent)
 
     add_target = ""
@@ -2717,12 +2723,10 @@ def write_example(
     else:
         add_target = f'add_{"qt_gui_" if gui else ""}executable({binary_name}'
 
-
     write_all_source_file_lists(cm_fh, scope, add_target, indent=0)
-
     cm_fh.write(")\n")
 
-    for scope in scopes :
+    for scope in scopes:
         # write wayland already has condition scope handling
         write_wayland_part(cm_fh, binary_name, scope, indent=0)
 
@@ -2742,7 +2746,7 @@ def write_example(
             cm_fh, scope, f"target_compile_definitions({binary_name} PUBLIC", indent=indent, footer=")"
         )
 
-        (scope_public_libs, scope_private_libs) = extract_cmake_libraries(scope, is_example = True)
+        (scope_public_libs, scope_private_libs) = extract_cmake_libraries(scope, is_example=True)
 
         write_list(
             cm_fh,
