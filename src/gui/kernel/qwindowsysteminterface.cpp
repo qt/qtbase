@@ -619,6 +619,7 @@ bool QWindowSystemInterface::isTouchDeviceRegistered(const QTouchDevice *device)
 static int g_nextPointId = 1;
 
 // map from device-independent point id (arbitrary) to "Qt point" ids
+QMutex QWindowSystemInterfacePrivate::pointIdMapMutex;
 typedef QMap<quint64, int> PointIdMap;
 Q_GLOBAL_STATIC(PointIdMap, g_pointIdMap)
 
@@ -636,6 +637,8 @@ Q_GLOBAL_STATIC(PointIdMap, g_pointIdMap)
 */
 static int acquireCombinedPointId(quint8 deviceId, int pointId)
 {
+    QMutexLocker locker(&QWindowSystemInterfacePrivate::pointIdMapMutex);
+
     quint64 combinedId64 = (quint64(deviceId) << 32) + pointId;
     auto it = g_pointIdMap->constFind(combinedId64);
     int uid;
@@ -695,6 +698,8 @@ QList<QTouchEvent::TouchPoint>
     }
 
     if (states == Qt::TouchPointReleased) {
+        QMutexLocker locker(&QWindowSystemInterfacePrivate::pointIdMapMutex);
+
         // All points on deviceId have been released.
         // Remove all points associated with that device from g_pointIdMap.
         // (On other devices, some touchpoints might still be pressed.
@@ -714,6 +719,7 @@ QList<QTouchEvent::TouchPoint>
 
 void QWindowSystemInterfacePrivate::clearPointIdMap()
 {
+    QMutexLocker locker(&QWindowSystemInterfacePrivate::pointIdMapMutex);
     g_pointIdMap->clear();
     g_nextPointId = 1;
 }

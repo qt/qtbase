@@ -529,6 +529,7 @@ public:
 
     static QWaitCondition eventsFlushed;
     static QMutex flushEventMutex;
+    static QMutex pointIdMapMutex;
     static QAtomicInt eventAccepted;
 
     static QList<QTouchEvent::TouchPoint>
