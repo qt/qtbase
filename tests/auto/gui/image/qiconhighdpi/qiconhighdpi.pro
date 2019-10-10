@@ -1,5 +1,5 @@
 CONFIG += testcase
-TARGET = tst_qicon
+TARGET = tst_qiconhighdpi
 
 QT += testlib
 SOURCES += tst_qiconhighdpi.cpp
