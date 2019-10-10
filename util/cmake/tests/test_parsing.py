@@ -28,7 +28,7 @@
 #############################################################################
 
 import os
-from pro2cmake import QmakeParser
+from qmake_parser import QmakeParser
 
 
 _tests_path = os.path.dirname(os.path.abspath(__file__))

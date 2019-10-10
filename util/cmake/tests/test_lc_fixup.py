@@ -27,7 +27,7 @@
 ##
 #############################################################################
 
-from pro2cmake import fixup_linecontinuation
+from qmake_parser import fixup_linecontinuation
 
 
 def test_no_change():
@@ -42,5 +42,3 @@ def test_fix():
     output = "test line2   line3 line4 line5 \n\n"
     result = fixup_linecontinuation(input)
     assert output == result
-
-
