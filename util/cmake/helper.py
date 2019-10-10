@@ -281,7 +281,9 @@ _qt_library_map = [
     ),
     LibraryMapping("quickwidgets", "Qt6", "Qt::QuickWidgets", extra=["COMPONENTS", "QuickWidgets"]),
     LibraryMapping("render", "Qt6", "Qt::3DRender", extra=["COMPONENTS", "3DRender"]),
-    LibraryMapping("remoteobjects", "Qt6", "Qt::RemoteObjects", extra=["COMPONENTS", "RemoteObjects"]),
+    LibraryMapping(
+        "remoteobjects", "Qt6", "Qt::RemoteObjects", extra=["COMPONENTS", "RemoteObjects"]
+    ),
     LibraryMapping("script", "Qt6", "Qt::Script", extra=["COMPONENTS", "Script"]),
     LibraryMapping("scripttools", "Qt6", "Qt::ScriptTools", extra=["COMPONENTS", "ScriptTools"]),
     LibraryMapping("scxml", "Qt6", "Qt::Scxml", extra=["COMPONENTS", "Scxml"]),
@@ -312,7 +314,10 @@ _qt_library_map = [
         "waylandclient", "Qt6", "Qt::WaylandClient", extra=["COMPONENTS", "WaylandClient"]
     ),
     LibraryMapping(
-        "waylandcompositor", "Qt6", "Qt::WaylandCompositor", extra=["COMPONENTS", "WaylandCompositor"]
+        "waylandcompositor",
+        "Qt6",
+        "Qt::WaylandCompositor",
+        extra=["COMPONENTS", "WaylandCompositor"],
     ),
     LibraryMapping("webchannel", "Qt6", "Qt::WebChannel", extra=["COMPONENTS", "WebChannel"]),
     LibraryMapping("webengine", "Qt6", "Qt::WebEngine", extra=["COMPONENTS", "WebEngine"]),
@@ -417,7 +422,9 @@ _library_map = [
     LibraryMapping("wayland-client", "Wayland", "Wayland::Client"),
     LibraryMapping("wayland-cursor", "Wayland", "Wayland::Cursor"),
     LibraryMapping("wayland-egl", "Wayland", "Wayland::Egl"),
-    LibraryMapping('wayland-kms', 'Waylandkms', 'PkgConfig::Waylandkms'),  # TODO: check if this actually works
+    LibraryMapping(
+        "wayland-kms", "Waylandkms", "PkgConfig::Waylandkms"
+    ),  # TODO: check if this actually works
     LibraryMapping("x11", "X11", "X11::X11"),
     LibraryMapping("x11sm", "X11", "${X11_SM_LIB} ${X11_ICE_LIB}", resultVariable="X11_SM"),
     LibraryMapping(
@@ -495,7 +502,7 @@ _library_map = [
         "xcb_xkb", "XCB", "XCB::XKB", extra=["COMPONENTS", "XKB"], resultVariable="XCB_XKB"
     ),
     LibraryMapping("xcb_xlib", "X11_XCB", "X11::XCB"),
-    LibraryMapping('xcomposite', 'XComposite', 'PkgConfig::XComposite'),
+    LibraryMapping("xcomposite", "XComposite", "PkgConfig::XComposite"),
     LibraryMapping("xkbcommon_evdev", "XKB", "XKB::XKB", extra=["0.4.1"]),  # see also xkbcommon
     LibraryMapping("xkbcommon_x11", "XKB", "XKB::XKB", extra=["0.4.1"]),  # see also xkbcommon
     LibraryMapping("xkbcommon", "XKB", "XKB::XKB", extra=["0.4.1"]),
