@@ -2100,17 +2100,39 @@ def write_simd_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
         "avx512common",
         "avx512core",
     ]
+
+    simd_io_string = io.StringIO()
+
+    condition = "ON"
+    if scope.total_condition:
+        condition = map_to_cmake_condition(scope.total_condition)
+
+    if condition != "ON":
+        indent += 1
+
     for simd in simd_options:
         SIMD = simd.upper()
         write_source_file_list(
-            cm_fh,
+            simd_io_string,
             scope,
             "SOURCES",
             [f"{SIMD}_HEADERS", f"{SIMD}_SOURCES", f"{SIMD}_C_SOURCES", f"{SIMD}_ASM"],
-            indent,
+            indent=indent,
             header=f"add_qt_simd_part({target} SIMD {simd}\n",
-            footer=")\n\n",
+            footer=")\n",
         )
+
+    simd_string = simd_io_string.getvalue()
+    if simd_string:
+        simd_string = simd_string.rstrip("\n")
+        cond_start = ""
+        cond_end = ""
+        if condition != "ON":
+            cond_start = f"{spaces(indent - 1)}if({condition})"
+            cond_end = f"{spaces(indent - 1)}endif()"
+
+        extend_scope = f"\n{cond_start}\n" f"{simd_string}" f"\n{cond_end}\n"
+        cm_fh.write(extend_scope)
 
 
 def write_android_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
@@ -2431,6 +2453,8 @@ def write_main_part(
         write_android_part(cm_fh, name, c, indent=indent)
         write_wayland_part(cm_fh, name, c, indent=indent)
         write_extend_target(cm_fh, name, c, indent=indent)
+        write_simd_part(cm_fh, name, c, indent=indent)
+
         ignored_keys_report = write_ignored_keys(c, spaces(indent))
         if ignored_keys_report:
             cm_fh.write(ignored_keys_report)
