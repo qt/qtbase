@@ -43,7 +43,7 @@ def _map_to_operation(**kwargs):
 
 def _new_scope(*, parent_scope=None, condition='', **kwargs) -> Scope:
     return Scope(parent_scope=parent_scope,
-                 file='file1', condition=condition, operations=_map_to_operation(**kwargs))
+                 qmake_file='file1', condition=condition, operations=_map_to_operation(**kwargs))
 
 
 def _evaluate_scopes(scopes: ScopeList) -> ScopeList:
