@@ -42,6 +42,7 @@
 
 #include <qvector.h>
 #include <qstring.h>
+#include <qstringlist.h>
 #include <qtypeinfo.h>
 
 struct Tracepoint

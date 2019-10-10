@@ -152,6 +152,18 @@
            "features": [
                "disable_program_cache"
            ]
-        }
+        },
+        {
+           "id": 13,
+           "description": "Disable DesktopGL on Windows with Mobile Intel(R) 4 Series Express Chipset Family graphics card (QTBUG-58772)",
+           "vendor_id": "0x8086",
+           "device_id": [ "0x2A42" ],
+           "os": {
+               "type": "win"
+           },
+           "features": [
+               "disable_desktopgl"
+           ]
+       }
     ]
 }

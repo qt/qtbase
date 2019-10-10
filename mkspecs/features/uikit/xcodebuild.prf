@@ -29,6 +29,8 @@ cmd = "$$QMAKE_QMAKE $$system_quote($$_PRO_FILE_) -spec macx-xcode $$args"
 debug(1, "Generating Xcode project in $$OUT_PWD using '$$cmd'")
 system("$$QMAKE_CD $$system_quote($$OUT_PWD) && $$cmd")
 
+QMAKE_EXTRA_VARIABLES += PRE_TARGETDEPS
+
 # Subtargets
 
 for(build, BUILDS): \
