@@ -79,7 +79,7 @@ struct QVkBuffer : public QRhiBuffer
 
     VkBuffer buffers[QVK_FRAMES_IN_FLIGHT];
     QVkAlloc allocations[QVK_FRAMES_IN_FLIGHT];
-    QVector<QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate> pendingDynamicUpdates[QVK_FRAMES_IN_FLIGHT];
+    QVarLengthArray<QRhiResourceUpdateBatchPrivate::BufferOp, 16> pendingDynamicUpdates[QVK_FRAMES_IN_FLIGHT];
     VkBuffer stagingBuffers[QVK_FRAMES_IN_FLIGHT];
     QVkAlloc stagingAllocations[QVK_FRAMES_IN_FLIGHT];
     struct UsageState {
@@ -853,17 +853,25 @@ public:
         VkFence cmdFence = VK_NULL_HANDLE;
     } ofr;
 
-    struct ActiveReadback {
+    struct TextureReadback {
         int activeFrameSlot = -1;
         QRhiReadbackDescription desc;
         QRhiReadbackResult *result;
-        VkBuffer buf;
-        QVkAlloc bufAlloc;
-        quint32 bufSize;
+        VkBuffer stagingBuf;
+        QVkAlloc stagingAlloc;
+        quint32 byteSize;
         QSize pixelSize;
         QRhiTexture::Format format;
     };
-    QVector<ActiveReadback> activeReadbacks;
+    QVector<TextureReadback> activeTextureReadbacks;
+    struct BufferReadback {
+        int activeFrameSlot = -1;
+        QRhiBufferReadbackResult *result;
+        int byteSize;
+        VkBuffer stagingBuf;
+        QVkAlloc stagingAlloc;
+    };
+    QVector<BufferReadback> activeBufferReadbacks;
 
     struct DeferredReleaseEntry {
         enum Type {
@@ -933,7 +941,8 @@ public:
 
 Q_DECLARE_TYPEINFO(QRhiVulkan::DescriptorPoolData, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QRhiVulkan::DeferredReleaseEntry, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiVulkan::ActiveReadback, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiVulkan::TextureReadback, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiVulkan::BufferReadback, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 

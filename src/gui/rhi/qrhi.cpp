@@ -566,7 +566,19 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
     \value TriangleFanTopology Indicates that QRhiGraphicsPipeline::setTopology()
     supports QRhiGraphicsPipeline::TriangleFan.
-*/
+
+    \value ReadBackNonUniformBuffer Indicates that
+    \l{QRhiResourceUpdateBatch::readBackBuffer()}{reading buffer contents} is
+    supported for QRhiBuffer instances with a usage different than
+    UniformBuffer. While this is supported in the majority of cases, it will be
+    unsupported with OpenGL ES older than 3.0.
+
+    \value ReadBackNonBaseMipLevel Indicates that specifying a mip level other
+    than 0 is supported when reading back texture contents. When not supported,
+    specifying a non-zero level in QRhiReadbackDescription leads to returning
+    an all-zero image. In practice this feature will be unsupported with OpenGL
+    ES 2.0, while it will likely be supported everywhere else.
+ */
 
 /*!
     \enum QRhi::BeginFrameFlag
@@ -3072,9 +3084,13 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     \inmodule QtGui
     \brief Graphics pipeline state resource.
 
+    \note Setting the shader stages is mandatory. There must be at least one
+    stage, and there must be a vertex stage.
+
     \note Setting the shader resource bindings is mandatory. The referenced
     QRhiShaderResourceBindings must already be built by the time build() is
-    called.
+    called. Associating with a QRhiShaderResourceBindings that has no bindings
+    is also valid, as long as no shader in any stage expects any resources.
 
     \note Setting the render pass descriptor is mandatory. To obtain a
     QRhiRenderPassDescriptor that can be passed to setRenderPassDescriptor(),
@@ -3082,8 +3098,6 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     QRhiSwapChain::newCompatibleRenderPassDescriptor().
 
     \note Setting the vertex input layout is mandatory.
-
-    \note Setting the shader stages is mandatory.
 
     \note sampleCount() defaults to 1 and must match the sample count of the
     render target's color and depth stencil attachments.
@@ -3900,6 +3914,46 @@ quint32 QRhiImplementation::approxByteSizeForTexture(QRhiTexture::Format format,
     return approxSize;
 }
 
+bool QRhiImplementation::sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps)
+{
+    if (ps->cbeginShaderStages() == ps->cendShaderStages()) {
+        qWarning("Cannot build a graphics pipeline without any stages");
+        return false;
+    }
+
+    bool hasVertexStage = false;
+    for (auto it = ps->cbeginShaderStages(), itEnd = ps->cendShaderStages(); it != itEnd; ++it) {
+        if (!it->shader().isValid()) {
+            qWarning("Empty shader passed to graphics pipeline");
+            return false;
+        }
+        if (it->type() == QRhiShaderStage::Vertex) {
+            hasVertexStage = true;
+            const QRhiVertexInputLayout inputLayout = ps->vertexInputLayout();
+            if (inputLayout.cbeginAttributes() == inputLayout.cendAttributes()) {
+                qWarning("Vertex stage present without any vertex inputs");
+                return false;
+            }
+        }
+    }
+    if (!hasVertexStage) {
+        qWarning("Cannot build a graphics pipeline without a vertex stage");
+        return false;
+    }
+
+    if (!ps->renderPassDescriptor()) {
+        qWarning("Cannot build a graphics pipeline without a QRhiRenderPassDescriptor");
+        return false;
+    }
+
+    if (!ps->shaderResourceBindings()) {
+        qWarning("Cannot build a graphics pipeline without QRhiShaderResourceBindings");
+        return false;
+    }
+
+    return true;
+}
+
 /*!
     \internal
  */
@@ -4175,7 +4229,7 @@ void QRhiResourceUpdateBatch::merge(QRhiResourceUpdateBatch *other)
 void QRhiResourceUpdateBatch::updateDynamicBuffer(QRhiBuffer *buf, int offset, int size, const void *data)
 {
     if (size > 0)
-        d->dynamicBufferUpdates.append({ buf, offset, size, data });
+        d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::dynamicUpdate(buf, offset, size, data));
 }
 
 /*!
@@ -4189,7 +4243,7 @@ void QRhiResourceUpdateBatch::updateDynamicBuffer(QRhiBuffer *buf, int offset, i
 void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, int offset, int size, const void *data)
 {
     if (size > 0)
-        d->staticBufferUploads.append({ buf, offset, size, data });
+        d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::staticUpload(buf, offset, size, data));
 }
 
 /*!
@@ -4199,7 +4253,28 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, int offset, in
 void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, const void *data)
 {
     if (buf->size() > 0)
-        d->staticBufferUploads.append({ buf, 0, 0, data });
+        d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::staticUpload(buf, 0, 0, data));
+}
+
+/*!
+    Enqueues reading back a region of the QRhiBuffer \a buf. The size of the
+    region is specified by \a size in bytes, \a offset is the offset in bytes
+    to start reading from.
+
+    A readback is asynchronous. \a result contains a callback that is invoked
+    when the operation has completed. The data is provided in
+    QRhiBufferReadbackResult::data. Upon successful completion that QByteArray
+    will have a size equal to \a size. On failure the QByteArray will be empty.
+
+    \note Reading buffers with a usage different than QRhiBuffer::UniformBuffer
+    is supported only when the QRhi::ReadBackNonUniformBuffer feature is
+    reported as supported.
+
+    \a readBackTexture(), QRhi::isFeatureSupported()
+ */
+void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, int offset, int size, QRhiBufferReadbackResult *result)
+{
+    d->bufferOps.append(QRhiResourceUpdateBatchPrivate::BufferOp::read(buf, offset, size, result));
 }
 
 /*!
@@ -4212,7 +4287,7 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, const void *da
 void QRhiResourceUpdateBatch::uploadTexture(QRhiTexture *tex, const QRhiTextureUploadDescription &desc)
 {
     if (desc.cbeginEntries() != desc.cendEntries())
-        d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::textureUpload(tex, desc));
+        d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::upload(tex, desc));
 }
 
 /*!
@@ -4237,7 +4312,7 @@ void QRhiResourceUpdateBatch::uploadTexture(QRhiTexture *tex, const QImage &imag
  */
 void QRhiResourceUpdateBatch::copyTexture(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc)
 {
-    d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::textureCopy(dst, src, desc));
+    d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::copy(dst, src, desc));
 }
 
 /*!
@@ -4289,7 +4364,7 @@ void QRhiResourceUpdateBatch::copyTexture(QRhiTexture *dst, QRhiTexture *src, co
  */
 void QRhiResourceUpdateBatch::readBackTexture(const QRhiReadbackDescription &rb, QRhiReadbackResult *result)
 {
-    d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::textureRead(rb, result));
+    d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::read(rb, result));
 }
 
 /*!
@@ -4301,7 +4376,7 @@ void QRhiResourceUpdateBatch::readBackTexture(const QRhiReadbackDescription &rb,
  */
 void QRhiResourceUpdateBatch::generateMips(QRhiTexture *tex, int layer)
 {
-    d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::textureMipGen(tex, layer));
+    d->textureOps.append(QRhiResourceUpdateBatchPrivate::TextureOp::genMips(tex, layer));
 }
 
 /*!
@@ -4350,8 +4425,7 @@ void QRhiResourceUpdateBatchPrivate::free()
 {
     Q_ASSERT(poolIndex >= 0 && rhi->resUpdPool[poolIndex] == q);
 
-    dynamicBufferUpdates.clear();
-    staticBufferUploads.clear();
+    bufferOps.clear();
     textureOps.clear();
 
     rhi->resUpdPoolMap.clearBit(poolIndex);
@@ -4360,9 +4434,13 @@ void QRhiResourceUpdateBatchPrivate::free()
 
 void QRhiResourceUpdateBatchPrivate::merge(QRhiResourceUpdateBatchPrivate *other)
 {
-    dynamicBufferUpdates += other->dynamicBufferUpdates;
-    staticBufferUploads += other->staticBufferUploads;
-    textureOps += other->textureOps;
+    bufferOps.reserve(bufferOps.size() + other->bufferOps.size());
+    for (const BufferOp &op : qAsConst(other->bufferOps))
+        bufferOps.append(op);
+
+    textureOps.reserve(textureOps.size() + other->textureOps.size());
+    for (const TextureOp &op : qAsConst(other->textureOps))
+        textureOps.append(op);
 }
 
 /*!

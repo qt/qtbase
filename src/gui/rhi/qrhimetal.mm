@@ -205,7 +205,7 @@ struct QRhiMetalData
         QMetalCommandBuffer cbWrapper;
     } ofr;
 
-    struct ActiveReadback {
+    struct TextureReadback {
         int activeFrameSlot = -1;
         QRhiReadbackDescription desc;
         QRhiReadbackResult *result;
@@ -214,7 +214,7 @@ struct QRhiMetalData
         QSize pixelSize;
         QRhiTexture::Format format;
     };
-    QVector<ActiveReadback> activeReadbacks;
+    QVector<TextureReadback> activeTextureReadbacks;
 
     API_AVAILABLE(macos(10.13), ios(11.0)) MTLCaptureManager *captureMgr;
     API_AVAILABLE(macos(10.13), ios(11.0)) id<MTLCaptureScope> captureScope = nil;
@@ -225,14 +225,14 @@ struct QRhiMetalData
 };
 
 Q_DECLARE_TYPEINFO(QRhiMetalData::DeferredReleaseEntry, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiMetalData::ActiveReadback, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiMetalData::TextureReadback, Q_MOVABLE_TYPE);
 
 struct QMetalBufferData
 {
     bool managed;
     bool slotted;
     id<MTLBuffer> buf[QMTL_FRAMES_IN_FLIGHT];
-    QVector<QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate> pendingUpdates[QMTL_FRAMES_IN_FLIGHT];
+    QVarLengthArray<QRhiResourceUpdateBatchPrivate::BufferOp, 16> pendingUpdates[QMTL_FRAMES_IN_FLIGHT];
 };
 
 struct QMetalRenderBufferData
@@ -366,6 +366,11 @@ bool QRhiMetal::create(QRhi::Flags flags)
         [d->dev retain];
     else
         d->dev = MTLCreateSystemDefaultDevice();
+
+    if (!d->dev) {
+        qWarning("No MTLDevice");
+        return false;
+    }
 
     qCDebug(QRHI_LOG_INFO, "Metal device: %s", qPrintable(QString::fromNSString([d->dev name])));
 
@@ -552,6 +557,10 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::TriangleFanTopology:
         return false;
+    case QRhi::ReadBackNonUniformBuffer:
+        return true;
+    case QRhi::ReadBackNonBaseMipLevel:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -1541,21 +1550,33 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
     QRhiResourceUpdateBatchPrivate *ud = QRhiResourceUpdateBatchPrivate::get(resourceUpdates);
     QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
-    for (const QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate &u : ud->dynamicBufferUpdates) {
-        QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
-        Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
-        for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i)
-            bufD->d->pendingUpdates[i].append(u);
-    }
-
-    // Due to the Metal API the handling of static and dynamic buffers is
-    // basically the same. So go through the same pendingUpdates machinery.
-    for (const QRhiResourceUpdateBatchPrivate::StaticBufferUpload &u : ud->staticBufferUploads) {
-        QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
-        Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
-        Q_ASSERT(u.offset + u.data.size() <= bufD->m_size);
-        for (int i = 0, ie = bufD->d->slotted ? QMTL_FRAMES_IN_FLIGHT : 1; i != ie; ++i)
-            bufD->d->pendingUpdates[i].append({ u.buf, u.offset, u.data.size(), u.data.constData() });
+    for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : ud->bufferOps) {
+        if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::DynamicUpdate) {
+            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
+            Q_ASSERT(bufD->m_type == QRhiBuffer::Dynamic);
+            for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i)
+                bufD->d->pendingUpdates[i].append(u);
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::StaticUpload) {
+            // Due to the Metal API the handling of static and dynamic buffers is
+            // basically the same. So go through the same pendingUpdates machinery.
+            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
+            Q_ASSERT(bufD->m_type != QRhiBuffer::Dynamic);
+            Q_ASSERT(u.offset + u.data.size() <= bufD->m_size);
+            for (int i = 0, ie = bufD->d->slotted ? QMTL_FRAMES_IN_FLIGHT : 1; i != ie; ++i)
+                bufD->d->pendingUpdates[i].append(
+                            QRhiResourceUpdateBatchPrivate::BufferOp::dynamicUpdate(u.buf, u.offset, u.data.size(), u.data.constData()));
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::Read) {
+            QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, u.buf);
+            executeBufferHostWritesForCurrentFrame(bufD);
+            const int idx = bufD->d->slotted ? currentFrameSlot : 0;
+            char *p = reinterpret_cast<char *>([bufD->d->buf[idx] contents]);
+            if (p) {
+                u.result->data.resize(u.readSize);
+                memcpy(u.result->data.data(), p + u.offset, size_t(u.readSize));
+            }
+            if (u.result->completed)
+                u.result->completed();
+        }
     }
 
     id<MTLBlitCommandEncoder> blitEnc = nil;
@@ -1569,11 +1590,11 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 
     for (const QRhiResourceUpdateBatchPrivate::TextureOp &u : ud->textureOps) {
         if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Upload) {
-            QMetalTexture *utexD = QRHI_RES(QMetalTexture, u.upload.tex);
+            QMetalTexture *utexD = QRHI_RES(QMetalTexture, u.dst);
             qsizetype stagingSize = 0;
             for (int layer = 0; layer < QRhi::MAX_LAYERS; ++layer) {
                 for (int level = 0; level < QRhi::MAX_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.upload.subresDesc[layer][level]))
+                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
                         stagingSize += subresUploadByteSize(subresDesc);
                 }
             }
@@ -1588,7 +1609,7 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             qsizetype curOfs = 0;
             for (int layer = 0; layer < QRhi::MAX_LAYERS; ++layer) {
                 for (int level = 0; level < QRhi::MAX_LEVELS; ++level) {
-                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.upload.subresDesc[layer][level]))
+                    for (const QRhiTextureSubresourceUploadDescription &subresDesc : qAsConst(u.subresDesc[layer][level]))
                         enqueueSubresUpload(utexD, mp, blitEnc, layer, level, subresDesc, &curOfs);
                 }
             }
@@ -1603,32 +1624,33 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             d->releaseQueue.append(e);
             QRHI_PROF_F(releaseTextureStagingArea(utexD, currentFrameSlot));
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Copy) {
-            Q_ASSERT(u.copy.src && u.copy.dst);
-            QMetalTexture *srcD = QRHI_RES(QMetalTexture, u.copy.src);
-            QMetalTexture *dstD = QRHI_RES(QMetalTexture, u.copy.dst);
-            const QPoint dp = u.copy.desc.destinationTopLeft();
-            const QSize size = u.copy.desc.pixelSize().isEmpty() ? srcD->m_pixelSize : u.copy.desc.pixelSize();
-            const QPoint sp = u.copy.desc.sourceTopLeft();
+            Q_ASSERT(u.src && u.dst);
+            QMetalTexture *srcD = QRHI_RES(QMetalTexture, u.src);
+            QMetalTexture *dstD = QRHI_RES(QMetalTexture, u.dst);
+            const QPoint dp = u.desc.destinationTopLeft();
+            const QSize mipSize = q->sizeForMipLevel(u.desc.sourceLevel(), srcD->m_pixelSize);
+            const QSize copySize = u.desc.pixelSize().isEmpty() ? mipSize : u.desc.pixelSize();
+            const QPoint sp = u.desc.sourceTopLeft();
 
             ensureBlit();
             [blitEnc copyFromTexture: srcD->d->tex
-                                      sourceSlice: NSUInteger(u.copy.desc.sourceLayer())
-                                      sourceLevel: NSUInteger(u.copy.desc.sourceLevel())
+                                      sourceSlice: NSUInteger(u.desc.sourceLayer())
+                                      sourceLevel: NSUInteger(u.desc.sourceLevel())
                                       sourceOrigin: MTLOriginMake(NSUInteger(sp.x()), NSUInteger(sp.y()), 0)
-                                      sourceSize: MTLSizeMake(NSUInteger(size.width()), NSUInteger(size.height()), 1)
+                                      sourceSize: MTLSizeMake(NSUInteger(copySize.width()), NSUInteger(copySize.height()), 1)
                                       toTexture: dstD->d->tex
-                                      destinationSlice: NSUInteger(u.copy.desc.destinationLayer())
-                                      destinationLevel: NSUInteger(u.copy.desc.destinationLevel())
+                                      destinationSlice: NSUInteger(u.desc.destinationLayer())
+                                      destinationLevel: NSUInteger(u.desc.destinationLevel())
                                       destinationOrigin: MTLOriginMake(NSUInteger(dp.x()), NSUInteger(dp.y()), 0)];
 
             srcD->lastActiveFrameSlot = dstD->lastActiveFrameSlot = currentFrameSlot;
         } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::Read) {
-            QRhiMetalData::ActiveReadback aRb;
-            aRb.activeFrameSlot = currentFrameSlot;
-            aRb.desc = u.read.rb;
-            aRb.result = u.read.result;
+            QRhiMetalData::TextureReadback readback;
+            readback.activeFrameSlot = currentFrameSlot;
+            readback.desc = u.rb;
+            readback.result = u.result;
 
-            QMetalTexture *texD = QRHI_RES(QMetalTexture, u.read.rb.texture());
+            QMetalTexture *texD = QRHI_RES(QMetalTexture, u.rb.texture());
             QMetalSwapChain *swapChainD = nullptr;
             id<MTLTexture> src;
             QSize srcSize;
@@ -1637,17 +1659,16 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                     qWarning("Multisample texture cannot be read back");
                     continue;
                 }
-                aRb.pixelSize = u.read.rb.level() > 0 ? q->sizeForMipLevel(u.read.rb.level(), texD->m_pixelSize)
-                                                      : texD->m_pixelSize;
-                aRb.format = texD->m_format;
+                readback.pixelSize = q->sizeForMipLevel(u.rb.level(), texD->m_pixelSize);
+                readback.format = texD->m_format;
                 src = texD->d->tex;
-                srcSize = texD->m_pixelSize;
+                srcSize = readback.pixelSize;
                 texD->lastActiveFrameSlot = currentFrameSlot;
             } else {
                 Q_ASSERT(currentSwapChain);
                 swapChainD = QRHI_RES(QMetalSwapChain, currentSwapChain);
-                aRb.pixelSize = swapChainD->pixelSize;
-                aRb.format = swapChainD->d->rhiColorFormat;
+                readback.pixelSize = swapChainD->pixelSize;
+                readback.format = swapChainD->d->rhiColorFormat;
                 // Multisample swapchains need nothing special since resolving
                 // happens when ending a renderpass.
                 const QMetalRenderTargetData::ColorAtt &colorAtt(swapChainD->rtWrapper.d->fb.colorAtt[0]);
@@ -1656,28 +1677,28 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
             }
 
             quint32 bpl = 0;
-            textureFormatInfo(aRb.format, aRb.pixelSize, &bpl, &aRb.bufSize);
-            aRb.buf = [d->dev newBufferWithLength: aRb.bufSize options: MTLResourceStorageModeShared];
+            textureFormatInfo(readback.format, readback.pixelSize, &bpl, &readback.bufSize);
+            readback.buf = [d->dev newBufferWithLength: readback.bufSize options: MTLResourceStorageModeShared];
 
-            QRHI_PROF_F(newReadbackBuffer(qint64(qintptr(aRb.buf)),
+            QRHI_PROF_F(newReadbackBuffer(qint64(qintptr(readback.buf)),
                                           texD ? static_cast<QRhiResource *>(texD) : static_cast<QRhiResource *>(swapChainD),
-                                          aRb.bufSize));
+                                          readback.bufSize));
 
             ensureBlit();
             [blitEnc copyFromTexture: src
-                                      sourceSlice: NSUInteger(u.read.rb.layer())
-                                      sourceLevel: NSUInteger(u.read.rb.level())
+                                      sourceSlice: NSUInteger(u.rb.layer())
+                                      sourceLevel: NSUInteger(u.rb.level())
                                       sourceOrigin: MTLOriginMake(0, 0, 0)
                                       sourceSize: MTLSizeMake(NSUInteger(srcSize.width()), NSUInteger(srcSize.height()), 1)
-                                      toBuffer: aRb.buf
+                                      toBuffer: readback.buf
                                       destinationOffset: 0
                                       destinationBytesPerRow: bpl
                                       destinationBytesPerImage: 0
                                       options: MTLBlitOptionNone];
 
-            d->activeReadbacks.append(aRb);
-        } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::MipGen) {
-            QMetalTexture *utexD = QRHI_RES(QMetalTexture, u.mipgen.tex);
+            d->activeTextureReadbacks.append(readback);
+        } else if (u.type == QRhiResourceUpdateBatchPrivate::TextureOp::GenMips) {
+            QMetalTexture *utexD = QRHI_RES(QMetalTexture, u.dst);
             ensureBlit();
             [blitEnc generateMipmapsForTexture: utexD->d->tex];
             utexD->lastActiveFrameSlot = currentFrameSlot;
@@ -1697,14 +1718,13 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
 void QRhiMetal::executeBufferHostWritesForCurrentFrame(QMetalBuffer *bufD)
 {
     const int idx = bufD->d->slotted ? currentFrameSlot : 0;
-    QVector<QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate> &updates(bufD->d->pendingUpdates[idx]);
-    if (updates.isEmpty())
+    if (bufD->d->pendingUpdates[idx].isEmpty())
         return;
 
     void *p = [bufD->d->buf[idx] contents];
     int changeBegin = -1;
     int changeEnd = -1;
-    for (const QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate &u : updates) {
+    for (const QRhiResourceUpdateBatchPrivate::BufferOp &u : qAsConst(bufD->d->pendingUpdates[idx])) {
         Q_ASSERT(bufD == QRHI_RES(QMetalBuffer, u.buf));
         memcpy(static_cast<char *>(p) + u.offset, u.data.constData(), size_t(u.data.size()));
         if (changeBegin == -1 || u.offset < changeBegin)
@@ -1715,7 +1735,7 @@ void QRhiMetal::executeBufferHostWritesForCurrentFrame(QMetalBuffer *bufD)
     if (changeBegin >= 0 && bufD->d->managed)
         [bufD->d->buf[idx] didModifyRange: NSMakeRange(NSUInteger(changeBegin), NSUInteger(changeEnd - changeBegin))];
 
-    updates.clear();
+    bufD->d->pendingUpdates[idx].clear();
 }
 
 void QRhiMetal::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -1951,22 +1971,22 @@ void QRhiMetal::finishActiveReadbacks(bool forced)
     QVarLengthArray<std::function<void()>, 4> completedCallbacks;
     QRhiProfilerPrivate *rhiP = profilerPrivateOrNull();
 
-    for (int i = d->activeReadbacks.count() - 1; i >= 0; --i) {
-        const QRhiMetalData::ActiveReadback &aRb(d->activeReadbacks[i]);
-        if (forced || currentFrameSlot == aRb.activeFrameSlot || aRb.activeFrameSlot < 0) {
-            aRb.result->format = aRb.format;
-            aRb.result->pixelSize = aRb.pixelSize;
-            aRb.result->data.resize(int(aRb.bufSize));
-            void *p = [aRb.buf contents];
-            memcpy(aRb.result->data.data(), p, aRb.bufSize);
-            [aRb.buf release];
+    for (int i = d->activeTextureReadbacks.count() - 1; i >= 0; --i) {
+        const QRhiMetalData::TextureReadback &readback(d->activeTextureReadbacks[i]);
+        if (forced || currentFrameSlot == readback.activeFrameSlot || readback.activeFrameSlot < 0) {
+            readback.result->format = readback.format;
+            readback.result->pixelSize = readback.pixelSize;
+            readback.result->data.resize(int(readback.bufSize));
+            void *p = [readback.buf contents];
+            memcpy(readback.result->data.data(), p, readback.bufSize);
+            [readback.buf release];
 
-            QRHI_PROF_F(releaseReadbackBuffer(qint64(qintptr(aRb.buf))));
+            QRHI_PROF_F(releaseReadbackBuffer(qint64(qintptr(readback.buf))));
 
-            if (aRb.result->completed)
-                completedCallbacks.append(aRb.result->completed);
+            if (readback.result->completed)
+                completedCallbacks.append(readback.result->completed);
 
-            d->activeReadbacks.removeAt(i);
+            d->activeTextureReadbacks.removeAt(i);
         }
     }
 
@@ -2042,7 +2062,6 @@ bool QMetalBuffer::build()
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
         if (i == 0 || d->slotted) {
             d->buf[i] = [rhiD->d->dev newBufferWithLength: roundedSize options: opts];
-            d->pendingUpdates[i].reserve(16);
             if (!m_objectName.isEmpty()) {
                 if (!d->slotted) {
                     d->buf[i].label = [NSString stringWithUTF8String: m_objectName.constData()];
@@ -3120,6 +3139,8 @@ bool QMetalGraphicsPipeline::build()
         release();
 
     QRHI_RES_RHI(QRhiMetal);
+    if (!rhiD->sanityCheckGraphicsPipeline(this))
+        return false;
 
     // same binding space for vertex and constant buffers - work it around
     const int firstVertexBinding = QRHI_RES(QMetalShaderResourceBindings, m_shaderResourceBindings)->maxBinding + 1;

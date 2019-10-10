@@ -678,16 +678,22 @@ public:
         QD3D11CommandBuffer cbWrapper;
     } ofr;
 
-    struct ActiveReadback {
+    struct TextureReadback {
         QRhiReadbackDescription desc;
         QRhiReadbackResult *result;
         ID3D11Texture2D *stagingTex;
-        quint32 bufSize;
+        quint32 byteSize;
         quint32 bpl;
         QSize pixelSize;
         QRhiTexture::Format format;
     };
-    QVector<ActiveReadback> activeReadbacks;
+    QVector<TextureReadback> activeTextureReadbacks;
+    struct BufferReadback {
+        QRhiBufferReadbackResult *result;
+        quint32 byteSize;
+        ID3D11Buffer *stagingBuf;
+    };
+    QVector<BufferReadback> activeBufferReadbacks;
 
     struct Shader {
         Shader() = default;
@@ -711,7 +717,8 @@ public:
     } deviceCurse;
 };
 
-Q_DECLARE_TYPEINFO(QRhiD3D11::ActiveReadback, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiD3D11::TextureReadback, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiD3D11::BufferReadback, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 
