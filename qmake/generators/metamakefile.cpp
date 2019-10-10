@@ -141,7 +141,8 @@ bool
 BuildsMetaMakefileGenerator::write()
 {
     Build *glue = nullptr;
-    if(!makefiles.isEmpty() && !makefiles.first()->build.isNull()) {
+    if(!makefiles.isEmpty() && !makefiles.first()->build.isNull()
+        && Option::qmake_mode != Option::QMAKE_GENERATE_PRL) {
         glue = new Build;
         glue->name = name;
         glue->makefile = createMakefileGenerator(project, true);

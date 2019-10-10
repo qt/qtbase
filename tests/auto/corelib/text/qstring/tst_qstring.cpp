@@ -4593,6 +4593,8 @@ void tst_QString::fromLatin1()
 }
 
 #if QT_DEPRECATED_SINCE(5, 0)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void tst_QString::fromAscii()
 {
     QString a;
@@ -4613,6 +4615,7 @@ void tst_QString::fromAscii()
     a = QString::fromAscii("\0abcd", 5);
     QVERIFY(a.size() == 5);
 }
+QT_WARNING_POP
 #endif
 
 void tst_QString::fromUcs4()

@@ -32,6 +32,6 @@
 extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size) {
     static int c = 0;
     static QApplication a(c, nullptr);
-    QTextDocument().setHtml(QByteArray(Data, Size));
+    QTextDocument().setHtml(QByteArray::fromRawData(Data, Size));
     return 0;
 }

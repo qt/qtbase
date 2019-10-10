@@ -9213,9 +9213,11 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
     The default implementation calls mousePressEvent().
 
     \note The widget will also receive mouse press and mouse release
-    events in addition to the double click event. It is up to the
-    developer to ensure that the application interprets these events
-    correctly.
+    events in addition to the double click event. And if another widget
+    that overlaps this widget disappears in response to press or
+    release events, then this widget will only receive the double click
+    event. It is up to the developer to ensure that the application
+    interprets these events correctly.
 
     \sa mousePressEvent(), mouseReleaseEvent(), mouseMoveEvent(),
     event(), QMouseEvent

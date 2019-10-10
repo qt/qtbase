@@ -312,8 +312,8 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             BindShaderResources,
             BindFramebuffer,
             Clear,
-            BufferData,
             BufferSubData,
+            GetBufferSubData,
             CopyTex,
             ReadPixels,
             SubImage,
@@ -401,6 +401,13 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 int size;
                 const void *data; // must come from retainData()
             } bufferSubData;
+            struct {
+                QRhiBufferReadbackResult *result;
+                GLenum target;
+                GLuint buffer;
+                int offset;
+                int size;
+            } getBufferSubData;
             struct {
                 GLenum srcFaceTarget;
                 GLuint srcTexture;
@@ -744,7 +751,10 @@ public:
               rgba8Format(false),
               instancing(false),
               baseVertex(false),
-              compute(false)
+              compute(false),
+              textureCompareMode(false),
+              properMapBuffer(false),
+              nonBaseLevelFramebufferTexture(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -775,6 +785,8 @@ public:
         uint baseVertex : 1;
         uint compute : 1;
         uint textureCompareMode : 1;
+        uint properMapBuffer : 1;
+        uint nonBaseLevelFramebufferTexture : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QVector<GLint> supportedCompressedFormats;
