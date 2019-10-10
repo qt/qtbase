@@ -11,7 +11,7 @@ SUBDIRS=\
    macplist \
    networkselftest \
    qaccessibility \
-   # qaccessibilitylinux \ # QTBUG-44434
+   # qaccessibilitylinux # QTBUG-44434 \
    qaccessibilitymac \
    qcomplextext \
    qfocusevent \
