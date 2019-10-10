@@ -43,6 +43,7 @@ from argparse import ArgumentParser
 
 import os
 import typing
+from typing import Dict, Union
 from timeit import default_timer
 
 
@@ -94,7 +95,7 @@ class Blacklist:
         return False
 
     def is_blacklisted_part_aho(self, dir_path: str) -> bool:
-        return self.tree.search(dir_path) is not None
+        return self.tree.search(dir_path) is not None  # type: ignore
 
 
 def recursive_scan(path: str, extension: str, result_paths: typing.List[str], blacklist: Blacklist):
@@ -124,7 +125,7 @@ def compute_stats(
     existing_pros: int,
     missing_pros: int,
 ) -> dict:
-    stats = {}
+    stats: Dict[str, Dict[str, Union[str, int, float]]] = {}
     stats["total projects"] = {"label": "Total pro files found", "value": total_pros}
     stats["existing projects"] = {
         "label": "Existing CMakeLists.txt files found",
@@ -142,17 +143,21 @@ def compute_stats(
     for p in pros_with_missing_project:
         rel_path = os.path.relpath(p, src_path)
         if rel_path.startswith("examples"):
+            assert isinstance(stats["missing examples"]["value"], int)
             stats["missing examples"]["value"] += 1
         elif rel_path.startswith("tests"):
+            assert isinstance(stats["missing tests"]["value"], int)
             stats["missing tests"]["value"] += 1
         elif rel_path.startswith(os.path.join("src", "plugins")):
+            assert isinstance(stats["missing plugins"]["value"], int)
             stats["missing plugins"]["value"] += 1
         elif rel_path.startswith("src"):
+            assert isinstance(stats["missing src"]["value"], int)
             stats["missing src"]["value"] += 1
 
     for stat in stats:
-        if stats[stat]["value"] > 0:
-            stats[stat]["percentage"] = round(stats[stat]["value"] * 100 / total_pros, 2)
+        if int(stats[stat]["value"]) > 0:
+            stats[stat]["percentage"] = round(float(stats[stat]["value"]) * 100 / total_pros, 2)
     return stats
 
 
