@@ -2979,12 +2979,12 @@ def handle_app_or_lib(
     elif is_plugin:
         assert not is_example
         target = write_plugin(cm_fh, scope, indent=indent)
-    elif is_lib and "qt_module" in scope.get("_LOADED"):
-        assert not is_example
-        target = write_module(cm_fh, scope, indent=indent)
-    elif is_lib:
+    elif is_lib and not "qt_module" in scope.get("_LOADED"):
         assert not is_example
         target = write_generic_library(cm_fh, scope, indent=indent)
+    elif is_lib or "qt_module" in scope.get("_LOADED"):
+        assert not is_example
+        target = write_module(cm_fh, scope, indent=indent)
     elif "qt_tool" in scope.get("_LOADED"):
         assert not is_example
         target = write_tool(cm_fh, scope, indent=indent)
