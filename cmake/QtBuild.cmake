@@ -1758,7 +1758,7 @@ function(add_qt_plugin target)
     qt_internal_set_qt_known_plugins("${QT_KNOWN_PLUGINS}" "${target}")
 
     qt_parse_all_arguments(arg "add_qt_plugin"
-        "${__add_qt_plugin_optional_args}"
+        "${__add_qt_plugin_optional_args};SKIP_INSTALL"
         "${__add_qt_plugin_single_args}"
         "${__add_qt_plugin_multi_args}"
         "${ARGN}"
@@ -1781,10 +1781,12 @@ function(add_qt_plugin target)
 
     qt_internal_check_directory_or_type(OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" "${arg_TYPE}"
         "${output_directory_default}" output_directory)
-    qt_internal_check_directory_or_type(INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}" "${arg_TYPE}"
-        "${install_directory_default}" install_directory)
-    if (NOT arg_ARCHIVE_INSTALL_DIRECTORY AND arg_INSTALL_DIRECTORY)
-        set(arg_ARCHIVE_INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}")
+    if (NOT arg_SKIP_INSTALL)
+        qt_internal_check_directory_or_type(INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}" "${arg_TYPE}"
+            "${install_directory_default}" install_directory)
+        if (NOT arg_ARCHIVE_INSTALL_DIRECTORY AND arg_INSTALL_DIRECTORY)
+            set(arg_ARCHIVE_INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}")
+        endif()
     endif()
 
     if(arg_STATIC OR NOT BUILD_SHARED_LIBS)
@@ -1897,48 +1899,50 @@ function(add_qt_plugin target)
 
     qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
 
-    # Handle creation of cmake files for consumers of find_package().
-    # If we are part of a Qt module, the plugin cmake files are installed as part of that module.
-    if(qt_module)
-        set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${qt_module}")
-    else()
-        set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
+    if (NOT arg_SKIP_INSTALL)
+        # Handle creation of cmake files for consumers of find_package().
+        # If we are part of a Qt module, the plugin cmake files are installed as part of that module.
+        if(qt_module)
+            set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${qt_module}")
+        else()
+            set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}")
+        endif()
+
+        qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
+        qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
+
+        configure_package_config_file(
+            "${QT_CMAKE_DIR}/QtPluginConfig.cmake.in"
+            "${config_build_dir}/${target}Config.cmake"
+            INSTALL_DESTINATION "${config_install_dir}"
+        )
+        write_basic_package_version_file(
+            "${config_build_dir}/${target}ConfigVersion.cmake"
+            VERSION ${PROJECT_VERSION}
+            COMPATIBILITY AnyNewerVersion
+        )
+
+        qt_install(FILES
+            "${config_build_dir}/${target}Config.cmake"
+            "${config_build_dir}/${target}ConfigVersion.cmake"
+            DESTINATION "${config_install_dir}"
+            COMPONENT Devel
+        )
+
+        # Make the export name of plugins be consistent with modules, so that
+        # add_qt_resource adds its additional targets to the same export set in a static Qt build.
+        set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
+        qt_install(TARGETS "${target}"
+                   EXPORT ${export_name}
+                   RUNTIME DESTINATION "${install_directory}"
+                   LIBRARY DESTINATION "${install_directory}"
+                   ARCHIVE DESTINATION "${archive_install_directory}"
+        )
+        qt_install(EXPORT ${export_name}
+                   NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
+                   DESTINATION "${config_install_dir}"
+        )
     endif()
-
-    qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
-    qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
-
-    configure_package_config_file(
-        "${QT_CMAKE_DIR}/QtPluginConfig.cmake.in"
-        "${config_build_dir}/${target}Config.cmake"
-        INSTALL_DESTINATION "${config_install_dir}"
-    )
-    write_basic_package_version_file(
-        "${config_build_dir}/${target}ConfigVersion.cmake"
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY AnyNewerVersion
-    )
-
-    qt_install(FILES
-        "${config_build_dir}/${target}Config.cmake"
-        "${config_build_dir}/${target}ConfigVersion.cmake"
-        DESTINATION "${config_install_dir}"
-        COMPONENT Devel
-    )
-
-    # Make the export name of plugins be consistent with modules, so that
-    # add_qt_resource adds its additional targets to the same export set in a static Qt build.
-    set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
-    qt_install(TARGETS "${target}"
-               EXPORT ${export_name}
-               RUNTIME DESTINATION "${install_directory}"
-               LIBRARY DESTINATION "${install_directory}"
-               ARCHIVE DESTINATION "${archive_install_directory}"
-    )
-    qt_install(EXPORT ${export_name}
-               NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE}::
-               DESTINATION "${config_install_dir}"
-    )
 
     # Store the plug-in type in the target property
     set_property(TARGET "${target}" PROPERTY QT_PLUGIN_TYPE "${arg_TYPE}")

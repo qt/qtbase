@@ -2828,6 +2828,8 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
         target_path = replace_path_constants(target_path, scope)
         if target_path:
             extra.append(f'INSTALL_DIRECTORY "{target_path}"')
+        else:
+            extra.append('SKIP_INSTALL')
 
     plugin_class_name = scope.get_string("PLUGIN_CLASS_NAME")
     if plugin_class_name:
