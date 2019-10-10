@@ -511,7 +511,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
             if (hadModalSession && !d->currentModalSessionCached)
                 interruptLater = true;
         }
-        bool canWait = (d->threadData->canWait
+        bool canWait = (d->threadData.loadRelaxed()->canWait
                 && !retVal
                 && !d->interrupt
                 && (d->processEventsFlags & QEventLoop::WaitForMoreEvents));
@@ -878,7 +878,7 @@ void QCocoaEventDispatcherPrivate::processPostedEvents()
     }
 
     int serial = serialNumber.loadRelaxed();
-    if (!threadData->canWait || (serial != lastSerial)) {
+    if (!threadData.loadRelaxed()->canWait || (serial != lastSerial)) {
         lastSerial = serial;
         QCoreApplication::sendPostedEvents();
         QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);

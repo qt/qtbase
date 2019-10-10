@@ -1048,7 +1048,7 @@ bool QEventDispatcherWin32::event(QEvent *e)
 void QEventDispatcherWin32::sendPostedEvents()
 {
     Q_D(QEventDispatcherWin32);
-    QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
+    QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData.loadRelaxed());
 }
 
 HWND QEventDispatcherWin32::internalHwnd()

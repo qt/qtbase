@@ -918,7 +918,7 @@ QDebug operator<<(QDebug dbg, const MSG &msg)
 #ifndef QT_NO_QOBJECT
 void QCoreApplicationPrivate::removePostedTimerEvent(QObject *object, int timerId)
 {
-    QThreadData *data = object->d_func()->threadData;
+    QThreadData *data = object->d_func()->threadData.loadRelaxed();
 
     const auto locker = qt_scoped_lock(data->postEventList.mutex);
     if (data->postEventList.size() == 0)

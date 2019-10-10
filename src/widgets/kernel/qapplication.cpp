@@ -3660,7 +3660,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 
     // send to all application event filters
     if (threadRequiresCoreApplication()
-        && receiver->d_func()->threadData->thread.loadAcquire() == mainThread()
+        && receiver->d_func()->threadData.loadRelaxed()->thread.loadAcquire() == mainThread()
         && sendThroughApplicationEventFilters(receiver, e)) {
         filtered = true;
         return filtered;

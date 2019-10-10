@@ -374,8 +374,13 @@ public:
     }
 public:
     ExtraData *extraData;    // extra data set by the user
-    QThreadData *getThreadData() const { return threadData; }
-    QThreadData *threadData; // id of the thread that owns the object
+    QThreadData *getThreadData() const { return threadData.loadAcquire(); }
+    // This atomic requires acquire/release semantics in a few places,
+    // e.g. QObject::moveToThread must synchronize with QCoreApplication::postEvent,
+    // because postEvent is thread-safe.
+    // However, most of the code paths involving QObject are only reentrant and
+    // not thread-safe, so synchronization should not be necessary there.
+    QAtomicPointer<QThreadData> threadData; // id of the thread that owns the object
 
     using ConnectionDataPointer = QExplicitlySharedDataPointer<ConnectionData>;
     QAtomicPointer<ConnectionData> connections;
