@@ -222,7 +222,7 @@ void tst_QDialog::defaultButtons()
 
     testWidget.show();
     QApplication::setActiveWindow(&testWidget);
-    QVERIFY(QTest::qWaitForWindowActive(&testWidget));
+    QVERIFY(QTest::qWaitForWindowExposed(&testWidget));
 
     push->setDefault(true);
     QVERIFY(push->isDefault());
