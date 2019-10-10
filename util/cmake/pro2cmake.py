@@ -2775,6 +2775,9 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
     if plugin_class_name:
         extra.append(f"CLASS_NAME {plugin_class_name}")
 
+    if 'static' in scope.get('CONFIG'):
+        extra.append('STATIC')
+
     write_main_part(
         cm_fh,
         plugin_name,
