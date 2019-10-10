@@ -654,11 +654,11 @@ class ReplaceOperation(Operation):
         m = rex.search(s)
         if not m:
             return pattern, replacement
-        pattern = s[:m.start() + 1]
-        replacement = s[m.end():]
+        pattern = s[: m.start() + 1]
+        replacement = s[m.end() :]
         m = rex.search(replacement)
         if m:
-            replacement = replacement[:m.start() + 1]
+            replacement = replacement[: m.start() + 1]
         return pattern, replacement
 
     def __repr__(self):
@@ -1010,7 +1010,7 @@ class Scope(object):
             qmake_conf_path = find_qmake_conf(os.path.abspath(self.currentdir))
             qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
             project_relative_path = os.path.relpath(qmake_conf_dir_path, self.currentdir)
-            return ['${CMAKE_CURRENT_SOURCE_DIR}/' + project_relative_path]
+            return ["${CMAKE_CURRENT_SOURCE_DIR}/" + project_relative_path]
 
         if key == "_PRO_FILE_PWD_":
             return ["${CMAKE_CURRENT_SOURCE_DIR}"]
@@ -1109,7 +1109,7 @@ class Scope(object):
             else:
                 replacement = self.get(match.group(1), inherit=True)
                 replacement_str = replacement[0] if replacement else ""
-                result = result[: match.start()] + replacement_str + result[match.end():]
+                result = result[: match.start()] + replacement_str + result[match.end() :]
                 result = self._replace_env_var_value(result)
 
             if result == old_result:
@@ -1155,11 +1155,12 @@ class Scope(object):
 def unwrap_if(input_string):
     # Compute the grammar only once.
     if not hasattr(unwrap_if, "if_grammar"):
+
         def handle_expr_with_parentheses(s, l, t):
             # The following expression unwraps the condition via the
             # additional info set by originalTextFor, thus returning the
             # condition without parentheses.
-            condition_without_parentheses = s[t._original_start + 1: t._original_end - 1]
+            condition_without_parentheses = s[t._original_start + 1 : t._original_end - 1]
 
             # Re-add the parentheses, but with spaces in-between. This
             # fixes map_condition -> map_platform to apply properly.
@@ -1498,8 +1499,9 @@ def sort_sources(sources: List[str]) -> List[str]:
     return lines
 
 
-def _map_libraries_to_cmake(libraries: List[str], known_libraries: Set[str],
-                            is_example: bool = False) -> List[str]:
+def _map_libraries_to_cmake(
+    libraries: List[str], known_libraries: Set[str], is_example: bool = False
+) -> List[str]:
     result = []  # type: List[str]
     is_framework = False
 
@@ -1530,8 +1532,7 @@ def _map_libraries_to_cmake(libraries: List[str], known_libraries: Set[str],
 
 
 def extract_cmake_libraries(
-    scope: Scope, *, known_libraries: Optional[Set[str]] = None,
-    is_example: bool = False
+    scope: Scope, *, known_libraries: Optional[Set[str]] = None, is_example: bool = False
 ) -> Tuple[List[str], List[str]]:
     if known_libraries is None:
         known_libraries = set()
@@ -1900,7 +1901,9 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
                     else:
                         immediate_prefix = "/"
                     immediate_base_list = scope.get(f"{r}.base")
-                    assert len(immediate_base_list) < 2, f"immediate base directory must be at most one entry"
+                    assert (
+                        len(immediate_base_list) < 2
+                    ), f"immediate base directory must be at most one entry"
                     immediate_base = replace_path_constants("".join(immediate_base_list), scope)
                     immediate_lang = None
                     immediate_name = f"qmake_{r}"
@@ -1983,7 +1986,7 @@ def write_qlalrsources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
     indent += 1
     cm_fh.write(f"{spaces(indent)}{';'.join(sources)}\n")
     cm_fh.write(f"{spaces(indent)}{target}\n")
-    cm_fh.write(f"{spaces(indent)}\"\"\n")
+    cm_fh.write(f'{spaces(indent)}""\n')
     cm_fh.write(")\n")
 
 
@@ -2141,8 +2144,8 @@ def write_android_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
 
 
 def write_wayland_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
-    client_sources = scope.get_files('WAYLANDCLIENTSOURCES', use_vpath=True)
-    server_sources = scope.get_files('WAYLANDSERVERSOURCES', use_vpath=True)
+    client_sources = scope.get_files("WAYLANDCLIENTSOURCES", use_vpath=True)
+    server_sources = scope.get_files("WAYLANDSERVERSOURCES", use_vpath=True)
     if len(client_sources) == 0 and len(server_sources) == 0:
         return
 
@@ -2156,12 +2159,16 @@ def write_wayland_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
 
     if len(client_sources) != 0:
         cm_fh.write(f"\n{spaces(indent)}qt6_generate_wayland_protocol_client_sources({target}\n")
-        write_list(cm_fh, client_sources, 'FILES', indent + 1, prefix='${CMAKE_CURRENT_SOURCE_DIR}/')
+        write_list(
+            cm_fh, client_sources, "FILES", indent + 1, prefix="${CMAKE_CURRENT_SOURCE_DIR}/"
+        )
         cm_fh.write(f"{spaces(indent)})\n")
 
     if len(server_sources) != 0:
         cm_fh.write(f"\n{spaces(indent)}qt6_generate_wayland_protocol_server_sources({target}\n")
-        write_list(cm_fh, server_sources, 'FILES', indent + 1, prefix='${CMAKE_CURRENT_SOURCE_DIR}/')
+        write_list(
+            cm_fh, server_sources, "FILES", indent + 1, prefix="${CMAKE_CURRENT_SOURCE_DIR}/"
+        )
         cm_fh.write(f"{spaces(indent)})\n")
 
     if condition != "ON":
@@ -2263,7 +2270,9 @@ def handle_source_subtractions(scopes: List[Scope]):
         additions = modified_sources[modified_source].get("additions", set())
         assert isinstance(additions, set), f"Additions must be a set, got {additions} instead."
         subtractions = modified_sources[modified_source].get("subtractions", set())
-        assert isinstance(subtractions, set), f"Subtractions must be a set, got {additions} instead."
+        assert isinstance(
+            subtractions, set
+        ), f"Subtractions must be a set, got {additions} instead."
         add_to_no_pch_sources = modified_sources[modified_source].get(
             "add_to_no_pch_sources", False
         )
@@ -2433,10 +2442,10 @@ def write_generic_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> s
 
     library_type = ""
 
-    if 'dll' in scope.get('CONFIG'):
+    if "dll" in scope.get("CONFIG"):
         library_type = "SHARED"
 
-    if 'static' in scope.get('CONFIG'):
+    if "static" in scope.get("CONFIG"):
         library_type = "STATIC"
 
     extra_lines = []
@@ -2444,7 +2453,7 @@ def write_generic_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> s
     if library_type:
         extra_lines.append(library_type)
 
-    target_path = scope.expandString('target.path')
+    target_path = scope.expandString("target.path")
     target_path = replace_path_constants(target_path, scope)
     if target_path:
         extra_lines.append(f'INSTALL_DIRECTORY "{target_path}"')
@@ -2462,6 +2471,7 @@ def write_generic_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> s
     )
 
     return target_name
+
 
 def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     module_name = scope.TARGET
@@ -2641,10 +2651,10 @@ def write_example(
     binary_name = scope.TARGET
     assert binary_name
 
-    example_install_dir = scope.get_string('target.path')
+    example_install_dir = scope.get_string("target.path")
     if not example_install_dir:
-        example_install_dir = 'examples'
-    example_install_dir = example_install_dir.replace('$$[QT_INSTALL_EXAMPLES]', 'examples')
+        example_install_dir = "examples"
+    example_install_dir = example_install_dir.replace("$$[QT_INSTALL_EXAMPLES]", "examples")
 
     cm_fh.write(
         "cmake_minimum_required(VERSION 3.14)\n"
@@ -2740,10 +2750,18 @@ def write_example(
             indent += 1
 
         write_include_paths(
-            cm_fh, scope, f"target_include_directories({binary_name} PUBLIC", indent=indent, footer=")"
+            cm_fh,
+            scope,
+            f"target_include_directories({binary_name} PUBLIC",
+            indent=indent,
+            footer=")",
         )
         write_defines(
-            cm_fh, scope, f"target_compile_definitions({binary_name} PUBLIC", indent=indent, footer=")"
+            cm_fh,
+            scope,
+            f"target_compile_definitions({binary_name} PUBLIC",
+            indent=indent,
+            footer=")",
         )
 
         (scope_public_libs, scope_private_libs) = extract_cmake_libraries(scope, is_example=True)
@@ -2806,7 +2824,7 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
         plugin_function_name = "add_qml_module"
         qmldir = write_qml_plugin(cm_fh, plugin_name, scope, indent=indent, extra_lines=extra)
     else:
-        target_path = scope.expandString('target.path')
+        target_path = scope.expandString("target.path")
         target_path = replace_path_constants(target_path, scope)
         if target_path:
             extra.append(f'INSTALL_DIRECTORY "{target_path}"')
@@ -2815,8 +2833,8 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
     if plugin_class_name:
         extra.append(f"CLASS_NAME {plugin_class_name}")
 
-    if 'static' in scope.get('CONFIG'):
-        extra.append('STATIC')
+    if "static" in scope.get("CONFIG"):
+        extra.append("STATIC")
 
     write_main_part(
         cm_fh,

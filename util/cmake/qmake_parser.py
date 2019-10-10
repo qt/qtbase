@@ -35,6 +35,7 @@ from itertools import chain
 import pyparsing as pp  # type: ignore
 
 from helper import _set_up_py_parsing_nicer_debug_output
+
 _set_up_py_parsing_nicer_debug_output(pp)
 
 
@@ -99,7 +100,7 @@ def handle_function_value(group: pp.ParseResults):
     if function_name == "basename":
         if len(function_args) != 1:
             print(f"XXXX basename with more than one argument")
-        if function_args[0] == '_PRO_FILE_PWD_':
+        if function_args[0] == "_PRO_FILE_PWD_":
             return os.path.basename(os.getcwd())
         print(f"XXXX basename with value other than _PRO_FILE_PWD_")
         return os.path.basename(str(function_args[0]))
@@ -192,7 +193,12 @@ class QmakeParser:
         Values = add_element("Values", pp.ZeroOrMore(Value)("value"))
 
         Op = add_element(
-            "OP", pp.Literal("=") | pp.Literal("-=") | pp.Literal("+=") | pp.Literal("*=") | pp.Literal("~=")
+            "OP",
+            pp.Literal("=")
+            | pp.Literal("-=")
+            | pp.Literal("+=")
+            | pp.Literal("*=")
+            | pp.Literal("~="),
         )
 
         Key = add_element("Key", Identifier)
@@ -219,7 +225,7 @@ class QmakeParser:
         def parse_requires_condition(s, l, t):
             # The following expression unwraps the condition via the additional info
             # set by originalTextFor.
-            condition_without_parentheses = s[t._original_start + 1: t._original_end - 1]
+            condition_without_parentheses = s[t._original_start + 1 : t._original_end - 1]
 
             # And this replaces the colons with '&&' similar how it's done for 'Condition'.
             condition_without_parentheses = (
