@@ -248,13 +248,12 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
 
 static bool read_jpeg_image(QImage *outImage,
                             QSize scaledSize, QRect scaledClipRect,
-                            QRect clipRect, volatile int inQuality,
+                            QRect clipRect, int quality,
                             Rgb888ToRgb32Converter converter,
                             j_decompress_ptr info, struct my_error_mgr* err  )
 {
     if (!setjmp(err->setjmp_buffer)) {
         // -1 means default quality.
-        int quality = inQuality;
         if (quality < 0)
             quality = 75;
 
