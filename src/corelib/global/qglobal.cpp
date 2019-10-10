@@ -110,8 +110,8 @@ extern "C" {
     // without full system POSIX.
 #  pragma weak shm_area_password
 #  pragma weak shm_area_name
-    char *shm_area_password = "dummy";
-    char *shm_area_name = "dummy";
+    char shm_area_password[] = "dummy";
+    char shm_area_name[] = "dummy";
 }
 #endif
 
