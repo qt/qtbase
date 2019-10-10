@@ -101,13 +101,13 @@ public:
     void setCurrentTarget(QObject *target, bool dropped = false);
     QObject *currentTarget() const;
 
-    QDrag *object() const { return m_object; }
+    QPointer<QDrag> object() const { return m_object; }
     QObject *source() const;
 
 private:
     QObject *m_currentDropTarget;
     QPlatformDrag *m_platformDrag;
-    QDrag *m_object;
+    QPointer<QDrag> m_object;
 
     static QDragManager *m_instance;
     Q_DISABLE_COPY_MOVE(QDragManager)
