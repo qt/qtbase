@@ -142,7 +142,7 @@ def simplify_condition_memoize(f: Callable[[str], str]):
             os.makedirs(os.path.dirname(cache_path), exist_ok=True)
             # Create the file if it doesn't exist, but don't override
             # it.
-            with open(cache_path, "a") as temp_file_handle:
+            with open(cache_path, "a"):
                 pass
 
         updated_cache = cache_file_content
