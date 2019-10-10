@@ -2421,6 +2421,42 @@ def write_main_part(
             cm_fh.write(ignored_keys_report)
 
 
+def write_generic_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
+
+    target_name = scope.TARGET
+
+    library_type = ""
+
+    if 'dll' in scope.get('CONFIG'):
+        library_type = "SHARED"
+
+    if 'static' in scope.get('CONFIG'):
+        library_type = "STATIC"
+
+    extra_lines = []
+
+    if library_type:
+        extra_lines.append(library_type)
+
+    target_path = scope.expandString('target.path')
+    target_path = replace_path_constants(target_path, scope)
+    if target_path:
+        extra_lines.append(f'INSTALL_DIRECTORY "{target_path}"')
+
+    write_main_part(
+        cm_fh,
+        target_name,
+        "Generic Library",
+        "add_cmake_library",
+        scope,
+        extra_lines=extra_lines,
+        indent=indent,
+        known_libraries={},
+        extra_keys=[],
+    )
+
+    return target_name
+
 def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     module_name = scope.TARGET
     if not module_name.startswith("Qt"):
@@ -2921,9 +2957,12 @@ def handle_app_or_lib(
     elif is_plugin:
         assert not is_example
         target = write_plugin(cm_fh, scope, indent=indent)
-    elif is_lib or "qt_module" in scope.get("_LOADED"):
+    elif is_lib and "qt_module" in scope.get("_LOADED"):
         assert not is_example
         target = write_module(cm_fh, scope, indent=indent)
+    elif is_lib:
+        assert not is_example
+        target = write_generic_library(cm_fh, scope, indent=indent)
     elif "qt_tool" in scope.get("_LOADED"):
         assert not is_example
         target = write_tool(cm_fh, scope, indent=indent)

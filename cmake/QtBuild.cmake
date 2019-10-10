@@ -2518,6 +2518,68 @@ function(qt_check_if_tools_will_be_built)
     set(QT_WILL_BUILD_TOOLS ${will_build_tools} CACHE INTERNAL "Are tools going to be built" FORCE)
 endfunction()
 
+# Wrapper function to create a regular cmake target and forward all the
+# arguments collected by the conversion script. This is only meant for tests!
+function(add_cmake_library target)
+    # Process arguments:
+    qt_parse_all_arguments(arg "add_cmake_library"
+        "SHARED;MODULE;STATIC;INTERFACE"
+        "OUTPUT_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;INSTALL_DIRECTORY"
+        "${__default_private_args};${__default_public_args};"
+        ${ARGN}
+    )
+
+    ### Define Targets:
+    if(${arg_INTERFACE})
+        add_library("${target}" INTERFACE)
+    elseif(${arg_STATIC})
+        add_library("${target}" STATIC)
+    elseif(${arg_SHARED})
+        add_library("${target}" SHARED)
+    else()
+        add_library("${target}")
+    endif()
+
+    if (NOT arg_ARCHIVE_INSTALL_DIRECTORY AND arg_INSTALL_DIRECTORY)
+        set(arg_ARCHIVE_INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}")
+    endif()
+
+    if (android)
+        qt_android_apply_arch_suffix("${target}")
+    endif()
+
+    if (arg_INSTALL_DIRECTORY)
+        set(install_arguments
+            ARCHIVE_INSTALL_DIRECTORY ${arg_ARCHIVE_INSTALL_DIRECTORY}
+            INSTALL_DIRECTORY ${arg_INSTALL_DIRECTORY}
+        )
+    endif()
+
+    extend_target("${target}"
+        SOURCES ${arg_SOURCES}
+        OUTPUT_DIRECTORY ${arg_OUTPUT_DIRECTORY}
+        INCLUDE_DIRECTORIES
+            ${arg_INCLUDE_DIRECTORIES}
+        PUBLIC_INCLUDE_DIRECTORIES
+            ${arg_PUBLIC_INCLUDE_DIRECTORIES}
+        PUBLIC_DEFINES
+            ${arg_PUBLIC_DEFINES}
+        DEFINES
+            ${arg_DEFINES}
+        PUBLIC_LIBRARIES ${arg_PUBLIC_LIBRARIES}
+        LIBRARIES ${arg_LIBRARIES} Qt::PlatformModuleInternal
+        COMPILE_OPTIONS ${arg_COMPILE_OPTIONS}
+        PUBLIC_COMPILE_OPTIONS ${arg_PUBLIC_COMPILE_OPTIONS}
+        LINK_OPTIONS ${arg_LINK_OPTIONS}
+        PUBLIC_LINK_OPTIONS ${arg_PUBLIC_LINK_OPTIONS}
+        MOC_OPTIONS ${arg_MOC_OPTIONS}
+        ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
+        DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+        ${install_arguments}
+    )
+
+endfunction()
+
 # This function is used to define a "Qt tool", such as moc, uic or rcc.
 # The BOOTSTRAP option allows building it as standalone program, otherwise
 # it will be linked against QtCore.
