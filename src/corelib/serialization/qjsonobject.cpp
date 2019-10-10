@@ -1092,6 +1092,23 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     Returns a pointer to a modifiable reference to the current item.
 */
 
+/*! \fn QJsonValueRef QJsonObject::iterator::operator[](int j) const
+
+    Returns a modifiable reference to the item at offset \a j from the
+    item pointed to by this iterator (the item at position \c{*this + j}).
+
+    This function is provided to make QJsonObject iterators behave like C++
+    pointers.
+
+    The return value is of type QJsonValueRef, a helper class for QJsonArray
+    and QJsonObject. When you get an object of type QJsonValueRef, you can
+    use it as if it were a reference to a QJsonValue. If you assign to it,
+    the assignment will apply to the element in the QJsonArray or QJsonObject
+    from which you got the reference.
+
+    \sa operator+()
+*/
+
 /*!
     \fn bool QJsonObject::iterator::operator==(const iterator &other) const
     \fn bool QJsonObject::iterator::operator==(const const_iterator &other) const
@@ -1110,6 +1127,38 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     iterator; otherwise returns \c false.
 
     \sa operator==()
+*/
+
+/*!
+    \fn bool QJsonObject::iterator::operator<(const iterator& other) const
+    \fn bool QJsonObject::iterator::operator<(const const_iterator& other) const
+
+    Returns \c true if the item pointed to by this iterator is less than
+    the item pointed to by the \a other iterator.
+*/
+
+/*!
+    \fn bool QJsonObject::iterator::operator<=(const iterator& other) const
+    \fn bool QJsonObject::iterator::operator<=(const const_iterator& other) const
+
+    Returns \c true if the item pointed to by this iterator is less than
+    or equal to the item pointed to by the \a other iterator.
+*/
+
+/*!
+    \fn bool QJsonObject::iterator::operator>(const iterator& other) const
+    \fn bool QJsonObject::iterator::operator>(const const_iterator& other) const
+
+    Returns \c true if the item pointed to by this iterator is greater
+    than the item pointed to by the \a other iterator.
+*/
+
+/*!
+    \fn bool QJsonObject::iterator::operator>=(const iterator& other) const
+    \fn bool QJsonObject::iterator::operator>=(const const_iterator& other) const
+
+    Returns \c true if the item pointed to by this iterator is greater
+    than or equal to the item pointed to by the \a other iterator.
 */
 
 /*! \fn QJsonObject::iterator QJsonObject::iterator::operator++()
@@ -1183,6 +1232,12 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     the iterator goes forward.
 
     \sa operator+=(), operator-()
+*/
+
+/*! \fn int QJsonObject::iterator::operator-(iterator other) const
+
+    Returns the number of items between the item pointed to by \a
+    other and the item pointed to by this iterator.
 */
 
 /*!
@@ -1288,6 +1343,18 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     Returns a pointer to the current item.
 */
 
+/*! \fn QJsonValue QJsonObject::const_iterator::operator[](int j) const
+
+    Returns the item at offset \a j from the item pointed to by this iterator (the item at
+    position \c{*this + j}).
+
+    This function is provided to make QJsonObject iterators behave like C++
+    pointers.
+
+    \sa operator+()
+*/
+
+
 /*! \fn bool QJsonObject::const_iterator::operator==(const const_iterator &other) const
     \fn bool QJsonObject::const_iterator::operator==(const iterator &other) const
 
@@ -1304,6 +1371,34 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     iterator; otherwise returns \c false.
 
     \sa operator==()
+*/
+
+/*!
+    \fn bool QJsonObject::const_iterator::operator<(const const_iterator& other) const
+
+    Returns \c true if the item pointed to by this iterator is less than
+    the item pointed to by the \a other iterator.
+*/
+
+/*!
+    \fn bool QJsonObject::const_iterator::operator<=(const const_iterator& other) const
+
+    Returns \c true if the item pointed to by this iterator is less than
+    or equal to the item pointed to by the \a other iterator.
+*/
+
+/*!
+    \fn bool QJsonObject::const_iterator::operator>(const const_iterator& other) const
+
+    Returns \c true if the item pointed to by this iterator is greater
+    than the item pointed to by the \a other iterator.
+*/
+
+/*!
+    \fn bool QJsonObject::const_iterator::operator>=(const const_iterator& other) const
+
+    Returns \c true if the item pointed to by this iterator is greater
+    than or equal to the item pointed to by the \a other iterator.
 */
 
 /*! \fn QJsonObject::const_iterator QJsonObject::const_iterator::operator++()
@@ -1384,6 +1479,12 @@ QJsonObject::const_iterator QJsonObject::constFindImpl(T key) const
     This operation can be slow for large \a j values.
 
     \sa operator+=(), operator-()
+*/
+
+/*! \fn int QJsonObject::const_iterator::operator-(const_iterator other) const
+
+    Returns the number of items between the item pointed to by \a
+    other and the item pointed to by this iterator.
 */
 
 
