@@ -3106,6 +3106,11 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
     elif is_qml_plugin:
         plugin_function_name = "add_qml_module"
         qmldir = write_qml_plugin(cm_fh, plugin_name, scope, indent=indent, extra_lines=extra)
+    else:
+        target_path = scope.expandString('target.path')
+        target_path = replace_path_constants(target_path, scope)
+        if target_path:
+            extra.append(f'INSTALL_DIRECTORY "{target_path}"')
 
     plugin_class_name = scope.get_string("PLUGIN_CLASS_NAME")
     if plugin_class_name:

@@ -1783,9 +1783,9 @@ function(add_qt_plugin target)
         "${output_directory_default}" output_directory)
     qt_internal_check_directory_or_type(INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}" "${arg_TYPE}"
         "${install_directory_default}" install_directory)
-    qt_internal_check_directory_or_type(ARCHIVE_INSTALL_DIRECTORY
-        "${arg_ARCHIVE_INSTALL_DIRECTORY}" "${arg_TYPE}"
-        "${archive_install_directory_default}" archive_install_directory)
+    if (NOT arg_ARCHIVE_INSTALL_DIRECTORY AND arg_INSTALL_DIRECTORY)
+        set(arg_ARCHIVE_INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}")
+    endif()
 
     if(arg_STATIC OR NOT BUILD_SHARED_LIBS)
         add_library("${target}" STATIC)
