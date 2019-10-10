@@ -4,10 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pytest = "*"
-mypy = "*"
 pyparsing = "*"
 sympy = "*"
+mypy = "*"
+pytest = "*"
+pytest-cov = "*"
+flake8 = "*"
 
 [dev-packages]
 
