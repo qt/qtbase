@@ -528,17 +528,20 @@ static inline void write_icc_profile(const QImage &image, j_compress_ptr cinfo)
     }
 }
 
-static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile int sourceQuality, const QString &description, bool optimize, bool progressive)
+static bool do_write_jpeg_image(struct jpeg_compress_struct &cinfo,
+                                JSAMPROW *row_pointer,
+                                const QImage &image,
+                                QIODevice *device,
+                                int sourceQuality,
+                                const QString &description,
+                                bool optimize,
+                                bool progressive)
 {
     bool success = false;
     const QVector<QRgb> cmap = image.colorTable();
 
     if (image.format() == QImage::Format_Invalid || image.format() == QImage::Format_Alpha8)
         return false;
-
-    struct jpeg_compress_struct cinfo;
-    JSAMPROW row_pointer[1];
-    row_pointer[0] = 0;
 
     struct my_jpeg_destination_mgr *iod_dest = new my_jpeg_destination_mgr(device);
     struct my_error_mgr jerr;
@@ -712,6 +715,27 @@ static bool write_jpeg_image(const QImage &image, QIODevice *device, volatile in
     }
 
     delete iod_dest;
+    return success;
+}
+
+static bool write_jpeg_image(const QImage &image,
+                             QIODevice *device,
+                             int sourceQuality,
+                             const QString &description,
+                             bool optimize,
+                             bool progressive)
+{
+    // protect these objects from the setjmp/longjmp pair inside
+    // do_write_jpeg_image (by making them non-local).
+    struct jpeg_compress_struct cinfo;
+    JSAMPROW row_pointer[1];
+    row_pointer[0] = 0;
+
+    const bool success = do_write_jpeg_image(cinfo, row_pointer,
+                                             image, device,
+                                             sourceQuality, description,
+                                             optimize, progressive);
+
     delete [] row_pointer[0];
     return success;
 }
