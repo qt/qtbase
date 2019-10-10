@@ -123,6 +123,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "font-variant", FontVariant },
     { "font-weight", FontWeight },
     { "height", Height },
+    { "icon", QtIcon },
     { "image", QtImage },
     { "image-position", QtImageAlignment },
     { "left", Left },
@@ -1377,6 +1378,37 @@ bool ValueExtractor::extractImage(QIcon *icon, Qt::Alignment *a, QSize *size)
         hit = true;
     }
     return hit;
+}
+
+bool ValueExtractor::extractIcon(QIcon *icon, QSize *size)
+{
+    // Find last declaration that specifies an icon
+    const auto declaration = std::find_if(
+                declarations.rbegin(), declarations.rend(),
+                [](const Declaration &decl) { return decl.d->propertyId == QtIcon; });
+    if (declaration == declarations.rend())
+        return false;
+
+    *icon = declaration->iconValue();
+
+    // If the value contains a URI, try to get the size of the icon
+    if (declaration->d->values.isEmpty())
+        return true;
+
+    const auto &propertyValue = declaration->d->values.constFirst();
+    if (propertyValue.type != Value::Uri)
+        return true;
+
+    // First try to read just the size from the image without loading it
+    const QString url(propertyValue.variant.toString());
+    QImageReader imageReader(url);
+    *size = imageReader.size();
+    if (!size->isNull())
+        return true;
+
+    // Get the size by loading the image instead
+    *size = imageReader.read().size();
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

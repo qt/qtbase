@@ -534,6 +534,7 @@ public:
     const QStyleSheetOutlineData *outline() const { return ou; }
     const QStyleSheetGeometryData *geometry() const { return geo; }
     const QStyleSheetPositionData *position() const { return p; }
+    const QStyleSheetImageData *icon() const { return iconPtr; }
 
     bool hasModification() const;
 
@@ -569,6 +570,7 @@ public:
     bool hasGeometry() const { return geo != 0; }
     bool hasDrawable() const { return !hasNativeBorder() || hasBackground() || hasImage(); }
     bool hasImage() const { return img != 0; }
+    bool hasIcon() const { return iconPtr != 0; }
 
     QSize minimumContentsSize() const
     { return geo ? QSize(geo->minWidth, geo->minHeight) : QSize(0, 0); }
@@ -628,6 +630,7 @@ public:
     QSharedDataPointer<QStyleSheetGeometryData> geo;
     QSharedDataPointer<QStyleSheetPositionData> p;
     QSharedDataPointer<QStyleSheetImageData> img;
+    QSharedDataPointer<QStyleSheetImageData> iconPtr;
 
     int clipset;
     QPainterPath clipPath;
@@ -969,11 +972,16 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject
     if (v.extractPalette(&fg, &sfg, &sbg, &abg))
         pal = new QStyleSheetPaletteData(fg, sfg, sbg, abg);
 
-    QIcon icon;
+    QIcon imgIcon;
     alignment = Qt::AlignCenter;
+    QSize imgSize;
+    if (v.extractImage(&imgIcon, &alignment, &imgSize))
+        img = new QStyleSheetImageData(imgIcon, alignment, imgSize);
+
+    QIcon icon;
     QSize size;
-    if (v.extractImage(&icon, &alignment, &size))
-        img = new QStyleSheetImageData(icon, alignment, size);
+    if (v.extractIcon(&icon, &size))
+        iconPtr = new QStyleSheetImageData(icon, Qt::AlignCenter, size);
 
     int adj = -255;
     hasFont = v.extractFont(&font, &adj);
@@ -3521,15 +3529,25 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             if (rule.hasFont)
                 p->setFont(rule.font.resolve(p->font()));
 
-            if (rule.hasPosition() && rule.position()->textAlignment != 0) {
-                Qt::Alignment textAlignment = rule.position()->textAlignment;
-                QRect textRect = button->rect;
+            if (rule.hasPosition() || rule.hasIcon()) {
                 uint tf = Qt::TextShowMnemonic;
+                QRect textRect = button->rect;
+
+                const uint horizontalAlignMask = Qt::AlignHCenter | Qt::AlignLeft | Qt::AlignRight;
                 const uint verticalAlignMask = Qt::AlignVCenter | Qt::AlignTop | Qt::AlignLeft;
-                tf |= (textAlignment & verticalAlignMask) ? (textAlignment & verticalAlignMask) : Qt::AlignVCenter;
-                if (!styleHint(SH_UnderlineShortcut, button, w))
-                    tf |= Qt::TextHideMnemonic;
-                if (!button->icon.isNull()) {
+
+                if (rule.hasPosition() && rule.position()->textAlignment != 0) {
+                    Qt::Alignment textAlignment = rule.position()->textAlignment;
+                    tf |= (textAlignment & verticalAlignMask) ? (textAlignment & verticalAlignMask) : Qt::AlignVCenter;
+                    tf |= (textAlignment & horizontalAlignMask) ? (textAlignment & horizontalAlignMask) : Qt::AlignHCenter;
+                    if (!styleHint(SH_UnderlineShortcut, button, w))
+                        tf |= Qt::TextHideMnemonic;
+                } else {
+                    tf |= Qt::AlignVCenter | Qt::AlignHCenter;
+                }
+
+                QIcon icon = rule.hasIcon() ? rule.icon()->icon : button->icon;
+                if (!icon.isNull()) {
                     //Group both icon and text
                     QRect iconRect;
                     QIcon::Mode mode = button->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
@@ -3539,7 +3557,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     if (button->state & State_On)
                         state = QIcon::On;
 
-                    QPixmap pixmap = button->icon.pixmap(button->iconSize, mode, state);
+                    QPixmap pixmap = icon.pixmap(button->iconSize, mode, state);
                     int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
                     int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
                     int labelWidth = pixmapWidth;
@@ -3550,10 +3568,10 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         labelWidth += (textWidth + iconSpacing);
 
                     //Determine label alignment:
-                    if (textAlignment & Qt::AlignLeft) { /*left*/
+                    if (tf & Qt::AlignLeft) { /*left*/
                         iconRect = QRect(textRect.x(), textRect.y() + (textRect.height() - labelHeight) / 2,
                                          pixmapWidth, pixmapHeight);
-                    } else if (textAlignment & Qt::AlignHCenter) { /* center */
+                    } else if (tf & Qt::AlignHCenter) { /* center */
                         iconRect = QRect(textRect.x() + (textRect.width() - labelWidth) / 2,
                                          textRect.y() + (textRect.height() - labelHeight) / 2,
                                          pixmapWidth, pixmapHeight);
@@ -3565,7 +3583,9 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
                     iconRect = visualRect(button->direction, textRect, iconRect);
 
-                    tf |= Qt::AlignLeft; //left align, we adjust the text-rect instead
+                    // Left align, adjust the text-rect according to the icon instead
+                    tf &= ~horizontalAlignMask;
+                    tf |= Qt::AlignLeft;
 
                     if (button->direction == Qt::RightToLeft)
                         textRect.setRight(iconRect.left() - iconSpacing);
@@ -3576,9 +3596,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                         iconRect.translate(pixelMetric(PM_ButtonShiftHorizontal, opt, w),
                                            pixelMetric(PM_ButtonShiftVertical, opt, w));
                     p->drawPixmap(iconRect, pixmap);
-                } else {
-                    tf |= textAlignment;
                 }
+
                 if (button->state & (State_On | State_Sunken))
                     textRect.translate(pixelMetric(PM_ButtonShiftHorizontal, opt, w),
                                  pixelMetric(PM_ButtonShiftVertical, opt, w));

@@ -993,6 +993,9 @@
         \li Supports the \l{box model}. Supports the \l{#default-ps}{:default},
            \l{#flat-ps}{:flat}, \l{#checked-ps}{:checked} pseudo states.
 
+           Since 5.15, the \l{#icon-prop}{icon} property can be set to
+           override the button icon.
+
            For QPushButton with a menu, the menu indicator is styled
            using the \l{#menu-indicator-sub}{::menu-indicator}
            subcontrol. Appearance of checkable push buttons can be
@@ -1944,6 +1947,20 @@
            \snippet code/doc_src_stylesheet.qdoc 58
 
            See also \l{#width-prop}{width}.
+
+    \row
+        \li \b{\c icon} \target icon-prop
+        \li \l{#Url}{Url}+
+        \li The icon that is used, for widgets that have an icon.
+
+        The only widget currently supporting this property is QPushButton.
+
+        \note It's the application's responsibilty to assign an icon to a
+        button (using the QAbstractButton API), and not the style's. So be
+        careful setting it unless your stylesheet is targeting a specific
+        application.
+
+        Available since 5.15.
 
     \row
         \li \b{\c icon-size} \target icon-size-prop
