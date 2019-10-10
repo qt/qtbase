@@ -127,6 +127,7 @@ extend_target(Network CONDITION QT_FEATURE_http
         access/http2/http2streams.cpp access/http2/http2streams_p.h
         access/http2/huffman.cpp access/http2/huffman_p.h
         access/qabstractprotocolhandler.cpp access/qabstractprotocolhandler_p.h
+        access/qhttp2configuration.cpp access/qhttp2configuration.h
         access/qhttp2protocolhandler.cpp access/qhttp2protocolhandler_p.h
         access/qhttpmultipart.cpp access/qhttpmultipart.h access/qhttpmultipart_p.h
         access/qhttpnetworkconnection.cpp access/qhttpnetworkconnection_p.h

@@ -40,6 +40,7 @@ add_qt_module(XcbQpa
         qxcbconnection.cpp qxcbconnection.h
         qxcbconnection_basic.cpp qxcbconnection_basic.h
         qxcbconnection_screens.cpp
+        qxcbconnection_xi2.cpp
         qxcbcursor.cpp qxcbcursor.h
         qxcbeventdispatcher.cpp qxcbeventdispatcher.h
         qxcbeventqueue.cpp qxcbeventqueue.h
@@ -88,10 +89,12 @@ add_qt_module(XcbQpa
         XCB::XCB
         XCB::XFIXES
         XCB::XINERAMA
+        XCB::XINPUT
+        XCB::XKB
         XKB::XKB
 )
 
-#### Keys ignored in scope 3:.:.:xcb_qpa_lib.pro:<TRUE>:
+#### Keys ignored in scope 2:.:.:xcb_qpa_lib.pro:<TRUE>:
 # _LOADED = "qt_build_paths" "qt_module"
 
 ## Scopes:
@@ -130,24 +133,11 @@ extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xlib
         X11::X11 # special case
 )
 
-extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xinput
-    SOURCES
-        qxcbconnection_xi2.cpp
-    PUBLIC_LIBRARIES
-        XCB::XINPUT
-)
-
 extend_target(XcbQpa CONDITION QT_FEATURE_xcb_sm
     SOURCES
         qxcbsessionmanager.cpp qxcbsessionmanager.h
     PUBLIC_LIBRARIES
         ${X11_SM_LIB} ${X11_ICE_LIB}
-)
-
-extend_target(XcbQpa CONDITION QT_FEATURE_xkb
-    PUBLIC_LIBRARIES
-        XCB::XKB
-        XKB::XKB
 )
 
 extend_target(XcbQpa CONDITION QT_FEATURE_dlopen
@@ -204,14 +194,14 @@ add_qt_plugin(qxcb
         Qt::XcbQpa
 )
 
-#### Keys ignored in scope 24:.:.:xcb-plugin.pro:<TRUE>:
+#### Keys ignored in scope 19:.:.:xcb-plugin.pro:<TRUE>:
 # OTHER_FILES = "xcb.json" "README"
 # _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################
 
-#### Keys ignored in scope 26:.:.:xcb-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 21:.:.:xcb-plugin.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"
 add_subdirectory(gl_integrations)
 if(OFF)

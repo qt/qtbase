@@ -81,11 +81,16 @@ add_qt_executable(qmake
         property.cpp property.h
         qbytearray.cpp-NOTFOUND qbytearray.h-NOTFOUND
         qbytearraymatcher.cpp-NOTFOUND qbytearraymatcher.h-NOTFOUND
+        qcalendar.cpp-NOTFOUND qcalendar.h-NOTFOUND
+        qcalendarbackend_p.h-NOTFOUND
+        qcalendarmath_p.h-NOTFOUND
         qchar.h-NOTFOUND
         qdatetime.cpp-NOTFOUND qdatetime.h-NOTFOUND qdatetime_p.h-NOTFOUND
+        qgregoriancalendar.cpp-NOTFOUND qgregoriancalendar_p.h-NOTFOUND
         qlocale.cpp-NOTFOUND qlocale.h-NOTFOUND
         qlocale_tools.cpp-NOTFOUND qlocale_tools_p.h-NOTFOUND
         qregexp.cpp-NOTFOUND qregexp.h-NOTFOUND
+        qromancalendar.cpp-NOTFOUND qromancalendar_p.h-NOTFOUND
         qstring.cpp-NOTFOUND qstring.h-NOTFOUND
         qstringlist.cpp-NOTFOUND qstringlist.h-NOTFOUND
         qstringmatcher.h-NOTFOUND

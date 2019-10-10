@@ -29,7 +29,7 @@ add_qt_module(Widgets
         kernel/qtwidgetsglobal.h kernel/qtwidgetsglobal_p.h
         kernel/qwidget.cpp kernel/qwidget.h kernel/qwidget_p.h
         kernel/qwidgetaction.cpp kernel/qwidgetaction.h kernel/qwidgetaction_p.h
-        kernel/qwidgetbackingstore.cpp kernel/qwidgetbackingstore_p.h
+        kernel/qwidgetrepaintmanager.cpp kernel/qwidgetrepaintmanager_p.h
         kernel/qwidgetsvariant.cpp
         kernel/qwidgetwindow.cpp kernel/qwidgetwindow_p.h
         kernel/qwindowcontainer.cpp kernel/qwindowcontainer_p.h
@@ -294,11 +294,6 @@ add_qt_resource(Widgets "qstyle1"
 extend_target(Widgets CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x65000000"
-)
-
-extend_target(Widgets CONDITION APPLE
-    SOURCES
-        util/qscroller_mac.mm
 )
 
 extend_target(Widgets CONDITION APPLE_OSX
@@ -768,7 +763,6 @@ extend_target(Widgets CONDITION QT_FEATURE_graphicsview
         graphicsview/qgraphicsgridlayout.cpp graphicsview/qgraphicsgridlayout.h
         graphicsview/qgraphicsgridlayoutengine.cpp graphicsview/qgraphicsgridlayoutengine_p.h
         graphicsview/qgraphicsitem.cpp graphicsview/qgraphicsitem.h graphicsview/qgraphicsitem_p.h
-        graphicsview/qgraphicsitemanimation.cpp graphicsview/qgraphicsitemanimation.h
         graphicsview/qgraphicslayout.cpp graphicsview/qgraphicslayout.h graphicsview/qgraphicslayout_p.cpp graphicsview/qgraphicslayout_p.h
         graphicsview/qgraphicslayoutitem.cpp graphicsview/qgraphicslayoutitem.h graphicsview/qgraphicslayoutitem_p.h
         graphicsview/qgraphicslayoutstyleinfo.cpp graphicsview/qgraphicslayoutstyleinfo_p.h
@@ -784,6 +778,11 @@ extend_target(Widgets CONDITION QT_FEATURE_graphicsview
         graphicsview/qgraphicsview.cpp graphicsview/qgraphicsview.h graphicsview/qgraphicsview_p.h
         graphicsview/qgraphicswidget.cpp graphicsview/qgraphicswidget.h graphicsview/qgraphicswidget_p.cpp graphicsview/qgraphicswidget_p.h
         graphicsview/qsimplex_p.cpp graphicsview/qsimplex_p.h
+)
+
+extend_target(Widgets CONDITION QT_FEATURE_easingcurve AND QT_FEATURE_graphicsview
+    SOURCES
+        graphicsview/qgraphicsitemanimation.cpp graphicsview/qgraphicsitemanimation.h
 )
 
 extend_target(Widgets CONDITION QT_FEATURE_completer

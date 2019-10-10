@@ -18,10 +18,6 @@ set_property(CACHE INPUT_libmd4c PROPERTY STRINGS undefined no qt system)
 set(INPUT_libpng "undefined" CACHE STRING "")
 set_property(CACHE INPUT_libpng PROPERTY STRINGS undefined no qt system)
 
-# input xcb
-set(INPUT_xcb "undefined" CACHE STRING "")
-set_property(CACHE INPUT_xcb PROPERTY STRINGS undefined no yes qt system)
-
 
 
 #### Libraries
@@ -438,7 +434,8 @@ glFramebufferTexture(GL_TEXTURE_2D, GL_DEPTH_STENCIL_ATTACHMENT, 1, 0);
 # xcb_syslibs
 qt_config_compile_test(xcb_syslibs
     LABEL "XCB (extensions)"
-"
+"// xkb.h is using a variable called 'explicit', which is a reserved keyword in C++
+#define explicit dont_use_cxx_explicit
 #include <xcb/xcb.h>
 #include <xcb/xcb_image.h>
 #include <xcb/xcb_keysyms.h>
@@ -451,7 +448,8 @@ qt_config_compile_test(xcb_syslibs
 #include <xcb/xinerama.h>
 #include <xcb/xcb_icccm.h>
 #include <xcb/xcb_renderutil.h>
-
+#include <xcb/xkb.h>
+#undef explicit
 int main(int argc, char **argv)
 {
     (void)argc; (void)argv;
@@ -466,10 +464,12 @@ xcb_render_query_pict_formats_reply_t *formatsReply =
     xcb_render_query_pict_formats_reply(c, formatsCookie, &error);
 /* RENDERUTIL: xcb_renderutil.h include won't compile unless version >= 0.3.9 */
 xcb_render_util_find_standard_format(nullptr, XCB_PICT_STANDARD_ARGB_32);
+/* XKB: This takes more arguments in xcb-xkb < 1.11 */
+xcb_xkb_get_kbd_by_name_replies_key_names_value_list_sizeof(nullptr, 0, 0, 0, 0, 0, 0, 0, 0);
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb
+"# FIXME: use: xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb_xkb xcb
 )
 
 
@@ -679,7 +679,7 @@ qt_feature("openvg" PUBLIC
 )
 qt_feature("egl" PUBLIC PRIVATE
     LABEL "EGL"
-    CONDITION ( QT_FEATURE_opengl OR QT_FEATURE_openvg ) AND ( QT_FEATURE_angle OR EGL_FOUND )
+    CONDITION ( QT_FEATURE_opengl OR QT_FEATURE_openvg ) AND ( QT_FEATURE_angle OR EGL_FOUND ) AND ( QT_FEATURE_dlopen OR NOT UNIX )
 )
 qt_feature_definition("egl" "QT_NO_EGL" NEGATE VALUE "1")
 qt_feature("egl_x11" PRIVATE
@@ -771,8 +771,7 @@ qt_feature("xcb" PRIVATE
     SECTION "Platform plugins"
     LABEL "XCB"
     AUTODETECT NOT APPLE
-    CONDITION QT_FEATURE_thread AND QT_FEATURE_xkbcommon AND TARGET XCB::XCB
-    ENABLE INPUT_xcb STREQUAL 'system' OR INPUT_xcb STREQUAL 'qt' OR INPUT_xcb STREQUAL 'yes'
+    CONDITION QT_FEATURE_thread AND TARGET XCB::XCB AND TEST_xcb_syslibs AND QT_FEATURE_xkbcommon_x11
 )
 qt_feature("xcb_glx_plugin" PRIVATE
     LABEL "GLX Plugin"
@@ -800,11 +799,6 @@ qt_feature("xrender" PRIVATE
     CONDITION QT_FEATURE_xcb_native_painting
     EMIT_IF QT_FEATURE_xcb AND QT_FEATURE_xcb_native_painting
 )
-qt_feature("xkb" PRIVATE
-    LABEL "XCB XKB"
-    CONDITION ( NOT ON OR XCB_XKB_FOUND ) AND XKB_FOUND
-    EMIT_IF QT_FEATURE_xcb
-)
 qt_feature("xcb_xlib" PRIVATE
     LABEL "XCB Xlib"
     CONDITION QT_FEATURE_xlib AND X11_XCB_FOUND
@@ -814,14 +808,20 @@ qt_feature("xcb_sm" PRIVATE
     CONDITION QT_FEATURE_sessionmanager AND X11_SM_FOUND
     EMIT_IF QT_FEATURE_xcb
 )
-qt_feature("xcb_xinput" PRIVATE
-    LABEL "XCB XInput"
-    CONDITION NOT ON OR XCB_XINPUT_FOUND
+qt_feature("system_xcb_xinput" PRIVATE
+    LABEL "Using system-provided xcb-xinput"
+    CONDITION XCB_XINPUT_FOUND
+    ENABLE INPUT_bundled_xcb_xinput STREQUAL 'no'
+    DISABLE INPUT_bundled_xcb_xinput STREQUAL 'yes'
     EMIT_IF QT_FEATURE_xcb
 )
 qt_feature("xkbcommon" PRIVATE
     LABEL "xkbcommon"
     CONDITION XKB_FOUND
+)
+qt_feature("xkbcommon_x11" PRIVATE
+    LABEL "xkbcommon-x11"
+    CONDITION QT_FEATURE_xkbcommon AND XKB_FOUND
 )
 qt_feature("xlib" PRIVATE
     LABEL "XLib"

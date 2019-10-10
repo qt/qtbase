@@ -55,6 +55,10 @@ add_qt_tool(qmake # special case
         ../src/corelib/text/qbytearraymatcher.cpp ../src/corelib/text/qbytearraymatcher.h
         ../src/corelib/text/qchar.h
         ../src/corelib/tools/qcryptographichash.cpp ../src/corelib/tools/qcryptographichash.h
+        ../src/corelib/time/qcalendar.cpp ../src/corelib/time/qcalendar.h # special case
+        ../src/corelib/time/qcalendarbackend_p.h ../src/corelib/time/qcalendarmath_p.h # special case
+        ../src/corelib/time/qgregoriancalendar.cpp ../src/corelib/time/qgregoriancalendar_p.h # special case
+        ../src/corelib/time/qromancalendar.cpp ../src/corelib/time/qromancalendar_p.h # special case
         ../src/corelib/time/qdatetime.cpp ../src/corelib/time/qdatetime.h ../src/corelib/time/qdatetime_p.h # special case
         ../src/corelib/tools/qhash.cpp ../src/corelib/tools/qhash.h
         ../src/corelib/tools/qlist.cpp ../src/corelib/tools/qlist.h

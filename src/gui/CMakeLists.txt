@@ -65,7 +65,6 @@ add_qt_module(Gui
         image/qimagewriter.cpp image/qimagewriter.h
         image/qpaintengine_pic.cpp image/qpaintengine_pic_p.h
         image/qpicture.cpp image/qpicture.h image/qpicture_p.h
-        image/qpictureformatplugin.cpp image/qpictureformatplugin.h
         image/qpixmap.cpp image/qpixmap.h
         image/qpixmap_blitter.cpp image/qpixmap_blitter_p.h
         image/qpixmap_raster.cpp image/qpixmap_raster_p.h
@@ -295,51 +294,10 @@ set(qmake_webgradients_resource_files
 add_qt_resource(Gui "qmake_webgradients"
     PREFIX
         "/qgradient/" # special case
+    #BASE # special case remove
+        #"painting" # special case remove
     FILES
         ${qmake_webgradients_resource_files}
-)
-
-add_qt_simd_part(Gui SIMD sse2
-    SOURCES
-        painting/qdrawhelper_sse2.cpp
-)
-
-
-add_qt_simd_part(Gui SIMD ssse3
-    SOURCES
-        image/qimage_ssse3.cpp
-        painting/qdrawhelper_ssse3.cpp
-)
-
-
-add_qt_simd_part(Gui SIMD sse4_1
-    SOURCES
-        painting/qdrawhelper_sse4.cpp
-        painting/qimagescale_sse4.cpp
-)
-
-
-add_qt_simd_part(Gui SIMD neon
-    SOURCES
-        image/qimage_neon.cpp
-        painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
-        painting/qimagescale_neon.cpp
-)
-
-
-add_qt_simd_part(Gui SIMD mips_dsp
-    SOURCES
-        painting/qdrawhelper_mips_dsp.cpp painting/qdrawhelper_mips_dsp_p.h
-        painting/qdrawhelper_mips_dsp_asm.S
-        painting/qt_mips_asm_dsp_p.h
-)
-
-
-add_qt_simd_part(Gui SIMD mips_dspr2
-    SOURCES
-        image/qimage_mips_dspr2.cpp
-        image/qimage_mips_dspr2_asm.S
-        painting/qdrawhelper_mips_dspr2_asm.S
 )
 
 # special case begin
@@ -357,7 +315,6 @@ extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
         itemmodels/qstandarditemmodel.cpp itemmodels/qstandarditemmodel.h itemmodels/qstandarditemmodel_p.h
 )
 # special case end
-
 
 
 #### Keys ignored in scope 1:.:.:gui.pro:<TRUE>:
@@ -551,6 +508,69 @@ extend_target(Gui CONDITION QT_FEATURE_png
         PNG::PNG
 )
 
+if(NOT ANDROID)
+    add_qt_simd_part(Gui SIMD sse2
+        SOURCES
+            painting/qdrawhelper_sse2.cpp
+    )
+
+    add_qt_simd_part(Gui SIMD ssse3
+        SOURCES
+            image/qimage_ssse3.cpp
+            painting/qdrawhelper_ssse3.cpp
+    )
+
+    add_qt_simd_part(Gui SIMD sse4_1
+        SOURCES
+            painting/qdrawhelper_sse4.cpp
+            painting/qimagescale_sse4.cpp
+    )
+
+    add_qt_simd_part(Gui SIMD neon
+        SOURCES
+            image/qimage_neon.cpp
+            painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
+            painting/qimagescale_neon.cpp
+    )
+
+    add_qt_simd_part(Gui SIMD mips_dsp
+        SOURCES
+            painting/qdrawhelper_mips_dsp.cpp painting/qdrawhelper_mips_dsp_p.h
+            painting/qdrawhelper_mips_dsp_asm.S
+            painting/qt_mips_asm_dsp_p.h
+    )
+
+    add_qt_simd_part(Gui SIMD mips_dspr2
+        SOURCES
+            image/qimage_mips_dspr2.cpp
+            image/qimage_mips_dspr2_asm.S
+            painting/qdrawhelper_mips_dspr2_asm.S
+    )
+
+    add_qt_simd_part(Gui SIMD arch_haswell
+        SOURCES
+            painting/qdrawhelper_avx2.cpp
+    )
+endif()
+
+extend_target(Gui CONDITION ANDROID AND arm64-v8a
+    SOURCES
+        image/qimage_neon.cpp
+        painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
+        painting/qimagescale_neon.cpp
+)
+
+extend_target(Gui CONDITION ANDROID AND (x86 OR x86_64)
+    SOURCES
+        image/qimage_ssse3.cpp
+        painting/qdrawhelper_sse2.cpp
+        painting/qdrawhelper_ssse3.cpp
+    DEFINES
+        QT_COMPILER_SUPPORTS_SSE2 QT_COMPILER_SUPPORTS_SSE2
+        QT_COMPILER_SUPPORTS_SSE3 QT_COMPILER_SUPPORTS_SSE3
+        QT_COMPILER_SUPPORTS_SSSE3 QT_COMPILER_SUPPORTS_SSSE3
+)
+
 # special case begin
 if (MINGW AND CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 8.1.0)
   # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86048
@@ -603,9 +623,26 @@ extend_target(Gui CONDITION QT_FEATURE_cssparser
         text/qcssparser.cpp text/qcssparser_p.h
 )
 
-extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64")
+extend_target(Gui CONDITION UNIX AND NOT ANDROID AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64")
     DEFINES
         ENABLE_PIXMAN_DRAWHELPERS
+)
+
+if(UNIX AND NOT ANDROID AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64"))
+    add_qt_simd_part(Gui SIMD neon
+        SOURCES
+            ../3rdparty/pixman/pixman-arm-neon-asm.S
+            painting/qdrawhelper_neon_asm.S
+    )
+endif()
+
+extend_target(Gui CONDITION ANDROID AND x86_64
+    SOURCES
+        painting/qdrawhelper_sse4.cpp
+        painting/qimagescale_sse4.cpp
+    DEFINES
+        QT_COMPILER_SUPPORTS_SSE4_1
+        QT_COMPILER_SUPPORTS_SSE4_2
 )
 
 # special case begin
@@ -615,9 +652,6 @@ extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (
         painting/qdrawhelper_neon_asm.S
 )
 # special case end
-
-#### Keys ignored in scope 51:.:painting:painting/painting.pri:NOT APPLE_UIKIT AND NOT WIN32 AND NOT INTEGRITY AND NOT QT_ARCH___contains___arm64:
-# NEON_ASM = "../3rdparty/pixman/pixman-arm-neon-asm.S" "painting/qdrawhelper_neon_asm.S"
 
 extend_target(Gui CONDITION QT_FEATURE_regularexpression
     SOURCES
@@ -729,10 +763,10 @@ endif()
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 69:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 79:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 70:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 80:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 extend_target(Gui CONDITION WASM

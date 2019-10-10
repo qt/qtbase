@@ -822,11 +822,16 @@ qt_feature("big_codecs" PUBLIC
     CONDITION QT_FEATURE_textcodec
 )
 qt_feature_definition("big_codecs" "QT_NO_BIG_CODECS" NEGATE VALUE "1")
+qt_feature("easingcurve" PUBLIC
+    SECTION "Utilities"
+    LABEL "Easing curve"
+    PURPOSE "Provides easing curve."
+)
 qt_feature("animation" PUBLIC
     SECTION "Utilities"
     LABEL "Animation"
     PURPOSE "Provides a framework for animations."
-    CONDITION QT_FEATURE_properties
+    CONDITION QT_FEATURE_properties AND QT_FEATURE_easingcurve
 )
 qt_feature_definition("animation" "QT_NO_ANIMATION" NEGATE VALUE "1")
 qt_feature("statemachine" PUBLIC
@@ -850,6 +855,22 @@ qt_feature("sha3_fast" PRIVATE
     SECTION "Utilities"
     LABEL "Speed optimized SHA3"
     PURPOSE "Optimizes SHA3 for speed instead of size."
+)
+qt_feature("jalalicalendar" PUBLIC
+    SECTION "Utilities"
+    LABEL "QJalaliCalendar"
+    PURPOSE "Support the Jalali (Persian) calendar"
+)
+qt_feature("hijricalendar" PRIVATE
+    SECTION "Utilities"
+    LABEL "QHijriCalendar"
+    PURPOSE "Generic basis for Islamic calendars, providing shared locale data"
+)
+qt_feature("islamiccivilcalendar" PUBLIC
+    SECTION "Utilities"
+    LABEL "QIslamicCivilCalendar"
+    PURPOSE "Support the Islamic Civil calendar"
+    CONDITION QT_FEATURE_hijricalendar
 )
 qt_feature("timezone" PUBLIC
     SECTION "Utilities"

@@ -342,6 +342,7 @@ qt_feature("scroller" PUBLIC
     SECTION "Widgets"
     LABEL "QScroller"
     PURPOSE "Enables kinetic scrolling for any scrolling widget or graphics item."
+    CONDITION QT_FEATURE_easingcurve
 )
 qt_feature("graphicsview" PUBLIC
     SECTION "Widgets"
@@ -519,12 +520,6 @@ qt_feature("columnview" PUBLIC
     CONDITION QT_FEATURE_listview
 )
 qt_feature_definition("columnview" "QT_NO_COLUMNVIEW" NEGATE VALUE "1")
-qt_feature("paint_debug" PUBLIC
-    SECTION "Painting"
-    LABEL "Painting Debug Utilities"
-    PURPOSE "Enabled debugging painting with the environment variables QT_FLUSH_UPDATE and QT_FLUSH_PAINT."
-)
-qt_feature_definition("paint_debug" "QT_NO_PAINT_DEBUG" NEGATE VALUE "1")
 qt_feature("completer" PUBLIC
     SECTION "Utilities"
     LABEL "QCompleter"

@@ -86,5 +86,10 @@ extend_target(qsqlite CONDITION QT_FEATURE_dlopen AND NOT QT_FEATURE_system_sqli
         ${CMAKE_DL_LIBS}
 )
 
-#### Keys ignored in scope 12:.:../../../3rdparty:../../../3rdparty/sqlite.pri:INTEGRITY:
+extend_target(qsqlite CONDITION NOT QT_FEATURE_dlopen AND NOT QT_FEATURE_system_sqlite
+    DEFINES
+        SQLITE_OMIT_LOAD_EXTENSION
+)
+
+#### Keys ignored in scope 13:.:../../../3rdparty:../../../3rdparty/sqlite.pri:INTEGRITY:
 # QMAKE_CFLAGS = "-include" "qplatformdefs.h"

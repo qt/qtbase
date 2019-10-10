@@ -188,7 +188,15 @@ add_qt_module(Core
         thread/qthread.cpp thread/qthread.h
         thread/qthreadstorage.h
         thread/qwaitcondition.h
+        time/qcalendar.cpp time/qcalendar.h
+        time/qcalendarbackend_p.h
+        time/qcalendarmath_p.h
         time/qdatetime.cpp time/qdatetime.h time/qdatetime_p.h
+        time/qgregoriancalendar.cpp time/qgregoriancalendar_p.h
+        time/qjuliancalendar.cpp time/qjuliancalendar_p.h
+        time/qmilankoviccalendar.cpp time/qmilankoviccalendar_p.h
+        time/qromancalendar.cpp time/qromancalendar_p.h
+        time/qromancalendar_data_p.h
         tools/qalgorithms.h
         tools/qarraydata.cpp tools/qarraydata.h
         tools/qarraydataops.h
@@ -199,7 +207,6 @@ add_qt_module(Core
         tools/qcontainertools_impl.h
         tools/qcontiguouscache.cpp tools/qcontiguouscache.h
         tools/qcryptographichash.cpp tools/qcryptographichash.h
-        tools/qeasingcurve.cpp tools/qeasingcurve.h
         tools/qfreelist.cpp tools/qfreelist_p.h
         tools/qhash.cpp tools/qhash.h
         tools/qhashfunctions.h
@@ -228,7 +235,6 @@ add_qt_module(Core
         tools/qsimd.cpp tools/qsimd_p.h
         tools/qsize.cpp tools/qsize.h
         tools/qstack.h
-        tools/qtimeline.cpp tools/qtimeline.h
         tools/qtools_p.h
         tools/qvarlengtharray.h
         tools/qvector.h
@@ -243,7 +249,7 @@ add_qt_module(Core
     PRECOMPILED_HEADER
         global/qt_pch.h
     NO_PCH_SOURCES
-        text/qstring_compat.cpp
+        "text/qstring_compat.cpp"
     LIBRARIES
         ZLIB::ZLIB
         # double-conversion # special case
@@ -330,7 +336,6 @@ add_qt_simd_part(Core SIMD mips_dsp
 )
 
 
-
 if(ANDROID)
     set_property(TARGET Core APPEND PROPERTY QT_ANDROID_BUNDLED_JAR_DEPENDENCIES
         jar/QtAndroid.jar
@@ -389,12 +394,20 @@ endif()
 #### Keys ignored in scope 3:.:.:corelib.pro:NOT QT_NAMESPACE_ISEMPTY:
 # MODULE_DEFINES = "QT_NAMESPACE=$$QT_NAMESPACE"
 
+extend_target(Core CONDITION ANDROID
+    SOURCES
+        kernel/qsharedmemory_android.cpp
+        kernel/qsystemsemaphore_android.cpp
+    DEFINES
+        LIBS_SUFFIX='\\"_.so\\"'
+)
+
 extend_target(Core CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x67000000"
 )
 
-#### Keys ignored in scope 5:.:.:corelib.pro:FREEBSD OR OPENBSD:
+#### Keys ignored in scope 6:.:.:corelib.pro:FREEBSD OR OPENBSD:
 # QMAKE_LFLAGS_NOUNDEF = <EMPTY>
 
 extend_target(Core CONDITION QT_FEATURE_animation
@@ -487,33 +500,30 @@ extend_target(Core CONDITION INTEGRITY
         --pending_instantiations=128
 )
 
-#### Keys ignored in scope 13:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_HOST_DATA_DIR):
+#### Keys ignored in scope 14:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_HOST_DATA_DIR):
 # CMAKE_HOST_DATA_DIR = "$$[QT_HOST_DATA/src]/"
 # CMAKE_HOST_DATA_DIR_IS_ABSOLUTE = "True"
 
-#### Keys ignored in scope 14:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_INSTALL_DATA_DIR):
+#### Keys ignored in scope 15:.:.:corelib.pro:pathIsAbsolute(_ss_CMAKE_INSTALL_DATA_DIR):
 # CMAKE_INSTALL_DATA_DIR = "$$[QT_HOST_DATA]/"
 # CMAKE_INSTALL_DATA_DIR_IS_ABSOLUTE = "True"
 
-#### Keys ignored in scope 18:.:global:global/global.pri:QT_CPU_FEATURES__ss_QT_ARCH___contains___f16c:
+#### Keys ignored in scope 19:.:global:global/global.pri:QT_CPU_FEATURES__ss_QT_ARCH___contains___f16c:
 # f16c_cxx = "true"
 
-#### Keys ignored in scope 20:.:global:global/global.pri:CLANG OR intel_icl OR ICC:
+#### Keys ignored in scope 21:.:global:global/global.pri:CLANG OR intel_icl OR ICC:
 # f16c_cxx = "false"
 
-#### Keys ignored in scope 22:.:global:global/global.pri:GCC AND f16c AND x86SimdAlways:
+#### Keys ignored in scope 23:.:global:global/global.pri:GCC AND f16c AND x86SimdAlways:
 # f16c_cxx = "true"
 
-#### Keys ignored in scope 24:.:global:global/global.pri:MSVC AND QT_CPU_FEATURES__ss_QT_ARCH___contains___avx:
+#### Keys ignored in scope 25:.:global:global/global.pri:MSVC AND QT_CPU_FEATURES__ss_QT_ARCH___contains___avx:
 # f16c_cxx = "true"
 
-#### Keys ignored in scope 25:.:global:global/global.pri:else:
+#### Keys ignored in scope 26:.:global:global/global.pri:else:
 # f16c_cxx = "false"
 
-# extend_target(Core CONDITION _ss_f16c_cxx ... # special case: Handled manually:
-
-#### Keys ignored in scope 27:.:global:global/global.pri:else:
-# F16C_SOURCES = "global/qfloat16_f16c.c"
+# extend_target(Core CONDITION _ss_f16c_cxx ... # special case remove: Handled manually
 
 # special case begin
 # Remove this because it's handled manually
@@ -530,7 +540,7 @@ extend_target(Core CONDITION LINUX AND NOT static
         global/minimum-linux_p.h
 )
 
-#### Keys ignored in scope 32:.:global:global/global.pri:precompile_header:
+#### Keys ignored in scope 33:.:global:global/global.pri:precompile_header:
 # NO_PCH_ASM = "global/minimum-linux.S"
 # QMAKE_EXTRA_COMPILERS = "no_pch_assembler"
 # no_pch_assembler.commands = "$$QMAKE_CC" "-c" "$(CFLAGS)" "$(INCPATH)" "${QMAKE_FILE_IN}" "-o" "${QMAKE_FILE_OUT}"
@@ -539,7 +549,7 @@ extend_target(Core CONDITION LINUX AND NOT static
 # no_pch_assembler.name = "compiling[no_pch]" "${QMAKE_FILE_IN}"
 # no_pch_assembler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
 
-#### Keys ignored in scope 33:.:global:global/global.pri:silent:
+#### Keys ignored in scope 34:.:global:global/global.pri:silent:
 # no_pch_assembler.commands = "@echo" "compiling[no_pch]" "${QMAKE_FILE_IN}" "&&"
 
 extend_target(Core CONDITION LINUX AND NOT precompile_header AND NOT static
@@ -557,7 +567,7 @@ extend_target(Core CONDITION QT_FEATURE_journald
         PkgConfig::Libsystemd
 )
 
-#### Keys ignored in scope 37:.:global:global/global.pri:GCC AND ltcg:
+#### Keys ignored in scope 38:.:global:global/global.pri:GCC AND ltcg:
 # QMAKE_EXTRA_COMPILERS = "versiontagging_compiler"
 # versiontagging_compiler.commands = "$$QMAKE_CXX" "-c" "$(CXXFLAGS)" "$(INCPATH)" "-fno-lto" "-o" "${QMAKE_FILE_OUT}" "${QMAKE_FILE_IN}"
 # versiontagging_compiler.dependency_type = "TYPE_C"
@@ -566,7 +576,7 @@ extend_target(Core CONDITION QT_FEATURE_journald
 # versiontagging_compiler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
 # versiontagging_compiler.variable_out = "OBJECTS"
 
-#### Keys ignored in scope 38:.:global:global/global.pri:silent:
+#### Keys ignored in scope 39:.:global:global/global.pri:silent:
 # versiontagging_compiler.commands = "@echo" "compiling[versiontagging]" "${QMAKE_FILE_IN}" "&&"
 
 extend_target(Core CONDITION NOT GCC OR NOT ltcg
@@ -595,6 +605,7 @@ extend_target(Core CONDITION QT_FEATURE_thread
         thread/qbasicatomic.h
         thread/qfutex_p.h
         thread/qgenericatomic.h
+        thread/qlocking_p.h
         thread/qmutex.cpp thread/qmutex_p.h
         thread/qorderedmutexlocker_p.h
         thread/qreadwritelock.cpp thread/qreadwritelock_p.h
@@ -664,6 +675,12 @@ extend_target(Core CONDITION QT_FEATURE_commandlineparser
         tools/qcommandlineparser.cpp tools/qcommandlineparser.h
 )
 
+extend_target(Core CONDITION QT_FEATURE_easingcurve
+    SOURCES
+        tools/qeasingcurve.cpp tools/qeasingcurve.h
+        tools/qtimeline.cpp tools/qtimeline.h
+)
+
 extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND (NOT APPLE_OSX OR NOT ICC)
     LIBRARIES
         m
@@ -712,6 +729,23 @@ extend_target(Core CONDITION QT_FEATURE_regularexpression
         text/qregularexpression.cpp text/qregularexpression.h
     LIBRARIES
         WrapPCRE2::WrapPCRE2
+)
+
+extend_target(Core CONDITION QT_FEATURE_hijricalendar
+    SOURCES
+        time/qhijricalendar.cpp time/qhijricalendar_p.h
+        time/qhijricalendar_data_p.h
+)
+
+extend_target(Core CONDITION QT_FEATURE_islamiccivilcalendar
+    SOURCES
+        time/qislamiccivilcalendar.cpp time/qislamiccivilcalendar_p.h
+)
+
+extend_target(Core CONDITION QT_FEATURE_jalalicalendar
+    SOURCES
+        time/qjalalicalendar.cpp time/qjalalicalendar_p.h
+        time/qjalalicalendar_data_p.h
 )
 
 extend_target(Core CONDITION QT_FEATURE_timezone
@@ -979,12 +1013,6 @@ extend_target(Core CONDITION UNIX AND NOT ANDROID
         kernel/qsystemsemaphore_posix.cpp
         kernel/qsystemsemaphore_systemv.cpp
         kernel/qsystemsemaphore_unix.cpp
-)
-
-extend_target(Core CONDITION ANDROID
-    SOURCES
-        kernel/qsharedmemory_android.cpp
-        kernel/qsystemsemaphore_android.cpp
 )
 
 extend_target(Core CONDITION VXWORKS

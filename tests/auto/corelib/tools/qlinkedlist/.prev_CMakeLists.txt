@@ -1,12 +1,14 @@
-# Generated from qvarlengtharray.pro.
+# Generated from qlinkedlist.pro.
 
 #####################################################################
-## tst_qvarlengtharray Test:
+## tst_qlinkedlist Test:
 #####################################################################
 
-add_qt_test(tst_qvarlengtharray
+add_qt_test(tst_qlinkedlist
     SOURCES
-        tst_qvarlengtharray.cpp
+        tst_qlinkedlist.cpp
+    DEFINES
+        -QT_NO_LINKED_LIST
 )
 
 ## Scopes:
