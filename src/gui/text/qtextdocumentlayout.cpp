@@ -1336,8 +1336,12 @@ void QTextDocumentLayoutPrivate::drawBlock(const QPointF &offset, QPainter *pain
 
     tl->draw(painter, offset, selections, context.clip.isValid() ? (context.clip & clipRect) : clipRect);
 
-    if ((context.cursorPosition >= blpos && context.cursorPosition < blpos + bllen)
-        || (context.cursorPosition < -1 && !tl->preeditAreaText().isEmpty())) {
+    // if the block is empty and it precedes a table, do not draw the cursor.
+    // the cursor is drawn later after the table has been drawn so no need
+    // to draw it here.
+    if (!isEmptyBlockBeforeTable(frameIteratorForTextPosition(blpos))
+        && ((context.cursorPosition >= blpos && context.cursorPosition < blpos + bllen)
+            || (context.cursorPosition < -1 && !tl->preeditAreaText().isEmpty()))) {
         int cpos = context.cursorPosition;
         if (cpos < -1)
             cpos = tl->preeditAreaPosition() - (cpos + 2);
