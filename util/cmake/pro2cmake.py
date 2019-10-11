@@ -2651,7 +2651,7 @@ def write_example(
     binary_name = scope.TARGET
     assert binary_name
 
-    example_install_dir = scope.get_string("target.path")
+    example_install_dir = scope.expandString("target.path")
     if not example_install_dir:
         example_install_dir = "examples"
     example_install_dir = example_install_dir.replace("$$[QT_INSTALL_EXAMPLES]", "examples")
