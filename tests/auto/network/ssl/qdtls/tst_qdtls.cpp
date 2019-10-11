@@ -1131,7 +1131,7 @@ void tst_QDtls::handshakeReadyRead()
     QUdpSocket *socket = qobject_cast<QUdpSocket *>(sender());
     Q_ASSERT(socket);
 
-    if (!socket->pendingDatagramSize())
+    if (socket->pendingDatagramSize() <= 0)
         return;
 
     const bool isServer = socket == &serverSocket;

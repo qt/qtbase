@@ -746,6 +746,7 @@ void QTextEdit::setAlignment(Qt::Alignment a)
     QTextCursor cursor = d->control->textCursor();
     cursor.mergeBlockFormat(fmt);
     d->control->setTextCursor(cursor);
+    d->relayoutDocument();
 }
 
 /*!

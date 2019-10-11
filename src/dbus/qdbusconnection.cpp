@@ -870,8 +870,12 @@ bool QDBusConnection::disconnect(const QString &service, const QString &path, co
     This function does not replace existing objects: if there is already an object registered at
     path \a path, this function will return false. Use unregisterObject() to unregister it first.
 
+    The ExportChildObjects flag exports child objects on D-Bus based on the
+    path of the registered objects and the QObject::objectName of the child.
+    Therefore, it is important for the child object to have an object name.
+
     You cannot register an object as a child object of an object that
-    was registered with QDBusConnection::ExportChildObjects.
+    was registered with ExportChildObjects.
 */
 bool QDBusConnection::registerObject(const QString &path, QObject *object, RegisterOptions options)
 {
@@ -890,8 +894,12 @@ bool QDBusConnection::registerObject(const QString &path, QObject *object, Regis
     This function does not replace existing objects: if there is already an object registered at
     path \a path, this function will return false. Use unregisterObject() to unregister it first.
 
+    The ExportChildObjects flag exports child objects on D-Bus based on the
+    path of the registered objects and the QObject::objectName of the child.
+    Therefore, it is important for the child object to have an object name.
+
     You cannot register an object as a child object of an object that
-    was registered with QDBusConnection::ExportChildObjects.
+    was registered with ExportChildObjects.
 */
 bool QDBusConnection::registerObject(const QString &path, const QString &interface, QObject *object, RegisterOptions options)
 {

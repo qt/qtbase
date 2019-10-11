@@ -27,8 +27,8 @@ distclean: clean_all
 $(EXPORT_SUBTARGETS): % : %-build
 
 # Generic targets
-%_first: $(firstword $(call targets, %)) ;
-%_all: $(call targets, %) ;
+%_first: $(EXPORT_PRE_TARGETDEPS) $(firstword $(call targets, %)) ;
+%_all: $(EXPORT_PRE_TARGETDEPS) $(call targets, %) ;
 
 # Actions
 %-build: ACTION = build
