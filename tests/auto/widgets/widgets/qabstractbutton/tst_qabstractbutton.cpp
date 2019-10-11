@@ -39,6 +39,9 @@
 #include <qgridlayout.h>
 #include <qabstractbutton.h>
 
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
+
 class tst_QAbstractButton : public QObject
 {
     Q_OBJECT
@@ -470,6 +473,9 @@ void tst_QAbstractButton::toggled()
 
 void tst_QAbstractButton::setShortcut()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QKeySequence seq( Qt::Key_A );
     testWidget->setShortcut( seq );
     QApplication::setActiveWindow(testWidget);

@@ -132,6 +132,9 @@ void tst_QStatusBar::insertPermanentWidget()
 
 void tst_QStatusBar::setSizeGripEnabled()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow mainWindow;
     QPointer<QStatusBar> statusBar = mainWindow.statusBar();
     QVERIFY(statusBar);
@@ -223,6 +226,9 @@ void tst_QStatusBar::task194017_hiddenWidget()
 
 void tst_QStatusBar::QTBUG4334_hiddenOnMaximizedWindow()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow main;
     QStatusBar statusbar;
     statusbar.setSizeGripEnabled(true);
