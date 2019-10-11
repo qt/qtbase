@@ -216,6 +216,7 @@ private slots:
     void QTBUG14242_hideSectionAutoSize();
     void QTBUG50171_visualRegionForSwappedItems();
     void QTBUG53221_assertShiftHiddenRow();
+    void QTBUG75615_sizeHintWithStylesheet();
     void ensureNoIndexAtLength();
     void offsetConsistent();
 
@@ -2604,6 +2605,26 @@ void tst_QHeaderView::QTBUG53221_assertShiftHiddenRow()
     QCOMPARE(tableView.verticalHeader()->isSectionHidden(0), false);
     QCOMPARE(tableView.verticalHeader()->isSectionHidden(1), false);
     QCOMPARE(tableView.verticalHeader()->isSectionHidden(2), true);
+}
+
+void tst_QHeaderView::QTBUG75615_sizeHintWithStylesheet()
+{
+    QTableView tableView;
+    QStandardItemModel model(1, 1);
+    tableView.setModel(&model);
+    tableView.show();
+
+    const auto headerView = tableView.horizontalHeader();
+    const auto oldSizeHint = headerView->sizeHint();
+    QVERIFY(oldSizeHint.isValid());
+
+    tableView.setStyleSheet("QTableView QHeaderView::section { height: 100px;}");
+    QCOMPARE(headerView->sizeHint().width(), oldSizeHint.width());
+    QCOMPARE(headerView->sizeHint().height(), 100);
+
+    tableView.setStyleSheet("QTableView QHeaderView::section { width: 100px;}");
+    QCOMPARE(headerView->sizeHint().height(), oldSizeHint.height());
+    QCOMPARE(headerView->sizeHint().width(), 100);
 }
 
 void protected_QHeaderView::testVisualRegionForSelection()

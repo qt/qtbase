@@ -5035,6 +5035,14 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
                 QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
                 if (subRule.hasGeometry() || subRule.hasBox() || !subRule.hasNativeBorder() || subRule.hasFont) {
                     sz = subRule.adjustSize(csz);
+                    if (!sz.isValid()) {
+                        // Try to set the missing values based on the base style.
+                        const auto baseSize = baseStyle()->sizeFromContents(ct, opt, sz, w);
+                        if (sz.width() < 0)
+                            sz.setWidth(baseSize.width());
+                        if (sz.height() < 0)
+                            sz.setHeight(baseSize.height());
+                    }
                     if (!subRule.hasGeometry()) {
                         QSize nativeContentsSize;
                         bool nullIcon = hdr->icon.isNull();
