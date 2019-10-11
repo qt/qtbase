@@ -1003,6 +1003,9 @@ class ImhTester : public QGraphicsItem
 
 void tst_QGraphicsItem::inputMethodHints()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     ImhTester *item = new ImhTester;
     item->setFlag(QGraphicsItem::ItemAcceptsInputMethod, true);
     item->setFlag(QGraphicsItem::ItemIsFocusable, true);
@@ -1055,6 +1058,9 @@ void tst_QGraphicsItem::inputMethodHints()
 
 void tst_QGraphicsItem::toolTip()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QString toolTip = "Qt rocks!";
 
     QGraphicsRectItem *item = new QGraphicsRectItem(QRectF(0, 0, 100, 100));
@@ -1764,7 +1770,9 @@ void tst_QGraphicsItem::selected_multi()
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
     view.fitInView(scene.sceneRect());
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QVERIFY(!item1->isSelected());
     QVERIFY(!item2->isSelected());
@@ -3267,7 +3275,8 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QVERIFY(QTest::qWaitForWindowActive(&view));
     QCoreApplication::processEvents(); // Process all queued paint events
 
     EventTester *tester = new EventTester;
@@ -4994,6 +5003,9 @@ protected:
 
 void tst_QGraphicsItem::sceneEventFilter()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QGraphicsScene scene;
 
     QGraphicsView view(&scene);
@@ -6887,7 +6899,8 @@ void tst_QGraphicsItem::opacity2()
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QVERIFY(QTest::qWaitForWindowActive(&view));
     QCoreApplication::processEvents(); // Process all queued paint events
     QTRY_VERIFY(view.repaints >= 1);
 
@@ -6962,7 +6975,8 @@ void tst_QGraphicsItem::opacityZeroUpdates()
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QVERIFY(QTest::qWaitForWindowActive(&view));
     QCoreApplication::processEvents(); // Process all queued paint events
     QTRY_VERIFY(view.repaints > 0);
 
@@ -7297,6 +7311,9 @@ void tst_QGraphicsItem::tabChangesFocus_data()
 
 void tst_QGraphicsItem::tabChangesFocus()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QFETCH(bool, tabChangesFocus);
 
     QGraphicsScene scene;
@@ -8192,7 +8209,8 @@ void tst_QGraphicsItem::moveLineItem()
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QVERIFY(QTest::qWaitForWindowActive(&view));
     QCoreApplication::processEvents(); // Process all queued paint events
     view.reset();
 
@@ -8264,9 +8282,11 @@ void tst_QGraphicsItem::sorting()
     view.resize(120, 100);
     view.setFrameStyle(0);
     view.show();
-    qApp->setActiveWindow(&view);
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation)) {
+        qApp->setActiveWindow(&view);
+        QVERIFY(QTest::qWaitForWindowActive(&view));
+    }
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(_paintedItems.count() > 0);
 
     _paintedItems.clear();
@@ -8302,9 +8322,11 @@ void tst_QGraphicsItem::itemHasNoContents()
     QGraphicsView view(&scene);
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
-    qApp->setActiveWindow(&view);
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation)) {
+        qApp->setActiveWindow(&view);
+        QVERIFY(QTest::qWaitForWindowActive(&view));
+    }
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(!_paintedItems.isEmpty());
 
     _paintedItems.clear();
@@ -9326,10 +9348,12 @@ void tst_QGraphicsItem::ensureDirtySceneTransform()
     QGraphicsView view(&scene);
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
-    QApplication::setActiveWindow(&view);
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation)) {
+        QApplication::setActiveWindow(&view);
+        QVERIFY(QTest::qWaitForWindowActive(&view));
+        QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
+    }
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
-    QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
 
     //We move the parent
     parent->move();
@@ -9710,6 +9734,9 @@ void tst_QGraphicsItem::stackBefore()
 
 void tst_QGraphicsItem::QTBUG_4233_updateCachedWithSceneRect()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     EventTester *tester = new EventTester;
     tester->setCacheMode(QGraphicsItem::ItemCoordinateCache);
 
@@ -10782,6 +10809,9 @@ void tst_QGraphicsItem::scenePosChange()
 
 void tst_QGraphicsItem::textItem_shortcuts()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QWidget w;
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     auto l = new QVBoxLayout(&w);
@@ -10847,7 +10877,8 @@ void tst_QGraphicsItem::scroll()
     view.setFrameStyle(0);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.repaints > 0);
 
     view.reset();
@@ -11373,9 +11404,11 @@ void tst_QGraphicsItem::QTBUG_6738_missingUpdateWithSetParent()
     MyGraphicsView view(&scene);
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
-    qApp->setActiveWindow(&view);
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation)) {
+        qApp->setActiveWindow(&view);
+        QVERIFY(QTest::qWaitForWindowActive(&view));
+    }
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
     QCoreApplication::processEvents(); // Process all queued paint events
     QTRY_VERIFY(view.repaints > 0);
 
@@ -11426,7 +11459,8 @@ void tst_QGraphicsItem::QT_2653_fullUpdateDiscardingOpacityUpdate()
 
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QVERIFY(QTest::qWaitForWindowActive(&view));
     QCoreApplication::processEvents(); // Process all queued paint events
     view.reset();
 
@@ -11461,7 +11495,9 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
     scene.addItem(parentGreen);
 
     origView.show();
-    QVERIFY(QTest::qWaitForWindowActive(&origView));
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QVERIFY(QTest::qWaitForWindowActive(&origView));
+    QVERIFY(QTest::qWaitForWindowExposed(&origView));
     QCoreApplication::processEvents(); // Process all queued paint events
 
     origView.setGeometry(origView.x() + origView.width() + 20, origView.y() + 20,
@@ -11475,9 +11511,11 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
     QTRY_VERIFY(origView.repaints > 0);
 
     view.show();
-    qApp->setActiveWindow(&view);
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation)) {
+        qApp->setActiveWindow(&view);
+        QVERIFY(QTest::qWaitForWindowActive(&view));
+    }
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
     view.reset();
     origView.reset();
 
@@ -11591,6 +11629,9 @@ void tst_QGraphicsItem::sortItemsWhileAdding()
 
 void tst_QGraphicsItem::doNotMarkFullUpdateIfNotInScene()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     struct Item : public QGraphicsTextItem
     {
         int painted = 0;
@@ -11649,10 +11690,12 @@ void tst_QGraphicsItem::itemDiesDuringDraggingOperation()
     item->setAcceptDrops(true);
     scene.addItem(item);
     view.show();
-    QApplication::setActiveWindow(&view);
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation)) {
+        QApplication::setActiveWindow(&view);
+        QVERIFY(QTest::qWaitForWindowActive(&view));
+        QCOMPARE(QApplication::activeWindow(), &view);
+    }
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
-    QCOMPARE(QApplication::activeWindow(), &view);
     QGraphicsSceneDragDropEvent dragEnter(QEvent::GraphicsSceneDragEnter);
     dragEnter.setScenePos(item->boundingRect().center());
     QCoreApplication::sendEvent(&scene, &dragEnter);
@@ -11678,10 +11721,12 @@ void tst_QGraphicsItem::QTBUG_12112_focusItem()
     scene.addItem(item1);
 
     view.show();
-    QApplication::setActiveWindow(&view);
+    if (QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation)) {
+        QApplication::setActiveWindow(&view);
+        QVERIFY(QTest::qWaitForWindowActive(&view));
+        QCOMPARE(QApplication::activeWindow(), &view);
+    }
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    QVERIFY(QTest::qWaitForWindowActive(&view));
-    QCOMPARE(QApplication::activeWindow(), &view);
 
     QVERIFY(item1->focusItem());
     QVERIFY(!item2->focusItem());
