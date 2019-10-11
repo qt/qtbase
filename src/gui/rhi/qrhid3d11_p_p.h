@@ -473,9 +473,9 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         imageRetainPool.clear();
     }
     void resetState() {
-        resetCommands();
         recordingPass = NoPass;
         currentTarget = nullptr;
+        resetCommands();
         resetCachedState();
     }
     void resetCachedState() {
@@ -523,8 +523,8 @@ struct QD3D11SwapChain : public QRhiSwapChain
     DXGI_FORMAT colorFormat;
     IDXGISwapChain *swapChain = nullptr;
     static const int BUFFER_COUNT = 2;
-    ID3D11Texture2D *tex[BUFFER_COUNT];
-    ID3D11RenderTargetView *rtv[BUFFER_COUNT];
+    ID3D11Texture2D *backBufferTex;
+    ID3D11RenderTargetView *backBufferRtv;
     ID3D11Texture2D *msaaTex[BUFFER_COUNT];
     ID3D11RenderTargetView *msaaRtv[BUFFER_COUNT];
     DXGI_SAMPLE_DESC sampleDesc;
@@ -569,8 +569,8 @@ public:
     QRhiSwapChain *createSwapChain() override;
     QRhi::FrameOpResult beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags) override;
     QRhi::FrameOpResult endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameFlags flags) override;
-    QRhi::FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb) override;
-    QRhi::FrameOpResult endOffscreenFrame() override;
+    QRhi::FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags) override;
+    QRhi::FrameOpResult endOffscreenFrame(QRhi::EndFrameFlags flags) override;
     QRhi::FrameOpResult finish() override;
 
     void resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
@@ -633,7 +633,6 @@ public:
     void sendVMemStatsToProfiler() override;
     void makeThreadLocalNativeContextCurrent() override;
 
-    void flushCommandBuffer();
     void enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,
                              int layer, int level, const QRhiTextureSubresourceUploadDescription &subresDesc);
     void enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates);
@@ -656,6 +655,7 @@ public:
     ID3DUserDefinedAnnotation *annotations = nullptr;
     IDXGIFactory1 *dxgiFactory = nullptr;
     bool hasDxgi2 = false;
+    bool supportsFlipDiscardSwapchain = false;
     QRhiD3D11NativeHandles nativeHandlesStruct;
 
     struct {

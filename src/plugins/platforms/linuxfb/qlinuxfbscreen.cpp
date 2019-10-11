@@ -188,7 +188,7 @@ static QImage::Format determineFormat(const fb_var_screeninfo &info, int depth)
         if (memcmp(rgba, rgb888, 3 * sizeof(fb_bitfield)) == 0) {
             format = QImage::Format_RGB888;
         } else if (memcmp(rgba, bgr888, 3 * sizeof(fb_bitfield)) == 0) {
-            format = QImage::Format_RGB888;
+            format = QImage::Format_BGR888;
             // pixeltype = BGRPixel;
         }
         break;

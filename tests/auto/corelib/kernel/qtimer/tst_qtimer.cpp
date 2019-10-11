@@ -47,7 +47,11 @@
 class tst_QTimer : public QObject
 {
     Q_OBJECT
+public:
+    static void initMain();
+
 private slots:
+    void cleanupTestCase();
     void zeroTimer();
     void singleShotTimeout();
     void timeout();
@@ -1138,7 +1142,20 @@ struct StaticSingleShotUser
     }
 };
 
+// NOTE: to prevent any static initialization order fiasco, we implement
+//       initMain() to instantiate staticSingleShotUser before qApp
+
 static StaticSingleShotUser *s_staticSingleShotUser = nullptr;
+
+void tst_QTimer::initMain()
+{
+    s_staticSingleShotUser = new StaticSingleShotUser;
+}
+
+void tst_QTimer::cleanupTestCase()
+{
+    delete s_staticSingleShotUser;
+}
 
 void tst_QTimer::singleShot_static()
 {
@@ -1146,14 +1163,6 @@ void tst_QTimer::singleShot_static()
     QCOMPARE(s_staticSingleShotUser->helper.calls, s_staticSingleShotUser->calls());
 }
 
-// NOTE: to prevent any static initialization order fiasco, we handle QTEST_MAIN
-//       ourselves, but instantiate the staticSingleShotUser before qApp
-
-int main(int argc, char *argv[])
-{
-    StaticSingleShotUser staticSingleShotUser;
-    s_staticSingleShotUser = &staticSingleShotUser;
-    QTEST_MAIN_IMPL(tst_QTimer)
-}
+QTEST_MAIN(tst_QTimer)
 
 #include "tst_qtimer.moc"

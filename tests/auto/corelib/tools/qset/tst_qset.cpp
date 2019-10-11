@@ -54,6 +54,7 @@ private slots:
     void detach();
     void isDetached();
     void clear();
+    void cpp17ctad();
     void remove();
     void contains();
     void containsSet();
@@ -323,6 +324,33 @@ void tst_QSet::clear()
     set2.clear();
     QVERIFY(set1.size() == 0);
     QVERIFY(set2.size() == 0);
+}
+
+void tst_QSet::cpp17ctad()
+{
+#ifdef __cpp_deduction_guides
+#define QVERIFY_IS_SET_OF(obj, Type) \
+    QVERIFY2((std::is_same<decltype(obj), QSet<Type>>::value), \
+             QMetaType::typeName(qMetaTypeId<decltype(obj)::value_type>()))
+#define CHECK(Type, One, Two, Three) \
+    do { \
+        const Type v[] = {One, Two, Three}; \
+        QSet v1 = {One, Two, Three}; \
+        QVERIFY_IS_SET_OF(v1, Type); \
+        QSet v2(v1.begin(), v1.end()); \
+        QVERIFY_IS_SET_OF(v2, Type); \
+        QSet v3(std::begin(v), std::end(v)); \
+        QVERIFY_IS_SET_OF(v3, Type); \
+    } while (false) \
+    /*end*/
+    CHECK(int, 1, 2, 3);
+    CHECK(double, 1.0, 2.0, 3.0);
+    CHECK(QString, QStringLiteral("one"), QStringLiteral("two"), QStringLiteral("three"));
+#undef QVERIFY_IS_SET_OF
+#undef CHECK
+#else
+    QSKIP("This test requires C++17 Constructor Template Argument Deduction support enabled in the compiler.");
+#endif
 }
 
 void tst_QSet::remove()

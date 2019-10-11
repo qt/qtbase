@@ -43,6 +43,7 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qline.h>
 #include <QtCore/qmutex.h>
+#include <QtCore/private/qlocking_p.h>
 
 #include <algorithm>
 
@@ -426,7 +427,7 @@ void QVariantAnimation::registerInterpolator(QVariantAnimation::Interpolator fun
     // in such an order that we get here with interpolators == NULL,
     // to continue causes the app to crash on exit with a SEGV
     if (interpolators) {
-        QMutexLocker locker(&registeredInterpolatorsMutex);
+        const auto locker = qt_scoped_lock(registeredInterpolatorsMutex);
         if (int(interpolationType) >= interpolators->count())
             interpolators->resize(int(interpolationType) + 1);
         interpolators->replace(interpolationType, func);
@@ -443,7 +444,7 @@ QVariantAnimation::Interpolator QVariantAnimationPrivate::getInterpolator(int in
 {
     {
         QInterpolatorVector *interpolators = registeredInterpolators();
-        QMutexLocker locker(&registeredInterpolatorsMutex);
+        const auto locker = qt_scoped_lock(registeredInterpolatorsMutex);
         QVariantAnimation::Interpolator ret = 0;
         if (interpolationType < interpolators->count()) {
             ret = interpolators->at(interpolationType);

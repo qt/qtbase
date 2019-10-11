@@ -138,8 +138,8 @@ CMAKE_RELEASE_TYPE =
 #   the debug libraries at build time.
 
 equals(QMAKE_HOST.os, Windows): CMAKE_BIN_SUFFIX = ".exe"
-if(build_all|CONFIG(debug, debug|release)): CMAKE_DEBUG_TYPE = debug
-if(build_all|CONFIG(release, debug|release)): CMAKE_RELEASE_TYPE = release
+if(debug_and_release:build_all)|CONFIG(debug, debug|release): CMAKE_DEBUG_TYPE = debug
+if(debug_and_release:build_all)|CONFIG(release, debug|release): CMAKE_RELEASE_TYPE = release
 
 # CMAKE_DEBUG_AND_RELEASE is used to tell the _populate_$${CMAKE_MODULE_NAME}_target_properties
 # functions whether a Configuration specific generator expression needs to be added to the values
@@ -153,67 +153,109 @@ if(build_all|CONFIG(release, debug|release)): CMAKE_RELEASE_TYPE = release
 # <CONFIG> equivalent to the value  specified by CMAKE_BUILD_TYPE.
 # This means that when Qt was built in a Release configuration, and the application in a Debug
 # configuration, IMPORTED_LOCATION_RELEASE will be used for the Qt libraries.
-debug_and_release {
+#
+# Note that we need to check for the "debug_and_release" feature, and not the CONFIG value, because
+# the CONFIG value is always set to true on Windows in msvc-desktop.conf disregarding whether the
+# configure line specified just -debug or just -release.
+# This also means that if a user configures and builds Qt with -release, and then calls nmake debug
+# to build debug libraries of Qt, the generated CMake file won't know about debug libraries,
+# and will always link against the release libraries.
+qtConfig(debug_and_release) {
     CMAKE_DEBUG_AND_RELEASE = TRUE
 } else {
     CMAKE_DEBUG_AND_RELEASE = FALSE
 }
 
 contains(CONFIG, plugin) {
-    !isEmpty(PLUGIN_EXTENDS):!equals(PLUGIN_EXTENDS, -) {
-        count(PLUGIN_EXTENDS, 1, greaterThan): \
-            error("Plugin declares to extend multiple modules. We don't handle that ...")
-        PLUGIN_MODULE_NAME = $$PLUGIN_EXTENDS
+    equals(PLUGIN_EXTENDS, -) {
+        CMAKE_PLUGIN_EXTENDS = -
     } else {
-        PLUGIN_MODULE_NAME =
-        for (mod, QT_MODULES) {
-            contains(QT.$${mod}.plugin_types, $$PLUGIN_TYPE) {
-                !isEmpty(PLUGIN_MODULE_NAME): \
-                    error("Multiple modules claim plugin type '$$PLUGIN_TYPE' ($$mod, in addition to $$PLUGIN_MODULE_NAME)")
-                PLUGIN_MODULE_NAME = $$mod
-                break()
-            }
+        list_plugin_extends =
+        for (p, PLUGIN_EXTENDS) {
+            m = $$cmakeModuleName($$p)
+            list_plugin_extends += Qt5::$$m
         }
-        isEmpty(PLUGIN_MODULE_NAME): error("No module claims plugin type '$$PLUGIN_TYPE'")
+        CMAKE_PLUGIN_EXTENDS = $$join(list_plugin_extends, ";")
     }
+
+    PLUGIN_MODULE_NAME =
+    unique_qt_modules = $$unique(QT_MODULES)   # In case modules appear in multiple places
+    for (mod, unique_qt_modules) {
+        contains(QT.$${mod}.plugin_types, $$PLUGIN_TYPE) {
+            !isEmpty(PLUGIN_MODULE_NAME): \
+                error("Multiple modules claim plugin type '$$PLUGIN_TYPE' ($$mod, in addition to $$PLUGIN_MODULE_NAME)")
+            PLUGIN_MODULE_NAME = $$mod
+        }
+    }
+    isEmpty(PLUGIN_MODULE_NAME): error("No module claims plugin type '$$PLUGIN_TYPE'")
+
+    sorted_deps = $$sort_depends(QT_PLUGIN.$${CMAKE_QT_STEM}.DEPENDS, QT.)
+    mod_deps =
+    lib_deps =
+    aux_mod_deps =
+    aux_lib_deps =
+    for (dep, sorted_deps) {
+        cdep = $$cmakeModuleName($$dep)
+        mod_deps += $$cdep
+        lib_deps += Qt5::$$cdep
+    }
+    CMAKE_PLUGIN_MODULE_DEPS = $$join(mod_deps, ";")
+    CMAKE_PLUGIN_QT5_MODULE_DEPS = $$join(lib_deps, ";")
 
     CMAKE_MODULE_NAME = $$cmakeModuleName($$PLUGIN_MODULE_NAME)
 
     CMAKE_PLUGIN_NAME = $$PLUGIN_CLASS_NAME
+    CMAKE_PLUGIN_TYPE = $$PLUGIN_TYPE
+    CMAKE_PLUGIN_TYPE_ESCAPED = $$replace(PLUGIN_TYPE, [-/], _)
 
     win32 {
         isEmpty(CMAKE_STATIC_TYPE) {
-            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/$${TARGET}.dll
-            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${TARGET}d.dll
+            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}.dll
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}d.dll
+            CMAKE_PRL_FILE_LOCATION_RELEASE = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}.prl
+            CMAKE_PRL_FILE_LOCATION_DEBUG = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}d.prl
         } else:mingw {
-            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${TARGET}.a
-            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${TARGET}d.a
+            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}.a
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}d.a
+            CMAKE_PRL_FILE_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}.prl
+            CMAKE_PRL_FILE_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}d.prl
         } else {                         # MSVC static
-            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/$${TARGET}.lib
-            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${TARGET}d.lib
+            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}.lib
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}d.lib
+            CMAKE_PRL_FILE_LOCATION_RELEASE = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}.prl
+            CMAKE_PRL_FILE_LOCATION_DEBUG = $$PLUGIN_TYPE/$${CMAKE_QT_STEM}d.prl
         }
     } else {
         mac {
-            isEmpty(CMAKE_STATIC_TYPE): CMAKE_PlUGIN_EXT = .dylib
-            else: CMAKE_PlUGIN_EXT = .a
+            isEmpty(CMAKE_STATIC_TYPE): CMAKE_PLUGIN_EXT = .dylib
+            else: CMAKE_PLUGIN_EXT = .a
 
-            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${TARGET}$${CMAKE_PlUGIN_EXT}
-            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${TARGET}$${CMAKE_PlUGIN_EXT}
+            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}$${CMAKE_PLUGIN_EXT}
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}_debug$${CMAKE_PLUGIN_EXT}
+            CMAKE_PRL_FILE_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}.prl
+            CMAKE_PRL_FILE_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}_debug.prl
         } else {
-            isEmpty(CMAKE_STATIC_TYPE): CMAKE_PlUGIN_EXT = .so
-            else: CMAKE_PlUGIN_EXT = .a
+            isEmpty(CMAKE_STATIC_TYPE): CMAKE_PLUGIN_EXT = .so
+            else: CMAKE_PLUGIN_EXT = .a
 
-            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${TARGET}$${CMAKE_PlUGIN_EXT}
-            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${TARGET}$${CMAKE_PlUGIN_EXT}
+            CMAKE_PLUGIN_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}$${CMAKE_PLUGIN_EXT}
+            CMAKE_PLUGIN_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}$${CMAKE_PLUGIN_EXT}
+            CMAKE_PRL_FILE_LOCATION_RELEASE = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}.prl
+            CMAKE_PRL_FILE_LOCATION_DEBUG = $$PLUGIN_TYPE/lib$${CMAKE_QT_STEM}.prl
         }
     }
     cmake_target_file.input = $$PWD/data/cmake/Qt5PluginTarget.cmake.in
     cmake_target_file.output = $$CMAKE_OUT_DIR/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}_$${PLUGIN_CLASS_NAME}.cmake
+    cmake_qt5_plugin_import_file.input = $$PWD/data/cmake/Qt5ImportPlugin.cpp.in
+    cmake_qt5_plugin_import_file.output = $$CMAKE_OUT_DIR/Qt5$${CMAKE_MODULE_NAME}/Qt5$${CMAKE_MODULE_NAME}_$${PLUGIN_CLASS_NAME}_Import.cpp
 
-    !build_pass:QMAKE_SUBSTITUTES += \
-      cmake_target_file
+    !build_pass {
+        QMAKE_SUBSTITUTES += cmake_target_file
+        static|staticlib: QMAKE_SUBSTITUTES += cmake_qt5_plugin_import_file
+    }
 
     cmake_qt5_plugin_file.files = $$cmake_target_file.output
+    static|staticlib: cmake_qt5_plugin_file.files += $$cmake_qt5_plugin_import_file.output
     cmake_qt5_plugin_file.path = $$[QT_INSTALL_LIBS]/cmake/Qt5$${CMAKE_MODULE_NAME}
     INSTALLS += cmake_qt5_plugin_file
 
@@ -244,6 +286,7 @@ CMAKE_MODULE_DEPS = $$join(mod_deps, ";")
 CMAKE_QT5_MODULE_DEPS = $$join(lib_deps, ";")
 CMAKE_INTERFACE_MODULE_DEPS = $$join(aux_mod_deps, ";")
 CMAKE_INTERFACE_QT5_MODULE_DEPS = $$join(aux_lib_deps, ";")
+CMAKE_MODULE_PLUGIN_TYPES = $$join(QT.$${MODULE}.plugin_types, ";")
 
 mac {
     !isEmpty(CMAKE_STATIC_TYPE) {

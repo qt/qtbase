@@ -59,12 +59,12 @@
 #include "textinformationitem.h"
 
 //Qt
-#include <QtWidgets/QMessageBox>
-#include <QtWidgets/QGraphicsView>
-#include <QtCore/QStateMachine>
-#include <QtWidgets/QKeyEventTransition>
-#include <QtCore/QFinalState>
-#include <QtCore/QRandomGenerator>
+#include <QFinalState>
+#include <QGraphicsView>
+#include <QKeyEventTransition>
+#include <QMessageBox>
+#include <QRandomGenerator>
+#include <QStateMachine>
 
 PlayState::PlayState(GraphicsScene *scene, QState *parent)
     : QState(parent), scene(scene), machine(nullptr),
@@ -146,7 +146,7 @@ void PlayState::onEntry(QEvent *)
     machine->setInitialState(levelState);
 
     //Final state
-    QFinalState *final = new QFinalState(machine);
+    QFinalState *finalState = new QFinalState(machine);
 
     //This transition is triggered when the player press space after completing a level
     CustomSpaceTransition *spaceTransition = new CustomSpaceTransition(scene->views().at(0), this, QEvent::KeyPress, Qt::Key_Space);
@@ -154,7 +154,7 @@ void PlayState::onEntry(QEvent *)
     winState->addTransition(spaceTransition);
 
     //We lost we should reach the final state
-    lostState->addTransition(lostState, &QState::finished, final);
+    lostState->addTransition(lostState, &QState::finished, finalState);
 
     machine->start();
 }
@@ -181,11 +181,9 @@ void LevelState::initializeLevel()
     scene->progressItem->setScore(game->score);
     scene->progressItem->setLevel(game->currentLevel + 1);
 
-    GraphicsScene::LevelDescription currentLevelDescription = scene->levelsData.value(game->currentLevel);
+    const GraphicsScene::LevelDescription currentLevelDescription = scene->levelsData.value(game->currentLevel);
+    for (const QPair<int,int> &subContent : currentLevelDescription.submarines) {
 
-    for (int i = 0; i < currentLevelDescription.submarines.size(); ++i ) {
-
-        QPair<int,int> subContent = currentLevelDescription.submarines.at(i);
         GraphicsScene::SubmarineDescription submarineDesc = scene->submarinesData.at(subContent.first);
 
         for (int j = 0; j < subContent.second; ++j ) {
@@ -202,9 +200,10 @@ void LevelState::initializeLevel()
 }
 
 /** Pause State */
-PauseState::PauseState(GraphicsScene *scene, QState *parent) : QState(parent),scene(scene)
+PauseState::PauseState(GraphicsScene *scene, QState *parent) : QState(parent), scene(scene)
 {
 }
+
 void PauseState::onEntry(QEvent *)
 {
     AnimationManager::self()->pauseAll();
@@ -324,8 +323,7 @@ bool WinTransition::eventTest(QEvent *event)
 
 /** Space transition */
 CustomSpaceTransition::CustomSpaceTransition(QWidget *widget, PlayState *game, QEvent::Type type, int key)
-    :   QKeyEventTransition(widget, type, key),
-        game(game)
+    : QKeyEventTransition(widget, type, key), game(game)
 {
 }
 

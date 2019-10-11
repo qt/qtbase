@@ -147,6 +147,7 @@ static bool get_hex_rgb(const QChar *str, size_t len, QRgba64 *rgb)
 #endif
 #define rgb(r,g,b) (0xff000000 | (r << 16) |  (g << 8) | b)
 
+// keep this is in sync with QColorConstants
 static const struct RGBData {
     const char name[21];
     uint  value;
@@ -475,25 +476,35 @@ static QStringList get_colornames()
 
     \section1 Predefined Colors
 
-    There are 20 predefined QColors described by the Qt::GlobalColor enum,
-    including black, white, primary and secondary colors, darker versions
-    of these colors and three shades of gray. QColor also recognizes a
-    variety of color names; the static colorNames() function returns a
-    QStringList color names that QColor knows about.
+    There are 20 predefined QColor objects in the \c{QColorConstants}
+    namespace, including black, white, primary and secondary colors,
+    darker versions of these colors, and three shades of gray.
+    Furthermore, the \c{QColorConstants::Svg} namespace defines QColor
+    objects for the standard \l{https://www.w3.org/TR/SVG11/types.html#ColorKeywords}{SVG color keyword names}.
 
     \image qt-colors.png Qt Colors
 
-    Additionally, the Qt::color0, Qt::color1 and Qt::transparent colors
-    are used for special purposes.
+    The \c{QColorConstants::Color0}, \c{QColorConstants::Color1} and
+    \c{QColorConstants::Transparent} colors are used for special
+    purposes.
 
-    Qt::color0 (zero pixel value) and Qt::color1 (non-zero pixel value)
-    are special colors for drawing in QBitmaps. Painting with Qt::color0
-    sets the bitmap bits to 0 (transparent; i.e., background), and painting
-    with Qt::color1 sets the bits to 1 (opaque; i.e., foreground).
+    \c{QColorConstants::Color0} (zero pixel value) and
+    \c{QColorConstants::Color1} (non-zero pixel value) are special
+    colors for drawing in QBitmaps. Painting with
+    \c{QColorConstants::Color0} sets the bitmap bits to 0 (transparent;
+    i.e., background), and painting with c{QColorConstants::Color1}
+    sets the bits to 1 (opaque; i.e., foreground).
 
-    Qt::transparent is used to indicate a transparent pixel. When painting
-    with this value, a pixel value will be used that is appropriate for the
-    underlying pixel format in use.
+    \c{QColorConstants::Transparent} is used to indicate a transparent
+    pixel. When painting with this value, a pixel value will be used
+    that is appropriate for the underlying pixel format in use.
+
+    For historical reasons, the 20 predefined colors are also available
+    in the Qt::GlobalColor enumeration.
+
+    Finally, QColor recognizes a variety of color names (as strings);
+    the static colorNames() function returns a QStringList color names
+    that QColor knows about.
 
     \section1 The Extended RGB Color Model
 
@@ -586,7 +597,7 @@ static QStringList get_colornames()
     alpha-channel to feature \l {QColor#Alpha-Blended
     Drawing}{alpha-blended drawing}.
 
-    \sa QPalette, QBrush
+    \sa QPalette, QBrush, QColorConstants
 */
 
 #define QCOLOR_INT_RANGE_CHECK(fn, var) \
@@ -886,7 +897,8 @@ QString QColor::name(NameFormat format) const
     \li #AARRGGBB (Since 5.2)
     \li #RRRGGGBBB
     \li #RRRRGGGGBBBB
-    \li A name from the list of colors defined in the list of \l{http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color keyword names}
+    \li A name from the list of colors defined in the list of
+       \l{https://www.w3.org/TR/SVG11/types.html#ColorKeywords}{SVG color keyword names}
        provided by the World Wide Web Consortium; for example, "steelblue" or "gainsboro".
        These color names work on all platforms. Note that these color names are \e not the
        same as defined by the Qt::GlobalColor enums, e.g. "green" and Qt::green does not
@@ -3247,6 +3259,43 @@ const uint qt_inv_premul_factor[256] = {
     \l{QColor#Alpha-Blended Drawing}{Alpha-Blended Drawing} section.
 
     \sa QColor::rgb(), QColor::rgba()
+*/
+
+/*!
+    \namespace QColorConstants
+    \inmodule QtGui
+
+    \brief The QColorConstants namespace contains QColor predefined constants.
+
+    These constants are usable everywhere a QColor object is expected:
+
+    \code
+    painter.setBrush(QColorConstants::Svg::lightblue);
+    \endcode
+
+    Their usage is much cheaper than e.g. passing a string to QColor's constructor,
+    as they don't require any parsing of the string, and always result in a valid
+    QColor object:
+
+    \badcode
+    object.setColor(QColor("lightblue")); // expensive
+    \endcode
+
+    \section1 Qt Colors
+
+    The following colors are defined in the \c{QColorConstants} namespace:
+
+    \include qt-colors.qdocinc
+
+    \section1 SVG Colors
+
+    The following table lists the available
+    \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG colors}.
+    They are available in the \c{QColorConstants::Svg} inner namespace.
+
+    \include svg-colors.qdocinc
+
+    \sa QColor, Qt::GlobalColor
 */
 
 QT_END_NAMESPACE

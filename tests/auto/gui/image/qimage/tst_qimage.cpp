@@ -303,6 +303,8 @@ static QLatin1String formatToString(QImage::Format format)
         return QLatin1String("RGBA64pm");
     case QImage::Format_Grayscale16:
         return QLatin1String("Grayscale16");
+    case QImage::Format_BGR888:
+        return QLatin1String("BGR888");
     default:
         break;
     };
@@ -844,6 +846,13 @@ void tst_QImage::convertToFormat_data()
     QTest::newRow("blue rgb32 -> rgb888") << int(QImage::Format_RGB32) << 0xff0000ff
                                           << int(QImage::Format_RGB888) << 0xff0000ff;
 
+    QTest::newRow("red rgb32 -> bgr888") << int(QImage::Format_RGB32) << 0xffff0000
+                                         << int(QImage::Format_BGR888) << 0xffff0000;
+    QTest::newRow("green rgb32 -> bgr888") << int(QImage::Format_RGB32) << 0xff00ff00
+                                           << int(QImage::Format_BGR888) << 0xff00ff00;
+    QTest::newRow("blue rgb32 -> bgr888") << int(QImage::Format_RGB32) << 0xff0000ff
+                                          << int(QImage::Format_BGR888) << 0xff0000ff;
+
     QTest::newRow("red rgb16 -> rgb888") << int(QImage::Format_RGB16) << 0xffff0000
                                          << int(QImage::Format_RGB888) << 0xffff0000;
     QTest::newRow("green rgb16 -> rgb888") << int(QImage::Format_RGB16) << 0xff00ff00
@@ -856,6 +865,13 @@ void tst_QImage::convertToFormat_data()
     QTest::newRow("green rgb888 -> argb32") << int(QImage::Format_RGB888) << 0xff00ff00
                                             << int(QImage::Format_ARGB32) << 0xff00ff00;
     QTest::newRow("blue rgb888 -> argb32") << int(QImage::Format_RGB888) << 0xff0000ff
+                                           << int(QImage::Format_ARGB32) << 0xff0000ff;
+
+    QTest::newRow("red bgr888 -> argb32") << int(QImage::Format_RGB888) << 0xffff0000
+                                          << int(QImage::Format_ARGB32) << 0xffff0000;
+    QTest::newRow("green bgr888 -> argb32") << int(QImage::Format_RGB888) << 0xff00ff00
+                                            << int(QImage::Format_ARGB32) << 0xff00ff00;
+    QTest::newRow("blue bgr888 -> argb32") << int(QImage::Format_RGB888) << 0xff0000ff
                                            << int(QImage::Format_ARGB32) << 0xff0000ff;
 
     QTest::newRow("red rgb888 -> rgbx8888") << int(QImage::Format_RGB888) << 0xffff0000
@@ -1338,6 +1354,12 @@ void tst_QImage::setPixel_data()
                                   << 0xff00ff00 << 0x00ff00u;
     QTest::newRow("RGB888 blue") << int(QImage::Format_RGB888)
                                  << 0xff0000ff << 0x0000ffu;
+    QTest::newRow("BGR888 red") << int(QImage::Format_BGR888)
+                                << 0xffff0000 << 0x0000ffu;
+    QTest::newRow("BGR888 green") << int(QImage::Format_BGR888)
+                                  << 0xff00ff00 << 0x00ff00u;
+    QTest::newRow("BGR888 blue") << int(QImage::Format_BGR888)
+                                 << 0xff0000ff << 0xff0000u;
 #if Q_BYTE_ORDER == Q_BIG_ENDIAN
     QTest::newRow("RGBA8888 red") << int(QImage::Format_RGBA8888)
                                 << 0xffff0000u << 0xff0000ffu;
@@ -1425,6 +1447,7 @@ void tst_QImage::setPixel()
     case int(QImage::Format_ARGB8565_Premultiplied):
     case int(QImage::Format_ARGB8555_Premultiplied):
     case int(QImage::Format_RGB888):
+    case int(QImage::Format_BGR888):
     {
         for (int y = 0; y < h; ++y) {
             const quint24 *row = (const quint24*)(img.scanLine(y));
@@ -2445,6 +2468,7 @@ void tst_QImage::mirrored_data()
     QTest::newRow("Format_RGB555, vertical") << QImage::Format_RGB555 << true << false << 16 << 16;
     QTest::newRow("Format_ARGB8555_Premultiplied, vertical") << QImage::Format_ARGB8555_Premultiplied << true << false << 16 << 16;
     QTest::newRow("Format_RGB888, vertical") << QImage::Format_RGB888 << true << false << 16 << 16;
+    QTest::newRow("Format_BGR888, vertical") << QImage::Format_BGR888 << true << false << 16 << 16;
     QTest::newRow("Format_RGB444, vertical") << QImage::Format_RGB444 << true << false << 16 << 16;
     QTest::newRow("Format_RGBX8888, vertical") << QImage::Format_RGBX8888 << true << false << 16 << 16;
     QTest::newRow("Format_RGBA8888_Premultiplied, vertical") << QImage::Format_RGBA8888_Premultiplied << true << false << 16 << 16;

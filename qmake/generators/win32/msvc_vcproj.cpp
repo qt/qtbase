@@ -209,7 +209,9 @@ bool VcprojGenerator::writeProjectMakefile()
 
 struct VcsolutionDepend {
     QString uuid;
-    QString vcprojFile, orig_target, target;
+    QString vcprojFile;
+    QString projectName;
+    QString target;
     Target targetType;
     QStringList dependencies;
 };
@@ -433,7 +435,8 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
                     Option::qmake_mode = old_mode;
 
                     // We assume project filename is [QMAKE_PROJECT_NAME].vcproj
-                    QString vcproj = tmp_vcproj.project->first("QMAKE_PROJECT_NAME") + project->first("VCPROJ_EXTENSION");
+                    const ProString projectName = tmp_vcproj.project->first("QMAKE_PROJECT_NAME");
+                    const QString vcproj = projectName + project->first("VCPROJ_EXTENSION");
                     QString vcprojDir = Option::output_dir;
 
                     // If file doesn't exsist, then maybe the users configuration
@@ -445,14 +448,14 @@ ProStringList VcprojGenerator::collectDependencies(QMakeProject *proj, QHash<QSt
 
                     VcsolutionDepend *newDep = new VcsolutionDepend;
                     newDep->vcprojFile = vcprojDir + Option::dir_sep + vcproj;
-                    newDep->orig_target = tmp_proj.first("QMAKE_ORIG_TARGET").toQString();
+                    newDep->projectName = projectName.toQString();
                     newDep->target = tmp_proj.first("MSVCPROJ_TARGET").toQString().section(Option::dir_sep, -1);
                     newDep->targetType = tmp_vcproj.projectTarget;
                     newDep->uuid = tmp_proj.isEmpty("QMAKE_UUID") ? getProjectUUID(Option::fixPathToLocalOS(vcprojDir + QDir::separator() + vcproj)).toString().toUpper(): tmp_proj.first("QMAKE_UUID").toQString();
                     // We want to store it as the .lib name.
                     if (newDep->target.endsWith(".dll"))
                         newDep->target = newDep->target.left(newDep->target.length()-3) + "lib";
-                    projGuids.insert(newDep->orig_target, newDep->target);
+                    projGuids.insert(newDep->projectName, newDep->target);
 
                     if (tmpList.size()) {
                         const ProStringList depends = tmpList;
@@ -591,7 +594,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
     for (QList<VcsolutionDepend*>::Iterator it = solution_cleanup.begin(); it != solution_cleanup.end(); ++it) {
         // ### quoting rules?
         t << _slnProjectBeg << _slnMSVCvcprojGUID << _slnProjectMid
-            << "\"" << (*it)->orig_target << "\", \"" << (*it)->vcprojFile
+            << "\"" << (*it)->projectName << "\", \"" << (*it)->vcprojFile
             << "\", \"" << (*it)->uuid << "\"";
 
         debug_msg(1, "Project %s has dependencies: %s", (*it)->target.toLatin1().constData(), (*it)->dependencies.join(" ").toLatin1().constData());
@@ -937,6 +940,15 @@ void VcprojGenerator::initProject()
     vcProject.SccProjectName = project->first("SCCPROJECTNAME").toQString();
     vcProject.SccLocalPath = project->first("SCCLOCALPATH").toQString();
     vcProject.flat_files = project->isActiveConfig("flat");
+
+    // Set up the full target path for target conflict checking.
+    const QChar slash = QLatin1Char('/');
+    QString destdir = QDir::fromNativeSeparators(var("DESTDIR"));
+    if (!destdir.endsWith(slash))
+        destdir.append(slash);
+    project->values("DEST_TARGET") = ProStringList(destdir
+                                                   + project->first("TARGET")
+                                                   + project->first("TARGET_EXT"));
 }
 
 void VcprojGenerator::initConfiguration()

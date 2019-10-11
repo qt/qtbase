@@ -479,9 +479,6 @@ void tst_QMdiArea::subWindowActivated2()
     // Check that we only emit _one_ signal and the active window
     // is unchanged after hide/show.
     mdiArea.hide();
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    qt_x11_wait_for_window_manager(&mdiArea);
-#endif
     QTest::qWait(100);
     QTRY_COMPARE(spy.count(), 1);
     QVERIFY(!mdiArea.activeSubWindow());

@@ -1004,11 +1004,17 @@
             "condition": "features.textcodec",
             "output": [ "publicFeature", "feature" ]
         },
+        "easingcurve": {
+            "label": "Easing curve",
+            "purpose": "Provides easing curve.",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
+        },
         "animation": {
             "label": "Animation",
             "purpose": "Provides a framework for animations.",
             "section": "Utilities",
-            "condition": "features.properties",
+            "condition": "features.properties && features.easingcurve",
             "output": [ "publicFeature", "feature" ]
         },
         "statemachine": {
@@ -1034,6 +1040,25 @@
             "purpose": "Optimizes SHA3 for speed instead of size.",
             "section": "Utilities",
             "output": [ "privateFeature" ]
+        },
+        "jalalicalendar": {
+            "label": "QJalaliCalendar",
+            "purpose": "Support the Jalali (Persian) calendar",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
+        },
+        "hijricalendar": {
+            "label": "QHijriCalendar",
+            "purpose": "Generic basis for Islamic calendars, providing shared locale data",
+            "section": "Utilities",
+            "output": [ "privateFeature" ]
+        },
+        "islamiccivilcalendar": {
+            "label": "QIslamicCivilCalendar",
+            "purpose": "Support the Islamic Civil calendar",
+            "section": "Utilities",
+            "condition": "features.hijricalendar",
+            "output": [ "publicFeature" ]
         },
         "timezone": {
             "label": "QTimeZone",
@@ -1101,6 +1126,17 @@
             "type": "error",
             "condition": "!tests.atomicfptr",
             "message": "detected a std::atomic implementation that fails for function pointers.  Please apply the patch corresponding to your Standard Library vendor, found in qtbase/config.tests/atomicfptr"
+        },
+        {
+            "type": "error",
+            "condition": [
+                "config.unix || config.integrity",
+                "!features.poll_ppoll",
+                "!features.poll_pollts",
+                "!features.poll_poll",
+                "!features.poll_select"
+            ],
+            "message": "Qt requires poll(), ppoll(), poll_ts() or select() on this platform"
         }
     ],
 

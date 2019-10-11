@@ -85,6 +85,7 @@
 #include "qpropertyanimation_p.h"
 
 #include <QtCore/QMutex>
+#include <QtCore/private/qlocking_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -261,7 +262,7 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
     QPropertyAnimation *animToStop = 0;
     {
         static QBasicMutex mutex;
-        QMutexLocker locker(&mutex);
+        auto locker = qt_unique_lock(mutex);
         typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
         typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
         static QPropertyAnimationHash hash;

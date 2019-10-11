@@ -115,6 +115,7 @@ public:
 
     virtual QSizeF physicalSize() const;
     virtual QDpi logicalDpi() const;
+    virtual QDpi logicalBaseDpi() const;
     virtual qreal devicePixelRatio() const;
     virtual qreal pixelDensity()  const;
 
@@ -159,6 +160,8 @@ public:
 
     // The platform screen's geometry in device independent coordinates
     QRect deviceIndependentGeometry() const;
+
+    static QDpi overrideDpi(const QDpi &in);
 
 protected:
     void resizeMaximizedWindows();

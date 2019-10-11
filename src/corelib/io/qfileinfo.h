@@ -111,6 +111,8 @@ public:
     bool isFile() const;
     bool isDir() const;
     bool isSymLink() const;
+    bool isSymbolicLink() const;
+    bool isShortcut() const;
     bool isRoot() const;
     bool isBundle() const;
 

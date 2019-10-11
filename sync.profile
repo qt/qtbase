@@ -37,6 +37,9 @@
     "QtZlib" => "!>$basedir/src/corelib;$basedir/src/3rdparty/zlib",
     "QtOpenGLExtensions" => "$basedir/src/openglextensions",
     "QtEglFSDeviceIntegration" => "$basedir/src/plugins/platforms/eglfs",
+    "QtMockPlugins1" => "$basedir/tests/auto/cmake/mockplugins/mockplugins1",
+    "QtMockPlugins2" => "$basedir/tests/auto/cmake/mockplugins/mockplugins2",
+    "QtMockPlugins3" => "$basedir/tests/auto/cmake/mockplugins/mockplugins3",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
     "QtEglFSDeviceIntegration" => "api",

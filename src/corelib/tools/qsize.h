@@ -41,6 +41,7 @@
 #define QSIZE_H
 
 #include <QtCore/qnamespace.h>
+#include <QtCore/qmargins.h>
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 struct CGSize;
@@ -73,6 +74,11 @@ public:
 
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QSize expandedTo(const QSize &) const noexcept;
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QSize boundedTo(const QSize &) const noexcept;
+
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QSize grownBy(QMargins m) const noexcept
+    { return {width() + m.left() + m.right(), height() + m.top() + m.bottom()}; }
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QSize shrunkBy(QMargins m) const noexcept
+    { return {width() - m.left() - m.right(), height() - m.top() - m.bottom()}; }
 
     Q_DECL_RELAXED_CONSTEXPR inline int &rwidth() noexcept;
     Q_DECL_RELAXED_CONSTEXPR inline int &rheight() noexcept;
@@ -237,6 +243,11 @@ public:
 
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QSizeF expandedTo(const QSizeF &) const noexcept;
     Q_REQUIRED_RESULT Q_DECL_CONSTEXPR inline QSizeF boundedTo(const QSizeF &) const noexcept;
+
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QSizeF grownBy(QMarginsF m) const noexcept
+    { return {width() + m.left() + m.right(), height() + m.top() + m.bottom()}; }
+    Q_REQUIRED_RESULT Q_DECL_CONSTEXPR QSizeF shrunkBy(QMarginsF m) const noexcept
+    { return {width() - m.left() - m.right(), height() - m.top() - m.bottom()}; }
 
     Q_DECL_RELAXED_CONSTEXPR inline qreal &rwidth() noexcept;
     Q_DECL_RELAXED_CONSTEXPR inline qreal &rheight() noexcept;

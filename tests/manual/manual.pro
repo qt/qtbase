@@ -35,6 +35,7 @@ qsslsocket \
 qsysinfo \
 qtabletevent \
 qtexteditlist \
+qtexttableborders \
 qtbug-8933 \
 qtbug-52641 \
 qtouchevent \

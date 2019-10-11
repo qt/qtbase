@@ -525,19 +525,16 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     }
     void resetCommands() {
         commands.clear();
-        // beginExternal() can lead to calling resetCommands() inside a pass,
-        // hence the condition
-        if (recordingPass == NoPass) {
-            passResTrackers.clear();
-            currentPassResTrackerIndex = -1;
-        }
         dataRetainPool.clear();
         imageRetainPool.clear();
+
+        passResTrackers.clear();
+        currentPassResTrackerIndex = -1;
     }
     void resetState() {
-        resetCommands();
         recordingPass = NoPass;
         currentTarget = nullptr;
+        resetCommands();
         resetCachedState();
     }
     void resetCachedState() {
@@ -605,8 +602,8 @@ public:
     QRhiSwapChain *createSwapChain() override;
     QRhi::FrameOpResult beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags) override;
     QRhi::FrameOpResult endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameFlags flags) override;
-    QRhi::FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb) override;
-    QRhi::FrameOpResult endOffscreenFrame() override;
+    QRhi::FrameOpResult beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi::BeginFrameFlags flags) override;
+    QRhi::FrameOpResult endOffscreenFrame(QRhi::EndFrameFlags flags) override;
     QRhi::FrameOpResult finish() override;
 
     void resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates) override;
@@ -671,7 +668,6 @@ public:
 
     bool ensureContext(QSurface *surface = nullptr) const;
     void executeDeferredReleases();
-    QRhi::FrameOpResult flushCommandBuffer();
     void trackedBufferBarrier(QGles2CommandBuffer *cbD, QGles2Buffer *bufD, QGles2Buffer::Access access);
     void trackedImageBarrier(QGles2CommandBuffer *cbD, QGles2Texture *texD, QGles2Texture::Access access);
     void enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cbD,
@@ -692,8 +688,8 @@ public:
                              const uint *dynOfsPairs, int dynOfsCount);
     QGles2RenderTargetData *enqueueBindFramebuffer(QRhiRenderTarget *rt, QGles2CommandBuffer *cbD,
                                                    bool *wantsColorClear = nullptr, bool *wantsDsClear = nullptr);
+    void enqueueBarriersForPass(QGles2CommandBuffer *cbD);
     int effectiveSampleCount(int sampleCount) const;
-    QSize safeTextureSize(const QSize &size) const;
     bool compileShader(GLuint program, const QRhiShaderStage &shaderStage,
                        QShaderDescription *desc, int *glslVersionUsed);
     bool linkProgram(GLuint program);
@@ -717,8 +713,7 @@ public:
               maxTextureSize(2048),
               maxDrawBuffers(4),
               msaaRenderBuffer(false),
-              npotTexture(true),
-              npotTextureRepeat(true),
+              npotTextureFull(true),
               gles(false),
               fixedIndexPrimitiveRestart(false),
               bgraExternalFormat(false),
@@ -747,8 +742,7 @@ public:
         // Multisample fb and blit are supported (GLES 3.0 or OpenGL 3.x). Not
         // the same as multisample textures!
         uint msaaRenderBuffer : 1;
-        uint npotTexture : 1;
-        uint npotTextureRepeat : 1;
+        uint npotTextureFull : 1;
         uint gles : 1;
         uint fixedIndexPrimitiveRestart : 1;
         uint bgraExternalFormat : 1;
@@ -768,6 +762,7 @@ public:
         uint instancing : 1;
         uint baseVertex : 1;
         uint compute : 1;
+        uint textureCompareMode : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QVector<GLint> supportedCompressedFormats;

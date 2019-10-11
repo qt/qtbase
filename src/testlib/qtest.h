@@ -379,8 +379,36 @@ inline bool qCompare(quint32 const &t1, quint64 const &t2, const char *actual,
 {
     return qCompare(static_cast<quint64>(t1), t2, actual, expected, file, line);
 }
+namespace Internal {
 
+template <typename T>
+class HasInitMain // SFINAE test for the presence of initMain()
+{
+private:
+    using YesType = char[1];
+    using NoType = char[2];
+
+    template <typename C> static YesType& test( decltype(&C::initMain) ) ;
+    template <typename C> static NoType& test(...);
+
+public:
+    enum { value = sizeof(test<T>(nullptr)) == sizeof(YesType) };
+};
+
+template<typename T>
+typename std::enable_if<HasInitMain<T>::value, void>::type callInitMain()
+{
+    T::initMain();
 }
+
+template<typename T>
+typename std::enable_if<!HasInitMain<T>::value, void>::type callInitMain()
+{
+}
+
+} // namespace Internal
+
+} // namespace QTest
 QT_END_NAMESPACE
 
 #ifdef QT_TESTCASE_BUILDDIR
@@ -441,6 +469,7 @@ int main(int argc, char *argv[]) \
 
 #define QTEST_MAIN_IMPL(TestObject) \
     TESTLIB_SELFCOVERAGE_START(#TestObject) \
+    QT_PREPEND_NAMESPACE(QTest::Internal::callInitMain)<TestObject>(); \
     QApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     QTEST_DISABLE_KEYPAD_NAVIGATION \
@@ -454,6 +483,7 @@ int main(int argc, char *argv[]) \
 
 #define QTEST_MAIN_IMPL(TestObject) \
     TESTLIB_SELFCOVERAGE_START(#TestObject) \
+    QT_PREPEND_NAMESPACE(QTest::Internal::callInitMain)<TestObject>(); \
     QGuiApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
@@ -464,6 +494,7 @@ int main(int argc, char *argv[]) \
 
 #define QTEST_MAIN_IMPL(TestObject) \
     TESTLIB_SELFCOVERAGE_START(#TestObject) \
+    QT_PREPEND_NAMESPACE(QTest::Internal::callInitMain)<TestObject>(); \
     QCoreApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \
@@ -482,6 +513,7 @@ int main(int argc, char *argv[]) \
 int main(int argc, char *argv[]) \
 { \
     TESTLIB_SELFCOVERAGE_START(#TestObject) \
+    QT_PREPEND_NAMESPACE(QTest::Internal::callInitMain)<TestObject>(); \
     QCoreApplication app(argc, argv); \
     app.setAttribute(Qt::AA_Use96Dpi, true); \
     TestObject tc; \

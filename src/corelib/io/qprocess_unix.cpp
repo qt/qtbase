@@ -89,6 +89,7 @@ QT_END_NAMESPACE
 #include "qprocess_p.h"
 #include "qstandardpaths.h"
 #include "private/qcore_unix_p.h"
+#include "private/qlocking_p.h"
 
 #ifdef Q_OS_MAC
 #include <private/qcore_mac_p.h>
@@ -404,7 +405,7 @@ void QProcessPrivate::startProcess()
             // CFBundle is not reentrant, since CFBundleCreate might return a reference
             // to a cached bundle object. Protect the bundle calls with a mutex lock.
             static QBasicMutex cfbundleMutex;
-            QMutexLocker lock(&cfbundleMutex);
+            const auto locker = qt_scoped_lock(cfbundleMutex);
             QCFType<CFBundleRef> bundle = CFBundleCreate(0, url);
             // 'executableURL' can be either relative or absolute ...
             QCFType<CFURLRef> executableURL = CFBundleCopyExecutableURL(bundle);

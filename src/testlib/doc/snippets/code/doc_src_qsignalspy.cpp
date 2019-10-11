@@ -98,3 +98,51 @@ QVERIFY(spy.wait(1000));
 QSignalSpy spy(myPushButton, &QPushButton::clicked);
 //! [6]
 
+//! [7]
+QObject object;
+auto mo = object.metaObject();
+auto signalIndex = mo->indexOfSignal("objectNameChanged(QString)");
+auto signal = mo->method(signalIndex);
+
+QSignalSpy spy(&object, signal);
+object.setObjectName("A new object name");
+QCOMPARE(spy.count(), 1);
+//! [7]
+
+//! [8]
+void tst_QWindow::writeMinMaxDimensionalProps_data()
+    QTest::addColumn<int>("propertyIndex");
+
+    // Collect all relevant properties
+    static const auto mo = QWindow::staticMetaObject;
+    for (int i = mo.propertyOffset(); i < mo.propertyCount(); ++i) {
+        auto property = mo.property(i);
+
+        // ...that have type int
+        if (property.type() == QVariant::Int) {
+            static const QRegularExpression re("^minimum|maximum");
+            const auto name = property.name();
+
+            // ...and start with "minimum" or "maximum"
+            if (re.match(name).hasMatch()) {
+                QTest::addRow("%s", name) << i;
+            }
+        }
+    }
+}
+
+void tst_QWindow::writeMinMaxDimensionalProps()
+{
+    QFETCH(int, propertyIndex);
+
+    auto property = QWindow::staticMetaObject.property(propertyIndex);
+    QVERIFY(property.isWritable());
+    QVERIFY(property.hasNotifySignal());
+
+    QWindow window;
+    QSignalSpy spy(&window, property.notifySignal());
+
+    QVERIFY(property.write(&window, 42));
+    QCOMPARE(spy.count(), 1);
+}
+//! [8]

@@ -64,6 +64,9 @@ protected:
     void processRcFileVar();
     static QString cQuoted(const QString &str);
     virtual QString getManifestFileForRcFile() const;
+
+public:
+    ProKey fullTargetVariable() const override;
 };
 
 QT_END_NAMESPACE

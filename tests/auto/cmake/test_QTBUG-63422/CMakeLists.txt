@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(test_dependent_modules)
 
+# Need to set the policy to link to qtmain.lib automatically.
+cmake_policy(SET CMP0020 NEW)
+
 find_package(Qt5Widgets REQUIRED)
 
 set(CMAKE_AUTOMOC ON)

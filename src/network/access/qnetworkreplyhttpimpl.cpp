@@ -797,10 +797,8 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
 
     // Create the HTTP thread delegate
     QHttpThreadDelegate *delegate = new QHttpThreadDelegate;
-    // Propagate Http/2 settings if any
-    const QVariant blob(manager->property(Http2::http2ParametersPropertyName));
-    if (blob.isValid() && blob.canConvert<Http2::ProtocolParameters>())
-        delegate->http2Parameters = blob.value<Http2::ProtocolParameters>();
+    // Propagate Http/2 settings:
+    delegate->http2Parameters = request.http2Configuration();
 #ifndef QT_NO_BEARERMANAGEMENT
     if (!QNetworkStatusMonitor::isEnabled())
         delegate->networkSession = managerPrivate->getNetworkSession();
@@ -1054,58 +1052,38 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
     if (!q->isOpen())
         return;
 
-    int pendingSignals = (int)pendingDownloadDataEmissions->fetchAndAddAcquire(-1) - 1;
+    if (cacheEnabled && isCachingAllowed() && !cacheSaveDevice)
+        initCacheSaveDevice();
 
+    // This is going to look a little strange. When downloading data while a
+    // HTTP redirect is happening (and enabled), we write the redirect
+    // response to the cache. However, we do not append it to our internal
+    // buffer as that will contain the response data only for the final
+    // response
+    if (cacheSaveDevice)
+        cacheSaveDevice->write(d);
+
+    if (!isHttpRedirectResponse()) {
+        buffer.append(d);
+        bytesDownloaded += d.size();
+    }
+    bytesBuffered += d.size();
+
+    int pendingSignals = pendingDownloadDataEmissions->fetchAndSubAcquire(1) - 1;
     if (pendingSignals > 0) {
         // Some more signal emissions to this slot are pending.
         // Instead of writing the downstream data, we wait
         // and do it in the next call we get
         // (signal comppression)
-        pendingDownloadData.append(d);
         return;
     }
-
-    pendingDownloadData.append(d);
-    d.clear();
-    // We need to usa a copy for calling writeDownstreamData as we could
-    // possibly recurse into this this function when we call
-    // appendDownstreamDataSignalEmissions because the user might call
-    // processEvents() or spin an event loop when this occur.
-    QByteDataBuffer pendingDownloadDataCopy = pendingDownloadData;
-    pendingDownloadData.clear();
-
-    if (cacheEnabled && isCachingAllowed() && !cacheSaveDevice) {
-        initCacheSaveDevice();
-    }
-
-    qint64 bytesWritten = 0;
-    for (int i = 0; i < pendingDownloadDataCopy.bufferCount(); i++) {
-        QByteArray const &item = pendingDownloadDataCopy[i];
-
-        // This is going to look a little strange. When downloading data while a
-        // HTTP redirect is happening (and enabled), we write the redirect
-        // response to the cache. However, we do not append it to our internal
-        // buffer as that will contain the response data only for the final
-        // response
-        if (cacheSaveDevice)
-            cacheSaveDevice->write(item.constData(), item.size());
-
-        if (!isHttpRedirectResponse())
-            buffer.append(item);
-
-        bytesWritten += item.size();
-    }
-    bytesBuffered += bytesWritten;
-    pendingDownloadDataCopy.clear();
-
-    QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
-    if (preMigrationDownloaded != Q_INT64_C(-1))
-        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
 
     if (isHttpRedirectResponse())
         return;
 
-    bytesDownloaded += bytesWritten;
+    QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    if (preMigrationDownloaded != Q_INT64_C(-1))
+        totalSize = totalSize.toLongLong() + preMigrationDownloaded;
 
     emit q->readyRead();
     // emit readyRead before downloadProgress incase this will cause events to be

@@ -86,8 +86,14 @@ template <typename T, typename U, U (*RetainFunction)(U), void (*ReleaseFunction
 class QAppleRefCounted
 {
 public:
-    QAppleRefCounted(const T &t = T()) : value(t) {}
-    QAppleRefCounted(QAppleRefCounted &&other) : value(other.value) { other.value = T(); }
+    QAppleRefCounted() : value() {}
+    QAppleRefCounted(const T &t) : value(t) {}
+    QAppleRefCounted(T &&t) noexcept(std::is_nothrow_move_constructible<T>::value)
+        : value(std::move(t)) {}
+    QAppleRefCounted(QAppleRefCounted &&other)
+            noexcept(std::is_nothrow_move_assignable<T>::value &&
+                     std::is_nothrow_move_constructible<T>::value)
+        : value(qExchange(other.value, T())) {}
     QAppleRefCounted(const QAppleRefCounted &other) : value(other.value) { if (value) RetainFunction(value); }
     ~QAppleRefCounted() { if (value) ReleaseFunction(value); }
     operator T() const { return value; }
@@ -96,6 +102,8 @@ public:
     QAppleRefCounted &operator=(const QAppleRefCounted &other)
     { QAppleRefCounted copy(other); swap(copy); return *this; }
     QAppleRefCounted &operator=(QAppleRefCounted &&other)
+        noexcept(std::is_nothrow_move_assignable<T>::value &&
+                 std::is_nothrow_move_constructible<T>::value)
     { QAppleRefCounted moved(std::move(other)); swap(moved); return *this; }
     T *operator&() { return &value; }
 protected:

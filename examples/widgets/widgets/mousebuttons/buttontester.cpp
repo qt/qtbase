@@ -93,15 +93,16 @@ void ButtonTester::mouseDoubleClickEvent(QMouseEvent *e)
 void ButtonTester::wheelEvent (QWheelEvent *e)
 {
     QString result;
-    if (e->delta() > 0) {
-
-        if (e->orientation() == Qt::Vertical) {
+    const bool vertical = qAbs(e->angleDelta().y()) >= qAbs(e->angleDelta().x());
+    const int delta = vertical ? e->angleDelta().y() : e->angleDelta().x();
+    if (delta > 0) {
+        if (vertical) {
             result = "Mouse Wheel Event: UP";
         } else {
             result = "Mouse Wheel Event: LEFT";
         }
-    } else if (e->delta() < 0) {
-        if (e->orientation() == Qt::Vertical) {
+    } else if (delta < 0) {
+        if (vertical) {
             result = "Mouse Wheel Event: DOWN";
         } else {
             result = "Mouse Wheel Event: RIGHT";

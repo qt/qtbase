@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-#ifndef __BOMB__H__
-#define __BOMB__H__
+#ifndef BOMB_H
+#define BOMB_H
 
 #include "pixmapitem.h"
 
@@ -73,4 +73,4 @@ private slots:
     void onAnimationLaunchValueChanged(const QVariant &);
 };
 
-#endif //__BOMB__H__
+#endif // BOMB_H

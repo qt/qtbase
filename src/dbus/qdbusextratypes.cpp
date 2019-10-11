@@ -167,6 +167,14 @@ void QDBusSignature::doCheck()
 */
 
 /*!
+    \since 5.14
+
+    Implicit cast to QVariant. Equivalent to calling
+    QVariant::fromValue() with this object as argument.
+*/
+QDBusObjectPath::operator QVariant() const { return QVariant::fromValue(*this); }
+
+/*!
     \class QDBusSignature
     \inmodule QtDBus
     \since 4.2

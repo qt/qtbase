@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS = \
+   initmain \
    outformat \
    qsignalspy \
    selftests \

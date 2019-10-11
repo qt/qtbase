@@ -52,15 +52,11 @@
 #define STATES_H
 
 //Qt
-#include <QtCore/QState>
-#include <QtCore/QSignalTransition>
-#include <QtCore/QPropertyAnimation>
-#include <QtWidgets/QKeyEventTransition>
-#include <QtCore/QSet>
+#include <QKeyEventTransition>
+#include <QSignalTransition>
+#include <QState>
 
 class GraphicsScene;
-class Boat;
-class SubMarine;
 QT_BEGIN_NAMESPACE
 class QStateMachine;
 QT_END_NAMESPACE
@@ -68,7 +64,7 @@ QT_END_NAMESPACE
 class PlayState : public QState
 {
 public:
-    explicit PlayState(GraphicsScene *scene, QState *parent = 0);
+    explicit PlayState(GraphicsScene *scene, QState *parent = nullptr);
     ~PlayState();
 
  protected:
@@ -92,7 +88,7 @@ private :
 class LevelState : public QState
 {
 public:
-    LevelState(GraphicsScene *scene, PlayState *game, QState *parent = 0);
+    LevelState(GraphicsScene *scene, PlayState *game, QState *parent = nullptr);
 protected:
     void onEntry(QEvent *) override;
 private :
@@ -104,7 +100,7 @@ private :
 class PauseState : public QState
 {
 public:
-    explicit PauseState(GraphicsScene *scene, QState *parent = 0);
+    explicit PauseState(GraphicsScene *scene, QState *parent = nullptr);
 
 protected:
     void onEntry(QEvent *) override;
@@ -116,7 +112,7 @@ private :
 class LostState : public QState
 {
 public:
-    LostState(GraphicsScene *scene, PlayState *game, QState *parent = 0);
+    LostState(GraphicsScene *scene, PlayState *game, QState *parent = nullptr);
 
 protected:
     void onEntry(QEvent *) override;
@@ -129,7 +125,7 @@ private :
 class WinState : public QState
 {
 public:
-    WinState(GraphicsScene *scene, PlayState *game, QState *parent = 0);
+    WinState(GraphicsScene *scene, PlayState *game, QState *parent = nullptr);
 
 protected:
     void onEntry(QEvent *) override;
@@ -154,7 +150,7 @@ public:
 protected:
     bool eventTest(QEvent *event) override;
 private:
-    PlayState * game;
+    PlayState *game;
     GraphicsScene *scene;
 };
 
@@ -166,7 +162,7 @@ public:
 protected:
     bool eventTest(QEvent *event) override;
 private:
-    PlayState * game;
+    PlayState *game;
     GraphicsScene *scene;
 };
 

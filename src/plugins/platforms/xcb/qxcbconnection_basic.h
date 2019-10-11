@@ -99,12 +99,10 @@ public:
     bool hasXinerama() const { return m_hasXinerama; }
     bool hasBigRequest() const;
 
-#if QT_CONFIG(xcb_xinput)
     bool isAtLeastXI21() const { return m_xi2Enabled && m_xi2Minor >= 1; }
     bool isAtLeastXI22() const { return m_xi2Enabled && m_xi2Minor >= 2; }
     bool isXIEvent(xcb_generic_event_t *event) const;
     bool isXIType(xcb_generic_event_t *event, uint16_t type) const;
-#endif
 
     bool isXFixesType(uint responseType, int eventType) const;
     bool isXRandrType(uint responseType, int eventType) const;
@@ -119,9 +117,7 @@ protected:
     void initializeXShape();
     void initializeXKB();
     void initializeXSync();
-#if QT_CONFIG(xcb_xinput)
     void initializeXInput2();
-#endif
 
 private:
 #if QT_CONFIG(xcb_xlib)
@@ -147,11 +143,9 @@ private:
     QPair<int, int> m_xrenderVersion;
 
     bool m_xi2Enabled = false;
-#if QT_CONFIG(xcb_xinput)
     int m_xi2Minor = -1;
     int m_xiOpCode = -1;
     uint32_t m_xinputFirstEvent = 0;
-#endif
 
     uint32_t m_xfixesFirstEvent = 0;
     uint32_t m_xrandrFirstEvent = 0;

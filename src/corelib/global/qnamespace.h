@@ -1754,6 +1754,15 @@ public:
         ChecksumItuV41
     };
 
+    enum class HighDpiScaleFactorRoundingPolicy {
+        Unset,
+        Round,
+        Ceil,
+        Floor,
+        RoundPreferFloor,
+        PassThrough
+    };
+
 #ifndef Q_QDOC
     // NOTE: Generally, do not add QT_Q_ENUM if a corresponding Q_Q_FLAG exists.
     QT_Q_ENUM(ScrollBarPolicy)
@@ -1840,6 +1849,7 @@ public:
     QT_Q_ENUM(MouseEventSource)
     QT_Q_FLAG(MouseEventFlag)
     QT_Q_ENUM(ChecksumType)
+    QT_Q_ENUM(HighDpiScaleFactorRoundingPolicy)
     QT_Q_ENUM(TabFocusBehavior)
 #endif // Q_DOC
 

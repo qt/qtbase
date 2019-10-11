@@ -47,7 +47,9 @@
 #include "qstringlist.h"
 #include "qvector.h"
 #include "qlocale.h"
+#if QT_CONFIG(easingcurve)
 #include "qeasingcurve.h"
+#endif
 #include "quuid.h"
 #include "qvariant.h"
 #include "qdatastream.h"

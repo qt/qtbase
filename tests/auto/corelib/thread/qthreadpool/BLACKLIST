@@ -1,7 +1,4 @@
 [expiryTimeoutRace]
-rhel-7.6
 opensuse-leap
-osx-10.13
-ubuntu-18.04
-osx-10.12
-opensuse-42.3
+ubuntu
+rhel

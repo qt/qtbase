@@ -63,7 +63,6 @@
 
 #include <QtNetwork/QNetworkCacheMetaData>
 #include <private/qhttpnetworkrequest_p.h>
-#include <private/qbytedata_p.h>
 #include <private/qnetworkreply_p.h>
 #include <QtNetwork/QNetworkProxy>
 #include <QtNetwork/QNetworkSession>
@@ -248,7 +247,6 @@ public:
     quint64 resumeOffset;
     qint64 preMigrationDownloaded;
 
-    QByteDataBuffer pendingDownloadData; // For signal compression
     qint64 bytesDownloaded;
     qint64 bytesBuffered;
 

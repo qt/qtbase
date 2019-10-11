@@ -2768,9 +2768,6 @@ void tst_QGraphicsProxyWidget::windowOpacity()
     // disabled on platforms without alpha channel support in QPixmap (e.g.,
     // X11 without XRender).
     int paints = 0;
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    paints = !X11->use_xrender;
-#endif
     QTRY_COMPARE(eventSpy.counts[QEvent::UpdateRequest], 0);
     QTRY_COMPARE(eventSpy.counts[QEvent::Paint], paints);
 

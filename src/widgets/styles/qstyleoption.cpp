@@ -198,11 +198,6 @@ void QStyleOption::init(const QWidget *widget)
         state |= QStyle::State_Active;
     if (widget->isWindow())
         state |= QStyle::State_Window;
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    extern bool qt_mac_can_clickThrough(const QWidget *w); //qwidget_mac.cpp
-    if (!(state & QStyle::State_Active) && !qt_mac_can_clickThrough(widget))
-        state &= ~QStyle::State_Enabled;
-#endif
     switch (QStyleHelper::widgetSizePolicy(widget)) {
     case QStyleHelper::SizeSmall:
         state |= QStyle::State_Small;

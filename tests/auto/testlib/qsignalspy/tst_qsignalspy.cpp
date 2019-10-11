@@ -65,6 +65,11 @@ private slots:
     void waitFunctionPointer_signalEmittedLater();
     void waitFunctionPointer_signalEmittedTooLate();
     void waitFunctionPointer_signalEmittedMultipleTimes();
+
+    void spyOnMetaMethod();
+
+    void spyOnMetaMethod_invalid();
+    void spyOnMetaMethod_invalid_data();
 };
 
 class QtTestObject: public QObject
@@ -430,6 +435,53 @@ void tst_QSignalSpy::waitFunctionPointer_signalEmittedMultipleTimes()
     QTimer::singleShot(10, this, SIGNAL(sigFoo()));
     QVERIFY(spy.wait());
     QCOMPARE(spy.count(), 3);
+}
+
+void tst_QSignalSpy::spyOnMetaMethod()
+{
+    QObject obj;
+    auto mo = obj.metaObject();
+
+    auto signalIndex = mo->indexOfSignal("objectNameChanged(QString)");
+    QVERIFY(signalIndex != -1);
+
+    auto signal = mo->method(signalIndex);
+    QVERIFY(signal.isValid());
+    QCOMPARE(signal.methodType(), QMetaMethod::Signal);
+
+    QSignalSpy spy(&obj, signal);
+    QVERIFY(spy.isValid());
+
+    obj.setObjectName("A new object name");
+    QCOMPARE(spy.count(), 1);
+}
+
+Q_DECLARE_METATYPE(QMetaMethod);
+void tst_QSignalSpy::spyOnMetaMethod_invalid()
+{
+    QFETCH(QObject*, object);
+    QFETCH(QMetaMethod, signal);
+
+    QSignalSpy spy(object, signal);
+    QVERIFY(!spy.isValid());
+}
+
+void tst_QSignalSpy::spyOnMetaMethod_invalid_data()
+{
+    QTest::addColumn<QObject*>("object");
+    QTest::addColumn<QMetaMethod>("signal");
+
+    QTest::addRow("Invalid object")
+        << static_cast<QObject*>(nullptr)
+        << QMetaMethod();
+
+    QTest::addRow("Empty signal")
+        << new QObject(this)
+        << QMetaMethod();
+
+    QTest::addRow("Method is not a signal")
+        << new QObject(this)
+        << QObject::staticMetaObject.method(QObject::staticMetaObject.indexOfMethod("deleteLater()"));
 }
 
 QTEST_MAIN(tst_QSignalSpy)

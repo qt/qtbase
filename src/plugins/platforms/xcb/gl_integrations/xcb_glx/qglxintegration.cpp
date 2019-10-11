@@ -163,10 +163,12 @@ static void updateFormatFromContext(QSurfaceFormat &format)
         format.setOption(QSurfaceFormat::StereoBuffers);
 
     if (format.renderableType() == QSurfaceFormat::OpenGL) {
-        GLint value = 0;
-        glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY_ARB, &value);
-        if (value == GL_LOSE_CONTEXT_ON_RESET_ARB)
-            format.setOption(QSurfaceFormat::ResetNotification);
+        if (format.version() >= qMakePair(4, 0)) {
+            GLint value = 0;
+            glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY_ARB, &value);
+            if (value == GL_LOSE_CONTEXT_ON_RESET_ARB)
+                format.setOption(QSurfaceFormat::ResetNotification);
+        }
 
         if (format.version() < qMakePair(3, 0)) {
             format.setOption(QSurfaceFormat::DeprecatedFunctions);
@@ -175,7 +177,7 @@ static void updateFormatFromContext(QSurfaceFormat &format)
 
         // Version 3.0 onwards - check if it includes deprecated functionality or is
         // a debug context
-        value = 0;
+        GLint value = 0;
         glGetIntegerv(GL_CONTEXT_FLAGS, &value);
         if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
             format.setOption(QSurfaceFormat::DeprecatedFunctions);

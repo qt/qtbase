@@ -49,6 +49,7 @@
 #include <qstringlist.h>
 #include <qtimer.h>
 #include <qthread.h>
+#include <private/qlocking_p.h>
 
 #include "qdbusargument.h"
 #include "qdbusconnection_p.h"
@@ -304,7 +305,7 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
         q_dbus_connection_set_allow_anonymous(connection, true);
 
     QDBusConnectionPrivate *newConnection = new QDBusConnectionPrivate(serverConnection->parent());
-    QMutexLocker locker(&QDBusConnectionManager::instance()->mutex);
+    const auto locker = qt_scoped_lock(QDBusConnectionManager::instance()->mutex);
     QDBusConnectionManager::instance()->setConnection(QLatin1String("QDBusServer-") + QString::number(reinterpret_cast<qulonglong>(newConnection), 16), newConnection);
     serverConnection->serverConnectionNames << newConnection->name;
 
@@ -1862,7 +1863,7 @@ void QDBusConnectionPrivate::processFinishedCall(QDBusPendingCallPrivate *call)
 {
     QDBusConnectionPrivate *connection = const_cast<QDBusConnectionPrivate *>(call->connection);
 
-    QMutexLocker locker(&call->mutex);
+    auto locker = qt_unique_lock(call->mutex);
 
     connection->pendingCalls.removeOne(call);
 
@@ -1979,7 +1980,7 @@ public:
 #endif
         static bool initializedAmounts = false;
         static QBasicMutex initializeMutex;
-        QMutexLocker locker(&initializeMutex);
+        auto locker = qt_unique_lock(initializeMutex);
 
         if (!initializedAmounts) {
             int tmp = 0;

@@ -67,3 +67,6 @@ navigation.cppclassespage = "Qt GUI C++ Classes"
 
 # Ignore warnings about undocumented enum values for the QGradient presets
 spurious += "Undocumented enum item '.*' in QGradient::Preset"
+
+# \svgcolor {#ffdead}
+macro.svgcolor.HTML = "<div style=\"padding:10px;color:#fff;background:\1;\"></div>"

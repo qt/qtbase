@@ -67,7 +67,9 @@
 #include "graphicsscene.h"
 
 // Qt
-#include <QtWidgets/QKeyEventTransition>
+#include <QGraphicsRotation>
+#include <QKeyEventTransition>
+#include <QState>
 
 static const int MAX_BOMB = 5;
 
@@ -88,7 +90,7 @@ protected:
         return (boat->currentSpeed() == 1);
     }
 private:
-    Boat * boat;
+    Boat *boat;
 };
 
 //These transtion test if we have to move the boat (i.e current speed was 0 or another value)
@@ -118,7 +120,7 @@ protected:
         boat->updateBoatMovement();
     }
 private:
-    Boat * boat;
+    Boat *boat;
     int key;
 };
 
@@ -139,7 +141,7 @@ protected:
         return (boat->bombsLaunched() < MAX_BOMB);
     }
 private:
-    Boat * boat;
+    Boat *boat;
 };
 
 //This state is describing when the boat is moving right
@@ -157,7 +159,7 @@ protected:
         boat->updateBoatMovement();
     }
 private:
-    Boat * boat;
+    Boat *boat;
 };
 
  //This state is describing when the boat is moving left
@@ -175,7 +177,7 @@ protected:
         boat->updateBoatMovement();
     }
 private:
-    Boat * boat;
+    Boat *boat;
 };
 
 //This state is describing when the boat is in a stand by position
@@ -194,7 +196,7 @@ protected:
         boat->updateBoatMovement();
     }
 private:
-    Boat * boat;
+    Boat *boat;
 };
 
 //This state is describing the launch of the torpedo on the right
@@ -216,7 +218,7 @@ protected:
         boat->setBombsLaunched(boat->bombsLaunched() + 1);
     }
 private:
-    Boat * boat;
+    Boat *boat;
 };
 
 //This state is describing the launch of the torpedo on the left
@@ -238,7 +240,7 @@ protected:
         boat->setBombsLaunched(boat->bombsLaunched() + 1);
     }
 private:
-    Boat * boat;
+    Boat *boat;
 };
 
 #endif // BOAT_P_H

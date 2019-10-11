@@ -124,21 +124,6 @@ bool QWidgetResizeHandler::eventFilter(QObject *o, QEvent *ee)
         if (!widgetRect.contains(cursorPoint))
             return false;
         if (e->button() == Qt::LeftButton) {
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-            /*
-               Implicit grabs do not stop the X server from changing
-               the cursor in children, which looks *really* bad when
-               doing resizingk, so we grab the cursor. Note that we do
-               not do this on Windows since double clicks are lost due
-               to the grab (see change 198463).
-            */
-            if (e->spontaneous())
-#  if !defined(QT_NO_CURSOR)
-                widget->grabMouse(widget->cursor());
-#  else
-                widget->grabMouse();
-#  endif // QT_NO_CURSOR
-#endif
             buttonDown = false;
             emit activate();
             bool me = movingEnabled;

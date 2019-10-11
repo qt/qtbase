@@ -51,12 +51,7 @@
 #include "rectbutton.h"
 #include <QPainter>
 
-RectButton::RectButton(QString buttonText) : m_ButtonText(buttonText)
-{
-}
-
-
-RectButton::~RectButton()
+RectButton::RectButton(const QString &buttonText) : m_ButtonText(buttonText)
 {
 }
 

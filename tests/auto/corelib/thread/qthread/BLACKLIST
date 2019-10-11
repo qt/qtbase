@@ -1,7 +1,5 @@
 [wait3_slowDestructor]
-windows-10 msvc-2015
-windows-7sp1
-windows-10 msvc-2017
+windows-10
 [sleep]
 windows-7sp1
 

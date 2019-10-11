@@ -3476,11 +3476,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     const QTransform viewTransform = painter.worldTransform();
 
     // Draw background
-    if ((d->cacheMode & CacheBackground)
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-        && X11->use_xrender
-#endif
-        ) {
+    if (d->cacheMode & CacheBackground) {
         // Recreate the background pixmap, and flag the whole background as
         // exposed.
         if (d->mustResizeBackgroundPixmap) {
@@ -3677,11 +3673,7 @@ void QGraphicsView::scrollContentsBy(int dx, int dy)
 
     d->updateLastCenterPoint();
 
-    if ((d->cacheMode & CacheBackground)
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-        && X11->use_xrender
-#endif
-        ) {
+    if (d->cacheMode & CacheBackground) {
         // Below, QPixmap::scroll() works in device pixels, while the delta values
         // and backgroundPixmapExposed are in device independent pixels.
         const qreal dpr = d->backgroundPixmap.devicePixelRatio();

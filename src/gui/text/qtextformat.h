@@ -242,6 +242,7 @@ public:
         TableCellSpacing = 0x4102,
         TableCellPadding = 0x4103,
         TableHeaderRowCount = 0x4104,
+        TableBorderCollapse = 0x4105,
 
         // table cell properties
         TableCellRowSpan = 0x4810,
@@ -251,6 +252,21 @@ public:
         TableCellBottomPadding = 0x4813,
         TableCellLeftPadding = 0x4814,
         TableCellRightPadding = 0x4815,
+
+        TableCellTopBorder = 0x4816,
+        TableCellBottomBorder = 0x4817,
+        TableCellLeftBorder = 0x4818,
+        TableCellRightBorder = 0x4819,
+
+        TableCellTopBorderStyle = 0x481a,
+        TableCellBottomBorderStyle = 0x481b,
+        TableCellLeftBorderStyle = 0x481c,
+        TableCellRightBorderStyle = 0x481d,
+
+        TableCellTopBorderBrush = 0x481e,
+        TableCellBottomBorderBrush = 0x481f,
+        TableCellLeftBorderBrush = 0x4820,
+        TableCellRightBorderBrush = 0x4821,
 
         // image properties
         ImageName = 0x5000,
@@ -966,6 +982,11 @@ public:
     inline int headerRowCount() const
     { return intProperty(TableHeaderRowCount); }
 
+    inline void setBorderCollapse(bool borderCollapse)
+    { setProperty(TableBorderCollapse, borderCollapse); }
+    inline bool borderCollapse() const
+    { return boolProperty(TableBorderCollapse); }
+
 protected:
     explicit QTextTableFormat(const QTextFormat &fmt);
     friend class QTextFormat;
@@ -1006,6 +1027,72 @@ public:
     inline qreal rightPadding() const;
 
     inline void setPadding(qreal padding);
+
+    inline void setTopBorder(qreal width)
+    { setProperty(TableCellTopBorder, width); }
+    inline qreal topBorder() const
+    { return doubleProperty(TableCellTopBorder); }
+
+    inline void setBottomBorder(qreal width)
+    { setProperty(TableCellBottomBorder, width); }
+    inline qreal bottomBorder() const
+    { return doubleProperty(TableCellBottomBorder); }
+
+    inline void setLeftBorder(qreal width)
+    { setProperty(TableCellLeftBorder, width); }
+    inline qreal leftBorder() const
+    { return doubleProperty(TableCellLeftBorder); }
+
+    inline void setRightBorder(qreal width)
+    { setProperty(TableCellRightBorder, width); }
+    inline qreal rightBorder() const
+    { return doubleProperty(TableCellRightBorder); }
+
+    inline void setBorder(qreal width);
+
+    inline void setTopBorderStyle(QTextFrameFormat::BorderStyle style)
+    { setProperty(TableCellTopBorderStyle, style); }
+    inline QTextFrameFormat::BorderStyle topBorderStyle() const
+    { return static_cast<QTextFrameFormat::BorderStyle>(intProperty(TableCellTopBorderStyle)); }
+
+    inline void setBottomBorderStyle(QTextFrameFormat::BorderStyle style)
+    { setProperty(TableCellBottomBorderStyle, style); }
+    inline QTextFrameFormat::BorderStyle bottomBorderStyle() const
+    { return static_cast<QTextFrameFormat::BorderStyle>(intProperty(TableCellBottomBorderStyle)); }
+
+    inline void setLeftBorderStyle(QTextFrameFormat::BorderStyle style)
+    { setProperty(TableCellLeftBorderStyle, style); }
+    inline QTextFrameFormat::BorderStyle leftBorderStyle() const
+    { return static_cast<QTextFrameFormat::BorderStyle>(intProperty(TableCellLeftBorderStyle)); }
+
+    inline void setRightBorderStyle(QTextFrameFormat::BorderStyle style)
+    { setProperty(TableCellRightBorderStyle, style); }
+    inline QTextFrameFormat::BorderStyle rightBorderStyle() const
+    { return static_cast<QTextFrameFormat::BorderStyle>(intProperty(TableCellRightBorderStyle)); }
+
+    inline void setBorderStyle(QTextFrameFormat::BorderStyle style);
+
+    inline void setTopBorderBrush(const QBrush &brush)
+    { setProperty(TableCellTopBorderBrush, brush); }
+    inline QBrush topBorderBrush() const
+    { return brushProperty(TableCellTopBorderBrush); }
+
+    inline void setBottomBorderBrush(const QBrush &brush)
+    { setProperty(TableCellBottomBorderBrush, brush); }
+    inline QBrush bottomBorderBrush() const
+    { return brushProperty(TableCellBottomBorderBrush); }
+
+    inline void setLeftBorderBrush(const QBrush &brush)
+    { setProperty(TableCellLeftBorderBrush, brush); }
+    inline QBrush leftBorderBrush() const
+    { return brushProperty(TableCellLeftBorderBrush); }
+
+    inline void setRightBorderBrush(const QBrush &brush)
+    { setProperty(TableCellRightBorderBrush, brush); }
+    inline QBrush rightBorderBrush() const
+    { return brushProperty(TableCellRightBorderBrush); }
+
+    inline void setBorderBrush(const QBrush &brush);
 
 protected:
     explicit QTextTableCellFormat(const QTextFormat &fmt);
@@ -1062,6 +1149,29 @@ inline void QTextTableCellFormat::setPadding(qreal padding)
     setRightPadding(padding);
 }
 
+inline void QTextTableCellFormat::setBorder(qreal width)
+{
+    setTopBorder(width);
+    setBottomBorder(width);
+    setLeftBorder(width);
+    setRightBorder(width);
+}
+
+inline void QTextTableCellFormat::setBorderStyle(QTextFrameFormat::BorderStyle style)
+{
+    setTopBorderStyle(style);
+    setBottomBorderStyle(style);
+    setLeftBorderStyle(style);
+    setRightBorderStyle(style);
+}
+
+inline void QTextTableCellFormat::setBorderBrush(const QBrush &brush)
+{
+    setTopBorderBrush(brush);
+    setBottomBorderBrush(brush);
+    setLeftBorderBrush(brush);
+    setRightBorderBrush(brush);
+}
 
 QT_END_NAMESPACE
 

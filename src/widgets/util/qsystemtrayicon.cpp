@@ -626,16 +626,6 @@ void QBalloonTip::balloon(const QPoint& pos, int msecs, bool showArrow)
     }
 
     QPainterPath path;
-#if defined(QT_NO_XSHAPE) && 0 /* Used to be included in Qt4 for Q_WS_X11 */
-    // XShape is required for setting the mask, so we just
-    // draw an ugly square when its not available
-    path.moveTo(0, 0);
-    path.lineTo(sz.width() - 1, 0);
-    path.lineTo(sz.width() - 1, sz.height() - 1);
-    path.lineTo(0, sz.height() - 1);
-    path.lineTo(0, 0);
-    move(qMax(pos.x() - sz.width(), scr.left()), pos.y());
-#else
     path.moveTo(ml + rc, mt);
     if (arrowAtTop && arrowAtLeft) {
         if (showArrow) {
@@ -685,7 +675,6 @@ void QBalloonTip::balloon(const QPoint& pos, int msecs, bool showArrow)
     painter1.setBrush(QBrush(Qt::color1));
     painter1.drawPath(path);
     setMask(bitmap);
-#endif
 
     // Draw the border
     pixmap = QPixmap(sz);

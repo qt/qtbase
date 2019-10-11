@@ -160,8 +160,6 @@ bool dumpHtml(const QString &pathName)
     QString platformName = QString::fromLatin1(
 #if defined(Q_OS_WIN)
             "Win32"
-#elif 0 // Used to be included in Qt4 for Q_WS_X11
-            "X11"
 #else
             ""
 #endif

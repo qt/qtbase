@@ -176,7 +176,7 @@ void MandelbrotWidget::keyPressEvent(QKeyEvent *event)
 //! [12]
 void MandelbrotWidget::wheelEvent(QWheelEvent *event)
 {
-    int numDegrees = event->delta() / 8;
+    int numDegrees = event->angleDelta().y() / 8;
     double numSteps = numDegrees / 15.0f;
     zoom(pow(ZoomInFactor, numSteps));
 }

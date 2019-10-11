@@ -276,6 +276,7 @@ public:
     virtual bool openOutput(QFile &, const QString &build) const;
     bool isWindowsShell() const { return Option::dir_sep == QLatin1String("\\"); }
     QString shellQuote(const QString &str);
+    virtual ProKey fullTargetVariable() const;
 };
 Q_DECLARE_TYPEINFO(MakefileGenerator::Compiler, Q_MOVABLE_TYPE);
 Q_DECLARE_OPERATORS_FOR_FLAGS(MakefileGenerator::FileFixifyTypes)

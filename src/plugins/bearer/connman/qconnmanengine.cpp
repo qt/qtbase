@@ -46,6 +46,7 @@
 #include <QtNetwork/qnetworksession.h>
 
 #include <QtCore/qdebug.h>
+#include <QtCore/private/qlocking_p.h>
 
 #include <QtDBus/QtDBus>
 #include <QtDBus/QDBusConnection>
@@ -74,13 +75,13 @@ QConnmanEngine::~QConnmanEngine()
 
 bool QConnmanEngine::connmanAvailable() const
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     return connmanManager->isValid();
 }
 
 void QConnmanEngine::initialize()
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     connect(ofonoManager,SIGNAL(modemChanged()),this,SLOT(changedModem()));
 
     ofonoNetwork = new QOfonoNetworkRegistrationInterface(ofonoManager->currentModem(),this);
@@ -101,7 +102,7 @@ void QConnmanEngine::initialize()
 
 void QConnmanEngine::changedModem()
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     if (ofonoNetwork)
         delete ofonoNetwork;
 
@@ -114,7 +115,7 @@ void QConnmanEngine::changedModem()
 
 void QConnmanEngine::servicesReady(const QStringList &list)
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     for (const QString &servPath : list)
         addServiceConfiguration(servPath);
 
@@ -123,7 +124,7 @@ void QConnmanEngine::servicesReady(const QStringList &list)
 
 QList<QNetworkConfigurationPrivate *> QConnmanEngine::getConfigurations()
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     QList<QNetworkConfigurationPrivate *> fetchedConfigurations;
     QNetworkConfigurationPrivate* cpPriv = 0;
     const int numFoundConfigurations = foundConfigurations.count();
@@ -150,19 +151,19 @@ QList<QNetworkConfigurationPrivate *> QConnmanEngine::getConfigurations()
 
 QString QConnmanEngine::getInterfaceFromId(const QString &id)
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     return configInterfaces.value(id);
 }
 
 bool QConnmanEngine::hasIdentifier(const QString &id)
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     return accessPointConfigurations.contains(id);
 }
 
 void QConnmanEngine::connectToId(const QString &id)
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
 
     QConnmanServiceInterface *serv = connmanServiceInterfaces.value(id);
 
@@ -184,7 +185,7 @@ void QConnmanEngine::connectToId(const QString &id)
 
 void QConnmanEngine::disconnectFromId(const QString &id)
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     QConnmanServiceInterface *serv = connmanServiceInterfaces.value(id);
 
     if (!serv || !serv->isValid()) {
@@ -196,7 +197,7 @@ void QConnmanEngine::disconnectFromId(const QString &id)
 
 void QConnmanEngine::requestUpdate()
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     QTimer::singleShot(0, this, SLOT(doRequestUpdate()));
 }
 
@@ -215,7 +216,7 @@ void QConnmanEngine::finishedScan(bool error)
 
 void QConnmanEngine::updateServices(const ConnmanMapList &changed, const QList<QDBusObjectPath> &removed)
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
 
     foreach (const QDBusObjectPath &objectPath, removed) {
         removeConfiguration(objectPath.path());
@@ -234,7 +235,7 @@ void QConnmanEngine::updateServices(const ConnmanMapList &changed, const QList<Q
 
 QNetworkSession::State QConnmanEngine::sessionStateForId(const QString &id)
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
 
     QNetworkConfigurationPrivatePointer ptr = accessPointConfigurations.value(id);
 
@@ -275,7 +276,7 @@ QNetworkSession::State QConnmanEngine::sessionStateForId(const QString &id)
 
 quint64 QConnmanEngine::bytesWritten(const QString &id)
 {//TODO use connman counter API
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     quint64 result = 0;
     QString devFile = getInterfaceFromId(id);
     QFile tx("/sys/class/net/"+devFile+"/statistics/tx_bytes");
@@ -290,7 +291,7 @@ quint64 QConnmanEngine::bytesWritten(const QString &id)
 
 quint64 QConnmanEngine::bytesReceived(const QString &id)
 {//TODO use connman counter API
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     quint64 result = 0;
     QString devFile = getInterfaceFromId(id);
     QFile rx("/sys/class/net/"+devFile+"/statistics/rx_bytes");
@@ -305,7 +306,7 @@ quint64 QConnmanEngine::bytesReceived(const QString &id)
 quint64 QConnmanEngine::startTime(const QString &/*id*/)
 {
     // TODO
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     if (activeTime.isNull()) {
         return 0;
     }
@@ -327,7 +328,7 @@ QNetworkSessionPrivate *QConnmanEngine::createSessionBackend()
 
 QNetworkConfigurationPrivatePointer QConnmanEngine::defaultConfiguration()
 {
-    const QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     const auto servPaths = connmanManager->getServices();
     for (const QString &servPath : servPaths) {
         if (connmanServiceInterfaces.contains(servPath)) {
@@ -352,7 +353,7 @@ void QConnmanEngine::configurationChange(QConnmanServiceInterface *serv)
 {
     if (!serv)
         return;
-    QMutexLocker locker(&mutex);
+    auto locker = qt_unique_lock(mutex);
     QString id = serv->path();
 
     if (accessPointConfigurations.contains(id)) {
@@ -381,7 +382,7 @@ void QConnmanEngine::configurationChange(QConnmanServiceInterface *serv)
         if (changed) {
             locker.unlock();
             emit configurationChanged(ptr);
-            locker.relock();
+            locker.lock();
         }
     }
 
@@ -391,7 +392,7 @@ void QConnmanEngine::configurationChange(QConnmanServiceInterface *serv)
 
 QNetworkConfiguration::StateFlags QConnmanEngine::getStateForService(const QString &service)
 {
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
     QConnmanServiceInterface *serv = connmanServiceInterfaces.value(service);
     if (!serv)
         return QNetworkConfiguration::Undefined;
@@ -472,7 +473,7 @@ bool QConnmanEngine::isRoamingAllowed(const QString &context)
 
 void QConnmanEngine::removeConfiguration(const QString &id)
 {
-    QMutexLocker locker(&mutex);
+    auto locker = qt_unique_lock(mutex);
 
     if (accessPointConfigurations.contains(id)) {
 
@@ -485,13 +486,12 @@ void QConnmanEngine::removeConfiguration(const QString &id)
         foundConfigurations.removeOne(ptr.data());
         locker.unlock();
         emit configurationRemoved(ptr);
-        locker.relock();
     }
 }
 
 void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
 {
-    QMutexLocker locker(&mutex);
+    auto locker = qt_unique_lock(mutex);
     if (!connmanServiceInterfaces.contains(servicePath)) {
         QConnmanServiceInterface *serv = new QConnmanServiceInterface(servicePath, this);
         connmanServiceInterfaces.insert(serv->path(),serv);
@@ -547,7 +547,6 @@ void QConnmanEngine::addServiceConfiguration(const QString &servicePath)
 
         locker.unlock();
         Q_EMIT configurationAdded(ptr);
-        locker.relock();
     }
 }
 

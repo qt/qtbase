@@ -915,7 +915,7 @@ void QCborContainerPrivate::replaceAt_complex(Element &e, const QCborValue &valu
 // in qstring.cpp
 void qt_to_latin1_unchecked(uchar *dst, const ushort *uc, qsizetype len);
 
-Q_NEVER_INLINE void QCborContainerPrivate::appendAsciiString(const QString &s)
+Q_NEVER_INLINE void QCborContainerPrivate::appendAsciiString(QStringView s)
 {
     qsizetype len = s.size();
     QtCbor::Element e;
@@ -926,7 +926,7 @@ Q_NEVER_INLINE void QCborContainerPrivate::appendAsciiString(const QString &s)
 
     char *ptr = data.data() + e.value + sizeof(ByteData);
     uchar *l = reinterpret_cast<uchar *>(ptr);
-    const ushort *uc = (const ushort *)s.unicode();
+    const ushort *uc = (const ushort *)s.utf16();
     qt_to_latin1_unchecked(l, uc, len);
 }
 
@@ -1646,13 +1646,23 @@ QCborValue::QCborValue(const QByteArray &ba)
     container->ref.storeRelaxed(1);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     Creates a QCborValue with string value \a s. The value can later be
     retrieved using toString().
 
     \sa toString(), isString(), isByteArray()
  */
-QCborValue::QCborValue(const QString &s)
+QCborValue::QCborValue(const QString &s) : QCborValue(qToStringViewIgnoringNull(s)) {}
+#endif
+
+/*!
+    Creates a QCborValue with string value \a s. The value can later be
+    retrieved using toString().
+
+    \sa toString(), isString(), isByteArray()
+*/
+QCborValue::QCborValue(QStringView s)
     : n(0), container(new QCborContainerPrivate), t(String)
 {
     container->append(s);

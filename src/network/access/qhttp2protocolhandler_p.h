@@ -55,6 +55,8 @@
 #include <private/qabstractprotocolhandler_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 
+#include <access/qhttp2configuration.h>
+
 #include <private/http2protocol_p.h>
 #include <private/http2streams_p.h>
 #include <private/http2frames_p.h>
@@ -163,8 +165,9 @@ private:
     static const std::deque<quint32>::size_type maxRecycledStreams;
     std::deque<quint32> recycledStreams;
 
-    // Peer's max frame size.
-    quint32 maxFrameSize = Http2::maxFrameSize;
+    // Peer's max frame size (this min is the default value
+    // we start with, that can be updated by SETTINGS frame):
+    quint32 maxFrameSize = Http2::minPayloadLimit;
 
     Http2::FrameReader frameReader;
     Http2::Frame inboundFrame;
@@ -176,28 +179,28 @@ private:
 
     // Control flow:
 
-    // This is how many concurrent streams our peer expects from us:
-    // 100 is the default value, can be updated by the server's SETTINGS
-    // frame(s):
+    // This is how many concurrent streams our peer allows us, 100 is the
+    // initial value, can be updated by the server's SETTINGS frame(s):
     quint32 maxConcurrentStreams = Http2::maxConcurrentStreams;
     // While we allow sending SETTTINGS_MAX_CONCURRENT_STREAMS to limit our peer,
     // it's just a hint and we do not actually enforce it (and we can continue
     // sending requests and creating streams while maxConcurrentStreams allows).
 
-    // This is the max value, we set it in a ctor from Http2::ProtocolParameters,
-    // it does not change after that.
+    // This is our (client-side) maximum possible receive window size, we set
+    // it in a ctor from QHttp2Configuration, it does not change after that.
+    // The default is 64Kb:
     qint32 maxSessionReceiveWindowSize = Http2::defaultSessionWindowSize;
 
-    // Our session receive window size, default is 64Kb. We'll update it from QNAM's
-    // Http2::ProtocolParameters. Signed integer since it can become negative
+    // Our session current receive window size, updated in a ctor from
+    // QHttp2Configuration. Signed integer since it can become negative
     // (it's still a valid window size).
     qint32 sessionReceiveWindowSize = Http2::defaultSessionWindowSize;
     // Our per-stream receive window size, default is 64 Kb, will be updated
-    // from QNAM's Http2::ProtocolParameters. Again, signed - can become negative.
+    // from QHttp2Configuration. Again, signed - can become negative.
     qint32 streamInitialReceiveWindowSize = Http2::defaultSessionWindowSize;
 
     // These are our peer's receive window sizes, they will be updated by the
-    // peer's SETTINGS and WINDOW_UPDATE frames.
+    // peer's SETTINGS and WINDOW_UPDATE frames, defaults presumed to be 64Kb.
     qint32 sessionSendWindowSize = Http2::defaultSessionWindowSize;
     qint32 streamInitialSendWindowSize = Http2::defaultSessionWindowSize;
 

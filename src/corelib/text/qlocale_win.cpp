@@ -116,8 +116,8 @@ struct QSystemLocalePrivate
     QVariant dateTimeFormat(QLocale::FormatType);
     QVariant dayName(int, QLocale::FormatType);
     QVariant monthName(int, QLocale::FormatType);
-    QVariant toString(const QDate &, QLocale::FormatType);
-    QVariant toString(const QTime &, QLocale::FormatType);
+    QVariant toString(QDate, QLocale::FormatType);
+    QVariant toString(QTime, QLocale::FormatType);
     QVariant toString(const QDateTime &, QLocale::FormatType);
     QVariant measurementSystem();
     QVariant collation();
@@ -394,7 +394,7 @@ QVariant QSystemLocalePrivate::monthName(int month, QLocale::FormatType type)
     return getLocaleInfo(lctype);
 }
 
-QVariant QSystemLocalePrivate::toString(const QDate &date, QLocale::FormatType type)
+QVariant QSystemLocalePrivate::toString(QDate date, QLocale::FormatType type)
 {
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
@@ -413,7 +413,7 @@ QVariant QSystemLocalePrivate::toString(const QDate &date, QLocale::FormatType t
     return QString();
 }
 
-QVariant QSystemLocalePrivate::toString(const QTime &time, QLocale::FormatType type)
+QVariant QSystemLocalePrivate::toString(QTime time, QLocale::FormatType type)
 {
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));

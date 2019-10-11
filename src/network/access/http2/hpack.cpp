@@ -208,6 +208,11 @@ void Encoder::setMaxDynamicTableSize(quint32 size)
     lookupTable.setMaxDynamicTableSize(size);
 }
 
+void Encoder::setCompressStrings(bool compress)
+{
+    compressStrings = compress;
+}
+
 bool Encoder::encodeRequestPseudoHeaders(BitOStream &outputStream,
                                          const HttpHeader &header)
 {

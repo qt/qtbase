@@ -431,20 +431,20 @@ void tst_QStringView::arg() const
 {
 #define CHECK1(pattern, arg1, expected) \
     do { \
-        auto p = QStringViewLiteral(pattern); \
+        auto p = QStringView(u"" pattern); \
         QCOMPARE(p.arg(QLatin1String(arg1)), expected); \
-        QCOMPARE(p.arg(QStringViewLiteral(arg1)), expected); \
+        QCOMPARE(p.arg(u"" arg1), expected); \
         QCOMPARE(p.arg(QStringLiteral(arg1)), expected); \
         QCOMPARE(p.arg(QString(QLatin1String(arg1))), expected); \
     } while (false) \
     /*end*/
 #define CHECK2(pattern, arg1, arg2, expected) \
     do { \
-        auto p = QStringViewLiteral(pattern); \
+        auto p = QStringView(u"" pattern); \
         QCOMPARE(p.arg(QLatin1String(arg1), QLatin1String(arg2)), expected); \
-        QCOMPARE(p.arg(QStringViewLiteral(arg1), QLatin1String(arg2)), expected); \
-        QCOMPARE(p.arg(QLatin1String(arg1), QStringViewLiteral(arg2)), expected); \
-        QCOMPARE(p.arg(QStringViewLiteral(arg1), QStringViewLiteral(arg2)), expected); \
+        QCOMPARE(p.arg(u"" arg1, QLatin1String(arg2)), expected); \
+        QCOMPARE(p.arg(QLatin1String(arg1), u"" arg2), expected); \
+        QCOMPARE(p.arg(u"" arg1, u"" arg2), expected); \
     } while (false) \
     /*end*/
 

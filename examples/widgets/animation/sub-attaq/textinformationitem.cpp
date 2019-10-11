@@ -50,14 +50,15 @@
 #include "textinformationitem.h"
 #include "pixmapitem.h"
 
-TextInformationItem::TextInformationItem (QGraphicsItem * parent)
+TextInformationItem::TextInformationItem (QGraphicsItem *parent)
     : QGraphicsTextItem(parent)
 {
     setFont(QFont("Comic Sans MS", 15));
 }
-#include <QDebug>
-void TextInformationItem::setMessage(const QString& text)
+
+void TextInformationItem::setMessage(const QString &text)
 {
     setHtml(text);
-    setPos(parentItem()->boundingRect().center().x() - boundingRect().size().width()/2 , parentItem()->boundingRect().center().y());
+    setPos(parentItem()->boundingRect().center().x() - boundingRect().size().width() / 2,
+           parentItem()->boundingRect().center().y());
 }

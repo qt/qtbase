@@ -95,10 +95,6 @@ public:
         m_selstart(0), m_selend(0), m_passwordEchoEditing(false)
         , m_passwordEchoTimer(0)
         , m_passwordMaskDelay(-1)
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        , m_threadChecks(false)
-        , m_textLayoutThread(0)
- #endif
 #if defined(QT_BUILD_INTERNAL)
         , m_passwordMaskDelayOverride(-1)
 #endif
@@ -404,24 +400,8 @@ public:
 
     QTextLayout *textLayout() const
     {
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        if (m_threadChecks && QThread::currentThread() != m_textLayoutThread)
-            redoTextLayout();
-#endif
         return &m_textLayout;
     }
-
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    void setThreadChecks(bool threadChecks)
-    {
-        m_threadChecks = threadChecks;
-    }
-
-    bool threadChecks() const
-    {
-        return m_threadChecks;
-    }
-#endif
 
 private:
     void init(const QString &txt);
@@ -534,10 +514,6 @@ private:
     }
 
     int redoTextLayout() const;
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    bool m_threadChecks;
-    mutable QThread *m_textLayoutThread;
-#endif
 
 public:
 #if defined(QT_BUILD_INTERNAL)
