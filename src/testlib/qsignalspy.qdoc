@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -48,7 +48,7 @@
 
     \snippet code/doc_src_qsignalspy.cpp 1
 
-    \b {Note:} Non-standard data types need to be registered, using
+    \note Non-standard data types need to be registered, using
     the qRegisterMetaType() function, before you can create a
     QSignalSpy. For example:
 
@@ -57,6 +57,18 @@
     To retrieve the instance, you can use qvariant_cast:
 
     \snippet code/doc_src_qsignalspy.cpp 3
+
+    \section1 Verifying Signal Emissions
+
+    The QSignalSpy class provides an elegant mechanism for capturing the list
+    of signals emitted by an object. However, you should verify its validity
+    after construction. The constructor does a number of sanity checks, such as
+    verifying that the signal to be spied upon actually exists. To make the
+    diagnosis of test failures easier, the results of these checks should be
+    checked by calling \c QVERIFY(spy.isValid()) before proceeding further with
+    a test.
+
+    \sa QVERIFY()
  */
 
 /*! \fn QSignalSpy::QSignalSpy(const QObject *object, const char *signal)
