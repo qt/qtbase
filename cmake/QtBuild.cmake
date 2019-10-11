@@ -3188,14 +3188,6 @@ endfunction()
 # 'input_file_list' is a list of 'foo.g' file paths.
 # 'flags' are extra flags to be passed to qlalr.
 function(qt_process_qlalr consuming_target input_file_list flags)
-    # For compatibility, swap parameters if called from an old call site.
-    if (NOT TARGET "${consuming_target}")
-        set(tmp "${consuming_target}")
-        set(consuming_target "${input_file_list}")
-        set(input_file_list "${tmp}")
-        unset(tmp)
-    endif()
-
     foreach(input_file ${input_file_list})
         file(STRINGS ${input_file} input_file_lines)
         qt_qlalr_find_option_in_list("${input_file_lines}" "^%parser(.+)" "parser")
