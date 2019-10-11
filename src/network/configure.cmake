@@ -9,6 +9,7 @@
 qt_find_package(Libproxy PROVIDED_TARGETS PkgConfig::Libproxy)
 qt_find_package(OpenSSL PROVIDED_TARGETS OpenSSL::SSL)
 qt_find_package(OpenSSL PROVIDED_TARGETS OpenSSL::SSL)
+qt_find_package(GSSAPI PROVIDED_TARGETS GSSAPI::GSSAPI)
 
 
 #### Tests
@@ -163,23 +164,6 @@ int main(int argc, char **argv)
     return 0;
 }
 "# FIXME: use: openssl
-)
-
-# gssapi
-qt_config_compile_test(gssapi
-    LABEL "KRB5 GSSAPI support"
-"
-#include <gssapi/gssapi.h>
-
-int main(int argc, char **argv)
-{
-    (void)argc; (void)argv;
-    /* BEGIN TEST: */
-gss_ctx_id_t ctx;
-    /* END TEST: */
-    return 0;
-}
-"# FIXME: qmake: LIBS += -lgssapi_krb5
 )
 
 # netlistmgr
@@ -349,6 +333,7 @@ qt_feature("bearermanagement" PUBLIC
     CONDITION QT_FEATURE_thread AND QT_FEATURE_library AND QT_FEATURE_networkinterface AND QT_FEATURE_properties
 )
 qt_feature_definition("bearermanagement" "QT_NO_BEARERMANAGEMENT" NEGATE VALUE "1")
+qt_feature_definition("bearermanagement" "QT_NO_BEARERMANAGEMENT" NEGATE)
 qt_feature("localserver" PUBLIC
     SECTION "Networking"
     LABEL "QLocalServer"
@@ -365,7 +350,7 @@ qt_feature("gssapi" PUBLIC
     SECTION "Networking"
     LABEL "GSSAPI"
     PURPOSE "Enable SPNEGO authentication through GSSAPI"
-    CONDITION NOT WIN32 AND TEST_gssapi
+    CONDITION NOT WIN32 AND GSSAPI_FOUND
 )
 qt_feature_definition("gssapi" "QT_NO_GSSAPI" NEGATE VALUE "1")
 qt_feature("sspi" PUBLIC

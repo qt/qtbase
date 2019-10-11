@@ -6,7 +6,6 @@ add_subdirectory(qnetworkaccessmanager)
 add_subdirectory(qnetworkcookie)
 add_subdirectory(qnetworkrequest)
 add_subdirectory(qnetworkreply)
-add_subdirectory(spdy)
 add_subdirectory(qnetworkcachemetadata)
 add_subdirectory(qabstractnetworkcache)
 

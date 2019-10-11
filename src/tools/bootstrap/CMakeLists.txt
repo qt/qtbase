@@ -63,6 +63,7 @@ extend_target(Bootstrap
         ../../corelib/serialization/qxmlstream.cpp
         ../../corelib/serialization/qxmlutils.cpp
         ../../corelib/text/qbytearray.cpp
+        ../../corelib/text/qbytearraylist.cpp
         ../../corelib/text/qbytearraymatcher.cpp
         ../../corelib/text/qlocale.cpp
         ../../corelib/text/qlocale_tools.cpp

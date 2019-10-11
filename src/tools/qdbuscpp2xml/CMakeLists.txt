@@ -8,6 +8,7 @@ add_qt_tool(qdbuscpp2xml
     TOOLS_TARGET DBus # special case
     SOURCES
         ../moc/cbordevice.h
+        ../moc/collectjson.cpp ../moc/collectjson.h
         ../moc/generator.cpp ../moc/generator.h
         ../moc/moc.cpp ../moc/moc.h
         ../moc/outputrevision.h

@@ -57,6 +57,8 @@ def map_tests(test: str) -> Optional[str]:
         "c++11": "$<COMPILE_FEATURES:cxx_std_11>",
         "c++14": "$<COMPILE_FEATURES:cxx_std_14>",
         "c++1z": "$<COMPILE_FEATURES:cxx_std_17>",
+        "c++17": "$<COMPILE_FEATURES:cxx_std_17>",
+        "c++20": "$<COMPILE_FEATURES:cxx_std_20>",
         "c99": "$<COMPILE_FEATURES:c_std_99>",
         "c11": "$<COMPILE_FEATURES:c_std_11>",
         "x86SimdAlways": "ON",  # FIXME: Make this actually do a compile test.
@@ -489,6 +491,8 @@ def parseTest(ctx, test, data, cm_fh):
     skip_tests = {
         "c++11",
         "c++14",
+        "c++17",
+        "c++20",
         "c++1y",
         "c++1z",
         "c11",

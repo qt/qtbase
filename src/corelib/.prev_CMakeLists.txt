@@ -173,7 +173,7 @@ add_qt_module(Core
         thread/qrunnable.cpp thread/qrunnable.h
         thread/qthread.cpp thread/qthread.h
         thread/qthreadstorage.h
-        thread/qwaitcondition.h
+        thread/qwaitcondition.h thread/qwaitcondition_p.h
         time/qcalendar.cpp time/qcalendar.h
         time/qcalendarbackend_p.h
         time/qcalendarmath_p.h
@@ -257,7 +257,7 @@ if(ANDROID)
         jar/QtAndroid.jar
     )
     set_property(TARGET Core APPEND PROPERTY QT_ANDROID_LIB_DEPENDENCIES
-        plugins/platforms/android/libqtforandroid.so
+        plugins/platforms/libplugins_platforms_qtforandroid.so
     )
     set_property(TARGET Core APPEND PROPERTY QT_ANDROID_PERMISSIONS
         android.permission.INTERNET android.permission.WRITE_EXTERNAL_STORAGE

@@ -8,6 +8,7 @@ add_qt_tool(moc
     BOOTSTRAP
     SOURCES
         cbordevice.h
+        collectjson.cpp collectjson.h
         generator.cpp generator.h
         moc.cpp moc.h
         outputrevision.h

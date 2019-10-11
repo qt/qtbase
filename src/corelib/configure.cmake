@@ -488,10 +488,6 @@ qt_feature("clock_monotonic" PUBLIC
     CONDITION QT_FEATURE_clock_gettime AND TEST_clock_monotonic
 )
 qt_feature_definition("clock_monotonic" "QT_NO_CLOCK_MONOTONIC" NEGATE VALUE "1")
-qt_feature("dlopen" PRIVATE
-    LABEL "dlopen()"
-    CONDITION UNIX
-)
 qt_feature("cxx11_future" PUBLIC
     LABEL "C++11 <future>"
     CONDITION TEST_cxx11_future
@@ -699,7 +695,7 @@ qt_feature_definition("textdate" "QT_NO_TEXTDATE" NEGATE VALUE "1")
 qt_feature("datestring" PUBLIC
     SECTION "Data structures"
     LABEL "QDate/QTime/QDateTime"
-    PURPOSE "Provides convertion between dates and strings."
+    PURPOSE "Provides conversion between dates and strings."
     CONDITION QT_FEATURE_textdate
 )
 qt_feature_definition("datestring" "QT_NO_DATESTRING" NEGATE VALUE "1")

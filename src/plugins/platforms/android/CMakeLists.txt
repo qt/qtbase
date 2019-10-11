@@ -6,7 +6,7 @@
 
 add_qt_plugin(qtforandroid
     TYPE platforms
-    # OUTPUT_DIRECTORY "$$DESTDIR/android" # special case remove
+    CLASS_NAME QAndroidIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES android # special case
     SOURCES
         androidcontentfileengine.cpp androidcontentfileengine.h
@@ -18,6 +18,7 @@ add_qt_plugin(qtforandroid
         androidjnimenu.cpp androidjnimenu.h
         androidplatformplugin.cpp
         androidsurfaceclient.h
+        main.cpp
         qandroidassetsfileenginehandler.cpp qandroidassetsfileenginehandler.h
         qandroideventdispatcher.cpp qandroideventdispatcher.h
         qandroidinputcontext.cpp qandroidinputcontext.h
@@ -40,8 +41,6 @@ add_qt_plugin(qtforandroid
         qandroidplatformtheme.cpp qandroidplatformtheme.h
         qandroidplatformwindow.cpp qandroidplatformwindow.h
         qandroidsystemlocale.cpp qandroidsystemlocale.h
-    DEFINES
-        QT_STATICPLUGIN
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${QT_SOURCE_TREE}/src/3rdparty/android
@@ -74,7 +73,6 @@ add_qt_plugin(qtforandroid
 #### Keys ignored in scope 1:.:.:android.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/android.json"
 # _LOADED = "qt_plugin"
-# target.path = "$${target.path}/android"
 
 ## Scopes:
 #####################################################################

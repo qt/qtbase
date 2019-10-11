@@ -9,6 +9,7 @@ add_qt_tool(moc
     TOOLS_TARGET Core # special case
     SOURCES
         cbordevice.h
+        collectjson.cpp collectjson.h
         generator.cpp generator.h
         main.cpp  # special case
         moc.cpp moc.h

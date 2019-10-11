@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     /* END TEST: */
     return 0;
 }
-"# FIXME: qmake: CONFIG += c++11 c++14 c++1z c++2a
+"# FIXME: qmake: CONFIG += c++11 c++14 c++17 c++2a
 )
 
 # precompile_header
@@ -74,6 +74,23 @@ int main(int argc, char **argv)
 "# FIXME: qmake: ['TEMPLATE = lib', 'CONFIG += dll bsymbolic_functions', 'isEmpty(QMAKE_LFLAGS_BSYMBOLIC_FUNC): error("Nope")']
 )
 
+# signaling_nan
+qt_config_compile_test(signaling_nan
+    LABEL "Signaling NaN for doubles"
+"#include <limits>
+
+
+int main(int argc, char **argv)
+{
+    (void)argc; (void)argv;
+    /* BEGIN TEST: */
+using B = std::numeric_limits<double>;
+static_assert(B::has_signaling_NaN, \"System lacks signaling NaN\");
+    /* END TEST: */
+    return 0;
+}
+")
+
 # sse2
 qt_config_compile_test_x86simd(sse2 "SSE2 instructions")
 
@@ -97,6 +114,9 @@ qt_config_compile_test_x86simd(f16c "F16C instructions")
 
 # rdrnd
 qt_config_compile_test_x86simd(rdrnd "RDRAND instruction")
+
+# rdseed
+qt_config_compile_test_x86simd(rdseed "RDSEED instruction")
 
 # shani
 qt_config_compile_test_x86simd(shani "SHA new instructions")
@@ -276,20 +296,28 @@ qt_feature("cxx14" PUBLIC
     LABEL "C++14"
     CONDITION QT_FEATURE_cxx11 AND $<COMPILE_FEATURES:cxx_std_14>
 )
-qt_feature("cxx1z" PUBLIC
+qt_feature("cxx17" PUBLIC
     LABEL "C++17"
     CONDITION QT_FEATURE_cxx14 AND $<COMPILE_FEATURES:cxx_std_17>
+)
+qt_feature("cxx1z" PUBLIC
+    LABEL "C++17"
+    CONDITION QT_FEATURE_cxx17
 )
 qt_feature("cxx2a" PUBLIC
     LABEL "C++2a"
     AUTODETECT OFF
-    CONDITION QT_FEATURE_cxx1z AND TEST_cxx2a
+    CONDITION QT_FEATURE_cxx17 AND TEST_cxx2a
 )
 qt_feature("reduce_exports" PRIVATE
     LABEL "Reduce amount of exported symbols"
     CONDITION NOT WIN32 AND CMAKE_CXX_COMPILE_OPTIONS_VISIBILITY
 )
 qt_feature_definition("reduce_exports" "QT_VISIBILITY_AVAILABLE")
+qt_feature("signaling_nan" PUBLIC
+    LABEL "Signaling NaN"
+    CONDITION TEST_signaling_nan
+)
 qt_feature("sse2" PRIVATE
     LABEL "SSE2"
     CONDITION ( ( TEST_architecture_arch STREQUAL i386 ) OR ( TEST_architecture_arch STREQUAL x86_64 ) ) AND TEST_subarch_sse2
@@ -385,6 +413,11 @@ qt_feature("rdrnd"
     CONDITION TEST_subarch_rdseed
 )
 qt_feature_definition("rdrnd" "QT_COMPILER_SUPPORTS_RDRND" VALUE "1")
+qt_feature("rdseed"
+    LABEL "RDSEED"
+    CONDITION TEST_subarch_rdseed
+)
+qt_feature_definition("rdseed" "QT_COMPILER_SUPPORTS_RDSEED" VALUE "1")
 qt_feature("shani"
     LABEL "SHA"
     CONDITION QT_FEATURE_sse2 AND TEST_subarch_sha
@@ -482,6 +515,15 @@ qt_feature("xml" PRIVATE
 qt_feature("libudev" PRIVATE
     LABEL "udev"
     CONDITION Libudev_FOUND
+)
+qt_feature("dlopen" PRIVATE
+    LABEL "dlopen()"
+    CONDITION UNIX
+)
+qt_feature("relocatable" PRIVATE
+    LABEL "Relocatable"
+    AUTODETECT QT_FEATURE_shared
+    CONDITION QT_FEATURE_dlopen OR WIN32 OR NOT QT_FEATURE_shared
 )
 
 qt_extra_definition("QT_VERSION_STR" "\"${PROJECT_VERSION}\"" PUBLIC)

@@ -14,8 +14,6 @@ add_qt_plugin(qcocoa
     SOURCES
         main.mm
         messages.cpp messages.h
-        qcocoaaccessibility.h qcocoaaccessibility.mm
-        qcocoaaccessibilityelement.h qcocoaaccessibilityelement.mm
         qcocoaapplication.h qcocoaapplication.mm
         qcocoaapplicationdelegate.h qcocoaapplicationdelegate.mm
         qcocoabackingstore.h qcocoabackingstore.mm
@@ -49,7 +47,6 @@ add_qt_plugin(qcocoa
         qnswindow.h qnswindow.mm
         qnswindowdelegate.h qnswindowdelegate.mm
     LIBRARIES
-        Qt::AccessibilitySupportPrivate
         Qt::ClipboardSupportPrivate
         Qt::CorePrivate
         Qt::FontDatabaseSupportPrivate
@@ -66,7 +63,6 @@ add_qt_plugin(qcocoa
         ${FWMetal}
         ${FWQuartzCore}
         Cups::Cups
-        Qt::AccessibilitySupport
         Qt::ClipboardSupport
         Qt::Core
         Qt::FontDatabaseSupport
@@ -111,22 +107,38 @@ extend_target(qcocoa CONDITION QT_FEATURE_vulkan
         Qt::VulkanSupport
 )
 
+extend_target(qcocoa CONDITION QT_FEATURE_accessibility
+    SOURCES
+        qcocoaaccessibility.h qcocoaaccessibility.mm
+        qcocoaaccessibilityelement.h qcocoaaccessibilityelement.mm
+    LIBRARIES
+        Qt::AccessibilitySupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::AccessibilitySupport
+)
+
 extend_target(qcocoa CONDITION TARGET Qt::Widgets
     SOURCES
-        qcocoaprintdevice.h qcocoaprintdevice.mm
-        qcocoaprintersupport.h qcocoaprintersupport.mm
         qpaintengine_mac.mm qpaintengine_mac_p.h
-        qprintengine_mac.mm qprintengine_mac_p.h
     LIBRARIES
-        Qt::PrintSupportPrivate
         Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
-        Qt::PrintSupport
         Qt::Widgets
 )
 
-#### Keys ignored in scope 5:.:.:cocoa.pro:TARGET Qt::Widgets:
+#### Keys ignored in scope 6:.:.:cocoa.pro:TARGET Qt::Widgets:
 # QT_FOR_CONFIG = "widgets"
+
+extend_target(qcocoa CONDITION TARGET Qt::PrintSupport AND TARGET Qt::Widgets
+    SOURCES
+        qcocoaprintdevice.h qcocoaprintdevice.mm
+        qcocoaprintersupport.h qcocoaprintersupport.mm
+        qprintengine_mac.mm qprintengine_mac_p.h
+    LIBRARIES
+        Qt::PrintSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::PrintSupport
+)
 
 extend_target(qcocoa CONDITION QT_FEATURE_colordialog AND TARGET Qt::Widgets
     SOURCES
@@ -143,5 +155,5 @@ extend_target(qcocoa CONDITION QT_FEATURE_fontdialog AND TARGET Qt::Widgets
         qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
 )
 
-#### Keys ignored in scope 9:.:.:cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 11:.:.:cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"

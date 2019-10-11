@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qudpsocket
-    GUI
     SOURCES
         ../tst_qudpsocket.cpp
     INCLUDE_DIRECTORIES
@@ -15,7 +14,6 @@ add_qt_test(tst_qudpsocket
 )
 
 #### Keys ignored in scope 1:.:.:test.pro:<TRUE>:
-# CONFIG = "testcase"
 # MOC_DIR = "tmp"
 # testcase.timeout = "800"
 
@@ -32,5 +30,4 @@ add_qt_test(tst_qudpsocket
 # DESTDIR = "../"
 
 #### Keys ignored in scope 6:.:.:test.pro:LINUX:
-# CONFIG = "unsupported/testserver"
 # QT_TEST_SERVER_LIST = "danted" "echo"

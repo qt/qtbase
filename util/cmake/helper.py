@@ -374,6 +374,7 @@ _library_map = [
     LibraryMapping("glib", "GLIB2", "GLIB2::GLIB2"),
     LibraryMapping("gnu_iconv", None, None),
     LibraryMapping("gtk3", "GTK3", "PkgConfig::GTK3"),
+    LibraryMapping("gssapi", "GSSAPI", "GSSAPI::GSSAPI"),
     LibraryMapping("harfbuzz", "harfbuzz", "harfbuzz::harfbuzz"),
     LibraryMapping("host_dbus", None, None),
     LibraryMapping(

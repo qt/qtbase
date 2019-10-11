@@ -82,7 +82,7 @@ if(ANDROID AND (QT_FEATURE_bearermanagement))
         jar/QtAndroidBearer.jar
     )
     set_property(TARGET Network APPEND PROPERTY QT_ANDROID_LIB_DEPENDENCIES
-        plugins/bearer/libqandroidbearer.so
+        plugins/bearer/libplugins_bearer_qandroidbearer.so
     )
     set_property(TARGET Network APPEND PROPERTY QT_ANDROID_PERMISSIONS
         android.permission.ACCESS_NETWORK_STATE
@@ -139,11 +139,6 @@ extend_target(Network CONDITION QT_FEATURE_http
         access/qhttpthreaddelegate.cpp access/qhttpthreaddelegate_p.h
         access/qnetworkreplyhttpimpl.cpp access/qnetworkreplyhttpimpl_p.h
         socket/qhttpsocketengine.cpp socket/qhttpsocketengine_p.h
-)
-
-extend_target(Network CONDITION QT_FEATURE_http AND QT_FEATURE_ssl
-    SOURCES
-        access/qspdyprotocolhandler.cpp access/qspdyprotocolhandler_p.h
 )
 
 extend_target(Network CONDITION QT_FEATURE_dnslookup
@@ -235,7 +230,7 @@ extend_target(Network CONDITION NOT APPLE_IOS AND NOT APPLE_OSX AND NOT QT_FEATU
 
 extend_target(Network CONDITION QT_FEATURE_gssapi
     LIBRARIES
-        gssapi_krb5
+        GSSAPI::GSSAPI
 )
 
 extend_target(Network CONDITION APPLE_UIKIT

@@ -3263,5 +3263,44 @@ function(qt_generate_qconfig_cpp)
     set(QT_CONFIG_STR_OFFSETS_SECOND "${QT_CONFIG_STR_OFFSETS}")
     set(QT_CONFIG_STRS_SECOND "${QT_CONFIG_STRS}")
 
+    # Settings path / sysconf dir.
+    if(APPLE)
+        set(QT_DEFAULT_SYS_CONF_DIR "/Library/Preferences/Qt")
+    else()
+        set(QT_DEFAULT_SYS_CONF_DIR "etc/xdg")
+    endif()
+
+    # Compute and set relocation prefixes.
+    # TODO: Clean this up, there's a bunch of unrealistic assumptions here.
+    # See qtConfOutput_preparePaths in qtbase/configure.pri.
+    if(WIN32)
+        set(lib_location_absolute_path "${CMAKE_INSTALL_PREFIX}/bin")
+    else()
+        set(lib_location_absolute_path "${CMAKE_INSTALL_PREFIX}/lib")
+    endif()
+    file(RELATIVE_PATH from_lib_location_to_prefix
+         "${lib_location_absolute_path}" "${CMAKE_INSTALL_PREFIX}")
+
+    if(QT_HOST_PATH)
+        set(host_prefix "${QT_HOST_PATH}")
+        set(host_bin_dir_absolute_path "${QT_HOST_PATH}/bin")
+    else()
+        set(host_prefix "${CMAKE_INSTALL_PREFIX}")
+        set(host_bin_dir_absolute_path "${CMAKE_INSTALL_PREFIX}/bin")
+    endif()
+
+    file(RELATIVE_PATH from_host_bin_dir_to_host_prefix
+         "${host_bin_dir_absolute_path}" "${host_prefix}")
+
+    # TODO: Fix this to use the equivalent of extprefix on CMake (CMAKE_STAGING_PREFIX?)
+    # For now just assume ext prefix is same as regular prefix.
+    file(RELATIVE_PATH from_host_bin_dir_to_ext_prefix
+         "${host_bin_dir_absolute_path}" "${CMAKE_INSTALL_PREFIX}")
+
+
+    set(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH "${from_lib_location_to_prefix}")
+    set(QT_CONFIGURE_HOSTBINDIR_TO_HOSTPREFIX_PATH "${from_host_bin_dir_to_host_prefix}")
+    set(QT_CONFIGURE_HOSTBINDIR_TO_EXTPREFIX_PATH "${from_host_bin_dir_to_ext_prefix}")
+
     configure_file(global/qconfig.cpp.in global/qconfig.cpp @ONLY)
 endfunction()
