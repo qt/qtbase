@@ -944,6 +944,10 @@ QT_WARNING_POP
 #  define Q_DUMMY_COMPARISON_OPERATOR(C)
 #endif
 
+QT_WARNING_PUSH
+// warning: noexcept-expression evaluates to ‘false’ because of a call to ‘void swap(..., ...)'
+QT_WARNING_DISABLE_GCC("-Wnoexcept")
+
 namespace QtPrivate
 {
 namespace SwapExceptionTester { // insulate users from the "using std::swap" below
@@ -962,6 +966,8 @@ inline void qSwap(T &value1, T &value2)
     using std::swap;
     swap(value1, value2);
 }
+
+QT_WARNING_POP
 
 #if QT_DEPRECATED_SINCE(5, 0)
 Q_CORE_EXPORT QT_DEPRECATED void *qMalloc(size_t size) Q_ALLOC_SIZE(1);
