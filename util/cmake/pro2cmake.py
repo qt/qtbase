@@ -2760,6 +2760,8 @@ def write_example(
     write_all_source_file_lists(cm_fh, scope, add_target, indent=0)
     cm_fh.write(")\n")
 
+    handling_first_scope = True
+
     for scope in scopes:
         # write wayland already has condition scope handling
         write_wayland_part(cm_fh, binary_name, scope, indent=0)
@@ -2772,6 +2774,10 @@ def write_example(
         if condition != "ON":
             cm_fh.write(f"\n{spaces(indent)}if({condition})\n")
             indent += 1
+
+        if not handling_first_scope:
+            target_sources = f"target_sources({binary_name} PUBLIC"
+            write_all_source_file_lists(cm_fh, scope, target_sources, indent=indent, footer=")\n")
 
         write_include_paths(
             cm_fh,
@@ -2817,6 +2823,7 @@ def write_example(
         if condition != "ON":
             indent -= 1
             cm_fh.write(f"\n{spaces(indent)}endif()\n")
+        handling_first_scope = False
 
     if qmldir:
         write_qml_plugin_epilogue(cm_fh, binary_name, scope, qmldir, indent)
