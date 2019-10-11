@@ -1984,8 +1984,8 @@ def write_qlalrsources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
     cm_fh.write("\n# QLALR Grammars:\n")
     cm_fh.write(f"qt_process_qlalr(\n")
     indent += 1
-    cm_fh.write(f"{spaces(indent)}{';'.join(sources)}\n")
     cm_fh.write(f"{spaces(indent)}{target}\n")
+    cm_fh.write(f"{spaces(indent)}{';'.join(sources)}\n")
     cm_fh.write(f'{spaces(indent)}""\n')
     cm_fh.write(")\n")
 
