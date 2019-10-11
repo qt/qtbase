@@ -2768,62 +2768,70 @@ def write_example(
         write_wayland_part(cm_fh, binary_name, scope, indent=0)
 
         # The following options do not
+        io_string = io.StringIO()
+        condition_str = ""
         condition = "ON"
         if scope.total_condition:
             condition = map_to_cmake_condition(scope.total_condition)
 
         if condition != "ON":
-            cm_fh.write(f"\n{spaces(indent)}if({condition})\n")
+            condition_str = f"\n{spaces(indent)}if({condition})\n"
             indent += 1
 
         if not handling_first_scope:
             target_sources = f"target_sources({binary_name} PUBLIC"
-            write_all_source_file_lists(cm_fh, scope, target_sources, indent=indent, footer=")\n")
+            write_all_source_file_lists(io_string, scope, target_sources, indent=indent, footer=")\n")
 
         write_include_paths(
-            cm_fh,
+            io_string,
             scope,
             f"target_include_directories({binary_name} PUBLIC",
             indent=indent,
-            footer=")",
+            footer=")\n",
         )
         write_defines(
-            cm_fh,
+            io_string,
             scope,
             f"target_compile_definitions({binary_name} PUBLIC",
             indent=indent,
-            footer=")",
+            footer=")\n",
         )
 
         (scope_public_libs, scope_private_libs) = extract_cmake_libraries(scope, is_example=True)
 
         write_list(
-            cm_fh,
+            io_string,
             scope_private_libs,
             "",
             indent=indent,
             header=f"target_link_libraries({binary_name} PRIVATE\n",
-            footer=")",
+            footer=")\n",
         )
         write_list(
-            cm_fh,
+            io_string,
             scope_public_libs,
             "",
             indent=indent,
             header=f"target_link_libraries({binary_name} PUBLIC\n",
-            footer=")",
+            footer=")\n",
         )
         write_compile_options(
-            cm_fh, scope, f"target_compile_options({binary_name}", indent=indent, footer=")"
+            io_string, scope, f"target_compile_options({binary_name}", indent=indent, footer=")\n"
         )
 
-        write_resources(cm_fh, binary_name, scope, indent=indent, is_example=True)
-        write_statecharts(cm_fh, binary_name, scope, indent=indent, is_example=True)
-        write_repc_files(cm_fh, binary_name, scope, indent=indent)
+        write_resources(io_string, binary_name, scope, indent=indent, is_example=True)
+        write_statecharts(io_string, binary_name, scope, indent=indent, is_example=True)
+        write_repc_files(io_string, binary_name, scope, indent=indent)
 
         if condition != "ON":
             indent -= 1
-            cm_fh.write(f"\n{spaces(indent)}endif()\n")
+        string = io_string.getvalue()
+        if len(string) != 0:
+            string = string.rstrip("\n")
+            cm_fh.write(f"{condition_str}{string}\n")
+            if condition != "ON":
+                cm_fh.write(f"{spaces(indent)}endif()\n")
+
         handling_first_scope = False
 
     if qmldir:
