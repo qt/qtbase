@@ -2529,7 +2529,7 @@ function(add_cmake_library target)
     qt_parse_all_arguments(arg "add_cmake_library"
         "SHARED;MODULE;STATIC;INTERFACE"
         "OUTPUT_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;INSTALL_DIRECTORY"
-        "${__default_private_args};${__default_public_args};"
+        "${__default_private_args};${__default_public_args}"
         ${ARGN}
     )
 
@@ -2559,9 +2559,14 @@ function(add_cmake_library target)
         )
     endif()
 
+    if (arg_OUTPUT_DIRECTORY)
+        set_target_properties(${target} PROPERTIES
+            OUTPUT_DIRECTORY ${arg_OUTPUT_DIRECTORY}
+        )
+    endif()
+
     extend_target("${target}"
         SOURCES ${arg_SOURCES}
-        OUTPUT_DIRECTORY ${arg_OUTPUT_DIRECTORY}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
         PUBLIC_INCLUDE_DIRECTORIES
