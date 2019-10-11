@@ -1227,6 +1227,7 @@ def map_condition(condition: str) -> str:
     condition = unwrap_if(condition)
 
     condition = re.sub(r"\bisEmpty\s*\((.*?)\)", r"\1_ISEMPTY", condition)
+    condition = re.sub(r"\bcontains\s*\(\s*(?:QT_)?CONFIG\s*,\s*c\+\+(\d+)\)", r"cxx_std_\1 IN_LIST CMAKE_CXX_COMPILE_FEATURES", condition)
     condition = re.sub(r'\bcontains\s*\((.*?),\s*"?(.*?)"?\)', r"\1___contains___\2", condition)
     condition = re.sub(r'\bequals\s*\((.*?),\s*"?(.*?)"?\)', r"\1___equals___\2", condition)
     condition = re.sub(r'\bisEqual\s*\((.*?),\s*"?(.*?)"?\)', r"\1___equals___\2", condition)
