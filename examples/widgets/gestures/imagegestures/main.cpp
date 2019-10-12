@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    QList<Qt::GestureType> gestures;
+    QVector<Qt::GestureType> gestures;
     if (!commandLineParser.isSet(disablePanOption))
         gestures << Qt::PanGesture;
     if (!commandLineParser.isSet(disablePinchOption))

@@ -3861,6 +3861,9 @@ int QDateTime::offsetFromUtc() const
 
 QString QDateTime::timeZoneAbbreviation() const
 {
+    if (!isValid())
+        return QString();
+
     switch (getSpec(d)) {
     case Qt::UTC:
         return QLatin1String("UTC");
@@ -3895,6 +3898,9 @@ QString QDateTime::timeZoneAbbreviation() const
 
 bool QDateTime::isDaylightTime() const
 {
+    if (!isValid())
+        return false;
+
     switch (getSpec(d)) {
     case Qt::UTC:
     case Qt::OffsetFromUTC:
@@ -4761,17 +4767,24 @@ QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
     Returns \c true if this datetime is equal to the \a other datetime;
     otherwise returns \c false.
 
+    Since 5.14, all invalid datetimes are equal to one another and differ from
+    all other datetimes.
+
     \sa operator!=()
 */
 
 bool QDateTime::operator==(const QDateTime &other) const
 {
-    if (getSpec(d) == Qt::LocalTime
-        && getStatus(d) == getStatus(other.d)) {
+    if (!isValid())
+        return !other.isValid();
+    if (!other.isValid())
+        return false;
+
+    if (getSpec(d) == Qt::LocalTime && getStatus(d) == getStatus(other.d))
         return getMSecs(d) == getMSecs(other.d);
-    }
+
     // Convert to UTC and compare
-    return (toMSecsSinceEpoch() == other.toMSecsSinceEpoch());
+    return toMSecsSinceEpoch() == other.toMSecsSinceEpoch();
 }
 
 /*!
@@ -4780,8 +4793,9 @@ bool QDateTime::operator==(const QDateTime &other) const
     Returns \c true if this datetime is different from the \a other
     datetime; otherwise returns \c false.
 
-    Two datetimes are different if either the date, the time, or the
-    time zone components are different.
+    Two datetimes are different if either the date, the time, or the time zone
+    components are different. Since 5.14, any invalid datetime is less than all
+    valid datetimes.
 
     \sa operator==()
 */
@@ -4793,12 +4807,16 @@ bool QDateTime::operator==(const QDateTime &other) const
 
 bool QDateTime::operator<(const QDateTime &other) const
 {
-    if (getSpec(d) == Qt::LocalTime
-        && getStatus(d) == getStatus(other.d)) {
+    if (!isValid())
+        return other.isValid();
+    if (!other.isValid())
+        return false;
+
+    if (getSpec(d) == Qt::LocalTime && getStatus(d) == getStatus(other.d))
         return getMSecs(d) < getMSecs(other.d);
-    }
+
     // Convert to UTC and compare
-    return (toMSecsSinceEpoch() < other.toMSecsSinceEpoch());
+    return toMSecsSinceEpoch() < other.toMSecsSinceEpoch();
 }
 
 /*!
@@ -5849,7 +5867,7 @@ uint qHash(const QDateTime &key, uint seed)
     // QDate/QTime/spec/offset because QDateTime::operator== converts both arguments
     // to the same timezone. If we don't, qHash would return different hashes for
     // two QDateTimes that are equivalent once converted to the same timezone.
-    return qHash(key.toMSecsSinceEpoch(), seed);
+    return key.isValid() ? qHash(key.toMSecsSinceEpoch(), seed) : seed;
 }
 
 /*! \fn uint qHash(const QDate &key, uint seed = 0)

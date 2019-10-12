@@ -7669,7 +7669,7 @@ void QWidget::show()
     else if (defaultState == Qt::WindowMaximized)
         showMaximized();
     else
-        setVisible(true); // FIXME: Why not showNormal(), like QWindow::show()?
+        setVisible(true); // Don't call showNormal() as not to clobber Qt::Window(Max/Min)imized
 }
 
 /*! \internal

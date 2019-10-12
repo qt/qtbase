@@ -118,9 +118,9 @@ void ClassWizard::accept()
     block += "public:\n";
 
     if (field("qobjectCtor").toBool()) {
-        block += "    " + className + "(QObject *parent = 0);\n";
+        block += "    " + className + "(QObject *parent = nullptr);\n";
     } else if (field("qwidgetCtor").toBool()) {
-        block += "    " + className + "(QWidget *parent = 0);\n";
+        block += "    " + className + "(QWidget *parent = nullptr);\n";
     } else if (field("defaultCtor").toBool()) {
         block += "    " + className + "();\n";
         if (field("copyCtor").toBool()) {

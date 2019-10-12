@@ -1810,11 +1810,11 @@ void QWidgetTextControlPrivate::mouseReleaseEvent(QEvent *e, Qt::MouseButton but
         if (markerBlock == blockWithMarkerUnderMouse) {
             auto fmt = blockWithMarkerUnderMouse.blockFormat();
             switch (fmt.marker()) {
-            case QTextBlockFormat::Unchecked :
-                fmt.setMarker(QTextBlockFormat::Checked);
+            case QTextBlockFormat::MarkerType::Unchecked :
+                fmt.setMarker(QTextBlockFormat::MarkerType::Checked);
                 break;
-            case QTextBlockFormat::Checked:
-                fmt.setMarker(QTextBlockFormat::Unchecked);
+            case QTextBlockFormat::MarkerType::Checked:
+                fmt.setMarker(QTextBlockFormat::MarkerType::Unchecked);
                 break;
             default:
                 break;

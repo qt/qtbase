@@ -56,10 +56,10 @@ class GraphicsView : public QGraphicsView
     Q_OBJECT
 
 public:
-    GraphicsView(QGraphicsScene *scene = 0, QWidget *parent = 0);
+    GraphicsView(QGraphicsScene *scene = nullptr, QWidget *parent = nullptr);
 
     bool viewportEvent(QEvent *event) override;
 
 private:
-    qreal totalScaleFactor;
+    qreal totalScaleFactor = 1;
 };

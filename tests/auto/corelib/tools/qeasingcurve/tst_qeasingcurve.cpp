@@ -404,6 +404,11 @@ void tst_QEasingCurve::valueForProgress()
         const qreal error = qAbs(ex - curve.valueForProgress(at.at(i)/qreal(100)));
         QVERIFY(error <= errorBound);
     }
+
+    if (type != QEasingCurve::SineCurve && type != QEasingCurve::CosineCurve) {
+        QVERIFY( !(curve.valueForProgress(0) > 0) );
+        QVERIFY( !(curve.valueForProgress(1) < 1) );
+    }
 #endif
 }
 
@@ -632,6 +637,9 @@ void tst_QEasingCurve::bezierSpline()
             QCOMPARE(value, ex);
         QVERIFY(error <= errorBound);
     }
+
+    QVERIFY( !(bezierEasingCurve.valueForProgress(0) > 0) );
+    QVERIFY( !(bezierEasingCurve.valueForProgress(1) < 1) );
 }
 
 void tst_QEasingCurve::tcbSpline_data()
@@ -691,6 +699,9 @@ void tst_QEasingCurve::tcbSpline()
             QCOMPARE(value, ex);
         QVERIFY(error <= errorBound);
     }
+
+    QVERIFY( !(tcbEasingCurve.valueForProgress(0) > 0) );
+    QVERIFY( !(tcbEasingCurve.valueForProgress(1) < 1) );
 }
 
 /*This is single precision code for a cubic root used inside the spline easing curve.

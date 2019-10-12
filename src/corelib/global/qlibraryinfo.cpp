@@ -569,6 +569,23 @@ static QString getRelocatablePrefix()
 #error "The chosen platform / config does not support querying for a dynamic prefix."
 #endif
 
+#if defined(Q_OS_LINUX) && !defined(QT_STATIC) && defined(__GLIBC__)
+    // QTBUG-78948: libQt5Core.so may be located in subdirectories below libdir.
+    // See "Hardware capabilities" in the ld.so documentation and the Qt 5.3.0
+    // changelog regarding SSE2 support.
+    const QString libdir = QString::fromLatin1(
+        qt_configure_strs + qt_configure_str_offsets[QLibraryInfo::LibrariesPath - 1]);
+    QDir prefixDir(prefixPath);
+    while (!prefixDir.exists(libdir)) {
+        prefixDir.cdUp();
+        prefixPath = prefixDir.absolutePath();
+        if (prefixDir.isRoot()) {
+            prefixPath.clear();
+            break;
+        }
+    }
+#endif
+
     Q_ASSERT_X(!prefixPath.isEmpty(), "getRelocatablePrefix",
                                       "Failed to find the Qt prefix path.");
     return prefixPath;

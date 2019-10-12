@@ -190,8 +190,8 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
         m_listItem = true;
         MD_BLOCK_LI_DETAIL *detail = static_cast<MD_BLOCK_LI_DETAIL *>(det);
         m_markerType = detail->is_task ?
-                    (detail->task_mark == ' ' ? QTextBlockFormat::Unchecked : QTextBlockFormat::Checked) :
-                    QTextBlockFormat::NoMarker;
+                    (detail->task_mark == ' ' ? QTextBlockFormat::MarkerType::Unchecked : QTextBlockFormat::MarkerType::Checked) :
+                    QTextBlockFormat::MarkerType::NoMarker;
         qCDebug(lcMD) << "LI";
     } break;
     case MD_BLOCK_UL: {
@@ -549,7 +549,7 @@ void QTextMarkdownImporter::insertBlock()
         blockFormat.setTopMargin(m_paragraphMargin);
         blockFormat.setBottomMargin(m_paragraphMargin);
     }
-    if (m_markerType == QTextBlockFormat::NoMarker)
+    if (m_markerType == QTextBlockFormat::MarkerType::NoMarker)
         blockFormat.clearProperty(QTextFormat::BlockMarker);
     else
         blockFormat.setMarker(m_markerType);

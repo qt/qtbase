@@ -48,13 +48,18 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QEventTransition>
+#include <QPushButton>
+#include <QStateMachine>
+#include <QVBoxLayout>
+#include <QWidget>
 
 //! [0]
 class Window : public QWidget
 {
 public:
-    Window(QWidget *parent = 0)
+    Window(QWidget *parent = nullptr)
         : QWidget(parent)
     {
         QPushButton *button = new QPushButton(this);

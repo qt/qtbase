@@ -132,7 +132,7 @@ bool Model::hasChildren(const QModelIndex &parent) const
 Qt::ItemFlags Model::flags(const QModelIndex &index) const
 {
     if (!index.isValid())
-        return 0;
+        return {};
     return Qt::ItemIsDragEnabled|QAbstractItemModel::flags(index);
 }
 
@@ -146,7 +146,7 @@ Model::Node *Model::node(int row, Node *parent) const
 
 Model::Node *Model::parent(Node *child) const
 {
-    return child ? child->parent : 0;
+    return child ? child->parent : nullptr;
 }
 
 int Model::row(Node *node) const

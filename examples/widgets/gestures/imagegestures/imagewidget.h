@@ -51,9 +51,9 @@
 #ifndef IMAGEWIDGET_H
 #define IMAGEWIDGET_H
 
-#include <QWidget>
 #include <QImage>
-#include <QtWidgets>
+#include <QLoggingCategory>
+#include <QWidget>
 
 QT_BEGIN_NAMESPACE
 class QGestureEvent;
@@ -70,9 +70,9 @@ class ImageWidget : public QWidget
     Q_OBJECT
 
 public:
-    ImageWidget(QWidget *parent = 0);
+    ImageWidget(QWidget *parent = nullptr);
     void openDirectory(const QString &path);
-    void grabGestures(const QList<Qt::GestureType> &gestures);
+    void grabGestures(const QVector<Qt::GestureType> &gestures);
 
 protected:
     bool event(QEvent *event) override;
@@ -87,7 +87,7 @@ private:
     void swipeTriggered(QSwipeGesture*);
 //! [class definition begin]
 
-    QImage loadImage(const QString &fileName);
+    QImage loadImage(const QString &fileName) const;
     void loadImage();
     void goNextImage();
     void goPrevImage();

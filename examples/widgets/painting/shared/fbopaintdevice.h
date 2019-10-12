@@ -60,7 +60,7 @@
 
 class QFboPaintDevice : public QOpenGLPaintDevice {
 public:
-    QFboPaintDevice(const QSize&, bool flipped = false, bool clearOnInit = true,
+    QFboPaintDevice(const QSize &size, bool flipped = false, bool clearOnInit = true,
         QOpenGLFramebufferObject::Attachment = QOpenGLFramebufferObject::CombinedDepthStencil);
     ~QFboPaintDevice();
 
@@ -83,7 +83,7 @@ public:
 
 private:
     QOpenGLFramebufferObject *m_framebufferObject;
-    QSurface* m_surface;
+    QSurface *m_surface;
 };
 
 #endif // QT_NO_OPENGL

@@ -171,12 +171,8 @@ QT_USE_NAMESPACE
 // This function will only be called when NSApp is actually running.
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    // The reflection delegate gets precedence
-    if (reflectionDelegate) {
-        if ([reflectionDelegate respondsToSelector:@selector(applicationShouldTerminate:)])
-            return [reflectionDelegate applicationShouldTerminate:sender];
-        return NSTerminateNow;
-    }
+    if ([reflectionDelegate respondsToSelector:_cmd])
+        return [reflectionDelegate applicationShouldTerminate:sender];
 
     if ([self canQuit]) {
         if (!startedQuit) {
@@ -228,10 +224,6 @@ QT_USE_NAMESPACE
      */
     NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
     [eventManager setEventHandler:self
-                      andSelector:@selector(appleEventQuit:withReplyEvent:)
-                    forEventClass:kCoreEventClass
-                       andEventID:kAEQuitApplication];
-    [eventManager setEventHandler:self
                       andSelector:@selector(getUrl:withReplyEvent:)
                     forEventClass:kInternetEventClass
                        andEventID:kAEGetURL];
@@ -241,7 +233,6 @@ QT_USE_NAMESPACE
 - (void)removeAppleEventHandlers
 {
     NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
-    [eventManager removeEventHandlerForEventClass:kCoreEventClass andEventID:kAEQuitApplication];
     [eventManager removeEventHandlerForEventClass:kInternetEventClass andEventID:kAEGetURL];
 }
 
@@ -282,26 +273,22 @@ QT_USE_NAMESPACE
         QWindowSystemInterface::handleFileOpenEvent(qtFileName);
     }
 
-    if (reflectionDelegate &&
-        [reflectionDelegate respondsToSelector:@selector(application:openFiles:)])
+    if ([reflectionDelegate respondsToSelector:_cmd])
         [reflectionDelegate application:sender openFiles:filenames];
 
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
 {
-    // If we have a reflection delegate, that will get to call the shots.
-    if (reflectionDelegate
-        && [reflectionDelegate respondsToSelector:
-                            @selector(applicationShouldTerminateAfterLastWindowClosed:)])
+    if ([reflectionDelegate respondsToSelector:_cmd])
         return [reflectionDelegate applicationShouldTerminateAfterLastWindowClosed:sender];
+
     return NO; // Someday qApp->quitOnLastWindowClosed(); when QApp and NSApp work closer together.
 }
 
 - (void)applicationDidBecomeActive:(NSNotification *)notification
 {
-    if (reflectionDelegate
-        && [reflectionDelegate respondsToSelector:@selector(applicationDidBecomeActive:)])
+    if ([reflectionDelegate respondsToSelector:_cmd])
         [reflectionDelegate applicationDidBecomeActive:notification];
 
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationActive);
@@ -309,8 +296,7 @@ QT_USE_NAMESPACE
 
 - (void)applicationDidResignActive:(NSNotification *)notification
 {
-    if (reflectionDelegate
-        && [reflectionDelegate respondsToSelector:@selector(applicationDidResignActive:)])
+    if ([reflectionDelegate respondsToSelector:_cmd])
         [reflectionDelegate applicationDidResignActive:notification];
 
     QWindowSystemInterface::handleApplicationStateChanged(Qt::ApplicationInactive);
@@ -318,10 +304,7 @@ QT_USE_NAMESPACE
 
 - (BOOL)applicationShouldHandleReopen:(NSApplication *)theApplication hasVisibleWindows:(BOOL)flag
 {
-    Q_UNUSED(theApplication);
-    Q_UNUSED(flag);
-    if (reflectionDelegate
-        && [reflectionDelegate respondsToSelector:@selector(applicationShouldHandleReopen:hasVisibleWindows:)])
+    if ([reflectionDelegate respondsToSelector:_cmd])
         return [reflectionDelegate applicationShouldHandleReopen:theApplication hasVisibleWindows:flag];
 
     /*
@@ -354,16 +337,13 @@ QT_USE_NAMESPACE
 
 - (BOOL)respondsToSelector:(SEL)aSelector
 {
-    BOOL result = [super respondsToSelector:aSelector];
-    if (!result && reflectionDelegate)
-        result = [reflectionDelegate respondsToSelector:aSelector];
-    return result;
+    return [super respondsToSelector:aSelector] || [reflectionDelegate respondsToSelector:aSelector];
 }
 
 - (void)forwardInvocation:(NSInvocation *)invocation
 {
     SEL invocationSelector = [invocation selector];
-    if (reflectionDelegate && [reflectionDelegate respondsToSelector:invocationSelector])
+    if ([reflectionDelegate respondsToSelector:invocationSelector])
         [invocation invokeWithTarget:reflectionDelegate];
     else
         [self doesNotRecognizeSelector:invocationSelector];
@@ -375,14 +355,6 @@ QT_USE_NAMESPACE
     NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
     QWindowSystemInterface::handleFileOpenEvent(QUrl(QString::fromNSString(urlString)));
 }
-
-- (void)appleEventQuit:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
-{
-    Q_UNUSED(event);
-    Q_UNUSED(replyEvent);
-    [NSApp terminate:self];
-}
-
 @end
 
 @implementation QCocoaApplicationDelegate (Menus)

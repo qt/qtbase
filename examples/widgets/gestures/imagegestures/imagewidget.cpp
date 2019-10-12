@@ -50,26 +50,23 @@
 
 #include "imagewidget.h"
 
-#include <QtWidgets>
+#include <QDir>
+#include <QImageReader>
+#include <QGestureEvent>
+#include <QPainter>
 
 Q_LOGGING_CATEGORY(lcExample, "qt.examples.imagegestures")
 
 //! [constructor]
 ImageWidget::ImageWidget(QWidget *parent)
-    : QWidget(parent),
-    position(0),
-    horizontalOffset(0),
-    verticalOffset(0),
-    rotationAngle(0),
-    scaleFactor(1),
-    currentStepScaleFactor(1)
-
+    : QWidget(parent), position(0), horizontalOffset(0), verticalOffset(0)
+    , rotationAngle(0), scaleFactor(1), currentStepScaleFactor(1)
 {
-    setMinimumSize(QSize(100,100));
+    setMinimumSize(QSize(100, 100));
 }
 //! [constructor]
 
-void ImageWidget::grabGestures(const QList<Qt::GestureType> &gestures)
+void ImageWidget::grabGestures(const QVector<Qt::GestureType> &gestures)
 {
     //! [enable gestures]
     for (Qt::GestureType gesture : gestures)
@@ -96,11 +93,11 @@ void ImageWidget::paintEvent(QPaintEvent*)
     const qreal wh = height();
     const qreal ww = width();
 
-    p.translate(ww/2, wh/2);
+    p.translate(ww / 2, wh / 2);
     p.translate(horizontalOffset, verticalOffset);
     p.rotate(rotationAngle);
     p.scale(currentStepScaleFactor * scaleFactor, currentStepScaleFactor * scaleFactor);
-    p.translate(-iw/2, -ih/2);
+    p.translate(-iw / 2, -ih / 2);
     p.drawImage(0, 0, currentImage);
 }
 //! [paint method]
@@ -198,8 +195,7 @@ void ImageWidget::openDirectory(const QString &path)
 {
     this->path = path;
     QDir dir(path);
-    QStringList nameFilters;
-    nameFilters << "*.jpg" << "*.png";
+    const QStringList nameFilters{"*.jpg", "*.png"};
     files = dir.entryList(nameFilters, QDir::Files|QDir::Readable, QDir::Name);
 
     position = 0;
@@ -207,7 +203,7 @@ void ImageWidget::openDirectory(const QString &path)
     update();
 }
 
-QImage ImageWidget::loadImage(const QString &fileName)
+QImage ImageWidget::loadImage(const QString &fileName) const
 {
     QImageReader reader(fileName);
     reader.setAutoTransform(true);

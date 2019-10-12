@@ -72,7 +72,7 @@ void MainWidget::openDirectory(const QString &path)
     imageWidget->openDirectory(path);
 }
 
-void MainWidget::grabGestures(const QList<Qt::GestureType> &gestures)
+void MainWidget::grabGestures(const QVector<Qt::GestureType> &gestures)
 {
     imageWidget->grabGestures(gestures);
 }

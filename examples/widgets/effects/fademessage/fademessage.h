@@ -62,7 +62,7 @@ class FadeMessage: public QGraphicsView
     Q_OBJECT
 
 public:
-    FadeMessage(QWidget *parent = 0);
+    FadeMessage(QWidget *parent = nullptr);
 
 private:
     void setupScene();
