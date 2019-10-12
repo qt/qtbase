@@ -120,75 +120,7 @@ static int detect_clone_pidfd_support()
 
     sys_waitid(P_PIDFD, INT_MAX, NULL, WEXITED|WNOHANG, NULL);
     return errno == EBADF ? 1 : -1;
-
-#if 0
-    /* Detection methods not used: */
-#ifdef __NR_pidfd_send_signal
-    /*
-     * pidfd_send_signal was added at the same time as CLONE_PIDFD, so if this
-     * system call exists, so does CLONE_PIDFD. We make a system call with a
-     * file descriptor of -1: if it's supported, we get EBADF; otherwise, the
-     * typical ENOSYS.
-     */
-    syscall(__NR_pidfd_send_signal, -1, 0, NULL, 0);
-    return errno == EBADF ? 1 : -1;
-#else
-    /*
-     * detect kernel CLONE_PIDFD support directly: CLONE_PIDFD |
-     * CLONE_PARENT_SETTID causes EINVAL on kernel >= 5.2, but on older
-     * kernels, that combination is ignored. Therefore, if we EINVAL, we know
-     * that CLONE_PIDFD is supported.
-     *
-     * To avoid creating a process unnecessarily, we add CLONE_NEWUTS, which is
-     * a privileged operation. Therefore, if we're not root, we'll get EPERM.
-     * If we're root, we need to exit the child process and wait for it on the
-     * parent.
-     */
-    pid_t pid = sys_clone(CLONE_PIDFD | CLONE_PARENT_SETTID | CLONE_NEWUTS, NULL);
-    if (pid == -1 && errno == EINVAL)
-        return 1;
-    if (pid == 0)
-        _exit(0);               /* Child */
-    if (pid > 0)
-        sys_waitid(P_PID, pid, NULL, WEXITED | __WALL, NULL);   /* Parent */
-
-    return -1;
-#endif
-#endif  // 0
 }
-
-#if 0
-/* To be used if waitid's P_PIDFD support gets bumped to 5.4 */
-static pid_t pidfd_to_pid(int pidfd)
-{
-    static const char pidtext[] = "Pid:\t";
-    int fdinfo;
-    ssize_t ret;
-    char buf[256];
-    char *text, *endpid = NULL;
-
-    snprintf(buf, sizeof(buf), "/proc/self/fdinfo/%d", pidfd);
-    fdinfo = open(buf, O_RDONLY | O_CLOEXEC);
-    if (fdinfo < 0)
-        return fdinfo;
-
-    ret = read(fdinfo, buf, sizeof(buf) - 1);
-    close(fdinfo);
-    if (ret < 1)
-        return ret;
-
-    buf[ret] = '\0';
-    text = (char *) memmem(buf, ret, pidtext, sizeof(pidtext) - 1);
-    if (text == NULL)
-        return -1;
-
-    text += sizeof(pidtext) - 1;
-    ret = strtol(text, &endpid, 10);
-    if (ret < 0 || (endpid && *endpid != '\n'))
-        return -1;
-    return ret;
-}
-#endif
 
 int system_has_forkfd()
 {
