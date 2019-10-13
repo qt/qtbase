@@ -295,6 +295,12 @@ void tst_QGroupBox::enabledChildPropagation()
     QVERIFY(!childWidget->isEnabled());
     dialog = new QDialog(&testWidget);
     QVERIFY(dialog->isEnabled());
+
+    // children that are enabled after adding should still be disabled before
+    // they are shown
+    childWidget->setEnabled(true);
+    testWidget.show();
+    QVERIFY(!childWidget->isEnabled());
 }
 
 void tst_QGroupBox::sizeHint()

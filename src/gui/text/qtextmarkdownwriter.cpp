@@ -327,10 +327,10 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             break;
         }
         switch (blockFmt.marker()) {
-        case QTextBlockFormat::Checked:
+        case QTextBlockFormat::MarkerType::Checked:
             bullet += " [x]";
             break;
-        case QTextBlockFormat::Unchecked:
+        case QTextBlockFormat::MarkerType::Unchecked:
             bullet += " [ ]";
             break;
         default:

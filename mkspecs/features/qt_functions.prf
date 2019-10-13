@@ -159,8 +159,12 @@ defineTest(qtAddToolEnv) {
         !isEmpty(cmd): cmd = "$$cmd "
         equals(ds, /) {
             batch_name = $${batch_name}.sh
+            equals(QMAKE_HOST.os, Darwin):exists(/bin/bash): \
+                shell = /bin/bash
+            else: \
+                shell = /bin/sh
             batch_cont = \
-                "$$LITERAL_HASH!/bin/sh" \
+                "$$LITERAL_HASH!$$shell" \
                 $$batch_sets \
                 "exec $$cmd\"$@\""
             # It would be nicer to use the '.' command (without 'exec' above),

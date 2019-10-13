@@ -16,7 +16,7 @@ PROVIDER_NAME = qt$$lower($$MODULE)
 INCLUDEPATH += $$absolute_path($$TRACEGEN_DIR, $$OUT_PWD)
 HEADER_PATH = $$OUT_PWD/$$TRACEGEN_DIR/$${PROVIDER_NAME}_tracepoints_p$${first(QMAKE_EXT_H)}
 
-!force_bootstrap:if(qtConfig(lttng)|qtConfig(etw)) {
+if(qtConfig(lttng)|qtConfig(etw)) {
     SOURCE_PATH = $$OUT_PWD/$$TRACEGEN_DIR/$${PROVIDER_NAME}_tracepoints$${first(QMAKE_EXT_CPP)}
 
     isEmpty(BUILDS)|build_pass {

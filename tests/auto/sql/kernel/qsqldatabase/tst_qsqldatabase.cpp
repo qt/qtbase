@@ -520,10 +520,6 @@ void tst_QSqlDatabase::tables()
     bool tempTables = false;
 
     QSqlQuery q(db);
-    if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-        QSKIP( "Test requires MySQL >= 5.0");
-
-
     if (!q.exec("CREATE VIEW " + qtest_view + " as select * from " + qtest)) {
         qDebug("DBMS '%s' cannot handle VIEWs: %s",
                qPrintable(tst_Databases::dbToString(db)),
@@ -1891,11 +1887,6 @@ void tst_QSqlDatabase::mysql_multiselect()
     const QString qtest(qTableName("qtest", __FILE__, db));
 
     QSqlQuery q(db);
-    QString version=tst_Databases::getMySqlVersion( db );
-    double ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
-    if (ver < 4.1)
-        QSKIP("Test requires MySQL >= 4.1");
-
     QVERIFY_SQL(q, exec("SELECT * FROM " + qtest + "; SELECT * FROM " + qtest));
     QVERIFY_SQL(q, next());
     QVERIFY_SQL(q, exec("SELECT * FROM " + qtest + "; SELECT * FROM " + qtest));
@@ -2280,9 +2271,6 @@ void tst_QSqlDatabase::mysql_savepointtest()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    if (tst_Databases::getMySqlVersion(db).section(QChar('.'), 0, 1).toDouble() < 4.1)
-        QSKIP( "Test requires MySQL >= 4.1");
-
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("begin"));
     QVERIFY_SQL(q, exec("insert into " + qTableName("qtest", __FILE__, db) + " VALUES (54, 'foo', 'foo', 54.54)"));

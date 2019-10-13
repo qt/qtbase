@@ -627,7 +627,7 @@ public:
         LineDistanceHeight = 4
     };
 
-    enum MarkerType {
+    enum class MarkerType {
         NoMarker = 0,
         Unchecked = 1,
         Checked = 2

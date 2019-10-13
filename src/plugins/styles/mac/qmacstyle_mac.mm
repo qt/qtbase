@@ -328,6 +328,20 @@ static const int closeButtonSize = 14;
 static const qreal closeButtonCornerRadius = 2.0;
 #endif // QT_CONFIG(tabbar)
 
+#ifndef QT_NO_ACCESSIBILITY // This ifdef to avoid "unused function" warning.
+QBrush brushForToolButton(bool isOnKeyWindow)
+{
+    // When a toolbutton in a toolbar is in the 'ON' state, we draw a
+    // partially transparent background. The colors must be different
+    // for 'Aqua' and 'DarkAqua' appearances though.
+    if (isDarkMode())
+        return isOnKeyWindow ? QColor(73, 73, 73, 100) : QColor(56, 56, 56, 100);
+
+    return isOnKeyWindow ? QColor(0, 0, 0, 28) : QColor(0, 0, 0, 21);
+}
+#endif // QT_NO_ACCESSIBILITY
+
+
 static const int headerSectionArrowHeight = 6;
 static const int headerSectionSeparatorInset = 2;
 
@@ -5603,8 +5617,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     if (view)
                         isKey = [view.window isKeyWindow];
 
-                    QBrush brush(isKey ? QColor(0, 0, 0, 28)
-                                       : QColor(0, 0, 0, 21));
+                    QBrush brush(brushForToolButton(isKey));
                     QPainterPath path;
                     path.addRoundedRect(QRectF(tb->rect.x(), tb->rect.y(), tb->rect.width(), tb->rect.height() + 4), 4, 4);
                     p->setRenderHint(QPainter::Antialiasing);

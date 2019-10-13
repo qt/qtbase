@@ -389,9 +389,13 @@ bool QGroupBox::event(QEvent *e)
 void QGroupBox::childEvent(QChildEvent *c)
 {
     Q_D(QGroupBox);
-    if (c->type() != QEvent::ChildAdded || !c->child()->isWidgetType())
+    /*
+        Children might have been enabled after being added to the group box, in which case
+        the childEvent handler ran too early, and we need to disabled children again.
+    */
+    if (!(c->added() || c->polished()) || !c->child()->isWidgetType())
         return;
-    QWidget *w = (QWidget*)c->child();
+    QWidget *w = static_cast<QWidget*>(c->child());
     if (w->isWindow())
         return;
     if (d->checkable) {

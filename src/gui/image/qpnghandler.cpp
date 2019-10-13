@@ -174,7 +174,7 @@ public:
     void setGamma(float);
 
     bool writeImage(const QImage& img, int x, int y);
-    bool writeImage(const QImage& img, volatile int compression_in, const QString &description, int x, int y);
+    bool writeImage(const QImage& img, int compression_in, const QString &description, int x, int y);
     bool writeImage(const QImage& img)
         { return writeImage(img, 0, 0); }
     bool writeImage(const QImage& img, int compression, const QString &description)
@@ -900,7 +900,7 @@ bool QPNGImageWriter::writeImage(const QImage& image, int off_x, int off_y)
     return writeImage(image, -1, QString(), off_x, off_y);
 }
 
-bool QPNGImageWriter::writeImage(const QImage& image, volatile int compression_in, const QString &description,
+bool QPNGImageWriter::writeImage(const QImage& image, int compression_in, const QString &description,
                                  int off_x_in, int off_y_in)
 {
     QPoint offset = image.offset();

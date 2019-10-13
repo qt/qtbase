@@ -640,7 +640,7 @@ void TextEdit::textStyle(int styleIndex)
 {
     QTextCursor cursor = textEdit->textCursor();
     QTextListFormat::Style style = QTextListFormat::ListStyleUndefined;
-    QTextBlockFormat::MarkerType marker = QTextBlockFormat::NoMarker;
+    QTextBlockFormat::MarkerType marker = QTextBlockFormat::MarkerType::NoMarker;
 
     switch (styleIndex) {
     case 1:
@@ -657,14 +657,14 @@ void TextEdit::textStyle(int styleIndex)
             style = cursor.currentList()->format().style();
         else
             style = QTextListFormat::ListDisc;
-        marker = QTextBlockFormat::Unchecked;
+        marker = QTextBlockFormat::MarkerType::Unchecked;
         break;
     case 5:
         if (cursor.currentList())
             style = cursor.currentList()->format().style();
         else
             style = QTextListFormat::ListDisc;
-        marker = QTextBlockFormat::Checked;
+        marker = QTextBlockFormat::MarkerType::Checked;
         break;
     case 6:
         style = QTextListFormat::ListDecimal;
@@ -823,14 +823,14 @@ void TextEdit::cursorPositionChanged()
             break;
         }
         switch (textEdit->textCursor().block().blockFormat().marker()) {
-        case QTextBlockFormat::NoMarker:
+        case QTextBlockFormat::MarkerType::NoMarker:
             actionToggleCheckState->setChecked(false);
             break;
-        case QTextBlockFormat::Unchecked:
+        case QTextBlockFormat::MarkerType::Unchecked:
             comboStyle->setCurrentIndex(4);
             actionToggleCheckState->setChecked(false);
             break;
-        case QTextBlockFormat::Checked:
+        case QTextBlockFormat::MarkerType::Checked:
             comboStyle->setCurrentIndex(5);
             actionToggleCheckState->setChecked(true);
             break;

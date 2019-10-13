@@ -70,7 +70,7 @@ class MainWindow : public QMainWindow, private Ui::MainWindowBase
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
+    MainWindow(QWidget *parent = nullptr);
 
 public slots:
     void on_clearAction_triggered();

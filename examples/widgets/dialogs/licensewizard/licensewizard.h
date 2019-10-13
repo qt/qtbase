@@ -72,7 +72,7 @@ public:
            Page_Conclusion };
 //! [2]
 
-    LicenseWizard(QWidget *parent = 0);
+    LicenseWizard(QWidget *parent = nullptr);
 
 private slots:
     void showHelp();
@@ -86,7 +86,7 @@ class IntroPage : public QWizardPage
     Q_OBJECT
 
 public:
-    IntroPage(QWidget *parent = 0);
+    IntroPage(QWidget *parent = nullptr);
 
     int nextId() const override;
 
@@ -103,7 +103,7 @@ class EvaluatePage : public QWizardPage
     Q_OBJECT
 
 public:
-    EvaluatePage(QWidget *parent = 0);
+    EvaluatePage(QWidget *parent = nullptr);
 
     int nextId() const override;
 
@@ -120,7 +120,7 @@ class RegisterPage : public QWizardPage
     Q_OBJECT
 
 public:
-    RegisterPage(QWidget *parent = 0);
+    RegisterPage(QWidget *parent = nullptr);
 
     int nextId() const override;
 
@@ -136,7 +136,7 @@ class DetailsPage : public QWizardPage
     Q_OBJECT
 
 public:
-    DetailsPage(QWidget *parent = 0);
+    DetailsPage(QWidget *parent = nullptr);
 
     int nextId() const override;
 
@@ -155,7 +155,7 @@ class ConclusionPage : public QWizardPage
     Q_OBJECT
 
 public:
-    ConclusionPage(QWidget *parent = 0);
+    ConclusionPage(QWidget *parent = nullptr);
 
     void initializePage() override;
     int nextId() const override;

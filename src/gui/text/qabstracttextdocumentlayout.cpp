@@ -660,7 +660,7 @@ QTextBlock QAbstractTextDocumentLayout::blockWithMarkerAt(const QPointF &pos) co
 {
     QTextBlock block = document()->firstBlock();
     while (block.isValid()) {
-        if (block.blockFormat().marker() != QTextBlockFormat::NoMarker) {
+        if (block.blockFormat().marker() != QTextBlockFormat::MarkerType::NoMarker) {
             QRectF blockBr = blockBoundingRect(block);
             QTextBlockFormat blockFmt = block.blockFormat();
             QFontMetrics fm(block.charFormat().font());

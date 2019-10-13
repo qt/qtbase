@@ -48,7 +48,13 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QFinalState>
+#include <QPainter>
+#include <QStateMachine>
+#include <QTimer>
+#include <QVBoxLayout>
+#include <QWidget>
 
 //! [0]
 class LightWidget : public QWidget
@@ -56,7 +62,7 @@ class LightWidget : public QWidget
     Q_OBJECT
     Q_PROPERTY(bool on READ isOn WRITE setOn)
 public:
-    LightWidget(const QColor &color, QWidget *parent = 0)
+    LightWidget(const QColor &color, QWidget *parent = nullptr)
         : QWidget(parent), m_color(color), m_on(false) {}
 
     bool isOn() const
@@ -94,7 +100,7 @@ private:
 class TrafficLightWidget : public QWidget
 {
 public:
-    TrafficLightWidget(QWidget *parent = 0)
+    TrafficLightWidget(QWidget *parent = nullptr)
         : QWidget(parent)
     {
         QVBoxLayout *vbox = new QVBoxLayout(this);
@@ -125,7 +131,7 @@ private:
 //! [1]
 
 //! [2]
-QState *createLightState(LightWidget *light, int duration, QState *parent = 0)
+QState *createLightState(LightWidget *light, int duration, QState *parent = nullptr)
 {
     QState *lightState = new QState(parent);
     QTimer *timer = new QTimer(lightState);

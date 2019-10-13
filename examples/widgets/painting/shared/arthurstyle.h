@@ -63,7 +63,7 @@ public:
     void drawHoverRect(QPainter *painter, const QRect &rect) const;
 
     void drawPrimitive(PrimitiveElement element, const QStyleOption *option,
-                       QPainter *painter, const QWidget *widget = 0) const override;
+                       QPainter *painter, const QWidget *widget = nullptr) const override;
     void drawControl(ControlElement element, const QStyleOption *option,
                      QPainter *painter, const QWidget *widget) const override;
     void drawComplexControl(ComplexControl control, const QStyleOptionComplex *option,
