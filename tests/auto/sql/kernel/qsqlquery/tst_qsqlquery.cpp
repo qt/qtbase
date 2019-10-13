@@ -185,12 +185,6 @@ private slots:
     void mysql_timeType_data() { generic_data("QMYSQL"); }
     void mysql_timeType();
 
-#ifdef NOT_READY_YET
-    void task_229811();
-    void task_229811_data() { generic_data(); }
-    void task_234422_data() {  generic_data(); }
-    void task_234422();
-#endif
     void task_217003_data() { generic_data(); }
     void task_217003();
 
@@ -3462,90 +3456,6 @@ void tst_QSqlQuery::task_205701()
 //     }
     QSqlDatabase::removeDatabase("atest");
 }
-
-#ifdef NOT_READY_YET
-// For task: 229811
-void tst_QSqlQuery::task_229811()
-{
-    QFETCH( QString, dbName );
-    QSqlDatabase db = QSqlDatabase::database( dbName );
-    CHECK_DATABASE( db );
-
-    if (!db.driverName().startsWith( "QODBC" )) return;
-
-    QSqlQuery q( db );
-
-    const QString tableName(qTableName("task_229811", __FILE__, db));
-
-    if ( !q.exec( "CREATE TABLE " + tableName + " (Word varchar(20))" ) ) {
-        qDebug() << "Warning" << q.lastError();
-    }
-
-    QVERIFY_SQL( q, exec( "INSERT INTO " + tableName + " values ('Albert')" ) );
-    QVERIFY_SQL( q, exec( "INSERT INTO " + tableName + " values ('Beehive')" ) );
-    QVERIFY_SQL( q, exec( "INSERT INTO " + tableName + " values ('Alimony')" ) );
-    QVERIFY_SQL( q, exec( "INSERT INTO " + tableName + " values ('Bohemian')" ) );
-    QVERIFY_SQL( q, exec( "INSERT INTO " + tableName + " values ('AllStars')" ) );
-
-
-    QString stmt = "SELECT * FROM " + tableName  +  " WHERE Word LIKE :name";
-    QVERIFY_SQL(q,prepare(stmt));
-    q.bindValue(":name", "A%");
-    QVERIFY_SQL(q,exec());
-
-    QVERIFY(q.isActive());
-    QVERIFY(q.isSelect());
-    QVERIFY(q.first());
-
-    QSqlRecord rec = q.record();
-    QCOMPARE(rec.field(0).value().toString(), QString("Albert"));
-    QVERIFY(q.next());
-    rec = q.record();
-    QCOMPARE(rec.field(0).value().toString(), QString("Alimony"));
-    QVERIFY(q.next());
-    rec = q.record();
-    QCOMPARE(rec.field(0).value().toString(),QString("AllStars"));
-
-    q.exec("DROP TABLE " + tableName );
-}
-
-void tst_QSqlQuery::task_234422()
-{
-    QFETCH( QString, dbName );
-    QSqlDatabase db = QSqlDatabase::database( dbName );
-    CHECK_DATABASE( db );
-
-    QSqlQuery query(db);
-    QStringList m_airlines;
-    QStringList m_countries;
-
-    m_airlines << "Lufthansa" << "SAS" << "United" << "KLM" << "Aeroflot";
-    m_countries << "DE" << "SE" << "US" << "NL" << "RU";
-
-    const QString tableName(qTableName("task_234422", __FILE__, db));
-
-    QVERIFY_SQL(query,exec("CREATE TABLE " + tableName + " (id int primary key, "
-                "name varchar(20), homecountry varchar(2))"));
-    for (int i = 0; i < m_airlines.count(); ++i) {
-        QVERIFY(query.exec(QString("INSERT INTO " + tableName + " values(%1, '%2', '%3')")
-                    .arg(i).arg(m_airlines[i], m_countries[i])));
-    }
-
-    QVERIFY_SQL(query, exec("SELECT name FROM " + tableName));
-    QVERIFY(query.isSelect());
-    QVERIFY(query.first());
-    QVERIFY(query.next());
-    QCOMPARE(query.at(), 1);
-
-    QSqlQuery query2(query);
-
-    QVERIFY_SQL(query2,exec());
-    QVERIFY(query2.first());
-    QCOMPARE(query2.at(), 0);
-    QCOMPARE(query.at(), 1);
-}
-
-#endif
 
 void tst_QSqlQuery::task_233829()
 {
