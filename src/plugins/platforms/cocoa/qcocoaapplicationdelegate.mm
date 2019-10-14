@@ -88,10 +88,13 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qwindowdefs.h>
 
+QT_BEGIN_NAMESPACE
+Q_LOGGING_CATEGORY(lcQpaApplication, "qt.qpa.application");
+QT_END_NAMESPACE
+
 QT_USE_NAMESPACE
 
 @implementation QCocoaApplicationDelegate {
-    bool startedQuit;
     NSObject <NSApplicationDelegate> *reflectionDelegate;
     bool inLaunch;
 }
@@ -150,30 +153,20 @@ QT_USE_NAMESPACE
         // No event loop is executing. This probably means that Qt is used as a plugin,
         // or as a part of a native Cocoa application. In any case it should be fine to
         // terminate now.
+        qCDebug(lcQpaApplication) << "No running event loops, terminating now";
         return NSTerminateNow;
     }
 
-    QCloseEvent ev;
-    QGuiApplication::sendEvent(qGuiApp, &ev);
-    if (!ev.isAccepted())
+    if (!QWindowSystemInterface::handleApplicationTermination<QWindowSystemInterface::SynchronousDelivery>()) {
+        qCDebug(lcQpaApplication) << "Application termination canceled";
         return NSTerminateCancel;
-
-    if (!startedQuit) {
-        startedQuit = true;
-        // Close open windows. This is done in order to deliver de-expose
-        // events while the event loop is still running.
-        for (QWindow *topLevelWindow : QGuiApplication::topLevelWindows()) {
-            // Already closed windows will not have a platform window, skip those
-            if (!topLevelWindow->handle())
-                continue;
-
-            QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::SynchronousDelivery>(topLevelWindow);
-        }
-
-        QGuiApplication::exit(0);
-        startedQuit = false;
     }
 
+    // Even if the application termination was accepted by the application we can't
+    // return NSTerminateNow, as that would trigger AppKit to ultimately call exit().
+    // We need to ensure that the runloop continues spinning so that we can return
+    // from our own event loop back to main(), and exit from there.
+    qCDebug(lcQpaApplication) << "Termination accepted, but returning to runloop for exit through main()";
     return NSTerminateCancel;
 }
 

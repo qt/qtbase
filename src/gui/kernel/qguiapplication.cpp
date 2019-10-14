@@ -1863,7 +1863,20 @@ bool QGuiApplication::event(QEvent *e)
 {
     if(e->type() == QEvent::LanguageChange) {
         setLayoutDirection(qt_detectRTLLanguage()?Qt::RightToLeft:Qt::LeftToRight);
+    } else if (e->type() == QEvent::Quit) {
+        // Close open windows. This is done in order to deliver de-expose
+        // events while the event loop is still running.
+        for (QWindow *topLevelWindow : QGuiApplication::topLevelWindows()) {
+            // Already closed windows will not have a platform window, skip those
+            if (!topLevelWindow->handle())
+                continue;
+            if (!topLevelWindow->close()) {
+                e->ignore();
+                return true;
+            }
+        }
     }
+
     return QCoreApplication::event(e);
 }
 
@@ -1939,6 +1952,9 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
     case QWindowSystemInterfacePrivate::ApplicationStateChanged: {
         QWindowSystemInterfacePrivate::ApplicationStateChangedEvent * changeEvent = static_cast<QWindowSystemInterfacePrivate::ApplicationStateChangedEvent *>(e);
         QGuiApplicationPrivate::setApplicationState(changeEvent->newState, changeEvent->forcePropagate); }
+        break;
+    case QWindowSystemInterfacePrivate::ApplicationTermination:
+        QGuiApplicationPrivate::processApplicationTermination(e);
         break;
     case QWindowSystemInterfacePrivate::FlushEvents: {
         QWindowSystemInterfacePrivate::FlushEventsEvent *flushEventsEvent = static_cast<QWindowSystemInterfacePrivate::FlushEventsEvent *>(e);
@@ -3487,6 +3503,13 @@ bool QGuiApplicationPrivate::tryCloseRemainingWindows(QWindowList processedWindo
         }
     }
     return true;
+}
+
+void QGuiApplicationPrivate::processApplicationTermination(QWindowSystemInterfacePrivate::WindowSystemEvent *windowSystemEvent)
+{
+    QEvent event(QEvent::Quit);
+    QGuiApplication::sendSpontaneousEvent(QGuiApplication::instance(), &event);
+    windowSystemEvent->eventAccepted = event.isAccepted();
 }
 
 /*!
