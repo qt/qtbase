@@ -2538,6 +2538,10 @@ QStateMachine::~QStateMachine()
            state machine. Commonly, this could mean that one of the states has not been given
            any parent or added to any machine. The context of this error is the source state of
            the transition.
+    \value StateMachineChildModeSetToParallelError The machine's \l childMode
+           property was set to \l{QState::ParallelStates}. This is illegal.
+           Only states may be declared as parallel, not the state machine
+           itself. This enum value was added in Qt 5.14.
 
     \sa setErrorState()
 */
@@ -3041,102 +3045,14 @@ void QStateMachine::removeDefaultAnimation(QAbstractAnimation *animation)
 
 #endif // animation
 
-
-// Begin moc-generated code -- modify carefully (check "HAND EDIT" parts)!
-struct qt_meta_stringdata_QSignalEventGenerator_t {
-    QByteArrayData data[3];
-    char stringdata[32];
-};
-#define QT_MOC_LITERAL(idx, ofs, len) \
-    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-        offsetof(qt_meta_stringdata_QSignalEventGenerator_t, stringdata) + ofs \
-        - idx * sizeof(QByteArrayData) \
-    )
-static const qt_meta_stringdata_QSignalEventGenerator_t qt_meta_stringdata_QSignalEventGenerator = {
-    {
-QT_MOC_LITERAL(0, 0, 21),
-QT_MOC_LITERAL(1, 22, 7),
-QT_MOC_LITERAL(2, 30, 0)
-    },
-    "QSignalEventGenerator\0execute\0\0"
-};
-#undef QT_MOC_LITERAL
-
-static const uint qt_meta_data_QSignalEventGenerator[] = {
-
- // content:
-       7,       // revision
-       0,       // classname
-       0,    0, // classinfo
-       1,   14, // methods
-       0,    0, // properties
-       0,    0, // enums/sets
-       0,    0, // constructors
-       0,       // flags
-       0,       // signalCount
-
- // slots: name, argc, parameters, tag, flags
-       1,    0,   19,    2, 0x0a,
-
- // slots: parameters
-    QMetaType::Void,
-
-       0        // eod
-};
-
-void QSignalEventGenerator::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
-{
-    if (_c == QMetaObject::InvokeMetaMethod) {
-        Q_ASSERT(staticMetaObject.cast(_o));
-        QSignalEventGenerator *_t = static_cast<QSignalEventGenerator *>(_o);
-        switch (_id) {
-        case 0: _t->execute(_a); break; // HAND EDIT: add the _a parameter
-        default: ;
-        }
-    }
-    Q_UNUSED(_a);
-}
-
-const QMetaObject QSignalEventGenerator::staticMetaObject = {
-    { &QObject::staticMetaObject, qt_meta_stringdata_QSignalEventGenerator.data,
-      qt_meta_data_QSignalEventGenerator, qt_static_metacall, 0, 0 }
-};
-
-const QMetaObject *QSignalEventGenerator::metaObject() const
-{
-    return &staticMetaObject;
-}
-
-void *QSignalEventGenerator::qt_metacast(const char *_clname)
-{
-    if (!_clname) return 0;
-    if (!strcmp(_clname, qt_meta_stringdata_QSignalEventGenerator.stringdata))
-        return static_cast<void*>(const_cast< QSignalEventGenerator*>(this));
-    return QObject::qt_metacast(_clname);
-}
-
-int QSignalEventGenerator::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
-{
-    _id = QObject::qt_metacall(_c, _id, _a);
-    if (_id < 0)
-        return _id;
-    if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 1)
-            qt_static_metacall(this, _c, _id, _a);
-        _id -= 1;
-    }
-    return _id;
-}
-// End moc-generated code
-
-void QSignalEventGenerator::execute(void **_a)
+void QSignalEventGenerator::execute(QMethodRawArguments a)
 {
     auto machinePrivate = QStateMachinePrivate::get(qobject_cast<QStateMachine*>(parent()));
     if (machinePrivate->state != QStateMachinePrivate::Running)
         return;
     int signalIndex = senderSignalIndex();
     Q_ASSERT(signalIndex != -1);
-    machinePrivate->handleTransitionSignal(sender(), signalIndex, _a);
+    machinePrivate->handleTransitionSignal(sender(), signalIndex, a.arguments);
 }
 
 QSignalEventGenerator::QSignalEventGenerator(QStateMachine *parent)

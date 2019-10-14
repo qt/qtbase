@@ -48,14 +48,19 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "mainwindow.h"
 #include "tabletcanvas.h"
 
+#include <QApplication>
+#include <QColorDialog>
+#include <QDir>
+#include <QFileDialog>
+#include <QMenuBar>
+#include <QMessageBox>
+
 //! [0]
 MainWindow::MainWindow(TabletCanvas *canvas)
-  : m_canvas(canvas), m_colorDialog(nullptr)
+    : m_canvas(canvas)
 {
     createMenus();
     setWindowTitle(tr("Tablet Example"));

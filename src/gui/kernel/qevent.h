@@ -854,7 +854,6 @@ private:
     qint64 m_numericId;
 };
 Q_DECLARE_TYPEINFO(QPointingDeviceUniqueId, Q_MOVABLE_TYPE);
-template <> class QList<QPointingDeviceUniqueId> {}; // to prevent instantiation: use QVector instead
 
 Q_GUI_EXPORT bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept;
 inline bool operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
@@ -960,6 +959,8 @@ public:
         friend class QGuiApplicationPrivate;
         friend class QApplication;
         friend class QApplicationPrivate;
+        friend class QQuickPointerTouchEvent;
+        friend class QQuickMultiPointTouchArea;
     };
 
 #if QT_DEPRECATED_SINCE(5, 0)

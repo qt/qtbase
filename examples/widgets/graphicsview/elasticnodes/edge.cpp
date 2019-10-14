@@ -51,16 +51,14 @@
 #include "edge.h"
 #include "node.h"
 
-#include <qmath.h>
 #include <QPainter>
+#include <QtMath>
 
 //! [0]
 Edge::Edge(Node *sourceNode, Node *destNode)
-    : arrowSize(10)
+    : source(sourceNode), dest(destNode)
 {
-    setAcceptedMouseButtons(0);
-    source = sourceNode;
-    dest = destNode;
+    setAcceptedMouseButtons(Qt::NoButton);
     source->addEdge(this);
     dest->addEdge(this);
     adjust();

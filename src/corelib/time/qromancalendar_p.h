@@ -60,7 +60,7 @@ class Q_CORE_EXPORT QRomanCalendar : public QCalendarBackend
 public:
     // date queries:
     int daysInMonth(int month, int year = QCalendar::Unspecified) const override;
-    int minDaysInMonth() const override;
+    int minimumDaysInMonth() const override;
     // properties of the calendar
     bool isLunar() const override;
     bool isLuniSolar() const override;

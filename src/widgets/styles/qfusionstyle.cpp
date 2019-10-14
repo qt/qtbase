@@ -88,6 +88,7 @@
 #include <private/qstylehelper_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qapplication_p.h>
+#include <private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -362,6 +363,11 @@ static void qt_fusion_draw_mdibutton(QPainter *painter, const QStyleOptionTitleB
     painter->drawPoint(tmp.left() + 1, tmp.bottom());
     painter->drawPoint(tmp.right() - 1, tmp.bottom());
     painter->drawPoint(tmp.right() , tmp.bottom() - 1);
+}
+
+static QWindow *qt_getWindow(const QWidget *widget)
+{
+    return widget ? QWidgetPrivate::get(widget)->windowHandle(QWidgetPrivate::WindowHandleMode::Closest) : nullptr;
 }
 
 /*
@@ -995,7 +1001,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             d->tabBarcloseButtonIcon = proxy()->standardIcon(SP_DialogCloseButton, option, widget);
         if ((option->state & State_Enabled) && (option->state & State_MouseOver))
             proxy()->drawPrimitive(PE_PanelButtonCommand, option, painter, widget);
-        QPixmap pixmap = d->tabBarcloseButtonIcon.pixmap(QSize(16, 16), QIcon::Normal, QIcon::On);
+        QPixmap pixmap = d->tabBarcloseButtonIcon.pixmap(qt_getWindow(widget), QSize(16, 16), QIcon::Normal, QIcon::On);
         proxy()->drawItemPixmap(painter, option->rect, Qt::AlignCenter, pixmap);
     }
         break;
@@ -1035,7 +1041,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
             if (!cb->currentIcon.isNull()) {
                 QIcon::Mode mode = cb->state & State_Enabled ? QIcon::Normal
                                                              : QIcon::Disabled;
-                QPixmap pixmap = cb->currentIcon.pixmap(cb->iconSize, mode);
+                QPixmap pixmap = cb->currentIcon.pixmap(qt_getWindow(widget), cb->iconSize, mode);
                 QRect iconRect(editRect);
                 iconRect.setWidth(cb->iconSize.width() + 4);
                 iconRect = alignedRect(cb->direction,
@@ -1647,9 +1653,9 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                     iconSize = combo->iconSize();
 #endif
                 if (checked)
-                    pixmap = menuItem->icon.pixmap(iconSize, mode, QIcon::On);
+                    pixmap = menuItem->icon.pixmap(qt_getWindow(widget), iconSize, mode, QIcon::On);
                 else
-                    pixmap = menuItem->icon.pixmap(iconSize, mode);
+                    pixmap = menuItem->icon.pixmap(qt_getWindow(widget), iconSize, mode);
 
                 const int pixw = pixmap.width() / pixmap.devicePixelRatio();
                 const int pixh = pixmap.height() / pixmap.devicePixelRatio();
@@ -1783,7 +1789,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 if (button->state & State_On)
                     state = QIcon::On;
 
-                QPixmap pixmap = button->icon.pixmap(button->iconSize, mode, state);
+                QPixmap pixmap = button->icon.pixmap(qt_getWindow(widget), button->iconSize, mode, state);
                 int w = pixmap.width() / pixmap.devicePixelRatio();
                 int h = pixmap.height() / pixmap.devicePixelRatio();
 
@@ -3232,7 +3238,7 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
         break;
     case CT_MenuItem:
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-            int w = newSize.width();
+            int w = size.width(); // Don't rely of QCommonStyle's width calculation here
             int maxpmw = menuItem->maxIconWidth;
             int tabSpacing = 20;
             if (menuItem->text.contains(QLatin1Char('\t')))

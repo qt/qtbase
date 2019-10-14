@@ -62,7 +62,6 @@ QString processRequest(const QString &request, const QDBusMessage &message)
     data->request = request;
     message.setDelayedReply(true);
     data->reply = message.createReply();
-    QDBusConnection::sessionBus().send(data->reply);
 
     appendRequest(data);
     return QString();

@@ -1970,18 +1970,18 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
     QRectF body = QRectF(QPointF(0, 0), d->pageSize);
     QPointF pageNumberPos;
 
+    qreal sourceDpiX = qt_defaultDpiX();
+    qreal sourceDpiY = qt_defaultDpiY();
+    const qreal dpiScaleX = qreal(printer->logicalDpiX()) / sourceDpiX;
+    const qreal dpiScaleY = qreal(printer->logicalDpiY()) / sourceDpiY;
+
     if (documentPaginated) {
-        qreal sourceDpiX = qt_defaultDpi();
-        qreal sourceDpiY = sourceDpiX;
 
         QPaintDevice *dev = doc->documentLayout()->paintDevice();
         if (dev) {
             sourceDpiX = dev->logicalDpiX();
             sourceDpiY = dev->logicalDpiY();
         }
-
-        const qreal dpiScaleX = qreal(printer->logicalDpiX()) / sourceDpiX;
-        const qreal dpiScaleY = qreal(printer->logicalDpiY()) / sourceDpiY;
 
         // scale to dpi
         p.scale(dpiScaleX, dpiScaleY);
@@ -2011,15 +2011,21 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
         // copy the custom object handlers
         layout->d_func()->handlers = documentLayout()->d_func()->handlers;
 
-        int dpiy = p.device()->logicalDpiY();
-        int margin = (int) ((2/2.54)*dpiy); // 2 cm margins
+        // 2 cm margins, scaled to device in QTextDocumentLayoutPrivate::layoutFrame
+        const int horizontalMargin = int((2/2.54)*sourceDpiX);
+        const int verticalMargin = int((2/2.54)*sourceDpiY);
         QTextFrameFormat fmt = doc->rootFrame()->frameFormat();
-        fmt.setMargin(margin);
+        fmt.setLeftMargin(horizontalMargin);
+        fmt.setRightMargin(horizontalMargin);
+        fmt.setTopMargin(verticalMargin);
+        fmt.setBottomMargin(verticalMargin);
         doc->rootFrame()->setFrameFormat(fmt);
 
+        // pageNumberPos must be in device coordinates, so scale to device here
+        const int dpiy = p.device()->logicalDpiY();
         body = QRectF(0, 0, printer->width(), printer->height());
-        pageNumberPos = QPointF(body.width() - margin,
-                                body.height() - margin
+        pageNumberPos = QPointF(body.width() - horizontalMargin * dpiScaleX,
+                                body.height() - verticalMargin * dpiScaleY
                                 + QFontMetrics(doc->defaultFont(), p.device()).ascent()
                                 + 5 * dpiy / 72.0);
         clonedDoc->setPageSize(body.size());
@@ -2067,8 +2073,9 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
     \enum QTextDocument::ResourceType
 
     This enum describes the types of resources that can be loaded by
-    QTextDocument's loadResource() function.
+    QTextDocument's loadResource() function or by QTextBrowser::setSource().
 
+    \value UnknownResource No resource is loaded, or the resource type is not known.
     \value HtmlResource  The resource contains HTML.
     \value ImageResource The resource contains image data.
                          Currently supported data types are QVariant::Pixmap and
@@ -2082,7 +2089,7 @@ void QTextDocument::print(QPagedPaintDevice *printer) const
     \value UserResource  The first available value for user defined
                          resource types.
 
-    \sa loadResource()
+    \sa loadResource(), QTextBrowser::sourceType()
 */
 
 /*!

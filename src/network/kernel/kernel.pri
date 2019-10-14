@@ -83,7 +83,7 @@ macos | ios {
     SOURCES += kernel/qnetconmonitor_stub.cpp
 }
 
-qtConfig(gssapi): LIBS_PRIVATE += -lgssapi_krb5
+qtConfig(gssapi): QMAKE_USE_PRIVATE += gssapi
 
 uikit:HEADERS += kernel/qnetworkinterface_uikit_p.h
 osx:SOURCES += kernel/qnetworkproxy_mac.cpp

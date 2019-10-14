@@ -1272,14 +1272,11 @@ void QCocoaWindow::windowWillClose()
 bool QCocoaWindow::windowShouldClose()
 {
     qCDebug(lcQpaWindow) << "QCocoaWindow::windowShouldClose" << window();
-   // This callback should technically only determine if the window
-   // should (be allowed to) close, but since our QPA API to determine
-   // that also involves actually closing the window we do both at the
-   // same time, instead of doing the latter in windowWillClose.
-    bool accepted = false;
-    QWindowSystemInterface::handleCloseEvent(window(), &accepted);
-    QWindowSystemInterface::flushWindowSystemEvents();
-    return accepted;
+    // This callback should technically only determine if the window
+    // should (be allowed to) close, but since our QPA API to determine
+    // that also involves actually closing the window we do both at the
+    // same time, instead of doing the latter in windowWillClose.
+    return QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::SynchronousDelivery>(window());
 }
 
 // ----------------------------- QPA forwarding -----------------------------
@@ -1645,21 +1642,6 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
     m_windowModality = QPlatformWindow::window()->modality();
 
     applyContentBorderThickness(nsWindow);
-
-    // Prevent CoreGraphics RGB32 -> RGB64 backing store conversions on deep color
-    // displays by forcing 8-bit components, unless a deep color format has been
-    // requested. This conversion uses significant CPU time.
-    QSurface::SurfaceType surfaceType = QPlatformWindow::window()->surfaceType();
-    bool usesCoreGraphics = surfaceType == QSurface::RasterSurface || surfaceType == QSurface::RasterGLSurface;
-    QSurfaceFormat surfaceFormat = QPlatformWindow::window()->format();
-    bool usesDeepColor = surfaceFormat.redBufferSize() > 8 ||
-                         surfaceFormat.greenBufferSize() > 8 ||
-                         surfaceFormat.blueBufferSize() > 8;
-    bool usesLayer = view().layer;
-    if (usesCoreGraphics && !usesDeepColor && !usesLayer) {
-        [nsWindow setDynamicDepthLimit:NO];
-        [nsWindow setDepthLimit:NSWindowDepthTwentyfourBitRGB];
-    }
 
     if (format().colorSpace() == QSurfaceFormat::sRGBColorSpace)
         nsWindow.colorSpace = NSColorSpace.sRGBColorSpace;

@@ -58,6 +58,7 @@
 #include <QtCore/private/qabstracteventdispatcher_p.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/private/qthread_p.h>
+#include <QtCore/private/qlocking_p.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qlibraryinfo.h>
 #include <QtCore/qnumeric.h>
@@ -1039,7 +1040,9 @@ QList<QScreen *> QGuiApplication::screens()
 
     The \a point is in relation to the virtualGeometry() of each set of virtual
     siblings. If the point maps to more than one set of virtual siblings the first
-    match is returned.
+    match is returned.  If you wish to search only the virtual desktop siblings
+    of a known screen (for example siblings of the screen of your application
+    window \c QWidget::windowHandle()->screen()), use QScreen::virtualSiblingAt().
 
     \since 5.10
 */
@@ -2248,8 +2251,11 @@ void QGuiApplicationPrivate::processWheelEvent(QWindowSystemInterfacePrivate::Wh
     }
 
 #if QT_DEPRECATED_SINCE(5, 14)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
      QWheelEvent ev(localPoint, globalPoint, e->pixelDelta, e->angleDelta, e->qt4Delta, e->qt4Orientation,
                     mouse_buttons, e->modifiers, e->phase, e->source, e->inverted);
+QT_WARNING_POP
 #else
     QWheelEvent ev(localPoint, globalPoint, e->pixelDelta, e->angleDelta,
                    mouse_buttons, e->modifiers, e->phase, e->inverted, e->source);
@@ -2527,9 +2533,8 @@ void QGuiApplicationPrivate::processCloseEvent(QWindowSystemInterfacePrivate::Cl
 
     QCloseEvent event;
     QGuiApplication::sendSpontaneousEvent(e->window.data(), &event);
-    if (e->accepted) {
-        *(e->accepted) = event.isAccepted();
-    }
+
+    e->eventAccepted = event.isAccepted();
 }
 
 void QGuiApplicationPrivate::processFileOpenEvent(QWindowSystemInterfacePrivate::FileOpenEvent *e)
@@ -2766,7 +2771,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
     QWindow *window = e->window.data();
     typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
     QHash<QWindow *, StatesAndTouchPoints> windowsNeedingEvents;
-    bool stationaryTouchPointChangedVelocity = false;
+    bool stationaryTouchPointChangedProperty = false;
 
     for (int i = 0; i < e->points.count(); ++i) {
         QTouchEvent::TouchPoint touchPoint = e->points.at(i);
@@ -2846,7 +2851,13 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             if (touchPoint.state() == Qt::TouchPointStationary) {
                 if (touchInfo.touchPoint.velocity() != touchPoint.velocity()) {
                     touchInfo.touchPoint.setVelocity(touchPoint.velocity());
-                    stationaryTouchPointChangedVelocity = true;
+                    touchPoint.d->stationaryWithModifiedProperty = true;
+                    stationaryTouchPointChangedProperty = true;
+                }
+                if (!qFuzzyCompare(touchInfo.touchPoint.pressure(), touchPoint.pressure())) {
+                    touchInfo.touchPoint.setPressure(touchPoint.pressure());
+                    touchPoint.d->stationaryWithModifiedProperty = true;
+                    stationaryTouchPointChangedProperty = true;
                 }
             } else {
                 touchInfo.touchPoint = touchPoint;
@@ -2887,7 +2898,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             break;
         case Qt::TouchPointStationary:
             // don't send the event if nothing changed
-            if (!stationaryTouchPointChangedVelocity)
+            if (!stationaryTouchPointChangedProperty)
                 continue;
             Q_FALLTHROUGH();
         default:
@@ -3305,7 +3316,7 @@ void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
 QFont QGuiApplication::font()
 {
     Q_ASSERT_X(QGuiApplicationPrivate::self, "QGuiApplication::font()", "no QGuiApplication instance");
-    QMutexLocker locker(&applicationFontMutex);
+    const auto locker = qt_scoped_lock(applicationFontMutex);
     initFontUnlocked();
     return *QGuiApplicationPrivate::app_font;
 }
@@ -3317,7 +3328,7 @@ QFont QGuiApplication::font()
 */
 void QGuiApplication::setFont(const QFont &font)
 {
-    QMutexLocker locker(&applicationFontMutex);
+    auto locker = qt_unique_lock(applicationFontMutex);
     const bool emitChange = !QGuiApplicationPrivate::app_font
                             || (*QGuiApplicationPrivate::app_font != font);
     if (!QGuiApplicationPrivate::app_font)
@@ -3326,8 +3337,11 @@ void QGuiApplication::setFont(const QFont &font)
         *QGuiApplicationPrivate::app_font = font;
     applicationResourceFlags |= ApplicationFontExplicitlySet;
 
-    if (emitChange && qGuiApp)
-        emit qGuiApp->fontChanged(*QGuiApplicationPrivate::app_font);
+    if (emitChange && qGuiApp) {
+        auto font = *QGuiApplicationPrivate::app_font;
+        locker.unlock();
+        emit qGuiApp->fontChanged(font);
+    }
 }
 
 /*!
@@ -3502,7 +3516,7 @@ Qt::ApplicationState QGuiApplication::applicationState()
     \since 5.14
 
     Sets the high-DPI scale factor rounding policy for the application. The
-    policy decides how non-integer scale factors (such as Windows 150%) are
+    \a policy decides how non-integer scale factors (such as Windows 150%) are
     handled, for applications that have AA_EnableHighDpiScaling enabled.
 
     The two principal options are whether fractional scale factors should
@@ -4078,7 +4092,7 @@ void QGuiApplicationPrivate::notifyThemeChanged()
             sendApplicationPaletteChange();
     }
     if (!(applicationResourceFlags & ApplicationFontExplicitlySet)) {
-        QMutexLocker locker(&applicationFontMutex);
+        const auto locker = qt_scoped_lock(applicationFontMutex);
         clearFontUnlocked();
         initFontUnlocked();
     }

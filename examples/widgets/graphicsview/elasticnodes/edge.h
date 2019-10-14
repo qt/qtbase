@@ -78,7 +78,7 @@ private:
 
     QPointF sourcePoint;
     QPointF destPoint;
-    qreal arrowSize;
+    qreal arrowSize = 10;
 };
 //! [0]
 

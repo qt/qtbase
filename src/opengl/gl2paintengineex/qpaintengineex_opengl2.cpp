@@ -1391,6 +1391,8 @@ void QGL2PaintEngineEx::renderHintsChanged()
     state()->renderHintsChanged = true;
 
 #if !defined(QT_OPENGL_ES_2)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     if (!d->ctx->contextHandle()->isOpenGLES()) {
         if ((state()->renderHints & QPainter::Antialiasing)
 #if QT_DEPRECATED_SINCE(5, 14)
@@ -1401,6 +1403,7 @@ void QGL2PaintEngineEx::renderHintsChanged()
         else
             d->glDisable(GL_MULTISAMPLE);
     }
+QT_WARNING_POP
 #endif
 
     d->lastTextureUsed = GLuint(-1);

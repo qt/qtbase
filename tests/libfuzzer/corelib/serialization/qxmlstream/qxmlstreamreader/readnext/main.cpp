@@ -29,7 +29,7 @@
 #include <QXmlStreamReader>
 
 extern "C" int LLVMFuzzerTestOneInput(const char *Data, size_t Size) {
-    QXmlStreamReader reader(QByteArray(Data, Size));
+    QXmlStreamReader reader(QByteArray::fromRawData(Data, Size));
     while (!reader.atEnd())
         reader.readNext();
     return 0;

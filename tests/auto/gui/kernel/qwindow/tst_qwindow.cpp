@@ -893,7 +893,13 @@ void tst_QWindow::isActive()
     QTRY_COMPARE(QGuiApplication::focusWindow(), &window);
     QCoreApplication::processEvents();
     QTRY_COMPARE(dialog.received(QEvent::FocusOut), 1);
-    QTRY_COMPARE(window.received(QEvent::FocusIn), 3);
+    // We should be checking for exactly three, but since this is a try-compare _loop_, we might
+    // loose and regain focus multiple times in the event of a system popup. This has been observed
+    // to fail on Windows, see QTBUG-77769.
+    QTRY_VERIFY2(window.received(QEvent::FocusIn) >= 3,
+                 qPrintable(
+                 QStringLiteral("Expected more than three focus in events, received: %1")
+                 .arg(window.received(QEvent::FocusIn))));
 
     QVERIFY(window.isActive());
 
@@ -1025,6 +1031,23 @@ public:
     Qt::MouseButtons buttonStateInGeneratedMove;
 };
 
+static void simulateMouseClick(QWindow *target, const QPointF &local, const QPointF &global)
+{
+    QWindowSystemInterface::handleMouseEvent(target, local, global,
+                                             {}, Qt::LeftButton, QEvent::MouseButtonPress);
+    QWindowSystemInterface::handleMouseEvent(target, local, global,
+                                             Qt::LeftButton, Qt::LeftButton, QEvent::MouseButtonRelease);
+}
+
+static void simulateMouseClick(QWindow *target, ulong &timeStamp,
+                               const QPointF &local, const QPointF &global)
+{
+    QWindowSystemInterface::handleMouseEvent(target, timeStamp++, local, global,
+                                             {}, Qt::LeftButton, QEvent::MouseButtonPress);
+    QWindowSystemInterface::handleMouseEvent(target, timeStamp++, local, global,
+                                             Qt::LeftButton, Qt::LeftButton, QEvent::MouseButtonRelease);
+}
+
 void tst_QWindow::testInputEvents()
 {
     InputTestWindow window;
@@ -1066,15 +1089,13 @@ void tst_QWindow::testInputEvents()
     window.mousePressButton = window.mouseReleaseButton = 0;
     const QPointF nonWindowGlobal(window.geometry().topRight() + QPoint(200, 50)); // not inside the window
     const QPointF deviceNonWindowGlobal = QHighDpi::toNativePixels(nonWindowGlobal, window.screen());
-    QWindowSystemInterface::handleMouseEvent(nullptr, deviceNonWindowGlobal, deviceNonWindowGlobal, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(nullptr, deviceNonWindowGlobal, deviceNonWindowGlobal, Qt::NoButton);
+    simulateMouseClick(nullptr, deviceNonWindowGlobal, deviceNonWindowGlobal);
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressButton, 0);
     QCOMPARE(window.mouseReleaseButton, 0);
     const QPointF windowGlobal = window.mapToGlobal(local.toPoint());
     const QPointF deviceWindowGlobal = QHighDpi::toNativePixels(windowGlobal, window.screen());
-    QWindowSystemInterface::handleMouseEvent(nullptr, deviceWindowGlobal, deviceWindowGlobal, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(nullptr, deviceWindowGlobal, deviceWindowGlobal, Qt::NoButton);
+    simulateMouseClick(nullptr, deviceWindowGlobal, deviceWindowGlobal);
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressButton, int(Qt::LeftButton));
     QCOMPARE(window.mouseReleaseButton, int(Qt::LeftButton));
@@ -1198,8 +1219,7 @@ void tst_QWindow::mouseToTouchTranslation()
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
-    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::NoButton);
+    QTest::mouseClick(&window, Qt::LeftButton, {}, QPoint(10, 10));
     QCoreApplication::processEvents();
 
     QCoreApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, false);
@@ -1211,8 +1231,7 @@ void tst_QWindow::mouseToTouchTranslation()
 
     window.ignoreMouse = false;
 
-    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::NoButton);
+    QTest::mouseClick(&window, Qt::LeftButton, {}, QPoint(10, 10));
     QCoreApplication::processEvents();
 
     QCoreApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, false);
@@ -1223,8 +1242,7 @@ void tst_QWindow::mouseToTouchTranslation()
 
     window.ignoreMouse = true;
 
-    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::NoButton);
+    QTest::mouseClick(&window, Qt::LeftButton, {}, QPoint(10, 10));
     QCoreApplication::processEvents();
 
     // touch event synthesis disabled
@@ -1249,8 +1267,7 @@ void tst_QWindow::mouseToTouchLoop()
     window.show();
     QVERIFY(QTest::qWaitForWindowExposed(&window));
 
-    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, QPoint(10, 10), window.mapToGlobal(QPoint(10, 10)), Qt::NoButton);
+    QTest::mouseClick(&window, Qt::LeftButton, {}, QPoint(10, 10));
     QCoreApplication::processEvents();
 
     QCoreApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents, false);
@@ -1545,8 +1562,8 @@ void tst_QWindow::mouseEventSequence()
     ulong timestamp = 0;
     QPointF local(12, 34);
     const QPointF deviceLocal = QHighDpi::toNativePixels(local, &window);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, deviceLocal, deviceLocal, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, deviceLocal, deviceLocal, Qt::NoButton);
+
+    simulateMouseClick(&window, timestamp, deviceLocal, deviceLocal);
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressedCount, 1);
     QCOMPARE(window.mouseReleasedCount, 1);
@@ -1558,10 +1575,8 @@ void tst_QWindow::mouseEventSequence()
 
     // A double click must result in press, release, press, doubleclick, release.
     // Check that no unexpected event suppression occurs and that the order is correct.
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    simulateMouseClick(&window, timestamp, local, local);
+    simulateMouseClick(&window, timestamp, local, local);
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressedCount, 2);
     QCOMPARE(window.mouseReleasedCount, 2);
@@ -1572,12 +1587,9 @@ void tst_QWindow::mouseEventSequence()
     window.resetCounters();
 
     // Triple click = double + single click
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    simulateMouseClick(&window, timestamp, local, local);
+    simulateMouseClick(&window, timestamp, local, local);
+    simulateMouseClick(&window, timestamp, local, local);
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressedCount, 3);
     QCOMPARE(window.mouseReleasedCount, 3);
@@ -1588,14 +1600,10 @@ void tst_QWindow::mouseEventSequence()
     window.resetCounters();
 
     // Two double clicks.
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    simulateMouseClick(&window, timestamp, local, local);
+    simulateMouseClick(&window, timestamp, local, local);
+    simulateMouseClick(&window, timestamp, local, local);
+    simulateMouseClick(&window, timestamp, local, local);
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressedCount, 4);
     QCOMPARE(window.mouseReleasedCount, 4);
@@ -1606,17 +1614,13 @@ void tst_QWindow::mouseEventSequence()
     window.resetCounters();
 
     // Four clicks, none of which qualifies as a double click.
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    simulateMouseClick(&window, timestamp, local, local);
     timestamp += doubleClickInterval;
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    simulateMouseClick(&window, timestamp, local, local);
     timestamp += doubleClickInterval;
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    simulateMouseClick(&window, timestamp, local, local);
     timestamp += doubleClickInterval;
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, timestamp++, local, local, Qt::NoButton);
+    simulateMouseClick(&window, timestamp, local, local);
     timestamp += doubleClickInterval;
     QCoreApplication::processEvents();
     QCOMPARE(window.mousePressedCount, 4);
@@ -1668,10 +1672,13 @@ void tst_QWindow::inputReentrancy()
 
     // Queue three events.
     QPointF local(12, 34);
-    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::LeftButton);
+    QWindowSystemInterface::handleMouseEvent(&window, local, local, {},
+                                             Qt::LeftButton, QEvent::MouseButtonPress);
     local += QPointF(2, 2);
-    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::NoButton);
+    QWindowSystemInterface::handleMouseEvent(&window, local, local,
+                                             Qt::LeftButton, Qt::LeftButton, QEvent::MouseMove);
+    QWindowSystemInterface::handleMouseEvent(&window, local, local, Qt::LeftButton,
+                                             Qt::LeftButton, QEvent::MouseButtonRelease);
     // Process them. However, the event handler for the press will also call
     // processEvents() so the move and release will be delivered before returning
     // from mousePressEvent(). The point is that no events should get lost.
@@ -1741,12 +1748,14 @@ void tst_QWindow::tabletEvents()
     const QPoint global = window.mapToGlobal(local);
     const QPoint deviceLocal = QHighDpi::toNativeLocalPosition(local, &window);
     const QPoint deviceGlobal = QHighDpi::toNativePixels(global, window.screen());
-    QWindowSystemInterface::handleTabletEvent(&window, true, deviceLocal, deviceGlobal, 1, 2, 0.5, 1, 2, 0.1, 0, 0, 0);
+    QWindowSystemInterface::handleTabletEvent(&window, deviceLocal, deviceGlobal,
+                                              1, 2, Qt::LeftButton, 0.5, 1, 2, 0.1, 0, 0, 0);
     QCoreApplication::processEvents();
     QTRY_VERIFY(window.eventType == QEvent::TabletPress);
     QTRY_COMPARE(window.eventGlobal.toPoint(), global);
     QTRY_COMPARE(window.eventLocal.toPoint(), local);
-    QWindowSystemInterface::handleTabletEvent(&window, false, deviceLocal, deviceGlobal, 1, 2, 0.5, 1, 2, 0.1, 0, 0, 0);
+    QWindowSystemInterface::handleTabletEvent(&window, deviceLocal, deviceGlobal, 1, 2,
+                                              {}, 0.5, 1, 2, 0.1, 0, 0, 0);
     QCoreApplication::processEvents();
     QTRY_COMPARE(window.eventType, QEvent::TabletRelease);
 
@@ -1782,11 +1791,9 @@ void tst_QWindow::windowModality_QTBUG27039()
     modalB.setModality(Qt::ApplicationModal);
     modalB.show();
 
-    QPointF local(5, 5);
-    QWindowSystemInterface::handleMouseEvent(&modalA, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&modalA, local, local, Qt::NoButton);
-    QWindowSystemInterface::handleMouseEvent(&modalB, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&modalB, local, local, Qt::NoButton);
+    QPoint local(5, 5);
+    QTest::mouseClick(&modalA, Qt::LeftButton, {}, local);
+    QTest::mouseClick(&modalB, Qt::LeftButton, {}, local);
     QCoreApplication::processEvents();
 
     // modal A should be blocked since it was shown first, but modal B should not be blocked
@@ -1794,8 +1801,7 @@ void tst_QWindow::windowModality_QTBUG27039()
     QCOMPARE(modalA.mousePressedCount, 0);
 
     modalB.hide();
-    QWindowSystemInterface::handleMouseEvent(&modalA, local, local, Qt::LeftButton);
-    QWindowSystemInterface::handleMouseEvent(&modalA, local, local, Qt::NoButton);
+    QTest::mouseClick(&modalA, Qt::LeftButton, {}, local);
     QCoreApplication::processEvents();
 
     // modal B has been hidden, modal A should be unblocked again

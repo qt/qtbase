@@ -85,6 +85,8 @@ public:
 
     static bool useNativeMenus();
 
+    void refreshFonts();
+
     static const char *name;
 
 private:
@@ -92,7 +94,6 @@ private:
     void clearPalettes();
     void refreshPalettes();
     void clearFonts();
-    void refreshFonts();
     void refreshIconPixmapSizes();
 
     static QWindowsTheme *m_instance;

@@ -174,9 +174,6 @@
 
     \snippet code/doc_src_qdbusadaptors.cpp 10
 
-    The use of
-    \l{QDBusConnection::send()}{QDBusConnection::sessionBus().send(data->reply)}
-    is needed to explicitly inform the caller that the response will be delayed.
     In this case, the return value is unimportant; we return an arbitrary value
     to satisfy the compiler.
 

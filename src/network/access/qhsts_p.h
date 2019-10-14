@@ -66,7 +66,6 @@
 
 QT_BEGIN_NAMESPACE
 
-template<typename T> class QList;
 template <typename T> class QVector;
 
 class Q_AUTOTEST_EXPORT QHstsCache

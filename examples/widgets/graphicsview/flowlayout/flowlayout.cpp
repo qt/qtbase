@@ -50,14 +50,10 @@
 
 #include "flowlayout.h"
 
-#include <qmath.h>
+#include <QtMath>
 
-#include <QWidget>
-
-FlowLayout::FlowLayout()
+FlowLayout::FlowLayout(QGraphicsLayoutItem *parent) : QGraphicsLayout(parent)
 {
-    m_spacing[0] = 6;
-    m_spacing[1] = 6;
     QSizePolicy sp = sizePolicy();
     sp.setHeightForWidth(true);
     setSizePolicy(sp);
@@ -66,7 +62,7 @@ FlowLayout::FlowLayout()
 void FlowLayout::insertItem(int index, QGraphicsLayoutItem *item)
 {
     item->setParentLayoutItem(this);
-    if (uint(index) > uint(m_items.count()))
+    if (index > m_items.count() || index < 0)
         index = m_items.count();
     m_items.insert(index, item);
     invalidate();
@@ -117,15 +113,14 @@ qreal FlowLayout::doLayout(const QRectF &geom, bool applyNewGeometry) const
     qreal y = 0;
     qreal maxRowHeight = 0;
     QSizeF pref;
-    for (int i = 0; i < m_items.count(); ++i) {
-        QGraphicsLayoutItem *item = m_items.at(i);
+    for (QGraphicsLayoutItem *item : m_items) {
         pref = item->effectiveSizeHint(Qt::PreferredSize);
         maxRowHeight = qMax(maxRowHeight, pref.height());
 
         qreal next_x;
         next_x = x + pref.width();
         if (next_x > maxw) {
-            if (x == 0) {
+            if (qFuzzyIsNull(x)) {
                 pref.setWidth(maxw);
             } else {
                 x = 0;
@@ -156,7 +151,7 @@ QSizeF FlowLayout::minSize(const QSizeF &constraint) const
     } else {
         for (const QGraphicsLayoutItem *item : qAsConst(m_items))
             size = size.expandedTo(item->effectiveSizeHint(Qt::MinimumSize));
-        size += QSize(left + right, top + bottom);
+        size += QSizeF(left + right, top + bottom);
     }
     return size;
 }
@@ -164,7 +159,7 @@ QSizeF FlowLayout::minSize(const QSizeF &constraint) const
 QSizeF FlowLayout::prefSize() const
 {
     qreal left, right;
-    getContentsMargins(&left, 0, &right, 0);
+    getContentsMargins(&left, nullptr, &right, nullptr);
 
     qreal maxh = 0;
     qreal totalWidth = 0;

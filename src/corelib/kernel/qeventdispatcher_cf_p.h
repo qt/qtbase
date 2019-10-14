@@ -98,8 +98,10 @@ Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(RunLoopModeTracker));
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(lcEventDispatcher);
-Q_DECLARE_LOGGING_CATEGORY(lcEventDispatcherTimers)
+namespace QtPrivate {
+Q_CORE_EXPORT Q_DECLARE_LOGGING_CATEGORY(lcEventDispatcher);
+Q_CORE_EXPORT Q_DECLARE_LOGGING_CATEGORY(lcEventDispatcherTimers)
+}
 
 class QEventDispatcherCoreFoundation;
 

@@ -45,6 +45,8 @@
 #include <QtCore/qdir.h>
 #include <QtWidgets/qfileiconprovider.h>
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
 QT_REQUIRE_CONFIG(dirmodel);
 
 QT_BEGIN_NAMESPACE
@@ -65,9 +67,10 @@ public:
         FileNameRole
     };
 
-    QDirModel(const QStringList &nameFilters, QDir::Filters filters,
-              QDir::SortFlags sort, QObject *parent = nullptr);
-    explicit QDirModel(QObject *parent = nullptr);
+    QT_DEPRECATED_VERSION_X_5_15("Use QFileSystemModel") QDirModel(const QStringList &nameFilters,
+              QDir::Filters filters, QDir::SortFlags sort,
+              QObject *parent = nullptr);
+    QT_DEPRECATED_VERSION_X_5_15("Use QFileSystemModel") explicit QDirModel(QObject *parent = nullptr);
     ~QDirModel();
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
@@ -143,5 +146,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 #endif // QDIRMODEL_H

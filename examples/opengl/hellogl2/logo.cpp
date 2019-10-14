@@ -52,7 +52,6 @@
 #include <qmath.h>
 
 Logo::Logo()
-    : m_count(0)
 {
     m_data.resize(2500 * 6);
 

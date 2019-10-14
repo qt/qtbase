@@ -82,9 +82,6 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
   hostName(hostName), port(port), encrypt(encrypt), delayIpv4(true)
   , activeChannelCount(type == QHttpNetworkConnection::ConnectionTypeHTTP2
                        || type == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
-#ifndef QT_NO_SSL
-                       || type == QHttpNetworkConnection::ConnectionTypeSPDY
-#endif
                        ? 1 : defaultHttpChannelCount)
   , channelCount(defaultHttpChannelCount)
 #ifndef QT_NO_NETWORKPROXY
@@ -93,9 +90,9 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
   , preConnectRequests(0)
   , connectionType(type)
 {
-    // We allocate all 6 channels even if it's SPDY or HTTP/2 enabled
-    // connection: in case the protocol negotiation via NPN/ALPN fails,
-    // we will have normally working HTTP/1.1.
+    // We allocate all 6 channels even if it's HTTP/2 enabled connection:
+    // in case the protocol negotiation via NPN/ALPN fails, we will have
+    // normally working HTTP/1.1.
     Q_ASSERT(channelCount >= activeChannelCount);
     channels = new QHttpNetworkConnectionChannel[channelCount];
 }
@@ -641,10 +638,10 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
             break;
         }
     }
-    else { // SPDY, HTTP/2 ('h2' mode)
+    else { // HTTP/2 ('h2' mode)
         if (!pair.second->d_func()->requestIsPrepared)
             prepareRequest(pair);
-        channels[0].spdyRequestsToSend.insert(request.priority(), pair);
+        channels[0].h2RequestsToSend.insert(request.priority(), pair);
     }
 
 #ifndef Q_OS_WINRT
@@ -680,7 +677,7 @@ void QHttpNetworkConnectionPrivate::fillHttp2Queue()
     for (auto &pair : highPriorityQueue) {
         if (!pair.second->d_func()->requestIsPrepared)
             prepareRequest(pair);
-        channels[0].spdyRequestsToSend.insert(QHttpNetworkRequest::HighPriority, pair);
+        channels[0].h2RequestsToSend.insert(QHttpNetworkRequest::HighPriority, pair);
     }
 
     highPriorityQueue.clear();
@@ -688,7 +685,7 @@ void QHttpNetworkConnectionPrivate::fillHttp2Queue()
     for (auto &pair : lowPriorityQueue) {
         if (!pair.second->d_func()->requestIsPrepared)
             prepareRequest(pair);
-        channels[0].spdyRequestsToSend.insert(pair.first.priority(), pair);
+        channels[0].h2RequestsToSend.insert(pair.first.priority(), pair);
     }
 
     lowPriorityQueue.clear();
@@ -984,12 +981,12 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
             }
         }
 #ifndef QT_NO_SSL
-        // is the reply inside the SPDY pipeline of this channel already?
-        QMultiMap<int, HttpMessagePair>::iterator it = channels[i].spdyRequestsToSend.begin();
-        QMultiMap<int, HttpMessagePair>::iterator end = channels[i].spdyRequestsToSend.end();
+        // is the reply inside the H2 pipeline of this channel already?
+        QMultiMap<int, HttpMessagePair>::iterator it = channels[i].h2RequestsToSend.begin();
+        QMultiMap<int, HttpMessagePair>::iterator end = channels[i].h2RequestsToSend.end();
         for (; it != end; ++it) {
             if (it.value().second == reply) {
-                channels[i].spdyRequestsToSend.remove(it.key());
+                channels[i].h2RequestsToSend.remove(it.key());
 
                 QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
                 return;
@@ -1068,9 +1065,8 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         break;
     }
     case QHttpNetworkConnection::ConnectionTypeHTTP2Direct:
-    case QHttpNetworkConnection::ConnectionTypeHTTP2:
-    case QHttpNetworkConnection::ConnectionTypeSPDY: {
-        if (channels[0].spdyRequestsToSend.isEmpty() && channels[0].switchedToHttp2)
+    case QHttpNetworkConnection::ConnectionTypeHTTP2: {
+        if (channels[0].h2RequestsToSend.isEmpty() && channels[0].switchedToHttp2)
             return;
 
         if (networkLayerState == IPv4)
@@ -1079,7 +1075,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
             channels[0].networkLayerPreference = QAbstractSocket::IPv6Protocol;
         channels[0].ensureConnection();
         if (channels[0].socket && channels[0].socket->state() == QAbstractSocket::ConnectedState
-                && !channels[0].pendingEncrypt && channels[0].spdyRequestsToSend.size())
+                && !channels[0].pendingEncrypt && channels[0].h2RequestsToSend.size())
             channels[0].sendRequest();
         break;
     }
@@ -1234,18 +1230,18 @@ void QHttpNetworkConnectionPrivate::_q_hostLookupFinished(const QHostInfo &info)
         if (dequeueRequest(channels[0].socket)) {
             emitReplyError(channels[0].socket, channels[0].reply, QNetworkReply::HostNotFoundError);
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
-        } else if (connectionType == QHttpNetworkConnection::ConnectionTypeSPDY
-                   || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2) {
-            for (const HttpMessagePair &spdyPair : qAsConst(channels[0].spdyRequestsToSend)) {
+        } else if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
+                   || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
+            for (const HttpMessagePair &h2Pair : qAsConst(channels[0].h2RequestsToSend)) {
                 // emit error for all replies
-                QHttpNetworkReply *currentReply = spdyPair.second;
+                QHttpNetworkReply *currentReply = h2Pair.second;
                 Q_ASSERT(currentReply);
                 emitReplyError(channels[0].socket, currentReply, QNetworkReply::HostNotFoundError);
             }
         } else {
             // Should not happen: we start a host lookup before sending a request,
-            // so it's natural to have requests either in SPDY/HTTP/2 queue,
-            // or in low/high priority queues.
+            // so it's natural to have requests either in HTTP/2 queue, or in low/high
+            // priority queues.
             qWarning("QHttpNetworkConnectionPrivate::_q_hostLookupFinished"
                      " could not de-queue request, failed to report HostNotFoundError");
             networkLayerState = QHttpNetworkConnectionPrivate::Unknown;
@@ -1575,17 +1571,12 @@ void QHttpNetworkConnectionPrivate::emitProxyAuthenticationRequired(const QHttpN
     pauseConnection();
     QHttpNetworkReply *reply;
     if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
-        || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
-#if QT_CONFIG(ssl)
-        || connectionType == QHttpNetworkConnection::ConnectionTypeSPDY
-#endif
-        ) {
-
+        || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
         // we choose the reply to emit the proxyAuth signal from somewhat arbitrarily,
         // but that does not matter because the signal will ultimately be emitted
         // by the QNetworkAccessManager.
-        Q_ASSERT(chan->spdyRequestsToSend.count() > 0);
-        reply = chan->spdyRequestsToSend.cbegin().value().second;
+        Q_ASSERT(chan->h2RequestsToSend.count() > 0);
+        reply = chan->h2RequestsToSend.cbegin().value().second;
     } else { // HTTP
         reply = chan->reply;
     }

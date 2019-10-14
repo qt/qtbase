@@ -72,7 +72,7 @@ class Notepad : public QMainWindow
 
 //! [4]
 public:
-    explicit Notepad(QWidget *parent = 0);
+    explicit Notepad(QWidget *parent = nullptr);
 //! [4]
 //! [5]
     ~Notepad();

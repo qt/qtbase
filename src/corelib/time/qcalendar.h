@@ -128,7 +128,7 @@ public:
         User = -1
     };
     // New entries must be added to the \enum doc in qcalendar.cpp and
-    // handled in QCalendar::fromEnum()
+    // handled in QCalendarBackend::fromEnum()
     Q_ENUM(System)
 
     explicit QCalendar(); // Gregorian, optimised
@@ -137,7 +137,7 @@ public:
     explicit QCalendar(QStringView name);
 
     // QCalendar is a trivially copyable value type.
-    bool isValid() { return d != nullptr; }
+    bool isValid() const { return d != nullptr; }
 
     // Date queries:
     int daysInMonth(int month, int year = Unspecified) const;
@@ -155,9 +155,9 @@ public:
     bool isSolar() const;
     bool isProleptic() const;
     bool hasYearZero() const;
-    int maxDaysInMonth() const;
-    int minDaysInMonth() const;
-    int maxMonthsInYear() const;
+    int maximumDaysInMonth() const;
+    int minimumDaysInMonth() const;
+    int maximumMonthsInYear() const;
     QString name() const;
 
     // QDate conversions:

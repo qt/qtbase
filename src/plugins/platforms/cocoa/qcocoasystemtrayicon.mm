@@ -264,7 +264,7 @@ bool QCocoaSystemTrayIcon::supportsMessages() const
 }
 
 void QCocoaSystemTrayIcon::showMessage(const QString &title, const QString &message,
-                                       const QIcon& icon, MessageIcon, int)
+                                       const QIcon& icon, MessageIcon, int msecs)
 {
     if (!m_sys)
         return;
@@ -282,6 +282,10 @@ void QCocoaSystemTrayIcon::showMessage(const QString &title, const QString &mess
     NSUserNotificationCenter *center = NSUserNotificationCenter.defaultUserNotificationCenter;
     center.delegate = m_sys->item;
     [center deliverNotification:notification];
+    if (msecs) {
+        NSTimeInterval timeout = msecs / 1000.0;
+        [center performSelector:@selector(removeDeliveredNotification:) withObject:notification afterDelay:timeout];
+    }
     [notification release];
 }
 QT_END_NAMESPACE
@@ -434,8 +438,7 @@ QT_END_NAMESPACE
 }
 
 - (void)userNotificationCenter:(NSUserNotificationCenter *)center didActivateNotification:(NSUserNotification *)notification {
-    Q_UNUSED(center);
-    Q_UNUSED(notification);
+    [center removeDeliveredNotification:notification];
     emit systray->messageClicked();
 }
 

@@ -604,8 +604,8 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
     \since 5.12
     \overload
 
-    Creates a connection from the timeout() signal to \a slot, and returns a
-    handle to the connection.
+    Creates a connection of type \a connectionType from the timeout() signal
+    to \a slot, and returns a handle to the connection.
 
     This method is provided for convenience.
     It's equivalent to calling \c {QObject::connect(timer, &QTimer::timeout, timer, slot, connectionType)}.

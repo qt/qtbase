@@ -158,21 +158,6 @@
                 "-latomic"
             ]
         },
-        "libdl": {
-            "label": "dlopen()",
-            "test": {
-                "main": [
-                    "dlclose(dlopen(0, 0));",
-                    "dlsym(RTLD_DEFAULT, 0);",
-                    "dlerror();"
-                ]
-            },
-            "headers": "dlfcn.h",
-            "sources": [
-                "",
-                "-ldl"
-            ]
-        },
         "librt": {
             "label": "clock_gettime()",
             "test": {
@@ -612,11 +597,6 @@
             "condition": "features.clock-gettime && tests.clock-monotonic",
             "output": [ "feature" ]
         },
-        "dlopen": {
-            "label": "dlopen()",
-            "condition": "config.unix && libs.libdl",
-            "output": [ "privateFeature" ]
-        },
         "doubleconversion": {
             "label": "DoubleConversion",
             "output": [ "privateFeature", "feature" ]
@@ -879,7 +859,7 @@
         },
         "datestring": {
             "label": "QDate/QTime/QDateTime",
-            "purpose": "Provides convertion between dates and strings.",
+            "purpose": "Provides conversion between dates and strings.",
             "section": "Data structures",
             "condition": "features.textdate",
             "output": [ "publicFeature", "feature" ]

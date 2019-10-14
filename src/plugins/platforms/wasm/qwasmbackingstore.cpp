@@ -81,6 +81,11 @@ void QWasmBackingStore::updateTexture()
     if (m_dirty.isNull())
         return;
 
+    if (m_recreateTexture && m_texture->isCreated()) {
+        m_recreateTexture = false;
+        m_texture->destroy();
+    }
+
     if (!m_texture->isCreated()) {
         m_texture->setMinificationFilter(QOpenGLTexture::Nearest);
         m_texture->setMagnificationFilter(QOpenGLTexture::Nearest);
@@ -146,9 +151,7 @@ void QWasmBackingStore::resize(const QSize &size, const QRegion &staticContents)
 
     m_image = QImage(size * window()->devicePixelRatio(), QImage::Format_RGB32);
     m_image.setDevicePixelRatio(window()->devicePixelRatio());
-
-    if (m_texture->isCreated())
-        m_texture->destroy();
+    m_recreateTexture = true;
 }
 
 QImage QWasmBackingStore::toImage() const

@@ -143,13 +143,12 @@ void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
     if (!s_loadRootCertsOnDemand)
         setDefaultCaCertificates(systemCaCertificates());
 #ifdef Q_OS_WIN
-    //Enabled for fetching additional root certs from windows update on windows 6+
+    //Enabled for fetching additional root certs from windows update on windows.
     //This flag is set false by setDefaultCaCertificates() indicating the app uses
     //its own cert bundle rather than the system one.
     //Same logic that disables the unix on demand cert loading.
     //Unlike unix, we do preload the certificates from the cert store.
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::WindowsVista)
-        s_loadRootCertsOnDemand = true;
+    s_loadRootCertsOnDemand = true;
 #endif
 }
 

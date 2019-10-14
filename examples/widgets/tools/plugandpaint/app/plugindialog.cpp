@@ -49,8 +49,8 @@
 ****************************************************************************/
 
 
-#include "interfaces.h"
 #include "plugindialog.h"
+#include "interfaces.h"
 
 #include <QDir>
 #include <QGridLayout>

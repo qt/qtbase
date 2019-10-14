@@ -53,15 +53,13 @@
 
 #include "roundrectitem.h"
 
-#include <QGraphicsObject>
-#include <QLinearGradient>
 #include <QVector>
 
 //! [0]
 class FlippablePad : public RoundRectItem
 {
 public:
-    explicit FlippablePad(const QSize &size, QGraphicsItem *parent = 0);
+    explicit FlippablePad(const QSize &size, QGraphicsItem *parent = nullptr);
 
     RoundRectItem *iconAt(int column, int row) const;
 

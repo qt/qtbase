@@ -48,6 +48,10 @@
 #include "qoperatingsystemversion_p.h"
 #if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINRT)
 #include "qoperatingsystemversion_win_p.h"
+#  if QT_CONFIG(settings)
+#    include "qsettings.h"
+#    include "qvariant.h"
+#  endif
 #endif
 #include <private/qlocale_tools_p.h>
 
@@ -2202,12 +2206,36 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 QT_WARNING_POP
 #endif
 
+static QString readRegistryString(const QString &key, const QString &subKey)
+{
+#if QT_CONFIG(settings)
+    QSettings settings(key, QSettings::NativeFormat);
+    return settings.value(subKey).toString();
+#else
+    Q_UNUSED(key);
+    Q_UNUSED(subKey);
+    return QString();
+#endif
+}
+
+static inline QString windowsVersionKey() { return QStringLiteral(R"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion)"); }
+
+static inline QString windows10ReleaseId()
+{
+    return readRegistryString(windowsVersionKey(), QStringLiteral("ReleaseId"));
+}
+
+static inline QString windows7Build()
+{
+    return readRegistryString(windowsVersionKey(), QStringLiteral("CurrentBuild"));
+}
+
 static QString winSp_helper()
 {
     const auto osv = qWindowsVersionInfo();
     const qint16 major = osv.wServicePackMajor;
     if (major) {
-        QString sp = QStringLiteral(" SP ") + QString::number(major);
+        QString sp = QStringLiteral("SP ") + QString::number(major);
         const qint16 minor = osv.wServicePackMinor;
         if (minor)
             sp += QLatin1Char('.') + QString::number(minor);
@@ -2920,19 +2948,34 @@ QString QSysInfo::prettyProductName()
 {
 #if (defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN)
     const auto version = QOperatingSystemVersion::current();
+    const int majorVersion = version.majorVersion();
+    const QString versionString = QString::number(majorVersion) + QLatin1Char('.')
+        + QString::number(version.minorVersion());
+    QString result = version.name() + QLatin1Char(' ');
     const char *name = osVer_helper(version);
-    if (name)
-        return version.name() + QLatin1Char(' ') + QLatin1String(name)
-#    if defined(Q_OS_WIN)
-            + winSp_helper()
-#    endif
-            + QLatin1String(" (") + QString::number(version.majorVersion())
-            + QLatin1Char('.') + QString::number(version.minorVersion())
-            + QLatin1Char(')');
-      else
-        return version.name() + QLatin1Char(' ')
-            + QString::number(version.majorVersion()) + QLatin1Char('.')
-            + QString::number(version.minorVersion());
+    if (!name)
+        return result + versionString;
+    result += QLatin1String(name);
+#  if !defined(Q_OS_WIN) || defined(Q_OS_WINRT)
+    return result + QLatin1String(" (") + versionString + QLatin1Char(')');
+#  else
+    // (resembling winver.exe): Windows 10 "Windows 10 Version 1809"
+    if (majorVersion >= 10) {
+        const auto releaseId = windows10ReleaseId();
+        if (!releaseId.isEmpty())
+            result += QLatin1String(" Version ") + releaseId;
+        return result;
+    }
+    // Windows 7: "Windows 7 Version 6.1 (Build 7601: Service Pack 1)"
+    result += QLatin1String(" Version ") + versionString + QLatin1String(" (");
+    const auto build = windows7Build();
+    if (!build.isEmpty())
+        result += QLatin1String("Build ") + build;
+    const auto servicePack = winSp_helper();
+    if (!servicePack.isEmpty())
+        result += QLatin1String(": ") + servicePack;
+    return result + QLatin1Char(')');
+#  endif // Windows
 #elif defined(Q_OS_HAIKU)
     return QLatin1String("Haiku ") + productVersion();
 #elif defined(Q_OS_UNIX)

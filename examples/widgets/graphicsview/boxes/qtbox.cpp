@@ -50,28 +50,23 @@
 
 #include "qtbox.h"
 
-const qreal ROTATE_SPEED_X = 30.0 / 1000.0;
-const qreal ROTATE_SPEED_Y = 20.0 / 1000.0;
-const qreal ROTATE_SPEED_Z = 40.0 / 1000.0;
-const int MAX_ITEM_SIZE = 512;
-const int MIN_ITEM_SIZE = 16;
+constexpr qreal ROTATE_SPEED_X = 30.0 / 1000.0;
+constexpr qreal ROTATE_SPEED_Y = 20.0 / 1000.0;
+constexpr qreal ROTATE_SPEED_Z = 40.0 / 1000.0;
+constexpr int MAX_ITEM_SIZE = 512;
+constexpr int MIN_ITEM_SIZE = 16;
 
 //============================================================================//
 //                                  ItemBase                                  //
 //============================================================================//
 
-ItemBase::ItemBase(int size, int x, int y) : m_size(size), m_isResizing(false)
+ItemBase::ItemBase(int size, int x, int y) : m_size(size), m_startTime(QTime::currentTime())
 {
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemIsFocusable, true);
     setAcceptHoverEvents(true);
     setPos(x, y);
-    m_startTime = QTime::currentTime();
-}
-
-ItemBase::~ItemBase()
-{
 }
 
 QRectF ItemBase::boundingRect() const
@@ -252,10 +247,7 @@ void ItemBase::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
     prepareGeometryChange();
     m_size = int(m_size * qExp(-event->delta() / 600.0));
-    if (m_size > MAX_ITEM_SIZE)
-        m_size = MAX_ITEM_SIZE;
-    else if (m_size < MIN_ITEM_SIZE)
-        m_size = MIN_ITEM_SIZE;
+    m_size = qBound(MIN_ITEM_SIZE, m_size, MAX_ITEM_SIZE);
 }
 
 int ItemBase::type() const
@@ -273,7 +265,7 @@ bool ItemBase::isInResizeArea(const QPointF &pos)
 //                                    QtBox                                   //
 //============================================================================//
 
-QtBox::QtBox(int size, int x, int y) : ItemBase(size, x, y), m_texture(0)
+QtBox::QtBox(int size, int x, int y) : ItemBase(size, x, y)
 {
     for (int i = 0; i < 8; ++i) {
         m_vertices[i].setX(i & 1 ? 0.5f : -0.5f);
@@ -294,8 +286,7 @@ QtBox::QtBox(int size, int x, int y) : ItemBase(size, x, y), m_texture(0)
 
 QtBox::~QtBox()
 {
-    if (m_texture)
-        delete m_texture;
+    delete m_texture;
 }
 
 ItemBase *QtBox::createNew(int size, int x, int y)
@@ -337,7 +328,7 @@ void QtBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_NORMALIZE);
 
-    if(m_texture == 0)
+    if (m_texture == nullptr)
         m_texture = new GLTexture2D(":/res/boxes/qt-logo.jpg", 64, 64);
     m_texture->bind();
     glEnable(GL_TEXTURE_2D);
@@ -405,9 +396,8 @@ void QtBox::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWi
 //============================================================================//
 
 CircleItem::CircleItem(int size, int x, int y) : ItemBase(size, x, y)
-{
-     m_color = QColor::fromHsv(QRandomGenerator::global()->bounded(360), 255, 255);
-}
+    , m_color(QColor::fromHsv(QRandomGenerator::global()->bounded(360), 255, 255))
+{}
 
 void CircleItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
@@ -455,9 +445,8 @@ ItemBase *CircleItem::createNew(int size, int x, int y)
 //============================================================================//
 
 SquareItem::SquareItem(int size, int x, int y) : ItemBase(size, x, y)
-{
-    m_image = QPixmap(":/res/boxes/square.jpg");
-}
+    , m_image(QPixmap(":/res/boxes/square.jpg"))
+{}
 
 void SquareItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {

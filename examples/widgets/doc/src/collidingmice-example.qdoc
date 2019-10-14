@@ -75,7 +75,8 @@
     \section1 Mouse Class Definition
 
     When constructing a mouse item, we first ensure that all the item's
-    private variables are properly initialized:
+    private variables which were no yet initialized directly in the class
+    are properly initialized:
 
     \snippet graphicsview/collidingmice/mouse.cpp 0
 

@@ -52,7 +52,7 @@
 #define PREVIEWFORM_H
 
 #include <QDialog>
-#include <QList>
+#include <QVector>
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
@@ -71,7 +71,7 @@ class PreviewForm : public QDialog
 public:
     explicit PreviewForm(QWidget *parent = nullptr);
 
-    void setCodecList(const QList<QTextCodec *> &list);
+    void setCodecList(const QVector<QTextCodec *> &list);
     void setEncodedData(const QByteArray &data);
     QString decodedString() const { return decodedStr; }
 

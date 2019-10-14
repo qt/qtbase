@@ -45,6 +45,7 @@
 
 #include <QtCore/QThreadStorage>
 #include <QtCore/QThread>
+#include <QtCore/private/qlocking_p.h>
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qopengl_p.h>
@@ -1442,7 +1443,7 @@ QOpenGLContextGroup *QOpenGLContextGroup::currentContextGroup()
 
 void QOpenGLContextGroupPrivate::addContext(QOpenGLContext *ctx)
 {
-    QMutexLocker locker(&m_mutex);
+    const auto locker = qt_scoped_lock(m_mutex);
     m_refs.ref();
     m_shares << ctx;
 }
@@ -1454,7 +1455,7 @@ void QOpenGLContextGroupPrivate::removeContext(QOpenGLContext *ctx)
     bool deleteObject = false;
 
     {
-        QMutexLocker locker(&m_mutex);
+        const auto locker = qt_scoped_lock(m_mutex);
         m_shares.removeOne(ctx);
 
         if (ctx == m_context && !m_shares.isEmpty())
@@ -1502,7 +1503,7 @@ void QOpenGLContextGroupPrivate::cleanup()
 
 void QOpenGLContextGroupPrivate::deletePendingResources(QOpenGLContext *ctx)
 {
-    QMutexLocker locker(&m_mutex);
+    const auto locker = qt_scoped_lock(m_mutex);
 
     const QList<QOpenGLSharedResource *> pending = m_pendingDeletion;
     m_pendingDeletion.clear();
@@ -1543,7 +1544,7 @@ void QOpenGLContextGroupPrivate::deletePendingResources(QOpenGLContext *ctx)
 QOpenGLSharedResource::QOpenGLSharedResource(QOpenGLContextGroup *group)
     : m_group(group)
 {
-    QMutexLocker locker(&m_group->d_func()->m_mutex);
+    const auto locker = qt_scoped_lock(m_group->d_func()->m_mutex);
     m_group->d_func()->m_sharedResources << this;
 }
 
@@ -1559,7 +1560,7 @@ void QOpenGLSharedResource::free()
         return;
     }
 
-    QMutexLocker locker(&m_group->d_func()->m_mutex);
+    const auto locker = qt_scoped_lock(m_group->d_func()->m_mutex);
     m_group->d_func()->m_sharedResources.removeOne(this);
     m_group->d_func()->m_pendingDeletion << this;
 

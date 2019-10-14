@@ -58,7 +58,6 @@ class QDesktopWidget;
 class QStyle;
 class QEventLoop;
 class QIcon;
-template <typename T> class QList;
 class QLocale;
 class QPlatformNativeInterface;
 

@@ -1465,7 +1465,7 @@ QDate QDate::addMonths(int nmonths, QCalendar cal) const
 }
 
 /*!
-  \override
+  \overload
 */
 
 QDate QDate::addMonths(int nmonths) const
@@ -1530,7 +1530,7 @@ QDate QDate::addYears(int nyears, QCalendar cal) const
 }
 
 /*!
-  \override
+    \overload
 */
 
 QDate QDate::addYears(int nyears) const
@@ -3432,15 +3432,15 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     datetime by adding a number of seconds, days, months, or years.
 
     QDateTime can describe datetimes with respect to \l{Qt::LocalTime}{local
-    time}, to \l{Qt::UTC}{UTC}, to a specified \l{Qt::OffsetFromUTC}{offset
-    from UTC} or to a specified \l{Qt::TimeZone}{time zone}, in conjunction
-    with the QTimeZone class. For example, a time zone of "Europe/Berlin" will
-    apply the daylight-saving rules as used in Germany since 1970. In contrast,
-    an offset from UTC of +3600 seconds is one hour ahead of UTC (usually
-    written in ISO standard notation as "UTC+01:00"), with no daylight-saving
-    offset or changes. When using either local time or a specified time zone,
-    time-zone transitions such as the starts and ends of daylight-saving time
-    (DST) are taken into account. The choice of system used to represent a
+    time}, to \l{Qt::UTC}{UTC}, to a specified \l{Qt::OffsetFromUTC}{offset from
+    UTC} or to a specified \l{Qt::TimeZone}{time zone}, in conjunction with the
+    QTimeZone class. For example, a time zone of "Europe/Berlin" will apply the
+    daylight-saving rules as used in Germany since 1970. In contrast, an offset
+    from UTC of +3600 seconds is one hour ahead of UTC (usually written in ISO
+    standard notation as "UTC+01:00"), with no daylight-saving offset or
+    changes. When using either local time or a specified time zone, time-zone
+    transitions such as the starts and ends of daylight-saving time (DST; but
+    see below) are taken into account. The choice of system used to represent a
     datetime is described as its "timespec".
 
     A QDateTime object is typically created either by giving a date and time
@@ -3528,11 +3528,13 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 
     The range of valid dates taking DST into account is 1970-01-01 to the
     present, and rules are in place for handling DST correctly until 2037-12-31,
-    but these could change. For dates falling outside that range, QDateTime
-    makes a \e{best guess} using the rules for year 1970 or 2037, but we can't
-    guarantee accuracy. This means QDateTime doesn't take into account changes
-    in a time zone before 1970, even if the system's time zone database provides
-    that information.
+    but these could change. For dates after 2037, QDateTime makes a \e{best
+    guess} using the rules for year 2037, but we can't guarantee accuracy;
+    indeed, for \e{any} future date, the time-zone may change its rules before
+    that date comes around. For dates before 1970, QDateTime doesn't take DST
+    changes into account, even if the system's time zone database provides that
+    information, although it does take into account changes to the time-zone's
+    standard offset, where this information is available.
 
     \section2 Offsets From UTC
 
@@ -3546,6 +3548,7 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 */
 
 /*!
+    \since 5.14
     \enum QDateTime::YearRange
 
     This enumerated type describes the range of years (in the Gregorian
@@ -3797,17 +3800,22 @@ QTimeZone QDateTime::timeZone() const
 /*!
     \since 5.2
 
-    Returns the current Offset From UTC in seconds.
+    Returns this date-time's Offset From UTC in seconds.
 
-    If the timeSpec() is Qt::OffsetFromUTC this will be the value originally set.
+    The result depends on timeSpec():
+    \list
+    \li \c Qt::UTC The offset is 0.
+    \li \c Qt::OffsetFromUTC The offset is the value originally set.
+    \li \c Qt::LocalTime The local time's offset from UTC is returned.
+    \li \c Qt::TimeZone The offset used by the time-zone is returned.
+    \endlist
 
-    If the timeSpec() is Qt::TimeZone this will be the offset effective in the
-    Time Zone including any Daylight-Saving Offset.
-
-    If the timeSpec() is Qt::LocalTime this will be the difference between the
-    Local Time and UTC including any Daylight-Saving Offset.
-
-    If the timeSpec() is Qt::UTC this will be 0.
+    For the last two, the offset at this date and time will be returned, taking
+    account of Daylight-Saving Offset unless the date precedes the start of
+    1970. The offset is the difference between the local time or time in the
+    given time-zone and UTC time; it is positive in time-zones ahead of UTC
+    (East of The Prime Meridian), negative for those behind UTC (West of The
+    Prime Meridian).
 
     \sa setOffsetFromUtc()
 */
@@ -3853,6 +3861,9 @@ int QDateTime::offsetFromUtc() const
 
 QString QDateTime::timeZoneAbbreviation() const
 {
+    if (!isValid())
+        return QString();
+
     switch (getSpec(d)) {
     case Qt::UTC:
         return QLatin1String("UTC");
@@ -3887,6 +3898,9 @@ QString QDateTime::timeZoneAbbreviation() const
 
 bool QDateTime::isDaylightTime() const
 {
+    if (!isValid())
+        return false;
+
     switch (getSpec(d)) {
     case Qt::UTC:
     case Qt::OffsetFromUTC:
@@ -4753,17 +4767,24 @@ QDateTime QDateTime::toTimeZone(const QTimeZone &timeZone) const
     Returns \c true if this datetime is equal to the \a other datetime;
     otherwise returns \c false.
 
+    Since 5.14, all invalid datetimes are equal to one another and differ from
+    all other datetimes.
+
     \sa operator!=()
 */
 
 bool QDateTime::operator==(const QDateTime &other) const
 {
-    if (getSpec(d) == Qt::LocalTime
-        && getStatus(d) == getStatus(other.d)) {
+    if (!isValid())
+        return !other.isValid();
+    if (!other.isValid())
+        return false;
+
+    if (getSpec(d) == Qt::LocalTime && getStatus(d) == getStatus(other.d))
         return getMSecs(d) == getMSecs(other.d);
-    }
+
     // Convert to UTC and compare
-    return (toMSecsSinceEpoch() == other.toMSecsSinceEpoch());
+    return toMSecsSinceEpoch() == other.toMSecsSinceEpoch();
 }
 
 /*!
@@ -4772,8 +4793,9 @@ bool QDateTime::operator==(const QDateTime &other) const
     Returns \c true if this datetime is different from the \a other
     datetime; otherwise returns \c false.
 
-    Two datetimes are different if either the date, the time, or the
-    time zone components are different.
+    Two datetimes are different if either the date, the time, or the time zone
+    components are different. Since 5.14, any invalid datetime is less than all
+    valid datetimes.
 
     \sa operator==()
 */
@@ -4785,12 +4807,16 @@ bool QDateTime::operator==(const QDateTime &other) const
 
 bool QDateTime::operator<(const QDateTime &other) const
 {
-    if (getSpec(d) == Qt::LocalTime
-        && getStatus(d) == getStatus(other.d)) {
+    if (!isValid())
+        return other.isValid();
+    if (!other.isValid())
+        return false;
+
+    if (getSpec(d) == Qt::LocalTime && getStatus(d) == getStatus(other.d))
         return getMSecs(d) < getMSecs(other.d);
-    }
+
     // Convert to UTC and compare
-    return (toMSecsSinceEpoch() < other.toMSecsSinceEpoch());
+    return toMSecsSinceEpoch() < other.toMSecsSinceEpoch();
 }
 
 /*!
@@ -5841,7 +5867,7 @@ uint qHash(const QDateTime &key, uint seed)
     // QDate/QTime/spec/offset because QDateTime::operator== converts both arguments
     // to the same timezone. If we don't, qHash would return different hashes for
     // two QDateTimes that are equivalent once converted to the same timezone.
-    return qHash(key.toMSecsSinceEpoch(), seed);
+    return key.isValid() ? qHash(key.toMSecsSinceEpoch(), seed) : seed;
 }
 
 /*! \fn uint qHash(const QDate &key, uint seed = 0)

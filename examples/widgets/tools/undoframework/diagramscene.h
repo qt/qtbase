@@ -66,7 +66,7 @@ class DiagramScene : public QGraphicsScene
     Q_OBJECT
 
 public:
-    DiagramScene(QObject *parent = 0);
+    DiagramScene(QObject *parent = nullptr);
 
 signals:
     void itemMoved(DiagramItem *movedItem, const QPointF &movedFromPosition);
@@ -76,7 +76,7 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
 private:
-    QGraphicsItem *movingItem;
+    QGraphicsItem *movingItem = nullptr;
     QPointF oldPos;
 };
 //! [0]

@@ -414,7 +414,7 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
             } else {
                 // We've read all frames now. Return an end marker
                 haveReadAll = true;
-                return QFrameInfo::endMarker();
+                return frameNumber == greatestFrameNumber + 1 ? QFrameInfo::endMarker() : QFrameInfo();
             }
         }
     }

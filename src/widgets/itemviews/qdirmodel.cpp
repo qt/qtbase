@@ -39,6 +39,8 @@
 
 #include "qdirmodel.h"
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
 #include <qfile.h>
 #include <qfilesystemmodel.h>
 #include <qurl.h>
@@ -1372,3 +1374,5 @@ QFileInfo QDirModelPrivate::resolvedInfo(QFileInfo info)
 QT_END_NAMESPACE
 
 #include "moc_qdirmodel.cpp"
+
+#endif // QT_DEPRECATED_SINCE(5, 15)

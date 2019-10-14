@@ -79,7 +79,7 @@ struct QVkBuffer : public QRhiBuffer
 
     VkBuffer buffers[QVK_FRAMES_IN_FLIGHT];
     QVkAlloc allocations[QVK_FRAMES_IN_FLIGHT];
-    QVector<QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate> pendingDynamicUpdates[QVK_FRAMES_IN_FLIGHT];
+    QVarLengthArray<QRhiResourceUpdateBatchPrivate::BufferOp, 16> pendingDynamicUpdates[QVK_FRAMES_IN_FLIGHT];
     VkBuffer stagingBuffers[QVK_FRAMES_IN_FLIGHT];
     QVkAlloc stagingAllocations[QVK_FRAMES_IN_FLIGHT];
     struct UsageState {
@@ -232,7 +232,7 @@ struct QVkShaderResourceBindings : public QRhiShaderResourceBindings
     void release() override;
     bool build() override;
 
-    QVector<QRhiShaderResourceBinding> sortedBindings;
+    QVarLengthArray<QRhiShaderResourceBinding, 8> sortedBindings;
     int poolIndex = -1;
     VkDescriptorSetLayout layout = VK_NULL_HANDLE;
     VkDescriptorSet descSets[QVK_FRAMES_IN_FLIGHT]; // multiple sets to support dynamic buffers
@@ -268,7 +268,7 @@ struct QVkShaderResourceBindings : public QRhiShaderResourceBindings
             BoundStorageBufferData sbuf;
         };
     };
-    QVector<BoundResourceData> boundResourceData[QVK_FRAMES_IN_FLIGHT];
+    QVarLengthArray<BoundResourceData, 8> boundResourceData[QVK_FRAMES_IN_FLIGHT];
 
     friend class QRhiVulkan;
 };
@@ -711,7 +711,9 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
-    void makeThreadLocalNativeContextCurrent() override;
+    bool makeThreadLocalNativeContextCurrent() override;
+    void releaseCachedResources() override;
+    bool isDeviceLost() const override;
 
     VkResult createDescriptorPool(VkDescriptorPool *pool);
     bool allocateDescriptorSet(VkDescriptorSetAllocateInfo *allocInfo, VkDescriptorSet *result, int *resultPoolIndex);
@@ -730,7 +732,8 @@ public:
                                  VkSampleCountFlagBits samples,
                                  VkFormat colorFormat);
     bool createOffscreenRenderPass(VkRenderPass *rp,
-                                   const QVector<QRhiColorAttachment> &colorAttachments,
+                                   const QRhiColorAttachment *firstColorAttachment,
+                                   const QRhiColorAttachment *lastColorAttachment,
                                    bool preserveColor,
                                    bool preserveDs,
                                    QRhiRenderBuffer *depthStencilBuffer,
@@ -803,6 +806,7 @@ public:
     VkDeviceSize ubufAlign;
     VkDeviceSize texbufAlign;
     bool hasWideLines = false;
+    bool deviceLost = false;
 
     bool debugMarkersAvailable = false;
     bool vertexAttribDivisorAvailable = false;
@@ -849,17 +853,25 @@ public:
         VkFence cmdFence = VK_NULL_HANDLE;
     } ofr;
 
-    struct ActiveReadback {
+    struct TextureReadback {
         int activeFrameSlot = -1;
         QRhiReadbackDescription desc;
         QRhiReadbackResult *result;
-        VkBuffer buf;
-        QVkAlloc bufAlloc;
-        quint32 bufSize;
+        VkBuffer stagingBuf;
+        QVkAlloc stagingAlloc;
+        quint32 byteSize;
         QSize pixelSize;
         QRhiTexture::Format format;
     };
-    QVector<ActiveReadback> activeReadbacks;
+    QVector<TextureReadback> activeTextureReadbacks;
+    struct BufferReadback {
+        int activeFrameSlot = -1;
+        QRhiBufferReadbackResult *result;
+        int byteSize;
+        VkBuffer stagingBuf;
+        QVkAlloc stagingAlloc;
+    };
+    QVector<BufferReadback> activeBufferReadbacks;
 
     struct DeferredReleaseEntry {
         enum Type {
@@ -929,7 +941,8 @@ public:
 
 Q_DECLARE_TYPEINFO(QRhiVulkan::DescriptorPoolData, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QRhiVulkan::DeferredReleaseEntry, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiVulkan::ActiveReadback, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiVulkan::TextureReadback, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiVulkan::BufferReadback, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 

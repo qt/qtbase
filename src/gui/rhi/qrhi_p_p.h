@@ -156,7 +156,9 @@ public:
     virtual int resourceLimit(QRhi::ResourceLimit limit) const = 0;
     virtual const QRhiNativeHandles *nativeHandles() = 0;
     virtual void sendVMemStatsToProfiler() = 0;
-    virtual void makeThreadLocalNativeContextCurrent() = 0;
+    virtual bool makeThreadLocalNativeContextCurrent() = 0;
+    virtual void releaseCachedResources() = 0;
+    virtual bool isDeviceLost() const = 0;
 
     bool isCompressedFormat(QRhiTexture::Format format) const;
     void compressedFormatInfo(QRhiTexture::Format format, const QSize &size,
@@ -203,7 +205,11 @@ public:
         cleanupCallbacks.append(callback);
     }
 
+    bool sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps);
+
     QRhi *q;
+
+    static const int MAX_SHADER_CACHE_ENTRIES = 128;
 
 protected:
     bool debugMarkers = false;
@@ -214,7 +220,7 @@ private:
     QRhi::Implementation implType;
     QThread *implThread;
     QRhiProfiler profiler;
-    QVector<QRhiResourceUpdateBatch *> resUpdPool;
+    QVarLengthArray<QRhiResourceUpdateBatch *, 4> resUpdPool;
     QBitArray resUpdPoolMap;
     QSet<QRhiResource *> resources;
     QSet<QRhiResource *> pendingReleaseAndDestroyResources;
@@ -229,27 +235,37 @@ bool qrhi_toTopLeftRenderTargetRect(const QSize &outputSize, const std::array<T,
                                     T *x, T *y, T *w, T *h)
 {
     // x,y are bottom-left in QRhiScissor and QRhiViewport but top-left in
-    // Vulkan/Metal/D3D. We also need proper clamping since some
-    // validation/debug layers are allergic to out of bounds scissor or
-    // viewport rects.
+    // Vulkan/Metal/D3D. Our input is an OpenGL-style scissor rect where both
+    // negative x or y, and partly or completely out of bounds rects are
+    // allowed. The only thing the input here cannot have is a negative width
+    // or height. We must handle all other input gracefully, clamping to a zero
+    // width or height rect in the worst case, and ensuring the resulting rect
+    // is inside the rendertarget's bounds because some APIs' validation/debug
+    // layers are allergic to out of bounds scissor or viewport rects.
 
     const T outputWidth = outputSize.width();
     const T outputHeight = outputSize.height();
     const T inputWidth = r[2];
     const T inputHeight = r[3];
 
-    *x = qMax<T>(0, r[0]);
-    *y = qMax<T>(0, outputHeight - (r[1] + inputHeight));
-    *w = inputWidth;
-    *h = inputHeight;
-
-    if (*x >= outputWidth || *y >= outputHeight)
+    if (inputWidth < 0 || inputHeight < 0)
         return false;
 
+    *x = r[0];
+    *y = outputHeight - (r[1] + inputHeight);
+
+    const T widthOffset = *x < 0 ? -*x : 0;
+    const T heightOffset = *y < 0 ? -*y : 0;
+
+    *x = qBound<T>(0, *x, outputWidth - 1);
+    *y = qBound<T>(0, *y, outputHeight - 1);
+    *w = qMax<T>(0, inputWidth - widthOffset);
+    *h = qMax<T>(0, inputHeight - heightOffset);
+
     if (*x + *w > outputWidth)
-        *w = outputWidth - *x;
+        *w = qMax<T>(0, outputWidth - *x - 1);
     if (*y + *h > outputHeight)
-        *h = outputHeight - *y;
+        *h = qMax<T>(0, outputHeight - *y - 1);
 
     return true;
 }
@@ -257,26 +273,49 @@ bool qrhi_toTopLeftRenderTargetRect(const QSize &outputSize, const std::array<T,
 class QRhiResourceUpdateBatchPrivate
 {
 public:
-    struct DynamicBufferUpdate {
-        DynamicBufferUpdate() { }
-        DynamicBufferUpdate(QRhiBuffer *buf_, int offset_, int size_, const void *data_)
-            : buf(buf_), offset(offset_), data(reinterpret_cast<const char *>(data_), size_)
-        { }
-
-        QRhiBuffer *buf = nullptr;
-        int offset = 0;
+    struct BufferOp {
+        enum Type {
+            DynamicUpdate,
+            StaticUpload,
+            Read
+        };
+        Type type;
+        QRhiBuffer *buf;
+        int offset;
         QByteArray data;
-    };
+        int readSize;
+        QRhiBufferReadbackResult *result;
 
-    struct StaticBufferUpload {
-        StaticBufferUpload() { }
-        StaticBufferUpload(QRhiBuffer *buf_, int offset_, int size_, const void *data_)
-            : buf(buf_), offset(offset_), data(reinterpret_cast<const char *>(data_), size_ ? size_ : buf_->size())
-        { }
+        static BufferOp dynamicUpdate(QRhiBuffer *buf, int offset, int size, const void *data)
+        {
+            BufferOp op;
+            op.type = DynamicUpdate;
+            op.buf = buf;
+            op.offset = offset;
+            op.data = QByteArray(reinterpret_cast<const char *>(data), size ? size : buf->size());
+            return op;
+        }
 
-        QRhiBuffer *buf = nullptr;
-        int offset = 0;
-        QByteArray data;
+        static BufferOp staticUpload(QRhiBuffer *buf, int offset, int size, const void *data)
+        {
+            BufferOp op;
+            op.type = StaticUpload;
+            op.buf = buf;
+            op.offset = offset;
+            op.data = QByteArray(reinterpret_cast<const char *>(data), size ? size : buf->size());
+            return op;
+        }
+
+        static BufferOp read(QRhiBuffer *buf, int offset, int size, QRhiBufferReadbackResult *result)
+        {
+            BufferOp op;
+            op.type = Read;
+            op.buf = buf;
+            op.offset = offset;
+            op.readSize = size;
+            op.result = result;
+            return op;
+        }
     };
 
     struct TextureOp {
@@ -284,74 +323,62 @@ public:
             Upload,
             Copy,
             Read,
-            MipGen
+            GenMips
         };
         Type type;
-        struct SUpload {
-            QRhiTexture *tex = nullptr;
-            // Specifying multiple uploads for a subresource must be supported.
-            // In the backend this can then end up, where applicable, as a
-            // single, batched copy operation with only one set of barriers.
-            // This helps when doing for example glyph cache fills.
-            QVector<QRhiTextureSubresourceUploadDescription> subresDesc[QRhi::MAX_LAYERS][QRhi::MAX_LEVELS];
-        } upload;
-        struct SCopy {
-            QRhiTexture *dst = nullptr;
-            QRhiTexture *src = nullptr;
-            QRhiTextureCopyDescription desc;
-        } copy;
-        struct SRead {
-            QRhiReadbackDescription rb;
-            QRhiReadbackResult *result;
-        } read;
-        struct SMipGen {
-            QRhiTexture *tex = nullptr;
-            int layer = 0;
-        } mipgen;
+        QRhiTexture *dst;
+        // Specifying multiple uploads for a subresource must be supported.
+        // In the backend this can then end up, where applicable, as a
+        // single, batched copy operation with only one set of barriers.
+        // This helps when doing for example glyph cache fills.
+        QVector<QRhiTextureSubresourceUploadDescription> subresDesc[QRhi::MAX_LAYERS][QRhi::MAX_LEVELS];
+        QRhiTexture *src;
+        QRhiTextureCopyDescription desc;
+        QRhiReadbackDescription rb;
+        QRhiReadbackResult *result;
+        int layer;
 
-        static TextureOp textureUpload(QRhiTexture *tex, const QRhiTextureUploadDescription &desc)
+        static TextureOp upload(QRhiTexture *tex, const QRhiTextureUploadDescription &desc)
         {
             TextureOp op;
             op.type = Upload;
-            op.upload.tex = tex;
-            const QVector<QRhiTextureUploadEntry> &entries(desc.entries());
-            for (const QRhiTextureUploadEntry &entry : entries)
-                op.upload.subresDesc[entry.layer()][entry.level()].append(entry.description());
+            op.dst = tex;
+            for (auto it = desc.cbeginEntries(), itEnd = desc.cendEntries(); it != itEnd; ++it)
+                op.subresDesc[it->layer()][it->level()].append(it->description());
             return op;
         }
 
-        static TextureOp textureCopy(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc)
+        static TextureOp copy(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc)
         {
             TextureOp op;
             op.type = Copy;
-            op.copy.dst = dst;
-            op.copy.src = src;
-            op.copy.desc = desc;
+            op.dst = dst;
+            op.src = src;
+            op.desc = desc;
             return op;
         }
 
-        static TextureOp textureRead(const QRhiReadbackDescription &rb, QRhiReadbackResult *result)
+        static TextureOp read(const QRhiReadbackDescription &rb, QRhiReadbackResult *result)
         {
             TextureOp op;
             op.type = Read;
-            op.read.rb = rb;
-            op.read.result = result;
+            op.rb = rb;
+            op.result = result;
             return op;
         }
 
-        static TextureOp textureMipGen(QRhiTexture *tex, int layer)
+        static TextureOp genMips(QRhiTexture *tex, int layer)
         {
             TextureOp op;
-            op.type = MipGen;
-            op.mipgen.tex = tex;
-            op.mipgen.layer = layer;
+            op.type = GenMips;
+            op.dst = tex;
+            op.layer = layer;
             return op;
         }
     };
 
-    QVector<DynamicBufferUpdate> dynamicBufferUpdates;
-    QVector<StaticBufferUpload> staticBufferUploads;
-    QVector<TextureOp> textureOps;
+    QVarLengthArray<BufferOp, 1024> bufferOps;
+    QVarLengthArray<TextureOp, 256> textureOps;
 
     QRhiResourceUpdateBatch *q = nullptr;
     QRhiImplementation *rhi = nullptr;
@@ -363,60 +390,8 @@ public:
     static QRhiResourceUpdateBatchPrivate *get(QRhiResourceUpdateBatch *b) { return b->d; }
 };
 
-Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::DynamicBufferUpdate, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::StaticBufferUpload, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::BufferOp, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(QRhiResourceUpdateBatchPrivate::TextureOp, Q_MOVABLE_TYPE);
-
-class Q_GUI_EXPORT QRhiShaderResourceBindingPrivate
-{
-public:
-    QRhiShaderResourceBindingPrivate()
-        : ref(1)
-    {
-    }
-
-    QRhiShaderResourceBindingPrivate(const QRhiShaderResourceBindingPrivate *other)
-        : ref(1),
-          binding(other->binding),
-          stage(other->stage),
-          type(other->type),
-          u(other->u)
-    {
-    }
-
-    static QRhiShaderResourceBindingPrivate *get(QRhiShaderResourceBinding *s) { return s->d; }
-    static const QRhiShaderResourceBindingPrivate *get(const QRhiShaderResourceBinding *s) { return s->d; }
-
-    QAtomicInt ref;
-    int binding;
-    QRhiShaderResourceBinding::StageFlags stage;
-    QRhiShaderResourceBinding::Type type;
-    struct UniformBufferData {
-        QRhiBuffer *buf;
-        int offset;
-        int maybeSize;
-        bool hasDynamicOffset;
-    };
-    struct SampledTextureData {
-        QRhiTexture *tex;
-        QRhiSampler *sampler;
-    };
-    struct StorageImageData {
-        QRhiTexture *tex;
-        int level;
-    };
-    struct StorageBufferData {
-        QRhiBuffer *buf;
-        int offset;
-        int maybeSize;
-    };
-    union {
-        UniformBufferData ubuf;
-        SampledTextureData stex;
-        StorageImageData simage;
-        StorageBufferData sbuf;
-    } u;
-};
 
 template<typename T>
 struct QRhiBatchedBindings
@@ -540,28 +515,32 @@ public:
                          const UsageState &state);
 
     struct Buffer {
-        QRhiBuffer *buf;
         int slot;
         BufferAccess access;
         BufferStage stage;
         UsageState stateAtPassBegin;
     };
-    const QVector<Buffer> *buffers() const { return &m_buffers; }
+
+    using BufferIterator = QHash<QRhiBuffer *, Buffer>::const_iterator;
+    BufferIterator cbeginBuffers() const { return m_buffers.cbegin(); }
+    BufferIterator cendBuffers() const { return m_buffers.cend(); }
 
     struct Texture {
-        QRhiTexture *tex;
         TextureAccess access;
         TextureStage stage;
         UsageState stateAtPassBegin;
     };
-    const QVector<Texture> *textures() const { return &m_textures; }
+
+    using TextureIterator = QHash<QRhiTexture *, Texture>::const_iterator;
+    TextureIterator cbeginTextures() const { return m_textures.cbegin(); }
+    TextureIterator cendTextures() const { return m_textures.cend(); }
 
     static BufferStage toPassTrackerBufferStage(QRhiShaderResourceBinding::StageFlags stages);
     static TextureStage toPassTrackerTextureStage(QRhiShaderResourceBinding::StageFlags stages);
 
 private:
-    QVector<Buffer> m_buffers;
-    QVector<Texture> m_textures;
+    QHash<QRhiBuffer *, Buffer> m_buffers;
+    QHash<QRhiTexture *, Texture> m_textures;
 };
 
 Q_DECLARE_TYPEINFO(QRhiPassResourceTracker::Buffer, Q_MOVABLE_TYPE);

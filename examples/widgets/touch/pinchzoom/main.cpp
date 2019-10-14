@@ -51,11 +51,10 @@
 #include "graphicsview.h"
 #include "mouse.h"
 
-#include <QtWidgets>
+#include <QApplication>
+#include <cmath>
 
-#include <math.h>
-
-static const int MouseCount = 7;
+static constexpr int MouseCount = 7;
 
 //! [0]
 int main(int argc, char **argv)

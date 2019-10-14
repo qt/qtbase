@@ -1,0 +1,34 @@
+qtPrepareTool(MOC_COLLECT_JSON, moc)
+
+QMAKE_MOC_OPTIONS += --output-json
+
+moc_json_header.input = HEADERS
+moc_json_header.output = $$MOC_DIR/$${QMAKE_H_MOD_MOC}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_CPP)}.json
+moc_json_header.CONFIG = no_link moc_verify
+moc_json_header.depends = $$MOC_DIR/$${QMAKE_H_MOD_MOC}${QMAKE_FILE_BASE}$${first(QMAKE_EXT_CPP)}
+moc_json_header.commands = $$escape_expand(\\n)  # force creation of rule
+moc_json_header.variable_out = MOC_JSON_FILES
+
+moc_json_source.input = SOURCES
+moc_json_source.output = $$MOC_DIR/$${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}$${QMAKE_EXT_CPP_MOC}.json
+moc_json_source.CONFIG = no_link moc_verify
+moc_json_source.depends = $$MOC_DIR/$${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}$${QMAKE_EXT_CPP_MOC}
+moc_json_source.commands = $$escape_expand(\\n)  # force creation of rule
+moc_json_source.variable_out = MOC_JSON_FILES
+
+MOC_COLLECT_JSON_OUTPUT = $$lower($$basename(TARGET))_metatypes.json
+
+moc_collect_json.CONFIG += no_link combine
+moc_collect_json.commands = $$MOC_COLLECT_JSON --collect-json -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
+moc_collect_json.input = MOC_JSON_FILES
+moc_collect_json.output = $$MOC_COLLECT_JSON_OUTPUT
+moc_collect_json.name = Collect moc JSON output into central file
+
+install_metatypes {
+    do_install.path = $$[QT_INSTALL_LIBS]/metatypes
+    do_install.files = $$OUT_PWD/$$MOC_COLLECT_JSON_OUTPUT
+    prefix_build: INSTALLS += do_install
+    else: COPIES += do_install
+}
+
+QMAKE_EXTRA_COMPILERS += moc_collect_json moc_json_header moc_json_source

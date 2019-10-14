@@ -48,12 +48,17 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "mainwindow.h"
 #include "diagramscene.h"
 #include "diagramitem.h"
 #include "commands.h"
+
+#include <QAction>
+#include <QGraphicsView>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QUndoView>
 
 //! [0]
 MainWindow::MainWindow()

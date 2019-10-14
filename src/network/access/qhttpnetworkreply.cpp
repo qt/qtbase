@@ -287,14 +287,14 @@ bool QHttpNetworkReply::isPipeliningUsed() const
     return d_func()->pipeliningUsed;
 }
 
-bool QHttpNetworkReply::isSpdyUsed() const
+bool QHttpNetworkReply::isHttp2Used() const
 {
-    return d_func()->spdyUsed;
+    return d_func()->h2Used;
 }
 
-void QHttpNetworkReply::setSpdyWasUsed(bool spdy)
+void QHttpNetworkReply::setHttp2WasUsed(bool h2)
 {
-    d_func()->spdyUsed = spdy;
+    d_func()->h2Used = h2;
 }
 
 qint64 QHttpNetworkReply::removedContentLength() const
@@ -324,15 +324,11 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
       forceConnectionCloseEnabled(false),
       lastChunkRead(false),
       currentChunkSize(0), currentChunkRead(0), readBufferMaxSize(0),
-      windowSizeDownload(65536), // 64K initial window size according to SPDY standard
-      windowSizeUpload(65536), // 64K initial window size according to SPDY standard
-      currentlyReceivedDataInWindow(0),
-      currentlyUploadedDataInWindow(0),
       totallyUploadedData(0),
       removedContentLength(-1),
       connection(0),
       autoDecompress(false), responseData(), requestIsPrepared(false)
-      ,pipeliningUsed(false), spdyUsed(false), downstreamLimited(false)
+      ,pipeliningUsed(false), h2Used(false), downstreamLimited(false)
       ,userProvidedDownloadBuffer(0)
 #ifndef QT_NO_COMPRESS
       ,inflateStrm(0)

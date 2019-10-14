@@ -473,7 +473,7 @@ QMatchData QCompletionEngine::filterHistory()
     if (curParts.count() <= 1 || c->proxy->showAll || !source)
         return QMatchData();
 
-#if QT_CONFIG(dirmodel)
+#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
     const bool isDirModel = (qobject_cast<QDirModel *>(source) != nullptr);
 #else
     const bool isDirModel = false;
@@ -903,7 +903,7 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
         QModelIndex si = proxy->mapToSource(index);
         si = si.sibling(si.row(), column); // for clicked()
         completion = q->pathFromIndex(si);
-#if QT_CONFIG(dirmodel)
+#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
         // add a trailing separator in inline
         if (mode == QCompleter::InlineCompletion) {
             if (qobject_cast<QDirModel *>(proxy->sourceModel()) && QFileInfo(completion).isDir())
@@ -1125,7 +1125,7 @@ void QCompleter::setModel(QAbstractItemModel *model)
         setPopup(d->popup); // set the model and make new connections
     if (oldModel && oldModel->QObject::parent() == this)
         delete oldModel;
-#if QT_CONFIG(dirmodel)
+#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
     if (qobject_cast<QDirModel *>(model)) {
 #if defined(Q_OS_WIN)
         setCaseSensitivity(Qt::CaseInsensitive);
@@ -1846,7 +1846,7 @@ QString QCompleter::pathFromIndex(const QModelIndex& index) const
         return QString();
     bool isDirModel = false;
     bool isFsModel = false;
-#if QT_CONFIG(dirmodel)
+#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
     isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != nullptr;
 #endif
 #if QT_CONFIG(filesystemmodel)
@@ -1895,7 +1895,7 @@ QStringList QCompleter::splitPath(const QString& path) const
 {
     bool isDirModel = false;
     bool isFsModel = false;
-#if QT_CONFIG(dirmodel)
+#if QT_CONFIG(dirmodel) && QT_DEPRECATED_SINCE(5, 15)
     Q_D(const QCompleter);
     isDirModel = qobject_cast<QDirModel *>(d->proxy->sourceModel()) != nullptr;
 #endif

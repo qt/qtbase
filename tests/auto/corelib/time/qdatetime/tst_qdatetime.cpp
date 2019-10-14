@@ -360,6 +360,7 @@ void tst_QDateTime::ctor()
 
 void tst_QDateTime::operator_eq()
 {
+    QVERIFY(QDateTime() != QDateTime(QDate(1970, 1, 1), QTime(0, 0))); // QTBUG-79006
     QDateTime dt1(QDate(2004, 3, 24), QTime(23, 45, 57), Qt::UTC);
     QDateTime dt2(QDate(2005, 3, 11), QTime(), Qt::UTC);
     dt2 = dt1;
@@ -1675,29 +1676,30 @@ void tst_QDateTime::currentDateTimeUtc2()
 void tst_QDateTime::toSecsSinceEpoch_data()
 {
     QTest::addColumn<QString>("dateTimeStr");
-    QTest::addColumn<bool>("res");
+    QTest::addColumn<bool>("valid");
 
-    QTest::newRow( "data1" ) << str( 1800, 1, 1, 12, 0, 0 ) << false;
-    QTest::newRow( "data2" ) << str( 1969, 1, 1, 12, 0, 0 ) << false;
+    QTest::newRow( "data1" ) << str( 1800, 1, 1, 12, 0, 0 ) << true;
+    QTest::newRow( "data2" ) << str( 1969, 1, 1, 12, 0, 0 ) << true;
     QTest::newRow( "data3" ) << str( 2002, 1, 1, 12, 0, 0 ) << true;
     QTest::newRow( "data4" ) << str( 2002, 6, 1, 12, 0, 0 ) << true;
     QTest::newRow( "data5" ) << QString("INVALID") << false;
     QTest::newRow( "data6" ) << str( 2038, 1, 1, 12, 0, 0 ) << true;
     QTest::newRow( "data7" ) << str( 2063, 4, 5, 12, 0, 0 ) << true; // the day of First Contact
-    QTest::newRow( "data8" ) << str( 2107, 1, 1, 12, 0, 0 )
-                          << bool( sizeof(uint) > 32 && sizeof(time_t) > 32 );
+    QTest::newRow( "data8" ) << str( 2107, 1, 1, 12, 0, 0 ) << true;
 }
 
 void tst_QDateTime::toSecsSinceEpoch()
 {
-    QFETCH( QString, dateTimeStr );
-    QDateTime datetime = dt( dateTimeStr );
+    QFETCH(const QString, dateTimeStr);
+    const QDateTime datetime = dt(dateTimeStr);
+    QFETCH(const bool, valid);
+    QCOMPARE(datetime.isValid(), valid);
 
-    qint64 asSecsSinceEpoch = datetime.toSecsSinceEpoch();
-    QCOMPARE(asSecsSinceEpoch, datetime.toMSecsSinceEpoch() / 1000);
-
-    QDateTime datetime2 = QDateTime::fromSecsSinceEpoch(asSecsSinceEpoch);
-    QCOMPARE(datetime, datetime2);
+    if (valid) {
+        const qint64 asSecsSinceEpoch = datetime.toSecsSinceEpoch();
+        QCOMPARE(asSecsSinceEpoch, datetime.toMSecsSinceEpoch() / 1000);
+        QCOMPARE(QDateTime::fromSecsSinceEpoch(asSecsSinceEpoch), datetime);
+    }
 }
 
 #if QT_DEPRECATED_SINCE(5, 8)
@@ -1725,14 +1727,10 @@ void tst_QDateTime::toTime_t()
     uint asTime_t = datetime.toTime_t();
     QFETCH( bool, res );
     if (res) {
-        QVERIFY( asTime_t != (uint)-1 );
+        QVERIFY(asTime_t != uint(-1));
+        QCOMPARE(QDateTime::fromTime_t(asTime_t), datetime);
     } else {
-        QVERIFY( asTime_t == (uint)-1 );
-    }
-
-    if ( asTime_t != (uint) -1 ) {
-        QDateTime datetime2 = QDateTime::fromTime_t( asTime_t );
-        QCOMPARE(datetime, datetime2);
+        QCOMPARE(asTime_t, uint(-1));
     }
 }
 #endif
@@ -1929,8 +1927,8 @@ void tst_QDateTime::operator_eqeq_data()
 
     QDateTime dateTime1(QDate(2012, 6, 20), QTime(14, 33, 2, 500));
     QDateTime dateTime1a = dateTime1.addMSecs(1);
-    QDateTime dateTime2(QDate(2012, 20, 6), QTime(14, 33, 2, 500));
-    QDateTime dateTime2a = dateTime2.addMSecs(-1);
+    QDateTime dateTime2(QDate(2012, 20, 6), QTime(14, 33, 2, 500)); // Invalid
+    QDateTime dateTime2a = dateTime2.addMSecs(-1); // Still invalid
     QDateTime dateTime3(QDate(1970, 1, 1), QTime(0, 0, 0, 0), Qt::UTC); // UTC epoch
     QDateTime dateTime3a = dateTime3.addDays(1);
     QDateTime dateTime3b = dateTime3.addDays(-1);
@@ -1946,7 +1944,7 @@ void tst_QDateTime::operator_eqeq_data()
     QTest::newRow("data2") << dateTime1a << dateTime1a << true << false;
     QTest::newRow("data3") << dateTime1 << dateTime2 << false << false;
     QTest::newRow("data4") << dateTime1 << dateTime1a << false << false;
-    QTest::newRow("data5") << dateTime2 << dateTime2a << false << false;
+    QTest::newRow("data5") << dateTime2 << dateTime2a << true << false;
     QTest::newRow("data6") << dateTime2 << dateTime3 << false << false;
     QTest::newRow("data7") << dateTime3 << dateTime3a << false << false;
     QTest::newRow("data8") << dateTime3 << dateTime3b << false << false;
@@ -3352,6 +3350,14 @@ void tst_QDateTime::timeZones() const
     QCOMPARE(dt3.timeSpec(), dt1.timeSpec());
     QCOMPARE(dt3.timeZone(), dt1.timeZone());
 
+    // The start of year 1 should be *describable* in any zone (QTBUG-78051)
+    dt3 = QDateTime(QDate(1, 1, 1), QTime(0, 0, 0), ausTz);
+    QVERIFY(dt3.isValid());
+    // Likewise the end of year -1 (a.k.a. 1 BCE).
+    dt3 = dt3.addMSecs(-1);
+    QVERIFY(dt3.isValid());
+    QCOMPARE(dt3, QDateTime(QDate(-1, 12, 31), QTime(23, 59, 59, 999), ausTz));
+
     // Check datastream serialises the time zone
     QByteArray tmp;
     {
@@ -3460,6 +3466,9 @@ void tst_QDateTime::timeZones() const
 
 void tst_QDateTime::systemTimeZoneChange() const
 {
+#ifdef Q_OS_WINRT
+    QSKIP("UWP applications cannot change the system`s time zone (sandboxing)");
+#endif
     // Set the timezone to Brisbane time
     TimeZoneRollback useZone(QByteArray("AEST-10:00"));
 
@@ -3477,9 +3486,6 @@ void tst_QDateTime::systemTimeZoneChange() const
     useZone.reset(QByteArray("IST-05:30"));
 
     QCOMPARE(localDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::LocalTime));
-#ifdef Q_OS_WINRT
-    QEXPECT_FAIL("", "WinRT gets this wrong, QTBUG-71185", Continue);
-#endif
     QVERIFY(localMsecs != localDate.toMSecsSinceEpoch());
     QCOMPARE(utcDate, QDateTime(QDate(2012, 6, 1), QTime(2, 15, 30), Qt::UTC));
     QCOMPARE(utcDate.toMSecsSinceEpoch(), utcMsecs);

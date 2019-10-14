@@ -63,7 +63,7 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 
 public:
-    explicit GLWidget(QWidget *parent = 0);
+    using QOpenGLWidget::QOpenGLWidget;
     ~GLWidget();
 
     QSize minimumSizeHint() const override;
@@ -85,13 +85,13 @@ protected:
 private:
     void makeObject();
 
-    QColor clearColor;
+    QColor clearColor = Qt::black;
     QPoint lastPos;
-    int xRot;
-    int yRot;
-    int zRot;
-    QOpenGLTexture *textures[6];
-    QOpenGLShaderProgram *program;
+    int xRot = 0;
+    int yRot = 0;
+    int zRot = 0;
+    QOpenGLTexture *textures[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+    QOpenGLShaderProgram *program = nullptr;
     QOpenGLBuffer vbo;
 };
 

@@ -50,7 +50,8 @@
 
 #include "iconpreviewarea.h"
 
-#include <QtWidgets>
+#include <QGridLayout>
+#include <QLabel>
 
 //! [0]
 IconPreviewArea::IconPreviewArea(QWidget *parent)

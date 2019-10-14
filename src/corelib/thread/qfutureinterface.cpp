@@ -424,12 +424,7 @@ void QFutureInterfaceBase::setProgressValueAndText(int progressValue,
     }
 }
 
-QMutex *QFutureInterfaceBase::mutex() const
-{
-    return &d->m_mutex;
-}
-
-QMutex &QFutureInterfaceBase::mutex(int) const
+QMutex &QFutureInterfaceBase::mutex() const
 {
     return d->m_mutex;
 }

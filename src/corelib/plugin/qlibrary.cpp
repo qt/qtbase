@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 #  define QLIBRARY_AS_DEBUG true
 #endif
 
-#if defined(Q_OS_UNIX) || defined(Q_CC_MINGW)
+#if defined(Q_OS_UNIX) || (defined(Q_CC_MINGW) && !QT_CONFIG(debug_and_release))
 // We don't use separate debug and release libs on UNIX, so we want
 // to allow loading plugins, regardless of how they were built.
 #  define QT_NO_DEBUG_PLUGIN_CHECK

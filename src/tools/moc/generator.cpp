@@ -1217,18 +1217,22 @@ void Generator::generateStaticMetacall()
             fprintf(out, "%s(", f.name.constData());
             int offset = 1;
 
-            int argsCount = f.arguments.count();
-            for (int j = 0; j < argsCount; ++j) {
-                const ArgumentDef &a = f.arguments.at(j);
-                if (j)
-                    fprintf(out, ",");
-                fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))",a.typeNameForCast.constData(), offset++);
-                isUsed_a = true;
-            }
-            if (f.isPrivateSignal) {
-                if (argsCount > 0)
-                    fprintf(out, ", ");
-                fprintf(out, "%s", "QPrivateSignal()");
+            if (f.isRawSlot) {
+                fprintf(out, "QMethodRawArguments{ _a }");
+            } else {
+                int argsCount = f.arguments.count();
+                for (int j = 0; j < argsCount; ++j) {
+                    const ArgumentDef &a = f.arguments.at(j);
+                    if (j)
+                        fprintf(out, ",");
+                    fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))",a.typeNameForCast.constData(), offset++);
+                    isUsed_a = true;
+                }
+                if (f.isPrivateSignal) {
+                    if (argsCount > 0)
+                        fprintf(out, ", ");
+                    fprintf(out, "%s", "QPrivateSignal()");
+                }
             }
             fprintf(out, ");");
             if (f.normalizedType != "void") {

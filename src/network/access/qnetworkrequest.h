@@ -89,12 +89,10 @@ public:
         DownloadBufferAttribute, // internal
         SynchronousRequestAttribute, // internal
         BackgroundRequestAttribute,
-        SpdyAllowedAttribute,
-        SpdyWasUsedAttribute,
-        EmitAllUploadProgressSignalsAttribute,
+        EmitAllUploadProgressSignalsAttribute = BackgroundRequestAttribute + 3,
         FollowRedirectsAttribute,
-        HTTP2AllowedAttribute,
-        HTTP2WasUsedAttribute,
+        Http2AllowedAttribute,
+        Http2WasUsedAttribute,
         OriginalContentLengthAttribute,
         RedirectPolicyAttribute,
         Http2DirectAttribute,

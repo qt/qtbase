@@ -643,7 +643,9 @@
     This function is called when the item is removed from the scene
     and removes all arrows that are connected to this item. The arrow
     must be removed from the \c arrows list of both its start and end
-    item.
+    item. Since either the start or the end item is the object where
+    this function is currently called, we have to make sure to work on
+    a copy of arrows since removeArrow() is modifying this container.
 
     Here is the \c addArrow() function:
 

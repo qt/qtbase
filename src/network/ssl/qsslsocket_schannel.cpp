@@ -408,13 +408,17 @@ QByteArray createAlpnString(const QByteArrayList &nextAllowedProtocols)
             for (QByteArray proto : nextAllowedProtocols) {
                 if (proto.size() > 255) {
                     qCWarning(lcSsl) << "TLS ALPN extension" << proto
-                                     << "is too long and will be truncated to 255 characters.";
-                    proto = proto.left(255);
+                                     << "is too long and will be ignored.";
+                    continue;
+                } else if (proto.isEmpty()) {
+                    continue;
                 }
                 protocolString += char(proto.length()) + proto;
             }
             return protocolString;
         }();
+        if (names.isEmpty())
+            return alpnString;
 
         const quint16 namesSize = names.size();
         const quint32 alpnId = SecApplicationProtocolNegotiationExt_ALPN;
@@ -824,12 +828,17 @@ bool QSslSocketBackendPrivate::acceptContext()
             &expiry // ptsTimeStamp
     );
 
+    if (status == SEC_E_INCOMPLETE_MESSAGE) {
+        // Need more data
+        return true;
+    }
+
     if (inBuffers[1].BufferType == SECBUFFER_EXTRA) {
         // https://docs.microsoft.com/en-us/windows/desktop/secauthn/extra-buffers-returned-by-schannel
         // inBuffers[1].cbBuffer indicates the amount of bytes _NOT_ processed, the rest need to
         // be stored.
         intermediateBuffer = intermediateBuffer.right(int(inBuffers[1].cbBuffer));
-    } else if (status != SEC_E_INCOMPLETE_MESSAGE) {
+    } else { /* No 'extra' data, message not incomplete */
         intermediateBuffer.clear();
     }
 
@@ -1065,7 +1074,6 @@ bool QSslSocketBackendPrivate::verifyHandshake()
     }
 
     schannelState = SchannelState::Done;
-    peerCertVerified = true;
     return true;
 }
 
@@ -1148,7 +1156,6 @@ void QSslSocketBackendPrivate::reset()
 
     connectionEncrypted = false;
     shutdown = false;
-    peerCertVerified = false;
     renegotiating = false;
 }
 
@@ -1311,7 +1318,9 @@ void QSslSocketBackendPrivate::transmit()
 #endif
                     intermediateBuffer = ciphertext.right(int(dataBuffer[3].cbBuffer));
                 }
-            } else if (status == SEC_E_INCOMPLETE_MESSAGE) {
+            }
+
+            if (status == SEC_E_INCOMPLETE_MESSAGE) {
                 // Need more data before we can decrypt.. to the buffer it goes!
 #ifdef QSSLSOCKET_DEBUG
                 qCDebug(lcSsl, "We didn't have enough data to decrypt anything, will try again!");
@@ -1356,6 +1365,7 @@ void QSslSocketBackendPrivate::transmit()
 #endif
                 schannelState = SchannelState::Renegotiate;
                 renegotiating = true;
+
                 // We need to call 'continueHandshake' or else there's no guarantee it ever gets called
                 continueHandshake();
                 break;
@@ -1521,7 +1531,7 @@ void QSslSocketBackendPrivate::continueHandshake()
     case SchannelState::VerifyHandshake:
         // if we're in shutdown or renegotiating then we might not need to verify
         // (since we already did)
-        if (!peerCertVerified && !verifyHandshake()) {
+        if (!verifyHandshake()) {
             shutdown = true; // Skip sending shutdown alert
             q->abort(); // We don't want to send buffered data
             disconnectFromHost();

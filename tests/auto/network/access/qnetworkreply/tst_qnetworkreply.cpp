@@ -1910,10 +1910,6 @@ void tst_QNetworkReply::getFromHttp_data()
         << testDataDir + "/rfc3252.txt"
         << "http://" + QtNetworkSettings::httpServerName() + "/qtest/rfc3252.txt";
 
-    QTest::newRow("success-external")
-        << testDataDir + "/rfc3252.txt"
-        << "http://www.ietf.org/rfc/rfc3252.txt";
-
     QTest::newRow("bigfile-internal")
         << testDataDir + "/bigfile"
         << "http://" + QtNetworkSettings::httpServerName() + "/qtest/bigfile";

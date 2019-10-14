@@ -428,12 +428,14 @@ static QVariant::Type qDecodePSQLType(int t)
 
 void QPSQLResultPrivate::deallocatePreparedStmt()
 {
-    const QString stmt = QStringLiteral("DEALLOCATE ") + preparedStmtId;
-    PGresult *result = drv_d_func()->exec(stmt);
+    if (drv_d_func()) {
+        const QString stmt = QStringLiteral("DEALLOCATE ") + preparedStmtId;
+        PGresult *result = drv_d_func()->exec(stmt);
 
-    if (PQresultStatus(result) != PGRES_COMMAND_OK)
-        qWarning("Unable to free statement: %s", PQerrorMessage(drv_d_func()->connection));
-    PQclear(result);
+        if (PQresultStatus(result) != PGRES_COMMAND_OK)
+            qWarning("Unable to free statement: %s", PQerrorMessage(drv_d_func()->connection));
+        PQclear(result);
+    }
     preparedStmtId.clear();
 }
 
@@ -810,8 +812,8 @@ QSqlRecord QPSQLResult::record() const
         return info;
 
     int count = PQnfields(d->result);
+    QSqlField f;
     for (int i = 0; i < count; ++i) {
-        QSqlField f;
         if (d->drv_d_func()->isUtf8)
             f.setName(QString::fromUtf8(PQfname(d->result, i)));
         else
@@ -831,6 +833,8 @@ QSqlRecord QPSQLResult::record() const
                 }
             }
             f.setTableName(tableName);
+        } else {
+            f.setTableName(QString());
         }
         int ptype = PQftype(d->result, i);
         f.setType(qDecodePSQLType(ptype));
@@ -1690,7 +1694,12 @@ void QPSQLDriver::_q_handleNotification(int)
             if (notify->extra)
                 payload = d->isUtf8 ? QString::fromUtf8(notify->extra) : QString::fromLatin1(notify->extra);
 #endif
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
             emit notification(name);
+QT_WARNING_POP
+#endif
             QSqlDriver::NotificationSource source = (notify->be_pid == PQbackendPID(d->connection)) ? QSqlDriver::SelfSource : QSqlDriver::OtherSource;
             emit notification(name, source, payload);
         }

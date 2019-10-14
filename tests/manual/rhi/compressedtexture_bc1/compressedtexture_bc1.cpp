@@ -165,11 +165,13 @@ void Window::customRender()
         u->updateDynamicBuffer(d.ubuf, 64, 4, &flip);
     }
     if (!d.compressedData.isEmpty()) {
-        QRhiTextureUploadDescription desc;
+        QVarLengthArray<QRhiTextureUploadEntry, 16> descEntries;
         for (int i = 0; i < d.compressedData.count(); ++i) {
             QRhiTextureSubresourceUploadDescription image(d.compressedData[i].constData(), d.compressedData[i].size());
-            desc.append({ 0, i, image });
+            descEntries.append({ 0, i, image });
         }
+        QRhiTextureUploadDescription desc;
+        desc.setEntries(descEntries.cbegin(), descEntries.cend());
         u->uploadTexture(d.tex, desc);
         d.compressedData.clear();
     }
@@ -182,7 +184,7 @@ void Window::customRender()
     QRhiCommandBuffer *cb = m_sc->currentFrameCommandBuffer();
     const QSize outputSizeInPixels = m_sc->currentPixelSize();
 
-    cb->beginPass(m_sc->currentFrameRenderTarget(), QColor::fromRgbF(0.4f, 0.7f, 0.0f, 1.0f), { 1.0f, 0 }, u);
+    cb->beginPass(m_sc->currentFrameRenderTarget(), m_clearColor, { 1.0f, 0 }, u);
 
     cb->setGraphicsPipeline(d.ps);
     cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });

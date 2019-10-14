@@ -92,7 +92,7 @@ public:
 
 class QDBusAdaptorConnector: public QObject
 {
-    Q_OBJECT_FAKE
+    Q_OBJECT
 
 public: // typedefs
     struct AdaptorData
@@ -118,12 +118,11 @@ public: // methods
     void disconnectAllSignals(QObject *object);
     void relay(QObject *sender, int id, void **);
 
-//public slots:
-    void relaySlot(void **);
+public Q_SLOTS:
+    void relaySlot(QMethodRawArguments a);
     void polish();
 
-protected:
-//signals:
+Q_SIGNALS:
     void relaySignal(QObject *obj, const QMetaObject *metaObject, int sid, const QVariantList &args);
 
 public: // member variables

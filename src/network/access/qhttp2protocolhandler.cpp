@@ -58,6 +58,8 @@
 #include <QtNetwork/qnetworkproxy.h>
 #endif
 
+#include <qcoreapplication.h>
+
 #include <algorithm>
 #include <vector>
 
@@ -195,6 +197,29 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
     }
 }
 
+void QHttp2ProtocolHandler::handleConnectionClosure()
+{
+    // The channel has just received RemoteHostClosedError and since it will
+    // not try (for HTTP/2) to re-connect, it's time to finish all replies
+    // with error.
+
+    // Maybe we still have some data to read and can successfully finish
+    // a stream/request?
+    _q_receiveReply();
+
+    // Finish all still active streams. If we previously had GOAWAY frame,
+    // we probably already closed some (or all) streams with ContentReSend
+    // error, but for those still active, not having any data to finish,
+    // we now report RemoteHostClosedError.
+    const auto errorString = QCoreApplication::translate("QHttp", "Connection closed");
+    for (auto it = activeStreams.begin(), eIt = activeStreams.end(); it != eIt; ++it)
+        finishStreamWithError(it.value(), QNetworkReply::RemoteHostClosedError, errorString);
+
+    // Make sure we'll never try to read anything later:
+    activeStreams.clear();
+    goingAway = true;
+}
+
 void QHttp2ProtocolHandler::_q_uploadDataReadyRead()
 {
     if (!sender()) // QueuedConnection, firing after sender (byte device) was deleted.
@@ -307,13 +332,13 @@ bool QHttp2ProtocolHandler::sendRequest()
         // so we cannot create new streams.
         m_channel->emitFinishedWithError(QNetworkReply::ProtocolUnknownError,
                                          "GOAWAY received, cannot start a request");
-        m_channel->spdyRequestsToSend.clear();
+        m_channel->h2RequestsToSend.clear();
         return false;
     }
 
     // Process 'fake' (created by QNetworkAccessManager::connectToHostEncrypted())
     // requests first:
-    auto &requests = m_channel->spdyRequestsToSend;
+    auto &requests = m_channel->h2RequestsToSend;
     for (auto it = requests.begin(), endIt = requests.end(); it != endIt;) {
         const auto &pair = *it;
         const QString scheme(pair.first.url().scheme());
@@ -837,7 +862,7 @@ void QHttp2ProtocolHandler::handleGOAWAY()
     m_channel->emitFinishedWithError(QNetworkReply::ProtocolUnknownError,
                                      "GOAWAY received, cannot start a request");
     // Also, prevent further calls to sendRequest:
-    m_channel->spdyRequestsToSend.clear();
+    m_channel->h2RequestsToSend.clear();
 
     QNetworkReply::NetworkError error = QNetworkReply::NoError;
     QString message;
@@ -1256,7 +1281,7 @@ quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message, b
     const auto replyPrivate = reply->d_func();
     replyPrivate->connection = m_connection;
     replyPrivate->connectionChannel = m_channel;
-    reply->setSpdyWasUsed(true);
+    reply->setHttp2WasUsed(true);
     streamIDs.insert(reply, newStreamID);
     connect(reply, SIGNAL(destroyed(QObject*)),
             this, SLOT(_q_replyDestroyed(QObject*)));
@@ -1314,14 +1339,13 @@ void QHttp2ProtocolHandler::markAsReset(quint32 streamID)
 quint32 QHttp2ProtocolHandler::popStreamToResume()
 {
     quint32 streamID = connectionStreamID;
-    const int nQ = sizeof suspendedStreams / sizeof suspendedStreams[0];
     using QNR = QHttpNetworkRequest;
-    const QNR::Priority ranks[nQ] = {QNR::HighPriority,
-                                     QNR::NormalPriority,
-                                     QNR::LowPriority};
+    const QNR::Priority ranks[] = {QNR::HighPriority,
+                                   QNR::NormalPriority,
+                                   QNR::LowPriority};
 
-    for (int i = 0; i < nQ; ++i) {
-        auto &queue = suspendedStreams[ranks[i]];
+    for (const QNR::Priority rank : ranks) {
+        auto &queue = suspendedStreams[rank];
         auto it = queue.begin();
         for (; it != queue.end(); ++it) {
             if (!activeStreams.contains(*it))
@@ -1342,9 +1366,7 @@ quint32 QHttp2ProtocolHandler::popStreamToResume()
 
 void QHttp2ProtocolHandler::removeFromSuspended(quint32 streamID)
 {
-    const int nQ = sizeof suspendedStreams / sizeof suspendedStreams[0];
-    for (int i = 0; i < nQ; ++i) {
-        auto &q = suspendedStreams[i];
+    for (auto &q : suspendedStreams) {
         q.erase(std::remove(q.begin(), q.end(), streamID), q.end());
     }
 }
@@ -1365,7 +1387,7 @@ void QHttp2ProtocolHandler::deleteActiveStream(quint32 streamID)
     }
 
     removeFromSuspended(streamID);
-    if (m_channel->spdyRequestsToSend.size())
+    if (m_channel->h2RequestsToSend.size())
         QMetaObject::invokeMethod(this, "sendRequest", Qt::QueuedConnection);
 }
 
@@ -1484,7 +1506,7 @@ void QHttp2ProtocolHandler::initReplyFromPushPromise(const HttpMessagePair &mess
     Q_ASSERT(promisedData.contains(cacheKey));
     auto promise = promisedData.take(cacheKey);
     Q_ASSERT(message.second);
-    message.second->setSpdyWasUsed(true);
+    message.second->setHttp2WasUsed(true);
 
     qCDebug(QT_HTTP2) << "found cached/promised response on stream" << promise.reservedID;
 

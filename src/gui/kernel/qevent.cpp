@@ -791,37 +791,44 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos, int delta
     \obsolete
     This constructor has been deprecated.
 */
-
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
             QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers)
     : QWheelEvent(pos, globalPos, pixelDelta, angleDelta, qt4Delta, qt4Orientation,
                   buttons, modifiers, Qt::NoScrollPhase)
 {}
+QT_WARNING_POP
 
 /*!
     \obsolete
     This constructor has been deprecated.
 */
-
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
             QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase)
     : QWheelEvent(pos, globalPos, pixelDelta, angleDelta, qt4Delta, qt4Orientation,
                   buttons, modifiers, phase, Qt::MouseEventNotSynthesized)
 {}
+QT_WARNING_POP
 
 /*!
     \obsolete
     This constructor has been deprecated.
 */
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
             QPoint pixelDelta, QPoint angleDelta, int qt4Delta, Qt::Orientation qt4Orientation,
             Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, Qt::ScrollPhase phase, Qt::MouseEventSource source)
     : QWheelEvent(pos, globalPos, pixelDelta, angleDelta, qt4Delta, qt4Orientation,
                   buttons, modifiers, phase, source, false)
 {}
+QT_WARNING_POP
 
 /*!
     \obsolete
@@ -929,6 +936,30 @@ QWheelEvent::~QWheelEvent()
     \li scrolling is about to begin, but the distance did not yet change (Qt::ScrollBegin),
     \li or scrolling has ended and the distance did not change anymore (Qt::ScrollEnd).
     \endlist
+*/
+
+/*!
+    \fn QPoint QWheelEvent::position() const
+
+    Returns the position of the mouse cursor relative to the widget
+    that received the event.
+
+    If you move your widgets around in response to mouse events,
+    use globalPosition() instead of this function.
+
+    \sa globalPosition()
+*/
+
+/*!
+    \fn QPoint QWheelEvent::globalPosition() const
+
+    Returns the global position of the mouse pointer \e{at the time
+    of the event}. This is important on asynchronous window systems
+    such as X11; whenever you move your widgets around in response to
+    mouse events, globalPosition() can differ a lot from the current
+    cursor position returned by QCursor::pos().
+
+    \sa position()
 */
 
 #if QT_DEPRECATED_SINCE(5, 15)
@@ -3895,12 +3926,15 @@ QDebug operator<<(QDebug dbg, const QEvent *e)
     case QEvent::Wheel: {
         const QWheelEvent *we = static_cast<const QWheelEvent *>(e);
         dbg << "QWheelEvent(" << we->phase();
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED // delta() and orientation()
         if (!we->pixelDelta().isNull() || !we->angleDelta().isNull())
             dbg << ", pixelDelta=" << we->pixelDelta() << ", angleDelta=" << we->angleDelta();
 #if QT_DEPRECATED_SINCE(5, 14)
         else if (int qt4Delta = we->delta())
             dbg << ", delta=" << qt4Delta << ", orientation=" << we->orientation();
 #endif
+QT_WARNING_POP
         dbg << ')';
     }
         break;

@@ -48,8 +48,6 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "simplestyle.h"
 
 void SimpleStyle::polish(QPalette &palette)

@@ -51,6 +51,8 @@
 #include <QtCore/QString>
 #include <QtCore/private/qeventdispatcher_winrt_p.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QWinRTUiAutomation;
@@ -104,26 +106,26 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaTextProvider::GetSelection(UINT32 *returnValu
     *returnValueSize = 0;
     *returnValue = nullptr;
 
-    auto accid = id();
-    auto selections = QSharedPointer<QList<QPair<int,int>>>(new QList<QPair<int,int>>);
-    auto ptrSelections = new QSharedPointer<QList<QPair<int,int>>>(selections);
+    struct Selection { int startOffset, endOffset; };
 
-    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, ptrSelections]() {
+    auto accid = id();
+    auto selections = std::make_shared<QVarLengthArray<Selection>>();
+
+    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, selections]() {
         if (QAccessibleInterface *accessible = accessibleForId(accid)) {
             if (QAccessibleTextInterface *textInterface = accessible->textInterface()) {
                 for (int i = 0; i < textInterface->selectionCount(); ++i) {
-                    QPair<int,int> sel;
-                    textInterface->selection(i, &sel.first, &sel.second);
-                    (*ptrSelections)->append(sel);
+                    int startOffset, endOffset;
+                    textInterface->selection(i, &startOffset, &endOffset);
+                    selections->append({startOffset, endOffset});
                 }
-                if ((*ptrSelections)->size() == 0) {
+                if (selections->size() == 0) {
                     // If there is no selection, we return an array with a single degenerate (empty) text range at the cursor position.
-                    QPair<int,int> sel(textInterface->cursorPosition(), textInterface->cursorPosition());
-                    (*ptrSelections)->append(sel);
+                    auto cur = textInterface->cursorPosition();
+                    selections->append({cur, cur});
                 }
             }
         }
-        delete ptrSelections;
         return S_OK;
     }))) {
         return E_FAIL;
@@ -137,9 +139,11 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaTextProvider::GetSelection(UINT32 *returnValu
     if (!providerArray)
         return E_OUTOFMEMORY;
 
-    for (int i = 0; i < selCount; ++i) {
-        ComPtr<QWinRTUiaTextRangeProvider> textRangeProvider = Make<QWinRTUiaTextRangeProvider>(id(), (*selections)[i].first, (*selections)[i].second);
-        textRangeProvider.CopyTo(&providerArray[i]);
+    auto dst = providerArray;
+    for (auto sel : *selections) {
+        ComPtr<QWinRTUiaTextRangeProvider> textRangeProvider
+                = Make<QWinRTUiaTextRangeProvider>(id(), sel.startOffset, sel.endOffset);
+        textRangeProvider.CopyTo(dst++);
     }
     *returnValueSize = selCount;
     *returnValue = providerArray;
@@ -184,14 +188,12 @@ HRESULT STDMETHODCALLTYPE QWinRTUiaTextProvider::RangeFromPoint(ABI::Windows::Fo
 
     const QPoint pt(screenLocation.X, screenLocation.Y);
     auto accid = id();
-    auto offset = QSharedPointer<int>(new int);
-    auto ptrOffset = new QSharedPointer<int>(offset);
+    auto offset = std::make_shared<int>();
 
-    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, pt, ptrOffset]() {
+    if (!SUCCEEDED(QEventDispatcherWinRT::runOnMainThread([accid, pt, offset]() {
         if (QAccessibleInterface *accessible = accessibleForId(accid))
             if (QAccessibleTextInterface *textInterface = accessible->textInterface())
-                **ptrOffset = qBound(0, textInterface->offsetAtPoint(pt), textInterface->characterCount() - 1);
-        delete ptrOffset;
+                *offset = qBound(0, textInterface->offsetAtPoint(pt), textInterface->characterCount() - 1);
         return S_OK;
     }))) {
         return E_FAIL;

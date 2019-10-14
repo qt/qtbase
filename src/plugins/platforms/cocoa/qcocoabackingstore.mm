@@ -51,6 +51,17 @@ QT_BEGIN_NAMESPACE
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QRasterBackingStore(window)
 {
+    // Ideally this would be plumbed from the platform layer to QtGui, and
+    // the QBackingStore would be recreated, but we don't have that code yet,
+    // so at least make sure we invalidate our backingstore when the backing
+    // properties (color space e.g.) are changed.
+    NSView *view = static_cast<QCocoaWindow *>(window->handle())->view();
+    m_backingPropertiesObserver = QMacNotificationObserver(view.window,
+        NSWindowDidChangeBackingPropertiesNotification, [this]() {
+            qCDebug(lcQpaBackingStore) << "Backing properties for"
+                << this->window() << "did change";
+            backingPropertiesChanged();
+        });
 }
 
 QCFType<CGColorSpaceRef> QCocoaBackingStore::colorSpace() const
@@ -64,6 +75,37 @@ QCFType<CGColorSpaceRef> QCocoaBackingStore::colorSpace() const
 QNSWindowBackingStore::QNSWindowBackingStore(QWindow *window)
     : QCocoaBackingStore(window)
 {
+    // Choose an appropriate window depth based on the requested surface format.
+    // On deep color displays the default bit depth is 16-bit, so unless we need
+    // that level of precision we opt out of it (and the expensive RGB32 -> RGB64
+    // conversions that come with it if our backingstore depth does not match).
+
+    NSWindow *nsWindow = static_cast<QCocoaWindow *>(window->handle())->view().window;
+    auto colorSpaceName = NSColorSpaceFromDepth(nsWindow.depthLimit);
+
+    static const int kDefaultBitDepth = 8;
+    auto surfaceFormat = window->requestedFormat();
+    auto bitsPerSample = qMax(kDefaultBitDepth, qMax(surfaceFormat.redBufferSize(),
+        qMax(surfaceFormat.greenBufferSize(), surfaceFormat.blueBufferSize())));
+
+    // NSBestDepth does not seem to guarantee a window depth deep enough for the
+    // given bits per sample, even if documented as such. For example, requesting
+    // 10 bits per sample will not give us a 16-bit format, even if that's what's
+    // available. Work around this by manually bumping the bit depth.
+    bitsPerSample = !(bitsPerSample & (bitsPerSample - 1))
+        ? bitsPerSample : qNextPowerOfTwo(bitsPerSample);
+
+    auto bestDepth = NSBestDepth(colorSpaceName, bitsPerSample, 0, NO, nullptr);
+
+    // Disable dynamic depth limit, otherwise our depth limit will be overwritten
+    // by AppKit if the window moves to a screen with a different depth. We call
+    // this before setting the depth limit, as the call will reset the depth to 0.
+    [nsWindow setDynamicDepthLimit:NO];
+
+    qCDebug(lcQpaBackingStore) << "Using" << NSBitsPerSampleFromDepth(bestDepth)
+        << "bit window depth for" << nsWindow;
+
+    nsWindow.depthLimit = bestDepth;
 }
 
 QNSWindowBackingStore::~QNSWindowBackingStore()
@@ -212,9 +254,6 @@ void QNSWindowBackingStore::flush(QWindow *window, const QRegion &region, const 
 
         CGRect viewRect = viewLocalRect.toCGRect();
 
-        if (windowHasUnifiedToolbar())
-            NSDrawWindowBackground(viewRect);
-
         [backingStoreImage drawInRect:viewRect fromRect:backingStoreRect.toCGRect()
             operation:compositingOperation fraction:1.0 respectFlipped:YES hints:nil];
 
@@ -300,6 +339,11 @@ void QNSWindowBackingStore::redrawRoundedBottomCorners(CGRect windowRect) const
 #else
     Q_UNUSED(windowRect);
 #endif
+}
+
+void QNSWindowBackingStore::backingPropertiesChanged()
+{
+    m_image = QImage();
 }
 
 // ----------------------------------------------------------------------------
@@ -516,17 +560,26 @@ void QCALayerBackingStore::flush(QWindow *flushedWindow, const QRegion &region, 
         flushedView.layer.contents = nil;
     }
 
-    qCInfo(lcQpaBackingStore) << "Flushing" << backBufferSurface
-         << "to" << flushedView.layer << "of" << flushedView;
+    if (flushedView == backingStoreView) {
+        qCInfo(lcQpaBackingStore) << "Flushing" << backBufferSurface
+            << "to" << flushedView.layer << "of" << flushedView;
+        flushedView.layer.contents = backBufferSurface;
+    } else {
+        auto subviewRect = [flushedView convertRect:flushedView.bounds toView:backingStoreView];
+        auto scale = flushedView.layer.contentsScale;
+        subviewRect = CGRectApplyAffineTransform(subviewRect, CGAffineTransformMakeScale(scale, scale));
 
-    flushedView.layer.contents = backBufferSurface;
+        // We make a copy of the image data up front, which means we don't
+        // need to mark the IOSurface as being in use. FIXME: Investigate
+        // if there's a cheaper way to get sub-image data to a layer.
+        m_buffers.back()->lock(QPlatformGraphicsBuffer::SWReadAccess);
+        QImage subImage = m_buffers.back()->asImage()->copy(QRectF::fromCGRect(subviewRect).toRect());
+        m_buffers.back()->unlock();
 
-    if (flushedView != backingStoreView) {
-        const CGSize backingStoreSize = backingStoreView.bounds.size;
-        flushedView.layer.contentsRect = CGRectApplyAffineTransform(
-            [flushedView convertRect:flushedView.bounds toView:backingStoreView],
-            // The contentsRect is in unit coordinate system
-            CGAffineTransformMakeScale(1.0 / backingStoreSize.width, 1.0 / backingStoreSize.height));
+        qCInfo(lcQpaBackingStore) << "Flushing" << subImage
+            << "to" << flushedView.layer << "of subview" << flushedView;
+        QCFType<CGImageRef> cgImage = subImage.toCGImage();
+        flushedView.layer.contents = (__bridge id)static_cast<CGImageRef>(cgImage);
     }
 
     // Since we may receive multiple flushes before a new frame is started, we do not
@@ -563,6 +616,12 @@ QImage QCALayerBackingStore::toImage() const
     QImage imageCopy = m_buffers.back()->asImage()->copy();
     m_buffers.back()->unlock();
     return imageCopy;
+}
+
+void QCALayerBackingStore::backingPropertiesChanged()
+{
+    m_buffers.clear();
+    m_buffers.resize(1);
 }
 
 QPlatformGraphicsBuffer *QCALayerBackingStore::graphicsBuffer() const

@@ -102,9 +102,9 @@ uint ShadeWidget::colorAt(int x)
     generateShade();
 
     QPolygonF pts = m_hoverPoints->points();
-    for (int i=1; i < pts.size(); ++i) {
-        if (pts.at(i-1).x() <= x && pts.at(i).x() >= x) {
-            QLineF l(pts.at(i-1), pts.at(i));
+    for (int i = 1; i < pts.size(); ++i) {
+        if (pts.at(i - 1).x() <= x && pts.at(i).x() >= x) {
+            QLineF l(pts.at(i - 1), pts.at(i));
             l.setLength(l.length() * ((x - l.x1()) / l.dx()));
             return m_shade.pixel(qRound(qMin(l.x2(), (qreal(m_shade.width() - 1)))),
                                  qRound(qMin(l.y2(), qreal(m_shade.height() - 1))));
@@ -118,9 +118,9 @@ void ShadeWidget::setGradientStops(const QGradientStops &stops)
     if (m_shade_type == ARGBShade) {
         m_alpha_gradient = QLinearGradient(0, 0, width(), 0);
 
-        for (int i=0; i<stops.size(); ++i) {
-            QColor c = stops.at(i).second;
-            m_alpha_gradient.setColorAt(stops.at(i).first, QColor(c.red(), c.green(), c.blue()));
+        for (const auto &stop : stops) {
+            QColor c = stop.second;
+            m_alpha_gradient.setColorAt(stop.first, QColor(c.red(), c.green(), c.blue()));
         }
 
         m_shade = QImage();
@@ -223,13 +223,13 @@ void GradientEditor::pointsUpdated()
     std::sort(points.begin(), points.end(), x_less_than);
 
     for (int i = 0; i < points.size(); ++i) {
-        qreal x = int(points.at(i).x());
-        if (i + 1 < points.size() && x == points.at(i + 1).x())
+        const int x = int(points.at(i).x());
+        if (i + 1 < points.size() && x == int(points.at(i + 1).x()))
             continue;
-        QColor color((0x00ff0000 & m_red_shade->colorAt(int(x))) >> 16,
-                     (0x0000ff00 & m_green_shade->colorAt(int(x))) >> 8,
-                     (0x000000ff & m_blue_shade->colorAt(int(x))),
-                     (0xff000000 & m_alpha_shade->colorAt(int(x))) >> 24);
+        QColor color((0x00ff0000 & m_red_shade->colorAt(x)) >> 16,
+                     (0x0000ff00 & m_green_shade->colorAt(x)) >> 8,
+                     (0x000000ff & m_blue_shade->colorAt(x)),
+                     (0xff000000 & m_alpha_shade->colorAt(x)) >> 24);
 
         if (x / w > 1)
             return;
@@ -568,8 +568,8 @@ void GradientRenderer::paint(QPainter *p)
         g = QConicalGradient(pts.at(0), angle);
     }
 
-    for (int i = 0; i < m_stops.size(); ++i)
-        g.setColorAt(m_stops.at(i).first, m_stops.at(i).second);
+    for (const auto &stop : qAsConst(m_stops))
+        g.setColorAt(stop.first, stop.second);
 
     g.setSpread(m_spread);
 

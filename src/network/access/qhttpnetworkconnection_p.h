@@ -96,7 +96,6 @@ public:
 
     enum ConnectionType {
         ConnectionTypeHTTP,
-        ConnectionTypeSPDY,
         ConnectionTypeHTTP2,
         ConnectionTypeHTTP2Direct
     };
@@ -172,7 +171,6 @@ private:
     friend class QHttpNetworkConnectionChannel;
     friend class QHttp2ProtocolHandler;
     friend class QHttpProtocolHandler;
-    friend class QSpdyProtocolHandler;
 
     Q_PRIVATE_SLOT(d_func(), void _q_startNextRequest())
     Q_PRIVATE_SLOT(d_func(), void _q_hostLookupFinished(QHostInfo))

@@ -63,17 +63,16 @@ QT_BEGIN_NAMESPACE
 class QReadWriteLockPrivate
 {
 public:
-    QReadWriteLockPrivate(bool isRecursive = false)
-        : readerCount(0), writerCount(0), waitingReaders(0), waitingWriters(0),
-        recursive(isRecursive), id(0), currentWriter(nullptr) {}
+    explicit QReadWriteLockPrivate(bool isRecursive = false)
+        : recursive(isRecursive) {}
 
     QMutex mutex;
     QWaitCondition writerCond;
     QWaitCondition readerCond;
-    int readerCount;
-    int writerCount;
-    int waitingReaders;
-    int waitingWriters;
+    int readerCount = 0;
+    int writerCount = 0;
+    int waitingReaders = 0;
+    int waitingWriters = 0;
     const bool recursive;
 
     //Called with the mutex locked
@@ -82,19 +81,18 @@ public:
     void unlock();
 
     //memory management
-    int id;
+    int id = 0;
     void release();
     static QReadWriteLockPrivate *allocate();
 
     // Recusive mutex handling
-    Qt::HANDLE currentWriter;
+    Qt::HANDLE currentWriter = {};
     QHash<Qt::HANDLE, int> currentReaders;
 
     // called with the mutex unlocked
     bool recursiveLockForWrite(int timeout);
     bool recursiveLockForRead(int timeout);
     void recursiveUnlock();
-
 };
 
 QT_END_NAMESPACE

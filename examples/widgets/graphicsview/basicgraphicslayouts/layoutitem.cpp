@@ -51,33 +51,26 @@
 #include "layoutitem.h"
 
 #include <QGradient>
-#include <QGraphicsLinearLayout>
 #include <QPainter>
 
 //! [0]
-LayoutItem::LayoutItem(QGraphicsItem *parent/* = 0*/)
-    : QGraphicsLayoutItem(), QGraphicsItem(parent)
+LayoutItem::LayoutItem(QGraphicsItem *parent)
+    : QGraphicsLayoutItem(), QGraphicsItem(parent),
+      m_pix(QPixmap(QLatin1String(":/images/block.png")))
 {
-    m_pix = new QPixmap(QLatin1String(":/images/block.png"));
     setGraphicsItem(this);
 }
 //! [0]
 
-LayoutItem::~LayoutItem()
-{
-    delete m_pix;
-}
-
 //! [1]
-void LayoutItem::paint(QPainter *painter,
-    const QStyleOptionGraphicsItem *option, QWidget *widget /*= 0*/)
+void LayoutItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                       QWidget *widget)
 {
     Q_UNUSED(widget);
     Q_UNUSED(option);
 
-    QRectF frame(QPointF(0,0), geometry().size());
-    qreal w = m_pix->width();
-    qreal h = m_pix->height();
+    QRectF frame(QPointF(0, 0), geometry().size());
+    const QSize pmSize = m_pix.size();
     QGradientStops stops;
 //! [1]
 
@@ -94,8 +87,8 @@ void LayoutItem::paint(QPainter *painter,
     painter->drawRoundedRect(frame, 10.0, 10.0);
 
     // paint a rect around the pixmap (with gradient)
-    QPointF pixpos = frame.center() - (QPointF(w, h) / 2);
-    QRectF innerFrame(pixpos, QSizeF(w, h));
+    QPointF pixpos = frame.center() - (QPointF(pmSize.width(), pmSize.height()) / 2);
+    QRectF innerFrame(pixpos, pmSize);
     innerFrame.adjust(-4, -4, 4, 4);
     gradient.setStart(innerFrame.topLeft());
     gradient.setFinalStop(innerFrame.bottomRight());
@@ -106,14 +99,14 @@ void LayoutItem::paint(QPainter *painter,
     gradient.setStops(stops);
     painter->setBrush(QBrush(gradient));
     painter->drawRoundedRect(innerFrame, 10.0, 10.0);
-    painter->drawPixmap(pixpos, *m_pix);
+    painter->drawPixmap(pixpos, m_pix);
 }
 //! [2]
 
 //! [3]
 QRectF LayoutItem::boundingRect() const
 {
-    return QRectF(QPointF(0,0), geometry().size());
+    return QRectF(QPointF(0, 0), geometry().size());
 }
 //! [3]
 
@@ -133,7 +126,7 @@ QSizeF LayoutItem::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
     case Qt::MinimumSize:
     case Qt::PreferredSize:
         // Do not allow a size smaller than the pixmap with two frames around it.
-        return m_pix->size() + QSize(12, 12);
+        return m_pix.size() + QSize(12, 12);
     case Qt::MaximumSize:
         return QSizeF(1000,1000);
     default:

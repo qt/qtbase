@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QApplication>
 
 #include "sortingbox.h"
 

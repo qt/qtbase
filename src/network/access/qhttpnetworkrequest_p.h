@@ -116,9 +116,6 @@ public:
     bool isPipeliningAllowed() const;
     void setPipeliningAllowed(bool b);
 
-    bool isSPDYAllowed() const;
-    void setSPDYAllowed(bool b);
-
     bool isHTTP2Allowed() const;
     void setHTTP2Allowed(bool b);
 
@@ -176,7 +173,6 @@ public:
     mutable QNonContiguousByteDevice* uploadByteDevice;
     bool autoDecompress;
     bool pipeliningAllowed;
-    bool spdyAllowed;
     bool http2Allowed;
     bool http2Direct;
     bool withCredentials;

@@ -54,7 +54,7 @@ class Widget : public QGraphicsWidget
 {
 public:
     Widget(const QColor &color, const QColor &textColor, const QString &caption,
-           QGraphicsItem *parent = 0)
+           QGraphicsItem *parent = nullptr)
         : QGraphicsWidget(parent)
         , caption(caption)
         , color(color)
@@ -62,7 +62,7 @@ public:
     {
     }
 
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget * = 0) override
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget * = nullptr) override
     {
         QFont font;
         font.setPixelSize(0.75 * qMin(boundingRect().width(), boundingRect().height()));
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    QGraphicsScene *scene = new QGraphicsScene();
+    QGraphicsScene scene;
 
     Widget *a = new Widget(Qt::blue, Qt::white, "a");
     a->setPreferredSize(100, 100);
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     Widget *c = new Widget(Qt::red, Qt::black, "c");
     c->setPreferredSize(100, 100);
 
-    QGraphicsAnchorLayout *layout = new QGraphicsAnchorLayout();
+    QGraphicsAnchorLayout *layout = new QGraphicsAnchorLayout;
 /*
     //! [adding a corner anchor in two steps]
     layout->addAnchor(a, Qt::AnchorTop, layout, Qt::AnchorTop);
@@ -128,20 +128,20 @@ int main(int argc, char *argv[])
     // corner of the layout.
     layout->addCornerAnchors(c, Qt::BottomRightCorner, layout, Qt::BottomRightCorner);
 
-    QGraphicsWidget *w = new QGraphicsWidget(0, Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+    auto w = new QGraphicsWidget(nullptr, Qt::Window | Qt::CustomizeWindowHint | Qt::WindowTitleHint);
     w->setPos(20, 20);
     w->setMinimumSize(100, 100);
     w->setPreferredSize(320, 240);
     w->setLayout(layout);
     w->setWindowTitle(QApplication::translate("simpleanchorlayout", "QGraphicsAnchorLayout in use"));
-    scene->addItem(w);
+    scene.addItem(w);
 
-    QGraphicsView *view = new QGraphicsView();
-    view->setScene(scene);
-    view->setWindowTitle(QApplication::translate("simpleanchorlayout", "Simple Anchor Layout"));
+    QGraphicsView view;
+    view.setScene(&scene);
+    view.setWindowTitle(QApplication::translate("simpleanchorlayout", "Simple Anchor Layout"));
 
-    view->resize(360, 320);
-    view->show();
+    view.resize(360, 320);
+    view.show();
 
     return app.exec();
 }

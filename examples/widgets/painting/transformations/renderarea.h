@@ -70,7 +70,7 @@ class RenderArea : public QWidget
     Q_OBJECT
 
 public:
-    RenderArea(QWidget *parent = 0);
+    RenderArea(QWidget *parent = nullptr);
 
     void setOperations(const QList<Operation> &operations);
     void setShape(const QPainterPath &shape);

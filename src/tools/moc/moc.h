@@ -61,6 +61,7 @@ struct Type
 };
 Q_DECLARE_TYPEINFO(Type, Q_MOVABLE_TYPE);
 
+struct ClassDef;
 struct EnumDef
 {
     QByteArray name;
@@ -68,6 +69,7 @@ struct EnumDef
     QVector<QByteArray> values;
     bool isEnumClass; // c++11 enum class
     EnumDef() : isEnumClass(false) {}
+    QJsonObject toJson(const ClassDef &cdef) const;
 };
 Q_DECLARE_TYPEINFO(EnumDef, Q_MOVABLE_TYPE);
 
@@ -78,6 +80,8 @@ struct ArgumentDef
     QByteArray rightType, normalizedType, name;
     QByteArray typeNameForCast; // type name to be used in cast from void * in metacall
     bool isDefault;
+
+    QJsonObject toJson() const;
 };
 Q_DECLARE_TYPEINFO(ArgumentDef, Q_MOVABLE_TYPE);
 
@@ -111,6 +115,10 @@ struct FunctionDef
     bool isConstructor = false;
     bool isDestructor = false;
     bool isAbstract = false;
+    bool isRawSlot = false;
+
+    QJsonObject toJson() const;
+    static void accessToJson(QJsonObject *obj, Access acs);
 };
 Q_DECLARE_TYPEINFO(FunctionDef, Q_MOVABLE_TYPE);
 
@@ -130,6 +138,8 @@ struct PropertyDef
     int revision = 0;
     bool constant = false;
     bool final = false;
+
+    QJsonObject toJson() const;
 };
 Q_DECLARE_TYPEINFO(PropertyDef, Q_MOVABLE_TYPE);
 
@@ -183,6 +193,7 @@ struct ClassDef : BaseDef {
     bool hasQObject = false;
     bool hasQGadget = false;
 
+    QJsonObject toJson() const;
 };
 Q_DECLARE_TYPEINFO(ClassDef, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(ClassDef::Interface, Q_MOVABLE_TYPE);
@@ -215,7 +226,7 @@ public:
     QMap<QString, QJsonArray> metaArgs;
 
     void parse();
-    void generate(FILE *out);
+    void generate(FILE *out, FILE *jsonOutput);
 
     bool parseClassHead(ClassDef *def);
     inline bool inClass(const ClassDef *def) const {

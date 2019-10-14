@@ -194,7 +194,7 @@ public:
     static void handleExposeEvent(QWindow *window, const QRegion &region);
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
-    static void handleCloseEvent(QWindow *window, bool *accepted = nullptr);
+    static bool handleCloseEvent(QWindow *window);
 
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleEnterEvent(QWindow *window, const QPointF &local = QPointF(), const QPointF& global = QPointF());

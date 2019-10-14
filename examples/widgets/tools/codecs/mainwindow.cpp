@@ -48,11 +48,20 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "mainwindow.h"
 #include "encodingdialog.h"
 #include "previewform.h"
+
+#include <QAction>
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QFileDialog>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QRegularExpression>
+#include <QTextCodec>
+#include <QTextStream>
 
 MainWindow::MainWindow()
 {
@@ -146,14 +155,14 @@ void MainWindow::findCodecs()
         QTextCodec *codec = QTextCodec::codecForMib(mib);
 
         QString sortKey = codec->name().toUpper();
-        int rank;
+        char rank;
 
         if (sortKey.startsWith(QLatin1String("UTF-8"))) {
             rank = 1;
         } else if (sortKey.startsWith(QLatin1String("UTF-16"))) {
             rank = 2;
         } else if ((match = iso8859RegExp.match(sortKey)).hasMatch()) {
-            if (match.captured(1).size() == 1)
+            if (match.capturedRef(1).size() == 1)
                 rank = 3;
             else
                 rank = 4;
@@ -164,7 +173,8 @@ void MainWindow::findCodecs()
 
         codecMap.insert(sortKey, codec);
     }
-    codecs = codecMap.values();
+    for (const auto &codec : qAsConst(codecMap))
+      codecs += codec;
 }
 
 void MainWindow::createMenus()

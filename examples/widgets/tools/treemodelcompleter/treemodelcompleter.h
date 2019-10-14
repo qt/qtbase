@@ -60,8 +60,8 @@ class TreeModelCompleter : public QCompleter
     Q_PROPERTY(QString separator READ separator WRITE setSeparator)
 
 public:
-    explicit TreeModelCompleter(QObject *parent = 0);
-    explicit TreeModelCompleter(QAbstractItemModel *model, QObject *parent = 0);
+    explicit TreeModelCompleter(QObject *parent = nullptr);
+    explicit TreeModelCompleter(QAbstractItemModel *model, QObject *parent = nullptr);
 
     QString separator() const;
 public slots:

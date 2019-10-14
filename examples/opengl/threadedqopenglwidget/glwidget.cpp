@@ -115,12 +115,7 @@ void GLWidget::grabContext()
     m_renderer->unlockRenderer();
 }
 
-Renderer::Renderer(GLWidget *w)
-    : m_inited(false),
-      m_glwidget(w),
-      m_exiting(false)
-{
-}
+Renderer::Renderer(GLWidget *w) : m_glwidget(w) {}
 
 void Renderer::paintQtLogo()
 {

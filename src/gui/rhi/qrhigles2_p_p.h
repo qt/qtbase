@@ -312,8 +312,8 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             BindShaderResources,
             BindFramebuffer,
             Clear,
-            BufferData,
             BufferSubData,
+            GetBufferSubData,
             CopyTex,
             ReadPixels,
             SubImage,
@@ -401,6 +401,13 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 int size;
                 const void *data; // must come from retainData()
             } bufferSubData;
+            struct {
+                QRhiBufferReadbackResult *result;
+                GLenum target;
+                GLuint buffer;
+                int offset;
+                int size;
+            } getBufferSubData;
             struct {
                 GLenum srcFaceTarget;
                 GLuint srcTexture;
@@ -664,7 +671,9 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
-    void makeThreadLocalNativeContextCurrent() override;
+    bool makeThreadLocalNativeContextCurrent() override;
+    void releaseCachedResources() override;
+    bool isDeviceLost() const override;
 
     bool ensureContext(QSurface *surface = nullptr) const;
     void executeDeferredReleases();
@@ -690,13 +699,23 @@ public:
                                                    bool *wantsColorClear = nullptr, bool *wantsDsClear = nullptr);
     void enqueueBarriersForPass(QGles2CommandBuffer *cbD);
     int effectiveSampleCount(int sampleCount) const;
-    bool compileShader(GLuint program, const QRhiShaderStage &shaderStage,
-                       QShaderDescription *desc, int *glslVersionUsed);
+    QByteArray shaderSource(const QRhiShaderStage &shaderStage, int *glslVersion);
+    bool compileShader(GLuint program, const QRhiShaderStage &shaderStage, int *glslVersion);
     bool linkProgram(GLuint program);
     void gatherUniforms(GLuint program, const QShaderDescription::UniformBlock &ub,
                         QVector<QGles2UniformDescription> *dst);
     void gatherSamplers(GLuint program, const QShaderDescription::InOutVariable &v,
                         QVector<QGles2SamplerDescription> *dst);
+    bool isProgramBinaryDiskCacheEnabled() const;
+
+    enum DiskCacheResult {
+        DiskCacheHit,
+        DiskCacheMiss,
+        DiskCacheError
+    };
+    DiskCacheResult tryLoadFromDiskCache(const QRhiShaderStage *stages, int stageCount,
+                                         GLuint program, QByteArray *cacheKey);
+    void trySaveToDiskCache(GLuint program, const QByteArray &cacheKey);
 
     QOpenGLContext *ctx = nullptr;
     bool importedContext = false;
@@ -732,7 +751,10 @@ public:
               rgba8Format(false),
               instancing(false),
               baseVertex(false),
-              compute(false)
+              compute(false),
+              textureCompareMode(false),
+              properMapBuffer(false),
+              nonBaseLevelFramebufferTexture(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -763,11 +785,14 @@ public:
         uint baseVertex : 1;
         uint compute : 1;
         uint textureCompareMode : 1;
+        uint properMapBuffer : 1;
+        uint nonBaseLevelFramebufferTexture : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QVector<GLint> supportedCompressedFormats;
     mutable QVector<int> supportedSampleCountList;
     QRhiGles2NativeHandles nativeHandlesStruct;
+    mutable bool contextLost = false;
 
     struct DeferredReleaseEntry {
         enum Type {
@@ -804,6 +829,8 @@ public:
         bool active = false;
         QGles2CommandBuffer cbWrapper;
     } ofr;
+
+    QHash<QRhiShaderStage, uint> m_shaderCache;
 };
 
 Q_DECLARE_TYPEINFO(QRhiGles2::DeferredReleaseEntry, Q_MOVABLE_TYPE);

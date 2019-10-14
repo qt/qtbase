@@ -823,7 +823,9 @@ void tst_QSslSocket::connectToHostEncrypted()
     socket->setProtocol(QSsl::SslProtocol::TlsV1_1);
 #endif
     this->socket = socket.data();
-    QVERIFY(socket->addCaCertificates(httpServerCertChainPath()));
+    auto config = socket->sslConfiguration();
+    QVERIFY(config.addCaCertificates(httpServerCertChainPath()));
+    socket->setSslConfiguration(config);
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     connect(socket.data(), SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
@@ -860,7 +862,9 @@ void tst_QSslSocket::connectToHostEncryptedWithVerificationPeerName()
 #endif
     this->socket = socket.data();
 
-    socket->addCaCertificates(httpServerCertChainPath());
+    auto config = socket->sslConfiguration();
+    config.addCaCertificates(httpServerCertChainPath());
+    socket->setSslConfiguration(config);
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     connect(socket.data(), SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
@@ -965,7 +969,9 @@ void tst_QSslSocket::peerCertificateChain()
     this->socket = socket.data();
     QList<QSslCertificate> caCertificates = QSslCertificate::fromPath(httpServerCertChainPath());
     QCOMPARE(caCertificates.count(), 1);
-    socket->addCaCertificates(caCertificates);
+    auto config = socket->sslConfiguration();
+    config.addCaCertificates(caCertificates);
+    socket->setSslConfiguration(config);
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     connect(socket.data(), SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
@@ -1224,10 +1230,10 @@ signals:
 protected:
     void incomingConnection(qintptr socketDescriptor)
     {
+        QSslConfiguration configuration = config;
         socket = new QSslSocket(this);
-        socket->setSslConfiguration(config);
-        socket->setPeerVerifyMode(peerVerifyMode);
-        socket->setProtocol(protocol);
+        configuration.setPeerVerifyMode(peerVerifyMode);
+        configuration.setProtocol(protocol);
         if (ignoreSslErrors)
             connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
         connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SIGNAL(socketError(QAbstractSocket::SocketError)));
@@ -1236,14 +1242,14 @@ protected:
         QVERIFY(file.open(QIODevice::ReadOnly));
         QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
         QVERIFY(!key.isNull());
-        socket->setPrivateKey(key);
+        configuration.setPrivateKey(key);
 
         // Add CA certificates to verify client certificate
         if (!addCaCertificates.isEmpty()) {
             QList<QSslCertificate> caCert = QSslCertificate::fromPath(addCaCertificates);
             QVERIFY(!caCert.isEmpty());
             QVERIFY(!caCert.first().isNull());
-            socket->addCaCertificates(caCert);
+            configuration.addCaCertificates(caCert);
         }
 
         // If we have a cert issued directly from the CA
@@ -1251,9 +1257,8 @@ protected:
             QList<QSslCertificate> localCert = QSslCertificate::fromPath(m_certFile);
             QVERIFY(!localCert.isEmpty());
             QVERIFY(!localCert.first().isNull());
-            socket->setLocalCertificate(localCert.first());
-        }
-        else {
+            configuration.setLocalCertificate(localCert.first());
+        } else {
             QList<QSslCertificate> localCert = QSslCertificate::fromPath(m_certFile);
             QVERIFY(!localCert.isEmpty());
             QVERIFY(!localCert.first().isNull());
@@ -1262,14 +1267,12 @@ protected:
             QVERIFY(!interCert.isEmpty());
             QVERIFY(!interCert.first().isNull());
 
-            socket->setLocalCertificateChain(localCert + interCert);
+            configuration.setLocalCertificateChain(localCert + interCert);
         }
 
-        if (!ciphers.isEmpty()) {
-            auto sslConfig = socket->sslConfiguration();
-            sslConfig.setCiphers(ciphers);
-            socket->setSslConfiguration(sslConfig);
-        }
+        if (!ciphers.isEmpty())
+            configuration.setCiphers(ciphers);
+        socket->setSslConfiguration(configuration);
 
         QVERIFY(socket->setSocketDescriptor(socketDescriptor, QAbstractSocket::ConnectedState));
         QVERIFY(!socket->peerAddress().isNull());
@@ -1748,7 +1751,8 @@ void tst_QSslSocket::addDefaultCaCertificate()
     QCOMPARE(flukeCerts.size(), 1);
     QList<QSslCertificate> globalCerts = QSslConfiguration::defaultConfiguration().caCertificates();
     QVERIFY(!globalCerts.contains(flukeCerts.first()));
-    QSslSocket::addDefaultCaCertificate(flukeCerts.first());
+    sslConfig.addCaCertificate(flukeCerts.first());
+    QSslConfiguration::setDefaultConfiguration(sslConfig);
     QCOMPARE(QSslConfiguration::defaultConfiguration().caCertificates().size(),
              globalCerts.size() + 1);
     QVERIFY(QSslConfiguration::defaultConfiguration().caCertificates()
@@ -1941,7 +1945,9 @@ void tst_QSslSocket::wildcard()
     // responds with the wildcard, and QSslSocket should accept that as a
     // valid connection.  This was broken in 4.3.0.
     QSslSocketPtr socket = newSocket();
-    socket->addCaCertificates(QLatin1String("certs/aspiriniks.ca.crt"));
+    auto config = socket->sslConfiguration();
+    config.addCaCertificates(QLatin1String("certs/aspiriniks.ca.crt"));
+    socket->setSslConfiguration(config);
     this->socket = socket.data();
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)),
@@ -2572,7 +2578,9 @@ void tst_QSslSocket::resetProxy()
     // make sure the connection works, and then set a nonsense proxy, and then
     // make sure it does not work anymore
     QSslSocket socket;
-    socket.addCaCertificates(httpServerCertChainPath());
+    auto config = socket.sslConfiguration();
+    config.addCaCertificates(httpServerCertChainPath());
+    socket.setSslConfiguration(config);
     socket.setProxy(goodProxy);
     socket.connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
     QVERIFY2(socket.waitForConnected(10000), qPrintable(socket.errorString()));
@@ -2591,7 +2599,9 @@ void tst_QSslSocket::resetProxy()
     // set the nonsense proxy and make sure the connection does not work,
     // and then set the right proxy and make sure it works
     QSslSocket socket2;
-    socket2.addCaCertificates(httpServerCertChainPath());
+    auto config2 = socket.sslConfiguration();
+    config2.addCaCertificates(httpServerCertChainPath());
+    socket2.setSslConfiguration(config2);
     socket2.setProxy(badProxy);
     socket2.connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
     QVERIFY(! socket2.waitForConnected(10000));

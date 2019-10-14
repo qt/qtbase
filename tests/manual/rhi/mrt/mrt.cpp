@@ -143,10 +143,10 @@ void Window::customInit()
     }
 
     QRhiTextureRenderTargetDescription rtDesc;
-    QVector<QRhiColorAttachment> att;
+    QRhiColorAttachment att[ATTCOUNT];
     for (int i = 0; i < ATTCOUNT; ++i)
-        att.append(QRhiColorAttachment(d.colData[i].tex));
-    rtDesc.setColorAttachments(att);
+        att[i] = QRhiColorAttachment(d.colData[i].tex);
+    rtDesc.setColorAttachments(att, att + ATTCOUNT);
     d.rt = m_r->newTextureRenderTarget(rtDesc);
     d.releasePool << d.rt;
     d.rtRp = d.rt->newCompatibleRenderPassDescriptor();
@@ -200,12 +200,10 @@ void Window::customInit()
         { QRhiShaderStage::Vertex, getShader(QLatin1String(":/mrt.vert.qsb")) },
         { QRhiShaderStage::Fragment, getShader(QLatin1String(":/mrt.frag.qsb")) }
     });
-    QVector<QRhiGraphicsPipeline::TargetBlend> blends;
-    for (int i = 0; i < ATTCOUNT; ++i) {
-        QRhiGraphicsPipeline::TargetBlend blend;
-        blends.append(blend);
-    }
-    d.triPs->setTargetBlends(blends);
+
+    QRhiGraphicsPipeline::TargetBlend blends[ATTCOUNT]; // defaults to blending == false
+    d.triPs->setTargetBlends(blends, blends + ATTCOUNT);
+
     inputLayout.setBindings({
         { 5 * sizeof(float) }
     });
@@ -283,7 +281,7 @@ void Window::customRender()
     }
 
     const QSize outputSizeInPixels = m_sc->currentPixelSize();
-    cb->beginPass(m_sc->currentFrameRenderTarget(), QColor::fromRgbF(0.4f, 0.7f, 0.0f, 1.0f), { 1.0f, 0 }, u);
+    cb->beginPass(m_sc->currentFrameRenderTarget(), m_clearColor, { 1.0f, 0 }, u);
     cb->setGraphicsPipeline(d.ps);
     cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
     vbufBinding.second = 0;

@@ -57,6 +57,7 @@
 #include "qregexp.h"
 #include "qregion.h"
 #include "qdebug.h"
+#include <QtCore/private/qlocking_p.h>
 
 #include <algorithm>
 

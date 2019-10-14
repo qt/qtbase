@@ -758,8 +758,9 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
             quint64 requestStartOffset = requestRange.left(index).toULongLong();
             quint64 requestEndOffset = requestRange.mid(index + 1).toULongLong();
 
+            // In case an end offset is not given it is skipped from the request range
             requestRange = "bytes=" + QByteArray::number(resumeOffset + requestStartOffset) +
-                           '-' + QByteArray::number(requestEndOffset);
+                           '-' + (requestEndOffset ? QByteArray::number(requestEndOffset) : QByteArray());
 
             httpRequest.setHeaderField("Range", requestRange);
         } else {
@@ -773,10 +774,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
     if (newHttpRequest.attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool())
         httpRequest.setPipeliningAllowed(true);
 
-    if (request.attribute(QNetworkRequest::SpdyAllowedAttribute).toBool())
-        httpRequest.setSPDYAllowed(true);
-
-    if (request.attribute(QNetworkRequest::HTTP2AllowedAttribute).toBool())
+    if (request.attribute(QNetworkRequest::Http2AllowedAttribute).toBool())
         httpRequest.setHTTP2Allowed(true);
 
     if (request.attribute(QNetworkRequest::Http2DirectAttribute).toBool()) {
@@ -967,7 +965,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
                      QSharedPointer<char>(),
                      delegate->incomingContentLength,
                      delegate->removedContentLength,
-                     delegate->isSpdyUsed);
+                     delegate->isHttp2Used);
             replyDownloadData(delegate->synchronousDownloadData);
             httpError(delegate->incomingErrorCode, delegate->incomingErrorDetail);
         } else {
@@ -979,7 +977,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
                      QSharedPointer<char>(),
                      delegate->incomingContentLength,
                      delegate->removedContentLength,
-                     delegate->isSpdyUsed);
+                     delegate->isHttp2Used);
             replyDownloadData(delegate->synchronousDownloadData);
         }
 
@@ -1253,7 +1251,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
                                                          QSharedPointer<char> db,
                                                          qint64 contentLength,
                                                          qint64 removedContentLength,
-                                                         bool spdyWasUsed)
+                                                         bool h2Used)
 {
     Q_Q(QNetworkReplyHttpImpl);
     Q_UNUSED(contentLength);
@@ -1279,16 +1277,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
     }
 
     q->setAttribute(QNetworkRequest::HttpPipeliningWasUsedAttribute, pu);
-    const QVariant http2Allowed = request.attribute(QNetworkRequest::HTTP2AllowedAttribute);
-    const QVariant http2Direct = request.attribute(QNetworkRequest::Http2DirectAttribute);
-    if ((http2Allowed.isValid() && http2Allowed.toBool())
-        || (http2Direct.isValid() && http2Direct.toBool())) {
-        q->setAttribute(QNetworkRequest::HTTP2WasUsedAttribute, spdyWasUsed);
-        q->setAttribute(QNetworkRequest::SpdyWasUsedAttribute, false);
-    } else {
-        q->setAttribute(QNetworkRequest::SpdyWasUsedAttribute, spdyWasUsed);
-        q->setAttribute(QNetworkRequest::HTTP2WasUsedAttribute, false);
-    }
+    q->setAttribute(QNetworkRequest::Http2WasUsedAttribute, h2Used);
 
     // reconstruct the HTTP header
     QList<QPair<QByteArray, QByteArray> > headerMap = hm;

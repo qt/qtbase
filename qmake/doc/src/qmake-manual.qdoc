@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -992,6 +992,22 @@
     \row    \li embed_translations \li Embed the generated translations from
             \c lrelease in the executable, under \l{QM_FILES_RESOURCE_PREFIX}.
             Requires \c lrelease to be set, too. Not set by default.
+    \row \li create_libtool \li Create a libtool .la file for the currently
+            built library.
+    \row \li create_pc \li Create a pkg-config .pc file for the currently built
+            library.
+    \row \li no_batch \li NMake only: Turn off generation of NMake batch rules
+            or inference rules.
+    \row \li skip_target_version_ext \li Suppress the automatic version number
+            appended to the DLL file name on Windows.
+    \row \li suppress_vcproj_warnings \li Suppress warnings of the VS project
+            generator.
+    \row \li windeployqt \li Automatically invoke windeployqt after linking,
+            and add the output as deployment items.
+    \row \li dont_recurse \li Suppress qmake recursion for the current
+            subproject.
+    \row \li no_include_pwd \li Do not add the current directory to
+            INCLUDEPATHS.
     \endtable
 
     When you use the \c debug_and_release option (which is the default under
@@ -1039,6 +1055,8 @@
         qmake will process all libraries linked to
         by the application and find their meta-information (see
         \l{LibDepend}{Library Dependencies} for more info).
+     \row \li no_install_prl \li This option disables the generation of
+        installation rules for generated .prl files.
      \endtable
 
     \note The \c create_prl option is required when \e {building} a
@@ -1143,6 +1161,26 @@
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 27
+
+    \target DEFINES_DEBUG
+    \section1 DEFINES_DEBUG
+
+    Specifies preprocessor defines for the debug configuration. The values of
+    this variable get added to \l{DEFINES} before the project is loaded. This
+    variable is typically set in \l{#QMAKESPEC}{qmake.conf} and rarely needs
+    to be modified.
+
+    This variable was introduced in Qt 5.13.2.
+
+    \target DEFINES_RELEASE
+    \section1 DEFINES_RELEASE
+
+    Specifies preprocessor defines for the release configuration. The values of
+    this variable get added to \l{DEFINES} before the project is loaded. This
+    variable is typically set in \l{#QMAKESPEC}{qmake.conf} and rarely needs
+    to be modified.
+
+    This variable was introduced in Qt 5.13.2.
 
     \target DEF_FILE
     \section1 DEF_FILE
@@ -2871,8 +2909,8 @@
     On desktop Windows, the default value is the value of the environment
     variable \c{WindowsSDKVersion}.
 
-    On WinRT, the default value is the value of the environment variable
-    \c{UCRTVERSION}.
+    On Universal Windows Platform (UWP), the default value is the value of the
+    environment variable \c{UCRTVERSION}.
 
     \target WINDOWS_TARGET_PLATFORM_MIN_VERSION
     \section1 WINDOWS_TARGET_PLATFORM_MIN_VERSION
@@ -2885,8 +2923,8 @@
     \target WINRT_MANIFEST
     \section1 WINRT_MANIFEST
 
-    Specifies parameters to be passed to the application manifest on \l{Qt for WinRT}{Windows
-    Runtime}. The allowed values are:
+    Specifies parameters to be passed to the application manifest on
+    \l{Qt for UWP}{UWP}. The allowed values are:
 
     \table
     \header
@@ -2921,7 +2959,6 @@
     \row
         \li foreground
         \li Tile foreground (text) color. Defaults to \c{light}.
-            This option is only available for Windows Store apps on Windows 8 and Windows RT.
     \row
         \li iconic_tile_icon
         \li Image file for the \c{iconic} tile template icon. Default provided by
@@ -2936,16 +2973,16 @@
             manifest's UUID, or generates a new UUID if none is present.
     \row
         \li logo_30x30
-        \li Logo image file of size 30x30 pixels. This is not supported on Windows Phone.
+        \li Logo image file of size 30x30 pixels.
     \row
         \li logo_41x41
-        \li Logo image file of size 41x41 pixels. This is only supported on Windows Phone.
+        \li Logo image file of size 41x41 pixels. This parameter is obsolete.
     \row
         \li logo_70x70
-        \li Logo image file of size 70x70 pixels. This is not supported on Windows Phone.
+        \li Logo image file of size 70x70 pixels.
     \row
         \li logo_71x71
-        \li Logo image file of size 71x71 pixels. This is only supported on Windows Phone.
+        \li Logo image file of size 71x71 pixels. This parameter is obsolete.
     \row
         \li logo_150x150
         \li Logo image file of size 150x150 pixels. This is supported on all Windows
@@ -2960,31 +2997,27 @@
             Store App platforms.
     \row
         \li logo_620x300
-        \li Splash screen image file of size 620x300 pixels. This is not supported on
-            Windows Phone.
+        \li Splash screen image file of size 620x300 pixels.
     \row
         \li logo_480x800
-        \li Splash screen image file of size 480x800 pixels. This is only supported on
-            Windows Phone.
+        \li Splash screen image file of size 480x800 pixels.
+            This parameter is obsolete.
     \row
         \li logo_large
         \li Large logo image file. This has to be 150x150 pixels. Supported on all
             Windows Store App platforms. Default provided by the mkspec.
     \row
         \li logo_medium
-        \li Medium logo image file. For Windows Phone the image must have a pixel size
-            of 71x71, for other Windows Store App platforms 70x70. Default provided by
-            the mkspec.
+        \li Medium logo image file. The image must have a pixel size of 70x70.
+            Default provided by the mkspec.
     \row
         \li logo_small
-        \li Small logo image file. For Windows Phone the image must have a pixel size
-            of 44x44, for other Windows Store App platforms 30x30. Default provided by
-            the mkspec.
+        \li Small logo image file. The image must have a pixel size of 30x30.
+            Default provided by the mkspec.
     \row
         \li logo_splash
-        \li Splash screen image file. For Windows Phone the image must have a pixel size
-            of 480x800, for other Windows Store App platforms 620x300. Default provided
-            by the mkspec.
+        \li Splash screen image file. The image must have a pixel size of
+            620x300. Default provided by the mkspec.
     \row
         \li logo_store
         \li Logo image file for Windows Store. Default provided by the mkspec.
@@ -2997,10 +3030,12 @@
         \li The name of the package as displayed to the user. Defaults to TARGET.
     \row
         \li phone_product_id
-        \li The GUID of the product. Defaults to the value of WINRT_MANIFEST.identity. (Windows Phone only)
+        \li The GUID of the product.
+            This parameter is obsolete.
     \row
         \li phone_publisher_id
-        \li The GUID of the publisher. Defaults to an invalid GUID. (Windows Phone only)
+        \li The GUID of the publisher.
+            This parameter is obsolete.
     \row
         \li publisher
         \li Display name of the publisher. Defaults to \c{Default publisher display name}.
@@ -3050,10 +3085,6 @@
     WINRT_MANIFEST = someManifest.xml.in
     WINRT_MANIFEST.CONFIG += verbatim
     \endcode
-
-    \note The required image sizes of \e logo_small, \e logo_medium, and \e logo_large
-          depend on the target platform. The general descriptions are overwritten if a
-          description that specifies the size is provided.
 
     \target YACCSOURCES
     \section1 YACCSOURCES
@@ -4795,6 +4826,11 @@
         \li explicit_dependencies
         \li The dependencies for the output only get generated from the depends
             member and from nowhere else.
+    \row
+        \li dep_existing_only
+        \li Every dependency that is a result of .depend_command is checked for
+            existence. Non-existing dependencies are ignored.
+            This value was introduced in Qt 5.13.2.
     \row
         \li dep_lines
         \li The output from the .depend_command is interpreted to be one file

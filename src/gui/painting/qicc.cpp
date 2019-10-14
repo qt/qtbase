@@ -687,9 +687,6 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromDciP3D65()) {
         qCDebug(lcIcc) << "fromIccProfile: DCI-P3 D65 primaries detected";
         colorspaceDPtr->primaries = QColorSpace::Primaries::DciP3D65;
-    } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromBt2020()) {
-        qCDebug(lcIcc) << "fromIccProfile: BT.2020 primaries detected";
-        colorspaceDPtr->primaries = QColorSpace::Primaries::Bt2020;
     }
     if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromProPhotoRgb()) {
         qCDebug(lcIcc) << "fromIccProfile: ProPhoto RGB primaries detected";
@@ -765,10 +762,9 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
             qCDebug(lcIcc) << "fromIccProfile: Description" << colorspaceDPtr->description;
     }
 
-    if (!colorspaceDPtr->identifyColorSpace())
-        colorspaceDPtr->id = QColorSpace::Unknown;
-    else
-        qCDebug(lcIcc) << "fromIccProfile: Named colorspace detected: " << colorSpace->colorSpaceId();
+    colorspaceDPtr->identifyColorSpace();
+    if (colorspaceDPtr->namedColorSpace)
+        qCDebug(lcIcc) << "fromIccProfile: Named colorspace detected: " << QColorSpace::NamedColorSpace(colorspaceDPtr->namedColorSpace);
 
     colorspaceDPtr->iccProfile = data;
 

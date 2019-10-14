@@ -157,7 +157,7 @@ class GradientWidget : public QWidget
     Q_OBJECT
 
 public:
-    GradientWidget(QWidget *parent);
+    GradientWidget(QWidget *parent = nullptr);
 
 public slots:
     void setDefault1() { setDefault(1); }

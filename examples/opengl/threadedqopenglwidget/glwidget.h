@@ -88,29 +88,29 @@ private:
     void quad(qreal x1, qreal y1, qreal x2, qreal y2, qreal x3, qreal y3, qreal x4, qreal y4);
     void extrude(qreal x1, qreal y1, qreal x2, qreal y2);
 
-    bool m_inited;
-    qreal m_fAngle;
-    qreal m_fScale;
+    bool m_inited = false;
+    qreal m_fAngle = 0;
+    qreal m_fScale = 1;
     QVector<QVector3D> vertices;
     QVector<QVector3D> normals;
     QOpenGLShaderProgram program;
     QOpenGLBuffer vbo;
-    int vertexAttr;
-    int normalAttr;
-    int matrixUniform;
-    GLWidget *m_glwidget;
+    int vertexAttr = 0;
+    int normalAttr = 0;
+    int matrixUniform = 0;
+    GLWidget *m_glwidget = nullptr;
     QMutex m_renderMutex;
     QElapsedTimer m_elapsed;
     QMutex m_grabMutex;
     QWaitCondition m_grabCond;
-    bool m_exiting;
+    bool m_exiting = false;
 };
 
 class GLWidget : public QOpenGLWidget
 {
     Q_OBJECT
 public:
-    explicit GLWidget(QWidget *parent = 0);
+    explicit GLWidget(QWidget *parent = nullptr);
     ~GLWidget();
 
 protected:

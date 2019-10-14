@@ -69,7 +69,7 @@ class AddressBook : public QWidget
     Q_OBJECT
 
 public:
-    AddressBook(QWidget *parent = 0);
+    AddressBook(QWidget *parent = nullptr);
     enum Mode { NavigationMode, AddingMode, EditingMode };
 
 public slots:

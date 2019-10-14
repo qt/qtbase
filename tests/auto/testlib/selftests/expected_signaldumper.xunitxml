@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="125" failures="0" tests="12" name="tst_Signaldumper">
+<testsuite errors="126" failures="0" tests="13" name="tst_Signaldumper">
   <properties>
     <property value="@INSERT_QT_VERSION_HERE@" name="QTestVersion"/>
     <property value="@INSERT_QT_VERSION_HERE@" name="QtVersion"/>
@@ -151,8 +151,11 @@
     <!-- message="Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())" type="info" -->
     <!-- message="Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())" type="info" -->
   </testcase>
+  <testcase result="pass" name="deletingSender">
+    <!-- message="Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()" type="info" -->
+  </testcase>
   <testcase result="pass" name="cleanupTestCase">
-    <!-- message="Signal: QThread(_POINTER_) finished ()" type="info" -->
+    <!-- message="    Signal: QThread(_POINTER_) finished ()" type="info" -->
   </testcase>
   <system-err>
 <![CDATA[Signal: QThread(_POINTER_) started ()]]>
@@ -279,6 +282,7 @@
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ()]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
-<![CDATA[Signal: QThread(_POINTER_) finished ()]]>
+<![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>
+<![CDATA[    Signal: QThread(_POINTER_) finished ()]]>
   </system-err>
 </testsuite>

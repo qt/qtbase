@@ -69,7 +69,7 @@ private:
 private slots:
     void selectionChangedSlot(const QItemSelection &newSelection, const QItemSelection &oldSelection);
 public:
-    MainWindow(QWidget *parent = 0);
+    MainWindow(QWidget *parent = nullptr);
 };
 
 #endif // MAINWINDOW_H

@@ -53,7 +53,7 @@
 class FlowLayout : public QGraphicsLayout
 {
 public:
-    FlowLayout();
+    FlowLayout(QGraphicsLayoutItem *parent = nullptr);
     inline void addItem(QGraphicsLayoutItem *item);
     void insertItem(int index, QGraphicsLayoutItem *item);
     void setSpacing(Qt::Orientations o, qreal spacing);
@@ -75,8 +75,8 @@ private:
     QSizeF prefSize() const;
     QSizeF maxSize() const;
 
-    QList<QGraphicsLayoutItem*> m_items;
-    qreal m_spacing[2];
+    QVector<QGraphicsLayoutItem*> m_items;
+    qreal m_spacing[2] = {6, 6};
 };
 
 

@@ -118,16 +118,16 @@ public:
         return false;
     }
 
-    bool runIterations(Iterator sequenceBeginIterator, int begin, int end, ReducedResultType *) override
+    bool runIterations(Iterator sequenceBeginIterator, int beginIndex, int endIndex, ReducedResultType *) override
     {
         IntermediateResults<typename MapFunctor::result_type> results;
-        results.begin = begin;
-        results.end = end;
-        results.vector.reserve(end - begin);
+        results.begin = beginIndex;
+        results.end = endIndex;
+        results.vector.reserve(endIndex - beginIndex);
 
         Iterator it = sequenceBeginIterator;
-        std::advance(it, begin);
-        for (int i = begin; i < end; ++i) {
+        std::advance(it, beginIndex);
+        for (int i = beginIndex; i < endIndex; ++i) {
             results.vector.append(map(*(it)));
             std::advance(it, 1);
         }
@@ -176,13 +176,13 @@ public:
         return true;
     }
 
-    bool runIterations(Iterator sequenceBeginIterator, int begin, int end, T *results) override
+    bool runIterations(Iterator sequenceBeginIterator, int beginIndex, int endIndex, T *results) override
     {
 
         Iterator it = sequenceBeginIterator;
-        std::advance(it, begin);
-        for (int i = begin; i < end; ++i) {
-            runIteration(it, i, results + (i - begin));
+        std::advance(it, beginIndex);
+        for (int i = beginIndex; i < endIndex; ++i) {
+            runIteration(it, i, results + (i - beginIndex));
             std::advance(it, 1);
         }
 

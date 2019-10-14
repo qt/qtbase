@@ -103,6 +103,12 @@ public:
     QVector<int> supportedSampleCounts();
     void setSampleCount(int sampleCount);
 
+    typedef std::function<void(const VkQueueFamilyProperties *,
+                               uint32_t,
+                               QVector<VkDeviceQueueCreateInfo> &)> QueueCreateInfoModifier;
+    QueueCreateInfoModifier queueCreateInfoModifier() const;
+    void setQueueCreateInfoModifier(QueueCreateInfoModifier modifier);
+
     bool isValid() const;
 
     virtual QVulkanWindowRenderer *createRenderer();
@@ -112,6 +118,7 @@ public:
     const VkPhysicalDeviceProperties *physicalDeviceProperties() const;
     VkDevice device() const;
     VkQueue graphicsQueue() const;
+    uint32_t graphicsQueueFamilyIndex() const;
     VkCommandPool graphicsCommandPool() const;
     uint32_t hostVisibleMemoryIndex() const;
     uint32_t deviceLocalMemoryIndex() const;

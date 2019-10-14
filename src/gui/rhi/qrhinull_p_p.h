@@ -59,6 +59,8 @@ struct QNullBuffer : public QRhiBuffer
     ~QNullBuffer();
     void release() override;
     bool build() override;
+
+    QByteArray data;
 };
 
 struct QNullRenderBuffer : public QRhiRenderBuffer
@@ -82,6 +84,7 @@ struct QNullTexture : public QRhiTexture
     const QRhiNativeHandles *nativeHandles() override;
 
     QRhiNullTextureNativeHandles nativeHandlesStruct;
+    QImage image[QRhi::MAX_LAYERS][QRhi::MAX_LEVELS];
 };
 
 struct QNullSampler : public QRhiSampler
@@ -282,7 +285,13 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
-    void makeThreadLocalNativeContextCurrent() override;
+    bool makeThreadLocalNativeContextCurrent() override;
+    void releaseCachedResources() override;
+    bool isDeviceLost() const override;
+
+    void simulateTextureUpload(const QRhiResourceUpdateBatchPrivate::TextureOp &u);
+    void simulateTextureCopy(const QRhiResourceUpdateBatchPrivate::TextureOp &u);
+    void simulateTextureGenMips(const QRhiResourceUpdateBatchPrivate::TextureOp &u);
 
     QRhiNullNativeHandles nativeHandlesStruct;
     QRhiSwapChain *currentSwapChain = nullptr;

@@ -60,8 +60,8 @@ class QColorSpace;
 
 namespace QIcc {
 
-Q_GUI_EXPORT bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace);
-Q_GUI_EXPORT QByteArray toIccProfile(const QColorSpace &space);
+bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace);
+QByteArray toIccProfile(const QColorSpace &space);
 
 }
 

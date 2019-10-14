@@ -32,6 +32,6 @@
 extern "C" int LLVMFuzzerTestOneInput(const char *data, size_t size) {
     static int c = 0;
     static QGuiApplication a(c, nullptr);
-    QColorSpace cs = QColorSpace::fromIccProfile(QByteArray(data, size));
+    QColorSpace cs = QColorSpace::fromIccProfile(QByteArray::fromRawData(data, size));
     return 0;
 }

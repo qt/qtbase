@@ -48,10 +48,17 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-
 #include "mainwindow.h"
 #include "scribblearea.h"
+
+#include <QApplication>
+#include <QColorDialog>
+#include <QFileDialog>
+#include <QImageWriter>
+#include <QInputDialog>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QCloseEvent>
 
 //! [0]
 MainWindow::MainWindow(QWidget *parent)
@@ -71,11 +78,10 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::closeEvent(QCloseEvent *event)
 //! [1] //! [2]
 {
-    if (maybeSave()) {
+    if (maybeSave())
         event->accept();
-    } else {
+    else
         event->ignore();
-    }
 }
 //! [2]
 
@@ -231,11 +237,10 @@ bool MainWindow::maybeSave()
                              "Do you want to save your changes?"),
                           QMessageBox::Save | QMessageBox::Discard
                           | QMessageBox::Cancel);
-        if (ret == QMessageBox::Save) {
+        if (ret == QMessageBox::Save)
             return saveFile("png");
-        } else if (ret == QMessageBox::Cancel) {
+        else if (ret == QMessageBox::Cancel)
             return false;
-        }
     }
     return true;
 }
@@ -252,10 +257,8 @@ bool MainWindow::saveFile(const QByteArray &fileFormat)
                                tr("%1 Files (*.%2);;All Files (*)")
                                .arg(QString::fromLatin1(fileFormat.toUpper()))
                                .arg(QString::fromLatin1(fileFormat)));
-    if (fileName.isEmpty()) {
+    if (fileName.isEmpty())
         return false;
-    } else {
-        return scribbleArea->saveImage(fileName, fileFormat.constData());
-    }
+    return scribbleArea->saveImage(fileName, fileFormat.constData());
 }
 //! [20]

@@ -69,7 +69,7 @@ private:
     void add(const QVector3D &v, const QVector3D &n);
 
     QVector<GLfloat> m_data;
-    int m_count;
+    int m_count = 0;
 };
 
 #endif // LOGO_H

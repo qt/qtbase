@@ -91,8 +91,8 @@ bool QMimeDatabasePrivate::shouldCheck()
     return true;
 }
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
-#define QT_USE_MMAP
+#if defined(Q_OS_UNIX) && !defined(Q_OS_NACL) && !defined(Q_OS_INTEGRITY)
+#  define QT_USE_MMAP
 #endif
 
 void QMimeDatabasePrivate::loadProviders()

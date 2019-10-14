@@ -68,7 +68,9 @@ QTsLibMouseHandler::QTsLibMouseHandler(const QString &key,
         return;
     }
 
+#ifdef TSLIB_VERSION_EVENTPATH /* also introduced in 1.15 */
     qCDebug(qLcTsLib) << "tslib device is" << ts_get_eventpath(m_dev);
+#endif
     m_notify = new QSocketNotifier(ts_fd(m_dev), QSocketNotifier::Read, this);
     connect(m_notify, &QSocketNotifier::activated, this, &QTsLibMouseHandler::readMouseData);
 }

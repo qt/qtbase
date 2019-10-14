@@ -41,7 +41,8 @@ private slots:
     void fuzzyCompare();
     void ltgt_data();
     void ltgt();
-    void qNan();
+    void qNaN();
+    void infinity();
     void float_cast();
     void float_cast_data();
     void promotionTests();
@@ -49,6 +50,9 @@ private slots:
     void arithOps();
     void floatToFloat16();
     void floatFromFloat16();
+    void finite_data();
+    void finite();
+    void properties();
     void limits();
 };
 
@@ -103,6 +107,7 @@ void tst_qfloat16::ltgt_data()
     QTest::addColumn<float>("val2");
 
     QTest::newRow("zero")  << 0.0f << 0.0f;
+    QTest::newRow("-zero") << -0.0f << 0.0f;
     QTest::newRow("ten")   << 10.0f << 10.0f;
     QTest::newRow("large") << 100000.0f << 100000.0f;
     QTest::newRow("small") << 0.0000001f << 0.0000001f;
@@ -154,38 +159,66 @@ void tst_qfloat16::ltgt()
 #  pragma GCC optimize "no-fast-math"
 #endif
 
-void tst_qfloat16::qNan()
+void tst_qfloat16::qNaN()
 {
 #if defined __FAST_MATH__ && (__GNUC__ * 100 + __GNUC_MINOR__ < 404)
     QSKIP("Non-conformant fast math mode is enabled, cannot run test");
 #endif
-    qfloat16 nan = qQNaN();
-    QVERIFY(!(0. > nan));
-    QVERIFY(!(0. < nan));
+    using Bounds = std::numeric_limits<qfloat16>;
+    const qfloat16 nan = Bounds::quiet_NaN();
+    const qfloat16 zero(0), one(1);
+    QVERIFY(!(zero > nan));
+    QVERIFY(!(zero < nan));
+    QVERIFY(!(zero == nan));
     QVERIFY(!qIsInf(nan));
     QVERIFY(qIsNaN(nan));
-    QVERIFY(qIsNaN(nan + 1.f));
+    QVERIFY(qIsNaN(nan + one));
     QVERIFY(qIsNaN(-nan));
-    qfloat16 inf = qInf();
-    QVERIFY(inf > qfloat16(0));
-    QVERIFY(-inf < qfloat16(0));
-    QVERIFY(!qIsNaN(inf));
-    QVERIFY(qIsInf(inf));
-    QVERIFY(qIsInf(-inf));
-    QVERIFY(qIsInf(2.f*inf));
-    QVERIFY(qIsInf(inf*2.f));
-    // QTBUG-75812: QEMU/arm64 compiler over-optimizes, so flakily fails 1/inf == 0 :-(
-    if (qfloat16(9.785e-4f) == qfloat16(9.794e-4f))
-        QCOMPARE(qfloat16(1.f) / inf, qfloat16(0.f));
 #ifdef Q_CC_INTEL
     QEXPECT_FAIL("", "ICC optimizes zero * anything to zero", Continue);
 #endif
-    QVERIFY(qIsNaN(nan*0.f));
+    QVERIFY(qIsNaN(nan * zero));
 #ifdef Q_CC_INTEL
     QEXPECT_FAIL("", "ICC optimizes zero * anything to zero", Continue);
 #endif
-    QVERIFY(qIsNaN(inf*0.f));
-    QVERIFY(qFuzzyCompare(qfloat16(1.f/inf), qfloat16(0.0)));
+    QVERIFY(qIsNaN(Bounds::infinity() * zero));
+
+    QVERIFY(!nan.isNormal());
+    QVERIFY(!qIsFinite(nan));
+    QVERIFY(!(nan == nan));
+    QCOMPARE(nan, nan); // Despite the preceding
+    QCOMPARE(qFpClassify(nan), FP_NAN);
+}
+
+void tst_qfloat16::infinity()
+{
+    const qfloat16 huge = std::numeric_limits<qfloat16>::infinity();
+    const qfloat16 zero(0), one(1), two(2);
+    QVERIFY(huge > -huge);
+    QVERIFY(huge > zero);
+    QVERIFY(-huge < zero);
+    QCOMPARE(huge, huge);
+    QCOMPARE(-huge, -huge);
+
+    // QTBUG-75812 - see overOptimized in the limits() test.
+    if (qfloat16(9.785e-4f) == qfloat16(9.794e-4f)) {
+        QCOMPARE(one / huge, zero);
+        QVERIFY(qFuzzyCompare(one / huge, zero)); // (same thing)
+    }
+
+    QVERIFY(qIsInf(huge));
+    QVERIFY(qIsInf(-huge));
+    QVERIFY(qIsInf(two * huge));
+    QVERIFY(qIsInf(huge * two));
+
+    QVERIFY(!huge.isNormal());
+    QVERIFY(!(-huge).isNormal());
+    QVERIFY(!qIsNaN(huge));
+    QVERIFY(!qIsNaN(-huge));
+    QVERIFY(!qIsFinite(huge));
+    QVERIFY(!qIsFinite(-huge));
+    QCOMPARE(qFpClassify(huge), FP_INFINITE);
+    QCOMPARE(qFpClassify(-huge), FP_INFINITE);
 }
 
 void tst_qfloat16::float_cast_data()
@@ -366,10 +399,41 @@ static qfloat16 powf16(qfloat16 base, int raise)
     return answer;
 }
 
-void tst_qfloat16::limits()
+void tst_qfloat16::finite_data()
 {
-    // *NOT* using QCOMPARE() on finite qfloat16 values, since that uses fuzzy
-    // comparison, and we need exact here.
+    using Bounds = std::numeric_limits<qfloat16>;
+    QTest::addColumn<qfloat16>("value");
+    QTest::addColumn<int>("mode");
+
+    QTest::newRow("zero") << qfloat16(0) << FP_ZERO;
+    QTest::newRow("-zero") << -qfloat16(0) << FP_ZERO;
+    QTest::newRow("one") << qfloat16(1) << FP_NORMAL;
+    QTest::newRow("-one") << qfloat16(-1) << FP_NORMAL;
+    QTest::newRow("ten") << qfloat16(10) << FP_NORMAL;
+    QTest::newRow("-ten") << qfloat16(-10) << FP_NORMAL;
+    QTest::newRow("max") << Bounds::max() << FP_NORMAL;
+    QTest::newRow("lowest") << Bounds::lowest() << FP_NORMAL;
+    QTest::newRow("min") << Bounds::min() << FP_NORMAL;
+    QTest::newRow("-min") << -Bounds::min() << FP_NORMAL;
+    QTest::newRow("denorm_min") << Bounds::denorm_min() << FP_SUBNORMAL;
+    QTest::newRow("-denorm_min") << -Bounds::denorm_min() << FP_SUBNORMAL;
+}
+
+void tst_qfloat16::finite()
+{
+    QFETCH(qfloat16, value);
+    QFETCH(int, mode);
+    QCOMPARE(value.isNormal(), mode != FP_SUBNORMAL);
+    QCOMPARE(value, value); // Fuzzy
+    QVERIFY(value == value); // Exact
+    QVERIFY(qIsFinite(value));
+    QVERIFY(!qIsInf(value));
+    QVERIFY(!qIsNaN(value));
+    QCOMPARE(qFpClassify(value), mode);
+}
+
+void tst_qfloat16::properties()
+{
     using Bounds = std::numeric_limits<qfloat16>;
     QVERIFY(Bounds::is_specialized);
     QVERIFY(Bounds::is_signed);
@@ -386,21 +450,22 @@ void tst_qfloat16::limits()
     QCOMPARE(Bounds::round_style, std::round_to_nearest);
     QCOMPARE(Bounds::radix, 2);
     // Untested: has_denorm_loss
+}
 
-    // A few common values:
+void tst_qfloat16::limits() // See also: qNaN() and infinity()
+{
+    // *NOT* using QCOMPARE() on finite qfloat16 values, since that uses fuzzy
+    // comparison, and we need exact here.
+    using Bounds = std::numeric_limits<qfloat16>;
+
+    // A few useful values:
     const qfloat16 zero(0), one(1), ten(10);
-    QVERIFY(qIsFinite(zero));
-    QVERIFY(!qIsInf(zero));
-    QVERIFY(!qIsNaN(zero));
-    QCOMPARE(qFpClassify(zero), FP_ZERO);
-    QVERIFY(qIsFinite(one));
-    QVERIFY(!qIsInf(one));
-    QCOMPARE(qFpClassify(one), FP_NORMAL);
-    QVERIFY(!qIsNaN(one));
-    QVERIFY(qIsFinite(ten));
-    QVERIFY(!qIsInf(ten));
-    QVERIFY(!qIsNaN(ten));
-    QCOMPARE(qFpClassify(ten), FP_NORMAL);
+
+    // The specifics of minus zero:
+    // (IEEE 754 seems to want -zero < zero, but -0. == 0. and -0.f == 0.f in C++.)
+    QVERIFY(-zero <= zero);
+    QVERIFY(-zero == zero);
+    QVERIFY(!(-zero > zero));
 
     // digits in the mantissa, including the implicit 1 before the binary dot at its left:
     QVERIFY(qfloat16(1 << (Bounds::digits - 1)) + one > qfloat16(1 << (Bounds::digits - 1)));
@@ -436,12 +501,12 @@ void tst_qfloat16::limits()
     // How many digits are significant ?  (Casts avoid linker errors ...)
     QCOMPARE(int(Bounds::digits10), 3); // 9.79e-4 has enough sigificant digits:
     qfloat16 below(9.785e-4f), above(9.794e-4f);
-#if 0 // Sadly, the QEMU x-compile for arm64 "optimises" comparisons:
-    const bool overOptimised = false;
+#if 0 // Sadly, the QEMU x-compile for arm64 "optimizes" comparisons:
+    const bool overOptimized = false;
 #else
-    const bool overOptimised = (below != above);
-    if (overOptimised)
-        QEXPECT_FAIL("", "Over-optimised on QEMU", Continue);
+    const bool overOptimized = (below != above);
+    if (overOptimized)
+        QEXPECT_FAIL("", "Over-optimized on ARM", Continue);
 #endif // (but it did, so should, pass everywhere else, confirming digits10 is indeed 3).
     QVERIFY(below == above);
     QCOMPARE(int(Bounds::max_digits10), 5); // we need 5 to distinguish these two:
@@ -450,62 +515,26 @@ void tst_qfloat16::limits()
     // Actual limiting values of the type:
     const qfloat16 rose(one + Bounds::epsilon());
     QVERIFY(rose > one);
-    if (overOptimised)
-        QEXPECT_FAIL("", "Over-optimised on QEMU", Continue);
+    if (overOptimized)
+        QEXPECT_FAIL("", "Over-optimized on ARM", Continue);
     QVERIFY(one + Bounds::epsilon() / rose == one);
-    QVERIFY(qIsInf(Bounds::infinity()));
-    QVERIFY(!qIsNaN(Bounds::infinity()));
-    QVERIFY(!qIsFinite(Bounds::infinity()));
-    QCOMPARE(Bounds::infinity(), Bounds::infinity());
-    QCOMPARE(qFpClassify(Bounds::infinity()), FP_INFINITE);
-
-    QVERIFY(Bounds::infinity() > -Bounds::infinity());
-    QVERIFY(Bounds::infinity() > zero);
-    QVERIFY(qIsInf(-Bounds::infinity()));
-    QVERIFY(!qIsNaN(-Bounds::infinity()));
-    QVERIFY(!qIsFinite(-Bounds::infinity()));
-    QCOMPARE(-Bounds::infinity(), -Bounds::infinity());
-    QCOMPARE(qFpClassify(-Bounds::infinity()), FP_INFINITE);
-
-    QVERIFY(-Bounds::infinity() < zero);
-    QVERIFY(qIsNaN(Bounds::quiet_NaN()));
-    QVERIFY(!qIsInf(Bounds::quiet_NaN()));
-    QVERIFY(!qIsFinite(Bounds::quiet_NaN()));
-    QVERIFY(!(Bounds::quiet_NaN() == Bounds::quiet_NaN()));
-    QCOMPARE(Bounds::quiet_NaN(), Bounds::quiet_NaN());
-    QCOMPARE(qFpClassify(Bounds::quiet_NaN()), FP_NAN);
 
     QVERIFY(Bounds::max() > zero);
-    QVERIFY(qIsFinite(Bounds::max()));
-    QVERIFY(!qIsInf(Bounds::max()));
-    QVERIFY(!qIsNaN(Bounds::max()));
     QVERIFY(qIsInf(Bounds::max() * rose));
-    QCOMPARE(qFpClassify(Bounds::max()), FP_NORMAL);
 
     QVERIFY(Bounds::lowest() < zero);
-    QVERIFY(qIsFinite(Bounds::lowest()));
-    QVERIFY(!qIsInf(Bounds::lowest()));
-    QVERIFY(!qIsNaN(Bounds::lowest()));
     QVERIFY(qIsInf(Bounds::lowest() * rose));
-    QCOMPARE(qFpClassify(Bounds::lowest()), FP_NORMAL);
 
     QVERIFY(Bounds::min() > zero);
-    QVERIFY(Bounds::min().isNormal());
     QVERIFY(!(Bounds::min() / rose).isNormal());
-    QVERIFY(qIsFinite(Bounds::min()));
-    QVERIFY(!qIsInf(Bounds::min()));
-    QVERIFY(!qIsNaN(Bounds::min()));
-    QCOMPARE(qFpClassify(Bounds::min()), FP_NORMAL);
 
     QVERIFY(Bounds::denorm_min() > zero);
-    QVERIFY(!Bounds::denorm_min().isNormal());
-    QVERIFY(qIsFinite(Bounds::denorm_min()));
-    QVERIFY(!qIsInf(Bounds::denorm_min()));
-    QVERIFY(!qIsNaN(Bounds::denorm_min()));
-    if (overOptimised)
-        QEXPECT_FAIL("", "Over-optimised on QEMU", Continue);
-    QCOMPARE(Bounds::denorm_min() / rose, zero);
-    QCOMPARE(qFpClassify(Bounds::denorm_min()), FP_SUBNORMAL);
+    if (overOptimized)
+        QEXPECT_FAIL("", "Over-optimized on ARM", Continue);
+    QVERIFY(Bounds::denorm_min() / rose == zero);
+    if (overOptimized)
+        QEXPECT_FAIL("", "Over-optimized on ARM", Continue);
+    QVERIFY(-Bounds::denorm_min() / rose == -zero);
 }
 
 QTEST_APPLESS_MAIN(tst_qfloat16)

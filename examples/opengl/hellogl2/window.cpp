@@ -121,7 +121,7 @@ void Window::keyPressEvent(QKeyEvent *e)
 void Window::dockUndock()
 {
     if (parent()) {
-        setParent(0);
+        setParent(nullptr);
         setAttribute(Qt::WA_DeleteOnClose);
         move(QApplication::desktop()->width() / 2 - width() / 2,
              QApplication::desktop()->height() / 2 - height() / 2);
@@ -134,10 +134,12 @@ void Window::dockUndock()
                 dockBtn->setText(tr("Undock"));
                 mainWindow->setCentralWidget(this);
             } else {
-                QMessageBox::information(0, tr("Cannot dock"), tr("Main window already closed"));
+                QMessageBox::information(nullptr, tr("Cannot dock"),
+                                         tr("Main window already closed"));
             }
         } else {
-            QMessageBox::information(0, tr("Cannot dock"), tr("Main window already occupied"));
+            QMessageBox::information(nullptr, tr("Cannot dock"),
+                                     tr("Main window already occupied"));
         }
     }
 }

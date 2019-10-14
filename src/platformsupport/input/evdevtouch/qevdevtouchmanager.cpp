@@ -98,8 +98,8 @@ void QEvdevTouchManager::addDevice(const QString &deviceNode)
     qCDebug(qLcEvdevTouch, "evdevtouch: Adding device at %ls", qUtf16Printable(deviceNode));
     auto handler = qt_make_unique<QEvdevTouchScreenHandlerThread>(deviceNode, m_spec);
     if (handler) {
-        m_activeDevices.add(deviceNode, std::move(handler));
         connect(handler.get(), &QEvdevTouchScreenHandlerThread::touchDeviceRegistered, this, &QEvdevTouchManager::updateInputDeviceCount);
+        m_activeDevices.add(deviceNode, std::move(handler));
     } else {
         qWarning("evdevtouch: Failed to open touch device %ls", qUtf16Printable(deviceNode));
     }

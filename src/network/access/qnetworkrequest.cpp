@@ -272,24 +272,13 @@ QT_BEGIN_NAMESPACE
         The QNetworkSession ConnectInBackground property will be set according to
         this attribute.
 
-    \value SpdyAllowedAttribute
-        Requests only, type: QMetaType::Bool (default: false)
-        Indicates whether the QNetworkAccessManager code is
-        allowed to use SPDY with this request. This applies only
-        to SSL requests, and depends on the server supporting SPDY.
-
-    \value SpdyWasUsedAttribute
-        Replies only, type: QMetaType::Bool
-        Indicates whether SPDY was used for receiving
-        this reply.
-
-    \value HTTP2AllowedAttribute
+    \value Http2AllowedAttribute
         Requests only, type: QMetaType::Bool (default: false)
         Indicates whether the QNetworkAccessManager code is
         allowed to use HTTP/2 with this request. This applies
         to SSL requests or 'cleartext' HTTP/2.
 
-    \value HTTP2WasUsedAttribute
+    \value Http2WasUsedAttribute
         Replies only, type: QMetaType::Bool (default: false)
         Indicates whether HTTP/2 was used for receiving this reply.
         (This value was introduced in 5.9.)
@@ -329,7 +318,7 @@ QT_BEGIN_NAMESPACE
         server supports HTTP/2. The attribute works with SSL or 'cleartext'
         HTTP/2. If a server turns out to not support HTTP/2, when HTTP/2 direct
         was specified, QNetworkAccessManager gives up, without attempting to
-        fall back to HTTP/1.1. If both HTTP2AllowedAttribute and
+        fall back to HTTP/1.1. If both Http2AllowedAttribute and
         Http2DirectAttribute are set, Http2DirectAttribute takes priority.
         (This value was introduced in 5.11.)
 

@@ -497,7 +497,6 @@ while [ "$#" -gt 0 ]; do
     -docdir| \
     -headerdir| \
     -plugindir| \
-    -importdir| \
     -qmldir| \
     -archdatadir| \
     -datadir| \

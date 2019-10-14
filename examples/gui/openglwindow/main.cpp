@@ -50,36 +50,30 @@
 
 #include "openglwindow.h"
 
-#include <QtGui/QGuiApplication>
-#include <QtGui/QMatrix4x4>
-#include <QtGui/QOpenGLShaderProgram>
-#include <QtGui/QScreen>
+#include <QGuiApplication>
+#include <QMatrix4x4>
+#include <QOpenGLShaderProgram>
+#include <QScreen>
+#include <QtMath>
 
-#include <QtCore/qmath.h>
 
 //! [1]
 class TriangleWindow : public OpenGLWindow
 {
 public:
-    TriangleWindow();
+    using OpenGLWindow::OpenGLWindow;
 
     void initialize() override;
     void render() override;
 
 private:
-    GLuint m_posAttr;
-    GLuint m_colAttr;
-    GLuint m_matrixUniform;
+    GLint m_posAttr = 0;
+    GLint m_colAttr = 0;
+    GLint m_matrixUniform = 0;
 
-    QOpenGLShaderProgram *m_program;
-    int m_frame;
+    QOpenGLShaderProgram *m_program = nullptr;
+    int m_frame = 0;
 };
-
-TriangleWindow::TriangleWindow()
-    : m_program(0)
-    , m_frame(0)
-{
-}
 //! [1]
 
 //! [2]
@@ -128,8 +122,11 @@ void TriangleWindow::initialize()
     m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
     m_program->link();
     m_posAttr = m_program->attributeLocation("posAttr");
+    Q_ASSERT(m_posAttr != -1);
     m_colAttr = m_program->attributeLocation("colAttr");
+    Q_ASSERT(m_colAttr != -1);
     m_matrixUniform = m_program->uniformLocation("matrix");
+    Q_ASSERT(m_matrixUniform != -1);
 }
 //! [4]
 
@@ -144,19 +141,19 @@ void TriangleWindow::render()
     m_program->bind();
 
     QMatrix4x4 matrix;
-    matrix.perspective(60.0f, 4.0f/3.0f, 0.1f, 100.0f);
+    matrix.perspective(60.0f, 4.0f / 3.0f, 0.1f, 100.0f);
     matrix.translate(0, 0, -2);
     matrix.rotate(100.0f * m_frame / screen()->refreshRate(), 0, 1, 0);
 
     m_program->setUniformValue(m_matrixUniform, matrix);
 
-    GLfloat vertices[] = {
-        0.0f, 0.707f,
+    static const GLfloat vertices[] = {
+         0.0f,  0.707f,
         -0.5f, -0.5f,
-        0.5f, -0.5f
+         0.5f, -0.5f
     };
 
-    GLfloat colors[] = {
+    static const GLfloat colors[] = {
         1.0f, 0.0f, 0.0f,
         0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 1.0f
@@ -165,13 +162,13 @@ void TriangleWindow::render()
     glVertexAttribPointer(m_posAttr, 2, GL_FLOAT, GL_FALSE, 0, vertices);
     glVertexAttribPointer(m_colAttr, 3, GL_FLOAT, GL_FALSE, 0, colors);
 
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(m_posAttr);
+    glEnableVertexAttribArray(m_colAttr);
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
-    glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(m_colAttr);
+    glDisableVertexAttribArray(m_posAttr);
 
     m_program->release();
 

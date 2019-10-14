@@ -48,7 +48,9 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QPushButton>
 
 #include "stylewindow.h"
 

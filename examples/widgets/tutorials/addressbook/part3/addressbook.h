@@ -66,7 +66,7 @@ class AddressBook : public QWidget
     Q_OBJECT
 
 public:
-    AddressBook(QWidget *parent = 0);
+    AddressBook(QWidget *parent = nullptr);
 
 public slots:
     void addContact();

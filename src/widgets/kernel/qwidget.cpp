@@ -1513,13 +1513,8 @@ QWidget::~QWidget()
 
     if (d->declarativeData) {
         d->wasDeleted = true; // needed, so that destroying the declarative data does the right thing
-        if (static_cast<QAbstractDeclarativeDataImpl*>(d->declarativeData)->ownedByQml1) {
-            if (QAbstractDeclarativeData::destroyed_qml1)
-                QAbstractDeclarativeData::destroyed_qml1(d->declarativeData, this);
-        } else {
-            if (QAbstractDeclarativeData::destroyed)
-                QAbstractDeclarativeData::destroyed(d->declarativeData, this);
-        }
+        if (QAbstractDeclarativeData::destroyed)
+            QAbstractDeclarativeData::destroyed(d->declarativeData, this);
         d->declarativeData = 0;                 // don't activate again in ~QObject
         d->wasDeleted = false;
     }
@@ -6204,7 +6199,7 @@ void QWidget::setFocusProxy(QWidget * w)
 
     if (changingAppFocusWidget) {
         QWidget *newDeepestFocusProxy = d_func()->deepestFocusProxy();
-        QApplicationPrivate::focus_widget = newDeepestFocusProxy ? newDeepestFocusProxy : this;
+        QApplicationPrivate::setFocusWidget(newDeepestFocusProxy ? newDeepestFocusProxy : this, Qt::NoFocusReason);
     }
 }
 
@@ -7669,7 +7664,7 @@ void QWidget::show()
     else if (defaultState == Qt::WindowMaximized)
         showMaximized();
     else
-        setVisible(true); // FIXME: Why not showNormal(), like QWindow::show()?
+        setVisible(true); // Don't call showNormal() as not to clobber Qt::Window(Max/Min)imized
 }
 
 /*! \internal
@@ -9218,9 +9213,11 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
     The default implementation calls mousePressEvent().
 
     \note The widget will also receive mouse press and mouse release
-    events in addition to the double click event. It is up to the
-    developer to ensure that the application interprets these events
-    correctly.
+    events in addition to the double click event. And if another widget
+    that overlaps this widget disappears in response to press or
+    release events, then this widget will only receive the double click
+    event. It is up to the developer to ensure that the application
+    interprets these events correctly.
 
     \sa mousePressEvent(), mouseReleaseEvent(), mouseMoveEvent(),
     event(), QMouseEvent

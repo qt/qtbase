@@ -88,6 +88,9 @@ cross_compile: \
 android|uikit|winrt: \
     CONFIG += builtin_testdata
 
+# Prevent warnings about object files without any symbols
+macos: CONFIG += no_warn_empty_obj_files
+
 CONFIG += \
     utf8_source \
     create_prl link_prl \

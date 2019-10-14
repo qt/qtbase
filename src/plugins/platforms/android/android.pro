@@ -1,9 +1,5 @@
 TARGET = qtforandroid
 
-# STATICPLUGIN needed because there's a Q_IMPORT_PLUGIN in androidjnimain.cpp
-# Yes, the plugin imports itself statically
-DEFINES += QT_STATICPLUGIN
-
 LIBS += -ljnigraphics -landroid
 
 QT += \
@@ -19,7 +15,8 @@ INCLUDEPATH += \
     $$PWD \
     $$QT_SOURCE_TREE/src/3rdparty/android
 
-SOURCES += $$PWD/androidplatformplugin.cpp \
+SOURCES += $$PWD/main.cpp \
+           $$PWD/androidplatformplugin.cpp \
            $$PWD/androidcontentfileengine.cpp \
            $$PWD/androiddeadlockprotector.cpp \
            $$PWD/androidjnimain.cpp \
@@ -92,8 +89,5 @@ qtConfig(vulkan) {
 }
 
 PLUGIN_TYPE = platforms
+PLUGIN_CLASS_NAME = QAndroidIntegrationPlugin
 load(qt_plugin)
-
-#Non-standard install directory, QTBUG-29859
-DESTDIR = $$DESTDIR/android
-target.path = $${target.path}/android

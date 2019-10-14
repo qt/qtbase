@@ -3370,7 +3370,7 @@ void QImage::mirrored_inplace(bool horizontal, bool vertical)
     \sa {QImage#Image Transformations}{Image Transformations}
 */
 
-inline void rgbSwapped_generic(int width, int height, const QImage *src, QImage *dst, const QPixelLayout* layout)
+static inline void rgbSwapped_generic(int width, int height, const QImage *src, QImage *dst, const QPixelLayout* layout)
 {
     const RbSwapFunc func = layout->rbSwap;
     if (!func) {
@@ -5025,7 +5025,7 @@ QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace) const
 QColorSpace QImage::colorSpace() const
 {
     if (!d)
-        return QColorSpace::Undefined;
+        return QColorSpace();
     return d->colorSpace;
 }
 

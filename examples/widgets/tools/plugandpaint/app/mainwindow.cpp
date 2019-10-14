@@ -49,8 +49,8 @@
 ****************************************************************************/
 
 
-#include "interfaces.h"
 #include "mainwindow.h"
+#include "interfaces.h"
 #include "paintarea.h"
 #include "plugindialog.h"
 
@@ -67,9 +67,8 @@
 #include <QScrollArea>
 #include <QTimer>
 
-MainWindow::MainWindow() :
-    paintArea(new PaintArea),
-    scrollArea(new QScrollArea)
+MainWindow::MainWindow() : paintArea(new PaintArea)
+    , scrollArea(new QScrollArea)
 {
     scrollArea->setBackgroundRole(QPalette::Dark);
     scrollArea->setWidget(paintArea);
@@ -136,7 +135,11 @@ void MainWindow::brushWidth()
 void MainWindow::changeBrush()
 {
     auto action = qobject_cast<QAction *>(sender());
+    if (!action)
+      return;
     auto iBrush = qobject_cast<BrushInterface *>(action->parent());
+    if (!iBrush)
+      return;
     const QString brush = action->text();
 
     paintArea->setBrush(iBrush, brush);
@@ -147,7 +150,11 @@ void MainWindow::changeBrush()
 void MainWindow::insertShape()
 {
     auto action = qobject_cast<QAction *>(sender());
+    if (!action)
+      return;
     auto iShape = qobject_cast<ShapeInterface *>(action->parent());
+    if (!iShape)
+      return;
 
     const QPainterPath path = iShape->generateShape(action->text(), this);
     if (!path.isEmpty())
@@ -159,7 +166,11 @@ void MainWindow::insertShape()
 void MainWindow::applyFilter()
 {
     auto action = qobject_cast<QAction *>(sender());
+    if (!action)
+      return;
     auto iFilter = qobject_cast<FilterInterface *>(action->parent());
+    if (!iFilter)
+      return;
 
     const QImage image = iFilter->filterImage(action->text(), paintArea->image(),
                                               this);
@@ -247,7 +258,7 @@ void MainWindow::loadPlugins()
         populateMenus(plugin);
 //! [4] //! [5]
 
-    pluginsDir = QDir(qApp->applicationDirPath());
+    pluginsDir = QDir(QCoreApplication::applicationDirPath());
 
 #if defined(Q_OS_WIN)
     if (pluginsDir.dirName().toLower() == "debug" || pluginsDir.dirName().toLower() == "release")

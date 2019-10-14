@@ -142,9 +142,6 @@ public:
         PE_FrameLineEdit,
         PE_FrameMenu,
         PE_FrameStatusBarItem,
-#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove
-        PE_FrameStatusBar Q_DECL_ENUMERATOR_DEPRECATED = PE_FrameStatusBarItem,
-#endif
         PE_FrameTabWidget,
         PE_FrameWindow,
         PE_FrameButtonBevel,
@@ -165,9 +162,6 @@ public:
         PE_IndicatorBranch,
         PE_IndicatorButtonDropDown,
         PE_IndicatorItemViewItemCheck,
-#if QT_DEPRECATED_SINCE(5, 13) // ### Qt 6: remove
-        PE_IndicatorViewItemCheck Q_DECL_ENUMERATOR_DEPRECATED = PE_IndicatorItemViewItemCheck,
-#endif
         PE_IndicatorCheckBox,
         PE_IndicatorDockWidgetResizeHandle,
         PE_IndicatorHeaderArrow,

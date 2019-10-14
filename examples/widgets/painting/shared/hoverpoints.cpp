@@ -262,8 +262,8 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
         case QEvent::Paint:
         {
             QWidget *that_widget = m_widget;
-            m_widget = 0;
-            QApplication::sendEvent(object, event);
+            m_widget = nullptr;
+            QCoreApplication::sendEvent(object, event);
             m_widget = that_widget;
             paintPoints();
             return true;

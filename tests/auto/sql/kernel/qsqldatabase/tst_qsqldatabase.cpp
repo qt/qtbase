@@ -520,10 +520,6 @@ void tst_QSqlDatabase::tables()
     bool tempTables = false;
 
     QSqlQuery q(db);
-    if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-        QSKIP( "Test requires MySQL >= 5.0");
-
-
     if (!q.exec("CREATE VIEW " + qtest_view + " as select * from " + qtest)) {
         qDebug("DBMS '%s' cannot handle VIEWs: %s",
                qPrintable(tst_Databases::dbToString(db)),
@@ -1891,11 +1887,6 @@ void tst_QSqlDatabase::mysql_multiselect()
     const QString qtest(qTableName("qtest", __FILE__, db));
 
     QSqlQuery q(db);
-    QString version=tst_Databases::getMySqlVersion( db );
-    double ver=version.section(QChar::fromLatin1('.'),0,1).toDouble();
-    if (ver < 4.1)
-        QSKIP("Test requires MySQL >= 4.1");
-
     QVERIFY_SQL(q, exec("SELECT * FROM " + qtest + "; SELECT * FROM " + qtest));
     QVERIFY_SQL(q, next());
     QVERIFY_SQL(q, exec("SELECT * FROM " + qtest + "; SELECT * FROM " + qtest));
@@ -2135,6 +2126,8 @@ void tst_QSqlDatabase::eventNotificationIBase()
 {
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
+    if (db.driverName().compare(QLatin1String("QIBASE"), Qt::CaseInsensitive))
+        QSKIP("QIBASE specific test");
     CHECK_DATABASE(db);
 
     const QString procedureName(qTableName("posteventProc", __FILE__, db));
@@ -2147,13 +2140,12 @@ void tst_QSqlDatabase::eventNotificationIBase()
     q.exec(QString("DROP PROCEDURE %1").arg(procedureName));
     q.exec(QString("CREATE PROCEDURE %1\nAS BEGIN\nPOST_EVENT '%1';\nEND;").arg(procedureName));
     q.exec(QString("EXECUTE PROCEDURE %1").arg(procedureName));
-    QSignalSpy spy(driver, SIGNAL(notification(QString)));
+    QSignalSpy spy(driver, QOverload<const QString &, QSqlDriver::NotificationSource, const QVariant &>::of(&QSqlDriver::notification));
     db.commit();        // No notifications are posted until the transaction is committed.
-    QTest::qWait(300);  // Interbase needs some time to post the notification and call the driver callback.
-                        // This happends from another thread, and we have to process events in order for the
-                        // event handler in the driver to be executed and emit the notification signal.
-
-    QCOMPARE(spy.count(), 1);
+    // Interbase needs some time to post the notification and call the driver callback.
+    // This happends from another thread, and we have to process events in order for the
+    // event handler in the driver to be executed and emit the notification signal.
+    QTRY_COMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), procedureName);
     QVERIFY_SQL(*driver, unsubscribeFromNotification(procedureName));
@@ -2164,52 +2156,49 @@ void tst_QSqlDatabase::eventNotificationPSQL()
 {
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
+    if (db.driverName().compare(QLatin1String("QPSQL"), Qt::CaseInsensitive))
+        QSKIP("QPSQL specific test");
     CHECK_DATABASE(db);
 
     QSqlQuery query(db);
     const auto procedureName = qTableName("posteventProc", __FILE__, db, false);
     QString payload = "payload";
-    QSqlDriver &driver=*(db.driver());
-    QVERIFY_SQL(driver, subscribeToNotification(procedureName));
-    QSignalSpy spy(db.driver(), SIGNAL(notification(QString,QSqlDriver::NotificationSource,QVariant)));
+    QSqlDriver *driver = db.driver();
+    QVERIFY_SQL(*driver, subscribeToNotification(procedureName));
+    QSignalSpy spy(driver, QOverload<const QString &, QSqlDriver::NotificationSource, const QVariant &>::of(&QSqlDriver::notification));
     query.exec(QString("NOTIFY \"%1\", '%2'").arg(procedureName).arg(payload));
-    QCoreApplication::processEvents();
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), procedureName);
     QCOMPARE(qvariant_cast<QSqlDriver::NotificationSource>(arguments.at(1)), QSqlDriver::SelfSource);
     QCOMPARE(qvariant_cast<QVariant>(arguments.at(2)).toString(), payload);
-    QVERIFY_SQL(driver, unsubscribeFromNotification(procedureName));
+    QVERIFY_SQL(*driver, unsubscribeFromNotification(procedureName));
 }
 
 void tst_QSqlDatabase::eventNotificationSQLite()
 {
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
-    CHECK_DATABASE(db);
-    if (db.driverName().compare(QLatin1String("QSQLITE"), Qt::CaseInsensitive)) {
+    if (db.driverName().compare(QLatin1String("QSQLITE"), Qt::CaseInsensitive))
         QSKIP("QSQLITE specific test");
-    }
+    CHECK_DATABASE(db);
+
     const QString tableName(qTableName("sqlitnotifytest", __FILE__, db));
     const auto noEscapeTableName(qTableName("sqlitnotifytest", __FILE__, db, false));
     tst_Databases::safeDropTable(db, tableName);
 
-    QSignalSpy notificationSpy(db.driver(), SIGNAL(notification(QString)));
-    QSignalSpy notificationSpyExt(db.driver(), SIGNAL(notification(QString,QSqlDriver::NotificationSource,QVariant)));
+    QSqlDriver *driver = db.driver();
+    QSignalSpy spy(driver, QOverload<const QString &, QSqlDriver::NotificationSource, const QVariant &>::of(&QSqlDriver::notification));
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("CREATE TABLE " + tableName + " (id INTEGER, realVal REAL)"));
-    db.driver()->subscribeToNotification(noEscapeTableName);
+    driver->subscribeToNotification(noEscapeTableName);
     QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, realVal) VALUES (1, 2.3)"));
-    QTRY_COMPARE(notificationSpy.count(), 1);
-    QTRY_COMPARE(notificationSpyExt.count(), 1);
-    QList<QVariant> arguments = notificationSpy.takeFirst();
+    QTRY_COMPARE(spy.count(), 1);
+    QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(), noEscapeTableName);
-    arguments = notificationSpyExt.takeFirst();
-    QCOMPARE(arguments.at(0).toString(), noEscapeTableName);
-    db.driver()->unsubscribeFromNotification(noEscapeTableName);
+    driver->unsubscribeFromNotification(noEscapeTableName);
     QVERIFY_SQL(q, exec("INSERT INTO " + tableName + " (id, realVal) VALUES (1, 2.3)"));
-    QTRY_COMPARE(notificationSpy.count(), 0);
-    QTRY_COMPARE(notificationSpyExt.count(), 0);
+    QTRY_COMPARE(spy.count(), 0);
 }
 
 void tst_QSqlDatabase::sqlite_bindAndFetchUInt()
@@ -2282,9 +2271,6 @@ void tst_QSqlDatabase::mysql_savepointtest()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    if (tst_Databases::getMySqlVersion(db).section(QChar('.'), 0, 1).toDouble() < 4.1)
-        QSKIP( "Test requires MySQL >= 4.1");
-
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("begin"));
     QVERIFY_SQL(q, exec("insert into " + qTableName("qtest", __FILE__, db) + " VALUES (54, 'foo', 'foo', 54.54)"));

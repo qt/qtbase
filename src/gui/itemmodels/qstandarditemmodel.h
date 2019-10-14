@@ -53,8 +53,6 @@ QT_REQUIRE_CONFIG(standarditemmodel);
 
 QT_BEGIN_NAMESPACE
 
-template <class T> class QList;
-
 class QStandardItemModel;
 
 class QStandardItemPrivate;

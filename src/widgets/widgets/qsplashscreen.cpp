@@ -123,6 +123,11 @@ public:
    wish to do your own drawing you can get a pointer to the pixmap
    used in the splash screen with pixmap().  Alternatively, you can
    subclass QSplashScreen and reimplement drawContents().
+
+   In case of having multiple screens, it is also possible to show the
+   splash screen on a different screen than the primary one. For example:
+
+   \snippet qsplashscreen/main.cpp 2
 */
 
 /*!
@@ -139,6 +144,23 @@ QSplashScreen::QSplashScreen(const QPixmap &pixmap, Qt::WindowFlags f)
 
 /*!
     \overload
+    \since 5.15
+
+    This function allows you to specify the screen for your splashscreen. The
+    typical use for this constructor is if you have multiple screens and
+    prefer to have the splash screen on a different screen than your primary
+    one. In that case pass the proper \a screen.
+*/
+QSplashScreen::QSplashScreen(QScreen *screen, const QPixmap &pixmap, Qt::WindowFlags f)
+    : QWidget(*(new QSplashScreenPrivate()), nullptr, Qt::SplashScreen | Qt::FramelessWindowHint | f)
+{
+    d_func()->setPixmap(pixmap, screen);
+}
+
+#if QT_DEPRECATED_SINCE(5, 15)
+/*!
+    \overload
+    \obsolete
 
     This function allows you to specify a parent for your splashscreen. The
     typical use for this constructor is if you have a multiple screens and
@@ -152,6 +174,7 @@ QSplashScreen::QSplashScreen(QWidget *parent, const QPixmap &pixmap, Qt::WindowF
     // is still 0 here due to QWidget's special handling.
     d_func()->setPixmap(pixmap, QSplashScreenPrivate::screenFor(parent));
 }
+#endif
 
 /*!
   Destructor.
@@ -286,26 +309,35 @@ void QSplashScreen::setPixmap(const QPixmap &pixmap)
 }
 
 // In setPixmap(), resize and try to position on a screen according to:
-// 1) If a QDesktopScreenWidget is found in the parent hierarchy, use that (see docs on
+// 1) If the screen for the given widget is available, use that
+// 2) If a QDesktopScreenWidget is found in the parent hierarchy, use that (see docs on
 //    QSplashScreen(QWidget *, QPixmap).
-// 2) If a widget with associated QWindow is found, use that
-// 3) When nothing can be found, try to center it over the cursor
+// 3) If a widget with associated QWindow is found, use that
+// 4) When nothing can be found, try to center it over the cursor
 
+#if QT_DEPRECATED_SINCE(5, 15)
 static inline int screenNumberOf(const QDesktopScreenWidget *dsw)
 {
     auto desktopWidgetPrivate =
         static_cast<QDesktopWidgetPrivate *>(qt_widget_private(QApplication::desktop()));
     return desktopWidgetPrivate->screens.indexOf(const_cast<QDesktopScreenWidget *>(dsw));
 }
+#endif
 
 const QScreen *QSplashScreenPrivate::screenFor(const QWidget *w)
 {
+    if (w && w->screen())
+        return w->screen();
+
     for (const QWidget *p = w; p !=nullptr ; p = p->parentWidget()) {
+#if QT_DEPRECATED_SINCE(5, 15)
         if (auto dsw = qobject_cast<const QDesktopScreenWidget *>(p))
             return QGuiApplication::screens().value(screenNumberOf(dsw));
+#endif
         if (QWindow *window = p->windowHandle())
             return window->screen();
     }
+
 #if QT_CONFIG(cursor)
     // Note: We could rely on QPlatformWindow::initialGeometry() to center it
     // over the cursor, but not all platforms (namely Android) use that.

@@ -51,7 +51,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtWidgets>
+#include <QMainWindow>
 
 #include "ui_mainwindow.h"
 

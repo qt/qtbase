@@ -186,6 +186,7 @@ public:
 
     bool supportsPresent(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, QWindow *window);
 
+    void presentAboutToBeQueued(QWindow *window);
     void presentQueued(QWindow *window);
 
     typedef bool (*DebugFilter)(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object,

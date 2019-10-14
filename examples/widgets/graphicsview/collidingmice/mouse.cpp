@@ -54,10 +54,10 @@
 #include <QPainter>
 #include <QRandomGenerator>
 #include <QStyleOption>
-#include <qmath.h>
+#include <QtMath>
 
-const qreal Pi = M_PI;
-const qreal TwoPi = 2 * M_PI;
+constexpr qreal Pi = M_PI;
+constexpr qreal TwoPi = 2 * M_PI;
 
 static qreal normalizeAngle(qreal angle)
 {
@@ -69,9 +69,9 @@ static qreal normalizeAngle(qreal angle)
 }
 
 //! [0]
-Mouse::Mouse()
-    : angle(0), speed(0), mouseEyeDirection(0),
-      color(QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256), QRandomGenerator::global()->bounded(256))
+Mouse::Mouse() : color(QRandomGenerator::global()->bounded(256),
+                       QRandomGenerator::global()->bounded(256),
+                       QRandomGenerator::global()->bounded(256))
 {
     setRotation(QRandomGenerator::global()->bounded(360 * 16));
 }

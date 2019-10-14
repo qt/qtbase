@@ -217,7 +217,7 @@ void Window::customRender()
     cb->dispatch(d.imageSize.width() / 16, d.imageSize.height() / 16, 1);
     cb->endComputePass();
 
-    cb->beginPass(m_sc->currentFrameRenderTarget(), QColor::fromRgbF(0.4f, 0.7f, 0.0f, 1.0f), { 1.0f, 0 });
+    cb->beginPass(m_sc->currentFrameRenderTarget(), m_clearColor, { 1.0f, 0 });
     cb->setGraphicsPipeline(d.ps);
     cb->setViewport({ 0, 0, float(outputSizeInPixels.width()), float(outputSizeInPixels.height()) });
     cb->setShaderResources();

@@ -67,7 +67,6 @@ QT_BEGIN_NAMESPACE
 class QGraphicsSceneIndexPrivate;
 class QPointF;
 class QRectF;
-template<typename T> class QList;
 
 typedef bool (*QGraphicsSceneIndexIntersector)(const QGraphicsItem *item, const QRectF &exposeRect, Qt::ItemSelectionMode mode,
                                                const QTransform &deviceTransform, const void *data);

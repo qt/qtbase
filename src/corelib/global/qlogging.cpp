@@ -1803,8 +1803,8 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
 #ifndef QT_BOOTSTRAPPED
     Q_TRACE(qt_message_print, msgType, context.category, context.function, context.file, context.line, message);
 
-    // qDebug, qWarning, ... macros do not check whether category is enabled
-    if (isDefaultCategory(context.category)) {
+    // qDebug, qWarning, ... macros do not check whether category is enabledgc
+    if (msgType != QtFatalMsg && isDefaultCategory(context.category)) {
         if (QLoggingCategory *defaultCategory = QLoggingCategory::defaultCategory()) {
             if (!defaultCategory->isEnabled(msgType))
                 return;
@@ -1910,12 +1910,14 @@ void qErrnoWarning(const char *msg, ...)
 {
     // qt_error_string() will allocate anyway, so we don't have
     // to be careful here (like we do in plain qWarning())
+    QString error_string = qt_error_string(-1);  // before vasprintf changes errno/GetLastError()
+
     va_list ap;
     va_start(ap, msg);
     QString buf = QString::vasprintf(msg, ap);
     va_end(ap);
 
-    buf += QLatin1String(" (") + qt_error_string(-1) + QLatin1Char(')');
+    buf += QLatin1String(" (") + error_string + QLatin1Char(')');
     QMessageLogContext context;
     qt_message_output(QtCriticalMsg, context, buf);
 }

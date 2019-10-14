@@ -63,7 +63,7 @@ class Q_CORE_EXPORT QHijriCalendar : public QCalendarBackend
 {
 public:
     int daysInMonth(int month, int year = QCalendar::Unspecified) const override;
-    int maxDaysInMonth() const override;
+    int maximumDaysInMonth() const override;
     int daysInYear(int year) const override;
 
     bool isLunar() const override;

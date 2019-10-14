@@ -328,6 +328,20 @@ static const int closeButtonSize = 14;
 static const qreal closeButtonCornerRadius = 2.0;
 #endif // QT_CONFIG(tabbar)
 
+#ifndef QT_NO_ACCESSIBILITY // This ifdef to avoid "unused function" warning.
+QBrush brushForToolButton(bool isOnKeyWindow)
+{
+    // When a toolbutton in a toolbar is in the 'ON' state, we draw a
+    // partially transparent background. The colors must be different
+    // for 'Aqua' and 'DarkAqua' appearances though.
+    if (isDarkMode())
+        return isOnKeyWindow ? QColor(73, 73, 73, 100) : QColor(56, 56, 56, 100);
+
+    return isOnKeyWindow ? QColor(0, 0, 0, 28) : QColor(0, 0, 0, 21);
+}
+#endif // QT_NO_ACCESSIBILITY
+
+
 static const int headerSectionArrowHeight = 6;
 static const int headerSectionSeparatorInset = 2;
 
@@ -555,10 +569,10 @@ QRect rotateTabPainter(QPainter *p, QTabBar::Shape shape, QRect tabRect)
             newRot = -90;
         }
         tabRect.setRect(0, 0, tabRect.height(), tabRect.width());
-        QMatrix m;
-        m.translate(newX, newY);
-        m.rotate(newRot);
-        p->setMatrix(m, true);
+        QTransform transform;
+        transform.translate(newX, newY);
+        transform.rotate(newRot);
+        p->setTransform(transform, true);
     }
     return tabRect;
 }
@@ -2951,24 +2965,24 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         }
 #endif
 
-        QMatrix matrix;
-        matrix.translate(opt->rect.center().x() + xOffset, opt->rect.center().y() + 2);
+        QTransform transform;
+        transform.translate(opt->rect.center().x() + xOffset, opt->rect.center().y() + 2);
         QPainterPath path;
         switch(pe) {
         default:
         case PE_IndicatorArrowDown:
             break;
         case PE_IndicatorArrowUp:
-            matrix.rotate(180);
+            transform.rotate(180);
             break;
         case PE_IndicatorArrowLeft:
-            matrix.rotate(90);
+            transform.rotate(90);
             break;
         case PE_IndicatorArrowRight:
-            matrix.rotate(-90);
+            transform.rotate(-90);
             break;
         }
-        p->setMatrix(matrix);
+        p->setTransform(transform);
 
         path.moveTo(-halfSize, -halfSize * 0.5);
         path.lineTo(0.0, halfSize * 0.5);
@@ -3211,7 +3225,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
 
         CGContextRestoreGState(cg);
         break; }
-    case PE_IndicatorViewItemCheck:
+    case PE_IndicatorItemViewItemCheck:
     case PE_IndicatorRadioButton:
     case PE_IndicatorCheckBox: {
         const bool isEnabled = opt->state & State_Enabled;
@@ -3462,6 +3476,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 {
     Q_D(const QMacStyle);
     const AppearanceSync sync;
+    const QMacAutoReleasePool pool;
     QMacCGContext cg(p);
     QWindow *window = w && w->window() ? w->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
@@ -4326,7 +4341,6 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         break;
     case CE_ProgressBarContents:
         if (const QStyleOptionProgressBar *pb = qstyleoption_cast<const QStyleOptionProgressBar *>(opt)) {
-            QMacAutoReleasePool pool;
             const bool isIndeterminate = (pb->minimum == 0 && pb->maximum == 0);
             const bool vertical = pb->orientation == Qt::Vertical;
             const bool inverted = pb->invertedAppearance;
@@ -5603,8 +5617,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     if (view)
                         isKey = [view.window isKeyWindow];
 
-                    QBrush brush(isKey ? QColor(0, 0, 0, 28)
-                                       : QColor(0, 0, 0, 21));
+                    QBrush brush(brushForToolButton(isKey));
                     QPainterPath path;
                     path.addRoundedRect(QRectF(tb->rect.x(), tb->rect.y(), tb->rect.width(), tb->rect.height() + 4), 4, 4);
                     p->setRenderHint(QPainter::Antialiasing);

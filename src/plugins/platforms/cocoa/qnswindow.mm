@@ -253,20 +253,10 @@ static bool isMouseEvent(NSEvent *ev)
     return m_platformWindow ? m_platformWindow->isOpaque() : [super isOpaque];
 }
 
-/*!
-    Borderless windows need a transparent background
-
-    Technically windows with NSWindowStyleMaskTexturedBackground
-    (such as windows with unified toolbars) need to draw the textured
-    background of the NSWindow, and can't have a transparent
-    background, but as NSWindowStyleMaskBorderless is 0, you can't
-    have a window with NSWindowStyleMaskTexturedBackground that is
-    also borderless.
-*/
 - (NSColor *)backgroundColor
 {
-    return self.styleMask == NSWindowStyleMaskBorderless
-        ? [NSColor clearColor] : [super backgroundColor];
+    return self.styleMask == NSWindowStyleMaskBorderless ?
+        [NSColor clearColor] : [super backgroundColor];
 }
 
 - (void)sendEvent:(NSEvent*)theEvent

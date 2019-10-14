@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Jolla Ltd, author: <gunnar.sletta@jollamobile.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -69,6 +69,7 @@ extern "C" {
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(qLcEvdevTouch, "qt.qpa.input")
+Q_LOGGING_CATEGORY(qLcEvents, "qt.qpa.input.events")
 
 /* android (and perhaps some other linux-derived stuff) don't define everything
  * in linux/input.h, so we'll need to do that ourselves.
@@ -77,7 +78,7 @@ Q_LOGGING_CATEGORY(qLcEvdevTouch, "qt.qpa.input")
 #define ABS_MT_TOUCH_MAJOR      0x30    /* Major axis of touching ellipse */
 #endif
 #ifndef ABS_MT_POSITION_X
-#define ABS_MT_POSITION_X 0x35    /* Center X ellipse position */
+#define ABS_MT_POSITION_X       0x35    /* Center X ellipse position */
 #endif
 #ifndef ABS_MT_POSITION_Y
 #define ABS_MT_POSITION_Y       0x36    /* Center Y ellipse position */
@@ -90,6 +91,9 @@ Q_LOGGING_CATEGORY(qLcEvdevTouch, "qt.qpa.input")
 #endif
 #ifndef ABS_MT_TRACKING_ID
 #define ABS_MT_TRACKING_ID      0x39    /* Unique ID of initiated contact */
+#endif
+#ifndef ABS_MT_PRESSURE
+#define ABS_MT_PRESSURE         0x3a
 #endif
 #ifndef SYN_MT_REPORT
 #define SYN_MT_REPORT           2
@@ -535,7 +539,10 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 m_currentData.state = Qt::TouchPointReleased;
             if (m_typeB)
                 m_contacts[m_currentSlot].maj = m_currentData.maj;
-        } else if (data->code == ABS_PRESSURE) {
+        } else if (data->code == ABS_PRESSURE || data->code == ABS_MT_PRESSURE) {
+            if (Q_UNLIKELY(qLcEvents().isDebugEnabled()))
+                qCDebug(qLcEvents, "EV_ABS code 0x%x: pressure %d; bounding to [%d,%d]",
+                        data->code, data->value, hw_pressure_min, hw_pressure_max);
             m_currentData.pressure = qBound(hw_pressure_min, data->value, hw_pressure_max);
             if (m_typeB || m_singleTouch)
                 m_contacts[m_currentSlot].pressure = m_currentData.pressure;
@@ -574,6 +581,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         m_lastTouchPoints = m_touchPoints;
         m_touchPoints.clear();
         Qt::TouchPointStates combinedStates;
+        bool hasPressure = false;
 
         for (auto i = m_contacts.begin(), end = m_contacts.end(); i != end; /*erasing*/) {
             auto it = i++;
@@ -603,6 +611,9 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 m_contacts.erase(it);
                 continue;
             }
+
+            if (contact.pressure)
+                hasPressure = true;
 
             addTouchPoint(contact, &combinedStates);
         }
@@ -648,7 +659,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             m_contacts.clear();
 
 
-        if (!m_touchPoints.isEmpty() && combinedStates != Qt::TouchPointStationary)
+        if (!m_touchPoints.isEmpty() && (hasPressure || combinedStates != Qt::TouchPointStationary))
             reportPoints();
     }
 
@@ -774,6 +785,9 @@ void QEvdevTouchScreenData::reportPoints()
             tp.pressure = tp.state == Qt::TouchPointReleased ? 0 : 1;
         else
             tp.pressure = (tp.pressure - hw_pressure_min) / qreal(hw_pressure_max - hw_pressure_min);
+
+        if (Q_UNLIKELY(qLcEvents().isDebugEnabled()))
+            qCDebug(qLcEvents) << "reporting" << tp;
     }
 
     // Let qguiapp pick the target window.

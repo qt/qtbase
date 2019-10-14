@@ -137,8 +137,10 @@ private:
 template <typename T>
 class QCFType : public QAppleRefCounted<T, CFTypeRef, CFRetain, CFRelease>
 {
+    using Base = QAppleRefCounted<T, CFTypeRef, CFRetain, CFRelease>;
 public:
-    using QAppleRefCounted<T, CFTypeRef, CFRetain, CFRelease>::QAppleRefCounted;
+    using Base::Base;
+    explicit QCFType(CFTypeRef r) : Base(static_cast<T>(r)) {}
     template <typename X> X as() const { return reinterpret_cast<X>(this->value); }
     static QCFType constructFromGet(const T &t)
     {
@@ -151,6 +153,7 @@ public:
 class Q_CORE_EXPORT QCFString : public QCFType<CFStringRef>
 {
 public:
+    using QCFType<CFStringRef>::QCFType;
     inline QCFString(const QString &str) : QCFType<CFStringRef>(0), string(str) {}
     inline QCFString(const CFStringRef cfstr = 0) : QCFType<CFStringRef>(cfstr) {}
     inline QCFString(const QCFType<CFStringRef> &other) : QCFType<CFStringRef>(other) {}
@@ -168,7 +171,8 @@ Q_CORE_EXPORT bool qt_mac_applicationIsInDarkMode();
 #endif
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool);
+Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QMacAutoReleasePool *pool);
+Q_CORE_EXPORT QDebug operator<<(QDebug debug, const QCFString &string);
 #endif
 
 Q_CORE_EXPORT bool qt_apple_isApplicationExtension();

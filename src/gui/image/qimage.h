@@ -68,7 +68,6 @@ class QMatrix;
 class QStringList;
 class QTransform;
 class QVariant;
-template <class T> class QList;
 template <class T> class QVector;
 
 struct QImageData;

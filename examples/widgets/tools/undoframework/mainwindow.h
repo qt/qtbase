@@ -87,22 +87,22 @@ private:
     void createMenus();
     void createUndoView();
 
-    QAction *deleteAction;
-    QAction *addBoxAction;
-    QAction *addTriangleAction;
-    QAction *undoAction;
-    QAction *redoAction;
-    QAction *exitAction;
-    QAction *aboutAction;
+    QAction *deleteAction = nullptr;
+    QAction *addBoxAction = nullptr;
+    QAction *addTriangleAction = nullptr;
+    QAction *undoAction = nullptr;
+    QAction *redoAction = nullptr;
+    QAction *exitAction = nullptr;
+    QAction *aboutAction = nullptr;
 
-    QMenu *fileMenu;
-    QMenu *editMenu;
-    QMenu *itemMenu;
-    QMenu *helpMenu;
+    QMenu *fileMenu = nullptr;
+    QMenu *editMenu = nullptr;
+    QMenu *itemMenu = nullptr;
+    QMenu *helpMenu = nullptr;
 
-    DiagramScene *diagramScene;
-    QUndoStack *undoStack;
-    QUndoView *undoView;
+    DiagramScene *diagramScene = nullptr;
+    QUndoStack *undoStack = nullptr;
+    QUndoView *undoView = nullptr;
 };
 //! [0]
 

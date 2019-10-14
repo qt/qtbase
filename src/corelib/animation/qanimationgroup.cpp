@@ -195,8 +195,11 @@ void QAnimationGroup::insertAnimation(int index, QAbstractAnimation *animation)
         return;
     }
 
-    if (QAnimationGroup *oldGroup = animation->group())
+    if (QAnimationGroup *oldGroup = animation->group()) {
         oldGroup->removeAnimation(animation);
+        // ensure we don't insert out of bounds if oldGroup == this
+        index = qMin(index, d->animations.size());
+    }
 
     d->animations.insert(index, animation);
     QAbstractAnimationPrivate::get(animation)->group = this;

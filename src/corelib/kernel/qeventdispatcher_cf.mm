@@ -56,6 +56,14 @@
 #  include <UIKit/UIApplication.h>
 #endif
 
+QT_BEGIN_NAMESPACE
+namespace QtPrivate {
+Q_LOGGING_CATEGORY(lcEventDispatcher, "qt.eventdispatcher");
+Q_LOGGING_CATEGORY(lcEventDispatcherTimers, "qt.eventdispatcher.timers");
+}
+using namespace QtPrivate;
+QT_END_NAMESPACE
+
 QT_USE_NAMESPACE
 
 /*
@@ -147,9 +155,6 @@ static CFStringRef runLoopMode(NSDictionary *dictionary)
 @end
 
 QT_BEGIN_NAMESPACE
-
-Q_LOGGING_CATEGORY(lcEventDispatcher, "qt.eventdispatcher");
-Q_LOGGING_CATEGORY(lcEventDispatcherTimers, "qt.eventdispatcher.timers");
 
 class RunLoopDebugger : public QObject
 {
@@ -423,7 +428,7 @@ bool QEventDispatcherCoreFoundation::processPostedEvents()
     m_processEvents.processedPostedEvents = true;
 
     qCDebug(lcEventDispatcher) << "Sending posted events for"
-        << QEventLoop::ProcessEventsFlags(m_processEvents.flags.load());
+        << QEventLoop::ProcessEventsFlags(m_processEvents.flags.loadRelaxed());
     QCoreApplication::sendPostedEvents();
 
     return true;

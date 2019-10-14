@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 Intel Corporation.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -89,42 +89,6 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 #include <assert.h>
 
 QT_BEGIN_NAMESPACE
-
-#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
-static qsizetype qt_random_cpu(void *buffer, qsizetype count) noexcept;
-
-#  ifdef Q_PROCESSOR_X86_64
-#    define _rdrandXX_step _rdrand64_step
-#  else
-#    define _rdrandXX_step _rdrand32_step
-#  endif
-
-static QT_FUNCTION_TARGET(RDRND) qsizetype qt_random_cpu(void *buffer, qsizetype count) noexcept
-{
-    unsigned *ptr = reinterpret_cast<unsigned *>(buffer);
-    unsigned *end = ptr + count;
-
-    while (ptr + sizeof(qregisteruint)/sizeof(*ptr) <= end) {
-        if (_rdrandXX_step(reinterpret_cast<qregisteruint *>(ptr)) == 0)
-            goto out;
-        ptr += sizeof(qregisteruint)/sizeof(*ptr);
-    }
-
-    if (sizeof(*ptr) != sizeof(qregisteruint) && ptr != end) {
-        if (_rdrand32_step(ptr))
-            goto out;
-        ++ptr;
-    }
-
-out:
-    return ptr - reinterpret_cast<unsigned *>(buffer);
-}
-#else
-static qsizetype qt_random_cpu(void *, qsizetype)
-{
-    return 0;
-}
-#endif
 
 enum {
     // may be "overridden" by a member enum
@@ -366,8 +330,8 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     }
 
     qsizetype filled = 0;
-    if (qt_has_hwrng() && (uint(qt_randomdevice_control.loadAcquire()) & SkipHWRNG) == 0)
-        filled += qt_random_cpu(buffer, count);
+    if (qHasHwrng() && (uint(qt_randomdevice_control.loadAcquire()) & SkipHWRNG) == 0)
+        filled += qRandomCpu(buffer, count);
 
     if (filled != count && (uint(qt_randomdevice_control.loadAcquire()) & SkipSystemRNG) == 0) {
         qsizetype bytesFilled =

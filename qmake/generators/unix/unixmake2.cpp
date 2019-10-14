@@ -1199,8 +1199,10 @@ void UnixMakefileGenerator::init2()
         project->values("QMAKE_FRAMEWORK_VERSION").append(project->first("VER_MAJ"));
 
     if (project->first("TEMPLATE") == "aux") {
-        project->values("PRL_TARGET") =
-            project->values("TARGET").first().prepend(project->first("QMAKE_PREFIX_STATICLIB"));
+        project->values("PRL_TARGET") = {
+            project->first("QMAKE_PREFIX_STATICLIB") +
+            project->first("TARGET")
+        };
     } else if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         if(!project->isEmpty("QMAKE_BUNDLE")) {
             ProString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
@@ -1228,8 +1230,9 @@ void UnixMakefileGenerator::init2()
         else
             ar_cmd.append("$(AR) $(TARGETA) $(OBJECTS)");
         if (!project->isEmpty("QMAKE_BUNDLE")) {
-            project->values("PRL_TARGET").prepend(
-                    project->first("QMAKE_BUNDLE") + Option::dir_sep + project->first("TARGET"));
+            project->values("PRL_TARGET").prepend(project->first("QMAKE_BUNDLE") +
+                "/Versions/" + project->first("QMAKE_FRAMEWORK_VERSION") +
+                "/Resources/" + project->first("TARGET"));
             ProString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
             if(!bundle_loc.isEmpty() && !bundle_loc.startsWith("/"))
                 bundle_loc.prepend("/");

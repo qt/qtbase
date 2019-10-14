@@ -141,7 +141,8 @@ bool
 BuildsMetaMakefileGenerator::write()
 {
     Build *glue = nullptr;
-    if(!makefiles.isEmpty() && !makefiles.first()->build.isNull()) {
+    if(!makefiles.isEmpty() && !makefiles.first()->build.isNull()
+        && Option::qmake_mode != Option::QMAKE_GENERATE_PRL) {
         glue = new Build;
         glue->name = name;
         glue->makefile = createMakefileGenerator(project, true);
@@ -250,6 +251,10 @@ void BuildsMetaMakefileGenerator::checkForConflictingTargets() const
     if (makefiles.count() < 3) {
         // Checking for conflicts only makes sense if we have more than one BUILD,
         // and the last entry in makefiles is the "glue" Build.
+        return;
+    }
+    if (!project->isActiveConfig("build_all")) {
+        // Only complain if we're about to build all configurations.
         return;
     }
     using TargetInfo = std::pair<Build *, ProString>;

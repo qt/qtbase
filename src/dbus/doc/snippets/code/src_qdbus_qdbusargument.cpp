@@ -186,7 +186,7 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, MyDictionary &myd
     argument.beginMap();
     mydict.clear();
 
-    while ( !argMap.atEnd() ) {
+    while ( !argument.atEnd() ) {
         int key;
         MyValue value;
         argument.beginMapEntry();

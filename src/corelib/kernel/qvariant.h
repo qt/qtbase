@@ -256,12 +256,12 @@ class Q_CORE_EXPORT QVariant
 #if QT_CONFIG(regularexpression)
     QVariant(const QRegularExpression &re);
 #endif // QT_CONFIG(regularexpression)
-#ifndef QT_BOOTSTRAPPED
-    QVariant(const QUrl &url);
 #if QT_CONFIG(easingcurve)
     QVariant(const QEasingCurve &easing);
 #endif
     QVariant(const QUuid &uuid);
+#ifndef QT_BOOTSTRAPPED
+    QVariant(const QUrl &url);
     QVariant(const QJsonValue &jsonValue);
     QVariant(const QJsonObject &jsonObject);
     QVariant(const QJsonArray &jsonArray);
@@ -332,12 +332,12 @@ class Q_CORE_EXPORT QVariant
 #if QT_CONFIG(regularexpression)
     QRegularExpression toRegularExpression() const;
 #endif // QT_CONFIG(regularexpression)
-#ifndef QT_BOOTSTRAPPED
-    QUrl toUrl() const;
 #if QT_CONFIG(easingcurve)
     QEasingCurve toEasingCurve() const;
 #endif
     QUuid toUuid() const;
+#ifndef QT_BOOTSTRAPPED
+    QUrl toUrl() const;
     QJsonValue toJsonValue() const;
     QJsonObject toJsonObject() const;
     QJsonArray toJsonArray() const;

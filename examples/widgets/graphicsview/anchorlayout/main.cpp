@@ -88,7 +88,7 @@ int main(int argc, char **argv)
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setSpacing(0);
 
-    QGraphicsWidget *w = new QGraphicsWidget(0, Qt::Window);
+    QGraphicsWidget *w = new QGraphicsWidget(nullptr, Qt::Window);
     w->setPos(20, 20);
     w->setLayout(l);
 

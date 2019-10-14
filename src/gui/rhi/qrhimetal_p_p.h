@@ -188,7 +188,7 @@ struct QMetalShaderResourceBindings : public QRhiShaderResourceBindings
     void release() override;
     bool build() override;
 
-    QVector<QRhiShaderResourceBinding> sortedBindings;
+    QVarLengthArray<QRhiShaderResourceBinding, 8> sortedBindings;
     int maxBinding = -1;
 
     struct BoundUniformBufferData {
@@ -217,7 +217,7 @@ struct QMetalShaderResourceBindings : public QRhiShaderResourceBindings
             BoundStorageBufferData sbuf;
         };
     };
-    QVector<BoundResourceData> boundResourceData;
+    QVarLengthArray<BoundResourceData, 8> boundResourceData;
 
     uint generation = 0;
     friend class QRhiMetal;
@@ -271,8 +271,11 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
         ComputePass
     };
 
+    // per-pass (render or compute command encoder) persistent state
     PassType recordingPass;
     QRhiRenderTarget *currentTarget;
+
+    // per-pass (render or compute command encoder) volatile (cached) state
     QRhiGraphicsPipeline *currentGraphicsPipeline;
     QRhiComputePipeline *currentComputePipeline;
     uint currentPipelineGeneration;
@@ -283,6 +286,8 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     QRhiBuffer *currentIndexBuffer;
     quint32 currentIndexOffset;
     QRhiCommandBuffer::IndexFormat currentIndexFormat;
+    int currentCullMode;
+    int currentFrontFaceWinding;
 
     const QRhiNativeHandles *nativeHandles();
     void resetState();
@@ -416,7 +421,9 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
-    void makeThreadLocalNativeContextCurrent() override;
+    bool makeThreadLocalNativeContextCurrent() override;
+    void releaseCachedResources() override;
+    bool isDeviceLost() const override;
 
     void executeDeferredReleases(bool forced = false);
     void finishActiveReadbacks(bool forced = false);

@@ -65,7 +65,7 @@ class AddressBook : public QWidget
     Q_OBJECT
 
 public:
-    AddressBook(QWidget *parent = 0);
+    AddressBook(QWidget *parent = nullptr);
 
 private:
     QLineEdit *nameLine;

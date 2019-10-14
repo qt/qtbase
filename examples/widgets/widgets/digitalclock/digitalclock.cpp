@@ -50,7 +50,8 @@
 
 #include "digitalclock.h"
 
-#include <QtWidgets>
+#include <QTime>
+#include <QTimer>
 
 //! [0]
 DigitalClock::DigitalClock(QWidget *parent)

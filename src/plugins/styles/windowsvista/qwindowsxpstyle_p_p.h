@@ -100,11 +100,11 @@ class QDebug;
 class XPThemeData
 {
 public:
-    explicit XPThemeData(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
+    explicit XPThemeData(const QWidget *w = nullptr, QPainter *p = nullptr, int themeIn = -1,
                          int part = 0, int state = 0, const QRect &r = QRect())
-        : widget(w), painter(p), theme(themeIn), htheme(0), partId(part), stateId(state),
+        : widget(w), painter(p), theme(themeIn), partId(part), stateId(state),
           mirrorHorizontally(false), mirrorVertically(false), noBorder(false),
-          noContent(false), rotate(0), rect(r)
+          noContent(false), rect(r)
     {}
 
     HRGN mask(QWidget *widget);
@@ -117,17 +117,17 @@ public:
     QMarginsF margins(const QRect &rect, int propId = TMT_CONTENTMARGINS);
     QMarginsF margins(int propId = TMT_CONTENTMARGINS);
 
-    static QSizeF themeSize(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1, int part = 0, int state = 0);
-    static QMarginsF themeMargins(const QRect &rect, const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
+    static QSizeF themeSize(const QWidget *w = nullptr, QPainter *p = nullptr, int themeIn = -1, int part = 0, int state = 0);
+    static QMarginsF themeMargins(const QRect &rect, const QWidget *w = nullptr, QPainter *p = nullptr, int themeIn = -1,
                                   int part = 0, int state = 0, int propId = TMT_CONTENTMARGINS);
-    static QMarginsF themeMargins(const QWidget *w = 0, QPainter *p = 0, int themeIn = -1,
+    static QMarginsF themeMargins(const QWidget *w = nullptr, QPainter *p = nullptr, int themeIn = -1,
                                   int part = 0, int state = 0, int propId = TMT_CONTENTMARGINS);
 
     const QWidget *widget;
     QPainter *painter;
 
     int theme;
-    HTHEME htheme;
+    HTHEME htheme = nullptr;
     int partId;
     int stateId;
 
@@ -135,18 +135,18 @@ public:
     uint mirrorVertically : 1;
     uint noBorder : 1;
     uint noContent : 1;
-    uint rotate;
+    uint rotate = 0;
     QRect rect;
 };
 
 struct ThemeMapKey {
-    int theme;
-    int partId;
-    int stateId;
-    bool noBorder;
-    bool noContent;
+    int theme = 0;
+    int partId = -1;
+    int stateId = -1;
+    bool noBorder = false;
+    bool noContent = false;
 
-    ThemeMapKey() : partId(-1), stateId(-1) {}
+    ThemeMapKey() = default;
     ThemeMapKey(const XPThemeData &data)
         : theme(data.theme), partId(data.partId), stateId(data.stateId),
         noBorder(data.noBorder), noContent(data.noContent) {}
@@ -171,7 +171,7 @@ enum AlphaChannelType {
 };
 
 struct ThemeMapData {
-    AlphaChannelType alphaType; // Which type of alpha on part & state
+    AlphaChannelType alphaType = UnknownAlpha; // Which type of alpha on part & state
 
     bool dataValid         : 1; // Only used to detect if hash value is ok
     bool partIsTransparent : 1;
@@ -217,15 +217,13 @@ public:
     };
 
     QWindowsXPStylePrivate()
-        : QWindowsStylePrivate(), hasInitColors(false), bufferDC(0), bufferBitmap(0), nullBitmap(0),
-          bufferPixels(0), bufferW(0), bufferH(0)
     { init(); }
 
     ~QWindowsXPStylePrivate()
     { cleanup(); }
 
-    static int pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0);
-    static int fixedPixelMetric(QStyle::PixelMetric pm, const QStyleOption *option = 0, const QWidget *widget = 0);
+    static int pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option = nullptr, const QWidget *widget = nullptr);
+    static int fixedPixelMetric(QStyle::PixelMetric pm, const QStyleOption *option = nullptr, const QWidget *widget = nullptr);
 
     static HWND winId(const QWidget *widget);
 
@@ -251,10 +249,10 @@ public:
     bool fixAlphaChannel(const QRect &rect);
     bool swapAlphaChannel(const QRect &rect, bool allPixels = false);
 
-    QRgb groupBoxTextColor;
-    QRgb groupBoxTextColorDisabled;
-    QRgb sliderTickColor;
-    bool hasInitColors;
+    QRgb groupBoxTextColor = 0;
+    QRgb groupBoxTextColorDisabled = 0;
+    QRgb sliderTickColor = 0;
+    bool hasInitColors = false;
 
     static HTHEME createTheme(int theme, HWND hwnd);
     static QString themeName(int theme);
@@ -277,11 +275,12 @@ private:
     static bool use_xp;
 
     QHash<ThemeMapKey, ThemeMapData> alphaCache;
-    HDC bufferDC;
-    HBITMAP bufferBitmap;
-    HBITMAP nullBitmap;
-    uchar *bufferPixels;
-    int bufferW, bufferH;
+    HDC bufferDC = nullptr;
+    HBITMAP bufferBitmap = nullptr;
+    HBITMAP nullBitmap = nullptr;
+    uchar *bufferPixels = nullptr;
+    int bufferW = 0;
+    int bufferH = 0;
 
     static HWND m_vistaTreeViewHelper;
     static HTHEME m_themes[NThemes];
@@ -292,7 +291,7 @@ inline QSizeF XPThemeData::size()
     QSizeF result(0, 0);
     if (isValid()) {
         SIZE size;
-        if (SUCCEEDED(GetThemePartSize(handle(), 0, partId, stateId, 0, TS_TRUE, &size)))
+        if (SUCCEEDED(GetThemePartSize(handle(), nullptr, partId, stateId, nullptr, TS_TRUE, &size)))
             result = QSize(size.cx, size.cy);
     }
     return result;
@@ -304,7 +303,7 @@ inline QMarginsF XPThemeData::margins(const QRect &qRect, int propId)
     if (isValid()) {
         MARGINS margins;
         RECT rect = XPThemeData::toRECT(qRect);
-        if (SUCCEEDED(GetThemeMargins(handle(), 0, partId, stateId, propId, &rect, &margins)))
+        if (SUCCEEDED(GetThemeMargins(handle(), nullptr, partId, stateId, propId, &rect, &margins)))
             result = QMargins(margins.cxLeftWidth, margins.cyTopHeight, margins.cxRightWidth, margins.cyBottomHeight);
     }
     return result;
@@ -315,7 +314,7 @@ inline QMarginsF XPThemeData::margins(int propId)
     QMarginsF result(0, 0, 0 ,0);
     if (isValid()) {
         MARGINS margins;
-        if (SUCCEEDED(GetThemeMargins(handle(), 0, partId, stateId, propId, NULL, &margins)))
+        if (SUCCEEDED(GetThemeMargins(handle(), nullptr, partId, stateId, propId, nullptr, &margins)))
             result = QMargins(margins.cxLeftWidth, margins.cyTopHeight, margins.cxRightWidth, margins.cyBottomHeight);
     }
     return result;

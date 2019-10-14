@@ -88,7 +88,9 @@ private slots:
 
     void testToFillPolygons();
 
+#if QT_CONFIG(signaling_nan)
     void testNaNandInfinites();
+#endif
 
     void closing();
 
@@ -1228,6 +1230,7 @@ void tst_QPainterPath::testToFillPolygons()
     QCOMPARE(polygons.first().count(QPointF(70, 50)), 0);
 }
 
+#if QT_CONFIG(signaling_nan)
 void tst_QPainterPath::testNaNandInfinites()
 {
     QPainterPath path1;
@@ -1271,6 +1274,7 @@ void tst_QPainterPath::testNaNandInfinites()
     path1.lineTo(QPointF(1, 1));
     QVERIFY(path1 != path2);
 }
+#endif // signaling_nan
 
 void tst_QPainterPath::connectPathDuplicatePoint()
 {

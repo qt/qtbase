@@ -161,7 +161,6 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 #endif
 
 void (*QAbstractDeclarativeData::destroyed)(QAbstractDeclarativeData *, QObject *) = 0;
-void (*QAbstractDeclarativeData::destroyed_qml1)(QAbstractDeclarativeData *, QObject *) = 0;
 void (*QAbstractDeclarativeData::parentChanged)(QAbstractDeclarativeData *, QObject *, QObject *) = 0;
 void (*QAbstractDeclarativeData::signalEmitted)(QAbstractDeclarativeData *, QObject *, int, void **) = 0;
 int  (*QAbstractDeclarativeData::receivers)(QAbstractDeclarativeData *, const QObject *, int) = 0;
@@ -902,30 +901,8 @@ static bool check_parent_thread(QObject *parent,
 */
 
 QObject::QObject(QObject *parent)
-    : d_ptr(new QObjectPrivate)
+    : QObject(*new QObjectPrivate, parent)
 {
-    Q_ASSERT_X(this != parent, Q_FUNC_INFO, "Cannot parent a QObject to itself");
-
-    Q_D(QObject);
-    d_ptr->q_ptr = this;
-    d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
-    d->threadData->ref();
-    if (parent) {
-        QT_TRY {
-            if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
-                parent = 0;
-            setParent(parent);
-        } QT_CATCH(...) {
-            d->threadData->deref();
-            QT_RETHROW;
-        }
-    }
-#if QT_VERSION < 0x60000
-    qt_addObject(this);
-#endif
-    if (Q_UNLIKELY(qtHookData[QHooks::AddQObject]))
-        reinterpret_cast<QHooks::AddQObjectCallback>(qtHookData[QHooks::AddQObject])(this);
-    Q_TRACE(QObject_ctor, this);
 }
 
 /*!
@@ -1013,15 +990,8 @@ QObject::~QObject()
         emit destroyed(this);
     }
 
-    if (d->declarativeData) {
-        if (static_cast<QAbstractDeclarativeDataImpl*>(d->declarativeData)->ownedByQml1) {
-            if (QAbstractDeclarativeData::destroyed_qml1)
-                QAbstractDeclarativeData::destroyed_qml1(d->declarativeData, this);
-        } else {
-            if (QAbstractDeclarativeData::destroyed)
-                QAbstractDeclarativeData::destroyed(d->declarativeData, this);
-        }
-    }
+    if (d->declarativeData && QAbstractDeclarativeData::destroyed)
+        QAbstractDeclarativeData::destroyed(d->declarativeData, this);
 
     QObjectPrivate::ConnectionData *cd = d->connections.loadRelaxed();
     if (cd) {
@@ -2153,7 +2123,9 @@ void QObjectPrivate::setParent_helper(QObject *o)
             // cleared our entry in parentD->children.
         } else {
             const int index = parentD->children.indexOf(q);
-            if (parentD->isDeletingChildren) {
+            if (index < 0) {
+                // we're probably recursing into setParent() from a ChildRemoved event, don't do anything
+            } else if (parentD->isDeletingChildren) {
                 parentD->children[index] = 0;
             } else {
                 parentD->children.removeAt(index);
@@ -3904,11 +3876,12 @@ void doActivate(QObject *sender, int signal_index, void **argv)
         if (connections->currentConnectionId.loadRelaxed() == 0)
             senderDeleted = true;
     }
-    if (!senderDeleted)
+    if (!senderDeleted) {
         sp->connections.loadRelaxed()->cleanOrphanedConnections(sender);
 
-    if (callbacks_enabled && signal_spy_set->signal_end_callback != nullptr)
-        signal_spy_set->signal_end_callback(sender, signal_index);
+        if (callbacks_enabled && signal_spy_set->signal_end_callback != nullptr)
+            signal_spy_set->signal_end_callback(sender, signal_index);
+    }
 }
 
 /*!
@@ -4343,21 +4316,17 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     \relates QObject
     \obsolete
 
+    In new code, you should prefer the use of the Q_ENUM() macro, which makes the
+    type available also to the meta type system.
+    For instance, QMetaEnum::fromType() will not work with types declared with Q_ENUMS().
+
     This macro registers one or several enum types to the meta-object
     system.
-
-    For example:
-
-    \snippet code/src_corelib_kernel_qobject.cpp 38
 
     If you want to register an enum that is declared in another class,
     the enum must be fully qualified with the name of the class
     defining it. In addition, the class \e defining the enum has to
     inherit QObject as well as declare the enum using Q_ENUMS().
-
-    In new code, you should prefer the use of the Q_ENUM() macro, which makes the
-    type available also to the meta type system.
-    For instance, QMetaEnum::fromType() will not work with types declared with Q_ENUMS().
 
     \sa {Qt's Property System}
 */
@@ -4560,7 +4529,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     It works exactly like the Q_NAMESPACE macro. However, the external
     \c{staticMetaObject} variable that gets defined in the namespace
     is declared with the supplied \c{EXPORT_MACRO} qualifier. This is
-    useful f.i. if the object needs to be exported from a dynamic library.
+    useful if the object needs to be exported from a dynamic library.
 
     \sa Q_NAMESPACE, {Creating Shared Libraries}
 */

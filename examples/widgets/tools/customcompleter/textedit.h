@@ -63,7 +63,7 @@ class TextEdit : public QTextEdit
     Q_OBJECT
 
 public:
-    TextEdit(QWidget *parent = 0);
+    TextEdit(QWidget *parent = nullptr);
     ~TextEdit();
 
     void setCompleter(QCompleter *c);
@@ -80,7 +80,7 @@ private:
     QString textUnderCursor() const;
 
 private:
-    QCompleter *c;
+    QCompleter *c = nullptr;
 };
 //! [0]
 

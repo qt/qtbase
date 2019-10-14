@@ -112,6 +112,13 @@ QT_BEGIN_NAMESPACE
     are returned by classInfo(), and you can search for pairs with
     indexOfClassInfo().
 
+    \note Operations that use the meta object system are generally thread-
+    safe, as QMetaObjects are typically static read-only instances
+    generated at compile time. However, if meta objects are dynamically
+    modified by the application (for instance, when using QQmlPropertyMap),
+    then the application has to explicitly synchronize access to the
+    respective meta object.
+
     \sa QMetaClassInfo, QMetaEnum, QMetaMethod, QMetaProperty, QMetaType,
         {Meta-Object System}
 */
@@ -3646,6 +3653,21 @@ const char* QMetaClassInfo::value() const
         return 0;
     return rawStringData(mobj, mobj->d.data[handle + 1]);
 }
+
+/*!
+    \class QMethodRawArguments
+    \internal
+
+    A wrapper class for the void ** arguments array used by the meta
+    object system. If a slot uses a single argument of this type,
+    the meta object system will pass the raw arguments array directly
+    to the slot and set the arguments count in the slot description to
+    zero, so that any signal can connect to it.
+
+    This is used internally to implement signal relay functionality in
+    our state machine and dbus.
+*/
+
 
 /*!
     \macro QGenericArgument Q_ARG(Type, const Type &value)

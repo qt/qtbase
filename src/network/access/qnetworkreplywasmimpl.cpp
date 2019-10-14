@@ -63,6 +63,8 @@ static void q_requestErrorCallback(val event)
         return;
 
     val xhr = event["target"];
+    if (xhr.isNull() || xhr.isUndefined())
+        return;
 
     quintptr func = xhr["data-handler"].as<quintptr>();
     QNetworkReplyWasmImplPrivate *reply = reinterpret_cast<QNetworkReplyWasmImplPrivate*>(func);
@@ -84,6 +86,8 @@ static void q_progressCallback(val event)
         return;
 
     val xhr = event["target"];
+    if (xhr.isNull() || xhr.isUndefined())
+        return;
 
     QNetworkReplyWasmImplPrivate *reply =
             reinterpret_cast<QNetworkReplyWasmImplPrivate*>(xhr["data-handler"].as<quintptr>());
@@ -99,6 +103,8 @@ static void q_loadCallback(val event)
         return;
 
     val xhr = event["target"];
+    if (xhr.isNull() || xhr.isUndefined())
+        return;
 
     QNetworkReplyWasmImplPrivate *reply =
             reinterpret_cast<QNetworkReplyWasmImplPrivate*>(xhr["data-handler"].as<quintptr>());
@@ -123,8 +129,13 @@ static void q_loadCallback(val event)
         } else if (responseType == "arraybuffer" || responseType == "blob") {
             // handle this data in the FileReader, triggered by the call to readAsArrayBuffer
             val blob = xhr["response"];
+            if (blob.isNull() || blob.isUndefined())
+                return;
 
             val reader = val::global("FileReader").new_();
+            if (reader.isNull() || reader.isUndefined())
+                return;
+
             reader.set("onload", val::module_property("qt_QNetworkReplyWasmImplPrivate_readBinary"));
             reader.set("data-handler", xhr["data-handler"]);
 
@@ -151,6 +162,8 @@ static void q_responseHeadersCallback(val event)
         return;
 
     val xhr = event["target"];
+    if (xhr.isNull() || xhr.isUndefined())
+        return;
 
     if (xhr["readyState"].as<int>() == 2) { // HEADERS_RECEIVED
         std::string responseHeaders = xhr.call<std::string>("getAllResponseHeaders");
@@ -170,6 +183,8 @@ static void q_readBinary(val event)
         return;
 
     val fileReader = event["target"];
+    if (fileReader.isNull() || fileReader.isUndefined())
+        return;
 
     QNetworkReplyWasmImplPrivate *reply =
             reinterpret_cast<QNetworkReplyWasmImplPrivate*>(fileReader["data-handler"].as<quintptr>());
@@ -180,6 +195,9 @@ static void q_readBinary(val event)
 
     // Set up source typed array
     val result = fileReader["result"]; // ArrayBuffer
+    if (result.isNull() || result.isUndefined())
+        return;
+
     val Uint8Array = val::global("Uint8Array");
     val sourceTypedArray = Uint8Array.new_(result);
 

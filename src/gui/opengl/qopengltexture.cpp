@@ -4612,7 +4612,7 @@ QOpenGLTexture::WrapMode QOpenGLTexture::wrapMode(QOpenGLTexture::CoordinateDire
     \note This function has no effect on Mac and Qt built for OpenGL ES 2.
     \sa borderColor()
 */
-void QOpenGLTexture::setBorderColor(QColor color)
+void QOpenGLTexture::setBorderColor(const QColor &color)
 {
     setBorderColor(static_cast<float>(color.redF()), static_cast<float>(color.greenF()),
                    static_cast<float>(color.blueF()), static_cast<float>(color.alphaF()));

@@ -54,22 +54,6 @@
 #include "qlocale_p.h"
 #include "qstring.h"
 
-#if !defined(QT_QLOCALE_NEEDS_VOLATILE)
-#  if defined(Q_CC_GNU)
-#    if  __GNUC__ == 4
-#      define QT_QLOCALE_NEEDS_VOLATILE
-#    elif defined(Q_OS_WIN)
-#      define QT_QLOCALE_NEEDS_VOLATILE
-#    endif
-#  endif
-#endif
-
-#if defined(QT_QLOCALE_NEEDS_VOLATILE)
-#   define NEEDS_VOLATILE volatile
-#else
-#   define NEEDS_VOLATILE
-#endif
-
 QT_BEGIN_NAMESPACE
 
 enum StrayCharacterMode {

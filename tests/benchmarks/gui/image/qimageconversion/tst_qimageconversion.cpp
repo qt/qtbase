@@ -342,6 +342,7 @@ void tst_QImageConversion::convertGenericInplace_data()
     QImage argb6666 = argb32.convertToFormat(QImage::Format_ARGB6666_Premultiplied);
     QImage argb4444 = argb32.convertToFormat(QImage::Format_ARGB4444_Premultiplied);
     QImage rgb16 = argb32.convertToFormat(QImage::Format_RGB16);
+    QImage rgb30 = argb32.convertToFormat(QImage::Format_RGB30);
     QImage rgb888 = argb32.convertToFormat(QImage::Format_RGB888);
 
     QTest::newRow("argb32 -> argb32pm -> argb32") << argb32 << QImage::Format_ARGB32_Premultiplied;
@@ -370,6 +371,7 @@ void tst_QImageConversion::convertGenericInplace_data()
     QTest::newRow("rgb16 -> rgb444 -> rgb16") << rgb16 << QImage::Format_RGB444;
     QTest::newRow("rgb16 -> argb4444pm -> rgb16") << rgb16 << QImage::Format_ARGB4444_Premultiplied;
 
+    QTest::newRow("rgb30 -> bgr30 -> rgb30") << rgb30 << QImage::Format_BGR30;
     QTest::newRow("rgb888 -> bgr888 -> rgb888") << rgb888 << QImage::Format_BGR888;
 }
 

@@ -15,8 +15,6 @@ linux
 # QTBUG-71953
 [getFromHttp]
 * !android !winrt
-[getFromHttp:success-external]
-*
 [getFromHttpIntoBuffer]
 osx
 [getFromHttpIntoBuffer2]

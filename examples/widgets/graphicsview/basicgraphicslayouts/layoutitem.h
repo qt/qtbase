@@ -53,23 +53,24 @@
 
 #include <QGraphicsLayoutItem>
 #include <QGraphicsItem>
+#include <QPixmap>
 
 //! [0]
 class LayoutItem : public QGraphicsLayoutItem, public QGraphicsItem
 {
 public:
-    LayoutItem(QGraphicsItem *parent = 0);
-    ~LayoutItem();
+    LayoutItem(QGraphicsItem *parent = nullptr);
+
     // Inherited from QGraphicsLayoutItem
     void setGeometry(const QRectF &geom) override;
     QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const override;
 
     // Inherited from QGraphicsItem
     QRectF boundingRect() const override;
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
 
 private:
-    QPixmap *m_pix;
+    QPixmap m_pix;
 };
 //! [0]
 

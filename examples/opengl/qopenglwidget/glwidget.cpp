@@ -68,14 +68,6 @@ const int bubbleNum = 8;
 
 GLWidget::GLWidget(MainWindow *mw, bool button, const QColor &background)
     : m_mainWindow(mw),
-      m_showBubbles(true),
-      m_qtLogo(true),
-      m_frames(0),
-      m_program1(0),
-      m_program2(0),
-      m_texture(0),
-      m_transparent(false),
-      m_btn(0),
       m_hasButton(button),
       m_background(background)
 {

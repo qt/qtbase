@@ -59,7 +59,7 @@
 
 //! [0]
 GraphWidget::GraphWidget(QWidget *parent)
-    : QGraphicsView(parent), timerId(0)
+    : QGraphicsView(parent) 
 {
     QGraphicsScene *scene = new QGraphicsScene(this);
     scene->setItemIndexMethod(QGraphicsScene::NoIndex);
@@ -163,7 +163,7 @@ void GraphWidget::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event);
 
-    QList<Node *> nodes;
+    QVector<Node *> nodes;
     const QList<QGraphicsItem *> items = scene()->items();
     for (QGraphicsItem *item : items) {
         if (Node *node = qgraphicsitem_cast<Node *>(item))
@@ -190,7 +190,7 @@ void GraphWidget::timerEvent(QTimerEvent *event)
 //! [5]
 void GraphWidget::wheelEvent(QWheelEvent *event)
 {
-    scaleView(pow((double)2, -event->angleDelta().y() / 240.0));
+    scaleView(pow(2., -event->angleDelta().y() / 240.0));
 }
 //! [5]
 #endif

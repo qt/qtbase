@@ -199,7 +199,7 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
     void release() override;
     bool build() override;
 
-    QVector<QRhiShaderResourceBinding> sortedBindings;
+    QVarLengthArray<QRhiShaderResourceBinding, 8> sortedBindings;
     uint generation = 0;
 
     // Keep track of the generation number of each referenced QRhi* to be able
@@ -230,7 +230,7 @@ struct QD3D11ShaderResourceBindings : public QRhiShaderResourceBindings
             BoundStorageBufferData sbuf;
         };
     };
-    QVector<BoundResourceData> boundResourceData;
+    QVarLengthArray<BoundResourceData, 8> boundResourceData;
 
     QRhiBatchedBindings<ID3D11Buffer *> vsubufs;
     QRhiBatchedBindings<UINT> vsubufoffsets;
@@ -631,7 +631,9 @@ public:
     int resourceLimit(QRhi::ResourceLimit limit) const override;
     const QRhiNativeHandles *nativeHandles() override;
     void sendVMemStatsToProfiler() override;
-    void makeThreadLocalNativeContextCurrent() override;
+    bool makeThreadLocalNativeContextCurrent() override;
+    void releaseCachedResources() override;
+    bool isDeviceLost() const override;
 
     void enqueueSubresUpload(QD3D11Texture *texD, QD3D11CommandBuffer *cbD,
                              int layer, int level, const QRhiTextureSubresourceUploadDescription &subresDesc);
@@ -646,6 +648,7 @@ public:
     DXGI_SAMPLE_DESC effectiveSampleCount(int sampleCount) const;
     void finishActiveReadbacks();
     void reportLiveObjects(ID3D11Device *device);
+    void clearShaderCache();
 
     bool debugLayer = false;
     bool importedDevice = false;
@@ -656,6 +659,7 @@ public:
     IDXGIFactory1 *dxgiFactory = nullptr;
     bool hasDxgi2 = false;
     bool supportsFlipDiscardSwapchain = false;
+    bool deviceLost = false;
     QRhiD3D11NativeHandles nativeHandlesStruct;
 
     struct {
@@ -674,19 +678,47 @@ public:
         QD3D11CommandBuffer cbWrapper;
     } ofr;
 
-    struct ActiveReadback {
+    struct TextureReadback {
         QRhiReadbackDescription desc;
         QRhiReadbackResult *result;
         ID3D11Texture2D *stagingTex;
-        quint32 bufSize;
+        quint32 byteSize;
         quint32 bpl;
         QSize pixelSize;
         QRhiTexture::Format format;
     };
-    QVector<ActiveReadback> activeReadbacks;
+    QVector<TextureReadback> activeTextureReadbacks;
+    struct BufferReadback {
+        QRhiBufferReadbackResult *result;
+        quint32 byteSize;
+        ID3D11Buffer *stagingBuf;
+    };
+    QVector<BufferReadback> activeBufferReadbacks;
+
+    struct Shader {
+        Shader() = default;
+        Shader(IUnknown *s, const QByteArray &bytecode) : s(s), bytecode(bytecode) { }
+        IUnknown *s;
+        QByteArray bytecode;
+    };
+    QHash<QRhiShaderStage, Shader> m_shaderCache;
+
+    struct DeviceCurse {
+        DeviceCurse(QRhiD3D11 *impl) : q(impl) { }
+        QRhiD3D11 *q;
+        int framesToActivate = -1;
+        bool permanent = false;
+        int framesLeft = 0;
+        ID3D11ComputeShader *cs = nullptr;
+
+        void initResources();
+        void releaseResources();
+        void activate();
+    } deviceCurse;
 };
 
-Q_DECLARE_TYPEINFO(QRhiD3D11::ActiveReadback, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiD3D11::TextureReadback, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QRhiD3D11::BufferReadback, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 

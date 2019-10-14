@@ -544,15 +544,10 @@ void tst_qnetworkreply::echoPerformance()
 void tst_qnetworkreply::preConnectEncrypted()
 {
     QFETCH(int, sleepTime);
-    QFETCH(QSslConfiguration, sslConfiguration);
-    bool spdyEnabled = !sslConfiguration.isNull();
-
     QString hostName = QLatin1String("www.google.com");
 
     QNetworkAccessManager manager;
     QNetworkRequest request(QUrl("https://" + hostName));
-    if (spdyEnabled)
-        request.setAttribute(QNetworkRequest::SpdyAllowedAttribute, true);
 
     // make sure we have a full request including
     // DNS lookup, TCP and SSL handshakes
@@ -578,12 +573,7 @@ void tst_qnetworkreply::preConnectEncrypted()
     manager.clearAccessCache();
 
     // now try to make the connection beforehand
-    if (spdyEnabled) {
-        request.setAttribute(QNetworkRequest::SpdyAllowedAttribute, true);
-        manager.connectToHostEncrypted(hostName, 443, sslConfiguration);
-    } else {
-        manager.connectToHostEncrypted(hostName);
-    }
+    manager.connectToHostEncrypted(hostName);
     QTestEventLoop::instance().enterLoopMSecs(sleepTime);
 
     // now make another request and hopefully use the existing connection
@@ -591,8 +581,6 @@ void tst_qnetworkreply::preConnectEncrypted()
     QNetworkReply *preConnectReply = normalResult.first;
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(preConnectReply->error() == QNetworkReply::NoError);
-    bool spdyWasUsed = preConnectReply->attribute(QNetworkRequest::SpdyWasUsedAttribute).toBool();
-    QCOMPARE(spdyEnabled, spdyWasUsed);
     qint64 preConnectElapsed = preConnectResult.second;
     qDebug() << request.url().toString() << "full request:" << normalElapsed
              << "ms, pre-connect request:" << preConnectElapsed << "ms, difference:"
@@ -605,27 +593,11 @@ void tst_qnetworkreply::preConnectEncrypted_data()
 {
 #ifndef QT_NO_OPENSSL
     QTest::addColumn<int>("sleepTime");
-    QTest::addColumn<QSslConfiguration>("sslConfiguration");
-
     // start a new normal request after preconnecting is done
-    QTest::newRow("HTTPS-2secs") << 2000 << QSslConfiguration();
+    QTest::newRow("HTTPS-2secs") << 2000;
 
     // start a new normal request while preconnecting is in-flight
-    QTest::newRow("HTTPS-100ms") << 100 << QSslConfiguration();
-
-    QSslConfiguration spdySslConf = QSslConfiguration::defaultConfiguration();
-    QList<QByteArray> nextProtocols = QList<QByteArray>()
-            << QSslConfiguration::NextProtocolSpdy3_0
-            << QSslConfiguration::NextProtocolHttp1_1;
-    spdySslConf.setAllowedNextProtocols(nextProtocols);
-
-#if defined(QT_BUILD_INTERNAL) && !defined(QT_NO_SSL) && OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_TLSEXT) && !defined(OPENSSL_NO_NEXTPROTONEG)
-    // start a new SPDY request while preconnecting is done
-    QTest::newRow("SPDY-2secs") << 2000 << spdySslConf;
-
-    // start a new SPDY request while preconnecting is in-flight
-    QTest::newRow("SPDY-100ms") << 100 << spdySslConf;
-#endif // defined (QT_BUILD_INTERNAL) && !defined(QT_NO_SSL) ...
+    QTest::newRow("HTTPS-100ms") << 100;
 #endif // QT_NO_OPENSSL
 }
 

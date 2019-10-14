@@ -44,6 +44,7 @@
 #include <QtCore/qrefcount.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qarraydata.h>
+#include <QtCore/qcontainerfwd.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -112,7 +113,6 @@ Q_CORE_EXPORT quint16 qChecksum(const char *s, uint len, Qt::ChecksumType standa
 class QByteRef;
 class QString;
 class QDataStream;
-template <typename T> class QList;
 
 typedef QArrayData QByteArrayData;
 

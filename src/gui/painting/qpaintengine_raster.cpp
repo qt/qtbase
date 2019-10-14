@@ -842,8 +842,8 @@ void QRasterPaintEngine::updateRasterState()
         const QPainter::CompositionMode mode = s->composition_mode;
         s->flags.fast_text = (s->penData.type == QSpanData::Solid)
                        && s->intOpacity == 256
-                       && (mode == QPainter::CompositionMode_Source
-                           || (mode == QPainter::CompositionMode_SourceOver
+                       && (mode == QPainter::CompositionMode_SourceOver
+                           || (mode == QPainter::CompositionMode_Source
                                && s->penData.solidColor.isOpaque()));
     }
 
@@ -906,8 +906,11 @@ void QRasterPaintEngine::renderHintsChanged()
 
     s->flags.antialiased = bool(s->renderHints & QPainter::Antialiasing);
 #if QT_DEPRECATED_SINCE(5, 14)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     if (s->renderHints & QPainter::HighQualityAntialiasing)
         s->flags.antialiased = true;
+QT_WARNING_POP
 #endif
     s->flags.bilinear = bool(s->renderHints & QPainter::SmoothPixmapTransform);
     s->flags.legacy_rounding = !bool(s->renderHints & QPainter::Antialiasing) && bool(s->renderHints & QPainter::Qt4CompatiblePainting);
@@ -2214,7 +2217,7 @@ void QRasterPaintEngine::drawImage(const QPointF &p, const QImage &img)
         const QClipData *clip = d->clip();
         QPointF pt(p.x() + s->matrix.dx(), p.y() + s->matrix.dy());
 
-        if (d->canUseImageBlitting(d->rasterBuffer->compositionMode, img)) {
+        if (d->canUseImageBlitting(d->rasterBuffer->compositionMode, img, pt, img.rect())) {
             if (!clip) {
                 d->blitImage(pt, img, d->deviceRect);
                 return;
@@ -2285,7 +2288,12 @@ namespace {
         return NoRotation;
     }
 
-    inline bool isPixelAligned(const QRectF &rect) {
+    inline bool isPixelAligned(const QPointF &pt)
+    {
+        return QPointF(pt.toPoint()) == pt;
+    }
+    inline bool isPixelAligned(const QRectF &rect)
+    {
         return QRectF(rect.toRect()) == rect;
     }
 }
@@ -2353,17 +2361,12 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
 
     const QClipData *clip = d->clip();
 
-    if (s->matrix.type() > QTransform::TxTranslate
+    if (s->matrix.type() == QTransform::TxRotate
         && !stretch_sr
         && (!clip || clip->hasRectClip)
         && s->intOpacity == 256
         && (d->rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver
-            || d->rasterBuffer->compositionMode == QPainter::CompositionMode_Source)
-        && d->rasterBuffer->format == img.format()
-        && (d->rasterBuffer->format == QImage::Format_RGB16
-            || d->rasterBuffer->format == QImage::Format_RGB32
-            || (d->rasterBuffer->format == QImage::Format_ARGB32_Premultiplied
-                && d->rasterBuffer->compositionMode == QPainter::CompositionMode_Source)))
+            || d->rasterBuffer->compositionMode == QPainter::CompositionMode_Source))
     {
         RotationType rotationType = qRotationType(s->matrix);
         const QPixelLayout::BPP plBpp = qPixelLayouts[d->rasterBuffer->format].bpp;
@@ -2371,9 +2374,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         if (rotationType != NoRotation && qMemRotateFunctions[plBpp][rotationType] && img.rect().contains(sr.toAlignedRect())) {
             QRectF transformedTargetRect = s->matrix.mapRect(r);
 
-            if ((!(s->renderHints & QPainter::SmoothPixmapTransform) && !(s->renderHints & QPainter::Antialiasing))
-                || (isPixelAligned(transformedTargetRect) && isPixelAligned(sr)))
-            {
+            if (d->canUseImageBlitting(d->rasterBuffer->compositionMode, img, transformedTargetRect.topRight(), sr)) {
                 QRect clippedTransformedTargetRect = transformedTargetRect.toRect().intersected(clip ? clip->clipRect : d->deviceRect);
                 if (clippedTransformedTargetRect.isNull())
                     return;
@@ -2507,8 +2508,8 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         fillPath(path, &d->image_filler_xform);
         s->matrix = m;
     } else {
-        if (d->canUseImageBlitting(d->rasterBuffer->compositionMode, img)) {
-            QPointF pt(r.x() + s->matrix.dx(), r.y() + s->matrix.dy());
+        QPointF pt(r.x() + s->matrix.dx(), r.y() + s->matrix.dy());
+        if (d->canUseImageBlitting(d->rasterBuffer->compositionMode, img, pt, sr)) {
             if (!clip) {
                 d->blitImage(pt, img, d->deviceRect, sr.toRect());
                 return;
@@ -2519,7 +2520,6 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
         } else if (d->canUseFastImageBlending(d->rasterBuffer->compositionMode, img)) {
             SrcOverBlendFunc func = qBlendFunctions[d->rasterBuffer->format][img.format()];
             if (func) {
-                QPointF pt(r.x() + s->matrix.dx(), r.y() + s->matrix.dy());
                 if (!clip) {
                     d->drawImage(pt, img, func, d->deviceRect, s->intOpacity, sr.toRect());
                     return;
@@ -3754,12 +3754,22 @@ bool QRasterPaintEnginePrivate::canUseFastImageBlending(QPainter::CompositionMod
                    && !image.hasAlphaChannel()));
 }
 
-bool QRasterPaintEnginePrivate::canUseImageBlitting(QPainter::CompositionMode mode, const QImage &image) const
+bool QRasterPaintEnginePrivate::canUseImageBlitting(QPainter::CompositionMode mode, const QImage &image, const QPointF &pt, const QRectF &sr) const
 {
     Q_Q(const QRasterPaintEngine);
-    const QRasterPaintEngineState *s = q->state();
 
-    if (!s->flags.fast_images || s->intOpacity != 256 || qt_depthForFormat(rasterBuffer->format) < 8)
+    if (!(mode == QPainter::CompositionMode_Source
+          || (mode == QPainter::CompositionMode_SourceOver
+              && !image.hasAlphaChannel())))
+        return false;
+
+    const QRasterPaintEngineState *s = q->state();
+    Q_ASSERT(s->matrix.type() <= QTransform::TxTranslate || s->matrix.type() == QTransform::TxRotate);
+
+    if (s->intOpacity != 256
+        || image.depth() < 8
+        || ((s->renderHints & (QPainter::SmoothPixmapTransform | QPainter::Antialiasing))
+            && (!isPixelAligned(pt) || !isPixelAligned(sr))))
         return false;
 
     QImage::Format dFormat = rasterBuffer->format;
@@ -3767,18 +3777,13 @@ bool QRasterPaintEnginePrivate::canUseImageBlitting(QPainter::CompositionMode mo
     // Formats must match or source format must be a subset of destination format
     if (dFormat != sFormat && image.pixelFormat().alphaUsage() == QPixelFormat::IgnoresAlpha) {
         if ((sFormat == QImage::Format_RGB32 && dFormat == QImage::Format_ARGB32)
-            || (sFormat == QImage::Format_RGBX8888 && dFormat == QImage::Format_RGBA8888))
+            || (sFormat == QImage::Format_RGBX8888 && dFormat == QImage::Format_RGBA8888)
+            || (sFormat == QImage::Format_RGBX64 && dFormat == QImage::Format_RGBA64))
             sFormat = dFormat;
         else
             sFormat = qt_maybeAlphaVersionWithSameDepth(sFormat); // this returns premul formats
     }
-    if (dFormat != sFormat)
-        return false;
-
-    return s->matrix.type() <= QTransform::TxTranslate
-           && (mode == QPainter::CompositionMode_Source
-               || (mode == QPainter::CompositionMode_SourceOver
-                   && !image.hasAlphaChannel()));
+    return (dFormat == sFormat);
 }
 
 QImage QRasterBuffer::colorizeBitmap(const QImage &image, const QColor &color)

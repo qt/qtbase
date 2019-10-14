@@ -66,6 +66,8 @@ private slots:
     void defaultFamily();
     void toAndFromString();
     void fromStringWithoutStyleName();
+    void fromDegenerateString_data();
+    void fromDegenerateString();
 
     void sharing();
     void familyNameWithCommaQuote_data();
@@ -539,10 +541,10 @@ void tst_QFont::defaultFamily_data()
     QTest::addColumn<QStringList>("acceptableFamilies");
 
     QTest::newRow("serif") << QFont::Serif << (QStringList() << "Times New Roman" << "Times" << "Droid Serif" << getPlatformGenericFont("serif").split(","));
-    QTest::newRow("monospace") << QFont::Monospace << (QStringList() << "Courier New" << "Monaco" << "Droid Sans Mono" << getPlatformGenericFont("monospace").split(","));
+    QTest::newRow("monospace") << QFont::Monospace << (QStringList() << "Courier New" << "Monaco" << "Menlo" << "Droid Sans Mono" << getPlatformGenericFont("monospace").split(","));
     QTest::newRow("cursive") << QFont::Cursive << (QStringList() << "Comic Sans MS" << "Apple Chancery" << "Roboto" << "Droid Sans" << getPlatformGenericFont("cursive").split(","));
     QTest::newRow("fantasy") << QFont::Fantasy << (QStringList() << "Impact" << "Zapfino"  << "Roboto" << "Droid Sans" << getPlatformGenericFont("fantasy").split(","));
-    QTest::newRow("sans-serif") << QFont::SansSerif << (QStringList() << "Arial" << "Lucida Grande" << "Roboto" << "Droid Sans" << "Segoe UI" << getPlatformGenericFont("sans-serif").split(","));
+    QTest::newRow("sans-serif") << QFont::SansSerif << (QStringList() << "Arial" << "Lucida Grande" << "Helvetica" << "Roboto" << "Droid Sans" << "Segoe UI" << getPlatformGenericFont("sans-serif").split(","));
 }
 
 void tst_QFont::defaultFamily()
@@ -604,6 +606,25 @@ void tst_QFont::fromStringWithoutStyleName()
     QCOMPARE(font2.toString(), str);
 }
 
+void tst_QFont::fromDegenerateString_data()
+{
+    QTest::addColumn<QString>("string");
+
+    QTest::newRow("empty") << QString();
+    QTest::newRow("justAComma") << ",";
+    QTest::newRow("commasAndSpaces") << " , ,    ";
+    QTest::newRow("spaces") << "   ";
+    QTest::newRow("spacesTabsAndNewlines") << " \t  \n";
+}
+
+void tst_QFont::fromDegenerateString()
+{
+    QFETCH(QString, string);
+    QFont f;
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression(".*Invalid description.*"));
+    QCOMPARE(f.fromString(string), false);
+    QCOMPARE(f, QFont());
+}
 
 void tst_QFont::sharing()
 {

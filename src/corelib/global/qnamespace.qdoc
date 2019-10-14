@@ -3287,7 +3287,7 @@
   the application object is created, or by setting the QT_SCALE_FACTOR_ROUNDING_POLICY
   environment variable.
 
-  \sa QGuiApplication::setHighDdpiScaleFactorRoundingPolicy()
+  \sa QGuiApplication::setHighDpiScaleFactorRoundingPolicy()
   \sa AA_EnableHighDpiScaling.
 
   \omitvalue Unset
