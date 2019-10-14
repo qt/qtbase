@@ -276,7 +276,9 @@ void QXcbWindow::create()
 
     QXcbScreen *currentScreen = xcbScreen();
     QXcbScreen *platformScreen = parent() ? parentScreen() : initialScreen();
-    QRect rect = QHighDpi::toNativePixels(window()->geometry(), platformScreen);
+    QRect rect = parent()
+        ? QHighDpi::toNativeLocalPosition(window()->geometry(), platformScreen)
+        : QHighDpi::toNativePixels(window()->geometry(), platformScreen);
 
     if (type == Qt::Desktop) {
         m_window = platformScreen->root();
