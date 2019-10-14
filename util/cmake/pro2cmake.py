@@ -1013,7 +1013,7 @@ class Scope(object):
             return ["${CMAKE_CURRENT_SOURCE_DIR}/" + project_relative_path]
 
         if key == "QT_ARCH":
-            return ["${ANDROID_ABI}"]
+            return ["${CMAKE_SYSTEM_PROCESSOR}"]
 
         if key == "_PRO_FILE_PWD_":
             return ["${CMAKE_CURRENT_SOURCE_DIR}"]
