@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qandroidbearerengine.h"
-#include "../../qnetworksession_impl.h"
+#include <private/qnetworksession_impl_p.h>
 #include "wrappers/androidconnectivitymanager.h"
 
 #ifndef QT_NO_BEARERMANAGEMENT

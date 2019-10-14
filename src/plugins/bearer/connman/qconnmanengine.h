@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include "../qbearerengine_impl.h"
+#include <private/qbearerengine_impl_p.h>
 
 #include "qconnmanservice_linux_p.h"
 #include "../linux_common/qofonoservice_linux_p.h"

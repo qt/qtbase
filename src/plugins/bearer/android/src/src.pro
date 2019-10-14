@@ -2,13 +2,10 @@ TARGET = qandroidbearer
 
 QT = core-private network-private
 
-HEADERS += qandroidbearerengine.h \
-           ../../qnetworksession_impl.h \
-           ../../qbearerengine_impl.h
+HEADERS += qandroidbearerengine.h
 
 SOURCES += main.cpp \
-           qandroidbearerengine.cpp \
-           ../../qnetworksession_impl.cpp
+           qandroidbearerengine.cpp
 
 include(wrappers/wrappers.pri)
 

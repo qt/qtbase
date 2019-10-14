@@ -42,9 +42,11 @@
 
 #include <QtNetwork/private/qbearerengine_p.h>
 
+#ifndef QT_NO_BEARERMANAGEMENT
+
 QT_BEGIN_NAMESPACE
 
-class QBearerEngineImpl : public QBearerEngine
+class Q_NETWORK_EXPORT QBearerEngineImpl : public QBearerEngine
 {
     Q_OBJECT
 
@@ -77,5 +79,7 @@ Q_SIGNALS:
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QBearerEngineImpl::ConnectionError)
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif // QBEARERENGINE_IMPL_H

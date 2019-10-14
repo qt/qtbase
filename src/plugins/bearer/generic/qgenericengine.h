@@ -40,7 +40,7 @@
 #ifndef QGENERICENGINE_H
 #define QGENERICENGINE_H
 
-#include "../qbearerengine_impl.h"
+#include <private/qbearerengine_impl_p.h>
 
 #include <QMap>
 #include <QTimer>
