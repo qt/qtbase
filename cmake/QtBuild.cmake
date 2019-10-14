@@ -1404,7 +1404,7 @@ function(add_qt_module target)
 
     # Handle cases like QmlDevTools which do not have their own headers, but rather borrow them
     # from another module.
-    if(NOT arg_NO_SYNC_QT)
+    if(NOT arg_NO_SYNC_QT AND NOT arg_NO_MODULE_HEADERS)
         list(APPEND private_includes
                     "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}>"
                     "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
