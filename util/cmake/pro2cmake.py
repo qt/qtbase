@@ -1227,7 +1227,11 @@ def map_condition(condition: str) -> str:
     condition = unwrap_if(condition)
 
     condition = re.sub(r"\bisEmpty\s*\((.*?)\)", r"\1_ISEMPTY", condition)
-    condition = re.sub(r"\bcontains\s*\(\s*(?:QT_)?CONFIG\s*,\s*c\+\+(\d+)\)", r"cxx_std_\1 IN_LIST CMAKE_CXX_COMPILE_FEATURES", condition)
+    condition = re.sub(
+        r"\bcontains\s*\(\s*(?:QT_)?CONFIG\s*,\s*c\+\+(\d+)\)",
+        r"cxx_std_\1 IN_LIST CMAKE_CXX_COMPILE_FEATURES",
+        condition,
+    )
     condition = re.sub(r'\bcontains\s*\((.*?),\s*"?(.*?)"?\)', r"\1___contains___\2", condition)
     condition = re.sub(r'\bequals\s*\((.*?),\s*"?(.*?)"?\)', r"\1___equals___\2", condition)
     condition = re.sub(r'\bisEqual\s*\((.*?),\s*"?(.*?)"?\)', r"\1___equals___\2", condition)
@@ -2780,7 +2784,9 @@ def write_example(
 
         if not handling_first_scope:
             target_sources = f"target_sources({binary_name} PUBLIC"
-            write_all_source_file_lists(io_string, scope, target_sources, indent=indent, footer=")\n")
+            write_all_source_file_lists(
+                io_string, scope, target_sources, indent=indent, footer=")\n"
+            )
 
         write_include_paths(
             io_string,
@@ -2869,7 +2875,7 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
         if target_path:
             extra.append(f'INSTALL_DIRECTORY "{target_path}"')
         else:
-            extra.append('SKIP_INSTALL')
+            extra.append("SKIP_INSTALL")
 
     plugin_class_name = scope.get_string("PLUGIN_CLASS_NAME")
     if plugin_class_name:
