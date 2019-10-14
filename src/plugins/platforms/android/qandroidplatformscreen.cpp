@@ -401,15 +401,17 @@ void QAndroidPlatformScreen::doRedraw()
         m_dirtyRect = QRect();
 }
 
+static const int androidLogicalDpi = 72;
+
 QDpi QAndroidPlatformScreen::logicalDpi() const
 {
-    qreal lDpi = QtAndroid::scaledDensity() * 72;
+    qreal lDpi = QtAndroid::scaledDensity() * androidLogicalDpi;
     return QDpi(lDpi, lDpi);
 }
 
-qreal QAndroidPlatformScreen::pixelDensity() const
+QDpi QAndroidPlatformScreen::logicalBaseDpi() const
 {
-    return QtAndroid::pixelDensity();
+    return QDpi(androidLogicalDpi, androidLogicalDpi);
 }
 
 Qt::ScreenOrientation QAndroidPlatformScreen::orientation() const

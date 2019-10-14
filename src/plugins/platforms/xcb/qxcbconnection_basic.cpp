@@ -45,14 +45,10 @@
 #include <xcb/xfixes.h>
 #include <xcb/xinerama.h>
 #include <xcb/render.h>
-#if QT_CONFIG(xcb_xinput)
 #include <xcb/xinput.h>
-#endif
-#if QT_CONFIG(xkb)
 #define explicit dont_use_cxx_explicit
 #include <xcb/xkb.h>
 #undef explicit
-#endif
 
 #if QT_CONFIG(xcb_xlib)
 #define register        /* C++17 deprecated register */
@@ -138,14 +134,7 @@ QXcbBasicConnection::QXcbBasicConnection(const char *displayName)
 
     xcb_extension_t *extensions[] = {
         &xcb_shm_id, &xcb_xfixes_id, &xcb_randr_id, &xcb_shape_id, &xcb_sync_id,
-        &xcb_render_id,
-#if QT_CONFIG(xkb)
-        &xcb_xkb_id,
-#endif
-#if QT_CONFIG(xcb_xinput)
-        &xcb_input_id,
-#endif
-        0
+        &xcb_render_id, &xcb_xkb_id, &xcb_input_id, 0
     };
 
     for (xcb_extension_t **ext_it = extensions; *ext_it; ++ext_it)
@@ -160,10 +149,8 @@ QXcbBasicConnection::QXcbBasicConnection(const char *displayName)
         initializeXinerama();
     initializeXFixes();
     initializeXRender();
-#if QT_CONFIG(xcb_xinput)
     if (!qEnvironmentVariableIsSet("QT_XCB_NO_XI2"))
         initializeXInput2();
-#endif
     initializeXShape();
     initializeXKB();
 }
@@ -213,7 +200,6 @@ bool QXcbBasicConnection::hasBigRequest() const
     return m_maximumRequestLength > m_setup->maximum_request_length;
 }
 
-#if QT_CONFIG(xcb_xinput)
 // Starting from the xcb version 1.9.3 struct xcb_ge_event_t has changed:
 // - "pad0" became "extension"
 // - "pad1" and "pad" became "pad0"
@@ -240,7 +226,6 @@ bool QXcbBasicConnection::isXIType(xcb_generic_event_t *event, uint16_t type) co
     auto *e = reinterpret_cast<qt_xcb_ge_event_t *>(event);
     return e->event_type == type;
 }
-#endif // QT_CONFIG(xcb_xinput)
 
 bool QXcbBasicConnection::isXFixesType(uint responseType, int eventType) const
 {
@@ -370,7 +355,6 @@ void QXcbBasicConnection::initializeXRandr()
     m_xrandrFirstEvent = reply->first_event;
 }
 
-#if QT_CONFIG(xcb_xinput)
 void QXcbBasicConnection::initializeXInput2()
 {
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_xcbConnection, &xcb_input_id);
@@ -393,7 +377,6 @@ void QXcbBasicConnection::initializeXInput2()
     m_xinputFirstEvent = reply->first_event;
     m_xi2Minor = xinputQuery->minor_version;
 }
-#endif
 
 void QXcbBasicConnection::initializeXShape()
 {
@@ -417,7 +400,6 @@ void QXcbBasicConnection::initializeXShape()
 
 void QXcbBasicConnection::initializeXKB()
 {
-#if QT_CONFIG(xkb)
     const xcb_query_extension_reply_t *reply = xcb_get_extension_data(m_xcbConnection, &xcb_xkb_id);
     if (!reply || !reply->present) {
         qCWarning(lcQpaXcb, "XKeyboard extension not present on the X server");
@@ -439,7 +421,6 @@ void QXcbBasicConnection::initializeXKB()
 
     m_hasXkb = true;
     m_xkbFirstEvent = reply->first_event;
-#endif
 }
 
 QT_END_NAMESPACE

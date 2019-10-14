@@ -92,15 +92,11 @@ public:
 public Q_SLOTS: // METHODS
     QDBusPendingReply<QString, QDBusObjectPath> GetMenuForWindow(uint windowId)
     {
-        QList<QVariant> argumentList;
-        argumentList << QVariant::fromValue(windowId);
-        return asyncCallWithArgumentList(QStringLiteral("GetMenuForWindow"), argumentList);
+        return asyncCall(QStringLiteral("GetMenuForWindow"), windowId);
     }
     QDBusReply<QString> GetMenuForWindow(uint windowId, QDBusObjectPath &menuObjectPath)
     {
-        QList<QVariant> argumentList;
-        argumentList << QVariant::fromValue(windowId);
-        QDBusMessage reply = callWithArgumentList(QDBus::Block, QStringLiteral("GetMenuForWindow"), argumentList);
+        QDBusMessage reply = call(QDBus::Block, QStringLiteral("GetMenuForWindow"), windowId);
         QList<QVariant> arguments = reply.arguments();
         if (reply.type() == QDBusMessage::ReplyMessage && arguments.count() == 2)
             menuObjectPath = qdbus_cast<QDBusObjectPath>(arguments.at(1));
@@ -109,16 +105,12 @@ public Q_SLOTS: // METHODS
 
     QDBusPendingReply<> RegisterWindow(uint windowId, const QDBusObjectPath &menuObjectPath)
     {
-        QList<QVariant> argumentList;
-        argumentList << QVariant::fromValue(windowId) << QVariant::fromValue(menuObjectPath);
-        return asyncCallWithArgumentList(QStringLiteral("RegisterWindow"), argumentList);
+        return asyncCall(QStringLiteral("RegisterWindow"), windowId, menuObjectPath);
     }
 
     QDBusPendingReply<> UnregisterWindow(uint windowId)
     {
-        QList<QVariant> argumentList;
-        argumentList << QVariant::fromValue(windowId);
-        return asyncCallWithArgumentList(QStringLiteral("UnregisterWindow"), argumentList);
+        return asyncCall(QStringLiteral("UnregisterWindow"), windowId);
     }
 };
 

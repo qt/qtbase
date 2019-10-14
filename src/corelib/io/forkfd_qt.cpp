@@ -37,37 +37,12 @@
 **
 ****************************************************************************/
 
-// these might be defined via precompiled headers
-#include <QtCore/qatomic.h>
+#include <QtCore/qglobal.h>
 
 #define FORKFD_NO_SPAWNFD
-
 #if defined(QT_NO_DEBUG) && !defined(NDEBUG)
 #  define NDEBUG
 #endif
 
-typedef QT_PREPEND_NAMESPACE(QBasicAtomicInt) ffd_atomic_int;
-#define ffd_atomic_pointer(type)    QT_PREPEND_NAMESPACE(QBasicAtomicPointer<type>)
-
-QT_BEGIN_NAMESPACE
-
-#define FFD_ATOMIC_INIT(val)    Q_BASIC_ATOMIC_INITIALIZER(val)
-
-#define FFD_ATOMIC_RELAXED  Relaxed
-#define FFD_ATOMIC_ACQUIRE  Acquire
-#define FFD_ATOMIC_RELEASE  Release
-
-#define FFD_CONCAT(x, y)    x ## y
-
-#define ffd_atomic_load(ptr,order)      (ptr)->FFD_CONCAT(load, order)()
-#define ffd_atomic_store(ptr,val,order) (ptr)->FFD_CONCAT(store, order)(val)
-#define ffd_atomic_exchange(ptr,val,order) (ptr)->FFD_CONCAT(fetchAndStore, order)(val)
-#define ffd_atomic_compare_exchange(ptr,expected,desired,order1,order2) \
-    (ptr)->FFD_CONCAT(testAndSet, order1)(*expected, desired, *expected)
-#define ffd_atomic_add_fetch(ptr,val,order) ((ptr)->FFD_CONCAT(fetchAndAdd, order)(val) + val)
-
-QT_END_NAMESPACE
-
-extern "C" {
+#include <forkfd.h>
 #include "../../3rdparty/forkfd/forkfd.c"
-}

@@ -38,6 +38,9 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
+
+#include <private/qdialog_p.h>
+
 #include <QStyleFactory>
 #include <QSharedPointer>
 
@@ -1196,22 +1199,20 @@ void tst_QFormLayout::layoutAlone()
 void tst_QFormLayout::taskQTBUG_27420_takeAtShouldUnparentLayout()
 {
     QSharedPointer<QFormLayout> outer(new QFormLayout);
-    QPointer<QFormLayout> inner = new QFormLayout;
+    QAutoPointer<QFormLayout> holder{new QFormLayout};
+    auto inner = holder.get();
 
     outer->addRow(inner);
     QCOMPARE(outer->count(), 1);
     QCOMPARE(inner->parent(), outer.data());
 
     QLayoutItem *item = outer->takeAt(0);
-    QCOMPARE(item->layout(), inner.data());
+    QCOMPARE(item->layout(), inner);
     QVERIFY(!item->layout()->parent());
 
     outer.reset();
 
-    if (inner)
-        delete item; // success: a taken item/layout should not be deleted when the old parent is deleted
-    else
-        QVERIFY(!inner.isNull());
+    QVERIFY(holder); // a taken item/layout should not be deleted when the old parent is deleted
 }
 
 void tst_QFormLayout::taskQTBUG_40609_addingWidgetToItsOwnLayout(){

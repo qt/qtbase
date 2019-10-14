@@ -128,10 +128,6 @@ void ColorEdit::mousePressEvent(QMouseEvent *event)
         QColor color(m_color);
         QColorDialog dialog(color, 0);
         dialog.setOption(QColorDialog::ShowAlphaChannel, true);
-// The ifdef block is a workaround for the beta, TODO: remove when bug 238525 is fixed
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        dialog.setOption(QColorDialog::DontUseNativeDialog, true);
-#endif
         dialog.move(280, 120);
         if (dialog.exec() == QDialog::Rejected)
             return;

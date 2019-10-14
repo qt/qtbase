@@ -48,14 +48,14 @@
 **
 ****************************************************************************/
 
-#ifndef __PIXMAPITEM__H__
-#define __PIXMAPITEM__H__
+#ifndef PIXMAPITEM_H
+#define PIXMAPITEM_H
 
 //Own
 #include "graphicsscene.h"
 
 //Qt
-#include <QtWidgets/QGraphicsObject>
+#include <QGraphicsObject>
 
 class PixmapItem : public QGraphicsObject
 {
@@ -69,4 +69,4 @@ private:
     QPixmap pix;
 };
 
-#endif //__PIXMAPITEM__H__
+#endif // PIXMAPITEM_H

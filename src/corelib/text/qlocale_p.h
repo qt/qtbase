@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -57,6 +57,7 @@
 #include "QtCore/qvarlengtharray.h"
 #include "QtCore/qvariant.h"
 #include "QtCore/qnumeric.h"
+#include <QtCore/qcalendar.h>
 
 #include "qlocale.h"
 
@@ -171,9 +172,14 @@ Q_DECLARE_TYPEINFO(QLocaleId, Q_PRIMITIVE_TYPE);
 struct QLocaleData
 {
 public:
+    // TODO: Remove this?
     static const QLocaleData *findLocaleData(QLocale::Language language,
                                              QLocale::Script script,
                                              QLocale::Country country);
+    // Having an offset of current locale, enables us to have multiple sources of data, i.e. user-provided calendar locales
+    static uint findLocaleOffset(QLocale::Language language,
+                                 QLocale::Script script,
+                                 QLocale::Country country);
     static const QLocaleData *c();
 
     // Maximum number of significant digits needed to represent a double.
@@ -297,12 +303,6 @@ public:
     quint16 m_long_date_format_idx, m_long_date_format_size;
     quint16 m_short_time_format_idx, m_short_time_format_size;
     quint16 m_long_time_format_idx, m_long_time_format_size;
-    quint16 m_standalone_short_month_names_idx, m_standalone_short_month_names_size;
-    quint16 m_standalone_long_month_names_idx, m_standalone_long_month_names_size;
-    quint16 m_standalone_narrow_month_names_idx, m_standalone_narrow_month_names_size;
-    quint16 m_short_month_names_idx, m_short_month_names_size;
-    quint16 m_long_month_names_idx, m_long_month_names_size;
-    quint16 m_narrow_month_names_idx, m_narrow_month_names_size;
     quint16 m_standalone_short_day_names_idx, m_standalone_short_day_names_size;
     quint16 m_standalone_long_day_names_idx, m_standalone_long_day_names_size;
     quint16 m_standalone_narrow_day_names_idx, m_standalone_narrow_day_names_size;
@@ -328,22 +328,23 @@ public:
     quint16 m_weekend_end : 3;
 };
 
-class Q_CORE_EXPORT QLocalePrivate
+class Q_CORE_EXPORT QLocalePrivate // A POD type
 {
 public:
     static QLocalePrivate *create(
-            const QLocaleData *data,
+            const QLocaleData *data, const uint data_offset = 0,
             QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions)
     {
-        QLocalePrivate *retval = new QLocalePrivate;
+        auto *retval = new QLocalePrivate;
         retval->m_data = data;
         retval->ref.storeRelaxed(0);
+        retval->m_data_offset = data_offset;
         retval->m_numberOptions = numberOptions;
         return retval;
     }
 
     static QLocalePrivate *get(QLocale &l) { return l.d; }
-    static const    QLocalePrivate *get(const QLocale &l) { return l.d; }
+    static const QLocalePrivate *get(const QLocale &l) { return l.d; }
 
     QChar decimal() const { return QChar(m_data->m_decimal); }
     QChar group() const { return QChar(m_data->m_group); }
@@ -374,12 +375,9 @@ public:
 
     QLocale::MeasurementSystem measurementSystem() const;
 
-    QString dateTimeToString(QStringView format, const QDateTime &datetime,
-                             const QDate &dateOnly, const QTime &timeOnly,
-                             const QLocale *q) const;
-
     const QLocaleData *m_data;
     QBasicAtomicInt ref;
+    uint m_data_offset;
     QLocale::NumberOptions m_numberOptions;
 };
 
@@ -392,7 +390,7 @@ inline QLocalePrivate *QSharedDataPointer<QLocalePrivate>::clone()
 {
     // cannot use QLocalePrivate's copy constructor
     // since it is deleted in C++11
-    return QLocalePrivate::create(d->m_data, d->m_numberOptions);
+    return QLocalePrivate::create(d->m_data, d->m_data_offset, d->m_numberOptions);
 }
 
 inline char QLocaleData::digitToCLocale(QChar in) const

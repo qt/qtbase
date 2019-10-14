@@ -40,6 +40,8 @@
 #include <qstyleoption.h>
 #include <qpainter.h>
 #include <qpixmapcache.h>
+#include <private/qhighdpiscaling_p.h>
+#include <private/qguiapplication_p.h>
 #include <private/qmath_p.h>
 #include <private/qstyle_p.h>
 #include <qmath.h>
@@ -49,6 +51,7 @@
 #include <qabstractscrollarea.h>
 #include <qwindow.h>
 
+#include <qmetaobject.h>
 #include "qstylehelper_p.h"
 #include <qstringbuilder.h>
 
@@ -79,15 +82,41 @@ QString uniqueName(const QString &key, const QStyleOption *option, const QSize &
     return tmp;
 }
 
-qreal dpiScaled(qreal value)
-{
-#ifdef Q_OS_MAC
-    // On mac the DPI is always 72 so we should not scale it
-    return value;
+#ifdef Q_OS_DARWIN
+static const qreal qstyleBaseDpi = 72;
 #else
-    static const qreal scale = qreal(qt_defaultDpiX()) / 96.0;
-    return value * scale;
+static const qreal qstyleBaseDpi = 96;
 #endif
+
+Q_WIDGETS_EXPORT qreal dpi(const QStyleOption *option)
+{
+#ifndef Q_OS_DARWIN
+    // Prioritize the application override, except for on macOS where
+    // we have historically not supported the AA_Use96Dpi flag.
+    if (QCoreApplication::testAttribute(Qt::AA_Use96Dpi))
+        return 96;
+#endif
+
+    // Expect that QStyleOption::QFontMetrics::QFont has the correct DPI set
+    if (option)
+        return option->fontMetrics.fontDpi();
+
+    return qstyleBaseDpi;
+}
+
+Q_WIDGETS_EXPORT qreal dpiScaled(qreal value, qreal dpi)
+{
+    return value * dpi / qstyleBaseDpi;
+}
+
+Q_WIDGETS_EXPORT qreal dpiScaled(qreal value, const QPaintDevice *device)
+{
+    return dpiScaled(value, device->logicalDpiX());
+}
+
+Q_WIDGETS_EXPORT qreal dpiScaled(qreal value, const QStyleOption *option)
+{
+    return dpiScaled(value, dpi(option));
 }
 
 #ifndef QT_NO_ACCESSIBILITY

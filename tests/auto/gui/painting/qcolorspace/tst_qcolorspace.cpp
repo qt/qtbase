@@ -47,6 +47,7 @@ public:
     tst_QColorSpace();
 
 private slots:
+    void movable();
     void namedColorSpaces_data();
     void namedColorSpaces();
 
@@ -74,6 +75,28 @@ private slots:
 tst_QColorSpace::tst_QColorSpace()
 { }
 
+
+void tst_QColorSpace::movable()
+{
+    QColorSpace cs1 = QColorSpace::SRgb;
+    QColorSpace cs2 = QColorSpace::SRgbLinear;
+    QVERIFY(cs1.isValid());
+    QVERIFY(cs2.isValid());
+    QCOMPARE(cs1.colorSpaceId(), QColorSpace::SRgb);
+
+    cs2 = std::move(cs1);
+    QVERIFY(!cs1.isValid());
+    QVERIFY(cs2.isValid());
+    QCOMPARE(cs2.colorSpaceId(), QColorSpace::SRgb);
+    QCOMPARE(cs1.colorSpaceId(), QColorSpace::Undefined);
+    QCOMPARE(cs1, QColorSpace());
+
+    QColorSpace cs3(std::move(cs2));
+    QVERIFY(!cs2.isValid());
+    QVERIFY(cs3.isValid());
+    QCOMPARE(cs3.colorSpaceId(), QColorSpace::SRgb);
+    QCOMPARE(cs2.colorSpaceId(), QColorSpace::Undefined);
+}
 
 void tst_QColorSpace::namedColorSpaces_data()
 {

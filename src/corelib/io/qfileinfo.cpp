@@ -256,10 +256,9 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 
     \snippet code/src_corelib_io_qfileinfo.cpp 0
 
-    On Windows, symlinks (shortcuts) are \c .lnk files. The reported
-    size() is that of the symlink (not the link's target), and
-    opening a symlink using QFile opens the \c .lnk file. For
-    example:
+    On Windows, shortcuts are \c .lnk files. The reported size() is that of
+    the shortcut (not the link's target), and opening a shortcut using QFile
+    opens the \c .lnk file. For example:
 
     \snippet code/src_corelib_io_qfileinfo.cpp 1
 
@@ -1036,7 +1035,7 @@ bool QFileInfo::isBundle() const
 }
 
 /*!
-    Returns \c true if this object points to a symbolic link;
+    Returns \c true if this object points to a symbolic link or shortcut;
     otherwise returns \c false.
 
     Symbolic links exist on Unix (including \macos and iOS) and Windows
@@ -1063,6 +1062,61 @@ bool QFileInfo::isSymLink() const
                 QFileSystemMetaData::LegacyLinkType,
                 [d]() { return d->metaData.isLegacyLink(); },
                 [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); });
+}
+
+/*!
+    Returns \c true if this object points to a symbolic link;
+    otherwise returns \c false.
+
+    Symbolic links exist on Unix (including \macos and iOS) and Windows
+    (NTFS-symlink) and are typically created by the \c{ln -s} or \c{mklink}
+    commands, respectively.
+
+    Unix handles symlinks transparently. Opening a symbolic link effectively
+    opens the \l{symLinkTarget()}{link's target}.
+
+    In contrast to isSymLink(), false will be returned for shortcuts
+    (\c *.lnk files) on Windows. Use QFileInfo::isShortcut() instead.
+
+    \note If the symlink points to a non existing file, exists() returns
+    false.
+
+    \sa isFile(), isDir(), isShortcut(), symLinkTarget()
+*/
+
+bool QFileInfo::isSymbolicLink() const
+{
+    Q_D(const QFileInfo);
+    return d->checkAttribute<bool>(
+                QFileSystemMetaData::LegacyLinkType,
+                [d]() { return d->metaData.isLink(); },
+                [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); });
+}
+
+/*!
+    Returns \c true if this object points to a shortcut;
+    otherwise returns \c false.
+
+    Shortcuts only exist on Windows and are typically \c .lnk files.
+    For instance, true will be returned for shortcuts (\c *.lnk files) on
+    Windows, but false will be returned on Unix (including \macos and iOS).
+
+    The shortcut (.lnk) files are treated as regular files. Opening those will
+    open the \c .lnk file itself. In order to open the file a shortcut
+    references to, it must uses symLinkTarget() on a shortcut.
+
+    \note Even if a shortcut (broken shortcut) points to a non existing file,
+    isShortcut() returns true.
+
+    \sa isFile(), isDir(), isSymbolicLink(), symLinkTarget()
+*/
+bool QFileInfo::isShortcut() const
+{
+    Q_D(const QFileInfo);
+    return d->checkAttribute<bool>(
+            QFileSystemMetaData::LegacyLinkType,
+            [d]() { return d->metaData.isLnkFile(); },
+            [d]() { return d->getFileFlags(QAbstractFileEngine::LinkType); });
 }
 
 /*!

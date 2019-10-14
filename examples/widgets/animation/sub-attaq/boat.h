@@ -48,12 +48,11 @@
 **
 ****************************************************************************/
 
-#ifndef __BOAT__H__
-#define __BOAT__H__
+#ifndef BOAT_H
+#define BOAT_H
 
 #include "pixmapitem.h"
 
-class Bomb;
 QT_BEGIN_NAMESPACE
 class QVariantAnimation;
 class QAbstractAnimation;
@@ -101,4 +100,4 @@ private:
     QStateMachine *machine;
 };
 
-#endif //__BOAT__H__
+#endif // BOAT_H

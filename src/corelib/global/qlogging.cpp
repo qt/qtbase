@@ -49,6 +49,7 @@
 #include "qvarlengtharray.h"
 #include "qdebug.h"
 #include "qmutex.h"
+#include <QtCore/private/qlocking_p.h>
 #include "qloggingcategory.h"
 #ifndef QT_BOOTSTRAPPED
 #include "qelapsedtimer.h"
@@ -1375,7 +1376,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
 {
     QString message;
 
-    QMutexLocker lock(&QMessagePattern::mutex);
+    const auto locker = qt_scoped_lock(QMessagePattern::mutex);
 
     QMessagePattern *pattern = qMessagePattern();
     if (!pattern) {
@@ -2091,7 +2092,7 @@ QtMsgHandler qInstallMsgHandler(QtMsgHandler h)
 
 void qSetMessagePattern(const QString &pattern)
 {
-    QMutexLocker lock(&QMessagePattern::mutex);
+    const auto locker = qt_scoped_lock(QMessagePattern::mutex);
 
     if (!qMessagePattern()->fromEnvironment)
         qMessagePattern()->setPattern(pattern);

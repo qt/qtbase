@@ -825,9 +825,6 @@ void QPlainTextEditPrivate::init(const QString &txt)
     viewport->setCursor(Qt::IBeamCursor);
 #endif
     originalOffsetY = 0;
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-    setSingleFingerPanEnabled(true);
-#endif
 }
 
 void QPlainTextEditPrivate::_q_textChanged()

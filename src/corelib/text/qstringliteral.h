@@ -82,11 +82,8 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
     Q_STATIC_STRING_DATA_HEADER_INITIALIZER_WITH_OFFSET(size, sizeof(QStringData)) \
     /**/
 
-#ifndef QT_NO_UNICODE_LITERAL
-# ifndef QT_UNICODE_LITERAL
-#  error "If you change QStringLiteral, please change QStringViewLiteral, too"
-# endif
-# define QStringViewLiteral(str) QStringView(QT_UNICODE_LITERAL(str))
+#if QT_DEPRECATED_SINCE(5, 14)
+# define QStringViewLiteral(str) QStringView(QT_UNICODE_LITERAL(str), QtPrivate::Deprecated)
 #endif
 
 template <int N>

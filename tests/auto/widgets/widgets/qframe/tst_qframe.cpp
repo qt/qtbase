@@ -37,6 +37,10 @@
 class tst_QFrame : public QObject
 {
     Q_OBJECT
+
+public:
+    static void initMain() { QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling); }
+
 private slots:
     void testDefaults();
     void testInitStyleOption_data();

@@ -230,6 +230,7 @@ private slots:
     void countInt() const;
     void countMovable() const;
     void countCustom() const;
+    void cpp17ctad() const;
     void data() const;
     void emptyInt() const;
     void emptyMovable() const;
@@ -912,6 +913,33 @@ void tst_QVector::countCustom() const
     const int instancesCount = Custom::counter.loadAcquire();
     count<Custom>();
     QCOMPARE(instancesCount, Custom::counter.loadAcquire());
+}
+
+void tst_QVector::cpp17ctad() const
+{
+#ifdef __cpp_deduction_guides
+#define QVERIFY_IS_VECTOR_OF(obj, Type) \
+    QVERIFY2((std::is_same<decltype(obj), QVector<Type>>::value), \
+             QMetaType::typeName(qMetaTypeId<decltype(obj)::value_type>()))
+#define CHECK(Type, One, Two, Three) \
+    do { \
+        const Type v[] = {One, Two, Three}; \
+        QVector v1 = {One, Two, Three}; \
+        QVERIFY_IS_VECTOR_OF(v1, Type); \
+        QVector v2(v1.begin(), v1.end()); \
+        QVERIFY_IS_VECTOR_OF(v2, Type); \
+        QVector v3(std::begin(v), std::end(v)); \
+        QVERIFY_IS_VECTOR_OF(v3, Type); \
+    } while (false) \
+    /*end*/
+    CHECK(int, 1, 2, 3);
+    CHECK(double, 1.0, 2.0, 3.0);
+    CHECK(QString, QStringLiteral("one"), QStringLiteral("two"), QStringLiteral("three"));
+#undef QVERIFY_IS_VECTOR_OF
+#undef CHECK
+#else
+    QSKIP("This test requires C++17 Constructor Template Argument Deduction support enabled in the compiler.");
+#endif
 }
 
 void tst_QVector::data() const

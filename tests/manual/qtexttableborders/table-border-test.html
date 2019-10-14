@@ -1,0 +1,171 @@
+<html>
+  <body>
+
+    <h1>Working Test Cases</h1>
+
+    <h2>border-collapse: separate</h2>
+
+    <h3>TC-A1: table no border</h3>
+    <table>
+      <tbody>
+        <tr>
+          <td>Cell 1A</td>
+          <td>Cell 1B</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>TC-A2: table attribute controlled border (1px, red)</h3>
+    <table border=1 bordercolor="red">
+      <tbody>
+        <tr>
+          <td>Cell 1A</td>
+          <td>Cell 1B</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>TC-A3: table attribute controlled border (4px, blue)</h3>
+    <table border=4 bordercolor="blue">
+      <tbody>
+        <tr>
+          <td>Cell 1A</td>
+          <td>Cell 1B</td>
+        </tr>
+      </tbody>
+    </table>
+    Note: Real browsers render the inner cells border with 1px, but QTextDocument's rendering has always been like this.
+
+    <h2>border-collapse: collapse</h2>
+
+    <h3>TC-B1: table no border</h3>
+    <table style="border-collapse: collapse">
+      <tbody>
+        <tr>
+          <td>Cell 1A</td>
+          <td>Cell 1B</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>TC-B2: table attribute + css controlled grid (outer border 1px)</h3>
+    <table border=1 bordercolor="red" style="border-collapse: collapse">
+      <tbody>
+        <tr>
+          <td>Cell 1A</td>
+          <td>Cell 1B</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>TC-B3: table attribute + css controlled grid (outer border 4px)</h3>
+    <table border=4 bordercolor="red" style="border-collapse: collapse">
+      <tbody>
+        <tr>
+          <td>Cell 1A</td>
+          <td>Cell 1B</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>TC-B4: table attribute + css controlled grid (one cell with custom edge)</h3>
+    <table border=4 bordercolor="red" style="border-collapse: collapse">
+      <tbody>
+        <tr>
+          <td>Cell 1A</td>
+          <td style="border-right: 8px solid green">Cell 1B (border-right: 8px solid green)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>TC-B5: table with single decorated cell</h3>
+    <table style="border-collapse: collapse">
+      <tbody>
+        <tr>
+          <td>Cell 1A</td>
+          <td style="border: 2px solid red">Cell 1B (border: 2px solid red)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>cells with competing rules</h3>
+
+    <h4>TC-C1: vertical edge (pink, 6px) wins over horizontal edge (red|blue, 6px)</h4>
+    <table border=1 bordercolor="#999999" style="border-collapse: collapse">
+      <tbody>
+        <tr>
+          <td style="border-right: 4px solid green; border-bottom: 6px solid red">Cell 1A</td>
+          <td style="border-left: 6px solid pink; border-bottom: 6px solid blue">Cell 2B</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>TC-C2: vertical edge (pink, 6px) loses over horizontal edge (red|blue, 8px)</h4>
+    <table border=1 bordercolor="#999999" style="border-collapse: collapse">
+      <tbody>
+        <tr>
+          <td style="border-right: 4px solid green; border-bottom: 8px solid red">Cell 1A</td>
+          <td style="border-left: 6px solid pink; border-bottom: 8px solid blue">Cell 2B</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>TC-C3: cells with span and competing rules</h4>
+    <table border=1 bordercolor="#999999" style="border-collapse: collapse">
+      <tbody>
+        <tr>
+          <td colspan=2 style="border-bottom: 4px solid red">Cell 1A/B spans over two columns (border-bottom: red)</td>
+        </tr>
+        <tr>
+          <td style="border-top: 1px solid green">Cell 2A (border-top loses -> red)</td>
+          <td style="border-top: 10px solid green">Cell 2B (border-top wins -> green)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h1>Non-Working Test Cases</h1>
+
+    <h2>border-collapse: separate</h2>
+
+    <h3>TC-X1: table css border (red via style)</h3>
+    <table style="border: 1px solid red">
+      <tbody>
+        <tr>
+          <td>Cell 1A</td>
+          <td>Cell 1B</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>border-collapse: collapse</h2>
+
+    <h3>TC-X2: tr css border</h3>
+    <table border=1 style="border-collapse: collapse">
+      <tbody>
+        <tr style="border-bottom: 2px solid red">
+          <td>Cell 1A (border-bottom should be red)</td>
+          <td>Cell 1B (border-bottom should be red)</td>
+        </tr>
+        <tr style="border-left: 2px solid red">
+          <td>Cell 2A (border-left should be red)</td>
+          <td>Cell 2B</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>TC-X3: cells with competing rules and colspan</h3>
+    <table border=1 bordercolor="#999999" style="border-collapse: collapse">
+      <tbody>
+        <tr>
+          <td colspan=2 style="border-bottom: 4px solid red; border-right: 15px solid pink">Cell 1A/B spans over two columns (border-bottom: red, border-right pink)</td>
+        </tr>
+        <tr>
+          <td style="border-top: 1px solid green">Cell 2A (border-top loses -> red)</td>
+          <td style="border-top: 10px solid green">Cell 2B (border-top wins -> green)</td>
+        </tr>
+      </tbody>
+    </table>
+    This is currently not 100% correct but admittedly a constructed corner case (and Chrome failes here, too).
+
+  </body>
+</html>

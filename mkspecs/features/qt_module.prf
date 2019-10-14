@@ -93,7 +93,7 @@ header_module {
 DESTDIR          = $$MODULE_BASE_OUTDIR/lib
 DLLDESTDIR       = $$MODULE_BASE_OUTDIR/bin
 
-CONFIG          += qmake_cache target_qt
+CONFIG          += target_qt
 
 QMAKE_DOCS_TARGETDIR = qt$${MODULE}
 

@@ -135,6 +135,8 @@ public:
     int strikeOutPos() const;
     int lineWidth() const;
 
+    qreal fontDpi() const;
+
     bool operator==(const QFontMetrics &other) const;
     inline bool operator !=(const QFontMetrics &other) const { return !operator==(other); }
 
@@ -215,6 +217,8 @@ public:
     qreal overlinePos() const;
     qreal strikeOutPos() const;
     qreal lineWidth() const;
+
+    qreal fontDpi() const;
 
     bool operator==(const QFontMetricsF &other) const;
     inline bool operator !=(const QFontMetricsF &other) const { return !operator==(other); }

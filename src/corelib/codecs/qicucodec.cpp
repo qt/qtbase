@@ -42,8 +42,10 @@
 #include "qtextcodec_p.h"
 #include "qutfcodec_p.h"
 #include "qlatincodec_p.h"
+#if QT_CONFIG(codecs)
 #include "qtsciicodec_p.h"
 #include "qisciicodec_p.h"
+#endif
 #include "qsimplecodec_p.h"
 #include "private/qcoreglobaldata_p.h"
 #include "qdebug.h"

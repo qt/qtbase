@@ -164,15 +164,17 @@ bool TestCompiler::runCommand(const QString &cmd, const QStringList &args, bool 
         return errorOut();
     }
 
-    child.setReadChannel(QProcess::StandardError);
     child.waitForFinished(-1);
     bool ok = child.exitStatus() == QProcess::NormalExit && (expectFail ^ (child.exitCode() == 0));
 
-    foreach (const QByteArray &output, child.readAllStandardError().split('\n')) {
-        testOutput_.append(QString::fromLocal8Bit(output));
-
-        if (output.startsWith("Project MESSAGE: FAILED"))
-            ok = false;
+    for (auto channel : { QProcess::StandardOutput, QProcess::StandardError }) {
+        child.setReadChannel(channel);
+        while (!child.atEnd()) {
+            const QString output = QString::fromLocal8Bit(child.readLine());
+            if (output.startsWith("Project MESSAGE: FAILED"))
+                ok = false;
+            testOutput_.append(output);
+        }
     }
 
     return ok ? true : errorOut();
@@ -279,14 +281,23 @@ bool TestCompiler::qmake(const QString &workDir, const QString &proName, const Q
                       << additionalArguments);
 }
 
+bool TestCompiler::qmake(const QString &workDir, const QStringList &arguments)
+{
+    QDir d;
+    d.setCurrent(workDir); // ### runCommand should take a workingDir argument instead
+    return runCommand(qmakeCmd_, arguments);
+}
+
 bool TestCompiler::make( const QString &workPath, const QString &target, bool expectFail )
 {
     QDir D;
     D.setCurrent( workPath );
 
     QStringList args = makeArgs_;
-    if (makeCmd_.contains("nmake", Qt::CaseInsensitive))
+    if (makeCmd_.contains("nmake", Qt::CaseInsensitive) ||
+        makeCmd_.contains("jom", Qt::CaseInsensitive)) {
         args << "/NOLOGO";
+    }
     if (!target.isEmpty())
         args << target;
 

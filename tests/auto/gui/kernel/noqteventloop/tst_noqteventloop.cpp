@@ -36,6 +36,7 @@
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qtcpsocket.h>
 #include <QtCore/qelapsedtimer.h>
+#include <QtCore/qtimer.h>
 
 #include <QtCore/qt_windows.h>
 
@@ -49,7 +50,7 @@ class tst_NoQtEventLoop : public QObject
 private slots:
     void consumeMouseEvents();
     void consumeSocketEvents();
-
+    void deliverEventsInLivelock();
 };
 
 class Window : public QRasterWindow
@@ -258,8 +259,8 @@ void tst_NoQtEventLoop::consumeMouseEvents()
 
     ::SetWindowPos(mainWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-    Window *childWindow = new Window;
-    childWindow->setParent(QWindow::fromWinId((WId)mainWnd));
+    QWindow *mainWindow = QWindow::fromWinId(reinterpret_cast<WId>(mainWnd));
+    Window *childWindow = new Window(mainWindow);
     childWindow->setGeometry(margin, topVerticalMargin,
                              width - 2 * margin, height - margin - topVerticalMargin);
     childWindow->show();
@@ -276,6 +277,7 @@ void tst_NoQtEventLoop::consumeMouseEvents()
         if (g_exit)
             break;
     }
+    delete mainWindow;
 
     QCOMPARE(testThread->passed(), true);
 
@@ -309,6 +311,34 @@ void tst_NoQtEventLoop::consumeSocketEvents()
     }
 
     QVERIFY(server.hasPendingConnections());
+}
+
+void tst_NoQtEventLoop::deliverEventsInLivelock()
+{
+    int argc = 1;
+    char *argv[] = { const_cast<char *>("test"), 0 };
+    QGuiApplication app(argc, argv);
+
+    QTimer livelockTimer;
+    livelockTimer.start(0);
+    QTimer::singleShot(100, Qt::CoarseTimer, &livelockTimer, &QTimer::stop);
+
+    QElapsedTimer elapsedTimer;
+    elapsedTimer.start();
+
+    // Exec own message loop
+    MSG msg;
+    forever {
+        if (elapsedTimer.hasExpired(3000) || !livelockTimer.isActive())
+            break;
+
+        if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            ::TranslateMessage(&msg);
+            ::DispatchMessage(&msg);
+        }
+    }
+
+    QVERIFY(!livelockTimer.isActive());
 }
 
 #include <tst_noqteventloop.moc>

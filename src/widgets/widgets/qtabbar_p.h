@@ -93,9 +93,6 @@ public:
         selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false),
         dragInProgress(false), documentMode(false), autoHide(false), changeCurrentOnDrag(false),
         switchTabCurrentIndex(-1), switchTabTimerId(0), movingTab(nullptr)
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-        , previousPressedIndex(-1)
-#endif
         {}
 
     int currentIndex;
@@ -232,9 +229,6 @@ public:
     int switchTabTimerId;
 
     QMovableTabWidget *movingTab;
-#if 0 // Used to be included in Qt4 for Q_WS_MAC
-    int previousPressedIndex;
-#endif
     // shared by tabwidget and qtabbar
     static void initStyleBaseOption(QStyleOptionTabBarBase *optTabBase, QTabBar *tabbar, QSize size)
     {

@@ -17,32 +17,21 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
     isEmpty(NDK_ROOT): NDK_ROOT = $$DEFAULT_ANDROID_NDK_ROOT
     FILE_CONTENT += "   \"ndk\": $$emitString($$NDK_ROOT),"
 
-    equals(ANDROID_USE_LLVM, true) {
-        FILE_CONTENT += "   \"toolchain-prefix\": \"llvm\","
-        FILE_CONTENT += "   \"tool-prefix\": \"llvm\","
-    } else {
-        NDK_TOOLCHAIN_PREFIX = $$(ANDROID_NDK_TOOLCHAIN_PREFIX)
-        isEmpty(NDK_TOOLCHAIN_PREFIX) {
-            equals(ANDROID_TARGET_ARCH, x86): NDK_TOOLCHAIN_PREFIX = x86
-            else: equals(ANDROID_TARGET_ARCH, x86_64): NDK_TOOLCHAIN_PREFIX = x86_64
-            else: equals(ANDROID_TARGET_ARCH, arm64-v8a): NDK_TOOLCHAIN_PREFIX = aarch64-linux-android
-            else: NDK_TOOLCHAIN_PREFIX = arm-linux-androideabi
-        }
-        FILE_CONTENT += "   \"toolchain-prefix\": $$emitString($$NDK_TOOLCHAIN_PREFIX),"
-        FILE_CONTENT += "   \"tool-prefix\": $$emitString($$NDK_TOOLS_PREFIX),"
-    }
-
-    NDK_TOOLCHAIN_VERSION = $$(ANDROID_NDK_TOOLCHAIN_VERSION)
-    isEmpty(NDK_TOOLCHAIN_VERSION): NDK_TOOLCHAIN_VERSION = $$DEFAULT_ANDROID_NDK_TOOLCHAIN_VERSION
-    FILE_CONTENT += "   \"toolchain-version\": $$emitString($$NDK_TOOLCHAIN_VERSION),"
+    FILE_CONTENT += "   \"toolchain-prefix\": \"llvm\","
+    FILE_CONTENT += "   \"tool-prefix\": \"llvm\","
 
     NDK_HOST = $$(ANDROID_NDK_HOST)
     isEmpty(NDK_HOST): NDK_HOST = $$DEFAULT_ANDROID_NDK_HOST
     FILE_CONTENT += "   \"ndk-host\": $$emitString($$NDK_HOST),"
 
-    ANDROID_TARGET_ARCH = $$(ANDROID_TARGET_ARCH)
-    isEmpty(ANDROID_TARGET_ARCH): ANDROID_TARGET_ARCH = $$DEFAULT_ANDROID_TARGET_ARCH
-    FILE_CONTENT += "   \"target-architecture\": $$emitString($$ANDROID_TARGET_ARCH),"
+    for (arch, ANDROID_ABIS) {
+        equals(arch, x86): libs_arch = i686-linux-android
+        else: equals(arch, x86_64): libs_arch = x86_64-linux-android
+        else: equals(arch, arm64-v8a): libs_arch = aarch64-linux-android
+        else: libs_arch = arm-linux-androideabi
+        ARCHS += "$$emitString($$arch):$$emitString($$libs_arch)"
+    }
+    FILE_CONTENT += "   \"architectures\": {$$join(ARCHS,", ")},"
 
     # Explicitly set qt dependencies of application for deployment
     !isEmpty(ANDROID_DEPLOYMENT_DEPENDENCIES): \
@@ -74,13 +63,11 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
         QML_ROOT_PATH = $$_PRO_FILE_PWD_
     FILE_CONTENT += "   \"qml-root-path\": $$emitString($$QML_ROOT_PATH),"
     FILE_CONTENT += "   \"stdcpp-path\": $$emitString($$ANDROID_STDCPP_PATH),"
-    FILE_CONTENT += "   \"useLLVM\": $$ANDROID_USE_LLVM,"
-
-    FILE_CONTENT += "   \"application-binary\": $$emitString($$absolute_path($$DESTDIR, $$OUT_PWD)/$$TARGET)"
+    FILE_CONTENT += ""
+    FILE_CONTENT += "   \"application-binary\": $$emitString($$TARGET)"
     FILE_CONTENT += "}"
 
     isEmpty(ANDROID_DEPLOYMENT_SETTINGS_FILE): ANDROID_DEPLOYMENT_SETTINGS_FILE = $$OUT_PWD/android-$$TARGET-deployment-settings.json
 
     write_file($$ANDROID_DEPLOYMENT_SETTINGS_FILE, FILE_CONTENT)|error()
 }
-

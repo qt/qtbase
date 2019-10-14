@@ -33,9 +33,6 @@
 #include <qbitmap.h>
 #include <qpainter.h>
 #include <qpolygon.h>
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-#include <private/qt_x11_p.h>
-#endif
 
 class tst_QRegion : public QObject
 {
@@ -79,9 +76,6 @@ private slots:
 
     void isEmpty_data();
     void isEmpty();
-#if 0 /* Used to be included in Qt4 for Q_WS_X11 */ && defined(QT_BUILD_INTERNAL)
-    void clipRectangles();
-#endif
 
     void regionFromPath();
     void scaleRegions_data();
@@ -909,24 +903,6 @@ void tst_QRegion::isEmpty()
     QVERIFY(region.rects().isEmpty());
 #endif
 }
-
-#if 0 /* Used to be included in Qt4 for Q_WS_X11 */ && defined(QT_BUILD_INTERNAL)
-void tst_QRegion::clipRectangles()
-{
-    QRegion region(30, 30, 30, 30);
-    int num = 0;
-    qt_getClipRects(region, num);
-    QCOMPARE(num, 1);
-
-    region += QRegion(10, 10, 10, 10);
-    XRectangle *rects2 = static_cast<XRectangle *>(qt_getClipRects(region, num));
-    QCOMPARE(num, 2);
-
-    // Here's the important part (Y-sorted):
-    QCOMPARE(int(rects2[0].y), 10);
-    QCOMPARE(int(rects2[1].y), 30);
-}
-#endif
 
 void tst_QRegion::regionFromPath()
 {

@@ -95,26 +95,21 @@ public:
 public Q_SLOTS: // METHODS
     inline QDBusPendingReply<> closeNotification(uint id)
     {
-        QList<QVariant> argumentList;
-        argumentList << QVariant::fromValue(id);
-        return asyncCallWithArgumentList(QStringLiteral("CloseNotification"), argumentList);
+        return asyncCall(QStringLiteral("CloseNotification"), id);
     }
 
     inline QDBusPendingReply<QStringList> getCapabilities()
     {
-        QList<QVariant> argumentList;
-        return asyncCallWithArgumentList(QStringLiteral("GetCapabilities"), argumentList);
+        return asyncCall(QStringLiteral("GetCapabilities"));
     }
 
     inline QDBusPendingReply<QString, QString, QString, QString> getServerInformation()
     {
-        QList<QVariant> argumentList;
-        return asyncCallWithArgumentList(QStringLiteral("GetServerInformation"), argumentList);
+        return asyncCall(QStringLiteral("GetServerInformation"));
     }
     inline QDBusReply<QString> getServerInformation(QString &vendor, QString &version, QString &specVersion)
     {
-        QList<QVariant> argumentList;
-        QDBusMessage reply = callWithArgumentList(QDBus::Block, QStringLiteral("GetServerInformation"), argumentList);
+        QDBusMessage reply = call(QDBus::Block, QStringLiteral("GetServerInformation"));
         if (reply.type() == QDBusMessage::ReplyMessage && reply.arguments().count() == 4) {
             vendor = qdbus_cast<QString>(reply.arguments().at(1));
             version = qdbus_cast<QString>(reply.arguments().at(2));
@@ -129,12 +124,7 @@ public Q_SLOTS: // METHODS
                                           const QVariantMap &hints, int timeout)
     {
         qCDebug(qLcTray) << appName << replacesId << appIcon << summary << body << actions << hints << timeout;
-        QList<QVariant> argumentList;
-        argumentList << QVariant::fromValue(appName) << QVariant::fromValue(replacesId) <<
-                        QVariant::fromValue(appIcon) << QVariant::fromValue(summary) <<
-                        QVariant::fromValue(body) << QVariant::fromValue(actions) <<
-                        QVariant::fromValue(hints) << QVariant::fromValue(timeout);
-        return asyncCallWithArgumentList(QStringLiteral("Notify"), argumentList);
+        return asyncCall(QStringLiteral("Notify"), appName, replacesId, appIcon, summary, body, actions, hints, timeout);
     }
 
 Q_SIGNALS:

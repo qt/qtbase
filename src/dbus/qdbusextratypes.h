@@ -54,7 +54,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class Q_DBUS_EXPORT QDBusObjectPath
 {
     QString m_path;
@@ -74,6 +73,8 @@ public:
 
     inline QString path() const
     { return m_path; }
+
+    operator QVariant() const;
 
 private:
     void doCheck();

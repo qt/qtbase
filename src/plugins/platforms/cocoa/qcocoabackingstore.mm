@@ -153,7 +153,7 @@ void QNSWindowBackingStore::flush(QWindow *window, const QRegion &region, const 
     // context is set up correctly (coordinate system, clipping, etc). Outside
     // of the normal display cycle there is no focused view, as explained above,
     // so we have to handle it manually. There's also a corner case inside the
-    // normal display cycle due to way QWidgetBackingStore composits native child
+    // normal display cycle due to way QWidgetRepaintManager composits native child
     // widgets, where we'll get a flush of a native child during the drawRect of
     // its parent/ancestor, and the parent/ancestor being the one locked by AppKit.
     // In this case we also need to lock and unlock focus manually.

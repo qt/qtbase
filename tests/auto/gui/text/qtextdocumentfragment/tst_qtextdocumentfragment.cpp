@@ -181,6 +181,11 @@ private slots:
     void html_tableCellBackground();
     void css_bodyBackground();
     void css_tableCellBackground();
+    void css_tableCellBorder();
+    void css_tableCellBorderShorthand();
+    void css_tableCellAllBordersShorthand();
+    void css_tableCellOverrideOneBorder();
+    void css_tableBorderCollapse();
     void css_fontWeight();
     void css_float();
     void css_textIndent();
@@ -1272,11 +1277,11 @@ void tst_QTextDocumentFragment::html_whitespace_data()
     QTest::newRow("2") << QString("<span>  </span><span>nowhitespacehereplease</span>")
                        << QString::fromLatin1("nowhitespacehereplease");
 
-    QTest::newRow("3") << QString("<span style=\"white-space: pre;\">  white  space  here  </span>")
-                       << QString::fromLatin1("  white  space  here  ");
+    QTest::newRow("3") << QString("<span style=\"white-space: pre;\">  white  space  \n\n  here  </span>")
+                       << QString::fromLatin1("  white  space  \n\n  here  ");
 
-    QTest::newRow("4") << QString("<span style=\"white-space: pre-wrap;\">  white  space  here  </span>")
-                       << QString::fromLatin1("  white  space  here  ");
+    QTest::newRow("4") << QString("<span style=\"white-space: pre-wrap;\">  white  space  \n\n  here  </span>")
+                       << QString::fromLatin1("  white  space  \n\n  here  ");
 
     QTest::newRow("5") << QString("<a href=\"One.html\">One</a> <a href=\"Two.html\">Two</a> <b>Three</b>\n"
                                   "<b>Four</b>")
@@ -1290,6 +1295,12 @@ void tst_QTextDocumentFragment::html_whitespace_data()
 
     QTest::newRow("8") << QString("<table><tr><td><i>Blah</i></td></tr></table> <i>Blub</i>")
                        << QString("\nBlah\nBlub");
+
+    QTest::newRow("9") << QString("<span style=\"white-space: nowrap;\">  white  space  \n\n  here  </span>")
+                       << QString::fromLatin1("white space here ");
+
+    QTest::newRow("10") << QString("<span style=\"white-space: pre-line;\">  white  space  \n\n  here  </span>")
+                        << QString::fromLatin1("white space\n\nhere ");
 
     QTest::newRow("task116492") << QString("<p>a<font=\"Times\"> b </font>c</p>")
                                 << QString("a b c");
@@ -1745,6 +1756,135 @@ void tst_QTextDocumentFragment::css_tableCellBackground()
     QEXPECT_FAIL("", "Fails on winrt. Investigate - QTBUG-68297", Continue);
 #endif
     QCOMPARE(cell.format().background().style(), Qt::TexturePattern);
+}
+
+void tst_QTextDocumentFragment::css_tableCellBorder()
+{
+    const char html[] = "<body><table><tr><td style=\"border-width:8px;border-color:green;border-style:groove;border-left-style:dashed;border-left-color:red;border-left-width:4px\">Foo</td></tr></table></body>";
+    doc->setHtml(html);
+
+    cursor.movePosition(QTextCursor::Start);
+    cursor.movePosition(QTextCursor::NextBlock);
+    QTextTable *table = cursor.currentTable();
+    QVERIFY(table);
+
+    QTextTableCell cell = table->cellAt(0, 0);
+    QTextTableCellFormat cellFormat = cell.format().toTableCellFormat();
+    QCOMPARE(cellFormat.leftBorder(), qreal(4));
+    QCOMPARE(cellFormat.leftBorderBrush(), QBrush(QColor("red")));
+    QCOMPARE(cellFormat.leftBorderStyle(), QTextFrameFormat::BorderStyle_Dashed);
+
+    QCOMPARE(cellFormat.rightBorder(), qreal(8));
+    QCOMPARE(cellFormat.rightBorderBrush(), QBrush(QColor("green")));
+    QCOMPARE(cellFormat.rightBorderStyle(), QTextFrameFormat::BorderStyle_Groove);
+
+    QCOMPARE(cellFormat.bottomBorder(), qreal(8));
+    QCOMPARE(cellFormat.bottomBorderBrush(), QBrush(QColor("green")));
+    QCOMPARE(cellFormat.bottomBorderStyle(), QTextFrameFormat::BorderStyle_Groove);
+
+    QCOMPARE(cellFormat.topBorder(), qreal(8));
+    QCOMPARE(cellFormat.topBorderBrush(), QBrush(QColor("green")));
+    QCOMPARE(cellFormat.topBorderStyle(), QTextFrameFormat::BorderStyle_Groove);
+}
+
+void tst_QTextDocumentFragment::css_tableCellBorderShorthand()
+{
+    const char html[] = "<body><table><tr><td style=\"border-left:1px solid green;border-right:2px dashed red;border-bottom:3px dotted yellow;border-top:4px dot-dash blue\">Foo</td></tr></table></body>";
+    doc->setHtml(html);
+
+    cursor.movePosition(QTextCursor::Start);
+    cursor.movePosition(QTextCursor::NextBlock);
+    QTextTable *table = cursor.currentTable();
+    QVERIFY(table);
+
+    QTextTableCell cell = table->cellAt(0, 0);
+    QTextTableCellFormat cellFormat = cell.format().toTableCellFormat();
+    QCOMPARE(cellFormat.leftBorder(), qreal(1));
+    QCOMPARE(cellFormat.leftBorderBrush(), QBrush(QColor("green")));
+    QCOMPARE(cellFormat.leftBorderStyle(), QTextFrameFormat::BorderStyle_Solid);
+
+    QCOMPARE(cellFormat.rightBorder(), qreal(2));
+    QCOMPARE(cellFormat.rightBorderBrush(), QBrush(QColor("red")));
+    QCOMPARE(cellFormat.rightBorderStyle(), QTextFrameFormat::BorderStyle_Dashed);
+
+    QCOMPARE(cellFormat.bottomBorder(), qreal(3));
+    QCOMPARE(cellFormat.bottomBorderBrush(), QBrush(QColor("yellow")));
+    QCOMPARE(cellFormat.bottomBorderStyle(), QTextFrameFormat::BorderStyle_Dotted);
+
+    QCOMPARE(cellFormat.topBorder(), qreal(4));
+    QCOMPARE(cellFormat.topBorderBrush(), QBrush(QColor("blue")));
+    QCOMPARE(cellFormat.topBorderStyle(), QTextFrameFormat::BorderStyle_DotDash);
+}
+
+void tst_QTextDocumentFragment::css_tableCellAllBordersShorthand()
+{
+    const char html[] = "<body><table><tr><td style=\"border:2px dashed green\">Foo</td></tr></table></body>";
+    doc->setHtml(html);
+
+    cursor.movePosition(QTextCursor::Start);
+    cursor.movePosition(QTextCursor::NextBlock);
+    QTextTable *table = cursor.currentTable();
+    QVERIFY(table);
+
+    QTextTableCell cell = table->cellAt(0, 0);
+    QTextTableCellFormat cellFormat = cell.format().toTableCellFormat();
+    QCOMPARE(cellFormat.leftBorder(), qreal(2));
+    QCOMPARE(cellFormat.leftBorderBrush(), QBrush(QColor("green")));
+    QCOMPARE(cellFormat.leftBorderStyle(), QTextFrameFormat::BorderStyle_Dashed);
+
+    QCOMPARE(cellFormat.rightBorder(), qreal(2));
+    QCOMPARE(cellFormat.rightBorderBrush(), QBrush(QColor("green")));
+    QCOMPARE(cellFormat.rightBorderStyle(), QTextFrameFormat::BorderStyle_Dashed);
+
+    QCOMPARE(cellFormat.bottomBorder(), qreal(2));
+    QCOMPARE(cellFormat.bottomBorderBrush(), QBrush(QColor("green")));
+    QCOMPARE(cellFormat.bottomBorderStyle(), QTextFrameFormat::BorderStyle_Dashed);
+
+    QCOMPARE(cellFormat.topBorder(), qreal(2));
+    QCOMPARE(cellFormat.topBorderBrush(), QBrush(QColor("green")));
+    QCOMPARE(cellFormat.topBorderStyle(), QTextFrameFormat::BorderStyle_Dashed);
+}
+
+void tst_QTextDocumentFragment::css_tableCellOverrideOneBorder()
+{
+    const char html[] = "<body><table><tr><td style=\"border:2px dashed green;border-left:4px solid red\">Foo</td></tr></table></body>";
+    doc->setHtml(html);
+
+    cursor.movePosition(QTextCursor::Start);
+    cursor.movePosition(QTextCursor::NextBlock);
+    QTextTable *table = cursor.currentTable();
+    QVERIFY(table);
+
+    QTextTableCell cell = table->cellAt(0, 0);
+    QTextTableCellFormat cellFormat = cell.format().toTableCellFormat();
+    QCOMPARE(cellFormat.leftBorder(), qreal(4));
+    QCOMPARE(cellFormat.leftBorderBrush(), QBrush(QColor("red")));
+    QCOMPARE(cellFormat.leftBorderStyle(), QTextFrameFormat::BorderStyle_Solid);
+
+    QCOMPARE(cellFormat.rightBorder(), qreal(2));
+    QCOMPARE(cellFormat.rightBorderBrush(), QBrush(QColor("green")));
+    QCOMPARE(cellFormat.rightBorderStyle(), QTextFrameFormat::BorderStyle_Dashed);
+
+    QCOMPARE(cellFormat.bottomBorder(), qreal(2));
+    QCOMPARE(cellFormat.bottomBorderBrush(), QBrush(QColor("green")));
+    QCOMPARE(cellFormat.bottomBorderStyle(), QTextFrameFormat::BorderStyle_Dashed);
+
+    QCOMPARE(cellFormat.topBorder(), qreal(2));
+    QCOMPARE(cellFormat.topBorderBrush(), QBrush(QColor("green")));
+    QCOMPARE(cellFormat.topBorderStyle(), QTextFrameFormat::BorderStyle_Dashed);
+}
+
+void tst_QTextDocumentFragment::css_tableBorderCollapse()
+{
+    const char html[] = "<body><table style=\"border-collapse:collapse\"><tr><td>Foo</td></tr></table></body>";
+    doc->setHtml(html);
+
+    cursor.movePosition(QTextCursor::Start);
+    cursor.movePosition(QTextCursor::NextBlock);
+    QTextTable *table = cursor.currentTable();
+    QVERIFY(table);
+
+    QCOMPARE(table->format().borderCollapse(), true);
 }
 
 void tst_QTextDocumentFragment::css_cellPaddings()

@@ -61,6 +61,7 @@ class Q_WIDGETS_EXPORT QFileSystemModel : public QAbstractItemModel
     Q_PROPERTY(bool resolveSymlinks READ resolveSymlinks WRITE setResolveSymlinks)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
     Q_PROPERTY(bool nameFilterDisables READ nameFilterDisables WRITE setNameFilterDisables)
+    Q_PROPERTY(Options options READ options WRITE setOptions)
 
 Q_SIGNALS:
     void rootPathChanged(const QString &newPath);
@@ -74,6 +75,15 @@ public:
         FileNameRole = Qt::UserRole + 2,
         FilePermissions = Qt::UserRole + 3
     };
+
+    enum Option
+    {
+        DontWatchForChanges         = 0x00000001,
+        DontResolveSymlinks         = 0x00000002,
+        DontUseCustomDirectoryIcons = 0x00000004
+    };
+    Q_ENUM(Option)
+    Q_DECLARE_FLAGS(Options, Option)
 
     explicit QFileSystemModel(QObject *parent = nullptr);
     ~QFileSystemModel();
@@ -129,6 +139,11 @@ public:
     void setNameFilters(const QStringList &filters);
     QStringList nameFilters() const;
 
+    void setOption(Option option, bool on = true);
+    bool testOption(Option option) const;
+    void setOptions(Options options);
+    Options options() const;
+
     QString filePath(const QModelIndex &index) const;
     bool isDir(const QModelIndex &index) const;
     qint64 size(const QModelIndex &index) const;
@@ -164,6 +179,8 @@ inline QString QFileSystemModel::fileName(const QModelIndex &aindex) const
 { return aindex.data(Qt::DisplayRole).toString(); }
 inline QIcon QFileSystemModel::fileIcon(const QModelIndex &aindex) const
 { return qvariant_cast<QIcon>(aindex.data(Qt::DecorationRole)); }
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QFileSystemModel::Options)
 
 QT_END_NAMESPACE
 

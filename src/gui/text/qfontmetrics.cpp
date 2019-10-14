@@ -185,11 +185,9 @@ QFontMetrics::QFontMetrics(const QFont &font, const QPaintDevice *paintdevice)
 #endif
 {
     const int dpi = paintdevice ? paintdevice->logicalDpiY() : qt_defaultDpi();
-    const int screen = 0;
-    if (font.d->dpi != dpi || font.d->screen != screen ) {
+    if (font.d->dpi != dpi) {
         d = new QFontPrivate(*font.d);
         d->dpi = dpi;
-        d->screen = screen;
     } else {
         d = font.d;
     }
@@ -1036,8 +1034,15 @@ int QFontMetrics::lineWidth() const
     return qRound(engine->lineThickness());
 }
 
+/*!
+    \since 5.14
 
-
+    Returns the font DPI.
+*/
+qreal QFontMetrics::fontDpi() const
+{
+    return d->dpi;
+}
 
 /*****************************************************************************
   QFontMetricsF member functions
@@ -1171,11 +1176,9 @@ QFontMetricsF::QFontMetricsF(const QFont &font, const QPaintDevice *paintdevice)
 #endif
 {
     int dpi = paintdevice ? paintdevice->logicalDpiY() : qt_defaultDpi();
-    const int screen = 0;
-    if (font.d->dpi != dpi || font.d->screen != screen ) {
+    if (font.d->dpi != dpi) {
         d = new QFontPrivate(*font.d);
         d->dpi = dpi;
-        d->screen = screen;
     } else {
         d = font.d;
     }
@@ -1911,6 +1914,16 @@ qreal QFontMetricsF::lineWidth() const
     QFontEngine *engine = d->engineForScript(QChar::Script_Common);
     Q_ASSERT(engine != 0);
     return engine->lineThickness().toReal();
+}
+
+/*!
+    \since 5.14
+
+    Returns the font DPI.
+*/
+qreal QFontMetricsF::fontDpi() const
+{
+    return d->dpi;
 }
 
 QT_END_NAMESPACE

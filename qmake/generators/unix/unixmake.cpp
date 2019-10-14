@@ -392,7 +392,7 @@ UnixMakefileGenerator::fixLibFlag(const ProString &lib)
 bool
 UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
 {
-    QList<QMakeLocalFileName> libdirs, frameworkdirs;
+    QVector<QMakeLocalFileName> libdirs, frameworkdirs;
     int libidx = 0, fwidx = 0;
     for (const ProString &dlib : project->values("QMAKE_DEFAULT_LIBDIRS"))
         libdirs.append(QMakeLocalFileName(dlib.toQString()));
@@ -418,9 +418,8 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                     libdirs.insert(libidx++, f);
                 } else if(opt.startsWith("-l")) {
                     QString lib = opt.mid(2);
-                    for (QList<QMakeLocalFileName>::Iterator dep_it = libdirs.begin();
-                         dep_it != libdirs.end(); ++dep_it) {
-                        QString libBase = (*dep_it).local() + '/'
+                    for (const QMakeLocalFileName &libdir : qAsConst(libdirs)) {
+                        QString libBase = libdir.local() + '/'
                                 + project->first("QMAKE_PREFIX_SHLIB") + lib;
                         if (linkPrl && processPrlFile(libBase, true))
                             goto found;

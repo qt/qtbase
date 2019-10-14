@@ -1,0 +1,15 @@
+diff --git a/src/3rdparty/xcb/include/xcb/xinput.h b/src/3rdparty/xcb/include/xcb/xinput.h
+index 9420047c71..729c0b5169 100644
+--- a/src/3rdparty/xcb/include/xcb/xinput.h
++++ b/src/3rdparty/xcb/include/xcb/xinput.h
+@@ -12,8 +12,8 @@
+ #ifndef __XINPUT_H
+ #define __XINPUT_H
+ 
+-#include "xcb.h"
+-#include "xfixes.h"
++#include <xcb/xcb.h>
++#include <xcb/xfixes.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {

@@ -69,7 +69,8 @@ class Q_GUI_EXPORT QBezier
 {
 public:
     static QBezier fromPoints(const QPointF &p1, const QPointF &p2,
-                              const QPointF &p3, const QPointF &p4);
+                              const QPointF &p3, const QPointF &p4)
+    { return {p1.x(), p1.y(), p2.x(), p2.y(), p3.x(), p3.y(), p4.x(), p4.y()}; }
 
     static void coefficients(qreal t, qreal &a, qreal &b, qreal &c, qreal &d);
 
@@ -106,7 +107,7 @@ public:
     inline QLineF endTangent() const;
 
     inline void parameterSplitLeft(qreal t, QBezier *left);
-    inline void split(QBezier *firstHalf, QBezier *secondHalf) const;
+    inline std::pair<QBezier, QBezier> split() const;
 
     int shifted(QBezier *curveSegments, int maxSegmets,
                 qreal offset, float threshold) const;
@@ -222,28 +223,21 @@ inline QPointF QBezier::secondDerivedAt(qreal t) const
                        a * y1 + b * y2 + c * y3 + d * y4);
 }
 
-inline void QBezier::split(QBezier *firstHalf, QBezier *secondHalf) const
+std::pair<QBezier, QBezier> QBezier::split() const
 {
-    Q_ASSERT(firstHalf);
-    Q_ASSERT(secondHalf);
+    const auto mid = [](QPointF lhs, QPointF rhs) { return (lhs + rhs) * .5; };
 
-    qreal c = (x2 + x3)*.5;
-    firstHalf->x2 = (x1 + x2)*.5;
-    secondHalf->x3 = (x3 + x4)*.5;
-    firstHalf->x1 = x1;
-    secondHalf->x4 = x4;
-    firstHalf->x3 = (firstHalf->x2 + c)*.5;
-    secondHalf->x2 = (secondHalf->x3 + c)*.5;
-    firstHalf->x4 = secondHalf->x1 = (firstHalf->x3 + secondHalf->x2)*.5;
+    const QPointF mid_12 = mid(pt1(), pt2());
+    const QPointF mid_23 = mid(pt2(), pt3());
+    const QPointF mid_34 = mid(pt3(), pt4());
+    const QPointF mid_12_23 = mid(mid_12, mid_23);
+    const QPointF mid_23_34 = mid(mid_23, mid_34);
+    const QPointF mid_12_23__23_34 = mid(mid_12_23, mid_23_34);
 
-    c = (y2 + y3)/2;
-    firstHalf->y2 = (y1 + y2)*.5;
-    secondHalf->y3 = (y3 + y4)*.5;
-    firstHalf->y1 = y1;
-    secondHalf->y4 = y4;
-    firstHalf->y3 = (firstHalf->y2 + c)*.5;
-    secondHalf->y2 = (secondHalf->y3 + c)*.5;
-    firstHalf->y4 = secondHalf->y1 = (firstHalf->y3 + secondHalf->y2)*.5;
+    return {
+        fromPoints(pt1(), mid_12, mid_12_23, mid_12_23__23_34),
+        fromPoints(mid_12_23__23_34, mid_23_34, mid_34, pt4()),
+    };
 }
 
 inline void QBezier::parameterSplitLeft(qreal t, QBezier *left)

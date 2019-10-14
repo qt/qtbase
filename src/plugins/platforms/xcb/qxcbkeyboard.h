@@ -43,14 +43,12 @@
 #include "qxcbobject.h"
 
 #include <xcb/xcb_keysyms.h>
-#if QT_CONFIG(xkb)
 #define explicit dont_use_cxx_explicit
 #include <xcb/xkb.h>
 #undef explicit
-#endif
 
-#include <xkbcommon/xkbcommon.h>
 #include <QtXkbCommonSupport/private/qxkbcommon_p.h>
+#include <xkbcommon/xkbcommon-x11.h>
 
 #include <QEvent>
 
@@ -74,18 +72,14 @@ public:
     void updateKeymap();
     QList<int> possibleKeys(const QKeyEvent *event) const;
 
-    // when XKEYBOARD not present on the X server
     void updateXKBMods();
     xkb_mod_mask_t xkbModMask(quint16 state);
     void updateXKBStateFromCore(quint16 state);
-#if QT_CONFIG(xcb_xinput)
     void updateXKBStateFromXI(void *modInfo, void *groupInfo);
-#endif
-#if QT_CONFIG(xkb)
-    // when XKEYBOARD is present on the X server
+
     int coreDeviceId() const { return core_device_id; }
     void updateXKBState(xcb_xkb_state_notify_event_t *state);
-#endif
+
     void handleStateChanges(xkb_state_component changedComponents);
 
 protected:
@@ -97,10 +91,9 @@ protected:
     typedef QMap<xcb_keysym_t, int> KeysymModifierMap;
     struct xkb_keymap *keymapFromCore(const KeysymModifierMap &keysymMods);
 
-    // when XKEYBOARD not present on the X server
     void updateModifiers(const KeysymModifierMap &keysymMods);
     KeysymModifierMap keysymsToModifiers();
-    // when XKEYBOARD is present on the X server
+
     void updateVModMapping();
     void updateVModToRModMapping();
 
@@ -119,7 +112,6 @@ private:
 
     _mod_masks rmod_masks;
 
-    // when XKEYBOARD not present on the X server
     xcb_key_symbols_t *m_key_symbols = nullptr;
     struct _xkb_mods {
         xkb_mod_index_t shift;
@@ -132,11 +124,9 @@ private:
         xkb_mod_index_t mod5;
     };
     _xkb_mods xkb_mods;
-#if QT_CONFIG(xkb)
-    // when XKEYBOARD is present on the X server
+
     _mod_masks vmod_masks;
     int core_device_id;
-#endif
 
     QXkbCommon::ScopedXKBState m_xkbState;
     QXkbCommon::ScopedXKBKeymap m_xkbKeymap;

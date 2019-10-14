@@ -324,13 +324,8 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
                 event->y() >= 0 && event->y() < q->height());
 
             startDrag(moving);
-            if (!moving && !wasDragging) {
-#if 0 // Used to be included in Qt4 for Q_WS_WIN
-                grabMouseWhileInWindow();
-#else
+            if (!moving && !wasDragging)
                 q->grabMouse();
-#endif
-            }
     }
 
     if (state->dragging) {

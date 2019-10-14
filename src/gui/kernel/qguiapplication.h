@@ -156,6 +156,9 @@ public:
 
     static Qt::ApplicationState applicationState();
 
+    static void setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy policy);
+    static Qt::HighDpiScaleFactorRoundingPolicy highDpiScaleFactorRoundingPolicy();
+
     static int exec();
     bool notify(QObject *, QEvent *) override;
 

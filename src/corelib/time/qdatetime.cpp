@@ -73,6 +73,9 @@
 #include <private/qcore_mac_p.h>
 #endif
 
+#include "qcalendar.h"
+#include "qgregoriancalendar_p.h"
+
 QT_BEGIN_NAMESPACE
 
 /*****************************************************************************
@@ -94,78 +97,24 @@ enum {
   QDate static helper functions
  *****************************************************************************/
 
-static inline QDate fixedDate(int y, int m, int d)
+static inline QDate fixedDate(QCalendar::YearMonthDay &&parts, QCalendar cal)
 {
-    QDate result(y, m, 1);
-    result.setDate(y, m, qMin(d, result.daysInMonth()));
-    return result;
+    if ((parts.year < 0 && !cal.isProleptic()) || (parts.year == 0 && !cal.hasYearZero()))
+        return QDate();
+
+    parts.day = qMin(parts.day, cal.daysInMonth(parts.month, parts.year));
+    return cal.dateFromParts(parts);
 }
 
-/*
-  Division, rounding down (rather than towards zero).
-
-  From C++11 onwards, integer division is defined to round towards zero, so we
-  can rely on that when implementing this.  This is only used with denominator b
-  > 0, so we only have to treat negative numerator, a, specially.
- */
-static inline qint64 floordiv(qint64 a, int b)
+static inline QDate fixedDate(QCalendar::YearMonthDay &&parts)
 {
-    return (a - (a < 0 ? b - 1 : 0)) / b;
-}
-
-static inline int floordiv(int a, int b)
-{
-    return (a - (a < 0 ? b - 1 : 0)) / b;
-}
-
-static inline qint64 julianDayFromDate(int year, int month, int day)
-{
-    // Adjust for no year 0
-    if (year < 0)
-        ++year;
-
-/*
- * Math from The Calendar FAQ at http://www.tondering.dk/claus/cal/julperiod.php
- * This formula is correct for all julian days, when using mathematical integer
- * division (round to negative infinity), not c++11 integer division (round to zero)
- */
-    int    a = floordiv(14 - month, 12);
-    qint64 y = (qint64)year + 4800 - a;
-    int    m = month + 12 * a - 3;
-    return day + floordiv(153 * m + 2, 5) + 365 * y + floordiv(y, 4) - floordiv(y, 100) + floordiv(y, 400) - 32045;
-}
-
-struct ParsedDate
-{
-    int year, month, day;
-};
-
-// prevent this function from being inlined into all 10 users
-Q_NEVER_INLINE
-static ParsedDate getDateFromJulianDay(qint64 julianDay)
-{
-/*
- * Math from The Calendar FAQ at http://www.tondering.dk/claus/cal/julperiod.php
- * This formula is correct for all julian days, when using mathematical integer
- * division (round to negative infinity), not c++11 integer division (round to zero)
- */
-    qint64 a = julianDay + 32044;
-    qint64 b = floordiv(4 * a + 3, 146097);
-    int    c = a - floordiv(146097 * b, 4);
-
-    int    d = floordiv(4 * c + 3, 1461);
-    int    e = c - floordiv(1461 * d, 4);
-    int    m = floordiv(5 * e + 2, 153);
-
-    int    day = e - floordiv(153 * m + 2, 5) + 1;
-    int    month = m + 3 - 12 * floordiv(m, 10);
-    int    year = 100 * b + d - 4800 + floordiv(m, 10);
-
-    // Adjust for no year 0
-    if (year <= 0)
-        --year ;
-
-    return { year, month, day };
+    if (parts.year) {
+        parts.day = qMin(parts.day, QGregorianCalendar::monthLength(parts.month, parts.year));
+        qint64 jd;
+        if (QGregorianCalendar::julianFromParts(parts.year, parts.month, parts.day, &jd))
+            return QDate::fromJulianDay(jd);
+    }
+    return QDate();
 }
 
 /*****************************************************************************
@@ -189,7 +138,7 @@ static int qt_monthNumberFromShortName(QStringRef shortName)
 static int qt_monthNumberFromShortName(const QString &shortName)
 { return qt_monthNumberFromShortName(QStringRef(&shortName)); }
 
-static int fromShortMonthName(const QStringRef &monthName)
+static int fromShortMonthName(const QStringRef &monthName, int year)
 {
     // Assume that English monthnames are the default
     int month = qt_monthNumberFromShortName(monthName);
@@ -197,7 +146,7 @@ static int fromShortMonthName(const QStringRef &monthName)
         return month;
     // If English names can't be found, search the localized ones
     for (int i = 1; i <= 12; ++i) {
-        if (monthName == QLocale::system().monthName(i, QLocale::ShortFormat))
+        if (monthName == QCalendar().monthName(QLocale::system(), i, year, QLocale::ShortFormat))
             return i;
     }
     return -1;
@@ -303,12 +252,6 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) noexcep
 }
 #endif // datestring
 
-static constexpr int daysInUsualMonth(int month) // (February isn't usual.)
-{
-    // Long if odd up to July = 7, or if even from 8 = August onwards:
-    return Q_ASSERT(month != 2 && month > 0 && month <= 12), 30 | ((month & 1) ^ (month >> 3));
-}
-
 /*****************************************************************************
   QDate member functions
  *****************************************************************************/
@@ -385,7 +328,7 @@ static constexpr int daysInUsualMonth(int month) // (February isn't usual.)
     for technical reasons limited to between -784350574879 and 784354017364,
     which means from before 2 billion BCE to after 2 billion CE.
 
-    \sa QTime, QDateTime, QDateTime::YearRange, QDateEdit, QDateTimeEdit, QCalendarWidget
+    \sa QTime, QDateTime, QCalendar, QDateTime::YearRange, QDateEdit, QDateTimeEdit, QCalendarWidget
 */
 
 /*!
@@ -399,19 +342,24 @@ static constexpr int daysInUsualMonth(int month) // (February isn't usual.)
 /*!
     Constructs a date with year \a y, month \a m and day \a d.
 
-    If the specified date is invalid, the date is not set and
-    isValid() returns \c false.
+    The date is understood in terms of the Gregorian calendar. If the specified
+    date is invalid, the date is not set and isValid() returns \c false.
 
     \warning Years 1 to 99 are interpreted as is. Year 0 is invalid.
 
-    \sa isValid()
+    \sa isValid(), QCalendar::dateFromParts()
 */
 
 QDate::QDate(int y, int m, int d)
 {
-    setDate(y, m, d);
+    if (!QGregorianCalendar::julianFromParts(y, m, d, &jd))
+        jd = nullJd();
 }
 
+QDate::QDate(int y, int m, int d, QCalendar cal)
+{
+    *this = cal.dateFromParts(y, m, d);
+}
 
 /*!
     \fn bool QDate::isNull() const
@@ -429,29 +377,61 @@ QDate::QDate(int y, int m, int d)
 
     Returns \c true if this date is valid; otherwise returns \c false.
 
-    \sa isNull()
+    \sa isNull(), QCalendar::isDateValid()
 */
 
 /*!
-    Returns the year of this date. Negative numbers indicate years
-    before 1 CE, such that year -44 is 44 BCE.
+    Returns the year of this date.
 
-    Returns 0 if the date is invalid.
+    Uses \a cal as calendar, if supplied, else the Gregorian calendar.
 
-    \sa month(), day()
+    Returns 0 if the date is invalid. For some calendars, dates before their
+    first year may all be invalid.
+
+    If using a calendar which has a year 0, check using isValid() if the return
+    is 0. Such calendars use negative year numbers in the obvious way, with
+    year 1 preceded by year 0, in turn preceded by year -1 and so on.
+
+    Some calendars, despite having no year 0, have a conventional numbering of
+    the years before their first year, counting backwards from 1. For example,
+    in the proleptic Gregorian calendar, successive years before 1 CE (the first
+    year) are identified as 1 BCE, 2 BCE, 3 BCE and so on. For such calendars,
+    negative year numbers are used to indicate these years before year 1, with
+    -1 indicating the year before 1.
+
+    \sa month(), day(), QCalendar::hasYearZero(), QCalendar::isProleptic()
 */
 
-int QDate::year() const
+int QDate::year(QCalendar cal) const
 {
-    if (isNull())
-        return 0;
-
-    return getDateFromJulianDay(jd).year;
+    if (isValid()) {
+        const auto parts = cal.partsFromDate(*this);
+        if (parts.isValid())
+            return parts.year;
+    }
+    return 0;
 }
 
 /*!
-    Returns the number corresponding to the month of this date, using
-    the following convention:
+  \overload
+ */
+
+int QDate::year() const
+{
+    if (isValid()) {
+        const auto parts = QGregorianCalendar::partsFromJulian(jd);
+        if (parts.isValid())
+            return parts.year;
+    }
+    return 0;
+}
+
+/*!
+    Returns the month-number for the date.
+
+    Numbers the months of the year starting with 1 for the first. Uses \a cal
+    as calendar if supplied, else the Gregorian calendar, for which the month
+    numbering is as follows:
 
     \list
     \li 1 = "January"
@@ -468,118 +448,201 @@ int QDate::year() const
     \li 12 = "December"
     \endlist
 
-    Returns 0 if the date is invalid.
+    Returns 0 if the date is invalid. Note that some calendars may have more
+    than 12 months in some years.
 
     \sa year(), day()
 */
 
-int QDate::month() const
+int QDate::month(QCalendar cal) const
 {
-    if (isNull())
-        return 0;
-
-    return getDateFromJulianDay(jd).month;
+    if (isValid()) {
+        const auto parts = cal.partsFromDate(*this);
+        if (parts.isValid())
+            return parts.month;
+    }
+    return 0;
 }
 
 /*!
-    Returns the day of the month (1 to 31) of this date.
+  \overload
+ */
 
-    Returns 0 if the date is invalid.
+int QDate::month() const
+{
+    if (isValid()) {
+        const auto parts = QGregorianCalendar::partsFromJulian(jd);
+        if (parts.isValid())
+            return parts.month;
+    }
+    return 0;
+}
+
+/*!
+    Returns the day of the month for this date.
+
+    Uses \a cal as calendar if supplied, else the Gregorian calendar (for which
+    the return ranges from 1 to 31). Returns 0 if the date is invalid.
 
     \sa year(), month(), dayOfWeek()
 */
 
+int QDate::day(QCalendar cal) const
+{
+    if (isValid()) {
+        const auto parts = cal.partsFromDate(*this);
+        if (parts.isValid())
+            return parts.day;
+    }
+    return 0;
+}
+
+/*!
+  \overload
+ */
+
 int QDate::day() const
 {
-    if (isNull())
-        return 0;
-
-    return getDateFromJulianDay(jd).day;
+    if (isValid()) {
+        const auto parts = QGregorianCalendar::partsFromJulian(jd);
+        if (parts.isValid())
+            return parts.day;
+    }
+    return 0;
 }
 
 /*!
     Returns the weekday (1 = Monday to 7 = Sunday) for this date.
 
-    Returns 0 if the date is invalid.
+    Uses \a cal as calendar if supplied, else the Gregorian calendar. Returns 0
+    if the date is invalid. Some calendars may give special meaning
+    (e.g. intercallary days) to values greater than 7.
 
     \sa day(), dayOfYear(), Qt::DayOfWeek
 */
 
-int QDate::dayOfWeek() const
+int QDate::dayOfWeek(QCalendar cal) const
 {
     if (isNull())
         return 0;
 
-    if (jd >= 0)
-        return (jd % 7) + 1;
-    else
-        return ((jd + 1) % 7) + 7;
+    return cal.dayOfWeek(*this);
 }
 
 /*!
-    Returns the day of the year (1 to 365 or 366 on leap years) for
-    this date.
+  \overload
+ */
 
-    Returns 0 if the date is invalid.
+int QDate::dayOfWeek() const
+{
+    return isValid() ? QGregorianCalendar::weekDayOfJulian(jd) : 0;
+}
+
+/*!
+    Returns the day of the year (1 for the first day) for this date.
+
+    Uses \a cal as calendar if supplied, else the Gregorian calendar.
+    Returns 0 if either the date or the first day of its year is invalid.
 
     \sa day(), dayOfWeek()
 */
 
-int QDate::dayOfYear() const
+int QDate::dayOfYear(QCalendar cal) const
 {
-    if (isNull())
-        return 0;
-
-    return jd - julianDayFromDate(year(), 1, 1) + 1;
+    if (isValid()) {
+        QDate firstDay = cal.dateFromParts(year(cal), 1, 1);
+        if (firstDay.isValid())
+            return firstDay.daysTo(*this) + 1;
+    }
+    return 0;
 }
 
 /*!
-    Returns the number of days in the month (28 to 31) for this date.
+  \overload
+ */
 
-    Returns 0 if the date is invalid.
+int QDate::dayOfYear() const
+{
+    if (isValid()) {
+        qint64 first;
+        if (QGregorianCalendar::julianFromParts(year(), 1, 1, &first))
+            return jd - first + 1;
+    }
+    return 0;
+}
+
+/*!
+    Returns the number of days in the month for this date.
+
+    Uses \a cal as calendar if supplied, else the Gregorian calendar (for which
+    the result ranges from 28 to 31). Returns 0 if the date is invalid.
 
     \sa day(), daysInYear()
 */
 
-int QDate::daysInMonth() const
+int QDate::daysInMonth(QCalendar cal) const
 {
-    if (isNull())
-        return 0;
-
-    const ParsedDate pd = getDateFromJulianDay(jd);
-    if (pd.month == 2)
-        return isLeapYear(pd.year) ? 29 : 28;
-
-    return daysInUsualMonth(pd.month);
+    if (isValid()) {
+        const auto parts = cal.partsFromDate(*this);
+        if (parts.isValid())
+            return cal.daysInMonth(parts.month, parts.year);
+    }
+    return 0;
 }
 
 /*!
-    Returns the number of days in the year (365 or 366) for this date.
+  \overload
+ */
 
-    Returns 0 if the date is invalid.
+int QDate::daysInMonth() const
+{
+    if (isValid()) {
+        const auto parts = QGregorianCalendar::partsFromJulian(jd);
+        if (parts.isValid())
+            return QGregorianCalendar::monthLength(parts.month, parts.year);
+    }
+    return 0;
+}
+
+/*!
+    Returns the number of days in the year for this date.
+
+    Uses \a cal as calendar if supplied, else the Gregorian calendar (for which
+    the result is 365 or 366). Returns 0 if the date is invalid.
 
     \sa day(), daysInMonth()
 */
 
-int QDate::daysInYear() const
+int QDate::daysInYear(QCalendar cal) const
 {
     if (isNull())
         return 0;
 
-    return isLeapYear(getDateFromJulianDay(jd).year) ? 366 : 365;
+    return cal.daysInYear(year(cal));
 }
 
 /*!
-    Returns the week number (1 to 53), and stores the year in
-    *\a{yearNumber} unless \a yearNumber is null (the default).
+  \overload
+ */
 
-    Returns 0 if the date is invalid.
+int QDate::daysInYear() const
+{
+    return isValid() ? QGregorianCalendar::leapTest(year()) ? 366 : 365 : 0;
+}
 
-    In accordance with ISO 8601, weeks start on Monday and the first
-    Thursday of a year is always in week 1 of that year. Most years
-    have 52 weeks, but some have 53.
+/*!
+    Returns the ISO 8601 week number (1 to 53).
 
-    *\a{yearNumber} is not always the same as year(). For example, 1
+    Returns 0 if the date is invalid. Otherwise, returns the week number for the
+    date. If \a yearNumber is not \nullptr (its default), stores the year as
+    *\a{yearNumber}.
+
+    In accordance with ISO 8601, each week falls in the year to which most of
+    its days belong, in the Gregorian calendar. As ISO 8601's week starts on
+    Monday, this is the year in which the week's Thursday falls. Most years have
+    52 weeks, but some have 53.
+
+    \note *\a{yearNumber} is not always the same as year(). For example, 1
     January 2000 has week number 52 in the year 1999, and 31 December
     2002 has week number 1 in the year 2003.
 
@@ -591,26 +654,12 @@ int QDate::weekNumber(int *yearNumber) const
     if (!isValid())
         return 0;
 
-    int year = QDate::year();
-    int yday = dayOfYear();
-    int wday = dayOfWeek();
-
-    int week = (yday - wday + 10) / 7;
-
-    if (week == 0) {
-        // last week of previous year
-        --year;
-        week = (yday + 365 + (QDate::isLeapYear(year) ? 1 : 0) - wday + 10) / 7;
-        Q_ASSERT(week == 52 || week == 53);
-    } else if (week == 53) {
-        // maybe first week of next year
-        int w = (yday - 365 - (QDate::isLeapYear(year) ? 1 : 0) - wday + 10) / 7;
-        if (w > 0) {
-            ++year;
-            week = w;
-        }
-        Q_ASSERT(week == 53 || week == 1);
-    }
+    // This could be replaced by use of QIso8601Calendar, once we implement it.
+    // The Thursday of the same week determines our answer:
+    QDate thursday(addDays(4 - dayOfWeek()));
+    int year = thursday.year();
+    // Week n's Thurs's DOY has 1 <= DOY - 7*(n-1) < 8, so 0 <= DOY + 6 - 7*n < 7:
+    int week = (thursday.dayOfYear() + 6) / 7;
 
     if (yearNumber)
         *yearNumber = year;
@@ -917,9 +966,11 @@ QString QDate::shortMonthName(int month, QDate::MonthNameType type)
 {
     switch (type) {
     case QDate::DateFormat:
-        return QLocale::system().monthName(month, QLocale::ShortFormat);
+        return QCalendar().monthName(QLocale::system(), month,
+                                     QCalendar::Unspecified, QLocale::ShortFormat);
     case QDate::StandaloneFormat:
-        return QLocale::system().standaloneMonthName(month, QLocale::ShortFormat);
+        return QCalendar().standaloneMonthName(QLocale::system(), month,
+                                               QCalendar::Unspecified, QLocale::ShortFormat);
     }
     return QString();
 }
@@ -960,9 +1011,11 @@ QString QDate::longMonthName(int month, MonthNameType type)
 {
     switch (type) {
     case QDate::DateFormat:
-        return QLocale::system().monthName(month, QLocale::LongFormat);
+        return QCalendar().monthName(QLocale::system(), month,
+                                     QCalendar::Unspecified, QLocale::LongFormat);
     case QDate::StandaloneFormat:
-        return QLocale::system().standaloneMonthName(month, QLocale::LongFormat);
+        return QCalendar().standaloneMonthName(QLocale::system(), month,
+                                               QCalendar::Unspecified, QLocale::LongFormat);
     }
     return QString();
 }
@@ -1047,24 +1100,32 @@ QString QDate::longDayName(int weekday, MonthNameType type)
 #if QT_CONFIG(datestring)
 
 #if QT_CONFIG(textdate)
+static QString toStringTextDate(QDate date, QCalendar cal)
+{
+    if (date.isValid()) {
+        const auto parts = cal.partsFromDate(date);
+        if (parts.isValid()) {
+            const QLatin1Char sp(' ');
+            return QLocale::system().dayName(cal.dayOfWeek(date), QLocale::ShortFormat) + sp
+                + cal.monthName(QLocale::system(), parts.month, parts.year, QLocale::ShortFormat)
+                + sp + QString::number(parts.day) + sp + QString::number(parts.year);
+        }
+    }
+    return QString();
+}
+
 static QString toStringTextDate(QDate date)
 {
-    const ParsedDate pd = getDateFromJulianDay(date.toJulianDay());
-    static const QLatin1Char sp(' ');
-    return QLocale::system().dayName(date.dayOfWeek(), QLocale::ShortFormat) + sp
-         + QLocale::system().monthName(pd.month, QLocale::ShortFormat) + sp
-         + QString::number(pd.day) + sp
-         + QString::number(pd.year);
+    return toStringTextDate(date, QCalendar());
 }
 #endif // textdate
 
-static QString toStringIsoDate(qint64 jd)
+static QString toStringIsoDate(const QDate &date)
 {
-    const ParsedDate pd = getDateFromJulianDay(jd);
-    if (pd.year >= 0 && pd.year <= 9999)
-        return QString::asprintf("%04d-%02d-%02d", pd.year, pd.month, pd.day);
-    else
-        return QString();
+    const auto parts = QCalendar().partsFromDate(date);
+    if (parts.isValid() && parts.year >= 0 && parts.year <= 9999)
+        return QString::asprintf("%04d-%02d-%02d", parts.year, parts.month, parts.day);
+    return QString();
 }
 
 /*!
@@ -1137,7 +1198,7 @@ QString QDate::toString(Qt::DateFormat format) const
 #endif
     case Qt::ISODate:
     case Qt::ISODateWithMs:
-        return toStringIsoDate(jd);
+        return toStringIsoDate(*this);
     }
 }
 
@@ -1211,6 +1272,47 @@ QString QDate::toString(const QString &format) const
 }
 #endif
 
+QString QDate::toString(Qt::DateFormat format, QCalendar cal) const
+{
+    if (!isValid())
+        return QString();
+
+    switch (format) {
+    case Qt::SystemLocaleDate:
+    case Qt::SystemLocaleShortDate:
+        return QLocale::system().toString(*this, QLocale::ShortFormat, cal);
+    case Qt::SystemLocaleLongDate:
+        return QLocale::system().toString(*this, QLocale::LongFormat, cal);
+    case Qt::LocaleDate:
+    case Qt::DefaultLocaleShortDate:
+        return QLocale().toString(*this, QLocale::ShortFormat, cal);
+    case Qt::DefaultLocaleLongDate:
+        return QLocale().toString(*this, QLocale::LongFormat, cal);
+    case Qt::RFC2822Date:
+        return QLocale::c().toString(*this, QStringView(u"dd MMM yyyy"), cal);
+    default:
+#ifndef QT_NO_TEXTDATE
+    case Qt::TextDate:
+        return toStringTextDate(*this, cal);
+#endif
+    case Qt::ISODate:
+    case Qt::ISODateWithMs:
+        return toStringIsoDate(*this);
+    }
+}
+
+QString QDate::toString(QStringView format, QCalendar cal) const
+{
+    return QLocale::system().toString(*this, format, cal); // QLocale::c() ### Qt6
+}
+
+#if QT_STRINGVIEW_LEVEL < 2
+QString QDate::toString(const QString &format, QCalendar cal) const
+{
+    return toString(qToStringViewIgnoringNull(format), cal);
+}
+#endif
+
 #endif // datestring
 
 /*!
@@ -1230,21 +1332,36 @@ QString QDate::toString(const QString &format) const
 /*!
     \since 4.2
 
-    Sets the date's \a year, \a month, and \a day. Returns \c true if
-    the date is valid; otherwise returns \c false.
+    Sets this to represent the date, in the Gregorian calendar, with the given
+    \a year, \a month and \a day numbers. Returns true if the resulting date is
+    valid, otherwise it sets this to represent an invalid date and returns
+    false.
 
-    If the specified date is invalid, the QDate object is set to be
-    invalid.
-
-    \sa isValid()
+    \sa isValid(), QCalendar::dateFromParts()
 */
 bool QDate::setDate(int year, int month, int day)
 {
-    if (isValid(year, month, day))
-        jd = julianDayFromDate(year, month, day);
-    else
-        jd = nullJd();
+    if (QGregorianCalendar::julianFromParts(year, month, day, &jd))
+        return true;
 
+    jd = nullJd();
+    return false;
+}
+
+/*!
+    \since 5.14
+
+    Sets this to represent the date, in the given calendar \a cal, with the
+    given \a year, \a month and \a day numbers. Returns true if the resulting
+    date is valid, otherwise it sets this to represent an invalid date and
+    returns false.
+
+    \sa isValid(), QCalendar::dateFromParts()
+*/
+
+bool QDate::setDate(int year, int month, int day, QCalendar cal)
+{
+    *this = QDate(year, month, day, cal);
     return isValid();
 }
 
@@ -1258,20 +1375,21 @@ bool QDate::setDate(int year, int month, int day)
 
     \note In Qt versions prior to 5.7, this function is marked as non-\c{const}.
 
-    \sa year(), month(), day(), isValid()
+    \sa year(), month(), day(), isValid(), QCalendar::partsFromDate()
 */
 void QDate::getDate(int *year, int *month, int *day) const
 {
-    ParsedDate pd = { 0, 0, 0 };
+    QCalendar::YearMonthDay parts; // invalid by default
     if (isValid())
-        pd = getDateFromJulianDay(jd);
+        parts = QGregorianCalendar::partsFromJulian(jd);
 
+    const bool ok = parts.isValid();
     if (year)
-        *year = pd.year;
+        *year = ok ? parts.year : 0;
     if (month)
-        *month = pd.month;
+        *month = ok ? parts.month : 0;
     if (day)
-        *day = pd.day;
+        *day = ok ? parts.day : 0;
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -1309,96 +1427,129 @@ QDate QDate::addDays(qint64 ndays) const
     Returns a QDate object containing a date \a nmonths later than the
     date of this object (or earlier if \a nmonths is negative).
 
-    \note If the ending day/month combination does not exist in the
-    resulting month/year, this function will return a date that is the
-    latest valid date.
+    Uses \a cal as calendar, if supplied, else the Gregorian calendar.
+
+    \note If the ending day/month combination does not exist in the resulting
+    month/year, this function will return a date that is the latest valid date
+    in the selected month.
 
     \sa addDays(), addYears()
 */
 
-QDate QDate::addMonths(int nmonths) const
+QDate QDate::addMonths(int nmonths, QCalendar cal) const
 {
     if (!isValid())
         return QDate();
-    if (!nmonths)
+
+    if (nmonths == 0)
         return *this;
 
-    int old_y, y, m, d;
-    {
-        const ParsedDate pd = getDateFromJulianDay(jd);
-        y = pd.year;
-        m = pd.month;
-        d = pd.day;
+    auto parts = cal.partsFromDate(*this);
+
+    if (!parts.isValid())
+        return QDate();
+    Q_ASSERT(parts.year || cal.hasYearZero());
+
+    parts.month += nmonths;
+    while (parts.month <= 0) {
+        if (--parts.year || cal.hasYearZero())
+            parts.month += cal.monthsInYear(parts.year);
     }
-    old_y = y;
-
-    bool increasing = nmonths > 0;
-
-    while (nmonths != 0) {
-        if (nmonths < 0 && nmonths + 12 <= 0) {
-            y--;
-            nmonths+=12;
-        } else if (nmonths < 0) {
-            m+= nmonths;
-            nmonths = 0;
-            if (m <= 0) {
-                --y;
-                m += 12;
-            }
-        } else if (nmonths - 12 >= 0) {
-            y++;
-            nmonths -= 12;
-        } else if (m == 12) {
-            y++;
-            m = 0;
-        } else {
-            m += nmonths;
-            nmonths = 0;
-            if (m > 12) {
-                ++y;
-                m -= 12;
-            }
-        }
+    int count = cal.monthsInYear(parts.year);
+    while (parts.month > count) {
+        parts.month -= count;
+        count = (++parts.year || cal.hasYearZero()) ? cal.monthsInYear(parts.year) : 0;
     }
 
-    // was there a sign change?
-    if ((old_y > 0 && y <= 0) ||
-        (old_y < 0 && y >= 0))
-        // yes, adjust the date by +1 or -1 years
-        y += increasing ? +1 : -1;
+    return fixedDate(std::move(parts), cal);
+}
 
-    return fixedDate(y, m, d);
+/*!
+  \override
+*/
+
+QDate QDate::addMonths(int nmonths) const
+{
+    if (isNull())
+        return QDate();
+
+    if (nmonths == 0)
+        return *this;
+
+    auto parts = QGregorianCalendar::partsFromJulian(jd);
+
+    if (!parts.isValid())
+        return QDate();
+    Q_ASSERT(parts.year);
+
+    parts.month += nmonths;
+    while (parts.month <= 0) {
+        if (--parts.year) // skip over year 0
+            parts.month += 12;
+    }
+    while (parts.month > 12) {
+        parts.month -= 12;
+        if (!++parts.year) // skip over year 0
+            ++parts.year;
+    }
+
+    return fixedDate(std::move(parts));
 }
 
 /*!
     Returns a QDate object containing a date \a nyears later than the
     date of this object (or earlier if \a nyears is negative).
 
-    \note If the ending day/month combination does not exist in the
-    resulting year (i.e., if the date was Feb 29 and the final year is
-    not a leap year), this function will return a date that is the
-    latest valid date (that is, Feb 28).
+    Uses \a cal as calendar, if supplied, else the Gregorian calendar.
+
+    \note If the ending day/month combination does not exist in the resulting
+    year (e.g., for the Gregorian calendar, if the date was Feb 29 and the final
+    year is not a leap year), this function will return a date that is the
+    latest valid date in the given month (in the example, Feb 28).
 
     \sa addDays(), addMonths()
 */
 
-QDate QDate::addYears(int nyears) const
+QDate QDate::addYears(int nyears, QCalendar cal) const
 {
     if (!isValid())
         return QDate();
 
-    ParsedDate pd = getDateFromJulianDay(jd);
+    auto parts = cal.partsFromDate(*this);
+    if (!parts.isValid())
+        return QDate();
 
-    int old_y = pd.year;
-    pd.year += nyears;
+    int old_y = parts.year;
+    parts.year += nyears;
 
-    // was there a sign change?
-    if ((old_y > 0 && pd.year <= 0) ||
-        (old_y < 0 && pd.year >= 0))
-        // yes, adjust the date by +1 or -1 years
-        pd.year += nyears > 0 ? +1 : -1;
+    // If we just crossed (or hit) a missing year zero, adjust year by +/- 1:
+    if (!cal.hasYearZero() && ((old_y > 0) != (parts.year > 0) || !parts.year))
+        parts.year += nyears > 0 ? +1 : -1;
 
-    return fixedDate(pd.year, pd.month, pd.day);
+    return fixedDate(std::move(parts), cal);
+}
+
+/*!
+  \override
+*/
+
+QDate QDate::addYears(int nyears) const
+{
+    if (isNull())
+        return QDate();
+
+    auto parts = QGregorianCalendar::partsFromJulian(jd);
+    if (!parts.isValid())
+        return QDate();
+
+    int old_y = parts.year;
+    parts.year += nyears;
+
+    // If we just crossed (or hit) a missing year zero, adjust year by +/- 1:
+    if ((old_y > 0) != (parts.year > 0) || !parts.year)
+        parts.year += nyears > 0 ? +1 : -1;
+
+    return fixedDate(std::move(parts));
 }
 
 /*!
@@ -1518,7 +1669,7 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         if (!ok || !day)
             return QDate();
 
-        const int month = fromShortMonthName(parts.at(1));
+        const int month = fromShortMonthName(parts.at(1), year);
         if (month == -1) // Month name matches no English or localised name.
             return QDate();
 
@@ -1543,6 +1694,10 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
 /*!
     Returns the QDate represented by the \a string, using the \a
     format given, or an invalid date if the string cannot be parsed.
+
+    Uses \a cal as calendar if supplied, else the Gregorian calendar. Ranges of
+    values in the format descriptions below are for the latter; they may be
+    different for other calendars.
 
     These expressions may be used for the format:
 
@@ -1603,55 +1758,61 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         QLocale::toDate()
 */
 
-QDate QDate::fromString(const QString &string, const QString &format)
+QDate QDate::fromString(const QString &string, const QString &format, QCalendar cal)
 {
     QDate date;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString);
+    QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString, cal);
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format))
         dt.fromString(string, &date, 0);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
+    Q_UNUSED(cal);
 #endif
     return date;
+}
+
+/*!
+  \overload
+*/
+
+QDate QDate::fromString(const QString &string, const QString &format)
+{
+    return fromString(string, format, QCalendar());
 }
 #endif // datestring
 
 /*!
     \overload
 
-    Returns \c true if the specified date (\a year, \a month, and \a
-    day) is valid; otherwise returns \c false.
+    Returns \c true if the specified date (\a year, \a month, and \a day) is
+    valid in the Gregorian calendar; otherwise returns \c false.
 
     Example:
     \snippet code/src_corelib_tools_qdatetime.cpp 4
 
-    \sa isNull(), setDate()
+    \sa isNull(), setDate(), QCalendar::isDateValid()
 */
 
 bool QDate::isValid(int year, int month, int day)
 {
-    // There is no year 0 in the Gregorian calendar.
-    return year && day > 0 && month > 0 && month <= 12 &&
-        day <= (month == 2 ? isLeapYear(year) ? 29 : 28 : daysInUsualMonth(month));
+    return QGregorianCalendar::validParts(year, month, day);
 }
 
 /*!
     \fn bool QDate::isLeapYear(int year)
 
-    Returns \c true if the specified \a year is a leap year; otherwise
-    returns \c false.
+    Returns \c true if the specified \a year is a leap year in the Gregorian
+    calendar; otherwise returns \c false.
+
+    \sa QCalendar::isLeapYear()
 */
 
 bool QDate::isLeapYear(int y)
 {
-    // No year 0 in Gregorian calendar, so -1, -5, -9 etc are leap years
-    if ( y < 1)
-        ++y;
-
-    return (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
+    return QGregorianCalendar::leapTest(y);
 }
 
 /*! \fn static QDate QDate::fromJulianDay(qint64 jd)
@@ -2324,7 +2485,7 @@ QTime QTime::fromString(const QString &string, const QString &format)
 {
     QTime time;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString);
+    QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString, QCalendar());
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format))
         dt.fromString(string, 0, &time);
@@ -4699,12 +4860,10 @@ static inline uint msecsFromDecomposed(int hour, int minute, int sec, int msec =
 
 QDate QDate::currentDate()
 {
-    QDate d;
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
     GetLocalTime(&st);
-    d.jd = julianDayFromDate(st.wYear, st.wMonth, st.wDay);
-    return d;
+    return QDate(st.wYear, st.wMonth, st.wDay);
 }
 
 QTime QTime::currentTime()
@@ -4719,24 +4878,22 @@ QTime QTime::currentTime()
 
 QDateTime QDateTime::currentDateTime()
 {
-    QDate d;
     QTime t;
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
     GetLocalTime(&st);
-    d.jd = julianDayFromDate(st.wYear, st.wMonth, st.wDay);
+    QDate d(st.wYear, st.wMonth, st.wDay);
     t.mds = msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
     return QDateTime(d, t);
 }
 
 QDateTime QDateTime::currentDateTimeUtc()
 {
-    QDate d;
     QTime t;
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
     GetSystemTime(&st);
-    d.jd = julianDayFromDate(st.wYear, st.wMonth, st.wDay);
+    QDate d(st.wYear, st.wMonth, st.wDay);
     t.mds = msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
     return QDateTime(d, t, Qt::UTC);
 }
@@ -4746,10 +4903,10 @@ qint64 QDateTime::currentMSecsSinceEpoch() noexcept
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
     GetSystemTime(&st);
+    const qint64 daysAfterEpoch = QDate(1970, 1, 1).daysTo(QDate(st.wYear, st.wMonth, st.wDay));
 
     return msecsFromDecomposed(st.wHour, st.wMinute, st.wSecond, st.wMilliseconds) +
-            qint64(julianDayFromDate(st.wYear, st.wMonth, st.wDay)
-                   - julianDayFromDate(1970, 1, 1)) * Q_INT64_C(86400000);
+           daysAfterEpoch * Q_INT64_C(86400000);
 }
 
 qint64 QDateTime::currentSecsSinceEpoch() noexcept
@@ -4757,10 +4914,10 @@ qint64 QDateTime::currentSecsSinceEpoch() noexcept
     SYSTEMTIME st;
     memset(&st, 0, sizeof(SYSTEMTIME));
     GetSystemTime(&st);
+    const qint64 daysAfterEpoch = QDate(1970, 1, 1).daysTo(QDate(st.wYear, st.wMonth, st.wDay));
 
     return st.wHour * SECS_PER_HOUR + st.wMinute * SECS_PER_MIN + st.wSecond +
-            qint64(julianDayFromDate(st.wYear, st.wMonth, st.wDay)
-                   - julianDayFromDate(1970, 1, 1)) * Q_INT64_C(86400);
+           daysAfterEpoch * Q_INT64_C(86400);
 }
 
 #elif defined(Q_OS_UNIX)
@@ -5139,13 +5296,13 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
             return QDateTime();
 
         // Next try month then day
-        month = fromShortMonthName(parts.at(1));
+        month = fromShortMonthName(parts.at(1), year);
         if (month)
             day = parts.at(2).toInt(&ok);
 
         // If failed, try day then month
         if (!ok || !month || !day) {
-            month = fromShortMonthName(parts.at(2));
+            month = fromShortMonthName(parts.at(2), year);
             if (month) {
                 QStringRef dayStr = parts.at(1);
                 if (dayStr.endsWith(QLatin1Char('.'))) {
@@ -5225,6 +5382,10 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
 /*!
     Returns the QDateTime represented by the \a string, using the \a
     format given, or an invalid datetime if the string cannot be parsed.
+
+    Uses the calendar \a cal if supplied, else Gregorian. The illustrative
+    values and ranges below are given for the latter; other calendars may have
+    different ranges or values.
 
     These expressions may be used for the date part of the format string:
 
@@ -5328,21 +5489,31 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
     QLocale::toDateTime()
 */
 
-QDateTime QDateTime::fromString(const QString &string, const QString &format)
+QDateTime QDateTime::fromString(const QString &string, const QString &format, QCalendar cal)
 {
 #if QT_CONFIG(datetimeparser)
     QTime time;
     QDate date;
 
-    QDateTimeParser dt(QVariant::DateTime, QDateTimeParser::FromString);
+    QDateTimeParser dt(QVariant::DateTime, QDateTimeParser::FromString, cal);
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format) && dt.fromString(string, &date, &time))
         return QDateTime(date, time);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
+    Q_UNUSED(cal);
 #endif
     return QDateTime();
+}
+
+/*
+  \overload
+*/
+
+QDateTime QDateTime::fromString(const QString &string, const QString &format)
+{
+    return fromString(string, format, QCalendar());
 }
 
 #endif // datestring

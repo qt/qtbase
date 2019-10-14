@@ -461,11 +461,6 @@ void tst_QPainter::drawPixmap_comp()
     destPm.fill(c1);
     srcPm.fill(c2);
 
-#if 0 // Used to be included in Qt4 for Q_WS_X11
-    if (!destPm.x11PictureHandle())
-        QSKIP("Requires XRender support");
-#endif
-
     QPainter p(&destPm);
     p.drawPixmap(0, 0, srcPm);
     p.end();
@@ -1637,6 +1632,7 @@ void tst_QPainter::qimageFormats_data()
     QTest::newRow("Qimage::Format_RGB555") << QImage::Format_RGB555;
     QTest::newRow("Qimage::Format_ARGB8555_Premultiplied") << QImage::Format_ARGB8555_Premultiplied;
     QTest::newRow("Qimage::Format_RGB888") << QImage::Format_RGB888;
+    QTest::newRow("Qimage::Format_BGR888") << QImage::Format_BGR888;
     QTest::newRow("Qimage::Format_A2RGB30_Premultiplied") << QImage::Format_A2RGB30_Premultiplied;
     QTest::newRow("Qimage::Format_RGB30") << QImage::Format_RGB30;
 }

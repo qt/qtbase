@@ -25,6 +25,9 @@ int main(int,char**) { QWidget w; w.show(); return 0; }
 "
 )
 
+# Fix try_compile to inherit the parent configuration.
+set(CMAKE_TRY_COMPILE_CONFIGURATION "${CMAKE_BUILD_TYPE}")
+
 # The try_compile works because Qt5::Widgets is listed in the LINK_LIBRARIES,
 # which causes the includes, defines and appropriate PIC flag to be used.
 try_compile(_TRY_COMPILE_RES "${CMAKE_CURRENT_BINARY_DIR}/try_compile-test"

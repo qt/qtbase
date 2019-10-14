@@ -80,6 +80,11 @@ struct Q_GUI_EXPORT QRhiVulkanCommandBufferNativeHandles : public QRhiNativeHand
     VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
 };
 
+struct Q_GUI_EXPORT QRhiVulkanRenderPassNativeHandles : public QRhiNativeHandles
+{
+    VkRenderPass renderPass = VK_NULL_HANDLE;
+};
+
 QT_END_NAMESPACE
 
 #endif

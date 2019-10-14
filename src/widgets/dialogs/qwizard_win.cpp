@@ -87,7 +87,7 @@ QVistaBackButton::QVistaBackButton(QWidget *widget)
 QSize QVistaBackButton::sizeHint() const
 {
     ensurePolished();
-    int size = int(QStyleHelper::dpiScaled(32));
+    int size = int(QStyleHelper::dpiScaled(32, this));
     int width = size, height = size;
     return QSize(width, height);
 }
@@ -156,7 +156,7 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
     backButton_ = new QVistaBackButton(wizard);
     backButton_->hide();
 
-    iconSpacing = QStyleHelper::dpiScaled(7);
+    iconSpacing = QStyleHelper::dpiScaled(7, wizard);
 }
 
 QVistaHelper::~QVistaHelper()
@@ -229,7 +229,7 @@ bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
         if (type == NormalTitleBar)
             mar.cyTopHeight = 0;
         else
-            mar.cyTopHeight = (titleBarSize() + topOffset()) * QVistaHelper::m_devicePixelRatio;
+            mar.cyTopHeight = (titleBarSize() + topOffset(wizard)) * QVistaHelper::m_devicePixelRatio;
         if (const HWND wizardHandle = wizardHWND())
             if (SUCCEEDED(DwmExtendFrameIntoClientArea(wizardHandle, &mar)))
                 value = true;
@@ -275,7 +275,7 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
 
     if (vistaState() == VistaAero && isWindow)
         drawBlackRect(QRect(0, 0, wizard->width(),
-                            titleBarSize() + topOffset()), hdc);
+                            titleBarSize() + topOffset(wizard)), hdc);
     // The button is positioned in QWizardPrivate::handleAeroStyleChange(),
     // all calculation is relative to it.
     const int btnTop = backButton_->mapToParent(QPoint()).y();
@@ -293,7 +293,7 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
     int glowOffset = 0;
 
     if (vistaState() == VistaAero) {
-        glowOffset = glowSize();
+        glowOffset = glowSize(wizard);
         textHeight += 2 * glowOffset;
         textWidth += 2 * glowOffset;
     }
@@ -314,10 +314,10 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
 
     const QIcon windowIcon = wizard->windowIcon();
     if (!windowIcon.isNull()) {
-        const int size = QVistaHelper::iconSize();
+        const int size = QVistaHelper::iconSize(wizard);
         const int iconLeft = (wizard->layoutDirection() == Qt::LeftToRight
-                              ? leftMargin()
-                              : wizard->width() - leftMargin() - size);
+                              ? leftMargin(wizard)
+                              : wizard->width() - leftMargin(wizard) - size);
 
         const QPoint pos(origin.x() + iconLeft, origin.y() + verticalCenter - size / 2);
         const QPoint posDp = pos * QVistaHelper::m_devicePixelRatio;
@@ -427,7 +427,7 @@ void QVistaHelper::resizeEvent(QResizeEvent * event)
 {
     Q_UNUSED(event);
     rtTop = QRect (0, 0, wizard->width(), frameSize());
-    int height = captionSize() + topOffset();
+    int height = captionSize() + topOffset(wizard);
     if (vistaState() == VistaBasic)
         height -= titleBarSize();
     rtTitle = QRect (0, frameSize(), wizard->width(), height);
@@ -637,7 +637,7 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
         RECT rctext ={0,0, rectDp.width(), rectDp.height()};
 
         dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
-        dto.iGlowSize = glowSize();
+        dto.iGlowSize = glowSize(wizard);
 
         DrawThemeTextEx(hTheme, dcMem, 0, 0, reinterpret_cast<LPCWSTR>(text.utf16()), -1, uFormat, &rctext, &dto );
         BitBlt(hdc, rectDp.left(), rectDp.top(), rectDp.width(), rectDp.height(), dcMem, 0, 0, SRCCOPY);
@@ -714,27 +714,27 @@ int QVistaHelper::captionSizeDp()
 
 int QVistaHelper::titleOffset()
 {
-    int iconOffset = wizard ->windowIcon().isNull() ? 0 : iconSize() + iconSpacing;
-    return leftMargin() + iconOffset;
+    int iconOffset = wizard ->windowIcon().isNull() ? 0 : iconSize(wizard) + iconSpacing;
+    return leftMargin(wizard) + iconOffset;
 }
 
-int QVistaHelper::iconSize()
+int QVistaHelper::iconSize(const QPaintDevice *device)
 {
-    return QStyleHelper::dpiScaled(16); // Standard Aero
+    return QStyleHelper::dpiScaled(16, device); // Standard Aero
 }
 
-int QVistaHelper::glowSize()
+int QVistaHelper::glowSize(const QPaintDevice *device)
 {
-    return QStyleHelper::dpiScaled(10);
+    return QStyleHelper::dpiScaled(10, device);
 }
 
-int QVistaHelper::topOffset()
+int QVistaHelper::topOffset(const QPaintDevice *device)
 {
     if (vistaState() != VistaAero)
         return titleBarSize() + 3;
     static const int aeroOffset =
         QOperatingSystemVersion::current() < QOperatingSystemVersion::Windows8 ?
-        QStyleHelper::dpiScaled(4) : QStyleHelper::dpiScaled(13);
+        QStyleHelper::dpiScaled(4, device) : QStyleHelper::dpiScaled(13, device);
     return aeroOffset + titleBarSize();
 }
 

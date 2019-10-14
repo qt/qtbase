@@ -99,7 +99,7 @@ QNetworkInterface getInterfaceFromHostAddress(const QHostAddress &local)
 }
 } // anonymous namespace
 
-class QNetworkConnectionEvents final : public INetworkConnectionEvents
+class QNetworkConnectionEvents : public INetworkConnectionEvents
 {
 public:
     QNetworkConnectionEvents(QNetworkConnectionMonitorPrivate *monitor);
@@ -139,7 +139,7 @@ private:
 
     QNetworkConnectionMonitorPrivate *monitor = nullptr;
 
-    QAtomicInteger<ULONG> ref = 1; // start at 1 for our own initial reference
+    QAtomicInteger<ULONG> ref = 0;
     DWORD cookie = 0;
 };
 
@@ -346,6 +346,8 @@ QNetworkConnectionMonitorPrivate::~QNetworkConnectionMonitorPrivate()
 {
     if (comInitFailed)
         return;
+    if (monitoring)
+        stopMonitoring();
     connectionEvents.Reset();
     CoUninitialize();
 }
@@ -465,7 +467,7 @@ bool QNetworkConnectionMonitor::isReachable()
     return d_func()->connectivity & required;
 }
 
-class QNetworkListManagerEvents final : public INetworkListManagerEvents
+class QNetworkListManagerEvents : public INetworkListManagerEvents
 {
 public:
     QNetworkListManagerEvents(QNetworkStatusMonitorPrivate *monitor);
@@ -496,7 +498,7 @@ private:
 
     QNetworkStatusMonitorPrivate *monitor = nullptr;
 
-    QAtomicInteger<ULONG> ref = 1; // start at 1 for our own initial reference
+    QAtomicInteger<ULONG> ref = 0;
     DWORD cookie = 0;
 };
 

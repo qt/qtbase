@@ -2,15 +2,9 @@
 windows-10 msvc-2017
 windows-10 msvc-2015
 windows-7sp1
-[multicastLeaveAfterClose]
-osx-10.12
-osx-10.11
 [readyReadForEmptyDatagram]
 opensuse-leap
-ubuntu-16.04
 [echo]
 opensuse-42.3
-[ipv6Loop]
-osx-10.12
 [readyReadForEmptyDatagram]
 linux

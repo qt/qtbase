@@ -997,8 +997,8 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                 QPoint global(fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y));
                 Qt::KeyboardModifiers modifiers = keyboard()->translateModifiers(xiDeviceEvent->mods.effective);
                 if (modifiers & Qt::AltModifier) {
-                    std::swap(angleDelta.rx(), angleDelta.ry());
-                    std::swap(rawDelta.rx(), rawDelta.ry());
+                    angleDelta = angleDelta.transposed();
+                    rawDelta = rawDelta.transposed();
                 }
                 qCDebug(lcQpaXInputEvents) << "scroll wheel @ window pos" << local << "delta px" << rawDelta << "angle" << angleDelta;
                 QWindowSystemInterface::handleWheelEvent(platformWindow->window(), xiDeviceEvent->time, local, global, rawDelta, angleDelta, modifiers);
@@ -1024,7 +1024,7 @@ void QXcbConnection::xi2HandleScrollEvent(void *event, ScrollingDevice &scrollin
                 QPoint global(fixed1616ToReal(xiDeviceEvent->root_x), fixed1616ToReal(xiDeviceEvent->root_y));
                 Qt::KeyboardModifiers modifiers = keyboard()->translateModifiers(xiDeviceEvent->mods.effective);
                 if (modifiers & Qt::AltModifier)
-                    std::swap(angleDelta.rx(), angleDelta.ry());
+                    angleDelta = angleDelta.transposed();
                 qCDebug(lcQpaXInputEvents) << "scroll wheel (button" << xiDeviceEvent->detail << ") @ window pos" << local << "delta angle" << angleDelta;
                 QWindowSystemInterface::handleWheelEvent(platformWindow->window(), xiDeviceEvent->time, local, global, QPoint(), angleDelta, modifiers);
             }

@@ -177,6 +177,9 @@ void *QCocoaNativeInterface::NSPrintInfoForPrintEngine(QPrintEngine *printEngine
 
 QPixmap QCocoaNativeInterface::defaultBackgroundPixmapForQWizard()
 {
+    // Note: starting with macOS 10.14, the KeyboardSetupAssistant app bundle no
+    // longer contains the "Background.png" image. This function then returns a
+    // null pixmap.
     const int ExpectedImageWidth = 242;
     const int ExpectedImageHeight = 414;
     QCFType<CFArrayRef> urls = LSCopyApplicationURLsForBundleIdentifier(

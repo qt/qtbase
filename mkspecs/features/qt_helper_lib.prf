@@ -29,19 +29,19 @@ DLLDESTDIR = $$MODULE_BASE_OUTDIR/bin
 
 THE_TARGET = $$qt5LibraryTarget($$TARGET)
 
-!build_pass {
-    MODULE = $$replace(TARGET, ^qt, )
-    MODULE ~= s,-,_,
-    MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_ext_$${MODULE}.pri
-    ucmodule = $$upper($$MODULE)
+MODULE = $$replace(TARGET, ^qt, )
+MODULE ~= s,-,_,
+MODULE_PRI = $$MODULE_QMAKE_OUTDIR/mkspecs/modules/qt_ext_$${MODULE}.pri
+ucmodule = $$upper($$MODULE)
+win32|CONFIG(static, static|shared) {
+    prefix = $$QMAKE_PREFIX_STATICLIB
+    suffix = $$QMAKE_EXTENSION_STATICLIB
+} else {
+    prefix = $$QMAKE_PREFIX_SHLIB
+    suffix = $$QMAKE_EXTENSION_SHLIB
+}
 
-    win32|CONFIG(static, static|shared) {
-        prefix = $$QMAKE_PREFIX_STATICLIB
-        suffix = $$QMAKE_EXTENSION_STATICLIB
-    } else {
-        prefix = $$QMAKE_PREFIX_SHLIB
-        suffix = $$QMAKE_EXTENSION_SHLIB
-    }
+!build_pass {
     CC_USES =
     LD_USES =
     for (use, QMAKE_USE) {
@@ -58,7 +58,9 @@ THE_TARGET = $$qt5LibraryTarget($$TARGET)
         "QMAKE_DEPENDS_$${ucmodule}_LD =$$join(LD_USES, " ", " ")" \
         "QMAKE_INCDIR_$${ucmodule} = $$val_escape(MODULE_INCLUDEPATH)" \
         "QMAKE_DEFINES_$${ucmodule} = $$val_escape(MODULE_DEFINES)"
-    debug_and_release {
+    android {
+        MODULE_PRI_CONT += "QMAKE_LIBS_$${ucmodule} ="
+    } else: debug_and_release {
         win32: \
             MODULE_DEBUG_LIBS = $$DESTDIR/$$prefix$${TARGET}d.$$suffix
         else: darwin: \
@@ -76,6 +78,11 @@ THE_TARGET = $$qt5LibraryTarget($$TARGET)
             "QMAKE_LIBS_$${ucmodule} = $$val_escape(MODULE_LIBS)"
     }
     write_file($$MODULE_PRI, MODULE_PRI_CONT)|error()
+} else: android {
+    ABI_TARGET = $$qt5LibraryTarget($$TARGET)
+    ABI_MODULE_LIBS = $$DESTDIR/$$prefix$${ABI_TARGET}.$$suffix
+    MODULE_PRI_CONT = "QMAKE_LIBS_$${ucmodule}_$${QT_ARCH} = $$val_escape(ABI_MODULE_LIBS)"
+    write_file($$MODULE_PRI, MODULE_PRI_CONT, append)|error()
 }
 
 TARGET = $$THE_TARGET

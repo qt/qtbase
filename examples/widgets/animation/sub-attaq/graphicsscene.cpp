@@ -55,38 +55,33 @@
 #include "submarine.h"
 #include "torpedo.h"
 #include "bomb.h"
-#include "pixmapitem.h"
 #include "animationmanager.h"
 #include "qanimationstate.h"
 #include "progressitem.h"
 #include "textinformationitem.h"
 
 //Qt
-#include <QtCore/QPropertyAnimation>
-#include <QtCore/QSequentialAnimationGroup>
-#include <QtCore/QParallelAnimationGroup>
-#include <QtCore/QStateMachine>
-#include <QtCore/QFinalState>
-#include <QtCore/QPauseAnimation>
-#include <QtWidgets/QAction>
-#include <QtCore/QDir>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QMessageBox>
-#include <QtWidgets/QGraphicsView>
-#include <QtWidgets/QGraphicsSceneMouseEvent>
-#include <QtCore/QXmlStreamReader>
+#include <QAction>
+#include <QApplication>
+#include <QFile>
+#include <QFinalState>
+#include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
+#include <QSequentialAnimationGroup>
+#include <QStateMachine>
+#include <QXmlStreamReader>
 
-GraphicsScene::GraphicsScene(int x, int y, int width, int height, Mode mode)
-    : QGraphicsScene(x , y, width, height), mode(mode), boat(new Boat)
+GraphicsScene::GraphicsScene(int x, int y, int width, int height, Mode mode, QObject *parent)
+    : QGraphicsScene(x, y, width, height, parent), mode(mode), boat(new Boat)
 {
-    PixmapItem *backgroundItem = new PixmapItem(QString("background"),mode);
+    PixmapItem *backgroundItem = new PixmapItem(QStringLiteral("background"), mode);
     backgroundItem->setZValue(1);
     backgroundItem->setPos(0,0);
     addItem(backgroundItem);
 
-    PixmapItem *surfaceItem = new PixmapItem(QString("surface"),mode);
+    PixmapItem *surfaceItem = new PixmapItem(QStringLiteral("surface"), mode);
     surfaceItem->setZValue(3);
-    surfaceItem->setPos(0,sealLevel() - surfaceItem->boundingRect().height()/2);
+    surfaceItem->setPos(0, sealLevel() - surfaceItem->boundingRect().height() / 2);
     addItem(surfaceItem);
 
     //The item that display score and level
@@ -137,8 +132,8 @@ qreal GraphicsScene::sealLevel() const
 
 void GraphicsScene::setupScene(QAction *newAction, QAction *quitAction)
 {
-    static const int nLetters = 10;
-    static struct {
+    static constexpr int nLetters = 10;
+    static constexpr struct {
         char const *pix;
         qreal initX, initY;
         qreal destX, destY;
@@ -154,8 +149,8 @@ void GraphicsScene::setupScene(QAction *newAction, QAction *quitAction)
         {"q",     200,  2000, 510, 250 },
         {"excl",    0,  2000, 570, 220 } };
 
-    QSequentialAnimationGroup * lettersGroupMoving = new QSequentialAnimationGroup(this);
-    QParallelAnimationGroup * lettersGroupFading = new QParallelAnimationGroup(this);
+    QSequentialAnimationGroup *lettersGroupMoving = new QSequentialAnimationGroup(this);
+    QParallelAnimationGroup *lettersGroupFading = new QParallelAnimationGroup(this);
 
     for (int i = 0; i < nLetters; ++i) {
         PixmapItem *logo = new PixmapItem(QLatin1String(":/logo-") + logoData[i].pix, this);
@@ -180,7 +175,7 @@ void GraphicsScene::setupScene(QAction *newAction, QAction *quitAction)
     PlayState *gameState = new PlayState(this, machine);
 
     //Final state
-    QFinalState *final = new QFinalState(machine);
+    QFinalState *finalState = new QFinalState(machine);
 
     //Animation when the player enter in the game
     QAnimationState *lettersMovingState = new QAnimationState(machine);
@@ -198,8 +193,8 @@ void GraphicsScene::setupScene(QAction *newAction, QAction *quitAction)
     gameState->addTransition(newAction, &QAction::triggered, gameState);
 
     //Wanna quit, then connect to CTRL+Q
-    gameState->addTransition(quitAction, &QAction::triggered, final);
-    lettersMovingState->addTransition(quitAction, &QAction::triggered, final);
+    gameState->addTransition(quitAction, &QAction::triggered, finalState);
+    lettersMovingState->addTransition(quitAction, &QAction::triggered, finalState);
 
     //Welcome screen is the initial state
     machine->setInitialState(lettersMovingState);
@@ -213,21 +208,24 @@ void GraphicsScene::setupScene(QAction *newAction, QAction *quitAction)
 void GraphicsScene::addItem(Bomb *bomb)
 {
     bombs.insert(bomb);
-    connect(bomb,&Bomb::bombExecutionFinished,this, &GraphicsScene::onBombExecutionFinished);
+    connect(bomb, &Bomb::bombExecutionFinished,
+            this, &GraphicsScene::onBombExecutionFinished);
     QGraphicsScene::addItem(bomb);
 }
 
 void GraphicsScene::addItem(Torpedo *torpedo)
 {
     torpedos.insert(torpedo);
-    connect(torpedo,&Torpedo::torpedoExecutionFinished,this, &GraphicsScene::onTorpedoExecutionFinished);
+    connect(torpedo, &Torpedo::torpedoExecutionFinished,
+            this, &GraphicsScene::onTorpedoExecutionFinished);
     QGraphicsScene::addItem(torpedo);
 }
 
 void GraphicsScene::addItem(SubMarine *submarine)
 {
     submarines.insert(submarine);
-    connect(submarine,&SubMarine::subMarineExecutionFinished,this, &GraphicsScene::onSubMarineExecutionFinished);
+    connect(submarine, &SubMarine::subMarineExecutionFinished,
+            this, &GraphicsScene::onSubMarineExecutionFinished);
     QGraphicsScene::addItem(submarine);
 }
 
@@ -239,15 +237,18 @@ void GraphicsScene::addItem(QGraphicsItem *item)
 void GraphicsScene::onBombExecutionFinished()
 {
     Bomb *bomb = qobject_cast<Bomb *>(sender());
+    if (!bomb)
+        return;
     bombs.remove(bomb);
     bomb->deleteLater();
-    if (boat)
-        boat->setBombsLaunched(boat->bombsLaunched() - 1);
+    boat->setBombsLaunched(boat->bombsLaunched() - 1);
 }
 
 void GraphicsScene::onTorpedoExecutionFinished()
 {
     Torpedo *torpedo = qobject_cast<Torpedo *>(sender());
+    if (!torpedo)
+        return;
     torpedos.remove(torpedo);
     torpedo->deleteLater();
 }
@@ -255,6 +256,8 @@ void GraphicsScene::onTorpedoExecutionFinished()
 void GraphicsScene::onSubMarineExecutionFinished()
 {
     SubMarine *submarine = qobject_cast<SubMarine *>(sender());
+    if (!submarine)
+        return;
     submarines.remove(submarine);
     if (submarines.count() == 0)
         emit allSubMarineDestroyed(submarine->points());
@@ -266,16 +269,22 @@ void GraphicsScene::onSubMarineExecutionFinished()
 void GraphicsScene::clearScene()
 {
     for (SubMarine *sub : qAsConst(submarines)) {
+        // make sure to not go into onSubMarineExecutionFinished
+        sub->disconnect(this);
         sub->destroy();
         sub->deleteLater();
     }
 
     for (Torpedo *torpedo : qAsConst(torpedos)) {
+        // make sure to not go into onTorpedoExecutionFinished
+        torpedo->disconnect(this);
         torpedo->destroy();
         torpedo->deleteLater();
     }
 
     for (Bomb *bomb : qAsConst(bombs)) {
+        // make sure to not go into onBombExecutionFinished
+        bomb->disconnect(this);
         bomb->destroy();
         bomb->deleteLater();
     }

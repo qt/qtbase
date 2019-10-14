@@ -32,6 +32,9 @@
 
 #include <algorithm>
 
+Q_DECLARE_METATYPE(QItemSelectionModel::SelectionFlag)
+Q_DECLARE_METATYPE(Qt::SortOrder)
+
 class tst_QItemSelectionModel : public QObject
 {
     Q_OBJECT
@@ -1463,7 +1466,7 @@ void tst_QItemSelectionModel::persistentselections()
     QFETCH(IntList, insertColumns);
     QFETCH(IntList, deleteRows);
     QFETCH(IntList, deleteColumns);
-    QFETCH(PairList, expectedList);
+    QFETCH(const PairList, expectedList);
 
     // make sure the model is sane (5x5)
     QCOMPARE(model->rowCount(QModelIndex()), 5);
@@ -1504,7 +1507,7 @@ void tst_QItemSelectionModel::persistentselections()
     // check that the selected items are the correct number and indexes
     QModelIndexList selectedList = selection->selectedIndexes();
     QCOMPARE(selectedList.count(), expectedList.count());
-    foreach(IntPair pair, expectedList) {
+    for (const auto &pair : expectedList) {
         QModelIndex index = model->index(pair.first, pair.second, QModelIndex());
         QVERIFY(selectedList.contains(index));
     }
@@ -1679,7 +1682,7 @@ void tst_QItemSelectionModel::modelLayoutChanged_data()
 {
     QTest::addColumn<IntListList>("items");
     QTest::addColumn<IntPairPairList>("initialSelectedRanges");
-    QTest::addColumn<int>("sortOrder");
+    QTest::addColumn<Qt::SortOrder>("sortOrder");
     QTest::addColumn<int>("sortColumn");
     QTest::addColumn<IntPairPairList>("expectedSelectedRanges");
 
@@ -1689,7 +1692,7 @@ void tst_QItemSelectionModel::modelLayoutChanged_data()
             << (IntList() << 3 << 2 << 1 << 0))
         << (IntPairPairList()
             << IntPairPair(IntPair(0, 0), IntPair(3, 1)))
-        << int(Qt::DescendingOrder)
+        << Qt::DescendingOrder
         << 0
         << (IntPairPairList()
             << IntPairPair(IntPair(0, 0), IntPair(3, 1)));
@@ -1699,7 +1702,7 @@ void tst_QItemSelectionModel::modelLayoutChanged_data()
             << (IntList() << 3 << 2 << 1 << 0))
         << (IntPairPairList()
             << IntPairPair(IntPair(0, 0), IntPair(1, 1)))
-        << int(Qt::DescendingOrder)
+        << Qt::DescendingOrder
         << 0
         << (IntPairPairList()
             << IntPairPair(IntPair(2, 0), IntPair(3, 1)));
@@ -1709,7 +1712,7 @@ void tst_QItemSelectionModel::modelLayoutChanged_data()
             << (IntList() << 3 << 2 << 1 << 0))
         << (IntPairPairList()
             << IntPairPair(IntPair(1, 0), IntPair(2, 1)))
-        << int(Qt::DescendingOrder)
+        << Qt::DescendingOrder
         << 0
         << (IntPairPairList()
             << IntPairPair(IntPair(1, 0), IntPair(2, 1)));
@@ -1720,7 +1723,7 @@ void tst_QItemSelectionModel::modelLayoutChanged_data()
         << (IntPairPairList()
             << IntPairPair(IntPair(1, 0), IntPair(1, 1))
             << IntPairPair(IntPair(3, 0), IntPair(3, 1)))
-        << int(Qt::AscendingOrder)
+        << Qt::AscendingOrder
         << 0
         << (IntPairPairList()
             << IntPairPair(IntPair(0, 0), IntPair(0, 1))
@@ -1730,8 +1733,8 @@ void tst_QItemSelectionModel::modelLayoutChanged_data()
 void tst_QItemSelectionModel::modelLayoutChanged()
 {
     QFETCH(IntListList, items);
-    QFETCH(IntPairPairList, initialSelectedRanges);
-    QFETCH(int, sortOrder);
+    QFETCH(const IntPairPairList, initialSelectedRanges);
+    QFETCH(Qt::SortOrder, sortOrder);
     QFETCH(int, sortColumn);
     QFETCH(IntPairPairList, expectedSelectedRanges);
 
@@ -1746,9 +1749,9 @@ void tst_QItemSelectionModel::modelLayoutChanged()
 
     // select initial ranges
     QItemSelectionModel selectionModel(&model);
-    foreach (IntPairPair range, initialSelectedRanges) {
-        IntPair tl = range.first;
-        IntPair br = range.second;
+    for (const auto &range : initialSelectedRanges) {
+        const auto &tl = range.first;
+        const auto &br = range.second;
         QItemSelection selection(
             model.index(tl.first, tl.second),
             model.index(br.first, br.second));
@@ -1756,7 +1759,7 @@ void tst_QItemSelectionModel::modelLayoutChanged()
     }
 
     // sort the model
-    model.sort(sortColumn, Qt::SortOrder(sortOrder));
+    model.sort(sortColumn, sortOrder);
 
     // verify that selection is as expected
     QItemSelection selection = selectionModel.selection();
@@ -2126,43 +2129,43 @@ void tst_QItemSelectionModel::merge_data()
 {
     QTest::addColumn<QItemSelection>("init");
     QTest::addColumn<QItemSelection>("other");
-    QTest::addColumn<int>("command");
+    QTest::addColumn<QItemSelectionModel::SelectionFlag>("command");
     QTest::addColumn<QItemSelection>("result");
 
     QTest::newRow("Simple select")
         << QItemSelection()
         << QItemSelection(model->index(2, 1) , model->index(3, 4))
-        << int(QItemSelectionModel::Select)
+        << QItemSelectionModel::Select
         << QItemSelection(model->index(2, 1) , model->index(3, 4));
 
     QTest::newRow("Simple deselect")
         << QItemSelection(model->index(2, 1) , model->index(3, 4))
         << QItemSelection(model->index(2, 1) , model->index(3, 4))
-        << int(QItemSelectionModel::Deselect)
+        << QItemSelectionModel::Deselect
         << QItemSelection();
 
     QTest::newRow("Simple Toggle deselect")
         << QItemSelection(model->index(2, 1) , model->index(3, 4))
         << QItemSelection(model->index(2, 1) , model->index(3, 4))
-        << int(QItemSelectionModel::Toggle)
+        << QItemSelectionModel::Toggle
         << QItemSelection();
 
     QTest::newRow("Simple Toggle select")
         << QItemSelection()
         << QItemSelection(model->index(2, 1) , model->index(3, 4))
-        << int(QItemSelectionModel::Toggle)
+        << QItemSelectionModel::Toggle
         << QItemSelection(model->index(2, 1) , model->index(3, 4));
 
     QTest::newRow("Add select")
         << QItemSelection(model->index(2, 1) , model->index(3, 3))
         << QItemSelection(model->index(2, 2) , model->index(3, 4))
-        << int(QItemSelectionModel::Select)
+        << QItemSelectionModel::Select
         << QItemSelection(model->index(2, 1) , model->index(3, 4));
 
     QTest::newRow("Deselect")
         << QItemSelection(model->index(2, 1) , model->index(3, 4))
         << QItemSelection(model->index(2, 2) , model->index(3, 4))
-        << int(QItemSelectionModel::Deselect)
+        << QItemSelectionModel::Deselect
         << QItemSelection(model->index(2, 1) , model->index(3, 1));
 
     QItemSelection r1(model->index(2, 1) , model->index(3, 1));
@@ -2170,7 +2173,7 @@ void tst_QItemSelectionModel::merge_data()
     QTest::newRow("Toggle")
         << QItemSelection(model->index(2, 1) , model->index(3, 3))
         << QItemSelection(model->index(2, 2) , model->index(3, 4))
-        << int(QItemSelectionModel::Toggle)
+        << QItemSelectionModel::Toggle
         << r1;
 }
 
@@ -2178,15 +2181,18 @@ void tst_QItemSelectionModel::merge()
 {
     QFETCH(QItemSelection, init);
     QFETCH(QItemSelection, other);
-    QFETCH(int, command);
+    QFETCH(QItemSelectionModel::SelectionFlag, command);
     QFETCH(QItemSelection, result);
 
-    init.merge(other, QItemSelectionModel::SelectionFlags(command));
+    init.merge(other, command);
 
-    foreach(const QModelIndex &idx, init.indexes())
-        QVERIFY(result.contains(idx));
-    foreach(const QModelIndex &idx, result.indexes())
-        QVERIFY(init.contains(idx));
+    auto verify = [](const QModelIndexList &a, const QItemSelection &b)
+    {
+        for (const QModelIndex &idx : a)
+            QVERIFY(b.contains(idx));
+    };
+    verify(init.indexes(), result);
+    verify(result.indexes(), init);
 }
 
 void tst_QItemSelectionModel::isRowSelected()
@@ -2267,13 +2273,12 @@ void tst_QItemSelectionModel::layoutChangedWithAllSelected1()
     proxy.setFilterRegularExpression(QRegularExpression("f"));
     QCOMPARE(proxy.rowCount(), 2);
 
-    QList<QPersistentModelIndex> indexList;
-    indexList << proxy.index(0,0) << proxy.index(1,0);
-    selection.select( QItemSelection(indexList.first(), indexList.last()), QItemSelectionModel::Select);
+    const QList<QPersistentModelIndex> indexList({proxy.index(0,0), proxy.index(1,0)});
+    selection.select(QItemSelection(indexList.first(), indexList.last()), QItemSelectionModel::Select);
 
     //let's check the selection hasn't changed
     QCOMPARE(selection.selectedIndexes().count(), indexList.count());
-    foreach(QPersistentModelIndex index, indexList)
+    for (const auto &index : indexList)
         QVERIFY(selection.isSelected(index));
 
     proxy.setFilterRegularExpression(QRegularExpression());
@@ -2281,7 +2286,7 @@ void tst_QItemSelectionModel::layoutChangedWithAllSelected1()
 
     //let's check the selection hasn't changed
     QCOMPARE(selection.selectedIndexes().count(), indexList.count());
-    foreach(QPersistentModelIndex index, indexList)
+    for (const auto &index : indexList)
         QVERIFY(selection.isSelected(index));
 }
 
@@ -2321,9 +2326,8 @@ void tst_QItemSelectionModel::layoutChangedWithAllSelected2()
 
     selection.select( QItemSelection(proxy.index(0,0), proxy.index(proxy.rowCount() - 1, proxy.columnCount() - 1)), QItemSelectionModel::Select);
 
-    QList<QPersistentModelIndex> indexList;
-    foreach(const QModelIndex &id, selection.selectedIndexes())
-        indexList << id;
+    const auto selIndexes = selection.selectedIndexes();
+    const QList<QPersistentModelIndex> indexList(selIndexes.begin(), selIndexes.end());
 
     proxy.filtering = false;
     proxy.invalidate();
@@ -2331,7 +2335,7 @@ void tst_QItemSelectionModel::layoutChangedWithAllSelected2()
 
     //let's check the selection hasn't changed
     QCOMPARE(selection.selectedIndexes().count(), indexList.count());
-    foreach(QPersistentModelIndex index, indexList)
+    for (const auto &index : indexList)
         QVERIFY(selection.isSelected(index));
 }
 
@@ -2375,7 +2379,8 @@ public:
 public slots:
     void selectionChanged(const QItemSelection & /* selected */, const QItemSelection &deselected)
     {
-        foreach(const QModelIndex &index, deselected.indexes()) {
+        const auto deselIndexes = deselected.indexes();
+        for (const auto &index : deselIndexes) {
             QVERIFY(!m_itemSelectionModel->selection().contains(index));
         }
         QCOMPARE(m_itemSelectionModel->selection().size(), 2);
@@ -2633,9 +2638,9 @@ private slots:
 
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
     {
-        foreach(const QItemSelectionRange &range, selected)
+        for (const auto &range : selected)
             QVERIFY(range.isValid());
-        foreach(const QItemSelectionRange &range, deselected)
+        for (const auto &range : deselected)
             QVERIFY(range.isValid());
     }
 

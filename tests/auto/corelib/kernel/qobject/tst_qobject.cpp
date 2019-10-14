@@ -81,9 +81,6 @@ private slots:
     void senderTest();
     void declareInterface();
     void qpointerResetBeforeDestroyedSignal();
-#ifndef QT_NO_USERDATA
-    void testUserData();
-#endif
     void childDeletesItsSibling();
     void dynamicProperties();
     void floatProperty();
@@ -2340,51 +2337,6 @@ void tst_QObject::declareInterface()
     QCOMPARE(static_cast<Foo::Bleh *>(&bleh), b);
 
 }
-
-#ifndef QT_NO_USERDATA
-class CustomData : public QObjectUserData
-{
-public:
-    int id;
-};
-
-void tst_QObject::testUserData()
-{
-    const int USER_DATA_COUNT = 100;
-    int user_data_ids[USER_DATA_COUNT];
-
-    // Register a few
-    for (int i=0; i<USER_DATA_COUNT; ++i) {
-        user_data_ids[i] = QObject::registerUserData();
-    }
-
-    // Randomize the table a bit
-    for (int i=0; i<100; ++i) {
-        int p1 = QRandomGenerator::global()->bounded(USER_DATA_COUNT);
-        int p2 = QRandomGenerator::global()->bounded(USER_DATA_COUNT);
-
-        int tmp = user_data_ids[p1];
-        user_data_ids[p1] = user_data_ids[p2];
-        user_data_ids[p2] = tmp;
-    }
-
-    // insert the user data into an object
-    QObject my_test_object;
-    for (int i=0; i<USER_DATA_COUNT; ++i) {
-        CustomData *data = new CustomData;
-        data->id = user_data_ids[i];
-        my_test_object.setUserData(data->id, data);
-    }
-
-    // verify that all ids and positions are matching
-    for (int i=0; i<USER_DATA_COUNT; ++i) {
-        int id = user_data_ids[i];
-        CustomData *data = static_cast<CustomData *>(my_test_object.userData(id));
-        QVERIFY(data != nullptr);
-        QCOMPARE(data->id, id);
-    }
-}
-#endif // QT_NO_USERDATA
 
 class DestroyedListener : public QObject
 {

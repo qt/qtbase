@@ -160,3 +160,5 @@ if (NOT CMAKE_VERSION VERSION_LESS 3.8)
     # Reason: SKIP_* properties were added in CMake 3.8 only
     expect_pass(test_QTBUG-63422)
 endif()
+
+expect_pass(test_import_plugins BINARY ${CMAKE_CTEST_COMMAND})

@@ -33,6 +33,7 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QObject>
+#include <QRegularExpression>
 #include <QStandardPaths>
 #include <QTemporaryDir>
 
@@ -75,13 +76,17 @@ private slots:
     void findMocs();
     void findDeps();
     void rawString();
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
     void bundle_spaces();
+#elif defined(Q_OS_WIN)
+    void windowsResources();
 #endif
     void substitutes();
     void project();
     void proFileCache();
+    void qinstall();
     void resources();
+    void conflictingTargets();
 
 private:
     TestCompiler test_compiler;
@@ -510,7 +515,8 @@ struct TempFile
     }
 };
 
-#if defined(Q_OS_MAC)
+#if defined(Q_OS_DARWIN)
+
 void tst_qmake::bundle_spaces()
 {
     QString workDir = base_path + "/testdata/bundle-spaces";
@@ -541,7 +547,34 @@ void tst_qmake::bundle_spaces()
     QVERIFY( !non_existing_file.exists() );
     QVERIFY( test_compiler.removeMakefile(workDir) );
 }
-#endif // defined(Q_OS_MAC)
+
+#elif defined(Q_OS_WIN) // defined(Q_OS_DARWIN)
+
+void tst_qmake::windowsResources()
+{
+    QString workDir = base_path + "/testdata/windows_resources";
+    QVERIFY(test_compiler.qmake(workDir, "windows_resources"));
+    QVERIFY(test_compiler.make(workDir));
+
+    // Another "make" must not rebuild the .res file
+    test_compiler.clearCommandOutput();
+    QVERIFY(test_compiler.make(workDir));
+    QVERIFY(!test_compiler.commandOutput().contains("windows_resources.rc"));
+    test_compiler.clearCommandOutput();
+
+    // Wait a second to make sure we get a new timestamp in the touch below
+    QTest::qWait(1000);
+
+    // Touch the deepest include of the .rc file
+    QVERIFY(test_compiler.runCommand("cmd", QStringList{"/c",
+                        "echo.>>" + QDir::toNativeSeparators(workDir + "/version.inc")}));
+
+    // The next "make" must rebuild the .res file
+    QVERIFY(test_compiler.make(workDir));
+    QVERIFY(test_compiler.commandOutput().contains("windows_resources.rc"));
+}
+
+#endif // defined(Q_OS_WIN)
 
 void tst_qmake::substitutes()
 {
@@ -588,6 +621,104 @@ void tst_qmake::proFileCache()
     QVERIFY( test_compiler.qmake( workDir, "pro_file_cache" ));
 }
 
+void tst_qmake::qinstall()
+{
+    const QString testName = "qinstall";
+    QDir testDataDir = base_path + "/testdata";
+    if (testDataDir.exists(testName))
+        testDataDir.rmdir(testName);
+    QVERIFY(testDataDir.mkdir(testName));
+    const QString workDir = testDataDir.filePath(testName);
+    auto qinstall = [&](const QString &src, const QString &dst, bool executable = false) {
+                        QStringList args = {"-install", "qinstall"};
+                        if (executable)
+                            args << "-exe";
+                        args << src << dst;
+                        return test_compiler.qmake(workDir, args);
+                    };
+    const QFileDevice::Permissions readFlags
+            = QFileDevice::ReadOwner | QFileDevice::ReadUser
+            | QFileDevice::ReadGroup | QFileDevice::ReadOther;
+    const QFileDevice::Permissions writeFlags
+            = QFileDevice::WriteOwner | QFileDevice::WriteUser
+            | QFileDevice::WriteGroup | QFileDevice::WriteOther;
+    const QFileDevice::Permissions exeFlags
+            = QFileDevice::ExeOwner | QFileDevice::ExeUser
+            | QFileDevice::ExeGroup | QFileDevice::ExeOther;
+
+    // install a regular file
+    {
+        QFileInfo src(testDataDir.filePath("project/main.cpp"));
+        QFileInfo dst("foo.cpp");
+        QVERIFY(qinstall(src.filePath(), dst.filePath()));
+        QVERIFY(dst.exists());
+        QCOMPARE(src.size(), dst.size());
+        QVERIFY(dst.permissions() & readFlags);
+        QVERIFY(dst.permissions() & writeFlags);
+        QVERIFY(!(dst.permissions() & exeFlags));
+        test_compiler.clearCommandOutput();
+    }
+
+    // install an executable file
+    {
+        const QString mocFilePath = QLibraryInfo::location(QLibraryInfo::BinariesPath)
+                + "/moc"
+#ifdef Q_OS_WIN
+                + ".exe"
+#endif
+                ;
+        QFileInfo src(mocFilePath);
+        QVERIFY(src.exists());
+        QVERIFY(src.permissions() & exeFlags);
+        QFileInfo dst("copied_" + src.fileName());
+        QVERIFY(qinstall(src.filePath(), dst.filePath(), true));
+        QVERIFY(dst.exists());
+        QCOMPARE(src.size(), dst.size());
+        QVERIFY(dst.permissions() & readFlags);
+        QVERIFY(dst.permissions() & writeFlags);
+        QVERIFY(dst.permissions() & exeFlags);
+        test_compiler.clearCommandOutput();
+    }
+
+    // install a read-only file
+    {
+        QFile srcfile("foo.cpp");
+        QVERIFY(srcfile.setPermissions(srcfile.permissions() & ~writeFlags));
+        QFileInfo src(srcfile);
+        QFileInfo dst("bar.cpp");
+        QVERIFY(qinstall(src.filePath(), dst.filePath()));
+        QVERIFY(dst.exists());
+        QCOMPARE(src.size(), dst.size());
+        QVERIFY(dst.permissions() & readFlags);
+        QVERIFY(dst.permissions() & writeFlags);
+        QVERIFY(!(dst.permissions() & exeFlags));
+        test_compiler.clearCommandOutput();
+    }
+
+    // install a directory
+    {
+        QDir src = testDataDir;
+        src.cd("project");
+        QDir dst("narf");
+        QVERIFY(qinstall(src.absolutePath(), dst.absolutePath()));
+        QCOMPARE(src.entryList(QDir::Files, QDir::Name), dst.entryList(QDir::Files, QDir::Name));
+        test_compiler.clearCommandOutput();
+    }
+
+    // install a directory with a read-only file
+    {
+        QDir src("narf");
+        QFile srcfile(src.filePath("main.cpp"));
+        QVERIFY(srcfile.setPermissions(srcfile.permissions() & ~writeFlags));
+        QDir dst("zort");
+#ifdef Q_OS_WIN
+        QEXPECT_FAIL("", "QTBUG-77299", Abort);
+#endif
+        QVERIFY(qinstall(src.absolutePath(), dst.absolutePath()));
+        QCOMPARE(src.entryList(QDir::Files, QDir::Name), dst.entryList(QDir::Files, QDir::Name));
+    }
+}
+
 void tst_qmake::resources()
 {
     QString workDir = base_path + "/testdata/resources";
@@ -619,6 +750,19 @@ void tst_qmake::resources()
     }
 
     QVERIFY(test_compiler.make(workDir));
+}
+
+void tst_qmake::conflictingTargets()
+{
+    QString workDir = base_path + "/testdata/conflicting_targets";
+    QVERIFY(test_compiler.qmake(workDir, "conflicting_targets"));
+    const QRegularExpression rex("Targets of builds '([^']+)' and '([^']+)' conflict");
+    auto match = rex.match(test_compiler.commandOutput());
+    QVERIFY(match.hasMatch());
+    QStringList builds = { match.captured(1), match.captured(2) };
+    std::sort(builds.begin(), builds.end());
+    const QStringList expectedBuilds{"Debug", "Release"};
+    QCOMPARE(builds, expectedBuilds);
 }
 
 QTEST_MAIN(tst_qmake)

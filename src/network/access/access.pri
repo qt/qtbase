@@ -97,7 +97,8 @@ qtConfig(http) {
         access/qhttpnetworkrequest.cpp \
         access/qhttpprotocolhandler.cpp \
         access/qhttpthreaddelegate.cpp \
-        access/qnetworkreplyhttpimpl.cpp
+        access/qnetworkreplyhttpimpl.cpp \
+        access/qhttp2configuration.cpp
 
     HEADERS += \
         access/qabstractprotocolhandler_p.h \
@@ -111,7 +112,8 @@ qtConfig(http) {
         access/qhttpnetworkrequest_p.h \
         access/qhttpprotocolhandler_p.h \
         access/qhttpthreaddelegate_p.h \
-        access/qnetworkreplyhttpimpl_p.h
+        access/qnetworkreplyhttpimpl_p.h \
+        access/qhttp2configuration.h
 
     qtConfig(ssl) {
         SOURCES += \

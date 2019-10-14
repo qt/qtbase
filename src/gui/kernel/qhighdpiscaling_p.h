@@ -59,6 +59,7 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtGui/qregion.h>
 #include <QtGui/qscreen.h>
+#include <QtGui/qvector2d.h>
 #include <QtGui/qwindow.h>
 
 QT_BEGIN_NAMESPACE
@@ -71,11 +72,27 @@ typedef QPair<qreal, qreal> QDpi;
 
 #ifndef QT_NO_HIGHDPISCALING
 class Q_GUI_EXPORT QHighDpiScaling {
+    Q_GADGET
 public:
+    enum class DpiAdjustmentPolicy {
+        Unset,
+        Enabled,
+        Disabled,
+        UpOnly
+    };
+    Q_ENUM(DpiAdjustmentPolicy)
+
+    QHighDpiScaling() = delete;
+    ~QHighDpiScaling() = delete;
+    QHighDpiScaling(const QHighDpiScaling &) = delete;
+    QHighDpiScaling &operator=(const QHighDpiScaling &) = delete;
+    QHighDpiScaling(QHighDpiScaling &&) = delete;
+    QHighDpiScaling &operator=(QHighDpiScaling &&) = delete;
+
     static void initHighDpiScaling();
     static void updateHighDpiScaling();
     static void setGlobalFactor(qreal factor);
-    static void setScreenFactor(QScreen *window, qreal factor);
+    static void setScreenFactor(QScreen *screen, qreal factor);
 
     static bool isActive() { return m_active; }
 
@@ -97,9 +114,12 @@ public:
     static QPoint mapPositionToNative(const QPoint &pos, const QPlatformScreen *platformScreen);
     static QPoint mapPositionToGlobal(const QPoint &pos, const QPoint &windowGlobalPosition, const QWindow *window);
     static QPoint mapPositionFromGlobal(const QPoint &pos, const QPoint &windowGlobalPosition, const QWindow *window);
-    static QDpi logicalDpi();
+    static QDpi logicalDpi(const QScreen *screen);
 
 private:
+    static qreal rawScaleFactor(const QPlatformScreen *screen);
+    static qreal roundScaleFactor(qreal rawFactor);
+    static QDpi effectiveLogicalDpi(const QPlatformScreen *screen, qreal rawFactor, qreal roundedFactor);
     static qreal screenSubfactor(const QPlatformScreen *screen);
 
     static qreal m_factor;
@@ -117,11 +137,24 @@ private:
 
 namespace QHighDpi {
 
-template <typename T>
-inline T scale(const T &value, qreal scaleFactor, QPoint origin = QPoint(0, 0))
+inline qreal scale(qreal value, qreal scaleFactor, QPointF /* origin */ = QPointF(0, 0))
 {
-    Q_UNUSED(origin)
     return value * scaleFactor;
+}
+
+inline QSize scale(const QSize &value, qreal scaleFactor, QPointF /* origin */ = QPointF(0, 0))
+{
+    return value * scaleFactor;
+}
+
+inline QSizeF scale(const QSizeF &value, qreal scaleFactor, QPointF /* origin */ = QPointF(0, 0))
+{
+    return value * scaleFactor;
+}
+
+inline QVector2D scale(const QVector2D &value, qreal scaleFactor, QPointF /* origin */ = QPointF(0, 0))
+{
+    return value * float(scaleFactor);
 }
 
 inline QPointF scale(const QPointF &pos, qreal scaleFactor, QPointF origin = QPointF(0, 0))

@@ -108,9 +108,6 @@
 
     Constructs a set with a copy of each of the elements in the
     initializer list \a list.
-
-    This function is only available if the program is being
-    compiled in C++11 mode.
 */
 
 /*! \fn template <class T> template<typename InputIterator> QSet<T>::QSet(InputIterator first, InputIterator last)

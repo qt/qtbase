@@ -49,13 +49,7 @@
 
 #include <private/qguiapplication_p.h>
 
-#if QT_CONFIG(xkb)
-#include <xkbcommon/xkbcommon-x11.h>
-#endif
-
-#if QT_CONFIG(xcb_xinput)
 #include <xcb/xinput.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -392,20 +386,16 @@ void QXcbKeyboard::updateKeymap()
         xkb_context_set_log_level(m_xkbContext.get(), logLevel);
     }
 
-#if QT_CONFIG(xkb)
     if (connection()->hasXKB()) {
         m_xkbKeymap.reset(xkb_x11_keymap_new_from_device(m_xkbContext.get(), xcb_connection(),
                                                          core_device_id, XKB_KEYMAP_COMPILE_NO_FLAGS));
         if (m_xkbKeymap)
             m_xkbState.reset(xkb_x11_state_new_from_device(m_xkbKeymap.get(), xcb_connection(), core_device_id));
     } else {
-#endif
         m_xkbKeymap.reset(keymapFromCore(keysymMods));
         if (m_xkbKeymap)
             m_xkbState.reset(xkb_state_new(m_xkbKeymap.get()));
-#if QT_CONFIG(xkb)
     }
-#endif
 
     if (!m_xkbKeymap) {
         qCWarning(lcQpaKeyboard, "failed to compile a keymap");
@@ -428,7 +418,6 @@ QList<int> QXcbKeyboard::possibleKeys(const QKeyEvent *event) const
     return QXkbCommon::possibleKeys(m_xkbState.get(), event, m_superAsMeta, m_hyperAsMeta);
 }
 
-#if QT_CONFIG(xkb)
 void QXcbKeyboard::updateXKBState(xcb_xkb_state_notify_event_t *state)
 {
     if (m_config && connection()->hasXKB()) {
@@ -444,7 +433,6 @@ void QXcbKeyboard::updateXKBState(xcb_xkb_state_notify_event_t *state)
         handleStateChanges(changedComponents);
     }
 }
-#endif
 
 static xkb_layout_index_t lockedGroup(quint16 state)
 {
@@ -473,7 +461,6 @@ void QXcbKeyboard::updateXKBStateFromCore(quint16 state)
     }
 }
 
-#if QT_CONFIG(xcb_xinput)
 void QXcbKeyboard::updateXKBStateFromXI(void *modInfo, void *groupInfo)
 {
     if (m_config && !connection()->hasXKB()) {
@@ -491,7 +478,6 @@ void QXcbKeyboard::updateXKBStateFromXI(void *modInfo, void *groupInfo)
         handleStateChanges(changedComponents);
     }
 }
-#endif
 
 void QXcbKeyboard::handleStateChanges(xkb_state_component changedComponents)
 {
@@ -541,7 +527,6 @@ void QXcbKeyboard::updateXKBMods()
 QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
     : QXcbObject(connection)
 {
-#if QT_CONFIG(xkb)
     core_device_id = 0;
     if (connection->hasXKB()) {
         selectEvents();
@@ -551,11 +536,9 @@ QXcbKeyboard::QXcbKeyboard(QXcbConnection *connection)
             return;
         }
     } else {
-#endif
         m_key_symbols = xcb_key_symbols_alloc(xcb_connection());
-#if QT_CONFIG(xkb)
     }
-#endif
+
     updateKeymap();
 }
 
@@ -573,7 +556,6 @@ void QXcbKeyboard::initialize()
 
 void QXcbKeyboard::selectEvents()
 {
-#if QT_CONFIG(xkb)
     const uint16_t required_map_parts = (XCB_XKB_MAP_PART_KEY_TYPES |
         XCB_XKB_MAP_PART_KEY_SYMS |
         XCB_XKB_MAP_PART_MODIFIER_MAP |
@@ -604,12 +586,10 @@ void QXcbKeyboard::selectEvents()
         free(error);
         qCWarning(lcQpaXcb, "failed to select notify events from XKB");
     }
-#endif
 }
 
 void QXcbKeyboard::updateVModMapping()
 {
-#if QT_CONFIG(xkb)
     xcb_xkb_get_names_value_list_t names_list;
 
     memset(&vmod_masks, 0, sizeof(vmod_masks));
@@ -667,12 +647,10 @@ void QXcbKeyboard::updateVModMapping()
         else if (qstrcmp(vmod_name, "Hyper") == 0)
             vmod_masks.hyper = bit;
     }
-#endif
 }
 
 void QXcbKeyboard::updateVModToRModMapping()
 {
-#if QT_CONFIG(xkb)
     xcb_xkb_get_map_map_t map;
 
     memset(&rmod_masks, 0, sizeof(rmod_masks));
@@ -729,7 +707,6 @@ void QXcbKeyboard::updateVModToRModMapping()
         else if (vmod_masks.hyper == bit)
             rmod_masks.hyper = modmap;
     }
-#endif
 }
 
 // Small helper: set modifier bit, if modifier position is valid

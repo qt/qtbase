@@ -50,6 +50,8 @@ typedef QList<int> IntList;
 
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 
+Q_DECLARE_METATYPE(QTextFrameFormat::BorderStyle);
+
 class tst_QTextTable : public QObject
 {
     Q_OBJECT
@@ -95,6 +97,8 @@ private slots:
 #if !defined(QT_NO_PRINTER) && defined(QT_BUILD_INTERNAL)
     void QTBUG31330_renderBackground();
 #endif
+    void checkBorderAttributes_data();
+    void checkBorderAttributes();
 
 private:
     QTextTable *create2x2Table();
@@ -1169,6 +1173,110 @@ void tst_QTextTable::QTBUG31330_renderBackground()
     }
 }
 #endif
+
+void tst_QTextTable::checkBorderAttributes_data()
+{
+    QTest::addColumn<QString>("html");
+    QTest::addColumn<qreal>("topBorderWidth");
+    QTest::addColumn<qreal>("bottomBorderWidth");
+    QTest::addColumn<qreal>("leftBorderWidth");
+    QTest::addColumn<qreal>("rightBorderWidth");
+    QTest::addColumn<QTextFrameFormat::BorderStyle>("topBorderStyle");
+    QTest::addColumn<QTextFrameFormat::BorderStyle>("bottomBorderStyle");
+    QTest::addColumn<QTextFrameFormat::BorderStyle>("leftBorderStyle");
+    QTest::addColumn<QTextFrameFormat::BorderStyle>("rightBorderStyle");
+    QTest::addColumn<QBrush>("topBorderBrush");
+    QTest::addColumn<QBrush>("bottomBorderBrush");
+    QTest::addColumn<QBrush>("leftBorderBrush");
+    QTest::addColumn<QBrush>("rightBorderBrush");
+
+    const QString tableHtmlStart = QStringLiteral("<html><head><style>");
+    const QString tableHtmlEnd = QStringLiteral("</style></head><body>"
+                                                "<table border=\"1\"><tr><td>One</td><td>Two</td></tr>"
+                                                "<tr><td>Three</td><td>Four</td></tr></table></body></html>");
+    QTest::newRow("1px-solid-colors")
+        << QString("%1"
+                   "td {"
+                   "border-top: 1px solid red;"
+                   "border-bottom: 1px solid blue;"
+                   "border-left: 1px solid green;"
+                   "border-right: 1px solid yellow;"
+                   "}"
+                   "%2").arg(tableHtmlStart).arg(tableHtmlEnd)
+        << 1.0 << 1.0 << 1.0 << 1.0
+        << QTextFrameFormat::BorderStyle_Solid << QTextFrameFormat::BorderStyle_Solid
+        << QTextFrameFormat::BorderStyle_Solid << QTextFrameFormat::BorderStyle_Solid
+        << QBrush(Qt::red) << QBrush(Qt::blue) << QBrush(Qt::darkGreen) << QBrush(Qt::yellow);
+    QTest::newRow("MixedWidth-solid-colors")
+        << QString("%1"
+                   "td {"
+                   "border-top: 1px solid red;"
+                   "border-bottom: 2px solid blue;"
+                   "border-left: 3px solid green;"
+                   "border-right: 4px solid yellow;"
+                   "}"
+                   "%2").arg(tableHtmlStart).arg(tableHtmlEnd)
+        << 1.0 << 2.0 << 3.0 << 4.0
+        << QTextFrameFormat::BorderStyle_Solid << QTextFrameFormat::BorderStyle_Solid
+        << QTextFrameFormat::BorderStyle_Solid << QTextFrameFormat::BorderStyle_Solid
+        << QBrush(Qt::red) << QBrush(Qt::blue) << QBrush(Qt::darkGreen) << QBrush(Qt::yellow);
+    QTest::newRow("MixedWidth-MixedStyle-colors")
+        << QString("%1"
+                   "td {"
+                   "border-top: 1px solid red;"
+                   "border-bottom: 2px dotted blue;"
+                   "border-left: 3px dashed green;"
+                   "border-right: 4px inset yellow;"
+                   "}"
+                   "%2").arg(tableHtmlStart).arg(tableHtmlEnd)
+        << 1.0 << 2.0 << 3.0 << 4.0
+        << QTextFrameFormat::BorderStyle_Solid << QTextFrameFormat::BorderStyle_Dotted
+        << QTextFrameFormat::BorderStyle_Dashed << QTextFrameFormat::BorderStyle_Inset
+        << QBrush(Qt::red) << QBrush(Qt::blue) << QBrush(Qt::darkGreen) << QBrush(Qt::yellow);
+}
+
+void tst_QTextTable::checkBorderAttributes()
+{
+    QFETCH(QString, html);
+    QFETCH(qreal, topBorderWidth);
+    QFETCH(qreal, bottomBorderWidth);
+    QFETCH(qreal, leftBorderWidth);
+    QFETCH(qreal, rightBorderWidth);
+    QFETCH(QTextFrameFormat::BorderStyle, topBorderStyle);
+    QFETCH(QTextFrameFormat::BorderStyle, bottomBorderStyle);
+    QFETCH(QTextFrameFormat::BorderStyle, leftBorderStyle);
+    QFETCH(QTextFrameFormat::BorderStyle, rightBorderStyle);
+    QFETCH(QBrush, topBorderBrush);
+    QFETCH(QBrush, bottomBorderBrush);
+    QFETCH(QBrush, leftBorderBrush);
+    QFETCH(QBrush, rightBorderBrush);
+
+    QTextDocument doc;
+    doc.setHtml(html);
+    QTextCursor cursor(doc.firstBlock());
+    cursor.movePosition(QTextCursor::Right);
+
+    QTextTable *currentTable = cursor.currentTable();
+    QVERIFY(currentTable);
+    for (int row = 0; row < 2; row++) {
+        for (int column = 0; column < 2; column++) {
+            QTextTableCell cell = currentTable->cellAt(row, column);
+            QTextCharFormat cellFormat = cell.format();
+            QCOMPARE(cellFormat.doubleProperty(QTextFormat::TableCellTopBorder), topBorderWidth);
+            QCOMPARE(cellFormat.doubleProperty(QTextFormat::TableCellBottomBorder), bottomBorderWidth);
+            QCOMPARE(cellFormat.doubleProperty(QTextFormat::TableCellLeftBorder), leftBorderWidth);
+            QCOMPARE(cellFormat.doubleProperty(QTextFormat::TableCellRightBorder), rightBorderWidth);
+            QCOMPARE(cellFormat.property(QTextFormat::TableCellTopBorderStyle), topBorderStyle);
+            QCOMPARE(cellFormat.property(QTextFormat::TableCellBottomBorderStyle), bottomBorderStyle);
+            QCOMPARE(cellFormat.property(QTextFormat::TableCellLeftBorderStyle), leftBorderStyle);
+            QCOMPARE(cellFormat.property(QTextFormat::TableCellRightBorderStyle), rightBorderStyle);
+            QCOMPARE(cellFormat.brushProperty(QTextFormat::TableCellTopBorderBrush), topBorderBrush);
+            QCOMPARE(cellFormat.brushProperty(QTextFormat::TableCellBottomBorderBrush), bottomBorderBrush);
+            QCOMPARE(cellFormat.brushProperty(QTextFormat::TableCellLeftBorderBrush), leftBorderBrush);
+            QCOMPARE(cellFormat.brushProperty(QTextFormat::TableCellRightBorderBrush), rightBorderBrush);
+        }
+    }
+}
 
 QTEST_MAIN(tst_QTextTable)
 #include "tst_qtexttable.moc"

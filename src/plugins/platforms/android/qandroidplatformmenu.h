@@ -73,6 +73,8 @@ public:
 
     QPlatformMenuItem *menuItemAt(int position) const override;
     QPlatformMenuItem *menuItemForTag(quintptr tag) const override;
+    QPlatformMenuItem *menuItemForId(int menuId) const;
+    int menuId(QPlatformMenuItem *menuItem) const;
 
     PlatformMenuItemsType menuItems() const;
     QMutex *menuItemsMutex();
@@ -84,6 +86,9 @@ private:
     bool m_enabled;
     bool m_isVisible;
     QMutex m_menuItemsMutex;
+
+    int m_nextMenuId = 0;
+    QHash<int, QPlatformMenuItem *> m_menuHash;
 };
 
 QT_END_NAMESPACE

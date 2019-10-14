@@ -48,13 +48,12 @@
 **
 ****************************************************************************/
 
-#ifndef __GRAPHICSSCENE__H__
-#define __GRAPHICSSCENE__H__
+#ifndef GRAPHICSSCENE_H
+#define GRAPHICSSCENE_H
 
 //Qt
-#include <QtWidgets/QGraphicsScene>
-#include <QtCore/QSet>
-#include <QtCore/QState>
+#include <QGraphicsScene>
+#include <QSet>
 
 
 class Boat;
@@ -78,18 +77,18 @@ public:
     };
 
     struct SubmarineDescription {
-        int type;
-        int points;
+        int type = 0;
+        int points = 0;
         QString name;
     };
 
     struct LevelDescription {
-        int id;
+        int id = 0;
         QString name;
-        QList<QPair<int,int> > submarines;
+        QVector<QPair<int, int>> submarines;
     };
 
-    GraphicsScene(int x, int y, int width, int height, Mode mode = Big);
+    GraphicsScene(int x, int y, int width, int height, Mode mode, QObject *parent = nullptr);
     qreal sealLevel() const;
     void setupScene(QAction *newAction, QAction *quitAction);
     void addItem(Bomb *bomb);
@@ -127,5 +126,5 @@ private:
     friend class UpdateScoreTransition;
 };
 
-#endif //__GRAPHICSSCENE__H__
+#endif // GRAPHICSSCENE_H
 

@@ -41,7 +41,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiProfiler
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
 
     \brief Collects resource and timing information from an active QRhi.
 
@@ -142,7 +143,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiProfiler::CpuTime
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Contains CPU-side frame timings.
 
     Once sufficient number of frames have been rendered, the minimum, maximum,
@@ -155,7 +157,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRhiProfiler::GpuTime
-    \inmodule QtRhi
+    \internal
+    \inmodule QtGui
     \brief Contains GPU-side frame timings.
 
     Once sufficient number of frames have been rendered, the minimum, maximum,

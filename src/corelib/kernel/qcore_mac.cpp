@@ -44,6 +44,7 @@
 #include "qpair.h"
 #include "qmutex.h"
 #include "qvarlengtharray.h"
+#include "private/qlocking_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -135,7 +136,7 @@ os_log_type_t AppleUnifiedLogger::logTypeForMessageType(QtMsgType msgType)
 os_log_t AppleUnifiedLogger::cachedLog(const QString &subsystem, const QString &category)
 {
     static QBasicMutex mutex;
-    QMutexLocker locker(&mutex);
+    const auto locker = qt_scoped_lock(mutex);
 
     static QHash<QPair<QString, QString>, os_log_t> logs;
     const auto cacheKey = qMakePair(subsystem, category);

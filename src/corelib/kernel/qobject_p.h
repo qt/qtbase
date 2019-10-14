@@ -113,9 +113,6 @@ public:
     struct ExtraData
     {
         ExtraData() {}
-    #ifndef QT_NO_USERDATA
-        QVector<QObjectUserData *> userData;
-    #endif
         QList<QByteArray> propertyNames;
         QVector<QVariant> propertyValues;
         QVector<int> runningTimers;
@@ -509,29 +506,47 @@ private:
 class Q_CORE_EXPORT QMetaCallEvent : public QAbstractMetaCallEvent
 {
 public:
-    QMetaCallEvent(ushort method_offset, ushort method_relative, QObjectPrivate::StaticMetaCallFunction callFunction , const QObject *sender, int signalId,
-                   int nargs = 0, int *types = nullptr, void **args = nullptr, QSemaphore *semaphore = nullptr);
-    /*! \internal
-        \a signalId is in the signal index range (see QObjectPrivate::signalIndex()).
-    */
-    QMetaCallEvent(QtPrivate::QSlotObjectBase *slotObj, const QObject *sender, int signalId,
-                   int nargs = 0, int *types = nullptr, void **args = nullptr, QSemaphore *semaphore = nullptr);
+    // blocking queued with semaphore - args always owned by caller
+    QMetaCallEvent(ushort method_offset, ushort method_relative,
+                   QObjectPrivate::StaticMetaCallFunction callFunction,
+                   const QObject *sender, int signalId,
+                   void **args, QSemaphore *semaphore);
+    QMetaCallEvent(QtPrivate::QSlotObjectBase *slotObj,
+                   const QObject *sender, int signalId,
+                   void **args, QSemaphore *semaphore);
+
+    // queued - args allocated by event, copied by caller
+    QMetaCallEvent(ushort method_offset, ushort method_relative,
+                   QObjectPrivate::StaticMetaCallFunction callFunction,
+                   const QObject *sender, int signalId,
+                   int nargs);
+    QMetaCallEvent(QtPrivate::QSlotObjectBase *slotObj,
+                   const QObject *sender, int signalId,
+                   int nargs);
 
     ~QMetaCallEvent() override;
 
-    inline int id() const { return method_offset_ + method_relative_; }
-    inline void **args() const { return args_; }
+    inline int id() const { return d.method_offset_ + d.method_relative_; }
+    inline const void * const* args() const { return d.args_; }
+    inline void ** args() { return d.args_; }
+    inline const int *types() const { return reinterpret_cast<int*>(d.args_ + d.nargs_); }
+    inline int *types() { return reinterpret_cast<int*>(d.args_ + d.nargs_); }
 
     virtual void placeMetaCall(QObject *object) override;
 
 private:
-    QtPrivate::QSlotObjectBase *slotObj_;
-    int nargs_;
-    int *types_;
-    void **args_;
-    QObjectPrivate::StaticMetaCallFunction callFunction_;
-    ushort method_offset_;
-    ushort method_relative_;
+    inline void allocArgs();
+
+    struct Data {
+        QtPrivate::QSlotObjectBase *slotObj_;
+        void **args_;
+        QObjectPrivate::StaticMetaCallFunction callFunction_;
+        int nargs_;
+        ushort method_offset_;
+        ushort method_relative_;
+    } d;
+    // preallocate enough space for three arguments
+    char prealloc_[3*(sizeof(void*) + sizeof(int))];
 };
 
 class QBoolBlocker

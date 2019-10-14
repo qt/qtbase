@@ -68,7 +68,6 @@
 #include "qdebug.h"
 #include "qmap.h"
 #include "qdatetime.h"
-#include "qeasingcurve.h"
 #include "qlist.h"
 #include "qstring.h"
 #include "qstringlist.h"

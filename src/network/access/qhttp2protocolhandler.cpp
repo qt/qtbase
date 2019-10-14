@@ -40,6 +40,7 @@
 #include "qhttpnetworkconnection_p.h"
 #include "qhttp2protocolhandler_p.h"
 
+#include "http2/http2frames_p.h"
 #include "http2/bitstreams_p.h"
 
 #include <private/qnoncontiguousbytedevice_p.h>
@@ -50,6 +51,8 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qurl.h>
+
+#include <qhttp2configuration.h>
 
 #ifndef QT_NO_NETWORKPROXY
 #include <QtNetwork/qnetworkproxy.h>
@@ -172,30 +175,11 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
     Q_ASSERT(channel && m_connection);
     continuedFrames.reserve(20);
 
-    const ProtocolParameters params(m_connection->http2Parameters());
-    Q_ASSERT(params.validate());
-
-    maxSessionReceiveWindowSize = params.maxSessionReceiveWindowSize;
-
-    const RawSettings &data = params.settingsFrameData;
-    for (auto param = data.cbegin(), end = data.cend(); param != end; ++param) {
-        switch (param.key()) {
-        case Settings::INITIAL_WINDOW_SIZE_ID:
-            streamInitialReceiveWindowSize = param.value();
-            break;
-        case Settings::ENABLE_PUSH_ID:
-            pushPromiseEnabled = param.value();
-            break;
-        case Settings::HEADER_TABLE_SIZE_ID:
-        case Settings::MAX_CONCURRENT_STREAMS_ID:
-        case Settings::MAX_FRAME_SIZE_ID:
-        case Settings::MAX_HEADER_LIST_SIZE_ID:
-            // These other settings are just recommendations to our peer. We
-            // only check they are not crazy in ProtocolParameters::validate().
-        default:
-            break;
-        }
-    }
+    const auto h2Config = m_connection->http2Parameters();
+    maxSessionReceiveWindowSize = h2Config.sessionReceiveWindowSize();
+    pushPromiseEnabled = h2Config.serverPushEnabled();
+    streamInitialReceiveWindowSize = h2Config.streamReceiveWindowSize();
+    encoder.setCompressStrings(h2Config.huffmanCompressionEnabled());
 
     if (!channel->ssl && m_connection->connectionType() != QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
         // We upgraded from HTTP/1.1 to HTTP/2. channel->request was already sent
@@ -422,20 +406,17 @@ bool QHttp2ProtocolHandler::sendClientPreface()
         return false;
 
     // 6.5 SETTINGS
-    const ProtocolParameters params(m_connection->http2Parameters());
-    Q_ASSERT(params.validate());
-    frameWriter.setOutboundFrame(params.settingsFrame());
+    frameWriter.setOutboundFrame(Http2::configurationToSettingsFrame(m_connection->http2Parameters()));
     Q_ASSERT(frameWriter.outboundFrame().payloadSize());
 
     if (!frameWriter.write(*m_socket))
         return false;
 
     sessionReceiveWindowSize = maxSessionReceiveWindowSize;
-    // ProtocolParameters::validate does not allow maxSessionReceiveWindowSize
-    // to be smaller than defaultSessionWindowSize, so everything is OK here with
-    // 'delta':
+    // We only send WINDOW_UPDATE for the connection if the size differs from the
+    // default 64 KB:
     const auto delta = maxSessionReceiveWindowSize - Http2::defaultSessionWindowSize;
-    if (!sendWINDOW_UPDATE(Http2::connectionStreamID, delta))
+    if (delta && !sendWINDOW_UPDATE(Http2::connectionStreamID, delta))
         return false;
 
     prefaceSent = true;
@@ -1069,7 +1050,7 @@ bool QHttp2ProtocolHandler::acceptSetting(Http2::Settings identifier, quint32 ne
     }
 
     if (identifier == Settings::MAX_FRAME_SIZE_ID) {
-        if (newValue < Http2::maxFrameSize || newValue > Http2::maxPayloadSize) {
+        if (newValue < Http2::minPayloadLimit || newValue > Http2::maxPayloadSize) {
             connectionError(PROTOCOL_ERROR, "SETTGINGS max frame size is out of range");
             return false;
         }
