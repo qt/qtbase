@@ -1,0 +1,121 @@
+setRenderHint Antialiasing false
+
+# offscreen
+translate 0 -200
+
+begin_block rects
+# int API
+fillRect 10 10 20 20 green
+fillRect 40 10 20 20
+drawRect 70 10 20 20
+
+# float API, int values
+fillRectF 10.0 40.0 20.0 20.0 green
+fillRectF 40.0 40.0 20.0 20.0
+drawRect 70.0 40.0 20.0 20.0
+
+# float API, float values
+fillRectF 10.0 70.0 20.5 20.5 green
+fillRectF 40.0 70.0 20.5 20.5
+drawRect 70.0 70.0 20.5 20.5
+
+# alignment, int api, color
+fillRect 10 100 10 10 green
+fillRect 20 100 10 10 green
+fillRect 10 110 10 10 green
+fillRect 20 110 10 10 green
+
+# alignment, int api, brush
+fillRect 40 100 10 10
+fillRect 50 100 10 10
+fillRect 40 110 10 10
+fillRect 50 110 10 10
+
+# alignment comparison
+drawRect 70 100 10 10
+drawRect 80 100 10 10
+drawRect 70 110 10 10
+drawRect 80 110 10 10
+
+# alignment, float api, color
+fillRectF 10.0 130.0 10.0 10.0 green
+fillRectF 20.0 130.0 10.0 10.0 green
+fillRectF 10.0 140.0 10.0 10.0 green
+fillRectF 20.0 140.0 10.0 10.0 green
+
+# alignment, float api, brush
+fillRectF 40.0 130.0 10.0 10.0
+fillRectF 50.0 130.0 10.0 10.0
+fillRectF 40.0 140.0 10.0 10.0
+fillRectF 50.0 140.0 10.0 10.0
+
+# alignment comparison
+drawRect 70.0 130.0 10.0 10.0
+drawRect 80.0 130.0 10.0 10.0
+drawRect 70.0 140.0 10.0 10.0
+drawRect 80.0 140.0 10.0 10.0
+
+end_block
+
+begin_block row
+
+repeat_block rects
+
+save
+translate 100.2 0.2
+repeat_block rects
+restore
+
+save
+translate 200.5 0.5
+repeat_block rects
+restore
+
+save
+translate 300.7 0.7
+repeat_block rects
+restore
+
+end_block
+
+# end of block defs
+
+resetMatrix
+
+setPen NoPen
+setBrush green
+repeat_block row
+
+save
+translate 500 50
+scale 0.42 0.42
+repeat_block row
+restore
+
+save
+translate 0 160
+scale 1.8 0.8
+repeat_block row
+restore
+
+save
+translate 650 320
+rotate 80
+repeat_block row
+restore
+
+save
+setBrush green Dense2Pattern
+translate 0 400
+repeat_block row
+restore
+
+save
+gradient_clearStops
+gradient_appendStop 0 green
+gradient_appendStop 1 blue
+gradient_setCoordinateMode ObjectBoundingMode
+gradient_setLinear 0.0 0.0 1.0 1.0
+translate 0 600
+repeat_block row
+restore

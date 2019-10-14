@@ -365,6 +365,7 @@ void PaintCommands::staticInit()
                       "^gradient_setCoordinateMode\\s+(\\w*)$",
                       "gradient_setCoordinateMode <coordinate method enum>",
                       "gradient_setCoordinateMode ObjectBoundingMode");
+
     DECL_PAINTCOMMANDSECTION("drawing ops");
     DECL_PAINTCOMMAND("drawPoint", command_drawPoint,
                       "^drawPoint\\s+(-?[\\w.]*)\\s+(-?[\\w.]*)$",
@@ -454,6 +455,14 @@ void PaintCommands::staticInit()
                       "\n  - where t means tile"
                       "\n  - and s is an offset in the tile",
                       "drawTiledPixmap :/images/alpha.png ");
+    DECL_PAINTCOMMAND("fillRect", command_fillRect,
+                      "^fillRect\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s*(\\w*)?$",
+                      "fillRect <x> <y> <w> <h> [color]\n - Uses current brush if no color given",
+                      "fillRect 10 10 20 20 blue");
+    DECL_PAINTCOMMAND("fillRectF", command_fillRectF,
+                      "^fillRectF\\s+(-?[.\\w]*)\\s+(-?[.\\w]*)\\s+(-?[.\\w]*)\\s+(-?[.\\w]*)\\s*(\\w*)?$",
+                      "fillRectF <x> <y> <w> <h> [color]\n - Uses current brush if no color given",
+                      "fillRectF 10.5 10.5 20.2 20.2 blue");
 
     DECL_PAINTCOMMANDSECTION("painterPaths");
     DECL_PAINTCOMMAND("path_moveTo", command_path_moveTo,
@@ -1331,6 +1340,46 @@ void PaintCommands::command_drawTextDocument(QRegularExpressionMatch re)
     m_painter->restore();
 }
 
+/***************************************************************************************************/
+void PaintCommands::command_fillRect(QRegularExpressionMatch re)
+{
+    QStringList caps = re.capturedTexts();
+    int x = convertToInt(caps.at(1));
+    int y = convertToInt(caps.at(2));
+    int w = convertToInt(caps.at(3));
+    int h = convertToInt(caps.at(4));
+
+    if (!caps.at(5).isEmpty()) {
+        QColor color = convertToColor(caps.at(5));
+        if (m_verboseMode)
+            printf(" -(lance) fillRect(%d, %d, %d, %d, %s)\n", x, y, w, h, qPrintable(color.name()));
+        m_painter->fillRect(x, y, w, h, color);
+    } else {
+        if (m_verboseMode)
+            printf(" -(lance) fillRect(%d, %d, %d, %d)\n", x, y, w, h);
+        m_painter->fillRect(x, y, w, h, m_painter->brush());
+    }
+}
+
+void PaintCommands::command_fillRectF(QRegularExpressionMatch re)
+{
+    QStringList caps = re.capturedTexts();
+    double x = convertToDouble(caps.at(1));
+    double y = convertToDouble(caps.at(2));
+    double w = convertToDouble(caps.at(3));
+    double h = convertToDouble(caps.at(4));
+
+    if (!caps.at(5).isEmpty()) {
+        QColor color = convertToColor(caps.at(5));
+        if (m_verboseMode)
+            printf(" -(lance) fillRectF(%.2f, %.2f, %.2f, %.2f, %s)\n", x, y, w, h, qPrintable(color.name()));
+        m_painter->fillRect(QRectF(x, y, w, h), color);
+    } else {
+        if (m_verboseMode)
+            printf(" -(lance) fillRectF(%.2f, %.2f, %.2f, %.2f)\n", x, y, w, h);
+        m_painter->fillRect(QRectF(x, y, w, h), m_painter->brush());
+    }
+}
 
 /***************************************************************************************************/
 void PaintCommands::command_noop(QRegularExpressionMatch)
