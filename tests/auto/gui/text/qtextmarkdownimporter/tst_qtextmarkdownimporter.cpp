@@ -171,14 +171,14 @@ void tst_QTextMarkdownImporter::lists_data()
     // Some of these cases show odd behavior, which is subject to change
     // as the importer and the writer are tweaked to fix bugs over time.
     QTest::newRow("dot newline") << ".\n" << 0 << true << ".\n\n";
-    QTest::newRow("number dot newline") << "1.\n" << 1 << true << "";
-    QTest::newRow("star newline") << "*\n" << 1 << true << "";
-    QTest::newRow("hyphen newline") << "-\n" << 1 << true << "";
-    QTest::newRow("hyphen space newline") << "- \n" << 1 << true << "";
+    QTest::newRow("number dot newline") << "1.\n" << 1 << true << "1.  \n";
+    QTest::newRow("star newline") << "*\n" << 1 << true << "* \n";
+    QTest::newRow("hyphen newline") << "-\n" << 1 << true << "- \n";
+    QTest::newRow("hyphen space newline") << "- \n" << 1 << true << "- \n";
     QTest::newRow("hyphen space letter newline") << "- a\n" << 1 << false << "- a\n";
     QTest::newRow("hyphen nbsp newline") <<
         QString::fromUtf8("-\u00A0\n") << 0 << true << "-\u00A0\n\n";
-    QTest::newRow("nested empty lists") << "*\n  *\n  *\n" << 1 << true << "";
+    QTest::newRow("nested empty lists") << "*\n  *\n  *\n" << 1 << true << "  * \n";
     QTest::newRow("list nested in empty list") << "-\n  * a\n" << 2 << false << "- \n  * a\n";
     QTest::newRow("lists nested in empty lists")
             << "-\n  * a\n  * b\n- c\n  *\n    + d\n" << 5 << false
