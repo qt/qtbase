@@ -140,44 +140,38 @@ QT_USE_NAMESPACE
     return [[self.dockMenu retain] autorelease];
 }
 
-- (BOOL)canQuit
-{
-    QCloseEvent ev;
-    QGuiApplication::sendEvent(qGuiApp, &ev);
-    return ev.isAccepted();
-}
-
 // This function will only be called when NSApp is actually running.
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
     if ([reflectionDelegate respondsToSelector:_cmd])
         return [reflectionDelegate applicationShouldTerminate:sender];
 
-    if ([self canQuit]) {
-        if (!startedQuit) {
-            startedQuit = true;
-            // Close open windows. This is done in order to deliver de-expose
-            // events while the event loop is still running.
-            const QWindowList topLevels = QGuiApplication::topLevelWindows();
-            for (int i = 0; i < topLevels.size(); ++i) {
-                QWindow *topLevelWindow = topLevels.at(i);
-                // Already closed windows will not have a platform window, skip those
-                if (topLevelWindow->handle())
-                    QWindowSystemInterface::handleCloseEvent(topLevelWindow);
-            }
-            QWindowSystemInterface::flushWindowSystemEvents();
-
-            QGuiApplication::exit(0);
-            startedQuit = false;
-        }
+    if (QGuiApplicationPrivate::instance()->threadData->eventLoops.isEmpty()) {
+        // No event loop is executing. This probably means that Qt is used as a plugin,
+        // or as a part of a native Cocoa application. In any case it should be fine to
+        // terminate now.
+        return NSTerminateNow;
     }
 
-    if (QGuiApplicationPrivate::instance()->threadData->eventLoops.isEmpty()) {
-        // INVARIANT: No event loop is executing. This probably
-        // means that Qt is used as a plugin, or as a part of a native
-        // Cocoa application. In any case it should be fine to
-        // terminate now:
-        return NSTerminateNow;
+    QCloseEvent ev;
+    QGuiApplication::sendEvent(qGuiApp, &ev);
+    if (!ev.isAccepted())
+        return NSTerminateCancel;
+
+    if (!startedQuit) {
+        startedQuit = true;
+        // Close open windows. This is done in order to deliver de-expose
+        // events while the event loop is still running.
+        for (QWindow *topLevelWindow : QGuiApplication::topLevelWindows()) {
+            // Already closed windows will not have a platform window, skip those
+            if (!topLevelWindow->handle())
+                continue;
+
+            QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::SynchronousDelivery>(topLevelWindow);
+        }
+
+        QGuiApplication::exit(0);
+        startedQuit = false;
     }
 
     return NSTerminateCancel;
