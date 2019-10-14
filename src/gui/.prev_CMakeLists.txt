@@ -471,14 +471,14 @@ if(NOT ANDROID)
     )
 endif()
 
-extend_target(Gui CONDITION ANDROID AND arm64-v8a
+extend_target(Gui CONDITION ANDROID AND TEST_architecture_arch STREQUAL arm64
     SOURCES
         image/qimage_neon.cpp
         painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
         painting/qimagescale_neon.cpp
 )
 
-extend_target(Gui CONDITION ANDROID AND (x86 OR x86_64)
+extend_target(Gui CONDITION ANDROID AND (TEST_architecture_arch STREQUAL x86 OR TEST_architecture_arch STREQUAL x86_64)
     SOURCES
         image/qimage_ssse3.cpp
         painting/qdrawhelper_sse2.cpp
@@ -545,7 +545,7 @@ if(UNIX AND NOT ANDROID AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_arch
     )
 endif()
 
-extend_target(Gui CONDITION ANDROID AND x86_64
+extend_target(Gui CONDITION ANDROID AND TEST_architecture_arch STREQUAL x86_64
     SOURCES
         painting/qdrawhelper_sse4.cpp
         painting/qimagescale_sse4.cpp

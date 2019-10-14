@@ -1317,7 +1317,7 @@ function(add_qt_module target)
         add_library("${target}" STATIC)
     endif()
 
-    if (android)
+    if (ANDROID)
         qt_android_apply_arch_suffix("${target}")
     endif()
     qt_internal_add_target_aliases("${target}")
@@ -2548,7 +2548,7 @@ function(add_cmake_library target)
         set(arg_ARCHIVE_INSTALL_DIRECTORY "${arg_INSTALL_DIRECTORY}")
     endif()
 
-    if (android)
+    if (ANDROID)
         qt_android_apply_arch_suffix("${target}")
     endif()
 

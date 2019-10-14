@@ -1012,6 +1012,9 @@ class Scope(object):
             project_relative_path = os.path.relpath(qmake_conf_dir_path, self.currentdir)
             return ["${CMAKE_CURRENT_SOURCE_DIR}/" + project_relative_path]
 
+        if key == "QT_ARCH":
+            return ["${ANDROID_ABI}"]
+
         if key == "_PRO_FILE_PWD_":
             return ["${CMAKE_CURRENT_SOURCE_DIR}"]
         if key == "PWD":
@@ -1244,6 +1247,12 @@ def map_condition(condition: str) -> str:
     condition = condition.replace("*-clang*", "CLANG")
     condition = condition.replace("*-llvm", "CLANG")
     condition = condition.replace("win32-*", "WIN32")
+
+    # new conditions added by the android multi arch qmake build
+    condition = re.sub(r'x86[^\_]', "TEST_architecture_arch STREQUAL x86", condition)
+    condition = condition.replace('x86_64', "TEST_architecture_arch STREQUAL x86_64")
+    condition = condition.replace('arm64-v8a', "TEST_architecture_arch STREQUAL arm64")
+    condition = condition.replace('armeabi-v7a', "TEST_architecture_arch STREQUAL arm")
 
     pattern = r"CONFIG\((debug|release),debug\|release\)"
     match_result = re.match(pattern, condition)

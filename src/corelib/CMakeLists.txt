@@ -399,7 +399,7 @@ extend_target(Core CONDITION ANDROID
         kernel/qsharedmemory_android.cpp
         kernel/qsystemsemaphore_android.cpp
     DEFINES
-        LIBS_SUFFIX='\\"_.so\\"'
+        LIBS_SUFFIX="\\\\"_${ANDROID_ABI}.so\\\\"" # special case
 )
 
 extend_target(Core CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
