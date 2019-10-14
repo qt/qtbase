@@ -285,6 +285,7 @@ public:
     static QCborValue fromJsonValue(const QJsonValue &v);
     QJsonValue toJsonValue() const;
 
+#if QT_CONFIG(cborstream)
     static QCborValue fromCbor(QCborStreamReader &reader);
     static QCborValue fromCbor(const QByteArray &ba, QCborParserError *error = nullptr);
     static QCborValue fromCbor(const char *data, qsizetype len, QCborParserError *error = nullptr)
@@ -293,6 +294,7 @@ public:
     { return fromCbor(QByteArray(reinterpret_cast<const char *>(data), int(len)), error); }
     QByteArray toCbor(EncodingOptions opt = NoTransformation);
     void toCbor(QCborStreamWriter &writer, EncodingOptions opt = NoTransformation);
+#endif
 
     QString toDiagnosticNotation(DiagnosticNotationOptions opts = Compact) const;
 
@@ -435,9 +437,11 @@ public:
     QVariant toVariant() const                  { return concrete().toVariant(); }
     QJsonValue toJsonValue() const;
 
+#if QT_CONFIG(cborstream)
     QByteArray toCbor(QCborValue::EncodingOptions opt = QCborValue::NoTransformation)
     { return concrete().toCbor(opt); }
     void toCbor(QCborStreamWriter &writer, QCborValue::EncodingOptions opt = QCborValue::NoTransformation);
+#endif
 
     QString toDiagnosticNotation(QCborValue::DiagnosticNotationOptions opt = QCborValue::Compact)
     { return concrete().toDiagnosticNotation(opt); }
