@@ -488,6 +488,12 @@ void QCocoaIntegration::beep() const
     NSBeep();
 }
 
+void QCocoaIntegration::quit() const
+{
+    qCDebug(lcQpaApplication) << "Terminating application";
+    [NSApp terminate:nil];
+}
+
 void QCocoaIntegration::closePopups(QWindow *forWindow)
 {
     for (auto it = m_popupWindowStack.begin(); it != m_popupWindowStack.end();) {

@@ -135,6 +135,8 @@ public:
     virtual bool shouldQuit() {
       return true;
     }
+
+    virtual void quit();
     void maybeQuit();
 
     static QBasicAtomicPointer<QThread> theMainThread;

@@ -529,6 +529,20 @@ void QPlatformIntegration::beep() const
 {
 }
 
+/*!
+   \since 6.0
+
+   Asks the platform to terminate the application.
+
+   Overrides should ensure there's a callback into the QWSI
+   function handleApplicationTermination so that the quit can
+   be propagated to QtGui and the application.
+*/
+void QPlatformIntegration::quit() const
+{
+    QWindowSystemInterface::handleApplicationTermination<QWindowSystemInterface::SynchronousDelivery>();
+}
+
 #ifndef QT_NO_OPENGL
 /*!
   Platform integration function for querying the OpenGL implementation type.

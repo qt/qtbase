@@ -3641,6 +3641,14 @@ bool QGuiApplicationPrivate::shouldQuitInternal(const QWindowList &processedWind
     return true;
 }
 
+void QGuiApplicationPrivate::quit()
+{
+    if (auto *platformIntegration = QGuiApplicationPrivate::platformIntegration())
+        platformIntegration->quit();
+    else
+        QCoreApplicationPrivate::quit();
+}
+
 void QGuiApplicationPrivate::processApplicationTermination(QWindowSystemInterfacePrivate::WindowSystemEvent *windowSystemEvent)
 {
     QEvent event(QEvent::Quit);

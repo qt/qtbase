@@ -92,10 +92,6 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qwindowdefs.h>
 
-QT_BEGIN_NAMESPACE
-Q_LOGGING_CATEGORY(lcQpaApplication, "qt.qpa.application");
-QT_END_NAMESPACE
-
 QT_USE_NAMESPACE
 
 @implementation QCocoaApplicationDelegate {

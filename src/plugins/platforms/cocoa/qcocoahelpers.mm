@@ -59,6 +59,7 @@ Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
 Q_LOGGING_CATEGORY(lcQpaDrawing, "qt.qpa.drawing");
 Q_LOGGING_CATEGORY(lcQpaMouse, "qt.qpa.input.mouse", QtCriticalMsg);
 Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen", QtCriticalMsg);
+Q_LOGGING_CATEGORY(lcQpaApplication, "qt.qpa.application");
 
 //
 // Conversion Functions

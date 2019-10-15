@@ -105,6 +105,7 @@ public:
     void addQtOptions(QList<QCommandLineOption> *options) override;
 #endif
     virtual bool shouldQuit() override;
+    void quit() override;
 
     bool shouldQuitInternal(const QWindowList &processedWindows);
 

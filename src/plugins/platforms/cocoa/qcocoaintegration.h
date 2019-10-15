@@ -132,6 +132,7 @@ public:
     void setApplicationIcon(const QIcon &icon) const override;
 
     void beep() const override;
+    void quit() const override;
 
     void closePopups(QWindow *forWindow = nullptr);
 

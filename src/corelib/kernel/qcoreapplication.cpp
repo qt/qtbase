@@ -1975,11 +1975,18 @@ void QCoreApplication::quit()
     if (!self)
         return;
 
-    if (QThread::currentThread() == self->d_func()->mainThread()) {
+    self->d_func()->quit();
+}
+
+void QCoreApplicationPrivate::quit()
+{
+    Q_Q(QCoreApplication);
+
+    if (QThread::currentThread() == mainThread()) {
         QEvent quitEvent(QEvent::Quit);
-        QCoreApplication::sendEvent(self, &quitEvent);
+        QCoreApplication::sendEvent(q, &quitEvent);
     } else {
-        QCoreApplication::postEvent(self, new QEvent(QEvent::Quit));
+        QCoreApplication::postEvent(q, new QEvent(QEvent::Quit));
     }
 }
 
