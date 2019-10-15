@@ -43,55 +43,106 @@
    true, execution continues. If not, a failure is recorded in the test log
    and the test won't be executed further.
 
-   \b {Note:} This macro can only be used in a test function that is invoked
+   You can use \l QVERIFY2() when it is practical and valuable to put additional
+   information into the test failure report.
+
+   \note This macro can only be used in a test function that is invoked
    by the test framework.
 
-   Example:
+   For example, the following code shows this macro being used to verify that a
+   \l QSignalSpy object is valid:
+
    \snippet code/src_qtestlib_qtestcase.cpp 0
 
-   \sa QCOMPARE(), QTRY_VERIFY()
+   For more information about the failure, use \c QCOMPARE(x, y) instead of
+   \c QVERIFY(x == y), because it reports both the expected and actual value
+   when the comparison fails.
+
+   \sa QCOMPARE(), QTRY_VERIFY(), QSignalSpy, QEXPECT_FAIL()
 */
 
 /*! \macro QVERIFY2(condition, message)
 
     \relates QTest
 
-    The QVERIFY2() macro behaves exactly like QVERIFY(), except that it outputs
-    a verbose \a message when \a condition is false. The \a message is a plain
-    C string.
+    The QVERIFY2() macro behaves exactly like QVERIFY(), except that it reports
+    a \a message when \a condition is false. The \a message is a plain C string.
+
+    The message can also be obtained from a function call that produces a plain
+    C string, such as qPrintable() applied to a QString, which may be built in
+    any of its usual ways, including applying \c {.args()} to format some data.
 
     Example:
     \snippet code/src_qtestlib_qtestcase.cpp 1
 
-    \sa QVERIFY(), QCOMPARE()
+    For example, if you have a file object and you are testing its \c open()
+    function, you might write a test with a statement like:
+
+    \snippet code/src_qtestlib_qtestcase.cpp 32
+
+    If this test fails, it will give no clue as to why the file failed to open:
+
+    \c {FAIL! : tst_QFile::open_write() 'opened' returned FALSE. ()}
+
+    If there is a more informative error message you could construct from the
+    values being tested, you can use \c QVERIFY2() to pass that message along
+    with your test condition, to provide a more informative message on failure:
+
+    \snippet code/src_qtestlib_qtestcase.cpp 33
+
+    If this branch is being tested in the Qt CI system, the above detailed
+    failure message will be inserted into the summary posted to the code-review
+    system:
+
+    \c {FAIL! : tst_QFile::open_write() 'opened' returned FALSE.
+        (open /tmp/qt.a3B42Cd: No space left on device)}
+
+    \sa QVERIFY(), QCOMPARE(), QEXPECT_FAIL()
 */
 
 /*! \macro QCOMPARE(actual, expected)
 
    \relates QTest
 
-   The QCOMPARE macro compares an \a actual value to an \a expected value using
-   the equals operator. If \a actual and \a expected are identical, execution
+   The QCOMPARE() macro compares an \a actual value to an \a expected value
+   using the equality operator. If \a actual and \a expected match, execution
    continues. If not, a failure is recorded in the test log and the test
-   won't be executed further.
+   function returns without attempting any later checks.
 
-   In the case of comparing floats and doubles, qFuzzyCompare() is used for
-   comparing. This means that comparing to 0 will likely fail. One solution
-   to this is to compare to 1, and add 1 to the produced output.
+   Always respect QCOMPARE() parameter semantics. The first parameter passed to it
+   should always be the actual value produced by the code-under-test, while the
+   second parameter should always be the expected value. When the values don't
+   match, QCOMPARE() prints them with the labels \e Actual and \e Expected.
+   If the parameter order is swapped, debugging a failing test can be confusing.
 
-   QCOMPARE tries to output the contents of the values if the comparison fails,
+   When comparing floating-point types (\c float, \c double, and \c qfloat16),
+   \l qFuzzyCompare() is used for finite values. Infinities match if they have
+   the same sign, and any NaN as actual value matches with any NaN as expected
+   value (even though NaN != NaN, even when they're identical). This means that
+   expecting 0 can fail when the actual value may be affected by rounding errors.
+   One solution to this is to offset both actual and expected values by adding
+   some suitable constant (such as 1).
+
+   QCOMPARE() tries to output the contents of the values if the comparison fails,
    so it is visible from the test log why the comparison failed.
-
-   For your own classes, you can use \l QTest::toString() to format values for
-   outputting into the test log.
-
-   \note This macro can only be used in a test function that is invoked
-   by the test framework.
 
    Example:
    \snippet code/src_qtestlib_qtestcase.cpp 2
 
-   \sa QVERIFY(), QTRY_COMPARE(), QTest::toString()
+   \note This macro can only be used in a test function that is invoked
+   by the test framework.
+
+   For your own classes, you can use \l QTest::toString() to format values for
+   outputting into the test log.
+
+   Example:
+   \snippet code/src_qtestlib_qtestcase.cpp 34
+
+   The return from \c toString() must be a \c {new char []}. That is, it shall
+   be released with \c delete[] (rather than \c free() or plain \c delete) once
+   the calling code is done with it.
+
+   \sa QVERIFY(), QTRY_COMPARE(), QTest::toString(), QEXPECT_FAIL()
 */
 
 /*! \macro QVERIFY_EXCEPTION_THROWN(expression, exceptiontype)
@@ -127,7 +178,8 @@
    \note This macro can only be used in a test function that is invoked
    by the test framework.
 
-   \sa QTRY_VERIFY(), QTRY_VERIFY2_WITH_TIMEOUT(), QVERIFY(), QCOMPARE(), QTRY_COMPARE()
+   \sa QTRY_VERIFY(), QTRY_VERIFY2_WITH_TIMEOUT(), QVERIFY(), QCOMPARE(), QTRY_COMPARE(),
+   QEXPECT_FAIL()
 */
 
 
@@ -141,7 +193,8 @@
    \note This macro can only be used in a test function that is invoked
    by the test framework.
 
-   \sa QTRY_VERIFY_WITH_TIMEOUT(), QTRY_VERIFY2(), QVERIFY(), QCOMPARE(), QTRY_COMPARE()
+   \sa QTRY_VERIFY_WITH_TIMEOUT(), QTRY_VERIFY2(), QVERIFY(), QCOMPARE(), QTRY_COMPARE(),
+   QEXPECT_FAIL()
 */
 
 /*! \macro QTRY_VERIFY2_WITH_TIMEOUT(condition, message, timeout)
@@ -161,7 +214,8 @@
    \note This macro can only be used in a test function that is invoked
    by the test framework.
 
-   \sa QTRY_VERIFY(), QTRY_VERIFY_WITH_TIMEOUT(), QVERIFY(), QCOMPARE(), QTRY_COMPARE()
+   \sa QTRY_VERIFY(), QTRY_VERIFY_WITH_TIMEOUT(), QVERIFY(), QCOMPARE(), QTRY_COMPARE(),
+   QEXPECT_FAIL()
 */
 
 /*! \macro QTRY_VERIFY2(condition, message)
@@ -181,7 +235,8 @@
    \note This macro can only be used in a test function that is invoked
    by the test framework.
 
-   \sa QTRY_VERIFY2_WITH_TIMEOUT(), QTRY_VERIFY2(), QVERIFY(), QCOMPARE(), QTRY_COMPARE()
+   \sa QTRY_VERIFY2_WITH_TIMEOUT(), QTRY_VERIFY2(), QVERIFY(), QCOMPARE(), QTRY_COMPARE(),
+   QEXPECT_FAIL()
 */
 
 /*! \macro QTRY_COMPARE_WITH_TIMEOUT(actual, expected, timeout)
@@ -198,7 +253,7 @@
    \note This macro can only be used in a test function that is invoked
    by the test framework.
 
-   \sa QTRY_COMPARE(), QCOMPARE(), QVERIFY(), QTRY_VERIFY()
+   \sa QTRY_COMPARE(), QCOMPARE(), QVERIFY(), QTRY_VERIFY(), QEXPECT_FAIL()
 */
 
 /*! \macro QTRY_COMPARE(actual, expected)
@@ -212,7 +267,8 @@
    \note This macro can only be used in a test function that is invoked
    by the test framework.
 
-   \sa QTRY_COMPARE_WITH_TIMEOUT(), QCOMPARE(), QVERIFY(), QTRY_VERIFY()
+   \sa QTRY_COMPARE_WITH_TIMEOUT(), QCOMPARE(), QVERIFY(), QTRY_VERIFY(),
+   QEXPECT_FAIL()
 */
 
 /*! \macro QFETCH(type, name)
