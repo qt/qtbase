@@ -52,6 +52,7 @@ add_qt_tool(qmake # special case
         ../src/corelib/tools/qarraydatapointer.h
         ../src/corelib/tools/qbitarray.cpp ../src/corelib/tools/qbitarray.h
         ../src/corelib/text/qbytearray.cpp ../src/corelib/text/qbytearray.h
+        ../src/corelib/text/qbytearraylist.cpp ../src/corelib/text/qbytearraylist.h # special case
         ../src/corelib/text/qbytearraymatcher.cpp ../src/corelib/text/qbytearraymatcher.h
         ../src/corelib/text/qchar.h
         ../src/corelib/tools/qcryptographichash.cpp ../src/corelib/tools/qcryptographichash.h
