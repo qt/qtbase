@@ -44,7 +44,7 @@
 #  include <stdbool.h>
 #endif
 
-#if __STDC_VERSION__ >= 201112L || __cplusplus >= 201103L || __cpp_static_assert >= 200410
+#if __STDC_VERSION__ >= 201112L || (defined(__cplusplus) && __cplusplus >= 201103L) || (defined(__cpp_static_assert) && __cpp_static_assert >= 200410)
 #  define cbor_static_assert(x)         static_assert(x, #x)
 #elif !defined(__cplusplus) && defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 406) && (__STDC_VERSION__ > 199901L)
 #  define cbor_static_assert(x)         _Static_assert(x, #x)
