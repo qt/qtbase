@@ -113,7 +113,7 @@ def open_file_safe(file_path: str, mode: str = "r+"):
     except ImportError:
         print(
             "The conversion script is missing a required package: portalocker. Please run "
-            "python -m pip install requirements.txt to install the missing dependency."
+            "python -m pip install -r requirements.txt to install the missing dependency."
         )
         exit(1)
 
