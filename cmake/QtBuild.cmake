@@ -2561,7 +2561,9 @@ function(add_cmake_library target)
 
     if (arg_OUTPUT_DIRECTORY)
         set_target_properties(${target} PROPERTIES
-            OUTPUT_DIRECTORY ${arg_OUTPUT_DIRECTORY}
+            ARCHIVE_OUTPUT_DIRECTORY ${arg_OUTPUT_DIRECTORY}
+            RUNTIME_OUTPUT_DIRECTORY ${arg_OUTPUT_DIRECTORY}
+            LIBRARY_OUTPUT_DIRECTORY ${arg_OUTPUT_DIRECTORY}
         )
     endif()
 
