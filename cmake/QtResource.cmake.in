@@ -253,6 +253,7 @@ function(QT@PROJECT_VERSION_MAJOR@_PROCESS_RESOURCE target resourceName)
     endif()
     string(APPEND qrcContents ">\n")
 
+    set(resource_dependencies)
     foreach(file IN LISTS resources)
         __qt_get_relative_resource_path_for_file(file_resource_path ${file})
 
@@ -265,6 +266,16 @@ function(QT@PROJECT_VERSION_MAJOR@_PROCESS_RESOURCE target resourceName)
         string(APPEND qrcContents "    <file alias=\"${file_resource_path}\">")
         string(APPEND qrcContents "${file}</file>\n")
         list(APPEND files "${file}")
+
+        get_source_file_property(target_dependency ${file} QT_RESOURCE_TARGET_DEPENDENCY)
+        if (NOT target_dependency)
+            list(APPEND resource_dependencies ${file})
+        else()
+            if (NOT TARGET ${target_dependency})
+                message(FATAL_ERROR "Target dependency on resource file ${file} is not a cmake target.")
+            endif()
+            list(APPEND resource_dependencies ${target_dependency})
+        endif()
     endforeach()
 
     # </qresource></RCC>
@@ -282,7 +293,7 @@ function(QT@PROJECT_VERSION_MAJOR@_PROCESS_RESOURCE target resourceName)
     add_custom_command(OUTPUT "${generatedSourceCode}"
                        COMMAND "@QT_CMAKE_EXPORT_NAMESPACE@::rcc"
                        ARGS ${rccArgs}
-                       DEPENDS ${resources} ${generatedResourceFile}
+                       DEPENDS ${resource_dependencies} ${generatedResourceFile}
                        COMMENT "RCC ${newResourceName}"
                        VERBATIM)
 
