@@ -79,6 +79,7 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/quuid.h>
 #include <QtCore/private/qsystemlibrary_p.h>
+#include <QtCore/private/qwinregistry_p.h>
 
 #include <QtEventDispatcherSupport/private/qwindowsguieventdispatcher_p.h>
 
@@ -1518,28 +1519,13 @@ QTouchDevice *QWindowsContext::touchDevice() const
         d->m_pointerHandler.touchDevice() : d->m_mouseHandler.touchDevice();
 }
 
-static DWORD readDwordRegistrySetting(const wchar_t *regKey, const wchar_t *subKey, DWORD defaultValue)
-{
-    DWORD result = defaultValue;
-    HKEY handle;
-    if (RegOpenKeyEx(HKEY_CURRENT_USER, regKey, 0, KEY_READ, &handle) == ERROR_SUCCESS) {
-        DWORD type;
-        if (RegQueryValueEx(handle, subKey, nullptr, &type, nullptr, nullptr) == ERROR_SUCCESS
-            && type == REG_DWORD) {
-            DWORD value;
-            DWORD size = sizeof(result);
-            if (RegQueryValueEx(handle, subKey, nullptr, nullptr, reinterpret_cast<unsigned char *>(&value), &size) == ERROR_SUCCESS)
-                result = value;
-        }
-        RegCloseKey(handle);
-    }
-    return result;
-}
-
 DWORD QWindowsContext::readAdvancedExplorerSettings(const wchar_t *subKey, DWORD defaultValue)
 {
-    return readDwordRegistrySetting(L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
-                                    subKey, defaultValue);
+    const auto value =
+        QWinRegistryKey(HKEY_CURRENT_USER,
+                        LR"(Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced)")
+                       .dwordValue(subKey);
+    return value.second ? value.first : defaultValue;
 }
 
 static inline bool isEmptyRect(const RECT &rect)

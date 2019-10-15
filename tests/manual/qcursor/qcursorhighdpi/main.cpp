@@ -218,7 +218,7 @@ protected:
 
 VerticalRuler::VerticalRuler(QWidget *parent) : QWidget(parent)
 {
-    const int screenWidth = QApplication::desktop()->screenGeometry(this).width();
+    const int screenWidth = screen()->geometry().width();
     setFixedWidth(screenWidth / 48); // 1920 pixel monitor ->40
 }
 
@@ -356,15 +356,12 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     MainWindowPtrList windows;
-
-    QDesktopWidget *desktopWidget = app.desktop();
-
     const int lastScreen = arguments.contains("-p")
         ? 0  // Primary screen only
-        : desktopWidget->screenCount() - 1; // All screens
+        : QGuiApplication::screens().size() - 1; // All screens
     for (int s = lastScreen; s >= 0; --s) {
-        MainWindowPtr window(new MainWindow(desktopWidget->screen(s)));
-        const QPoint pos = desktopWidget->screenGeometry(s).center() - QPoint(200, 100);
+        MainWindowPtr window(new MainWindow());
+        const QPoint pos = QGuiApplication::screens().at(s)->geometry().center() - QPoint(200, 100);
         window->move(pos);
         windows.append(window);
         window->show();

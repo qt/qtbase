@@ -43,10 +43,16 @@
 #include <QObject>
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <qpa/qplatformdialoghelper.h>
+#include <QtCore/private/qcore_mac_p.h>
+
+#import <AppKit/NSSavePanel.h>
 
 QT_REQUIRE_CONFIG(filedialog);
 
-Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate));
+@interface QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) : NSObject<NSOpenSavePanelDelegate>
+@end
+
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
 
 QT_BEGIN_NAMESPACE
 
@@ -84,7 +90,7 @@ public:
     void QNSOpenSavePanelDelegate_filterSelected(int menuIndex);
 
 private:
-    QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate) *mDelegate;
+    QNSOpenSavePanelDelegate *mDelegate;
     QUrl mDir;
 };
 

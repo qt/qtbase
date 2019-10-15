@@ -211,7 +211,9 @@ QDesktopWidget::QDesktopWidget()
     setObjectName(QLatin1String("desktop"));
     d->_q_updateScreens();
     connect(qApp, SIGNAL(screenAdded(QScreen*)), this, SLOT(_q_updateScreens()));
+#if QT_DEPRECATED_SINCE(5, 11)
     connect(qApp, SIGNAL(primaryScreenChanged(QScreen*)), this, SIGNAL(primaryScreenChanged()));
+#endif
 }
 
 QDesktopWidget::~QDesktopWidget()

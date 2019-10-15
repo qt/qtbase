@@ -52,12 +52,12 @@
 
 #include <QApplication>
 #include <QComboBox>
-#include <QDesktopWidget>
 #include <QDialogButtonBox>
 #include <QGridLayout>
 #include <QLabel>
 #include <QPlainTextEdit>
 #include <QPushButton>
+#include <QScreen>
 #include <QTextCodec>
 #include <QTextStream>
 
@@ -183,7 +183,7 @@ PreviewForm::PreviewForm(QWidget *parent)
     mainLayout->addWidget(statusLabel, 2, 0, 1, 2);
     mainLayout->addWidget(buttonBox, 3, 0, 1, 2);
 
-    const QRect screenGeometry = QApplication::desktop()->screenGeometry(this);
+    const QRect screenGeometry = screen()->geometry();
     resize(screenGeometry.width() * 2 / 5, screenGeometry.height() / 2);
 }
 

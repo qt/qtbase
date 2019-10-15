@@ -278,12 +278,11 @@ void QCocoaMenuBar::updateMenuBarImmediately()
         // we still have to update the menubar.
         if ((win->flags() & Qt::WindowType_Mask) != Qt::Tool)
             return;
-        typedef QT_MANGLE_NAMESPACE(QCocoaApplicationDelegate) AppDelegate;
         NSApplication *app = [NSApplication sharedApplication];
-        if (![app.delegate isKindOfClass:[AppDelegate class]])
+        if (![app.delegate isKindOfClass:[QCocoaApplicationDelegate class]])
             return;
         // We apply this logic _only_ during the startup.
-        AppDelegate *appDelegate = app.delegate;
+        QCocoaApplicationDelegate *appDelegate = app.delegate;
         if (!appDelegate.inLaunch)
             return;
     }
@@ -403,3 +402,4 @@ QCocoaWindow *QCocoaMenuBar::cocoaWindow() const
 
 QT_END_NAMESPACE
 
+#include "moc_qcocoamenubar.cpp"

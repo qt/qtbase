@@ -43,7 +43,7 @@
 
 Q_LOGGING_CATEGORY(lcQpaGestures, "qt.qpa.input.gestures")
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) (Gestures)
+@implementation QNSView (Gestures)
 
 - (bool)handleGestureAsBeginEnd:(NSEvent *)event
 {

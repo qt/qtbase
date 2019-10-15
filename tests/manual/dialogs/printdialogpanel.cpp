@@ -710,8 +710,7 @@ void PrintDialogPanel::showPreviewDialog()
     applySettings(m_printer.data());
     PrintPreviewDialog dialog(m_printer.data(), this);
 #if QT_VERSION >= 0x050000
-    const int screenNumber = QApplication::desktop()->screenNumber(this);
-    const QSize availableSize = QGuiApplication::screens().at(screenNumber)->availableSize();
+    const QSize availableSize = screen()->availableSize();
 #else
     const QSize availableSize = QApplication::desktop()->availableGeometry().size();
 #endif

@@ -126,6 +126,7 @@ win32:SOURCES += ../../corelib/global/qoperatingsystemversion_win.cpp \
                  ../../corelib/kernel/qsharedmemory_win.cpp \
                  ../../corelib/kernel/qsystemsemaphore_win.cpp \
                  ../../corelib/plugin/qsystemlibrary.cpp \
+                 ../../corelib/kernel/qwinregistry.cpp \
 
 mac {
     SOURCES += \

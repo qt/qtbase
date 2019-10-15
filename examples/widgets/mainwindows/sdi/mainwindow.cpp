@@ -167,7 +167,7 @@ void MainWindow::tile(const QMainWindow *previous)
     if (!topFrameWidth)
         topFrameWidth = 40;
     const QPoint pos = previous->pos() + 2 * QPoint(topFrameWidth, topFrameWidth);
-    if (QApplication::desktop()->availableGeometry(this).contains(rect().bottomRight() + pos))
+    if (screen()->availableGeometry().contains(rect().bottomRight() + pos))
         move(pos);
 }
 
@@ -290,7 +290,7 @@ void MainWindow::readSettings()
     QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
     const QByteArray geometry = settings.value("geometry", QByteArray()).toByteArray();
     if (geometry.isEmpty()) {
-        const QRect availableGeometry = QApplication::desktop()->availableGeometry(this);
+        const QRect availableGeometry = screen()->availableGeometry();
         resize(availableGeometry.width() / 3, availableGeometry.height() / 2);
         move((availableGeometry.width() - width()) / 2,
              (availableGeometry.height() - height()) / 2);

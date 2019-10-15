@@ -133,8 +133,6 @@ public:
     static void setFontOptions(unsigned options);
     static unsigned fontOptions();
 
-    static QString readRegistryString(HKEY parentHandle, const wchar_t *keyPath, const wchar_t *keyName);
-
 private:
     void removeApplicationFonts();
     void addDefaultEUDCFont();

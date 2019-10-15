@@ -47,12 +47,11 @@
 #include "qoperatingsystemversion.h"
 #include "qoperatingsystemversion_p.h"
 #if defined(Q_OS_WIN) || defined(Q_OS_CYGWIN) || defined(Q_OS_WINRT)
-#include "qoperatingsystemversion_win_p.h"
-#  if QT_CONFIG(settings)
-#    include "qsettings.h"
-#    include "qvariant.h"
+#  include "qoperatingsystemversion_win_p.h"
+#  ifndef Q_OS_WINRT
+#    include "private/qwinregistry_p.h"
 #  endif
-#endif
+#endif // Q_OS_WIN || Q_OS_CYGWIN
 #include <private/qlocale_tools_p.h>
 
 #include <qmutex.h>
@@ -2190,28 +2189,25 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 QT_WARNING_POP
 #endif
 
-static QString readRegistryString(const QString &key, const QString &subKey)
+static QString readVersionRegistryString(const wchar_t *subKey)
 {
-#if QT_CONFIG(settings)
-    QSettings settings(key, QSettings::NativeFormat);
-    return settings.value(subKey).toString();
+#if !defined(QT_BUILD_QMAKE) && !defined(Q_OS_WINRT)
+     return QWinRegistryKey(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion)")
+            .stringValue(subKey);
 #else
-    Q_UNUSED(key);
-    Q_UNUSED(subKey);
-    return QString();
+     Q_UNUSED(subKey);
+     return QString();
 #endif
 }
 
-static inline QString windowsVersionKey() { return QStringLiteral(R"(HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion)"); }
-
 static inline QString windows10ReleaseId()
 {
-    return readRegistryString(windowsVersionKey(), QStringLiteral("ReleaseId"));
+    return readVersionRegistryString(L"ReleaseId");
 }
 
 static inline QString windows7Build()
 {
-    return readRegistryString(windowsVersionKey(), QStringLiteral("CurrentBuild"));
+    return readVersionRegistryString(L"CurrentBuild");
 }
 
 static QString winSp_helper()
@@ -3078,6 +3074,7 @@ QByteArray QSysInfo::machineUniqueId()
     }
 #elif defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     // Let's poke at the registry
+    // ### Qt 6: Use new helpers from qwinregistry.cpp (once bootstrap builds are obsolete)
     HKEY key = NULL;
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ | KEY_WOW64_64KEY, &key)
             == ERROR_SUCCESS) {

@@ -49,8 +49,8 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include <QScreen>
 #include <QStyleHints>
-#include <QDesktopWidget>
 #include <QTranslator>
 #include <QLocale>
 #include <QLibraryInfo>
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 
     Dialog dialog;
     if (!QGuiApplication::styleHints()->showIsFullScreen() && !QGuiApplication::styleHints()->showIsMaximized()) {
-        const QRect availableGeometry = QApplication::desktop()->availableGeometry(&dialog);
+        const QRect availableGeometry = dialog.screen()->availableGeometry();
         dialog.resize(availableGeometry.width() / 3, availableGeometry.height() * 2 / 3);
         dialog.move((availableGeometry.width() - dialog.width()) / 2,
                     (availableGeometry.height() - dialog.height()) / 2);

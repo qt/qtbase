@@ -66,13 +66,13 @@
 #include "qcocoaintegration.h"
 
 // Private interface
-@interface QT_MANGLE_NAMESPACE(QNSView) ()
+@interface QNSView ()
 - (BOOL)isTransparentForUserInput;
 @property (assign) NSView* previousSuperview;
 @property (assign) NSWindow* previousWindow;
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSView) (Drawing) <CALayerDelegate>
+@interface QNSView (Drawing) <CALayerDelegate>
 - (void)initDrawing;
 @end
 
@@ -84,7 +84,9 @@
 - (void)cursorUpdate:(NSEvent *)theEvent;
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSView) (Mouse)
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMouseMoveHelper);
+
+@interface QNSView (Mouse)
 - (void)initMouse;
 - (NSPoint)screenMousePoint:(NSEvent *)theEvent;
 - (void)mouseMovedImpl:(NSEvent *)theEvent;
@@ -92,28 +94,28 @@
 - (void)mouseExitedImpl:(NSEvent *)theEvent;
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSView) (Touch)
+@interface QNSView (Touch)
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSView) (Tablet)
+@interface QNSView (Tablet)
 - (bool)handleTabletEvent:(NSEvent *)theEvent;
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSView) (Gestures)
+@interface QNSView (Gestures)
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSView) (Dragging)
+@interface QNSView (Dragging)
 -(void)registerDragTypes;
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSView) (Keys)
+@interface QNSView (Keys)
 @end
 
-@interface QT_MANGLE_NAMESPACE(QNSView) (ComplexText) <NSTextInputClient>
+@interface QNSView (ComplexText) <NSTextInputClient>
 - (void)textInputContextKeyboardSelectionDidChangeNotification:(NSNotification *)textInputContextKeyboardSelectionDidChangeNotification;
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) {
+@implementation QNSView {
     QPointer<QCocoaWindow> m_platformWindow;
     Qt::MouseButtons m_buttons;
     Qt::MouseButtons m_acceptedMouseDowns;
@@ -125,7 +127,7 @@
     bool m_sendUpAsRightButton;
     Qt::KeyboardModifiers m_currentWheelModifiers;
     NSString *m_inputSource;
-    QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) *m_mouseMoveHelper;
+    QNSViewMouseMoveHelper *m_mouseMoveHelper;
     bool m_resendKeyEvent;
     bool m_scrolling;
     bool m_updatingDrag;
@@ -379,7 +381,7 @@
 
 // -----------------------------------------------------
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) (QtExtras)
+@implementation QNSView (QtExtras)
 
 - (QCocoaWindow*)platformWindow
 {

@@ -12,3 +12,6 @@ SUBDIRS=\
     qtendian \
     qglobalstatic \
     qhooks
+
+win32:!winrt: SUBDIRS += \
+    qwinregistry
