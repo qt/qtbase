@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation
+** Copyright (C) 2019 Intel Corporation
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and associated documentation files (the "Software"), to deal
@@ -37,15 +37,17 @@
 #endif
 
 #ifndef CBOR_NO_HALF_FLOAT_TYPE
-#  ifdef __F16C__
+#  if defined(__F16C__) || defined(__AVX2__)
 #    include <immintrin.h>
-static inline unsigned short encode_half(double val)
+static inline unsigned short encode_half(float val)
 {
-    return _cvtss_sh((float)val, 3);
+    __m128i m = _mm_cvtps_ph(_mm_set_ss(val), _MM_FROUND_CUR_DIRECTION);
+    return _mm_extract_epi16(m, 0);
 }
-static inline double decode_half(unsigned short half)
+static inline float decode_half(unsigned short half)
 {
-    return _cvtsh_ss(half);
+    __m128i m = _mm_cvtsi32_si128(half);
+    return _mm_cvtss_f32(_mm_cvtph_ps(m));
 }
 #  else
 /* software implementation of float-to-fp16 conversions */

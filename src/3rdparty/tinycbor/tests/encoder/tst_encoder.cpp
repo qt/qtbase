@@ -22,7 +22,7 @@
 **
 ****************************************************************************/
 
-#include <QTest>
+#include <QtTest>
 #include "cbor.h"
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 9, 0)
