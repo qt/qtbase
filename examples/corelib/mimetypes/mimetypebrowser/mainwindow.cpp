@@ -83,7 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
         fileMenu->addAction(tr("&Detect File Type..."), this, &MainWindow::detectFile);
     detectFileAction->setShortcuts(QKeySequence::Open);
 
-    QAction *exitAction = fileMenu->addAction(tr("E&xit"), qApp, &QApplication::closeAllWindows);
+    QAction *exitAction = fileMenu->addAction(tr("E&xit"), qApp, &QApplication::quit);
     exitAction->setShortcuts(QKeySequence::Quit);
 
     QMenu *findMenu = menuBar()->addMenu(tr("&Edit"));

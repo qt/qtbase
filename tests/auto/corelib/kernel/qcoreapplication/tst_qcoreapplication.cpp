@@ -617,6 +617,72 @@ void tst_QCoreApplication::processEventsAlwaysSendsPostedEvents()
     } while (t.elapsed() < 1000);
 }
 
+class QuitBlocker : public QObject
+{
+   Q_OBJECT
+
+public:
+    bool eventFilter(QObject *, QEvent *event)
+    {
+        if (event->type() == QEvent::Quit) {
+            event->ignore();
+            return true;
+        }
+
+        return false;
+    }
+};
+
+void tst_QCoreApplication::quit()
+{
+    TestApplication::quit(); // Should not do anything
+
+    {
+        int argc = 1;
+        char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
+        TestApplication app(argc, argv);
+
+        EventSpy spy;
+        app.installEventFilter(&spy);
+
+        {
+            QTimer::singleShot(0, &app, SLOT(quit()));
+            app.exec();
+            QVERIFY(spy.recordedEvents.contains(QEvent::Quit));
+        }
+
+        spy.recordedEvents.clear();
+
+        {
+            QTimer::singleShot(0, qApp, SLOT(quit()));
+            app.exec();
+            QVERIFY(spy.recordedEvents.contains(QEvent::Quit));
+        }
+
+        spy.recordedEvents.clear();
+
+        {
+            QTimer::singleShot(0, [&]{ TestApplication::quit(); });
+            app.exec();
+            QVERIFY(spy.recordedEvents.contains(QEvent::Quit));
+        }
+
+        spy.recordedEvents.clear();
+
+        {
+            QuitBlocker quitBlocker;
+            app.installEventFilter(&quitBlocker);
+
+            QTimer::singleShot(0, [&]{ TestApplication::quit(); });
+            QTimer::singleShot(200, [&]{ TestApplication::exit(); });
+            app.exec();
+            QVERIFY(!spy.recordedEvents.contains(QEvent::Quit));
+        }
+    }
+
+    TestApplication::quit(); // Should not do anything
+}
+
 void tst_QCoreApplication::reexec()
 {
     int argc = 1;

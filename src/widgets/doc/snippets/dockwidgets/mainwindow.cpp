@@ -119,7 +119,7 @@ void MainWindow::setupMenus()
     QAction *exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcut(tr("Ctrl+Q"));
     exitAct->setStatusTip(tr("Exit the application"));
-    connect(exitAct, &QAction::triggered, qApp, &QApplication::closeAllWindows);
+    connect(exitAct, &QAction::triggered, qApp, &QApplication::quit);
 
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(exitAct);

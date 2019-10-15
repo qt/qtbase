@@ -462,7 +462,7 @@ ControllerWidget::ControllerWidget(QWidget *parent)
     QMenu *fileMenu = menuBar()->addMenu(tr("File"));
     QAction *exitAction = fileMenu->addAction(tr("Exit"));
     exitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
-    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
+    connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 
     QString title = QLatin1String("Child Window Geometry test, (Qt ");
     title += QLatin1String(QT_VERSION_STR);

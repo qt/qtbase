@@ -675,7 +675,7 @@ void tst_QApplication::quitOnLastWindowClosed()
     bool quitApplicationTriggered = false;
     auto quitSlot = [&quitApplicationTriggered] () {
         quitApplicationTriggered = true;
-        QCoreApplication::quit();
+        QCoreApplication::exit();
     };
 
     {

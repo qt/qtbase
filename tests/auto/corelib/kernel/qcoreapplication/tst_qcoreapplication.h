@@ -49,6 +49,7 @@ private slots:
     void applicationPid();
     void globalPostedEventsCount();
     void processEventsAlwaysSendsPostedEvents();
+    void quit();
     void reexec();
     void execAfterExit();
     void eventLoopExecAfterExit();

@@ -1920,7 +1920,7 @@ void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
 bool QCoreApplication::event(QEvent *e)
 {
     if (e->type() == QEvent::Quit) {
-        quit();
+        exit(0);
         return true;
     }
     return QObject::event(e);
@@ -1944,12 +1944,18 @@ void QCoreApplicationPrivate::maybeQuit()
 }
 
 /*!
-    Tells the application to exit with return code 0 (success).
-    Equivalent to calling QCoreApplication::exit(0).
+    Asks the application to quit.
 
-    It's common to connect the QGuiApplication::lastWindowClosed() signal
-    to quit(), and you also often connect e.g. QAbstractButton::clicked() or
-    signals in QAction, QMenu, or QMenuBar to it.
+    The request may be ignored if the application prevents the quit,
+    for example if one of its windows can't be closed. The application
+    can affect this by handling the QEvent::Quit event on the application
+    level, or QEvent::Close events for the individual windows.
+
+    If the quit is not interrupted the application will exit with return
+    code 0 (success).
+
+    To exit the application without a chance of being interrupted, call
+    exit() directly.
 
     It's good practice to always connect signals to this slot using a
     \l{Qt::}{QueuedConnection}. If a signal connected (non-queued) to this slot
@@ -1962,12 +1968,19 @@ void QCoreApplicationPrivate::maybeQuit()
 
     \snippet code/src_corelib_kernel_qcoreapplication.cpp 1
 
-    \sa exit(), aboutToQuit(), QGuiApplication::lastWindowClosed()
+    \sa exit(), aboutToQuit()
 */
-
 void QCoreApplication::quit()
 {
-    exit(0);
+    if (!self)
+        return;
+
+    if (QThread::currentThread() == self->d_func()->mainThread()) {
+        QEvent quitEvent(QEvent::Quit);
+        QCoreApplication::sendEvent(self, &quitEvent);
+    } else {
+        QCoreApplication::postEvent(self, new QEvent(QEvent::Quit));
+    }
 }
 
 /*!

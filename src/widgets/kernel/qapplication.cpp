@@ -1605,19 +1605,17 @@ retry:
     Closes all top-level windows.
 
     This function is particularly useful for applications with many top-level
-    windows. It could, for example, be connected to a \uicontrol{Exit} entry in the
-    \uicontrol{File} menu:
-
-    \snippet mainwindows/mdi/mainwindow.cpp 0
+    windows.
 
     The windows are closed in random order, until one window does not accept
-    the close event. The application quits when the last window was
-    successfully closed; this can be turned off by setting
-    \l quitOnLastWindowClosed to false.
+    the close event. The application quits when the last window was successfully
+    closed, unless \l quitOnLastWindowClosed is set to false. To trigger application
+    termination from e.g. a menu, use QCoreApplication::quit() instead of this
+    function.
 
     \sa quitOnLastWindowClosed, lastWindowClosed(), QWidget::close(),
-    QWidget::closeEvent(), lastWindowClosed(), QCoreApplication::quit(), topLevelWidgets(),
-    QWidget::isWindow()
+    QWidget::closeEvent(), lastWindowClosed(), QCoreApplication::quit(),
+    topLevelWidgets(), QWidget::isWindow()
 */
 void QApplication::closeAllWindows()
 {

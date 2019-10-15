@@ -227,7 +227,7 @@ void MainWindow::createActions()
     closeAct->setStatusTip(tr("Close this window"));
 
     const QIcon exitIcon = QIcon::fromTheme("application-exit");
-    QAction *exitAct = fileMenu->addAction(exitIcon, tr("E&xit"), qApp, &QApplication::closeAllWindows);
+    QAction *exitAct = fileMenu->addAction(exitIcon, tr("E&xit"), qApp, &QApplication::quit);
     exitAct->setShortcuts(QKeySequence::Quit);
     exitAct->setStatusTip(tr("Exit the application"));
 
