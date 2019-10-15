@@ -154,8 +154,14 @@ public:
 #else
         inline QJsonValueRefPtr operator->() const { return QJsonValueRefPtr(o, i); }
 #endif
+        const QJsonValueRef operator[](int j) { return QJsonValueRef(o, i + j); }
+
         inline bool operator==(const iterator &other) const { return i == other.i; }
         inline bool operator!=(const iterator &other) const { return i != other.i; }
+        bool operator<(const iterator& other) const { return i < other.i; }
+        bool operator<=(const iterator& other) const { return i <= other.i; }
+        bool operator>(const iterator& other) const { return i > other.i; }
+        bool operator>=(const iterator& other) const { return i >= other.i; }
 
         inline iterator &operator++() { ++i; return *this; }
         inline iterator operator++(int) { iterator r = *this; ++i; return r; }
@@ -166,10 +172,15 @@ public:
         inline iterator operator-(int j) const { return operator+(-j); }
         inline iterator &operator+=(int j) { i += j; return *this; }
         inline iterator &operator-=(int j) { i -= j; return *this; }
+        int operator-(iterator j) const { return i - j.i; }
 
     public:
         inline bool operator==(const const_iterator &other) const { return i == other.i; }
         inline bool operator!=(const const_iterator &other) const { return i != other.i; }
+        bool operator<(const const_iterator& other) const { return i < other.i; }
+        bool operator<=(const const_iterator& other) const { return i <= other.i; }
+        bool operator>(const const_iterator& other) const { return i > other.i; }
+        bool operator>=(const const_iterator& other) const { return i >= other.i; }
     };
     friend class iterator;
 
@@ -200,8 +211,14 @@ public:
 #else
         inline QJsonValuePtr operator->() const { return QJsonValuePtr(o->valueAt(i)); }
 #endif
+        const QJsonValue operator[](int j) { return o->valueAt(i + j); }
+
         inline bool operator==(const const_iterator &other) const { return i == other.i; }
         inline bool operator!=(const const_iterator &other) const { return i != other.i; }
+        bool operator<(const const_iterator& other) const { return i < other.i; }
+        bool operator<=(const const_iterator& other) const { return i <= other.i; }
+        bool operator>(const const_iterator& other) const { return i > other.i; }
+        bool operator>=(const const_iterator& other) const { return i >= other.i; }
 
         inline const_iterator &operator++() { ++i; return *this; }
         inline const_iterator operator++(int) { const_iterator r = *this; ++i; return r; }
@@ -212,9 +229,14 @@ public:
         inline const_iterator operator-(int j) const { return operator+(-j); }
         inline const_iterator &operator+=(int j) { i += j; return *this; }
         inline const_iterator &operator-=(int j) { i -= j; return *this; }
+        int operator-(iterator j) const { return i - j.i; }
 
         inline bool operator==(const iterator &other) const { return i == other.i; }
         inline bool operator!=(const iterator &other) const { return i != other.i; }
+        bool operator<(const iterator& other) const { return i < other.i; }
+        bool operator<=(const iterator& other) const { return i <= other.i; }
+        bool operator>(const iterator& other) const { return i > other.i; }
+        bool operator>=(const iterator& other) const { return i >= other.i; }
     };
     friend class const_iterator;
 

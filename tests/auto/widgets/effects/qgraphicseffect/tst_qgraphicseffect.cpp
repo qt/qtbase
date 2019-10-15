@@ -311,7 +311,7 @@ void tst_QGraphicsEffect::draw()
 
     QGraphicsView view(&scene);
     view.show();
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(item->numRepaints > 0);
     QCoreApplication::processEvents(); // Process all queued paint events
     item->reset();
@@ -668,8 +668,7 @@ void tst_QGraphicsEffect::childrenVisibilityShouldInvalidateCache()
     scene.addItem(&parent);
     QGraphicsView view(&scene);
     view.show();
-    QApplication::setActiveWindow(&view);
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(parent.nbPaint >= 1);
     //we set an effect on the parent
     parent.setGraphicsEffect(new QGraphicsDropShadowEffect(&parent));
@@ -694,8 +693,7 @@ void tst_QGraphicsEffect::prepareGeometryChangeInvalidateCache()
 
     QGraphicsView view(&scene);
     view.show();
-    qApp->setActiveWindow(&view);
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(item->nbPaint >= 1);
 
     item->nbPaint = 0;
@@ -726,8 +724,7 @@ void tst_QGraphicsEffect::itemHasNoContents()
 
     QGraphicsView view(&scene);
     view.show();
-    qApp->setActiveWindow(&view);
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
     QTRY_VERIFY(child->nbPaint >= 1);
 
     CustomEffect *effect = new CustomEffect;

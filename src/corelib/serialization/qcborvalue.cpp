@@ -1765,6 +1765,7 @@ QCborValue::QCborValue(const QDateTime &dt)
     container->elements[1].type = String;
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     Creates a QCborValue object of the URL extended type and containing the
     value represented by \a url. The value can later be retrieved using toUrl().
@@ -1781,6 +1782,7 @@ QCborValue::QCborValue(const QUrl &url)
     t = Url;
     container->elements[1].type = String;
 }
+#endif
 
 #if QT_CONFIG(regularexpression)
 /*!
@@ -1934,6 +1936,7 @@ QDateTime QCborValue::toDateTime(const QDateTime &defaultValue) const
     return QDateTime::fromString(byteData->asLatin1(), Qt::ISODateWithMs);
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     Returns the URL value stored in this QCborValue, if it is of the URL
     extended type. Otherwise, it returns \a defaultValue.
@@ -1954,6 +1957,7 @@ QUrl QCborValue::toUrl(const QUrl &defaultValue) const
 
     return QUrl::fromEncoded(byteData->asByteArrayView());
 }
+#endif
 
 #if QT_CONFIG(regularexpression)
 /*!
@@ -2882,8 +2886,10 @@ uint qHash(const QCborValue &value, uint seed)
         return qHash(value.toDouble(), seed);
     case QCborValue::DateTime:
         return qHash(value.toDateTime(), seed);
+#ifndef QT_BOOTSTRAPPED
     case QCborValue::Url:
         return qHash(value.toUrl(), seed);
+#endif
 #if QT_CONFIG(regularexpression)
     case QCborValue::RegularExpression:
         return qHash(value.toRegularExpression(), seed);
@@ -2936,8 +2942,10 @@ static QDebug debugContents(QDebug &dbg, const QCborValue &v)
     }
     case QCborValue::DateTime:
         return dbg << v.toDateTime();
+#ifndef QT_BOOTSTRAPPED
     case QCborValue::Url:
         return dbg << v.toUrl();
+#endif
 #if QT_CONFIG(regularexpression)
     case QCborValue::RegularExpression:
         return dbg << v.toRegularExpression();

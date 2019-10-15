@@ -161,7 +161,9 @@ public:
     {}
 
     explicit QCborValue(const QDateTime &dt);
+#ifndef QT_BOOTSTRAPPED
     explicit QCborValue(const QUrl &url);
+#endif
 #if QT_CONFIG(regularexpression)
     explicit QCborValue(const QRegularExpression &rx);
 #endif
@@ -387,8 +389,10 @@ public:
     { return concrete().toString(defaultValue); }
     QDateTime toDateTime(const QDateTime &defaultValue = {}) const
     { return concrete().toDateTime(defaultValue); }
+#ifndef QT_BOOTSTRAPPED
     QUrl toUrl(const QUrl &defaultValue = {}) const
     { return concrete().toUrl(defaultValue); }
+#endif
 #if QT_CONFIG(regularexpression)
     QRegularExpression toRegularExpression(const QRegularExpression &defaultValue = {}) const
     { return concrete().toRegularExpression(defaultValue); }
