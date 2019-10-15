@@ -1,37 +1,38 @@
 
 function(qt_internal_set_warnings_are_errors_flags target)
+    set(flags "")
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         # Regular clang 3.0+
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "3.0.0")
-            target_compile_options("${target}" INTERFACE -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
+            list(APPEND flags -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
         endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
         # using AppleClang
         # Apple clang 4.0+
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "4.0.0" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS_EQUAL "9.2")
-            target_compile_options("${target}" INTERFACE -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
+            list(APPEND flags -Werror -Wno-error=\#warnings -Wno-error=deprecated-declarations)
         endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         # using GCC
-        target_compile_options("${target}" INTERFACE -Werror -Wno-error=cpp -Wno-error=deprecated-declarations)
+        list(APPEND flags -Werror -Wno-error=cpp -Wno-error=deprecated-declarations)
 
         # GCC prints this bogus warning, after it has inlined a lot of code
         # error: assuming signed overflow does not occur when assuming that (X + c) < X is always false
-        target_compile_options("${target}" INTERFACE -Wno-error=strict-overflow)
+        list(APPEND flags -Wno-error=strict-overflow)
 
         # GCC 7 includes -Wimplicit-fallthrough in -Wextra, but Qt is not yet free of implicit fallthroughs.
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "7.0.0")
-            target_compile_options("${target}" INTERFACE -Wno-error=implicit-fallthrough)
+            list(APPEND flags -Wno-error=implicit-fallthrough)
         endif()
 
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.0.0")
             # GCC 9 introduced these but we are not clean for it.
-            target_compile_options("${target}" INTERFACE -Wno-error=deprecated-copy -Wno-error=redundant-move -Wno-error=init-list-lifetime)
+            list(APPEND flags -Wno-error=deprecated-copy -Wno-error=redundant-move -Wno-error=init-list-lifetime)
         endif()
 
         # Work-around for bug https://code.google.com/p/android/issues/detail?id=58135
         if (ANDROID)
-            target_compile_options("${target}" INTERFACE -Wno-error=literal-suffix)
+            list(APPEND flags -Wno-error=literal-suffix)
         endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
         # Intel CC 13.0 +, on Linux only
@@ -44,7 +45,7 @@ function(qt_internal_set_warnings_are_errors_flags target)
                 # 1786: function "entity" (declared at line N of "file") was declared deprecated ("message")
                 # 1881: argument must be a constant null pointer value
                 #      (NULL in C++ is usually a literal 0)
-                target_compile_options("${target}" INTERFACE -Werror -ww177,1224,1478,1786,1881)
+                list(APPEND flags -Werror -ww177,1224,1478,1786,1881)
             endif()
         endif()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -52,9 +53,12 @@ function(qt_internal_set_warnings_are_errors_flags target)
         # MSVC 2012, 2013, 2015.
         # Respectively MSVC_VERRSIONs are: 1700-1799, 1800-1899, 1900-1909.
         if(MSVC_VERSION GREATER_EQUAL 1700 AND MSVC_VERSION LESS_EQUAL 1909)
-            target_compile_options("${target}" INTERFACE /WX)
+            list(APPEND flags /WX)
         endif()
     endif()
+    set(add_flags "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_SKIP_WARNINGS_ARE_ERRORS>>>")
+    set(flags_generator_expression "$<${add_flags}:${flags}>")
+    target_compile_options("${target}" INTERFACE "${flags_generator_expression}")
 endfunction()
 
 add_library(PlatformCommonInternal INTERFACE)

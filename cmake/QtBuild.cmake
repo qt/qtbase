@@ -1303,6 +1303,16 @@ function(qt_internal_set_no_exceptions_flags target)
     endif()
 endfunction()
 
+function(qt_skip_warnings_are_errors target)
+    set_target_properties("${target}" PROPERTIES QT_SKIP_WARNINGS_ARE_ERRORS ON)
+endfunction()
+
+function(qt_skip_warnings_are_errors_when_repo_unclean target)
+    if(QT_REPO_NOT_WARNINGS_CLEAN)
+        qt_skip_warnings_are_errors("${target}")
+    endif()
+endfunction()
+
 # This is the main entry function for creating a Qt module, that typically
 # consists of a library, public header files, private header files and configurable
 # features.
@@ -1343,6 +1353,7 @@ function(add_qt_module target)
         qt_android_apply_arch_suffix("${target}")
     endif()
     qt_internal_add_target_aliases("${target}")
+    qt_skip_warnings_are_errors_when_repo_unclean("${target}")
 
     # Add _private target to link against the private headers:
     if(NOT ${arg_NO_PRIVATE_MODULE})
@@ -1834,6 +1845,7 @@ function(add_qt_plugin target)
         )
     endif()
     qt_internal_add_target_aliases("${target}")
+    qt_skip_warnings_are_errors_when_repo_unclean("${target}")
 
     set_target_properties("${target}" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${output_directory}"
@@ -2310,6 +2322,7 @@ function(add_qt_executable name)
     endif()
 
     qt_autogen_tools_initial_setup(${name})
+    qt_skip_warnings_are_errors_when_repo_unclean("${target}")
 
     set(extra_libraries "")
     if(NOT arg_BOOTSTRAP AND NOT arg_NO_QT)
@@ -2672,6 +2685,7 @@ function(add_cmake_library target)
     if (ANDROID)
         qt_android_apply_arch_suffix("${target}")
     endif()
+    qt_skip_warnings_are_errors_when_repo_unclean("${target}")
 
     if (arg_INSTALL_DIRECTORY)
         set(install_arguments
