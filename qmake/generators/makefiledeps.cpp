@@ -246,7 +246,7 @@ bool QMakeSourceFileInfo::mocable(const QString &file)
     return false;
 }
 
-QMakeSourceFileInfo::QMakeSourceFileInfo(const QString &cf)
+QMakeSourceFileInfo::QMakeSourceFileInfo()
 {
     //dep_mode
     dep_mode = Recursive;
