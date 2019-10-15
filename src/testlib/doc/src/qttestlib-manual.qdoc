@@ -102,6 +102,20 @@
     \li \c{cleanup()} will be called after every test function.
     \endlist
 
+    Use \c initTestCase() for preparing the test. Every test should leave the
+    system in a usable state, so it can be run repeatedly. Cleanup operations
+    should be handled in \c cleanupTestCase(), so they get run even if the test
+    fails.
+
+    Use \c init() for preparing a test function. Every test function should
+    leave the system in a usable state, so it can be run repeatedly. Cleanup
+    operations should be handled in \c cleanup(), so they get run even if the
+    test function fails and exits early.
+
+    Alternatively, you can use RAII (resource acquisition is initialization),
+    with cleanup operations called in destructors, to ensure they happen when
+    the test function returns and the object moves out of scope.
+
     If \c{initTestCase()} fails, no test function will be executed. If \c{init()} fails,
     the following test function will not be executed, the test will proceed to the next
     test function.
