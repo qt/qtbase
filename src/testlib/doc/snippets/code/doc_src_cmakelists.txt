@@ -1,0 +1,14 @@
+project(mytest LANGUAGES CXX)
+
+find_package(Qt5Test REQUIRED)
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+set(CMAKE_AUTOMOC ON)
+
+enable_testing(true)
+
+add_executable(mytest tst_mytest.cpp)
+add_test(NAME mytest COMMAND mytest)
+
+target_link_libraries(mytest PRIVATE Qt5::Test)
