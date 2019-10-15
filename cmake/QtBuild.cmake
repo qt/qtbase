@@ -953,7 +953,7 @@ endfunction()
 
 function(qt_update_precompiled_header target precompiled_header)
     if (precompiled_header AND BUILD_WITH_PCH)
-        set_property(TARGET "${target}" APPEND PROPERTY "PRECOMPILE_HEADERS" "${precompiled_header}")
+        set_property(TARGET "${target}" APPEND PROPERTY "PRECOMPILE_HEADERS" "$<$<COMPILE_LANGUAGE:CXX>:${precompiled_header}>")
     endif()
 endfunction()
 
