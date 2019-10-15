@@ -1248,12 +1248,6 @@ def map_condition(condition: str) -> str:
     condition = condition.replace("*-llvm", "CLANG")
     condition = condition.replace("win32-*", "WIN32")
 
-    # new conditions added by the android multi arch qmake build
-    condition = re.sub(r'x86[^\_]', "TEST_architecture_arch STREQUAL x86", condition)
-    condition = condition.replace('x86_64', "TEST_architecture_arch STREQUAL x86_64")
-    condition = condition.replace('arm64-v8a', "TEST_architecture_arch STREQUAL arm64")
-    condition = condition.replace('armeabi-v7a', "TEST_architecture_arch STREQUAL arm")
-
     pattern = r"CONFIG\((debug|release),debug\|release\)"
     match_result = re.match(pattern, condition)
     if match_result:
@@ -1271,6 +1265,12 @@ def map_condition(condition: str) -> str:
     condition = condition.replace("!", "NOT ")
     condition = condition.replace("&&", " AND ")
     condition = condition.replace("|", " OR ")
+
+    # new conditions added by the android multi arch qmake build
+    condition = re.sub(r'(^| )x86([^\_]|$)', "TEST_architecture_arch STREQUAL x86", condition)
+    condition = re.sub(r'(^| )x86_64', " TEST_architecture_arch STREQUAL x86_64", condition)
+    condition = re.sub(r'(^| )arm64-v8a', "TEST_architecture_arch STREQUAL arm64", condition)
+    condition = re.sub(r'(^| )armeabi-v7a', "TEST_architecture_arch STREQUAL arm", condition)
 
     cmake_condition = ""
     for part in condition.split():
