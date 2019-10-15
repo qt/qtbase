@@ -1971,9 +1971,10 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
             )
 
     if qrc_output:
-        cm_fh.write("\n# Resources:\n")
+        str_indent = spaces(indent)
+        cm_fh.write(f"\n{str_indent}# Resources:\n")
         for line in qrc_output.split("\n"):
-            cm_fh.write(f"{' ' * indent}{line}\n")
+            cm_fh.write(f"{str_indent}{line}\n")
 
 
 def write_statecharts(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, is_example=False):
@@ -2043,9 +2044,12 @@ def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int =
     extend_qt_string = extend_qt_io_string.getvalue()
 
     assert scope.total_condition, "Cannot write CONDITION when scope.condition is None"
+
+    condition = map_to_cmake_condition(scope.total_condition)
+
     extend_scope = (
         f"\n{ind}extend_target({target} CONDITION"
-        f" {map_to_cmake_condition(scope.total_condition)}\n"
+        f" {condition}\n"
         f"{extend_qt_string}{ind})\n"
     )
 
@@ -2054,8 +2058,13 @@ def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int =
 
     cm_fh.write(extend_scope)
 
-    write_resources(cm_fh, target, scope, indent)
-
+    io_string = io.StringIO()
+    write_resources(io_string, target, scope, indent + 1)
+    resource_string = io_string.getvalue()
+    if len(resource_string) != 0:
+        resource_string = resource_string.strip('\n').rstrip(f'\n{spaces(indent + 1)}')
+        cm_fh.write(f"\n{spaces(indent)}if({condition})\n{resource_string}")
+        cm_fh.write(f"\n{spaces(indent)}endif()\n")
 
 def flatten_scopes(scope: Scope) -> List[Scope]:
     result = [scope]  # type: List[Scope]
