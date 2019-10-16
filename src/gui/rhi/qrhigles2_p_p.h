@@ -300,6 +300,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
         enum Cmd {
             BeginFrame,
             EndFrame,
+            ResetFrame,
             Viewport,
             Scissor,
             BlendConstants,

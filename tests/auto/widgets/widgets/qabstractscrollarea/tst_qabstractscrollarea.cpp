@@ -356,7 +356,7 @@ void tst_QAbstractScrollArea::patternBackground()
     widget.resize(600, 600);
     scrollArea.setWidget(&widget);
     topLevel.show();
-    QVERIFY(QTest::qWaitForWindowActive(&topLevel));
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
 
     QLinearGradient linearGrad(QPointF(250, 250), QPointF(300, 300));
     linearGrad.setColorAt(0, Qt::yellow);

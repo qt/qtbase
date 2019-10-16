@@ -64,6 +64,7 @@
 #include <QMenuBar>
 #include <QPlainTextEdit>
 #include <QPushButton>
+#include <QScreen>
 #include <QScrollArea>
 #include <QStatusBar>
 #include <QTextStream>
@@ -302,7 +303,7 @@ QString FontInfoDialog::text() const
 
 void MainWindow::showInfo()
 {
-    const QRect screenGeometry = QApplication::desktop()->screenGeometry(this);
+    const QRect screenGeometry = screen()->geometry();
     FontInfoDialog *dialog = new FontInfoDialog(this);
     dialog->setWindowTitle(tr("Fonts"));
     dialog->setAttribute(Qt::WA_DeleteOnClose);

@@ -52,8 +52,8 @@
 #include "variantdelegate.h"
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QHeaderView>
+#include <QScreen>
 #include <QSettings>
 
 SettingsTree::SettingsTree(QWidget *parent)
@@ -93,7 +93,7 @@ void SettingsTree::setSettingsObject(const SettingsPtr &newSettings)
 
 QSize SettingsTree::sizeHint() const
 {
-    const QRect availableGeometry = QApplication::desktop()->availableGeometry(this);
+    const QRect availableGeometry = screen()->availableGeometry();
     return QSize(availableGeometry.width() * 2 / 3, availableGeometry.height() * 2 / 3);
 }
 

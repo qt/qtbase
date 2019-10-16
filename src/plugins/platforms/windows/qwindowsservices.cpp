@@ -45,6 +45,8 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
 
+#include <QtCore/private/qwinregistry_p.h>
+
 #include <shlobj.h>
 #include <intshcut.h>
 
@@ -78,35 +80,24 @@ static inline QString mailCommand()
 
     const wchar_t mailUserKey[] = L"Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\mailto\\UserChoice";
 
-    wchar_t command[MAX_PATH] = {0};
     // Check if user has set preference, otherwise use default.
-    HKEY handle;
-    QString keyName;
-    if (!RegOpenKeyEx(HKEY_CURRENT_USER, mailUserKey, 0, KEY_READ, &handle)) {
-        DWORD bufferSize = BufferSize;
-        if (!RegQueryValueEx(handle, L"Progid", nullptr, nullptr, reinterpret_cast<unsigned char*>(command), &bufferSize))
-            keyName = QString::fromWCharArray(command);
-        RegCloseKey(handle);
-    }
+    QString keyName = QWinRegistryKey(HKEY_CURRENT_USER, mailUserKey)
+                      .stringValue( L"Progid");
     const QLatin1String mailto = keyName.isEmpty() ? QLatin1String("mailto") : QLatin1String();
     keyName += mailto + QLatin1String("\\Shell\\Open\\Command");
     if (debug)
         qDebug() << __FUNCTION__ << "keyName=" << keyName;
-    command[0] = 0;
-    if (!RegOpenKeyExW(HKEY_CLASSES_ROOT, reinterpret_cast<const wchar_t*>(keyName.utf16()), 0, KEY_READ, &handle)) {
-        DWORD bufferSize = BufferSize;
-        RegQueryValueEx(handle, L"", nullptr, nullptr, reinterpret_cast<unsigned char*>(command), &bufferSize);
-        RegCloseKey(handle);
-    }
+    const QString command = QWinRegistryKey(HKEY_CLASSES_ROOT, keyName).stringValue(L"");
     // QTBUG-57816: As of Windows 10, if there is no mail client installed, an entry like
     // "rundll32.exe .. url.dll,MailToProtocolHandler %l" is returned. Launching it
     // silently fails or brings up a broken dialog after a long time, so exclude it and
     // fall back to ShellExecute() which brings up the URL assocation dialog.
-    if (!command[0] || wcsstr(command, L",MailToProtocolHandler") != nullptr)
+    if (command.isEmpty() || command.contains(QLatin1String(",MailToProtocolHandler")))
         return QString();
     wchar_t expandedCommand[MAX_PATH] = {0};
-    return ExpandEnvironmentStrings(command, expandedCommand, MAX_PATH) ?
-           QString::fromWCharArray(expandedCommand) : QString::fromWCharArray(command);
+    return ExpandEnvironmentStrings(reinterpret_cast<const wchar_t *>(command.utf16()),
+                                    expandedCommand, MAX_PATH)
+        ? QString::fromWCharArray(expandedCommand) : command;
 }
 
 static inline bool launchMail(const QUrl &url)

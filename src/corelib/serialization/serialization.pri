@@ -6,7 +6,6 @@ HEADERS += \
     serialization/qcbormap.h \
     serialization/qcborvalue.h \
     serialization/qcborvalue_p.h \
-    serialization/qcborstream.h \
     serialization/qdatastream.h \
     serialization/qdatastream_p.h \
     serialization/qjson_p.h \
@@ -23,7 +22,6 @@ HEADERS += \
     serialization/qxmlutils_p.h
 
 SOURCES += \
-    serialization/qcborstream.cpp \
     serialization/qcbordiagnostic.cpp \
     serialization/qcborvalue.cpp \
     serialization/qdatastream.cpp \
@@ -38,6 +36,14 @@ SOURCES += \
     serialization/qtextstream.cpp \
     serialization/qxmlstream.cpp \
     serialization/qxmlutils.cpp
+
+qtConfig(cborstream): {
+    SOURCES += \
+        serialization/qcborstream.cpp
+
+    HEADERS += \
+        serialization/qcborstream.h
+}
 
 false: SOURCES += \
     serialization/qcborarray.cpp \

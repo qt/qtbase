@@ -75,7 +75,7 @@ MainWindow::MainWindow()
     statusBar()->showMessage(tr("Ready"));
 
     setWindowTitle(tr("QXmlStream Bookmarks"));
-    const QSize availableSize = QApplication::desktop()->availableGeometry(this).size();
+    const QSize availableSize = screen()->availableGeometry().size();
     resize(availableSize.width() / 2, availableSize.height() / 3);
 }
 //! [0]

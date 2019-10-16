@@ -54,6 +54,9 @@
 
 #if defined(Q_OS_WIN)
 #include <QtCore/qt_windows.h>
+#ifndef Q_OS_WINRT
+#  include <private/qwinregistry_p.h>
+#endif
 #else
 #include <unistd.h>
 #endif
@@ -3623,16 +3626,13 @@ void tst_QSettings::recursionBug()
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
 
-static DWORD readKeyType(HKEY handle, const QString &rSubKey)
+static DWORD readKeyType(HKEY handle, QStringView rSubKey)
 {
     DWORD dataType;
     DWORD dataSize;
-    LONG res = RegQueryValueEx(handle, reinterpret_cast<const wchar_t *>(rSubKey.utf16()), 0, &dataType, 0, &dataSize);
-
-    if (res == ERROR_SUCCESS)
-        return dataType;
-
-    return 0;
+    LONG res = RegQueryValueEx(handle, reinterpret_cast<const wchar_t *>(rSubKey.utf16()),
+                               nullptr, &dataType, nullptr, &dataSize);
+    return res == ERROR_SUCCESS ? dataType : 0;
 }
 
 // This is a regression test for QTBUG-13249, where QSettings was storing
@@ -3652,29 +3652,12 @@ void tst_QSettings::consistentRegistryStorage()
     QCOMPARE(settings1.value("quint64_value").toULongLong(), (quint64)1024);
     settings1.sync();
 
-    HKEY handle;
-    LONG res;
-    QString keyName = "Software\\software.org\\KillerAPP";
-    res = RegOpenKeyEx(HKEY_CURRENT_USER, reinterpret_cast<const wchar_t *>(keyName.utf16()), 0, KEY_READ, &handle);
-    if (res == ERROR_SUCCESS)
-    {
-        DWORD dataType;
-        dataType = readKeyType(handle, QString("qint32_value"));
-        if (dataType != 0) {
-            QCOMPARE((int)REG_DWORD, (int)dataType);
-        }
-        dataType = readKeyType(handle, QString("quint32_value"));
-        if (dataType != 0) {
-            QCOMPARE((int)REG_DWORD, (int)dataType);
-        }
-        dataType = readKeyType(handle, QString("qint64_value"));
-        if (dataType != 0) {
-            QCOMPARE((int)REG_QWORD, (int)dataType);
-        }
-        dataType = readKeyType(handle, QString("quint64_value"));
-        if (dataType != 0) {
-            QCOMPARE((int)REG_QWORD, (int)dataType);
-        }
+    QWinRegistryKey handle(HKEY_CURRENT_USER, LR"(Software\software.org\KillerAPP)");
+    if (handle.isValid()) {
+        QCOMPARE(readKeyType(handle, L"qint32_value"), DWORD(REG_DWORD));
+        QCOMPARE(readKeyType(handle, L"quint32_value"), DWORD(REG_DWORD));
+        QCOMPARE(readKeyType(handle, L"qint64_value"), DWORD(REG_QWORD));
+        QCOMPARE(readKeyType(handle, L"quint64_value"), DWORD(REG_QWORD));
         RegCloseKey(handle);
     }
 }

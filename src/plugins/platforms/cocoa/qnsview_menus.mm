@@ -53,11 +53,11 @@ static bool selectorIsCutCopyPaste(SEL selector)
             || selector == @selector(selectAll:));
 }
 
-@interface QT_MANGLE_NAMESPACE(QNSView) (Menus)
+@interface QNSView (Menus)
 - (void)qt_itemFired:(QCocoaNSMenuItem *)item;
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) (Menus)
+@implementation QNSView (Menus)
 
 - (BOOL)validateMenuItem:(NSMenuItem*)item
 {

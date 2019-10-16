@@ -525,6 +525,11 @@ void QRhiGles2::destroy()
     ensureContext();
     executeDeferredReleases();
 
+    if (vao) {
+        f->glDeleteVertexArrays(1, &vao);
+        vao = 0;
+    }
+
     for (uint shader : m_shaderCache)
         f->glDeleteShader(shader);
     m_shaderCache.clear();
@@ -1151,6 +1156,13 @@ const QRhiNativeHandles *QRhiGles2::nativeHandles(QRhiCommandBuffer *cb)
     return nullptr;
 }
 
+static void addBoundaryCommand(QGles2CommandBuffer *cbD, QGles2CommandBuffer::Command::Cmd type)
+{
+    QGles2CommandBuffer::Command cmd;
+    cmd.cmd = type;
+    cbD->commands.append(cmd);
+}
+
 void QRhiGles2::beginExternal(QRhiCommandBuffer *cb)
 {
     if (ofr.active) {
@@ -1166,6 +1178,9 @@ void QRhiGles2::beginExternal(QRhiCommandBuffer *cb)
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
     executeCommandBuffer(cbD);
     cbD->resetCommands();
+
+    if (vao)
+        f->glBindVertexArray(0);
 }
 
 void QRhiGles2::endExternal(QRhiCommandBuffer *cb)
@@ -1183,15 +1198,10 @@ void QRhiGles2::endExternal(QRhiCommandBuffer *cb)
         enqueueBarriersForPass(cbD);
     }
 
+    addBoundaryCommand(cbD, QGles2CommandBuffer::Command::ResetFrame);
+
     if (cbD->currentTarget)
         enqueueBindFramebuffer(cbD->currentTarget, cbD);
-}
-
-static void addBoundaryCommand(QGles2CommandBuffer *cb, QGles2CommandBuffer::Command::Cmd type)
-{
-    QGles2CommandBuffer::Command cmd;
-    cmd.cmd = type;
-    cb->commands.append(cmd);
 }
 
 QRhi::FrameOpResult QRhiGles2::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags)
@@ -1912,6 +1922,10 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
         case QGles2CommandBuffer::Command::EndFrame:
             if (vao)
                 f->glBindVertexArray(0);
+            break;
+        case QGles2CommandBuffer::Command::ResetFrame:
+            if (vao)
+                f->glBindVertexArray(vao);
             break;
         case QGles2CommandBuffer::Command::Viewport:
             f->glViewport(GLint(cmd.args.viewport.x), GLint(cmd.args.viewport.y), GLsizei(cmd.args.viewport.w), GLsizei(cmd.args.viewport.h));

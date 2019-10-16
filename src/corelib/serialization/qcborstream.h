@@ -47,6 +47,8 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringview.h>
 
+QT_REQUIRE_CONFIG(cborstream);
+
 // See qcborcommon.h for why we check
 #if defined(QT_X11_DEFINES_FOUND)
 #  undef True

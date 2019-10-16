@@ -136,6 +136,8 @@ static void mergeKeySets(NameSet *dest, const QStringList &src)
 ** Wrappers for the insane windows registry API
 */
 
+// ### Qt 6: Use new helpers from qwinregistry.cpp (once bootstrap builds are obsolete)
+
 // Open a key with the specified "perms".
 // "access" is to explicitly use the 32- or 64-bit branch.
 static HKEY openKey(HKEY parentHandle, REGSAM perms, const QString &rSubKey, REGSAM access = 0)

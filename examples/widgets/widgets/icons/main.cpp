@@ -50,7 +50,7 @@
 
 #include <QApplication>
 #include <QCommandLineParser>
-#include <QDesktopWidget>
+#include <QScreen>
 
 #include "mainwindow.h"
 
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     if (!commandLineParser.positionalArguments().isEmpty())
         mainWin.loadImages(commandLineParser.positionalArguments());
 
-    const QRect availableGeometry = QApplication::desktop()->availableGeometry(&mainWin);
+    const QRect availableGeometry = mainWin.screen()->availableGeometry();
     mainWin.resize(availableGeometry.width() / 2, availableGeometry.height() * 2 / 3);
     mainWin.move((availableGeometry.width() - mainWin.width()) / 2, (availableGeometry.height() - mainWin.height()) / 2);
 

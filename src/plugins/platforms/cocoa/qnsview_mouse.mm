@@ -55,7 +55,7 @@
     interact with the responder chain by e.g. calling super if Qt does not
     accept the mouse event
 */
-@implementation QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) {
+@implementation QNSViewMouseMoveHelper {
     QNSView *view;
 }
 
@@ -89,7 +89,7 @@
 
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) (MouseAPI)
+@implementation QNSView (MouseAPI)
 
 - (void)resetMouseButtons
 {
@@ -178,7 +178,7 @@
 }
 @end
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) (Mouse)
+@implementation QNSView (Mouse)
 
 - (void)initMouse
 {
@@ -193,7 +193,7 @@
     m_dontOverrideCtrlLMB = qt_mac_resolveOption(false, m_platformWindow->window(),
             "_q_platform_MacDontOverrideCtrlLMB", "QT_MAC_DONT_OVERRIDE_CTRL_LMB");
 
-    m_mouseMoveHelper = [[QT_MANGLE_NAMESPACE(QNSViewMouseMoveHelper) alloc] initWithView:self];
+    m_mouseMoveHelper = [[QNSViewMouseMoveHelper alloc] initWithView:self];
 
     NSUInteger trackingOptions = NSTrackingActiveInActiveApp
         | NSTrackingMouseEnteredAndExited | NSTrackingCursorUpdate;

@@ -5383,7 +5383,7 @@ void tst_QWidget::moveChild()
     parent.setStyle(style.data());
     ColorWidget child(&parent, Qt::Widget, Qt::blue);
 
-    parent.setGeometry(QRect(QPoint(QApplication::desktop()->availableGeometry(&parent).topLeft()) + QPoint(50, 50),
+    parent.setGeometry(QRect(parent.screen()->availableGeometry().topLeft() + QPoint(50, 50),
                              QSize(200, 200)));
     child.setGeometry(25, 25, 50, 50);
 #ifndef QT_NO_CURSOR // Try to make sure the cursor is not in a taskbar area to prevent tooltips or window highlighting
@@ -5430,8 +5430,7 @@ void tst_QWidget::showAndMoveChild()
     const QScopedPointer<QStyle> style(QStyleFactory::create(QLatin1String("Windows")));
     parent.setStyle(style.data());
 
-    QDesktopWidget desktop;
-    QRect desktopDimensions = desktop.availableGeometry(&parent);
+    QRect desktopDimensions = parent.screen()->availableGeometry();
     desktopDimensions = desktopDimensions.adjusted(64, 64, -64, -64);
 
 #ifndef QT_NO_CURSOR // Try to make sure the cursor is not in a taskbar area to prevent tooltips or window highlighting
@@ -7708,7 +7707,7 @@ void tst_QWidget::repaintWhenChildDeleted()
 #endif
     ColorWidget w(nullptr, Qt::FramelessWindowHint, Qt::red);
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-    QPoint startPoint = QApplication::desktop()->availableGeometry(&w).topLeft();
+    QPoint startPoint = w.screen()->availableGeometry().topLeft();
     startPoint.rx() += 50;
     startPoint.ry() += 50;
     w.setGeometry(QRect(startPoint, QSize(100, 100)));
@@ -7733,7 +7732,7 @@ void tst_QWidget::hideOpaqueChildWhileHidden()
 {
     ColorWidget w(nullptr, Qt::FramelessWindowHint, Qt::red);
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
-    QPoint startPoint = QApplication::desktop()->availableGeometry(&w).topLeft();
+    QPoint startPoint = w.screen()->availableGeometry().topLeft();
     startPoint.rx() += 50;
     startPoint.ry() += 50;
     w.setGeometry(QRect(startPoint, QSize(100, 100)));
@@ -9601,8 +9600,7 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
     palette.setColor(QPalette::Window, Qt::red);
     main.setPalette(palette);
 
-    QDesktopWidget desktop;
-    QRect desktopDimensions = desktop.availableGeometry(&main);
+    QRect desktopDimensions = main.screen()->availableGeometry();
     QSize mainSize(400, 400);
     mainSize = mainSize.boundedTo(desktopDimensions.size());
     main.resize(mainSize);

@@ -11084,7 +11084,7 @@ static QList<QTouchEvent::TouchPoint>
     tp.setStartScreenPos(screenPos);
     tp.setLastScreenPos(screenPos);
     tp.setEllipseDiameters(ellipseDiameters);
-    const QSizeF screenSize = QApplication::desktop()->screenGeometry(&view).size();
+    const QSizeF screenSize = view.screen()->geometry().size();
     tp.setNormalizedPos(QPointF(screenPos.x() / screenSize.width(), screenPos.y() / screenSize.height()));
     return QList<QTouchEvent::TouchPoint>() << tp;
 }

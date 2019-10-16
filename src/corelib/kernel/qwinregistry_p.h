@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,46 +37,53 @@
 **
 ****************************************************************************/
 
-#ifndef QCOCOANSMENU_H
-#define QCOCOANSMENU_H
+#ifndef QWINREGISTRY_H
+#define QWINREGISTRY_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#import <AppKit/AppKit.h>
+#include <QtCore/qpair.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qstringview.h>
+#include <QtCore/qt_windows.h>
 
-#include <qcocoahelpers.h>
+QT_BEGIN_NAMESPACE
 
-QT_FORWARD_DECLARE_CLASS(QCocoaMenu);
-QT_FORWARD_DECLARE_CLASS(QCocoaMenuItem);
+class Q_CORE_EXPORT QWinRegistryKey
+{
+public:
+    Q_DISABLE_COPY(QWinRegistryKey)
 
-@interface QT_MANGLE_NAMESPACE(QCocoaNSMenuDelegate) : NSObject <NSMenuDelegate>
-+ (instancetype)sharedMenuDelegate;
-- (NSMenuItem *)findItemInMenu:(NSMenu *)menu forKey:(NSString *)key modifiers:(NSUInteger)modifiers;
-@end
+    QWinRegistryKey();
+    explicit QWinRegistryKey(HKEY parentHandle, QStringView subKey,
+                             REGSAM permissions = KEY_READ, REGSAM access = 0);
+    ~QWinRegistryKey();
 
-@interface QT_MANGLE_NAMESPACE(QCocoaNSMenu) : NSMenu
-@property (readonly, nonatomic) QCocoaMenu *platformMenu;
-- (instancetype)initWithPlatformMenu:(QCocoaMenu *)menu;
-@end
+    QWinRegistryKey(QWinRegistryKey &&other) noexcept { swap(other); }
+    QWinRegistryKey &operator=(QWinRegistryKey &&other) noexcept { swap(other); return *this; }
 
-@interface QT_MANGLE_NAMESPACE(QCocoaNSMenuItem) : NSMenuItem
-@property (nonatomic) QCocoaMenuItem *platformMenuItem;
-+ (instancetype)separatorItemWithPlatformMenuItem:(QCocoaMenuItem *)menuItem;
-- (instancetype)initWithPlatformMenuItem:(QCocoaMenuItem *)menuItem;
-- (instancetype)init;
-@end
+    void swap(QWinRegistryKey &other) noexcept { qSwap(m_key, other.m_key); }
 
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaNSMenu);
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaNSMenuItem);
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaNSMenuDelegate);
+    bool isValid() const { return m_key != nullptr; }
+    operator HKEY() const { return m_key; }
+    void close();
 
-#endif // QCOCOANSMENU_H
+    QString stringValue(QStringView subKey) const;
+    QPair<DWORD, bool> dwordValue(QStringView subKey) const;
+
+private:
+    HKEY m_key;
+};
+
+QT_END_NAMESPACE
+
+#endif // QWINREGISTRY_H

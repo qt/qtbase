@@ -42,10 +42,12 @@ class tst_QDesktopWidget : public QObject
 private slots:
     void cleanup();
 
+#if QT_DEPRECATED_SINCE(5, 11)
     void numScreens();
     void primaryScreen();
-    void screenNumberForQWidget();
     void screenNumberForQPoint();
+#endif
+    void screenNumberForQWidget();
     void availableGeometry();
     void screenGeometry();
     void topLevels();
@@ -56,6 +58,7 @@ void tst_QDesktopWidget::cleanup()
     QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
+#if QT_DEPRECATED_SINCE(5, 11)
 void tst_QDesktopWidget::numScreens()
 {
     QDesktopWidget desktop;
@@ -68,14 +71,17 @@ void tst_QDesktopWidget::primaryScreen()
     QVERIFY(desktop.primaryScreen() >= 0);
     QVERIFY(desktop.primaryScreen() < desktop.numScreens());
 }
+#endif
 
 void tst_QDesktopWidget::availableGeometry()
 {
     QDesktopWidget desktop;
     QTest::ignoreMessage(QtWarningMsg, "QDesktopWidget::availableGeometry(): Attempt "
                                        "to get the available geometry of a null widget");
-    desktop.availableGeometry((QWidget *)0);
+    QRect r = desktop.availableGeometry(nullptr);
+    QVERIFY(r.isNull());
 
+#if QT_DEPRECATED_SINCE(5, 11)
     QRect total;
     QRect available;
 
@@ -90,13 +96,14 @@ void tst_QDesktopWidget::availableGeometry()
     QVERIFY(total.contains(available));
     QCOMPARE(desktop.availableGeometry(desktop.primaryScreen()), available);
     QCOMPARE(desktop.screenGeometry(desktop.primaryScreen()), total);
+#endif
 }
 
 void tst_QDesktopWidget::screenNumberForQWidget()
 {
     QDesktopWidget desktop;
 
-    QCOMPARE(desktop.screenNumber(0), 0);
+    QCOMPARE(desktop.screenNumber(nullptr), 0);
 
     QWidget widget;
     widget.show();
@@ -105,9 +112,10 @@ void tst_QDesktopWidget::screenNumberForQWidget()
 
     int widgetScreen = desktop.screenNumber(&widget);
     QVERIFY(widgetScreen > -1);
-    QVERIFY(widgetScreen < desktop.numScreens());
+    QVERIFY(widgetScreen < QGuiApplication::screens().size());
 }
 
+#if QT_DEPRECATED_SINCE(5, 11)
 void tst_QDesktopWidget::screenNumberForQPoint()
 {
     // make sure QDesktopWidget::screenNumber(QPoint) returns the correct screen
@@ -131,25 +139,28 @@ void tst_QDesktopWidget::screenNumberForQPoint()
     screen = desktopWidget->screenNumber(allScreens.bottomRight() + QPoint(1, 1));
     QVERIFY(screen >= 0 && screen < desktopWidget->numScreens());
 }
+#endif
 
 void tst_QDesktopWidget::screenGeometry()
 {
     QDesktopWidget *desktopWidget = QApplication::desktop();
     QTest::ignoreMessage(QtWarningMsg, "QDesktopWidget::screenGeometry(): Attempt "
                                        "to get the screen geometry of a null widget");
-    QRect r = desktopWidget->screenGeometry((QWidget *)0);
+    QRect r = desktopWidget->screenGeometry(nullptr);
     QVERIFY(r.isNull());
     QWidget widget;
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     r = desktopWidget->screenGeometry(&widget);
 
+#if QT_DEPRECATED_SINCE(5, 11)
     QRect total;
     QRect available;
     for (int i = 0; i < desktopWidget->screenCount(); ++i) {
         total = desktopWidget->screenGeometry(i);
         available = desktopWidget->availableGeometry(i);
     }
+#endif
 }
 
 void tst_QDesktopWidget::topLevels()

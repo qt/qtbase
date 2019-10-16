@@ -46,6 +46,7 @@
 #include <qdebug.h>
 #include <qvector.h>
 #include <qregexp.h>
+#include <qregularexpression.h>
 #include <qstack.h>
 #include <qbitarray.h>
 #include <qdatetime.h>
@@ -2358,6 +2359,7 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
     bool wrap = flags & Qt::MatchWrap;
     bool allHits = (hits == -1);
     QString text; // only convert to a string if it is needed
+    QRegularExpression rx; // only create it if needed
     const int column = start.column();
     QModelIndex p = parent(start);
     int from = start.row();
@@ -2374,17 +2376,39 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
             if (matchType == Qt::MatchExactly) {
                 if (value == v)
                     result.append(idx);
-            } else { // QString based matching
-                if (text.isEmpty()) // lazy conversion
-                    text = value.toString();
+            } else { // QString or regular expression based matching
+                if (matchType == Qt::MatchRegularExpression) {
+                    if (rx.pattern().isEmpty()) {
+                        if (value.type() == QVariant::RegularExpression) {
+                            rx = value.toRegularExpression();
+                        } else {
+                            rx.setPattern(value.toString());
+                            if (cs == Qt::CaseInsensitive)
+                                rx.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+                        }
+                    }
+                } else if (matchType == Qt::MatchWildcard) {
+                    if (rx.pattern().isEmpty())
+                        rx.setPattern(QRegularExpression::wildcardToRegularExpression(value.toString()));
+                    if (cs == Qt::CaseInsensitive)
+                        rx.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+                } else {
+                    if (text.isEmpty()) // lazy conversion
+                        text = value.toString();
+                }
+
                 QString t = v.toString();
                 switch (matchType) {
+#if QT_DEPRECATED_SINCE(5, 15)
                 case Qt::MatchRegExp:
                     if (QRegExp(text, cs).exactMatch(t))
                         result.append(idx);
                     break;
+#endif
+                case Qt::MatchRegularExpression:
+                    Q_FALLTHROUGH();
                 case Qt::MatchWildcard:
-                    if (QRegExp(text, cs, QRegExp::Wildcard).exactMatch(t))
+                    if (t.contains(rx))
                         result.append(idx);
                     break;
                 case Qt::MatchStartsWith:

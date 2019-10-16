@@ -44,9 +44,9 @@
 #include <QtGui>
 #include <qpa/qplatformaccessibility.h>
 
-#ifndef QT_NO_ACCESSIBILITY
+#include "qcocoaaccessibilityelement.h"
 
-@class QT_MANGLE_NAMESPACE(QMacAccessibilityElement);
+#ifndef QT_NO_ACCESSIBILITY
 
 QT_BEGIN_NAMESPACE
 
@@ -84,7 +84,7 @@ namespace QCocoaAccessible {
 NSString *macRole(QAccessibleInterface *interface);
 NSString *macSubrole(QAccessibleInterface *interface);
 bool shouldBeIgnored(QAccessibleInterface *interface);
-NSArray<QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *> *unignoredChildren(QAccessibleInterface *interface);
+NSArray<QMacAccessibilityElement *> *unignoredChildren(QAccessibleInterface *interface);
 NSString *getTranslatedAction(const QString &qtAction);
 QString translateAction(NSString *nsAction, QAccessibleInterface *interface);
 bool hasValueAttribute(QAccessibleInterface *interface);

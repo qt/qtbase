@@ -34,6 +34,7 @@
 
 class DesktopView : public QGraphicsView
 {
+#if QT_DEPRECATED_SINCE(5, 11)
     Q_OBJECT
 public:
     DesktopView()
@@ -195,6 +196,7 @@ private:
     QGraphicsScene *scene;
     QGraphicsRectItem *that;
     QPoint thatRoot;
+#endif
 };
 
 #include "main.moc"

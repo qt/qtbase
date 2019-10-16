@@ -76,27 +76,6 @@ QT_USE_NAMESPACE
 
 typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
-@interface QT_MANGLE_NAMESPACE(QNSOpenSavePanelDelegate)
-    : NSObject<NSOpenSavePanelDelegate>
-
-- (NSString *)strip:(const QString &)label;
-- (BOOL)panel:(id)sender shouldEnableURL:(NSURL *)url;
-- (void)filterChanged:(id)sender;
-- (void)showModelessPanel;
-- (BOOL)runApplicationModalPanel;
-- (void)showWindowModalSheet:(QWindow *)docWidget;
-- (void)updateProperties;
-- (QStringList)acceptableExtensionsForSave;
-- (QString)removeExtensions:(const QString &)filter;
-- (void)createTextField;
-- (void)createPopUpButton:(const QString &)selectedFilter hideDetails:(BOOL)hideDetails;
-- (QStringList)findStrippedFilterWithVisualFilterName:(QString)name;
-- (void)createAccessory;
-
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSOpenSavePanelDelegate);
-
 @implementation QNSOpenSavePanelDelegate {
     @public
     NSOpenPanel *mOpenPanel;

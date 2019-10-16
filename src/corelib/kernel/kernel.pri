@@ -88,8 +88,10 @@ win32 {
             SOURCES += kernel/qeventdispatcher_winrt.cpp
             HEADERS += kernel/qeventdispatcher_winrt_p.h
         } else {
-            SOURCES += kernel/qeventdispatcher_win.cpp
-            HEADERS += kernel/qeventdispatcher_win_p.h
+            SOURCES += kernel/qeventdispatcher_win.cpp \
+                       kernel/qwinregistry.cpp
+            HEADERS += kernel/qeventdispatcher_win_p.h \
+                       kernel/qwinregistry_p.h
         }
 
         !winrt: LIBS_PRIVATE += -lversion

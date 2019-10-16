@@ -2840,24 +2840,32 @@
     This enum describes the type of matches that can be used when searching
     for items in a model.
 
-    \value MatchExactly     Performs QVariant-based matching.
-    \value MatchFixedString Performs string-based matching.
+    \value MatchExactly            Performs QVariant-based matching.
+    \value MatchFixedString        Performs string-based matching.
            String-based comparisons are case-insensitive unless the
            \c MatchCaseSensitive flag is also specified.
-    \value MatchContains    The search term is contained in the item.
-    \value MatchStartsWith  The search term matches the start of the item.
-    \value MatchEndsWith    The search term matches the end of the item.
-    \value MatchCaseSensitive  The search is case sensitive.
-    \value MatchRegExp      Performs string-based matching using a regular
-           expression as the search term.
-    \value MatchWildcard    Performs string-based matching using a string with
+    \value MatchContains           The search term is contained in the item.
+    \value MatchStartsWith         The search term matches the start of the item.
+    \value MatchEndsWith           The search term matches the end of the item.
+    \value MatchCaseSensitive      The search is case sensitive.
+    \value MatchRegExp             Performs string-based matching using a regular
+           expression as the search term. Uses the deprecated QRegExp class.
+           \e{This enum value is deprecated since Qt 5.15.}
+    \value MatchRegularExpression  Performs string-based matching using a regular
+           expression as the search term. Uses QRegularExpression.
+           When using this flag, a QRegularExpression object can be passed as
+           parameter and will directly be used to perform the search. The case
+           sensitivity flag will be ignored as the QRegularExpression object is
+           expected to be fully configured.
+           This enum value was added in Qt 5.15.
+    \value MatchWildcard           Performs string-based matching using a string with
            wildcards as the search term.
-    \value MatchWrap        Perform a search that wraps around, so that when
+    \value MatchWrap               Perform a search that wraps around, so that when
            the search reaches the last item in the model, it begins again at
            the first item and continues until all items have been examined.
-    \value MatchRecursive   Searches the entire hierarchy.
+    \value MatchRecursive          Searches the entire hierarchy.
 
-    \sa QString::compare(), QRegExp
+    \sa QString::compare(), QRegExp, QRegularExpression
 */
 
 /*!
