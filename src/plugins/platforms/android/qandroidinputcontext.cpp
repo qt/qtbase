@@ -827,9 +827,6 @@ void QAndroidInputContext::longPress(int x, int y)
 
         focusObjectStopComposing();
 
-        // Release left button, otherwise the following events will cancel the menu popup
-        QtAndroidInput::releaseMouse(x, y);
-
         const double pixelDensity =
                 QGuiApplication::focusWindow()
                 ? QHighDpiScaling::factor(QGuiApplication::focusWindow())
