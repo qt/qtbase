@@ -628,7 +628,6 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 #endif
 }
 
-#if QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(130000)
 - (void)addInteraction:(id<UIInteraction>)interaction
 {
     if (__builtin_available(iOS 13.0, *)) {
@@ -638,7 +637,6 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
     [super addInteraction:interaction];
 }
-#endif
 
 @end
 
