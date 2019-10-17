@@ -59,7 +59,7 @@ Screenshot::Screenshot()
     screenshotLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     screenshotLabel->setAlignment(Qt::AlignCenter);
 
-    const QRect screenGeometry = QApplication::desktop()->screenGeometry(this);
+    const QRect screenGeometry = screen()->geometry();
     screenshotLabel->setMinimumSize(screenGeometry.width() / 8, screenGeometry.height() / 8);
 
     QVBoxLayout *mainLayout = new QVBoxLayout(this);

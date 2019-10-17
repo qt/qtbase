@@ -16,7 +16,6 @@ INCLUDEPATH += \
     $$QT_SOURCE_TREE/src/3rdparty/android
 
 SOURCES += $$PWD/main.cpp \
-           $$PWD/androidplatformplugin.cpp \
            $$PWD/androidcontentfileengine.cpp \
            $$PWD/androiddeadlockprotector.cpp \
            $$PWD/androidjnimain.cpp \

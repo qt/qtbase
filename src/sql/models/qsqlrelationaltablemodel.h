@@ -91,7 +91,7 @@ public:
     };
 
     explicit QSqlRelationalTableModel(QObject *parent = nullptr,
-                                      QSqlDatabase db = QSqlDatabase());
+                                      const QSqlDatabase &db = QSqlDatabase());
     virtual ~QSqlRelationalTableModel();
 
     QVariant data(const QModelIndex &item, int role = Qt::DisplayRole) const override;

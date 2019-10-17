@@ -61,8 +61,10 @@ public:
                 QLatin1String("Left-click to test QGuiApplication::topLevelAt(click pos)\nRight-click to ungrab\n") :
                 QLatin1String("Left-click to grab mouse\n");
         if (!m_cursorPos.isNull()) {
+            const auto screen = QGuiApplication::screenAt(m_cursorPos);
+            const auto screenNum = screen ? QGuiApplication::screens().indexOf(screen) : 0;
             txt += QString(QLatin1String("Current mouse position: %1, %2 on screen %3\n"))
-                    .arg(m_cursorPos.x()).arg(m_cursorPos.y()).arg(QApplication::desktop()->screenNumber(m_cursorPos));
+                    .arg(m_cursorPos.x()).arg(m_cursorPos.y()).arg(screenNum);
             if (QGuiApplication::mouseButtons() & Qt::LeftButton) {
                 QWindow *win = QGuiApplication::topLevelAt(m_cursorPos);
                 txt += QString(QLatin1String("Top-level window found? %1\n"))
@@ -234,6 +236,7 @@ void screenAdded(QScreen* screen)
     QList<QScreen *> screens = QGuiApplication::screens();
     int screenNumber = screens.indexOf(screen);
     Q_ASSERT(screenNumber >= 0);
+    // ### Qt 6: Find a replacement for QDesktopWidget::screen()
     w->setParent(qApp->desktop()->screen(screenNumber));
 
     w->show();

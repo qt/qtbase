@@ -283,7 +283,7 @@ class QCocoaFontPanel
 public:
     QCocoaFontPanel()
     {
-        mDelegate = [[QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) alloc] init];
+        mDelegate = [[QNSFontPanelDelegate alloc] init];
     }
 
     ~QCocoaFontPanel()
@@ -356,7 +356,7 @@ public:
     }
 
 private:
-    QT_MANGLE_NAMESPACE(QNSFontPanelDelegate) *mDelegate;
+    QNSFontPanelDelegate *mDelegate;
 };
 
 Q_GLOBAL_STATIC(QCocoaFontPanel, sharedFontPanel)

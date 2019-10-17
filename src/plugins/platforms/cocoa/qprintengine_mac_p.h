@@ -64,11 +64,7 @@
 
 #include "qpaintengine_mac_p.h"
 
-#ifdef __OBJC__
-@class NSPrintInfo;
-#else
-typedef void NSPrintInfo;
-#endif
+Q_FORWARD_DECLARE_OBJC_CLASS(NSPrintInfo);
 
 QT_BEGIN_NAMESPACE
 

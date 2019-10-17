@@ -144,7 +144,7 @@ static void qt_maybeSendKeyEquivalentUpEvent(NSEvent *event)
     }
 }
 
-@implementation QT_MANGLE_NAMESPACE(QNSApplication)
+@implementation QNSApplication
 
 - (void)QT_MANGLE_NAMESPACE(qt_sendEvent_original):(NSEvent *)event
 {
@@ -188,7 +188,7 @@ void qt_redirectNSApplicationSendEvent()
         // can be unloaded.
         return;
 
-    if ([NSApp isMemberOfClass:[QT_MANGLE_NAMESPACE(QNSApplication) class]]) {
+    if ([NSApp isMemberOfClass:[QNSApplication class]]) {
         // No need to change implementation since Qt
         // already controls a subclass of NSApplication
         return;
@@ -201,7 +201,7 @@ void qt_redirectNSApplicationSendEvent()
     qt_cocoa_change_implementation(
             [NSApplication class],
             @selector(sendEvent:),
-            [QT_MANGLE_NAMESPACE(QNSApplication) class],
+            [QNSApplication class],
             @selector(QT_MANGLE_NAMESPACE(qt_sendEvent_replacement):),
             @selector(QT_MANGLE_NAMESPACE(qt_sendEvent_original):));
  }

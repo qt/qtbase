@@ -47,7 +47,7 @@
 
 #import <AppKit/NSAccessibility.h>
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) (Accessibility)
+@implementation QNSView (Accessibility)
 
 - (id)childAccessibleElement
 {

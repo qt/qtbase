@@ -61,3 +61,4 @@ QPlatformIntegration *QAndroidIntegrationPlugin::create(const QString& system, c
 }
 
 QT_END_NAMESPACE
+#include "main.moc"

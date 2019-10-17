@@ -99,7 +99,7 @@ static QAlphaWidget* q_blend = 0;
   Constructs a QAlphaWidget.
 */
 QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED // QDesktopWidget::screen()
+QT_WARNING_DISABLE_DEPRECATED // ### Qt 6: Find a replacement for QDesktopWidget::screen()
 QAlphaWidget::QAlphaWidget(QWidget* w, Qt::WindowFlags f)
     : QWidget(QApplication::desktop()->screen(QDesktopWidgetPrivate::screenNumber(w)), f)
 {

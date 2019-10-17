@@ -1575,9 +1575,12 @@ public:
         MatchContains = 1,
         MatchStartsWith = 2,
         MatchEndsWith = 3,
-        MatchRegExp = 4,
+#if QT_DEPRECATED_SINCE(5, 15)
+        MatchRegExp Q_DECL_ENUMERATOR_DEPRECATED_X("MatchRegExp is deprecated. Use MatchRegularExpression instead") = 4,
+#endif
         MatchWildcard = 5,
         MatchFixedString = 8,
+        MatchRegularExpression = 9,
         MatchCaseSensitive = 16,
         MatchWrap = 32,
         MatchRecursive = 64

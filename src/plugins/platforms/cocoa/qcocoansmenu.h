@@ -59,31 +59,20 @@ QT_FORWARD_DECLARE_CLASS(QCocoaMenu);
 QT_FORWARD_DECLARE_CLASS(QCocoaMenuItem);
 
 @interface QT_MANGLE_NAMESPACE(QCocoaNSMenuDelegate) : NSObject <NSMenuDelegate>
-
 + (instancetype)sharedMenuDelegate;
-
-- (NSMenuItem *)findItemInMenu:(NSMenu *)menu
-                        forKey:(NSString *)key
-                     modifiers:(NSUInteger)modifiers;
-
+- (NSMenuItem *)findItemInMenu:(NSMenu *)menu forKey:(NSString *)key modifiers:(NSUInteger)modifiers;
 @end
 
 @interface QT_MANGLE_NAMESPACE(QCocoaNSMenu) : NSMenu
-
 @property (readonly, nonatomic) QCocoaMenu *platformMenu;
-
 - (instancetype)initWithPlatformMenu:(QCocoaMenu *)menu;
-
 @end
 
 @interface QT_MANGLE_NAMESPACE(QCocoaNSMenuItem) : NSMenuItem
-
 @property (nonatomic) QCocoaMenuItem *platformMenuItem;
-
 + (instancetype)separatorItemWithPlatformMenuItem:(QCocoaMenuItem *)menuItem;
 - (instancetype)initWithPlatformMenuItem:(QCocoaMenuItem *)menuItem;
 - (instancetype)init;
-
 @end
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QCocoaNSMenu);

@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include "../qbearerengine_impl.h"
+#include <private/qbearerengine_impl_p.h>
 
 #include <QtCore/qtimer.h>
 

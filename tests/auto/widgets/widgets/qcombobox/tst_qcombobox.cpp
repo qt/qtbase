@@ -34,7 +34,6 @@
 #include <qpa/qplatformtheme.h>
 
 #include <qfontcombobox.h>
-#include <qdesktopwidget.h>
 #include <qapplication.h>
 #include <qpushbutton.h>
 #include <qdialog.h>
@@ -2212,15 +2211,13 @@ void tst_QComboBox::itemListPosition()
     QFontComboBox combo(&topLevel);
 
     layout->addWidget(&combo);
-    //the code to get the available screen space is copied from QComboBox code
-    const int scrNumber = QApplication::desktop()->screenNumber(&combo);
 
     bool useFullScreenForPopupMenu = false;
     if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
         useFullScreenForPopupMenu = theme->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool();
     const QRect screen = useFullScreenForPopupMenu ?
-                         QApplication::screens().at(scrNumber)->geometry() :
-                         QApplication::screens().at(scrNumber)->availableGeometry();
+                         combo.screen()->geometry() :
+                         combo.screen()->availableGeometry();
 
     topLevel.move(screen.width() - topLevel.sizeHint().width() - 10, 0); //puts the combo to the top-right corner
 
@@ -2440,8 +2437,7 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
 #if defined QT_BUILD_INTERNAL
     QFrame *container = comboBox.findChild<QComboBoxPrivateContainer *>();
     QVERIFY(container);
-    QDesktopWidget desktop;
-    QTRY_VERIFY(desktop.screenGeometry(container).contains(container->geometry()));
+    QTRY_VERIFY(container->screen()->geometry().contains(container->geometry()));
 #endif
 }
 

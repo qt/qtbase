@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qcorewlanengine.h"
-#include "../qnetworksession_impl.h"
+#include <private/qnetworksession_impl_p.h>
 
 #include <QtNetwork/private/qnetworkconfiguration_p.h>
 
@@ -62,12 +62,11 @@ extern "C" { // Otherwise it won't find CWKeychain* symbols at link time
 #include <ifaddrs.h>
 
 @interface QT_MANGLE_NAMESPACE(QNSListener) : NSObject <CWEventDelegate>
-
 @property (assign) QCoreWlanEngine* engine;
-
 @end
+QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSListener);
 
-@implementation QT_MANGLE_NAMESPACE(QNSListener) {
+@implementation QNSListener {
     NSNotificationCenter *notificationCenter;
     CWWiFiClient *client;
     QCoreWlanEngine *engine;
@@ -88,7 +87,7 @@ extern "C" { // Otherwise it won't find CWKeychain* symbols at link time
     return self;
 }
 
-static QT_MANGLE_NAMESPACE(QNSListener) *listener = 0;
+static QNSListener *listener = 0;
 
 -(void)dealloc
 {
@@ -415,7 +414,7 @@ void QCoreWlanEngine::initialize()
     QMacAutoReleasePool pool;
 
     if ([[CWWiFiClient interfaceNames] count] > 0 && !listener) {
-        listener = [[QT_MANGLE_NAMESPACE(QNSListener) alloc] init];
+        listener = [QNSListener alloc] init];
         listener.engine = this;
         hasWifi = true;
     } else {

@@ -3,13 +3,10 @@ TARGET = qnativewifibearer
 QT = core-private network-private
 
 HEADERS += qnativewifiengine.h \
-           platformdefs.h \
-           ../qnetworksession_impl.h \
-           ../qbearerengine_impl.h
+           platformdefs.h
 
 SOURCES += main.cpp \
-           qnativewifiengine.cpp \
-           ../qnetworksession_impl.cpp
+           qnativewifiengine.cpp
 
 OTHER_FILES += nativewifi.json
 

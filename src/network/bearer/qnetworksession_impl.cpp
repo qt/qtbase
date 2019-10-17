@@ -40,8 +40,8 @@
 // see comment in ../platformdefs_win.h.
 #define WIN32_LEAN_AND_MEAN 1
 
-#include "qnetworksession_impl.h"
-#include "qbearerengine_impl.h"
+#include "qnetworksession_impl_p.h"
+#include "qbearerengine_impl_p.h"
 
 #include <QtNetwork/qnetworksession.h>
 #include <QtNetwork/private/qnetworkconfigmanager_p.h>
@@ -50,6 +50,8 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qstringlist.h>
+
+#ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
@@ -433,3 +435,5 @@ void QNetworkSessionPrivateImpl::decrementTimeout()
 QT_END_NAMESPACE
 
 #include "qnetworksession_impl.moc"
+
+#endif // QT_NO_BEARERMANAGEMENT

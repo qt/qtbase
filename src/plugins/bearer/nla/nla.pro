@@ -5,13 +5,10 @@ QT = core core-private network network-private
 QMAKE_USE_PRIVATE += ws2_32
 
 HEADERS += qnlaengine.h \
-           ../platformdefs_win.h \
-           ../qnetworksession_impl.h \
-           ../qbearerengine_impl.h
+           ../platformdefs_win.h
 
 SOURCES += main.cpp \
-           qnlaengine.cpp \
-           ../qnetworksession_impl.cpp
+           qnlaengine.cpp
 
 OTHER_FILES += nla.json
 

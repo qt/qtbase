@@ -40,7 +40,7 @@
 #ifndef QANDROIDBEARERENGINE_H
 #define QANDROIDBEARERENGINE_H
 
-#include "../../qbearerengine_impl.h"
+#include <private/qbearerengine_impl_p.h>
 
 #include <QAbstractEventDispatcher>
 #include <QAbstractNativeEventFilter>

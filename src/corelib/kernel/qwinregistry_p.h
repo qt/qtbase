@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,45 +37,53 @@
 **
 ****************************************************************************/
 
-#ifndef QBEARERENGINE_IMPL_H
-#define QBEARERENGINE_IMPL_H
+#ifndef QWINREGISTRY_H
+#define QWINREGISTRY_H
 
-#include <QtNetwork/private/qbearerengine_p.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtCore/qpair.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qstringview.h>
+#include <QtCore/qt_windows.h>
 
 QT_BEGIN_NAMESPACE
 
-class QBearerEngineImpl : public QBearerEngine
+class Q_CORE_EXPORT QWinRegistryKey
 {
-    Q_OBJECT
-
 public:
-    enum ConnectionError {
-        InterfaceLookupError = 0,
-        ConnectError,
-        OperationNotSupported,
-        DisconnectionError,
-    };
+    Q_DISABLE_COPY(QWinRegistryKey)
 
-    QBearerEngineImpl(QObject *parent = nullptr) : QBearerEngine(parent) {}
-    ~QBearerEngineImpl() {}
+    QWinRegistryKey();
+    explicit QWinRegistryKey(HKEY parentHandle, QStringView subKey,
+                             REGSAM permissions = KEY_READ, REGSAM access = 0);
+    ~QWinRegistryKey();
 
-    virtual void connectToId(const QString &id) = 0;
-    virtual void disconnectFromId(const QString &id) = 0;
+    QWinRegistryKey(QWinRegistryKey &&other) noexcept { swap(other); }
+    QWinRegistryKey &operator=(QWinRegistryKey &&other) noexcept { swap(other); return *this; }
 
-    virtual QString getInterfaceFromId(const QString &id) = 0;
+    void swap(QWinRegistryKey &other) noexcept { qSwap(m_key, other.m_key); }
 
-    virtual QNetworkSession::State sessionStateForId(const QString &id) = 0;
+    bool isValid() const { return m_key != nullptr; }
+    operator HKEY() const { return m_key; }
+    void close();
 
-    virtual quint64 bytesWritten(const QString &) { return Q_UINT64_C(0); }
-    virtual quint64 bytesReceived(const QString &) { return Q_UINT64_C(0); }
-    virtual quint64 startTime(const QString &) { return Q_UINT64_C(0); }
+    QString stringValue(QStringView subKey) const;
+    QPair<DWORD, bool> dwordValue(QStringView subKey) const;
 
-Q_SIGNALS:
-    void connectionError(const QString &id, QBearerEngineImpl::ConnectionError error);
+private:
+    HKEY m_key;
 };
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QBearerEngineImpl::ConnectionError)
-
-#endif // QBEARERENGINE_IMPL_H
+#endif // QWINREGISTRY_H

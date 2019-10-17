@@ -49,9 +49,9 @@
 ****************************************************************************/
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QFileSystemModel>
 #include <QFileIconProvider>
+#include <QScreen>
 #include <QTreeView>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     tree.setAnimated(false);
     tree.setIndentation(20);
     tree.setSortingEnabled(true);
-    const QSize availableSize = QApplication::desktop()->availableGeometry(&tree).size();
+    const QSize availableSize = tree.screen()->availableGeometry().size();
     tree.resize(availableSize / 2);
     tree.setColumnWidth(0, tree.width() / 3);
 

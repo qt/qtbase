@@ -43,8 +43,6 @@
 #include <QtCore/QHash>
 #include <qpa/qplatformtheme.h>
 
-Q_FORWARD_DECLARE_OBJC_CLASS(QT_MANGLE_NAMESPACE(QCocoaThemeAppAppearanceObserver));
-
 #include <QtCore/private/qcore_mac_p.h>
 
 QT_BEGIN_NAMESPACE

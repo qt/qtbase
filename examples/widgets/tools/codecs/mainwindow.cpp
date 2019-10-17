@@ -54,12 +54,12 @@
 
 #include <QAction>
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QFileDialog>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QRegularExpression>
+#include <QScreen>
 #include <QTextCodec>
 #include <QTextStream>
 
@@ -78,7 +78,7 @@ MainWindow::MainWindow()
 
     setWindowTitle(tr("Codecs"));
 
-    const QRect screenGeometry = QApplication::desktop()->screenGeometry(this);
+    const QRect screenGeometry = screen()->geometry();
     resize(screenGeometry.width() / 2, screenGeometry.height() * 2 / 3);
 }
 
@@ -216,7 +216,7 @@ void MainWindow::encodingDialog()
 {
     if (!m_encodingDialog) {
         m_encodingDialog = new EncodingDialog(this);
-        const QRect screenGeometry = QApplication::desktop()->screenGeometry(this);
+        const QRect screenGeometry = screen()->geometry();
         m_encodingDialog->setMinimumWidth(screenGeometry.width() / 4);
     }
     m_encodingDialog->show();

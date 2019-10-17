@@ -37,10 +37,15 @@
 **
 ****************************************************************************/
 
+#include <private/qguiapplication_p.h>
+
+#include <qpa/qplatformintegration.h>
+
 #include "qtestsupport_gui.h"
 #include "qwindow.h"
 
 #include <QtCore/qtestsupport_core.h>
+#include <QtCore/QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,6 +60,14 @@ QT_BEGIN_NAMESPACE
 */
 Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
 {
+    if (Q_UNLIKELY(!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))) {
+        qWarning() << "qWaitForWindowActive was called on a platform that doesn't support window"
+                   << "activation. This means there is an error in the test and it should either"
+                   << "check for the WindowActivation platform capability before calling"
+                   << "qWaitForWindowActivate, use qWaitForWindowExposed instead, or skip the test."
+                   << "Falling back to qWaitForWindowExposed.";
+        return qWaitForWindowExposed(window, timeout);
+    }
     return QTest::qWaitFor([&]() { return window->isActive(); }, timeout);
 }
 

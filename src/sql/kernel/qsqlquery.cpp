@@ -258,7 +258,7 @@ QSqlQuery::QSqlQuery(const QSqlQuery& other)
 /*!
     \internal
 */
-static void qInit(QSqlQuery *q, const QString& query, QSqlDatabase db)
+static void qInit(QSqlQuery *q, const QString& query, const QSqlDatabase &db)
 {
     QSqlDatabase database = db;
     if (!database.isValid())
@@ -278,7 +278,7 @@ static void qInit(QSqlQuery *q, const QString& query, QSqlDatabase db)
 
     \sa QSqlDatabase
 */
-QSqlQuery::QSqlQuery(const QString& query, QSqlDatabase db)
+QSqlQuery::QSqlQuery(const QString& query, const QSqlDatabase &db)
 {
     d = QSqlQueryPrivate::shared_null();
     qInit(this, query, db);
@@ -291,7 +291,7 @@ QSqlQuery::QSqlQuery(const QString& query, QSqlDatabase db)
     \sa QSqlDatabase
 */
 
-QSqlQuery::QSqlQuery(QSqlDatabase db)
+QSqlQuery::QSqlQuery(const QSqlDatabase &db)
 {
     d = QSqlQueryPrivate::shared_null();
     qInit(this, QString(), db);

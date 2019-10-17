@@ -51,16 +51,18 @@
 // We mean it.
 //
 
-#include "qbearerengine_impl.h"
+#include "qbearerengine_impl_p.h"
 
 #include <QtNetwork/private/qnetworkconfigmanager_p.h>
 #include <QtNetwork/private/qnetworksession_p.h>
+
+#ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
 class QBearerEngineImpl;
 
-class QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
+class Q_NETWORK_EXPORT QNetworkSessionPrivateImpl : public QNetworkSessionPrivate
 {
     Q_OBJECT
 
@@ -126,5 +128,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_BEARERMANAGEMENT
 
 #endif // QNETWORKSESSION_IMPL_H

@@ -41,7 +41,7 @@
 #define WIN32_LEAN_AND_MEAN 1
 
 #include "qgenericengine.h"
-#include "../qnetworksession_impl.h"
+#include <private/qnetworksession_impl_p.h>
 
 #include <QtNetwork/private/qnetworkconfiguration_p.h>
 

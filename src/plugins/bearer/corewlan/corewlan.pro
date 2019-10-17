@@ -7,12 +7,9 @@ qtConfig(corewlan) {
     LIBS += -framework CoreWLAN -framework Security
 }
 
-HEADERS += qcorewlanengine.h \
-           ../qnetworksession_impl.h \
-           ../qbearerengine_impl.h
+HEADERS += qcorewlanengine.h
 
-SOURCES += main.cpp \
-           ../qnetworksession_impl.cpp
+SOURCES += main.cpp
 
 OBJECTIVE_SOURCES += qcorewlanengine.mm
 

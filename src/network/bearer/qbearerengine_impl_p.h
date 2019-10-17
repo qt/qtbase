@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 BogDan Vatra <bogdan@kde.org>
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,28 +37,49 @@
 **
 ****************************************************************************/
 
-#include <qpa/qplatformintegrationplugin.h>
-#include "qandroidplatformintegration.h"
+#ifndef QBEARERENGINE_IMPL_H
+#define QBEARERENGINE_IMPL_H
+
+#include <QtNetwork/private/qbearerengine_p.h>
+
+#ifndef QT_NO_BEARERMANAGEMENT
 
 QT_BEGIN_NAMESPACE
 
-class QAndroidPlatformIntegrationPlugin: public QPlatformIntegrationPlugin
+class Q_NETWORK_EXPORT QBearerEngineImpl : public QBearerEngine
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID QPlatformIntegrationFactoryInterface_iid FILE "android.json")
+
 public:
-    QPlatformIntegration *create(const QString &key, const QStringList &paramList) override;
+    enum ConnectionError {
+        InterfaceLookupError = 0,
+        ConnectError,
+        OperationNotSupported,
+        DisconnectionError,
+    };
+
+    QBearerEngineImpl(QObject *parent = nullptr) : QBearerEngine(parent) {}
+    ~QBearerEngineImpl() {}
+
+    virtual void connectToId(const QString &id) = 0;
+    virtual void disconnectFromId(const QString &id) = 0;
+
+    virtual QString getInterfaceFromId(const QString &id) = 0;
+
+    virtual QNetworkSession::State sessionStateForId(const QString &id) = 0;
+
+    virtual quint64 bytesWritten(const QString &) { return Q_UINT64_C(0); }
+    virtual quint64 bytesReceived(const QString &) { return Q_UINT64_C(0); }
+    virtual quint64 startTime(const QString &) { return Q_UINT64_C(0); }
+
+Q_SIGNALS:
+    void connectionError(const QString &id, QBearerEngineImpl::ConnectionError error);
 };
 
-
-QPlatformIntegration *QAndroidPlatformIntegrationPlugin::create(const QString &key, const QStringList &paramList)
-{
-    Q_UNUSED(paramList);
-    if (!key.compare(QLatin1String("android"), Qt::CaseInsensitive))
-        return new QAndroidPlatformIntegration(paramList);
-    return 0;
-}
-
 QT_END_NAMESPACE
-#include "androidplatformplugin.moc"
 
+Q_DECLARE_METATYPE(QBearerEngineImpl::ConnectionError)
+
+#endif // QT_NO_BEARERMANAGEMENT
+
+#endif // QBEARERENGINE_IMPL_H

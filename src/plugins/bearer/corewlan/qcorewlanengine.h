@@ -40,7 +40,7 @@
 #ifndef QCOREWLANENGINE_H
 #define QCOREWLANENGINE_H
 
-#include "../qbearerengine_impl.h"
+#include <private/qbearerengine_impl_p.h>
 
 #include <QMap>
 #include <QTimer>

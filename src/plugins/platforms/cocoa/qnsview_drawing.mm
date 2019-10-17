@@ -39,7 +39,7 @@
 
 // This file is included from qnsview.mm, and only used to organize the code
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) (Drawing)
+@implementation QNSView (Drawing)
 
 - (void)initDrawing
 {

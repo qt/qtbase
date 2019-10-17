@@ -50,7 +50,7 @@
 
 #include <QApplication>
 #include <QMainWindow>
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QSurfaceFormat>
 #include <QOpenGLContext>
 #include <QCommandLineParser>
@@ -90,7 +90,7 @@ int main( int argc, char ** argv )
     // The rendering for the four QOpenGLWidgets happens on four separate threads.
 
     GLWidget topLevelGlWidget;
-    QPoint pos = QApplication::desktop()->availableGeometry(&topLevelGlWidget).topLeft() + QPoint(200, 200);
+    QPoint pos = topLevelGlWidget.screen()->availableGeometry().topLeft() + QPoint(200, 200);
     topLevelGlWidget.setWindowTitle(QStringLiteral("Threaded QOpenGLWidget example top level"));
     topLevelGlWidget.resize(200, 200);
     topLevelGlWidget.move(pos);

@@ -53,6 +53,7 @@
 #include <QtCore/QtEndian>
 #include <QtCore/QThreadStorage>
 #include <QtCore/private/qsystemlibrary_p.h>
+#include <QtCore/private/qwinregistry_p.h>
 
 #include <wchar.h>
 
@@ -1210,33 +1211,8 @@ static int QT_WIN_CALLBACK populateFontFamilies(const LOGFONT *logFont, const TE
 
 void QWindowsFontDatabase::addDefaultEUDCFont()
 {
-    QString path;
-    {
-        HKEY key;
-        if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                         L"EUDC\\1252",
-                         0,
-                         KEY_READ,
-                         &key) != ERROR_SUCCESS) {
-            return;
-        }
-
-        WCHAR value[MAX_PATH];
-        DWORD bufferSize = sizeof(value);
-        ZeroMemory(value, bufferSize);
-
-        if (RegQueryValueEx(key,
-                            L"SystemDefaultEUDCFont",
-                            nullptr,
-                            nullptr,
-                            reinterpret_cast<LPBYTE>(value),
-                            &bufferSize) == ERROR_SUCCESS) {
-            path = QString::fromWCharArray(value);
-        }
-
-        RegCloseKey(key);
-    }
-
+    const QString path = QWinRegistryKey(HKEY_CURRENT_USER, LR"(EUDC\1252)")
+                         .stringValue(L"SystemDefaultEUDCFont");
     if (!path.isEmpty()) {
         QFile file(path);
         if (!file.open(QIODevice::ReadOnly)) {
@@ -2103,28 +2079,6 @@ int QWindowsFontDatabase::defaultVerticalDPI()
         }
     }
     return vDPI;
-}
-
-QString QWindowsFontDatabase::readRegistryString(HKEY parentHandle, const wchar_t *keyPath, const wchar_t *keyName)
-{
-    QString result;
-    HKEY handle = 0;
-    if (RegOpenKeyEx(parentHandle, keyPath, 0, KEY_READ, &handle) == ERROR_SUCCESS) {
-        // get the size and type of the value
-        DWORD dataType;
-        DWORD dataSize;
-        if (RegQueryValueEx(handle, keyName, 0, &dataType, 0, &dataSize) == ERROR_SUCCESS) {
-            if (dataType == REG_SZ || dataType == REG_EXPAND_SZ) {
-                dataSize += 2; // '\0' missing?
-                QVarLengthArray<unsigned char> data(dataSize);
-                data[dataSize - 2] = data[dataSize - 1] = '\0';
-                if (RegQueryValueEx(handle, keyName, 0, 0, data.data(), &dataSize) == ERROR_SUCCESS)
-                    result = QString::fromWCharArray(reinterpret_cast<const wchar_t *>(data.data()));
-            }
-        }
-        RegCloseKey(handle);
-    }
-    return result;
 }
 
 bool QWindowsFontDatabase::isPrivateFontFamily(const QString &family) const

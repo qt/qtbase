@@ -42,7 +42,10 @@
 #include "qdatastream.h"
 #include "qcborarray.h"
 #include "qcbormap.h"
+
+#if QT_CONFIG(cborstream)
 #include "qcborstream.h"
+#endif
 
 #include <qendian.h>
 #include <qlocale.h>
@@ -758,6 +761,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtCbor;
 
+#if QT_CONFIG(cborstream)
 // in qcborstream.cpp
 extern void qt_cbor_stream_set_error(QCborStreamReaderPrivate *d, QCborError error);
 
@@ -799,6 +803,7 @@ static void writeDoubleToCbor(QCborStreamWriter &writer, double d, QCborValue::E
 
     writer.append(d);
 }
+#endif // QT_CONFIG(cborstream)
 
 static inline int typeOrder(Element e1, Element e2)
 {
@@ -1221,6 +1226,7 @@ int QCborMap::compare(const QCborMap &other) const noexcept
     return compareContainer(d.data(), other.d.data());
 }
 
+#if QT_CONFIG(cborstream)
 static void encodeToCbor(QCborStreamWriter &writer, const QCborContainerPrivate *d, qsizetype idx,
                          QCborValue::EncodingOptions opt)
 {
@@ -1632,6 +1638,7 @@ void QCborContainerPrivate::decodeFromCbor(QCborStreamReader &reader)
     if (reader.lastError() == QCborError::NoError)
         reader.leaveContainer();
 }
+#endif // QT_CONFIG(cborstream)
 
 /*!
     Creates a QCborValue with byte array value \a ba. The value can later be
@@ -1765,6 +1772,7 @@ QCborValue::QCborValue(const QDateTime &dt)
     container->elements[1].type = String;
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     Creates a QCborValue object of the URL extended type and containing the
     value represented by \a url. The value can later be retrieved using toUrl().
@@ -1781,6 +1789,7 @@ QCborValue::QCborValue(const QUrl &url)
     t = Url;
     container->elements[1].type = String;
 }
+#endif
 
 #if QT_CONFIG(regularexpression)
 /*!
@@ -1934,6 +1943,7 @@ QDateTime QCborValue::toDateTime(const QDateTime &defaultValue) const
     return QDateTime::fromString(byteData->asLatin1(), Qt::ISODateWithMs);
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     Returns the URL value stored in this QCborValue, if it is of the URL
     extended type. Otherwise, it returns \a defaultValue.
@@ -1954,6 +1964,7 @@ QUrl QCborValue::toUrl(const QUrl &defaultValue) const
 
     return QUrl::fromEncoded(byteData->asByteArrayView());
 }
+#endif
 
 #if QT_CONFIG(regularexpression)
 /*!
@@ -2326,6 +2337,7 @@ QCborValueRef QCborValue::operator[](qint64 key)
     return { container, index };
 }
 
+#if QT_CONFIG(cborstream)
 /*!
     Decodes one item from the CBOR stream found in \a reader and returns the
     equivalent representation. This function is recursive: if the item is a map
@@ -2563,6 +2575,7 @@ void QCborValueRef::toCbor(QCborStreamWriter &writer, QCborValue::EncodingOption
 {
     concrete().toCbor(writer, opt);
 }
+#endif // QT_CONFIG(cborstream)
 
 void QCborValueRef::assign(QCborValueRef that, const QCborValue &other)
 {
@@ -2882,8 +2895,10 @@ uint qHash(const QCborValue &value, uint seed)
         return qHash(value.toDouble(), seed);
     case QCborValue::DateTime:
         return qHash(value.toDateTime(), seed);
+#ifndef QT_BOOTSTRAPPED
     case QCborValue::Url:
         return qHash(value.toUrl(), seed);
+#endif
 #if QT_CONFIG(regularexpression)
     case QCborValue::RegularExpression:
         return qHash(value.toRegularExpression(), seed);
@@ -2936,8 +2951,10 @@ static QDebug debugContents(QDebug &dbg, const QCborValue &v)
     }
     case QCborValue::DateTime:
         return dbg << v.toDateTime();
+#ifndef QT_BOOTSTRAPPED
     case QCborValue::Url:
         return dbg << v.toUrl();
+#endif
 #if QT_CONFIG(regularexpression)
     case QCborValue::RegularExpression:
         return dbg << v.toRegularExpression();

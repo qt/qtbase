@@ -41,7 +41,7 @@
 
 Q_LOGGING_CATEGORY(lcQpaTouch, "qt.qpa.input.touch")
 
-@implementation QT_MANGLE_NAMESPACE(QNSView) (Touch)
+@implementation QNSView (Touch)
 
 - (bool)shouldSendSingleTouch
 {

@@ -458,6 +458,34 @@ void tst_QAbstractItemModel::match()
     res = model.match(start, Qt::DisplayRole, QVariant("bat"), -1,
                       Qt::MatchFixedString | Qt::MatchCaseSensitive);
     QCOMPARE(res.count(), 1);
+
+    res = model.match(start, Qt::DisplayRole, QVariant(".*O.*"), -1,
+                      Qt::MatchRegularExpression);
+    QCOMPARE(res.count(), 2);
+    res = model.match(start, Qt::DisplayRole, QVariant(".*O.*"), -1,
+                      Qt::MatchRegularExpression | Qt::MatchCaseSensitive);
+    QCOMPARE(res.count(), 0);
+
+    res = model.match(start, Qt::DisplayRole, QVariant(QRegularExpression(".*O.*")),
+                      -1, Qt::MatchRegularExpression);
+    QCOMPARE(res.count(), 0);
+    res = model.match(start,
+                      Qt::DisplayRole,
+                      QVariant(QRegularExpression(".*O.*",
+                                                  QRegularExpression::CaseInsensitiveOption)),
+                      -1,
+                      Qt::MatchRegularExpression);
+    QCOMPARE(res.count(), 2);
+
+    // Ensure that the case sensitivity is properly ignored when passing a
+    // QRegularExpression object.
+    res = model.match(start,
+                      Qt::DisplayRole,
+                      QVariant(QRegularExpression(".*O.*",
+                                                  QRegularExpression::CaseInsensitiveOption)),
+                      -1,
+                      Qt::MatchRegularExpression | Qt::MatchCaseSensitive);
+    QCOMPARE(res.count(), 2);
 }
 
 typedef QPair<int, int> Position;
