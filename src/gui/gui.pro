@@ -35,7 +35,7 @@ testcocoon {
 osx: LIBS_PRIVATE += -framework AppKit
 darwin: LIBS_PRIVATE += -framework CoreGraphics
 
-CONFIG += simd optimize_full
+CONFIG += simd optimize_full metatypes install_metatypes
 
 include(accessible/accessible.pri)
 include(kernel/kernel.pri)

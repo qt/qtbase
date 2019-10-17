@@ -2976,6 +2976,112 @@ QDebug operator<<(QDebug dbg, const QCborValue &v)
     dbg.nospace() << "QCborValue(";
     return debugContents(dbg, v) << ')';
 }
+
+Q_CORE_EXPORT const char *qt_cbor_simpletype_id(QCborSimpleType st)
+{
+    switch (st) {
+    case QCborSimpleType::False:
+        return "False";
+    case QCborSimpleType::True:
+        return "True";
+    case QCborSimpleType::Null:
+        return "Null";
+    case QCborSimpleType::Undefined:
+        return "Undefined";
+    }
+    return nullptr;
+}
+
+QDebug operator<<(QDebug dbg, QCborSimpleType st)
+{
+    QDebugStateSaver saver(dbg);
+    const char *id = qt_cbor_simpletype_id(st);
+    if (id)
+        return dbg.nospace() << "QCborSimpleType::" << id;
+
+    return dbg.nospace() << "QCborSimpleType(" << uint(st) << ')';
+}
+
+Q_CORE_EXPORT const char *qt_cbor_tag_id(QCborTag tag)
+{
+    // Casting to QCborKnownTags's underlying type will make the comparison
+    // below fail if the tag value is out of range.
+    auto n = std::underlying_type<QCborKnownTags>::type(tag);
+    if (QCborTag(n) == tag) {
+        switch (QCborKnownTags(n)) {
+        case QCborKnownTags::DateTimeString:
+            return "DateTimeString";
+        case QCborKnownTags::UnixTime_t:
+            return "UnixTime_t";
+        case QCborKnownTags::PositiveBignum:
+            return "PositiveBignum";
+        case QCborKnownTags::NegativeBignum:
+            return "NegativeBignum";
+        case QCborKnownTags::Decimal:
+            return "Decimal";
+        case QCborKnownTags::Bigfloat:
+            return "Bigfloat";
+        case QCborKnownTags::COSE_Encrypt0:
+            return "COSE_Encrypt0";
+        case QCborKnownTags::COSE_Mac0:
+            return "COSE_Mac0";
+        case QCborKnownTags::COSE_Sign1:
+            return "COSE_Sign1";
+        case QCborKnownTags::ExpectedBase64url:
+            return "ExpectedBase64url";
+        case QCborKnownTags::ExpectedBase64:
+            return "ExpectedBase64";
+        case QCborKnownTags::ExpectedBase16:
+            return "ExpectedBase16";
+        case QCborKnownTags::EncodedCbor:
+            return "EncodedCbor";
+        case QCborKnownTags::Url:
+            return "Url";
+        case QCborKnownTags::Base64url:
+            return "Base64url";
+        case QCborKnownTags::Base64:
+            return "Base64";
+        case QCborKnownTags::RegularExpression:
+            return "RegularExpression";
+        case QCborKnownTags::MimeMessage:
+            return "MimeMessage";
+        case QCborKnownTags::Uuid:
+            return "Uuid";
+        case QCborKnownTags::COSE_Encrypt:
+            return "COSE_Encrypt";
+        case QCborKnownTags::COSE_Mac:
+            return "COSE_Mac";
+        case QCborKnownTags::COSE_Sign:
+            return "COSE_Sign";
+        case QCborKnownTags::Signature:
+            return "Signature";
+        }
+    }
+    return nullptr;
+}
+
+QDebug operator<<(QDebug dbg, QCborTag tag)
+{
+    QDebugStateSaver saver(dbg);
+    const char *id = qt_cbor_tag_id(tag);
+    dbg.nospace() << "QCborTag(";
+    if (id)
+        dbg.nospace() << "QCborKnownTags::" << id;
+    else
+        dbg.nospace() << quint64(tag);
+
+    return dbg << ')';
+}
+
+QDebug operator<<(QDebug dbg, QCborKnownTags tag)
+{
+    QDebugStateSaver saver(dbg);
+    const char *id = qt_cbor_tag_id(QCborTag(int(tag)));
+    if (id)
+        return dbg.nospace() << "QCborKnownTags::" << id;
+
+    return dbg.nospace() << "QCborKnownTags(" << int(tag) << ')';
+}
 #endif
 
 #ifndef QT_NO_DATASTREAM
