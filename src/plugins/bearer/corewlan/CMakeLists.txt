@@ -8,8 +8,6 @@ add_qt_plugin(qcorewlanbearer
     TYPE bearer
     CLASS_NAME QCoreWlanEnginePlugin
     SOURCES
-        ../qbearerengine_impl.h
-        ../qnetworksession_impl.cpp ../qnetworksession_impl.h
         main.cpp
         qcorewlanengine.h qcorewlanengine.mm
     LIBRARIES

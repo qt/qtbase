@@ -135,7 +135,6 @@ add_qt_module(Core
         serialization/qcborcommon.h
         serialization/qcbordiagnostic.cpp
         serialization/qcbormap.h
-        serialization/qcborstream.cpp serialization/qcborstream.h
         serialization/qcborvalue.cpp serialization/qcborvalue.h serialization/qcborvalue_p.h
         serialization/qdatastream.cpp serialization/qdatastream.h serialization/qdatastream_p.h
         serialization/qjson.cpp serialization/qjson_p.h
@@ -447,6 +446,7 @@ extend_target(Core CONDITION WIN32 AND NOT WINRT
         io/qwindowspipereader.cpp io/qwindowspipereader_p.h
         io/qwindowspipewriter.cpp io/qwindowspipewriter_p.h
         kernel/qeventdispatcher_win.cpp kernel/qeventdispatcher_win_p.h
+        kernel/qwinregistry.cpp kernel/qwinregistry_p.h
     LIBRARIES
         advapi32
         kernel32
@@ -1071,6 +1071,11 @@ extend_target(Core CONDITION QT_FEATURE_textcodec AND WIN32 AND NOT QT_FEATURE_i
         codecs/qwindowscodec.cpp codecs/qwindowscodec_p.h
 )
 
+extend_target(Core CONDITION QT_FEATURE_cborstream
+    SOURCES
+        serialization/qcborstream.cpp serialization/qcborstream.h
+)
+
 extend_target(Core CONDITION QT_FEATURE_qeventtransition
     SOURCES
         statemachine/qeventtransition.cpp statemachine/qeventtransition.h statemachine/qeventtransition_p.h
@@ -1092,8 +1097,10 @@ extend_target(Core CONDITION QT_FEATURE_mimetype
 # We can't specify the resources directly as we have unit tests that
 # depend on these as well and we no longer support the use of hand
 # edited qrc files.
-include(${CMAKE_CURRENT_SOURCE_DIR}/mimetypes/mimetypes_resources.cmake)
-corelib_add_mimetypes_resources(Core)
+if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/mimetypes/mimetypes_resources.cmake)
+    corelib_add_mimetypes_resources(Core)
+endif()
 # special case end
 
 extend_target(Core CONDITION WASM

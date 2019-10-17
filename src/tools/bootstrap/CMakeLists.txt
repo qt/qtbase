@@ -147,6 +147,7 @@ extend_target(Bootstrap CONDITION WIN32
         ../../corelib/kernel/qcoreapplication_win.cpp
         ../../corelib/kernel/qsharedmemory_win.cpp
         ../../corelib/kernel/qsystemsemaphore_win.cpp
+        ../../corelib/kernel/qwinregistry.cpp
         ../../corelib/plugin/qsystemlibrary.cpp
     PUBLIC_LIBRARIES
         advapi32

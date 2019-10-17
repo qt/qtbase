@@ -121,7 +121,6 @@ add_qt_module(Core
         serialization/qcborcommon.h
         serialization/qcbordiagnostic.cpp
         serialization/qcbormap.h
-        serialization/qcborstream.cpp serialization/qcborstream.h
         serialization/qcborvalue.cpp serialization/qcborvalue.h serialization/qcborvalue_p.h
         serialization/qdatastream.cpp serialization/qdatastream.h serialization/qdatastream_p.h
         serialization/qjson.cpp serialization/qjson_p.h
@@ -364,6 +363,7 @@ extend_target(Core CONDITION WIN32 AND NOT WINRT
         io/qwindowspipereader.cpp io/qwindowspipereader_p.h
         io/qwindowspipewriter.cpp io/qwindowspipewriter_p.h
         kernel/qeventdispatcher_win.cpp kernel/qeventdispatcher_win_p.h
+        kernel/qwinregistry.cpp kernel/qwinregistry_p.h
     LIBRARIES
         advapi32
         kernel32
@@ -995,6 +995,11 @@ extend_target(Core CONDITION QT_FEATURE_textcodec AND WIN32 AND NOT QT_FEATURE_i
         codecs/qwindowscodec.cpp codecs/qwindowscodec_p.h
 )
 
+extend_target(Core CONDITION QT_FEATURE_cborstream
+    SOURCES
+        serialization/qcborstream.cpp serialization/qcborstream.h
+)
+
 extend_target(Core CONDITION QT_FEATURE_qeventtransition
     SOURCES
         statemachine/qeventtransition.cpp statemachine/qeventtransition.h statemachine/qeventtransition_p.h
@@ -1011,23 +1016,24 @@ extend_target(Core CONDITION QT_FEATURE_mimetype
         mimetypes/qmimetypeparser.cpp mimetypes/qmimetypeparser_p.h
 )
 
-# Resources:
-set_source_files_properties("mimetypes/mime/packages/freedesktop.org.xml"
-    PROPERTIES QT_RESOURCE_ALIAS "freedesktop.org.xml"
-)
-set(mimetypes_resource_files
-    "mime/packages/freedesktop.org.xml"
-)
-
-add_qt_resource(Core "mimetypes"
-    PREFIX
-        "/qt-project.org/qmime/packages"
-    BASE
-        "mimetypes"
-    FILES
-        ${mimetypes_resource_files}
-)
-
+if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
+    # Resources:
+    set_source_files_properties("mimetypes/mime/packages/freedesktop.org.xml"
+        PROPERTIES QT_RESOURCE_ALIAS "freedesktop.org.xml"
+    )
+    set(mimetypes_resource_files
+        "mime/packages/freedesktop.org.xml"
+    )
+    
+    add_qt_resource(Core "mimetypes"
+        PREFIX
+            "/qt-project.org/qmime/packages"
+        BASE
+            "mimetypes"
+        FILES
+            ${mimetypes_resource_files}
+    )
+endif()
 
 extend_target(Core CONDITION WASM
     SOURCES

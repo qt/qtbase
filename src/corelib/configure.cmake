@@ -906,3 +906,8 @@ qt_feature("win32_system_libs"
     LABEL "Windows System Libraries"
     CONDITION WIN32 AND libs.advapi32 AND libs.gdi32 AND libs.kernel32 AND libs.netapi32 AND libs.ole32 AND libs.shell32 AND libs.uuid AND libs.user32 AND libs.winmm AND libs.ws2_32 OR FIXME
 )
+qt_feature("cborstream" PUBLIC
+    SECTION "Utilities"
+    LABEL "CBOR stream I/O"
+    PURPOSE "Provides support for reading and writing the CBOR binary format.  Note that this is required for plugin loading. Qt GUI needs QPA plugins for basic operation."
+)

@@ -647,20 +647,21 @@ extend_target(Widgets CONDITION QT_FEATURE_messagebox
         dialogs/qmessagebox.cpp dialogs/qmessagebox.h
 )
 
-# Resources:
-set(qmessagebox_resource_files
-    "images/qtlogo-64.png"
-)
-
-add_qt_resource(Widgets "qmessagebox"
-    PREFIX
-        "/qt-project.org/qmessagebox"
-    BASE
-        "dialogs"
-    FILES
-        ${qmessagebox_resource_files}
-)
-
+if(QT_FEATURE_messagebox)
+    # Resources:
+    set(qmessagebox_resource_files
+        "images/qtlogo-64.png"
+    )
+    
+    add_qt_resource(Widgets "qmessagebox"
+        PREFIX
+            "/qt-project.org/qmessagebox"
+        BASE
+            "dialogs"
+        FILES
+            ${qmessagebox_resource_files}
+    )
+endif()
 
 extend_target(Widgets CONDITION QT_FEATURE_progressdialog
     SOURCES

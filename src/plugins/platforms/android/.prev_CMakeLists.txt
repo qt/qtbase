@@ -15,7 +15,6 @@ add_qt_plugin(qtforandroid
         androidjniinput.cpp androidjniinput.h
         androidjnimain.cpp androidjnimain.h
         androidjnimenu.cpp androidjnimenu.h
-        androidplatformplugin.cpp
         androidsurfaceclient.h
         main.cpp
         qandroidassetsfileenginehandler.cpp qandroidassetsfileenginehandler.h

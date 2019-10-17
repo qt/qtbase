@@ -26,10 +26,12 @@ add_qt_module(Network
         access/qnetworkreplyimpl.cpp access/qnetworkreplyimpl_p.h
         access/qnetworkrequest.cpp access/qnetworkrequest.h access/qnetworkrequest_p.h
         bearer/qbearerengine.cpp bearer/qbearerengine_p.h
+        bearer/qbearerengine_impl_p.h
         bearer/qbearerplugin.cpp bearer/qbearerplugin_p.h
         bearer/qnetworkconfigmanager.cpp bearer/qnetworkconfigmanager.h bearer/qnetworkconfigmanager_p.cpp bearer/qnetworkconfigmanager_p.h
         bearer/qnetworkconfiguration.cpp bearer/qnetworkconfiguration.h bearer/qnetworkconfiguration_p.h
         bearer/qnetworksession.cpp bearer/qnetworksession.h bearer/qnetworksession_p.h
+        bearer/qnetworksession_impl.cpp bearer/qnetworksession_impl_p.h
         bearer/qsharednetworksession.cpp bearer/qsharednetworksession_p.h
         kernel/qauthenticator.cpp kernel/qauthenticator.h kernel/qauthenticator_p.h
         kernel/qhostaddress.cpp kernel/qhostaddress.h kernel/qhostaddress_p.h

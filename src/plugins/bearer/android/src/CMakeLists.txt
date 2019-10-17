@@ -8,8 +8,6 @@ add_qt_plugin(qandroidbearer
     TYPE bearer
     CLASS_NAME QAndroidBearerEnginePlugin
     SOURCES
-        ../../qbearerengine_impl.h
-        ../../qnetworksession_impl.cpp ../../qnetworksession_impl.h
         main.cpp
         qandroidbearerengine.cpp qandroidbearerengine.h
         wrappers/androidconnectivitymanager.cpp wrappers/androidconnectivitymanager.h

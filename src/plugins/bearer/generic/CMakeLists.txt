@@ -9,8 +9,6 @@ add_qt_plugin(qgenericbearer
     CLASS_NAME QGenericEnginePlugin
     SOURCES
         ../platformdefs_win.h
-        ../qbearerengine_impl.h
-        ../qnetworksession_impl.cpp ../qnetworksession_impl.h
         main.cpp
         qgenericengine.cpp qgenericengine.h
     LIBRARIES
