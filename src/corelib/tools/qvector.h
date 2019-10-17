@@ -301,9 +301,6 @@ public:
     inline QVector<T> toVector() const { return *this; }
 
 private:
-    // ### Qt6: remove methods, they are unused
-    void reallocData(const int size, const int alloc, QArrayData::ArrayOptions options = QArrayData::DefaultAllocationFlags);
-    void reallocData(const int sz) { reallocData(sz, d->allocatedCapacity()); }
     void realloc(int alloc, QArrayData::ArrayOptions options = QArrayData::DefaultAllocationFlags);
     void freeData(Data *d);
     void defaultConstruct(T *from, T *to);
@@ -574,105 +571,6 @@ void QVector<T>::freeData(Data *x)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_MSVC(4127) // conditional expression is constant
 #endif
-
-template <typename T>
-void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::ArrayOptions options)
-{
-    Q_ASSERT(asize >= 0 && asize <= aalloc);
-    Data *x = d;
-
-    const bool isShared = d->ref.isShared();
-
-    if (aalloc != 0) {
-        if (aalloc != int(d->allocatedCapacity()) || isShared) {
-            QT_TRY {
-                // allocate memory
-                x = Data::allocate(aalloc, options);
-                Q_CHECK_PTR(x);
-                // aalloc is bigger then 0 so it is not [un]sharedEmpty
-                Q_ASSERT(!x->ref.isStatic());
-                x->size = asize;
-
-                T *srcBegin = d->begin();
-                T *srcEnd = asize > d->size ? d->end() : d->begin() + asize;
-                T *dst = x->begin();
-
-                if (!QTypeInfoQuery<T>::isRelocatable || (isShared && QTypeInfo<T>::isComplex)) {
-                    QT_TRY {
-                        if (isShared || !std::is_nothrow_move_constructible<T>::value) {
-                            // we can not move the data, we need to copy construct it
-                            while (srcBegin != srcEnd)
-                                new (dst++) T(*srcBegin++);
-                        } else {
-                            while (srcBegin != srcEnd)
-                                new (dst++) T(std::move(*srcBegin++));
-                        }
-                    } QT_CATCH (...) {
-                        // destruct already copied objects
-                        destruct(x->begin(), dst);
-                        QT_RETHROW;
-                    }
-                } else {
-                    ::memcpy(static_cast<void *>(dst), static_cast<void *>(srcBegin), (srcEnd - srcBegin) * sizeof(T));
-                    dst += srcEnd - srcBegin;
-
-                    // destruct unused / not moved data
-                    if (asize < d->size)
-                        destruct(d->begin() + asize, d->end());
-                }
-
-                if (asize > d->size) {
-                    // construct all new objects when growing
-                    if (!QTypeInfo<T>::isComplex) {
-                        ::memset(static_cast<void *>(dst), 0, (static_cast<T *>(x->end()) - dst) * sizeof(T));
-                    } else {
-                        QT_TRY {
-                            while (dst != x->end())
-                                new (dst++) T();
-                        } QT_CATCH (...) {
-                            // destruct already copied objects
-                            destruct(x->begin(), dst);
-                            QT_RETHROW;
-                        }
-                    }
-                }
-            } QT_CATCH (...) {
-                Data::deallocate(x);
-                QT_RETHROW;
-            }
-        } else {
-            Q_ASSERT(int(d->allocatedCapacity()) == aalloc); // resize, without changing allocation size
-            Q_ASSERT(isDetached());       // can be done only on detached d
-            Q_ASSERT(x == d);             // in this case we do not need to allocate anything
-            if (asize <= d->size) {
-                destruct(x->begin() + asize, x->end()); // from future end to current end
-            } else {
-                defaultConstruct(x->end(), x->begin() + asize); // from current end to future end
-            }
-            x->size = asize;
-        }
-    } else {
-        x = Data::sharedNull();
-    }
-    if (d != x) {
-        if (!d->ref.deref()) {
-            if (!QTypeInfoQuery<T>::isRelocatable || !aalloc || (isShared && QTypeInfo<T>::isComplex)) {
-                // data was copy constructed, we need to call destructors
-                // or if !alloc we did nothing to the old 'd'.
-                freeData(d);
-            } else {
-                Data::deallocate(d);
-            }
-        }
-        d = x;
-    }
-
-    Q_ASSERT(d->data());
-    Q_ASSERT(d->size <= int(d->allocatedCapacity()));
-    Q_ASSERT(aalloc ? d != Data::sharedNull() : d == Data::sharedNull());
-    Q_ASSERT(int(d->allocatedCapacity()) >= aalloc);
-    Q_ASSERT(d->size == asize);
-}
 
 template<typename T>
 void QVector<T>::realloc(int aalloc, QArrayData::ArrayOptions options)
