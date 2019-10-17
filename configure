@@ -974,7 +974,7 @@ IFS=$SAVED_IFS
 cmake $* "$relpath"
 }
 
-parseCommandline $@
+parseCommandline "$@"
 handleHelp
 if [ "$BUILD_WITH_CMAKE" = "yes" ]; then
     getCMakeCmdLine $@
@@ -984,8 +984,8 @@ else
     findAwk
     findMake
     checkQMakeEnv
-    checkTopLevelBuild $@
-    getOptAndQMakeCmdLines $@
+    checkTopLevelBuild "$@"
+    getOptAndQMakeCmdLines "$@"
     detectOperatingSystem
     maybeVerifyXcode
     detectQtVersion
