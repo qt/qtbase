@@ -134,6 +134,9 @@ public:
         UserVerifiedRedirectPolicy
     };
 
+    enum TransferTimeoutConstant {
+        TransferTimeoutPreset = 30000
+    };
 
     QNetworkRequest();
     explicit QNetworkRequest(const QUrl &url);
@@ -185,6 +188,9 @@ public:
 #if QT_CONFIG(http) || defined(Q_CLANG_QDOC)
     QHttp2Configuration http2Configuration() const;
     void setHttp2Configuration(const QHttp2Configuration &configuration);
+
+    int transferTimeout();
+    void setTransferTimeout(int timeout = TransferTimeoutPreset);
 #endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC)
 private:
     QSharedDataPointer<QNetworkRequestPrivate> d;

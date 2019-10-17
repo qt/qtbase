@@ -425,6 +425,18 @@ QT_BEGIN_NAMESPACE
                                        based on some app-specific configuration.
 */
 
+/*!
+    \enum QNetworkRequest::TransferTimeoutConstant
+    \since 5.15
+
+    A constant that can be used for enabling transfer
+    timeouts with a preset value.
+
+    \value TransferTimeoutPreset      The transfer timeout in milliseconds.
+                                      Used if setTimeout() is called
+                                      without an argument.
+ */
+
 class QNetworkRequestPrivate: public QSharedData, public QNetworkHeadersPrivate
 {
 public:
@@ -435,6 +447,7 @@ public:
         , sslConfiguration(0)
 #endif
         , maxRedirectsAllowed(maxRedirectCount)
+        , transferTimeout(0)
     { qRegisterMetaType<QNetworkRequest>(); }
     ~QNetworkRequestPrivate()
     {
@@ -459,6 +472,7 @@ public:
 #if QT_CONFIG(http)
         h2Configuration = other.h2Configuration;
 #endif
+        transferTimeout = other.transferTimeout;
     }
 
     inline bool operator==(const QNetworkRequestPrivate &other) const
@@ -472,6 +486,7 @@ public:
 #if QT_CONFIG(http)
             && h2Configuration == other.h2Configuration
 #endif
+            && transferTimeout == other.transferTimeout
             ;
         // don't compare cookedHeaders
     }
@@ -486,6 +501,7 @@ public:
 #if QT_CONFIG(http)
     QHttp2Configuration h2Configuration;
 #endif
+    int transferTimeout;
 };
 
 /*!
@@ -908,6 +924,40 @@ QHttp2Configuration QNetworkRequest::http2Configuration() const
 void QNetworkRequest::setHttp2Configuration(const QHttp2Configuration &configuration)
 {
     d->h2Configuration = configuration;
+}
+
+/*!
+    \since 5.15
+
+    Returns the timeout used for transfers, in milliseconds.
+
+    This timeout is zero if setTransferTimeout hasn't been
+    called, which means that the timeout is not used.
+
+    \sa setTransferTimeout
+*/
+int QNetworkRequest::transferTimeout()
+{
+    return d->transferTimeout;
+}
+
+/*!
+    \since 5.15
+
+    Sets \a timeout as the transfer timeout in milliseconds.
+
+    Transfers are aborted if no bytes are transferred before
+    the timeout expires. Zero means no timer is set. If no
+    argument is provided, the timeout is
+    QNetworkRequest::TransferTimeoutPreset. If this function
+    is not called, the timeout is disabled and has the
+    value zero.
+
+    \sa transferTimeout
+*/
+void QNetworkRequest::setTransferTimeout(int timeout)
+{
+    d->transferTimeout = timeout;
 }
 #endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC)
 
