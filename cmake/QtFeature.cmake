@@ -472,7 +472,7 @@ function(qt_feature_copy_global_config_features_to_core target)
 endfunction()
 
 function(qt_config_compile_test name)
-    cmake_parse_arguments(arg "" "LABEL;PROJECT_PATH" "LIBRARIES;CODE" ${ARGN})
+    cmake_parse_arguments(arg "" "LABEL;PROJECT_PATH;C_STANDARD;CXX_STANDARD" "LIBRARIES;CODE" ${ARGN})
 
     if(arg_PROJECT_PATH)
         message(STATUS "Performing Test ${arg_LABEL}")
@@ -499,10 +499,24 @@ function(qt_config_compile_test name)
         endforeach()
 
         if(NOT DEFINED HAVE_${name})
+            set(_save_CMAKE_C_STANDARD "${CMAKE_C_STANDARD}")
+            set(_save_CMAKE_CXX_STANDARD "${CMAKE_CXX_STANDARD}")
+
+            if(arg_C_STANDARD)
+               set(CMAKE_C_STANDARD "${arg_C_STANDARD}")
+            endif()
+
+            if(arg_CXX_STANDARD)
+               set(CMAKE_CXX_STANDARD "${arg_CXX_STANDARD}")
+            endif()
+
             set(_save_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
             set(CMAKE_REQUIRED_LIBRARIES "${arg_LIBRARIES}")
             check_cxx_source_compiles("${arg_UNPARSED_ARGUMENTS} ${arg_CODE}" HAVE_${name})
             set(CMAKE_REQUIRED_LIBRARIES "${_save_CMAKE_REQUIRED_LIBRARIES}")
+
+            set(CMAKE_C_STANDARD "${_save_CMAKE_C_STANDARD}")
+            set(CMAKE_CXX_STANDARD "${_save_CMAKE_CXX_STANDARD}")
         endif()
     endif()
 

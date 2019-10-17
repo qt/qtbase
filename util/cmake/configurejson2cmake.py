@@ -54,13 +54,8 @@ class LibraryMapping:
 
 def map_tests(test: str) -> Optional[str]:
     testmap = {
-        "c++11": "$<COMPILE_FEATURES:cxx_std_11>",
-        "c++14": "$<COMPILE_FEATURES:cxx_std_14>",
-        "c++1z": "$<COMPILE_FEATURES:cxx_std_17>",
-        "c++17": "$<COMPILE_FEATURES:cxx_std_17>",
-        "c++20": "$<COMPILE_FEATURES:cxx_std_20>",
-        "c99": "$<COMPILE_FEATURES:c_std_99>",
-        "c11": "$<COMPILE_FEATURES:c_std_11>",
+        "c99": "c_std_99 IN_LIST CMAKE_C_COMPILE_FEATURES",
+        "c11": "c_std_11 IN_LIST CMAKE_C_COMPILE_FEATURES",
         "x86SimdAlways": "ON",  # FIXME: Make this actually do a compile test.
         "aesni": "TEST_subarch_aes",
         "avx": "TEST_subarch_avx",
@@ -489,12 +484,6 @@ def parseInput(ctx, sinput, data, cm_fh):
 #        },
 def parseTest(ctx, test, data, cm_fh):
     skip_tests = {
-        "c++11",
-        "c++14",
-        "c++17",
-        "c++20",
-        "c++1y",
-        "c++1z",
         "c11",
         "c99",
         "gc_binaries",
@@ -572,6 +561,7 @@ endif()
         sourceCode = sourceCode.replace('"', '\\"')
 
         librariesCmakeName = ""
+        languageStandard = ""
         qmakeFixme = ""
 
         cm_fh.write(f"# {test}\n")
@@ -594,6 +584,12 @@ endif()
             elif details["qmake"] == "CONFIG += c++11":
                 # do nothing we're always in c++11 mode
                 pass
+            elif details["qmake"] == "CONFIG += c++11 c++14":
+                languageStandard = "CXX_STANDARD 14"
+            elif details["qmake"] == "CONFIG += c++11 c++14 c++17":
+                languageStandard = "CXX_STANDARD 17"
+            elif details["qmake"] == "CONFIG += c++11 c++14 c++17 c++2a":
+                languageStandard = "CXX_STANDARD 20"
             else:
                 qmakeFixme = f"# FIXME: qmake: {details['qmake']}\n"
 
@@ -614,6 +610,8 @@ endif()
         cm_fh.write('"' + sourceCode + '"')
         if qmakeFixme != "":
             cm_fh.write(qmakeFixme)
+        if languageStandard != "":
+            cm_fh.write(f"\n    {languageStandard}\n")
         cm_fh.write(")\n\n")
 
     elif data["type"] == "libclang":
