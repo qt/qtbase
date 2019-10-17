@@ -24,11 +24,6 @@ elseif(APPLE)
     set(CMAKE_DEBUG_POSTFIX "_debug")
 endif()
 
-## Force C++ standard, do not fall back, do not use compiler extensions
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 ## Position independent code:
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -109,6 +104,8 @@ include(QtCompilerFlags)
 
 ## Set up non-prefix build:
 qt_set_up_nonprefix_build()
+
+qt_set_language_standards()
 
 ## Find host tools (if non native):
 set(QT_HOST_PATH "" CACHE PATH "Installed Qt host directory path, used for cross compiling.")

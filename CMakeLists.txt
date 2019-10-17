@@ -35,6 +35,8 @@ include(QtBaseCMakeTesting)
 ## Targets for global features, etc.:
 include(QtBaseGlobalTargets)
 
+qt_set_language_standards()
+
 ## Should this Qt be static or dynamically linked?
 option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
 set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
