@@ -157,10 +157,10 @@ private slots:
     void clippedLines();
     void clippedPolygon_data();
     void clippedPolygon();
-
     void clippedText();
 
     void clipBoundingRect();
+    void transformedClip();
 
     void setOpacity_data();
     void setOpacity();
@@ -4587,6 +4587,53 @@ void tst_QPainter::clipBoundingRect()
     QVERIFY(p.clipBoundingRect().contains(QRectF(-100, -100, 200, 200)));
     QVERIFY(!p.clipBoundingRect().contains(QRectF(-250, -250, 500, 500)));
 
+}
+
+void tst_QPainter::transformedClip()
+{
+    QImage img(8, 4, QImage::Format_ARGB32_Premultiplied);
+    QImage img2(img.size(), img.format());
+    QRect clip(0, 0, 2, 1);
+    QTransform xf;
+    xf.translate(0.2, 0);
+    xf.scale(2.2, 1);
+    // setClipRect(QRectF)
+    {
+        img.fill(Qt::green);
+        QPainter p(&img);
+        p.setTransform(xf);
+        p.setClipRect(QRectF(clip));
+        p.fillRect(img.rect(), Qt::white);
+    }
+    // setClipRect(QRect)
+    {
+        img2.fill(Qt::green);
+        QPainter p(&img2);
+        p.setTransform(xf);
+        p.setClipRect(clip);
+        p.fillRect(img2.rect(), Qt::white);
+        QCOMPARE(img, img2);
+    }
+    // setClipRegion
+    {
+        img2.fill(Qt::green);
+        QPainter p(&img2);
+        p.setTransform(xf);
+        p.setClipRegion(QRegion(clip) + QRect(0, 3, 1, 1));  // dummy extra rect to avoid single-rect codepath
+        p.fillRect(img2.rect(), Qt::white);
+        QCOMPARE(img.copy(0, 0, 8, 2), img2.copy(0, 0, 8, 2));
+    }
+    // setClipPath
+    {
+        img2.fill(Qt::green);
+        QPainter p(&img2);
+        p.setTransform(xf);
+        QPainterPath path;
+        path.addRect(clip);
+        p.setClipPath(path);
+        p.fillRect(img2.rect(), Qt::white);
+        QCOMPARE(img, img2);
+    }
 }
 
 #if defined(Q_OS_MAC)
