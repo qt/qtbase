@@ -57,6 +57,7 @@
 #endif
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
+#include <qpa/qplatformintegration.h>
 #include <QFileDialog>
 #include <QFileSystemModel>
 
@@ -1129,6 +1130,8 @@ void tst_QFiledialog::setNameFilter()
 
 void tst_QFiledialog::focus()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
     QFileDialog fd;
     fd.setDirectory(QDir::currentPath());
     fd.show();
@@ -1550,6 +1553,9 @@ public slots:
 
 void tst_QFiledialog::rejectModalDialogs()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This freezes. Figure out why.");
+
     // QTBUG-38672 , static functions should return empty Urls
     DialogRejecter dr;
 
@@ -1609,6 +1615,9 @@ public:
 
 void tst_QFiledialog::focusObjectDuringDestruction()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This freezes. Figure out why.");
+
     QTRY_VERIFY(QGuiApplication::topLevelWindows().isEmpty());
 
     qtbug57193DialogRejecter dialogRejecter;

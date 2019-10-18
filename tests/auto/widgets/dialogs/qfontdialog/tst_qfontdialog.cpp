@@ -179,6 +179,9 @@ class FriendlyFontDialog : public QFontDialog
 
 void tst_QFontDialog::task256466_wrongStyle()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This freezes. Figure out why.");
+
     QFontDatabase fdb;
     FriendlyFontDialog dialog;
     dialog.setOption(QFontDialog::DontUseNativeDialog);

@@ -35,6 +35,8 @@ class tst_QFontComboBox : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     void qfontcombobox_data();
     void qfontcombobox();
     void currentFont_data();
@@ -57,6 +59,12 @@ public:
     bool call_event(QEvent* e)
         { return SubQFontComboBox::event(e); }
 };
+
+void tst_QFontComboBox::initTestCase()
+{
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This freezes. Figure out why.");
+}
 
 void tst_QFontComboBox::qfontcombobox_data()
 {

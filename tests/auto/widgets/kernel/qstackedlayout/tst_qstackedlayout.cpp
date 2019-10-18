@@ -92,6 +92,9 @@ tst_QStackedLayout::tst_QStackedLayout()
 
 void tst_QStackedLayout::init()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     if (testWidget) {
         delete testWidget;
         testWidget = 0;

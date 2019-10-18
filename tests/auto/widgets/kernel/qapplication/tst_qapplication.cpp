@@ -1704,6 +1704,9 @@ void tst_QApplication::focusMouseClick()
     int argc = 1;
     QApplication app(argc, &argv0);
 
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QWidget w;
     w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     w.setFocusPolicy(Qt::StrongFocus);

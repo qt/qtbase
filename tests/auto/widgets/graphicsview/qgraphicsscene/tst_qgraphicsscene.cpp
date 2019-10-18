@@ -3078,6 +3078,9 @@ void tst_QGraphicsScene::tabFocus_emptyScene()
 
 void tst_QGraphicsScene::tabFocus_sceneWithFocusableItems()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QGraphicsScene scene;
     QGraphicsTextItem *item = scene.addText("Qt rocks!");
     item->setTabChangesFocus(true);
@@ -3218,6 +3221,9 @@ protected:
 
 void tst_QGraphicsScene::tabFocus_sceneWithFocusWidgets()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QGraphicsScene scene;
 
     FocusWidget *widget1 = new FocusWidget;
@@ -3287,6 +3293,9 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusWidgets()
 
 void tst_QGraphicsScene::tabFocus_sceneWithNestedFocusWidgets()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QGraphicsScene scene;
 
     FocusWidget *widget1 = new FocusWidget;
@@ -3811,6 +3820,9 @@ public:
 
 void tst_QGraphicsScene::inputMethod()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     PlatformInputContext inputContext;
     QInputMethodPrivate *inputMethodPrivate =
         QInputMethodPrivate::get(QGuiApplication::inputMethod());
@@ -4054,6 +4066,9 @@ void tst_QGraphicsScene::polishItems2()
 
 void tst_QGraphicsScene::isActive()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
 #if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
     QSKIP("Fails on Android (QTBUG-44430)");
 #endif

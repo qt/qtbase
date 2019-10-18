@@ -53,6 +53,7 @@
 #include <QCoreApplication>
 #include <QPainter>
 #include <QtMath>
+#include <cstdlib>
 
 //! [0]
 TabletCanvas::TabletCanvas()
