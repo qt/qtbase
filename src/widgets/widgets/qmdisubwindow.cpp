@@ -162,7 +162,9 @@
 #include <QDebug>
 #include <QMdiArea>
 #include <QScopedValueRollback>
-#include <QAction>
+#if QT_CONFIG(action)
+#  include <qaction.h>
+#endif
 #if QT_CONFIG(menu)
 #include <QMenu>
 #endif
@@ -895,7 +897,7 @@ QMdiSubWindowPrivate::QMdiSubWindowPrivate()
 */
 void QMdiSubWindowPrivate::_q_updateStaysOnTopHint()
 {
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     Q_Q(QMdiSubWindow);
     if (QAction *senderAction = qobject_cast<QAction *>(q->sender())) {
         if (senderAction->isChecked()) {
@@ -906,7 +908,7 @@ void QMdiSubWindowPrivate::_q_updateStaysOnTopHint()
             q->lower();
         }
     }
-#endif // QT_NO_ACTION
+#endif // QT_CONFIG(action)
 }
 
 /*!

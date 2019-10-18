@@ -1638,8 +1638,8 @@
             "output": [ "publicFeature", "feature" ]
         },
         "action": {
-            "label": "QAction",
-            "purpose": "Provides widget actions.",
+            "label": "Q(Gui)Action(Group)",
+            "purpose": "Provides abstract user interface actions.",
             "section": "Kernel",
             "output": [ "publicFeature", "feature" ]
         },

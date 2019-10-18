@@ -52,7 +52,6 @@
 #include "qpainter.h"
 #include "qapplication.h"
 #include "qstyle.h"
-#include "qaction.h"
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif

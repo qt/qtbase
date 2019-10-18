@@ -53,7 +53,9 @@
 #include <qabstractbutton.h>
 #include <qabstractscrollarea.h>
 #include <qabstractslider.h>
-#include <qaction.h>
+#if QT_CONFIG(action)
+#  include <qaction.h>
+#endif
 #include <qcommonstyle.h>
 #include <qlayout.h>
 #include <qstyle.h>

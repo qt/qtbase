@@ -40,7 +40,6 @@
 #include "qaction.h"
 #include "qactiongroup.h"
 
-#ifndef QT_NO_ACTION
 #include "qaction_p.h"
 #include "qapplication.h"
 #include "qevent.h"
@@ -353,5 +352,3 @@ QAction::showStatusText(QWidget *widget)
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_ACTION

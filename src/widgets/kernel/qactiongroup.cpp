@@ -40,8 +40,6 @@
 #include "qactiongroup.h"
 #include <QtGui/private/qguiactiongroup_p.h>
 
-#ifndef QT_NO_ACTION
-
 #include "qaction.h"
 
 QT_BEGIN_NAMESPACE
@@ -188,5 +186,3 @@ QList<QAction*> QActionGroup::actions() const
 }
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_ACTION

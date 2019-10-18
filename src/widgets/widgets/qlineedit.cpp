@@ -40,7 +40,9 @@
 #include "qlineedit.h"
 #include "qlineedit_p.h"
 
-#include "qaction.h"
+#if QT_CONFIG(action)
+#  include "qaction.h"
+#endif
 #include "qapplication.h"
 #include "qclipboard.h"
 #if QT_CONFIG(draganddrop)

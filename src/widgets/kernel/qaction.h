@@ -46,10 +46,9 @@
 #include <QtWidgets/qwidget.h>
 #include <QtCore/qvariant.h>
 
+QT_REQUIRE_CONFIG(action);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ACTION
 
 class QMenu;
 class QActionGroup;
@@ -107,8 +106,6 @@ Q_WIDGETS_EXPORT QDebug operator<<(QDebug, const QAction *);
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <QtWidgets/qactiongroup.h>
 QT_END_INCLUDE_NAMESPACE
-
-#endif // QT_NO_ACTION
 
 QT_END_NAMESPACE
 

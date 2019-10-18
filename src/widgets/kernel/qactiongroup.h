@@ -44,10 +44,9 @@
 #include <QtGui/qguiactiongroup.h>
 #include <QtWidgets/qaction.h>
 
+QT_REQUIRE_CONFIG(action);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ACTION
 
 class QActionGroupPrivate;
 
@@ -75,8 +74,6 @@ Q_SIGNALS:
 private:
     Q_DISABLE_COPY(QActionGroup)
 };
-
-#endif // QT_NO_ACTION
 
 QT_END_NAMESPACE
 

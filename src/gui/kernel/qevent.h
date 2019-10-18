@@ -753,7 +753,7 @@ private:
 };
 #endif
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 class Q_GUI_EXPORT QActionEvent : public QEvent
 {
     QGuiAction *act, *bef;
@@ -764,7 +764,7 @@ public:
     inline QGuiAction *action() const { return act; }
     inline QGuiAction *before() const { return bef; }
 };
-#endif
+#endif // QT_CONFIG(action)
 
 class Q_GUI_EXPORT QFileOpenEvent : public QEvent
 {

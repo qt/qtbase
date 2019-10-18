@@ -53,7 +53,9 @@
 #include <qapplication.h>
 #include <private/qapplication_p.h>
 #include <private/qshortcutmap_p.h>
-#include <private/qaction_p.h>
+#if QT_CONFIG(action)
+#  include <private/qaction_p.h>
+#endif
 #include <private/qwidgetwindow_p.h>
 #include <qpa/qplatformmenu.h>
 
@@ -70,7 +72,7 @@ static bool correctWidgetContext(Qt::ShortcutContext context, QWidget *w, QWidge
 #if QT_CONFIG(graphicsview)
 static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsWidget *w, QWidget *active_window);
 #endif
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidget *active_window);
 #endif
 
@@ -107,7 +109,7 @@ bool qWidgetShortcutContextMatcher(QObject *object, Qt::ShortcutContext context)
     if (!active_window)
         return false;
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
     if (auto a = qobject_cast<QAction *>(object))
         return correctActionContext(context, a, active_window);
 #endif
@@ -283,7 +285,7 @@ static bool correctGraphicsWidgetContext(Qt::ShortcutContext context, QGraphicsW
 }
 #endif
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidget *active_window)
 {
     const QWidgetList &widgets = static_cast<QActionPrivate *>(QObjectPrivate::get(a))->widgets;
@@ -331,7 +333,7 @@ static bool correctActionContext(Qt::ShortcutContext context, QAction *a, QWidge
 #endif
     return false;
 }
-#endif // QT_NO_ACTION
+#endif // QT_CONFIG(action)
 
 
 /*!

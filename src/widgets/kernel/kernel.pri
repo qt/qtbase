@@ -7,9 +7,6 @@ KERNEL_P= kernel
 HEADERS += \
         kernel/qtwidgetsglobal.h \
         kernel/qtwidgetsglobal_p.h \
-        kernel/qaction.h \
-        kernel/qaction_p.h \
-	kernel/qactiongroup.h \
 	kernel/qapplication.h \
 	kernel/qapplication_p.h \
         kernel/qwidgetrepaintmanager_p.h \
@@ -24,8 +21,6 @@ HEADERS += \
         kernel/qstackedlayout.h \
         kernel/qwidget.h \
         kernel/qwidget_p.h \
-	kernel/qwidgetaction.h \
-	kernel/qwidgetaction_p.h \
 	kernel/qgesture.h \
 	kernel/qgesture_p.h \
 	kernel/qstandardgestures_p.h \
@@ -37,8 +32,6 @@ HEADERS += \
         kernel/qtestsupport_widgets.h
 
 SOURCES += \
-	kernel/qaction.cpp \
-	kernel/qactiongroup.cpp \
 	kernel/qapplication.cpp \
         kernel/qwidgetrepaintmanager.cpp \
         kernel/qboxlayout.cpp \
@@ -49,7 +42,6 @@ SOURCES += \
         kernel/qsizepolicy.cpp \
         kernel/qstackedlayout.cpp \
 	kernel/qwidget.cpp \
-	kernel/qwidgetaction.cpp \
 	kernel/qgesture.cpp \
 	kernel/qstandardgestures.cpp \
 	kernel/qgesturerecognizer.cpp \
@@ -63,6 +55,17 @@ SOURCES += \
 macx: {
     HEADERS += kernel/qmacgesturerecognizer_p.h
     SOURCES += kernel/qmacgesturerecognizer.cpp
+}
+
+qtConfig(action) {
+    HEADERS += kernel/qaction.h \
+               kernel/qaction_p.h \
+               kernel/qactiongroup.h \
+               kernel/qwidgetaction.h \
+               kernel/qwidgetaction_p.h
+    SOURCES += kernel/qaction.cpp \
+               kernel/qactiongroup.cpp \
+               kernel/qwidgetaction.cpp
 }
 
 qtConfig(opengl) {
