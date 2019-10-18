@@ -355,14 +355,12 @@
     counters can be obtained by running any benchmark executable with the
     option \c -perfcounterlist.
 
-    \list
-    \li \b Notes:
+    \note
     \list
     \li Using the performance counter may require enabling access to non-privileged
         applications.
     \li Devices that do not support high-resolution timers default to
         one-millisecond granularity.
-    \endlist
     \endlist
 
     See \l {Chapter 5: Writing a Benchmark}{Writing a Benchmark} in the Qt Test

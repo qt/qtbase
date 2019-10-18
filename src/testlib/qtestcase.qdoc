@@ -235,7 +235,7 @@
    \c aString and \c expected are variables on the stack that are initialized with
    the current test data.
 
-   \b {Note:} This macro can only be used in a test function that is invoked
+   \note This macro can only be used in a test function that is invoked
    by the test framework. The test function must have a _data function.
 */
 
@@ -282,7 +282,7 @@
    This macro can be used to force a test failure. The test stops
    executing and the failure \a message is appended to the test log.
 
-   \b {Note:} This macro can only be used in a test function that is invoked
+   \note This macro can only be used in a test function that is invoked
    by the test framework.
 
    Example:
@@ -359,7 +359,7 @@
    \a mode is a \l QTest::TestFailMode and sets whether the test should
    continue to execute or not.
 
-   \b {Note:} This macro can only be used in a test function that is invoked
+   \note This macro can only be used in a test function that is invoked
    by the test framework.
 
    Example 1:
@@ -421,13 +421,13 @@
    test has been installed, and regardless of whether the test's build tree
    is equal to the test's source tree.
 
-   \b {Note:} reliable detection of testdata from the source directory requires
+   \note reliable detection of testdata from the source directory requires
    either that qmake is used, or the \c{QT_TESTCASE_BUILDDIR} macro is defined to
    point to the working directory from which the compiler is invoked, or only
    absolute paths to the source files are passed to the compiler. Otherwise, the
    absolute path of the source directory cannot be determined.
 
-   \b {Note:} For tests that use the \l QTEST_APPLESS_MAIN() macro to generate a
+   \note For tests that use the \l QTEST_APPLESS_MAIN() macro to generate a
    \c{main()} function, \c{QFINDTESTDATA} will not attempt to find test data
    relative to QCoreApplication::applicationDirPath().  In practice, this means that
    tests using \c{QTEST_APPLESS_MAIN()} will fail to find their test data
@@ -449,7 +449,7 @@
     Similarly, if qmake is used and the configuration includes \c{QT += gui}, then
     \c QT_GUI_LIB will be defined automatically.
 
-    \b {Note:} On platforms that have keypad navigation enabled by default,
+    \note On platforms that have keypad navigation enabled by default,
     this macro will forcefully disable it if \c QT_WIDGETS_LIB is defined.  This is done
     to simplify the usage of key events when writing autotests. If you wish to write a
     test case that uses keypad navigation, you should enable it either in the
@@ -689,7 +689,7 @@
     Simulates pressing a \a key with an optional \a modifier on a \a widget. If \a delay
     is larger than 0, the test will wait for \a delay milliseconds before pressing the key.
 
-    \b {Note:} At some point you should release the key using \l keyRelease().
+    \note At some point you should release the key using \l keyRelease().
 
     \sa QTest::keyRelease(), QTest::keyClick()
 */
@@ -701,7 +701,7 @@
     If \a delay is larger than 0, the test will wait for \a delay milliseconds
     before pressing the key.
 
-    \b {Note:} At some point you should release the key using \l keyRelease().
+    \note At some point you should release the key using \l keyRelease().
 
     \sa QTest::keyRelease(), QTest::keyClick()
 */
@@ -713,7 +713,7 @@
     Simulates pressing a \a key with an optional \a modifier on a \a window. If \a delay
     is larger than 0, the test will wait for \a delay milliseconds before pressing the key.
 
-    \b {Note:} At some point you should release the key using \l keyRelease().
+    \note At some point you should release the key using \l keyRelease().
 
     \sa QTest::keyRelease(), QTest::keyClick()
 */
@@ -726,7 +726,7 @@
     If \a delay is larger than 0, the test will wait for \a delay milliseconds
     before pressing the key.
 
-    \b {Note:} At some point you should release the key using \l keyRelease().
+    \note At some point you should release the key using \l keyRelease().
 
     \sa QTest::keyRelease(), QTest::keyClick()
 */
@@ -947,12 +947,12 @@
     You can add specializations or overloads of this function to your test to enable
     verbose output.
 
-    \b {Note:} Starting with Qt 5.5, you should prefer to provide a toString() function
+    \note Starting with Qt 5.5, you should prefer to provide a toString() function
     in the type's namespace instead of specializing this template.
     If your code needs to continue to work with the QTestLib from Qt 5.4 or
     earlier, you need to continue to use specialization.
 
-    \b {Note:} The caller of toString() must delete the returned data
+    \note The caller of toString() must delete the returned data
     using \c{delete[]}.  Your implementation should return a string
     created with \c{new[]} or qstrdup(). The easiest way to do so is to
     create a QByteArray or QString and calling QTest::toString() on it
