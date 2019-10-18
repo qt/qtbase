@@ -317,26 +317,55 @@
 
    If called from a test function, the QSKIP() macro stops execution of the test
    without adding a failure to the test log. You can use it to skip tests that
-   wouldn't make sense in the current configuration. The text \a description is
-   appended to the test log and should contain an explanation of why the test
-   couldn't be executed.
+   wouldn't make sense in the current configuration. For example, a test of font
+   rendering may call QSKIP() if the needed fonts are not installed on the test
+   system.
 
-   If the test is data-driven, each call to QSKIP() will skip only the current
-   row of test data, so an unconditional call to QSKIP will produce one skip
-   message in the test log for each row of test data.
+   The text \a description is appended to the test log and should contain an
+   explanation of why the test couldn't be executed.
 
-   If called from an _data function, the QSKIP() macro will stop execution of
-   the _data function and will prevent execution of the associated test
-   function.
+   If the test is data-driven, each call to QSKIP() in the test function will
+   skip only the current row of test data, so an unconditional call to QSKIP()
+   will produce one skip message in the test log for each row of test data.
 
-   If called from initTestCase() or initTestCase_data(), the QSKIP() macro will
-   skip all test and _data functions.
+   If called from an \c _data function, the QSKIP() macro will stop execution of
+   the \c _data function and will prevent execution of the associated test
+   function. This entirely omits a data-driven test. To omit individual rows,
+   make them conditional by using a simple \c{if (condition) newRow(...) << ...}
+   in the \c _data function, instead of using QSKIP() in the test function.
 
-   \b {Note:} This macro can only be used in a test function or _data
+   If called from \c initTestCase_data(), the QSKIP() macro will skip all test
+   and \c _data functions. If called from \c initTestCase() when there is no
+   \c initTestCase_data(), or when it only sets up one row, QSKIP() will
+   likewise skip the whole test. However, if \c initTestCase_data() contains
+   more than one row, then \c initTestCase() is called (followed by each test
+   and finally the wrap-up) once per row of it. Therefore, a call to QSKIP() in
+   \c initTestCase() will merely skip all test functions for the current row of
+   global data, set up by \c initTestCase_data().
+
+   \note This macro can only be used in a test function or \c _data
    function that is invoked by the test framework.
 
    Example:
    \snippet code/src_qtestlib_qtestcase.cpp 8
+
+   \section2 Skipping Known Bugs
+
+   If a test exposes a known bug that will not be fixed immediately, use the
+   QEXPECT_FAIL() macro to document the failure and reference the bug tracking
+   identifier for the known issue. When the test is run, expected failures will
+   be marked as XFAIL in the test output and will not be counted as failures
+   when setting the test program's return code. If an expected failure does
+   not occur, the XPASS (unexpected pass) will be reported in the test output
+   and will be counted as a test failure.
+
+   For known bugs, QEXPECT_FAIL() is better than QSKIP() because a developer
+   cannot fix the bug without an XPASS result reminding them that the test
+   needs to be updated too. If QSKIP() is used, there is no reminder to revise
+   or re-enable the test, without which subsequent regressions will not be
+   reported.
+
+   \sa QEXPECT_FAIL(), {Select Appropriate Mechanisms to Exclude Tests}
 */
 
 /*! \macro QEXPECT_FAIL(dataIndex, comment, mode)
