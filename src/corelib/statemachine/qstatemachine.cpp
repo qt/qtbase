@@ -1498,7 +1498,7 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
     case QStateMachine::StateMachineChildModeSetToParallelError:
         Q_ASSERT(currentContext != nullptr);
 
-        errorString = QStateMachine::tr("Child mode of state machine '%1' is not 'ExclusiveStates'!")
+        errorString = QStateMachine::tr("Child mode of state machine '%1' is not 'ExclusiveStates'.")
                         .arg(currentContext->objectName());
         break;
 
@@ -2469,7 +2469,7 @@ QStateMachine::QStateMachine(QObject *parent)
   and \a parent.
 
   \warning Do not set the \a childMode to anything else than \l{ExclusiveStates}, otherwise the
-           state machine is invalid, and might work incorrectly!
+           state machine is invalid, and might work incorrectly.
 */
 QStateMachine::QStateMachine(QState::ChildMode childMode, QObject *parent)
     : QState(*new QStateMachinePrivate, /*parentState=*/0)
