@@ -741,7 +741,13 @@ defineTest(qtConfOutput_preparePaths) {
         }
         have_prefix = false
     } else {
-        config.input.prefix = $$absolute_path($$config.input.prefix, $$OUT_PWD)
+        equals(XSPEC, $$[QMAKE_SPEC]) {
+            # Only make the user-specified prefix absolute if we're not cross-compiling.
+            config.input.prefix = $$absolute_path($$config.input.prefix, $$OUT_PWD)
+        } else {
+            # But we still must normalize path separators.
+            config.input.prefix = $$replace(config.input.prefix, \\\\, /)
+        }
         have_prefix = true
     }
 
