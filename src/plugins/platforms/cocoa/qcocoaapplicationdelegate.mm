@@ -142,28 +142,9 @@ QT_USE_NAMESPACE
 
 - (BOOL)canQuit
 {
-    bool handle_quit = true;
-    NSMenuItem *quitMenuItem = [[QCocoaMenuLoader sharedMenuLoader] quitMenuItem];
-    if (!QGuiApplicationPrivate::instance()->modalWindowList.isEmpty()
-        && [quitMenuItem isEnabled]) {
-        int visible = 0;
-        const QWindowList tlws = QGuiApplication::topLevelWindows();
-        for (int i = 0; i < tlws.size(); ++i) {
-            if (tlws.at(i)->isVisible())
-                ++visible;
-        }
-        handle_quit = (visible <= 1);
-    }
-
-    if (handle_quit) {
-        QCloseEvent ev;
-        QGuiApplication::sendEvent(qGuiApp, &ev);
-        if (ev.isAccepted()) {
-            return YES;
-        }
-    }
-
-    return NO;
+    QCloseEvent ev;
+    QGuiApplication::sendEvent(qGuiApp, &ev);
+    return ev.isAccepted();
 }
 
 // This function will only be called when NSApp is actually running.

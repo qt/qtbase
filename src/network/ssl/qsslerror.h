@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 class QSslErrorPrivate;
 class Q_NETWORK_EXPORT QSslError
 {
+    Q_GADGET
 public:
     enum SslError {
         NoError,
@@ -94,6 +95,7 @@ public:
         OcspStatusUnknown,
         UnspecifiedError = -1
     };
+    Q_ENUM(SslError)
 
     // RVCT compiler in debug build does not like about default values in const-
     // So as an workaround we define all constructor overloads here explicitly
