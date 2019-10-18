@@ -56,7 +56,9 @@
 #include <qsortfilterproxymodel.h>
 #include <qdebug.h>
 #include <qscreen.h>
-#include <qshortcut.h>
+#if QT_CONFIG(shortcut)
+#  include <qshortcut.h>
+#endif
 
 #include "qcommonstyle.h"
 #include "qstyleoption.h"
@@ -135,9 +137,11 @@ private slots:
 
     void clearInputMask();
 
+#if QT_CONFIG(shortcut)
     void keypress_inputMask_data();
     void keypress_inputMask();
     void keypress_inputMethod_inputMask();
+#endif
 
     void inputMaskAndValidator_data();
     void inputMaskAndValidator();
@@ -219,7 +223,7 @@ private slots:
     void setSelection_data();
     void setSelection();
 
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard) && QT_CONFIG(shortcut)
     void cut();
     void cutWithoutSelection();
 #endif
@@ -299,8 +303,10 @@ private slots:
     void shouldShowPlaceholderText();
     void QTBUG1266_setInputMaskEmittingTextEdited();
 
+#if QT_CONFIG(shortcut)
     void shortcutOverrideOnReadonlyLineEdit_data();
     void shortcutOverrideOnReadonlyLineEdit();
+#endif
     void QTBUG59957_clearButtonLeftmostAction();
     void QTBUG_60319_setInputMaskCheckImSurroundingText();
     void testQuickSelectionWithMouse();
@@ -319,7 +325,9 @@ private:
     void psKeyClick(QWidget *target, Qt::Key key, Qt::KeyboardModifiers pressState = 0);
     void psKeyClick(QTestEventList &keys, Qt::Key key, Qt::KeyboardModifiers pressState = 0);
     bool unselectingWithLeftOrRightChangesCursorPosition();
+#if QT_CONFIG(shortcut)
     void addKeySequenceStandardKey(QTestEventList &keys, QKeySequence::StandardKey);
+#endif
     QLineEdit *ensureTestWidget();
 
     bool validInput;
@@ -715,6 +723,8 @@ void tst_QLineEdit::clearInputMask()
     QCOMPARE(testWidget->inputMask(), QString());
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QLineEdit::keypress_inputMask_data()
 {
     QTest::addColumn<QString>("mask");
@@ -831,6 +841,8 @@ void tst_QLineEdit::keypress_inputMethod_inputMask()
     QCOMPARE(testWidget->cursorPosition(), 8);
     QCOMPARE(testWidget->text(), QStringLiteral("EE.EE.EE"));
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QLineEdit::hasAcceptableInputMask_data()
 {
@@ -1986,12 +1998,16 @@ void tst_QLineEdit::psKeyClick(QTestEventList &keys, Qt::Key key, Qt::KeyboardMo
     keys.addKeyClick(key, pressState);
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QLineEdit::addKeySequenceStandardKey(QTestEventList &keys, QKeySequence::StandardKey key)
 {
     QKeySequence keyseq = QKeySequence(key);
     for (int i = 0; i < keyseq.count(); ++i)
         keys.addKeyClick( Qt::Key( keyseq[i] & ~Qt::KeyboardModifierMask), Qt::KeyboardModifier(keyseq[i] & Qt::KeyboardModifierMask) );
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QLineEdit::cursorPosition()
 {
@@ -3023,7 +3039,7 @@ void tst_QLineEdit::setSelection()
         QCOMPARE(testWidget->cursorPosition(), expectedCursor);
 }
 
-#ifndef QT_NO_CLIPBOARD
+#if QT_CONFIG(clipboard) && QT_CONFIG(shortcut)
 void tst_QLineEdit::cut()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
@@ -3124,7 +3140,7 @@ void tst_QLineEdit::cutWithoutSelection()
         QCOMPARE(clipboard->text(), origText.left(selectionLength));
 }
 
-#endif // !QT_NO_CLIPBOARD
+#endif // QT_CONFIG(clipboard) && QT_CONFIG(shortcut)
 
 class InputMaskValidator : public QValidator
 {
@@ -3969,7 +3985,9 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
     le.setReadOnly(true);
 
     QAction action(QString::fromLatin1("hello"), &le);
+#if QT_CONFIG(shortcut)
     action.setShortcut(QString::fromLatin1("p"));
+#endif
     QSignalSpy spy(&action, SIGNAL(triggered()));
     le.addAction(&action);
 
@@ -4704,6 +4722,8 @@ void tst_QLineEdit::QTBUG1266_setInputMaskEmittingTextEdited()
     QCOMPARE(spy.count(), 0);
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QLineEdit::shortcutOverrideOnReadonlyLineEdit_data()
 {
     QTest::addColumn<QKeySequence>("keySequence");
@@ -4762,6 +4782,8 @@ void tst_QLineEdit::shortcutOverrideOnReadonlyLineEdit()
     const int activationCount = shouldBeHandledByQLineEdit ? 0 : 1;
     QCOMPARE(spy.count(), activationCount);
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QLineEdit::QTBUG59957_clearButtonLeftmostAction()
 {

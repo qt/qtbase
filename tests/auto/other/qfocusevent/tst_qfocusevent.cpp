@@ -91,7 +91,9 @@ private slots:
     void checkReason_BackTab();
     void checkReason_Popup();
     void checkReason_focusWidget();
+#if QT_CONFIG(shortcut)
     void checkReason_Shortcut();
+#endif
     void checkReason_ActiveWindow();
 
 private:
@@ -250,6 +252,8 @@ QT_BEGIN_NAMESPACE
 QT_END_NAMESPACE
 #endif
 
+#if QT_CONFIG(shortcut)
+
 void tst_QFocusEvent::checkReason_Shortcut()
 {
     initWidget();
@@ -287,6 +291,8 @@ void tst_QFocusEvent::checkReason_Shortcut()
     qt_set_sequence_auto_mnemonic(false);
 #endif
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QFocusEvent::checkReason_focusWidget()
 {

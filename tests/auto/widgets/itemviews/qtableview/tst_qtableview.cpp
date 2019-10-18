@@ -331,8 +331,10 @@ private slots:
     void selectColumn_data();
     void selectColumn();
 
+#if QT_CONFIG(shortcut)
     void selectall_data();
     void selectall();
+#endif
 
     void visualRect_data();
     void visualRect();
@@ -1842,6 +1844,8 @@ void tst_QTableView::selectColumn()
         QCOMPARE(view.selectionModel()->selectedIndexes().at(i).column(), column);
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QTableView::selectall_data()
 {
     QTest::addColumn<int>("rowCount");
@@ -1997,6 +2001,8 @@ void tst_QTableView::selectall()
     QTest__keySequence(&view, QKeySequence(QKeySequence::SelectAll));
     QCOMPARE(view.selectedIndexes().count(), 0);
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QTableView::visualRect_data()
 {

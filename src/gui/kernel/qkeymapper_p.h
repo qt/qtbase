@@ -53,7 +53,6 @@
 #include <QtGui/private/qtguiglobal_p.h>
 #include <qobject.h>
 #include <private/qobject_p.h>
-#include <qkeysequence.h>
 #include <qlist.h>
 #include <qlocale.h>
 #include <qevent.h>

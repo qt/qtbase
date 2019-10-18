@@ -52,7 +52,9 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qpointer.h>
 #include <QtGui/QFont>
-#include <QtGui/QKeySequence>
+#if QT_CONFIG(shortcut)
+#  include <QtGui/QKeySequence>
+#endif
 #include <QtGui/QIcon>
 
 QT_BEGIN_NAMESPACE
@@ -85,7 +87,7 @@ public:
     virtual void setRole(MenuRole role) = 0;
     virtual void setCheckable(bool checkable) = 0;
     virtual void setChecked(bool isChecked) = 0;
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     virtual void setShortcut(const QKeySequence& shortcut) = 0;
 #endif
     virtual void setEnabled(bool enabled) = 0;

@@ -57,18 +57,24 @@ private slots:
     void setIconText();
     void setUnknownFont();
     void actionEvent();
+#if QT_CONFIG(shortcut)
     void setStandardKeys();
     void alternateShortcuts();
     void enabledVisibleInteraction();
     void task200823_tooltip();
+#endif
     void task229128TriggeredSignalWithoutActiongroup();
     void task229128TriggeredSignalWhenInActiongroup();
+#if QT_CONFIG(shortcut)
     void repeat();
+#endif
     void setData();
+#if QT_CONFIG(shortcut)
     void keysequence(); // QTBUG-53381
     void disableShortcutsWithBlockedWidgets_data();
     void disableShortcutsWithBlockedWidgets();
     void shortcutFromKeyEvent(); // QTBUG-48325
+#endif
 
 private:
     QEvent::Type m_lastEventType;
@@ -221,6 +227,8 @@ void tst_QAction::actionEvent()
     QCOMPARE(m_lastAction, &a);
 }
 
+#if QT_CONFIG(shortcut)
+
 //basic testing of standard keys
 void tst_QAction::setStandardKeys()
 {
@@ -367,6 +375,8 @@ void tst_QAction::task200823_tooltip()
     QCOMPARE(action->toolTip(), ref);
 }
 
+#endif // QT_CONFIG(shortcut)
+
 void tst_QAction::task229128TriggeredSignalWithoutActiongroup()
 {
     // test without a group
@@ -407,6 +417,8 @@ void tst_QAction::task229128TriggeredSignalWhenInActiongroup()
     QCOMPARE(actionGroupSpy.count(), 1);
     QCOMPARE(actionSpy.count(), 1);
 }
+
+#if QT_CONFIG(shortcut)
 
 void tst_QAction::repeat()
 {
@@ -452,6 +464,8 @@ void tst_QAction::repeat()
     QCOMPARE(spy.count(), 2);
 }
 
+#endif // QT_CONFIG(shortcut)
+
 void tst_QAction::setData() // QTBUG-62006
 {
     QAction act(nullptr);
@@ -466,6 +480,8 @@ void tst_QAction::setData() // QTBUG-62006
     act.setData(-1);
     QCOMPARE(spy.count(), 1);
 }
+
+#if QT_CONFIG(shortcut)
 
 void tst_QAction::disableShortcutsWithBlockedWidgets_data()
 {
@@ -555,6 +571,8 @@ void tst_QAction::shortcutFromKeyEvent()
     QCOMPARE(spy.count(), 1);
     QCOMPARE(testWidget.shortcutOverrideCount, 1);
 }
+
+#endif // QT_CONFIG(shortcut)
 
 QTEST_MAIN(tst_QAction)
 #include "tst_qaction.moc"

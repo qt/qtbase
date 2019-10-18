@@ -64,8 +64,10 @@ public:
 
 private slots:
     void basicEventDelivery();
+#if QT_CONFIG(shortcut)
     void modifiers_data();
     void modifiers();
+#endif
 };
 
 tst_QKeyEvent::tst_QKeyEvent()
@@ -127,6 +129,8 @@ static QByteArray modifiersTestRowName(const QString &keySequence)
     }
     return result;
 }
+
+#if QT_CONFIG(shortcut)
 
 void tst_QKeyEvent::modifiers_data()
 {
@@ -197,6 +201,8 @@ void tst_QKeyEvent::modifiers()
         }
     }
 }
+
+#endif // QT_CONFIG(shortcut)
 
 QTEST_MAIN(tst_QKeyEvent)
 #include "tst_qkeyevent.moc"

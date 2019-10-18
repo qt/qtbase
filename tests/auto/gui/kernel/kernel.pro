@@ -29,6 +29,11 @@ SUBDIRS=\
 
 win32:!winrt:qtHaveModule(network): SUBDIRS += noqteventloop
 
+!qtConfig(shortcut): SUBDIRS -= \
+   qkeysequence \
+   qguimetatype \
+   qguivariant
+
 !qtHaveModule(widgets): SUBDIRS -= \
    qmouseevent_modal \
    qtouchevent

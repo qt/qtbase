@@ -92,7 +92,7 @@
 #include <QtGui/qaccessible.h>
 #include <QtCore/qmetaobject.h>
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"
 #include <qkeysequence.h>

@@ -2469,7 +2469,9 @@ static const ushort mapIdFromQt3ToCurrent[MapFromThreeCount] =
     QVariant::DateTime,
     QVariant::ByteArray,
     QVariant::BitArray,
+#if QT_CONFIG(shortcut)
     QVariant::KeySequence,
+#endif
     QVariant::Pen,
     QVariant::LongLong,
     QVariant::ULongLong,
@@ -2574,7 +2576,11 @@ void QVariant::save(QDataStream &s) const
             typeId += 97;
         } else if (typeId == QMetaType::QSizePolicy) {
             typeId = 75;
+#if QT_CONFIG(shortcut)
         } else if (typeId >= QMetaType::QKeySequence && typeId <= QMetaType::QQuaternion) {
+#else
+        } else if (typeId >= QMetaType::QPen && typeId <= QMetaType::QQuaternion) {
+#endif
             // and as a result these types received lower ids too
             typeId +=1;
         } else if (typeId == QMetaType::QPolygonF) {
@@ -3647,9 +3653,11 @@ bool QVariant::canConvert(int targetTypeId) const
     if (currentType > int(QMetaType::QUuid) || targetTypeId > int(QMetaType::QUuid)) {
         switch (uint(targetTypeId)) {
         case QVariant::Int:
+#if QT_CONFIG(shortcut)
             if (currentType == QVariant::KeySequence)
                 return true;
             Q_FALLTHROUGH();
+#endif
         case QVariant::UInt:
         case QVariant::LongLong:
         case QVariant::ULongLong:
@@ -3672,11 +3680,16 @@ bool QVariant::canConvert(int targetTypeId) const
             return currentType == QVariant::Color || currentType == QMetaType::Nullptr
                               || ((QMetaType::typeFlags(currentType) & QMetaType::IsEnumeration) && QMetaType::metaObjectForType(currentType));
         case QVariant::String:
-            return currentType == QVariant::KeySequence || currentType == QVariant::Font
-                              || currentType == QVariant::Color || currentType == QMetaType::Nullptr
-                              || ((QMetaType::typeFlags(currentType) & QMetaType::IsEnumeration) && QMetaType::metaObjectForType(currentType));
+            return currentType == QVariant::Font
+                   || currentType == QVariant::Color || currentType == QMetaType::Nullptr
+#if QT_CONFIG(shortcut)
+                   || currentType == QVariant::KeySequence
+#endif
+                   || ((QMetaType::typeFlags(currentType) & QMetaType::IsEnumeration) && QMetaType::metaObjectForType(currentType));
+#if QT_CONFIG(shortcut)
         case QVariant::KeySequence:
             return currentType == QVariant::String || currentType == QVariant::Int;
+#endif
         case QVariant::Font:
             return currentType == QVariant::String;
         case QVariant::Color:

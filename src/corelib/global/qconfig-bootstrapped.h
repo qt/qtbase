@@ -110,6 +110,7 @@
 # define QT_FEATURE_renameat2 -1
 #endif
 #define QT_FEATURE_sharedmemory -1
+#define QT_FEATURE_shortcut -1
 #define QT_FEATURE_signaling_nan -1
 #define QT_FEATURE_slog2 -1
 #ifdef __GLIBC_PREREQ

@@ -48,11 +48,8 @@ HEADERS += \
         kernel/qinputmethod.h \
         kernel/qinputmethod_p.h \
         kernel/qinternalmimedata_p.h \
-        kernel/qkeysequence.h \
-        kernel/qkeysequence_p.h \
         kernel/qkeymapper_p.h \
         kernel/qpalette.h \
-        kernel/qshortcutmap_p.h \
         kernel/qsessionmanager.h \
         kernel/qsessionmanager_p.h \
         kernel/qwindowdefs.h \
@@ -108,12 +105,10 @@ SOURCES += \
         kernel/qevent.cpp \
         kernel/qinputmethod.cpp \
         kernel/qinternalmimedata.cpp \
-        kernel/qkeysequence.cpp \
         kernel/qkeymapper.cpp \
         kernel/qpalette.cpp \
         kernel/qguivariant.cpp \
         kernel/qscreen.cpp \
-        kernel/qshortcutmap.cpp \
         kernel/qstylehints.cpp \
         kernel/qtouchdevice.cpp \
         kernel/qplatformsharedgraphicscache.cpp \
@@ -158,6 +153,16 @@ qtConfig(opengl) {
             kernel/qplatformopenglcontext.cpp \
             kernel/qopenglcontext.cpp \
             kernel/qopenglwindow.cpp
+}
+
+qtConfig(shortcut) {
+    HEADERS += \
+            kernel/qshortcutmap_p.h \
+            kernel/qkeysequence.h \
+            kernel/qkeysequence_p.h
+    SOURCES += \
+            kernel/qshortcutmap.cpp \
+            kernel/qkeysequence.cpp
 }
 
 win32:HEADERS+=kernel/qwindowdefs_win.h

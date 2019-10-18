@@ -44,11 +44,15 @@ public:
     virtual ~tst_QRadioButton(){};
 
 private slots:
+#if QT_CONFIG(shortcut)
     void task190739_focus();
+#endif
     void minimumSizeHint();
 
 private:
 };
+
+#if QT_CONFIG(shortcut)
 
 void tst_QRadioButton::task190739_focus()
 {
@@ -84,6 +88,7 @@ void tst_QRadioButton::task190739_focus()
     QVERIFY(!radio1.hasFocus());
 }
 
+#endif // QT_CONFIG(shortcut)
 
 void tst_QRadioButton::minimumSizeHint()
 {

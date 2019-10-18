@@ -232,19 +232,25 @@ TestMenu tst_QMenuBar::initSimpleMenuBar(QMenuBar *mb, bool forceNonNative) {
     connect(mb, SIGNAL(triggered(QAction*)), this, SLOT(onSimpleActivated(QAction*)));
     QMenu *menu = mb->addMenu(QStringLiteral("&accel"));
     QAction *action = menu->addAction(QStringLiteral("menu1") );
+#if QT_CONFIG(shortcut)
     action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_A));
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_A));
+#endif
     connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(onSimpleActivated(QAction*)));
     result.menus << menu;
     result.actions << action;
 
     menu = mb->addMenu(QStringLiteral("accel1"));
     action = menu->addAction(QStringLiteral("&Open...") );
+#if QT_CONFIG(shortcut)
     action->setShortcut(Qt::Key_O);
+#endif
     result.actions << action;
 
     action = menu->addAction(QStringLiteral("action"));
+#if QT_CONFIG(shortcut)
     action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Z));
+#endif
     result.actions << action;
 
     result.menus << menu;
@@ -283,7 +289,9 @@ QAction *tst_QMenuBar::createCharacterAction(QMenu *menu, char lowerAscii)
     QAction *action = menu->addAction(text);
     action->setObjectName(text);
     action->setData(QVariant(int(lowerAscii)));
+#if QT_CONFIG(shortcut)
     action->setShortcut(Qt::CTRL + (lowerAscii - 'a' + Qt::Key_A));
+#endif
     connect(action, SIGNAL(triggered()), this, SLOT(onComplexActionTriggered()));
     return action;
 }
@@ -318,7 +326,9 @@ TestMenu tst_QMenuBar::initComplexMenuBar(QMenuBar *mb)
 
     QAction *action = mb->addAction(QStringLiteral("M&enu 3"));
     action->setData(QVariant(3));
+#if QT_CONFIG(shortcut)
     action->setShortcut(Qt::ALT + Qt::Key_J);
+#endif
     connect(action, SIGNAL(triggered()), this, SLOT(onComplexActionTriggered()));
     result.actions << action;
 
@@ -1422,7 +1432,9 @@ void tst_QMenuBar::taskQTBUG4965_escapeEaten()
     menubar.setNativeMenuBar(false);
     QMenu menu("menu1");
     QAction *first = menubar.addMenu(&menu);
+#if QT_CONFIG(shortcut)
     menu.addAction("quit", &menubar, SLOT(close()), QKeySequence("ESC"));
+#endif
     centerOnScreen(&menubar);
     menubar.show();
     QApplication::setActiveWindow(&menubar);

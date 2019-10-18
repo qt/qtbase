@@ -62,7 +62,10 @@
 
 #include <qpa/qwindowsysteminterface.h>
 #include <qpa/qwindowsysteminterface_p.h>
-#include "private/qshortcutmap_p.h"
+#if QT_CONFIG(shortcut)
+#  include "private/qshortcutmap_p.h"
+#endif
+
 #include <qicon.h>
 
 QT_BEGIN_NAMESPACE
@@ -261,7 +264,7 @@ public:
     QIcon forcedWindowIcon;
 
     static QList<QObject *> generic_plugin_list;
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     QShortcutMap shortcutMap;
 #endif
 

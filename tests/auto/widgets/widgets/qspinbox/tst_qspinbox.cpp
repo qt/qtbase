@@ -47,7 +47,9 @@
 #include <QLocale>
 #include <QDoubleSpinBox>
 #include <QVBoxLayout>
-#include <QKeySequence>
+#if QT_CONFIG(shortcut)
+#  include <QKeySequence>
+#endif
 #include <QStackedWidget>
 #include <QDebug>
 #include <QStyleOptionSpinBox>
@@ -173,7 +175,10 @@ private slots:
 
     void removeAll();
     void startWithDash();
+
+#if QT_CONFIG(shortcut)
     void undoRedo();
+#endif
 
     void specialValue();
     void textFromValue();
@@ -1024,6 +1029,8 @@ void tst_QSpinBox::startWithDash()
     QCOMPARE(spin.text(), QString("0"));
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QSpinBox::undoRedo()
 {
     //test undo/redo feature (in conjunction with the "undoRedoEnabled" property)
@@ -1075,6 +1082,8 @@ void tst_QSpinBox::undoRedo()
     QVERIFY(spin.lineEdit()->isUndoAvailable());
     QVERIFY(!spin.lineEdit()->isRedoAvailable());
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QSpinBox::specialValue()
 {

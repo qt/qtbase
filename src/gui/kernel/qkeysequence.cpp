@@ -42,8 +42,6 @@
 #include <qpa/qplatformtheme.h>
 #include "private/qguiapplication_p.h"
 
-#if !defined(QT_NO_SHORTCUT) || defined(Q_CLANG_QDOC)
-
 #include "qdebug.h"
 #include <QtCore/qhashfunctions.h>
 #ifndef QT_NO_DATASTREAM
@@ -1672,9 +1670,6 @@ QDebug operator<<(QDebug dbg, const QKeySequence &p)
     return dbg;
 }
 #endif
-
-#endif // QT_NO_SHORTCUT
-
 
 /*!
     \typedef QKeySequence::DataPtr

@@ -41,7 +41,9 @@
 #define QACTION_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
-#include <QtGui/qkeysequence.h>
+#if QT_CONFIG(shortcut)
+#  include <QtGui/qkeysequence.h>
+#endif
 #include <QtCore/qstring.h>
 #include <QtWidgets/qwidget.h>
 #include <QtCore/qvariant.h>

@@ -51,7 +51,9 @@ private slots:
 
     void getSetCheck();
     void pressed();
+#if QT_CONFIG(shortcut)
     void setAccel();
+#endif
     void isCheckable();
     void setDown();
     void popupCrash();
@@ -133,8 +135,10 @@ void tst_QCommandLinkButton::init()
     testWidget->setText("Test");
     testWidget->setDescription("Description text.");
     testWidget->setEnabled( true );
+#if QT_CONFIG(shortcut)
     QKeySequence seq;
     testWidget->setShortcut( seq );
+#endif
 
     resetCounters();
 }
@@ -327,6 +331,8 @@ void tst_QCommandLinkButton::toggled()
     QVERIFY( click_count == 1 );
 }
 
+#if QT_CONFIG(shortcut)
+
 /*
     If we press an accelerator key we ONLY get a pressed signal and
     NOT a released or clicked signal.
@@ -354,6 +360,8 @@ void tst_QCommandLinkButton::setAccel()
     // if we don't wait this may screw up a next test.
     QTest::qWait(200);
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QCommandLinkButton::animateClick()
 {

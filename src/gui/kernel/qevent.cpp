@@ -1224,7 +1224,7 @@ Qt::KeyboardModifiers QKeyEvent::modifiers() const
     return QInputEvent::modifiers();
 }
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 /*!
     \fn bool QKeyEvent::matches(QKeySequence::StandardKey key) const
     \since 4.2
@@ -1240,7 +1240,7 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
     const QList<QKeySequence> bindings = QKeySequence::keyBindings(matchKey);
     return bindings.contains(QKeySequence(searchkey));
 }
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
 
 /*!
@@ -3581,7 +3581,7 @@ QToolBarChangeEvent::~QToolBarChangeEvent()
 
 #endif // QT_NO_TOOLBAR
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 
 /*!
     Constructs a shortcut event for the given \a key press,
@@ -3602,7 +3602,7 @@ QShortcutEvent::~QShortcutEvent()
 {
 }
 
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
 #ifndef QT_NO_DEBUG_STREAM
 
@@ -3956,7 +3956,7 @@ QT_WARNING_POP
         dbg << ')';
     }
         break;
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     case QEvent::Shortcut: {
         const QShortcutEvent *se = static_cast<const QShortcutEvent *>(e);
         dbg << "QShortcutEvent(" << se->key().toString() << ", id=" << se->shortcutId();

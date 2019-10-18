@@ -403,7 +403,9 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
     //calculate size
     QFontMetrics qfm = q->fontMetrics();
     bool previousWasSeparator = true; // this is true to allow removing the leading separators
+#if QT_CONFIG(shortcut)
     const bool contextMenu = isContextMenu();
+#endif
     for(int i = 0; i <= lastVisibleAction; i++) {
         QAction *action = actions.at(i);
         const bool isSection = action->isSeparator() && (!action->text().isEmpty() || !action->icon().isNull());
@@ -434,12 +436,12 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
                 if (t != -1) {
                     tabWidth = qMax(int(tabWidth), qfm.horizontalAdvance(s.mid(t+1)));
                     s = s.left(t);
-    #ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
                 } else if (action->isShortcutVisibleInContextMenu() || !contextMenu) {
                     QKeySequence seq = action->shortcut();
                     if (!seq.isEmpty())
                         tabWidth = qMax(int(tabWidth), qfm.horizontalAdvance(seq.toString(QKeySequence::NativeText)));
-    #endif
+#endif
                 }
                 sz.setWidth(fm.boundingRect(QRect(), Qt::TextSingleLine | Qt::TextShowMnemonic, s).width());
                 sz.setHeight(qMax(fm.height(), qfm.height()));
@@ -1767,12 +1769,14 @@ QAction *QMenu::addAction(const QIcon &icon, const QString &text)
 
     \sa QWidget::addAction()
 */
-QAction *QMenu::addAction(const QString &text, const QObject *receiver, const char* member, const QKeySequence &shortcut)
+QAction *QMenu::addAction(const QString &text, const QObject *receiver, const char* member
+#if QT_CONFIG(shortcut)
+                          , const QKeySequence &shortcut
+#endif
+                          )
 {
     QAction *action = new QAction(text, this);
-#ifdef QT_NO_SHORTCUT
-    Q_UNUSED(shortcut);
-#else
+#if QT_CONFIG(shortcut)
     action->setShortcut(shortcut);
 #endif
     QObject::connect(action, SIGNAL(triggered(bool)), receiver, member);
@@ -1860,12 +1864,14 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     \sa QWidget::addAction()
 */
 QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *receiver,
-                          const char* member, const QKeySequence &shortcut)
+                          const char* member
+#if QT_CONFIG(shortcut)
+                          , const QKeySequence &shortcut
+#endif
+                          )
 {
     QAction *action = new QAction(icon, text, this);
-#ifdef QT_NO_SHORTCUT
-    Q_UNUSED(shortcut);
-#else
+#if QT_CONFIG(shortcut)
     action->setShortcut(shortcut);
 #endif
     QObject::connect(action, SIGNAL(triggered(bool)), receiver, member);

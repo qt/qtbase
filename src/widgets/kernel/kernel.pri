@@ -20,8 +20,7 @@ HEADERS += \
 	kernel/qlayout_p.h \
 	kernel/qlayoutengine_p.h \
 	kernel/qlayoutitem.h \
-        kernel/qshortcut.h \
-	kernel/qsizepolicy.h \
+        kernel/qsizepolicy.h \
         kernel/qstackedlayout.h \
         kernel/qwidget.h \
         kernel/qwidget_p.h \
@@ -47,7 +46,6 @@ SOURCES += \
         kernel/qlayout.cpp \
 	kernel/qlayoutengine.cpp \
 	kernel/qlayoutitem.cpp \
-        kernel/qshortcut.cpp \
         kernel/qsizepolicy.cpp \
         kernel/qstackedlayout.cpp \
 	kernel/qwidget.cpp \
@@ -75,6 +73,11 @@ qtConfig(opengl) {
 qtConfig(formlayout) {
     HEADERS += kernel/qformlayout.h
     SOURCES += kernel/qformlayout.cpp
+}
+
+qtConfig(shortcut) {
+    HEADERS += kernel/qshortcut.h
+    SOURCES += kernel/qshortcut.cpp
 }
 
 qtConfig(tooltip) {

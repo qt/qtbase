@@ -56,9 +56,9 @@
 #include "QtCore/qvector.h"
 #include "QtCore/qscopedpointer.h"
 
-QT_BEGIN_NAMESPACE
+QT_REQUIRE_CONFIG(shortcut);
 
-#ifndef QT_NO_SHORTCUT
+QT_BEGIN_NAMESPACE
 
 // To enable dump output uncomment below
 //#define Dump_QShortcutMap
@@ -105,8 +105,6 @@ private:
 
     QScopedPointer<QShortcutMapPrivate> d_ptr;
 };
-
-#endif // QT_NO_SHORTCUT
 
 QT_END_NAMESPACE
 

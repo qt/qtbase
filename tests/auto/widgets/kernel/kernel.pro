@@ -22,3 +22,6 @@ SUBDIRS=\
 
 darwin:SUBDIRS -= \ # Uses native recognizers
    qgesturerecognizer \
+
+!qtConfig(shortcut): SUBDIRS -= \
+   qshortcut

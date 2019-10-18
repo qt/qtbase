@@ -826,6 +826,12 @@
             ],
             "output": [ "publicFeature", "feature" ]
         },
+        "shortcut": {
+            "label": "QShortcut",
+            "purpose": "Provides keyboard accelerators and shortcuts.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
         "systemsemaphore": {
             "label": "QSystemSemaphore",
             "purpose": "Provides a general counting system semaphore.",

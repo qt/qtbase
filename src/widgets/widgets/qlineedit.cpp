@@ -78,7 +78,7 @@
 #endif
 #include "private/qstylesheetstyle_p.h"
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"
 #include "qkeysequence.h"

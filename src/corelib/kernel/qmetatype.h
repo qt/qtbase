@@ -151,6 +151,13 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QVariantHash, 28, QVariantHash) \
     F(QByteArrayList, 49, QByteArrayList) \
 
+#if QT_CONFIG(shortcut)
+#define QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F)\
+    F(QKeySequence, 75, QKeySequence)
+#else
+#define QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F)
+#endif
+
 #define QT_FOR_EACH_STATIC_GUI_CLASS(F)\
     F(QFont, 64, QFont) \
     F(QPixmap, 65, QPixmap) \
@@ -163,7 +170,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QRegion, 72, QRegion) \
     F(QBitmap, 73, QBitmap) \
     F(QCursor, 74, QCursor) \
-    F(QKeySequence, 75, QKeySequence) \
+    QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F) \
     F(QPen, 76, QPen) \
     F(QTextLength, 77, QTextLength) \
     F(QTextFormat, 78, QTextFormat) \

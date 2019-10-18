@@ -434,7 +434,7 @@ void QWindowSystemInterface::handleFrameStrutMouseEvent(QWindow *window, ulong t
 bool QWindowSystemInterface::handleShortcutEvent(QWindow *window, ulong timestamp, int keyCode, Qt::KeyboardModifiers modifiers, quint32 nativeScanCode,
                                       quint32 nativeVirtualKey, quint32 nativeModifiers, const QString &text, bool autorepeat, ushort count)
 {
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     if (!window)
         window = QGuiApplication::focusWindow();
 
@@ -1238,7 +1238,7 @@ Q_GUI_EXPORT void qt_handleKeyEvent(QWindow *window, QEvent::Type t, int k, Qt::
 
 Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int k, Qt::KeyboardModifiers mods, const QString &text = QString(), bool autorep = false, ushort count = 1)
 {
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 
     // FIXME: This method should not allow targeting a specific object, but should
     // instead forward the event to a window, which then takes care of normal event

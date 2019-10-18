@@ -181,9 +181,13 @@ template<> struct TestValueFactory<QMetaType::QCursor> {
     static QCursor *create() { return new QCursor(Qt::WaitCursor); }
 };
 #endif
+
+#if QT_CONFIG(shortcut)
 template<> struct TestValueFactory<QMetaType::QKeySequence> {
     static QKeySequence *create() { return new QKeySequence(QKeySequence::Close); }
 };
+#endif
+
 template<> struct TestValueFactory<QMetaType::QPen> {
     static QPen *create() { return new QPen(Qt::DashDotDotLine); }
 };

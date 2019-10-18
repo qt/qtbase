@@ -46,7 +46,9 @@
 #include "qevent.h"
 #include "qlist.h"
 #include "qstylehints.h"
-#include <private/qshortcutmap_p.h>
+#if QT_CONFIG(shortcut)
+#  include <private/qshortcutmap_p.h>
+#endif
 #include <private/qguiapplication_p.h>
 #if QT_CONFIG(menu)
 #include <private/qmenu_p.h>

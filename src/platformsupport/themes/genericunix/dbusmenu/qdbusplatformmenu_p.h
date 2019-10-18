@@ -96,7 +96,7 @@ public:
     void setChecked(bool isChecked) override;
     bool hasExclusiveGroup() const { return m_hasExclusiveGroup; }
     void setHasExclusiveGroup(bool hasExclusiveGroup) override;
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     QKeySequence shortcut() const { return m_shortcut; }
     void setShortcut(const QKeySequence& shortcut) override;
 #endif
@@ -123,7 +123,9 @@ private:
     bool m_hasExclusiveGroup : 1;
     short /*unused*/ : 6;
     short m_dbusID : 16;
+#if QT_CONFIG(shortcut)
     QKeySequence m_shortcut;
+#endif
 };
 
 class QDBusPlatformMenu : public QPlatformMenu

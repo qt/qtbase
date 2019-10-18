@@ -44,10 +44,9 @@
 #include <QtWidgets/qwidget.h>
 #include <QtGui/qkeysequence.h>
 
+QT_REQUIRE_CONFIG(shortcut);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_SHORTCUT
 
 class QShortcutPrivate;
 class Q_WIDGETS_EXPORT QShortcut : public QObject
@@ -93,8 +92,6 @@ Q_SIGNALS:
 protected:
     bool event(QEvent *e) override;
 };
-
-#endif // QT_NO_SHORTCUT
 
 QT_END_NAMESPACE
 

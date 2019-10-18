@@ -40,7 +40,9 @@
 #include <qwidgetaction.h>
 #include <qtoolbutton.h>
 #include <qlineedit.h>
-#include <qkeysequence.h>
+#if QT_CONFIG(shortcut)
+#  include <qkeysequence.h>
+#endif
 #include <qmenu.h>
 #include <qlabel.h>
 #include <private/qtoolbarextension_p.h>

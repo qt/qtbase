@@ -44,7 +44,9 @@
 #include "qcursor.h"
 #include "qfont.h"
 #include "qimage.h"
-#include "qkeysequence.h"
+#if QT_CONFIG(shortcut)
+#  include "qkeysequence.h"
+#endif
 #include "qtransform.h"
 #include "qmatrix.h"
 #include "qpalette.h"
@@ -188,7 +190,7 @@ static bool convert(const QVariant::Private *d, int t,
     case QVariant::String: {
         QString *str = static_cast<QString *>(result);
         switch (d->type) {
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
         case QVariant::KeySequence:
             *str = (*v_cast<QKeySequence>(d)).toString(QKeySequence::NativeText);
             return true;
@@ -238,7 +240,7 @@ static bool convert(const QVariant::Private *d, int t,
             return true;
         }
         break;
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     case QVariant::Int:
         if (d->type == QVariant::KeySequence) {
             const QKeySequence &seq = *v_cast<QKeySequence>(d);
@@ -277,7 +279,7 @@ static bool convert(const QVariant::Private *d, int t,
             return true;
         }
         break;
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     case QVariant::KeySequence: {
         QKeySequence *seq = static_cast<QKeySequence *>(result);
         switch (d->type) {

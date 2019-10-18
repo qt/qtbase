@@ -166,7 +166,9 @@ private slots:
 
     void doubleDot();
 
+#if QT_CONFIG(shortcut)
     void undoRedo();
+#endif
 
     void valueFromTextAndValidate_data();
     void valueFromTextAndValidate();
@@ -1025,6 +1027,8 @@ void tst_QDoubleSpinBox::doubleDot()
     QCOMPARE(spin.lineEdit()->cursorPosition(), 2);
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QDoubleSpinBox::undoRedo()
 {
     //test undo/redo feature (in conjunction with the "undoRedoEnabled" property)
@@ -1072,6 +1076,8 @@ void tst_QDoubleSpinBox::undoRedo()
     QVERIFY(!spin.lineEdit()->isUndoAvailable());
     QVERIFY(!spin.lineEdit()->isRedoAvailable());
 }
+
+#endif // QT_CONFIG(shortcut)
 
 struct task199226_DoubleSpinBox : public QDoubleSpinBox
 {

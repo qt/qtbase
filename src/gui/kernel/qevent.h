@@ -45,7 +45,9 @@
 #include <QtGui/qregion.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h>
-#include <QtGui/qkeysequence.h>
+#if QT_CONFIG(shortcut)
+#  include <QtGui/qkeysequence.h>
+#endif
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qmap.h> // ### Qt 6: Remove
@@ -375,7 +377,7 @@ public:
     ~QKeyEvent();
 
     int key() const { return k; }
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     bool matches(QKeySequence::StandardKey key) const;
 #endif
     Qt::KeyboardModifiers modifiers() const;
@@ -792,7 +794,7 @@ private:
 };
 #endif
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 class Q_GUI_EXPORT QShortcutEvent : public QEvent
 {
 public:
@@ -827,10 +829,10 @@ private:
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QEvent *);
 #endif
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 inline bool operator==(QKeyEvent *e, QKeySequence::StandardKey key){return (e ? e->matches(key) : false);}
 inline bool operator==(QKeySequence::StandardKey key, QKeyEvent *e){return (e ? e->matches(key) : false);}
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
 class Q_GUI_EXPORT QPointingDeviceUniqueId
 {

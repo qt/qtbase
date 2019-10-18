@@ -54,7 +54,9 @@
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qevent.h>
-#include <QtGui/qkeysequence.h>
+#if QT_CONFIG(shortcut)
+#  include <QtGui/qkeysequence.h>
+#endif
 
 #ifdef QT_WIDGETS_LIB
 #include <QtWidgets/qwidget.h>

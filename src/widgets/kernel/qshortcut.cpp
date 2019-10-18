@@ -40,7 +40,6 @@
 #include "qshortcut.h"
 #include "private/qwidget_p.h"
 
-#ifndef QT_NO_SHORTCUT
 #include <qevent.h>
 #if QT_CONFIG(whatsthis)
 #include <qwhatsthis.h>
@@ -676,7 +675,6 @@ bool QShortcut::event(QEvent *e)
     }
     return QObject::event(e);
 }
-#endif // QT_NO_SHORTCUT
 
 QT_END_NAMESPACE
 

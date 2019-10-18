@@ -1637,12 +1637,6 @@
             "condition": "features.imageformat_xpm",
             "output": [ "publicFeature", "feature" ]
         },
-        "shortcut": {
-            "label": "QShortcut",
-            "purpose": "Provides keyboard accelerators and shortcuts.",
-            "section": "Kernel",
-            "output": [ "publicFeature", "feature" ]
-        },
         "action": {
             "label": "QAction",
             "purpose": "Provides widget actions.",

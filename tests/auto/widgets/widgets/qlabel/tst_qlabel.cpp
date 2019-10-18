@@ -68,7 +68,7 @@ private Q_SLOTS:
     void setText_data();
     void setText();
     void setTextFormat();
-#ifndef Q_OS_MAC
+#if QT_CONFIG(shortcut) && !defined(Q_OS_DARWIN)
     void setBuddy();
 #endif
     void setNum();
@@ -88,8 +88,10 @@ private Q_SLOTS:
     void unicodeText_data();
     void unicodeText();
 
+#if QT_CONFIG(shortcut)
     void mnemonic_data();
     void mnemonic();
+#endif
     void selection();
 
 #ifndef QT_NO_CONTEXTMENU
@@ -116,6 +118,7 @@ void tst_QLabel::getSetCheck()
     obj1.setWordWrap(true);
     QCOMPARE(true, obj1.wordWrap());
 
+#if QT_CONFIG(shortcut)
     // QWidget * QLabel::buddy()
     // void QLabel::setBuddy(QWidget *)
     QWidget *var2 = new QWidget();
@@ -124,6 +127,7 @@ void tst_QLabel::getSetCheck()
     obj1.setBuddy((QWidget *)0);
     QCOMPARE((QWidget *)0, obj1.buddy());
     delete var2;
+#endif // QT_CONFIG(shortcut)
 
     // QMovie * QLabel::movie()
     // void QLabel::setMovie(QMovie *)
@@ -153,7 +157,9 @@ void tst_QLabel::cleanupTestCase()
 void tst_QLabel::init()
 {
     testWidget->setTextFormat( Qt::AutoText );
+# if QT_CONFIG(shortcut)
     testWidget->setBuddy( 0 );
+#endif
     testWidget->setIndent( 0 );
     testWidget->setAlignment( Qt::AlignLeft | Qt::AlignVCenter );
     testWidget->setScaledContents( false );
@@ -169,7 +175,7 @@ void tst_QLabel::cleanup()
 }
 
 // Set buddy doesn't make much sense on OS X
-#ifndef Q_OS_MAC
+#if QT_CONFIG(shortcut) && !defined(Q_OS_DARWIN)
 void tst_QLabel::setBuddy()
 {
     testWidget->hide();
@@ -204,7 +210,7 @@ void tst_QLabel::setBuddy()
 
     delete test_box;
 }
-#endif
+#endif // QT_CONFIG(shortcut) && !Q_OS_DARWIN
 
 void tst_QLabel::setText_data()
 {
@@ -469,6 +475,8 @@ void tst_QLabel::unicodeText()
     testWidget->show();
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QLabel::mnemonic_data()
 {
     QTest::addColumn<QString>("text");
@@ -512,6 +520,8 @@ void tst_QLabel::mnemonic()
     QCOMPARE(d->control->document()->toPlainText(), expectedDocText);
     QCOMPARE(d->shortcutCursor.selectedText(), expectedShortcutCursor);
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QLabel::selection()
 {
