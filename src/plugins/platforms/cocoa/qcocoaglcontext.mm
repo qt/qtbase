@@ -491,6 +491,21 @@ void QCocoaGLContext::swapBuffers(QPlatformSurface *surface)
         return;
     }
 
+    if (m_context.view.layer) {
+        // Flushing an NSOpenGLContext will hit the screen immediately, ignoring
+        // any Core Animation transactions in place. This may result in major
+        // visual artifacts if the flush happens out of sync with the size
+        // of the layer, view, and window reflected by other parts of the UI,
+        // e.g. if the application flushes in the resize event or a timer during
+        // window resizing, instead of in the expose event.
+        auto *cocoaWindow = static_cast<QCocoaWindow *>(surface);
+        if (cocoaWindow->geometry().size() != cocoaWindow->m_exposedRect.size()) {
+            qCInfo(lcQpaOpenGLContext) << "Window exposed size does not match geometry (yet)."
+                << "Skipping flush to avoid visual artifacts.";
+            return;
+        }
+    }
+
     QMutexLocker locker(&s_reentrancyMutex);
     [m_context flushBuffer];
 }
