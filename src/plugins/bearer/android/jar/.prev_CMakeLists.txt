@@ -1,18 +1,16 @@
 # Generated from jar.pro.
 
-#####################################################################
-## QtAndroidBearer Binary:
-#####################################################################
-
-add_qt_executable(QtAndroidBearer
-    GUI
-    INSTALL_DIRECTORY "${INSTALL_DIRECTORY}/jar"
-    OUTPUT_DIRECTORY "$$MODULE_BASE_OUTDIR/jar"
-    PUBLIC_LIBRARIES
-        Qt::Gui
+set(java_sources
+    src/org/qtproject/qt5/android/bearer/QtNetworkReceiver.java
 )
 
-#### Keys ignored in scope 1:.:.:jar.pro:<TRUE>:
-# JAVACLASSPATH = "$$PWD/src"
-# JAVASOURCES = "$$PWD/src/org/qtproject/qt5/android/bearer/QtNetworkReceiver.java"
-# _LOADED = "qt_build_paths"
+add_jar(QtAndroidBearer
+    INCLUDE_JARS ${QT_ANDROID_JAR}
+    SOURCES ${java_sources}
+)
+
+install_jar(QtAndroidBearer
+    DESTINATION jar
+    COMPONENT Devel
+)
+

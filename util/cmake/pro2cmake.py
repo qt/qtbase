@@ -2692,6 +2692,44 @@ def write_find_package_section(
         cm_fh.write("\n")
 
 
+def write_jar(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
+
+    target = scope.TARGET
+
+    install_dir = scope.expandString("target.path")
+    if not install_dir:
+        raise RuntimeError("Could not locate jar install path")
+    install_dir = install_dir.replace("$$[QT_INSTALL_PREFIX]/", "")
+
+    android_sdk_jar = "${QT_ANDROID_JAR}"
+    android_api_level = scope.get_string("API_VERSION")
+    if android_api_level:
+        cm_fh.write(f'{spaces(indent)}qt_get_android_sdk_jar_for_api("{android_api_level}" android_sdk)\n\n')
+        android_sdk_jar ="${android_sdk}"
+
+    write_source_file_list(
+        cm_fh,
+        scope,
+        "",
+        ["JAVASOURCES"],
+        indent=indent,
+        header=f"set(java_sources\n",
+        footer=")\n",
+    )
+
+    cm_fh.write(f"{spaces(indent)}add_jar({target}\n")
+    cm_fh.write(f"{spaces(indent+1)}INCLUDE_JARS {android_sdk_jar}\n")
+    cm_fh.write(f"{spaces(indent+1)}SOURCES ${{java_sources}}\n")
+    cm_fh.write(f"{spaces(indent)})\n\n")
+
+    cm_fh.write(f"{spaces(indent)}install_jar({target}\n")
+    cm_fh.write(f"{spaces(indent+1)}DESTINATION {install_dir}\n")
+    cm_fh.write(f"{spaces(indent+1)}COMPONENT Devel\n")
+    cm_fh.write(f"{spaces(indent)})\n\n")
+
+    return target
+
+
 def write_example(
     cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int = 0, is_plugin: bool = False
 ) -> str:
@@ -3030,6 +3068,7 @@ def handle_app_or_lib(
     assert scope.TEMPLATE in ("app", "lib")
 
     config = scope.get("CONFIG")
+    is_jar = "java" in config
     is_lib = scope.TEMPLATE == "lib"
     is_qml_plugin = any("qml_plugin" == s for s in scope.get("_LOADED"))
     is_plugin = (
@@ -3040,7 +3079,9 @@ def handle_app_or_lib(
         val not in config for val in ["console", "cmdline"]
     ) and "testlib" not in scope.expand("QT")
 
-    if is_example:
+    if is_jar:
+        tar = write_jar(cm_fh, scope, indent=indent)
+    elif is_example:
         target = write_example(cm_fh, scope, gui, indent=indent, is_plugin=is_plugin)
     elif is_plugin:
         assert not is_example

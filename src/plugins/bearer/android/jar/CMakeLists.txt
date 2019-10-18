@@ -1,10 +1,9 @@
-# special case begin
-# This is a manually edited file
-
-set(path_prefix ${CMAKE_CURRENT_SOURCE_DIR}/src/org/qtproject/qt5/android/bearer)
+#####################################################################
+## QtAndroidBearer Binary:
+#####################################################################
 
 set(java_sources
-    ${path_prefix}/QtNetworkReceiver.java
+    src/org/qtproject/qt5/android/bearer/QtNetworkReceiver.java
 )
 
 add_jar(QtAndroidBearer
@@ -16,4 +15,8 @@ install_jar(QtAndroidBearer
     DESTINATION jar
     COMPONENT Devel)
 
-# special case end
+#### Keys ignored in scope 1:.:.:jar.pro:<TRUE>:
+# JAVACLASSPATH = "$$PWD/src"
+# JAVASOURCES = "$$PWD/src/org/qtproject/qt5/android/bearer/QtNetworkReceiver.java"
+# _LOADED = "qt_build_paths"
+

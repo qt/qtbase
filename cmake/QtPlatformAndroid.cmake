@@ -27,6 +27,18 @@ if (NOT IS_DIRECTORY "${ANDROID_SDK_ROOT}")
     message(FATAL_ERROR "Could not find ANDROID_SDK_ROOT or path is not a directory: ${ANDROID_SDK_ROOT}")
 endif()
 
+# Get the Android SDK jar for an API version other than the one specified with
+# QT_ANDROID_API_VERSION.
+function(qt_get_android_sdk_jar_for_api api out_jar_location)
+    set(jar_location "${ANDROID_SDK_ROOT}/platforms/${api}/android.jar")
+    if (NOT EXISTS "${jar_location}")
+        message(WARNING "Could not locate Android SDK jar for api '${api}', defaulting to ${QT_ANDROID_API_VERSION}")
+        set(${out_jar_location} ${QT_ANDROID_JAR} PARENT_SCOPE)
+    else()
+        set(${out_jar_location} ${jar_location} PARENT_SCOPE)
+    endif()
+endfunction()
+
 # Minimum recommend android SDK api version
 set(QT_ANDROID_API_VERSION "android-21")
 
