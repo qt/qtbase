@@ -418,6 +418,7 @@ private slots:
     void taskQTBUG_10169_sizeHintForRow();
     void taskQTBUG_30653_doItemsLayout();
     void taskQTBUG_50171_selectRowAfterSwapColumns();
+    void deselectRow();
 
 #if QT_CONFIG(wheelevent)
     void mouseWheel_data();
@@ -4490,6 +4491,31 @@ void tst_QTableView::taskQTBUG_50171_selectRowAfterSwapColumns()
         QCOMPARE(sModel->isSelected(tableView.model()->index(1, 0)), false);
         QCOMPARE(sModel->isSelected(tableView.model()->index(2, 0)), false);
     }
+}
+
+class DeselectTableWidget : public QTableWidget
+{
+public:
+    using QTableWidget::QTableWidget;
+    QItemSelectionModel::SelectionFlags selectionCommand(const QModelIndex &,
+                                                         const QEvent * = nullptr) const override
+    {
+        return QItemSelectionModel::Toggle;
+    }
+};
+
+void tst_QTableView::deselectRow()
+{
+    DeselectTableWidget tw(20, 20);
+    tw.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&tw));
+    tw.hideColumn(0);
+    QVERIFY(tw.isColumnHidden(0));
+    tw.selectRow(1);
+    QVERIFY(tw.selectionModel()->isRowSelected(1, QModelIndex()));
+    tw.selectRow(1);
+    // QTBUG-79092 - deselection was not possible when column 0 was hidden
+    QVERIFY(!tw.selectionModel()->isRowSelected(1, QModelIndex()));
 }
 
 // This has nothing to do with QTableView, but it's convenient to reuse the QtTestTableModel
