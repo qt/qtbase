@@ -1,0 +1,2 @@
+    \note Since Qt 5.14, range constructors are available for Qt's generic
+    \l{container classes} and should be used in place of this method.

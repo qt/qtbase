@@ -312,3 +312,11 @@ int j = *i; // Undefined behavior!
     but with QVector this is likely to crash.
 */
 //! [24]
+
+//! [25]
+QVector<int> vector{1, 2, 3, 4, 4, 5};
+QSet<int> set(vector.begin(), vector.end());
+/*
+    Will generate a QSet containing 1, 2, 4, 5.
+*/
+//! [25]

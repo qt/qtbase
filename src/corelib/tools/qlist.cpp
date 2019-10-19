@@ -2014,6 +2014,8 @@ void **QListData::erase(void **xi)
 
     \snippet code/src_corelib_tools_qlistdata.cpp 21
 
+    \include containers-range-constructor.qdocinc
+
     \sa fromSet(), toVector(), QVector::toList()
 */
 
@@ -2024,6 +2026,8 @@ void **QListData::erase(void **xi)
     Example:
 
     \snippet code/src_corelib_tools_qlistdata.cpp 22
+
+    \include containers-range-constructor.qdocinc
 
     \sa toSet(), fromVector(), QVector::fromList()
 */
@@ -2036,6 +2040,8 @@ void **QListData::erase(void **xi)
     Example:
 
     \snippet code/src_corelib_tools_qlistdata.cpp 23
+
+    \include containers-range-constructor.qdocinc
 
     \sa fromVector(), toSet(), QSet::toList()
 */
@@ -2050,6 +2056,8 @@ void **QListData::erase(void **xi)
 
     \snippet code/src_corelib_tools_qlistdata.cpp 24
 
+    \include containers-range-constructor.qdocinc
+
     \sa toVector(), fromSet(), QSet::fromList()
 */
 
@@ -2062,6 +2070,8 @@ void **QListData::erase(void **xi)
 
     \snippet code/src_corelib_tools_qlistdata.cpp 25
 
+    \include containers-range-constructor.qdocinc
+
     \sa toStdList(), QVector::fromStdVector()
 */
 
@@ -2071,6 +2081,8 @@ void **QListData::erase(void **xi)
     Example:
 
     \snippet code/src_corelib_tools_qlistdata.cpp 26
+
+    \include containers-range-constructor.qdocinc
 
     \sa fromStdList(), QVector::toStdVector()
 */
