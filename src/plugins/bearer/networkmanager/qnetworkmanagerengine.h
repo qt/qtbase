@@ -55,7 +55,7 @@
 
 #include "qnetworkmanagerservice.h"
 
-#include "../linux_common/qofonoservice_linux_p.h"
+#include <private/qofonoservice_linux_p.h>
 
 #include <QMap>
 #include <QVariant>

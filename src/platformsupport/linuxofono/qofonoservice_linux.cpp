@@ -148,7 +148,7 @@ QOfonoModemInterface::QOfonoModemInterface(const QString &dbusPathName, QObject 
 {
     QDBusConnection::systemBus().connect(QLatin1String(OFONO_SERVICE),
                                          path(),
-                                         OFONO_MODEM_INTERFACE,
+                                         QLatin1String(OFONO_MODEM_INTERFACE),
                                          QLatin1String("PropertyChanged"),
                                          this,SLOT(propertyChanged(QString,QDBusVariant)));
 }

@@ -53,7 +53,6 @@
 #include <QDBusInterface>
 #include <QDBusMessage>
 #include <QDBusReply>
-#include "../linux_common/qofonoservice_linux_p.h"
 
 #ifndef QT_NO_DBUS
 
