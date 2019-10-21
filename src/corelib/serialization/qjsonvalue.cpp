@@ -154,7 +154,9 @@ QJsonValue::QJsonValue(bool b)
 QJsonValue::QJsonValue(double v)
     : d(nullptr)
 {
-    if (convertDoubleTo(v, &n)) {
+    // Convert to integer if the number is an integer and changing wouldn't
+    // introduce additional digit precision not present in the double.
+    if (convertDoubleTo<qint64>(v, &n, false /* allow_precision_upgrade */)) {
         t = QCborValue::Integer;
     } else {
         memcpy(&n, &v, sizeof(n));
@@ -449,12 +451,18 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
         return QJsonValue(Null);
     case QVariant::Bool:
         return QJsonValue(variant.toBool());
+    case QMetaType::Short:
+    case QMetaType::UShort:
     case QVariant::Int:
+    case QVariant::UInt:
+    case QVariant::LongLong:
+        return QJsonValue(variant.toLongLong());
+    case QVariant::ULongLong:
+        if (variant.toULongLong() <= static_cast<uint64_t>(std::numeric_limits<qint64>::max()))
+            return QJsonValue(variant.toLongLong());
+        Q_FALLTHROUGH();
     case QMetaType::Float:
     case QVariant::Double:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-    case QVariant::UInt:
         return QJsonValue(variant.toDouble());
     case QVariant::String:
         return QJsonValue(variant.toString());
@@ -504,7 +512,7 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
 
     \value Null     QMetaType::Nullptr
     \value Bool     QMetaType::Bool
-    \value Double   QMetaType::Double
+    \value Double   QMetaType::Double or QMetaType::LongLong
     \value String   QString
     \value Array    QVariantList
     \value Object   QVariantMap
@@ -520,6 +528,7 @@ QVariant QJsonValue::toVariant() const
     case QCborValue::False:
         return false;
     case QCborValue::Integer:
+        return toInteger();
     case QCborValue::Double:
         return toDouble();
     case QCborValue::String:
@@ -548,7 +557,8 @@ QVariant QJsonValue::toVariant() const
 
     \value Null     A Null value
     \value Bool     A boolean value. Use toBool() to convert to a bool.
-    \value Double   A double. Use toDouble() to convert to a double.
+    \value Double   A number value. Use toDouble() to convert to a double,
+                    or toInteger() to convert to a qint64.
     \value String   A string. Use toString() to convert to a QString.
     \value Array    An array. Use toArray() to convert to a QJsonArray.
     \value Object   An object. Use toObject() to convert to a QJsonObject.
@@ -613,18 +623,43 @@ int QJsonValue::toInt(int defaultValue) const
 {
     switch (t) {
     case QCborValue::Double: {
-        const double dbl = toDouble();
         int dblInt;
-        convertDoubleTo<int>(dbl, &dblInt);
-        return dbl == dblInt ? dblInt : defaultValue;
+        if (convertDoubleTo<int>(toDouble(), &dblInt))
+            return dblInt;
+        break;
     }
     case QCborValue::Integer:
-        return (n <= qint64(std::numeric_limits<int>::max())
-                && n >= qint64(std::numeric_limits<int>::min()))
-                ? n : defaultValue;
+        if (qint64(int(n)) == n)
+            return int(n);
+        break;
     default:
-        return defaultValue;
+        break;
     }
+    return defaultValue;
+}
+
+/*!
+    \since 6.0
+    Converts the value to an integer and returns it.
+
+    If type() is not Double or the value is not a whole number
+    representable as qint64, the \a defaultValue will be returned.
+ */
+qint64 QJsonValue::toInteger(qint64 defaultValue) const
+{
+    switch (t) {
+    case QCborValue::Integer:
+        return n;
+    case QCborValue::Double: {
+        qint64 dblInt;
+        if (convertDoubleTo<qint64>(toDouble(), &dblInt))
+            return dblInt;
+        break;
+    }
+    default:
+        break;
+    }
+    return defaultValue;
 }
 
 /*!
@@ -641,7 +676,7 @@ double QJsonValue::toDouble(double defaultValue) const
         return d;
     }
     case QCborValue::Integer:
-        return n;
+        return double(n);
     default:
         return defaultValue;
     }
@@ -787,8 +822,13 @@ const QJsonValue QJsonValue::operator[](int i) const
  */
 bool QJsonValue::operator==(const QJsonValue &other) const
 {
-    if (t != other.t)
+    if (t != other.t) {
+        if (isDouble() && other.isDouble()) {
+            // One value Cbor integer, one Cbor double, should interact as doubles.
+            return toDouble() == other.toDouble();
+        }
         return false;
+    }
 
     switch (t) {
     case QCborValue::Undefined:
@@ -929,32 +969,38 @@ uint qHash(const QJsonValue &value, uint seed)
 QDebug operator<<(QDebug dbg, const QJsonValue &o)
 {
     QDebugStateSaver saver(dbg);
-    switch (o.type()) {
-    case QJsonValue::Undefined:
+    switch (o.t) {
+    case QCborValue::Undefined:
         dbg << "QJsonValue(undefined)";
         break;
-    case QJsonValue::Null:
+    case QCborValue::Null:
         dbg << "QJsonValue(null)";
         break;
-    case QJsonValue::Bool:
+    case QCborValue::True:
+    case QCborValue::False:
         dbg.nospace() << "QJsonValue(bool, " << o.toBool() << ')';
         break;
-    case QJsonValue::Double:
+    case QCborValue::Integer:
+        dbg.nospace() << "QJsonValue(double, " << o.toInteger() << ')';
+        break;
+    case QCborValue::Double:
         dbg.nospace() << "QJsonValue(double, " << o.toDouble() << ')';
         break;
-    case QJsonValue::String:
+    case QCborValue::String:
         dbg.nospace() << "QJsonValue(string, " << o.toString() << ')';
         break;
-    case QJsonValue::Array:
+    case QCborValue::Array:
         dbg.nospace() << "QJsonValue(array, ";
         dbg << o.toArray();
         dbg << ')';
         break;
-    case QJsonValue::Object:
+    case QCborValue::Map:
         dbg.nospace() << "QJsonValue(object, ";
         dbg << o.toObject();
         dbg << ')';
         break;
+    default:
+        Q_UNREACHABLE();
     }
     return dbg;
 }

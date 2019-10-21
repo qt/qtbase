@@ -262,8 +262,7 @@ QJsonValue qt_convertToJson(QCborContainerPrivate *d, qsizetype idx)
     const auto &e = d->elements.at(idx);
     switch (e.type) {
     case QCborValue::Integer:
-        return QJsonPrivate::Value::fromTrustedCbor(e.value);
-
+        return QJsonValue(e.value);
     case QCborValue::ByteArray:
     case QCborValue::String:
     case QCborValue::SimpleType:
@@ -370,7 +369,7 @@ QJsonValue QCborValue::toJsonValue() const
         return false;
 
     case Integer:
-        return QJsonPrivate::Value::fromTrustedCbor(n);
+        return QJsonPrivate::Value::fromTrustedCbor(*this);
 
     case True:
         return true;
@@ -615,11 +614,9 @@ QCborValue QCborValue::fromJsonValue(const QJsonValue &v)
     case QJsonValue::Bool:
         return v.toBool();
     case QJsonValue::Double: {
-        qint64 i;
-        const double dbl = v.toDouble();
-        if (convertDoubleTo(dbl, &i))
-            return i;
-        return dbl;
+        if (v.t == Integer)
+            return v.toInteger();
+        return v.toDouble();
     }
     case QJsonValue::String:
         return v.toString();
@@ -667,9 +664,7 @@ static void appendVariant(QCborContainerPrivate *d, const QVariant &variant)
       \row  \li \c bool                     \li Bool
       \row  \li \c std::nullptr_t           \li Null
       \row  \li \c short, \c ushort, \c int, \c uint, \l qint64  \li Integer
-      \row  \li \l quint64                  \li Integer, but they are cast to \c qint64 first so
-                                                values higher than 2\sup{63}-1 (\c INT64_MAX) will
-                                                be wrapped to negative
+      \row  \li \l quint64                  \li Integer, or Double if outside the range of qint64
       \row  \li \c float, \c double         \li Double
       \row  \li \l QByteArray               \li ByteArray
       \row  \li \l QDateTime                \li DateTime
@@ -713,9 +708,12 @@ QCborValue QCborValue::fromVariant(const QVariant &variant)
     case QMetaType::UShort:
     case QVariant::Int:
     case QVariant::LongLong:
-    case QVariant::ULongLong:
     case QVariant::UInt:
         return variant.toLongLong();
+    case QVariant::ULongLong:
+        if (variant.toULongLong() <= static_cast<uint64_t>(std::numeric_limits<qint64>::max()))
+            return variant.toLongLong();
+        Q_FALLTHROUGH();
     case QMetaType::Float:
     case QVariant::Double:
         return variant.toDouble();

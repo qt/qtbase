@@ -138,15 +138,14 @@ static void valueToJson(const QCborValue &v, QByteArray &json, int indent, bool 
         json += "false";
         break;
     case QCborValue::Integer:
+        json += QByteArray::number(v.toInteger());
+        break;
     case QCborValue::Double: {
         const double d = v.toDouble();
-        if (qIsFinite(d)) {
-            quint64 absInt;
-            json += QByteArray::number(d, convertDoubleTo(std::abs(d), &absInt) ? 'f' : 'g',
-                                       QLocale::FloatingPointShortest);
-        } else {
+        if (qIsFinite(d))
+            json += QByteArray::number(d, 'g', QLocale::FloatingPointShortest);
+        else
             json += "null"; // +INF || -INF || NaN (see RFC4627#section2.4)
-        }
         break;
     }
     case QCborValue::String:

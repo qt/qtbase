@@ -709,10 +709,11 @@ bool Parser::parseNumber()
 
     // frac = decimal-point 1*DIGIT
     if (json < end && *json == '.') {
-        isInt = false;
         ++json;
-        while (json < end && *json >= '0' && *json <= '9')
+        while (json < end && *json >= '0' && *json <= '9') {
+            isInt = isInt && *json == '0';
             ++json;
+        }
     }
 
     // exp = e [ minus / plus ] 1*DIGIT

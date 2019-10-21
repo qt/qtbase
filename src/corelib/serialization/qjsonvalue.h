@@ -112,6 +112,7 @@ public:
 
     bool toBool(bool defaultValue = false) const;
     int toInt(int defaultValue = 0) const;
+    qint64 toInteger(qint64 defaultValue = 0) const;
     double toDouble(double defaultValue = 0) const;
     QString toString() const;
     QString toString(const QString &defaultValue) const;

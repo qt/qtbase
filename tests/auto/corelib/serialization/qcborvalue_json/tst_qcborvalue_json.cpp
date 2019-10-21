@@ -97,9 +97,12 @@ void tst_QCborValue_Json::toVariant_data()
     add(1, 1, 1);
     add(-1, -1, -1);
     add(0., 0., 0.);
+    add(2., 2., 2.);
     add(1.25, 1.25, 1.25);
     add(-1.25, -1.25, -1.25);
     add("Hello", "Hello", "Hello");
+    add(std::numeric_limits<qint64>::max(), std::numeric_limits<qint64>::max(), std::numeric_limits<qint64>::max());
+    add(std::numeric_limits<qint64>::min(), std::numeric_limits<qint64>::min(), std::numeric_limits<qint64>::min());
 
     // converts to string in JSON:
     add(QByteArray("Hello"), QByteArray("Hello"), "SGVsbG8");
@@ -122,14 +125,6 @@ void tst_QCborValue_Json::toVariant_data()
     QTest::newRow("Double:nan") << QCborValue(qQNaN())
                                 << QVariant(qQNaN())
                                 << QJsonValue();
-
-    // large integral values lose precision in JSON
-    QTest::newRow("Integer:max") << QCborValue(std::numeric_limits<qint64>::max())
-                                 << QVariant(std::numeric_limits<qint64>::max())
-                                 << QJsonValue(std::numeric_limits<qint64>::max());
-    QTest::newRow("Integer:min") << QCborValue(std::numeric_limits<qint64>::min())
-                                 << QVariant(std::numeric_limits<qint64>::min())
-                                 << QJsonValue(std::numeric_limits<qint64>::min());
 
     // empty arrays and maps
     add(QCborArray(), QVariantList(), QJsonArray());
@@ -257,6 +252,10 @@ void tst_QCborValue_Json::fromJson_data()
     QTest::newRow("0") << QCborValue(0) << QJsonValue(0.);
     QTest::newRow("1") << QCborValue(1) << QJsonValue(1);
     QTest::newRow("1.5") << QCborValue(1.5) << QJsonValue(1.5);
+    QTest::newRow("Integer:max") << QCborValue(std::numeric_limits<qint64>::max())
+                                 << QJsonValue(std::numeric_limits<qint64>::max());
+    QTest::newRow("Integer:min") << QCborValue(std::numeric_limits<qint64>::min())
+                                 << QJsonValue(std::numeric_limits<qint64>::min());
     QTest::newRow("string") << QCborValue("Hello") << QJsonValue("Hello");
     QTest::newRow("array") << QCborValue(QCborValue::Array) << QJsonValue(QJsonValue::Array);
     QTest::newRow("map") << QCborValue(QCborValue::Map) << QJsonValue(QJsonValue::Object);
