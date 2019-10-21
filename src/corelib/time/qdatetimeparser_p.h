@@ -77,7 +77,6 @@ QT_BEGIN_NAMESPACE
 
 class Q_CORE_EXPORT QDateTimeParser
 {
-    Q_DECLARE_TR_FUNCTIONS(QDateTimeParser)
 public:
     enum Context {
         FromString,
@@ -267,10 +266,11 @@ protected: // for the benefit of QDateTimeEditPrivate
         return skipToNextSection(section, current, QStringRef(&sectionText));
     }
     QString stateName(State s) const;
+    QString getAmPmText(AmPm ap, Case cs) const;
+
     virtual QDateTime getMinimum() const;
     virtual QDateTime getMaximum() const;
     virtual int cursorPosition() const { return -1; }
-    virtual QString getAmPmText(AmPm ap, Case cs) const;
     virtual QLocale locale() const { return defaultLocale; }
 
     mutable int currentSectionIndex;
