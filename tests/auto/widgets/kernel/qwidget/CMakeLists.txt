@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qwidget
-    GUI
     SOURCES
         tst_qwidget.cpp
     LIBRARIES
@@ -19,22 +18,30 @@ add_qt_test(tst_qwidget
 )
 
 # Resources:
+set(qwidget_resource_files
+    "geometry-fullscreen.dat"
+    "geometry-maximized.dat"
+    "geometry.dat"
+)
+
 add_qt_resource(tst_qwidget "qwidget"
     PREFIX
         "/"
     FILES
-        geometry-fullscreen.dat
-        geometry-maximized.dat
-        geometry.dat
+        ${qwidget_resource_files}
 )
 
 
 #### Keys ignored in scope 1:.:.:qwidget.pro:<TRUE>:
-# CONFIG = "testcase" "x11inc"
 # testcase.timeout = "600"
 
 ## Scopes:
 #####################################################################
+
+extend_target(tst_qwidget CONDITION AIX
+    COMPILE_OPTIONS
+        -fpermissive
+)
 
 extend_target(tst_qwidget CONDITION APPLE
     SOURCES

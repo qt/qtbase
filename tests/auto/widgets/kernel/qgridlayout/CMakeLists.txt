@@ -19,6 +19,3 @@ add_qt_test(tst_qgridlayout
     ENABLE_AUTOGEN_TOOLS
         uic
 )
-
-#### Keys ignored in scope 1:.:.:qgridlayout.pro:<TRUE>:
-# CONFIG = "testcase"

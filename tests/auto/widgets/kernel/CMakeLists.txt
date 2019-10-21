@@ -2,7 +2,7 @@
 
 add_subdirectory(qaction)
 add_subdirectory(qactiongroup)
-# add_subdirectory(qapplication) # FIXME: Enable this!
+add_subdirectory(qapplication)
 add_subdirectory(qboxlayout)
 add_subdirectory(qdesktopwidget)
 add_subdirectory(qformlayout)
@@ -18,10 +18,6 @@ add_subdirectory(qwidgetsvariant)
 add_subdirectory(qwindowcontainer)
 add_subdirectory(qshortcut)
 add_subdirectory(qsizepolicy)
-if(OFF)
-    add_subdirectory(qsound)
-endif()
-
 if(NOT APPLE)
     add_subdirectory(qgesturerecognizer)
 endif()

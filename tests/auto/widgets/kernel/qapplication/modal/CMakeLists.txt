@@ -1,14 +1,16 @@
-# Generated from qsizepolicy.pro.
+# Generated from modal.pro.
 
 #####################################################################
-## tst_qsizepolicy Test:
+## modal Binary:
 #####################################################################
 
-add_qt_test(tst_qsizepolicy
+add_qt_executable(modal_helper  # special case
+    GUI
     SOURCES
-        tst_qsizepolicy.cpp
-    LIBRARIES
-        Qt::WidgetsPrivate
+        base.cpp base.h
+        main.cpp
+    OUTPUT_DIRECTORY # special case
+        ${CMAKE_CURRENT_BINARY_DIR}/.. # special case
     PUBLIC_LIBRARIES
         Qt::Gui
         Qt::Widgets

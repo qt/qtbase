@@ -1,14 +1,15 @@
-# Generated from qsizepolicy.pro.
+# Generated from desktopsettingsaware.pro.
 
 #####################################################################
-## tst_qsizepolicy Test:
+## desktopsettingsaware Binary:
 #####################################################################
 
-add_qt_test(tst_qsizepolicy
+add_qt_executable(desktopsettingsaware_helper # special case
+    GUI
     SOURCES
-        tst_qsizepolicy.cpp
-    LIBRARIES
-        Qt::WidgetsPrivate
+        main.cpp
+    OUTPUT_DIRECTORY # special case
+        ${CMAKE_CURRENT_BINARY_DIR}/.. # special case
     PUBLIC_LIBRARIES
         Qt::Gui
         Qt::Widgets
