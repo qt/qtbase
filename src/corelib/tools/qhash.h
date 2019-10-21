@@ -235,7 +235,7 @@ class QHash
         return reinterpret_cast<Node *>(node);
     }
 
-    static inline int alignOfNode() { return qMax<int>(sizeof(void*), Q_ALIGNOF(Node)); }
+    static inline int alignOfNode() { return qMax<int>(sizeof(void*), alignof(Node)); }
 
 public:
     inline QHash() noexcept : d(const_cast<QHashData *>(&QHashData::shared_null)) { }

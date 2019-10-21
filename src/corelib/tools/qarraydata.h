@@ -222,7 +222,7 @@ struct QTypedArrayData
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
         return static_cast<QTypedArrayData *>(QArrayData::allocate(sizeof(T),
-                    Q_ALIGNOF(AlignmentDummy), capacity, options));
+                    alignof(AlignmentDummy), capacity, options));
     }
 
     static QTypedArrayData *reallocateUnaligned(QTypedArrayData *data, size_t capacity,
@@ -236,7 +236,7 @@ struct QTypedArrayData
     static void deallocate(QArrayData *data)
     {
         Q_STATIC_ASSERT(sizeof(QTypedArrayData) == sizeof(QArrayData));
-        QArrayData::deallocate(data, sizeof(T), Q_ALIGNOF(AlignmentDummy));
+        QArrayData::deallocate(data, sizeof(T), alignof(AlignmentDummy));
     }
 
     static QTypedArrayData *fromRawData(const T *data, size_t n,
@@ -295,7 +295,7 @@ struct QArrayDataPointerRef
 
 #define Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER(type, size) \
     Q_STATIC_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(size,\
-        ((sizeof(QArrayData) + (Q_ALIGNOF(type) - 1)) & ~(Q_ALIGNOF(type) - 1) )) \
+        ((sizeof(QArrayData) + (alignof(type) - 1)) & ~(alignof(type) - 1) )) \
     /**/
 
 ////////////////////////////////////////////////////////////////////////////////

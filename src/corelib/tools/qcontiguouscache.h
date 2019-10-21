@@ -166,7 +166,7 @@ private:
     }
     int alignOfTypedData() const
     {
-        return qMax<int>(sizeof(void*), Q_ALIGNOF(Data));
+        return qMax<int>(sizeof(void*), alignof(Data));
     }
 };
 

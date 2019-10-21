@@ -108,11 +108,7 @@ void tst_QAtomicPointer::warningFree()
 
 void tst_QAtomicPointer::alignment()
 {
-#ifdef Q_ALIGNOF
-    // this will cause a build error if the alignment isn't the same
-    char dummy[Q_ALIGNOF(QBasicAtomicPointer<void>) == Q_ALIGNOF(void*) ? 1 : -1];
-    (void)dummy;
-#endif
+    Q_STATIC_ASSERT(alignof(QBasicAtomicPointer<void>) == alignof(void*));
 }
 
 void tst_QAtomicPointer::constructor()

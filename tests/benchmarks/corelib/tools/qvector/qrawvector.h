@@ -280,11 +280,7 @@ private:
     }
     static Q_DECL_CONSTEXPR int alignOfTypedData()
     {
-#ifdef Q_ALIGNOF
-        return Q_ALIGNOF(AlignmentDummy);
-#else
-        return sizeof(void *);
-#endif
+        return alignof(AlignmentDummy);
     }
 
 public:

@@ -1470,7 +1470,7 @@ static void customConstruct(QVariant::Private *d, const void *copy)
     } else {
         // Private::Data contains long long, and long double is the biggest standard type.
         const size_t maxAlignment =
-            qMax(Q_ALIGNOF(QVariant::Private::Data), Q_ALIGNOF(long double));
+            qMax(alignof(QVariant::Private::Data), alignof(long double));
         const size_t s = sizeof(QVariant::PrivateShared);
         const size_t offset = s + ((s * maxAlignment - s) % maxAlignment);
         void *data = operator new(offset + size);

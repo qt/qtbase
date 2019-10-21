@@ -237,28 +237,23 @@ template <typename T> struct TypeInStruct { T type; };
 
 void tst_QAtomicInt::alignment()
 {
-#ifdef Q_ALIGNOF
-    // this will cause a build error if the alignment isn't the same
-    char dummy1[Q_ALIGNOF(QBasicAtomicInt) == Q_ALIGNOF(TypeInStruct<int>) ? 1 : -1];
-    char dummy2[Q_ALIGNOF(QAtomicInt) == Q_ALIGNOF(TypeInStruct<int>) ? 1 : -1];
-    (void)dummy1; (void)dummy2;
+    Q_STATIC_ASSERT(alignof(QBasicAtomicInt) == alignof(TypeInStruct<int>));
+    Q_STATIC_ASSERT(alignof(QBasicAtomicInt) == alignof(TypeInStruct<int>));
 
 #ifdef Q_ATOMIC_INT32_IS_SUPPORTED
-    QCOMPARE(Q_ALIGNOF(QBasicAtomicInteger<int>), Q_ALIGNOF(TypeInStruct<int>));
+    QCOMPARE(alignof(QBasicAtomicInteger<int>), alignof(TypeInStruct<int>));
 #endif
 
 #ifdef Q_ATOMIC_INT16_IS_SUPPORTED
-    QCOMPARE(Q_ALIGNOF(QBasicAtomicInteger<short>), Q_ALIGNOF(TypeInStruct<short>));
+    QCOMPARE(alignof(QBasicAtomicInteger<short>), alignof(TypeInStruct<short>));
 #endif
 
 #ifdef Q_ATOMIC_INT8_IS_SUPPORTED
-    QCOMPARE(Q_ALIGNOF(QBasicAtomicInteger<char>), Q_ALIGNOF(TypeInStruct<char>));
+    QCOMPARE(alignof(QBasicAtomicInteger<char>), alignof(TypeInStruct<char>));
 #endif
 
 #ifdef Q_ATOMIC_INT64_IS_SUPPORTED
-    QCOMPARE(Q_ALIGNOF(QBasicAtomicInteger<qlonglong>), Q_ALIGNOF(TypeInStruct<qlonglong>));
-#endif
-
+    QCOMPARE(alignof(QBasicAtomicInteger<qlonglong>), alignof(TypeInStruct<qlonglong>));
 #endif
 }
 

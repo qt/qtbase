@@ -160,7 +160,7 @@ void tst_QArrayData::referenceCounting()
 void tst_QArrayData::sharedNullEmpty()
 {
     QArrayData *null = const_cast<QArrayData *>(QArrayData::shared_null);
-    QArrayData *empty = QArrayData::allocate(1, Q_ALIGNOF(QArrayData), 0);
+    QArrayData *empty = QArrayData::allocate(1, alignof(QArrayData), 0);
 
     QVERIFY(null->ref.isStatic());
     QVERIFY(null->ref.isShared());
@@ -657,16 +657,16 @@ void tst_QArrayData::allocate_data()
         size_t objectSize;
         size_t alignment;
     } types[] = {
-        { "char", sizeof(char), Q_ALIGNOF(char) },
-        { "short", sizeof(short), Q_ALIGNOF(short) },
-        { "void *", sizeof(void *), Q_ALIGNOF(void *) }
+        { "char", sizeof(char), alignof(char) },
+        { "short", sizeof(short), alignof(short) },
+        { "void *", sizeof(void *), alignof(void *) }
     };
 
-    QArrayData *shared_empty = QArrayData::allocate(0, Q_ALIGNOF(QArrayData), 0);
+    QArrayData *shared_empty = QArrayData::allocate(0, alignof(QArrayData), 0);
     QVERIFY(shared_empty);
 
 #if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    QArrayData *unsharable_empty = QArrayData::allocate(0, Q_ALIGNOF(QArrayData), 0, QArrayData::Unsharable);
+    QArrayData *unsharable_empty = QArrayData::allocate(0, alignof(QArrayData), 0, QArrayData::Unsharable);
     QVERIFY(unsharable_empty);
 #endif
 
@@ -709,7 +709,7 @@ void tst_QArrayData::allocate()
 
     // Minimum alignment that can be requested is that of QArrayData.
     // Typically, this alignment is sizeof(void *) and ensured by malloc.
-    size_t minAlignment = qMax(alignment, Q_ALIGNOF(QArrayData));
+    size_t minAlignment = qMax(alignment, alignof(QArrayData));
 
     // Shared Empty
     QCOMPARE(QArrayData::allocate(objectSize, minAlignment, 0,
@@ -749,11 +749,11 @@ void tst_QArrayData::reallocate()
 
     // Maximum alignment that can be requested is that of QArrayData,
     // otherwise, we can't use reallocate().
-    Q_ASSERT(alignment <= Q_ALIGNOF(QArrayData));
+    Q_ASSERT(alignment <= alignof(QArrayData));
 
     // Minimum alignment that can be requested is that of QArrayData.
     // Typically, this alignment is sizeof(void *) and ensured by malloc.
-    size_t minAlignment = qMax(alignment, Q_ALIGNOF(QArrayData));
+    size_t minAlignment = qMax(alignment, alignof(QArrayData));
 
     int capacity = 10;
     Deallocator keeper(objectSize, minAlignment);
@@ -808,7 +808,7 @@ void tst_QArrayData::alignment()
 
     // Minimum alignment that can be requested is that of QArrayData.
     // Typically, this alignment is sizeof(void *) and ensured by malloc.
-    size_t minAlignment = qMax(alignment, Q_ALIGNOF(QArrayData));
+    size_t minAlignment = qMax(alignment, alignof(QArrayData));
 
     Deallocator keeper(sizeof(Unaligned), minAlignment);
     keeper.headers.reserve(100);
@@ -826,7 +826,7 @@ void tst_QArrayData::alignment()
         // allocated together
         QVERIFY(data->offset >= qptrdiff(sizeof(QArrayData)));
         QVERIFY(data->offset <= qptrdiff(sizeof(QArrayData)
-                    + minAlignment - Q_ALIGNOF(QArrayData)));
+                    + minAlignment - alignof(QArrayData)));
 
         // Data is aligned
         QCOMPARE(quintptr(quintptr(data->data()) % alignment), quintptr(0u));
@@ -886,7 +886,7 @@ void tst_QArrayData::typedData()
 
     {
         Deallocator keeper(sizeof(char),
-                Q_ALIGNOF(QTypedArrayData<char>::AlignmentDummy));
+                alignof(QTypedArrayData<char>::AlignmentDummy));
         QArrayData *array = QTypedArrayData<char>::allocate(10);
         keeper.headers.append(array);
 
@@ -906,7 +906,7 @@ void tst_QArrayData::typedData()
 
     {
         Deallocator keeper(sizeof(short),
-                Q_ALIGNOF(QTypedArrayData<short>::AlignmentDummy));
+                alignof(QTypedArrayData<short>::AlignmentDummy));
         QArrayData *array = QTypedArrayData<short>::allocate(10);
         keeper.headers.append(array);
 
@@ -926,7 +926,7 @@ void tst_QArrayData::typedData()
 
     {
         Deallocator keeper(sizeof(double),
-                Q_ALIGNOF(QTypedArrayData<double>::AlignmentDummy));
+                alignof(QTypedArrayData<double>::AlignmentDummy));
         QArrayData *array = QTypedArrayData<double>::allocate(10);
         keeper.headers.append(array);
 

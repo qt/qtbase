@@ -219,7 +219,7 @@ struct QMapData : public QMapDataBase
 
     Node *createNode(const Key &k, const T &v, Node *parent = nullptr, bool left = false)
     {
-        Node *n = static_cast<Node *>(QMapDataBase::createNode(sizeof(Node), Q_ALIGNOF(Node),
+        Node *n = static_cast<Node *>(QMapDataBase::createNode(sizeof(Node), alignof(Node),
                                       parent, left));
         QT_TRY {
             new (&n->key) Key(k);
@@ -243,7 +243,7 @@ struct QMapData : public QMapDataBase
     void destroy() {
         if (root()) {
             root()->destroySubTree();
-            freeTree(header.left, Q_ALIGNOF(Node));
+            freeTree(header.left, alignof(Node));
         }
         freeData(this);
     }

@@ -1024,9 +1024,9 @@ static void testConstructHelper()
     typedef typename MetaEnumToType<ID>::Type Type;
     QMetaType info(ID);
     int size = info.sizeOf();
-    void *storage1 = qMallocAligned(size, Q_ALIGNOF(Type));
+    void *storage1 = qMallocAligned(size, alignof(Type));
     void *actual1 = QMetaType::construct(ID, storage1, /*copy=*/0);
-    void *storage2 = qMallocAligned(size, Q_ALIGNOF(Type));
+    void *storage2 = qMallocAligned(size, alignof(Type));
     void *actual2 = info.construct(storage2, /*copy=*/0);
     QCOMPARE(actual1, storage1);
     QCOMPARE(actual2, storage2);
@@ -1178,9 +1178,9 @@ static void testConstructCopyHelper()
     QMetaType info(ID);
     int size = QMetaType::sizeOf(ID);
     QCOMPARE(info.sizeOf(), size);
-    void *storage1 = qMallocAligned(size, Q_ALIGNOF(Type));
+    void *storage1 = qMallocAligned(size, alignof(Type));
     void *actual1 = QMetaType::construct(ID, storage1, expected);
-    void *storage2 = qMallocAligned(size, Q_ALIGNOF(Type));
+    void *storage2 = qMallocAligned(size, alignof(Type));
     void *actual2 = info.construct(storage2, expected);
     QCOMPARE(actual1, storage1);
     QCOMPARE(actual2, storage2);
