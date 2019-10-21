@@ -60,6 +60,22 @@ static const QChar Space = QLatin1Char(' ');
 // TODO maybe eliminate the margins after all views recognize BlockQuoteLevel, CSS can format it, etc.
 static const int BlockQuoteIndent = 40; // pixels, same as in QTextHtmlParserNode::initializeProperties
 
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeatureCollapseWhitespace) == MD_FLAG_COLLAPSEWHITESPACE);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeaturePermissiveATXHeaders) == MD_FLAG_PERMISSIVEATXHEADERS);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeaturePermissiveURLAutoLinks) == MD_FLAG_PERMISSIVEURLAUTOLINKS);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeaturePermissiveMailAutoLinks) == MD_FLAG_PERMISSIVEEMAILAUTOLINKS);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeatureNoIndentedCodeBlocks) == MD_FLAG_NOINDENTEDCODEBLOCKS);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeatureNoHTMLBlocks) == MD_FLAG_NOHTMLBLOCKS);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeatureNoHTMLSpans) == MD_FLAG_NOHTMLSPANS);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeatureTables) == MD_FLAG_TABLES);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeatureStrikeThrough) == MD_FLAG_STRIKETHROUGH);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeaturePermissiveWWWAutoLinks) == MD_FLAG_PERMISSIVEWWWAUTOLINKS);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeaturePermissiveAutoLinks) == MD_FLAG_PERMISSIVEAUTOLINKS);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeatureTasklists) == MD_FLAG_TASKLISTS);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::FeatureNoHTML) == MD_FLAG_NOHTML);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::DialectCommonMark) == MD_DIALECT_COMMONMARK);
+Q_STATIC_ASSERT(int(QTextMarkdownImporter::DialectGitHub) == MD_DIALECT_GITHUB);
+
 // --------------------------------------------------------
 // MD4C callback function wrappers
 
@@ -119,6 +135,11 @@ static Qt::Alignment MdAlignment(MD_ALIGN a, Qt::Alignment defaultAlignment = Qt
 QTextMarkdownImporter::QTextMarkdownImporter(QTextMarkdownImporter::Features features)
   : m_monoFont(QFontDatabase::systemFont(QFontDatabase::FixedFont))
   , m_features(features)
+{
+}
+
+QTextMarkdownImporter::QTextMarkdownImporter(QTextDocument::MarkdownFeatures features)
+  : QTextMarkdownImporter(static_cast<QTextMarkdownImporter::Features>(int(features)))
 {
 }
 

@@ -152,7 +152,6 @@ public:
 #endif
 
 #if QT_CONFIG(textmarkdownwriter) || QT_CONFIG(textmarkdownreader)
-    // Must be in sync with QTextMarkdownImporter::Features, should be in sync with #define MD_FLAG_* in md4c
     enum MarkdownFeature {
         MarkdownNoHTML = 0x0020 | 0x0040,
         MarkdownDialectCommonMark = 0,
