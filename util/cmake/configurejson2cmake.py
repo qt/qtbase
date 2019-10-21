@@ -593,20 +593,31 @@ endif()
             else:
                 qmakeFixme = f"# FIXME: qmake: {details['qmake']}\n"
 
+        library_list = []
         if "use" in data:
-            if data["use"] == "egl xcb_xlib":
-                librariesCmakeName = format(featureName(test)) + "_TEST_LIBRARIES"
-                cm_fh.write("if (HAVE_EGL AND X11_XCB_FOUND AND X11_FOUND)\n")
-                cm_fh.write("    set(" + librariesCmakeName + " EGL::EGL X11::X11 X11::XCB)\n")
-                cm_fh.write("endif()\n")
-            else:
-                qmakeFixme += f"# FIXME: use: {data['use']}\n"
+            for library in data["use"].split(" "):
+                if len(library) == 0:
+                    continue
+
+                mapped_library = find_3rd_party_library_mapping(library)
+                if not mapped_library:
+                    qmakeFixme += f"# FIXME: use: unmapped library: {library}\n"
+                    continue
+                library_list.append(mapped_library.targetName)
+
+
 
         cm_fh.write(f"qt_config_compile_test({featureName(test)}\n")
         cm_fh.write(lineify("LABEL", data.get("label", "")))
-        if librariesCmakeName != "":
-            cm_fh.write(lineify("LIBRARIES", "${" + librariesCmakeName + "}"))
-            cm_fh.write("    CODE\n")
+        if librariesCmakeName != "" or len(library_list) != 0:
+            cm_fh.write("    LIBRARIES\n")
+            if librariesCmakeName != "":
+                cm_fh.write(lineify("", "${" + librariesCmakeName + "}"))
+            if len(library_list) != 0:
+                cm_fh.write("        ")
+                cm_fh.write("\n        ".join(library_list))
+                cm_fh.write("\n")
+        cm_fh.write("    CODE\n")
         cm_fh.write('"' + sourceCode + '"')
         if qmakeFixme != "":
             cm_fh.write(qmakeFixme)
