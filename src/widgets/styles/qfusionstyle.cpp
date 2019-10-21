@@ -3733,7 +3733,7 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
         return 0;
 
     case SH_Table_GridLineColor:
-        return option ? option->palette.window().color().darker(120).rgb() : 0;
+        return option ? option->palette.window().color().darker(120).rgba() : 0;
 
     case SH_MessageBox_TextInteractionFlags:
         return Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse;

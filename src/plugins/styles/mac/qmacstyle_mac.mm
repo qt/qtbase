@@ -2873,7 +2873,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         ret = false;
         break;
     case SH_Table_GridLineColor:
-        ret = int(qt_mac_toQColor(NSColor.gridColor).rgb());
+        ret = int(qt_mac_toQColor(NSColor.gridColor).rgba());
         break;
     default:
         ret = QCommonStyle::styleHint(sh, opt, w, hret);
