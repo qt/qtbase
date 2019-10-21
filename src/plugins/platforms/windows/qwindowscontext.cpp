@@ -42,6 +42,7 @@
 #include "qwindowsintegration.h"
 #include "qwindowswindow.h"
 #include "qwindowskeymapper.h"
+#include "qwindowsnativeinterface.h"
 #include "qwindowsmousehandler.h"
 #include "qwindowspointerhandler.h"
 #include "qtwindowsglobal.h"
@@ -277,7 +278,10 @@ struct QWindowsContextPrivate {
     bool m_asyncExpose = false;
     HPOWERNOTIFY m_powerNotification = nullptr;
     HWND m_powerDummyWindow = nullptr;
+    static bool m_darkMode;
 };
+
+bool QWindowsContextPrivate::m_darkMode = false;
 
 QWindowsContextPrivate::QWindowsContextPrivate()
     : m_oleInitializeResult(OleInitialize(nullptr))
@@ -293,6 +297,7 @@ QWindowsContextPrivate::QWindowsContextPrivate()
         m_systemInfo |= QWindowsContext::SI_RTL_Extensions;
         m_keyMapper.setUseRTLExtensions(true);
     }
+    m_darkMode = QWindowsTheme::queryDarkMode();
     if (FAILED(m_oleInitializeResult)) {
        qWarning() << "QWindowsContext: OleInitialize() failed: "
            << QWindowsContext::comErrorString(m_oleInitializeResult);
@@ -483,6 +488,11 @@ void QWindowsContext::setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiA
                 qErrnoWarning("SetProcessDPIAware() failed");
         }
     }
+}
+
+bool QWindowsContext::isDarkMode()
+{
+    return QWindowsContextPrivate::m_darkMode;
 }
 
 QWindowsContext *QWindowsContext::instance()
@@ -1203,9 +1213,17 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             t->displayChanged();
         QWindowsWindow::displayChanged();
         return d->m_screenManager.handleDisplayChange(wParam, lParam);
-    case QtWindows::SettingChangedEvent:
+    case QtWindows::SettingChangedEvent: {
         QWindowsWindow::settingsChanged();
+        const bool darkMode = QWindowsTheme::queryDarkMode();
+        if (darkMode != QWindowsContextPrivate::m_darkMode) {
+            QWindowsContextPrivate::m_darkMode = darkMode;
+            auto nativeInterface =
+                static_cast<QWindowsNativeInterface *>(QWindowsIntegration::instance()->nativeInterface());
+            emit nativeInterface->darkModeChanged(darkMode);
+        }
         return d->m_screenManager.handleScreenChanges();
+    }
     default:
         break;
     }

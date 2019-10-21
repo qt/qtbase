@@ -65,6 +65,8 @@ class QWindowsNativeInterface : public QPlatformNativeInterface
 {
     Q_OBJECT
     Q_PROPERTY(bool asyncExpose READ asyncExpose WRITE setAsyncExpose)
+    Q_PROPERTY(bool darkMode READ isDarkMode STORED false NOTIFY darkModeChanged)
+    Q_PROPERTY(bool darkModeStyle READ isDarkModeStyle STORED false)
     Q_PROPERTY(QVariant gpu READ gpu STORED false)
     Q_PROPERTY(QVariant gpuList READ gpuList STORED false)
 
@@ -92,6 +94,9 @@ public:
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
 
+    bool isDarkMode() const;
+    bool isDarkModeStyle() const;
+
     QVariant gpu() const;
     QVariant gpuList() const;
 
@@ -108,6 +113,9 @@ public:
     static bool isTabletMode();
 
     QFunctionPointer platformFunction(const QByteArray &function) const override;
+
+Q_SIGNALS:
+    void darkModeChanged(bool);
 
 private:
     static QWindowsWindowFunctions::WindowActivationBehavior m_windowActivationBehavior;

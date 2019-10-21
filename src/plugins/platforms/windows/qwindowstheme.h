@@ -84,6 +84,8 @@ public:
     void showPlatformMenuBar() override;
 
     static bool useNativeMenus();
+    static bool queryDarkMode();
+    static bool queryHighContrast();
 
     void refreshFonts();
 

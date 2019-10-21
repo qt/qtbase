@@ -592,6 +592,21 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
     \list
         \li \c {altgr}, detect the key \c {AltGr} found on some keyboards as
                Qt::GroupSwitchModifier (since Qt 5.12).
+        \li \c {darkmode=[1|2]} controls how Qt responds to the activation
+               of the \e{Dark Mode for applications} introduced in Windows 10
+               1903 (since Qt 5.15).
+
+               A value of 1 causes Qt to switch the window borders to black
+               when \e{Dark Mode for applications} is activated and no High
+               Contrast Theme is in use. This is intended for applications
+               that implement their own theming.
+
+               A value of 2 will in addition cause the Windows Vista style to
+               be deactivated and switch to the Windows style using a
+               simplified palette in dark mode. This is currently
+               experimental pending the introduction of new style that
+               properly adapts to dark mode.
+
         \li \c {dialogs=[xp|none]}, \c xp uses XP-style native dialogs and
             \c none disables them.
 
