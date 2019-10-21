@@ -18,6 +18,7 @@ qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev)
 # c++14
 qt_config_compile_test(cxx14
     LABEL "C++14 support"
+    CODE
 "#if __cplusplus > 201103L
 // Compiler claims to support C++14, trust it
 #else
@@ -40,6 +41,7 @@ int main(int argc, char **argv)
 # c++17
 qt_config_compile_test(cxx17
     LABEL "C++17 support"
+    CODE
 "#if __cplusplus > 201402L
 // Compiler claims to support C++17, trust it
 #else
@@ -66,6 +68,7 @@ std::visit([](const auto &) { return 1; }, v);
 # c++2a
 qt_config_compile_test(cxx2a
     LABEL "C++2a support"
+    CODE
 "#if __cplusplus > 201703L
 // Compiler claims to support experimental C++2a, trust it
 #else
@@ -88,6 +91,7 @@ int main(int argc, char **argv)
 # precompile_header
 qt_config_compile_test(precompile_header
     LABEL "precompiled header support"
+    CODE
 "
 
 #ifndef HEADER_H
@@ -107,6 +111,7 @@ int main(int argc, char **argv)
 # reduce_relocations
 qt_config_compile_test(reduce_relocations
     LABEL "-Bsymbolic-functions support"
+    CODE
 "#if !(defined(__i386) || defined(__i386__) || defined(__x86_64) || defined(__x86_64__) || defined(__amd64))
 #  error Symbolic function binding on this architecture may be broken, disabling it (see QTBUG-36129).
 #endif
@@ -126,6 +131,7 @@ int main(int argc, char **argv)
 # signaling_nan
 qt_config_compile_test(signaling_nan
     LABEL "Signaling NaN for doubles"
+    CODE
 "#include <limits>
 
 
@@ -206,6 +212,7 @@ qt_config_compile_test_x86simd(avx512vbmi "AVX512 VBMI instructions")
 # posix_fallocate
 qt_config_compile_test(posix_fallocate
     LABEL "POSIX fallocate()"
+    CODE
 "
 #include <fcntl.h>
 #include <unistd.h>
@@ -223,6 +230,7 @@ int main(int argc, char **argv)
 # alloca_stdlib_h
 qt_config_compile_test(alloca_stdlib_h
     LABEL "alloca() in stdlib.h"
+    CODE
 "
 #include <stdlib.h>
 
@@ -239,6 +247,7 @@ alloca(1);
 # alloca_h
 qt_config_compile_test(alloca_h
     LABEL "alloca() in alloca.h"
+    CODE
 "
 #include <alloca.h>
 #ifdef __QNXNTO__
@@ -258,6 +267,7 @@ alloca(1);
 # alloca_malloc_h
 qt_config_compile_test(alloca_malloc_h
     LABEL "alloca() in malloc.h"
+    CODE
 "
 #include <malloc.h>
 
@@ -274,6 +284,7 @@ alloca(1);
 # stack_protector
 qt_config_compile_test(stack_protector
     LABEL "stack protection"
+    CODE
 "#ifdef __QNXNTO__
 #  include <sys/neutrino.h>
 #  if _NTO_VERSION < 700

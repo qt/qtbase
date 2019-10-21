@@ -106,6 +106,7 @@ endif()
 # angle_d3d11_qdtd
 qt_config_compile_test(angle_d3d11_qdtd
     LABEL "D3D11_QUERY_DATA_TIMESTAMP_DISJOINT"
+    CODE
 "
 #include <d3d11.h>
 
@@ -123,6 +124,9 @@ D3D11_QUERY_DATA_TIMESTAMP_DISJOINT qdtd;
 # drm_atomic
 qt_config_compile_test(drm_atomic
     LABEL "DRM Atomic API"
+    LIBRARIES
+        Libdrm::Libdrm
+    CODE
 "#include <stdlib.h>
 #include <stdint.h>
 extern \"C\" {
@@ -137,12 +141,15 @@ drmModeAtomicReq *request;
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: drm
-)
+")
 
 # egl-x11
 qt_config_compile_test(egl_x11
     LABEL "EGL on X11"
+    LIBRARIES
+        EGL::EGL
+        X11::XCB
+    CODE
 "// Check if EGL is compatible with X. Some EGL implementations, typically on
 // embedded devices, are not intended to be used together with X. EGL support
 // has to be disabled in plugins like xcb in this case since the native display,
@@ -164,12 +171,14 @@ XCloseDisplay(dpy);
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: egl xlib
-)
+")
 
 # egl-brcm
 qt_config_compile_test(egl_brcm
     LABEL "Broadcom EGL (Raspberry Pi)"
+    LIBRARIES
+        EGL::EGL
+    CODE
 "
 #include <EGL/egl.h>
 #include <bcm_host.h>
@@ -182,12 +191,15 @@ vc_dispmanx_display_open(0);
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: egl bcm_host
+"# FIXME: use: unmapped library: bcm_host
 )
 
 # egl-egldevice
 qt_config_compile_test(egl_egldevice
     LABEL "EGLDevice"
+    LIBRARIES
+        EGL::EGL
+    CODE
 "
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
@@ -203,12 +215,14 @@ EGLOutputLayerEXT layer = 0;
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: egl
-)
+")
 
 # egl-mali
 qt_config_compile_test(egl_mali
     LABEL "Mali EGL"
+    LIBRARIES
+        EGL::EGL
+    CODE
 "
 #include <EGL/fbdev_window.h>
 #include <EGL/egl.h>
@@ -222,12 +236,14 @@ fbdev_window *w = 0;
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: egl
-)
+")
 
 # egl-mali-2
 qt_config_compile_test(egl_mali_2
     LABEL "Mali 2 EGL"
+    LIBRARIES
+        EGL::EGL
+    CODE
 "
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
@@ -240,12 +256,14 @@ mali_native_window *w = 0;
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: egl
-)
+")
 
 # egl-viv
 qt_config_compile_test(egl_viv
     LABEL "i.Mx6 EGL"
+    LIBRARIES
+        EGL::EGL
+    CODE
 "
 #include <EGL/egl.h>
 #include <EGL/eglvivante.h>
@@ -265,12 +283,14 @@ fbGetDisplayByIndex(0);
     return 0;
 }
 "# FIXME: qmake: ['DEFINES += EGL_API_FB=1', '!integrity: DEFINES += LINUX=1']
-# FIXME: use: egl
 )
 
 # egl-openwfd
 qt_config_compile_test(egl_openwfd
     LABEL "OpenWFD EGL"
+    LIBRARIES
+        EGL::EGL
+    CODE
 "
 #include <wfd.h>
 
@@ -282,12 +302,15 @@ wfdEnumerateDevices(nullptr, 0, nullptr);
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: egl
-)
+")
 
 # egl-rcar
 qt_config_compile_test(egl_rcar
     LABEL "RCAR EGL"
+    LIBRARIES
+        EGL::EGL
+        GLESv2::GLESv2
+    CODE
 "
 #include <EGL/egl.h>
 extern \"C\" {
@@ -301,12 +324,12 @@ PVRGrfxServerInit();
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: egl opengl_es2
-)
+")
 
 # evdev
 qt_config_compile_test(evdev
     LABEL "evdev"
+    CODE
 "#if defined(__FreeBSD__)
 #  include <dev/evdev/input.h>
 #else
@@ -335,6 +358,7 @@ input_event buf[32];
 # integrityfb
 qt_config_compile_test(integrityfb
     LABEL "INTEGRITY framebuffer"
+    CODE
 "
 #include <device/fbdriver.h>
 
@@ -351,6 +375,7 @@ FBDriver *driver = 0;
 # linuxfb
 qt_config_compile_test(linuxfb
     LABEL "LinuxFB"
+    CODE
 "
 #include <linux/fb.h>
 #include <sys/kd.h>
@@ -373,6 +398,9 @@ ioctl(fd, FBIOGET_VSCREENINFO, &vinfo);
 # opengles3
 qt_config_compile_test(opengles3
     LABEL "OpenGL ES 3.0"
+    LIBRARIES
+        GLESv2::GLESv2
+    CODE
 "#ifdef __APPLE__
 #  include <OpenGLES/ES3/gl.h>
 #else
@@ -393,12 +421,14 @@ glMapBufferRange(GL_ARRAY_BUFFER, 0, 0, GL_MAP_READ_BIT);
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: opengl_es2
-)
+")
 
 # opengles31
 qt_config_compile_test(opengles31
     LABEL "OpenGL ES 3.1"
+    LIBRARIES
+        GLESv2::GLESv2
+    CODE
 "
 #include <GLES3/gl31.h>
 
@@ -411,12 +441,14 @@ glProgramUniform1i(0, 0, 0);
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: opengl_es2
-)
+")
 
 # opengles32
 qt_config_compile_test(opengles32
     LABEL "OpenGL ES 3.2"
+    LIBRARIES
+        GLESv2::GLESv2
+    CODE
 "
 #include <GLES3/gl32.h>
 
@@ -428,12 +460,26 @@ glFramebufferTexture(GL_TEXTURE_2D, GL_DEPTH_STENCIL_ATTACHMENT, 1, 0);
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: opengl_es2
-)
+")
 
 # xcb_syslibs
 qt_config_compile_test(xcb_syslibs
     LABEL "XCB (extensions)"
+    LIBRARIES
+        XCB::ICCCM
+        XCB::IMAGE
+        XCB::KEYSYMS
+        XCB::RANDR
+        XCB::RENDER
+        XCB::RENDERUTIL
+        XCB::SHAPE
+        XCB::SHM
+        XCB::SYNC
+        XCB::XFIXES
+        XCB::XINERAMA
+        XCB::XKB
+        XCB::XCB
+    CODE
 "// xkb.h is using a variable called 'explicit', which is a reserved keyword in C++
 #define explicit dont_use_cxx_explicit
 #include <xcb/xcb.h>
@@ -469,8 +515,7 @@ xcb_xkb_get_kbd_by_name_replies_key_names_value_list_sizeof(nullptr, 0, 0, 0, 0,
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: xcb_icccm xcb_image xcb_keysyms xcb_randr xcb_render xcb_renderutil xcb_shape xcb_shm xcb_sync xcb_xfixes xcb_xinerama xcb_xkb xcb
-)
+")
 
 
 

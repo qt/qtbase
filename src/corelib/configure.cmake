@@ -29,6 +29,7 @@ qt_find_package(Slog2 PROVIDED_TARGETS Slog2::Slog2)
 # atomicfptr
 qt_config_compile_test(atomicfptr
     LABEL "working std::atomic for function pointers"
+    CODE
 "
 #include <atomic>
 typedef void (*fptr)(int);
@@ -58,6 +59,9 @@ test(fptr);
 # clock-monotonic
 qt_config_compile_test(clock_monotonic
     LABEL "POSIX monotonic clock"
+    LIBRARIES
+        WrapRt
+    CODE
 "
 #include <unistd.h>
 #include <time.h>
@@ -75,12 +79,12 @@ clock_gettime(CLOCK_MONOTONIC, &ts);
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: librt
-)
+")
 
 # cloexec
 qt_config_compile_test(cloexec
     LABEL "O_CLOEXEC"
+    CODE
 "#define _GNU_SOURCE 1
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -111,7 +115,8 @@ if (UNIX)
 endif()
 qt_config_compile_test(cxx11_future
     LABEL "C++11 <future>"
-    LIBRARIES "${cxx11_future_TEST_LIBRARIES}"
+    LIBRARIES
+     "${cxx11_future_TEST_LIBRARIES}"
     CODE
 "
 #include <future>
@@ -130,6 +135,7 @@ std::future<int> f = std::async([]() { return 42; });
 # cxx11_random
 qt_config_compile_test(cxx11_random
     LABEL "C++11 <random>"
+    CODE
 "
 #include <random>
 
@@ -146,6 +152,7 @@ std::mt19937 mt(0);
 # eventfd
 qt_config_compile_test(eventfd
     LABEL "eventfd"
+    CODE
 "
 #include <sys/eventfd.h>
 
@@ -165,6 +172,7 @@ eventfd_write(fd, value);
 # futimens
 qt_config_compile_test(futimens
     LABEL "futimens()"
+    CODE
 "
 #include <sys/stat.h>
 
@@ -182,6 +190,7 @@ futimens(-1, 0);
 # futimes
 qt_config_compile_test(futimes
     LABEL "futimes()"
+    CODE
 "
 #include <sys/time.h>
 
@@ -198,6 +207,7 @@ futimes(-1, 0);
 # getauxval
 qt_config_compile_test(getauxval
     LABEL "getauxval()"
+    CODE
 "
 #include <sys/auxv.h>
 
@@ -214,6 +224,7 @@ int main(int argc, char **argv)
 # getentropy
 qt_config_compile_test(getentropy
     LABEL "getentropy()"
+    CODE
 "
 #include <unistd.h>
 
@@ -231,6 +242,7 @@ char buf[32];
 # glibc
 qt_config_compile_test(glibc
     LABEL "GNU libc"
+    CODE
 "
 #include <stdlib.h>
 
@@ -247,6 +259,7 @@ return __GLIBC__;
 # inotify
 qt_config_compile_test(inotify
     LABEL "inotify"
+    CODE
 "
 #include <sys/inotify.h>
 
@@ -265,6 +278,7 @@ inotify_rm_watch(0, 1);
 # ipc_sysv
 qt_config_compile_test(ipc_sysv
     LABEL "SysV IPC"
+    CODE
 "
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -291,7 +305,8 @@ if (LINUX)
 endif()
 qt_config_compile_test(ipc_posix
     LABEL "POSIX IPC"
-    LIBRARIES "${ipc_posix_TEST_LIBRARIES}"
+    LIBRARIES
+     "${ipc_posix_TEST_LIBRARIES}"
     CODE
 "
 #include <sys/types.h>
@@ -314,6 +329,7 @@ shm_unlink(\"test\");
 # linkat
 qt_config_compile_test(linkat
     LABEL "linkat()"
+    CODE
 "#define _ATFILE_SOURCE 1
 #include <fcntl.h>
 #include <unistd.h>
@@ -331,6 +347,7 @@ linkat(AT_FDCWD, \"foo\", AT_FDCWD, \"bar\", AT_SYMLINK_FOLLOW);
 # ppoll
 qt_config_compile_test(ppoll
     LABEL "ppoll()"
+    CODE
 "
 #include <signal.h>
 #include <poll.h>
@@ -351,6 +368,7 @@ ppoll(&pfd, 1, &ts, &sig);
 # pollts
 qt_config_compile_test(pollts
     LABEL "pollts()"
+    CODE
 "
 #include <poll.h>
 #include <signal.h>
@@ -372,6 +390,7 @@ pollts(&pfd, 1, &ts, &sig);
 # poll
 qt_config_compile_test(poll
     LABEL "poll()"
+    CODE
 "
 #include <poll.h>
 
@@ -389,6 +408,7 @@ poll(&pfd, 1, 0);
 # renameat2
 qt_config_compile_test(renameat2
     LABEL "renameat2()"
+    CODE
 "#define _ATFILE_SOURCE 1
 #include <fcntl.h>
 #include <stdio.h>
@@ -406,6 +426,7 @@ renameat2(AT_FDCWD, argv[1], AT_FDCWD, argv[2], RENAME_NOREPLACE | RENAME_WHITEO
 # statx
 qt_config_compile_test(statx
     LABEL "statx() in libc"
+    CODE
 "#define _ATFILE_SOURCE 1
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -427,6 +448,7 @@ return statx(AT_FDCWD, \"\", AT_STATX_SYNC_AS_STAT, mask, &statxbuf);
 # syslog
 qt_config_compile_test(syslog
     LABEL "syslog"
+    CODE
 "
 #include <syslog.h>
 
@@ -445,6 +467,7 @@ closelog();
 # xlocalescanprint
 qt_config_compile_test(xlocalescanprint
     LABEL "xlocale.h (or equivalents)"
+    CODE
 "
 
 #define QT_BEGIN_NAMESPACE

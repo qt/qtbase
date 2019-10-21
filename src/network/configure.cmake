@@ -17,6 +17,7 @@ qt_find_package(GSSAPI PROVIDED_TARGETS GSSAPI::GSSAPI)
 # getifaddrs
 qt_config_compile_test(getifaddrs
     LABEL "getifaddrs()"
+    CODE
 "
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -33,12 +34,13 @@ freeifaddrs(list);
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: network
+"# FIXME: use: unmapped library: network
 )
 
 # ipv6ifname
 qt_config_compile_test(ipv6ifname
     LABEL "IPv6 ifname"
+    CODE
 "
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -55,12 +57,13 @@ if_freenameindex(if_nameindex());
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: network
+"# FIXME: use: unmapped library: network
 )
 
 # linux-netlink
 qt_config_compile_test(linux_netlink
     LABEL "Linux AF_NETLINK sockets"
+    CODE
 "
 #include <asm/types.h>
 #include <linux/netlink.h>
@@ -88,6 +91,7 @@ ci.ifa_prefered = ci.ifa_valid = 0;
 # sctp
 qt_config_compile_test(sctp
     LABEL "SCTP support"
+    CODE
 "
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -105,12 +109,15 @@ socklen_t sctpInitMsgSize = sizeof(sctpInitMsg);
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: network
+"# FIXME: use: unmapped library: network
 )
 
 # openssl11
 qt_config_compile_test(openssl11
     LABEL "OpenSSL 1.1 support"
+    LIBRARIES
+        OpenSSL::SSL
+    CODE
 "
 #include <openssl/opensslv.h>
 #if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10100000L
@@ -124,12 +131,14 @@ int main(int argc, char **argv)
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: openssl
-)
+")
 
 # dtls
 qt_config_compile_test(dtls
     LABEL "DTLS support in OpenSSL"
+    LIBRARIES
+        OpenSSL::SSL
+    CODE
 "
 #include <openssl/ssl.h>
 #if defined(OPENSSL_NO_DTLS) || !defined(DTLS1_2_VERSION)
@@ -143,12 +152,14 @@ int main(int argc, char **argv)
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: openssl
-)
+")
 
 # ocsp
 qt_config_compile_test(ocsp
     LABEL "OCSP stapling support in OpenSSL"
+    LIBRARIES
+        OpenSSL::SSL
+    CODE
 "
 #include <openssl/ssl.h>
 #include <openssl/ocsp.h>
@@ -163,12 +174,12 @@ int main(int argc, char **argv)
     /* END TEST: */
     return 0;
 }
-"# FIXME: use: openssl
-)
+")
 
 # netlistmgr
 qt_config_compile_test(netlistmgr
     LABEL "Network List Manager"
+    CODE
 "
 #include <netlistmgr.h>
 #include <wrl/client.h>
