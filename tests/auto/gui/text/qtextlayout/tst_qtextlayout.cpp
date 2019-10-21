@@ -2068,7 +2068,12 @@ void tst_QTextLayout::cursorInLigatureWithMultipleLines()
 
 void tst_QTextLayout::xToCursorForLigatures()
 {
+#if defined(Q_OS_WIN32)
+    QTextLayout layout("fi", QFont("Calibri", 20));
+#else
     QTextLayout layout("fi", QFont("Times", 20));
+#endif
+
     layout.setCacheEnabled(true);
     layout.beginLayout();
     QTextLine line = layout.createLine();

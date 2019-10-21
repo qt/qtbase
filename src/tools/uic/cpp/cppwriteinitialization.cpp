@@ -1680,7 +1680,7 @@ static void writeResourceIcon(QTextStream &output,
                          "Selected", "Off");
     }
     if (i->hasElementSelectedOn()) {
-        writeIconAddFile(output, indent, iconName, i->elementSelectedOff()->text(),
+        writeIconAddFile(output, indent, iconName, i->elementSelectedOn()->text(),
                          "Selected", "On");
     }
 }

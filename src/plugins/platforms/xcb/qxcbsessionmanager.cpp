@@ -42,6 +42,8 @@
 
 #ifndef QT_NO_SESSIONMANAGER
 
+#include <qpa/qwindowsysteminterface.h>
+
 #include <qguiapplication.h>
 #include <qdatetime.h>
 #include <qfileinfo.h>
@@ -289,8 +291,7 @@ static void sm_dieCallback(SmcConn smcConn, SmPointer /* clientData */)
     if (smcConn != smcConnection)
         return;
     resetSmState();
-    QEvent quitEvent(QEvent::Quit);
-    QGuiApplication::sendEvent(qApp, &quitEvent);
+    QWindowSystemInterface::handleApplicationTermination<QWindowSystemInterface::SynchronousDelivery>();
 }
 
 static void sm_shutdownCancelledCallback(SmcConn smcConn, SmPointer clientData)
