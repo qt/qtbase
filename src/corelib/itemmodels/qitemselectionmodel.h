@@ -171,11 +171,11 @@ public:
     QModelIndex currentIndex() const;
 
     Q_INVOKABLE bool isSelected(const QModelIndex &index) const;
-    Q_INVOKABLE bool isRowSelected(int row, const QModelIndex &parent) const;
-    Q_INVOKABLE bool isColumnSelected(int column, const QModelIndex &parent) const;
+    Q_INVOKABLE bool isRowSelected(int row, const QModelIndex &parent = QModelIndex()) const;
+    Q_INVOKABLE bool isColumnSelected(int column, const QModelIndex &parent = QModelIndex()) const;
 
-    Q_INVOKABLE bool rowIntersectsSelection(int row, const QModelIndex &parent) const;
-    Q_INVOKABLE bool columnIntersectsSelection(int column, const QModelIndex &parent) const;
+    Q_INVOKABLE bool rowIntersectsSelection(int row, const QModelIndex &parent = QModelIndex()) const;
+    Q_INVOKABLE bool columnIntersectsSelection(int column, const QModelIndex &parent = QModelIndex()) const;
 
     bool hasSelection() const;
 
