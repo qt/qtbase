@@ -3214,9 +3214,7 @@ void tst_Collections::forwardDeclared()
     { typedef QSet<T1> C; C *x = 0; /* C::iterator i; */ C::const_iterator j; Q_UNUSED(x) }
 }
 
-#if defined(Q_DECL_ALIGN)
-
-class Q_DECL_ALIGN(4) Aligned4
+class alignas(4) Aligned4
 {
     char i;
 public:
@@ -3242,7 +3240,7 @@ Q_STATIC_ASSERT(alignof(Aligned4) % 4 == 0);
 #  define BIGGEST_ALIGNMENT_TO_TEST 128
 #endif
 
-class Q_DECL_ALIGN(BIGGEST_ALIGNMENT_TO_TEST) AlignedBiggest
+class alignas(BIGGEST_ALIGNMENT_TO_TEST) AlignedBiggest
 {
     char i;
 public:
@@ -3324,13 +3322,6 @@ void tst_Collections::alignment()
     testAssociativeContainerAlignment<QHash<AlignedBiggest, Aligned4> >();
     testAssociativeContainerAlignment<QHash<AlignedBiggest, AlignedBiggest> >();
 }
-
-#else
-void tst_Collections::alignment()
-{
-    QSKIP("Compiler doesn't support necessary extension keywords");
-}
-#endif
 
 #ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
 
