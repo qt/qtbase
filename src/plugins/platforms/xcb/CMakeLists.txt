@@ -89,7 +89,7 @@ add_qt_module(XcbQpa
         XCB::XCB
         XCB::XFIXES
         XCB::XINERAMA
-        XCB::XINPUT
+        $<$<TARGET_EXISTS:XCB::XINPUT>:XCB::XINPUT> # special case
         XCB::XKB
         XKB::XKB
 )
@@ -172,6 +172,21 @@ extend_target(XcbQpa CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_xcb_native_p
     LIBRARIES
         WrapFreetype::WrapFreetype
 )
+
+# special case begin
+if (NOT QT_FEATURE_system_xcb_input)
+    set(xinput_source "${PROJECT_SOURCE_DIR}/src/3rdparty/xcb/libxcb/xinput.c")
+    set_source_files_properties(
+        "${xinput_source}"
+        PROPERTIES COMPILE_OPTIONS "-w"
+    )
+    target_sources(XcbQpa PRIVATE "${xinput_source}")
+    target_include_directories(XcbQpa PRIVATE
+        "${PROJECT_SOURCE_DIR}/src/3rdparty/xcb/include"
+    )
+endif()
+# special case end
+
 #####################################################################
 ## qxcb Plugin:
 #####################################################################
