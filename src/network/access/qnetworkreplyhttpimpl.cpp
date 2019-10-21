@@ -2103,6 +2103,7 @@ void QNetworkReplyHttpImplPrivate::emitReplyUploadProgress(qint64 bytesSent, qin
     if (isFinished)
         return;
 
+    bytesUploaded = bytesSent;
     if (!emitAllUploadProgressSignals) {
         //choke signal emissions, except the first and last signals which are unconditional
         if (uploadProgressSignalChoke.isValid()) {
