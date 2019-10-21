@@ -1741,7 +1741,7 @@ endfunction()
 # Collection of add_qt_plugin arguments so they can be shared across different
 # plugin type wrappers
 set(__add_qt_plugin_optional_args
-    "STATIC;EXCEPTIONS"
+    "STATIC;EXCEPTIONS;ALLOW_UNDEFINED_SYMBOLS"
 )
 set(__add_qt_plugin_single_args
     "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;QML_TARGET_PATH"
@@ -1947,9 +1947,11 @@ function(add_qt_plugin target)
     # Store the plug-in type in the target property
     set_property(TARGET "${target}" PROPERTY QT_PLUGIN_TYPE "${arg_TYPE}")
 
-    ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
-    # that belong to Qt.
-    qt_internal_add_link_flags_no_undefined("${target}")
+    if (NOT arg_ALLOW_UNDEFINED_SYMBOLS)
+        ### fixme: cmake is missing a built-in variable for this. We want to apply it only to
+        # modules and plugins that belong to Qt.
+        qt_internal_add_link_flags_no_undefined("${target}")
+    endif()
 
     qt_internal_add_linker_version_script(${target})
 endfunction()
