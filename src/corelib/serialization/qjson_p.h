@@ -222,7 +222,9 @@ public:
         for (int i = 0; i < str.length(); ++i)
             d->utf16[i] = uc[i];
 #else
-        memcpy(d->utf16, str.unicode(), str.length()*sizeof(ushort));
+        memcpy(static_cast<void *>(d->utf16),
+          static_cast<const void *>(str.unicode()),
+          str.length()*sizeof(ushort));
 #endif
         if (str.length() & 1)
             d->utf16[str.length()] = 0;
