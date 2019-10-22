@@ -1,4 +1,4 @@
-﻿/****************************************************************************
+/****************************************************************************
 **
 ** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
@@ -8460,6 +8460,8 @@ void QWidgetPrivate::showChildren(bool spontaneous)
     QList<QObject*> childList = children;
     for (int i = 0; i < childList.size(); ++i) {
         QWidget *widget = qobject_cast<QWidget*>(childList.at(i));
+        if (widget && widget->windowHandle() && !widget->testAttribute(Qt::WA_WState_ExplicitShowHide))
+            widget->setAttribute(Qt::WA_WState_Hidden, false);
         if (!widget
             || widget->isWindow()
             || widget->testAttribute(Qt::WA_WState_Hidden))

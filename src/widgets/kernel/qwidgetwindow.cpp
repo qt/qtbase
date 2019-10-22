@@ -72,10 +72,18 @@ public:
     void setVisible(bool visible) override
     {
         Q_Q(QWidgetWindow);
-        if (QWidget *widget = q->widget())
+        if (QWidget *widget = q->widget()) {
+            // Check if the widget was already hidden, as this indicates it was done
+            // explicitly and not because the parent window in this case made it hidden.
+            // In which case do not automatically show the widget when the parent
+            // window is shown.
+            const bool wasHidden = widget->testAttribute(Qt::WA_WState_Hidden);
             QWidgetPrivate::get(widget)->setVisible(visible);
-        else
+            if (!wasHidden)
+                widget->setAttribute(Qt::WA_WState_ExplicitShowHide, false);
+        } else {
             QWindowPrivate::setVisible(visible);
+        }
     }
 
     QWindow *eventReceiver() override {
