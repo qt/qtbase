@@ -4,6 +4,8 @@ SUBDIRS=\
    qclipboard \
    qcursor \
    qdrag \
+   qguiaction \
+   qguiactiongroup \
    qevent \
    qfileopenevent \
    qguieventdispatcher \
@@ -40,6 +42,10 @@ win32:!winrt:qtHaveModule(network): SUBDIRS += noqteventloop
 
 !qtHaveModule(network): SUBDIRS -= \
    qguieventloop
+
+!qtConfig(action): SUBDIRS -= \
+   qguiaction \
+   qguiactiongroup
 
 !qtConfig(highdpiscaling): SUBDIRS -= qhighdpiscaling
 

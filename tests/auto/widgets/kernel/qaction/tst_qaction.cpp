@@ -50,26 +50,15 @@ public:
 private slots:
     void init();
     void cleanup();
-    void getSetCheck();
-    void setText_data();
-    void setText();
-    void setIconText_data() { setText_data(); }
-    void setIconText();
     void setUnknownFont();
     void actionEvent();
 #if QT_CONFIG(shortcut)
-    void setStandardKeys();
     void alternateShortcuts();
     void enabledVisibleInteraction();
-    void task200823_tooltip();
 #endif
-    void task229128TriggeredSignalWithoutActiongroup();
     void task229128TriggeredSignalWhenInActiongroup();
 #if QT_CONFIG(shortcut)
     void repeat();
-#endif
-    void setData();
-#if QT_CONFIG(shortcut)
     void keysequence(); // QTBUG-53381
     void disableShortcutsWithBlockedWidgets_data();
     void disableShortcutsWithBlockedWidgets();
@@ -98,33 +87,6 @@ void tst_QAction::cleanup()
     QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
-// Testing get/set functions
-void tst_QAction::getSetCheck()
-{
-    QAction obj1(nullptr);
-    // QActionGroup * QAction::actionGroup()
-    // void QAction::setActionGroup(QActionGroup *)
-    QActionGroup *var1 = new QActionGroup(nullptr);
-    obj1.setActionGroup(var1);
-    QCOMPARE(var1, obj1.actionGroup());
-    obj1.setActionGroup(nullptr);
-    QCOMPARE(obj1.actionGroup(), nullptr);
-    delete var1;
-
-    // QMenu * QAction::menu()
-    // void QAction::setMenu(QMenu *)
-    QMenu *var2 = new QMenu(nullptr);
-    obj1.setMenu(var2);
-    QCOMPARE(var2, obj1.menu());
-    obj1.setMenu(nullptr);
-    QCOMPARE(obj1.menu(), nullptr);
-    delete var2;
-
-    QCOMPARE(obj1.priority(), QAction::NormalPriority);
-    obj1.setPriority(QAction::LowPriority);
-    QCOMPARE(obj1.priority(), QAction::LowPriority);
-}
-
 class MyWidget : public QWidget
 {
     Q_OBJECT
@@ -138,43 +100,6 @@ protected:
 private:
     tst_QAction *m_test;
 };
-
-void tst_QAction::setText_data()
-{
-    QTest::addColumn<QString>("text");
-    QTest::addColumn<QString>("iconText");
-    QTest::addColumn<QString>("textFromIconText");
-
-    //next we fill it with data
-    QTest::newRow("Normal") << "Action" << "Action" << "Action";
-    QTest::newRow("Ampersand") << "Search && Destroy" << "Search & Destroy" << "Search && Destroy";
-    QTest::newRow("Mnemonic and ellipsis") << "O&pen File ..." << "Open File" << "Open File";
-}
-
-void tst_QAction::setText()
-{
-    QFETCH(QString, text);
-
-    QAction action(nullptr);
-    action.setText(text);
-
-    QCOMPARE(action.text(), text);
-
-    QFETCH(QString, iconText);
-    QCOMPARE(action.iconText(), iconText);
-}
-
-void tst_QAction::setIconText()
-{
-    QFETCH(QString, iconText);
-
-    QAction action(nullptr);
-    action.setIconText(iconText);
-    QCOMPARE(action.iconText(), iconText);
-
-    QFETCH(QString, textFromIconText);
-    QCOMPARE(action.text(), textFromIconText);
-}
 
 void tst_QAction::setUnknownFont() // QTBUG-42728
 {
@@ -228,35 +153,6 @@ void tst_QAction::actionEvent()
 }
 
 #if QT_CONFIG(shortcut)
-
-//basic testing of standard keys
-void tst_QAction::setStandardKeys()
-{
-    QAction act(nullptr);
-    act.setShortcut(QKeySequence("CTRL+L"));
-    QList<QKeySequence> list;
-    act.setShortcuts(list);
-    act.setShortcuts(QKeySequence::Copy);
-    QCOMPARE(act.shortcut(), act.shortcuts().constFirst());
-
-    QList<QKeySequence> expected;
-    const QKeySequence ctrlC = QKeySequence(QStringLiteral("CTRL+C"));
-    const QKeySequence ctrlInsert = QKeySequence(QStringLiteral("CTRL+INSERT"));
-    switch (m_keyboardScheme) {
-    case QPlatformTheme::MacKeyboardScheme:
-        expected  << ctrlC;
-        break;
-    case QPlatformTheme::WindowsKeyboardScheme:
-        expected  << ctrlC << ctrlInsert;
-        break;
-    default: // X11
-        expected  << ctrlC << ctrlInsert << QKeySequence(QStringLiteral("F16"));
-        break;
-    }
-
-    QCOMPARE(act.shortcuts(), expected);
-}
-
 
 void tst_QAction::alternateShortcuts()
 {
@@ -362,40 +258,7 @@ void tst_QAction::enabledVisibleInteraction()
     QCOMPARE(spy.count(), 1); //act is visible and enabled, so trigger
 }
 
-void tst_QAction::task200823_tooltip()
-{
-    const QScopedPointer<QAction> action(new QAction("foo", nullptr));
-    QString shortcut("ctrl+o");
-    action->setShortcut(shortcut);
-
-    // we want a non-standard tooltip that shows the shortcut
-    action->setToolTip(action->text() + QLatin1String(" (") + action->shortcut().toString() + QLatin1Char(')'));
-
-    QString ref = QLatin1String("foo (") + QKeySequence(shortcut).toString() + QLatin1Char(')');
-    QCOMPARE(action->toolTip(), ref);
-}
-
 #endif // QT_CONFIG(shortcut)
-
-void tst_QAction::task229128TriggeredSignalWithoutActiongroup()
-{
-    // test without a group
-    const QScopedPointer<QAction> actionWithoutGroup(new QAction("Test", nullptr));
-    QSignalSpy spyWithoutGroup(actionWithoutGroup.data(), QOverload<bool>::of(&QAction::triggered));
-    QCOMPARE(spyWithoutGroup.count(), 0);
-    actionWithoutGroup->trigger();
-    // signal should be emitted
-    QCOMPARE(spyWithoutGroup.count(), 1);
-
-    // it is now a checkable checked action
-    actionWithoutGroup->setCheckable(true);
-    actionWithoutGroup->setChecked(true);
-    spyWithoutGroup.clear();
-    QCOMPARE(spyWithoutGroup.count(), 0);
-    actionWithoutGroup->trigger();
-    // signal should be emitted
-    QCOMPARE(spyWithoutGroup.count(), 1);
-}
 
 void tst_QAction::task229128TriggeredSignalWhenInActiongroup()
 {
@@ -463,25 +326,6 @@ void tst_QAction::repeat()
     QTest::keyRelease(&testWidget, Qt::Key_F);
     QCOMPARE(spy.count(), 2);
 }
-
-#endif // QT_CONFIG(shortcut)
-
-void tst_QAction::setData() // QTBUG-62006
-{
-    QAction act(nullptr);
-    QSignalSpy spy(&act, &QAction::changed);
-    QCOMPARE(act.data(), QVariant());
-    QCOMPARE(spy.count(), 0);
-    act.setData(QVariant());
-    QCOMPARE(spy.count(), 0);
-
-    act.setData(-1);
-    QCOMPARE(spy.count(), 1);
-    act.setData(-1);
-    QCOMPARE(spy.count(), 1);
-}
-
-#if QT_CONFIG(shortcut)
 
 void tst_QAction::disableShortcutsWithBlockedWidgets_data()
 {
