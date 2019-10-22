@@ -3,7 +3,7 @@
 ** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,37 +37,62 @@
 **
 ****************************************************************************/
 
-#ifndef QSHORTCUT_H
-#define QSHORTCUT_H
+#ifndef QGUISHORTCUT_H
+#define QGUISHORTCUT_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
-#include <QtWidgets/qwidget.h>
-#include <QtGui/qguishortcut.h>
+#include <QtGui/qtguiglobal.h>
+#include <QtGui/qkeysequence.h>
+#include <QtCore/qobject.h>
 
 QT_REQUIRE_CONFIG(shortcut);
 
 QT_BEGIN_NAMESPACE
 
-class QShortcutPrivate;
-class Q_WIDGETS_EXPORT QShortcut : public QGuiShortcut
+class QGuiShortcutPrivate;
+class QWindow;
+
+class Q_GUI_EXPORT QGuiShortcut : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString whatsThis READ whatsThis WRITE setWhatsThis)
-    Q_DECLARE_PRIVATE(QShortcut)
+    Q_DECLARE_PRIVATE(QGuiShortcut)
+    Q_PROPERTY(QKeySequence key READ key WRITE setKey)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
+    Q_PROPERTY(bool autoRepeat READ autoRepeat WRITE setAutoRepeat)
+    Q_PROPERTY(Qt::ShortcutContext context READ context WRITE setContext)
 public:
-    explicit QShortcut(QWidget *parent);
-    explicit QShortcut(const QKeySequence& key, QWidget *parent,
-                       const char *member = nullptr, const char *ambiguousMember = nullptr,
-                       Qt::ShortcutContext context = Qt::WindowShortcut);
-    ~QShortcut();
+    explicit QGuiShortcut(QWindow *parent);
+    explicit QGuiShortcut(const QKeySequence& key, QWindow *parent,
+                          const char *member = nullptr, const char *ambiguousMember = nullptr,
+                          Qt::ShortcutContext context = Qt::WindowShortcut);
+    ~QGuiShortcut();
 
-    void setWhatsThis(const QString &text);
-    QString whatsThis() const;
+    void setKey(const QKeySequence& key);
+    QKeySequence key() const;
 
-    inline QWidget *parentWidget() const
-    { return static_cast<QWidget *>(QObject::parent()); }
+    void setEnabled(bool enable);
+    bool isEnabled() const;
+
+    void setContext(Qt::ShortcutContext context);
+    Qt::ShortcutContext context() const;
+
+    void setAutoRepeat(bool on);
+    bool autoRepeat() const;
+
+    int id() const;
+
+Q_SIGNALS:
+    void activated();
+    void activatedAmbiguously();
+
+protected:
+    QGuiShortcut(QGuiShortcutPrivate &dd, QObject *parent);
+    QGuiShortcut(QGuiShortcutPrivate &dd, const QKeySequence& key, QObject *parent,
+                 const char *member, const char *ambiguousMember,
+                 Qt::ShortcutContext context);
+
+    bool event(QEvent *e) override;
 };
 
 QT_END_NAMESPACE
 
-#endif // QSHORTCUT_H
+#endif // QGUISHORTCUT_H

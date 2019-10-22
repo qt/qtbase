@@ -3,7 +3,7 @@
 ** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,37 +37,56 @@
 **
 ****************************************************************************/
 
-#ifndef QSHORTCUT_H
-#define QSHORTCUT_H
+#ifndef QGUISHORTCUT_P_H
+#define QGUISHORTCUT_P_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
-#include <QtWidgets/qwidget.h>
-#include <QtGui/qguishortcut.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_REQUIRE_CONFIG(shortcut);
+#include <QtGui/private/qtguiglobal_p.h>
+#include "qguishortcut.h"
+#include <QtGui/qkeysequence.h>
+
+#include <QtCore/qstring.h>
+#include <QtCore/private/qobject_p.h>
+
+#include <private/qshortcutmap_p.h>
+
+
 
 QT_BEGIN_NAMESPACE
 
-class QShortcutPrivate;
-class Q_WIDGETS_EXPORT QShortcut : public QGuiShortcut
+class QShortcutMap;
+
+/*
+    \internal
+    Private data accessed through d-pointer.
+*/
+class Q_GUI_EXPORT QGuiShortcutPrivate : public QObjectPrivate
 {
-    Q_OBJECT
-    Q_PROPERTY(QString whatsThis READ whatsThis WRITE setWhatsThis)
-    Q_DECLARE_PRIVATE(QShortcut)
+    Q_DECLARE_PUBLIC(QGuiShortcut)
 public:
-    explicit QShortcut(QWidget *parent);
-    explicit QShortcut(const QKeySequence& key, QWidget *parent,
-                       const char *member = nullptr, const char *ambiguousMember = nullptr,
-                       Qt::ShortcutContext context = Qt::WindowShortcut);
-    ~QShortcut();
+    QGuiShortcutPrivate() = default;
 
-    void setWhatsThis(const QString &text);
-    QString whatsThis() const;
+    virtual QShortcutMap::ContextMatcher contextMatcher() const;
+    virtual bool handleWhatsThis() { return false; }
 
-    inline QWidget *parentWidget() const
-    { return static_cast<QWidget *>(QObject::parent()); }
+    QKeySequence sc_sequence;
+    Qt::ShortcutContext sc_context = Qt::WindowShortcut;
+    bool sc_enabled = true;
+    bool sc_autorepeat = true;
+    int sc_id = 0;
+    void redoGrab(QShortcutMap &map);
 };
 
 QT_END_NAMESPACE
 
-#endif // QSHORTCUT_H
+#endif // QGUISHORTCUT_P_H

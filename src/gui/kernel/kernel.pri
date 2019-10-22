@@ -169,10 +169,13 @@ qtConfig(opengl) {
 
 qtConfig(shortcut) {
     HEADERS += \
+            kernel/qguishortcut.h \
+            kernel/qguishortcut_p.h \
             kernel/qshortcutmap_p.h \
             kernel/qkeysequence.h \
             kernel/qkeysequence_p.h
     SOURCES += \
+            kernel/qguishortcut.cpp \
             kernel/qshortcutmap.cpp \
             kernel/qkeysequence.cpp
 }
