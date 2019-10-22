@@ -351,7 +351,7 @@ struct QScriptItem
     Q_DECL_CONSTEXPR QFixed height() const noexcept { return ascent + descent; }
 private:
     friend class QVector<QScriptItem>;
-    QScriptItem() {}; // for QVector, don't use
+    QScriptItem() {} // for QVector, don't use
 };
 Q_DECLARE_TYPEINFO(QScriptItem, Q_PRIMITIVE_TYPE);
 
