@@ -2171,11 +2171,12 @@ def write_android_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
         "ANDROID_LIB_DEPENDENCY_REPLACEMENTS",
         "ANDROID_BUNDLED_FILES",
         "ANDROID_PERMISSIONS",
+        "ANDROID_PACKAGE_SOURCE_DIR"
     ]
 
     has_no_values = True
     for key in keys:
-        value = scope.get(key)
+        value = scope.expand(key)
         if len(value) != 0:
             if has_no_values:
                 if scope.condition:
