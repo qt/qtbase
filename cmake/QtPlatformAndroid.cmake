@@ -317,9 +317,35 @@ endfunction()
 
 function(qt_android_apply_arch_suffix target)
     get_target_property(target_type ${target} TYPE)
-    if (target_type STREQUAL "SHARED_LIBRARY")
+    if (target_type STREQUAL "SHARED_LIBRARY" OR target_type STREQUAL "MODULE_LIBRARY")
         set_property(TARGET "${target}" PROPERTY SUFFIX "_${CMAKE_ANDROID_ARCH_ABI}.so")
     elseif (target_type STREQUAL "STATIC_LIBRARY")
         set_property(TARGET "${target}" PROPERTY SUFFIX "_${CMAKE_ANDROID_ARCH_ABI}.a")
     endif()
+endfunction()
+
+# Add custom target to package the APK
+function(qt_android_add_apk_target target)
+    get_target_property(deployment_file ${target} QT_ANDROID_DEPLOYMENT_SETTINGS_FILE)
+    if (NOT deployment_file)
+        message(FATAL_ERROR "Target ${target} is not a valid android executable target\n")
+    endif()
+
+    set(deployment_tool "${QT_HOST_PATH}/bin/androiddeployqt")
+    set(apk_dir "$<TARGET_PROPERTY:${target},BINARY_DIR>/apk")
+    add_custom_target(${target}_prepare_apk_dir
+        DEPENDS ${target}
+        COMMAND ${CMAKE_COMMAND}
+            -E copy $<TARGET_FILE:${target}>
+            "${apk_dir}/libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>"
+        COMMENT "Copying ${target} binarty to apk folder"
+    )
+
+    add_custom_target(${target}_make_apk
+        DEPENDS ${target}_prepare_apk_dir
+        COMMAND  ${deployment_tool}
+            --input ${deployment_file}
+            --output ${apk_dir}
+        COMMENT "Creating APK for ${target}"
+    )
 endfunction()

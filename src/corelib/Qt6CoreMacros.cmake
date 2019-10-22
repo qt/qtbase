@@ -423,6 +423,7 @@ function(add_qt_gui_executable target)
 
     if(ANDROID)
         qt_android_generate_deployment_settings("${target}")
+        qt_android_add_apk_target("${target}")
     endif()
 endfunction()
 

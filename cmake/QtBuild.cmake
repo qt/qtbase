@@ -1823,6 +1823,10 @@ function(add_qt_plugin target)
 
     if (ANDROID)
         qt_android_apply_arch_suffix("${target}")
+        set_target_properties(${target}
+            PROPERTIES
+            LIBRARY_OUTPUT_NAME "plugins_${arg_TYPE}_${target}"
+        )
     endif()
     qt_internal_add_target_aliases("${target}")
 

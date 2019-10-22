@@ -61,11 +61,11 @@ add_qt_plugin(qtforandroid
         jnigraphics
 # special case begin
     INSTALL_DIRECTORY
-        plugins/platforms/android
+        plugins/platforms
     OUTPUT_DIRECTORY
-        plugins/platforms/android
+        plugins/platforms
     ARCHIVE_INSTALL_DIRECTORY
-        plugins/platforms/android
+        plugins/platforms
 # special case end
 )
 
