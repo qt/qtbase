@@ -35,8 +35,6 @@
 ****************************************************************************/
 
 #include "qrhimetal_p_p.h"
-#include "qshader_p.h"
-#include "qshaderdescription_p.h"
 #include <QGuiApplication>
 #include <QWindow>
 #include <qmath.h>
@@ -143,8 +141,10 @@ struct QMetalShader
     id<MTLLibrary> lib = nil;
     id<MTLFunction> func = nil;
     std::array<uint, 3> localSize;
+    QShader::NativeResourceBindingMap nativeResourceBindingMap;
 
     void release() {
+        nativeResourceBindingMap.clear();
         [lib release];
         lib = nil;
         [func release];
@@ -164,7 +164,7 @@ struct QRhiMetalData
                                                      const QRhiDepthStencilClearValue &depthStencilClearValue,
                                                      int colorAttCount);
     id<MTLLibrary> createMetalLib(const QShader &shader, QShader::Variant shaderVariant,
-                                  QString *error, QByteArray *entryPoint);
+                                  QString *error, QByteArray *entryPoint, QShaderKey *activeKey);
     id<MTLFunction> createMSLShaderFunction(id<MTLLibrary> lib, const QByteArray &entryPoint);
 
     struct DeferredReleaseEntry {
@@ -653,18 +653,39 @@ QRhiShaderResourceBindings *QRhiMetal::createShaderResourceBindings()
     return new QMetalShaderResourceBindings(this);
 }
 
-void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD, QMetalCommandBuffer *cbD,
+enum class BindingType {
+    Buffer,
+    Texture,
+    Sampler
+};
+
+static inline int mapBinding(int binding,
+                             int stageIndex,
+                             const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[],
+                             BindingType type)
+{
+    const QShader::NativeResourceBindingMap *map = nativeResourceBindingMaps[stageIndex];
+    if (map) {
+        auto it = map->constFind(binding);
+        if (it != map->cend())
+            return type == BindingType::Sampler ? it->second : it->first;
+    }
+    return binding;
+}
+
+void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD,
+                                              QMetalCommandBuffer *cbD,
                                               int dynamicOffsetCount,
                                               const QRhiCommandBuffer::DynamicOffset *dynamicOffsets,
-                                              bool offsetOnlyChange)
+                                              bool offsetOnlyChange,
+                                              const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[SUPPORTED_STAGES])
 {
-    static const int KNOWN_STAGES = 3;
     struct {
         QRhiBatchedBindings<id<MTLBuffer> > buffers;
         QRhiBatchedBindings<NSUInteger> bufferOffsets;
         QRhiBatchedBindings<id<MTLTexture> > textures;
         QRhiBatchedBindings<id<MTLSamplerState> > samplers;
-    } res[KNOWN_STAGES];
+    } res[SUPPORTED_STAGES];
 
     for (const QRhiShaderResourceBinding &binding : qAsConst(srbD->sortedBindings)) {
         const QRhiShaderResourceBinding::Data *b = binding.data();
@@ -682,15 +703,15 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
                 }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                res[0].buffers.feed(b->binding, mtlbuf);
+                res[0].buffers.feed(mapBinding(b->binding, 0, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
                 res[0].bufferOffsets.feed(b->binding, offset);
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                res[1].buffers.feed(b->binding, mtlbuf);
+                res[1].buffers.feed(mapBinding(b->binding, 1, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
                 res[1].bufferOffsets.feed(b->binding, offset);
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                res[2].buffers.feed(b->binding, mtlbuf);
+                res[2].buffers.feed(mapBinding(b->binding, 2, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
                 res[2].bufferOffsets.feed(b->binding, offset);
             }
         }
@@ -700,16 +721,16 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.stex.tex);
             QMetalSampler *samplerD = QRHI_RES(QMetalSampler, b->u.stex.sampler);
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                res[0].textures.feed(b->binding, texD->d->tex);
-                res[0].samplers.feed(b->binding, samplerD->d->samplerState);
+                res[0].textures.feed(mapBinding(b->binding, 0, nativeResourceBindingMaps, BindingType::Texture), texD->d->tex);
+                res[0].samplers.feed(mapBinding(b->binding, 0, nativeResourceBindingMaps, BindingType::Sampler), samplerD->d->samplerState);
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                res[1].textures.feed(b->binding, texD->d->tex);
-                res[1].samplers.feed(b->binding, samplerD->d->samplerState);
+                res[1].textures.feed(mapBinding(b->binding, 1, nativeResourceBindingMaps, BindingType::Texture), texD->d->tex);
+                res[1].samplers.feed(mapBinding(b->binding, 1, nativeResourceBindingMaps, BindingType::Sampler), samplerD->d->samplerState);
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                res[2].textures.feed(b->binding, texD->d->tex);
-                res[2].samplers.feed(b->binding, samplerD->d->samplerState);
+                res[2].textures.feed(mapBinding(b->binding, 2, nativeResourceBindingMaps, BindingType::Texture), texD->d->tex);
+                res[2].samplers.feed(mapBinding(b->binding, 2, nativeResourceBindingMaps, BindingType::Sampler), samplerD->d->samplerState);
             }
         }
             break;
@@ -722,11 +743,11 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
             id<MTLTexture> t = texD->d->viewForLevel(b->u.simage.level);
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage))
-                res[0].textures.feed(b->binding, t);
+                res[0].textures.feed(mapBinding(b->binding, 0, nativeResourceBindingMaps, BindingType::Texture), t);
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage))
-                res[1].textures.feed(b->binding, t);
+                res[1].textures.feed(mapBinding(b->binding, 1, nativeResourceBindingMaps, BindingType::Texture), t);
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage))
-                res[2].textures.feed(b->binding, t);
+                res[2].textures.feed(mapBinding(b->binding, 2, nativeResourceBindingMaps, BindingType::Texture), t);
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
@@ -739,15 +760,15 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             id<MTLBuffer> mtlbuf = bufD->d->buf[0];
             uint offset = uint(b->u.sbuf.offset);
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                res[0].buffers.feed(b->binding, mtlbuf);
+                res[0].buffers.feed(mapBinding(b->binding, 0, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
                 res[0].bufferOffsets.feed(b->binding, offset);
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                res[1].buffers.feed(b->binding, mtlbuf);
+                res[1].buffers.feed(mapBinding(b->binding, 1, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
                 res[1].bufferOffsets.feed(b->binding, offset);
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                res[2].buffers.feed(b->binding, mtlbuf);
+                res[2].buffers.feed(mapBinding(b->binding, 2, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
                 res[2].bufferOffsets.feed(b->binding, offset);
             }
         }
@@ -758,7 +779,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         }
     }
 
-    for (int idx = 0; idx < KNOWN_STAGES; ++idx) {
+    for (int idx = 0; idx < SUPPORTED_STAGES; ++idx) {
         res[idx].buffers.finish();
         res[idx].bufferOffsets.finish();
 
@@ -973,18 +994,22 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
 
     // dynamic uniform buffer offsets always trigger a rebind
     if (hasDynamicOffsetInSrb || resNeedsRebind || srbChanged || srbRebuilt) {
+        const QShader::NativeResourceBindingMap *resBindMaps[SUPPORTED_STAGES] = { nullptr, nullptr, nullptr };
         if (gfxPsD) {
             cbD->currentGraphicsSrb = srb;
             cbD->currentComputeSrb = nullptr;
+            resBindMaps[0] = &gfxPsD->d->vs.nativeResourceBindingMap;
+            resBindMaps[1] = &gfxPsD->d->fs.nativeResourceBindingMap;
         } else {
             cbD->currentGraphicsSrb = nullptr;
             cbD->currentComputeSrb = srb;
+            resBindMaps[2] = &compPsD->d->cs.nativeResourceBindingMap;
         }
         cbD->currentSrbGeneration = srbD->generation;
         cbD->currentResSlot = resSlot;
 
         const bool offsetOnlyChange = hasDynamicOffsetInSrb && !resNeedsRebind && !srbChanged && !srbRebuilt;
-        enqueueShaderResourceBindings(srbD, cbD, dynamicOffsetCount, dynamicOffsets, offsetOnlyChange);
+        enqueueShaderResourceBindings(srbD, cbD, dynamicOffsetCount, dynamicOffsets, offsetOnlyChange, resBindMaps);
     }
 }
 
@@ -3081,9 +3106,10 @@ static inline MTLCullMode toMetalCullMode(QRhiGraphicsPipeline::CullMode c)
 }
 
 id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Variant shaderVariant,
-                                             QString *error, QByteArray *entryPoint)
+                                             QString *error, QByteArray *entryPoint, QShaderKey *activeKey)
 {
-    QShaderCode mtllib = shader.shader({ QShader::MetalLibShader, 12, shaderVariant });
+    QShaderKey key = { QShader::MetalLibShader, 12, shaderVariant };
+    QShaderCode mtllib = shader.shader(key);
     if (!mtllib.shader().isEmpty()) {
         dispatch_data_t data = dispatch_data_create(mtllib.shader().constData(),
                                                     size_t(mtllib.shader().size()),
@@ -3094,6 +3120,7 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
         dispatch_release(data);
         if (!err) {
             *entryPoint = mtllib.entryPoint();
+            *activeKey = key;
             return lib;
         } else {
             const QString msg = QString::fromNSString(err.localizedDescription);
@@ -3101,7 +3128,8 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
         }
     }
 
-    QShaderCode mslSource = shader.shader({ QShader::MslShader, 12, shaderVariant });
+    key = { QShader::MslShader, 12, shaderVariant };
+    QShaderCode mslSource = shader.shader(key);
     if (mslSource.shader().isEmpty()) {
         qWarning() << "No MSL 1.2 code found in baked shader" << shader;
         return nil;
@@ -3122,6 +3150,7 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
     }
 
     *entryPoint = mslSource.entryPoint();
+    *activeKey = key;
     return lib;
 }
 
@@ -3195,9 +3224,12 @@ bool QMetalGraphicsPipeline::build()
                 break;
             }
         } else {
+            const QShader shader = shaderStage.shader();
             QString error;
             QByteArray entryPoint;
-            id<MTLLibrary> lib = rhiD->d->createMetalLib(shaderStage.shader(), shaderStage.shaderVariant(), &error, &entryPoint);
+            QShaderKey activeKey;
+            id<MTLLibrary> lib = rhiD->d->createMetalLib(shader, shaderStage.shaderVariant(),
+                                                         &error, &entryPoint, &activeKey);
             if (!lib) {
                 qWarning("MSL shader compilation failed: %s", qPrintable(error));
                 return false;
@@ -3218,6 +3250,8 @@ bool QMetalGraphicsPipeline::build()
             case QRhiShaderStage::Vertex:
                 d->vs.lib = lib;
                 d->vs.func = func;
+                if (const QShader::NativeResourceBindingMap *map = shader.nativeResourceBindingMap(activeKey))
+                    d->vs.nativeResourceBindingMap = *map;
                 rhiD->d->shaderCache.insert(shaderStage, d->vs);
                 [d->vs.lib retain];
                 [d->vs.func retain];
@@ -3226,6 +3260,8 @@ bool QMetalGraphicsPipeline::build()
             case QRhiShaderStage::Fragment:
                 d->fs.lib = lib;
                 d->fs.func = func;
+                if (const QShader::NativeResourceBindingMap *map = shader.nativeResourceBindingMap(activeKey))
+                    d->fs.nativeResourceBindingMap = *map;
                 rhiD->d->shaderCache.insert(shaderStage, d->fs);
                 [d->fs.lib retain];
                 [d->fs.func retain];
@@ -3360,8 +3396,9 @@ bool QMetalComputePipeline::build()
         const QShader shader = m_shaderStage.shader();
         QString error;
         QByteArray entryPoint;
+        QShaderKey activeKey;
         id<MTLLibrary> lib = rhiD->d->createMetalLib(shader, m_shaderStage.shaderVariant(),
-                                                     &error, &entryPoint);
+                                                     &error, &entryPoint, &activeKey);
         if (!lib) {
             qWarning("MSL shader compilation failed: %s", qPrintable(error));
             return false;
@@ -3375,6 +3412,8 @@ bool QMetalComputePipeline::build()
         d->cs.lib = lib;
         d->cs.func = func;
         d->cs.localSize = shader.description().computeShaderLocalSize();
+        if (const QShader::NativeResourceBindingMap *map = shader.nativeResourceBindingMap(activeKey))
+            d->cs.nativeResourceBindingMap = *map;
 
         if (rhiD->d->shaderCache.count() >= QRhiMetal::MAX_SHADER_CACHE_ENTRIES) {
             for (QMetalShader &s : rhiD->d->shaderCache)
