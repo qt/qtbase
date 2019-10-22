@@ -1,15 +1,15 @@
-# Generated from xkbkeyboard.pro.
+# Generated from test.pro.
 
 #####################################################################
-## tst_xkbkeyboard Test:
+## tst_macplist Test:
 #####################################################################
 
-add_qt_test(tst_xkbkeyboard
+add_qt_test(tst_macplist
     SOURCES
-        tst_xkbkeyboard.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
+        ../tst_macplist.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
 )
+
+## Scopes:
+#####################################################################

@@ -1,15 +1,13 @@
-# Generated from xkbkeyboard.pro.
+# Generated from write-read-write.pro.
 
 #####################################################################
-## tst_xkbkeyboard Test:
+## write-read-write Binary:
 #####################################################################
 
-add_qt_test(tst_xkbkeyboard
+add_qt_executable(write-read-write
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
-        tst_xkbkeyboard.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
+        main.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
 )

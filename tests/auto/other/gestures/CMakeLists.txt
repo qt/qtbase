@@ -1,15 +1,13 @@
-# Generated from xkbkeyboard.pro.
+# Generated from gestures.pro.
 
 #####################################################################
-## tst_xkbkeyboard Test:
+## tst_gestures Test:
 #####################################################################
 
-add_qt_test(tst_xkbkeyboard
+add_qt_test(tst_gestures
     SOURCES
-        tst_xkbkeyboard.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
+        tst_gestures.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )

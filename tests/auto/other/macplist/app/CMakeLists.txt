@@ -1,15 +1,15 @@
-# Generated from xkbkeyboard.pro.
+# Generated from app.pro.
 
 #####################################################################
-## tst_xkbkeyboard Test:
+## app Binary:
 #####################################################################
 
-add_qt_test(tst_xkbkeyboard
+add_qt_executable(app
+    GUI
+    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
-        tst_xkbkeyboard.cpp
-    LIBRARIES
-        Qt::CorePrivate
-        Qt::GuiPrivate
+        main.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )

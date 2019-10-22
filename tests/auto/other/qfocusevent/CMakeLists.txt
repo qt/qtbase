@@ -1,15 +1,15 @@
-# Generated from xkbkeyboard.pro.
+# Generated from qfocusevent.pro.
 
 #####################################################################
-## tst_xkbkeyboard Test:
+## tst_qfocusevent Test:
 #####################################################################
 
-add_qt_test(tst_xkbkeyboard
+add_qt_test(tst_qfocusevent
     SOURCES
-        tst_xkbkeyboard.cpp
+        tst_qfocusevent.cpp
     LIBRARIES
-        Qt::CorePrivate
         Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
