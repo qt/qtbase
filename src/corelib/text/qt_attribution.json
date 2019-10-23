@@ -11,7 +11,7 @@
  define the Unicode character properties and internal mappings.",
     "Homepage": "https://www.unicode.org/ucd/",
     "Version": "Don't use the Unicode standard version; UCD has its own 'Revision' numbers",
-    "Version": "20",
+    "Version": "24",
     "License": "Unicode License Agreement - Data Files and Software (2016)",
     "LicenseId": "Unicode-DFS-2016",
     "LicenseFile": "UNICODE_LICENSE.txt",

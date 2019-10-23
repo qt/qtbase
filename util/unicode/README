@@ -6,24 +6,39 @@ To update:
 * Unpack the zip file; for each file in data/, replace with the new
   version; find the *BreakProperty.txt in auxiliary/. (These last are
   only in the zip, not in the web-space's unpacked versions.)
+* In tst_QTextBoundaryFinder's data/ sub-directory, update its files
+  from the auxiliary/ sub-directory of the UCD data.
 * If needed, add an entry to enum QChar::UnicodeVersion for the new
   Unicode version
 * In that case, also update main.cpp's initAgeMap and DATA_VERSION_S*
   to match
 * Build this project. Its binary, unicode, ignores command-line
   options and assumes it is being run from this directory. When run,
-  it produces lots of output. Hopefully that doesn't matter.
-* Assertions may trigger: if so, study code and understand what's more
-  complicated about this update; talk to folk named in the git logs,
-  maybe push a WIP to gerrit to solicit advice. Some bit-field may
-  need to be expanded, for example. In some cases QChar may need
-  additions to some of its enums.
-* Build with the modified code, fix any compilation issues.
+  it produces lots of output. If it gets as far as updating
+  qunicodetables.cpp the output hopefully doesn't matter.
+* It'll end prematurely with a qFatal() message if it needs updates,
+  either in main.cpp or in QChar:
+  * "unassigned or unhandled age value:" initAgeMap() and
+    QChar::UnicodeVersion;
+  * "Unhandled script property value:" initScriptMap(), QChar::Script,
+    qharfbuzzng.cpp's _qtscript_to_hbscript[] array and
+    qfontconfigdatabase.cpp's specialLanguages.
+  * "unassigned word break class:" enum WordBreakClass,
+    word_break_class_string and initWordBreak();
+* Assertions or other qFatal()s may trigger: if so, study code and
+  understand what's more complicated about this update; talk to folk
+  named in the git logs, maybe push a WIP to gerrit to solicit
+  advice. Some bit-field may need to be expanded, for example. In some
+  cases QChar may need additions to some of its enums.
+* Build with the modified code, fix any compilation issues, make check
+  in suitable directories, including tst_QTextBoundaryFinder.
 * That may have updated qtbase/src/corelib/text/qunicodetables.cpp;
   if so the update matters; be sure to commit the changes to data/ at
   the same time and update text/qt_attribution.json to match; use the
   UCD Revision number, rather than the Unicode standard number, as the
   Version, for all that qunicodetables.cpp uses the latter.
+* If you don't normally build in the source tree, remember to delete
+  qtbase/.qmake.stash while you're cleaning up.
 
 The script writingSystems.sh generates a list of writing systems,
 ostensibly as a the basis for updating QFontDatabase::WritingSystem

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the utils of the Qt Toolkit.
@@ -38,8 +38,8 @@
 #include <private/qunicodetables_p.h>
 #endif
 
-#define DATA_VERSION_S "10.0"
-#define DATA_VERSION_STR "QChar::Unicode_10_0"
+#define DATA_VERSION_S "12.1"
+#define DATA_VERSION_STR "QChar::Unicode_12_1"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
@@ -69,6 +69,9 @@ static void initAgeMap()
         { QChar::Unicode_8_0,   "8.0" },
         { QChar::Unicode_9_0,   "9.0" },
         { QChar::Unicode_10_0,   "10.0" },
+        { QChar::Unicode_11_0,   "11.0" },
+        { QChar::Unicode_12_0,   "12.0" },
+        { QChar::Unicode_12_1,   "12.1" }, // UCD Revision 24
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -377,6 +380,7 @@ static const char *word_break_class_string =
     "    WordBreak_E_Modifier,\n"
     "    WordBreak_Glue_After_Zwj,\n"
     "    WordBreak_E_Base_GAZ,\n"
+    "    WordBreak_WSegSpace,\n"
     "    NumWordBreakClasses,\n"
     "};\n\n";
 
@@ -403,6 +407,7 @@ enum WordBreakClass {
     WordBreak_E_Modifier,
     WordBreak_Glue_After_Zwj,
     WordBreak_E_Base_GAZ,
+    WordBreak_WSegSpace,
 
     WordBreak_Unassigned
 };
@@ -437,6 +442,7 @@ static void initWordBreak()
         { WordBreak_E_Modifier, "E_Modifier" },
         { WordBreak_Glue_After_Zwj, "Glue_After_Zwj" },
         { WordBreak_E_Base_GAZ, "E_Base_GAZ" },
+        { WordBreak_WSegSpace, "WSegSpace" },
         { WordBreak_Unassigned, 0 }
     };
     WordBreakList *d = breaks;
@@ -776,6 +782,18 @@ static void initScriptMap()
         { QChar::Script_Nushu,                  "Nushu" },
         { QChar::Script_Soyombo,                "Soyombo" },
         { QChar::Script_ZanabazarSquare,        "ZanabazarSquare" },
+        // 12.1
+        { QChar::Script_Dogra,                  "Dogra" },
+        { QChar::Script_GunjalaGondi,           "GunjalaGondi" },
+        { QChar::Script_HanifiRohingya,         "HanifiRohingya" },
+        { QChar::Script_Makasar,                "Makasar" },
+        { QChar::Script_Medefaidrin,            "Medefaidrin" },
+        { QChar::Script_OldSogdian,             "OldSogdian" },
+        { QChar::Script_Sogdian,                "Sogdian" },
+        { QChar::Script_Elymaic,                "Elymaic" },
+        { QChar::Script_Nandinagari,            "Nandinagari" },
+        { QChar::Script_NyiakengPuachueHmong,   "NyiakengPuachueHmong" },
+        { QChar::Script_Wancho,                 "Wancho" },
 
         // unhandled
         { QChar::Script_Unknown,                0 }
@@ -1375,12 +1393,18 @@ static void readArabicShaping()
             qFatal("%x: unassigned or unhandled joining type: %s", codepoint, l[2].constData());
             break;
         case Joining_Transparent:
-            if (d.p.category != QChar::Mark_NonSpacing && d.p.category != QChar::Mark_Enclosing && d.p.category != QChar::Other_Format) {
-                qFatal("%x: joining type '%s' was met; the current implementation needs to be revised!",
-                       codepoint, l[2].constData());
+            switch (d.p.category) {
+            case QChar::Mark_Enclosing:
+            case QChar::Mark_NonSpacing:
+            case QChar::Letter_Modifier:
+            case QChar::Other_Format:
+                break;
+            default:
+                qFatal("%x: joining type '%s' was met (category: %d); "
+                       "the current implementation needs to be revised!",
+                       codepoint, l[2].constData(), d.p.category);
             }
-            // fall through
-
+            Q_FALLTHROUGH();
         default:
             d.p.joining = QChar::JoiningType(joining);
             break;
