@@ -1975,7 +1975,11 @@ def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, 
         str_indent = spaces(indent)
         cm_fh.write(f"\n{str_indent}# Resources:\n")
         for line in qrc_output.split("\n"):
-            cm_fh.write(f"{str_indent}{line}\n")
+            if line:
+                cm_fh.write(f"{str_indent}{line}\n")
+            else:
+                # do not add spaces to empty lines
+                cm_fh.write("\n")
 
 
 def write_statecharts(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, is_example=False):
