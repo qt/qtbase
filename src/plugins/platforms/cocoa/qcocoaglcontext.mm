@@ -368,23 +368,6 @@ bool QCocoaGLContext::makeCurrent(QPlatformSurface *surface)
     [m_context makeCurrentContext];
 
     if (surface->surface()->surfaceClass() == QSurface::Window) {
-        // Disable high-resolution surfaces when using the software renderer, which has the
-        // problem that the system silently falls back to a to using a low-resolution buffer
-        // when a high-resolution buffer is requested. This is not detectable using the NSWindow
-        // convertSizeToBacking and backingScaleFactor APIs. A typical result of this is that Qt
-        // will display a quarter of the window content when running in a virtual machine.
-        if (!m_didCheckForSoftwareContext) {
-            // FIXME: This ensures we check only once per context,
-            // but the context may be used for multiple surfaces.
-            m_didCheckForSoftwareContext = true;
-
-            const GLubyte* renderer = glGetString(GL_RENDERER);
-            if (qstrcmp((const char *)renderer, "Apple Software Renderer") == 0) {
-                NSView *view = static_cast<QCocoaWindow *>(surface)->m_view;
-                [view setWantsBestResolutionOpenGLSurface:NO];
-            }
-        }
-
         if (m_needsUpdate.fetchAndStoreRelaxed(false))
             update();
     }
@@ -413,10 +396,13 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
     }
 
     Q_ASSERT(surface->surface()->surfaceClass() == QSurface::Window);
-    QNSView *view = qnsview_cast(static_cast<QCocoaWindow *>(surface)->view());
+    auto *cocoaWindow = static_cast<QCocoaWindow *>(surface);
+    QNSView *view = qnsview_cast(cocoaWindow->view());
 
     if (view == m_context.view)
         return true;
+
+    prepareDrawable(cocoaWindow);
 
     // Setting the drawable may happen on a separate thread as a result of
     // a call to makeCurrent, so we need to set up the observers before we
@@ -458,6 +444,30 @@ bool QCocoaGLContext::setDrawable(QPlatformSurface *surface)
 
     qCInfo(lcQpaOpenGLContext) << "Set drawable for" << m_context << "to" << m_context.view;
     return true;
+}
+
+void QCocoaGLContext::prepareDrawable(QCocoaWindow *platformWindow)
+{
+    // We generally want high-DPI GL surfaces, unless the user has explicitly disabled them
+    bool prefersBestResolutionOpenGLSurface = qt_mac_resolveOption(YES,
+        platformWindow->window(), "_q_mac_wantsBestResolutionOpenGLSurface",
+        "QT_MAC_WANTS_BEST_RESOLUTION_OPENGL_SURFACE");
+
+    auto *view = platformWindow->view();
+
+    // The only case we have to opt out ourselves is when using the Apple software renderer
+    // in combination with surface-backed views, as these together do not support high-DPI.
+    if (prefersBestResolutionOpenGLSurface) {
+        int rendererID = 0;
+        [m_context getValues:&rendererID forParameter:NSOpenGLContextParameterCurrentRendererID];
+        bool isSoftwareRenderer = (rendererID & kCGLRendererIDMatchingMask) == kCGLRendererGenericFloatID;
+        if (isSoftwareRenderer && !view.layer) {
+            qCInfo(lcQpaOpenGLContext) << "Disabling high resolution GL surface due to software renderer";
+            prefersBestResolutionOpenGLSurface = false;
+        }
+    }
+
+    view.wantsBestResolutionOpenGLSurface = prefersBestResolutionOpenGLSurface;
 }
 
 // NSOpenGLContext is not re-entrant. Even when using separate contexts per thread,
