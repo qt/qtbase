@@ -170,6 +170,9 @@ public:
     bool autoDeleteReplies() const;
     void setAutoDeleteReplies(bool autoDelete);
 
+    int transferTimeout();
+    void setTransferTimeout(int timeout = QNetworkRequest::TransferTimeoutPreset);
+
 Q_SIGNALS:
 #ifndef QT_NO_NETWORKPROXY
     void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);

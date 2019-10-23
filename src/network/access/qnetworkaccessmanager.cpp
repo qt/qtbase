@@ -1404,6 +1404,11 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, redirectPolicy());
     }
 
+#if QT_CONFIG(http)
+    if (!req.transferTimeout())
+      req.setTransferTimeout(transferTimeout());
+#endif
+
     if (autoDeleteReplies()
         && req.attribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute).isNull()) {
         req.setAttribute(QNetworkRequest::AutoDeleteReplyOnFinishAttribute, true);
@@ -1711,6 +1716,41 @@ bool QNetworkAccessManager::autoDeleteReplies() const
 void QNetworkAccessManager::setAutoDeleteReplies(bool shouldAutoDelete)
 {
     d_func()->autoDeleteReplies = shouldAutoDelete;
+}
+
+/*!
+    \since 5.15
+
+    Returns the timeout used for transfers, in milliseconds.
+
+    This timeout is zero if setTransferTimeout() hasn't been
+    called, which means that the timeout is not used.
+*/
+int QNetworkAccessManager::transferTimeout()
+{
+    return d_func()->transferTimeout;
+}
+
+/*!
+    \since 5.15
+
+    Sets \a timeout as the transfer timeout in milliseconds.
+
+    Transfers are aborted if no bytes are transferred before
+    the timeout expires. Zero means no timer is set. If no
+    argument is provided, the timeout is
+    QNetworkRequest::TransferTimeoutPreset. If this function
+    is not called, the timeout is disabled and has the
+    value zero. The request-specific non-zero timeouts set for
+    the requests that are executed override this value. This means
+    that if QNetworkAccessManager has an enabled timeout, it needs
+    to be disabled to execute a request without a timeout.
+
+    \sa transferTimeout()
+*/
+void QNetworkAccessManager::setTransferTimeout(int timeout)
+{
+    d_func()->transferTimeout = timeout;
 }
 
 void QNetworkAccessManagerPrivate::_q_replyFinished()
