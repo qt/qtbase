@@ -223,6 +223,12 @@ NSOpenGLPixelFormat *QCocoaGLContext::pixelFormatForSurfaceFormat(const QSurface
         attrs << NSOpenGLPFAAllowOfflineRenderers;
     }
 
+    if (qGuiApp->testAttribute(Qt::AA_UseSoftwareOpenGL)) {
+        // kCGLRendererGenericFloatID is the modern software renderer on macOS,
+        // as opposed to kCGLRendererGenericID, which is deprecated.
+        attrs << NSOpenGLPFARendererID << kCGLRendererGenericFloatID;
+    }
+
     // FIXME: Pull this information out of the NSView
     QByteArray useLayer = qgetenv("QT_MAC_WANTS_LAYER");
     if (!useLayer.isEmpty() && useLayer.toInt() > 0) {
