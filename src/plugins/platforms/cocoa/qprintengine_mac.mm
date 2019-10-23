@@ -59,6 +59,8 @@ QMacPrintEngine::QMacPrintEngine(QPrinter::PrinterMode mode, const QString &devi
     QString id = deviceId;
     if (id.isEmpty())
         id = QCocoaPrinterSupport().defaultPrintDeviceId();
+    else
+        setProperty(QPrintEngine::PPK_PrinterName, deviceId);
     d->m_printDevice.reset(new QCocoaPrintDevice(id));
     d->m_pageLayout.setPageSize(d->m_printDevice->defaultPageSize());
     d->initialize();
