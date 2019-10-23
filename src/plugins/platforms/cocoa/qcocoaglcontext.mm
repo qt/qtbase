@@ -229,14 +229,6 @@ NSOpenGLPixelFormat *QCocoaGLContext::pixelFormatForSurfaceFormat(const QSurface
         attrs << NSOpenGLPFARendererID << kCGLRendererGenericFloatID;
     }
 
-    // FIXME: Pull this information out of the NSView
-    QByteArray useLayer = qgetenv("QT_MAC_WANTS_LAYER");
-    if (!useLayer.isEmpty() && useLayer.toInt() > 0) {
-        // Disable the software rendering fallback. This makes compositing
-        // OpenGL and raster NSViews using Core Animation layers possible.
-        attrs << NSOpenGLPFANoRecovery;
-    }
-
     attrs << 0; // 0-terminate array
     return [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs.constData()];
 }
