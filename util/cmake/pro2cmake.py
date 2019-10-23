@@ -992,16 +992,16 @@ class Scope(object):
             def op_transformer(files):
                 return files
 
+        for ic in self._included_children:
+            result = list(ic._evalOps(key, transformer, result))
+
         for op in self._operations.get(key, []):
             result = op.process(key, result, op_transformer)
 
-        for ic in self._included_children:
-            result = list(ic._evalOps(key, transformer, result))
 
         return result
 
     def get(self, key: str, *, ignore_includes: bool = False, inherit: bool = False) -> List[str]:
-
         is_same_path = self.currentdir == self.basedir
         if not is_same_path:
             relative_path = os.path.relpath(self.currentdir, self.basedir)
