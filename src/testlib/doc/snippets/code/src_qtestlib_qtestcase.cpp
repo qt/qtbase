@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -296,3 +296,31 @@ QTest::keyClick(myWindow, Qt::Key_Escape, Qt::ShiftModifier, 200);
 
 }
 
+//! [30]
+void TestQLocale::initTestCase_data()
+{
+    QTest::addColumn<QLocale>("locale");
+    QTest::newRow("C") << QLocale::c();
+    QTest::newRow("UKish") << QLocale("en_GB");
+    QTest::newRow("USAish") << QLocale(QLocale::English);
+}
+
+void TestQLocale::roundTripInt_data()
+{
+    QTest::addColumn<int>("number");
+    QTest::newRow("one") << 1;
+    QTest::newRow("two") << 2;
+    QTest::newRow("ten") << 10;
+}
+//! [30]
+
+//! [31]
+void TestQLocale::roundTripInt()
+{
+    QFETCH_GLOBAL(QLocale, locale);
+    QFETCH(int, number);
+    bool ok;
+    QCOMPARE(locale.toInt(locale.toString(number), &ok), number);
+    QVERIFY(ok);
+}
+//! [31]

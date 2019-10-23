@@ -59,6 +59,12 @@
 
 QT_BEGIN_NAMESPACE
 
+// MemoryBarrier is a macro on some architectures on Windows
+#ifdef Q_OS_WIN
+#pragma push_macro("MemoryBarrier")
+#undef MemoryBarrier
+#endif
+
 class Q_GUI_EXPORT QOpenGLFunctions_4_4_Compatibility : public QAbstractOpenGLFunctions
 {
 public:
@@ -5960,6 +5966,10 @@ inline void QOpenGLFunctions_4_4_Compatibility::glVertexP2ui(GLenum type, GLuint
 
 
 QT_END_NAMESPACE
+
+#ifdef Q_OS_WIN
+#pragma pop_macro("MemoryBarrier")
+#endif
 
 #endif // QT_NO_OPENGL && !QT_OPENGL_ES_2
 

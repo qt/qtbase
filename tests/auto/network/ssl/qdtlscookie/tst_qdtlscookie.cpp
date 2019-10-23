@@ -352,7 +352,7 @@ void tst_QDtlsCookie::receiveMessage(QUdpSocket *socket, QByteArray *message,
 {
     Q_ASSERT(socket && message);
 
-    if (!socket->pendingDatagramSize())
+    if (socket->pendingDatagramSize() <= 0)
         testLoop.enterLoopMSecs(handshakeTimeoutMS);
 
     QVERIFY(!testLoop.timeout());
@@ -377,7 +377,7 @@ void tst_QDtlsCookie::serverReadyRead()
 {
     Q_ASSERT(clientsToWait);
 
-    if (!serverSocket.pendingDatagramSize())
+    if (serverSocket.pendingDatagramSize() <= 0)
         return;
 
     QByteArray hello;
@@ -410,7 +410,7 @@ void tst_QDtlsCookie::clientReadyRead()
     QUdpSocket *clientSocket = qobject_cast<QUdpSocket *>(sender());
     Q_ASSERT(clientSocket);
 
-    if (!clientSocket->pendingDatagramSize())
+    if (clientSocket->pendingDatagramSize() <= 0)
         return;
 
     QDtls *handshake = nullptr;

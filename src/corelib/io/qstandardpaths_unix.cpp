@@ -142,35 +142,44 @@ QString QStandardPaths::writableLocation(StandardLocation type)
     }
     case RuntimeLocation:
     {
-        const uint myUid = uint(geteuid());
         // http://standards.freedesktop.org/basedir-spec/latest/
+        const uint myUid = uint(geteuid());
+        // since the current user is the owner, set both xxxUser and xxxOwner
+        const QFile::Permissions wantedPerms = QFile::ReadUser | QFile::WriteUser | QFile::ExeUser
+                                               | QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner;
         QFileInfo fileInfo;
         QString xdgRuntimeDir = QFile::decodeName(qgetenv("XDG_RUNTIME_DIR"));
         if (xdgRuntimeDir.isEmpty()) {
             const QString userName = QFileSystemEngine::resolveUserName(myUid);
             xdgRuntimeDir = QDir::tempPath() + QLatin1String("/runtime-") + userName;
             fileInfo.setFile(xdgRuntimeDir);
-            if (!fileInfo.isDir()) {
-                if (!QDir().mkdir(xdgRuntimeDir)) {
-                    qErrnoWarning("QStandardPaths: error creating runtime directory %ls",
-                                  qUtf16Printable(xdgRuntimeDir));
-                    return QString();
-                }
-            }
 #ifndef Q_OS_WASM
             qWarning("QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '%ls'", qUtf16Printable(xdgRuntimeDir));
 #endif
         } else {
             fileInfo.setFile(xdgRuntimeDir);
-            if (!fileInfo.exists()) {
-                qWarning("QStandardPaths: XDG_RUNTIME_DIR points to non-existing path '%ls', "
-                         "please create it with 0700 permissions.", qUtf16Printable(xdgRuntimeDir));
-                return QString();
-            }
+        }
+        if (fileInfo.exists()) {
             if (!fileInfo.isDir()) {
                 qWarning("QStandardPaths: XDG_RUNTIME_DIR points to '%ls' which is not a directory",
                          qUtf16Printable(xdgRuntimeDir));
                 return QString();
+            }
+        } else {
+            QFileSystemEntry entry(xdgRuntimeDir);
+            if (!QFileSystemEngine::createDirectory(entry, false)) {
+                if (errno != EEXIST) {
+                    qErrnoWarning("QStandardPaths: error creating runtime directory %ls",
+                                  qUtf16Printable(xdgRuntimeDir));
+                    return QString();
+                }
+            } else {
+                QSystemError error;
+                if (!QFileSystemEngine::setPermissions(entry, wantedPerms, error)) {
+                    qWarning("QStandardPaths: could not set correct permissions on runtime directory %ls: %ls",
+                             qUtf16Printable(xdgRuntimeDir), qUtf16Printable(error.toString()));
+                    return QString();
+                }
             }
         }
         // "The directory MUST be owned by the user"
@@ -181,17 +190,12 @@ QString QStandardPaths::writableLocation(StandardLocation type)
             return QString();
         }
         // "and he MUST be the only one having read and write access to it. Its Unix access mode MUST be 0700."
-        // since the current user is the owner, set both xxxUser and xxxOwner
-        const QFile::Permissions wantedPerms = QFile::ReadUser | QFile::WriteUser | QFile::ExeUser
-                                               | QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner;
         if (fileInfo.permissions() != wantedPerms) {
-            QFile file(xdgRuntimeDir);
-            if (!file.setPermissions(wantedPerms)) {
-                qWarning("QStandardPaths: could not set correct permissions on runtime directory %ls: %ls",
-                         qUtf16Printable(xdgRuntimeDir), qUtf16Printable(file.errorString()));
-                return QString();
-            }
+            qWarning("QStandardPaths: wrong permissions on runtime directory %ls, %x instead of %x",
+                     qUtf16Printable(xdgRuntimeDir), uint(fileInfo.permissions()), uint(wantedPerms));
+            return QString();
         }
+
         return xdgRuntimeDir;
     }
     default:
