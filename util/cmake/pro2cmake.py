@@ -1243,6 +1243,7 @@ def map_condition(condition: str) -> str:
 
     # checking mkspec, predating gcc scope in qmake, will then be replaced by platform_mapping in helper.py
     condition = condition.replace("*-g++*", "GCC")
+    condition = condition.replace("aix-g++*", "AIX")
     condition = condition.replace("*-icc*", "ICC")
     condition = condition.replace("*-clang*", "CLANG")
     condition = condition.replace("*-llvm", "CLANG")
