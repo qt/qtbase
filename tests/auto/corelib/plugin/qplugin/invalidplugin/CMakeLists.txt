@@ -1,11 +1,11 @@
 # Generated from invalidplugin.pro.
 
 #####################################################################
-## invalidplugin Plugin:
+## invalidplugin Generic Library:
 #####################################################################
 
-add_qt_plugin(invalidplugin
-    SKIP_INSTALL
+add_cmake_library(invalidplugin
+    MODULE
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../plugins"
     SOURCES
         main.cpp
@@ -15,3 +15,5 @@ add_qt_plugin(invalidplugin
 
 #### Keys ignored in scope 1:.:.:invalidplugin.pro:<TRUE>:
 # TEMPLATE = "lib"
+
+qt_autogen_tools_initial_setup(invalidplugin)

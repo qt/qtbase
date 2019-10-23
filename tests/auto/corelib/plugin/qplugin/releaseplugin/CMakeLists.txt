@@ -1,11 +1,11 @@
 # Generated from releaseplugin.pro.
 
 #####################################################################
-## releaseplugin Plugin:
+## releaseplugin Generic Library:
 #####################################################################
 
-add_qt_plugin(releaseplugin
-    SKIP_INSTALL
+add_cmake_library(releaseplugin
+    MODULE
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../plugins"
     SOURCES
         main.cpp
@@ -15,3 +15,5 @@ add_qt_plugin(releaseplugin
 
 #### Keys ignored in scope 1:.:.:releaseplugin.pro:<TRUE>:
 # TEMPLATE = "lib"
+
+qt_autogen_tools_initial_setup(releaseplugin)

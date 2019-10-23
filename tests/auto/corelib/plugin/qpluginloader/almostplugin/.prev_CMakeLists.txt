@@ -22,11 +22,9 @@ add_cmake_library(almostplugin
 ## Scopes:
 #####################################################################
 
+extend_target(almostplugin CONDITION GCC
+    LINK_OPTIONS
+        "--Wl,--no-undefined"
+)
+
 qt_autogen_tools_initial_setup(almostplugin)
-# special case begin
-# We want the opposite of this
-#extend_target(almostplugin CONDITION GCC
-#    LINK_OPTIONS
-#        "--Wl,--no-undefined"
-#)
-# special case end

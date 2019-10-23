@@ -2498,6 +2498,12 @@ def write_generic_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> s
     if "dll" in scope.get("CONFIG"):
         library_type = "SHARED"
 
+    is_plugin = False
+    if "plugin" in scope.get("CONFIG"):
+        library_type = "MODULE"
+        is_plugin = True
+
+    # static after plugin in order to handle static library plugins
     if "static" in scope.get("CONFIG"):
         library_type = "STATIC"
 
@@ -2522,6 +2528,13 @@ def write_generic_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> s
         known_libraries={},
         extra_keys=[],
     )
+
+    if is_plugin:
+        # Plugins need to be able to run auto moc
+        cm_fh.write(f"\nqt_autogen_tools_initial_setup({target_name})\n")
+
+        if library_type == "STATIC":
+            cm_fh.write(f"\ntarget_compile_definitions({target_name} PRIVATE QT_STATICPLUGIN)\n")
 
     return target_name
 
@@ -3077,8 +3090,9 @@ def handle_app_or_lib(
     is_jar = "java" in config
     is_lib = scope.TEMPLATE == "lib"
     is_qml_plugin = any("qml_plugin" == s for s in scope.get("_LOADED"))
-    is_plugin = (
-        any("qt_plugin" == s for s in scope.get("_LOADED")) or is_qml_plugin or "plugin" in config
+    is_plugin = "plugin" in config
+    is_qt_plugin = (
+        any("qt_plugin" == s for s in scope.get("_LOADED")) or is_qml_plugin
     )
     target = ""
     gui = all(
@@ -3089,10 +3103,10 @@ def handle_app_or_lib(
         tar = write_jar(cm_fh, scope, indent=indent)
     elif is_example:
         target = write_example(cm_fh, scope, gui, indent=indent, is_plugin=is_plugin)
-    elif is_plugin:
+    elif is_qt_plugin:
         assert not is_example
         target = write_plugin(cm_fh, scope, indent=indent)
-    elif is_lib and "qt_module" not in scope.get("_LOADED"):
+    elif (is_lib and "qt_module" not in scope.get("_LOADED")) or is_plugin:
         assert not is_example
         target = write_generic_library(cm_fh, scope, indent=indent)
     elif is_lib or "qt_module" in scope.get("_LOADED"):

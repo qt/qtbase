@@ -1,23 +1,23 @@
-# Generated from plugin2.pro.
+# Generated from lib.pro.
 
 #####################################################################
-## plugin2 Generic Library:
+## tst_qpluginloaderlib Generic Library:
 #####################################################################
 
-add_cmake_library(plugin2
-    MODULE
-    INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_qfactoryloader/bin"
+add_cmake_library(tst_qpluginloaderlib
+    SHARED
+    INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_qpluginloader/bin"
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../bin"
     SOURCES
-        plugin2.cpp plugin2.h
+        mylib.c
     PUBLIC_LIBRARIES
         Qt::Core
 )
 
-#### Keys ignored in scope 1:.:.:plugin2.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:lib.pro:<TRUE>:
 # INSTALLS = "target"
 # TEMPLATE = "lib"
-# target.path = "$$[QT_INSTALL_TESTS]/tst_qfactoryloader/bin"
+# target.path = "$$[QT_INSTALL_TESTS]/tst_qpluginloader/bin"
 
 ## Scopes:
 #####################################################################
@@ -28,9 +28,7 @@ add_cmake_library(plugin2
 #### Keys ignored in scope 7:.:..:../winrt.pri:else:
 # DESTDIR = "../release/bin"
 
-extend_target(plugin2 CONDITION NOT QT_FEATURE_library
+extend_target(tst_qpluginloaderlib CONDITION MSVC
     DEFINES
-        QT_STATICPLUGIN
+        WIN32_MSVC
 )
-
-qt_autogen_tools_initial_setup(plugin2)

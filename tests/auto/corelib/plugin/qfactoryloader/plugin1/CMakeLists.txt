@@ -1,10 +1,11 @@
 # Generated from plugin1.pro.
 
 #####################################################################
-## plugin1 Plugin:
+## plugin1 Generic Library:
 #####################################################################
 
-add_qt_plugin(plugin1
+add_cmake_library(plugin1
+    MODULE
     INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_qfactoryloader/bin"
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../bin"
     SOURCES
@@ -31,3 +32,5 @@ extend_target(plugin1 CONDITION NOT QT_FEATURE_library
     DEFINES
         QT_STATICPLUGIN
 )
+
+qt_autogen_tools_initial_setup(plugin1)

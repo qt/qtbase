@@ -30,8 +30,6 @@ extend_target(tst_qfactoryloader CONDITION NOT QT_FEATURE_library
         # this part is handled as a special case above
         # ../bin/
         # special case end
-        plugin1
-        plugin2
 )
 
 if(ANDROID)
@@ -45,15 +43,19 @@ if(ANDROID)
         ${CMAKE_CURRENT_BINARY_DIR}/../bin/libplugin2.so
         PROPERTIES QT_RESOURCE_TARGET_DEPENDENCY plugin2
     )
-    # special case end
     # Resources:
-    set(qmake_libs_resource_files
-        # special case begin
-        bin/libplugin1.so
-        bin/libplugin2.so
-        #${CMAKE_CURRENT_BINARY_DIR}/../bin
-        # special case end
-    )
+    if (ANDROID)
+        set(qmake_libs_resource_files
+            bin/libplugin1_${CMAKE_ANDROID_ARCH_ABI}.so
+            bin/libplugin2_${CMAKE_ANDROID_ARCH_ABI}.so
+        )
+    else()
+        set(qmake_libs_resource_files
+            bin/libplugin1.so
+            bin/libplugin2.so
+        )
+    endif()
+    # special case end
 
     add_qt_resource(tst_qfactoryloader "qmake_libs"
         PREFIX

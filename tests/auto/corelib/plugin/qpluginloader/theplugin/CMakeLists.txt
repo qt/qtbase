@@ -1,10 +1,11 @@
 # Generated from theplugin.pro.
 
 #####################################################################
-## theplugin Plugin:
+## theplugin Generic Library:
 #####################################################################
 
-add_qt_plugin(theplugin
+add_cmake_library(theplugin
+    MODULE
     INSTALL_DIRECTORY "${INSTALL_TESTSDIR}/tst_qpluginloader/bin"
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../bin"
     SOURCES
@@ -26,3 +27,5 @@ add_qt_plugin(theplugin
 
 #### Keys ignored in scope 6:.:..:../winrt.pri:else:
 # DESTDIR = "../release/bin"
+
+qt_autogen_tools_initial_setup(theplugin)
