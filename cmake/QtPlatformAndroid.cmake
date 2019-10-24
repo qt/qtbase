@@ -332,7 +332,7 @@ function(qt_android_add_apk_target target)
     endif()
 
     set(deployment_tool "${QT_HOST_PATH}/bin/androiddeployqt")
-    set(apk_dir "$<TARGET_PROPERTY:${target},BINARY_DIR>/apk")
+    set(apk_dir "$<TARGET_PROPERTY:${target},BINARY_DIR>/android-build")
     add_custom_target(${target}_prepare_apk_dir
         DEPENDS ${target}
         COMMAND ${CMAKE_COMMAND}
@@ -347,5 +347,32 @@ function(qt_android_add_apk_target target)
             --input ${deployment_file}
             --output ${apk_dir}
         COMMENT "Creating APK for ${target}"
+    )
+endfunction()
+
+
+# Add a test for Android which will be run by the android test runner tool
+function(qt_android_add_test target)
+
+    set(deployment_tool "${QT_HOST_PATH}/bin/androiddeployqt")
+    set(test_runner "${QT_HOST_PATH}/bin/androidtestrunner")
+
+    get_target_property(deployment_file ${target} QT_ANDROID_DEPLOYMENT_SETTINGS_FILE)
+    if (NOT deployment_file)
+        message(FATAL_ERROR "Target ${target} is not a valid android executable target\n")
+    endif()
+
+    set(target_binary_dir "$<TARGET_PROPERTY:${target},BINARY_DIR>")
+    set(apk_dir "${target_binary_dir}/android-build")
+
+    add_test(NAME "${target}"
+        COMMAND "${test_runner}"
+            --androiddeployqt "${deployment_tool} --input ${deployment_file}"
+            --adb "${ANDROID_SDK_ROOT}/platform-tools/adb"
+            --path "${apk_dir}"
+            --skip-install-root
+            --make "${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${target}_make_apk"
+            --apk "${apk_dir}/${target}.apk"
+            --verbose
     )
 endfunction()

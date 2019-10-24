@@ -2287,7 +2287,20 @@ function(add_qt_executable name)
         set(arg_INSTALL_DIRECTORY "${INSTALL_BINDIR}")
     endif()
 
-    add_executable("${name}" ${arg_EXE_FLAGS})
+    if (ANDROID)
+        add_library("${name}" MODULE)
+        qt_android_apply_arch_suffix("${name}")
+        qt_android_generate_deployment_settings("${name}")
+        qt_android_add_apk_target("${name}")
+        # On our qmake builds we don't compile the executables with
+        # visibility=hidden. Not having this flag set will cause the
+        # executable to have main() hidden and can then no longer be loaded
+        # through dlopen()
+        set_property(TARGET ${name} PROPERTY C_VISIBILITY_PRESET default)
+        set_property(TARGET ${name} PROPERTY CXX_VISIBILITY_PRESET default)
+    else()
+        add_executable("${name}" ${arg_EXE_FLAGS})
+    endif()
 
     qt_autogen_tools_initial_setup(${name})
 
@@ -2320,6 +2333,7 @@ function(add_qt_executable name)
     )
     set_target_properties("${name}" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}"
+        LIBRARY_OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}"
         WIN32_EXECUTABLE "${arg_GUI}"
         MACOSX_BUNDLE "${arg_GUI}"
     )
@@ -2331,6 +2345,7 @@ function(add_qt_executable name)
     if(NOT arg_NO_INSTALL)
         qt_install(TARGETS "${name}"
             RUNTIME DESTINATION "${arg_INSTALL_DIRECTORY}"
+            LIBRARY DESTINATION "${arg_INSTALL_DIRECTORY}"
             BUNDLE DESTINATION "${arg_INSTALL_DIRECTORY}")
     endif()
 endfunction()
@@ -2417,15 +2432,19 @@ function(add_qt_test name)
     # and use it also for XML output
     file(RELATIVE_PATH label "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${name}")
 
-    if(arg_QMLTEST AND NOT arg_SOURCES)
-        set(test_working_dir "${CMAKE_CURRENT_SOURCE_DIR}")
-        set(test_executable ${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner)
+    if (ANDROID)
+        qt_android_add_test("${name}")
     else()
-        set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
-        set(test_executable "${name}")
-    endif()
+        if(arg_QMLTEST AND NOT arg_SOURCES)
+            set(test_working_dir "${CMAKE_CURRENT_SOURCE_DIR}")
+            set(test_executable ${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner)
+        else()
+            set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
+            set(test_executable "${name}")
+        endif()
 
-    add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args} -o ${name}.xml,xml -o -,txt  WORKING_DIRECTORY "${test_working_dir}")
+        add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args} -o ${name}.xml,xml -o -,txt  WORKING_DIRECTORY "${test_working_dir}")
+    endif()
     set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}" LABELS "${label}")
 
     # Get path to qtbase/bin, then prepend this path containing the shared libraries to PATH
