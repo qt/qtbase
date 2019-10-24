@@ -4690,7 +4690,7 @@
 
     The definitions above define a qmake target called \c mytarget, containing a
     Makefile target called \c{.buildfile} which in turn is generated with the
-    \l{touchfunction}{touch()} function. Finally, the
+    \c touch command. Finally, the
     \c{.depends} member specifies that \c mytarget depends on \c mytarget2,
     another target that is defined afterwards. \c mytarget2 is a dummy target.
     It is only defined to echo some text to the console.

@@ -58,6 +58,36 @@
 
 QT_BEGIN_NAMESPACE
 
+#define Q_RETURN_ON_INVALID_FILENAME(message, result) \
+    { \
+        QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC).warning(message); \
+        errno = EINVAL; \
+        return (result); \
+    }
+
+inline bool qIsFilenameBroken(const QByteArray &name)
+{
+    return name.contains('\0');
+}
+
+inline bool qIsFilenameBroken(const QString &name)
+{
+    return name.contains(QLatin1Char('\0'));
+}
+
+inline bool qIsFilenameBroken(const QFileSystemEntry &entry)
+{
+    return qIsFilenameBroken(entry.nativeFilePath());
+}
+
+#define Q_CHECK_FILE_NAME(name, result) \
+    do { \
+        if (Q_UNLIKELY((name).isEmpty())) \
+            Q_RETURN_ON_INVALID_FILENAME("Empty filename passed to function", (result)); \
+        if (Q_UNLIKELY(qIsFilenameBroken(name))) \
+            Q_RETURN_ON_INVALID_FILENAME("Broken filename passed to function", (result)); \
+    } while (false)
+
 class QFileSystemEngine
 {
 public:

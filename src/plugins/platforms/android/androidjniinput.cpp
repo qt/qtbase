@@ -195,20 +195,6 @@ namespace QtAndroidInput
                                                  angleDelta);
     }
 
-    void releaseMouse(int x, int y)
-    {
-        m_ignoreMouseEvents = true;
-        QPoint globalPos(x,y);
-        QWindow *tlw = topLevelWindowAt(globalPos);
-        QPoint localPos = tlw ? (globalPos-tlw->position()) : globalPos;
-
-        // Release left button
-        QWindowSystemInterface::handleMouseEvent(tlw,
-                                                 localPos,
-                                                 globalPos,
-                                                 Qt::MouseButtons(Qt::NoButton));
-    }
-
     static void longPress(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint x, jint y)
     {
         QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();

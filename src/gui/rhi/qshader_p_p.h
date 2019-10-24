@@ -66,7 +66,8 @@ struct Q_GUI_EXPORT QShaderPrivate
         : ref(1),
           stage(other->stage),
           desc(other->desc),
-          shaders(other->shaders)
+          shaders(other->shaders),
+          bindings(other->bindings)
     {
     }
 
@@ -77,6 +78,7 @@ struct Q_GUI_EXPORT QShaderPrivate
     QShader::Stage stage = QShader::VertexStage;
     QShaderDescription desc;
     QHash<QShaderKey, QShaderCode> shaders;
+    QHash<QShaderKey, QShader::NativeResourceBindingMap> bindings;
 };
 
 QT_END_NAMESPACE

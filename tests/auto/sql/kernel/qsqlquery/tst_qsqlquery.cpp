@@ -190,8 +190,7 @@ private slots:
 
     void task_250026_data() { generic_data("QODBC"); }
     void task_250026();
-    void task_205701_data() { generic_data("QMYSQL"); }
-    void task_205701();
+    void crashQueryOnCloseDatabase();
 
     void task_233829_data() { generic_data("QPSQL"); }
     void task_233829();
@@ -305,6 +304,8 @@ void tst_QSqlQuery::init()
 
 void tst_QSqlQuery::cleanup()
 {
+    if (QTest::currentTestFunction() == QLatin1String("crashQueryOnCloseDatabase"))
+        return;
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
@@ -3427,19 +3428,17 @@ void tst_QSqlQuery::task_250026()
     QCOMPARE( q.value( 0 ).toString().length(), data1026.length() );
 }
 
-void tst_QSqlQuery::task_205701()
+void tst_QSqlQuery::crashQueryOnCloseDatabase()
 {
-    QSqlDatabase qsdb = QSqlDatabase::addDatabase("QMYSQL", "atest");
-    qsdb.setHostName("test");
-    qsdb.setDatabaseName("test");
-    qsdb.setUserName("test");
-    qsdb.setPassword("test");
-    qsdb.open();
-
-//     {
-        QSqlQuery query(qsdb);
-//     }
-    QSqlDatabase::removeDatabase("atest");
+    for (const auto &dbName : qAsConst(dbs.dbNames)) {
+        QSqlDatabase clonedDb = QSqlDatabase::cloneDatabase(
+              QSqlDatabase::database(dbName), "crashTest");
+        qDebug() << "Testing crash in sqlquery dtor for driver" << clonedDb.driverName();
+        QVERIFY(clonedDb.open());
+        QSqlQuery q(clonedDb);
+        clonedDb.close();
+        QSqlDatabase::removeDatabase("crashTest");
+    }
 }
 
 void tst_QSqlQuery::task_233829()

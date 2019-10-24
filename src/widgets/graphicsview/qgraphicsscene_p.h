@@ -69,6 +69,9 @@
 #include <QtWidgets/qstyle.h>
 #include <QtWidgets/qstyleoption.h>
 
+#include <set>
+#include <tuple>
+
 QT_REQUIRE_CONFIG(graphicsview);
 
 QT_BEGIN_NAMESPACE
@@ -122,7 +125,19 @@ public:
     QRectF growingItemsBoundingRect;
 
     void _q_emitUpdated();
-    QList<QRectF> updatedRects;
+
+    struct UpdatedRectsCmp
+    {
+        bool operator() (const QRectF &a, const QRectF &b) const noexcept
+        {
+            return std::make_tuple(a.y(), a.x(), a.height(), a.width())
+                    < std::make_tuple(b.y(), b.x(), b.height(), b.width());
+        }
+    };
+
+    // std::set was used here instead of std::unordered_set due to requiring only a comparator and
+    // showing equivalent performance in empirical measurements within the ranges of interest...
+    std::set<QRectF, UpdatedRectsCmp> updatedRects;
 
     QPainterPath selectionArea;
     int selectionChanging;
