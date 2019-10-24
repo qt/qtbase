@@ -5728,11 +5728,11 @@ bool QDomDocumentPrivate::setContent(QXmlInputSource *source, QXmlReader *reader
 
     if (!reader->parse(source)) {
         if (errorMsg)
-            *errorMsg = hnd.errorMsg;
+            *errorMsg = std::get<0>(hnd.errorInfo());
         if (errorLine)
-            *errorLine = hnd.errorLine;
+            *errorLine = std::get<1>(hnd.errorInfo());
         if (errorColumn)
-            *errorColumn = hnd.errorColumn;
+            *errorColumn = std::get<2>(hnd.errorInfo());
         return false;
     }
 
