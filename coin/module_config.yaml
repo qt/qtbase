@@ -30,7 +30,7 @@ instructions:
       enable_if:
         condition: property
         property: host.os
-        equals_value: target.os
+        equals_property: target.os
     - type: EnvironmentVariable
       variableName: Dummy
       variableValue: dummy
