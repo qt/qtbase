@@ -1395,7 +1395,9 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
         else
             *QApplicationPrivate::set_pal = palette;
         QCoreApplication::setAttribute(Qt::AA_SetPalette);
-        emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
+
+        if (qGuiApp && QGuiApplicationPrivate::app_pal)
+            emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
     }
 }
 
