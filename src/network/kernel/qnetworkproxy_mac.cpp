@@ -210,16 +210,14 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
     QList<QNetworkProxy> result;
 
     // obtain a dictionary to the proxy settings:
-    CFDictionaryRef dict = SCDynamicStoreCopyProxies(NULL);
+    const QCFType<CFDictionaryRef> dict = SCDynamicStoreCopyProxies(NULL);
     if (!dict) {
         qWarning("QNetworkProxyFactory::systemProxyForQuery: SCDynamicStoreCopyProxies returned NULL");
         return result;          // failed
     }
 
-    if (isHostExcluded(dict, query.peerHostName())) {
-        CFRelease(dict);
+    if (isHostExcluded(dict, query.peerHostName()))
         return result;          // no proxy for this host
-    }
 
     // is there a PAC enabled? If so, use it first.
     CFNumberRef pacEnabled;
@@ -329,7 +327,6 @@ QList<QNetworkProxy> macQueryInternal(const QNetworkProxyQuery &query)
             result << https;
     }
 
-    CFRelease(dict);
     return result;
 }
 
