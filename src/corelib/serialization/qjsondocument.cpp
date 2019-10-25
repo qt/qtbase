@@ -44,10 +44,21 @@
 #include <qstringlist.h>
 #include <qvariant.h>
 #include <qdebug.h>
+#include <qcbormap.h>
+#include <qcborarray.h>
+#include "qcborvalue_p.h"
 #include "qjsonwriter_p.h"
 #include "qjsonparser_p.h"
 #include "qjson_p.h"
 #include "qdatastream.h"
+
+#if QT_CONFIG(binaryjson)
+#include "qbinaryjson_p.h"
+#include "qbinaryjsonobject_p.h"
+#include "qbinaryjsonarray_p.h"
+#endif
+
+#include <private/qmemory_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -80,6 +91,33 @@ QT_BEGIN_NAMESPACE
     \sa {JSON Support in Qt}, {JSON Save Game Example}
 */
 
+
+class QJsonDocumentPrivate
+{
+    Q_DISABLE_COPY_MOVE(QJsonDocumentPrivate);
+public:
+    QJsonDocumentPrivate() = default;
+    QJsonDocumentPrivate(QCborValue data) : value(std::move(data)) {}
+    ~QJsonDocumentPrivate()
+    {
+        if (rawData)
+            free(rawData);
+    }
+
+    QCborValue value;
+    char *rawData = nullptr;
+    uint rawDataSize = 0;
+
+    void clearRawData()
+    {
+        if (rawData) {
+            free(rawData);
+            rawData = nullptr;
+            rawDataSize = 0;
+        }
+    }
+};
+
 /*!
  * Constructs an empty and invalid document.
  */
@@ -109,11 +147,10 @@ QJsonDocument::QJsonDocument(const QJsonArray &array)
 /*!
     \internal
  */
-QJsonDocument::QJsonDocument(QJsonPrivate::Data *data)
-    : d(data)
+QJsonDocument::QJsonDocument(const QCborValue &data)
+    : d(qt_make_unique<QJsonDocumentPrivate>(data))
 {
     Q_ASSERT(d);
-    d->ref.ref();
 }
 
 /*!
@@ -121,20 +158,30 @@ QJsonDocument::QJsonDocument(QJsonPrivate::Data *data)
 
  Binary data set with fromRawData is not freed.
  */
-QJsonDocument::~QJsonDocument()
-{
-    if (d && !d->ref.deref())
-        delete d;
-}
+QJsonDocument::~QJsonDocument() = default;
 
 /*!
  * Creates a copy of the \a other document.
  */
 QJsonDocument::QJsonDocument(const QJsonDocument &other)
 {
-    d = other.d;
-    if (d)
-        d->ref.ref();
+    if (other.d) {
+        if (!d)
+            d = qt_make_unique<QJsonDocumentPrivate>();
+        d->value = other.d->value;
+    } else {
+        d.reset();
+    }
+}
+
+QJsonDocument::QJsonDocument(QJsonDocument &&other) noexcept
+    : d(std::move(other.d))
+{
+}
+
+void QJsonDocument::swap(QJsonDocument &other) noexcept
+{
+    qSwap(d, other.d);
 }
 
 /*!
@@ -143,14 +190,17 @@ QJsonDocument::QJsonDocument(const QJsonDocument &other)
  */
 QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
 {
-    if (d != other.d) {
-        if (d && !d->ref.deref())
-            delete d;
-        d = other.d;
-        if (d)
-            d->ref.ref();
+    if (this != &other) {
+        if (other.d) {
+            if (!d)
+                d = qt_make_unique<QJsonDocumentPrivate>();
+            else
+                d->clearRawData();
+            d->value = other.d->value;
+        } else {
+            d.reset();
+        }
     }
-
     return *this;
 }
 
@@ -187,12 +237,13 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
   the application.
   */
 
+#if QT_CONFIG(binaryjson)
 /*!
  Creates a QJsonDocument that uses the first \a size bytes from
  \a data. It assumes \a data contains a binary encoded JSON document.
- The created document does not take ownership of \a data and the caller
- has to guarantee that \a data will not be deleted or modified as long as
- any QJsonDocument, QJsonObject or QJsonArray still references the data.
+ The created document does not take ownership of \a data. The data is
+ copied into a different data structure, and the original data can be
+ deleted or modified afterwards.
 
  \a data has to be aligned to a 4 byte boundary.
 
@@ -202,7 +253,18 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
 
  Returns a QJsonDocument representing the data.
 
- \sa rawData(), fromBinaryData(), isNull(), DataValidation
+ \deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
+ compatibility. It is undocumented and restrictive in the maximum size of JSON
+ documents that can be encoded. Qt JSON types can be converted to Qt CBOR types,
+ which can in turn be serialized into the CBOR binary format and vice versa. The
+ CBOR format is a well-defined and less restrictive binary representation for a
+ superset of JSON.
+
+ \note Before Qt 5.15, the caller had to guarantee that \a data would not be
+ deleted or modified as long as any QJsonDocument, QJsonObject or QJsonArray
+ still referenced the data. From Qt 5.15 on, this is not necessary anymore.
+
+ \sa rawData(), fromBinaryData(), isNull(), DataValidation, QCborValue
  */
 QJsonDocument QJsonDocument::fromRawData(const char *data, int size, DataValidation validation)
 {
@@ -211,18 +273,15 @@ QJsonDocument QJsonDocument::fromRawData(const char *data, int size, DataValidat
         return QJsonDocument();
     }
 
-    if (size < (int)(sizeof(QJsonPrivate::Header) + sizeof(QJsonPrivate::Base)))
+    if (size < 0 || uint(size) < sizeof(QBinaryJsonPrivate::Header) + sizeof(QBinaryJsonPrivate::Base))
         return QJsonDocument();
 
-    QJsonPrivate::Data *d = new QJsonPrivate::Data((char *)data, size);
-    d->ownsData = false;
+    std::unique_ptr<QBinaryJsonPrivate::ConstData> binaryData
+            = qt_make_unique<QBinaryJsonPrivate::ConstData>(data, size);
 
-    if (validation != BypassValidation && !d->valid()) {
-        delete d;
-        return QJsonDocument();
-    }
-
-    return QJsonDocument(d);
+    return (validation == BypassValidation || binaryData->isValid())
+            ? binaryData->toJsonDocument()
+            : QJsonDocument();
 }
 
 /*!
@@ -230,7 +289,16 @@ QJsonDocument QJsonDocument::fromRawData(const char *data, int size, DataValidat
   \a size will contain the size of the returned data.
 
   This method is useful to e.g. stream the JSON document
-  in it's binary form to a file.
+  in its binary form to a file.
+
+  \deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
+  compatibility. It is undocumented and restrictive in the maximum size of JSON
+  documents that can be encoded. Qt JSON types can be converted to Qt CBOR types,
+  which can in turn be serialized into the CBOR binary format and vice versa. The
+  CBOR format is a well-defined and less restrictive binary representation for a
+  superset of JSON.
+
+  \sa QCborValue
  */
 const char *QJsonDocument::rawData(int *size) const
 {
@@ -238,7 +306,21 @@ const char *QJsonDocument::rawData(int *size) const
         *size = 0;
         return nullptr;
     }
-    *size = d->alloc;
+
+    if (!d->rawData) {
+        if (isObject()) {
+            QBinaryJsonObject o = QBinaryJsonObject::fromJsonObject(object());
+            d->rawData = o.takeRawData(&(d->rawDataSize));
+        } else {
+            QBinaryJsonArray a = QBinaryJsonArray::fromJsonArray(array());
+            d->rawData = a.takeRawData(&(d->rawDataSize));
+        }
+    }
+
+    // It would be quite miraculous if not, as we should have hit the 128MB limit then.
+    Q_ASSERT(d->rawDataSize <= uint(std::numeric_limits<int>::max()));
+
+    *size = d->rawDataSize;
     return d->rawData;
 }
 
@@ -249,38 +331,64 @@ const char *QJsonDocument::rawData(int *size) const
  By default the data is validated. If the \a data is not valid, the method returns
  a null document.
 
- \sa toBinaryData(), fromRawData(), isNull(), DataValidation
+ \deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
+ compatibility. It is undocumented and restrictive in the maximum size of JSON
+ documents that can be encoded. Qt JSON types can be converted to Qt CBOR types,
+ which can in turn be serialized into the CBOR binary format and vice versa. The
+ CBOR format is a well-defined and less restrictive binary representation for a
+ superset of JSON.
+
+ \sa toBinaryData(), fromRawData(), isNull(), DataValidation, QCborValue
  */
 QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidation validation)
 {
-    if (data.size() < (int)(sizeof(QJsonPrivate::Header) + sizeof(QJsonPrivate::Base)))
+    if (uint(data.size()) < sizeof(QBinaryJsonPrivate::Header) + sizeof(QBinaryJsonPrivate::Base))
         return QJsonDocument();
 
-    QJsonPrivate::Header h;
-    memcpy(&h, data.constData(), sizeof(QJsonPrivate::Header));
-    QJsonPrivate::Base root;
-    memcpy(&root, data.constData() + sizeof(QJsonPrivate::Header), sizeof(QJsonPrivate::Base));
+    QBinaryJsonPrivate::Header h;
+    memcpy(&h, data.constData(), sizeof(QBinaryJsonPrivate::Header));
+    QBinaryJsonPrivate::Base root;
+    memcpy(&root, data.constData() + sizeof(QBinaryJsonPrivate::Header),
+           sizeof(QBinaryJsonPrivate::Base));
 
-    // do basic checks here, so we don't try to allocate more memory than we can.
-    if (h.tag != QJsonDocument::BinaryFormatTag || h.version != 1u ||
-        sizeof(QJsonPrivate::Header) + root.size > (uint)data.size())
+    const uint size = sizeof(QBinaryJsonPrivate::Header) + root.size;
+    if (h.tag != QJsonDocument::BinaryFormatTag || h.version != 1U || size > uint(data.size()))
         return QJsonDocument();
 
-    const uint size = sizeof(QJsonPrivate::Header) + root.size;
-    char *raw = (char *)malloc(size);
-    if (!raw)
-        return QJsonDocument();
+    std::unique_ptr<QBinaryJsonPrivate::ConstData> d
+            = qt_make_unique<QBinaryJsonPrivate::ConstData>(data.constData(), size);
 
-    memcpy(raw, data.constData(), size);
-    QJsonPrivate::Data *d = new QJsonPrivate::Data(raw, size);
-
-    if (validation != BypassValidation && !d->valid()) {
-        delete d;
-        return QJsonDocument();
-    }
-
-    return QJsonDocument(d);
+    return (validation == BypassValidation || d->isValid())
+            ? d->toJsonDocument()
+            : QJsonDocument();
 }
+
+/*!
+ Returns a binary representation of the document.
+
+ The binary representation is also the native format used internally in Qt,
+ and is very efficient and fast to convert to and from.
+
+ The binary format can be stored on disk and interchanged with other applications
+ or computers. fromBinaryData() can be used to convert it back into a
+ JSON document.
+
+ \deprecated in Qt 5.15. The binary JSON encoding is only retained for backwards
+ compatibility. It is undocumented and restrictive in the maximum size of JSON
+ documents that can be encoded. Qt JSON types can be converted to Qt CBOR types,
+ which can in turn be serialized into the CBOR binary format and vice versa. The
+ CBOR format is a well-defined and less restrictive binary representation for a
+ superset of JSON.
+
+ \sa fromBinaryData(), QCborValue
+ */
+QByteArray QJsonDocument::toBinaryData() const
+{
+    int size = 0;
+    const char *raw = rawData(&size);
+    return QByteArray(raw, size);
+}
+#endif // QT_CONFIG(binaryjson)
 
 /*!
  Creates a QJsonDocument from the QVariant \a variant.
@@ -293,6 +401,7 @@ QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidati
 QJsonDocument QJsonDocument::fromVariant(const QVariant &variant)
 {
     QJsonDocument doc;
+
     switch (variant.type()) {
     case QVariant::Map:
         doc.setObject(QJsonObject::fromVariantMap(variant.toMap()));
@@ -304,7 +413,8 @@ QJsonDocument QJsonDocument::fromVariant(const QVariant &variant)
         doc.setArray(QJsonArray::fromVariantList(variant.toList()));
         break;
     case QVariant::StringList:
-        doc.setArray(QJsonArray::fromStringList(variant.toStringList()));
+        doc.d = qt_make_unique<QJsonDocumentPrivate>();
+        doc.d->value = QCborArray::fromStringList(variant.toStringList());
         break;
     default:
         break;
@@ -325,10 +435,10 @@ QVariant QJsonDocument::toVariant() const
     if (!d)
         return QVariant();
 
-    if (d->header->root()->isArray())
-        return QJsonArray(d, static_cast<QJsonPrivate::Array *>(d->header->root())).toVariantList();
-    else
-        return QJsonObject(d, static_cast<QJsonPrivate::Object *>(d->header->root())).toVariantMap();
+    QCborContainerPrivate *container = QJsonPrivate::Value::container(d->value);
+    if (d->value.isArray())
+        return QJsonArray(container).toVariantList();
+    return QJsonObject(container).toVariantMap();
 }
 
 /*!
@@ -370,10 +480,11 @@ QByteArray QJsonDocument::toJson(JsonFormat format) const
     if (!d)
         return json;
 
-    if (d->header->root()->isArray())
-        QJsonPrivate::Writer::arrayToJson(static_cast<QJsonPrivate::Array *>(d->header->root()), json, 0, (format == Compact));
+    const QCborContainerPrivate *container = QJsonPrivate::Value::container(d->value);
+    if (d->value.isArray())
+        QJsonPrivate::Writer::arrayToJson(container, json, 0, (format == Compact));
     else
-        QJsonPrivate::Writer::objectToJson(static_cast<QJsonPrivate::Object *>(d->header->root()), json, 0, (format == Compact));
+        QJsonPrivate::Writer::objectToJson(container, json, 0, (format == Compact));
 
     return json;
 }
@@ -392,7 +503,13 @@ QByteArray QJsonDocument::toJson(JsonFormat format) const
 QJsonDocument QJsonDocument::fromJson(const QByteArray &json, QJsonParseError *error)
 {
     QJsonPrivate::Parser parser(json.constData(), json.length());
-    return parser.parse(error);
+    QJsonDocument result;
+    const QCborValue val = parser.parse(error);
+    if (val.isArray() || val.isMap()) {
+        result.d = qt_make_unique<QJsonDocumentPrivate>();
+        result.d->value = val;
+    }
+    return result;
 }
 
 /*!
@@ -407,26 +524,6 @@ bool QJsonDocument::isEmpty() const
 }
 
 /*!
- Returns a binary representation of the document.
-
- The binary representation is also the native format used internally in Qt,
- and is very efficient and fast to convert to and from.
-
- The binary format can be stored on disk and interchanged with other applications
- or computers. fromBinaryData() can be used to convert it back into a
- JSON document.
-
- \sa fromBinaryData()
- */
-QByteArray QJsonDocument::toBinaryData() const
-{
-    if (!d || !d->rawData)
-        return QByteArray();
-
-    return QByteArray(d->rawData, d->header->root()->size + sizeof(QJsonPrivate::Header));
-}
-
-/*!
     Returns \c true if the document contains an array.
 
     \sa array(), isObject()
@@ -436,8 +533,7 @@ bool QJsonDocument::isArray() const
     if (!d)
         return false;
 
-    QJsonPrivate::Header *h = (QJsonPrivate::Header *)d->rawData;
-    return h->root()->isArray();
+    return d->value.isArray();
 }
 
 /*!
@@ -450,8 +546,7 @@ bool QJsonDocument::isObject() const
     if (!d)
         return false;
 
-    QJsonPrivate::Header *h = (QJsonPrivate::Header *)d->rawData;
-    return h->root()->isObject();
+    return d->value.isMap();
 }
 
 /*!
@@ -464,10 +559,9 @@ bool QJsonDocument::isObject() const
  */
 QJsonObject QJsonDocument::object() const
 {
-    if (d) {
-        QJsonPrivate::Base *b = d->header->root();
-        if (b->isObject())
-            return QJsonObject(d, static_cast<QJsonPrivate::Object *>(b));
+    if (isObject()) {
+        if (auto container = QJsonPrivate::Value::container(d->value))
+            return QJsonObject(container);
     }
     return QJsonObject();
 }
@@ -482,10 +576,9 @@ QJsonObject QJsonDocument::object() const
  */
 QJsonArray QJsonDocument::array() const
 {
-    if (d) {
-        QJsonPrivate::Base *b = d->header->root();
-        if (b->isArray())
-            return QJsonArray(d, static_cast<QJsonPrivate::Array *>(b));
+    if (isArray()) {
+        if (auto container = QJsonPrivate::Value::container(d->value))
+            return QJsonArray(container);
     }
     return QJsonArray();
 }
@@ -497,24 +590,12 @@ QJsonArray QJsonDocument::array() const
  */
 void QJsonDocument::setObject(const QJsonObject &object)
 {
-    if (d && !d->ref.deref())
-        delete d;
+    if (!d)
+        d = qt_make_unique<QJsonDocumentPrivate>();
+    else
+        d->clearRawData();
 
-    d = object.d;
-
-    if (!d) {
-        d = new QJsonPrivate::Data(0, QJsonValue::Object);
-    } else if (d->compactionCounter || object.o != d->header->root()) {
-        QJsonObject o(object);
-        if (d->compactionCounter)
-            o.compact();
-        else
-            o.detach2();
-        d = o.d;
-        d->ref.ref();
-        return;
-    }
-    d->ref.ref();
+    d->value = QCborValue::fromJsonValue(object);
 }
 
 /*!
@@ -524,24 +605,12 @@ void QJsonDocument::setObject(const QJsonObject &object)
  */
 void QJsonDocument::setArray(const QJsonArray &array)
 {
-    if (d && !d->ref.deref())
-        delete d;
+    if (!d)
+        d = qt_make_unique<QJsonDocumentPrivate>();
+    else
+        d->clearRawData();
 
-    d = array.d;
-
-    if (!d) {
-        d = new QJsonPrivate::Data(0, QJsonValue::Array);
-    } else if (d->compactionCounter || array.a != d->header->root()) {
-        QJsonArray a(array);
-        if (d->compactionCounter)
-            a.compact();
-        else
-            a.detach2();
-        d = a.d;
-        d->ref.ref();
-        return;
-    }
-    d->ref.ref();
+    d->value = QCborValue::fromJsonValue(array);
 }
 
 #if QT_STRINGVIEW_LEVEL < 2
@@ -572,7 +641,7 @@ const QJsonValue QJsonDocument::operator[](QStringView key) const
     if (!isObject())
         return QJsonValue(QJsonValue::Undefined);
 
-    return object().value(key);
+    return QJsonPrivate::Value::fromTrustedCbor(d->value.toMap().value(key));
 }
 
 /*!
@@ -584,7 +653,7 @@ const QJsonValue QJsonDocument::operator[](QLatin1String key) const
     if (!isObject())
         return QJsonValue(QJsonValue::Undefined);
 
-    return object().value(key);
+    return QJsonPrivate::Value::fromTrustedCbor(d->value.toMap().value(key));
 }
 
 /*!
@@ -604,7 +673,7 @@ const QJsonValue QJsonDocument::operator[](int i) const
     if (!isArray())
         return QJsonValue(QJsonValue::Undefined);
 
-    return array().at(i);
+    return QJsonPrivate::Value::fromTrustedCbor(d->value.toArray().at(i));
 }
 
 /*!
@@ -612,21 +681,7 @@ const QJsonValue QJsonDocument::operator[](int i) const
  */
 bool QJsonDocument::operator==(const QJsonDocument &other) const
 {
-    if (d == other.d)
-        return true;
-
-    if (!d || !other.d)
-        return false;
-
-    if (d->header->root()->isArray() != other.d->header->root()->isArray())
-        return false;
-
-    if (d->header->root()->isObject())
-        return QJsonObject(d, static_cast<QJsonPrivate::Object *>(d->header->root()))
-                == QJsonObject(other.d, static_cast<QJsonPrivate::Object *>(other.d->header->root()));
-    else
-        return QJsonArray(d, static_cast<QJsonPrivate::Array *>(d->header->root()))
-                == QJsonArray(other.d, static_cast<QJsonPrivate::Array *>(other.d->header->root()));
+    return (!d) ? (!other.d) : (d->value == other.d->value);
 }
 
 /*!
@@ -658,10 +713,11 @@ QDebug operator<<(QDebug dbg, const QJsonDocument &o)
         return dbg;
     }
     QByteArray json;
-    if (o.d->header->root()->isArray())
-        QJsonPrivate::Writer::arrayToJson(static_cast<QJsonPrivate::Array *>(o.d->header->root()), json, 0, true);
+    const QCborContainerPrivate *container = QJsonPrivate::Value::container(o.d->value);
+    if (o.d->value.isArray())
+        QJsonPrivate::Writer::arrayToJson(container, json, 0, true);
     else
-        QJsonPrivate::Writer::objectToJson(static_cast<QJsonPrivate::Object *>(o.d->header->root()), json, 0, true);
+        QJsonPrivate::Writer::objectToJson(container, json, 0, true);
     dbg.nospace() << "QJsonDocument("
                   << json.constData() // print as utf-8 string without extra quotation marks
                   << ')';

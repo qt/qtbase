@@ -42,22 +42,18 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qshareddata.h>
+#include <QtCore/qcborvalue.h>
 
 QT_BEGIN_NAMESPACE
 
-class QDebug;
 class QVariant;
 class QJsonArray;
 class QJsonObject;
+class QCborContainerPrivate;
 
 namespace QJsonPrivate {
-    class Data;
-    class Base;
-    class Object;
-    class Header;
-    class Array;
-    class Value;
-    class Entry;
+class Value;
 }
 
 class Q_CORE_EXPORT QJsonValue
@@ -77,12 +73,12 @@ public:
     QJsonValue(bool b);
     QJsonValue(double n);
     QJsonValue(int n);
-    QJsonValue(qint64 n);
+    QJsonValue(qint64 v);
     QJsonValue(const QString &s);
     QJsonValue(QLatin1String s);
 #ifndef QT_NO_CAST_FROM_ASCII
     inline QT_ASCII_CAST_WARN QJsonValue(const char *s)
-        : d(nullptr), t(String) { stringDataFromQStringHelper(QString::fromUtf8(s)); }
+        : QJsonValue(QString::fromUtf8(s)) {}
 #endif
     QJsonValue(const QJsonArray &a);
     QJsonValue(const QJsonObject &o);
@@ -92,15 +88,7 @@ public:
     QJsonValue(const QJsonValue &other);
     QJsonValue &operator =(const QJsonValue &other);
 
-    QJsonValue(QJsonValue &&other) noexcept
-        : ui(other.ui),
-          d(other.d),
-          t(other.t)
-    {
-        other.ui = 0;
-        other.d = nullptr;
-        other.t = Null;
-    }
+    QJsonValue(QJsonValue &&other) noexcept;
 
     QJsonValue &operator =(QJsonValue &&other) noexcept
     {
@@ -108,12 +96,7 @@ public:
         return *this;
     }
 
-    void swap(QJsonValue &other) noexcept
-    {
-        qSwap(ui, other.ui);
-        qSwap(d, other.d);
-        qSwap(t, other.t);
-    }
+    void swap(QJsonValue &other) noexcept;
 
     static QJsonValue fromVariant(const QVariant &variant);
     QVariant toVariant() const;
@@ -149,7 +132,7 @@ public:
 
 private:
     // avoid implicit conversions from char * to bool
-    inline QJsonValue(const void *) {}
+    QJsonValue(const void *) = delete;
     friend class QJsonPrivate::Value;
     friend class QJsonArray;
     friend class QJsonObject;
@@ -157,20 +140,19 @@ private:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonValue &);
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QJsonValue &);
 
-    QJsonValue(QJsonPrivate::Data *d, QJsonPrivate::Base *b, const QJsonPrivate::Value& v);
+    // ### Qt6: Remove this.
     void stringDataFromQStringHelper(const QString &string);
 
     void detach();
 
-    union {
-        quint64 ui;
-        bool b;
-        double dbl;
-        QStringData *stringData;
-        QJsonPrivate::Base *base;
-    };
-    QJsonPrivate::Data *d; // needed for Objects and Arrays
-    Type t;
+    // ### Qt6: change to an actual QCborValue
+    qint64 n = 0;
+    QExplicitlySharedDataPointer<QCborContainerPrivate> d; // needed for Objects, Arrays, Strings
+    QCborValue::Type t;
+
+    // Assert binary compatibility with pre-5.15 QJsonValue
+    Q_STATIC_ASSERT(sizeof(QExplicitlySharedDataPointer<QCborContainerPrivate>) == sizeof(void *));
+    Q_STATIC_ASSERT(sizeof(QCborValue::Type) == sizeof(QJsonValue::Type));
 };
 
 class Q_CORE_EXPORT QJsonValueRef

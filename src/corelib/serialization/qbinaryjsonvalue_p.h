@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QJSONPARSER_P_H
-#define QJSONPARSER_P_H
+#ifndef QBINARYJSONVALUE_P_H
+#define QBINARYJSONVALUE_P_H
 
 //
 //  W A R N I N G
@@ -51,43 +51,84 @@
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
-#include <QtCore/private/qcborvalue_p.h>
-#include <QtCore/qjsondocument.h>
+#include <QtCore/qglobal.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qjsonvalue.h>
+
+QT_REQUIRE_CONFIG(binaryjson);
 
 QT_BEGIN_NAMESPACE
 
-namespace QJsonPrivate {
+class QBinaryJsonArray;
+class QBinaryJsonObject;
 
-class Parser
+namespace QBinaryJsonPrivate {
+class ConstData;
+class MutableData;
+class Base;
+class Value;
+class Object;
+class Array;
+}
+
+class Q_CORE_EXPORT QBinaryJsonValue
 {
+    Q_DISABLE_COPY(QBinaryJsonValue)
 public:
-    Parser(const char *json, int length);
+    explicit QBinaryJsonValue(QJsonValue::Type type) : ui(0), t(type) {}
+    explicit QBinaryJsonValue(bool b) : b(b), t(QJsonValue::Bool) {}
+    explicit QBinaryJsonValue(double n) : dbl(n), t(QJsonValue::Double) {}
+    explicit QBinaryJsonValue(QString s);
+    QBinaryJsonValue(const QBinaryJsonArray &a);
+    QBinaryJsonValue(const QBinaryJsonObject &o);
 
-    QCborValue parse(QJsonParseError *error);
+    ~QBinaryJsonValue();
+
+    QBinaryJsonValue(QBinaryJsonValue &&other) noexcept
+        : ui(other.ui),
+          d(other.d),
+          t(other.t)
+    {
+        other.ui = 0;
+        other.d = nullptr;
+        other.t = QJsonValue::Null;
+    }
+
+    QBinaryJsonValue &operator =(QBinaryJsonValue &&other) noexcept
+    {
+        qSwap(ui, other.ui);
+        qSwap(d, other.d);
+        qSwap(t, other.t);
+        return *this;
+    }
+
+    static QBinaryJsonValue fromJsonValue(const QJsonValue &json);
+    QJsonValue::Type type() const { return t; }
+    bool toBool() const { return (t == QJsonValue::Bool) && b; }
+    double toDouble() const { return (t == QJsonValue::Double) ? dbl : 0; }
+    QString toString() const;
 
 private:
-    inline void eatBOM();
-    inline bool eatSpace();
-    inline char nextToken();
+    friend class QBinaryJsonPrivate::Value;
+    friend class QBinaryJsonArray;
+    friend class QBinaryJsonObject;
 
-    bool parseObject();
-    bool parseArray();
-    bool parseMember();
-    bool parseString();
-    bool parseValue();
-    bool parseNumber();
-    const char *head;
-    const char *json;
-    const char *end;
+    QBinaryJsonValue(QBinaryJsonPrivate::MutableData *d, QBinaryJsonPrivate::Base *parent,
+                     const QBinaryJsonPrivate::Value &v);
 
-    int nestingLevel;
-    QJsonParseError::ParseError lastError;
-    QExplicitlySharedDataPointer<QCborContainerPrivate> container;
+    void detach();
+
+    union {
+        quint64 ui;
+        bool b;
+        double dbl;
+        QStringData *stringData;
+        const QBinaryJsonPrivate::Base *base;
+    };
+    QBinaryJsonPrivate::MutableData *d = nullptr; // needed for Objects and Arrays
+    QJsonValue::Type t = QJsonValue::Null;
 };
-
-}
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QBINARYJSONVALUE_P_H

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QJSONPARSER_P_H
-#define QJSONPARSER_P_H
+#ifndef QBINARYJSONARRAY_P_H
+#define QBINARYJSONARRAY_P_H
 
 //
 //  W A R N I N G
@@ -51,43 +51,48 @@
 // We mean it.
 //
 
-#include <QtCore/private/qglobal_p.h>
-#include <QtCore/private/qcborvalue_p.h>
-#include <QtCore/qjsondocument.h>
+#include "qbinaryjsonvalue_p.h"
+
+QT_REQUIRE_CONFIG(binaryjson);
 
 QT_BEGIN_NAMESPACE
 
-namespace QJsonPrivate {
-
-class Parser
+class QBinaryJsonArray
 {
+    Q_DISABLE_COPY(QBinaryJsonArray)
 public:
-    Parser(const char *json, int length);
+    QBinaryJsonArray() = default;
+    ~QBinaryJsonArray();
 
-    QCborValue parse(QJsonParseError *error);
+    QBinaryJsonArray(QBinaryJsonArray &&other) noexcept
+        : d(other.d),
+          a(other.a)
+    {
+        other.d = nullptr;
+        other.a = nullptr;
+    }
+
+    QBinaryJsonArray &operator =(QBinaryJsonArray &&other) noexcept
+    {
+        qSwap(d, other.d);
+        qSwap(a, other.a);
+        return *this;
+    }
+
+    static QBinaryJsonArray fromJsonArray(const QJsonArray &array);
+    char *takeRawData(uint *size);
 
 private:
-    inline void eatBOM();
-    inline bool eatSpace();
-    inline char nextToken();
+    friend class QBinaryJsonValue;
 
-    bool parseObject();
-    bool parseArray();
-    bool parseMember();
-    bool parseString();
-    bool parseValue();
-    bool parseNumber();
-    const char *head;
-    const char *json;
-    const char *end;
+    void append(const QBinaryJsonValue &value);
+    void compact();
+    bool detach(uint reserve = 0);
 
-    int nestingLevel;
-    QJsonParseError::ParseError lastError;
-    QExplicitlySharedDataPointer<QCborContainerPrivate> container;
+    QBinaryJsonPrivate::MutableData *d = nullptr;
+    QBinaryJsonPrivate::Array *a = nullptr;
 };
-
-}
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QBINARYJSONARRAY_P_H

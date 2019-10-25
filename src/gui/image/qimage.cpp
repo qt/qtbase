@@ -4145,11 +4145,11 @@ QPaintEngine *QImage::paintEngine() const
 
     if (!d->paintEngine) {
         QPaintDevice *paintDevice = const_cast<QImage *>(this);
-        QPaintEngine *paintEngine = 0;
         QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
         if (platformIntegration)
-            paintEngine = platformIntegration->createImagePaintEngine(paintDevice);
-        d->paintEngine = paintEngine ? paintEngine : new QRasterPaintEngine(paintDevice);
+            d->paintEngine = platformIntegration->createImagePaintEngine(paintDevice);
+       if (!d->paintEngine)
+            d->paintEngine = new QRasterPaintEngine(paintDevice);
     }
 
     return d->paintEngine;

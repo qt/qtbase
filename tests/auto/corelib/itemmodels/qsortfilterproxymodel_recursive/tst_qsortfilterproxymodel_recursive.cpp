@@ -28,9 +28,8 @@
 
 #include <QTest>
 #include <QSignalSpy>
-
-#include <QtCore/QSortFilterProxyModel>
-#include <QtGui/QStandardItem>
+#include <QSortFilterProxyModel>
+#include <QStandardItem>
 
 Q_DECLARE_METATYPE(QModelIndex)
 

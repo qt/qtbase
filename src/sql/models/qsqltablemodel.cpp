@@ -1369,7 +1369,7 @@ QSqlRecord QSqlTableModel::record(int row) const
     // get generated flags from the cache
     const QSqlTableModelPrivate::ModifiedRow mrow = d->cache.value(row);
     if (mrow.op() != QSqlTableModelPrivate::None) {
-        const QSqlRecord crec = mrow.rec();
+        const QSqlRecord &crec = mrow.rec();
         for (int i = 0, cnt = rec.count(); i < cnt; ++i)
             rec.setGenerated(i, crec.isGenerated(i));
     }

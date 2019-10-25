@@ -118,7 +118,8 @@ QTOBJS= \
 	qxmlutils.obj \
 	qnumeric.obj \
 	qlogging.obj \
-	qjson.obj \
+	qcborvalue.obj \
+	qjsoncbor.obj \
 	qjsondocument.obj \
 	qjsonparser.obj \
 	qjsonarray.obj \

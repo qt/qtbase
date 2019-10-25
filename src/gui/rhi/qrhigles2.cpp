@@ -2961,7 +2961,7 @@ bool QRhiGles2::isProgramBinaryDiskCacheEnabled() const
     return checker.get(ctx)->isSupported();
 }
 
-static QOpenGLProgramBinaryCache qrhi_programBinaryCache;
+Q_GLOBAL_STATIC(QOpenGLProgramBinaryCache, qrhi_programBinaryCache);
 
 static inline QShader::Stage toShaderStage(QRhiShaderStage::Type type)
 {
@@ -2995,7 +2995,7 @@ QRhiGles2::DiskCacheResult QRhiGles2::tryLoadFromDiskCache(const QRhiShaderStage
         }
 
         diskCacheKey = binaryProgram.cacheKey();
-        if (qrhi_programBinaryCache.load(diskCacheKey, program)) {
+        if (qrhi_programBinaryCache()->load(diskCacheKey, program)) {
             qCDebug(lcOpenGLProgramDiskCache, "Program binary received from cache, program %u, key %s",
                     program, diskCacheKey.constData());
             result = QRhiGles2::DiskCacheHit;
@@ -3013,7 +3013,7 @@ void QRhiGles2::trySaveToDiskCache(GLuint program, const QByteArray &cacheKey)
     if (isProgramBinaryDiskCacheEnabled()) {
         qCDebug(lcOpenGLProgramDiskCache, "Saving program binary, program %u, key %s",
                 program, cacheKey.constData());
-        qrhi_programBinaryCache.save(cacheKey, program);
+        qrhi_programBinaryCache()->save(cacheKey, program);
     }
 }
 

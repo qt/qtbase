@@ -1100,6 +1100,12 @@ Mozilla License) is included. The data is then also used in QNetworkCookieJar::v
 Note that this is required for plugin loading. Qt GUI needs QPA plugins for basic operation.",
             "section": "Utilities",
             "output": [ "publicFeature" ]
+        },
+        "binaryjson": {
+            "label": "Binary JSON (deprecated)",
+            "purpose": "Provides support for the deprecated binary JSON format.",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
         }
     },
 

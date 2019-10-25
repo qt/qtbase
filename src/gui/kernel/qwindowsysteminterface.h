@@ -215,6 +215,9 @@ public:
     template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleApplicationStateChanged(Qt::ApplicationState newState, bool forcePropagate = false);
 
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
+    static bool handleApplicationTermination();
+
 #if QT_CONFIG(draganddrop)
 #if QT_DEPRECATED_SINCE(5, 11)
     QT_DEPRECATED static QPlatformDragQtResponse handleDrag(QWindow *window, const QMimeData *dropData,

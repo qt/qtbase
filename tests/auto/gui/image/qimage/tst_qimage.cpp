@@ -2132,6 +2132,12 @@ void tst_QImage::paintEngine()
 
     QCOMPARE(engine, img.paintEngine());
     QCOMPARE(img, expected);
+
+    {
+        QImage img1(16, 16, QImage::Format_ARGB32);
+        QImage img2 = img1;
+        QVERIFY(img2.paintEngine());
+    }
 }
 
 void tst_QImage::setAlphaChannelWhilePainting()

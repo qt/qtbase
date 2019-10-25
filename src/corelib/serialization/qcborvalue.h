@@ -71,6 +71,8 @@ class QCborStreamReader;
 class QCborStreamWriter;
 class QDataStream;
 
+namespace QJsonPrivate { class Value; }
+
 struct QCborParserError
 {
     qint64 offset = 0;
@@ -301,6 +303,8 @@ public:
 private:
     friend class QCborValueRef;
     friend class QCborContainerPrivate;
+    friend class QJsonPrivate::Value;
+
     qint64 n = 0;
     QCborContainerPrivate *container = nullptr;
     Type t = Undefined;

@@ -285,6 +285,12 @@ QT_DEFINE_QPA_EVENT_HANDLER(void, handleApplicationStateChanged, Qt::Application
     QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
+QT_DEFINE_QPA_EVENT_HANDLER(bool, handleApplicationTermination)
+{
+    auto *e = new QWindowSystemInterfacePrivate::WindowSystemEvent(QWindowSystemInterfacePrivate::ApplicationTermination);
+    return QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
+}
+
 QWindowSystemInterfacePrivate::GeometryChangeEvent::GeometryChangeEvent(QWindow *window, const QRect &newGeometry)
     : WindowSystemEvent(GeometryChange)
     , window(window)

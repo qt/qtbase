@@ -514,15 +514,6 @@ void QStyledItemDelegate::updateEditorGeometry(QWidget *editor,
 
     QStyle *style = widget ? widget->style() : QApplication::style();
     QRect geom = style->subElementRect(QStyle::SE_ItemViewItemText, &opt, widget);
-    const int delta = qSmartMinSize(editor).width() - geom.width();
-    if (delta > 0) {
-        //we need to widen the geometry
-        if (editor->layoutDirection() == Qt::RightToLeft)
-            geom.adjust(-delta, 0, 0, 0);
-        else
-            geom.adjust(0, 0, delta, 0);
-    }
-
     editor->setGeometry(geom);
 }
 
