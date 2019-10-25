@@ -1,4 +1,4 @@
-Unicode is used to generate the unicode data in src/corelib/tools.
+Unicode is used to generate the unicode data in src/corelib/text/.
 
 To update:
 * Find the data (UAX #44, UCD; not the XML version) at
@@ -21,7 +21,7 @@ To update:
 * Build with the modified code, fix any compilation issues.
 * That may have updated qtbase/src/corelib/text/qunicodetables.cpp;
   if so the update matters; be sure to commit the changes to data/ at
-  the same time and update tools/qt_attribution.json to match; use the
+  the same time and update text/qt_attribution.json to match; use the
   UCD Revision number, rather than the Unicode standard number, as the
   Version, for all that qunicodetables.cpp uses the latter.
 

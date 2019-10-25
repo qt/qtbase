@@ -66,6 +66,12 @@
     Qt also offers a \l{foreach} keyword that make it very
     easy to iterate over all the items stored in a container.
 
+    \note Since Qt 5.14, range constructors are available for most of the
+    container classes. QMultiMap is a notable exception. Their use is
+    encouraged in place of the various from/to methods. For example:
+
+    \snippet code/doc_src_containers.cpp 25
+
     \section1 The Container Classes
 
     Qt provides the following sequential containers: QList,

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -92,7 +92,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v35.1.
+    QLocale's data is based on Common Locale Data Repository v36.
 
     \sa QString::arg(), QString::toInt(), QString::toDouble(),
     QInputMethod::locale()
@@ -172,6 +172,7 @@
     \value Chechen
     \value Cherokee
     \value Chewa Obsolete, please use Nyanja
+    \value Chickasaw Since Qt 5.14
     \value Chiga
     \value Chinese
     \value Church
@@ -333,6 +334,7 @@
     \value Morisyen
     \value Mru Since Qt 5.7
     \value Mundang
+    \value Muscogee Since Qt 5.14
     \value Nama
     \value NauruLanguage
     \value Navaho
@@ -406,6 +408,7 @@
     \value SichuanYi
     \value Sicilian Since Qt 5.12
     \value Sidamo
+    \value Silesian Since Qt 5.14
     \value Sindhi
     \value Sinhala
     \value SkoltSami Since Qt 5.5

@@ -1005,6 +1005,8 @@
 
     \snippet code/doc_src_qset.cpp 13
 
+    \include containers-range-constructor.qdocinc
+
     \sa fromList(), QList::fromSet()
 */
 
@@ -1014,6 +1016,8 @@
     order of the elements in the QList is undefined.
 
     This is the same as toList().
+
+    \include containers-range-constructor.qdocinc
 
     \sa fromList(), QList::fromSet()
 */
@@ -1029,6 +1033,8 @@
     Example:
 
     \snippet code/doc_src_qset.cpp 14
+
+    \include containers-range-constructor.qdocinc
 
     \sa toList(), QList::toSet()
 */

@@ -54,6 +54,7 @@
 #include <QtGui/qfont.h>
 #include <QtGui/qtguiglobal.h>
 #include <QtGui/qpalette.h>
+#include <QtGui/qtextdocument.h>
 #include <QtGui/qtextlist.h>
 #include <QtCore/qstack.h>
 
@@ -67,27 +68,28 @@ class Q_GUI_EXPORT QTextMarkdownImporter
 {
 public:
     enum Feature {
-        // Must be kept in sync with MD_FLAG_* in md4c.h
-        FeatureCollapseWhitespace =       0x0001, // MD_FLAG_COLLAPSEWHITESPACE
-        FeaturePermissiveATXHeaders =     0x0002, // MD_FLAG_PERMISSIVEATXHEADERS
-        FeaturePermissiveURLAutoLinks =   0x0004, // MD_FLAG_PERMISSIVEURLAUTOLINKS
-        FeaturePermissiveMailAutoLinks =  0x0008, // MD_FLAG_PERMISSIVEEMAILAUTOLINKS
-        FeatureNoIndentedCodeBlocks =     0x0010, // MD_FLAG_NOINDENTEDCODEBLOCKS
-        FeatureNoHTMLBlocks =             0x0020, // MD_FLAG_NOHTMLBLOCKS
-        FeatureNoHTMLSpans =              0x0040, // MD_FLAG_NOHTMLSPANS
-        FeatureTables =                   0x0100, // MD_FLAG_TABLES
-        FeatureStrikeThrough =            0x0200, // MD_FLAG_STRIKETHROUGH
-        FeaturePermissiveWWWAutoLinks =   0x0400, // MD_FLAG_PERMISSIVEWWWAUTOLINKS
-        FeatureTasklists =                0x0800, // MD_FLAG_TASKLISTS
+        FeatureCollapseWhitespace =       0x0001,
+        FeaturePermissiveATXHeaders =     0x0002,
+        FeaturePermissiveURLAutoLinks =   0x0004,
+        FeaturePermissiveMailAutoLinks =  0x0008,
+        FeatureNoIndentedCodeBlocks =     0x0010,
+        FeatureNoHTMLBlocks =             0x0020,
+        FeatureNoHTMLSpans =              0x0040,
+        FeatureTables =                   0x0100,
+        FeatureStrikeThrough =            0x0200,
+        FeaturePermissiveWWWAutoLinks =   0x0400,
+        FeatureTasklists =                0x0800,
         // composite flags
-        FeaturePermissiveAutoLinks =  FeaturePermissiveMailAutoLinks | FeaturePermissiveURLAutoLinks | FeaturePermissiveWWWAutoLinks, // MD_FLAG_PERMISSIVEAUTOLINKS
-        FeatureNoHTML = FeatureNoHTMLBlocks | FeatureNoHTMLSpans, // MD_FLAG_NOHTML
-        DialectCommonMark = 0,                   // MD_DIALECT_COMMONMARK
-        DialectGitHub = FeaturePermissiveAutoLinks | FeatureTables | FeatureStrikeThrough | FeatureTasklists // MD_DIALECT_GITHUB
+        FeaturePermissiveAutoLinks = FeaturePermissiveMailAutoLinks
+            | FeaturePermissiveURLAutoLinks | FeaturePermissiveWWWAutoLinks,
+        FeatureNoHTML = QTextDocument::MarkdownNoHTML,
+        DialectCommonMark = QTextDocument::MarkdownDialectCommonMark,
+        DialectGitHub = QTextDocument::MarkdownDialectGitHub
     };
     Q_DECLARE_FLAGS(Features, Feature)
 
     QTextMarkdownImporter(Features features);
+    QTextMarkdownImporter(QTextDocument::MarkdownFeatures features);
 
     void import(QTextDocument *doc, const QString &markdown);
 

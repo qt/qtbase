@@ -99,6 +99,12 @@ cmake_umbrella_config_module_location_for_install.output = $$DESTDIR/cmake/insta
 cmake_umbrella_config_version_file.input = $$PWD/../../mkspecs/features/data/cmake/Qt5ConfigVersion.cmake.in
 cmake_umbrella_config_version_file.output = $$DESTDIR/cmake/Qt5/Qt5ConfigVersion.cmake
 
+android {
+    cmake_android_support.input = $$PWD/Qt5AndroidSupport.cmake
+    cmake_android_support.output = $$DESTDIR/cmake/Qt5Core/Qt5AndroidSupport.cmake
+    cmake_android_support.CONFIG = verbatim
+}
+
 load(cmake_functions)
 
 defineTest(pathIsAbsolute) {
@@ -143,6 +149,11 @@ QMAKE_SUBSTITUTES += \
     cmake_umbrella_config_version_file \
     cmake_extras_mkspec_dir \
     cmake_extras_mkspec_dir_for_install
+
+android {
+    QMAKE_SUBSTITUTES += cmake_android_support
+    ctest_qt5_module_files.files += $$cmake_android_support.output
+}
 
 ctest_qt5_module_files.files += $$ctest_macros_file.output $$cmake_extras_mkspec_dir_for_install.output
 

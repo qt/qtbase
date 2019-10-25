@@ -1006,8 +1006,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         if(!project->isEmpty("PRECOMPILED_DIR"))
             precomph_out_dir = project->first("PRECOMPILED_DIR");
         precomph_out_dir += project->first("QMAKE_ORIG_TARGET");
-        if (!project->isActiveConfig("clang_pch_style"))
-            precomph_out_dir += project->first("QMAKE_PCH_OUTPUT_EXT");
+        precomph_out_dir += project->first("QMAKE_PCH_OUTPUT_EXT");
 
         if (project->isActiveConfig("icc_pch_style")) {
             // icc style
@@ -1126,8 +1125,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             if(!project->isEmpty("PRECOMPILED_DIR"))
                 pchOutput = project->first("PRECOMPILED_DIR");
             pchOutput += pchBaseName;
-            if (!project->isActiveConfig("clang_pch_style"))
-                pchOutput += project->first("QMAKE_PCH_OUTPUT_EXT");
+            pchOutput += project->first("QMAKE_PCH_OUTPUT_EXT");
 
             if (!project->isActiveConfig("icc_pch_style")) {
                 // gcc style (including clang_pch_style)
