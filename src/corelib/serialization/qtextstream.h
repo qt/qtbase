@@ -279,9 +279,12 @@ namespace Qt {
 using namespace QTextStreamFunctions;
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_CLANG("-Wheader-hygiene")
 // We use 'using namespace' as that doesn't cause
 // conflicting definitions compiler errors.
 using namespace QTextStreamFunctions;
+QT_WARNING_POP
 #endif // QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && !defined(Q_QDOC)
 
 inline QTextStreamManipulator qSetFieldWidth(int width)

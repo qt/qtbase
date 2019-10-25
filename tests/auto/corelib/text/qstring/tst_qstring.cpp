@@ -37,6 +37,7 @@
 # undef QT_ASCII_CAST_WARNINGS
 #endif
 
+#include <private/qglobal_p.h> // for the icu feature test
 #include <QtTest/QtTest>
 #include <qregexp.h>
 #include <qregularexpression.h>
@@ -577,7 +578,7 @@ private slots:
     void repeated_data() const;
     void compareRef();
     void arg_locale();
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     void toUpperLower_icu();
 #endif
 #if !defined(QT_NO_UNICODE_LITERAL)
@@ -2235,7 +2236,7 @@ void tst_QString::toUpper()
     upper += QChar(QChar::highSurrogate(0x10428));
     QCOMPARE(lower.toUpper(), upper);
 
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     // test doesn't work with ICU support, since QChar is unaware of any locale
     QEXPECT_FAIL("", "test doesn't work with ICU support, since QChar is unaware of any locale", Continue);
     QVERIFY(false);
@@ -2247,7 +2248,7 @@ void tst_QString::toUpper()
         if (upper.length() == 1)
             QVERIFY(upper == QString(1, QChar(i).toUpper()));
     }
-#endif
+#endif // icu
 }
 
 void tst_QString::toLower()
@@ -2295,7 +2296,7 @@ void tst_QString::toLower()
     upper += QChar(QChar::highSurrogate(0x10400));
     QCOMPARE( upper.toLower(), lower);
 
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     // test doesn't work with ICU support, since QChar is unaware of any locale
     QEXPECT_FAIL("", "test doesn't work with ICU support, since QChar is unaware of any locale", Continue);
     QVERIFY(false);
@@ -2307,7 +2308,7 @@ void tst_QString::toLower()
         if (lower.length() == 1)
             QVERIFY(str.toLower() == QString(1, QChar(i).toLower()));
     }
-#endif
+#endif // icu
 }
 
 void tst_QString::isUpper()
@@ -5623,7 +5624,7 @@ void tst_QString::localeAwareCompare()
     QStringRef r2(&s2, 0, s2.length());
 
     if (!locale.isEmpty()) {
-#if defined (Q_OS_DARWIN) || defined(QT_USE_ICU)
+#if defined (Q_OS_DARWIN) || QT_CONFIG(icu)
         QSKIP("Setting the locale is not supported on OS X or ICU (you can set the C locale, but that won't affect localeAwareCompare)");
 #else
         const char *newLocale = setlocale(LC_ALL, locale.toLatin1());
@@ -5631,10 +5632,10 @@ void tst_QString::localeAwareCompare()
             setlocale(LC_ALL, "");
             QSKIP("Please install the proper locale on this machine to test properly");
         }
-#endif
+#endif // Darwin || icu
     }
 
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
     // ### for c1, ICU disagrees with libc on how to compare
     QEXPECT_FAIL("c1", "ICU disagrees with test", Abort);
 #endif
@@ -6592,7 +6593,7 @@ void tst_QString::arg_locale()
 }
 
 
-#ifdef QT_USE_ICU
+#if QT_CONFIG(icu)
 // Qt has to be built with ICU support
 void tst_QString::toUpperLower_icu()
 {
@@ -6626,7 +6627,7 @@ void tst_QString::toUpperLower_icu()
     QCOMPARE(l.toLower(sup), sup);
     QCOMPARE(l.toLower(QString::fromLatin1("i")), QString::fromLatin1("i"));
 }
-#endif
+#endif // icu
 
 #if !defined(QT_NO_UNICODE_LITERAL)
 // Only tested on c++0x compliant compiler or gcc

@@ -1258,7 +1258,7 @@ bool updateLibsXml(Options *options)
                 QFileInfo extraLibInfo(extraLib);
                 QString name = extraLibInfo.fileName().mid(sizeof("lib") - 1);
                 name.chop(sizeof(".so") - 1);
-                extraLibs += QLatin1String("    <item>%1;%2").arg(it.key(), name);
+                extraLibs += QLatin1String("        <item>%1;%2</item>\n").arg(it.key(), name);
             }
         }
 
