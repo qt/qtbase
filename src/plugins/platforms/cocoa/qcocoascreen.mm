@@ -552,10 +552,10 @@ QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) 
 */
 QCocoaScreen *QCocoaScreen::primaryScreen()
 {
-    auto screen = static_cast<QCocoaScreen *>(QGuiApplication::primaryScreen()->handle());
-    Q_ASSERT_X(screen == get(CGMainDisplayID()), "QCocoaScreen",
-        "The application's primary screen should always be in sync with the main display");
-    return screen;
+    // Note: The primary screen that Qt knows about may not match the current CGMainDisplayID()
+    // if macOS has not yet been able to inform us that the main display has changed, but we
+    // will update the primary screen accordingly once the reconfiguration callback comes in.
+    return static_cast<QCocoaScreen *>(QGuiApplication::primaryScreen()->handle());
 }
 
 QList<QPlatformScreen*> QCocoaScreen::virtualSiblings() const
