@@ -657,7 +657,8 @@ qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
         // Check if there is a factor set on the screen object or associated
         // with the screen name. These are mutually exclusive, so checking
         // order is not significant.
-        QVariant byIndex = screen->screen()->property(scaleFactorProperty);
+        auto qScreen = screen->screen();
+        auto byIndex = qScreen ? qScreen->property(scaleFactorProperty) : QVariant();
         auto byNameIt = qNamedScreenScaleFactors()->constFind(screen->name());
         if (byIndex.isValid()) {
             screenPropertyUsed = true;
