@@ -39,6 +39,7 @@
 
 #include "qdomhelpers_p.h"
 #include "qdom_p.h"
+#include "qxmlstream.h"
 #include "private/qxml_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -166,6 +167,18 @@ QDomBuilder::ErrorInfo QDomHandler::errorInfo() const
  *
  **************************************************************/
 
+int QDomDocumentLocator::column() const
+{
+    Q_ASSERT(reader);
+    return static_cast<int>(reader->columnNumber());
+}
+
+int QDomDocumentLocator::line() const
+{
+    Q_ASSERT(reader);
+    return static_cast<int>(reader->lineNumber());
+}
+
 void QSAXDocumentLocator::setLocator(QXmlLocator *l)
 {
     locator = l;
@@ -247,6 +260,44 @@ bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
             domElement->setAttributeNS(atts.uri(i), atts.qName(i), atts.value(i));
         else
             domElement->setAttribute(atts.qName(i), atts.value(i));
+    }
+
+    return true;
+}
+
+inline QString stringRefToString(const QStringRef &stringRef)
+{
+    // Calling QStringRef::toString() on a NULL QStringRef in some cases returns
+    // an empty string (i.e. QString("")) instead of a NULL string (i.e. QString()).
+    // QDom implementation differentiates between NULL and empty strings, so
+    // we need this as workaround to keep the current behavior unchanged.
+    return stringRef.isNull() ? QString() : stringRef.toString();
+}
+
+bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
+                               const QXmlStreamAttributes &atts)
+{
+    QDomNodePrivate *n =
+            nsProcessing ? doc->createElementNS(nsURI, qName) : doc->createElement(qName);
+    if (!n)
+        return false;
+
+    n->setLocation(locator->line(), locator->column());
+
+    node->appendChild(n);
+    node = n;
+
+    // attributes
+    for (const auto &attr : atts) {
+        auto domElement = static_cast<QDomElementPrivate *>(node);
+        if (nsProcessing) {
+            domElement->setAttributeNS(stringRefToString(attr.namespaceUri()),
+                                       stringRefToString(attr.qualifiedName()),
+                                       stringRefToString(attr.value()));
+        } else {
+            domElement->setAttribute(stringRefToString(attr.qualifiedName()),
+                                     stringRefToString(attr.value()));
+        }
     }
 
     return true;
@@ -365,6 +416,227 @@ bool QDomBuilder::notationDecl(const QString &name, const QString &publicId,
     // keep the refcount balanced: appendChild() does a ref anyway.
     n->ref.deref();
     doc->doctype()->appendChild(n);
+    return true;
+}
+
+/**************************************************************
+ *
+ * QDomParser
+ *
+ **************************************************************/
+
+QDomParser::QDomParser(QDomDocumentPrivate *d, QXmlStreamReader *r, bool namespaceProcessing)
+    : reader(r), locator(r), domBuilder(d, &locator, namespaceProcessing)
+{
+}
+
+bool QDomParser::parse()
+{
+    return parseProlog() && parseBody();
+}
+
+QDomBuilder::ErrorInfo QDomParser::errorInfo() const
+{
+    return domBuilder.error();
+}
+
+bool QDomParser::parseProlog()
+{
+    Q_ASSERT(reader);
+
+    bool foundDtd = false;
+
+    while (!reader->atEnd()) {
+        reader->readNext();
+
+        if (reader->hasError()) {
+            domBuilder.fatalError(reader->errorString());
+            return false;
+        }
+
+        switch (reader->tokenType()) {
+        case QXmlStreamReader::StartDocument:
+            if (!reader->documentVersion().isEmpty()) {
+                QString value(QLatin1String("version='"));
+                value += reader->documentVersion();
+                value += QLatin1Char('\'');
+                if (!reader->documentEncoding().isEmpty()) {
+                    value += QLatin1String(" encoding='");
+                    value += reader->documentEncoding();
+                    value += QLatin1Char('\'');
+                }
+                if (reader->isStandaloneDocument()) {
+                    value += QLatin1String(" standalone='yes'");
+                } else {
+                    // TODO: Add standalone='no', if 'standalone' is specified. With the current
+                    // QXmlStreamReader there is no way to figure out if it was specified or not.
+                    // QXmlStreamReader needs to be modified for handling that case correctly.
+                }
+
+                if (!domBuilder.processingInstruction(QLatin1String("xml"), value)) {
+                    domBuilder.fatalError(
+                            QDomParser::tr("Error occurred while processing XML declaration"));
+                    return false;
+                }
+            }
+            break;
+        case QXmlStreamReader::DTD:
+            if (foundDtd) {
+                domBuilder.fatalError(QDomParser::tr("Multiple DTD sections are not allowed"));
+                return false;
+            }
+            foundDtd = true;
+
+            if (!domBuilder.startDTD(stringRefToString(reader->dtdName()),
+                                     stringRefToString(reader->dtdPublicId()),
+                                     stringRefToString(reader->dtdSystemId()))) {
+                domBuilder.fatalError(
+                        QDomParser::tr("Error occurred while processing document type declaration"));
+                return false;
+            }
+            if (!parseMarkupDecl())
+                return false;
+            break;
+        case QXmlStreamReader::Comment:
+            if (!domBuilder.comment(reader->text().toString())) {
+                domBuilder.fatalError(QDomParser::tr("Error occurred while processing comment"));
+                return false;
+            }
+            break;
+        case QXmlStreamReader::ProcessingInstruction:
+            if (!domBuilder.processingInstruction(reader->processingInstructionTarget().toString(),
+                                                  reader->processingInstructionData().toString())) {
+                domBuilder.fatalError(
+                        QDomParser::tr("Error occurred while processing a processing instruction"));
+                return false;
+            }
+            break;
+        default:
+            // If the token is none of the above, prolog processing is done.
+            return true;
+        }
+    }
+
+    return true;
+}
+
+bool QDomParser::parseBody()
+{
+    Q_ASSERT(reader);
+
+    std::stack<QStringRef> tagStack;
+    while (!reader->atEnd() && !reader->hasError()) {
+        switch (reader->tokenType()) {
+        case QXmlStreamReader::StartElement:
+            tagStack.push(reader->qualifiedName());
+            if (!domBuilder.startElement(stringRefToString(reader->namespaceUri()),
+                                         stringRefToString(reader->qualifiedName()),
+                                         reader->attributes())) {
+                domBuilder.fatalError(
+                        QDomParser::tr("Error occurred while processing a start element"));
+                return false;
+            }
+            break;
+        case QXmlStreamReader::EndElement:
+            if (tagStack.empty() || reader->qualifiedName() != tagStack.top()) {
+                domBuilder.fatalError(
+                        QDomParser::tr("Unexpected end element '%1'").arg(reader->name()));
+                return false;
+            }
+            tagStack.pop();
+            if (!domBuilder.endElement()) {
+                domBuilder.fatalError(
+                        QDomParser::tr("Error occurred while processing an end element"));
+                return false;
+            }
+            break;
+        case QXmlStreamReader::Characters:
+            if (!reader->isWhitespace()) { // Skip the content consisting of only whitespaces
+                if (!reader->text().toString().trimmed().isEmpty()) {
+                    if (!domBuilder.characters(reader->text().toString(), reader->isCDATA())) {
+                        domBuilder.fatalError(QDomParser::tr(
+                                "Error occurred while processing the element content"));
+                        return false;
+                    }
+                }
+            }
+            break;
+        case QXmlStreamReader::Comment:
+            if (!domBuilder.comment(reader->text().toString())) {
+                domBuilder.fatalError(QDomParser::tr("Error occurred while processing comments"));
+                return false;
+            }
+            break;
+        case QXmlStreamReader::ProcessingInstruction:
+            if (!domBuilder.processingInstruction(reader->processingInstructionTarget().toString(),
+                                                  reader->processingInstructionData().toString())) {
+                domBuilder.fatalError(
+                        QDomParser::tr("Error occurred while processing a processing instruction"));
+                return false;
+            }
+            break;
+        case QXmlStreamReader::EntityReference:
+            if (!domBuilder.skippedEntity(reader->name().toString())) {
+                domBuilder.fatalError(
+                        QDomParser::tr("Error occurred while processing an entity reference"));
+                return false;
+            }
+            break;
+        default:
+            domBuilder.fatalError(QDomParser::tr("Unexpected token"));
+            return false;
+        }
+
+        reader->readNext();
+    }
+
+    if (reader->hasError()) {
+        domBuilder.fatalError(reader->errorString());
+        reader->readNext();
+        return false;
+    }
+
+    if (!tagStack.empty()) {
+        domBuilder.fatalError(QDomParser::tr("Tag mismatch"));
+        return false;
+    }
+
+    return true;
+}
+
+bool QDomParser::parseMarkupDecl()
+{
+    Q_ASSERT(reader);
+
+    const auto entities = reader->entityDeclarations();
+    for (const auto &entityDecl : entities) {
+        // Entity declarations are created only for Extrenal Entities. Internal Entities
+        // are parsed, and QXmlStreamReader handles the parsing itself and returns the
+        // parsed result. So we don't need to do anything for the Internal Entities.
+        if (!entityDecl.publicId().isEmpty() || !entityDecl.systemId().isEmpty()) {
+            // External Entity
+            if (!domBuilder.unparsedEntityDecl(stringRefToString(entityDecl.name()),
+                                               stringRefToString(entityDecl.publicId()),
+                                               stringRefToString(entityDecl.systemId()),
+                                               stringRefToString(entityDecl.notationName()))) {
+                domBuilder.fatalError(
+                        QDomParser::tr("Error occurred while processing entity declaration"));
+                return false;
+            }
+        }
+    }
+
+    const auto notations = reader->notationDeclarations();
+    for (const auto &notationDecl : notations) {
+        if (!domBuilder.notationDecl(stringRefToString(notationDecl.name()),
+                                     stringRefToString(notationDecl.publicId()),
+                                     stringRefToString(notationDecl.systemId()))) {
+            domBuilder.fatalError(
+                    QDomParser::tr("Error occurred while processing notation declaration"));
+            return false;
+        }
+    }
+
     return true;
 }
 

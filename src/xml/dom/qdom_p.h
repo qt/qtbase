@@ -465,6 +465,8 @@ public:
                     int *errorLine, int *errorColumn);
     bool setContent(QXmlInputSource *source, QXmlReader *reader, QXmlSimpleReader *simpleReader,
                     QString *errorMsg, int *errorLine, int *errorColumn);
+    bool setContent(QXmlStreamReader *reader, bool namespaceProcessing, QString *errorMsg,
+                    int *errorLine, int *errorColumn);
 
     // Attributes
     QDomDocumentTypePrivate *doctype() { return type.data(); }

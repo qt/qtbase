@@ -91,6 +91,7 @@ class QDomNode;
 class QDomEntity;
 class QDomNotation;
 class QDomCharacterData;
+class QXmlStreamReader;
 
 class Q_XML_EXPORT QDomImplementation
 {
@@ -343,6 +344,8 @@ public:
     bool setContent(const QString& text, QString *errorMsg=nullptr, int *errorLine=nullptr, int *errorColumn=nullptr );
     bool setContent(QIODevice* dev, QString *errorMsg=nullptr, int *errorLine=nullptr, int *errorColumn=nullptr );
     bool setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg=nullptr, int *errorLine=nullptr, int *errorColumn=nullptr );
+    bool setContent(QXmlStreamReader *reader, bool namespaceProcessing, QString *errorMsg = nullptr,
+                    int *errorLine = nullptr, int *errorColumn = nullptr);
 
     // Qt extensions
     QString toString(int = 1) const;

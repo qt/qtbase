@@ -39,6 +39,7 @@
 #ifndef QDOMHELPERS_P_H
 #define QDOMHELPERS_P_H
 
+#include <qcoreapplication.h>
 #include <qglobal.h>
 #include <qxml.h>
 
@@ -57,6 +58,8 @@ QT_BEGIN_NAMESPACE
 
 class QDomDocumentPrivate;
 class QDomNodePrivate;
+class QXmlStreamReader;
+class QXmlStreamAttributes;
 
 /**************************************************************
  *
@@ -75,6 +78,19 @@ public:
     virtual ~QXmlDocumentLocator() = default;
     virtual int column() const = 0;
     virtual int line() const = 0;
+};
+
+class QDomDocumentLocator : public QXmlDocumentLocator
+{
+public:
+    QDomDocumentLocator(QXmlStreamReader *r) : reader(r) {}
+    ~QDomDocumentLocator() override = default;
+
+    int column() const override;
+    int line() const override;
+
+private:
+    QXmlStreamReader *reader;
 };
 
 class QSAXDocumentLocator : public QXmlDocumentLocator
@@ -105,6 +121,7 @@ public:
 
     bool endDocument();
     bool startElement(const QString &nsURI, const QString &qName, const QXmlAttributes &atts);
+    bool startElement(const QString &nsURI, const QString &qName, const QXmlStreamAttributes &atts);
     bool endElement();
     bool characters(const QString &characters, bool cdata = false);
     bool processingInstruction(const QString &target, const QString &data);
@@ -185,6 +202,31 @@ private:
     bool cdata;
     QXmlSimpleReader *reader;
     QSAXDocumentLocator locator;
+    QDomBuilder domBuilder;
+};
+
+/**************************************************************
+ *
+ * QDomParser
+ *
+ **************************************************************/
+
+class QDomParser
+{
+    Q_DECLARE_TR_FUNCTIONS(QDomParser)
+public:
+    QDomParser(QDomDocumentPrivate *d, QXmlStreamReader *r, bool namespaceProcessing);
+
+    bool parse();
+    QDomBuilder::ErrorInfo errorInfo() const;
+
+private:
+    bool parseProlog();
+    bool parseBody();
+    bool parseMarkupDecl();
+
+    QXmlStreamReader *reader;
+    QDomDocumentLocator locator;
     QDomBuilder domBuilder;
 };
 
