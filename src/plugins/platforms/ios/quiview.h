@@ -70,8 +70,3 @@ QT_END_NAMESPACE
 @property (nonatomic, readonly) UIEdgeInsets qt_safeAreaInsets;
 @end
 
-#if !QT_IOS_PLATFORM_SDK_EQUAL_OR_ABOVE(130000)
-@interface UITextInteraction : NSObject
-@end
-#endif
-
