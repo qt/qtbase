@@ -23,8 +23,6 @@ endif()
 
 set(INSTALL_LIBEXECDIR "${_default_libexec}" CACHE STRING
     "Helper programs [ARCHDATADIR/bin on Windows, ARCHDATADIR/libexec otherwise]")
-set(INSTALL_IMPORTDIR "${INSTALL_ARCHDATADIR}/imports" CACHE STRING
-    "QML1 imports [ARCHDATADIR/imports]")
 set(INSTALL_QMLDIR "${INSTALL_ARCHDATADIR}/qml" CACHE STRING
     "QML2 imports [ARCHDATADIR/qml]")
 set(INSTALL_DATADIR "." CACHE STRING  "Arch-independent data [PREFIX]")
@@ -3256,7 +3254,6 @@ function(qt_generate_qconfig_cpp)
     qt_add_string_to_qconfig_cpp("libexec")
     qt_add_string_to_qconfig_cpp("bin")
     qt_add_string_to_qconfig_cpp("plugins")
-    qt_add_string_to_qconfig_cpp("imports")
     qt_add_string_to_qconfig_cpp("qml")
     qt_add_string_to_qconfig_cpp(".")
     qt_add_string_to_qconfig_cpp(".")
