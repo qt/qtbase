@@ -102,14 +102,14 @@ int main(int argc, char **argv)
     }
     QFile file(argv[1]);
     if (!file.open(QIODevice::ReadOnly)) {
-        fprintf("Failed to open input file (%s); see %s -usage", argv[1], argv[0]);
+        fprintf(stderr, "Failed to open input file (%s); see %s -usage", argv[1], argv[0]);
         return 1;
     }
 
     QFile outFile(argv[2]);
     if (!outFile.open(QIODevice::WriteOnly)) {
-        file.close()
-        fprintf("Failed to open output file (%s); see %s -usage", argv[2], argv[0]);
+        file.close();
+        fprintf(stderr, "Failed to open output file (%s); see %s -usage", argv[2], argv[0]);
         return 1;
     }
 

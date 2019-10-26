@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 #############################################################################
 ##
-## Copyright (C) 2016 The Qt Company Ltd.
+## Copyright (C) 2019 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -181,6 +181,7 @@ windowsIdList = (
     (u'Pacific Standard Time (Mexico)',  -28800),
     (u'Pakistan Standard Time',           18000),
     (u'Paraguay Standard Time',          -14400),
+    (u'Qyzylorda Standard Time',          18000), # a.k.a. Kyzylorda, in Kazakhstan
     (u'Romance Standard Time',             3600),
     (u'Russia Time Zone 3',               14400),
     (u'Russia Time Zone 10',              39600),
@@ -221,6 +222,7 @@ windowsIdList = (
     (u'UTC+13',                           46800),
     (u'Venezuela Standard Time',         -16200),
     (u'Vladivostok Standard Time',        36000),
+    (u'Volgograd Standard Time',          14400),
     (u'W. Australia Standard Time',       28800),
     (u'W. Central Africa Standard Time',   3600),
     (u'W. Europe Standard Time',           3600),
@@ -386,7 +388,7 @@ ianaIdData = ByteArrayData()
 # Write Windows/IANA table
 newTempFile.write("// Windows ID Key, Country Enum, IANA ID Index\n")
 newTempFile.write("static const QZoneData zoneDataTable[] = {\n")
-for index in windowsIdDict:
+for index in sorted(windowsIdDict):
     data = windowsIdDict[index]
     newTempFile.write("    { %6d,%6d,%6d }, // %s / %s\n"
                          % (data['windowsKey'],

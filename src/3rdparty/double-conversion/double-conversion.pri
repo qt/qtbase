@@ -1,4 +1,4 @@
-INCLUDEPATH += $$PWD/.. $$PWD/include $$PWD/include/double-conversion
+INCLUDEPATH += $$PWD/.. $$PWD/include
 SOURCES += \
     $$PWD/bignum.cc \
     $$PWD/bignum-dtoa.cc \
@@ -20,5 +20,3 @@ HEADERS += \
     $$PWD/ieee.h \
     $$PWD/strtod.h \
     $$PWD/include/double-conversion/utils.h
-
-OTHER_FILES += README

@@ -136,7 +136,7 @@ public:
         signed char format = 0;
         uchar *data = nullptr;
     private:
-        Q_DISABLE_COPY(Glyph);
+        Q_DISABLE_COPY(Glyph)
     };
 
     virtual ~QFontEngine();

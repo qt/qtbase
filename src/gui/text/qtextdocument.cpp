@@ -3420,7 +3420,7 @@ QString QTextDocument::toMarkdown(QTextDocument::MarkdownFeatures features) cons
 #if QT_CONFIG(textmarkdownreader)
 void QTextDocument::setMarkdown(const QString &markdown, QTextDocument::MarkdownFeatures features)
 {
-    QTextMarkdownImporter(static_cast<QTextMarkdownImporter::Features>(int(features))).import(this, markdown);
+    QTextMarkdownImporter(features).import(this, markdown);
 }
 #endif
 
