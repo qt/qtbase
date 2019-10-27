@@ -93,10 +93,9 @@ void QCocoaScreen::initializeScreens()
                 mainDisplay->updateProperties();
                 qCInfo(lcQpaScreen) << "Primary screen changed to" << mainDisplay;
                 QWindowSystemInterface::handlePrimaryScreenChanged(mainDisplay);
+                if (cocoaScreen == mainDisplay)
+                    return; // Already reconfigured
             }
-
-            if (cocoaScreen == mainDisplay)
-                return; // Already reconfigured
 
             cocoaScreen->updateProperties();
             qCInfo(lcQpaScreen) << "Reconfigured" << cocoaScreen;
