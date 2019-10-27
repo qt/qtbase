@@ -127,7 +127,7 @@ void QCocoaScreen::cleanupScreens()
 
 void QCocoaScreen::remove()
 {
-    m_displayId = 0; // Prevent stale references during removal
+    m_displayId = kCGNullDirectDisplay; // Prevent stale references during removal
 
     // This may result in the application responding to QGuiApplication::screenRemoved
     // by moving the window to another screen, either by setGeometry, or by setScreen.
