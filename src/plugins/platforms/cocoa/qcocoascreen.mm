@@ -597,7 +597,7 @@ NSScreen *QCocoaScreen::nativeScreen() const
     QCFType<CFUUIDRef> uuid = CGDisplayCreateUUIDFromDisplayID(m_displayId);
 
     for (NSScreen *screen in [NSScreen screens]) {
-        if (CGDisplayCreateUUIDFromDisplayID(screen.qt_displayId) == uuid)
+        if (QCFType<CFUUIDRef>(CGDisplayCreateUUIDFromDisplayID(screen.qt_displayId)) == uuid)
             return screen;
     }
 
