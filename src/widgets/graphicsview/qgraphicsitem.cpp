@@ -4550,6 +4550,8 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
 }
 
 #if QT_DEPRECATED_SINCE(5, 13)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 /*!
     \obsolete
 
@@ -4588,6 +4590,7 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     // Send post-notification.
     itemChange(ItemTransformHasChanged, QVariant::fromValue<QTransform>(newTransform));
 }
+QT_WARNING_POP
 #endif
 
 /*!
@@ -11524,9 +11527,12 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change)
         str = "ItemFlagsHaveChanged";
         break;
 #if QT_DEPRECATED_SINCE(5, 14)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     case QGraphicsItem::ItemMatrixChange:
         str = "ItemMatrixChange";
         break;
+QT_WARNING_POP
 #endif
     case QGraphicsItem::ItemParentChange:
         str = "ItemParentChange";
