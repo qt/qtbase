@@ -1,12 +1,14 @@
-# Generated from qregexpvalidator.pro.
+# Generated from qshadergenerator.pro.
 
 #####################################################################
-## tst_qregexpvalidator Test:
+## tst_qshadergenerator Test:
 #####################################################################
 
-add_qt_test(tst_qregexpvalidator
+add_qt_test(tst_qshadergenerator
     SOURCES
-        tst_qregexpvalidator.cpp
+        tst_qshadergenerator.cpp
+    LIBRARIES
+        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
 )
