@@ -504,7 +504,7 @@ void QWellArray::keyPressEvent(QKeyEvent* e)
 // Event filter to be installed on the dialog while in color-picking mode.
 class QColorPickingEventFilter : public QObject {
 public:
-    explicit QColorPickingEventFilter(QColorDialogPrivate *dp, QObject *parent = 0) : QObject(parent), m_dp(dp) {}
+    explicit QColorPickingEventFilter(QColorDialogPrivate *dp, QObject *parent) : QObject(parent), m_dp(dp) {}
 
     bool eventFilter(QObject *, QEvent *event) override
     {
@@ -1611,7 +1611,7 @@ void QColorDialogPrivate::_q_pickScreenColor()
 {
     Q_Q(QColorDialog);
     if (!colorPickingEventFilter)
-        colorPickingEventFilter = new QColorPickingEventFilter(this);
+        colorPickingEventFilter = new QColorPickingEventFilter(this, q);
     q->installEventFilter(colorPickingEventFilter);
     // If user pushes Escape, the last color before picking will be restored.
     beforeScreenColorPicking = cs->currentColor();

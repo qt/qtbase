@@ -354,6 +354,11 @@ bool QXcbDrag::findXdndAwareTarget(const QPoint &globalPos, xcb_window_t *target
 
 void QXcbDrag::move(const QPoint &globalPos, Qt::MouseButtons b, Qt::KeyboardModifiers mods)
 {
+    // currentDrag() might be deleted while 'drag' is progressing
+    if (!currentDrag()) {
+        cancel();
+        return;
+    }
     // The source sends XdndEnter and XdndPosition to the target.
     if (source_sameanswer.contains(globalPos) && source_sameanswer.isValid())
         return;
@@ -1076,7 +1081,8 @@ void QXcbDrag::cancel()
         send_leave();
 
     // remove canceled object
-    currentDrag()->deleteLater();
+    if (currentDrag())
+        currentDrag()->deleteLater();
 
     canceled = true;
 }
