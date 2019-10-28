@@ -233,6 +233,16 @@ def is_config_test_project(project_file_path: str = "") -> bool:
     )
 
 
+def is_benchmark_project(project_file_path: str = "") -> bool:
+    qmake_conf_path = find_qmake_conf(project_file_path)
+    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+
+    project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
+    # If the project file is found in a subdir called 'tests/benchmarks'
+    # relative to the repo source dir, then it must be benchmark
+    return project_relative_path.startswith("tests/benchmarks")
+
+
 @lru_cache(maxsize=None)
 def find_qmake_conf(project_file_path: str = "") -> str:
     if not os.path.isabs(project_file_path):
@@ -2661,22 +2671,29 @@ def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int
     binary_name = scope.TARGET
     assert binary_name
 
+    is_benchmark = is_benchmark_project(scope.file_absolute_path)
+
     is_qt_test_helper = "qt_test_helper" in scope.get("_LOADED")
 
     extra = ["GUI"] if gui and not is_qt_test_helper else []
     cmake_function_call = "add_qt_executable"
+    extra_keys = []
 
     if is_qt_test_helper:
         binary_name += "_helper"
         cmake_function_call = "add_qt_test_helper"
 
-    target_path = scope.get_string("target.path")
-    if target_path:
-        target_path = replace_path_constants(target_path, scope)
-        if not scope.get("DESTDIR"):
-            extra.append(f'OUTPUT_DIRECTORY "{target_path}"')
-        if "target" in scope.get("INSTALLS"):
-            extra.append(f'INSTALL_DIRECTORY "{target_path}"')
+    if is_benchmark:
+        cmake_function_call = "add_qt_benchmark"
+    else:
+        extra_keys = ["target.path", "INSTALLS"]
+        target_path = scope.get_string("target.path")
+        if target_path:
+            target_path = replace_path_constants(target_path, scope)
+            if not scope.get("DESTDIR"):
+                extra.append(f'OUTPUT_DIRECTORY "{target_path}"')
+            if "target" in scope.get("INSTALLS"):
+                extra.append(f'INSTALL_DIRECTORY "{target_path}"')
 
     write_main_part(
         cm_fh,
@@ -2687,7 +2704,7 @@ def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int
         extra_lines=extra,
         indent=indent,
         known_libraries={"Qt::Core"},
-        extra_keys=["target.path", "INSTALLS"],
+        extra_keys=extra_keys,
     )
 
     return binary_name

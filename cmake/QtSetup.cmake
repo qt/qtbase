@@ -73,8 +73,16 @@ if(FEATURE_developer_build)
         set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
     endif()
     set(QT_BUILD_TESTING ON)
+    set(__build_benchmarks ON)
+
+    # Disable benchmarks for single configuration generators which do not build
+    # with release configuration.
+    if (CMAKE_BUILD_TYPE AND NOT CMAKE_BUILD_TYPE STREQUAL Release)
+        set(__build_benchmarks OFF)
+    endif()
 else()
     set(QT_BUILD_TESTING OFF)
+    set(__build_benchmarks OFF)
 endif()
 
 ## Set up testing
@@ -84,6 +92,9 @@ enable_testing()
 
 # Set up building of examples.
 option(BUILD_EXAMPLES "Build Qt examples" ON)
+
+# Build Benchmarks
+option(QT_BUILD_BENCHMARKS "Build Qt Benchmarks" ${__build_benchmarks})
 
 ## Android platform settings
 if(ANDROID)
