@@ -8,7 +8,7 @@ if(NOT APPLE_UIKIT)
     # add_subdirectory(text) # special case missing project
     add_subdirectory(util)
     add_subdirectory(itemmodels)
-    # add_subdirectory(rhi) # special case missing project
+    add_subdirectory(rhi)
 endif()
 if(QT_FEATURE_opengl AND NOT APPLE_UIKIT AND NOT WINRT)
     # add_subdirectory(qopenglconfig) # special case missing project
