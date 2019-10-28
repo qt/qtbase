@@ -156,6 +156,14 @@ void tst_QGraphicsPixmapItem::contains()
     QFETCH(QPointF, point);
     QFETCH(bool, contains);
 
+    // At the time of writing, by default pixmaps will have:
+    //  - The same pixel format of the primary screen (which is platform dependent and may contain alpha)
+    //  - Uninitialized pixels, potentially including an alpha channel
+    //  - A ShapeMode of Mask (which mean it will use the alpha channel as a mask for contains())
+    // This means that in order to prevent undefined behavior in this test, we either need to set
+    // the shapeMode to something else, or set the pixels of the pixmap.
+    pixmap.fill(); // Filling the pixmap to be on the safe side.
+
     SubQGraphicsPixmapItem item(pixmap);
     QCOMPARE(item.contains(point), contains);
 }

@@ -68,7 +68,4 @@ winrt|!qtHaveModule(gui)|!qtConfig(accessibility): SUBDIRS -= qaccessibility
 android: SUBDIRS += \
     android
 
-qtConfig(xkbcommon): {
-    SUBDIRS += \
-        xkbkeyboard
-}
+qtHaveModule(gui):qtConfig(xkbcommon): SUBDIRS += xkbkeyboard

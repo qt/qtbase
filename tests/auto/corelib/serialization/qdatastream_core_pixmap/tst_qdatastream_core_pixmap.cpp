@@ -27,13 +27,8 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
-#include <QtGui/QBitmap>
-#include <QtGui/QPalette>
 #include <QtGui/QPixmap>
-#include <QtGui/QPicture>
-#include <QtGui/QTextLength>
-#include <QtGui/QPainter>
-#include <QtGui/QPen>
+#include <QtGui/QImage>
 
 class tst_QDataStream : public QObject
 {
@@ -41,16 +36,20 @@ Q_OBJECT
 
 private slots:
     void stream_with_pixmap();
-
 };
 
 void tst_QDataStream::stream_with_pixmap()
 {
     // This is a QVariantMap with a 3x3 red QPixmap and two strings inside
-    const QByteArray ba = QByteArray::fromBase64("AAAAAwAAAAIAegAAAAoAAAAACgB0AGgAZQByAGUAAAACAHAAAABBAAAAAAGJUE5HDQoaCgAAAA1JSERSAAAAAwAAAAMIAgAAANlKIugAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAQSURBVAiZY/zPAAVMDJgsAB1bAQXZn5ieAAAAAElFTkSuQmCCAAAAAgBhAAAACgAAAAAKAGgAZQBsAGwAbw==");
+    const QByteArray ba = QByteArray::fromBase64(
+        "AAAAAwAAAAIAegAAAAoAAAAACgB0AGgAZQByAGUAAAACAHAAAABBAAAAAAGJUE5H"
+        "DQoaCgAAAA1JSERSAAAAAwAAAAMIAgAAANlKIugAAAAJcEhZcwAADsQAAA7EAZUr"
+        "DhsAAAAQSURBVAiZY/zPAAVMDJgsAB1bAQXZn5ieAAAAAElFTkSuQmCCAAAAAgBh"
+        "AAAACgAAAAAKAGgAZQBsAGwAbw==");
     QImage dummy; // Needed to make sure qtGui is loaded
 
-    QTest::ignoreMessage(QtWarningMsg, "QPixmap::fromImageInPlace: QPixmap cannot be created without a QGuiApplication");
+    QTest::ignoreMessage(QtWarningMsg, "QPixmap::fromImageInPlace: "
+                         "QPixmap cannot be created without a QGuiApplication");
 
     QVariantMap map;
     QDataStream d(ba);
@@ -58,11 +57,11 @@ void tst_QDataStream::stream_with_pixmap()
     d >> map;
 
     QCOMPARE(map["a"].toString(), QString("hello"));
-    QCOMPARE(map["p"].value<QPixmap>(), QPixmap()); // the pixmap is null because this is not a QGuiApplication
+    // The pixmap is null because this is not a QGuiApplication:
+    QCOMPARE(map["p"].value<QPixmap>(), QPixmap());
     QCOMPARE(map["z"].toString(), QString("there"));
 }
 
 QTEST_GUILESS_MAIN(tst_QDataStream)
 
 #include "tst_qdatastream_core_pixmap.moc"
-

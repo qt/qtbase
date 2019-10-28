@@ -279,8 +279,11 @@ Qt::DropAction QDrag::exec(Qt::DropActions supportedActions, Qt::DropAction defa
     }
     d->supported_actions = supportedActions;
     d->default_action = transformedDefaultDropAction;
-    d->executed_action = QDragManager::self()->drag(this);
-
+    QPointer<QDrag> self = this;
+    auto executed_action = QDragManager::self()->drag(self.data());
+    if (self.isNull())
+        return Qt::IgnoreAction;
+    d->executed_action = executed_action;
     return d->executed_action;
 }
 
