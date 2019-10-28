@@ -322,7 +322,7 @@
                 "qmake": "CONFIG += c11"
             }
         },
-        "c++14": {
+        "cxx14": {
             "label": "C++14 support",
             "type": "compile",
             "test": {
@@ -336,7 +336,7 @@
                 "qmake": "CONFIG += c++11 c++14"
             }
         },
-        "c++17": {
+        "cxx17": {
             "label": "C++17 support",
             "type": "compile",
             "test": {
@@ -357,7 +357,7 @@
                 "qmake": "CONFIG += c++11 c++14 c++17"
             }
         },
-        "c++2a": {
+        "cxx2a": {
             "label": "C++2a support",
             "type": "compile",
             "test": {
@@ -963,12 +963,12 @@
         },
         "c++14": {
             "label": "C++14",
-            "condition": "features.c++11 && tests.c++14",
+            "condition": "features.c++11 && tests.cxx14",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c++17": {
             "label": "C++17",
-            "condition": "features.c++14 && tests.c++17",
+            "condition": "features.c++14 && tests.cxx17",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c++1z": {
@@ -979,7 +979,7 @@
         "c++2a": {
             "label": "C++2a",
             "autoDetect": false,
-            "condition": "features.c++17 && tests.c++2a",
+            "condition": "features.c++17 && tests.cxx2a",
             "output": [ "publicFeature", "publicQtConfig" ]
         },
         "c89": {
