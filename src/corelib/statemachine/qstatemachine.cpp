@@ -2599,7 +2599,7 @@ void QStateMachine::setGlobalRestorePolicy(QState::RestorePolicy restorePolicy)
 
 /*!
   Adds the given \a state to this state machine. The state becomes a top-level
-  state.
+  state and the state machine takes ownership of the state.
 
   If the state is already in a different machine, it will first be removed
   from its old machine, and then added to this machine.
