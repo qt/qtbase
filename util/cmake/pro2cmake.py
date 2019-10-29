@@ -998,7 +998,6 @@ class Scope(object):
         for op in self._operations.get(key, []):
             result = op.process(key, result, op_transformer)
 
-
         return result
 
     def get(self, key: str, *, ignore_includes: bool = False, inherit: bool = False) -> List[str]:
@@ -1269,10 +1268,10 @@ def map_condition(condition: str) -> str:
     condition = condition.replace("|", " OR ")
 
     # new conditions added by the android multi arch qmake build
-    condition = re.sub(r'(^| )x86([^\_]|$)', "TEST_architecture_arch STREQUAL x86", condition)
-    condition = re.sub(r'(^| )x86_64', " TEST_architecture_arch STREQUAL x86_64", condition)
-    condition = re.sub(r'(^| )arm64-v8a', "TEST_architecture_arch STREQUAL arm64", condition)
-    condition = re.sub(r'(^| )armeabi-v7a', "TEST_architecture_arch STREQUAL arm", condition)
+    condition = re.sub(r"(^| )x86([^\_]|$)", "TEST_architecture_arch STREQUAL x86", condition)
+    condition = re.sub(r"(^| )x86_64", " TEST_architecture_arch STREQUAL x86_64", condition)
+    condition = re.sub(r"(^| )arm64-v8a", "TEST_architecture_arch STREQUAL arm64", condition)
+    condition = re.sub(r"(^| )armeabi-v7a", "TEST_architecture_arch STREQUAL arm", condition)
 
     cmake_condition = ""
     for part in condition.split():
@@ -2054,9 +2053,7 @@ def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int =
     condition = map_to_cmake_condition(scope.total_condition)
 
     extend_scope = (
-        f"\n{ind}extend_target({target} CONDITION"
-        f" {condition}\n"
-        f"{extend_qt_string}{ind})\n"
+        f"\n{ind}extend_target({target} CONDITION" f" {condition}\n" f"{extend_qt_string}{ind})\n"
     )
 
     if not extend_qt_string:
@@ -2068,9 +2065,10 @@ def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int =
     write_resources(io_string, target, scope, indent + 1)
     resource_string = io_string.getvalue()
     if len(resource_string) != 0:
-        resource_string = resource_string.strip('\n').rstrip(f'\n{spaces(indent + 1)}')
+        resource_string = resource_string.strip("\n").rstrip(f"\n{spaces(indent + 1)}")
         cm_fh.write(f"\n{spaces(indent)}if({condition})\n{resource_string}")
         cm_fh.write(f"\n{spaces(indent)}endif()\n")
+
 
 def flatten_scopes(scope: Scope) -> List[Scope]:
     result = [scope]  # type: List[Scope]
@@ -2172,7 +2170,7 @@ def write_android_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 
         "ANDROID_LIB_DEPENDENCY_REPLACEMENTS",
         "ANDROID_BUNDLED_FILES",
         "ANDROID_PERMISSIONS",
-        "ANDROID_PACKAGE_SOURCE_DIR"
+        "ANDROID_PACKAGE_SOURCE_DIR",
     ]
 
     has_no_values = True
@@ -2724,17 +2722,13 @@ def write_jar(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
     android_sdk_jar = "${QT_ANDROID_JAR}"
     android_api_level = scope.get_string("API_VERSION")
     if android_api_level:
-        cm_fh.write(f'{spaces(indent)}qt_get_android_sdk_jar_for_api("{android_api_level}" android_sdk)\n\n')
-        android_sdk_jar ="${android_sdk}"
+        cm_fh.write(
+            f'{spaces(indent)}qt_get_android_sdk_jar_for_api("{android_api_level}" android_sdk)\n\n'
+        )
+        android_sdk_jar = "${android_sdk}"
 
     write_source_file_list(
-        cm_fh,
-        scope,
-        "",
-        ["JAVASOURCES"],
-        indent=indent,
-        header=f"set(java_sources\n",
-        footer=")\n",
+        cm_fh, scope, "", ["JAVASOURCES"], indent=indent, header=f"set(java_sources\n", footer=")\n"
     )
 
     cm_fh.write(f"{spaces(indent)}add_jar({target}\n")
@@ -3092,9 +3086,7 @@ def handle_app_or_lib(
     is_lib = scope.TEMPLATE == "lib"
     is_qml_plugin = any("qml_plugin" == s for s in scope.get("_LOADED"))
     is_plugin = "plugin" in config
-    is_qt_plugin = (
-        any("qt_plugin" == s for s in scope.get("_LOADED")) or is_qml_plugin
-    )
+    is_qt_plugin = any("qt_plugin" == s for s in scope.get("_LOADED")) or is_qml_plugin
     target = ""
     gui = all(
         val not in config for val in ["console", "cmdline"]

@@ -605,8 +605,6 @@ endif()
                     continue
                 library_list.append(mapped_library.targetName)
 
-
-
         cm_fh.write(f"qt_config_compile_test({featureName(test)}\n")
         cm_fh.write(lineify("LABEL", data.get("label", "")))
         if librariesCmakeName != "" or len(library_list) != 0:
