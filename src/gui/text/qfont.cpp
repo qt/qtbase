@@ -271,8 +271,13 @@ void QFontPrivate::resolve(uint mask, const QFontPrivate *other)
     if (! (mask & QFont::FamilyResolved))
         request.family = other->request.family;
 
-    if (!(mask & QFont::FamiliesResolved))
+    if (!(mask & QFont::FamiliesResolved)) {
         request.families = other->request.families;
+        // Prepend the family explicitly set so it will be given
+        // preference in this case
+        if (mask & QFont::FamilyResolved)
+            request.families.prepend(request.family);
+    }
 
     if (! (mask & QFont::StyleNameResolved))
         request.styleName = other->request.styleName;
