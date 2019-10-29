@@ -256,6 +256,8 @@ QWindowsIntegrationPrivate::QWindowsIntegrationPrivate(const QStringList &paramL
 
     m_context.initTouch(m_options);
     QPlatformCursor::setCapability(QPlatformCursor::OverrideCursor);
+
+    m_context.initPowerNotificationHandler();
 }
 
 QWindowsIntegrationPrivate::~QWindowsIntegrationPrivate()

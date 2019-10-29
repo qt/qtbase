@@ -176,6 +176,8 @@ public:
     bool initTablet(unsigned integrationOptions);
     bool initPointer(unsigned integrationOptions);
 
+    bool initPowerNotificationHandler();
+
     int defaultDPI() const;
 
     QString registerWindowClass(const QWindow *w);
