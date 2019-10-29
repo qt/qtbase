@@ -62,8 +62,8 @@ bool QLocalServerPrivate::addListener()
 {
     // The object must not change its address once the
     // contained OVERLAPPED struct is passed to Windows.
-    listeners << Listener();
-    Listener &listener = listeners.last();
+    listeners.push_back(std::make_unique<Listener>());
+    auto &listener = listeners.back();
 
     SECURITY_ATTRIBUTES sa;
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -175,7 +175,7 @@ bool QLocalServerPrivate::addListener()
         sa.lpSecurityDescriptor = pSD.data();
     }
 
-    listener.handle = CreateNamedPipe(
+    listener->handle = CreateNamedPipe(
                  reinterpret_cast<const wchar_t *>(fullServerName.utf16()), // pipe name
                  PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,       // read/write access
                  PIPE_TYPE_BYTE |          // byte type pipe
@@ -187,32 +187,32 @@ bool QLocalServerPrivate::addListener()
                  3000,                     // client time-out
                  &sa);
 
-    if (listener.handle == INVALID_HANDLE_VALUE) {
+    if (listener->handle == INVALID_HANDLE_VALUE) {
         setError(QLatin1String("QLocalServerPrivate::addListener"));
-        listeners.removeLast();
+        listeners.pop_back();
         return false;
     }
 
     if (worldSID)
         FreeSid(worldSID);
 
-    memset(&listener.overlapped, 0, sizeof(listener.overlapped));
-    listener.overlapped.hEvent = eventHandle;
+    memset(&listener->overlapped, 0, sizeof(OVERLAPPED));
+    listener->overlapped.hEvent = eventHandle;
 
     // Beware! ConnectNamedPipe will reset the eventHandle to non-signaled.
     // Callers of addListener must check all listeners for connections.
-    if (!ConnectNamedPipe(listener.handle, &listener.overlapped)) {
+    if (!ConnectNamedPipe(listener->handle, &listener->overlapped)) {
         switch (GetLastError()) {
         case ERROR_IO_PENDING:
-            listener.connected = false;
+            listener->connected = false;
             break;
         case ERROR_PIPE_CONNECTED:
-            listener.connected = true;
+            listener->connected = true;
             break;
         default:
-            CloseHandle(listener.handle);
+            CloseHandle(listener->handle);
             setError(QLatin1String("QLocalServerPrivate::addListener"));
-            listeners.removeLast();
+            listeners.pop_back();
             return false;
         }
     } else {
@@ -284,12 +284,12 @@ void QLocalServerPrivate::_q_onNewConnection()
 
         // Testing shows that there is indeed absolutely no guarantee which listener gets
         // a client connection first, so there is no way around polling all of them.
-        for (int i = 0; i < listeners.size(); ) {
-            HANDLE handle = listeners[i].handle;
-            if (listeners[i].connected
-                || GetOverlappedResult(handle, &listeners[i].overlapped, &dummy, FALSE))
+        for (size_t i = 0; i < listeners.size(); ) {
+            HANDLE handle = listeners[i]->handle;
+            if (listeners[i]->connected
+                || GetOverlappedResult(handle, &listeners[i]->overlapped, &dummy, FALSE))
             {
-                listeners.removeAt(i);
+                listeners.erase(listeners.begin() + i);
 
                 addListener();
 
@@ -319,8 +319,8 @@ void QLocalServerPrivate::closeServer()
     connectionEventNotifier->deleteLater();
     connectionEventNotifier = 0;
     CloseHandle(eventHandle);
-    for (int i = 0; i < listeners.size(); ++i)
-        CloseHandle(listeners[i].handle);
+    for (size_t i = 0; i < listeners.size(); ++i)
+        CloseHandle(listeners[i]->handle);
     listeners.clear();
 }
 
