@@ -43,15 +43,15 @@
 
     \section1 TableEditor Class Definition
 
-    The \c TableEditor class inherits QDialog making the table editor
+    The \c TableEditor class inherits QWidget making the table editor
     widget a top-level dialog window.
 
     \snippet cachedtable/tableeditor.h 0
 
     The \c TableEditor constructor takes two arguments: The first is a
-    pointer to the parent widget and is passed on to the base class
-    constructor. The other is a reference to the database table the \c
-    TableEditor object will operate on.
+    reference to the database table the \c TableEditor object will operate
+    on. The other is a pointer to the parent widget and is passed on to the
+    base class constructor.
 
     Note the QSqlTableModel variable declaration: As we will see in
     this example, the QSqlTableModel class can be used to provide data
