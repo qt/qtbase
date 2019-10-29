@@ -75,7 +75,8 @@
 # define QT_FEATURE_alloca_malloc_h -1
 #endif
 #define QT_FEATURE_binaryjson -1
-#define QT_FEATURE_cborstream -1
+#define QT_FEATURE_cborstreamreader -1
+#define QT_FEATURE_cborstreamwriter 1
 #define QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 #define QT_FEATURE_cxx11_random (__has_include(<random>) ? 1 : -1)
 #define QT_NO_DATASTREAM

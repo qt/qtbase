@@ -90,7 +90,9 @@ public:
     enum EncodingOption {
         SortKeysInMaps = 0x01,
         UseFloat = 0x02,
+#ifndef QT_BOOTSTRAPPED
         UseFloat16 = UseFloat | 0x04,
+#endif
         UseIntegers = 0x08,
 
         NoTransformation = 0
@@ -287,13 +289,15 @@ public:
     static QCborValue fromJsonValue(const QJsonValue &v);
     QJsonValue toJsonValue() const;
 
-#if QT_CONFIG(cborstream)
+#if QT_CONFIG(cborstreamreader)
     static QCborValue fromCbor(QCborStreamReader &reader);
     static QCborValue fromCbor(const QByteArray &ba, QCborParserError *error = nullptr);
     static QCborValue fromCbor(const char *data, qsizetype len, QCborParserError *error = nullptr)
     { return fromCbor(QByteArray(data, int(len)), error); }
     static QCborValue fromCbor(const quint8 *data, qsizetype len, QCborParserError *error = nullptr)
     { return fromCbor(QByteArray(reinterpret_cast<const char *>(data), int(len)), error); }
+#endif // QT_CONFIG(cborstreamreader)
+#if QT_CONFIG(cborstreamwriter)
     QByteArray toCbor(EncodingOptions opt = NoTransformation);
     void toCbor(QCborStreamWriter &writer, EncodingOptions opt = NoTransformation);
 #endif
@@ -441,7 +445,7 @@ public:
     QVariant toVariant() const                  { return concrete().toVariant(); }
     QJsonValue toJsonValue() const;
 
-#if QT_CONFIG(cborstream)
+#if QT_CONFIG(cborstreamwriter)
     QByteArray toCbor(QCborValue::EncodingOptions opt = QCborValue::NoTransformation)
     { return concrete().toCbor(opt); }
     void toCbor(QCborStreamWriter &writer, QCborValue::EncodingOptions opt = QCborValue::NoTransformation);

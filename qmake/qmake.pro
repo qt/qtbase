@@ -31,7 +31,8 @@ INCLUDEPATH += \
     generators \
     generators/unix \
     generators/win32 \
-    generators/mac
+    generators/mac \
+    ../src/3rdparty/tinycbor/src
 
 SOURCES += \
     main.cpp \
@@ -116,6 +117,7 @@ SOURCES += \
     qbytearray.cpp \
     qbytearraymatcher.cpp \
     qcalendar.cpp \
+    qcborstreamwriter.cpp \
     qcborvalue.cpp \
     qcryptographichash.cpp \
     qdatetime.cpp \
@@ -175,6 +177,7 @@ HEADERS += \
     qcalendar.h \
     qcalendarbackend_p.h \
     qcalendarmath_p.h \
+    qcborstreamwriter.h \
     qcborvalue.h \
     qcborvalue_p.h \
     qchar.h \

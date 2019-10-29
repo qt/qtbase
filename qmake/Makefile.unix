@@ -24,7 +24,8 @@ QOBJS = \
 	qfile.o qfiledevice.o qfileinfo.o qfilesystemengine.o \
 	qfilesystementry.o qfsfileengine.o qfsfileengine_iterator.o \
 	qiodevice.o qsettings.o qtemporaryfile.o qtextstream.o \
-	qcborvalue.o qjsoncbor.o qjsonarray.o qjsondocument.o qjsonobject.o qjsonparser.o qjsonvalue.o \
+	qcborstreamwriter.o qcborvalue.o \
+	qjsoncbor.o qjsonarray.o qjsondocument.o qjsonobject.o qjsonparser.o qjsonvalue.o \
 	qmetatype.o qsystemerror.o qvariant.o \
 	quuid.o \
 	qarraydata.o qbitarray.o qbytearray.o qbytearraylist.o qbytearraymatcher.o \
@@ -96,6 +97,7 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp \
 	   $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp \
 	   $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp \
+	   $(SOURCE_PATH)/src/corelib/serialization/qcborstreamwriter.cpp \
 	   $(SOURCE_PATH)/src/corelib/serialization/qcborvalue.cpp \
 	   $(SOURCE_PATH)/src/corelib/serialization/qdatastream.cpp \
 	   $(SOURCE_PATH)/src/corelib/serialization/qjsonarray.cpp \
@@ -136,6 +138,7 @@ DEPEND_SRC = \
 
 CPPFLAGS = -g $(EXTRA_CPPFLAGS) \
 	   -I$(QMKSRC) -I$(QMKLIBSRC) -I$(QMKGENSRC) \
+	   -I$(SOURCE_PATH)/src/3rdparty/tinycbor/src \
 	   -I$(QMKGENSRC)/unix -I$(QMKGENSRC)/win32 -I$(QMKGENSRC)/mac \
 	   -I$(INC_PATH) -I$(INC_PATH)/QtCore \
 	   -I$(INC_PATH)/QtCore/$(QT_VERSION) -I$(INC_PATH)/QtCore/$(QT_VERSION)/QtCore \
@@ -465,6 +468,9 @@ qsystemlibrary.o: $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qdatastream.o: $(SOURCE_PATH)/src/corelib/serialization/qdatastream.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qcborstreamwriter.o: $(SOURCE_PATH)/src/corelib/serialization/qcborstreamwriter.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qcborvalue.o: $(SOURCE_PATH)/src/corelib/serialization/qcborvalue.cpp

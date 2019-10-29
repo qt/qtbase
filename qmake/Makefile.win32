@@ -31,6 +31,7 @@ CFLAGS_BARE = -c -Fo./ -Fdqmake.pdb \
               -W2 -nologo -O2 \
               $(CFLAGS_EXTRA) \
               -I$(QMKSRC) -I$(QMKSRC)\library -I$(QMKSRC)\generators -I$(QMKSRC)\generators\unix -I$(QMKSRC)\generators\win32 -I$(QMKSRC)\generators\mac \
+              -I$(SOURCE_PATH)/src/3rdparty/tinycbor/src \
               -I$(INC_PATH) -I$(INC_PATH)\QtCore -I$(INC_PATH)\QtCore\$(QT_VERSION) -I$(INC_PATH)\QtCore\$(QT_VERSION)\QtCore \
               -I$(BUILD_PATH)\src\corelib\global \
               -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \
@@ -118,6 +119,7 @@ QTOBJS= \
 	qxmlutils.obj \
 	qnumeric.obj \
 	qlogging.obj \
+	qcborstreamwriter.obj \
 	qcborvalue.obj \
 	qjsoncbor.obj \
 	qjsondocument.obj \

@@ -19,6 +19,10 @@ DEFINES += \
     QT_NO_FOREACH \
     QT_NO_CAST_FROM_ASCII
 
+INCLUDEPATH += \
+    $$PWD/.. \
+    $$PWD/../../3rdparty/tinycbor/src
+
 SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \
            ../../corelib/codecs/qtextcodec.cpp \
@@ -63,6 +67,8 @@ SOURCES += \
            ../../corelib/kernel/qsharedmemory.cpp \
            ../../corelib/kernel/qsystemsemaphore.cpp \
            ../../corelib/plugin/quuid.cpp \
+           ../../corelib/serialization/qcborcommon.cpp \
+           ../../corelib/serialization/qcborstreamwriter.cpp \
            ../../corelib/serialization/qcborvalue.cpp \
            ../../corelib/serialization/qdatastream.cpp \
            ../../corelib/serialization/qjsoncbor.cpp \
