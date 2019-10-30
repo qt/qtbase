@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
 
 // defined in qsslsocket_openssl.cpp:
 extern int q_X509Callback(int ok, X509_STORE_CTX *ctx);
+extern "C" int q_X509CallbackDirect(int ok, X509_STORE_CTX *ctx);
 extern QString getErrorsFromOpenSsl();
 
 #if QT_CONFIG(dtls)
@@ -571,11 +572,20 @@ init_context:
     if (sslContext->sslConfiguration.peerVerifyMode() == QSslSocket::VerifyNone) {
         q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_NONE, nullptr);
     } else {
-        q_SSL_CTX_set_verify(sslContext->ctx, SSL_VERIFY_PEER,
-#if QT_CONFIG(dtls)
-                             isDtls ? dtlscallbacks::q_X509DtlsCallback :
-#endif // dtls
-                             q_X509Callback);
+        auto verificationCallback =
+        #if QT_CONFIG(dtls)
+                                            isDtls ? dtlscallbacks::q_X509DtlsCallback :
+        #endif // dtls
+                                            q_X509Callback;
+
+        if (!isDtls && configuration.handshakeMustInterruptOnError())
+            verificationCallback = q_X509CallbackDirect;
+
+        auto verificationMode = SSL_VERIFY_PEER;
+        if (!isDtls && sslContext->sslConfiguration.missingCertificateIsFatal())
+            verificationMode |= SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+
+        q_SSL_CTX_set_verify(sslContext->ctx, verificationMode, verificationCallback);
     }
 
 #if QT_CONFIG(dtls)

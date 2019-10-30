@@ -222,7 +222,9 @@ bool QSslConfiguration::operator==(const QSslConfiguration &other) const
         d->nextNegotiatedProtocol == other.d->nextNegotiatedProtocol &&
         d->nextProtocolNegotiationStatus == other.d->nextProtocolNegotiationStatus &&
         d->dtlsCookieEnabled == other.d->dtlsCookieEnabled &&
-        d->ocspStaplingEnabled == other.d->ocspStaplingEnabled;
+        d->ocspStaplingEnabled == other.d->ocspStaplingEnabled &&
+        d->reportFromCallback == other.d->reportFromCallback &&
+        d->missingCertIsFatal == other.d->missingCertIsFatal;
 }
 
 /*!
@@ -267,7 +269,9 @@ bool QSslConfiguration::isNull() const
             d->nextAllowedProtocols.isEmpty() &&
             d->nextNegotiatedProtocol.isNull() &&
             d->nextProtocolNegotiationStatus == QSslConfiguration::NextProtocolNegotiationNone &&
-            d->ocspStaplingEnabled == false);
+            d->ocspStaplingEnabled == false &&
+            d->reportFromCallback == false &&
+            d->missingCertIsFatal == false);
 }
 
 /*!
@@ -1188,6 +1192,89 @@ void QSslConfiguration::setOcspStaplingEnabled(bool enabled)
 bool QSslConfiguration::ocspStaplingEnabled() const
 {
     return d->ocspStaplingEnabled;
+}
+
+/*!
+    \since 6.0
+
+    Returns true if a verification callback will emit QSslSocket::handshakeInterruptedOnError()
+    early, before concluding the handshake.
+
+    \note This function always returns false for all backends but OpenSSL.
+
+    \sa setHandshakeMustInterruptOnError(), QSslSocket::handshakeInterruptedOnError(), QSslSocket::continueInterruptedHandshake()
+*/
+bool QSslConfiguration::handshakeMustInterruptOnError() const
+{
+    return d->reportFromCallback;
+}
+
+/*!
+    \since 6.0
+
+    If \a interrupt is true and the underlying backend supports this option,
+    errors found during certificate verification are reported immediately
+    by emitting QSslSocket::handshakeInterruptedOnError(). This allows
+    to stop the unfinished handshake and send a proper alert message to
+    a peer. No special action is required from the application in this case.
+    QSslSocket will close the connection after sending the alert message.
+    If the application after inspecting the error wants to continue the
+    handshake, it must call QSslSocket::continueInterruptedHandshake()
+    from its slot function. The signal-slot connection must be direct.
+
+    \note When interrupting handshake is enabled, errors that would otherwise
+    be reported by QSslSocket::peerVerifyError() are instead only reported by
+    QSslSocket::handshakeInterruptedOnError().
+    \note Even if the handshake was continued, these errors will be
+    reported when emitting QSslSocket::sslErrors() signal (and thus must
+    be ignored in the corresponding function slot).
+
+    \sa handshakeMustInterruptOnError(), QSslSocket::handshakeInterruptedOnError(), QSslSocket::continueInterruptedHandshake()
+*/
+void QSslConfiguration::setHandshakeMustInterruptOnError(bool interrupt)
+{
+#if QT_CONFIG(openssl)
+    d->reportFromCallback = interrupt;
+#else
+    qCWarning(lcSsl, "This operation requires OpenSSL as TLS backend");
+#endif
+}
+
+/*!
+    \since 6.0
+
+    Returns true if errors with code QSslError::NoPeerCertificate
+    cannot be ignored.
+
+    \note Always returns false for all TLS backends but OpenSSL.
+
+    \sa QSslSocket::ignoreSslErrors(), setMissingCertificateIsFatal()
+*/
+bool QSslConfiguration::missingCertificateIsFatal() const
+{
+    return d->missingCertIsFatal;
+}
+
+/*!
+    \since 6.0
+
+    If \a cannotRecover is true, and verification mode in use is
+    QSslSocket::VerifyPeer or QSslSocket::AutoVerifyPeer (for a
+    client-side socket), the missing peer's certificate would be
+    treated as an unrecoverable error that cannot be ignored. A proper
+    alert message will be sent to the peer before closing the connection.
+
+    \note Only available if Qt was configured and built with OpenSSL backend.
+
+    \sa QSslSocket::ignoreSslErrors(), QSslSocket::PeerVerifyMode, missingCertificateIsFatal()
+*/
+void QSslConfiguration::setMissingCertificateIsFatal(bool cannotRecover)
+{
+#if QT_CONFIG(openssl)
+    d->missingCertIsFatal = cannotRecover;
+#else
+    qCWarning(lcSsl, "Handling a missing certificate as a fatal error requires an OpenSSL backend");
+#endif // openssl
 }
 
 /*! \internal

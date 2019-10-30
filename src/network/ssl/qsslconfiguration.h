@@ -172,6 +172,12 @@ public:
     static void setDefaultDtlsConfiguration(const QSslConfiguration &configuration);
 #endif // dtls
 
+    bool handshakeMustInterruptOnError() const;
+    void setHandshakeMustInterruptOnError(bool interrupt);
+
+    bool missingCertificateIsFatal() const;
+    void setMissingCertificateIsFatal(bool cannotRecover);
+
     void setOcspStaplingEnabled(bool enable);
     bool ocspStaplingEnabled() const;
 

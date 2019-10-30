@@ -73,7 +73,7 @@ typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 #else
 #define FLUKE_CERTIFICATE_ERROR QSslError::CertificateUntrusted
 #endif
-#endif // QT_NO_SSL
+#endif // QT_NO_OPENSSL
 
 // Detect ALPN (Application-Layer Protocol Negotiation) support
 #undef ALPN_SUPPORTED // Undef the variable first to be safe
@@ -263,6 +263,10 @@ private slots:
     void unsupportedProtocols();
 
     void oldErrorsOnSocketReuse();
+#if QT_CONFIG(openssl)
+    void alertMissingCertificate();
+    void alertInvalidCertificate();
+#endif // openssl
 
     void setEmptyDefaultConfiguration(); // this test should be last
 
@@ -337,6 +341,8 @@ tst_QSslSocket::tst_QSslSocket()
     qRegisterMetaType<QSslError>("QSslError");
     qRegisterMetaType<QAbstractSocket::SocketState>("QAbstractSocket::SocketState");
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
+    qRegisterMetaType<QAlertLevel>("QAlertLevel");
+    qRegisterMetaType<QAlertType>("QAlertType");
 
 #ifndef QT_NO_OPENSSL
     qRegisterMetaType<QSslPreSharedKeyAuthenticator *>();
@@ -1210,6 +1216,8 @@ public:
 
 signals:
     void socketError(QAbstractSocket::SocketError);
+    void gotAlert(QAlertLevel level, QAlertType type, const QString &message);
+    void alertSent(QAlertLevel level, QAlertType type, const QString &message);
 
 protected:
     void incomingConnection(qintptr socketDescriptor)
@@ -1221,6 +1229,8 @@ protected:
         if (ignoreSslErrors)
             connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(ignoreErrorSlot()));
         connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SIGNAL(socketError(QAbstractSocket::SocketError)));
+        connect(socket, &QSslSocket::alertReceived, this, &SslServer::gotAlert);
+        connect(socket, &QSslSocket::alertSent, this, &SslServer::alertSent);
 
         QFile file(m_keyFile);
         QVERIFY(file.open(QIODevice::ReadOnly));
@@ -4417,6 +4427,119 @@ void tst_QSslSocket::oldErrorsOnSocketReuse()
 }
 
 #endif // QT_NO_SSL
+
+#if QT_CONFIG(openssl)
+
+void (QSslSocket::*const tlsErrorSignal)(const QList<QSslError> &) = &QSslSocket::sslErrors;
+void (QAbstractSocket::*const socketErrorSignal)(QAbstractSocket::SocketError) = &QAbstractSocket::error;
+
+void tst_QSslSocket::alertMissingCertificate()
+{
+    // In this test we want a server to abort the connection due to the failing
+    // client authentication. The server expected to send an alert before closing
+    // the connection, and the client expected to receive this alert and report it.
+
+    QFETCH_GLOBAL(const bool, setProxy);
+    if (setProxy) // Not what we test here, bail out.
+        return;
+
+    SslServer server;
+    if (!server.listen(QHostAddress::LocalHost))
+        QSKIP("SslServer::listen() returned false");
+
+    // We want a certificate request to be sent to the client:
+    server.peerVerifyMode = QSslSocket::VerifyPeer;
+    // The only way we can force OpenSSL to send an alert - is to use
+    // a special option (so we fail before handshake is finished):
+    server.config.setMissingCertificateIsFatal(true);
+
+    QSslSocket clientSocket;
+    connect(&clientSocket, tlsErrorSignal, [&clientSocket](const QList<QSslError> &errors){
+        qDebug() << "ERR";
+        clientSocket.ignoreSslErrors(errors);
+    });
+
+    QSignalSpy serverSpy(&server, &SslServer::alertSent);
+    QSignalSpy clientSpy(&clientSocket, &QSslSocket::alertReceived);
+
+    clientSocket.connectToHostEncrypted(server.serverAddress().toString(), server.serverPort());
+
+    QTestEventLoop runner;
+    QTimer::singleShot(500, [&runner](){
+        runner.exitLoop();
+    });
+
+    int waitFor = 2;
+    auto earlyQuitter = [&runner, &waitFor](QAbstractSocket::SocketError) {
+        if (!--waitFor)
+            runner.exitLoop();
+    };
+
+    // Presumably, RemoteHostClosedError for the client and SslHandshakeError
+    // for the server:
+    connect(&clientSocket, socketErrorSignal, earlyQuitter);
+    connect(&server, &SslServer::socketError, earlyQuitter);
+
+    runner.enterLoopMSecs(1000);
+
+    QVERIFY(serverSpy.count() > 0);
+    QVERIFY(clientSpy.count() > 0);
+    QVERIFY(server.socket && !server.socket->isEncrypted());
+    QVERIFY(!clientSocket.isEncrypted());
+}
+
+void tst_QSslSocket::alertInvalidCertificate()
+{
+    // In this test a client will not ignore verification errors,
+    // it also will do 'early' checks, meaning the reported and
+    // not ignored _during_ the hanshake, not after. This ensures
+    // OpenSSL sends an alert.
+    QFETCH_GLOBAL(const bool, setProxy);
+    if (setProxy) // Not what we test here, bail out.
+        return;
+
+    SslServer server;
+    if (!server.listen(QHostAddress::LocalHost))
+        QSKIP("SslServer::listen() returned false");
+
+    QSslSocket clientSocket;
+    auto configuration = QSslConfiguration::defaultConfiguration();
+    configuration.setHandshakeMustInterruptOnError(true);
+    QVERIFY(configuration.handshakeMustInterruptOnError());
+    clientSocket.setSslConfiguration(configuration);
+
+    QSignalSpy serverSpy(&server, &SslServer::gotAlert);
+    QSignalSpy clientSpy(&clientSocket, &QSslSocket::alertSent);
+    QSignalSpy interruptedSpy(&clientSocket, &QSslSocket::handshakeInterruptedOnError);
+
+    clientSocket.connectToHostEncrypted(server.serverAddress().toString(), server.serverPort());
+
+    QTestEventLoop runner;
+    QTimer::singleShot(500, [&runner](){
+        runner.exitLoop();
+    });
+
+    int waitFor = 2;
+    auto earlyQuitter = [&runner, &waitFor](QAbstractSocket::SocketError) {
+        if (!--waitFor)
+            runner.exitLoop();
+    };
+
+    // Presumably, RemoteHostClosedError for the server and SslHandshakeError
+    // for the client:
+    connect(&clientSocket, socketErrorSignal, earlyQuitter);
+    connect(&server, &SslServer::socketError, earlyQuitter);
+
+    runner.enterLoopMSecs(1000);
+
+    QVERIFY(serverSpy.count() > 0);
+    QVERIFY(clientSpy.count() > 0);
+    QVERIFY(interruptedSpy.count() > 0);
+    QVERIFY(server.socket && !server.socket->isEncrypted());
+    QVERIFY(!clientSocket.isEncrypted());
+}
+
+#endif // openssl
 
 QTEST_MAIN(tst_QSslSocket)
 

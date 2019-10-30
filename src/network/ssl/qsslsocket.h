@@ -63,6 +63,49 @@ class QSslEllipticCurve;
 class QSslPreSharedKeyAuthenticator;
 class QOcspResponse;
 
+enum class QAlertLevel {
+    Warning,
+    Fatal,
+    Unknown
+};
+
+enum class QAlertType {
+    CloseNotify,
+    UnexpectedMessage = 10,
+    BadRecordMac = 20,
+    RecordOverflow = 22,
+    DecompressionFailure = 30, // reserved
+    HandshakeFailure = 40,
+    NoCertificate = 41, // reserved
+    BadCertificate = 42,
+    UnsupportedCertificate = 43,
+    CertificateRevoked = 44,
+    CertificateExpired = 45,
+    CertificateUnknown = 46,
+    IllegalParameter = 47,
+    UnknownCa = 48,
+    AccessDenied = 49,
+    DecodeError = 50,
+    DecryptError = 51,
+    ExportRestriction = 60, // reserved
+    ProtocolVersion = 70,
+    InsufficientSecurity = 71,
+    InternalError = 80,
+    InappropriateFallback = 86,
+    UserCancelled = 90,
+    NoRenegotiation = 100,
+    MissingExtension = 109,
+    UnsupportedExtension = 110,
+    CertificateUnobtainable = 111, // reserved
+    UnrecognizedName = 112,
+    BadCertificateStatusResponse = 113,
+    BadCertificateHashValue = 114, // reserved
+    UnknownPskIdentity = 115,
+    CertificateRequired = 116,
+    NoApplicationProtocol = 120,
+    UnknownAlertMessage = 255
+};
+
 class QSslSocketPrivate;
 class Q_NETWORK_EXPORT QSslSocket : public QTcpSocket
 {
@@ -201,6 +244,7 @@ public:
     static QString sslLibraryBuildVersionString();
 
     void ignoreSslErrors(const QList<QSslError> &errors);
+    void continueInterruptedHandshake();
 
 public Q_SLOTS:
     void startClientEncryption();
@@ -214,6 +258,9 @@ Q_SIGNALS:
     void modeChanged(QSslSocket::SslMode newMode);
     void encryptedBytesWritten(qint64 totalBytes);
     void preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *authenticator);
+    void alertSent(QAlertLevel level, QAlertType type, const QString &description);
+    void alertReceived(QAlertLevel level, QAlertType type, const QString &description);
+    void handshakeInterruptedOnError(const QSslError &error);
 
 protected:
     qint64 readData(char *data, qint64 maxlen) override;

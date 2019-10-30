@@ -228,6 +228,74 @@
 */
 
 /*!
+    \enum QAlertLevel
+    \brief Describes the level of an alert message
+    \relates QSslSocket
+    \since 6.0
+
+    \ingroup network
+    \ingroup ssl
+    \inmodule QtNetwork
+
+    This enum describes the level of an alert message that was sent
+    or received.
+
+    \value Warning Non-fatal alert message
+    \value Fatal Fatal alert message, the underlying backend will
+           handle such an alert properly and close the connection.
+    \value Unknown An alert of unknown level of severity.
+*/
+
+/*!
+    \enum QAlertType
+    \brief Enumerates possible codes that an alert message can have
+    \relates QSslSocket
+    \since 6.0
+
+    \ingroup network
+    \ingroup ssl
+    \inmodule QtNetwork
+
+    See \l{https://tools.ietf.org/html/rfc8446#page-85}{RFC 8446, section 6}
+    for the possible values and their meaning.
+
+    \value CloseNotify,
+    \value UnexpectedMessage
+    \value BadRecordMac
+    \value RecordOverflow
+    \value DecompressionFailure
+    \value HandshakeFailure
+    \value NoCertificate
+    \value BadCertificate
+    \value UnsupportedCertificate
+    \value CertificateRevoked
+    \value CertificateExpired
+    \value CertificateUnknown
+    \value IllegalParameter
+    \value UnknownCa
+    \value AccessDenied
+    \value DecodeError
+    \value DecryptError
+    \value ExportRestriction
+    \value ProtocolVersion
+    \value InsufficientSecurity
+    \value InternalError
+    \value InappropriateFallback
+    \value UserCancelled
+    \value NoRenegotiation
+    \value MissingExtension
+    \value UnsupportedExtension
+    \value CertificateUnobtainable
+    \value UnrecognizedName
+    \value BadCertificateStatusResponse
+    \value BadCertificateHashValue
+    \value UnknownPskIdentity
+    \value CertificateRequired
+    \value NoApplicationProtocol
+    \value UnknownAlertMessage
+*/
+
+/*!
     \fn void QSslSocket::encrypted()
 
     This signal is emitted when QSslSocket enters encrypted mode. After this
@@ -322,6 +390,48 @@
     \sa QSslPreSharedKeyAuthenticator
 */
 
+/*!
+    \fn void QSslSocket::alertSent(QAlertLevel level, QAlertType type, const QString &description)
+
+    QSslSocket emits this signal if an alert message was sent to a peer. \a level
+    describes if it was a warning or a fatal error. \a type gives the code
+    of the alert message. When a textual description of the alert message is
+    available, it is supplied in \a description.
+
+    \note This signal is mostly informational and can be used for debugging
+    purposes, normally it does not require any actions from the application.
+    \note Not all backends support this functionality.
+
+    \sa alertReceived(), QAlertLevel, QAlertType
+*/
+
+/*!
+    \fn void QSslSocket::alertReceived(QAlertLevel level, QAlertType type, const QString &description)
+
+    QSslSocket emits this signal if an alert message was received from a peer.
+    \a level tells if the alert was fatal or it was a warning. \a type is the
+    code explaining why the alert was sent. When a textual description of
+    the alert message is available, it is supplied in \a description.
+
+    \note The signal is mostly for informational and debugging purposes and does not
+    require any handling in the application. If the alert was fatal, underlying
+    backend will handle it and close the connection.
+    \note Not all backends support this functionality.
+
+    \sa alertSent(), QAlertLevel, QAlertType
+*/
+
+/*!
+    \fn void QSslSocket::handshakeInterruptedOnError(const QSslError &error)
+
+    QSslSocket emits this signal if a certificate verification error was
+    found and if early error reporting was enabled in QSslConfiguration.
+    An application is expected to inspect the \a error and decide if
+    it wants to continue the handshake, or abort it and send an alert message
+    to the peer. The signal-slot connection must be direct.
+
+    \sa continueInterruptedHandshake(), sslErrors(), QSslConfiguration::setHandshakeMustInterruptOnError()
+*/
 #include "qssl_p.h"
 #include "qsslsocket.h"
 #include "qsslcipher.h"
@@ -977,7 +1087,10 @@ void QSslSocket::setSslConfiguration(const QSslConfiguration &configuration)
 #if QT_CONFIG(ocsp)
     d->configuration.ocspStaplingEnabled = configuration.ocspStaplingEnabled();
 #endif
-
+#if QT_CONFIG(openssl)
+    d->configuration.reportFromCallback = configuration.handshakeMustInterruptOnError();
+    d->configuration.missingCertIsFatal = configuration.missingCertificateIsFatal();
+#endif // openssl
     // if the CA certificates were set explicitly (either via
     // QSslConfiguration::setCaCertificates() or QSslSocket::setCaCertificates(),
     // we cannot load the certificates on demand
@@ -2043,6 +2156,23 @@ void QSslSocket::ignoreSslErrors(const QList<QSslError> &errors)
     d->ignoreErrorsList = errors;
 }
 
+
+/*!
+    \since 6.0
+
+    If an application wants to conclude a handshake even after receiving
+    handshakeInterruptedOnError() signal, it must call this function.
+    This call must be done from a slot function attached to the signal.
+    The signal-slot connection must be direct.
+
+    \sa handshakeInterruptedOnError(), QSslConfiguration::setHandshakeMustInterruptOnError()
+*/
+void QSslSocket::continueInterruptedHandshake()
+{
+    Q_D(QSslSocket);
+    d->handshakeInterrupted = false;
+}
+
 /*!
     \internal
 */
@@ -2444,6 +2574,10 @@ void QSslConfigurationPrivate::deepCopyDefaultConfiguration(QSslConfigurationPri
 #endif
 #if QT_CONFIG(ocsp)
     ptr->ocspStaplingEnabled = global->ocspStaplingEnabled;
+#endif
+#if QT_CONFIG(openssl)
+    ptr->reportFromCallback = global->reportFromCallback;
+    ptr->missingCertIsFatal = global->missingCertIsFatal;
 #endif
 }
 

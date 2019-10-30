@@ -208,6 +208,7 @@ protected:
     bool paused;
     bool flushTriggered;
     QVector<QOcspResponse> ocspResponses;
+    bool handshakeInterrupted = false;
 };
 
 #if QT_CONFIG(securetransport) || QT_CONFIG(schannel)

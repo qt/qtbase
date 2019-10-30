@@ -156,6 +156,10 @@ DEFINEFUNC(void, OPENSSL_sk_free, OPENSSL_STACK *a, a, return, DUMMYARG)
 DEFINEFUNC2(void *, OPENSSL_sk_value, OPENSSL_STACK *a, a, int b, b, return nullptr, return)
 DEFINEFUNC(int, SSL_session_reused, SSL *a, a, return 0, return)
 DEFINEFUNC2(unsigned long, SSL_CTX_set_options, SSL_CTX *ctx, ctx, unsigned long op, op, return 0, return)
+using info_callback = void (*) (const SSL *ssl, int type, int val);
+DEFINEFUNC2(void, SSL_set_info_callback, SSL *ssl, ssl, info_callback cb, cb, return, return)
+DEFINEFUNC(const char *, SSL_alert_type_string, int value, value, return nullptr, return)
+DEFINEFUNC(const char *, SSL_alert_desc_string_long, int value, value, return nullptr, return)
 #ifdef TLS1_3_VERSION
 DEFINEFUNC2(int, SSL_CTX_set_ciphersuites, SSL_CTX *ctx, ctx, const char *str, str, return 0, return)
 DEFINEFUNC2(void, SSL_set_psk_use_session_callback, SSL *ssl, ssl, q_SSL_psk_use_session_cb_func_t callback, callback, return, DUMMYARG)
@@ -839,7 +843,9 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(OPENSSL_sk_value)
     RESOLVEFUNC(DH_get0_pqg)
     RESOLVEFUNC(SSL_CTX_set_options)
-
+    RESOLVEFUNC(SSL_set_info_callback)
+    RESOLVEFUNC(SSL_alert_type_string)
+    RESOLVEFUNC(SSL_alert_desc_string_long)
 #ifdef TLS1_3_VERSION
     RESOLVEFUNC(SSL_CTX_set_ciphersuites)
     RESOLVEFUNC(SSL_set_psk_use_session_callback)
