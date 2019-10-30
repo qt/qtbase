@@ -44,10 +44,12 @@
 #include <QtCore/qcontainerfwd.h>
 
 #if !defined(QT_NO_JAVA_STYLE_ITERATORS)
+QT_BEGIN_NAMESPACE
 template<typename T>
 using QMutableListIterator = QMutableVectorIterator<T>;
 template<typename T>
 using QListIterator = QVectorIterator<T>;
+QT_END_NAMESPACE
 #endif
 
 #include <QtCore/qbytearraylist.h>
