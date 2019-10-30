@@ -958,7 +958,7 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
                 textRemoved = textEvent->textRemoved();
                 changePosition = textEvent->changePosition();
                 cursorPosition = textEvent->cursorPosition();
-            } else if (event->type() == QAccessible::TextInserted) {
+            } else if (event->type() == QAccessible::TextUpdated) {
                 QAccessibleTextUpdateEvent *textEvent = static_cast<QAccessibleTextUpdateEvent*>(event);
                 textInserted = textEvent->textInserted();
                 textRemoved = textEvent->textRemoved();
