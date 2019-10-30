@@ -1528,7 +1528,7 @@ void TestMethods::invokeTests(QObject *testObject) const
     QTestResult::setCurrentTestFunction(nullptr);
 }
 
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
 class FatalSignalHandler
 {
 public:
@@ -1928,7 +1928,7 @@ int QTest::qRun()
     } else
 #endif
     {
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
         QScopedPointer<FatalSignalHandler> handler;
         if (!noCrashHandler)
             handler.reset(new FatalSignalHandler);
