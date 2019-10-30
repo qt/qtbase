@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -58,6 +58,11 @@
     \li \l{Qt Style Sheets Reference}
     \li \l{Qt Style Sheets Examples}
     \endlist
+
+    \note If Qt Style Sheets are used on the same widget as functions that
+    set the appearance of widgets, such as \l QWidget::setFont() or
+    \l QTreeWidgetItem::setBackground(), style sheets will take precedence
+    if the settings conflict.
 
     \target overview
     \section1 Overview
