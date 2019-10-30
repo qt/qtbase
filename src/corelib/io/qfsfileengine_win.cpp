@@ -443,64 +443,9 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
 #endif
 }
 
-bool QFSFileEngine::remove()
-{
-    Q_D(QFSFileEngine);
-    QSystemError error;
-    bool ret = QFileSystemEngine::removeFile(d->fileEntry, error);
-    if (!ret)
-        setError(QFile::RemoveError, error.toString());
-    return ret;
-}
-
-bool QFSFileEngine::copy(const QString &copyName)
-{
-    Q_D(QFSFileEngine);
-    QSystemError error;
-    bool ret = QFileSystemEngine::copyFile(d->fileEntry, QFileSystemEntry(copyName), error);
-    if (!ret)
-        setError(QFile::CopyError, error.toString());
-    return ret;
-}
-
-bool QFSFileEngine::rename(const QString &newName)
-{
-    Q_D(QFSFileEngine);
-    QSystemError error;
-    bool ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName), error);
-    if (!ret)
-        setError(QFile::RenameError, error.toString());
-    return ret;
-}
-
-bool QFSFileEngine::renameOverwrite(const QString &newName)
-{
-    Q_D(QFSFileEngine);
-    QSystemError error;
-    bool ret = QFileSystemEngine::renameOverwriteFile(d->fileEntry, QFileSystemEntry(newName), error);
-    if (!ret)
-        setError(QFile::RenameError, error.toString());
-    return ret;
-}
-
-bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) const
-{
-    return QFileSystemEngine::createDirectory(QFileSystemEntry(name), createParentDirectories);
-}
-
-bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) const
-{
-    return QFileSystemEngine::removeDirectory(QFileSystemEntry(name), recurseParentDirectories);
-}
-
 bool QFSFileEngine::caseSensitive() const
 {
     return false;
-}
-
-bool QFSFileEngine::setCurrentPath(const QString &path)
-{
-    return QFileSystemEngine::setCurrentPath(QFileSystemEntry(path));
 }
 
 QString QFSFileEngine::currentPath(const QString &fileName)
@@ -528,21 +473,6 @@ QString QFSFileEngine::currentPath(const QString &fileName)
     Q_UNUSED(fileName);
     return QFileSystemEngine::currentPath().filePath();
 #endif // Q_OS_WINRT
-}
-
-QString QFSFileEngine::homePath()
-{
-    return QFileSystemEngine::homePath();
-}
-
-QString QFSFileEngine::rootPath()
-{
-    return QFileSystemEngine::rootPath();
-}
-
-QString QFSFileEngine::tempPath()
-{
-    return QFileSystemEngine::tempPath();
 }
 
 #if !defined(Q_OS_WINRT)
