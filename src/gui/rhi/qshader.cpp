@@ -214,9 +214,6 @@ QT_BEGIN_NAMESPACE
     QShader, it indicates no shader code was found for the requested key.
  */
 
-static const int QSB_VERSION = 2;
-static const int QSB_VERSION_WITHOUT_BINDINGS = 1;
-
 /*!
     Constructs a new, empty (and thus invalid) QShader instance.
  */
@@ -368,9 +365,9 @@ QByteArray QShader::serialized() const
     if (!buf.open(QIODevice::WriteOnly))
         return QByteArray();
 
-    ds << QSB_VERSION;
+    ds << QShaderPrivate::QSB_VERSION;
     ds << d->stage;
-    ds << d->desc.toBinaryJson();
+    ds << d->desc.toCbor();
     ds << d->shaders.count();
     for (auto it = d->shaders.cbegin(), itEnd = d->shaders.cend(); it != itEnd; ++it) {
         const QShaderKey &k(it.key());
@@ -429,9 +426,12 @@ QShader QShader::fromSerialized(const QByteArray &data)
     Q_ASSERT(d->ref.loadRelaxed() == 1); // must be detached
     int intVal;
     ds >> intVal;
-    const int qsbVersion = intVal;
-    if (qsbVersion != QSB_VERSION && qsbVersion != QSB_VERSION_WITHOUT_BINDINGS) {
-        qWarning("Attempted to deserialize QShader with unknown version %d.", qsbVersion);
+    d->qsbVersion = intVal;
+    if (d->qsbVersion != QShaderPrivate::QSB_VERSION
+            && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON
+            && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITHOUT_BINDINGS)
+    {
+        qWarning("Attempted to deserialize QShader with unknown version %d.", d->qsbVersion);
         return QShader();
     }
 
@@ -439,7 +439,10 @@ QShader QShader::fromSerialized(const QByteArray &data)
     d->stage = Stage(intVal);
     QByteArray descBin;
     ds >> descBin;
-    d->desc = QShaderDescription::fromBinaryJson(descBin);
+    if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON)
+        d->desc = QShaderDescription::fromCbor(descBin);
+    else
+        d->desc = QShaderDescription::fromBinaryJson(descBin);
     int count;
     ds >> count;
     for (int i = 0; i < count; ++i) {
@@ -454,7 +457,7 @@ QShader QShader::fromSerialized(const QByteArray &data)
         d->shaders[k] = shader;
     }
 
-    if (qsbVersion != QSB_VERSION_WITHOUT_BINDINGS) {
+    if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITHOUT_BINDINGS) {
         ds >> count;
         for (int i = 0; i < count; ++i) {
             QShaderKey k;

@@ -57,6 +57,10 @@ QT_BEGIN_NAMESPACE
 
 struct Q_GUI_EXPORT QShaderPrivate
 {
+    static const int QSB_VERSION = 3;
+    static const int QSB_VERSION_WITH_BINARY_JSON = 2;
+    static const int QSB_VERSION_WITHOUT_BINDINGS = 1;
+
     QShaderPrivate()
         : ref(1)
     {
@@ -64,6 +68,7 @@ struct Q_GUI_EXPORT QShaderPrivate
 
     QShaderPrivate(const QShaderPrivate *other)
         : ref(1),
+          qsbVersion(other->qsbVersion),
           stage(other->stage),
           desc(other->desc),
           shaders(other->shaders),
@@ -75,6 +80,7 @@ struct Q_GUI_EXPORT QShaderPrivate
     static const QShaderPrivate *get(const QShader *s) { return s->d; }
 
     QAtomicInt ref;
+    int qsbVersion = QSB_VERSION;
     QShader::Stage stage = QShader::VertexStage;
     QShaderDescription desc;
     QHash<QShaderKey, QShaderCode> shaders;

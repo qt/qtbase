@@ -54,6 +54,23 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace CoreGraphics {
+    Q_NAMESPACE
+    enum DisplayChange {
+        Moved = kCGDisplayMovedFlag,
+        SetMain = kCGDisplaySetMainFlag,
+        SetMode = kCGDisplaySetModeFlag,
+        Added = kCGDisplayAddFlag,
+        Removed = kCGDisplayRemoveFlag,
+        Enabled = kCGDisplayEnabledFlag,
+        Disabled = kCGDisplayDisabledFlag,
+        Mirrored = kCGDisplayMirrorFlag,
+        UnMirrored = kCGDisplayUnMirrorFlag,
+        DesktopShapeChanged = kCGDisplayDesktopShapeChangedFlag
+    };
+    Q_ENUM_NS(DisplayChange)
+}
+
 void QCocoaScreen::initializeScreens()
 {
     uint32_t displayCount = 0;
@@ -72,6 +89,10 @@ void QCocoaScreen::initializeScreens()
             return; // Wait for changes to apply
 
         Q_UNUSED(userInfo);
+
+        qCDebug(lcQpaScreen).verbosity(0).nospace() << "Display reconfiguration"
+            << " (" << QFlags<CoreGraphics::DisplayChange>(flags) << ")"
+            << " for displayId=" << displayId;
 
         QCocoaScreen *cocoaScreen = QCocoaScreen::get(displayId);
 
@@ -93,22 +114,24 @@ void QCocoaScreen::initializeScreens()
                 mainDisplay->updateProperties();
                 qCInfo(lcQpaScreen) << "Primary screen changed to" << mainDisplay;
                 QWindowSystemInterface::handlePrimaryScreenChanged(mainDisplay);
+                if (cocoaScreen == mainDisplay)
+                    return; // Already reconfigured
             }
 
-            if (cocoaScreen == mainDisplay)
-                return; // Already reconfigured
-
             cocoaScreen->updateProperties();
-            qCInfo(lcQpaScreen) << "Reconfigured" << cocoaScreen;
+            qCInfo(lcQpaScreen).nospace() << "Reconfigured " <<
+                (primaryScreen() == cocoaScreen ? "primary " : "")
+                << cocoaScreen;
         }
     }, nullptr);
 }
 
 void QCocoaScreen::add(CGDirectDisplayID displayId)
 {
+    const bool isPrimary = CGDisplayIsMain(displayId);
     QCocoaScreen *cocoaScreen = new QCocoaScreen(displayId);
-    qCInfo(lcQpaScreen) << "Adding" << cocoaScreen;
-    QWindowSystemInterface::handleScreenAdded(cocoaScreen, CGDisplayIsMain(displayId));
+    qCInfo(lcQpaScreen).nospace() << "Adding " << (isPrimary ? "new primary " : "") << cocoaScreen;
+    QWindowSystemInterface::handleScreenAdded(cocoaScreen, isPrimary);
 }
 
 QCocoaScreen::QCocoaScreen(CGDirectDisplayID displayId)
@@ -127,7 +150,7 @@ void QCocoaScreen::cleanupScreens()
 
 void QCocoaScreen::remove()
 {
-    m_displayId = 0; // Prevent stale references during removal
+    m_displayId = kCGNullDirectDisplay; // Prevent stale references during removal
 
     // This may result in the application responding to QGuiApplication::screenRemoved
     // by moving the window to another screen, either by setGeometry, or by setScreen.
@@ -140,6 +163,7 @@ void QCocoaScreen::remove()
     // QCocoaWindow::windowDidChangeScreen. At that point the window will appear to have
     // already changed its screen, but that's only true if comparing the Qt screens,
     // not when comparing the NSScreens.
+    qCInfo(lcQpaScreen).nospace() << "Removing " << (primaryScreen() == this ? "current primary " : "") << this;
     QWindowSystemInterface::handleScreenRemoved(this);
 }
 
@@ -552,10 +576,10 @@ QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) 
 */
 QCocoaScreen *QCocoaScreen::primaryScreen()
 {
-    auto screen = static_cast<QCocoaScreen *>(QGuiApplication::primaryScreen()->handle());
-    Q_ASSERT_X(screen == get(CGMainDisplayID()), "QCocoaScreen",
-        "The application's primary screen should always be in sync with the main display");
-    return screen;
+    // Note: The primary screen that Qt knows about may not match the current CGMainDisplayID()
+    // if macOS has not yet been able to inform us that the main display has changed, but we
+    // will update the primary screen accordingly once the reconfiguration callback comes in.
+    return static_cast<QCocoaScreen *>(QGuiApplication::primaryScreen()->handle());
 }
 
 QList<QPlatformScreen*> QCocoaScreen::virtualSiblings() const
@@ -597,7 +621,7 @@ NSScreen *QCocoaScreen::nativeScreen() const
     QCFType<CFUUIDRef> uuid = CGDisplayCreateUUIDFromDisplayID(m_displayId);
 
     for (NSScreen *screen in [NSScreen screens]) {
-        if (CGDisplayCreateUUIDFromDisplayID(screen.qt_displayId) == uuid)
+        if (QCFType<CFUUIDRef>(CGDisplayCreateUUIDFromDisplayID(screen.qt_displayId)) == uuid)
             return screen;
     }
 
@@ -639,12 +663,15 @@ QDebug operator<<(QDebug debug, const QCocoaScreen *screen)
         debug << ", geometry=" << screen->geometry();
         debug << ", dpr=" << screen->devicePixelRatio();
         debug << ", name=" << screen->name();
+        debug << ", displayId=" << screen->m_displayId;
         debug << ", native=" << screen->nativeScreen();
     }
     debug << ')';
     return debug;
 }
 #endif // !QT_NO_DEBUG_STREAM
+
+#include "qcocoascreen.moc"
 
 QT_END_NAMESPACE
 

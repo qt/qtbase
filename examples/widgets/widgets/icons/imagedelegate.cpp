@@ -55,9 +55,8 @@
 
 //! [0]
 ImageDelegate::ImageDelegate(QObject *parent)
-    : QItemDelegate(parent)
-{
-}
+    : QStyledItemDelegate(parent)
+{}
 //! [0]
 
 //! [1]

@@ -99,18 +99,18 @@ private:
     static void add(CGDirectDisplayID displayId);
     void remove();
 
-    CGDirectDisplayID m_displayId = 0;
+    CGDirectDisplayID m_displayId = kCGNullDirectDisplay;
 
     QRect m_geometry;
     QRect m_availableGeometry;
     QDpi m_logicalDpi;
-    qreal m_refreshRate;
-    int m_depth;
+    qreal m_refreshRate = 0;
+    int m_depth = 0;
     QString m_name;
     QImage::Format m_format;
     QSizeF m_physicalSize;
     QCocoaCursor *m_cursor;
-    qreal m_devicePixelRatio;
+    qreal m_devicePixelRatio = 0;
 
     CVDisplayLinkRef m_displayLink = nullptr;
     dispatch_source_t m_displayLinkSource = nullptr;

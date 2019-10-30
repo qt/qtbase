@@ -362,6 +362,7 @@ public:
     }
 public:
     ExtraData *extraData;    // extra data set by the user
+    QThreadData *getThreadData() const { return threadData; }
     QThreadData *threadData; // id of the thread that owns the object
 
     using ConnectionDataPointer = QExplicitlySharedDataPointer<ConnectionData>;

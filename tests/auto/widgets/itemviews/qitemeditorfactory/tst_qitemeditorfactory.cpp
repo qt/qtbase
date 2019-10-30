@@ -25,9 +25,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QtGui/QtGui>
-#include <QtWidgets/QtWidgets>
-#include <QtTest/QtTest>
+
+
+#include <QDoubleSpinBox>
+#include <QItemEditorFactory>
+#include <QTest>
 
 class tst_QItemEditorFactory: public QObject
 {

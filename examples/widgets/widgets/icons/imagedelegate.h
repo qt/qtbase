@@ -51,10 +51,10 @@
 #ifndef IMAGEDELEGATE_H
 #define IMAGEDELEGATE_H
 
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 
 //! [0]
-class ImageDelegate : public QItemDelegate
+class ImageDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 
@@ -72,7 +72,7 @@ public:
 //! [1] //! [2]
 private slots:
     void emitCommitData();
-};
 //! [2]
+};
 
 #endif
