@@ -478,30 +478,42 @@ QStringList QCoreTextFontDatabase::fallbacksForFamily(const QString &family, QFo
                 if (cascadeList) {
                     QStringList fallbackList;
                     const int numCascades = CFArrayGetCount(cascadeList);
+
+                    int symbolIndex = -1;
+                    int notoSansUniversalIndex = -1;
                     for (int i = 0; i < numCascades; ++i) {
                         CTFontDescriptorRef fontFallback = (CTFontDescriptorRef) CFArrayGetValueAtIndex(cascadeList, i);
                         QCFString fallbackFamilyName = (CFStringRef) CTFontDescriptorCopyAttribute(fontFallback, kCTFontFamilyNameAttribute);
-                        fallbackList.append(QString::fromCFString(fallbackFamilyName));
+
+                        QString fallbackName = QString::fromCFString(fallbackFamilyName);
+                        fallbackList.append(fallbackName);
+
+                        if (!qt_isFontFamilyPopulated(fallbackName))
+                            const_cast<QCoreTextFontDatabase *>(this)->populateFromDescriptor(fontFallback, fallbackName);
+
+                        if (fallbackName == QLatin1String(".Apple Symbols Fallback"))
+                            symbolIndex = fallbackList.size() - 1;
+                        else if (fallbackName == QLatin1String(".Noto Sans Universal"))
+                            notoSansUniversalIndex = fallbackList.size() - 1;
                     }
 
                     // .Apple Symbols Fallback will be at the beginning of the list and we will
                     // detect that this has glyphs for Arabic and other writing systems.
                     // Since it is a symbol font, it should be the last resort, so that
                     // the proper fonts for these writing systems are preferred.
-                    int symbolIndex = fallbackList.indexOf(QLatin1String(".Apple Symbols Fallback"));
-                    if (symbolIndex >= 0)
+                    if (symbolIndex >= 0) {
                         fallbackList.move(symbolIndex, fallbackList.size() - 1);
+                        if (notoSansUniversalIndex > symbolIndex)
+                            --notoSansUniversalIndex;
+                    }
+
+                    // .Noto Sans Universal appears to have a bug when the application
+                    // does not have a valid Info.plist, which causes it to return glyph #4
+                    // (a question mark) for any character.
+                    if (notoSansUniversalIndex >= 0)
+                        fallbackList.move(notoSansUniversalIndex, fallbackList.size() - 1);
 
                     addExtraFallbacks(&fallbackList);
-
-                    // Since iOS 13, the cascade list may contain meta-fonts which have not been
-                    // populated to the database, such as ".AppleJapaneseFont". It is important that we
-                    // include this in the fallback list, in order to get fallback support for all
-                    // languages
-                    for (const QString &fallback : fallbackList) {
-                        if (!qt_isFontFamilyPopulated(fallback))
-                            const_cast<QCoreTextFontDatabase *>(this)->populateFamily(fallback);
-                    }
 
                     extern QStringList qt_sort_families_by_writing_system(QChar::Script, const QStringList &);
                     fallbackList = qt_sort_families_by_writing_system(script, fallbackList);

@@ -259,6 +259,8 @@ private slots:
     void disabledProtocols_data();
     void disabledProtocols();
 
+    void oldErrorsOnSocketReuse();
+
     void setEmptyDefaultConfiguration(); // this test should be last
 
 protected slots:
@@ -4189,6 +4191,53 @@ void tst_QSslSocket::disabledProtocols()
         QVERIFY(!loop.timeout());
         QVERIFY(server.socket);
         QCOMPARE(server.socket->error(), QAbstractSocket::SslInvalidUserDataError);
+    }
+}
+
+void tst_QSslSocket::oldErrorsOnSocketReuse()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return; // not relevant
+    SslServer server;
+    server.protocol = QSsl::TlsV1_1;
+    server.m_certFile = testDataDir + "certs/fluke.cert";
+    server.m_keyFile = testDataDir + "certs/fluke.key";
+    QVERIFY(server.listen(QHostAddress::SpecialAddress::LocalHost));
+
+    QSslSocket socket;
+    socket.setProtocol(QSsl::TlsV1_1);
+    QList<QSslError> errorList;
+    auto connection = connect(&socket, QOverload<const QList<QSslError> &>::of(&QSslSocket::sslErrors),
+        [&socket, &errorList](const QList<QSslError> &errors) {
+            errorList += errors;
+            socket.ignoreSslErrors(errors);
+            socket.resume();
+    });
+
+    socket.connectToHostEncrypted(QString::fromLatin1("localhost"), server.serverPort());
+    QVERIFY(QTest::qWaitFor([&socket](){ return socket.isEncrypted(); }));
+    socket.disconnectFromHost();
+    if (socket.state() != QAbstractSocket::UnconnectedState) {
+        QVERIFY(QTest::qWaitFor(
+            [&socket](){
+                return socket.state() == QAbstractSocket::UnconnectedState;
+        }));
+    }
+
+    auto oldList = errorList;
+    errorList.clear();
+    server.close();
+    server.m_certFile = testDataDir + "certs/bogus-client.crt";
+    server.m_keyFile = testDataDir + "certs/bogus-client.key";
+    QVERIFY(server.listen(QHostAddress::SpecialAddress::LocalHost));
+
+    socket.connectToHostEncrypted(QString::fromLatin1("localhost"), server.serverPort());
+    QVERIFY(QTest::qWaitFor([&socket](){ return socket.isEncrypted(); }));
+
+    for (const auto &error : oldList) {
+        QVERIFY2(!errorList.contains(error),
+            "The new errors should not contain any of the old ones");
     }
 }
 

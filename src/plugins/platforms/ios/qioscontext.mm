@@ -332,11 +332,8 @@ bool QIOSContext::verifyGraphicsHardwareAvailability()
         );
     });
 
-    if (applicationBackgrounded) {
-        static const char warning[] = "OpenGL ES calls are not allowed while an application is backgrounded";
-        Q_ASSERT_X(!applicationBackgrounded, "QIOSContext", warning);
-        qCWarning(lcQpaGLContext, warning);
-    }
+    if (applicationBackgrounded)
+        qCWarning(lcQpaGLContext, "OpenGL ES calls are not allowed while an application is backgrounded");
 
     return !applicationBackgrounded;
 }
