@@ -1,27 +1,26 @@
 # Generated from qguieventloop.pro.
 
 #####################################################################
-## tst_qeventloop Test:
+## tst_qguieventloop Test:
 #####################################################################
 
-add_qt_test(tst_qeventloop
+add_qt_test(tst_qguieventloop
+    GUI
     SOURCES
         ../../../corelib/kernel/qeventloop/tst_qeventloop.cpp
-    LIBRARIES
-        Qt::CorePrivate
     PUBLIC_LIBRARIES
-        Qt::Network
+        Qt::Gui
 )
 
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qeventloop CONDITION WIN32 AND NOT WINRT
+extend_target(tst_qguieventloop CONDITION WIN32 AND NOT WINRT
     PUBLIC_LIBRARIES
         user32
 )
 
-extend_target(tst_qeventloop CONDITION QT_FEATURE_glib
+extend_target(tst_qguieventloop CONDITION QT_FEATURE_glib
     DEFINES
         HAVE_GLIB
 )
