@@ -146,13 +146,13 @@ dialog.exec();
 //! [14]
 
 //! [15]
-auto fileOpenCompleted = [](const QString &fileName, const QByteArray &fileContent) {
+auto fileContentReady = [](const QString &fileName, const QByteArray &fileContent) {
     if (fileName.isEmpty()) {
         // No file was selected
     } else {
         // Use fileName and fileContent
     }
-}
+};
 QFileDialog::getOpenFileContent("Images (*.png *.xpm *.jpg)",  fileContentReady);
 //! [15]
 
