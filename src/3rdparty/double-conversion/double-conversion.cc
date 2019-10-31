@@ -38,6 +38,11 @@
 #include <double-conversion/strtod.h>
 #include <double-conversion/utils.h>
 
+// Fix warning C4244: 'argument': conversion from 'const uc16' to 'char', possible loss of data
+#ifdef _MSC_VER
+ __pragma(warning(disable: 4244))
+#endif
+
 namespace double_conversion {
 
 const DoubleToStringConverter& DoubleToStringConverter::EcmaScriptConverter() {
