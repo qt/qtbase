@@ -1111,6 +1111,9 @@ class Scope(object):
             else:
                 replacement = self.get(match.group(1), inherit=True)
                 replacement_str = replacement[0] if replacement else ""
+                if replacement_str == value:
+                    # we have recursed
+                    replacement_str = ""
                 result = result[: match.start()] + replacement_str + result[match.end() :]
                 result = self._replace_env_var_value(result)
 
