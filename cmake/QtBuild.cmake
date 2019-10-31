@@ -1142,12 +1142,13 @@ function(qt_internal_library_deprecation_level result)
     if(WIN32)
         # On Windows, due to the way DLLs work, we need to export all functions,
         # including the inlines
-        set("${result}" "QT_DISABLE_DEPRECATED_BEFORE=0x040800" PARENT_SCOPE)
+        list(APPEND deprecations "QT_DISABLE_DEPRECATED_BEFORE=0x040800")
     else()
         # On other platforms, Qt's own compilation goes needs to compile the Qt 5.0 API
-        set("${result}" "QT_DISABLE_DEPRECATED_BEFORE=0x050000" PARENT_SCOPE)
+        list(APPEND deprecations "QT_DISABLE_DEPRECATED_BEFORE=0x050000")
     endif()
-    set("${result}" "QT_DEPRECATED_WARNINGS_SINCE=0x060000" PARENT_SCOPE)
+    list(APPEND deprecations "QT_DEPRECATED_WARNINGS_SINCE=0x060000")
+    set("${result}" deprecations PARENT_SCOPE)
 endfunction()
 
 
