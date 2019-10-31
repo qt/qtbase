@@ -822,6 +822,8 @@ defineTest(qtConfLibrary_pkgConfig) {
         return(false)
     contains($${1}.libs, ".*\\.$${QMAKE_EXTENSION_STATICLIB}$") {
         qtRunLoggedCommand("$$pkg_config --static --libs $$args", libs)|return(false)
+        # Split by space
+        eval(libs = $$libs)
         !qtConfResolveLibs($${1}.libs, $$libs): \
             return(false)
     }
