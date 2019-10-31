@@ -1590,6 +1590,9 @@ void tst_QRhi::renderToWindowSimple()
     QScopedPointer<QWindow> window(new QWindow);
     switch (impl) {
     case QRhi::OpenGLES2:
+#if QT_CONFIG(opengl)
+        window->setFormat(QRhiGles2InitParams::adjustedFormat());
+#endif
         Q_FALLTHROUGH();
     case QRhi::D3D11:
         window->setSurfaceType(QSurface::OpenGLSurface);
