@@ -88,7 +88,7 @@ inline bool qIsFilenameBroken(const QFileSystemEntry &entry)
             Q_RETURN_ON_INVALID_FILENAME("Broken filename passed to function", (result)); \
     } while (false)
 
-class QFileSystemEngine
+class Q_AUTOTEST_EXPORT QFileSystemEngine
 {
 public:
     static bool isCaseSensitive()
@@ -155,6 +155,7 @@ public:
     static bool createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
 
     static bool copyFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
+    static bool moveFileToTrash(const QFileSystemEntry &source, QFileSystemEntry &newLocation, QSystemError &error);
     static bool renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
     static bool renameOverwriteFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
     static bool removeFile(const QFileSystemEntry &entry, QSystemError &error);
