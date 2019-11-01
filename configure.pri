@@ -53,6 +53,8 @@ defineTest(qtConfCommandline_sanitize) {
             qtConfCommandlineSetInput("sanitize_thread", "yes")
         } else: equals(val, "memory") {
             qtConfCommandlineSetInput("sanitize_memory", "yes")
+        } else: equals(val, "fuzzer-no-link") {
+            qtConfCommandlineSetInput("sanitize_fuzzer_no_link", "yes")
         } else: equals(val, "undefined") {
             qtConfCommandlineSetInput("sanitize_undefined", "yes")
         } else {

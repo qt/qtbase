@@ -131,7 +131,7 @@ Build options:
                          Currently supported backends are 'etw' (Windows) and
                          'lttng' (Linux), or 'yes' for auto-detection. [no]
 
-  -sanitize {address|thread|memory|undefined}
+  -sanitize {address|thread|memory|fuzzer-no-link|undefined}
                          Instrument with the specified compiler sanitizer.
                          Note that some sanitizers cannot be combined;
                          for example, -sanitize address cannot be combined with

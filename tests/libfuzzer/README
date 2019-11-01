@@ -17,6 +17,8 @@ To run a test with libFuzzer:
    install libFuzzer for this version of clang explicitly.
 2. Make sure clang and clang++ from this version of clang are found in PATH.
 3. Configure Qt with
+    -platform linux-clang -sanitize fuzzer-no-link
+   or, if you are using clang 5
     -platform linux-clang -coverage trace-pc-guard
    to add the needed code coverage instrumentation. Since speed of execution is crucial for fuzz
    testing, it's recommendable to also use the switches
