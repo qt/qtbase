@@ -39,7 +39,7 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 # or when enabling developer builds and no prefix is specified.
 # This detection only happens when building qtbase, and later is propagated via the generated
 # QtBuildInternalsExtra.cmake file.
-if (PROJECT_NAME STREQUAL "QtBase")
+if (PROJECT_NAME STREQUAL "QtBase" AND NOT QT_BUILD_STANDALONE_TESTS)
     if((CMAKE_INSTALL_PREFIX STREQUAL CMAKE_BINARY_DIR) OR
         (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND FEATURE_developer_build))
 
@@ -87,6 +87,14 @@ endif()
 
 ## Set up testing
 option(BUILD_TESTING "Build the testing tree." ${QT_BUILD_TESTING})
+if(QT_BUILD_STANDALONE_TESTS)
+    set(QT_BUILD_TESTING ON)
+
+    # BuildInternals might have set it to OFF on initial configuration. So force it to ON when
+    # building standalone tests.
+    set(BUILD_TESTING ON CACHE BOOL "Build the testing tree." FORCE)
+endif()
+
 include(CTest)
 enable_testing()
 

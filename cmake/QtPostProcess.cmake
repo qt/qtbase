@@ -346,10 +346,37 @@ function(qt_create_tools_config_files)
     endforeach()
 endfunction()
 
+function(qt_internal_create_config_file_for_standalone_tests)
+    set(standalone_tests_config_dir "StandaloneTests")
+    qt_path_join(config_build_dir
+                 ${QT_CONFIG_BUILD_DIR}
+                 "${INSTALL_CMAKE_NAMESPACE}BuildInternals" "${standalone_tests_config_dir}")
+    qt_path_join(config_install_dir
+                 ${QT_CONFIG_INSTALL_DIR}
+                 "${INSTALL_CMAKE_NAMESPACE}BuildInternals" "${standalone_tests_config_dir}")
+
+    list(JOIN QT_REPO_KNOWN_MODULES " " QT_REPO_KNOWN_MODULES_STRING)
+    string(STRIP "${QT_REPO_KNOWN_MODULES_STRING}" QT_REPO_KNOWN_MODULES_STRING)
+
+    # Ceate a Config file that calls find_package on the modules that were built as part
+    # of the current repo. This is used for standalone tests.
+    configure_file(
+        "${QT_CMAKE_DIR}/QtStandaloneTestsConfig.cmake.in"
+        "${config_build_dir}/${CMAKE_PROJECT_NAME}TestsConfig.cmake"
+        @ONLY
+    )
+    qt_install(FILES
+        "${config_build_dir}/${CMAKE_PROJECT_NAME}TestsConfig.cmake"
+        DESTINATION "${config_install_dir}"
+        COMPONENT Devel
+    )
+endfunction()
+
 qt_create_tools_config_files()
 qt_internal_create_depends_files()
 qt_generate_build_internals_extra_cmake_code()
 qt_internal_create_plugins_files()
+qt_internal_create_config_file_for_standalone_tests()
 
 if (ANDROID)
     qt_modules_process_android_dependencies()

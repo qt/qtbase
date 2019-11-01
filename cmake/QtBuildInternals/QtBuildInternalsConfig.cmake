@@ -60,37 +60,42 @@ macro(qt_build_repo_begin)
 
     # Find Apple frameworks if needed.
     qt_find_apple_system_frameworks()
+
+    # Decide whether tools will be built.
+    qt_check_if_tools_will_be_built()
 endmacro()
 
 macro(qt_build_repo_end)
-    # Delayed actions on some of the Qt targets:
-    include(QtPostProcess)
+    if(NOT QT_BUILD_STANDALONE_TESTS)
+        # Delayed actions on some of the Qt targets:
+        include(QtPostProcess)
 
-    # Install the repo-specific cmake find modules.
-    qt_path_join(__qt_repo_install_dir ${QT_CONFIG_INSTALL_DIR} ${INSTALL_CMAKE_NAMESPACE})
+        # Install the repo-specific cmake find modules.
+        qt_path_join(__qt_repo_install_dir ${QT_CONFIG_INSTALL_DIR} ${INSTALL_CMAKE_NAMESPACE})
 
-    if(NOT PROJECT_NAME STREQUAL "QtBase")
-        if (EXISTS cmake)
-            qt_copy_or_install(DIRECTORY cmake/
-                DESTINATION "${__qt_repo_install_dir}"
-                FILES_MATCHING PATTERN "Find*.cmake"
-            )
+        if(NOT PROJECT_NAME STREQUAL "QtBase")
+            if (EXISTS cmake)
+                qt_copy_or_install(DIRECTORY cmake/
+                    DESTINATION "${__qt_repo_install_dir}"
+                    FILES_MATCHING PATTERN "Find*.cmake"
+                )
+            endif()
         endif()
-    endif()
 
-    # Print a feature summary:
-    feature_summary(WHAT PACKAGES_FOUND
-                         REQUIRED_PACKAGES_NOT_FOUND
-                         RECOMMENDED_PACKAGES_NOT_FOUND
-                         OPTIONAL_PACKAGES_NOT_FOUND
-                         RUNTIME_PACKAGES_NOT_FOUND
-                         FATAL_ON_MISSING_REQUIRED_PACKAGES)
+        # Print a feature summary:
+        feature_summary(WHAT PACKAGES_FOUND
+                             REQUIRED_PACKAGES_NOT_FOUND
+                             RECOMMENDED_PACKAGES_NOT_FOUND
+                             OPTIONAL_PACKAGES_NOT_FOUND
+                             RUNTIME_PACKAGES_NOT_FOUND
+                             FATAL_ON_MISSING_REQUIRED_PACKAGES)
+    endif()
 
     qt_print_build_instructions()
 endmacro()
 
 function(qt_print_build_instructions)
-    if(NOT PROJECT_NAME STREQUAL "QtBase")
+    if(NOT PROJECT_NAME STREQUAL "QtBase" OR QT_BUILD_STANDALONE_TESTS)
         return()
     endif()
 
@@ -118,19 +123,18 @@ macro(qt_build_repo)
     # If testing is enabled, try to find the qtbase Test package.
     # Do this before adding src, because there might be test related conditions
     # in source.
-    if (BUILD_TESTING)
+    if (BUILD_TESTING AND NOT QT_BUILD_STANDALONE_TESTS)
         find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
     endif()
 
-    ## Decide whether tools will be built.
-    qt_check_if_tools_will_be_built()
+    if(NOT QT_BUILD_STANDALONE_TESTS)
+        if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists.txt")
+            add_subdirectory(src)
+        endif()
 
-    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists.txt")
-        add_subdirectory(src)
-    endif()
-
-    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tools/CMakeLists.txt")
-        add_subdirectory(tools)
+        if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tools/CMakeLists.txt")
+            add_subdirectory(tools)
+        endif()
     endif()
 
     if (BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
@@ -139,23 +143,34 @@ macro(qt_build_repo)
 
     qt_build_repo_end()
 
-    if (BUILD_EXAMPLES AND BUILD_SHARED_LIBS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt")
+    if (BUILD_EXAMPLES AND BUILD_SHARED_LIBS
+            AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt"
+            AND NOT QT_BUILD_STANDALONE_TESTS)
         add_subdirectory(examples)
     endif()
 endmacro()
 
 macro(qt_set_up_standalone_tests_build)
-    qt_set_up_build_internals_paths()
-    include(QtSetup)
-
-    # Optionally include a repo specific Setup module.
-    include(QtRepoSetup OPTIONAL)
-
-    qt_find_apple_system_frameworks()
-    qt_check_if_tools_will_be_built()
+    # Remove this macro once all usages of it have been removed.
+    # Standalone tests are not handled via the main repo project and qt_build_tests.
 endmacro()
 
 macro(qt_build_tests)
+    if(QT_BUILD_STANDALONE_TESTS)
+        # Find location of TestsConfig.cmake. These contain the modules that need to be
+        # find_package'd when testing.
+        set(_qt_build_tests_install_prefix
+            "${QT_CONFIG_INSTALL_DIR}/${INSTALL_CMAKE_NAMESPACE}BuildInternals/StandaloneTests")
+        if(QT_WILL_INSTALL)
+            qt_path_join(_qt_build_tests_install_prefix
+                         ${CMAKE_INSTALL_PREFIX} ${_qt_build_tests_install_prefix})
+        endif()
+        include("${_qt_build_tests_install_prefix}/${CMAKE_PROJECT_NAME}TestsConfig.cmake")
+
+        # Of course we always need the test module as well.
+        find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
+    endif()
+
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/auto/CMakeLists.txt")
         add_subdirectory(auto)
     endif()

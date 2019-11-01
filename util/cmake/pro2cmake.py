@@ -3248,12 +3248,9 @@ def handle_top_level_repo_tests_project(scope: Scope, cm_fh: IO[str]):
 
     content = dedent(
         f"""\
-        if(NOT TARGET Qt::Test)
-            cmake_minimum_required(VERSION {cmake_version_string})
-            project({qt_lib} VERSION 6.0.0 LANGUAGES C CXX)
-            find_package(Qt6 ${{PROJECT_VERSION}} REQUIRED COMPONENTS BuildInternals Core SET_ME_TO_SOMETHING_USEFUL)
-            find_package(Qt6 ${{PROJECT_VERSION}} OPTIONAL_COMPONENTS SET_ME_TO_SOMETHING_USEFUL){requires_content}
-            qt_set_up_standalone_tests_build()
+        if(QT_BUILD_STANDALONE_TESTS)
+            # Add qt_find_package calls for extra dependencies that need to be found when building
+            # the standalone tests here.
         endif()
         qt_build_tests()
 """
