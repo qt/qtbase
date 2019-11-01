@@ -9365,6 +9365,19 @@ void tst_QNetworkReply::getWithTimeout()
 
     QCOMPARE(spy2.count(), 1);
     QVERIFY(reply2->error() == QNetworkReply::OperationCanceledError);
+
+    request.setTransferTimeout(0);
+    manager.setTransferTimeout(1000);
+
+    QNetworkReplyPtr reply3(manager.get(request));
+    QSignalSpy spy3(reply3.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+
+    QCOMPARE(waitForFinish(reply3), int(Failure));
+
+    QCOMPARE(spy3.count(), 1);
+    QVERIFY(reply3->error() == QNetworkReply::OperationCanceledError);
+
+    manager.setTransferTimeout(0);
 }
 
 void tst_QNetworkReply::postWithTimeout()
@@ -9392,6 +9405,19 @@ void tst_QNetworkReply::postWithTimeout()
 
     QCOMPARE(spy2.count(), 1);
     QVERIFY(reply2->error() == QNetworkReply::OperationCanceledError);
+
+    request.setTransferTimeout(0);
+    manager.setTransferTimeout(1000);
+
+    QNetworkReplyPtr reply3(manager.post(request, postData));
+    QSignalSpy spy3(reply3.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+
+    QCOMPARE(waitForFinish(reply3), int(Failure));
+
+    QCOMPARE(spy3.count(), 1);
+    QVERIFY(reply3->error() == QNetworkReply::OperationCanceledError);
+
+    manager.setTransferTimeout(0);
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!

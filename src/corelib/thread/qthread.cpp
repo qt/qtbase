@@ -919,6 +919,16 @@ QThreadPrivate::~QThreadPrivate()
     delete data;
 }
 
+void QThread::setStackSize(uint stackSize)
+{
+    Q_UNUSED(stackSize);
+}
+
+uint QThread::stackSize() const
+{
+    return 0;
+}
+
 #endif // QT_CONFIG(thread)
 
 /*!

@@ -911,14 +911,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
 }
 
 /*! \fn bool QFSFileEngine::caseSensitive() const
-  Returns \c true for Windows, false for Unix.
-*/
-
-/*! \fn bool QFSFileEngine::copy(const QString &copyName)
-
-  For Windows or Apple platforms, copy the file to file \a copyName.
-
-  Not implemented for other Unix platforms.
+  Returns \c false for Windows, true for Unix.
 */
 
 /*! \fn QString QFSFileEngine::currentPath(const QString &fileName)
@@ -950,11 +943,34 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   \reimp
 */
 
-/*! \fn QString QFSFileEngine::homePath()
+/*!
   Returns the home path of the current user.
 
   \sa rootPath()
 */
+QString QFSFileEngine::homePath()
+{
+    return QFileSystemEngine::homePath();
+}
+
+/*!
+  Returns the root path.
+
+  \sa homePath()
+*/
+QString QFSFileEngine::rootPath()
+{
+    return QFileSystemEngine::rootPath();
+}
+
+/*!
+  Returns the temporary path (i.e., a path in which it is safe
+  to store temporary files).
+*/
+QString QFSFileEngine::tempPath()
+{
+    return QFileSystemEngine::tempPath();
+}
 
 /*! \fn bool QFSFileEngine::isRelativePath() const
   \reimp
@@ -968,9 +984,6 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   true if successful; otherwise returns \c false.
 */
 
-/*! \fn bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) const
-  \reimp
-*/
 
 /*! \fn uint QFSFileEngine::ownerId(QAbstractFileEngine::FileOwner own) const
   In Unix, if stat() is successful, the \c uid is returned if
@@ -984,35 +997,87 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   \reimp
 */
 
-/*! \fn bool QFSFileEngine::remove()
+/*!
+  For Windows or Apple platforms, copy the file to file \a copyName.
+
+  Not implemented for other Unix platforms.
+*/
+bool QFSFileEngine::copy(const QString &copyName)
+{
+    Q_D(QFSFileEngine);
+    QSystemError error;
+    bool ret = QFileSystemEngine::copyFile(d->fileEntry, QFileSystemEntry(copyName), error);
+    if (!ret)
+        setError(QFile::CopyError, error.toString());
+    return ret;
+}
+
+/*!
   \reimp
 */
+bool QFSFileEngine::remove()
+{
+    Q_D(QFSFileEngine);
+    QSystemError error;
+    bool ret = QFileSystemEngine::removeFile(d->fileEntry, error);
+    d->metaData.clear();
+    if (!ret)
+        setError(QFile::RemoveError, error.toString());
+    return ret;
+}
 
-/*! \fn bool QFSFileEngine::rename(const QString &newName)
+/*!
   \reimp
 */
-
-
-/*! \fn bool QFSFileEngine::renameOverwrite(const QString &newName)
+bool QFSFileEngine::rename(const QString &newName)
+{
+    Q_D(QFSFileEngine);
+    QSystemError error;
+    bool ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName), error);
+    if (!ret)
+        setError(QFile::RenameError, error.toString());
+    return ret;
+}
+/*!
   \reimp
 */
+bool QFSFileEngine::renameOverwrite(const QString &newName)
+{
+    Q_D(QFSFileEngine);
+    QSystemError error;
+    bool ret = QFileSystemEngine::renameOverwriteFile(d->fileEntry, QFileSystemEntry(newName), error);
+    if (!ret)
+        setError(QFile::RenameError, error.toString());
+    return ret;
+}
 
-/*! \fn bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) const
+/*!
   \reimp
 */
+bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) const
+{
+    return QFileSystemEngine::createDirectory(QFileSystemEntry(name), createParentDirectories);
+}
 
-/*! \fn QString QFSFileEngine::rootPath()
-  Returns the root path.
-
-  \sa homePath()
+/*!
+  \reimp
 */
+bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) const
+{
+    return QFileSystemEngine::removeDirectory(QFileSystemEntry(name), recurseParentDirectories);
+}
 
-/*! \fn bool QFSFileEngine::setCurrentPath(const QString &path)
+
+/*!
   Sets the current path (e.g., for QDir), to \a path. Returns \c true if the
   new path exists; otherwise this function does nothing, and returns \c false.
 
   \sa currentPath()
 */
+bool QFSFileEngine::setCurrentPath(const QString &path)
+{
+    return QFileSystemEngine::setCurrentPath(QFileSystemEntry(path));
+}
 
 /*! \fn bool QFSFileEngine::setPermissions(uint perms)
   \reimp
@@ -1020,11 +1085,6 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
 
 /*! \fn bool QFSFileEngine::setSize(qint64 size)
   \reimp
-*/
-
-/*! \fn QString QFSFileEngine::tempPath()
-  Returns the temporary path (i.e., a path in which it is safe
-  to store temporary files).
 */
 
 /*! \fn QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions(QAbstractFileEngine::FileFlags type) const

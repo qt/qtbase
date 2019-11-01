@@ -168,6 +168,9 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
         -D CMAKE_FIND_ROOT_PATH_MODE_INCLUDE=${CMAKE_FIND_ROOT_PATH_MODE_INCLUDE}
         -D CMAKE_FIND_ROOT_PATH_MODE_PACKAGE=${CMAKE_FIND_ROOT_PATH_MODE_PACKAGE}
         -D CMAKE_SHARED_LIBRARY_SUFFIX_CXX=_${android_abi}.so
+        -D CMAKE_SHARED_MODULE_SUFFIX_CXX=_${android_abi}.so
+        -D CMAKE_SHARED_LIBRARY_SUFFIX_C=_${android_abi}.so
+        -D CMAKE_SHARED_MODULE_SUFFIX_C=_${android_abi}.so
         -D CMAKE_LIBRARY_OUTPUT_DIRECTORY=${CMAKE_BINARY_DIR}/android-build/libs/${android_abi}
         -D ${PROJECT_NAME}-MultiAbiBuild=ON
     )
@@ -181,7 +184,10 @@ if (NOT ${PROJECT_NAME}-MultiAbiBuild)
     else()
       # For the default abi just use the regular cmake run, to have
       # nice IDE integration and so on
+      set(CMAKE_SHARED_MODULE_SUFFIX_CXX "_${ANDROID_ABI}.so")
       set(CMAKE_SHARED_LIBRARY_SUFFIX_CXX "_${ANDROID_ABI}.so")
+      set(CMAKE_SHARED_MODULE_SUFFIX_C "_${ANDROID_ABI}.so")
+      set(CMAKE_SHARED_LIBRARY_SUFFIX_C "_${ANDROID_ABI}.so")
       set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/android-build/libs/${ANDROID_ABI})
     endif()
   endforeach()

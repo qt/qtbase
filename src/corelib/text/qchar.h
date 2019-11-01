@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -328,6 +328,19 @@ public:
         Script_Soyombo,
         Script_ZanabazarSquare,
 
+        // Unicode 12.1 additions
+        Script_Dogra,
+        Script_GunjalaGondi,
+        Script_HanifiRohingya,
+        Script_Makasar,
+        Script_Medefaidrin,
+        Script_OldSogdian,
+        Script_Sogdian,
+        Script_Elymaic,
+        Script_Nandinagari,
+        Script_NyiakengPuachueHmong,
+        Script_Wancho,
+
         ScriptCount
     };
 
@@ -421,7 +434,10 @@ public:
         Unicode_7_0,
         Unicode_8_0,
         Unicode_9_0,
-        Unicode_10_0
+        Unicode_10_0,
+        Unicode_11_0,
+        Unicode_12_0,
+        Unicode_12_1,
     };
     // ****** WHEN ADDING FUNCTIONS, CONSIDER ADDING TO QCharRef TOO
 

@@ -828,7 +828,8 @@ void QWindowSystemInterface::handleScreenAdded(QPlatformScreen *ps, bool isPrima
 */
 void QWindowSystemInterface::handleScreenRemoved(QPlatformScreen *platformScreen)
 {
-    // Important to keep this order since the QSceen doesn't own the platform screen
+    // Important to keep this order since the QSceen doesn't own the platform screen.
+    // The QScreen destructor will take care changing the primary screen, so no need here.
     delete platformScreen->screen();
     delete platformScreen;
 }

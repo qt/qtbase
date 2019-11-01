@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2013 Konstantin Ritt
 ** Contact: https://www.qt.io/licensing/
 **
@@ -216,7 +216,20 @@ static const hb_script_t _qtscript_to_hbscript[] = {
     HB_SCRIPT_MASARAM_GONDI,
     HB_SCRIPT_NUSHU,
     HB_SCRIPT_SOYOMBO,
-    HB_SCRIPT_ZANABAZAR_SQUARE
+    HB_SCRIPT_ZANABAZAR_SQUARE,
+
+    // Unicode 12.1 additions (not present in harfbuzz-ng 1.7.4)
+    hb_script_t(HB_TAG('D', 'o', 'g', 'r')), // Script_Dogra
+    hb_script_t(HB_TAG('G', 'o', 'n', 'g')), // Script_GunjalaGondi
+    hb_script_t(HB_TAG('R', 'o', 'h', 'g')), // Script_HanifiRohingya
+    hb_script_t(HB_TAG('M', 'a', 'k', 'a')), // Script_Makasar
+    hb_script_t(HB_TAG('M', 'e', 'd', 'f')), // Script_Medefaidrin
+    hb_script_t(HB_TAG('S', 'o', 'g', 'o')), // Script_OldSogdian
+    hb_script_t(HB_TAG('S', 'o', 'g', 'd')), // Script_Sogdian
+    hb_script_t(HB_TAG('E', 'l', 'y', 'm')), // Script_Elymaic
+    hb_script_t(HB_TAG('N', 'a', 'n', 'd')), // Script_Nandinagari
+    hb_script_t(HB_TAG('H', 'm', 'n', 'p')), // Script_NyiakengPuachueHmong
+    hb_script_t(HB_TAG('W', 'c', 'h', 'o')), // Script_Wancho
 };
 Q_STATIC_ASSERT(QChar::ScriptCount == sizeof(_qtscript_to_hbscript) / sizeof(_qtscript_to_hbscript[0]));
 
