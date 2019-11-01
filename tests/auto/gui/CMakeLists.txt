@@ -5,7 +5,7 @@ if(NOT APPLE_UIKIT)
     add_subdirectory(image)
     add_subdirectory(math3d)
     add_subdirectory(painting)
-    # add_subdirectory(text) # special case missing project
+    add_subdirectory(text)
     add_subdirectory(util)
     add_subdirectory(itemmodels)
     add_subdirectory(rhi)
