@@ -8,8 +8,11 @@ add_qt_test(tst_qguieventloop
     GUI
     SOURCES
         ../../../corelib/kernel/qeventloop/tst_qeventloop.cpp
+    LIBRARIES # special case
+        Qt::CorePrivate # special case
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Network # special case
 )
 
 ## Scopes:
