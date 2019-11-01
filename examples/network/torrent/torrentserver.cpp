@@ -78,10 +78,10 @@ void TorrentServer::incomingConnection(qintptr socketDescriptor)
 
     if (client->setSocketDescriptor(socketDescriptor)) {
         if (ConnectionManager::instance()->canAddConnection() && !clients.isEmpty()) {
-            connect(client, SIGNAL(infoHashReceived(QByteArray)),
-                    this, SLOT(processInfoHash(QByteArray)));
-            connect(client, SIGNAL(error(QAbstractSocket::SocketError)),
-                    this, SLOT(removeClient()));
+            connect(client, &PeerWireClient::infoHashReceived,
+                    this, &TorrentServer::processInfoHash);
+            connect(client, QOverload<QAbstractSocket::SocketError>::of(&PeerWireClient::error),
+                    this, QOverload<>::of(&TorrentServer::removeClient));
             RateController::instance()->addSocket(client);
             ConnectionManager::instance()->addConnection(client);
             return;
@@ -104,7 +104,7 @@ void TorrentServer::processInfoHash(const QByteArray &infoHash)
     PeerWireClient *peer = qobject_cast<PeerWireClient *>(sender());
     for (TorrentClient *client : qAsConst(clients)) {
         if (client->state() >= TorrentClient::Searching && client->infoHash() == infoHash) {
-            peer->disconnect(peer, 0, this, 0);
+            peer->disconnect(peer, nullptr, this, nullptr);
             client->setupIncomingConnection(peer);
             return;
         }

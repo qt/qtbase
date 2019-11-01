@@ -61,7 +61,7 @@ class FortuneThread : public QThread
     Q_OBJECT
 
 public:
-    FortuneThread(QObject *parent = 0);
+    FortuneThread(QObject *parent = nullptr);
     ~FortuneThread();
 
     void requestNewFortune(const QString &hostName, quint16 port);

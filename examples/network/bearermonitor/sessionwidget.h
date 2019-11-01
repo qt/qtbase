@@ -51,7 +51,7 @@
 #ifndef SESSIONWIDGET_H
 #define SESSIONWIDGET_H
 
-#include <qnetworksession.h>
+#include <QNetworkSession>
 
 #include "ui_sessionwidget.h"
 
@@ -62,10 +62,10 @@ class SessionWidget : public QWidget, public Ui_SessionWidget
     Q_OBJECT
 
 public:
-    explicit SessionWidget(const QNetworkConfiguration &config, QWidget *parent = 0);
+    explicit SessionWidget(const QNetworkConfiguration &config, QWidget *parent = nullptr);
     ~SessionWidget();
 
-    void timerEvent(QTimerEvent *) override;
+    void timerEvent(QTimerEvent *e) override;
 
 private:
     void updateSessionState(QNetworkSession::State state);
@@ -80,8 +80,8 @@ private Q_SLOTS:
     void updateSessionError(QNetworkSession::SessionError error);
 
 private:
-    QNetworkSession *session;
-    int statsTimer;
+    QNetworkSession *session = nullptr;
+    int statsTimer = -1;
 };
 
 #endif

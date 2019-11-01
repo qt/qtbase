@@ -51,8 +51,7 @@
 #ifndef BEARERMONITOR_H
 #define BEARERMONITOR_H
 
-#include <qnetworkconfigmanager.h>
-#include <qnetworksession.h>
+#include <QNetworkConfigurationManager>
 #include "ui_bearermonitor_640_480.h"
 
 QT_USE_NAMESPACE
@@ -64,11 +63,11 @@ class BearerMonitor : public QWidget, public Ui_BearerMonitor
     Q_OBJECT
 
 public:
-    BearerMonitor(QWidget *parent = 0);
+    BearerMonitor(QWidget *parent = nullptr);
     ~BearerMonitor();
 
 private slots:
-    void configurationAdded(const QNetworkConfiguration &config, QTreeWidgetItem *parent = 0);
+    void configurationAdded(const QNetworkConfiguration &config, QTreeWidgetItem *parent = nullptr);
     void configurationRemoved(const QNetworkConfiguration &config);
     void configurationChanged(const QNetworkConfiguration &config);
     void updateSnapConfiguration(QTreeWidgetItem *parent, const QNetworkConfiguration &snap);
@@ -90,7 +89,7 @@ private slots:
 
 private:
     QNetworkConfigurationManager manager;
-    QList<SessionWidget *> sessionWidgets;
+    QVector<SessionWidget *> sessionWidgets;
 };
 
 #endif //BEARERMONITOR_H

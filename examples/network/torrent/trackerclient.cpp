@@ -60,14 +60,8 @@
 TrackerClient::TrackerClient(TorrentClient *downloader, QObject *parent)
     : QObject(parent), torrentDownloader(downloader)
 {
-    length = 0;
-    requestInterval = 5 * 60;
-    requestIntervalTimer = -1;
-    firstTrackerRequest = true;
-    lastTrackerRequest = false;
-    firstSeeding = true;
-
-    connect(&http, SIGNAL(finished(QNetworkReply*)), this, SLOT(httpRequestDone(QNetworkReply*)));
+    connect(&http, &QNetworkAccessManager::finished,
+            this, &TrackerClient::httpRequestDone);
 }
 
 void TrackerClient::start(const MetaInfo &info)
@@ -157,8 +151,8 @@ void TrackerClient::fetchPeerList()
     if (!url.userName().isEmpty()) {
         uname = url.userName();
         pwd = url.password();
-        connect(&http, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
-                this, SLOT(provideAuthentication(QNetworkReply*,QAuthenticator*)));
+        connect(&http, &QNetworkAccessManager::authenticationRequired,
+                this, &TrackerClient::provideAuthentication);
     }
     http.get(req);
 }

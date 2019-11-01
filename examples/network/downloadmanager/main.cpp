@@ -76,6 +76,7 @@ int main(int argc, char **argv)
     DownloadManager manager;
     manager.append(arguments);
 
-    QObject::connect(&manager, SIGNAL(finished()), &app, SLOT(quit()));
+    QObject::connect(&manager, &DownloadManager::finished,
+                     &app, &QCoreApplication::quit);
     app.exec();
 }

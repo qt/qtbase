@@ -87,7 +87,7 @@ PeerWireClient::PeerWireClient(const QByteArray &peerId, QObject *parent)
     : QTcpSocket(parent), pendingBlockSizes(0),
       pwState(ChokingPeer | ChokedByPeer), receivedHandShake(false), gotPeerId(false),
       sentHandShake(false), nextPacketLength(-1), pendingRequestTimer(0), invalidateTimeout(false),
-      keepAliveTimer(0), torrentPeer(0)
+      keepAliveTimer(0), torrentPeer(nullptr)
 {
     memset(uploadSpeedData, 0, sizeof(uploadSpeedData));
     memset(downloadSpeedData, 0, sizeof(downloadSpeedData));
@@ -96,21 +96,23 @@ PeerWireClient::PeerWireClient(const QByteArray &peerId, QObject *parent)
     timeoutTimer = startTimer(ConnectTimeout);
     peerIdString = peerId;
 
-    connect(this, SIGNAL(readyRead()), this, SIGNAL(readyToTransfer()));
-    connect(this, SIGNAL(connected()), this, SIGNAL(readyToTransfer()));
+    connect(this, &PeerWireClient::readyRead,
+            this, &PeerWireClient::readyToTransfer);
+    connect(this, &PeerWireClient::connected,
+            this, &PeerWireClient::readyToTransfer);
 
-    connect(&socket, SIGNAL(connected()),
-            this, SIGNAL(connected()));
-    connect(&socket, SIGNAL(readyRead()),
-            this, SIGNAL(readyRead()));
-    connect(&socket, SIGNAL(disconnected()),
-            this, SIGNAL(disconnected()));
-    connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SIGNAL(error(QAbstractSocket::SocketError)));
-    connect(&socket, SIGNAL(bytesWritten(qint64)),
-            this, SIGNAL(bytesWritten(qint64)));
-    connect(&socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
-            this, SLOT(socketStateChanged(QAbstractSocket::SocketState)));
+    connect(&socket, &QTcpSocket::connected,
+            this, &PeerWireClient::connected);
+    connect(&socket, &QTcpSocket::readyRead,
+            this, &PeerWireClient::readyRead);
+    connect(&socket, &QTcpSocket::disconnected,
+            this, &PeerWireClient::disconnected);
+    connect(&socket, QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::error),
+            this, QOverload<QAbstractSocket::SocketError>::of(&PeerWireClient::error));
+    connect(&socket, &QTcpSocket::bytesWritten,
+            this, &PeerWireClient::bytesWritten);
+    connect(&socket, &QTcpSocket::stateChanged,
+            this, &PeerWireClient::socketStateChanged);
 
 }
 

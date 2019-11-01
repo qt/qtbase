@@ -92,7 +92,7 @@ public:
     };
     Q_DECLARE_FLAGS(PeerWireState, PeerWireStateFlag)
 
-    explicit PeerWireClient(const QByteArray &peerId, QObject *parent = 0);
+    explicit PeerWireClient(const QByteArray &peerId, QObject *parent = nullptr);
     void initialize(const QByteArray &infoHash, int pieceCount);
 
     void setPeer(TorrentPeer *peer);

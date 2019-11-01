@@ -89,7 +89,7 @@ Dialog::Dialog(QWidget *parent)
                             "Run the Fortune Client example now.")
                          .arg(ipAddress).arg(server.serverPort()));
 
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(quitButton, &QPushButton::clicked, this, &Dialog::close);
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
     buttonLayout->addStretch(1);

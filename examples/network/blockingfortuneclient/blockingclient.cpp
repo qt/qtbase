@@ -96,20 +96,21 @@ BlockingClient::BlockingClient(QWidget *parent)
     buttonBox->addButton(getFortuneButton, QDialogButtonBox::ActionRole);
     buttonBox->addButton(quitButton, QDialogButtonBox::RejectRole);
 
-    connect(getFortuneButton, SIGNAL(clicked()), this, SLOT(requestNewFortune()));
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(getFortuneButton, &QPushButton::clicked,
+            this, &BlockingClient::requestNewFortune);
+    connect(quitButton, &QPushButton::clicked,
+            this, &BlockingClient::close);
 
-    connect(hostLineEdit, SIGNAL(textChanged(QString)),
-            this, SLOT(enableGetFortuneButton()));
-    connect(portLineEdit, SIGNAL(textChanged(QString)),
-            this, SLOT(enableGetFortuneButton()));
+    connect(hostLineEdit, &QLineEdit::textChanged,
+            this, &BlockingClient::enableGetFortuneButton);
+    connect(portLineEdit, &QLineEdit::textChanged,
+            this, &BlockingClient::enableGetFortuneButton);
 //! [0]
-    connect(&thread, SIGNAL(newFortune(QString)),
-            this, SLOT(showFortune(QString)));
-//! [0] //! [1]
-    connect(&thread, SIGNAL(error(int,QString)),
-            this, SLOT(displayError(int,QString)));
-//! [1]
+    connect(&thread, &FortuneThread::newFortune,
+            this, &BlockingClient::showFortune);
+    connect(&thread, &FortuneThread::error,
+            this, &BlockingClient::displayError);
+//! [0]
 
     QGridLayout *mainLayout = new QGridLayout;
     mainLayout->addWidget(hostLabel, 0, 0);
@@ -124,30 +125,30 @@ BlockingClient::BlockingClient(QWidget *parent)
     portLineEdit->setFocus();
 }
 
-//! [2]
+//! [1]
 void BlockingClient::requestNewFortune()
 {
     getFortuneButton->setEnabled(false);
     thread.requestNewFortune(hostLineEdit->text(),
                              portLineEdit->text().toInt());
 }
-//! [2]
+//! [1]
 
-//! [3]
+//! [2]
 void BlockingClient::showFortune(const QString &nextFortune)
 {
     if (nextFortune == currentFortune) {
         requestNewFortune();
         return;
     }
-//! [3]
+//! [2]
 
-//! [4]
+//! [3]
     currentFortune = nextFortune;
     statusLabel->setText(currentFortune);
     getFortuneButton->setEnabled(true);
 }
-//! [4]
+//! [3]
 
 void BlockingClient::displayError(int socketError, const QString &message)
 {
