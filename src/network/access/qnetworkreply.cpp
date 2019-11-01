@@ -687,7 +687,7 @@ QVariant QNetworkReply::attribute(QNetworkRequest::Attribute code) const
     return d_func()->attributes.value(code);
 }
 
-#ifndef QT_NO_SSL
+#if QT_CONFIG(ssl)
 /*!
     Returns the SSL configuration and state associated with this
     reply, if SSL was used. It will contain the remote server's
@@ -742,7 +742,6 @@ void QNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
 {
     ignoreSslErrorsImplementation(errors);
 }
-#endif
 
 /*!
   \fn void QNetworkReply::sslConfigurationImplementation(QSslConfiguration &configuration) const
@@ -785,6 +784,8 @@ void QNetworkReply::setSslConfigurationImplementation(const QSslConfiguration &)
 void QNetworkReply::ignoreSslErrorsImplementation(const QList<QSslError> &)
 {
 }
+
+#endif // QT_CONFIG(ssl)
 
 /*!
     If this function is called, SSL errors related to network
