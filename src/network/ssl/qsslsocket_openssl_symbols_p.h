@@ -220,11 +220,129 @@ QT_BEGIN_NAMESPACE
 
 #endif // !defined QT_LINKED_OPENSSL
 
-#if QT_CONFIG(opensslv11)
-#include "qsslsocket_openssl11_symbols_p.h"
-#else
-#include "qsslsocket_opensslpre11_symbols_p.h"
-#endif // QT_CONFIG
+// TODO: the following lines previously were a part of 1.1 - specific header.
+// To reduce the amount of the change, I'm directly copying and pasting the
+// content of the header here. Later, can be better sorted/split into groups,
+// depending on the functionality.
+//#include "qsslsocket_openssl11_symbols_p.h"
+
+const unsigned char * q_ASN1_STRING_get0_data(const ASN1_STRING *x);
+
+Q_AUTOTEST_EXPORT BIO *q_BIO_new(const BIO_METHOD *a);
+Q_AUTOTEST_EXPORT const BIO_METHOD *q_BIO_s_mem();
+
+int q_DSA_bits(DSA *a);
+int q_EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *c);
+Q_AUTOTEST_EXPORT int q_EVP_PKEY_up_ref(EVP_PKEY *a);
+int q_EVP_PKEY_base_id(EVP_PKEY *a);
+int q_RSA_bits(RSA *a);
+Q_AUTOTEST_EXPORT int q_OPENSSL_sk_num(OPENSSL_STACK *a);
+Q_AUTOTEST_EXPORT void q_OPENSSL_sk_pop_free(OPENSSL_STACK *a, void (*b)(void *));
+Q_AUTOTEST_EXPORT OPENSSL_STACK *q_OPENSSL_sk_new_null();
+Q_AUTOTEST_EXPORT void q_OPENSSL_sk_push(OPENSSL_STACK *st, void *data);
+Q_AUTOTEST_EXPORT void q_OPENSSL_sk_free(OPENSSL_STACK *a);
+Q_AUTOTEST_EXPORT void * q_OPENSSL_sk_value(OPENSSL_STACK *a, int b);
+int q_SSL_session_reused(SSL *a);
+unsigned long q_SSL_CTX_set_options(SSL_CTX *ctx, unsigned long op);
+int q_OPENSSL_init_ssl(uint64_t opts, const OPENSSL_INIT_SETTINGS *settings);
+size_t q_SSL_get_client_random(SSL *a, unsigned char *out, size_t outlen);
+size_t q_SSL_SESSION_get_master_key(const SSL_SESSION *session, unsigned char *out, size_t outlen);
+int q_CRYPTO_get_ex_new_index(int class_index, long argl, void *argp, CRYPTO_EX_new *new_func, CRYPTO_EX_dup *dup_func, CRYPTO_EX_free *free_func);
+const SSL_METHOD *q_TLS_method();
+const SSL_METHOD *q_TLS_client_method();
+const SSL_METHOD *q_TLS_server_method();
+ASN1_TIME *q_X509_getm_notBefore(X509 *a);
+ASN1_TIME *q_X509_getm_notAfter(X509 *a);
+
+Q_AUTOTEST_EXPORT void q_X509_up_ref(X509 *a);
+long q_X509_get_version(X509 *a);
+EVP_PKEY *q_X509_get_pubkey(X509 *a);
+void q_X509_STORE_set_verify_cb(X509_STORE *ctx, X509_STORE_CTX_verify_cb verify_cb);
+int q_X509_STORE_set_ex_data(X509_STORE *ctx, int idx, void *data);
+void *q_X509_STORE_get_ex_data(X509_STORE *r, int idx);
+STACK_OF(X509) *q_X509_STORE_CTX_get0_chain(X509_STORE_CTX *ctx);
+void q_DH_get0_pqg(const DH *dh, const BIGNUM **p, const BIGNUM **q, const BIGNUM **g);
+int q_DH_bits(DH *dh);
+
+# define q_SSL_load_error_strings() q_OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS \
+                                                       | OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL)
+
+#define q_SKM_sk_num(type, st) ((int (*)(const STACK_OF(type) *))q_OPENSSL_sk_num)(st)
+#define q_SKM_sk_value(type, st,i) ((type * (*)(const STACK_OF(type) *, int))q_OPENSSL_sk_value)(st, i)
+
+#define q_OPENSSL_add_all_algorithms_conf()  q_OPENSSL_init_crypto(OPENSSL_INIT_ADD_ALL_CIPHERS \
+                                                                   | OPENSSL_INIT_ADD_ALL_DIGESTS \
+                                                                   | OPENSSL_INIT_LOAD_CONFIG, NULL)
+#define  q_OPENSSL_add_all_algorithms_noconf() q_OPENSSL_init_crypto(OPENSSL_INIT_ADD_ALL_CIPHERS \
+                                                                    | OPENSSL_INIT_ADD_ALL_DIGESTS, NULL)
+
+int q_OPENSSL_init_crypto(uint64_t opts, const OPENSSL_INIT_SETTINGS *settings);
+void q_CRYPTO_free(void *str, const char *file, int line);
+
+long q_OpenSSL_version_num();
+const char *q_OpenSSL_version(int type);
+
+unsigned long q_SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *session);
+unsigned long q_SSL_set_options(SSL *s, unsigned long op);
+
+#ifdef TLS1_3_VERSION
+int q_SSL_CTX_set_ciphersuites(SSL_CTX *ctx, const char *str);
+#endif
+
+#if QT_CONFIG(dtls)
+// Functions and types required for DTLS support:
+extern "C"
+{
+
+typedef int (*CookieVerifyCallback)(SSL *, const unsigned char *, unsigned);
+typedef int (*DgramWriteCallback) (BIO *, const char *, int);
+typedef int (*DgramReadCallback) (BIO *, char *, int);
+typedef int (*DgramPutsCallback) (BIO *, const char *);
+typedef long (*DgramCtrlCallback) (BIO *, int, long, void *);
+typedef int (*DgramCreateCallback) (BIO *);
+typedef int (*DgramDestroyCallback) (BIO *);
+
+}
+
+int q_DTLSv1_listen(SSL *s, BIO_ADDR *client);
+BIO_ADDR *q_BIO_ADDR_new();
+void q_BIO_ADDR_free(BIO_ADDR *ap);
+
+// API we need for a custom dgram BIO:
+
+BIO_METHOD *q_BIO_meth_new(int type, const char *name);
+void q_BIO_meth_free(BIO_METHOD *biom);
+int q_BIO_meth_set_write(BIO_METHOD *biom, DgramWriteCallback);
+int q_BIO_meth_set_read(BIO_METHOD *biom, DgramReadCallback);
+int q_BIO_meth_set_puts(BIO_METHOD *biom, DgramPutsCallback);
+int q_BIO_meth_set_ctrl(BIO_METHOD *biom, DgramCtrlCallback);
+int q_BIO_meth_set_create(BIO_METHOD *biom, DgramCreateCallback);
+int q_BIO_meth_set_destroy(BIO_METHOD *biom, DgramDestroyCallback);
+
+#endif // dtls
+
+void q_BIO_set_data(BIO *a, void *ptr);
+void *q_BIO_get_data(BIO *a);
+void q_BIO_set_init(BIO *a, int init);
+int q_BIO_get_shutdown(BIO *a);
+void q_BIO_set_shutdown(BIO *a, int shut);
+
+#if QT_CONFIG(ocsp)
+const OCSP_CERTID *q_OCSP_SINGLERESP_get0_id(const OCSP_SINGLERESP *x);
+#endif // ocsp
+
+#define q_SSL_CTX_set_min_proto_version(ctx, version) \
+        q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MIN_PROTO_VERSION, version, nullptr)
+
+#define q_SSL_CTX_set_max_proto_version(ctx, version) \
+        q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MAX_PROTO_VERSION, version, nullptr)
+
+extern "C" {
+typedef int (*q_SSL_psk_use_session_cb_func_t)(SSL *, const EVP_MD *, const unsigned char **, size_t *,
+                                               SSL_SESSION **);
+}
+void q_SSL_set_psk_use_session_callback(SSL *s, q_SSL_psk_use_session_cb_func_t);
+// Here the content of the 1.1 header ends.
 
 bool q_resolveOpenSslSymbols();
 long q_ASN1_INTEGER_get(ASN1_INTEGER *a);
@@ -237,27 +355,14 @@ BIO *q_BIO_new_mem_buf(void *a, int b);
 int q_BIO_read(BIO *a, void *b, int c);
 Q_AUTOTEST_EXPORT int q_BIO_write(BIO *a, const void *b, int c);
 int q_BN_num_bits(const BIGNUM *a);
-
-#if QT_CONFIG(opensslv11)
 int q_BN_is_word(BIGNUM *a, BN_ULONG w);
-#else // opensslv11
-// BN_is_word is implemented purely as a
-// macro in OpenSSL < 1.1. It doesn't
-// call any functions.
-//
-// The implementation of BN_is_word is
-// 100% the same between 1.0.0, 1.0.1
-// and 1.0.2.
-//
-// Users are required to include <openssl/bn.h>.
-#define q_BN_is_word BN_is_word
-#endif // !opensslv11
-
 BN_ULONG q_BN_mod_word(const BIGNUM *a, BN_ULONG w);
+
 #ifndef OPENSSL_NO_EC
 const EC_GROUP* q_EC_KEY_get0_group(const EC_KEY* k);
 int q_EC_GROUP_get_degree(const EC_GROUP* g);
-#endif
+#endif // OPENSSL_NO_EC
+
 DSA *q_DSA_new();
 void q_DSA_free(DSA *a);
 X509 *q_d2i_X509(X509 **a, const unsigned char **b, long c);
@@ -277,23 +382,28 @@ const EVP_MD *q_EVP_get_digestbyname(const char *name);
 #ifndef OPENSSL_NO_DES
 const EVP_CIPHER *q_EVP_des_cbc();
 const EVP_CIPHER *q_EVP_des_ede3_cbc();
-#endif
+#endif // OPENSSL_NO_DES
+
 #ifndef OPENSSL_NO_RC2
 const EVP_CIPHER *q_EVP_rc2_cbc();
-#endif
+#endif // OPENSSL_NO_RC2
+
 #ifndef OPENSSL_NO_AES
 const EVP_CIPHER *q_EVP_aes_128_cbc();
 const EVP_CIPHER *q_EVP_aes_192_cbc();
 const EVP_CIPHER *q_EVP_aes_256_cbc();
-#endif
+#endif // OPENSSL_NO_AES
+
 Q_AUTOTEST_EXPORT const EVP_MD *q_EVP_sha1();
 int q_EVP_PKEY_assign(EVP_PKEY *a, int b, char *c);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_RSA(EVP_PKEY *a, RSA *b);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_DSA(EVP_PKEY *a, DSA *b);
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_DH(EVP_PKEY *a, DH *b);
+
 #ifndef OPENSSL_NO_EC
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_set1_EC_KEY(EVP_PKEY *a, EC_KEY *b);
 #endif
+
 Q_AUTOTEST_EXPORT int q_EVP_PKEY_cmp(const EVP_PKEY *a, const EVP_PKEY *b);
 Q_AUTOTEST_EXPORT void q_EVP_PKEY_free(EVP_PKEY *a);
 RSA *q_EVP_PKEY_get1_RSA(EVP_PKEY *a);
@@ -313,18 +423,18 @@ int q_i2t_ASN1_OBJECT(char *buf, int buf_len, ASN1_OBJECT *obj);
 int q_OBJ_obj2txt(char *buf, int buf_len, ASN1_OBJECT *obj, int no_name);
 int q_OBJ_obj2nid(const ASN1_OBJECT *a);
 #define q_EVP_get_digestbynid(a) q_EVP_get_digestbyname(q_OBJ_nid2sn(a))
-#ifdef SSLEAY_MACROS
-// ### verify
-void *q_PEM_ASN1_read_bio(d2i_of_void *a, const char *b, BIO *c, void **d, pem_password_cb *e,
-                          void *f);
-// ### ditto for write
-#else
 Q_AUTOTEST_EXPORT EVP_PKEY *q_PEM_read_bio_PrivateKey(BIO *a, EVP_PKEY **b, pem_password_cb *c, void *d);
 DSA *q_PEM_read_bio_DSAPrivateKey(BIO *a, DSA **b, pem_password_cb *c, void *d);
 RSA *q_PEM_read_bio_RSAPrivateKey(BIO *a, RSA **b, pem_password_cb *c, void *d);
+
 #ifndef OPENSSL_NO_EC
 EC_KEY *q_PEM_read_bio_ECPrivateKey(BIO *a, EC_KEY **b, pem_password_cb *c, void *d);
-#endif
+int q_PEM_write_bio_ECPrivateKey(BIO *a, EC_KEY *b, const EVP_CIPHER *c, unsigned char *d,
+                                  int e, pem_password_cb *f, void *g);
+EC_KEY *q_PEM_read_bio_EC_PUBKEY(BIO *a, EC_KEY **b, pem_password_cb *c, void *d);
+int q_PEM_write_bio_EC_PUBKEY(BIO *a, EC_KEY *b);
+#endif // OPENSSL_NO_EC
+
 DH *q_PEM_read_bio_DHparams(BIO *a, DH **b, pem_password_cb *c, void *d);
 int q_PEM_write_bio_DSAPrivateKey(BIO *a, DSA *b, const EVP_CIPHER *c, unsigned char *d,
                                   int e, pem_password_cb *f, void *g);
@@ -332,23 +442,13 @@ int q_PEM_write_bio_RSAPrivateKey(BIO *a, RSA *b, const EVP_CIPHER *c, unsigned 
                                   int e, pem_password_cb *f, void *g);
 int q_PEM_write_bio_PrivateKey(BIO *a, EVP_PKEY *b, const EVP_CIPHER *c, unsigned char *d,
                                int e, pem_password_cb *f, void *g);
-#ifndef OPENSSL_NO_EC
-int q_PEM_write_bio_ECPrivateKey(BIO *a, EC_KEY *b, const EVP_CIPHER *c, unsigned char *d,
-                                  int e, pem_password_cb *f, void *g);
-#endif
-#endif // SSLEAY_MACROS
 Q_AUTOTEST_EXPORT EVP_PKEY *q_PEM_read_bio_PUBKEY(BIO *a, EVP_PKEY **b, pem_password_cb *c, void *d);
 DSA *q_PEM_read_bio_DSA_PUBKEY(BIO *a, DSA **b, pem_password_cb *c, void *d);
 RSA *q_PEM_read_bio_RSA_PUBKEY(BIO *a, RSA **b, pem_password_cb *c, void *d);
-#ifndef OPENSSL_NO_EC
-EC_KEY *q_PEM_read_bio_EC_PUBKEY(BIO *a, EC_KEY **b, pem_password_cb *c, void *d);
-#endif
 int q_PEM_write_bio_DSA_PUBKEY(BIO *a, DSA *b);
 int q_PEM_write_bio_RSA_PUBKEY(BIO *a, RSA *b);
 int q_PEM_write_bio_PUBKEY(BIO *a, EVP_PKEY *b);
-#ifndef OPENSSL_NO_EC
-int q_PEM_write_bio_EC_PUBKEY(BIO *a, EC_KEY *b);
-#endif
+
 void q_RAND_seed(const void *a, int b);
 int q_RAND_status();
 int q_RAND_bytes(unsigned char *b, int n);
@@ -378,14 +478,12 @@ int q_SSL_CTX_use_PrivateKey(SSL_CTX *a, EVP_PKEY *b);
 int q_SSL_CTX_use_RSAPrivateKey(SSL_CTX *a, RSA *b);
 int q_SSL_CTX_use_PrivateKey_file(SSL_CTX *a, const char *b, int c);
 X509_STORE *q_SSL_CTX_get_cert_store(const SSL_CTX *a);
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
 SSL_CONF_CTX *q_SSL_CONF_CTX_new();
 void q_SSL_CONF_CTX_free(SSL_CONF_CTX *a);
 void q_SSL_CONF_CTX_set_ssl_ctx(SSL_CONF_CTX *a, SSL_CTX *b);
 unsigned int q_SSL_CONF_CTX_set_flags(SSL_CONF_CTX *a, unsigned int b);
 int q_SSL_CONF_CTX_finish(SSL_CONF_CTX *a);
 int q_SSL_CONF_cmd(SSL_CONF_CTX *a, const char *b, const char *c);
-#endif
 void q_SSL_free(SSL *a);
 STACK_OF(SSL_CIPHER) *q_SSL_get_ciphers(const SSL *a);
 const SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
@@ -407,26 +505,18 @@ int q_SSL_set_session(SSL *to, SSL_SESSION *session);
 void q_SSL_SESSION_free(SSL_SESSION *ses);
 SSL_SESSION *q_SSL_get1_session(SSL *ssl);
 SSL_SESSION *q_SSL_get_session(const SSL *ssl);
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
 int q_SSL_set_ex_data(SSL *ssl, int idx, void *arg);
 void *q_SSL_get_ex_data(const SSL *ssl, int idx);
-#endif
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
+#ifndef OPENSSL_NO_PSK
 typedef unsigned int (*q_psk_client_callback_t)(SSL *ssl, const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len);
 void q_SSL_set_psk_client_callback(SSL *ssl, q_psk_client_callback_t callback);
 typedef unsigned int (*q_psk_server_callback_t)(SSL *ssl, const char *identity, unsigned char *psk, unsigned int max_psk_len);
 void q_SSL_set_psk_server_callback(SSL *ssl, q_psk_server_callback_t callback);
 int q_SSL_CTX_use_psk_identity_hint(SSL_CTX *ctx, const char *hint);
-#endif // OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
+#endif // !OPENSSL_NO_PSK
 int q_SSL_write(SSL *a, const void *b, int c);
 int q_X509_cmp(X509 *a, X509 *b);
-#ifdef SSLEAY_MACROS
-void *q_ASN1_dup(i2d_of_void *i2d, d2i_of_void *d2i, char *x);
-#define q_X509_dup(x509) (X509 *)q_ASN1_dup((i2d_of_void *)q_i2d_X509, \
-                (d2i_of_void *)q_d2i_X509,(char *)x509)
-#else
 X509 *q_X509_dup(X509 *a);
-#endif
 void q_X509_print(BIO *a, X509*b);
 int q_X509_digest(const X509 *x509, const EVP_MD *type, unsigned char *md, unsigned int *len);
 ASN1_OBJECT *q_X509_EXTENSION_get_object(X509_EXTENSION *a);
@@ -485,13 +575,10 @@ void q_EC_KEY_free(EC_KEY *ecdh);
 
 // EC curves management
 size_t q_EC_get_builtin_curves(EC_builtin_curve *r, size_t nitems);
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
 int q_EC_curve_nist2nid(const char *name);
-#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L
 #endif // OPENSSL_NO_EC
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
+
 #define q_SSL_get_server_tmp_key(ssl, key) q_SSL_ctrl((ssl), SSL_CTRL_GET_SERVER_TMP_KEY, 0, (char *)key)
-#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L
 
 // PKCS#12 support
 int q_PKCS12_parse(PKCS12 *p12, const char *pass, EVP_PKEY **pkey, X509 **cert, STACK_OF(X509) **ca);
@@ -521,7 +608,7 @@ int q_SSL_CTX_load_verify_locations(SSL_CTX *ctx, const char *CAfile, const char
 int q_i2d_SSL_SESSION(SSL_SESSION *in, unsigned char **pp);
 SSL_SESSION *q_d2i_SSL_SESSION(SSL_SESSION **a, const unsigned char **pp, long length);
 
-#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_NEXTPROTONEG)
+#ifndef OPENSSL_NO_NEXTPROTONEG
 int q_SSL_select_next_proto(unsigned char **out, unsigned char *outlen,
                             const unsigned char *in, unsigned int inlen,
                             const unsigned char *client, unsigned int client_len);
@@ -533,7 +620,6 @@ void q_SSL_CTX_set_next_proto_select_cb(SSL_CTX *s,
                                         void *arg);
 void q_SSL_get0_next_proto_negotiated(const SSL *s, const unsigned char **data,
                                       unsigned *len);
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
 int q_SSL_set_alpn_protos(SSL *ssl, const unsigned char *protos,
                           unsigned protos_len);
 void q_SSL_CTX_set_alpn_select_cb(SSL_CTX *ctx,
@@ -545,8 +631,8 @@ void q_SSL_CTX_set_alpn_select_cb(SSL_CTX *ctx,
                                              void *arg), void *arg);
 void q_SSL_get0_alpn_selected(const SSL *ssl, const unsigned char **data,
                               unsigned *len);
-#endif
-#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
+#endif // !OPENSSL_NO_NEXTPROTONEG
+
 
 #if QT_CONFIG(dtls)
 
@@ -586,12 +672,8 @@ int q_BIO_set_ex_data(BIO *b, int idx, void *data);
 class QDateTime;
 QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime);
 
-#ifndef OPENSSL_NO_TLSEXT
-
 #define q_SSL_set_tlsext_status_type(ssl, type) \
     q_SSL_ctrl((ssl), SSL_CTRL_SET_TLSEXT_STATUS_REQ_TYPE, (type), nullptr)
-
-#endif // OPENSSL_NO_TLSEXT
 
 #if QT_CONFIG(ocsp)
 

@@ -137,10 +137,6 @@ void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 
 #endif // QT_LINKED_OPENSSL
 
-#if QT_CONFIG(opensslv11)
-
-// Below are the functions first introduced in version 1.1:
-
 DEFINEFUNC(const unsigned char *, ASN1_STRING_get0_data, const ASN1_STRING *a, a, return nullptr, return)
 DEFINEFUNC2(int, OPENSSL_init_ssl, uint64_t opts, opts, const OPENSSL_INIT_SETTINGS *settings, settings, return 0, return)
 DEFINEFUNC2(int, OPENSSL_init_crypto, uint64_t opts, opts, const OPENSSL_INIT_SETTINGS *settings, settings, return 0, return)
@@ -237,93 +233,6 @@ DEFINEFUNC2(void, BIO_set_init, BIO *a, a, int init, init, return, DUMMYARG)
 DEFINEFUNC(int, BIO_get_shutdown, BIO *a, a, return -1, return)
 DEFINEFUNC2(void, BIO_set_shutdown, BIO *a, a, int shut, shut, return, DUMMYARG)
 
-#else // QT_CONFIG(opensslv11)
-
-// Functions below are either deprecated or removed in OpenSSL >= 1.1:
-
-DEFINEFUNC(unsigned char *, ASN1_STRING_data, ASN1_STRING *a, a, return nullptr, return)
-
-#ifdef SSLEAY_MACROS
-DEFINEFUNC3(void *, ASN1_dup, i2d_of_void *a, a, d2i_of_void *b, b, char *c, c, return nullptr, return)
-#endif
-DEFINEFUNC2(BIO *, BIO_new_file, const char *filename, filename, const char *mode, mode, return nullptr, return)
-DEFINEFUNC(void, ERR_clear_error, DUMMYARG, DUMMYARG, return, DUMMYARG)
-DEFINEFUNC(BIO *, BIO_new, BIO_METHOD *a, a, return nullptr, return)
-DEFINEFUNC(BIO_METHOD *, BIO_s_mem, void, DUMMYARG, return nullptr, return)
-DEFINEFUNC(int, CRYPTO_num_locks, DUMMYARG, DUMMYARG, return 0, return)
-DEFINEFUNC(void, CRYPTO_set_locking_callback, void (*a)(int, int, const char *, int), a, return, DUMMYARG)
-DEFINEFUNC(void, CRYPTO_set_id_callback, unsigned long (*a)(), a, return, DUMMYARG)
-DEFINEFUNC(void, CRYPTO_free, void *a, a, return, DUMMYARG)
-DEFINEFUNC3(int, CRYPTO_set_ex_data, CRYPTO_EX_DATA *ad, ad, int idx, idx, void *val, val, return 0, return)
-DEFINEFUNC2(void *, CRYPTO_get_ex_data, const CRYPTO_EX_DATA *ad, ad, int idx, idx, return nullptr, return)
-DEFINEFUNC(unsigned long, ERR_peek_last_error, DUMMYARG, DUMMYARG, return 0, return)
-DEFINEFUNC(void, ERR_free_strings, void, DUMMYARG, return, DUMMYARG)
-DEFINEFUNC(void, EVP_CIPHER_CTX_cleanup, EVP_CIPHER_CTX *a, a, return, DUMMYARG)
-DEFINEFUNC(void, EVP_CIPHER_CTX_init, EVP_CIPHER_CTX *a, a, return, DUMMYARG)
-
-#ifdef SSLEAY_MACROS
-DEFINEFUNC6(void *, PEM_ASN1_read_bio, d2i_of_void *a, a, const char *b, b, BIO *c, c, void **d, d, pem_password_cb *e, e, void *f, f, return nullptr, return)
-DEFINEFUNC6(void *, PEM_ASN1_write_bio, d2i_of_void *a, a, const char *b, b, BIO *c, c, void **d, d, pem_password_cb *e, e, void *f, f, return nullptr, return)
-#endif // SSLEAY_MACROS
-
-DEFINEFUNC(int, sk_num, STACK *a, a, return -1, return)
-DEFINEFUNC2(void, sk_pop_free, STACK *a, a, void (*b)(void*), b, return, DUMMYARG)
-
-DEFINEFUNC(_STACK *, sk_new_null, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC2(void, sk_push, _STACK *a, a, void *b, b, return, DUMMYARG)
-DEFINEFUNC(void, sk_free, _STACK *a, a, return, DUMMYARG)
-DEFINEFUNC2(void *, sk_value, STACK *a, a, int b, b, return nullptr, return)
-
-DEFINEFUNC(int, SSL_library_init, void, DUMMYARG, return -1, return)
-DEFINEFUNC(void, SSL_load_error_strings, void, DUMMYARG, return, DUMMYARG)
-
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-DEFINEFUNC5(int, SSL_get_ex_new_index, long argl, argl, void *argp, argp, CRYPTO_EX_new *new_func, new_func, CRYPTO_EX_dup *dup_func, dup_func, CRYPTO_EX_free *free_func, free_func, return -1, return)
-#endif // OPENSSL_VERSION_NUMBER >= 0x10001000L
-
-DEFINEFUNC(const SSL_METHOD *, SSLv23_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(const SSL_METHOD *, TLSv1_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-DEFINEFUNC(const SSL_METHOD *, TLSv1_1_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(const SSL_METHOD *, TLSv1_2_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#endif
-DEFINEFUNC(const SSL_METHOD *, SSLv23_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(const SSL_METHOD *, TLSv1_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-DEFINEFUNC(const SSL_METHOD *, TLSv1_1_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(const SSL_METHOD *, TLSv1_2_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
-#endif
-
-DEFINEFUNC(STACK_OF(X509) *, X509_STORE_CTX_get_chain, X509_STORE_CTX *a, a, return nullptr, return)
-
-#ifdef SSLEAY_MACROS
-DEFINEFUNC2(int, i2d_DSAPrivateKey, const DSA *a, a, unsigned char **b, b, return -1, return)
-DEFINEFUNC2(int, i2d_RSAPrivateKey, const RSA *a, a, unsigned char **b, b, return -1, return)
-#ifndef OPENSSL_NO_EC
-DEFINEFUNC2(int, i2d_ECPrivateKey, const EC_KEY *a, a, unsigned char **b, b, return -1, return)
-#endif
-DEFINEFUNC3(RSA *, d2i_RSAPrivateKey, RSA **a, a, unsigned char **b, b, long c, c, return nullptr, return)
-DEFINEFUNC3(DSA *, d2i_DSAPrivateKey, DSA **a, a, unsigned char **b, b, long c, c, return nullptr, return)
-#ifndef OPENSSL_NO_EC
-DEFINEFUNC3(EC_KEY *, d2i_ECPrivateKey, EC_KEY **a, a, unsigned char **b, b, long c, c, return nullptr, return)
-#endif
-#endif
-
-#if QT_CONFIG(dtls)
-DEFINEFUNC(const SSL_METHOD *, DTLSv1_server_method, void, DUMMYARG, return nullptr, return)
-DEFINEFUNC(const SSL_METHOD *, DTLSv1_client_method, void, DUMMYARG, return nullptr, return)
-DEFINEFUNC(const SSL_METHOD *, DTLSv1_2_server_method, void, DUMMYARG, return nullptr, return)
-DEFINEFUNC(const SSL_METHOD *, DTLSv1_2_client_method, void, DUMMYARG, return nullptr, return)
-#endif // dtls
-
-DEFINEFUNC(char *, CONF_get1_default_config_file, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(void, OPENSSL_add_all_algorithms_noconf, void, DUMMYARG, return, DUMMYARG)
-DEFINEFUNC(void, OPENSSL_add_all_algorithms_conf, void, DUMMYARG, return, DUMMYARG)
-DEFINEFUNC(long, SSLeay, void, DUMMYARG, return 0, return)
-DEFINEFUNC(const char *, SSLeay_version, int a, a, return nullptr, return)
-
-#endif // QT_CONFIG(opensslv11)
-
 DEFINEFUNC(long, ASN1_INTEGER_get, ASN1_INTEGER *a, a, return 0, return)
 DEFINEFUNC2(int, ASN1_INTEGER_cmp, const ASN1_INTEGER *a, a, const ASN1_INTEGER *b, b, return 1, return)
 DEFINEFUNC(int, ASN1_STRING_length, ASN1_STRING *a, a, return 0, return)
@@ -392,36 +301,28 @@ DEFINEFUNC(int, OBJ_sn2nid, const char *s, s, return 0, return)
 DEFINEFUNC(int, OBJ_ln2nid, const char *s, s, return 0, return)
 DEFINEFUNC3(int, i2t_ASN1_OBJECT, char *a, a, int b, b, ASN1_OBJECT *c, c, return -1, return)
 DEFINEFUNC4(int, OBJ_obj2txt, char *a, a, int b, b, ASN1_OBJECT *c, c, int d, d, return -1, return)
-
 DEFINEFUNC(int, OBJ_obj2nid, const ASN1_OBJECT *a, a, return NID_undef, return)
-
-#ifndef SSLEAY_MACROS
 DEFINEFUNC4(EVP_PKEY *, PEM_read_bio_PrivateKey, BIO *a, a, EVP_PKEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
 DEFINEFUNC4(DSA *, PEM_read_bio_DSAPrivateKey, BIO *a, a, DSA **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
 DEFINEFUNC4(RSA *, PEM_read_bio_RSAPrivateKey, BIO *a, a, RSA **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
+
 #ifndef OPENSSL_NO_EC
 DEFINEFUNC4(EC_KEY *, PEM_read_bio_ECPrivateKey, BIO *a, a, EC_KEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
-#endif
+DEFINEFUNC7(int, PEM_write_bio_ECPrivateKey, BIO *a, a, EC_KEY *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
+DEFINEFUNC4(EC_KEY *, PEM_read_bio_EC_PUBKEY, BIO *a, a, EC_KEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
+DEFINEFUNC2(int, PEM_write_bio_EC_PUBKEY, BIO *a, a, EC_KEY *b, b, return 0, return)
+#endif // OPENSSL_NO_EC
+
 DEFINEFUNC4(DH *, PEM_read_bio_DHparams, BIO *a, a, DH **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
 DEFINEFUNC7(int, PEM_write_bio_DSAPrivateKey, BIO *a, a, DSA *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
 DEFINEFUNC7(int, PEM_write_bio_RSAPrivateKey, BIO *a, a, RSA *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
 DEFINEFUNC7(int, PEM_write_bio_PrivateKey, BIO *a, a, EVP_PKEY *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
-#ifndef OPENSSL_NO_EC
-DEFINEFUNC7(int, PEM_write_bio_ECPrivateKey, BIO *a, a, EC_KEY *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
-#endif
-#endif // !SSLEAY_MACROS
 DEFINEFUNC4(EVP_PKEY *, PEM_read_bio_PUBKEY, BIO *a, a, EVP_PKEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
 DEFINEFUNC4(DSA *, PEM_read_bio_DSA_PUBKEY, BIO *a, a, DSA **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
 DEFINEFUNC4(RSA *, PEM_read_bio_RSA_PUBKEY, BIO *a, a, RSA **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
-#ifndef OPENSSL_NO_EC
-DEFINEFUNC4(EC_KEY *, PEM_read_bio_EC_PUBKEY, BIO *a, a, EC_KEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
-#endif
 DEFINEFUNC2(int, PEM_write_bio_DSA_PUBKEY, BIO *a, a, DSA *b, b, return 0, return)
 DEFINEFUNC2(int, PEM_write_bio_RSA_PUBKEY, BIO *a, a, RSA *b, b, return 0, return)
 DEFINEFUNC2(int, PEM_write_bio_PUBKEY, BIO *a, a, EVP_PKEY *b, b, return 0, return)
-#ifndef OPENSSL_NO_EC
-DEFINEFUNC2(int, PEM_write_bio_EC_PUBKEY, BIO *a, a, EC_KEY *b, b, return 0, return)
-#endif
 DEFINEFUNC2(void, RAND_seed, const void *a, a, int b, b, return, DUMMYARG)
 DEFINEFUNC(int, RAND_status, void, DUMMYARG, return -1, return)
 DEFINEFUNC2(int, RAND_bytes, unsigned char *b, b, int n, n, return 0, return)
@@ -448,14 +349,12 @@ DEFINEFUNC2(int, SSL_CTX_use_PrivateKey, SSL_CTX *a, a, EVP_PKEY *b, b, return -
 DEFINEFUNC2(int, SSL_CTX_use_RSAPrivateKey, SSL_CTX *a, a, RSA *b, b, return -1, return)
 DEFINEFUNC3(int, SSL_CTX_use_PrivateKey_file, SSL_CTX *a, a, const char *b, b, int c, c, return -1, return)
 DEFINEFUNC(X509_STORE *, SSL_CTX_get_cert_store, const SSL_CTX *a, a, return nullptr, return)
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
 DEFINEFUNC(SSL_CONF_CTX *, SSL_CONF_CTX_new, DUMMYARG, DUMMYARG, return nullptr, return);
 DEFINEFUNC(void, SSL_CONF_CTX_free, SSL_CONF_CTX *a, a, return ,return);
 DEFINEFUNC2(void, SSL_CONF_CTX_set_ssl_ctx, SSL_CONF_CTX *a, a, SSL_CTX *b, b, return, return);
 DEFINEFUNC2(unsigned int, SSL_CONF_CTX_set_flags, SSL_CONF_CTX *a, a, unsigned int b, b, return 0, return);
 DEFINEFUNC(int, SSL_CONF_CTX_finish, SSL_CONF_CTX *a, a, return 0, return);
 DEFINEFUNC3(int, SSL_CONF_cmd, SSL_CONF_CTX *a, a, const char *b, b, const char *c, c, return 0, return);
-#endif
 DEFINEFUNC(void, SSL_free, SSL *a, a, return, DUMMYARG)
 DEFINEFUNC(STACK_OF(SSL_CIPHER) *, SSL_get_ciphers, const SSL *a, a, return nullptr, return)
 DEFINEFUNC(const SSL_CIPHER *, SSL_get_current_cipher, SSL *a, a, return nullptr, return)
@@ -477,21 +376,19 @@ DEFINEFUNC2(int, SSL_set_session, SSL* to, to, SSL_SESSION *session, session, re
 DEFINEFUNC(void, SSL_SESSION_free, SSL_SESSION *ses, ses, return, DUMMYARG)
 DEFINEFUNC(SSL_SESSION*, SSL_get1_session, SSL *ssl, ssl, return nullptr, return)
 DEFINEFUNC(SSL_SESSION*, SSL_get_session, const SSL *ssl, ssl, return nullptr, return)
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
 DEFINEFUNC3(int, SSL_set_ex_data, SSL *ssl, ssl, int idx, idx, void *arg, arg, return 0, return)
 DEFINEFUNC2(void *, SSL_get_ex_data, const SSL *ssl, ssl, int idx, idx, return nullptr, return)
-#endif
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
+
+#ifndef OPENSSL_NO_PSK
 DEFINEFUNC2(void, SSL_set_psk_client_callback, SSL* ssl, ssl, q_psk_client_callback_t callback, callback, return, DUMMYARG)
 DEFINEFUNC2(void, SSL_set_psk_server_callback, SSL* ssl, ssl, q_psk_server_callback_t callback, callback, return, DUMMYARG)
 DEFINEFUNC2(int, SSL_CTX_use_psk_identity_hint, SSL_CTX* ctx, ctx, const char *hint, hint, return 0, return)
-#endif
+#endif // !OPENSSL_NO_PSK
+
 DEFINEFUNC3(int, SSL_write, SSL *a, a, const void *b, b, int c, c, return -1, return)
 DEFINEFUNC2(int, X509_cmp, X509 *a, a, X509 *b, b, return -1, return)
 DEFINEFUNC4(int, X509_digest, const X509 *x509, x509, const EVP_MD *type, type, unsigned char *md, md, unsigned int *len, len, return -1, return)
-#ifndef SSLEAY_MACROS
 DEFINEFUNC(X509 *, X509_dup, X509 *a, a, return nullptr, return)
-#endif
 DEFINEFUNC2(void, X509_print, BIO *a, a, X509 *b, b, return, DUMMYARG);
 DEFINEFUNC(ASN1_OBJECT *, X509_EXTENSION_get_object, X509_EXTENSION *a, a, return nullptr, return)
 DEFINEFUNC(void, X509_free, X509 *a, a, return, DUMMYARG)
@@ -535,7 +432,8 @@ DEFINEFUNC(int, SSL_get_ex_data_X509_STORE_CTX_idx, DUMMYARG, DUMMYARG, return -
 DEFINEFUNC3(int, SSL_CTX_load_verify_locations, SSL_CTX *ctx, ctx, const char *CAfile, CAfile, const char *CApath, CApath, return 0, return)
 DEFINEFUNC2(int, i2d_SSL_SESSION, SSL_SESSION *in, in, unsigned char **pp, pp, return 0, return)
 DEFINEFUNC3(SSL_SESSION *, d2i_SSL_SESSION, SSL_SESSION **a, a, const unsigned char **pp, pp, long length, length, return nullptr, return)
-#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_NEXTPROTONEG)
+
+#ifndef OPENSSL_NO_NEXTPROTONEG
 DEFINEFUNC6(int, SSL_select_next_proto, unsigned char **out, out, unsigned char *outlen, outlen,
             const unsigned char *in, in, unsigned int inlen, inlen,
             const unsigned char *client, client, unsigned int client_len, client_len,
@@ -548,7 +446,6 @@ DEFINEFUNC3(void, SSL_CTX_set_next_proto_select_cb, SSL_CTX *s, s,
             void *arg, arg, return, DUMMYARG)
 DEFINEFUNC3(void, SSL_get0_next_proto_negotiated, const SSL *s, s,
             const unsigned char **data, data, unsigned *len, len, return, DUMMYARG)
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
 DEFINEFUNC3(int, SSL_set_alpn_protos, SSL *s, s, const unsigned char *protos, protos,
             unsigned protos_len, protos_len, return -1, return)
 DEFINEFUNC3(void, SSL_CTX_set_alpn_select_cb, SSL_CTX *s, s,
@@ -559,8 +456,7 @@ DEFINEFUNC3(void, SSL_CTX_set_alpn_select_cb, SSL_CTX *s, s,
             void *arg, arg, return, DUMMYARG)
 DEFINEFUNC3(void, SSL_get0_alpn_selected, const SSL *s, s, const unsigned char **data, data,
             unsigned *len, len, return, DUMMYARG)
-#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
-#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
+#endif // !OPENSSL_NO_NEXTPROTONEG
 
 // DTLS:
 #if QT_CONFIG(dtls)
@@ -581,14 +477,13 @@ DEFINEFUNC3(DH *, d2i_DHparams, DH**a, a, const unsigned char **pp, pp, long len
 DEFINEFUNC2(int, i2d_DHparams, DH *a, a, unsigned char **p, p, return -1, return)
 DEFINEFUNC2(int, DH_check, DH *dh, dh, int *codes, codes, return 0, return)
 DEFINEFUNC3(BIGNUM *, BN_bin2bn, const unsigned char *s, s, int len, len, BIGNUM *ret, ret, return nullptr, return)
+
 #ifndef OPENSSL_NO_EC
 DEFINEFUNC(EC_KEY *, EC_KEY_dup, const EC_KEY *ec, ec, return nullptr, return)
 DEFINEFUNC(EC_KEY *, EC_KEY_new_by_curve_name, int nid, nid, return nullptr, return)
 DEFINEFUNC(void, EC_KEY_free, EC_KEY *ecdh, ecdh, return, DUMMYARG)
 DEFINEFUNC2(size_t, EC_get_builtin_curves, EC_builtin_curve * r, r, size_t nitems, nitems, return 0, return)
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
 DEFINEFUNC(int, EC_curve_nist2nid, const char *name, name, return 0, return)
-#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L
 #endif // OPENSSL_NO_EC
 
 DEFINEFUNC5(int, PKCS12_parse, PKCS12 *p12, p12, const char *pass, pass, EVP_PKEY **pkey, pkey, \
@@ -760,7 +655,6 @@ static LoadedOpenSsl loadOpenSsl()
 {
     LoadedOpenSsl result;
 
-#if QT_CONFIG(opensslv11)
     // With OpenSSL 1.1 the names have changed to libssl-1_1(-x64) and libcrypto-1_1(-x64), for builds using
     // MSVC and GCC, (-x64 suffix for 64-bit builds).
 
@@ -774,21 +668,6 @@ static LoadedOpenSsl loadOpenSsl()
                                  QLatin1String("libcrypto-1_1" QT_SSL_SUFFIX), result);
 
 #undef QT_SSL_SUFFIX
-
-#else // QT_CONFIG(opensslv11)
-
-    // When OpenSSL is built using MSVC then the libraries are named 'ssleay32.dll' and 'libeay32'dll'.
-    // When OpenSSL is built using GCC then different library names are used (depending on the OpenSSL version)
-    // The oldest version of a GCC-based OpenSSL which can be detected by the code below is 0.9.8g (released in 2007)
-    if (!tryToLoadOpenSslWin32Library(QLatin1String("ssleay32"), QLatin1String("libeay32"), result)) {
-        if (!tryToLoadOpenSslWin32Library(QLatin1String("libssl-10"), QLatin1String("libcrypto-10"), result)) {
-            if (!tryToLoadOpenSslWin32Library(QLatin1String("libssl-8"), QLatin1String("libcrypto-8"), result)) {
-                tryToLoadOpenSslWin32Library(QLatin1String("libssl-7"), QLatin1String("libcrypto-7"), result);
-            }
-        }
-    }
-#endif // !QT_CONFIG(opensslv11)
-
     return result;
 }
 #else
@@ -852,27 +731,6 @@ static LoadedOpenSsl loadOpenSsl()
         libssl->unload();
         libcrypto->unload();
     }
-
-#if !QT_CONFIG(opensslv11)
-    // first-and-half attempts: for OpenSSL 1.0 try to load some hardcoded sonames:
-    // - "1.0.0" is the official upstream one
-    // - "1.0.2" is found on some distributions (e.g. Debian) that patch OpenSSL
-    static const QLatin1String fallbackSonames[] = {
-        QLatin1String("1.0.0"),
-        QLatin1String("1.0.2")
-    };
-
-    for (auto fallbackSoname : fallbackSonames) {
-        libssl->setFileNameAndVersion(QLatin1String("ssl"), fallbackSoname);
-        libcrypto->setFileNameAndVersion(QLatin1String("crypto"), fallbackSoname);
-        if (libcrypto->load() && libssl->load()) {
-            return result;
-        } else {
-            libssl->unload();
-            libcrypto->unload();
-        }
-    }
-#endif
 #endif
 
 #ifndef Q_OS_DARWIN
@@ -890,11 +748,9 @@ static LoadedOpenSsl loadOpenSsl()
             return defaultSuffix;
         return suffix;
     };
-#  if QT_CONFIG(opensslv11)
+
     static QString suffix = QString::fromLatin1(openSSLSuffix("_1_1"));
-#  else
-    static QString suffix = QString::fromLatin1(openSSLSuffix());
-#  endif
+
     libssl->setFileNameAndVersion(QLatin1String("ssl") + suffix, -1);
     libcrypto->setFileNameAndVersion(QLatin1String("crypto") + suffix, -1);
 # else
@@ -968,8 +824,6 @@ bool q_resolveOpenSslSymbols()
         // failed to load them
         return false;
 
-#if QT_CONFIG(opensslv11)
-
     RESOLVEFUNC(OPENSSL_init_ssl)
     RESOLVEFUNC(OPENSSL_init_crypto)
     RESOLVEFUNC(ASN1_STRING_get0_data)
@@ -985,10 +839,12 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(OPENSSL_sk_value)
     RESOLVEFUNC(DH_get0_pqg)
     RESOLVEFUNC(SSL_CTX_set_options)
+
 #ifdef TLS1_3_VERSION
     RESOLVEFUNC(SSL_CTX_set_ciphersuites)
     RESOLVEFUNC(SSL_set_psk_use_session_callback)
 #endif // TLS 1.3 or OpenSSL > 1.1.1
+
     RESOLVEFUNC(SSL_get_client_random)
     RESOLVEFUNC(SSL_SESSION_get_master_key)
     RESOLVEFUNC(SSL_session_reused)
@@ -1010,6 +866,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(CRYPTO_free)
     RESOLVEFUNC(OpenSSL_version_num)
     RESOLVEFUNC(OpenSSL_version)
+
     if (!_q_OpenSSL_version) {
         // Apparently, we were built with OpenSSL 1.1 enabled but are now using
         // a wrong library.
@@ -1034,6 +891,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(BIO_meth_set_create)
     RESOLVEFUNC(BIO_meth_set_destroy)
 #endif // dtls
+
 #if QT_CONFIG(ocsp)
     RESOLVEFUNC(OCSP_SINGLERESP_get0_id)
     RESOLVEFUNC(d2i_OCSP_RESPONSE)
@@ -1058,99 +916,12 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(OCSP_cert_to_id)
     RESOLVEFUNC(OCSP_id_cmp)
 #endif // ocsp
+
     RESOLVEFUNC(BIO_set_data)
     RESOLVEFUNC(BIO_get_data)
     RESOLVEFUNC(BIO_set_init)
     RESOLVEFUNC(BIO_get_shutdown)
     RESOLVEFUNC(BIO_set_shutdown)
-#else // !opensslv11
-
-    RESOLVEFUNC(ASN1_STRING_data)
-
-#ifdef SSLEAY_MACROS
-    RESOLVEFUNC(ASN1_dup)
-#endif // SSLEAY_MACROS
-    RESOLVEFUNC(BIO_new_file)
-    RESOLVEFUNC(ERR_clear_error)
-    RESOLVEFUNC(CRYPTO_free)
-    RESOLVEFUNC(CRYPTO_num_locks)
-    RESOLVEFUNC(CRYPTO_set_id_callback)
-    RESOLVEFUNC(CRYPTO_set_locking_callback)
-    RESOLVEFUNC(CRYPTO_set_ex_data)
-    RESOLVEFUNC(CRYPTO_get_ex_data)
-    RESOLVEFUNC(ERR_peek_last_error)
-    RESOLVEFUNC(ERR_free_strings)
-    RESOLVEFUNC(EVP_CIPHER_CTX_cleanup)
-    RESOLVEFUNC(EVP_CIPHER_CTX_init)
-
-#ifdef SSLEAY_MACROS // ### verify
-    RESOLVEFUNC(PEM_ASN1_read_bio)
-#endif // SSLEAY_MACROS
-
-    RESOLVEFUNC(sk_new_null)
-    RESOLVEFUNC(sk_push)
-    RESOLVEFUNC(sk_free)
-    RESOLVEFUNC(sk_num)
-    RESOLVEFUNC(sk_pop_free)
-    RESOLVEFUNC(sk_value)
-    RESOLVEFUNC(SSL_library_init)
-    RESOLVEFUNC(SSL_load_error_strings)
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-    RESOLVEFUNC(SSL_get_ex_new_index)
-#endif
-    RESOLVEFUNC(SSLv23_client_method)
-    RESOLVEFUNC(TLSv1_client_method)
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-    RESOLVEFUNC(TLSv1_1_client_method)
-    RESOLVEFUNC(TLSv1_2_client_method)
-#endif
-    RESOLVEFUNC(SSLv23_server_method)
-    RESOLVEFUNC(TLSv1_server_method)
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-    RESOLVEFUNC(TLSv1_1_server_method)
-    RESOLVEFUNC(TLSv1_2_server_method)
-#endif
-    RESOLVEFUNC(X509_STORE_CTX_get_chain)
-#ifdef SSLEAY_MACROS
-    RESOLVEFUNC(i2d_DSAPrivateKey)
-    RESOLVEFUNC(i2d_RSAPrivateKey)
-    RESOLVEFUNC(d2i_DSAPrivateKey)
-    RESOLVEFUNC(d2i_RSAPrivateKey)
-#endif
-
-#if QT_CONFIG(dtls)
-    RESOLVEFUNC(DTLSv1_server_method)
-    RESOLVEFUNC(DTLSv1_client_method)
-    RESOLVEFUNC(DTLSv1_2_server_method)
-    RESOLVEFUNC(DTLSv1_2_client_method)
-#endif // dtls
-
-    RESOLVEFUNC(CONF_get1_default_config_file)
-    RESOLVEFUNC(OPENSSL_add_all_algorithms_noconf)
-    RESOLVEFUNC(OPENSSL_add_all_algorithms_conf)
-    RESOLVEFUNC(SSLeay)
-
-    if (!_q_SSLeay || q_SSLeay() >= 0x10100000L) {
-        // OpenSSL 1.1 has deprecated and removed SSLeay. We consider a failure to
-        // resolve this symbol as a failure to resolve symbols.
-        // The right operand of '||' above is ... a bit of paranoia.
-        qCWarning(lcSsl, "Incompatible version of OpenSSL");
-        return false;
-    }
-
-
-    RESOLVEFUNC(SSLeay_version)
-
-#ifndef OPENSSL_NO_EC
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
-    if (q_SSLeay() >= 0x10002000L)
-        RESOLVEFUNC(EC_curve_nist2nid)
-#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L
-#endif // OPENSSL_NO_EC
-
-
-#endif // !opensslv11
-
     RESOLVEFUNC(ASN1_INTEGER_get)
     RESOLVEFUNC(ASN1_INTEGER_cmp)
     RESOLVEFUNC(ASN1_STRING_length)
@@ -1172,9 +943,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(EC_GROUP_get_degree)
 #endif
     RESOLVEFUNC(BN_num_bits)
-#if QT_CONFIG(opensslv11)
     RESOLVEFUNC(BN_is_word)
-#endif
     RESOLVEFUNC(BN_mod_word)
     RESOLVEFUNC(DSA_new)
     RESOLVEFUNC(DSA_free)
@@ -1207,17 +976,21 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(EVP_PKEY_set1_RSA)
     RESOLVEFUNC(EVP_PKEY_set1_DSA)
     RESOLVEFUNC(EVP_PKEY_set1_DH)
+
 #ifndef OPENSSL_NO_EC
     RESOLVEFUNC(EVP_PKEY_set1_EC_KEY)
-#endif
+    RESOLVEFUNC(EVP_PKEY_get1_EC_KEY)
+    RESOLVEFUNC(PEM_read_bio_ECPrivateKey)
+    RESOLVEFUNC(PEM_write_bio_ECPrivateKey)
+    RESOLVEFUNC(PEM_read_bio_EC_PUBKEY)
+    RESOLVEFUNC(PEM_write_bio_EC_PUBKEY)
+#endif // OPENSSL_NO_EC
+
     RESOLVEFUNC(EVP_PKEY_cmp)
     RESOLVEFUNC(EVP_PKEY_free)
     RESOLVEFUNC(EVP_PKEY_get1_DSA)
     RESOLVEFUNC(EVP_PKEY_get1_RSA)
     RESOLVEFUNC(EVP_PKEY_get1_DH)
-#ifndef OPENSSL_NO_EC
-    RESOLVEFUNC(EVP_PKEY_get1_EC_KEY)
-#endif
     RESOLVEFUNC(EVP_PKEY_new)
     RESOLVEFUNC(EVP_PKEY_type)
     RESOLVEFUNC(OBJ_nid2sn)
@@ -1227,35 +1000,19 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(i2t_ASN1_OBJECT)
     RESOLVEFUNC(OBJ_obj2txt)
     RESOLVEFUNC(OBJ_obj2nid)
-
-#ifndef SSLEAY_MACROS
     RESOLVEFUNC(PEM_read_bio_PrivateKey)
     RESOLVEFUNC(PEM_read_bio_DSAPrivateKey)
     RESOLVEFUNC(PEM_read_bio_RSAPrivateKey)
-#ifndef OPENSSL_NO_EC
-    RESOLVEFUNC(PEM_read_bio_ECPrivateKey)
-#endif
     RESOLVEFUNC(PEM_read_bio_DHparams)
     RESOLVEFUNC(PEM_write_bio_DSAPrivateKey)
     RESOLVEFUNC(PEM_write_bio_RSAPrivateKey)
     RESOLVEFUNC(PEM_write_bio_PrivateKey)
-#ifndef OPENSSL_NO_EC
-    RESOLVEFUNC(PEM_write_bio_ECPrivateKey)
-#endif
-#endif // !SSLEAY_MACROS
-
     RESOLVEFUNC(PEM_read_bio_PUBKEY)
     RESOLVEFUNC(PEM_read_bio_DSA_PUBKEY)
     RESOLVEFUNC(PEM_read_bio_RSA_PUBKEY)
-#ifndef OPENSSL_NO_EC
-    RESOLVEFUNC(PEM_read_bio_EC_PUBKEY)
-#endif
     RESOLVEFUNC(PEM_write_bio_DSA_PUBKEY)
     RESOLVEFUNC(PEM_write_bio_RSA_PUBKEY)
     RESOLVEFUNC(PEM_write_bio_PUBKEY)
-#ifndef OPENSSL_NO_EC
-    RESOLVEFUNC(PEM_write_bio_EC_PUBKEY)
-#endif
     RESOLVEFUNC(RAND_seed)
     RESOLVEFUNC(RAND_status)
     RESOLVEFUNC(RAND_bytes)
@@ -1279,14 +1036,12 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_CTX_use_RSAPrivateKey)
     RESOLVEFUNC(SSL_CTX_use_PrivateKey_file)
     RESOLVEFUNC(SSL_CTX_get_cert_store);
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
     RESOLVEFUNC(SSL_CONF_CTX_new);
     RESOLVEFUNC(SSL_CONF_CTX_free);
     RESOLVEFUNC(SSL_CONF_CTX_set_ssl_ctx);
     RESOLVEFUNC(SSL_CONF_CTX_set_flags);
     RESOLVEFUNC(SSL_CONF_CTX_finish);
     RESOLVEFUNC(SSL_CONF_cmd);
-#endif
     RESOLVEFUNC(SSL_accept)
     RESOLVEFUNC(SSL_clear)
     RESOLVEFUNC(SSL_connect)
@@ -1311,16 +1066,16 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_SESSION_free)
     RESOLVEFUNC(SSL_get1_session)
     RESOLVEFUNC(SSL_get_session)
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
     RESOLVEFUNC(SSL_set_ex_data)
     RESOLVEFUNC(SSL_get_ex_data)
     RESOLVEFUNC(SSL_get_ex_data_X509_STORE_CTX_idx)
-#endif
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
+
+#ifndef OPENSSL_NO_PSK
     RESOLVEFUNC(SSL_set_psk_client_callback)
     RESOLVEFUNC(SSL_set_psk_server_callback)
     RESOLVEFUNC(SSL_CTX_use_psk_identity_hint)
-#endif
+#endif // !OPENSSL_NO_PSK
+
     RESOLVEFUNC(SSL_write)
     RESOLVEFUNC(X509_NAME_entry_count)
     RESOLVEFUNC(X509_NAME_get_entry)
@@ -1340,10 +1095,7 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(X509_STORE_CTX_get0_store)
     RESOLVEFUNC(X509_cmp)
     RESOLVEFUNC(X509_STORE_CTX_get_ex_data)
-
-#ifndef SSLEAY_MACROS
     RESOLVEFUNC(X509_dup)
-#endif
     RESOLVEFUNC(X509_print)
     RESOLVEFUNC(X509_digest)
     RESOLVEFUNC(X509_EXTENSION_get_object)
@@ -1371,22 +1123,23 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(SSL_CTX_load_verify_locations)
     RESOLVEFUNC(i2d_SSL_SESSION)
     RESOLVEFUNC(d2i_SSL_SESSION)
-#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_NEXTPROTONEG)
+
+#ifndef OPENSSL_NO_NEXTPROTONEG
     RESOLVEFUNC(SSL_select_next_proto)
     RESOLVEFUNC(SSL_CTX_set_next_proto_select_cb)
     RESOLVEFUNC(SSL_get0_next_proto_negotiated)
-#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
     RESOLVEFUNC(SSL_set_alpn_protos)
     RESOLVEFUNC(SSL_CTX_set_alpn_select_cb)
     RESOLVEFUNC(SSL_get0_alpn_selected)
-#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
+#endif // !OPENSSL_NO_NEXTPROTONEG
+
 #if QT_CONFIG(dtls)
     RESOLVEFUNC(SSL_CTX_set_cookie_generate_cb)
     RESOLVEFUNC(SSL_CTX_set_cookie_verify_cb)
     RESOLVEFUNC(DTLS_server_method)
     RESOLVEFUNC(DTLS_client_method)
 #endif // dtls
+
     RESOLVEFUNC(CRYPTO_malloc)
     RESOLVEFUNC(DH_new)
     RESOLVEFUNC(DH_free)
@@ -1394,12 +1147,14 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(i2d_DHparams)
     RESOLVEFUNC(DH_check)
     RESOLVEFUNC(BN_bin2bn)
+
 #ifndef OPENSSL_NO_EC
     RESOLVEFUNC(EC_KEY_dup)
     RESOLVEFUNC(EC_KEY_new_by_curve_name)
     RESOLVEFUNC(EC_KEY_free)
     RESOLVEFUNC(EC_get_builtin_curves)
 #endif // OPENSSL_NO_EC
+
     RESOLVEFUNC(PKCS12_parse)
     RESOLVEFUNC(d2i_PKCS12_bio)
     RESOLVEFUNC(PKCS12_free)

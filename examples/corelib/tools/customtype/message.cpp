@@ -52,21 +52,6 @@
 
 #include <QDebug>
 
-//! [Message class implementation]
-Message::Message()
-{
-}
-
-Message::Message(const Message &other)
-    : m_body(other.m_body), m_headers(other.m_headers)
-{
-}
-
-Message::~Message()
-{
-}
-//! [Message class implementation]
-
 Message::Message(const QString &body, const QStringList &headers)
     : m_body(body), m_headers(headers)
 {

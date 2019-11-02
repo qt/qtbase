@@ -81,11 +81,6 @@
 
     \section1 The Message Class Implementation
 
-    The implementation of the default constructor, copy constructor and destructor
-    are straightforward for the \c Message class:
-
-    \snippet tools/customtype/message.cpp Message class implementation
-
     The streaming operator is implemented in the following way:
 
     \snippet tools/customtype/message.cpp custom type streaming operator

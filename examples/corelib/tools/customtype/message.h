@@ -58,9 +58,10 @@
 class Message
 {
 public:
-    Message();
-    Message(const Message &other);
-    ~Message();
+    Message() = default;
+    ~Message() = default;
+    Message(const Message &) = default;
+    Message &operator=(const Message &) = default;
 
     Message(const QString &body, const QStringList &headers);
 

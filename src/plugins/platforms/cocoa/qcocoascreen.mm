@@ -375,15 +375,6 @@ void QCocoaScreen::deliverUpdateRequests()
             // it on the main thread yet, because the processing of the update request is taking
             // too long, or because the update request was deferred due to window live resizing.
             qDeferredDebug(screenUpdates) << ", " << framesAheadOfDelivery << " frame(s) ahead";
-
-            // We skip the frame completely if we're live-resizing, to not put any extra
-            // strain on the main thread runloop. Otherwise we assume we should push frames
-            // as fast as possible, and hopefully the callback will be delivered on the
-            // main thread just when the previous finished.
-            if (qt_apple_sharedApplication().keyWindow.inLiveResize) {
-                qDeferredDebug(screenUpdates) << "; waiting for main thread to catch up";
-                return;
-            }
         }
 
         qDeferredDebug(screenUpdates) << "; signaling dispatch source";

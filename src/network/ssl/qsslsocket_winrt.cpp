@@ -157,11 +157,6 @@ QSslSocketBackendPrivate::~QSslSocketBackendPrivate()
     g->syncCaCertificates(QSet<QSslCertificate>(), previousCaCertificates);
 }
 
-void QSslSocketPrivate::deinitialize()
-{
-    Q_UNIMPLEMENTED();
-}
-
 bool QSslSocketPrivate::supportsSsl()
 {
     return true;
