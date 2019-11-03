@@ -130,78 +130,9 @@ public:
     bool contains(const T &t) const;
     int count(const T &t) const;
 
-#ifdef QT_STRICT_ITERATORS
-    class iterator {
-    public:
-        T *i;
-        typedef std::random_access_iterator_tag  iterator_category;
-        typedef ptrdiff_t difference_type;
-        typedef T value_type;
-        typedef T *pointer;
-        typedef T &reference;
-
-        inline iterator() : i(0) {}
-        inline iterator(T *n) : i(n) {}
-        inline iterator(const iterator &o): i(o.i){}
-        inline T &operator*() const { return *i; }
-        inline T *operator->() const { return i; }
-        inline T &operator[](int j) const { return *(i + j); }
-        inline bool operator==(const iterator &o) const { return i == o.i; }
-        inline bool operator!=(const iterator &o) const { return i != o.i; }
-        inline bool operator<(const iterator& other) const { return i < other.i; }
-        inline bool operator<=(const iterator& other) const { return i <= other.i; }
-        inline bool operator>(const iterator& other) const { return i > other.i; }
-        inline bool operator>=(const iterator& other) const { return i >= other.i; }
-        inline iterator &operator++() { ++i; return *this; }
-        inline iterator operator++(int) { T *n = i; ++i; return n; }
-        inline iterator &operator--() { i--; return *this; }
-        inline iterator operator--(int) { T *n = i; i--; return n; }
-        inline iterator &operator+=(int j) { i+=j; return *this; }
-        inline iterator &operator-=(int j) { i-=j; return *this; }
-        inline iterator operator+(int j) const { return iterator(i+j); }
-        inline iterator operator-(int j) const { return iterator(i-j); }
-        inline int operator-(iterator j) const { return i - j.i; }
-    };
-    friend class iterator;
-
-    class const_iterator {
-    public:
-        T *i;
-        typedef std::random_access_iterator_tag  iterator_category;
-        typedef ptrdiff_t difference_type;
-        typedef T value_type;
-        typedef const T *pointer;
-        typedef const T &reference;
-
-        inline const_iterator() : i(0) {}
-        inline const_iterator(T *n) : i(n) {}
-        inline const_iterator(const const_iterator &o): i(o.i) {}
-        inline explicit const_iterator(const iterator &o): i(o.i) {}
-        inline const T &operator*() const { return *i; }
-        inline const T *operator->() const { return i; }
-        inline const T &operator[](int j) const { return *(i + j); }
-        inline bool operator==(const const_iterator &o) const { return i == o.i; }
-        inline bool operator!=(const const_iterator &o) const { return i != o.i; }
-        inline bool operator<(const const_iterator& other) const { return i < other.i; }
-        inline bool operator<=(const const_iterator& other) const { return i <= other.i; }
-        inline bool operator>(const const_iterator& other) const { return i > other.i; }
-        inline bool operator>=(const const_iterator& other) const { return i >= other.i; }
-        inline const_iterator &operator++() { ++i; return *this; }
-        inline const_iterator operator++(int) { T *n = i; ++i; return n; }
-        inline const_iterator &operator--() { i--; return *this; }
-        inline const_iterator operator--(int) { T *n = i; i--; return n; }
-        inline const_iterator &operator+=(int j) { i+=j; return *this; }
-        inline const_iterator &operator-=(int j) { i+=j; return *this; }
-        inline const_iterator operator+(int j) const { return const_iterator(i+j); }
-        inline const_iterator operator-(int j) const { return const_iterator(i-j); }
-        inline int operator-(const_iterator j) const { return i - j.i; }
-    };
-    friend class const_iterator;
-#else
     // STL-style
     typedef T *iterator;
     typedef const T *const_iterator;
-#endif
     inline iterator begin() { return m_begin; }
     inline const_iterator begin() const { return m_begin; }
     inline const_iterator constBegin() const { return m_begin; }

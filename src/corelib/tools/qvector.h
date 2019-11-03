@@ -208,7 +208,6 @@ public:
     typedef typename Data::const_iterator const_iterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-#if !defined(QT_STRICT_ITERATORS) || defined(Q_CLANG_QDOC)
     inline iterator begin() { detach(); return d->begin(); }
     inline const_iterator begin() const noexcept { return d->constBegin(); }
     inline const_iterator cbegin() const noexcept { return d->constBegin(); }
@@ -217,16 +216,6 @@ public:
     inline const_iterator end() const noexcept { return d->constEnd(); }
     inline const_iterator cend() const noexcept { return d->constEnd(); }
     inline const_iterator constEnd() const noexcept { return d->constEnd(); }
-#else
-    inline iterator begin(iterator = iterator()) { detach(); return d->begin(); }
-    inline const_iterator begin(const_iterator = const_iterator()) const noexcept { return d->constBegin(); }
-    inline const_iterator cbegin(const_iterator = const_iterator()) const noexcept { return d->constBegin(); }
-    inline const_iterator constBegin(const_iterator = const_iterator()) const noexcept { return d->constBegin(); }
-    inline iterator end(iterator = iterator()) { detach(); return d->end(); }
-    inline const_iterator end(const_iterator = const_iterator()) const noexcept { return d->constEnd(); }
-    inline const_iterator cend(const_iterator = const_iterator()) const noexcept { return d->constEnd(); }
-    inline const_iterator constEnd(const_iterator = const_iterator()) const noexcept { return d->constEnd(); }
-#endif
     reverse_iterator rbegin() { return reverse_iterator(end()); }
     reverse_iterator rend() { return reverse_iterator(begin()); }
     const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }

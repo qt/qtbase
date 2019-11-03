@@ -47,12 +47,5 @@
 #  error "This file must be compiled with no precompiled headers"
 #endif
 
-// invert the setting of QT_STRICT_ITERATORS, whichever it was
-#ifdef QT_STRICT_ITERATORS
-#  undef QT_STRICT_ITERATORS
-#else
-#  define QT_STRICT_ITERATORS
-#endif
-
 // the Q_TEMPLATE_EXTERN at the bottom of qvector.h will do the trick
 #include <QtCore/qvector.h>

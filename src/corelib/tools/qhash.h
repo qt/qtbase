@@ -363,13 +363,8 @@ public:
         inline iterator &operator-=(int j) { return *this = *this - j; }
         friend inline iterator operator+(int j, iterator k) { return k + j; }
 
-#ifndef QT_STRICT_ITERATORS
-    public:
-        inline bool operator==(const const_iterator &o) const
-            { return i == o.i; }
-        inline bool operator!=(const const_iterator &o) const
-            { return i != o.i; }
-#endif
+        inline bool operator==(const const_iterator &o) const { return i == o.i; }
+        inline bool operator!=(const const_iterator &o) const { return i != o.i; }
     };
     friend class iterator;
 
@@ -390,11 +385,7 @@ public:
         Q_DECL_CONSTEXPR inline const_iterator() : i(nullptr) { }
         explicit inline const_iterator(void *node)
             : i(reinterpret_cast<QHashData::Node *>(node)) { }
-#ifdef QT_STRICT_ITERATORS
-        explicit inline const_iterator(const iterator &o)
-#else
         inline const_iterator(const iterator &o)
-#endif
         { i = o.i; }
 
         inline const Key &key() const { return concrete(i)->key; }
@@ -428,13 +419,6 @@ public:
         inline const_iterator &operator+=(int j) { return *this = *this + j; }
         inline const_iterator &operator-=(int j) { return *this = *this - j; }
         friend inline const_iterator operator+(int j, const_iterator k) { return k + j; }
-
-        // ### Qt 5: not sure this is necessary anymore
-#ifdef QT_STRICT_ITERATORS
-    private:
-        inline bool operator==(const iterator &o) const { return operator==(const_iterator(o)); }
-        inline bool operator!=(const iterator &o) const { return operator!=(const_iterator(o)); }
-#endif
     };
     friend class const_iterator;
 

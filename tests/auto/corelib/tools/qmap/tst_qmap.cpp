@@ -1351,17 +1351,16 @@ void tst_QMap::testInsertMultiWithHint()
 {
     QMap<int, int> map;
 
-    typedef QMap<int, int>::const_iterator cite; // Hack since we define QT_STRICT_ITERATORS
-    map.insertMulti(cite(map.end()), 64, 65);
+    map.insertMulti(map.end(), 64, 65);
     map[128] = 129;
     map[256] = 257;
     sanityCheckTree(map, __LINE__);
 
-    map.insertMulti(cite(map.end()), 512, 513);
-    map.insertMulti(cite(map.end()), 512, 513 * 2);
+    map.insertMulti(map.end(), 512, 513);
+    map.insertMulti(map.end(), 512, 513 * 2);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 5);
-    map.insertMulti(cite(map.end()), 256, 258); // wrong hint
+    map.insertMulti(map.end(), 256, 258); // wrong hint
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 6);
 
@@ -1373,23 +1372,23 @@ void tst_QMap::testInsertMultiWithHint()
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 8);
 
-    j = map.insertMulti(cite(j), 68, 259);
+    j = map.insertMulti(j, 68, 259);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 9);
 
-    j = map.insertMulti(cite(j), 67, 67);
+    j = map.insertMulti(j, 67, 67);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 10);
 
-    i = map.insertMulti(cite(i), 256, 259);
+    i = map.insertMulti(i, 256, 259);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 11);
 
-    i = map.insertMulti(cite(i), 256, 260);
+    i = map.insertMulti(i, 256, 260);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 12);
 
-    map.insertMulti(cite(i), 64, 67);
+    map.insertMulti(i, 64, 67);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 13);
 
