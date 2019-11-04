@@ -1501,10 +1501,12 @@ function(add_qt_module target)
         set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${CMAKE_CURRENT_BINARY_DIR}/qt${arg_CONFIG_MODULE_NAME}-config_p.h")
     endif()
 
-    if(DEFINED module_headers_private)
-        qt_internal_add_linker_version_script("${target}" PRIVATE_HEADERS ${module_headers_private} ${module_headers_qpa})
-    else()
-        qt_internal_add_linker_version_script("${target}")
+    if(NOT arg_HEADER_MODULE)
+        if(DEFINED module_headers_private)
+            qt_internal_add_linker_version_script("${target}" PRIVATE_HEADERS ${module_headers_private} ${module_headers_qpa})
+        else()
+            qt_internal_add_linker_version_script("${target}")
+        endif()
     endif()
 
     # Handle injections. Aka create forwarding headers for certain headers that have been
