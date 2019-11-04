@@ -94,12 +94,14 @@ if(QT_BUILD_STANDALONE_TESTS)
     # building standalone tests.
     set(BUILD_TESTING ON CACHE BOOL "Build the testing tree." FORCE)
 endif()
+option(QT_NO_MAKE_TESTS "Should tests be built as part of the default 'all' target." OFF)
 
 include(CTest)
 enable_testing()
 
 # Set up building of examples.
 option(BUILD_EXAMPLES "Build Qt examples" ON)
+option(QT_NO_MAKE_EXAMPLES "Should examples be built as part of the default 'all' target." OFF)
 
 # Build Benchmarks
 option(QT_BUILD_BENCHMARKS "Build Qt Benchmarks" ${__build_benchmarks})

@@ -139,6 +139,9 @@ macro(qt_build_repo)
 
     if (BUILD_TESTING AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
         add_subdirectory(tests)
+        if(QT_NO_MAKE_TESTS)
+            set_property(DIRECTORY tests PROPERTY EXCLUDE_FROM_ALL TRUE)
+        endif()
     endif()
 
     qt_build_repo_end()
@@ -147,6 +150,9 @@ macro(qt_build_repo)
             AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt"
             AND NOT QT_BUILD_STANDALONE_TESTS)
         add_subdirectory(examples)
+        if(QT_NO_MAKE_EXAMPLES)
+            set_property(DIRECTORY examples PROPERTY EXCLUDE_FROM_ALL TRUE)
+        endif()
     endif()
 endmacro()
 

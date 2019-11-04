@@ -26,6 +26,10 @@ set(QT_SOURCE_TREE "@QT_SOURCE_TREE@" CACHE PATH
 # Propagate decision of building tests and examples to other repositories.
 set(BUILD_TESTING @BUILD_TESTING@ CACHE BOOL "Build the testing tree.")
 set(BUILD_EXAMPLES @BUILD_EXAMPLES@ CACHE BOOL "Build Qt examples")
+set(QT_NO_MAKE_TESTS @QT_NO_MAKE_TESTS@ CACHE BOOL
+    "Should tests be built as part of the default 'all' target.")
+set(QT_NO_MAKE_EXAMPLES @QT_NO_MAKE_EXAMPLES@ CACHE BOOL
+    "Should examples be built as part of the default 'all' target.")
 
 # Extra set of exported variables
 @QT_EXTRA_BUILD_INTERNALS_VARS@

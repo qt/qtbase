@@ -62,6 +62,9 @@ endif()
 
 if(BUILD_TESTING)
     add_subdirectory(tests)
+    if(QT_NO_MAKE_TESTS)
+        set_property(DIRECTORY tests PROPERTY EXCLUDE_FROM_ALL TRUE)
+    endif()
 endif()
 
 if(NOT QT_BUILD_STANDALONE_TESTS)
@@ -81,4 +84,7 @@ qt_build_repo_end()
 
 if(NOT QT_BUILD_STANDALONE_TESTS AND BUILD_EXAMPLES)
     add_subdirectory(examples)
+    if(QT_NO_MAKE_EXAMPLES)
+        set_property(DIRECTORY examples PROPERTY EXCLUDE_FROM_ALL TRUE)
+    endif()
 endif()
