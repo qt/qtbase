@@ -819,216 +819,6 @@ static bool convert_A2RGB30_PM_to_ARGB_inplace(QImageData *data, Qt::ImageConver
     return true;
 }
 
-static bool convert_indexed8_to_ARGB_PM_inplace(QImageData *data, Qt::ImageConversionFlags)
-{
-    Q_ASSERT(data->format == QImage::Format_Indexed8);
-    Q_ASSERT(data->own_data);
-
-    const int depth = 32;
-    auto params = QImageData::calculateImageParameters(data->width, data->height, depth);
-    if (params.bytesPerLine < 0)
-        return false;
-    uchar *const newData = (uchar *)realloc(data->data, params.totalSize);
-    if (!newData)
-        return false;
-
-    data->data = newData;
-
-    // start converting from the end because the end image is bigger than the source
-    uchar *src_data = newData + data->nbytes; // end of src
-    quint32 *dest_data = (quint32 *) (newData + params.totalSize); // end of dest > end of src
-    const int width = data->width;
-    const int src_pad = data->bytes_per_line - width;
-    const int dest_pad = (params.bytesPerLine >> 2) - width;
-    if (data->colortable.size() == 0) {
-        data->colortable.resize(256);
-        for (int i = 0; i < 256; ++i)
-            data->colortable[i] = qRgb(i, i, i);
-    } else {
-        for (int i = 0; i < data->colortable.size(); ++i)
-            data->colortable[i] = qPremultiply(data->colortable.at(i));
-
-        // Fill the rest of the table in case src_data > colortable.size()
-        const int oldSize = data->colortable.size();
-        const QRgb lastColor = data->colortable.at(oldSize - 1);
-        data->colortable.insert(oldSize, 256 - oldSize, lastColor);
-    }
-
-    for (int i = 0; i < data->height; ++i) {
-        src_data -= src_pad;
-        dest_data -= dest_pad;
-        for (int pixI = 0; pixI < width; ++pixI) {
-            --src_data;
-            --dest_data;
-            *dest_data = data->colortable.at(*src_data);
-        }
-    }
-
-    data->colortable = QVector<QRgb>();
-    data->format = QImage::Format_ARGB32_Premultiplied;
-    data->bytes_per_line = params.bytesPerLine;
-    data->depth = depth;
-    data->nbytes = params.totalSize;
-
-    return true;
-}
-
-static bool convert_indexed8_to_ARGB_inplace(QImageData *data, Qt::ImageConversionFlags)
-{
-    Q_ASSERT(data->format == QImage::Format_Indexed8);
-    Q_ASSERT(data->own_data);
-
-    const int depth = 32;
-    auto params = QImageData::calculateImageParameters(data->width, data->height, depth);
-    if (params.bytesPerLine < 0)
-        return false;
-    uchar *const newData = (uchar *)realloc(data->data, params.totalSize);
-    if (!newData)
-        return false;
-
-    data->data = newData;
-
-    // start converting from the end because the end image is bigger than the source
-    uchar *src_data = newData + data->nbytes;
-    quint32 *dest_data = (quint32 *) (newData + params.totalSize);
-    const int width = data->width;
-    const int src_pad = data->bytes_per_line - width;
-    const int dest_pad = (params.bytesPerLine >> 2) - width;
-    if (data->colortable.size() == 0) {
-        data->colortable.resize(256);
-        for (int i = 0; i < 256; ++i)
-            data->colortable[i] = qRgb(i, i, i);
-    } else {
-        // Fill the rest of the table in case src_data > colortable.size()
-        const int oldSize = data->colortable.size();
-        const QRgb lastColor = data->colortable.at(oldSize - 1);
-        data->colortable.insert(oldSize, 256 - oldSize, lastColor);
-    }
-
-    for (int i = 0; i < data->height; ++i) {
-        src_data -= src_pad;
-        dest_data -= dest_pad;
-        for (int pixI = 0; pixI < width; ++pixI) {
-            --src_data;
-            --dest_data;
-            *dest_data = (quint32) data->colortable.at(*src_data);
-        }
-    }
-
-    data->colortable = QVector<QRgb>();
-    data->format = QImage::Format_ARGB32;
-    data->bytes_per_line = params.bytesPerLine;
-    data->depth = depth;
-    data->nbytes = params.totalSize;
-
-    return true;
-}
-
-static bool convert_indexed8_to_RGB_inplace(QImageData *data, Qt::ImageConversionFlags flags)
-{
-    Q_ASSERT(data->format == QImage::Format_Indexed8);
-    Q_ASSERT(data->own_data);
-
-    if (data->has_alpha_clut) {
-        for (int i = 0; i < data->colortable.size(); ++i)
-            data->colortable[i] |= 0xff000000;
-    }
-
-    if (!convert_indexed8_to_ARGB_inplace(data, flags))
-        return false;
-
-    data->format = QImage::Format_RGB32;
-    return true;
-}
-
-static bool convert_indexed8_to_RGB16_inplace(QImageData *data, Qt::ImageConversionFlags)
-{
-    Q_ASSERT(data->format == QImage::Format_Indexed8);
-    Q_ASSERT(data->own_data);
-
-    const int depth = 16;
-    auto params = QImageData::calculateImageParameters(data->width, data->height, depth);
-    if (params.bytesPerLine < 0)
-        return false;
-    uchar *const newData = (uchar *)realloc(data->data, params.totalSize);
-    if (!newData)
-        return false;
-
-    data->data = newData;
-
-    // start converting from the end because the end image is bigger than the source
-    uchar *src_data = newData + data->nbytes;
-    quint16 *dest_data = (quint16 *) (newData + params.totalSize);
-    const int width = data->width;
-    const int src_pad = data->bytes_per_line - width;
-    const int dest_pad = (params.bytesPerLine >> 1) - width;
-
-    quint16 colorTableRGB16[256];
-    const int tableSize = data->colortable.size();
-    if (tableSize == 0) {
-        for (int i = 0; i < 256; ++i)
-            colorTableRGB16[i] = qConvertRgb32To16(qRgb(i, i, i));
-    } else {
-        // 1) convert the existing colors to RGB16
-        for (int i = 0; i < tableSize; ++i)
-            colorTableRGB16[i] = qConvertRgb32To16(data->colortable.at(i));
-        data->colortable = QVector<QRgb>();
-
-        // 2) fill the rest of the table in case src_data > colortable.size()
-        const quint16 lastColor = colorTableRGB16[tableSize - 1];
-        for (int i = tableSize; i < 256; ++i)
-            colorTableRGB16[i] = lastColor;
-    }
-
-    for (int i = 0; i < data->height; ++i) {
-        src_data -= src_pad;
-        dest_data -= dest_pad;
-        for (int pixI = 0; pixI < width; ++pixI) {
-            --src_data;
-            --dest_data;
-            *dest_data = colorTableRGB16[*src_data];
-        }
-    }
-
-    data->format = QImage::Format_RGB16;
-    data->bytes_per_line = params.bytesPerLine;
-    data->depth = depth;
-    data->nbytes = params.totalSize;
-
-    return true;
-}
-
-static bool convert_RGB_to_RGB16_inplace(QImageData *data, Qt::ImageConversionFlags)
-{
-    Q_ASSERT(data->format == QImage::Format_RGB32);
-    Q_ASSERT(data->own_data);
-
-    const int depth = 16;
-
-    // cannot overflow, since we're shrinking the buffer
-    const qsizetype dst_bytes_per_line = ((data->width * depth + 31) >> 5) << 2;
-    const qsizetype src_bytes_per_line = data->bytes_per_line;
-    quint32 *src_data = (quint32 *) data->data;
-    quint16 *dst_data = (quint16 *) data->data;
-
-    for (int i = 0; i < data->height; ++i) {
-        for (int j = 0; j < data->width; ++j)
-            dst_data[j] = qConvertRgb32To16(src_data[j]);
-        src_data = (quint32 *) (((char*)src_data) + src_bytes_per_line);
-        dst_data = (quint16 *) (((char*)dst_data) + dst_bytes_per_line);
-    }
-    data->format = QImage::Format_RGB16;
-    data->bytes_per_line = dst_bytes_per_line;
-    data->depth = depth;
-    data->nbytes = dst_bytes_per_line * data->height;
-    uchar *const newData = (uchar *)realloc(data->data, data->nbytes);
-    if (newData)
-        data->data = newData;
-
-    // can't fail, since we're shrinking
-    return true;
-}
-
 static void convert_ARGB_PM_to_ARGB(QImageData *dest, const QImageData *src)
 {
     Q_ASSERT(src->format == QImage::Format_ARGB32_Premultiplied || src->format == QImage::Format_RGBA8888_Premultiplied);
@@ -2978,10 +2768,10 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0,
         0,
         0,
-        convert_indexed8_to_RGB_inplace,
-        convert_indexed8_to_ARGB_inplace,
-        convert_indexed8_to_ARGB_PM_inplace,
-        convert_indexed8_to_RGB16_inplace,
+        0,
+        0,
+        0,
+        0,
         0,
         0,
         0,
@@ -3005,7 +2795,7 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0,
         mask_alpha_converter_inplace<QImage::Format_ARGB32>,
         mask_alpha_converter_inplace<QImage::Format_ARGB32_Premultiplied>,
-        convert_RGB_to_RGB16_inplace,
+        0,
         0,
         0,
         0,
