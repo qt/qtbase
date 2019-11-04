@@ -10506,7 +10506,7 @@ ownership of it, no memory is freed when instances are destroyed.
 */
 
 QString QStringRef::toString() const {
-    if (!m_string)
+    if (isNull())
         return QString();
     if (m_size && m_position == 0 && m_size == m_string->size())
         return *m_string;
