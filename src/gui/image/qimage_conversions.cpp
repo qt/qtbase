@@ -851,30 +851,6 @@ static bool convert_A2RGB30_PM_to_ARGB_inplace(QImageData *data, Qt::ImageConver
     return true;
 }
 
-static void convert_ARGB_PM_to_ARGB(QImageData *dest, const QImageData *src)
-{
-    Q_ASSERT(src->format == QImage::Format_ARGB32_Premultiplied || src->format == QImage::Format_RGBA8888_Premultiplied);
-    Q_ASSERT(dest->format == QImage::Format_ARGB32 || dest->format == QImage::Format_RGBA8888);
-    Q_ASSERT(src->width == dest->width);
-    Q_ASSERT(src->height == dest->height);
-
-    const int src_pad = (src->bytes_per_line >> 2) - src->width;
-    const int dest_pad = (dest->bytes_per_line >> 2) - dest->width;
-    const QRgb *src_data = (QRgb *) src->data;
-    QRgb *dest_data = (QRgb *) dest->data;
-
-    for (int i = 0; i < src->height; ++i) {
-        const QRgb *end = src_data + src->width;
-        while (src_data < end) {
-            *dest_data = qUnpremultiply(*src_data);
-            ++src_data;
-            ++dest_data;
-        }
-        src_data += src_pad;
-        dest_data += dest_pad;
-    }
-}
-
 static void convert_RGBA_to_RGB(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
     Q_ASSERT(src->format == QImage::Format_RGBA8888 || src->format == QImage::Format_RGBX8888);
@@ -1541,7 +1517,7 @@ static void convert_X_to_Mono(QImageData *dst, const QImageData *src, Qt::ImageC
 static void convert_ARGB_PM_to_Mono(QImageData *dst, const QImageData *src, Qt::ImageConversionFlags flags)
 {
     QScopedPointer<QImageData> tmp(QImageData::create(QSize(src->width, src->height), QImage::Format_ARGB32));
-    convert_ARGB_PM_to_ARGB(tmp.data(), src);
+    convert_generic(tmp.data(), src, Qt::AutoColor);
     dither_to_Mono(dst, tmp.data(), flags, false);
 }
 
@@ -1821,7 +1797,7 @@ static void convert_RGB_to_Indexed8(QImageData *dst, const QImageData *src, Qt::
 static void convert_ARGB_PM_to_Indexed8(QImageData *dst, const QImageData *src, Qt::ImageConversionFlags flags)
 {
     QScopedPointer<QImageData> tmp(QImageData::create(QSize(src->width, src->height), QImage::Format_ARGB32));
-    convert_ARGB_PM_to_ARGB(tmp.data(), src);
+    convert_generic(tmp.data(), src, Qt::AutoColor);
     convert_RGB_to_Indexed8(dst, tmp.data(), flags);
 }
 
