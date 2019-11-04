@@ -410,10 +410,14 @@ public:
 
 bool QShortcutPrivate::handleWhatsThis()
 {
+#if QT_CONFIG(whatsthis)
     const bool result = QWhatsThis::inWhatsThisMode();
     if (result)
         QWhatsThis::showText(QCursor::pos(), sc_whatsthis);
     return result;
+#else
+    return false;
+#endif
 }
 
 /*!
