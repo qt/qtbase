@@ -5742,19 +5742,6 @@ QString QString::trimmed_helper(QString &str)
     \overload operator[]()
 */
 
-/*! \fn QCharRef QString::operator[](uint position)
-
-\overload operator[]()
-
-Returns the character at the specified \a position in the string as a
-modifiable reference.
-*/
-
-/*! \fn const QChar QString::operator[](uint position) const
-    Equivalent to \c at(position).
-\overload operator[]()
-*/
-
 /*!
     \fn QChar QString::front() const
     \since 5.10

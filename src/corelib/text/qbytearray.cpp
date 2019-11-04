@@ -1458,16 +1458,6 @@ QByteArray &QByteArray::operator=(const char *str)
     Same as at(\a i).
 */
 
-/*! \fn QByteRef QByteArray::operator[](uint i)
-
-    \overload
-*/
-
-/*! \fn char QByteArray::operator[](uint i) const
-
-    \overload
-*/
-
 /*!
     \fn char QByteArray::front() const
     \since 5.10

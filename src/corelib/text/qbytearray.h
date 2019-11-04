@@ -208,9 +208,7 @@ public:
 
     inline char at(int i) const;
     inline char operator[](int i) const;
-    inline char operator[](uint i) const;
     Q_REQUIRED_RESULT inline QByteRef operator[](int i);
-    Q_REQUIRED_RESULT inline QByteRef operator[](uint i);
     Q_REQUIRED_RESULT char front() const { return at(0); }
     Q_REQUIRED_RESULT inline QByteRef front();
     Q_REQUIRED_RESULT char back() const { return at(size() - 1); }
@@ -477,8 +475,6 @@ inline char QByteArray::at(int i) const
 { Q_ASSERT(uint(i) < uint(size())); return d->data()[i]; }
 inline char QByteArray::operator[](int i) const
 { Q_ASSERT(uint(i) < uint(size())); return d->data()[i]; }
-inline char QByteArray::operator[](uint i) const
-{ Q_ASSERT(i < uint(size())); return d->data()[i]; }
 
 inline bool QByteArray::isEmpty() const
 { return d->size == 0; }
@@ -599,8 +595,6 @@ public:
 
 inline QByteRef QByteArray::operator[](int i)
 { Q_ASSERT(i >= 0); detach(); return QByteRef(*this, i); }
-inline QByteRef QByteArray::operator[](uint i)
-{  detach(); return QByteRef(*this, i); }
 inline QByteRef QByteArray::front() { return operator[](0); }
 inline QByteRef QByteArray::back() { return operator[](size() - 1); }
 inline QByteArray::iterator QByteArray::begin()

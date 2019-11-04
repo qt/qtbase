@@ -291,8 +291,6 @@ public:
     inline const QChar at(int i) const;
     const QChar operator[](int i) const;
     Q_REQUIRED_RESULT QCharRef operator[](int i);
-    const QChar operator[](uint i) const;
-    Q_REQUIRED_RESULT QCharRef operator[](uint i);
 
     Q_REQUIRED_RESULT inline QChar front() const { return at(0); }
     Q_REQUIRED_RESULT inline QCharRef front();
@@ -1028,8 +1026,6 @@ inline const QChar QString::at(int i) const
 { Q_ASSERT(uint(i) < uint(size())); return QChar(d->data()[i]); }
 inline const QChar QString::operator[](int i) const
 { Q_ASSERT(uint(i) < uint(size())); return QChar(d->data()[i]); }
-inline const QChar QString::operator[](uint i) const
-{ Q_ASSERT(i < uint(size())); return QChar(d->data()[i]); }
 inline bool QString::isEmpty() const
 { return d->size == 0; }
 inline const QChar *QString::unicode() const
@@ -1285,8 +1281,6 @@ inline QString &QString::setUtf16(const ushort *autf16, int asize)
 { return setUnicode(reinterpret_cast<const QChar *>(autf16), asize); }
 inline QCharRef QString::operator[](int i)
 { Q_ASSERT(i >= 0); detach(); return QCharRef(*this, i); }
-inline QCharRef QString::operator[](uint i)
-{  detach(); return QCharRef(*this, i); }
 inline QCharRef QString::front() { return operator[](0); }
 inline QCharRef QString::back() { return operator[](size() - 1); }
 inline QString::iterator QString::begin()
