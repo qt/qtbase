@@ -257,7 +257,8 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
     // Cannot be used with indexed formats or between formats with different pixel depths.
     Q_ASSERT(dst_format > QImage::Format_Indexed8);
     Q_ASSERT(data->format > QImage::Format_Indexed8);
-    if (data->depth != qt_depthForFormat(dst_format))
+    const int destDepth = qt_depthForFormat(dst_format);
+    if (data->depth < destDepth)
         return false;
 
     const QPixelLayout *srcLayout = &qPixelLayouts[data->format];
@@ -272,9 +273,16 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
     uint buf[BufferSize];
     uint *buffer = buf;
     uchar *srcData = data->data;
+    uchar *destData = data->data;
 
-    Q_ASSERT(srcLayout->bpp == destLayout->bpp);
-    Q_ASSERT(srcLayout->bpp != QPixelLayout::BPP64);
+    QImageData::ImageSizeParameters params = { data->bytes_per_line, data->nbytes };
+    if (data->depth != destDepth) {
+        params = QImageData::calculateImageParameters(data->width, data->height, destDepth);
+        if (!params.isValid())
+            return false;
+    }
+
+    Q_ASSERT(destLayout->bpp != QPixelLayout::BPP64);
     FetchAndConvertPixelsFunc fetch = srcLayout->fetchToARGB32PM;
     ConvertAndStorePixelsFunc store = destLayout->storeFromARGB32PM;
     if (!srcLayout->hasAlphaChannel && destLayout->storeFromRGB32) {
@@ -316,15 +324,26 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
         while (x < data->width) {
             dither.x = x;
             int l = data->width - x;
-            if (destLayout->bpp == QPixelLayout::BPP32)
+            if (srcLayout->bpp == QPixelLayout::BPP32)
                 buffer = reinterpret_cast<uint *>(srcData) + x;
             else
                 l = qMin(l, BufferSize);
             const uint *ptr = fetch(buffer, srcData, x, l, nullptr, ditherPtr);
-            store(srcData, ptr, x, l, nullptr, ditherPtr);
+            store(destData, ptr, x, l, nullptr, ditherPtr);
             x += l;
         }
         srcData += data->bytes_per_line;
+        destData += params.bytesPerLine;
+    }
+    if (params.totalSize != data->nbytes) {
+        Q_ASSERT(params.totalSize < data->nbytes);
+        void *newData = realloc(data->data, params.totalSize);
+        if (newData) {
+            data->data = (uchar *)newData;
+            data->nbytes = params.totalSize;
+        }
+        data->bytes_per_line = params.bytesPerLine;
+        data->depth = destDepth;
     }
     data->format = dst_format;
     return true;
