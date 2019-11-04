@@ -69,6 +69,10 @@ define_property(TARGET
 # androiddeploytoolqt to successfully copy all the plugins and other dependent
 # items into tha APK
 function(qt_android_dependencies target)
+    get_target_property(target_type "${target}" TYPE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
 
     get_target_property(arg_JAR_DEPENDENCIES ${target} QT_ANDROID_JAR_DEPENDENCIES)
     get_target_property(arg_BUNDLED_JAR_DEPENDENCIES ${target} QT_ANDROID_BUNDLED_JAR_DEPENDENCIES)
