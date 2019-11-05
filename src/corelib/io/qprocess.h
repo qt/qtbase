@@ -278,7 +278,8 @@ Q_SIGNALS:
     void finished(int exitCode); // ### Qt 6: merge the two signals with a default value
 #endif
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
-#if QT_DEPRECATED_SINCE(5,6)
+#if QT_DEPRECATED_SINCE(5, 6)
+    QT_DEPRECATED_X("Use QProcess::errorOccurred(QProcess::ProcessError) instead")
     void error(QProcess::ProcessError error);
 #endif
     void errorOccurred(QProcess::ProcessError error);
