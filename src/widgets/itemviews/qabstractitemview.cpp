@@ -3967,7 +3967,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemView::selectionCommand(const QM
         case SingleSelection: // ClearAndSelect on valid index otherwise NoUpdate
             if (event && event->type() == QEvent::MouseButtonRelease)
                 return QItemSelectionModel::NoUpdate;
-            if ((keyModifiers & Qt::ControlModifier) && d->selectionModel->isSelected(index))
+            if ((keyModifiers & Qt::ControlModifier) && d->selectionModel->isSelected(index) && event->type() != QEvent::MouseMove)
                 return QItemSelectionModel::Deselect | d->selectionBehaviorFlags();
             else
                 return QItemSelectionModel::ClearAndSelect | d->selectionBehaviorFlags();
