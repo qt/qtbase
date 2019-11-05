@@ -131,6 +131,14 @@ void QPlatformCursor::setPos(const QPoint &pos)
     QWindowSystemInterface::handleMouseEvent(0, pos, pos, Qt::NoButton, Qt::NoButton, QEvent::MouseMove);
 }
 
+/*!
+    Returns the size of the cursor, in native pixels.
+*/
+QSize QPlatformCursor::size() const
+{
+    return QSize(16, 16);
+}
+
 // End of display and pointer event handling code
 // Beginning of built-in cursor graphics
 // from src/gui/embedded/QGraphicsSystemCursorImage_qws.cpp

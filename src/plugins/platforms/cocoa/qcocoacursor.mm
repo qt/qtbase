@@ -85,6 +85,31 @@ void QCocoaCursor::setPos(const QPoint &position)
     CFRelease(e);
 }
 
+
+QSize QCocoaCursor::size() const
+{
+    NSCursor *cocoaCursor = NSCursor.currentSystemCursor;
+    if (!cocoaCursor)
+        return QPlatformCursor::size();
+    NSImage *cursorImage = cocoaCursor.image;
+    if (!cursorImage)
+        return QPlatformCursor::size();
+
+    QSizeF size = QSizeF::fromCGSize(cursorImage.size);
+    NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
+    NSDictionary *accessSettings = [defaults persistentDomainForName:@"com.apple.universalaccess"];
+    if (accessSettings == nil)
+        return size.toSize();
+
+    float sizeScale = [accessSettings[@"mouseDriverCursorSize"] floatValue];
+    if (sizeScale > 0) {
+        size.rwidth() *= sizeScale;
+        size.rheight() *= sizeScale;
+    }
+
+    return size.toSize();
+}
+
 NSCursor *QCocoaCursor::convertCursor(QCursor *cursor)
 {
     if (!cursor)
