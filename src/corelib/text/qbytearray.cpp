@@ -556,28 +556,13 @@ static const quint16 crc_tbl[16] = {
 
 /*!
     \relates QByteArray
-
-    Returns the CRC-16 checksum of the first \a len bytes of \a data.
-
-    The checksum is independent of the byte order (endianness) and will be
-    calculated accorded to the algorithm published in ISO 3309 (Qt::ChecksumIso3309).
-
-    \note This function is a 16-bit cache conserving (16 entry table)
-    implementation of the CRC-16-CCITT algorithm.
-*/
-quint16 qChecksum(const char *data, uint len)
-{
-    return qChecksum(data, len, Qt::ChecksumIso3309);
-}
-
-/*!
-    \relates QByteArray
     \since 5.9
 
     Returns the CRC-16 checksum of the first \a len bytes of \a data.
 
     The checksum is independent of the byte order (endianness) and will
     be calculated accorded to the algorithm published in \a standard.
+    By default the algorithm published in ISO 3309 (Qt::ChecksumIso3309) is used.
 
     \note This function is a 16-bit cache conserving (16 entry table)
     implementation of the CRC-16-CCITT algorithm.
@@ -4093,26 +4078,11 @@ float QByteArray::toFloat(bool *ok) const
 }
 
 /*!
-    Returns a copy of the byte array, encoded as Base64.
-
-    \snippet code/src_corelib_tools_qbytearray.cpp 39
-
-    The algorithm used to encode Base64-encoded data is defined in \l{RFC 4648}.
-
-    \sa fromBase64()
-*/
-QByteArray QByteArray::toBase64() const
-{
-    return toBase64(Base64Encoding);
-}
-
-/*!
     \since 5.2
-    \overload
 
     Returns a copy of the byte array, encoded using the options \a options.
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 39bis
+    \snippet code/src_corelib_tools_qbytearray.cpp 39
 
     The algorithm used to encode Base64-encoded data is defined in \l{RFC 4648}.
 
@@ -4514,26 +4484,7 @@ QByteArray &QByteArray::setRawData(const char *data, uint size)
 }
 
 /*!
-    Returns a decoded copy of the Base64 array \a base64. Input is not checked
-    for validity; invalid characters in the input are skipped, enabling the
-    decoding process to continue with subsequent characters.
-
-    For example:
-
-    \snippet code/src_corelib_tools_qbytearray.cpp 44
-
-    The algorithm used to decode Base64-encoded data is defined in \l{RFC 4648}.
-
-    \sa toBase64()
-*/
-QByteArray QByteArray::fromBase64(const QByteArray &base64)
-{
-    return fromBase64(base64, Base64Encoding);
-}
-
-/*!
     \since 5.2
-    \overload
 
     Returns a decoded copy of the Base64 array \a base64, using the alphabet
     defined by \a options. Input is not checked for validity; invalid
@@ -4542,7 +4493,7 @@ QByteArray QByteArray::fromBase64(const QByteArray &base64)
 
     For example:
 
-    \snippet code/src_corelib_tools_qbytearray.cpp 44bis
+    \snippet code/src_corelib_tools_qbytearray.cpp 44
 
     The algorithm used to decode Base64-encoded data is defined in \l{RFC 4648}.
 
@@ -4627,21 +4578,7 @@ QByteArray QByteArray::fromHex(const QByteArray &hexEncoded)
     return res;
 }
 
-/*!
-    Returns a hex encoded copy of the byte array. The hex encoding uses the numbers 0-9 and
-    the letters a-f.
-
-    \sa fromHex()
-*/
-QByteArray QByteArray::toHex() const
-{
-    return toHex('\0');
-}
-
-/*! \overload
-    \since 5.9
-
-    Returns a hex encoded copy of the byte array. The hex encoding uses the numbers 0-9 and
+/*! Returns a hex encoded copy of the byte array. The hex encoding uses the numbers 0-9 and
     the letters a-f.
 
     If \a separator is not '\0', the separator character is inserted between the hex bytes.
@@ -4649,6 +4586,7 @@ QByteArray QByteArray::toHex() const
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 50
 
+    \since 5.9
     \sa fromHex()
 */
 QByteArray QByteArray::toHex(char separator) const
