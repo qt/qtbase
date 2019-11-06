@@ -1030,15 +1030,13 @@ void tst_QFileSystemModel::dirsBeforeFiles()
     // Wait for model to be notified by the file system watcher
     QTRY_COMPARE(model->rowCount(root), 2 * itemCount);
 
-    // ensure that no file occurs before a directory
-    for (int i = 0; i < model->rowCount(root); ++i) {
+    // Ensure that no file occurs before any directory:
+    for (int i = 1; i < model->rowCount(root); ++i) {
 #ifndef Q_OS_MAC
-        QVERIFY(i == 0 ||
-                !(model->fileInfo(model->index(i - 1, 0, root)).isFile()
+        QVERIFY(!(model->fileInfo(model->index(i - 1, 0, root)).isFile()
                   && model->fileInfo(model->index(i, 0, root)).isDir()));
 #else
-        QVERIFY(i == 0 ||
-                model->fileInfo(model->index(i - 1, 0, root)).fileName() <
+        QVERIFY(model->fileInfo(model->index(i - 1, 0, root)).fileName() <
                 model->fileInfo(model->index(i, 0, root)).fileName());
 #endif
     }
