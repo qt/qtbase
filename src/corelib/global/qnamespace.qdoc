@@ -743,22 +743,25 @@
     removed in Qt 6.} It is equivalent to SystemLocaleShortDate.
 
     \value RFC2822Date \l{RFC 2822}, \l{RFC 850} and \l{RFC 1036} format:
-    either \c{[ddd,] dd MMM yyyy [hh:mm[:ss]][ ±tzoff]}
-    or \c{ddd MMM dd[ hh:mm:ss] yyyy[ ±tzoff]} are recognized for combined dates
-    and times, where \c{tzoff} is a timezone offset in \c{hhmm} format. For
+    either \c{[ddd,] dd MMM yyyy [HH:mm[:ss]][ ±tzoff]}
+    or \c{ddd MMM dd[ HH:mm:ss] yyyy[ ±tzoff]} are recognized for combined dates
+    and times, where \c{tzoff} is a timezone offset in \c{HHmm} format. For
     dates and times separately, the same formats are matched and the unwanted
     parts are ignored. In particular, note that a time is not recognized without
     an accompanying date. When converting dates to string form,
-    format \c{dd MMM yyyy} is used, for times the format is \c{hh:mm:ss}. For
+    format \c{dd MMM yyyy} is used, for times the format is \c{HH:mm:ss}. For
     combined date and time, these are combined
-    as \c{dd MMM yyyy hh:mm:ss ±tzoff} (omitting the optional leading day of the
+    as \c{dd MMM yyyy HH:mm:ss ±tzoff} (omitting the optional leading day of the
     week from the first format recognized).
 
-    \note For \c ISODate formats, each \c Y, \c M and \c D represents a single digit
-    of the year, month and day used to specify the date. Each \c H, \c M and \c S
-    represents a single digit of the hour, minute and second used to specify the time.
-    The presence of a literal \c T character is used to separate the date and time when
-    both are specified.
+    \note For \c ISODate formats, each \c y, \c M and \c d represents a single
+    digit of the year, month, and day used to specify the date. Each \c H, \c m,
+    and \c s represents a single digit of the hour (up to 24), minute and second
+    used to specify the time. The presence of a literal \c T character is used
+    to separate the date and time when both are specified. For the \c
+    RFC2822Date format, MMM stands for the first three letters of the month name
+    in English, the other format characters have the same meaning as for the
+    ISODate format.
 */
 
 
