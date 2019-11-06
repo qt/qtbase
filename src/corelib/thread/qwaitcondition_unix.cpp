@@ -202,12 +202,14 @@ void QWaitCondition::wakeAll()
     report_error(pthread_mutex_unlock(&d->mutex), "QWaitCondition::wakeAll()", "mutex unlock");
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 bool QWaitCondition::wait(QMutex *mutex, unsigned long time)
 {
     if (time == std::numeric_limits<unsigned long>::max())
         return wait(mutex, QDeadlineTimer(QDeadlineTimer::Forever));
     return wait(mutex, QDeadlineTimer(time));
 }
+#endif
 
 bool QWaitCondition::wait(QMutex *mutex, QDeadlineTimer deadline)
 {
@@ -229,12 +231,14 @@ bool QWaitCondition::wait(QMutex *mutex, QDeadlineTimer deadline)
     return returnValue;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 bool QWaitCondition::wait(QReadWriteLock *readWriteLock, unsigned long time)
 {
     if (time == std::numeric_limits<unsigned long>::max())
         return wait(readWriteLock, QDeadlineTimer(QDeadlineTimer::Forever));
     return wait(readWriteLock, QDeadlineTimer(time));
 }
+#endif
 
 bool QWaitCondition::wait(QReadWriteLock *readWriteLock, QDeadlineTimer deadline)
 {

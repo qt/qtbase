@@ -40,15 +40,12 @@
 #ifndef QWAITCONDITION_H
 #define QWAITCONDITION_H
 
-#include <QtCore/qglobal.h>
-
-#include <limits.h>
+#include <QDeadlineTimer>
 
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(thread)
 
-class QDeadlineTimer;
 class QWaitConditionPrivate;
 class QMutex;
 class QReadWriteLock;
@@ -59,11 +56,16 @@ public:
     QWaitCondition();
     ~QWaitCondition();
 
-    // ### Qt 6: remove unsigned long overloads
-    bool wait(QMutex *lockedMutex, unsigned long time = ULONG_MAX);
-    bool wait(QMutex *lockedMutex, QDeadlineTimer deadline);
-    bool wait(QReadWriteLock *lockedReadWriteLock, unsigned long time = ULONG_MAX);
-    bool wait(QReadWriteLock *lockedReadWriteLock, QDeadlineTimer deadline);
+    bool wait(QMutex *lockedMutex,
+              QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever));
+    bool wait(QReadWriteLock *lockedReadWriteLock,
+              QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever));
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_VERSION_X_5_15("Use wait(QMutex *lockedMutex, QDeadlineTimer deadline) instead")
+    bool wait(QMutex *lockedMutex, unsigned long time);
+    QT_DEPRECATED_VERSION_X_5_15("Use wait(QReadWriteLock *lockedReadWriteLock, QDeadlineTimer deadline) instead")
+    bool wait(QReadWriteLock *lockedReadWriteLock, unsigned long time);
+#endif
 
     void wakeOne();
     void wakeAll();
