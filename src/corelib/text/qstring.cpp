@@ -4431,24 +4431,6 @@ int QString::count(const QRegExp& rx) const
 
 #if QT_CONFIG(regularexpression)
 /*!
-    \overload indexOf()
-    \since 5.0
-
-    Returns the index position of the first match of the regular
-    expression \a re in the string, searching forward from index
-    position \a from. Returns -1 if \a re didn't match anywhere.
-
-    Example:
-
-    \snippet qstring/main.cpp 93
-*/
-int QString::indexOf(const QRegularExpression& re, int from) const
-{
-    return indexOf(re, from, nullptr);
-}
-
-/*!
-    \overload
     \since 5.5
 
     Returns the index position of the first match of the regular
@@ -4461,7 +4443,7 @@ int QString::indexOf(const QRegularExpression& re, int from) const
 
     Example:
 
-    \snippet qstring/main.cpp 99
+    \snippet qstring/main.cpp 93
 */
 int QString::indexOf(const QRegularExpression &re, int from, QRegularExpressionMatch *rmatch) const
 {
@@ -4482,24 +4464,6 @@ int QString::indexOf(const QRegularExpression &re, int from, QRegularExpressionM
 }
 
 /*!
-    \overload lastIndexOf()
-    \since 5.0
-
-    Returns the index position of the last match of the regular
-    expression \a re in the string, which starts before the index
-    position \a from. Returns -1 if \a re didn't match anywhere.
-
-    Example:
-
-    \snippet qstring/main.cpp 94
-*/
-int QString::lastIndexOf(const QRegularExpression &re, int from) const
-{
-    return lastIndexOf(re, from, nullptr);
-}
-
-/*!
-    \overload
     \since 5.5
 
     Returns the index position of the last match of the regular
@@ -4512,7 +4476,7 @@ int QString::lastIndexOf(const QRegularExpression &re, int from) const
 
     Example:
 
-    \snippet qstring/main.cpp 100
+    \snippet qstring/main.cpp 94
 */
 int QString::lastIndexOf(const QRegularExpression &re, int from, QRegularExpressionMatch *rmatch) const
 {
@@ -4539,19 +4503,7 @@ int QString::lastIndexOf(const QRegularExpression &re, int from, QRegularExpress
     return lastIndex;
 }
 
-/*! \overload contains()
-    \since 5.0
-
-    Returns \c true if the regular expression \a re matches somewhere in
-    this string; otherwise returns \c false.
-*/
-bool QString::contains(const QRegularExpression &re) const
-{
-    return contains(re, nullptr);
-}
-
 /*!
-    \overload contains()
     \since 5.1
 
     Returns \c true if the regular expression \a re matches somewhere in this
