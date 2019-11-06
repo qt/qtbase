@@ -180,7 +180,7 @@ static const char *fsDisplaySource =
     "}\n";
 
 static const char *csComputeSourceV =
-        "#define COMPUTEPATCHSIZE 32 \n"
+        "#define COMPUTEPATCHSIZE 10 // Setting this to 10 to comply with MAX_COMPUTE_WORK_GROUP_INVOCATIONS for both OpenGL and OpenGLES - see QTBUG-79374 \n"
         "#define IMGFMT rgba8 \n"
         "layout (local_size_x = COMPUTEPATCHSIZE, local_size_y = COMPUTEPATCHSIZE) in;\n"
         "layout(binding=0, IMGFMT) uniform readonly highp image2D inputImage; // Use a sampler to improve performance  \n"
@@ -221,7 +221,7 @@ static const char *csComputeSourceV =
         "}\n";
 
 static const char *csComputeSourceH =
-        "#define COMPUTEPATCHSIZE 32 \n"
+        "#define COMPUTEPATCHSIZE 10 \n"
         "#define IMGFMT rgba8 \n"
         "layout (local_size_x = COMPUTEPATCHSIZE, local_size_y = COMPUTEPATCHSIZE) in;\n"
         "layout(binding=0, IMGFMT) uniform readonly highp image2D inputImage; // Use a sampler to improve performance  \n"
@@ -408,7 +408,7 @@ void GLWindow::paintGL()
 
 
     // Process input image
-    QSize workGroups = getWorkGroups( 32, QSize(m_texImageInput->width(), m_texImageInput->height()));
+    QSize workGroups = getWorkGroups(10, QSize(m_texImageInput->width(), m_texImageInput->height()));
     // Pass 1
     f->glBindImageTexture(0, m_texImageInput->textureId(), 0, 0, 0,  GL_READ_WRITE, GL_RGBA8);
     f->glBindImageTexture(1, m_texImageTmp->textureId(), 0, 0, 0,  GL_READ_WRITE, GL_RGBA8);

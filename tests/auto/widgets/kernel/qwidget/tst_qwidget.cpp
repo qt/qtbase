@@ -401,6 +401,7 @@ private slots:
     void tabletTracking();
 
     void closeEvent();
+    void closeWithChildWindow();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -11120,6 +11121,28 @@ void tst_QWidget::closeEvent()
     widget.windowHandle()->close();
     widget.windowHandle()->close();
     QCOMPARE(widget.closeCount, 1);
+}
+
+void tst_QWidget::closeWithChildWindow()
+{
+    QWidget widget;
+    auto childWidget = new QWidget(&widget);
+    childWidget->setAttribute(Qt::WA_NativeWindow);
+    childWidget->windowHandle()->create();
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    widget.windowHandle()->close();
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    // Check that the child window inside the window is now visible
+    QVERIFY(childWidget->isVisible());
+
+    // Now explicitly hide the childWidget
+    childWidget->hide();
+    widget.windowHandle()->close();
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+    QVERIFY(!childWidget->isVisible());
 }
 
 QTEST_MAIN(tst_QWidget)

@@ -102,6 +102,20 @@
     \li \c{cleanup()} will be called after every test function.
     \endlist
 
+    Use \c initTestCase() for preparing the test. Every test should leave the
+    system in a usable state, so it can be run repeatedly. Cleanup operations
+    should be handled in \c cleanupTestCase(), so they get run even if the test
+    fails.
+
+    Use \c init() for preparing a test function. Every test function should
+    leave the system in a usable state, so it can be run repeatedly. Cleanup
+    operations should be handled in \c cleanup(), so they get run even if the
+    test function fails and exits early.
+
+    Alternatively, you can use RAII (resource acquisition is initialization),
+    with cleanup operations called in destructors, to ensure they happen when
+    the test function returns and the object moves out of scope.
+
     If \c{initTestCase()} fails, no test function will be executed. If \c{init()} fails,
     the following test function will not be executed, the test will proceed to the next
     test function.
@@ -308,9 +322,34 @@
     \section1 Creating a Benchmark
 
     To create a benchmark, follow the instructions for creating a test and then add a
-    QBENCHMARK macro to the test function that you want to benchmark.
+    \l QBENCHMARK macro or \l QTest::setBenchmarkResult() to the test function that
+    you want to benchmark. In the following code snippet, the macro is used:
 
     \snippet code/doc_src_qtestlib.cpp 12
+
+    A test function that measures performance should contain either a single
+    \c QBENCHMARK macro or a single call to \c setBenchmarkResult(). Multiple
+    occurrences make no sense, because only one performance result can be
+    reported per test function, or per data tag in a data-driven setup.
+
+    Avoid changing the test code that forms (or influences) the body of a
+    \c QBENCHMARK macro, or the test code that computes the value passed to
+    \c setBenchmarkResult(). Differences in successive performance results
+    should ideally be caused only by changes to the product you are testing.
+    Changes to the test code can potentially result in misleading report of
+    a change in performance. If you do need to change the test code, make
+    that clear in the commit message.
+
+    In a performance test function, the \c QBENCHMARK or \c setBenchmarkResult()
+    should be followed by a verification step using \l QCOMPARE(), \l QVERIFY(),
+    and so on. You can then flag a performance result as \e invalid if another
+    code path than the intended one was measured. A performance analysis tool
+    can use this information to filter out invalid results.
+    For example, an unexpected error condition will typically cause the program
+    to bail out prematurely from the normal program execution, and thus falsely
+    show a dramatic performance increase.
+
+    \section2 Selecting the Measurement Back-end
 
     The code inside the QBENCHMARK macro will be measured, and possibly also repeated
     several times in order to get an accurate measurement. This depends on the selected

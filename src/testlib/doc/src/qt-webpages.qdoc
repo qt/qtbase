@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -25,10 +25,26 @@
 **
 ****************************************************************************/
 /*!
-    \externalpage http://blog.qt.io
-    \title Qt Labs
-*/
-/*!
-    \externalpage http://blog.qt.io/blog/2008/12/05/qtestlib-now-with-nice-graphs-pointing-upwards/
+    \externalpage https://blog.qt.io/blog/2008/12/05/qtestlib-now-with-nice-graphs-pointing-upwards/
     \title qtestlib-tools Announcement
+*/
+
+/*!
+    \externalpage https://www.froglogic.com/coco/
+    \title Froglogic Coco Code Coverage
+*/
+
+/*!
+    \externalpage https://gcc.gnu.org/onlinedocs/gcc/Gcov.html
+    \title gcov
+*/
+
+/*!
+    \externalpage https://github.com/google/googletest/tree/master/googlemock
+    \title Googletest Mocking (gMock) Framework
+*/
+
+/*!
+    \externalpage https://www.itk.org/Wiki/CMake_Testing_With_CTest
+    \title CMake/Testing With CTest
 */

@@ -416,18 +416,16 @@ QByteArray QImageIOHandler::format() const
     \sa read(), QIODevice::peek()
 */
 
-#if QT_DEPRECATED_SINCE(5, 13)
 /*!
     \obsolete
 
     Use format() instead.
 */
 
-QByteArray QImageIOHandler::name() const
+QByteArray QImageIOHandler::name() const // ### Qt6: remove
 {
     return format();
 }
-#endif
 
 /*!
     Writes the image \a image to the assigned device. Returns \c true on

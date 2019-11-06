@@ -2359,11 +2359,12 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
 }
 
 /*!
-    Waits until the socket has disconnected, up to \a msecs
-    milliseconds. If the connection has been disconnected, this
-    function returns \c true; otherwise it returns \c false. In the case
-    where it returns \c false, you can call error() to determine
-    the cause of the error.
+    Waits until the socket has disconnected, up to \a msecs milliseconds. If the
+    connection was successfully disconnected, this function returns \c true;
+    otherwise it returns \c false (if the operation timed out, if an error
+    occurred, or if this QAbstractSocket is already disconnected). In the case
+    where it returns \c false, you can call error() to determine the cause of
+    the error.
 
     The following example waits up to one second for a connection
     to be closed:
