@@ -59,6 +59,8 @@ private slots:
 
     void insertion_string_int2();
     void insertion_string_int2_hint();
+
+    void insertMap();
 };
 
 
@@ -266,6 +268,19 @@ void tst_QMap::insertion_string_int2_hint()
             str.setNum(i);
             map.insert(map.end(), str, i);
         }
+    }
+}
+
+void tst_QMap::insertMap()
+{
+    QMap<int, int> map;
+    for (int i = 0; i < 100000; ++i)
+        map.insert(i * 4, 0);
+    QMap<int, int> map2;
+    for (int i = 0; i < 50000; ++i)
+        map2.insert(i * 7, 0);
+    QBENCHMARK_ONCE {
+        map.insert(map2);
     }
 }
 

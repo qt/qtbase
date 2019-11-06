@@ -578,6 +578,7 @@ public:
     const_iterator upperBound(const Key &key) const;
     iterator insert(const Key &key, const T &value);
     iterator insert(const_iterator pos, const Key &key, const T &value);
+    void insert(const QMap<Key, T> &map);
     iterator insertMulti(const Key &key, const T &value);
     iterator insertMulti(const_iterator pos, const Key &akey, const T &avalue);
     QMap<Key, T> &unite(const QMap<Key, T> &other);
@@ -784,6 +785,49 @@ typename QMap<Key, T>::iterator QMap<Key, T>::insert(const_iterator pos, const K
             }
             Q_ASSERT(false); // We should have prev->right == nullptr or next->left == nullptr.
             return this->insert(akey, avalue);
+        }
+    }
+}
+
+template <class Key, class T>
+Q_INLINE_TEMPLATE void QMap<Key, T>::insert(const QMap<Key, T> &map)
+{
+    if (d == map.d)
+        return;
+
+    detach();
+
+    Node *n = d->root();
+    auto it = map.cbegin();
+    const auto e = map.cend();
+    while (it != e) {
+        // Insertion here is based on insert(Key, T)
+        auto parent = d->end();
+        bool left = true;
+        Node *lastNode = nullptr;
+        while (n) {
+            parent = n;
+            if (!qMapLessThanKey(n->key, it.key())) {
+                lastNode = n;
+                n = n->leftNode();
+                left = true;
+            } else {
+                n = n->rightNode();
+                left = false;
+            }
+        }
+        if (lastNode && !qMapLessThanKey(it.key(), lastNode->key)) {
+            lastNode->value = it.value();
+            n = lastNode;
+        } else {
+            n = d->createNode(it.key(), it.value(), parent, left);
+        }
+        ++it;
+        if (it != e) {
+            // Move back up the tree until we find the next branch or node which is
+            // relevant for the next key.
+            while (n != d->root() && qMapLessThanKey(n->key, it.key()))
+                n = static_cast<Node *>(n->parent());
         }
     }
 }
