@@ -644,7 +644,7 @@ QPoint QHighDpiScaling::mapPositionFromGlobal(const QPoint &pos, const QPoint &w
 
 qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
 {
-    qreal factor = qreal(1.0);
+    auto factor = qreal(1.0);
     if (!screen)
         return factor;
 
@@ -657,15 +657,16 @@ qreal QHighDpiScaling::screenSubfactor(const QPlatformScreen *screen)
         // Check if there is a factor set on the screen object or associated
         // with the screen name. These are mutually exclusive, so checking
         // order is not significant.
-        auto qScreen = screen->screen();
-        auto byIndex = qScreen ? qScreen->property(scaleFactorProperty) : QVariant();
-        auto byNameIt = qNamedScreenScaleFactors()->constFind(screen->name());
-        if (byIndex.isValid()) {
-            screenPropertyUsed = true;
-            factor = byIndex.toReal();
-        } else if (byNameIt != qNamedScreenScaleFactors()->cend()) {
-            screenPropertyUsed = true;
-            factor = *byNameIt;
+        if (auto qScreen = screen->screen()) {
+            auto screenFactor = qScreen->property(scaleFactorProperty).toReal(&screenPropertyUsed);
+            if (screenPropertyUsed)
+                factor = screenFactor;
+        }
+
+        if (!screenPropertyUsed) {
+            auto byNameIt = qNamedScreenScaleFactors()->constFind(screen->name());
+            if ((screenPropertyUsed = byNameIt != qNamedScreenScaleFactors()->cend()))
+                factor = *byNameIt;
         }
     }
 
