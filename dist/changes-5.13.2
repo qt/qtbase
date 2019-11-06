@@ -1,0 +1,69 @@
+Qt 5.13.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.13.0 through 5.13.1.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.13 series is binary compatible with the 5.12.x series.
+Applications compiled for 5.12 will continue to run with 5.13.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - Fixed a bug that made qErrnoWarning() say there was no error when
+   generating the error message.
+
+ - QBitArray:
+   * Fixed two bugs that caused QBitArrays created using fromBits() not to
+     compare equal to the equivalent QBitArray created using other methods
+     if the size was zero or not a multiple of 4. If the size modulus 8 was
+     5, 6, or 7, the data was actually incorrect.
+
+ - QCryptographicHash:
+   * Fixed a bug that caused the SHA-3 and Keccak algorithms to crash if
+     passed 256 MB of data or more.
+
+ - QObject:
+   * Fixed a resource leak caused by a race condition if multiple QObjects
+     were created at the same time, for the first time in an application,
+     from multiple threads (implies threads not started with QThread).
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - Text:
+   * [QTBUG-69546] Fixed a crash bug in
+     QTextDocument::clearUndoRedoStacks(QTextDocument::UndoStack).
+
+****************************************************************************
+*                                  QtSQL                                   *
+****************************************************************************
+
+ - sqlite:
+   * Updated to v3.29.0
+
+****************************************************************************
+*                        Platform-Specific Changes                         *
+****************************************************************************
+
+ - Linux:
+   * [QTBUG-61916] Added an environment variable
+     QT_QPA_PRESERVE_CONSOLE_STATE that can be used to prevent Qt from
+     altering the tty screen and cursor settings when running with
+     platforms like linuxfb and eglfs.
+
+ - Android:
+   * [QTBUG-76036] Fixed an issue where menus would not work on 64 bit
+     builds.

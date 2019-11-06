@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtWidgets module of the Qt Toolkit.
@@ -1285,6 +1285,9 @@ bool QTreeWidgetItem::isFirstColumnSpanned() const
 
     Sets the background brush of the label in the given \a column to the
     specified \a brush.
+
+    \note If \l{Qt Style Sheets} are used on the same widget as setBackground(),
+    style sheets will take precedence if the settings conflict.
 
     \sa setForeground()
 */

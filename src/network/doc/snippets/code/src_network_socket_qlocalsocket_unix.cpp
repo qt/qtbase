@@ -57,6 +57,8 @@ if (socket->waitForConnected(1000))
 
 //! [1]
 socket->disconnectFromServer();
-if (socket->waitForDisconnected(1000))
+if (socket->state() == QLocalSocket::UnconnectedState
+    || socket->waitForDisconnected(1000)) {
     qDebug("Disconnected!");
+}
 //! [1]
