@@ -26,6 +26,16 @@ find_package(QtBuildInternals CMAKE_FIND_ROOT_PATH_BOTH)
 unset(QT_BUILD_INTERNALS_SKIP_CMAKE_MODULE_PATH_ADDITION)
 qt_build_repo_begin()
 
+## Should this Qt be static or dynamically linked?
+option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
+set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+
+## Should this Qt be built with Werror?
+option(WARNINGS_ARE_ERRORS "Build Qt with warnings as errors" ${FEATURE_developer_build})
+
+## Should Qt be built using PCH?
+option(BUILD_WITH_PCH "Build Qt using precompiled headers?" ON)
+
 ## QtBase specific configure tests:
 include(QtBaseConfigureTests)
 
@@ -36,16 +46,6 @@ include(QtBaseCMakeTesting)
 include(QtBaseGlobalTargets)
 
 qt_set_language_standards()
-
-## Should this Qt be static or dynamically linked?
-option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
-set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
-
-## Should this Qt be built with Werror?
-option(WARNINGS_ARE_ERRORS "Build Qt with warnings as errors" ${FEATURE_developer_build})
-
-## Should Qt be built using PCH?
-option(BUILD_WITH_PCH "Build Qt using precompiled headers?" ON)
 
 ## Decide whether tools will be built.
 qt_check_if_tools_will_be_built()
