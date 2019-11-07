@@ -410,15 +410,22 @@ void QPlatformScreen::resizeMaximizedWindows()
     const QRect newGeometry = deviceIndependentGeometry();
     const QRect newAvailableGeometry = QHighDpi::fromNative(availableGeometry(), QHighDpiScaling::factor(this), newGeometry.topLeft());
 
+    const bool supportsMaximizeUsingFullscreen = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MaximizeUsingFullscreenGeometry);
+
     for (QWindow *w : windows()) {
         // Skip non-platform windows, e.g., offscreen windows.
         if (!w->handle())
             continue;
 
-        if (w->windowState() & Qt::WindowMaximized || w->geometry() == oldAvailableGeometry)
-            w->setGeometry(newAvailableGeometry);
-        else if (w->windowState() & Qt::WindowFullScreen || w->geometry() == oldGeometry)
+        if (supportsMaximizeUsingFullscreen
+                && w->windowState() & Qt::WindowMaximized
+                && w->flags() & Qt::MaximizeUsingFullscreenGeometryHint) {
             w->setGeometry(newGeometry);
+        } else if (w->windowState() & Qt::WindowMaximized || w->geometry() == oldAvailableGeometry) {
+            w->setGeometry(newAvailableGeometry);
+        } else if (w->windowState() & Qt::WindowFullScreen || w->geometry() == oldGeometry) {
+            w->setGeometry(newGeometry);
+        }
     }
 }
 
