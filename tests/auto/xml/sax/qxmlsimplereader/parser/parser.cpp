@@ -26,12 +26,15 @@
 **
 ****************************************************************************/
 
+#include "parser.h"
+
+#if QT_DEPRECATED_SINCE(5, 15)
 
 #include <qxml.h>
 #include <qregularexpression.h>
 
-#include "parser.h"
-
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 class ContentHandler : public QXmlDefaultHandler
 {
 public:
@@ -440,3 +443,6 @@ QString Parser::errorMsg() const
 {
     return handler->errorMsg();
 }
+
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(5, 15)

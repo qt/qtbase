@@ -93,6 +93,11 @@ private:
     QXmlStreamReader *reader;
 };
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+
 class QSAXDocumentLocator : public QXmlDocumentLocator
 {
 public:
@@ -107,6 +112,10 @@ private:
     QXmlLocator *locator = nullptr;
 };
 
+QT_WARNING_POP
+
+#endif
+
 /**************************************************************
  *
  * QDomBuilder
@@ -120,7 +129,12 @@ public:
     ~QDomBuilder();
 
     bool endDocument();
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     bool startElement(const QString &nsURI, const QString &qName, const QXmlAttributes &atts);
+QT_WARNING_POP
+#endif
     bool startElement(const QString &nsURI, const QString &qName, const QXmlStreamAttributes &atts);
     bool endElement();
     bool characters(const QString &characters, bool cdata = false);
@@ -152,11 +166,16 @@ private:
     bool nsProcessing;
 };
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
 /**************************************************************
  *
  * QDomHandler
  *
  **************************************************************/
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 
 class QDomHandler : public QXmlDefaultHandler
 {
@@ -204,6 +223,10 @@ private:
     QSAXDocumentLocator locator;
     QDomBuilder domBuilder;
 };
+
+QT_WARNING_POP
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /**************************************************************
  *

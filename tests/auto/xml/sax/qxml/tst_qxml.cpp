@@ -26,7 +26,6 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 
 #include <qcoreapplication.h>
@@ -38,12 +37,16 @@ class tst_QXml : public QObject
 Q_OBJECT
 
 private slots:
+#if QT_DEPRECATED_SINCE(5, 15)
     void getSetCheck();
     void interpretedAs0D() const;
 #ifndef QT_NO_EXCEPTIONS
     void exception();
 #endif
+#endif // QT_DEPRECATED_SINCE(5, 15)
 };
+
+#if QT_DEPRECATED_SINCE(5, 15)
 
 class MyXmlEntityResolver : public QXmlEntityResolver
 {
@@ -224,6 +227,8 @@ void tst_QXml::exception()
     }
 }
 #endif
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 QTEST_MAIN(tst_QXml)
 #include "tst_qxml.moc"

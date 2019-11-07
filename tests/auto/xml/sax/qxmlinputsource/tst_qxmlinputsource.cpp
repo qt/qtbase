@@ -45,13 +45,18 @@ class tst_QXmlInputSource : public QObject
 {
     Q_OBJECT
 
+#if QT_DEPRECATED_SINCE(5, 15)
 private slots:
     void reset() const;
     void resetSimplified() const;
     void waitForReadyIODevice() const;
     void inputFromSlowDevice() const;
+#endif // QT_DEPRECATED_SINCE(5, 15)
 };
 
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 /*!
   \internal
   \since 4.4
@@ -291,6 +296,9 @@ void tst_QXmlInputSource::inputFromSlowDevice() const
     }
     QCOMPARE(data, expectedData);
 }
+
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 QTEST_MAIN(tst_QXmlInputSource)
 #include "tst_qxmlinputsource.moc"
