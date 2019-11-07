@@ -14,6 +14,7 @@ if(NOT TARGET Qt::Test)
     qt_find_package(WrapDBus1 PROVIDED_TARGETS dbus-1)
     qt_find_package(ICU COMPONENTS i18n uc data PROVIDED_TARGETS ICU::i18n ICU::uc ICU::data)
     qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
+    qt_find_package(OpenSSL PROVIDED_TARGETS OpenSSL::OpenSSL)
 endif()
 # special case end
 

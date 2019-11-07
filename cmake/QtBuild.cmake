@@ -685,8 +685,11 @@ function(qt_create_nolink_target target dependee_target)
     # Create the nolink interface target, assign the properties from the original target,
     # associate the nolink target with the same export which contains
     # the target that uses the _nolink target.
-    # Also create a namespaced alias of the form {$target}::${target}_nolink which is used by
+    # Also create a namespaced alias of the form ${target}::${target}_nolink which is used by
     # our modules.
+    # Also create a Qt namespaced alias target, because when exporting via install(EXPORT)
+    # Vulkan::Vulkan_nolink transforms into Qt6::Vulkan_nolink, and the latter needs to be an
+    # accessible alias for standalone tests.
     if(NOT TARGET "${nolink_target}")
         add_library("${nolink_target}" INTERFACE)
         set(prefixed_nolink_target "${target}_nolink")
@@ -703,6 +706,7 @@ function(qt_create_nolink_target target dependee_target)
                               $<TARGET_PROPERTY:${target},INTERFACE_COMPILE_FEATURES>)
 
         add_library(${prefixed_nolink_target} ALIAS ${nolink_target})
+        add_library("${INSTALL_CMAKE_NAMESPACE}::${nolink_target}" ALIAS ${nolink_target})
 
         set(export_name "${INSTALL_CMAKE_NAMESPACE}${dependee_target}Targets")
         qt_install(TARGETS ${nolink_target} EXPORT ${export_name})
