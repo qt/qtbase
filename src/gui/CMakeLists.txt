@@ -560,7 +560,7 @@ extend_target(Gui CONDITION ANDROID AND TEST_architecture_arch STREQUAL arm64
         painting/qimagescale_neon.cpp
 )
 
-extend_target(Gui CONDITION ANDROID AND (TEST_architecture_arch STREQUAL x86 OR TEST_architecture_arch STREQUAL x86_64)
+extend_target(Gui CONDITION ANDROID AND (TEST_architecture_arch STREQUAL i386 OR TEST_architecture_arch STREQUAL x86_64)
     SOURCES
         image/qimage_ssse3.cpp
         painting/qdrawhelper_sse2.cpp

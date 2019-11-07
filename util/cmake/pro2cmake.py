@@ -1281,7 +1281,7 @@ def map_condition(condition: str) -> str:
     condition = condition.replace("|", " OR ")
 
     # new conditions added by the android multi arch qmake build
-    condition = re.sub(r"(^| )x86([^\_]|$)", "TEST_architecture_arch STREQUAL x86", condition)
+    condition = re.sub(r"(^| )x86([^\_]|$)", "TEST_architecture_arch STREQUAL i386", condition)
     condition = re.sub(r"(^| )x86_64", " TEST_architecture_arch STREQUAL x86_64", condition)
     condition = re.sub(r"(^| )arm64-v8a", "TEST_architecture_arch STREQUAL arm64", condition)
     condition = re.sub(r"(^| )armeabi-v7a", "TEST_architecture_arch STREQUAL arm", condition)

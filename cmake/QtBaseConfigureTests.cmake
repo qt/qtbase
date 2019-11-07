@@ -162,4 +162,13 @@ function(run_config_tests)
     run_linker_version_script_support()
 endfunction()
 
+# The qmake build of android does not perform the right architecture tests and
+# forcefully disables sse4 on android x86. We have to mimic this behavior
+# for now
+if (CMAKE_ANDROID_ARCH_ABI STREQUAL x86)
+    set(QT_FEATURE_sse4_1 OFF CACHE BOOL INTERNAL FORCE)
+    set(QT_FEATURE_sse4_2 OFF CACHE BOOL INTERNAL FORCE)
+    set(TEST_subarch_sse4_1 FALSE CACHE BOOL INTERNAL FORCE)
+    set(TEST_subarch_sse4_2 FALSE CACHE BOOL INTERNAL FORCE)
+endif()
 run_config_tests()
