@@ -1,6 +1,7 @@
 include(CheckCXXSourceCompiles)
 function(run_config_test_architecture)
-    set(qt_base_configure_tests_vars_to_export)
+    set(QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT
+        "" CACHE INTERNAL "Test variables that should be exported" FORCE)
     # Test architecture
     set(_arch_file "${CMAKE_CURRENT_BINARY_DIR}/architecture_test")
     set(saved_executable_suffix "${CMAKE_EXECUTABLE_SUFFIX}")
@@ -49,16 +50,16 @@ function(run_config_test_architecture)
 
     set(TEST_architecture 1 CACHE INTERNAL "Ran the architecture test")
     set(TEST_architecture_arch "${_architecture}" CACHE INTERNAL "Target machine architecture")
-    list(APPEND qt_base_configure_tests_vars_to_export TEST_architecture_arch)
+    list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_architecture_arch)
     set(TEST_subarch 1 CACHE INTERNAL "Ran machine subArchitecture test")
     foreach(it ${_sub_architecture})
         # Equivalent to qmake's QT_CPU_FEATURES.$arch.
         set(TEST_arch_${TEST_architecture_arch}_subarch_${it} 1 CACHE INTERNAL "Target sub architecture result")
-        list(APPEND qt_base_configure_tests_vars_to_export TEST_arch_${TEST_architecture_arch}_subarch_${it})
+        list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_arch_${TEST_architecture_arch}_subarch_${it})
     endforeach()
     set(TEST_buildAbi "${_build_abi}" CACHE INTERNAL "Target machine buildAbi")
-    list(APPEND qt_base_configure_tests_vars_to_export TEST_buildAbi)
-    set(qt_base_configure_tests_vars_to_export ${qt_base_configure_tests_vars_to_export} CACHE INTERNAL "Test variables that should be exported")
+    list(APPEND QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT TEST_buildAbi)
+    set(QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT ${QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT} CACHE INTERNAL "Test variables that should be exported")
 endfunction()
 
 

@@ -314,7 +314,7 @@ endfunction()
 function(qt_generate_build_internals_extra_cmake_code)
     if(PROJECT_NAME STREQUAL "QtBase")
         set(QT_EXTRA_BUILD_INTERNALS_VARS)
-        foreach(var IN LISTS qt_base_configure_tests_vars_to_export)
+        foreach(var IN LISTS QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "set(${var} \"${${var}}\" CACHE INTERNAL \"\")\n")
         endforeach()
 
