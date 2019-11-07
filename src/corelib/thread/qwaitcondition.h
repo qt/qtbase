@@ -40,7 +40,7 @@
 #ifndef QWAITCONDITION_H
 #define QWAITCONDITION_H
 
-#include <QDeadlineTimer>
+#include <QtCore/QDeadlineTimer>
 
 QT_BEGIN_NAMESPACE
 
@@ -82,21 +82,28 @@ private:
 #else
 
 class QMutex;
+class QReadWriteLock;
+
 class Q_CORE_EXPORT QWaitCondition
 {
 public:
     QWaitCondition() {}
     ~QWaitCondition() {}
 
-    bool wait(QMutex *mutex, unsigned long time = ULONG_MAX)
-    {
-        Q_UNUSED(mutex);
-        Q_UNUSED(time);
-        return true;
-    }
+    bool wait(QMutex *, QDeadlineTimer = QDeadlineTimer(QDeadlineTimer::Forever))
+    { return true; }
+    bool wait(QReadWriteLock *, QDeadlineTimer = QDeadlineTimer(QDeadlineTimer::Forever))
+    { return true; }
+#if QT_DEPRECATED_SINCE(5, 15)
+    bool wait(QMutex *, unsigned long) { return true; }
+    bool wait(QReadWriteLock *, unsigned long) { return true; }
+#endif
 
     void wakeOne() {}
     void wakeAll() {}
+
+    void notify_one() { wakeOne(); }
+    void notify_all() { wakeAll(); }
 };
 
 #endif // QT_CONFIG(thread)
