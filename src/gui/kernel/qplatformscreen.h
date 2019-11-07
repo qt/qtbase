@@ -105,7 +105,7 @@ public:
     QPlatformScreen();
     virtual ~QPlatformScreen();
 
-    virtual bool isPlaceholder() const { return false; };
+    virtual bool isPlaceholder() const { return false; }
 
     virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
 
@@ -176,12 +176,23 @@ private:
 
 // Qt doesn't currently support running with no platform screen
 // QPA plugins can use this class to create a fake screen
-class QPlatformPlaceholderScreen : public QPlatformScreen {
-    bool isPlaceholder() const override { return true; };
+class Q_GUI_EXPORT QPlatformPlaceholderScreen : public QPlatformScreen {
+public:
+    // virtualSibling can be passed in to make the placeholder a sibling with other screens during
+    // the transitioning phase when the real screen is about to be removed, or the first real screen
+    // is about to be added. This is useful because Qt will currently recreate (but now show!)
+    // windows when they are moved from one virtual desktop to another, so if the last monitor is
+    // unplugged, then plugged in again, windows will be hidden unless the placeholder belongs to
+    // the same virtual desktop as the other screens.
+    QPlatformPlaceholderScreen(bool virtualSibling = true) : m_virtualSibling(virtualSibling) {}
+    bool isPlaceholder() const override { return true; }
     QRect geometry() const override { return QRect(); }
     QRect availableGeometry() const override { return QRect(); }
     int depth() const override { return 32; }
     QImage::Format format() const override { return QImage::Format::Format_RGB32; }
+    QList<QPlatformScreen *> virtualSiblings() const override;
+private:
+    bool m_virtualSibling = true;
 };
 
 QT_END_NAMESPACE

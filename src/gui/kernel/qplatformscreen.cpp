@@ -616,4 +616,18 @@ int QPlatformScreen::preferredMode() const
     return 0;
 }
 
+QList<QPlatformScreen *> QPlatformPlaceholderScreen::virtualSiblings() const
+{
+    QList<QPlatformScreen *> siblings;
+
+    if (!m_virtualSibling)
+        return siblings;
+
+    for (QScreen *screen : QGuiApplication::screens()) {
+        if (screen->handle() && screen->handle() != this)
+            siblings << screen->handle();
+    }
+    return siblings;
+}
+
 QT_END_NAMESPACE
