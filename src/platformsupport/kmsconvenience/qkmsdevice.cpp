@@ -490,8 +490,30 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         }
     }
 
-    if (output.eglfs_plane)
-        qCDebug(qLcKmsDebug, "Output eglfs plane is: %d", output.eglfs_plane->id);
+    // A more useful version: allows specifying "crtc_id,plane_id:crtc_id,plane_id:..."
+    // in order to allow overriding the plane used for a given crtc.
+    if (qEnvironmentVariableIsSet("QT_QPA_EGLFS_KMS_PLANES_FOR_CRTCS")) {
+        const QString val = qEnvironmentVariable("QT_QPA_EGLFS_KMS_PLANES_FOR_CRTCS");
+        qCDebug(qLcKmsDebug, "crtc_id:plane_id override list: %s", qPrintable(val));
+        const QStringList crtcPlanePairs = val.split(QLatin1Char(':'));
+        for (const QString &crtcPlanePair : crtcPlanePairs) {
+            const QStringList values = crtcPlanePair.split(QLatin1Char(','));
+            if (values.count() == 2 && uint(values[0].toInt()) == output.crtc_id) {
+                uint planeId = values[1].toInt();
+                for (const QKmsPlane &kmsplane : qAsConst(m_planes)) {
+                    if (kmsplane.id == planeId) {
+                        output.eglfs_plane = (QKmsPlane*)&kmsplane;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    if (output.eglfs_plane) {
+        qCDebug(qLcKmsDebug, "Chose plane %u for output %s (crtc id %u) (may not be applicable)",
+                output.eglfs_plane->id, connectorName.constData(), output.crtc_id);
+    }
 
     m_crtc_allocator |= (1 << output.crtc_index);
 
