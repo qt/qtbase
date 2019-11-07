@@ -68,7 +68,10 @@ load(qt_common)
 # To regenerate run 'make qmltypes' which will update the plugins.qmltypes file in the source
 # directory.  Then review and commit the changes made to plugins.qmltypes.
 #
-!cross_compile {
+# Due to the above mentioned drawbacks, there is a better mechanism available now: qmltyperegistrar
+# can generate the .qmltypes files at compile time. It will do this when CONFIG += qmltypes is set.
+# Therefore, don't try to generate the qmltypes files via qmlplugindump in that case.
+!cross_compile:!qmltypes {
     qmlplugindump = qmlplugindump
     importpath.name = QML2_IMPORT_PATH
     importpath.value =
