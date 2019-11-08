@@ -1879,6 +1879,9 @@ def map_to_cmake_condition(condition: str = "") -> str:
         r'(TEST_architecture_arch STREQUAL "\1")',
         condition or "",
     )
+    condition = condition.replace('QT___contains___opengl', 'QT_FEATURE_opengl')
+    condition = condition.replace('QT___contains___widgets', 'QT_FEATURE_widgets')
+    condition = condition.replace('DEFINES___contains___QT_NO_PRINTER', '(QT_FEATURE_printer EQUAL FALSE)')
     return condition
 
 
