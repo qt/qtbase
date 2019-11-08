@@ -140,7 +140,7 @@ void *QEglFSKmsIntegration::nativeResourceForIntegration(const QByteArray &name)
 
 #if QT_CONFIG(drm_atomic)
     if (name == QByteArrayLiteral("dri_atomic_request") && m_device)
-        return (void *) (qintptr) m_device->atomic_request();
+        return (void *) (qintptr) m_device->threadLocalAtomicRequest();
 #endif
     return nullptr;
 }

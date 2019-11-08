@@ -243,7 +243,7 @@ void QEglFSKmsGbmScreen::ensureModeSet(uint32_t fb)
 
             if (device()->hasAtomicSupport()) {
 #if QT_CONFIG(drm_atomic)
-                drmModeAtomicReq *request = device()->atomic_request();
+                drmModeAtomicReq *request = device()->threadLocalAtomicRequest();
                 if (request) {
                     drmModeAtomicAddProperty(request, op.connector_id, op.crtcIdPropertyId, op.crtc_id);
                     drmModeAtomicAddProperty(request, op.crtc_id, op.modeIdPropertyId, op.mode_blob_id);
@@ -287,8 +287,7 @@ void QEglFSKmsGbmScreen::waitForFlip()
     }
 
 #if QT_CONFIG(drm_atomic)
-    if (device()->hasAtomicSupport())
-        device()->atomicReset();
+    device()->threadLocalAtomicReset();
 #endif
 }
 
@@ -324,16 +323,16 @@ void QEglFSKmsGbmScreen::flip()
 
     if (device()->hasAtomicSupport()) {
 #if QT_CONFIG(drm_atomic)
-        drmModeAtomicReq *request = device()->atomic_request();
+        drmModeAtomicReq *request = device()->threadLocalAtomicRequest();
         if (request) {
             drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->framebufferPropertyId, fb->fb);
             drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcPropertyId, op.crtc_id);
             drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->srcwidthPropertyId,
-                                     output().size.width() << 16);
+                                     op.size.width() << 16);
             drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->srcXPropertyId, 0);
             drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->srcYPropertyId, 0);
             drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->srcheightPropertyId,
-                                     output().size.height() << 16);
+                                     op.size.height() << 16);
             drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcXPropertyId, 0);
             drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcYPropertyId, 0);
             drmModeAtomicAddProperty(request, op.eglfs_plane->id, op.eglfs_plane->crtcwidthPropertyId,
@@ -371,7 +370,7 @@ void QEglFSKmsGbmScreen::flip()
 
             if (device()->hasAtomicSupport()) {
 #if QT_CONFIG(drm_atomic)
-                drmModeAtomicReq *request = device()->atomic_request();
+                drmModeAtomicReq *request = device()->threadLocalAtomicRequest();
                 if (request) {
                     drmModeAtomicAddProperty(request, d.screen->output().eglfs_plane->id,
                                                       d.screen->output().eglfs_plane->framebufferPropertyId, fb->fb);
@@ -394,8 +393,7 @@ void QEglFSKmsGbmScreen::flip()
     }
 
 #if QT_CONFIG(drm_atomic)
-    if (device()->hasAtomicSupport())
-         device()->atomicCommit(this);
+    device()->threadLocalAtomicCommit(this);
 #endif
 }
 
