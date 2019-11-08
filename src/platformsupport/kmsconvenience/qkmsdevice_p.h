@@ -179,6 +179,8 @@ struct QKmsPlane
     uint32_t crtcheightPropertyId = 0;
     uint32_t zposPropertyId = 0;
     uint32_t blendOpPropertyId = 0;
+
+    uint32_t activeCrtcId = 0;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QKmsPlane::Rotations)

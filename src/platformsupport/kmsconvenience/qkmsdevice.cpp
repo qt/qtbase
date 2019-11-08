@@ -176,6 +176,15 @@ static bool parseModeline(const QByteArray &text, drmModeModeInfoPtr mode)
     return true;
 }
 
+static inline void assignPlane(QKmsOutput *output, QKmsPlane *plane)
+{
+    if (output->eglfs_plane)
+        output->eglfs_plane->activeCrtcId = 0;
+
+    plane->activeCrtcId = output->crtc_id;
+    output->eglfs_plane = plane;
+}
+
 QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
                                                       drmModeConnectorPtr connector,
                                                       ScreenInfo *vinfo)
@@ -449,13 +458,16 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
 #endif
 
     QString planeListStr;
-    for (const QKmsPlane &plane : qAsConst(m_planes)) {
+    for (QKmsPlane &plane : m_planes) {
         if (plane.possibleCrtcs & (1 << output.crtc_index)) {
             output.available_planes.append(plane);
             planeListStr.append(QString::number(plane.id));
             planeListStr.append(QLatin1Char(' '));
-            if (plane.type == QKmsPlane::PrimaryPlane)
-                output.eglfs_plane = (QKmsPlane*)&plane;
+
+            // Choose the first primary plane that is not already assigned to
+            // another screen's associated crtc.
+            if (!output.eglfs_plane && plane.type == QKmsPlane::PrimaryPlane && !plane.activeCrtcId)
+                assignPlane(&output, &plane);
         }
     }
     qCDebug(qLcKmsDebug, "Output %s can use %d planes: %s",
@@ -477,9 +489,11 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
                     qCDebug(qLcKmsDebug, "Forcing plane index %d, plane id %u (belongs to crtc id %u)",
                             idx, plane->plane_id, plane->crtc_id);
 
-                    for (const QKmsPlane &kmsplane : qAsConst(m_planes)) {
-                        if (kmsplane.id == output.forced_plane_id)
-                            output.eglfs_plane = (QKmsPlane*)&kmsplane;
+                    for (QKmsPlane &kmsplane : m_planes) {
+                        if (kmsplane.id == output.forced_plane_id) {
+                            assignPlane(&output, &kmsplane);
+                            break;
+                        }
                     }
 
                     drmModeFreePlane(plane);
@@ -500,9 +514,9 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
             const QStringList values = crtcPlanePair.split(QLatin1Char(','));
             if (values.count() == 2 && uint(values[0].toInt()) == output.crtc_id) {
                 uint planeId = values[1].toInt();
-                for (const QKmsPlane &kmsplane : qAsConst(m_planes)) {
+                for (QKmsPlane &kmsplane : m_planes) {
                     if (kmsplane.id == planeId) {
-                        output.eglfs_plane = (QKmsPlane*)&kmsplane;
+                        assignPlane(&output, &kmsplane);
                         break;
                     }
                 }
@@ -514,6 +528,13 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         qCDebug(qLcKmsDebug, "Chose plane %u for output %s (crtc id %u) (may not be applicable)",
                 output.eglfs_plane->id, connectorName.constData(), output.crtc_id);
     }
+
+#if QT_CONFIG(drm_atomic)
+    if (hasAtomicSupport() && !output.eglfs_plane) {
+        qCDebug(qLcKmsDebug, "No plane associated with output %s (crtc id %u) and atomic modesetting is enabled. This is bad.",
+                connectorName.constData(), output.crtc_id);
+    }
+#endif
 
     m_crtc_allocator |= (1 << output.crtc_index);
 
