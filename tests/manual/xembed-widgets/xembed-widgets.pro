@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET= lineedits
+TARGET= tst_manual_lineedits
 QT += widgets
 
 SOURCES += \

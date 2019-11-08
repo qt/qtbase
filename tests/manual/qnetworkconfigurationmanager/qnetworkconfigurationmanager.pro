@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = tst_qnetworkconfigurationmanager
+TARGET = tst_manual_qnetworkconfigurationmanager
 
 QT -= gui
 QT += network testlib

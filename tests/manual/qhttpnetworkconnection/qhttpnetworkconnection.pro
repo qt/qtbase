@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = tst_qhttpnetworkconnection
+TARGET = tst_manual_qhttpnetworkconnection
 
 QT -= gui
 QT += network testlib
