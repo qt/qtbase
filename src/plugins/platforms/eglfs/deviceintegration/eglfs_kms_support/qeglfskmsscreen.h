@@ -51,12 +51,13 @@
 
 QT_BEGIN_NAMESPACE
 
+class QEglFSKmsDevice;
 class QEglFSKmsInterruptHandler;
 
 class Q_EGLFS_EXPORT QEglFSKmsScreen : public QEglFSScreen
 {
 public:
-    QEglFSKmsScreen(QKmsDevice *device, const QKmsOutput &output, bool headless = false);
+    QEglFSKmsScreen(QEglFSKmsDevice *device, const QKmsOutput &output, bool headless = false);
     ~QEglFSKmsScreen();
 
     void setVirtualPosition(const QPoint &pos);
@@ -87,7 +88,7 @@ public:
     int currentMode() const override;
     int preferredMode() const override;
 
-    QKmsDevice *device() const { return m_device; }
+    QEglFSKmsDevice *device() const { return m_device; }
 
     virtual void waitForFlip();
 
@@ -103,7 +104,7 @@ public:
     void setCursorOutOfRange(bool b) { m_cursorOutOfRange = b; }
 
 protected:
-    QKmsDevice *m_device;
+    QEglFSKmsDevice *m_device;
 
     QKmsOutput m_output;
     QEdidParser m_edid;

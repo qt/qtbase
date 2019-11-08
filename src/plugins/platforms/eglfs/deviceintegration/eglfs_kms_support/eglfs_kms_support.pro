@@ -14,9 +14,11 @@ CONFIG += egl
 
 SOURCES += $$PWD/qeglfskmsintegration.cpp \
            $$PWD/qeglfskmsdevice.cpp \
-           $$PWD/qeglfskmsscreen.cpp
+           $$PWD/qeglfskmsscreen.cpp \
+           $$PWD/qeglfskmseventreader.cpp
 
 HEADERS += $$PWD/qeglfskmsintegration.h \
            $$PWD/qeglfskmsdevice.h \
            $$PWD/qeglfskmsscreen.h \
-           $$PWD/qeglfskmshelpers.h
+           $$PWD/qeglfskmshelpers.h \
+           $$PWD/qeglfskmseventreader.h
