@@ -1238,6 +1238,24 @@ def map_condition(condition: str) -> str:
     pattern = r"(equals|greaterThan|lessThan)\(WINDOWS_SDK_VERSION,[ ]*([0-9]+)\)"
     condition = re.sub(pattern, windows_sdk_version_handler, condition)
 
+    # Generic lessThan|equals|lessThan()
+
+    def generic_version_handler(match_obj: Match):
+        operator = match_obj.group(1)
+        if operator == "equals":
+            operator = "EQUAL"
+        elif operator == "greaterThan":
+            operator = "GREATER"
+        elif operator == "lessThan":
+            operator = "LESS"
+
+        variable = match_obj.group(2)
+        version = match_obj.group(3)
+        return f"({variable} {operator} {version})"
+
+    pattern = r"(equals|greaterThan|lessThan)\((.+),[ ]*([0-9]+)\)"
+    condition = re.sub(pattern, generic_version_handler, condition)
+
     # Handle if(...) conditions.
     condition = unwrap_if(condition)
 
