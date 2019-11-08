@@ -286,7 +286,6 @@ static QString locatePlugin(const QString& fileName)
     const bool debug = qt_debug_component();
 
     QStringList paths = QCoreApplication::libraryPaths();
-    paths.prepend(QStringLiteral("./")); // search in current dir first
     foreach (const QString &path, paths) {
         foreach (const QString &prefix, prefixes) {
             foreach (const QString &suffix, suffixes) {
