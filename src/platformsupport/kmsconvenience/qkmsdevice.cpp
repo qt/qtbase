@@ -522,10 +522,6 @@ QKmsDevice::QKmsDevice(QKmsScreenConfig *screenConfig, const QString &path)
     , m_path(path)
     , m_dri_fd(-1)
     , m_has_atomic_support(false)
-#if QT_CONFIG(drm_atomic)
-    , m_atomic_request(nullptr)
-    , m_previous_request(nullptr)
-#endif
     , m_crtc_allocator(0)
 {
     if (m_path.isEmpty()) {
@@ -541,7 +537,7 @@ QKmsDevice::QKmsDevice(QKmsScreenConfig *screenConfig, const QString &path)
 QKmsDevice::~QKmsDevice()
 {
 #if QT_CONFIG(drm_atomic)
-    atomicReset();
+    threadLocalAtomicReset();
 #endif
 }
 
@@ -881,39 +877,51 @@ bool QKmsDevice::hasAtomicSupport()
 }
 
 #if QT_CONFIG(drm_atomic)
-drmModeAtomicReq * QKmsDevice::atomic_request()
+drmModeAtomicReq *QKmsDevice::threadLocalAtomicRequest()
 {
-    if (!m_atomic_request && m_has_atomic_support)
-        m_atomic_request = drmModeAtomicAlloc();
+    if (!m_has_atomic_support)
+        return nullptr;
 
-    return m_atomic_request;
+    AtomicReqs &a(m_atomicReqs.localData());
+    if (!a.request)
+        a.request = drmModeAtomicAlloc();
+
+    return a.request;
 }
 
-bool QKmsDevice::atomicCommit(void *user_data)
+bool QKmsDevice::threadLocalAtomicCommit(void *user_data)
 {
-    if (m_atomic_request) {
-        int ret = drmModeAtomicCommit(m_dri_fd, m_atomic_request,
-                          DRM_MODE_ATOMIC_NONBLOCK | DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_ATOMIC_ALLOW_MODESET, user_data);
+    if (!m_has_atomic_support)
+        return false;
 
-        if (ret) {
-           qWarning("Failed to commit atomic request (code=%d)", ret);
-           return false;
-        }
+    AtomicReqs &a(m_atomicReqs.localData());
+    if (!a.request)
+        return false;
 
-        m_previous_request = m_atomic_request;
-        m_atomic_request = nullptr;
+    int ret = drmModeAtomicCommit(m_dri_fd, a.request,
+                                  DRM_MODE_ATOMIC_NONBLOCK | DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_ATOMIC_ALLOW_MODESET,
+                                  user_data);
 
-        return true;
+    if (ret) {
+        qWarning("Failed to commit atomic request (code=%d)", ret);
+        return false;
     }
 
-    return false;
+    a.previous_request = a.request;
+    a.request = nullptr;
+
+    return true;
 }
 
-void QKmsDevice::atomicReset()
+void QKmsDevice::threadLocalAtomicReset()
 {
-    if (m_previous_request) {
-        drmModeAtomicFree(m_previous_request);
-        m_previous_request = nullptr;
+    if (!m_has_atomic_support)
+        return;
+
+    AtomicReqs &a(m_atomicReqs.localData());
+    if (a.previous_request) {
+        drmModeAtomicFree(a.previous_request);
+        a.previous_request = nullptr;
     }
 }
 #endif

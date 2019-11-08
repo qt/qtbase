@@ -57,6 +57,7 @@
 #include <qpa/qplatformscreen.h>
 #include <QtCore/QMap>
 #include <QtCore/QVariant>
+#include <QtCore/QThreadStorage>
 
 #include <xf86drm.h>
 #include <xf86drmMode.h>
@@ -238,10 +239,9 @@ public:
     bool hasAtomicSupport();
 
 #if QT_CONFIG(drm_atomic)
-    bool atomicCommit(void *user_data);
-    void atomicReset();
-
-    drmModeAtomicReq *atomic_request();
+    drmModeAtomicReq *threadLocalAtomicRequest();
+    bool threadLocalAtomicCommit(void *user_data);
+    void threadLocalAtomicReset();
 #endif
     void createScreens();
 
@@ -281,8 +281,11 @@ protected:
     bool m_has_atomic_support;
 
 #if QT_CONFIG(drm_atomic)
-    drmModeAtomicReq *m_atomic_request;
-    drmModeAtomicReq *m_previous_request;
+    struct AtomicReqs {
+        drmModeAtomicReq *request = nullptr;
+        drmModeAtomicReq *previous_request = nullptr;
+    };
+    QThreadStorage<AtomicReqs> m_atomicReqs;
 #endif
     quint32 m_crtc_allocator;
 
