@@ -1,3 +1,5 @@
+TARGET        = tst_manual_windowflags
+
 HEADERS       = controllerwindow.h \
                 previewwindow.h \
                 controls.h

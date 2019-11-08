@@ -1,5 +1,7 @@
 QT += widgets
 
+TARGET = tst_manual_graphicsview
+
 SOURCES += main.cpp \
     imageitem.cpp \
     gestures.cpp \

@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET= rasterwindow
+TARGET= tst_manual_rasterwindow
 QT += gui
 
 SOURCES += \

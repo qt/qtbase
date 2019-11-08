@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = tst_qnetworkreply
+TARGET = tst_manual_qnetworkreply
 
 QT -= gui
 QT += core-private network network-private testlib
