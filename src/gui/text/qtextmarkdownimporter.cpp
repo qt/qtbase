@@ -160,6 +160,10 @@ void QTextMarkdownImporter::import(QTextDocument *doc, const QString &markdown)
     m_paragraphMargin = m_doc->defaultFont().pointSize() * 2 / 3;
     m_cursor = new QTextCursor(doc);
     doc->clear();
+    if (doc->defaultFont().pointSize() != -1)
+        m_monoFont.setPointSize(doc->defaultFont().pointSize());
+    else
+        m_monoFont.setPixelSize(doc->defaultFont().pixelSize());
     qCDebug(lcMD) << "default font" << doc->defaultFont() << "mono font" << m_monoFont;
     QByteArray md = markdown.toUtf8();
     md_parse(md.constData(), MD_SIZE(md.size()), &callbacks, this);
