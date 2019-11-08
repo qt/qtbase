@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qeglfskmsscreen.h"
+#include "qeglfskmsdevice.h"
 #include "qeglfsintegration_p.h"
 
 #include <QtCore/QLoggingCategory>
@@ -68,7 +69,7 @@ private:
     QEglFSKmsScreen *m_screen;
 };
 
-QEglFSKmsScreen::QEglFSKmsScreen(QKmsDevice *device, const QKmsOutput &output, bool headless)
+QEglFSKmsScreen::QEglFSKmsScreen(QEglFSKmsDevice *device, const QKmsOutput &output, bool headless)
     : QEglFSScreen(static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration())->display())
     , m_device(device)
     , m_output(output)

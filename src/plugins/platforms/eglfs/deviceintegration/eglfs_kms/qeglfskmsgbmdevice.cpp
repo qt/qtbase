@@ -83,12 +83,16 @@ bool QEglFSKmsGbmDevice::open()
 
     setFd(fd);
 
+    m_eventReader.create(this);
+
     return true;
 }
 
 void QEglFSKmsGbmDevice::close()
 {
     // Note: screens are gone at this stage.
+
+    m_eventReader.destroy();
 
     if (m_gbm_device) {
         gbm_device_destroy(m_gbm_device);

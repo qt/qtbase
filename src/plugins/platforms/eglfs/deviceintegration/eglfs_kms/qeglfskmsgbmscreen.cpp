@@ -110,7 +110,7 @@ QEglFSKmsGbmScreen::FrameBuffer *QEglFSKmsGbmScreen::framebufferForBufferObject(
     return fb.take();
 }
 
-QEglFSKmsGbmScreen::QEglFSKmsGbmScreen(QKmsDevice *device, const QKmsOutput &output, bool headless)
+QEglFSKmsGbmScreen::QEglFSKmsGbmScreen(QEglFSKmsDevice *device, const QKmsOutput &output, bool headless)
     : QEglFSKmsScreen(device, output, headless)
     , m_gbm_surface(nullptr)
     , m_gbm_bo_current(nullptr)
@@ -276,15 +276,12 @@ void QEglFSKmsGbmScreen::waitForFlip()
     if (!m_gbm_bo_next)
         return;
 
-    QMutexLocker lock(&m_waitForFlipMutex);
-    while (m_gbm_bo_next) {
-        drmEventContext drmEvent;
-        memset(&drmEvent, 0, sizeof(drmEvent));
-        drmEvent.version = 2;
-        drmEvent.vblank_handler = nullptr;
-        drmEvent.page_flip_handler = pageFlipHandler;
-        drmHandleEvent(device()->fd(), &drmEvent);
-    }
+    m_flipMutex.lock();
+    device()->eventReader()->startWaitFlip(this, &m_flipMutex, &m_flipCond);
+    m_flipCond.wait(&m_flipMutex);
+    m_flipMutex.unlock();
+
+    flipFinished();
 
 #if QT_CONFIG(drm_atomic)
     device()->threadLocalAtomicReset();
@@ -392,17 +389,6 @@ void QEglFSKmsGbmScreen::flip()
 #if QT_CONFIG(drm_atomic)
     device()->threadLocalAtomicCommit(this);
 #endif
-}
-
-void QEglFSKmsGbmScreen::pageFlipHandler(int fd, unsigned int sequence, unsigned int tv_sec, unsigned int tv_usec, void *user_data)
-{
-    Q_UNUSED(fd);
-    Q_UNUSED(sequence);
-    Q_UNUSED(tv_sec);
-    Q_UNUSED(tv_usec);
-
-    QEglFSKmsGbmScreen *screen = static_cast<QEglFSKmsGbmScreen *>(user_data);
-    screen->flipFinished();
 }
 
 void QEglFSKmsGbmScreen::flipFinished()

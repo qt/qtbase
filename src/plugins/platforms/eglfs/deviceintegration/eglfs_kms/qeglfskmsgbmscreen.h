@@ -43,7 +43,8 @@
 #define QEGLFSKMSGBMSCREEN_H
 
 #include "qeglfskmsscreen.h"
-#include <QtCore/QMutex>
+#include <QMutex>
+#include <QWaitCondition>
 
 #include <gbm.h>
 
@@ -54,7 +55,7 @@ class QEglFSKmsGbmCursor;
 class QEglFSKmsGbmScreen : public QEglFSKmsScreen
 {
 public:
-    QEglFSKmsGbmScreen(QKmsDevice *device, const QKmsOutput &output, bool headless);
+    QEglFSKmsGbmScreen(QEglFSKmsDevice *device, const QKmsOutput &output, bool headless);
     ~QEglFSKmsGbmScreen();
 
     QPlatformCursor *cursor() const override;
@@ -75,17 +76,14 @@ private:
     void cloneDestFlipFinished(QEglFSKmsGbmScreen *cloneDestScreen);
     void updateFlipStatus();
 
-    static void pageFlipHandler(int fd,
-                                unsigned int sequence,
-                                unsigned int tv_sec,
-                                unsigned int tv_usec,
-                                void *user_data);
-
     gbm_surface *m_gbm_surface;
 
     gbm_bo *m_gbm_bo_current;
     gbm_bo *m_gbm_bo_next;
     bool m_flipPending;
+
+    QMutex m_flipMutex;
+    QWaitCondition m_flipCond;
 
     QScopedPointer<QEglFSKmsGbmCursor> m_cursor;
 
@@ -101,8 +99,6 @@ private:
         bool cloneFlipPending = false;
     };
     QVector<CloneDestination> m_cloneDests;
-
-    static QMutex m_waitForFlipMutex;
 };
 
 QT_END_NAMESPACE

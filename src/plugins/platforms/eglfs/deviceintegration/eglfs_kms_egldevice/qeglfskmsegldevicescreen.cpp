@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 
-QEglFSKmsEglDeviceScreen::QEglFSKmsEglDeviceScreen(QKmsDevice *device, const QKmsOutput &output)
+QEglFSKmsEglDeviceScreen::QEglFSKmsEglDeviceScreen(QEglFSKmsDevice *device, const QKmsOutput &output)
     : QEglFSKmsScreen(device, output)
 {
 }
