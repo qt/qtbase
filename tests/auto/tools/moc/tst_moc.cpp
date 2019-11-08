@@ -723,6 +723,9 @@ private slots:
     void mocJsonOutput();
     void mocInclude();
     void requiredProperties();
+    void qpropertyMembers();
+    void observerMetaCall();
+    void setQPRopertyBinding();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -1603,7 +1606,7 @@ void tst_Moc::warnOnPropertyWithoutREAD()
     QVERIFY(!mocOut.isEmpty());
     QString mocWarning = QString::fromLocal8Bit(proc.readAllStandardError());
     QCOMPARE(mocWarning, header +
-                QString(":36: Warning: Property declaration foo has no READ accessor function or associated MEMBER variable. The property will be invalid.\n"));
+                QString(":36: Warning: Property declaration foo has neither an associated QProperty<> member, nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.\n"));
 #else
     QSKIP("Only tested on linux/gcc");
 #endif
@@ -2087,7 +2090,7 @@ void tst_Moc::warnings_data()
         << QStringList()
         << 0
         << QString("IGNORE_ALL_STDOUT")
-        << QString("standard input:1: Warning: Property declaration x has no READ accessor function or associated MEMBER variable. The property will be invalid.");
+        << QString("standard input:1: Warning: Property declaration x has neither an associated QProperty<> member, nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.");
 
     // This should output a warning
     QTest::newRow("Duplicate property warning")
@@ -2103,7 +2106,7 @@ void tst_Moc::warnings_data()
         << (QStringList() << "-nn")
         << 0
         << QString("IGNORE_ALL_STDOUT")
-        << QString("standard input:1: Warning: Property declaration x has no READ accessor function or associated MEMBER variable. The property will be invalid.");
+        << QString("standard input:1: Warning: Property declaration x has neither an associated QProperty<> member, nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.");
 
     // Passing "-nw" should suppress the warning
     QTest::newRow("Invalid property warning with -nw")
@@ -4098,6 +4101,104 @@ void tst_Moc::requiredProperties()
     QMetaProperty notRequired = mo.property(mo.indexOfProperty("notRequired"));
     QVERIFY(notRequired.isValid());
     QVERIFY(!notRequired.isRequired());
+}
+
+class ClassWithQPropertyMembers : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int publicProperty)
+    Q_PROPERTY(int privateExposedProperty)
+public:
+
+    QProperty<int> publicProperty;
+    QProperty<int> notExposed;
+
+protected:
+    QProperty<int> protectedProperty;
+
+private:
+    QProperty<int> privateProperty;
+    QProperty<int> privateExposedProperty;
+};
+
+void tst_Moc::qpropertyMembers()
+{
+    const auto metaObject = &ClassWithQPropertyMembers::staticMetaObject;
+
+    QCOMPARE(metaObject->propertyCount() - metaObject->superClass()->propertyCount(), 2);
+
+    QCOMPARE(metaObject->indexOfProperty("notExposed"), -1);
+
+    QMetaProperty prop = metaObject->property(metaObject->indexOfProperty("publicProperty"));
+    QVERIFY(prop.isValid());
+
+    QVERIFY(metaObject->property(metaObject->indexOfProperty("privateExposedProperty")).isValid());
+
+    ClassWithQPropertyMembers instance;
+
+    prop.write(&instance, 42);
+    QCOMPARE(instance.publicProperty.value(), 42);
+
+    instance.publicProperty.setValue(100);
+    QCOMPARE(prop.read(&instance).toInt(), 100);
+
+    QCOMPARE(prop.metaType(), QMetaType(QMetaType::Int));
+
+    QVERIFY(!prop.notifySignal().isValid());
+}
+
+
+
+void tst_Moc::observerMetaCall()
+{
+    const auto metaObject = &ClassWithQPropertyMembers::staticMetaObject;
+    QMetaProperty prop = metaObject->property(metaObject->indexOfProperty("publicProperty"));
+    QVERIFY(prop.isValid());
+
+    ClassWithQPropertyMembers instance;
+
+    int observerCallCount = 0;
+
+    QProperty<int> dummy;
+    auto handler = dummy.onValueChanged([&observerCallCount]() {
+        ++observerCallCount;
+    });
+
+    {
+        void *argv[] = { &handler };
+        instance.qt_metacall(QMetaObject::RegisterQPropertyObserver, prop.propertyIndex(), argv);
+    }
+
+    instance.publicProperty.setValue(100);
+    QCOMPARE(observerCallCount, 1);
+    instance.publicProperty.setValue(101);
+    QCOMPARE(observerCallCount, 2);
+}
+
+
+
+void tst_Moc::setQPRopertyBinding()
+{
+    const auto metaObject = &ClassWithQPropertyMembers::staticMetaObject;
+    QMetaProperty prop = metaObject->property(metaObject->indexOfProperty("publicProperty"));
+    QVERIFY(prop.isValid());
+
+    ClassWithQPropertyMembers instance;
+
+    bool bindingCalled = false;
+    auto binding = Qt::makePropertyBinding([&bindingCalled]() {
+        bindingCalled = true;
+        return 42;
+    });
+
+    {
+        void *argv[] = { &binding };
+        instance.qt_metacall(QMetaObject::SetQPropertyBinding, prop.propertyIndex(), argv);
+    }
+    QVERIFY(!bindingCalled); // not yet!
+
+    QCOMPARE(instance.publicProperty.value(), 42);
+    QVERIFY(bindingCalled); // but now it should've been called :)
 }
 
 QTEST_MAIN(tst_Moc)

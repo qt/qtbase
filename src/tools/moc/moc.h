@@ -140,6 +140,9 @@ struct PropertyDef
     bool constant = false;
     bool final = false;
     bool required = false;
+    bool isQProperty = false;
+
+    int location = -1; // token index, used for error reporting
 
     QJsonObject toJson() const;
 };
@@ -188,6 +191,7 @@ struct ClassDef : BaseDef {
     QVector<FunctionDef> signalList, slotList, methodList, publicList;
     QVector<QByteArray> nonClassSignalList;
     QVector<PropertyDef> propertyList;
+    QSet<QByteArray> qPropertyMembers;
     int notifyableProperties = 0;
     int revisionedMethods = 0;
     int revisionedProperties = 0;
@@ -247,6 +251,7 @@ public:
 
     bool parseFunction(FunctionDef *def, bool inMacro = false);
     bool parseMaybeFunction(const ClassDef *cdef, FunctionDef *def);
+    bool parseMaybeQProperty(ClassDef *def);
 
     void parseSlots(ClassDef *def, FunctionDef::Access access);
     void parseSignals(ClassDef *def);

@@ -869,6 +869,9 @@ void Generator::generateProperties()
         if (p.required)
             flags |= Required;
 
+        if (p.isQProperty)
+            flags |= IsQProperty;
+
         fprintf(out, "    %4d, ", stridx(p.name));
         generateTypeInfo(p.type);
         fprintf(out, ", 0x%.8x,\n", flags);
@@ -1017,7 +1020,9 @@ void Generator::generateMetacall()
             fprintf(out, "else ");
         fprintf(out,
             "if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty\n"
-            "            || _c == QMetaObject::ResetProperty || _c == QMetaObject::RegisterPropertyMetaType) {\n"
+            "            || _c == QMetaObject::ResetProperty || _c == QMetaObject::RegisterPropertyMetaType\n"
+            "            || _c == QMetaObject::RegisterQPropertyObserver\n"
+            "            || _c == QMetaObject::SetQPropertyBinding) {\n"
             "        qt_static_metacall(this, _c, _id, _a);\n"
             "        _id -= %d;\n    }", cdef->propertyList.count());
 
@@ -1354,6 +1359,7 @@ void Generator::generateStaticMetacall()
         bool needTempVarForGet = false;
         bool needSet = false;
         bool needReset = false;
+        bool haveQProperties = false;
         for (int i = 0; i < cdef->propertyList.size(); ++i) {
             const PropertyDef &p = cdef->propertyList.at(i);
             needGet |= !p.read.isEmpty() || !p.member.isEmpty();
@@ -1363,13 +1369,15 @@ void Generator::generateStaticMetacall()
 
             needSet |= !p.write.isEmpty() || (!p.member.isEmpty() && !p.constant);
             needReset |= !p.reset.isEmpty();
+            haveQProperties |= p.isQProperty;
         }
         fprintf(out, "\n#ifndef QT_NO_PROPERTIES\n    ");
 
         if (needElse)
             fprintf(out, "else ");
         fprintf(out, "if (_c == QMetaObject::ReadProperty) {\n");
-        if (needGet) {
+
+        auto setupMemberAccess = [this]() {
             if (cdef->hasQObject) {
 #ifndef QT_NO_DEBUG
                 fprintf(out, "        Q_ASSERT(staticMetaObject.cast(_o));\n");
@@ -1379,6 +1387,10 @@ void Generator::generateStaticMetacall()
                 fprintf(out, "        auto *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData());
             }
             fprintf(out, "        Q_UNUSED(_t)\n");
+        };
+
+        if (needGet) {
+            setupMemberAccess();
             if (needTempVarForGet)
                 fprintf(out, "        void *_v = _a[0];\n");
             fprintf(out, "        switch (_id) {\n");
@@ -1416,15 +1428,7 @@ void Generator::generateStaticMetacall()
         fprintf(out, "if (_c == QMetaObject::WriteProperty) {\n");
 
         if (needSet) {
-            if (cdef->hasQObject) {
-#ifndef QT_NO_DEBUG
-                fprintf(out, "        Q_ASSERT(staticMetaObject.cast(_o));\n");
-#endif
-                fprintf(out, "        auto *_t = static_cast<%s *>(_o);\n", cdef->classname.constData());
-            } else {
-                fprintf(out, "        auto *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData());
-            }
-            fprintf(out, "        Q_UNUSED(_t)\n");
+            setupMemberAccess();
             fprintf(out, "        void *_v = _a[0];\n");
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
@@ -1472,15 +1476,7 @@ void Generator::generateStaticMetacall()
         fprintf(out, " else ");
         fprintf(out, "if (_c == QMetaObject::ResetProperty) {\n");
         if (needReset) {
-            if (cdef->hasQObject) {
-#ifndef QT_NO_DEBUG
-                fprintf(out, "        Q_ASSERT(staticMetaObject.cast(_o));\n");
-#endif
-                fprintf(out, "        %s *_t = static_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
-            } else {
-                fprintf(out, "        %s *_t = reinterpret_cast<%s *>(_o);\n", cdef->classname.constData(), cdef->classname.constData());
-            }
-            fprintf(out, "        Q_UNUSED(_t)\n");
+            setupMemberAccess();
             fprintf(out, "        switch (_id) {\n");
             for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
                 const PropertyDef &p = cdef->propertyList.at(propindex);
@@ -1497,6 +1493,42 @@ void Generator::generateStaticMetacall()
             fprintf(out, "        }\n");
         }
         fprintf(out, "    }");
+
+        fprintf(out, " else ");
+        fprintf(out, "if (_c == QMetaObject::RegisterQPropertyObserver) {\n");
+        if (haveQProperties) {
+            setupMemberAccess();
+            fprintf(out, "        QPropertyObserver *observer = reinterpret_cast<QPropertyObserver *>(_a[0]);\n");
+            fprintf(out, "        switch (_id) {\n");
+            for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
+                const PropertyDef &p = cdef->propertyList.at(propindex);
+                if (!p.isQProperty)
+                    continue;
+                fprintf(out, "        case %d: observer->setSource(_t->%s); break;\n",
+                        propindex, p.name.constData());
+            }
+            fprintf(out, "        default: break;\n");
+            fprintf(out, "        }\n");
+        }
+        fprintf(out, "    }");
+
+        fprintf(out, " else ");
+        fprintf(out, "if (_c == QMetaObject::SetQPropertyBinding) {\n");
+        if (haveQProperties) {
+            setupMemberAccess();
+            fprintf(out, "        switch (_id) {\n");
+            for (int propindex = 0; propindex < cdef->propertyList.size(); ++propindex) {
+                const PropertyDef &p = cdef->propertyList.at(propindex);
+                if (!p.isQProperty)
+                    continue;
+                fprintf(out, "        case %d: _t->%s.setBinding(*reinterpret_cast<QPropertyBinding<%s> *>(_a[0])); break;\n",
+                        propindex, p.name.constData(), p.type.constData());
+            }
+            fprintf(out, "        default: break;\n");
+            fprintf(out, "        }\n");
+        }
+        fprintf(out, "    }");
+
         fprintf(out, "\n#endif // QT_NO_PROPERTIES");
         needElse = true;
     }

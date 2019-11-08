@@ -265,6 +265,7 @@ public:
     bool isConstant() const;
     bool isFinal() const;
     bool isRequired() const;
+    bool isQProperty() const;
 
     bool isFlagType() const;
     bool isEnumType() const;

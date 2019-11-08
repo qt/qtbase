@@ -87,6 +87,7 @@ enum PropertyFlags  {
     Notify = 0x00400000,
     Revisioned = 0x00800000,
     Required = 0x01000000,
+    IsQProperty = 0x02000000
 };
 
 enum MethodFlags  {

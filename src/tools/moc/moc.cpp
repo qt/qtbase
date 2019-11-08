@@ -564,6 +564,32 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
     return true;
 }
 
+
+// Try to parse QProperty<MyType> propertName; members
+bool Moc::parseMaybeQProperty(ClassDef *def)
+{
+    if (!test(IDENTIFIER))
+        return false;
+
+    if (lexem() != "QProperty")
+        return false;
+
+    if (!test(LANGLE))
+        return false;
+
+    until(RANGLE);
+
+    next();
+    const auto propName = lexem();
+
+    if (!test(SEMIC))
+        return false;
+
+    def->qPropertyMembers.insert(propName);
+
+    return true;
+}
+
 void Moc::parse()
 {
     QVector<NamespaceDef> namespaceList;
@@ -909,7 +935,9 @@ void Moc::parse()
                             }
                         }
                     } else {
-                        index = rewind;
+                        index = rewind - 1;
+                        if (!parseMaybeQProperty(&def))
+                            index = rewind;
                     }
                 }
             }
@@ -1198,11 +1226,14 @@ void Moc::parseSignals(ClassDef *def)
 
 void Moc::createPropertyDef(PropertyDef &propDef)
 {
+    propDef.location = index;
+
     QByteArray type = parseType().name;
     if (type.isEmpty())
         error();
     propDef.designable = propDef.scriptable = propDef.stored = "true";
     propDef.user = "false";
+
     /*
       The Q_PROPERTY construct cannot contain any commas, since
       commas separate macro arguments. We therefore expect users
@@ -1234,6 +1265,17 @@ void Moc::createPropertyDef(PropertyDef &propDef)
 
     next();
     propDef.name = lexem();
+
+    // Could be Q_PROPERTY(type field) and later QProperty<int> field; -- to be resolved later.
+    if (lookup() == RPAREN) {
+        propDef.isQProperty = true;
+        propDef.designable = propDef.scriptable = propDef.stored = "true";
+        propDef.user = "false";
+        propDef.read = propDef.name + ".value";
+        propDef.write = propDef.name + ".setValue";
+        return;
+    }
+
     while (test(IDENTIFIER)) {
         const QByteArray l = lexem();
         if (l[0] == 'C' && l == "CONSTANT") {
@@ -1319,11 +1361,6 @@ void Moc::createPropertyDef(PropertyDef &propDef)
         default:
             error(2);
         }
-    }
-    if (propDef.read.isNull() && propDef.member.isNull()) {
-        const QByteArray msg = "Property declaration " + propDef.name
-                + " has no READ accessor function or associated MEMBER variable. The property will be invalid.";
-        warning(msg.constData());
     }
     if (propDef.constant && !propDef.write.isNull()) {
         const QByteArray msg = "Property declaration " + propDef.name
@@ -1777,6 +1814,25 @@ void Moc::checkProperties(ClassDef *cdef)
         }
         definedProperties.insert(p.name);
 
+        const auto skipProperty = [&](const QByteArray &msg) {
+            const int rewind = index;
+            if (p.location >= 0)
+                index = p.location;
+            warning(msg.constData());
+            index = rewind;
+            cdef->propertyList.removeAt(i);
+            --i;
+        };
+
+        if (p.isQProperty) {
+            if (!cdef->qPropertyMembers.contains(p.name)) {
+                QByteArray msg = "Property declaration " + p.name + " has neither an associated QProperty<> member"
+                    ", nor a READ accessor function nor an associated MEMBER variable. The property will be invalid.";
+                skipProperty(msg);
+                break;
+            }
+        }
+
         for (int j = 0; j < cdef->publicList.count(); ++j) {
             const FunctionDef &f = cdef->publicList.at(j);
             if (f.name != p.read)
@@ -1989,6 +2045,7 @@ QJsonObject PropertyDef::toJson() const
     prop[QLatin1String("constant")] = constant;
     prop[QLatin1String("final")] = final;
     prop[QLatin1String("required")] = required;
+    prop[QLatin1String("isQProperty")] = isQProperty;
 
     if (revision > 0)
         prop[QLatin1String("revision")] = revision;

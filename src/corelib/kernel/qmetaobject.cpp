@@ -3506,6 +3506,21 @@ bool QMetaProperty::isRequired() const
 }
 
 /*!
+    \since 6.0
+    Returns \c true if the property is implemented using a QProperty member; otherwise returns \c false.
+
+    This can be used to detect the availability of QProperty related meta-call types ahead of
+    performing the call itself.
+*/
+bool QMetaProperty::isQProperty() const
+{
+    if (!mobj)
+        return false;
+    int flags = mobj->d.data[handle + 2];
+    return flags & IsQProperty;
+}
+
+/*!
     \obsolete
 
     Returns \c true if the property is editable for the given \a object;
