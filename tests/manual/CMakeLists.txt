@@ -1,5 +1,11 @@
 # Generated from tests/manual/manual.pro.
 
+# special case begin
+# Ignore this folder for now as we need to wait for changes in dev to make
+# it back into wip/cmake regarding duplicate target names
+return()
+# special case end
+
 add_subdirectory("bearerex")
 add_subdirectory("filetest")
 add_subdirectory("embeddedintoforeignwindow")
