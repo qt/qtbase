@@ -1581,12 +1581,14 @@ void VcprojGenerator::initExtraCompilerOutputs()
             if (!outputVar.isEmpty() && otherFilters.contains(outputVar))
                 continue;
 
-            QString tmp_out = project->first(outputs.first().toKey()).toQString();
+            QString tmp_out;
+            if (!outputs.isEmpty())
+                tmp_out = project->first(outputs.first().toKey()).toQString();
             if (project->values(ProKey(*it + ".CONFIG")).indexOf("combine") != -1) {
                 // Combined output, only one file result
                 extraCompile.addFile(Option::fixPathToTargetOS(
                         replaceExtraCompilerVariables(tmp_out, QString(), QString(), NoShell), false));
-            } else {
+            } else if (!inputVars.isEmpty()) {
                 // One output file per input
                 const ProStringList &tmp_in = project->values(inputVars.first().toKey());
                 for (int i = 0; i < tmp_in.count(); ++i) {

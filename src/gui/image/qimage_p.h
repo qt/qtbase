@@ -276,6 +276,29 @@ inline QImage::Format qt_alphaVersion(QImage::Format format)
     return QImage::Format_ARGB32_Premultiplied;
 }
 
+inline bool qt_highColorPrecision(QImage::Format format, bool opaque = false)
+{
+    // Formats with higher color precision than ARGB32_Premultiplied.
+    switch (format) {
+    case QImage::Format_ARGB32:
+    case QImage::Format_RGBA8888:
+        return !opaque;
+    case QImage::Format_BGR30:
+    case QImage::Format_RGB30:
+    case QImage::Format_A2BGR30_Premultiplied:
+    case QImage::Format_A2RGB30_Premultiplied:
+    case QImage::Format_RGBX64:
+    case QImage::Format_RGBA64:
+    case QImage::Format_RGBA64_Premultiplied:
+    case QImage::Format_Grayscale16:
+        return true;
+    default:
+        break;
+    }
+    return false;
+}
+
+
 inline QImage::Format qt_maybeAlphaVersionWithSameDepth(QImage::Format format)
 {
     const QImage::Format toFormat = qt_alphaVersion(format);

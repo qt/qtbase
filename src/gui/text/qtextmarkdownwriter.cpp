@@ -173,7 +173,8 @@ void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
                 if (lastWasList)
                     m_stream << Newline;
             }
-            int endingCol = writeBlock(block, !table, table && tableRow == 0, nextIsDifferent);
+            int endingCol = writeBlock(block, !table, table && tableRow == 0,
+                                       nextIsDifferent && !block.textList());
             m_doubleNewlineWritten = false;
             if (table) {
                 QTextTableCell cell = table->cellAt(block.position());
