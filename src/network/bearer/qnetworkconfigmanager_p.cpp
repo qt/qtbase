@@ -93,7 +93,7 @@ void QNetworkConfigurationManagerPrivate::cleanup()
 {
     QThread* thread = bearerThread;
     deleteLater();
-    if (thread->wait(5000))
+    if (thread->wait(QDeadlineTimer(5000)))
         delete thread;
 }
 

@@ -42,6 +42,7 @@
 #define QTHREAD_H
 
 #include <QtCore/qobject.h>
+#include <QtCore/qdeadlinetimer.h>
 
 // For QThread::create. The configure-time test just checks for the availability
 // of std::future and std::async; for the C++17 codepath we perform some extra
@@ -56,8 +57,6 @@
 #    define QTHREAD_HAS_VARIADIC_CREATE
 #  endif
 #endif
-
-#include <limits.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -135,8 +134,9 @@ public Q_SLOTS:
     void quit();
 
 public:
-    // default argument causes thread to block indefinetely
-    bool wait(unsigned long time = ULONG_MAX);
+    bool wait(QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever));
+    // ### Qt6 inline this function
+    bool wait(unsigned long time);
 
     static void sleep(unsigned long);
     static void msleep(unsigned long);

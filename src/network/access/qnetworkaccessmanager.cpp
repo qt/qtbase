@@ -1981,7 +1981,7 @@ void QNetworkAccessManagerPrivate::destroyThread()
 {
     if (thread) {
         thread->quit();
-        thread->wait(5000);
+        thread->wait(QDeadlineTimer(5000));
         if (thread->isFinished())
             delete thread;
         else

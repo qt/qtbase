@@ -751,7 +751,7 @@ void QThread::terminate()
 #endif
 }
 
-bool QThread::wait(unsigned long time)
+bool QThread::wait(QDeadlineTimer deadline)
 {
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
@@ -765,7 +765,7 @@ bool QThread::wait(unsigned long time)
         return true;
 
     while (d->running) {
-        if (!d->thread_done.wait(locker.mutex(), QDeadlineTimer(time)))
+        if (!d->thread_done.wait(locker.mutex(), deadline))
             return false;
     }
     return true;

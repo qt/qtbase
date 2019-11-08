@@ -986,7 +986,7 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
         }
 
         thread->quit();
-        thread->wait(5000);
+        thread->wait(QDeadlineTimer(5000));
         if (thread->isFinished())
             delete thread;
         else
