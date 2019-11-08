@@ -595,11 +595,12 @@ def handle_vpath(source: str, base_dir: str, vpath: List[str]) -> str:
 
 
 class Operation:
-    def __init__(self, value: Union[List[str], str]) -> None:
+    def __init__(self, value: Union[List[str], str], line_no: int = -1) -> None:
         if isinstance(value, list):
             self._value = value
         else:
             self._value = [str(value)]
+        self._line_no = line_no
 
     def process(
         self, key: str, sinput: List[str], transformer: Callable[[List[str]], List[str]]
@@ -703,9 +704,6 @@ class SetOperation(Operation):
 
 
 class RemoveOperation(Operation):
-    def __init__(self, value):
-        super().__init__(value)
-
     def process(
         self, key: str, sinput: List[str], transformer: Callable[[List[str]], List[str]]
     ) -> List[str]:
@@ -729,6 +727,34 @@ class RemoveOperation(Operation):
         return f"-({self._dump()})"
 
 
+# Helper class that stores a list of tuples, representing a scope id and
+# a line number within that scope's project file. The whole list
+# represents the full path location for a certain operation while
+# traversing include()'d scopes. Used for sorting when determining
+# operation order when evaluating operations.
+class OperationLocation(object):
+    def __init__(self):
+        self.list_of_scope_ids_and_line_numbers = []
+
+    def clone_and_append(self, scope_id: int, line_number: int) -> OperationLocation:
+        new_location = OperationLocation()
+        new_location.list_of_scope_ids_and_line_numbers = list(
+            self.list_of_scope_ids_and_line_numbers
+        )
+        new_location.list_of_scope_ids_and_line_numbers.append((scope_id, line_number))
+        return new_location
+
+    def __lt__(self, other: OperationLocation) -> Any:
+        return self.list_of_scope_ids_and_line_numbers < other.list_of_scope_ids_and_line_numbers
+
+    def __repr__(self) -> str:
+        s = ""
+        for t in self.list_of_scope_ids_and_line_numbers:
+            s += f"s{t[0]}:{t[1]} "
+        s = s.strip(" ")
+        return s
+
+
 class Scope(object):
 
     SCOPE_ID: int = 1
@@ -741,6 +767,7 @@ class Scope(object):
         condition: str = "",
         base_dir: str = "",
         operations: Union[Dict[str, List[Operation]], None] = None,
+        parent_include_line_no: int = -1,
     ) -> None:
         if not operations:
             operations = {
@@ -774,6 +801,7 @@ class Scope(object):
         self._included_children = []  # type: List[Scope]
         self._visited_keys = set()  # type: Set[str]
         self._total_condition = None  # type: Optional[str]
+        self._parent_include_line_no = parent_include_line_no
 
     def __repr__(self):
         return (
@@ -832,9 +860,21 @@ class Scope(object):
 
     @staticmethod
     def FromDict(
-        parent_scope: Optional["Scope"], file: str, statements, cond: str = "", base_dir: str = ""
+        parent_scope: Optional["Scope"],
+        file: str,
+        statements,
+        cond: str = "",
+        base_dir: str = "",
+        project_file_content: str = "",
+        parent_include_line_no: int = -1,
     ) -> Scope:
-        scope = Scope(parent_scope=parent_scope, qmake_file=file, condition=cond, base_dir=base_dir)
+        scope = Scope(
+            parent_scope=parent_scope,
+            qmake_file=file,
+            condition=cond,
+            base_dir=base_dir,
+            parent_include_line_no=parent_include_line_no,
+        )
         for statement in statements:
             if isinstance(statement, list):  # Handle skipped parts...
                 assert not statement
@@ -846,16 +886,20 @@ class Scope(object):
                 value = statement.get("value", [])
                 assert key != ""
 
+                op_location_start = operation["locn_start"]
+                operation = operation["value"]
+                op_line_no = pp.lineno(op_location_start, project_file_content)
+
                 if operation == "=":
-                    scope._append_operation(key, SetOperation(value))
+                    scope._append_operation(key, SetOperation(value, line_no=op_line_no))
                 elif operation == "-=":
-                    scope._append_operation(key, RemoveOperation(value))
+                    scope._append_operation(key, RemoveOperation(value, line_no=op_line_no))
                 elif operation == "+=":
-                    scope._append_operation(key, AddOperation(value))
+                    scope._append_operation(key, AddOperation(value, line_no=op_line_no))
                 elif operation == "*=":
-                    scope._append_operation(key, UniqueAddOperation(value))
+                    scope._append_operation(key, UniqueAddOperation(value, line_no=op_line_no))
                 elif operation == "~=":
-                    scope._append_operation(key, ReplaceOperation(value))
+                    scope._append_operation(key, ReplaceOperation(value, line_no=op_line_no))
                 else:
                     print(f'Unexpected operation "{operation}" in scope "{scope}".')
                     assert False
@@ -883,7 +927,12 @@ class Scope(object):
 
             included = statement.get("included", None)
             if included:
-                scope._append_operation("_INCLUDED", UniqueAddOperation(included))
+                included_location_start = included["locn_start"]
+                included = included["value"]
+                included_line_no = pp.lineno(included_location_start, project_file_content)
+                scope._append_operation(
+                    "_INCLUDED", UniqueAddOperation(included, line_no=included_line_no)
+                )
                 continue
 
             project_required_condition = statement.get("project_required_condition")
@@ -985,6 +1034,51 @@ class Scope(object):
     def visited_keys(self):
         return self._visited_keys
 
+    # Traverses a scope and its children, and collects operations
+    # that need to be processed for a certain key.
+    def _gather_operations_from_scope(
+        self,
+        operations_result: List[Dict[str, Any]],
+        current_scope: Scope,
+        op_key: str,
+        current_location: OperationLocation,
+    ):
+        for op in current_scope._operations.get(op_key, []):
+            new_op_location = current_location.clone_and_append(
+                current_scope._scope_id, op._line_no
+            )
+            op_info: Dict[str, Any] = {}
+            op_info["op"] = op
+            op_info["scope"] = current_scope
+            op_info["location"] = new_op_location
+            operations_result.append(op_info)
+
+        for included_child in current_scope._included_children:
+            new_scope_location = current_location.clone_and_append(
+                current_scope._scope_id, included_child._parent_include_line_no
+            )
+            self._gather_operations_from_scope(
+                operations_result, included_child, op_key, new_scope_location
+            )
+
+    # Partially applies a scope argument to a given transformer.
+    @staticmethod
+    def _create_transformer_for_operation(
+        given_transformer: Optional[Callable[[Scope, List[str]], List[str]]],
+        transformer_scope: Scope,
+    ) -> Callable[[List[str]], List[str]]:
+        if given_transformer:
+
+            def wrapped_transformer(values):
+                return given_transformer(transformer_scope, values)
+
+        else:
+
+            def wrapped_transformer(values):
+                return values
+
+        return wrapped_transformer
+
     def _evalOps(
         self,
         key: str,
@@ -995,26 +1089,29 @@ class Scope(object):
     ) -> List[str]:
         self._visited_keys.add(key)
 
-        # Inherrit values from above:
+        # Inherit values from parent scope.
+        # This is a strange edge case which is wrong in principle, because
+        # .pro files are imperative and not declarative. Nevertheless
+        # this fixes certain mappings (e.g. for handling
+        # VERSIONTAGGING_SOURCES in src/corelib/global/global.pri).
         if self._parent and inherit:
             result = self._parent._evalOps(key, transformer, result)
 
-        if transformer:
+        operations_to_run: List[Dict[str, Any]] = []
+        starting_location = OperationLocation()
+        starting_scope = self
+        self._gather_operations_from_scope(
+            operations_to_run, starting_scope, key, starting_location
+        )
 
-            def op_transformer(files):
-                return transformer(self, files)
+        # Sorts the operations based on the location of each operation. Technically compares two
+        # lists of tuples.
+        operations_to_run = sorted(operations_to_run, key=lambda o: o["location"])
 
-        else:
-
-            def op_transformer(files):
-                return files
-
-        for ic in self._included_children:
-            result = list(ic._evalOps(key, transformer, result))
-
-        for op in self._operations.get(key, []):
-            result = op.process(key, result, op_transformer)
-
+        # Process the operations.
+        for op_info in operations_to_run:
+            op_transformer = self._create_transformer_for_operation(transformer, op_info["scope"])
+            result = op_info["op"].process(key, result, op_transformer)
         return result
 
     def get(self, key: str, *, ignore_includes: bool = False, inherit: bool = False) -> List[str]:
@@ -1154,6 +1251,9 @@ class Scope(object):
         result = self._expand_value(self.get_string(key))
         assert len(result) == 1
         return result[0]
+
+    def _get_operation_at_index(self, key, index):
+        return self._operations[key][index]
 
     @property
     def TEMPLATE(self) -> str:
@@ -1413,9 +1513,14 @@ def handle_subdir(
                 if dirname:
                     collect_subdir_info(dirname, current_conditions=current_conditions)
                 else:
-                    subdir_result = parseProFile(sd, debug=False)
+                    subdir_result, project_file_content = parseProFile(sd, debug=False)
                     subdir_scope = Scope.FromDict(
-                        scope, sd, subdir_result.asDict().get("statements"), "", scope.basedir
+                        scope,
+                        sd,
+                        subdir_result.asDict().get("statements"),
+                        "",
+                        scope.basedir,
+                        project_file_content=project_file_content,
                     )
 
                     do_include(subdir_scope)
@@ -3408,7 +3513,7 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
     for c in scope.children:
         do_include(c)
 
-    for include_file in scope.get_files("_INCLUDED", is_include=True):
+    for include_index, include_file in enumerate(scope.get_files("_INCLUDED", is_include=True)):
         if not include_file:
             continue
         if not os.path.isfile(include_file):
@@ -3418,9 +3523,18 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
                 print(f"    XXXX: Failed to include {include_file}.")
             continue
 
-        include_result = parseProFile(include_file, debug=debug)
+        include_op = scope._get_operation_at_index("_INCLUDED", include_index)
+        include_line_no = include_op._line_no
+
+        include_result, project_file_content = parseProFile(include_file, debug=debug)
         include_scope = Scope.FromDict(
-            None, include_file, include_result.asDict().get("statements"), "", scope.basedir
+            None,
+            include_file,
+            include_result.asDict().get("statements"),
+            "",
+            scope.basedir,
+            project_file_content=project_file_content,
+            parent_include_line_no=include_line_no,
         )  # This scope will be merged into scope!
 
         do_include(include_scope)
@@ -3524,7 +3638,7 @@ def main() -> None:
             print(f'Skipping conversion of project: "{project_file_absolute_path}"')
             continue
 
-        parseresult = parseProFile(file_relative_path, debug=debug_parsing)
+        parseresult, project_file_content = parseProFile(file_relative_path, debug=debug_parsing)
 
         if args.debug_parse_result or args.debug:
             print("\n\n#### Parser result:")
@@ -3536,7 +3650,10 @@ def main() -> None:
             print("\n#### End of parser result dictionary.\n")
 
         file_scope = Scope.FromDict(
-            None, file_relative_path, parseresult.asDict().get("statements")
+            None,
+            file_relative_path,
+            parseresult.asDict().get("statements"),
+            project_file_content=project_file_content,
         )
 
         if args.debug_pro_structure or args.debug:

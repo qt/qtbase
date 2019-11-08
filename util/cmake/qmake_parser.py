@@ -31,6 +31,7 @@ import collections
 import os
 import re
 from itertools import chain
+from typing import Tuple
 
 import pyparsing as pp  # type: ignore
 
@@ -203,7 +204,9 @@ class QmakeParser:
 
         Key = add_element("Key", Identifier)
 
-        Operation = add_element("Operation", Key("key") + Op("operation") + Values("value"))
+        Operation = add_element(
+            "Operation", Key("key") + pp.locatedExpr(Op)("operation") + Values("value")
+        )
         CallArgs = add_element("CallArgs", pp.nestedExpr())
 
         def parse_call_args(results):
@@ -218,7 +221,9 @@ class QmakeParser:
         CallArgs.setParseAction(parse_call_args)
 
         Load = add_element("Load", pp.Keyword("load") + CallArgs("loaded"))
-        Include = add_element("Include", pp.Keyword("include") + CallArgs("included"))
+        Include = add_element(
+            "Include", pp.Keyword("include") + pp.locatedExpr(CallArgs)("included")
+        )
         Option = add_element("Option", pp.Keyword("option") + CallArgs("option"))
         RequiresCondition = add_element("RequiresCondition", pp.originalTextFor(pp.nestedExpr()))
 
@@ -360,7 +365,7 @@ class QmakeParser:
 
         return Grammar
 
-    def parseFile(self, file: str):
+    def parseFile(self, file: str) -> Tuple[pp.ParseResults, str]:
         print(f'Parsing "{file}"...')
         try:
             with open(file, "r") as file_fd:
@@ -375,9 +380,9 @@ class QmakeParser:
             print(f"{' ' * (pe.col-1)}^")
             print(pe)
             raise pe
-        return result
+        return result, contents
 
 
-def parseProFile(file: str, *, debug=False):
+def parseProFile(file: str, *, debug=False) -> Tuple[pp.ParseResults, str]:
     parser = QmakeParser(debug=debug)
     return parser.parseFile(file)

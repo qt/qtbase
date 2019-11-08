@@ -36,7 +36,7 @@ _tests_path = os.path.dirname(os.path.abspath(__file__))
 
 def validate_op(key, op, value, to_validate):
     assert key == to_validate['key']
-    assert op == to_validate['operation']
+    assert op == to_validate['operation']['value']
     assert value == to_validate.get('value', None)
 
 
@@ -71,7 +71,7 @@ def validate_default_else_test(file_name):
 
 def parse_file(file):
     p = QmakeParser(debug=True)
-    result = p.parseFile(file)
+    result, _ = p.parseFile(file)
 
     print('\n\n#### Parser result:')
     print(result)
@@ -153,7 +153,8 @@ def test_include():
     validate_op('A', '=', ['42'], result[0])
     include = result[1]
     assert len(include) == 1
-    assert include.get('included', '') == 'foo'
+    assert 'included' in include
+    assert include['included'].get('value', '') == 'foo'
     validate_op('B', '=', ['23'], result[2])
 
 
@@ -260,7 +261,8 @@ def test_realworld_comment_scope():
     assert len(if_branch) == 1
     validate_op('QMAKE_LFLAGS_NOUNDEF', '=', None, if_branch[0])
 
-    assert result[1].get('included', '') == 'animation/animation.pri'
+    assert 'included' in result[1]
+    assert result[1]['included'].get('value', '') == 'animation/animation.pri'
 
 
 def test_realworld_contains_scope():
