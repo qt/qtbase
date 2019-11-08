@@ -33,10 +33,10 @@ moc_collect_json.output = $$MOC_COLLECT_JSON_OUTPUT
 moc_collect_json.name = Collect moc JSON output into central file
 
 install_metatypes {
-    do_install.path = $$[QT_INSTALL_LIBS]/metatypes
-    do_install.files = $$OUT_PWD/$$MOC_COLLECT_JSON_OUTPUT
-    prefix_build: INSTALLS += do_install
-    else: COPIES += do_install
+    do_install_metatypes.path = $$[QT_INSTALL_LIBS]/metatypes
+    do_install_metatypes.files = $$OUT_PWD/$$MOC_COLLECT_JSON_OUTPUT
+    prefix_build: INSTALLS += do_install_metatypes
+    else: COPIES += do_install_metatypes
 }
 
 QMAKE_EXTRA_COMPILERS += moc_collect_json moc_json_header moc_json_source
