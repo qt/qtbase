@@ -8934,6 +8934,23 @@ bool QWidget::event(QEvent *event)
         }
     }
     switch (event->type()) {
+    case QEvent::PlatformSurface: {
+        // Sync up QWidget's view of whether or not the widget has been created
+        switch (static_cast<QPlatformSurfaceEvent*>(event)->surfaceEventType()) {
+        case QPlatformSurfaceEvent::SurfaceCreated:
+            if (!testAttribute(Qt::WA_WState_Created))
+                create();
+            break;
+        case QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed:
+            if (testAttribute(Qt::WA_WState_Created)) {
+                // Child windows have already been destroyed by QWindow,
+                // so we skip them here.
+                destroy(false, false);
+            }
+            break;
+        }
+        break;
+    }
     case QEvent::MouseMove:
         mouseMoveEvent((QMouseEvent*)event);
         break;
