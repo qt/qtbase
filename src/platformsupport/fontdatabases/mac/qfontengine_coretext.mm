@@ -471,7 +471,7 @@ void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextIt
     const qreal firstY = positions[0].y.toReal();
     for (int i = 0; i < glyphs.size(); ++i) {
         cgPositions[i].x = positions[i].x.toReal() - firstX;
-        cgPositions[i].y = positions[i].y.toReal() - firstY;
+        cgPositions[i].y = firstY - positions[i].y.toReal();
         cgGlyphs[i] = glyphs[i];
     }
 

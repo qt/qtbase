@@ -1213,25 +1213,25 @@ QString QDate::toString(Qt::DateFormat format) const
 
     \table
     \header \li Expression \li Output
-    \row \li d \li the day as number without a leading zero (1 to 31)
-    \row \li dd \li the day as number with a leading zero (01 to 31)
+    \row \li d \li The day as a number without a leading zero (1 to 31)
+    \row \li dd \li The day as a number with a leading zero (01 to 31)
     \row \li ddd
-         \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
+         \li The abbreviated localized day name (e.g. 'Mon' to 'Sun').
              Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li dddd
-         \li the long localized day name (e.g. 'Monday' to 'Sunday').
+         \li The long localized day name (e.g. 'Monday' to 'Sunday').
              Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li M \li the month as number without a leading zero (1 to 12)
-    \row \li MM \li the month as number with a leading zero (01 to 12)
+    \row \li M \li The month as a number without a leading zero (1 to 12)
+    \row \li MM \li The month as a number with a leading zero (01 to 12)
     \row \li MMM
-         \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
+         \li The abbreviated localized month name (e.g. 'Jan' to 'Dec').
              Uses the system locale to localize the name, i.e. QLocale::system().
     \row \li MMMM
-         \li the long localized month name (e.g. 'January' to 'December').
+         \li The long localized month name (e.g. 'January' to 'December').
              Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li yy \li the year as two digit number (00 to 99)
-    \row \li yyyy \li the year as four digit number. If the year is negative,
-            a minus sign is prepended in addition.
+    \row \li yy \li The year as a two digit number (00 to 99)
+    \row \li yyyy \li The year as a four digit number. If the year is negative,
+            a minus sign is prepended, making five characters.
     \endtable
 
     Any sequence of characters enclosed in single quotes will be included
@@ -1719,10 +1719,14 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
     \row \li MMMM
          \li The long localized month name (e.g. 'January' to 'December').
              Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li yy \li The year as two digit number (00 to 99)
-    \row \li yyyy \li The year as four digit number. If the year is negative,
-            a minus sign is prepended in addition.
+    \row \li yy \li The year as a two digit number (00 to 99)
+    \row \li yyyy \li The year as a four digit number, possibly plus a leading
+             minus sign for negative years.
     \endtable
+
+    \note Unlike the other version of this function, day and month names must
+    be given in the user's local language. It is only possible to use the English
+    names if the user's language is English.
 
     All other input characters will be treated as text. Any sequence
     of characters that are enclosed in single quotes will also be
@@ -2063,30 +2067,30 @@ QString QTime::toString(Qt::DateFormat format) const
     \table
     \header \li Expression \li Output
     \row \li h
-         \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
+         \li The hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
     \row \li hh
-         \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
+         \li The hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
     \row \li H
-         \li the hour without a leading zero (0 to 23, even with AM/PM display)
+         \li The hour without a leading zero (0 to 23, even with AM/PM display)
     \row \li HH
-         \li the hour with a leading zero (00 to 23, even with AM/PM display)
-    \row \li m \li the minute without a leading zero (0 to 59)
-    \row \li mm \li the minute with a leading zero (00 to 59)
-    \row \li s \li the whole second, without any leading zero (0 to 59)
-    \row \li ss \li the whole second, with a leading zero where applicable (00 to 59)
-    \row \li z \li the fractional part of the second, to go after a decimal
+         \li The hour with a leading zero (00 to 23, even with AM/PM display)
+    \row \li m \li The minute without a leading zero (0 to 59)
+    \row \li mm \li The minute with a leading zero (00 to 59)
+    \row \li s \li The whole second, without any leading zero (0 to 59)
+    \row \li ss \li The whole second, with a leading zero where applicable (00 to 59)
+    \row \li z \li The fractional part of the second, to go after a decimal
                 point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
                 reports the seconds to full available (millisecond) precision
                 without trailing zeroes.
-    \row \li zzz \li the fractional part of the second, to millisecond
+    \row \li zzz \li The fractional part of the second, to millisecond
                 precision, including trailing zeroes where applicable (000 to 999).
     \row \li AP or A
-         \li use AM/PM display. \e A/AP will be replaced by either
-             QLocale::amText() or QLocale::pmText().
+         \li Use AM/PM display. \e A/AP will be replaced by an upper-case
+             version of either QLocale::amText() or QLocale::pmText().
     \row \li ap or a
-         \li use am/pm display. \e a/ap will be replaced by a lower-case version of
-             QLocale::amText() or QLocale::pmText().
-    \row \li t \li the timezone (for example "CEST")
+         \li Use am/pm display. \e a/ap will be replaced by a lower-case version
+             of either QLocale::amText() or QLocale::pmText().
+    \row \li t \li The timezone (for example "CEST")
     \endtable
 
     Any sequence of characters enclosed in single quotes will be included
@@ -2437,23 +2441,30 @@ QTime QTime::fromString(const QString &string, Qt::DateFormat format)
     \table
     \header \li Expression \li Output
     \row \li h
-         \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
+         \li The hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
     \row \li hh
-         \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
-    \row \li m \li the minute without a leading zero (0 to 59)
-    \row \li mm \li the minute with a leading zero (00 to 59)
-    \row \li s \li the whole second, without any leading zero (0 to 59)
-    \row \li ss \li the whole second, with a leading zero where applicable (00 to 59)
-    \row \li z \li the fractional part of the second, to go after a decimal
+         \li The hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
+    \row \li H
+         \li The hour without a leading zero (0 to 23, even with AM/PM display)
+    \row \li HH
+         \li The hour with a leading zero (00 to 23, even with AM/PM display)
+    \row \li m \li The minute without a leading zero (0 to 59)
+    \row \li mm \li The minute with a leading zero (00 to 59)
+    \row \li s \li The whole second, without any leading zero (0 to 59)
+    \row \li ss \li The whole second, with a leading zero where applicable (00 to 59)
+    \row \li z \li The fractional part of the second, to go after a decimal
                 point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
                 reports the seconds to full available (millisecond) precision
                 without trailing zeroes.
-    \row \li zzz \li the fractional part of the second, to millisecond
+    \row \li zzz \li The fractional part of the second, to millisecond
                 precision, including trailing zeroes where applicable (000 to 999).
-    \row \li AP
-         \li interpret as an AM/PM time. \e AP must be either "AM" or "PM".
-    \row \li ap
-         \li Interpret as an AM/PM time. \e ap must be either "am" or "pm".
+    \row \li AP or A
+         \li Interpret as an AM/PM time. \e A/AP will match an upper-case
+             version of either QLocale::amText() or QLocale::pmText().
+    \row \li ap or a
+         \li Interpret as an am/pm time. \e a/ap will match a lower-case version
+             of either QLocale::amText() or QLocale::pmText().
+    \row \li t \li the timezone (for example "CEST")
     \endtable
 
     All other input characters will be treated as text. Any sequence
@@ -4358,61 +4369,9 @@ QString QDateTime::toString(Qt::DateFormat format) const
     \fn QString QDateTime::toString(const QString &format) const
     \fn QString QDateTime::toString(QStringView format) const
 
-    Returns the datetime as a string. The \a format parameter
-    determines the format of the result string.
-
-    These expressions may be used for the date:
-
-    \table
-    \header \li Expression \li Output
-    \row \li d \li the day as number without a leading zero (1 to 31)
-    \row \li dd \li the day as number with a leading zero (01 to 31)
-    \row \li ddd
-            \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
-            Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li dddd
-            \li the long localized day name (e.g. 'Monday' to 'Sunday').
-            Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li M \li the month as number without a leading zero (1-12)
-    \row \li MM \li the month as number with a leading zero (01-12)
-    \row \li MMM
-            \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
-            Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li MMMM
-            \li the long localized month name (e.g. 'January' to 'December').
-            Uses the system locale to localize the name, i.e. QLocale::system().
-    \row \li yy \li the year as two digit number (00-99)
-    \row \li yyyy \li the year as four digit number
-    \endtable
-
-    These expressions may be used for the time:
-
-    \table
-    \header \li Expression \li Output
-    \row \li h
-         \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
-    \row \li hh
-         \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
-    \row \li H
-         \li the hour without a leading zero (0 to 23, even with AM/PM display)
-    \row \li HH
-         \li the hour with a leading zero (00 to 23, even with AM/PM display)
-    \row \li m \li the minute without a leading zero (0 to 59)
-    \row \li mm \li the minute with a leading zero (00 to 59)
-    \row \li s \li the whole second without a leading zero (0 to 59)
-    \row \li ss \li the whole second with a leading zero where applicable (00 to 59)
-    \row \li z \li the fractional part of the second, to go after a decimal
-                point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
-                reports the seconds to full available (millisecond) precision
-                without trailing zeroes.
-    \row \li zzz \li the fractional part of the second, to millisecond
-                precision, including trailing zeroes where applicable (000 to 999).
-    \row \li AP or A
-         \li use AM/PM display. \e A/AP will be replaced by either "AM" or "PM".
-    \row \li ap or a
-         \li use am/pm display. \e a/ap will be replaced by either "am" or "pm".
-    \row \li t \li the timezone (for example "CEST")
-    \endtable
+    Returns the datetime as a string. The \a format parameter determines the
+    format of the result string. See QTime::toString() and QDate::toString() for
+    the supported specifiers for time and date, respectively.
 
     Any sequence of characters enclosed in single quotes will be included
     verbatim in the output string (stripped of the quotes), even if it contains
@@ -5409,65 +5368,13 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
     Returns the QDateTime represented by the \a string, using the \a
     format given, or an invalid datetime if the string cannot be parsed.
 
-    Uses the calendar \a cal if supplied, else Gregorian. The illustrative
-    values and ranges below are given for the latter; other calendars may have
-    different ranges or values.
+    Uses the calendar \a cal if supplied, else Gregorian.
 
-    These expressions may be used for the date part of the format string:
-
-    \table
-    \header \li Expression \li Output
-    \row \li d \li the day as number without a leading zero (1 to 31)
-    \row \li dd \li the day as number with a leading zero (01 to 31)
-    \row \li ddd
-            \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
-    \row \li dddd
-            \li the long localized day name (e.g. 'Monday' to 'Sunday').
-    \row \li M \li the month as number without a leading zero (1-12)
-    \row \li MM \li the month as number with a leading zero (01-12)
-    \row \li MMM
-            \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
-    \row \li MMMM
-            \li the long localized month name (e.g. 'January' to 'December').
-    \row \li yy \li the year as two digit number (00-99)
-    \row \li yyyy \li the year as four digit number
-    \endtable
-
-    \note Unlike the other version of this function, day and month names must
-    be given in the user's local language. It is only possible to use the English
-    names if the user's language is English.
-
-    These expressions may be used for the time part of the format string:
-
-    \table
-    \header \li Expression \li Output
-    \row \li h
-            \li the hour without a leading zero (0 to 23 or 1 to 12 if AM/PM display)
-    \row \li hh
-            \li the hour with a leading zero (00 to 23 or 01 to 12 if AM/PM display)
-    \row \li H
-            \li the hour without a leading zero (0 to 23, even with AM/PM display)
-    \row \li HH
-            \li the hour with a leading zero (00 to 23, even with AM/PM display)
-    \row \li m \li the minute without a leading zero (0 to 59)
-    \row \li mm \li the minute with a leading zero (00 to 59)
-    \row \li s \li the whole second without a leading zero (0 to 59)
-    \row \li ss \li the whole second with a leading zero where applicable (00 to 59)
-    \row \li z \li the fractional part of the second, to go after a decimal
-                point, without trailing zeroes (0 to 999).  Thus "\c{s.z}"
-                reports the seconds to full available (millisecond) precision
-                without trailing zeroes.
-    \row \li zzz \li the fractional part of the second, to millisecond
-                precision, including trailing zeroes where applicable (000 to 999).
-    \row \li AP or A
-         \li interpret as an AM/PM time. \e AP must be either "AM" or "PM".
-    \row \li ap or a
-         \li Interpret as an AM/PM time. \e ap must be either "am" or "pm".
-    \endtable
-
-    All other input characters will be treated as text. Any sequence
-    of characters that are enclosed in single quotes will also be
-    treated as text and not be used as an expression.
+    See QDate::fromString() and QTime::fromString() for the expressions
+    recognized in the format string to represent parts of the date and time.
+    All other input characters will be treated as text. Any sequence of
+    characters that are enclosed in single quotes will also be treated as text
+    and not be used as an expression.
 
     \snippet code/src_corelib_tools_qdatetime.cpp 12
 

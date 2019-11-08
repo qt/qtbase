@@ -579,7 +579,9 @@ bool QWindowsPointerHandler::translatePenEvent(QWindow *window, HWND hwnd, QtWin
 
     const QTabletEvent::TabletDevice device = QTabletEvent::Stylus;
     QTabletEvent::PointerType type;
-    Qt::MouseButtons mouseButtons;
+    // Since it may be the middle button, so if the checks fail then it should
+    // be set to Middle if it was used.
+    Qt::MouseButtons mouseButtons = queryMouseButtons();
 
     const bool pointerInContact = IS_POINTER_INCONTACT_WPARAM(msg.wParam);
     if (pointerInContact)

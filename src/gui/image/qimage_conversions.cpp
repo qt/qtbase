@@ -260,10 +260,17 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
     if (data->depth != qt_depthForFormat(dst_format))
         return false;
 
-    uint buf[BufferSize];
-    uint *buffer = buf;
     const QPixelLayout *srcLayout = &qPixelLayouts[data->format];
     const QPixelLayout *destLayout = &qPixelLayouts[dst_format];
+
+    // The precision here is only ARGB32PM so don't convert between higher accuracy
+    // formats (assert instead when we have a convert_generic_over_rgb64_inplace).
+    if (qt_highColorPrecision(data->format, !destLayout->hasAlphaChannel)
+            && qt_highColorPrecision(dst_format, !srcLayout->hasAlphaChannel))
+        return false;
+
+    uint buf[BufferSize];
+    uint *buffer = buf;
     uchar *srcData = data->data;
 
     Q_ASSERT(srcLayout->bpp == destLayout->bpp);
@@ -626,12 +633,13 @@ static bool convert_rgbswap_generic_inplace(QImageData *data, Qt::ImageConversio
 }
 
 template<QtPixelOrder PixelOrder, bool RGBA>
-static void convert_RGB_to_RGB30(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+static void convert_ARGB_to_A2RGB30(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
 
-    Q_ASSERT(RGBA || src->format == QImage::Format_RGB32 || src->format == QImage::Format_ARGB32);
-    Q_ASSERT(!RGBA || src->format == QImage::Format_RGBX8888 || src->format == QImage::Format_RGBA8888);
-    Q_ASSERT(dest->format == QImage::Format_BGR30 || dest->format == QImage::Format_RGB30);
+    Q_ASSERT(RGBA || src->format == QImage::Format_ARGB32);
+    Q_ASSERT(!RGBA || src->format == QImage::Format_RGBA8888);
+    Q_ASSERT(dest->format == QImage::Format_A2BGR30_Premultiplied
+             || dest->format == QImage::Format_A2RGB30_Premultiplied);
     Q_ASSERT(src->width == dest->width);
     Q_ASSERT(src->height == dest->height);
 
@@ -646,7 +654,9 @@ static void convert_RGB_to_RGB30(QImageData *dest, const QImageData *src, Qt::Im
             QRgb c = *src_data;
             if (RGBA)
                 c = RGBA2ARGB(c);
-            *dest_data = qConvertRgb32ToRgb30<PixelOrder>(c);
+            const uint alpha = (qAlpha(c) >> 6) * 85;
+            c = BYTE_MUL(c, alpha);
+            *dest_data = (qConvertRgb32ToRgb30<PixelOrder>(c) & 0x3fffffff) | (alpha << 30);
             ++src_data;
             ++dest_data;
         }
@@ -656,10 +666,10 @@ static void convert_RGB_to_RGB30(QImageData *dest, const QImageData *src, Qt::Im
 }
 
 template<QtPixelOrder PixelOrder, bool RGBA>
-static bool convert_RGB_to_RGB30_inplace(QImageData *data, Qt::ImageConversionFlags)
+static bool convert_ARGB_to_A2RGB30_inplace(QImageData *data, Qt::ImageConversionFlags)
 {
-    Q_ASSERT(RGBA || (data->format == QImage::Format_RGB32 || data->format == QImage::Format_ARGB32));
-    Q_ASSERT(!RGBA || (data->format == QImage::Format_RGBX8888 || data->format == QImage::Format_RGBA8888));
+    Q_ASSERT(RGBA || data->format == QImage::Format_ARGB32);
+    Q_ASSERT(!RGBA || data->format == QImage::Format_RGBA8888);
 
     const int pad = (data->bytes_per_line >> 2) - data->width;
     QRgb *rgb_data = (QRgb *) data->data;
@@ -670,13 +680,16 @@ static bool convert_RGB_to_RGB30_inplace(QImageData *data, Qt::ImageConversionFl
             QRgb c = *rgb_data;
             if (RGBA)
                 c = RGBA2ARGB(c);
-            *rgb_data = qConvertRgb32ToRgb30<PixelOrder>(c);
+            const uint alpha = (qAlpha(c) >> 6) * 85;
+            c = BYTE_MUL(c, alpha);
+            *rgb_data = (qConvertRgb32ToRgb30<PixelOrder>(c) & 0x3fffffff) | (alpha << 30);
             ++rgb_data;
         }
         rgb_data += pad;
     }
 
-    data->format = (PixelOrder == PixelOrderRGB) ? QImage::Format_RGB30 : QImage::Format_BGR30;
+    data->format = (PixelOrder == PixelOrderRGB) ? QImage::Format_A2RGB30_Premultiplied
+                                                 : QImage::Format_A2BGR30_Premultiplied;
     return true;
 }
 
@@ -2143,9 +2156,9 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         0,
         0,
-        convert_RGB_to_RGB30<PixelOrderBGR, false>,
         0,
-        convert_RGB_to_RGB30<PixelOrderRGB, false>,
+        0,
+        0,
         0,
         0, 0,
         0, 0, 0, 0, 0
@@ -2171,10 +2184,10 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         convert_ARGB_to_RGBx,
         convert_ARGB_to_RGBA,
         0,
-        convert_RGB_to_RGB30<PixelOrderBGR, false>,
         0,
-        convert_RGB_to_RGB30<PixelOrderRGB, false>,
+        convert_ARGB_to_A2RGB30<PixelOrderBGR, false>,
         0,
+        convert_ARGB_to_A2RGB30<PixelOrderRGB, false>,
         0, 0,
         0,
         convert_ARGB32_to_RGBA64<false>,
@@ -2424,9 +2437,9 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         0,
         convert_passthrough,
         convert_passthrough,
-        convert_RGB_to_RGB30<PixelOrderBGR, true>,
         0,
-        convert_RGB_to_RGB30<PixelOrderRGB, true>,
+        0,
+        0,
         0,
         0, 0,
         0, 0, 0, 0, 0
@@ -2451,10 +2464,10 @@ Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormat
         mask_alpha_converter_RGBx,
         0,
         0,
-        convert_RGB_to_RGB30<PixelOrderBGR, true>,
         0,
-        convert_RGB_to_RGB30<PixelOrderRGB, true>,
+        convert_ARGB_to_A2RGB30<PixelOrderBGR, true>,
         0,
+        convert_ARGB_to_A2RGB30<PixelOrderRGB, true>,
         0, 0,
         0,
         convert_ARGB32_to_RGBA64<true>,
@@ -2807,9 +2820,9 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0,
         0,
         0,
-        convert_RGB_to_RGB30_inplace<PixelOrderBGR, false>,
         0,
-        convert_RGB_to_RGB30_inplace<PixelOrderRGB, false>,
+        0,
+        0,
         0,
         0, 0,
         0, 0, 0, 0, 0
@@ -2834,10 +2847,10 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         convert_ARGB_to_RGBA_inplace<QImage::Format_RGBX8888>,
         convert_ARGB_to_RGBA_inplace<QImage::Format_RGBA8888>,
         0,
-        convert_RGB_to_RGB30_inplace<PixelOrderBGR, false>,
         0,
-        convert_RGB_to_RGB30_inplace<PixelOrderRGB, false>,
+        convert_ARGB_to_A2RGB30_inplace<PixelOrderBGR, false>,
         0,
+        convert_ARGB_to_A2RGB30_inplace<PixelOrderRGB, false>,
         0, 0,
         0, 0, 0, 0, 0
     }, // Format_ARGB32
@@ -2913,9 +2926,9 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         0,
         convert_passthrough_inplace<QImage::Format_RGBA8888>,
         convert_passthrough_inplace<QImage::Format_RGBA8888_Premultiplied>,
-        convert_RGB_to_RGB30_inplace<PixelOrderBGR, true>,
         0,
-        convert_RGB_to_RGB30_inplace<PixelOrderRGB, true>,
+        0,
+        0,
         0,
         0, 0,
         0, 0, 0, 0, 0
@@ -2940,10 +2953,10 @@ InPlace_Image_Converter qimage_inplace_converter_map[QImage::NImageFormats][QIma
         mask_alpha_converter_rgbx_inplace,
         0,
         0,
-        convert_RGB_to_RGB30_inplace<PixelOrderBGR, true>,
         0,
-        convert_RGB_to_RGB30_inplace<PixelOrderRGB, true>,
+        convert_ARGB_to_A2RGB30_inplace<PixelOrderBGR, true>,
         0,
+        convert_ARGB_to_A2RGB30_inplace<PixelOrderRGB, true>,
         0, 0,
         0, 0, 0, 0, 0
     }, // Format_RGBA8888

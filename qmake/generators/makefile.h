@@ -257,6 +257,7 @@ protected:
                                     const QStringRef &fixedBase, int slashOff);
     bool processPrlFileCore(QString &origFile, const QStringRef &origName,
                             const QString &fixedFile);
+    void createResponseFile(const QString &fileName, const ProStringList &objList);
 
 public:
     QMakeProject *projectFile() const;

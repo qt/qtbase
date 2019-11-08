@@ -731,7 +731,8 @@ void qt_registerFont(const QString &familyName, const QString &stylename,
                      const QSupportedWritingSystems &writingSystems, void *handle)
 {
     QFontDatabasePrivate *d = privateDb();
-    qCDebug(lcFontDb) << "Adding font" << familyName << weight << style << pixelSize << "aa" << antialiased << "fixed" << fixedPitch;
+    qCDebug(lcFontDb) << "Adding font: familyName" << familyName << "stylename" << stylename << "weight" << weight
+        << "style" << style << "pixelSize" << pixelSize << "antialiased" << antialiased << "fixed" << fixedPitch;
     QtFontStyle::Key styleKey;
     styleKey.style = style;
     styleKey.weight = weight;

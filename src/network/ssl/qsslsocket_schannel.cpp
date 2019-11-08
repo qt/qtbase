@@ -1030,6 +1030,7 @@ bool QSslSocketBackendPrivate::performHandshake()
 bool QSslSocketBackendPrivate::verifyHandshake()
 {
     Q_Q(QSslSocket);
+    sslErrors.clear();
 
     const bool isClient = mode == QSslSocket::SslClientMode;
 #define CHECK_STATUS(status)                                                  \
@@ -1118,7 +1119,7 @@ bool QSslSocketBackendPrivate::verifyHandshake()
     }
 
     // verifyCertContext returns false if the user disconnected while it was checking errors.
-    if (certificateContext && sslErrors.isEmpty() && !verifyCertContext(certificateContext))
+    if (certificateContext && !verifyCertContext(certificateContext))
         return false;
 
     if (!checkSslErrors() || state != QAbstractSocket::ConnectedState) {

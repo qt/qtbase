@@ -5539,7 +5539,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     const auto ct = d->windowButtonCocoaControl(sc);
                     const auto cw = QMacStylePrivate::CocoaControl(ct, QStyleHelper::SizeLarge);
                     auto *wb = static_cast<NSButton *>(d->cocoaControl(cw));
-                    wb.enabled = (sc & titlebar->subControls);
+                    wb.enabled = (sc & titlebar->subControls) && isActive;
                     [wb highlight:(titlebar->state & State_Sunken) && (sc & titlebar->activeSubControls)];
                     Q_UNUSED(isHovered); // FIXME No public API for this
 
