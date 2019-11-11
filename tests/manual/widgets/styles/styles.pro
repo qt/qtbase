@@ -1,5 +1,5 @@
 TEMPLATE = app
-QT = widgets
+QT = tst_manual_widgets
 CONFIG += cmdline
 CONFIG += c++11
 

@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = childwidget
+TARGET = tst_manual_childwidget
 INCLUDEPATH += .
 QT += widgets
 
