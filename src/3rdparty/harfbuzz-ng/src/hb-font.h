@@ -110,7 +110,7 @@ typedef struct hb_glyph_extents_t
 /* func types */
 
 typedef hb_bool_t (*hb_font_get_font_extents_func_t) (hb_font_t *font, void *font_data,
-						       hb_font_extents_t *metrics,
+						       hb_font_extents_t *extents,
 						       void *user_data);
 typedef hb_font_get_font_extents_func_t hb_font_get_font_h_extents_func_t;
 typedef hb_font_get_font_extents_func_t hb_font_get_font_v_extents_func_t;
@@ -125,12 +125,30 @@ typedef hb_bool_t (*hb_font_get_variation_glyph_func_t) (hb_font_t *font, void *
 							 hb_codepoint_t *glyph,
 							 void *user_data);
 
+typedef unsigned int (*hb_font_get_nominal_glyphs_func_t) (hb_font_t *font, void *font_data,
+							   unsigned int count,
+							   const hb_codepoint_t *first_unicode,
+							   unsigned int unicode_stride,
+							   hb_codepoint_t *first_glyph,
+							   unsigned int glyph_stride,
+							   void *user_data);
+
 
 typedef hb_position_t (*hb_font_get_glyph_advance_func_t) (hb_font_t *font, void *font_data,
 							   hb_codepoint_t glyph,
 							   void *user_data);
 typedef hb_font_get_glyph_advance_func_t hb_font_get_glyph_h_advance_func_t;
 typedef hb_font_get_glyph_advance_func_t hb_font_get_glyph_v_advance_func_t;
+
+typedef void (*hb_font_get_glyph_advances_func_t) (hb_font_t* font, void* font_data,
+						   unsigned int count,
+						   const hb_codepoint_t *first_glyph,
+						   unsigned glyph_stride,
+						   hb_position_t *first_advance,
+						   unsigned advance_stride,
+						   void *user_data);
+typedef hb_font_get_glyph_advances_func_t hb_font_get_glyph_h_advances_func_t;
+typedef hb_font_get_glyph_advances_func_t hb_font_get_glyph_v_advances_func_t;
 
 typedef hb_bool_t (*hb_font_get_glyph_origin_func_t) (hb_font_t *font, void *font_data,
 						      hb_codepoint_t glyph,
@@ -143,7 +161,6 @@ typedef hb_position_t (*hb_font_get_glyph_kerning_func_t) (hb_font_t *font, void
 							   hb_codepoint_t first_glyph, hb_codepoint_t second_glyph,
 							   void *user_data);
 typedef hb_font_get_glyph_kerning_func_t hb_font_get_glyph_h_kerning_func_t;
-typedef hb_font_get_glyph_kerning_func_t hb_font_get_glyph_v_kerning_func_t;
 
 
 typedef hb_bool_t (*hb_font_get_glyph_extents_func_t) (hb_font_t *font, void *font_data,
@@ -207,7 +224,7 @@ hb_font_funcs_set_font_v_extents_func (hb_font_funcs_t *ffuncs,
  * @user_data:
  * @destroy:
  *
- * 
+ *
  *
  * Since: 1.2.3
  **/
@@ -217,13 +234,29 @@ hb_font_funcs_set_nominal_glyph_func (hb_font_funcs_t *ffuncs,
 				      void *user_data, hb_destroy_func_t destroy);
 
 /**
+ * hb_font_funcs_set_nominal_glyphs_func:
+ * @ffuncs: font functions.
+ * @func: (closure user_data) (destroy destroy) (scope notified):
+ * @user_data:
+ * @destroy:
+ *
+ *
+ *
+ * Since: 2.0.0
+ **/
+HB_EXTERN void
+hb_font_funcs_set_nominal_glyphs_func (hb_font_funcs_t *ffuncs,
+				       hb_font_get_nominal_glyphs_func_t func,
+				       void *user_data, hb_destroy_func_t destroy);
+
+/**
  * hb_font_funcs_set_variation_glyph_func:
  * @ffuncs: font functions.
  * @func: (closure user_data) (destroy destroy) (scope notified):
  * @user_data:
  * @destroy:
  *
- * 
+ *
  *
  * Since: 1.2.3
  **/
@@ -239,7 +272,7 @@ hb_font_funcs_set_variation_glyph_func (hb_font_funcs_t *ffuncs,
  * @user_data:
  * @destroy:
  *
- * 
+ *
  *
  * Since: 0.9.2
  **/
@@ -255,7 +288,7 @@ hb_font_funcs_set_glyph_h_advance_func (hb_font_funcs_t *ffuncs,
  * @user_data:
  * @destroy:
  *
- * 
+ *
  *
  * Since: 0.9.2
  **/
@@ -265,13 +298,45 @@ hb_font_funcs_set_glyph_v_advance_func (hb_font_funcs_t *ffuncs,
 					void *user_data, hb_destroy_func_t destroy);
 
 /**
+ * hb_font_funcs_set_glyph_h_advances_func:
+ * @ffuncs: font functions.
+ * @func: (closure user_data) (destroy destroy) (scope notified):
+ * @user_data:
+ * @destroy:
+ *
+ *
+ *
+ * Since: 1.8.6
+ **/
+HB_EXTERN void
+hb_font_funcs_set_glyph_h_advances_func (hb_font_funcs_t *ffuncs,
+					hb_font_get_glyph_h_advances_func_t func,
+					void *user_data, hb_destroy_func_t destroy);
+
+/**
+ * hb_font_funcs_set_glyph_v_advances_func:
+ * @ffuncs: font functions.
+ * @func: (closure user_data) (destroy destroy) (scope notified):
+ * @user_data:
+ * @destroy:
+ *
+ *
+ *
+ * Since: 1.8.6
+ **/
+HB_EXTERN void
+hb_font_funcs_set_glyph_v_advances_func (hb_font_funcs_t *ffuncs,
+					hb_font_get_glyph_v_advances_func_t func,
+					void *user_data, hb_destroy_func_t destroy);
+
+/**
  * hb_font_funcs_set_glyph_h_origin_func:
  * @ffuncs: font functions.
  * @func: (closure user_data) (destroy destroy) (scope notified):
  * @user_data:
  * @destroy:
  *
- * 
+ *
  *
  * Since: 0.9.2
  **/
@@ -287,7 +352,7 @@ hb_font_funcs_set_glyph_h_origin_func (hb_font_funcs_t *ffuncs,
  * @user_data:
  * @destroy:
  *
- * 
+ *
  *
  * Since: 0.9.2
  **/
@@ -303,7 +368,7 @@ hb_font_funcs_set_glyph_v_origin_func (hb_font_funcs_t *ffuncs,
  * @user_data:
  * @destroy:
  *
- * 
+ *
  *
  * Since: 0.9.2
  **/
@@ -313,29 +378,13 @@ hb_font_funcs_set_glyph_h_kerning_func (hb_font_funcs_t *ffuncs,
 					void *user_data, hb_destroy_func_t destroy);
 
 /**
- * hb_font_funcs_set_glyph_v_kerning_func:
- * @ffuncs: font functions.
- * @func: (closure user_data) (destroy destroy) (scope notified):
- * @user_data:
- * @destroy:
- *
- * 
- *
- * Since: 0.9.2
- **/
-HB_EXTERN void
-hb_font_funcs_set_glyph_v_kerning_func (hb_font_funcs_t *ffuncs,
-					hb_font_get_glyph_v_kerning_func_t func,
-					void *user_data, hb_destroy_func_t destroy);
-
-/**
  * hb_font_funcs_set_glyph_extents_func:
  * @ffuncs: font functions.
  * @func: (closure user_data) (destroy destroy) (scope notified):
  * @user_data:
  * @destroy:
  *
- * 
+ *
  *
  * Since: 0.9.2
  **/
@@ -351,7 +400,7 @@ hb_font_funcs_set_glyph_extents_func (hb_font_funcs_t *ffuncs,
  * @user_data:
  * @destroy:
  *
- * 
+ *
  *
  * Since: 0.9.2
  **/
@@ -367,7 +416,7 @@ hb_font_funcs_set_glyph_contour_point_func (hb_font_funcs_t *ffuncs,
  * @user_data:
  * @destroy:
  *
- * 
+ *
  *
  * Since: 0.9.2
  **/
@@ -383,7 +432,7 @@ hb_font_funcs_set_glyph_name_func (hb_font_funcs_t *ffuncs,
  * @user_data:
  * @destroy:
  *
- * 
+ *
  *
  * Since: 0.9.2
  **/
@@ -410,12 +459,35 @@ hb_font_get_variation_glyph (hb_font_t *font,
 			     hb_codepoint_t unicode, hb_codepoint_t variation_selector,
 			     hb_codepoint_t *glyph);
 
+HB_EXTERN unsigned int
+hb_font_get_nominal_glyphs (hb_font_t *font,
+			    unsigned int count,
+			    const hb_codepoint_t *first_unicode,
+			    unsigned int unicode_stride,
+			    hb_codepoint_t *first_glyph,
+			    unsigned int glyph_stride);
+
 HB_EXTERN hb_position_t
 hb_font_get_glyph_h_advance (hb_font_t *font,
 			     hb_codepoint_t glyph);
 HB_EXTERN hb_position_t
 hb_font_get_glyph_v_advance (hb_font_t *font,
 			     hb_codepoint_t glyph);
+
+HB_EXTERN void
+hb_font_get_glyph_h_advances (hb_font_t* font,
+			      unsigned int count,
+			      const hb_codepoint_t *first_glyph,
+			      unsigned glyph_stride,
+			      hb_position_t *first_advance,
+			      unsigned advance_stride);
+HB_EXTERN void
+hb_font_get_glyph_v_advances (hb_font_t* font,
+			      unsigned int count,
+			      const hb_codepoint_t *first_glyph,
+			      unsigned glyph_stride,
+			      hb_position_t *first_advance,
+			      unsigned advance_stride);
 
 HB_EXTERN hb_bool_t
 hb_font_get_glyph_h_origin (hb_font_t *font,
@@ -429,9 +501,6 @@ hb_font_get_glyph_v_origin (hb_font_t *font,
 HB_EXTERN hb_position_t
 hb_font_get_glyph_h_kerning (hb_font_t *font,
 			     hb_codepoint_t left_glyph, hb_codepoint_t right_glyph);
-HB_EXTERN hb_position_t
-hb_font_get_glyph_v_kerning (hb_font_t *font,
-			     hb_codepoint_t top_glyph, hb_codepoint_t bottom_glyph);
 
 HB_EXTERN hb_bool_t
 hb_font_get_glyph_extents (hb_font_t *font,
@@ -456,7 +525,7 @@ hb_font_get_glyph_from_name (hb_font_t *font,
 /* high-level funcs, with fallback */
 
 /* Calls either hb_font_get_nominal_glyph() if variation_selector is 0,
- * otherwise callse hb_font_get_variation_glyph(). */
+ * otherwise calls hb_font_get_variation_glyph(). */
 HB_EXTERN hb_bool_t
 hb_font_get_glyph (hb_font_t *font,
 		   hb_codepoint_t unicode, hb_codepoint_t variation_selector,
@@ -471,6 +540,14 @@ hb_font_get_glyph_advance_for_direction (hb_font_t *font,
 					 hb_codepoint_t glyph,
 					 hb_direction_t direction,
 					 hb_position_t *x, hb_position_t *y);
+HB_EXTERN void
+hb_font_get_glyph_advances_for_direction (hb_font_t* font,
+					  hb_direction_t direction,
+					  unsigned int count,
+					  const hb_codepoint_t *first_glyph,
+					  unsigned glyph_stride,
+					  hb_position_t *first_advance,
+					  unsigned advance_stride);
 HB_EXTERN void
 hb_font_get_glyph_origin_for_direction (hb_font_t *font,
 					hb_codepoint_t glyph,
@@ -580,8 +657,8 @@ hb_font_set_funcs (hb_font_t         *font,
 /* Be *very* careful with this function! */
 HB_EXTERN void
 hb_font_set_funcs_data (hb_font_t         *font,
-		        void              *font_data,
-		        hb_destroy_func_t  destroy);
+			void              *font_data,
+			hb_destroy_func_t  destroy);
 
 
 HB_EXTERN void
@@ -635,6 +712,10 @@ hb_font_set_var_coords_normalized (hb_font_t *font,
 HB_EXTERN const int *
 hb_font_get_var_coords_normalized (hb_font_t *font,
 				   unsigned int *length);
+
+HB_EXTERN void
+hb_font_set_var_named_instance (hb_font_t *font,
+				unsigned instance_index);
 
 HB_END_DECLS
 

@@ -29,30 +29,45 @@
 #ifndef HB_OT_HEAD_TABLE_HH
 #define HB_OT_HEAD_TABLE_HH
 
-#include "hb-open-type-private.hh"
+#include "hb-open-type.hh"
+
+/*
+ * head -- Font Header
+ * https://docs.microsoft.com/en-us/typography/opentype/spec/head
+ */
+#define HB_OT_TAG_head HB_TAG('h','e','a','d')
 
 
 namespace OT {
 
 
-/*
- * head -- Font Header
- */
-
-#define HB_OT_TAG_head HB_TAG('h','e','a','d')
-
 struct head
 {
-  static const hb_tag_t tableTag	= HB_OT_TAG_head;
+  friend struct OffsetTable;
 
-  inline unsigned int get_upem (void) const
+  static constexpr hb_tag_t tableTag = HB_OT_TAG_head;
+
+  unsigned int get_upem () const
   {
     unsigned int upem = unitsPerEm;
     /* If no valid head table found, assume 1000, which matches typical Type1 usage. */
     return 16 <= upem && upem <= 16384 ? upem : 1000;
   }
 
-  inline bool sanitize (hb_sanitize_context_t *c) const
+  enum mac_style_flag_t {
+    BOLD	= 1u<<0,
+    ITALIC	= 1u<<1,
+    UNDERLINE	= 1u<<2,
+    OUTLINE	= 1u<<3,
+    SHADOW	= 1u<<4,
+    CONDENSED	= 1u<<5
+  };
+
+  bool is_bold () const      { return macStyle & BOLD; }
+  bool is_italic () const    { return macStyle & ITALIC; }
+  bool is_condensed () const { return macStyle & CONDENSED; }
+
+  bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
@@ -64,11 +79,11 @@ struct head
   FixedVersion<>version;		/* Version of the head table--currently
 					 * 0x00010000u for version 1.0. */
   FixedVersion<>fontRevision;		/* Set by font manufacturer. */
-  UINT32		checkSumAdjustment;	/* To compute: set it to 0, sum the
-					 * entire font as UINT32, then store
+  HBUINT32	checkSumAdjustment;	/* To compute: set it to 0, sum the
+					 * entire font as HBUINT32, then store
 					 * 0xB1B0AFBAu - sum. */
-  UINT32		magicNumber;		/* Set to 0x5F0F3CF5u. */
-  UINT16	flags;			/* Bit 0: Baseline for font at y=0;
+  HBUINT32	magicNumber;		/* Set to 0x5F0F3CF5u. */
+  HBUINT16	flags;			/* Bit 0: Baseline for font at y=0;
 					 * Bit 1: Left sidebearing point at x=0;
 					 * Bit 2: Instructions may depend on point size;
 					 * Bit 3: Force ppem to integer values for all
@@ -76,7 +91,6 @@ struct head
 					 *   ppem sizes if this bit is clear;
 					 * Bit 4: Instructions may alter advance width
 					 *   (the advance widths might not scale linearly);
-
 					 * Bits 5-10: These should be set according to
 					 *   Apple's specification. However, they are not
 					 *   implemented in OpenType.
@@ -96,7 +110,6 @@ struct head
 					 *   contains any strong right-to-left glyphs.
 					 * Bit 10: This bit should be set if the font
 					 *   contains Indic-style rearrangement effects.
-
 					 * Bit 11: Font data is 'lossless,' as a result
 					 *   of having been compressed and decompressed
 					 *   with the Agfa MicroType Express engine.
@@ -114,18 +127,18 @@ struct head
 					 * encoded in the cmap subtables represent proper
 					 * support for those code points.
 					 * Bit 15: Reserved, set to 0. */
-  UINT16	unitsPerEm;		/* Valid range is from 16 to 16384. This value
+  HBUINT16	unitsPerEm;		/* Valid range is from 16 to 16384. This value
 					 * should be a power of 2 for fonts that have
 					 * TrueType outlines. */
   LONGDATETIME	created;		/* Number of seconds since 12:00 midnight,
 					   January 1, 1904. 64-bit integer */
   LONGDATETIME	modified;		/* Number of seconds since 12:00 midnight,
 					   January 1, 1904. 64-bit integer */
-  INT16		xMin;			/* For all glyph bounding boxes. */
-  INT16		yMin;			/* For all glyph bounding boxes. */
-  INT16		xMax;			/* For all glyph bounding boxes. */
-  INT16		yMax;			/* For all glyph bounding boxes. */
-  UINT16	macStyle;		/* Bit 0: Bold (if set to 1);
+  HBINT16	xMin;			/* For all glyph bounding boxes. */
+  HBINT16	yMin;			/* For all glyph bounding boxes. */
+  HBINT16	xMax;			/* For all glyph bounding boxes. */
+  HBINT16	yMax;			/* For all glyph bounding boxes. */
+  HBUINT16	macStyle;		/* Bit 0: Bold (if set to 1);
 					 * Bit 1: Italic (if set to 1)
 					 * Bit 2: Underline (if set to 1)
 					 * Bit 3: Outline (if set to 1)
@@ -133,16 +146,16 @@ struct head
 					 * Bit 5: Condensed (if set to 1)
 					 * Bit 6: Extended (if set to 1)
 					 * Bits 7-15: Reserved (set to 0). */
-  UINT16	lowestRecPPEM;		/* Smallest readable size in pixels. */
-  INT16		fontDirectionHint;	/* Deprecated (Set to 2).
+  HBUINT16	lowestRecPPEM;		/* Smallest readable size in pixels. */
+  HBINT16	fontDirectionHint;	/* Deprecated (Set to 2).
 					 * 0: Fully mixed directional glyphs;
 					 * 1: Only strongly left to right;
 					 * 2: Like 1 but also contains neutrals;
 					 * -1: Only strongly right to left;
 					 * -2: Like -1 but also contains neutrals. */
   public:
-  INT16		indexToLocFormat;	/* 0 for short offsets, 1 for long. */
-  INT16		glyphDataFormat;	/* 0 for current format. */
+  HBUINT16	indexToLocFormat;	/* 0 for short offsets, 1 for long. */
+  HBUINT16	glyphDataFormat;	/* 0 for current format. */
 
   DEFINE_SIZE_STATIC (54);
 };

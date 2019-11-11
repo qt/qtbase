@@ -24,9 +24,13 @@
  * Google Author(s): Behdad Esfahbod
  */
 
-#include "hb-ot-shape-normalize-private.hh"
-#include "hb-ot-shape-complex-private.hh"
-#include "hb-ot-shape-private.hh"
+#include "hb.hh"
+
+#ifndef HB_NO_OT_SHAPE
+
+#include "hb-ot-shape-normalize.hh"
+#include "hb-ot-shape-complex.hh"
+#include "hb-ot-shape.hh"
 
 
 /*
@@ -119,7 +123,7 @@ skip_char (hb_buffer_t *buffer)
 static inline unsigned int
 decompose (const hb_ot_shape_normalize_context_t *c, bool shortest, hb_codepoint_t ab)
 {
-  hb_codepoint_t a, b, a_glyph, b_glyph;
+  hb_codepoint_t a = 0, b = 0, a_glyph = 0, b_glyph = 0;
   hb_buffer_t * const buffer = c->buffer;
   hb_font_t * const font = c->font;
 
@@ -164,7 +168,7 @@ decompose_current_character (const hb_ot_shape_normalize_context_t *c, bool shor
 {
   hb_buffer_t * const buffer = c->buffer;
   hb_codepoint_t u = buffer->cur().codepoint;
-  hb_codepoint_t glyph;
+  hb_codepoint_t glyph = 0;
 
   if (shortest && c->font->get_nominal_glyph (u, &glyph))
   {
@@ -213,21 +217,23 @@ decompose_current_character (const hb_ot_shape_normalize_context_t *c, bool shor
 }
 
 static inline void
-handle_variation_selector_cluster (const hb_ot_shape_normalize_context_t *c, unsigned int end, bool short_circuit)
+handle_variation_selector_cluster (const hb_ot_shape_normalize_context_t *c,
+				   unsigned int end,
+				   bool short_circuit HB_UNUSED)
 {
   /* TODO Currently if there's a variation-selector we give-up, it's just too hard. */
   hb_buffer_t * const buffer = c->buffer;
   hb_font_t * const font = c->font;
-  for (; buffer->idx < end - 1 && !buffer->in_error;) {
+  for (; buffer->idx < end - 1 && buffer->successful;) {
     if (unlikely (buffer->unicode->is_variation_selector (buffer->cur(+1).codepoint))) {
-      /* The next two lines are some ugly lines... But work. */
       if (font->get_variation_glyph (buffer->cur().codepoint, buffer->cur(+1).codepoint, &buffer->cur().glyph_index()))
       {
-	buffer->replace_glyphs (2, 1, &buffer->cur().codepoint);
+	hb_codepoint_t unicode = buffer->cur().codepoint;
+	buffer->replace_glyphs (2, 1, &unicode);
       }
       else
       {
-        /* Just pass on the two characters separately, let GSUB do its magic. */
+	/* Just pass on the two characters separately, let GSUB do its magic. */
 	set_glyph (buffer->cur(), font);
 	buffer->next_glyph ();
 	set_glyph (buffer->cur(), font);
@@ -254,23 +260,14 @@ static inline void
 decompose_multi_char_cluster (const hb_ot_shape_normalize_context_t *c, unsigned int end, bool short_circuit)
 {
   hb_buffer_t * const buffer = c->buffer;
-  for (unsigned int i = buffer->idx; i < end && !buffer->in_error; i++)
+  for (unsigned int i = buffer->idx; i < end && buffer->successful; i++)
     if (unlikely (buffer->unicode->is_variation_selector (buffer->info[i].codepoint))) {
       handle_variation_selector_cluster (c, end, short_circuit);
       return;
     }
 
-  while (buffer->idx < end && !buffer->in_error)
+  while (buffer->idx < end && buffer->successful)
     decompose_current_character (c, short_circuit);
-}
-
-static inline void
-decompose_cluster (const hb_ot_shape_normalize_context_t *c, unsigned int end, bool might_short_circuit, bool always_short_circuit)
-{
-  if (likely (c->buffer->idx + 1 == end))
-    decompose_current_character (c, might_short_circuit);
-  else
-    decompose_multi_char_cluster (c, end, always_short_circuit);
 }
 
 
@@ -294,6 +291,16 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
   _hb_buffer_assert_unicode_vars (buffer);
 
   hb_ot_shape_normalization_mode_t mode = plan->shaper->normalization_preference;
+  if (mode == HB_OT_SHAPE_NORMALIZATION_MODE_AUTO)
+  {
+    if (plan->has_gpos_mark)
+      // https://github.com/harfbuzz/harfbuzz/issues/653#issuecomment-423905920
+      //mode = HB_OT_SHAPE_NORMALIZATION_MODE_DECOMPOSED;
+      mode = HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS;
+    else
+      mode = HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS;
+  }
+
   const hb_ot_shape_normalize_context_t c = {
     plan,
     buffer,
@@ -318,114 +325,154 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
 
   /* First round, decompose */
 
-  buffer->clear_output ();
-  count = buffer->len;
-  for (buffer->idx = 0; buffer->idx < count && !buffer->in_error;)
+  bool all_simple = true;
   {
-    unsigned int end;
-    for (end = buffer->idx + 1; end < count; end++)
-      if (likely (!HB_UNICODE_GENERAL_CATEGORY_IS_MARK (_hb_glyph_info_get_general_category (&buffer->info[end]))))
-        break;
+    buffer->clear_output ();
+    count = buffer->len;
+    buffer->idx = 0;
+    do
+    {
+      unsigned int end;
+      for (end = buffer->idx + 1; end < count; end++)
+	if (unlikely (HB_UNICODE_GENERAL_CATEGORY_IS_MARK (_hb_glyph_info_get_general_category (&buffer->info[end]))))
+	  break;
 
-    decompose_cluster (&c, end, might_short_circuit, always_short_circuit);
+      if (end < count)
+	end--; /* Leave one base for the marks to cluster with. */
+
+      /* From idx to end are simple clusters. */
+      if (might_short_circuit)
+      {
+	unsigned int done = font->get_nominal_glyphs (end - buffer->idx,
+						      &buffer->cur().codepoint,
+						      sizeof (buffer->info[0]),
+						      &buffer->cur().glyph_index(),
+						      sizeof (buffer->info[0]));
+	buffer->next_glyphs (done);
+      }
+      while (buffer->idx < end && buffer->successful)
+	decompose_current_character (&c, might_short_circuit);
+
+      if (buffer->idx == count || !buffer->successful)
+	break;
+
+      all_simple = false;
+
+      /* Find all the marks now. */
+      for (end = buffer->idx + 1; end < count; end++)
+	if (!HB_UNICODE_GENERAL_CATEGORY_IS_MARK (_hb_glyph_info_get_general_category (&buffer->info[end])))
+	  break;
+
+      /* idx to end is one non-simple cluster. */
+      decompose_multi_char_cluster (&c, end, always_short_circuit);
+    }
+    while (buffer->idx < count && buffer->successful);
+    buffer->swap_buffers ();
   }
-  buffer->swap_buffers ();
 
 
   /* Second round, reorder (inplace) */
 
-  count = buffer->len;
-  for (unsigned int i = 0; i < count; i++)
+  if (!all_simple)
   {
-    if (_hb_glyph_info_get_modified_combining_class (&buffer->info[i]) == 0)
-      continue;
+    count = buffer->len;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      if (_hb_glyph_info_get_modified_combining_class (&buffer->info[i]) == 0)
+	continue;
 
-    unsigned int end;
-    for (end = i + 1; end < count; end++)
-      if (_hb_glyph_info_get_modified_combining_class (&buffer->info[end]) == 0)
-        break;
+      unsigned int end;
+      for (end = i + 1; end < count; end++)
+	if (_hb_glyph_info_get_modified_combining_class (&buffer->info[end]) == 0)
+	  break;
 
-    /* We are going to do a O(n^2).  Only do this if the sequence is short,
-     * but not too short ;). */
-    if (end - i < 2 || end - i > HB_OT_SHAPE_COMPLEX_MAX_COMBINING_MARKS) {
+      /* We are going to do a O(n^2).  Only do this if the sequence is short. */
+      if (end - i > HB_OT_SHAPE_COMPLEX_MAX_COMBINING_MARKS) {
+	i = end;
+	continue;
+      }
+
+      buffer->sort (i, end, compare_combining_class);
+
+      if (plan->shaper->reorder_marks)
+	plan->shaper->reorder_marks (plan, buffer, i, end);
+
       i = end;
-      continue;
     }
-
-    buffer->sort (i, end, compare_combining_class);
-
-    if (plan->shaper->reorder_marks)
-      plan->shaper->reorder_marks (plan, buffer, i, end);
-
-    i = end;
+  }
+  if (buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_CGJ)
+  {
+    /* For all CGJ, check if it prevented any reordering at all.
+     * If it did NOT, then make it skippable.
+     * https://github.com/harfbuzz/harfbuzz/issues/554
+     */
+    for (unsigned int i = 1; i + 1 < buffer->len; i++)
+      if (buffer->info[i].codepoint == 0x034Fu/*CGJ*/ &&
+	  info_cc(buffer->info[i-1]) <= info_cc(buffer->info[i+1]))
+      {
+	_hb_glyph_info_unhide (&buffer->info[i]);
+      }
   }
 
-
-  if (mode == HB_OT_SHAPE_NORMALIZATION_MODE_NONE ||
-      mode == HB_OT_SHAPE_NORMALIZATION_MODE_DECOMPOSED)
-    return;
 
   /* Third round, recompose */
 
-  /* As noted in the comment earlier, we don't try to combine
-   * ccc=0 chars with their previous Starter. */
-
-  buffer->clear_output ();
-  count = buffer->len;
-  unsigned int starter = 0;
-  bool combine = true;
-  buffer->next_glyph ();
-  while (buffer->idx < count && !buffer->in_error)
+  if (!all_simple &&
+      (mode == HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS ||
+       mode == HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT))
   {
-    hb_codepoint_t composed, glyph;
-    if (combine &&
-	/* We don't try to compose a non-mark character with it's preceding starter.
-	 * This is both an optimization to avoid trying to compose every two neighboring
-	 * glyphs in most scripts AND a desired feature for Hangul.  Apparently Hangul
-	 * fonts are not designed to mix-and-match pre-composed syllables and Jamo. */
-	HB_UNICODE_GENERAL_CATEGORY_IS_MARK (_hb_glyph_info_get_general_category (&buffer->cur())))
-    {
-      if (/* If there's anything between the starter and this char, they should have CCC
-	   * smaller than this character's. */
-	  (starter == buffer->out_len - 1 ||
-	   info_cc (buffer->prev()) < info_cc (buffer->cur())) &&
-	  /* And compose. */
-	  c.compose (&c,
-		     buffer->out_info[starter].codepoint,
-		     buffer->cur().codepoint,
-		     &composed) &&
-	  /* And the font has glyph for the composite. */
-	  font->get_nominal_glyph (composed, &glyph))
-      {
-	/* Composes. */
-	buffer->next_glyph (); /* Copy to out-buffer. */
-	if (unlikely (buffer->in_error))
-	  return;
-	buffer->merge_out_clusters (starter, buffer->out_len);
-	buffer->out_len--; /* Remove the second composable. */
-	/* Modify starter and carry on. */
-	buffer->out_info[starter].codepoint = composed;
-	buffer->out_info[starter].glyph_index() = glyph;
-	_hb_glyph_info_set_unicode_props (&buffer->out_info[starter], buffer);
+    /* As noted in the comment earlier, we don't try to combine
+     * ccc=0 chars with their previous Starter. */
 
-	continue;
-      }
-      else if (/* We sometimes custom-tailor the sorted order of marks. In that case, stop
-		* trying to combine as soon as combining-class drops. */
-	       starter < buffer->out_len - 1 &&
-	       info_cc (buffer->prev()) > info_cc (buffer->cur()))
-        combine = false;
-    }
-
-    /* Blocked, or doesn't compose. */
+    buffer->clear_output ();
+    count = buffer->len;
+    unsigned int starter = 0;
     buffer->next_glyph ();
-
-    if (info_cc (buffer->prev()) == 0)
+    while (buffer->idx < count && buffer->successful)
     {
-      starter = buffer->out_len - 1;
-      combine = true;
-    }
-  }
-  buffer->swap_buffers ();
+      hb_codepoint_t composed, glyph;
+      if (/* We don't try to compose a non-mark character with it's preceding starter.
+	   * This is both an optimization to avoid trying to compose every two neighboring
+	   * glyphs in most scripts AND a desired feature for Hangul.  Apparently Hangul
+	   * fonts are not designed to mix-and-match pre-composed syllables and Jamo. */
+	  HB_UNICODE_GENERAL_CATEGORY_IS_MARK (_hb_glyph_info_get_general_category (&buffer->cur())))
+      {
+	if (/* If there's anything between the starter and this char, they should have CCC
+	     * smaller than this character's. */
+	    (starter == buffer->out_len - 1 ||
+	     info_cc (buffer->prev()) < info_cc (buffer->cur())) &&
+	    /* And compose. */
+	    c.compose (&c,
+		       buffer->out_info[starter].codepoint,
+		       buffer->cur().codepoint,
+		       &composed) &&
+	    /* And the font has glyph for the composite. */
+	    font->get_nominal_glyph (composed, &glyph))
+	{
+	  /* Composes. */
+	  buffer->next_glyph (); /* Copy to out-buffer. */
+	  if (unlikely (!buffer->successful))
+	    return;
+	  buffer->merge_out_clusters (starter, buffer->out_len);
+	  buffer->out_len--; /* Remove the second composable. */
+	  /* Modify starter and carry on. */
+	  buffer->out_info[starter].codepoint = composed;
+	  buffer->out_info[starter].glyph_index() = glyph;
+	  _hb_glyph_info_set_unicode_props (&buffer->out_info[starter], buffer);
 
+	  continue;
+	}
+      }
+
+      /* Blocked, or doesn't compose. */
+      buffer->next_glyph ();
+
+      if (info_cc (buffer->prev()) == 0)
+	starter = buffer->out_len - 1;
+    }
+    buffer->swap_buffers ();
+  }
 }
+
+
+#endif

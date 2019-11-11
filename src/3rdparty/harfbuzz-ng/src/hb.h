@@ -28,16 +28,13 @@
 #define HB_H
 #define HB_H_IN
 
-#ifndef HB_EXTERN
-#define HB_EXTERN extern
-#endif
-
 #include "hb-blob.h"
 #include "hb-buffer.h"
 #include "hb-common.h"
 #include "hb-deprecated.h"
 #include "hb-face.h"
 #include "hb-font.h"
+#include "hb-map.h"
 #include "hb-set.h"
 #include "hb-shape.h"
 #include "hb-shape-plan.h"

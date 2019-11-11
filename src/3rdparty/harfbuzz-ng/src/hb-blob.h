@@ -44,7 +44,7 @@ HB_BEGIN_DECLS
  *   any such possibility, MODE_DUPLICATE should be used
  *   such that HarfBuzz makes a copy immediately,
  *
- * - Use MODE_READONLY otherse, unless you really really
+ * - Use MODE_READONLY otherwise, unless you really really
  *   really know what you are doing,
  *
  * - MODE_WRITABLE is appropriate if you really made a
@@ -71,6 +71,9 @@ hb_blob_create (const char        *data,
 		void              *user_data,
 		hb_destroy_func_t  destroy);
 
+HB_EXTERN hb_blob_t *
+hb_blob_create_from_file (const char *file_name);
+
 /* Always creates with MEMORY_MODE_READONLY.
  * Even if the parent blob is writable, we don't
  * want the user of the sub-blob to be able to
@@ -81,6 +84,9 @@ HB_EXTERN hb_blob_t *
 hb_blob_create_sub_blob (hb_blob_t    *parent,
 			 unsigned int  offset,
 			 unsigned int  length);
+
+HB_EXTERN hb_blob_t *
+hb_blob_copy_writable_or_fail (hb_blob_t *blob);
 
 HB_EXTERN hb_blob_t *
 hb_blob_get_empty (void);
@@ -119,7 +125,6 @@ hb_blob_get_data (hb_blob_t *blob, unsigned int *length);
 
 HB_EXTERN char *
 hb_blob_get_data_writable (hb_blob_t *blob, unsigned int *length);
-
 
 HB_END_DECLS
 

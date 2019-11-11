@@ -27,23 +27,32 @@
 #ifndef HB_OT_VAR_AVAR_TABLE_HH
 #define HB_OT_VAR_AVAR_TABLE_HH
 
-#include "hb-open-type-private.hh"
+#include "hb-open-type.hh"
+
+/*
+ * avar -- Axis Variations
+ * https://docs.microsoft.com/en-us/typography/opentype/spec/avar
+ */
+
+#define HB_OT_TAG_avar HB_TAG('a','v','a','r')
+
 
 namespace OT {
 
 
 struct AxisValueMap
 {
-  inline bool sanitize (hb_sanitize_context_t *c) const
+  bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this));
   }
 
   public:
-  F2DOT14	fromCoord;	/* A normalized coordinate value obtained using
-				 * default normalization. */
-  F2DOT14	toCoord;	/* The modified, normalized coordinate value. */
+  F2DOT14	coords[2];
+//   F2DOT14	fromCoord;	/* A normalized coordinate value obtained using
+// 				 * default normalization. */
+//   F2DOT14	toCoord;	/* The modified, normalized coordinate value. */
 
   public:
   DEFINE_SIZE_STATIC (4);
@@ -51,54 +60,54 @@ struct AxisValueMap
 
 struct SegmentMaps : ArrayOf<AxisValueMap>
 {
-  inline int map (int value) const
+  int map (int value, unsigned int from_offset = 0, unsigned int to_offset = 1) const
   {
+#define fromCoord coords[from_offset]
+#define toCoord coords[to_offset]
     /* The following special-cases are not part of OpenType, which requires
      * that at least -1, 0, and +1 must be mapped. But we include these as
      * part of a better error recovery scheme. */
-
     if (len < 2)
     {
       if (!len)
 	return value;
       else /* len == 1*/
-	return value - array[0].fromCoord + array[0].toCoord;
+	return value - arrayZ[0].fromCoord + arrayZ[0].toCoord;
     }
 
-    if (value <= array[0].fromCoord)
-      return value - array[0].fromCoord + array[0].toCoord;
+    if (value <= arrayZ[0].fromCoord)
+      return value - arrayZ[0].fromCoord + arrayZ[0].toCoord;
 
     unsigned int i;
     unsigned int count = len;
-    for (i = 1; i < count && value > array[i].fromCoord; i++)
+    for (i = 1; i < count && value > arrayZ[i].fromCoord; i++)
       ;
 
-    if (value >= array[i].fromCoord)
-      return value - array[i].fromCoord + array[i].toCoord;
+    if (value >= arrayZ[i].fromCoord)
+      return value - arrayZ[i].fromCoord + arrayZ[i].toCoord;
 
-    if (unlikely (array[i-1].fromCoord == array[i].fromCoord))
-      return array[i-1].toCoord;
+    if (unlikely (arrayZ[i-1].fromCoord == arrayZ[i].fromCoord))
+      return arrayZ[i-1].toCoord;
 
-    int denom = array[i].fromCoord - array[i-1].fromCoord;
-    return array[i-1].toCoord +
-	   ((array[i].toCoord - array[i-1].toCoord) *
-	    (value - array[i-1].fromCoord) + denom/2) / denom;
+    int denom = arrayZ[i].fromCoord - arrayZ[i-1].fromCoord;
+    return arrayZ[i-1].toCoord +
+	   ((arrayZ[i].toCoord - arrayZ[i-1].toCoord) *
+	    (value - arrayZ[i-1].fromCoord) + denom/2) / denom;
+#undef toCoord
+#undef fromCoord
   }
 
-  DEFINE_SIZE_ARRAY (2, array);
+  int unmap (int value) const { return map (value, 1, 0); }
+
+  public:
+  DEFINE_SIZE_ARRAY (2, *this);
 };
-
-/*
- * avar — Axis Variations Table
- */
-
-#define HB_OT_TAG_avar HB_TAG('a','v','a','r')
 
 struct avar
 {
-  static const hb_tag_t tableTag	= HB_OT_TAG_avar;
+  static constexpr hb_tag_t tableTag = HB_OT_TAG_avar;
 
-  inline bool sanitize (hb_sanitize_context_t *c) const
+  bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
     if (unlikely (!(version.sanitize (c) &&
@@ -106,23 +115,23 @@ struct avar
 		    c->check_struct (this))))
       return_trace (false);
 
-    const SegmentMaps *map = &axisSegmentMapsZ;
+    const SegmentMaps *map = &firstAxisSegmentMaps;
     unsigned int count = axisCount;
     for (unsigned int i = 0; i < count; i++)
     {
       if (unlikely (!map->sanitize (c)))
-        return_trace (false);
+	return_trace (false);
       map = &StructAfter<SegmentMaps> (*map);
     }
 
     return_trace (true);
   }
 
-  inline void map_coords (int *coords, unsigned int coords_length) const
+  void map_coords (int *coords, unsigned int coords_length) const
   {
-    unsigned int count = MIN<unsigned int> (coords_length, axisCount);
+    unsigned int count = hb_min (coords_length, axisCount);
 
-    const SegmentMaps *map = &axisSegmentMapsZ;
+    const SegmentMaps *map = &firstAxisSegmentMaps;
     for (unsigned int i = 0; i < count; i++)
     {
       coords[i] = map->map (coords[i]);
@@ -130,14 +139,26 @@ struct avar
     }
   }
 
+  void unmap_coords (int *coords, unsigned int coords_length) const
+  {
+    unsigned int count = hb_min (coords_length, axisCount);
+
+    const SegmentMaps *map = &firstAxisSegmentMaps;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      coords[i] = map->unmap (coords[i]);
+      map = &StructAfter<SegmentMaps> (*map);
+    }
+  }
+
   protected:
   FixedVersion<>version;	/* Version of the avar table
 				 * initially set to 0x00010000u */
-  UINT16	reserved;	/* This field is permanently reserved. Set to 0. */
-  UINT16	axisCount;	/* The number of variation axes in the font. This
+  HBUINT16	reserved;	/* This field is permanently reserved. Set to 0. */
+  HBUINT16	axisCount;	/* The number of variation axes in the font. This
 				 * must be the same number as axisCount in the
 				 * 'fvar' table. */
-  SegmentMaps	axisSegmentMapsZ;
+  SegmentMaps	firstAxisSegmentMaps;
 
   public:
   DEFINE_SIZE_MIN (8);

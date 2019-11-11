@@ -1210,6 +1210,10 @@ void tst_QTextScriptEngine::thaiIsolatedSaraAm()
 
 void tst_QTextScriptEngine::thaiWithZWJ()
 {
+#if QT_CONFIG(system_harfbuzz)
+    QSKIP("Requires up-to-date Harfbuzz");
+#endif
+
     QFontDatabase db;
     if (!db.families().contains("Waree"))
         QSKIP("couldn't find 'Waree' font");
@@ -1236,14 +1240,13 @@ void tst_QTextScriptEngine::thaiWithZWJ()
     QCOMPARE(e->layoutData->items[2].num_glyphs, ushort(2)); // Thai: Thai character followed by superscript "a" which is of inherited type
 
     //A quick sanity check - check all the characters are individual clusters
-    // A thai implementation could either remove the ZWJ and ZWNJ characters, or hide them.
-    // The current implementation hides them, so we test for that.
+    // A thai implementation could either remove the ZWJ character, or hide it.
+    // The current implementation merges the cluster for ZWJ and keeps ZWNJ, so we test for that.
     unsigned short *logClusters = e->layoutData->logClustersPtr;
     QCOMPARE(logClusters[0], ushort(0));
     QCOMPARE(logClusters[1], ushort(0));
     QCOMPARE(logClusters[2], ushort(2));
-    QCOMPARE(logClusters[3], ushort(2));
-    for (int i = 4; i < 15; i++)
+    for (int i = 3; i < 15; i++)
         QCOMPARE(logClusters[i], ushort(i));
     for (int i = 0; i < 3; i++)
         QCOMPARE(logClusters[i+15], ushort(0));
