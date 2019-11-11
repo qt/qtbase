@@ -1,5 +1,7 @@
 qtPrepareTool(MOC_COLLECT_JSON, moc)
 
+load(qt_build_paths)
+
 QMAKE_MOC_OPTIONS += --output-json
 
 MOC_JSON_H_BASE = $${QMAKE_H_MOD_MOC}
@@ -35,8 +37,16 @@ moc_collect_json.name = Collect moc JSON output into central file
 install_metatypes {
     do_install_metatypes.path = $$[QT_INSTALL_LIBS]/metatypes
     do_install_metatypes.files = $$OUT_PWD/$$MOC_COLLECT_JSON_OUTPUT
-    prefix_build: INSTALLS += do_install_metatypes
-    else: COPIES += do_install_metatypes
+    prefix_build {
+        !isEmpty(MODULE_BASE_OUTDIR) {
+            metatypes_to_builddir.files = $$do_install_metatypes.files
+            metatypes_to_builddir.path = $$MODULE_BASE_OUTDIR/lib/metatypes
+            COPIES += metatypes_to_builddir
+        }
+        INSTALLS += do_install_metatypes
+    } else {
+        COPIES += do_install_metatypes
+    }
 }
 
 QMAKE_EXTRA_COMPILERS += moc_collect_json moc_json_header moc_json_source
