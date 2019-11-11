@@ -1,9 +1,5 @@
-QT       += core gui
+QT       += core gui widgets
 TARGET = widgetgrab
 TEMPLATE = app
 
 SOURCES += main.cpp
-
-greaterThan(QT_MAJOR_VERSION, 4) {
-    QT += widgets
-}

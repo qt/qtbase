@@ -1,5 +1,4 @@
-QT += testlib
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += testlib widgets
 SOURCES = main.cpp \
     touchwidget.cpp
 FORMS += form.ui

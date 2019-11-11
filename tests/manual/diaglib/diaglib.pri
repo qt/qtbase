@@ -17,20 +17,8 @@ win32:!winrt:  {
     SOURCES += $$PWD/nativewindowdump.cpp
 }
 
-greaterThan(QT_MAJOR_VERSION, 4) {
-    QT += gui-private core-private
-    contains(QT, widgets) {
-        HEADERS += \
-            $$PWD/qwidgetdump.h \
-            $$PWD/debugproxystyle.h \
-            $$PWD/logwidget.h
-
-        SOURCES += \
-            $$PWD/qwidgetdump.cpp \
-            $$PWD/debugproxystyle.cpp \
-            $$PWD/logwidget.cpp
-    }
-} else {
+QT += gui-private core-private
+contains(QT, widgets) {
     HEADERS += \
         $$PWD/qwidgetdump.h \
         $$PWD/debugproxystyle.h \
