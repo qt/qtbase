@@ -161,13 +161,14 @@ def run_process_quiet(args_string: str, debug=False) -> bool:
         # git merge with conflicts returns with exit code 1, but that's not
         # an error for us.
         if "git merge" not in args_string:
-            print(
-                dedent(
-                    f"""\
-                         Error while running: "{args_string}"
-                         {e.stdout}"""
+            if debug:
+                print(
+                    dedent(
+                        f"""\
+                             Error while running: "{args_string}"
+                             {e.stdout}"""
+                    )
                 )
-            )
             return False
     return True
 
@@ -333,9 +334,11 @@ class SpecialCaseHandler(object):
                     time.sleep(0.1)
 
                 if failed_once and not success:
-                    print("Retrying git add, the index.lock was probably acquired.")
+                    if self.debug:
+                        print("Retrying git add, the index.lock was probably acquired.")
             if failed_once and success:
-                print("git add succeeded.")
+                if self.debug:
+                    print("git add succeeded.")
             elif failed_once and not success:
                 print(f"git add failed. Make sure to git add {self.prev_file_path} yourself.")
 
@@ -375,11 +378,11 @@ class SpecialCaseHandler(object):
             copyfile_log(self.post_merge_file_path, self.generated_file_path)
             if not self.keep_temporary_files:
                 os.remove(self.post_merge_file_path)
-
-            print(
-                "Special case reapplication using git is complete. "
-                "Make sure to fix remaining conflict markers."
-            )
+            if self.debug:
+                print(
+                    "Special case reapplication using git is complete. "
+                    "Make sure to fix remaining conflict markers."
+                )
 
         except Exception as e:
             print(f"Error occurred while trying to reapply special case modifications: {e}")

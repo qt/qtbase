@@ -3383,8 +3383,9 @@ def cmakeify_scope(
     cm_fh.write(buffer_value)
 
 
-def generate_new_cmakelists(scope: Scope, *, is_example: bool = False) -> None:
-    print("Generating CMakeLists.gen.txt")
+def generate_new_cmakelists(scope: Scope, *, is_example: bool = False, debug: bool = False) -> None:
+    if debug:
+        print("Generating CMakeLists.gen.txt")
     with open(scope.generated_cmake_lists_path, "w") as cm_fh:
         assert scope.file
         cm_fh.write(f"# Generated from {os.path.basename(scope.file)}.\n\n")
@@ -3415,8 +3416,11 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
         scope.merge(include_scope)
 
 
-def copy_generated_file_to_final_location(scope: Scope, keep_temporary_files=False) -> None:
-    print(f"Copying {scope.generated_cmake_lists_path} to {scope.original_cmake_lists_path}")
+def copy_generated_file_to_final_location(
+    scope: Scope, keep_temporary_files=False, debug: bool = False
+) -> None:
+    if debug:
+        print(f"Copying {scope.generated_cmake_lists_path} to {scope.original_cmake_lists_path}")
     copyfile(scope.generated_cmake_lists_path, scope.original_cmake_lists_path)
     if not keep_temporary_files:
         os.remove(scope.generated_cmake_lists_path)
@@ -3526,7 +3530,7 @@ def main() -> None:
             file_scope.dump()
             print("\n#### End of full .pro/.pri file structure.\n")
 
-        generate_new_cmakelists(file_scope, is_example=args.is_example)
+        generate_new_cmakelists(file_scope, is_example=args.is_example, debug=args.debug)
 
         copy_generated_file = True
         if not args.skip_special_case_preservation:
