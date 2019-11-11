@@ -35,7 +35,7 @@ testcocoon {
 osx: LIBS_PRIVATE += -framework AppKit
 darwin: LIBS_PRIVATE += -framework CoreGraphics
 
-CONFIG += simd optimize_full metatypes install_metatypes
+CONFIG += simd optimize_full
 
 include(accessible/accessible.pri)
 include(kernel/kernel.pri)
@@ -99,4 +99,4 @@ qtConfig(egl): CMAKE_EGL_INCDIRS = $$cmakePortablePaths($$QMAKE_INCDIR_EGL)
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtGui.dynlist
 
 TRACEPOINT_PROVIDER = $$PWD/qtgui.tracepoints
-CONFIG += qt_tracepoints
+CONFIG += qt_tracepoints metatypes install_metatypes
