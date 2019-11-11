@@ -85,6 +85,8 @@ public:
 
     void updateMouseStatus();
 
+    void reevaluateVisibilityForScreens() { setPos(pos()); }
+
 private:
     void initCursorAtlas();
 

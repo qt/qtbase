@@ -72,6 +72,7 @@ QEglFSKmsScreen::QEglFSKmsScreen(QKmsDevice *device, const QKmsOutput &output, b
     : QEglFSScreen(static_cast<QEglFSIntegration *>(QGuiApplicationPrivate::platformIntegration())->display())
     , m_device(device)
     , m_output(output)
+    , m_cursorOutOfRange(false)
     , m_powerState(PowerStateOn)
     , m_interruptHandler(new QEglFSKmsInterruptHandler(this))
     , m_headless(headless)

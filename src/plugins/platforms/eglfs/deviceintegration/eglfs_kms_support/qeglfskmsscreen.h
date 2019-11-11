@@ -99,12 +99,16 @@ public:
     QPlatformScreen::PowerState powerState() const override;
     void setPowerState(QPlatformScreen::PowerState state) override;
 
+    bool isCursorOutOfRange() const { return m_cursorOutOfRange; }
+    void setCursorOutOfRange(bool b) { m_cursorOutOfRange = b; }
+
 protected:
     QKmsDevice *m_device;
 
     QKmsOutput m_output;
     QEdidParser m_edid;
     QPoint m_pos;
+    bool m_cursorOutOfRange;
 
     QList<QPlatformScreen *> m_siblings;
 

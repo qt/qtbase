@@ -214,7 +214,8 @@ void QEglFSKmsGbmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 
     Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
         QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
-
+        if (kmsScreen->isCursorOutOfRange())
+            continue;
         int status = drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, handle,
                                       m_cursorSize.width(), m_cursorSize.height());
         if (status != 0)
@@ -232,17 +233,36 @@ void QEglFSKmsGbmCursor::setPos(const QPoint &pos)
 {
     Q_FOREACH (QPlatformScreen *screen, m_screen->virtualSiblings()) {
         QEglFSKmsScreen *kmsScreen = static_cast<QEglFSKmsScreen *>(screen);
-        QPoint origin = kmsScreen->geometry().topLeft();
-        QPoint localPos = pos - origin;
-        QPoint adjustedPos = localPos - m_cursorImage.hotspot();
+        const QRect screenGeom = kmsScreen->geometry();
+        const QPoint origin = screenGeom.topLeft();
+        const QPoint localPos = pos - origin;
+        const QPoint adjustedLocalPos = localPos - m_cursorImage.hotspot();
 
-        int ret = drmModeMoveCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, adjustedPos.x(), adjustedPos.y());
-        if (ret == 0)
-            m_pos = pos;
-        else
-            qWarning("Failed to move cursor on screen %s: %d", kmsScreen->name().toLatin1().constData(), ret);
+        if (localPos.x() < 0 || localPos.y() < 0
+            || localPos.x() >= screenGeom.width() || localPos.y() >= screenGeom.height())
+        {
+            if (!kmsScreen->isCursorOutOfRange()) {
+                kmsScreen->setCursorOutOfRange(true);
+                drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id, 0, 0, 0);
+            }
+        } else {
+            int ret;
+            if (kmsScreen->isCursorOutOfRange()) {
+                kmsScreen->setCursorOutOfRange(false);
+                uint32_t handle = gbm_bo_get_handle(m_bo).u32;
+                ret = drmModeSetCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id,
+                                       handle, m_cursorSize.width(), m_cursorSize.height());
+            } else {
+                ret = drmModeMoveCursor(kmsScreen->device()->fd(), kmsScreen->output().crtc_id,
+                                        adjustedLocalPos.x(), adjustedLocalPos.y());
+            }
+            if (ret == 0)
+                m_pos = pos;
+            else
+                qWarning("Failed to move cursor on screen %s: %d", kmsScreen->name().toLatin1().constData(), ret);
 
-        kmsScreen->handleCursorMove(pos);
+            kmsScreen->handleCursorMove(pos);
+        }
     }
 }
 

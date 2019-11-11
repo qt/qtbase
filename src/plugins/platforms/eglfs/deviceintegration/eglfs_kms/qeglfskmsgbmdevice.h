@@ -70,6 +70,10 @@ public:
     void registerScreenCloning(QPlatformScreen *screen,
                                QPlatformScreen *screenThisScreenClones,
                                const QVector<QPlatformScreen *> &screensCloningThisScreen) override;
+    void registerScreen(QPlatformScreen *screen,
+                        bool isPrimary,
+                        const QPoint &virtualPos,
+                        const QList<QPlatformScreen *> &virtualSiblings) override;
 
 private:
     Q_DISABLE_COPY(QEglFSKmsGbmDevice)

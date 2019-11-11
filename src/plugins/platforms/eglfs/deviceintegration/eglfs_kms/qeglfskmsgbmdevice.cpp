@@ -155,4 +155,14 @@ void QEglFSKmsGbmDevice::registerScreenCloning(QPlatformScreen *screen,
     gbmScreen->initCloning(screenThisScreenClones, screensCloningThisScreen);
 }
 
+void QEglFSKmsGbmDevice::registerScreen(QPlatformScreen *screen,
+                                        bool isPrimary,
+                                        const QPoint &virtualPos,
+                                        const QList<QPlatformScreen *> &virtualSiblings)
+{
+    QEglFSKmsDevice::registerScreen(screen, isPrimary, virtualPos, virtualSiblings);
+    if (screenConfig()->hwCursor() && m_globalCursor)
+        m_globalCursor->reevaluateVisibilityForScreens();
+}
+
 QT_END_NAMESPACE
