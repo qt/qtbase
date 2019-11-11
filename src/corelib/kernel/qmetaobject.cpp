@@ -154,19 +154,29 @@ QT_BEGIN_NAMESPACE
 static inline const QMetaObjectPrivate *priv(const uint* data)
 { return reinterpret_cast<const QMetaObjectPrivate*>(data); }
 
+static inline const char *rawStringData(const QMetaObject *mo, int index)
+{
+    Q_ASSERT(priv(mo->d.data)->revision >= 7);
+    uint offset = mo->d.stringdata[2*index];
+    return reinterpret_cast<const char *>(mo->d.stringdata) + offset;
+}
+
 static inline const QByteArray stringData(const QMetaObject *mo, int index)
 {
     Q_ASSERT(priv(mo->d.data)->revision >= 7);
-    const QByteArrayDataPtr data = { const_cast<QByteArrayData*>(&mo->d.stringdata[index]) };
-    Q_ASSERT(data.ptr->isStatic());
-    Q_ASSERT(data.ptr->allocatedCapacity() == 0);
-    Q_ASSERT(data.ptr->size >= 0);
-    return data;
+    uint offset = mo->d.stringdata[2*index];
+    uint length = mo->d.stringdata[2*index + 1];
+    const char *string = reinterpret_cast<const char *>(mo->d.stringdata) + offset;
+    return QByteArray::fromRawData(string, length);
 }
 
-static inline const char *rawStringData(const QMetaObject *mo, int index)
+static inline const char *rawTypeNameFromTypeInfo(const QMetaObject *mo, uint typeInfo)
 {
-    return stringData(mo, index).data();
+    if (typeInfo & IsUnresolvedType) {
+        return rawStringData(mo, typeInfo & TypeNameIndexMask);
+    } else {
+        return QMetaType::typeName(typeInfo);
+    }
 }
 
 static inline QByteArray typeNameFromTypeInfo(const QMetaObject *mo, uint typeInfo)
@@ -180,16 +190,11 @@ static inline QByteArray typeNameFromTypeInfo(const QMetaObject *mo, uint typeIn
     }
 }
 
-static inline const char *rawTypeNameFromTypeInfo(const QMetaObject *mo, uint typeInfo)
-{
-    return typeNameFromTypeInfo(mo, typeInfo).constData();
-}
-
 static inline int typeFromTypeInfo(const QMetaObject *mo, uint typeInfo)
 {
     if (!(typeInfo & IsUnresolvedType))
         return typeInfo;
-    return QMetaType::type(stringData(mo, typeInfo & TypeNameIndexMask));
+    return QMetaType::type(rawStringData(mo, typeInfo & TypeNameIndexMask));
 }
 
 class QMetaMethodPrivate : public QMetaMethod
@@ -576,7 +581,7 @@ static bool methodMatch(const QMetaObject *m, int handle,
     if (int(m->d.data[handle + 1]) != argc)
         return false;
 
-    if (stringData(m, m->d.data[handle]) != name)
+    if (rawStringData(m, m->d.data[handle]) != name)
         return false;
 
     int paramsIndex = m->d.data[handle + 2] + 1;

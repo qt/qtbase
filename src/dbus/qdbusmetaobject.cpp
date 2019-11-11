@@ -547,7 +547,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     obj->d.relatedMetaObjects = 0;
     obj->d.static_metacall = 0;
     obj->d.extradata = 0;
-    obj->d.stringdata = reinterpret_cast<const QByteArrayData *>(string_data);
+    obj->d.stringdata = reinterpret_cast<const uint *>(string_data);
     obj->d.superdata = &QDBusAbstractInterface::staticMetaObject;
 }
 

@@ -1702,9 +1702,10 @@ void tst_QMetaObjectBuilder::classNameFirstInStringData()
     builder.setClassName(QByteArrayLiteral("TestClass"));
     QMetaObject *mo = builder.toMetaObject();
 
-    QByteArrayDataPtr header;
-    header.ptr = const_cast<QByteArrayData*>(mo->d.stringdata);
-    QCOMPARE(QByteArray(header), QByteArrayLiteral("TestClass"));
+    uint offset = mo->d.stringdata[0];
+    uint len = mo->d.stringdata[1];
+    QByteArray className(reinterpret_cast<const char *>(mo->d.stringdata) + offset, len);
+    QCOMPARE(className, QByteArrayLiteral("TestClass"));
 
     free(mo);
 }

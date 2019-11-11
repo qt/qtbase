@@ -424,7 +424,7 @@ struct Q_CORE_EXPORT QMetaObject
 
     struct { // private data
         SuperData superdata;
-        const QByteArrayData *stringdata;
+        const uint *stringdata;
         const uint *data;
         typedef void (*StaticMetacallFunction)(QObject *, QMetaObject::Call, int, void **);
         StaticMetacallFunction static_metacall;

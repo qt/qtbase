@@ -236,7 +236,7 @@ void Generator::generateCode()
 //
     const int constCharArraySizeLimit = 65535;
     fprintf(out, "struct qt_meta_stringdata_%s_t {\n", qualifiedClassNameIdentifier.constData());
-    fprintf(out, "    QByteArrayData data[%d];\n", strings.size());
+    fprintf(out, "    const uint offsetsAndSize[%d];\n", strings.size()*2);
     {
         int stringDataLength = 0;
         int stringDataCounter = 0;
@@ -259,11 +259,8 @@ void Generator::generateCode()
     // stringdata.stringdata member, and 2) the stringdata.data index of the
     // QByteArrayData being defined. This calculation relies on the
     // QByteArrayData::data() implementation returning simply "this + offset".
-    fprintf(out, "#define QT_MOC_LITERAL(idx, ofs, len) \\\n"
-            "    Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \\\n"
-            "    qptrdiff(offsetof(qt_meta_stringdata_%s_t, stringdata0) + ofs \\\n"
-            "        - idx * sizeof(QByteArrayData)) \\\n"
-            "    )\n",
+    fprintf(out, "#define QT_MOC_LITERAL(ofs, len) \\\n"
+            "    uint(offsetof(qt_meta_stringdata_%s_t, stringdata0) + ofs), len \n",
             qualifiedClassNameIdentifier.constData());
 
     fprintf(out, "static const qt_meta_stringdata_%s_t qt_meta_stringdata_%s = {\n",
@@ -273,7 +270,7 @@ void Generator::generateCode()
         int idx = 0;
         for (int i = 0; i < strings.size(); ++i) {
             const QByteArray &str = strings.at(i);
-            fprintf(out, "QT_MOC_LITERAL(%d, %d, %d)", i, idx, str.length());
+            fprintf(out, "QT_MOC_LITERAL(%d, %d)", idx, str.length());
             if (i != strings.size() - 1)
                 fputc(',', out);
             const QByteArray comment = str.length() > 32 ? str.left(29) + "..." : str;
@@ -541,7 +538,7 @@ void Generator::generateCode()
         fprintf(out, "    QMetaObject::SuperData::link<%s::staticMetaObject>(),\n", purestSuperClass.constData());
     else
         fprintf(out, "    nullptr,\n");
-    fprintf(out, "    qt_meta_stringdata_%s.data,\n"
+    fprintf(out, "    qt_meta_stringdata_%s.offsetsAndSize,\n"
             "    qt_meta_data_%s,\n", qualifiedClassNameIdentifier.constData(),
             qualifiedClassNameIdentifier.constData());
     if (hasStaticMetaCall)
