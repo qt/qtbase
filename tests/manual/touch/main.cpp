@@ -526,7 +526,7 @@ void MainWindow::updateScreenLabel()
     const QRect geometry = screen->geometry();
     const qreal dpr = screen->devicePixelRatio();
     str << '"' << screen->name() << "\" " << geometry.width() << 'x' << geometry.height()
-        << forcesign << geometry.x() << geometry.y() << noforcesign;
+        << Qt::forcesign << geometry.x() << geometry.y() << Qt::noforcesign;
     if (!qFuzzyCompare(dpr, qreal(1)))
         str << ", dpr=" << dpr;
     m_screenLabel->setText(text);

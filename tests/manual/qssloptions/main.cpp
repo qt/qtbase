@@ -37,13 +37,13 @@ int main(int argc, char **argv)
 
     if (argc < 3) {
         QTextStream out(stdout);
-        out << "Usage: " << argv[0] << " host port [options]" << endl;
-        out << "The options can be one or more of the following:" << endl;
-        out << "enable_empty_fragments" << endl;
-        out << "disable_session_tickets" << endl;
-        out << "disable_compression" << endl;
-        out << "disable_sni" << endl;
-        out << "enable_unsafe_reneg" << endl;
+        out << "Usage: " << argv[0] << " host port [options]" << Qt::endl;
+        out << "The options can be one or more of the following:" << Qt::endl;
+        out << "enable_empty_fragments" << Qt::endl;
+        out << "disable_session_tickets" << Qt::endl;
+        out << "disable_compression" << Qt::endl;
+        out << "disable_sni" << Qt::endl;
+        out << "enable_unsafe_reneg" << Qt::endl;
         return 1;
     }
 

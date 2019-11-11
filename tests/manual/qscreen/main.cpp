@@ -192,15 +192,15 @@ static inline QString msgScreenChange(const QWidget *w, const QScreen *oldScreen
     if (!newScreen) {
         result = QLatin1String("Screen changed --> null");
     } else if (!oldScreen) {
-        QTextStream(&result) << "Screen changed null --> \""
-            << newScreen->name() << "\" at " << pos.x() << ',' << pos.y() << " geometry: "
-            << geometry.width() << 'x' << geometry.height() << forcesign << geometry.x()
-            << geometry.y() << '.';
+        QTextStream(&result) << "Screen changed null --> \"" << newScreen->name() << "\" at "
+                             << pos.x() << ',' << pos.y() << " geometry: " << geometry.width()
+                             << 'x' << geometry.height() << Qt::forcesign << geometry.x()
+                             << geometry.y() << '.';
     } else {
         QTextStream(&result) << "Screen changed \"" << oldScreen->name() << "\" --> \""
-            << newScreen->name() << "\" at " << pos.x() << ',' << pos.y() << " geometry: "
-            << geometry.width() << 'x' << geometry.height() << forcesign << geometry.x()
-            << geometry.y() << '.';
+                             << newScreen->name() << "\" at " << pos.x() << ',' << pos.y()
+                             << " geometry: " << geometry.width() << 'x' << geometry.height()
+                             << Qt::forcesign << geometry.x() << geometry.y() << '.';
     }
     return result;
 }
