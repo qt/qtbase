@@ -645,14 +645,6 @@ extend_target(Gui CONDITION ANDROID AND TEST_architecture_arch STREQUAL x86_64
         QT_COMPILER_SUPPORTS_SSE4_2
 )
 
-# special case begin
-extend_target(Gui CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64" AND QT_FEATURE_neon)
-    SOURCES
-        ../3rdparty/pixman/pixman-arm-neon-asm.S
-        painting/qdrawhelper_neon_asm.S
-)
-# special case end
-
 extend_target(Gui CONDITION QT_FEATURE_regularexpression
     SOURCES
         util/qshadergenerator.cpp util/qshadergenerator_p.h
