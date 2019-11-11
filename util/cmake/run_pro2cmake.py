@@ -60,6 +60,12 @@ def parse_command_line():
         help="Run pro2cmake only on the main modules in qtbase.",
     )
     parser.add_argument(
+        "--skip-subdirs-projects",
+        dest="skip_subdirs_projects",
+        action="store_true",
+        help="Don't run pro2cmake on TEMPLATE=subdirs projects.",
+    )
+    parser.add_argument(
         "--is-example",
         dest="is_example",
         action="store_true",
@@ -162,6 +168,8 @@ def run(all_files: typing.List[str], pro2cmake: str, args: argparse.Namespace) -
             pro2cmake_args.append(pro2cmake)
             if args.is_example:
                 pro2cmake_args.append("--is-example")
+            if args.skip_subdirs_projects:
+                pro2cmake_args.append("--skip-subdirs-project")
             pro2cmake_args.append(os.path.basename(filename))
             result = subprocess.run(
                 pro2cmake_args,

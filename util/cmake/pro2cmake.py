@@ -156,6 +156,13 @@ def _parse_commandline():
     )
 
     parser.add_argument(
+        "--skip-subdirs-project",
+        dest="skip_subdirs_project",
+        action="store_true",
+        help="Skip converting project if it ends up being a TEMPLATE=subdirs project.",
+    )
+
+    parser.add_argument(
         "-i",
         "--ignore-skip-marker",
         dest="ignore_skip_marker",
@@ -3485,6 +3492,15 @@ def should_convert_project(project_file_path: str = "", ignore_skip_marker: bool
     return True
 
 
+def should_convert_project_after_parsing(
+    file_scope: Scope, skip_subdirs_project: bool = False
+) -> bool:
+    template = file_scope.TEMPLATE
+    if template == "subdirs" and skip_subdirs_project:
+        return False
+    return True
+
+
 def main() -> None:
     # Be sure of proper Python version
     assert sys.version_info >= (3, 7)
@@ -3534,6 +3550,10 @@ def main() -> None:
             print("\n\n#### Full .pro/.pri file structure:")
             file_scope.dump()
             print("\n#### End of full .pro/.pri file structure.\n")
+
+        if not should_convert_project_after_parsing(file_scope, args.skip_subdirs_project):
+            print(f'Skipping conversion of project: "{project_file_absolute_path}"')
+            continue
 
         generate_new_cmakelists(file_scope, is_example=args.is_example, debug=args.debug)
 
