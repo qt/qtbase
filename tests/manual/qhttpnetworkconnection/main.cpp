@@ -58,7 +58,7 @@ void tst_qhttpnetworkconnection::bigRemoteFile()
     QVERIFY(!QTestEventLoop::instance().timeout());
     size = reply->size();
     delete reply;
-    qDebug() << "Finished!" << endl;
+    qDebug() << "Finished!" << Qt::endl;
     qDebug() << "Time:" << t.elapsed() << "msec";
     qDebug() << "Bytes:" << size;
     qDebug() << "Speed:" <<  (size / qreal(1024)) / (t.elapsed() / qreal(1000)) << "KB/sec";

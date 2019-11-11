@@ -190,7 +190,8 @@ QTextStream &operator<<(QTextStream &s, const QSizeF &size)
 
 QTextStream &operator<<(QTextStream &s, const QRectF &rect)
 {
-    s << rect.width() << 'x' << rect.height() << forcesign << rect.x() << rect.y() << noforcesign;
+    s << rect.width() << 'x' << rect.height() << Qt::forcesign << rect.x() << rect.y()
+      << Qt::noforcesign;
     return s;
 }
 

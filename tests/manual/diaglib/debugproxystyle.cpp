@@ -68,8 +68,8 @@ QDebug operator<<(QDebug debug, const QStyleOption *option)
     } else {
         debug << "QStyleOption(";
     }
-    debug << "rect=" << option->rect.width() << 'x' << option->rect.height()
-          << forcesign << option->rect.x() << option->rect.y() << noforcesign;
+    debug << "rect=" << option->rect.width() << 'x' << option->rect.height() << Qt::forcesign
+          << option->rect.x() << option->rect.y() << Qt::noforcesign;
     if (option->state != QStyle::State_None)
         debug << ", state=" << option->state;
 #if QT_VERSION >= 0x050000

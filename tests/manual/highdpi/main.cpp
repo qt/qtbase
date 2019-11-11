@@ -63,7 +63,7 @@
 
 static QTextStream &operator<<(QTextStream &str, const QRect &r)
 {
-    str << r.width() << 'x' << r.height() << forcesign << r.x() << r.y() << noforcesign;
+    str << r.width() << 'x' << r.height() << Qt::forcesign << r.x() << r.y() << Qt::noforcesign;
     return str;
 }
 

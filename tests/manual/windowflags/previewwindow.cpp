@@ -48,7 +48,8 @@ void PreviewWindow::paintEvent(QPaintEvent *event)
 
 static void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
 {
-    str << "Window flags: " << hex << showbase << unsigned(flags) << noshowbase << dec << ' ';
+    str << "Window flags: " << Qt::hex << Qt::showbase << unsigned(flags) << Qt::noshowbase
+        << Qt::dec << ' ';
     switch (flags & Qt::WindowType_Mask) {
     case Qt::Window:
         str << "Qt::Window";
@@ -125,7 +126,8 @@ static void formatWindowFlags(QTextStream &str, Qt::WindowFlags flags)
 
 static void formatWindowStates(QTextStream &str, Qt::WindowStates states)
 {
-    str << "Window states: " << hex << showbase << unsigned(states) << noshowbase << dec << ' ';
+    str << "Window states: " << Qt::hex << Qt::showbase << unsigned(states) << Qt::noshowbase
+        << Qt::dec << ' ';
     if (states & Qt::WindowActive) {
         str << "Qt::WindowActive ";
         states &= ~Qt::WindowActive;
@@ -150,7 +152,7 @@ static void formatWindowStates(QTextStream &str, Qt::WindowStates states)
 
 QTextStream &operator<<(QTextStream &str, const QRect &r)
 {
-    str << r.width() << 'x' << r.height() << forcesign << r.x() << r.y() << noforcesign;
+    str << r.width() << 'x' << r.height() << Qt::forcesign << r.x() << r.y() << Qt::noforcesign;
     return str;
 }
 

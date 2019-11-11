@@ -86,14 +86,16 @@ static void dumpWidgetRecursion(QTextStream &str, const QWidget *w,
     formatWidgetClass(str, w);
     str << ' ' << (w->isVisible() ? "[visible] " : "[hidden] ");
     if (const WId nativeWinId = w->internalWinId())
-        str << "[native: " << hex << showbase << nativeWinId << dec << noshowbase << "] ";
+        str << "[native: " << Qt::hex << Qt::showbase << nativeWinId << Qt::dec << Qt::noshowbase
+            << "] ";
     if (w->isWindow())
         str << "[top] ";
     str << (w->testAttribute(Qt::WA_Mapped) ? "[mapped] " : "[not mapped] ");
     if (w->testAttribute(Qt::WA_DontCreateNativeAncestors))
         str << "[NoNativeAncestors] ";
     if (const int states = w->windowState())
-        str << "windowState=" << hex << showbase << states << dec << noshowbase << ' ';
+        str << "windowState=" << Qt::hex << Qt::showbase << states << Qt::dec << Qt::noshowbase
+            << ' ';
     formatRect(str, w->geometry());
     if (w->isWindow()) {
         str << ' ' << w->logicalDpiX() << "DPI";
