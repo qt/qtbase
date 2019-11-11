@@ -2852,7 +2852,9 @@ function(add_qt_simd_part target)
         endif()
         string(TOUPPER "QT_CFLAGS_${arg_SIMD}" simd_flags)
 
-        add_library("${name}" OBJECT)
+        if (NOT TARGET "${name}")
+            add_library("${name}" OBJECT)
+        endif()
         target_sources("${name}" PRIVATE ${arg_SOURCES})
         target_include_directories("${name}" PRIVATE
             ${arg_INCLUDE_DIRECTORIES}
