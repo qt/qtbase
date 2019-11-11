@@ -1879,9 +1879,11 @@ def map_to_cmake_condition(condition: str = "") -> str:
         r'(TEST_architecture_arch STREQUAL "\1")',
         condition or "",
     )
-    condition = condition.replace('QT___contains___opengl', 'QT_FEATURE_opengl')
-    condition = condition.replace('QT___contains___widgets', 'QT_FEATURE_widgets')
-    condition = condition.replace('DEFINES___contains___QT_NO_PRINTER', '(QT_FEATURE_printer EQUAL FALSE)')
+    condition = condition.replace("QT___contains___opengl", "QT_FEATURE_opengl")
+    condition = condition.replace("QT___contains___widgets", "QT_FEATURE_widgets")
+    condition = condition.replace(
+        "DEFINES___contains___QT_NO_PRINTER", "(QT_FEATURE_printer EQUAL FALSE)"
+    )
     return condition
 
 
@@ -2698,7 +2700,7 @@ def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int
 
     extra = ["GUI"] if gui and not is_qt_test_helper else []
     cmake_function_call = "add_qt_executable"
-    extra_keys = []
+    extra_keys: List[str] = []
 
     if is_qt_test_helper:
         binary_name += "_helper"
@@ -3134,7 +3136,7 @@ def handle_app_or_lib(
     ) and "testlib" not in scope.expand("QT")
 
     if is_jar:
-        tar = write_jar(cm_fh, scope, indent=indent)
+        write_jar(cm_fh, scope, indent=indent)
     elif is_example:
         target = write_example(cm_fh, scope, gui, indent=indent, is_plugin=is_plugin)
     elif is_qt_plugin:
