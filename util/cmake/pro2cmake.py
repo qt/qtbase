@@ -3403,7 +3403,10 @@ def do_include(scope: Scope, *, debug: bool = False) -> None:
         if not include_file:
             continue
         if not os.path.isfile(include_file):
-            print(f"    XXXX: Failed to include {include_file}.")
+            generated_config_pri_pattern = re.compile(r"qt.+?-config\.pri$")
+            match_result = re.search(generated_config_pri_pattern, include_file)
+            if not match_result:
+                print(f"    XXXX: Failed to include {include_file}.")
             continue
 
         include_result = parseProFile(include_file, debug=debug)
