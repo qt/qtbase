@@ -717,11 +717,6 @@ extend_target(Gui CONDITION QT_FEATURE_vulkan
 
 # special case begin
 if (QT_FEATURE_vulkan)
-    set(qvkgen_command "${HOST_QVKGEN}")
-    if (TARGET qvkgen)
-        set(qvkgen_command qvkgen)
-    endif()
-
     set(vulkan_fun "qvulkanfunctions.h")
     set(vulkan_fun_p "qvulkanfunctions_p.h")
     set(vulkan_fun_p_cpp "qvulkanfunctions_p.cpp")
@@ -729,7 +724,7 @@ if (QT_FEATURE_vulkan)
     add_custom_command(
         OUTPUT "vulkan/${vulkan_fun}" "vulkan/${vulkan_fun_p}" "vulkan/${vulkan_fun_p_cpp}"
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/vulkan/"
-        COMMAND "${qvkgen_command}"
+        COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qvkgen
             "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vk.xml"
             "${PROJECT_SOURCE_DIR}/header.LGPL"
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/qvulkanfunctions"
