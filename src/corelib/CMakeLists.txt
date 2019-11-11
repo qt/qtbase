@@ -514,7 +514,7 @@ extend_target(Core CONDITION INTEGRITY
 #### Keys ignored in scope 21:.:global:global/global.pri:CLANG OR intel_icl OR ICC:
 # f16c_cxx = "false"
 
-#### Keys ignored in scope 23:.:global:global/global.pri:GCC AND f16c AND TEST_architecture_arch STREQUAL x86imdAlways:
+#### Keys ignored in scope 23:.:global:global/global.pri:GCC AND f16c AND x86SimdAlways:
 # f16c_cxx = "true"
 
 #### Keys ignored in scope 25:.:global:global/global.pri:MSVC AND QT_CPU_FEATURES__ss_QT_ARCH___contains___avx:

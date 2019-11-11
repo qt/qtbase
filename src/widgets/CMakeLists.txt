@@ -656,7 +656,7 @@ if(QT_FEATURE_messagebox)
     set(qmessagebox_resource_files
         "images/qtlogo-64.png"
     )
-    
+
     add_qt_resource(Widgets "qmessagebox"
         PREFIX
             "/qt-project.org/qmessagebox"

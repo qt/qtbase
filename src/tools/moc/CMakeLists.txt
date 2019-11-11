@@ -11,11 +11,12 @@ add_qt_tool(moc
         cbordevice.h
         collectjson.cpp collectjson.h
         generator.cpp generator.h
-        main.cpp  # special case
+        main.cpp
         moc.cpp moc.h
         outputrevision.h
         parser.cpp parser.h
         preprocessor.cpp preprocessor.h
+        # qdatetime_p.h special case remove
         symbols.h
         token.cpp token.h
         utils.h

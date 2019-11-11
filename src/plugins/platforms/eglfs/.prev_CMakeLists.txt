@@ -72,19 +72,20 @@ extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEM
         EGLFS_PREFERRED_PLUGIN=
 )
 
-# Resources:
-set(cursor_resource_files
-    "cursor-atlas.png"
-    "cursor.json"
-)
+if(NOT DEFINES___contains___QT_NO_CURSOR)
+    # Resources:
+    set(cursor_resource_files
+        "cursor-atlas.png"
+        "cursor.json"
+    )
 
-add_qt_resource(EglFSDeviceIntegration "cursor"
-    PREFIX
-        "/"
-    FILES
-        ${cursor_resource_files}
-)
-
+    add_qt_resource(EglFSDeviceIntegration "cursor"
+        PREFIX
+            "/"
+        FILES
+            ${cursor_resource_files}
+    )
+endif()
 
 extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
     SOURCES

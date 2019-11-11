@@ -58,19 +58,20 @@ extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::PlatformCompositorSupp
 # extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY ...
 # extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY ...
 
-# Resources:
-set(cursor_resource_files
-    "cursor-atlas.png"
-    "cursor.json"
-)
+if(QT_FEATURE_cursor) # special case
+    # Resources:
+    set(cursor_resource_files
+        "cursor-atlas.png"
+        "cursor.json"
+    )
 
-add_qt_resource(EglFSDeviceIntegration "cursor"
-    PREFIX
-        "/"
-    FILES
-        ${cursor_resource_files}
-)
-
+    add_qt_resource(EglFSDeviceIntegration "cursor"
+        PREFIX
+            "/"
+        FILES
+            ${cursor_resource_files}
+    )
+endif()
 
 extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
     SOURCES

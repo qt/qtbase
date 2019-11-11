@@ -116,7 +116,7 @@ if(QT_FEATURE_printdialog)
         "images/zoom-out-24.png"
         "images/zoom-out-32.png"
     )
-    
+
     add_qt_resource(PrintSupport "qprintdialog"
         PREFIX
             "/qt-project.org/dialogs/qprintpreviewdialog"
@@ -129,7 +129,7 @@ if(QT_FEATURE_printdialog)
         "images/status-color.png"
         "images/status-gray-scale.png"
     )
-    
+
     add_qt_resource(PrintSupport "qprintdialog1"
         PREFIX
             "/qt-project.org/dialogs/qprintdialog"

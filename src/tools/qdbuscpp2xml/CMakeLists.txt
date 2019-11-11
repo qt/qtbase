@@ -17,7 +17,7 @@ add_qt_tool(qdbuscpp2xml
         ../moc/symbols.h
         ../moc/token.cpp ../moc/token.h
         ../moc/utils.h
-        qdbuscpp2xml.cpp  # special case
+        qdbuscpp2xml.cpp
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_FOREACH
