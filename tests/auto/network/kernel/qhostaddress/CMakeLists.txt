@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qhostaddress
-    GUI
     SOURCES
         tst_qhostaddress.cpp
     LIBRARIES
@@ -13,9 +12,6 @@ add_qt_test(tst_qhostaddress
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:qhostaddress.pro:<TRUE>:
-# CONFIG = "testcase"
 
 ## Scopes:
 #####################################################################

@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qnetworkproxyfactory
-    GUI
     SOURCES
         tst_qnetworkproxyfactory.cpp
     LIBRARIES
@@ -13,6 +12,3 @@ add_qt_test(tst_qnetworkproxyfactory
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:qnetworkproxyfactory.pro:<TRUE>:
-# CONFIG = "testcase"

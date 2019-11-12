@@ -10,6 +10,3 @@ add_qt_test(tst_qnetworkdatagram
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:qnetworkdatagram.pro:<TRUE>:
-# CONFIG = "testcase" "console"

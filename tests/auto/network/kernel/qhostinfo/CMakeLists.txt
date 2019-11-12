@@ -1,11 +1,14 @@
 # Generated from qhostinfo.pro.
 
+if(NOT QT_FEATURE_private_tests)
+    return()
+endif()
+
 #####################################################################
 ## tst_qhostinfo Test:
 #####################################################################
 
 add_qt_test(tst_qhostinfo
-    GUI
     SOURCES
         tst_qhostinfo.cpp
     LIBRARIES
@@ -16,7 +19,7 @@ add_qt_test(tst_qhostinfo
 )
 
 #### Keys ignored in scope 1:.:.:qhostinfo.pro:<TRUE>:
-# CONFIG = "testcase"
+# _REQUIREMENTS = "qtConfig(private_tests)"
 
 ## Scopes:
 #####################################################################

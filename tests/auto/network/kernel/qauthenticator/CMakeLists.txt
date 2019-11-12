@@ -1,11 +1,14 @@
 # Generated from qauthenticator.pro.
 
+if(NOT QT_FEATURE_private_tests)
+    return()
+endif()
+
 #####################################################################
 ## tst_qauthenticator Test:
 #####################################################################
 
 add_qt_test(tst_qauthenticator
-    GUI
     SOURCES
         tst_qauthenticator.cpp
     DEFINES
@@ -17,4 +20,4 @@ add_qt_test(tst_qauthenticator
 )
 
 #### Keys ignored in scope 1:.:.:qauthenticator.pro:<TRUE>:
-# CONFIG = "testcase"
+# _REQUIREMENTS = "qtConfig(private_tests)"

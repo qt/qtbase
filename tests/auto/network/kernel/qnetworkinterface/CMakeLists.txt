@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qnetworkinterface
-    GUI
     SOURCES
         ../../../../shared/emulationdetector.h
         tst_qnetworkinterface.cpp
@@ -14,6 +13,3 @@ add_qt_test(tst_qnetworkinterface
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:qnetworkinterface.pro:<TRUE>:
-# CONFIG = "testcase"
