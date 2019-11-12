@@ -1,15 +1,14 @@
-# Generated from qopenglwindow.pro.
+# Generated from qguitimer.pro.
 
 #####################################################################
-## tst_qopenglwindow Test:
+## tst_qguitimer Test:
 #####################################################################
 
-add_qt_test(tst_qopenglwindow
+add_qt_test(tst_qguitimer
     SOURCES
-        tst_qopenglwindow.cpp
+        ../../../corelib/kernel/qtimer/tst_qtimer.cpp
     LIBRARIES
         Qt::CorePrivate
-        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
 )

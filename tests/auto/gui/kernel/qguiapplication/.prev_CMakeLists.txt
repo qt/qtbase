@@ -9,15 +9,15 @@ endif()
 #####################################################################
 
 add_qt_test(tst_qguiapplication
-    GUI
     SOURCES
-        ../../../corelib/kernel/qcoreapplication/tst_qcoreapplication.cpp ../../../corelib/kernel/qcoreapplication/tst_qcoreapplication.h
+        tst_qcoreapplication.cpp tst_qcoreapplication.h
         tst_qguiapplication.cpp
     DEFINES
         QT_DISABLE_DEPRECATED_BEFORE=0x050E00
     INCLUDE_DIRECTORIES
         ../../../corelib/kernel/qcoreapplication
     LIBRARIES
+        Qt::CorePrivate
         Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui

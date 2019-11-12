@@ -9,7 +9,6 @@ endif()
 #####################################################################
 
 add_qt_test(tst_qguiapplication
-    GUI
     SOURCES
         ../../../corelib/kernel/qcoreapplication/tst_qcoreapplication.cpp ../../../corelib/kernel/qcoreapplication/tst_qcoreapplication.h # special case
         tst_qguiapplication.cpp
@@ -18,6 +17,7 @@ add_qt_test(tst_qguiapplication
     INCLUDE_DIRECTORIES
         ../../../corelib/kernel/qcoreapplication
     LIBRARIES
+        Qt::CorePrivate
         Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
