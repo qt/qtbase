@@ -22,4 +22,3 @@ add_qt_plugin(qevdevmouseplugin
 #### Keys ignored in scope 1:.:.:evdevmouse.pro:<TRUE>:
 # OTHER_FILES = "evdevmouse.json"
 # PLUGIN_EXTENDS = "-"
-# _LOADED = "qt_plugin"

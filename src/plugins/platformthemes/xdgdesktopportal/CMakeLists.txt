@@ -24,4 +24,3 @@ add_qt_plugin(qxdgdesktopportal
 
 #### Keys ignored in scope 1:.:.:xdgdesktopportal.pro:<TRUE>:
 # PLUGIN_EXTENDS = "-"
-# _LOADED = "qt_plugin"

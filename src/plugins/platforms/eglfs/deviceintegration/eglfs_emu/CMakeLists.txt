@@ -28,4 +28,3 @@ add_qt_plugin(qeglfs-emu-integration
 #### Keys ignored in scope 1:.:.:eglfs_emu.pro:<TRUE>:
 # DISTFILES = "eglfs_emu.json"
 # OTHER_FILES = "$$PWD/eglfs_emu.json"
-# _LOADED = "qt_plugin"

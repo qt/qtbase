@@ -39,7 +39,6 @@ add_qt_plugin(qdirectfb
 
 #### Keys ignored in scope 1:.:.:directfb.pro:<TRUE>:
 # OTHER_FILES = "directfb.json"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

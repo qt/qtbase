@@ -22,4 +22,3 @@ add_qt_plugin(qevdevtabletplugin
 #### Keys ignored in scope 1:.:.:evdevtablet.pro:<TRUE>:
 # OTHER_FILES = "evdevtablet.json"
 # PLUGIN_EXTENDS = "-"
-# _LOADED = "qt_plugin"

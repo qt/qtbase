@@ -69,7 +69,6 @@ add_qt_module(Network
 #### Keys ignored in scope 1:.:.:network.pro:<TRUE>:
 # MODULE_WINRT_CAPABILITIES = "internetClient" "internetClientServer" "privateNetworkClientServer"
 # QMAKE_LIBS = "$$QMAKE_LIBS_NETWORK"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################

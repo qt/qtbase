@@ -23,4 +23,3 @@ add_qt_plugin(qjpeg
 
 #### Keys ignored in scope 1:.:.:jpeg.pro:<TRUE>:
 # OTHER_FILES = "jpeg.json"
-# _LOADED = "qt_plugin"

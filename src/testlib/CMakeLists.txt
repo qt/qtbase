@@ -68,7 +68,6 @@ add_qt_module(Test
 
 #### Keys ignored in scope 1:.:.:testlib.pro:<TRUE>:
 # MODULE_CONFIG = "console" "testlib_defines"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
@@ -106,9 +105,6 @@ extend_target(Test CONDITION APPLE_OSX
         ${FWFoundation}
         ${FWIOKit}
 )
-
-#### Keys ignored in scope 8:.:.:testlib.pro:OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"):
-# _LOADED = "sdk"
 
 # special case begin
 # Do not bother with disabled stuff:

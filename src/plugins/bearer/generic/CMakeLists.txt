@@ -21,7 +21,6 @@ add_qt_plugin(qgenericbearer
 
 #### Keys ignored in scope 1:.:.:generic.pro:<TRUE>:
 # OTHER_FILES = "generic.json"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

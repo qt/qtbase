@@ -71,7 +71,6 @@ add_qt_plugin(qtforandroid
 
 #### Keys ignored in scope 1:.:.:android.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/android.json"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

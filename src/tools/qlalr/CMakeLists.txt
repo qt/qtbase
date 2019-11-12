@@ -24,5 +24,4 @@ add_qt_tool(qlalr
 #### Keys ignored in scope 1:.:.:qlalr.pro:<TRUE>:
 # OTHER_FILES = "lalr.g"
 # QMAKE_TARGET_DESCRIPTION = "Qt Look Ahead LR Parser Generator"
-# _LOADED = "qt_tool"
 # _OPTION = "host_build"

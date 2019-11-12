@@ -30,6 +30,3 @@ add_qt_module(EglFsKmsSupport
         Qt::Gui
         Qt::KmsSupport
 )
-
-#### Keys ignored in scope 1:.:.:eglfs_kms_support.pro:<TRUE>:
-# _LOADED = "qt_module"

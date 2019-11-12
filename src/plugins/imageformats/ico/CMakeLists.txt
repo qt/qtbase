@@ -19,4 +19,3 @@ add_qt_plugin(qico
 
 #### Keys ignored in scope 1:.:.:ico.pro:<TRUE>:
 # OTHER_FILES = "ico.json"
-# _LOADED = "qt_plugin"

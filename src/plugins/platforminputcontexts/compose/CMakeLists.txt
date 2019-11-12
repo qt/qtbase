@@ -25,4 +25,3 @@ add_qt_plugin(composeplatforminputcontextplugin
 #### Keys ignored in scope 1:.:.:compose.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/compose.json"
 # PLUGIN_EXTENDS = "-"
-# _LOADED = "qt_plugin"

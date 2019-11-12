@@ -50,7 +50,6 @@ add_qt_module(DBus
 
 #### Keys ignored in scope 1:.:.:dbus.pro:<TRUE>:
 # MODULE_CONFIG = "dbusadaptors" "dbusinterfaces"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################

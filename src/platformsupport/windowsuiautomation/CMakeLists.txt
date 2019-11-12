@@ -29,4 +29,3 @@ add_qt_module(WindowsUIAutomationSupport
 
 #### Keys ignored in scope 1:.:.:windowsuiautomation.pro:<TRUE>:
 # MODULE = "windowsuiautomation_support"
-# _LOADED = "qt_module"

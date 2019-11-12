@@ -24,7 +24,6 @@ add_qt_module(FontDatabaseSupport
 
 #### Keys ignored in scope 1:.:.:fontdatabases.pro:<TRUE>:
 # MODULE = "fontdatabase_support"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################

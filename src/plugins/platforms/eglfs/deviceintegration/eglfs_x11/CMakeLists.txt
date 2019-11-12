@@ -28,4 +28,3 @@ add_qt_plugin(qeglfs-x11-integration
 
 #### Keys ignored in scope 1:.:.:eglfs_x11.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/eglfs_x11.json"
-# _LOADED = "qt_plugin"

@@ -17,5 +17,4 @@ add_qt_tool(tracegen
 )
 
 #### Keys ignored in scope 1:.:.:tracegen.pro:<TRUE>:
-# _LOADED = "qt_tool"
 # _OPTION = "host_build"

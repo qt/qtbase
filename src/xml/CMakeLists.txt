@@ -18,9 +18,6 @@ add_qt_module(Xml
         Qt::Core
 )
 
-#### Keys ignored in scope 1:.:.:xml.pro:<TRUE>:
-# _LOADED = "qt_module"
-
 ## Scopes:
 #####################################################################
 

@@ -23,7 +23,6 @@ add_qt_module(EventDispatcherSupport
 
 #### Keys ignored in scope 1:.:.:eventdispatchers.pro:<TRUE>:
 # MODULE = "eventdispatcher_support"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################

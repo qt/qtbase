@@ -22,4 +22,3 @@ add_qt_module(PlatformCompositorSupport
 
 #### Keys ignored in scope 1:.:.:platformcompositor.pro:<TRUE>:
 # MODULE = "platformcompositor_support"
-# _LOADED = "qt_module"

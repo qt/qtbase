@@ -257,7 +257,6 @@ add_qt_resource(Gui "qmake_webgradients"
 #### Keys ignored in scope 1:.:.:gui.pro:<TRUE>:
 # QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtGui.dynlist"
 # QMAKE_LIBS = "$$QMAKE_LIBS_GUI"
-# _LOADED = "qt_module" "cmake_functions"
 
 ## Scopes:
 #####################################################################
@@ -303,9 +302,6 @@ extend_target(Gui CONDITION QT_FEATURE_opengl
 
 #### Keys ignored in scope 3:.:.:gui.pro:QT_FEATURE_angle:
 # MODULE_AUX_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/QtANGLE"
-
-#### Keys ignored in scope 4:.:.:gui.pro:testcocoon:
-# _LOADED = "testcocoon"
 
 extend_target(Gui CONDITION APPLE_OSX
     SOURCES

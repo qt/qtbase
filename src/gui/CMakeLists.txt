@@ -321,7 +321,6 @@ extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
 # MODULE_PLUGIN_TYPES = "platforms" "platforms/darwin" "xcbglintegrations" "platformthemes" "platforminputcontexts" "generic" "iconengines" "imageformats" "egldeviceintegrations"
 # QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtGui.dynlist"
 # QMAKE_LIBS = "$$QMAKE_LIBS_GUI"
-# _LOADED = "qt_module" "cmake_functions"
 
 ## Scopes:
 #####################################################################
@@ -385,9 +384,6 @@ extend_target(Gui CONDITION QT_FEATURE_opengl
 
 #### Keys ignored in scope 3:.:.:gui.pro:QT_FEATURE_angle:
 # MODULE_AUX_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/QtANGLE"
-
-#### Keys ignored in scope 4:.:.:gui.pro:testcocoon:
-# _LOADED = "testcocoon"
 
 extend_target(Gui CONDITION APPLE_OSX
     SOURCES

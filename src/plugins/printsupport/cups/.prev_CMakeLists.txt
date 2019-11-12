@@ -28,4 +28,3 @@ add_qt_plugin(cupsprintersupport
 #### Keys ignored in scope 1:.:.:cups.pro:<TRUE>:
 # MODULE = "cupsprintersupport"
 # OTHER_FILES = "cups.json"
-# _LOADED = "qt_plugin"

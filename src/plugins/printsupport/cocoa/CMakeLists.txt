@@ -22,4 +22,3 @@ add_qt_plugin(cocoaprintersupport
 #### Keys ignored in scope 1:.:.:cocoa.pro:<TRUE>:
 # MODULE = "cocoaprintersupport"
 # OTHER_FILES = "cocoa.json"
-# _LOADED = "qt_plugin"

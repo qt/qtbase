@@ -45,4 +45,3 @@ add_qt_module(LinuxAccessibilitySupport
 
 #### Keys ignored in scope 1:.:.:linuxaccessibility.pro:<TRUE>:
 # MODULE = "linuxaccessibility_support"
-# _LOADED = "qt_module"

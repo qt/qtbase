@@ -33,7 +33,6 @@ add_qt_module(Sql
 
 #### Keys ignored in scope 1:.:.:sql.pro:<TRUE>:
 # SQL_P = "sql"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################

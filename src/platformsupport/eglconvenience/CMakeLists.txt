@@ -28,7 +28,6 @@ add_qt_module(EglSupport
 
 #### Keys ignored in scope 1:.:.:eglconvenience.pro:<TRUE>:
 # MODULE = "egl_support"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################

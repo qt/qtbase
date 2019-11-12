@@ -284,7 +284,6 @@ add_qt_resource(Widgets "qstyle1"
 # MODULE_CONFIG = "uic"
 # QMAKE_DYNAMIC_LIST_FILE = "$$PWD/QtWidgets.dynlist"
 # QMAKE_LIBS = "$$QMAKE_LIBS_GUI"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
@@ -321,9 +320,6 @@ extend_target(Widgets CONDITION QT_FEATURE_graphicseffect
         effects/qgraphicseffect.cpp effects/qgraphicseffect.h effects/qgraphicseffect_p.h
         effects/qpixmapfilter.cpp effects/qpixmapfilter_p.h
 )
-
-#### Keys ignored in scope 6:.:.:widgets.pro:testcocoon:
-# _LOADED = "testcocoon"
 
 extend_target(Widgets CONDITION QT_FEATURE_opengl
     SOURCES

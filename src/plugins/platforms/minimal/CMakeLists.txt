@@ -28,7 +28,6 @@ add_qt_plugin(qminimal
 
 #### Keys ignored in scope 1:.:.:minimal.pro:<TRUE>:
 # OTHER_FILES = "minimal.json"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

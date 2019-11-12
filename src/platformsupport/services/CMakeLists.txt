@@ -23,7 +23,6 @@ add_qt_module(ServiceSupport
 
 #### Keys ignored in scope 1:.:.:services.pro:<TRUE>:
 # MODULE = "service_support"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################

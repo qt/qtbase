@@ -21,4 +21,3 @@ add_qt_module(GraphicsSupport
 
 #### Keys ignored in scope 1:.:.:graphics.pro:<TRUE>:
 # MODULE = "graphics_support"
-# _LOADED = "qt_module"

@@ -16,7 +16,6 @@ add_qt_executable(androidtestrunner
 )
 
 #### Keys ignored in scope 1:.:.:androidtestrunner.pro:<TRUE>:
-# _LOADED = "qt_app"
 # _OPTION = "host_build"
 
 ## Scopes:

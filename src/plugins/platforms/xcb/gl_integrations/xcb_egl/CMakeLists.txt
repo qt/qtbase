@@ -29,6 +29,3 @@ add_qt_plugin(qxcb-egl-integration
         Qt::Gui
         Qt::XcbQpa
 )
-
-#### Keys ignored in scope 1:.:.:xcb_egl.pro:<TRUE>:
-# _LOADED = "qt_plugin" "qt_build_paths"

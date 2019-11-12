@@ -16,7 +16,6 @@ add_qt_executable(androiddeployqt
 )
 
 #### Keys ignored in scope 1:.:.:androiddeployqt.pro:<TRUE>:
-# _LOADED = "qt_app"
 # _OPTION = "host_build"
 
 ## Scopes:

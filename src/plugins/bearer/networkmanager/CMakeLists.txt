@@ -22,4 +22,3 @@ add_qt_plugin(qnmbearer
 
 #### Keys ignored in scope 1:.:.:networkmanager.pro:<TRUE>:
 # OTHER_FILES = "networkmanager.json"
-# _LOADED = "qt_plugin"

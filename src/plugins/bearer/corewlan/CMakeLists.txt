@@ -22,7 +22,6 @@ add_qt_plugin(qcorewlanbearer
 
 #### Keys ignored in scope 1:.:.:corewlan.pro:<TRUE>:
 # OTHER_FILES = "corewlan.json"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

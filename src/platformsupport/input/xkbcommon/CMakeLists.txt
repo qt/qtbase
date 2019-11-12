@@ -25,7 +25,6 @@ add_qt_module(XkbCommonSupport
 
 #### Keys ignored in scope 1:.:.:xkbcommon.pro:<TRUE>:
 # MODULE = "xkbcommon_support"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################

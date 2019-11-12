@@ -30,7 +30,6 @@ add_qt_plugin(qminimalegl
 
 #### Keys ignored in scope 1:.:.:minimalegl.pro:<TRUE>:
 # OTHER_FILES = "minimalegl.json"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

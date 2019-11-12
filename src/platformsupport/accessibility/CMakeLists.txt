@@ -21,4 +21,3 @@ add_qt_module(AccessibilitySupport
 
 #### Keys ignored in scope 1:.:.:accessibility.pro:<TRUE>:
 # MODULE = "accessibility_support"
-# _LOADED = "qt_module"

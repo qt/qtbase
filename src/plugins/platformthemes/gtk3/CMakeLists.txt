@@ -31,4 +31,3 @@ add_qt_plugin(qgtk3
 
 #### Keys ignored in scope 1:.:.:gtk3.pro:<TRUE>:
 # PLUGIN_EXTENDS = "-"
-# _LOADED = "qt_plugin"

@@ -21,7 +21,6 @@ add_qt_module(ClipboardSupport
 
 #### Keys ignored in scope 1:.:.:clipboard.pro:<TRUE>:
 # MODULE = "clipboard_support"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################

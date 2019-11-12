@@ -20,6 +20,3 @@ add_qt_plugin(qandroidbearer
         Qt::Core
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:src.pro:<TRUE>:
-# _LOADED = "qt_plugin"

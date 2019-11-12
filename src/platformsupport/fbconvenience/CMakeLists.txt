@@ -27,4 +27,3 @@ add_qt_module(FbSupport
 
 #### Keys ignored in scope 1:.:.:fbconvenience.pro:<TRUE>:
 # MODULE = "fb_support"
-# _LOADED = "qt_module"

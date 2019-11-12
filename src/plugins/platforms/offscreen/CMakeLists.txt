@@ -29,7 +29,6 @@ add_qt_plugin(qoffscreen
 
 #### Keys ignored in scope 1:.:.:offscreen.pro:<TRUE>:
 # OTHER_FILES = "offscreen.json"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

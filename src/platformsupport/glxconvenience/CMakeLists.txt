@@ -24,4 +24,3 @@ add_qt_module(GlxSupport
 
 #### Keys ignored in scope 1:.:.:glxconvenience.pro:<TRUE>:
 # MODULE = "glx_support"
-# _LOADED = "qt_module"

@@ -22,4 +22,3 @@ add_qt_plugin(qmacstyle
 
 #### Keys ignored in scope 1:.:.:mac.pro:<TRUE>:
 # DISTFILES = "macstyle.json"
-# _LOADED = "qt_plugin"

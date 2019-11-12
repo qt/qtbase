@@ -38,7 +38,6 @@ add_qt_tool(uic
 
 #### Keys ignored in scope 1:.:.:uic.pro:<TRUE>:
 # QMAKE_TARGET_DESCRIPTION = "Qt User Interface Compiler"
-# _LOADED = "qt_tool"
 # _OPTION = "host_build"
 
 ## Scopes:

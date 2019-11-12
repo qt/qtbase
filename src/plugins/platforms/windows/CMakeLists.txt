@@ -86,7 +86,6 @@ add_qt_resource(qwindows "openglblacklists"
 
 #### Keys ignored in scope 1:.:.:windows.pro:<TRUE>:
 # OTHER_FILES = "windows.json"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

@@ -25,4 +25,3 @@ add_qt_plugin(qtslibplugin
 #### Keys ignored in scope 1:.:.:tslib.pro:<TRUE>:
 # OTHER_FILES = "tslib.json"
 # PLUGIN_EXTENDS = "-"
-# _LOADED = "qt_plugin"

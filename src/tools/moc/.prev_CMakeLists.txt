@@ -32,5 +32,4 @@ add_qt_tool(moc
 
 #### Keys ignored in scope 1:.:.:moc.pro:<TRUE>:
 # QMAKE_TARGET_DESCRIPTION = "Qt Meta Object Compiler"
-# _LOADED = "qt_tool"
 # _OPTION = "host_build"

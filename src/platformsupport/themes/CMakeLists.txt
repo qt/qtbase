@@ -21,7 +21,6 @@ add_qt_module(ThemeSupport
 
 #### Keys ignored in scope 1:.:.:themes.pro:<TRUE>:
 # MODULE = "theme_support"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################

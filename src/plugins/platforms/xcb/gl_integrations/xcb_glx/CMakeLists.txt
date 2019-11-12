@@ -30,9 +30,6 @@ add_qt_plugin(qxcb-glx-integration
         Qt::XcbQpa
 )
 
-#### Keys ignored in scope 1:.:.:xcb_glx.pro:<TRUE>:
-# _LOADED = "qt_plugin" "qt_build_paths"
-
 ## Scopes:
 #####################################################################
 

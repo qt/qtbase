@@ -116,7 +116,6 @@ extend_target(Bootstrap
 # INSTALLS = "lib"
 # MODULE_CONFIG = "gc_binaries"
 # MODULE_INCNAME = "QtCore" "QtXml"
-# _LOADED = "qt_module"
 # _OPTION = "host_build"
 # lib.CONFIG = "dummy_install"
 

@@ -70,7 +70,6 @@ add_qt_module(Test
 
 #### Keys ignored in scope 1:.:.:testlib.pro:<TRUE>:
 # MODULE_CONFIG = "console" "testlib_defines"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
@@ -117,9 +116,6 @@ extend_target(Test CONDITION (APPLE) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSI
     PUBLIC_LIBRARIES
         ${FWFoundation}
 )
-
-#### Keys ignored in scope 8:.:.:testlib.pro:OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"):
-# _LOADED = "sdk"
 
 extend_target(Test CONDITION ((APPLE) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"))) AND (NOT QMAKE_MAC_SDK_PLATFORM_PATH_ISEMPTY)
     COMPILE_OPTIONS

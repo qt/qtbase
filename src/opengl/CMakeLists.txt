@@ -36,9 +36,6 @@ add_qt_module(OpenGL
         Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:.:opengl.pro:<TRUE>:
-# _LOADED = "qt_module"
-
 ## Scopes:
 #####################################################################
 

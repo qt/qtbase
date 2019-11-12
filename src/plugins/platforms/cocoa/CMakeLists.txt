@@ -88,7 +88,6 @@ add_qt_resource(qcocoa "qcocoaresources"
 
 #### Keys ignored in scope 1:.:.:cocoa.pro:<TRUE>:
 # OTHER_FILES = "cocoa.json"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

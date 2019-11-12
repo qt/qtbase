@@ -22,4 +22,3 @@ add_qt_module(KmsSupport
 
 #### Keys ignored in scope 1:.:.:kmsconvenience.pro:<TRUE>:
 # MODULE = "kms_support"
-# _LOADED = "qt_module"

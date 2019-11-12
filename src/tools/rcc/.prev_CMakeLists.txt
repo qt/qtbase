@@ -19,7 +19,6 @@ add_qt_tool(rcc
 
 #### Keys ignored in scope 1:.:.:rcc.pro:<TRUE>:
 # QMAKE_TARGET_DESCRIPTION = "Qt Resource Compiler"
-# _LOADED = "qt_tool"
 # _OPTION = "host_build"
 
 ## Scopes:

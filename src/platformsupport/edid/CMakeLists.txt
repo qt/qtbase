@@ -21,4 +21,3 @@ add_qt_module(EdidSupport
 
 #### Keys ignored in scope 1:.:.:edid.pro:<TRUE>:
 # MODULE = "edid_support"
-# _LOADED = "qt_module"

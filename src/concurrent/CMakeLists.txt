@@ -33,9 +33,6 @@ add_qt_module(Concurrent
         "../corelib/global/qt_pch.h"
 )
 
-#### Keys ignored in scope 1:.:.:concurrent.pro:<TRUE>:
-# _LOADED = "qt_module"
-
 ## Scopes:
 #####################################################################
 

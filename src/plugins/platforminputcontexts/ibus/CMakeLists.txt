@@ -27,4 +27,3 @@ add_qt_plugin(ibusplatforminputcontextplugin
 #### Keys ignored in scope 1:.:.:ibus.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/ibus.json"
 # PLUGIN_EXTENDS = "-"
-# _LOADED = "qt_plugin"

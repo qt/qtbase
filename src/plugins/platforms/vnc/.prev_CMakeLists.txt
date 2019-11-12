@@ -36,7 +36,6 @@ add_qt_plugin(qvnc
 
 #### Keys ignored in scope 1:.:.:vnc.pro:<TRUE>:
 # OTHER_FILES = "vnc.json"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

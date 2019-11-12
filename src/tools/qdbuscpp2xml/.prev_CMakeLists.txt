@@ -29,7 +29,6 @@ add_qt_tool(qdbuscpp2xml
 
 #### Keys ignored in scope 1:.:.:qdbuscpp2xml.pro:<TRUE>:
 # QMAKE_TARGET_DESCRIPTION = "Qt D-Bus C++ to XML Compiler"
-# _LOADED = "qt_tool"
 # _OPTION = "host_build"
 
 ## Scopes:

@@ -53,7 +53,6 @@ set_source_files_properties(qdbusmarshaller.cpp
 
 #### Keys ignored in scope 1:.:.:dbus.pro:<TRUE>:
 # MODULE_CONFIG = "dbusadaptors" "dbusinterfaces"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
