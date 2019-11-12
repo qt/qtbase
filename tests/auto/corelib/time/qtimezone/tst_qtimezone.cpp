@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -377,31 +377,6 @@ void tst_QTimeZone::isTimeZoneIdAvailable()
     QList<QByteArray> available = QTimeZone::availableTimeZoneIds();
     foreach (const QByteArray &id, available)
         QVERIFY(QTimeZone::isTimeZoneIdAvailable(id));
-
-#ifdef QT_BUILD_INTERNAL
-    // a-z, A-Z, 0-9, '.', '-', '_' are valid chars
-    // Can't start with '-'
-    // Parts separated by '/', each part min 1 and max of 14 chars
-    QCOMPARE(QTimeZonePrivate::isValidId("az"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("AZ"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("09"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("a/z"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("a.z"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("a-z"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("a_z"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId(".z"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("_z"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("12345678901234"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("12345678901234/12345678901234"), true);
-    QCOMPARE(QTimeZonePrivate::isValidId("a z"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("a\\z"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("a,z"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("/z"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("-z"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("123456789012345"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("123456789012345/12345678901234"), false);
-    QCOMPARE(QTimeZonePrivate::isValidId("12345678901234/123456789012345"), false);
-#endif // QT_BUILD_INTERNAL
 }
 
 void tst_QTimeZone::specificTransition_data()
@@ -728,6 +703,9 @@ void tst_QTimeZone::isValidId_data()
     QTest::addColumn<QByteArray>("input");
     QTest::addColumn<bool>("valid");
 
+    // a-z, A-Z, 0-9, '.', '-', '_' are valid chars
+    // Can't start with '-'
+    // Parts separated by '/', each part min 1 and max of 14 chars
 #define TESTSET(name, section, valid) \
     QTest::newRow(name " front")  << QByteArray(section "/xyz/xyz")    << valid; \
     QTest::newRow(name " middle") << QByteArray("xyz/" section "/xyz") << valid; \
@@ -766,6 +744,26 @@ void tst_QTimeZone::isValidId_data()
     TESTSET("invalid char ' '", " ", false);
 
 #undef TESTSET
+
+    QTest::newRow("az alone") << QByteArray("az") << true;
+    QTest::newRow("AZ alone") << QByteArray("AZ") << true;
+    QTest::newRow("09 alone") << QByteArray("09") << true;
+    QTest::newRow("a/z alone") << QByteArray("a/z") << true;
+    QTest::newRow("a.z alone") << QByteArray("a.z") << true;
+    QTest::newRow("a-z alone") << QByteArray("a-z") << true;
+    QTest::newRow("a_z alone") << QByteArray("a_z") << true;
+    QTest::newRow(".z alone") << QByteArray(".z") << true;
+    QTest::newRow("_z alone") << QByteArray("_z") << true;
+    QTest::newRow("a z alone") << QByteArray("a z") << false;
+    QTest::newRow("a\\z alone") << QByteArray("a\\z") << false;
+    QTest::newRow("a,z alone") << QByteArray("a,z") << false;
+    QTest::newRow("/z alone") << QByteArray("/z") << false;
+    QTest::newRow("-z alone") << QByteArray("-z") << false;
+    QTest::newRow("long alone") << QByteArray("12345678901234") << true;
+    QTest::newRow("over-long alone") << QByteArray("123456789012345") << false;
+
+#else
+    QSKIP("This test requires a Qt -developer-build.");
 #endif // QT_BUILD_INTERNAL
 }
 
@@ -776,8 +774,6 @@ void tst_QTimeZone::isValidId()
     QFETCH(bool, valid);
 
     QCOMPARE(QTimeZonePrivate::isValidId(input), valid);
-#else
-    QSKIP("This test requires a Qt -developer-build.");
 #endif
 }
 
