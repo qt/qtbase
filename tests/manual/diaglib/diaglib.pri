@@ -28,14 +28,17 @@ contains(QT, widgets) {
         $$PWD/qwidgetdump.cpp \
         $$PWD/debugproxystyle.cpp \
         $$PWD/logwidget.cpp
+    QT += widgets-private
 }
 
 contains(QT, opengl) {
-HEADERS += \
-    $$PWD/glinfo.h
+    HEADERS += \
+        $$PWD/glinfo.h
 
-SOURCES += \
-    $$PWD/glinfo.cpp
+    SOURCES += \
+        $$PWD/glinfo.cpp
+
+    QT += opengl
 }
 
 DEFINES += QT_DIAG_LIB
