@@ -1,3 +1,9 @@
+# Generated from qsqlresult.pro.
+
+#####################################################################
+## tst_qsqlresult Test:
+#####################################################################
+
 add_qt_test(tst_qsqlresult
     SOURCES
         testsqldriver.h
@@ -5,4 +11,6 @@ add_qt_test(tst_qsqlresult
     LIBRARIES
         Qt::CorePrivate
         Qt::SqlPrivate
+    PUBLIC_LIBRARIES
+        Qt::Sql
 )
