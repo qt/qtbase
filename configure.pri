@@ -607,8 +607,11 @@ defineTest(qtConfOutput_prepareOptions) {
                 qtConfAddNote("Available Android host does not match host architecture.")
             }
         } else {
-            !exists($$ndk_tc_pfx/$$ndk_host/*): \
-                qtConfFatalError("Specified Android NDK host is invalid.")
+            !exists($$ndk_tc_pfx/$$ndk_host/*) {
+                err = "Specified Android NDK host '$$ndk_host' is invalid. Expected files in the following directory to exist:"
+                err += '$${ndk_tc_pfx}/$${ndk_host}/'
+                qtConfFatalError($$err)
+            }
         }
 
         android_abis = $$eval(config.input.android-abis)
