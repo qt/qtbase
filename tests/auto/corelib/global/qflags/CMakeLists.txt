@@ -1,1 +1,13 @@
-add_qt_test(tst_qflags SOURCES tst_qflags.cpp)
+# Generated from qflags.pro.
+
+#####################################################################
+## tst_qflags Test:
+#####################################################################
+
+add_qt_test(tst_qflags
+    SOURCES
+        tst_qflags.cpp
+)
+
+## Scopes:
+#####################################################################
