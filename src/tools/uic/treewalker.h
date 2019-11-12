@@ -29,7 +29,7 @@
 #ifndef TREEWALKER_H
 #define TREEWALKER_H
 
-#include <qlist.h>
+#include <qvector.h>
 
 QT_BEGIN_NAMESPACE
 

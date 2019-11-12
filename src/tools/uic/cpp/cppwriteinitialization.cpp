@@ -2304,7 +2304,7 @@ void WriteInitialization::initializeTreeWidget(DomWidget *w)
 
     QString tempName = disableSorting(w, varName);
 
-    QList<Item *> items = initializeTreeWidgetItems(w->elementItem());
+    const auto items = initializeTreeWidgetItems(w->elementItem());
     for (int i = 0; i < items.count(); i++) {
         Item *itm = items[i];
         itm->writeSetupUi(varName);
@@ -2326,10 +2326,10 @@ void WriteInitialization::initializeTreeWidget(DomWidget *w)
     conditions an item is needed needs to be done bottom-up, the whole process makes
     two passes, storing the intermediate result in a recursive StringInitializerListMap.
 */
-QList<WriteInitialization::Item *> WriteInitialization::initializeTreeWidgetItems(const QVector<DomItem *> &domItems)
+WriteInitialization::Items WriteInitialization::initializeTreeWidgetItems(const QVector<DomItem *> &domItems)
 {
     // items
-    QList<Item *> items;
+    Items items;
     const int numDomItems = domItems.size();
     items.reserve(numDomItems);
 
@@ -2357,7 +2357,7 @@ QList<WriteInitialization::Item *> WriteInitialization::initializeTreeWidgetItem
         // AbstractFromBuilder saves flags last, so they always end up in the last column's map.
         addQtFlagsInitializer(item, map, QLatin1String("flags"));
 
-        const QList<Item *> subItems = initializeTreeWidgetItems(domItem->elementItem());
+        const auto subItems = initializeTreeWidgetItems(domItem->elementItem());
         for (Item *subItem : subItems)
             item->addChild(subItem);
     }
