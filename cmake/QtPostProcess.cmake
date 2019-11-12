@@ -358,6 +358,12 @@ function(qt_internal_create_config_file_for_standalone_tests)
     list(JOIN QT_REPO_KNOWN_MODULES " " QT_REPO_KNOWN_MODULES_STRING)
     string(STRIP "${QT_REPO_KNOWN_MODULES_STRING}" QT_REPO_KNOWN_MODULES_STRING)
 
+    # Skip generating and installing file if no modules were built. This make sure not to install
+    # anything when build qtx11extras on macOS for example.
+    if(NOT QT_REPO_KNOWN_MODULES_STRING)
+        return()
+    endif()
+
     # Ceate a Config file that calls find_package on the modules that were built as part
     # of the current repo. This is used for standalone tests.
     configure_file(
