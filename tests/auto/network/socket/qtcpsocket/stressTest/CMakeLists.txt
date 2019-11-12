@@ -5,7 +5,7 @@
 #####################################################################
 
 add_qt_executable(stressTest
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/./"
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         Test.cpp Test.h
         main.cpp

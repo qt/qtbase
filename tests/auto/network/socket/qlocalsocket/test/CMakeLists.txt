@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qlocalsocket
-    GUI
     SOURCES
         ../tst_qlocalsocket.cpp
     DEFINES
@@ -15,9 +14,6 @@ add_qt_test(tst_qlocalsocket
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:test.pro:<TRUE>:
-# CONFIG = "testcase"
 
 ## Scopes:
 #####################################################################

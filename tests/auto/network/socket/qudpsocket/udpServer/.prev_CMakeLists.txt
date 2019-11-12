@@ -1,11 +1,10 @@
-# Generated from clientserver.pro.
+# Generated from udpServer.pro.
 
 #####################################################################
-## clientserver Binary:
+## udpServer Binary:
 #####################################################################
 
-add_qt_executable(clientserver
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+add_qt_executable(udpServer
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
