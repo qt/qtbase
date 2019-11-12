@@ -14,12 +14,9 @@ add_qt_test(tst_qfilesystemmodel
         Qt::CorePrivate
         Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
-        Qt::Core
+        Qt::Gui
         Qt::Widgets
 )
-
-#### Keys ignored in scope 1:.:.:qfilesystemmodel.pro:<TRUE>:
-# CONFIG = "testcase"
 
 ## Scopes:
 #####################################################################

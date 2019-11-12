@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qwizard
-    GUI
     SOURCES
         tst_qwizard.cpp
         tst_qwizard_2.cpp
@@ -15,16 +14,17 @@ add_qt_test(tst_qwizard
 )
 
 # Resources:
+set(qwizard_resource_files
+    "images/background.png"
+    "images/banner.png"
+    "images/logo.png"
+    "images/watermark.png"
+)
+
 add_qt_resource(tst_qwizard "qwizard"
     PREFIX
         "/"
     FILES
-        images/background.png
-        images/banner.png
-        images/logo.png
-        images/watermark.png
+        ${qwizard_resource_files}
 )
 
-
-#### Keys ignored in scope 1:.:.:qwizard.pro:<TRUE>:
-# CONFIG = "testcase"
