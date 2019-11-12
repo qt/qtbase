@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qtconcurrentfilter
-    GUI
     SOURCES
         tst_qtconcurrentfilter.cpp
     DEFINES

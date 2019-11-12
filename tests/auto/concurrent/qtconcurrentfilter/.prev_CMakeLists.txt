@@ -1,13 +1,14 @@
-# Generated from qtconcurrentmedian.pro.
+# Generated from qtconcurrentfilter.pro.
 
 #####################################################################
-## tst_qtconcurrentmedian Test:
+## tst_qtconcurrentfilter Test:
 #####################################################################
 
-add_qt_test(tst_qtconcurrentmedian
+add_qt_test(tst_qtconcurrentfilter
     SOURCES
-        tst_qtconcurrentmedian.cpp
+        tst_qtconcurrentfilter.cpp
     DEFINES
+        -QT_NO_LINKED_LIST
         QT_STRICT_ITERATORS
     PUBLIC_LIBRARIES
         Qt::Concurrent

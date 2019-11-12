@@ -7,6 +7,6 @@
 add_qt_test(tst_qtconcurrentiteratekernel
     SOURCES
         tst_qtconcurrentiteratekernel.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Concurrent
 )

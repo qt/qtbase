@@ -7,12 +7,9 @@
 add_qt_test(tst_qtconcurrentrun
     SOURCES
         tst_qtconcurrentrun.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::Concurrent
 )
 
 ## Scopes:
 #####################################################################
-#
-#extend_target(tst_qtconcurrentrun CONDITION contains(QT_CONFIG, c++1z)
-#)
