@@ -1,1 +1,10 @@
-add_qt_test(tst_qstl SOURCES tst_qstl.cpp)
+# Generated from qstl.pro.
+
+#####################################################################
+## tst_qstl Test:
+#####################################################################
+
+add_qt_test(tst_qstl
+    SOURCES
+        tst_qstl.cpp
+)
