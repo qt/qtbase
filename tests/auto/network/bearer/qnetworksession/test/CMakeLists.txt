@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qnetworksession
-    GUI
     SOURCES
         ../../qbearertestcommon.h
         tst_qnetworksession.cpp
@@ -14,9 +13,6 @@ add_qt_test(tst_qnetworksession
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:test.pro:<TRUE>:
-# CONFIG = "testcase"
 
 ## Scopes:
 #####################################################################
