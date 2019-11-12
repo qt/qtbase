@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qdbuscpp2xml
-    GUI
     SOURCES
         test1.h
         tst_qdbuscpp2xml.cpp

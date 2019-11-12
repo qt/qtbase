@@ -23,20 +23,17 @@ add_qt_test(tst_qmake
 #### Keys ignored in scope 2:.:.:qmake.pro:WIN32:
 # testcase.timeout = "900"
 
-extend_target(tst_qmake CONDITION CMAKE_CROSSCOMPILING # special case
+extend_target(tst_qmake CONDITION cross_compile
     DEFINES
         QMAKE_CROSS_COMPILED
 )
 
-# special case begin
-# remove this because it's not needed
-#extend_target(tst_qmake CONDITION CMAKE_BUILD_TYPE STREQUAL Debug AND debug_and_release
-    #DEFINES
-        #DEBUG_BUILD
-#)
+extend_target(tst_qmake CONDITION CMAKE_BUILD_TYPE STREQUAL Debug AND debug_and_release
+    DEFINES
+        DEBUG_BUILD
+)
 
-#extend_target(tst_qmake CONDITION debug_and_release AND NOT CMAKE_BUILD_TYPE STREQUAL Debug
-    #DEFINES
-        #RELEASE_BUILD
-#)
-# special case end
+extend_target(tst_qmake CONDITION debug_and_release AND NOT CMAKE_BUILD_TYPE STREQUAL Debug
+    DEFINES
+        RELEASE_BUILD
+)

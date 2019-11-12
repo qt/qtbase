@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qmakelib
-    GUI
     SOURCES
         ../../../../qmake/library/ioutils.cpp
         ../../../../qmake/library/proitems.cpp
