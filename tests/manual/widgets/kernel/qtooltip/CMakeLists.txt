@@ -1,16 +1,14 @@
-# Generated from multiwindow.pro.
+# Generated from qtooltip.pro.
 
 #####################################################################
-## multiwindow Binary:
+## qtooltip Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
-    GUI
+add_qt_manual_test(qtooltip
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Test
+        Qt::Widgets
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

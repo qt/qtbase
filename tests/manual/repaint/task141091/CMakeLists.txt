@@ -1,16 +1,13 @@
-# Generated from multiwindow.pro.
+# Generated from task141091.pro.
 
 #####################################################################
-## multiwindow Binary:
+## task141091 Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
-    GUI
+add_qt_manual_test(task141091
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

@@ -40,6 +40,8 @@
 #  define WS_EX_NOREDIRECTIONBITMAP 0x00200000L
 #endif
 
+using namespace Qt;
+
 namespace QtDiag {
 
 struct DumpContext {

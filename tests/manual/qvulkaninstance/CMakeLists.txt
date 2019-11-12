@@ -1,16 +1,18 @@
-# Generated from multiwindow.pro.
+# Generated from qvulkaninstance.pro.
 
 #####################################################################
-## multiwindow Binary:
+## qvulkaninstance Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(qvulkaninstance
     GUI
     SOURCES
         main.cpp
+    LIBRARIES
+        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:qvulkaninstance.pro:<TRUE>:
 # TEMPLATE = "app"

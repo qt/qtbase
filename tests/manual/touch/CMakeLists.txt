@@ -1,16 +1,17 @@
-# Generated from multiwindow.pro.
+# Generated from touch.pro.
 
 #####################################################################
-## multiwindow Binary:
+## touch Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(touch
     GUI
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:touch.pro:<TRUE>:
 # TEMPLATE = "app"

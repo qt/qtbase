@@ -1,10 +1,10 @@
-# Generated from childwindow.pro.
+# Generated from qconcatenatetablesproxymodel.pro.
 
 #####################################################################
-## childwindow Binary:
+## qconcatenatetablesproxymodel Binary:
 #####################################################################
 
-add_qt_manual_test(childwindow
+add_qt_manual_test(qconcatenatetablesproxymodel
     GUI
     SOURCES
         main.cpp
@@ -12,7 +12,8 @@ add_qt_manual_test(childwindow
         .
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:.:childwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:qconcatenatetablesproxymodel.pro:<TRUE>:
 # TEMPLATE = "app"

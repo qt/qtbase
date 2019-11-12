@@ -1,16 +1,20 @@
-# Generated from multiwindow.pro.
+# Generated from qtabbar.pro.
 
 #####################################################################
-## multiwindow Binary:
+## qtabbar Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(qtabbar
     GUI
     SOURCES
         main.cpp
+        tabbarform.cpp tabbarform.h tabbarform.ui
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:qtabbar.pro:<TRUE>:
 # TEMPLATE = "app"

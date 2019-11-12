@@ -1,16 +1,19 @@
-# Generated from multiwindow.pro.
+# Generated from windowmodality.pro.
 
 #####################################################################
-## multiwindow Binary:
+## windowmodality Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(windowmodality
     GUI
     SOURCES
+        dialog.ui
         main.cpp
+        widget.ui
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::PrintSupport
+        Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

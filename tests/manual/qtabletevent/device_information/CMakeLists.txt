@@ -1,16 +1,15 @@
-# Generated from multiwindow.pro.
+# Generated from device_information.pro.
 
 #####################################################################
-## multiwindow Binary:
+## device_information Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(device_information
     GUI
     SOURCES
         main.cpp
+        tabletwidget.cpp tabletwidget.h
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

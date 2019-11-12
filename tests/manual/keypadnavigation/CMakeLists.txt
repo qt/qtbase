@@ -1,16 +1,17 @@
-# Generated from multiwindow.pro.
+# Generated from keypadnavigation.pro.
 
 #####################################################################
-## multiwindow Binary:
+## keypadnavigation Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(keypadnavigation
     GUI
     SOURCES
+        keypadnavigation.ui
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

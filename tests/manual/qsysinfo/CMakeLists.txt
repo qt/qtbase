@@ -1,16 +1,13 @@
-# Generated from multiwindow.pro.
+# Generated from qsysinfo.pro.
 
 #####################################################################
-## multiwindow Binary:
+## qsysinfo Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
-    GUI
+add_qt_manual_test(qsysinfo
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
-        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:qsysinfo.pro:<TRUE>:
 # TEMPLATE = "app"

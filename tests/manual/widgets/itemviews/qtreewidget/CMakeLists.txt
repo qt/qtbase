@@ -1,16 +1,19 @@
-# Generated from multiwindow.pro.
+# Generated from qtreewidget.pro.
 
 #####################################################################
-## multiwindow Binary:
+## qtreewidget Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(qtreewidget
     GUI
     SOURCES
         main.cpp
+    LIBRARIES
+        Qt::CorePrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:qtreewidget.pro:<TRUE>:
 # TEMPLATE = "app"

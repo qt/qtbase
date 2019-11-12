@@ -1,16 +1,20 @@
-# Generated from multiwindow.pro.
+# Generated from qtbug-8933.pro.
 
 #####################################################################
-## multiwindow Binary:
+## qtbug-8933 Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(qtbug-8933
     GUI
     SOURCES
         main.cpp
+        widget.cpp widget.h widget.ui
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
+    ENABLE_AUTOGEN_TOOLS
+        uic
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:qtbug-8933.pro:<TRUE>:
 # TEMPLATE = "app"

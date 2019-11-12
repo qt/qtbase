@@ -1,0 +1,5 @@
+# Generated from kernel.pro.
+
+add_subdirectory(qtooltip)
+add_subdirectory(sizeonhide)
+add_subdirectory(layoutreplace)

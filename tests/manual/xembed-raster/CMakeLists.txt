@@ -1,16 +1,17 @@
-# Generated from multiwindow.pro.
+# Generated from xembed-raster.pro.
 
 #####################################################################
-## multiwindow Binary:
+## tst_manual_rasterwindow Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(tst_manual_rasterwindow
     GUI
     SOURCES
         main.cpp
+        rasterwindow.cpp rasterwindow.h
     PUBLIC_LIBRARIES
         Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:xembed-raster.pro:<TRUE>:
 # TEMPLATE = "app"

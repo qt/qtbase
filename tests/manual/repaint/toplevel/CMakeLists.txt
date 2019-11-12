@@ -1,16 +1,14 @@
-# Generated from multiwindow.pro.
+# Generated from toplevel.pro.
 
 #####################################################################
-## multiwindow Binary:
+## tst_manual_toplevel Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
-    GUI
+add_qt_manual_test(tst_manual_toplevel
     SOURCES
+        ../shared/shared.h
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

@@ -1,16 +1,13 @@
-# Generated from multiwindow.pro.
+# Generated from qmimedatabase.pro.
 
 #####################################################################
-## multiwindow Binary:
+## qmimedatabase Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
-    GUI
+add_qt_manual_test(qmimedatabase
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
-        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:qmimedatabase.pro:<TRUE>:
 # TEMPLATE = "app"

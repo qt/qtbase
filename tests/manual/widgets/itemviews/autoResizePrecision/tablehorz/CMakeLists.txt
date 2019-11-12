@@ -1,16 +1,14 @@
-# Generated from multiwindow.pro.
+# Generated from testtable1.pro.
 
 #####################################################################
-## multiwindow Binary:
+## testtable1 Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(testtable1
     GUI
     SOURCES
-        main.cpp
+        testtable1.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

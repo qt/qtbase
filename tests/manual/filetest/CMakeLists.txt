@@ -1,16 +1,13 @@
-# Generated from multiwindow.pro.
+# Generated from filetest.pro.
 
 #####################################################################
-## multiwindow Binary:
+## filetest Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
-    GUI
+add_qt_manual_test(filetest
     SOURCES
         main.cpp
-    PUBLIC_LIBRARIES
-        Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:filetest.pro:<TRUE>:
 # TEMPLATE = "app"

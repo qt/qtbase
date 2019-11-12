@@ -1,16 +1,15 @@
-# Generated from multiwindow.pro.
+# Generated from flicker.pro.
 
 #####################################################################
-## multiwindow Binary:
+## flicker Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(flicker
     GUI
     SOURCES
         main.cpp
+        window.cpp window.h
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

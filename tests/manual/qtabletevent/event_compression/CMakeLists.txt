@@ -1,16 +1,15 @@
-# Generated from multiwindow.pro.
+# Generated from event_compression.pro.
 
 #####################################################################
-## multiwindow Binary:
+## event_compression Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
-    GUI
+add_qt_manual_test(event_compression
     SOURCES
         main.cpp
+        mousestatwidget.cpp mousestatwidget.h
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Test
+        Qt::Widgets
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

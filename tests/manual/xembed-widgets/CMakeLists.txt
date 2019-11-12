@@ -1,16 +1,18 @@
-# Generated from multiwindow.pro.
+# Generated from xembed-widgets.pro.
 
 #####################################################################
-## multiwindow Binary:
+## tst_manual_lineedits Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(tst_manual_lineedits
     GUI
     SOURCES
         main.cpp
+        window.cpp window.h
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:xembed-widgets.pro:<TRUE>:
 # TEMPLATE = "app"

@@ -1,0 +1,40 @@
+# Generated from mrt.pro.
+
+#####################################################################
+## mrt Binary:
+#####################################################################
+
+add_qt_manual_test(mrt
+    GUI
+    SOURCES
+        mrt.cpp
+    LIBRARIES
+        Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Gui
+)
+
+# Resources:
+set_source_files_properties("../shared/texture.frag.qsb"
+    PROPERTIES QT_RESOURCE_ALIAS "texture.frag.qsb"
+)
+set_source_files_properties("../shared/texture.vert.qsb"
+    PROPERTIES QT_RESOURCE_ALIAS "texture.vert.qsb"
+)
+set(mrt_resource_files
+    "../shared/texture.frag.qsb"
+    "../shared/texture.vert.qsb"
+    "mrt.frag.qsb"
+    "mrt.vert.qsb"
+)
+
+add_qt_resource(mrt "mrt"
+    PREFIX
+        "/"
+    FILES
+        ${mrt_resource_files}
+)
+
+
+#### Keys ignored in scope 1:.:.:mrt.pro:<TRUE>:
+# TEMPLATE = "app"

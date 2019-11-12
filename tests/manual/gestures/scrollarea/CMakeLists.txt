@@ -1,16 +1,15 @@
-# Generated from multiwindow.pro.
+# Generated from scrollarea.pro.
 
 #####################################################################
-## multiwindow Binary:
+## scrollarea Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(scrollarea
     GUI
     SOURCES
         main.cpp
+        mousepangesturerecognizer.cpp mousepangesturerecognizer.h
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

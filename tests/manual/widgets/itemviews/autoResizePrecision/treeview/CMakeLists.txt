@@ -1,16 +1,14 @@
-# Generated from multiwindow.pro.
+# Generated from testtree.pro.
 
 #####################################################################
-## multiwindow Binary:
+## testtree Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(testtree
     GUI
     SOURCES
-        main.cpp
+        testtree.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

@@ -1,16 +1,13 @@
-# Generated from multiwindow.pro.
+# Generated from qssloptions.pro.
 
 #####################################################################
-## multiwindow Binary:
+## tst_qssloptions Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
-    GUI
+add_qt_manual_test(tst_qssloptions
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
-        Qt::Gui
+        Qt::Network
+        Qt::Test
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

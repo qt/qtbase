@@ -1,16 +1,17 @@
-# Generated from multiwindow.pro.
+# Generated from widgetgrab.pro.
 
 #####################################################################
-## multiwindow Binary:
+## widgetgrab Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(widgetgrab
     GUI
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:widgetgrab.pro:<TRUE>:
 # TEMPLATE = "app"

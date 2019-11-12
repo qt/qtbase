@@ -1,16 +1,18 @@
-# Generated from multiwindow.pro.
+# Generated from transientwindow.pro.
 
 #####################################################################
-## multiwindow Binary:
+## transientwindow Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(transientwindow
     GUI
     SOURCES
         main.cpp
+        mainwindow.cpp mainwindow.h
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:transientwindow.pro:<TRUE>:
 # TEMPLATE = "app"

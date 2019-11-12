@@ -1,16 +1,15 @@
-# Generated from multiwindow.pro.
+# Generated from tableview.pro.
 
 #####################################################################
-## multiwindow Binary:
+## tableview Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(tableview
     GUI
     SOURCES
+        ../shared/shared.h
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

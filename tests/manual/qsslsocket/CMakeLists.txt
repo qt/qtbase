@@ -1,16 +1,12 @@
-# Generated from multiwindow.pro.
+# Generated from qsslsocket.pro.
 
 #####################################################################
-## multiwindow Binary:
+## tst_manual_qsslsocket Test:
 #####################################################################
 
-add_qt_manual_test(multiwindow
-    GUI
+add_qt_test(tst_manual_qsslsocket
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
-        Qt::Gui
+        Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
-# TEMPLATE = "app"

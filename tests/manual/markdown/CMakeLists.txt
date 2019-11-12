@@ -1,16 +1,18 @@
-# Generated from multiwindow.pro.
+# Generated from html2md.pro.
 
 #####################################################################
-## multiwindow Binary:
+## html2md Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(html2md
     GUI
     SOURCES
-        main.cpp
+        html2md.cpp
+    INCLUDE_DIRECTORIES
+        .
     PUBLIC_LIBRARIES
         Qt::Gui
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:html2md.pro:<TRUE>:
 # TEMPLATE = "app"

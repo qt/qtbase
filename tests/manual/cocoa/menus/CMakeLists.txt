@@ -1,16 +1,17 @@
-# Generated from multiwindow.pro.
+# Generated from menus.pro.
 
 #####################################################################
-## multiwindow Binary:
+## menus Binary:
 #####################################################################
 
-add_qt_manual_test(multiwindow
+add_qt_manual_test(menus
     GUI
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::Widgets
 )
 
-#### Keys ignored in scope 1:.:.:multiwindow.pro:<TRUE>:
+#### Keys ignored in scope 1:.:.:menus.pro:<TRUE>:
 # TEMPLATE = "app"
