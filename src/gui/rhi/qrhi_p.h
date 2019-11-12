@@ -812,9 +812,7 @@ public:
     enum AddressMode {
         Repeat,
         ClampToEdge,
-        Border,
         Mirror,
-        MirrorOnce
     };
 
     enum CompareOp {

@@ -52,7 +52,7 @@
 # define TST_D3D11
 #endif
 
-#ifdef Q_OS_DARWIN
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 # include <QtGui/private/qrhimetal_p.h>
 # define TST_MTL
 #endif

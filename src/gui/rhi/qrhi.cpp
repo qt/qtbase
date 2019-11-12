@@ -48,8 +48,7 @@
 #ifdef Q_OS_WIN
 #include "qrhid3d11_p_p.h"
 #endif
-//#ifdef Q_OS_DARWIN
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 #include "qrhimetal_p_p.h"
 #endif
 
@@ -2253,9 +2252,7 @@ bool QRhiTexture::buildFrom(const QRhiNativeHandles *src)
 
     \value Repeat
     \value ClampToEdge
-    \value Border
     \value Mirror
-    \value MirrorOnce
  */
 
 /*!
@@ -4049,8 +4046,7 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
         break;
 #endif
     case Metal:
-//#ifdef Q_OS_DARWIN
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
         r->d = new QRhiMetal(static_cast<QRhiMetalInitParams *>(params),
                              static_cast<QRhiMetalNativeHandles *>(importDevice));
         break;

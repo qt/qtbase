@@ -2862,12 +2862,8 @@ static inline D3D11_TEXTURE_ADDRESS_MODE toD3DAddressMode(QRhiSampler::AddressMo
         return D3D11_TEXTURE_ADDRESS_WRAP;
     case QRhiSampler::ClampToEdge:
         return D3D11_TEXTURE_ADDRESS_CLAMP;
-    case QRhiSampler::Border:
-        return D3D11_TEXTURE_ADDRESS_BORDER;
     case QRhiSampler::Mirror:
         return D3D11_TEXTURE_ADDRESS_MIRROR;
-    case QRhiSampler::MirrorOnce:
-        return D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
     default:
         Q_UNREACHABLE();
         return D3D11_TEXTURE_ADDRESS_CLAMP;

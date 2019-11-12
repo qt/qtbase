@@ -41,6 +41,8 @@
 
 #ifdef Q_OS_MACOS
 #include <AppKit/AppKit.h>
+#else
+#include <UIKit/UIKit.h>
 #endif
 
 #include <Metal/Metal.h>
@@ -318,7 +320,13 @@ struct QMetalComputePipelineData
 
 struct QMetalSwapChainData
 {
+    // The iOS simulator's headers mark CAMetalLayer as iOS 13.0+ only.
+    // (for real device SDKs it is 8.0+)
+#ifdef TARGET_IPHONE_SIMULATOR
+    API_AVAILABLE(ios(13.0)) CAMetalLayer *layer = nullptr;
+#else
     CAMetalLayer *layer = nullptr;
+#endif
     id<CAMetalDrawable> curDrawable;
     dispatch_semaphore_t sem[QMTL_FRAMES_IN_FLIGHT];
     MTLRenderPassDescriptor *rp = nullptr;
@@ -1763,8 +1771,10 @@ void QRhiMetal::executeBufferHostWritesForCurrentFrame(QMetalBuffer *bufD)
         if (changeEnd == -1 || u.offset + u.data.size() > changeEnd)
             changeEnd = u.offset + u.data.size();
     }
+#ifdef Q_OS_MACOS
     if (changeBegin >= 0 && bufD->d->managed)
         [bufD->d->buf[idx] didModifyRange: NSMakeRange(NSUInteger(changeBegin), NSUInteger(changeEnd - changeBegin))];
+#endif
 
     bufD->d->pendingUpdates[idx].clear();
 }
@@ -1798,8 +1808,12 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
             if (color0.needsDrawableForTex || color0.needsDrawableForResolveTex) {
                 Q_ASSERT(currentSwapChain);
                 QMetalSwapChain *swapChainD = QRHI_RES(QMetalSwapChain, currentSwapChain);
-                if (!swapChainD->d->curDrawable)
-                    swapChainD->d->curDrawable = [swapChainD->d->layer nextDrawable];
+                if (!swapChainD->d->curDrawable) {
+#ifdef TARGET_IPHONE_SIMULATOR
+                    if (@available(ios 13.0, *))
+#endif
+                        swapChainD->d->curDrawable = [swapChainD->d->layer nextDrawable];
+                }
                 if (!swapChainD->d->curDrawable) {
                     qWarning("No drawable");
                     return;
@@ -2170,12 +2184,13 @@ bool QMetalRenderBuffer::build()
     case DepthStencil:
 #ifdef Q_OS_MACOS
         desc.storageMode = MTLStorageModePrivate;
-#else
-        desc.storageMode = MTLResourceStorageModeMemoryless;
-        transientBacking = true;
-#endif
         d->format = rhiD->d->dev.depth24Stencil8PixelFormatSupported
                 ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
+#else
+        desc.storageMode = MTLStorageModeMemoryless;
+        transientBacking = true;
+        d->format = MTLPixelFormatDepth32Float_Stencil8;
+#endif
         desc.pixelFormat = d->format;
         break;
     case Color:
@@ -2569,12 +2584,8 @@ static inline MTLSamplerAddressMode toMetalAddressMode(QRhiSampler::AddressMode 
         return MTLSamplerAddressModeRepeat;
     case QRhiSampler::ClampToEdge:
         return MTLSamplerAddressModeClampToEdge;
-    case QRhiSampler::Border:
-        return MTLSamplerAddressModeClampToBorderColor;
     case QRhiSampler::Mirror:
         return MTLSamplerAddressModeMirrorRepeat;
-    case QRhiSampler::MirrorOnce:
-        return MTLSamplerAddressModeMirrorClampToEdge;
     default:
         Q_UNREACHABLE();
         return MTLSamplerAddressModeClampToEdge;
@@ -3311,7 +3322,11 @@ bool QMetalGraphicsPipeline::build()
         // validation blows up otherwise.
         MTLPixelFormat fmt = MTLPixelFormat(rpD->dsFormat);
         rpDesc.depthAttachmentPixelFormat = fmt;
+#ifdef Q_OS_MACOS
         if (fmt != MTLPixelFormatDepth16Unorm && fmt != MTLPixelFormatDepth32Float)
+#else
+        if (fmt != MTLPixelFormatDepth32Float)
+#endif
             rpDesc.stencilAttachmentPixelFormat = fmt;
     }
 
@@ -3528,6 +3543,10 @@ QMetalSwapChain::~QMetalSwapChain()
 
 void QMetalSwapChain::release()
 {
+#ifdef TARGET_IPHONE_SIMULATOR
+    if (@available(ios 13.0, *)) {
+#endif
+
     if (!d->layer)
         return;
 
@@ -3556,6 +3575,10 @@ void QMetalSwapChain::release()
     QRHI_PROF_F(releaseSwapChain(this));
 
     rhiD->unregisterResource(this);
+
+#ifdef TARGET_IPHONE_SIMULATOR
+    }
+#endif
 }
 
 QRhiCommandBuffer *QMetalSwapChain::currentFrameCommandBuffer()
@@ -3578,16 +3601,20 @@ QRhiRenderPassDescriptor *QMetalSwapChain::newCompatibleRenderPassDescriptor()
 {
     chooseFormats(); // ensure colorFormat and similar are filled out
 
-    QRHI_RES_RHI(QRhiMetal);
     QMetalRenderPassDescriptor *rpD = new QMetalRenderPassDescriptor(m_rhi);
     rpD->colorAttachmentCount = 1;
     rpD->hasDepthStencil = m_depthStencil != nullptr;
 
     rpD->colorFormat[0] = int(d->colorFormat);
 
+#ifdef Q_OS_MACOS
     // m_depthStencil may not be built yet so cannot rely on computed fields in it
+    QRHI_RES_RHI(QRhiMetal);
     rpD->dsFormat = rhiD->d->dev.depth24Stencil8PixelFormatSupported
             ? MTLPixelFormatDepth24Unorm_Stencil8 : MTLPixelFormatDepth32Float_Stencil8;
+#else
+    rpD->dsFormat = MTLPixelFormatDepth32Float_Stencil8;
+#endif
 
     return rpD;
 }
@@ -3603,6 +3630,10 @@ void QMetalSwapChain::chooseFormats()
 
 bool QMetalSwapChain::buildOrResize()
 {
+#ifdef TARGET_IPHONE_SIMULATOR
+    if (@available(ios 13.0, *)) {
+#endif
+
     Q_ASSERT(m_window);
 
     const bool needsRegistration = !window || window != m_window;
@@ -3622,7 +3653,11 @@ bool QMetalSwapChain::buildOrResize()
         return false;
     }
 
+#ifdef Q_OS_MACOS
     NSView *view = reinterpret_cast<NSView *>(window->winId());
+#else
+    UIView *view = reinterpret_cast<UIView *>(window->winId());
+#endif
     Q_ASSERT(view);
     d->layer = static_cast<CAMetalLayer *>(view.layer);
     Q_ASSERT(d->layer);
@@ -3726,6 +3761,15 @@ bool QMetalSwapChain::buildOrResize()
         rhiD->registerResource(this);
 
     return true;
+
+#ifdef TARGET_IPHONE_SIMULATOR
+    } else {
+        // Won't ever get here in a normal app because MTLDevice creation would
+        // fail too. Print a warning, just in case.
+        qWarning("No CAMetalLayer support in this version of the iOS Simulator");
+        return false;
+    }
+#endif
 }
 
 QT_END_NAMESPACE

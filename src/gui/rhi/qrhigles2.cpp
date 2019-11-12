@@ -1785,11 +1785,6 @@ static inline GLenum toGlWrapMode(QRhiSampler::AddressMode m)
         return GL_CLAMP_TO_EDGE;
     case QRhiSampler::Mirror:
         return GL_MIRRORED_REPEAT;
-    case QRhiSampler::MirrorOnce:
-        Q_FALLTHROUGH();
-    case QRhiSampler::Border:
-        qWarning("Unsupported wrap mode %d", m);
-        return GL_CLAMP_TO_EDGE;
     default:
         Q_UNREACHABLE();
         return GL_CLAMP_TO_EDGE;

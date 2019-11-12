@@ -4617,12 +4617,8 @@ static inline VkSamplerAddressMode toVkAddressMode(QRhiSampler::AddressMode m)
         return VK_SAMPLER_ADDRESS_MODE_REPEAT;
     case QRhiSampler::ClampToEdge:
         return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    case QRhiSampler::Border:
-        return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
     case QRhiSampler::Mirror:
         return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-    case QRhiSampler::MirrorOnce:
-        return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
     default:
         Q_UNREACHABLE();
         return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
