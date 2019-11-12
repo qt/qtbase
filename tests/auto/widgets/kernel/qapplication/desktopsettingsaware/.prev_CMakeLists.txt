@@ -1,0 +1,17 @@
+# Generated from desktopsettingsaware.pro.
+
+#####################################################################
+## desktopsettingsaware Binary:
+#####################################################################
+
+add_qt_executable(desktopsettingsaware
+    GUI
+    SOURCES
+        main.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::Widgets
+)
+
+## Scopes:
+#####################################################################

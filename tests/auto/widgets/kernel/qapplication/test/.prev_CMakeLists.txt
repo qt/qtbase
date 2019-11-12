@@ -9,7 +9,7 @@ list(APPEND test_data "../test/test.pro")
 list(APPEND test_data "../tmp/README")
 list(APPEND test_data "../modal")
 
-add_qt_test(tst_qapplication # special case
+add_qt_test(test
     SOURCES
         ../tst_qapplication.cpp
     LIBRARIES
@@ -20,13 +20,12 @@ add_qt_test(tst_qapplication # special case
         Qt::Gui
         Qt::Widgets
     TESTDATA ${test_data}
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.." # special case
 )
 
 ## Scopes:
 #####################################################################
 
-extend_target(tst_qapplication CONDITION builtin_testdata # special case
+extend_target(test CONDITION builtin_testdata
     DEFINES
         BUILTIN_TESTDATA
 )
