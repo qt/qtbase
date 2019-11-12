@@ -2390,6 +2390,40 @@ function(add_qt_benchmark target)
 
 endfunction()
 
+# Simple wrapper around add_qt_executable for manual tests which insure that
+# the binary is built under ${CMAKE_CURRENT_BINARY_DIR} and never installed.
+# See add_qt_executable() for more details.
+function(add_qt_manual_test target)
+
+    qt_parse_all_arguments(arg "add_qt_benchmark"
+        "${__add_qt_executable_optional_args}"
+        "${__add_qt_executable_single_args}"
+        "${__add_qt_executable_multi_args}"
+        ${ARGN}
+    )
+
+    qt_remove_args(exec_args
+        ARGS_TO_REMOVE
+            ${target}
+            OUTPUT_DIRECTORY
+            INSTALL_DIRECTORY
+        ALL_ARGS
+            "${__add_qt_executable_optional_args}"
+            "${__add_qt_executable_single_args}"
+            "${__add_qt_executable_multi_args}"
+        ARGS
+            ${ARGV}
+    )
+
+    add_qt_executable(${target}
+        NO_INSTALL # we don't install benchmarks
+        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" # avoid polluting bin directory
+        ${exec_args}
+    )
+
+endfunction()
+
+
 # This function creates a CMake test target with the specified name for use with CTest.
 function(add_qt_test name)
     qt_parse_all_arguments(arg "add_qt_test"

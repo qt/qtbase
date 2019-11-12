@@ -246,8 +246,17 @@ def is_benchmark_project(project_file_path: str = "") -> bool:
 
     project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
     # If the project file is found in a subdir called 'tests/benchmarks'
-    # relative to the repo source dir, then it must be benchmark
+    # relative to the repo source dir, then it must be a benchmark
     return project_relative_path.startswith("tests/benchmarks")
+
+def is_manual_test(project_file_path: str = "") -> bool:
+    qmake_conf_path = find_qmake_conf(project_file_path)
+    qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
+
+    project_relative_path = os.path.relpath(project_file_path, qmake_conf_dir_path)
+    # If the project file is found in a subdir called 'tests/manual'
+    # relative to the repo source dir, then it must be a manual test
+    return project_relative_path.startswith("tests/manual")
 
 
 @lru_cache(maxsize=None)
@@ -2808,6 +2817,7 @@ def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int
     assert binary_name
 
     is_benchmark = is_benchmark_project(scope.file_absolute_path)
+    is_manual_test = is_manual_test(scope.file_absolute_path)
 
     is_qt_test_helper = "qt_test_helper" in scope.get("_LOADED")
 
@@ -2821,6 +2831,8 @@ def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int
 
     if is_benchmark:
         cmake_function_call = "add_qt_benchmark"
+    elif is_manual_test:
+        cmake_function_call = "add_qt_manual_test"
     else:
         extra_keys = ["target.path", "INSTALLS"]
         target_path = scope.get_string("target.path")
