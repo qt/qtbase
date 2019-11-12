@@ -592,7 +592,7 @@ static QPoint calcPosition(const QWindow *w, const QWindowCreationContextPtr &co
         return posFrame;
 
     // Find the original screen containing the coordinates.
-    const QList<QScreen *> screens = screenForGL->virtualSiblings();
+    const auto screens = screenForGL->virtualSiblings();
     const QScreen *orgScreen = nullptr;
     for (QScreen *screen : screens) {
         if (screen->handle()->availableGeometry().contains(posFrame)) {

@@ -127,7 +127,7 @@ private:
 class QWindowsScreenManager
 {
 public:
-    using WindowsScreenList = QList<QWindowsScreen *>;
+    using WindowsScreenList = QVector<QWindowsScreen *>;
 
     QWindowsScreenManager();
 

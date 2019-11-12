@@ -1388,7 +1388,7 @@ QList<int> QWindowsKeyMapper::possibleKeys(const QKeyEvent *e) const
         if (key && key != baseKey && ((keyMods & neededMods) == neededMods)) {
             const Qt::KeyboardModifiers missingMods = keyMods & ~neededMods;
             const int matchedKey = int(key) + missingMods;
-            const QList<int>::iterator it =
+            const auto it =
                 std::find_if(result.begin(), result.end(),
                              [key] (int k) { return (k & ~Qt::KeyboardModifierMask) == key; });
             // QTBUG-67200: Use the match with the least modifiers (prefer

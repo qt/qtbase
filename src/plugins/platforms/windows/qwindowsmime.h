@@ -43,7 +43,6 @@
 #include <QtCore/qt_windows.h>
 
 #include <QtCore/qvector.h>
-#include <QtCore/qlist.h>
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
@@ -95,7 +94,7 @@ public:
 private:
     void ensureInitialized() const;
 
-    mutable QList<QWindowsMime *> m_mimes;
+    mutable QVector<QWindowsMime *> m_mimes;
     mutable int m_internalMimeCount = 0;
 };
 
