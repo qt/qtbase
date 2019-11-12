@@ -1,7 +1,7 @@
 # Generated from qiconhighdpi.pro.
 
 #####################################################################
-## tst_qicon Test:
+## tst_qiconhighdpi Test:
 #####################################################################
 
 # Collect test data

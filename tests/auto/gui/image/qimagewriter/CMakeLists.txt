@@ -24,26 +24,27 @@ add_qt_test(tst_qimagewriter
 ## Scopes:
 #####################################################################
 
-# Resources:
-set(qimagewriter_resource_files
-    "images/YCbCr_cmyk.jpg"
-    "images/YCbCr_rgb.jpg"
-    "images/beavis.jpg"
-    "images/colorful.bmp"
-    "images/earth.gif"
-    "images/font.bmp"
-    "images/gnus.xbm"
-    "images/kollada.png"
-    "images/marble.xpm"
-    "images/ship63.pbm"
-    "images/teapot.ppm"
-    "images/trolltech.gif"
-)
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    # Resources:
+    set(qimagewriter_resource_files
+        "images/YCbCr_cmyk.jpg"
+        "images/YCbCr_rgb.jpg"
+        "images/beavis.jpg"
+        "images/colorful.bmp"
+        "images/earth.gif"
+        "images/font.bmp"
+        "images/gnus.xbm"
+        "images/kollada.png"
+        "images/marble.xpm"
+        "images/ship63.pbm"
+        "images/teapot.ppm"
+        "images/trolltech.gif"
+    )
 
-add_qt_resource(tst_qimagewriter "qimagewriter"
-    PREFIX
-        "/"
-    FILES
-        ${qimagewriter_resource_files}
-)
-
+    add_qt_resource(tst_qimagewriter "qimagewriter"
+        PREFIX
+            "/"
+        FILES
+            ${qimagewriter_resource_files}
+    )
+endif()

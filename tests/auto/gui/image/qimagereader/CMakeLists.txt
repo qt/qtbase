@@ -50,16 +50,17 @@ add_qt_resource(tst_qimagereader "qmake_immediate"
 ## Scopes:
 #####################################################################
 
-# Resources:
-set(android_testdata_resource_files
-    "images/kollada-noext"
-    "images/trans.gif"
-)
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    # Resources:
+    set(android_testdata_resource_files
+        "images/kollada-noext"
+        "images/trans.gif"
+    )
 
-add_qt_resource(tst_qimagereader "android_testdata"
-    PREFIX
-        "/"
-    FILES
-        ${android_testdata_resource_files}
-)
-
+    add_qt_resource(tst_qimagereader "android_testdata"
+        PREFIX
+            "/"
+        FILES
+            ${android_testdata_resource_files}
+    )
+endif()

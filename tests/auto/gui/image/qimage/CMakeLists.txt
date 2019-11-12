@@ -24,35 +24,36 @@ add_qt_test(tst_qimage
 ## Scopes:
 #####################################################################
 
-# Resources:
-set(qimage_resource_files
-    "images/image.bmp"
-    "images/image.gif"
-    "images/image.ico"
-    "images/image.jpg"
-    "images/image.pbm"
-    "images/image.pgm"
-    "images/image.png"
-    "images/image.ppm"
-    "images/image.xbm"
-    "images/image.xpm"
-    "images/jpeg_exif_orientation_value_1.jpg"
-    "images/jpeg_exif_orientation_value_2.jpg"
-    "images/jpeg_exif_orientation_value_3.jpg"
-    "images/jpeg_exif_orientation_value_4.jpg"
-    "images/jpeg_exif_orientation_value_5.jpg"
-    "images/jpeg_exif_orientation_value_6.jpg"
-    "images/jpeg_exif_orientation_value_7.jpg"
-    "images/jpeg_exif_orientation_value_8.jpg"
-)
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    # Resources:
+    set(qimage_resource_files
+        "images/image.bmp"
+        "images/image.gif"
+        "images/image.ico"
+        "images/image.jpg"
+        "images/image.pbm"
+        "images/image.pgm"
+        "images/image.png"
+        "images/image.ppm"
+        "images/image.xbm"
+        "images/image.xpm"
+        "images/jpeg_exif_orientation_value_1.jpg"
+        "images/jpeg_exif_orientation_value_2.jpg"
+        "images/jpeg_exif_orientation_value_3.jpg"
+        "images/jpeg_exif_orientation_value_4.jpg"
+        "images/jpeg_exif_orientation_value_5.jpg"
+        "images/jpeg_exif_orientation_value_6.jpg"
+        "images/jpeg_exif_orientation_value_7.jpg"
+        "images/jpeg_exif_orientation_value_8.jpg"
+    )
 
-add_qt_resource(tst_qimage "qimage"
-    PREFIX
-        "/"
-    FILES
-        ${qimage_resource_files}
-)
-
+    add_qt_resource(tst_qimage "qimage"
+        PREFIX
+            "/"
+        FILES
+            ${qimage_resource_files}
+    )
+endif()
 
 extend_target(tst_qimage CONDITION WIN32 AND NOT WINRT
     PUBLIC_LIBRARIES

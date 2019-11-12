@@ -21,28 +21,29 @@ add_qt_test(tst_qicoimageformat
 ## Scopes:
 #####################################################################
 
-# Resources:
-set(qicoimageformat_resource_files
-    "icons/invalid/35floppy.ico"
-    "icons/valid/35FLOPPY.ICO"
-    "icons/valid/AddPerfMon.ico"
-    "icons/valid/App.ico"
-    "icons/valid/Obj_N2_Internal_Mem.ico"
-    "icons/valid/Qt.ico"
-    "icons/valid/Status_Play.ico"
-    "icons/valid/TIMER01.ICO"
-    "icons/valid/WORLD.ico"
-    "icons/valid/WORLDH.ico"
-    "icons/valid/abcardWindow.ico"
-    "icons/valid/semitransparent.ico"
-    "icons/valid/trolltechlogo_tiny.ico"
-    "icons/valid/yellow.cur"
-)
+if(ANDROID)
+    # Resources:
+    set(qicoimageformat_resource_files
+        "icons/invalid/35floppy.ico"
+        "icons/valid/35FLOPPY.ICO"
+        "icons/valid/AddPerfMon.ico"
+        "icons/valid/App.ico"
+        "icons/valid/Obj_N2_Internal_Mem.ico"
+        "icons/valid/Qt.ico"
+        "icons/valid/Status_Play.ico"
+        "icons/valid/TIMER01.ICO"
+        "icons/valid/WORLD.ico"
+        "icons/valid/WORLDH.ico"
+        "icons/valid/abcardWindow.ico"
+        "icons/valid/semitransparent.ico"
+        "icons/valid/trolltechlogo_tiny.ico"
+        "icons/valid/yellow.cur"
+    )
 
-add_qt_resource(tst_qicoimageformat "qicoimageformat"
-    PREFIX
-        "/"
-    FILES
-        ${qicoimageformat_resource_files}
-)
-
+    add_qt_resource(tst_qicoimageformat "qicoimageformat"
+        PREFIX
+            "/"
+        FILES
+            ${qicoimageformat_resource_files}
+    )
+endif()
