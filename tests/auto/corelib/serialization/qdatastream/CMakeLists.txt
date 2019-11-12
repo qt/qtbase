@@ -18,15 +18,16 @@ add_qt_test(tst_qdatastream
 ## Scopes:
 #####################################################################
 
-# Resources:
-set(testdata_resource_files
-    "datastream.q42"
-)
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    # Resources:
+    set(testdata_resource_files
+        "datastream.q42"
+    )
 
-add_qt_resource(tst_qdatastream "testdata"
-    PREFIX
-        "/"
-    FILES
-        ${testdata_resource_files}
-)
-
+    add_qt_resource(tst_qdatastream "testdata"
+        PREFIX
+            "/"
+        FILES
+            ${testdata_resource_files}
+    )
+endif()
