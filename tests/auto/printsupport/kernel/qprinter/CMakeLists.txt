@@ -7,7 +7,8 @@
 add_qt_test(tst_qprinter
     SOURCES
         tst_qprinter.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
+        Qt::Gui
         Qt::PrintSupport
         Qt::Widgets
 )

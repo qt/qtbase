@@ -11,4 +11,7 @@ add_qt_test(tst_qprintdevice
         QT_USE_USING_NAMESPACE
     LIBRARIES
         Qt::PrintSupportPrivate
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::PrintSupport
 )
