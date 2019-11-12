@@ -1,11 +1,14 @@
 # Generated from qgl.pro.
 
+if(NOT TARGET Qt::OpenGL)
+    return()
+endif()
+
 #####################################################################
 ## tst_qgl Test:
 #####################################################################
 
 add_qt_test(tst_qgl
-    GUI
     SOURCES
         tst_qgl.cpp
     LIBRARIES
@@ -23,13 +26,17 @@ add_qt_test(tst_qgl
 set_source_files_properties("../../gui/image/qpixmap/images/designer.png"
     PROPERTIES QT_RESOURCE_ALIAS "designer.png"
 )
+set(qgl_resource_files
+    "../../gui/image/qpixmap/images/designer.png"
+)
+
 add_qt_resource(tst_qgl "qgl"
     PREFIX
         "/"
     FILES
-        ../../gui/image/qpixmap/images/designer.png
+        ${qgl_resource_files}
 )
 
 
 #### Keys ignored in scope 1:.:.:qgl.pro:<TRUE>:
-# CONFIG = "testcase"
+# _REQUIREMENTS = "qtHaveModule(opengl)"
