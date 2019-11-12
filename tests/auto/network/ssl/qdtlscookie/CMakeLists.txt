@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qdtlscookie
-    GUI
     SOURCES
         tst_qdtlscookie.cpp
     LIBRARIES
@@ -13,9 +12,6 @@ add_qt_test(tst_qdtlscookie
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:qdtlscookie.pro:<TRUE>:
-# CONFIG = "testcase"
 
 ## Scopes:
 #####################################################################

@@ -1,11 +1,14 @@
 # Generated from qsslsocket_onDemandCertificates_static.pro.
 
+if(NOT QT_FEATURE_private_tests)
+    return()
+endif()
+
 #####################################################################
 ## tst_qsslsocket_onDemandCertificates_static Test:
 #####################################################################
 
 add_qt_test(tst_qsslsocket_onDemandCertificates_static
-    GUI
     SOURCES
         tst_qsslsocket_onDemandCertificates_static.cpp
     DEFINES
@@ -18,7 +21,7 @@ add_qt_test(tst_qsslsocket_onDemandCertificates_static
 )
 
 #### Keys ignored in scope 1:.:.:qsslsocket_onDemandCertificates_static.pro:<TRUE>:
-# CONFIG = "testcase"
+# _REQUIREMENTS = "qtConfig(private_tests)"
 
 ## Scopes:
 #####################################################################
@@ -30,5 +33,4 @@ add_qt_test(tst_qsslsocket_onDemandCertificates_static
 # DESTDIR = "release"
 
 #### Keys ignored in scope 5:.:.:qsslsocket_onDemandCertificates_static.pro:LINUX:
-# CONFIG = "unsupported/testserver"
 # QT_TEST_SERVER_LIST = "squid" "danted"

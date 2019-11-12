@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qocsp
-    GUI
     SOURCES
         tst_qocsp.cpp
     LIBRARIES
@@ -13,9 +12,6 @@ add_qt_test(tst_qocsp
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:qocsp.pro:<TRUE>:
-# CONFIG = "testcase"
 
 ## Scopes:
 #####################################################################

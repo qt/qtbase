@@ -5,15 +5,11 @@
 #####################################################################
 
 add_qt_test(tst_qsslcipher
-    GUI
     SOURCES
         tst_qsslcipher.cpp
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:qsslcipher.pro:<TRUE>:
-# CONFIG = "testcase"
 
 ## Scopes:
 #####################################################################

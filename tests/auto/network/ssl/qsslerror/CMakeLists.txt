@@ -5,15 +5,11 @@
 #####################################################################
 
 add_qt_test(tst_qsslerror
-    GUI
     SOURCES
         tst_qsslerror.cpp
     PUBLIC_LIBRARIES
         Qt::Network
 )
-
-#### Keys ignored in scope 1:.:.:qsslerror.pro:<TRUE>:
-# CONFIG = "testcase"
 
 ## Scopes:
 #####################################################################

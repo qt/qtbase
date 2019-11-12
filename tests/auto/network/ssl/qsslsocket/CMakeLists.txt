@@ -1,5 +1,9 @@
 # Generated from qsslsocket.pro.
 
+if(NOT QT_FEATURE_private_tests)
+    return()
+endif()
+
 #####################################################################
 ## tst_qsslsocket Test:
 #####################################################################
@@ -8,7 +12,6 @@
 list(APPEND test_data "certs")
 
 add_qt_test(tst_qsslsocket
-    GUI
     SOURCES
         tst_qsslsocket.cpp
     DEFINES
@@ -22,7 +25,7 @@ add_qt_test(tst_qsslsocket
 )
 
 #### Keys ignored in scope 1:.:.:qsslsocket.pro:<TRUE>:
-# CONFIG = "testcase"
+# _REQUIREMENTS = "qtConfig(private_tests)"
 
 ## Scopes:
 #####################################################################
@@ -34,5 +37,4 @@ add_qt_test(tst_qsslsocket
 # DESTDIR = "release"
 
 #### Keys ignored in scope 5:.:.:qsslsocket.pro:LINUX:
-# CONFIG = "unsupported/testserver"
 # QT_TEST_SERVER_LIST = "squid" "danted" "cyrus" "apache2" "echo"
