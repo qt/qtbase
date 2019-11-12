@@ -1,1 +1,12 @@
-add_qt_test(tst_qvectornd SOURCES tst_qvectornd.cpp LIBRARIES Qt::Gui)
+# Generated from qvectornd.pro.
+
+#####################################################################
+## tst_qvectornd Test:
+#####################################################################
+
+add_qt_test(tst_qvectornd
+    SOURCES
+        tst_qvectornd.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+)
