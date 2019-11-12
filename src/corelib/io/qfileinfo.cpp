@@ -359,7 +359,7 @@ QFileInfo::QFileInfo(const QString &file) : d_ptr(new QFileInfoPrivate(file))
 
     \sa isRelative()
 */
-QFileInfo::QFileInfo(const QFile &file) : d_ptr(new QFileInfoPrivate(file.fileName()))
+QFileInfo::QFileInfo(const QFileDevice &file) : d_ptr(new QFileInfoPrivate(file.fileName()))
 {
 }
 
@@ -502,7 +502,7 @@ void QFileInfo::setFile(const QString &file)
 
     \sa isRelative()
 */
-void QFileInfo::setFile(const QFile &file)
+void QFileInfo::setFile(const QFileDevice &file)
 {
     setFile(file.fileName());
 }

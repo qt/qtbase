@@ -61,7 +61,7 @@ public:
 
     QFileInfo();
     QFileInfo(const QString &file);
-    QFileInfo(const QFile &file);
+    QFileInfo(const QFileDevice &file);
     QFileInfo(const QDir &dir, const QString &file);
     QFileInfo(const QFileInfo &fileinfo);
 #ifdef Q_CLANG_QDOC
@@ -88,7 +88,7 @@ public:
     inline bool operator!=(const QFileInfo &fileinfo) const { return !(operator==(fileinfo)); }
 
     void setFile(const QString &file);
-    void setFile(const QFile &file);
+    void setFile(const QFileDevice &file);
     void setFile(const QDir &dir, const QString &file);
 #ifdef Q_CLANG_QDOC
     void setFile(const std::filesystem::path &file);
