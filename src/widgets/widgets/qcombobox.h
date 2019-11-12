@@ -170,7 +170,7 @@ public:
     void setItemDelegate(QAbstractItemDelegate *delegate);
 
     QAbstractItemModel *model() const;
-    void setModel(QAbstractItemModel *model);
+    virtual void setModel(QAbstractItemModel *model);
 
     QModelIndex rootModelIndex() const;
     void setRootModelIndex(const QModelIndex &index);
