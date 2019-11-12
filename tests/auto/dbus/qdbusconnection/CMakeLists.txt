@@ -7,6 +7,6 @@
 add_qt_test(tst_qdbusconnection
     SOURCES
         tst_qdbusconnection.cpp tst_qdbusconnection.h
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::DBus
 )

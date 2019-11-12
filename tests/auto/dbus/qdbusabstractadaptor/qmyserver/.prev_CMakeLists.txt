@@ -1,12 +1,14 @@
-# Generated from qdbusreply.pro.
+# Generated from qmyserver.pro.
 
 #####################################################################
-## tst_qdbusreply Test:
+## qmyserver Binary:
 #####################################################################
 
-add_qt_test(tst_qdbusreply
+add_qt_executable(qmyserver
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
-        tst_qdbusreply.cpp
+        ../myobject.h
+        qmyserver.cpp
     PUBLIC_LIBRARIES
         Qt::DBus
 )

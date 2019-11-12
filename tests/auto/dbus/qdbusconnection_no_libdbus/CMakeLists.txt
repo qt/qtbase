@@ -10,6 +10,6 @@ add_qt_test(tst_qdbusconnection_no_libdbus
     DEFINES
         SIMULATE_LOAD_FAIL
         tst_QDBusConnectionNoBus=tst_QDBusConnectionNoLibDBus1
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::DBus
 )

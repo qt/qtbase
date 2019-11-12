@@ -5,12 +5,11 @@
 #####################################################################
 
 add_qt_executable(qpinger
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     NO_INSTALL # special case
-    OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
     SOURCES
         ../interface.cpp ../interface.h
         qpinger.cpp
-    LIBRARIES
-        Qt::Core
+    PUBLIC_LIBRARIES
         Qt::DBus
 )

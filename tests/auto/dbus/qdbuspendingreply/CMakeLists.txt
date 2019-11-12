@@ -7,6 +7,6 @@
 add_qt_test(tst_qdbuspendingreply
     SOURCES
         tst_qdbuspendingreply.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::DBus
 )

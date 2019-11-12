@@ -7,6 +7,6 @@
 add_qt_test(tst_qdbuslocalcalls
     SOURCES
         tst_qdbuslocalcalls.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::DBus
 )

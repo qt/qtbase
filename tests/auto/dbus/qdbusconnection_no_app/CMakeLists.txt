@@ -9,8 +9,8 @@ add_qt_test(tst_qdbusconnection_no_app
         ../qdbusconnection/tst_qdbusconnection.h
         tst_qdbusconnection_no_app.cpp
     DEFINES
-        SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}/"
+        SRCDIR=\\\"${CMAKE_CURRENT_SOURCE_DIR}/\\\"
         tst_QDBusConnection=tst_QDBusConnection_NoApplication
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::DBus
 )

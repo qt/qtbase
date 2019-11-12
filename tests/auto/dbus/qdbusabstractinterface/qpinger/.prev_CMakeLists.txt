@@ -1,12 +1,14 @@
-# Generated from qdbusreply.pro.
+# Generated from qpinger.pro.
 
 #####################################################################
-## tst_qdbusreply Test:
+## qpinger Binary:
 #####################################################################
 
-add_qt_test(tst_qdbusreply
+add_qt_executable(qpinger
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
-        tst_qdbusreply.cpp
+        ../interface.cpp ../interface.h
+        qpinger.cpp
     PUBLIC_LIBRARIES
         Qt::DBus
 )

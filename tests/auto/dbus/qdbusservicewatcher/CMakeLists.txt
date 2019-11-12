@@ -7,6 +7,6 @@
 add_qt_test(tst_qdbusservicewatcher
     SOURCES
         tst_qdbusservicewatcher.cpp
-    LIBRARIES
+    PUBLIC_LIBRARIES
         Qt::DBus
 )
