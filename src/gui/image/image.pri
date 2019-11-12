@@ -79,6 +79,14 @@ qtConfig(png) {
     HEADERS += image/qpnghandler_p.h
     SOURCES += image/qpnghandler.cpp
     QMAKE_USE_PRIVATE += libpng
+
+    win32:mingw {
+      # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86048
+      GCC_VERSION = "$${QMAKE_GCC_MAJOR_VERSION}.$${QMAKE_GCC_MINOR_VERSION}.$${QMAKE_GCC_PATCH_VERSION}"
+      equals(GCC_VERSION, "8.1.0") {
+        QMAKE_CXXFLAGS += -fno-reorder-blocks-and-partition
+      }
+    }
 }
 
 # SIMD
