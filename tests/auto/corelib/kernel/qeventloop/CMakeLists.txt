@@ -13,9 +13,6 @@ add_qt_test(tst_qeventloop
         Qt::Network
 )
 
-#### Keys ignored in scope 1:.:.:qeventloop.pro:<TRUE>:
-# CONFIG = "testcase"
-
 ## Scopes:
 #####################################################################
 

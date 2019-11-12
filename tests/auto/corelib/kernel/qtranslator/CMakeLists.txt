@@ -10,24 +10,38 @@ add_qt_test(tst_qtranslator
 )
 
 # Resources:
-add_qt_resource(tst_qtranslator "qtranslator" PREFIX "/tst_qtranslator" FILES
-    hellotr_empty.qm
-    hellotr_la.qm)
+set(qtranslator_resource_files
+    "hellotr_empty.qm"
+    "hellotr_la.qm"
+)
 
+add_qt_resource(tst_qtranslator "qtranslator"
+    PREFIX
+        "/tst_qtranslator"
+    FILES
+        ${qtranslator_resource_files}
+)
 
-#### Keys ignored in scope 1:.:.:qtranslator.pro:<TRUE>:
-# CONFIG = "testcase"
 
 ## Scopes:
 #####################################################################
 
-# Resources:
-add_qt_resource(tst_qtranslator "android_testdata" PREFIX "/android_testdata" FILES
-    dependencies_la.qm
-    hellotr_empty.qm
-    hellotr_la.qm
-    msgfmt_from_po.qm)
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    # Resources:
+    set(android_testdata_resource_files
+        "dependencies_la.qm"
+        "hellotr_empty.qm"
+        "hellotr_la.qm"
+        "msgfmt_from_po.qm"
+    )
 
+    add_qt_resource(tst_qtranslator "android_testdata"
+        PREFIX
+            "/android_testdata"
+        FILES
+            ${android_testdata_resource_files}
+    )
+endif()
 
 #### Keys ignored in scope 3:.:.:qtranslator.pro:else:
 # TESTDATA = "dependencies_la.qm" "hellotr_empty.qm" "hellotr_la.qm" "msgfmt_from_po.qm"

@@ -9,9 +9,6 @@ add_qt_test(tst_qpointer
         tst_qpointer.cpp
 )
 
-#### Keys ignored in scope 1:.:.:qpointer.pro:<TRUE>:
-# CONFIG = "testcase"
-
 ## Scopes:
 #####################################################################
 

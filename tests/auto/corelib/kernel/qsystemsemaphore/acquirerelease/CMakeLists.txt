@@ -10,6 +10,3 @@ add_qt_test_helper(acquirerelease_helper
     PUBLIC_LIBRARIES
         Qt::Test
 )
-
-#### Keys ignored in scope 1:.:.:acquirerelease.pro:<TRUE>:
-# _LOADED = "qt_test_helper"

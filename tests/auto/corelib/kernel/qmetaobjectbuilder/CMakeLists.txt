@@ -10,6 +10,3 @@ add_qt_test(tst_qmetaobjectbuilder
     LIBRARIES
         Qt::CorePrivate
 )
-
-#### Keys ignored in scope 1:.:.:qmetaobjectbuilder.pro:<TRUE>:
-# CONFIG = "testcase"

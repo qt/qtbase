@@ -10,6 +10,3 @@ add_qt_test(tst_qmimedata
     PUBLIC_LIBRARIES
         Qt::Gui
 )
-
-#### Keys ignored in scope 1:.:.:qmimedata.pro:<TRUE>:
-# CONFIG = "testcase"

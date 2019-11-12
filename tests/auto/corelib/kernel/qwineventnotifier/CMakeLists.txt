@@ -10,6 +10,3 @@ add_qt_test(tst_qwineventnotifier
     LIBRARIES
         Qt::CorePrivate
 )
-
-#### Keys ignored in scope 1:.:.:qwineventnotifier.pro:<TRUE>:
-# CONFIG = "testcase"
