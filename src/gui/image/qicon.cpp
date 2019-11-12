@@ -165,6 +165,11 @@ QIconPrivate::QIconPrivate(QIconEngine *e)
 qreal QIconPrivate::pixmapDevicePixelRatio(qreal displayDevicePixelRatio, const QSize &requestedSize, const QSize &actualSize)
 {
     QSize targetSize = requestedSize * displayDevicePixelRatio;
+    if ((actualSize.width() == targetSize.width() && actualSize.height() <= targetSize.height()) ||
+        (actualSize.width() <= targetSize.width() && actualSize.height() == targetSize.height())) {
+        // Correctly scaled for dpr, just having different aspect ratio
+        return displayDevicePixelRatio;
+    }
     qreal scale = 0.5 * (qreal(actualSize.width()) / qreal(targetSize.width()) +
                          qreal(actualSize.height() / qreal(targetSize.height())));
     return qMax(qreal(1.0), displayDevicePixelRatio *scale);
