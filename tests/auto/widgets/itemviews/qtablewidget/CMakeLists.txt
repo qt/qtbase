@@ -1,1 +1,13 @@
-add_qt_test("tst_qtablewidget" SOURCES tst_qtablewidget.cpp LIBRARIES Qt::Widgets)
+# Generated from qtablewidget.pro.
+
+#####################################################################
+## tst_qtablewidget Test:
+#####################################################################
+
+add_qt_test(tst_qtablewidget
+    SOURCES
+        tst_qtablewidget.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::Widgets
+)
