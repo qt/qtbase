@@ -14,7 +14,6 @@ list(APPEND test_data "types")
 list(APPEND test_data "tst_qdir.cpp")
 
 add_qt_test(tst_qdir
-    GUI
     SOURCES
         tst_qdir.cpp
     LIBRARIES
@@ -23,11 +22,15 @@ add_qt_test(tst_qdir
 )
 
 # Resources:
+set(qdir_resource_files
+    "resources/entryList/"
+)
+
 add_qt_resource(tst_qdir "qdir"
     PREFIX
         "/tst_qdir/"
     FILES
-        "resources/entryList/"
+        ${qdir_resource_files}
 )
 
 
@@ -42,11 +45,9 @@ extend_target(tst_qdir CONDITION CONFIG___contains___builtin_testdata
         BUILTIN_TESTDATA
 )
 
-# Resources:
-add_qt_resource(tst_qdir "android_testdata"
-    PREFIX
-        "/android_testdata"
-    FILES
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    # Resources:
+    set(android_testdata_resource_files
         "entrylist/directory/dummy"
         "entrylist/file"
         "resources/entryList/file1.data"
@@ -87,5 +88,12 @@ add_qt_resource(tst_qdir "android_testdata"
         "types/f.b/dummy"
         "types/f.c/dummy"
         "types/f/dummy"
-)
+    )
 
+    add_qt_resource(tst_qdir "android_testdata"
+        PREFIX
+            "/android_testdata"
+        FILES
+            ${android_testdata_resource_files}
+    )
+endif()

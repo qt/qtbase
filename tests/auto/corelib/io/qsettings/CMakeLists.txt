@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qsettings
-    GUI
     SOURCES
         tst_qsettings.cpp
     DEFINES
@@ -19,18 +18,22 @@ add_qt_test(tst_qsettings
 )
 
 # Resources:
+set(qsettings_resource_files
+    "bom.ini"
+    "resourcefile.ini"
+    "resourcefile2.ini"
+    "resourcefile3.ini"
+    "resourcefile4.ini"
+    "resourcefile5.ini"
+    "resourcefile6.plist"
+    "withcomments.ini"
+)
+
 add_qt_resource(tst_qsettings "qsettings"
     PREFIX
         "/"
     FILES
-        "bom.ini"
-        "resourcefile.ini"
-        "resourcefile2.ini"
-        "resourcefile3.ini"
-        "resourcefile4.ini"
-        "resourcefile5.ini"
-        "resourcefile6.plist"
-        "withcomments.ini"
+        ${qsettings_resource_files}
 )
 
 

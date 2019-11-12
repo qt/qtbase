@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qfilesystemmetadata
-    GUI
     SOURCES
         tst_qfilesystemmetadata.cpp
     LIBRARIES

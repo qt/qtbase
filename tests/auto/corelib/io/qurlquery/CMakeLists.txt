@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qurlquery
-    GUI
     SOURCES
         tst_qurlquery.cpp
     DEFINES

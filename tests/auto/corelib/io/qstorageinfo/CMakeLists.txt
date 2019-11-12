@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qstorageinfo
-    GUI
     SOURCES
         tst_qstorageinfo.cpp
     LIBRARIES

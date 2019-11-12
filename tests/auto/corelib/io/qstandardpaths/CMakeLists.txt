@@ -9,7 +9,6 @@ list(APPEND test_data "tst_qstandardpaths.cpp")
 list(APPEND test_data "qstandardpaths.pro")
 
 add_qt_test(tst_qstandardpaths
-    GUI
     SOURCES
         ../../../../shared/emulationdetector.h
         tst_qstandardpaths.cpp

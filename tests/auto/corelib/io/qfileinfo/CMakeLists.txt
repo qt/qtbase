@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qfileinfo
-    GUI
     SOURCES
         tst_qfileinfo.cpp
     LIBRARIES
@@ -13,20 +12,28 @@ add_qt_test(tst_qfileinfo
 )
 
 # Resources:
+set(qfileinfo_resource_files
+    "resources/"
+)
+
 add_qt_resource(tst_qfileinfo "qfileinfo"
     PREFIX
         "/tst_qfileinfo/"
     FILES
-        "resources/"
+        ${qfileinfo_resource_files}
 )
+set(testdata_resource_files
+    "resources/file1"
+    "resources/file1.ext1"
+    "resources/file1.ext1.ext2"
+    "tst_qfileinfo.cpp"
+)
+
 add_qt_resource(tst_qfileinfo "testdata"
     PREFIX
         "/testdata"
     FILES
-        "resources/file1"
-        "resources/file1.ext1"
-        "resources/file1.ext1.ext2"
-        "tst_qfileinfo.cpp"
+        ${testdata_resource_files}
 )
 
 

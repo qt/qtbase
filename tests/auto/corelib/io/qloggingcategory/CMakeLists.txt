@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qloggingcategory
-    GUI
     SOURCES
         tst_qloggingcategory.cpp
     LIBRARIES

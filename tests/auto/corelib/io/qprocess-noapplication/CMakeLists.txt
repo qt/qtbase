@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(qprocess-noapplication
-    GUI
     SOURCES
         tst_qprocessnoapplication.cpp
 )

@@ -8,7 +8,6 @@
 list(APPEND test_data "tst_qiodevice.cpp")
 
 add_qt_test(tst_qiodevice
-    GUI
     SOURCES
         tst_qiodevice.cpp
     PUBLIC_LIBRARIES
@@ -22,11 +21,16 @@ add_qt_test(tst_qiodevice
 ## Scopes:
 #####################################################################
 
-# Resources:
-add_qt_resource(tst_qiodevice "android_testdata"
-    PREFIX
-        "/"
-    FILES
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    # Resources:
+    set(android_testdata_resource_files
         "tst_qiodevice.cpp"
-)
+    )
 
+    add_qt_resource(tst_qiodevice "android_testdata"
+        PREFIX
+            "/"
+        FILES
+            ${android_testdata_resource_files}
+    )
+endif()

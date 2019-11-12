@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qurl
-    GUI
     SOURCES
         tst_qurl.cpp
     PUBLIC_LIBRARIES

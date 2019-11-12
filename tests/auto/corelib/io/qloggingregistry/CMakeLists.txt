@@ -8,7 +8,6 @@
 list(APPEND test_data "qtlogging.ini")
 
 add_qt_test(tst_qloggingregistry
-    GUI
     SOURCES
         tst_qloggingregistry.cpp
     LIBRARIES
@@ -22,11 +21,16 @@ add_qt_test(tst_qloggingregistry
 ## Scopes:
 #####################################################################
 
-# Resources:
-add_qt_resource(tst_qloggingregistry "android_testdata"
-    PREFIX
-        "/"
-    FILES
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    # Resources:
+    set(android_testdata_resource_files
         "qtlogging.ini"
-)
+    )
 
+    add_qt_resource(tst_qloggingregistry "android_testdata"
+        PREFIX
+            "/"
+        FILES
+            ${android_testdata_resource_files}
+    )
+endif()

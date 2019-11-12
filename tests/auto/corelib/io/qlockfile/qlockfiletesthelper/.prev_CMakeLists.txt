@@ -5,7 +5,7 @@
 #####################################################################
 
 add_qt_executable(qlockfile_test_helper
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/./"
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         qlockfile_test_helper.cpp
 )

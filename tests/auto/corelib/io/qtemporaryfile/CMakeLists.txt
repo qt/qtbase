@@ -8,7 +8,6 @@
 list(APPEND test_data "tst_qtemporaryfile.cpp")
 
 add_qt_test(tst_qtemporaryfile
-    GUI
     SOURCES
         tst_qtemporaryfile.cpp
     LIBRARIES
@@ -17,23 +16,32 @@ add_qt_test(tst_qtemporaryfile
 )
 
 # Resources:
+set(qtemporaryfile_resource_files
+    "resources/test.txt"
+)
+
 add_qt_resource(tst_qtemporaryfile "qtemporaryfile"
     PREFIX
         "/"
     FILES
-        "resources/test.txt"
+        ${qtemporaryfile_resource_files}
 )
 
 
 ## Scopes:
 #####################################################################
 
-# Resources:
-add_qt_resource(tst_qtemporaryfile "android_testdata"
-    PREFIX
-        "/android_testdata"
-    FILES
+if(ANDROID AND NOT ANDROID_EMBEDDED)
+    # Resources:
+    set(android_testdata_resource_files
         "resources/test.txt"
         "tst_qtemporaryfile.cpp"
-)
+    )
 
+    add_qt_resource(tst_qtemporaryfile "android_testdata"
+        PREFIX
+            "/android_testdata"
+        FILES
+            ${android_testdata_resource_files}
+    )
+endif()

@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qnodebug
-    GUI
     SOURCES
         tst_qnodebug.cpp
 )

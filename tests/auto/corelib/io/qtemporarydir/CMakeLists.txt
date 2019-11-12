@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qtemporarydir
-    GUI
     SOURCES
         ../../../../shared/emulationdetector.h
         tst_qtemporarydir.cpp

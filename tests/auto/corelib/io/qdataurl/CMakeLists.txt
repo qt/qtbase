@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qdataurl
-    GUI
     SOURCES
         tst_qdataurl.cpp
     LIBRARIES

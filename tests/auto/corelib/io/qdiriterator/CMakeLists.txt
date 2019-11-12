@@ -8,7 +8,6 @@
 list(APPEND test_data "entrylist")
 
 add_qt_test(tst_qdiriterator
-    GUI
     SOURCES
         tst_qdiriterator.cpp
     LIBRARIES
@@ -17,12 +16,16 @@ add_qt_test(tst_qdiriterator
 )
 
 # Resources:
+set(qdiriterator_resource_files
+    "entrylist/directory/dummy"
+    "entrylist/file"
+)
+
 add_qt_resource(tst_qdiriterator "qdiriterator"
     PREFIX
         "/testdata/"
     FILES
-        "entrylist/directory/dummy"
-        "entrylist/file"
+        ${qdiriterator_resource_files}
 )
 
 

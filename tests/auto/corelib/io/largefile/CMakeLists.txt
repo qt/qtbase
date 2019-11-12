@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_largefile
-    GUI
     SOURCES
         ../../../../shared/emulationdetector.h
         tst_largefile.cpp

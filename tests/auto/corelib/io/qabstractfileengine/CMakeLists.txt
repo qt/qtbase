@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qabstractfileengine
-    GUI
     SOURCES
         tst_qabstractfileengine.cpp
     LIBRARIES
@@ -13,10 +12,14 @@ add_qt_test(tst_qabstractfileengine
 )
 
 # Resources:
+set(qabstractfileengine_resource_files
+    "resources/"
+)
+
 add_qt_resource(tst_qabstractfileengine "qabstractfileengine"
     PREFIX
         "/tst_qabstractfileengine/"
     FILES
-        "resources/"
+        ${qabstractfileengine_resource_files}
 )
 

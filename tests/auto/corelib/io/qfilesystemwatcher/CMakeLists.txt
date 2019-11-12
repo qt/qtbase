@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qfilesystemwatcher
-    GUI
     SOURCES
         tst_qfilesystemwatcher.cpp
 )
