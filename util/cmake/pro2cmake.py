@@ -1933,6 +1933,7 @@ def write_ignored_keys(scope: Scope, indent: str) -> str:
     for k in sorted(ignored_keys):
         if k in {
             "_INCLUDED",
+            "_LOADED",
             "TARGET",
             "QMAKE_DOCS",
             "QT_SOURCE_TREE",
