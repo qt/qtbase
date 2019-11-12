@@ -5,15 +5,12 @@
 #####################################################################
 
 # Collect test data
-
-file(GLOB test_data_glob
-    LIST_DIRECTORIES true
+file(GLOB_RECURSE test_data_glob
     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    "tests/*")
+    tests/*)
 list(APPEND test_data ${test_data_glob})
 
 add_qt_test(tst_qabstractnetworkcache
-    GUI
     SOURCES
         tst_qabstractnetworkcache.cpp
     PUBLIC_LIBRARIES
@@ -22,5 +19,4 @@ add_qt_test(tst_qabstractnetworkcache
 )
 
 #### Keys ignored in scope 1:.:.:qabstractnetworkcache.pro:<TRUE>:
-# CONFIG = "testcase" "unsupported/testserver"
 # QT_TEST_SERVER_LIST = "apache2"

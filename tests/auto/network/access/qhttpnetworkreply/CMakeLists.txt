@@ -1,11 +1,14 @@
 # Generated from qhttpnetworkreply.pro.
 
+if(NOT QT_FEATURE_private_tests)
+    return()
+endif()
+
 #####################################################################
 ## tst_qhttpnetworkreply Test:
 #####################################################################
 
 add_qt_test(tst_qhttpnetworkreply
-    GUI
     SOURCES
         tst_qhttpnetworkreply.cpp
     LIBRARIES
@@ -16,4 +19,4 @@ add_qt_test(tst_qhttpnetworkreply
 )
 
 #### Keys ignored in scope 1:.:.:qhttpnetworkreply.pro:<TRUE>:
-# CONFIG = "testcase"
+# _REQUIREMENTS = "qtConfig(private_tests)"

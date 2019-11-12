@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_hpack
-    GUI
     SOURCES
         tst_hpack.cpp
     LIBRARIES
@@ -16,5 +15,4 @@ add_qt_test(tst_hpack
 )
 
 #### Keys ignored in scope 1:.:.:hpack.pro:<TRUE>:
-# CONFIG = "testcase" "parallel_test" "c++11"
 # TEMPLATE = "app"

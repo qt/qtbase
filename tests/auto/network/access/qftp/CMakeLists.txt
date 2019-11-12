@@ -1,11 +1,14 @@
 # Generated from qftp.pro.
 
+if(NOT QT_FEATURE_private_tests)
+    return()
+endif()
+
 #####################################################################
 ## tst_qftp Test:
 #####################################################################
 
 add_qt_test(tst_qftp
-    GUI
     SOURCES
         tst_qftp.cpp
     LIBRARIES
@@ -15,5 +18,5 @@ add_qt_test(tst_qftp
 )
 
 #### Keys ignored in scope 1:.:.:qftp.pro:<TRUE>:
-# CONFIG = "testcase" "unsupported/testserver"
 # QT_TEST_SERVER_LIST = "vsftpd" "ftp-proxy" "squid" "danted"
+# _REQUIREMENTS = "qtConfig(private_tests)"

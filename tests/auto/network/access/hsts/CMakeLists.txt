@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qhsts
-    GUI
     SOURCES
         tst_qhsts.cpp
     LIBRARIES
@@ -16,5 +15,4 @@ add_qt_test(tst_qhsts
 )
 
 #### Keys ignored in scope 1:.:.:hsts.pro:<TRUE>:
-# CONFIG = "testcase" "parallel_test" "c++11"
 # TEMPLATE = "app"

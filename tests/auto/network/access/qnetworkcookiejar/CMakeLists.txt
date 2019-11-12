@@ -8,7 +8,6 @@
 list(APPEND test_data "parser.json")
 
 add_qt_test(tst_qnetworkcookiejar
-    GUI
     SOURCES
         tst_qnetworkcookiejar.cpp
     LIBRARIES
@@ -18,6 +17,3 @@ add_qt_test(tst_qnetworkcookiejar
         Qt::Network
     TESTDATA ${test_data}
 )
-
-#### Keys ignored in scope 1:.:.:qnetworkcookiejar.pro:<TRUE>:
-# CONFIG = "testcase"
