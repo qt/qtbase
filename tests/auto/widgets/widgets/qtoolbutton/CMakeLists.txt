@@ -1,1 +1,13 @@
-add_qt_test("tst_qtoolbutton" RUN_SERIAL SOURCES tst_qtoolbutton.cpp LIBRARIES Qt::Widgets)
+# Generated from qtoolbutton.pro.
+
+#####################################################################
+## tst_qtoolbutton Test:
+#####################################################################
+
+add_qt_test(tst_qtoolbutton
+    SOURCES
+        tst_qtoolbutton.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::Widgets
+)

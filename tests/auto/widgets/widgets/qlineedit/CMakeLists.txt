@@ -1,9 +1,26 @@
-add_qt_test("tst_qlineedit" RUN_SERIAL SOURCES tst_qlineedit.cpp
+# Generated from qlineedit.pro.
+
+#####################################################################
+## tst_qlineedit Test:
+#####################################################################
+
+add_qt_test(tst_qlineedit
+    SOURCES
+        tst_qlineedit.cpp
     LIBRARIES
-        Qt::GuiPrivate
         Qt::CorePrivate
-        Qt::WidgetsPrivate
+        Qt::GuiPrivate
         Qt::TestPrivate
+        Qt::WidgetsPrivate
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::Widgets
 )
 
-extend_target("tst_qlineedit" CONDITION APPLE_OSX LIBRARIES ${FWAppKit})
+## Scopes:
+#####################################################################
+
+extend_target(tst_qlineedit CONDITION APPLE_OSX
+    PUBLIC_LIBRARIES
+        ${FWAppKit}
+)

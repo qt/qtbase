@@ -1,6 +1,16 @@
-add_qt_test("tst_qopenglwidget" RUN_SERIAL SOURCES tst_qopenglwidget.cpp
+# Generated from qopenglwidget.pro.
+
+#####################################################################
+## tst_qopenglwidget Test:
+#####################################################################
+
+add_qt_test(tst_qopenglwidget
+    SOURCES
+        tst_qopenglwidget.cpp
     LIBRARIES
-        Qt::GuiPrivate
         Qt::CorePrivate
+        Qt::GuiPrivate
+    PUBLIC_LIBRARIES
+        Qt::Gui
         Qt::Widgets
 )

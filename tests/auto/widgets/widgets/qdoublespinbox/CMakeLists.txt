@@ -1,1 +1,13 @@
-add_qt_test("tst_qdoublespinbox" RUN_SERIAL SOURCES tst_qdoublespinbox.cpp LIBRARIES Qt::Widgets)
+# Generated from qdoublespinbox.pro.
+
+#####################################################################
+## tst_qdoublespinbox Test:
+#####################################################################
+
+add_qt_test(tst_qdoublespinbox
+    SOURCES
+        tst_qdoublespinbox.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::Widgets
+)

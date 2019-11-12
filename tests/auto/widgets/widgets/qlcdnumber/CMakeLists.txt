@@ -1,1 +1,13 @@
-add_qt_test("tst_qlcdnumber" RUN_SERIAL SOURCES tst_qlcdnumber.cpp LIBRARIES Qt::Widgets)
+# Generated from qlcdnumber.pro.
+
+#####################################################################
+## tst_qlcdnumber Test:
+#####################################################################
+
+add_qt_test(tst_qlcdnumber
+    SOURCES
+        tst_qlcdnumber.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::Widgets
+)

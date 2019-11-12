@@ -1,1 +1,13 @@
-add_qt_test("tst_qspinbox" RUN_SERIAL SOURCES tst_qspinbox.cpp LIBRARIES Qt::Widgets)
+# Generated from qspinbox.pro.
+
+#####################################################################
+## tst_qspinbox Test:
+#####################################################################
+
+add_qt_test(tst_qspinbox
+    SOURCES
+        tst_qspinbox.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::Widgets
+)

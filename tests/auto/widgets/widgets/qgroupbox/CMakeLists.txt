@@ -1,1 +1,13 @@
-add_qt_test("tst_qgroupbox" RUN_SERIAL SOURCES tst_qgroupbox.cpp LIBRARIES Qt::Widgets)
+# Generated from qgroupbox.pro.
+
+#####################################################################
+## tst_qgroupbox Test:
+#####################################################################
+
+add_qt_test(tst_qgroupbox
+    SOURCES
+        tst_qgroupbox.cpp
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::Widgets
+)

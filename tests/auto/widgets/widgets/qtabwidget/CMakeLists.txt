@@ -1,3 +1,25 @@
-add_qt_test("tst_qtabwidget" RUN_SERIAL SOURCES tst_qtabwidget.cpp LIBRARIES Qt::WidgetsPrivate)
+# Generated from qtabwidget.pro.
 
-extend_target("tst_qtabwidget" CONDITION WIN32 AND NOT WINRT LIBRARIES -luser32)
+#####################################################################
+## tst_qtabwidget Test:
+#####################################################################
+
+add_qt_test(tst_qtabwidget
+    SOURCES
+        tst_qtabwidget.cpp
+    INCLUDE_DIRECTORIES
+        ..
+    LIBRARIES
+        Qt::WidgetsPrivate
+    PUBLIC_LIBRARIES
+        Qt::Gui
+        Qt::Widgets
+)
+
+## Scopes:
+#####################################################################
+
+extend_target(tst_qtabwidget CONDITION WIN32 AND NOT WINRT
+    PUBLIC_LIBRARIES
+        user32
+)

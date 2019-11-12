@@ -20,9 +20,6 @@ add_qt_test(tst_qtextedit
     TESTDATA ${test_data}
 )
 
-#### Keys ignored in scope 1:.:.:qtextedit.pro:<TRUE>:
-# CONFIG = "testcase"
-
 ## Scopes:
 #####################################################################
 
