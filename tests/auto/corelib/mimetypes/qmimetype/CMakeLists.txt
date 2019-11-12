@@ -10,6 +10,3 @@ add_qt_test(tst_qmimetype
     LIBRARIES
         Qt::CorePrivate
 )
-
-#### Keys ignored in scope 1:.:.:qmimetype.pro:<TRUE>:
-# CONFIG = "testcase"
