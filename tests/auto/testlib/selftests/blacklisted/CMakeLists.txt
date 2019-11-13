@@ -16,11 +16,5 @@ add_qt_executable(blacklisted
         Qt::Test
 )
 
-#### Keys ignored in scope 1:.:.:blacklisted.pro:<TRUE>:
-# CONFIG = "-debug_and_release_target"
-
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:blacklisted.pro:APPLE_OSX:
-# CONFIG = "-app_bundle"

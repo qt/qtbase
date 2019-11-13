@@ -14,11 +14,5 @@ add_qt_executable(benchlibtickcounter
         Qt::Test
 )
 
-#### Keys ignored in scope 1:.:.:benchlibtickcounter.pro:<TRUE>:
-# CONFIG = "-debug_and_release_target"
-
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:benchlibtickcounter.pro:APPLE_OSX:
-# CONFIG = "-app_bundle"

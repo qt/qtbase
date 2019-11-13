@@ -7,15 +7,11 @@
 add_qt_executable(cmptest
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
-    GUI
     SOURCES
         tst_cmptest.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )
-
-#### Keys ignored in scope 1:.:.:cmptest.pro:<TRUE>:
-# CONFIG = "-debug_and_release_target"
 
 ## Scopes:
 #####################################################################
@@ -24,6 +20,3 @@ extend_target(cmptest CONDITION TARGET Qt::Gui
     PUBLIC_LIBRARIES
         Qt::Gui
 )
-
-#### Keys ignored in scope 3:.:.:cmptest.pro:APPLE_OSX:
-# CONFIG = "-app_bundle"

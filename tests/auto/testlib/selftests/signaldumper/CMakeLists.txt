@@ -16,11 +16,5 @@ add_qt_executable(signaldumper
         Qt::Test
 )
 
-#### Keys ignored in scope 1:.:.:signaldumper.pro:<TRUE>:
-# CONFIG = "-debug_and_release_target"
-
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:signaldumper.pro:APPLE_OSX:
-# CONFIG = "-app_bundle"

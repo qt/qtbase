@@ -7,7 +7,6 @@
 add_qt_executable(findtestdata
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
-    GUI
     SOURCES
         findtestdata.cpp
     PUBLIC_LIBRARIES
@@ -15,15 +14,17 @@ add_qt_executable(findtestdata
 )
 
 # Resources:
-add_qt_resource(findtestdata "findtestdata" PREFIX "/qt/etc/" FILES
-    qt.conf)
+set(findtestdata_resource_files
+    "qt.conf"
+)
 
+add_qt_resource(findtestdata "findtestdata"
+    PREFIX
+        "/qt/etc/"
+    FILES
+        ${findtestdata_resource_files}
+)
 
-#### Keys ignored in scope 1:.:.:findtestdata.pro:<TRUE>:
-# CONFIG = "-debug_and_release_target"
 
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:findtestdata.pro:APPLE_OSX:
-# CONFIG = "-app_bundle"

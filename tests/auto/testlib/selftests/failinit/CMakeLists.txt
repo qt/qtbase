@@ -7,18 +7,11 @@
 add_qt_executable(failinit
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
-    GUI
     SOURCES
         tst_failinit.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )
 
-#### Keys ignored in scope 1:.:.:failinit.pro:<TRUE>:
-# CONFIG = "-debug_and_release_target"
-
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:failinit.pro:APPLE_OSX:
-# CONFIG = "-app_bundle"

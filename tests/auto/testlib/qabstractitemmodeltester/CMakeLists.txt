@@ -1,8 +1,16 @@
-add_qt_test(tst_qabstractitemmodeltester SOURCES
+# Generated from qabstractitemmodeltester.pro.
+
+#####################################################################
+## qabstractitemmodeltester Test:
+#####################################################################
+
+add_qt_test(qabstractitemmodeltester
+    SOURCES
+        ../../other/qabstractitemmodelutils/dynamictreemodel.cpp ../../other/qabstractitemmodelutils/dynamictreemodel.h
         tst_qabstractitemmodeltester.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../other/qabstractitemmodelutils/dynamictreemodel.cpp
     INCLUDE_DIRECTORIES
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../other/qabstractitemmodelutils
-    LIBRARIES
+        ../../other/qabstractitemmodelutils
+    PUBLIC_LIBRARIES
+        Qt::Gui
         Qt::Widgets
 )

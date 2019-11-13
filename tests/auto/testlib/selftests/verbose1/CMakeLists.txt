@@ -7,18 +7,11 @@
 add_qt_executable(verbose1
     NO_INSTALL # special case
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} # special case
-    GUI
     SOURCES
         ../counting/tst_counting.cpp
     PUBLIC_LIBRARIES
         Qt::Test
 )
 
-#### Keys ignored in scope 1:.:.:verbose1.pro:<TRUE>:
-# CONFIG = "-debug_and_release_target"
-
 ## Scopes:
 #####################################################################
-
-#### Keys ignored in scope 2:.:.:verbose1.pro:APPLE_OSX:
-# CONFIG = "-app_bundle"
