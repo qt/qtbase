@@ -4,7 +4,7 @@
 ## XkbCommonSupport Module:
 #####################################################################
 
-add_qt_module(XkbCommonSupport
+qt_add_module(XkbCommonSupport
     STATIC
     INTERNAL_MODULE
     SOURCES
@@ -29,7 +29,7 @@ add_qt_module(XkbCommonSupport
 ## Scopes:
 #####################################################################
 
-extend_target(XkbCommonSupport CONDITION CLANG AND NOT ICC
+qt_extend_target(XkbCommonSupport CONDITION CLANG AND NOT ICC
     COMPILE_OPTIONS
         -ftemplate-depth=1024
 )

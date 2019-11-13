@@ -4,7 +4,7 @@
 ## qdbuscpp2xml Tool:
 #####################################################################
 
-add_qt_tool(qdbuscpp2xml
+qt_add_tool(qdbuscpp2xml
     SOURCES
         ../moc/cbordevice.h
         ../moc/collectjson.cpp ../moc/collectjson.h
@@ -34,14 +34,14 @@ add_qt_tool(qdbuscpp2xml
 ## Scopes:
 #####################################################################
 
-extend_target(qdbuscpp2xml CONDITION force_bootstrap
+qt_extend_target(qdbuscpp2xml CONDITION force_bootstrap
     LIBRARIES
         bootstrap_dbusPrivate
     PUBLIC_LIBRARIES
         bootstrap_dbus
 )
 
-extend_target(qdbuscpp2xml CONDITION NOT force_bootstrap
+qt_extend_target(qdbuscpp2xml CONDITION NOT force_bootstrap
     LIBRARIES
         Qt::DBusPrivate
     PUBLIC_LIBRARIES

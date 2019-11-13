@@ -26,7 +26,7 @@ qt_find_package(XKB_COMMON_X11 PROVIDED_TARGETS PkgConfig::XKB_COMMON_X11)
 ## XcbQpa Module:
 #####################################################################
 
-add_qt_module(XcbQpa
+qt_add_module(XcbQpa
     INTERNAL_MODULE
     NO_MODULE_HEADERS
     SOURCES
@@ -100,14 +100,14 @@ add_qt_module(XcbQpa
 ## Scopes:
 #####################################################################
 
-extend_target(XcbQpa CONDITION TARGET Qt::LinuxAccessibilitySupportPrivate
+qt_extend_target(XcbQpa CONDITION TARGET Qt::LinuxAccessibilitySupportPrivate
     LIBRARIES
         Qt::LinuxAccessibilitySupportPrivate
     PUBLIC_LIBRARIES
         Qt::LinuxAccessibilitySupport
 )
 
-extend_target(XcbQpa CONDITION QT_FEATURE_vulkan
+qt_extend_target(XcbQpa CONDITION QT_FEATURE_vulkan
     SOURCES
         qxcbvulkaninstance.cpp qxcbvulkaninstance.h
         qxcbvulkanwindow.cpp qxcbvulkanwindow.h
@@ -117,40 +117,40 @@ extend_target(XcbQpa CONDITION QT_FEATURE_vulkan
         Qt::VulkanSupport
 )
 
-extend_target(XcbQpa CONDITION QT_FEATURE_glib
+qt_extend_target(XcbQpa CONDITION QT_FEATURE_glib
     LIBRARIES
         GLIB2::GLIB2
 )
 
-extend_target(XcbQpa CONDITION QT_FEATURE_draganddrop
+qt_extend_target(XcbQpa CONDITION QT_FEATURE_draganddrop
     SOURCES
         qxcbdrag.cpp qxcbdrag.h
 )
 
-extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xlib
+qt_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_xlib
     PUBLIC_LIBRARIES
         X11::XCB
         X11::X11 # special case
 )
 
-extend_target(XcbQpa CONDITION QT_FEATURE_xcb_sm
+qt_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_sm
     SOURCES
         qxcbsessionmanager.cpp qxcbsessionmanager.h
     PUBLIC_LIBRARIES
         ${X11_SM_LIB} ${X11_ICE_LIB}
 )
 
-extend_target(XcbQpa CONDITION QT_FEATURE_dlopen
+qt_extend_target(XcbQpa CONDITION QT_FEATURE_dlopen
     PUBLIC_LIBRARIES
         ${CMAKE_DL_LIBS}
 )
 
-extend_target(XcbQpa CONDITION CLANG AND NOT ICC
+qt_extend_target(XcbQpa CONDITION CLANG AND NOT ICC
     COMPILE_OPTIONS
         -ftemplate-depth=1024
 )
 
-extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting
+qt_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting
     SOURCES
         nativepainting/qbackingstore_x11.cpp nativepainting/qbackingstore_x11_p.h
         nativepainting/qcolormap_x11.cpp nativepainting/qcolormap_x11_p.h
@@ -163,12 +163,12 @@ extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting
         nativepainting
 )
 
-extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting AND QT_FEATURE_xrender
+qt_extend_target(XcbQpa CONDITION QT_FEATURE_xcb_native_painting AND QT_FEATURE_xrender
     PUBLIC_LIBRARIES
         PkgConfig::XRender
 )
 
-extend_target(XcbQpa CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_xcb_native_painting
+qt_extend_target(XcbQpa CONDITION QT_FEATURE_fontconfig AND QT_FEATURE_xcb_native_painting
     LIBRARIES
         WrapFreetype::WrapFreetype
 )
@@ -191,7 +191,7 @@ endif()
 ## qxcb Plugin:
 #####################################################################
 
-add_qt_plugin(qxcb
+qt_add_plugin(qxcb
     TYPE platforms
     CLASS_NAME QXcbIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES xcb # special case

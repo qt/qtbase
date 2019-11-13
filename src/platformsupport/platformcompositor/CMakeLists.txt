@@ -4,7 +4,7 @@
 ## PlatformCompositorSupport Module:
 #####################################################################
 
-add_qt_module(PlatformCompositorSupport
+qt_add_module(PlatformCompositorSupport
     STATIC
     INTERNAL_MODULE
     SOURCES

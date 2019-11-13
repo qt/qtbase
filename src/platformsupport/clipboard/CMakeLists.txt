@@ -4,7 +4,7 @@
 ## ClipboardSupport Module:
 #####################################################################
 
-add_qt_module(ClipboardSupport
+qt_add_module(ClipboardSupport
     STATIC
     INTERNAL_MODULE
     SOURCES
@@ -25,7 +25,7 @@ add_qt_module(ClipboardSupport
 ## Scopes:
 #####################################################################
 
-extend_target(ClipboardSupport CONDITION APPLE_OSX
+qt_extend_target(ClipboardSupport CONDITION APPLE_OSX
     LIBRARIES
         ${FWAppKit}
 )

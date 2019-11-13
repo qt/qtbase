@@ -4,7 +4,7 @@
 ## qlalr Tool:
 #####################################################################
 
-add_qt_tool(qlalr
+qt_add_tool(qlalr
     SOURCES
         compress.cpp compress.h
         cppgenerator.cpp cppgenerator.h

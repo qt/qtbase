@@ -4,7 +4,7 @@
 ## tracegen Tool:
 #####################################################################
 
-add_qt_tool(tracegen
+qt_add_tool(tracegen
     BOOTSTRAP
     TOOLS_TARGET Core # special case
     SOURCES

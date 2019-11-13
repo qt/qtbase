@@ -4,7 +4,7 @@
 ## LinuxAccessibilitySupport Module:
 #####################################################################
 
-add_qt_module(LinuxAccessibilitySupport
+qt_add_module(LinuxAccessibilitySupport
     STATIC
     INTERNAL_MODULE
     SOURCES

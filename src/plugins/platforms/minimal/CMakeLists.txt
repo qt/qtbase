@@ -4,7 +4,7 @@
 ## qminimal Plugin:
 #####################################################################
 
-add_qt_plugin(qminimal
+qt_add_plugin(qminimal
     TYPE platforms
     CLASS_NAME QMinimalIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES minimal # special case
@@ -32,7 +32,7 @@ add_qt_plugin(qminimal
 ## Scopes:
 #####################################################################
 
-extend_target(qminimal CONDITION QT_FEATURE_freetype
+qt_extend_target(qminimal CONDITION QT_FEATURE_freetype
     LIBRARIES
         WrapFreetype::WrapFreetype
 )

@@ -4,7 +4,7 @@
 ## EglFsKmsSupport Module:
 #####################################################################
 
-add_qt_module(EglFsKmsSupport
+qt_add_module(EglFsKmsSupport
     INTERNAL_MODULE
     NO_MODULE_HEADERS
     SOURCES

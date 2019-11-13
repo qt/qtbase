@@ -4,7 +4,7 @@
 ## Test Module:
 #####################################################################
 
-add_qt_module(Test
+qt_add_module(Test
     QMAKE_MODULE_CONFIG console testlib_defines
     EXCEPTIONS
     SOURCES
@@ -77,29 +77,29 @@ add_qt_module(Test
 #### Keys ignored in scope 2:.:.:testlib.pro:UNIX AND NOT embedded:
 # QMAKE_PKGCONFIG_DESCRIPTION = "Qt" "Unit" "Testing" "Library"
 
-extend_target(Test CONDITION QT_FEATURE_itemmodeltester
+qt_extend_target(Test CONDITION QT_FEATURE_itemmodeltester
     SOURCES
         qabstractitemmodeltester.cpp qabstractitemmodeltester.h
 )
 
-extend_target(Test CONDITION QT_FEATURE_valgrind
+qt_extend_target(Test CONDITION QT_FEATURE_valgrind
     SOURCES
         qbenchmarkvalgrind.cpp qbenchmarkvalgrind_p.h
 )
 
-extend_target(Test CONDITION embedded
+qt_extend_target(Test CONDITION embedded
     COMPILE_OPTIONS
         -fno-rtti
 )
 
-extend_target(Test CONDITION APPLE
+qt_extend_target(Test CONDITION APPLE
     SOURCES
         qappletestlogger.cpp qappletestlogger_p.h
     PUBLIC_LIBRARIES
         ${FWSecurity}
 )
 
-extend_target(Test CONDITION APPLE_OSX
+qt_extend_target(Test CONDITION APPLE_OSX
     SOURCES
         qtestutil_macos.mm qtestutil_macos_p.h
     PUBLIC_LIBRARIES
@@ -108,7 +108,7 @@ extend_target(Test CONDITION APPLE_OSX
         ${FWIOKit}
 )
 
-extend_target(Test CONDITION (APPLE) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"))
+qt_extend_target(Test CONDITION (APPLE) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"))
     SOURCES
         qxctestlogger.mm qxctestlogger_p.h
     DEFINES
@@ -117,7 +117,7 @@ extend_target(Test CONDITION (APPLE) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSI
         ${FWFoundation}
 )
 
-extend_target(Test CONDITION ((APPLE) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"))) AND (NOT QMAKE_MAC_SDK_PLATFORM_PATH_ISEMPTY)
+qt_extend_target(Test CONDITION ((APPLE) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERSION, "6.0"))) AND (NOT QMAKE_MAC_SDK_PLATFORM_PATH_ISEMPTY)
     COMPILE_OPTIONS
         -F/Developer/Library/Frameworks
     LINK_OPTIONS
@@ -137,7 +137,7 @@ extend_target(Test CONDITION ((APPLE) AND (OFF AND NOT lessThan(QMAKE_XCODE_VERS
 
 #### Keys ignored in scope 12:.:.:testlib.pro:NOT TARGET Qt::Network:
 # HEADERSCLEAN_EXCLUDE = "qtest_network.h"
-add_qt_docs(Test
+qt_add_docs(Test
     doc/qttestlib.qdocconf
 )
 

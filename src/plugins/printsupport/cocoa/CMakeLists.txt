@@ -4,7 +4,7 @@
 ## cocoaprintersupport Plugin:
 #####################################################################
 
-add_qt_plugin(cocoaprintersupport
+qt_add_plugin(cocoaprintersupport
     TYPE printsupport
     CLASS_NAME QCocoaPrinterSupportPlugin
     SOURCES

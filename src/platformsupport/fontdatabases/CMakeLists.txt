@@ -7,7 +7,7 @@ qt_find_package(Fontconfig) # special case
 ## FontDatabaseSupport Module:
 #####################################################################
 
-add_qt_module(FontDatabaseSupport
+qt_add_module(FontDatabaseSupport
     STATIC
     INTERNAL_MODULE
     DEFINES
@@ -28,7 +28,7 @@ add_qt_module(FontDatabaseSupport
 ## Scopes:
 #####################################################################
 
-extend_target(FontDatabaseSupport CONDITION APPLE
+qt_extend_target(FontDatabaseSupport CONDITION APPLE
     SOURCES
         mac/qcoretextfontdatabase.mm mac/qcoretextfontdatabase_p.h
         mac/qfontengine_coretext.mm mac/qfontengine_coretext_p.h
@@ -39,17 +39,17 @@ extend_target(FontDatabaseSupport CONDITION APPLE
         ${FWFoundation}
 )
 
-extend_target(FontDatabaseSupport CONDITION APPLE_OSX
+qt_extend_target(FontDatabaseSupport CONDITION APPLE_OSX
     LIBRARIES
         ${FWAppKit}
 )
 
-extend_target(FontDatabaseSupport CONDITION APPLE AND NOT APPLE_OSX
+qt_extend_target(FontDatabaseSupport CONDITION APPLE AND NOT APPLE_OSX
     LIBRARIES
         ${FWUIKit}
 )
 
-extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype
+qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype
     SOURCES
         freetype/qfontengine_ft.cpp freetype/qfontengine_ft_p.h
         freetype/qfreetypefontdatabase.cpp freetype/qfreetypefontdatabase_p.h
@@ -57,12 +57,12 @@ extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype
         WrapFreetype::WrapFreetype
 )
 
-extend_target(FontDatabaseSupport CONDITION UNIX
+qt_extend_target(FontDatabaseSupport CONDITION UNIX
     SOURCES
         genericunix/qgenericunixfontdatabase_p.h
 )
 
-extend_target(FontDatabaseSupport CONDITION QT_FEATURE_fontconfig AND UNIX
+qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_fontconfig AND UNIX
     SOURCES
         fontconfig/qfontconfigdatabase.cpp fontconfig/qfontconfigdatabase_p.h
         fontconfig/qfontenginemultifontconfig.cpp fontconfig/qfontenginemultifontconfig_p.h
@@ -70,7 +70,7 @@ extend_target(FontDatabaseSupport CONDITION QT_FEATURE_fontconfig AND UNIX
         Fontconfig::Fontconfig
 )
 
-extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT
     SOURCES
         windows/qwindowsfontdatabase.cpp windows/qwindowsfontdatabase_p.h
         windows/qwindowsfontengine.cpp windows/qwindowsfontengine_p.h
@@ -85,41 +85,41 @@ extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT
         Qt::Gui
 )
 
-extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype AND WIN32 AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_freetype AND WIN32 AND NOT WINRT
     SOURCES
         windows/qwindowsfontdatabase_ft.cpp windows/qwindowsfontdatabase_ft_p.h
 )
 
-extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32 AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32 AND NOT WINRT
     SOURCES
         windows/qwindowsfontenginedirectwrite.cpp windows/qwindowsfontenginedirectwrite_p.h
     LIBRARIES
         d2d1
 )
 
-extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND QT_FEATURE_directwrite2 AND WIN32 AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND QT_FEATURE_directwrite2 AND WIN32 AND NOT WINRT
     DEFINES
         QT_USE_DIRECTWRITE2
     LIBRARIES
         dwrite_2
 )
 
-extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32 AND NOT QT_FEATURE_directwrite2 AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_direct2d AND QT_FEATURE_directwrite AND WIN32 AND NOT QT_FEATURE_directwrite2 AND NOT WINRT
     LIBRARIES
         dwrite
 )
 
-extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT AND (NOT QT_FEATURE_direct2d OR NOT QT_FEATURE_directwrite)
+qt_extend_target(FontDatabaseSupport CONDITION WIN32 AND NOT WINRT AND (NOT QT_FEATURE_direct2d OR NOT QT_FEATURE_directwrite)
     DEFINES
         QT_NO_DIRECTWRITE
 )
 
-extend_target(FontDatabaseSupport CONDITION WIN32 AND mingw AND NOT WINRT
+qt_extend_target(FontDatabaseSupport CONDITION WIN32 AND mingw AND NOT WINRT
     LIBRARIES
         uuid
 )
 
-extend_target(FontDatabaseSupport CONDITION WINRT
+qt_extend_target(FontDatabaseSupport CONDITION WINRT
     SOURCES
         winrt/qwinrtfontdatabase.cpp winrt/qwinrtfontdatabase_p.h
     DEFINES

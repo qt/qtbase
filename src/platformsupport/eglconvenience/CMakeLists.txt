@@ -1,10 +1,12 @@
-qt_find_package(EGL) # special case
+# Generated from eglconvenience.pro.
 
 #####################################################################
 ## EglSupport Module:
 #####################################################################
 
-add_qt_module(EglSupport
+qt_find_package(EGL) # special case
+
+qt_add_module(EglSupport
     STATIC
     INTERNAL_MODULE
     SOURCES
@@ -13,9 +15,7 @@ add_qt_module(EglSupport
         qt_egl_p.h
     DEFINES
         QT_NO_CAST_FROM_ASCII
-        QT_EGL_NO_X11
     LIBRARIES
-        ${CMAKE_DL_LIBS}
         Qt::CorePrivate
         Qt::GuiPrivate
         EGL::EGL # special case
@@ -32,13 +32,25 @@ add_qt_module(EglSupport
 ## Scopes:
 #####################################################################
 
-extend_target(EglSupport CONDITION QT_FEATURE_opengl
+qt_extend_target(EglSupport CONDITION QT_FEATURE_opengl
     SOURCES
         qeglpbuffer.cpp qeglpbuffer_p.h
         qeglplatformcontext.cpp qeglplatformcontext_p.h
 )
 
-extend_target(EglSupport CONDITION QT_FEATURE_xlib
+qt_extend_target(EglSupport CONDITION QT_FEATURE_egl_x11
     SOURCES
         qxlibeglintegration.cpp qxlibeglintegration_p.h
+    LIBRARIES
+        X11::XCB
+)
+
+qt_extend_target(EglSupport CONDITION NOT QT_FEATURE_egl_x11
+    DEFINES
+        QT_EGL_NO_X11
+)
+
+qt_extend_target(EglSupport CONDITION QT_FEATURE_dlopen
+    PUBLIC_LIBRARIES
+        ${CMAKE_DL_LIBS}
 )

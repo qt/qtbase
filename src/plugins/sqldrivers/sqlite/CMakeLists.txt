@@ -4,7 +4,7 @@
 ## qsqlite Plugin:
 #####################################################################
 
-add_qt_plugin(qsqlite
+qt_add_plugin(qsqlite
     TYPE sqldrivers
     CLASS_NAME QSQLiteDriverPlugin
     SOURCES
@@ -31,5 +31,5 @@ add_qt_plugin(qsqlite
 
 # special case begin
 # Remove non-system-sqlite code
-# extend_target(qsqlite CONDITION QT_FEATURE_system_sqlite
+# qt_extend_target(qsqlite CONDITION QT_FEATURE_system_sqlite
 # special case end

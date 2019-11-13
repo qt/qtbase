@@ -6,7 +6,7 @@
 
 qt_find_package(ODBC) # special case
 
-add_qt_plugin(qsqlodbc
+qt_add_plugin(qsqlodbc
     TYPE sqldrivers
     CLASS_NAME QODBCDriverPlugin
     SOURCES
@@ -30,7 +30,7 @@ add_qt_plugin(qsqlodbc
 ## Scopes:
 #####################################################################
 
-extend_target(qsqlodbc CONDITION UNIX
+qt_extend_target(qsqlodbc CONDITION UNIX
     DEFINES
         UNICODE
 )

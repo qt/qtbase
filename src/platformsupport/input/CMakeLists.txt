@@ -9,7 +9,7 @@ qt_find_package(Mtdev) # special case
 ## InputSupport Module:
 #####################################################################
 
-add_qt_module(InputSupport
+qt_add_module(InputSupport
     STATIC
     INTERNAL_MODULE
     DEFINES
@@ -33,7 +33,7 @@ add_qt_module(InputSupport
 ## Scopes:
 #####################################################################
 
-extend_target(InputSupport CONDITION QT_FEATURE_evdev
+qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev
     SOURCES
         evdevkeyboard/qevdevkeyboard_defaultmap_p.h
         evdevkeyboard/qevdevkeyboardhandler.cpp evdevkeyboard/qevdevkeyboardhandler_p.h
@@ -46,35 +46,35 @@ extend_target(InputSupport CONDITION QT_FEATURE_evdev
         evdevtouch/../shared
 )
 
-extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_tabletevent
+qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_tabletevent
     SOURCES
         evdevtablet/qevdevtablethandler.cpp evdevtablet/qevdevtablethandler_p.h
         evdevtablet/qevdevtabletmanager.cpp evdevtablet/qevdevtabletmanager_p.h
 )
 
-extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_libudev AND QT_FEATURE_tabletevent
+qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_libudev AND QT_FEATURE_tabletevent
     LIBRARIES
         PkgConfig::Libudev
 )
 
-extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_libudev
+qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_libudev
     LIBRARIES
         PkgConfig::Libudev
 )
 
-extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_mtdev
+qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev AND QT_FEATURE_mtdev
     LIBRARIES
         PkgConfig::Mtdev
 )
 
-extend_target(InputSupport CONDITION QT_FEATURE_tslib
+qt_extend_target(InputSupport CONDITION QT_FEATURE_tslib
     SOURCES
         tslib/qtslib.cpp tslib/qtslib_p.h
     PUBLIC_LIBRARIES
         PkgConfig::Tslib
 )
 
-extend_target(InputSupport CONDITION QT_FEATURE_libinput
+qt_extend_target(InputSupport CONDITION QT_FEATURE_libinput
     SOURCES
         libinput/qlibinputhandler.cpp libinput/qlibinputhandler_p.h
         libinput/qlibinputkeyboard.cpp libinput/qlibinputkeyboard_p.h
@@ -87,7 +87,7 @@ extend_target(InputSupport CONDITION QT_FEATURE_libinput
         PkgConfig::Libudev
 )
 
-extend_target(InputSupport CONDITION QT_FEATURE_libinput AND QT_FEATURE_xkbcommon
+qt_extend_target(InputSupport CONDITION QT_FEATURE_libinput AND QT_FEATURE_xkbcommon
     LIBRARIES
         Qt::XkbCommonSupportPrivate
         XKB::XKB
@@ -95,14 +95,14 @@ extend_target(InputSupport CONDITION QT_FEATURE_libinput AND QT_FEATURE_xkbcommo
         Qt::XkbCommonSupport
 )
 
-extend_target(InputSupport CONDITION QT_FEATURE_evdev OR QT_FEATURE_libinput
+qt_extend_target(InputSupport CONDITION QT_FEATURE_evdev OR QT_FEATURE_libinput
     SOURCES
         shared/devicehandlerlist_p.h
         shared/qevdevutil.cpp shared/qevdevutil_p.h
         shared/qtouchoutputmapping.cpp shared/qtouchoutputmapping_p.h
 )
 
-extend_target(InputSupport CONDITION QT_FEATURE_integrityhid
+qt_extend_target(InputSupport CONDITION QT_FEATURE_integrityhid
     SOURCES
         integrityhid/qintegrityhidmanager.cpp integrityhid/qintegrityhidmanager.h
     LIBRARIES

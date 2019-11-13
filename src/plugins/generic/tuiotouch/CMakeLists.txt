@@ -4,7 +4,7 @@
 ## qtuiotouchplugin Plugin:
 #####################################################################
 
-add_qt_plugin(qtuiotouchplugin
+qt_add_plugin(qtuiotouchplugin
     TYPE generic
     CLASS_NAME QTuioTouchPlugin
     SOURCES

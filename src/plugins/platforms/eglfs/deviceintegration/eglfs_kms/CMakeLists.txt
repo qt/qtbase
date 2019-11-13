@@ -4,7 +4,7 @@
 ## qeglfs-kms-integration Plugin:
 #####################################################################
 
-add_qt_plugin(qeglfs-kms-integration
+qt_add_plugin(qeglfs-kms-integration
     TYPE egldeviceintegrations
     CLASS_NAME QEglFSKmsGbmIntegrationPlugin
     SOURCES

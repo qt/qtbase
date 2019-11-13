@@ -4,7 +4,7 @@
 ## cupsprintersupport Plugin:
 #####################################################################
 
-add_qt_plugin(cupsprintersupport
+qt_add_plugin(cupsprintersupport
     TYPE printsupport
     CLASS_NAME QCupsPrinterSupportPlugin
     SOURCES

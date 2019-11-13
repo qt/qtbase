@@ -4,7 +4,7 @@
 ## qmake Binary:
 #####################################################################
 
-add_qt_executable(qmake
+qt_add_executable(qmake
     SOURCES
         ../src/corelib/codecs/qutfcodec.cpp ../src/corelib/codecs/qutfcodec_p.h
         ../src/corelib/global/qglobal.cpp ../src/corelib/global/qglobal.h
@@ -127,7 +127,7 @@ add_qt_executable(qmake
 ## Scopes:
 #####################################################################
 
-extend_target(qmake CONDITION WIN32
+qt_extend_target(qmake CONDITION WIN32
     SOURCES
         ../src/corelib/global/qoperatingsystemversion_win.cpp
         ../src/corelib/io/qfilesystemengine_win.cpp
@@ -149,7 +149,7 @@ extend_target(qmake CONDITION WIN32
         ole32
 )
 
-extend_target(qmake CONDITION UNIX
+qt_extend_target(qmake CONDITION UNIX
     SOURCES
         ../src/corelib/io/qfilesystemengine_unix.cpp
         ../src/corelib/io/qfilesystemiterator_unix.cpp
@@ -158,7 +158,7 @@ extend_target(qmake CONDITION UNIX
         qlocale_unix.cpp-NOTFOUND
 )
 
-extend_target(qmake CONDITION APPLE_OSX
+qt_extend_target(qmake CONDITION APPLE_OSX
     SOURCES
         qcore_foundation.mm
         qcore_mac.cpp
@@ -172,12 +172,12 @@ extend_target(qmake CONDITION APPLE_OSX
         -fconstant-cfstrings
 )
 
-extend_target(qmake CONDITION WIN32 AND mingw
+qt_extend_target(qmake CONDITION WIN32 AND mingw
     PUBLIC_LIBRARIES
         uuid
 )
 
-extend_target(qmake CONDITION CLANG AND WIN32
+qt_extend_target(qmake CONDITION CLANG AND WIN32
     COMPILE_OPTIONS
         -Wno-microsoft-enum-value
         -fms-compatibility-version=19.00.23506

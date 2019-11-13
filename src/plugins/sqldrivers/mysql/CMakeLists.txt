@@ -4,7 +4,7 @@
 ## qsqlmysql Plugin:
 #####################################################################
 
-add_qt_plugin(qsqlmysql
+qt_add_plugin(qsqlmysql
     TYPE sqldrivers
     CLASS_NAME QMYSQLDriverPlugin
     SOURCES

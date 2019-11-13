@@ -4,7 +4,7 @@
 ## androiddeployqt Binary:
 #####################################################################
 
-add_qt_executable(androiddeployqt
+qt_add_executable(androiddeployqt
     SOURCES
         main.cpp
     DEFINES
@@ -21,7 +21,7 @@ add_qt_executable(androiddeployqt
 ## Scopes:
 #####################################################################
 
-extend_target(androiddeployqt CONDITION windows
+qt_extend_target(androiddeployqt CONDITION windows
     COMPILE_OPTIONS
         -U__STRICT_ANSI__
 )

@@ -4,7 +4,7 @@
 ## ibusplatforminputcontextplugin Plugin:
 #####################################################################
 
-add_qt_plugin(ibusplatforminputcontextplugin
+qt_add_plugin(ibusplatforminputcontextplugin
     TYPE platforminputcontexts
     CLASS_NAME QIbusPlatformInputContextPlugin
     SOURCES

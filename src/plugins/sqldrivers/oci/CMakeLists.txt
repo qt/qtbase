@@ -4,7 +4,7 @@
 ## qsqloci Plugin:
 #####################################################################
 
-add_qt_plugin(qsqloci
+qt_add_plugin(qsqloci
     TYPE sqldrivers
     CLASS_NAME QOCIDriverPlugin
     SOURCES
@@ -28,7 +28,7 @@ add_qt_plugin(qsqloci
 ## Scopes:
 #####################################################################
 
-extend_target(qsqloci CONDITION APPLE
+qt_extend_target(qsqloci CONDITION APPLE
     LINK_OPTIONS
         "-Wl,-flat_namespace,-U,_environ"
 )

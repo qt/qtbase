@@ -4,7 +4,7 @@
 ## qlalr Tool:
 #####################################################################
 
-add_qt_tool(qlalr
+qt_add_tool(qlalr
     TOOLS_TARGET Core # special case
     SOURCES
         compress.cpp compress.h

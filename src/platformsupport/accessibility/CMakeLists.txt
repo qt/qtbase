@@ -4,7 +4,7 @@
 ## AccessibilitySupport Module:
 #####################################################################
 
-add_qt_module(AccessibilitySupport
+qt_add_module(AccessibilitySupport
     STATIC
     INTERNAL_MODULE
     SOURCES

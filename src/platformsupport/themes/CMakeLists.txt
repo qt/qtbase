@@ -4,7 +4,7 @@
 ## ThemeSupport Module:
 #####################################################################
 
-add_qt_module(ThemeSupport
+qt_add_module(ThemeSupport
     STATIC
     INTERNAL_MODULE
     SOURCES
@@ -25,12 +25,12 @@ add_qt_module(ThemeSupport
 ## Scopes:
 #####################################################################
 
-extend_target(ThemeSupport CONDITION QT_FEATURE_xcb OR (UNIX AND NOT APPLE_UIKIT)
+qt_extend_target(ThemeSupport CONDITION QT_FEATURE_xcb OR (UNIX AND NOT APPLE_UIKIT)
     SOURCES
         genericunix/qgenericunixthemes.cpp genericunix/qgenericunixthemes_p.h
 )
 
-extend_target(ThemeSupport CONDITION QT_FEATURE_dbus AND (QT_FEATURE_xcb OR UNIX) AND (QT_FEATURE_xcb OR NOT APPLE_UIKIT)
+qt_extend_target(ThemeSupport CONDITION QT_FEATURE_dbus AND (QT_FEATURE_xcb OR UNIX) AND (QT_FEATURE_xcb OR NOT APPLE_UIKIT)
     SOURCES
         genericunix/dbusmenu/qdbusmenuadaptor.cpp genericunix/dbusmenu/qdbusmenuadaptor_p.h
         genericunix/dbusmenu/qdbusmenubar.cpp genericunix/dbusmenu/qdbusmenubar_p.h
@@ -44,7 +44,7 @@ extend_target(ThemeSupport CONDITION QT_FEATURE_dbus AND (QT_FEATURE_xcb OR UNIX
         Qt::DBus
 )
 
-extend_target(ThemeSupport CONDITION QT_FEATURE_dbus AND QT_FEATURE_systemtrayicon AND (QT_FEATURE_xcb OR UNIX) AND (QT_FEATURE_xcb OR NOT APPLE_UIKIT)
+qt_extend_target(ThemeSupport CONDITION QT_FEATURE_dbus AND QT_FEATURE_systemtrayicon AND (QT_FEATURE_xcb OR UNIX) AND (QT_FEATURE_xcb OR NOT APPLE_UIKIT)
     SOURCES
         genericunix/dbustray/qdbustrayicon.cpp genericunix/dbustray/qdbustrayicon_p.h
         genericunix/dbustray/qdbustraytypes.cpp genericunix/dbustray/qdbustraytypes_p.h

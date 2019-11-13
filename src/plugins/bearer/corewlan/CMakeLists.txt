@@ -4,7 +4,7 @@
 ## qcorewlanbearer Plugin:
 #####################################################################
 
-add_qt_plugin(qcorewlanbearer
+qt_add_plugin(qcorewlanbearer
     TYPE bearer
     CLASS_NAME QCoreWlanEnginePlugin
     SOURCES
@@ -26,7 +26,7 @@ add_qt_plugin(qcorewlanbearer
 ## Scopes:
 #####################################################################
 
-extend_target(qcorewlanbearer CONDITION QT_FEATURE_corewlan
+qt_extend_target(qcorewlanbearer CONDITION QT_FEATURE_corewlan
     PUBLIC_LIBRARIES
         ${FWCoreWLAN}
         ${FWSecurity}

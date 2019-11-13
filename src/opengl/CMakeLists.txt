@@ -4,7 +4,7 @@
 ## OpenGL Module:
 #####################################################################
 
-add_qt_module(OpenGL
+qt_add_module(OpenGL
     SOURCES
         gl2paintengineex/qgl2pexvertexarray.cpp gl2paintengineex/qgl2pexvertexarray_p.h
         gl2paintengineex/qglcustomshaderstage.cpp gl2paintengineex/qglcustomshaderstage_p.h
@@ -39,7 +39,7 @@ add_qt_module(OpenGL
 ## Scopes:
 #####################################################################
 
-extend_target(OpenGL CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
+qt_extend_target(OpenGL CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x63000000"
 )
@@ -47,11 +47,11 @@ extend_target(OpenGL CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
 #### Keys ignored in scope 3:.:.:opengl.pro:solaris-cc_x_:
 # QMAKE_CXXFLAGS_RELEASE = "--O2"
 
-extend_target(OpenGL CONDITION QT_FEATURE_graphicseffect
+qt_extend_target(OpenGL CONDITION QT_FEATURE_graphicseffect
     SOURCES
         qgraphicsshadereffect.cpp qgraphicsshadereffect_p.h
 )
-add_qt_docs(OpenGL
+qt_add_docs(OpenGL
     doc/qtopengl.qdocconf
 )
 

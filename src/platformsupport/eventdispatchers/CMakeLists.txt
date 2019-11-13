@@ -6,7 +6,7 @@ qt_find_package(GLIB2) # special case
 ## EventDispatcherSupport Module:
 #####################################################################
 
-add_qt_module(EventDispatcherSupport
+qt_add_module(EventDispatcherSupport
     STATIC
     INTERNAL_MODULE
     DEFINES
@@ -27,19 +27,19 @@ add_qt_module(EventDispatcherSupport
 ## Scopes:
 #####################################################################
 
-extend_target(EventDispatcherSupport CONDITION UNIX
+qt_extend_target(EventDispatcherSupport CONDITION UNIX
     SOURCES
         qgenericunixeventdispatcher.cpp qgenericunixeventdispatcher_p.h
         qunixeventdispatcher.cpp
         qunixeventdispatcher_qpa_p.h
 )
 
-extend_target(EventDispatcherSupport CONDITION WIN32
+qt_extend_target(EventDispatcherSupport CONDITION WIN32
     SOURCES
         qwindowsguieventdispatcher.cpp qwindowsguieventdispatcher_p.h
 )
 
-extend_target(EventDispatcherSupport CONDITION QT_FEATURE_glib
+qt_extend_target(EventDispatcherSupport CONDITION QT_FEATURE_glib
     SOURCES
         qeventdispatcher_glib.cpp qeventdispatcher_glib_p.h
     LIBRARIES

@@ -4,7 +4,7 @@
 ## qsqlite Plugin:
 #####################################################################
 
-add_qt_plugin(qsqlite
+qt_add_plugin(qsqlite
     TYPE sqldrivers
     CLASS_NAME QSQLiteDriverPlugin
     SOURCES
@@ -28,12 +28,12 @@ add_qt_plugin(qsqlite
 ## Scopes:
 #####################################################################
 
-extend_target(qsqlite CONDITION QT_FEATURE_system_sqlite
+qt_extend_target(qsqlite CONDITION QT_FEATURE_system_sqlite
     PUBLIC_LIBRARIES
         sqlite
 )
 
-extend_target(qsqlite CONDITION NOT QT_FEATURE_system_sqlite
+qt_extend_target(qsqlite CONDITION NOT QT_FEATURE_system_sqlite
     SOURCES
         ../../../3rdparty/sqlite/sqlite3.c
     DEFINES
@@ -48,22 +48,22 @@ extend_target(qsqlite CONDITION NOT QT_FEATURE_system_sqlite
         ../../../3rdparty/sqlite
 )
 
-extend_target(qsqlite CONDITION CMAKE_BUILD_TYPE STREQUAL Release AND NOT QT_FEATURE_system_sqlite
+qt_extend_target(qsqlite CONDITION CMAKE_BUILD_TYPE STREQUAL Release AND NOT QT_FEATURE_system_sqlite
     DEFINES
         NDEBUG
 )
 
-extend_target(qsqlite CONDITION NOT CONFIG___contains___largefile AND NOT QT_FEATURE_system_sqlite
+qt_extend_target(qsqlite CONDITION NOT CONFIG___contains___largefile AND NOT QT_FEATURE_system_sqlite
     DEFINES
         SQLITE_DISABLE_LFS
 )
 
-extend_target(qsqlite CONDITION QT_FEATURE_posix_fallocate AND NOT QT_FEATURE_system_sqlite
+qt_extend_target(qsqlite CONDITION QT_FEATURE_posix_fallocate AND NOT QT_FEATURE_system_sqlite
     DEFINES
         HAVE_POSIX_FALLOCATE=1
 )
 
-extend_target(qsqlite CONDITION WINRT AND NOT QT_FEATURE_system_sqlite
+qt_extend_target(qsqlite CONDITION WINRT AND NOT QT_FEATURE_system_sqlite
     DEFINES
         SQLITE_OS_WINRT
 )
@@ -71,22 +71,22 @@ extend_target(qsqlite CONDITION WINRT AND NOT QT_FEATURE_system_sqlite
 #### Keys ignored in scope 8:.:../../../3rdparty:../../../3rdparty/sqlite.pri:WINRT:
 # QMAKE_CFLAGS = "-Gy"
 
-extend_target(qsqlite CONDITION QNX AND NOT QT_FEATURE_system_sqlite
+qt_extend_target(qsqlite CONDITION QNX AND NOT QT_FEATURE_system_sqlite
     DEFINES
         _QNX_SOURCE
 )
 
-extend_target(qsqlite CONDITION UNIX AND NOT QT_FEATURE_system_sqlite AND NOT WINRT AND NOT winphone
+qt_extend_target(qsqlite CONDITION UNIX AND NOT QT_FEATURE_system_sqlite AND NOT WINRT AND NOT winphone
     DEFINES
         HAVE_USLEEP=1
 )
 
-extend_target(qsqlite CONDITION QT_FEATURE_dlopen AND NOT QT_FEATURE_system_sqlite
+qt_extend_target(qsqlite CONDITION QT_FEATURE_dlopen AND NOT QT_FEATURE_system_sqlite
     PUBLIC_LIBRARIES
         ${CMAKE_DL_LIBS}
 )
 
-extend_target(qsqlite CONDITION NOT QT_FEATURE_dlopen AND NOT QT_FEATURE_system_sqlite
+qt_extend_target(qsqlite CONDITION NOT QT_FEATURE_dlopen AND NOT QT_FEATURE_system_sqlite
     DEFINES
         SQLITE_OMIT_LOAD_EXTENSION
 )

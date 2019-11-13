@@ -4,7 +4,7 @@
 ## composeplatforminputcontextplugin Plugin:
 #####################################################################
 
-add_qt_plugin(composeplatforminputcontextplugin
+qt_add_plugin(composeplatforminputcontextplugin
     TYPE platforminputcontexts
     CLASS_NAME QComposePlatformInputContextPlugin
     SOURCES

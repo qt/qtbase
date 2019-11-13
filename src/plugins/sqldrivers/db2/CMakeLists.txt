@@ -4,7 +4,7 @@
 ## qsqldb2 Plugin:
 #####################################################################
 
-add_qt_plugin(qsqldb2
+qt_add_plugin(qsqldb2
     TYPE sqldrivers
     CLASS_NAME QDB2DriverPlugin
     SOURCES
@@ -28,7 +28,7 @@ add_qt_plugin(qsqldb2
 ## Scopes:
 #####################################################################
 
-extend_target(qsqldb2 CONDITION (TEST_architecture_arch STREQUAL "x86_64")
+qt_extend_target(qsqldb2 CONDITION (TEST_architecture_arch STREQUAL "x86_64")
     DEFINES
         ODBC64
 )

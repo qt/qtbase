@@ -4,7 +4,7 @@
 ## qevdevmouseplugin Plugin:
 #####################################################################
 
-add_qt_plugin(qevdevmouseplugin
+qt_add_plugin(qevdevmouseplugin
     TYPE generic
     CLASS_NAME QEvdevMousePlugin
     SOURCES

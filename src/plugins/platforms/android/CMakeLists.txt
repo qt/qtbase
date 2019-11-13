@@ -4,7 +4,7 @@
 ## qtforandroid Plugin:
 #####################################################################
 
-add_qt_plugin(qtforandroid
+qt_add_plugin(qtforandroid
     TYPE platforms
     CLASS_NAME QAndroidIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES android # special case
@@ -75,7 +75,7 @@ add_qt_plugin(qtforandroid
 ## Scopes:
 #####################################################################
 
-extend_target(qtforandroid CONDITION QT_FEATURE_vulkan
+qt_extend_target(qtforandroid CONDITION QT_FEATURE_vulkan
     SOURCES
         qandroidplatformvulkaninstance.cpp qandroidplatformvulkaninstance.h
         qandroidplatformvulkanwindow.cpp qandroidplatformvulkanwindow.h
@@ -85,12 +85,12 @@ extend_target(qtforandroid CONDITION QT_FEATURE_vulkan
         Qt::VulkanSupport
 )
 
-extend_target(qtforandroid CONDITION QT_FEATURE_android_style_assets
+qt_extend_target(qtforandroid CONDITION QT_FEATURE_android_style_assets
     SOURCES
         extract.cpp
 )
 
-extend_target(qtforandroid CONDITION NOT QT_FEATURE_android_style_assets
+qt_extend_target(qtforandroid CONDITION NOT QT_FEATURE_android_style_assets
     SOURCES
         extract-dummy.cpp
 )

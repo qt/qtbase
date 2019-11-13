@@ -4,7 +4,7 @@
 ## qevdevtouchplugin Plugin:
 #####################################################################
 
-add_qt_plugin(qevdevtouchplugin
+qt_add_plugin(qevdevtouchplugin
     TYPE generic
     CLASS_NAME QEvdevTouchScreenPlugin
     SOURCES

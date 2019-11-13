@@ -4,7 +4,7 @@
 ## moc Tool:
 #####################################################################
 
-add_qt_tool(moc
+qt_add_tool(moc
     BOOTSTRAP
     TOOLS_TARGET Core # special case
     SOURCES

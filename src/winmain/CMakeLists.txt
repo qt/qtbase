@@ -4,7 +4,7 @@ if (NOT WIN32)
     return()
 endif()
 
-add_qt_module(WinMain
+qt_add_module(WinMain
   STATIC
   NO_SYNC_QT
   NO_MODULE_HEADERS
@@ -14,15 +14,15 @@ add_qt_module(WinMain
       $<TARGET_PROPERTY:Qt::Core,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-extend_target(WinMain CONDITION WINRT
+qt_extend_target(WinMain CONDITION WINRT
     SOURCES qtmain_winrt.cpp
 )
 
-extend_target(WinMain CONDITION NOT WINRT
+qt_extend_target(WinMain CONDITION NOT WINRT
     SOURCES qtmain_win.cpp
 )
 
-extend_target(WinMain CONDITION MINGW
+qt_extend_target(WinMain CONDITION MINGW
     DEFINES QT_NEEDS_QMAIN
 )
 # special case end

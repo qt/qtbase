@@ -4,7 +4,7 @@
 ## qgenericbearer Plugin:
 #####################################################################
 
-add_qt_plugin(qgenericbearer
+qt_add_plugin(qgenericbearer
     TYPE bearer
     CLASS_NAME QGenericEnginePlugin
     SOURCES
@@ -25,7 +25,7 @@ add_qt_plugin(qgenericbearer
 ## Scopes:
 #####################################################################
 
-extend_target(qgenericbearer CONDITION WIN32 AND NOT WINRT
+qt_extend_target(qgenericbearer CONDITION WIN32 AND NOT WINRT
     PUBLIC_LIBRARIES
         iphlpapi
 )

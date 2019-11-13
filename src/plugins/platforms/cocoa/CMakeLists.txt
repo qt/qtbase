@@ -7,7 +7,7 @@ qt_find_package(Cups PROVIDED_TARGETS Cups::Cups)
 ## qcocoa Plugin:
 #####################################################################
 
-add_qt_plugin(qcocoa
+qt_add_plugin(qcocoa
     TYPE platforms
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES cocoa # special case
     CLASS_NAME QCocoaIntegrationPlugin
@@ -78,7 +78,7 @@ set(qcocoaresources_resource_files
     "images/waitcursor.png"
 )
 
-add_qt_resource(qcocoa "qcocoaresources"
+qt_add_resource(qcocoa "qcocoaresources"
     PREFIX
         "/qt-project.org/mac/cursors"
     FILES
@@ -92,12 +92,12 @@ add_qt_resource(qcocoa "qcocoaresources"
 ## Scopes:
 #####################################################################
 
-extend_target(qcocoa CONDITION QT_FEATURE_opengl
+qt_extend_target(qcocoa CONDITION QT_FEATURE_opengl
     SOURCES
         qcocoaglcontext.h qcocoaglcontext.mm
 )
 
-extend_target(qcocoa CONDITION QT_FEATURE_vulkan
+qt_extend_target(qcocoa CONDITION QT_FEATURE_vulkan
     SOURCES
         qcocoavulkaninstance.h qcocoavulkaninstance.mm
     LIBRARIES
@@ -106,7 +106,7 @@ extend_target(qcocoa CONDITION QT_FEATURE_vulkan
         Qt::VulkanSupport
 )
 
-extend_target(qcocoa CONDITION QT_FEATURE_accessibility
+qt_extend_target(qcocoa CONDITION QT_FEATURE_accessibility
     SOURCES
         qcocoaaccessibility.h qcocoaaccessibility.mm
         qcocoaaccessibilityelement.h qcocoaaccessibilityelement.mm
@@ -116,7 +116,7 @@ extend_target(qcocoa CONDITION QT_FEATURE_accessibility
         Qt::AccessibilitySupport
 )
 
-extend_target(qcocoa CONDITION TARGET Qt::Widgets
+qt_extend_target(qcocoa CONDITION TARGET Qt::Widgets
     SOURCES
         qpaintengine_mac.mm qpaintengine_mac_p.h
     LIBRARIES
@@ -128,7 +128,7 @@ extend_target(qcocoa CONDITION TARGET Qt::Widgets
 #### Keys ignored in scope 6:.:.:cocoa.pro:TARGET Qt::Widgets:
 # QT_FOR_CONFIG = "widgets"
 
-extend_target(qcocoa CONDITION TARGET Qt::PrintSupport AND TARGET Qt::Widgets
+qt_extend_target(qcocoa CONDITION TARGET Qt::PrintSupport AND TARGET Qt::Widgets
     SOURCES
         qcocoaprintdevice.h qcocoaprintdevice.mm
         qcocoaprintersupport.h qcocoaprintersupport.mm
@@ -139,17 +139,17 @@ extend_target(qcocoa CONDITION TARGET Qt::PrintSupport AND TARGET Qt::Widgets
         Qt::PrintSupport
 )
 
-extend_target(qcocoa CONDITION QT_FEATURE_colordialog AND TARGET Qt::Widgets
+qt_extend_target(qcocoa CONDITION QT_FEATURE_colordialog AND TARGET Qt::Widgets
     SOURCES
         qcocoacolordialoghelper.h qcocoacolordialoghelper.mm
 )
 
-extend_target(qcocoa CONDITION QT_FEATURE_filedialog AND TARGET Qt::Widgets
+qt_extend_target(qcocoa CONDITION QT_FEATURE_filedialog AND TARGET Qt::Widgets
     SOURCES
         qcocoafiledialoghelper.h qcocoafiledialoghelper.mm
 )
 
-extend_target(qcocoa CONDITION QT_FEATURE_fontdialog AND TARGET Qt::Widgets
+qt_extend_target(qcocoa CONDITION QT_FEATURE_fontdialog AND TARGET Qt::Widgets
     SOURCES
         qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
 )

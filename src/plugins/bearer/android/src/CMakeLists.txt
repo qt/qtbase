@@ -4,7 +4,7 @@
 ## qandroidbearer Plugin:
 #####################################################################
 
-add_qt_plugin(qandroidbearer
+qt_add_plugin(qandroidbearer
     TYPE bearer
     CLASS_NAME QAndroidBearerEnginePlugin
     SOURCES

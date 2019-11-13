@@ -4,7 +4,7 @@
 ## qmake Binary:
 #####################################################################
 
-add_qt_tool(qmake # special case
+qt_add_tool(qmake # special case
     NO_QT # special case
     TOOLS_TARGET Core # special case
     # GUI # special case: remove this
@@ -133,7 +133,7 @@ qt_internal_add_target_aliases(Bootstrap) # special case
 ## Scopes:
 #####################################################################
 
-extend_target(qmake CONDITION WIN32
+qt_extend_target(qmake CONDITION WIN32
     SOURCES
         ../src/corelib/global/qoperatingsystemversion_win.cpp
         ../src/corelib/io/qfilesystemengine_win.cpp
@@ -155,7 +155,7 @@ extend_target(qmake CONDITION WIN32
         ole32
 )
 
-extend_target(qmake CONDITION UNIX
+qt_extend_target(qmake CONDITION UNIX
     SOURCES
         ../src/corelib/io/qfilesystemengine_unix.cpp
         ../src/corelib/io/qfilesystemiterator_unix.cpp
@@ -164,7 +164,7 @@ extend_target(qmake CONDITION UNIX
         ../src/corelib/text/qlocale_unix.cpp
 )
 
-extend_target(qmake CONDITION APPLE_OSX
+qt_extend_target(qmake CONDITION APPLE_OSX
     SOURCES
         ../src/corelib/kernel/qcore_foundation.mm # special case
         ../src/corelib/kernel/qcore_mac.cpp # special case
@@ -195,12 +195,12 @@ extend_target(qmake CONDITION WIN32
         ole32 advapi32 kernel32 netapi32
 )
 
-extend_target(qmake CONDITION WIN32 AND mingw
+qt_extend_target(qmake CONDITION WIN32 AND mingw
     PUBLIC_LIBRARIES
         uuid
 )
 
-extend_target(qmake CONDITION CLANG AND WIN32
+qt_extend_target(qmake CONDITION CLANG AND WIN32
     COMPILE_OPTIONS
         "-fms-compatibility-version=19.00.23506"
         "-Wno-microsoft-enum-value"

@@ -4,7 +4,7 @@
 ## rcc Tool:
 #####################################################################
 
-add_qt_tool(rcc
+qt_add_tool(rcc
     BOOTSTRAP
     SOURCES
         main.cpp
@@ -24,14 +24,14 @@ add_qt_tool(rcc
 ## Scopes:
 #####################################################################
 
-extend_target(rcc CONDITION QT_FEATURE_zstd AND NOT cross_compile
+qt_extend_target(rcc CONDITION QT_FEATURE_zstd AND NOT cross_compile
     DEFINES
         QT_FEATURE_zstd=1
     LIBRARIES
         ZSTD::ZSTD
 )
 
-extend_target(rcc CONDITION cross_compile OR NOT QT_FEATURE_zstd
+qt_extend_target(rcc CONDITION cross_compile OR NOT QT_FEATURE_zstd
     DEFINES
         QT_FEATURE_zstd=-1
 )

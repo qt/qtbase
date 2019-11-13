@@ -6,7 +6,7 @@ qt_find_package(Cups PROVIDED_TARGETS Cups::Cups) # special case
 ## cupsprintersupport Plugin:
 #####################################################################
 
-add_qt_plugin(cupsprintersupport
+qt_add_plugin(cupsprintersupport
     TYPE printsupport
     CLASS_NAME QCupsPrinterSupportPlugin
     SOURCES

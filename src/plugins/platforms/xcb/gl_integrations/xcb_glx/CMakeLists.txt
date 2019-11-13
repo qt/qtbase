@@ -4,7 +4,7 @@
 ## qxcb-glx-integration Plugin:
 #####################################################################
 
-add_qt_plugin(qxcb-glx-integration
+qt_add_plugin(qxcb-glx-integration
     TYPE xcbglintegrations
     CLASS_NAME QXcbGlxIntegrationPlugin
     SOURCES
@@ -33,12 +33,12 @@ add_qt_plugin(qxcb-glx-integration
 ## Scopes:
 #####################################################################
 
-extend_target(qxcb-glx-integration CONDITION QT_FEATURE_xcb_glx
+qt_extend_target(qxcb-glx-integration CONDITION QT_FEATURE_xcb_glx
     PUBLIC_LIBRARIES
         XCB::GLX
 )
 
-extend_target(qxcb-glx-integration CONDITION QT_FEATURE_dlopen AND NOT static
+qt_extend_target(qxcb-glx-integration CONDITION QT_FEATURE_dlopen AND NOT static
     PUBLIC_LIBRARIES
         ${CMAKE_DL_LIBS}
 )

@@ -4,7 +4,7 @@
 ## qminimalegl Plugin:
 #####################################################################
 
-add_qt_plugin(qminimalegl
+qt_add_plugin(qminimalegl
     TYPE platforms
     CLASS_NAME QMinimalEglIntegrationPlugin
     SOURCES
@@ -34,7 +34,7 @@ add_qt_plugin(qminimalegl
 ## Scopes:
 #####################################################################
 
-extend_target(qminimalegl CONDITION QT_FEATURE_opengl
+qt_extend_target(qminimalegl CONDITION QT_FEATURE_opengl
     SOURCES
         qminimaleglbackingstore.cpp qminimaleglbackingstore.h
 )

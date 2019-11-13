@@ -9,7 +9,7 @@ qt_find_package(PostgreSQL) # special case
 ## qsqlpsql Plugin:
 #####################################################################
 
-add_qt_plugin(qsqlpsql
+qt_add_plugin(qsqlpsql
     TYPE sqldrivers
     CLASS_NAME QPSQLDriverPlugin
     SOURCES

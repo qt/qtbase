@@ -4,7 +4,7 @@
 ## qnmbearer Plugin:
 #####################################################################
 
-add_qt_plugin(qnmbearer
+qt_add_plugin(qnmbearer
     TYPE bearer
     CLASS_NAME QNetworkManagerEnginePlugin
     SOURCES

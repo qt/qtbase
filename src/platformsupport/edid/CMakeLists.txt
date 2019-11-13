@@ -4,7 +4,7 @@
 ## EdidSupport Module:
 #####################################################################
 
-add_qt_module(EdidSupport
+qt_add_module(EdidSupport
     STATIC
     INTERNAL_MODULE
     SOURCES

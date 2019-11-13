@@ -4,7 +4,7 @@
 ## qdbusxml2cpp Tool:
 #####################################################################
 
-add_qt_tool(qdbusxml2cpp
+qt_add_tool(qdbusxml2cpp
     TOOLS_TARGET DBus # special case
     SOURCES
         qdbusxml2cpp.cpp

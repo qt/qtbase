@@ -4,7 +4,7 @@
 ## qxdgdesktopportal Plugin:
 #####################################################################
 
-add_qt_plugin(qxdgdesktopportal
+qt_add_plugin(qxdgdesktopportal
     TYPE platformthemes
     CLASS_NAME QXdgDesktopPortalThemePlugin
     SOURCES

@@ -6,7 +6,7 @@ qt_find_package(Vulkan) # special case
 ## VulkanSupport Module:
 #####################################################################
 
-add_qt_module(VulkanSupport
+qt_add_module(VulkanSupport
     STATIC
     INTERNAL_MODULE
     SOURCES

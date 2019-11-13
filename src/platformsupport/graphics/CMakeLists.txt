@@ -4,7 +4,7 @@
 ## GraphicsSupport Module:
 #####################################################################
 
-add_qt_module(GraphicsSupport
+qt_add_module(GraphicsSupport
     STATIC
     INTERNAL_MODULE
     SOURCES

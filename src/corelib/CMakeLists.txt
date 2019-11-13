@@ -26,7 +26,7 @@ file(RELATIVE_PATH QT_INVERSE_CONFIG_INSTALL_DIR ${_clean_prefix} ${CMAKE_INSTAL
 ## Core Module:
 #####################################################################
 
-add_qt_module(Core
+qt_add_module(Core
     QMAKE_MODULE_CONFIG moc resources
     EXCEPTIONS
     SOURCES
@@ -328,7 +328,7 @@ if (LINUX AND NOT CMAKE_CROSSCOMPILING AND BUILD_SHARED_LIBS)
 endif()
 # special case end
 
-add_qt_simd_part(Core SIMD mips_dsp
+qt_add_simd_part(Core SIMD mips_dsp
     SOURCES
         ../gui/painting/qt_mips_asm_dsp_p.h
         text/qstring_mips_dsp_asm.S
@@ -392,7 +392,7 @@ endif()
 #### Keys ignored in scope 3:.:.:corelib.pro:NOT QT_NAMESPACE_ISEMPTY:
 # MODULE_DEFINES = "QT_NAMESPACE=$$QT_NAMESPACE"
 
-extend_target(Core CONDITION ANDROID
+qt_extend_target(Core CONDITION ANDROID
     SOURCES
         kernel/qsharedmemory_android.cpp
         kernel/qsystemsemaphore_android.cpp
@@ -400,7 +400,7 @@ extend_target(Core CONDITION ANDROID
         LIBS_SUFFIX="\\\\"_${CMAKE_SYSTEM_PROCESSOR}.so\\\\"" # special case
 )
 
-extend_target(Core CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
+qt_extend_target(Core CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x67000000"
 )
@@ -408,7 +408,7 @@ extend_target(Core CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
 #### Keys ignored in scope 6:.:.:corelib.pro:FREEBSD OR OPENBSD:
 # QMAKE_LFLAGS_NOUNDEF = <EMPTY>
 
-extend_target(Core CONDITION QT_FEATURE_animation
+qt_extend_target(Core CONDITION QT_FEATURE_animation
     SOURCES
         animation/qabstractanimation.cpp animation/qabstractanimation.h animation/qabstractanimation_p.h
         animation/qanimationgroup.cpp animation/qanimationgroup.h animation/qanimationgroup_p.h
@@ -419,7 +419,7 @@ extend_target(Core CONDITION QT_FEATURE_animation
         animation/qvariantanimation.cpp animation/qvariantanimation.h animation/qvariantanimation_p.h
 )
 
-extend_target(Core CONDITION WIN32
+qt_extend_target(Core CONDITION WIN32
     SOURCES
         global/qoperatingsystemversion_win.cpp global/qoperatingsystemversion_win_p.h
         io/qfilesystemengine_win.cpp
@@ -438,7 +438,7 @@ extend_target(Core CONDITION WIN32
         ws2_32
 )
 
-extend_target(Core CONDITION WIN32 AND NOT WINRT
+qt_extend_target(Core CONDITION WIN32 AND NOT WINRT
     SOURCES
         io/qstandardpaths_win.cpp
         io/qstorageinfo_win.cpp
@@ -461,7 +461,7 @@ extend_target(Core CONDITION WIN32 AND NOT WINRT
         userenv
 )
 
-extend_target(Core CONDITION APPLE
+qt_extend_target(Core CONDITION APPLE
     SOURCES
         global/qoperatingsystemversion_darwin.mm
         io/qstandardpaths_mac.mm
@@ -477,7 +477,7 @@ extend_target(Core CONDITION APPLE
         ${FWFoundation}
 )
 
-extend_target(Core CONDITION APPLE_OSX
+qt_extend_target(Core CONDITION APPLE_OSX
     LIBRARIES
         ${FWAppKit}
         ${FWApplicationServices}
@@ -488,7 +488,7 @@ extend_target(Core CONDITION APPLE_OSX
         ${FWIOKit}
 )
 
-extend_target(Core CONDITION INTEGRITY
+qt_extend_target(Core CONDITION INTEGRITY
     LIBRARIES
         ivfs
         net
@@ -534,7 +534,7 @@ extend_target(Core CONDITION INTEGRITY
 #)
 # special case end
 
-extend_target(Core CONDITION LINUX AND NOT static
+qt_extend_target(Core CONDITION LINUX AND NOT static
     SOURCES
         global/minimum-linux_p.h
 )
@@ -551,17 +551,17 @@ extend_target(Core CONDITION LINUX AND NOT static
 #### Keys ignored in scope 34:.:global:global/global.pri:silent:
 # no_pch_assembler.commands = "@echo" "compiling[no_pch]" "${QMAKE_FILE_IN}" "&&"
 
-extend_target(Core CONDITION LINUX AND NOT precompile_header AND NOT static
+qt_extend_target(Core CONDITION LINUX AND NOT precompile_header AND NOT static
     SOURCES
         global/minimum-linux.S
 )
 
-extend_target(Core CONDITION QT_FEATURE_slog2
+qt_extend_target(Core CONDITION QT_FEATURE_slog2
     LIBRARIES
         Slog2::Slog2
 )
 
-extend_target(Core CONDITION QT_FEATURE_journald
+qt_extend_target(Core CONDITION QT_FEATURE_journald
     LIBRARIES
         PkgConfig::Libsystemd
 )
@@ -578,12 +578,12 @@ extend_target(Core CONDITION QT_FEATURE_journald
 #### Keys ignored in scope 39:.:global:global/global.pri:silent:
 # versiontagging_compiler.commands = "@echo" "compiling[versiontagging]" "${QMAKE_FILE_IN}" "&&"
 
-extend_target(Core CONDITION NOT GCC OR NOT ltcg
+qt_extend_target(Core CONDITION NOT GCC OR NOT ltcg
     SOURCES
         global/qversiontagging.cpp
 )
 
-extend_target(Core CONDITION UNIX
+qt_extend_target(Core CONDITION UNIX
     SOURCES
         io/qfilesystemengine_unix.cpp
         io/qfilesystemiterator_unix.cpp
@@ -596,7 +596,7 @@ extend_target(Core CONDITION UNIX
         thread/qthread_unix.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_thread
+qt_extend_target(Core CONDITION QT_FEATURE_thread
     SOURCES
         thread/qatomic.cpp thread/qatomic.h
         thread/qatomic_bootstrap.h
@@ -614,33 +614,33 @@ extend_target(Core CONDITION QT_FEATURE_thread
         thread/qthreadstorage.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_thread AND WIN32
+qt_extend_target(Core CONDITION QT_FEATURE_thread AND WIN32
     SOURCES
         thread/qmutex_win.cpp
         thread/qwaitcondition_win.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_thread AND UNIX
+qt_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX
     SOURCES
         thread/qwaitcondition_unix.cpp
 )
 
-extend_target(Core CONDITION APPLE AND QT_FEATURE_thread
+qt_extend_target(Core CONDITION APPLE AND QT_FEATURE_thread
     SOURCES
         thread/qmutex_mac.cpp
 )
 
-extend_target(Core CONDITION LINUX AND QT_FEATURE_thread
+qt_extend_target(Core CONDITION LINUX AND QT_FEATURE_thread
     SOURCES
         thread/qmutex_linux.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_thread AND UNIX AND NOT APPLE AND NOT LINUX
+qt_extend_target(Core CONDITION QT_FEATURE_thread AND UNIX AND NOT APPLE AND NOT LINUX
     SOURCES
         thread/qmutex_unix.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_future
+qt_extend_target(Core CONDITION QT_FEATURE_future
     SOURCES
         thread/qexception.cpp thread/qexception.h
         thread/qfuture.h
@@ -650,57 +650,57 @@ extend_target(Core CONDITION QT_FEATURE_future
         thread/qresultstore.cpp thread/qresultstore.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_std_atomic64
+qt_extend_target(Core CONDITION QT_FEATURE_std_atomic64
     PUBLIC_LIBRARIES
         Atomic
 )
 
-extend_target(Core CONDITION ICC
+qt_extend_target(Core CONDITION ICC
     COMPILE_OPTIONS
         -fp-model
         strict
 )
 
-extend_target(Core CONDITION MSVC
+qt_extend_target(Core CONDITION MSVC
     SOURCES
         tools/qvector_msvc.cpp
     NO_PCH_SOURCES
         "tools/qvector_msvc.cpp"
 )
 
-extend_target(Core CONDITION QT_FEATURE_commandlineparser
+qt_extend_target(Core CONDITION QT_FEATURE_commandlineparser
     SOURCES
         tools/qcommandlineoption.cpp tools/qcommandlineoption.h
         tools/qcommandlineparser.cpp tools/qcommandlineparser.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_easingcurve
+qt_extend_target(Core CONDITION QT_FEATURE_easingcurve
     SOURCES
         tools/qeasingcurve.cpp tools/qeasingcurve.h
         tools/qtimeline.cpp tools/qtimeline.h
 )
 
-extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND (NOT APPLE_OSX OR NOT ICC)
+qt_extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND (NOT APPLE_OSX OR NOT ICC)
     LIBRARIES
         m
 )
 
-extend_target(Core CONDITION APPLE_OSX AND NOT NACL
+qt_extend_target(Core CONDITION APPLE_OSX AND NOT NACL
     SOURCES
         text/qlocale_mac.mm
 )
 
-extend_target(Core CONDITION UNIX AND (NACL OR NOT APPLE_OSX)
+qt_extend_target(Core CONDITION UNIX AND (NACL OR NOT APPLE_OSX)
     SOURCES
         text/qlocale_unix.cpp
 )
 
-extend_target(Core CONDITION WIN32 AND (NACL OR NOT APPLE_OSX)
+qt_extend_target(Core CONDITION WIN32 AND (NACL OR NOT APPLE_OSX)
     SOURCES
         text/qlocale_win.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_icu
+qt_extend_target(Core CONDITION QT_FEATURE_icu
     SOURCES
         text/qcollator_icu.cpp
         text/qlocale_icu.cpp
@@ -708,159 +708,159 @@ extend_target(Core CONDITION QT_FEATURE_icu
         ICU::i18n ICU::uc ICU::data
 )
 
-extend_target(Core CONDITION WIN32 AND NOT QT_FEATURE_icu
+qt_extend_target(Core CONDITION WIN32 AND NOT QT_FEATURE_icu
     SOURCES
         text/qcollator_win.cpp
 )
 
-extend_target(Core CONDITION APPLE_OSX AND NOT QT_FEATURE_icu
+qt_extend_target(Core CONDITION APPLE_OSX AND NOT QT_FEATURE_icu
     SOURCES
         text/qcollator_macx.cpp
 )
 
-extend_target(Core CONDITION UNIX AND NOT APPLE_OSX AND NOT QT_FEATURE_icu
+qt_extend_target(Core CONDITION UNIX AND NOT APPLE_OSX AND NOT QT_FEATURE_icu
     SOURCES
         text/qcollator_posix.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_regularexpression
+qt_extend_target(Core CONDITION QT_FEATURE_regularexpression
     SOURCES
         text/qregularexpression.cpp text/qregularexpression.h
     LIBRARIES
         WrapPCRE2::WrapPCRE2
 )
 
-extend_target(Core CONDITION QT_FEATURE_hijricalendar
+qt_extend_target(Core CONDITION QT_FEATURE_hijricalendar
     SOURCES
         time/qhijricalendar.cpp time/qhijricalendar_p.h
         time/qhijricalendar_data_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_islamiccivilcalendar
+qt_extend_target(Core CONDITION QT_FEATURE_islamiccivilcalendar
     SOURCES
         time/qislamiccivilcalendar.cpp time/qislamiccivilcalendar_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_jalalicalendar
+qt_extend_target(Core CONDITION QT_FEATURE_jalalicalendar
     SOURCES
         time/qjalalicalendar.cpp time/qjalalicalendar_p.h
         time/qjalalicalendar_data_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_timezone
+qt_extend_target(Core CONDITION QT_FEATURE_timezone
     SOURCES
         time/qtimezone.cpp time/qtimezone.h
         time/qtimezoneprivate.cpp time/qtimezoneprivate_p.h
         time/qtimezoneprivate_data_p.h
 )
 
-extend_target(Core CONDITION APPLE AND QT_FEATURE_timezone AND NOT NACL
+qt_extend_target(Core CONDITION APPLE AND QT_FEATURE_timezone AND NOT NACL
     SOURCES
         time/qtimezoneprivate_mac.mm
 )
 
-extend_target(Core CONDITION ANDROID AND QT_FEATURE_timezone AND NOT ANDROID_EMBEDDED AND (NACL OR NOT APPLE)
+qt_extend_target(Core CONDITION ANDROID AND QT_FEATURE_timezone AND NOT ANDROID_EMBEDDED AND (NACL OR NOT APPLE)
     SOURCES
         time/qtimezoneprivate_android.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_timezone AND UNIX AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
+qt_extend_target(Core CONDITION QT_FEATURE_timezone AND UNIX AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
     SOURCES
         time/qtimezoneprivate_tz.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND UNIX AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
+qt_extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND UNIX AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
     SOURCES
         time/qtimezoneprivate_icu.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND WIN32 AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
+qt_extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND WIN32 AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
     SOURCES
         time/qtimezoneprivate_icu.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_timezone AND WIN32 AND NOT QT_FEATURE_icu AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
+qt_extend_target(Core CONDITION QT_FEATURE_timezone AND WIN32 AND NOT QT_FEATURE_icu AND (ANDROID_EMBEDDED OR NOT ANDROID) AND (NACL OR NOT APPLE)
     SOURCES
         time/qtimezoneprivate_win.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_datetimeparser
+qt_extend_target(Core CONDITION QT_FEATURE_datetimeparser
     SOURCES
         time/qdatetimeparser.cpp time/qdatetimeparser_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_zstd
+qt_extend_target(Core CONDITION QT_FEATURE_zstd
     LIBRARIES
         ZSTD::ZSTD
 )
 
-extend_target(Core CONDITION QT_FEATURE_filesystemwatcher
+qt_extend_target(Core CONDITION QT_FEATURE_filesystemwatcher
     SOURCES
         io/qfilesystemwatcher.cpp io/qfilesystemwatcher.h io/qfilesystemwatcher_p.h
         io/qfilesystemwatcher_polling.cpp io/qfilesystemwatcher_polling_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_filesystemwatcher AND WIN32
+qt_extend_target(Core CONDITION QT_FEATURE_filesystemwatcher AND WIN32
     SOURCES
         io/qfilesystemwatcher_win.cpp io/qfilesystemwatcher_win_p.h
 )
 
-extend_target(Core CONDITION APPLE_OSX AND QT_FEATURE_filesystemwatcher
+qt_extend_target(Core CONDITION APPLE_OSX AND QT_FEATURE_filesystemwatcher
     SOURCES
         io/qfilesystemwatcher_fsevents.mm io/qfilesystemwatcher_fsevents_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_filesystemwatcher AND QT_FEATURE_inotify AND UNIX AND NOT APPLE_OSX
+qt_extend_target(Core CONDITION QT_FEATURE_filesystemwatcher AND QT_FEATURE_inotify AND UNIX AND NOT APPLE_OSX
     SOURCES
         io/qfilesystemwatcher_inotify.cpp io/qfilesystemwatcher_inotify_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_filesystemwatcher AND UNIX AND NOT APPLE_OSX AND NOT QT_FEATURE_inotify AND (APPLE OR FREEBSD OR NETBSD OR OPENBSD)
+qt_extend_target(Core CONDITION QT_FEATURE_filesystemwatcher AND UNIX AND NOT APPLE_OSX AND NOT QT_FEATURE_inotify AND (APPLE OR FREEBSD OR NETBSD OR OPENBSD)
     SOURCES
         io/qfilesystemwatcher_kqueue.cpp io/qfilesystemwatcher_kqueue_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_processenvironment
+qt_extend_target(Core CONDITION QT_FEATURE_processenvironment
     SOURCES
         io/qprocess.cpp io/qprocess.h io/qprocess_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_processenvironment AND WIN32 AND NOT WINRT
+qt_extend_target(Core CONDITION QT_FEATURE_processenvironment AND WIN32 AND NOT WINRT
     SOURCES
         io/qprocess_win.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_processenvironment AND UNIX
+qt_extend_target(Core CONDITION QT_FEATURE_processenvironment AND UNIX
     SOURCES
         io/qprocess_unix.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_settings
+qt_extend_target(Core CONDITION QT_FEATURE_settings
     SOURCES
         io/qsettings.cpp io/qsettings.h io/qsettings_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_settings AND WIN32 AND NOT WINRT
+qt_extend_target(Core CONDITION QT_FEATURE_settings AND WIN32 AND NOT WINRT
     SOURCES
         io/qsettings_win.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_settings AND WINRT
+qt_extend_target(Core CONDITION QT_FEATURE_settings AND WINRT
     SOURCES
         io/qsettings_winrt.cpp
 )
 
-extend_target(Core CONDITION APPLE AND QT_FEATURE_settings AND NOT NACL
+qt_extend_target(Core CONDITION APPLE AND QT_FEATURE_settings AND NOT NACL
     SOURCES
         io/qsettings_mac.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_filesystemiterator AND WIN32
+qt_extend_target(Core CONDITION QT_FEATURE_filesystemiterator AND WIN32
     SOURCES
         io/qfilesystemiterator_win.cpp
 )
 
-extend_target(Core CONDITION WINRT
+qt_extend_target(Core CONDITION WINRT
     SOURCES
         io/qstandardpaths_winrt.cpp
         io/qstorageinfo_stub.cpp
@@ -869,7 +869,7 @@ extend_target(Core CONDITION WINRT
         kernel/qfunctions_winrt.cpp kernel/qfunctions_winrt.h
 )
 
-extend_target(Core CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT rtems
+qt_extend_target(Core CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT rtems
     SOURCES
         ../3rdparty/forkfd/forkfd.h
         io/forkfd_qt.cpp
@@ -877,17 +877,17 @@ extend_target(Core CONDITION UNIX AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT 
         ../3rdparty/forkfd
 )
 
-extend_target(Core CONDITION APPLE AND QT_FEATURE_processenvironment
+qt_extend_target(Core CONDITION APPLE AND QT_FEATURE_processenvironment
     SOURCES
         io/qprocess_darwin.mm
 )
 
-extend_target(Core CONDITION APPLE AND NOT APPLE_OSX
+qt_extend_target(Core CONDITION APPLE AND NOT APPLE_OSX
     PUBLIC_LIBRARIES
         ${FWMobileCoreServices}
 )
 
-extend_target(Core CONDITION ANDROID AND NOT ANDROID_EMBEDDED
+qt_extend_target(Core CONDITION ANDROID AND NOT ANDROID_EMBEDDED
     SOURCES
         io/qstandardpaths_android.cpp
         io/qstorageinfo_unix.cpp
@@ -896,7 +896,7 @@ extend_target(Core CONDITION ANDROID AND NOT ANDROID_EMBEDDED
         kernel/qjnionload.cpp
 )
 
-extend_target(Core CONDITION HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)
+qt_extend_target(Core CONDITION HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)
     SOURCES
         io/qstandardpaths_haiku.cpp
         io/qstorageinfo_unix.cpp
@@ -904,107 +904,107 @@ extend_target(Core CONDITION HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)
         be
 )
 
-extend_target(Core CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)
+qt_extend_target(Core CONDITION UNIX AND NOT APPLE AND NOT HAIKU AND (ANDROID_EMBEDDED OR NOT ANDROID)
     SOURCES
         io/qstandardpaths_unix.cpp
         io/qstorageinfo_unix.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_proxymodel
+qt_extend_target(Core CONDITION QT_FEATURE_proxymodel
     SOURCES
         itemmodels/qabstractproxymodel.cpp itemmodels/qabstractproxymodel.h itemmodels/qabstractproxymodel_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_concatenatetablesproxymodel AND QT_FEATURE_proxymodel
+qt_extend_target(Core CONDITION QT_FEATURE_concatenatetablesproxymodel AND QT_FEATURE_proxymodel
     SOURCES
         itemmodels/qconcatenatetablesproxymodel.cpp itemmodels/qconcatenatetablesproxymodel.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_identityproxymodel AND QT_FEATURE_proxymodel
+qt_extend_target(Core CONDITION QT_FEATURE_identityproxymodel AND QT_FEATURE_proxymodel
     SOURCES
         itemmodels/qidentityproxymodel.cpp itemmodels/qidentityproxymodel.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_proxymodel AND QT_FEATURE_sortfilterproxymodel
+qt_extend_target(Core CONDITION QT_FEATURE_proxymodel AND QT_FEATURE_sortfilterproxymodel
     SOURCES
         itemmodels/qsortfilterproxymodel.cpp itemmodels/qsortfilterproxymodel.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_proxymodel AND QT_FEATURE_transposeproxymodel
+qt_extend_target(Core CONDITION QT_FEATURE_proxymodel AND QT_FEATURE_transposeproxymodel
     SOURCES
         itemmodels/qtransposeproxymodel.cpp itemmodels/qtransposeproxymodel.h itemmodels/qtransposeproxymodel_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_stringlistmodel
+qt_extend_target(Core CONDITION QT_FEATURE_stringlistmodel
     SOURCES
         itemmodels/qstringlistmodel.cpp itemmodels/qstringlistmodel.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_library
+qt_extend_target(Core CONDITION QT_FEATURE_library
     SOURCES
         plugin/qelfparser_p.cpp plugin/qelfparser_p.h
         plugin/qlibrary.cpp plugin/qlibrary.h plugin/qlibrary_p.h
         plugin/qmachparser.cpp plugin/qmachparser_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_library AND UNIX
+qt_extend_target(Core CONDITION QT_FEATURE_library AND UNIX
     SOURCES
         plugin/qlibrary_unix.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_library AND WIN32
+qt_extend_target(Core CONDITION QT_FEATURE_library AND WIN32
     SOURCES
         plugin/qlibrary_win.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_dlopen AND QT_FEATURE_library
+qt_extend_target(Core CONDITION QT_FEATURE_dlopen AND QT_FEATURE_library
     LIBRARIES
         ${CMAKE_DL_LIBS}
 )
 
-extend_target(Core CONDITION APPLE AND NOT NACL
+qt_extend_target(Core CONDITION APPLE AND NOT NACL
     SOURCES
         kernel/qelapsedtimer_mac.cpp
 )
 
-extend_target(Core CONDITION APPLE AND (APPLE_IOS OR APPLE_TVOS)
+qt_extend_target(Core CONDITION APPLE AND (APPLE_IOS OR APPLE_TVOS)
     LIBRARIES
         ${FWUIKit}
 )
 
-extend_target(Core CONDITION APPLE_WATCHOS
+qt_extend_target(Core CONDITION APPLE_WATCHOS
     LIBRARIES
         ${FWWatchKit}
 )
 
-extend_target(Core CONDITION NACL
+qt_extend_target(Core CONDITION NACL
     SOURCES
         kernel/qfunctions_nacl.cpp kernel/qfunctions_nacl.h
 )
 
-extend_target(Core CONDITION INTEGRITY OR (NACL AND UNIX) OR (UNIX AND NOT APPLE)
+qt_extend_target(Core CONDITION INTEGRITY OR (NACL AND UNIX) OR (UNIX AND NOT APPLE)
     SOURCES
         kernel/qelapsedtimer_unix.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_poll_select AND UNIX
+qt_extend_target(Core CONDITION QT_FEATURE_poll_select AND UNIX
     SOURCES
         kernel/qpoll.cpp
 )
 
-extend_target(Core CONDITION QT_FEATURE_glib AND UNIX
+qt_extend_target(Core CONDITION QT_FEATURE_glib AND UNIX
     SOURCES
         kernel/qeventdispatcher_glib.cpp kernel/qeventdispatcher_glib_p.h
     LIBRARIES
         GLIB2::GLIB2
 )
 
-extend_target(Core CONDITION QT_FEATURE_clock_gettime AND UNIX
+qt_extend_target(Core CONDITION QT_FEATURE_clock_gettime AND UNIX
     LIBRARIES
         WrapRt
 )
 
-extend_target(Core CONDITION UNIX AND NOT ANDROID
+qt_extend_target(Core CONDITION UNIX AND NOT ANDROID
     SOURCES
         kernel/qsharedmemory_posix.cpp
         kernel/qsharedmemory_systemv.cpp
@@ -1014,12 +1014,12 @@ extend_target(Core CONDITION UNIX AND NOT ANDROID
         kernel/qsystemsemaphore_unix.cpp
 )
 
-extend_target(Core CONDITION VXWORKS
+qt_extend_target(Core CONDITION VXWORKS
     SOURCES
         kernel/qfunctions_vxworks.cpp kernel/qfunctions_vxworks.h
 )
 
-extend_target(Core CONDITION QNX AND QT_FEATURE_qqnx_pps
+qt_extend_target(Core CONDITION QNX AND QT_FEATURE_qqnx_pps
     SOURCES
         kernel/qppsattribute.cpp kernel/qppsattribute_p.h
         kernel/qppsattributeprivate_p.h
@@ -1029,25 +1029,25 @@ extend_target(Core CONDITION QNX AND QT_FEATURE_qqnx_pps
         PPS::PPS
 )
 
-extend_target(Core CONDITION QT_FEATURE_textcodec
+qt_extend_target(Core CONDITION QT_FEATURE_textcodec
     SOURCES
         codecs/qlatincodec.cpp codecs/qlatincodec_p.h
         codecs/qsimplecodec.cpp codecs/qsimplecodec_p.h
         codecs/qtextcodec.cpp codecs/qtextcodec.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_codecs AND QT_FEATURE_textcodec
+qt_extend_target(Core CONDITION QT_FEATURE_codecs AND QT_FEATURE_textcodec
     SOURCES
         codecs/qisciicodec.cpp codecs/qisciicodec_p.h
         codecs/qtsciicodec.cpp codecs/qtsciicodec_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_textcodec
+qt_extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_textcodec
     SOURCES
         codecs/qicucodec.cpp codecs/qicucodec_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_big_codecs AND QT_FEATURE_textcodec AND NOT QT_FEATURE_icu
+qt_extend_target(Core CONDITION QT_FEATURE_big_codecs AND QT_FEATURE_textcodec AND NOT QT_FEATURE_icu
     SOURCES
         codecs/qbig5codec.cpp codecs/qbig5codec_p.h
         codecs/qeucjpcodec.cpp codecs/qeucjpcodec_p.h
@@ -1058,29 +1058,29 @@ extend_target(Core CONDITION QT_FEATURE_big_codecs AND QT_FEATURE_textcodec AND 
         codecs/qsjiscodec.cpp codecs/qsjiscodec_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_iconv AND QT_FEATURE_textcodec AND NOT QT_FEATURE_icu
+qt_extend_target(Core CONDITION QT_FEATURE_iconv AND QT_FEATURE_textcodec AND NOT QT_FEATURE_icu
     SOURCES
         codecs/qiconvcodec.cpp codecs/qiconvcodec_p.h
     LIBRARIES
         iconv
 )
 
-extend_target(Core CONDITION QT_FEATURE_textcodec AND WIN32 AND NOT QT_FEATURE_icu
+qt_extend_target(Core CONDITION QT_FEATURE_textcodec AND WIN32 AND NOT QT_FEATURE_icu
     SOURCES
         codecs/qwindowscodec.cpp codecs/qwindowscodec_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_cborstream
+qt_extend_target(Core CONDITION QT_FEATURE_cborstream
     SOURCES
         serialization/qcborstream.cpp serialization/qcborstream.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_qeventtransition
+qt_extend_target(Core CONDITION QT_FEATURE_qeventtransition
     SOURCES
         statemachine/qeventtransition.cpp statemachine/qeventtransition.h statemachine/qeventtransition_p.h
 )
 
-extend_target(Core CONDITION QT_FEATURE_mimetype
+qt_extend_target(Core CONDITION QT_FEATURE_mimetype
     SOURCES
         mimetypes/qmimedatabase.cpp mimetypes/qmimedatabase.h mimetypes/qmimedatabase_p.h
         mimetypes/qmimeglobpattern.cpp mimetypes/qmimeglobpattern_p.h
@@ -1102,7 +1102,7 @@ if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
 endif()
 # special case end
 
-extend_target(Core CONDITION WASM
+qt_extend_target(Core CONDITION WASM
     SOURCES
         platform/wasm/qstdweb.cpp platform/wasm/qstdweb_p.h
 )
@@ -1116,7 +1116,7 @@ if(TEST_arch_${TEST_architecture_arch}_subarch_f16c)
             QFLOAT16_INCLUDE_FAST
     )
 else()
-    add_qt_simd_part(Core SIMD f16c
+    qt_add_simd_part(Core SIMD f16c
         SOURCES
             global/qfloat16_f16c.c
     )
@@ -1152,7 +1152,7 @@ endif()
 # special case end
 
 qt_create_tracepoints(Core qtcore.tracepoints)
-add_qt_docs(Core
+qt_add_docs(Core
     doc/qtcore.qdocconf
 )
 

@@ -4,7 +4,7 @@
 ## qvkgen Tool:
 #####################################################################
 
-add_qt_tool(qvkgen
+qt_add_tool(qvkgen
     TOOLS_TARGET Gui # special case
     SOURCES
         qvkgen.cpp

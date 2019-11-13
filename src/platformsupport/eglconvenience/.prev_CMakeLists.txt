@@ -4,7 +4,7 @@
 ## EglSupport Module:
 #####################################################################
 
-add_qt_module(EglSupport
+qt_add_module(EglSupport
     STATIC
     INTERNAL_MODULE
     SOURCES
@@ -29,25 +29,25 @@ add_qt_module(EglSupport
 ## Scopes:
 #####################################################################
 
-extend_target(EglSupport CONDITION QT_FEATURE_opengl
+qt_extend_target(EglSupport CONDITION QT_FEATURE_opengl
     SOURCES
         qeglpbuffer.cpp qeglpbuffer_p.h
         qeglplatformcontext.cpp qeglplatformcontext_p.h
 )
 
-extend_target(EglSupport CONDITION QT_FEATURE_egl_x11
+qt_extend_target(EglSupport CONDITION QT_FEATURE_egl_x11
     SOURCES
         qxlibeglintegration.cpp qxlibeglintegration_p.h
     LIBRARIES
         X11::XCB
 )
 
-extend_target(EglSupport CONDITION NOT QT_FEATURE_egl_x11
+qt_extend_target(EglSupport CONDITION NOT QT_FEATURE_egl_x11
     DEFINES
         QT_EGL_NO_X11
 )
 
-extend_target(EglSupport CONDITION QT_FEATURE_dlopen
+qt_extend_target(EglSupport CONDITION QT_FEATURE_dlopen
     PUBLIC_LIBRARIES
         ${CMAKE_DL_LIBS}
 )

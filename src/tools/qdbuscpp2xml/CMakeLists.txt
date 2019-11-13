@@ -4,7 +4,7 @@
 ## qdbuscpp2xml Tool:
 #####################################################################
 
-add_qt_tool(qdbuscpp2xml
+qt_add_tool(qdbuscpp2xml
     TOOLS_TARGET DBus # special case
     SOURCES
         ../moc/cbordevice.h

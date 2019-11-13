@@ -4,7 +4,7 @@
 ## androidtestrunner Binary:
 #####################################################################
 
-add_qt_executable(androidtestrunner
+qt_add_executable(androidtestrunner
     SOURCES
         main.cpp
     DEFINES
@@ -21,7 +21,7 @@ add_qt_executable(androidtestrunner
 ## Scopes:
 #####################################################################
 
-extend_target(androidtestrunner CONDITION windows
+qt_extend_target(androidtestrunner CONDITION windows
     COMPILE_OPTIONS
         -U__STRICT_ANSI__
 )

@@ -6,7 +6,7 @@
 
 # special case:
 add_library(Bootstrap STATIC)
-extend_target(Bootstrap
+qt_extend_target(Bootstrap
     SOURCES
         ../../corelib/codecs/qlatincodec.cpp
         ../../corelib/codecs/qtextcodec.cpp
@@ -122,7 +122,7 @@ extend_target(Bootstrap
 ## Scopes:
 #####################################################################
 
-extend_target(Bootstrap CONDITION UNIX
+qt_extend_target(Bootstrap CONDITION UNIX
     SOURCES
         ../../corelib/io/qfilesystemengine_unix.cpp
         ../../corelib/io/qfilesystemiterator_unix.cpp
@@ -136,7 +136,7 @@ extend_target(Bootstrap CONDITION UNIX
         ../../corelib/kernel/qsystemsemaphore_unix.cpp
 )
 
-extend_target(Bootstrap CONDITION WIN32
+qt_extend_target(Bootstrap CONDITION WIN32
     SOURCES
         ../../corelib/global/qoperatingsystemversion_win.cpp
         ../../corelib/io/qfilesystemengine_win.cpp
@@ -156,7 +156,7 @@ extend_target(Bootstrap CONDITION WIN32
         user32
 )
 
-extend_target(Bootstrap CONDITION APPLE
+qt_extend_target(Bootstrap CONDITION APPLE
     SOURCES
         ../../corelib/global/qoperatingsystemversion_darwin.mm
         ../../corelib/kernel/qcore_foundation.mm
@@ -167,19 +167,19 @@ extend_target(Bootstrap CONDITION APPLE
         ${FWFoundation}
 )
 
-extend_target(Bootstrap CONDITION APPLE_OSX
+qt_extend_target(Bootstrap CONDITION APPLE_OSX
     SOURCES
         ../../corelib/io/qstandardpaths_mac.mm
     LIBRARIES
         ${FWCoreServices}
 )
 
-extend_target(Bootstrap CONDITION APPLE_UIKIT
+qt_extend_target(Bootstrap CONDITION APPLE_UIKIT
     LIBRARIES
         ${FWUIKit}
 )
 
-extend_target(Bootstrap CONDITION UNIX AND NOT APPLE_OSX
+qt_extend_target(Bootstrap CONDITION UNIX AND NOT APPLE_OSX
     SOURCES
         ../../corelib/io/qstandardpaths_unix.cpp
 )
@@ -188,7 +188,7 @@ extend_target(Bootstrap CONDITION UNIX AND NOT APPLE_OSX
 # extend_target(Bootstrap CONDITION cross_compile [...])
 # extend_target(Bootstrap CONDITION NOT cross_compile [...])
 
-extend_target(Bootstrap CONDITION WIN32 AND mingw
+qt_extend_target(Bootstrap CONDITION WIN32 AND mingw
     PUBLIC_LIBRARIES
         uuid
 )

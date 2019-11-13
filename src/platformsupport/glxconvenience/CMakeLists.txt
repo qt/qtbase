@@ -6,7 +6,7 @@ qt_find_package(X11) # special case
 ## GlxSupport Module:
 #####################################################################
 
-add_qt_module(GlxSupport
+qt_add_module(GlxSupport
     STATIC
     INTERNAL_MODULE
     SOURCES

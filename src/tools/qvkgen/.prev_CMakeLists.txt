@@ -4,7 +4,7 @@
 ## qvkgen Tool:
 #####################################################################
 
-add_qt_tool(qvkgen
+qt_add_tool(qvkgen
     SOURCES
         qvkgen.cpp
     PUBLIC_LIBRARIES

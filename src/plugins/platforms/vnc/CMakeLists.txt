@@ -4,7 +4,7 @@
 ## qvnc Plugin:
 #####################################################################
 
-add_qt_plugin(qvnc
+qt_add_plugin(qvnc
     TYPE platforms
     CLASS_NAME QVncIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES vnc # special case
@@ -41,7 +41,7 @@ add_qt_plugin(qvnc
 ## Scopes:
 #####################################################################
 
-extend_target(qvnc CONDITION TARGET Qt::InputSupportPrivate
+qt_extend_target(qvnc CONDITION TARGET Qt::InputSupportPrivate
     LIBRARIES
         Qt::InputSupportPrivate
     PUBLIC_LIBRARIES

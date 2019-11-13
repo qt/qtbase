@@ -4,7 +4,7 @@
 ## qnmbearer Plugin:
 #####################################################################
 
-add_qt_plugin(qnmbearer
+qt_add_plugin(qnmbearer
     TYPE bearer
     DEFAULT_IF False # special case QTBUG-78164
     CLASS_NAME QNetworkManagerEnginePlugin

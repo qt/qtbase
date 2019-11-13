@@ -4,7 +4,7 @@
 ## ServiceSupport Module:
 #####################################################################
 
-add_qt_module(ServiceSupport
+qt_add_module(ServiceSupport
     STATIC
     INTERNAL_MODULE
     SOURCES
@@ -27,7 +27,7 @@ add_qt_module(ServiceSupport
 ## Scopes:
 #####################################################################
 
-extend_target(ServiceSupport CONDITION QT_FEATURE_dbus
+qt_extend_target(ServiceSupport CONDITION QT_FEATURE_dbus
     PUBLIC_LIBRARIES
         Qt::DBus
 )

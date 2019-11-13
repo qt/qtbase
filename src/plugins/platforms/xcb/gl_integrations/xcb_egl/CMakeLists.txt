@@ -4,7 +4,7 @@
 ## qxcb-egl-integration Plugin:
 #####################################################################
 
-add_qt_plugin(qxcb-egl-integration
+qt_add_plugin(qxcb-egl-integration
     TYPE xcbglintegrations
     CLASS_NAME QXcbEglIntegrationPlugin
     SOURCES

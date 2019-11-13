@@ -4,7 +4,7 @@
 ## qico Plugin:
 #####################################################################
 
-add_qt_plugin(qico
+qt_add_plugin(qico
     TYPE imageformats
     CLASS_NAME QICOPlugin
     SOURCES

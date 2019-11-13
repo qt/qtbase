@@ -4,7 +4,7 @@
 ## qlinuxfb Plugin:
 #####################################################################
 
-add_qt_plugin(qlinuxfb
+qt_add_plugin(qlinuxfb
     TYPE platforms
     CLASS_NAME QLinuxFbIntegrationPlugin
     SOURCES
@@ -35,14 +35,14 @@ add_qt_plugin(qlinuxfb
 ## Scopes:
 #####################################################################
 
-extend_target(qlinuxfb CONDITION TARGET Qt::InputSupportPrivate
+qt_extend_target(qlinuxfb CONDITION TARGET Qt::InputSupportPrivate
     LIBRARIES
         Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
         Qt::InputSupport
 )
 
-extend_target(qlinuxfb CONDITION TARGET Qt::KmsSupportPrivate
+qt_extend_target(qlinuxfb CONDITION TARGET Qt::KmsSupportPrivate
     SOURCES
         qlinuxfbdrmscreen.cpp qlinuxfbdrmscreen.h
     LIBRARIES

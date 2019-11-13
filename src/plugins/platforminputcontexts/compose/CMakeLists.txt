@@ -7,7 +7,7 @@
 qt_find_package(XKB) # special case
 pkg_get_variable(PKG_X11_PREFIX x11 prefix) # special case
 
-add_qt_plugin(composeplatforminputcontextplugin
+qt_add_plugin(composeplatforminputcontextplugin
     TYPE platforminputcontexts
     CLASS_NAME QComposePlatformInputContextPlugin
     SOURCES

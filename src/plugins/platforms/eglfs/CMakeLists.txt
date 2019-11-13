@@ -5,7 +5,7 @@ qt_find_package(EGL) # special case
 ## EglFSDeviceIntegration Module:
 #####################################################################
 
-add_qt_module(EglFSDeviceIntegration
+qt_add_module(EglFSDeviceIntegration
     INTERNAL_MODULE
     SOURCES
         api/qeglfsdeviceintegration.cpp api/qeglfsdeviceintegration_p.h
@@ -40,14 +40,14 @@ add_qt_module(EglFSDeviceIntegration
 ## Scopes:
 #####################################################################
 
-extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::InputSupportPrivate
+qt_extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::InputSupportPrivate
     LIBRARIES
         Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
         Qt::InputSupport
 )
 
-extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+qt_extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::PlatformCompositorSupportPrivate
     LIBRARIES
         Qt::PlatformCompositorSupportPrivate
     PUBLIC_LIBRARIES
@@ -65,7 +65,7 @@ if(QT_FEATURE_cursor) # special case
         "cursor.json"
     )
 
-    add_qt_resource(EglFSDeviceIntegration "cursor"
+    qt_add_resource(EglFSDeviceIntegration "cursor"
         PREFIX
             "/"
         FILES
@@ -73,7 +73,7 @@ if(QT_FEATURE_cursor) # special case
     )
 endif()
 
-extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
+qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
     SOURCES
         api/qeglfscontext.cpp api/qeglfscontext_p.h
         api/qeglfscursor.cpp api/qeglfscursor_p.h
@@ -82,7 +82,7 @@ extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
 ## qeglfs Plugin:
 #####################################################################
 
-add_qt_plugin(qeglfs
+qt_add_plugin(qeglfs
     TYPE platforms
     CLASS_NAME QEglFSIntegrationPlugin
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES eglfs # special case

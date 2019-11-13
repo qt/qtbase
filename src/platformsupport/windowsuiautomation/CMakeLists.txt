@@ -4,7 +4,7 @@
 ## WindowsUIAutomationSupport Module:
 #####################################################################
 
-add_qt_module(WindowsUIAutomationSupport
+qt_add_module(WindowsUIAutomationSupport
     STATIC
     INTERNAL_MODULE
     SOURCES

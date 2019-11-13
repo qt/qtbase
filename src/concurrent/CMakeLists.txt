@@ -4,7 +4,7 @@
 ## Concurrent Module:
 #####################################################################
 
-add_qt_module(Concurrent
+qt_add_module(Concurrent
     EXCEPTIONS
     SOURCES
         qtconcurrent_global.h
@@ -36,11 +36,11 @@ add_qt_module(Concurrent
 ## Scopes:
 #####################################################################
 
-extend_target(Concurrent CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
+qt_extend_target(Concurrent CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x66000000"
 )
-add_qt_docs(Concurrent
+qt_add_docs(Concurrent
     doc/qtconcurrent.qdocconf
 )
 

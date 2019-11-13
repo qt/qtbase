@@ -45,7 +45,7 @@ endif()
 
 # special case end
 
-add_qt_module(Gui
+qt_add_module(Gui
     PLUGIN_TYPES platforms platforms/darwin xcbglintegrations platformthemes platforminputcontexts generic iconengines imageformats egldeviceintegrations
     FEATURE_DEPENDENCIES  # special case:
         Qt::Network # special case:
@@ -279,7 +279,7 @@ set(qpdf_resource_files
     "qpdfa_metadata.xml"
 )
 
-add_qt_resource(Gui "qpdf"
+qt_add_resource(Gui "qpdf"
     PREFIX
         "/qpdf/"
     BASE
@@ -291,7 +291,7 @@ set(qmake_webgradients_resource_files
     "painting/webgradients.binaryjson"
 )
 
-add_qt_resource(Gui "qmake_webgradients"
+qt_add_resource(Gui "qmake_webgradients"
     PREFIX
         "/qgradient/" # special case
     #BASE # special case remove
@@ -303,14 +303,14 @@ add_qt_resource(Gui "qmake_webgradients"
 # special case begin
 # Replace arch_haswell with avx2 feature. That is what is used in the code requireing
 # this file, too!
-add_qt_simd_part(Gui SIMD avx2
+qt_add_simd_part(Gui SIMD avx2
     SOURCES
         painting/qdrawhelper_avx2.cpp
 )
 # special case end
 
 # special case begin
-extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
+qt_extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
     SOURCES
         itemmodels/qstandarditemmodel.cpp itemmodels/qstandarditemmodel.h itemmodels/qstandarditemmodel_p.h
 )
@@ -331,7 +331,7 @@ extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
 # on the opengl _feature_. This is done by hand now here (where the
 # feature is available).
 # DO NOT MOVE THIS TO THE BEGINNING OF THE FILE, the feature variables are not
-# available until the add_qt_module call.
+# available until the qt_add_module call.
 if(QT_FEATURE_opengl)
     if(QT_FEATURE_opengles2)
         find_package(GLESv2)
@@ -343,7 +343,7 @@ if(QT_FEATURE_opengl)
 endif()
 # special case end
 
-extend_target(Gui CONDITION QT_FEATURE_opengl
+qt_extend_target(Gui CONDITION QT_FEATURE_opengl
     SOURCES
         kernel/qopenglcontext.cpp kernel/qopenglcontext.h kernel/qopenglcontext_p.h
         kernel/qopenglwindow.cpp kernel/qopenglwindow.h
@@ -385,7 +385,7 @@ extend_target(Gui CONDITION QT_FEATURE_opengl
 #### Keys ignored in scope 3:.:.:gui.pro:QT_FEATURE_angle:
 # MODULE_AUX_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/QtANGLE"
 
-extend_target(Gui CONDITION APPLE_OSX
+qt_extend_target(Gui CONDITION APPLE_OSX
     SOURCES
         rhi/qrhimetal.mm rhi/qrhimetal_p.h
         rhi/qrhimetal_p_p.h
@@ -396,7 +396,7 @@ extend_target(Gui CONDITION APPLE_OSX
         ${FWMetal}
 )
 
-extend_target(Gui CONDITION APPLE
+qt_extend_target(Gui CONDITION APPLE
     SOURCES
         image/qimage_darwin.mm
         painting/qcoregraphics.mm painting/qcoregraphics_p.h
@@ -404,12 +404,12 @@ extend_target(Gui CONDITION APPLE
         ${FWCoreGraphics}
 )
 
-extend_target(Gui CONDITION QT_FEATURE_animation
+qt_extend_target(Gui CONDITION QT_FEATURE_animation
     SOURCES
         animation/qguivariantanimation.cpp
 )
 
-extend_target(Gui CONDITION WIN32
+qt_extend_target(Gui CONDITION WIN32
     SOURCES
         kernel/qwindowdefs_win.h
         rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h
@@ -461,7 +461,7 @@ extend_target(Gui CONDITION WIN32
 #### Keys ignored in scope 22:.:.:gui.pro:QT_FEATURE_egl:
 # CMAKE_EGL_INCDIRS = "$$cmakePortablePaths($$QMAKE_INCDIR_EGL)"
 
-extend_target(Gui CONDITION QT_FEATURE_accessibility
+qt_extend_target(Gui CONDITION QT_FEATURE_accessibility
     SOURCES
         accessible/qaccessible.cpp accessible/qaccessible.h
         accessible/qaccessiblebridge.cpp accessible/qaccessiblebridge.h
@@ -471,14 +471,14 @@ extend_target(Gui CONDITION QT_FEATURE_accessibility
         accessible/qplatformaccessibility.cpp accessible/qplatformaccessibility.h
 )
 
-extend_target(Gui CONDITION APPLE AND QT_FEATURE_accessibility
+qt_extend_target(Gui CONDITION APPLE AND QT_FEATURE_accessibility
     SOURCES
         accessible/qaccessiblecache_mac.mm
     LIBRARIES
         ${FWFoundation}
 )
 
-extend_target(Gui CONDITION QT_FEATURE_draganddrop
+qt_extend_target(Gui CONDITION QT_FEATURE_draganddrop
     SOURCES
         kernel/qdnd.cpp kernel/qdnd_p.h
         kernel/qdrag.cpp kernel/qdrag.h
@@ -487,17 +487,17 @@ extend_target(Gui CONDITION QT_FEATURE_draganddrop
         kernel/qsimpledrag.cpp kernel/qsimpledrag_p.h
 )
 
-extend_target(Gui CONDITION QT_FEATURE_movie
+qt_extend_target(Gui CONDITION QT_FEATURE_movie
     SOURCES
         image/qmovie.cpp image/qmovie.h
 )
 
-extend_target(Gui CONDITION WIN32 AND NOT WINRT
+qt_extend_target(Gui CONDITION WIN32 AND NOT WINRT
     SOURCES
         image/qpixmap_win.cpp
 )
 
-extend_target(Gui CONDITION QT_FEATURE_png
+qt_extend_target(Gui CONDITION QT_FEATURE_png
     SOURCES
         image/qpnghandler.cpp image/qpnghandler_p.h
     LIBRARIES
@@ -505,58 +505,58 @@ extend_target(Gui CONDITION QT_FEATURE_png
 )
 
 if(NOT ANDROID)
-    add_qt_simd_part(Gui SIMD sse2
+    qt_add_simd_part(Gui SIMD sse2
         SOURCES
             painting/qdrawhelper_sse2.cpp
     )
 
-    add_qt_simd_part(Gui SIMD ssse3
+    qt_add_simd_part(Gui SIMD ssse3
         SOURCES
             image/qimage_ssse3.cpp
             painting/qdrawhelper_ssse3.cpp
     )
 
-    add_qt_simd_part(Gui SIMD sse4_1
+    qt_add_simd_part(Gui SIMD sse4_1
         SOURCES
             painting/qdrawhelper_sse4.cpp
             painting/qimagescale_sse4.cpp
     )
 
-    add_qt_simd_part(Gui SIMD neon
+    qt_add_simd_part(Gui SIMD neon
         SOURCES
             image/qimage_neon.cpp
             painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
             painting/qimagescale_neon.cpp
     )
 
-    add_qt_simd_part(Gui SIMD mips_dsp
+    qt_add_simd_part(Gui SIMD mips_dsp
         SOURCES
             painting/qdrawhelper_mips_dsp.cpp painting/qdrawhelper_mips_dsp_p.h
             painting/qdrawhelper_mips_dsp_asm.S
             painting/qt_mips_asm_dsp_p.h
     )
 
-    add_qt_simd_part(Gui SIMD mips_dspr2
+    qt_add_simd_part(Gui SIMD mips_dspr2
         SOURCES
             image/qimage_mips_dspr2.cpp
             image/qimage_mips_dspr2_asm.S
             painting/qdrawhelper_mips_dspr2_asm.S
     )
 
-    add_qt_simd_part(Gui SIMD arch_haswell
+    qt_add_simd_part(Gui SIMD arch_haswell
         SOURCES
             painting/qdrawhelper_avx2.cpp
     )
 endif()
 
-extend_target(Gui CONDITION ANDROID AND TEST_architecture_arch STREQUAL arm64
+qt_extend_target(Gui CONDITION ANDROID AND TEST_architecture_arch STREQUAL arm64
     SOURCES
         image/qimage_neon.cpp
         painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
         painting/qimagescale_neon.cpp
 )
 
-extend_target(Gui CONDITION ANDROID AND (TEST_architecture_arch STREQUAL i386 OR TEST_architecture_arch STREQUAL x86_64)
+qt_extend_target(Gui CONDITION ANDROID AND (TEST_architecture_arch STREQUAL i386 OR TEST_architecture_arch STREQUAL x86_64)
     SOURCES
         image/qimage_ssse3.cpp
         painting/qdrawhelper_sse2.cpp
@@ -576,14 +576,14 @@ if (MINGW AND CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 8.1.0)
 endif()
 # special case end
 
-extend_target(Gui CONDITION QT_FEATURE_harfbuzz
+qt_extend_target(Gui CONDITION QT_FEATURE_harfbuzz
     SOURCES
         text/qharfbuzzng.cpp text/qharfbuzzng_p.h
     LIBRARIES
         harfbuzz::harfbuzz
 )
 
-extend_target(Gui CONDITION QT_FEATURE_textodfwriter
+qt_extend_target(Gui CONDITION QT_FEATURE_textodfwriter
     SOURCES
         text/qtextodfwriter.cpp text/qtextodfwriter_p.h
         text/qzip.cpp
@@ -591,48 +591,48 @@ extend_target(Gui CONDITION QT_FEATURE_textodfwriter
         text/qzipwriter_p.h
 )
 
-extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader
+qt_extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader
     SOURCES
         text/qtextmarkdownimporter.cpp text/qtextmarkdownimporter_p.h
 )
 
-extend_target(Gui CONDITION QT_FEATURE_system_textmarkdownreader AND QT_FEATURE_textmarkdownreader
+qt_extend_target(Gui CONDITION QT_FEATURE_system_textmarkdownreader AND QT_FEATURE_textmarkdownreader
     PUBLIC_LIBRARIES
         libmd4c
 )
 
-extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader AND NOT QT_FEATURE_system_textmarkdownreader
+qt_extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader AND NOT QT_FEATURE_system_textmarkdownreader
     SOURCES
         ../3rdparty/md4c/md4c.c ../3rdparty/md4c/md4c.h
     INCLUDE_DIRECTORIES
         ../3rdparty/md4c
 )
 
-extend_target(Gui CONDITION QT_FEATURE_textmarkdownwriter
+qt_extend_target(Gui CONDITION QT_FEATURE_textmarkdownwriter
     SOURCES
         text/qtextmarkdownwriter.cpp text/qtextmarkdownwriter_p.h
 )
 
-extend_target(Gui CONDITION QT_FEATURE_cssparser
+qt_extend_target(Gui CONDITION QT_FEATURE_cssparser
     SOURCES
         painting/qcssutil.cpp
         text/qcssparser.cpp text/qcssparser_p.h
 )
 
-extend_target(Gui CONDITION UNIX AND NOT ANDROID AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64")
+qt_extend_target(Gui CONDITION UNIX AND NOT ANDROID AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64")
     DEFINES
         ENABLE_PIXMAN_DRAWHELPERS
 )
 
 if(UNIX AND NOT ANDROID AND NOT APPLE_UIKIT AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64"))
-    add_qt_simd_part(Gui SIMD neon
+    qt_add_simd_part(Gui SIMD neon
         SOURCES
             ../3rdparty/pixman/pixman-arm-neon-asm.S
             painting/qdrawhelper_neon_asm.S
     )
 endif()
 
-extend_target(Gui CONDITION ANDROID AND TEST_architecture_arch STREQUAL x86_64
+qt_extend_target(Gui CONDITION ANDROID AND TEST_architecture_arch STREQUAL x86_64
     SOURCES
         painting/qdrawhelper_sse4.cpp
         painting/qimagescale_sse4.cpp
@@ -641,12 +641,12 @@ extend_target(Gui CONDITION ANDROID AND TEST_architecture_arch STREQUAL x86_64
         QT_COMPILER_SUPPORTS_SSE4_2
 )
 
-extend_target(Gui CONDITION QT_FEATURE_regularexpression
+qt_extend_target(Gui CONDITION QT_FEATURE_regularexpression
     SOURCES
         util/qshadergenerator.cpp util/qshadergenerator_p.h
 )
 
-extend_target(Gui CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
+qt_extend_target(Gui CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
     SOURCES
         opengl/qopenglfunctions_1_0.cpp opengl/qopenglfunctions_1_0.h
         opengl/qopenglfunctions_1_1.cpp opengl/qopenglfunctions_1_1.h
@@ -678,7 +678,7 @@ extend_target(Gui CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
         opengl/qopengltimerquery.cpp opengl/qopengltimerquery.h
 )
 
-extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengles2
+qt_extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengles2
     SOURCES
         opengl/qopenglfunctions_es2.cpp opengl/qopenglfunctions_es2.h
 )
@@ -691,7 +691,7 @@ if(TARGET Vulkan::Vulkan)
 endif()
 # special case end
 
-extend_target(Gui CONDITION QT_FEATURE_vulkan
+qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
     SOURCES
         rhi/qrhivulkan.cpp rhi/qrhivulkan_p.h
         rhi/qrhivulkan_p_p.h
@@ -752,12 +752,12 @@ endif()
 #### Keys ignored in scope 80:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
-extend_target(Gui CONDITION WASM
+qt_extend_target(Gui CONDITION WASM
     SOURCES
         platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
 )
 
-extend_target(Gui CONDITION NOT GCC OR NOT QT_COMPILER_VERSION_MAJOR STREQUAL 5
+qt_extend_target(Gui CONDITION NOT GCC OR NOT QT_COMPILER_VERSION_MAJOR STREQUAL 5
     SOURCES
         painting/qdrawhelper.cpp
     NO_PCH_SOURCES
@@ -766,7 +766,7 @@ extend_target(Gui CONDITION NOT GCC OR NOT QT_COMPILER_VERSION_MAJOR STREQUAL 5
 
 
 qt_create_tracepoints(Gui qtgui.tracepoints)
-add_qt_docs(Gui
+qt_add_docs(Gui
     doc/qtgui.qdocconf
 )
 

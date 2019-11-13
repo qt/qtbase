@@ -4,7 +4,7 @@
 ## qeglfs-emu-integration Plugin:
 #####################################################################
 
-add_qt_plugin(qeglfs-emu-integration
+qt_add_plugin(qeglfs-emu-integration
     TYPE egldeviceintegrations
     CLASS_NAME QEglFSEmulatorIntegrationPlugin
     SOURCES
