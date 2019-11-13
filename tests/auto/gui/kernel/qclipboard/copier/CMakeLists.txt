@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_executable(copier
-    GUI
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

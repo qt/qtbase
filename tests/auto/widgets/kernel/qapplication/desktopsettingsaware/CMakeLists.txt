@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_executable(desktopsettingsaware_helper # special case
-    GUI
     SOURCES
         main.cpp
     OUTPUT_DIRECTORY # special case

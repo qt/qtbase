@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_executable(modal
-    GUI
     SOURCES
         base.cpp base.h
         main.cpp

@@ -11,7 +11,6 @@ add_qt_benchmark(qtimer_vs_qmetaobject
         .
     PUBLIC_LIBRARIES
         Qt::Test
-        Threads::Threads
 )
 
 #### Keys ignored in scope 1:.:.:qtimer_vs_qmetaobject.pro:<TRUE>:

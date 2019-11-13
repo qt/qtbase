@@ -22,4 +22,3 @@ add_qt_plugin(qconnmanbearer
 
 #### Keys ignored in scope 1:.:.:connman.pro:<TRUE>:
 # OTHER_FILES = "connman.json"
-# _LOADED = "qt_plugin"

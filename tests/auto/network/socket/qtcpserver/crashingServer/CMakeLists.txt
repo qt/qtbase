@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_executable(crashingServer
-    GUI
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         main.cpp

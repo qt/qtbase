@@ -16,18 +16,6 @@ add_qt_benchmark(tst_bench_qgraphicsview
 )
 
 # Resources:
-set(images_resource_files
-    "qt4logo.png"
-)
-
-add_qt_resource(tst_bench_qgraphicsview "images"
-    PREFIX
-        "/"
-    BASE
-        "chiptester"
-    FILES
-        ${images_resource_files}
-)
 set(qgraphicsview_resource_files
     "images/designer.png"
     "images/wine-big.jpeg"
@@ -40,6 +28,18 @@ add_qt_resource(tst_bench_qgraphicsview "qgraphicsview"
         "/"
     FILES
         ${qgraphicsview_resource_files}
+)
+set(images_resource_files
+    "qt4logo.png"
+)
+
+add_qt_resource(tst_bench_qgraphicsview "images"
+    PREFIX
+        "/"
+    BASE
+        "chiptester"
+    FILES
+        ${images_resource_files}
 )
 
 

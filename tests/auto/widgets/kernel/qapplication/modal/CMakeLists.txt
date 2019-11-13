@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_executable(modal_helper  # special case
-    GUI
     SOURCES
         base.cpp base.h
         main.cpp
