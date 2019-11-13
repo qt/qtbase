@@ -137,7 +137,7 @@ QT_BEGIN_NAMESPACE
     \sa qToLittleEndian()
 */
 /*!
-    \fn template <typename T> T qFromLittleEndian(const void *src)
+    \fn template <typename T> inline T qFromLittleEndian(const void *src)
     \since 4.3
     \relates <QtEndian>
 
@@ -159,7 +159,7 @@ QT_BEGIN_NAMESPACE
     \sa qToLittleEndian()
 */
 /*!
-    \fn template <typename T> T qFromLittleEndian(T src)
+    \fn template <typename T> inline T qFromLittleEndian(T src)
     \since 4.3
     \relates <QtEndian>
     \overload
@@ -171,7 +171,7 @@ QT_BEGIN_NAMESPACE
     unmodified.
 */
 /*!
-    \fn template <typename T> T qFromLittleEndian(const void *src, qsizetype count, void *dest)
+    \fn template <typename T> inline T qFromLittleEndian(const void *src, qsizetype count, void *dest)
     \since 5.12
     \relates <QtEndian>
 

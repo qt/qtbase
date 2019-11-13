@@ -278,8 +278,8 @@
     \section2 Avoid Fixed Timeouts
 
     Avoid using hard-coded timeouts, such as QTest::qWait() to wait for some
-    conditions to become true. Consider using the \l QtSignalSpy class,
-    the \l QTRY_VERIFY() or \l QTRY_COMPARE() macros, or the \c QtSignalSpy
+    conditions to become true. Consider using the \l QSignalSpy class,
+    the \l QTRY_VERIFY() or \l QTRY_COMPARE() macros, or the \c QSignalSpy
     class in conjunction with the \c QTRY_ macro variants.
 
     The \c qWait() function can be used to set a delay for a fixed period
