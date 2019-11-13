@@ -170,7 +170,7 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
     QByteArray::DataPointer baDataPtr = const_cast<QByteArray &>(ba).data_ptr();
 
     // Skip if isStatic() or fromRawData(), as those offer no guarantees
-    if (baDataPtr.d->isStatic() || baDataPtr.d->flags & QArrayData::RawDataType)
+    if (baDataPtr->isStatic() || baDataPtr->flags() & QArrayData::RawDataType)
         return ba;
 
     int baSize = ba.size();
@@ -181,7 +181,7 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
                 .arg(baTerminator, 2, 16, QChar('0')).toLatin1();
 
     // Skip mutating checks on shared strings
-    if (baDataPtr.d->isShared())
+    if (baDataPtr->isShared())
         return ba;
 
     const char *baData = ba.constData();
@@ -2168,7 +2168,7 @@ void tst_QByteArray::literals()
 
     QVERIFY(str.length() == 4);
     QVERIFY(str == "abcd");
-    QVERIFY(str.data_ptr().d->isStatic());
+    QVERIFY(str.data_ptr()->isStatic());
 
     const char *s = str.constData();
     QByteArray str2 = str;

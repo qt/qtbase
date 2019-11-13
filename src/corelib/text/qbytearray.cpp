@@ -63,7 +63,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define IS_RAW_DATA(d) ((d)->flags & QArrayData::RawDataType)
+#define IS_RAW_DATA(d) ((d)->flags() & QArrayData::RawDataType)
 
 QT_BEGIN_NAMESPACE
 
@@ -1183,9 +1183,6 @@ QByteArray qUncompress(const uchar* data, int nbytes)
 */
 QByteArray &QByteArray::operator=(const QByteArray & other) noexcept
 {
-    other.d.d->ref();
-    if (!d.d->deref())
-        Data::deallocate(d.d);
     d = other.d;
     return *this;
 }
@@ -1205,20 +1202,15 @@ QByteArray &QByteArray::operator=(const char *str)
             pair = qMakePair(Data::sharedNull(), Data::sharedNullData());
         } else {
             pair = Data::allocate(0);
-            pair.first->ref();
         }
-        if (!d.d->deref())
-             Data::deallocate(d.d);
-        d.d = pair.first;
-        d.b = pair.second;
-        d.size = 0;
+        d = QByteArrayData(pair.first, pair.second, 0);
     } else {
         const int len = int(strlen(str));
         const size_t fullLen = len + 1;
-        if (d.d->needsDetach() || fullLen > d.d->allocatedCapacity()
-                || (len < size() && fullLen < (d.d->allocatedCapacity() >> 1)))
-            reallocData(fullLen, d.d->detachFlags());
-        memcpy(d.b, str, fullLen); // include null terminator
+        if (d->needsDetach() || fullLen > d->allocatedCapacity()
+                || (len < size() && fullLen < (d->allocatedCapacity() >> 1)))
+            reallocData(fullLen, d->detachFlags());
+        memcpy(d.data(), str, fullLen); // include null terminator
         d.size = len;
     }
     return *this;
@@ -1665,19 +1657,13 @@ void QByteArray::chop(int n)
 QByteArray::QByteArray(const char *data, int size)
 {
     if (!data) {
-        d.d = Data::sharedNull();
-        d.b = Data::sharedNullData();
-        d.size = 0;
+        d = DataPointer();
     } else {
         if (size < 0)
             size = int(strlen(data));
-        QPair<Data *, char *> pair = Data::allocate(uint(size) + 1u);
-        Q_CHECK_PTR(pair.first);
-        d.d = pair.first;
-        d.b = pair.second;
-        d.size = size;
-        memcpy(d.b, data, size);
-        d.b[size] = '\0';
+        d = DataPointer(Data::allocate(uint(size) + 1u), size);
+        memcpy(d.data(), data, size);
+        d.data()[size] = '\0';
     }
 }
 
@@ -1691,18 +1677,11 @@ QByteArray::QByteArray(const char *data, int size)
 QByteArray::QByteArray(int size, char ch)
 {
     if (size <= 0) {
-        QPair<Data *, char *> pair = Data::allocate(0);
-        d.d = pair.first;
-        d.b = pair.second;
-        d.size = 0;
+        d = DataPointer(Data::allocate(0), 0);
     } else {
-        QPair<Data *, char *> pair = Data::allocate(uint(size) + 1u);
-        Q_CHECK_PTR(pair.first);
-        d.d = pair.first;
-        d.b = pair.second;
-        d.size = size;
-        memset(d.b, ch, size);
-        d.b[size] = '\0';
+        d = DataPointer(Data::allocate(uint(size) + 1u), size);
+        memset(d.data(), ch, size);
+        d.data()[size] = '\0';
     }
 }
 
@@ -1714,12 +1693,8 @@ QByteArray::QByteArray(int size, char ch)
 
 QByteArray::QByteArray(int size, Qt::Initialization)
 {
-    QPair<Data *, char *> pair = Data::allocate(uint(size) + 1u);
-    Q_CHECK_PTR(pair.first);
-    d.d = pair.first;
-    d.b = pair.second;
-    d.size = size;
-    d.b[size] = '\0';
+    d = DataPointer(Data::allocate(uint(size) + 1u), size);
+    d.data()[size] = '\0';
 }
 
 /*!
@@ -1739,26 +1714,21 @@ void QByteArray::resize(int size)
     if (size < 0)
         size = 0;
 
-    if (!d.d->isShared() && !d.d->isMutable() && size < int(d.size)) {
+    if (!d->isShared() && !d->isMutable() && size < int(d.size)) {
         d.size = size;
         return;
     }
 
-    if (size == 0 && !(d.d->flags & Data::CapacityReserved)) {
-        QPair<Data *, char *> pair = Data::allocate(0);
-        if (!d.d->deref())
-            Data::deallocate(d.d);
-        d.d = pair.first;
-        d.b = pair.second;
-        d.size = 0;
+    if (size == 0 && !(d->flags() & Data::CapacityReserved)) {
+        d = DataPointer(Data::allocate(0), 0);
     } else {
-        if (d.d->needsDetach() || size > capacity()
-                || (!(d.d->flags & Data::CapacityReserved) && size < int(d.size)
+        if (d->needsDetach() || size > capacity()
+                || (!(d->flags() & Data::CapacityReserved) && size < int(d.size)
                     && size < (capacity() >> 1)))
-            reallocData(uint(size) + 1u, d.d->detachFlags() | Data::GrowsForward);
+            reallocData(uint(size) + 1u, d->detachFlags() | Data::GrowsForward);
         d.size = size;
-        if (d.d->isMutable()) {
-            d.b[size] = '\0';
+        if (d->isMutable()) {
+            d.data()[size] = '\0';
         }
     }
 }
@@ -1778,28 +1748,19 @@ QByteArray &QByteArray::fill(char ch, int size)
 {
     resize(size < 0 ? this->size() : size);
     if (this->size())
-        memset(d.b, ch, this->size());
+        memset(d.data(), ch, this->size());
     return *this;
 }
 
 void QByteArray::reallocData(uint alloc, Data::ArrayOptions options)
 {
-    if (d.d->needsDetach()) {
-        QPair<Data *, char *> pair = Data::allocate(alloc, options);
-        Q_CHECK_PTR(pair.first);
-        d.size = qMin(alloc - 1, d.size);
-        ::memcpy(pair.second, d.b, d.size);
-        pair.second[d.size] = 0;
-        if (!d.d->deref())
-            Data::deallocate(d.d);
-        d.d = pair.first;
-        d.b = pair.second;
+    if (d->needsDetach()) {
+        DataPointer dd(Data::allocate(alloc, options), qMin(int(alloc) - 1, d.size));
+        ::memcpy(dd.data(), d.data(), dd.size);
+        dd.data()[dd.size] = 0;
+        d = dd;
     } else {
-        QPair<Data *, char *> pair =
-                Data::reallocateUnaligned(static_cast<Data *>(d.d), d.b, alloc, options);
-        Q_CHECK_PTR(pair.first);
-        d.d = pair.first;
-        d.b = pair.second;
+        d.reallocate(alloc, options);
     }
 }
 
@@ -1820,7 +1781,7 @@ void QByteArray::expand(int i)
 QByteArray QByteArray::nulTerminated() const
 {
     // is this fromRawData?
-    if (!IS_RAW_DATA(d.d))
+    if (!IS_RAW_DATA(d))
         return *this;           // no, then we're sure we're zero terminated
 
     QByteArray copy(*this);
@@ -1851,7 +1812,7 @@ QByteArray QByteArray::nulTerminated() const
 
 QByteArray &QByteArray::prepend(const QByteArray &ba)
 {
-    if (size() == 0 && d.d->isStatic() && !IS_RAW_DATA(ba.d.d)) {
+    if (size() == 0 && d->isStatic() && !IS_RAW_DATA(ba.d)) {
         *this = ba;
     } else if (ba.size() != 0) {
         QByteArray tmp = *this;
@@ -1882,12 +1843,12 @@ QByteArray &QByteArray::prepend(const char *str)
 QByteArray &QByteArray::prepend(const char *str, int len)
 {
     if (str) {
-        if (d.d->needsDetach() || size() + len > capacity())
-            reallocData(uint(size() + len) + 1u, d.d->detachFlags() | Data::GrowsForward);
-        memmove(d.b+len, d.b, d.size);
-        memcpy(d.b, str, len);
+        if (d->needsDetach() || size() + len > capacity())
+            reallocData(uint(size() + len) + 1u, d->detachFlags() | Data::GrowsForward);
+        memmove(d.data()+len, d.data(), d.size);
+        memcpy(d.data(), str, len);
         d.size += len;
-        d.b[d.size] = '\0';
+        d.data()[d.size] = '\0';
     }
     return *this;
 }
@@ -1908,12 +1869,12 @@ QByteArray &QByteArray::prepend(const char *str, int len)
 
 QByteArray &QByteArray::prepend(char ch)
 {
-    if (d.d->needsDetach() || size() + 1 > capacity())
-        reallocData(uint(size()) + 2u, d.d->detachFlags() | Data::GrowsForward);
-    memmove(d.b+1, d.b, d.size);
-    d.b[0] = ch;
+    if (d->needsDetach() || size() + 1 > capacity())
+        reallocData(uint(size()) + 2u, d->detachFlags() | Data::GrowsForward);
+    memmove(d.data()+1, d.data(), d.size);
+    d.data()[0] = ch;
     ++d.size;
-    d.b[d.size] = '\0';
+    d.data()[d.size] = '\0';
     return *this;
 }
 
@@ -1943,14 +1904,14 @@ QByteArray &QByteArray::prepend(char ch)
 
 QByteArray &QByteArray::append(const QByteArray &ba)
 {
-    if (size() == 0 && d.d->isStatic() && !IS_RAW_DATA(ba.d.d)) {
+    if (size() == 0 && d->isStatic() && !IS_RAW_DATA(ba.d)) {
         *this = ba;
     } else if (ba.size() != 0) {
-        if (d.d->needsDetach() || size() + ba.size() > capacity())
-            reallocData(uint(size() + ba.size()) + 1u, d.d->detachFlags() | Data::GrowsForward);
-        memcpy(d.b + d.size, ba.data(), ba.size());
+        if (d->needsDetach() || size() + ba.size() > capacity())
+            reallocData(uint(size() + ba.size()) + 1u, d->detachFlags() | Data::GrowsForward);
+        memcpy(d.data() + d.size, ba.data(), ba.size());
         d.size += ba.size();
-        d.b[d.size] = '\0';
+        d.data()[d.size] = '\0';
     }
     return *this;
 }
@@ -1978,9 +1939,9 @@ QByteArray& QByteArray::append(const char *str)
 {
     if (str) {
         const int len = int(strlen(str));
-        if (d.d->needsDetach() || size() + len > capacity())
-            reallocData(uint(size() + len) + 1u, d.d->detachFlags() | Data::GrowsForward);
-        memcpy(d.b + d.size, str, len + 1); // include null terminator
+        if (d->needsDetach() || size() + len > capacity())
+            reallocData(uint(size() + len) + 1u, d->detachFlags() | Data::GrowsForward);
+        memcpy(d.data() + d.size, str, len + 1); // include null terminator
         d.size += len;
     }
     return *this;
@@ -2003,11 +1964,11 @@ QByteArray &QByteArray::append(const char *str, int len)
     if (len < 0)
         len = qstrlen(str);
     if (str && len) {
-        if (d.d->needsDetach() || size() + len > capacity())
-            reallocData(uint(size() + len) + 1u, d.d->detachFlags() | Data::GrowsForward);
-        memcpy(d.b + d.size, str, len);
+        if (d->needsDetach() || size() + len > capacity())
+            reallocData(uint(size() + len) + 1u, d->detachFlags() | Data::GrowsForward);
+        memcpy(d.data() + d.size, str, len);
         d.size += len;
-        d.b[d.size] = '\0';
+        d.data()[d.size] = '\0';
     }
     return *this;
 }
@@ -2031,10 +1992,10 @@ QByteArray &QByteArray::append(const char *str, int len)
 
 QByteArray& QByteArray::append(char ch)
 {
-    if (d.d->needsDetach() || size() + 1 > capacity())
-        reallocData(uint(size()) + 2u, d.d->detachFlags() | Data::GrowsForward);
-    d.b[d.size++] = ch;
-    d.b[d.size] = '\0';
+    if (d->needsDetach() || size() + 1 > capacity())
+        reallocData(uint(size()) + 2u, d->detachFlags() | Data::GrowsForward);
+    d.data()[d.size++] = ch;
+    d.data()[d.size] = '\0';
     return *this;
 }
 
@@ -2157,7 +2118,7 @@ QByteArray &QByteArray::insert(int i, int count, char ch)
 
     int oldsize = size();
     resize(qMax(i, oldsize) + count);
-    char *dst = d.b;
+    char *dst = d.data();
     if (i > oldsize)
         ::memset(dst + oldsize, 0x20, i - oldsize);
     else if (i < oldsize)
@@ -2188,7 +2149,7 @@ QByteArray &QByteArray::remove(int pos, int len)
     if (len >= size() - pos) {
         resize(pos);
     } else {
-        memmove(d.b + pos, d.b + pos + len, size() - pos - len);
+        memmove(d.data() + pos, d.data() + pos + len, size() - pos - len);
         resize(size() - len);
     }
     return *this;
@@ -2208,7 +2169,7 @@ QByteArray &QByteArray::replace(int pos, int len, const QByteArray &after)
 {
     if (len == after.size() && (pos + len <= size())) {
         detach();
-        memmove(d.b + pos, after.data(), len*sizeof(char));
+        memmove(d.data() + pos, after.data(), len*sizeof(char));
         return *this;
     } else {
         QByteArray copy(after);
@@ -2245,7 +2206,7 @@ QByteArray &QByteArray::replace(int pos, int len, const char *after, int alen)
 {
     if (len == alen && (pos + len <= size())) {
         detach();
-        memcpy(d.b + pos, after, len*sizeof(char));
+        memcpy(d.data() + pos, after, len*sizeof(char));
         return *this;
     } else {
         remove(pos, len);
@@ -2384,7 +2345,7 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
                 resize(newlen);
                 len = newlen;
             }
-            d = this->d.b; // data(), without the detach() check
+            d = this->d.data(); // data(), without the detach() check
 
             while(pos) {
                 pos--;
@@ -2549,19 +2510,19 @@ QByteArray QByteArray::repeated(int times) const
     if (result.capacity() != resultSize)
         return QByteArray(); // not enough memory
 
-    memcpy(result.d.b, data(), size());
+    memcpy(result.d.data(), data(), size());
 
     int sizeSoFar = size();
-    char *end = result.d.b + sizeSoFar;
+    char *end = result.d.data() + sizeSoFar;
 
     const int halfResultSize = resultSize >> 1;
     while (sizeSoFar <= halfResultSize) {
-        memcpy(end, result.d.b, sizeSoFar);
+        memcpy(end, result.d.data(), sizeSoFar);
         end += sizeSoFar;
         sizeSoFar <<= 1;
     }
-    memcpy(end, result.d.b, resultSize - sizeSoFar);
-    result.d.b[resultSize] = '\0';
+    memcpy(end, result.d.data(), resultSize - sizeSoFar);
+    result.d.data()[resultSize] = '\0';
     result.d.size = resultSize;
     return result;
 }
@@ -3107,7 +3068,7 @@ QByteArray QByteArray::mid(int pos, int len) const
     case QContainerImplHelper::Full:
         return *this;
     case QContainerImplHelper::Subset:
-        return QByteArray(d.b + pos, len);
+        return QByteArray(d.data() + pos, len);
     }
     Q_UNREACHABLE();
     return QByteArray();
@@ -3210,11 +3171,7 @@ QByteArray QByteArray::toUpper_helper(QByteArray &a)
 
 void QByteArray::clear()
 {
-    if (!d.d->deref())
-        Data::deallocate(d.d);
-    d.d = Data::sharedNull();
-    d.b = Data::sharedNullData();
-    d.size = 0;
+    d.clear();
 }
 
 #if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
@@ -3696,8 +3653,8 @@ QByteArray QByteArray::leftJustified(int width, char fill, bool truncate) const
     if (padlen > 0) {
         result.resize(len+padlen);
         if (len)
-            memcpy(result.d.b, data(), len);
-        memset(result.d.b+len, fill, padlen);
+            memcpy(result.d.data(), data(), len);
+        memset(result.d.data()+len, fill, padlen);
     } else {
         if (truncate)
             result = left(width);
@@ -3733,8 +3690,8 @@ QByteArray QByteArray::rightJustified(int width, char fill, bool truncate) const
     if (padlen > 0) {
         result.resize(len+padlen);
         if (len)
-            memcpy(result.d.b+padlen, data(), len);
-        memset(result.d.b, fill, padlen);
+            memcpy(result.d.data()+padlen, data(), len);
+        memset(result.d.data(), fill, padlen);
     } else {
         if (truncate)
             result = left(width);
@@ -3746,7 +3703,7 @@ QByteArray QByteArray::rightJustified(int width, char fill, bool truncate) const
 
 bool QByteArray::isNull() const
 {
-    return d.d == QArrayData::sharedNull();
+    return d->isNull();
 }
 
 static qlonglong toIntegral_helper(const char *data, bool *ok, int base, qlonglong)
@@ -4418,19 +4375,10 @@ QByteArray QByteArray::fromRawData(const char *data, int size)
 {
     QByteArray::DataPointer x;
     if (!data) {
-        x.d = Data::sharedNull();
-        x.b = Data::sharedNullData();
-        x.size = 0;
     } else if (!size) {
-        QPair<Data *, char *> pair = Data::allocate(0);
-        x.d = pair.first;
-        x.b = pair.second;
-        x.size = 0;
+        x = DataPointer(Data::allocate(0), 0);
     } else {
-        x.d = Data::fromRawData(data, size).ptr;
-        Q_CHECK_PTR(x.d);
-        x.b = const_cast<char *>(data);
-        x.size = size;
+        x = Data::fromRawData(data, size);
     }
     return QByteArray(x);
 }
@@ -4453,12 +4401,13 @@ QByteArray &QByteArray::setRawData(const char *data, uint size)
 {
     if (!data || !size) {
         clear();
-    } else if (d.d->isShared() || (d.d->flags & Data::RawDataType) == 0) {
-        *this = fromRawData(data, size);
-    } else {
-        d.size = size;
-        d.b = const_cast<char *>(data);
     }
+//    else if (d->isShared() || (d->flags() & Data::RawDataType) == 0) {
+        *this = fromRawData(data, size);
+//    } else {
+//        d.size = size;
+//        d.data() = const_cast<char *>(data);
+//    }
     return *this;
 }
 

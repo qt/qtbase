@@ -5148,21 +5148,21 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
 
     // Swap the d pointers.
     // Kids, avert your eyes. Don't try this at home.
-    QByteArray::DataPointer ba_d = {
-        s.d.d,
-        reinterpret_cast<char *>(s.d.b),
-        length
-    };
+
+    auto *dd = static_cast<QTypedArrayData<char> *>(s.d.d);
+    char *ddata = reinterpret_cast<char *>(s.d.b);
+
+    QByteArray::DataPointer ba_d = { dd, ddata, length };
 
     // multiply the allocated capacity by sizeof(ushort)
-    ba_d.d->alloc *= sizeof(ushort);
+    dd->alloc *= sizeof(ushort);
 
     // reset ourselves to QString()
     s.d = QString().d;
 
     // do the in-place conversion
-    qt_to_latin1(reinterpret_cast<uchar *>(ba_d.b), data, length);
-    ba_d.b[length] = '\0';
+    qt_to_latin1(reinterpret_cast<uchar *>(ddata), data, length);
+    ddata[length] = '\0';
     return QByteArray(ba_d);
 }
 

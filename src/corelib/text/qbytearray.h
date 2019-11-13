@@ -44,6 +44,7 @@
 #include <QtCore/qrefcount.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qarraydata.h>
+#include <QtCore/qarraydatapointer.h>
 #include <QtCore/qcontainerfwd.h>
 
 #include <stdlib.h>
@@ -113,12 +114,7 @@ Q_CORE_EXPORT quint16 qChecksum(const char *s, uint len,
 class QString;
 class QDataStream;
 
-struct QByteArrayData
-{
-    QArrayData *d;
-    char *b;
-    uint size;
-};
+using QByteArrayData = QArrayDataPointer<char>;
 
 #  define QByteArrayLiteral(str) \
     ([]() -> QByteArray { \
@@ -126,7 +122,7 @@ struct QByteArrayData
         static const QArrayData qbytearray_literal = { \
             Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 }; \
         QByteArrayData holder = { \
-            const_cast<QArrayData *>(&qbytearray_literal), \
+            static_cast<QTypedArrayData<char> *>(const_cast<QArrayData *>(&qbytearray_literal)), \
             const_cast<char *>(str), \
             Size }; \
         const QByteArray ba(holder); \
@@ -162,14 +158,13 @@ public:
 
     QByteArray &operator=(const QByteArray &) noexcept;
     QByteArray &operator=(const char *str);
-    inline QByteArray(QByteArray && other) noexcept : d(std::move(other.d))
-    { other.d.d = Data::sharedNull(); other.d.b = Data::sharedNullData(); other.d.size = 0; }
+    inline QByteArray(QByteArray && other) noexcept
+    { qSwap(d, other.d); }
     inline QByteArray &operator=(QByteArray &&other) noexcept
     { qSwap(d, other.d); return *this; }
     inline void swap(QByteArray &other) noexcept
     { qSwap(d, other.d); }
 
-    inline int size() const;
     inline bool isEmpty() const;
     void resize(int size);
 
@@ -417,8 +412,9 @@ public:
     static inline QByteArray fromStdString(const std::string &s);
     inline std::string toStdString() const;
 
-    inline int count() const { return int(d.size); }
-    int length() const { return int(d.size); }
+    inline int size() const { return d->size; }
+    inline int count() const { return size(); }
+    inline int length() const { return size(); }
     bool isNull() const;
 
     inline DataPointer &data_ptr() { return d; }
@@ -448,15 +444,13 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QByteArray::Base64Options)
 
-inline QByteArray::QByteArray() noexcept { d.d = Data::sharedNull(); d.b = Data::sharedNullData(); d.size = 0; }
-inline QByteArray::~QByteArray() { if (!d.d->deref()) Data::deallocate(d.d); }
-inline int QByteArray::size() const
-{ return int(d.size); }
+inline QByteArray::QByteArray() noexcept {}
+inline QByteArray::~QByteArray() {}
 
 inline char QByteArray::at(int i) const
-{ Q_ASSERT(uint(i) < uint(size())); return d.b[i]; }
+{ Q_ASSERT(uint(i) < uint(size())); return d.data()[i]; }
 inline char QByteArray::operator[](int i) const
-{ Q_ASSERT(uint(i) < uint(size())); return d.b[i]; }
+{ Q_ASSERT(uint(i) < uint(size())); return d.data()[i]; }
 
 inline bool QByteArray::isEmpty() const
 { return size() == 0; }
@@ -467,38 +461,38 @@ inline QByteArray::operator const void *() const
 { return data(); }
 #endif
 inline char *QByteArray::data()
-{ detach(); return d.b; }
+{ detach(); return d.data(); }
 inline const char *QByteArray::data() const
-{ return d.b; }
+{ return d.data(); }
 inline const char *QByteArray::constData() const
-{ return d.b; }
+{ return d.data(); }
 inline void QByteArray::detach()
-{ if (d.d->needsDetach()) reallocData(uint(size()) + 1u, d.d->detachFlags()); }
+{ if (d->needsDetach()) reallocData(uint(size()) + 1u, d->detachFlags()); }
 inline bool QByteArray::isDetached() const
-{ return !d.d->isShared(); }
+{ return !d->isShared(); }
 inline QByteArray::QByteArray(const QByteArray &a) noexcept : d(a.d)
-{ d.d->ref(); }
+{}
 
 inline int QByteArray::capacity() const
-{ int realCapacity = d.d->constAllocatedCapacity(); return realCapacity ? realCapacity - 1 : 0; }
+{ int realCapacity = d->constAllocatedCapacity(); return realCapacity ? realCapacity - 1 : 0; }
 
 inline void QByteArray::reserve(int asize)
 {
-    if (d.d->needsDetach() || asize > capacity()) {
-        reallocData(qMax(uint(size()), uint(asize)) + 1u, d.d->detachFlags() | Data::CapacityReserved);
+    if (d->needsDetach() || asize > capacity()) {
+        reallocData(qMax(uint(size()), uint(asize)) + 1u, d->detachFlags() | Data::CapacityReserved);
     } else {
-        d.d->flags |= Data::CapacityReserved;
+        d->flags() |= Data::CapacityReserved;
     }
 }
 
 inline void QByteArray::squeeze()
 {
-    if ((d.d->flags & Data::CapacityReserved) == 0)
+    if ((d->flags() & Data::CapacityReserved) == 0)
         return;
-    if (d.d->needsDetach() || size() < capacity()) {
-        reallocData(uint(size()) + 1u, d.d->detachFlags() & ~Data::CapacityReserved);
+    if (d->needsDetach() || size() < capacity()) {
+        reallocData(uint(size()) + 1u, d->detachFlags() & ~Data::CapacityReserved);
     } else {
-        d.d->flags &= uint(~Data::CapacityReserved);
+        d->flags() &= uint(~Data::CapacityReserved);
     }
 }
 

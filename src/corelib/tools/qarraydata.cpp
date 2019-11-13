@@ -185,6 +185,7 @@ static QArrayData *allocateData(size_t allocSize, uint options)
     if (header) {
         header->ref_.storeRelaxed(1);
         header->flags = options;
+        header->alloc = 0;
     }
     return header;
 }
