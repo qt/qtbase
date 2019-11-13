@@ -190,7 +190,12 @@ QPixmapIconEngine::~QPixmapIconEngine()
 
 void QPixmapIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
 {
-    QSize pixmapSize = rect.size() * qt_effective_device_pixel_ratio(0);
+    qreal dpr = 1.0;
+    if (QCoreApplication::testAttribute(Qt::AA_UseHighDpiPixmaps)) {
+      auto paintDevice = painter->device();
+      dpr = paintDevice ? paintDevice->devicePixelRatioF() : qApp->devicePixelRatio();
+    }
+    const QSize pixmapSize = rect.size() * dpr;
     QPixmap px = pixmap(pixmapSize, mode, state);
     painter->drawPixmap(rect, px);
 }
