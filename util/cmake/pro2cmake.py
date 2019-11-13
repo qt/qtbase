@@ -249,7 +249,7 @@ def is_benchmark_project(project_file_path: str = "") -> bool:
     # relative to the repo source dir, then it must be a benchmark
     return project_relative_path.startswith("tests/benchmarks")
 
-def is_manual_test(project_file_path: str = "") -> bool:
+def is_manual_test_project(project_file_path: str = "") -> bool:
     qmake_conf_path = find_qmake_conf(project_file_path)
     qmake_conf_dir_path = os.path.dirname(qmake_conf_path)
 
@@ -2817,7 +2817,7 @@ def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int
     assert binary_name
 
     is_benchmark = is_benchmark_project(scope.file_absolute_path)
-    is_manual_test = is_manual_test(scope.file_absolute_path)
+    is_manual_test = is_manual_test_project(scope.file_absolute_path)
 
     is_qt_test_helper = "qt_test_helper" in scope.get("_LOADED")
 
