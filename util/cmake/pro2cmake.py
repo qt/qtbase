@@ -1370,7 +1370,7 @@ def map_condition(condition: str) -> str:
         version = match_obj.group(3)
         return f"({variable} {operator} {version})"
 
-    pattern = r"(equals|greaterThan|lessThan)\((.+),[ ]*([0-9]+)\)"
+    pattern = r"(equals|greaterThan|lessThan)\(([^,]+?),[ ]*([0-9]+)\)"
     condition = re.sub(pattern, generic_version_handler, condition)
 
     # Handle if(...) conditions.
