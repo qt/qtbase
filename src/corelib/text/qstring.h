@@ -70,7 +70,6 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 
 QT_BEGIN_NAMESPACE
 
-class QCharRef;
 class QRegExp;
 class QRegularExpression;
 class QRegularExpressionMatch;
@@ -290,12 +289,12 @@ public:
 
     inline const QChar at(int i) const;
     const QChar operator[](int i) const;
-    Q_REQUIRED_RESULT QCharRef operator[](int i);
+    Q_REQUIRED_RESULT QChar &operator[](int i);
 
     Q_REQUIRED_RESULT inline QChar front() const { return at(0); }
-    Q_REQUIRED_RESULT inline QCharRef front();
+    Q_REQUIRED_RESULT inline QChar &front();
     Q_REQUIRED_RESULT inline QChar back() const { return at(size() - 1); }
-    Q_REQUIRED_RESULT inline QCharRef back();
+    Q_REQUIRED_RESULT inline QChar &back();
 
     Q_REQUIRED_RESULT QString arg(qlonglong a, int fieldwidth=0, int base=10,
                 QChar fillChar = QLatin1Char(' ')) const;
@@ -979,7 +978,6 @@ private:
     static qlonglong toIntegral_helper(const QChar *data, int len, bool *ok, int base);
     static qulonglong toIntegral_helper(const QChar *data, uint len, bool *ok, int base);
     void replace_helper(uint *indices, int nIndices, int blen, const QChar *after, int alen);
-    friend class QCharRef;
     friend class QTextCodec;
     friend class QStringRef;
     friend class QStringView;
@@ -1131,128 +1129,6 @@ inline QString QString::fromWCharArray(const wchar_t *string, int size)
                                             : fromUcs4(reinterpret_cast<const uint *>(string), size);
 }
 
-class
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-Q_CORE_EXPORT
-#endif
-QCharRef { // ### Qt 7: remove
-    QString &s;
-    int i;
-    inline QCharRef(QString &str, int idx)
-        : s(str),i(idx) {}
-    friend class QString;
-public:
-
-    // most QChar operations repeated here
-
-    // all this is not documented: We just say "like QChar" and let it be.
-    inline operator QChar() const
-    {
-        using namespace QtPrivate::DeprecatedRefClassBehavior;
-        if (Q_LIKELY(i < s.size()))
-            return QChar(s.constData()[i]);
-#ifdef QT_DEBUG
-        warn(WarningType::OutOfRange, EmittingClass::QCharRef);
-#endif
-        return QChar();
-    }
-    inline QCharRef &operator=(QChar c)
-    {
-        using namespace QtPrivate::DeprecatedRefClassBehavior;
-        if (Q_UNLIKELY(i >= s.size())) {
-#ifdef QT_DEBUG
-            warn(WarningType::OutOfRange, EmittingClass::QCharRef);
-#endif
-            s.resize(i + 1, QLatin1Char(' '));
-        } else {
-#ifdef QT_DEBUG
-            if (Q_UNLIKELY(!s.isDetached()))
-                warn(WarningType::DelayedDetach, EmittingClass::QCharRef);
-#endif
-            s.detach();
-        }
-        s.d.b[i] = c.unicode();
-        return *this;
-    }
-
-    // An operator= for each QChar cast constructors
-#ifndef QT_NO_CAST_FROM_ASCII
-    inline QT_ASCII_CAST_WARN QCharRef &operator=(char c)
-    { return operator=(QChar::fromLatin1(c)); }
-    inline QT_ASCII_CAST_WARN QCharRef &operator=(uchar c)
-    { return operator=(QChar::fromLatin1(c)); }
-#endif
-    inline QCharRef &operator=(const QCharRef &c) { return operator=(QChar(c)); }
-    inline QCharRef &operator=(ushort rc) { return operator=(QChar(rc)); }
-    inline QCharRef &operator=(short rc) { return operator=(QChar(rc)); }
-    inline QCharRef &operator=(uint rc) { return operator=(QChar(rc)); }
-    inline QCharRef &operator=(int rc) { return operator=(QChar(rc)); }
-
-    // each function...
-    inline bool isNull() const { return QChar(*this).isNull(); }
-    inline bool isPrint() const { return QChar(*this).isPrint(); }
-    inline bool isPunct() const { return QChar(*this).isPunct(); }
-    inline bool isSpace() const { return QChar(*this).isSpace(); }
-    inline bool isMark() const { return QChar(*this).isMark(); }
-    inline bool isLetter() const { return QChar(*this).isLetter(); }
-    inline bool isNumber() const { return QChar(*this).isNumber(); }
-    inline bool isLetterOrNumber() { return QChar(*this).isLetterOrNumber(); }
-    inline bool isDigit() const { return QChar(*this).isDigit(); }
-    inline bool isLower() const { return QChar(*this).isLower(); }
-    inline bool isUpper() const { return QChar(*this).isUpper(); }
-    inline bool isTitleCase() const { return QChar(*this).isTitleCase(); }
-
-    inline int digitValue() const { return QChar(*this).digitValue(); }
-    QChar toLower() const { return QChar(*this).toLower(); }
-    QChar toUpper() const { return QChar(*this).toUpper(); }
-    QChar toTitleCase () const { return QChar(*this).toTitleCase(); }
-
-    QChar::Category category() const { return QChar(*this).category(); }
-    QChar::Direction direction() const { return QChar(*this).direction(); }
-    QChar::JoiningType joiningType() const { return QChar(*this).joiningType(); }
-#if QT_DEPRECATED_SINCE(5, 3)
-    QT_DEPRECATED QChar::Joining joining() const
-    {
-        switch (QChar(*this).joiningType()) {
-        case QChar::Joining_Causing: return QChar::Center;
-        case QChar::Joining_Dual: return QChar::Dual;
-        case QChar::Joining_Right: return QChar::Right;
-        case QChar::Joining_None:
-        case QChar::Joining_Left:
-        case QChar::Joining_Transparent:
-        default: return QChar::OtherJoining;
-        }
-    }
-#endif
-    bool hasMirrored() const { return QChar(*this).hasMirrored(); }
-    QChar mirroredChar() const { return QChar(*this).mirroredChar(); }
-    QString decomposition() const { return QChar(*this).decomposition(); }
-    QChar::Decomposition decompositionTag() const { return QChar(*this).decompositionTag(); }
-    uchar combiningClass() const { return QChar(*this).combiningClass(); }
-
-    inline QChar::Script script() const { return QChar(*this).script(); }
-
-    QChar::UnicodeVersion unicodeVersion() const { return QChar(*this).unicodeVersion(); }
-
-    inline uchar cell() const { return QChar(*this).cell(); }
-    inline uchar row() const { return QChar(*this).row(); }
-    inline void setCell(uchar cell);
-    inline void setRow(uchar row);
-
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED  char toAscii() const { return QChar(*this).toLatin1(); }
-#endif
-    char toLatin1() const { return QChar(*this).toLatin1(); }
-    ushort unicode() const { return QChar(*this).unicode(); }
-    ushort& unicode() { return s.data()[i].unicode(); }
-
-};
-Q_DECLARE_TYPEINFO(QCharRef, Q_MOVABLE_TYPE);
-
-inline void QCharRef::setRow(uchar arow) { QChar(*this).setRow(arow); }
-inline void QCharRef::setCell(uchar acell) { QChar(*this).setCell(acell); }
-
-
 inline QString::QString() noexcept { d.d = Data::sharedNull(); d.b = Data::sharedNullData(); d.size = 0; }
 inline QString::~QString() { if (!d.d->deref()) Data::deallocate(d.d); }
 
@@ -1278,10 +1154,10 @@ inline void QString::squeeze()
 
 inline QString &QString::setUtf16(const ushort *autf16, int asize)
 { return setUnicode(reinterpret_cast<const QChar *>(autf16), asize); }
-inline QCharRef QString::operator[](int i)
-{ Q_ASSERT(i >= 0); detach(); return QCharRef(*this, i); }
-inline QCharRef QString::front() { return operator[](0); }
-inline QCharRef QString::back() { return operator[](size() - 1); }
+inline QChar &QString::operator[](int i)
+{ Q_ASSERT(i >= 0 && i < size()); return data()[i]; }
+inline QChar &QString::front() { return operator[](0); }
+inline QChar &QString::back() { return operator[](size() - 1); }
 inline QString::iterator QString::begin()
 { detach(); return reinterpret_cast<QChar*>(d.b); }
 inline QString::const_iterator QString::begin() const

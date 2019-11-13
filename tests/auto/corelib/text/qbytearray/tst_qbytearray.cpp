@@ -2003,7 +2003,7 @@ void tst_QByteArray::byteRefDetaching() const
 {
     {
         QByteArray str = "str";
-        QByteArray copy;
+        QByteArray copy = str;
         copy[0] = 'S';
 
         QCOMPARE(str, QByteArray("str"));

@@ -29,7 +29,7 @@
   \dontdocument (QMacAutoReleasePool QIncompatibleFlag QGenericAtomicOps QAtomicTraits
                  QAtomicOps QBasicAtomicInteger QBasicAtomicPointer QBasicMutex QInternal
                  QArgument QReturnArgument QArrayData QTypedArrayData QStaticByteArrayData
-                 QByteRef QStaticStringData QListSpecialMethods QListData QScopedPointerDeleter
+                 QStaticStringData QListSpecialMethods QListData QScopedPointerDeleter
                  QScopedPointerArrayDeleter QScopedPointerPodDeleter QScopedPointerObjectDeleteLater
                  QMetaTypeId2 QObjectData QObjectUserData QMapNodeBase QMapNode QMapDataBase
                  QMapData QHashData QHashNode QArrayDataPointer QTextStreamManipulator

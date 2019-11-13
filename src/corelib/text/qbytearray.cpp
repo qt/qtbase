@@ -1423,7 +1423,7 @@ QByteArray &QByteArray::operator=(const char *str)
     \sa operator[]()
 */
 
-/*! \fn QByteRef QByteArray::operator[](int i)
+/*! \fn char &QByteArray::operator[](int i)
 
     Returns the byte at index position \a i as a modifiable reference.
 
@@ -1433,21 +1433,6 @@ QByteArray &QByteArray::operator=(const char *str)
 
     Example:
     \snippet code/src_corelib_tools_qbytearray.cpp 9
-
-    The return value is of type QByteRef, a helper class for
-    QByteArray. When you get an object of type QByteRef, you can use
-    it as if it were a char &. If you assign to it, the assignment
-    will apply to the character in the QByteArray from which you got
-    the reference.
-
-    \note Before Qt 5.14 it was possible to use this operator to access
-    a character at an out-of-bounds position in the byte array, and
-    then assign to such a position, causing the byte array to be
-    automatically resized. Furthermore, assigning a value to the
-    returned QByteRef would cause a detach of the byte array, even if the
-    byte array has been copied in the meanwhile (and the QByteRef kept
-    alive while the copy was taken). These behaviors are deprecated,
-    and will be changed in a future version of Qt.
 
     \sa at()
 */
@@ -1490,7 +1475,7 @@ QByteArray &QByteArray::operator=(const char *str)
 */
 
 /*!
-    \fn QByteRef QByteArray::front()
+    \fn char &QByteArray::front()
     \since 5.10
 
     Returns a reference to the first character in the byte array.
@@ -1505,7 +1490,7 @@ QByteArray &QByteArray::operator=(const char *str)
 */
 
 /*!
-    \fn QByteRef QByteArray::back()
+    \fn char &QByteArray::back()
     \since 5.10
 
     Returns a reference to the last character in the byte array.
@@ -4903,42 +4888,5 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 
     \sa QStringLiteral
 */
-
-namespace QtPrivate {
-namespace DeprecatedRefClassBehavior {
-void warn(WarningType w, EmittingClass c)
-{
-    static const char deprecatedBehaviorString[] =
-            "The corresponding behavior is deprecated, and will be changed"
-             " in a future version of Qt.";
-
-    const char *emittingClassName = nullptr;
-    const char *containerClassName = nullptr;
-
-    switch (c) {
-    case EmittingClass::QByteRef:
-        emittingClassName = "QByteRef";
-        containerClassName = "QByteArray";
-        break;
-    case EmittingClass::QCharRef:
-        emittingClassName = "QCharRef";
-        containerClassName = "QString";
-        break;
-    }
-
-    switch (w) {
-    case WarningType::OutOfRange:
-        qWarning("Using %s with an index pointing outside the valid range of a %s. %s",
-                 emittingClassName, containerClassName, deprecatedBehaviorString);
-        break;
-    case WarningType::DelayedDetach:
-        qWarning("Using %s with on a %s that is not already detached. %s",
-                 emittingClassName, containerClassName, deprecatedBehaviorString);
-        break;
-    }
-}
-} // namespace DeprecatedRefClassBehavior
-} // namespace QtPrivate
-
 
 QT_END_NAMESPACE

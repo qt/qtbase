@@ -983,28 +983,6 @@ void tst_QString::acc_01()
     f[7]='F';
     QCOMPARE(text[7],'!');
 
-    a="";
-    a[0]='A';
-    QCOMPARE(a, QLatin1String("A"));
-    QCOMPARE(a.length(),1);
-    a[1]='B';
-    QCOMPARE(a, QLatin1String("AB"));
-    QCOMPARE(a.length(),2);
-    a[2]='C';
-    QCOMPARE(a, QLatin1String("ABC"));
-    QCOMPARE(a.length(),3);
-    a = QString();
-    QVERIFY(a.isNull());
-    a[0]='A';
-    QCOMPARE(a, QLatin1String("A"));
-    QCOMPARE(a.length(),1);
-    a[1]='B';
-    QCOMPARE(a, QLatin1String("AB"));
-    QCOMPARE(a.length(),2);
-    a[2]='C';
-    QCOMPARE(a, QLatin1String("ABC"));
-    QCOMPARE(a.length(),3);
-
     a="123";
     b="456";
     a[0]=a[1];
@@ -6415,7 +6393,7 @@ void tst_QString::QCharRefDetaching() const
 {
     {
         QString str = QString::fromLatin1("str");
-        QString copy;
+        QString copy = str;
         copy[0] = QLatin1Char('S');
 
         QCOMPARE(str, QString::fromLatin1("str"));

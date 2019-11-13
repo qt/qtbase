@@ -1360,28 +1360,6 @@ const QString::Null QString::null = { };
 */
 
 /*!
-    \class QCharRef
-    \inmodule QtCore
-    \reentrant
-    \brief The QCharRef class is a helper class for QString.
-
-    \internal
-
-    \ingroup string-processing
-
-    When you get an object of type QCharRef, if you can assign to it,
-    the assignment will apply to the character in the string from
-    which you got the reference. That is its whole purpose in life.
-    The QCharRef becomes invalid once modifications are made to the
-    string: if you want to keep the character, copy it into a QChar.
-
-    Most of the QChar member functions also exist in QCharRef.
-    However, they are not explicitly documented here.
-
-    \sa QString::operator[](), QString::at(), QChar
-*/
-
-/*!
     \class QString
     \inmodule QtCore
     \reentrant
@@ -5737,7 +5715,7 @@ QString QString::trimmed_helper(QString &str)
 */
 
 /*!
-    \fn QCharRef QString::operator[](int position)
+    \fn QChar &QString::operator[](int position)
 
     Returns the character at the specified \a position in the string as a
     modifiable reference.
@@ -5745,20 +5723,6 @@ QString QString::trimmed_helper(QString &str)
     Example:
 
     \snippet qstring/main.cpp 85
-
-    The return value is of type QCharRef, a helper class for QString.
-    When you get an object of type QCharRef, you can use it as if it
-    were a reference to a QChar. If you assign to it, the assignment will apply to
-    the character in the QString from which you got the reference.
-
-    \note Before Qt 5.14 it was possible to use this operator to access
-    a character at an out-of-bounds position in the string, and
-    then assign to such a position, causing the string to be
-    automatically resized. Furthermore, assigning a value to the
-    returned QCharRef would cause a detach of the string, even if the
-    string has been copied in the meanwhile (and the QCharRef kept
-    alive while the copy was taken). These behaviors are deprecated,
-    and will be changed in a future version of Qt.
 
     \sa at()
 */
@@ -5800,7 +5764,7 @@ QString QString::trimmed_helper(QString &str)
 */
 
 /*!
-    \fn QCharRef QString::front()
+    \fn QChar &QString::front()
     \since 5.10
 
     Returns a reference to the first character in the string.
@@ -5815,7 +5779,7 @@ QString QString::trimmed_helper(QString &str)
 */
 
 /*!
-    \fn QCharRef QString::back()
+    \fn QChar &QString::back()
     \since 5.10
 
     Returns a reference to the last character in the string.

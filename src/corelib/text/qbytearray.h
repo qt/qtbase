@@ -110,7 +110,6 @@ Q_CORE_EXPORT int qsnprintf(char *str, size_t n, const char *fmt, ...);
 Q_CORE_EXPORT quint16 qChecksum(const char *s, uint len,
                                 Qt::ChecksumType standard = Qt::ChecksumIso3309);
 
-class QByteRef;
 class QString;
 class QDataStream;
 
@@ -191,11 +190,11 @@ public:
 
     inline char at(int i) const;
     inline char operator[](int i) const;
-    Q_REQUIRED_RESULT inline QByteRef operator[](int i);
+    Q_REQUIRED_RESULT inline char &operator[](int i);
     Q_REQUIRED_RESULT char front() const { return at(0); }
-    Q_REQUIRED_RESULT inline QByteRef front();
+    Q_REQUIRED_RESULT inline char &front();
     Q_REQUIRED_RESULT char back() const { return at(size() - 1); }
-    Q_REQUIRED_RESULT inline QByteRef back();
+    Q_REQUIRED_RESULT inline char &back();
 
     int indexOf(char c, int from = 0) const;
     int indexOf(const char *c, int from = 0) const;
@@ -439,7 +438,6 @@ private:
     static QByteArray simplified_helper(const QByteArray &a);
     static QByteArray simplified_helper(QByteArray &a);
 
-    friend class QByteRef;
     friend class QString;
     friend Q_CORE_EXPORT QByteArray qUncompress(const uchar *data, int nbytes);
 public:
@@ -503,83 +501,10 @@ inline void QByteArray::squeeze()
     }
 }
 
-namespace QtPrivate {
-namespace DeprecatedRefClassBehavior {
-    enum class EmittingClass {
-        QByteRef,
-        QCharRef,
-    };
-
-    enum class WarningType {
-        OutOfRange,
-        DelayedDetach,
-    };
-
-    Q_CORE_EXPORT Q_DECL_COLD_FUNCTION void warn(WarningType w, EmittingClass c);
-} // namespace DeprecatedAssignmentOperatorBehavior
-} // namespace QtPrivate
-
-class
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-Q_CORE_EXPORT
-#endif
-QByteRef {  // ### Qt 7: remove
-    QByteArray &a;
-    int i;
-    inline QByteRef(QByteArray &array, int idx)
-        : a(array),i(idx) {}
-    friend class QByteArray;
-public:
-    inline operator char() const
-    {
-        using namespace QtPrivate::DeprecatedRefClassBehavior;
-        if (Q_LIKELY(i < a.size()))
-            return a.constData()[i];
-#ifdef QT_DEBUG
-        warn(WarningType::OutOfRange, EmittingClass::QByteRef);
-#endif
-        return char(0);
-    }
-    inline QByteRef &operator=(char c)
-    {
-        using namespace QtPrivate::DeprecatedRefClassBehavior;
-        if (Q_UNLIKELY(i >= a.size())) {
-#ifdef QT_DEBUG
-            warn(WarningType::OutOfRange, EmittingClass::QByteRef);
-#endif
-            a.expand(i);
-        } else {
-#ifdef QT_DEBUG
-            if (Q_UNLIKELY(!a.isDetached()))
-                warn(WarningType::DelayedDetach, EmittingClass::QByteRef);
-#endif
-            a.detach();
-        }
-        a.d.b[i] = c;
-        return *this;
-    }
-    inline QByteRef &operator=(const QByteRef &c)
-    {
-        return operator=(char(c));
-    }
-    inline bool operator==(char c) const
-    { return a.data()[i] == c; }
-    inline bool operator!=(char c) const
-    { return a.data()[i] != c; }
-    inline bool operator>(char c) const
-    { return a.data()[i] > c; }
-    inline bool operator>=(char c) const
-    { return a.data()[i] >= c; }
-    inline bool operator<(char c) const
-    { return a.data()[i] < c; }
-    inline bool operator<=(char c) const
-    { return a.data()[i] <= c; }
-};
-
-inline QByteRef QByteArray::operator[](int i)
-{ Q_ASSERT(i >= 0); detach(); return QByteRef(*this, i); }
-inline QByteRef QByteArray::front() { return operator[](0); }
-inline QByteRef QByteArray::back() { return operator[](size() - 1); }
+inline char &QByteArray::operator[](int i)
+{ Q_ASSERT(i >= 0 && i < size()); return data()[i]; }
+inline char &QByteArray::front() { return operator[](0); }
+inline char &QByteArray::back() { return operator[](size() - 1); }
 inline QByteArray::iterator QByteArray::begin()
 { return data(); }
 inline QByteArray::const_iterator QByteArray::begin() const
