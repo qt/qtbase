@@ -5148,7 +5148,7 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
 
     // Swap the d pointers.
     // Kids, avert your eyes. Don't try this at home.
-    QByteArrayData ba_d = {
+    QByteArray::DataPointer ba_d = {
         s.d.d,
         reinterpret_cast<char *>(s.d.b),
         length

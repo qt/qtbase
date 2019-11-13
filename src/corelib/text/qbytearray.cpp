@@ -746,7 +746,7 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         case Z_OK: {
             Q_ASSERT(len <= alloc);
             Q_UNUSED(alloc);
-            QByteArrayData dataPtr = { d.take(), pair.second, uint(len) };
+            QByteArray::DataPointer dataPtr = { d.take(), pair.second, uint(len) };
             pair.second[len] = '\0';
             return QByteArray(dataPtr);
         }
@@ -3101,7 +3101,7 @@ QByteArray QByteArray::mid(int pos, int len) const
     case QContainerImplHelper::Empty:
     {
         auto alloc = Data::allocate(0);
-        QByteArrayData empty = { alloc.first, alloc.second, 0 };
+        QByteArray::DataPointer empty = { alloc.first, alloc.second, 0 };
         return QByteArray(empty);
     }
     case QContainerImplHelper::Full:
@@ -4416,7 +4416,7 @@ QByteArray QByteArray::number(double n, char f, int prec)
 
 QByteArray QByteArray::fromRawData(const char *data, int size)
 {
-    QByteArrayData x;
+    QByteArray::DataPointer x;
     if (!data) {
         x.d = Data::sharedNull();
         x.b = Data::sharedNullData();

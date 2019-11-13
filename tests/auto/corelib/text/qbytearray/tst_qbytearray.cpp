@@ -150,12 +150,12 @@ private slots:
 };
 
 static const QArrayData staticDataFlags = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 };
-static const QByteArrayData staticStandard = {
+static const QByteArray::DataPointer staticStandard = {
     static_cast<QTypedArrayData<char> *>(const_cast<QArrayData *>(&staticDataFlags)),
     const_cast<char *>("data"),
     4
 };
-static const QByteArrayData staticNotNullTerminated = {
+static const QByteArray::DataPointer staticNotNullTerminated = {
     static_cast<QTypedArrayData<char> *>(const_cast<QArrayData *>(&staticDataFlags)),
     const_cast<char *>("dataBAD"),
     4
@@ -167,7 +167,7 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
 {
     // This test does some evil stuff, it's all supposed to work.
 
-    QByteArray::DataPtr baDataPtr = const_cast<QByteArray &>(ba).data_ptr();
+    QByteArray::DataPointer baDataPtr = const_cast<QByteArray &>(ba).data_ptr();
 
     // Skip if isStatic() or fromRawData(), as those offer no guarantees
     if (baDataPtr.d->isStatic() || baDataPtr.d->flags & QArrayData::RawDataType)

@@ -136,10 +136,14 @@ struct QByteArrayData
 
 class Q_CORE_EXPORT QByteArray
 {
+public:
+    using DataPointer = QByteArrayData;
 private:
     typedef QTypedArrayData<char> Data;
 
+    DataPointer d;
 public:
+
     enum Base64Option {
         Base64Encoding = 0,
         Base64UrlEncoding = 1,
@@ -417,14 +421,14 @@ public:
     int length() const { return int(d.size); }
     bool isNull() const;
 
-    explicit inline QByteArray(const QByteArrayData &dd)
+    inline DataPointer &data_ptr() { return d; }
+    explicit inline QByteArray(const DataPointer &dd)
         : d(dd)
     {
     }
 
 private:
     operator QNoImplicitBoolCast() const;
-    QByteArrayData d;
     void reallocData(uint alloc, Data::ArrayOptions options);
     void expand(int i);
     QByteArray nulTerminated() const;
@@ -440,9 +444,6 @@ private:
 
     friend class QString;
     friend Q_CORE_EXPORT QByteArray qUncompress(const uchar *data, int nbytes);
-public:
-    typedef QByteArrayData DataPtr;
-    inline DataPtr &data_ptr() { return d; }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QByteArray::Base64Options)
