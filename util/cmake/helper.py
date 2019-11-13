@@ -349,7 +349,10 @@ _qt_library_map = [
         "quickparticles", "Qt6", "Qt::QuickParticles", extra=["COMPONENTS", "QuickParticles"]
     ),
     LibraryMapping(
-        "linuxofono_support", "Qt6", "Qt::LinuxOfonoSupport", extra=["COMPONENTS", "LinuxOfonoSupport"]
+        "linuxofono_support",
+        "Qt6",
+        "Qt::LinuxOfonoSupport",
+        extra=["COMPONENTS", "LinuxOfonoSupport"],
     )
     # qtzlib: No longer supported.
 ]
