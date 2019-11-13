@@ -37,9 +37,11 @@ import argparse
 from argparse import ArgumentParser
 
 
-def parse_command_line():
+def parse_command_line() -> argparse.Namespace:
     parser = ArgumentParser(
-        description="Run pro2cmake on all .pro files recursively in given path."
+        description="Run pro2cmake on all .pro files recursively in given path. "
+        "You can pass additional arguments to the pro2cmake calls by appending "
+        "-- --foo --bar"
     )
     parser.add_argument(
         "--only-existing",
@@ -75,7 +77,16 @@ def parse_command_line():
         "path", metavar="<path>", type=str, help="The path where to look for .pro files."
     )
 
-    return parser.parse_args()
+    args, unknown = parser.parse_known_args()
+
+    # Error out when the unknown arguments do not start with a "--",
+    # which implies passing through arguments to pro2cmake.
+    if len(unknown) > 0 and unknown[0] != "--":
+        parser.error("unrecognized arguments: {}".format(" ".join(unknown)))
+    else:
+        args.pro2cmake_args = unknown[1:]
+
+    return args
 
 
 def find_all_pro_files(base_path: str, args: argparse.Namespace):
@@ -171,6 +182,10 @@ def run(all_files: typing.List[str], pro2cmake: str, args: argparse.Namespace) -
             if args.skip_subdirs_projects:
                 pro2cmake_args.append("--skip-subdirs-project")
             pro2cmake_args.append(os.path.basename(filename))
+
+            if args.pro2cmake_args:
+                pro2cmake_args += args.pro2cmake_args
+
             result = subprocess.run(
                 pro2cmake_args,
                 cwd=os.path.dirname(filename),
