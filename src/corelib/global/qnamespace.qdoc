@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -724,9 +724,17 @@
     \value LocalDate \e{This enum value is deprecated.} Use Qt::SystemLocaleShortDate
     instead (or Qt::SystemLocaleLongDate if you want long dates).
 
-    \value RFC2822Date \l{RFC 2822}, \l{RFC 850} and \l{RFC 1036} format: either
-    \c{[ddd,] dd MMM yyyy hh:mm[:ss] +/-TZ} or \c{ddd MMM dd yyyy hh:mm[:ss] +/-TZ}
-    for combined dates and times.
+    \value RFC2822Date \l{RFC 2822}, \l{RFC 850} and \l{RFC 1036} format:
+    either \c{[ddd,] dd MMM yyyy [hh:mm[:ss]][ ±tzoff]}
+    or \c{ddd MMM dd[ hh:mm:ss] yyyy[ ±tzoff]} are recognized for combined dates
+    and times, where \c{tzoff} is a timezone offset in \c{hhmm} format. For
+    dates and times separately, the same formats are matched and the unwanted
+    parts are ignored. In particular, note that a time is not recognized without
+    an accompanying date. When converting dates to string form,
+    format \c{dd MMM yyyy} is used, for times the format is \c{hh:mm:ss}. For
+    combined date and time, these are combined
+    as \c{dd MMM yyyy hh:mm:ss ±tzoff} (omitting the optional leading day of the
+    week from the first format recognized).
 
     \note For \c ISODate formats, each \c Y, \c M and \c D represents a single digit
     of the year, month and day used to specify the date. Each \c H, \c M and \c S

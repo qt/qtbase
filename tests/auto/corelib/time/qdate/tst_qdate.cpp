@@ -1165,7 +1165,7 @@ void tst_QDate::fromStringDateFormat_data()
     QTest::newRow("RFC 2822 invalid character 2 at front") << QString::fromLatin1("!!01 Jan 2012 08:00:00 +0000")
         << Qt::RFC2822Date << QDate();
 
-    // Test Qt::RFC2822Date format (RFC 850 and 1036).
+    // Test Qt::RFC2822Date format (RFC 850 and 1036, permissive).
     QTest::newRow("RFC 850 and 1036") << QString::fromLatin1("Fri Feb 13 13:24:51 1987 +0100")
         << Qt::RFC2822Date << QDate(1987, 2, 13);
     // No timezone
