@@ -415,7 +415,7 @@ endfunction()
 # at CMake configuration step, and use it as an input to a custom command that replaces the
 # cmake_install.cmake file with an empty one. This means we will always replace the file on
 # every reconfiguration, but not when doing null builds.
-function(remove_install_target)
+function(qt_remove_install_target)
     set(file_in "${CMAKE_BINARY_DIR}/.remove_cmake_install_in.txt")
     set(file_generated "${CMAKE_BINARY_DIR}/.remove_cmake_install_generated.txt")
     set(cmake_install_file "${CMAKE_BINARY_DIR}/cmake_install.cmake")
@@ -433,7 +433,7 @@ endfunction()
 
 function(qt_set_up_nonprefix_build)
     if(NOT QT_WILL_INSTALL)
-        remove_install_target()
+        qt_remove_install_target()
     endif()
 endfunction()
 
@@ -1001,7 +1001,7 @@ endfunction()
 
 # This function can be used to add sources/libraries/etc. to the specified CMake target
 # if the provided CONDITION evaluates to true.
-function(extend_target target)
+function(qt_extend_target target)
     # Don't try to extend_target when cross compiling an imported host target (like a tool).
     qt_is_imported_target("${target}" is_imported)
     if(is_imported)
@@ -1011,7 +1011,7 @@ function(extend_target target)
     if (NOT TARGET "${target}")
         message(FATAL_ERROR "Trying to extend non-existing target \"${target}\".")
     endif()
-    qt_parse_all_arguments(arg "extend_target" "HEADER_MODULE" "PRECOMPILED_HEADER"
+    qt_parse_all_arguments(arg "qt_extend_target" "HEADER_MODULE" "PRECOMPILED_HEADER"
         "CONDITION;${__default_public_args};${__default_private_args};COMPILE_FLAGS;NO_PCH_SOURCES" ${ARGN})
     if ("x${arg_CONDITION}" STREQUAL x)
         set(arg_CONDITION ON)
@@ -1020,7 +1020,7 @@ function(extend_target target)
     qt_evaluate_config_expression(result ${arg_CONDITION})
     if (${result})
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
-            message("extend_target(${target} CONDITION ${arg_CONDITION} ...): Evaluated")
+            message("qt_extend_target(${target} CONDITION ${arg_CONDITION} ...): Evaluated")
         endif()
         set(dbus_sources "")
         foreach(adaptor ${arg_DBUS_ADAPTOR_SOURCES})
@@ -1136,7 +1136,7 @@ function(extend_target target)
 
     else()
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
-            message("extend_target(${target} CONDITION ${arg_CONDITION} ...): Skipped")
+            message("qt_extend_target(${target} CONDITION ${arg_CONDITION} ...): Skipped")
         endif()
     endif()
 endfunction()
@@ -1327,11 +1327,11 @@ endfunction()
 # this module are imported into the scope of the calling feature.
 #
 # Target is without leading "Qt". So e.g. the "QtCore" module has the target "Core".
-function(add_qt_module target)
+function(qt_add_module target)
     qt_internal_module_info(module "${target}")
 
     # Process arguments:
-    qt_parse_all_arguments(arg "add_qt_module"
+    qt_parse_all_arguments(arg "qt_add_module"
         "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE"
         "CONFIG_MODULE_NAME;PRECOMPILED_HEADER"
         "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
@@ -1463,7 +1463,7 @@ function(add_qt_module target)
         set(header_module "HEADER_MODULE")
     endif()
 
-    extend_target("${target}"
+    qt_extend_target("${target}"
         ${header_module}
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
@@ -1743,7 +1743,7 @@ endfunction()
 function(qt_internal_check_directory_or_type name dir type default result_var)
     if ("x${dir}" STREQUAL x)
         if("x${type}" STREQUAL x)
-            message(FATAL_ERROR "add_qt_plugin called without setting either TYPE or ${name}.")
+            message(FATAL_ERROR "qt_add_plugin called without setting either TYPE or ${name}.")
         endif()
         set(${result_var} "${default}" PARENT_SCOPE)
     else()
@@ -1779,29 +1779,29 @@ function(qt_get_module_for_plugin target target_type)
 endfunction()
 
 
-# Collection of add_qt_plugin arguments so they can be shared across different
+# Collection of qt_add_plugin arguments so they can be shared across different
 # plugin type wrappers
-set(__add_qt_plugin_optional_args
+set(__qt_add_plugin_optional_args
     "STATIC;EXCEPTIONS;ALLOW_UNDEFINED_SYMBOLS"
 )
-set(__add_qt_plugin_single_args
+set(__qt_add_plugin_single_args
     "TYPE;CLASS_NAME;OUTPUT_DIRECTORY;INSTALL_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;QML_TARGET_PATH"
 )
-set(__add_qt_plugin_multi_args
+set(__qt_add_plugin_multi_args
     "${__default_private_args};${__default_public_args};DEFAULT_IF"
 )
 # This is the main entry point for defining Qt plugins.
 # A CMake target is created with the given target. The TYPE parameter is needed to place the
 # plugin into the correct plugins/ sub-directory.
-function(add_qt_plugin target)
+function(qt_add_plugin target)
     qt_internal_module_info(module "${target}")
 
     qt_internal_set_qt_known_plugins("${QT_KNOWN_PLUGINS}" "${target}")
 
-    qt_parse_all_arguments(arg "add_qt_plugin"
-        "${__add_qt_plugin_optional_args};SKIP_INSTALL"
-        "${__add_qt_plugin_single_args}"
-        "${__add_qt_plugin_multi_args}"
+    qt_parse_all_arguments(arg "qt_add_plugin"
+        "${__qt_add_plugin_optional_args};SKIP_INSTALL"
+        "${__qt_add_plugin_single_args}"
+        "${__qt_add_plugin_multi_args}"
         "${ARGN}"
     )
 
@@ -1817,7 +1817,7 @@ function(add_qt_plugin target)
     endif()
 
     if ("x${arg_CLASS_NAME}" STREQUAL "x" AND NOT "${arg_TYPE}" STREQUAL "qml_plugin")
-        message(AUTHOR_WARNING "add_qt_plugin called without setting CLASS_NAME.")
+        message(AUTHOR_WARNING "qt_add_plugin called without setting CLASS_NAME.")
     endif()
 
     qt_internal_check_directory_or_type(OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}" "${arg_TYPE}"
@@ -1899,7 +1899,7 @@ function(add_qt_plugin target)
         ${arg_PUBLIC_INCLUDE_DIRECTORIES}
     )
 
-    extend_target("${target}"
+    qt_extend_target("${target}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${private_includes}
@@ -1976,7 +1976,7 @@ function(add_qt_plugin target)
         )
 
         # Make the export name of plugins be consistent with modules, so that
-        # add_qt_resource adds its additional targets to the same export set in a static Qt build.
+        # qt_add_resource adds its additional targets to the same export set in a static Qt build.
         set(export_name "${INSTALL_CMAKE_NAMESPACE}${target}Targets")
         qt_install(TARGETS "${target}"
                    EXPORT ${export_name}
@@ -2094,7 +2094,7 @@ function(qt_install_qml_files target)
 endfunction()
 
 
-function(add_qt_resource target resourceName)
+function(qt_add_resource target resourceName)
     # Don't try to add resources when cross compiling, and the target is actually a host target
     # (like a tool).
     qt_is_imported_target("${target}" is_imported)
@@ -2102,7 +2102,7 @@ function(add_qt_resource target resourceName)
         return()
     endif()
 
-    qt_parse_all_arguments(arg "add_qt_resource" "" "PREFIX;LANG;BASE" "FILES" ${ARGN})
+    qt_parse_all_arguments(arg "qt_add_resource" "" "PREFIX;LANG;BASE" "FILES" ${ARGN})
 
     QT6_PROCESS_RESOURCE(${target} ${resourceName}
         PREFIX "${arg_PREFIX}"
@@ -2138,7 +2138,7 @@ endfunction()
 #  SKIP_TYPE_REGISTRATION: All qml files are expected to be registered by the
 #  c++ plugin code.
 #
-function(add_qml_module target)
+function(qt_add_qml_module target)
 
     set(qml_module_optional_args
         DESIGNER_SUPPORTED
@@ -2160,19 +2160,19 @@ function(add_qml_module target)
         DEPENDENCIES
     )
 
-    qt_parse_all_arguments(arg "add_qml_module"
-        "${__add_qt_plugin_optional_args};${qml_module_optional_args}"
-        "${__add_qt_plugin_single_args};${qml_module_single_args}"
-        "${__add_qt_plugin_multi_args};${qml_module_multi_args}" ${ARGN})
+    qt_parse_all_arguments(arg "qt_add_qml_module"
+        "${__qt_add_plugin_optional_args};${qml_module_optional_args}"
+        "${__qt_add_plugin_single_args};${qml_module_single_args}"
+        "${__qt_add_plugin_multi_args};${qml_module_multi_args}" ${ARGN})
 
     if (NOT arg_URI)
-        message(FATAL_ERROR "add_qml_module called without specifying the module's uri. Please specify one using the URI parameter.")
+        message(FATAL_ERROR "qt_add_qml_module called without specifying the module's uri. Please specify one using the URI parameter.")
     endif()
 
     set(target_path ${arg_TARGET_PATH})
 
     if (NOT arg_VERSION)
-        message(FATAL_ERROR "add_qml_module called without specifying the module's import version. Please specify one using the VERSION parameter.")
+        message(FATAL_ERROR "qt_add_qml_module called without specifying the module's import version. Please specify one using the VERSION parameter.")
     endif()
 
     if (NOT arg_TARGET_PATH)
@@ -2185,10 +2185,10 @@ function(add_qml_module target)
             ${qml_module_multi_args}
             ${qml_module_single_args}
         ALL_ARGS
-            ${__add_qt_plugin_optional_args}
-            ${__add_qt_plugin_single_args}
+            ${__qt_add_plugin_optional_args}
+            ${__qt_add_plugin_single_args}
             ${qml_module_single_args}
-            ${__add_qt_plugin_multi_args}
+            ${__qt_add_plugin_multi_args}
             ${qml_module_multi_args}
         ARGS
             ${ARGV}
@@ -2197,7 +2197,7 @@ function(add_qml_module target)
     # If we have no sources, but qml files, create a custom target so the
     # qml file will be visibile in an IDE.
     if (arg_SOURCES)
-        add_qt_plugin(${target}
+        qt_add_plugin(${target}
             TYPE
                 qml_plugin
             QML_TARGET_PATH
@@ -2277,26 +2277,26 @@ function(add_qml_module target)
 
 endfunction()
 
-# Collection of add_qt_executable arguments so they can be shared across add_qt_executable
-# and add_qt_test_helper.
-set(__add_qt_executable_optional_args
+# Collection of qt_add_executable arguments so they can be shared across qt_add_executable
+# and qt_add_test_helper.
+set(__qt_add_executable_optional_args
     "GUI;BOOTSTRAP;NO_QT;NO_INSTALL;EXCEPTIONS"
 )
-set(__add_qt_executable_single_args
+set(__qt_add_executable_single_args
     "OUTPUT_DIRECTORY;INSTALL_DIRECTORY"
 )
-set(__add_qt_executable_multi_args
+set(__qt_add_executable_multi_args
     "EXE_FLAGS;${__default_private_args};${__default_public_args}"
 )
 
 # This function creates a CMake target for a generic console or GUI binary.
 # Please consider to use a more specific version target like the one created
-# by add_qt_test or add_qt_tool below.
-function(add_qt_executable name)
-    qt_parse_all_arguments(arg "add_qt_executable"
-        "${__add_qt_executable_optional_args}"
-        "${__add_qt_executable_single_args}"
-        "${__add_qt_executable_multi_args}"
+# by qt_add_test or qt_add_tool below.
+function(qt_add_executable name)
+    qt_parse_all_arguments(arg "qt_add_executable"
+        "${__qt_add_executable_optional_args}"
+        "${__qt_add_executable_single_args}"
+        "${__qt_add_executable_multi_args}"
         ${ARGN})
 
     if ("x${arg_OUTPUT_DIRECTORY}" STREQUAL "x")
@@ -2339,7 +2339,7 @@ function(add_qt_executable name)
          ${arg_INCLUDE_DIRECTORIES}
     )
 
-    extend_target("${name}"
+    qt_extend_target("${name}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES ${private_includes}
         DEFINES ${arg_DEFINES}
@@ -2374,15 +2374,15 @@ function(add_qt_executable name)
     endif()
 endfunction()
 
-# Simple wrapper around add_qt_executable for benchmarks which insure that
+# Simple wrapper around qt_add_executable for benchmarks which insure that
 # the binary is built under ${CMAKE_CURRENT_BINARY_DIR} and never installed.
-# See add_qt_executable() for more details.
-function(add_qt_benchmark target)
+# See qt_add_executable() for more details.
+function(qt_add_benchmark target)
 
-    qt_parse_all_arguments(arg "add_qt_benchmark"
-        "${__add_qt_executable_optional_args}"
-        "${__add_qt_executable_single_args}"
-        "${__add_qt_executable_multi_args}"
+    qt_parse_all_arguments(arg "qt_add_benchmark"
+        "${__qt_add_executable_optional_args}"
+        "${__qt_add_executable_single_args}"
+        "${__qt_add_executable_multi_args}"
         ${ARGN}
     )
 
@@ -2392,14 +2392,14 @@ function(add_qt_benchmark target)
             OUTPUT_DIRECTORY
             INSTALL_DIRECTORY
         ALL_ARGS
-            "${__add_qt_executable_optional_args}"
-            "${__add_qt_executable_single_args}"
-            "${__add_qt_executable_multi_args}"
+            "${__qt_add_executable_optional_args}"
+            "${__qt_add_executable_single_args}"
+            "${__qt_add_executable_multi_args}"
         ARGS
             ${ARGV}
     )
 
-    add_qt_executable(${target}
+    qt_add_executable(${target}
         NO_INSTALL # we don't install benchmarks
         OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" # avoid polluting bin directory
         ${exec_args}
@@ -2407,15 +2407,15 @@ function(add_qt_benchmark target)
 
 endfunction()
 
-# Simple wrapper around add_qt_executable for manual tests which insure that
+# Simple wrapper around qt_add_executable for manual tests which insure that
 # the binary is built under ${CMAKE_CURRENT_BINARY_DIR} and never installed.
-# See add_qt_executable() for more details.
-function(add_qt_manual_test target)
+# See qt_add_executable() for more details.
+function(qt_add_manual_test target)
 
-    qt_parse_all_arguments(arg "add_qt_benchmark"
-        "${__add_qt_executable_optional_args}"
-        "${__add_qt_executable_single_args}"
-        "${__add_qt_executable_multi_args}"
+    qt_parse_all_arguments(arg "qt_add_manual_test"
+        "${__qt_add_executable_optional_args}"
+        "${__qt_add_executable_single_args}"
+        "${__qt_add_executable_multi_args}"
         ${ARGN}
     )
 
@@ -2425,14 +2425,14 @@ function(add_qt_manual_test target)
             OUTPUT_DIRECTORY
             INSTALL_DIRECTORY
         ALL_ARGS
-            "${__add_qt_executable_optional_args}"
-            "${__add_qt_executable_single_args}"
-            "${__add_qt_executable_multi_args}"
+            "${__qt_add_executable_optional_args}"
+            "${__qt_add_executable_single_args}"
+            "${__qt_add_executable_multi_args}"
         ARGS
             ${ARGV}
     )
 
-    add_qt_executable(${target}
+    qt_add_executable(${target}
         NO_INSTALL # we don't install benchmarks
         OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}" # avoid polluting bin directory
         ${exec_args}
@@ -2442,8 +2442,8 @@ endfunction()
 
 
 # This function creates a CMake test target with the specified name for use with CTest.
-function(add_qt_test name)
-    qt_parse_all_arguments(arg "add_qt_test"
+function(qt_add_test name)
+    qt_parse_all_arguments(arg "qt_add_test"
         "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST"
         "OUTPUT_DIRECTORY" "QML_IMPORTPATH;TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN})
 
@@ -2468,7 +2468,7 @@ function(add_qt_test name)
              ${arg_INCLUDE_DIRECTORIES}
         )
 
-        add_qt_executable("${name}"
+        qt_add_executable("${name}"
             ${exceptions_text}
             ${gui_text}
             NO_INSTALL
@@ -2499,16 +2499,16 @@ function(add_qt_test name)
 
         # QMLTest specifics
 
-        extend_target("${name}" CONDITION arg_QMLTEST
+        qt_extend_target("${name}" CONDITION arg_QMLTEST
             PUBLIC_LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::QuickTest
         )
 
-        extend_target("${name}" CONDITION arg_QMLTEST AND NOT ANDROID
+        qt_extend_target("${name}" CONDITION arg_QMLTEST AND NOT ANDROID
             DEFINES
                 QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         )
 
-        extend_target("${name}" CONDITION arg_QMLTEST AND ANDROID
+        qt_extend_target("${name}" CONDITION arg_QMLTEST AND ANDROID
             DEFINES
                 QUICK_TEST_SOURCE_DIR=":/"
         )
@@ -2579,7 +2579,7 @@ function(add_qt_test name)
             endforeach()
 
             if (builtin_files)
-                add_qt_resource(${name} "${name}_testdata_builtin"
+                qt_add_resource(${name} "${name}_testdata_builtin"
                     PREFIX "/"
                     FILES ${builtin_files}
                     BASE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -2613,27 +2613,27 @@ endfunction()
 # tests launch separate programs to test certain input/output behavior.
 # Specify OVERRIDE_OUTPUT_DIRECTORY if you dont' want to place the helper in the parent directory,
 # in which case you should specify OUTPUT_DIRECTORY "/foo/bar" manually.
-function(add_qt_test_helper name)
+function(qt_add_test_helper name)
 
-    set(add_qt_test_helper_optional_args
+    set(qt_add_test_helper_optional_args
         "OVERRIDE_OUTPUT_DIRECTORY"
     )
 
-    qt_parse_all_arguments(arg "add_qt_test_helper"
-        "${add_qt_test_helper_optional_args};${__add_qt_executable_optional_args}"
-        "${__add_qt_executable_single_args}"
-        "${__add_qt_executable_multi_args}"
+    qt_parse_all_arguments(arg "qt_add_test_helper"
+        "${qt_add_test_helper_optional_args};${__qt_add_executable_optional_args}"
+        "${__qt_add_executable_single_args}"
+        "${__qt_add_executable_multi_args}"
          ${ARGN})
 
     qt_remove_args(forward_args
         ARGS_TO_REMOVE
             "${name}"
-            ${add_qt_test_helper_optional_args}
+            ${qt_add_test_helper_optional_args}
         ALL_ARGS
-            ${add_qt_test_helper_optional_args}
-            ${__add_qt_executable_optional_args}
-            ${__add_qt_executable_single_args}
-            ${__add_qt_executable_multi_args}
+            ${qt_add_test_helper_optional_args}
+            ${__qt_add_executable_optional_args}
+            ${__qt_add_executable_single_args}
+            ${__qt_add_executable_multi_args}
         ARGS
             ${ARGV}
     )
@@ -2643,7 +2643,7 @@ function(add_qt_test_helper name)
         set(extra_args_to_pass OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/..")
     endif()
 
-    add_qt_executable("${name}" NO_INSTALL ${extra_args_to_pass} ${forward_args})
+    qt_add_executable("${name}" NO_INSTALL ${extra_args_to_pass} ${forward_args})
 endfunction()
 
 # Sets QT_WILL_BUILD_TOOLS if tools will be built.
@@ -2658,9 +2658,9 @@ endfunction()
 
 # Wrapper function to create a regular cmake target and forward all the
 # arguments collected by the conversion script. This is only meant for tests!
-function(add_cmake_library target)
+function(qt_add_cmake_library target)
     # Process arguments:
-    qt_parse_all_arguments(arg "add_cmake_library"
+    qt_parse_all_arguments(arg "qt_add_cmake_library"
         "SHARED;MODULE;STATIC;INTERFACE"
         "OUTPUT_DIRECTORY;ARCHIVE_INSTALL_DIRECTORY;INSTALL_DIRECTORY"
         "${__default_private_args};${__default_public_args}"
@@ -2706,7 +2706,7 @@ function(add_cmake_library target)
         )
     endif()
 
-    extend_target("${target}"
+    qt_extend_target("${target}"
         SOURCES ${arg_SOURCES}
         INCLUDE_DIRECTORIES
             ${arg_INCLUDE_DIRECTORIES}
@@ -2733,8 +2733,8 @@ endfunction()
 # This function is used to define a "Qt tool", such as moc, uic or rcc.
 # The BOOTSTRAP option allows building it as standalone program, otherwise
 # it will be linked against QtCore.
-function(add_qt_tool name)
-    qt_parse_all_arguments(arg "add_qt_tool" "BOOTSTRAP;NO_QT;NO_INSTALL" "TOOLS_TARGET"
+function(qt_add_tool name)
+    qt_parse_all_arguments(arg "qt_add_tool" "BOOTSTRAP;NO_QT;NO_INSTALL" "TOOLS_TARGET"
                                "${__default_private_args}" ${ARGN})
 
     # Handle case when a tool does not belong to a module and it can't be built either (like
@@ -2831,7 +2831,7 @@ function(add_qt_tool name)
         set(no_install NO_INSTALL)
     endif()
 
-    add_qt_executable("${name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+    qt_add_executable("${name}" OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
         ${bootstrap}
         ${no_qt}
         ${no_install}
@@ -2876,11 +2876,11 @@ endfunction()
 # Handle files that need special SIMD-related flags.
 # This creates an object library and makes target link
 # to it (privately).
-function(add_qt_simd_part target)
-    qt_parse_all_arguments(arg "add_qt_simd_part" "" ""
+function(qt_add_simd_part target)
+    qt_parse_all_arguments(arg "qt_add_simd_part" "" ""
        "NAME;SIMD;${__default_private_args};COMPILE_FLAGS" ${ARGN})
     if ("x${arg_SIMD}" STREQUAL x)
-        message(FATAL_ERROR "add_qt_simd_part needs a SIMD type to be set.")
+        message(FATAL_ERROR "qt_add_simd_part needs a SIMD type to be set.")
     endif()
 
     set(condition "QT_FEATURE_${arg_SIMD}")
@@ -2900,7 +2900,7 @@ function(add_qt_simd_part target)
     qt_evaluate_config_expression(result ${condition})
     if(${result})
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
-            message("add_qt_simd_part(${target} SIMD ${arg_SIMD} ...): Evaluated")
+            message("qt_add_simd_part(${target} SIMD ${arg_SIMD} ...): Evaluated")
         endif()
         string(TOUPPER "QT_CFLAGS_${arg_SIMD}" simd_flags)
 
@@ -2928,7 +2928,7 @@ function(add_qt_simd_part target)
         endif()
     else()
         if(QT_CMAKE_DEBUG_EXTEND_TARGET)
-            message("add_qt_simd_part(${target} SIMD ${arg_SIMD} ...): Skipped")
+            message("qt_add_simd_part(${target} SIMD ${arg_SIMD} ...): Skipped")
         endif()
     endif()
 endfunction()
@@ -3057,13 +3057,13 @@ function(qt_compute_injection_forwarding_header target)
 endfunction()
 
 
-function(add_qt_docs)
+function(qt_add_docs)
     if(${ARGC} EQUAL 1)
         # Function called from old generated CMakeLists.txt that was missing the target parameter
         return()
     endif()
     if(NOT ${ARGC} EQUAL 2)
-        message(FATAL_ERROR "add_qt_docs called with the wrong number of arguments. Should be add_qt_docs(target path_to_project.qdocconf).")
+        message(FATAL_ERROR "qt_add_docs called with the wrong number of arguments. Should be qt_add_docs(target path_to_project.qdocconf).")
         return()
     endif()
     set(target ${ARGV0})
@@ -3456,4 +3456,61 @@ function(qt_set_language_standards)
     elseif (c_std_99 IN_LIST CMAKE_C_COMPILE_FEATURES)
         set(CMAKE_C_STANDARD 99 PARENT_SCOPE)
     endif()
+endfunction()
+
+# Compatibility macros that should be removed once all their usages are removed.
+function(extend_target)
+    qt_extend_target(${ARGV})
+endfunction()
+
+function(add_qt_module)
+    qt_add_module(${ARGV})
+endfunction()
+
+function(add_qt_plugin)
+    qt_add_plugin(${ARGV})
+endfunction()
+
+function(add_qt_tool)
+    qt_add_tool(${ARGV})
+endfunction()
+
+function(add_qt_test)
+    qt_add_test(${ARGV})
+endfunction()
+
+function(add_qt_test_helper)
+    qt_add_test_helper(${ARGV})
+endfunction()
+
+function(add_qt_manual_test)
+    qt_add_manual_test(${ARGV})
+endfunction()
+
+function(add_qt_benchmark)
+    qt_add_benchmark(${ARGV})
+endfunction()
+
+function(add_qt_executable)
+    qt_add_executable(${ARGV})
+endfunction()
+
+function(add_qt_simd_part)
+    qt_add_simd_part(${ARGV})
+endfunction()
+
+function(add_qt_docs)
+    qt_add_docs(${ARGV})
+endfunction()
+
+function(add_qt_resource)
+    qt_add_resource(${ARGV})
+endfunction()
+
+function(add_qml_module)
+    qt_add_qml_module(${ARGV})
+endfunction()
+
+function(add_cmake_library)
+    qt_add_cmake_library(${ARGV})
 endfunction()

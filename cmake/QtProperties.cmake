@@ -93,7 +93,7 @@ define_property(TARGET
     BRIEF_DOCS
         "Specifies the default Qt resource prefix."
     FULL_DOCS
-        "When using add_qt_resource() without a PREFIX, then prefix of this target property
+        "When using qt_add_resource() without a PREFIX, then prefix of this target property
         will be used."
 )
 

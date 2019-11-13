@@ -115,7 +115,7 @@ if(ANDROID)
     include(QtPlatformAndroid)
 endif()
 
-## add_qt_module and co.:
+## qt_add_module and co.:
 include(QtBuild)
 
 ## Qt Feature support:

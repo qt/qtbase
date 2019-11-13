@@ -28,7 +28,7 @@ function(__qt_propagate_generated_resource target resource_name generated_source
     endif()
 endfunction()
 
-# Inspect all files passed to a call to add_qt_resource. If there are any
+# Inspect all files passed to a call to qt_add_resource. If there are any
 # files present, invoke the quick compiler and return the remaining resource
 # files that have not been processed in OUTPUT_REMAINING_RESOURCES as well as the new
 # name for the resource in OUTPUT_RESOURCE_NAME.

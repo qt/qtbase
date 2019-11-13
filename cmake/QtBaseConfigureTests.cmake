@@ -1,5 +1,5 @@
 include(CheckCXXSourceCompiles)
-function(run_config_test_architecture)
+function(qt_run_config_test_architecture)
     set(QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT
         "" CACHE INTERNAL "Test variables that should be exported" FORCE)
     # Test architecture
@@ -63,7 +63,7 @@ function(run_config_test_architecture)
 endfunction()
 
 
-function(run_config_test_posix_iconv)
+function(qt_run_config_test_posix_iconv)
     set(source "#include <iconv.h>
 
 int main(int, char **)
@@ -95,7 +95,7 @@ int main(int, char **)
 endfunction()
 
 
-function(run_config_test_sun_iconv)
+function(qt_run_config_test_sun_iconv)
     set(source "#include <iconv.h>
 
 int main(int, char **)
@@ -121,7 +121,7 @@ int main(int, char **)
     set(TEST_sun_iconv "${HAVE_SUN_ICONV}" CACHE INTERNAL "SUN libiconv")
 endfunction()
 
-function(run_linker_version_script_support)
+function(qt_run_linker_version_script_support)
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/version_flag.map" "VERS_1 { global: sym; };
 VERS_2 { global: sym; }
 VERS_1;
@@ -148,8 +148,8 @@ VERS_1;
     set(TEST_ld_version_script "${HAVE_LD_VERSION_SCRIPT}" CACHE INTERNAL "linker version script support")
 endfunction()
 
-function(run_config_tests)
-    run_config_test_posix_iconv()
+function(qt_run_qtbase_config_tests)
+    qt_run_config_test_posix_iconv()
 
     add_library(Iconv INTERFACE)
     if(TEST_iconv_needlib)
@@ -157,10 +157,10 @@ function(run_config_tests)
     endif()
 
     if(NOT TEST_posix_iconv)
-        run_config_test_sun_iconv()
+        qt_run_config_test_sun_iconv()
     endif()
-    run_config_test_architecture()
-    run_linker_version_script_support()
+    qt_run_config_test_architecture()
+    qt_run_linker_version_script_support()
 endfunction()
 
 # The qmake build of android does not perform the right architecture tests and
@@ -172,4 +172,4 @@ if (CMAKE_ANDROID_ARCH_ABI STREQUAL x86)
     set(TEST_subarch_sse4_1 FALSE CACHE BOOL INTERNAL FORCE)
     set(TEST_subarch_sse4_2 FALSE CACHE BOOL INTERNAL FORCE)
 endif()
-run_config_tests()
+qt_run_qtbase_config_tests()
