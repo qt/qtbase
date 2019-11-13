@@ -2322,7 +2322,7 @@ function(add_qt_executable name)
     endif()
 
     qt_autogen_tools_initial_setup(${name})
-    qt_skip_warnings_are_errors_when_repo_unclean("${target}")
+    qt_skip_warnings_are_errors_when_repo_unclean("${name}")
 
     set(extra_libraries "")
     if(NOT arg_BOOTSTRAP AND NOT arg_NO_QT)
