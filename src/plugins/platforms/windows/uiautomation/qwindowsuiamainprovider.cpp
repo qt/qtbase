@@ -393,12 +393,14 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
             // Control type converted from role.
             auto controlType = roleToControlTypeId(accessible->role());
 
-            // The native OSK should be disbled if the Qt OSK is in use.
+            // The native OSK should be disbled if the Qt OSK is in use,
+            // or if disabled via application attribute.
             static bool imModuleEmpty = qEnvironmentVariableIsEmpty("QT_IM_MODULE");
+            bool nativeVKDisabled = QCoreApplication::testAttribute(Qt::AA_MSWindowsDisableVirtualKeyboard);
 
             // If we want to disable the native OSK auto-showing
             // we have to report text fields as non-editable.
-            if (controlType == UIA_EditControlTypeId && !imModuleEmpty)
+            if (controlType == UIA_EditControlTypeId && (!imModuleEmpty || nativeVKDisabled))
                 controlType = UIA_TextControlTypeId;
 
             setVariantI4(controlType, pRetVal);
