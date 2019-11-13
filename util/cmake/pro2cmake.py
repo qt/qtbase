@@ -49,6 +49,7 @@ from textwrap import dedent
 from textwrap import indent as textwrap_indent
 from functools import lru_cache
 from shutil import copyfile
+from collections import defaultdict
 from typing import (
     List,
     Optional,
@@ -79,6 +80,7 @@ from helper import (
 
 
 cmake_version_string = "3.15.0"
+cmake_api_version = 2
 
 
 def _parse_commandline():
@@ -168,6 +170,13 @@ def _parse_commandline():
         dest="ignore_skip_marker",
         action="store_true",
         help="If set, pro file will be converted even if skip marker is found in CMakeLists.txt.",
+    )
+
+    parser.add_argument(
+        "--api-version",
+        dest="api_version",
+        type=int,
+        help="Specify which cmake api version should be generated. 1 or 2, 2 is latest.",
     )
 
     parser.add_argument(
@@ -281,6 +290,82 @@ def find_qmake_conf(project_file_path: str = "") -> str:
 
     print(f"Warning: could not find .qmake.conf file")
     return ""
+
+
+def set_up_cmake_api_calls():
+    def nested_dict():
+        return defaultdict(nested_dict)
+
+    api = nested_dict()
+
+    api[1]["qt_extend_target"] = "extend_target"
+    api[1]["qt_add_module"] = "add_qt_module"
+    api[1]["qt_add_plugin"] = "add_qt_plugin"
+    api[1]["qt_add_tool"] = "add_qt_tool"
+    api[1]["qt_add_test"] = "add_qt_test"
+    api[1]["qt_add_test_helper"] = "add_qt_test_helper"
+    api[1]["qt_add_manual_test"] = "add_qt_manual_test"
+    api[1]["qt_add_benchmark"] = "add_qt_benchmark"
+    api[1]["qt_add_executable"] = "add_qt_executable"
+    api[1]["qt_add_simd_part"] = "add_qt_simd_part"
+    api[1]["qt_add_docs"] = "add_qt_docs"
+    api[1]["qt_add_resource"] = "add_qt_resource"
+    api[1]["qt_add_qml_module"] = "add_qml_module"
+    api[1]["qt_add_cmake_library"] = "add_cmake_library"
+
+    api[2]["qt_extend_target"] = "qt_extend_target"
+    api[2]["qt_add_module"] = "qt_add_module"
+    api[2]["qt_add_plugin"] = "qt_add_plugin"
+    api[2]["qt_add_tool"] = "qt_add_tool"
+    api[2]["qt_add_test"] = "qt_add_test"
+    api[2]["qt_add_test_helper"] = "qt_add_test_helper"
+    api[2]["qt_add_manual_test"] = "qt_add_manual_test"
+    api[2]["qt_add_benchmark"] = "qt_add_benchmark"
+    api[2]["qt_add_executable"] = "qt_add_executable"
+    api[2]["qt_add_simd_part"] = "qt_add_simd_part"
+    api[2]["qt_add_docs"] = "qt_add_docs"
+    api[2]["qt_add_resource"] = "qt_add_resource"
+    api[2]["qt_add_qml_module"] = "qt_add_qml_module"
+    api[2]["qt_add_cmake_library"] = "qt_add_cmake_library"
+
+    return api
+
+
+cmake_api_calls = set_up_cmake_api_calls()
+
+
+def detect_cmake_api_version_used_in_file_content(project_file_path: str) -> Optional[int]:
+    dir_path = os.path.dirname(project_file_path)
+    cmake_project_path = os.path.join(dir_path, "CMakeLists.txt")
+
+    # If file doesn't exist, None implies default version selected by
+    # script.
+    if not os.path.exists(cmake_project_path):
+        return None
+
+    with open(cmake_project_path, "r") as file_fd:
+        contents = file_fd.read()
+
+        new_api_calls = [api_call for api_call in cmake_api_calls[2]]
+        new_api_calls_alternatives = "|".join(new_api_calls)
+        match = re.search(new_api_calls_alternatives, contents)
+
+        # If new style found, return latest api version. Otherwise
+        # the old version.
+        if match:
+            return 2
+        else:
+            return 1
+
+
+def get_cmake_api_call(api_name: str, api_version: Optional[int] = None) -> str:
+    if not api_version:
+        global cmake_api_version
+        api_version = cmake_api_version
+    if not cmake_api_calls[api_version][api_name]:
+        raise RuntimeError(f"No CMake API call {api_name} of version {api_version} found.")
+
+    return cmake_api_calls[api_version][api_name]
 
 
 def process_qrc_file(
@@ -434,7 +519,7 @@ def write_add_qt_resource_call(
     if is_example:
         add_resource_command = "qt6_add_resources"
     else:
-        add_resource_command = "add_qt_resource"
+        add_resource_command = get_cmake_api_call("qt_add_resource")
     output += (
         f'{add_resource_command}({target} "{resource_name}"\n{params}{spaces(1)}FILES\n'
         f"{spaces(2)}{file_list}\n)\n"
@@ -2036,7 +2121,7 @@ def expand_resource_glob(cm_fh: IO[str], expression: str) -> str:
 def write_resources(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0, is_example=False):
     # vpath = scope.expand('VPATH')
 
-    # Handle QRC files by turning them into add_qt_resource:
+    # Handle QRC files by turning them into qt_add_resource:
     resources = scope.get_files("RESOURCES")
     qtquickcompiler_skipped = scope.get_files("QTQUICK_COMPILER_SKIPPED_RESOURCES")
     qtquickcompiler_retained = scope.get_files("QTQUICK_COMPILER_RETAINED_RESOURCES")
@@ -2211,8 +2296,11 @@ def write_extend_target(cm_fh: IO[str], target: str, scope: Scope, indent: int =
 
     condition = map_to_cmake_condition(scope.total_condition)
 
+    cmake_api_call = get_cmake_api_call("qt_extend_target")
     extend_scope = (
-        f"\n{ind}extend_target({target} CONDITION" f" {condition}\n" f"{extend_qt_string}{ind})\n"
+        f"\n{ind}{cmake_api_call}({target} CONDITION"
+        f" {condition}\n"
+        f"{extend_qt_string}{ind})\n"
     )
 
     if not extend_qt_string:
@@ -2304,7 +2392,7 @@ def write_simd_part(cm_fh: IO[str], target: str, scope: Scope, indent: int = 0):
             "SOURCES",
             [f"{SIMD}_HEADERS", f"{SIMD}_SOURCES", f"{SIMD}_C_SOURCES", f"{SIMD}_ASM"],
             indent=indent,
-            header=f"add_qt_simd_part({target} SIMD {simd}\n",
+            header=f"{get_cmake_api_call('qt_add_simd_part')}({target} SIMD {simd}\n",
             footer=")\n",
         )
 
@@ -2679,7 +2767,7 @@ def write_generic_library(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> s
         cm_fh,
         target_name,
         "Generic Library",
-        "add_cmake_library",
+        get_cmake_api_call("qt_add_cmake_library"),
         scope,
         extra_lines=extra_lines,
         indent=indent,
@@ -2734,7 +2822,7 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         cm_fh,
         target_name,
         "Module",
-        "add_qt_module",
+        f"{get_cmake_api_call('qt_add_module')}",
         scope,
         extra_lines=extra,
         indent=indent,
@@ -2766,7 +2854,7 @@ def write_tool(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         cm_fh,
         tool_name,
         "Tool",
-        "add_qt_tool",
+        get_cmake_api_call("qt_add_tool"),
         scope,
         indent=indent,
         known_libraries={"Qt::Core"},
@@ -2802,7 +2890,7 @@ def write_test(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int =
         cm_fh,
         test_name,
         "Test",
-        "add_qt_test",
+        get_cmake_api_call("qt_add_test"),
         scope,
         indent=indent,
         known_libraries=libraries,
@@ -2823,17 +2911,17 @@ def write_binary(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int
     is_qt_test_helper = "qt_test_helper" in scope.get("_LOADED")
 
     extra = ["GUI"] if gui and not is_qt_test_helper else []
-    cmake_function_call = "add_qt_executable"
+    cmake_function_call = get_cmake_api_call("qt_add_executable")
     extra_keys: List[str] = []
 
     if is_qt_test_helper:
         binary_name += "_helper"
-        cmake_function_call = "add_qt_test_helper"
+        cmake_function_call = get_cmake_api_call("qt_add_test_helper")
 
     if is_benchmark:
-        cmake_function_call = "add_qt_benchmark"
+        cmake_function_call = get_cmake_api_call("qt_add_benchmark")
     elif is_manual_test:
-        cmake_function_call = "add_qt_manual_test"
+        cmake_function_call = get_cmake_api_call("qt_add_manual_test")
     else:
         extra_keys = ["target.path", "INSTALLS"]
         target_path = scope.get_string("target.path")
@@ -3102,11 +3190,11 @@ def write_plugin(cm_fh, scope, *, indent: int = 0) -> str:
     qmldir = None
     plugin_type = scope.get_string("PLUGIN_TYPE")
     is_qml_plugin = any("qml_plugin" == s for s in scope.get("_LOADED"))
-    plugin_function_name = "add_qt_plugin"
+    plugin_function_name = get_cmake_api_call("qt_add_plugin")
     if plugin_type:
         extra.append(f"TYPE {plugin_type}")
     elif is_qml_plugin:
-        plugin_function_name = "add_qml_module"
+        plugin_function_name = get_cmake_api_call("qt_add_qml_module")
         qmldir = write_qml_plugin(cm_fh, plugin_name, scope, indent=indent, extra_lines=extra)
     else:
         target_path = scope.expandString("target.path")
@@ -3285,8 +3373,15 @@ def handle_app_or_lib(
             target = write_binary(cm_fh, scope, gui, indent=indent)
 
     # ind = spaces(indent)
+    cmake_api_call = get_cmake_api_call("qt_add_docs")
     write_source_file_list(
-        cm_fh, scope, "", ["QMAKE_DOCS"], indent, header=f"add_qt_docs({target}\n", footer=")\n"
+        cm_fh,
+        scope,
+        "",
+        ["QMAKE_DOCS"],
+        indent,
+        header=f"{cmake_api_call}({target}\n",
+        footer=")\n",
     )
 
 
@@ -3653,6 +3748,20 @@ def main() -> None:
             continue
 
         parseresult, project_file_content = parseProFile(file_relative_path, debug=debug_parsing)
+
+        # If CMake api version is given on command line, that means the
+        # user wants to force use that api version.
+        global cmake_api_version
+        if args.api_version:
+            cmake_api_version = args.api_version
+        else:
+            # Otherwise detect the api version in the old CMakeLists.txt
+            # if it exsists.
+            detected_cmake_api_version = detect_cmake_api_version_used_in_file_content(
+                file_relative_path
+            )
+            if detected_cmake_api_version:
+                cmake_api_version = detected_cmake_api_version
 
         if args.debug_parse_result or args.debug:
             print("\n\n#### Parser result:")
