@@ -1304,6 +1304,10 @@ function(qt_internal_set_no_exceptions_flags target)
 endfunction()
 
 function(qt_skip_warnings_are_errors target)
+    get_target_property(target_type "${target}" TYPE)
+    if(target_type STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
     set_target_properties("${target}" PROPERTIES QT_SKIP_WARNINGS_ARE_ERRORS ON)
 endfunction()
 
