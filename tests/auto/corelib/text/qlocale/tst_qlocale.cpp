@@ -595,10 +595,7 @@ void tst_QLocale::emptyCtor_data()
     ADD_CTOR_TEST("zz_zz", "C");
     ADD_CTOR_TEST("zz...", "C");
     ADD_CTOR_TEST("en.bla", "en_US");
-#if !(defined(Q_OS_DARWIN) && QT_HAS_FEATURE(address_sanitizer))
-    // See QTBUG-69875
     ADD_CTOR_TEST("en@bla", "en_US");
-#endif
     ADD_CTOR_TEST("en_blaaa", "en_US");
     ADD_CTOR_TEST("en_zz", "en_US");
     ADD_CTOR_TEST("en_GB.bla", "en_GB");
@@ -607,10 +604,7 @@ void tst_QLocale::emptyCtor_data()
 
     // Empty optional fields, but with punctuators supplied
     ADD_CTOR_TEST("en.", "en_US");
-#if !(defined(Q_OS_DARWIN) && QT_HAS_FEATURE(address_sanitizer))
-    // See QTBUG-69875
     ADD_CTOR_TEST("en@", "en_US");
-#endif
     ADD_CTOR_TEST("en.@", "en_US");
     ADD_CTOR_TEST("en_", "en_US");
     ADD_CTOR_TEST("en_.", "en_US");
