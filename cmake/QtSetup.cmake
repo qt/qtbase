@@ -93,6 +93,10 @@ if(QT_BUILD_STANDALONE_TESTS)
     # BuildInternals might have set it to OFF on initial configuration. So force it to ON when
     # building standalone tests.
     set(BUILD_TESTING ON CACHE BOOL "Build the testing tree." FORCE)
+
+    # Also force the tests to be built as part of the default build target.
+    set(QT_NO_MAKE_TESTS OFF CACHE BOOL
+        "Should examples be built as part of the default 'all' target." FORCE)
 endif()
 option(QT_NO_MAKE_TESTS "Should tests be built as part of the default 'all' target." OFF)
 
