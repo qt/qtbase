@@ -251,11 +251,11 @@ void tst_QByteArray::qChecksum_data()
     QTest::addColumn<uint>("checksum");
 
     // Examples from ISO 14443-3
-    QTest::newRow("1") << QByteArray("\x00\x00")         << 2U << Qt::ChecksumItuV41  << 0x1EA0U;
-    QTest::newRow("2") << QByteArray("\x12\x34")         << 2U << Qt::ChecksumItuV41  << 0xCF26U;
-    QTest::newRow("3") << QByteArray("\x00\x00\x00")     << 3U << Qt::ChecksumIso3309 << 0xC6CCU;
-    QTest::newRow("4") << QByteArray("\x0F\xAA\xFF")     << 3U << Qt::ChecksumIso3309 << 0xD1FCU;
-    QTest::newRow("5") << QByteArray("\x0A\x12\x34\x56") << 4U << Qt::ChecksumIso3309 << 0xF62CU;
+    QTest::newRow("1") << QByteArray("\x00\x00", 2)         << 2U << Qt::ChecksumItuV41  << 0x1EA0U;
+    QTest::newRow("2") << QByteArray("\x12\x34", 2)         << 2U << Qt::ChecksumItuV41  << 0xCF26U;
+    QTest::newRow("3") << QByteArray("\x00\x00\x00", 3)     << 3U << Qt::ChecksumIso3309 << 0xC6CCU;
+    QTest::newRow("4") << QByteArray("\x0F\xAA\xFF", 3)     << 3U << Qt::ChecksumIso3309 << 0xD1FCU;
+    QTest::newRow("5") << QByteArray("\x0A\x12\x34\x56", 4) << 4U << Qt::ChecksumIso3309 << 0xF62CU;
 }
 
 void tst_QByteArray::qChecksum()
@@ -265,6 +265,7 @@ void tst_QByteArray::qChecksum()
     QFETCH(Qt::ChecksumType, standard);
     QFETCH(uint, checksum);
 
+    QCOMPARE(data.length(), int(len));
     if (standard == Qt::ChecksumIso3309) {
         QCOMPARE(::qChecksum(data.constData(), len), static_cast<quint16>(checksum));
     }
