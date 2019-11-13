@@ -58,6 +58,7 @@
 #include <QInputDialog>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QCloseEvent>
 
 //! [0]
 MainWindow::MainWindow(QWidget *parent)
