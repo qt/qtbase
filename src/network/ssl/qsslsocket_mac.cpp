@@ -496,10 +496,6 @@ QSsl::SslProtocol QSslSocketBackendPrivate::sessionProtocol() const
     }
 
     switch (protocol) {
-    case kSSLProtocol2:
-        return QSsl::SslV2;
-    case kSSLProtocol3:
-        return QSsl::SslV3;
     case kTLSProtocol1:
         return QSsl::TlsV1_0;
     case kTLSProtocol11:
@@ -657,23 +653,6 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(SSLCipherSui
     QSslCipher ciph;
     switch (cipher) {
     // Sorted as in CipherSuite.h (and groupped by their RFC)
-    case SSL_RSA_WITH_NULL_MD5:
-        ciph.d->name = QLatin1String("NULL-MD5");
-        ciph.d->protocol = QSsl::SslV3;
-        break;
-    case SSL_RSA_WITH_NULL_SHA:
-        ciph.d->name = QLatin1String("NULL-SHA");
-        ciph.d->protocol = QSsl::SslV3;
-        break;
-    case SSL_RSA_WITH_RC4_128_MD5:
-        ciph.d->name = QLatin1String("RC4-MD5");
-        ciph.d->protocol = QSsl::SslV3;
-        break;
-    case SSL_RSA_WITH_RC4_128_SHA:
-        ciph.d->name = QLatin1String("RC4-SHA");
-        ciph.d->protocol = QSsl::SslV3;
-        break;
-
     // TLS addenda using AES, per RFC 3268
     case TLS_RSA_WITH_AES_128_CBC_SHA:
         ciph.d->name = QLatin1String("AES128-SHA");
@@ -822,12 +801,8 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSLCipherSuite(SSLCipherSui
     ciph.d->isNull = false;
 
     // protocol
-    if (ciph.d->protocol == QSsl::SslV3) {
-        ciph.d->protocolString = QLatin1String("SSLv3");
-    } else {
-        ciph.d->protocol = QSsl::TlsV1_2;
-        ciph.d->protocolString = QLatin1String("TLSv1.2");
-    }
+    ciph.d->protocol = QSsl::TlsV1_2;
+    ciph.d->protocolString = QLatin1String("TLSv1.2");
 
     const auto bits = ciph.d->name.splitRef(QLatin1Char('-'));
     if (bits.size() >= 2) {
@@ -1106,22 +1081,6 @@ bool QSslSocketBackendPrivate::setSessionProtocol()
 {
     Q_ASSERT_X(context, Q_FUNC_INFO, "invalid SSL context (null)");
 
-    // QSsl::SslV2 == kSSLProtocol2 is disabled in Secure Transport and
-    // always fails with errSSLIllegalParam:
-    // if (version < MINIMUM_STREAM_VERSION || version > MAXIMUM_STREAM_VERSION)
-    //     return errSSLIllegalParam;
-    // where MINIMUM_STREAM_VERSION is SSL_Version_3_0, MAXIMUM_STREAM_VERSION is TLS_Version_1_2.
-    if (configuration.protocol == QSsl::SslV2) {
-        qCDebug(lcSsl) << "protocol QSsl::SslV2 is disabled";
-        return false;
-    }
-
-    // SslV3 is unsupported.
-    if (configuration.protocol == QSsl::SslV3) {
-        qCDebug(lcSsl) << "protocol QSsl::SslV3 is disabled";
-        return false;
-    }
-
     // SecureTransport has kTLSProtocol13 constant and also, kTLSProtocolMaxSupported.
     // Calling SSLSetProtocolVersionMax/Min with any of these two constants results
     // in errInvalidParam and a failure to set the protocol version. This means
@@ -1162,13 +1121,6 @@ bool QSslSocketBackendPrivate::setSessionProtocol()
         qCDebug(lcSsl) << plainSocket << "requesting : any";
     #endif
         err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
-    } else if (configuration.protocol == QSsl::TlsV1SslV3) {
-    #ifdef QSSLSOCKET_DEBUG
-        qCDebug(lcSsl) << plainSocket << "requesting : SSLv3 - TLSv1.2";
-    #endif
-        err = SSLSetProtocolVersionMin(context, kTLSProtocol1);
-        if (err == errSecSuccess)
-            err = SSLSetProtocolVersionMax(context, kTLSProtocol1);
     } else if (configuration.protocol == QSsl::SecureProtocols) {
     #ifdef QSSLSOCKET_DEBUG
         qCDebug(lcSsl) << plainSocket << "requesting : TLSv1 - TLSv1.2";
@@ -1213,8 +1165,6 @@ bool QSslSocketBackendPrivate::verifySessionProtocol() const
     bool protocolOk = false;
     if (configuration.protocol == QSsl::AnyProtocol)
         protocolOk = true;
-    else if (configuration.protocol == QSsl::TlsV1SslV3)
-        protocolOk = (sessionProtocol() == QSsl::TlsV1_0);
     else if (configuration.protocol == QSsl::SecureProtocols)
         protocolOk = (sessionProtocol() >= QSsl::TlsV1_0);
     else if (configuration.protocol == QSsl::TlsV1_0OrLater)

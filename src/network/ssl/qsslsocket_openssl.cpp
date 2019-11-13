@@ -249,11 +249,7 @@ QSslCipher QSslSocketBackendPrivate::QSslCipher_from_SSL_CIPHER(const SSL_CIPHER
         QString protoString = descriptionList.at(1).toString();
         ciph.d->protocolString = protoString;
         ciph.d->protocol = QSsl::UnknownProtocol;
-        if (protoString == QLatin1String("SSLv3"))
-            ciph.d->protocol = QSsl::SslV3;
-        else if (protoString == QLatin1String("SSLv2"))
-            ciph.d->protocol = QSsl::SslV2;
-        else if (protoString == QLatin1String("TLSv1"))
+        if (protoString == QLatin1String("TLSv1"))
             ciph.d->protocol = QSsl::TlsV1_0;
         else if (protoString == QLatin1String("TLSv1.1"))
             ciph.d->protocol = QSsl::TlsV1_1;
@@ -459,20 +455,23 @@ void q_setDefaultDtlsCiphers(const QList<QSslCipher> &ciphers);
 long QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SslProtocol protocol, QSsl::SslOptions sslOptions)
 {
     long options;
-    if (protocol == QSsl::TlsV1SslV3)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3;
-    else if (protocol == QSsl::SecureProtocols)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3;
-    else if (protocol == QSsl::TlsV1_0OrLater)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3;
-    else if (protocol == QSsl::TlsV1_1OrLater)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1;
-    else if (protocol == QSsl::TlsV1_2OrLater)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1|SSL_OP_NO_TLSv1_1;
-    else if (protocol == QSsl::TlsV1_3OrLater)
-        options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1|SSL_OP_NO_TLSv1_1|SSL_OP_NO_TLSv1_2;
-    else
+    switch (protocol) {
+    case QSsl::SecureProtocols:
+    case QSsl::TlsV1_0OrLater:
+        options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3;
+        break;
+    case QSsl::TlsV1_1OrLater:
+        options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1;
+        break;
+    case QSsl::TlsV1_2OrLater:
+        options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1;
+        break;
+    case QSsl::TlsV1_3OrLater:
+        options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1 | SSL_OP_NO_TLSv1_2;
+        break;
+    default:
         options = SSL_OP_ALL;
+    }
 
     // This option is disabled by default, so we need to be able to clear it
     if (sslOptions & QSsl::SslOptionDisableEmptyFragments)
@@ -530,10 +529,7 @@ bool QSslSocketBackendPrivate::initSslContext()
         return false;
     }
 
-    if (configuration.protocol != QSsl::SslV2 &&
-        configuration.protocol != QSsl::SslV3 &&
-        configuration.protocol != QSsl::UnknownProtocol &&
-        mode == QSslSocket::SslClientMode) {
+    if (configuration.protocol != QSsl::UnknownProtocol && mode == QSslSocket::SslClientMode) {
         // Set server hostname on TLS extension. RFC4366 section 3.1 requires it in ACE format.
         QString tlsHostName = verificationPeerName.isEmpty() ? q->peerName() : verificationPeerName;
         if (tlsHostName.isEmpty())
@@ -1746,10 +1742,6 @@ QSsl::SslProtocol QSslSocketBackendPrivate::sessionProtocol() const
     int ver = q_SSL_version(ssl);
 
     switch (ver) {
-    case 0x2:
-        return QSsl::SslV2;
-    case 0x300:
-        return QSsl::SslV3;
     case 0x301:
         return QSsl::TlsV1_0;
     case 0x302:

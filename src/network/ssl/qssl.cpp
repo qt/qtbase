@@ -120,8 +120,6 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
 
     Describes the protocol of the cipher.
 
-    \value SslV3 SSLv3; not supported by QSslSocket.
-    \value SslV2 SSLv2; not supported by QSslSocket.
     \value TlsV1_0 TLSv1.0
     \value TlsV1_0OrLater TLSv1.0 and later versions. This option is not available when using the WinRT backend due to platform limitations.
     \value TlsV1 Obsolete, means the same as TlsV1_0
@@ -137,7 +135,6 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
     \value TlsV1_3OrLater TLSv1.3 and later versions. (Since Qt 5.12)
     \value UnknownProtocol The cipher's protocol cannot be determined.
     \value AnyProtocol Any supported protocol. This value is used by QSslSocket only.
-    \value TlsV1SslV3 Same as TlsV1_0.
     \value SecureProtocols The default option, using protocols known to be secure.
 */
 

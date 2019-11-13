@@ -259,8 +259,8 @@ private slots:
     void signatureAlgorithm();
 #endif
 
-    void disabledProtocols_data();
-    void disabledProtocols();
+    void unsupportedProtocols_data();
+    void unsupportedProtocols();
 
     void oldErrorsOnSocketReuse();
 
@@ -1179,25 +1179,6 @@ void tst_QSslSocket::protocol()
         QCOMPARE(socket->protocol(), QSsl::AnyProtocol);
         socket->abort();
     }
-    {
-        // qt-test-server allows TlsV1, so it allows TlsV1SslV3
-        socket->setProtocol(QSsl::TlsV1SslV3);
-        QCOMPARE(socket->protocol(), QSsl::TlsV1SslV3);
-        socket->connectToHostEncrypted(QtNetworkSettings::httpServerName(), 443);
-        if (setProxy && !socket->waitForEncrypted())
-            QSKIP("Skipping flaky test - See QTBUG-29941");
-        QCOMPARE(socket->protocol(), QSsl::TlsV1SslV3);
-        socket->abort();
-        QCOMPARE(socket->protocol(), QSsl::TlsV1SslV3);
-        socket->connectToHost(QtNetworkSettings::httpServerName(), 443);
-        if (setProxy && !socket->waitForConnected())
-            QSKIP("Skipping flaky test - See QTBUG-29941");
-        socket->startClientEncryption();
-        if (setProxy && !socket->waitForEncrypted())
-            QSKIP("Skipping flaky test - See QTBUG-29941");
-        QCOMPARE(socket->protocol(), QSsl::TlsV1SslV3);
-        socket->abort();
-    }
 }
 
 class SslServer : public QTcpServer
@@ -1303,20 +1284,13 @@ void tst_QSslSocket::protocolServerSide_data()
     QTest::addColumn<bool>("works");
 
     QTest::newRow("tls1.0-tls1.0") << QSsl::TlsV1_0 << QSsl::TlsV1_0 << true;
-    QTest::newRow("tls1ssl3-tls1ssl3") << QSsl::TlsV1SslV3 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("any-any") << QSsl::AnyProtocol << QSsl::AnyProtocol << true;
     QTest::newRow("secure-secure") << QSsl::SecureProtocols << QSsl::SecureProtocols << true;
 
-    QTest::newRow("tls1-tls1ssl3") << QSsl::TlsV1_0 << QSsl::TlsV1SslV3 << true;
     QTest::newRow("tls1.0-secure") << QSsl::TlsV1_0 << QSsl::SecureProtocols << true;
     QTest::newRow("tls1.0-any") << QSsl::TlsV1_0 << QSsl::AnyProtocol << true;
 
-    QTest::newRow("tls1ssl3-tls1.0") << QSsl::TlsV1SslV3 << QSsl::TlsV1_0 << true;
-    QTest::newRow("tls1ssl3-secure") << QSsl::TlsV1SslV3 << QSsl::SecureProtocols << true;
-    QTest::newRow("tls1ssl3-any") << QSsl::TlsV1SslV3 << QSsl::AnyProtocol << true;
-
     QTest::newRow("secure-tls1.0") << QSsl::SecureProtocols << QSsl::TlsV1_0 << true;
-    QTest::newRow("secure-tls1ssl3") << QSsl::SecureProtocols << QSsl::TlsV1SslV3 << true;
     QTest::newRow("secure-any") << QSsl::SecureProtocols << QSsl::AnyProtocol << true;
 
     QTest::newRow("tls1.0orlater-tls1.0") << QSsl::TlsV1_0OrLater << QSsl::TlsV1_0 << true;
@@ -1348,7 +1322,6 @@ void tst_QSslSocket::protocolServerSide_data()
 #endif // TLS1_3_VERSION
 
     QTest::newRow("any-tls1.0") << QSsl::AnyProtocol << QSsl::TlsV1_0 << true;
-    QTest::newRow("any-tls1ssl3") << QSsl::AnyProtocol << QSsl::TlsV1SslV3 << true;
     QTest::newRow("any-secure") << QSsl::AnyProtocol << QSsl::SecureProtocols << true;
 }
 
@@ -4325,27 +4298,30 @@ void tst_QSslSocket::forwardReadChannelFinished()
 
 #endif // QT_NO_OPENSSL
 
-void tst_QSslSocket::disabledProtocols_data()
+void tst_QSslSocket::unsupportedProtocols_data()
 {
-    QTest::addColumn<QSsl::SslProtocol>("disabledProtocol");
-    QTest::newRow("SslV2") << QSsl::SslV2;
-    QTest::newRow("SslV3") << QSsl::SslV3;
+    QTest::addColumn<QSsl::SslProtocol>("unsupportedProtocol");
+    QTest::newRow("DtlsV1_0") << QSsl::DtlsV1_0;
+    QTest::newRow("DtlsV1_2") << QSsl::DtlsV1_2;
+    QTest::newRow("DtlsV1_0OrLater") << QSsl::DtlsV1_0OrLater;
+    QTest::newRow("DtlsV1_2OrLater") << QSsl::DtlsV1_2OrLater;
+    QTest::newRow("UnknownProtocol") << QSsl::UnknownProtocol;
 }
 
-void tst_QSslSocket::disabledProtocols()
+void tst_QSslSocket::unsupportedProtocols()
 {
     QFETCH_GLOBAL(const bool, setProxy);
     if (setProxy)
         return;
 
-    QFETCH(const QSsl::SslProtocol, disabledProtocol);
+    QFETCH(const QSsl::SslProtocol, unsupportedProtocol);
     const int timeoutMS = 500;
     // Test a client socket.
     {
         // 0. connectToHostEncrypted: client-side, non-blocking API, error is discovered
         // early, preventing any real connection from ever starting.
         QSslSocket socket;
-        socket.setProtocol(disabledProtocol);
+        socket.setProtocol(unsupportedProtocol);
         QCOMPARE(socket.error(), QAbstractSocket::UnknownSocketError);
         socket.connectToHostEncrypted(QStringLiteral("doesnotmatter.org"), 1010);
         QCOMPARE(socket.error(), QAbstractSocket::SslInvalidUserDataError);
@@ -4363,7 +4339,7 @@ void tst_QSslSocket::disabledProtocols()
         socket.connectToHost(QHostAddress::LocalHost, server.serverPort());
         QVERIFY(socket.waitForConnected(timeoutMS));
 
-        socket.setProtocol(disabledProtocol);
+        socket.setProtocol(unsupportedProtocol);
         socket.startClientEncryption();
         QCOMPARE(socket.error(), QAbstractSocket::SslInvalidUserDataError);
     }
@@ -4377,7 +4353,7 @@ void tst_QSslSocket::disabledProtocols()
     // and then calls startServerEncryption() (which must fall).
     {
         SslServer server;
-        server.protocol = disabledProtocol;
+        server.protocol = unsupportedProtocol;
         QVERIFY(server.listen());
 
         QTestEventLoop loop;

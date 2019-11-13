@@ -226,12 +226,6 @@ DWORD toSchannelProtocol(QSsl::SslProtocol protocol)
         protocols = SP_PROT_TLS1_0 | SP_PROT_TLS1_1 | SP_PROT_TLS1_2;
         // @future Add TLS 1.3 when supported by Windows!
         break;
-    case QSsl::SslV2:
-    case QSsl::SslV3:
-        return DWORD(-1); // Not supported
-    case QSsl::TlsV1SslV3:
-        protocols = SP_PROT_TLS1_0;
-        break;
     case QSsl::TlsV1_0:
         protocols = SP_PROT_TLS1_0;
         break;

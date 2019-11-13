@@ -2217,13 +2217,24 @@ void QSslSocketPrivate::init()
 */
 bool QSslSocketPrivate::verifyProtocolSupported(const char *where)
 {
-    if (configuration.protocol == QSsl::SslV2 || configuration.protocol == QSsl::SslV3) {
-        qCWarning(lcSsl) << where << "Attempted to use an unsupported protocol.";
+    QLatin1String protocolName("DTLS");
+    switch (configuration.protocol) {
+    case QSsl::UnknownProtocol:
+        // UnknownProtocol, according to our docs, is for cipher whose protocol is unknown.
+        // Should not be used when configuring QSslSocket.
+        protocolName = QLatin1String("UnknownProtocol");
+        Q_FALLTHROUGH();
+    case QSsl::DtlsV1_0:
+    case QSsl::DtlsV1_2:
+    case QSsl::DtlsV1_0OrLater:
+    case QSsl::DtlsV1_2OrLater:
+        qCWarning(lcSsl) << where << "QSslConfiguration with unexpected protocol" << protocolName;
         setErrorAndEmit(QAbstractSocket::SslInvalidUserDataError,
                         QSslSocket::tr("Attempted to use an unsupported protocol."));
         return false;
+    default:
+        return true;
     }
-    return true;
 }
 
 /*!

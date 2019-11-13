@@ -77,20 +77,10 @@ namespace QSsl {
 #endif
 
     enum SslProtocol {
-#if QT_DEPRECATED_SINCE(5, 15)
-        SslV3,
-        SslV2,
-#endif
         TlsV1_0 = 2,
-#if QT_DEPRECATED_SINCE(5,0)
-        TlsV1 = TlsV1_0,
-#endif
         TlsV1_1,
         TlsV1_2,
         AnyProtocol,
-#if QT_DEPRECATED_SINCE(5, 15)
-        TlsV1SslV3,
-#endif
         SecureProtocols = AnyProtocol + 2,
 
         TlsV1_0OrLater,
