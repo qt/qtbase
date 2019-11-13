@@ -171,7 +171,7 @@ macro(qt_build_tests)
             qt_path_join(_qt_build_tests_install_prefix
                          ${CMAKE_INSTALL_PREFIX} ${_qt_build_tests_install_prefix})
         endif()
-        include("${_qt_build_tests_install_prefix}/${CMAKE_PROJECT_NAME}TestsConfig.cmake")
+        include("${_qt_build_tests_install_prefix}/${CMAKE_PROJECT_NAME}TestsConfig.cmake" OPTIONAL)
 
         # Of course we always need the test module as well.
         find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
