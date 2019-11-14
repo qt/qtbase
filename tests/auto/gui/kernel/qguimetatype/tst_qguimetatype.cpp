@@ -181,9 +181,13 @@ template<> struct TestValueFactory<QMetaType::QCursor> {
     static QCursor *create() { return new QCursor(Qt::WaitCursor); }
 };
 #endif
+
+#if QT_CONFIG(shortcut)
 template<> struct TestValueFactory<QMetaType::QKeySequence> {
     static QKeySequence *create() { return new QKeySequence(QKeySequence::Close); }
 };
+#endif
+
 template<> struct TestValueFactory<QMetaType::QPen> {
     static QPen *create() { return new QPen(Qt::DashDotDotLine); }
 };
@@ -312,30 +316,10 @@ void tst_QGuiMetaType::sizeOf()
     QCOMPARE(QMetaType::sizeOf(type), size);
 }
 
-#ifndef Q_ALIGNOF
-template<uint N>
-struct RoundToNextHighestPowerOfTwo
-{
-private:
-    enum { V1 = N-1 };
-    enum { V2 = V1 | (V1 >> 1) };
-    enum { V3 = V2 | (V2 >> 2) };
-    enum { V4 = V3 | (V3 >> 4) };
-    enum { V5 = V4 | (V4 >> 8) };
-    enum { V6 = V5 | (V5 >> 16) };
-public:
-    enum { Value = V6 + 1 };
-};
-#endif
-
 template<class T>
 struct TypeAlignment
 {
-#ifdef Q_ALIGNOF
-    enum { Value = Q_ALIGNOF(T) };
-#else
-    enum { Value = RoundToNextHighestPowerOfTwo<sizeof(T)>::Value };
-#endif
+    enum { Value = alignof(T) };
 };
 
 void tst_QGuiMetaType::flags_data()

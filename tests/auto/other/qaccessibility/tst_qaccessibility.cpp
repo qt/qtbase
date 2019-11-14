@@ -203,11 +203,15 @@ private slots:
     void applicationTest();
     void mainWindowTest();
     void subWindowTest();
+#if QT_CONFIG(shortcut)
     void buttonTest();
+#endif
     void scrollBarTest();
     void tabTest();
     void tabWidgetTest();
+#if QT_CONFIG(shortcut)
     void menuTest();
+#endif
     void spinBoxTest();
     void doubleSpinBoxTest();
     void textEditTest();
@@ -234,8 +238,10 @@ private slots:
     void dockWidgetTest();
     void comboBoxTest();
     void accessibleName();
+#if QT_CONFIG(shortcut)
     void labelTest();
     void accelerators();
+#endif
     void bridgeTest();
 
 protected slots:
@@ -1026,6 +1032,8 @@ public Q_SLOTS:
     }
 };
 
+#if QT_CONFIG(shortcut)
+
 void tst_QAccessibility::buttonTest()
 {
     QWidget window;
@@ -1197,6 +1205,8 @@ void tst_QAccessibility::buttonTest()
 //    QCOMPARE(test->state(2), (int)QAccessible::HasPopup);
 //    test->release();
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QAccessibility::scrollBarTest()
 {
@@ -1407,6 +1417,8 @@ void tst_QAccessibility::tabWidgetTest()
     QTestAccessibility::clearEvents();
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QAccessibility::menuTest()
 {
     {
@@ -1616,6 +1628,8 @@ void tst_QAccessibility::menuTest()
     }
     QTestAccessibility::clearEvents();
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QAccessibility::spinBoxTest()
 {
@@ -3629,6 +3643,8 @@ void tst_QAccessibility::comboBoxTest()
     QTestAccessibility::clearEvents();
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QAccessibility::labelTest()
 {
     QWidget *window = new QWidget;
@@ -3728,6 +3744,8 @@ void tst_QAccessibility::accelerators()
     delete window;
     QTestAccessibility::clearEvents();
 }
+
+#endif // QT_CONFIG(shortcut)
 
 #ifdef QT_SUPPORTS_IACCESSIBLE2
 static IUnknown *queryIA2(IAccessible *acc, const IID &iid)

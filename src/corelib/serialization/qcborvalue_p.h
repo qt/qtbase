@@ -147,8 +147,8 @@ public:
         qptrdiff offset = data.size();
 
         // align offset
-        offset += Q_ALIGNOF(QtCbor::ByteData) - 1;
-        offset &= ~(Q_ALIGNOF(QtCbor::ByteData) - 1);
+        offset += alignof(QtCbor::ByteData) - 1;
+        offset &= ~(alignof(QtCbor::ByteData) - 1);
 
         qptrdiff increment = qptrdiff(sizeof(QtCbor::ByteData)) + len;
 
@@ -170,7 +170,7 @@ public:
             return nullptr;
 
         size_t offset = size_t(e.value);
-        Q_ASSERT((offset % Q_ALIGNOF(QtCbor::ByteData)) == 0);
+        Q_ASSERT((offset % alignof(QtCbor::ByteData)) == 0);
         Q_ASSERT(offset + sizeof(QtCbor::ByteData) <= size_t(data.size()));
 
         auto b = reinterpret_cast<const QtCbor::ByteData *>(data.constData() + offset);
@@ -215,7 +215,7 @@ public:
     }
     void insertAt(qsizetype idx, const QCborValue &value, ContainerDisposition disp = CopyContainer)
     {
-        replaceAt_internal(*elements.insert(elements.begin() + idx, {}), value, disp);
+        replaceAt_internal(*elements.insert(elements.begin() + int(idx), {}), value, disp);
     }
 
     void append(QtCbor::Undefined)

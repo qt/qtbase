@@ -61,11 +61,11 @@
             "export": "openssl",
             "test": {
                 "tail": [
-                    "#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10000000L",
-                    "#  error OpenSSL >= 1.0.0 is required",
+                    "#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10100000L",
+                    "#  error OpenSSL >= 1.1.0 is required",
                     "#endif",
-                    "#if OPENSSL_VERSION_NUMBER-0 >= 0x10002000L && !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)",
-                    "#  error OpenSSL was reported as >= 1.0.2 but is missing required features, possibly it's libressl which is unsupported",
+                    "#if !defined(OPENSSL_NO_EC) && !defined(SSL_CTRL_SET_CURVES)",
+                    "#  error OpenSSL was reported as >= 1.1.0 but is missing required features, possibly it's libressl which is unsupported",
                     "#endif"
                 ]
             },
@@ -184,19 +184,6 @@
                 ]
             },
             "use": "network"
-        },
-        "openssl11": {
-            "label": "OpenSSL 1.1 support",
-            "type": "compile",
-            "test": {
-                "include": "openssl/opensslv.h",
-                "tail": [
-                    "#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10100000L",
-                    "#  error OpenSSL >= 1.1 is required",
-                    "#endif"
-                ]
-            },
-            "use": "openssl"
         },
         "dtls": {
             "label": "DTLS support in OpenSSL",
@@ -335,7 +322,7 @@
         },
         "opensslv11": {
             "label": "OpenSSL 1.1",
-            "condition": "features.openssl && tests.openssl11",
+            "condition": "features.openssl",
             "output": [ "publicFeature" ]
         },
         "sctp": {

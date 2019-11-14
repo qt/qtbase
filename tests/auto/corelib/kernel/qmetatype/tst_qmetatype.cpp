@@ -572,11 +572,13 @@ void tst_QMetaType::typeName_data()
     QTest::newRow("124125534") << 124125534 << QString();
 
     // automatic registration
-    QTest::newRow("QList<int>") << ::qMetaTypeId<QList<int> >() << QString::fromLatin1("QList<int>");
     QTest::newRow("QHash<int,int>") << ::qMetaTypeId<QHash<int, int> >() << QString::fromLatin1("QHash<int,int>");
     QTest::newRow("QMap<int,int>") << ::qMetaTypeId<QMap<int, int> >() << QString::fromLatin1("QMap<int,int>");
-    QTest::newRow("QVector<QList<int>>") << ::qMetaTypeId<QVector<QList<int> > >() << QString::fromLatin1("QVector<QList<int> >");
     QTest::newRow("QVector<QMap<int,int>>") << ::qMetaTypeId<QVector<QMap<int, int> > >() << QString::fromLatin1("QVector<QMap<int,int> >");
+
+    // automatic registration with automatic QList to QVector aliasing
+    QTest::newRow("QList<int>") << ::qMetaTypeId<QList<int> >() << QString::fromLatin1("QVector<int>");
+    QTest::newRow("QVector<QList<int>>") << ::qMetaTypeId<QVector<QList<int> > >() << QString::fromLatin1("QVector<QVector<int> >");
 
     QTest::newRow("CustomQObject*") << ::qMetaTypeId<CustomQObject*>() << QString::fromLatin1("CustomQObject*");
     QTest::newRow("CustomGadget") << ::qMetaTypeId<CustomGadget>() << QString::fromLatin1("CustomGadget");
@@ -1024,9 +1026,9 @@ static void testConstructHelper()
     typedef typename MetaEnumToType<ID>::Type Type;
     QMetaType info(ID);
     int size = info.sizeOf();
-    void *storage1 = qMallocAligned(size, Q_ALIGNOF(Type));
+    void *storage1 = qMallocAligned(size, alignof(Type));
     void *actual1 = QMetaType::construct(ID, storage1, /*copy=*/0);
-    void *storage2 = qMallocAligned(size, Q_ALIGNOF(Type));
+    void *storage2 = qMallocAligned(size, alignof(Type));
     void *actual2 = info.construct(storage2, /*copy=*/0);
     QCOMPARE(actual1, storage1);
     QCOMPARE(actual2, storage2);
@@ -1178,9 +1180,9 @@ static void testConstructCopyHelper()
     QMetaType info(ID);
     int size = QMetaType::sizeOf(ID);
     QCOMPARE(info.sizeOf(), size);
-    void *storage1 = qMallocAligned(size, Q_ALIGNOF(Type));
+    void *storage1 = qMallocAligned(size, alignof(Type));
     void *actual1 = QMetaType::construct(ID, storage1, expected);
-    void *storage2 = qMallocAligned(size, Q_ALIGNOF(Type));
+    void *storage2 = qMallocAligned(size, alignof(Type));
     void *actual2 = info.construct(storage2, expected);
     QCOMPARE(actual1, storage1);
     QCOMPARE(actual2, storage2);

@@ -29,19 +29,10 @@
 #ifndef TST_QSORTFILTERPROXYMODEL_H
 #define TST_QSORTFILTERPROXYMODEL_H
 
-#include <QtTest/QtTest>
 #include "dynamictreemodel.h"
-
-#include <QtCore/QCoreApplication>
-#include <QtGui/QStandardItem>
-#include <QtWidgets/QTreeView>
-#include <QtWidgets/QTableView>
-
-#include <qdebug.h>
-
-typedef QList<int> IntList;
-typedef QPair<int, int> IntPair;
-typedef QList<IntPair> IntPairList;
+#include <QLoggingCategory>
+#include <QSortFilterProxyModel>
+#include <QStandardItemModel>
 
 enum class FilterType {
     RegExp,
@@ -53,10 +44,6 @@ Q_DECLARE_METATYPE(QList<QPersistentModelIndex>)
 class tst_QSortFilterProxyModel : public QObject
 {
     Q_OBJECT
-
-public:
-    tst_QSortFilterProxyModel();
-
 public slots:
     void initTestCase();
     void cleanupTestCase();
@@ -181,8 +168,8 @@ protected:
     FilterType m_filterType;
 
 private:
-    QStandardItemModel *m_model;
-    QSortFilterProxyModel *m_proxy;
+    QStandardItemModel *m_model = nullptr;
+    QSortFilterProxyModel *m_proxy = nullptr;
 };
 
 Q_DECLARE_METATYPE(QAbstractItemModel::LayoutChangeHint)

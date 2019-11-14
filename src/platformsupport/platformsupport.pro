@@ -45,3 +45,7 @@ darwin {
 
 qtConfig(vulkan): \
     SUBDIRS += vkconvenience
+
+!android:linux*:qtHaveModule(dbus) \
+    SUBDIRS += linuxofono
+

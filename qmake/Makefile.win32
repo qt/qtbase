@@ -90,7 +90,6 @@ QTOBJS= \
 	qiodevice.obj \
 	qringbuffer.obj \
 	qdebug.obj \
-	qlist.obj \
 	qlocale.obj \
 	qlocale_tools.obj \
 	qlocale_win.obj \
@@ -118,7 +117,8 @@ QTOBJS= \
 	qxmlutils.obj \
 	qnumeric.obj \
 	qlogging.obj \
-	qjson.obj \
+	qcborvalue.obj \
+	qjsoncbor.obj \
 	qjsondocument.obj \
 	qjsonparser.obj \
 	qjsonarray.obj \

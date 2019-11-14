@@ -961,7 +961,7 @@ QAction *QToolBar::actionAt(const QPoint &p) const
 void QToolBar::actionEvent(QActionEvent *event)
 {
     Q_D(QToolBar);
-    QAction *action = event->action();
+    auto action = static_cast<QAction *>(event->action());
     QWidgetAction *widgetAction = qobject_cast<QWidgetAction *>(action);
 
     switch (event->type()) {

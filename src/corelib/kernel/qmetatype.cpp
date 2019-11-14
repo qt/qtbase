@@ -37,6 +37,8 @@
 **
 ****************************************************************************/
 
+#include <bitset>
+
 #include "qmetatype.h"
 #include "qmetatype_p.h"
 #include "qobjectdefs.h"
@@ -2415,6 +2417,50 @@ const QMetaObject *metaObjectForQWidget()
     if (!qMetaTypeWidgetsHelper)
         return nullptr;
     return qMetaObjectWidgetsHelper;
+}
+
+void qt5CompatibilityHookPostRegister(int id, const QByteArray &normalizedTypeName)
+{
+    // In Qt6 QList got typedef'ed to QVector. To keep runtime behavior compatibility
+    // with Qt5 we install corresponding aliases. For example if one register
+    //   QVector<QVector<int>>
+    // we need to register the type plus all possible aliases:
+    //   QVector<QList<int>>
+    //   QList<QVector<int>>
+    //   QList<QList<int>>
+    // ### Qt6 TODO This is slow, as it allocates couple of strings we would need to
+    // if def this call with something like QT_NO_QLIST
+    const char *vectorName = "QVector<";
+    const char *listName = "QList<";
+
+    auto isSubstringOfAType = [](char c) { return c != ' ' && c != ',' && c != '<'; };
+    QVarLengthArray<int> indexes;
+
+    for (auto containerName: {vectorName, listName}) {
+        for (int i = normalizedTypeName.indexOf(containerName, 0); i != -1; i = normalizedTypeName.indexOf(containerName, i + 1)) {
+                if (!i || (i > 0 && !isSubstringOfAType(normalizedTypeName[i - 1])))
+                    indexes.append(i);
+            }
+    }
+    // To avoid problems with the constantly changing size we start replacements
+    // from the end of normalizedTypeName
+    std::sort(indexes.rbegin(), indexes.rend());
+
+    for (quint64 combination = 1; ; ++combination) {
+        std::bitset<64> bits(combination);
+        QByteArray name = normalizedTypeName;
+        for (auto j = 0; j < indexes.size(); ++j) {
+            if (bits.test(j)) {
+                auto i = indexes[j];
+                auto replaceFrom = normalizedTypeName[i + 1] == 'V' ? vectorName : listName;
+                auto replaceTo = normalizedTypeName[i + 1] == 'V' ? listName : vectorName;
+                name.replace(i, sizeof(replaceFrom), replaceTo);
+            }
+        }
+        QMetaType::registerNormalizedTypedef(name, id);
+        if (bits.count() >= size_t(indexes.size()))
+            break;
+    }
 }
 }
 

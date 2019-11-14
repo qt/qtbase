@@ -827,7 +827,7 @@ void tst_QVarLengthArray::operators()
 
     // +=: not provided, emulate
     //myvla += myvlatwo;
-    Q_FOREACH (const QString &s, myvlatwo)
+    for (const QString &s : qAsConst(myvlatwo))
         myvla.push_back(s);
     QCOMPARE(myvla, combined);
 

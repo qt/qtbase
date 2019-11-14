@@ -88,7 +88,9 @@
 
 #include "qwidget_p.h"
 #include <QtGui/private/qwindow_p.h>
-#include "qaction_p.h"
+#if QT_CONFIG(action)
+#  include "qaction_p.h"
+#endif
 #include "qlayout_p.h"
 #if QT_CONFIG(graphicsview)
 #include "QtWidgets/qgraphicsproxywidget.h"

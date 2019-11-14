@@ -50,7 +50,6 @@ template <class Key, class T> class QHash;
 #ifndef QT_NO_LINKED_LIST
 template <class T> class QLinkedList;
 #endif
-template <class T> class QList;
 template <class Key, class T> class QMap;
 template <class Key, class T> class QMultiHash;
 template <class Key, class T> class QMultiMap;
@@ -60,6 +59,7 @@ template <class T> class QSet;
 template <class T> class QStack;
 template<class T, int Prealloc = 256> class QVarLengthArray;
 template <class T> class QVector;
+template<typename T> using QList = QVector<T>;
 
 QT_END_NAMESPACE
 

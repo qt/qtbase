@@ -338,7 +338,7 @@ void tst_QStateMachine::transitionToRootState()
     machine.postEvent(new QEvent(QEvent::User));
     QTest::ignoreMessage(QtWarningMsg,
                          "Unrecoverable error detected in running state machine: "
-                         "Child mode of state machine 'machine' is not 'ExclusiveStates'!");
+                         "Child mode of state machine 'machine' is not 'ExclusiveStates'.");
     QCoreApplication::processEvents();
     QVERIFY(machine.configuration().isEmpty());
     QVERIFY(!machine.isRunning());
@@ -1064,7 +1064,7 @@ void tst_QStateMachine::transitionToStateNotInGraph()
 
     machine.start();
     QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: "
-                                       "Child mode of state machine '' is not 'ExclusiveStates'!");
+                                       "Child mode of state machine '' is not 'ExclusiveStates'.");
     QCoreApplication::processEvents();
 
     QCOMPARE(machine.isRunning(), false);
@@ -2103,7 +2103,7 @@ void tst_QStateMachine::parallelRootState()
     QVERIFY(finishedSpy.isValid());
     machine.start();
     QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: "
-                                       "Child mode of state machine '' is not 'ExclusiveStates'!");
+                                       "Child mode of state machine '' is not 'ExclusiveStates'.");
     QTRY_COMPARE(startedSpy.count(), 1);
     QCOMPARE(machine.configuration().size(), 4);
     QVERIFY(machine.configuration().contains(s1));
@@ -3316,7 +3316,7 @@ void tst_QStateMachine::targetStateWithNoParent()
 
     machine.start();
     QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: "
-                                       "Child mode of state machine '' is not 'ExclusiveStates'!");
+                                       "Child mode of state machine '' is not 'ExclusiveStates'.");
     TEST_ACTIVE_CHANGED(s1, 2);
     QTRY_COMPARE(startedSpy.count(), 1);
     QCOMPARE(machine.isRunning(), false);

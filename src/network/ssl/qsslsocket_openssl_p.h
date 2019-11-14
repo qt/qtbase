@@ -130,9 +130,7 @@ public:
     BIO *writeBio;
     SSL_SESSION *session;
     QVector<QSslErrorEntry> errorList;
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
     static int s_indexForSSLExtraData; // index used in SSL_get_ex_data to get the matching QSslSocketBackendPrivate
-#endif
 
     bool inSetAndEmitError = false;
 

@@ -162,7 +162,6 @@ Q_DECLARE_METATYPE(QSslSocket::SslMode)
 Q_DECLARE_METATYPE(QSslSocket::PeerVerifyMode)
 Q_DECLARE_METATYPE(QList<QSslCertificate>)
 Q_DECLARE_METATYPE(QSslKey)
-Q_DECLARE_METATYPE(QVector<QSslError>)
 
 QT_BEGIN_NAMESPACE
 
@@ -837,10 +836,6 @@ void tst_QDtls::verifyServerCertificate()
 
 void tst_QDtls::verifyClientCertificate_data()
 {
-#if !QT_CONFIG(opensslv11)
-    QSKIP("This test is not supposed to work with OpenSSL version below 1.1");
-#endif
-
     QTest::addColumn<QSslSocket::PeerVerifyMode>("verifyMode");
     QTest::addColumn<QList<QSslCertificate>>("clientCerts");
     QTest::addColumn<QSslKey>("clientKey");
@@ -1131,7 +1126,7 @@ void tst_QDtls::handshakeReadyRead()
     QUdpSocket *socket = qobject_cast<QUdpSocket *>(sender());
     Q_ASSERT(socket);
 
-    if (!socket->pendingDatagramSize())
+    if (socket->pendingDatagramSize() <= 0)
         return;
 
     const bool isServer = socket == &serverSocket;

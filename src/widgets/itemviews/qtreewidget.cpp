@@ -646,7 +646,7 @@ void QTreeModel::ensureSorted(int column, Qt::SortOrder order,
         lit = lst.begin() + tmpitepos;
 
         lit = sortedInsertionIterator(lit, lst.end(), order, item);
-        int newRow = qMax(lit - lst.begin(), 0);
+        int newRow = qMax<qsizetype>(lit - lst.begin(), 0);
 
         if ((newRow < oldRow) && !(*item < *lst.at(oldRow - 1)) && !(*lst.at(oldRow - 1) < *item ))
             newRow = oldRow;

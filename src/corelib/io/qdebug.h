@@ -234,12 +234,6 @@ inline QDebug printSequentialContainer(QDebug debug, const char *which, const Se
 
 } // namespace QtPrivate
 
-template <class T>
-inline QDebug operator<<(QDebug debug, const QList<T> &list)
-{
-    return QtPrivate::printSequentialContainer(debug, "" /*for historical reasons*/, list);
-}
-
 template <typename T>
 inline QDebug operator<<(QDebug debug, const QVector<T> &vec)
 {

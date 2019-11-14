@@ -27,7 +27,6 @@
 ****************************************************************************/
 
 #include <QDebug>
-//#define QT_STRICT_ITERATORS
 #include <QHash>
 
 void testEraseNoError()

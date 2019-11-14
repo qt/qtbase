@@ -196,7 +196,7 @@ private:
         RandomEngine &engine() { return twister; }
         const RandomEngine &engine() const { return twister; }
 #else
-        std::aligned_storage<sizeof(RandomEngine), Q_ALIGNOF(RandomEngine)>::type buffer;
+        std::aligned_storage<sizeof(RandomEngine), alignof(RandomEngine)>::type buffer;
         RandomEngine &engine() { return reinterpret_cast<RandomEngine &>(buffer); }
         const RandomEngine &engine() const { return reinterpret_cast<const RandomEngine &>(buffer); }
 #endif

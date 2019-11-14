@@ -549,6 +549,10 @@
     If the property references an enum declared with Q_ENUMS, you should
     reference its constants by name, i.e., not their numeric value.
 
+    \note Use the qproperty syntax with care, as it modifies the
+    widget that is being painted. Also, the qproperty syntax is evaluated only
+    once, which is when the widget is polished by the style. This means that any
+    attempt to use them in pseudo-states such as QPushButton:hover, will not work.
 */
 
 /*!

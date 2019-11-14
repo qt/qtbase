@@ -52,6 +52,8 @@ private Q_SLOTS:
     void testNumbers_3();
     void testNumbers_4();
 
+    void testNumberComparisons();
+
     void testObjectSimple();
     void testObjectSmallKeys();
     void testArraySimple();
@@ -218,26 +220,32 @@ void tst_QtJson::testNumbers()
     {
         int numbers[] = {
             0,
-            -1,
             1,
+            2,
+            -1,
+            -2,
+            (1<<25),
             (1<<26),
             (1<<27),
             (1<<28),
+            -(1<<25),
             -(1<<26),
             -(1<<27),
             -(1<<28),
             (1<<26) - 1,
             (1<<27) - 1,
             (1<<28) - 1,
+            (1<<29) - 1,
             -((1<<26) - 1),
             -((1<<27) - 1),
-            -((1<<28) - 1)
+            -((1<<28) - 1),
+            -((1<<29) - 1)
         };
         int n = sizeof(numbers)/sizeof(int);
 
         QJsonArray array;
         for (int i = 0; i < n; ++i)
-            array.append((double)numbers[i]);
+            array.append(numbers[i]);
 
         QByteArray serialized = QJsonDocument(array).toJson();
         QJsonDocument json = QJsonDocument::fromJson(serialized);
@@ -246,8 +254,10 @@ void tst_QtJson::testNumbers()
         QCOMPARE(array.size(), array2.size());
         for (int i = 0; i < array.size(); ++i) {
             QCOMPARE(array.at(i).type(), QJsonValue::Double);
+            QCOMPARE(array.at(i).toInt(), numbers[i]);
             QCOMPARE(array.at(i).toDouble(), (double)numbers[i]);
             QCOMPARE(array2.at(i).type(), QJsonValue::Double);
+            QCOMPARE(array2.at(i).toInt(), numbers[i]);
             QCOMPARE(array2.at(i).toDouble(), (double)numbers[i]);
         }
     }
@@ -255,8 +265,10 @@ void tst_QtJson::testNumbers()
     {
         qint64 numbers[] = {
             0,
-            -1,
             1,
+            2,
+            -1,
+            -2,
             (1ll<<54),
             (1ll<<55),
             (1ll<<56),
@@ -266,15 +278,21 @@ void tst_QtJson::testNumbers()
             (1ll<<54) - 1,
             (1ll<<55) - 1,
             (1ll<<56) - 1,
+            (1ll<<57) - 1,
+            (1ll<<58) - 1,
+            (1ll<<59) + 1001,
             -((1ll<<54) - 1),
             -((1ll<<55) - 1),
-            -((1ll<<56) - 1)
+            -((1ll<<56) - 1),
+            -((1ll<<57) - 1),
+            -((1ll<<58) - 1),
+            -((1ll<<59) + 1001),
         };
         int n = sizeof(numbers)/sizeof(qint64);
 
         QJsonArray array;
         for (int i = 0; i < n; ++i)
-            array.append((double)numbers[i]);
+            array.append(QJsonValue(numbers[i]));
 
         QByteArray serialized = QJsonDocument(array).toJson();
         QJsonDocument json = QJsonDocument::fromJson(serialized);
@@ -283,8 +301,10 @@ void tst_QtJson::testNumbers()
         QCOMPARE(array.size(), array2.size());
         for (int i = 0; i < array.size(); ++i) {
             QCOMPARE(array.at(i).type(), QJsonValue::Double);
+            QCOMPARE(array.at(i).toInteger(), numbers[i]);
             QCOMPARE(array.at(i).toDouble(), (double)numbers[i]);
             QCOMPARE(array2.at(i).type(), QJsonValue::Double);
+            QCOMPARE(array2.at(i).toInteger(), numbers[i]);
             QCOMPARE(array2.at(i).toDouble(), (double)numbers[i]);
         }
     }
@@ -422,6 +442,46 @@ void tst_QtJson::testNumbers_4()
             "    -18446744073709552000\n"
             "]\n";
     QCOMPARE(json, expected);
+
+    QJsonArray array2;
+    array2 << QJsonValue(Q_INT64_C(+1000000000000000));
+    array2 << QJsonValue(Q_INT64_C(-1000000000000000));
+    array2 << QJsonValue(Q_INT64_C(+9007199254740992));
+    array2 << QJsonValue(Q_INT64_C(-9007199254740992));
+    array2 << QJsonValue(Q_INT64_C(+9223372036854775807));
+    array2 << QJsonValue(Q_INT64_C(-9223372036854775807));
+    const QByteArray json2(QJsonDocument(array2).toJson());
+    const QByteArray expected2 =
+            "[\n"
+            "    1000000000000000,\n"
+            "    -1000000000000000,\n"
+            "    9007199254740992,\n"
+            "    -9007199254740992,\n"
+            "    9223372036854775807,\n"
+            "    -9223372036854775807\n"
+            "]\n";
+    QCOMPARE(json2, expected2);
+}
+
+void tst_QtJson::testNumberComparisons()
+{
+    // QJsonValues created using doubles only have double precision
+    QJsonValue llMinDbl(-9223372036854775807.0);
+    QJsonValue llMinPlus1Dbl(-9223372036854775806.0);
+    QCOMPARE(llMinDbl == llMinPlus1Dbl, -9223372036854775807.0 == -9223372036854775806.0); // true
+
+    // QJsonValues created using qint64 have full qint64 precision
+    QJsonValue llMin(Q_INT64_C(-9223372036854775807));
+    QJsonValue llMinPlus1(Q_INT64_C(-9223372036854775806));
+    QCOMPARE(llMin == llMinPlus1, Q_INT64_C(-9223372036854775807) == Q_INT64_C(-9223372036854775806)); // false
+
+    // The different storage formats should be able to compare as their C++ versions (all true)
+    QCOMPARE(llMin == llMinDbl, Q_INT64_C(-9223372036854775807) == -9223372036854775807.0);
+    QCOMPARE(llMinDbl == llMin, -9223372036854775807.0 == Q_INT64_C(-9223372036854775807));
+    QCOMPARE(llMinPlus1 == llMinPlus1Dbl, Q_INT64_C(-9223372036854775806) == -9223372036854775806.0);
+    QCOMPARE(llMinPlus1Dbl == llMinPlus1, -9223372036854775806.0 == Q_INT64_C(-9223372036854775806));
+    QCOMPARE(llMinPlus1 == llMinDbl, Q_INT64_C(-9223372036854775806) == -9223372036854775807.0);
+    QCOMPARE(llMinPlus1Dbl == llMin, -9223372036854775806.0 == Q_INT64_C(-9223372036854775807));
 }
 
 void tst_QtJson::testObjectSimple()
@@ -1160,8 +1220,8 @@ void tst_QtJson::fromVariant_data()
     bool boolValue = true;
     int intValue = -1;
     uint uintValue = 1;
-    long long longlongValue = -2;
-    unsigned long long ulonglongValue = 2;
+    qlonglong longlongValue = -2;
+    qulonglong ulonglongValue = 2;
     float floatValue = 3.3f;
     double doubleValue = 4.4;
     QString stringValue("str");
@@ -1207,7 +1267,7 @@ void tst_QtJson::fromVariant_data()
     QTest::newRow("nullptr") << QVariant::fromValue(nullptr) <<  QJsonValue(QJsonValue::Null);
     QTest::newRow("bool") << QVariant(boolValue) <<  QJsonValue(boolValue);
     QTest::newRow("int") << QVariant(intValue) <<  QJsonValue(intValue);
-    QTest::newRow("uint") << QVariant(uintValue) <<  QJsonValue(static_cast<double>(uintValue));
+    QTest::newRow("uint") << QVariant(uintValue) <<  QJsonValue(static_cast<qint64>(uintValue));
     QTest::newRow("longlong") << QVariant(longlongValue) <<  QJsonValue(longlongValue);
     QTest::newRow("ulonglong") << QVariant(ulonglongValue) <<  QJsonValue(static_cast<double>(ulonglongValue));
     QTest::newRow("float") << QVariant(floatValue) <<  QJsonValue(floatValue);

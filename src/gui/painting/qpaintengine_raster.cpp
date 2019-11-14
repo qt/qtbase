@@ -1319,7 +1319,7 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
         QPaintEngineEx::clip(rect, op);
         return;
 
-    } else if (!setClipRectInDeviceCoords(s->matrix.mapRect(rect), op)) {
+    } else if (!setClipRectInDeviceCoords(s->matrix.mapRect(QRectF(rect)).toRect(), op)) {
         QPaintEngineEx::clip(rect, op);
         return;
     }

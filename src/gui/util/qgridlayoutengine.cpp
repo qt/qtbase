@@ -960,7 +960,7 @@ void QGridLayoutEngine::insertItem(QGridLayoutItem *item, int index)
 {
     maybeExpandGrid(item->lastRow(), item->lastColumn());
 
-    if (index == -1)
+    if (index < 0 || index >= q_items.size())
         q_items.append(item);
     else
         q_items.insert(index, item);

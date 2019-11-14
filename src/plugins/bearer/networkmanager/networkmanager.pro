@@ -1,15 +1,13 @@
 TARGET = qnmbearer
 
-QT = core network-private dbus
+QT = core network-private dbus linuxofono_support_private
 
 HEADERS += qnetworkmanagerservice.h \
-           qnetworkmanagerengine.h \
-           ../linux_common/qofonoservice_linux_p.h
+           qnetworkmanagerengine.h
 
 SOURCES += main.cpp \
            qnetworkmanagerservice.cpp \
-           qnetworkmanagerengine.cpp \
-           ../linux_common/qofonoservice_linux.cpp
+           qnetworkmanagerengine.cpp
 
 OTHER_FILES += networkmanager.json
 

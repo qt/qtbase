@@ -35,59 +35,106 @@
 #include <math.h>
 #include <float.h>
 
+namespace {
+    template <typename F> struct Fuzzy {};
+    /* Data taken from qglobal.h's implementation of qFuzzyCompare:
+     * qFuzzyCompare conflates values with fractional difference up to (and
+     * including) the given scale.
+     */
+    template <> struct Fuzzy<double> { constexpr static double scale = 1e12; };
+    template <> struct Fuzzy<float> { constexpr static float scale = 1e5f; };
+}
+
 class tst_QNumeric: public QObject
 {
     Q_OBJECT
 
-private slots:
-    void fuzzyCompare_data();
-    void fuzzyCompare();
-    void rawNaN_data();
-    void rawNaN();
+    // Support for floating-point:
+    template<typename F> inline void fuzzyCompare_data();
+    template<typename F> inline void fuzzyCompare();
+    template<typename F> inline void checkNaN(F nan);
+    template<typename F> inline void rawNaN_data();
+    template<typename F> inline void rawNaN();
 #if QT_CONFIG(signaling_nan)
-    void distinctNaN();
+    template<typename F> inline void distinctNaN();
 #endif
-    void generalNaN_data();
-    void generalNaN();
-    void infinity();
-    void classifyfp();
-    void floatDistance_data();
-    void floatDistance();
-    void floatDistance_double_data();
-    void floatDistance_double();
+    template<typename F, typename Whole> inline void generalNaN_data();
+    template<typename F, typename Whole> inline void generalNaN();
+    template<typename F> inline void infinity();
+    template<typename F> inline void classifyfp();
+    template<typename F, typename Count> inline void distance_data();
+    template<typename F, typename Count> inline void distance();
+
+private slots:
+    // Floating-point tests:
+    void fuzzyCompareF_data() { fuzzyCompare_data<float>(); }
+    void fuzzyCompareF() { fuzzyCompare<float>(); }
+    void fuzzyCompareD_data() { fuzzyCompare_data<double>(); }
+    void fuzzyCompareD() { fuzzyCompare<double>(); }
+    void rawNaNF_data() { rawNaN_data<float>(); }
+    void rawNaNF() { rawNaN<float>(); }
+    void rawNaND_data() { rawNaN_data<double>(); }
+    void rawNaND() { rawNaN<double>(); }
+#if QT_CONFIG(signaling_nan)
+    void distinctNaNF();
+    void distinctNaND() { distinctNaN<double>(); }
+#endif
+    void generalNaNd_data() { generalNaN_data<double, quint64>(); }
+    void generalNaNd() { generalNaN<double, quint64>(); }
+    void generalNaNf_data() { generalNaN_data<float, quint32>(); }
+    void generalNaNf() { generalNaN<float, quint32>(); }
+    void infinityF() { infinity<float>(); }
+    void infinityD() { infinity<double>(); }
+    void classifyF() { classifyfp<float>(); }
+    void classifyD() { classifyfp<double>(); }
+    void floatDistance_data() { distance_data<float, quint32>(); }
+    void floatDistance() { distance<float, quint32>(); }
+    void doubleDistance_data() { distance_data<double, quint64>(); }
+    void doubleDistance() { distance<double, quint64>(); }
+
+    // Whole number tests:
     void addOverflow_data();
     void addOverflow();
     void mulOverflow_data();
     void mulOverflow();
     void signedOverflow();
-private:
-    void checkNaN(double nan);
 };
 
+// Floating-point tests:
+
+template<typename F>
 void tst_QNumeric::fuzzyCompare_data()
 {
-    QTest::addColumn<double>("val1");
-    QTest::addColumn<double>("val2");
+    QTest::addColumn<F>("val1");
+    QTest::addColumn<F>("val2");
     QTest::addColumn<bool>("isEqual");
+    const F zero(0), one(1), ten(10);
+    const F huge = Fuzzy<F>::scale, tiny = one / huge;
+    const F deci(.1), giga(1e9), nano(1e-9), big(1e7), small(1e-10);
 
-    QTest::newRow("zero") << 0.0 << 0.0 << true;
-    QTest::newRow("ten") << 10.0 << 10.0 << true;
-    QTest::newRow("large") << 1000000000.0 << 1000000000.0 << true;
-    QTest::newRow("small") << 0.00000000001 << 0.00000000001 << true;
-    QTest::newRow("eps") << 10.000000000000001 << 10.00000000000002 << true;
-    QTest::newRow("eps2") << 10.000000000000001 << 10.000000000000009 << true;
+    QTest::newRow("zero") << zero << zero << true;
+    QTest::newRow("ten") << ten << ten << true;
+    QTest::newRow("large") << giga << giga << true;
+    QTest::newRow("small") << small << small << true;
+    QTest::newRow("10+9*tiny==10") << (ten + 9 * tiny) << ten << true;
+    QTest::newRow("huge+.9==huge") << (huge + 9 * deci) << huge << true;
+    QTest::newRow("eps2") << (ten + tiny) << (ten + 2 * tiny) << true;
+    QTest::newRow("eps9") << (ten + tiny) << (ten + 9 * tiny) << true;
 
-    QTest::newRow("mis1") << 0.0 << 1.0 << false;
-    QTest::newRow("mis2") << 0.0 << 10000000.0 << false;
-    QTest::newRow("mis3") << 0.0 << 0.000000001 << false;
-    QTest::newRow("mis4") << 100000000.0 << 0.000000001 << false;
-    QTest::newRow("mis5") << 0.0000000001 << 0.000000001 << false;
+    QTest::newRow("0!=1") << zero << one << false;
+    QTest::newRow("0!=big") << zero << big << false;
+    QTest::newRow("0!=nano") << zero << nano << false;
+    QTest::newRow("giga!=nano") << giga << nano << false;
+    QTest::newRow("small!=nano") << small << nano << false;
+    QTest::newRow("huge+1.1!=huge") << (huge + 1 + deci) << huge << false;
+    QTest::newRow("1+1.1*tiny!=1") << (one + tiny * (one + deci)) << one << false;
 }
 
+template<typename F>
 void tst_QNumeric::fuzzyCompare()
 {
-    QFETCH(double, val1);
-    QFETCH(double, val2);
+    QFETCH(F, val1);
+    QFETCH(F, val2);
     QFETCH(bool, isEqual);
 
     QCOMPARE(::qFuzzyCompare(val1, val2), isEqual);
@@ -101,11 +148,12 @@ void tst_QNumeric::fuzzyCompare()
 #  pragma GCC optimize "no-fast-math"
 #endif
 
-void tst_QNumeric::checkNaN(double nan)
+template<typename F>
+void tst_QNumeric::checkNaN(F nan)
 {
 #define CHECKNAN(value) \
     do { \
-        const double v = (value); \
+        const F v = (value); \
         QCOMPARE(qFpClassify(v), FP_NAN); \
         QVERIFY(qIsNaN(v)); \
         QVERIFY(!qIsFinite(v)); \
@@ -134,211 +182,197 @@ void tst_QNumeric::checkNaN(double nan)
 #undef CHECKNAN
 }
 
+template<typename F>
 void tst_QNumeric::rawNaN_data()
 {
 #if defined __FAST_MATH__ && (__GNUC__ * 100 + __GNUC_MINOR__ < 404)
     QSKIP("Non-conformant fast math mode is enabled, cannot run test");
 #endif
-    QTest::addColumn<double>("nan");
+    QTest::addColumn<F>("nan");
 
-    QTest::newRow("quiet") << qQNaN();
+    QTest::newRow("quiet") << F(qQNaN());
 #if QT_CONFIG(signaling_nan)
-    QTest::newRow("signaling") << qSNaN();
+    QTest::newRow("signaling") << F(qSNaN());
 #endif
 }
 
+template<typename F>
 void tst_QNumeric::rawNaN()
 {
-    QFETCH(double, nan);
+    QFETCH(F, nan);
+#ifdef Q_OS_WASM
+#  ifdef __asmjs
+    QEXPECT_FAIL("", "Fastcomp conflates quiet and signaling NaNs", Continue);
+#  endif // but the modern clang compiler handls it fine.
+#endif
     checkNaN(nan);
 }
 
 #if QT_CONFIG(signaling_nan)
+template<typename F>
 void tst_QNumeric::distinctNaN()
 {
-    const double qnan = qQNaN();
-    const double snan = qSNaN();
-    QVERIFY(memcmp(&qnan, &snan, sizeof(double)) != 0);
+    const F qnan = qQNaN();
+    const F snan = qSNaN();
+    QVERIFY(memcmp(&qnan, &snan, sizeof(F)) != 0);
 }
-#endif
 
+void tst_QNumeric::distinctNaNF() {
+#ifdef Q_CC_MSVC
+    QEXPECT_FAIL("", "MSVC's float conflates quiet and signaling NaNs", Continue);
+#endif
+    distinctNaN<float>();
+}
+#endif // signaling_nan
+
+template<typename F, typename Whole>
 void tst_QNumeric::generalNaN_data()
 {
-    QTest::addColumn<int>("most");
-    QTest::addColumn<int>("next");
-    QTest::addColumn<int>("least");
+    Q_STATIC_ASSERT(sizeof(F) == sizeof(Whole));
+    QTest::addColumn<Whole>("whole");
     // Every value with every bit of the exponent set is a NaN.
     // Sign and mantissa can be anything without interfering with that.
-    // The 0x7f bits of most and the 0xf0 bits of next are the exponent.
+    using Bounds = std::numeric_limits<F>;
+    // Bounds::digits is one more than the number of bits used to encode the mantissa:
+    const int mantissaBits = Bounds::digits - 1;
+    // One bit for sign, the rest are mantissa and exponent:
+    const int exponentBits = sizeof(F) * CHAR_BIT - 1 - mantissaBits;
 
-    QTest::newRow("lowload") << 0x7f << 0xf0 << 1;
-    QTest::newRow("sign-lowload") << 0xff << 0xf0 << 1;
-    QTest::newRow("highload") << 0x7f << 0xf1 << 0;
-    QTest::newRow("sign-highload") << 0xff << 0xf1 << 0;
+    const Whole exponent = ((Whole(1) << exponentBits) - 1) << mantissaBits;
+    const Whole sign = Whole(1) << (exponentBits + mantissaBits);
+    const Whole mantissaTop = Whole(1) << (mantissaBits - 1);
+
+    QTest::newRow("lowload") << (exponent | 1);
+    QTest::newRow("sign-lowload") << (sign | exponent | 1);
+    QTest::newRow("highload") << (exponent | mantissaTop);
+    QTest::newRow("sign-highload") << (sign | exponent | mantissaTop);
 }
 
+template<typename F, typename Whole>
 void tst_QNumeric::generalNaN()
 {
-    QFETCH(int, most);
-    QFETCH(int, next);
-    QFETCH(int, least);
-    double nan;
-    Q_STATIC_ASSERT(sizeof(double) == 8);
-#ifdef Q_LITTLE_ENDIAN
-    const uchar bytes[] = { uchar(least), 0, 0, 0, 0, 0, uchar(next), uchar(most) };
-#else
-    const uchar bytes[] = { uchar(most), uchar(next), 0, 0, 0, 0, 0, uchar(least) };
-#endif
-    memcpy(&nan, bytes, 8);
+    Q_STATIC_ASSERT(sizeof(F) == sizeof(Whole));
+    QFETCH(const Whole, whole);
+    F nan;
+    memcpy(&nan, &whole, sizeof(F));
     checkNaN(nan);
 }
 
+template<typename F>
 void tst_QNumeric::infinity()
 {
-    const double inf = qInf();
-    QVERIFY(inf > 0);
-    QVERIFY(-inf < 0);
+    const F inf = qInf();
+    const F zero(0), one(1), two(2);
+    QVERIFY(inf > zero);
+    QVERIFY(-inf < zero);
     QVERIFY(qIsInf(inf));
     QCOMPARE(inf, inf);
     QCOMPARE(-inf, -inf);
     QVERIFY(qIsInf(-inf));
-    QVERIFY(qIsInf(inf + 1));
-    QVERIFY(qIsInf(inf - 1));
-    QVERIFY(qIsInf(-inf - 1));
-    QVERIFY(qIsInf(-inf + 1));
-    QVERIFY(qIsInf(inf * 2.0));
-    QVERIFY(qIsInf(-inf * 2.0));
-    QVERIFY(qIsInf(inf / 2.0));
-    QVERIFY(qIsInf(-inf / 2.0));
-    QVERIFY(qFuzzyCompare(1.0 / inf, 0.0));
+    QVERIFY(qIsInf(inf + one));
+    QVERIFY(qIsInf(inf - one));
+    QVERIFY(qIsInf(-inf - one));
+    QVERIFY(qIsInf(-inf + one));
+    QVERIFY(qIsInf(inf * two));
+    QVERIFY(qIsInf(-inf * two));
+    QVERIFY(qIsInf(inf / two));
+    QVERIFY(qIsInf(-inf / two));
+    QVERIFY(qFuzzyCompare(one / inf, zero));
     QCOMPARE(1.0 / inf, 0.0);
-    QVERIFY(qFuzzyCompare(1.0 / -inf, 0.0));
-    QCOMPARE(1.0 / -inf, 0.0);
-    QVERIFY(qIsNaN(0.0 * inf));
-    QVERIFY(qIsNaN(0.0 * -inf));
+    QVERIFY(qFuzzyCompare(one / -inf, zero));
+    QCOMPARE(one / -inf, zero);
+    QVERIFY(qIsNaN(zero * inf));
+    QVERIFY(qIsNaN(zero * -inf));
 }
 
+template<typename F>
 void tst_QNumeric::classifyfp()
 {
+    using Bounds = std::numeric_limits<F>;
+    const F huge = Bounds::max();
+    const F tiny = Bounds::min();
     // NaNs already handled, see checkNaN()'s callers.
+    const F one(1), two(2), inf(qInf());
 
-    QCOMPARE(qFpClassify(qInf()), FP_INFINITE);
-    QCOMPARE(qFpClassify(-qInf()), FP_INFINITE);
-    QCOMPARE(qFpClassify(DBL_MAX * 2.0), FP_INFINITE);
-    QCOMPARE(qFpClassify(FLT_MAX * 2.f), FP_INFINITE);
-    QCOMPARE(qFpClassify(DBL_MAX * -2.0), FP_INFINITE);
-    QCOMPARE(qFpClassify(FLT_MAX * -2.f), FP_INFINITE);
+    QCOMPARE(qFpClassify(inf), FP_INFINITE);
+    QCOMPARE(qFpClassify(-inf), FP_INFINITE);
+    QCOMPARE(qFpClassify(huge * two), FP_INFINITE);
+    QCOMPARE(qFpClassify(huge * -two), FP_INFINITE);
 
-    QCOMPARE(qFpClassify(1.0), FP_NORMAL);
-    QCOMPARE(qFpClassify(DBL_MAX), FP_NORMAL);
-    QCOMPARE(qFpClassify(-DBL_MAX), FP_NORMAL);
-    QCOMPARE(qFpClassify(DBL_MIN), FP_NORMAL);
-    QCOMPARE(qFpClassify(-DBL_MIN), FP_NORMAL);
-    QCOMPARE(qFpClassify(DBL_MIN / 2.0), FP_SUBNORMAL);
-    QCOMPARE(qFpClassify(DBL_MIN / -2.0), FP_SUBNORMAL);
-
-    QCOMPARE(qFpClassify(1.f), FP_NORMAL);
-    QCOMPARE(qFpClassify(FLT_MAX), FP_NORMAL);
-    QCOMPARE(qFpClassify(-FLT_MAX), FP_NORMAL);
-    QCOMPARE(qFpClassify(FLT_MIN), FP_NORMAL);
-    QCOMPARE(qFpClassify(-FLT_MIN), FP_NORMAL);
-    QCOMPARE(qFpClassify(FLT_MIN / 2.f), FP_SUBNORMAL);
-    QCOMPARE(qFpClassify(FLT_MIN / -2.f), FP_SUBNORMAL);
+    QCOMPARE(qFpClassify(one), FP_NORMAL);
+    QCOMPARE(qFpClassify(huge), FP_NORMAL);
+    QCOMPARE(qFpClassify(-huge), FP_NORMAL);
+    QCOMPARE(qFpClassify(tiny), FP_NORMAL);
+    QCOMPARE(qFpClassify(-tiny), FP_NORMAL);
+    if (Bounds::has_denorm == std::denorm_present) {
+        QCOMPARE(qFpClassify(tiny / two), FP_SUBNORMAL);
+        QCOMPARE(qFpClassify(tiny / -two), FP_SUBNORMAL);
+    }
 }
 
-void tst_QNumeric::floatDistance_data()
+template<typename F, typename Count>
+void tst_QNumeric::distance_data()
 {
-    QTest::addColumn<float>("val1");
-    QTest::addColumn<float>("val2");
-    QTest::addColumn<quint32>("expectedDistance");
+    using Bounds = std::numeric_limits<F>;
+    const F huge = Bounds::max();
+    const F tiny = Bounds::min();
 
-    // exponent: 8 bits
-    // mantissa: 23 bits
-    const quint32 number_of_denormals = (1 << 23) - 1;  // Set to 0 if denormals are not included
+    QTest::addColumn<F>("from");
+    QTest::addColumn<F>("stop");
+    QTest::addColumn<Count>("expectedDistance");
 
-    quint32 _0_to_1 = quint32((1 << 23) * 126 + 1 + number_of_denormals); // We need +1 to include the 0
-    quint32 _1_to_2 = quint32(1 << 23);
+    using Bounds = std::numeric_limits<F>;
+    const int mantissaBits = Bounds::digits - 1;
+    const int exponentBits = sizeof(F) * CHAR_BIT - 1 - mantissaBits;
 
-    // We don't need +1 because FLT_MAX has all bits set in the mantissa. (Thus mantissa
+    // Set to 1 and 0 if denormals are not included:
+    const Count count_0_to_tiny = Count(1) << mantissaBits;
+    const Count count_denormals = count_0_to_tiny - 1;
+
+    // We need +1 to include the 0:
+    const Count count_0_to_1
+        = (Count(1) << mantissaBits) * ((Count(1) << (exponentBits - 1)) - 2)
+          + 1 + count_denormals;
+    const Count count_1_to_2 = Count(1) << mantissaBits;
+
+    // We don't need +1 because huge has all bits set in the mantissa. (Thus mantissa
     // have not wrapped back to 0, which would be the case for 1 in _0_to_1
-    quint32 _0_to_FLT_MAX = quint32((1 << 23) * 254) + number_of_denormals;
+    const Count count_0_to_huge
+        = (Count(1) << mantissaBits) * ((Count(1) << exponentBits) - 2)
+          + count_denormals;
 
-    quint32 _0_to_FLT_MIN = 1 + number_of_denormals;
-    QTest::newRow("[0,FLT_MIN]") << 0.F << FLT_MIN << _0_to_FLT_MIN;
-    QTest::newRow("[0,FLT_MAX]") << 0.F << FLT_MAX << _0_to_FLT_MAX;
-    QTest::newRow("[1,1.5]") << 1.0F << 1.5F << quint32(1 << 22);
-    QTest::newRow("[0,1]") << 0.F << 1.0F << _0_to_1;
-    QTest::newRow("[0.5,1]") << 0.5F << 1.0F << quint32(1 << 23);
-    QTest::newRow("[1,2]") << 1.F << 2.0F << _1_to_2;
-    QTest::newRow("[-1,+1]") << -1.F << +1.0F << 2 * _0_to_1;
-    QTest::newRow("[-1,0]") << -1.F << 0.0F << _0_to_1;
-    QTest::newRow("[-1,FLT_MAX]") << -1.F << FLT_MAX << _0_to_1 + _0_to_FLT_MAX;
-    QTest::newRow("[-2,-1") << -2.F << -1.F << _1_to_2;
-    QTest::newRow("[-1,-2") << -1.F << -2.F << _1_to_2;
-    QTest::newRow("[FLT_MIN,FLT_MAX]") << FLT_MIN << FLT_MAX << _0_to_FLT_MAX - _0_to_FLT_MIN;
-    QTest::newRow("[-FLT_MAX,FLT_MAX]") << -FLT_MAX << FLT_MAX << (2*_0_to_FLT_MAX);
-    float denormal = FLT_MIN;
-    denormal/=2.0F;
-    QTest::newRow("denormal") << 0.F << denormal << _0_to_FLT_MIN/2;
+    const F zero(0), half(.5), one(1), sesqui(1.5), two(2);
+    const F denormal = tiny / two;
+
+    QTest::newRow("[0,tiny]") << zero << tiny << count_0_to_tiny;
+    QTest::newRow("[0,huge]") << zero << huge << count_0_to_huge;
+    QTest::newRow("[1,1.5]") << one << sesqui << (Count(1) << (mantissaBits - 1));
+    QTest::newRow("[0,1]") << zero << one << count_0_to_1;
+    QTest::newRow("[0.5,1]") << half << one << (Count(1) << mantissaBits);
+    QTest::newRow("[1,2]") << one << two << count_1_to_2;
+    QTest::newRow("[-1,+1]") << -one << +one << 2 * count_0_to_1;
+    QTest::newRow("[-1,0]") << -one << zero << count_0_to_1;
+    QTest::newRow("[-1,huge]") << -one << huge << count_0_to_1 + count_0_to_huge;
+    QTest::newRow("[-2,-1") << -two << -one << count_1_to_2;
+    QTest::newRow("[-1,-2") << -one << -two << count_1_to_2;
+    QTest::newRow("[tiny,huge]") << tiny << huge << count_0_to_huge - count_0_to_tiny;
+    QTest::newRow("[-huge,huge]") << -huge << huge << (2 * count_0_to_huge);
+    QTest::newRow("denormal") << zero << denormal << count_0_to_tiny / 2;
 }
 
-void tst_QNumeric::floatDistance()
+template<typename F, typename Count>
+void tst_QNumeric::distance()
 {
-    QFETCH(float, val1);
-    QFETCH(float, val2);
-    QFETCH(quint32, expectedDistance);
+    QFETCH(F, from);
+    QFETCH(F, stop);
+    QFETCH(Count, expectedDistance);
 #ifdef Q_OS_QNX
     QEXPECT_FAIL("denormal", "See QTBUG-37094", Continue);
 #endif
-    QCOMPARE(qFloatDistance(val1, val2), expectedDistance);
+    QCOMPARE(qFloatDistance(from, stop), expectedDistance);
 }
 
-void tst_QNumeric::floatDistance_double_data()
-{
-    QTest::addColumn<double>("val1");
-    QTest::addColumn<double>("val2");
-    QTest::addColumn<quint64>("expectedDistance");
-
-    // exponent: 11 bits
-    // mantissa: 52 bits
-    const quint64 number_of_denormals = (Q_UINT64_C(1) << 52) - 1;  // Set to 0 if denormals are not included
-
-    quint64 _0_to_1 = (Q_UINT64_C(1) << 52) * ((1 << (11-1)) - 2) + 1 + number_of_denormals; // We need +1 to include the 0
-    quint64 _1_to_2 = Q_UINT64_C(1) << 52;
-
-    // We don't need +1 because DBL_MAX has all bits set in the mantissa. (Thus mantissa
-    // have not wrapped back to 0, which would be the case for 1 in _0_to_1
-    quint64 _0_to_DBL_MAX = quint64((Q_UINT64_C(1) << 52) * ((1 << 11) - 2)) + number_of_denormals;
-
-    quint64 _0_to_DBL_MIN = 1 + number_of_denormals;
-    QTest::newRow("[0,DBL_MIN]") << 0.0 << DBL_MIN << _0_to_DBL_MIN;
-    QTest::newRow("[0,DBL_MAX]") << 0.0 << DBL_MAX << _0_to_DBL_MAX;
-    QTest::newRow("[1,1.5]") << 1.0 << 1.5 << (Q_UINT64_C(1) << 51);
-    QTest::newRow("[0,1]") << 0.0 << 1.0 << _0_to_1;
-    QTest::newRow("[0.5,1]") << 0.5 << 1.0 << (Q_UINT64_C(1) << 52);
-    QTest::newRow("[1,2]") << 1.0 << 2.0 << _1_to_2;
-    QTest::newRow("[-1,+1]") << -1.0 << +1.0 << 2 * _0_to_1;
-    QTest::newRow("[-1,0]") << -1.0 << 0.0 << _0_to_1;
-    QTest::newRow("[-1,DBL_MAX]") << -1.0 << DBL_MAX << _0_to_1 + _0_to_DBL_MAX;
-    QTest::newRow("[-2,-1") << -2.0 << -1.0 << _1_to_2;
-    QTest::newRow("[-1,-2") << -1.0 << -2.0 << _1_to_2;
-    QTest::newRow("[DBL_MIN,DBL_MAX]") << DBL_MIN << DBL_MAX << _0_to_DBL_MAX - _0_to_DBL_MIN;
-    QTest::newRow("[-DBL_MAX,DBL_MAX]") << -DBL_MAX << DBL_MAX << (2*_0_to_DBL_MAX);
-    double denormal = DBL_MIN;
-    denormal/=2.0;
-    QTest::newRow("denormal") << 0.0 << denormal << _0_to_DBL_MIN/2;
-}
-
-void tst_QNumeric::floatDistance_double()
-{
-    QFETCH(double, val1);
-    QFETCH(double, val2);
-    QFETCH(quint64, expectedDistance);
-#ifdef Q_OS_QNX
-    QEXPECT_FAIL("denormal", "See QTBUG-37094", Continue);
-#endif
-    QCOMPARE(qFloatDistance(val1, val2), expectedDistance);
-}
+// Whole number tests:
 
 void tst_QNumeric::addOverflow_data()
 {

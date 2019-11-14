@@ -443,7 +443,7 @@ const QUndoCommand *QUndoCommand::child(int index) const
     \sa QUndoCommand, QUndoView
 */
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 
 QUndoAction::QUndoAction(const QString &prefix, QObject *parent)
     : QAction(parent)
@@ -473,7 +473,7 @@ void QUndoAction::setTextFormat(const QString &textFormat, const QString &defaul
     m_defaultText = defaultText;
 }
 
-#endif // QT_NO_ACTION
+#endif // QT_CONFIG(action)
 
 /*! \internal
     Sets the current index to \a idx, emitting appropriate signals. If \a clean is true,

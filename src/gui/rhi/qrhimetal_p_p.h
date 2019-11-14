@@ -433,10 +433,13 @@ public:
                              qsizetype *curOfs);
     void enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates);
     void executeBufferHostWritesForCurrentFrame(QMetalBuffer *bufD);
-    void enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD, QMetalCommandBuffer *cbD,
+    static const int SUPPORTED_STAGES = 3;
+    void enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD,
+                                       QMetalCommandBuffer *cbD,
                                        int dynamicOffsetCount,
                                        const QRhiCommandBuffer::DynamicOffset *dynamicOffsets,
-                                       bool offsetOnlyChange);
+                                       bool offsetOnlyChange,
+                                       const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[SUPPORTED_STAGES]);
     int effectiveSampleCount(int sampleCount) const;
 
     bool importedDevice = false;

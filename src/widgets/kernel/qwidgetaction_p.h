@@ -54,6 +54,8 @@
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
 #include "private/qaction_p.h"
 
+QT_REQUIRE_CONFIG(action);
+
 QT_BEGIN_NAMESPACE
 
 class QWidgetActionPrivate : public QActionPrivate

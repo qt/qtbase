@@ -821,6 +821,12 @@
             ],
             "output": [ "publicFeature", "feature" ]
         },
+        "shortcut": {
+            "label": "QShortcut",
+            "purpose": "Provides keyboard accelerators and shortcuts.",
+            "section": "Kernel",
+            "output": [ "publicFeature", "feature" ]
+        },
         "systemsemaphore": {
             "label": "QSystemSemaphore",
             "purpose": "Provides a general counting system semaphore.",
@@ -1089,6 +1095,12 @@
             "purpose": "Provides support for reading and writing the CBOR binary format.
 
 Note that this is required for plugin loading. Qt GUI needs QPA plugins for basic operation.",
+            "section": "Utilities",
+            "output": [ "publicFeature" ]
+        },
+        "binaryjson": {
+            "label": "Binary JSON (deprecated)",
+            "purpose": "Provides support for the deprecated binary JSON format.",
             "section": "Utilities",
             "output": [ "publicFeature" ]
         }

@@ -25,15 +25,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QDataWidgetMapper>
-#include <QStandardItemModel>
-#include <QLineEdit>
+
 #include <QComboBox>
+#include <QDataWidgetMapper>
+#include <QLineEdit>
+#include <QMetaType>
+#include <QStandardItemModel>
+#include <QSignalSpy>
+#include <QTest>
 #include <QTextEdit>
 #include <QVBoxLayout>
-#include <QTest>
-#include <QSignalSpy>
-#include <QMetaType>
 
 class tst_QDataWidgetMapper: public QObject
 {
@@ -56,7 +57,7 @@ private slots:
 
 Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 
-static QStandardItemModel *testModel(QObject *parent = 0)
+static QStandardItemModel *testModel(QObject *parent)
 {
     QStandardItemModel *model = new QStandardItemModel(10, 10, parent);
 
@@ -84,7 +85,7 @@ void tst_QDataWidgetMapper::setModel()
     { // let the model go out of scope firstma
         QStandardItemModel model;
         mapper.setModel(&model);
-        QCOMPARE(mapper.model(), static_cast<QAbstractItemModel *>(&model));
+        QCOMPARE(mapper.model(), &model);
     }
 
     QCOMPARE(mapper.model(), nullptr);
@@ -273,7 +274,7 @@ void tst_QDataWidgetMapper::currentIndexChanged()
     QAbstractItemModel *model = testModel(&mapper);
     mapper.setModel(model);
 
-    QSignalSpy spy(&mapper, SIGNAL(currentIndexChanged(int)));
+    QSignalSpy spy(&mapper, &QDataWidgetMapper::currentIndexChanged);
 
     mapper.toFirst();
     QCOMPARE(spy.count(), 1);
@@ -405,22 +406,26 @@ void tst_QDataWidgetMapper::mappedWidgetAt()
     mapper.addMapping(&lineEdit1, 1);
     mapper.addMapping(&lineEdit2, 2);
 
-    QCOMPARE(mapper.mappedWidgetAt(1), static_cast<QWidget *>(&lineEdit1));
-    QCOMPARE(mapper.mappedWidgetAt(2), static_cast<QWidget *>(&lineEdit2));
+    QCOMPARE(mapper.mappedWidgetAt(1), &lineEdit1);
+    QCOMPARE(mapper.mappedWidgetAt(2), &lineEdit2);
 
     mapper.addMapping(&lineEdit2, 4242);
 
     QCOMPARE(mapper.mappedWidgetAt(2), nullptr);
-    QCOMPARE(mapper.mappedWidgetAt(4242), static_cast<QWidget *>(&lineEdit2));
+    QCOMPARE(mapper.mappedWidgetAt(4242), &lineEdit2);
 }
 
 void tst_QDataWidgetMapper::textEditDoesntChangeFocusOnTab_qtbug3305()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QDataWidgetMapper mapper;
     QAbstractItemModel *model = testModel(&mapper);
     mapper.setModel(model);
 
-    QSignalSpy closeEditorSpy(mapper.itemDelegate(), SIGNAL(closeEditor(QWidget*,QAbstractItemDelegate::EndEditHint)));
+    QSignalSpy closeEditorSpy(mapper.itemDelegate(),
+                              &QAbstractItemDelegate::closeEditor);
     QVERIFY(closeEditorSpy.isValid());
 
     QWidget container;

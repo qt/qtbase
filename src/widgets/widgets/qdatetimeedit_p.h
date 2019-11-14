@@ -97,7 +97,6 @@ public:
     QDateTime getMinimum() const override { return minimum.toDateTime(); }
     QDateTime getMaximum() const override { return maximum.toDateTime(); }
     QLocale locale() const override { return q_func()->locale(); }
-    QString getAmPmText(AmPm ap, Case cs) const override;
     int cursorPosition() const override { return edit ? edit->cursorPosition() : -1; }
 
     int absoluteIndex(QDateTimeEdit::Section s, int index) const;

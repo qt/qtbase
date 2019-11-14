@@ -844,7 +844,7 @@ bool QThread::event(QEvent* event)
     return QObject::event(event);
 }
 
-Qt::HANDLE QThread::currentThreadId() noexcept
+Qt::HANDLE QThread::currentThreadIdImpl() noexcept
 {
     return Qt::HANDLE(currentThread());
 }
@@ -917,6 +917,16 @@ QThreadPrivate::~QThreadPrivate()
 {
     data->thread = nullptr; // prevent QThreadData from deleting the QThreadPrivate (again).
     delete data;
+}
+
+void QThread::setStackSize(uint stackSize)
+{
+    Q_UNUSED(stackSize);
+}
+
+uint QThread::stackSize() const
+{
+    return 0;
 }
 
 #endif // QT_CONFIG(thread)

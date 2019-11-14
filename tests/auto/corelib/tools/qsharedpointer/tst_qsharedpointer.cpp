@@ -40,6 +40,7 @@
 #include "nontracked.h"
 #include "wrapper.h"
 
+#include <array>
 #include <memory>
 #include <stdlib.h>
 #include <time.h>
@@ -106,12 +107,15 @@ private slots:
     void sharedFromThis();
 
     void constructorThrow();
+    void overloads();
 
     void threadStressTest_data();
     void threadStressTest();
     void validConstructs();
     void invalidConstructs_data();
     void invalidConstructs();
+
+
     // let invalidConstructs be the last test, because it's the slowest;
     // add new tests above this block
 public slots:
@@ -2383,6 +2387,11 @@ void tst_QSharedPointer::invalidConstructs_data()
     QTest::newRow("incompatible-custom-lambda-deleter")
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<Data> ptr(new Data, [](int *) {});\n";
+
+    QTest::newRow("incompatible-overload")
+        << &QTest::QExternalTest::tryCompileFail
+        << "void foo(QSharedPointer<DerivedData>) {}\n"
+           "void bar() { foo(QSharedPointer<Data>()); }\n";
 }
 
 void tst_QSharedPointer::invalidConstructs()
@@ -2881,6 +2890,51 @@ namespace ReentrancyWhileDestructing {
 void tst_QSharedPointer::reentrancyWhileDestructing()
 {
     ReentrancyWhileDestructing::A obj;
+}
+
+namespace {
+struct Base1 {};
+struct Base2 {};
+
+struct Child1 : Base1 {};
+struct Child2 : Base2 {};
+
+template<template<typename> class SmartPtr>
+struct Overloaded
+{
+    std::array<int, 1> call(const SmartPtr<const Base1> &)
+    {
+        return {};
+    }
+    std::array<int, 2> call(const SmartPtr<const Base2> &)
+    {
+        return {};
+    }
+    static const Q_CONSTEXPR uint base1Called = sizeof(std::array<int, 1>);
+    static const Q_CONSTEXPR uint base2Called = sizeof(std::array<int, 2>);
+
+    void test()
+    {
+#define QVERIFY_CALLS(expr, base) Q_STATIC_ASSERT(sizeof(call(expr)) == base##Called)
+        QVERIFY_CALLS(SmartPtr<Base1>{}, base1);
+        QVERIFY_CALLS(SmartPtr<Base2>{}, base2);
+        QVERIFY_CALLS(SmartPtr<const Base1>{}, base1);
+        QVERIFY_CALLS(SmartPtr<const Base2>{}, base2);
+        QVERIFY_CALLS(SmartPtr<Child1>{}, base1);
+        QVERIFY_CALLS(SmartPtr<Child2>{}, base2);
+        QVERIFY_CALLS(SmartPtr<const Child1>{}, base1);
+        QVERIFY_CALLS(SmartPtr<const Child2>{}, base2);
+#undef QVERIFY_CALLS
+    }
+};
+}
+
+void tst_QSharedPointer::overloads()
+{
+    Overloaded<QSharedPointer> sharedOverloaded;
+    sharedOverloaded.test();
+    Overloaded<QWeakPointer> weakOverloaded;
+    weakOverloaded.test();
 }
 
 QTEST_MAIN(tst_QSharedPointer)

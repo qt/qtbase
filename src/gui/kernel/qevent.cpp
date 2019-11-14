@@ -1224,7 +1224,7 @@ Qt::KeyboardModifiers QKeyEvent::modifiers() const
     return QInputEvent::modifiers();
 }
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 /*!
     \fn bool QKeyEvent::matches(QKeySequence::StandardKey key) const
     \since 4.2
@@ -1240,7 +1240,7 @@ bool QKeyEvent::matches(QKeySequence::StandardKey matchKey) const
     const QList<QKeySequence> bindings = QKeySequence::keyBindings(matchKey);
     return bindings.contains(QKeySequence(searchkey));
 }
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
 
 /*!
@@ -3324,18 +3324,18 @@ QWhatsThisClickedEvent::~QWhatsThisClickedEvent()
 /*!
     \class QActionEvent
     \brief The QActionEvent class provides an event that is generated
-    when a QAction is added, removed, or changed.
+    when a QGuiAction is added, removed, or changed.
 
     \ingroup events
     \inmodule QtGui
 
-    Actions can be added to widgets using QWidget::addAction(). This
-    generates an \l ActionAdded event, which you can handle to provide
+    Actions can be added to controls, for example by using QWidget::addAction().
+    This generates an \l ActionAdded event, which you can handle to provide
     custom behavior. For example, QToolBar reimplements
     QWidget::actionEvent() to create \l{QToolButton}s for the
     actions.
 
-    \sa QAction, QWidget::addAction(), QWidget::removeAction(), QWidget::actions()
+    \sa QGuiAction, QWidget::addAction(), QWidget::removeAction(), QWidget::actions()
 */
 
 /*!
@@ -3346,7 +3346,7 @@ QWhatsThisClickedEvent::~QWhatsThisClickedEvent()
     type is ActionAdded, the action is to be inserted before the
     action \a before. If \a before is 0, the action is appended.
 */
-QActionEvent::QActionEvent(int type, QAction *action, QAction *before)
+QActionEvent::QActionEvent(int type, QGuiAction *action, QGuiAction *before)
     : QEvent(static_cast<QEvent::Type>(type)), act(action), bef(before)
 {}
 
@@ -3581,7 +3581,7 @@ QToolBarChangeEvent::~QToolBarChangeEvent()
 
 #endif // QT_NO_TOOLBAR
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 
 /*!
     Constructs a shortcut event for the given \a key press,
@@ -3602,7 +3602,7 @@ QShortcutEvent::~QShortcutEvent()
 {
 }
 
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
 #ifndef QT_NO_DEBUG_STREAM
 
@@ -3956,7 +3956,7 @@ QT_WARNING_POP
         dbg << ')';
     }
         break;
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     case QEvent::Shortcut: {
         const QShortcutEvent *se = static_cast<const QShortcutEvent *>(e);
         dbg << "QShortcutEvent(" << se->key().toString() << ", id=" << se->shortcutId();

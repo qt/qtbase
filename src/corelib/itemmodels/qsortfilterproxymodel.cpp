@@ -377,6 +377,7 @@ public:
 
     void sort();
     bool update_source_sort_column();
+    int find_source_sort_column() const;
     void sort_source_rows(QVector<int> &source_rows,
                           const QModelIndex &source_parent) const;
     QVector<QPair<int, QVector<int > > > proxy_intervals_for_source_items_to_add(
@@ -479,11 +480,8 @@ void QSortFilterProxyModelPrivate::_q_clearMapping()
 
     qDeleteAll(source_index_mapping);
     source_index_mapping.clear();
-    if (dynamic_sortfilter && update_source_sort_column()) {
-        //update_source_sort_column might have created wrong mapping so we have to clear it again
-        qDeleteAll(source_index_mapping);
-        source_index_mapping.clear();
-    }
+    if (dynamic_sortfilter)
+        source_sort_column = find_source_sort_column();
 
     // update the persistent indexes
     update_persistent_indexes(source_indexes);
@@ -640,6 +638,31 @@ bool QSortFilterProxyModelPrivate::update_source_sort_column()
     return old_source_sort_column != source_sort_column;
 }
 
+/*!
+  \internal
+
+  Find the source_sort_column without creating a full mapping and
+  without updating anything.
+*/
+int QSortFilterProxyModelPrivate::find_source_sort_column() const
+{
+    if (proxy_sort_column == -1)
+        return -1;
+
+    const QModelIndex rootIndex;
+    const int source_cols = model->columnCount();
+    int accepted_columns = -1;
+
+    Q_Q(const QSortFilterProxyModel);
+    for (int i = 0; i < source_cols; ++i) {
+        if (q->filterAcceptsColumn(i, rootIndex)) {
+            if (++accepted_columns == proxy_sort_column)
+                return i;
+        }
+    }
+
+    return -1;
+}
 
 /*!
   \internal
@@ -1591,11 +1614,8 @@ void QSortFilterProxyModelPrivate::_q_sourceLayoutChanged(const QList<QPersisten
     update_persistent_indexes(saved_persistent_indexes);
     saved_persistent_indexes.clear();
 
-    if (dynamic_sortfilter && update_source_sort_column()) {
-        //update_source_sort_column might have created wrong mapping so we have to clear it again
-        qDeleteAll(source_index_mapping);
-        source_index_mapping.clear();
-    }
+    if (dynamic_sortfilter)
+        source_sort_column = find_source_sort_column();
 
     emit q->layoutChanged(saved_layoutChange_parents);
     saved_layoutChange_parents.clear();

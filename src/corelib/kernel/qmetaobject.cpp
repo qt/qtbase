@@ -682,7 +682,9 @@ static void argumentTypesFromString(const char *str, const char *end,
                 --level;
             ++str;
         }
-        types += QArgumentType(QByteArray(begin, str - begin));
+        QByteArray argType(begin, str - begin);
+        argType.replace("QList<", "QVector<");
+        types += QArgumentType(std::move(argType));
     }
 }
 

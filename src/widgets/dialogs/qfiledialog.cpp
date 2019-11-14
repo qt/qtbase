@@ -49,7 +49,9 @@
 #include <qfontmetrics.h>
 #include <qaction.h>
 #include <qheaderview.h>
-#include <qshortcut.h>
+#if QT_CONFIG(shortcut)
+#  include <qshortcut.h>
+#endif
 #include <qgridlayout.h>
 #if QT_CONFIG(menu)
 #include <qmenu.h>
@@ -344,7 +346,9 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <QMetaEnum>
-#include <qshortcut.h>
+#if QT_CONFIG(shortcut)
+#  include <qshortcut.h>
+#endif
 QT_END_INCLUDE_NAMESPACE
 
 /*!

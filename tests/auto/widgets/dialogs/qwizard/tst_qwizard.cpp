@@ -96,8 +96,9 @@ private slots:
     void task248107_backButton();
     void task255350_fieldObjectDestroyed();
     void taskQTBUG_25691_fieldObjectDestroyed2();
+#if QT_CONFIG(shortcut)
     void taskQTBUG_46894_nextButtonShortcut();
-
+#endif
     /*
         Things that could be added:
 
@@ -2703,6 +2704,8 @@ void tst_QWizard::taskQTBUG_25691_fieldObjectDestroyed2()
     ::taskQTBUG_25691_fieldObjectDestroyed2();
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QWizard::taskQTBUG_46894_nextButtonShortcut()
 {
     for (int i = 0; i < QWizard::NStyles; ++i) {
@@ -2716,6 +2719,8 @@ void tst_QWizard::taskQTBUG_46894_nextButtonShortcut()
                  QKeySequence::mnemonic(wizard.button(QWizard::NextButton)->text()));
     }
 }
+
+#endif // QT_CONFIG(shortcut)
 
 QTEST_MAIN(tst_QWizard)
 #include "tst_qwizard.moc"

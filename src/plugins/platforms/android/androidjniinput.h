@@ -61,8 +61,6 @@ namespace QtAndroidInput
     void updateHandles(int handleCount, QPoint editMenuPos = QPoint(), uint32_t editButtons = 0, QPoint cursor = QPoint(), QPoint anchor = QPoint(), bool rtl = false);
 
     bool registerNatives(JNIEnv *env);
-
-    void releaseMouse(int x, int y);
 }
 
 QT_END_NAMESPACE

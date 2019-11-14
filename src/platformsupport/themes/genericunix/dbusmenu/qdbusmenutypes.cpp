@@ -48,7 +48,9 @@
 #include <QDebug>
 #include <QtEndian>
 #include <QBuffer>
-#include <private/qkeysequence_p.h>
+#if QT_CONFIG(shortcut)
+#  include <private/qkeysequence_p.h>
+#endif
 #include <qpa/qplatformmenu.h>
 #include "qdbusplatformmenu_p.h"
 

@@ -142,7 +142,7 @@
     <!-- message="Signal: SignalSlotClass(_POINTER_) qStringRefSignal ((QString&amp;)@_POINTER_)" type="info" -->
     <!-- message="Signal: SignalSlotClass(_POINTER_) qStringConstRefSignal (QString(Test string))" type="info" -->
     <!-- message="Signal: SignalSlotClass(_POINTER_) qByteArraySignal (QByteArray(Test bytearray))" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qListSignal (QList&lt;int&gt;())" type="info" -->
+    <!-- message="Signal: SignalSlotClass(_POINTER_) qListSignal (QVector&lt;int&gt;())" type="info" -->
     <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorSignal (QVector&lt;int&gt;())" type="info" -->
     <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QVector&lt;int&gt;&amp;)@_POINTER_)" type="info" -->
     <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QVector&lt;int&gt;())" type="info" -->
@@ -274,7 +274,7 @@
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qStringRefSignal ((QString&)@_POINTER_)]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qStringConstRefSignal (QString(Test string))]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qByteArraySignal (QByteArray(Test bytearray))]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qListSignal (QList<int>())]]>
+<![CDATA[Signal: SignalSlotClass(_POINTER_) qListSignal (QVector<int>())]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorSignal (QVector<int>())]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QVector<int>&)@_POINTER_)]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QVector<int>())]]>

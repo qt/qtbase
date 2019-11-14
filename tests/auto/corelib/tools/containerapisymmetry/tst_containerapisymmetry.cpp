@@ -580,9 +580,6 @@ template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<VarLengthArray<T...>> : ContainerAcceptsDuplicateValues {};
 
 template<typename ... T>
-struct ContainerDuplicatedValuesStrategy<QList<T...>> : ContainerAcceptsDuplicateValues {};
-
-template<typename ... T>
 struct ContainerDuplicatedValuesStrategy<std::list<T...>> : ContainerAcceptsDuplicateValues {};
 
 #if COMPILER_HAS_STDLIB_INCLUDE(<forward_list>)

@@ -1107,10 +1107,10 @@ QMenu::indicator:exclusive:checked:selected {
 QMenuBar {
     background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                                       stop:0 lightgray, stop:1 darkgray);
+    spacing: 3px; /* spacing between menu bar items */
 }
 
 QMenuBar::item {
-    spacing: 3px; /* spacing between menu bar items */
     padding: 1px 4px;
     background: transparent;
     border-radius: 4px;

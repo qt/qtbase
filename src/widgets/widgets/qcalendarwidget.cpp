@@ -309,15 +309,17 @@ QString QCalendarMonthValidator::text() const
 
 QString QCalendarMonthValidator::text(QDate date, QCalendar cal, int repeat) const
 {
-    if (repeat <= 1) {
-        return QString::number(date.month(cal));
-    } else if (repeat == 2) {
-        return formatNumber(date.month(cal), 2);
-    } else if (repeat == 3) {
-        return cal.standaloneMonthName(m_locale, date.month(cal), QLocale::ShortFormat);
-    } else /*if (repeat >= 4)*/ {
-        return cal.standaloneMonthName(m_locale, date.month(cal), QLocale::LongFormat);
-    }
+    const auto parts = cal.partsFromDate(date);
+    // Numeric forms:
+    if (repeat <= 1)
+        return QString::number(parts.month);
+    if (repeat == 2)
+        return formatNumber(parts.month, 2);
+    // Text forms:
+    if (repeat == 3)
+        return cal.standaloneMonthName(m_locale, parts.month, parts.year, QLocale::ShortFormat);
+    /* repeat >= 4 */
+    return cal.standaloneMonthName(m_locale, parts.month, parts.year, QLocale::LongFormat);
 }
 
 //////////////////////////////////
@@ -922,6 +924,11 @@ public:
     void internalUpdate();
     QDate referenceDate() const;
     int columnForFirstOfMonth(QDate date) const;
+
+    QString monthName(const QLocale &locale, int month)
+    {
+        return m_calendar.standaloneMonthName(locale, month, m_shownYear, QLocale::LongFormat);
+    }
 
     int m_firstColumn;
     int m_firstRow;
@@ -1786,8 +1793,8 @@ void QCalendarWidgetPrivate::createNavigationBar(QWidget *widget)
     monthButton->setAutoRaise(true);
     monthButton->setPopupMode(QToolButton::InstantPopup);
     monthMenu = new QMenu(monthButton);
-    for (int i = 1; i <= 12; i++) {
-        QString monthName(m_model->m_calendar.standaloneMonthName(q->locale(), i, QLocale::LongFormat));
+    for (int i = 1, e = m_model->m_calendar.maximumMonthsInYear(); i <= e; i++) {
+        QString monthName(m_model->monthName(q->locale(), i));
         QAction *act = monthMenu->addAction(monthName);
         act->setData(i);
         monthToAction[i] = act;
@@ -1876,7 +1883,7 @@ void QCalendarWidgetPrivate::updateMonthMenuNames()
     Q_Q(QCalendarWidget);
 
     for (int i = 1; i <= 12; i++) {
-        QString monthName(m_model->m_calendar.standaloneMonthName(q->locale(), i, QLocale::LongFormat));
+        QString monthName(m_model->monthName(q->locale(), i));
         monthToAction[i]->setText(monthName);
     }
 }
@@ -1979,7 +1986,7 @@ void QCalendarWidgetPrivate::updateNavigationBar()
 {
     Q_Q(QCalendarWidget);
 
-    QString monthName = m_model->m_calendar.standaloneMonthName(q->locale(), m_model->m_shownMonth, QLocale::LongFormat);
+    QString monthName = m_model->monthName(q->locale(), m_model->m_shownMonth);
 
     monthButton->setText(monthName);
     yearEdit->setValue(m_model->m_shownYear);
@@ -2277,7 +2284,7 @@ QSize QCalendarWidget::minimumSizeHint() const
         QFontMetrics fm = d->monthButton->fontMetrics();
         int monthW = 0;
         for (int i = 1; i < 12; i++) {
-            QString monthName = d->m_model->m_calendar.standaloneMonthName(locale(), i, QLocale::LongFormat);
+            QString monthName = d->m_model->monthName(locale(), i);
             monthW = qMax(monthW, fm.boundingRect(monthName).width());
         }
         const int buttonDecoMargin = d->monthButton->sizeHint().width() - fm.boundingRect(d->monthButton->text()).width();

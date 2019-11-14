@@ -351,13 +351,13 @@
        <item row="0" column="0">
         <widget class="QGroupBox" name="duplex">
          <property name="title">
-          <string>Duplex Printing</string>
+          <string>Double Sided Printing</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <widget class="QRadioButton" name="noDuplex">
             <property name="text">
-             <string>None</string>
+             <string>Off</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -367,14 +367,14 @@
           <item>
            <widget class="QRadioButton" name="duplexLong">
             <property name="text">
-             <string>Long side</string>
+             <string>Long side binding</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QRadioButton" name="duplexShort">
             <property name="text">
-             <string>Short side</string>
+             <string>Short side binding</string>
             </property>
            </widget>
           </item>

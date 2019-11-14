@@ -171,11 +171,11 @@ public:
     QModelIndex currentIndex() const;
 
     Q_INVOKABLE bool isSelected(const QModelIndex &index) const;
-    Q_INVOKABLE bool isRowSelected(int row, const QModelIndex &parent) const;
-    Q_INVOKABLE bool isColumnSelected(int column, const QModelIndex &parent) const;
+    Q_INVOKABLE bool isRowSelected(int row, const QModelIndex &parent = QModelIndex()) const;
+    Q_INVOKABLE bool isColumnSelected(int column, const QModelIndex &parent = QModelIndex()) const;
 
-    Q_INVOKABLE bool rowIntersectsSelection(int row, const QModelIndex &parent) const;
-    Q_INVOKABLE bool columnIntersectsSelection(int column, const QModelIndex &parent) const;
+    Q_INVOKABLE bool rowIntersectsSelection(int row, const QModelIndex &parent = QModelIndex()) const;
+    Q_INVOKABLE bool columnIntersectsSelection(int column, const QModelIndex &parent = QModelIndex()) const;
 
     bool hasSelection() const;
 
@@ -241,7 +241,7 @@ inline uint qHash(const QItemSelectionRange &) { return 0; }
 #   define Q_TEMPLATE_EXTERN extern
 #  endif
 # endif
-Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QList<QItemSelectionRange>;
+Q_TEMPLATE_EXTERN template class Q_CORE_EXPORT QVector<QItemSelectionRange>;
 #endif // Q_CC_MSVC
 
 class Q_CORE_EXPORT QItemSelection : public QList<QItemSelectionRange>

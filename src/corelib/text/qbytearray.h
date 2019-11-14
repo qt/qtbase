@@ -107,8 +107,8 @@ Q_CORE_EXPORT int qvsnprintf(char *str, size_t n, const char *fmt, va_list ap);
 Q_CORE_EXPORT int qsnprintf(char *str, size_t n, const char *fmt, ...);
 
 // qChecksum: Internet checksum
-Q_CORE_EXPORT quint16 qChecksum(const char *s, uint len);                            // ### Qt 6: Remove
-Q_CORE_EXPORT quint16 qChecksum(const char *s, uint len, Qt::ChecksumType standard); // ### Qt 6: Use Qt::ChecksumType standard = Qt::ChecksumIso3309
+Q_CORE_EXPORT quint16 qChecksum(const char *s, uint len,
+                                Qt::ChecksumType standard = Qt::ChecksumIso3309);
 
 class QByteRef;
 class QString;
@@ -355,10 +355,8 @@ public:
     qulonglong toULongLong(bool *ok = nullptr, int base = 10) const;
     float toFloat(bool *ok = nullptr) const;
     double toDouble(bool *ok = nullptr) const;
-    QByteArray toBase64(Base64Options options) const;
-    QByteArray toBase64() const; // ### Qt6 merge with previous
-    QByteArray toHex() const;
-    QByteArray toHex(char separator) const; // ### Qt6 merge with previous
+    QByteArray toBase64(Base64Options options = Base64Encoding) const;
+    QByteArray toHex(char separator = '\0') const;
     QByteArray toPercentEncoding(const QByteArray &exclude = QByteArray(),
                                  const QByteArray &include = QByteArray(),
                                  char percent = '%') const;
@@ -379,8 +377,8 @@ public:
     Q_REQUIRED_RESULT static QByteArray number(qulonglong, int base = 10);
     Q_REQUIRED_RESULT static QByteArray number(double, char f = 'g', int prec = 6);
     Q_REQUIRED_RESULT static QByteArray fromRawData(const char *, int size);
-    Q_REQUIRED_RESULT static QByteArray fromBase64(const QByteArray &base64, Base64Options options);
-    Q_REQUIRED_RESULT static QByteArray fromBase64(const QByteArray &base64); // ### Qt6 merge with previous
+    Q_REQUIRED_RESULT static QByteArray fromBase64(const QByteArray &base64,
+                                                   Base64Options options = Base64Encoding);
     Q_REQUIRED_RESULT static QByteArray fromHex(const QByteArray &hexEncoded);
     Q_REQUIRED_RESULT static QByteArray fromPercentEncoding(const QByteArray &pctEncoded, char percent = '%');
 

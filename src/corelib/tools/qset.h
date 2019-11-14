@@ -86,9 +86,6 @@ public:
 
     inline void detach() { q_hash.detach(); }
     inline bool isDetached() const { return q_hash.isDetached(); }
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    inline void setSharable(bool sharable) { q_hash.setSharable(sharable); }
-#endif
 
     inline void clear() { q_hash.clear(); }
 

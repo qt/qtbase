@@ -461,6 +461,7 @@ QNetworkReplyHttpImplPrivate::QNetworkReplyHttpImplPrivate()
     , preMigrationDownloaded(-1)
     , bytesDownloaded(0)
     , bytesBuffered(0)
+    , transferTimeout(nullptr)
     , downloadBufferReadPosition(0)
     , downloadBufferCurrentSize(0)
     , downloadZerocopyBuffer(nullptr)
@@ -1064,6 +1065,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadData(QByteArray d)
     if (!isHttpRedirectResponse()) {
         buffer.append(d);
         bytesDownloaded += d.size();
+        setupTransferTimeout();
     }
     bytesBuffered += d.size();
 
@@ -1389,6 +1391,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadProgressSlot(qint64 bytesReceive
         return;
 
     bytesDownloaded = bytesReceived;
+    setupTransferTimeout();
 
     downloadBufferCurrentSize = bytesReceived;
 
@@ -1845,7 +1848,6 @@ bool QNetworkReplyHttpImplPrivate::startWaitForSession(QSharedPointer<QNetworkSe
 void QNetworkReplyHttpImplPrivate::_q_startOperation()
 {
     Q_Q(QNetworkReplyHttpImpl);
-
     if (state == Working) // ensure this function is only being called once
         return;
 
@@ -1885,6 +1887,7 @@ void QNetworkReplyHttpImplPrivate::_q_startOperation()
     }
 #endif // QT_NO_BEARERMANAGEMENT
 
+    setupTransferTimeout();
     if (synchronous) {
         state = Finished;
         q_func()->setFinished(true);
@@ -2021,6 +2024,31 @@ void QNetworkReplyHttpImplPrivate::_q_bufferOutgoingData()
     }
 }
 
+void QNetworkReplyHttpImplPrivate::_q_transferTimedOut()
+{
+    Q_Q(QNetworkReplyHttpImpl);
+    q->abort();
+}
+
+void QNetworkReplyHttpImplPrivate::setupTransferTimeout()
+{
+    Q_Q(QNetworkReplyHttpImpl);
+    if (!transferTimeout) {
+      transferTimeout = new QTimer(q);
+      QObject::connect(transferTimeout, SIGNAL(timeout()),
+                       q, SLOT(_q_transferTimedOut()),
+                       Qt::QueuedConnection);
+    }
+    transferTimeout->stop();
+    if (request.transferTimeout()) {
+        transferTimeout->setSingleShot(true);
+        transferTimeout->setInterval(request.transferTimeout());
+        QMetaObject::invokeMethod(transferTimeout, "start",
+                                  Qt::QueuedConnection);
+
+    }
+}
+
 #ifndef QT_NO_BEARERMANAGEMENT
 void QNetworkReplyHttpImplPrivate::_q_networkSessionConnected()
 {
@@ -2103,6 +2131,8 @@ void QNetworkReplyHttpImplPrivate::emitReplyUploadProgress(qint64 bytesSent, qin
     if (isFinished)
         return;
 
+    setupTransferTimeout();
+
     if (!emitAllUploadProgressSignals) {
         //choke signal emissions, except the first and last signals which are unconditional
         if (uploadProgressSignalChoke.isValid()) {
@@ -2114,7 +2144,6 @@ void QNetworkReplyHttpImplPrivate::emitReplyUploadProgress(qint64 bytesSent, qin
             uploadProgressSignalChoke.start();
         }
     }
-
     emit q->uploadProgress(bytesSent, bytesTotal);
 }
 
@@ -2147,7 +2176,8 @@ void QNetworkReplyHttpImplPrivate::_q_finished()
 void QNetworkReplyHttpImplPrivate::finished()
 {
     Q_Q(QNetworkReplyHttpImpl);
-
+    if (transferTimeout)
+      transferTimeout->stop();
     if (state == Finished || state == Aborted || state == WaitingForSession)
         return;
 

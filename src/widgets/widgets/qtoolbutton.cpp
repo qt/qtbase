@@ -466,7 +466,7 @@ void QToolButton::paintEvent(QPaintEvent *)
 void QToolButton::actionEvent(QActionEvent *event)
 {
     Q_D(QToolButton);
-    QAction *action = event->action();
+    auto action = static_cast<QAction *>(event->action());
     switch (event->type()) {
     case QEvent::ActionChanged:
         if (action == d->defaultAction)

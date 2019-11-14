@@ -4,11 +4,14 @@ SUBDIRS=\
    qclipboard \
    qcursor \
    qdrag \
+   qguiaction \
+   qguiactiongroup \
    qevent \
    qfileopenevent \
    qguieventdispatcher \
    qguieventloop \
    qguimetatype \
+   qguishortcut \
    qguitimer \
    qguivariant \
    qhighdpiscaling \
@@ -29,12 +32,22 @@ SUBDIRS=\
 
 win32:!winrt:qtHaveModule(network): SUBDIRS += noqteventloop
 
+!qtConfig(shortcut): SUBDIRS -= \
+   qkeysequence \
+   qguishortcut \
+   qguimetatype \
+   qguivariant
+
 !qtHaveModule(widgets): SUBDIRS -= \
    qmouseevent_modal \
    qtouchevent
 
 !qtHaveModule(network): SUBDIRS -= \
    qguieventloop
+
+!qtConfig(action): SUBDIRS -= \
+   qguiaction \
+   qguiactiongroup
 
 !qtConfig(highdpiscaling): SUBDIRS -= qhighdpiscaling
 

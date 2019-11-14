@@ -86,7 +86,7 @@ public:
     void setSessionASN1(const QByteArray &sessionASN1);
     int sessionTicketLifeTimeHint() const;
 
-#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_NEXTPROTONEG)
+#ifndef OPENSSL_NO_NEXTPROTONEG
     // must be public because we want to use it from an OpenSSL callback
     struct NPNContext {
         NPNContext() : data(nullptr),
@@ -98,7 +98,7 @@ public:
         QSslConfiguration::NextProtocolNegotiationStatus status;
     };
     NPNContext npnContext() const;
-#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
+#endif // !OPENSSL_NO_NEXTPROTONEG
 
 protected:
     QSslContext();
@@ -118,10 +118,10 @@ private:
     QSslError::SslError errorCode;
     QString errorStr;
     QSslConfiguration sslConfiguration;
-#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_NEXTPROTONEG)
+#ifndef OPENSSL_NO_NEXTPROTONEG
     QByteArray m_supportedNPNVersions;
     NPNContext m_npnContext;
-#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
+#endif // !OPENSSL_NO_NEXTPROTONEG
 };
 
 #endif // QT_NO_SSL

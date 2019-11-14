@@ -46,6 +46,8 @@
 #include <QtCore/qstringlist.h>
 #include <QtGui/qrgba64.h>
 
+#include <limits.h>
+
 QT_BEGIN_NAMESPACE
 
 

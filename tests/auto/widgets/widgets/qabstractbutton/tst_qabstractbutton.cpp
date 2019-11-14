@@ -34,10 +34,15 @@
 #include <qapplication.h>
 #include <qpainter.h>
 #include <qstyleoption.h>
-#include <qkeysequence.h>
+#if QT_CONFIG(shortcut)
+#  include <qkeysequence.h>
+#endif
 #include <qevent.h>
 #include <qgridlayout.h>
 #include <qabstractbutton.h>
+
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 class tst_QAbstractButton : public QObject
 {
@@ -56,7 +61,9 @@ private slots:
     void setText();
     void setIcon();
 
+#if QT_CONFIG(shortcut)
     void setShortcut();
+#endif
 
     void animateClick();
 
@@ -65,7 +72,9 @@ private slots:
     void isChecked();
     void toggled();
     void setEnabled();
+#if QT_CONFIG(shortcut)
     void shortcutEvents();
+#endif
     void stopRepeatTimer();
 
     void mouseReleased(); // QTBUG-53244
@@ -161,8 +170,10 @@ void tst_QAbstractButton::init()
     testWidget->setEnabled( true );
     testWidget->setDown( false );
     testWidget->setAutoRepeat( false );
+#if QT_CONFIG(shortcut)
     QKeySequence seq;
     testWidget->setShortcut( seq );
+#endif
 
     toggle_count = 0;
     press_count = 0;
@@ -333,17 +344,17 @@ void tst_QAbstractButton::setText()
     QCOMPARE( testWidget->text(), QString("simple") );
     testWidget->setText("&ampersand");
     QCOMPARE( testWidget->text(), QString("&ampersand") );
-#ifndef Q_OS_MAC // no mneonics on Mac.
+#if QT_CONFIG(shortcut) && !defined(Q_OS_DARWIN) // no mnemonics on Mac.
     QCOMPARE( testWidget->shortcut(), QKeySequence("ALT+A"));
 #endif
     testWidget->setText("te&st");
     QCOMPARE( testWidget->text(), QString("te&st") );
-#ifndef Q_OS_MAC // no mneonics on Mac.
+#if QT_CONFIG(shortcut) && !defined(Q_OS_DARWIN) // no mnemonics on Mac.
     QCOMPARE( testWidget->shortcut(), QKeySequence("ALT+S"));
 #endif
     testWidget->setText("foo");
     QCOMPARE( testWidget->text(), QString("foo") );
-#ifndef Q_OS_MAC // no mneonics on Mac.
+#if QT_CONFIG(shortcut) && !defined(Q_OS_DARWIN) // no mnemonics on Mac.
     QCOMPARE( testWidget->shortcut(), QKeySequence());
 #endif
 }
@@ -468,8 +479,12 @@ void tst_QAbstractButton::toggled()
     testWidget->setCheckable(false);
 }
 
+#if QT_CONFIG(shortcut)
 void tst_QAbstractButton::setShortcut()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     QKeySequence seq( Qt::Key_A );
     testWidget->setShortcut( seq );
     QApplication::setActiveWindow(testWidget);
@@ -496,6 +511,7 @@ void tst_QAbstractButton::setShortcut()
 //     qDebug() << click_count;
 
 }
+#endif // QT_CONFIG(shortcut)
 
 void tst_QAbstractButton::animateClick()
 {
@@ -505,6 +521,8 @@ void tst_QAbstractButton::animateClick()
     QVERIFY( testWidget->isDown() );
     QTRY_VERIFY( !testWidget->isDown() );
 }
+
+#if QT_CONFIG(shortcut)
 
 void tst_QAbstractButton::shortcutEvents()
 {
@@ -528,6 +546,8 @@ void tst_QAbstractButton::shortcutEvents()
     QCOMPARE(releasedSpy.count(), 3);
     QCOMPARE(clickedSpy.count(), 3);
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QAbstractButton::stopRepeatTimer()
 {

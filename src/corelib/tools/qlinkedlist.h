@@ -107,9 +107,6 @@ public:
     inline void detach()
     { if (d->ref.isShared()) detach_helper2(this->e); }
     inline bool isDetached() const { return !d->ref.isShared(); }
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    inline void setSharable(bool sharable) { if (!sharable) detach(); if (d != &QLinkedListData::shared_null) d->sharable = sharable; }
-#endif
     inline bool isSharedWith(const QLinkedList<T> &other) const { return d == other.d; }
 
     inline bool isEmpty() const { return d->size == 0; }

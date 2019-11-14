@@ -1,9 +1,5 @@
-QT += core gui
-
-greaterThan(QT_MAJOR_VERSION, 4) {
-    QT += widgets
-    qtHaveModule(printsupport): QT += printsupport
-}
+QT += core gui widgets
+qtHaveModule(printsupport): QT += printsupport
 
 TARGET = dialogs
 TEMPLATE = app

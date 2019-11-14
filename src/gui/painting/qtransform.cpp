@@ -1529,12 +1529,12 @@ QRegion QTransform::map(const QRegion &r) const
         QRegion res;
         if (m11() < 0 || m22() < 0) {
             for (const QRect &rect : r)
-                res += mapRect(rect);
+                res += mapRect(QRectF(rect)).toRect();
         } else {
             QVarLengthArray<QRect, 32> rects;
             rects.reserve(r.rectCount());
             for (const QRect &rect : r) {
-                QRect nr = mapRect(rect);
+                QRect nr = mapRect(QRectF(rect)).toRect();
                 if (!nr.isEmpty())
                     rects.append(nr);
             }

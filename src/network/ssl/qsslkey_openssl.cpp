@@ -93,11 +93,7 @@ bool QSslKeyPrivate::fromEVP_PKEY(EVP_PKEY *pkey)
     if (pkey == nullptr)
         return false;
 
-#if QT_CONFIG(opensslv11)
     const int keyType = q_EVP_PKEY_type(q_EVP_PKEY_base_id(pkey));
-#else
-    const int keyType = pkey->type;
-#endif
     if (keyType == EVP_PKEY_RSA) {
         isNull = false;
         algorithm = QSsl::Rsa;
@@ -350,33 +346,17 @@ static QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
     QByteArray output;
     output.resize(data.size() + EVP_MAX_BLOCK_LENGTH);
 
-#if QT_CONFIG(opensslv11)
     EVP_CIPHER_CTX *ctx = q_EVP_CIPHER_CTX_new();
     q_EVP_CIPHER_CTX_reset(ctx);
-#else
-    EVP_CIPHER_CTX evpCipherContext;
-    EVP_CIPHER_CTX *ctx = &evpCipherContext;
-    q_EVP_CIPHER_CTX_init(ctx);
-#endif
-
     q_EVP_CipherInit(ctx, type, nullptr, nullptr, enc);
     q_EVP_CIPHER_CTX_set_key_length(ctx, key.size());
     if (cipher == QSslKeyPrivate::Rc2Cbc)
         q_EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_SET_RC2_KEY_BITS, 8 * key.size(), nullptr);
 
-#if QT_CONFIG(opensslv11)
-    // EVP_CipherInit in 1.1 resets the context thus making the calls above useless.
-    // We call EVP_CipherInit_ex instead.
     q_EVP_CipherInit_ex(ctx, nullptr, nullptr,
                         reinterpret_cast<const unsigned char *>(key.constData()),
                         reinterpret_cast<const unsigned char *>(iv.constData()),
                         enc);
-#else
-    q_EVP_CipherInit(ctx, NULL,
-        reinterpret_cast<const unsigned char *>(key.constData()),
-        reinterpret_cast<const unsigned char *>(iv.constData()), enc);
-#endif // opensslv11
-
     q_EVP_CipherUpdate(ctx,
         reinterpret_cast<unsigned char *>(output.data()), &len,
         reinterpret_cast<const unsigned char *>(data.constData()), data.size());
@@ -384,12 +364,8 @@ static QByteArray doCrypt(QSslKeyPrivate::Cipher cipher, const QByteArray &data,
         reinterpret_cast<unsigned char *>(output.data()) + len, &i);
     len += i;
 
-#if QT_CONFIG(opensslv11)
     q_EVP_CIPHER_CTX_reset(ctx);
     q_EVP_CIPHER_CTX_free(ctx);
-#else
-    q_EVP_CIPHER_CTX_cleanup(ctx);
-#endif
 
     return output.left(len);
 }

@@ -52,6 +52,7 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
+#include <QtGui/private/qguiaction_p.h>
 #include "QtWidgets/qaction.h"
 #if QT_CONFIG(menu)
 #include "QtWidgets/qmenu.h"
@@ -68,12 +69,15 @@ QT_BEGIN_NAMESPACE
 
 class QShortcutMap;
 
-class Q_WIDGETS_EXPORT QActionPrivate : public QObjectPrivate
+class Q_WIDGETS_EXPORT QActionPrivate : public QGuiActionPrivate
 {
     Q_DECLARE_PUBLIC(QAction)
 public:
-    QActionPrivate();
-    ~QActionPrivate();
+    QActionPrivate() = default;
+
+#if QT_CONFIG(shortcut)
+    QShortcutMap::ContextMatcher contextMatcher() const override;
+#endif
 
     static QActionPrivate *get(QAction *q)
     {
@@ -82,50 +86,11 @@ public:
 
     bool showStatusText(QWidget *w, const QString &str);
 
-    QPointer<QActionGroup> group;
-    QString text;
-    QString iconText;
-    QIcon icon;
-    QString tooltip;
-    QString statustip;
-    QString whatsthis;
-#if QT_CONFIG(shortcut)
-    QKeySequence shortcut;
-    QList<QKeySequence> alternateShortcuts;
-#endif
-    QVariant userData;
-#if QT_CONFIG(shortcut)
-    int shortcutId = 0;
-    QVector<int> alternateShortcutIds;
-    Qt::ShortcutContext shortcutContext = Qt::WindowShortcut;
-    uint autorepeat : 1;
-#endif
-    QFont font;
     QPointer<QMenu> menu;
-    uint enabled : 1, forceDisabled : 1;
-    uint visible : 1, forceInvisible : 1;
-    uint checkable : 1;
-    uint checked : 1;
-    uint separator : 1;
-    uint fontSet : 1;
-
-    int iconVisibleInMenu : 2;  // Only has values -1, 0, and 1
-    int shortcutVisibleInContextMenu : 2; // Only has values -1, 0, and 1
-
-    QAction::MenuRole menuRole = QAction::TextHeuristicRole;
-    QAction::Priority priority = QAction::NormalPriority;
-
     QWidgetList widgets;
 #if QT_CONFIG(graphicsview)
     QList<QGraphicsWidget *> graphicsWidgets;
 #endif
-#if QT_CONFIG(shortcut)
-    void redoGrab(QShortcutMap &map);
-    void redoGrabAlternate(QShortcutMap &map);
-    void setShortcutEnabled(bool enable, QShortcutMap &map);
-#endif // QT_NO_SHORTCUT
-
-    void sendDataChanged();
 };
 
 #endif // QT_NO_ACTION

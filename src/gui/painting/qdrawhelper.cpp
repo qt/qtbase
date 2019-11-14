@@ -6044,11 +6044,11 @@ static inline void alphargbblend_argb32(quint32 *dst, uint coverage, const QRgba
         // nothing
     } else if (coverage == 0xffffffff && qAlpha(src) == 255) {
         blend_pixel(*dst, src);
-    } else if (!colorProfile) {
-        *dst = rgbBlend(*dst, src, coverage);
     } else if (*dst < 0xff000000) {
         // Give up and do a naive gray alphablend. Needed to deal with ARGB32 and invalid ARGB32_premultiplied, see QTBUG-60571
         blend_pixel(*dst, src, qRgbAvg(coverage));
+    } else if (!colorProfile) {
+        *dst = rgbBlend(*dst, src, coverage);
     } else if (srcLinear.isOpaque()) {
         rgbBlendPixel(dst, coverage, srcLinear, colorProfile);
     } else {

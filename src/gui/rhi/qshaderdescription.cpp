@@ -38,6 +38,9 @@
 #include <QDebug>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QCborValue>
+#include <QCborMap>
+#include <QCborArray>
 
 QT_BEGIN_NAMESPACE
 
@@ -335,11 +338,27 @@ bool QShaderDescription::isValid() const
 /*!
     \return a serialized binary version of the data.
 
-    \sa toJson()
+    \sa toJson(), toCbor()
  */
 QByteArray QShaderDescription::toBinaryJson() const
 {
+#if QT_CONFIG(binaryjson)
     return d->makeDoc().toBinaryData();
+#else
+    qWarning("Cannot generate binary JSON from QShaderDescription due to disabled binaryjson feature");
+    return QByteArray();
+#endif
+}
+
+/*!
+   \return a serialized binary version of the data in CBOR (Concise Binary
+   Object Representation) format.
+
+   \sa QCborValue, toBinaryJson(), toJson()
+ */
+QByteArray QShaderDescription::toCbor() const
+{
+    return QCborValue::fromJsonValue(d->makeDoc().object()).toCbor();
 }
 
 /*!
@@ -347,7 +366,7 @@ QByteArray QShaderDescription::toBinaryJson() const
 
     \note There is no deserialization method provided for JSON text.
 
-    \sa toBinaryJson()
+    \sa toBinaryJson(), toCbor()
  */
 QByteArray QShaderDescription::toJson() const
 {
@@ -357,11 +376,38 @@ QByteArray QShaderDescription::toJson() const
 /*!
     Deserializes the given binary JSON \a data and returns a new
     QShaderDescription.
+
+    \sa fromCbor()
  */
 QShaderDescription QShaderDescription::fromBinaryJson(const QByteArray &data)
 {
     QShaderDescription desc;
+#if QT_CONFIG(binaryjson)
     QShaderDescriptionPrivate::get(&desc)->loadDoc(QJsonDocument::fromBinaryData(data));
+#else
+    Q_UNUSED(data);
+    qWarning("Cannot load QShaderDescription from binary JSON due to disabled binaryjson feature");
+#endif
+    return desc;
+}
+
+/*!
+    Deserializes the given CBOR \a data and returns a new QShaderDescription.
+
+    \sa fromBinaryJson()
+ */
+QShaderDescription QShaderDescription::fromCbor(const QByteArray &data)
+{
+    QShaderDescription desc;
+    const QCborValue cbor = QCborValue::fromCbor(data);
+    if (cbor.isMap()) {
+        const QJsonDocument doc(cbor.toMap().toJsonObject());
+        QShaderDescriptionPrivate::get(&desc)->loadDoc(doc);
+    }
+    if (cbor.isArray()) {
+        const QJsonDocument doc(cbor.toArray().toJsonArray());
+        QShaderDescriptionPrivate::get(&desc)->loadDoc(doc);
+    }
     return desc;
 }
 
@@ -1117,6 +1163,108 @@ void QShaderDescriptionPrivate::loadDoc(const QJsonDocument &doc)
                 localSize[i] = localSizeArr[i].toInt();
         }
     }
+}
+
+/*!
+    Returns \c true if the two QShaderDescription objects \a lhs and \a rhs are
+    equal.
+
+    \relates QShaderDescription
+ */
+bool operator==(const QShaderDescription &lhs, const QShaderDescription &rhs) Q_DECL_NOTHROW
+{
+    if (lhs.d == rhs.d)
+        return true;
+
+    return lhs.d->inVars == rhs.d->inVars
+            && lhs.d->outVars == rhs.d->outVars
+            && lhs.d->uniformBlocks == rhs.d->uniformBlocks
+            && lhs.d->pushConstantBlocks == rhs.d->pushConstantBlocks
+            && lhs.d->storageBlocks == rhs.d->storageBlocks
+            && lhs.d->combinedImageSamplers == rhs.d->combinedImageSamplers
+            && lhs.d->storageImages == rhs.d->storageImages
+            && lhs.d->localSize == rhs.d->localSize;
+}
+
+/*!
+    Returns \c true if the two InOutVariable objects \a lhs and \a rhs are
+    equal.
+
+    \relates QShaderDescription::InOutVariable
+ */
+bool operator==(const QShaderDescription::InOutVariable &lhs, const QShaderDescription::InOutVariable &rhs) Q_DECL_NOTHROW
+{
+    return lhs.name == rhs.name
+            && lhs.type == rhs.type
+            && lhs.location == rhs.location
+            && lhs.binding == rhs.binding
+            && lhs.descriptorSet == rhs.descriptorSet
+            && lhs.imageFormat == rhs.imageFormat
+            && lhs.imageFlags == rhs.imageFlags;
+}
+
+/*!
+    Returns \c true if the two BlockVariable objects \a lhs and \a rhs are
+    equal.
+
+    \relates QShaderDescription::BlockVariable
+ */
+bool operator==(const QShaderDescription::BlockVariable &lhs, const QShaderDescription::BlockVariable &rhs) Q_DECL_NOTHROW
+{
+    return lhs.name == rhs.name
+            && lhs.type == rhs.type
+            && lhs.offset == rhs.offset
+            && lhs.size == rhs.size
+            && lhs.arrayDims == rhs.arrayDims
+            && lhs.arrayStride == rhs.arrayStride
+            && lhs.matrixStride == rhs.matrixStride
+            && lhs.matrixIsRowMajor == rhs.matrixIsRowMajor
+            && lhs.structMembers == rhs.structMembers;
+}
+
+/*!
+    Returns \c true if the two UniformBlock objects \a lhs and \a rhs are
+    equal.
+
+    \relates QShaderDescription::UniformBlock
+ */
+bool operator==(const QShaderDescription::UniformBlock &lhs, const QShaderDescription::UniformBlock &rhs) Q_DECL_NOTHROW
+{
+    return lhs.blockName == rhs.blockName
+            && lhs.structName == rhs.structName
+            && lhs.size == rhs.size
+            && lhs.binding == rhs.binding
+            && lhs.descriptorSet == rhs.descriptorSet
+            && lhs.members == rhs.members;
+}
+
+/*!
+    Returns \c true if the two PushConstantBlock objects \a lhs and \a rhs are
+    equal.
+
+    \relates QShaderDescription::PushConstantBlock
+ */
+bool operator==(const QShaderDescription::PushConstantBlock &lhs, const QShaderDescription::PushConstantBlock &rhs) Q_DECL_NOTHROW
+{
+    return lhs.name == rhs.name
+            && lhs.size == rhs.size
+            && lhs.members == rhs.members;
+}
+
+/*!
+    Returns \c true if the two StorageBlock objects \a lhs and \a rhs are
+    equal.
+
+    \relates QShaderDescription::StorageBlock
+ */
+bool operator==(const QShaderDescription::StorageBlock &lhs, const QShaderDescription::StorageBlock &rhs) Q_DECL_NOTHROW
+{
+    return lhs.blockName == rhs.blockName
+            && lhs.instanceName == rhs.instanceName
+            && lhs.knownSize == rhs.knownSize
+            && lhs.binding == rhs.binding
+            && lhs.descriptorSet == rhs.descriptorSet
+            && lhs.members == rhs.members;
 }
 
 QT_END_NAMESPACE

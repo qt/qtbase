@@ -420,7 +420,10 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
         case QVariant::UInt:
         case QVariant::Bool:
         case QVariant::Double:
-        case QVariant::KeySequence: {
+#if QT_CONFIG(shortcut)
+        case QVariant::KeySequence:
+#endif
+        {
             result = v.toString();
             if (result.contains(QChar::Null))
                 result = QLatin1String("@String(") + result + QLatin1Char(')');

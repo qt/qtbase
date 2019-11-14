@@ -198,9 +198,8 @@ UnixMakefileGenerator::init()
                 QString headerSuffix;
                 if (project->isActiveConfig("clang_pch_style"))
                     headerSuffix = project->first("QMAKE_PCH_OUTPUT_EXT").toQString();
-                else
-                    pchBaseName += project->first("QMAKE_PCH_OUTPUT_EXT").toQString();
 
+                pchBaseName += project->first("QMAKE_PCH_OUTPUT_EXT").toQString();
                 pchBaseName += Option::dir_sep;
 
                 ProString language = project->first(ProKey("QMAKE_LANGUAGE_" + compiler));
@@ -319,8 +318,7 @@ QStringList
         if(!project->isEmpty("PRECOMPILED_DIR"))
             header_prefix = project->first("PRECOMPILED_DIR").toQString();
         header_prefix += project->first("QMAKE_ORIG_TARGET").toQString();
-        if (!project->isActiveConfig("clang_pch_style"))
-            header_prefix += project->first("QMAKE_PCH_OUTPUT_EXT").toQString();
+        header_prefix += project->first("QMAKE_PCH_OUTPUT_EXT").toQString();
         if (project->isActiveConfig("icc_pch_style")) {
             // icc style
             ProStringList pchArchs = project->values("QMAKE_PCH_ARCHS");

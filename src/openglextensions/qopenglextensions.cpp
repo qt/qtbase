@@ -60,6 +60,12 @@
 #include "qopenglextensions.h"
 #include <QtGui/qopenglcontext.h>
 
+// MemoryBarrier is a macro on some architectures on Windows
+#ifdef Q_OS_WIN
+#pragma push_macro("MemoryBarrier")
+#undef MemoryBarrier
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QAbstractOpenGLExtension::~QAbstractOpenGLExtension()
@@ -7720,3 +7726,6 @@ bool QOpenGLExtension_QCOM_tiled_rendering::initializeOpenGLFunctions()
 
 QT_END_NAMESPACE
 
+#ifdef Q_OS_WIN
+#pragma pop_macro("MemoryBarrier")
+#endif

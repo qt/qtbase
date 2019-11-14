@@ -87,6 +87,7 @@ private slots:
     void mid();
     void split_data();
     void split();
+    void nullToString();
 };
 
 static QStringRef emptyRef()
@@ -2175,6 +2176,18 @@ void tst_QStringRef::split()
         list = ref.split(sep.at(0), QString::SkipEmptyParts);
         QVERIFY(list == result);
     }
+}
+
+void tst_QStringRef::nullToString()
+{
+    QStringRef nullRef;
+    QVERIFY(nullRef.isNull());
+    QVERIFY(nullRef.toString().isNull());
+
+    QString str;
+    nullRef = &str;
+    QVERIFY(nullRef.isNull());
+    QVERIFY(nullRef.toString().isNull());
 }
 
 QTEST_APPLESS_MAIN(tst_QStringRef)

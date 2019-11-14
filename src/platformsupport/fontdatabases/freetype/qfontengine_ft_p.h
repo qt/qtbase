@@ -63,6 +63,8 @@
 
 #include <qmutex.h>
 
+#include <string.h>
+
 QT_BEGIN_NAMESPACE
 
 class QFontEngineFTRawFont;
@@ -170,6 +172,7 @@ public:
         inline bool isGlyphMissing(glyph_t index) const { return missing_glyphs.contains(index); }
         inline void setGlyphMissing(glyph_t index) const { missing_glyphs.insert(index); }
 private:
+        Q_DISABLE_COPY(QGlyphSet);
         mutable QHash<GlyphAndSubPixelPosition, Glyph *> glyph_data; // maps from glyph index to glyph data
         mutable QSet<glyph_t> missing_glyphs;
         mutable Glyph *fast_glyph_data[256]; // for fast lookup of glyphs < 256
@@ -310,7 +313,18 @@ private:
     GlyphFormat defaultFormat;
     FT_Matrix matrix;
 
-    QList<QGlyphSet> transformedGlyphSets;
+    struct TransformedGlyphSets {
+        enum { nSets = 10 };
+        QGlyphSet *sets[nSets];
+
+        QGlyphSet *findSet(const QTransform &matrix, const QFontDef &fontDef);
+        TransformedGlyphSets() { std::fill(&sets[0], &sets[nSets], nullptr); }
+        ~TransformedGlyphSets() { qDeleteAll(&sets[0], &sets[nSets]); }
+    private:
+        void moveToFront(int i);
+        Q_DISABLE_COPY(TransformedGlyphSets);
+    };
+    TransformedGlyphSets transformedGlyphSets;
     mutable QGlyphSet defaultGlyphSet;
 
     QFontEngine::FaceId face_id;
@@ -325,6 +339,9 @@ private:
     mutable bool kerning_pairs_loaded;
     QFixed scalableBitmapScaleFactor;
 };
+
+Q_DECLARE_TYPEINFO(QFontEngineFT::QGlyphSet, Q_MOVABLE_TYPE);
+
 
 inline uint qHash(const QFontEngineFT::GlyphAndSubPixelPosition &g)
 {

@@ -53,7 +53,9 @@
 #include <QtGui/qregion.h>
 #include <QtGui/qbrush.h>
 #include <QtGui/qcursor.h>
-#include <QtGui/qkeysequence.h>
+#if QT_CONFIG(shortcut)
+#  include <QtGui/qkeysequence.h>
+#endif
 
 #ifdef QT_INCLUDE_COMPAT
 #include <QtGui/qevent.h>

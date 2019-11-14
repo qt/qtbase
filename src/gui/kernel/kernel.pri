@@ -48,11 +48,8 @@ HEADERS += \
         kernel/qinputmethod.h \
         kernel/qinputmethod_p.h \
         kernel/qinternalmimedata_p.h \
-        kernel/qkeysequence.h \
-        kernel/qkeysequence_p.h \
         kernel/qkeymapper_p.h \
         kernel/qpalette.h \
-        kernel/qshortcutmap_p.h \
         kernel/qsessionmanager.h \
         kernel/qsessionmanager_p.h \
         kernel/qwindowdefs.h \
@@ -108,12 +105,10 @@ SOURCES += \
         kernel/qevent.cpp \
         kernel/qinputmethod.cpp \
         kernel/qinternalmimedata.cpp \
-        kernel/qkeysequence.cpp \
         kernel/qkeymapper.cpp \
         kernel/qpalette.cpp \
         kernel/qguivariant.cpp \
         kernel/qscreen.cpp \
-        kernel/qshortcutmap.cpp \
         kernel/qstylehints.cpp \
         kernel/qtouchdevice.cpp \
         kernel/qplatformsharedgraphicscache.cpp \
@@ -130,6 +125,18 @@ SOURCES += \
         kernel/qinputdevicemanager.cpp \
         kernel/qhighdpiscaling.cpp \
         kernel/qtestsupport_gui.cpp
+
+qtConfig(action) {
+    HEADERS += \
+        kernel/qguiaction.h \
+        kernel/qguiaction_p.h \
+        kernel/qguiactiongroup.h \
+        kernel/qguiactiongroup_p.h
+
+    SOURCES += \
+        kernel/qguiactiongroup.cpp \
+        kernel/qguiaction.cpp
+}
 
 qtConfig(draganddrop) {
     HEADERS += \
@@ -158,6 +165,19 @@ qtConfig(opengl) {
             kernel/qplatformopenglcontext.cpp \
             kernel/qopenglcontext.cpp \
             kernel/qopenglwindow.cpp
+}
+
+qtConfig(shortcut) {
+    HEADERS += \
+            kernel/qguishortcut.h \
+            kernel/qguishortcut_p.h \
+            kernel/qshortcutmap_p.h \
+            kernel/qkeysequence.h \
+            kernel/qkeysequence_p.h
+    SOURCES += \
+            kernel/qguishortcut.cpp \
+            kernel/qshortcutmap.cpp \
+            kernel/qkeysequence.cpp
 }
 
 win32:HEADERS+=kernel/qwindowdefs_win.h

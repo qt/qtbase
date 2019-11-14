@@ -550,6 +550,10 @@ void tst_QFile::exists()
     QFile unc(uncPath);
     QVERIFY2(unc.exists(), msgFileDoesNotExist(uncPath).constData());
 #endif
+
+    QTest::ignoreMessage(QtWarningMsg, "Broken filename passed to function");
+    QVERIFY(!QFile::exists(QDir::currentPath() + QLatin1Char('/') +
+                           QChar(QChar::Null) + QLatin1String("x/y")));
 }
 
 void tst_QFile::open_data()

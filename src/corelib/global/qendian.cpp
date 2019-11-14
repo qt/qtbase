@@ -765,7 +765,7 @@ QT_BEGIN_NAMESPACE
 
 #if defined(__SSSE3__)
 using ShuffleMask = uchar[16];
-Q_DECL_ALIGN(16) static const ShuffleMask shuffleMasks[3] = {
+alignas(16) static const ShuffleMask shuffleMasks[3] = {
     // 16-bit
     {1, 0, 3, 2,  5, 4, 7, 6,  9, 8, 11, 10,  13, 12, 15, 14},
     // 32-bit

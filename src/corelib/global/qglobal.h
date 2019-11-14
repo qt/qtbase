@@ -86,15 +86,9 @@
 #define QT_CONFIG(feature) (1/QT_FEATURE_##feature == 1)
 #define QT_REQUIRE_CONFIG(feature) Q_STATIC_ASSERT_X(QT_FEATURE_##feature == 1, "Required feature " #feature " for file " __FILE__ " not available.")
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-// ### Qt6: FIXME and get rid of unsharable containers
-//#  define QT_NO_UNSHARABLE_CONTAINERS
-#  define QT6_VIRTUAL virtual
-#  define QT6_NOT_VIRTUAL
-#else
-#  define QT6_VIRTUAL
-#  define QT6_NOT_VIRTUAL virtual
-#endif
+// ### Clean those up, once all code is adjusted
+#define QT6_VIRTUAL virtual
+#define QT6_NOT_VIRTUAL
 
 /* These two macros makes it possible to turn the builtin line expander into a
  * string literal. */
@@ -498,53 +492,6 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION const char *qVersion(void) Q_DECL_NOEXCEPT;
     }
 # define Q_DESTRUCTOR_FUNCTION(AFUNC) Q_DESTRUCTOR_FUNCTION0(AFUNC)
 #endif
-
-namespace QtPrivate {
-    template <class T>
-    struct AlignOfHelper
-    {
-        char c;
-        T type;
-
-        AlignOfHelper();
-        ~AlignOfHelper();
-    };
-
-    template <class T>
-    struct AlignOf_Default
-    {
-        enum { Value = sizeof(AlignOfHelper<T>) - sizeof(T) };
-    };
-
-    template <class T> struct AlignOf : AlignOf_Default<T> { };
-    template <class T> struct AlignOf<T &> : AlignOf<T> {};
-    template <class T> struct AlignOf<T &&> : AlignOf<T> {};
-    template <size_t N, class T> struct AlignOf<T[N]> : AlignOf<T> {};
-
-#if defined(Q_PROCESSOR_X86_32) && !defined(Q_OS_WIN)
-    template <class T> struct AlignOf_WorkaroundForI386Abi { enum { Value = sizeof(T) }; };
-
-    // x86 ABI weirdness
-    // Alignment of naked type is 8, but inside struct has alignment 4.
-    template <> struct AlignOf<double>  : AlignOf_WorkaroundForI386Abi<double> {};
-    template <> struct AlignOf<qint64>  : AlignOf_WorkaroundForI386Abi<qint64> {};
-    template <> struct AlignOf<quint64> : AlignOf_WorkaroundForI386Abi<quint64> {};
-#ifdef Q_CC_CLANG
-    // GCC and Clang seem to disagree wrt to alignment of arrays
-    template <size_t N> struct AlignOf<double[N]>   : AlignOf_Default<double> {};
-    template <size_t N> struct AlignOf<qint64[N]>   : AlignOf_Default<qint64> {};
-    template <size_t N> struct AlignOf<quint64[N]>  : AlignOf_Default<quint64> {};
-#endif
-#endif
-} // namespace QtPrivate
-
-#define QT_EMULATED_ALIGNOF(T) \
-    (size_t(QT_PREPEND_NAMESPACE(QtPrivate)::AlignOf<T>::Value))
-
-#ifndef Q_ALIGNOF
-#define Q_ALIGNOF(T) QT_EMULATED_ALIGNOF(T)
-#endif
-
 
 /*
   quintptr and qptrdiff is guaranteed to be the same size as a pointer, i.e.

@@ -1359,6 +1359,8 @@
 
     \snippet code/src_corelib_tools_qvector.cpp 14
 
+    \include containers-range-constructor.qdocinc
+
     \sa fromList(), QList::fromVector()
 */
 
@@ -1369,6 +1371,8 @@
     Example:
 
     \snippet code/src_corelib_tools_qvector.cpp 15
+
+    \include containers-range-constructor.qdocinc
 
     \sa toList(), QList::toVector()
 */
@@ -1382,6 +1386,8 @@
 
     \snippet code/src_corelib_tools_qvector.cpp 16
 
+    \include containers-range-constructor.qdocinc
+
     \sa toStdVector(), QList::fromStdList()
 */
 
@@ -1391,6 +1397,8 @@
     Example:
 
     \snippet code/src_corelib_tools_qvector.cpp 17
+
+    \include containers-range-constructor.qdocinc
 
     \sa fromStdVector(), QList::toStdList()
 */

@@ -52,7 +52,9 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
-#include "private/qkeysequence_p.h"
+#if QT_CONFIG(shortcut)
+#  include "private/qkeysequence_p.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -67,7 +69,7 @@ public:
 
     void initializeSystemPalette();
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     static const QKeyBinding keyBindings[];
     static const uint numberOfKeyBindings;
 #endif

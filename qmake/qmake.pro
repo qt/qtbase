@@ -116,6 +116,7 @@ SOURCES += \
     qbytearray.cpp \
     qbytearraymatcher.cpp \
     qcalendar.cpp \
+    qcborvalue.cpp \
     qcryptographichash.cpp \
     qdatetime.cpp \
     qdir.cpp \
@@ -131,8 +132,8 @@ SOURCES += \
     qgregoriancalendar.cpp \
     qhash.cpp \
     qiodevice.cpp \
-    qjson.cpp \
     qjsonarray.cpp \
+    qjsoncbor.cpp \
     qjsondocument.cpp \
     qjsonobject.cpp \
     qjsonparser.cpp \
@@ -174,6 +175,8 @@ HEADERS += \
     qcalendar.h \
     qcalendarbackend_p.h \
     qcalendarmath_p.h \
+    qcborvalue.h \
+    qcborvalue_p.h \
     qchar.h \
     qcryptographichash.h \
     qdatetime.h \

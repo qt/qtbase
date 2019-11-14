@@ -214,8 +214,6 @@ QT_BEGIN_NAMESPACE
     QShader, it indicates no shader code was found for the requested key.
  */
 
-static const int QSB_VERSION = 1;
-
 /*!
     Constructs a new, empty (and thus invalid) QShader instance.
  */
@@ -345,6 +343,14 @@ void QShader::removeShader(const QShaderKey &key)
     d->shaders.erase(it);
 }
 
+static void writeShaderKey(QDataStream *ds, const QShaderKey &k)
+{
+    *ds << k.source();
+    *ds << k.sourceVersion().version();
+    *ds << k.sourceVersion().flags();
+    *ds << k.sourceVariant();
+}
+
 /*!
     \return a serialized binary version of all the data held by the
     QShader, suitable for writing to files or other I/O devices.
@@ -359,22 +365,46 @@ QByteArray QShader::serialized() const
     if (!buf.open(QIODevice::WriteOnly))
         return QByteArray();
 
-    ds << QSB_VERSION;
+    ds << QShaderPrivate::QSB_VERSION;
     ds << d->stage;
-    ds << d->desc.toBinaryJson();
+    ds << d->desc.toCbor();
     ds << d->shaders.count();
     for (auto it = d->shaders.cbegin(), itEnd = d->shaders.cend(); it != itEnd; ++it) {
         const QShaderKey &k(it.key());
-        ds << k.source();
-        ds << k.sourceVersion().version();
-        ds << k.sourceVersion().flags();
-        ds << k.sourceVariant();
+        writeShaderKey(&ds, k);
         const QShaderCode &shader(d->shaders.value(k));
         ds << shader.shader();
         ds << shader.entryPoint();
     }
+    ds << d->bindings.count();
+    for (auto it = d->bindings.cbegin(), itEnd = d->bindings.cend(); it != itEnd; ++it) {
+        const QShaderKey &k(it.key());
+        writeShaderKey(&ds, k);
+        const NativeResourceBindingMap &map(it.value());
+        ds << map.count();
+        for (auto mapIt = map.cbegin(), mapItEnd = map.cend(); mapIt != mapItEnd; ++mapIt) {
+            ds << mapIt.key();
+            ds << mapIt.value().first;
+            ds << mapIt.value().second;
+        }
+    }
 
     return qCompress(buf.buffer());
+}
+
+static void readShaderKey(QDataStream *ds, QShaderKey *k)
+{
+    int intVal;
+    *ds >> intVal;
+    k->setSource(QShader::Source(intVal));
+    QShaderVersion ver;
+    *ds >> intVal;
+    ver.setVersion(intVal);
+    *ds >> intVal;
+    ver.setFlags(QShaderVersion::Flags(intVal));
+    k->setSourceVersion(ver);
+    *ds >> intVal;
+    k->setSourceVariant(QShader::Variant(intVal));
 }
 
 /*!
@@ -396,28 +426,28 @@ QShader QShader::fromSerialized(const QByteArray &data)
     Q_ASSERT(d->ref.loadRelaxed() == 1); // must be detached
     int intVal;
     ds >> intVal;
-    if (intVal != QSB_VERSION)
+    d->qsbVersion = intVal;
+    if (d->qsbVersion != QShaderPrivate::QSB_VERSION
+            && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON
+            && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITHOUT_BINDINGS)
+    {
+        qWarning("Attempted to deserialize QShader with unknown version %d.", d->qsbVersion);
         return QShader();
+    }
 
     ds >> intVal;
     d->stage = Stage(intVal);
     QByteArray descBin;
     ds >> descBin;
-    d->desc = QShaderDescription::fromBinaryJson(descBin);
+    if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON)
+        d->desc = QShaderDescription::fromCbor(descBin);
+    else
+        d->desc = QShaderDescription::fromBinaryJson(descBin);
     int count;
     ds >> count;
     for (int i = 0; i < count; ++i) {
         QShaderKey k;
-        ds >> intVal;
-        k.setSource(Source(intVal));
-        QShaderVersion ver;
-        ds >> intVal;
-        ver.setVersion(intVal);
-        ds >> intVal;
-        ver.setFlags(QShaderVersion::Flags(intVal));
-        k.setSourceVersion(ver);
-        ds >> intVal;
-        k.setSourceVariant(Variant(intVal));
+        readShaderKey(&ds, &k);
         QShaderCode shader;
         QByteArray s;
         ds >> s;
@@ -425,6 +455,27 @@ QShader QShader::fromSerialized(const QByteArray &data)
         ds >> s;
         shader.setEntryPoint(s);
         d->shaders[k] = shader;
+    }
+
+    if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITHOUT_BINDINGS) {
+        ds >> count;
+        for (int i = 0; i < count; ++i) {
+            QShaderKey k;
+            readShaderKey(&ds, &k);
+            NativeResourceBindingMap map;
+            int mapSize;
+            ds >> mapSize;
+            for (int b = 0; b < mapSize; ++b) {
+                int binding;
+                ds >> binding;
+                int firstNativeBinding;
+                ds >> firstNativeBinding;
+                int secondNativeBinding;
+                ds >> secondNativeBinding;
+                map.insert(binding, { firstNativeBinding, secondNativeBinding });
+            }
+            d->bindings.insert(k, map);
+        }
     }
 
     return bs;
@@ -460,7 +511,7 @@ bool operator==(const QShader &lhs, const QShader &rhs) Q_DECL_NOTHROW
 {
     return lhs.d->stage == rhs.d->stage
             && lhs.d->shaders == rhs.d->shaders;
-    // do not bother with desc, if the shader code is the same, the description must match too
+    // do not bother with desc and bindings, if the shader code is the same, the description must match too
 }
 
 /*!
@@ -585,5 +636,67 @@ QDebug operator<<(QDebug dbg, const QShaderVersion &v)
     return dbg;
 }
 #endif // QT_NO_DEBUG_STREAM
+
+/*!
+    \typedef QShader::NativeResourceBindingMap
+
+    Synonym for QHash<int, QPair<int, int>>.
+
+    The resource binding model QRhi assumes is based on SPIR-V. This means that
+    uniform buffers, storage buffers, combined image samplers, and storage
+    images share a common binding point space. The binding numbers in
+    QShaderDescription and QRhiShaderResourceBinding are expected to match the
+    \c binding layout qualifier in the Vulkan-compatible GLSL shader.
+
+    Graphics APIs other than Vulkan may use a resource binding model that is
+    not fully compatible with this. In addition, the generator of the shader
+    code translated from SPIR-V may choose not to take the SPIR-V binding
+    qualifiers into account, for various reasons. (this is the case with the
+    Metal backend of SPIRV-Cross, for example).
+
+    Therefore, a QShader may expose an additional map that describes what the
+    native binding point for a given SPIR-V binding is. The QRhi backends are
+    expected to use this map automatically, as appropriate. The value is a
+    pair, because combined image samplers may map to two native resources (a
+    texture and a sampler) in some shading languages. In that case the second
+    value refers to the sampler.
+*/
+
+/*!
+    \return the native binding map for \a key or null if no extra mapping is
+    available, or is not applicable.
+ */
+const QShader::NativeResourceBindingMap *QShader::nativeResourceBindingMap(const QShaderKey &key) const
+{
+    auto it = d->bindings.constFind(key);
+    if (it == d->bindings.cend())
+        return nullptr;
+
+    return &it.value();
+}
+
+/*!
+    Stores the given native resource binding \a map associated with \a key.
+
+    \sa nativeResourceBindingMap()
+ */
+void QShader::setResourceBindingMap(const QShaderKey &key, const NativeResourceBindingMap &map)
+{
+    detach();
+    d->bindings[key] = map;
+}
+
+/*!
+    Removes the native resource binding map for \a key.
+ */
+void QShader::removeResourceBindingMap(const QShaderKey &key)
+{
+    auto it = d->bindings.find(key);
+    if (it == d->bindings.end())
+        return;
+
+    detach();
+    d->bindings.erase(it);
+}
 
 QT_END_NAMESPACE

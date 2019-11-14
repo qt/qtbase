@@ -39,7 +39,9 @@
 
 #include "qprogressdialog.h"
 
-#include "qshortcut.h"
+#if QT_CONFIG(shortcut)
+#  include "qshortcut.h"
+#endif
 #include "qpainter.h"
 #include "qdrawutil.h"
 #include "qlabel.h"

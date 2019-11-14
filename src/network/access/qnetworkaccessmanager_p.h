@@ -229,6 +229,8 @@ public:
 
     bool autoDeleteReplies = false;
 
+    int transferTimeout = 0;
+
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_AUTOTEST_EXPORT static const QWeakPointer<const QNetworkSession> getNetworkSession(const QNetworkAccessManager *manager);
 #endif

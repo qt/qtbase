@@ -1395,7 +1395,9 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
         else
             *QApplicationPrivate::set_pal = palette;
         QCoreApplication::setAttribute(Qt::AA_SetPalette);
-        emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
+
+        if (qGuiApp && QGuiApplicationPrivate::app_pal)
+            emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
     }
 }
 
@@ -1866,22 +1868,19 @@ void QApplication::aboutQt()
 bool QApplication::event(QEvent *e)
 {
     Q_D(QApplication);
-    if(e->type() == QEvent::Close) {
-        QCloseEvent *ce = static_cast<QCloseEvent*>(e);
-        ce->accept();
+    if (e->type() == QEvent::Quit) {
         closeAllWindows();
-
-        const QWidgetList list = topLevelWidgets();
-        for (auto *w : list) {
+        for (auto *w : topLevelWidgets()) {
             if (w->isVisible() && !(w->windowType() == Qt::Desktop) && !(w->windowType() == Qt::Popup) &&
                  (!(w->windowType() == Qt::Dialog) || !w->parentWidget())) {
-                ce->ignore();
-                break;
+                e->ignore();
+                return true;
             }
         }
-        if (ce->isAccepted()) {
-            return true;
-        }
+        // Explicitly call QCoreApplication instead of QGuiApplication so that
+        // we don't let QGuiApplication close any windows we skipped earlier in
+        // closeAllWindows(). FIXME: Unify all this close magic through closeAllWindows.
+        return QCoreApplication::event(e);
 #ifndef Q_OS_WIN
     } else if (e->type() == QEvent::LocaleChange) {
         // on Windows the event propagation is taken care by the

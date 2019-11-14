@@ -44,10 +44,9 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qobjectdefs.h>
 
+QT_REQUIRE_CONFIG(shortcut);
+
 QT_BEGIN_NAMESPACE
-
-
-#if !defined(QT_NO_SHORTCUT) || defined(Q_CLANG_QDOC)
 
 class QKeySequence;
 
@@ -226,17 +225,6 @@ Q_DECLARE_SHARED(QKeySequence)
 #if !defined(QT_NO_DEBUG_STREAM) || defined(Q_CLANG_QDOC)
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QKeySequence &);
 #endif
-
-#else
-
-class Q_GUI_EXPORT QKeySequence
-{
-public:
-    QKeySequence() {}
-    QKeySequence(int) {}
-};
-
-#endif // QT_NO_SHORTCUT
 
 QT_END_NAMESPACE
 

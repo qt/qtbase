@@ -53,10 +53,6 @@ class RefCount
 public:
     inline bool ref() noexcept {
         int count = atomic.loadRelaxed();
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-        if (count == 0) // !isSharable
-            return false;
-#endif
         if (count != -1) // !isStatic
             atomic.ref();
         return true;
@@ -64,31 +60,10 @@ public:
 
     inline bool deref() noexcept {
         int count = atomic.loadRelaxed();
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-        if (count == 0) // !isSharable
-            return false;
-#endif
         if (count == -1) // isStatic
             return true;
         return atomic.deref();
     }
-
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    bool setSharable(bool sharable) noexcept
-    {
-        Q_ASSERT(!isShared());
-        if (sharable)
-            return atomic.testAndSetRelaxed(0, 1);
-        else
-            return atomic.testAndSetRelaxed(1, 0);
-    }
-
-    bool isSharable() const noexcept
-    {
-        // Sharable === Shared ownership.
-        return atomic.loadRelaxed() != 0;
-    }
-#endif
 
     bool isStatic() const noexcept
     {
