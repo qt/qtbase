@@ -163,7 +163,7 @@ qsizetype QtPrivate::qustrlen(const ushort *str) noexcept
 {
     qsizetype result = 0;
 
-#ifdef __SSE2__
+#if defined(__SSE2__) && !(defined(__SANITIZE_ADDRESS__) || QT_HAS_FEATURE(address_sanitizer))
     // find the 16-byte alignment immediately prior or equal to str
     quintptr misalignment = quintptr(str) & 0xf;
     Q_ASSERT((misalignment & 1) == 0);
