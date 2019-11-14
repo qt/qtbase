@@ -2678,6 +2678,12 @@ function(qt_add_cmake_library target)
         add_library("${target}" MODULE)
         set_property(TARGET ${name} PROPERTY C_VISIBILITY_PRESET default)
         set_property(TARGET ${name} PROPERTY CXX_VISIBILITY_PRESET default)
+
+        if(APPLE)
+            # CMake defaults to using .so extensions for loadable modules, aka plugins,
+            # but Qt plugins are actually suffixed with .dylib.
+            set_property(TARGET "${target}" PROPERTY SUFFIX ".dylib")
+        endif()
     else()
         add_library("${target}")
     endif()
