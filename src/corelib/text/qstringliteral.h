@@ -42,6 +42,7 @@
 #define QSTRINGLITERAL_H
 
 #include <QtCore/qarraydata.h>
+#include <QtCore/qarraydatapointer.h>
 
 #if 0
 #pragma qt_class(QStringLiteral)
@@ -67,7 +68,7 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
             Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 \
         }; \
         QStringPrivate holder = {  \
-            const_cast<QArrayData *>(&qstring_literal), \
+            static_cast<QTypedArrayData<ushort> *>(const_cast<QArrayData *>(&qstring_literal)), \
             reinterpret_cast<ushort *>(const_cast<qunicodechar *>(QT_UNICODE_LITERAL(str))), \
             Size \
         }; \
@@ -79,12 +80,7 @@ Q_STATIC_ASSERT_X(sizeof(qunicodechar) == 2,
 # define QStringViewLiteral(str) QStringView(QT_UNICODE_LITERAL(str), QtPrivate::Deprecated)
 #endif
 
-struct QStringPrivate
-{
-    QArrayData *d;
-    ushort *b;
-    uint size;
-};
+using QStringPrivate = QArrayDataPointer<ushort>;
 
 QT_END_NAMESPACE
 

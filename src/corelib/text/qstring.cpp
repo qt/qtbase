@@ -2082,9 +2082,7 @@ int QString::toUcs4_helper(const ushort *uc, int length, uint *out)
 QString::QString(const QChar *unicode, int size)
 {
     if (!unicode) {
-        d.d = Data::sharedNull();
-        d.b = Data::sharedNullData();
-        d.size = 0;
+        d.clear();
     } else {
         if (size < 0) {
             size = 0;
@@ -2092,18 +2090,11 @@ QString::QString(const QChar *unicode, int size)
                 ++size;
         }
         if (!size) {
-            QPair<Data *, ushort *> pair = Data::allocate(0);
-            d.d = pair.first;
-            d.b = pair.second;
-            d.size = 0;
+            d = DataPointer(Data::allocate(0), 0);
         } else {
-            QPair<Data *, ushort *> pair = Data::allocate(size + 1);
-            d.d = pair.first;
-            d.b = pair.second;
-            d.size = size;
-            Q_CHECK_PTR(d.d);
-            memcpy(d.b, unicode, size * sizeof(QChar));
-            d.b[size] = '\0';
+            d = DataPointer(Data::allocate(size + 1), size);
+            memcpy(d.data(), unicode, size * sizeof(QChar));
+            d.data()[size] = '\0';
         }
     }
 }
@@ -2117,19 +2108,12 @@ QString::QString(const QChar *unicode, int size)
 QString::QString(int size, QChar ch)
 {
     if (size <= 0) {
-        QPair<Data *, ushort *> pair = Data::allocate(0);
-        d.d = pair.first;
-        d.b = pair.second;
-        d.size = 0;
+        d = DataPointer(Data::allocate(0), 0);
     } else {
-        QPair<Data *, ushort *> pair = Data::allocate(size + 1);
-        d.d = pair.first;
-        d.b = pair.second;
-        d.size = size;
-        Q_CHECK_PTR(d.d);
-        d.b[size] = '\0';
-        ushort *i = d.b + size;
-        ushort *b = d.b;
+        d = DataPointer(Data::allocate(size + 1), size);
+        d.data()[size] = '\0';
+        ushort *i = d.data() + size;
+        ushort *b = d.data();
         const ushort value = ch.unicode();
         while (i != b)
            *--i = value;
@@ -2144,12 +2128,8 @@ QString::QString(int size, QChar ch)
 */
 QString::QString(int size, Qt::Initialization)
 {
-    QPair<Data *, ushort *> pair = Data::allocate(size + 1);
-    d.d = pair.first;
-    d.b = pair.second;
-    d.size = size;
-    Q_CHECK_PTR(d.d);
-    d.b[size] = '\0';
+    d = DataPointer(Data::allocate(size + 1), size);
+    d.data()[size] = '\0';
 }
 
 /*! \fn QString::QString(QLatin1String str)
@@ -2164,13 +2144,9 @@ QString::QString(int size, Qt::Initialization)
 */
 QString::QString(QChar ch)
 {
-    QPair<Data *, ushort *> pair = Data::allocate(2);
-    d.d = pair.first;
-    d.b = pair.second;
-    d.size = 1;
-    Q_CHECK_PTR(d.d);
-    d.b[0] = ch.unicode();
-    d.b[1] = '\0';
+    d = DataPointer(Data::allocate(2), 1);
+    d.data()[0] = ch.unicode();
+    d.data()[1] = '\0';
 }
 
 /*! \fn QString::QString(const QByteArray &ba)
@@ -2262,16 +2238,16 @@ void QString::resize(int size)
     if (size < 0)
         size = 0;
 
-    if (!d.d->isShared() && !d.d->isMutable() && size < int(d.size)) {
+    if (!d->isShared() && !d->isMutable() && size < int(d.size)) {
         d.size = size;
         return;
     }
 
-    if (d.d->needsDetach() || size > capacity())
+    if (d->needsDetach() || size > capacity())
         reallocData(uint(size) + 1u, true);
     d.size = size;
-    if (d.d->isMutable()) {
-        d.b[size] = '\0';
+    if (d->isMutable()) {
+        d.data()[size] = '\0';
     }
 }
 
@@ -2291,7 +2267,7 @@ void QString::resize(int size, QChar fillChar)
     resize(size);
     const int difference = length() - oldSize;
     if (difference > 0)
-        std::fill_n(d.b + oldSize, difference, fillChar.unicode());
+        std::fill_n(d.data() + oldSize, difference, fillChar.unicode());
 }
 
 /*! \fn int QString::capacity() const
@@ -2346,26 +2322,17 @@ void QString::resize(int size, QChar fillChar)
 
 void QString::reallocData(uint alloc, bool grow)
 {
-    auto allocOptions = d.d->detachFlags();
+    auto allocOptions = d->detachFlags();
     if (grow)
         allocOptions |= QArrayData::GrowsForward;
 
-    if (d.d->needsDetach()) {
-        QPair<Data *, ushort *> pair = Data::allocate(alloc, allocOptions);
-        Q_CHECK_PTR(pair.first);
-        d.size = qMin(alloc - 1, d.size);
-        ::memcpy(pair.second, d.b, d.size * sizeof(QChar));
-        pair.second[d.size] = 0;
-        if (!d.d->deref())
-            Data::deallocate(d.d);
-        d.d = pair.first;
-        d.b = pair.second;
+    if (d->needsDetach()) {
+        DataPointer dd(Data::allocate(alloc, allocOptions), qMin(int(alloc) - 1, d.size));
+        ::memcpy(dd.data(), d.data(), dd.size * sizeof(QChar));
+        dd.data()[dd.size] = 0;
+        d = dd;
     } else {
-        QPair<Data *, ushort *> pair =
-                Data::reallocateUnaligned(static_cast<Data *>(d.d), d.b, alloc, allocOptions);
-        Q_CHECK_PTR(pair.first);
-        d.d = pair.first;
-        d.b = pair.second;
+        d.reallocate(alloc, allocOptions);
     }
 }
 
@@ -2391,9 +2358,6 @@ void QString::expand(int i)
 
 QString &QString::operator=(const QString &other) noexcept
 {
-    other.d.d->ref();
-    if (!d.d->deref())
-        Data::deallocate(d.d);
     d = other.d;
     return *this;
 }
@@ -2416,8 +2380,8 @@ QString &QString::operator=(QLatin1String other)
 {
     if (isDetached() && other.size() <= capacity()) { // assumes d->alloc == 0 -> !isDetached() (sharedNull)
         d.size = other.size();
-        d.b[other.size()] = 0;
-        qt_from_latin1(d.b, other.latin1(), other.size());
+        d.data()[other.size()] = 0;
+        qt_from_latin1(d.data(), other.latin1(), other.size());
     } else {
         *this = fromLatin1(other.latin1(), other.size());
     }
@@ -2480,8 +2444,8 @@ QString &QString::operator=(QChar ch)
 {
     if (isDetached() && capacity() >= 1) { // assumes d->alloc == 0 -> !isDetached() (sharedNull)
         // re-use existing capacity:
-        d.b[0] = ch.unicode();
-        d.b[1] = 0;
+        d.data()[0] = ch.unicode();
+        d.data()[1] = 0;
         d.size = 1;
     } else {
         operator=(QString(ch));
@@ -2573,8 +2537,8 @@ QString &QString::insert(int i, QLatin1String str)
     else
         resize(size() + len);
 
-    ::memmove(d.b + i + len, d.b + i, (d.size - i - len) * sizeof(QChar));
-    qt_from_latin1(d.b + i, s, uint(len));
+    ::memmove(d.data() + i + len, d.data() + i, (d.size - i - len) * sizeof(QChar));
+    qt_from_latin1(d.data() + i, s, uint(len));
     return *this;
 }
 
@@ -2591,7 +2555,7 @@ QString& QString::insert(int i, const QChar *unicode, int size)
         return *this;
 
     const ushort *s = (const ushort *)unicode;
-    if (s >= d.b && s < d.b + d.size) {
+    if (s >= d.data() && s < d.data() + d.size) {
         // Part of me - take a copy
         ushort *tmp = static_cast<ushort *>(::malloc(size * sizeof(QChar)));
         Q_CHECK_PTR(tmp);
@@ -2606,8 +2570,8 @@ QString& QString::insert(int i, const QChar *unicode, int size)
     else
         resize(d.size + size);
 
-    ::memmove(d.b + i + size, d.b + i, (d.size - i - size) * sizeof(QChar));
-    memcpy(d.b + i, s, size * sizeof(QChar));
+    ::memmove(d.data() + i + size, d.data() + i, (d.size - i - size) * sizeof(QChar));
+    memcpy(d.data() + i, s, size * sizeof(QChar));
     return *this;
 }
 
@@ -2628,8 +2592,8 @@ QString& QString::insert(int i, QChar ch)
         resize(i + 1, QLatin1Char(' '));
     else
         resize(d.size + 1);
-    ::memmove(d.b + i + 1, d.b + i, (d.size - i - 1) * sizeof(QChar));
-    d.b[i] = ch.unicode();
+    ::memmove(d.data() + i + 1, d.data() + i, (d.size - i - 1) * sizeof(QChar));
+    d.data()[i] = ch.unicode();
     return *this;
 }
 
@@ -2657,11 +2621,11 @@ QString &QString::append(const QString &str)
         if (isNull()) {
             operator=(str);
         } else {
-            if (d.d->needsDetach() || size() + str.size() > capacity())
+            if (d->needsDetach() || size() + str.size() > capacity())
                 reallocData(uint(size() + str.size()) + 1u, true);
-            memcpy(d.b + d.size, str.d.b, str.d.size * sizeof(QChar));
+            memcpy(d.data() + d.size, str.d.data(), str.d.size * sizeof(QChar));
             d.size += str.d.size;
-            d.b[d.size] = '\0';
+            d.data()[d.size] = '\0';
         }
     }
     return *this;
@@ -2676,11 +2640,11 @@ QString &QString::append(const QString &str)
 QString &QString::append(const QChar *str, int len)
 {
     if (str && len > 0) {
-        if (d.d->needsDetach() || size() + len > capacity())
+        if (d->needsDetach() || size() + len > capacity())
             reallocData(uint(size() + len) + 1u, true);
-        memcpy(d.b + d.size, str, len * sizeof(QChar));
+        memcpy(d.data() + d.size, str, len * sizeof(QChar));
         d.size += len;
-        d.b[d.size] = '\0';
+        d.data()[d.size] = '\0';
     }
     return *this;
 }
@@ -2695,9 +2659,9 @@ QString &QString::append(QLatin1String str)
     const char *s = str.latin1();
     if (s) {
         int len = str.size();
-        if (d.d->needsDetach() || size() + len > capacity())
+        if (d->needsDetach() || size() + len > capacity())
             reallocData(uint(size() + len) + 1u, true);
-        ushort *i = d.b + d.size;
+        ushort *i = d.data() + d.size;
         qt_from_latin1(i, s, uint(len));
         i[len] = '\0';
         d.size += len;
@@ -2742,10 +2706,10 @@ QString &QString::append(QLatin1String str)
 */
 QString &QString::append(QChar ch)
 {
-    if (d.d->needsDetach() || size() + 1 > capacity())
+    if (d->needsDetach() || size() + 1 > capacity())
         reallocData(uint(d.size) + 2u, true);
-    d.b[d.size++] = ch.unicode();
-    d.b[d.size] = '\0';
+    d.data()[d.size++] = ch.unicode();
+    d.data()[d.size] = '\0';
     return *this;
 }
 
@@ -2845,7 +2809,7 @@ QString &QString::remove(int pos, int len)
         resize(pos); // truncate
     } else if (len > 0) {
         detach();
-        memmove(d.b + pos, d.b + pos + len,
+        memmove(d.data() + pos, d.data() + pos + len,
                 (d.size - pos - len + 1) * sizeof(ushort));
         d.size -= len;
     }
@@ -3062,7 +3026,7 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
     // Copy after if it lies inside our own d.b area (which we could
     // possibly invalidate via a realloc or modify by replacement).
     QChar *afterBuffer = nullptr;
-    if (pointsIntoRange(after, d.b, d.size)) // Use copy in place of vulnerable original:
+    if (pointsIntoRange(after, d.data(), d.size)) // Use copy in place of vulnerable original:
         after = afterBuffer = textCopy(after, alen);
 
     QT_TRY {
@@ -3070,30 +3034,30 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
             // replace in place
             detach();
             for (int i = 0; i < nIndices; ++i)
-                memcpy(d.b + indices[i], after, alen * sizeof(QChar));
+                memcpy(d.data() + indices[i], after, alen * sizeof(QChar));
         } else if (alen < blen) {
             // replace from front
             detach();
             uint to = indices[0];
             if (alen)
-                memcpy(d.b+to, after, alen*sizeof(QChar));
+                memcpy(d.data()+to, after, alen*sizeof(QChar));
             to += alen;
             uint movestart = indices[0] + blen;
             for (int i = 1; i < nIndices; ++i) {
                 int msize = indices[i] - movestart;
                 if (msize > 0) {
-                    memmove(d.b + to, d.b + movestart, msize * sizeof(QChar));
+                    memmove(d.data() + to, d.data() + movestart, msize * sizeof(QChar));
                     to += msize;
                 }
                 if (alen) {
-                    memcpy(d.b + to, after, alen * sizeof(QChar));
+                    memcpy(d.data() + to, after, alen * sizeof(QChar));
                     to += alen;
                 }
                 movestart = indices[i] + blen;
             }
             int msize = d.size - movestart;
             if (msize > 0)
-                memmove(d.b + to, d.b + movestart, msize * sizeof(QChar));
+                memmove(d.data() + to, d.data() + movestart, msize * sizeof(QChar));
             resize(d.size - nIndices*(blen-alen));
         } else {
             // replace from back
@@ -3107,9 +3071,9 @@ void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar 
                 int movestart = indices[nIndices] + blen;
                 int insertstart = indices[nIndices] + nIndices*(alen-blen);
                 int moveto = insertstart + alen;
-                memmove(d.b + moveto, d.b + movestart,
+                memmove(d.data() + moveto, d.data() + movestart,
                         (moveend - movestart)*sizeof(QChar));
-                memcpy(d.b + insertstart, after, alen * sizeof(QChar));
+                memcpy(d.data() + insertstart, after, alen * sizeof(QChar));
                 moveend = movestart-blen;
             }
         }
@@ -3170,10 +3134,10 @@ QString &QString::replace(const QChar *before, int blen,
               We're about to change data, that before and after might point
               into, and we'll need that data for our next batch of indices.
             */
-            if (!afterBuffer && pointsIntoRange(after, d.b, d.size))
+            if (!afterBuffer && pointsIntoRange(after, d.data(), d.size))
                 after = afterBuffer = textCopy(after, alen);
 
-            if (!beforeBuffer && pointsIntoRange(before, d.b, d.size)) {
+            if (!beforeBuffer && pointsIntoRange(before, d.data(), d.size)) {
                 beforeBuffer = textCopy(before, blen);
                 matcher = QStringMatcher(beforeBuffer, blen, cs);
             }
@@ -3219,13 +3183,13 @@ QString& QString::replace(QChar ch, const QString &after, Qt::CaseSensitivity cs
         uint pos = 0;
         if (cs == Qt::CaseSensitive) {
             while (pos < 1024 && index < size()) {
-                if (d.b[index] == cc)
+                if (d.data()[index] == cc)
                     indices[pos++] = index;
                 index++;
             }
         } else {
             while (pos < 1024 && index < size()) {
-                if (QChar::toCaseFolded(d.b[index]) == cc)
+                if (QChar::toCaseFolded(d.data()[index]) == cc)
                     indices[pos++] = index;
                 index++;
             }
@@ -3258,7 +3222,7 @@ QString& QString::replace(QChar before, QChar after, Qt::CaseSensitivity cs)
         if (idx != -1) {
             detach();
             const ushort a = after.unicode();
-            ushort *i = d.b;
+            ushort *i = d.data();
             ushort *const e = i + d.size;
             i += idx;
             *i = a;
@@ -4050,14 +4014,14 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
         while (i < pos) {
             int copyend = replacements[i].pos;
             int size = copyend - copystart;
-            memcpy(static_cast<void*>(uc), static_cast<const void *>(d.b + copystart), size * sizeof(QChar));
+            memcpy(static_cast<void*>(uc), static_cast<const void *>(d.data() + copystart), size * sizeof(QChar));
             uc += size;
-            memcpy(static_cast<void *>(uc), static_cast<const void *>(after.d.b), al * sizeof(QChar));
+            memcpy(static_cast<void *>(uc), static_cast<const void *>(after.d.data()), al * sizeof(QChar));
             uc += al;
             copystart = copyend + replacements[i].length;
             i++;
         }
-        memcpy(static_cast<void *>(uc), static_cast<const void *>(d.b + copystart), (d.size - copystart) * sizeof(QChar));
+        memcpy(static_cast<void *>(uc), static_cast<const void *>(d.data() + copystart), (d.size - copystart) * sizeof(QChar));
         newstring.resize(newlen);
         *this = newstring;
         caretMode = QRegExp::CaretWontMatch;
@@ -4851,7 +4815,7 @@ QString QString::left(int n)  const
 {
     if (uint(n) >= uint(size()))
         return *this;
-    return QString((const QChar*) d.b, n);
+    return QString((const QChar*) d.data(), n);
 }
 
 /*!
@@ -5146,22 +5110,22 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
 
     // We can return our own buffer to the caller.
     // Conversion to Latin-1 always shrinks the buffer by half.
-    const ushort *data = reinterpret_cast<const ushort *>(s.constData());
-    uint length = s.size();
+    const ushort *data = s.d.data();
+    int length = s.d.size;
 
-    // Swap the d pointers.
+    // Move the d pointer over to the bytearray.
     // Kids, avert your eyes. Don't try this at home.
 
-    auto *dd = static_cast<QTypedArrayData<char> *>(s.d.d);
-    char *ddata = reinterpret_cast<char *>(s.d.b);
+    // this relies on the fact that we use QArrayData for everything behind the scenes which has the same layout
+    static_assert(sizeof(QByteArray::DataPointer) == sizeof(QString::DataPointer), "sizes have to be equal");
+    QByteArray::DataPointer ba_d(reinterpret_cast<QByteArray::Data *>(s.d.d_ptr()), reinterpret_cast<char *>(s.d.data()), length);
+    ba_d.ref();
+    s.clear();
 
-    QByteArray::DataPointer ba_d = { dd, ddata, length };
+    char *ddata = ba_d.data();
 
     // multiply the allocated capacity by sizeof(ushort)
-    dd->alloc *= sizeof(ushort);
-
-    // reset ourselves to QString()
-    s.d = QString().d;
+    ba_d.d_ptr()->alloc *= sizeof(ushort);
 
     // do the in-place conversion
     qt_to_latin1(reinterpret_cast<uchar *>(ddata), data, length);
@@ -5352,35 +5316,19 @@ QString::DataPointer QString::fromLatin1_helper(const char *str, int size)
 {
     DataPointer d;
     if (!str) {
-        d.d = Data::sharedNull();
-        d.b = Data::sharedNullData();
-        d.size = 0;
+        // nothing to do
     } else if (size == 0 || (!*str && size < 0)) {
-        QPair<Data *, ushort *> pair = Data::allocate(0);
-        d.d = pair.first;
-        d.b = pair.second;
-        d.size = 0;
+        d = DataPointer(Data::allocate(0), 0);
     } else {
         if (size < 0)
             size = qstrlen(str);
-        QPair<Data *, ushort *> pair = Data::allocate(size + 1);
-        d.d = pair.first;
-        d.b = pair.second;
-        d.size = size;
-        Q_CHECK_PTR(d.d);
-        d.b[size] = '\0';
-        ushort *dst = d.b;
+        d = DataPointer(Data::allocate(size + 1), size);
+        d.data()[size] = '\0';
+        ushort *dst = d.data();
 
         qt_from_latin1(dst, str, uint(size));
     }
     return d;
-}
-
-QString::DataPointer QString::fromAscii_helper(const char *str, int size)
-{
-    QString s = fromUtf8(str, size);
-    s.d.d->ref();
-    return s.d;
 }
 
 /*! \fn QString QString::fromLatin1(const char *str, int size)
@@ -5596,7 +5544,7 @@ QString& QString::setUnicode(const QChar *unicode, int size)
 {
      resize(size);
      if (unicode && size)
-         memcpy(d.b, unicode, size * sizeof(QChar));
+         memcpy(d.data(), unicode, size * sizeof(QChar));
      return *this;
 }
 
@@ -5856,8 +5804,8 @@ QString& QString::fill(QChar ch, int size)
 {
     resize(size < 0 ? d.size : size);
     if (d.size) {
-        QChar *i = (QChar*)d.b + d.size;
-        QChar *b = (QChar*)d.b;
+        QChar *i = (QChar*)d.data() + d.size;
+        QChar *b = (QChar*)d.data();
         while (i != b)
            *--i = ch;
     }
@@ -6438,11 +6386,11 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
 
 const ushort *QString::utf16() const
 {
-    if (!d.d->isMutable()) {
+    if (!d->isMutable()) {
         // ensure '\0'-termination for ::fromRawData strings
         const_cast<QString*>(this)->reallocData(uint(d.size) + 1u);
     }
-    return d.b;
+    return d.data();
 }
 
 /*!
@@ -6471,8 +6419,8 @@ QString QString::leftJustified(int width, QChar fill, bool truncate) const
     if (padlen > 0) {
         result.resize(len+padlen);
         if (len)
-            memcpy(result.d.b, d.b, sizeof(QChar)*len);
-        QChar *uc = (QChar*)result.d.b + len;
+            memcpy(result.d.data(), d.data(), sizeof(QChar)*len);
+        QChar *uc = (QChar*)result.d.data() + len;
         while (padlen--)
            * uc++ = fill;
     } else {
@@ -6509,11 +6457,11 @@ QString QString::rightJustified(int width, QChar fill, bool truncate) const
     int padlen = width - len;
     if (padlen > 0) {
         result.resize(len+padlen);
-        QChar *uc = (QChar*)result.d.b;
+        QChar *uc = (QChar*)result.d.data();
         while (padlen--)
            * uc++ = fill;
         if (len)
-          memcpy(static_cast<void *>(uc), static_cast<const void *>(d.b), sizeof(QChar)*len);
+          memcpy(static_cast<void *>(uc), static_cast<const void *>(d.data()), sizeof(QChar)*len);
     } else {
         if (truncate)
             result = left(width);
@@ -7938,19 +7886,19 @@ QString QString::repeated(int times) const
     if (result.capacity() != resultSize)
         return QString(); // not enough memory
 
-    memcpy(result.d.b, d.b, d.size * sizeof(ushort));
+    memcpy(result.d.data(), d.data(), d.size * sizeof(ushort));
 
     int sizeSoFar = d.size;
-    ushort *end = result.d.b + sizeSoFar;
+    ushort *end = result.d.data() + sizeSoFar;
 
     const int halfResultSize = resultSize >> 1;
     while (sizeSoFar <= halfResultSize) {
-        memcpy(end, result.d.b, sizeSoFar * sizeof(ushort));
+        memcpy(end, result.d.data(), sizeSoFar * sizeof(ushort));
         end += sizeSoFar;
         sizeSoFar <<= 1;
     }
-    memcpy(end, result.d.b, (resultSize - sizeSoFar) * sizeof(ushort));
-    result.d.b[resultSize] = '\0';
+    memcpy(end, result.d.data(), (resultSize - sizeSoFar) * sizeof(ushort));
+    result.d.data()[resultSize] = '\0';
     result.d.size = resultSize;
     return result;
 }
@@ -8951,7 +8899,7 @@ QString QtPrivate::argToQString(QLatin1String pattern, size_t n, const ArgBase *
 */
 bool QString::isSimpleText() const
 {
-    const ushort *p = d.b;
+    const ushort *p = d.data();
     const ushort * const end = p + d.size;
     while (p < end) {
         ushort uc = *p;
@@ -9102,18 +9050,11 @@ bool QString::isRightToLeft() const
 QString QString::fromRawData(const QChar *unicode, int size)
 {
     QString::DataPointer x;
-    x.size = size;
     if (!unicode) {
-        x.d = Data::sharedNull();
-        x.b = Data::sharedNullData();
     } else if (!size) {
-        QPair<Data *, ushort *> pair = Data::allocate(0);
-        x.d = pair.first;
-        x.b = pair.second;
+        x = DataPointer(Data::allocate(0), 0);
     } else {
-        x.b = const_cast<ushort *>(reinterpret_cast<const ushort *>(unicode));
-        x.d = Data::fromRawData(x.b, size).ptr;
-        Q_CHECK_PTR(x.d);
+        x = Data::fromRawData(reinterpret_cast<const ushort *>(unicode), size);
     }
     return QString(x);
 }
@@ -9136,12 +9077,8 @@ QString &QString::setRawData(const QChar *unicode, int size)
 {
     if (!unicode || !size) {
         clear();
-    } else if (d.d->isShared() || !IS_RAW_DATA(d)) {
-        *this = fromRawData(unicode, size);
-    } else {
-        d.size = size;
-        d.b = const_cast<ushort *>(reinterpret_cast<const ushort *>(unicode));
     }
+    *this = fromRawData(unicode, size);
     return *this;
 }
 

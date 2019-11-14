@@ -85,10 +85,12 @@ public:
     ~QBinaryJsonValue();
 
     QBinaryJsonValue(QBinaryJsonValue &&other) noexcept
-        : stringData(other.stringData),
+        : ui(other.ui),
+          stringData(std::move(other.stringData)),
           d(other.d),
           t(other.t)
     {
+        other.ui = 0;
         other.d = nullptr;
         other.t = QJsonValue::Null;
     }
@@ -96,6 +98,7 @@ public:
     QBinaryJsonValue &operator =(QBinaryJsonValue &&other) noexcept
     {
         qSwap(stringData, other.stringData);
+        qSwap(ui, other.ui);
         qSwap(d, other.d);
         qSwap(t, other.t);
         return *this;
@@ -121,9 +124,9 @@ private:
         quint64 ui;
         bool b;
         double dbl;
-        QString::DataPointer stringData;
         const QBinaryJsonPrivate::Base *base;
     };
+    QString stringData;
     QBinaryJsonPrivate::MutableData *d = nullptr; // needed for Objects and Arrays
     QJsonValue::Type t = QJsonValue::Null;
 };

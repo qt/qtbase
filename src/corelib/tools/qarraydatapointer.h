@@ -191,6 +191,7 @@ public:
     bool isMutable() const noexcept { return d->isMutable(); }
     bool isStatic() const noexcept { return d->isStatic(); }
     bool isShared() const noexcept { return d->isShared(); }
+    bool isSharedWith(const QArrayDataPointer &other) const noexcept { return d && d == other.d; }
     bool needsDetach() const noexcept { return d->needsDetach(); }
     size_t detachCapacity(size_t newSize) const noexcept { return d->detachCapacity(newSize); }
     typename Data::ArrayOptions &flags() noexcept { return reinterpret_cast<typename Data::ArrayOptions &>(d->flags); }
@@ -204,6 +205,7 @@ public:
         d = pair.first;
         ptr = pair.second;
     }
+    Data *d_ptr() { return d; }
 
 private:
     Q_REQUIRED_RESULT QPair<Data *, T *> clone(QArrayData::ArrayOptions options) const
