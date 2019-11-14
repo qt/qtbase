@@ -190,14 +190,6 @@ static QArrayData *allocateData(size_t allocSize, uint options)
     return header;
 }
 
-static QArrayData *reallocateData(QArrayData *header, size_t allocSize, uint options)
-{
-    header = static_cast<QArrayData *>(::realloc(header, allocSize));
-    if (header)
-        header->flags = options;
-    return header;
-}
-
 void *QArrayData::allocate(QArrayData **dptr, size_t objectSize, size_t alignment,
         size_t capacity, ArrayOptions options) noexcept
 {
@@ -260,8 +252,9 @@ QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
     size_t allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
     qptrdiff offset = reinterpret_cast<char *>(dataPointer) - reinterpret_cast<char *>(data);
     options |= AllocatedDataType | MutableData;
-    QArrayData *header = reallocateData(data, allocSize, options);
+    QArrayData *header = static_cast<QArrayData *>(::realloc(data, size_t(allocSize)));
     if (header) {
+        header->flags = options;
         header->alloc = uint(capacity);
         dataPointer = reinterpret_cast<char *>(header) + offset;
     }
