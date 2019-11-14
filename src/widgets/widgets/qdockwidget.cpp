@@ -1609,10 +1609,13 @@ bool QDockWidget::event(QEvent *event)
 
 #ifndef QT_NO_ACTION
 /*!
-  Returns a checkable action that can be used to show or close this
-  dock widget.
+  Returns a checkable action that can be added to menus and toolbars so that
+  the user can show or close this dock widget.
 
   The action's text is set to the dock widget's window title.
+
+  \note The action can not be used to programmatically show or hide the dock
+  widget. Use the \l visible property for that.
 
   \sa QAction::text, QWidget::windowTitle
  */
