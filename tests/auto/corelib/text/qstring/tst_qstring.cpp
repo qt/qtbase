@@ -605,7 +605,7 @@ QString verifyZeroTermination(const QString &str)
 {
     // This test does some evil stuff, it's all supposed to work.
 
-    QString::DataPtr strDataPtr = const_cast<QString &>(str).data_ptr();
+    QString::DataPointer strDataPtr = const_cast<QString &>(str).data_ptr();
 
     // Skip if isStatic() or fromRawData(), as those offer no guarantees
     if (strDataPtr.d->isStatic() || !strDataPtr.d->isMutable())

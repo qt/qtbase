@@ -121,7 +121,7 @@ private:
         quint64 ui;
         bool b;
         double dbl;
-        QStringPrivate stringData;
+        QString::DataPointer stringData;
         const QBinaryJsonPrivate::Base *base;
     };
     QBinaryJsonPrivate::MutableData *d = nullptr; // needed for Objects and Arrays

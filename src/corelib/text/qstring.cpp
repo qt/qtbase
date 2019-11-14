@@ -4895,7 +4895,7 @@ QString QString::mid(int position, int n) const
     case QContainerImplHelper::Empty:
     {
         QPair<Data *, ushort *> pair = Data::allocate(0);
-        QStringPrivate empty = { pair.first, pair.second, 0 };
+        DataPointer empty = { pair.first, pair.second, 0 };
         return QString(empty);
     }
     case QContainerImplHelper::Full:
@@ -5345,9 +5345,9 @@ QVector<uint> QtPrivate::convertToUcs4(QStringView string)
     return qt_convert_to_ucs4(string);
 }
 
-QStringPrivate QString::fromLatin1_helper(const char *str, int size)
+QString::DataPointer QString::fromLatin1_helper(const char *str, int size)
 {
-    QStringPrivate d;
+    DataPointer d;
     if (!str) {
         d.d = Data::sharedNull();
         d.b = Data::sharedNullData();
@@ -5373,7 +5373,7 @@ QStringPrivate QString::fromLatin1_helper(const char *str, int size)
     return d;
 }
 
-QStringPrivate QString::fromAscii_helper(const char *str, int size)
+QString::DataPointer QString::fromAscii_helper(const char *str, int size)
 {
     QString s = fromUtf8(str, size);
     s.d.d->ref();
@@ -5423,7 +5423,7 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
         return QString();
     if (size == 0 || (!*str && size < 0)) {
         QPair<Data *, ushort *> pair = Data::allocate(0);
-        QStringPrivate empty = { pair.first, pair.second, 0 };
+        QString::DataPointer empty = { pair.first, pair.second, 0 };
         return QString(empty);
     }
 #if QT_CONFIG(textcodec)
@@ -9098,7 +9098,7 @@ bool QString::isRightToLeft() const
 */
 QString QString::fromRawData(const QChar *unicode, int size)
 {
-    QStringPrivate x;
+    QString::DataPointer x;
     x.size = size;
     if (!unicode) {
         x.d = Data::sharedNull();

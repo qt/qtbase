@@ -247,6 +247,8 @@ class Q_CORE_EXPORT QString
 {
     typedef QTypedArrayData<ushort> Data;
 public:
+    typedef QStringPrivate DataPointer;
+
     inline QString() noexcept;
     explicit QString(const QChar *unicode, int size = -1);
     QString(QChar c);
@@ -916,7 +918,7 @@ public:
     bool isRightToLeft() const;
 
     QString(int size, Qt::Initialization);
-    explicit QString(QStringPrivate dd) : d(dd) {}
+    explicit QString(DataPointer dd) : d(dd) {}
 
 private:
 #if defined(QT_NO_CAST_FROM_ASCII)
@@ -928,7 +930,7 @@ private:
     QString &operator=(const QByteArray &a);
 #endif
 
-    QStringPrivate d;
+    DataPointer d;
 
     friend inline bool operator==(QChar, const QString &) noexcept;
     friend inline bool operator< (QChar, const QString &) noexcept;
@@ -966,8 +968,8 @@ private:
     static QString trimmed_helper(QString &str);
     static QString simplified_helper(const QString &str);
     static QString simplified_helper(QString &str);
-    static QStringPrivate fromLatin1_helper(const char *str, int size = -1);
-    static QStringPrivate fromAscii_helper(const char *str, int size = -1);
+    static DataPointer fromLatin1_helper(const char *str, int size = -1);
+    static DataPointer fromAscii_helper(const char *str, int size = -1);
     static QString fromUtf8_helper(const char *str, int size);
     static QString fromLocal8Bit_helper(const char *, int size);
     static QByteArray toLatin1_helper(const QString &);
@@ -1002,8 +1004,7 @@ private:
     }
 
 public:
-    typedef QStringPrivate DataPtr;
-    inline DataPtr &data_ptr() { return d; }
+    inline DataPointer &data_ptr() { return d; }
 };
 
 //

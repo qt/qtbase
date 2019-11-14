@@ -82,7 +82,7 @@ QBinaryJsonValue::QBinaryJsonValue(QBinaryJsonPrivate::MutableData *data,
 QBinaryJsonValue::QBinaryJsonValue(QString string)
     : d(nullptr), t(QJsonValue::String)
 {
-    stringData = *(QStringPrivate *)(&string);
+    stringData = string.data_ptr();
     stringData.d->ref();
 }
 
