@@ -2351,7 +2351,7 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
     if (bsize == asize) {
         if (bsize) {
             while ((index = matcher.indexIn(*this, index)) != -1) {
-                memcpy(d + index, after, asize);
+                memcpy(d + index, a, asize);
                 index += bsize;
             }
         }
@@ -2370,7 +2370,7 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
                 to = index;
             }
             if (asize) {
-                memcpy(d + to, after, asize);
+                memcpy(d + to, a, asize);
                 to += asize;
             }
             index += bsize;
@@ -2422,7 +2422,7 @@ QByteArray &QByteArray::replace(const char *before, int bsize, const char *after
                 int moveto = insertstart + asize;
                 memmove(d + moveto, d + movestart, (moveend - movestart));
                 if (asize)
-                    memcpy(d + insertstart, after, asize);
+                    memcpy(d + insertstart, a, asize);
                 moveend = movestart - bsize;
             }
         }
