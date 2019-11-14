@@ -88,19 +88,19 @@ Q_DECL_CONSTEXPR inline int fromOct(uint c) noexcept
 
 // We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.
 enum {
-    MaxAllocSize = INT_MAX
+    MaxAllocSize = (std::numeric_limits<int>::max)()
 };
 
 struct CalculateGrowingBlockSizeResult {
-    size_t size;
-    size_t elementCount;
+    qsizetype size;
+    qsizetype elementCount;
 };
 
 // Implemented in qarraydata.cpp:
-size_t Q_CORE_EXPORT Q_DECL_CONST_FUNCTION
-qCalculateBlockSize(size_t elementCount, size_t elementSize, size_t headerSize = 0) noexcept;
+qsizetype Q_CORE_EXPORT Q_DECL_CONST_FUNCTION
+qCalculateBlockSize(qsizetype elementCount, qsizetype elementSize, qsizetype headerSize = 0) noexcept;
 CalculateGrowingBlockSizeResult Q_CORE_EXPORT Q_DECL_CONST_FUNCTION
-qCalculateGrowingBlockSize(size_t elementCount, size_t elementSize, size_t headerSize = 0) noexcept ;
+qCalculateGrowingBlockSize(qsizetype elementCount, qsizetype elementSize, qsizetype headerSize = 0) noexcept ;
 
 QT_END_NAMESPACE
 

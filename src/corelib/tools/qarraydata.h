@@ -62,14 +62,14 @@ struct Q_CORE_EXPORT QArrayData
 
     QBasicAtomicInt ref_;
     uint flags;
-    uint alloc;
+    qsizetype alloc;
 
-    inline size_t allocatedCapacity() noexcept
+    inline qsizetype allocatedCapacity() noexcept
     {
         return alloc;
     }
 
-    inline size_t constAllocatedCapacity() const noexcept
+    inline qsizetype constAllocatedCapacity() const noexcept
     {
         return alloc;
     }
@@ -100,7 +100,7 @@ struct Q_CORE_EXPORT QArrayData
         return ref_.loadRelaxed() > 1;
     }
 
-    size_t detachCapacity(size_t newSize) const noexcept
+    qsizetype detachCapacity(qsizetype newSize) const noexcept
     {
         if (flags & CapacityReserved && newSize < constAllocatedCapacity())
             return constAllocatedCapacity();
@@ -119,12 +119,12 @@ struct Q_CORE_EXPORT QArrayData
 #if defined(Q_CC_GNU)
     __attribute__((__malloc__))
 #endif
-    static void *allocate(QArrayData **pdata, size_t objectSize, size_t alignment,
-            size_t capacity, ArrayOptions options = DefaultAllocationFlags) noexcept;
+    static void *allocate(QArrayData **pdata, qsizetype objectSize, qsizetype alignment,
+            qsizetype capacity, ArrayOptions options = DefaultAllocationFlags) noexcept;
     Q_REQUIRED_RESULT static QPair<QArrayData *, void *> reallocateUnaligned(QArrayData *data, void *dataPointer,
-            size_t objectSize, size_t newCapacity, ArrayOptions newOptions = DefaultAllocationFlags) Q_DECL_NOTHROW;
-    static void deallocate(QArrayData *data, size_t objectSize,
-            size_t alignment) noexcept;
+            qsizetype objectSize, qsizetype newCapacity, ArrayOptions newOptions = DefaultAllocationFlags) noexcept;
+    static void deallocate(QArrayData *data, qsizetype objectSize,
+            qsizetype alignment) noexcept;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::ArrayOptions)
@@ -202,7 +202,7 @@ struct QTypedArrayData
 
     class AlignmentDummy { QArrayData header; T data; };
 
-    Q_REQUIRED_RESULT static QPair<QTypedArrayData *, T *> allocate(size_t capacity,
+    Q_REQUIRED_RESULT static QPair<QTypedArrayData *, T *> allocate(qsizetype capacity,
             ArrayOptions options = DefaultAllocationFlags)
     {
         static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
@@ -215,7 +215,7 @@ struct QTypedArrayData
     }
 
     static QPair<QTypedArrayData *, T *>
-    reallocateUnaligned(QTypedArrayData *data, T *dataPointer, size_t capacity,
+    reallocateUnaligned(QTypedArrayData *data, T *dataPointer, qsizetype capacity,
             ArrayOptions options = DefaultAllocationFlags)
     {
         static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
