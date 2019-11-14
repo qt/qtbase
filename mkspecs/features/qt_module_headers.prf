@@ -192,7 +192,6 @@ headersclean:!internal_module {
     hcleanDEFS = -DQT_NO_CAST_TO_ASCII=1 \
                  -DQT_NO_CAST_FROM_ASCII=1 \
                  -UQT_RESTRICTED_CAST_FROM_ASCII \
-                 -DQT_STRICT_ITERATORS \
                  -DQT_NO_URL_CAST_FROM_STRING=1 \
                  -DQT_NO_CAST_FROM_BYTEARRAY=1 \
                  -DQT_NO_KEYWORDS=1 \

@@ -4,12 +4,11 @@
 ## tst_qfuture Test:
 #####################################################################
 
-add_qt_test(tst_qfuture
+qt_add_test(tst_qfuture
     SOURCES
         tst_qfuture.cpp
-    DEFINES
-        # -QT_NO_JAVA_STYLE_ITERATORS # special case
-        QT_STRICT_ITERATORS
+#    DEFINES
+#        -QT_NO_JAVA_STYLE_ITERATORS
     PUBLIC_LIBRARIES
         Qt::CorePrivate
 )
