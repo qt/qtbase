@@ -1136,7 +1136,13 @@ void tst_QDate::fromStringDateFormat_data()
     // Test Qt::RFC2822Date format (RFC 2822).
     QTest::newRow("RFC 2822") << QString::fromLatin1("13 Feb 1987 13:24:51 +0100")
         << Qt::RFC2822Date << QDate(1987, 2, 13);
+    QTest::newRow("RFC 2822 after space")
+        << QString::fromLatin1(" 13 Feb 1987 13:24:51 +0100")
+        << Qt::RFC2822Date << QDate(1987, 2, 13);
     QTest::newRow("RFC 2822 with day") << QString::fromLatin1("Thu, 01 Jan 1970 00:12:34 +0000")
+        << Qt::RFC2822Date << QDate(1970, 1, 1);
+    QTest::newRow("RFC 2822 with day after space")
+        << QString::fromLatin1(" Thu, 01 Jan 1970 00:12:34 +0000")
         << Qt::RFC2822Date << QDate(1970, 1, 1);
     // No timezone
     QTest::newRow("RFC 2822 no timezone") << QString::fromLatin1("01 Jan 1970 00:12:34")
@@ -1167,6 +1173,9 @@ void tst_QDate::fromStringDateFormat_data()
 
     // Test Qt::RFC2822Date format (RFC 850 and 1036, permissive).
     QTest::newRow("RFC 850 and 1036") << QString::fromLatin1("Fri Feb 13 13:24:51 1987 +0100")
+        << Qt::RFC2822Date << QDate(1987, 2, 13);
+    QTest::newRow("RFC 850 and 1036 after space")
+        << QString::fromLatin1(" Fri Feb 13 13:24:51 1987 +0100")
         << Qt::RFC2822Date << QDate(1987, 2, 13);
     // No timezone
     QTest::newRow("RFC 850 and 1036 no timezone") << QString::fromLatin1("Thu Jan 01 00:12:34 1970")
