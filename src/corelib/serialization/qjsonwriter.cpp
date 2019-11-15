@@ -60,7 +60,8 @@ static inline uchar hexdig(uint u)
 
 static QByteArray escapedString(const QString &s)
 {
-    QByteArray ba(s.length(), Qt::Uninitialized);
+    // give it a minimum size to ensure the resize() below always adds enough space
+    QByteArray ba(qMax(s.length(), 16), Qt::Uninitialized);
 
     uchar *cursor = reinterpret_cast<uchar *>(const_cast<char *>(ba.constData()));
     const uchar *ba_end = cursor + ba.length();
