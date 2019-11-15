@@ -164,6 +164,7 @@ struct Options
     QString applicationBinary;
     QString rootPath;
     QStringList qmlImportPaths;
+    QStringList qrcFiles;
 
     // Versioning
     QString versionName;
@@ -976,7 +977,10 @@ bool readInputFile(Options *options)
             }
         }
     }
-
+    {
+        const QJsonValue qrcFiles = jsonObject.value(QLatin1String("qrcFiles"));
+        options->qrcFiles = qrcFiles.toString().split(QLatin1Char(','), QString::SkipEmptyParts);
+    }
     options->packageName = packageNameFromAndroidManifest(options->androidSourceDirectory + QLatin1String("/AndroidManifest.xml"));
     if (options->packageName.isEmpty())
         options->packageName = cleanPackageName(QLatin1String("org.qtproject.example.%1").arg(options->applicationBinary));
@@ -1709,22 +1713,28 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
     }
 
     QString rootPath = options->rootPath;
-    if (rootPath.isEmpty())
-        rootPath = QFileInfo(options->inputFileName).absolutePath();
-    else
-        rootPath = QFileInfo(rootPath).absoluteFilePath();
+    if (!options->qrcFiles.isEmpty()) {
+        qmlImportScanner += QLatin1String(" -qrcFiles");
+        for (const QString &qrcFile : options->qrcFiles)
+            qmlImportScanner += QLatin1Char(' ') + shellQuote(qrcFile);
+    } else {
+        if (rootPath.isEmpty())
+            rootPath = QFileInfo(options->inputFileName).absolutePath();
+        else
+            rootPath = QFileInfo(rootPath).absoluteFilePath();
 
-    if (!rootPath.endsWith(QLatin1Char('/')))
-        rootPath += QLatin1Char('/');
+        if (!rootPath.endsWith(QLatin1Char('/')))
+            rootPath += QLatin1Char('/');
+        qmlImportScanner += QLatin1String(" -rootPath %1").arg(shellQuote(rootPath));
+    }
 
     QStringList importPaths;
     importPaths += shellQuote(options->qtInstallDirectory + QLatin1String("/qml"));
-    importPaths += shellQuote(rootPath);
+    if (!rootPath.isEmpty())
+        importPaths += shellQuote(rootPath);
     for (const QString &qmlImportPath : qAsConst(options->qmlImportPaths))
         importPaths += shellQuote(qmlImportPath);
-
-    qmlImportScanner += QLatin1String(" -rootPath %1 -importPath %2")
-            .arg(shellQuote(rootPath), importPaths.join(QLatin1Char(' ')));
+    qmlImportScanner += QLatin1String(" -importPath %1").arg(importPaths.join(QLatin1Char(' ')));
 
     if (options->verbose) {
         fprintf(stdout, "Running qmlimportscanner with the following command: %s\n",
@@ -1946,7 +1956,8 @@ bool readDependencies(Options *options)
         }
     }
 
-    if (!options->rootPath.isEmpty() && !scanImports(options, &usedDependencies))
+    if ((!options->rootPath.isEmpty() || options->qrcFiles.isEmpty()) &&
+        !scanImports(options, &usedDependencies))
         return false;
 
     return true;

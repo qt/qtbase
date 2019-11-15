@@ -274,6 +274,8 @@ struct QWindowsContextPrivate {
     const HRESULT m_oleInitializeResult;
     QWindow *m_lastActiveWindow = nullptr;
     bool m_asyncExpose = false;
+    HPOWERNOTIFY m_powerNotification = nullptr;
+    HWND m_powerDummyWindow = nullptr;
 };
 
 QWindowsContextPrivate::QWindowsContextPrivate()
@@ -314,6 +316,13 @@ QWindowsContext::~QWindowsContext()
 #if QT_CONFIG(tabletevent)
     d->m_tabletSupport.reset(); // Destroy internal window before unregistering classes.
 #endif
+
+    if (d->m_powerNotification)
+        UnregisterPowerSettingNotification(d->m_powerNotification);
+
+    if (d->m_powerDummyWindow)
+        DestroyWindow(d->m_powerDummyWindow);
+
     unregisterWindowClasses();
     if (d->m_oleInitializeResult == S_OK || d->m_oleInitializeResult == S_FALSE)
         OleUninitialize();
@@ -378,6 +387,55 @@ bool QWindowsContext::initPointer(unsigned integrationOptions)
         return false;
 
     d->m_systemInfo |= QWindowsContext::SI_SupportsPointer;
+    return true;
+}
+
+extern "C" LRESULT QT_WIN_CALLBACK qWindowsPowerWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (message != WM_POWERBROADCAST || wParam != PBT_POWERSETTINGCHANGE)
+        return DefWindowProc(hwnd, message, wParam, lParam);
+
+    static bool initialized = false; // ignore the initial change
+    if (!initialized) {
+        initialized = true;
+        return DefWindowProc(hwnd, message, wParam, lParam);
+    }
+
+    auto setting = reinterpret_cast<const POWERBROADCAST_SETTING *>(lParam);
+    if (setting) {
+        auto data = reinterpret_cast<const DWORD *>(&setting->Data);
+        if (*data == 1) {
+            // Repaint the windows when returning from sleeping display mode.
+            const auto tlw = QGuiApplication::topLevelWindows();
+            for (auto w : tlw) {
+                if (w->isVisible() && w->windowState() != Qt::WindowMinimized) {
+                    if (auto tw = QWindowsWindow::windowsWindowOf(w)) {
+                        if (HWND hwnd = tw->handle()) {
+                            InvalidateRect(hwnd, nullptr, false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return DefWindowProc(hwnd, message, wParam, lParam);
+}
+
+bool QWindowsContext::initPowerNotificationHandler()
+{
+    if (d->m_powerNotification)
+        return false;
+
+    d->m_powerDummyWindow = createDummyWindow(QStringLiteral("QtPowerDummyWindow"), L"QtPowerDummyWindow", qWindowsPowerWindowProc);
+    if (!d->m_powerDummyWindow)
+        return false;
+
+    d->m_powerNotification = RegisterPowerSettingNotification(d->m_powerDummyWindow, &GUID_MONITOR_POWER_ON, DEVICE_NOTIFY_WINDOW_HANDLE);
+    if (!d->m_powerNotification) {
+        DestroyWindow(d->m_powerDummyWindow);
+        d->m_powerDummyWindow = nullptr;
+        return false;
+    }
     return true;
 }
 

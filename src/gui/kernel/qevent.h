@@ -853,7 +853,14 @@ private:
     qint64 m_numericId;
 };
 Q_DECLARE_TYPEINFO(QPointingDeviceUniqueId, Q_MOVABLE_TYPE);
+
+#if 0
+#pragma qt_sync_suspend_processing
+#endif
 template <> class QList<QPointingDeviceUniqueId> {}; // to prevent instantiation: use QVector instead
+#if 0
+#pragma qt_sync_resume_processing
+#endif
 
 Q_GUI_EXPORT bool operator==(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept;
 inline bool operator!=(QPointingDeviceUniqueId lhs, QPointingDeviceUniqueId rhs) noexcept
