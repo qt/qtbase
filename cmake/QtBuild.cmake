@@ -1715,7 +1715,18 @@ function(qt_export_tools module_name)
     # Also assemble a list of tool targets to expose in the config file for informational purposes.
     set(extra_cmake_statements "")
     set(tool_targets "")
+
+    # List of package dependencies that need be find_package'd when using the Tools package.
+    set(package_deps "")
+
     foreach(tool_name ${QT_KNOWN_MODULE_${module_name}_TOOLS})
+        # Specific tools can have package dependencies.
+        # e.g. qtwaylandscanner depends on WaylandScanner (non-qt package).
+        get_target_property(extra_packages "${tool_name}" QT_EXTRA_PACKAGE_DEPENDENCIES)
+        if(extra_packages)
+            list(APPEND package_deps "${extra_packages}")
+        endif()
+
         set(extra_cmake_statements "${extra_cmake_statements}
 if (NOT QT_NO_CREATE_TARGETS)
     get_property(is_global TARGET ${INSTALL_CMAKE_NAMESPACE}::${tool_name} PROPERTY IMPORTED_GLOBAL)
@@ -1730,6 +1741,31 @@ endif()
     string(APPEND extra_cmake_statements
 "set(${QT_CMAKE_EXPORT_NAMESPACE}${module_name}Tools_TARGETS \"${tool_targets}\")")
 
+    # Extract package dependencies that were determined in QtPostProcess, but only if ${module_name}
+    # is an actual target.
+    # module_name can be a non-existent target, if the tool doesn't have an existing associated
+    # module, e.g. qtwaylandscanner.
+    if(TARGET "${module_name}")
+        get_target_property(module_package_deps "${module_name}" _qt_tools_package_deps)
+        if(module_package_deps)
+            list(APPEND package_deps "${module_package_deps}")
+        endif()
+    endif()
+
+    # Configure and install dependencies file for the ${module_name}Tools package.
+    configure_file(
+        "${QT_CMAKE_DIR}/QtModuleToolsDependencies.cmake.in"
+        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
+        @ONLY
+    )
+
+    qt_install(FILES
+        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Dependencies.cmake"
+        DESTINATION "${config_install_dir}"
+        COMPONENT Devel
+    )
+
+    # Configure and install the ${module_name}Tools package Config file.
     configure_package_config_file(
         "${QT_CMAKE_DIR}/QtModuleToolsConfig.cmake.in"
         "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}Config.cmake"
@@ -1758,6 +1794,38 @@ endif()
     #qt_internal_export_modern_cmake_config_targets_file(TARGETS ${QT_KNOWN_MODULE_${module_name}_TOOLS}
     #                                                    EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
     #                                                    CONFIG_INSTALL_DIR ${config_install_dir})
+endfunction()
+
+# This function records a dependency between ${target_name} and ${dep_package_name}.
+# at the CMake package level.
+# E.g. The Tools package that provides the qtwaylandscanner target
+# needs to call find_package(WaylandScanner) (non-qt-package).
+# main_target_name = qtwaylandscanner
+# dep_package_name = WaylandScanner
+function(qt_record_extra_package_dependency main_target_name dep_package_name dep_package_version)
+    get_target_property(extra_packages "${main_target_name}" QT_EXTRA_PACKAGE_DEPENDENCIES)
+    if(NOT extra_packages)
+        set(extra_packages "")
+    endif()
+
+    list(APPEND extra_packages "${dep_package_name}\;${dep_package_version}")
+    set_target_properties("${main_target_name}" PROPERTIES QT_EXTRA_PACKAGE_DEPENDENCIES
+                                                           "${extra_packages}")
+endfunction()
+
+# This function records a dependency between ${main_target_name} and ${dep_target_name}
+# at the CMake package level.
+# E.g. Qt6CoreConfig.cmake needs to find_package(Qt6WinMain).
+# main_target_name = Core
+# dep_target_name = WinMain
+# This is just a convenience function that deals with Qt targets and their associated packages
+# instead of raw package names.
+function(qt_record_extra_qt_package_dependency main_target_name dep_target_name
+                                                                dep_package_version)
+    # WinMain -> Qt6WinMain.
+    qt_internal_module_info(qtfied_target_name "${dep_target_name}")
+    qt_record_extra_package_dependency("${main_target_name}" "${qtfied_target_name_versioned}"
+                                                             "${dep_package_version}")
 endfunction()
 
 function(qt_internal_check_directory_or_type name dir type default result_var)

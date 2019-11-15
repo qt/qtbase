@@ -82,7 +82,7 @@ function(qt_internal_create_module_depends_file target)
         get_target_property(extra_depends "${target}" QT_EXTRA_PACKAGE_DEPENDENCIES)
     endif()
     if(NOT extra_depends STREQUAL "${extra_depends}-NOTFOUND")
-        list(APPEND target_deps ${extra_depends})
+        list(APPEND target_deps "${extra_depends}")
     endif()
 
     # Used for assembling the content of an include/Module/ModuleDepends.h header.
@@ -183,23 +183,8 @@ function(qt_internal_create_module_depends_file target)
 
     endif()
     if(tool_deps)
-        set(path_suffix "${INSTALL_CMAKE_NAMESPACE}${target}Tools")
-        qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} ${path_suffix})
-        qt_path_join(config_install_dir ${QT_CONFIG_INSTALL_DIR} ${path_suffix})
-
-        # Configure and install ModuleToolDependencies file.
-        configure_file(
-            "${QT_CMAKE_DIR}/QtModuleToolsDependencies.cmake.in"
-            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ToolsDependencies.cmake"
-            @ONLY
-        )
-
-        qt_install(FILES
-            "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}ToolsDependencies.cmake"
-            DESTINATION "${config_install_dir}"
-            COMPONENT Devel
-        )
-
+        # The value of the property will be used by qt_export_tools.
+        set_property(TARGET "${target}" PROPERTY _qt_tools_package_deps "${tool_deps}")
     endif()
 endfunction()
 
@@ -378,11 +363,13 @@ function(qt_internal_create_config_file_for_standalone_tests)
     )
 endfunction()
 
-qt_create_tools_config_files()
 qt_internal_create_depends_files()
 qt_generate_build_internals_extra_cmake_code()
 qt_internal_create_plugins_files()
 qt_internal_create_config_file_for_standalone_tests()
+
+# Needs to run after qt_internal_create_depends_files.
+qt_create_tools_config_files()
 
 if (ANDROID)
     qt_modules_process_android_dependencies()

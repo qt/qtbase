@@ -1154,8 +1154,7 @@ if(WIN32)
     set(isPolicyNEW $<TARGET_POLICY:CMP0020>)
 
     target_link_libraries(Core INTERFACE $<$<AND:${isExe},${isWin32},${isNotExcluded},${isPolicyNEW}>:Qt::WinMain>)
-    qt_internal_module_info(win_main_module WinMain)
-    set_property(TARGET Core APPEND PROPERTY QT_EXTRA_PACKAGE_DEPENDENCIES "${win_main_module_versioned}\\\;${PROJECT_VERSION}")
+    qt_record_extra_qt_package_dependency(Core WinMain "${PROJECT_VERSION}")
 endif()
 # special case end
 

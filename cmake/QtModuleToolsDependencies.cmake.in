@@ -1,5 +1,5 @@
 # Find "ModuleTools" dependencies, which are other ModuleTools packages.
-set(_tool_deps "@tool_deps@")
+set(_tool_deps "@package_deps@")
 foreach(_target_dep ${_tool_deps})
     list(GET _target_dep 0 pkg)
     list(GET _target_dep 1 version)
@@ -9,7 +9,7 @@ foreach(_target_dep ${_tool_deps})
     endif()
 
     if (NOT ${pkg}_FOUND)
-        set(@INSTALL_CMAKE_NAMESPACE@@target@Tools_FOUND FALSE)
+        set(@INSTALL_CMAKE_NAMESPACE@@target@_FOUND FALSE)
         return()
     endif()
 endforeach()
