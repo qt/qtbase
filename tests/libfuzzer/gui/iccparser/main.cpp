@@ -29,6 +29,10 @@
 #include <QGuiApplication>
 #include <QColorSpace>
 
+// Run this with
+// QT_LOGGING_RULES="qt.gui.icc=false"
+// to reduce noise and increase speed.
+
 extern "C" int LLVMFuzzerTestOneInput(const char *data, size_t size) {
     static int c = 0;
     static QGuiApplication a(c, nullptr);

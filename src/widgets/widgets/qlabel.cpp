@@ -85,6 +85,7 @@ QLabelPrivate::QLabelPrivate()
       shortcutId(0),
 #endif
       textformat(Qt::AutoText),
+      effectiveTextFormat(Qt::PlainText),
       textInteractionFlags(Qt::LinksAccessibleByMouse),
       sizePolicy(),
       margin(0),
@@ -94,7 +95,6 @@ QLabelPrivate::QLabelPrivate()
       scaledcontents(false),
       textLayoutDirty(false),
       textDirty(false),
-      isRichText(false),
       isTextLabel(false),
       hasShortcut(/*???*/),
 #ifndef QT_NO_CURSOR
@@ -294,8 +294,14 @@ void QLabel::setText(const QString &text)
     d->text = text;
     d->isTextLabel = true;
     d->textDirty = true;
-    d->isRichText = d->textformat == Qt::RichText
-                    || (d->textformat == Qt::AutoText && Qt::mightBeRichText(d->text));
+    if (d->textformat == Qt::AutoText) {
+        if (Qt::mightBeRichText(d->text))
+            d->effectiveTextFormat = Qt::RichText;
+        else
+            d->effectiveTextFormat = Qt::PlainText;
+    } else {
+        d->effectiveTextFormat = d->textformat;
+    }
 
     d->control = oldControl;
 
@@ -306,7 +312,7 @@ void QLabel::setText(const QString &text)
         d->control = nullptr;
     }
 
-    if (d->isRichText) {
+    if (d->effectiveTextFormat != Qt::PlainText) {
         setMouseTracking(true);
     } else {
         // Note: mouse tracking not disabled intentionally
@@ -1478,14 +1484,19 @@ void QLabelPrivate::ensureTextPopulated() const
     if (control) {
         QTextDocument *doc = control->document();
         if (textDirty) {
-#ifndef QT_NO_TEXTHTMLPARSER
-            if (isRichText)
-                doc->setHtml(text);
-            else
+            if (effectiveTextFormat == Qt::PlainText) {
                 doc->setPlainText(text);
-#else
-            doc->setPlainText(text);
+#if QT_CONFIG(texthtmlparser)
+            } else if (effectiveTextFormat == Qt::RichText) {
+                doc->setHtml(text);
 #endif
+#if QT_CONFIG(textmarkdownreader)
+            } else if (effectiveTextFormat == Qt::MarkdownText) {
+                doc->setMarkdown(text);
+#endif
+            } else {
+                doc->setPlainText(text);
+            }
             doc->setUndoRedoEnabled(false);
 
 #ifndef QT_NO_SHORTCUT
@@ -1623,7 +1634,7 @@ QMenu *QLabelPrivate::createStandardContextMenu(const QPoint &pos)
 {
     QString linkToCopy;
     QPoint p;
-    if (control && isRichText) {
+    if (control && effectiveTextFormat != Qt::PlainText) {
         p = layoutPoint(pos);
         linkToCopy = control->document()->documentLayout()->anchorAt(p);
     }

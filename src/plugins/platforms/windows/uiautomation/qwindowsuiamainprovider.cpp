@@ -277,8 +277,9 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         }
         break;
     case UIA_ValuePatternId:
-        // All accessible controls return text(QAccessible::Value) (which may be empty).
-        *pRetVal = new QWindowsUiaValueProvider(id());
+        // All non-static controls support the Value pattern.
+        if (accessible->role() != QAccessible::StaticText)
+            *pRetVal = new QWindowsUiaValueProvider(id());
         break;
     case UIA_RangeValuePatternId:
         // Controls providing a numeric value within a range (e.g., sliders, scroll bars, dials).
