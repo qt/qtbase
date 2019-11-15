@@ -1317,6 +1317,12 @@ function(qt_skip_warnings_are_errors_when_repo_unclean target)
     endif()
 endfunction()
 
+function(qt_get_sanitized_plugin_type plugin_type out_var)
+    # Used to handle some edge cases such as platforms/darwin
+    string(REGEX REPLACE "[-/]" "_" plugin_type "${plugin_type}")
+    set("${out_var}" "${plugin_type}" PARENT_SCOPE)
+endfunction()
+
 # This is the main entry function for creating a Qt module, that typically
 # consists of a library, public header files, private header files and configurable
 # features.
@@ -1405,9 +1411,7 @@ function(qt_add_module target)
         if(NOT "x${arg_PLUGIN_TYPES}" STREQUAL "x")
             # Reset the variable containing the list of plugins for the given plugin type
             foreach(plugin_type ${arg_PLUGIN_TYPES})
-                # Used to handle some edge cases such as platforms/darwin
-                string(REGEX REPLACE "[-/]" "_" plugin_type "${plugin_type}")
-
+                qt_get_sanitized_plugin_type("${plugin_type}" plugin_type)
                 set_property(TARGET "${target}" APPEND PROPERTY MODULE_PLUGIN_TYPES "${plugin_type}")
                 qt_internal_add_qt_repo_known_plugin_types("${plugin_type}")
             endforeach()
@@ -1755,6 +1759,8 @@ endfunction()
 # This will set the QT_MODULE target property on the plug-in - e.g. "Gui", "Sql"...
 function(qt_get_module_for_plugin target target_type)
     qt_internal_get_qt_all_known_modules(known_modules)
+
+    qt_get_sanitized_plugin_type("${target_type}" target_type)
     foreach(qt_module ${known_modules})
         get_target_property(module_type "${QT_CMAKE_EXPORT_NAMESPACE}::${qt_module}" TYPE)
         # Assuming interface libraries can't have plugins. Otherwise we'll need to fix the property
