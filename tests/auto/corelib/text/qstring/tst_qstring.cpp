@@ -4014,7 +4014,7 @@ void tst_QString::fromRawData()
 {
     const QChar ptr[] = { 0x1234, 0x0000 };
     QString cstr = QString::fromRawData(ptr, 1);
-    QVERIFY(cstr.isDetached());
+    QVERIFY(!cstr.isDetached());
     QVERIFY(cstr.constData() == ptr);
     QVERIFY(cstr == QString(ptr, 1));
     cstr.squeeze();
@@ -4036,7 +4036,7 @@ void tst_QString::setRawData()
     // This just tests the fromRawData() fallback
     QVERIFY(!cstr.isDetached());
     cstr.setRawData(ptr, 1);
-    QVERIFY(cstr.isDetached());
+    QVERIFY(!cstr.isDetached());
     QVERIFY(cstr.constData() == ptr);
     QVERIFY(cstr == QString(ptr, 1));
 
@@ -6571,7 +6571,7 @@ void tst_QString::literals()
     QVERIFY(str.length() == 4);
     QCOMPARE(str.capacity(), 0);
     QVERIFY(str == QLatin1String("abcd"));
-    QVERIFY(str.data_ptr()->isStatic());
+    QVERIFY(!str.data_ptr()->isMutable());
 
     const QChar *s = str.constData();
     QString str2 = str;

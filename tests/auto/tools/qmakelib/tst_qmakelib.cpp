@@ -56,7 +56,7 @@ void tst_qmakelib::cleanupTestCase()
 
 void tst_qmakelib::proString()
 {
-    QString qs1(QStringLiteral("this is a string"));
+    QString qs1(QString::fromUtf8("this is a string"));
 
     ProString s1(qs1);
     QCOMPARE(s1.toQString(), QStringLiteral("this is a string"));

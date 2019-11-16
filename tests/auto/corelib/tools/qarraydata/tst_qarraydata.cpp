@@ -156,20 +156,15 @@ void tst_QArrayData::sharedNullEmpty()
 
 void tst_QArrayData::simpleVector()
 {
-    QArrayData data0 = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 };
-    QStaticArrayData<int, 7> data1 = {
-            { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 },
-            { 0, 1, 2, 3, 4, 5, 6 }
-        };
-
+    int data[] = { 0, 1, 2, 3, 4, 5, 6 };
     int array[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 
     SimpleVector<int> v1;
     SimpleVector<int> v2(v1);
-    SimpleVector<int> v3(static_cast<QTypedArrayData<int> *>(&data0), 0, 0);
-    SimpleVector<int> v4(data1);
-    SimpleVector<int> v5(static_cast<QTypedArrayData<int> *>(&data0), 0, 0);
-    SimpleVector<int> v6(data1);
+    SimpleVector<int> v3(nullptr, nullptr, 0);
+    SimpleVector<int> v4(nullptr, data, 0);
+    SimpleVector<int> v5(nullptr, data, 1);
+    SimpleVector<int> v6(nullptr, data, 7);
     SimpleVector<int> v7(10, 5);
     SimpleVector<int> v8(array, array + sizeof(array)/sizeof(*array));
 
@@ -190,7 +185,7 @@ void tst_QArrayData::simpleVector()
     QVERIFY(v2.isEmpty());
     QVERIFY(v3.isEmpty());
     QVERIFY(v4.isEmpty());
-    QVERIFY(v5.isEmpty());
+    QVERIFY(!v5.isEmpty());
     QVERIFY(!v6.isEmpty());
     QVERIFY(!v7.isEmpty());
     QVERIFY(!v8.isEmpty());
@@ -199,7 +194,7 @@ void tst_QArrayData::simpleVector()
     QCOMPARE(v2.size(), size_t(0));
     QCOMPARE(v3.size(), size_t(0));
     QCOMPARE(v4.size(), size_t(0));
-    QCOMPARE(v5.size(), size_t(0));
+    QCOMPARE(v5.size(), size_t(1));
     QCOMPARE(v6.size(), size_t(7));
     QCOMPARE(v7.size(), size_t(10));
     QCOMPARE(v8.size(), size_t(10));
@@ -248,13 +243,13 @@ void tst_QArrayData::simpleVector()
     QVERIFY(v1 == v2);
     QVERIFY(v1 == v3);
     QVERIFY(v1 == v4);
-    QVERIFY(v1 == v5);
+    QVERIFY(v1 != v5);
     QVERIFY(!(v1 == v6));
 
     QVERIFY(v1 != v6);
     QVERIFY(v4 != v6);
     QVERIFY(v5 != v6);
-    QVERIFY(!(v1 != v5));
+    QVERIFY(!(v1 == v5));
 
     QVERIFY(v1 < v6);
     QVERIFY(!(v6 < v1));
@@ -428,17 +423,10 @@ void tst_QArrayData::simpleVectorReserve_data()
     QTest::newRow("empty") << SimpleVector<int>(0, 42) << size_t(0) << size_t(0);
     QTest::newRow("non-empty") << SimpleVector<int>(5, 42) << size_t(5) << size_t(5);
 
-    static const QStaticArrayData<int, 15> array = {
-        { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 },
-        { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 } };
-    const QArrayDataPointerRef<int> p = {
-         static_cast<QTypedArrayData<int> *>(
-            const_cast<QArrayData *>(&array.header)),
-        const_cast<int *>(array.data),
-        sizeof(array.data) / sizeof(array.data[0]) };
+    static const int array[] =
+        { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 
-    QTest::newRow("static") << SimpleVector<int>(p) << size_t(0) << size_t(15);
-    QTest::newRow("raw-data") << SimpleVector<int>::fromRawData(array.data, 15) << size_t(0) << size_t(15);
+    QTest::newRow("raw-data") << SimpleVector<int>::fromRawData(array, 15) << size_t(0) << size_t(15);
 }
 
 void tst_QArrayData::simpleVectorReserve()
@@ -519,7 +507,7 @@ void tst_QArrayData::allocate_data()
     };
 
     QArrayData *shared_empty;
-    QArrayData::allocate(&shared_empty, 1, alignof(QArrayData), 0);
+    (void)QArrayData::allocate(&shared_empty, 1, alignof(QArrayData), 0);
     QVERIFY(shared_empty);
 
     struct {
@@ -1180,15 +1168,15 @@ void fromRawData_impl()
     {
         // Default: Immutable, sharable
         SimpleVector<T> raw = SimpleVector<T>::fromRawData(array,
-                sizeof(array)/sizeof(array[0]), QArrayData::DefaultRawFlags);
+                sizeof(array)/sizeof(array[0]));
 
         QCOMPARE(raw.size(), size_t(11));
         QCOMPARE((const T *)raw.constBegin(), array);
         QCOMPARE((const T *)raw.constEnd(), (const T *)(array + sizeof(array)/sizeof(array[0])));
 
-        QVERIFY(!raw.isShared());
+        QVERIFY(raw.isShared());
         QVERIFY(SimpleVector<T>(raw).isSharedWith(raw));
-        QVERIFY(!raw.isShared());
+        QVERIFY(raw.isShared());
 
         // Detach
         QCOMPARE(raw.back(), T(11));

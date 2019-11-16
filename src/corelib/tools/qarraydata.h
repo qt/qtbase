@@ -143,14 +143,6 @@ struct Q_CORE_EXPORT QArrayData
         return result;
     }
 
-    ArrayOptions cloneFlags() const
-    {
-        ArrayOptions result = DefaultAllocationFlags;
-        if (flags & CapacityReserved)
-            result |= CapacityReserved;
-        return result;
-    }
-
     Q_REQUIRED_RESULT
 #if defined(Q_CC_GNU)
     __attribute__((__malloc__))
@@ -159,8 +151,6 @@ struct Q_CORE_EXPORT QArrayData
             size_t capacity, ArrayOptions options = DefaultAllocationFlags) noexcept;
     Q_REQUIRED_RESULT static QPair<QArrayData *, void *> reallocateUnaligned(QArrayData *data, void *dataPointer,
             size_t objectSize, size_t newCapacity, ArrayOptions newOptions = DefaultAllocationFlags) Q_DECL_NOTHROW;
-    Q_REQUIRED_RESULT static QArrayData *prepareRawData(ArrayOptions options = ArrayOptions(RawDataType))
-        Q_DECL_NOTHROW;
     static void deallocate(QArrayData *data, size_t objectSize,
             size_t alignment) noexcept;
 
@@ -229,35 +219,13 @@ struct QTypedArrayData
         QArrayData::deallocate(data, sizeof(T), alignof(AlignmentDummy));
     }
 
-    static QArrayDataPointerRef<T> fromRawData(const T *data, size_t n,
-            ArrayOptions options = DefaultRawFlags)
+    static QArrayDataPointerRef<T> fromRawData(const T *data, size_t n)
     {
         static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QArrayDataPointerRef<T> result = {
-            static_cast<QTypedArrayData *>(prepareRawData(options)), const_cast<T *>(data), uint(n)
+            nullptr, const_cast<T *>(data), uint(n)
         };
-        if (result.ptr) {
-            Q_ASSERT(!result.ptr->isShared()); // No shared empty, please!
-        }
         return result;
-    }
-
-    static QTypedArrayData *sharedNull() noexcept
-    {
-        static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
-        return static_cast<QTypedArrayData *>(QArrayData::sharedNull());
-    }
-
-    static QTypedArrayData *sharedEmpty()
-    {
-        static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
-        return allocate(/* capacity */ 0);
-    }
-
-    static T *sharedNullData()
-    {
-        static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
-        return static_cast<T *>(QArrayData::sharedNullData());
     }
 };
 
@@ -271,33 +239,11 @@ struct QTypedArrayData
 
 // Hide array inside a lambda
 #define Q_ARRAY_LITERAL(Type, ...)                                              \
-    ([]() -> QArrayDataPointerRef<Type> {                                       \
-            /* MSVC 2010 Doesn't support static variables in a lambda, but */   \
-            /* happily accepts them in a static function of a lambda-local */   \
-            /* struct :-) */                                                    \
-            struct StaticWrapper {                                              \
-                static QArrayDataPointerRef<Type> get()                         \
-                {                                                               \
-                    Q_ARRAY_LITERAL_IMPL(Type, __VA_ARGS__)                     \
-                    return ref;                                                 \
-                }                                                               \
-            };                                                                  \
-            return StaticWrapper::get();                                        \
-        }())                                                                    \
-    /**/
-
-#define Q_ARRAY_LITERAL_IMPL(Type, ...)                                         \
-    /* Portable compile-time array size computation */                          \
-    static constexpr Type data[] = { __VA_ARGS__ };                             \
-    enum { Size = sizeof(data) / sizeof(data[0]) };                             \
-                                                                                \
-    static constexpr QArrayData literal = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 };\
-                                                                                \
-    QArrayDataPointerRef<Type> ref =                                            \
-        { static_cast<QTypedArrayData<Type> *>(                                 \
-            const_cast<QArrayData *>(&literal)),                                \
-          const_cast<Type *>(data),                                             \
-          Size };                                                               \
+    ([]() -> QArrayDataPointerRef<Type> { \
+        static Type const data[] = { __VA_ARGS__ };                                 \
+        enum { Size = sizeof(data) / sizeof(data[0]) }; \
+        return { nullptr, const_cast<Type *>(data), Size };              \
+    }())
     /**/
 
 namespace QtPrivate {

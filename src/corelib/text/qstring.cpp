@@ -106,6 +106,8 @@ static constexpr bool points_into_range(const T *p, const T *b, const T *e, Cmp 
     return !less(p, b) && less(p, e);
 }
 
+const char16_t QString::_empty = 0;
+
 /*
  * Note on the use of SIMD in qstring.cpp:
  *
@@ -4549,7 +4551,7 @@ QString QString::mid(int position, int n) const
     {
         QPair<Data *, char16_t *> pair = Data::allocate(0);
         DataPointer empty = { pair.first, pair.second, 0 };
-        return QString(empty);
+        return QString(std::move(empty));
     }
     case QContainerImplHelper::Full:
         return *this;
@@ -5066,7 +5068,7 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
     if (size == 0 || (!*str && size < 0)) {
         QPair<Data *, char16_t *> pair = Data::allocate(0);
         QString::DataPointer empty = { pair.first, pair.second, 0 };
-        return QString(empty);
+        return QString(std::move(empty));
     }
     QStringDecoder toUtf16(QStringDecoder::System, QStringDecoder::Flag::Stateless);
     return toUtf16(str, size);
@@ -8617,14 +8619,7 @@ bool QString::isRightToLeft() const
 */
 QString QString::fromRawData(const QChar *unicode, int size)
 {
-    QString::DataPointer x;
-    if (!unicode) {
-    } else if (!size) {
-        x = DataPointer(Data::allocate(0), 0);
-    } else {
-        x = Data::fromRawData(reinterpret_cast<const char16_t *>(unicode), size);
-    }
-    return QString(x);
+    return QString(Data::fromRawData(const_cast<char16_t *>(reinterpret_cast<const char16_t *>(unicode)), size));
 }
 
 /*!

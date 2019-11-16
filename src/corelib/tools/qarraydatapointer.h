@@ -59,18 +59,18 @@ public:
 
     typedef typename std::conditional<pass_parameter_by_value, T, const T &>::type parameter_type;
 
-    QArrayDataPointer() noexcept
-        : d(Data::sharedNull()), ptr(Data::sharedNullData()), size(0)
+    constexpr QArrayDataPointer() noexcept
+        : d(nullptr), ptr(nullptr), size(0)
     {
     }
 
     QArrayDataPointer(const QArrayDataPointer &other) noexcept
         : d(other.d), ptr(other.ptr), size(other.size)
     {
-        other.d->ref();
+        ref();
     }
 
-    QArrayDataPointer(Data *header, T *adata, size_t n = 0) noexcept
+    constexpr QArrayDataPointer(Data *header, T *adata, size_t n = 0) noexcept
         : d(header), ptr(adata), size(int(n))
     {
     }
@@ -96,54 +96,48 @@ public:
     QArrayDataPointer(QArrayDataPointer &&other) noexcept
         : d(other.d), ptr(other.ptr), size(other.size)
     {
-        other.d = Data::sharedNull();
-        other.ptr = Data::sharedNullData();
+        other.d = nullptr;
+        other.ptr = nullptr;
         other.size = 0;
     }
 
     QArrayDataPointer &operator=(QArrayDataPointer &&other) noexcept
     {
-        QArrayDataPointer moved(std::move(other));
-        this->swap(moved);
+        this->swap(other);
         return *this;
     }
 
     DataOps &operator*() noexcept
     {
-        Q_ASSERT(d);
         return *static_cast<DataOps *>(this);
     }
 
     DataOps *operator->() noexcept
     {
-        Q_ASSERT(d);
         return static_cast<DataOps *>(this);
     }
 
     const DataOps &operator*() const noexcept
     {
-        Q_ASSERT(d);
         return *static_cast<const DataOps *>(this);
     }
 
     const DataOps *operator->() const noexcept
     {
-        Q_ASSERT(d);
         return static_cast<const DataOps *>(this);
     }
 
     ~QArrayDataPointer()
     {
         if (!deref()) {
-            if (isMutable())
-                (*this)->destroyAll();
+            (*this)->destroyAll();
             Data::deallocate(d);
         }
     }
 
     bool isNull() const noexcept
     {
-        return d == Data::sharedNull();
+        return !ptr;
     }
 
     T *data() noexcept { return ptr; }
@@ -171,8 +165,8 @@ public:
 
     bool detach()
     {
-        if (d->needsDetach()) {
-            QPair<Data *, T *> copy = clone(d->detachFlags());
+        if (needsDetach()) {
+            QPair<Data *, T *> copy = clone(detachFlags());
             QArrayDataPointer old(d, ptr, size);
             d = copy.first;
             ptr = copy.second;
@@ -183,36 +177,35 @@ public:
     }
 
     // forwards from QArrayData
-    size_t allocatedCapacity() noexcept { return d->allocatedCapacity(); }
-    size_t constAllocatedCapacity() const noexcept { return d->constAllocatedCapacity(); }
-    int refCounterValue() const noexcept { return d->refCounterValue(); }
-    bool ref() noexcept { return d->ref(); }
-    bool deref() noexcept { return d->deref(); }
-    bool isMutable() const noexcept { return d->isMutable(); }
-    bool isStatic() const noexcept { return d->isStatic(); }
-    bool isShared() const noexcept { return d->isShared(); }
+    size_t allocatedCapacity() noexcept { return d ? d->allocatedCapacity() : 0; }
+    size_t constAllocatedCapacity() const noexcept { return d ? d->constAllocatedCapacity() : 0; }
+    void ref() noexcept { if (d) d->ref(); }
+    bool deref() noexcept { return !d || d->deref(); }
+    bool isMutable() const noexcept { return d; }
+    bool isStatic() const noexcept { return !d; }
+    bool isShared() const noexcept { return !d || d->isShared(); }
     bool isSharedWith(const QArrayDataPointer &other) const noexcept { return d && d == other.d; }
-    bool needsDetach() const noexcept { return d->needsDetach(); }
-    size_t detachCapacity(size_t newSize) const noexcept { return d->detachCapacity(newSize); }
-    typename Data::ArrayOptions &flags() noexcept { return reinterpret_cast<typename Data::ArrayOptions &>(d->flags); }
-    typename Data::ArrayOptions flags() const noexcept { return typename Data::ArrayOption(d->flags); }
-    typename Data::ArrayOptions detachFlags() const noexcept { return d->detachFlags(); }
-    typename Data::ArrayOptions cloneFlags() const noexcept { return d->cloneFlags(); }
+    bool needsDetach() const noexcept { return !d || d->needsDetach(); }
+    size_t detachCapacity(size_t newSize) const noexcept { return d ? d->detachCapacity(newSize) : newSize; }
+    const typename Data::ArrayOptions flags() const noexcept { return d ? typename Data::ArrayOption(d->flags) : Data::DefaultAllocationFlags; }
+    void setFlag(typename Data::ArrayOptions f) { Q_ASSERT(d); d->flags |= f; }
+    void clearFlag(typename Data::ArrayOptions f) { Q_ASSERT(d); d->flags &= ~f; }
+    typename Data::ArrayOptions detachFlags() const noexcept { return d ? d->detachFlags() : Data::DefaultAllocationFlags; }
 
     Data *d_ptr() { return d; }
 
 private:
     Q_REQUIRED_RESULT QPair<Data *, T *> clone(QArrayData::ArrayOptions options) const
     {
-        QPair<Data *, T *> pair = Data::allocate(d->detachCapacity(size),
-                    options);
+        QPair<Data *, T *> pair = Data::allocate(detachCapacity(size), options);
         Q_CHECK_PTR(pair.first);
         QArrayDataPointer copy(pair.first, pair.second, 0);
         if (size)
             copy->copyAppend(begin(), end());
 
         pair.first = copy.d;
-        copy.d = Data::sharedNull();
+        copy.d = nullptr;
+        copy.ptr = nullptr;
         return pair;
     }
 

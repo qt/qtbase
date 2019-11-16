@@ -232,25 +232,15 @@ void *QArrayData::allocate(QArrayData **dptr, size_t objectSize, size_t alignmen
     return reinterpret_cast<void *>(data);
 }
 
-QArrayData *QArrayData::prepareRawData(ArrayOptions options) Q_DECL_NOTHROW
-{
-    QArrayData *header = allocateData(sizeof(QArrayData), (options & ~DataTypeBits) | RawDataType);
-    if (header)
-        header->alloc = 0;
-    return header;
-}
-
 QPair<QArrayData *, void *>
 QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
                                 size_t objectSize, size_t capacity, ArrayOptions options) noexcept
 {
-    Q_ASSERT(data);
-    Q_ASSERT(data->isMutable());
-    Q_ASSERT(!data->isShared());
+    Q_ASSERT(!data || !data->isShared());
 
     size_t headerSize = sizeof(QArrayData);
     size_t allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
-    qptrdiff offset = reinterpret_cast<char *>(dataPointer) - reinterpret_cast<char *>(data);
+    qptrdiff offset = dataPointer ? reinterpret_cast<char *>(dataPointer) - reinterpret_cast<char *>(data) : headerSize;
     options |= AllocatedDataType | MutableData;
     QArrayData *header = static_cast<QArrayData *>(::realloc(data, size_t(allocSize)));
     if (header) {

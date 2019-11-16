@@ -134,7 +134,7 @@ public:
 
     void destroyAll() // Call from destructors, ONLY!
     {
-        Q_ASSERT(this->isMutable());
+        Q_ASSERT(this->d);
         Q_ASSERT(this->d->ref_.loadRelaxed() == 0);
 
         // As this is to be called only from destructor, it doesn't need to be
@@ -334,7 +334,7 @@ struct QGenericArrayOps
 
     void destroyAll() // Call from destructors, ONLY
     {
-        Q_ASSERT(this->isMutable());
+        Q_ASSERT(this->d);
         // As this is to be called only from destructor, it doesn't need to be
         // exception safe; size not updated.
 

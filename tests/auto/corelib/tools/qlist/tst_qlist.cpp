@@ -336,6 +336,8 @@ private slots:
     void emplaceWithElementFromTheSameContainer();
     void emplaceWithElementFromTheSameContainer_data();
 
+    void fromReadOnlyData() const;
+
 private:
     template<typename T> void copyConstructor() const;
     template<typename T> void add() const;
@@ -2828,6 +2830,54 @@ void tst_QList::emplaceConsistentWithStdVectorImpl() const
     qVec.emplace(5, qVec[7]);
     stdVec.emplace(stdVec.begin() + 5, (t = stdVec[7]));
     vecEq(qVec, stdVec);
+}
+
+void tst_QList::fromReadOnlyData() const
+{
+    {
+        QVector<char> d = QVector<char>::fromReadOnlyData("ABCDEFGHIJ");
+        QCOMPARE(d.size(), 10u + 1u);
+        for (int i = 0; i < 10; ++i)
+            QCOMPARE(d.data()[i], char('A' + i));
+    }
+
+    {
+        // wchar_t is not necessarily 2-bytes
+        QVector<wchar_t> d = QVector<wchar_t>::fromReadOnlyData(L"ABCDEFGHIJ");
+        QCOMPARE(d.size(), 10u + 1u);
+        for (int i = 0; i < 10; ++i)
+            QCOMPARE(d.data()[i], wchar_t('A' + i));
+        QVERIFY(d.isDetached());
+    }
+
+    {
+        const char data[] = "ABCDEFGHIJ";
+        const QVector<char> v = QVector<char>::fromReadOnlyData(data);
+
+        QVERIFY(v.constData() == data);
+        QVERIFY(!v.isEmpty());
+        QCOMPARE(v.size(), size_t(11));
+        // v.capacity() is unspecified, for now
+
+        QCOMPARE((void*)(const char*)(v.constBegin() + v.size()), (void*)(const char*)v.constEnd());
+
+        for (int i = 0; i < 10; ++i)
+            QCOMPARE(v[i], char('A' + i));
+        QCOMPARE(v[10], char('\0'));
+    }
+
+    {
+        struct LiteralType {
+            int value;
+            Q_DECL_CONSTEXPR LiteralType(int v = 0) : value(v) {}
+        };
+        const LiteralType literal[] = {LiteralType(0), LiteralType(1), LiteralType(2)};
+
+        const QVector<LiteralType> d = QVector<LiteralType>::fromReadOnlyData(literal);
+        QCOMPARE(d.size(), 3);
+        for (int i = 0; i < 3; ++i)
+            QCOMPARE(d.data()[i].value, i);
+    }
 }
 
 QTEST_MAIN(tst_QList)

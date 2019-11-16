@@ -428,6 +428,12 @@ public:
 
     static inline QList<T> fromVector(const QList<T> &vector) { return vector; }
     inline QList<T> toVector() const { return *this; }
+
+    template<int N>
+    static QList<T> fromReadOnlyData(const T (&t)[N])
+    {
+        return QList<T>({ nullptr, const_cast<T *>(t), N });
+    }
 };
 
 #if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606
@@ -465,7 +471,7 @@ void QList<T>::reserve(int asize)
             return;  // already reserved, don't shrink
         if (!d->isShared()) {
             // accept current allocation, don't shrink
-            d->flags() |= Data::CapacityReserved;
+            d->setFlag(Data::CapacityReserved);
             return;
         }
     }

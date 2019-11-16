@@ -67,6 +67,8 @@
 
 QT_BEGIN_NAMESPACE
 
+const char QByteArray::_empty = '\0';
+
 // ASCII case system, used by QByteArray::to{Upper,Lower}() and qstr(n)icmp():
 static constexpr inline uchar asciiUpper(uchar c)
 {
@@ -364,11 +366,18 @@ int qstrnicmp(const char *str1, const char *str2, uint len)
  */
 int qstrnicmp(const char *str1, qsizetype len1, const char *str2, qsizetype len2)
 {
-    Q_ASSERT(str1);
     Q_ASSERT(len1 >= 0);
     Q_ASSERT(len2 >= -1);
     const uchar *s1 = reinterpret_cast<const uchar *>(str1);
     const uchar *s2 = reinterpret_cast<const uchar *>(str2);
+    if (!s1 || !len1) {
+        if (len2 == 0)
+            return 0;
+        if (len2 == -1)
+            return (!s2 || !*s2) ? 0 : -1;
+        Q_ASSERT(s2);
+        return -1;
+    }
     if (!s2)
         return len1 == 0 ? 0 : 1;
 
@@ -1694,7 +1703,7 @@ void QByteArray::expand(int i)
 QByteArray QByteArray::nulTerminated() const
 {
     // is this fromRawData?
-    if (!IS_RAW_DATA(d))
+    if (d.isMutable())
         return *this;           // no, then we're sure we're zero terminated
 
     QByteArray copy(*this);
@@ -1725,7 +1734,7 @@ QByteArray QByteArray::nulTerminated() const
 
 QByteArray &QByteArray::prepend(const QByteArray &ba)
 {
-    if (size() == 0 && d->isStatic() && !IS_RAW_DATA(ba.d)) {
+    if (size() == 0 && d->isStatic() && ba.d.isMutable()) {
         *this = ba;
     } else if (ba.size() != 0) {
         QByteArray tmp = *this;
@@ -1818,7 +1827,7 @@ QByteArray &QByteArray::prepend(char ch)
 
 QByteArray &QByteArray::append(const QByteArray &ba)
 {
-    if (size() == 0 && d->isStatic() && !IS_RAW_DATA(ba.d)) {
+    if (size() == 0 && d->isStatic() && ba.d.isMutable()) {
         *this = ba;
     } else if (ba.size() != 0) {
         if (d->needsDetach() || size() + ba.size() > capacity())
@@ -2507,6 +2516,8 @@ static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char
 
 int QByteArray::lastIndexOf(const QByteArray &ba, int from) const
 {
+    if (isEmpty())
+        return !ba.size() ? 0 : -1;
     const int ol = ba.size();
     if (ol == 1)
         return lastIndexOf(ba[0], from);
@@ -2524,6 +2535,8 @@ int QByteArray::lastIndexOf(const QByteArray &ba, int from) const
 */
 int QByteArray::lastIndexOf(const char *str, int from) const
 {
+    if (isEmpty())
+        return (str && *str) ? -1 : 0;
     const int ol = qstrlen(str);
     if (ol == 1)
         return lastIndexOf(*str, from);
@@ -3484,6 +3497,11 @@ T toIntegral_helper(const char *data, bool *ok, int base)
         base = 10;
     }
 #endif
+    if (!data) {
+        if (ok)
+            *ok = false;
+        return 0;
+    }
 
     // we select the right overload by the last, unused parameter
     Int64 val = toIntegral_helper(data, ok, base, Int64());
@@ -4154,6 +4172,8 @@ QByteArray QByteArray::number(double n, char f, int prec)
 }
 
 /*!
+    \fn QByteArray QByteArray::fromRawData(const char *data, int size) constexpr
+
     Constructs a QByteArray that uses the first \a size bytes of the
     \a data array. The bytes are \e not copied. The QByteArray will
     contain the \a data pointer. The caller guarantees that \a data
@@ -4186,18 +4206,6 @@ QByteArray QByteArray::number(double n, char f, int prec)
 
     \sa setRawData(), data(), constData()
 */
-
-QByteArray QByteArray::fromRawData(const char *data, int size)
-{
-    QByteArray::DataPointer x;
-    if (!data) {
-    } else if (!size) {
-        x = DataPointer(Data::allocate(0), 0);
-    } else {
-        x = Data::fromRawData(data, size);
-    }
-    return QByteArray(x);
-}
 
 /*!
     \since 4.7

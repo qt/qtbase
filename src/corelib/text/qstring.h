@@ -275,7 +275,7 @@ class Q_CORE_EXPORT QString
 public:
     typedef QStringPrivate DataPointer;
 
-    inline QString() noexcept;
+    inline constexpr QString() noexcept;
     explicit QString(const QChar *unicode, int size = -1);
     QString(QChar c);
     QString(int size, QChar c);
@@ -902,7 +902,7 @@ public:
     { return QStringView(*this).isValidUtf16(); }
 
     QString(int size, Qt::Initialization);
-    explicit QString(DataPointer dd) : d(dd) {}
+    explicit QString(DataPointer &&dd) : d(std::move(dd)) {}
 
 private:
 #if defined(QT_NO_CAST_FROM_ASCII)
@@ -915,6 +915,7 @@ private:
 #endif
 
     DataPointer d;
+    static const char16_t _empty;
 
     friend inline bool operator==(QChar, const QString &) noexcept;
     friend inline bool operator< (QChar, const QString &) noexcept;
@@ -1031,13 +1032,23 @@ inline const QChar QString::operator[](int i) const
 inline bool QString::isEmpty() const
 { return d.size == 0; }
 inline const QChar *QString::unicode() const
-{ return reinterpret_cast<const QChar*>(d.data()); }
+{ return data(); }
 inline const QChar *QString::data() const
-{ return reinterpret_cast<const QChar*>(d.data()); }
+{
+#if QT5_NULL_STRINGS == 1
+    return reinterpret_cast<const QChar *>(d.data() ? d.data() : &_empty);
+#else
+    return reinterpret_cast<const QChar *>(d.data());
+#endif
+}
 inline QChar *QString::data()
-{ detach(); return reinterpret_cast<QChar*>(d.data()); }
+{
+    detach();
+    Q_ASSERT(d.data());
+    return reinterpret_cast<QChar *>(d.data());
+}
 inline const QChar *QString::constData() const
-{ return reinterpret_cast<const QChar*>(d.data()); }
+{ return data(); }
 inline void QString::detach()
 { if (d->needsDetach()) reallocData(d.size + 1u); }
 inline bool QString::isDetached() const
@@ -1107,7 +1118,7 @@ inline QString QString::fromWCharArray(const wchar_t *string, int size)
                                             : fromUcs4(reinterpret_cast<const char32_t *>(string), size);
 }
 
-inline QString::QString() noexcept {}
+inline constexpr QString::QString() noexcept {}
 inline QString::~QString() {}
 
 inline void QString::reserve(int asize)
@@ -1116,7 +1127,7 @@ inline void QString::reserve(int asize)
         reallocData(uint(qMax(asize, size())) + 1u);
 
     // we're not shared anymore, for sure
-    d->flags() |= Data::CapacityReserved;
+    d->setFlag(Data::CapacityReserved);
 }
 
 inline void QString::squeeze()
@@ -1127,7 +1138,7 @@ inline void QString::squeeze()
         reallocData(uint(d.size) + 1u);
 
     // we're not shared anymore, for sure
-    d->flags() &= uint(~Data::CapacityReserved);
+    d->clearFlag(Data::CapacityReserved);
 }
 
 inline QString &QString::setUtf16(const ushort *autf16, int asize)

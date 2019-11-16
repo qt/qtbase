@@ -156,7 +156,8 @@ QString ProString::toQString() const
 
 QString &ProString::toQString(QString &tmp) const
 {
-    return tmp.setRawData(m_string.constData() + m_offset, m_length);
+    tmp = m_string.mid(m_offset, m_length);
+    return tmp;
 }
 
 /*

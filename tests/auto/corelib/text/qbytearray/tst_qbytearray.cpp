@@ -2277,7 +2277,7 @@ void tst_QByteArray::literals()
     QVERIFY(str.length() == 4);
     QCOMPARE(str.capacity(), 0);
     QVERIFY(str == "abcd");
-    QVERIFY(str.data_ptr()->isStatic());
+    QVERIFY(!str.data_ptr()->isMutable());
 
     const char *s = str.constData();
     QByteArray str2 = str;

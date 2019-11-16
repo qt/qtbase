@@ -54,6 +54,11 @@
 #include <string>
 #include <iterator>
 
+#ifndef QT5_NULL_STRINGS
+// ### Should default to 0 in Qt 6.0
+#define QT5_NULL_STRINGS 1
+#endif
+
 #ifdef truncate
 #error qbytearray.h must be included before any header file that defines truncate
 #endif
@@ -117,16 +122,7 @@ class QDataStream;
 using QByteArrayData = QArrayDataPointer<char>;
 
 #  define QByteArrayLiteral(str) \
-    ([]() -> QByteArray { \
-        enum { Size = sizeof(str) - 1 }; \
-        static const QArrayData qbytearray_literal = { \
-            Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 }; \
-        QByteArrayData holder = { \
-            static_cast<QTypedArrayData<char> *>(const_cast<QArrayData *>(&qbytearray_literal)), \
-            const_cast<char *>(str), \
-            Size }; \
-        return QByteArray(holder); \
-    }()) \
+    (QByteArray(QByteArrayData(nullptr, const_cast<char *>(str), sizeof(str) - 1))) \
     /**/
 
 class Q_CORE_EXPORT QByteArray
@@ -137,6 +133,7 @@ private:
     typedef QTypedArrayData<char> Data;
 
     DataPointer d;
+    static const char _empty;
 public:
 
     enum Base64Option {
@@ -158,7 +155,7 @@ public:
         IllegalPadding,
     };
 
-    inline QByteArray() noexcept;
+    inline constexpr QByteArray() noexcept;
     QByteArray(const char *, int size = -1);
     QByteArray(int size, char c);
     QByteArray(int size, Qt::Initialization);
@@ -357,7 +354,10 @@ public:
     Q_REQUIRED_RESULT static QByteArray number(qlonglong, int base = 10);
     Q_REQUIRED_RESULT static QByteArray number(qulonglong, int base = 10);
     Q_REQUIRED_RESULT static QByteArray number(double, char f = 'g', int prec = 6);
-    Q_REQUIRED_RESULT static QByteArray fromRawData(const char *, int size);
+    Q_REQUIRED_RESULT static QByteArray fromRawData(const char *data, int size)
+    {
+        return QByteArray(DataPointer(nullptr, const_cast<char *>(data), size));
+    }
 
     class FromBase64Result;
     Q_REQUIRED_RESULT static FromBase64Result fromBase64Encoding(QByteArray &&base64, Base64Options options = Base64Encoding);
@@ -449,7 +449,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QByteArray::Base64Options)
 
-inline QByteArray::QByteArray() noexcept {}
+inline constexpr QByteArray::QByteArray() noexcept {}
 inline QByteArray::~QByteArray() {}
 
 inline char QByteArray::at(int i) const
@@ -466,11 +466,21 @@ inline QByteArray::operator const void *() const
 { return data(); }
 #endif
 inline char *QByteArray::data()
-{ detach(); return d.data(); }
+{
+    detach();
+    Q_ASSERT(d.data());
+    return d.data();
+}
 inline const char *QByteArray::data() const
-{ return d.data(); }
+{
+#if QT5_NULL_STRINGS == 1
+    return d.data() ? d.data() : &_empty;
+#else
+    return d.data();
+#endif
+}
 inline const char *QByteArray::constData() const
-{ return d.data(); }
+{ return data(); }
 inline void QByteArray::detach()
 { if (d->needsDetach()) reallocData(uint(size()) + 1u, d->detachFlags()); }
 inline bool QByteArray::isDetached() const
@@ -486,7 +496,7 @@ inline void QByteArray::reserve(int asize)
     if (d->needsDetach() || asize > capacity()) {
         reallocData(qMax(uint(size()), uint(asize)) + 1u, d->detachFlags() | Data::CapacityReserved);
     } else {
-        d->flags() |= Data::CapacityReserved;
+        d->setFlag(Data::CapacityReserved);
     }
 }
 
@@ -497,7 +507,7 @@ inline void QByteArray::squeeze()
     if (d->needsDetach() || size() < capacity()) {
         reallocData(uint(size()) + 1u, d->detachFlags() & ~Data::CapacityReserved);
     } else {
-        d->flags() &= uint(~Data::CapacityReserved);
+        d->clearFlag(Data::CapacityReserved);
     }
 }
 

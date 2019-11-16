@@ -270,7 +270,6 @@ class ProStringRoUser
 public:
     ProStringRoUser(QString &rs)
     {
-        Q_ASSERT(rs.isDetached() || rs.isEmpty());
         m_rs = &rs;
     }
     ProStringRoUser(const ProString &ps, QString &rs)
