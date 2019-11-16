@@ -3922,7 +3922,7 @@ bool QD3D11SwapChain::buildOrResize()
             desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
             desc.BufferCount = BUFFER_COUNT;
             desc.Scaling = DXGI_SCALING_STRETCH;
-            desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+            desc.SwapEffect = DXGI_SWAP_EFFECT(4); // DXGI_SWAP_EFFECT_FLIP_DISCARD
             // Do not bother with AlphaMode, if won't work unless we go through
             // DirectComposition. Instead, we just take the other (DISCARD)
             // path for now when alpha is requested.
