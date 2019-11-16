@@ -1209,13 +1209,11 @@ QByteArray &QByteArray::operator=(const QByteArray & other) noexcept
 QByteArray &QByteArray::operator=(const char *str)
 {
     if (!str || !*str) {
-        QPair<Data *, char *> pair;
         if (!str) {
-            pair = qMakePair(Data::sharedNull(), Data::sharedNullData());
+            d.clear();
         } else {
-            pair = Data::allocate(0);
+            d = QByteArrayData(Data::allocate(0), 0);
         }
-        d = QByteArrayData(pair.first, pair.second, 0);
     } else {
         const int len = int(strlen(str));
         const uint fullLen = uint(len) + 1;
