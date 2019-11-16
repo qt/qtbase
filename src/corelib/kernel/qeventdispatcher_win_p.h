@@ -54,6 +54,7 @@
 #include "QtCore/qabstracteventdispatcher.h"
 #include "QtCore/qt_windows.h"
 #include "QtCore/qhash.h"
+#include "QtCore/qatomic.h"
 
 #include "qabstracteventdispatcher_p.h"
 
@@ -193,8 +194,9 @@ public:
     bool closingDown = false;
 
     bool winEventNotifierListModified = false;
-    HANDLE winEventNotifierActivatedEvent;
+    QAtomicInt activateEventNotifiersPosted;
     QList<QWinEventNotifier *> winEventNotifierList;
+    void postActivateEventNotifiers();
     void activateEventNotifier(QWinEventNotifier * wen);
 
     QList<MSG> queuedUserInputEvents;

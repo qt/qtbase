@@ -246,7 +246,7 @@ static void CALLBACK wfsoCallback(void *context, BOOLEAN /*ignore*/)
     QEventDispatcherWin32Private *edp = QEventDispatcherWin32Private::get(
                 static_cast<QEventDispatcherWin32 *>(eventDispatcher));
     ++nd->signaledCount;
-    SetEvent(edp->winEventNotifierActivatedEvent);
+    edp->postActivateEventNotifiers();
 }
 
 bool QWinEventNotifierPrivate::registerWaitObject()
