@@ -62,6 +62,9 @@ template <class T>
 struct QPodArrayOps
         : public QArrayDataPointer<T>
 {
+private:
+    typedef QTypedArrayData<T> Data;
+public:
     typedef typename QArrayDataPointer<T>::parameter_type parameter_type;
 
     void appendInitialize(size_t newSize)
@@ -227,6 +230,13 @@ struct QPodArrayOps
                 return false;
         }
         return true;
+    }
+
+    void reallocate(qsizetype alloc, typename Data::ArrayOptions options)
+    {
+        auto pair = Data::reallocateUnaligned(this->d, this->ptr, alloc, options);
+        this->d = pair.first;
+        this->ptr = pair.second;
     }
 };
 QT_WARNING_POP

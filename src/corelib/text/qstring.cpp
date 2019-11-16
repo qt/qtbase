@@ -2367,7 +2367,7 @@ void QString::reallocData(uint alloc, bool grow)
         dd.data()[dd.size] = 0;
         d = dd;
     } else {
-        d.reallocate(alloc, allocOptions);
+        d->reallocate(alloc, allocOptions);
     }
 }
 

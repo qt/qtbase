@@ -199,12 +199,6 @@ public:
     typename Data::ArrayOptions detachFlags() const noexcept { return d->detachFlags(); }
     typename Data::ArrayOptions cloneFlags() const noexcept { return d->cloneFlags(); }
 
-    void reallocate(uint alloc, typename Data::ArrayOptions options)
-    {
-        auto pair = Data::reallocateUnaligned(d, ptr, alloc, options);
-        d = pair.first;
-        ptr = pair.second;
-    }
     Data *d_ptr() { return d; }
 
 private:

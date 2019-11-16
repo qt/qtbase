@@ -1673,7 +1673,7 @@ void QByteArray::reallocData(uint alloc, Data::ArrayOptions options)
         dd.data()[dd.size] = 0;
         d = dd;
     } else {
-        d.reallocate(alloc, options);
+        d->reallocate(alloc, options);
     }
 }
 
