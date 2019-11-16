@@ -198,11 +198,8 @@ void QWinEventNotifier::setEnabled(bool enable)
     d->enabled = enable;
 
     QAbstractEventDispatcher *eventDispatcher = d->threadData.loadRelaxed()->eventDispatcher.loadRelaxed();
-    if (!eventDispatcher) { // perhaps application is shutting down
-        if (!enable && d->waitHandle != nullptr)
-            d->unregisterWaitObject();
+    if (!eventDispatcher) // perhaps application is shutting down
         return;
-    }
     if (Q_UNLIKELY(thread() != QThread::currentThread())) {
         qWarning("QWinEventNotifier: Event notifiers cannot be enabled or disabled from another thread");
         return;
