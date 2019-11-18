@@ -157,8 +157,6 @@ struct Q_CORE_EXPORT QArrayData
 #endif
     static void *allocate(QArrayData **pdata, size_t objectSize, size_t alignment,
             size_t capacity, ArrayOptions options = DefaultAllocationFlags) noexcept;
-    Q_REQUIRED_RESULT static QArrayData *reallocateUnaligned(QArrayData *data, size_t objectSize,
-            size_t newCapacity, ArrayOptions newOptions = DefaultAllocationFlags) noexcept;
     Q_REQUIRED_RESULT static QPair<QArrayData *, void *> reallocateUnaligned(QArrayData *data, void *dataPointer,
             size_t objectSize, size_t newCapacity, ArrayOptions newOptions = DefaultAllocationFlags) Q_DECL_NOTHROW;
     Q_REQUIRED_RESULT static QArrayData *prepareRawData(ArrayOptions options = ArrayOptions(RawDataType))
