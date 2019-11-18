@@ -237,6 +237,7 @@ private slots:
     void labelTest();
     void accelerators();
     void bridgeTest();
+    void focusChild();
 
 protected slots:
     void onClicked();
@@ -3912,6 +3913,174 @@ void tst_QAccessibility::bridgeTest()
     QTestAccessibility::clearEvents();
 #endif
 }
+
+class FocusChildTestAccessibleInterface : public QAccessibleInterface
+{
+public:
+    FocusChildTestAccessibleInterface(int index, bool focus, QAccessibleInterface *parent)
+        : m_parent(parent)
+        , m_index(index)
+        , m_focus(focus)
+    {
+        QAccessible::registerAccessibleInterface(this);
+    }
+
+    bool isValid() const override { return true; }
+    QObject *object() const override { return nullptr; }
+    QAccessibleInterface *childAt(int, int) const override { return nullptr; }
+    QAccessibleInterface *parent() const override { return m_parent; }
+    QAccessibleInterface *child(int) const override { return nullptr; }
+    int childCount() const override { return 0; }
+    int indexOfChild(const QAccessibleInterface *) const override { return -1; }
+    QString text(QAccessible::Text) const override { return QStringLiteral("FocusChildTestAccessibleInterface %1").arg(m_index); }
+    void setText(QAccessible::Text, const QString &) override { }
+    QRect rect() const override { return QRect(); }
+    QAccessible::Role role() const override { return QAccessible::StaticText; }
+
+    QAccessible::State state() const override
+    {
+        QAccessible::State s;
+        s.focused = m_focus;
+        return s;
+    }
+
+private:
+    QAccessibleInterface *m_parent;
+    int m_index;
+    bool m_focus;
+};
+
+class FocusChildTestAccessibleWidget : public QAccessibleWidget
+{
+public:
+    static QAccessibleInterface *ifaceFactory(const QString &key, QObject *o)
+    {
+        if (key == "QtTestAccessibleWidget")
+            return new FocusChildTestAccessibleWidget(static_cast<QtTestAccessibleWidget *>(o));
+        return 0;
+    }
+
+    FocusChildTestAccessibleWidget(QtTestAccessibleWidget *w)
+        : QAccessibleWidget(w)
+    {
+        m_children.push_back(new FocusChildTestAccessibleInterface(0, false, this));
+        m_children.push_back(new FocusChildTestAccessibleInterface(1, true, this));
+        m_children.push_back(new FocusChildTestAccessibleInterface(2, false, this));
+    }
+
+    QAccessible::State state() const override
+    {
+        QAccessible::State s = QAccessibleWidget::state();
+        s.focused = false;
+        return s;
+    }
+
+    QAccessibleInterface *focusChild() const override
+    {
+        for (int i = 0; i < childCount(); ++i) {
+            if (child(i)->state().focused)
+                return child(i);
+        }
+
+        return nullptr;
+    }
+
+    QAccessibleInterface *child(int index) const override
+    {
+        return m_children[index];
+    }
+
+    int childCount() const override
+    {
+        return m_children.size();
+    }
+
+private:
+    QVector<QAccessibleInterface *> m_children;
+};
+
+void tst_QAccessibility::focusChild()
+{
+    {
+        QMainWindow mainWindow;
+        QtTestAccessibleWidget *widget1 = new QtTestAccessibleWidget(0, "Widget1");
+        QAccessibleInterface *iface1 = QAccessible::queryAccessibleInterface(widget1);
+        QtTestAccessibleWidget *widget2 = new QtTestAccessibleWidget(0, "Widget2");
+        QAccessibleInterface *iface2 = QAccessible::queryAccessibleInterface(widget2);
+
+        QWidget *centralWidget = new QWidget;
+        QHBoxLayout *centralLayout = new QHBoxLayout;
+        centralWidget->setLayout(centralLayout);
+        mainWindow.setCentralWidget(centralWidget);
+        centralLayout->addWidget(widget1);
+        centralLayout->addWidget(widget2);
+
+        mainWindow.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
+
+        // widget1 has not been focused yet -> it has no active focus nor focus widget.
+        QVERIFY(!iface1->focusChild());
+
+        // widget1 is focused -> it has active focus and focus widget.
+        widget1->setFocus();
+        QCOMPARE(iface1->focusChild(), iface1);
+        QCOMPARE(QAccessible::queryAccessibleInterface(&mainWindow)->focusChild(), iface1);
+
+        // widget1 lose focus -> it has no active focus but has focus widget what is itself.
+        // In this case, the focus child of widget1's interface is itself and the focusChild() call
+        // should not run into an infinite recursion.
+        widget2->setFocus();
+        QCOMPARE(iface1->focusChild(), iface1);
+        QCOMPARE(iface2->focusChild(), iface2);
+        QCOMPARE(QAccessible::queryAccessibleInterface(&mainWindow)->focusChild(), iface2);
+
+        delete widget1;
+        delete widget2;
+        delete centralWidget;
+        QTestAccessibility::clearEvents();
+    }
+
+    {
+        QMainWindow mainWindow;
+        QAccessible::installFactory(&FocusChildTestAccessibleWidget::ifaceFactory);
+        QtTestAccessibleWidget *widget = new QtTestAccessibleWidget(0, "FocusChildTestWidget");
+        mainWindow.setCentralWidget(widget);
+        mainWindow.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
+
+        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&mainWindow);
+        QVERIFY(!iface->focusChild());
+        widget->setFocus();
+        QCOMPARE(iface->focusChild(), QAccessible::queryAccessibleInterface(widget)->child(1));
+
+        delete widget;
+        QAccessible::removeFactory(FocusChildTestAccessibleWidget::ifaceFactory);
+        QTestAccessibility::clearEvents();
+    }
+
+    {
+        QMainWindow mainWindow;
+        QTabBar *tabBar = new QTabBar();
+        tabBar->insertTab(0, "First tab");
+        tabBar->insertTab(1, "Second tab");
+        tabBar->insertTab(2, "Third tab");
+        mainWindow.setCentralWidget(tabBar);
+        mainWindow.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
+
+        tabBar->setFocus();
+        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(&mainWindow);
+        QCOMPARE(iface->focusChild()->text(QAccessible::Name), QStringLiteral("First tab"));
+        QCOMPARE(iface->focusChild()->role(), QAccessible::PageTab);
+        tabBar->setCurrentIndex(1);
+        QCOMPARE(iface->focusChild()->text(QAccessible::Name), QStringLiteral("Second tab"));
+        QCOMPARE(iface->focusChild()->role(), QAccessible::PageTab);
+
+        delete tabBar;
+        QTestAccessibility::clearEvents();
+    }
+}
+
 
 QTEST_MAIN(tst_QAccessibility)
 #include "tst_qaccessibility.moc"
