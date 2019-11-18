@@ -150,6 +150,7 @@ private slots:
     void timeZones() const;
     void systemTimeZoneChange() const;
 
+    void invalid_data() const;
     void invalid() const;
     void range() const;
 
@@ -2458,6 +2459,7 @@ void tst_QDateTime::fromStringStringFormat_data()
     if (southBrazil.isValid()) {
         QTest::newRow("spring-forward-midnight")
             << QString("2008-10-19 23:45.678 America/Sao_Paulo") << QString("yyyy-MM-dd mm:ss.zzz t")
+            // That's in the hour skipped - expect the matching time after the spring-forward, in DST:
             << QDateTime(QDate(2008, 10, 19), QTime(1, 23, 45, 678), southBrazil);
     }
 #endif
@@ -3359,6 +3361,9 @@ void tst_QDateTime::timeZones() const
     QCOMPARE(utc.date(), utcDst.date());
     QCOMPARE(utc.time(), utcDst.time());
 
+    // Crash test, QTBUG-80146:
+    QVERIFY(!nzStd.toTimeZone(QTimeZone()).isValid());
+
     // Sydney is 2 hours behind New Zealand
     QTimeZone ausTz = QTimeZone("Australia/Sydney");
     QDateTime aus = nzStd.toTimeZone(ausTz);
@@ -3528,23 +3533,42 @@ void tst_QDateTime::systemTimeZoneChange() const
     QCOMPARE(tzDate.toMSecsSinceEpoch(), tzMsecs);
 }
 
+void tst_QDateTime::invalid_data() const
+{
+    QTest::addColumn<QDateTime>("when");
+    QTest::addColumn<Qt::TimeSpec>("spec");
+    QTest::addColumn<bool>("goodZone");
+    QTest::newRow("default") << QDateTime() << Qt::LocalTime << true;
+
+    QDateTime invalidDate = QDateTime(QDate(0, 0, 0), QTime(-1, -1, -1));
+    QTest::newRow("simple") << invalidDate << Qt::LocalTime << true;
+    QTest::newRow("UTC") << invalidDate.toUTC() << Qt::UTC << true;
+    QTest::newRow("offset")
+        << invalidDate.toOffsetFromUtc(3600) << Qt::OffsetFromUTC << true;
+    QTest::newRow("CET")
+        << invalidDate.toTimeZone(QTimeZone("Europe/Oslo")) << Qt::TimeZone << true;
+
+    // Crash tests, QTBUG-80146:
+    QTest::newRow("nozone+construct")
+        << QDateTime(QDate(1970, 1, 1), QTime(12, 0), QTimeZone()) << Qt::TimeZone << false;
+    QTest::newRow("nozone+fromMSecs")
+        << QDateTime::fromMSecsSinceEpoch(42, QTimeZone()) << Qt::TimeZone << false;
+    QDateTime valid(QDate(1970, 1, 1), QTime(12, 0), Qt::UTC);
+    QTest::newRow("tonozone") << valid.toTimeZone(QTimeZone()) << Qt::TimeZone << false;
+}
+
 void tst_QDateTime::invalid() const
 {
-    QDateTime invalidDate = QDateTime(QDate(0, 0, 0), QTime(-1, -1, -1));
-    QCOMPARE(invalidDate.isValid(), false);
-    QCOMPARE(invalidDate.timeSpec(), Qt::LocalTime);
-
-    QDateTime utcDate = invalidDate.toUTC();
-    QCOMPARE(utcDate.isValid(), false);
-    QCOMPARE(utcDate.timeSpec(), Qt::UTC);
-
-    QDateTime offsetDate = invalidDate.toOffsetFromUtc(3600);
-    QCOMPARE(offsetDate.isValid(), false);
-    QCOMPARE(offsetDate.timeSpec(), Qt::OffsetFromUTC);
-
-    QDateTime tzDate = invalidDate.toTimeZone(QTimeZone("Europe/Oslo"));
-    QCOMPARE(tzDate.isValid(), false);
-    QCOMPARE(tzDate.timeSpec(), Qt::TimeZone);
+    QFETCH(QDateTime, when);
+    QFETCH(Qt::TimeSpec, spec);
+    QFETCH(bool, goodZone);
+    QVERIFY(!when.isValid());
+    QCOMPARE(when.timeSpec(), spec);
+    QCOMPARE(when.timeZoneAbbreviation(), QString());
+    if (!goodZone)
+        QCOMPARE(when.toMSecsSinceEpoch(), 0);
+    QVERIFY(!when.isDaylightTime());
+    QCOMPARE(when.timeZone().isValid(), goodZone);
 }
 
 void tst_QDateTime::range() const
