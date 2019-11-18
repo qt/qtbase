@@ -368,18 +368,8 @@ void QXcbWindow::create()
                  | XCB_CW_BIT_GRAVITY
                  | XCB_CW_OVERRIDE_REDIRECT
                  | XCB_CW_SAVE_UNDER
-                 | XCB_CW_EVENT_MASK;
-
-    static auto haveOpenGL = []() {
-        static const bool result = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL);
-        return result;
-    };
-
-    xcb_colormap_t cmap = XCB_COLORMAP_NONE;
-    if ((window()->supportsOpenGL() && haveOpenGL()) || m_format.hasAlpha()) {
-        cmap = platformScreen->colormapForVisual(m_visualId);
-        mask |= XCB_CW_COLORMAP;
-    }
+                 | XCB_CW_EVENT_MASK
+                 | XCB_CW_COLORMAP;
 
     quint32 values[] = {
         XCB_BACK_PIXMAP_NONE,
@@ -388,7 +378,7 @@ void QXcbWindow::create()
         type == Qt::Popup || type == Qt::ToolTip || (window()->flags() & Qt::BypassWindowManagerHint),
         type == Qt::Popup || type == Qt::Tool || type == Qt::SplashScreen || type == Qt::ToolTip || type == Qt::Drawer,
         defaultEventMask,
-        cmap
+        platformScreen->colormapForVisual(m_visualId)
     };
 
     m_window = xcb_generate_id(xcb_connection());
