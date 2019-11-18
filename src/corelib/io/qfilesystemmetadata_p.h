@@ -76,8 +76,7 @@ class Q_AUTOTEST_EXPORT QFileSystemMetaData
 {
 public:
     QFileSystemMetaData()
-        : knownFlagsMask(nullptr),
-          size_(-1)
+        : size_(-1)
     {
     }
 
@@ -186,7 +185,7 @@ public:
 
     void clear()
     {
-        knownFlagsMask = nullptr;
+        knownFlagsMask = {};
     }
 
     void clearFlags(MetaDataFlags flags = AllMetaDataFlags)

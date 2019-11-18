@@ -309,7 +309,7 @@ public:
 
     virtual QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const;
     virtual QIcon fileIcon(const QFileInfo &fileInfo,
-                           QPlatformTheme::IconOptions iconOptions = nullptr) const;
+                           QPlatformTheme::IconOptions iconOptions = { }) const;
     virtual QIconEngine *createIconEngine(const QString &iconName) const;
 
 #ifndef QT_NO_SHORTCUT

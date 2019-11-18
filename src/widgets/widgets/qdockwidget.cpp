@@ -238,8 +238,8 @@ void QDockWidgetTitleButton::paintEvent(QPaintEvent *)
     }
 
     opt.icon = icon();
-    opt.subControls = 0;
-    opt.activeSubControls = 0;
+    opt.subControls = { };
+    opt.activeSubControls = { };
     opt.features = QStyleOptionToolButton::None;
     opt.arrowType = Qt::NoArrow;
     opt.iconSize = dockButtonIconSize();

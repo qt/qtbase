@@ -859,7 +859,7 @@ void QTabBarPrivate::refresh()
     Creates a new tab bar with the given \a parent.
 */
 QTabBar::QTabBar(QWidget* parent)
-    :QWidget(*new QTabBarPrivate, parent, 0)
+    :QWidget(*new QTabBarPrivate, parent, { })
 {
     Q_D(QTabBar);
     d->init();

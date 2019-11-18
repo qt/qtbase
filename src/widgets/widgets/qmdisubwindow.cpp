@@ -2212,7 +2212,7 @@ void QMdiSubWindowPrivate::updateInternalWindowTitle()
     \sa QMdiArea::addSubWindow()
 */
 QMdiSubWindow::QMdiSubWindow(QWidget *parent, Qt::WindowFlags flags)
-    : QWidget(*new QMdiSubWindowPrivate, parent, 0)
+    : QWidget(*new QMdiSubWindowPrivate, parent, { })
 {
     Q_D(QMdiSubWindow);
 #if QT_CONFIG(menu)

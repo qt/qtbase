@@ -226,7 +226,7 @@ QRect QStatusBarPrivate::messageRect() const
     \sa setSizeGripEnabled()
 */
 QStatusBar::QStatusBar(QWidget * parent)
-    : QWidget(*new QStatusBarPrivate, parent, 0)
+    : QWidget(*new QStatusBarPrivate, parent, { })
 {
     Q_D(QStatusBar);
     d->box = 0;

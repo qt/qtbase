@@ -492,7 +492,7 @@ void QProgressDialogPrivate::adoptChildWidget(QWidget *c)
         if (c->parentWidget() == q)
             c->hide(); // until after ensureSizeIsAtLeastSizeHint()
         else
-            c->setParent(q, 0);
+            c->setParent(q, { });
     }
     ensureSizeIsAtLeastSizeHint();
     if (c)

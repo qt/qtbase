@@ -116,12 +116,12 @@ public:
     void setCurrentCharFormat(const QTextCharFormat &format);
     QTextCharFormat currentCharFormat() const;
 
-    bool find(const QString &exp, QTextDocument::FindFlags options = nullptr);
+    bool find(const QString &exp, QTextDocument::FindFlags options = { });
 #ifndef QT_NO_REGEXP
-    bool find(const QRegExp &exp, QTextDocument::FindFlags options = nullptr);
+    bool find(const QRegExp &exp, QTextDocument::FindFlags options = { });
 #endif
 #if QT_CONFIG(regularexpression)
-    bool find(const QRegularExpression &exp, QTextDocument::FindFlags options = nullptr);
+    bool find(const QRegularExpression &exp, QTextDocument::FindFlags options = { });
 #endif
 
     QString toPlainText() const;

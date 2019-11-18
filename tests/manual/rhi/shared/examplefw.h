@@ -123,9 +123,9 @@ QString graphicsApiName()
 
 QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers;
 int sampleCount = 1;
-QRhiSwapChain::Flags scFlags = 0;
-QRhi::BeginFrameFlags beginFrameFlags = 0;
-QRhi::EndFrameFlags endFrameFlags = 0;
+QRhiSwapChain::Flags scFlags;
+QRhi::BeginFrameFlags beginFrameFlags;
+QRhi::EndFrameFlags endFrameFlags;
 int framesUntilTdr = -1;
 bool transparentBackground = false;
 

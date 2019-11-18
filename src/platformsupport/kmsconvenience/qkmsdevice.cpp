@@ -873,7 +873,7 @@ void QKmsDevice::discoverPlanes()
                 plane.type = QKmsPlane::Type(value);
             } else if (!strcmp(prop->name, "rotation")) {
                 plane.initialRotation = QKmsPlane::Rotations(int(value));
-                plane.availableRotations = 0;
+                plane.availableRotations = { };
                 if (propTypeIs(prop, DRM_MODE_PROP_BITMASK)) {
                     for (int i = 0; i < prop->count_enums; ++i)
                         plane.availableRotations |= QKmsPlane::Rotation(1 << prop->enums[i].value);

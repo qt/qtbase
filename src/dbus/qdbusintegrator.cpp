@@ -1026,7 +1026,7 @@ void QDBusConnectionPrivate::deliverCall(QObject *object, int /*flags*/, const Q
 extern bool qDBusInitThreads();
 
 QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
-    : QObject(p), ref(1), capabilities(0), mode(InvalidMode), busService(0),
+    : QObject(p), ref(1), mode(InvalidMode), busService(0),
       connection(0),
       rootNode(QString(QLatin1Char('/'))),
       anonymousAuthenticationAllowed(false),
@@ -1770,7 +1770,7 @@ void QDBusConnectionPrivate::setPeer(DBusConnection *c, const QDBusErrorInternal
 
 static QDBusConnection::ConnectionCapabilities connectionCapabilies(DBusConnection *connection)
 {
-    QDBusConnection::ConnectionCapabilities result = 0;
+    QDBusConnection::ConnectionCapabilities result;
     typedef dbus_bool_t (*can_send_type_t)(DBusConnection *, int);
     static can_send_type_t can_send_type = 0;
 

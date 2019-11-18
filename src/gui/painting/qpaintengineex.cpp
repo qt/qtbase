@@ -1061,7 +1061,7 @@ void QPaintEngineEx::drawStaticTextItem(QStaticTextItem *staticTextItem)
 
     QFontEngine *fontEngine = staticTextItem->fontEngine();
     fontEngine->addGlyphsToPath(staticTextItem->glyphs, staticTextItem->glyphPositions,
-                                staticTextItem->numGlyphs, &path, 0);
+                                staticTextItem->numGlyphs, &path, { });
     if (!path.isEmpty()) {
         QPainterState *s = state();
         QPainter::RenderHints oldHints = s->renderHints;

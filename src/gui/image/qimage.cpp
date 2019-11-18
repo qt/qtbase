@@ -1912,10 +1912,10 @@ void QImage::invertPixels(InvertMode mode)
     // Inverting premultiplied pixels would produce invalid image data.
     if (hasAlphaChannel() && qPixelLayouts[d->format].premultiplied) {
         if (depth() > 32) {
-            if (!d->convertInPlace(QImage::Format_RGBA64, 0))
+            if (!d->convertInPlace(QImage::Format_RGBA64, { }))
                 *this = convertToFormat(QImage::Format_RGBA64);
         } else {
-            if (!d->convertInPlace(QImage::Format_ARGB32, 0))
+            if (!d->convertInPlace(QImage::Format_ARGB32, { }))
                 *this = convertToFormat(QImage::Format_ARGB32);
         }
     }
@@ -1982,7 +1982,7 @@ void QImage::invertPixels(InvertMode mode)
     }
 
     if (originalFormat != d->format) {
-        if (!d->convertInPlace(originalFormat, 0))
+        if (!d->convertInPlace(originalFormat, { }))
             *this = convertToFormat(originalFormat);
     }
 }

@@ -71,7 +71,7 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
         }
     }
 
-    QUnicodeTools::CharAttributeOptions options = 0;
+    QUnicodeTools::CharAttributeOptions options;
     switch (type) {
     case QTextBoundaryFinder::Grapheme: options |= QUnicodeTools::GraphemeBreaks; break;
     case QTextBoundaryFinder::Word: options |= QUnicodeTools::WordBreaks; break;

@@ -407,7 +407,7 @@ bool QDateTimeParser::parseFormat(const QString &newFormat)
     QDTPDEBUGN("parseFormat: %s", newFormat.toLatin1().constData());
 
     QVector<SectionNode> newSectionNodes;
-    Sections newDisplay = 0;
+    Sections newDisplay;
     QStringList newSeparators;
     int i, index = 0;
     int add = 0;
@@ -1799,7 +1799,7 @@ int QDateTimeParser::SectionNode::maxChange() const
 
 QDateTimeParser::FieldInfo QDateTimeParser::fieldInfo(int index) const
 {
-    FieldInfo ret = 0;
+    FieldInfo ret;
     const SectionNode &sn = sectionNode(index);
     switch (sn.type) {
     case MSecSection:

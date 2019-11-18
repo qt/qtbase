@@ -1912,7 +1912,7 @@ void tst_QGraphicsItem::acceptedMouseButtons()
     event.setScenePos(QPointF(0, 0));
     QCoreApplication::sendEvent(&scene, &event);
     QCOMPARE(scene.mouseGrabberItem(), item2);
-    item2->setAcceptedMouseButtons(nullptr);
+    item2->setAcceptedMouseButtons({ });
     QCOMPARE(scene.mouseGrabberItem(), nullptr);
     QCoreApplication::sendEvent(&scene, &event);
     QCOMPARE(scene.mouseGrabberItem(), item1);
@@ -8069,7 +8069,7 @@ void tst_QGraphicsItem::itemUsesExtendedStyleOption()
 void tst_QGraphicsItem::itemSendsGeometryChanges()
 {
     ItemChangeTester item;
-    item.setFlags(nullptr);
+    item.setFlags({ });
     item.clear();
 
     QTransform x = QTransform().rotate(45);

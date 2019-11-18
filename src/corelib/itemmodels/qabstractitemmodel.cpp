@@ -432,7 +432,7 @@ Qt::ItemFlags QPersistentModelIndex::flags() const
 {
     if (d)
         return d->index.flags();
-    return 0;
+    return { };
 }
 
 /*!
@@ -2296,7 +2296,7 @@ Qt::ItemFlags QAbstractItemModel::flags(const QModelIndex &index) const
 {
     Q_D(const QAbstractItemModel);
     if (!d->indexValid(index))
-        return 0;
+        return { };
 
     return Qt::ItemIsSelectable|Qt::ItemIsEnabled;
 }

@@ -68,7 +68,7 @@ class QGraphicsLayoutPrivate;
 class QGraphicsGridLayoutEngineItem : public QGridLayoutItem {
 public:
     QGraphicsGridLayoutEngineItem(QGraphicsLayoutItem *item, int row, int columns, int rowSpan = 1, int columnSpan = 1,
-                            Qt::Alignment alignment = nullptr)
+                            Qt::Alignment alignment = { })
         : QGridLayoutItem(row, columns, rowSpan, columnSpan, alignment), q_layoutItem(item) {}
 
     virtual QLayoutPolicy::Policy sizePolicy(Qt::Orientation orientation) const override

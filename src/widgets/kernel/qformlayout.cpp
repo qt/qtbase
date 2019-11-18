@@ -1696,7 +1696,7 @@ Qt::Orientations QFormLayout::expandingDirections() const
     QFormLayoutPrivate *e = const_cast<QFormLayoutPrivate *>(d);
     e->updateSizes();
 
-    Qt::Orientations o = 0;
+    Qt::Orientations o;
     if (e->expandHorizontal)
         o = Qt::Horizontal;
     if (e->expandVertical)
@@ -2326,7 +2326,7 @@ void QFormLayout::resetRowWrapPolicy()
 void QFormLayout::resetFormAlignment()
 {
     Q_D(QFormLayout);
-    d->formAlignment = 0;
+    d->formAlignment = { };
 }
 
 /*!
@@ -2336,7 +2336,7 @@ void QFormLayout::resetFormAlignment()
 void QFormLayout::resetLabelAlignment()
 {
     Q_D(QFormLayout);
-    d->labelAlignment = 0;
+    d->labelAlignment = { };
 }
 
 #if 0

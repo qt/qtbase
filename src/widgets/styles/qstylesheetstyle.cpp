@@ -479,7 +479,7 @@ struct QStyleSheetGeometryData : public QSharedData
 
 struct QStyleSheetPositionData : public QSharedData
 {
-    QStyleSheetPositionData(int l, int t, int r, int b, Origin o, Qt::Alignment p, QCss::PositionMode m, Qt::Alignment a = 0)
+    QStyleSheetPositionData(int l, int t, int r, int b, Origin o, Qt::Alignment p, QCss::PositionMode m, Qt::Alignment a = { })
         : left(l), top(t), bottom(b), right(r), origin(o), position(p), mode(m), textAlignment(a) { }
 
     int left, top, bottom, right;
@@ -922,9 +922,9 @@ QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QObject
 
     int left = 0, top = 0, right = 0, bottom = 0;
     Origin origin = Origin_Unknown;
-    Qt::Alignment position = 0;
+    Qt::Alignment position;
     QCss::PositionMode mode = PositionMode_Unknown;
-    Qt::Alignment textAlignment = 0;
+    Qt::Alignment textAlignment;
     if (v.extractPosition(&left, &top, &right, &bottom, &origin, &position, &mode, &textAlignment))
         p = new QStyleSheetPositionData(left, top, right, bottom, origin, position, mode, textAlignment);
 
@@ -2231,7 +2231,7 @@ static Qt::Alignment defaultPosition(int pe)
         return Qt::AlignRight | Qt::AlignVCenter;
 
     default:
-        return 0;
+        return { };
     }
 }
 
@@ -3341,7 +3341,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 layout = subControlLayout(QLatin1String("mNX"));
 
             QStyleOptionComplex optCopy(*opt);
-            optCopy.subControls = 0;
+            optCopy.subControls = { };
             for (int i = 0; i < layout.count(); i++) {
                 int layoutButton = layout[i].toInt();
                 if (layoutButton < PseudoElement_MdiCloseButton
@@ -4242,7 +4242,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 }
                 r = subRule.contentsRect(r);
 
-                Qt::Alignment alignment = 0;
+                Qt::Alignment alignment;
                 if (subRule.hasPosition())
                     alignment = subRule.position()->textAlignment;
                 if (alignment == 0)

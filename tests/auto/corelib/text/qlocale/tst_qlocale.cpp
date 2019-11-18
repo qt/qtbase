@@ -1340,7 +1340,7 @@ void tst_QLocale::long_long_conversion()
 void tst_QLocale::long_long_conversion_extra()
 {
     QLocale l(QLocale::C);
-    l.setNumberOptions(0);
+    l.setNumberOptions({ });
     QCOMPARE(l.toString((qlonglong)1), QString("1"));
     QCOMPARE(l.toString((qlonglong)12), QString("12"));
     QCOMPARE(l.toString((qlonglong)123), QString("123"));
@@ -2087,7 +2087,7 @@ void tst_QLocale::numberOptions()
     QVERIFY(ok);
     QCOMPARE(locale.toString(12345), QString("12345"));
 
-    locale.setNumberOptions(0);
+    locale.setNumberOptions({ });
     QCOMPARE(locale.numberOptions(), 0);
     QCOMPARE(locale.toInt(QString("12,345"), &ok), 12345);
     QVERIFY(ok);

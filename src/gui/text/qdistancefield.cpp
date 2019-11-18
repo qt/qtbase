@@ -952,7 +952,7 @@ void QDistanceField::setGlyph(QFontEngine *fontEngine, glyph_t glyph, bool doubl
 {
     QFixedPoint position;
     QPainterPath path;
-    fontEngine->addGlyphsToPath(&glyph, &position, 1, &path, 0);
+    fontEngine->addGlyphsToPath(&glyph, &position, 1, &path, { });
     path.translate(-path.boundingRect().topLeft());
     path.setFillRule(Qt::WindingFill);
 

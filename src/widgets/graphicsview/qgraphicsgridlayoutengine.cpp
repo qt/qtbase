@@ -96,7 +96,7 @@ Qt::Alignment QGraphicsGridLayoutEngine::alignment(QGraphicsLayoutItem *graphics
 {
     if (QGraphicsGridLayoutEngineItem *gridEngineItem = findLayoutItem(graphicsLayoutItem))
         return gridEngineItem->alignment();
-    return 0;
+    return { };
 }
 
 

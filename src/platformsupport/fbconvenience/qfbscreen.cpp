@@ -255,7 +255,7 @@ QFbWindow *QFbScreen::windowForId(WId wid) const
 
 QFbScreen::Flags QFbScreen::flags() const
 {
-    return 0;
+    return { };
 }
 
 QT_END_NAMESPACE

@@ -3444,7 +3444,7 @@ int QWizard::nextId() const
     \sa wizard()
 */
 QWizardPage::QWizardPage(QWidget *parent)
-    : QWidget(*new QWizardPagePrivate, parent, 0)
+    : QWidget(*new QWizardPagePrivate, parent, { })
 {
     connect(this, SIGNAL(completeChanged()), this, SLOT(_q_updateCachedCompleteState()));
 }

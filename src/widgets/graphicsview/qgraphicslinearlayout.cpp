@@ -280,7 +280,7 @@ void QGraphicsLinearLayout::insertItem(int index, QGraphicsLayoutItem *item)
     Q_ASSERT(item);
     d->fixIndex(&index);
     d->engine.insertRow(index, d->orientation);
-    QGraphicsGridLayoutEngineItem *gridEngineItem = new QGraphicsGridLayoutEngineItem(item, d->gridRow(index), d->gridColumn(index), 1, 1, 0);
+    QGraphicsGridLayoutEngineItem *gridEngineItem = new QGraphicsGridLayoutEngineItem(item, d->gridRow(index), d->gridColumn(index), 1, 1, { });
     d->engine.insertItem(gridEngineItem, index);
     invalidate();
 }

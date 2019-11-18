@@ -1720,7 +1720,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                         g.glyphs[i] = actualFontEngine->glyphIndex('-');
                         if (Q_LIKELY(g.glyphs[i] != 0)) {
                             QGlyphLayout tmp = g.mid(i, 1);
-                            actualFontEngine->recalcAdvances(&tmp, 0);
+                            actualFontEngine->recalcAdvances(&tmp, { });
                         }
                         g.attributes[i].dontPrint = true;
                     }
@@ -2581,7 +2581,7 @@ static void set(QJustificationPoint *point, int type, const QGlyphLayout &glyph,
             g.numGlyphs = 1;
             g.glyphs = &kashidaGlyph;
             g.advances = &point->kashidaWidth;
-            fe->recalcAdvances(&g, 0);
+            fe->recalcAdvances(&g, { });
 
             if (point->kashidaWidth == 0)
                 point->type = Justification_Prohibited;
@@ -3214,13 +3214,13 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         glyphs.advances = &ellipsisWidth;
 
         if (glyph != 0) {
-            engine->recalcAdvances(&glyphs, 0);
+            engine->recalcAdvances(&glyphs, { });
 
             ellipsisText = ellipsisChar;
         } else {
             glyph = engine->glyphIndex('.');
             if (glyph != 0) {
-                engine->recalcAdvances(&glyphs, 0);
+                engine->recalcAdvances(&glyphs, { });
 
                 ellipsisWidth *= 3;
                 ellipsisText = QStringLiteral("...");
@@ -3928,7 +3928,7 @@ void QTextItemInt::initWithScriptItem(const QScriptItem &si)
 {
     // explicitly initialize flags so that initFontAttributes can be called
     // multiple times on the same TextItem
-    flags = 0;
+    flags = { };
     if (si.analysis.bidiLevel %2)
         flags |= QTextItem::RightToLeft;
     ascent = si.ascent;

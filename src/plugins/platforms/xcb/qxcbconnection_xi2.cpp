@@ -424,7 +424,7 @@ QXcbConnection::TouchDeviceData *QXcbConnection::touchDeviceForId(int id)
 QXcbConnection::TouchDeviceData *QXcbConnection::populateTouchDevices(void *info)
 {
     auto *deviceinfo = reinterpret_cast<xcb_input_xi_device_info_t *>(info);
-    QTouchDevice::Capabilities caps = 0;
+    QTouchDevice::Capabilities caps;
     int type = -1;
     int maxTouchPoints = 1;
     bool isTouchDevice = false;

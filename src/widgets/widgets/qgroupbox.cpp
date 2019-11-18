@@ -178,7 +178,7 @@ void QGroupBoxPrivate::click()
 */
 
 QGroupBox::QGroupBox(QWidget *parent)
-    : QWidget(*new QGroupBoxPrivate, parent, 0)
+    : QWidget(*new QGroupBoxPrivate, parent, { })
 {
     Q_D(QGroupBox);
     d->init();

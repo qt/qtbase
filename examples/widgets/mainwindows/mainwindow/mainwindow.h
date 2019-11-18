@@ -65,7 +65,7 @@ public:
 
     explicit MainWindow(const CustomSizeHintMap &customSizeHints,
                         QWidget *parent = nullptr,
-                        Qt::WindowFlags flags = 0);
+                        Qt::WindowFlags flags = { });
 
 public slots:
     void actionTriggered(QAction *action);

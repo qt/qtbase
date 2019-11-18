@@ -97,7 +97,7 @@ public:
     int physDevIndex = 0;
     QVector<VkPhysicalDevice> physDevs;
     QVector<VkPhysicalDeviceProperties> physDevProps;
-    QVulkanWindow::Flags flags = nullptr;
+    QVulkanWindow::Flags flags;
     QByteArrayList requestedDevExtensions;
     QHash<VkPhysicalDevice, QVulkanInfoVector<QVulkanExtension> > supportedDevExtensions;
     QVector<VkFormat> requestedColorFormats;

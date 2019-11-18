@@ -1272,7 +1272,7 @@ void tst_QNetworkSession::usagePolicies()
     QNetworkSession::UsagePolicies initial;
     initial = session.usagePolicies();
     if (initial != 0)
-        QNetworkSessionPrivate::setUsagePolicies(session, 0);
+        QNetworkSessionPrivate::setUsagePolicies(session, { });
     QSignalSpy spy(&session, SIGNAL(usagePoliciesChanged(QNetworkSession::UsagePolicies)));
     QNetworkSessionPrivate::setUsagePolicies(session, QNetworkSession::NoBackgroundTrafficPolicy);
     QCOMPARE(spy.count(), 1);

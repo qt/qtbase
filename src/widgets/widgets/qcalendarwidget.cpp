@@ -1207,9 +1207,9 @@ Qt::ItemFlags QCalendarModel::flags(const QModelIndex &index) const
     if (!date.isValid())
         return QAbstractTableModel::flags(index);
     if (date < m_minimumDate)
-        return 0;
+        return { };
     if (date > m_maximumDate)
-        return 0;
+        return { };
     return QAbstractTableModel::flags(index);
 }
 
@@ -2135,7 +2135,7 @@ void QCalendarWidgetPrivate::_q_editingFinished()
     \sa setCurrentPage()
 */
 QCalendarWidget::QCalendarWidget(QWidget *parent)
-    : QWidget(*new QCalendarWidgetPrivate, parent, 0)
+    : QWidget(*new QCalendarWidgetPrivate, parent, { })
 {
     Q_D(QCalendarWidget);
 

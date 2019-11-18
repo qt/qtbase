@@ -136,7 +136,7 @@ void QLibInputTouch::processTouchUp(libinput_event_touch *e)
     if (tp) {
         tp->state = Qt::TouchPointReleased;
         // There may not be a Frame event after the last Up. Work this around.
-        Qt::TouchPointStates s = 0;
+        Qt::TouchPointStates s;
         for (int i = 0; i < state->m_points.count(); ++i)
             s |= state->m_points.at(i).state;
         if (s == Qt::TouchPointReleased)

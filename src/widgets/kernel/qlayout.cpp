@@ -1337,7 +1337,7 @@ QRect QLayout::alignmentRect(const QRect &r) const
       returned by QLayoutItems that have an alignment.
     */
     QLayout *that = const_cast<QLayout *>(this);
-    that->setAlignment(0);
+    that->setAlignment({ });
     QSize ms = that->maximumSize();
     that->setAlignment(a);
 

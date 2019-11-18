@@ -147,7 +147,7 @@ QT_BEGIN_NAMESPACE
 */
 
 QAbstractSpinBox::QAbstractSpinBox(QWidget *parent)
-    : QWidget(*new QAbstractSpinBoxPrivate, parent, 0)
+    : QWidget(*new QAbstractSpinBoxPrivate, parent, { })
 {
     Q_D(QAbstractSpinBox);
     d->init();
@@ -157,7 +157,7 @@ QAbstractSpinBox::QAbstractSpinBox(QWidget *parent)
     \internal
 */
 QAbstractSpinBox::QAbstractSpinBox(QAbstractSpinBoxPrivate &dd, QWidget *parent)
-    : QWidget(dd, parent, 0)
+    : QWidget(dd, parent, { })
 {
     Q_D(QAbstractSpinBox);
     d->init();

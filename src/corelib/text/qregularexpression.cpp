@@ -912,7 +912,7 @@ QRegularExpression::QRegularExpression(QRegularExpressionPrivate &dd)
 */
 QRegularExpressionPrivate::QRegularExpressionPrivate()
     : QSharedData(),
-      patternOptions(0),
+      patternOptions(),
       pattern(),
       mutex(),
       compiledPattern(nullptr),

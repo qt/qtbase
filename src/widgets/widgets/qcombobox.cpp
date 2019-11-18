@@ -931,7 +931,7 @@ QStyleOptionComboBox QComboBoxPrivateContainer::comboStyleOption() const
     model QStandardItemModel.
 */
 QComboBox::QComboBox(QWidget *parent)
-    : QWidget(*new QComboBoxPrivate(), parent, 0)
+    : QWidget(*new QComboBoxPrivate(), parent, { })
 {
     Q_D(QComboBox);
     d->init();
@@ -941,7 +941,7 @@ QComboBox::QComboBox(QWidget *parent)
   \internal
 */
 QComboBox::QComboBox(QComboBoxPrivate &dd, QWidget *parent)
-    : QWidget(dd, parent, 0)
+    : QWidget(dd, parent, { })
 {
     Q_D(QComboBox);
     d->init();

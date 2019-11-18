@@ -348,7 +348,7 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
       hasUpdateClip(false),
       mousePressButton(Qt::NoButton),
       leftIndent(0), topIndent(0),
-      lastMouseEvent(QEvent::None, QPointF(), QPointF(), QPointF(), Qt::NoButton, 0, 0),
+      lastMouseEvent(QEvent::None, QPointF(), QPointF(), QPointF(), Qt::NoButton, { }, { }),
       alignment(Qt::AlignCenter),
       transformationAnchor(QGraphicsView::AnchorViewCenter), resizeAnchor(QGraphicsView::NoAnchor),
       viewportUpdateMode(QGraphicsView::MinimalViewportUpdate),
@@ -1170,7 +1170,7 @@ void QGraphicsViewPrivate::updateInputMethodSensitivity()
     q->viewport()->setAttribute(Qt::WA_InputMethodEnabled, enabled);
 
     if (!enabled) {
-        q->setInputMethodHints(0);
+        q->setInputMethodHints({ });
         return;
     }
 
@@ -1183,7 +1183,7 @@ void QGraphicsViewPrivate::updateInputMethodSensitivity()
             widget = fw;
         q->setInputMethodHints(widget->inputMethodHints());
     } else {
-        q->setInputMethodHints(0);
+        q->setInputMethodHints({ });
     }
 }
 

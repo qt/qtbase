@@ -3266,7 +3266,7 @@ inline QDateTime::Data::Data(Qt::TimeSpec spec)
         // the structure is too small, we need to detach
         d = new QDateTimePrivate;
         d->ref.ref();
-        d->m_status = mergeSpec(nullptr, spec);
+        d->m_status = mergeSpec({}, spec);
     }
 }
 

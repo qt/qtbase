@@ -186,7 +186,7 @@ void QEglFSWindow::destroy()
 #endif
     }
 
-    m_flags = 0;
+    m_flags = { };
 }
 
 void QEglFSWindow::invalidateSurface()

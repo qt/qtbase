@@ -489,7 +489,7 @@ QOpenGLFunctions::OpenGLFeatures QOpenGLFunctions::openGLFeatures() const
 {
     QOpenGLFunctionsPrivateEx *d = static_cast<QOpenGLFunctionsPrivateEx *>(d_ptr);
     if (!d)
-        return 0;
+        return { };
     if (d->m_features == -1)
         d->m_features = qt_gl_resolve_features();
     return QOpenGLFunctions::OpenGLFeatures(d->m_features);
@@ -527,7 +527,7 @@ QOpenGLExtensions::OpenGLExtensions QOpenGLExtensions::openGLExtensions()
 {
     QOpenGLFunctionsPrivateEx *d = static_cast<QOpenGLFunctionsPrivateEx *>(d_ptr);
     if (!d)
-        return 0;
+        return { };
     if (d->m_extensions == -1)
         d->m_extensions = qt_gl_resolve_extensions();
     return QOpenGLExtensions::OpenGLExtensions(d->m_extensions);

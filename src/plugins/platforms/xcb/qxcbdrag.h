@@ -86,7 +86,7 @@ public:
     void handlePosition(QPlatformWindow *w, const xcb_client_message_event_t *event);
     void handleLeave(QPlatformWindow *w, const xcb_client_message_event_t *event);
     void handleDrop(QPlatformWindow *, const xcb_client_message_event_t *event,
-                    Qt::MouseButtons b = nullptr, Qt::KeyboardModifiers mods = nullptr);
+                    Qt::MouseButtons b = { }, Qt::KeyboardModifiers mods = { });
 
     void handleStatus(const xcb_client_message_event_t *event);
     void handleSelectionRequest(const xcb_selection_request_event_t *event);
@@ -109,7 +109,7 @@ private:
     void init();
 
     void handle_xdnd_position(QPlatformWindow *w, const xcb_client_message_event_t *event,
-                              Qt::MouseButtons b = nullptr, Qt::KeyboardModifiers mods = nullptr);
+                              Qt::MouseButtons b = { }, Qt::KeyboardModifiers mods = { });
     void handle_xdnd_status(const xcb_client_message_event_t *event);
     void send_leave();
 

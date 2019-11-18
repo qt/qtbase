@@ -503,7 +503,7 @@ void QToolBarPrivate::plug(const QRect &r)
     Constructs a QToolBar with the given \a parent.
 */
 QToolBar::QToolBar(QWidget *parent)
-    : QWidget(*new QToolBarPrivate, parent, 0)
+    : QWidget(*new QToolBarPrivate, parent, { })
 {
     Q_D(QToolBar);
     d->init();

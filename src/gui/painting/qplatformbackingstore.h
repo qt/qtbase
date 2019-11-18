@@ -100,7 +100,7 @@ public:
     bool isLocked() const;
 
     void appendTexture(void *source, GLuint textureId, const QRect &geometry,
-                       const QRect &clipRect = QRect(), Flags flags = nullptr);
+                       const QRect &clipRect = QRect(), Flags flags = { });
     void clear();
 
  Q_SIGNALS:

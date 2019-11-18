@@ -93,8 +93,10 @@ class QFlags
                       "long long will overflow.");
     Q_STATIC_ASSERT_X((std::is_enum<Enum>::value), "QFlags is only usable on enumeration types.");
 
+#if QT_DEPRECATED_SINCE(5,15)
     struct Private;
     typedef int (Private::*Zero);
+#endif
     template <typename E> friend QDataStream &operator>>(QDataStream &, QFlags<E> &);
     template <typename E> friend QDataStream &operator<<(QDataStream &, QFlags<E>);
 public:
@@ -115,8 +117,11 @@ public:
     Q_DECL_CONSTEXPR inline QFlags(const QFlags &other);
     Q_DECL_CONSTEXPR inline QFlags &operator=(const QFlags &other);
 #endif
+    Q_DECL_CONSTEXPR inline QFlags() noexcept : i(0) {}
     Q_DECL_CONSTEXPR inline QFlags(Enum flags) noexcept : i(Int(flags)) {}
-    Q_DECL_CONSTEXPR inline QFlags(Zero = nullptr) noexcept : i(0) {}
+#if QT_DEPRECATED_SINCE(5,15)
+    QT_DEPRECATED_X("Use default constructor instead") Q_DECL_CONSTEXPR inline QFlags(Zero) noexcept : i(0) {}
+#endif
     Q_DECL_CONSTEXPR inline QFlags(QFlag flag) noexcept : i(flag) {}
 
     Q_DECL_CONSTEXPR inline QFlags(std::initializer_list<Enum> flags) noexcept

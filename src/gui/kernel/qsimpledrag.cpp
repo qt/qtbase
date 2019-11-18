@@ -393,7 +393,7 @@ void QSimpleDrag::startDrag()
 
 static void sendDragLeave(QWindow *window)
 {
-    QWindowSystemInterface::handleDrag(window, nullptr, QPoint(), Qt::IgnoreAction, 0, 0);
+    QWindowSystemInterface::handleDrag(window, nullptr, QPoint(), Qt::IgnoreAction, { }, { });
 }
 
 void QSimpleDrag::cancel()

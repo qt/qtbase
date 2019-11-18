@@ -391,7 +391,7 @@ QFont QFontDialog::getFont(bool *ok, const QFont &initial, QWidget *parent, cons
 QFont QFontDialog::getFont(bool *ok, QWidget *parent)
 {
     QFont initial;
-    return QFontDialogPrivate::getFont(ok, initial, parent, QString(), 0);
+    return QFontDialogPrivate::getFont(ok, initial, parent, QString(), { });
 }
 
 QFont QFontDialogPrivate::getFont(bool *ok, const QFont &initial, QWidget *parent,
