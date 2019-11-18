@@ -692,14 +692,6 @@ QByteArray qCompress(const uchar* data, int nbytes, int compressionLevel)
 */
 
 #ifndef QT_NO_COMPRESS
-namespace {
-struct QByteArrayDataDeleter
-{
-    static inline void cleanup(QTypedArrayData<char> *d)
-    { if (d) QTypedArrayData<char>::deallocate(d); }
-};
-}
-
 static QByteArray invalidCompressedData()
 {
     qWarning("qUncompress: Input data is corrupted");
@@ -733,24 +725,22 @@ QByteArray qUncompress(const uchar* data, int nbytes)
         return invalidCompressedData();
     }
 
-    QPair<QByteArray::Data *, char *> pair = QByteArray::Data::allocate(expectedSize + 1);
-    QScopedPointer<QByteArray::Data, QByteArrayDataDeleter> d(pair.first);
+    QByteArray::DataPointer d(QByteArray::Data::allocate(expectedSize + 1));
     if (Q_UNLIKELY(d.data() == nullptr))
         return invalidCompressedData();
 
     forever {
         ulong alloc = len;
-
-        int res = ::uncompress((uchar*)pair.second, &len,
+        int res = ::uncompress((uchar*)d.data(), &len,
                                data+4, nbytes-4);
 
         switch (res) {
         case Z_OK: {
             Q_ASSERT(len <= alloc);
-            Q_UNUSED(alloc);
-            QByteArray::DataPointer dataPtr = { d.take(), pair.second, uint(len) };
-            pair.second[len] = '\0';
-            return QByteArray(dataPtr);
+            Q_UNUSED(alloc)
+            d.data()[len] = '\0';
+            d.size = len;
+            return QByteArray(d);
         }
 
         case Z_MEM_ERROR:
@@ -764,12 +754,9 @@ QByteArray qUncompress(const uchar* data, int nbytes)
                 return invalidCompressedData();
             } else {
                 // grow the block
-                pair = QByteArray::Data::reallocateUnaligned(d.data(), pair.second, len + 1);
-                Q_CHECK_PTR(pair.first);
-                if (Q_UNLIKELY(pair.first == nullptr))
+                d->reallocate(d->allocatedCapacity()*2, QByteArray::Data::GrowsForward);
+                if (Q_UNLIKELY(d.data() == nullptr))
                     return invalidCompressedData();
-                d.take();   // don't free
-                d.reset(pair.first);
             }
             continue;
 
