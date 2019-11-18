@@ -107,6 +107,7 @@ public:
     const xcb_visualtype_t *visualForFormat(const QSurfaceFormat &format) const;
     const xcb_visualtype_t *visualForId(xcb_visualid_t) const;
     quint8 depthOfVisual(xcb_visualid_t) const;
+    xcb_colormap_t colormapForVisual(xcb_visualid_t) const;
 
 private:
     QRect getWorkArea() const;
@@ -133,6 +134,7 @@ private:
     QString m_windowManagerName;
     QMap<xcb_visualid_t, xcb_visualtype_t> m_visuals;
     QMap<xcb_visualid_t, quint8> m_visualDepths;
+    mutable QMap<xcb_visualid_t, xcb_colormap_t> m_visualColormaps;
     uint16_t m_rotation = 0;
 };
 
@@ -190,6 +192,7 @@ public:
 
     const xcb_visualtype_t *visualForFormat(const QSurfaceFormat &format) const { return m_virtualDesktop->visualForFormat(format); }
     const xcb_visualtype_t *visualForId(xcb_visualid_t visualid) const;
+    xcb_colormap_t colormapForVisual(xcb_visualid_t visualid) const { return m_virtualDesktop->colormapForVisual(visualid); }
     quint8 depthOfVisual(xcb_visualid_t visualid) const { return m_virtualDesktop->depthOfVisual(visualid); }
 
     QString name() const override { return m_outputName; }

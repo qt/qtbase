@@ -131,6 +131,9 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
 QXcbVirtualDesktop::~QXcbVirtualDesktop()
 {
     delete m_xSettings;
+
+    for (auto cmap : qAsConst(m_visualColormaps))
+        xcb_free_colormap(xcb_connection(), cmap);
 }
 
 QDpi QXcbVirtualDesktop::dpi() const
@@ -491,6 +494,22 @@ quint8 QXcbVirtualDesktop::depthOfVisual(xcb_visualid_t visualid) const
     if (it == m_visualDepths.constEnd())
         return 0;
     return *it;
+}
+
+xcb_colormap_t QXcbVirtualDesktop::colormapForVisual(xcb_visualid_t visualid) const
+{
+    auto it = m_visualColormaps.constFind(visualid);
+    if (it != m_visualColormaps.constEnd())
+        return *it;
+
+    auto cmap = xcb_generate_id(xcb_connection());
+    xcb_create_colormap(xcb_connection(),
+                        XCB_COLORMAP_ALLOC_NONE,
+                        cmap,
+                        screen()->root,
+                        visualid);
+    m_visualColormaps.insert(visualid, cmap);
+    return cmap;
 }
 
 QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDesktop,
