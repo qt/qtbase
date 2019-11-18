@@ -1391,10 +1391,10 @@ static QCborValue taggedValueFromCbor(QCborStreamReader &reader)
         auto &e = d->elements[1];
         const ByteData *b = d->byteData(e);
 
-        auto replaceByteData = [&](const char *buf, qsizetype len) {
+        auto replaceByteData = [&](const char *buf, qsizetype len, Element::ValueFlags f) {
             d->data.clear();
             d->usedData = 0;
-            e.flags = Element::HasByteData | Element::StringIsAscii;
+            e.flags = Element::HasByteData | f;
             e.value = d->addByteData(buf, len);
         };
 
@@ -1414,7 +1414,7 @@ static QCborValue taggedValueFromCbor(QCborStreamReader &reader)
             }
             if (dt.isValid()) {
                 QByteArray text = dt.toString(Qt::ISODateWithMs).toLatin1();
-                replaceByteData(text, text.size());
+                replaceByteData(text, text.size(), Element::StringIsAscii);
                 e.type = QCborValue::String;
                 d->elements[0].value = qint64(QCborKnownTags::DateTimeString);
                 type = QCborValue::DateTime;
@@ -1430,7 +1430,7 @@ static QCborValue taggedValueFromCbor(QCborStreamReader &reader)
                                  b->asQStringRaw() :
                                  b->toUtf8String());
                     QByteArray encoded = url.toString(QUrl::DecodeReserved).toUtf8();
-                    replaceByteData(encoded, encoded.size());
+                    replaceByteData(encoded, encoded.size(), {});
                 }
                 type = QCborValue::Url;
             }
@@ -1449,7 +1449,7 @@ static QCborValue taggedValueFromCbor(QCborStreamReader &reader)
                 char buf[sizeof(QUuid)] = {};
                 if (b)
                     memcpy(buf, b->byte(), qMin(sizeof(buf), size_t(b->len)));
-                replaceByteData(buf, sizeof(buf));
+                replaceByteData(buf, sizeof(buf), {});
 
                 type = QCborValue::Uuid;
             }

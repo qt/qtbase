@@ -1391,6 +1391,9 @@ static void addCommonCborData()
     QTest::newRow("Url") << QCborValue(QUrl("HTTPS://example.com/{%30%31}?q=%3Ca+b%20%C2%A9%3E&%26"))
                          << raw("\xd8\x20\x78\x27" "https://example.com/{01}?q=<a+b \xC2\xA9>&%26")
                          << noxfrm;
+    QTest::newRow("Url:NonAscii") << QCborValue(QUrl("https://example.com/\xc2\xa0"))
+                                  << raw("\xd8\x20\x76" "https://example.com/\xc2\xa0")
+                                  << noxfrm;
     QTest::newRow("Regex:Empty") << QCborValue(QRegularExpression()) << raw("\xd8\x23\x60") << noxfrm;
     QTest::newRow("Regex") << QCborValue(QRegularExpression("^.*$"))
                            << raw("\xd8\x23\x64" "^.*$") << noxfrm;
