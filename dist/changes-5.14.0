@@ -1,0 +1,542 @@
+Qt 5.14 introduces many new features and improvements as well as bugfixes
+over the 5.13.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.14 series is binary compatible with the 5.13.x series.
+Applications compiled for 5.13 will continue to run with 5.14.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                       Important Behavioral Change                        *
+****************************************************************************
+
+ - [QTBUG-47644] WrapWord now correctly prefers line breaks between words
+   in Korean text. WrapAnywhere can still be used to get breaks between
+   syllables instead.
+
+****************************************************************************
+*                 Potentially Source-Incompatible Changes                  *
+****************************************************************************
+
+ - qstringlist.h no longer includes qregexp.h.
+ - Prefixing Q_NAMESPACE with an export macro may no longer work. Use the
+   new Q_NAMESPACE_EXPORT macro for that use case.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - Added support of deduction guides for QPair
+ - Added new Qt::SplitBehavior, for use as eventual replacement for
+   QString::SplitBehavior.
+ - Added the new Q_NAMESPACE_EXPORT macro. It can be used just like
+   Q_NAMESPACE to add meta-object information to a namespace; however it
+   also supports exporting of such information from shared libraries.
+ - [QTBUG-15234] Qt installations on the host system can now be relocated,
+   i.e. moved to other directories.
+
+ - JSON:
+   * Added overloads of functions taking key strings as QStringView; in
+     QJsonObject, QJsonValue and QJsonDocument.
+
+ - QAtomicInteger:
+   * Added loadRelaxed() and storeRelaxed(), to be used as replacements of
+     load() / store().
+
+ - QAtomicPointer:
+   * Added loadRelaxed() and storeRelaxed(), to be used as replacements of
+     load() / store().
+
+ - QBasicTimer:
+   * QBasicTimer is now a move-only class. Copying is now deprecated and
+     will be removed in Qt 6.
+   * Added swap() member and free function.
+
+ - QByteArray::operator[]:
+   * Detach immediately, instead of deferring until modification via
+     the returned QByteRef.
+   * Deprecate reliance on its implicit resizing behavior. Support for
+     writing past the end of QByteArray shall be removed in a future
+     version of Qt.
+
+ - QCalendar:
+   * Added QCalendar to support diverse calendars, supported by
+     implementing QCalendarBackend.
+   * Added support for Julian and Milankovic calendars. These are enabled
+     by default, except in bootstrap builds.
+   * Added support for the Jalali (Persian or Solar Hijri) calendar,
+     controlled by feature jalalicalendar.
+   * Added support for the Islamic Civil calendar, controlled by feature
+     islamiccivilcalendar, with locale data that can be shared with other
+     implementations, controlled by feature hijricalendar.
+
+ - QChar:
+   * Added FormFeed (FF) special character.
+
+ - QCollator:
+   * Added support for QStringView.
+   * The default QCollator now uses the system's collation locale, rather
+     than the system locale itself.
+
+ - QDataStream:
+   * Enumerations can now be serialized through QDataStream without the
+     need of manually defining streaming operators.
+
+ - QDate:
+   * [QTBUG-64485] Added startOfDay() and endOfDay() methods to provide a
+     QDateTime at the start and end of a given date, taking account of any
+     time skipped by transitions, e.g. a DST spring-forward, which can lead
+     to a day starting at 01:00 or ending just before 23:00.
+   * Allow choice of calendar in various operations, with Gregorian
+     remaining the default.
+
+ - QDateTime:
+   * Invalid datetimes are now treated as equal and less than all valid
+     ones. They could previously be found equal to valid datetimes.
+
+ - QDir:
+   * Remove Windows specific long path markers when handling file paths
+     with native separators.
+
+ - QEasingCurve:
+   * QEasingCurve now properly streams all the data needed to QDataStream.
+
+ - QFileInfo:
+   * [QTBUG-75869] Introduced QFileInfo::isJunction() to detect NTFS Junctions
+     on Windows.
+
+ - QHash:
+   * Added range constructor.
+
+ - QJsonObject:
+   * Added insert(), remove(), and take() overloads taking QLatin1String.
+
+ - QLatin1Char:
+   * Comparison against char now works even in QT_NO_CAST_FROM_ASCII
+     builds.
+
+ - QLatin1Literal:
+   * The undocumented QLatin1Literal type alias for QLatin1String is now
+     deprecated. Use QLatin1String instead.
+
+ - QLatin1String:
+   * Added indexOf().
+   * Added contains().
+   * Added lastIndexOf().
+
+ - QLineF:
+   * added QLineF::intersects() as a replacement for QLineF::intersect()
+
+ - QLinkedList:
+   * Added range constructor.
+
+ - QList:
+   * Added range constructor.
+
+ - QLocale:
+   * The system locale now knows what to use for collation,
+     QLocale::system().collation().
+   * The NaN obtained when reading "nan" as a floating-point value is now
+     quiet rather than signaling.
+   * The system locale's UI languages list now includes, as for that of an
+     ordinary locale, the results of adding likely sub-tags from each
+     locale name, and of removing some, where this doesn't change which
+     locale is specified. This gives searches for translation files a
+     better chance of finding a suitable file.
+
+ - QMetaObject:
+   * [QTBUG-38876] Some internal members of the QMetaObject class have
+     changed types. Those members are not public API and thus should not
+     cause source incompatibilities.
+
+ - QMultiHash:
+   * Added range constructor.
+
+ - QMutex:
+   * Added QRecursiveMutex as a replacement of QMutex(QMutex::Recursive).
+
+ - QPoint/QPointF:
+   * Added transposed().
+
+ - QPointer:
+   * Added a free swap function.
+
+ - QSet:
+   * Added range constructor.
+
+ - QSharedPointer:
+   * Overloads of qSharedPointerObjectCast have been added to work on
+     std::shared_ptr.
+   * The swap overload for QSharedPointer in the std namespace has been
+     removed; a new overload has been added in the Qt namespace.
+
+ - QSize/QSizeF:
+   * Added grownBy(QMargin(F))/shrunkBy(QMargin(F)).
+
+ - QString:
+   * The behavior of operator[] to allow implicit resizing of the string
+     has been deprecated, and will be removed in a future version of Qt.
+   * QString::operator[] detaches immediately. Previously, the detach was
+     delayed until a modification was made to the string through the
+     returned QCharRef.
+   * QString::arg(QString, ..., QString) can now be called with more than
+     nine arguments, as well as with QStringViews.
+
+ - QString/QStringRef:
+   * The split functions now optionally take Qt::SplitBehavior.
+
+ - QStringList:
+   * Added range constructor.
+   * Added QStringView overloads of join(), filter(), and
+     replaceInStrings().
+
+ - QStringView:
+   * Added indexOf().
+   * Added contains().
+   * Added lastIndexOf().
+   * Deprecated the (undocumented) QStringViewLiteral macro. Just use u""
+     or QStringView(u"") instead.
+
+ - QStringView/QLatin1String:
+   * Added arg(), taking arbitrarily many strings.
+
+ - QTextStream:
+   * The NaN obtained when reading "nan" as a floating-point value is now
+     quiet rather than signaling.
+
+ - QTimeZone:
+   * [QTBUG-75565] The TZDB back-end now recognizes the contents of /etc/TZ
+     as a fall-back for $TZ (as used by uClibc).
+
+ - QVarLengthArray:
+   * Added range constructor.
+   * Added a qHash overload.
+
+ - QVariant:
+   * Fixed a bug that caused isNull() to be true after downcasting a
+     QObject* payload using convert().
+
+ - QVector:
+   * Added range constructor.
+
+ - QWeakPointer:
+   * The data() function has been deprecated.
+   * A swap overload has been added.
+
+ - QtGlobal:
+   * Add new macros QT_DEPRECATED_VERSION and QT_DEPRECATED_VERSION_X to
+     conditionally display deprecation warnings
+   * Added qExchange(), a drop-in for C++14's std::exchange()
+
+ - Windows:
+   * QSysInfo::prettyProductName() now returns a version including the
+     Windows 10 release id or Windows 7 build number respectively,
+     resembling the version string displayed by the winver tool.
+
+****************************************************************************
+*                                  QtDBus                                  *
+****************************************************************************
+
+ - QDBusAbstractInterface:
+   * The call() and asyncCall() methods now accept more than eight QVariant
+     arguments.
+
+ - QDBusObjectPath:
+   * Added explicit cast operator to QVariant.
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - QColor:
+   * Added QColorConstants, a namespace containing constexpr QColor
+     instances.
+
+ - A QColorSpace class has been added, and color spaces are now parsed from
+   PNG and JPEG images. No automatic color space conversion is done
+   however, and applications must request it.
+ - Added support for filtering Vulkan debug messages in QVulkanInstance.
+   This is especially useful for processing or suppressing messages from
+   the validation layers.
+ - Obsolete constructors and accessors in QWheelEvent now have proper
+   deprecation macros, and are no longer in use in any Qt modules.
+   What is left is intended to be compatible with planned changes in Qt 6.
+
+ - QFont:
+   * [QTBUG-77908] Fixed kerning error with certain fonts.
+   * [QTBUG-76239] Fixed an issue where application fonts would be parsed
+     multiple times, causing some unnecessary overhead when during
+     application startup.
+   * [QTBUG-46322] Resolving a font that just has a family set with
+     families set will prepend the family to the families so that it is
+     still the first preference for the font.
+
+ - QImage:
+   * [QTBUG-42540], [QTBUG-68787] Loading of image files having a file
+     name suffix for a different image file type has been
+     fixed. QImageReader will now ask the suffix format handler to
+     confirm the file contents (canRead()), and fall back to normal
+     file content recognition on failure. This implies a slight
+     behavior change in QImageReader::loopCount(), ::imageCount() and
+     ::nextImageDelay(): For an unreadable file with a recognized
+     suffix, they would earlier return 0, while they now will
+     return -1, i.e. error, as per the documentation.
+
+ - QPainter:
+   * HighQualityAntialiasing and NonCosmeticDefaultPen are marked as
+     deprecated and don't have an effect anymore
+
+ - QTextDocument:
+   * [QTBUG-36152] CSS styling of table cell borders (styling <td> and <th>
+     elements) is now supported during HTML import and export, including
+     border-color, border-width and border-style. Setting the table's
+     border-width to a value >= 1 and enabling border-collapse will now draw
+     a simple, clean table grid (1px) with an outer border of the specified
+     width and color.  A manual test was added, which allows editing HTML
+     with live preview.
+   * [QTBUG-43589] Fixed incorrect rounding of widths of variable-width
+     columns in tables, to avoid border drawing artifacts.
+   * [QTBUG-78318] QTextFrameFormat margins, padding and borders are now
+     scaled to device coordinates, and thus correctly sized on high-dpi
+     displays and printers.
+   * Markdown (CommonMark or GitHub dialect) is now a supported format for
+     reading into and writing from QTextDocument, via the setMarkdown() and
+     toMarkdown() functions.  We do not guarantee that every markdown
+     document can be re-written exactly as it was read; but that does work
+     in many cases, and it's OK to report bugs about cases that don't work.
+
+ - Touch:
+   * [QTBUG-77142] When a stationary touchpoint contains some "interesting"
+     property change (pressure or velocity, so far), it is delivered normally.
+
+****************************************************************************
+*                                QtNetwork                                 *
+****************************************************************************
+
+ - QAuthenticator:
+   * [QTBUG-4117] Add support for SPNEGO/Negotiate
+
+ - QHostInfo:
+   * Added move contructor.
+
+ - QNetworkAccessManager:
+   * [QTBUG-69477] Don't fail when FTP does not implement the HELP command.
+   * Added setAutoDeleteReplies to QNetworkAccessManager to enable the
+     AutoDeleteReplyOnFinishAttribute attribute for all QNetworkRequests
+     that are passed to QNetworkAccessManager.
+
+ - QNetworkRequest:
+   * Added the AutoDeleteReplyOnFinishAttribute attribute to
+     QNetworkRequest, which makes QNetworkAccessManager delete the
+     QNetworkReply after it has emitted the "finished" signal.
+   * Add an ability to configure HTTP/2 protocol
+
+ - QSslKey:
+   * Key data is cleared as soon as possible when move-assigning.
+
+ - QSslSocket:
+   * [QTBUG-72016] Added runtime validation of the SSL private key when it
+     is loaded through a file path.
+
+****************************************************************************
+*                                  QtSql                                   *
+****************************************************************************
+
+ - QPSQL:
+   * [QTBUG-79033][QTBUG-79064] added support for PostgreSQL 12
+
+ - QSqlite:
+   * Updated to v3.30.1
+
+ - QSqlite2:
+   * Marked QSQLITE2 plugin as obsolete - it will be removed with Qt6
+     together with the QTDS plugin
+
+****************************************************************************
+*                                QtTestLib                                 *
+****************************************************************************
+
+ - Comparison of QImage, QPixmap now checks for the device pixel ratio.
+ - It is now possible to perform static initialization before QApplication
+   instantiation by implementing a initMain() function in the test class.
+
+****************************************************************************
+*                                QtWidgets                                 *
+****************************************************************************
+
+ - QActionGroup:
+   * Added new exclusionPolicy property. Set it to ExclusiveOptional to
+     allow unchecking the active checkable action in an exclusive group.
+
+ - QCalendarWidget:
+   * Allow choice of calendar, with Gregorian remaining the default.
+
+ - QComboBox:
+   * Two new signals textHighlighted() and textActivated() were added to
+     replace highlighted()/activated() QString overloads.
+
+ - QDateTimeEdit:
+   * Allow choice of calendar, with Gregorian remaining the default.
+
+ - QFileDialog:
+   * The widgets-based dialog now remembers the selected files when
+     navigating the history.
+
+ - QFormLayout:
+   * Honor the vertical expanding state of a widget inside a QFormLayout.
+
+ - QGraphicsWidget:
+   * Added QMarginsF overloads of setContentsMargins() and
+     setWindowFrameMargins().
+
+ - QGroupBox:
+   * [QTBUG-259389 Always disable children of a checkable, unchecked group
+      box before showing.
+
+ - QLabel:
+   * Markdown is now a supported textFormat for QLabel.
+
+ - QLayout:
+   * Prevent clipping of group box titles on macOS (and similar styles that
+     draw into layout margins)
+
+ - QLineEdit:
+   * Behavior change: now the editingFinished signal is emitted only once
+     after the line edit content was edited.
+   * The getTextMargins() member function has been deprecated in favor of
+     textMargins().
+
+ - QStyle:
+   * Style sheets now only use the part of the stylesheet font that it
+     knows about. The remaining will be resolved/inherited from the
+     context.
+
+ - QTextBrowser:
+   * Markdown is now a supported format.  QTextBrowser::setSource() detects
+     the common file extensions (.md, .mkd and .markdown).  In case it
+     cannot be detected that way, setSource() now takes an optional
+     ResourceType enum argument so that the type can be overridden.
+     QTextBrowser inherits all the QTextEdit features: if readOnly is set
+     to false, the user can perform the editing operations that QTextEdit
+     allows.  If readOnly is set to true (the default), the user can click
+     Markdown hyperlinks to emit the anchorClicked() signal, as with HTML.
+
+ - QTextEdit:
+   * [QTBUG-75931] Added support for copy-pasting foreground brushes with
+     textures within same document.
+   * Markdown (CommonMark or GitHub dialect) is now a supported format,
+     via the markdown property.  GitHub dialect is the default, and supports
+     all features such as hyperlinks, images, tables, lists, checklists, etc.
+   * If the text was loaded from a Markdown document that contains checkboxes,
+     the user can click on them to toggle the states.  The cursor changes to
+     PointingHandCursor when the mouse is hovering over a checkbox.
+
+ - QTreeView:
+   * Don't emit clicked signal after a doubleClicked signal.
+
+ - QWidget:
+   * The getContentsMargins() member function has been deprecated in favor
+     of contentsMargins().
+
+****************************************************************************
+*                        Platform Specific Changes                         *
+****************************************************************************
+
+ - Android
+   * Fixed an issue where an application installation would be irrecoverably
+     broken if power loss or a crash occurred during its first initialization
+     run.
+   * Make it easy to run Qt tests on Android. "$ make check" is all that's
+     needed to run a test on an Android device.
+   * Remove ant support from androiddeployqt
+   * Introduce "make apk" target, an easy way to create an apk.
+   * Android depends on NDK r20+
+   * Android multi arch build in one go, needed to support the new .aab
+     packaging format.
+   * -android-abis configure script parameter useful to compile Qt only for a
+     selected Android ABIs.
+   * Instead of bundling QML resources in assets and extracting them on first
+     start, Qt now creates an .rcc file and register it before invoking the
+     main function.
+   * Fixed regression that made it impossible for an application to use the
+     tap-and-hold gesture.
+
+ - Linux:
+   * Added a device spec for Raspberry Pi 4 (32-bit, V3D)
+   * Added a device spec for 64-bit i.MX8 systems (Vivante graphics stack)
+
+ - MinGW:
+   * [QTBUG-4155] Added a suffix to debug mode pkgconfig files.
+
+ - macOS:
+   * The drawableSize of Metal layers is no longer updated automatically on
+     window resize or screen change. Update the size manually in response to
+     resizeEvent(), or at the start of each frame, as needed.
+
+ - Mir:
+   * The Mir platform plugin has been removed: use the Wayland plugin when
+     connecting to a Mir display server.
+
+ - Windows:
+   * It is now possible to enable RTL mode by passing the option -platform
+     windows:reverse.
+   * [QTBUG-74748] Fixed a bug where it would be impossible to
+     request different faces of a font family after a specific type face
+     has been in use.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+ - Upgraded bundled Freetype version to 2.10.1.
+ - Build sqlite without SQLITE_OMIT_LOAD_EXTENSION
+ - Qt Gui: Added md4c markdown parser to src/3rdparty/md4c (MIT licensed).
+ - [QTBUG-79418] Updated double-conversion code to upstream version 3.1.5.
+ - [QTBUG-79420] libjpeg-turbo was updated to version 2.0.3
+ - [QTBUG-79418] Updated DNS public suffix list
+
+****************************************************************************
+*                                  Tools                                   *
+****************************************************************************
+
+ - rcc:
+   * Added -d option to generate a dependency file.
+   * Added support for Python as output format.
+
+****************************************************************************
+*                                configure                                 *
+****************************************************************************
+
+ - Added the configure option -qtlibinfix-plugins to rename plugins
+   according to QT_LIBINFIX. This option is off by default.
+
+****************************************************************************
+*                                  CMake                                   *
+****************************************************************************
+
+ - [QTBUG-38913][QTBUG-76562] Added ability to auto-import non-qml plugins
+   on CMake builds
+
+****************************************************************************
+*                                  qmake                                   *
+****************************************************************************
+
+ - Installation targets do not ignore the exit code of QINSTALL and
+   QINSTALL_PROGRAM anymore.
+ - Introduced the variables LEX_DIR and YACC_DIR which determine the
+   location of lex/yacc output. Fixed parallel execution of lex/yacc for
+   debug_and_release builds.
+ - The syntax 'LIBS += -frameworkFoo', or 'LIBS += "-framework Foo"' is no
+   longer supported. Use the canonical 'LIBS += -framework Foo' instead.
+ - Fixed precompiled headers for the Clang compiler.
+
+ - Android:
+   * Remove gcc-style PCH directives from the android-clang mkspec.
