@@ -695,12 +695,12 @@ _hb_qt_font_create(QFontEngine *fe)
         return NULL;
     }
 
-    const int y_ppem = fe->fontDef.pixelSize;
-    const int x_ppem = (fe->fontDef.pixelSize * fe->fontDef.stretch) / 100;
+    const qreal y_ppem = fe->fontDef.pixelSize;
+    const qreal x_ppem = (fe->fontDef.pixelSize * fe->fontDef.stretch) / 100.0;
 
     hb_font_set_funcs(font, hb_qt_get_font_funcs(), (void *)fe, NULL);
-    hb_font_set_scale(font, QFixed(x_ppem).value(), -QFixed(y_ppem).value());
-    hb_font_set_ppem(font, x_ppem, y_ppem);
+    hb_font_set_scale(font, QFixed::fromReal(x_ppem).value(), -QFixed::fromReal(y_ppem).value());
+    hb_font_set_ppem(font, int(x_ppem), int(y_ppem));
 
     hb_font_set_ptem(font, fe->fontDef.pointSize);
 
