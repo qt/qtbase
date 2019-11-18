@@ -238,7 +238,6 @@ protected:
                                 quint8 mode, quint8 detail, xcb_timestamp_t timestamp);
 
     xcb_window_t m_window = 0;
-    xcb_colormap_t m_cmap = 0;
 
     uint m_depth = 0;
     QImage::Format m_imageFormat = QImage::Format_ARGB32_Premultiplied;
