@@ -71,17 +71,6 @@ public:
             d->copyAppend(begin, end);
     }
 
-    SimpleVector(QArrayDataPointerRef<T> ptr)
-        : d(ptr)
-    {
-    }
-
-    template <size_t N>
-    explicit SimpleVector(QStaticArrayData<T, N> &ptr)
-        : d(static_cast<Data *>(&ptr.header), ptr.data, N)
-    {
-    }
-
     SimpleVector(Data *header, T *data, size_t len = 0)
         : d(header, data, len)
     {
@@ -340,7 +329,7 @@ public:
 
     static SimpleVector fromRawData(const T *data, size_t size)
     {
-        return SimpleVector(Data::fromRawData(data, size));
+        return SimpleVector({ nullptr, const_cast<T *>(data), size });
     }
 
 private:

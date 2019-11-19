@@ -8619,7 +8619,7 @@ bool QString::isRightToLeft() const
 */
 QString QString::fromRawData(const QChar *unicode, int size)
 {
-    return QString(Data::fromRawData(const_cast<char16_t *>(reinterpret_cast<const char16_t *>(unicode)), size));
+    return QString(DataPointer::fromRawData(const_cast<char16_t *>(reinterpret_cast<const char16_t *>(unicode)), size));
 }
 
 /*!

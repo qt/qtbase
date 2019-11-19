@@ -81,9 +81,10 @@ public:
         Q_CHECK_PTR(d);
     }
 
-    QArrayDataPointer(QArrayDataPointerRef<T> dd) noexcept
-        : d(dd.ptr), ptr(dd.data), size(dd.size)
+    static QArrayDataPointer fromRawData(const T *rawData, size_t length)
     {
+        Q_ASSERT(rawData || !length);
+        return { nullptr, const_cast<T *>(rawData), length };
     }
 
     QArrayDataPointer &operator=(const QArrayDataPointer &other) noexcept
@@ -234,6 +235,20 @@ inline void qSwap(QArrayDataPointer<T> &p1, QArrayDataPointer<T> &p2) noexcept
 {
     p1.swap(p2);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//  Q_ARRAY_LITERAL
+
+// The idea here is to place a (read-only) copy of header and array data in an
+// mmappable portion of the executable (typically, .rodata section).
+
+// Hide array inside a lambda
+#define Q_ARRAY_LITERAL(Type, ...) \
+    ([]() -> QArrayDataPointer<Type> { \
+        static Type const data[] = { __VA_ARGS__ }; \
+        return QArrayDataPointer<Type>::fromRawData(const_cast<Type *>(data), std::size(data)); \
+    }())
+/**/
 
 QT_END_NAMESPACE
 

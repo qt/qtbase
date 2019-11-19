@@ -165,23 +165,6 @@ struct Q_CORE_EXPORT QArrayData
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::ArrayOptions)
 
-template <class T, size_t N>
-struct QStaticArrayData
-{
-    // static arrays are of type RawDataType
-    QArrayData header;
-    T data[N];
-};
-
-// Support for returning QArrayDataPointer<T> from functions
-template <class T>
-struct QArrayDataPointerRef
-{
-    QTypedArrayData<T> *ptr;
-    T *data;
-    uint size;
-};
-
 template <class T>
 struct QTypedArrayData
     : QArrayData
@@ -218,33 +201,7 @@ struct QTypedArrayData
         static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QArrayData::deallocate(data, sizeof(T), alignof(AlignmentDummy));
     }
-
-    static QArrayDataPointerRef<T> fromRawData(const T *data, size_t n)
-    {
-        static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
-        QArrayDataPointerRef<T> result = {
-            nullptr, const_cast<T *>(data), uint(n)
-        };
-        return result;
-    }
 };
-
-////////////////////////////////////////////////////////////////////////////////
-//  Q_ARRAY_LITERAL
-
-// The idea here is to place a (read-only) copy of header and array data in an
-// mmappable portion of the executable (typically, .rodata section). This is
-// accomplished by hiding a static const instance of QStaticArrayData, which is
-// POD.
-
-// Hide array inside a lambda
-#define Q_ARRAY_LITERAL(Type, ...)                                              \
-    ([]() -> QArrayDataPointerRef<Type> { \
-        static Type const data[] = { __VA_ARGS__ };                                 \
-        enum { Size = sizeof(data) / sizeof(data[0]) }; \
-        return { nullptr, const_cast<Type *>(data), Size };              \
-    }())
-    /**/
 
 namespace QtPrivate {
 struct Q_CORE_EXPORT QContainerImplHelper

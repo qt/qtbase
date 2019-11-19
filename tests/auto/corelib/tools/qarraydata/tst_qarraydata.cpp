@@ -1241,22 +1241,6 @@ void tst_QArrayData::literals()
             QCOMPARE(d.data()[i], wchar_t('A' + i));
     }
 
-    {
-        SimpleVector<char> v = Q_ARRAY_LITERAL(char, "ABCDEFGHIJ");
-
-        QVERIFY(!v.isNull());
-        QVERIFY(!v.isEmpty());
-        QCOMPARE(v.size(), size_t(11));
-        // v.capacity() is unspecified, for now
-
-        QVERIFY(v.isStatic());
-        QCOMPARE((void*)(const char*)(v.constBegin() + v.size()), (void*)(const char*)v.constEnd());
-
-        for (int i = 0; i < 10; ++i)
-            QCOMPARE(const_(v)[i], char('A' + i));
-        QCOMPARE(const_(v)[10], char('\0'));
-    }
-
     struct LiteralType {
         int value;
         Q_DECL_CONSTEXPR LiteralType(int v = 0) : value(v) {}
@@ -1312,21 +1296,6 @@ void tst_QArrayData::variadicLiterals()
             QCOMPARE(d.data()[i][0], char('A' + i));
             QCOMPARE(d.data()[i][1], '\0');
         }
-    }
-
-    {
-        SimpleVector<int> v = Q_ARRAY_LITERAL(int, 0, 1, 2, 3, 4, 5, 6);
-
-        QVERIFY(!v.isNull());
-        QVERIFY(!v.isEmpty());
-        QCOMPARE(v.size(), size_t(7));
-        // v.capacity() is unspecified, for now
-
-        QVERIFY(v.isStatic());
-        QCOMPARE((const int *)(v.constBegin() + v.size()), (const int *)v.constEnd());
-
-        for (int i = 0; i < 7; ++i)
-            QCOMPARE(const_(v)[i], i);
     }
 }
 
