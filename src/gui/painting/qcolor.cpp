@@ -855,18 +855,6 @@ QColor::QColor(Spec spec) noexcept
 */
 
 /*!
-    Returns the name of the color in the format "#RRGGBB"; i.e. a "#"
-    character followed by three two-digit hexadecimal numbers.
-
-    \sa setNamedColor()
-*/
-
-QString QColor::name() const
-{
-    return name(HexRgb);
-}
-
-/*!
     \since 5.2
 
     Returns the name of the color in the specified \a format.
@@ -2628,16 +2616,6 @@ QColor QColor::fromHslF(qreal h, qreal s, qreal l, qreal a)
 }
 
 /*!
-   \obsolete
-
-   Use the \c const overload instead.
-*/
-void QColor::getCmyk(int *c, int *m, int *y, int *k, int *a)
-{
-    const_cast<const QColor *>(this)->getCmyk(c, m, y, k, a);
-}
-
-/*!
     Sets the contents pointed to by \a c, \a m, \a y, \a k, and \a a, to the
     cyan, magenta, yellow, black, and alpha-channel (transparency) components
     of the color's CMYK value.
@@ -2664,16 +2642,6 @@ void QColor::getCmyk(int *c, int *m, int *y, int *k, int *a) const
 
     if (a)
         *a = ct.acmyk.alpha >> 8;
-}
-
-/*!
-   \obsolete
-
-   Use the \c const overload instead.
-*/
-void QColor::getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a)
-{
-    const_cast<const QColor *>(this)->getCmykF(c, m, y, k, a);
 }
 
 /*!
@@ -2921,18 +2889,6 @@ QColor QColor::light(int factor) const noexcept
 QColor QColor::dark(int factor) const noexcept
 {
     return darker(factor);
-}
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-/*!
-    Assigns a copy of \a color to this color, and returns a reference to it.
-*/
-QColor &QColor::operator=(const QColor &color) noexcept
-{
-    cspec = color.cspec;
-    ct.argb = color.ct.argb;
-    return *this;
 }
 #endif
 
