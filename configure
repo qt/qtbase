@@ -446,8 +446,7 @@ while [ "$#" -gt 0 ]; do
     -android-ndk| \
     -android-ndk-platform| \
     -android-ndk-host| \
-    -android-arch| \
-    -android-toolchain-version)
+    -android-arch)
         VAR=`echo $1 | sed 's,^-\(.*\),\1,'`
         shift
         VAL="$1"
