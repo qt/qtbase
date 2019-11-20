@@ -112,27 +112,6 @@ socklen_t sctpInitMsgSize = sizeof(sctpInitMsg);
 "# FIXME: use: unmapped library: network
 )
 
-# openssl11
-qt_config_compile_test(openssl11
-    LABEL "OpenSSL 1.1 support"
-    LIBRARIES
-        OpenSSL::SSL
-    CODE
-"
-#include <openssl/opensslv.h>
-#if !defined(OPENSSL_VERSION_NUMBER) || OPENSSL_VERSION_NUMBER-0 < 0x10100000L
-#  error OpenSSL >= 1.1 is required
-#endif
-int main(int argc, char **argv)
-{
-    (void)argc; (void)argv;
-    /* BEGIN TEST: */
-
-    /* END TEST: */
-    return 0;
-}
-")
-
 # dtls
 qt_config_compile_test(dtls
     LABEL "DTLS support in OpenSSL"
@@ -279,7 +258,7 @@ qt_feature("ocsp" PUBLIC
 )
 qt_feature("opensslv11" PUBLIC
     LABEL "OpenSSL 1.1"
-    CONDITION QT_FEATURE_openssl AND ( OPENSSL_VERSION VERSION_GREATER_EQUAL "1.1.0" )
+    CONDITION QT_FEATURE_openssl
 )
 qt_feature("sctp" PUBLIC
     LABEL "SCTP"

@@ -1,5 +1,20 @@
 # Generated from network.pro.
 
+# special case begin
+# Temporary fix for OpenSSL feature detection until we can provide a
+# proper implementation of additional compile tests for library dependencies
+# in configure.json
+
+if (UNIX OR ANDROID)
+find_package(OpenSSL)
+if (NOT OPENSSL_FOUND OR NOT OPENSSL_VERSION VERSION_GREATER_EQUAL "1.1.0")
+    set(QT_FEATURE_openssl_runtime OFF CACHE BOOL "" FORCE)
+    set(QT_FEATURE_openssl_linked OFF CACHE BOOL "" FORCE)
+    set(QT_FEATURE_openssl OFF CACHE BOOL "" FORCE)
+endif()
+endif()
+# special case end
+
 #####################################################################
 ## Network Module:
 #####################################################################
@@ -378,6 +393,8 @@ qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl
         ssl/qsslkey_openssl.cpp
         ssl/qsslsocket_openssl.cpp ssl/qsslsocket_openssl_p.h
         ssl/qsslsocket_openssl_symbols.cpp ssl/qsslsocket_openssl_symbols_p.h
+    DEFINES
+        OPENSSL_API_COMPAT=0x10100000L
 )
 
 qt_extend_target(Network CONDITION QT_FEATURE_dtls AND QT_FEATURE_openssl AND QT_FEATURE_ssl
@@ -388,22 +405,6 @@ qt_extend_target(Network CONDITION QT_FEATURE_dtls AND QT_FEATURE_openssl AND QT
 qt_extend_target(Network CONDITION QT_FEATURE_ocsp AND QT_FEATURE_openssl AND QT_FEATURE_ssl
     SOURCES
         ssl/qocsp_p.h
-)
-
-qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_opensslv11 AND QT_FEATURE_ssl
-    SOURCES
-        ssl/qsslcontext_openssl11.cpp
-        ssl/qsslsocket_openssl11.cpp
-        ssl/qsslsocket_openssl11_symbols_p.h
-    DEFINES
-        OPENSSL_API_COMPAT=0x10100000L
-)
-
-qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_ssl AND NOT QT_FEATURE_opensslv11
-    SOURCES
-        ssl/qsslcontext_opensslpre11.cpp
-        ssl/qsslsocket_opensslpre11.cpp
-        ssl/qsslsocket_opensslpre11_symbols_p.h
 )
 
 qt_extend_target(Network CONDITION APPLE AND QT_FEATURE_openssl AND QT_FEATURE_ssl

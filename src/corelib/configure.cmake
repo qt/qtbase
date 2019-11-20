@@ -682,6 +682,12 @@ qt_feature("sharedmemory" PUBLIC
     CONDITION ( ANDROID OR WIN32 OR ( NOT VXWORKS AND ( TEST_ipc_sysv OR TEST_ipc_posix ) ) )
 )
 qt_feature_definition("sharedmemory" "QT_NO_SHAREDMEMORY" NEGATE VALUE "1")
+qt_feature("shortcut" PUBLIC
+    SECTION "Kernel"
+    LABEL "QShortcut"
+    PURPOSE "Provides keyboard accelerators and shortcuts."
+)
+qt_feature_definition("shortcut" "QT_NO_SHORTCUT" NEGATE VALUE "1")
 qt_feature("systemsemaphore" PUBLIC
     SECTION "Kernel"
     LABEL "QSystemSemaphore"
@@ -933,4 +939,9 @@ qt_feature("cborstream" PUBLIC
     SECTION "Utilities"
     LABEL "CBOR stream I/O"
     PURPOSE "Provides support for reading and writing the CBOR binary format.  Note that this is required for plugin loading. Qt GUI needs QPA plugins for basic operation."
+)
+qt_feature("binaryjson" PUBLIC
+    SECTION "Utilities"
+    LABEL "Binary JSON (deprecated)"
+    PURPOSE "Provides support for the deprecated binary JSON format."
 )

@@ -4,7 +4,7 @@
 ## EglFSDeviceIntegration Module:
 #####################################################################
 
-add_qt_module(EglFSDeviceIntegration
+qt_add_module(EglFSDeviceIntegration
     INTERNAL_MODULE
     SOURCES
         api/qeglfsdeviceintegration.cpp api/qeglfsdeviceintegration_p.h
@@ -43,43 +43,42 @@ add_qt_module(EglFSDeviceIntegration
 
 #### Keys ignored in scope 2:.:.:eglfsdeviceintegration.pro:<TRUE>:
 # MODULE = "eglfsdeviceintegration"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
 
-extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::InputSupportPrivate
+qt_extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::InputSupportPrivate
     LIBRARIES
         Qt::InputSupportPrivate
     PUBLIC_LIBRARIES
         Qt::InputSupport
 )
 
-extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::PlatformCompositorSupportPrivate
+qt_extend_target(EglFSDeviceIntegration CONDITION TARGET Qt::PlatformCompositorSupportPrivate
     LIBRARIES
         Qt::PlatformCompositorSupportPrivate
     PUBLIC_LIBRARIES
         Qt::PlatformCompositorSupport
 )
 
-extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY
+qt_extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_PLATFORM_HOOKS_SOURCES_ISEMPTY
     DEFINES
         EGLFS_PLATFORM_HOOKS
 )
 
-extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY
+qt_extend_target(EglFSDeviceIntegration CONDITION NOT EGLFS_DEVICE_INTEGRATION_ISEMPTY
     DEFINES
         EGLFS_PREFERRED_PLUGIN=
 )
 
-if(NOT DEFINES___contains___QT_NO_CURSOR)
+if(QT_FEATURE_cursor)
     # Resources:
     set(cursor_resource_files
         "cursor-atlas.png"
         "cursor.json"
     )
 
-    add_qt_resource(EglFSDeviceIntegration "cursor"
+    qt_add_resource(EglFSDeviceIntegration "cursor"
         PREFIX
             "/"
         FILES
@@ -87,7 +86,7 @@ if(NOT DEFINES___contains___QT_NO_CURSOR)
     )
 endif()
 
-extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
+qt_extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
     SOURCES
         api/qeglfscontext.cpp api/qeglfscontext_p.h
         api/qeglfscursor.cpp api/qeglfscursor_p.h
@@ -96,7 +95,7 @@ extend_target(EglFSDeviceIntegration CONDITION QT_FEATURE_opengl
 ## qeglfs Plugin:
 #####################################################################
 
-add_qt_plugin(qeglfs
+qt_add_plugin(qeglfs
     TYPE platforms
     CLASS_NAME QEglFSIntegrationPlugin
     SOURCES
@@ -113,7 +112,6 @@ add_qt_plugin(qeglfs
 
 #### Keys ignored in scope 11:.:.:eglfs-plugin.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/eglfs.json"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

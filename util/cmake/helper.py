@@ -356,6 +356,12 @@ _qt_library_map = [
         "Qt6",
         "Qt::LinuxOfonoSupport",
         extra=["COMPONENTS", "LinuxOfonoSupport"],
+    ),
+    LibraryMapping(
+        "linuxofono_support_private",
+        "Qt6",
+        "Qt::LinuxOfonoSupportPrivate",
+        extra=["COMPONENTS", "LinuxOfonoSupportPrivate"],
     )
     # qtzlib: No longer supported.
 ]

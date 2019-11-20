@@ -18,7 +18,7 @@ add_subdirectory(qhash)
 add_subdirectory(qhashfunctions)
 # add_subdirectory(qline) # special case not ported
 add_subdirectory(qlinkedlist)
-add_subdirectory(qlist)
+# add_subdirectory(qlist) # special case no longer exists
 # add_subdirectory(qlist_strictiterators) # special case not ported
 add_subdirectory(qmakearray)
 add_subdirectory(qmap)

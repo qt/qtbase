@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_test(tst_qlockfile
-    GUI
     SOURCES
         tst_qlockfile.cpp
     LIBRARIES

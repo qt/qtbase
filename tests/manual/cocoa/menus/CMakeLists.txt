@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_manual_test(menus
-    GUI
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES

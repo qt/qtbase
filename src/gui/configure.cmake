@@ -918,16 +918,10 @@ qt_feature("draganddrop" PUBLIC
     CONDITION QT_FEATURE_imageformat_xpm
 )
 qt_feature_definition("draganddrop" "QT_NO_DRAGANDDROP" NEGATE VALUE "1")
-qt_feature("shortcut" PUBLIC
-    SECTION "Kernel"
-    LABEL "QShortcut"
-    PURPOSE "Provides keyboard accelerators and shortcuts."
-)
-qt_feature_definition("shortcut" "QT_NO_SHORTCUT" NEGATE VALUE "1")
 qt_feature("action" PUBLIC
     SECTION "Kernel"
-    LABEL "QAction"
-    PURPOSE "Provides widget actions."
+    LABEL "Q(Gui)Action(Group)"
+    PURPOSE "Provides abstract user interface actions."
 )
 qt_feature_definition("action" "QT_NO_ACTION" NEGATE VALUE "1")
 qt_feature("cursor" PUBLIC

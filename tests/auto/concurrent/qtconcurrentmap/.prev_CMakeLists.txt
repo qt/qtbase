@@ -9,7 +9,6 @@ add_qt_test(tst_qtconcurrentmap
         tst_qtconcurrentmap.cpp
     DEFINES
         -QT_NO_LINKED_LIST
-        QT_STRICT_ITERATORS
     PUBLIC_LIBRARIES
         Qt::Concurrent
 )

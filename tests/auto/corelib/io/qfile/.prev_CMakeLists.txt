@@ -18,7 +18,6 @@ list(APPEND test_data "forRenaming.txt")
 list(APPEND test_data "resources/file1.ext1")
 
 add_qt_test(tst_qfile
-    GUI
     SOURCES
         ../../../../shared/emulationdetector.h
         tst_qfile.cpp

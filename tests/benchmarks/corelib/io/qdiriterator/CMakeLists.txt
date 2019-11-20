@@ -11,3 +11,6 @@ add_qt_benchmark(tst_bench_qdiriterator
     PUBLIC_LIBRARIES
         Qt::Test
 )
+
+## Scopes:
+#####################################################################

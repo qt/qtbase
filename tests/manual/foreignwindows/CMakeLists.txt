@@ -15,6 +15,9 @@ add_qt_manual_test(foreignwindows
         QT_DIAG_LIB
     INCLUDE_DIRECTORIES
         ../diaglib
+    LIBRARIES
+        Qt::CorePrivate
+        Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
         Qt::Widgets

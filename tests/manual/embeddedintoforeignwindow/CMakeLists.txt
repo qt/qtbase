@@ -17,6 +17,7 @@ add_qt_manual_test(embeddedintoforeignwindow
     INCLUDE_DIRECTORIES
         ../diaglib
     LIBRARIES
+        Qt::CorePrivate
         Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui

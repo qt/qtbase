@@ -94,9 +94,6 @@ qt_add_module(XcbQpa
         XKB::XKB
 )
 
-#### Keys ignored in scope 2:.:.:xcb_qpa_lib.pro:<TRUE>:
-# _LOADED = "qt_build_paths" "qt_module"
-
 ## Scopes:
 #####################################################################
 
@@ -211,7 +208,6 @@ qt_add_plugin(qxcb
 
 #### Keys ignored in scope 19:.:.:xcb-plugin.pro:<TRUE>:
 # OTHER_FILES = "xcb.json" "README"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

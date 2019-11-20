@@ -1,3 +1,4 @@
+
 # Generated from qdbusabstractadaptor.pro.
 
 add_subdirectory(qmyserver)
@@ -10,3 +11,4 @@ add_qt_test(tst_qdbusabstractadaptor
         Qt::CorePrivate
         Qt::DBus
 )
+

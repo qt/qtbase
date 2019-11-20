@@ -9,7 +9,6 @@ add_qt_test(tst_qfuture
         tst_qfuture.cpp
     DEFINES
         -QT_NO_JAVA_STYLE_ITERATORS
-        QT_STRICT_ITERATORS
     LIBRARIES
         Qt::CorePrivate
 )

@@ -51,9 +51,10 @@ qt_extend_target(Bootstrap
         ../../corelib/kernel/qsystemsemaphore.cpp
         ../../corelib/kernel/qvariant.cpp
         ../../corelib/plugin/quuid.cpp
+        ../../corelib/serialization/qcborvalue.cpp
         ../../corelib/serialization/qdatastream.cpp
-        ../../corelib/serialization/qjson.cpp
         ../../corelib/serialization/qjsonarray.cpp
+        ../../corelib/serialization/qjsoncbor.cpp
         ../../corelib/serialization/qjsondocument.cpp
         ../../corelib/serialization/qjsonobject.cpp
         ../../corelib/serialization/qjsonparser.cpp
@@ -85,7 +86,6 @@ qt_extend_target(Bootstrap
         ../../corelib/tools/qcryptographichash.cpp
         ../../corelib/tools/qhash.cpp
         ../../corelib/tools/qline.cpp
-        ../../corelib/tools/qlist.cpp
         ../../corelib/tools/qmap.cpp
         ../../corelib/tools/qpoint.cpp
         ../../corelib/tools/qrect.cpp

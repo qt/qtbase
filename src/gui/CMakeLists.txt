@@ -87,7 +87,6 @@ qt_add_module(Gui
         kernel/qinputmethod.cpp kernel/qinputmethod.h kernel/qinputmethod_p.h
         kernel/qinternalmimedata.cpp kernel/qinternalmimedata_p.h
         kernel/qkeymapper.cpp kernel/qkeymapper_p.h
-        kernel/qkeysequence.cpp kernel/qkeysequence.h kernel/qkeysequence_p.h
         kernel/qoffscreensurface.cpp kernel/qoffscreensurface.h
         kernel/qpaintdevicewindow.cpp kernel/qpaintdevicewindow.h kernel/qpaintdevicewindow_p.h
         kernel/qpalette.cpp kernel/qpalette.h
@@ -119,7 +118,6 @@ qt_add_module(Gui
         kernel/qrasterwindow.cpp kernel/qrasterwindow.h
         kernel/qscreen.cpp kernel/qscreen.h kernel/qscreen_p.h
         kernel/qsessionmanager.cpp kernel/qsessionmanager.h kernel/qsessionmanager_p.h
-        kernel/qshortcutmap.cpp kernel/qshortcutmap_p.h
         kernel/qstylehints.cpp kernel/qstylehints.h
         kernel/qsurface.cpp kernel/qsurface.h
         kernel/qsurfaceformat.cpp kernel/qsurfaceformat.h
@@ -478,6 +476,12 @@ qt_extend_target(Gui CONDITION APPLE AND QT_FEATURE_accessibility
         ${FWFoundation}
 )
 
+qt_extend_target(Gui CONDITION QT_FEATURE_action
+    SOURCES
+        kernel/qguiaction.cpp kernel/qguiaction.h kernel/qguiaction_p.h
+        kernel/qguiactiongroup.cpp kernel/qguiactiongroup.h kernel/qguiactiongroup_p.h
+)
+
 qt_extend_target(Gui CONDITION QT_FEATURE_draganddrop
     SOURCES
         kernel/qdnd.cpp kernel/qdnd_p.h
@@ -485,6 +489,13 @@ qt_extend_target(Gui CONDITION QT_FEATURE_draganddrop
         kernel/qplatformdrag.cpp kernel/qplatformdrag.h
         kernel/qshapedpixmapdndwindow.cpp kernel/qshapedpixmapdndwindow_p.h
         kernel/qsimpledrag.cpp kernel/qsimpledrag_p.h
+)
+
+qt_extend_target(Gui CONDITION QT_FEATURE_shortcut
+    SOURCES
+        kernel/qguishortcut.cpp kernel/qguishortcut.h kernel/qguishortcut_p.h
+        kernel/qkeysequence.cpp kernel/qkeysequence.h kernel/qkeysequence_p.h
+        kernel/qshortcutmap.cpp kernel/qshortcutmap_p.h
 )
 
 qt_extend_target(Gui CONDITION QT_FEATURE_movie
@@ -746,10 +757,10 @@ endif()
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 79:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 81:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 80:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 82:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM

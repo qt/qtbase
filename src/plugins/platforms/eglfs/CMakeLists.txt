@@ -35,7 +35,6 @@ qt_add_module(EglFSDeviceIntegration
 
 #### Keys ignored in scope 2:.:.:eglfsdeviceintegration.pro:<TRUE>:
 # MODULE = "eglfsdeviceintegration"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################
@@ -100,7 +99,6 @@ qt_add_plugin(qeglfs
 
 #### Keys ignored in scope 11:.:.:eglfs-plugin.pro:<TRUE>:
 # OTHER_FILES = "$$PWD/eglfs.json"
-# _LOADED = "qt_plugin"
 
 ## Scopes:
 #####################################################################

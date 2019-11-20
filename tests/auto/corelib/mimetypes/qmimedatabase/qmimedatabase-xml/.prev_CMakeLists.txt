@@ -17,7 +17,7 @@ add_qt_test(tst_qmimedatabase-xml
 )
 
 # Resources:
-set_source_files_properties("/Volumes/T3/Dev/qt/qt5_cmake/qtbase/src/corelib/mimetypes/mime/packages/freedesktop.org.xml"
+set_source_files_properties("/devel/qt5/qtbase/src/corelib/mimetypes/mime/packages/freedesktop.org.xml"
     PROPERTIES QT_RESOURCE_ALIAS "freedesktop.org.xml"
 )
 set(mimetypes_resource_files
@@ -28,7 +28,7 @@ add_qt_resource(tst_qmimedatabase-xml "mimetypes"
     PREFIX
         "/qt-project.org/qmime/packages"
     BASE
-        "/Volumes/T3/Dev/qt/qt5_cmake/qtbase/src/corelib/mimetypes"
+        "/devel/qt5/qtbase/src/corelib/mimetypes"
     FILES
         ${mimetypes_resource_files}
 )

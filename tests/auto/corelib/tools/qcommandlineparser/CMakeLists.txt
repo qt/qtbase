@@ -1,3 +1,11 @@
-add_subdirectory(testhelper)
+# Generated from qcommandlineparser.pro.
 
-add_qt_test(tst_qcommandlineparser SOURCES tst_qcommandlineparser.cpp)
+#####################################################################
+## tst_qcommandlineparser Test:
+#####################################################################
+
+add_qt_test(tst_qcommandlineparser
+    SOURCES
+        tst_qcommandlineparser.cpp
+)
+add_subdirectory(testhelper)

@@ -5,6 +5,11 @@ add_subdirectory(eventdispatchers)
 add_subdirectory(devicediscovery)
 add_subdirectory(fbconvenience)
 add_subdirectory(themes)
+# special case begin
+if (QT_FEATURE_dbus)
+    add_subdirectory(linuxofono)
+endif()
+# special case end
 if(APPLE OR QT_FEATURE_freetype OR WIN32)
     add_subdirectory(fontdatabases)
 endif()

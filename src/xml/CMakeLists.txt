@@ -6,7 +6,8 @@
 
 qt_add_module(Xml
     SOURCES
-        dom/qdom.cpp dom/qdom.h
+        dom/qdom.cpp dom/qdom.h dom/qdom_p.h
+        dom/qdomhelpers.cpp dom/qdomhelpers_p.h
         qtxmlglobal.h
         sax/qxml.cpp sax/qxml.h sax/qxml_p.h
     DEFINES

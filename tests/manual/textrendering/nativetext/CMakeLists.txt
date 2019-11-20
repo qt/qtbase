@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_manual_test(nativetext
-    GUI
     SOURCES
         main.cpp
     LIBRARIES

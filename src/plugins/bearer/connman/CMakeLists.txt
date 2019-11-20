@@ -9,15 +9,16 @@ qt_add_plugin(qconnmanbearer
     DEFAULT_IF False # special case QTBUG-78164
     CLASS_NAME QConnmanEnginePlugin
     SOURCES
-        ../linux_common/qofonoservice_linux.cpp ../linux_common/qofonoservice_linux_p.h
         main.cpp
         qconnmanengine.cpp qconnmanengine.h
         qconnmanservice_linux.cpp qconnmanservice_linux_p.h
     LIBRARIES
+        Qt::LinuxOfonoSupportPrivate
         Qt::NetworkPrivate
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::DBus
+        Qt::LinuxOfonoSupport
         Qt::Network
 )
 

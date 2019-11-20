@@ -28,7 +28,6 @@ qt_add_module(InputSupport
 
 #### Keys ignored in scope 3:.:.:input-support.pro:<TRUE>:
 # MODULE = "input_support"
-# _LOADED = "qt_module"
 
 ## Scopes:
 #####################################################################

@@ -9,8 +9,6 @@ qt_add_module(Widgets
     PLUGIN_TYPES styles
     SOURCES
         itemviews/qfileiconprovider.cpp itemviews/qfileiconprovider.h itemviews/qfileiconprovider_p.h
-        kernel/qaction.cpp kernel/qaction.h kernel/qaction_p.h
-        kernel/qactiongroup.cpp kernel/qactiongroup.h
         kernel/qapplication.cpp kernel/qapplication.h kernel/qapplication_p.h
         kernel/qboxlayout.cpp kernel/qboxlayout.h
         kernel/qdesktopwidget.cpp kernel/qdesktopwidget.h kernel/qdesktopwidget_p.h
@@ -21,14 +19,12 @@ qt_add_module(Widgets
         kernel/qlayout.cpp kernel/qlayout.h kernel/qlayout_p.h
         kernel/qlayoutengine.cpp kernel/qlayoutengine_p.h
         kernel/qlayoutitem.cpp kernel/qlayoutitem.h
-        kernel/qshortcut.cpp kernel/qshortcut.h
         kernel/qsizepolicy.cpp kernel/qsizepolicy.h
         kernel/qstackedlayout.cpp kernel/qstackedlayout.h
         kernel/qstandardgestures.cpp kernel/qstandardgestures_p.h
         kernel/qtestsupport_widgets.cpp kernel/qtestsupport_widgets.h
         kernel/qtwidgetsglobal.h kernel/qtwidgetsglobal_p.h
         kernel/qwidget.cpp kernel/qwidget.h kernel/qwidget_p.h
-        kernel/qwidgetaction.cpp kernel/qwidgetaction.h kernel/qwidgetaction_p.h
         kernel/qwidgetrepaintmanager.cpp kernel/qwidgetrepaintmanager_p.h
         kernel/qwidgetsvariant.cpp
         kernel/qwidgetwindow.cpp kernel/qwidgetwindow_p.h
@@ -323,6 +319,13 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_graphicseffect
         effects/qpixmapfilter.cpp effects/qpixmapfilter_p.h
 )
 
+qt_extend_target(Widgets CONDITION QT_FEATURE_action
+    SOURCES
+        kernel/qaction.cpp kernel/qaction.h kernel/qaction_p.h
+        kernel/qactiongroup.cpp kernel/qactiongroup.h
+        kernel/qwidgetaction.cpp kernel/qwidgetaction.h kernel/qwidgetaction_p.h
+)
+
 qt_extend_target(Widgets CONDITION QT_FEATURE_opengl
     SOURCES
         kernel/qopenglwidget.cpp kernel/qopenglwidget.h
@@ -331,6 +334,11 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_opengl
 qt_extend_target(Widgets CONDITION QT_FEATURE_formlayout
     SOURCES
         kernel/qformlayout.cpp kernel/qformlayout.h
+)
+
+qt_extend_target(Widgets CONDITION QT_FEATURE_shortcut
+    SOURCES
+        kernel/qshortcut.cpp kernel/qshortcut.h
 )
 
 qt_extend_target(Widgets CONDITION QT_FEATURE_tooltip

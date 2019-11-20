@@ -5,7 +5,6 @@
 #####################################################################
 
 add_qt_manual_test(touch
-    GUI
     SOURCES
         main.cpp
     PUBLIC_LIBRARIES
