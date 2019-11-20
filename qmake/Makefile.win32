@@ -13,7 +13,7 @@ QMKSRC = $(SOURCE_PATH)\qmake
 !if "$(QMAKESPEC)" == "win32-icc"
 CXX               = icl
 LINKER            = xilink
-CFLAGS_EXTRA      = /Zc:forScope /Qstd=c++11 /O3
+CFLAGS_EXTRA      = /Zc:forScope /Qstd=c++11
 !elseif "$(QMAKESPEC)" == "win32-clang-msvc"
 CXX               = clang-cl
 LINKER            = lld-link

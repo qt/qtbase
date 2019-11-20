@@ -79,8 +79,11 @@ int main(int argc, char *argv[])
 
 //! [0]
     QFileSystemModel *model = new QFileSystemModel;
-    QModelIndex parentIndex = model->index(QDir::currentPath());
-    int numRows = model->rowCount(parentIndex);
+    connect(model, &QFileSystemModel::directoryLoaded, [model](const QString &directory) {
+        QModelIndex parentIndex = model->index(directory);
+        int numRows = model->rowCount(parentIndex);
+    });
+    model->setRootPath(QDir::currentPath);
 //! [0]
 
 //! [1]

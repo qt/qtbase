@@ -846,6 +846,7 @@ QWheelEvent::QWheelEvent(const QPointF &pos, const QPointF& globalPos,
 /*!
     Constructs a wheel event object.
 
+    \since 5.12
     The \a pos provides the location of the mouse cursor
     within the window. The position in global coordinates is specified
     by \a globalPos.

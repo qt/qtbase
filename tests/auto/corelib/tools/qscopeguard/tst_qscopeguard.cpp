@@ -67,7 +67,7 @@ void tst_QScopedGuard::exceptions()
     bool caught = false;
     QT_TRY
     {
-        auto cleanup = qScopeGuard([&caught] { s_globalState++; });
+        auto cleanup = qScopeGuard([] { s_globalState++; });
         QT_THROW(std::bad_alloc()); //if Qt compiled without exceptions this is noop
         s_globalState = 100;
     }

@@ -465,14 +465,19 @@
     Although this does not show a normal way of using a model, it demonstrates
     the conventions used by models when dealing with model indexes.
 
+    QFileSystemModel loading is asynchronous to minimize system resource use.
+    We have to take that into account when dealing with this model.
+
     We construct a file system model in the following way:
 
     \snippet simplemodel-use/main.cpp 0
 
-    In this case, we set up a default QFileSystemModel, obtain a parent index
-    using a specific implementation of \l{QFileSystemModel::}{index()}
-    provided by that model, and we count the number of rows in the model using
-    the \l{QFileSystemModel::}{rowCount()} function.
+    In this case, we start by setting up a default QFileSystemModel. We connect
+    it to a lambda, in which we will obtain a parent index using a specific
+    implementation of \l{QFileSystemModel::}{index()} provided by that model.
+    In the lambda, we count the number of rows in the model using the
+     \l{QFileSystemModel::}{rowCount()} function. Finally, we set the root path
+    of the QFileSystemModel so it starts loading data and triggers the lambda.
 
     For simplicity, we are only interested in the items in the first column
     of the model. We examine each row in turn, obtaining a model index for
