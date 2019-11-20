@@ -384,7 +384,7 @@ _library_map = [
     LibraryMapping("gnu_iconv", None, None),
     LibraryMapping("gtk3", "GTK3", "PkgConfig::GTK3"),
     LibraryMapping("gssapi", "GSSAPI", "GSSAPI::GSSAPI"),
-    LibraryMapping("harfbuzz", "harfbuzz", "harfbuzz::harfbuzz"),
+    LibraryMapping("harfbuzz", "WrapHarfbuzz", "WrapHarfbuzz::WrapHarfbuzz"),
     LibraryMapping("host_dbus", None, None),
     LibraryMapping(
         "icu", "ICU", "ICU::i18n ICU::uc ICU::data", extra=["COMPONENTS", "i18n", "uc", "data"]
