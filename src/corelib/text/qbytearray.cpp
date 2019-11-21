@@ -1149,12 +1149,10 @@ QByteArray &QByteArray::operator=(const QByteArray & other) noexcept
 
 QByteArray &QByteArray::operator=(const char *str)
 {
-    if (!str || !*str) {
-        if (!str) {
-            d.clear();
-        } else {
-            d = QByteArrayData(Data::allocate(0), 0);
-        }
+    if (!str) {
+        d.clear();
+    } else if (!*str) {
+        d = DataPointer::fromRawData(&_empty, 0);
     } else {
         const int len = int(strlen(str));
         const uint fullLen = uint(len) + 1;
@@ -1612,7 +1610,7 @@ QByteArray::QByteArray(const char *data, int size)
 QByteArray::QByteArray(int size, char ch)
 {
     if (size <= 0) {
-        d = DataPointer(Data::allocate(0), 0);
+        d = DataPointer::fromRawData(&_empty, 0);
     } else {
         d = DataPointer(Data::allocate(uint(size) + 1u), size);
         memset(d.data(), ch, size);
@@ -2885,9 +2883,7 @@ QByteArray QByteArray::mid(int pos, int len) const
         return QByteArray();
     case QContainerImplHelper::Empty:
     {
-        auto alloc = Data::allocate(0);
-        QByteArray::DataPointer empty = { alloc.first, alloc.second, 0 };
-        return QByteArray(empty);
+        return QByteArray(DataPointer::fromRawData(&_empty, 0));
     }
     case QContainerImplHelper::Full:
         return *this;

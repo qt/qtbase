@@ -2130,7 +2130,7 @@ QString::QString(const QChar *unicode, int size)
                 ++size;
         }
         if (!size) {
-            d = DataPointer(Data::allocate(0), 0);
+            d = DataPointer::fromRawData(&_empty, 0);
         } else {
             d = DataPointer(Data::allocate(size + 1), size);
             memcpy(d.data(), unicode, size * sizeof(QChar));
@@ -2148,7 +2148,7 @@ QString::QString(const QChar *unicode, int size)
 QString::QString(int size, QChar ch)
 {
     if (size <= 0) {
-        d = DataPointer(Data::allocate(0), 0);
+        d = DataPointer::fromRawData(&_empty, 0);
     } else {
         d = DataPointer(Data::allocate(size + 1), size);
         d.data()[size] = '\0';
@@ -4548,11 +4548,7 @@ QString QString::mid(int position, int n) const
     case QContainerImplHelper::Null:
         return QString();
     case QContainerImplHelper::Empty:
-    {
-        QPair<Data *, char16_t *> pair = Data::allocate(0);
-        DataPointer empty = { pair.first, pair.second, 0 };
-        return QString(std::move(empty));
-    }
+        return QString(DataPointer::fromRawData(&_empty, 0));
     case QContainerImplHelper::Full:
         return *this;
     case QContainerImplHelper::Subset:
@@ -5010,7 +5006,7 @@ QString::DataPointer QString::fromLatin1_helper(const char *str, int size)
     if (!str) {
         // nothing to do
     } else if (size == 0 || (!*str && size < 0)) {
-        d = DataPointer(Data::allocate(0), 0);
+        d = DataPointer::fromRawData(&_empty, 0);
     } else {
         if (size < 0)
             size = qstrlen(str);
@@ -5065,11 +5061,10 @@ QString QString::fromLocal8Bit_helper(const char *str, int size)
 {
     if (!str)
         return QString();
-    if (size == 0 || (!*str && size < 0)) {
-        QPair<Data *, char16_t *> pair = Data::allocate(0);
-        QString::DataPointer empty = { pair.first, pair.second, 0 };
-        return QString(std::move(empty));
-    }
+    if (size < 0)
+        size = qstrlen(str);
+    if (size == 0)
+        return QString(DataPointer::fromRawData(&_empty, 0));
     QStringDecoder toUtf16(QStringDecoder::System, QStringDecoder::Flag::Stateless);
     return toUtf16(str, size);
 }
