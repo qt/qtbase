@@ -45,6 +45,7 @@
 #include <QtCore/QMutex>
 
 #include <screen/screen.h>
+#include <sys/siginfo.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -73,6 +74,7 @@ private:
 
     int m_channelId;
     int m_connectionId;
+    struct sigevent m_screenEvent;
     screen_context_t m_screenContext;
     bool m_emitNeededOnNextScreenPulse = true;
     int m_screenPulsesSinceLastArmPulse = 0;
