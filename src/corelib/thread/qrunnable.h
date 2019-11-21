@@ -41,6 +41,7 @@
 #define QRUNNABLE_H
 
 #include <QtCore/qglobal.h>
+#include <functional>
 
 QT_BEGIN_NAMESPACE
 
@@ -59,6 +60,7 @@ public:
 
     QRunnable() : ref(0) { }
     virtual ~QRunnable();
+    static QRunnable *create(std::function<void()> fun);
 
     bool autoDelete() const { return ref != -1; }
     void setAutoDelete(bool _autoDelete) { ref = _autoDelete ? 0 : -1; }
