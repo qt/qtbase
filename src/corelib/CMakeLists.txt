@@ -243,7 +243,7 @@ qt_add_module(Core
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
     INCLUDE_DIRECTORIES
-        ${CMAKE_CURRENT_BINARY_DIR}/global # special case
+        "${CMAKE_CURRENT_BINARY_DIR}/global" # special case
         ../3rdparty/tinycbor/src
         # special case: remove ../3rdparty/...
     PRECOMPILED_HEADER

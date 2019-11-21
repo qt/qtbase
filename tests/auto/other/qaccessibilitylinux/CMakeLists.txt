@@ -1,6 +1,7 @@
 # Generated from qaccessibilitylinux.pro.
 # special case begin
-if (NOT QT_FEATURE_accessibility OR NOT TARGET Qt::LinuxAccessibilitySupportPrivate)
+if (NOT QT_FEATURE_accessibility OR NOT TARGET Qt::LinuxAccessibilitySupportPrivate
+        OR (QT_BUILD_STANDALONE_TESTS AND QT_WILL_INSTALL))
     return()
 endif()
 # special case end

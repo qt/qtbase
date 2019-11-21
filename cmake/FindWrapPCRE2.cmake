@@ -1,4 +1,7 @@
-include_guard(GLOBAL) # pragma once equivalent
+if(TARGET WrapPCRE2::WrapPCRE2)
+    set(WrapPCRE2_FOUND TRUE)
+    return()
+endif()
 
 find_package(PCRE2 CONFIG QUIET)
 

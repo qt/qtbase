@@ -203,6 +203,7 @@ qt_internal_export_modern_cmake_config_targets_file(TARGETS ${__export_targets}
 qt_copy_or_install(FILES
                    cmake/ModuleDescription.json.in
                    cmake/QtBuild.cmake
+                   cmake/QtBuildInformation.cmake
                    cmake/QtCompilerFlags.cmake
                    cmake/QtCompilerOptimization.cmake
                    cmake/QtFeature.cmake
@@ -221,13 +222,8 @@ qt_copy_or_install(FILES
                    cmake/QtPluginDependencies.cmake.in
     DESTINATION "${__GlobalConfig_install_dir}"
 )
-if(QT_WILL_INSTALL)
-    # NOTE: QtFeature.cmake is included by the Qt module config files unconditionally
-    # In a prefix build, QtFeature.cmake is not copied to the build dir by default
-    # Thus do it explicitly in that case so we can use the module config files in the examples
-    file(COPY cmake/QtFeature.cmake DESTINATION "${__GlobalConfig_install_dir}")
-endif()
 
+file(COPY cmake/QtFeature.cmake DESTINATION "${__GlobalConfig_build_dir}")
 
 # TODO: Check whether this is the right place to install these
 qt_copy_or_install(DIRECTORY cmake/3rdparty DESTINATION "${__GlobalConfig_install_dir}")

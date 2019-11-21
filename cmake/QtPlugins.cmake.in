@@ -1,3 +1,5 @@
+include_guard(DIRECTORY)
+
 @QT_MODULE_PLUGIN_INCLUDES@
 
 if(NOT @BUILD_SHARED_LIBS@)
@@ -16,6 +18,18 @@ if(NOT @BUILD_SHARED_LIBS@)
     set(_default_plugins_are_enabled_wrapped "$<BOOL:${_default_plugins_are_enabled}>")
     set(_manual_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_PLUGINS>>")
     set(_no_plugins_genex "$<GENEX_EVAL:$<TARGET_PROPERTY:QT_NO_PLUGINS>>")
+
+    # In super builds the rules below pollute the dependency rule for the
+    # plugin target when it's being build, causing cyclic dependencies.
+    # to overcome this, we check if the current target where this rule evaluates
+    # has a QT_BUILD_PROJECT_NAME equal to the current PROJECT_NAME.
+    # If so we disable the injection of plugin link rules to avoid cyclic
+    # dependencies.
+    if (@QT_SUPERBUILD@)
+        set(_build_allow_plugin_link_rules_genex "$<NOT:$<STREQUAL:$<TARGET_PROPERTY:QT_BUILD_PROJECT_NAME>,@PROJECT_NAME@>>")
+    else()
+        set(_build_allow_plugin_link_rules_genex TRUE)
+    endif()
 
     # The code in here uses the properties defined in qt_import_plugins (Qt6CoreMacros.cmake)
     foreach(target @qt_plugins@)
@@ -64,13 +78,16 @@ if(NOT @BUILD_SHARED_LIBS@)
 
         # Complete condition that defines whether a static plugin is linked
         string(CONCAT _plugin_condition
-            "$<BOOL:$<OR:"
-                "${_plugin_is_whitelisted},"
-                "${_plugin_is_in_type_whitelist},"
-                "$<AND:"
-                    "${_default_plugins_are_enabled_wrapped},"
-                    "${_plugin_is_default},"
-                    "${_plugin_is_not_blacklisted}"
+            "$<BOOL:$<AND:"
+                "${_build_allow_plugin_link_rules_genex},"
+                "$<OR:"
+                    "${_plugin_is_whitelisted},"
+                    "${_plugin_is_in_type_whitelist},"
+                    "$<AND:"
+                        "${_default_plugins_are_enabled_wrapped},"
+                        "${_plugin_is_default},"
+                        "${_plugin_is_not_blacklisted}"
+                    ">"
                 ">"
             ">>"
         )

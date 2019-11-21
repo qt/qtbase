@@ -19,12 +19,12 @@ macro(qt_set_up_build_internals_paths)
     set(QT_CMAKE_MODULE_PATH "${QT_BUILD_INTERNALS_PATH}/../${QT_CMAKE_EXPORT_NAMESPACE}")
     list(PREPEND CMAKE_MODULE_PATH "${QT_CMAKE_MODULE_PATH}")
 
-    # When doing a non-prefix build, prepend the qtbase source cmake directory to CMAKE_MODULE_PATH,
+    # Prepend the qtbase source cmake directory to CMAKE_MODULE_PATH,
     # so that if a change is done in cmake/QtBuild.cmake, it gets automatically picked up when
     # building qtdeclarative, rather than having to build qtbase first (which will copy
     # QtBuild.cmake to the build dir). This is similar to qmake non-prefix builds, where the
     # source qtbase/mkspecs directory is used.
-    if(NOT QT_WILL_INSTALL)
+    if(EXISTS "${QT_SOURCE_TREE}/cmake")
         list(PREPEND CMAKE_MODULE_PATH "${QT_SOURCE_TREE}/cmake")
     endif()
 
@@ -94,6 +94,8 @@ macro(qt_build_repo_begin)
 endmacro()
 
 macro(qt_build_repo_end)
+    include(QtBuildInformation)
+
     if(NOT QT_BUILD_STANDALONE_TESTS)
         # Delayed actions on some of the Qt targets:
         include(QtPostProcess)
@@ -110,40 +112,15 @@ macro(qt_build_repo_end)
             endif()
         endif()
 
-        # Print a feature summary:
-        feature_summary(WHAT PACKAGES_FOUND
-                             REQUIRED_PACKAGES_NOT_FOUND
-                             RECOMMENDED_PACKAGES_NOT_FOUND
-                             OPTIONAL_PACKAGES_NOT_FOUND
-                             RUNTIME_PACKAGES_NOT_FOUND
-                             FATAL_ON_MISSING_REQUIRED_PACKAGES)
+        if(NOT QT_SUPERBUILD)
+            qt_print_feature_summary()
+        endif()
     endif()
 
-    qt_print_build_instructions()
+    if(NOT QT_SUPERBUILD)
+        qt_print_build_instructions()
+    endif()
 endmacro()
-
-function(qt_print_build_instructions)
-    if(NOT PROJECT_NAME STREQUAL "QtBase" OR QT_BUILD_STANDALONE_TESTS)
-        return()
-    endif()
-
-    set(build_command "cmake --build . --parallel")
-    set(install_command "cmake --install .")
-
-    message("Qt is now configured for building. Just run '${build_command}'.")
-    if(QT_WILL_INSTALL)
-        message("Once everything is built, you must run '${install_command}'.")
-        message("Qt will be installed into '${CMAKE_INSTALL_PREFIX}'")
-    else()
-        message("Once everything is built, Qt is installed.")
-        message("You should NOT run '${install_command}'")
-        message("Note that this build cannot be deployed to other machines or devices.")
-    endif()
-    message("To configure and build other modules, you can use the following convenience script:
-        ${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}/qt-cmake")
-    message("\nIf reconfiguration fails for some reason, try to remove 'CMakeCache.txt' \
-from the build directory \n")
-endfunction()
 
 macro(qt_build_repo)
     qt_build_repo_begin(${ARGN})
@@ -199,7 +176,7 @@ macro(qt_build_tests)
             qt_path_join(_qt_build_tests_install_prefix
                          ${CMAKE_INSTALL_PREFIX} ${_qt_build_tests_install_prefix})
         endif()
-        include("${_qt_build_tests_install_prefix}/${CMAKE_PROJECT_NAME}TestsConfig.cmake" OPTIONAL)
+        include("${_qt_build_tests_install_prefix}/${PROJECT_NAME}TestsConfig.cmake" OPTIONAL)
 
         # Of course we always need the test module as well.
         find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Test)
@@ -222,8 +199,8 @@ macro(qt_examples_build_begin)
     # Appending to CMAKE_PREFIX_PATH helps find the initial Qt6Config.cmake.
     # Appending to QT_EXAMPLES_CMAKE_PREFIX_PATH helps find components of Qt6, because those
     # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
-    list(APPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
-    list(APPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}")
+    list(APPEND CMAKE_PREFIX_PATH "${QT_BUILD_DIR}")
+    list(APPEND QT_EXAMPLES_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}")
     # Also make sure the CMake config files do not recreate the already-existing targets
     set(QT_NO_CREATE_TARGETS TRUE)
     set(BACKUP_CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ${CMAKE_FIND_ROOT_PATH_MODE_PACKAGE})

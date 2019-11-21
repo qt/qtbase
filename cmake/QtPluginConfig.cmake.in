@@ -1,3 +1,5 @@
+include_guard(DIRECTORY)
+
 @PACKAGE_INIT@
 
 include(CMakeFindDependencyMacro)

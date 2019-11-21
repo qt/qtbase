@@ -49,6 +49,18 @@ endif()
 
 set(QT_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
+# Find the path to mkspecs/, depending on whether we are building as part of a standard qtbuild,
+# or a module against an already installed version of qt.
+if(NOT QT_MKSPECS_DIR)
+    if("${QT_BUILD_INTERNALS_PATH}" STREQUAL "")
+      get_filename_component(QT_MKSPECS_DIR "${CMAKE_CURRENT_LIST_DIR}/../mkspecs" ABSOLUTE)
+    else()
+      # We can rely on CMAKE_INSTALL_PREFIX being set by QtBuildInternalsExtra.cmake
+      get_filename_component(QT_MKSPECS_DIR "${CMAKE_INSTALL_PREFIX}/mkspecs" ABSOLUTE)
+    endif()
+    set(QT_MKSPECS_DIR "${QT_MKSPECS_DIR}" CACHE INTERNAL "")
+endif()
+
 # the default RPATH to be used when installing, but only if it's not a system directory
 LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
 IF("${isSystemDir}" STREQUAL "-1")
@@ -239,7 +251,8 @@ else()
 endif()
 
 # Compute the values of QT_BUILD_DIR, QT_INSTALL_DIR, QT_CONFIG_BUILD_DIR, QT_CONFIG_INSTALL_DIR
-# taking into account whether the current build is a prefix build or a non-prefix build.
+# taking into account whether the current build is a prefix build or a non-prefix build,
+# and whether it is a superbuild or non-superbuild.
 #
 # These values should be prepended to file paths in commands or properties,
 # in order to correctly place generated Config files, generated Targets files,
@@ -248,17 +261,29 @@ endif()
 # The build dir variables will always be absolute paths.
 # The QT_INSTALL_DIR variable will have a relative path in a prefix build,
 # which means that it can be empty, so use qt_join_path to prevent accidental absolute paths.
-if(QT_WILL_INSTALL)
-    # In the usual prefix build case, the build dir is the current module build dir,
-    # and the install dir is the prefix, so we don't set it.
-    set(QT_BUILD_DIR "${CMAKE_BINARY_DIR}")
-    set(QT_INSTALL_DIR "")
+if(QT_SUPERBUILD)
+    # In this case, we always copy all the build products in qtbase/{bin,lib,...}
+    if(QT_WILL_INSTALL)
+        set(QT_BUILD_DIR "${QtBase_BINARY_DIR}")
+        set(QT_INSTALL_DIR "")
+    else()
+        set(QT_BUILD_DIR "${QtBase_BINARY_DIR}")
+        set(QT_INSTALL_DIR "${QtBase_BINARY_DIR}")
+    endif()
 else()
-    # When doing a non-prefix build, both the build dir and install dir are the same,
-    # pointing to the qtbase build dir.
-    set(QT_BUILD_DIR "${CMAKE_INSTALL_PREFIX}")
-    set(QT_INSTALL_DIR "${QT_BUILD_DIR}")
+    if(QT_WILL_INSTALL)
+        # In the usual prefix build case, the build dir is the current module build dir,
+        # and the install dir is the prefix, so we don't set it.
+        set(QT_BUILD_DIR "${CMAKE_BINARY_DIR}")
+        set(QT_INSTALL_DIR "")
+    else()
+        # When doing a non-prefix build, both the build dir and install dir are the same,
+        # pointing to the qtbase build dir.
+        set(QT_BUILD_DIR "${CMAKE_INSTALL_PREFIX}")
+        set(QT_INSTALL_DIR "${QT_BUILD_DIR}")
+    endif()
 endif()
+
 set(__config_path_part "${INSTALL_LIBDIR}/cmake")
 set(QT_CONFIG_BUILD_DIR "${QT_BUILD_DIR}/${__config_path_part}")
 set(QT_CONFIG_INSTALL_DIR "${QT_INSTALL_DIR}")
@@ -421,6 +446,14 @@ endfunction()
 # cmake_install.cmake file with an empty one. This means we will always replace the file on
 # every reconfiguration, but not when doing null builds.
 function(qt_remove_install_target)
+    # On superbuilds we only do this for qtbase - it will correctly remove the
+    # cmake_install.cmake at the root of the repository.
+    if(QT_SUPERBUILD)
+      if(NOT (PROJECT_NAME STREQUAL "QtBase"))
+        return()
+      endif()
+    endif()
+
     set(file_in "${CMAKE_BINARY_DIR}/.remove_cmake_install_in.txt")
     set(file_generated "${CMAKE_BINARY_DIR}/.remove_cmake_install_generated.txt")
     set(cmake_install_file "${CMAKE_BINARY_DIR}/cmake_install.cmake")
@@ -849,7 +882,7 @@ function(qt_internal_add_linker_version_script target)
             qt_ensure_perl()
 
             add_custom_command(TARGET "${target}" PRE_LINK
-                COMMAND "${HOST_PERL}" "${PROJECT_SOURCE_DIR}/mkspecs/features/data/unix/findclasslist.pl" < "${infile}" > "${outfile}"
+                COMMAND "${HOST_PERL}" "${QT_MKSPECS_DIR}/features/data/unix/findclasslist.pl" < "${infile}" > "${outfile}"
                 BYPRODUCTS "${outfile}" DEPENDS "${infile}"
                 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
                 COMMENT "Generating version linker script"
@@ -1577,6 +1610,15 @@ function(qt_add_module target)
     endif()
 
     if(NOT arg_HEADER_MODULE)
+        # This property is used for super builds with static libraries. We use
+        # it in QtPlugins.cmake.in to avoid "polluting" the dependency chain
+        # for the target in it's project directory.
+        # E.g: When we process find_package(Qt6 ... Gui) in QtDeclarative, the
+        # rules in QtPugins.cmake add all the known Gui plugins as interface
+        # dependencies. This in turn causes circular dependencies on every
+        # plugin which links against Gui. Plugin A -> GUI -> Plugin A ....
+
+        set_target_properties(${target} PROPERTIES QT_BUILD_PROJECT_NAME ${PROJECT_NAME})
         # Plugin types associated to a module
         if(NOT "x${arg_PLUGIN_TYPES}" STREQUAL "x")
             # Reset the variable containing the list of plugins for the given plugin type
@@ -2152,6 +2194,10 @@ function(qt_add_plugin target)
     qt_internal_add_target_aliases("${target}")
     qt_skip_warnings_are_errors_when_repo_unclean("${target}")
 
+    # Disable linking of plugins against other plugins during static regular and
+    # super builds. The latter causes cyclic dependencies otherwise.
+    set_target_properties(${target} PROPERTIES QT_DEFAULT_PLUGINS 0)
+
     set_target_properties("${target}" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${output_directory}"
         RUNTIME_OUTPUT_DIRECTORY "${output_directory}"
@@ -2601,11 +2647,11 @@ function(qt_add_executable name)
         ${ARGN})
 
     if ("x${arg_OUTPUT_DIRECTORY}" STREQUAL "x")
-        set(arg_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${INSTALL_BINDIR}")
+        set(arg_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}")
     endif()
 
     get_filename_component(arg_OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}"
-        ABSOLUTE BASE_DIR "${CMAKE_BINARY_DIR}")
+        ABSOLUTE BASE_DIR "${QT_BUILD_DIR}")
 
     if ("x${arg_INSTALL_DIRECTORY}" STREQUAL "x")
         set(arg_INSTALL_DIRECTORY "${INSTALL_BINDIR}")
@@ -3357,7 +3403,7 @@ function(qt_compute_injection_forwarding_header target)
     get_filename_component(file_name "${arg_SOURCE}" NAME)
 
     set(source_absolute_path "${CMAKE_CURRENT_BINARY_DIR}/${arg_SOURCE}")
-    file(RELATIVE_PATH relpath "${CMAKE_BINARY_DIR}" "${source_absolute_path}")
+    file(RELATIVE_PATH relpath "${PROJECT_BINARY_DIR}" "${source_absolute_path}")
 
     if (arg_PRIVATE)
         set(fwd "${PROJECT_VERSION}/${module}/private/${file_name}")
@@ -3382,9 +3428,15 @@ function(qt_add_docs)
     set(target ${ARGV0})
     set(doc_project ${ARGV1})
 
-    set(qdoc_bin "${CMAKE_INSTALL_PREFIX}/bin/qdoc")
-    set(qtattributionsscanner_bin "${CMAKE_INSTALL_PREFIX}/bin/qtattributionsscanner")
-    set(qhelpgenerator_bin "${CMAKE_INSTALL_PREFIX}/bin/qhelpgenerator")
+    if (NOT QT_SUPERBUILD OR QT_WILL_INSTALL)
+        set(qdoc_bin "${CMAKE_INSTALL_PREFIX}/bin/qdoc")
+        set(qtattributionsscanner_bin "${CMAKE_INSTALL_PREFIX}/bin/qtattributionsscanner")
+        set(qhelpgenerator_bin "${CMAKE_INSTALL_PREFIX}/bin/qhelpgenerator")
+    else()
+        set(qdoc_bin "${CMAKE_INSTALL_PREFIX}/qtbase/bin/qdoc")
+        set(qtattributionsscanner_bin "${CMAKE_INSTALL_PREFIX}/qtbase/bin/qtattributionsscanner")
+        set(qhelpgenerator_bin "${CMAKE_INSTALL_PREFIX}/qtbase/bin/qhelpgenerator")
+    endif()
 
     get_target_property(target_type ${target} TYPE)
     if (NOT target_type STREQUAL "INTERFACE_LIBRARY")
@@ -3415,6 +3467,9 @@ function(qt_add_docs)
     if (QT_WILL_INSTALL)
         set(qdoc_output_dir "${CMAKE_BINARY_DIR}/doc/${doc_target}")
         set(index_dir "${CMAKE_BINARY_DIR}/doc")
+    elseif (QT_SUPERBUILD)
+        set(qdoc_output_dir "${CMAKE_INSTALL_PREFIX}/qtbase/doc/${doc_target}")
+        set(index_dir "${CMAKE_INSTALL_PREFIX}/qtbase/doc")
     else()
         set(qdoc_output_dir "${CMAKE_INSTALL_PREFIX}/doc/${doc_target}")
         set(index_dir "${CMAKE_INSTALL_PREFIX}/doc")
@@ -3439,8 +3494,14 @@ function(qt_add_docs)
         "${include_path_args}"
     )
 
+    if (QT_SUPERBUILD AND NOT QT_WILL_INSTALL)
+        set(qt_install_docs_env "${CMAKE_INSTALL_PREFIX}/qtbase/doc")
+    else()
+        set(qt_install_docs_env "${CMAKE_INSTALL_PREFIX}/doc")
+    endif()
+
     set(qdoc_env_args
-        "QT_INSTALL_DOCS=\"${CMAKE_INSTALL_PREFIX}/doc\""
+        "QT_INSTALL_DOCS=\"${qt_install_docs_env}\""
         "QT_VERSION=${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
         "QT_VER=${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}"
         "QT_VERSION_TAG=${PROJECT_VERSION_MAJOR}${PROJECT_VERSION_MINOR}${PROJECT_VERSION_PATCH}"

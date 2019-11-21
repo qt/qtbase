@@ -353,11 +353,11 @@ function(qt_internal_create_config_file_for_standalone_tests)
     # of the current repo. This is used for standalone tests.
     configure_file(
         "${QT_CMAKE_DIR}/QtStandaloneTestsConfig.cmake.in"
-        "${config_build_dir}/${CMAKE_PROJECT_NAME}TestsConfig.cmake"
+        "${config_build_dir}/${PROJECT_NAME}TestsConfig.cmake"
         @ONLY
     )
     qt_install(FILES
-        "${config_build_dir}/${CMAKE_PROJECT_NAME}TestsConfig.cmake"
+        "${config_build_dir}/${PROJECT_NAME}TestsConfig.cmake"
         DESTINATION "${config_install_dir}"
         COMPONENT Devel
     )
