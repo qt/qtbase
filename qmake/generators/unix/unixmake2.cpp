@@ -1017,10 +1017,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                 if (pchArchs.isEmpty())
                     pchArchs << ProString(); // normal single-arch PCH
                 for (const ProString &arch : qAsConst(pchArchs)) {
-                    auto suffix = header_suffix.toQString();
+                    QString file = precomph_out_dir + header_prefix + language + header_suffix;
                     if (!arch.isEmpty())
-                        suffix.replace(QStringLiteral("${QMAKE_PCH_ARCH}"), arch.toQString());
-                    precomp_files += precomph_out_dir + header_prefix + language + suffix;
+                        file.replace(QStringLiteral("${QMAKE_PCH_ARCH}"), arch.toQString());
+                    precomp_files += file;
                 }
             }
         }
@@ -1140,7 +1140,10 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
                     t << "\n\techo \"// Automatically generated, do not modify\" > " << sourceFile_f
                       << "\n\trm -f " << escapeFilePath(pchArchOutput);
                 } else {
-                    t << "\n\t" << mkdir_p_asstring(pchOutputDir);
+                    QString outDir = pchOutputDir;
+                    if (!arch.isEmpty())
+                        outDir.replace(QStringLiteral("${QMAKE_PCH_ARCH}"), arch.toQString());
+                    t << "\n\t" << mkdir_p_asstring(outDir);
                 }
 
                 auto pchArchFlags = pchFlags;

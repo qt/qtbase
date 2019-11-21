@@ -4818,20 +4818,20 @@ void QDomElement::setAttribute(const QString& name, const QString& value)
   \fn void QDomElement::setAttribute(const QString& name, int value)
 
     \overload
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 
 /*!
   \fn void QDomElement::setAttribute(const QString& name, uint value)
 
     \overload
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 
 /*!
     \overload
 
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 void QDomElement::setAttribute(const QString& name, qlonglong value)
 {
@@ -4845,7 +4845,7 @@ void QDomElement::setAttribute(const QString& name, qlonglong value)
 /*!
     \overload
 
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 void QDomElement::setAttribute(const QString& name, qulonglong value)
 {
@@ -4859,7 +4859,7 @@ void QDomElement::setAttribute(const QString& name, qulonglong value)
 /*!
     \overload
 
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 void QDomElement::setAttribute(const QString& name, float value)
 {
@@ -4873,19 +4873,14 @@ void QDomElement::setAttribute(const QString& name, float value)
 /*!
     \overload
 
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 void QDomElement::setAttribute(const QString& name, double value)
 {
     if (!impl)
         return;
     QString x;
-    char buf[256];
-    int count = qsnprintf(buf, sizeof(buf), "%.16g", value);
-    if (count > 0)
-        x = QString::fromLatin1(buf, count);
-    else
-        x.setNum(value); // Fallback
+    x.setNum(value);
     IMPL->setAttribute(name, x);
 }
 

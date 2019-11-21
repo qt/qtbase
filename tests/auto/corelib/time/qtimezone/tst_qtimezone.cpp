@@ -706,6 +706,7 @@ void tst_QTimeZone::isValidId_data()
     // a-z, A-Z, 0-9, '.', '-', '_' are valid chars
     // Can't start with '-'
     // Parts separated by '/', each part min 1 and max of 14 chars
+    // (Android has parts with lengths up to 17, so tolerates this as a special case.)
 #define TESTSET(name, section, valid) \
     QTest::newRow(name " front")  << QByteArray(section "/xyz/xyz")    << valid; \
     QTest::newRow(name " middle") << QByteArray("xyz/" section "/xyz") << valid; \
@@ -713,8 +714,13 @@ void tst_QTimeZone::isValidId_data()
 
     TESTSET("empty", "", false);
     TESTSET("minimal", "m", true);
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+    TESTSET("maximal", "East-Saskatchewan", true); // Android actually uses this
+    TESTSET("too long", "North-Saskatchewan", false); // ... but thankfully not this.
+#else
     TESTSET("maximal", "12345678901234", true);
     TESTSET("too long", "123456789012345", false);
+#endif
 
     TESTSET("bad hyphen", "-hyphen", false);
     TESTSET("good hyphen", "hy-phen", true);
@@ -759,8 +765,13 @@ void tst_QTimeZone::isValidId_data()
     QTest::newRow("a,z alone") << QByteArray("a,z") << false;
     QTest::newRow("/z alone") << QByteArray("/z") << false;
     QTest::newRow("-z alone") << QByteArray("-z") << false;
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+    QTest::newRow("long alone") << QByteArray("12345678901234567") << true;
+    QTest::newRow("over-long alone") << QByteArray("123456789012345678") << false;
+#else
     QTest::newRow("long alone") << QByteArray("12345678901234") << true;
     QTest::newRow("over-long alone") << QByteArray("123456789012345") << false;
+#endif
 
 #else
     QSKIP("This test requires a Qt -developer-build.");

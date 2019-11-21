@@ -348,10 +348,10 @@ void QShader::removeShader(const QShaderKey &key)
 
 static void writeShaderKey(QDataStream *ds, const QShaderKey &k)
 {
-    *ds << k.source();
+    *ds << int(k.source());
     *ds << k.sourceVersion().version();
     *ds << k.sourceVersion().flags();
-    *ds << k.sourceVariant();
+    *ds << int(k.sourceVariant());
 }
 
 /*!
@@ -369,7 +369,7 @@ QByteArray QShader::serialized() const
         return QByteArray();
 
     ds << QSB_VERSION;
-    ds << d->stage;
+    ds << int(d->stage);
     ds << d->desc.toBinaryJson();
     ds << d->shaders.count();
     for (auto it = d->shaders.cbegin(), itEnd = d->shaders.cend(); it != itEnd; ++it) {

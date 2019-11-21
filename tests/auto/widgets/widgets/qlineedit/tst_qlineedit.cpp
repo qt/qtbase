@@ -762,6 +762,14 @@ void tst_QLineEdit::keypress_inputMask_data()
     }
     {
         QTestEventList keys;
+        // inserting at end
+        addKeySequenceStandardKey(keys, QKeySequence::MoveToEndOfLine);
+        keys.addKeyClick(Qt::Key_Left);
+        keys.addKeyClick(Qt::Key_0);
+        QTest::newRow("insert at end") << QString("9-9-9") << keys << QString("--0") << QString(" - -0");
+    }
+    {
+        QTestEventList keys;
         // inserting '12.12' then two backspaces
         addKeySequenceStandardKey(keys, QKeySequence::MoveToStartOfLine);
         keys.addKeyClick(Qt::Key_1);

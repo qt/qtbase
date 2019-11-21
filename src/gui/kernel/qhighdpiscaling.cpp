@@ -56,6 +56,9 @@ Q_LOGGING_CATEGORY(lcScaling, "qt.scaling");
 
 #ifndef QT_NO_HIGHDPISCALING
 static const char legacyDevicePixelEnvVar[] = "QT_DEVICE_PIXEL_RATIO";
+
+// Note: QT_AUTO_SCREEN_SCALE_FACTOR is Done on X11, and should be kept
+// working as-is. It's Deprecated on all other platforms.
 static const char legacyAutoScreenEnvVar[] = "QT_AUTO_SCREEN_SCALE_FACTOR";
 
 static const char enableHighDpiScalingEnvVar[] = "QT_ENABLE_HIGHDPI_SCALING";
@@ -103,12 +106,6 @@ static inline qreal initialGlobalScaleFactor()
             int dpr = qEnvironmentVariableIntValue(legacyDevicePixelEnvVar);
             if (dpr > 0)
                 result = dpr;
-        }
-
-        if (qEnvironmentVariableIsSet(legacyAutoScreenEnvVar)) {
-            qWarning("Warning: %s is deprecated. Instead use:\n"
-                     "   %s to enable platform plugin controlled per-screen factors.",
-                     legacyAutoScreenEnvVar, enableHighDpiScalingEnvVar);
         }
     }
     return result;

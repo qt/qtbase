@@ -2862,12 +2862,18 @@ public:
     };
 
     Node *root;
+    bool crash = false;
 
     EvilModel(QObject *parent = nullptr): QAbstractItemModel(parent), root(new Node)
     {}
     ~EvilModel()
     {
         delete root;
+    }
+
+    void setCrash()
+    {
+        crash = true;
     }
 
     void change()
@@ -2938,6 +2944,10 @@ public:
 
     QVariant data(const QModelIndex &idx, int role) const override
     {
+        if (crash) {
+            QTest::qFail("Should not get here...", __FILE__, __LINE__);
+            return QVariant();
+        }
         if (idx.isValid() && role == Qt::DisplayRole) {
             Node *parentNode = root;
             if (idx.isValid()) {
@@ -2957,6 +2967,7 @@ void tst_QTreeView::evilModel_data()
 {
     QTest::addColumn<bool>("visible");
     QTest::newRow("visible") << false;
+    QTest::newRow("visible") << true;
 }
 
 void tst_QTreeView::evilModel()
@@ -3126,6 +3137,9 @@ void tst_QTreeView::evilModel()
     model.change();
 
     view.setRootIndex(secondLevel);
+
+    model.setCrash();
+    view.setModel(nullptr);
 }
 
 void tst_QTreeView::indexRowSizeHint()

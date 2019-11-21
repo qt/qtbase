@@ -17,9 +17,10 @@ qtConfig(freetype) {
 
 unix {
     include($$PWD/genericunix/genericunix.pri)
-    qtConfig(fontconfig) {
-        include($$PWD/fontconfig/fontconfig.pri)
-    }
+}
+
+qtConfig(fontconfig) {
+    include($$PWD/fontconfig/fontconfig.pri)
 }
 
 win32:!winrt {
