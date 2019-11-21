@@ -586,6 +586,12 @@ static int create_pipe(int filedes[], int flags)
  * descriptor. You probably want to set this flag, since forkfd() does not work
  * if the original parent process dies.
  *
+ * @li @C FFD_USE_FORK Tell forkfd() to actually call fork() instead of a
+ * different system implementation that may be available. On systems where a
+ * different implementation is available, its behavior may differ from that of
+ * fork(), such as not calling the functions registered with pthread_atfork().
+ * If that's necessary, pass this flag.
+ *
  * The file descriptor returned by forkfd() supports the following operations:
  *
  * @li read(2) When the child process exits, then the buffer supplied to
@@ -613,9 +619,11 @@ int forkfd(int flags, pid_t *ppid)
     int efd;
 #endif
 
-    fd = system_forkfd(flags, ppid, &ret);
-    if (ret)
-        return fd;
+    if ((flags & FFD_USE_FORK) == 0) {
+        fd = system_forkfd(flags, ppid, &ret);
+        if (ret)
+            return fd;
+    }
 
     (void) pthread_once(&forkfd_initialization, forkfd_initialize);
 
