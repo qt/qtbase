@@ -65,6 +65,7 @@
 #include <QRadioButton>
 #include <QScrollBar>
 #include <QSpinBox>
+#include <QStyle>
 #include <QStyleFactory>
 #include <QTableWidget>
 #include <QTextEdit>
@@ -77,8 +78,16 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     originalPalette = QApplication::palette();
 
     styleComboBox = new QComboBox;
-    styleComboBox->addItem("NorwegianWood");
-    styleComboBox->addItems(QStyleFactory::keys());
+    const QString defaultStyleName = QApplication::style()->objectName();
+    QStringList styleNames = QStyleFactory::keys();
+    styleNames.append("NorwegianWood");
+    for (int i = 1, size = styleNames.size(); i < size; ++i) {
+        if (defaultStyleName.compare(styleNames.at(i), Qt::CaseInsensitive) == 0) {
+            styleNames.swapItemsAt(0, i);
+            break;
+        }
+    }
+    styleComboBox->addItems(styleNames);
 
     styleLabel = new QLabel(tr("&Style:"));
     styleLabel->setBuddy(styleComboBox);
@@ -134,7 +143,6 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     setLayout(mainLayout);
 
     setWindowTitle(tr("Styles"));
-    changeStyle("NorwegianWood");
 }
 //! [4]
 
