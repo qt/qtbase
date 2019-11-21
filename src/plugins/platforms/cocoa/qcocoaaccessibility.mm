@@ -133,7 +133,7 @@ static void populateRoleMap()
     roleMap[QAccessible::SpinBox] = NSAccessibilityIncrementorRole;
     roleMap[QAccessible::Slider] = NSAccessibilitySliderRole;
     roleMap[QAccessible::ProgressBar] = NSAccessibilityProgressIndicatorRole;
-    roleMap[QAccessible::ComboBox] = NSAccessibilityPopUpButtonRole;
+    roleMap[QAccessible::ComboBox] = NSAccessibilityComboBoxRole;
     roleMap[QAccessible::RadioButton] = NSAccessibilityRadioButtonRole;
     roleMap[QAccessible::CheckBox] = NSAccessibilityCheckBoxRole;
     roleMap[QAccessible::StaticText] = NSAccessibilityStaticTextRole;
