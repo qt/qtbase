@@ -88,8 +88,10 @@ namespace QSsl {
         TlsV1_1,
         TlsV1_2,
         AnyProtocol,
+#if QT_DEPRECATED_SINCE(5, 15)
         TlsV1SslV3,
-        SecureProtocols,
+#endif
+        SecureProtocols = AnyProtocol + 2,
 
         TlsV1_0OrLater,
         TlsV1_1OrLater,
