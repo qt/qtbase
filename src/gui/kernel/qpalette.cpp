@@ -44,6 +44,8 @@
 #include "qvariant.h"
 #include "qdebug.h"
 
+#include <QtCore/qmetaobject.h>
+
 QT_BEGIN_NAMESPACE
 
 static int qt_palette_count = 1;
@@ -1224,36 +1226,58 @@ Q_GUI_EXPORT QPalette qt_fusionPalette()
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, const QPalette &p)
+static QString groupsToString(const QPalette &p, QPalette::ColorRole cr)
 {
-    const char *colorGroupNames[] = {"Active", "Disabled", "Inactive"};
-    const char *colorRoleNames[] =
-        {"WindowText", "Button", "Light", "Midlight", "Dark", "Mid", "Text",
-         "BrightText", "ButtonText", "Base", "Window", "Shadow", "Highlight",
-         "HighlightedText", "Link", "LinkVisited", "AlternateBase", "NoRole",
-         "ToolTipBase","ToolTipText", "PlaceholderText" };
-    QDebugStateSaver saver(dbg);
-    QDebug nospace = dbg.nospace();
-    auto mask = p.resolve();
-    nospace << "QPalette(resolve=" << Qt::hex << Qt::showbase << mask << ',';
-    for (int role = 0; role < (int)QPalette::NColorRoles; ++role) {
-        if (mask & (1<<role)) {
-            if (role)
-                nospace << ',';
-            nospace << colorRoleNames[role] << ":[";
-            for (int group = 0; group < (int)QPalette::NColorGroups; ++group) {
-                if (group)
-                    nospace << ',';
-                const QRgb color = p.color(static_cast<QPalette::ColorGroup>(group),
-                                           static_cast<QPalette::ColorRole>(role)).rgba();
-                nospace << colorGroupNames[group] << ':' << color;
-            }
-            nospace << ']';
+    const auto groupEnum = QMetaEnum::fromType<QPalette::ColorGroup>();
+
+    QString groupString;
+    for (int group = 0; group < QPalette::NColorGroups; ++group) {
+        const auto cg = QPalette::ColorGroup(group);
+
+        if (p.isBrushSet(cg, cr)) {
+            const auto &color = p.color(cg, cr);
+            groupString += QString::fromUtf8(groupEnum.valueToKey(cg)) + QLatin1Char(':') +
+                           color.name(QColor::HexArgb) + QLatin1Char(',');
         }
     }
-    nospace << ')' << Qt::noshowbase << Qt::dec;
-    return dbg;
+    groupString.chop(1);
+
+    return groupString;
 }
+
+static QString rolesToString(const QPalette &p)
+{
+    const auto roleEnum = QMetaEnum::fromType<QPalette::ColorRole>();
+
+    QString roleString;
+    for (int role = 0; role < QPalette::NColorRoles; ++role) {
+        const auto cr = QPalette::ColorRole(role);
+
+        auto groupString = groupsToString(p, cr);
+        if (!groupString.isEmpty())
+            roleString += QString::fromUtf8(roleEnum.valueToKey(cr)) + QStringLiteral(":[") +
+                          groupString + QStringLiteral("],");
+    }
+    roleString.chop(1);
+
+    return roleString;
+}
+
+QDebug operator<<(QDebug dbg, const QPalette &p)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace();
+
+    dbg << "QPalette(resolve=" << Qt::hex << Qt::showbase << p.resolve();
+
+    auto roleString = rolesToString(p);
+    if (!roleString.isEmpty())
+        dbg << ',' << roleString;
+
+    dbg << ')';
+
+    return dbg;
+ }
 #endif
 
 QT_END_NAMESPACE
