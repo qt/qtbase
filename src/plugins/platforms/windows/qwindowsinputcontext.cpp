@@ -283,8 +283,11 @@ void QWindowsInputContext::showInputPanel()
         // We only call ShowCaret() on Windows 10 after 1703 as in earlier versions
         // the caret would actually be visible (QTBUG-74492) and the workaround for
         // the Surface seems unnecessary there anyway. But leave it hidden for IME.
-        if (QOperatingSystemVersion::current() >=
-            QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 16299)) {
+        // Only trigger the native OSK if the Qt OSK is not in use.
+        static bool imModuleEmpty = qEnvironmentVariableIsEmpty("QT_IM_MODULE");
+        if (imModuleEmpty
+                && QOperatingSystemVersion::current()
+                    >= QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 16299)) {
             ShowCaret(platformWindow->handle());
         } else {
             HideCaret(platformWindow->handle());

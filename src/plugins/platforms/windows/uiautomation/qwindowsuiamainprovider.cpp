@@ -390,7 +390,17 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
             setVariantI4(UIA_WindowControlTypeId, pRetVal);
         } else {
             // Control type converted from role.
-            setVariantI4(roleToControlTypeId(accessible->role()), pRetVal);
+            auto controlType = roleToControlTypeId(accessible->role());
+
+            // The native OSK should be disbled if the Qt OSK is in use.
+            static bool imModuleEmpty = qEnvironmentVariableIsEmpty("QT_IM_MODULE");
+
+            // If we want to disable the native OSK auto-showing
+            // we have to report text fields as non-editable.
+            if (controlType == UIA_EditControlTypeId && !imModuleEmpty)
+                controlType = UIA_TextControlTypeId;
+
+            setVariantI4(controlType, pRetVal);
         }
         break;
     case UIA_HelpTextPropertyId:
