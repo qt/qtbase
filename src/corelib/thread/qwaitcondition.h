@@ -58,14 +58,11 @@ public:
 
     bool wait(QMutex *lockedMutex,
               QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever));
+    bool wait(QMutex *lockedMutex, unsigned long time);
+
     bool wait(QReadWriteLock *lockedReadWriteLock,
               QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever));
-#if QT_DEPRECATED_SINCE(5, 15)
-    QT_DEPRECATED_VERSION_X_5_15("Use wait(QMutex *lockedMutex, QDeadlineTimer deadline) instead")
-    bool wait(QMutex *lockedMutex, unsigned long time);
-    QT_DEPRECATED_VERSION_X_5_15("Use wait(QReadWriteLock *lockedReadWriteLock, QDeadlineTimer deadline) instead")
     bool wait(QReadWriteLock *lockedReadWriteLock, unsigned long time);
-#endif
 
     void wakeOne();
     void wakeAll();
@@ -94,10 +91,8 @@ public:
     { return true; }
     bool wait(QReadWriteLock *, QDeadlineTimer = QDeadlineTimer(QDeadlineTimer::Forever))
     { return true; }
-#if QT_DEPRECATED_SINCE(5, 15)
     bool wait(QMutex *, unsigned long) { return true; }
     bool wait(QReadWriteLock *, unsigned long) { return true; }
-#endif
 
     void wakeOne() {}
     void wakeAll() {}
