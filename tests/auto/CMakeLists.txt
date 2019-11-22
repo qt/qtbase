@@ -10,9 +10,13 @@ if (QT_FEATURE_dbus)
         if(NOT "${dbus_session_test}" STREQUAL "0")
             set(run_dbus_tests OFF)
             if(QT_FEATURE_dbus_linked)
-                message(SEND_ERROR "QtDBus is enabled but session bus is not available for testing. Please check the installation.")
+                message(WARNING
+                    " QtDBus is enabled but session bus is not available for testing.\n"
+                    " Please check the installation. Skipping QtDBus tests.")
             else()
-                message(WARNING "QtDBus is enabled with runtime support, but session bus is not available. Skipping QtDBus tests.")
+                message(WARNING
+                    " QtDBus is enabled with runtime support, but session bus is not available.\n"
+                    " Skipping QtDBus tests.")
             endif()
         endif()
     endif()
