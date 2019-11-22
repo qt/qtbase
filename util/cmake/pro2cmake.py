@@ -1396,9 +1396,11 @@ def unwrap_if(input_string):
 
 def map_condition(condition: str) -> str:
     # Some hardcoded cases that are too bothersome to generalize.
-    condition = re.sub(r"qtConfig\(opengles\.\)",
-            r"(QT_FEATURE_opengles2 OR QT_FEATURE_opengles3 OR QT_FEATURE_opengles31 OR QT_FEATURE_opengles32)",
-            condition)
+    condition = re.sub(
+        r"qtConfig\(opengles\.\)",
+        r"(QT_FEATURE_opengles2 OR QT_FEATURE_opengles3 OR QT_FEATURE_opengles31 OR QT_FEATURE_opengles32)",
+        condition,
+    )
     condition = re.sub(
         r"qtConfig\(opengl\(es1\|es2\)\?\)",
         r"QT_FEATURE_opengl OR QT_FEATURE_opengles2 OR QT_FEATURE_opengles3",
@@ -1510,12 +1512,10 @@ def map_condition(condition: str) -> str:
     condition = re.sub(r"(^| )armeabi-v7a", "TEST_architecture_arch STREQUAL arm", condition)
 
     # some defines replacements
-    condition = re.sub(r"DEFINES___contains___QT_NO_CURSOR",
-            r"(NOT QT_FEATURE_cursor)",
-            condition)
-    condition = re.sub(r"DEFINES___contains___QT_NO_TRANSLATION",
-            r"(NOT QT_FEATURE_translation)",
-            condition)
+    condition = re.sub(r"DEFINES___contains___QT_NO_CURSOR", r"(NOT QT_FEATURE_cursor)", condition)
+    condition = re.sub(
+        r"DEFINES___contains___QT_NO_TRANSLATION", r"(NOT QT_FEATURE_translation)", condition
+    )
 
     cmake_condition = ""
     for part in condition.split():

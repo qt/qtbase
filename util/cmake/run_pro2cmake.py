@@ -74,10 +74,7 @@ def parse_command_line() -> argparse.Namespace:
         help="Run pro2cmake with --is-example flag.",
     )
     parser.add_argument(
-        "--count",
-        dest="count",
-        help="How many projects should be converted.",
-        type=int,
+        "--count", dest="count", help="How many projects should be converted.", type=int
     )
     parser.add_argument(
         "--offset",
@@ -227,9 +224,9 @@ def main() -> None:
 
     all_files = find_all_pro_files(base_path, args)
     if args.offset:
-        all_files = all_files[args.offset:]
+        all_files = all_files[args.offset :]
     if args.count:
-        all_files = all_files[:args.count]
+        all_files = all_files[: args.count]
     files_count = len(all_files)
 
     failed_files = run(all_files, pro2cmake, args)
