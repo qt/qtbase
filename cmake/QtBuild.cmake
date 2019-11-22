@@ -760,17 +760,30 @@ macro(qt_parse_all_arguments result type flags options multiopts)
     endif()
 endmacro()
 
+include(CheckCXXSourceCompiles)
 
 function(qt_internal_add_link_flags_no_undefined target)
     if (NOT QT_BUILD_SHARED_LIBS)
         return()
     endif()
     if (GCC OR CLANG)
-        if(APPLE)
+        set(previous_CMAKE_REQUIRED_LINK_OPTIONS ${CMAKE_REQUIRED_LINK_OPTIONS})
+
+        set(CMAKE_REQUIRED_LINK_OPTIONS "-Wl,-undefined,error")
+        check_cxx_source_compiles("int main() {}" HAVE_DASH_UNDEFINED_ERROR)
+        if(HAVE_DASH_UNDEFINED_ERROR)
             set(no_undefined_flag "-Wl,-undefined,error")
-        elseif(LINUX OR MINGW OR ANDROID)
+        endif()
+
+        set(CMAKE_REQUIRED_LINK_OPTIONS "-Wl,--no-undefined")
+        check_cxx_source_compiles("int main() {}" HAVE_DASH_DASH_NO_UNDEFINED)
+        if(HAVE_DASH_DASH_NO_UNDEFINED)
             set(no_undefined_flag "-Wl,--no-undefined")
-        else()
+        endif()
+
+        set(CMAKE_REQUIRED_LINK_OPTIONS ${previous_CMAKE_REQUIRED_LINK_OPTIONS})
+
+        if (NOT HAVE_DASH_UNDEFINED_ERROR AND NOT HAVE_DASH_DASH_NO_UNDEFINED)
             message(FATAL_ERROR "Platform linker doesn't support erroring upon encountering undefined symbols. Target:\"${target}\".")
         endif()
         target_link_options("${target}" PRIVATE "${no_undefined_flag}")
