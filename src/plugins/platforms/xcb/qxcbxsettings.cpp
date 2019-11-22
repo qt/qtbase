@@ -256,7 +256,7 @@ QXcbXSettings::QXcbXSettings(QXcbVirtualDesktop *screen)
 QXcbXSettings::~QXcbXSettings()
 {
     delete d_ptr;
-    d_ptr = 0;
+    d_ptr = nullptr;
 }
 
 bool QXcbXSettings::initialized() const

@@ -596,7 +596,7 @@ void QTextFramePrivate::remove_me()
     parentFrame->d_func()->childFrames.removeAt(index);
 
     childFrames.clear();
-    parentFrame = 0;
+    parentFrame = nullptr;
 }
 
 /*!
@@ -654,10 +654,10 @@ QTextFrame::iterator QTextFrame::end() const
 */
 QTextFrame::iterator::iterator()
 {
-    f = 0;
+    f = nullptr;
     b = 0;
     e = 0;
-    cf = 0;
+    cf = nullptr;
     cb = 0;
 }
 
@@ -669,7 +669,7 @@ QTextFrame::iterator::iterator(QTextFrame *frame, int block, int begin, int end)
     f = frame;
     b = begin;
     e = end;
-    cf = 0;
+    cf = nullptr;
     cb = block;
 }
 
@@ -739,7 +739,7 @@ QTextFrame::iterator &QTextFrame::iterator::operator++()
     if (cf) {
         int end = cf->lastPosition() + 1;
         cb = map.findNode(end);
-        cf = 0;
+        cf = nullptr;
     } else if (cb) {
         cb = map.next(cb);
         if (cb == e)
@@ -777,7 +777,7 @@ QTextFrame::iterator &QTextFrame::iterator::operator--()
     if (cf) {
         int start = cf->firstPosition() - 1;
         cb = map.findNode(start);
-        cf = 0;
+        cf = nullptr;
     } else {
         if (cb == b)
             goto end;
@@ -907,7 +907,7 @@ QTextBlockUserData::~QTextBlockUserData()
 
 bool QTextBlock::isValid() const
 {
-    return p != 0 && p->blockMap().isValid(n);
+    return p != nullptr && p->blockMap().isValid(n);
 }
 
 /*!
@@ -1079,7 +1079,7 @@ bool QTextBlock::contains(int position) const
 QTextLayout *QTextBlock::layout() const
 {
     if (!p || !n)
-        return 0;
+        return nullptr;
 
     const QTextBlockData *b = p->blockMap().fragment(n);
     if (!b->layout)

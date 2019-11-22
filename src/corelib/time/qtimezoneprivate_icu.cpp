@@ -273,7 +273,7 @@ static int ucalDaylightOffset(const QByteArray &id)
 
 // Create the system default time zone
 QIcuTimeZonePrivate::QIcuTimeZonePrivate()
-    : m_ucal(0)
+    : m_ucal(nullptr)
 {
     // TODO No ICU C API to obtain sysem tz, assume default hasn't been changed
     init(ucalDefaultTimeZoneId());
@@ -281,7 +281,7 @@ QIcuTimeZonePrivate::QIcuTimeZonePrivate()
 
 // Create a named time zone
 QIcuTimeZonePrivate::QIcuTimeZonePrivate(const QByteArray &ianaId)
-    : m_ucal(0)
+    : m_ucal(nullptr)
 {
     // Need to check validity here as ICu will create a GMT tz if name is invalid
     if (availableTimeZoneIds().contains(ianaId))
@@ -289,14 +289,14 @@ QIcuTimeZonePrivate::QIcuTimeZonePrivate(const QByteArray &ianaId)
 }
 
 QIcuTimeZonePrivate::QIcuTimeZonePrivate(const QIcuTimeZonePrivate &other)
-    : QTimeZonePrivate(other), m_ucal(0)
+    : QTimeZonePrivate(other), m_ucal(nullptr)
 {
     // Clone the ucal so we don't close the shared object
     UErrorCode status = U_ZERO_ERROR;
     m_ucal = ucal_clone(other.m_ucal, &status);
     if (!U_SUCCESS(status)) {
         m_id.clear();
-        m_ucal = 0;
+        m_ucal = nullptr;
     }
 }
 
@@ -322,7 +322,7 @@ void QIcuTimeZonePrivate::init(const QByteArray &ianaId)
 
     if (!U_SUCCESS(status)) {
         m_id.clear();
-        m_ucal = 0;
+        m_ucal = nullptr;
     }
 }
 
@@ -493,7 +493,7 @@ QList<QByteArray> QIcuTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) c
 // TODO Available directly in C++ api but not C api, from 4.8 onwards new filter method works
 #if U_ICU_VERSION_MAJOR_NUM >= 49 || (U_ICU_VERSION_MAJOR_NUM == 4 && U_ICU_VERSION_MINOR_NUM == 8)
     UErrorCode status = U_ZERO_ERROR;
-    UEnumeration *uenum = ucal_openTimeZoneIDEnumeration(UCAL_ZONE_TYPE_ANY, 0,
+    UEnumeration *uenum = ucal_openTimeZoneIDEnumeration(UCAL_ZONE_TYPE_ANY, nullptr,
                                                          &offsetFromUtc, &status);
     QList<QByteArray> result;
     if (U_SUCCESS(status))

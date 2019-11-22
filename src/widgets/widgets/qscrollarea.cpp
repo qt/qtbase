@@ -259,7 +259,7 @@ void QScrollArea::setWidget(QWidget *widget)
         return;
 
     delete d->widget;
-    d->widget = 0;
+    d->widget = nullptr;
     d->hbar->setValue(0);
     d->vbar->setValue(0);
     if (widget->parentWidget() != d->viewport)
@@ -285,9 +285,9 @@ QWidget *QScrollArea::takeWidget()
 {
     Q_D(QScrollArea);
     QWidget *w = d->widget;
-    d->widget = 0;
+    d->widget = nullptr;
     if (w)
-        w->setParent(0);
+        w->setParent(nullptr);
     return w;
 }
 

@@ -109,10 +109,10 @@ QT_BEGIN_NAMESPACE
 
 QEglFSIntegration::QEglFSIntegration()
     : m_display(EGL_NO_DISPLAY),
-      m_inputContext(0),
+      m_inputContext(nullptr),
       m_fontDb(new QGenericUnixFontDatabase),
       m_services(new QGenericUnixServices),
-      m_kbdMgr(0),
+      m_kbdMgr(nullptr),
       m_disableInputHandlers(false)
 {
     m_disableInputHandlers = qEnvironmentVariableIntValue("QT_QPA_EGLFS_DISABLE_INPUT");
@@ -223,7 +223,7 @@ QPlatformOpenGLContext *QEglFSIntegration::createPlatformOpenGLContext(QOpenGLCo
         EGLConfig config = QEglFSDeviceIntegration::chooseConfig(dpy, adjustedFormat);
         ctx = new QEglFSContext(adjustedFormat, share, dpy, &config, QVariant());
     } else {
-        ctx = new QEglFSContext(adjustedFormat, share, dpy, 0, nativeHandle);
+        ctx = new QEglFSContext(adjustedFormat, share, dpy, nullptr, nativeHandle);
     }
     nativeHandle = QVariant::fromValue<QEGLNativeContext>(QEGLNativeContext(ctx->eglContext(), dpy));
 
@@ -307,7 +307,7 @@ static int resourceType(const QByteArray &key)
 
 void *QEglFSIntegration::nativeResourceForIntegration(const QByteArray &resource)
 {
-    void *result = 0;
+    void *result = nullptr;
 
     switch (resourceType(resource)) {
     case EglDisplay:
@@ -329,7 +329,7 @@ void *QEglFSIntegration::nativeResourceForIntegration(const QByteArray &resource
 
 void *QEglFSIntegration::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
 {
-    void *result = 0;
+    void *result = nullptr;
 
     switch (resourceType(resource)) {
     case XlibDisplay:
@@ -347,7 +347,7 @@ void *QEglFSIntegration::nativeResourceForScreen(const QByteArray &resource, QSc
 
 void *QEglFSIntegration::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
 {
-    void *result = 0;
+    void *result = nullptr;
 
     switch (resourceType(resource)) {
     case EglDisplay:
@@ -374,7 +374,7 @@ void *QEglFSIntegration::nativeResourceForWindow(const QByteArray &resource, QWi
 #ifndef QT_NO_OPENGL
 void *QEglFSIntegration::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
 {
-    void *result = 0;
+    void *result = nullptr;
 
     switch (resourceType(resource)) {
     case EglContext:
@@ -402,7 +402,7 @@ static void *eglContextForContext(QOpenGLContext *context)
 
     QEglFSContext *handle = static_cast<QEglFSContext *>(context->handle());
     if (!handle)
-        return 0;
+        return nullptr;
 
     return handle->eglContext();
 }
@@ -416,7 +416,7 @@ QPlatformNativeInterface::NativeResourceForContextFunction QEglFSIntegration::na
 #else
     Q_UNUSED(resource);
 #endif
-    return 0;
+    return nullptr;
 }
 
 QFunctionPointer QEglFSIntegration::platformFunction(const QByteArray &function) const

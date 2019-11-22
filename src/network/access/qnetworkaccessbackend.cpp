@@ -105,7 +105,7 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
             ++it;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 QStringList QNetworkAccessManagerPrivate::backendSupportedSchemes() const
@@ -131,7 +131,7 @@ QNonContiguousByteDevice* QNetworkAccessBackend::createUploadByteDevice()
     else if (reply->outgoingData) {
         uploadByteDevice = QNonContiguousByteDeviceFactory::createShared(reply->outgoingData);
     } else {
-        return 0;
+        return nullptr;
     }
 
     // We want signal emissions only for normal asynchronous uploads
@@ -151,8 +151,8 @@ void QNetworkAccessBackend::emitReplyUploadProgress(qint64 bytesSent, qint64 byt
 }
 
 QNetworkAccessBackend::QNetworkAccessBackend()
-    : manager(0)
-    , reply(0)
+    : manager(nullptr)
+    , reply(nullptr)
     , synchronous(false)
 {
 }
@@ -223,7 +223,7 @@ QList<QNetworkProxy> QNetworkAccessBackend::proxyList() const
 QAbstractNetworkCache *QNetworkAccessBackend::networkCache() const
 {
     if (!manager)
-        return 0;
+        return nullptr;
     return manager->networkCache;
 }
 

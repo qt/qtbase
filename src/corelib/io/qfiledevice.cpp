@@ -202,7 +202,7 @@ QFileDevice::QFileDevice(QFileDevicePrivate &dd)
     \internal
 */
 QFileDevice::QFileDevice()
-    : QIODevice(*new QFileDevicePrivate, 0)
+    : QIODevice(*new QFileDevicePrivate, nullptr)
 {
 }
 /*!

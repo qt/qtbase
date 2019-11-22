@@ -319,7 +319,7 @@ QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QVariant::Ty
     Constructs a new MIME data object with no data in it.
 */
 QMimeData::QMimeData()
-    : QObject(*new QMimeDataPrivate, 0)
+    : QObject(*new QMimeDataPrivate, nullptr)
 {
 }
 

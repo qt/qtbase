@@ -62,7 +62,7 @@ bool qDBusCheckAsyncTag(const char *tag)
         return false;
 
     const char *p = strstr(tag, noReplyTag);
-    if (p != NULL &&
+    if (p != nullptr &&
         (p == tag || *(p-1) == ' ') &&
         (p[sizeof noReplyTag - 1] == '\0' || p[sizeof noReplyTag - 1] == ' '))
         return true;
@@ -167,7 +167,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<in
             if (id == 0) {
                 errorMsg = QLatin1String("Unregistered output type in parameter list: ") + QLatin1String(type);
                 return -1;
-            } else if (QDBusMetaType::typeToSignature(id) == 0)
+            } else if (QDBusMetaType::typeToSignature(id) == nullptr)
                 return -1;
 
             metaTypes.append( id );
@@ -195,7 +195,7 @@ int qDBusParametersForMethod(const QList<QByteArray> &parameterTypes, QVector<in
 
         if (id == QDBusMetaTypeId::message())
             seenMessage = true;
-        else if (QDBusMetaType::typeToSignature(id) == 0) {
+        else if (QDBusMetaType::typeToSignature(id) == nullptr) {
             errorMsg = QLatin1String("Type not registered with QtDBus in parameter list: ") + QLatin1String(type);
             return -1;
         }

@@ -394,7 +394,7 @@ static QString qt_keyForPageSizeId(QPageSize::PageSizeId id)
 }
 
 // Return id name for PPD Key
-static QPageSize::PageSizeId qt_idForPpdKey(const QString &ppdKey, QSize *match = 0)
+static QPageSize::PageSizeId qt_idForPpdKey(const QString &ppdKey, QSize *match = nullptr)
 {
     if (ppdKey.isEmpty())
         return QPageSize::Custom;
@@ -415,7 +415,7 @@ static QPageSize::PageSizeId qt_idForPpdKey(const QString &ppdKey, QSize *match 
 }
 
 // Return id name for Windows ID
-static QPageSize::PageSizeId qt_idForWindowsID(int windowsId, QSize *match = 0)
+static QPageSize::PageSizeId qt_idForWindowsID(int windowsId, QSize *match = nullptr)
 {
     // If outside known values then is Custom
     if (windowsId <= DMPAPER_NONE || windowsId > DMPAPER_LAST)
@@ -770,7 +770,7 @@ QPageSizePrivate::QPageSizePrivate(const QSize &pointSize, const QString &name, 
       m_units(QPageSize::Point)
 {
     if (pointSize.isValid()) {
-        QPageSize::PageSizeId id = qt_idForPointSize(pointSize, matchPolicy, 0);
+        QPageSize::PageSizeId id = qt_idForPointSize(pointSize, matchPolicy, nullptr);
         id == QPageSize::Custom ? init(pointSize, name) : init(id, name);
     }
 }
@@ -782,7 +782,7 @@ QPageSizePrivate::QPageSizePrivate(const QSizeF &size, QPageSize::Unit units,
       m_units(QPageSize::Point)
 {
     if (size.isValid()) {
-        QPageSize::PageSizeId id = qt_idForSize(size, units, matchPolicy, 0);
+        QPageSize::PageSizeId id = qt_idForSize(size, units, matchPolicy, nullptr);
         id == QPageSize::Custom ? init(size, units, name) : init(id, name);
     }
 }
@@ -793,10 +793,10 @@ QPageSizePrivate::QPageSizePrivate(const QString &key, const QSize &pointSize, c
       m_units(QPageSize::Point)
 {
     if (!key.isEmpty() && pointSize.isValid()) {
-        QPageSize::PageSizeId id = qt_idForPpdKey(key, 0);
+        QPageSize::PageSizeId id = qt_idForPpdKey(key, nullptr);
         // If not a known PPD key, check if size is a standard PPD size
         if (id == QPageSize::Custom)
-            id = qt_idForPointSize(pointSize, QPageSize::FuzzyMatch, 0);
+            id = qt_idForPointSize(pointSize, QPageSize::FuzzyMatch, nullptr);
         id == QPageSize::Custom ? init(pointSize, name) : init(id, name);
         m_key = key;
     }
@@ -808,10 +808,10 @@ QPageSizePrivate::QPageSizePrivate(int windowsId, const QSize &pointSize, const 
       m_units(QPageSize::Point)
 {
     if (windowsId > 0 && pointSize.isValid()) {
-        QPageSize::PageSizeId id = qt_idForWindowsID(windowsId, 0);
+        QPageSize::PageSizeId id = qt_idForWindowsID(windowsId, nullptr);
         // If not a known Windows ID, check if size is a standard PPD size
         if (id == QPageSize::Custom)
-            id = qt_idForPointSize(pointSize, QPageSize::FuzzyMatch, 0);
+            id = qt_idForPointSize(pointSize, QPageSize::FuzzyMatch, nullptr);
         id == QPageSize::Custom ? init(pointSize, name) : init(id, name);
         m_windowsId = windowsId;
     }
@@ -1753,7 +1753,7 @@ QString QPageSize::name(PageSizeId pageSizeId)
 
 QPageSize::PageSizeId QPageSize::id(const QSize &pointSize, SizeMatchPolicy matchPolicy)
 {
-    return qt_idForPointSize(pointSize, matchPolicy, 0);
+    return qt_idForPointSize(pointSize, matchPolicy, nullptr);
 }
 
 /*!
@@ -1769,7 +1769,7 @@ QPageSize::PageSizeId QPageSize::id(const QSize &pointSize, SizeMatchPolicy matc
 QPageSize::PageSizeId QPageSize::id(const QSizeF &size, Unit units,
                                     SizeMatchPolicy matchPolicy)
 {
-    return qt_idForSize(size, units, matchPolicy, 0);
+    return qt_idForSize(size, units, matchPolicy, nullptr);
 }
 
 /*!

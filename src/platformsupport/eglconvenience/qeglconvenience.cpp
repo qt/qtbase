@@ -281,11 +281,11 @@ EGLConfig QEglConfigChooser::chooseConfig()
     }
     configureAttributes.append(EGL_NONE);
 
-    EGLConfig cfg = 0;
+    EGLConfig cfg = nullptr;
     do {
         // Get the number of matching configurations for this set of properties.
         EGLint matching = 0;
-        if (!eglChooseConfig(display(), configureAttributes.constData(), 0, 0, &matching) || !matching)
+        if (!eglChooseConfig(display(), configureAttributes.constData(), nullptr, 0, &matching) || !matching)
             continue;
 
         // Fetch all of the matching configurations and find the
@@ -450,7 +450,7 @@ static struct AttrInfo attrs[] = {
     {EGL_BIND_TO_TEXTURE_RGBA, "EGL_BIND_TO_TEXTURE_RGBA"},
     {EGL_MIN_SWAP_INTERVAL, "EGL_MIN_SWAP_INTERVAL"},
     {EGL_MAX_SWAP_INTERVAL, "EGL_MAX_SWAP_INTERVAL"},
-    {-1, 0}};
+    {-1, nullptr}};
 
 void q_printEglConfig(EGLDisplay display, EGLConfig config)
 {

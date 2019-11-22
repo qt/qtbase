@@ -128,7 +128,7 @@ QAccessibleInterface *QAccessibleObject::childAt(int x, int y) const
         if (childIface->isValid() && childIface->rect().contains(x,y))
             return childIface;
     }
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -152,7 +152,7 @@ QWindow *QAccessibleApplication::window() const
 {
     // an application can have several windows, and AFAIK we don't need
     // to notify about changes on the application.
-    return 0;
+    return nullptr;
 }
 
 // all toplevel windows except popups and the desktop
@@ -190,7 +190,7 @@ int QAccessibleApplication::indexOfChild(const QAccessibleInterface *child) cons
 
 QAccessibleInterface *QAccessibleApplication::parent() const
 {
-    return 0;
+    return nullptr;
 }
 
 QAccessibleInterface *QAccessibleApplication::child(int index) const
@@ -198,7 +198,7 @@ QAccessibleInterface *QAccessibleApplication::child(int index) const
     const QObjectList tlo(topLevelObjects());
     if (index >= 0 && index < tlo.count())
         return QAccessible::queryAccessibleInterface(tlo.at(index));
-    return 0;
+    return nullptr;
 }
 
 
@@ -207,7 +207,7 @@ QAccessibleInterface *QAccessibleApplication::focusChild() const
 {
     if (QWindow *window = QGuiApplication::focusWindow())
         return window->accessibleRoot();
-    return 0;
+    return nullptr;
 }
 
 /*! \reimp */

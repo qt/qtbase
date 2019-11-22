@@ -135,7 +135,7 @@ QExplicitlySharedDataPointer<QDBusUnixFileDescriptorPrivate>::~QExplicitlyShared
     \sa fileDescriptor(), isValid()
 */
 QDBusUnixFileDescriptor::QDBusUnixFileDescriptor()
-    : d(0)
+    : d(nullptr)
 {
 }
 
@@ -153,7 +153,7 @@ QDBusUnixFileDescriptor::QDBusUnixFileDescriptor()
     \sa setFileDescriptor(), fileDescriptor()
 */
 QDBusUnixFileDescriptor::QDBusUnixFileDescriptor(int fileDescriptor)
-    : d(0)
+    : d(nullptr)
 {
     if (fileDescriptor != -1)
         setFileDescriptor(fileDescriptor);

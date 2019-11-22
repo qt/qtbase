@@ -424,8 +424,8 @@ void QGroupBoxPrivate::_q_fixFocus(Qt::FocusReason reason)
     Q_Q(QGroupBox);
     QWidget *fw = q->focusWidget();
     if (!fw || fw == q) {
-        QWidget * best = 0;
-        QWidget * candidate = 0;
+        QWidget * best = nullptr;
+        QWidget * candidate = nullptr;
         QWidget * w = q;
         while ((w = w->nextInFocusChain()) != q) {
             if (q->isAncestorOf(w) && (w->focusPolicy() & Qt::TabFocus) == Qt::TabFocus && w->isVisibleTo(q)) {

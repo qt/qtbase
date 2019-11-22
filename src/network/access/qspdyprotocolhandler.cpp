@@ -254,7 +254,7 @@ static const char spdyDictionary[] = {
 //}
 
 QSpdyProtocolHandler::QSpdyProtocolHandler(QHttpNetworkConnectionChannel *channel)
-    : QObject(0), QAbstractProtocolHandler(channel),
+    : QObject(nullptr), QAbstractProtocolHandler(channel),
       m_nextStreamID(-1),
       m_maxConcurrentStreams(100), // 100 is recommended in the SPDY RFC
       m_initialWindowSize(0),
@@ -720,7 +720,7 @@ bool QSpdyProtocolHandler::uploadData(qint32 streamID)
             m_connection->d_func()->emitReplyError(m_socket, reply,
                                                    QNetworkReply::UnknownNetworkError);
             return false;
-        } else if (readPointer == 0 || currentReadSize == 0) {
+        } else if (readPointer == nullptr || currentReadSize == 0) {
             // nothing to read currently, break the loop
             break;
         } else {
@@ -746,7 +746,7 @@ bool QSpdyProtocolHandler::uploadData(qint32 streamID)
     }
     if (replyPrivate->totallyUploadedData == request.contentLength()) {
         DataFrameFlags finFlag = DataFrame_FLAG_FIN;
-        qint64 writeSize = sendDataFrame(streamID, finFlag, 0, 0);
+        qint64 writeSize = sendDataFrame(streamID, finFlag, 0, nullptr);
         Q_ASSERT(writeSize == 0);
         Q_UNUSED(writeSize); // silence -Wunused-variable
         replyPrivate->state = QHttpNetworkReplyPrivate::SPDYHalfClosed;
@@ -892,7 +892,7 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
 
     HttpMessagePair pair = it.value();
     QHttpNetworkReply *httpReply = pair.second;
-    Q_ASSERT(httpReply != 0);
+    Q_ASSERT(httpReply != nullptr);
 
     if (httpReply->d_func()->state == QHttpNetworkReplyPrivate::SPDYClosed) {
         sendRST_STREAM(streamID, RST_STREAM_STREAM_ALREADY_CLOSED);
@@ -950,7 +950,7 @@ void QSpdyProtocolHandler::parseHttpHeaders(char flags, const QByteArray &frameD
 
     if (flag_fin) {
         if (httpReply->d_func()->state != QHttpNetworkReplyPrivate::SPDYHalfClosed)
-            sendDataFrame(streamID, DataFrame_FLAG_FIN, 0, 0);
+            sendDataFrame(streamID, DataFrame_FLAG_FIN, 0, nullptr);
         replyFinished(httpReply, streamID);
     }
 }
@@ -1199,7 +1199,7 @@ void QSpdyProtocolHandler::handleDataFrame(const QByteArray &frameHeaders)
     HttpMessagePair pair = it.value();
     QHttpNetworkRequest httpRequest = pair.first;
     QHttpNetworkReply *httpReply = pair.second;
-    Q_ASSERT(httpReply != 0);
+    Q_ASSERT(httpReply != nullptr);
 
     QHttpNetworkReplyPrivate *replyPrivate = httpReply->d_func();
 
@@ -1261,7 +1261,7 @@ void QSpdyProtocolHandler::handleDataFrame(const QByteArray &frameHeaders)
 
     if (flag_fin) {
         if (httpReply->d_func()->state != QHttpNetworkReplyPrivate::SPDYHalfClosed)
-            sendDataFrame(streamID, DataFrame_FLAG_FIN, 0, 0);
+            sendDataFrame(streamID, DataFrame_FLAG_FIN, 0, nullptr);
         replyFinished(httpReply, streamID);
     }
 }

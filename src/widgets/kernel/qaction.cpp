@@ -658,7 +658,7 @@ void QAction::setMenu(QMenu *menu)
 {
     Q_D(QAction);
     if (d->menu)
-        d->menu->d_func()->setOverrideMenuAction(0); //we reset the default action of any previous menu
+        d->menu->d_func()->setOverrideMenuAction(nullptr); //we reset the default action of any previous menu
     d->menu = menu;
     if (menu)
         menu->d_func()->setOverrideMenuAction(this);

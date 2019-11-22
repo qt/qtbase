@@ -764,7 +764,7 @@ QCalendarWidget *QDateTimeEdit::calendarWidget() const
 {
     Q_D(const QDateTimeEdit);
     if (!d->calendarPopup || !(d->sections & QDateTimeParser::DateSectionMask))
-        return 0;
+        return nullptr;
     if (!d->monthCalendar) {
         const_cast<QDateTimeEditPrivate*>(d)->initCalendarPopup();
     }
@@ -1221,7 +1221,7 @@ void QDateTimeEdit::focusInEvent(QFocusEvent *event)
 {
     Q_D(QDateTimeEdit);
     QAbstractSpinBox::focusInEvent(event);
-    QString *frm = 0;
+    QString *frm = nullptr;
     const int oldPos = d->edit->cursorPosition();
     if (!d->formatExplicitlySet) {
         if (d->displayFormat == d->defaultTimeFormat) {
@@ -1668,7 +1668,7 @@ QDateTimeEditPrivate::QDateTimeEditPrivate()
     minimum = QDATETIMEEDIT_COMPAT_DATE_MIN.startOfDay();
     maximum = QDATETIMEEDIT_DATE_MAX.endOfDay();
     arrowState = QStyle::State_None;
-    monthCalendar = 0;
+    monthCalendar = nullptr;
     readLocaleSettings();
 
 #ifdef QT_KEYPAD_NAVIGATION

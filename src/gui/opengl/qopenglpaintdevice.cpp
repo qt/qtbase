@@ -171,7 +171,7 @@ QOpenGLPaintDevicePrivate::QOpenGLPaintDevicePrivate(const QSize &sz)
     , dpmy(qt_defaultDpiY() * 100. / 2.54)
     , devicePixelRatio(1.0)
     , flipped(false)
-    , engine(0)
+    , engine(nullptr)
 {
 }
 

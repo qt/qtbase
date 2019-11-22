@@ -364,7 +364,7 @@ QAccessibleInterface *QAccessibleToolButton::child(int index) const
 #else
     Q_UNUSED(index)
 #endif
-    return 0;
+    return nullptr;
 }
 
 /*
@@ -976,7 +976,7 @@ QAccessibleInterface *QAccessibleWindowContainer::child(int i) const
 {
     if (i == 0)
         return QAccessible::queryAccessibleInterface(container()->containedWindow());
-    return 0;
+    return nullptr;
 }
 
 QWindowContainer *QAccessibleWindowContainer::container() const

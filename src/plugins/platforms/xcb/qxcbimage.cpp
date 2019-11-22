@@ -221,7 +221,7 @@ xcb_pixmap_t qt_xcb_XPixmapFromBitmap(QXcbScreen *screen, const QImage &image)
     for (int i = 0; i < height; i++)
         memcpy(buf + (destLineSize * i), map + (bytesPerLine * i), destLineSize);
     xcb_pixmap_t pm = xcb_create_pixmap_from_bitmap_data(conn, screen->root(), buf,
-                                                         width, height, 1, 0, 0, 0);
+                                                         width, height, 1, 0, 0, nullptr);
     delete[] buf;
     return pm;
 }
@@ -249,7 +249,7 @@ xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
                                        32, 32, 32, 32,
                                        QSysInfo::ByteOrder == QSysInfo::BigEndian ? XCB_IMAGE_ORDER_MSB_FIRST : XCB_IMAGE_ORDER_LSB_FIRST,
                                        XCB_IMAGE_ORDER_MSB_FIRST,
-                                       0, 0, 0);
+                                       nullptr, 0, nullptr);
     if (!xi) {
         qWarning("qt_xcb_createCursorXRender: xcb_image_create failed");
         return XCB_NONE;
@@ -266,10 +266,10 @@ xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
     xcb_create_pixmap(conn, 32, pix, screen->root(), w, h);
 
     xcb_render_picture_t pic = xcb_generate_id(conn);
-    xcb_render_create_picture(conn, pic, pix, fmt->id, 0, 0);
+    xcb_render_create_picture(conn, pic, pix, fmt->id, 0, nullptr);
 
     xcb_gcontext_t gc = xcb_generate_id(conn);
-    xcb_create_gc(conn, gc, pix, 0, 0);
+    xcb_create_gc(conn, gc, pix, 0, nullptr);
     xcb_image_put(conn, pix, gc, xi, 0, 0, 0);
     xcb_free_gc(conn, gc);
 

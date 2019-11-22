@@ -68,7 +68,7 @@ void CLASS::init() \
 }
 
 QOpenGLVersionFunctionsStorage::QOpenGLVersionFunctionsStorage()
-    : backends(0)
+    : backends(nullptr)
 {
 }
 

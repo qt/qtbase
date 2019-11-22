@@ -729,7 +729,7 @@ static bool write_jpeg_image(const QImage &image,
     // do_write_jpeg_image (by making them non-local).
     struct jpeg_compress_struct cinfo;
     JSAMPROW row_pointer[1];
-    row_pointer[0] = 0;
+    row_pointer[0] = nullptr;
 
     const bool success = do_write_jpeg_image(cinfo, row_pointer,
                                              image, device,
@@ -751,7 +751,7 @@ public:
     };
 
     QJpegHandlerPrivate(QJpegHandler *qq)
-        : quality(75), transformation(QImageIOHandler::TransformationNone), iod_src(0),
+        : quality(75), transformation(QImageIOHandler::TransformationNone), iod_src(nullptr),
           rgb888ToRgb32ConverterPtr(qt_convert_rgb888_to_rgb32), state(Ready), optimize(false), progressive(false), q(qq)
     {}
 
@@ -761,7 +761,7 @@ public:
         {
             jpeg_destroy_decompress(&info);
             delete iod_src;
-            iod_src = 0;
+            iod_src = nullptr;
         }
     }
 
@@ -954,7 +954,7 @@ bool QJpegHandlerPrivate::readJpegHeader(QIODevice *device)
 
             QByteArray exifData;
 
-            for (jpeg_saved_marker_ptr marker = info.marker_list; marker != NULL; marker = marker->next) {
+            for (jpeg_saved_marker_ptr marker = info.marker_list; marker != nullptr; marker = marker->next) {
                 if (marker->marker == JPEG_COM) {
                     QString key, value;
                     QString s = QString::fromUtf8((const char *)marker->data, marker->data_length);

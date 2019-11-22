@@ -725,7 +725,7 @@ QPageSetupDialog::QPageSetupDialog(QPrinter *printer, QWidget *parent)
 }
 
 QPageSetupDialog::QPageSetupDialog(QWidget *parent)
-    : QDialog(*(new QUnixPageSetupDialogPrivate(0)), parent)
+    : QDialog(*(new QUnixPageSetupDialogPrivate(nullptr)), parent)
 {
     Q_D(QPageSetupDialog);
     setWindowTitle(QCoreApplication::translate("QPrintPreviewDialog", "Page Setup"));

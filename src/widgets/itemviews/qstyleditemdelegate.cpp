@@ -83,7 +83,7 @@ class QStyledItemDelegatePrivate : public QAbstractItemDelegatePrivate
     Q_DECLARE_PUBLIC(QStyledItemDelegate)
 
 public:
-    QStyledItemDelegatePrivate() : factory(0) { }
+    QStyledItemDelegatePrivate() : factory(nullptr) { }
 
     static const QWidget *widget(const QStyleOptionViewItem &option)
     {
@@ -351,7 +351,7 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
     option->backgroundBrush = qvariant_cast<QBrush>(index.data(Qt::BackgroundRole));
 
     // disable style animations for checkboxes etc. within itemviews (QTBUG-30146)
-    option->styleObject = 0;
+    option->styleObject = nullptr;
 }
 
 /*!
@@ -426,7 +426,7 @@ QWidget *QStyledItemDelegate::createEditor(QWidget *parent,
 {
     Q_D(const QStyledItemDelegate);
     if (!index.isValid())
-        return 0;
+        return nullptr;
     return d->editorFactory()->createEditor(index.data(Qt::EditRole).userType(), parent);
 }
 
@@ -450,7 +450,7 @@ void QStyledItemDelegate::setEditorData(QWidget *editor, const QModelIndex &inde
 
     if (!n.isEmpty()) {
         if (!v.isValid())
-            v = QVariant(editor->property(n).userType(), (const void *)0);
+            v = QVariant(editor->property(n).userType(), (const void *)nullptr);
         editor->setProperty(n, v);
     }
 #endif
@@ -507,7 +507,7 @@ void QStyledItemDelegate::updateEditorGeometry(QWidget *editor,
     //or it is in a QTableView
 #if QT_CONFIG(tableview) && QT_CONFIG(lineedit)
     if (qobject_cast<QExpandingLineEdit*>(editor) && !qobject_cast<const QTableView*>(widget))
-        opt.showDecorationSelected = editor->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, 0, editor);
+        opt.showDecorationSelected = editor->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, nullptr, editor);
     else
 #endif
         opt.showDecorationSelected = true;

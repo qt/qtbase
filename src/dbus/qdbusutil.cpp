@@ -246,12 +246,12 @@ static const char fixedTypes[] =         "ybnqiuxtdh";
 
 static bool isBasicType(int c)
 {
-    return c != DBUS_TYPE_INVALID && strchr(basicTypes, c) != NULL;
+    return c != DBUS_TYPE_INVALID && strchr(basicTypes, c) != nullptr;
 }
 
 static bool isFixedType(int c)
 {
-    return c != DBUS_TYPE_INVALID && strchr(fixedTypes, c) != NULL;
+    return c != DBUS_TYPE_INVALID && strchr(fixedTypes, c) != nullptr;
 }
 
 // Returns a pointer to one-past-end of this type if it's valid;
@@ -260,10 +260,10 @@ static const char *validateSingleType(const char *signature)
 {
     char c = *signature;
     if (c == DBUS_TYPE_INVALID)
-        return 0;
+        return nullptr;
 
     // is it one of the one-letter types?
-    if (strchr(oneLetterTypes, c) != NULL)
+    if (strchr(oneLetterTypes, c) != nullptr)
         return signature + 1;
 
     // is it an array?
@@ -277,9 +277,9 @@ static const char *validateSingleType(const char *signature)
             // and a free value
             c = *++signature;
             if (!isBasicType(c))
-                return 0;
+                return nullptr;
             signature = validateSingleType(signature + 1);
-            return signature && *signature == DBUS_DICT_ENTRY_END_CHAR ? signature + 1 : 0;
+            return signature && *signature == DBUS_DICT_ENTRY_END_CHAR ? signature + 1 : nullptr;
         }
 
         return validateSingleType(signature);
@@ -291,14 +291,14 @@ static const char *validateSingleType(const char *signature)
         while (true) {
             signature = validateSingleType(signature);
             if (!signature)
-                return 0;
+                return nullptr;
             if (*signature == DBUS_STRUCT_END_CHAR)
                 return signature + 1;
         }
     }
 
     // invalid/unknown type
-    return 0;
+    return nullptr;
 }
 
 /*!

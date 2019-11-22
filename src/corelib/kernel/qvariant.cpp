@@ -2523,7 +2523,7 @@ void QVariant::load(QDataStream &s)
             return;
         }
     }
-    create(typeId, 0);
+    create(typeId, nullptr);
     d.is_null = is_null;
 
     if (!isValid()) {

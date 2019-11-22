@@ -1315,7 +1315,7 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
 
                 if (function.startsWith(QLatin1String("_Z"))) {
                     QScopedPointer<char, QScopedPointerPodDeleter> demangled(
-                                abi::__cxa_demangle(function.toUtf8(), 0, 0, 0));
+                                abi::__cxa_demangle(function.toUtf8(), nullptr, nullptr, nullptr));
                     if (demangled)
                         function = QString::fromUtf8(qCleanupFuncinfo(demangled.data()));
                 }

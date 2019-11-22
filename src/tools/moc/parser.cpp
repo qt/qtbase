@@ -37,7 +37,7 @@ QT_BEGIN_NAMESPACE
 Symbol::LexemStore Symbol::lexemStore;
 #endif
 
-static const char *error_msg = 0;
+static const char *error_msg = nullptr;
 
 #ifdef Q_CC_MSVC
 #define ErrorFormatString "%s(%d): "

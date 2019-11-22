@@ -55,7 +55,7 @@ Q_CORE_EXPORT void QTestPrivate::qSleep(int ms)
     Sleep(uint(ms));
 #else
     struct timespec ts = { time_t(ms / 1000), (ms % 1000) * 1000 * 1000 };
-    nanosleep(&ts, NULL);
+    nanosleep(&ts, nullptr);
 #endif
 }
 

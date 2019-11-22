@@ -443,12 +443,12 @@ class QEasingCurvePrivate
 public:
     QEasingCurvePrivate()
         : type(QEasingCurve::Linear),
-          config(0),
+          config(nullptr),
           func(&easeNone)
     { }
     QEasingCurvePrivate(const QEasingCurvePrivate &other)
         : type(other.type),
-          config(other.config ? other.config->copy() : 0),
+          config(other.config ? other.config->copy() : nullptr),
           func(other.func)
     { }
     ~QEasingCurvePrivate() { delete config; }
@@ -590,7 +590,7 @@ struct BezierEase : public QEasingCurveFunction
         if (!(x < 1))
             return 1;
 
-        SingleCubicBezier *singleCubicBezier = 0;
+        SingleCubicBezier *singleCubicBezier = nullptr;
         getBezierSegment(singleCubicBezier, x);
 
         return evaluateSegmentForY(*singleCubicBezier, findTForX(*singleCubicBezier, x));
@@ -1097,7 +1097,7 @@ static QEasingCurve::EasingFunction curveToFunc(QEasingCurve::Type curve)
     case QEasingCurve::CosineCurve:
         return &easeCosineCurve;
     default:
-        return 0;
+        return nullptr;
     };
 }
 
@@ -1127,7 +1127,7 @@ static QEasingCurveFunction *curveToFunctionObject(QEasingCurve::Type type)
         return new QEasingCurveFunction(type, qreal(0.3), qreal(1.0), qreal(1.70158));
     }
 
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -1422,7 +1422,7 @@ void QEasingCurvePrivate::setType_helper(QEasingCurve::Type newType)
         tcbPoints = std::move(config->_tcbPoints);
 
         delete config;
-        config = 0;
+        config = nullptr;
     }
 
     if (isConfigFunction(newType) || (amp != -1.0) || (period != -1.0) || (overshoot != -1.0) ||
@@ -1436,11 +1436,11 @@ void QEasingCurvePrivate::setType_helper(QEasingCurve::Type newType)
             config->_o = overshoot;
         config->_bezierCurves = std::move(bezierCurves);
         config->_tcbPoints = std::move(tcbPoints);
-        func = 0;
+        func = nullptr;
     } else if (newType != QEasingCurve::Custom) {
         func = curveToFunc(newType);
     }
-    Q_ASSERT((func == 0) == (config != 0));
+    Q_ASSERT((func == nullptr) == (config != nullptr));
     type = newType;
 }
 
@@ -1487,7 +1487,7 @@ void QEasingCurve::setCustomType(EasingFunction func)
 */
 QEasingCurve::EasingFunction QEasingCurve::customType() const
 {
-    return d_ptr->type == Custom ? d_ptr->func : 0;
+    return d_ptr->type == Custom ? d_ptr->func : nullptr;
 }
 
 /*!

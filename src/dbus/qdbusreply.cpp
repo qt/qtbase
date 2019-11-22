@@ -202,7 +202,7 @@ void qDBusReplyFill(const QDBusMessage &reply, QDBusError &error, QVariant &data
     }
 
     const char *expectedSignature = QDBusMetaType::typeToSignature(data.userType());
-    const char *receivedType = 0;
+    const char *receivedType = nullptr;
     QByteArray receivedSignature;
 
     if (reply.arguments().count() >= 1) {

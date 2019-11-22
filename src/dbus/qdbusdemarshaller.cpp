@@ -295,7 +295,7 @@ QVariant QDBusDemarshaller::toVariantInternal()
 //        qWarning("QDBusDemarshaller: Found unknown D-Bus type %d '%c'",
 //                 q_dbus_message_iter_get_arg_type(&iterator),
 //                 q_dbus_message_iter_get_arg_type(&iterator));
-        char *ptr = 0;
+        char *ptr = nullptr;
         ptr += q_dbus_message_iter_get_arg_type(&iterator);
         q_dbus_message_iter_next(&iterator);
 

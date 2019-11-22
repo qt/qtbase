@@ -46,7 +46,7 @@ class QBlittablePrivate
 {
 public:
     QBlittablePrivate(const QSize &size, QBlittable::Capabilities caps)
-        : caps(caps), m_size(size), locked(false), cachedImg(0)
+        : caps(caps), m_size(size), locked(false), cachedImg(nullptr)
     {}
     QBlittable::Capabilities caps;
     QSize m_size;

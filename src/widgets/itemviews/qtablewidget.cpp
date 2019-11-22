@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
 QTableModel::QTableModel(int rows, int columns, QTableWidget *parent)
     : QAbstractTableModel(parent),
-      prototype(0),
+      prototype(nullptr),
       tableItems(rows * columns, 0),
       verticalHeaderItems(rows, 0),
       horizontalHeaderItems(columns, 0)
@@ -104,18 +104,18 @@ bool QTableModel::removeRows(int row, int count, const QModelIndex &)
     beginRemoveRows(QModelIndex(), row, row + count - 1);
     int i = tableIndex(row, 0);
     int n = count * columnCount();
-    QTableWidgetItem *oldItem = 0;
+    QTableWidgetItem *oldItem = nullptr;
     for (int j = i; j < n + i; ++j) {
         oldItem = tableItems.at(j);
         if (oldItem)
-            oldItem->view = 0;
+            oldItem->view = nullptr;
         delete oldItem;
     }
     tableItems.remove(qMax(i, 0), n);
     for (int v = row; v < row + count; ++v) {
         oldItem = verticalHeaderItems.at(v);
         if (oldItem)
-            oldItem->view = 0;
+            oldItem->view = nullptr;
         delete oldItem;
     }
     verticalHeaderItems.remove(row, count);
@@ -129,13 +129,13 @@ bool QTableModel::removeColumns(int column, int count, const QModelIndex &)
         return false;
 
     beginRemoveColumns(QModelIndex(), column, column + count - 1);
-    QTableWidgetItem *oldItem = 0;
+    QTableWidgetItem *oldItem = nullptr;
     for (int row = rowCount() - 1; row >= 0; --row) {
         int i = tableIndex(row, column);
         for (int j = i; j < i + count; ++j) {
             oldItem = tableItems.at(j);
             if (oldItem)
-                oldItem->view = 0;
+                oldItem->view = nullptr;
             delete oldItem;
         }
         tableItems.remove(i, count);
@@ -143,7 +143,7 @@ bool QTableModel::removeColumns(int column, int count, const QModelIndex &)
     for (int h=column; h<column+count; ++h) {
         oldItem = horizontalHeaderItems.at(h);
         if (oldItem)
-            oldItem->view = 0;
+            oldItem->view = nullptr;
         delete oldItem;
     }
     horizontalHeaderItems.remove(column, count);
@@ -162,7 +162,7 @@ void QTableModel::setItem(int row, int column, QTableWidgetItem *item)
 
     // remove old
     if (oldItem)
-        oldItem->view = 0;
+        oldItem->view = nullptr;
     delete tableItems.at(i);
 
     QTableWidget *view = qobject_cast<QTableWidget*>(QObject::parent());
@@ -180,7 +180,7 @@ void QTableModel::setItem(int row, int column, QTableWidgetItem *item)
         if (row < colItems.count())
             colItems.remove(row);
         int sortedRow;
-        if (item == 0) {
+        if (item == nullptr) {
             // move to after all non-0 (sortable) items
             sortedRow = colItems.count();
         } else {
@@ -222,7 +222,7 @@ QTableWidgetItem *QTableModel::takeItem(int row, int column)
     long i = tableIndex(row, column);
     QTableWidgetItem *itm = tableItems.value(i);
     if (itm) {
-        itm->view = 0;
+        itm->view = nullptr;
         itm->d->id = -1;
         tableItems[i] = 0;
         const QModelIndex ind = index(row, column);
@@ -239,7 +239,7 @@ QTableWidgetItem *QTableModel::item(int row, int column) const
 QTableWidgetItem *QTableModel::item(const QModelIndex &index) const
 {
     if (!isValid(index))
-        return 0;
+        return nullptr;
     return tableItems.at(tableIndex(index.row(), index.column()));
 }
 
@@ -277,7 +277,7 @@ void QTableModel::setHorizontalHeaderItem(int section, QTableWidgetItem *item)
         return;
 
     if (oldItem)
-        oldItem->view = 0;
+        oldItem->view = nullptr;
     delete oldItem;
 
     QTableWidget *view = qobject_cast<QTableWidget*>(QObject::parent());
@@ -299,7 +299,7 @@ void QTableModel::setVerticalHeaderItem(int section, QTableWidgetItem *item)
         return;
 
     if (oldItem)
-        oldItem->view = 0;
+        oldItem->view = nullptr;
     delete oldItem;
 
     QTableWidget *view = qobject_cast<QTableWidget*>(QObject::parent());
@@ -315,10 +315,10 @@ void QTableModel::setVerticalHeaderItem(int section, QTableWidgetItem *item)
 QTableWidgetItem *QTableModel::takeHorizontalHeaderItem(int section)
 {
     if (section < 0 || section >= horizontalHeaderItems.count())
-        return 0;
+        return nullptr;
     QTableWidgetItem *itm = horizontalHeaderItems.at(section);
     if (itm) {
-        itm->view = 0;
+        itm->view = nullptr;
         itm->itemFlags &= ~ItemIsHeaderItem;
         horizontalHeaderItems[section] = 0;
     }
@@ -328,10 +328,10 @@ QTableWidgetItem *QTableModel::takeHorizontalHeaderItem(int section)
 QTableWidgetItem *QTableModel::takeVerticalHeaderItem(int section)
 {
     if (section < 0 || section >= verticalHeaderItems.count())
-        return 0;
+        return nullptr;
     QTableWidgetItem *itm = verticalHeaderItems.at(section);
     if (itm) {
-        itm->view = 0;
+        itm->view = nullptr;
         itm->itemFlags &= ~ItemIsHeaderItem;
         verticalHeaderItems[section] = 0;
     }
@@ -571,7 +571,7 @@ void QTableModel::ensureSorted(int column, Qt::SortOrder order,
     sorting.reserve(count);
     for (int row = start; row <= end; ++row) {
         QTableWidgetItem *itm = item(row, column);
-        if (itm == 0) {
+        if (itm == nullptr) {
             // no more sortable items (all 0-items are
             // at the end of the table when it is sorted)
             break;
@@ -649,7 +649,7 @@ QVector<QTableWidgetItem*> QTableModel::columnItems(int column) const
     items.reserve(rc);
     for (int row = 0; row < rc; ++row) {
         QTableWidgetItem *itm = item(row, column);
-        if (itm == 0) {
+        if (itm == nullptr) {
             // no more sortable items (all 0-items are
             // at the end of the table when it is sorted)
             break;
@@ -718,7 +718,7 @@ QVariant QTableModel::headerData(int section, Qt::Orientation orientation, int r
     if (section < 0)
         return QVariant();
 
-    QTableWidgetItem *itm = 0;
+    QTableWidgetItem *itm = nullptr;
     if (orientation == Qt::Horizontal && section < horizontalHeaderItems.count())
         itm = horizontalHeaderItems.at(section);
     else if (orientation == Qt::Vertical && section < verticalHeaderItems.count())
@@ -741,7 +741,7 @@ bool QTableModel::setHeaderData(int section, Qt::Orientation orientation,
        (orientation == Qt::Vertical && verticalHeaderItems.size() <= section))
     return false;
 
-    QTableWidgetItem *itm = 0;
+    QTableWidgetItem *itm = nullptr;
     if (orientation == Qt::Horizontal)
         itm = horizontalHeaderItems.at(section);
     else
@@ -764,14 +764,14 @@ void QTableModel::clear()
 {
     for (int j = 0; j < verticalHeaderItems.count(); ++j) {
         if (verticalHeaderItems.at(j)) {
-            verticalHeaderItems.at(j)->view = 0;
+            verticalHeaderItems.at(j)->view = nullptr;
             delete verticalHeaderItems.at(j);
             verticalHeaderItems[j] = 0;
         }
     }
     for (int k = 0; k < horizontalHeaderItems.count(); ++k) {
         if (horizontalHeaderItems.at(k)) {
-            horizontalHeaderItems.at(k)->view = 0;
+            horizontalHeaderItems.at(k)->view = nullptr;
             delete horizontalHeaderItems.at(k);
             horizontalHeaderItems[k] = 0;
         }
@@ -784,7 +784,7 @@ void QTableModel::clearContents()
     beginResetModel();
     for (int i = 0; i < tableItems.count(); ++i) {
         if (tableItems.at(i)) {
-            tableItems.at(i)->view = 0;
+            tableItems.at(i)->view = nullptr;
             delete tableItems.at(i);
             tableItems[i] = 0;
         }
@@ -853,7 +853,7 @@ QMimeData *QTableModel::mimeData(const QModelIndexList &indexes) const
     // cachedIndexes is a little hack to avoid copying from QModelIndexList to
     // QList<QTreeWidgetItem*> and back again in the view
     cachedIndexes = indexes;
-    QMimeData *mimeData = (view ? view->mimeData(items) : 0);
+    QMimeData *mimeData = (view ? view->mimeData(items) : nullptr);
     cachedIndexes.clear();
     return mimeData;
 }
@@ -2040,7 +2040,7 @@ QTableWidgetItem *QTableWidget::takeItem(int row, int column)
     Q_D(QTableWidget);
     QTableWidgetItem *item = d->tableModel()->takeItem(row, column);
     if (item)
-        item->view = 0;
+        item->view = nullptr;
     return item;
 }
 
@@ -2076,7 +2076,7 @@ QTableWidgetItem *QTableWidget::takeVerticalHeaderItem(int row)
     Q_D(QTableWidget);
     QTableWidgetItem *itm = d->tableModel()->takeVerticalHeaderItem(row);
     if (itm)
-        itm->view = 0;
+        itm->view = nullptr;
     return itm;
 }
 
@@ -2115,7 +2115,7 @@ QTableWidgetItem *QTableWidget::takeHorizontalHeaderItem(int column)
     Q_D(QTableWidget);
     QTableWidgetItem *itm = d->tableModel()->takeHorizontalHeaderItem(column);
     if (itm)
-        itm->view = 0;
+        itm->view = nullptr;
     return itm;
 }
 
@@ -2126,7 +2126,7 @@ void QTableWidget::setVerticalHeaderLabels(const QStringList &labels)
 {
     Q_D(QTableWidget);
     QTableModel *model = d->tableModel();
-    QTableWidgetItem *item = 0;
+    QTableWidgetItem *item = nullptr;
     for (int i = 0; i < model->rowCount() && i < labels.count(); ++i) {
         item = model->verticalHeaderItem(i);
         if (!item) {
@@ -2144,7 +2144,7 @@ void QTableWidget::setHorizontalHeaderLabels(const QStringList &labels)
 {
     Q_D(QTableWidget);
     QTableModel *model = d->tableModel();
-    QTableWidgetItem *item = 0;
+    QTableWidgetItem *item = nullptr;
     for (int i = 0; i < model->columnCount() && i < labels.count(); ++i) {
         item = model->horizontalHeaderItem(i);
         if (!item) {

@@ -56,35 +56,35 @@ QT_BEGIN_NAMESPACE
 void *QPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
 {
     Q_UNUSED(resource);
-    return 0;
+    return nullptr;
 }
 
 void *QPlatformNativeInterface::nativeResourceForScreen(const QByteArray &resource, QScreen *screen)
 {
     Q_UNUSED(resource);
     Q_UNUSED(screen);
-    return 0;
+    return nullptr;
 }
 
 void *QPlatformNativeInterface::nativeResourceForWindow(const QByteArray &resource, QWindow *window)
 {
     Q_UNUSED(resource);
     Q_UNUSED(window);
-    return 0;
+    return nullptr;
 }
 
 void *QPlatformNativeInterface::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
 {
     Q_UNUSED(resource);
     Q_UNUSED(context);
-    return 0;
+    return nullptr;
 }
 
 void * QPlatformNativeInterface::nativeResourceForBackingStore(const QByteArray &resource, QBackingStore *backingStore)
 {
     Q_UNUSED(resource);
     Q_UNUSED(backingStore);
-    return 0;
+    return nullptr;
 }
 
 #ifndef QT_NO_CURSOR
@@ -99,31 +99,31 @@ void *QPlatformNativeInterface::nativeResourceForCursor(const QByteArray &resour
 QPlatformNativeInterface::NativeResourceForIntegrationFunction QPlatformNativeInterface::nativeResourceFunctionForIntegration(const QByteArray &resource)
 {
     Q_UNUSED(resource);
-    return 0;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForContextFunction QPlatformNativeInterface::nativeResourceFunctionForContext(const QByteArray &resource)
 {
     Q_UNUSED(resource);
-    return 0;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForScreenFunction QPlatformNativeInterface::nativeResourceFunctionForScreen(const QByteArray &resource)
 {
     Q_UNUSED(resource);
-    return 0;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForWindowFunction QPlatformNativeInterface::nativeResourceFunctionForWindow(const QByteArray &resource)
 {
     Q_UNUSED(resource);
-    return 0;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForBackingStoreFunction QPlatformNativeInterface::nativeResourceFunctionForBackingStore(const QByteArray &resource)
 {
     Q_UNUSED(resource);
-    return 0;
+    return nullptr;
 }
 
 QFunctionPointer QPlatformNativeInterface::platformFunction(const QByteArray &function) const

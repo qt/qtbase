@@ -67,7 +67,7 @@ QEglFSOffscreenWindow::QEglFSOffscreenWindow(EGLDisplay display, const QSurfaceF
         return;
     }
     EGLConfig config = q_configFromGLFormat(m_display, m_format);
-    m_surface = eglCreateWindowSurface(m_display, config, m_window, 0);
+    m_surface = eglCreateWindowSurface(m_display, config, m_window, nullptr);
     if (m_surface != EGL_NO_SURFACE)
         m_format = q_glFormatFromConfig(m_display, config);
 }

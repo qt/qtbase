@@ -81,7 +81,7 @@ void QActionGroupPrivate::_q_actionChanged()
                 current = action;
             }
         } else if (action == current) {
-            current = 0;
+            current = nullptr;
         }
     }
 }
@@ -271,11 +271,11 @@ void QActionGroup::removeAction(QAction *action)
     Q_D(QActionGroup);
     if (d->actions.removeAll(action)) {
         if (action == d->current)
-            d->current = 0;
+            d->current = nullptr;
         QObject::disconnect(action, SIGNAL(triggered()), this, SLOT(_q_actionTriggered()));
         QObject::disconnect(action, SIGNAL(changed()), this, SLOT(_q_actionChanged()));
         QObject::disconnect(action, SIGNAL(hovered()), this, SLOT(_q_actionHovered()));
-        action->d_func()->group = 0;
+        action->d_func()->group = nullptr;
     }
 }
 

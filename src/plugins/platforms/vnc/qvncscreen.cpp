@@ -101,7 +101,7 @@ bool QVncScreen::initialize()
     default:
         qWarning("QVNCScreen::initDevice: No support for screen depth %d",
                  depth());
-        dirty = 0;
+        dirty = nullptr;
         return false;
     }
 

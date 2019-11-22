@@ -48,19 +48,19 @@
 QT_BEGIN_NAMESPACE
 
 // the universe's only drag manager
-QDragManager *QDragManager::m_instance = 0;
+QDragManager *QDragManager::m_instance = nullptr;
 
 QDragManager::QDragManager()
-    : QObject(qApp), m_currentDropTarget(0),
+    : QObject(qApp), m_currentDropTarget(nullptr),
       m_platformDrag(QGuiApplicationPrivate::platformIntegration()->drag()),
-      m_object(0)
+      m_object(nullptr)
 {
     Q_ASSERT(!m_instance);
 }
 
 QDragManager::~QDragManager()
 {
-    m_instance = 0;
+    m_instance = nullptr;
 }
 
 QDragManager *QDragManager::self()
@@ -74,7 +74,7 @@ QObject *QDragManager::source() const
 {
     if (m_object)
         return m_object->source();
-    return 0;
+    return nullptr;
 }
 
 void QDragManager::setCurrentTarget(QObject *target, bool dropped)
@@ -111,7 +111,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
 
     m_object = o;
 
-    m_object->d_func()->target = 0;
+    m_object->d_func()->target = nullptr;
 
     QGuiApplicationPrivate::instance()->notifyDragStarted(m_object.data());
     const Qt::DropAction result = m_platformDrag->drag(m_object);

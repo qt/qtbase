@@ -72,7 +72,7 @@ public:
     void invalidateResource() override
     {
         delete m_shaders;
-        m_shaders = 0;
+        m_shaders = nullptr;
     }
 
     void freeResource(QOpenGLContext *) override
@@ -94,7 +94,7 @@ public:
             shaders = new QOpenGLMultiGroupSharedResource;
         QOpenGLEngineSharedShadersResource *resource =
             shaders->value<QOpenGLEngineSharedShadersResource>(context);
-        return resource ? resource->shaders() : 0;
+        return resource ? resource->shaders() : nullptr;
     }
 
 private:
@@ -116,8 +116,8 @@ const char* QOpenGLEngineSharedShaders::qShaderSnippets[] = {
 };
 
 QOpenGLEngineSharedShaders::QOpenGLEngineSharedShaders(QOpenGLContext* context)
-    : blitShaderProg(0)
-    , simpleShaderProg(0)
+    : blitShaderProg(nullptr)
+    , simpleShaderProg(nullptr)
 {
 
 /*
@@ -341,12 +341,12 @@ QOpenGLEngineSharedShaders::~QOpenGLEngineSharedShaders()
 
     if (blitShaderProg) {
         delete blitShaderProg;
-        blitShaderProg = 0;
+        blitShaderProg = nullptr;
     }
 
     if (simpleShaderProg) {
         delete simpleShaderProg;
-        simpleShaderProg = 0;
+        simpleShaderProg = nullptr;
     }
 }
 
@@ -507,8 +507,8 @@ QOpenGLEngineShaderManager::QOpenGLEngineShaderManager(QOpenGLContext* context)
       opacityMode(NoOpacity),
       maskType(NoMask),
       compositionMode(QPainter::CompositionMode_SourceOver),
-      customSrcStage(0),
-      currentShaderProg(0)
+      customSrcStage(nullptr),
+      currentShaderProg(nullptr)
 {
     sharedShaders = QOpenGLEngineSharedShaders::shadersForContext(context);
 }
@@ -627,7 +627,7 @@ void QOpenGLEngineShaderManager::removeCustomStage()
 {
     if (customSrcStage)
         customSrcStage->setInactive();
-    customSrcStage = 0;
+    customSrcStage = nullptr;
     shaderProgNeedsChanging = true;
 }
 
@@ -684,7 +684,7 @@ bool QOpenGLEngineShaderManager::useCorrectShaderProg()
     if (!shaderProgNeedsChanging)
         return false;
 
-    bool useCustomSrc = customSrcStage != 0;
+    bool useCustomSrc = customSrcStage != nullptr;
     if (useCustomSrc && srcPixelType != QOpenGLEngineShaderManager::ImageSrc && srcPixelType != Qt::TexturePattern) {
         useCustomSrc = false;
         qWarning("QOpenGLEngineShaderManager - Ignoring custom shader stage for non image src");

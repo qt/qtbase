@@ -87,11 +87,11 @@ private:
 static const int reconnectAttemptsDefault = 3;
 
 QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
-    : socket(0)
+    : socket(nullptr)
     , ssl(false)
     , isInitialized(false)
     , state(IdleState)
-    , reply(0)
+    , reply(nullptr)
     , written(0)
     , bytesTotal(0)
     , resendCurrent(false)
@@ -102,13 +102,13 @@ QHttpNetworkConnectionChannel::QHttpNetworkConnectionChannel()
     , proxyAuthMethod(QAuthenticatorPrivate::None)
     , authenticationCredentialsSent(false)
     , proxyCredentialsSent(false)
-    , protocolHandler(0)
+    , protocolHandler(nullptr)
 #ifndef QT_NO_SSL
     , ignoreAllSslErrors(false)
 #endif
     , pipeliningSupported(PipeliningSupportUnknown)
     , networkLayerPreference(QAbstractSocket::AnyIPProtocol)
-    , connection(0)
+    , connection(nullptr)
 {
     // Inlining this function in the header leads to compiler error on
     // release-armv5, on at least timebox 9.2 and 10.1.
@@ -295,9 +295,9 @@ void QHttpNetworkConnectionChannel::handleUnexpectedEOF()
         close();
         reply->d_func()->errorString = connection->d_func()->errorDetail(QNetworkReply::RemoteHostClosedError, socket);
         emit reply->finishedWithError(QNetworkReply::RemoteHostClosedError, reply->d_func()->errorString);
-        reply = 0;
+        reply = nullptr;
         if (protocolHandler)
-            protocolHandler->setReply(0);
+            protocolHandler->setReply(nullptr);
         request = QHttpNetworkRequest();
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     } else {
@@ -526,8 +526,8 @@ void QHttpNetworkConnectionChannel::allDone()
     // problem.
     if (!resendCurrent) {
         request = QHttpNetworkRequest();
-        reply = 0;
-        protocolHandler->setReply(0);
+        reply = nullptr;
+        protocolHandler->setReply(nullptr);
     }
 
     // move next from pipeline to current request
@@ -1100,9 +1100,9 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         if (reply) {
             reply->d_func()->errorString = errorString;
             emit reply->finishedWithError(errorCode, errorString);
-            reply = 0;
+            reply = nullptr;
             if (protocolHandler)
-                protocolHandler->setReply(0);
+                protocolHandler->setReply(nullptr);
         }
     } while (!connection->d_func()->highPriorityQueue.isEmpty()
              || !connection->d_func()->lowPriorityQueue.isEmpty());

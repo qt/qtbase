@@ -224,7 +224,7 @@ void QScrollBarPrivate::setTransient(bool value)
     if (transient != value) {
         transient = value;
         if (q->isVisible()) {
-            if (q->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, q))
+            if (q->style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, q))
                 q->update();
         } else if (!transient) {
             q->show();
@@ -235,7 +235,7 @@ void QScrollBarPrivate::setTransient(bool value)
 void QScrollBarPrivate::flash()
 {
     Q_Q(QScrollBar);
-    if (!flashed && q->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, q)) {
+    if (!flashed && q->style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, q)) {
         flashed = true;
         if (!q->isVisible())
             q->show();
@@ -319,7 +319,7 @@ void QScrollBar::initStyleOption(QStyleOptionSlider *option) const
     option->upsideDown = d->invertedAppearance;
     if (d->orientation == Qt::Horizontal)
         option->state |= QStyle::State_Horizontal;
-    if ((d->flashed || !d->transient) && style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, this))
+    if ((d->flashed || !d->transient) && style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, this))
         option->state |= QStyle::State_On;
 }
 
@@ -376,7 +376,7 @@ void QScrollBarPrivate::init()
     invertedControls = true;
     pressedControl = hoverControl = QStyle::SC_None;
     pointerOutsidePressedControl = false;
-    transient = q->style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, q);
+    transient = q->style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, q);
     flashed = false;
     flashTimer = 0;
     q->setFocusPolicy(Qt::NoFocus);
@@ -392,7 +392,7 @@ void QScrollBarPrivate::init()
 /*! \reimp */
 void QScrollBar::contextMenuEvent(QContextMenuEvent *event)
 {
-    if (!style()->styleHint(QStyle::SH_ScrollBar_ContextMenu, 0, this)) {
+    if (!style()->styleHint(QStyle::SH_ScrollBar_ContextMenu, nullptr, this)) {
         QAbstractSlider::contextMenuEvent(event);
         return ;
     }
@@ -412,7 +412,7 @@ void QScrollBar::contextMenuEvent(QContextMenuEvent *event)
     QAction *actScrollDn = menu->addAction(horiz ? tr("Scroll right") : tr("Scroll down"));
     QAction *actionSelected = menu->exec(event->globalPos());
     delete menu;
-    if (actionSelected == 0)
+    if (actionSelected == nullptr)
         /* do nothing */ ;
     else if (actionSelected == actScrollHere)
         setValue(d_func()->pixelPosToRangeValue(horiz ? event->pos().x() : event->pos().y()));
@@ -472,11 +472,11 @@ bool QScrollBar::event(QEvent *event)
             d_func()->updateHoverControl(he->pos());
         break;
     case QEvent::StyleChange:
-        d_func()->setTransient(style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, this));
+        d_func()->setTransient(style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, this));
         break;
     case QEvent::Timer:
         if (static_cast<QTimerEvent *>(event)->timerId() == d->flashTimer) {
-            if (d->flashed && style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, this)) {
+            if (d->flashed && style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, this)) {
                 d->flashed = false;
                 update();
             }
@@ -545,7 +545,7 @@ void QScrollBar::mousePressEvent(QMouseEvent *e)
         d->stopRepeatAction();
 
     bool midButtonAbsPos = style()->styleHint(QStyle::SH_ScrollBar_MiddleClickAbsolutePosition,
-                                             0, this);
+                                             nullptr, this);
     QStyleOptionSlider opt;
     initStyleOption(&opt);
 

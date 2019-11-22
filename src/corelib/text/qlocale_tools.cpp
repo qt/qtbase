@@ -322,7 +322,7 @@ double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
         conv_flags = double_conversion::StringToDoubleConverter::ALLOW_LEADING_SPACES
                 | double_conversion::StringToDoubleConverter::ALLOW_TRAILING_SPACES;
     }
-    double_conversion::StringToDoubleConverter conv(conv_flags, 0.0, qt_qnan(), 0, 0);
+    double_conversion::StringToDoubleConverter conv(conv_flags, 0.0, qt_qnan(), nullptr, nullptr);
     d = conv.StringToDouble(num, numLen, &processed);
 
     if (!qIsFinite(d)) {

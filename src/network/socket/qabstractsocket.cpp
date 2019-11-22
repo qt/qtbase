@@ -564,12 +564,12 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       port(0),
       localPort(0),
       peerPort(0),
-      socketEngine(0),
+      socketEngine(nullptr),
       cachedSocketDescriptor(-1),
       readBufferMaxSize(0),
       isBuffered(false),
       hasPendingData(false),
-      connectTimer(0),
+      connectTimer(nullptr),
       hostLookupId(-1),
       socketType(QAbstractSocket::UnknownSocketType),
       state(QAbstractSocket::UnconnectedState),
@@ -603,7 +603,7 @@ void QAbstractSocketPrivate::resetSocketLayer()
         socketEngine->close();
         socketEngine->disconnect();
         delete socketEngine;
-        socketEngine = 0;
+        socketEngine = nullptr;
         cachedSocketDescriptor = -1;
     }
     if (connectTimer)

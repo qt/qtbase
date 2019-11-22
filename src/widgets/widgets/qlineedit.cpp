@@ -446,7 +446,7 @@ void QLineEdit::addAction(QAction *action, ActionPosition position)
 {
     Q_D(QLineEdit);
     QWidget::addAction(action);
-    d->addAction(action, 0, position);
+    d->addAction(action, nullptr, position);
 }
 
 /*!
@@ -640,15 +640,15 @@ void QLineEdit::setCompleter(QCompleter *c)
     if (c == d->control->completer())
         return;
     if (d->control->completer()) {
-        disconnect(d->control->completer(), 0, this, 0);
-        d->control->completer()->setWidget(0);
+        disconnect(d->control->completer(), nullptr, this, nullptr);
+        d->control->completer()->setWidget(nullptr);
         if (d->control->completer()->parent() == this)
             delete d->control->completer();
     }
     d->control->setCompleter(c);
     if (!c)
         return;
-    if (c->widget() == 0)
+    if (c->widget() == nullptr)
         c->setWidget(this);
     if (hasFocus()) {
         QObject::connect(d->control->completer(), SIGNAL(activated(QString)),
@@ -683,7 +683,7 @@ QSize QLineEdit::sizeHint() const
     Q_D(const QLineEdit);
     ensurePolished();
     QFontMetrics fm(font());
-    const int iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
+    const int iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, this);
     const QMargins tm = d->effectiveTextMargins();
     int h = qMax(fm.height(), qMax(14, iconSize - 2)) + 2 * QLineEditPrivate::verticalMargin
             + tm.top() + tm.bottom()
@@ -1951,7 +1951,7 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
 #endif
 #if QT_CONFIG(completer)
     if (d->control->completer()) {
-        QObject::disconnect(d->control->completer(), 0, this, 0);
+        QObject::disconnect(d->control->completer(), nullptr, this, nullptr);
     }
 #endif
     QWidget::focusOutEvent(e);
@@ -2190,7 +2190,7 @@ QMenu *QLineEdit::createStandardContextMenu()
     Q_D(QLineEdit);
     QMenu *popup = new QMenu(this);
     popup->setObjectName(QLatin1String("qt_edit_menu"));
-    QAction *action = 0;
+    QAction *action = nullptr;
 
     if (!isReadOnly()) {
         action = popup->addAction(QLineEdit::tr("&Undo") + ACCEL_KEY(QKeySequence::Undo));

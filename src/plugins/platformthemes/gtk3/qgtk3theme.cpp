@@ -86,9 +86,9 @@ QGtk3Theme::QGtk3Theme()
 {
     // gtk_init will reset the Xlib error handler, and that causes
     // Qt applications to quit on X errors. Therefore, we need to manually restore it.
-    int (*oldErrorHandler)(Display *, XErrorEvent *) = XSetErrorHandler(NULL);
+    int (*oldErrorHandler)(Display *, XErrorEvent *) = XSetErrorHandler(nullptr);
 
-    gtk_init(0, 0);
+    gtk_init(nullptr, nullptr);
 
     XSetErrorHandler(oldErrorHandler);
 
@@ -99,7 +99,7 @@ QGtk3Theme::QGtk3Theme()
     g_type_ensure(PANGO_TYPE_FONT_FACE);
 
     /* Use our custom log handler. */
-    g_log_set_handler("Gtk", G_LOG_LEVEL_MESSAGE, gtkMessageHandler, NULL);
+    g_log_set_handler("Gtk", G_LOG_LEVEL_MESSAGE, gtkMessageHandler, nullptr);
 }
 
 static inline QVariant gtkGetLongPressTime()
@@ -173,7 +173,7 @@ QPlatformDialogHelper *QGtk3Theme::createPlatformDialogHelper(DialogType type) c
     case FontDialog:
         return new QGtk3FontDialogHelper;
     default:
-        return 0;
+        return nullptr;
     }
 }
 
@@ -197,7 +197,7 @@ bool QGtk3Theme::useNativeFileDialog()
      * dialogs entirely since we can't avoid creation of a platform
      * dialog helper.
      */
-    return gtk_check_version(3, 15, 5) == 0;
+    return gtk_check_version(3, 15, 5) == nullptr;
 }
 
 QT_END_NAMESPACE

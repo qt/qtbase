@@ -219,7 +219,7 @@ QPaintDeviceWindow::QPaintDeviceWindow(QPaintDeviceWindowPrivate &dd, QWindow *p
  */
 QPaintEngine *QPaintDeviceWindow::paintEngine() const
 {
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

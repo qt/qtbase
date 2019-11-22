@@ -127,7 +127,7 @@ bool QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const 
 
         QFixed subPixelPosition;
         if (supportsSubPixelPositions) {
-            QFixed x = positions != 0 ? positions[i].x : QFixed();
+            QFixed x = positions != nullptr ? positions[i].x : QFixed();
             subPixelPosition = fontEngine->subPixelPositionForX(x);
         }
 

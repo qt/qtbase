@@ -368,7 +368,7 @@ QFontEngine *QPlatformFontDatabase::fontEngine(const QByteArray &fontData, qreal
     Q_UNUSED(pixelSize);
     Q_UNUSED(hintingPreference);
     qWarning("This plugin does not support font engines created directly from font data");
-    return 0;
+    return nullptr;
 }
 
 /*!

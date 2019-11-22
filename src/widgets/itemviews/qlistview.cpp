@@ -933,8 +933,8 @@ QStyleOptionViewItem QListView::viewOptions() const
     QStyleOptionViewItem option = QAbstractItemView::viewOptions();
     if (!d->iconSize.isValid()) { // otherwise it was already set in abstractitemview
         int pm = (d->viewMode == QListView::ListMode
-                  ? style()->pixelMetric(QStyle::PM_ListViewIconSize, 0, this)
-                  : style()->pixelMetric(QStyle::PM_IconViewIconSize, 0, this));
+                  ? style()->pixelMetric(QStyle::PM_ListViewIconSize, nullptr, this)
+                  : style()->pixelMetric(QStyle::PM_IconViewIconSize, nullptr, this));
         option.decorationSize = QSize(pm, pm);
     }
     if (d->viewMode == QListView::IconMode) {
@@ -1688,7 +1688,7 @@ bool QListView::event(QEvent *e)
 
 QListViewPrivate::QListViewPrivate()
     : QAbstractItemViewPrivate(),
-      commonListView(0),
+      commonListView(nullptr),
       wrap(false),
       space(0),
       flow(QListView::TopToBottom),
@@ -1733,10 +1733,10 @@ void QListViewPrivate::prepareItemsLayout()
     // Qt::ScrollBarAlwaysOn but scrollbar extent must be deduced if policy
     // is Qt::ScrollBarAsNeeded
     int verticalMargin = vbarpolicy==Qt::ScrollBarAsNeeded
-        ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, vbar) + frameAroundContents
+        ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, nullptr, vbar) + frameAroundContents
         : 0;
     int horizontalMargin =  hbarpolicy==Qt::ScrollBarAsNeeded
-        ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, hbar) + frameAroundContents
+        ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, nullptr, hbar) + frameAroundContents
         : 0;
 
     layoutBounds.adjust(0, 0, -verticalMargin, -horizontalMargin);
@@ -3072,7 +3072,7 @@ void QIconModeViewBase::doDynamicLayout(const QListViewLayoutInfo &info)
         moved.resize(items.count());
 
     QRect rect(QPoint(), topLeft);
-    QListViewItem *item = 0;
+    QListViewItem *item = nullptr;
     for (int row = info.first; row <= info.last; ++row) {
         item = &items[row];
         if (isHidden(row)) {
@@ -3178,7 +3178,7 @@ QVector<QModelIndex> QIconModeViewBase::intersectingSet(const QRect &area) const
     QVector<QModelIndex> res;
     that->interSectingVector = &res;
     that->tree.climbTree(area, &QIconModeViewBase::addLeaf, data);
-    that->interSectingVector = 0;
+    that->interSectingVector = nullptr;
     return res;
 }
 

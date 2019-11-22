@@ -126,7 +126,7 @@ static inline bool qt_pixmapcache_thread_test()
 /*!
     Constructs an empty Key object.
 */
-QPixmapCache::Key::Key() : d(0)
+QPixmapCache::Key::Key() : d(nullptr)
 {
 }
 
@@ -259,9 +259,9 @@ uint qHash(const QPixmapCache::Key &k)
 }
 
 QPMCache::QPMCache()
-    : QObject(0),
+    : QObject(nullptr),
       QCache<QPixmapCache::Key, QPixmapCacheEntry>(cache_limit_default),
-      keyArray(0), theid(0), ps(0), keyArraySize(0), freeKey(0), t(false)
+      keyArray(nullptr), theid(0), ps(0), keyArraySize(0), freeKey(0), t(false)
 {
 }
 QPMCache::~QPMCache()
@@ -325,7 +325,7 @@ QPixmap *QPMCache::object(const QString &key) const
     QPixmapCache::Key cacheKey = cacheKeys.value(key);
     if (!cacheKey.d || !cacheKey.d->isValid) {
         const_cast<QPMCache *>(this)->cacheKeys.remove(key);
-        return 0;
+        return nullptr;
     }
     QPixmap *ptr = QCache<QPixmapCache::Key, QPixmapCacheEntry>::object(cacheKey);
      //We didn't find the pixmap in the cache, the key is not valid anymore
@@ -453,7 +453,7 @@ void QPMCache::releaseKey(const QPixmapCache::Key &key)
 void QPMCache::clear()
 {
     free(keyArray);
-    keyArray = 0;
+    keyArray = nullptr;
     freeKey = 0;
     keyArraySize = 0;
     //Mark all keys as invalid
@@ -539,7 +539,7 @@ bool QPixmapCache::find(const QString &key, QPixmap *pixmap)
     QPixmap *ptr = pm_cache()->object(key);
     if (ptr && pixmap)
         *pixmap = *ptr;
-    return ptr != 0;
+    return ptr != nullptr;
 }
 
 /*!
@@ -561,7 +561,7 @@ bool QPixmapCache::find(const Key &key, QPixmap *pixmap)
     QPixmap *ptr = pm_cache()->object(key);
     if (ptr && pixmap)
         *pixmap = *ptr;
-    return ptr != 0;
+    return ptr != nullptr;
 }
 
 /*!

@@ -124,12 +124,12 @@ public:
         QLibrarySettings *ls = qt_library_settings();
         if (ls) {
 #ifndef QT_BUILD_QMAKE
-            if (ls->reloadOnQAppAvailable && QCoreApplication::instance() != 0)
+            if (ls->reloadOnQAppAvailable && QCoreApplication::instance() != nullptr)
                 ls->load();
 #endif
             return ls->settings.data();
         } else {
-            return 0;
+            return nullptr;
         }
     }
 };
@@ -146,7 +146,7 @@ void QLibrarySettings::load()
     // If we get any settings here, those won't change when the application shows up.
     settings.reset(QLibraryInfoPrivate::findConfiguration());
 #ifndef QT_BUILD_QMAKE
-    reloadOnQAppAvailable = (settings.data() == 0 && QCoreApplication::instance() == 0);
+    reloadOnQAppAvailable = (settings.data() == nullptr && QCoreApplication::instance() == nullptr);
     bool haveDevicePaths;
     bool haveEffectivePaths;
     bool havePaths;
@@ -169,7 +169,7 @@ void QLibrarySettings::load()
                     || children.contains(QLatin1String("Paths"));
 #ifndef QT_BUILD_QMAKE
         if (!havePaths)
-            settings.reset(0);
+            settings.reset(nullptr);
 #else
     } else {
         haveDevicePaths = false;
@@ -212,7 +212,7 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
             return new QSettings(qtconfig, QSettings::IniFormat);
     }
 #endif
-    return 0;     //no luck
+    return nullptr;     //no luck
 }
 
 #endif // settings
@@ -750,7 +750,7 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
         // will binary-patch the Qt installation paths -- in such scenarios, Qt
         // will be built with a dummy path, thus the compile-time result of
         // strlen is meaningless.
-        const char * volatile path = 0;
+        const char * volatile path = nullptr;
         if (loc == PrefixPath) {
             path = getPrefix(
 #ifdef QT_BUILD_QMAKE

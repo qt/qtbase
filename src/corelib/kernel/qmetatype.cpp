@@ -1113,8 +1113,8 @@ static int registerNormalizedType(const NS(QByteArray) &normalizedTypeName,
             QCustomTypeInfo inf;
             inf.typeName = normalizedTypeName;
 #ifndef QT_NO_DATASTREAM
-            inf.loadOp = 0;
-            inf.saveOp = 0;
+            inf.loadOp = nullptr;
+            inf.saveOp = nullptr;
 #endif
             inf.alias = -1;
             inf.typedConstructor = typedConstructor;
@@ -1955,7 +1955,7 @@ public:
                 return Q_LIKELY(qMetaTypeWidgetsHelper)
                     ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].metaObject
                     : nullptr;
-            return 0;
+            return nullptr;
         }
     };
 

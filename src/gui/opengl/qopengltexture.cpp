@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 QOpenGLTexturePrivate::QOpenGLTexturePrivate(QOpenGLTexture::Target textureTarget,
                                              QOpenGLTexture *qq)
     : q_ptr(qq),
-      context(0),
+      context(nullptr),
       target(textureTarget),
       textureId(0),
       format(QOpenGLTexture::NoFormat),
@@ -82,8 +82,8 @@ QOpenGLTexturePrivate::QOpenGLTexturePrivate(QOpenGLTexture::Target textureTarge
       textureView(false),
       autoGenerateMipMaps(true),
       storageAllocated(false),
-      texFuncs(0),
-      functions(0)
+      texFuncs(nullptr),
+      functions(nullptr)
 {
     dimensions[0] = dimensions[1] = dimensions[2] = 1;
 
@@ -208,8 +208,8 @@ void QOpenGLTexturePrivate::destroy()
 
     functions->glDeleteTextures(1, &textureId);
 
-    context = 0;
-    functions = 0;
+    context = nullptr;
+    functions = nullptr;
     textureId = 0;
     format = QOpenGLTexture::NoFormat;
     formatClass = QOpenGLTexture::NoFormatClass;
@@ -231,7 +231,7 @@ void QOpenGLTexturePrivate::destroy()
     textureView = false;
     autoGenerateMipMaps = true;
     storageAllocated = false;
-    texFuncs = 0;
+    texFuncs = nullptr;
 
     swizzleMask[0] = QOpenGLTexture::RedValue;
     swizzleMask[1] = QOpenGLTexture::GreenValue;
@@ -1141,7 +1141,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
                 texFuncs->glTextureImage1D(textureId, target, bindingTarget, level, format,
                                            mipLevelSize(level, dimensions[0]),
                                            0,
-                                           pixelFormat, pixelType, 0);
+                                           pixelFormat, pixelType, nullptr);
         } else {
             qWarning("1D textures are not supported");
             return;
@@ -1156,7 +1156,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
                                            mipLevelSize(level, dimensions[0]),
                                            layers,
                                            0,
-                                           pixelFormat, pixelType, 0);
+                                           pixelFormat, pixelType, nullptr);
         } else {
             qWarning("1D array textures are not supported");
             return;
@@ -1170,7 +1170,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
                                        mipLevelSize(level, dimensions[0]),
                                        mipLevelSize(level, dimensions[1]),
                                        0,
-                                       pixelFormat, pixelType, 0);
+                                       pixelFormat, pixelType, nullptr);
         break;
 
     case QOpenGLTexture::TargetCubeMap: {
@@ -1190,7 +1190,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
                                            mipLevelSize(level, dimensions[0]),
                                            mipLevelSize(level, dimensions[1]),
                                            0,
-                                           pixelFormat, pixelType, 0);
+                                           pixelFormat, pixelType, nullptr);
             }
         }
         break;
@@ -1204,7 +1204,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
                                            mipLevelSize(level, dimensions[1]),
                                            layers,
                                            0,
-                                           pixelFormat, pixelType, 0);
+                                           pixelFormat, pixelType, nullptr);
         } else {
             qWarning("Array textures are not supported");
             return;
@@ -1220,7 +1220,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
                                            mipLevelSize(level, dimensions[1]),
                                            6 * layers,
                                            0,
-                                           pixelFormat, pixelType, 0);
+                                           pixelFormat, pixelType, nullptr);
         } else {
             qWarning("Cubemap Array textures are not supported");
             return;
@@ -1235,7 +1235,7 @@ void QOpenGLTexturePrivate::allocateMutableStorage(QOpenGLTexture::PixelFormat p
                                            mipLevelSize(level, dimensions[1]),
                                            mipLevelSize(level, dimensions[2]),
                                            0,
-                                           pixelFormat, pixelType, 0);
+                                           pixelFormat, pixelType, nullptr);
         } else {
             qWarning("3D textures are not supported");
             return;
@@ -1924,7 +1924,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
 
     if (!viewTargetCompatible) {
         qWarning("QOpenGLTexture::createTextureView(): Incompatible source and view targets");
-        return 0;
+        return nullptr;
     }
 
     // Check the formats are compatible
@@ -2057,7 +2057,7 @@ QOpenGLTexture *QOpenGLTexturePrivate::createTextureView(QOpenGLTexture::Target 
 
     if (!viewFormatCompatible) {
         qWarning("QOpenGLTexture::createTextureView(): Incompatible source and view formats");
-        return 0;
+        return nullptr;
     }
 
 
@@ -3387,7 +3387,7 @@ QOpenGLTexture *QOpenGLTexture::createTextureView(Target target,
     Q_D(const QOpenGLTexture);
     if (!isStorageAllocated()) {
         qWarning("Cannot set create a texture view of a texture that does not have storage allocated.");
-        return 0;
+        return nullptr;
     }
     Q_ASSERT(maximumMipmapLevel >= minimumMipmapLevel);
     Q_ASSERT(maximumLayer >= minimumLayer);

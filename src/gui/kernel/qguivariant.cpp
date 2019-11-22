@@ -103,13 +103,13 @@ static void construct(QVariant::Private *x, const void *copy)
 {
     const int type = x->type;
     QVariantConstructor<GuiTypesFilter> constructor(x, copy);
-    QMetaTypeSwitcher::switcher<void>(constructor, type, 0);
+    QMetaTypeSwitcher::switcher<void>(constructor, type, nullptr);
 }
 
 static void clear(QVariant::Private *d)
 {
     QVariantDestructor<GuiTypesFilter> destructor(d);
-    QMetaTypeSwitcher::switcher<void>(destructor, d->type, 0);
+    QMetaTypeSwitcher::switcher<void>(destructor, d->type, nullptr);
 }
 
 // This class is a hack that customizes access to QPolygon and QPolygonF
@@ -129,7 +129,7 @@ public:
 static bool isNull(const QVariant::Private *d)
 {
     QGuiVariantIsNull<GuiTypesFilter> isNull(d);
-    return QMetaTypeSwitcher::switcher<bool>(isNull, d->type, 0);
+    return QMetaTypeSwitcher::switcher<bool>(isNull, d->type, nullptr);
 }
 
 // This class is a hack that customizes access to QPixmap, QBitmap, QCursor and QIcon
@@ -171,7 +171,7 @@ public:
 static bool compare(const QVariant::Private *a, const QVariant::Private *b)
 {
     QGuiVariantComparator<GuiTypesFilter> comparator(a, b);
-    return QMetaTypeSwitcher::switcher<bool>(comparator, a->type, 0);
+    return QMetaTypeSwitcher::switcher<bool>(comparator, a->type, nullptr);
 }
 
 static bool convert(const QVariant::Private *d, int t,
@@ -311,7 +311,7 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
     QVariantDebugStream<GuiTypesFilter> stream(dbg, d);
-    QMetaTypeSwitcher::switcher<void>(stream, d->type, 0);
+    QMetaTypeSwitcher::switcher<void>(stream, d->type, nullptr);
 }
 #endif
 
@@ -320,12 +320,12 @@ const QVariant::Handler qt_gui_variant_handler = {
     clear,
     isNull,
 #ifndef QT_NO_DATASTREAM
-    0,
-    0,
+    nullptr,
+    nullptr,
 #endif
     compare,
     convert,
-    0,
+    nullptr,
 #if !defined(QT_NO_DEBUG_STREAM)
     streamDebug
 #else

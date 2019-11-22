@@ -1866,7 +1866,7 @@ void QVulkanWindowPrivate::beginFrame()
     // build new draw command buffer
     if (image.cmdBuf) {
         devFuncs->vkFreeCommandBuffers(dev, cmdPool, 1, &image.cmdBuf);
-        image.cmdBuf = 0;
+        image.cmdBuf = nullptr;
     }
 
     VkCommandBufferAllocateInfo cmdBufInfo = {

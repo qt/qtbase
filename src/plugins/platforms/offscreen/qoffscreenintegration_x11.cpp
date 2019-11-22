@@ -206,7 +206,7 @@ QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGL
     if (d->format.renderableType() != QSurfaceFormat::OpenGL)
         return;
 
-    d->shareContext = 0;
+    d->shareContext = nullptr;
     if (context->shareHandle())
         d->shareContext = static_cast<QOffscreenX11GLXContext *>(context->shareHandle())->d->context;
 
@@ -216,9 +216,9 @@ QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGL
     if (config) {
         d->context = glXCreateNewContext(x11->display(), config, GLX_RGBA_TYPE, d->shareContext, true);
         if (!d->context && d->shareContext) {
-            d->shareContext = 0;
+            d->shareContext = nullptr;
             // re-try without a shared glx context
-            d->context = glXCreateNewContext(x11->display(), config, GLX_RGBA_TYPE, 0, true);
+            d->context = glXCreateNewContext(x11->display(), config, GLX_RGBA_TYPE, nullptr, true);
         }
 
         // Get the basic surface format details
@@ -234,8 +234,8 @@ QOffscreenX11GLXContext::QOffscreenX11GLXContext(QOffscreenX11Info *x11, QOpenGL
         d->context = glXCreateContext(x11->display(), visualInfo, d->shareContext, true);
         if (!d->context && d->shareContext) {
             // re-try without a shared glx context
-            d->shareContext = 0;
-            d->context = glXCreateContext(x11->display(), visualInfo, 0, true);
+            d->shareContext = nullptr;
+            d->context = glXCreateContext(x11->display(), visualInfo, nullptr, true);
         }
 
         d->window = createDummyWindow(x11, visualInfo);
@@ -269,7 +269,7 @@ bool QOffscreenX11GLXContext::makeCurrent(QPlatformSurface *surface)
 
 void QOffscreenX11GLXContext::doneCurrent()
 {
-    glXMakeCurrent(d->x11->display(), 0, 0);
+    glXMakeCurrent(d->x11->display(), 0, nullptr);
 }
 
 void QOffscreenX11GLXContext::swapBuffers(QPlatformSurface *)

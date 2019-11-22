@@ -54,7 +54,7 @@ QPlatformScreen::QPlatformScreen()
     : d_ptr(new QPlatformScreenPrivate)
 {
     Q_D(QPlatformScreen);
-    d->screen = 0;
+    d->screen = nullptr;
 }
 
 QPlatformScreen::~QPlatformScreen()
@@ -99,7 +99,7 @@ QWindow *QPlatformScreen::topLevelAt(const QPoint & pos) const
             return w;
     }
 
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -310,7 +310,7 @@ QPlatformScreen * QPlatformScreen::platformScreenForWindow(const QWindow *window
     // QTBUG 32681: It can happen during the transition between screens
     // when one screen is disconnected that the window doesn't have a screen.
     if (!window->screen())
-        return 0;
+        return nullptr;
     return window->screen()->handle();
 }
 
@@ -395,7 +395,7 @@ QString QPlatformScreen::serialNumber() const
 */
 QPlatformCursor *QPlatformScreen::cursor() const
 {
-    return 0;
+    return nullptr;
 }
 
 /*!

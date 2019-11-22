@@ -410,7 +410,7 @@ QHostInfo QHostInfoAgent::reverseLookup(const QHostAddress &address)
     // Reverse lookup
     sockaddr_in sa4;
     sockaddr_in6 sa6;
-    sockaddr *sa = 0;
+    sockaddr *sa = nullptr;
     QT_SOCKLEN_T saSize;
     if (address.protocol() == QAbstractSocket::IPv4Protocol) {
         sa = reinterpret_cast<sockaddr *>(&sa4);
@@ -455,7 +455,7 @@ QHostInfo QHostInfoAgent::lookup(const QString &hostName)
         return results;
     }
 
-    addrinfo *res = 0;
+    addrinfo *res = nullptr;
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = PF_UNSPEC;

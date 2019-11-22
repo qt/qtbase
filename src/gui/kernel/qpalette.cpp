@@ -536,7 +536,7 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
     \sa QApplication::setPalette(), QApplication::palette()
 */
 QPalette::QPalette()
-    : d(0)
+    : d(nullptr)
 {
     data.current_group = Active;
     data.resolve_mask = 0;

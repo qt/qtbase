@@ -69,7 +69,7 @@ QEglFSKmsGbmCursor::QEglFSKmsGbmCursor(QEglFSKmsGbmScreen *screen)
     : m_screen(screen)
     , m_cursorSize(64, 64) // 64x64 is the old standard size, we now try to query the real size below
     , m_bo(nullptr)
-    , m_cursorImage(0, 0, 0, 0, 0, 0)
+    , m_cursorImage(nullptr, nullptr, 0, 0, 0, 0)
     , m_state(CursorPendingVisible)
     , m_deviceListener(nullptr)
 {
@@ -102,7 +102,7 @@ QEglFSKmsGbmCursor::QEglFSKmsGbmCursor(QEglFSKmsGbmScreen *screen)
 
 #ifndef QT_NO_CURSOR
     QCursor cursor(Qt::ArrowCursor);
-    changeCursor(&cursor, 0);
+    changeCursor(&cursor, nullptr);
 #endif
     setPos(QPoint(0, 0));
 }

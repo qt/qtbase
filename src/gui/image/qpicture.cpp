@@ -458,7 +458,7 @@ public:
     QFakeDevice() { dpi_x = qt_defaultDpiX(); dpi_y = qt_defaultDpiY(); }
     void setDpiX(int dpi) { dpi_x = dpi; }
     void setDpiY(int dpi) { dpi_y = dpi; }
-    QPaintEngine *paintEngine() const override { return 0; }
+    QPaintEngine *paintEngine() const override { return nullptr; }
     int metric(PaintDeviceMetric m) const override
     {
         switch(m) {
@@ -709,11 +709,11 @@ bool QPicture::exec(QPainter *painter, QDataStream &s, int nrecords)
 
                 QFontMetrics fm(fnt);
                 QPointF pt(p.x(), p.y() - fm.ascent());
-                qt_format_text(fnt, QRectF(pt, size), flags, /*opt*/0,
-                               str, /*brect=*/0, /*tabstops=*/0, /*...*/0, /*tabarraylen=*/0, painter);
+                qt_format_text(fnt, QRectF(pt, size), flags, /*opt*/nullptr,
+                               str, /*brect=*/nullptr, /*tabstops=*/0, /*...*/nullptr, /*tabarraylen=*/0, painter);
             } else {
-                qt_format_text(font, QRectF(p, QSizeF(1, 1)), Qt::TextSingleLine | Qt::TextDontClip, /*opt*/0,
-                               str, /*brect=*/0, /*tabstops=*/0, /*...*/0, /*tabarraylen=*/0, painter);
+                qt_format_text(font, QRectF(p, QSizeF(1, 1)), Qt::TextSingleLine | Qt::TextDontClip, /*opt*/nullptr,
+                               str, /*brect=*/nullptr, /*tabstops=*/0, /*...*/nullptr, /*tabarraylen=*/0, painter);
             }
 
             break;
@@ -1369,11 +1369,11 @@ QPictureIO::QPictureIO(const QString &fileName, const char* format)
 void QPictureIO::init()
 {
     d = new QPictureIOData();
-    d->parameters = 0;
+    d->parameters = nullptr;
     d->quality = -1; // default quality of the current format
     d->gamma=0.0f;
     d->iostat = 0;
-    d->iodev  = 0;
+    d->iodev  = nullptr;
 }
 
 /*!
@@ -1467,7 +1467,7 @@ static QPictureHandler *get_picture_handler(const char *format)
                 return list->at(i);
         }
     }
-    return 0;                                        // no such handler
+    return nullptr;                                        // no such handler
 }
 
 
@@ -1887,7 +1887,7 @@ bool QPictureIO::read()
         if (picture_format.isEmpty()) {
             if (file.isOpen()) {                        // unknown format
                 file.close();
-                d->iodev = 0;
+                d->iodev = nullptr;
             }
             return false;
         }
@@ -1913,7 +1913,7 @@ bool QPictureIO::read()
 
     if (file.isOpen()) {                        // picture was read using file
         file.close();
-        d->iodev = 0;
+        d->iodev = nullptr;
     }
     return d->iostat == 0;                                // picture successfully read?
 }
@@ -1957,7 +1957,7 @@ bool QPictureIO::write()
     (*h->write_picture)(this);
     if (file.isOpen()) {                        // picture was written using file
         file.close();
-        d->iodev = 0;
+        d->iodev = nullptr;
     }
     return d->iostat == 0;                                // picture successfully written?
 }

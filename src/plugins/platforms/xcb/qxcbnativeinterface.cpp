@@ -268,7 +268,7 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QXcbNativeInterfa
     if (lowerCaseResource == "peekeventqueue")
         return NativeResourceForIntegrationFunction(reinterpret_cast<void *>(peekEventQueue));
 
-    return 0;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForContextFunction QXcbNativeInterface::nativeResourceFunctionForContext(const QByteArray &resource)
@@ -291,7 +291,7 @@ QPlatformNativeInterface::NativeResourceForScreenFunction QXcbNativeInterface::n
         return NativeResourceForScreenFunction(reinterpret_cast<void *>(setAppTime));
     else if (lowerCaseResource == "setappusertime")
         return NativeResourceForScreenFunction(reinterpret_cast<void *>(setAppUserTime));
-    return 0;
+    return nullptr;
 }
 
 QPlatformNativeInterface::NativeResourceForWindowFunction QXcbNativeInterface::nativeResourceFunctionForWindow(const QByteArray &resource)
@@ -365,7 +365,7 @@ void *QXcbNativeInterface::startupId()
     QXcbConnection *defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         return reinterpret_cast<void *>(const_cast<char *>(defaultConnection->startupId().constData()));
-    return 0;
+    return nullptr;
 }
 
 void *QXcbNativeInterface::x11Screen()
@@ -374,7 +374,7 @@ void *QXcbNativeInterface::x11Screen()
     QXcbConnection *defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         return reinterpret_cast<void *>(defaultConnection->primaryScreenNumber());
-    return 0;
+    return nullptr;
 }
 
 void *QXcbNativeInterface::rootWindow()
@@ -383,7 +383,7 @@ void *QXcbNativeInterface::rootWindow()
     QXcbConnection *defaultConnection = integration->defaultConnection();
     if (defaultConnection)
         return reinterpret_cast<void *>(defaultConnection->rootWindow());
-    return 0;
+    return nullptr;
 }
 
 void *QXcbNativeInterface::display()

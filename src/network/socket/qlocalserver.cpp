@@ -417,7 +417,7 @@ QLocalSocket *QLocalServer::nextPendingConnection()
 {
     Q_D(QLocalServer);
     if (d->pendingConnections.isEmpty())
-        return 0;
+        return nullptr;
     QLocalSocket *nextSocket = d->pendingConnections.dequeue();
 #ifndef QT_LOCALSOCKET_TCP
     if (d->pendingConnections.size() <= d->maxPendingConnections)

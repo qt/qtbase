@@ -1176,7 +1176,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p, QPrinter *
 
 void QUnixPrintWidgetPrivate::updateWidget()
 {
-    const bool printToFile = q == 0 || q->isOptionEnabled(QPrintDialog::PrintToFile);
+    const bool printToFile = q == nullptr || q->isOptionEnabled(QPrintDialog::PrintToFile);
     if (printToFile && !filePrintersAdded) {
         if (widget.printers->count())
             widget.printers->insertSeparator(widget.printers->count());

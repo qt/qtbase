@@ -277,7 +277,7 @@ bool QLibraryPrivate::load_sys()
         qualifiedFileName = attempt;
         errorString.clear();
     }
-    return (pHnd != 0);
+    return (pHnd != nullptr);
 }
 
 bool QLibraryPrivate::unload_sys()

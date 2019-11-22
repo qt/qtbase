@@ -72,7 +72,7 @@ int QDBusAdaptorConnector::relaySlotMethodIndex()
 QDBusAdaptorConnector *qDBusFindAdaptorConnector(QObject *obj)
 {
     if (!obj)
-        return 0;
+        return nullptr;
     const QObjectList &children = obj->children();
     QObjectList::ConstIterator it = children.constBegin();
     QObjectList::ConstIterator end = children.constEnd();
@@ -83,7 +83,7 @@ QDBusAdaptorConnector *qDBusFindAdaptorConnector(QObject *obj)
             return connector;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 QDBusAdaptorConnector *qDBusFindAdaptorConnector(QDBusAbstractAdaptor *adaptor)
@@ -411,7 +411,7 @@ void QDBusAdaptorConnector::qt_static_metacall(QObject *_o, QMetaObject::Call _c
 
 const QMetaObject QDBusAdaptorConnector::staticMetaObject = {
     { &QObject::staticMetaObject, qt_meta_stringdata_QDBusAdaptorConnector.data,
-      qt_meta_data_QDBusAdaptorConnector, qt_static_metacall, 0, 0 }
+      qt_meta_data_QDBusAdaptorConnector, qt_static_metacall, nullptr, nullptr }
 };
 
 const QMetaObject *QDBusAdaptorConnector::metaObject() const
@@ -421,7 +421,7 @@ const QMetaObject *QDBusAdaptorConnector::metaObject() const
 
 void *QDBusAdaptorConnector::qt_metacast(const char *_clname)
 {
-    if (!_clname) return 0;
+    if (!_clname) return nullptr;
     if (!strcmp(_clname, qt_meta_stringdata_QDBusAdaptorConnector.stringdata))
         return static_cast<void*>(const_cast< QDBusAdaptorConnector*>(this));
     return QObject::qt_metacast(_clname);
@@ -443,7 +443,7 @@ int QDBusAdaptorConnector::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 // SIGNAL 0
 void QDBusAdaptorConnector::relaySignal(QObject * _t1, const QMetaObject * _t2, int _t3, const QVariantList & _t4)
 {
-    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)), const_cast<void*>(reinterpret_cast<const void*>(&_t3)), const_cast<void*>(reinterpret_cast<const void*>(&_t4)) };
+    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)), const_cast<void*>(reinterpret_cast<const void*>(&_t3)), const_cast<void*>(reinterpret_cast<const void*>(&_t4)) };
     QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 

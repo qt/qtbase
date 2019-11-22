@@ -84,7 +84,7 @@ Q_GLOBAL_STATIC(QConnectionDict, dbDict)
 class QSqlDatabasePrivate
 {
 public:
-    QSqlDatabasePrivate(QSqlDatabase *d, QSqlDriver *dr = 0):
+    QSqlDatabasePrivate(QSqlDatabase *d, QSqlDriver *dr = nullptr):
         ref(1),
         q(d),
         driver(dr),
@@ -178,7 +178,7 @@ DriverDict &QSqlDatabasePrivate::driverDict()
 QSqlDatabasePrivate *QSqlDatabasePrivate::shared_null()
 {
     static QSqlNullDriver dr;
-    static QSqlDatabasePrivate n(NULL, &dr);
+    static QSqlDatabasePrivate n(nullptr, &dr);
     return &n;
 }
 
@@ -702,7 +702,7 @@ void QSqlDatabasePrivate::init(const QString &type)
         qWarning("QSqlDatabase: %s driver not loaded", type.toLatin1().data());
         qWarning("QSqlDatabase: available drivers: %s",
                         QSqlDatabase::drivers().join(QLatin1Char(' ')).toLatin1().data());
-        if (QCoreApplication::instance() == 0)
+        if (QCoreApplication::instance() == nullptr)
             qWarning("QSqlDatabase: an instance of QCoreApplication is required for loading driver plugins");
         driver = shared_null()->driver;
     }

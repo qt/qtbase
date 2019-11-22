@@ -420,7 +420,7 @@ public:
     void setVisible(bool);
 
     void setEnabled_helper(bool);
-    static void adjustFlags(Qt::WindowFlags &flags, QWidget *w = 0);
+    static void adjustFlags(Qt::WindowFlags &flags, QWidget *w = nullptr);
 
     void updateFrameStrut();
     QRect frameStrut() const;

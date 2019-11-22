@@ -246,7 +246,7 @@ QSizeF QTextImageHandler::intrinsicSize(QTextDocument *doc, int posInDocument, c
 
 QImage QTextImageHandler::image(QTextDocument *doc, const QTextImageFormat &imageFormat)
 {
-    Q_ASSERT(doc != 0);
+    Q_ASSERT(doc != nullptr);
 
     return getImage(doc, imageFormat);
 }

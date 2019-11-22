@@ -363,7 +363,7 @@ QAccessibleInterface *QAccessibleWidget::child(int index) const
     QWidgetList childList = childWidgets(widget());
     if (index >= 0 && index < childList.size())
         return QAccessible::queryAccessibleInterface(childList.at(index));
-    return 0;
+    return nullptr;
 }
 
 /*! \reimp */
@@ -374,11 +374,11 @@ QAccessibleInterface *QAccessibleWidget::focusChild() const
 
     QWidget *fw = widget()->focusWidget();
     if (!fw)
-        return 0;
+        return nullptr;
 
     if (isAncestor(widget(), fw) || fw == widget())
         return QAccessible::queryAccessibleInterface(fw);
-    return 0;
+    return nullptr;
 }
 
 /*! \reimp */
@@ -522,7 +522,7 @@ void *QAccessibleWidget::interface_cast(QAccessible::InterfaceType t)
 {
     if (t == QAccessible::ActionInterface)
        return static_cast<QAccessibleActionInterface*>(this);
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

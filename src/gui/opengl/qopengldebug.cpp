@@ -1108,14 +1108,14 @@ public:
     \internal
 */
 QOpenGLDebugLoggerPrivate::QOpenGLDebugLoggerPrivate()
-    : glDebugMessageControl(0),
-      glDebugMessageInsert(0),
-      glDebugMessageCallback(0),
-      glGetDebugMessageLog(0),
-      glPushDebugGroup(0),
-      glPopDebugGroup(0),
-      oldDebugCallbackFunction(0),
-      context(0),
+    : glDebugMessageControl(nullptr),
+      glDebugMessageInsert(nullptr),
+      glDebugMessageCallback(nullptr),
+      glGetDebugMessageLog(nullptr),
+      glPushDebugGroup(nullptr),
+      glPopDebugGroup(nullptr),
+      oldDebugCallbackFunction(nullptr),
+      context(nullptr),
       maxMessageLength(0),
       loggingMode(QOpenGLDebugLogger::AsynchronousLogging),
       initialized(false),
@@ -1228,7 +1228,7 @@ void QOpenGLDebugLoggerPrivate::controlDebugMessages(QOpenGLDebugMessage::Source
     const GLsizei idCount = ids.count();
     // The GL_KHR_debug extension says that if idCount is 0, idPtr must be ignored.
     // Unfortunately, some bugged drivers do NOT ignore it, so pass NULL in case.
-    const GLuint * const idPtr = idCount ? ids.constData() : 0;
+    const GLuint * const idPtr = idCount ? ids.constData() : nullptr;
 
     for (GLenum source : glSources)
         for (GLenum type : glTypes)
@@ -1247,7 +1247,7 @@ void QOpenGLDebugLoggerPrivate::_q_contextAboutToBeDestroyed()
 
     // Save the current context and its surface in case we need to set them back
     QOpenGLContext *currentContext = QOpenGLContext::currentContext();
-    QSurface *currentSurface = 0;
+    QSurface *currentSurface = nullptr;
 
     QScopedPointer<QOffscreenSurface> offscreenSurface;
 
@@ -1275,7 +1275,7 @@ void QOpenGLDebugLoggerPrivate::_q_contextAboutToBeDestroyed()
     }
 
     QObject::disconnect(context, SIGNAL(aboutToBeDestroyed()), q, SLOT(_q_contextAboutToBeDestroyed()));
-    context = 0;
+    context = nullptr;
     initialized = false;
 }
 
@@ -1356,7 +1356,7 @@ bool QOpenGLDebugLogger::initialize()
         disconnect(d->context, SIGNAL(aboutToBeDestroyed()), this, SLOT(_q_contextAboutToBeDestroyed()));
 
     d->initialized = false;
-    d->context = 0;
+    d->context = nullptr;
 
     if (!context->hasExtension(QByteArrayLiteral("GL_KHR_debug")))
         return false;

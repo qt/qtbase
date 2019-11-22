@@ -111,7 +111,7 @@ public:
 
 QTextFrameData::QTextFrameData()
     : maximumWidth(QFIXED_MAX),
-      currentLayoutStruct(0), sizeDirty(true), layoutDirty(true)
+      currentLayoutStruct(nullptr), sizeDirty(true), layoutDirty(true)
 {
 }
 
@@ -571,7 +571,7 @@ public:
     void setCellPosition(QTextTable *t, const QTextTableCell &cell, const QPointF &pos);
     QRectF layoutTable(QTextTable *t, int layoutFrom, int layoutTo, QFixed parentY);
 
-    void positionFloat(QTextFrame *frame, QTextLine *currentLine = 0);
+    void positionFloat(QTextFrame *frame, QTextLine *currentLine = nullptr);
 
     // calls the next one
     QRectF layoutFrame(QTextFrame *f, int layoutFrom, int layoutTo, QFixed parentY = 0);
@@ -1554,7 +1554,7 @@ static inline double prioritizedEdgeAnchorOffset(const QTextDocumentLayoutPrivat
             competingCell = adjacentCell(table, cell, orthogonalEdge);
             if (competingCell.isValid()) {
                 checkJoinedEdge(table, td, competingCell, edgeData.edge, edgeData, couldHaveContinuation,
-                                &maxCompetingEdgeData, 0);
+                                &maxCompetingEdgeData, nullptr);
             }
         }
 
@@ -1946,7 +1946,7 @@ void QTextDocumentLayoutPrivate::drawFlow(const QPointF &offset, QPainter *paint
                                           QTextFrame::Iterator it, const QList<QTextFrame *> &floats, QTextBlock *cursorBlockNeedingRepaint) const
 {
     Q_Q(const QTextDocumentLayout);
-    const bool inRootFrame = (!it.atEnd() && it.parentFrame() && it.parentFrame()->parentFrame() == 0);
+    const bool inRootFrame = (!it.atEnd() && it.parentFrame() && it.parentFrame()->parentFrame() == nullptr);
 
     QVector<QCheckPoint>::ConstIterator lastVisibleCheckPoint = checkPoints.end();
     if (inRootFrame && context.clip.isValid()) {
@@ -1954,7 +1954,7 @@ void QTextDocumentLayoutPrivate::drawFlow(const QPointF &offset, QPainter *paint
     }
 
     QTextBlock previousBlock;
-    QTextFrame *previousFrame = 0;
+    QTextFrame *previousFrame = nullptr;
 
     for (; !it.atEnd(); ++it) {
         QTextFrame *c = it.currentFrame();
@@ -2050,7 +2050,7 @@ void QTextDocumentLayoutPrivate::drawBlock(const QPointF &offset, QPainter *pain
     QVector<QTextLayout::FormatRange> selections;
     int blpos = bl.position();
     int bllen = bl.length();
-    const QTextCharFormat *selFormat = 0;
+    const QTextCharFormat *selFormat = nullptr;
     for (int i = 0; i < context.selections.size(); ++i) {
         const QAbstractTextDocumentLayout::Selection &range = context.selections.at(i);
         const int selStart = range.cursor.selectionStart() - blpos;
@@ -2920,7 +2920,7 @@ QRectF QTextDocumentLayoutPrivate::layoutFrame(QTextFrame *f, int layoutFrom, in
     QTextFrameFormat fformat = f->frameFormat();
 
     QTextFrame *parent = f->parentFrame();
-    const QTextFrameData *pd = parent ? data(parent) : 0;
+    const QTextFrameData *pd = parent ? data(parent) : nullptr;
 
     const qreal maximumWidth = qMax(qreal(0), pd ? pd->contentsWidth.toReal() : document->pageSize().width());
     QFixed width = QFixed::fromReal(fformat.width().value(maximumWidth));
@@ -2971,7 +2971,7 @@ QRectF QTextDocumentLayoutPrivate::layoutFrame(QTextFrame *f, int layoutFrom, in
         }
 
         QTextFrame *parent = f->parentFrame();
-        const QTextFrameData *pd = parent ? data(parent) : 0;
+        const QTextFrameData *pd = parent ? data(parent) : nullptr;
 
         // accumulate top and bottom margins
         if (parent) {
@@ -3296,7 +3296,7 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
             const QFixed origMaximumWidth = layoutStruct->maximumWidth;
             layoutStruct->maximumWidth = 0;
 
-            const QTextBlockFormat *previousBlockFormatPtr = 0;
+            const QTextBlockFormat *previousBlockFormatPtr = nullptr;
             if (lastIt.currentBlock().isValid())
                 previousBlockFormatPtr = &previousBlockFormat;
 
@@ -3405,7 +3405,7 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QTextLayout
     }
 
 
-    fd->currentLayoutStruct = 0;
+    fd->currentLayoutStruct = nullptr;
 }
 
 static inline void getLineHeightParams(const QTextBlockFormat &blockFormat, const QTextLine &line, qreal scaling,
@@ -3865,7 +3865,7 @@ int QTextDocumentLayout::hitTest(const QPointF &point, Qt::HitTestAccuracy accur
     d->ensureLayouted(QFixed::fromReal(point.y()));
     QTextFrame *f = d->docPrivate->rootFrame();
     int position = 0;
-    QTextLayout *l = 0;
+    QTextLayout *l = nullptr;
     QFixedPoint pointf;
     pointf.x = QFixed::fromReal(point.x());
     pointf.y = QFixed::fromReal(point.y());
@@ -3944,7 +3944,7 @@ void QTextDocumentLayout::positionInlineObject(QTextInlineObject item, int posIn
         line = b.layout()->lineAt(b.layout()->lineCount()-1);
 //     qDebug() << "layoutObject: line.isValid" << line.isValid() << b.position() << b.length() <<
 //         frame->firstPosition() << frame->lastPosition();
-    d->positionFloat(frame, line.isValid() ? &line : 0);
+    d->positionFloat(frame, line.isValid() ? &line : nullptr);
 }
 
 void QTextDocumentLayout::drawInlineObject(QPainter *p, const QRectF &rect, QTextInlineObject item,

@@ -555,16 +555,16 @@ class QOpenGLWidgetPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QOpenGLWidget)
 public:
     QOpenGLWidgetPrivate()
-        : context(0),
-          fbo(0),
-          resolvedFbo(0),
-          surface(0),
+        : context(nullptr),
+          fbo(nullptr),
+          resolvedFbo(nullptr),
+          surface(nullptr),
           initialized(false),
           fakeHidden(false),
           inBackingStorePaint(false),
           hasBeenComposed(false),
           flushPending(false),
-          paintDevice(0),
+          paintDevice(nullptr),
           updateBehavior(QOpenGLWidget::NoPartialUpdate),
           requestedSamples(0),
           inPaintGL(false),
@@ -704,11 +704,11 @@ void QOpenGLWidgetPrivate::reset()
         q->makeCurrent();
 
     delete paintDevice;
-    paintDevice = 0;
+    paintDevice = nullptr;
     delete fbo;
-    fbo = 0;
+    fbo = nullptr;
     delete resolvedFbo;
-    resolvedFbo = 0;
+    resolvedFbo = nullptr;
 
     if (initialized)
         q->doneCurrent();
@@ -717,9 +717,9 @@ void QOpenGLWidgetPrivate::reset()
     // the context's aboutToBeDestroyed() may still call makeCurrent()
     // to perform some cleanup.
     delete context;
-    context = 0;
+    context = nullptr;
     delete surface;
-    surface = 0;
+    surface = nullptr;
     initialized = fakeHidden = inBackingStorePaint = false;
 }
 
@@ -732,9 +732,9 @@ void QOpenGLWidgetPrivate::recreateFbo()
     context->makeCurrent(surface);
 
     delete fbo;
-    fbo = 0;
+    fbo = nullptr;
     delete resolvedFbo;
-    resolvedFbo = 0;
+    resolvedFbo = nullptr;
 
     int samples = requestedSamples;
     QOpenGLExtensions *extfuncs = static_cast<QOpenGLExtensions *>(context->functions());
@@ -1421,7 +1421,7 @@ QPaintEngine *QOpenGLWidget::paintEngine() const
         return QWidget::paintEngine();
 
     if (!d->initialized)
-        return 0;
+        return nullptr;
 
     return d->paintDevice->paintEngine();
 }

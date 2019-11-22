@@ -58,8 +58,8 @@ public:
     Q_DECLARE_PUBLIC(QWindowContainer)
 
     QWindowContainerPrivate()
-        : window(0)
-        , oldFocusWindow(0)
+        : window(nullptr)
+        , oldFocusWindow(nullptr)
         , usesNativeWidgets(false)
     {
     }
@@ -70,7 +70,7 @@ public:
         QWindowContainer *wc = qobject_cast<QWindowContainer *>(w);
         if (wc)
             return wc->d_func();
-        return 0;
+        return nullptr;
     }
 
     void updateGeometry() {
@@ -90,7 +90,7 @@ public:
 
     void updateUsesNativeWidgets()
     {
-        if (window->parent() == 0)
+        if (window->parent() == nullptr)
             return;
         Q_Q(QWindowContainer);
         if (q->internalWinId()) {
@@ -295,7 +295,7 @@ bool QWindowContainer::event(QEvent *e)
     case QEvent::ChildRemoved: {
         QChildEvent *ce = static_cast<QChildEvent *>(e);
         if (ce->child() == d->window)
-            d->window = 0;
+            d->window = nullptr;
         break;
     }
     // The only thing we are interested in is making sure our sizes stay

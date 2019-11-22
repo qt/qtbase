@@ -67,7 +67,7 @@ private:
 
 QClipboardData::QClipboardData()
 {
-    src = 0;
+    src = nullptr;
 }
 
 QClipboardData::~QClipboardData()

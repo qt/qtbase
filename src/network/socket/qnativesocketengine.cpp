@@ -191,9 +191,9 @@ QT_BEGIN_NAMESPACE
 */
 QNativeSocketEnginePrivate::QNativeSocketEnginePrivate() :
     socketDescriptor(-1),
-    readNotifier(0),
-    writeNotifier(0),
-    exceptNotifier(0)
+    readNotifier(nullptr),
+    writeNotifier(nullptr),
+    exceptNotifier(nullptr)
 {
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     QSysInfo::machineHostName();        // this initializes ws2_32.dll
@@ -985,15 +985,15 @@ void QNativeSocketEngine::close()
     d->inboundStreamCount = d->outboundStreamCount = 0;
     if (d->readNotifier) {
         qDeleteInEventHandler(d->readNotifier);
-        d->readNotifier = 0;
+        d->readNotifier = nullptr;
     }
     if (d->writeNotifier) {
         qDeleteInEventHandler(d->writeNotifier);
-        d->writeNotifier = 0;
+        d->writeNotifier = nullptr;
     }
     if (d->exceptNotifier) {
         qDeleteInEventHandler(d->exceptNotifier);
-        d->exceptNotifier = 0;
+        d->exceptNotifier = nullptr;
     }
 }
 

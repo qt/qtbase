@@ -75,13 +75,13 @@ QNetworkAccessFtpBackendFactory::create(QNetworkAccessManager::Operation op,
 
     default:
         // no, we can't handle this operation
-        return 0;
+        return nullptr;
     }
 
     QUrl url = request.url();
     if (url.scheme().compare(QLatin1String("ftp"), Qt::CaseInsensitive) == 0)
         return new QNetworkAccessFtpBackend;
-    return 0;
+    return nullptr;
 }
 
 class QNetworkAccessCachedFtpConnection: public QFtp, public QNetworkAccessCache::CacheableObject
@@ -104,7 +104,7 @@ public:
 };
 
 QNetworkAccessFtpBackend::QNetworkAccessFtpBackend()
-    : ftp(0), uploadDevice(0), totalBytes(0), helpId(-1), sizeId(-1), mdtmId(-1), pwdId(-1),
+    : ftp(nullptr), uploadDevice(nullptr), totalBytes(0), helpId(-1), sizeId(-1), mdtmId(-1), pwdId(-1),
     supportsSize(false), supportsMdtm(false), supportsPwd(false), state(Idle)
 {
 }
@@ -215,7 +215,7 @@ void QNetworkAccessFtpBackend::disconnectFromFtp(CacheCleanupMode mode)
     state = Disconnecting;
 
     if (ftp) {
-        disconnect(ftp, 0, this, 0);
+        disconnect(ftp, nullptr, this, nullptr);
 
         QByteArray key = makeCacheKey(url());
         if (mode == RemoveCachedConnection) {
@@ -225,7 +225,7 @@ void QNetworkAccessFtpBackend::disconnectFromFtp(CacheCleanupMode mode)
             QNetworkAccessManagerPrivate::getObjectCache(this)->releaseEntry(key);
         }
 
-        ftp = 0;
+        ftp = nullptr;
     }
 }
 
@@ -362,7 +362,7 @@ void QNetworkAccessFtpBackend::ftpDone()
         QFtp::TransferType type = QFtp::Binary;
         if (operation() == QNetworkAccessManager::GetOperation) {
             setCachingEnabled(true);
-            ftp->get(url().path(), 0, type);
+            ftp->get(url().path(), nullptr, type);
         } else {
             ftp->put(uploadDevice, url().path(), type);
         }

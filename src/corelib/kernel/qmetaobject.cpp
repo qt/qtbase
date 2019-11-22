@@ -282,14 +282,14 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
         idx = indexOfConstructor(norm.constData());
     }
     if (idx < 0)
-        return 0;
+        return nullptr;
 
-    QObject *returnValue = 0;
+    QObject *returnValue = nullptr;
     void *param[] = {&returnValue, val0.data(), val1.data(), val2.data(), val3.data(), val4.data(),
                      val5.data(), val6.data(), val7.data(), val8.data(), val9.data()};
 
     if (static_metacall(CreateInstance, idx, param) >= 0)
-        return 0;
+        return nullptr;
     return returnValue;
 }
 
@@ -301,7 +301,7 @@ int QMetaObject::static_metacall(Call cl, int idx, void **argv) const
     Q_ASSERT(priv(d.data)->revision >= 6);
     if (!d.static_metacall)
         return 0;
-    d.static_metacall(0, cl, idx, argv);
+    d.static_metacall(nullptr, cl, idx, argv);
     return -1;
 }
 
@@ -691,7 +691,7 @@ static void argumentTypesFromString(const char *str, const char *end,
 QByteArray QMetaObjectPrivate::decodeMethodSignature(
         const char *signature, QArgumentTypeArray &types)
 {
-    Q_ASSERT(signature != 0);
+    Q_ASSERT(signature != nullptr);
     const char *lparens = strchr(signature, '(');
     if (!lparens)
         return QByteArray();
@@ -844,7 +844,7 @@ int QMetaObjectPrivate::indexOfConstructor(const QMetaObject *m, const QByteArra
 */
 int QMetaObjectPrivate::absoluteSignalCount(const QMetaObject *m)
 {
-    Q_ASSERT(m != 0);
+    Q_ASSERT(m != nullptr);
     int n = priv(m->d.data)->signalCount;
     for (m = m->d.superdata; m; m = m->d.superdata)
         n += priv(m->d.data)->signalCount;
@@ -881,7 +881,7 @@ QMetaMethod QMetaObjectPrivate::signal(const QMetaObject *m, int signal_index)
     QMetaMethod result;
     if (signal_index < 0)
         return result;
-    Q_ASSERT(m != 0);
+    Q_ASSERT(m != nullptr);
     int i = signal_index;
     i -= signalOffset(m);
     if (i < 0 && m->d.superdata)
@@ -1031,7 +1031,7 @@ int QMetaObject::indexOfProperty(const char *name) const
         QAbstractDynamicMetaObject *me =
             const_cast<QAbstractDynamicMetaObject *>(static_cast<const QAbstractDynamicMetaObject *>(this));
 
-        return me->createProperty(name, 0);
+        return me->createProperty(name, nullptr);
     }
 
     return -1;
@@ -1145,7 +1145,7 @@ QMetaProperty QMetaObject::property(int index) const
             if (!result.menum.isValid()) {
                 const char *enum_name = type;
                 const char *scope_name = objectClassName(this);
-                char *scope_buffer = 0;
+                char *scope_buffer = nullptr;
 
                 const char *colon = strrchr(enum_name, ':');
                 // ':' will always appear in pairs
@@ -1159,7 +1159,7 @@ QMetaProperty QMetaObject::property(int index) const
                     enum_name = colon+1;
                 }
 
-                const QMetaObject *scope = 0;
+                const QMetaObject *scope = nullptr;
                 if (qstrcmp(scope_name, "Qt") == 0)
                     scope = &QObject::staticQtMetaObject;
                 else
@@ -1542,14 +1542,14 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
             return false;
         }
 
-        QCoreApplication::postEvent(object, new QMetaCallEvent(slot, 0, -1, 1));
+        QCoreApplication::postEvent(object, new QMetaCallEvent(slot, nullptr, -1, 1));
     } else if (type == Qt::BlockingQueuedConnection) {
 #if QT_CONFIG(thread)
         if (currentThread == objectThread)
             qWarning("QMetaObject::invokeMethod: Dead lock detected");
 
         QSemaphore semaphore;
-        QCoreApplication::postEvent(object, new QMetaCallEvent(slot, 0, -1, argv, &semaphore));
+        QCoreApplication::postEvent(object, new QMetaCallEvent(slot, nullptr, -1, argv, &semaphore));
         semaphore.acquire();
 #endif // QT_CONFIG(thread)
     } else {
@@ -1988,7 +1988,7 @@ QList<QByteArray> QMetaMethod::parameterNames() const
 const char *QMetaMethod::typeName() const
 {
     if (!mobj)
-        return 0;
+        return nullptr;
     return QMetaMethodPrivate::get(this)->rawReturnTypeName();
 }
 
@@ -2020,7 +2020,7 @@ const char *QMetaMethod::typeName() const
 const char *QMetaMethod::tag() const
 {
     if (!mobj)
-        return 0;
+        return nullptr;
     return QMetaMethodPrivate::get(this)->tag().constData();
 }
 
@@ -2303,7 +2303,7 @@ bool QMetaMethod::invoke(QObject *object,
             return false;
         }
 
-        QScopedPointer<QMetaCallEvent> event(new QMetaCallEvent(idx_offset, idx_relative, callFunction, 0, -1, paramCount));
+        QScopedPointer<QMetaCallEvent> event(new QMetaCallEvent(idx_offset, idx_relative, callFunction, nullptr, -1, paramCount));
         int *types = event->types();
         void **args = event->args();
 
@@ -2340,7 +2340,7 @@ bool QMetaMethod::invoke(QObject *object,
 
         QSemaphore semaphore;
         QCoreApplication::postEvent(object, new QMetaCallEvent(idx_offset, idx_relative, callFunction,
-                                                        0, -1, param, &semaphore));
+                                                        nullptr, -1, param, &semaphore));
         semaphore.acquire();
 #endif // QT_CONFIG(thread)
     }
@@ -2563,7 +2563,7 @@ bool QMetaMethod::invokeOnGadget(void* gadget, QGenericReturnArgument returnValu
 const char *QMetaEnum::name() const
 {
     if (!mobj)
-        return 0;
+        return nullptr;
     return rawStringData(mobj, mobj->d.data[handle]);
 }
 
@@ -2582,7 +2582,7 @@ const char *QMetaEnum::name() const
 const char *QMetaEnum::enumName() const
 {
     if (!mobj)
-        return 0;
+        return nullptr;
     const bool rev8p = priv(mobj->d.data)->revision >= 8;
     if (rev8p)
         return rawStringData(mobj, mobj->d.data[handle + 1]);
@@ -2610,13 +2610,13 @@ int QMetaEnum::keyCount() const
 const char *QMetaEnum::key(int index) const
 {
     if (!mobj)
-        return 0;
+        return nullptr;
     const int offset = priv(mobj->d.data)->revision >= 8 ? 3 : 2;
     int count = mobj->d.data[handle + offset];
     int data = mobj->d.data[handle + offset + 1];
     if (index >= 0  && index < count)
         return rawStringData(mobj, mobj->d.data[data + 2*index]);
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -2679,7 +2679,7 @@ bool QMetaEnum::isScoped() const
 */
 const char *QMetaEnum::scope() const
 {
-    return mobj ? objectClassName(mobj) : 0;
+    return mobj ? objectClassName(mobj) : nullptr;
 }
 
 /*!
@@ -2695,7 +2695,7 @@ const char *QMetaEnum::scope() const
 */
 int QMetaEnum::keyToValue(const char *key, bool *ok) const
 {
-    if (ok != 0)
+    if (ok != nullptr)
         *ok = false;
     if (!mobj || !key)
         return -1;
@@ -2715,7 +2715,7 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
         const QByteArray className = stringData(mobj, priv(mobj->d.data)->className);
         if ((!scope || (className.size() == int(scope) && strncmp(qualified_key, className.constData(), scope) == 0))
              && strcmp(key, rawStringData(mobj, mobj->d.data[data + 2*i])) == 0) {
-            if (ok != 0)
+            if (ok != nullptr)
                 *ok = true;
             return mobj->d.data[data + 2*i + 1];
         }
@@ -2734,14 +2734,14 @@ int QMetaEnum::keyToValue(const char *key, bool *ok) const
 const char* QMetaEnum::valueToKey(int value) const
 {
     if (!mobj)
-        return 0;
+        return nullptr;
     const int offset = priv(mobj->d.data)->revision >= 8 ? 3 : 2;
     int count = mobj->d.data[handle + offset];
     int data = mobj->d.data[handle + offset + 1];
     for (int i = 0; i < count; ++i)
         if (value == (int)mobj->d.data[data + 2*i + 1])
             return rawStringData(mobj, mobj->d.data[data + 2*i]);
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -2756,11 +2756,11 @@ const char* QMetaEnum::valueToKey(int value) const
 */
 int QMetaEnum::keysToValue(const char *keys, bool *ok) const
 {
-    if (ok != 0)
+    if (ok != nullptr)
         *ok = false;
     if (!mobj || !keys)
         return -1;
-    if (ok != 0)
+    if (ok != nullptr)
         *ok = true;
     const QString keysString = QString::fromLatin1(keys);
     const QVector<QStringRef> splitKeys = keysString.splitRef(QLatin1Char('|'));
@@ -2793,7 +2793,7 @@ int QMetaEnum::keysToValue(const char *keys, bool *ok) const
             }
         }
         if (i < 0) {
-            if (ok != 0)
+            if (ok != nullptr)
                 *ok = false;
             value |= -1;
         }
@@ -2896,7 +2896,7 @@ static QByteArray qualifiedName(const QMetaEnum &e)
     \internal
 */
 QMetaProperty::QMetaProperty()
-    : mobj(0), handle(0), idx(0)
+    : mobj(nullptr), handle(0), idx(0)
 {
 }
 
@@ -2909,7 +2909,7 @@ QMetaProperty::QMetaProperty()
 const char *QMetaProperty::name() const
 {
     if (!mobj)
-        return 0;
+        return nullptr;
     int handle = priv(mobj->d.data)->propertyData + 3*idx;
     return rawStringData(mobj, mobj->d.data[handle]);
 }
@@ -2922,7 +2922,7 @@ const char *QMetaProperty::name() const
 const char *QMetaProperty::typeName() const
 {
     if (!mobj)
-        return 0;
+        return nullptr;
     int handle = priv(mobj->d.data)->propertyData + 3*idx;
     return rawTypeNameFromTypeInfo(mobj, mobj->d.data[handle + 1]);
 }
@@ -3112,7 +3112,7 @@ QVariant QMetaProperty::read(const QObject *object) const
             t = enumMetaTypeId;
     } else {
         int handle = priv(mobj->d.data)->propertyData + 3*idx;
-        const char *typeName = 0;
+        const char *typeName = nullptr;
         Q_ASSERT(priv(mobj->d.data)->revision >= 7);
         uint typeInfo = mobj->d.data[handle + 1];
         if (!(typeInfo & IsUnresolvedType))
@@ -3138,11 +3138,11 @@ QVariant QMetaProperty::read(const QObject *object) const
     // changed: result stored directly in value
     int status = -1;
     QVariant value;
-    void *argv[] = { 0, &value, &status };
+    void *argv[] = { nullptr, &value, &status };
     if (t == QMetaType::QVariant) {
         argv[0] = &value;
     } else {
-        value = QVariant(t, (void*)0);
+        value = QVariant(t, (void*)nullptr);
         argv[0] = value.data();
     }
     if (priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall) {
@@ -3196,7 +3196,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
         v.convert(QVariant::Int);
     } else {
         int handle = priv(mobj->d.data)->propertyData + 3*idx;
-        const char *typeName = 0;
+        const char *typeName = nullptr;
         Q_ASSERT(priv(mobj->d.data)->revision >= 7);
         uint typeInfo = mobj->d.data[handle + 1];
         if (!(typeInfo & IsUnresolvedType))
@@ -3213,7 +3213,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
             if (!value.isValid()) {
                 if (isResettable())
                     return reset(object);
-                v = QVariant(t, 0);
+                v = QVariant(t, nullptr);
             } else if (!v.convert(t)) {
                 return false;
             }
@@ -3229,7 +3229,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
     // the flags variable is used by the declarative module to implement
     // interception of property writes.
     int flags = 0;
-    void *argv[] = { 0, &v, &status, &flags };
+    void *argv[] = { nullptr, &v, &status, &flags };
     if (t == QMetaType::QVariant)
         argv[0] = &v;
     else
@@ -3254,7 +3254,7 @@ bool QMetaProperty::reset(QObject *object) const
 {
     if (!object || !mobj || !isResettable())
         return false;
-    void *argv[] = { 0 };
+    void *argv[] = { nullptr };
     if (priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall)
         mobj->d.static_metacall(object, QMetaObject::ResetProperty, idx, argv);
     else
@@ -3638,7 +3638,7 @@ bool QMetaProperty::isEditable(const QObject *object) const
 const char *QMetaClassInfo::name() const
 {
     if (!mobj)
-        return 0;
+        return nullptr;
     return rawStringData(mobj, mobj->d.data[handle]);
 }
 
@@ -3650,7 +3650,7 @@ const char *QMetaClassInfo::name() const
 const char* QMetaClassInfo::value() const
 {
     if (!mobj)
-        return 0;
+        return nullptr;
     return rawStringData(mobj, mobj->d.data[handle + 1]);
 }
 

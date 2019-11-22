@@ -487,7 +487,7 @@ QLineEditPrivate::SideWidgetParameters QLineEditPrivate::sideWidgetParameters() 
 {
     Q_Q(const QLineEdit);
     SideWidgetParameters result;
-    result.iconSize = q->style()->pixelMetric(QStyle::PM_SmallIconSize, 0, q);
+    result.iconSize = q->style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, q);
     result.margin = result.iconSize / 4;
     result.widgetWidth = result.iconSize + 6;
     result.widgetHeight = result.iconSize + 2;
@@ -566,12 +566,12 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
 {
     Q_Q(QLineEdit);
     if (!newAction)
-        return 0;
+        return nullptr;
     if (!hasSideWidgets()) { // initial setup.
         QObject::connect(q, SIGNAL(textChanged(QString)), q, SLOT(_q_textChanged(QString)));
         lastTextSize = q->text().size();
     }
-    QWidget *w = 0;
+    QWidget *w = nullptr;
     // Store flags about QWidgetAction here since removeAction() may be called from ~QAction,
     // in which a qobject_cast<> no longer works.
 #if QT_CONFIG(action)

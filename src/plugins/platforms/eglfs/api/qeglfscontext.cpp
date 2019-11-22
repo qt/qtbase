@@ -78,7 +78,7 @@ EGLSurface QEglFSContext::createTemporaryOffscreenSurface()
         }
     }
     EGLConfig config = q_configFromGLFormat(eglDisplay(), format());
-    return eglCreateWindowSurface(eglDisplay(), config, m_tempWindow, 0);
+    return eglCreateWindowSurface(eglDisplay(), config, m_tempWindow, nullptr);
 }
 
 void QEglFSContext::destroyTemporaryOffscreenSurface(EGLSurface surface)

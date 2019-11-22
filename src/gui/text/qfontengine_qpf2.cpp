@@ -151,17 +151,17 @@ static inline const uchar *verifyTag(const uchar *tagPtr, const uchar *endPtr)
 const QFontEngineQPF2::Glyph *QFontEngineQPF2::findGlyph(glyph_t g) const
 {
     if (!g || g >= glyphMapEntries)
-        return 0;
+        return nullptr;
     const quint32 *gmapPtr = reinterpret_cast<const quint32 *>(fontData + glyphMapOffset);
     quint32 glyphPos = qFromBigEndian<quint32>(gmapPtr[g]);
     if (glyphPos > glyphDataSize) {
         if (glyphPos == 0xffffffff)
-            return 0;
+            return nullptr;
 #if defined(DEBUG_FONTENGINE)
         qDebug() << "glyph" << g << "outside of glyphData, remapping font file";
 #endif
         if (glyphPos > glyphDataSize)
-            return 0;
+            return nullptr;
     }
     return reinterpret_cast<const Glyph *>(fontData + glyphDataOffset + glyphPos);
 }
@@ -230,7 +230,7 @@ QFontEngineQPF2::QFontEngineQPF2(const QFontDef &def, const QByteArray &data)
 {
     fontDef = def;
     cache_cost = 100;
-    cmap = 0;
+    cmap = nullptr;
     cmapOffset = 0;
     cmapSize = 0;
     glyphMapOffset = 0;
