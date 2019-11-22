@@ -355,7 +355,7 @@ QNetworkConfigurationManager::Capabilities QNetworkConfigurationManager::capabil
     if (priv)
         return priv->capabilities();
 
-    return QNetworkConfigurationManager::Capabilities(0);
+    return {};
 }
 
 /*!

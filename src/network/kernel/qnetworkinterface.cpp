@@ -746,7 +746,7 @@ QString QNetworkInterface::humanReadableName() const
 */
 QNetworkInterface::InterfaceFlags QNetworkInterface::flags() const
 {
-    return d ? d->flags : InterfaceFlags(0);
+    return d ? d->flags : InterfaceFlags{};
 }
 
 /*!

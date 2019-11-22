@@ -99,8 +99,7 @@ std::unique_ptr<QEvdevMouseHandler> QEvdevMouseHandler::create(const QString &de
 }
 
 QEvdevMouseHandler::QEvdevMouseHandler(const QString &device, int fd, bool abs, bool compression, int jitterLimit)
-    : m_device(device), m_fd(fd), m_notify(0), m_x(0), m_y(0), m_prevx(0), m_prevy(0),
-      m_abs(abs), m_compression(compression), m_buttons(0), m_prevInvalid(true)
+    : m_device(device), m_fd(fd), m_abs(abs), m_compression(compression)
 {
     setObjectName(QLatin1String("Evdev Mouse Handler"));
 

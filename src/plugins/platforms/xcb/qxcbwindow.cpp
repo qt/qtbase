@@ -876,7 +876,7 @@ enum {
 
 QXcbWindow::NetWmStates QXcbWindow::netWmStates()
 {
-    NetWmStates result(0);
+    NetWmStates result;
 
     auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
                                        0, m_window, atom(QXcbAtom::_NET_WM_STATE),
@@ -1063,7 +1063,7 @@ void QXcbWindow::setNetWmStateOnUnmappedWindow()
     if (Q_UNLIKELY(m_mapped))
         qCWarning(lcQpaXcb()) << "internal error: " << Q_FUNC_INFO << "called on mapped window";
 
-    NetWmStates states(0);
+    NetWmStates states;
     const Qt::WindowFlags flags = window()->flags();
     if (flags & Qt::WindowStaysOnTopHint) {
         states |= NetWmStateAbove;
@@ -1477,7 +1477,7 @@ uint QXcbWindow::visualIdStatic(QWindow *window)
 
 QXcbWindowFunctions::WmWindowTypes QXcbWindow::wmWindowTypes() const
 {
-    QXcbWindowFunctions::WmWindowTypes result(0);
+    QXcbWindowFunctions::WmWindowTypes result;
 
     auto reply = Q_XCB_REPLY_UNCHECKED(xcb_get_property, xcb_connection(),
                                        0, m_window, atom(QXcbAtom::_NET_WM_WINDOW_TYPE),

@@ -251,7 +251,6 @@ public:
     QVulkanInstancePrivate(QVulkanInstance *q)
         : q_ptr(q),
           vkInst(VK_NULL_HANDLE),
-          flags(0),
           errorCode(VK_SUCCESS)
     { }
     ~QVulkanInstancePrivate() { reset(); }

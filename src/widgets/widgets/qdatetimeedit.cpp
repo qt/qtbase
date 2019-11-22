@@ -1416,9 +1416,9 @@ QDateTimeEdit::StepEnabled QDateTimeEdit::stepEnabled() const
 {
     Q_D(const QDateTimeEdit);
     if (d->readOnly)
-        return StepEnabled(0);
+        return {};
     if (d->specialValue()) {
-        return (d->minimum == d->maximum ? StepEnabled(0) : StepEnabled(StepUpEnabled));
+        return (d->minimum == d->maximum ? StepEnabled{} : StepEnabled(StepUpEnabled));
     }
 
     QAbstractSpinBox::StepEnabled ret = { };

@@ -2909,7 +2909,7 @@ QStyleOptionRubberBand::QStyleOptionRubberBand(int version)
 */
 
 QStyleOptionTitleBar::QStyleOptionTitleBar()
-    : QStyleOptionComplex(Version, SO_TitleBar), titleBarState(0), titleBarFlags(0)
+    : QStyleOptionComplex(Version, SO_TitleBar), titleBarState(0)
 {
 }
 
@@ -2954,7 +2954,7 @@ QStyleOptionTitleBar::QStyleOptionTitleBar()
     \internal
 */
 QStyleOptionTitleBar::QStyleOptionTitleBar(int version)
-    : QStyleOptionComplex(version, SO_TitleBar), titleBarState(0), titleBarFlags(0)
+    : QStyleOptionComplex(version, SO_TitleBar), titleBarState(0)
 {
 }
 

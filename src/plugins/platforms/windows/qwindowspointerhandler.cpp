@@ -482,7 +482,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
                 << " message=" << Qt::hex << msg.message
                 << " count=" << Qt::dec << count;
 
-    Qt::TouchPointStates allStates = nullptr;
+    Qt::TouchPointStates allStates;
 
     for (quint32 i = 0; i < count; ++i) {
         if (QWindowsContext::verbose > 1)

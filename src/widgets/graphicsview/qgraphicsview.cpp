@@ -352,14 +352,13 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
       alignment(Qt::AlignCenter),
       transformationAnchor(QGraphicsView::AnchorViewCenter), resizeAnchor(QGraphicsView::NoAnchor),
       viewportUpdateMode(QGraphicsView::MinimalViewportUpdate),
-      optimizationFlags(0),
       scene(0),
 #if QT_CONFIG(rubberband)
       rubberBanding(false),
       rubberBandSelectionMode(Qt::IntersectsItemShape),
       rubberBandSelectionOperation(Qt::ReplaceSelection),
 #endif
-      handScrollMotions(0), cacheMode(0),
+      handScrollMotions(0),
 #ifndef QT_NO_CURSOR
       hasStoredOriginalCursor(false),
 #endif

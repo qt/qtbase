@@ -591,7 +591,7 @@ Qt::Orientations QSpacerItem::expandingDirections() const
 Qt::Orientations QWidgetItem::expandingDirections() const
 {
     if (isEmpty())
-        return Qt::Orientations(0);
+        return {};
 
     Qt::Orientations e = wid->sizePolicy().expandingDirections();
     /*

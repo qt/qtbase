@@ -71,7 +71,7 @@ public:
 
     QPixmap standardPixmap(StandardPixmap sp, const QSizeF &size) const override;
 
-    QIcon fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions = nullptr) const override;
+    QIcon fileIcon(const QFileInfo &fileInfo, QPlatformTheme::IconOptions iconOptions = {}) const override;
 
     void windowsThemeChanged(QWindow *window);
     void displayChanged() { refreshIconPixmapSizes(); }

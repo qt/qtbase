@@ -64,7 +64,6 @@ QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
         delayConnect(0),
         connectTimer(0),
         connectingSocket(-1),
-        connectingOpenMode(0),
         state(QLocalSocket::UnconnectedState)
 {
 }

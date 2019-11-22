@@ -1896,7 +1896,7 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
         }
 
         if (kerningEnabled && !shaper_item.kerning_applied)
-            actualFontEngine->doKerning(&g, option.useDesignMetrics() ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlags(0));
+            actualFontEngine->doKerning(&g, option.useDesignMetrics() ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlags{});
 
         if (engineIdx != 0) {
             for (quint32 i = 0; i < shaper_item.num_glyphs; ++i)
@@ -3895,12 +3895,7 @@ QStackTextEngine::QStackTextEngine(const QString &string, const QFont &f)
 }
 
 QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFormat &format)
-    : justified(false),
-      underlineStyle(QTextCharFormat::NoUnderline),
-      charFormat(format),
-      num_chars(0),
-      chars(nullptr),
-      logClusters(nullptr),
+    : charFormat(format),
       f(font),
       fontEngine(font->d->engineForScript(si.analysis.script))
 {
@@ -3910,13 +3905,9 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
 }
 
 QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars_, int numChars, QFontEngine *fe, const QTextCharFormat &format)
-    : flags(0),
-      justified(false),
-      underlineStyle(QTextCharFormat::NoUnderline),
-      charFormat(format),
+    : charFormat(format),
       num_chars(numChars),
       chars(chars_),
-      logClusters(nullptr),
       f(font),
       glyphs(g),
       fontEngine(fe)

@@ -199,18 +199,17 @@ public:
     ItemMatrix m_matrix;
     QList<QFormLayoutItem *> m_things;
 
-    int layoutWidth;    // the last width that we called setupVerticalLayoutData on (for vLayouts)
+    int layoutWidth = -1;    // the last width that we called setupVerticalLayoutData on (for vLayouts)
 
-    int hfw_width;  // the last width we calculated HFW for
-    int hfw_height; // what that height was
-    int hfw_minheight;  // what that minheight was
+    int hfw_width = -1;  // the last width we calculated HFW for
+    int hfw_height = -1; // what that height was
 
-    int hfw_sh_height;  // the hfw for sh_width
-    int hfw_sh_minheight;   // the minhfw for sh_width
+    int hfw_sh_height = -1;  // the hfw for sh_width
+    int hfw_sh_minheight = -1; // the minhfw for sh_width
 
-    int min_width;  // the width that gets turned into minSize (from updateSizes)
-    int sh_width;   // the width that gets turned into prefSize (from updateSizes)
-    int thresh_width; // the width that we start splitting label/field pairs at (from updateSizes)
+    int min_width = -1;  // the width that gets turned into minSize (from updateSizes)
+    int sh_width = -1;   // the width that gets turned into prefSize (from updateSizes)
+    int thresh_width = QLAYOUTSIZE_MAX; // the width that we start splitting label/field pairs at (from updateSizes)
     QSize minSize;
     QSize prefSize;
     int formMaxWidth;
@@ -222,17 +221,15 @@ public:
 
     QVector<QLayoutStruct> hfwLayouts;
 
-    int hSpacing;
-    int vSpacing;
+    int hSpacing = -1;
+    int vSpacing = -1;
     QLayoutItem* replaceAt(int index, QLayoutItem*) override;
 };
 
 QFormLayoutPrivate::QFormLayoutPrivate()
     : fieldGrowthPolicy(DefaultFieldGrowthPolicy),
       rowWrapPolicy(DefaultRowWrapPolicy), has_hfw(false), dirty(true), sizesDirty(true),
-      expandVertical(0), expandHorizontal(0), labelAlignment(0), formAlignment(0),
-      layoutWidth(-1), hfw_width(-1), hfw_sh_height(-1), min_width(-1),
-      sh_width(-1), thresh_width(QLAYOUTSIZE_MAX), hSpacing(-1), vSpacing(-1)
+      expandVertical(0), expandHorizontal(0)
 {
 }
 
@@ -481,7 +478,6 @@ void QFormLayoutPrivate::recalcHFW(int w)
     } else {
         hfw_width = w;
         hfw_height = qMin(QLAYOUTSIZE_MAX, h);
-        hfw_minheight = qMin(QLAYOUTSIZE_MAX, mh);
     }
 }
 

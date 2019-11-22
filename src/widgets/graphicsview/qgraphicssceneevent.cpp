@@ -344,8 +344,7 @@ class QGraphicsSceneMouseEventPrivate : public QGraphicsSceneEventPrivate
     Q_DECLARE_PUBLIC(QGraphicsSceneMouseEvent)
 public:
     inline QGraphicsSceneMouseEventPrivate()
-        : button(Qt::NoButton),
-          buttons(0), modifiers(0), source(Qt::MouseEventNotSynthesized), flags(0)
+        : button(Qt::NoButton), source(Qt::MouseEventNotSynthesized)
     { }
 
     QPointF pos;
@@ -691,17 +690,15 @@ class QGraphicsSceneWheelEventPrivate : public QGraphicsSceneEventPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsSceneWheelEvent)
 public:
-    inline QGraphicsSceneWheelEventPrivate()
-        : buttons(0), modifiers(0), delta(0), orientation(Qt::Horizontal)
-    { }
+    inline QGraphicsSceneWheelEventPrivate() = default;
 
     QPointF pos;
     QPointF scenePos;
     QPoint screenPos;
     Qt::MouseButtons buttons;
     Qt::KeyboardModifiers modifiers;
-    int delta;
-    Qt::Orientation orientation;
+    int delta = 0;
+    Qt::Orientation orientation = Qt::Horizontal;
 };
 
 /*!
@@ -872,15 +869,13 @@ class QGraphicsSceneContextMenuEventPrivate : public QGraphicsSceneEventPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsSceneContextMenuEvent)
         public:
-    inline QGraphicsSceneContextMenuEventPrivate()
-        : modifiers(0), reason(QGraphicsSceneContextMenuEvent::Other)
-        { }
+    inline QGraphicsSceneContextMenuEventPrivate() = default;
 
     QPointF pos;
     QPointF scenePos;
     QPoint screenPos;
     Qt::KeyboardModifiers modifiers;
-    QGraphicsSceneContextMenuEvent::Reason reason;
+    QGraphicsSceneContextMenuEvent::Reason reason = QGraphicsSceneContextMenuEvent::Other;
 };
 
 /*!

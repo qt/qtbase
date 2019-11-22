@@ -7786,16 +7786,9 @@ QPainterState::QPainterState(const QPainterState *s)
 }
 
 QPainterState::QPainterState()
-    : brushOrigin(0, 0), bgBrush(Qt::white), clipOperation(Qt::NoClip),
-      renderHints(0),
-      wx(0), wy(0), ww(0), wh(0), vx(0), vy(0), vw(0), vh(0),
-      opacity(1), WxF(false), VxF(false), clipEnabled(true),
-      bgMode(Qt::TransparentMode), painter(0),
-      layoutDirection(QGuiApplication::layoutDirection()),
-      composition_mode(QPainter::CompositionMode_SourceOver),
-      emulationSpecifier(0), changeFlags(0)
+    : brushOrigin(0, 0), WxF(false), VxF(false), clipEnabled(true),
+      layoutDirection(QGuiApplication::layoutDirection())
 {
-    dirtyFlags = { };
 }
 
 QPainterState::~QPainterState()

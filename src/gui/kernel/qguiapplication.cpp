@@ -1763,7 +1763,7 @@ Qt::KeyboardModifiers QGuiApplication::keyboardModifiers()
 */
 Qt::KeyboardModifiers QGuiApplication::queryKeyboardModifiers()
 {
-    CHECK_QAPP_INSTANCE(Qt::KeyboardModifiers(0))
+    CHECK_QAPP_INSTANCE(Qt::KeyboardModifiers{})
     QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
     return pi->queryKeyboardModifiers();
 }
