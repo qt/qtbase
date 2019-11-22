@@ -33,6 +33,10 @@ endif()
 if(QT_FEATURE_gui)
     add_subdirectory(gui)
 
+    if(QT_FEATURE_opengl)
+        add_subdirectory(openglextensions)
+    endif()
+
     if(QT_FEATURE_widgets)
         add_subdirectory(widgets)
         if(QT_FEATURE_opengl)
