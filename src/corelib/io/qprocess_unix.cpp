@@ -451,8 +451,13 @@ void QProcessPrivate::startProcess()
     }
 
     // Start the process manager, and fork off the child process.
+    // ### Qt6: revisit whether the change in behavior due to not using fork()
+    // is acceptable for derived classes.
+    int ffdflags = FFD_CLOEXEC;
+    if (typeid(*q) != typeid(QProcess))
+        ffdflags |= FFD_USE_FORK;
     pid_t childPid;
-    forkfd = ::forkfd(FFD_CLOEXEC, &childPid);
+    forkfd = ::forkfd(ffdflags , &childPid);
     int lastForkErrno = errno;
     if (forkfd != FFD_CHILD_PROCESS) {
         // Parent process.
