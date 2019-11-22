@@ -1726,7 +1726,7 @@ void QNetworkAccessManager::setAutoDeleteReplies(bool shouldAutoDelete)
     This timeout is zero if setTransferTimeout() hasn't been
     called, which means that the timeout is not used.
 */
-int QNetworkAccessManager::transferTimeout()
+int QNetworkAccessManager::transferTimeout() const
 {
     return d_func()->transferTimeout;
 }

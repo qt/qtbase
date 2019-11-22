@@ -170,7 +170,7 @@ public:
     bool autoDeleteReplies() const;
     void setAutoDeleteReplies(bool autoDelete);
 
-    int transferTimeout();
+    int transferTimeout() const;
     void setTransferTimeout(int timeout = QNetworkRequest::TransferTimeoutPreset);
 
 Q_SIGNALS:

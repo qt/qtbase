@@ -189,7 +189,7 @@ public:
     QHttp2Configuration http2Configuration() const;
     void setHttp2Configuration(const QHttp2Configuration &configuration);
 
-    int transferTimeout();
+    int transferTimeout() const;
     void setTransferTimeout(int timeout = TransferTimeoutPreset);
 #endif // QT_CONFIG(http) || defined(Q_CLANG_QDOC)
 private:
