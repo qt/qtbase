@@ -599,44 +599,51 @@ class QmlDir:
         qmldir_file.path = path
         return qmldir_file
 
+    def from_lines(self, lines: [str]):
+        for line in lines:
+            self.handle_line(line)
+
     def from_file(self, path: str):
         f = open(path, "r")
         if not f:
             raise RuntimeError(f"Failed to open qmldir file at: {path}")
         for line in f:
-            if line.startswith("#"):
-                continue
-            line = line.strip().replace("\n", "")
-            if len(line) == 0:
-                continue
+            self.handle_line(line)
 
-            entries = line.split(" ")
-            if len(entries) == 0:
-                raise RuntimeError("Unexpected QmlDir file line entry")
-            if entries[0] == "module":
-                self.module = entries[1]
-            elif entries[0] == "[singleton]":
-                self.handle_file_singleton(entries[1], entries[2], entries[3])
-            elif entries[0] == "internal":
-                self.handle_file_internal(entries[1], entries[2])
-            elif entries[0] == "plugin":
-                self.plugin_name = entries[1]
-                if len(entries) > 2:
-                    self.plugin_path = entries[2]
-            elif entries[0] == "classname":
-                self.classname = entries[1]
-            elif entries[0] == "typeinfo":
-                self.type_infos.append(entries[1])
-            elif entries[0] == "depends":
-                self.depends.append((entries[1], entries[2]))
-            elif entries[0] == "designersupported":
-                self.designer_supported = True
-            elif entries[0] == "import":
-                self.imports.append(entries[1])
-            elif len(entries) == 3:
-                self.handle_file(entries[0], entries[1], entries[2])
-            else:
-                raise RuntimeError(f"Uhandled qmldir entry {line}")
+    def handle_line(self, line: str):
+        if line.startswith("#"):
+            return
+        line = line.strip().replace("\n", "")
+        if len(line) == 0:
+            return
+
+        entries = line.split(" ")
+        if len(entries) == 0:
+            raise RuntimeError("Unexpected QmlDir file line entry")
+        if entries[0] == "module":
+            self.module = entries[1]
+        elif entries[0] == "[singleton]":
+            self.handle_file_singleton(entries[1], entries[2], entries[3])
+        elif entries[0] == "internal":
+            self.handle_file_internal(entries[1], entries[2])
+        elif entries[0] == "plugin":
+            self.plugin_name = entries[1]
+            if len(entries) > 2:
+                self.plugin_path = entries[2]
+        elif entries[0] == "classname":
+            self.classname = entries[1]
+        elif entries[0] == "typeinfo":
+            self.type_infos.append(entries[1])
+        elif entries[0] == "depends":
+            self.depends.append((entries[1], entries[2]))
+        elif entries[0] == "designersupported":
+            self.designer_supported = True
+        elif entries[0] == "import":
+            self.imports.append(entries[1])
+        elif len(entries) == 3:
+            self.handle_file(entries[0], entries[1], entries[2])
+        else:
+            raise RuntimeError(f"Uhandled qmldir entry {line}")
 
 
 def spaces(indent: int) -> str:
@@ -3061,14 +3068,10 @@ def write_example(
                 uri = os.path.basename(dest_dir)
                 dest_dir = f"${{CMAKE_CURRENT_BINARY_DIR}}/{dest_dir}"
 
-            add_target = dedent(
-                f"""\
-                qt6_add_qml_module({binary_name}
-                    OUTPUT_DIRECTORY "{dest_dir}"
-                    VERSION 1.0
-                    URI "{uri}"
-                    """
-            )
+            add_target = ""
+
+            qml_dir = None
+            qml_dir_dynamic_imports = False
 
             qmldir_file_path_list = scope.get_files("qmldir.files")
             assert len(qmldir_file_path_list) < 2, "File path must only contain one path"
@@ -3078,19 +3081,63 @@ def write_example(
             if os.path.exists(qmldir_file_path):
                 qml_dir = QmlDir()
                 qml_dir.from_file(qmldir_file_path)
+            else:
+                dynamic_qmldir = scope.get("DYNAMIC_QMLDIR")
+                if not dynamic_qmldir:
+                    return None
+                qml_dir = QmlDir()
+                qml_dir.from_lines(dynamic_qmldir)
+                qml_dir_dynamic_imports = True
+
+                add_target += "set(module_dynamic_qml_imports\n    "
+                if len(qml_dir.imports) != 0:
+                    add_target += "\n    ".join(qml_dir.imports)
+                add_target += "\n)\n\n"
+
+                for sc in scopes[1:]:
+                    import_list = []
+                    qml_imports = sc.get("DYNAMIC_QMLDIR")
+                    for qml_import in qml_imports:
+                        if not qml_import.startswith("import "):
+                            raise RuntimeError(
+                                "Only qmldir import statements expected in conditional scope!"
+                            )
+                        import_list.append(qml_import[len("import ") :])
+                    if len(import_list) == 0:
+                        continue
+
+                    assert sc.condition
+
+                    add_target += f"if ({sc.condition})\n"
+                    add_target += f"    list(APPEND module_dynamic_qml_imports\n        "
+                    add_target += "\n        ".join(import_list)
+                    add_target += f"\n    )\nendif()\n\n"
+
+            add_target += dedent(
+                f"""\
+                qt6_add_qml_module({binary_name}
+                    OUTPUT_DIRECTORY "{dest_dir}"
+                    VERSION 1.0
+                    URI "{uri}"
+                    """
+            )
+
+            if qml_dir != None:
                 if qml_dir.designer_supported:
                     add_target += "    DESIGNER_SUPPORTED\n"
                 if len(qml_dir.classname) != 0:
                     add_target += f"    CLASSNAME {qml_dir.classname}\n"
-                if len(qml_dir.imports) != 0:
-                    qml_dir_imports_line = "        \n".join(qml_dir.imports)
-                    add_target += f"    IMPORTS\n{qml_dir_imports_line}"
                 if len(qml_dir.depends) != 0:
                     add_target += "    DEPENDENCIES\n"
                     for dep in qml_dir.depends:
                         add_target += f"        {dep[0]}/{dep[1]}\n"
                 if len(qml_dir.type_names) == 0:
                     add_target += "    SKIP_TYPE_REGISTRATION\n"
+                if len(qml_dir.imports) != 0 and not qml_dir_dynamic_imports:
+                    qml_dir_imports_line = "        \n".join(qml_dir.imports)
+                    add_target += f"    IMPORTS\n{qml_dir_imports_line}"
+                if qml_dir_dynamic_imports:
+                    add_target += "    IMPORTS ${module_dynamic_qml_imports}\n"
 
             add_target += "    INSTALL_LOCATION ${INSTALL_EXAMPLEDIR}\n)\n\n"
             add_target += f"target_sources({binary_name} PRIVATE"
@@ -3282,27 +3329,64 @@ def write_qml_plugin(
     if plugindump_dep:
         extra_lines.append(f'QML_PLUGINDUMP_DEPENDENCIES "{plugindump_dep}"')
 
+    qml_dir = None
     qmldir_file_path = os.path.join(os.getcwd(), "qmldir")
+    qml_dir_dynamic_imports = False
     if os.path.exists(qmldir_file_path):
         qml_dir = QmlDir()
         qml_dir.from_file(qmldir_file_path)
+    else:
+        dynamic_qmldir = scope.get("DYNAMIC_QMLDIR")
+        if not dynamic_qmldir:
+            return None
+        qml_dir = QmlDir()
+        qml_dir.from_lines(dynamic_qmldir)
+        qml_dir_dynamic_imports = True
+
+        # Check scopes for conditional entries
+        scopes = flatten_scopes(scope)
+        cm_fh.write("set(module_dynamic_qml_imports\n    ")
+        if len(qml_dir.imports) != 0:
+            cm_fh.write("\n    ".join(qml_dir.imports))
+        cm_fh.write("\n)\n\n")
+
+        for sc in scopes[1:]:
+            import_list = []
+            qml_imports = sc.get("DYNAMIC_QMLDIR")
+            for qml_import in qml_imports:
+                if not qml_import.startswith("import "):
+                    raise RuntimeError(
+                        "Only qmldir import statements expected in conditional scope!"
+                    )
+                import_list.append(qml_import[len("import ") :])
+            if len(import_list) == 0:
+                continue
+
+            assert sc.condition
+
+            cm_fh.write(f"if ({sc.condition})\n")
+            cm_fh.write(f"    list(APPEND module_dynamic_qml_imports\n        ")
+            cm_fh.write("\n        ".join(import_list))
+            cm_fh.write(f"\n    )\nendif()\n\n")
+
+    if qml_dir != None:
         if qml_dir.designer_supported:
             extra_lines.append("DESIGNER_SUPPORTED")
         if len(qml_dir.classname) != 0:
             extra_lines.append(f"CLASSNAME {qml_dir.classname}")
-        if len(qml_dir.imports) != 0:
-            qml_dir_imports_line = "\n        ".join(qml_dir.imports)
-            extra_lines.append("IMPORTS\n        " f"{qml_dir_imports_line}")
         if len(qml_dir.depends) != 0:
             extra_lines.append("DEPENDENCIES")
             for dep in qml_dir.depends:
                 extra_lines.append(f"    {dep[0]}/{dep[1]}")
         if len(qml_dir.type_names) == 0:
             extra_lines.append("SKIP_TYPE_REGISTRATION")
+        if len(qml_dir.imports) != 0 and not qml_dir_dynamic_imports:
+            qml_dir_imports_line = "\n        ".join(qml_dir.imports)
+            extra_lines.append("IMPORTS\n        " f"{qml_dir_imports_line}")
+        if qml_dir_dynamic_imports:
+            extra_lines.append("IMPORTS ${module_dynamic_qml_imports}")
 
-        return qml_dir
-
-    return None
+    return qml_dir
 
 
 def write_qml_plugin_epilogue(
