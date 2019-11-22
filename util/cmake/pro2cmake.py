@@ -1229,7 +1229,7 @@ class Scope(object):
     def get(self, key: str, *, ignore_includes: bool = False, inherit: bool = False) -> List[str]:
         is_same_path = self.currentdir == self.basedir
         if not is_same_path:
-            relative_path = os.path.relpath(self.currentdir, self.basedir)
+            relative_path = posixpath.relpath(self.currentdir, self.basedir)
 
         if key == "QQC2_SOURCE_TREE":
             qmake_conf_path = find_qmake_conf(os.path.abspath(self.currentdir))
