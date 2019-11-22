@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #############################################################################
 ##
-## Copyright (C) 2016 The Qt Company Ltd.
+## Copyright (C) 2020 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the release tools of the Qt Toolkit.
@@ -263,7 +263,7 @@ def baseEnv(platname=None,
             keep += preserveLib
 
         cached = dict(
-            LC_ALL = 'C', # Use standard locale
+            LC_ALL = 'en-US.UTF-8', # Use standard locale
             # Avoid interference from any qtlogging.ini files, e.g. in
             # /etc/xdg/QtProject/, (must match tst_selftests.cpp's
             # processEnvironment()'s value):

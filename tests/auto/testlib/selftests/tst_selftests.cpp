@@ -632,6 +632,11 @@ static QProcessEnvironment processEnvironment()
         result.insert(QStringLiteral("QT_LOGGING_RULES"),
                       // Must match generate_expected_output.py's main()'s value:
                       QStringLiteral("*.debug=true;qt.*=false"));
+
+#if defined(Q_OS_UNIX)
+        // avoid the warning from QCoreApplication
+        result.insert(QStringLiteral("LC_ALL"), QStringLiteral("en_US.UTF-8"));
+#endif
     }
     return result;
 }

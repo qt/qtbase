@@ -112,6 +112,7 @@
 
 #ifdef Q_OS_UNIX
 #  include <locale.h>
+#  include <langinfo.h>
 #  include <unistd.h>
 #  include <sys/types.h>
 #endif
@@ -337,9 +338,6 @@ void Q_CORE_EXPORT qt_call_post_routines()
     }
 }
 
-
-// initialized in qcoreapplication and in qtextstream autotest when setlocale is called.
-static bool qt_locale_initialized = false;
 
 #ifndef QT_NO_QOBJECT
 
@@ -590,11 +588,45 @@ QString qAppName()
 
 void QCoreApplicationPrivate::initLocale()
 {
+#if defined(Q_OS_UNIX) && !defined(QT_BOOTSTRAPPED)
+    static bool qt_locale_initialized = false;
     if (qt_locale_initialized)
         return;
     qt_locale_initialized = true;
-#if defined(Q_OS_UNIX) && !defined(QT_BOOTSTRAPPED)
-    setlocale(LC_ALL, "");
+
+#ifdef Q_OS_ANDROID
+    // Android's Bionic didn't get nl_langinfo until NDK 15 (Android 8.0),
+    // which is too new for Qt, so we just assume it's always UTF-8.
+    auto nl_langinfo = [](int) { return "UTF-8"; };
+#endif
+
+    const char *locale = setlocale(LC_ALL, "");
+    const char *codec = nl_langinfo(CODESET);
+    if (Q_UNLIKELY(strcmp(codec, "UTF-8") != 0 && strcmp(codec, "utf8") != 0)) {
+        QByteArray oldLocale = locale;
+        QByteArray newLocale = setlocale(LC_CTYPE, nullptr);
+        if (int dot = newLocale.indexOf('.'); dot != -1)
+            newLocale.truncate(dot);    // remove encoding, if any
+        if (int at = newLocale.indexOf('@'); at != -1)
+            newLocale.truncate(at);     // remove variant, as the old de_DE@euro
+        newLocale += ".UTF-8";
+        newLocale = setlocale(LC_CTYPE, newLocale);
+
+        // if locale doesn't exist, try some fallbacks
+#  ifdef Q_OS_DARWIN
+        if (newLocale.isEmpty())
+            newLocale = setlocale(LC_CTYPE, "UTF-8");
+#  endif
+        if (newLocale.isEmpty())
+            newLocale = setlocale(LC_CTYPE, "C.UTF-8");
+        if (newLocale.isEmpty())
+            newLocale = setlocale(LC_CTYPE, "C.utf8");
+
+        qWarning("Detected system locale encoding (%s, locale \"%s\") is not UTF-8.\n"
+                 "Qt shall use a UTF-8 locale (\"%s\") instead. If this causes problems,\n"
+                 "reconfigure your locale. See the locale(1) manual for more information.",
+                 codec, oldLocale.constData(), newLocale.constData());
+    }
 #endif
 }
 
