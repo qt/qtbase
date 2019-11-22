@@ -299,7 +299,7 @@ public:
 
     void setPalette_helper(const QPalette &);
     void resolvePalette();
-    QPalette naturalWidgetPalette(uint inheritedMask) const;
+    QPalette naturalWidgetPalette(QPalette::ResolveMask inheritedMask) const;
 
     void setMask_sys(const QRegion &);
 
@@ -672,7 +672,7 @@ public:
     // Other variables.
     uint directFontResolveMask;
     uint inheritedFontResolveMask;
-    uint inheritedPaletteResolveMask;
+    QPalette::ResolveMask inheritedPaletteResolveMask;
     short leftmargin;
     short topmargin;
     short rightmargin;

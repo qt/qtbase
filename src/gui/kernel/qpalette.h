@@ -72,14 +72,12 @@ public:
     { other.d = nullptr; }
     inline QPalette &operator=(QPalette &&other) noexcept
     {
-        for_faster_swapping_dont_use = other.for_faster_swapping_dont_use;
         qSwap(d, other.d); return *this;
     }
 
     void swap(QPalette &other) noexcept
     {
         qSwap(d, other.d);
-        qSwap(for_faster_swapping_dont_use, other.for_faster_swapping_dont_use);
     }
 
     operator QVariant() const;
@@ -103,8 +101,8 @@ public:
                    };
     Q_ENUM(ColorRole)
 
-    inline ColorGroup currentColorGroup() const { return static_cast<ColorGroup>(data.current_group); }
-    inline void setCurrentColorGroup(ColorGroup cg) { data.current_group = cg; }
+    inline ColorGroup currentColorGroup() const { return data.currentGroup; }
+    inline void setCurrentColorGroup(ColorGroup cg) { data.currentGroup = cg; }
 
     inline const QColor &color(ColorGroup cg, ColorRole cr) const
     { return brush(cg, cr).color(); }
@@ -158,9 +156,11 @@ public:
 #endif
     qint64 cacheKey() const;
 
-    QPalette resolve(const QPalette &) const;
-    inline uint resolve() const { return data.resolve_mask; }
-    inline void resolve(uint mask) { data.resolve_mask = mask; }
+    QPalette resolve(const QPalette &other) const;
+
+    using ResolveMask = quint64;
+    inline ResolveMask resolve() const { return data.resolveMask; }
+    inline void resolve(ResolveMask mask) { data.resolveMask = mask; }
 
 private:
     void setColorGroup(ColorGroup cr, const QBrush &windowText, const QBrush &button,
@@ -185,13 +185,11 @@ private:
 
     QPalettePrivate *d;
     struct Data {
-        uint current_group : 4;
-        uint resolve_mask : 28;
+        ResolveMask resolveMask{0};
+        ColorGroup currentGroup{Active};
     };
-    union {
-        Data data;
-        quint32 for_faster_swapping_dont_use;
-    };
+    Data data;
+
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &s, const QPalette &p);
 };
 

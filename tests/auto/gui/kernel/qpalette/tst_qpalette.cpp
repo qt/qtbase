@@ -41,6 +41,12 @@ private Q_SLOTS:
     void copySemantics();
     void moveSemantics();
     void setBrush();
+
+    void isBrushSet();
+    void setAllPossibleBrushes();
+    void noBrushesSetForDefaultPalette();
+    void cannotCheckIfInvalidBrushSet();
+    void checkIfBrushForCurrentGroupSet();
 };
 
 void tst_QPalette::roleValues_data()
@@ -192,6 +198,63 @@ void tst_QPalette::setBrush()
     // Setting the same brush won't detach
     p.setBrush(QPalette::Disabled, QPalette::Button, Qt::green);
     QVERIFY(pp.isCopyOf(p));
+}
+
+void tst_QPalette::isBrushSet()
+{
+    QPalette p;
+
+    // Set only one color group
+    p.setBrush(QPalette::Active, QPalette::Mid, QBrush(Qt::red));
+    QVERIFY(p.isBrushSet(QPalette::Active, QPalette::Mid));
+    QVERIFY(!p.isBrushSet(QPalette::Inactive, QPalette::Mid));
+    QVERIFY(!p.isBrushSet(QPalette::Disabled, QPalette::Mid));
+
+    // Set all color groups
+    p.setBrush(QPalette::LinkVisited, QBrush(Qt::green));
+    QVERIFY(p.isBrushSet(QPalette::Active, QPalette::LinkVisited));
+    QVERIFY(p.isBrushSet(QPalette::Inactive, QPalette::LinkVisited));
+    QVERIFY(p.isBrushSet(QPalette::Disabled, QPalette::LinkVisited));
+}
+
+void tst_QPalette::setAllPossibleBrushes()
+{
+    QPalette p;
+
+    QCOMPARE(p.resolve(), QPalette::ResolveMask(0));
+
+    for (int r = 0; r < QPalette::NColorRoles; ++r) {
+        p.setBrush(QPalette::All, QPalette::ColorRole(r), Qt::red);
+    }
+
+    for (int r = 0; r < QPalette::NColorRoles; ++r) {
+        for (int g = 0; g < QPalette::NColorGroups; ++g) {
+            QVERIFY(p.isBrushSet(QPalette::ColorGroup(g), QPalette::ColorRole(r)));
+        }
+    }
+}
+
+void tst_QPalette::noBrushesSetForDefaultPalette()
+{
+    QCOMPARE(QPalette().resolve(), QPalette::ResolveMask(0));
+}
+
+void tst_QPalette::cannotCheckIfInvalidBrushSet()
+{
+    QPalette p(Qt::red);
+
+    QVERIFY(!p.isBrushSet(QPalette::All, QPalette::LinkVisited));
+    QVERIFY(!p.isBrushSet(QPalette::Active, QPalette::NColorRoles));
+}
+
+void tst_QPalette::checkIfBrushForCurrentGroupSet()
+{
+    QPalette p;
+
+    p.setCurrentColorGroup(QPalette::Disabled);
+    p.setBrush(QPalette::Current, QPalette::Link, QBrush(Qt::yellow));
+
+    QVERIFY(p.isBrushSet(QPalette::Current, QPalette::Link));
 }
 
 QTEST_MAIN(tst_QPalette)

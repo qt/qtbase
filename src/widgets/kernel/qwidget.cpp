@@ -1850,7 +1850,7 @@ void QWidgetPrivate::propagatePaletteChange()
         if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedPaletteResolveMask = 0;
     }
-    int mask = data.pal.resolve() | inheritedPaletteResolveMask;
+    QPalette::ResolveMask mask = data.pal.resolve() | inheritedPaletteResolveMask;
 
     const bool useStyleSheetPropagationInWidgetStyles =
         QCoreApplication::testAttribute(Qt::AA_UseStyleSheetPropagationInWidgetStyles);
@@ -4374,7 +4374,7 @@ void QWidget::setPalette(const QPalette &palette)
     widget's palette are implicitly imposed on this widget by the user). Note
     that this font does not take into account the palette set on \a w itself.
 */
-QPalette QWidgetPrivate::naturalWidgetPalette(uint inheritedMask) const
+QPalette QWidgetPrivate::naturalWidgetPalette(QPalette::ResolveMask inheritedMask) const
 {
     Q_Q(const QWidget);
 
