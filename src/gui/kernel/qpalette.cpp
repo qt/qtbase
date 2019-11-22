@@ -321,11 +321,8 @@ static void qt_palette_from_color(QPalette &pal, const QColor &button)
 
     Returns the placeholder text brush of the current color group.
 
-    \note Before Qt 5.12, the placeholder text color was hard-coded in the code as
-    QPalette::text().color() where an alpha of 128 was applied.
-    We continue to support this behavior by default, unless you set your own brush.
-    One can get back the original placeholder color setting the special QBrush default
-    constructor as placeholder brush.
+    \note Before Qt 5.12, the placeholder text color was hard-coded as QPalette::text().color()
+    with an alpha of 128 applied. In Qt 6, it is an independent color.
 
     \sa ColorRole, brush()
 */
@@ -783,32 +780,11 @@ void QPalette::setBrush(ColorGroup cg, ColorRole cr, const QBrush &b)
         cg = Active;
     }
 
-    // For placeholder we want to continue to respect the original behavior, which is
-    // derivating the text color, but only if user has not yet set his own brush.
-    // We then use Qt::NoBrush as an inernal way to know if the brush is customized or not.
-
-    // ### Qt 6 - remove this special case
-    // Part 1 - Restore initial color to the given color group
-    if (cr == PlaceholderText && b == QBrush()) {
-        QColor col = brush(Text).color();
-        col.setAlpha(128);
-        setBrush(cg, PlaceholderText, QBrush(col, Qt::NoBrush));
-        return;
-    }
-
     if (d->br[cg][cr] != b) {
         detach();
         d->br[cg][cr] = b;
     }
     data.resolve_mask |= (1<<cr);
-
-    // ### Qt 6 - remove this special case
-    // Part 2 - Update initial color to the given color group
-    if (cr == Text && d->br[cg][PlaceholderText].style() == Qt::NoBrush) {
-        QColor col = brush(Text).color();
-        col.setAlpha(128);
-        setBrush(cg, PlaceholderText, QBrush(col, Qt::NoBrush));
-    }
 }
 
 /*!
@@ -1177,6 +1153,8 @@ Q_GUI_EXPORT QPalette qt_fusionPalette()
     QColor button = backGround;
     QColor shadow = dark.darker(135);
     QColor disabledShadow = shadow.lighter(150);
+    QColor placeholder = text;
+    placeholder.setAlpha(128);
 
     QPalette fusionPalette(Qt::black,backGround,light,dark,mid,text,base);
     fusionPalette.setBrush(QPalette::Midlight, midLight);
@@ -1194,6 +1172,9 @@ Q_GUI_EXPORT QPalette qt_fusionPalette()
     fusionPalette.setBrush(QPalette::Active, QPalette::Highlight, QColor(48, 140, 198));
     fusionPalette.setBrush(QPalette::Inactive, QPalette::Highlight, QColor(48, 140, 198));
     fusionPalette.setBrush(QPalette::Disabled, QPalette::Highlight, QColor(145, 145, 145));
+
+    fusionPalette.setBrush(QPalette::PlaceholderText, placeholder);
+
     return fusionPalette;
 }
 
