@@ -103,6 +103,8 @@ FILES="
     src/pcre2_pattern_info.c
     src/pcre2_script_run.c
     src/pcre2_serialize.c
+    src/pcre2_jit_neon_inc.h
+    src/pcre2_jit_simd_inc.h
     src/pcre2_string_utils.c
     src/pcre2_study.c
     src/pcre2_substitute.c
