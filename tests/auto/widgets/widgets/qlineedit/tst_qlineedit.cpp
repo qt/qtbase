@@ -77,24 +77,22 @@ using namespace QTestPrivate;
 
 class StyleOptionTestStyle : public QCommonStyle
 {
-private:
-    bool readOnly;
-
 public:
-    inline StyleOptionTestStyle() : QCommonStyle(), readOnly(false)
-    {
-    }
+    bool readOnly = false;
+    mutable bool wasDrawn = false;
 
-    inline void setReadOnly(bool readOnly)
+    using QCommonStyle::QCommonStyle;
+    void setReadOnly(bool readOnly)
     {
         this->readOnly = readOnly;
     }
 
-    inline void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *,
-                                 const QWidget *) const
+    void drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *,
+                                 const QWidget *) const override
     {
         switch (pe) {
             case PE_PanelLineEdit:
+            wasDrawn = true;
             if (readOnly)
                 QVERIFY(opt->state & QStyle::State_ReadOnly);
             else
@@ -3271,19 +3269,22 @@ void tst_QLineEdit::readOnlyStyleOption()
     QLineEdit *testWidget = ensureTestWidget();
     bool wasReadOnly = testWidget->isReadOnly();
     QStyle *oldStyle = testWidget->style();
+    testWidget->show();
+    QTRY_VERIFY(QTest::qWaitForWindowExposed(testWidget));
 
     StyleOptionTestStyle myStyle;
     testWidget->setStyle(&myStyle);
 
     myStyle.setReadOnly(true);
     testWidget->setReadOnly(true);
-    testWidget->repaint();
-    qApp->processEvents();
+    testWidget->update();
+    QTRY_VERIFY(myStyle.wasDrawn);
+    myStyle.wasDrawn = false;
 
     testWidget->setReadOnly(false);
     myStyle.setReadOnly(false);
-    testWidget->repaint();
-    qApp->processEvents();
+    testWidget->update();
+    QTRY_VERIFY(myStyle.wasDrawn);
 
     testWidget->setReadOnly(wasReadOnly);
     testWidget->setStyle(oldStyle);
