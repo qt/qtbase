@@ -68,12 +68,12 @@ class Q_CORE_EXPORT QSortFilterProxyModel : public QAbstractProxyModel
 #endif
     Q_PROPERTY(int filterKeyColumn READ filterKeyColumn WRITE setFilterKeyColumn)
     Q_PROPERTY(bool dynamicSortFilter READ dynamicSortFilter WRITE setDynamicSortFilter)
-    Q_PROPERTY(Qt::CaseSensitivity filterCaseSensitivity READ filterCaseSensitivity WRITE setFilterCaseSensitivity)
-    Q_PROPERTY(Qt::CaseSensitivity sortCaseSensitivity READ sortCaseSensitivity WRITE setSortCaseSensitivity)
-    Q_PROPERTY(bool isSortLocaleAware READ isSortLocaleAware WRITE setSortLocaleAware)
-    Q_PROPERTY(int sortRole READ sortRole WRITE setSortRole)
-    Q_PROPERTY(int filterRole READ filterRole WRITE setFilterRole)
-    Q_PROPERTY(bool recursiveFilteringEnabled READ isRecursiveFilteringEnabled WRITE setRecursiveFilteringEnabled)
+    Q_PROPERTY(Qt::CaseSensitivity filterCaseSensitivity READ filterCaseSensitivity WRITE setFilterCaseSensitivity NOTIFY filterCaseSensitivityChanged)
+    Q_PROPERTY(Qt::CaseSensitivity sortCaseSensitivity READ sortCaseSensitivity WRITE setSortCaseSensitivity NOTIFY sortCaseSensitivityChanged)
+    Q_PROPERTY(bool isSortLocaleAware READ isSortLocaleAware WRITE setSortLocaleAware NOTIFY sortLocaleAwareChanged)
+    Q_PROPERTY(int sortRole READ sortRole WRITE setSortRole NOTIFY sortRoleChanged)
+    Q_PROPERTY(int filterRole READ filterRole WRITE setFilterRole NOTIFY filterRoleChanged)
+    Q_PROPERTY(bool recursiveFilteringEnabled READ isRecursiveFilteringEnabled WRITE setRecursiveFilteringEnabled NOTIFY recursiveFilteringEnabledChanged)
 
 public:
     explicit QSortFilterProxyModel(QObject *parent = nullptr);
@@ -185,6 +185,16 @@ public:
 
     QStringList mimeTypes() const override;
     Qt::DropActions supportedDropActions() const override;
+
+Q_SIGNALS:
+    void dynamicSortFilterChanged(bool dynamicSortFilter);
+    void filterCaseSensitivityChanged(Qt::CaseSensitivity filterCaseSensitivity);
+    void sortCaseSensitivityChanged(Qt::CaseSensitivity sortCaseSensitivity);
+    void sortLocaleAwareChanged(bool sortLocaleAware);
+    void sortRoleChanged(int sortRole);
+    void filterRoleChanged(int filterRole);
+    void recursiveFilteringEnabledChanged(bool recursiveFilteringEnabled);
+
 private:
     Q_DECLARE_PRIVATE(QSortFilterProxyModel)
     Q_DISABLE_COPY(QSortFilterProxyModel)
