@@ -3829,6 +3829,7 @@ bool QVariant::convert(const int type, void *ptr) const
 
 /*!
     \fn bool QVariant::operator<(const QVariant &v) const
+    \obsolete
 
     Compares this QVariant with \a v and returns \c true if this is less than \a v.
 
@@ -3838,10 +3839,15 @@ bool QVariant::convert(const int type, void *ptr) const
     \warning To make this function work with a custom type registered with
     qRegisterMetaType(), its comparison operator must be registered using
     QMetaType::registerComparators().
+
+    This operator is deprecated as it cannot establish a total order required
+    for most use of this operator, which is the reason you cannot use QVariant
+    as the key of a QMap.
 */
 
 /*!
     \fn bool QVariant::operator<=(const QVariant &v) const
+    \obsolete
 
     Compares this QVariant with \a v and returns \c true if this is less or equal than \a v.
 
@@ -3851,10 +3857,13 @@ bool QVariant::convert(const int type, void *ptr) const
     \warning To make this function work with a custom type registered with
     qRegisterMetaType(), its comparison operator must be registered using
     QMetaType::registerComparators().
+
+    This operator is deprecated as it cannot establish a total order.
 */
 
 /*!
     \fn bool QVariant::operator>(const QVariant &v) const
+    \obsolete
 
     Compares this QVariant with \a v and returns \c true if this is larger than \a v.
 
@@ -3864,10 +3873,13 @@ bool QVariant::convert(const int type, void *ptr) const
     \warning To make this function work with a custom type registered with
     qRegisterMetaType(), its comparison operator must be registered using
     QMetaType::registerComparators().
+
+    This operator is deprecated as it cannot establish a total order.
 */
 
 /*!
     \fn bool QVariant::operator>=(const QVariant &v) const
+    \obsolete
 
     Compares this QVariant with \a v and returns \c true if this is larger or equal than \a v.
 
@@ -3877,6 +3889,8 @@ bool QVariant::convert(const int type, void *ptr) const
     \warning To make this function work with a custom type registered with
     qRegisterMetaType(), its comparison operator must be registered using
     QMetaType::registerComparators().
+
+    This operator is deprecated as it cannot establish a total order.
 */
 
 static bool qIsNumericType(uint tp)

@@ -463,14 +463,16 @@ class Q_CORE_EXPORT QVariant
     { return cmp(v); }
     inline bool operator!=(const QVariant &v) const
     { return !cmp(v); }
-    inline bool operator<(const QVariant &v) const
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED inline bool operator<(const QVariant &v) const
     { return compare(v) < 0; }
-    inline bool operator<=(const QVariant &v) const
+    QT_DEPRECATED inline bool operator<=(const QVariant &v) const
     { return compare(v) <= 0; }
-    inline bool operator>(const QVariant &v) const
+    QT_DEPRECATED inline bool operator>(const QVariant &v) const
     { return compare(v) > 0; }
-    inline bool operator>=(const QVariant &v) const
+    QT_DEPRECATED inline bool operator>=(const QVariant &v) const
     { return compare(v) >= 0; }
+#endif
 
 protected:
     friend inline bool operator==(const QVariant &, const QVariantComparisonHelper &);
