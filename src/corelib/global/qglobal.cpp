@@ -4810,9 +4810,11 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro qMove(x)
     \relates <QtGlobal>
+    \obsolete
 
-    It expands to "std::move" if your compiler supports that C++11 function, or to nothing
-    otherwise.
+    Use \c std::move instead.
+
+    It expands to "std::move".
 
     qMove takes an rvalue reference to its parameter \a x, and converts it to an xvalue.
 */
@@ -4913,6 +4915,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro Q_DECL_OVERRIDE
     \since 5.0
+    \obsolete
     \relates <QtGlobal>
 
     This macro can be used to declare an overriding virtual
@@ -4920,8 +4923,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     an error if the overriding virtual function does not in fact
     override anything.
 
-    It expands to "override" if your compiler supports that C++11
-    contextual keyword, or to nothing otherwise.
+    It expands to "override".
 
     The macro goes at the end of the function, usually after the
     \c{const}, if any:
@@ -4933,6 +4935,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 /*!
     \macro Q_DECL_FINAL
     \since 5.0
+    \obsolete
     \relates <QtGlobal>
 
     This macro can be used to declare an overriding virtual or a class
@@ -4940,10 +4943,7 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     no longer override this virtual function, or inherit from this
     class, respectively.
 
-    It expands to "final" if your compiler supports that C++11
-    contextual keyword, or something non-standard if your compiler
-    supports something close enough to the C++11 semantics, or to
-    nothing otherwise.
+    It expands to "final".
 
     The macro goes at the end of the function, usually after the
     \c{const}, if any:
