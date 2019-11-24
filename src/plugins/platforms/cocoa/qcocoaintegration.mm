@@ -197,16 +197,6 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
         [cocoaApplication setMenu:[qtMenuLoader menu]];
     }
 
-    // The presentation options such as whether or not the dock and/or menu bar is
-    // hidden (automatically by the system) affects the main screen's available
-    // geometry. Since we're initializing the screens synchronously at application
-    // startup we need to ensure that the presentation options have been propagated
-    // to the screen before we read out its properties. Normally OS X does this in
-    // an asynchronous callback, but that's too late for us. We force the propagation
-    // by explicitly setting the presentation option to the magic 'default value',
-    // which will resolve to an actual value and result in screen invalidation.
-    cocoaApplication.presentationOptions = NSApplicationPresentationDefault;
-
     QCocoaScreen::initializeScreens();
 
     QMacInternalPasteboardMime::initializeMimeTypes();
