@@ -204,7 +204,9 @@ QDBusInterfacePrivate::~QDBusInterfacePrivate()
     interface \a interface on object at path \a path on service \a
     service, using the given \a connection. If \a interface is an
     empty string, the object created will refer to the merging of all
-    interfaces found in that object.
+    interfaces found by introspecting that object. Otherwise if
+    \a interface is not empty, the  QDBusInterface object will be cached
+    to speedup further creations of the same interface.
 
     \a parent is passed to the base class constructor.
 
