@@ -301,7 +301,7 @@ QRect QXcbVirtualDesktop::getWorkArea() const
         uint32_t *geom = (uint32_t*)xcb_get_property_value(workArea.get());
         r = QRect(geom[0], geom[1], geom[2], geom[3]);
     } else {
-        r = QRect(QPoint(), size());
+        r.setWidth(-1);
     }
     return r;
 }
@@ -314,6 +314,11 @@ void QXcbVirtualDesktop::updateWorkArea()
         for (QPlatformScreen *screen : qAsConst(m_screens))
             ((QXcbScreen *)screen)->updateAvailableGeometry();
     }
+}
+
+QRect QXcbVirtualDesktop::availableGeometry(const QRect &screenGeometry) const
+{
+    return m_workArea.width() >= 0 ? screenGeometry & m_workArea : screenGeometry;
 }
 
 static inline QSizeF sizeInMillimeters(const QSize &size, const QDpi &dpi)
@@ -535,7 +540,7 @@ QXcbScreen::QXcbScreen(QXcbConnection *connection, QXcbVirtualDesktop *virtualDe
         m_geometry = QRect(QPoint(), virtualDesktop->size());
 
     if (m_availableGeometry.isEmpty())
-        m_availableGeometry = m_geometry & m_virtualDesktop->workArea();
+        m_availableGeometry = m_virtualDesktop->availableGeometry(m_geometry);
 
     if (m_sizeMillimeters.isEmpty())
         m_sizeMillimeters = virtualDesktop->physicalSize();
@@ -773,7 +778,7 @@ void QXcbScreen::updateGeometry(const QRect &geometry, uint8_t rotation)
         m_sizeMillimeters = sizeInMillimeters(geometry.size(), m_virtualDesktop->dpi());
 
     m_geometry = geometry;
-    m_availableGeometry = geometry & m_virtualDesktop->workArea();
+    m_availableGeometry = m_virtualDesktop->availableGeometry(m_geometry);
     QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);
     if (m_orientation != oldOrientation)
         QWindowSystemInterface::handleScreenOrientationChange(QPlatformScreen::screen(), m_orientation);
@@ -781,7 +786,7 @@ void QXcbScreen::updateGeometry(const QRect &geometry, uint8_t rotation)
 
 void QXcbScreen::updateAvailableGeometry()
 {
-    QRect availableGeometry = m_geometry & m_virtualDesktop->workArea();
+    QRect availableGeometry = m_virtualDesktop->availableGeometry(m_geometry);
     if (m_availableGeometry != availableGeometry) {
         m_availableGeometry = availableGeometry;
         QWindowSystemInterface::handleScreenGeometryChange(QPlatformScreen::screen(), m_geometry, m_availableGeometry);
