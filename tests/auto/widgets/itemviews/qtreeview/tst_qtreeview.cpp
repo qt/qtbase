@@ -4875,10 +4875,24 @@ void tst_QTreeView::taskQTBUG_61476()
     const QPoint pos = rect.center();
 
     QTest::mousePress(tv.viewport(), Qt::LeftButton, {}, pos);
-    if (tv.style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, nullptr, &tv) ==
-        QEvent::MouseButtonPress)
+    const bool expandsOnPress =
+        (tv.style()->styleHint(QStyle::SH_ListViewExpand_SelectMouseType, nullptr, &tv) == QEvent::MouseButtonPress);
+    if (expandsOnPress)
         QTRY_VERIFY(!tv.isExpanded(mi));
 
+    QTest::mouseRelease(tv.viewport(), Qt::LeftButton, nullptr, pos);
+    QTRY_VERIFY(!tv.isExpanded(mi));
+    QCOMPARE(lastTopLevel->checkState(), Qt::Checked);
+
+    // Test that it does not toggle the check state of a previously selected item when collapsing an
+    // item causes it to position the item under the mouse to be the decoration for the selected item
+    tv.expandAll();
+    tv.verticalScrollBar()->setValue(tv.verticalScrollBar()->maximum());
+    // It is not enough to programmatically select the item, we need to have it clicked on
+    QTest::mouseClick(tv.viewport(), Qt::LeftButton, {}, tv.visualRect(lastTopLevel->index()).center());
+    QTest::mousePress(tv.viewport(), Qt::LeftButton, {}, pos);
+    if (expandsOnPress)
+        QTRY_VERIFY(!tv.isExpanded(mi));
     QTest::mouseRelease(tv.viewport(), Qt::LeftButton, nullptr, pos);
     QTRY_VERIFY(!tv.isExpanded(mi));
     QCOMPARE(lastTopLevel->checkState(), Qt::Checked);

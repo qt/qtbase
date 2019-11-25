@@ -1892,6 +1892,8 @@ void QTreeView::mousePressEvent(QMouseEvent *event)
         handled = d->expandOrCollapseItemAtPos(event->pos());
     if (!handled && d->itemDecorationAt(event->pos()) == -1)
         QAbstractItemView::mousePressEvent(event);
+    else
+        d->pressedIndex = QModelIndex();
 }
 
 /*!
