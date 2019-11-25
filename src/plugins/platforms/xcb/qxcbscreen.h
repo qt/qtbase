@@ -88,8 +88,8 @@ public:
 
     bool compositingActive() const;
 
-    QRect workArea() const { return m_workArea; }
     void updateWorkArea();
+    QRect availableGeometry(const QRect &screenGeometry) const;
 
     void handleXFixesSelectionNotify(xcb_xfixes_selection_notify_event_t *notify_event);
     void subscribeToXFixesSelectionNotify();
