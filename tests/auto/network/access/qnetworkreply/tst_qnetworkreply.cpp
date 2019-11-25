@@ -511,6 +511,8 @@ private Q_SLOTS:
     void autoDeleteReplies_data();
     void autoDeleteReplies();
 
+    void getWithTimeout();
+    void postWithTimeout();
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 private:
@@ -589,6 +591,7 @@ public:
     bool multiple;
     int totalConnections;
 
+    bool stopTransfer = false;
     bool hasContent = false;
     int contentRead = 0;
     int contentLength = 0;
@@ -655,7 +658,7 @@ protected:
         // we need to emulate the bytesWrittenSlot call if the data is empty.
         if (dataToTransmit.size() == 0) {
             emit client->bytesWritten(0);
-        } else {
+        } else if (!stopTransfer) {
             client->write(dataToTransmit);
             // FIXME: For SSL connections, if we don't flush the socket, the
             // client never receives the data and since we're doing a disconnect
@@ -711,7 +714,8 @@ public slots:
         Q_ASSERT(currentClient);
         if (currentClient != client)
             client = currentClient;
-
+        if (stopTransfer)
+          return;
         receivedData += client->readAll();
         const int doubleEndlPos = receivedData.indexOf("\r\n\r\n");
 
@@ -9336,6 +9340,84 @@ void tst_QNetworkReply::autoDeleteReplies()
         QCoreApplication::processEvents();
         QCOMPARE(destroyedSpy.count(), 0);
     }
+}
+
+void tst_QNetworkReply::getWithTimeout()
+{
+    MiniHttpServer server(tst_QNetworkReply::httpEmpty200Response, false);
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply(manager.get(request));
+    QSignalSpy spy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+
+    QCOMPARE(waitForFinish(reply), int(Success));
+
+    QCOMPARE(spy.count(), 0);
+    QVERIFY(reply->error() == QNetworkReply::NoError);
+
+    request.setTransferTimeout(1000);
+    server.stopTransfer = true;
+
+    QNetworkReplyPtr reply2(manager.get(request));
+    QSignalSpy spy2(reply2.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+
+    QCOMPARE(waitForFinish(reply2), int(Failure));
+
+    QCOMPARE(spy2.count(), 1);
+    QVERIFY(reply2->error() == QNetworkReply::OperationCanceledError);
+
+    request.setTransferTimeout(0);
+    manager.setTransferTimeout(1000);
+
+    QNetworkReplyPtr reply3(manager.get(request));
+    QSignalSpy spy3(reply3.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+
+    QCOMPARE(waitForFinish(reply3), int(Failure));
+
+    QCOMPARE(spy3.count(), 1);
+    QVERIFY(reply3->error() == QNetworkReply::OperationCanceledError);
+
+    manager.setTransferTimeout(0);
+}
+
+void tst_QNetworkReply::postWithTimeout()
+{
+    MiniHttpServer server(tst_QNetworkReply::httpEmpty200Response, false);
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    request.setRawHeader("Content-Type", "application/octet-stream");
+    QByteArray postData("Just some nonsense");
+    QNetworkReplyPtr reply(manager.post(request, postData));
+    QSignalSpy spy(reply.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+
+    QCOMPARE(waitForFinish(reply), int(Success));
+
+    QCOMPARE(spy.count(), 0);
+    QVERIFY(reply->error() == QNetworkReply::NoError);
+
+    request.setTransferTimeout(1000);
+    server.stopTransfer = true;
+
+    QNetworkReplyPtr reply2(manager.post(request, postData));
+    QSignalSpy spy2(reply2.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+
+    QCOMPARE(waitForFinish(reply2), int(Failure));
+
+    QCOMPARE(spy2.count(), 1);
+    QVERIFY(reply2->error() == QNetworkReply::OperationCanceledError);
+
+    request.setTransferTimeout(0);
+    manager.setTransferTimeout(1000);
+
+    QNetworkReplyPtr reply3(manager.post(request, postData));
+    QSignalSpy spy3(reply3.data(), SIGNAL(error(QNetworkReply::NetworkError)));
+
+    QCOMPARE(waitForFinish(reply3), int(Failure));
+
+    QCOMPARE(spy3.count(), 1);
+    QVERIFY(reply3->error() == QNetworkReply::OperationCanceledError);
+
+    manager.setTransferTimeout(0);
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!

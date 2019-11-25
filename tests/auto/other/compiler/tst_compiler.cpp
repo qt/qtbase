@@ -634,7 +634,7 @@ void tst_Compiler::cxx11_alignas()
     struct S {
         alignas(double) char c;
     };
-    QCOMPARE(Q_ALIGNOF(S), Q_ALIGNOF(double));
+    QCOMPARE(alignof(S), alignof(double));
 #endif
 }
 
@@ -1396,7 +1396,7 @@ void tst_Compiler::cxx11_unrestricted_unions()
         ~U() {}
     };
     U u;
-    std::aligned_storage<sizeof(QString), Q_ALIGNOF(QString)> as;
+    std::aligned_storage<sizeof(QString), alignof(QString)> as;
     Q_UNUSED(u);
     Q_UNUSED(as);
 

@@ -1078,8 +1078,10 @@ static QPSQLDriver::Protocol qMakePSQLVersion(int vMaj, int vMin)
         return QPSQLDriver::Version10;
     case 11:
         return QPSQLDriver::Version11;
+    case 12:
+        return QPSQLDriver::Version12;
     default:
-        if (vMaj > 11)
+        if (vMaj > 12)
             return QPSQLDriver::UnknownLaterVersion;
         break;
     }
@@ -1439,26 +1441,29 @@ QSqlRecord QPSQLDriver::record(const QString &tablename) const
     schema = stripDelimiters(schema, QSqlDriver::TableName);
     tbl = stripDelimiters(tbl, QSqlDriver::TableName);
 
-    QString stmt = QStringLiteral("SELECT pg_attribute.attname, pg_attribute.atttypid::int, "
-                                  "pg_attribute.attnotnull, pg_attribute.attlen, pg_attribute.atttypmod, "
-                                  "pg_attrdef.adsrc "
-                                  "FROM pg_class, pg_attribute "
-                                  "LEFT JOIN pg_attrdef ON (pg_attrdef.adrelid = "
-                                  "pg_attribute.attrelid AND pg_attrdef.adnum = pg_attribute.attnum) "
-                                  "WHERE %1 "
-                                  "AND pg_class.relname = '%2' "
-                                  "AND pg_attribute.attnum > 0 "
-                                  "AND pg_attribute.attrelid = pg_class.oid "
-                                  "AND pg_attribute.attisdropped = false "
-                                  "ORDER BY pg_attribute.attnum");
-    if (schema.isEmpty())
-        stmt = stmt.arg(QStringLiteral("pg_table_is_visible(pg_class.oid)"));
-    else
-        stmt = stmt.arg(QStringLiteral("pg_class.relnamespace = (SELECT oid FROM "
-                                            "pg_namespace WHERE pg_namespace.nspname = '%1')").arg(schema));
+    const QString adsrc = protocol() < Version8
+        ? QStringLiteral("pg_attrdef.adsrc")
+        : QStringLiteral("pg_get_expr(pg_attrdef.adbin, pg_attrdef.adrelid)");
+    const QString nspname = schema.isEmpty()
+        ? QStringLiteral("pg_table_is_visible(pg_class.oid)")
+        : QStringLiteral("pg_class.relnamespace = (SELECT oid FROM "
+                         "pg_namespace WHERE pg_namespace.nspname = '%1')").arg(schema);
+    const QString stmt =
+        QStringLiteral("SELECT pg_attribute.attname, pg_attribute.atttypid::int, "
+                       "pg_attribute.attnotnull, pg_attribute.attlen, pg_attribute.atttypmod, "
+                       "%1 "
+                       "FROM pg_class, pg_attribute "
+                       "LEFT JOIN pg_attrdef ON (pg_attrdef.adrelid = "
+                       "pg_attribute.attrelid AND pg_attrdef.adnum = pg_attribute.attnum) "
+                       "WHERE %2 "
+                       "AND pg_class.relname = '%3' "
+                       "AND pg_attribute.attnum > 0 "
+                       "AND pg_attribute.attrelid = pg_class.oid "
+                       "AND pg_attribute.attisdropped = false "
+                       "ORDER BY pg_attribute.attnum").arg(adsrc, nspname, tbl);
 
     QSqlQuery query(createResult());
-    query.exec(stmt.arg(tbl));
+    query.exec(stmt);
     while (query.next()) {
         int len = query.value(3).toInt();
         int precision = query.value(4).toInt();

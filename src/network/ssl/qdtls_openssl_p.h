@@ -84,9 +84,8 @@ namespace dtlsopenssl
 class DtlsState
 {
 public:
-    // Note, bioMethod, if allocated (i.e. OpenSSL version >= 1.1) _must_
-    // outlive BIOs it was used to create. Thus the order of declarations
-    // here matters.
+    // Note, bioMethod _must_ outlive BIOs it was used to create. Thus
+    // the order of declarations here matters.
     using BioMethod = QSharedPointer<BIO_METHOD>;
     BioMethod bioMethod;
 

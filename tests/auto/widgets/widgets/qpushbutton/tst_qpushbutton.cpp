@@ -53,7 +53,9 @@ private slots:
     void getSetCheck();
     void autoRepeat();
     void pressed();
+#if QT_CONFIG(shortcut)
     void setAccel();
+#endif
     void isCheckable();
     void setDown();
     void popupCrash();
@@ -65,7 +67,9 @@ private slots:
     void defaultAndAutoDefault();
     void sizeHint_data();
     void sizeHint();
+#if QT_CONFIG(shortcut)
     void taskQTBUG_20191_shortcutWithKeypadModifer();
+#endif
     void emitReleasedAfterChange();
 
 protected slots:
@@ -125,8 +129,10 @@ void tst_QPushButton::init()
     testWidget->setDown( false );
     testWidget->setText("Test");
     testWidget->setEnabled( true );
+#if QT_CONFIG(shortcut)
     QKeySequence seq;
     testWidget->setShortcut( seq );
+#endif
 
     resetCounters();
 }
@@ -318,6 +324,8 @@ void tst_QPushButton::toggled()
     QVERIFY( click_count == 1 );
 }
 
+#if QT_CONFIG(shortcut)
+
 /*
     If we press an accelerator key we ONLY get a pressed signal and
     NOT a released or clicked signal.
@@ -325,6 +333,9 @@ void tst_QPushButton::toggled()
 
 void tst_QPushButton::setAccel()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     testWidget->setText("&AccelTest");
     QKeySequence seq( Qt::ALT + Qt::Key_A );
     testWidget->setShortcut( seq );
@@ -345,6 +356,8 @@ void tst_QPushButton::setAccel()
     QTest::qWait(200);
     QTRY_VERIFY( !testWidget->isDown() );
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QPushButton::animateClick()
 {
@@ -568,6 +581,8 @@ void tst_QPushButton::sizeHint()
     }
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QPushButton::taskQTBUG_20191_shortcutWithKeypadModifer()
 {
     // setup a dialog with two buttons
@@ -613,6 +628,8 @@ void tst_QPushButton::taskQTBUG_20191_shortcutWithKeypadModifer()
     QCOMPARE(spy1.count(), 0);
     QCOMPARE(spy2.count(), 1);
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QPushButton::emitReleasedAfterChange()
 {

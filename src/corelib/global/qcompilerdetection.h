@@ -91,8 +91,6 @@
 #  define Q_OUTOFLINE_TEMPLATE inline
 #  define Q_COMPILER_MANGLES_RETURN_TYPE
 #  define Q_FUNC_INFO __FUNCSIG__
-#  define Q_ALIGNOF(type) __alignof(type)
-#  define Q_DECL_ALIGN(n) __declspec(align(n))
 #  define Q_ASSUME_IMPL(expr) __assume(expr)
 #  define Q_UNREACHABLE_IMPL() __assume(0)
 #  define Q_NORETURN __declspec(noreturn)
@@ -222,10 +220,8 @@
 #  endif
 
 #  define Q_FUNC_INFO       __PRETTY_FUNCTION__
-#  define Q_ALIGNOF(type)   __alignof__(type)
 #  define Q_TYPEOF(expr)    __typeof__(expr)
 #  define Q_DECL_DEPRECATED __attribute__ ((__deprecated__))
-#  define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
 #  define Q_DECL_UNUSED     __attribute__((__unused__))
 #  define Q_LIKELY(expr)    __builtin_expect(!!(expr), true)
 #  define Q_UNLIKELY(expr)  __builtin_expect(!!(expr), false)
@@ -272,9 +268,7 @@
 #  if __xlC__ < 0x400
 #    error "Compiler not supported"
 #  elif __xlC__ >= 0x0600
-#    define Q_ALIGNOF(type)     __alignof__(type)
 #    define Q_TYPEOF(expr)      __typeof__(expr)
-#    define Q_DECL_ALIGN(n)     __attribute__((__aligned__(n)))
 #    define Q_PACKED            __attribute__((__packed__))
 #  endif
 
@@ -352,7 +346,6 @@
 #    define Q_PACKED __attribute__ ((__packed__))
 #    define Q_FUNC_INFO       __PRETTY_FUNCTION__
 #    define Q_TYPEOF(expr)      __typeof__(expr)
-#    define Q_ALIGNOF(type)     __alignof__(type)
 #    define Q_UNREACHABLE_IMPL()
 #    if defined(__cplusplus)
 #      define Q_COMPILER_AUTO_TYPE
@@ -450,9 +443,7 @@
 #    define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
    /* see http://developers.sun.com/sunstudio/support/Ccompare.html */
 #    if __SUNPRO_CC >= 0x590
-#      define Q_ALIGNOF(type)   __alignof__(type)
 #      define Q_TYPEOF(expr)    __typeof__(expr)
-#      define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
 #    endif
 #    if __SUNPRO_CC >= 0x550
 #      define Q_DECL_EXPORT     __global
@@ -488,9 +479,6 @@
 #      define QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
 #      define Q_DECL_EXPORT     __declspec(dllexport)
 #      define Q_DECL_IMPORT     __declspec(dllimport)
-#    endif
-#    if __HP_aCC-0 >= 061200
-#      define Q_DECL_ALIGN(n) __attribute__((aligned(n)))
 #    endif
 #    if __HP_aCC-0 >= 062000
 #      define Q_DECL_EXPORT     __attribute__((visibility("default")))
@@ -1128,14 +1116,12 @@
 #endif
 #define Q_DECL_NOTHROW Q_DECL_NOEXCEPT
 
-#if defined(Q_COMPILER_ALIGNOF)
-#  undef Q_ALIGNOF
-#  define Q_ALIGNOF(x)  alignof(x)
+#ifndef Q_ALIGNOF
+# define Q_ALIGNOF(x)  alignof(x)
 #endif
 
-#if defined(Q_COMPILER_ALIGNAS)
-#  undef Q_DECL_ALIGN
-#  define Q_DECL_ALIGN(n)   alignas(n)
+#ifndef Q_DECL_ALIGN
+# define Q_DECL_ALIGN(n)   alignas(n)
 #endif
 
 #if QT_HAS_CPP_ATTRIBUTE(nodiscard) && !defined(Q_CC_CLANG)         // P0188R1

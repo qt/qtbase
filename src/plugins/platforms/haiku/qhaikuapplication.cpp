@@ -42,6 +42,8 @@
 #include <QCoreApplication>
 #include <QFileOpenEvent>
 
+#include <qpa/qwindowsysteminterface.h>
+
 #include <Entry.h>
 #include <Path.h>
 
@@ -52,8 +54,7 @@ QHaikuApplication::QHaikuApplication(const char *signature)
 
 bool QHaikuApplication::QuitRequested()
 {
-    QEvent quitEvent(QEvent::Quit);
-    QCoreApplication::sendEvent(QCoreApplication::instance(), &quitEvent);
+    QWindowSystemInterface::handleApplicationTermination<QWindowSystemInterface::SynchronousDelivery>();
     return true;
 }
 

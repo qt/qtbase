@@ -40,7 +40,6 @@
 #include "qwidgetaction.h"
 #include "qdebug.h"
 
-#ifndef QT_NO_ACTION
 #include "qwidgetaction_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -282,5 +281,3 @@ QList<QWidget *> QWidgetAction::createdWidgets() const
 QT_END_NAMESPACE
 
 #include "moc_qwidgetaction.cpp"
-
-#endif // QT_NO_ACTION

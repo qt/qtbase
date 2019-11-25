@@ -38,68 +38,30 @@
 ****************************************************************************/
 
 #include "qactiongroup.h"
+#include <QtGui/private/qguiactiongroup_p.h>
 
-#ifndef QT_NO_ACTION
-
-#include "qaction_p.h"
-#include "qevent.h"
-#include "qlist.h"
+#include "qaction.h"
 
 QT_BEGIN_NAMESPACE
 
-class QActionGroupPrivate : public QObjectPrivate
+class QActionGroupPrivate : public QGuiActionGroupPrivate
 {
     Q_DECLARE_PUBLIC(QActionGroup)
 public:
-    QActionGroupPrivate() : enabled(1),
-                            visible(1),
-                            exclusionPolicy(QActionGroup::ExclusionPolicy::Exclusive)
-    {
-    }
-    QList<QAction *> actions;
-    QPointer<QAction> current;
-    uint enabled : 1;
-    uint visible : 1;
-    QActionGroup::ExclusionPolicy exclusionPolicy;
-
-private:
-    void _q_actionTriggered();  //private slot
-    void _q_actionChanged();    //private slot
-    void _q_actionHovered();    //private slot
+     void emitSignal(Signal, QGuiAction *) override;
 };
 
-void QActionGroupPrivate::_q_actionChanged()
+void QActionGroupPrivate::emitSignal(Signal s, QGuiAction *action)
 {
     Q_Q(QActionGroup);
-    QAction *action = qobject_cast<QAction*>(q->sender());
-    Q_ASSERT_X(action != nullptr, "QActionGroup::_q_actionChanged", "internal error");
-    if (exclusionPolicy != QActionGroup::ExclusionPolicy::None) {
-        if (action->isChecked()) {
-            if (action != current) {
-                if(current)
-                    current->setChecked(false);
-                current = action;
-            }
-        } else if (action == current) {
-            current = 0;
-        }
+    switch (s) {
+    case QGuiActionGroupPrivate::Triggered:
+        emit q->triggered(static_cast<QAction *>(action));
+        break;
+    case QGuiActionGroupPrivate::Hovered:
+        emit q->hovered(static_cast<QAction *>(action));
+        break;
     }
-}
-
-void QActionGroupPrivate::_q_actionTriggered()
-{
-    Q_Q(QActionGroup);
-    QAction *action = qobject_cast<QAction*>(q->sender());
-    Q_ASSERT_X(action != nullptr, "QActionGroup::_q_actionTriggered", "internal error");
-    emit q->triggered(action);
-}
-
-void QActionGroupPrivate::_q_actionHovered()
-{
-    Q_Q(QActionGroup);
-    QAction *action = qobject_cast<QAction*>(q->sender());
-    Q_ASSERT_X(action != nullptr, "QActionGroup::_q_actionHovered", "internal error");
-    emit q->hovered(action);
 }
 
 /*!
@@ -154,27 +116,6 @@ void QActionGroupPrivate::_q_actionHovered()
 */
 
 /*!
-    \enum QActionGroup::ExclusionPolicy
-
-    This enum specifies the different policies that can be used to
-    control how the group performs exclusive checking on checkable actions.
-
-    \value None
-           The actions in the group can be checked independently of each other.
-
-    \value Exclusive
-           Exactly one action can be checked at any one time.
-           This is the default policy.
-
-    \value ExclusiveOptional
-           At most one action can be checked at any one time. The actions
-           can also be all unchecked.
-
-    \sa exclusionPolicy
-    \since 5.14
-*/
-
-/*!
     Constructs an action group for the \a parent object.
 
     The action group is exclusive by default. Call setExclusive(false)
@@ -182,53 +123,24 @@ void QActionGroupPrivate::_q_actionHovered()
     but allow unchecking the active action call instead
     setExclusionPolicy(QActionGroup::ExclusionPolicy::ExclusiveOptional)
 */
-QActionGroup::QActionGroup(QObject* parent) : QObject(*new QActionGroupPrivate, parent)
+QActionGroup::QActionGroup(QObject* parent) :
+    QGuiActionGroup(*new QActionGroupPrivate, parent)
 {
 }
 
 /*!
     Destroys the action group.
 */
-QActionGroup::~QActionGroup()
+QActionGroup::~QActionGroup() = default;
+
+QAction *QActionGroup::checkedAction() const
 {
+    return static_cast<QAction *>(checkedGuiAction());
 }
 
-/*!
-    \fn QAction *QActionGroup::addAction(QAction *action)
-
-    Adds the \a action to this group, and returns it.
-
-    Normally an action is added to a group by creating it with the
-    group as its parent, so this function is not usually used.
-
-    \sa QAction::setActionGroup()
-*/
-QAction *QActionGroup::addAction(QAction* a)
+QAction *QActionGroup::addAction(QAction *a)
 {
-    Q_D(QActionGroup);
-    if(!d->actions.contains(a)) {
-        d->actions.append(a);
-        QObject::connect(a, SIGNAL(triggered()), this, SLOT(_q_actionTriggered()));
-        QObject::connect(a, SIGNAL(changed()), this, SLOT(_q_actionChanged()));
-        QObject::connect(a, SIGNAL(hovered()), this, SLOT(_q_actionHovered()));
-    }
-    if(!a->d_func()->forceDisabled) {
-        a->setEnabled(d->enabled);
-        a->d_func()->forceDisabled = false;
-    }
-    if(!a->d_func()->forceInvisible) {
-        a->setVisible(d->visible);
-        a->d_func()->forceInvisible = false;
-    }
-    if(a->isChecked())
-        d->current = a;
-    QActionGroup *oldGroup = a->d_func()->group;
-    if(oldGroup != this) {
-        if (oldGroup)
-            oldGroup->removeAction(a);
-        a->d_func()->group = this;
-        a->d_func()->sendDataChanged();
-    }
+    QGuiActionGroup::addAction(a);
     return a;
 }
 
@@ -261,184 +173,16 @@ QAction *QActionGroup::addAction(const QIcon &icon, const QString &text)
 }
 
 /*!
-  Removes the \a action from this group. The action will have no
-  parent as a result.
-
-  \sa QAction::setActionGroup()
-*/
-void QActionGroup::removeAction(QAction *action)
-{
-    Q_D(QActionGroup);
-    if (d->actions.removeAll(action)) {
-        if (action == d->current)
-            d->current = 0;
-        QObject::disconnect(action, SIGNAL(triggered()), this, SLOT(_q_actionTriggered()));
-        QObject::disconnect(action, SIGNAL(changed()), this, SLOT(_q_actionChanged()));
-        QObject::disconnect(action, SIGNAL(hovered()), this, SLOT(_q_actionHovered()));
-        action->d_func()->group = 0;
-    }
-}
-
-/*!
     Returns the list of this groups's actions. This may be empty.
 */
 QList<QAction*> QActionGroup::actions() const
 {
-    Q_D(const QActionGroup);
-    return d->actions;
+    QList<QAction*> result;
+    const auto baseActions = guiActions();
+    result.reserve(baseActions.size());
+    for (auto baseAction : baseActions)
+        result.append(static_cast<QAction*>(baseAction));
+    return result;
 }
-
-/*!
-    \brief Enable or disable the group exclusion checking
-
-    This is a convenience method that calls
-    setExclusionPolicy(ExclusionPolicy::Exclusive).
-
-    \sa QActionGroup::exclusionPolicy
-*/
-void QActionGroup::setExclusive(bool b)
-{
-    setExclusionPolicy(b ? QActionGroup::ExclusionPolicy::Exclusive
-                         : QActionGroup::ExclusionPolicy::None);
-}
-
-/*!
-    \brief Returs true if the group is exclusive
-
-    The group is exclusive if the ExclusionPolicy is either Exclusive
-    or ExclusionOptional.
-
-*/
-bool QActionGroup::isExclusive() const
-{
-    return exclusionPolicy() != QActionGroup::ExclusionPolicy::None;
-}
-
-/*!
-    \property QActionGroup::exclusionPolicy
-    \brief This property holds the group exclusive checking policy
-
-    If exclusionPolicy is set to Exclusive, only one checkable
-    action in the action group can ever be active at any time. If the user
-    chooses another checkable action in the group, the one they chose becomes
-    active and the one that was active becomes inactive. If exclusionPolicy is
-    set to ExclusionOptional the group is exclusive but the active checkable
-    action in the group can be unchecked leaving the group with no actions
-    checked.
-
-    \sa QAction::checkable
-    \since 5.14
-*/
-void QActionGroup::setExclusionPolicy(QActionGroup::ExclusionPolicy policy)
-{
-    Q_D(QActionGroup);
-    d->exclusionPolicy = policy;
-}
-
-QActionGroup::ExclusionPolicy QActionGroup::exclusionPolicy() const
-{
-    Q_D(const QActionGroup);
-    return d->exclusionPolicy;
-}
-
-/*!
-    \fn void QActionGroup::setDisabled(bool b)
-
-    This is a convenience function for the \l enabled property, that
-    is useful for signals--slots connections. If \a b is true the
-    action group is disabled; otherwise it is enabled.
-*/
-
-/*!
-    \property QActionGroup::enabled
-    \brief whether the action group is enabled
-
-    Each action in the group will be enabled or disabled unless it
-    has been explicitly disabled.
-
-    \sa QAction::setEnabled()
-*/
-void QActionGroup::setEnabled(bool b)
-{
-    Q_D(QActionGroup);
-    d->enabled = b;
-    for (auto action : qAsConst(d->actions)) {
-        if (!action->d_func()->forceDisabled) {
-            action->setEnabled(b);
-            action->d_func()->forceDisabled = false;
-        }
-    }
-}
-
-bool QActionGroup::isEnabled() const
-{
-    Q_D(const QActionGroup);
-    return d->enabled;
-}
-
-/*!
-  Returns the currently checked action in the group, or \nullptr if
-  none are checked.
-*/
-QAction *QActionGroup::checkedAction() const
-{
-    Q_D(const QActionGroup);
-    return d->current;
-}
-
-/*!
-    \property QActionGroup::visible
-    \brief whether the action group is visible
-
-    Each action in the action group will match the visible state of
-    this group unless it has been explicitly hidden.
-
-    \sa QAction::setEnabled()
-*/
-void QActionGroup::setVisible(bool b)
-{
-    Q_D(QActionGroup);
-    d->visible = b;
-    for (auto action : qAsConst(d->actions)) {
-        if (!action->d_func()->forceInvisible) {
-            action->setVisible(b);
-            action->d_func()->forceInvisible = false;
-        }
-    }
-}
-
-bool QActionGroup::isVisible() const
-{
-    Q_D(const QActionGroup);
-    return d->visible;
-}
-
-/*!
-    \fn void QActionGroup::triggered(QAction *action)
-
-    This signal is emitted when the given \a action in the action
-    group is activated by the user; for example, when the user clicks
-    a menu option, toolbar button, or presses an action's shortcut key
-    combination.
-
-    Connect to this signal for command actions.
-
-    \sa QAction::activate()
-*/
-
-/*!
-    \fn void QActionGroup::hovered(QAction *action)
-
-    This signal is emitted when the given \a action in the action
-    group is highlighted by the user; for example, when the user
-    pauses with the cursor over a menu option, toolbar button, or
-    presses an action's shortcut key combination.
-
-    \sa QAction::activate()
-*/
 
 QT_END_NAMESPACE
-
-#include "moc_qactiongroup.cpp"
-
-#endif // QT_NO_ACTION

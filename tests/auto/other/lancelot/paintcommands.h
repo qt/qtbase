@@ -200,6 +200,10 @@ private:
     void command_drawStaticText(QRegularExpressionMatch re);
     void command_drawTextDocument(QRegularExpressionMatch re);
     void command_drawTiledPixmap(QRegularExpressionMatch re);
+    void command_fillRect(QRegularExpressionMatch re);
+    void command_fillRectF(QRegularExpressionMatch re);
+
+    // paths
     void command_path_addEllipse(QRegularExpressionMatch re);
     void command_path_addPolygon(QRegularExpressionMatch re);
     void command_path_addRect(QRegularExpressionMatch re);

@@ -56,8 +56,6 @@ using namespace QRoundingDown;
     \brief The QMilankovicCalendar class provides Milanković calendar system
     implementation.
 
-    \section1
-
     The Revised Julian calendar, also known as the Milanković calendar, or,
     less formally, new calendar, is a calendar, developed and proposed by the
     Serbian scientist Milutin Milanković in 1923, which effectively discontinued

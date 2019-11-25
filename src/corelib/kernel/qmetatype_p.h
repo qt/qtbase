@@ -232,9 +232,6 @@ template<> struct TypeDefinition<QRegExp> { static const bool IsAvailable = fals
 #if !QT_CONFIG(regularexpression)
 template<> struct TypeDefinition<QRegularExpression> { static const bool IsAvailable = false; };
 #endif
-#ifdef QT_NO_SHORTCUT
-template<> struct TypeDefinition<QKeySequence> { static const bool IsAvailable = false; };
-#endif
 #ifdef QT_NO_CURSOR
 template<> struct TypeDefinition<QCursor> { static const bool IsAvailable = false; };
 #endif

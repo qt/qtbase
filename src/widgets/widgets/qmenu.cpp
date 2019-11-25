@@ -157,10 +157,11 @@ public:
         Q_D(QTornOffMenu);
         if(menu != d->causedMenu)
             return;
+        auto action = static_cast<QAction *>(act->action());
         if (act->type() == QEvent::ActionAdded) {
-            insertAction(act->before(), act->action());
+            insertAction(static_cast<QAction *>(act->before()), action);
         } else if (act->type() == QEvent::ActionRemoved)
-            removeAction(act->action());
+            removeAction(action);
     }
     void actionEvent(QActionEvent *e) override
     {
@@ -403,7 +404,9 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
     //calculate size
     QFontMetrics qfm = q->fontMetrics();
     bool previousWasSeparator = true; // this is true to allow removing the leading separators
+#if QT_CONFIG(shortcut)
     const bool contextMenu = isContextMenu();
+#endif
     for(int i = 0; i <= lastVisibleAction; i++) {
         QAction *action = actions.at(i);
         const bool isSection = action->isSeparator() && (!action->text().isEmpty() || !action->icon().isNull());
@@ -434,12 +437,12 @@ void QMenuPrivate::updateActionRects(const QRect &screen) const
                 if (t != -1) {
                     tabWidth = qMax(int(tabWidth), qfm.horizontalAdvance(s.mid(t+1)));
                     s = s.left(t);
-    #ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
                 } else if (action->isShortcutVisibleInContextMenu() || !contextMenu) {
                     QKeySequence seq = action->shortcut();
                     if (!seq.isEmpty())
                         tabWidth = qMax(int(tabWidth), qfm.horizontalAdvance(seq.toString(QKeySequence::NativeText)));
-    #endif
+#endif
                 }
                 sz.setWidth(fm.boundingRect(QRect(), Qt::TextSingleLine | Qt::TextShowMnemonic, s).width());
                 sz.setHeight(qMax(fm.height(), qfm.height()));
@@ -1767,12 +1770,14 @@ QAction *QMenu::addAction(const QIcon &icon, const QString &text)
 
     \sa QWidget::addAction()
 */
-QAction *QMenu::addAction(const QString &text, const QObject *receiver, const char* member, const QKeySequence &shortcut)
+QAction *QMenu::addAction(const QString &text, const QObject *receiver, const char* member
+#if QT_CONFIG(shortcut)
+                          , const QKeySequence &shortcut
+#endif
+                          )
 {
     QAction *action = new QAction(text, this);
-#ifdef QT_NO_SHORTCUT
-    Q_UNUSED(shortcut);
-#else
+#if QT_CONFIG(shortcut)
     action->setShortcut(shortcut);
 #endif
     QObject::connect(action, SIGNAL(triggered(bool)), receiver, member);
@@ -1860,12 +1865,14 @@ QAction *QMenu::addAction(const QString &text, const QObject *receiver, const ch
     \sa QWidget::addAction()
 */
 QAction *QMenu::addAction(const QIcon &icon, const QString &text, const QObject *receiver,
-                          const char* member, const QKeySequence &shortcut)
+                          const char* member
+#if QT_CONFIG(shortcut)
+                          , const QKeySequence &shortcut
+#endif
+                          )
 {
     QAction *action = new QAction(icon, text, this);
-#ifdef QT_NO_SHORTCUT
-    Q_UNUSED(shortcut);
-#else
+#if QT_CONFIG(shortcut)
     action->setShortcut(shortcut);
 #endif
     QObject::connect(action, SIGNAL(triggered(bool)), receiver, member);
@@ -3541,15 +3548,16 @@ void QMenu::actionEvent(QActionEvent *e)
                 wa->releaseWidget(widget);
             }
         }
-        d->widgetItems.remove(e->action());
+        d->widgetItems.remove(static_cast<QAction *>(e->action()));
     }
 
     if (!d->platformMenu.isNull()) {
+        auto action = static_cast<QAction *>(e->action());
         if (e->type() == QEvent::ActionAdded) {
             QPlatformMenuItem *beforeItem = e->before()
                 ? d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->before()))
                 : nullptr;
-            d->insertActionInPlatformMenu(e->action(), beforeItem);
+            d->insertActionInPlatformMenu(action, beforeItem);
         } else if (e->type() == QEvent::ActionRemoved) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
             d->platformMenu->removeMenuItem(menuItem);
@@ -3557,7 +3565,7 @@ void QMenu::actionEvent(QActionEvent *e)
         } else if (e->type() == QEvent::ActionChanged) {
             QPlatformMenuItem *menuItem = d->platformMenu->menuItemForTag(reinterpret_cast<quintptr>(e->action()));
             if (menuItem) {
-                d->copyActionToPlatformItem(e->action(), menuItem);
+                d->copyActionToPlatformItem(action, menuItem);
                 d->platformMenu->syncMenuItem(menuItem);
             }
         }

@@ -59,6 +59,7 @@
 #include "QtCore/qdatetime.h"
 #include "QtCore/qsharedpointer.h"
 #include "QtCore/qscopedpointer.h"
+#include "QtCore/qtimer.h"
 #include "qatomic.h"
 
 #include <QtNetwork/QNetworkCacheMetaData>
@@ -100,6 +101,7 @@ public:
     Q_PRIVATE_SLOT(d_func(), void _q_cacheLoadReadyRead())
     Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingData())
     Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingDataFinished())
+    Q_PRIVATE_SLOT(d_func(), void _q_transferTimedOut())
 #ifndef QT_NO_BEARERMANAGEMENT
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionConnected())
     Q_PRIVATE_SLOT(d_func(), void _q_networkSessionFailed())
@@ -181,6 +183,9 @@ public:
 
     void _q_cacheSaveDeviceAboutToClose();
 
+    void _q_transferTimedOut();
+    void setupTransferTimeout();
+
 #ifndef QT_NO_BEARERMANAGEMENT
     void _q_networkSessionConnected();
     void _q_networkSessionFailed();
@@ -249,6 +254,8 @@ public:
 
     qint64 bytesDownloaded;
     qint64 bytesBuffered;
+
+    QTimer *transferTimeout;
 
     // Only used when the "zero copy" style is used.
     // Please note that the whole "zero copy" download buffer API is private right now. Do not use it.

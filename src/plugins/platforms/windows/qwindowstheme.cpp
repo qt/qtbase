@@ -466,6 +466,8 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
             result = int(scrollLines);
         return QVariant(result);
     }
+    case MouseDoubleClickDistance:
+        return GetSystemMetrics(SM_CXDOUBLECLK);
     default:
         break;
     }

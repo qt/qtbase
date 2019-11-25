@@ -386,7 +386,15 @@ void QGraphicsScenePrivate::_q_emitUpdated()
 
     // Notify the changes to anybody interested.
     QList<QRectF> oldUpdatedRects;
-    oldUpdatedRects = updateAll ? (QList<QRectF>() << q->sceneRect()) : updatedRects;
+    if (updateAll) {
+        oldUpdatedRects << q->sceneRect();
+    } else {
+        // Switch to a ranged constructor in Qt 6...
+        oldUpdatedRects.reserve(int(updatedRects.size()));
+        std::copy(updatedRects.cbegin(), updatedRects.cend(),
+                  std::back_inserter(oldUpdatedRects));
+    }
+
     updateAll = false;
     updatedRects.clear();
     emit q->changed(oldUpdatedRects);
@@ -3219,8 +3227,7 @@ void QGraphicsScene::update(const QRectF &rect)
                     view->d_func()->updateRectF(rect);
             }
         } else {
-            if (!d->updatedRects.contains(rect))
-                d->updatedRects << rect;
+            d->updatedRects.insert(rect);
         }
     }
 

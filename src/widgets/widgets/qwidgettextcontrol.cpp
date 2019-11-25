@@ -92,7 +92,7 @@
 #include <QtGui/qaccessible.h>
 #include <QtCore/qmetaobject.h>
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"
 #include <qkeysequence.h>
@@ -2362,6 +2362,7 @@ QMenu *QWidgetTextControl::createStandardContextMenu(const QPointF &pos, QWidget
         a = menu->addAction(tr("Select All") + ACCEL_KEY(QKeySequence::SelectAll), this, SLOT(selectAll()));
         a->setEnabled(!d->doc->isEmpty());
         a->setObjectName(QStringLiteral("select-all"));
+        setActionIcon(a, QStringLiteral("edit-select-all"));
     }
 
     if ((d->interactionFlags & Qt::TextEditable) && QGuiApplication::styleHints()->useRtlExtensions()) {
@@ -2480,7 +2481,7 @@ void QWidgetTextControl::setExtraSelections(const QList<QTextEdit::ExtraSelectio
 {
     Q_D(QWidgetTextControl);
 
-    QHash<int, int> hash;
+    QMultiHash<int, int> hash;
     for (int i = 0; i < d->extraSelections.count(); ++i) {
         const QAbstractTextDocumentLayout::Selection &esel = d->extraSelections.at(i);
         hash.insert(esel.cursor.anchor(), i);

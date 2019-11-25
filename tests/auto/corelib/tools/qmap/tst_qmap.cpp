@@ -68,7 +68,6 @@ private slots:
     void const_shared_null();
 
     void equal_range();
-    void setSharable();
 
     void insert();
     void checkMostLeftNode();
@@ -1065,13 +1064,6 @@ void tst_QMap::qmultimap_specific()
 void tst_QMap::const_shared_null()
 {
     QMap<int, QString> map2;
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    QMap<int, QString> map1;
-    map1.setSharable(false);
-    QVERIFY(map1.isDetached());
-
-    map2.setSharable(true);
-#endif
     QVERIFY(!map2.isDetached());
 }
 
@@ -1158,61 +1150,6 @@ template <class T>
 const T &const_(const T &t)
 {
     return t;
-}
-
-void tst_QMap::setSharable()
-{
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    QMap<int, QString> map;
-
-    map.insert(1, "um");
-    map.insert(2, "dois");
-    map.insert(4, "quatro");
-    map.insert(5, "cinco");
-
-    map.setSharable(true);
-    QCOMPARE(map.size(), 4);
-    QCOMPARE(const_(map)[4], QString("quatro"));
-
-    {
-        QMap<int, QString> copy(map);
-
-        QVERIFY(!map.isDetached());
-        QVERIFY(copy.isSharedWith(map));
-        sanityCheckTree(copy, __LINE__);
-    }
-
-    map.setSharable(false);
-    sanityCheckTree(map, __LINE__);
-    QVERIFY(map.isDetached());
-    QCOMPARE(map.size(), 4);
-    QCOMPARE(const_(map)[4], QString("quatro"));
-
-    {
-        QMap<int, QString> copy(map);
-
-        QVERIFY(map.isDetached());
-        QVERIFY(copy.isDetached());
-
-        QCOMPARE(copy.size(), 4);
-        QCOMPARE(const_(copy)[4], QString("quatro"));
-
-        QCOMPARE(map, copy);
-        sanityCheckTree(map, __LINE__);
-        sanityCheckTree(copy, __LINE__);
-    }
-
-    map.setSharable(true);
-    QCOMPARE(map.size(), 4);
-    QCOMPARE(const_(map)[4], QString("quatro"));
-
-    {
-        QMap<int, QString> copy(map);
-
-        QVERIFY(!map.isDetached());
-        QVERIFY(copy.isSharedWith(map));
-    }
-#endif
 }
 
 void tst_QMap::insert()
@@ -1414,17 +1351,16 @@ void tst_QMap::testInsertMultiWithHint()
 {
     QMap<int, int> map;
 
-    typedef QMap<int, int>::const_iterator cite; // Hack since we define QT_STRICT_ITERATORS
-    map.insertMulti(cite(map.end()), 64, 65);
+    map.insertMulti(map.end(), 64, 65);
     map[128] = 129;
     map[256] = 257;
     sanityCheckTree(map, __LINE__);
 
-    map.insertMulti(cite(map.end()), 512, 513);
-    map.insertMulti(cite(map.end()), 512, 513 * 2);
+    map.insertMulti(map.end(), 512, 513);
+    map.insertMulti(map.end(), 512, 513 * 2);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 5);
-    map.insertMulti(cite(map.end()), 256, 258); // wrong hint
+    map.insertMulti(map.end(), 256, 258); // wrong hint
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 6);
 
@@ -1436,23 +1372,23 @@ void tst_QMap::testInsertMultiWithHint()
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 8);
 
-    j = map.insertMulti(cite(j), 68, 259);
+    j = map.insertMulti(j, 68, 259);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 9);
 
-    j = map.insertMulti(cite(j), 67, 67);
+    j = map.insertMulti(j, 67, 67);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 10);
 
-    i = map.insertMulti(cite(i), 256, 259);
+    i = map.insertMulti(i, 256, 259);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 11);
 
-    i = map.insertMulti(cite(i), 256, 260);
+    i = map.insertMulti(i, 256, 260);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 12);
 
-    map.insertMulti(cite(i), 64, 67);
+    map.insertMulti(i, 64, 67);
     sanityCheckTree(map, __LINE__);
     QCOMPARE(map.size(), 13);
 

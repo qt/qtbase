@@ -99,7 +99,9 @@ class tst_QFormLayout : public QObject
 private slots:
     void cleanup();
     void rowCount();
+#if QT_CONFIG(shortcut)
     void buddies();
+#endif
     void getItemPosition();
     void wrapping();
     void spacing();
@@ -190,6 +192,8 @@ void tst_QFormLayout::rowCount()
     //TODO: remove items
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QFormLayout::buddies()
 {
     QWidget w;
@@ -217,6 +221,8 @@ void tst_QFormLayout::buddies()
 
     //TODO: empty label?
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QFormLayout::getItemPosition()
 {
@@ -687,17 +693,21 @@ void tst_QFormLayout::insertRow_QString_QWidget()
     layout->insertRow(-5, "&Name:", fld1);
     QLabel *label1 = qobject_cast<QLabel *>(layout->itemAt(0, QFormLayout::LabelRole)->widget());
     QVERIFY(label1 != 0);
+#if QT_CONFIG(shortcut)
     QCOMPARE(label1->buddy(), fld1);
-
+#endif
     layout->insertRow(0, "&Email:", fld2);
     QLabel *label2 = qobject_cast<QLabel *>(layout->itemAt(0, QFormLayout::LabelRole)->widget());
     QVERIFY(label2 != 0);
+#if QT_CONFIG(shortcut)
     QCOMPARE(label2->buddy(), fld2);
-
+#endif
     layout->insertRow(5, "&Age:", fld3);
     QLabel *label3 = qobject_cast<QLabel *>(layout->itemAt(2, QFormLayout::LabelRole)->widget());
     QVERIFY(label3 != 0);
+#if QT_CONFIG(shortcut)
     QCOMPARE(label3->buddy(), fld3);
+#endif
 }
 
 void tst_QFormLayout::insertRow_QString_QLayout()
@@ -711,21 +721,27 @@ void tst_QFormLayout::insertRow_QString_QLayout()
     layout->insertRow(-5, "&Name:", fld1);
     QLabel *label1 = qobject_cast<QLabel *>(layout->itemAt(0, QFormLayout::LabelRole)->widget());
     QVERIFY(label1 != 0);
+#if QT_CONFIG(shortcut)
     QVERIFY(!label1->buddy());
+#endif
 
     QCOMPARE(layout->rowCount(), 1);
 
     layout->insertRow(0, "&Email:", fld2);
     QLabel *label2 = qobject_cast<QLabel *>(layout->itemAt(0, QFormLayout::LabelRole)->widget());
     QVERIFY(label2 != 0);
+#if QT_CONFIG(shortcut)
     QVERIFY(!label2->buddy());
+#endif
 
     QCOMPARE(layout->rowCount(), 2);
 
     layout->insertRow(5, "&Age:", fld3);
     QLabel *label3 = qobject_cast<QLabel *>(layout->itemAt(2, QFormLayout::LabelRole)->widget());
     QVERIFY(label3 != 0);
+#if QT_CONFIG(shortcut)
     QVERIFY(!label3->buddy());
+#endif
 
     QCOMPARE(layout->rowCount(), 3);
 }

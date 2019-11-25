@@ -62,8 +62,8 @@ namespace QJsonPrivate
 class Writer
 {
 public:
-    static void objectToJson(const QJsonPrivate::Object *o, QByteArray &json, int indent, bool compact = false);
-    static void arrayToJson(const QJsonPrivate::Array *a, QByteArray &json, int indent, bool compact = false);
+    static void objectToJson(const QCborContainerPrivate *o, QByteArray &json, int indent, bool compact = false);
+    static void arrayToJson(const QCborContainerPrivate *a, QByteArray &json, int indent, bool compact = false);
 };
 
 }

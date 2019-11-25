@@ -52,8 +52,8 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
-#include <qjsondocument.h>
-#include <qvarlengtharray.h>
+#include <QtCore/private/qcborvalue_p.h>
+#include <QtCore/qjsondocument.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,25 +64,7 @@ class Parser
 public:
     Parser(const char *json, int length);
 
-    QJsonDocument parse(QJsonParseError *error);
-
-    class ParsedObject
-    {
-    public:
-        ParsedObject(Parser *p, int pos) : parser(p), objectPosition(pos) {
-            offsets.reserve(64);
-        }
-        void insert(uint offset);
-
-        Parser *parser;
-        int objectPosition;
-        QVector<uint> offsets;
-
-        inline QJsonPrivate::Entry *entryAt(int i) const {
-            return reinterpret_cast<QJsonPrivate::Entry *>(parser->data + objectPosition + offsets[i]);
-        }
-    };
-
+    QCborValue parse(QJsonParseError *error);
 
 private:
     inline void eatBOM();
@@ -91,34 +73,17 @@ private:
 
     bool parseObject();
     bool parseArray();
-    bool parseMember(int baseOffset);
-    bool parseString(bool *latin1);
-    bool parseValue(QJsonPrivate::Value *val, int baseOffset);
-    bool parseNumber(QJsonPrivate::Value *val, int baseOffset);
+    bool parseMember();
+    bool parseString();
+    bool parseValue();
+    bool parseNumber();
     const char *head;
     const char *json;
     const char *end;
 
-    char *data;
-    int dataLength;
-    int current;
     int nestingLevel;
     QJsonParseError::ParseError lastError;
-
-    inline int reserveSpace(int space) {
-        if (current + space >= dataLength) {
-            dataLength = 2*dataLength + space;
-            char *newData = (char *)realloc(data, dataLength);
-            if (!newData) {
-                lastError = QJsonParseError::DocumentTooLarge;
-                return -1;
-            }
-            data = newData;
-        }
-        int pos = current;
-        current += space;
-        return pos;
-    }
+    QExplicitlySharedDataPointer<QCborContainerPrivate> container;
 };
 
 }

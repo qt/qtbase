@@ -51,9 +51,9 @@
 #ifndef SPREADSHEETDELEGATE_H
 #define SPREADSHEETDELEGATE_H
 
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 
-class SpreadSheetDelegate : public QItemDelegate
+class SpreadSheetDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 

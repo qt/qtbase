@@ -450,7 +450,9 @@ private slots:
     void modality_keyEvents();
     void itemIsInFront();
     void scenePosChange();
+#if QT_CONFIG(shortcut)
     void textItem_shortcuts();
+#endif
     void scroll();
     void focusHandling_data();
     void focusHandling();
@@ -10813,6 +10815,8 @@ void tst_QGraphicsItem::scenePosChange()
     QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
 }
 
+#if QT_CONFIG(shortcut)
+
 void tst_QGraphicsItem::textItem_shortcuts()
 {
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
@@ -10851,6 +10855,8 @@ void tst_QGraphicsItem::textItem_shortcuts()
     QTest::keyClick(&view, Qt::Key_A, Qt::ControlModifier);
     QTRY_COMPARE(item->textCursor().selectedText(), item->toPlainText());
 }
+
+#endif // QT_CONFIG(shortcut)
 
 void tst_QGraphicsItem::scroll()
 {

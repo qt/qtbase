@@ -118,13 +118,6 @@ enum {
 #endif
 };
 
-#define emptyFileEntryWarning() emptyFileEntryWarning_(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC)
-static void emptyFileEntryWarning_(const char *file, int line, const char *function)
-{
-    QMessageLogger(file, line, function).warning("Empty filename passed to function");
-    errno = EINVAL;
-}
-
 #if defined(Q_OS_DARWIN)
 static inline bool hasResourcePropertyFlag(const QFileSystemMetaData &data,
                                            const QFileSystemEntry &entry,
@@ -625,8 +618,7 @@ void QFileSystemMetaData::fillFromDirEnt(const QT_DIRENT &entry)
 //static
 QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, QFileSystemMetaData &data)
 {
-    if (Q_UNLIKELY(link.isEmpty()))
-        return emptyFileEntryWarning(), link;
+    Q_CHECK_FILE_NAME(link, link);
 
     QByteArray s = qt_readlink(link.nativeFilePath().constData());
     if (s.length() > 0) {
@@ -685,10 +677,7 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link, 
 //static
 QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data)
 {
-    if (Q_UNLIKELY(entry.isEmpty()))
-        return emptyFileEntryWarning(), entry;
-    if (entry.isRoot())
-        return entry;
+    Q_CHECK_FILE_NAME(entry, entry);
 
 #if !defined(Q_OS_MAC) && !defined(Q_OS_QNX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_HAIKU) && _POSIX_VERSION < 200809L
     // realpath(X,0) is not supported
@@ -738,8 +727,8 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 //static
 QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 {
-    if (Q_UNLIKELY(entry.isEmpty()))
-        return emptyFileEntryWarning(), entry;
+    Q_CHECK_FILE_NAME(entry, entry);
+
     if (entry.isAbsolute() && entry.isClean())
         return entry;
 
@@ -773,8 +762,7 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 //static
 QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 {
-    if (Q_UNLIKELY(entry.isEmpty()))
-        return emptyFileEntryWarning(), QByteArray();
+    Q_CHECK_FILE_NAME(entry, QByteArray());
 
     QT_STATBUF statResult;
     if (QT_STAT(entry.nativeFilePath().constData(), &statResult)) {
@@ -887,8 +875,7 @@ QString QFileSystemEngine::bundleName(const QFileSystemEntry &entry)
 bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
         QFileSystemMetaData::MetaDataFlags what)
 {
-    if (Q_UNLIKELY(entry.isEmpty()))
-        return emptyFileEntryWarning(), false;
+    Q_CHECK_FILE_NAME(entry, false);
 
 #if defined(Q_OS_DARWIN)
     if (what & QFileSystemMetaData::BundleType) {
@@ -1157,8 +1144,7 @@ static bool createDirectoryWithParents(const QByteArray &nativeName, bool should
 bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool createParents)
 {
     QString dirName = entry.filePath();
-    if (Q_UNLIKELY(dirName.isEmpty()))
-        return emptyFileEntryWarning(), false;
+    Q_CHECK_FILE_NAME(dirName, false);
 
     // Darwin doesn't support trailing /'s, so remove for everyone
     while (dirName.size() > 1 && dirName.endsWith(QLatin1Char('/')))
@@ -1177,8 +1163,7 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
 //static
 bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents)
 {
-    if (Q_UNLIKELY(entry.isEmpty()))
-        return emptyFileEntryWarning(), false;
+    Q_CHECK_FILE_NAME(entry, false);
 
     if (removeEmptyParents) {
         QString dirName = QDir::cleanPath(entry.filePath());
@@ -1203,8 +1188,9 @@ bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool remo
 //static
 bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
-    if (Q_UNLIKELY(source.isEmpty() || target.isEmpty()))
-        return emptyFileEntryWarning(), false;
+    Q_CHECK_FILE_NAME(source, false);
+    Q_CHECK_FILE_NAME(target, false);
+
     if (::symlink(source.nativeFilePath().constData(), target.nativeFilePath().constData()) == 0)
         return true;
     error = QSystemError(errno, QSystemError::StandardLibraryError);
@@ -1233,8 +1219,9 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
 {
     QFileSystemEntry::NativePath srcPath = source.nativeFilePath();
     QFileSystemEntry::NativePath tgtPath = target.nativeFilePath();
-    if (Q_UNLIKELY(srcPath.isEmpty() || tgtPath.isEmpty()))
-        return emptyFileEntryWarning(), false;
+
+    Q_CHECK_FILE_NAME(srcPath, false);
+    Q_CHECK_FILE_NAME(tgtPath, false);
 
 #if defined(RENAME_NOREPLACE) && QT_CONFIG(renameat2)
     if (renameat2(AT_FDCWD, srcPath, AT_FDCWD, tgtPath, RENAME_NOREPLACE) == 0)
@@ -1302,8 +1289,9 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
 //static
 bool QFileSystemEngine::renameOverwriteFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
-    if (Q_UNLIKELY(source.isEmpty() || target.isEmpty()))
-        return emptyFileEntryWarning(), false;
+    Q_CHECK_FILE_NAME(source, false);
+    Q_CHECK_FILE_NAME(target, false);
+
     if (::rename(source.nativeFilePath().constData(), target.nativeFilePath().constData()) == 0)
         return true;
     error = QSystemError(errno, QSystemError::StandardLibraryError);
@@ -1313,8 +1301,7 @@ bool QFileSystemEngine::renameOverwriteFile(const QFileSystemEntry &source, cons
 //static
 bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &error)
 {
-    if (Q_UNLIKELY(entry.isEmpty()))
-        return emptyFileEntryWarning(), false;
+    Q_CHECK_FILE_NAME(entry, false);
     if (unlink(entry.nativeFilePath().constData()) == 0)
         return true;
     error = QSystemError(errno, QSystemError::StandardLibraryError);
@@ -1349,8 +1336,7 @@ static mode_t toMode_t(QFile::Permissions permissions)
 //static
 bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error, QFileSystemMetaData *data)
 {
-    if (Q_UNLIKELY(entry.isEmpty()))
-        return emptyFileEntryWarning(), false;
+    Q_CHECK_FILE_NAME(entry, false);
 
     mode_t mode = toMode_t(permissions);
     bool success = ::chmod(entry.nativeFilePath().constData(), mode) == 0;

@@ -45,7 +45,9 @@
 #include <QtGui/qregion.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h>
-#include <QtGui/qkeysequence.h>
+#if QT_CONFIG(shortcut)
+#  include <QtGui/qkeysequence.h>
+#endif
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qmap.h> // ### Qt 6: Remove
@@ -59,7 +61,7 @@
 QT_BEGIN_NAMESPACE
 
 
-class QAction;
+class QGuiAction;
 #ifndef QT_NO_GESTURES
 class QGesture;
 #endif
@@ -375,7 +377,7 @@ public:
     ~QKeyEvent();
 
     int key() const { return k; }
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     bool matches(QKeySequence::StandardKey key) const;
 #endif
     Qt::KeyboardModifiers modifiers() const;
@@ -751,18 +753,18 @@ private:
 };
 #endif
 
-#ifndef QT_NO_ACTION
+#if QT_CONFIG(action)
 class Q_GUI_EXPORT QActionEvent : public QEvent
 {
-    QAction *act, *bef;
+    QGuiAction *act, *bef;
 public:
-    QActionEvent(int type, QAction *action, QAction *before = nullptr);
+    QActionEvent(int type, QGuiAction *action, QGuiAction *before = nullptr);
     ~QActionEvent();
 
-    inline QAction *action() const { return act; }
-    inline QAction *before() const { return bef; }
+    inline QGuiAction *action() const { return act; }
+    inline QGuiAction *before() const { return bef; }
 };
-#endif
+#endif // QT_CONFIG(action)
 
 class Q_GUI_EXPORT QFileOpenEvent : public QEvent
 {
@@ -792,7 +794,7 @@ private:
 };
 #endif
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 class Q_GUI_EXPORT QShortcutEvent : public QEvent
 {
 public:
@@ -827,10 +829,10 @@ private:
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QEvent *);
 #endif
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 inline bool operator==(QKeyEvent *e, QKeySequence::StandardKey key){return (e ? e->matches(key) : false);}
 inline bool operator==(QKeySequence::StandardKey key, QKeyEvent *e){return (e ? e->matches(key) : false);}
-#endif // QT_NO_SHORTCUT
+#endif // QT_CONFIG(shortcut)
 
 class Q_GUI_EXPORT QPointingDeviceUniqueId
 {

@@ -85,7 +85,7 @@ private:
 
 class QStaticByteArrayMatcherBase
 {
-    Q_DECL_ALIGN(16)
+    alignas(16)
     struct Skiptable {
         uchar data[256];
     } m_skiptable;

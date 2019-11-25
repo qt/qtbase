@@ -2327,6 +2327,7 @@ void tst_QDataStream::setVersion()
     QDataStream latest;
     QFETCH(int, vers);
 
+#if QT_CONFIG(shortcut)
     /*
         Test QKeySequence.
     */
@@ -2351,6 +2352,7 @@ void tst_QDataStream::setVersion()
         }
         QCOMPARE(deadbeef, 0xDEADBEEF);
     }
+#endif // QT_CONFIG(shortcut)
 
     /*
         Test QPalette.

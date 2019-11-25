@@ -151,6 +151,13 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QVariantHash, 28, QVariantHash) \
     F(QByteArrayList, 49, QByteArrayList) \
 
+#if QT_CONFIG(shortcut)
+#define QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F)\
+    F(QKeySequence, 75, QKeySequence)
+#else
+#define QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F)
+#endif
+
 #define QT_FOR_EACH_STATIC_GUI_CLASS(F)\
     F(QFont, 64, QFont) \
     F(QPixmap, 65, QPixmap) \
@@ -163,7 +170,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QRegion, 72, QRegion) \
     F(QBitmap, 73, QBitmap) \
     F(QCursor, 74, QCursor) \
-    F(QKeySequence, 75, QKeySequence) \
+    QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F) \
     F(QPen, 76, QPen) \
     F(QTextLength, 77, QTextLength) \
     F(QTextFormat, 78, QTextFormat) \
@@ -200,10 +207,11 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(UInt, -1, uint, "quint32") \
     F(LongLong, -1, qlonglong, "qint64") \
     F(ULongLong, -1, qulonglong, "quint64") \
+    F(QVariantList, -1, QVariantList, "QVector<QVariant>") \
     F(QVariantList, -1, QVariantList, "QList<QVariant>") \
     F(QVariantMap, -1, QVariantMap, "QMap<QString,QVariant>") \
     F(QVariantHash, -1, QVariantHash, "QHash<QString,QVariant>") \
-    F(QByteArrayList, -1, QByteArrayList, "QList<QByteArray>") \
+    F(QByteArrayList, -1, QByteArrayList, "QVector<QByteArray>") \
 
 #define QT_FOR_EACH_STATIC_TYPE(F)\
     QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F)\
@@ -218,7 +226,6 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     TypeName = Id,
 
 #define QT_FOR_EACH_AUTOMATIC_TEMPLATE_1ARG(F) \
-    F(QList) \
     F(QVector) \
     F(QQueue) \
     F(QStack) \
@@ -997,10 +1004,6 @@ struct ContainerAPI : CapabilitiesImpl<T>
 };
 
 template<typename T>
-struct ContainerAPI<QList<T> > : CapabilitiesImpl<QList<T> >
-{ static int size(const QList<T> *t) { return t->size(); } };
-
-template<typename T>
 struct ContainerAPI<QVector<T> > : CapabilitiesImpl<QVector<T> >
 { static int size(const QVector<T> *t) { return t->size(); } };
 
@@ -1643,6 +1646,23 @@ namespace QtPrivate
         static bool registerConverter(int) { return false; }
     };
 
+    template<class T>
+    struct Qt5CompatibilityHook
+    {
+        static inline void postRegister(int, const QByteArray &) {};
+    };
+
+    Q_CORE_EXPORT void qt5CompatibilityHookPostRegister(int id, const QByteArray &normalizedTypeName);
+
+    template<class T>
+    struct Qt5CompatibilityHook<QVector<T>>
+    {
+        static inline void postRegister(int id, const QByteArray &normalizedTypeName)
+        {
+            qt5CompatibilityHookPostRegister(id, normalizedTypeName);
+        }
+    };
+
     Q_CORE_EXPORT bool isBuiltinType(const QByteArray &type);
 } // namespace QtPrivate
 
@@ -1769,6 +1789,7 @@ int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normaliz
         QtPrivate::AssociativeContainerConverterHelper<T>::registerConverter(id);
         QtPrivate::MetaTypePairHelper<T>::registerConverter(id);
         QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter(id);
+        QtPrivate::Qt5CompatibilityHook<T>::postRegister(id, normalizedTypeName);
     }
 
     return id;
@@ -1992,7 +2013,7 @@ typedef QHash<QString, QVariant> QVariantHash;
 #ifdef Q_CLANG_QDOC
 class QByteArrayList;
 #else
-typedef QList<QByteArray> QByteArrayList;
+typedef QVector<QByteArray> QByteArrayList;
 #endif
 
 #define Q_DECLARE_METATYPE_TEMPLATE_1ARG(SINGLE_ARG_TEMPLATE) \

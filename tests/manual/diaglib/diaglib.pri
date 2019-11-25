@@ -17,20 +17,8 @@ win32:!winrt:  {
     SOURCES += $$PWD/nativewindowdump.cpp
 }
 
-greaterThan(QT_MAJOR_VERSION, 4) {
-    QT += gui-private core-private
-    contains(QT, widgets) {
-        HEADERS += \
-            $$PWD/qwidgetdump.h \
-            $$PWD/debugproxystyle.h \
-            $$PWD/logwidget.h
-
-        SOURCES += \
-            $$PWD/qwidgetdump.cpp \
-            $$PWD/debugproxystyle.cpp \
-            $$PWD/logwidget.cpp
-    }
-} else {
+QT += gui-private core-private
+contains(QT, widgets) {
     HEADERS += \
         $$PWD/qwidgetdump.h \
         $$PWD/debugproxystyle.h \
@@ -40,14 +28,17 @@ greaterThan(QT_MAJOR_VERSION, 4) {
         $$PWD/qwidgetdump.cpp \
         $$PWD/debugproxystyle.cpp \
         $$PWD/logwidget.cpp
+    QT += widgets-private
 }
 
 contains(QT, opengl) {
-HEADERS += \
-    $$PWD/glinfo.h
+    HEADERS += \
+        $$PWD/glinfo.h
 
-SOURCES += \
-    $$PWD/glinfo.cpp
+    SOURCES += \
+        $$PWD/glinfo.cpp
+
+    QT += opengl
 }
 
 DEFINES += QT_DIAG_LIB

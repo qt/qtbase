@@ -3518,14 +3518,36 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
     \c{currentPixelSize() != surfacePixelSize()} then the swapchain needs to be
     resized.
 
+    \note Typical rendering logic will call this function to get the output
+    size when starting to prepare a new frame, and base dependent calculations
+    (such as, the viewport) on the size returned from this function.
+
+    While in many cases the value is the same as \c{QWindow::size() *
+    QWindow::devicePixelRatio()}, relying on the QWindow-reported size is not
+    guaranteed to be correct on all platforms and graphics API implementations.
+    Using this function is therefore strongly recommended whenever there is a
+    need to identify the dimensions, in pixels, of the output layer or surface.
+
+    This also has the added benefit of avoiding potential data races when QRhi
+    is used on a dedicated rendering thread, because the need to call QWindow
+    functions, that may then access data updated on the main thread, is
+    avoided.
+
     \sa surfacePixelSize()
   */
 
 /*!
     \fn QSize QRhiSwapChain::surfacePixelSize()
 
-    \return The size of the window's associated surface or layer. Do not assume
-    this is the same as QWindow::size() * QWindow::devicePixelRatio().
+    \return The size of the window's associated surface or layer.
+
+    \warning Do not assume this is the same as \c{QWindow::size() *
+    QWindow::devicePixelRatio()}. With some graphics APIs and windowing system
+    interfaces (for example, Vulkan) there is a theoretical possibility for a
+    surface to assume a size different from the associated window. To support
+    these cases, rendering logic must always base size-derived calculations
+    (such as, viewports) on the size reported from QRhiSwapChain, and never on
+    the size queried from QWindow.
 
     \note Can also be called before buildOrResize(), if at least window() is
     already set) This in combination with currentPixelSize() allows to detect

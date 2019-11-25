@@ -184,7 +184,9 @@ class Q_CORE_EXPORT QVariant
         Region = QMetaType::QRegion,
         Bitmap = QMetaType::QBitmap,
         Cursor = QMetaType::QCursor,
+#if QT_CONFIG(shortcut)
         KeySequence = QMetaType::QKeySequence,
+#endif
         Pen = QMetaType::QPen,
         TextLength = QMetaType::QTextLength,
         TextFormat = QMetaType::QTextFormat,

@@ -24,12 +24,12 @@ QOBJS = \
 	qfile.o qfiledevice.o qfileinfo.o qfilesystemengine.o \
 	qfilesystementry.o qfsfileengine.o qfsfileengine_iterator.o \
 	qiodevice.o qsettings.o qtemporaryfile.o qtextstream.o \
-	qjsonarray.o qjson.o qjsondocument.o qjsonobject.o qjsonparser.o qjsonvalue.o \
+	qcborvalue.o qjsoncbor.o qjsonarray.o qjsondocument.o qjsonobject.o qjsonparser.o qjsonvalue.o \
 	qmetatype.o qsystemerror.o qvariant.o \
 	quuid.o \
 	qarraydata.o qbitarray.o qbytearray.o qbytearraylist.o qbytearraymatcher.o \
 	qcalendar.o qgregoriancalendar.o qromancalendar.o \
-	qcryptographichash.o qdatetime.o qhash.o qlist.o \
+        qcryptographichash.o qdatetime.o qhash.o \
 	qlocale.o qlocale_tools.o qmap.o qregexp.o qringbuffer.o \
 	qstringbuilder.o qstring.o qstringlist.o qversionnumber.o \
 	qvsnprintf.o qxmlstream.o qxmlutils.o \
@@ -96,9 +96,10 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/kernel/qsystemerror.cpp \
 	   $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp \
 	   $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp \
+	   $(SOURCE_PATH)/src/corelib/serialization/qcborvalue.cpp \
 	   $(SOURCE_PATH)/src/corelib/serialization/qdatastream.cpp \
 	   $(SOURCE_PATH)/src/corelib/serialization/qjsonarray.cpp \
-	   $(SOURCE_PATH)/src/corelib/serialization/qjson.cpp \
+	   $(SOURCE_PATH)/src/corelib/serialization/qjsoncbor.cpp \
 	   $(SOURCE_PATH)/src/corelib/serialization/qjsondocument.cpp \
 	   $(SOURCE_PATH)/src/corelib/serialization/qjsonobject.cpp \
 	   $(SOURCE_PATH)/src/corelib/serialization/qjsonparser.cpp \
@@ -124,7 +125,6 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qhash.cpp \
-	   $(SOURCE_PATH)/src/corelib/tools/qlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qmap.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qringbuffer.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qversionnumber.cpp \
@@ -370,9 +370,6 @@ qversionnumber.o: $(SOURCE_PATH)/src/corelib/tools/qversionnumber.cpp
 qbuffer.o: $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-qlist.o: $(SOURCE_PATH)/src/corelib/tools/qlist.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $<
-
 qfile.o: $(SOURCE_PATH)/src/corelib/io/qfile.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
@@ -466,7 +463,10 @@ qsystemlibrary.o: $(SOURCE_PATH)/src/corelib/plugin/qsystemlibrary.cpp
 qdatastream.o: $(SOURCE_PATH)/src/corelib/serialization/qdatastream.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
-qjson.o: $(SOURCE_PATH)/src/corelib/serialization/qjson.cpp
+qcborvalue.o: $(SOURCE_PATH)/src/corelib/serialization/qcborvalue.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qjsoncbor.o: $(SOURCE_PATH)/src/corelib/serialization/qjsoncbor.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qjsondocument.o: $(SOURCE_PATH)/src/corelib/serialization/qjsondocument.cpp

@@ -84,10 +84,6 @@ void foo()
 #include "qvector.h"
 #include "qqueue.h"
 
-QT_BEGIN_NAMESPACE
-template class QList<int>;
-QT_END_NAMESPACE
-
 class tst_Collections : public QObject
 {
     Q_OBJECT
@@ -551,19 +547,12 @@ void tst_Collections::list()
         list << "foo" << "bar";
         QVERIFY(!list.isEmpty());
 
-        list.insert(-1, "lessthanzero");
-        QCOMPARE(list.at(0), QString("lessthanzero"));
-
         list.insert(0, "atzero");
         QCOMPARE(list.at(0), QString("atzero"));
 
         int listCount = list.count();
         list.insert(listCount, "atcount");
         QCOMPARE(list.at(listCount), QString("atcount"));
-
-        listCount = list.count();
-        list.insert(listCount + 1, "beyondcount");
-        QCOMPARE(list.at(listCount), QString("beyondcount"));
     }
 
     {
@@ -2337,12 +2326,6 @@ void populate(QLinkedList<int> &container)
 }
 
 template <>
-void populate(QVector<int> &container)
-{
-    container << 1 << 2 << 4 << 8;
-}
-
-template <>
 void populate(QMap<int, int> &container)
 {
     container.insert(1, 1);
@@ -3214,9 +3197,7 @@ void tst_Collections::forwardDeclared()
     { typedef QSet<T1> C; C *x = 0; /* C::iterator i; */ C::const_iterator j; Q_UNUSED(x) }
 }
 
-#if defined(Q_ALIGNOF) && defined(Q_DECL_ALIGN)
-
-class Q_DECL_ALIGN(4) Aligned4
+class alignas(4) Aligned4
 {
     char i;
 public:
@@ -3228,7 +3209,7 @@ public:
     inline bool operator<(const Aligned4 &other) const { return i < other.i; }
     friend inline int qHash(const Aligned4 &a) { return qHash(a.i); }
 };
-Q_STATIC_ASSERT(Q_ALIGNOF(Aligned4) % 4 == 0);
+Q_STATIC_ASSERT(alignof(Aligned4) % 4 == 0);
 
 #if defined(Q_PROCESSOR_ARM)
 #  if defined(Q_COMPILER_ALIGNAS) && defined(__BIGGEST_ALIGNMENT__)
@@ -3242,7 +3223,7 @@ Q_STATIC_ASSERT(Q_ALIGNOF(Aligned4) % 4 == 0);
 #  define BIGGEST_ALIGNMENT_TO_TEST 128
 #endif
 
-class Q_DECL_ALIGN(BIGGEST_ALIGNMENT_TO_TEST) AlignedBiggest
+class alignas(BIGGEST_ALIGNMENT_TO_TEST) AlignedBiggest
 {
     char i;
 public:
@@ -3254,7 +3235,7 @@ public:
     inline bool operator<(const AlignedBiggest &other) const { return i < other.i; }
     friend inline int qHash(const AlignedBiggest &a) { return qHash(a.i); }
 };
-Q_STATIC_ASSERT(Q_ALIGNOF(AlignedBiggest) % BIGGEST_ALIGNMENT_TO_TEST == 0);
+Q_STATIC_ASSERT(alignof(AlignedBiggest) % BIGGEST_ALIGNMENT_TO_TEST == 0);
 
 template<typename C>
 void testVectorAlignment()
@@ -3324,13 +3305,6 @@ void tst_Collections::alignment()
     testAssociativeContainerAlignment<QHash<AlignedBiggest, Aligned4> >();
     testAssociativeContainerAlignment<QHash<AlignedBiggest, AlignedBiggest> >();
 }
-
-#else
-void tst_Collections::alignment()
-{
-    QSKIP("Compiler doesn't support necessary extension keywords");
-}
-#endif
 
 #ifndef QT_NO_TEMPLATE_TEMPLATE_PARAMETERS
 
@@ -3510,9 +3484,6 @@ void tst_Collections::foreach_2()
     QCOMPARE(varl1.count(), intlist.count());
     QCOMPARE(varl2.count(), intlist.count());
     QCOMPARE(varl3.count(), intlist.count());
-    foreach_test_arrays(varl1);
-    foreach_test_arrays(varl2);
-    foreach_test_arrays(varl3);
 
     QVarLengthArray<QString> varl4;
     QVarLengthArray<QString, 3> varl5;
@@ -3525,9 +3496,6 @@ void tst_Collections::foreach_2()
     QCOMPARE(varl4.count(), strlist.count());
     QCOMPARE(varl5.count(), strlist.count());
     QCOMPARE(varl6.count(), strlist.count());
-    foreach_test_arrays(varl4);
-    foreach_test_arrays(varl5);
-    foreach_test_arrays(varl6);
 }
 
 struct IntOrString

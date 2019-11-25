@@ -48,8 +48,6 @@
 
 #include <algorithm>
 
-#ifndef QT_NO_SHORTCUT
-
 QT_BEGIN_NAMESPACE
 
 // To enable verbose output uncomment below
@@ -714,5 +712,3 @@ void QShortcutMap::dumpMap() const
 #endif
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_SHORTCUT

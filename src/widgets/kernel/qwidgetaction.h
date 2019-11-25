@@ -43,10 +43,9 @@
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtWidgets/qaction.h>
 
+QT_REQUIRE_CONFIG(action);
+
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_ACTION
 
 class QWidgetActionPrivate;
 
@@ -77,8 +76,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_widgetDestroyed(QObject *))
     friend class QToolBar;
 };
-
-#endif // QT_NO_ACTION
 
 QT_END_NAMESPACE
 

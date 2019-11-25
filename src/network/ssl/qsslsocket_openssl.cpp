@@ -66,13 +66,10 @@
 #include "qsslpresharedkeyauthenticator.h"
 #include "qsslpresharedkeyauthenticator_p.h"
 #include "qocspresponse_p.h"
+#include "qsslkey.h"
 
 #ifdef Q_OS_WIN
 #include "qwindowscarootfetcher_p.h"
-#endif
-
-#if !QT_CONFIG(opensslv11)
-#include <openssl/x509_vfy.h>
 #endif
 
 #include <QtCore/qdatetime.h>
@@ -87,6 +84,8 @@
 #include <QtCore/qurl.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qscopedvaluerollback.h>
+#include <QtCore/qlibrary.h>
+#include <QtCore/qoperatingsystemversion.h>
 
 #if QT_CONFIG(ocsp)
 #include "qocsp_p.h"
@@ -98,13 +97,12 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_GLOBAL_STATIC(QRecursiveMutex, qt_opensslInitMutex)
+
 bool QSslSocketPrivate::s_libraryLoaded = false;
 bool QSslSocketPrivate::s_loadedCiphersAndCerts = false;
 bool QSslSocketPrivate::s_loadRootCertsOnDemand = false;
-
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
 int QSslSocketBackendPrivate::s_indexForSSLExtraData = -1;
-#endif
 
 QString QSslSocketBackendPrivate::getErrorsFromOpenSsl()
 {
@@ -122,7 +120,7 @@ QString QSslSocketBackendPrivate::getErrorsFromOpenSsl()
 
 extern "C" {
 
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
+#ifndef OPENSSL_NO_PSK
 static unsigned int q_ssl_psk_client_callback(SSL *ssl,
                                               const char *hint,
                                               char *identity, unsigned int max_identity_len,
@@ -143,7 +141,6 @@ static unsigned int q_ssl_psk_server_callback(SSL *ssl,
 }
 
 #ifdef TLS1_3_VERSION
-#ifndef OPENSSL_NO_PSK
 static unsigned int q_ssl_psk_restore_client(SSL *ssl,
                                              const char *hint,
                                              char *identity, unsigned int max_identity_len,
@@ -164,7 +161,6 @@ static unsigned int q_ssl_psk_restore_client(SSL *ssl,
 
     return 0;
 }
-#endif // !OPENSSL_NO_PSK
 
 static int q_ssl_psk_use_session_callback(SSL *ssl, const EVP_MD *md, const unsigned char **id,
                                           size_t *idlen, SSL_SESSION **sess)
@@ -175,7 +171,6 @@ static int q_ssl_psk_use_session_callback(SSL *ssl, const EVP_MD *md, const unsi
     Q_UNUSED(idlen);
     Q_UNUSED(sess);
 
-#ifndef OPENSSL_NO_PSK
 #ifdef QT_DEBUG
     QSslSocketBackendPrivate *d = reinterpret_cast<QSslSocketBackendPrivate *>(q_SSL_get_ex_data(ssl, QSslSocketBackendPrivate::s_indexForSSLExtraData));
     Q_ASSERT(d);
@@ -184,13 +179,12 @@ static int q_ssl_psk_use_session_callback(SSL *ssl, const EVP_MD *md, const unsi
 
     // Temporarily rebind the psk because it will be called next. The function will restore it.
     q_SSL_set_psk_client_callback(ssl, &q_ssl_psk_restore_client);
-#endif
 
     return 1; // need to return 1 or else "the connection setup fails."
 }
 #endif // TLS1_3_VERSION
 
-#endif
+#endif // !OPENSSL_NO_PSK
 
 #if QT_CONFIG(ocsp)
 
@@ -407,13 +401,8 @@ int q_X509Callback(int ok, X509_STORE_CTX *ctx)
         ErrorListPtr errors = nullptr;
 
         // Error list is attached to either 'SSL' or 'X509_STORE'.
-        if (X509_STORE *store = q_X509_STORE_CTX_get0_store(ctx)) { // We try store first:
-#if QT_CONFIG(opensslv11)
+        if (X509_STORE *store = q_X509_STORE_CTX_get0_store(ctx)) // We try store first:
             errors = ErrorListPtr(q_X509_STORE_get_ex_data(store, 0));
-#else
-            errors = ErrorListPtr(q_CRYPTO_get_ex_data(&store->ex_data, 0));
-#endif // opensslv11
-        }
 
         if (!errors) {
             // Not found on store? Try SSL and its external data then. According to the OpenSSL's
@@ -476,17 +465,12 @@ long QSslSocketBackendPrivate::setupOpenSslOptions(QSsl::SslProtocol protocol, Q
         options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3;
     else if (protocol == QSsl::TlsV1_0OrLater)
         options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3;
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
-    // Choosing Tlsv1_1OrLater or TlsV1_2OrLater on OpenSSL < 1.0.1
-    // will cause an error in QSslContext::fromConfiguration, meaning
-    // we will never get here.
     else if (protocol == QSsl::TlsV1_1OrLater)
         options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1;
     else if (protocol == QSsl::TlsV1_2OrLater)
         options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1|SSL_OP_NO_TLSv1_1;
     else if (protocol == QSsl::TlsV1_3OrLater)
         options = SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3|SSL_OP_NO_TLSv1|SSL_OP_NO_TLSv1_1|SSL_OP_NO_TLSv1_2;
-#endif
     else
         options = SSL_OP_ALL;
 
@@ -590,15 +574,13 @@ bool QSslSocketBackendPrivate::initSslContext()
 
     q_SSL_set_ex_data(ssl, s_indexForSSLExtraData, this);
 
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L && !defined(OPENSSL_NO_PSK)
+#ifndef OPENSSL_NO_PSK
     // Set the client callback for PSK
-    if (QSslSocket::sslLibraryVersionNumber() >= 0x10001000L) {
-        if (mode == QSslSocket::SslClientMode)
-            q_SSL_set_psk_client_callback(ssl, &q_ssl_psk_client_callback);
-        else if (mode == QSslSocket::SslServerMode)
-            q_SSL_set_psk_server_callback(ssl, &q_ssl_psk_server_callback);
-    }
-#endif
+    if (mode == QSslSocket::SslClientMode)
+        q_SSL_set_psk_client_callback(ssl, &q_ssl_psk_client_callback);
+    else if (mode == QSslSocket::SslServerMode)
+        q_SSL_set_psk_server_callback(ssl, &q_ssl_psk_server_callback);
+
 #if OPENSSL_VERSION_NUMBER >= 0x10101006L
     // Set the client callback for TLSv1.3 PSK
     if (mode == QSslSocket::SslClientMode
@@ -606,6 +588,9 @@ bool QSslSocketBackendPrivate::initSslContext()
         q_SSL_set_psk_use_session_callback(ssl, &q_ssl_psk_use_session_callback);
     }
 #endif // openssl version >= 0x10101006L
+
+#endif // OPENSSL_NO_PSK
+
 
 #if QT_CONFIG(ocsp)
     if (configuration.ocspStaplingEnabled) {
@@ -673,10 +658,43 @@ bool QSslSocketPrivate::supportsSsl()
 /*!
     \internal
 
+    Returns the version number of the SSL library in use. Note that
+    this is the version of the library in use at run-time, not compile
+    time.
+*/
+long QSslSocketPrivate::sslLibraryVersionNumber()
+{
+    if (!supportsSsl())
+        return 0;
+
+    return q_OpenSSL_version_num();
+}
+
+/*!
+    \internal
+
+    Returns the version string of the SSL library in use. Note that
+    this is the version of the library in use at run-time, not compile
+    time. If no SSL support is available then this will return an empty value.
+*/
+QString QSslSocketPrivate::sslLibraryVersionString()
+{
+    if (!supportsSsl())
+        return QString();
+
+    const char *versionString = q_OpenSSL_version(OPENSSL_VERSION);
+    if (!versionString)
+        return QString();
+
+    return QString::fromLatin1(versionString);
+}
+
+/*!
+    \internal
+
     Declared static in QSslSocketPrivate, makes sure the SSL libraries have
     been initialized.
 */
-
 void QSslSocketPrivate::ensureInitialized()
 {
     if (!supportsSsl())
@@ -685,11 +703,23 @@ void QSslSocketPrivate::ensureInitialized()
     ensureCiphersAndCertsLoaded();
 }
 
+/*!
+    \internal
+
+    Returns the version number of the SSL library in use at compile
+    time.
+*/
 long QSslSocketPrivate::sslLibraryBuildVersionNumber()
 {
     return OPENSSL_VERSION_NUMBER;
 }
 
+/*!
+    \internal
+
+    Returns the version string of the SSL library in use at compile
+    time.
+*/
 QString QSslSocketPrivate::sslLibraryBuildVersionString()
 {
     // Using QStringLiteral to store the version string as unicode and
@@ -706,11 +736,7 @@ QString QSslSocketPrivate::sslLibraryBuildVersionString()
 */
 void QSslSocketPrivate::resetDefaultCiphers()
 {
-#if QT_CONFIG(opensslv11)
     SSL_CTX *myCtx = q_SSL_CTX_new(q_TLS_client_method());
-#else
-    SSL_CTX *myCtx = q_SSL_CTX_new(q_SSLv23_client_method());
-#endif
     // Note, we assert, not just silently return/bail out early:
     // this should never happen and problems with OpenSSL's initialization
     // must be caught before this (see supportsSsl()).
@@ -1737,6 +1763,174 @@ QSsl::SslProtocol QSslSocketBackendPrivate::sessionProtocol() const
     return QSsl::UnknownProtocol;
 }
 
+
+void QSslSocketBackendPrivate::continueHandshake()
+{
+    Q_Q(QSslSocket);
+    // if we have a max read buffer size, reset the plain socket's to match
+    if (readBufferMaxSize)
+        plainSocket->setReadBufferSize(readBufferMaxSize);
+
+    if (q_SSL_session_reused(ssl))
+        configuration.peerSessionShared = true;
+
+#ifdef QT_DECRYPT_SSL_TRAFFIC
+    if (q_SSL_get_session(ssl)) {
+        size_t master_key_len = q_SSL_SESSION_get_master_key(q_SSL_get_session(ssl), 0, 0);
+        size_t client_random_len = q_SSL_get_client_random(ssl, 0, 0);
+        QByteArray masterKey(int(master_key_len), 0); // Will not overflow
+        QByteArray clientRandom(int(client_random_len), 0); // Will not overflow
+
+        q_SSL_SESSION_get_master_key(q_SSL_get_session(ssl),
+                                     reinterpret_cast<unsigned char*>(masterKey.data()),
+                                     masterKey.size());
+        q_SSL_get_client_random(ssl, reinterpret_cast<unsigned char *>(clientRandom.data()),
+                                clientRandom.size());
+
+        QByteArray debugLineClientRandom("CLIENT_RANDOM ");
+        debugLineClientRandom.append(clientRandom.toHex().toUpper());
+        debugLineClientRandom.append(" ");
+        debugLineClientRandom.append(masterKey.toHex().toUpper());
+        debugLineClientRandom.append("\n");
+
+        QString sslKeyFile = QDir::tempPath() + QLatin1String("/qt-ssl-keys");
+        QFile file(sslKeyFile);
+        if (!file.open(QIODevice::Append))
+            qCWarning(lcSsl) << "could not open file" << sslKeyFile << "for appending";
+        if (!file.write(debugLineClientRandom))
+            qCWarning(lcSsl) << "could not write to file" << sslKeyFile;
+        file.close();
+    } else {
+        qCWarning(lcSsl, "could not decrypt SSL traffic");
+    }
+#endif
+
+    // Cache this SSL session inside the QSslContext
+    if (!(configuration.sslOptions & QSsl::SslOptionDisableSessionSharing)) {
+        if (!sslContextPointer->cacheSession(ssl)) {
+            sslContextPointer.clear(); // we could not cache the session
+        } else {
+            // Cache the session for permanent usage as well
+            if (!(configuration.sslOptions & QSsl::SslOptionDisableSessionPersistence)) {
+                if (!sslContextPointer->sessionASN1().isEmpty())
+                    configuration.sslSession = sslContextPointer->sessionASN1();
+                configuration.sslSessionTicketLifeTimeHint = sslContextPointer->sessionTicketLifeTimeHint();
+            }
+        }
+    }
+
+#if !defined(OPENSSL_NO_NEXTPROTONEG)
+
+    configuration.nextProtocolNegotiationStatus = sslContextPointer->npnContext().status;
+    if (sslContextPointer->npnContext().status == QSslConfiguration::NextProtocolNegotiationUnsupported) {
+        // we could not agree -> be conservative and use HTTP/1.1
+        configuration.nextNegotiatedProtocol = QByteArrayLiteral("http/1.1");
+    } else {
+        const unsigned char *proto = nullptr;
+        unsigned int proto_len = 0;
+
+        q_SSL_get0_alpn_selected(ssl, &proto, &proto_len);
+        if (proto_len && mode == QSslSocket::SslClientMode) {
+            // Client does not have a callback that sets it ...
+            configuration.nextProtocolNegotiationStatus = QSslConfiguration::NextProtocolNegotiationNegotiated;
+        }
+
+        if (!proto_len) { // Test if NPN was more lucky ...
+            q_SSL_get0_next_proto_negotiated(ssl, &proto, &proto_len);
+        }
+
+        if (proto_len)
+            configuration.nextNegotiatedProtocol = QByteArray(reinterpret_cast<const char *>(proto), proto_len);
+        else
+            configuration.nextNegotiatedProtocol.clear();
+    }
+#endif // !defined(OPENSSL_NO_NEXTPROTONEG)
+
+    if (mode == QSslSocket::SslClientMode) {
+        EVP_PKEY *key;
+        if (q_SSL_get_server_tmp_key(ssl, &key))
+            configuration.ephemeralServerKey = QSslKey(key, QSsl::PublicKey);
+    }
+
+    connectionEncrypted = true;
+    emit q->encrypted();
+    if (autoStartHandshake && pendingClose) {
+        pendingClose = false;
+        q->disconnectFromHost();
+    }
+}
+
+bool QSslSocketPrivate::ensureLibraryLoaded()
+{
+    if (!q_resolveOpenSslSymbols())
+        return false;
+
+    const QMutexLocker locker(qt_opensslInitMutex);
+
+    if (!s_libraryLoaded) {
+        // Initialize OpenSSL.
+        if (q_OPENSSL_init_ssl(0, nullptr) != 1)
+            return false;
+        q_SSL_load_error_strings();
+        q_OpenSSL_add_all_algorithms();
+
+        QSslSocketBackendPrivate::s_indexForSSLExtraData
+            = q_CRYPTO_get_ex_new_index(CRYPTO_EX_INDEX_SSL, 0L, nullptr, nullptr,
+                                        nullptr, nullptr);
+
+        // Initialize OpenSSL's random seed.
+        if (!q_RAND_status()) {
+            qWarning("Random number generator not seeded, disabling SSL support");
+            return false;
+        }
+
+        s_libraryLoaded = true;
+    }
+    return true;
+}
+
+void QSslSocketPrivate::ensureCiphersAndCertsLoaded()
+{
+    const QMutexLocker locker(qt_opensslInitMutex);
+
+    if (s_loadedCiphersAndCerts)
+        return;
+    s_loadedCiphersAndCerts = true;
+
+    resetDefaultCiphers();
+    resetDefaultEllipticCurves();
+
+#if QT_CONFIG(library)
+    //load symbols needed to receive certificates from system store
+#if defined(Q_OS_QNX)
+    s_loadRootCertsOnDemand = true;
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+    // check whether we can enable on-demand root-cert loading (i.e. check whether the sym links are there)
+    QList<QByteArray> dirs = unixRootCertDirectories();
+    QStringList symLinkFilter;
+    symLinkFilter << QLatin1String("[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].[0-9]");
+    for (int a = 0; a < dirs.count(); ++a) {
+        QDirIterator iterator(QLatin1String(dirs.at(a)), symLinkFilter, QDir::Files);
+        if (iterator.hasNext()) {
+            s_loadRootCertsOnDemand = true;
+            break;
+        }
+    }
+#endif
+#endif // QT_CONFIG(library)
+    // if on-demand loading was not enabled, load the certs now
+    if (!s_loadRootCertsOnDemand)
+        setDefaultCaCertificates(systemCaCertificates());
+#ifdef Q_OS_WIN
+    //Enabled for fetching additional root certs from windows update on windows.
+    //This flag is set false by setDefaultCaCertificates() indicating the app uses
+    //its own cert bundle rather than the system one.
+    //Same logic that disables the unix on demand cert loading.
+    //Unlike unix, we do preload the certificates from the cert store.
+    s_loadRootCertsOnDemand = true;
+#endif
+}
+
 QList<QSslCertificate> QSslSocketBackendPrivate::STACKOFX509_to_QSslCertificates(STACK_OF(X509) *x509)
 {
     ensureInitialized();
@@ -1788,19 +1982,11 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
     }
 
     QVector<QSslErrorEntry> lastErrors;
-#if QT_CONFIG(opensslv11)
     if (!q_X509_STORE_set_ex_data(certStore, 0, &lastErrors)) {
         qCWarning(lcSsl) << "Unable to attach external data (error list) to a store";
         errors << QSslError(QSslError::UnspecifiedError);
         return errors;
     }
-#else
-    if (!q_CRYPTO_set_ex_data(&certStore->ex_data, 0, &lastErrors)) {
-        qCWarning(lcSsl) << "Unable to attach external data (error list) to a store";
-        errors << QSslError(QSslError::UnspecifiedError);
-        return errors;
-    }
-#endif // opensslv11
 
     // Register a custom callback to get all verification errors.
     q_X509_STORE_set_verify_cb(certStore, q_X509Callback);

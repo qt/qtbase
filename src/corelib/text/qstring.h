@@ -425,12 +425,11 @@ public:
 #endif
 
 #if QT_CONFIG(regularexpression)
-    int indexOf(const QRegularExpression &re, int from = 0) const;
-    int indexOf(const QRegularExpression &re, int from, QRegularExpressionMatch *rmatch) const; // ### Qt 6: merge overloads
-    int lastIndexOf(const QRegularExpression &re, int from = -1) const;
-    int lastIndexOf(const QRegularExpression &re, int from, QRegularExpressionMatch *rmatch) const; // ### Qt 6: merge overloads
-    bool contains(const QRegularExpression &re) const;
-    bool contains(const QRegularExpression &re, QRegularExpressionMatch *rmatch) const; // ### Qt 6: merge overloads
+    int indexOf(const QRegularExpression &re, int from = 0,
+                QRegularExpressionMatch *rmatch = nullptr) const;
+    int lastIndexOf(const QRegularExpression &re, int from = -1,
+                    QRegularExpressionMatch *rmatch = nullptr) const;
+    bool contains(const QRegularExpression &re, QRegularExpressionMatch *rmatch = nullptr) const;
     int count(const QRegularExpression &re) const;
 #endif
 

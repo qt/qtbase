@@ -280,7 +280,7 @@ static void printHelp()
                     "       $PATH will be used.\n"
                     "    --activity <acitvity>: The Activity to run. If missing the first\n"
                     "       activity from AndroidManifest.qml file will be used.\n"
-                    "    --timout <seconds>: Timeout to run the test.\n"
+                    "    --timeout <seconds>: Timeout to run the test.\n"
                     "       Default is 5 minutes.\n"
                     "    --make <make cmd>: make command, needed to install the qt library.\n"
                     "       If make is missing make sure the --path is set.\n"

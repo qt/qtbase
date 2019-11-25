@@ -1381,11 +1381,13 @@ void tst_QtConcurrentMap::mappedReduced()
         QCOMPARE(sum3, 14);
     }
 
+    auto push_back = static_cast<void (QVector<int>::*)(const int &)>(&QVector<int>::push_back);
+
     // functor-member
     {
         QList<int> list2 = QtConcurrent::mappedReduced(list,
                                                        IntSquare(),
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list2, QList<int>() << 1 << 4 << 9);
@@ -1393,14 +1395,14 @@ void tst_QtConcurrentMap::mappedReduced()
         QList<int> list3 = QtConcurrent::mappedReduced(list.constBegin(),
                                                        list.constEnd(),
                                                        IntSquare(),
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list3, QList<int>() << 1 << 4 << 9);
 
         QList<int> list4 = QtConcurrent::mappedReduced(QList<int>(list),
                                                        IntSquare(),
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<int>() << 1 << 4 << 9);
@@ -1463,20 +1465,20 @@ void tst_QtConcurrentMap::mappedReduced()
     {
         QList<int> list2 = QtConcurrent::mappedReduced(numberList,
                                                        &Number::toInt,
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list2, QList<int>() << 1 << 2 << 3);
 
         QList<int> list3 = QtConcurrent::mappedReduced(numberList.constBegin(),
                                                        numberList.constEnd(),
                                                        &Number::toInt,
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list3, QList<int>() << 1 << 2 << 3);
 
         QList<int> list4 = QtConcurrent::mappedReduced(QList<Number>(numberList),
                                                        &Number::toInt,
-                                                       &QList<int>::push_back, OrderedReduce);
+                                                       push_back, OrderedReduce);
         QCOMPARE(list4, QList<int>() << 1 << 2 << 3);
     }
     {
@@ -1503,7 +1505,7 @@ void tst_QtConcurrentMap::mappedReduced()
     {
         QList<int> list2 = QtConcurrent::mappedReduced(list,
                                                        intSquare,
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list2, QList<int>() << 1 << 4 << 9);
@@ -1511,14 +1513,14 @@ void tst_QtConcurrentMap::mappedReduced()
         QList<int> list3 = QtConcurrent::mappedReduced(list.constBegin(),
                                                        list.constEnd(),
                                                        intSquare,
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list3, QList<int>() << 1 << 4 << 9);
 
         QList<int> list4 = QtConcurrent::mappedReduced(QList<int>(list),
                                                        intSquare,
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<int>() << 1 << 4 << 9);
@@ -1759,11 +1761,13 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
         QCOMPARE(sum3, 14);
     }
 
+    auto push_back = static_cast<void (QVector<int>::*)(const int &)>(&QVector<int>::push_back);
+
     // functor-member
     {
         QList<int> list2 = QtConcurrent::blockingMappedReduced(list,
                                                        IntSquare(),
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list2, QList<int>() << 1 << 4 << 9);
@@ -1771,14 +1775,14 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
         QList<int> list3 = QtConcurrent::blockingMappedReduced(list.constBegin(),
                                                        list.constEnd(),
                                                        IntSquare(),
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list3, QList<int>() << 1 << 4 << 9);
 
         QList<int> list4 = QtConcurrent::blockingMappedReduced(QList<int>(list),
                                                        IntSquare(),
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<int>() << 1 << 4 << 9);
@@ -1842,20 +1846,20 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
     {
         QList<int> list2 = QtConcurrent::blockingMappedReduced(numberList,
                                                        &Number::toInt,
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list2, QList<int>() << 1 << 2 << 3);
 
         QList<int> list3 = QtConcurrent::blockingMappedReduced(numberList.constBegin(),
                                                        numberList.constEnd(),
                                                        &Number::toInt,
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list3, QList<int>() << 1 << 2 << 3);
 
         QList<int> list4 = QtConcurrent::blockingMappedReduced(QList<Number>(numberList),
                                                        &Number::toInt,
-                                                       &QList<int>::push_back, OrderedReduce);
+                                                       push_back, OrderedReduce);
         QCOMPARE(list4, QList<int>() << 1 << 2 << 3);
     }
     {
@@ -1882,7 +1886,7 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
     {
         QList<int> list2 = QtConcurrent::blockingMappedReduced(list,
                                                        intSquare,
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list2, QList<int>() << 1 << 4 << 9);
@@ -1890,14 +1894,14 @@ void tst_QtConcurrentMap::blocking_mappedReduced()
         QList<int> list3 = QtConcurrent::blockingMappedReduced(list.constBegin(),
                                                        list.constEnd(),
                                                        intSquare,
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list3, QList<int>() << 1 << 4 << 9);
 
         QList<int> list4 = QtConcurrent::blockingMappedReduced(QList<int>(list),
                                                        intSquare,
-                                                       &QList<int>::push_back,
+                                                       push_back,
                                                        OrderedReduce);
         QCOMPARE(list, QList<int>() << 1 << 2 << 3);
         QCOMPARE(list4, QList<int>() << 1 << 4 << 9);
@@ -2118,7 +2122,6 @@ public:
 };
 
 Q_DECLARE_METATYPE(QVector<MemFnTester>);
-Q_DECLARE_METATYPE(QList<MemFnTester>);
 
 void tst_QtConcurrentMap::functionOverloads()
 {

@@ -1,7 +1,5 @@
 TEMPLATE=subdirs
 SUBDIRS=\
-   qaction \
-   qactiongroup \
    qapplication \
    qboxlayout \
    qdesktopwidget \
@@ -13,7 +11,6 @@ SUBDIRS=\
    qtooltip \
    qwidget \
    qwidget_window \
-   qwidgetaction \
    qwidgetmetatype \
    qwidgetsvariant \
    qwindowcontainer \
@@ -22,3 +19,11 @@ SUBDIRS=\
 
 darwin:SUBDIRS -= \
    qgesturerecognizer \
+
+!qtConfig(action):SUBDIRS -= \
+   qaction \
+   qactiongroup \
+   qwidgetaction
+
+!qtConfig(shortcut): SUBDIRS -= \
+   qshortcut

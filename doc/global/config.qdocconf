@@ -11,6 +11,12 @@ dita.metadata.default.audience = programmer
 navigation.homepage = index.html
 navigation.hometitle = "Qt $QT_VER"
 
+#Words to ignore for auto-linking
+ignorewords += \
+    macOS \
+    WebChannel \
+    OpenGL
+
 sourcedirs += includes $$BUILDDIR
 
 url = http://doc.qt.io/qt-5

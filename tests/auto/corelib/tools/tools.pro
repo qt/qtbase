@@ -4,7 +4,6 @@ SUBDIRS=\
     containerapisymmetry \
     qalgorithms \
     qarraydata \
-    qarraydata_strictiterators \
     qbitarray \
     qcache \
     qcommandlineparser \
@@ -14,15 +13,11 @@ SUBDIRS=\
     qexplicitlyshareddatapointer \
     qfreelist \
     qhash \
-    qhash_strictiterators \
     qhashfunctions \
     qline \
     qlinkedlist \
-    qlist \
-    qlist_strictiterators \
     qmakearray \
     qmap \
-    qmap_strictiterators \
     qmargins \
     qmessageauthenticationcode \
     qoffsetstringarray \
@@ -43,7 +38,6 @@ SUBDIRS=\
     qtimeline \
     qvarlengtharray \
     qvector \
-    qvector_strictiterators \
     qversionnumber
 
 darwin: SUBDIRS += qmacautoreleasepool

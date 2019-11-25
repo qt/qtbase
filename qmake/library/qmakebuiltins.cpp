@@ -1043,7 +1043,7 @@ QMakeEvaluator::VisitReturn QMakeEvaluator::evaluateBuiltinExpand(
         for (int d = 0; d < dirs.count(); d++) {
             QString dir = dirs[d];
             QDir qdir(pfx + dir);
-            for (int i = 0; i < (int)qdir.count(); ++i) {
+            for (int i = 0, count = int(qdir.count()); i < count; ++i) {
                 if (qdir[i] == statics.strDot || qdir[i] == statics.strDotDot)
                     continue;
                 QString fname = dir + qdir[i];

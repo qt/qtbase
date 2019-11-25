@@ -1354,6 +1354,53 @@ static inline FT_Matrix QTransformToFTMatrix(const QTransform &matrix)
     return m;
 }
 
+QFontEngineFT::QGlyphSet *QFontEngineFT::TransformedGlyphSets::findSet(const QTransform &matrix, const QFontDef &fontDef)
+{
+    FT_Matrix m = QTransformToFTMatrix(matrix);
+
+    int i = 0;
+    for (; i < nSets; ++i) {
+        QGlyphSet *g = sets[i];
+        if (!g)
+            break;
+        if (g->transformationMatrix.xx == m.xx
+            && g->transformationMatrix.xy == m.xy
+            && g->transformationMatrix.yx == m.yx
+            && g->transformationMatrix.yy == m.yy) {
+
+            // found a match, move it to the front
+            moveToFront(i);
+            return g;
+        }
+    }
+
+    // don't cache more than nSets transformations
+    if (i == nSets)
+        // reuse the last set
+        --i;
+    moveToFront(nSets - 1);
+    if (!sets[0])
+        sets[0] = new QGlyphSet;
+    QGlyphSet *gs = sets[0];
+    gs->clear();
+    gs->transformationMatrix = m;
+    gs->outline_drawing = fontDef.pixelSize * fontDef.pixelSize * qAbs(matrix.determinant()) > QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE;
+    Q_ASSERT(gs != 0);
+
+    return gs;
+}
+
+void QFontEngineFT::TransformedGlyphSets::moveToFront(int i)
+{
+    QGlyphSet *g = sets[i];
+    while (i > 0) {
+        sets[i] = sets[i - 1];
+        --i;
+    }
+    sets[0] = g;
+}
+
+
 QFontEngineFT::QGlyphSet *QFontEngineFT::loadGlyphSet(const QTransform &matrix)
 {
     if (matrix.type() > QTransform::TxShear || !cacheEnabled)
@@ -1363,39 +1410,7 @@ QFontEngineFT::QGlyphSet *QFontEngineFT::loadGlyphSet(const QTransform &matrix)
     if (!FT_IS_SCALABLE(freetype->face))
         return matrix.type() <= QTransform::TxTranslate ? &defaultGlyphSet : nullptr;
 
-    FT_Matrix m = QTransformToFTMatrix(matrix);
-
-    QGlyphSet *gs = 0;
-
-    for (int i = 0; i < transformedGlyphSets.count(); ++i) {
-        const QGlyphSet &g = transformedGlyphSets.at(i);
-        if (g.transformationMatrix.xx == m.xx
-            && g.transformationMatrix.xy == m.xy
-            && g.transformationMatrix.yx == m.yx
-            && g.transformationMatrix.yy == m.yy) {
-
-            // found a match, move it to the front
-            transformedGlyphSets.move(i, 0);
-            gs = &transformedGlyphSets[0];
-            break;
-        }
-    }
-
-    if (!gs) {
-        // don't cache more than 10 transformations
-        if (transformedGlyphSets.count() >= 10) {
-            transformedGlyphSets.move(transformedGlyphSets.size() - 1, 0);
-        } else {
-            transformedGlyphSets.prepend(QGlyphSet());
-        }
-        gs = &transformedGlyphSets[0];
-        gs->clear();
-        gs->transformationMatrix = m;
-        gs->outline_drawing = fontDef.pixelSize * fontDef.pixelSize * qAbs(matrix.determinant()) > QT_MAX_CACHED_GLYPH_SIZE * QT_MAX_CACHED_GLYPH_SIZE;
-    }
-    Q_ASSERT(gs != 0);
-
-    return gs;
+    return transformedGlyphSets.findSet(matrix, fontDef);
 }
 
 void QFontEngineFT::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_metrics_t *metrics)

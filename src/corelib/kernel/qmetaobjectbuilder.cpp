@@ -1103,7 +1103,7 @@ int QMetaStringTable::enter(const QByteArray &value)
 
 int QMetaStringTable::preferredAlignment()
 {
-    return Q_ALIGNOF(QByteArrayData);
+    return alignof(QByteArrayData);
 }
 
 // Returns the size (in bytes) required for serializing this string table.

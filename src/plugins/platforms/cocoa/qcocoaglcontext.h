@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QCocoaWindow;
+
 class QCocoaGLContext : public QPlatformOpenGLContext
 {
 public:
@@ -76,12 +78,12 @@ private:
     static NSOpenGLPixelFormat *pixelFormatForSurfaceFormat(const QSurfaceFormat &format);
 
     bool setDrawable(QPlatformSurface *surface);
+    void prepareDrawable(QCocoaWindow *platformWindow);
     void updateSurfaceFormat();
 
     NSOpenGLContext *m_context = nil;
     NSOpenGLContext *m_shareContext = nil;
     QSurfaceFormat m_format;
-    bool m_didCheckForSoftwareContext = false;
     QVarLengthArray<QMacNotificationObserver, 3> m_updateObservers;
     QAtomicInt m_needsUpdate = false;
 };

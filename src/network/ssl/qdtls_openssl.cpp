@@ -156,8 +156,6 @@ void delete_connection(SSL *ssl)
         q_SSL_free(ssl);
 }
 
-#if QT_CONFIG(opensslv11)
-
 void delete_BIO_ADDR(BIO_ADDR *bio)
 {
     // A deleter for QSharedPointer<BIO_ADDR>
@@ -171,8 +169,6 @@ void delete_bio_method(BIO_METHOD *method)
     if (method)
         q_BIO_meth_free(method);
 }
-
-#endif // openssl 1.1
 
 // The 'deleter' for QScopedPointer<BIO>.
 struct bio_deleter
@@ -411,10 +407,6 @@ extern "C" long q_dgram_ctrl(BIO *bio, int cmd, long num, void *ptr)
     auto dtls = static_cast<dtlsopenssl::DtlsState *>(q_BIO_get_app_data(bio));
     Q_ASSERT(dtls);
 
-#if !QT_CONFIG(opensslv11)
-    Q_UNUSED(num)
-#endif
-
     switch (cmd) {
     // Let's start from the most generic ones, in the order in which they are
     // documented (as BIO_ctrl):
@@ -578,11 +570,9 @@ extern "C" long q_dgram_ctrl(BIO *bio, int cmd, long num, void *ptr)
         // so that OpenSSL does not start suddenly fragmenting the first
         // client hello (which will result in DTLSv1_listen rejecting it).
         return 0;
-#if QT_CONFIG(opensslv11)
     case BIO_CTRL_DGRAM_SET_PEEK_MODE:
         dtls->peeking = num;
         return 1;
-#endif
     default:;
 #if QT_DTLS_VERBOSE
         qWarning() << "Unexpected cmd (" << cmd << ")";
@@ -594,15 +584,11 @@ extern "C" long q_dgram_ctrl(BIO *bio, int cmd, long num, void *ptr)
 
 extern "C" int q_dgram_create(BIO *bio)
 {
-#if QT_CONFIG(opensslv11)
+
     q_BIO_set_init(bio, 1);
-#else
-    bio->init = 1;
-#endif
     // With a custom BIO you'd normally allocate some implementation-specific
-    // data and append it to this new BIO: bio->ptr = ... (pre 1.0.2) or
-    // BIO_set_data (1.1). We don't need it and thus q_dgram_destroy below
-    // is a noop.
+    // data and append it to this new BIO using BIO_set_data. We don't need
+    // it and thus q_dgram_destroy below is a noop.
     return 1;
 }
 
@@ -613,39 +599,6 @@ extern "C" int q_dgram_destroy(BIO *bio)
 }
 
 const char * const qdtlsMethodName = "qdtlsbio";
-
-#if !QT_CONFIG(opensslv11)
-
-/*
-typedef struct bio_method_st {
-    int type;
-    const char *name;
-    int (*bwrite) (BIO *, const char *, int);
-    int (*bread) (BIO *, char *, int);
-    int (*bputs) (BIO *, const char *);
-    int (*bgets) (BIO *, char *, int);
-    long (*ctrl) (BIO *, int, long, void *);
-    int (*create) (BIO *);
-    int (*destroy) (BIO *);
-    long (*callback_ctrl) (BIO *, int, bio_info_cb *);
-} BIO_METHOD;
-*/
-
-bio_method_st qdtlsCustomBioMethod =
-{
-    BIO_TYPE_DGRAM,
-    qdtlsMethodName,
-    q_dgram_write,
-    q_dgram_read,
-    q_dgram_puts,
-    nullptr,
-    q_dgram_ctrl,
-    q_dgram_create,
-    q_dgram_destroy,
-    nullptr
-};
-
-#endif // openssl < 1.1
 
 } // namespace dtlsbio
 
@@ -777,7 +730,6 @@ bool DtlsState::initBIO(QDtlsBasePrivate *dtlsBase)
     Q_ASSERT(dtlsBase);
     Q_ASSERT(tlsContext.data() && tlsConnection.data());
 
-#if QT_CONFIG(opensslv11)
     BioMethod customMethod(q_BIO_meth_new(BIO_TYPE_DGRAM, dtlsbio::qdtlsMethodName),
                            dtlsutil::delete_bio_method);
     if (!customMethod.data()) {
@@ -793,9 +745,6 @@ bool DtlsState::initBIO(QDtlsBasePrivate *dtlsBase)
     q_BIO_meth_set_write(biom, dtlsbio::q_dgram_write);
     q_BIO_meth_set_puts(biom, dtlsbio::q_dgram_puts);
     q_BIO_meth_set_ctrl(biom, dtlsbio::q_dgram_ctrl);
-#else
-    BIO_METHOD *biom = &dtlsbio::qdtlsCustomBioMethod;
-#endif // openssl 1.1
 
     QScopedPointer<BIO, dtlsutil::bio_deleter> newBio(q_BIO_new(biom));
     BIO *bio = newBio.data();
@@ -808,9 +757,7 @@ bool DtlsState::initBIO(QDtlsBasePrivate *dtlsBase)
     q_SSL_set_bio(tlsConnection.data(), bio, bio);
     newBio.take();
 
-#if QT_CONFIG(opensslv11)
     bioMethod.swap(customMethod);
-#endif // openssl 1.1
 
     return true;
 }
@@ -869,7 +816,6 @@ bool QDtlsClientVerifierOpenSSL::verifyClient(QUdpSocket *socket, const QByteArr
     dtls.hashAlgorithm = hashAlgorithm;
 
     Q_ASSERT(dtls.tlsConnection.data());
-#if QT_CONFIG(opensslv11)
     QSharedPointer<BIO_ADDR> peer(q_BIO_ADDR_new(), dtlsutil::delete_BIO_ADDR);
     if (!peer.data()) {
         setDtlsError(QDtlsError::TlsInitializationError,
@@ -883,10 +829,7 @@ bool QDtlsClientVerifierOpenSSL::verifyClient(QUdpSocket *socket, const QByteArr
         setDtlsError(QDtlsError::TlsFatalError, QSslSocketBackendPrivate::getErrorsFromOpenSsl());
         return false;
     }
-#else
-    qt_sockaddr peer;
-    const int ret = q_DTLSv1_listen(dtls.tlsConnection.data(), &peer);
-#endif
+
     if (ret > 0) {
         verifiedClientHello = dgram;
         return true;
@@ -953,7 +896,6 @@ bool QDtlsPrivateOpenSSL::startHandshake(QUdpSocket *socket, const QByteArray &d
         // surprise DTLS/OpenSSL (such a message would be disregarded as
         // 'stale or future' in SSL_accept otherwise):
         int result = 0;
-#if QT_CONFIG(opensslv11)
         QSharedPointer<BIO_ADDR> peer(q_BIO_ADDR_new(), dtlsutil::delete_BIO_ADDR);
         if (!peer.data()) {
             setDtlsError(QDtlsError::TlsInitializationError,
@@ -967,10 +909,7 @@ bool QDtlsPrivateOpenSSL::startHandshake(QUdpSocket *socket, const QByteArray &d
         dtls.writeSuppressed = true;
         result = q_DTLSv1_listen(dtls.tlsConnection.data(), peer.data());
         dtls.writeSuppressed = false;
-#else
-        qt_sockaddr peer;
-        result = q_DTLSv1_listen(dtls.tlsConnection.data(), &peer);
-#endif
+
         if (result <= 0) {
             setDtlsError(QDtlsError::TlsFatalError,
                          QDtls::tr("Cannot start the handshake, verified client hello expected"));

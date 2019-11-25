@@ -47,7 +47,6 @@
 #include "qstyle.h"
 #include "qstyleoption.h"
 #include <limits.h>
-#include "qaction.h"
 #include "qclipboard.h"
 #include <qdebug.h>
 #include <qurl.h>

@@ -202,7 +202,7 @@ namespace {
     This function works for v containing infinities, but not NaN. It's the
     caller's responsibility to exclude that possibility before calling it.
 */
-template <typename T> static inline bool convertDoubleTo(double v, T *value)
+template <typename T> static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
 {
     Q_STATIC_ASSERT(std::numeric_limits<T>::is_integer);
 
@@ -226,6 +226,10 @@ template <typename T> static inline bool convertDoubleTo(double v, T *value)
         using ST = typename std::make_signed<T>::type;
         supremum = -2.0 * std::numeric_limits<ST>::min();   // -2 * (-2^63) = 2^64, exact (for T = quint64)
         v = fabs(v);
+    }
+    if (std::is_integral<T>::value && sizeof(T) > 4 && !allow_precision_upgrade) {
+        if (v > double(Q_INT64_C(1)<<53) || v < double(-((Q_INT64_C(1)<<53) + 1)))
+            return false;
     }
 
     *value = std::numeric_limits<T>::max();

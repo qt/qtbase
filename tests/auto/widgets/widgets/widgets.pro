@@ -47,6 +47,9 @@ SUBDIRS=\
    qtoolbox \
    qtoolbutton \
 
+!qtConfig(shortcut): SUBDIRS -= \
+   qkeysequenceedit
+
 # The following tests depend on private API:
 !qtConfig(private_tests): SUBDIRS -= \
            qabstractspinbox \

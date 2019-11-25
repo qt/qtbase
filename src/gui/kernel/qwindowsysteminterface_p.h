@@ -99,7 +99,8 @@ public:
         ApplicationStateChanged = 0x19,
         FlushEvents = 0x20,
         WindowScreenChanged = 0x21,
-        SafeAreaMarginsChanged = 0x22
+        SafeAreaMarginsChanged = 0x22,
+        ApplicationTermination = 0x23
     };
 
     class WindowSystemEvent {

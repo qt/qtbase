@@ -26,8 +26,6 @@
 **
 ****************************************************************************/
 
-//#define QT_STRICT_ITERATORS
-
 #include <QtTest/QtTest>
 #include <qset.h>
 #include <qdebug.h>

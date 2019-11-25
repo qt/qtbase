@@ -42,6 +42,9 @@
 
 #include <QtWidgets/qtwidgetsglobal.h>
 #include <QtGui/qfont.h>
+#if QT_CONFIG(action)
+#  include <QtWidgets/qaction.h>
+#endif
 #include <QtWidgets/qgraphicslayoutitem.h>
 #include <QtWidgets/qgraphicsitem.h>
 #include <QtGui/qpalette.h>

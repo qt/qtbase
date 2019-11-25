@@ -59,11 +59,30 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate {
+   template <typename V, typename U> int indexOf(const QVector<V> &list, const U &u, int from);
+   template <typename V, typename U> int lastIndexOf(const QVector<V> &list, const U &u, int from);
+}
+
+template <typename T> struct QVectorSpecialMethods
+{
+protected:
+    ~QVectorSpecialMethods() = default;
+};
+template <> struct QVectorSpecialMethods<QByteArray>;
+template <> struct QVectorSpecialMethods<QString>;
+
 template <typename T>
 class QVector
+#ifndef Q_QDOC
+    : public QVectorSpecialMethods<T>
+#endif
 {
     typedef QTypedArrayData<T> Data;
     Data *d;
+
+    template <typename V, typename U> friend int QtPrivate::indexOf(const QVector<V> &list, const U &u, int from);
+    template <typename V, typename U> friend int QtPrivate::lastIndexOf(const QVector<V> &list, const U &u, int from);
 
 public:
     inline QVector() noexcept : d(Data::sharedNull()) { }
@@ -111,23 +130,6 @@ public:
 
     inline void detach();
     inline bool isDetached() const { return !d->ref.isShared(); }
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    inline void setSharable(bool sharable)
-    {
-        if (sharable == d->ref.isSharable())
-            return;
-        if (!sharable)
-            detach();
-
-        if (d == Data::unsharableEmpty()) {
-            if (sharable)
-                d = Data::sharedNull();
-        } else {
-            d->ref.setSharable(sharable);
-        }
-        Q_ASSERT(d->ref.isSharable() == sharable);
-    }
-#endif
 
     inline bool isSharedWith(const QVector<T> &other) const { return d == other.d; }
 
@@ -206,7 +208,6 @@ public:
     typedef typename Data::const_iterator const_iterator;
     typedef std::reverse_iterator<iterator> reverse_iterator;
     typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-#if !defined(QT_STRICT_ITERATORS) || defined(Q_CLANG_QDOC)
     inline iterator begin() { detach(); return d->begin(); }
     inline const_iterator begin() const noexcept { return d->constBegin(); }
     inline const_iterator cbegin() const noexcept { return d->constBegin(); }
@@ -215,16 +216,6 @@ public:
     inline const_iterator end() const noexcept { return d->constEnd(); }
     inline const_iterator cend() const noexcept { return d->constEnd(); }
     inline const_iterator constEnd() const noexcept { return d->constEnd(); }
-#else
-    inline iterator begin(iterator = iterator()) { detach(); return d->begin(); }
-    inline const_iterator begin(const_iterator = const_iterator()) const noexcept { return d->constBegin(); }
-    inline const_iterator cbegin(const_iterator = const_iterator()) const noexcept { return d->constBegin(); }
-    inline const_iterator constBegin(const_iterator = const_iterator()) const noexcept { return d->constBegin(); }
-    inline iterator end(iterator = iterator()) { detach(); return d->end(); }
-    inline const_iterator end(const_iterator = const_iterator()) const noexcept { return d->constEnd(); }
-    inline const_iterator cend(const_iterator = const_iterator()) const noexcept { return d->constEnd(); }
-    inline const_iterator constEnd(const_iterator = const_iterator()) const noexcept { return d->constEnd(); }
-#endif
     reverse_iterator rbegin() { return reverse_iterator(end()); }
     reverse_iterator rend() { return reverse_iterator(begin()); }
     const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
@@ -298,9 +289,6 @@ public:
     inline QVector<T> &operator<<(T &&t)
     { append(std::move(t)); return *this; }
 
-    static QVector<T> fromList(const QList<T> &list);
-    QList<T> toList() const;
-
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     Q_DECL_DEPRECATED_X("Use QVector<T>(vector.begin(), vector.end()) instead.")
     static inline QVector<T> fromStdVector(const std::vector<T> &vector)
@@ -309,6 +297,14 @@ public:
     inline std::vector<T> toStdVector() const
     { return std::vector<T>(d->begin(), d->end()); }
 #endif
+
+    // Consider deprecating in 6.4 or later
+    static QVector<T> fromList(const QVector<T> &list) { return list; }
+    QVector<T> toList() const { return *this; }
+
+    static inline QVector<T> fromVector(const QVector<T> &vector) { return vector; }
+    inline QVector<T> toVector() const { return *this; }
+
 private:
     // ### Qt6: remove methods, they are unused
     void reallocData(const int size, const int alloc, QArrayData::AllocationOptions options = QArrayData::Default);
@@ -402,14 +398,11 @@ inline QVector<T>::QVector(const QVector<T> &v)
 template <typename T>
 void QVector<T>::detach()
 {
-    if (!isDetached()) {
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-        if (!d->alloc)
-            d = Data::unsharableEmpty();
-        else
-#endif
-            realloc(int(d->alloc));
-    }
+    if (d->ref.isStatic())
+        return;
+
+    if (!isDetached())
+        realloc(int(d->alloc));
     Q_ASSERT(isDetached());
 }
 
@@ -418,11 +411,7 @@ void QVector<T>::reserve(int asize)
 {
     if (asize > int(d->alloc))
         realloc(asize);
-    if (isDetached()
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-            && d != Data::unsharableEmpty()
-#endif
-            )
+    if (isDetached())
         d->capacityReserved = 1;
     Q_ASSERT(capacity() >= asize);
 }
@@ -605,9 +594,6 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
                 x = Data::allocate(aalloc, options);
                 Q_CHECK_PTR(x);
                 // aalloc is bigger then 0 so it is not [un]sharedEmpty
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-                Q_ASSERT(x->ref.isSharable() || options.testFlag(QArrayData::Unsharable));
-#endif
                 Q_ASSERT(!x->ref.isStatic());
                 x->size = asize;
 
@@ -688,9 +674,6 @@ void QVector<T>::reallocData(const int asize, const int aalloc, QArrayData::Allo
 
     Q_ASSERT(d->data());
     Q_ASSERT(uint(d->size) <= d->alloc);
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    Q_ASSERT(d != Data::unsharableEmpty());
-#endif
     Q_ASSERT(aalloc ? d != Data::sharedNull() : d == Data::sharedNull());
     Q_ASSERT(d->alloc >= uint(aalloc));
     Q_ASSERT(d->size == asize);
@@ -709,9 +692,6 @@ void QVector<T>::realloc(int aalloc, QArrayData::AllocationOptions options)
         x = Data::allocate(aalloc, options);
         Q_CHECK_PTR(x);
         // aalloc is bigger then 0 so it is not [un]sharedEmpty
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-        Q_ASSERT(x->ref.isSharable() || options.testFlag(QArrayData::Unsharable));
-#endif
         Q_ASSERT(!x->ref.isStatic());
         x->size = d->size;
 
@@ -759,9 +739,6 @@ void QVector<T>::realloc(int aalloc, QArrayData::AllocationOptions options)
 
     Q_ASSERT(d->data());
     Q_ASSERT(uint(d->size) <= d->alloc);
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    Q_ASSERT(d != Data::unsharableEmpty());
-#endif
     Q_ASSERT(d != Data::sharedNull());
     Q_ASSERT(d->alloc >= uint(aalloc));
 }
@@ -1004,37 +981,51 @@ QVector<T> &QVector<T>::operator+=(const QVector &l)
     return *this;
 }
 
+namespace QtPrivate {
+template <typename T, typename U>
+int indexOf(const QVector<T> &vector, const U &u, int from)
+{
+    if (from < 0)
+        from = qMax(from + vector.size(), 0);
+    if (from < vector.size()) {
+        auto n = vector.begin() + from - 1;
+        auto e = vector.end();
+        while (++n != e)
+            if (*n == u)
+                return n - vector.begin();
+    }
+    return -1;
+}
+
+template <typename T, typename U>
+int lastIndexOf(const QVector<T> &vector, const U &u, int from)
+{
+    if (from < 0)
+        from += vector.d->size;
+    else if (from >= vector.size())
+        from = vector.size() - 1;
+    if (from >= 0) {
+        auto b = vector.begin();
+        auto n = vector.begin() + from + 1;
+        while (n != b) {
+            if (*--n == u)
+                return n - b;
+        }
+    }
+    return -1;
+}
+}
+
 template <typename T>
 int QVector<T>::indexOf(const T &t, int from) const
 {
-    if (from < 0)
-        from = qMax(from + d->size, 0);
-    if (from < d->size) {
-        T* n = d->begin() + from - 1;
-        T* e = d->end();
-        while (++n != e)
-            if (*n == t)
-                return n - d->begin();
-    }
-    return -1;
+    return QtPrivate::indexOf<T, T>(*this, t, from);
 }
 
 template <typename T>
 int QVector<T>::lastIndexOf(const T &t, int from) const
 {
-    if (from < 0)
-        from += d->size;
-    else if (from >= d->size)
-        from = d->size-1;
-    if (from >= 0) {
-        T* b = d->begin();
-        T* n = d->begin() + from + 1;
-        while (n != b) {
-            if (*--n == t)
-                return n - b;
-        }
-    }
-    return -1;
+    return QtPrivate::lastIndexOf(*this, t, from);
 }
 
 template <typename T>
@@ -1152,5 +1143,8 @@ QVector<QStringRef> QStringRef::split(QChar sep, Qt::SplitBehavior behavior, Qt:
 
 
 QT_END_NAMESPACE
+
+#include <QtCore/qbytearraylist.h>
+#include <QtCore/qstringlist.h>
 
 #endif // QVECTOR_H

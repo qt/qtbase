@@ -112,7 +112,7 @@ void QListModel::insert(int row, QListWidgetItem *item)
         QList<QListWidgetItem*>::iterator it;
         it = sortedInsertionIterator(items.begin(), items.end(),
                                      item->view->sortOrder(), item);
-        row = qMax(it - items.begin(), 0);
+        row = qMax<qsizetype>(it - items.begin(), 0);
     } else {
         if (row < 0)
             row = 0;
@@ -391,7 +391,7 @@ void QListModel::ensureSorted(int column, Qt::SortOrder order, int start, int en
             --tmpitepos;
         lit = tmp.begin() + tmpitepos;
         lit = sortedInsertionIterator(lit, tmp.end(), order, item);
-        int newRow = qMax(lit - tmp.begin(), 0);
+        int newRow = qMax<qsizetype>(lit - tmp.begin(), 0);
         lit = tmp.insert(lit, item);
         if (newRow != oldRow) {
             changed = true;

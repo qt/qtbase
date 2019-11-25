@@ -53,7 +53,7 @@
 #include <QtWidgets>
 
 SpreadSheetDelegate::SpreadSheetDelegate(QObject *parent)
-    : QItemDelegate(parent)
+    : QStyledItemDelegate(parent)
 {}
 
 QWidget *SpreadSheetDelegate::createEditor(QWidget *parent,

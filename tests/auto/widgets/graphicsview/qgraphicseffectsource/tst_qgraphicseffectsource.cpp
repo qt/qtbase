@@ -166,7 +166,7 @@ void tst_QGraphicsEffectSource::initTestCase()
     scene->addItem(item);
     view = new QGraphicsView(scene);
     view->show();
-    QVERIFY(QTest::qWaitForWindowActive(view));
+    QVERIFY(QTest::qWaitForWindowExposed(view));
 }
 
 void tst_QGraphicsEffectSource::cleanupTestCase()

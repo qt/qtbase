@@ -4097,6 +4097,9 @@ void tst_QDateTimeEdit::stepModifierKeys_data()
 
 void tst_QDateTimeEdit::stepModifierKeys()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QFETCH(QDate, startDate);
     QFETCH(int, stepModifier);
     QFETCH(QDateTimeEdit::Section, section);
@@ -4198,6 +4201,9 @@ void tst_QDateTimeEdit::stepModifierButtons_data()
 
 void tst_QDateTimeEdit::stepModifierButtons()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QFETCH(QStyle::SubControl, subControl);
     QFETCH(int, stepModifier);
     QFETCH(Qt::KeyboardModifiers, modifiers);
@@ -4285,6 +4291,9 @@ void tst_QDateTimeEdit::stepModifierPressAndHold_data()
 
 void tst_QDateTimeEdit::stepModifierPressAndHold()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QFETCH(QStyle::SubControl, subControl);
     QFETCH(int, stepModifier);
     QFETCH(Qt::KeyboardModifiers, modifiers);

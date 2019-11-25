@@ -63,8 +63,9 @@ SOURCES += \
            ../../corelib/kernel/qsharedmemory.cpp \
            ../../corelib/kernel/qsystemsemaphore.cpp \
            ../../corelib/plugin/quuid.cpp \
+           ../../corelib/serialization/qcborvalue.cpp \
            ../../corelib/serialization/qdatastream.cpp \
-           ../../corelib/serialization/qjson.cpp \
+           ../../corelib/serialization/qjsoncbor.cpp \
            ../../corelib/serialization/qjsondocument.cpp \
            ../../corelib/serialization/qjsonobject.cpp \
            ../../corelib/serialization/qjsonarray.cpp \
@@ -96,7 +97,6 @@ SOURCES += \
            ../../corelib/tools/qcommandlineoption.cpp \
            ../../corelib/tools/qcryptographichash.cpp \
            ../../corelib/tools/qhash.cpp \
-           ../../corelib/tools/qlist.cpp \
            ../../corelib/tools/qmap.cpp \
            ../../corelib/tools/qringbuffer.cpp \
            ../../corelib/tools/qpoint.cpp \

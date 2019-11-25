@@ -461,7 +461,9 @@ void QFileSystemEngine::clearWinStatData(QFileSystemMetaData &data)
 QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
                                                   QFileSystemMetaData &data)
 {
-   if (data.missingFlags(QFileSystemMetaData::LinkType))
+    Q_CHECK_FILE_NAME(link, link);
+
+    if (data.missingFlags(QFileSystemMetaData::LinkType))
        QFileSystemEngine::fillMetaData(link, data, QFileSystemMetaData::LinkType);
 
     QString target;
@@ -480,6 +482,8 @@ QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
 //static
 QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data)
 {
+    Q_CHECK_FILE_NAME(entry, entry);
+
     if (data.missingFlags(QFileSystemMetaData::ExistsAttribute))
        QFileSystemEngine::fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute);
 
@@ -492,6 +496,8 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 //static
 QString QFileSystemEngine::nativeAbsoluteFilePath(const QString &path)
 {
+    Q_CHECK_FILE_NAME(path, QString());
+
     // can be //server or //server/share
     QString absPath;
     QVarLengthArray<wchar_t, MAX_PATH> buf(qMax(MAX_PATH, path.size() + 1));
@@ -527,6 +533,8 @@ QString QFileSystemEngine::nativeAbsoluteFilePath(const QString &path)
 //static
 QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
 {
+    Q_CHECK_FILE_NAME(entry, entry);
+
     QString ret;
 
     if (!entry.isRelative()) {
@@ -609,6 +617,8 @@ QByteArray fileIdWin8(HANDLE handle)
 //static
 QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
 {
+    Q_CHECK_FILE_NAME(entry, QByteArray());
+
     QByteArray result;
 
 #ifndef Q_OS_WINRT
@@ -999,6 +1009,7 @@ static bool isDirPath(const QString &dirPath, bool *existed);
 bool QFileSystemEngine::fillMetaData(const QFileSystemEntry &entry, QFileSystemMetaData &data,
                                      QFileSystemMetaData::MetaDataFlags what)
 {
+    Q_CHECK_FILE_NAME(entry, false);
     what |= QFileSystemMetaData::WinLnkType | QFileSystemMetaData::WinStatFlags;
     data.entryFlags &= ~what;
 
@@ -1112,71 +1123,70 @@ static bool isDirPath(const QString &dirPath, bool *existed)
     return fileAttrib & FILE_ATTRIBUTE_DIRECTORY;
 }
 
+// NOTE: if \a shouldMkdirFirst is false, we assume the caller did try to mkdir
+// before calling this function.
+static bool createDirectoryWithParents(const QString &nativeName, bool shouldMkdirFirst = true)
+{
+    const auto isUNCRoot = [](const QString &nativeName) {
+        return nativeName.startsWith(QLatin1String("\\\\")) && nativeName.count(QDir::separator()) <= 3;
+    };
+    const auto isDriveName = [](const QString &nativeName) {
+        return nativeName.size() == 2 && nativeName.at(1) == QLatin1Char(':');
+    };
+    const auto isDir = [](const QString &nativeName) {
+        bool exists = false;
+        return isDirPath(nativeName, &exists) && exists;
+    };
+    // Do not try to mkdir a UNC root path or a drive letter.
+    if (isUNCRoot(nativeName) || isDriveName(nativeName))
+        return false;
+
+    if (shouldMkdirFirst) {
+        if (mkDir(nativeName))
+            return true;
+    }
+
+    const int backSlash = nativeName.lastIndexOf(QDir::separator());
+    if (backSlash < 1)
+        return false;
+
+    const QString parentNativeName = nativeName.left(backSlash);
+    if (!createDirectoryWithParents(parentNativeName))
+        return false;
+
+    // try again
+    if (mkDir(nativeName))
+        return true;
+    return isDir(nativeName);
+}
+
 //static
 bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool createParents)
 {
     QString dirName = entry.filePath();
-    if (createParents) {
-        dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
-        // We spefically search for / so \ would break it..
-        int oldslash = -1;
-        if (dirName.startsWith(QLatin1String("\\\\"))) {
-            // Don't try to create the root path of a UNC path;
-            // CreateDirectory() will just return ERROR_INVALID_NAME.
-            for (int i = 0; i < dirName.size(); ++i) {
-                if (dirName.at(i) != QDir::separator()) {
-                    oldslash = i;
-                    break;
-                }
-            }
-            if (oldslash != -1)
-                oldslash = dirName.indexOf(QDir::separator(), oldslash);
-        } else if (dirName.size() > 2
-                && dirName.at(1) == QLatin1Char(':')) {
-            // Don't try to call mkdir with just a drive letter
-            oldslash = 2;
-        }
-        for (int slash=0; slash != -1; oldslash = slash) {
-            slash = dirName.indexOf(QDir::separator(), oldslash+1);
-            if (slash == -1) {
-                if (oldslash == dirName.length())
-                    break;
-                slash = dirName.length();
-            }
-            if (slash) {
-                DWORD lastError;
-                QString chunk = dirName.left(slash);
-                if (!mkDir(chunk, &lastError)) {
-                    if (lastError == ERROR_ALREADY_EXISTS || lastError == ERROR_ACCESS_DENIED) {
-                        bool existed = false;
-                        if (isDirPath(chunk, &existed) && existed)
-                            continue;
-#ifdef Q_OS_WINRT
-                        static QThreadStorage<QString> dataLocation;
-                        if (!dataLocation.hasLocalData())
-                            dataLocation.setLocalData(QDir::toNativeSeparators(QStandardPaths::writableLocation(QStandardPaths::DataLocation)));
-                        static QThreadStorage<QString> tempLocation;
-                        if (!tempLocation.hasLocalData())
-                            tempLocation.setLocalData(QDir::toNativeSeparators(QStandardPaths::writableLocation(QStandardPaths::TempLocation)));
-                        // We try to create something outside the sandbox, which is forbidden
-                        // However we could still try to pass into the sandbox
-                        if (dataLocation.localData().startsWith(chunk) || tempLocation.localData().startsWith(chunk))
-                            continue;
-#endif
-                    }
-                    return false;
-                }
-            }
-        }
+    Q_CHECK_FILE_NAME(dirName, false);
+
+    dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
+
+    // try to mkdir this directory
+    DWORD lastError;
+    if (mkDir(dirName, &lastError))
         return true;
-    }
-    return mkDir(entry.filePath());
+    // mkpath should return true, if the directory already exists, mkdir false.
+    if (!createParents)
+        return false;
+    if (lastError == ERROR_ALREADY_EXISTS)
+        return isDirPath(dirName, nullptr);
+
+    return createDirectoryWithParents(dirName, false);
 }
 
 //static
 bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents)
 {
     QString dirName = entry.filePath();
+    Q_CHECK_FILE_NAME(dirName, false);
+
     if (removeEmptyParents) {
         dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
         for (int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
@@ -1381,6 +1391,9 @@ bool QFileSystemEngine::copyFile(const QFileSystemEntry &source, const QFileSyst
 //static
 bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
+    Q_CHECK_FILE_NAME(source, false);
+    Q_CHECK_FILE_NAME(target, false);
+
 #ifndef Q_OS_WINRT
     bool ret = ::MoveFile((wchar_t*)source.nativeFilePath().utf16(),
                           (wchar_t*)target.nativeFilePath().utf16()) != 0;
@@ -1396,6 +1409,9 @@ bool QFileSystemEngine::renameFile(const QFileSystemEntry &source, const QFileSy
 //static
 bool QFileSystemEngine::renameOverwriteFile(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error)
 {
+    Q_CHECK_FILE_NAME(source, false);
+    Q_CHECK_FILE_NAME(target, false);
+
     bool ret = ::MoveFileEx(reinterpret_cast<const wchar_t *>(source.nativeFilePath().utf16()),
                             reinterpret_cast<const wchar_t *>(target.nativeFilePath().utf16()),
                             MOVEFILE_REPLACE_EXISTING) != 0;
@@ -1407,6 +1423,8 @@ bool QFileSystemEngine::renameOverwriteFile(const QFileSystemEntry &source, cons
 //static
 bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &error)
 {
+    Q_CHECK_FILE_NAME(entry, false);
+
     bool ret = ::DeleteFile((wchar_t*)entry.nativeFilePath().utf16()) != 0;
     if(!ret)
         error = QSystemError(::GetLastError(), QSystemError::NativeError);
@@ -1417,6 +1435,8 @@ bool QFileSystemEngine::removeFile(const QFileSystemEntry &entry, QSystemError &
 bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Permissions permissions, QSystemError &error,
                                        QFileSystemMetaData *data)
 {
+    Q_CHECK_FILE_NAME(entry, false);
+
     Q_UNUSED(data);
     int mode = 0;
 

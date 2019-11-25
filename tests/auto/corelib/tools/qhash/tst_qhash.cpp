@@ -1372,13 +1372,6 @@ void tst_QHash::noNeedlessRehashes()
 void tst_QHash::const_shared_null()
 {
     QHash<int, QString> hash2;
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    QHash<int, QString> hash1;
-    hash1.setSharable(false);
-    QVERIFY(hash1.isDetached());
-
-    hash2.setSharable(true);
-#endif
     QVERIFY(!hash2.isDetached());
 }
 

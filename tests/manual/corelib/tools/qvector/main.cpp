@@ -27,7 +27,6 @@
 ****************************************************************************/
 
 #include <QDebug>
-//#define QT_STRICT_ITERATORS
 #include <QVector>
 
 void testErase()

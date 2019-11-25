@@ -415,16 +415,36 @@ void QThreadPrivate::finish(void *arg)
 }
 
 
-
-
 /**************************************************************************
  ** QThread
  *************************************************************************/
 
-Qt::HANDLE QThread::currentThreadId() noexcept
+/*
+    Since each thread is guaranteed to have its own copy of
+    currenThreadData, the address is guaranteed to be unique for each
+    running thread (but likely to be reused for newly started threads).
+
+    CI tests fails on ARM architectures if we try to use the assembler,
+    or the address of the thread_local (even with a recent gcc version), so
+    stick to the pthread version there. The assembler would be
+
+    // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0344k/Babeihid.html
+    asm volatile ("mrc p15, 0, %0, c13, c0, 3" : "=r" (tid));
+
+    and
+
+    // see glibc/sysdeps/aarch64/nptl/tls.h
+    asm volatile ("mrs %0, tpidr_el0" : "=r" (tid));
+
+    for 32 and 64bit versions, respectively.
+*/
+Qt::HANDLE QThread::currentThreadIdImpl() noexcept
 {
-    // requires a C cast here otherwise we run into trouble on AIX
+#if defined(Q_PROCESSOR_ARM)
     return to_HANDLE(pthread_self());
+#else
+    return &currentThreadData;
+#endif
 }
 
 #if defined(QT_LINUXBASE) && !defined(_SC_NPROCESSORS_ONLN)

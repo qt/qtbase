@@ -2125,22 +2125,7 @@ void QTextEngine::itemize() const
     }
 #if QT_CONFIG(harfbuzz)
     analysis = scriptAnalysis.data();
-    if (qt_useHarfbuzzNG()) {
-        // ### pretend HB-old behavior for now
-        for (int i = 0; i < length; ++i) {
-            switch (analysis[i].script) {
-            case QChar::Script_Latin:
-            case QChar::Script_Hiragana:
-            case QChar::Script_Katakana:
-            case QChar::Script_Bopomofo:
-            case QChar::Script_Han:
-                analysis[i].script = QChar::Script_Common;
-                break;
-            default:
-                break;
-            }
-        }
-    } else {
+    if (!qt_useHarfbuzzNG()) {
         for (int i = 0; i < length; ++i)
             analysis[i].script = hbscript_to_script(script_to_hbscript(analysis[i].script));
     }
@@ -3619,7 +3604,12 @@ int QTextEngine::positionInLigature(const QScriptItem *si, int end,
     int clusterLength = 0;
 
     if (si->analysis.script != QChar::Script_Common &&
-        si->analysis.script != QChar::Script_Greek) {
+        si->analysis.script != QChar::Script_Greek &&
+        si->analysis.script != QChar::Script_Latin &&
+        si->analysis.script != QChar::Script_Hiragana &&
+        si->analysis.script != QChar::Script_Katakana &&
+        si->analysis.script != QChar::Script_Bopomofo &&
+        si->analysis.script != QChar::Script_Han) {
         if (glyph_pos == -1)
             return si->position + end;
         else {

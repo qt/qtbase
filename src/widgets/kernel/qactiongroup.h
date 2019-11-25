@@ -41,54 +41,31 @@
 #define QACTIONGROUP_H
 
 #include <QtWidgets/qtwidgetsglobal.h>
+#include <QtGui/qguiactiongroup.h>
 #include <QtWidgets/qaction.h>
+
+QT_REQUIRE_CONFIG(action);
 
 QT_BEGIN_NAMESPACE
 
-
-#ifndef QT_NO_ACTION
-
 class QActionGroupPrivate;
 
-class Q_WIDGETS_EXPORT QActionGroup : public QObject
+class Q_WIDGETS_EXPORT QActionGroup : public QGuiActionGroup
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QActionGroup)
 
-    Q_PROPERTY(QActionGroup::ExclusionPolicy exclusionPolicy READ exclusionPolicy WRITE setExclusionPolicy)
-    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
-    Q_PROPERTY(bool visible READ isVisible WRITE setVisible)
-
 public:
-    enum class ExclusionPolicy {
-        None,
-        Exclusive,
-        ExclusiveOptional
-    };
-    Q_ENUM(ExclusionPolicy)
-
     explicit QActionGroup(QObject* parent);
     ~QActionGroup();
 
-    QAction *addAction(QAction* a);
+    QAction *checkedAction() const;
+
+    QAction *addAction(QAction *a);
     QAction *addAction(const QString &text);
     QAction *addAction(const QIcon &icon, const QString &text);
-    void removeAction(QAction *a);
+
     QList<QAction*> actions() const;
-
-    QAction *checkedAction() const;
-    bool isExclusive() const;
-    bool isEnabled() const;
-    bool isVisible() const;
-    ExclusionPolicy exclusionPolicy() const;
-
-
-public Q_SLOTS:
-    void setEnabled(bool);
-    inline void setDisabled(bool b) { setEnabled(!b); }
-    void setVisible(bool);
-    void setExclusive(bool);
-    void setExclusionPolicy(ExclusionPolicy policy);
 
 Q_SIGNALS:
     void triggered(QAction *);
@@ -96,12 +73,7 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QActionGroup)
-    Q_PRIVATE_SLOT(d_func(), void _q_actionTriggered())
-    Q_PRIVATE_SLOT(d_func(), void _q_actionChanged())
-    Q_PRIVATE_SLOT(d_func(), void _q_actionHovered())
 };
-
-#endif // QT_NO_ACTION
 
 QT_END_NAMESPACE
 

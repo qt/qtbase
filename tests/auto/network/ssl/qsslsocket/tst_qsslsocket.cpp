@@ -77,7 +77,7 @@ typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 
 // Detect ALPN (Application-Layer Protocol Negotiation) support
 #undef ALPN_SUPPORTED // Undef the variable first to be safe
-#if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10002000L && !defined(OPENSSL_NO_TLSEXT)
+#if defined(OPENSSL_VERSION_NUMBER) && !defined(OPENSSL_NO_TLSEXT)
 #define ALPN_SUPPORTED 1
 #endif
 
@@ -94,11 +94,13 @@ typedef QSharedPointer<QSslSocket> QSslSocketPtr;
 // Use this cipher to force PSK key sharing.
 // Also, it's a cipher w/o auth, to check that we emit the signals warning
 // about the identity of the peer.
+#ifndef QT_NO_OPENSSL
 static const QString PSK_CIPHER_WITHOUT_AUTH = QStringLiteral("PSK-AES256-CBC-SHA");
 static const quint16 PSK_SERVER_PORT = 4433;
 static const QByteArray PSK_CLIENT_PRESHAREDKEY = QByteArrayLiteral("\x1a\x2b\x3c\x4d\x5e\x6f");
 static const QByteArray PSK_SERVER_IDENTITY_HINT = QByteArrayLiteral("QtTestServerHint");
 static const QByteArray PSK_CLIENT_IDENTITY = QByteArrayLiteral("Client_identity");
+#endif  // !QT_NO_OPENSSL
 
 class tst_QSslSocket : public QObject
 {
@@ -1100,7 +1102,6 @@ void tst_QSslSocket::protocol()
         QCOMPARE(socket->protocol(), QSsl::TlsV1_0);
         socket->abort();
     }
-#if OPENSSL_VERSION_NUMBER >= 0x10001000L
     {
         // qt-test-server probably doesn't allow TLSV1.1
         socket->setProtocol(QSsl::TlsV1_1);
@@ -1137,7 +1138,7 @@ void tst_QSslSocket::protocol()
         QCOMPARE(socket->protocol(), QSsl::TlsV1_2);
         socket->abort();
     }
-#endif
+
 #ifdef TLS1_3_VERSION
     {
         // qt-test-server probably doesn't allow TLSV1.3
@@ -2642,7 +2643,6 @@ void tst_QSslSocket::ignoreSslErrorsList()
     connect(&socket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
             this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
-//    this->socket = &socket;
     QSslCertificate cert;
 
     QFETCH(QList<QSslError>, expectedSslErrors);
@@ -4050,9 +4050,6 @@ void tst_QSslSocket::ephemeralServerKey_data()
     QTest::addColumn<QString>("cipher");
     QTest::addColumn<bool>("emptyKey");
 
-#if !QT_CONFIG(opensslv11) // 1.1 drops support for RC4-SHA
-    QTest::newRow("NonForwardSecrecyCipher") << "RC4-SHA" << true;
-#endif // !opensslv11
     QTest::newRow("ForwardSecrecyCipher") << "ECDHE-RSA-AES256-SHA" << (QSslSocket::sslLibraryVersionNumber() < 0x10002000L);
 }
 
@@ -4176,9 +4173,6 @@ void tst_QSslSocket::signatureAlgorithm_data()
 {
     if (!QSslSocket::supportsSsl())
         QSKIP("Signature algorithms cannot be tested without SSL support");
-
-    if (QSslSocket::sslLibraryVersionNumber() < 0x10002000L)
-        QSKIP("Signature algorithms cannot be tested with OpenSSL < 1.0.2");
 
     if (QSslSocket::sslLibraryVersionNumber() >= 0x10101000L) {
         // FIXME: investigate if this test makes any sense with TLS 1.3.

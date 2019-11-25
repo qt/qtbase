@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #############################################################################
 ##
-## Copyright (C) 2016 The Qt Company Ltd.
+## Copyright (C) 2019 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -404,6 +404,9 @@ language_list = {
     364: ["Western Balochi",             "bgn"],
     365: ["Cebuano",                     "ceb"],
     366: ["Erzya",                       "myv"],
+    367: ["Chickasaw",                   "cic"],
+    368: ["Muscogee",                    "mus"],
+    369: ["Silesian",                    "szl"],
 }
 
 language_aliases = {

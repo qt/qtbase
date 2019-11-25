@@ -88,10 +88,13 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <qwindowdefs.h>
 
+QT_BEGIN_NAMESPACE
+Q_LOGGING_CATEGORY(lcQpaApplication, "qt.qpa.application");
+QT_END_NAMESPACE
+
 QT_USE_NAMESPACE
 
 @implementation QCocoaApplicationDelegate {
-    bool startedQuit;
     NSObject <NSApplicationDelegate> *reflectionDelegate;
     bool inLaunch;
 }
@@ -140,67 +143,30 @@ QT_USE_NAMESPACE
     return [[self.dockMenu retain] autorelease];
 }
 
-- (BOOL)canQuit
-{
-    [[NSApp mainMenu] cancelTracking];
-
-    bool handle_quit = true;
-    NSMenuItem *quitMenuItem = [[QCocoaMenuLoader sharedMenuLoader] quitMenuItem];
-    if (!QGuiApplicationPrivate::instance()->modalWindowList.isEmpty()
-        && [quitMenuItem isEnabled]) {
-        int visible = 0;
-        const QWindowList tlws = QGuiApplication::topLevelWindows();
-        for (int i = 0; i < tlws.size(); ++i) {
-            if (tlws.at(i)->isVisible())
-                ++visible;
-        }
-        handle_quit = (visible <= 1);
-    }
-
-    if (handle_quit) {
-        QCloseEvent ev;
-        QGuiApplication::sendEvent(qGuiApp, &ev);
-        if (ev.isAccepted()) {
-            return YES;
-        }
-    }
-
-    return NO;
-}
-
 // This function will only be called when NSApp is actually running.
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
     if ([reflectionDelegate respondsToSelector:_cmd])
         return [reflectionDelegate applicationShouldTerminate:sender];
 
-    if ([self canQuit]) {
-        if (!startedQuit) {
-            startedQuit = true;
-            // Close open windows. This is done in order to deliver de-expose
-            // events while the event loop is still running.
-            const QWindowList topLevels = QGuiApplication::topLevelWindows();
-            for (int i = 0; i < topLevels.size(); ++i) {
-                QWindow *topLevelWindow = topLevels.at(i);
-                // Already closed windows will not have a platform window, skip those
-                if (topLevelWindow->handle())
-                    QWindowSystemInterface::handleCloseEvent(topLevelWindow);
-            }
-            QWindowSystemInterface::flushWindowSystemEvents();
-
-            QGuiApplication::exit(0);
-            startedQuit = false;
-        }
-    }
-
     if (QGuiApplicationPrivate::instance()->threadData->eventLoops.isEmpty()) {
-        // INVARIANT: No event loop is executing. This probably
-        // means that Qt is used as a plugin, or as a part of a native
-        // Cocoa application. In any case it should be fine to
-        // terminate now:
+        // No event loop is executing. This probably means that Qt is used as a plugin,
+        // or as a part of a native Cocoa application. In any case it should be fine to
+        // terminate now.
+        qCDebug(lcQpaApplication) << "No running event loops, terminating now";
         return NSTerminateNow;
     }
 
+    if (!QWindowSystemInterface::handleApplicationTermination<QWindowSystemInterface::SynchronousDelivery>()) {
+        qCDebug(lcQpaApplication) << "Application termination canceled";
+        return NSTerminateCancel;
+    }
+
+    // Even if the application termination was accepted by the application we can't
+    // return NSTerminateNow, as that would trigger AppKit to ultimately call exit().
+    // We need to ensure that the runloop continues spinning so that we can return
+    // from our own event loop back to main(), and exit from there.
+    qCDebug(lcQpaApplication) << "Termination accepted, but returning to runloop for exit through main()";
     return NSTerminateCancel;
 }
 

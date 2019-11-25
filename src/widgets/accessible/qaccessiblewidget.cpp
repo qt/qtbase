@@ -41,7 +41,6 @@
 
 #ifndef QT_NO_ACCESSIBILITY
 
-#include "qaction.h"
 #include "qapplication.h"
 #if QT_CONFIG(groupbox)
 #include "qgroupbox.h"

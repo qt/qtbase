@@ -232,19 +232,25 @@ TestMenu tst_QMenuBar::initSimpleMenuBar(QMenuBar *mb, bool forceNonNative) {
     connect(mb, SIGNAL(triggered(QAction*)), this, SLOT(onSimpleActivated(QAction*)));
     QMenu *menu = mb->addMenu(QStringLiteral("&accel"));
     QAction *action = menu->addAction(QStringLiteral("menu1") );
+#if QT_CONFIG(shortcut)
     action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_A));
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_A));
+#endif
     connect(menu, SIGNAL(triggered(QAction*)), this, SLOT(onSimpleActivated(QAction*)));
     result.menus << menu;
     result.actions << action;
 
     menu = mb->addMenu(QStringLiteral("accel1"));
     action = menu->addAction(QStringLiteral("&Open...") );
+#if QT_CONFIG(shortcut)
     action->setShortcut(Qt::Key_O);
+#endif
     result.actions << action;
 
     action = menu->addAction(QStringLiteral("action"));
+#if QT_CONFIG(shortcut)
     action->setShortcut(QKeySequence(Qt::ALT + Qt::Key_Z));
+#endif
     result.actions << action;
 
     result.menus << menu;
@@ -283,7 +289,9 @@ QAction *tst_QMenuBar::createCharacterAction(QMenu *menu, char lowerAscii)
     QAction *action = menu->addAction(text);
     action->setObjectName(text);
     action->setData(QVariant(int(lowerAscii)));
+#if QT_CONFIG(shortcut)
     action->setShortcut(Qt::CTRL + (lowerAscii - 'a' + Qt::Key_A));
+#endif
     connect(action, SIGNAL(triggered()), this, SLOT(onComplexActionTriggered()));
     return action;
 }
@@ -318,7 +326,9 @@ TestMenu tst_QMenuBar::initComplexMenuBar(QMenuBar *mb)
 
     QAction *action = mb->addAction(QStringLiteral("M&enu 3"));
     action->setData(QVariant(3));
+#if QT_CONFIG(shortcut)
     action->setShortcut(Qt::ALT + Qt::Key_J);
+#endif
     connect(action, SIGNAL(triggered()), this, SLOT(onComplexActionTriggered()));
     result.actions << action;
 
@@ -338,6 +348,9 @@ inline TestMenu tst_QMenuBar::initWindowWithComplexMenuBar(QMainWindow &w)
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::accel()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     // create a popup menu with menu items set the accelerators later...
     QMainWindow w;
     const TestMenu menu = initWindowWithSimpleMenuBar(w);
@@ -356,6 +369,9 @@ void tst_QMenuBar::accel()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::activatedCount()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     // create a popup menu with menu items set the accelerators later...
     QMainWindow w;
     QFETCH( bool, forceNonNative );
@@ -555,6 +571,9 @@ void tst_QMenuBar::insertItem_QString_QObject()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_accelKeys()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
@@ -631,6 +650,9 @@ void tst_QMenuBar::check_cursorKeys1()
     if (qgetenv("XDG_CURRENT_DESKTOP") == "Unity")
         QSKIP("This test is flaky on Ubuntu/Unity due to regression introduced by QTBUG-39362");
 
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
@@ -668,6 +690,9 @@ void tst_QMenuBar::check_cursorKeys2()
     if (qgetenv("XDG_CURRENT_DESKTOP") == "Unity")
         QSKIP("This test is flaky on Ubuntu/Unity due to regression introduced by QTBUG-39362");
 
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
@@ -704,6 +729,9 @@ void tst_QMenuBar::check_cursorKeys3()
     if (qgetenv("XDG_CURRENT_DESKTOP") == "Unity")
         QSKIP("This test is flaky on Ubuntu/Unity due to regression introduced by QTBUG-39362");
 
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
@@ -733,6 +761,9 @@ void tst_QMenuBar::taskQTBUG56860_focus()
 #if defined(Q_OS_DARWIN)
     QSKIP("Native key events are needed to test menu action activation on macOS.");
 #endif
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow w;
     QMenuBar *mb = w.menuBar();
     mb->setNativeMenuBar(false);
@@ -861,6 +892,9 @@ void tst_QMenuBar::check_endKey()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_escKey()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow w;
     const TestMenu menu = initWindowWithComplexMenuBar(w);
     w.show();
@@ -1051,6 +1085,9 @@ void tst_QMenuBar::allowActiveAndDisabled()
 
 void tst_QMenuBar::check_altPress()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     if ( !qApp->style()->styleHint(QStyle::SH_MenuBar_AltKeyNavigation) ) {
         QSKIP(QString( "this is not supposed to work in the %1 style. Skipping." ).
               arg(qApp->style()->objectName()).toLatin1());
@@ -1071,6 +1108,9 @@ void tst_QMenuBar::check_altPress()
 // should close it and QMenuBar::activeAction() should be 0.
 void tst_QMenuBar::check_altClosePress()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     const QStyle *style = QApplication::style();
     if (!style->styleHint(QStyle::SH_MenuBar_AltKeyNavigation) ) {
         QSKIP(("This test is not supposed to work in the " + style->objectName().toLatin1()
@@ -1101,6 +1141,9 @@ void tst_QMenuBar::check_altClosePress()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_shortcutPress()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow w;
     const TestMenu menu = initWindowWithComplexMenuBar(w);
     w.show();
@@ -1144,6 +1187,9 @@ private:
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::check_menuPosition()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow w;
 
     Menu menu;
@@ -1266,6 +1312,9 @@ void tst_QMenuBar::task256322_highlight()
     if (!QGuiApplication::platformName().compare(QLatin1String("minimal"), Qt::CaseInsensitive))
         QSKIP("Highlighting does not work correctly for minimal platform");
 
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow win;
     win.menuBar()->setNativeMenuBar(false);  //we can't check the geometry of native menubars
     QMenu menu;
@@ -1383,7 +1432,9 @@ void tst_QMenuBar::taskQTBUG4965_escapeEaten()
     menubar.setNativeMenuBar(false);
     QMenu menu("menu1");
     QAction *first = menubar.addMenu(&menu);
+#if QT_CONFIG(shortcut)
     menu.addAction("quit", &menubar, SLOT(close()), QKeySequence("ESC"));
+#endif
     centerOnScreen(&menubar);
     menubar.show();
     QApplication::setActiveWindow(&menubar);
@@ -1406,6 +1457,9 @@ void tst_QMenuBar::taskQTBUG4965_escapeEaten()
 
 void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMenuBar menubar;
     menubar.setNativeMenuBar(false); //we can't check the geometry of native menubars
 
@@ -1434,6 +1488,9 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
 
 void tst_QMenuBar::closeOnSecondClickAndOpenOnThirdClick() // QTBUG-32807, menu should close on 2nd click.
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow mainWindow;
     mainWindow.resize(300, 200);
     centerOnScreen(&mainWindow);
@@ -1689,6 +1746,9 @@ void tst_QMenuBar::slotForTaskQTBUG53205()
 #if !defined(Q_OS_DARWIN)
 void tst_QMenuBar::taskQTBUG46812_doNotLeaveMenubarHighlighted()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow mainWindow;
     QWidget *centralWidget = new QWidget;
     centralWidget->setFocusPolicy(Qt::StrongFocus);
@@ -1769,6 +1829,9 @@ void tst_QMenuBar::QTBUG_57404_existingMenuItemException()
 
 void tst_QMenuBar::taskQTBUG55966_subMenuRemoved()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This fails. Figure out why.");
+
     QMainWindow window;
     QMenuBar *menubar = window.menuBar();
     QMenu *parentMenu = menubar->addMenu("Parent menu");

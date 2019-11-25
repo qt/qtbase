@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -260,7 +260,18 @@ static const char specialLanguages[][6] = {
     "", // MasaramGondi
     "", // Nushu
     "", // Soyombo
-    "" // ZanabazarSquare
+    "", // ZanabazarSquare
+    "", // Dogra
+    "", // GunjalaGondi
+    "", // HanifiRohingya
+    "", // Makasar
+    "", // Medefaidrin
+    "", // OldSogdian
+    "", // Sogdian
+    "", // Elymaic
+    "", // Nandinagari
+    "", // NyiakengPuachueHmong
+    "" // Wancho
 };
 Q_STATIC_ASSERT(sizeof specialLanguages / sizeof *specialLanguages == QChar::ScriptCount);
 

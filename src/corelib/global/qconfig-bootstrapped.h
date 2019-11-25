@@ -74,6 +74,7 @@
 #else
 # define QT_FEATURE_alloca_malloc_h -1
 #endif
+#define QT_FEATURE_binaryjson -1
 #define QT_FEATURE_cborstream -1
 #define QT_CRYPTOGRAPHICHASH_ONLY_SHA1
 #define QT_FEATURE_cxx11_random (QT_HAS_INCLUDE(<random>) ? 1 : -1)
@@ -110,6 +111,7 @@
 # define QT_FEATURE_renameat2 -1
 #endif
 #define QT_FEATURE_sharedmemory -1
+#define QT_FEATURE_shortcut -1
 #define QT_FEATURE_signaling_nan -1
 #define QT_FEATURE_slog2 -1
 #ifdef __GLIBC_PREREQ

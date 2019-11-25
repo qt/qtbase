@@ -225,8 +225,6 @@ private slots:
     void constSharedNullInt() const;
     void constSharedNullMovable() const;
     void constSharedNullComplex() const;
-
-    void setSharableInt() const;
 private:
     template<typename T> void length() const;
     template<typename T> void first() const;
@@ -1048,13 +1046,6 @@ template<typename T>
 void tst_QLinkedList::constSharedNull() const
 {
     QLinkedList<T> list2;
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    QLinkedList<T> list1;
-    list1.setSharable(false);
-    QVERIFY(list1.isDetached());
-
-    list2.setSharable(true);
-#endif
     QVERIFY(!list2.isDetached());
 }
 
@@ -1075,58 +1066,6 @@ void tst_QLinkedList::constSharedNullComplex() const
     const int liveCount = Complex::getLiveCount();
     constSharedNull<Complex>();
     QCOMPARE(liveCount, Complex::getLiveCount());
-}
-
-
-void tst_QLinkedList::setSharableInt() const
-{
-#if !defined(QT_NO_UNSHARABLE_CONTAINERS)
-    QLinkedList<int> orglist;
-    orglist << 0 << 1 << 2 << 3 << 4 << 5;
-    int size = 6;
-
-    QLinkedList<int> list;
-    list = orglist;
-
-    QVERIFY(!list.isDetached());
-    list.setSharable(true);
-
-    QCOMPARE(list.size(), size);
-
-    {
-        QLinkedList<int> copy(list);
-        QVERIFY(!copy.isDetached());
-        QVERIFY(copy.isSharedWith(list));
-    }
-
-    list.setSharable(false);
-    QVERIFY(list.isDetached() || list.isSharedWith(QLinkedList<int>()));
-
-    {
-        QLinkedList<int> copy(list);
-
-        QVERIFY(copy.isDetached() || copy.isSharedWith(QLinkedList<int>()));
-        QCOMPARE(copy.size(), size);
-        QCOMPARE(copy, list);
-    }
-
-    list.setSharable(true);
-
-    {
-        QLinkedList<int> copy(list);
-
-        QVERIFY(!copy.isDetached());
-        QVERIFY(copy.isSharedWith(list));
-    }
-
-    QLinkedList<int>::const_iterator it = list.constBegin();
-    for (int i = 0; i < list.size(); ++i) {
-        QCOMPARE(int(*it), i);
-        ++it;
-    }
-
-    QCOMPARE(list.size(), size);
-#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QLinkedList)

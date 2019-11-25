@@ -39,7 +39,9 @@
 #include <QtCore/QDir>
 #include <QtCore/QThread>
 #include <QtCore/QSysInfo>
-#include <QtGui/QKeySequence>
+#if QT_CONFIG(shortcut)
+#  include <QtGui/QKeySequence>
+#endif
 
 #include <QtCore>
 #include <QtGui>
@@ -1364,6 +1366,7 @@ void tst_QSettings::testVariantTypes()
     dt.setOffsetFromUtc(3600);
     testVal("key14", dt, QDateTime, DateTime);
 
+#if QT_CONFIG(shortcut)
     // We store key sequences as strings instead of binary variant blob, for improved
     // readability in the resulting format.
     if (format >= QSettings::InvalidFormat) {
@@ -1373,6 +1376,7 @@ void tst_QSettings::testVariantTypes()
                 QKeySequence(Qt::ControlModifier + Qt::Key_F1).toString(QKeySequence::NativeText),
                 QString, String);
     }
+#endif // QT_CONFIG(shortcut)
 
 #undef testVal
 }

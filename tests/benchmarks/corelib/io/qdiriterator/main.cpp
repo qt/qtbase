@@ -44,9 +44,19 @@
 
 #include "qfilesystemiterator.h"
 
+#if QT_HAS_INCLUDE(<filesystem>) && defined(__cpp_lib_filesystem) && __cpp_lib_filesystem >= 201703L
+#define HAS_STD_FILESYSTEM
+#endif
+
+#ifdef HAS_STD_FILESYSTEM
+#include <filesystem>
+#endif
+
 class tst_qdiriterator : public QObject
 {
     Q_OBJECT
+
+    void data();
 private slots:
     void posix();
     void posix_data() { data(); }
@@ -54,7 +64,8 @@ private slots:
     void diriterator_data() { data(); }
     void fsiterator();
     void fsiterator_data() { data(); }
-    void data();
+    void stdRecursiveDirectoryIterator();
+    void stdRecursiveDirectoryIterator_data() { data(); }
 };
 
 
@@ -233,6 +244,28 @@ void tst_qdiriterator::fsiterator()
         count = c;
     }
     qDebug() << count;
+}
+
+void tst_qdiriterator::stdRecursiveDirectoryIterator()
+{
+#ifdef HAS_STD_FILESYSTEM
+    QFETCH(QByteArray, dirpath);
+
+    int count = 0;
+
+    QBENCHMARK {
+        int c = 0;
+        for (auto obj : std::filesystem::recursive_directory_iterator(dirpath.data())) {
+            if (obj.is_directory())
+                continue;
+            c++;
+        }
+        count = c;
+    }
+    qDebug() << count;
+#else
+    QSKIP("Not supported.");
+#endif
 }
 
 QTEST_MAIN(tst_qdiriterator)

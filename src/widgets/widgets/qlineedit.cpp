@@ -40,7 +40,9 @@
 #include "qlineedit.h"
 #include "qlineedit_p.h"
 
-#include "qaction.h"
+#if QT_CONFIG(action)
+#  include "qaction.h"
+#endif
 #include "qapplication.h"
 #include "qclipboard.h"
 #if QT_CONFIG(draganddrop)
@@ -78,7 +80,7 @@
 #endif
 #include "private/qstylesheetstyle_p.h"
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
 #include "private/qapplication_p.h"
 #include "private/qshortcutmap_p.h"
 #include "qkeysequence.h"
@@ -2226,6 +2228,7 @@ QMenu *QLineEdit::createStandardContextMenu()
 
     action = popup->addAction(QLineEdit::tr("Select All") + ACCEL_KEY(QKeySequence::SelectAll));
     action->setEnabled(!d->control->text().isEmpty() && !d->control->allSelected());
+    setActionIcon(action, QStringLiteral("edit-select-all"));
     d->selectAllAction = action;
     connect(action, SIGNAL(triggered()), SLOT(selectAll()));
 

@@ -51,7 +51,9 @@
 
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/QScopedPointer>
-#include <QtGui/QKeySequence>
+#if QT_CONFIG(shortcut)
+#  include <QtGui/QKeySequence>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -312,12 +314,14 @@ public:
                            QPlatformTheme::IconOptions iconOptions = nullptr) const;
     virtual QIconEngine *createIconEngine(const QString &iconName) const;
 
-#ifndef QT_NO_SHORTCUT
+#if QT_CONFIG(shortcut)
     virtual QList<QKeySequence> keyBindings(QKeySequence::StandardKey key) const;
 #endif
 
     virtual QString standardButtonText(int button) const;
+#if QT_CONFIG(shortcut)
     virtual QKeySequence standardButtonShortcut(int button) const;
+#endif
 
     static QVariant defaultThemeHint(ThemeHint hint);
     static QString defaultStandardButtonText(int button);

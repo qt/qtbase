@@ -293,46 +293,42 @@ bool QCocoaEventDispatcher::hasPendingEvents()
     return qGlobalPostedEventsCount() || (qt_is_gui_used && !CFRunLoopIsWaiting(CFRunLoopGetMain()));
 }
 
-static bool IsMouseOrKeyEvent( NSEvent* event )
+static bool isUserInputEvent(NSEvent* event)
 {
-    bool    result    = false;
-
-    switch( [event type] )
-    {
-        case NSEventTypeLeftMouseDown:
-        case NSEventTypeLeftMouseUp:
-        case NSEventTypeRightMouseDown:
-        case NSEventTypeRightMouseUp:
-        case NSEventTypeMouseMoved:                // ??
-        case NSEventTypeLeftMouseDragged:
-        case NSEventTypeRightMouseDragged:
-        case NSEventTypeMouseEntered:
-        case NSEventTypeMouseExited:
-        case NSEventTypeKeyDown:
-        case NSEventTypeKeyUp:
-        case NSEventTypeFlagsChanged:            // key modifiers changed?
-        case NSEventTypeCursorUpdate:            // ??
-        case NSEventTypeScrollWheel:
-        case NSEventTypeTabletPoint:
-        case NSEventTypeTabletProximity:
-        case NSEventTypeOtherMouseDown:
-        case NSEventTypeOtherMouseUp:
-        case NSEventTypeOtherMouseDragged:
+    switch ([event type]) {
+    case NSEventTypeLeftMouseDown:
+    case NSEventTypeLeftMouseUp:
+    case NSEventTypeRightMouseDown:
+    case NSEventTypeRightMouseUp:
+    case NSEventTypeMouseMoved:                // ??
+    case NSEventTypeLeftMouseDragged:
+    case NSEventTypeRightMouseDragged:
+    case NSEventTypeMouseEntered:
+    case NSEventTypeMouseExited:
+    case NSEventTypeKeyDown:
+    case NSEventTypeKeyUp:
+    case NSEventTypeFlagsChanged:            // key modifiers changed?
+    case NSEventTypeCursorUpdate:            // ??
+    case NSEventTypeScrollWheel:
+    case NSEventTypeTabletPoint:
+    case NSEventTypeTabletProximity:
+    case NSEventTypeOtherMouseDown:
+    case NSEventTypeOtherMouseUp:
+    case NSEventTypeOtherMouseDragged:
 #ifndef QT_NO_GESTURES
-        case NSEventTypeGesture: // touch events
-        case NSEventTypeMagnify:
-        case NSEventTypeSwipe:
-        case NSEventTypeRotate:
-        case NSEventTypeBeginGesture:
-        case NSEventTypeEndGesture:
+    case NSEventTypeGesture: // touch events
+    case NSEventTypeMagnify:
+    case NSEventTypeSwipe:
+    case NSEventTypeRotate:
+    case NSEventTypeBeginGesture:
+    case NSEventTypeEndGesture:
 #endif // QT_NO_GESTURES
-            result    = true;
+        return true;
         break;
-
-        default:
+    default:
         break;
     }
-    return result;
+    return false;
 }
 
 static inline void qt_mac_waitForMoreEvents(NSString *runLoopMode = NSDefaultRunLoopMode)
@@ -465,7 +461,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
                     dequeue: YES];
 
                     if (event) {
-                        if (IsMouseOrKeyEvent(event)) {
+                        if (isUserInputEvent(event)) {
                             [event retain];
                             d->queuedUserInputEvents.append(event);
                             continue;
@@ -485,7 +481,7 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
 
                 if (event) {
                     if (flags & QEventLoop::ExcludeUserInputEvents) {
-                        if (IsMouseOrKeyEvent(event)) {
+                        if (isUserInputEvent(event)) {
                             [event retain];
                             d->queuedUserInputEvents.append(event);
                             continue;

@@ -7,9 +7,6 @@ KERNEL_P= kernel
 HEADERS += \
         kernel/qtwidgetsglobal.h \
         kernel/qtwidgetsglobal_p.h \
-        kernel/qaction.h \
-        kernel/qaction_p.h \
-	kernel/qactiongroup.h \
 	kernel/qapplication.h \
 	kernel/qapplication_p.h \
         kernel/qwidgetrepaintmanager_p.h \
@@ -20,13 +17,10 @@ HEADERS += \
 	kernel/qlayout_p.h \
 	kernel/qlayoutengine_p.h \
 	kernel/qlayoutitem.h \
-        kernel/qshortcut.h \
-	kernel/qsizepolicy.h \
+        kernel/qsizepolicy.h \
         kernel/qstackedlayout.h \
         kernel/qwidget.h \
         kernel/qwidget_p.h \
-	kernel/qwidgetaction.h \
-	kernel/qwidgetaction_p.h \
 	kernel/qgesture.h \
 	kernel/qgesture_p.h \
 	kernel/qstandardgestures_p.h \
@@ -38,8 +32,6 @@ HEADERS += \
         kernel/qtestsupport_widgets.h
 
 SOURCES += \
-	kernel/qaction.cpp \
-	kernel/qactiongroup.cpp \
 	kernel/qapplication.cpp \
         kernel/qwidgetrepaintmanager.cpp \
         kernel/qboxlayout.cpp \
@@ -47,11 +39,9 @@ SOURCES += \
         kernel/qlayout.cpp \
 	kernel/qlayoutengine.cpp \
 	kernel/qlayoutitem.cpp \
-        kernel/qshortcut.cpp \
         kernel/qsizepolicy.cpp \
         kernel/qstackedlayout.cpp \
 	kernel/qwidget.cpp \
-	kernel/qwidgetaction.cpp \
 	kernel/qgesture.cpp \
 	kernel/qstandardgestures.cpp \
 	kernel/qgesturerecognizer.cpp \
@@ -67,6 +57,17 @@ macx: {
     SOURCES += kernel/qmacgesturerecognizer.cpp
 }
 
+qtConfig(action) {
+    HEADERS += kernel/qaction.h \
+               kernel/qaction_p.h \
+               kernel/qactiongroup.h \
+               kernel/qwidgetaction.h \
+               kernel/qwidgetaction_p.h
+    SOURCES += kernel/qaction.cpp \
+               kernel/qactiongroup.cpp \
+               kernel/qwidgetaction.cpp
+}
+
 qtConfig(opengl) {
     HEADERS += kernel/qopenglwidget.h
     SOURCES += kernel/qopenglwidget.cpp
@@ -75,6 +76,11 @@ qtConfig(opengl) {
 qtConfig(formlayout) {
     HEADERS += kernel/qformlayout.h
     SOURCES += kernel/qformlayout.cpp
+}
+
+qtConfig(shortcut) {
+    HEADERS += kernel/qshortcut.h
+    SOURCES += kernel/qshortcut.cpp
 }
 
 qtConfig(tooltip) {

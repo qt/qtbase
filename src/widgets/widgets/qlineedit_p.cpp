@@ -47,7 +47,9 @@
 #if QT_CONFIG(draganddrop)
 #include "qdrag.h"
 #endif
-#include "qwidgetaction.h"
+#if QT_CONFIG(action)
+#  include "qwidgetaction.h"
+#endif
 #include "qclipboard.h"
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
@@ -370,7 +372,7 @@ void QLineEditIconButton::actionEvent(QActionEvent *e)
 {
     switch (e->type()) {
     case QEvent::ActionChanged: {
-        const QAction *action = e->action();
+        const auto *action = e->action();
         if (isVisibleTo(parentWidget()) != action->isVisible()) {
             setVisible(action->isVisible());
             if (QLineEditPrivate *lep = lineEditPrivate())
@@ -545,7 +547,8 @@ void QLineEditPrivate::positionSideWidgets()
     }
 }
 
-QLineEditPrivate::SideWidgetLocation QLineEditPrivate::findSideWidget(const QAction *a) const
+#if QT_CONFIG(action)
+QLineEditPrivate::SideWidgetLocation QLineEditPrivate::findSideWidget(const QGuiAction *a) const
 {
     int i = 0;
     for (const auto &e : leadingSideWidgets) {
@@ -574,12 +577,10 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
     QWidget *w = 0;
     // Store flags about QWidgetAction here since removeAction() may be called from ~QAction,
     // in which a qobject_cast<> no longer works.
-#if QT_CONFIG(action)
     if (QWidgetAction *widgetAction = qobject_cast<QWidgetAction *>(newAction)) {
         if ((w = widgetAction->requestWidget(q)))
             flags |= SideWidgetCreatedByWidgetAction;
     }
-#endif
     if (!w) {
 #if QT_CONFIG(toolbutton)
         QLineEditIconButton *toolButton = new QLineEditIconButton(q);
@@ -634,9 +635,8 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
     return w;
 }
 
-void QLineEditPrivate::removeAction(QAction *action)
+void QLineEditPrivate::removeAction(QGuiAction *action)
 {
-#if QT_CONFIG(action)
     Q_Q(QLineEdit);
     const auto location = findSideWidget(action);
     if (!location.isValid())
@@ -652,10 +652,8 @@ void QLineEditPrivate::removeAction(QAction *action)
      if (!hasSideWidgets()) // Last widget, remove connection
          QObject::disconnect(q, SIGNAL(textChanged(QString)), q, SLOT(_q_textChanged(QString)));
      q->update();
-#else
-    Q_UNUSED(action);
-#endif // QT_CONFIG(action)
 }
+#endif // QT_CONFIG(action)
 
 static int effectiveTextMargin(int defaultMargin, const QLineEditPrivate::SideWidgetEntryList &widgets,
                                const QLineEditPrivate::SideWidgetParameters &parameters)

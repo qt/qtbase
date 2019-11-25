@@ -449,7 +449,7 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway) noexcept
  ** QThread
  *************************************************************************/
 
-Qt::HANDLE QThread::currentThreadId() noexcept
+Qt::HANDLE QThread::currentThreadIdImpl() noexcept
 {
     return reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId()));
 }

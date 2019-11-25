@@ -25,7 +25,6 @@ SOURCES += \
     serialization/qcbordiagnostic.cpp \
     serialization/qcborvalue.cpp \
     serialization/qdatastream.cpp \
-    serialization/qjson.cpp \
     serialization/qjsoncbor.cpp \
     serialization/qjsondocument.cpp \
     serialization/qjsonobject.cpp \
@@ -43,6 +42,20 @@ qtConfig(cborstream): {
 
     HEADERS += \
         serialization/qcborstream.h
+}
+
+qtConfig(binaryjson): {
+    HEADERS += \
+        serialization/qbinaryjson_p.h \
+        serialization/qbinaryjsonarray_p.h \
+        serialization/qbinaryjsonobject_p.h \
+        serialization/qbinaryjsonvalue_p.h
+
+    SOURCES += \
+        serialization/qbinaryjson.cpp \
+        serialization/qbinaryjsonarray.cpp \
+        serialization/qbinaryjsonobject.cpp \
+        serialization/qbinaryjsonvalue.cpp \
 }
 
 false: SOURCES += \

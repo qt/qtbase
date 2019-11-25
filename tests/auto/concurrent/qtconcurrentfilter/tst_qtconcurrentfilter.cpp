@@ -714,16 +714,17 @@ void tst_QtConcurrentFilter::filteredReduced()
         QCOMPARE(sum, 6);
     }
 
+    auto push_back = static_cast<void (QVector<int>::*)(const int &)>(&QVector<int>::push_back);
     // functor-member
     {
-        QList<int> list2 = QtConcurrent::filteredReduced(list, KeepEvenIntegers(), &QList<int>::push_back, QtConcurrent::OrderedReduce);
+        QList<int> list2 = QtConcurrent::filteredReduced(list, KeepEvenIntegers(), push_back, QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<int>() << 2 << 4);
     }
     {
         QList<int> list2 = QtConcurrent::filteredReduced(list.begin(),
                                                          list.end(),
                                                          KeepEvenIntegers(),
-                                                         &QList<int>::push_back,
+                                                         push_back,
                                                          QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<int>() << 2 << 4);
     }
@@ -731,19 +732,19 @@ void tst_QtConcurrentFilter::filteredReduced()
         QList<int> list2 = QtConcurrent::filteredReduced(list.constBegin(),
                                                          list.constEnd(),
                                                          KeepEvenIntegers(),
-                                                         &QList<int>::push_back,
+                                                         push_back,
                                                          QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<int>() << 2 << 4);
     }
     {
-        QList<int> list2 = QtConcurrent::blockingFilteredReduced(list, KeepEvenIntegers(), &QList<int>::push_back, QtConcurrent::OrderedReduce);
+        QList<int> list2 = QtConcurrent::blockingFilteredReduced(list, KeepEvenIntegers(), push_back, QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<int>() << 2 << 4);
     }
     {
         QList<int> list2 = QtConcurrent::blockingFilteredReduced(list.begin(),
                                                                  list.end(),
                                                                  KeepEvenIntegers(),
-                                                                 &QList<int>::push_back,
+                                                                 push_back,
                                                                  QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<int>() << 2 << 4);
     }
@@ -751,7 +752,7 @@ void tst_QtConcurrentFilter::filteredReduced()
         QList<int> list2 = QtConcurrent::blockingFilteredReduced(list.constBegin(),
                                                                  list.constEnd(),
                                                                  KeepEvenIntegers(),
-                                                                 &QList<int>::push_back,
+                                                                 push_back,
                                                                  QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<int>() << 2 << 4);
     }
@@ -805,12 +806,15 @@ void tst_QtConcurrentFilter::filteredReduced()
     }
 
     // member-member
+
+    auto push_back_number = static_cast<void (QVector<Number>::*)(const Number &)>(&QVector<Number>::push_back);
+
     {
         QList<Number> numbers;
         numbers << 1 << 2 << 3 << 4;
         QList<Number> list2 = QtConcurrent::filteredReduced(numbers,
                                                             &Number::isEven,
-                                                            &QList<Number>::push_back, QtConcurrent::OrderedReduce);
+                                                            push_back_number, QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<Number>() << 2 << 4);
     }
     {
@@ -819,7 +823,7 @@ void tst_QtConcurrentFilter::filteredReduced()
         QList<Number> list2 = QtConcurrent::filteredReduced(numbers.begin(),
                                                             numbers.end(),
                                                             &Number::isEven,
-                                                            &QList<Number>::push_back,
+                                                            push_back_number,
                                                             QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<Number>() << 2 << 4);
     }
@@ -829,7 +833,7 @@ void tst_QtConcurrentFilter::filteredReduced()
         QList<Number> list2 = QtConcurrent::filteredReduced(numbers.constBegin(),
                                                             numbers.constEnd(),
                                                             &Number::isEven,
-                                                            &QList<Number>::push_back,
+                                                            push_back_number,
                                                             QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<Number>() << 2 << 4);
     }
@@ -838,7 +842,7 @@ void tst_QtConcurrentFilter::filteredReduced()
         numbers << 1 << 2 << 3 << 4;
         QList<Number> list2 = QtConcurrent::blockingFilteredReduced(numbers,
                                                                     &Number::isEven,
-                                                                    &QList<Number>::push_back, QtConcurrent::OrderedReduce);
+                                                                    push_back_number, QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<Number>() << 2 << 4);
     }
     {
@@ -847,7 +851,7 @@ void tst_QtConcurrentFilter::filteredReduced()
         QList<Number> list2 = QtConcurrent::blockingFilteredReduced(numbers.begin(),
                                                                     numbers.end(),
                                                                     &Number::isEven,
-                                                                    &QList<Number>::push_back,
+                                                                    push_back_number,
                                                                     QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<Number>() << 2 << 4);
     }
@@ -857,21 +861,21 @@ void tst_QtConcurrentFilter::filteredReduced()
         QList<Number> list2 = QtConcurrent::blockingFilteredReduced(numbers.constBegin(),
                                                                     numbers.constEnd(),
                                                                     &Number::isEven,
-                                                                    &QList<Number>::push_back,
+                                                                    push_back_number,
                                                                     QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<Number>() << 2 << 4);
     }
 
     // function-member
     {
-        QList<int> list2 = QtConcurrent::filteredReduced(list, keepEvenIntegers, &QList<int>::push_back, QtConcurrent::OrderedReduce);
+        QList<int> list2 = QtConcurrent::filteredReduced(list, keepEvenIntegers, push_back, QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<int>() << 2 << 4);
     }
     {
         QList<int> list2 = QtConcurrent::filteredReduced(list.begin(),
                                                          list.end(),
                                                          keepEvenIntegers,
-                                                         &QList<int>::push_back,
+                                                         push_back,
                                                          QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<int>() << 2 << 4);
     }
@@ -879,19 +883,19 @@ void tst_QtConcurrentFilter::filteredReduced()
         QList<int> list2 = QtConcurrent::filteredReduced(list.constBegin(),
                                                          list.constEnd(),
                                                          keepEvenIntegers,
-                                                         &QList<int>::push_back,
+                                                         push_back,
                                                          QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<int>() << 2 << 4);
     }
     {
-        QList<int> list2 = QtConcurrent::blockingFilteredReduced(list, keepEvenIntegers, &QList<int>::push_back, QtConcurrent::OrderedReduce);
+        QList<int> list2 = QtConcurrent::blockingFilteredReduced(list, keepEvenIntegers, push_back, QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<int>() << 2 << 4);
     }
     {
         QList<int> list2 = QtConcurrent::blockingFilteredReduced(list.begin(),
                                                                  list.end(),
                                                                  keepEvenIntegers,
-                                                                 &QList<int>::push_back,
+                                                                 push_back,
                                                                  QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<int>() << 2 << 4);
     }
@@ -899,7 +903,7 @@ void tst_QtConcurrentFilter::filteredReduced()
         QList<int> list2 = QtConcurrent::blockingFilteredReduced(list.constBegin(),
                                                                  list.constEnd(),
                                                                  keepEvenIntegers,
-                                                                 &QList<int>::push_back,
+                                                                 push_back,
                                                                  QtConcurrent::OrderedReduce);
         QCOMPARE(list2, QList<int>() << 2 << 4);
     }

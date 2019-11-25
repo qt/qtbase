@@ -357,7 +357,7 @@ def main():
     qtsrcdir = sys.argv[2]
 
     if not (os.path.isdir(qtsrcdir)
-            and all(os.path.isfile(os.path.join(qtsrcdir, 'src', 'corelib', 'tools', leaf))
+            and all(os.path.isfile(os.path.join(qtsrcdir, 'src', 'corelib', 'text', leaf))
                     for leaf in ('qlocale_data_p.h', 'qlocale.h', 'qlocale.qdoc'))):
         usage()
 

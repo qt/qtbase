@@ -149,6 +149,11 @@ public:
     QByteArray serialized() const;
     static QShader fromSerialized(const QByteArray &data);
 
+    using NativeResourceBindingMap = QHash<int, QPair<int, int> >; // binding -> native_binding[, native_binding]
+    const NativeResourceBindingMap *nativeResourceBindingMap(const QShaderKey &key) const;
+    void setResourceBindingMap(const QShaderKey &key, const NativeResourceBindingMap &map);
+    void removeResourceBindingMap(const QShaderKey &key);
+
 private:
     QShaderPrivate *d;
     friend struct QShaderPrivate;

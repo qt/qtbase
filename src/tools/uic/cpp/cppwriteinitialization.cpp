@@ -502,7 +502,7 @@ void WriteInitialization::acceptUI(DomUI *node)
 
         const QString varConn = connection + QLatin1String("Connection");
         m_output << m_indent << varConn << " = QSqlDatabase::database("
-            << language::charliteral(connection, m_dindent) << ");\n";
+            << language::charliteral(connection, m_dindent) << ")" << language::eol;
     }
 
     acceptWidget(node->elementWidget());
@@ -551,7 +551,7 @@ void WriteInitialization::acceptUI(DomUI *node)
         m_refreshInitialization += m_indent;
         m_refreshInitialization += QLatin1String("(void)");
         m_refreshInitialization += varName ;
-        m_refreshInitialization += QLatin1String(";\n");
+        m_refreshInitialization += language::eol;
     }
 
     m_output << m_option.indent
@@ -682,7 +682,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
                 m_output << "Qt" << language::qualifier
                     << language::dockWidgetArea(pstyle->elementNumber()) << ", ";
             }
-            m_output << varName << ");\n";
+            m_output << varName << ")" << language::eol;
         } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QStatusBar"))) {
             m_output << m_indent << parentWidget << language::derefPointer
                 << "setStatusBar(" << varName << ')' << language::eol;
@@ -881,7 +881,7 @@ void WriteInitialization::acceptLayout(DomLayout *node)
     if (!m_layoutChain.top() && !isGroupBox)
         m_output << m_driver->findOrInsertWidget(m_widgetChain.top());
 
-    m_output << ");\n";
+    m_output << ")" << language::eol;
 
     // Suppress margin on a read child layout
     const bool suppressMarginDefault = m_layoutChain.top();
@@ -979,7 +979,7 @@ void WriteInitialization::acceptSpacer(DomSpacer *node)
 {
     m_output << m_indent << m_driver->findOrInsertSpacer(node) << " = ";
     writeSpacerItem(node, m_output);
-    m_output << ";\n";
+    m_output << language::eol;
 }
 
 static inline QString formLayoutRole(int column, int colspan)
@@ -1041,7 +1041,7 @@ void WriteInitialization::acceptLayoutItem(DomLayoutItem *node)
         if (layout->attributeClass().contains(QLatin1String("Box")) && !node->attributeAlignment().isEmpty())
             m_output << ", 0, " << language::enumValue(node->attributeAlignment());
     }
-    m_output << ");\n\n";
+    m_output << ")" << language::eol << "\n";
 }
 
 void WriteInitialization::acceptActionGroup(DomActionGroup *node)
@@ -1053,7 +1053,7 @@ void WriteInitialization::acceptActionGroup(DomActionGroup *node)
         varName = m_driver->findOrInsertActionGroup(m_actionGroupChain.top());
 
     m_output << m_indent << actionName << " = " << language::operatorNew
-        << "QActionGroup(" << varName << ");\n";
+        << "QActionGroup(" << varName << ")" << language::eol;
     writeProperties(actionName, QLatin1String("QActionGroup"), node->elementProperty());
 
     m_actionGroupChain.push(node);
@@ -1536,7 +1536,7 @@ void WriteInitialization::writeProperties(const QString &varName,
     if (leftMargin != -1 || topMargin != -1 || rightMargin != -1 || bottomMargin != -1) {
         m_output << m_indent << varName << language::derefPointer << "setContentsMargins("
             << leftMargin << ", " << topMargin << ", "
-            << rightMargin << ", " << bottomMargin << ");\n";
+            << rightMargin << ", " << bottomMargin << ")" << language::eol;
     }
 }
 
@@ -1566,9 +1566,9 @@ QString  WriteInitialization::writeSizePolicy(const DomSizePolicy *sp)
     m_output << ')' << language::eol;
 
     m_output << m_indent << spName << ".setHorizontalStretch("
-        << sp->elementHorStretch() << ");\n";
+        << sp->elementHorStretch() << ")" << language::eol;
     m_output << m_indent << spName << ".setVerticalStretch("
-        << sp->elementVerStretch() << ");\n";
+        << sp->elementVerStretch() << ")" << language::eol;
     return spName;
 }
 // Check for a font with the given properties in the FontPropertiesNameMap
@@ -1591,11 +1591,11 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
         << language::eol;
     if (f->hasElementFamily() && !f->elementFamily().isEmpty()) {
         m_output << m_indent << fontName << ".setFamily("
-            << language::qstring(f->elementFamily(), m_dindent) << ");\n";
+            << language::qstring(f->elementFamily(), m_dindent) << ")" << language::eol;
     }
     if (f->hasElementPointSize() && f->elementPointSize() > 0) {
          m_output << m_indent << fontName << ".setPointSize(" << f->elementPointSize()
-             << ");\n";
+             << ")" << language::eol;
     }
 
     if (f->hasElementBold()) {
@@ -1680,7 +1680,7 @@ static void writeResourceIcon(QTextStream &output,
                          "Selected", "Off");
     }
     if (i->hasElementSelectedOn()) {
-        writeIconAddFile(output, indent, iconName, i->elementSelectedOff()->text(),
+        writeIconAddFile(output, indent, iconName, i->elementSelectedOn()->text(),
                          "Selected", "On");
     }
 }
@@ -1780,7 +1780,7 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
     if (iconHasStatePixmaps(i)) {
         // Theme + default state pixmaps:
         // Generate code to check the theme and default to state pixmaps
-        m_output << m_indent << language::stackVariable("QIcon", iconName) << ";\n";
+        m_output << m_indent << language::stackVariable("QIcon", iconName) << language::eol;
         const char themeNameStringVariableC[] = "iconThemeName";
         // Store theme name in a variable
         m_output << m_indent;
@@ -1853,7 +1853,7 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
         m_output << m_indent << paletteName << ".setColor(" << group
             << ", QPalette" << language::qualifier << language::paletteColorRole(i)
             << ", " << domColor2QString(color)
-            << ");\n";
+            << ")" << language::eol;
     }
 
     // new format
@@ -1871,7 +1871,7 @@ void WriteInitialization::writeColorGroup(DomColorGroup *colorGroup, const QStri
             m_output << m_indent << paletteName << ".setBrush("
                 << language::enumValue(group) << ", "
                 << "QPalette" << language::qualifier << roleName
-                << ", " << brushName << ");\n";
+                << ", " << brushName << ")" << language::eol;
             if (!versionAdded.isNull())
                 m_output << "#endif\n";
         }
@@ -2086,12 +2086,12 @@ void WriteInitialization::initializeComboBox(DomWidget *w)
             m_output << iconValue << ", ";
 
         if (needsTranslation(text->elementString())) {
-            m_output << "QString());\n";
+            m_output << "QString())" << language::eol;
             m_refreshOut << m_indent << varName << language::derefPointer
                 << "setItemText(" << i << ", " << trCall(text->elementString())
                 << ')' << language::eol;
         } else {
-            m_output << noTrCall(text->elementString()) << ");\n";
+            m_output << noTrCall(text->elementString()) << ")" << language::eol;
         }
     }
     m_refreshOut << "\n";
@@ -2582,7 +2582,7 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
 
     m_output << m_indent;
     language::formatConnection(m_output, theSignal, theSlot);
-    m_output << ";\n";
+    m_output << language::eol;
 }
 
 static void generateMultiDirectiveBegin(QTextStream &outputStream, const QSet<QString> &directives)

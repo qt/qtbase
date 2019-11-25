@@ -481,7 +481,7 @@ void tst_QMenu::overrideMenuAction()
 
     // On Mac and Windows CE, we need to create native key events to test menu
     // action activation, so skip this part of the test.
-#if !defined(Q_OS_DARWIN)
+#if QT_CONFIG(shortcut) && !defined(Q_OS_DARWIN)
     QAction *aQuit = new QAction("Quit", &w);
     aQuit->setShortcut(QKeySequence("Ctrl+X"));
     m->addAction(aQuit);
@@ -499,7 +499,7 @@ void tst_QMenu::overrideMenuAction()
     //test if the menu still pops out
     QTest::keyClick(&w, Qt::Key_F, Qt::AltModifier);
     QTRY_VERIFY(m->isVisible());
-#endif
+#endif // QT_CONFIG(shortcut) && !Q_OS_DARWIN
 
     delete aFileMenu;
 
@@ -1706,10 +1706,13 @@ void tst_QMenu::QTBUG_61039_menu_shortcuts()
         QSKIP("Window activation is not supported");
 
     QAction *actionKamen = new QAction("Action Kamen");
+#if QT_CONFIG(shortcut)
     actionKamen->setShortcut(QKeySequence(QLatin1String("K")));
-
+#endif
     QAction *actionJoe = new QAction("Action Joe");
+#if QT_CONFIG(shortcut)
     actionJoe->setShortcut(QKeySequence(QLatin1String("Ctrl+J")));
+#endif
 
     QMenu menu;
     menu.addAction(actionKamen);

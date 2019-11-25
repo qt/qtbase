@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -443,6 +443,9 @@ public:
         WesternBalochi = 364,
         Cebuano = 365,
         Erzya = 366,
+        Chickasaw = 367,
+        Muscogee = 368,
+        Silesian = 369,
 
         Afan = Oromo,
         Bhutani = Dzongkha,
@@ -459,7 +462,7 @@ public:
         Twi = Akan,
         Uigur = Uighur,
 
-        LastLanguage = Erzya
+        LastLanguage = Silesian
     };
 
     enum Script {

@@ -42,8 +42,6 @@
 #include <qpa/qplatformtheme.h>
 #include "private/qguiapplication_p.h"
 
-#if !defined(QT_NO_SHORTCUT) || defined(Q_CLANG_QDOC)
-
 #include "qdebug.h"
 #include <QtCore/qhashfunctions.h>
 #ifndef QT_NO_DATASTREAM
@@ -492,6 +490,8 @@ static const struct {
     { Qt::Key_LaunchD,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (D)") },
     { Qt::Key_LaunchE,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (E)") },
     { Qt::Key_LaunchF,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (F)") },
+    { Qt::Key_LaunchG,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (G)") },
+    { Qt::Key_LaunchH,                    QT_TRANSLATE_NOOP("QShortcut", "Launch (H)") },
     { Qt::Key_MonBrightnessUp,            QT_TRANSLATE_NOOP("QShortcut", "Monitor Brightness Up") },
     { Qt::Key_MonBrightnessDown,          QT_TRANSLATE_NOOP("QShortcut", "Monitor Brightness Down") },
     { Qt::Key_KeyboardLightOnOff,         QT_TRANSLATE_NOOP("QShortcut", "Keyboard Light On/Off") },
@@ -518,9 +518,11 @@ static const struct {
     { Qt::Key_Book,                       QT_TRANSLATE_NOOP("QShortcut", "Book") },
     { Qt::Key_CD,                         QT_TRANSLATE_NOOP("QShortcut", "CD") },
     { Qt::Key_Calculator,                 QT_TRANSLATE_NOOP("QShortcut", "Calculator") },
+    { Qt::Key_Calendar,                   QT_TRANSLATE_NOOP("QShortcut", "Calendar") },
     { Qt::Key_Clear,                      QT_TRANSLATE_NOOP("QShortcut", "Clear") },
     { Qt::Key_ClearGrab,                  QT_TRANSLATE_NOOP("QShortcut", "Clear Grab") },
     { Qt::Key_Close,                      QT_TRANSLATE_NOOP("QShortcut", "Close") },
+    { Qt::Key_ContrastAdjust,             QT_TRANSLATE_NOOP("QShortcut", "Adjust contrast") },
     { Qt::Key_Copy,                       QT_TRANSLATE_NOOP("QShortcut", "Copy") },
     { Qt::Key_Cut,                        QT_TRANSLATE_NOOP("QShortcut", "Cut") },
     { Qt::Key_Display,                    QT_TRANSLATE_NOOP("QShortcut", "Display") },
@@ -534,6 +536,7 @@ static const struct {
     { Qt::Key_LogOff,                     QT_TRANSLATE_NOOP("QShortcut", "Logoff") },
     { Qt::Key_Market,                     QT_TRANSLATE_NOOP("QShortcut", "Market") },
     { Qt::Key_Meeting,                    QT_TRANSLATE_NOOP("QShortcut", "Meeting") },
+    { Qt::Key_Memo,                       QT_TRANSLATE_NOOP("QShortcut", "Memo") },
     { Qt::Key_MenuKB,                     QT_TRANSLATE_NOOP("QShortcut", "Keyboard Menu") },
     { Qt::Key_MenuPB,                     QT_TRANSLATE_NOOP("QShortcut", "Menu PB") },
     { Qt::Key_MySites,                    QT_TRANSLATE_NOOP("QShortcut", "My Sites") },
@@ -554,6 +557,7 @@ static const struct {
     { Qt::Key_Support,                    QT_TRANSLATE_NOOP("QShortcut", "Support") },
     { Qt::Key_TaskPane,                   QT_TRANSLATE_NOOP("QShortcut", "Task Panel") },
     { Qt::Key_Terminal,                   QT_TRANSLATE_NOOP("QShortcut", "Terminal") },
+    { Qt::Key_ToDoList,                   QT_TRANSLATE_NOOP("QShortcut", "To-do list") },
     { Qt::Key_Tools,                      QT_TRANSLATE_NOOP("QShortcut", "Tools") },
     { Qt::Key_Travel,                     QT_TRANSLATE_NOOP("QShortcut", "Travel") },
     { Qt::Key_Video,                      QT_TRANSLATE_NOOP("QShortcut", "Video") },
@@ -1672,9 +1676,6 @@ QDebug operator<<(QDebug dbg, const QKeySequence &p)
     return dbg;
 }
 #endif
-
-#endif // QT_NO_SHORTCUT
-
 
 /*!
     \typedef QKeySequence::DataPtr
