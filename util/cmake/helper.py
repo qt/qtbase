@@ -258,18 +258,22 @@ _qt_library_map = [
         extra=["COMPONENTS", "MultimediaQuick"],
     ),
     LibraryMapping(
-        "quick3dassetimport", "Qt6", "Qt::Quick3DAssetImport", extra=["COMPONENTS", "Quick3DAssetImport"]
+        "quick3dassetimport",
+        "Qt6",
+        "Qt::Quick3DAssetImport",
+        extra=["COMPONENTS", "Quick3DAssetImport"],
     ),
     LibraryMapping("quick3d", "Qt6", "Qt::Quick3D", extra=["COMPONENTS", "Quick3D"]),
     LibraryMapping(
         "quick3drender", "Qt6", "Qt::Quick3DRender", extra=["COMPONENTS", "Quick3DRender"]
     ),
     LibraryMapping(
-        "quick3druntimerender", "Qt6", "Qt::Quick3DRuntimeRender", extra=["COMPONENTS", "Quick3DRuntimeRender"]
+        "quick3druntimerender",
+        "Qt6",
+        "Qt::Quick3DRuntimeRender",
+        extra=["COMPONENTS", "Quick3DRuntimeRender"],
     ),
-    LibraryMapping(
-        "quick3dutils", "Qt6", "Qt::Quick3DUtils", extra=["COMPONENTS", "Quick3DUtils"]
-    ),
+    LibraryMapping("quick3dutils", "Qt6", "Qt::Quick3DUtils", extra=["COMPONENTS", "Quick3DUtils"]),
     LibraryMapping(
         "quickcontrols2", "Qt6", "Qt::QuickControls2", extra=["COMPONENTS", "QuickControls2"]
     ),
