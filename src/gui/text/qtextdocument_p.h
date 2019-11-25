@@ -277,8 +277,8 @@ private:
 public:
     void documentChange(int from, int length);
 
-    inline void addCursor(QTextCursorPrivate *c) { cursors.append(c); }
-    inline void removeCursor(QTextCursorPrivate *c) { cursors.removeAll(c); }
+    inline void addCursor(QTextCursorPrivate *c) { cursors.insert(c); }
+    inline void removeCursor(QTextCursorPrivate *c) { cursors.remove(c); }
 
     QTextFrame *frameAt(int pos) const;
     QTextFrame *rootFrame() const;
@@ -330,7 +330,7 @@ private:
     BlockMap blocks;
     int initialBlockCharFormatIndex;
 
-    QList<QTextCursorPrivate *> cursors;
+    QSet<QTextCursorPrivate *> cursors;
     QMap<int, QTextObject *> objects;
     QMap<QUrl, QVariant> resources;
     QMap<QUrl, QVariant> cachedResources;

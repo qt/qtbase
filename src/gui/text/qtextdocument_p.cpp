@@ -243,7 +243,7 @@ void QTextDocumentPrivate::clear()
         curs->adjusted_anchor = 0;
     }
 
-    QList<QTextCursorPrivate *>oldCursors = cursors;
+    QSet<QTextCursorPrivate *> oldCursors = cursors;
     QT_TRY{
         cursors.clear();
 
