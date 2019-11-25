@@ -1257,7 +1257,7 @@ void tst_QMenuBar::check_menuPosition()
         const QPoint bottomRight = mb->actionGeometry(menu.menuAction()).bottomRight() - QPoint(1, 1);
         const QPoint localPos = widgetToWindowPos(mb, bottomRight);
         const QPoint globalPos = w.mapToGlobal(localPos);
-        QTest::mouseClick(w.windowHandle(), Qt::LeftButton, 0, localPos);
+        QTest::mouseClick(w.windowHandle(), Qt::LeftButton, {}, localPos);
         QTRY_VERIFY(menu.isActiveWindow());
         QCOMPARE(menu.geometry().right() - 1, globalPos.x());
         menu.close();
@@ -1322,9 +1322,9 @@ void tst_QMenuBar::task256322_highlight()
 
     const QPoint filePos = menuBarActionWindowPos(win.menuBar(), file);
     QWindow *window = win.windowHandle();
-    QTest::mousePress(window, Qt::LeftButton, 0, filePos);
+    QTest::mousePress(window, Qt::LeftButton, {}, filePos);
     QTest::mouseMove(window, filePos);
-    QTest::mouseRelease(window, Qt::LeftButton, 0, filePos);
+    QTest::mouseRelease(window, Qt::LeftButton, {}, filePos);
     QTRY_VERIFY(menu.isVisible());
     QVERIFY(!menu2.isVisible());
     QCOMPARE(win.menuBar()->activeAction(), file);
@@ -1495,11 +1495,11 @@ void tst_QMenuBar::closeOnSecondClickAndOpenOnThirdClick() // QTBUG-32807, menu 
 
     QWindow *window = mainWindow.windowHandle();
     QTest::mouseMove(window, center);
-    QTest::mouseClick(window, Qt::LeftButton, 0, center);
+    QTest::mouseClick(window, Qt::LeftButton, {}, center);
     QTRY_VERIFY(fileMenu->isVisible());
-    QTest::mouseClick(window, Qt::LeftButton, 0, fileMenu->mapFromGlobal(globalPos));
+    QTest::mouseClick(window, Qt::LeftButton, {}, fileMenu->mapFromGlobal(globalPos));
     QTRY_VERIFY(!fileMenu->isVisible());
-    QTest::mouseClick(window, Qt::LeftButton, 0, center);
+    QTest::mouseClick(window, Qt::LeftButton, {}, center);
     QTRY_VERIFY(fileMenu->isVisible());
 }
 
@@ -1588,12 +1588,12 @@ void tst_QMenuBar::taskQTBUG53205_crashReparentNested()
     QApplication::setActiveWindow(&mainWindow);
 
     // they can't be windows
-    QWidget hiddenParent(&mainWindow, 0);
+    QWidget hiddenParent(&mainWindow, {});
     //this one is going to be moved around
-    QWidget movingParent(&hiddenParent, 0);
+    QWidget movingParent(&hiddenParent, {});
 
     //set up the container widget
-    QWidget containerWidget(&movingParent,0);
+    QWidget containerWidget(&movingParent, {});
 
     //set the new parent, a window
     QScopedPointer<QWidget> windowedParent;
@@ -1604,7 +1604,7 @@ void tst_QMenuBar::taskQTBUG53205_crashReparentNested()
     QVERIFY(QTest::qWaitForWindowExposed(windowedParent.data()));
 
     //set the "container", can't be a window
-    QWidget containedWidget(&containerWidget, 0);
+    QWidget containedWidget(&containerWidget, {});
 
     taskQTBUG53205MenuBar = new QMenuBar(&containedWidget);
 
@@ -1612,13 +1612,13 @@ void tst_QMenuBar::taskQTBUG53205_crashReparentNested()
     //now, move things around
     //from : QMainWindow<-hiddenParent<-movingParent<-containerWidget<-containedWidget<-menuBar
     //to windowedParent<-movingParent<-containerWidget<-containedWidget<-menuBar
-    movingParent.setParent(windowedParent.data(),0);
+    movingParent.setParent(windowedParent.data(), {});
     // this resets the parenting and the menu bar's window
     taskQTBUG53205MenuBar->setParent(nullptr);
     taskQTBUG53205MenuBar->setParent(&containedWidget);
     //from windowedParent<-movingParent<-containerWidget<-containedWidget<-menuBar
     //to : QMainWindow<-hiddenParent<-movingParent<-containerWidget<-containedWidget<-menuBar
-    movingParent.setParent(&hiddenParent,0);
+    movingParent.setParent(&hiddenParent, {});
     windowedParent.reset(); //make the old window invalid
     // trigger the aciton,  reset the menu bar's window, this used to crash here.
     testMenus.actions[0]->trigger();

@@ -243,7 +243,7 @@ void tst_QPluginLoader::loadHints()
     QSKIP("This test requires Qt to create shared libraries.");
 #endif
     QPluginLoader loader;
-    QCOMPARE(loader.loadHints(), (QLibrary::LoadHints)0);   //Do not crash
+    QCOMPARE(loader.loadHints(), QLibrary::LoadHints{});   //Do not crash
     loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
     loader.setFileName( sys_qualifiedLibraryName("theplugin"));     //a plugin
     QCOMPARE(loader.loadHints(), QLibrary::ResolveAllSymbolsHint);

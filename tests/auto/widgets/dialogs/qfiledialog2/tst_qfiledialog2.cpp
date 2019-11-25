@@ -571,14 +571,15 @@ void tst_QFileDialog2::task227304_proxyOnFileDialog()
     dialog->close();
     fd.close();
 
-    QFileDialog fd2(0, "I should not crash with a proxy", tempDir.path(), 0);
+    QFileDialog fd2(0, "I should not crash with a proxy", tempDir.path(), {});
     QSortFilterProxyModel *pm = new QSortFilterProxyModel;
     fd2.setProxyModel(pm);
     fd2.show();
     QSidebar *sidebar = fd2.findChild<QSidebar*>("sidebar");
     sidebar->setFocus();
     sidebar->selectUrl(QUrl::fromLocalFile(QDir::homePath()));
-    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, 0, sidebar->visualRect(sidebar->model()->index(1, 0)).center());
+    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, {},
+                      sidebar->visualRect(sidebar->model()->index(1, 0)).center());
     QTest::qWait(250);
     //We shouldn't crash
 }
@@ -613,7 +614,7 @@ void tst_QFileDialog2::task227930_correctNavigationKeyboardBehavior()
     QVERIFY(list);
     QTest::keyClick(list, Qt::Key_Down);
     QTest::keyClick(list, Qt::Key_Return);
-    QTest::mouseClick(list->viewport(), Qt::LeftButton,0);
+    QTest::mouseClick(list->viewport(), Qt::LeftButton, {});
     QTest::keyClick(list, Qt::Key_Down);
     QTest::keyClick(list, Qt::Key_Backspace);
     QTest::keyClick(list, Qt::Key_Down);
@@ -972,7 +973,8 @@ void tst_QFileDialog2::task251321_sideBarHiddenEntries()
     QVERIFY(sidebar);
     sidebar->setFocus();
     sidebar->selectUrl(QUrl::fromLocalFile(hiddenSubDir.absolutePath()));
-    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, 0, sidebar->visualRect(sidebar->model()->index(0, 0)).center());
+    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, {},
+                      sidebar->visualRect(sidebar->model()->index(0, 0)).center());
     // give the background processes more time on windows mobile
     QTest::qWait(250);
 
@@ -1027,7 +1029,8 @@ void tst_QFileDialog2::task251341_sideBarRemoveEntries()
     sidebar->setFocus();
     //We enter in the first bookmark
     sidebar->selectUrl(QUrl::fromLocalFile(testSubDir.absolutePath()));
-    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, 0, sidebar->visualRect(sidebar->model()->index(0, 0)).center());
+    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, {},
+                      sidebar->visualRect(sidebar->model()->index(0, 0)).center());
 
     QFileSystemModel *model = fd.findChild<QFileSystemModel*>("qt_filesystem_model");
     QVERIFY(model);
@@ -1040,7 +1043,8 @@ void tst_QFileDialog2::task251341_sideBarRemoveEntries()
     sidebar->setFocus();
     //We enter in the second bookmark which is invalid
     sidebar->selectUrl(QUrl::fromLocalFile("NotFound"));
-    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, 0, sidebar->visualRect(sidebar->model()->index(1, 0)).center());
+    QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, {},
+                      sidebar->visualRect(sidebar->model()->index(1, 0)).center());
 
     //We fallback to root because the entry in the bookmark is invalid
     QCOMPARE(model->rowCount(model->index("NotFound")), model->rowCount(model->index(model->rootPath())));

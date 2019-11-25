@@ -215,14 +215,14 @@ void tst_QToolButton::task176137_autoRepeatOfAction()
 
     QSignalSpy spy(&action,SIGNAL(triggered()));
     QTest::mousePress (toolButton, Qt::LeftButton);
-    QTest::mouseRelease (toolButton, Qt::LeftButton, 0, QPoint (), 2000);
+    QTest::mouseRelease (toolButton, Qt::LeftButton, {}, QPoint (), 2000);
     QCOMPARE(spy.count(),1);
 
     // try again with auto repeat
     toolButton->setAutoRepeat (true);
     QSignalSpy repeatSpy(&action,SIGNAL(triggered())); // new spy
     QTest::mousePress (toolButton, Qt::LeftButton);
-    QTest::mouseRelease (toolButton, Qt::LeftButton, 0, QPoint (), 3000);
+    QTest::mouseRelease (toolButton, Qt::LeftButton, {}, QPoint (), 3000);
     const qreal expected = (3000 - toolButton->autoRepeatDelay()) / toolButton->autoRepeatInterval() + 1;
     //we check that the difference is small (on some systems timers are not super accurate)
     qreal diff = (expected - repeatSpy.count()) / expected;
@@ -242,7 +242,7 @@ void tst_QToolButton::sendMouseClick()
     }
     if (!m_menu->isVisible())
         return;
-    QTest::mouseClick(m_menu.data(), Qt::LeftButton, 0, QPoint(7, 7));
+    QTest::mouseClick(m_menu.data(), Qt::LeftButton, {}, QPoint(7, 7));
     if (QTimer *timer = qobject_cast<QTimer *>(sender())) {
         timer->stop();
         timer->deleteLater();

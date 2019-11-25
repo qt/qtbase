@@ -319,12 +319,12 @@ void tst_QMenu::mouseActivation()
     menu.addAction("Menu Action");
     menu.move(topLevel.geometry().topRight() + QPoint(50, 0));
     menu.show();
-    QTest::mouseClick(&menu, Qt::LeftButton, 0, menu.rect().center(), 300);
+    QTest::mouseClick(&menu, Qt::LeftButton, {}, menu.rect().center(), 300);
     QVERIFY(!menu.isVisible());
 
     //context menus can always be accessed with right click except on windows
     menu.show();
-    QTest::mouseClick(&menu, Qt::RightButton, 0, menu.rect().center(), 300);
+    QTest::mouseClick(&menu, Qt::RightButton, {}, menu.rect().center(), 300);
     QVERIFY(!menu.isVisible());
 
 #ifdef Q_OS_WIN
@@ -643,7 +643,7 @@ void tst_QMenu::tearOff()
     MenuMetrics mm(menu.data());
     const int tearOffOffset = mm.fw + mm.vmargin + mm.tearOffHeight / 2;
 
-    QTest::mouseClick(menu.data(), Qt::LeftButton, 0, QPoint(10, tearOffOffset), 10);
+    QTest::mouseClick(menu.data(), Qt::LeftButton, {}, QPoint(10, tearOffOffset), 10);
     QTRY_VERIFY(menu->isTearOffMenuVisible());
     QPointer<QMenu> torn = getTornOffMenu();
     QVERIFY(torn);
@@ -723,7 +723,7 @@ void tst_QMenu::submenuTearOffDontClose()
     const QPoint submenuPos(submenuRect.topLeft() + QPoint(3, 3));
     // Move then click to avoid the submenu moves from causing it to close
     QTest::mouseMove(menu, submenuPos, 100);
-    QTest::mouseClick(menu, Qt::LeftButton, 0, submenuPos, 100);
+    QTest::mouseClick(menu, Qt::LeftButton, {}, submenuPos, 100);
     QVERIFY(QTest::qWaitFor([&]() { return submenu->window()->windowHandle(); }));
     QVERIFY(QTest::qWaitForWindowActive(submenu));
     // Make sure we enter the submenu frame directly on the tear-off area
@@ -888,7 +888,7 @@ void tst_QMenu::task176201_clear()
     QAction *action = menu.addAction("test");
     menu.connect(action, SIGNAL(triggered()), SLOT(clear()));
     menu.popup(QPoint());
-    QTest::mouseClick(&menu, Qt::LeftButton, 0, menu.rect().center());
+    QTest::mouseClick(&menu, Qt::LeftButton, {}, menu.rect().center());
 }
 
 void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
@@ -1212,13 +1212,13 @@ void tst_QMenu::click_while_dismissing_submenu()
     QVERIFY(sub.isVisible());
     QVERIFY(QTest::qWaitForWindowExposed(&sub));
     //press over the submenu entry
-    QTest::mousePress(menuWindow, Qt::LeftButton, 0, menu.rect().center() + QPoint(0,2), 300);
+    QTest::mousePress(menuWindow, Qt::LeftButton, {}, menu.rect().center() + QPoint(0, 2), 300);
     //move over the main action
     QTest::mouseMove(menuWindow, menu.rect().center() - QPoint(0,2));
     QVERIFY(menuHiddenSpy.wait());
     //the submenu must have been hidden for the bug to be triggered
     QVERIFY(!sub.isVisible());
-    QTest::mouseRelease(menuWindow, Qt::LeftButton, 0, menu.rect().center() - QPoint(0,2), 300);
+    QTest::mouseRelease(menuWindow, Qt::LeftButton, {}, menu.rect().center() - QPoint(0, 2), 300);
     QCOMPARE(spy.count(), 1);
 }
 #endif
@@ -1476,7 +1476,7 @@ void tst_QMenu::QTBUG_56917_wideSubmenuScreenNumber()
         menu.popup(screen->geometry().center());
         QVERIFY(QTest::qWaitForWindowExposed(&menu));
         QVERIFY(menu.isVisible());
-        QTest::mouseClick(&menu, Qt::LeftButton, 0, menu.actionGeometry(action).center());
+        QTest::mouseClick(&menu, Qt::LeftButton, {}, menu.actionGeometry(action).center());
         QTest::qWait(100);
         QVERIFY(QTest::qWaitForWindowExposed(&submenu));
         QVERIFY(submenu.isVisible());
@@ -1688,7 +1688,7 @@ void tst_QMenu::tearOffMenuNotDisplayed()
     MenuMetrics mm(menu.data());
     const int tearOffOffset = mm.fw + mm.vmargin + mm.tearOffHeight / 2;
 
-    QTest::mouseClick(menu.data(), Qt::LeftButton, 0, QPoint(10, tearOffOffset), 10);
+    QTest::mouseClick(menu.data(), Qt::LeftButton, {}, QPoint(10, tearOffOffset), 10);
     QTRY_VERIFY(menu->isTearOffMenuVisible());
     QPointer<QMenu> torn = getTornOffMenu();
     QVERIFY(torn);

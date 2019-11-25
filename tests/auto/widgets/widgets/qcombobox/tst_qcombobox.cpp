@@ -837,16 +837,16 @@ void tst_QComboBox::virtualAutocompletion()
     // well, and send a keypress & keyrelease right after each other.
     // This provokes the actual error, as there's no events in between to do
     // the text completion.
-    QKeyEvent kp1(QEvent::KeyPress, Qt::Key_B, 0, "b");
-    QKeyEvent kr1(QEvent::KeyRelease, Qt::Key_B, 0, "b");
+    QKeyEvent kp1(QEvent::KeyPress, Qt::Key_B, {}, "b");
+    QKeyEvent kr1(QEvent::KeyRelease, Qt::Key_B, {}, "b");
     QApplication::sendEvent(testWidget, &kp1);
     QApplication::sendEvent(testWidget, &kr1);
 
     qApp->processEvents(); // Process events to trigger autocompletion
     QTRY_COMPARE(testWidget->currentIndex(), 1);
 
-    QKeyEvent kp2(QEvent::KeyPress, Qt::Key_O, 0, "o");
-    QKeyEvent kr2(QEvent::KeyRelease, Qt::Key_O, 0, "o");
+    QKeyEvent kp2(QEvent::KeyPress, Qt::Key_O, {}, "o");
+    QKeyEvent kr2(QEvent::KeyRelease, Qt::Key_O, {}, "o");
 
     QApplication::sendEvent(testWidget, &kp2);
     QApplication::sendEvent(testWidget, &kr2);
@@ -1722,7 +1722,7 @@ void tst_QComboBox::setCustomModelAndView()
     // why this happens.
     QTest::qWait(QApplication::doubleClickInterval());
 
-    QTest::mouseClick(window->windowHandle(), Qt::LeftButton, 0, view->mapTo(window, subItemRect.center()));
+    QTest::mouseClick(window->windowHandle(), Qt::LeftButton, {}, view->mapTo(window, subItemRect.center()));
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
 #endif

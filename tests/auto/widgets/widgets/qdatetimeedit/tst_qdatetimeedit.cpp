@@ -2303,7 +2303,7 @@ void tst_QDateTimeEdit::mousePress()
     QRect rectUp = testWidget->style()->subControlRect(QStyle::CC_SpinBox, &so, QStyle::SC_SpinBoxUp, testWidget);
 
     // Send mouseClick to center of SC_SpinBoxUp
-    QTest::mouseClick(testWidget, Qt::LeftButton, 0, rectUp.center());
+    QTest::mouseClick(testWidget, Qt::LeftButton, {}, rectUp.center());
     QCOMPARE(testWidget->date().year(), 2005);
 }
 
@@ -2916,7 +2916,8 @@ void tst_QDateTimeEdit::calendarPopup()
     opt.editable = true;
     opt.subControls = QStyle::SC_ComboBoxArrow;
     QRect rect = style->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxArrow, testWidget);
-    QTest::mouseClick(testWidget, Qt::LeftButton, 0, QPoint(rect.left()+rect.width()/2, rect.top()+rect.height()/2));
+    QTest::mouseClick(testWidget, Qt::LeftButton, {},
+                      QPoint(rect.left() + rect.width() / 2, rect.top() + rect.height() / 2));
     QWidget *wid = testWidget->findChild<QWidget *>("qt_datetimedit_calendar");
     QVERIFY(wid != 0);
     testWidget->hide();
@@ -2928,7 +2929,8 @@ void tst_QDateTimeEdit::calendarPopup()
     opt.initFrom(&timeEdit);
     opt.subControls = QStyle::SC_ComboBoxArrow;
     rect = style->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxArrow, &timeEdit);
-    QTest::mouseClick(&timeEdit, Qt::LeftButton, 0, QPoint(rect.left()+rect.width()/2, rect.top()+rect.height()/2));
+    QTest::mouseClick(&timeEdit, Qt::LeftButton, {},
+                      QPoint(rect.left() + rect.width() / 2, rect.top() + rect.height() / 2));
     QWidget *wid2 = timeEdit.findChild<QWidget *>("qt_datetimedit_calendar");
     QVERIFY(!wid2);
     timeEdit.hide();
@@ -2942,7 +2944,8 @@ void tst_QDateTimeEdit::calendarPopup()
     opt.initFrom(&dateEdit);
     opt.subControls = QStyle::SC_ComboBoxArrow;
     rect = style->subControlRect(QStyle::CC_ComboBox, &opt, QStyle::SC_ComboBoxArrow, &dateEdit);
-    QTest::mouseClick(&dateEdit, Qt::LeftButton, 0, QPoint(rect.left()+rect.width()/2, rect.top()+rect.height()/2));
+    QTest::mouseClick(&dateEdit, Qt::LeftButton, {},
+                      QPoint(rect.left() + rect.width() / 2, rect.top() + rect.height() / 2));
     QWidget *wid3 = dateEdit.findChild<QWidget *>("qt_datetimedit_calendar");
     QVERIFY(!wid3);
     dateEdit.hide();

@@ -302,7 +302,7 @@ static void netChat(int port, const QList<Chat> &chat)
                 if (it + 1 != chat.constEnd())
                     break;
 
-                // fall through:
+                Q_FALLTHROUGH();
             case Chat::RemoteDisconnect:
             case Chat::DiscardUntilDisconnect:
                 qDebug() << i << "Waiting for remote disconnect";

@@ -163,7 +163,7 @@ void tst_QLayout::smartMaxSize()
                                         QSizePolicy::MinimumExpanding,
                                         QSizePolicy::Ignored
                                         };
-    Qt::Alignment alignments[] = {  0,
+    Qt::Alignment alignments[] = {  Qt::Alignment{},
                                     Qt::AlignLeft,
                                     Qt::AlignRight,
                                     Qt::AlignHCenter

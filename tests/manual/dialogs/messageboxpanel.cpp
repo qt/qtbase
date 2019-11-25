@@ -133,7 +133,7 @@ void MessageBoxPanel::setupMessageBox(QMessageBox &box)
     bool ok;
     QMessageBox::StandardButtons btns = (QMessageBox::StandardButtons) btnHexText.toUInt(&ok, 16);
     box.setStandardButtons((QMessageBox::StandardButtons) btns);
-    if (box.standardButtons() == (QMessageBox::StandardButtons) 0)
+    if (box.standardButtons() == QMessageBox::StandardButtons())
         box.setStandardButtons(QMessageBox::Ok); // just to have something.
 
 #if QT_VERSION >= 0x050000

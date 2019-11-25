@@ -120,11 +120,11 @@ void tst_QScrollBar::task_209492()
     const QPoint pressPoint(verticalScrollBar->width() / 2, verticalScrollBar->height() - 10);
     const QPoint globalPressPoint = verticalScrollBar->mapToGlobal(globalPressPoint);
     QMouseEvent mousePressEvent(QEvent::MouseButtonPress, pressPoint, globalPressPoint,
-                                Qt::LeftButton, Qt::LeftButton, 0);
+                                Qt::LeftButton, Qt::LeftButton, {});
     QApplication::sendEvent(verticalScrollBar, &mousePressEvent);
     QTest::qWait(1);
     QMouseEvent mouseReleaseEvent(QEvent::MouseButtonRelease, pressPoint, globalPressPoint,
-                                  Qt::LeftButton, Qt::LeftButton, 0);
+                                  Qt::LeftButton, Qt::LeftButton, {});
     QApplication::sendEvent(verticalScrollBar, &mouseReleaseEvent);
 
     // Check that the action was triggered once.
@@ -189,11 +189,11 @@ void tst_QScrollBar::QTBUG_42871()
     const QPoint pressPoint(scrollBarWidget.width() / 2, scrollBarWidget.height() - 10);
     const QPoint globalPressPoint = scrollBarWidget.mapToGlobal(pressPoint);
     QMouseEvent mousePressEvent(QEvent::MouseButtonPress, pressPoint, globalPressPoint,
-                                Qt::LeftButton, Qt::LeftButton, 0);
+                                Qt::LeftButton, Qt::LeftButton, {});
     QApplication::sendEvent(&scrollBarWidget, &mousePressEvent);
     QTest::qWait(1);
     QMouseEvent mouseReleaseEvent(QEvent::MouseButtonRelease, pressPoint, globalPressPoint,
-                                  Qt::LeftButton, Qt::LeftButton, 0);
+                                  Qt::LeftButton, Qt::LeftButton, {});
     QApplication::sendEvent(&scrollBarWidget, &mouseReleaseEvent);
     // Check that the action was triggered once.
     QCOMPARE(myHandler.updatesCount, 1);

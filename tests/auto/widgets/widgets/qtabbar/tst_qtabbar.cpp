@@ -605,7 +605,7 @@ void tst_QTabBar::changeTitleWhileDoubleClickingTab()
     QPoint tabPos = bar.tabRect(0).center();
 
     for(int i=0; i < 10; i++)
-        QTest::mouseDClick(&bar, Qt::LeftButton, 0, tabPos);
+        QTest::mouseDClick(&bar, Qt::LeftButton, {}, tabPos);
 }
 
 class Widget10052 : public QWidget
@@ -655,12 +655,12 @@ void tst_QTabBar::tabBarClicked()
     while (button <= Qt::MaxMouseButton) {
         const QPoint tabPos = tabBar.tabRect(0).center();
 
-        QTest::mouseClick(&tabBar, button, 0, tabPos);
+        QTest::mouseClick(&tabBar, button, {}, tabPos);
         QCOMPARE(clickSpy.count(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), 0);
         QCOMPARE(doubleClickSpy.count(), 0);
 
-        QTest::mouseDClick(&tabBar, button, 0, tabPos);
+        QTest::mouseDClick(&tabBar, button, {}, tabPos);
         QCOMPARE(clickSpy.count(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), 0);
         QCOMPARE(doubleClickSpy.count(), 1);
@@ -668,12 +668,12 @@ void tst_QTabBar::tabBarClicked()
 
         const QPoint barPos(tabBar.tabRect(0).right() + 5, tabBar.tabRect(0).center().y());
 
-        QTest::mouseClick(&tabBar, button, 0, barPos);
+        QTest::mouseClick(&tabBar, button, {}, barPos);
         QCOMPARE(clickSpy.count(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), -1);
         QCOMPARE(doubleClickSpy.count(), 0);
 
-        QTest::mouseDClick(&tabBar, button, 0, barPos);
+        QTest::mouseDClick(&tabBar, button, {}, barPos);
         QCOMPARE(clickSpy.count(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), -1);
         QCOMPARE(doubleClickSpy.count(), 1);

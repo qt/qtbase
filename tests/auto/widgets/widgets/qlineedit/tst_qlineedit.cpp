@@ -316,8 +316,8 @@ protected slots:
 
 private:
     // keyClicks(..) is moved to QtTestCase
-    void psKeyClick(QWidget *target, Qt::Key key, Qt::KeyboardModifiers pressState = 0);
-    void psKeyClick(QTestEventList &keys, Qt::Key key, Qt::KeyboardModifiers pressState = 0);
+    void psKeyClick(QWidget *target, Qt::Key key, Qt::KeyboardModifiers pressState = {});
+    void psKeyClick(QTestEventList &keys, Qt::Key key, Qt::KeyboardModifiers pressState = {});
     bool unselectingWithLeftOrRightChangesCursorPosition();
     void addKeySequenceStandardKey(QTestEventList &keys, QKeySequence::StandardKey);
     QLineEdit *ensureTestWidget();
@@ -2280,7 +2280,7 @@ void tst_QLineEdit::deleteSelectedText()
 
     edit.selectAll();
 
-    QTest::keyClick(&edit, Qt::Key_Delete, 0);
+    QTest::keyClick(&edit, Qt::Key_Delete, {});
     QVERIFY(edit.text().isEmpty());
 
     edit.setText(text);
@@ -3580,7 +3580,7 @@ void tst_QLineEdit::textMargin()
     QCOMPARE(bottom, b);
 #endif
 
-    QTest::mouseClick(&testWidget, Qt::LeftButton, 0, mousePressPos);
+    QTest::mouseClick(&testWidget, Qt::LeftButton, {}, mousePressPos);
     QTRY_COMPARE(testWidget.cursorPosition(), cursorPosition);
 }
 
@@ -4492,7 +4492,7 @@ void tst_QLineEdit::clearButton()
     QTRY_COMPARE(filterModel->rowCount(), 1); // matches 'ab'
     QSignalSpy spyEdited(filterLineEdit, &QLineEdit::textEdited);
     const QPoint clearButtonCenterPos = QRect(QPoint(0, 0), clearButton->size()).center();
-    QTest::mouseClick(clearButton, Qt::LeftButton, 0, clearButtonCenterPos);
+    QTest::mouseClick(clearButton, Qt::LeftButton, {}, clearButtonCenterPos);
     QCOMPARE(spyEdited.count(), 1);
     QTRY_COMPARE(clearButton->cursor().shape(), filterLineEdit->cursor().shape());
     QTRY_COMPARE(filterModel->rowCount(), 3);
@@ -4537,7 +4537,7 @@ void tst_QLineEdit::clearButtonVisibleAfterSettingText_QTBUG_45518()
     QTRY_VERIFY(clearButton->opacity() > 0);
     QTRY_COMPARE(clearButton->cursor().shape(), Qt::ArrowCursor);
 
-    QTest::mouseClick(clearButton, Qt::LeftButton, nullptr, clearButton->rect().center());
+    QTest::mouseClick(clearButton, Qt::LeftButton, {}, clearButton->rect().center());
     QTRY_COMPARE(edit.text(), QString());
 
     QTRY_COMPARE(clearButton->opacity(), qreal(0));

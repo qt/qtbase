@@ -1297,7 +1297,7 @@ void tst_QTableView::moveCursorStrikesBack()
     int newRow = -1;
     int newColumn = -1;
     for (auto cursorMoveAction : cursorMoveActions) {
-        QModelIndex newIndex = view.moveCursor(cursorMoveAction, nullptr);
+        QModelIndex newIndex = view.moveCursor(cursorMoveAction, {});
         view.setCurrentIndex(newIndex);
         newRow = newIndex.row();
         newColumn = newIndex.column();
