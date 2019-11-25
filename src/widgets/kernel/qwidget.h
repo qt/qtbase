@@ -175,11 +175,11 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
     Q_PROPERTY(QSize sizeHint READ sizeHint)
     Q_PROPERTY(QSize minimumSizeHint READ minimumSizeHint)
     Q_PROPERTY(bool acceptDrops READ acceptDrops WRITE setAcceptDrops)
-    Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle NOTIFY windowTitleChanged DESIGNABLE isWindow)
-    Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon NOTIFY windowIconChanged DESIGNABLE isWindow)
-    Q_PROPERTY(QString windowIconText READ windowIconText WRITE setWindowIconText NOTIFY windowIconTextChanged DESIGNABLE isWindow) // deprecated
-    Q_PROPERTY(double windowOpacity READ windowOpacity WRITE setWindowOpacity DESIGNABLE isWindow)
-    Q_PROPERTY(bool windowModified READ isWindowModified WRITE setWindowModified DESIGNABLE isWindow)
+    Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle NOTIFY windowTitleChanged)
+    Q_PROPERTY(QIcon windowIcon READ windowIcon WRITE setWindowIcon NOTIFY windowIconChanged)
+    Q_PROPERTY(QString windowIconText READ windowIconText WRITE setWindowIconText NOTIFY windowIconTextChanged) // deprecated
+    Q_PROPERTY(double windowOpacity READ windowOpacity WRITE setWindowOpacity)
+    Q_PROPERTY(bool windowModified READ isWindowModified WRITE setWindowModified)
 #ifndef QT_NO_TOOLTIP
     Q_PROPERTY(QString toolTip READ toolTip WRITE setToolTip)
     Q_PROPERTY(int toolTipDuration READ toolTipDuration WRITE setToolTipDuration)
@@ -201,7 +201,7 @@ class Q_WIDGETS_EXPORT QWidget : public QObject, public QPaintDevice
     Q_PROPERTY(QString styleSheet READ styleSheet WRITE setStyleSheet)
 #endif
     Q_PROPERTY(QLocale locale READ locale WRITE setLocale RESET unsetLocale)
-    Q_PROPERTY(QString windowFilePath READ windowFilePath WRITE setWindowFilePath DESIGNABLE isWindow)
+    Q_PROPERTY(QString windowFilePath READ windowFilePath WRITE setWindowFilePath)
     Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
 
 public:
