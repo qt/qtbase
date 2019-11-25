@@ -4135,36 +4135,6 @@ bool qunsetenv(const char *varName)
 */
 
 /*!
-    \macro QABS(n)
-    \relates <QtGlobal>
-    \obsolete
-
-    Use qAbs(\a n) instead.
-
-    \sa QMIN(), QMAX()
-*/
-
-/*!
-    \macro QMIN(x, y)
-    \relates <QtGlobal>
-    \obsolete
-
-    Use qMin(\a x, \a y) instead.
-
-    \sa QMAX(), QABS()
-*/
-
-/*!
-    \macro QMAX(x, y)
-    \relates <QtGlobal>
-    \obsolete
-
-    Use qMax(\a x, \a y) instead.
-
-    \sa QMIN(), QABS()
-*/
-
-/*!
     \macro const char *qPrintable(const QString &str)
     \relates <QtGlobal>
 
