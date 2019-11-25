@@ -40,7 +40,7 @@
 #ifndef QTESTSUPPORT_WIDGETS_H
 #define QTESTSUPPORT_WIDGETS_H
 
-#include "qtwidgetsglobal.h"
+#include <QtWidgets/qtwidgetsglobal.h>
 
 QT_BEGIN_NAMESPACE
 
