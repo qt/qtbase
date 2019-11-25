@@ -1519,15 +1519,11 @@ def map_condition(condition: str) -> str:
     condition = re.sub(r"(^| )armeabi-v7a", "TEST_architecture_arch STREQUAL arm", condition)
 
     # some defines replacements
-    condition = re.sub(r"DEFINES___contains___QT_NO_CURSOR",
-            r"(NOT QT_FEATURE_cursor)",
-            condition)
-    condition = re.sub(r"DEFINES___contains___QT_NO_TRANSLATION",
-            r"(NOT QT_FEATURE_translation)",
-            condition)
-    condition = re.sub(r"styles___contains___fusion",
-            r"QT_FEATURE_style_fusion",
-            condition)
+    condition = re.sub(r"DEFINES___contains___QT_NO_CURSOR", r"(NOT QT_FEATURE_cursor)", condition)
+    condition = re.sub(
+        r"DEFINES___contains___QT_NO_TRANSLATION", r"(NOT QT_FEATURE_translation)", condition
+    )
+    condition = re.sub(r"styles___contains___fusion", r"QT_FEATURE_style_fusion", condition)
 
     cmake_condition = ""
     for part in condition.split():
