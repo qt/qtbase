@@ -19,7 +19,6 @@ SUBDIRS=\
    qobjectrace \
    qsharedpointer_and_qwidget \
    qprocess_and_guieventloop \
-   qtokenautomaton \
    toolsupport \
 
 !qtHaveModule(gui): SUBDIRS -= \
