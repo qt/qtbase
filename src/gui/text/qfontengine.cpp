@@ -141,7 +141,7 @@ static void hb_getAdvances(HB_Font font, const HB_Glyph *glyphs, hb_uint32 numGl
     qglyphs.glyphs = const_cast<glyph_t *>(glyphs);
     qglyphs.advances = reinterpret_cast<QFixed *>(advances);
 
-    fe->recalcAdvances(&qglyphs, (flags & HB_ShaperFlag_UseDesignMetrics) ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlags(0));
+    fe->recalcAdvances(&qglyphs, (flags & HB_ShaperFlag_UseDesignMetrics) ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlags{});
 }
 
 static HB_Bool hb_canRender(HB_Font font, const HB_UChar16 *string, hb_uint32 length)
@@ -506,7 +506,7 @@ void QFontEngine::getGlyphPositions(const QGlyphLayout &glyphs, const QTransform
                 g.numGlyphs = 1;
                 g.glyphs = &kashidaGlyph;
                 g.advances = &kashidaWidth;
-                recalcAdvances(&g, 0);
+                recalcAdvances(&g, { });
 
                 for (uint k = 0; k < glyphs.justifications[i].nKashidas; ++k) {
                     xpos -= kashidaWidth;
@@ -948,7 +948,7 @@ QImage QFontEngine::alphaMapForGlyph(glyph_t glyph)
     im.fill(Qt::transparent);
     QPainter p(&im);
     p.setRenderHint(QPainter::Antialiasing);
-    addGlyphsToPath(&glyph, &pt, 1, &path, 0);
+    addGlyphsToPath(&glyph, &pt, 1, &path, { });
     p.setPen(Qt::NoPen);
     p.setBrush(Qt::black);
     p.drawPath(path);

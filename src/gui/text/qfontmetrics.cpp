@@ -562,7 +562,7 @@ int QFontMetrics::width(const QString &text, int len, int flags) const
         int numGlyphs = len;
         QVarLengthGlyphLayoutArray glyphs(numGlyphs);
         QFontEngine *engine = d->engineForScript(QChar::Script_Common);
-        if (!engine->stringToCMap(text.data(), len, &glyphs, &numGlyphs, 0))
+        if (!engine->stringToCMap(text.data(), len, &glyphs, &numGlyphs, { }))
             Q_UNREACHABLE();
 
         QFixed width;
@@ -684,7 +684,7 @@ int QFontMetrics::horizontalAdvance(QChar ch) const
     glyphs.numGlyphs = 1;
     glyphs.glyphs = &glyph;
     glyphs.advances = &advance;
-    engine->recalcAdvances(&glyphs, 0);
+    engine->recalcAdvances(&glyphs, { });
 
     return qRound(advance);
 }
@@ -736,7 +736,7 @@ int QFontMetrics::charWidth(const QString &text, int pos) const
         glyphs.numGlyphs = 1;
         glyphs.glyphs = &glyph;
         glyphs.advances = &advance;
-        engine->recalcAdvances(&glyphs, 0);
+        engine->recalcAdvances(&glyphs, { });
 
         width = qRound(advance);
     }
@@ -1619,7 +1619,7 @@ qreal QFontMetricsF::horizontalAdvance(QChar ch) const
     glyphs.numGlyphs = 1;
     glyphs.glyphs = &glyph;
     glyphs.advances = &advance;
-    engine->recalcAdvances(&glyphs, 0);
+    engine->recalcAdvances(&glyphs, { });
 
     return advance.toReal();
 }

@@ -147,12 +147,14 @@ QSocketNotifier::QSocketNotifier(qintptr socket, Type type, QObject *parent)
     d->sntype = type;
     d->snenabled = true;
 
+    auto thisThreadData = d->threadData.loadRelaxed();
+
     if (socket < 0)
         qWarning("QSocketNotifier: Invalid socket specified");
-    else if (!d->threadData->hasEventDispatcher())
+    else if (!thisThreadData->hasEventDispatcher())
         qWarning("QSocketNotifier: Can only be used with threads started with QThread");
     else
-        d->threadData->eventDispatcher.loadRelaxed()->registerSocketNotifier(this);
+        thisThreadData->eventDispatcher.loadRelaxed()->registerSocketNotifier(this);
 }
 
 /*!
@@ -234,16 +236,19 @@ void QSocketNotifier::setEnabled(bool enable)
         return;
     d->snenabled = enable;
 
-    if (!d->threadData->hasEventDispatcher()) // perhaps application/thread is shutting down
+
+    auto thisThreadData = d->threadData.loadRelaxed();
+
+    if (!thisThreadData->hasEventDispatcher()) // perhaps application/thread is shutting down
         return;
     if (Q_UNLIKELY(thread() != QThread::currentThread())) {
         qWarning("QSocketNotifier: Socket notifiers cannot be enabled or disabled from another thread");
         return;
     }
     if (d->snenabled)
-        d->threadData->eventDispatcher.loadRelaxed()->registerSocketNotifier(this);
+        thisThreadData->eventDispatcher.loadRelaxed()->registerSocketNotifier(this);
     else
-        d->threadData->eventDispatcher.loadRelaxed()->unregisterSocketNotifier(this);
+        thisThreadData->eventDispatcher.loadRelaxed()->unregisterSocketNotifier(this);
 }
 
 

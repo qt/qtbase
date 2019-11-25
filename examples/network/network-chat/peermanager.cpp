@@ -81,12 +81,12 @@ PeerManager::PeerManager(Client *client)
 
     broadcastSocket.bind(QHostAddress::Any, broadcastPort, QUdpSocket::ShareAddress
                          | QUdpSocket::ReuseAddressHint);
-    connect(&broadcastSocket, SIGNAL(readyRead()),
-            this, SLOT(readBroadcastDatagram()));
+    connect(&broadcastSocket, &QUdpSocket::readyRead,
+            this, &PeerManager::readBroadcastDatagram);
 
     broadcastTimer.setInterval(BroadcastInterval);
-    connect(&broadcastTimer, SIGNAL(timeout()),
-            this, SLOT(sendBroadcastDatagram()));
+    connect(&broadcastTimer, &QTimer::timeout,
+            this, &PeerManager::sendBroadcastDatagram);
 }
 
 void PeerManager::setServerPort(int port)

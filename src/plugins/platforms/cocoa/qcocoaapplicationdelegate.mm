@@ -149,7 +149,7 @@ QT_USE_NAMESPACE
     if ([reflectionDelegate respondsToSelector:_cmd])
         return [reflectionDelegate applicationShouldTerminate:sender];
 
-    if (QGuiApplicationPrivate::instance()->threadData->eventLoops.isEmpty()) {
+    if (QGuiApplicationPrivate::instance()->threadData.loadRelaxed()->eventLoops.isEmpty()) {
         // No event loop is executing. This probably means that Qt is used as a plugin,
         // or as a part of a native Cocoa application. In any case it should be fine to
         // terminate now.
@@ -359,7 +359,7 @@ QT_USE_NAMESPACE
     if (!platformItem || platformItem->menu())
         return;
 
-    QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData);
+    QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData.loadRelaxed());
     QGuiApplicationPrivate::modifier_buttons = [QNSView convertKeyModifiers:[NSEvent modifierFlags]];
 
     static QMetaMethod activatedSignal = QMetaMethod::fromSignal(&QCocoaMenuItem::activated);

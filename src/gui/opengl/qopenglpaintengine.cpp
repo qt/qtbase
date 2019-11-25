@@ -1575,7 +1575,7 @@ void QOpenGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, c
     case QImage::Format_ARGB32:
     case QImage::Format_RGBA64:
         d->shaderManager->setSrcPixelType(QOpenGLEngineShaderManager::NonPremultipliedImageSrc);
-        bindOption = 0;
+        bindOption = { };
         break;
     case QImage::Format_Alpha8:
         if (ctx->functions()->hasOpenGLFeature(QOpenGLFunctions::TextureRGFormats)) {

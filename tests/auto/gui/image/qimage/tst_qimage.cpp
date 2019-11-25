@@ -924,6 +924,9 @@ void tst_QImage::convertToFormat_data()
     QTest::newRow("blue rgb30 -> argb32") << int(QImage::Format_RGB30) << 0xff0000ff
                                           << int(QImage::Format_ARGB32) << 0xff0000ff;
 
+    QTest::newRow("semigray argb32 -> a2rgb30 pm") << int(QImage::Format_ARGB32) << 0x4c646565u
+                                                   << int(QImage::Format_A2RGB30_Premultiplied) << 0x55212222u;
+
     QTest::newRow("white gray8 -> argb pm") << int(QImage::Format_Grayscale8) << 0xfffffeffu
                                             << int(QImage::Format_ARGB32_Premultiplied) << 0xfffefefeu;
     QTest::newRow("gray gray8 -> argb pm") << int(QImage::Format_Grayscale8) << 0xff565557u

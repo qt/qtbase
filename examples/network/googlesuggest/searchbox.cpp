@@ -57,11 +57,11 @@
 const QString gsearchUrl = QStringLiteral("http://www.google.com/search?q=%1");
 
 //! [1]
-SearchBox::SearchBox(QWidget *parent): QLineEdit(parent)
+SearchBox::SearchBox(QWidget *parent)
+    : QLineEdit(parent)
+    , completer(new GSuggestCompletion(this))
 {
-    completer = new GSuggestCompletion(this);
-
-    connect(this, SIGNAL(returnPressed()),this, SLOT(doSearch()));
+    connect(this, &SearchBox::returnPressed, this, &SearchBox::doSearch);
 
     setWindowTitle("Search with Google");
 

@@ -17,6 +17,8 @@ To run a test with libFuzzer:
    install libFuzzer for this version of clang explicitly.
 2. Make sure clang and clang++ from this version of clang are found in PATH.
 3. Configure Qt with
+    -platform linux-clang -sanitize fuzzer-no-link
+   or, if you are using clang 5
     -platform linux-clang -coverage trace-pc-guard
    to add the needed code coverage instrumentation. Since speed of execution is crucial for fuzz
    testing, it's recommendable to also use the switches
@@ -29,7 +31,8 @@ To run a test with libFuzzer:
    Depending on the expected input format of the tested function, you will get results faster if
    you:
     * provide a set of interesting input data by passing the path of a directory which contains
-      these data, each in one file. You can find such data sets in the subdirectory "testcases".
+      these data, each in one file. You can find such data sets in the subdirectory
+      "fuzzing/testcases" of the qtqa repository.
     * pass a so-called dictionary listing keywords of the input format using
        -dict=<dictionary file>
       A couple of such dictionaries are provided by AFL (http://lcamtuf.coredump.cx/afl/)

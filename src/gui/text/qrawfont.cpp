@@ -303,7 +303,7 @@ QPainterPath QRawFont::pathForGlyph(quint32 glyphIndex) const
 
     QFixedPoint position;
     QPainterPath path;
-    d->fontEngine->addGlyphsToPath(&glyphIndex, &position, 1, &path, 0);
+    d->fontEngine->addGlyphsToPath(&glyphIndex, &position, 1, &path, { });
     return path;
 }
 

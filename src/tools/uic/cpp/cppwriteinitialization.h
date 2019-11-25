@@ -187,7 +187,7 @@ private:
         };
         ItemData m_setupUiData;
         ItemData m_retranslateUiData;
-        QList<Item *> m_children;
+        QVector<Item *> m_children;
         Item *m_parent = nullptr;
 
         const QString m_itemClassName;
@@ -196,6 +196,7 @@ private:
         QTextStream &m_retranslateUiStream;
         Driver *m_driver;
     };
+    using Items = QVector<Item *>;
 
     void addInitializer(Item *item,
             const QString &name, int column, const QString &value, const QString &directive = QString(), bool translatable = false) const;
@@ -214,7 +215,7 @@ private:
     void initializeComboBox(DomWidget *w);
     void initializeListWidget(DomWidget *w);
     void initializeTreeWidget(DomWidget *w);
-    QList<Item *> initializeTreeWidgetItems(const QVector<DomItem *> &domItems);
+    Items initializeTreeWidgetItems(const QVector<DomItem *> &domItems);
     void initializeTableWidget(DomWidget *w);
 
     QString disableSorting(DomWidget *w, const QString &varName);

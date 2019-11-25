@@ -1,6 +1,6 @@
 TARGET	   = QtCore
 QT         =
-CONFIG    += exceptions metatypes install_metatypes
+CONFIG    += exceptions
 
 MODULE = core     # not corelib, as per project file
 MODULE_CONFIG = moc resources
@@ -17,6 +17,7 @@ DEFINES += QT_NO_USING_NAMESPACE QT_NO_FOREACH
 msvc:equals(QT_ARCH, i386): QMAKE_LFLAGS += /BASE:0x67000000
 
 CONFIG += simd optimize_full
+CONFIG += metatypes install_metatypes
 
 QMAKE_DOCS = $$PWD/doc/qtcore.qdocconf
 

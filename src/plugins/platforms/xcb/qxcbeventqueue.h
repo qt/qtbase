@@ -49,6 +49,7 @@
 #include <xcb/xcb.h>
 
 #include <atomic>
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
@@ -106,7 +107,7 @@ public:
     bool peekEventQueue(PeekerCallback peeker, void *peekerData = nullptr,
                         PeekOptions option = PeekDefault, qint32 peekerId = -1);
 
-    void waitForNewEvents(unsigned long time = ULONG_MAX);
+    void waitForNewEvents(unsigned long time = std::numeric_limits<unsigned long>::max());
 
 private:
     QXcbEventNode *qXcbEventNodeFactory(xcb_generic_event_t *event);

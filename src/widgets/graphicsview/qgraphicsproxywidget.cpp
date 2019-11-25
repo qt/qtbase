@@ -235,7 +235,7 @@ void QGraphicsProxyWidgetPrivate::sendWidgetMouseEvent(QGraphicsSceneHoverEvent 
     mouseEvent.setPos(event->pos());
     mouseEvent.setScreenPos(event->screenPos());
     mouseEvent.setButton(Qt::NoButton);
-    mouseEvent.setButtons(0);
+    mouseEvent.setButtons({ });
     mouseEvent.setModifiers(event->modifiers());
     sendWidgetMouseEvent(&mouseEvent);
     event->setAccepted(mouseEvent.isAccepted());

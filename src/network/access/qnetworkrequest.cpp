@@ -918,7 +918,7 @@ void QNetworkRequest::setHttp2Configuration(const QHttp2Configuration &configura
 
     \sa setTransferTimeout
 */
-int QNetworkRequest::transferTimeout()
+int QNetworkRequest::transferTimeout() const
 {
     return d->transferTimeout;
 }

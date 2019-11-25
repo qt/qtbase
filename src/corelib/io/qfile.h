@@ -84,6 +84,10 @@ public:
         // note: duplicated in qglobal.cpp (qEnvironmentVariable)
         return QString::fromUtf8(localFileName).normalized(QString::NormalizationForm_C);
     }
+    static inline QString decodeName(const char *localFileName)
+    {
+        return QString::fromUtf8(localFileName).normalized(QString::NormalizationForm_C);
+    }
 #else
     static inline QByteArray encodeName(const QString &fileName)
     {
@@ -93,9 +97,11 @@ public:
     {
         return QString::fromLocal8Bit(localFileName);
     }
+    static inline QString decodeName(const char *localFileName)
+    {
+        return QString::fromLocal8Bit(localFileName);
+    }
 #endif
-    inline static QString decodeName(const char *localFileName)
-        { return decodeName(QByteArray(localFileName)); }
 
 #if QT_DEPRECATED_SINCE(5,0)
     typedef QByteArray (*EncoderFn)(const QString &fileName);

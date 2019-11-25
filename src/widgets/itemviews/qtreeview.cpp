@@ -233,7 +233,9 @@ void QTreeView::setModel(QAbstractItemModel *model)
     d->viewItems.clear();
     d->expandedIndexes.clear();
     d->hiddenIndexes.clear();
+    d->geometryRecursionBlock = true;   // do not update geometries due to signals from the headers
     d->header->setModel(model);
+    d->geometryRecursionBlock = false;
     QAbstractItemView::setModel(model);
 
     // QAbstractItemView connects to a private slot

@@ -397,6 +397,31 @@ void tst_QComboBox::getSetCheck()
     QCOMPARE(4, obj1.currentIndex()); // Valid
     obj1.setCurrentIndex(INT_MAX);
     QCOMPARE(-1, obj1.currentIndex()); // Invalid => -1
+
+    obj1.setIconSize(QSize(64, 32));
+    QCOMPARE(obj1.iconSize(), QSize(64, 32));
+    obj1.setIconSize(QSize());
+    const int iconWidth = obj1.style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, &obj1);
+    QCOMPARE(obj1.iconSize(), QSize(iconWidth, iconWidth));
+
+    const QString placeholderText("Please select");
+    obj1.setCurrentIndex(1);
+    obj1.setPlaceholderText(placeholderText);
+    QCOMPARE(obj1.placeholderText(), placeholderText);
+    QCOMPARE(obj1.currentText(), "2");
+    QCOMPARE(obj1.currentIndex(), 1);
+    obj1.setPlaceholderText(QString()); // should not change anything
+    QCOMPARE(obj1.placeholderText(), QString());
+    QCOMPARE(obj1.currentText(), "2");
+
+    obj1.clear();
+    obj1.setPlaceholderText(placeholderText);
+    obj1.addItems({"1", "2", "3", "4", "5"});
+    QCOMPARE(obj1.currentText(), placeholderText);
+    QCOMPARE(obj1.currentIndex(), -1);
+    obj1.setPlaceholderText(QString()); // should not change anything
+    QCOMPARE(obj1.currentText(), "1");
+    QCOMPARE(obj1.currentIndex(), 0);
 }
 
 typedef QList<QVariant> VariantList;

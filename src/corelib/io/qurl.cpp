@@ -823,7 +823,7 @@ recodeFromUser(const QString &input, const ushort *actions, int from, int to)
     QString output;
     const QChar *begin = input.constData() + from;
     const QChar *end = input.constData() + to;
-    if (qt_urlRecode(output, begin, end, nullptr, actions))
+    if (qt_urlRecode(output, begin, end, {}, actions))
         return output;
 
     return input.mid(from, to - from);

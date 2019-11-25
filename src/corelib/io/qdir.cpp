@@ -2372,8 +2372,9 @@ static QString qt_cleanPath(const QString &path, bool *ok)
 }
 
 /*!
-    Returns \a path with directory separators normalized (converted to "/") and
-    redundant ones removed, and "."s and ".."s resolved (as far as possible).
+    Returns \a path with directory separators normalized (that is, platform-native
+    separators converted to "/") and redundant ones removed, and "."s and ".."s
+    resolved (as far as possible).
 
     Symbolic links are kept. This function does not return the
     canonical path, but rather the simplest version of the input.

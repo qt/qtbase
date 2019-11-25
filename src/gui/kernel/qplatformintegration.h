@@ -106,7 +106,8 @@ public:
         ApplicationIcon,
         SwitchableWidgetComposition,
         TopStackedNativeChildWindows,
-        OpenGLOnRasterSurface
+        OpenGLOnRasterSurface,
+        MaximizeUsingFullscreenGeometry
     };
 
     virtual ~QPlatformIntegration() { }

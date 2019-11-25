@@ -56,6 +56,7 @@
 #include <QGraphicsView>
 #include <QApplication>
 #include <QMenu>
+#include <QMenuBar>
 #include <QLayout>
 
 #ifndef QT_NO_OPENGL

@@ -592,7 +592,7 @@ public:
         Q_Q(QWidget);
         return q->testAttribute(Qt::WA_AlwaysStackOnTop)
             ? QPlatformTextureList::StacksOnTop
-            : QPlatformTextureList::Flags(nullptr);
+            : QPlatformTextureList::Flags();
     }
     virtual QImage grabFramebuffer() { return QImage(); }
     virtual void beginBackingStorePainting() { }

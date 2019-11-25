@@ -179,7 +179,7 @@ static void setBoolLane(QBasicAtomicInt *atomic, bool enable, int shift)
     The \c QtProject/qtlogging.ini file is looked up in all directories returned
     by QStandardPaths::GenericConfigLocation.
 
-    Set the \c QT_LOGGING_DEBUG environment variable to find out where you logging
+    Set the \c QT_LOGGING_DEBUG environment variable to find out where your logging
     rules are loaded from.
 
     \section2 Installing a Custom Filter

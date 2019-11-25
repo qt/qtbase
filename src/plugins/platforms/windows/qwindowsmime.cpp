@@ -107,7 +107,7 @@ static inline QByteArray msgConversionError(const char *func, const char *format
     msg += ": Unable to convert DIB image. The image converter plugin for '";
     msg += format;
     msg += "' is not available. Available formats: ";
-    const QList<QByteArray> &formats = QImageReader::supportedImageFormats();
+    const auto &formats = QImageReader::supportedImageFormats();
     for (const QByteArray &af : formats) {
         msg += af;
         msg += ' ';
@@ -747,7 +747,7 @@ QWindowsMimeURI::QWindowsMimeURI()
 bool QWindowsMimeURI::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
 {
     if (mimeData->hasUrls() && getCf(formatetc) == CF_HDROP) {
-        const QList<QUrl> urls = mimeData->urls();
+        const auto urls = mimeData->urls();
         for (const QUrl &url : urls) {
             if (url.isLocalFile())
                 return true;
@@ -760,7 +760,7 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
 {
     if (canConvertFromMime(formatetc, mimeData)) {
         if (getCf(formatetc) == CF_HDROP) {
-            const QList<QUrl> &urls = mimeData->urls();
+            const auto &urls = mimeData->urls();
             QStringList fileNames;
             int size = sizeof(DROPFILES)+2;
             for (const QUrl &url : urls) {
@@ -791,7 +791,7 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
             return setData(result, pmedium);
         }
         if (getCf(formatetc) == CF_INETURL_W) {
-            QList<QUrl> urls = mimeData->urls();
+            const auto urls = mimeData->urls();
             QByteArray result;
             if (!urls.isEmpty()) {
                 QString url = urls.at(0).toString();
@@ -803,7 +803,7 @@ bool QWindowsMimeURI::convertFromMime(const FORMATETC &formatetc, const QMimeDat
             return setData(result, pmedium);
         }
         if (getCf(formatetc) == CF_INETURL) {
-            QList<QUrl> urls = mimeData->urls();
+            const auto urls = mimeData->urls();
             QByteArray result;
             if (!urls.isEmpty())
                 result = urls.at(0).toString().toLocal8Bit();

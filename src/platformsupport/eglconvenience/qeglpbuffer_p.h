@@ -60,7 +60,7 @@ class QEGLPbuffer : public QPlatformOffscreenSurface
 {
 public:
     QEGLPbuffer(EGLDisplay display, const QSurfaceFormat &format, QOffscreenSurface *offscreenSurface,
-                QEGLPlatformContext::Flags flags = nullptr);
+                QEGLPlatformContext::Flags flags = { });
     ~QEGLPbuffer();
 
     QSurfaceFormat format() const override { return m_format; }

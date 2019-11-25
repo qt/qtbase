@@ -492,7 +492,7 @@ void Dialog::questionMessage()
 void Dialog::warningMessage()
 {
     QMessageBox msgBox(QMessageBox::Warning, tr("QMessageBox::warning()"),
-                       MESSAGE, nullptr, this);
+                       MESSAGE, { }, this);
     msgBox.setDetailedText(MESSAGE_DETAILS);
     msgBox.addButton(tr("Save &Again"), QMessageBox::AcceptRole);
     msgBox.addButton(tr("&Continue"), QMessageBox::RejectRole);

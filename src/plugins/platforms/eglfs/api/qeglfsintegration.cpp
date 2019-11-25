@@ -236,7 +236,7 @@ QPlatformOffscreenSurface *QEglFSIntegration::createPlatformOffscreenSurface(QOf
     EGLDisplay dpy = surface->screen() ? static_cast<QEglFSScreen *>(surface->screen()->handle())->display() : display();
     QSurfaceFormat fmt = qt_egl_device_integration()->surfaceFormatFor(surface->requestedFormat());
     if (qt_egl_device_integration()->supportsPBuffers()) {
-        QEGLPlatformContext::Flags flags = 0;
+        QEGLPlatformContext::Flags flags;
         if (!qt_egl_device_integration()->supportsSurfacelessContexts())
             flags |= QEGLPlatformContext::NoSurfaceless;
         return new QEGLPbuffer(dpy, fmt, surface, flags);

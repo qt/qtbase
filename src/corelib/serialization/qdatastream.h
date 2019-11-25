@@ -316,14 +316,31 @@ template <typename Container>
 QDataStream &writeAssociativeContainer(QDataStream &s, const Container &c)
 {
     s << quint32(c.size());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     // Deserialization should occur in the reverse order.
     // Otherwise, value() will return the least recently inserted
     // value instead of the most recently inserted one.
     auto it = c.constEnd();
     auto begin = c.constBegin();
     while (it != begin) {
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_DEPRECATED
         --it;
+        QT_WARNING_POP
         s << it.key() << it.value();
+#else
+    auto it = c.constBegin();
+    auto end = c.constEnd();
+    while (it != end) {
+        const auto rangeStart = it++;
+        while (it != end && rangeStart.key() == it.key())
+            ++it;
+        const qint64 last = std::distance(rangeStart, it) - 1;
+        for (qint64 i = last; i >= 0; --i) {
+            auto next = std::next(rangeStart, i);
+            s << next.key() << next.value();
+        }
+#endif
     }
 
     return s;

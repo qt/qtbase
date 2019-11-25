@@ -60,7 +60,7 @@ class TorrentView : public QTreeWidget
 {
     Q_OBJECT
 public:
-    TorrentView(QWidget *parent = 0);
+    TorrentView(QWidget *parent = nullptr);
 
 #if QT_CONFIG(draganddrop)
 signals:
@@ -110,7 +110,7 @@ public:
 };
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), quitDialog(0), saveChanges(false)
+    : QMainWindow(parent), quitDialog(nullptr), saveChanges(false)
 {
     // Initialize some static strings
     QStringList headers;
@@ -147,12 +147,12 @@ MainWindow::MainWindow(QWidget *parent)
     fileMenu->addAction(pauseTorrentAction);
     fileMenu->addAction(removeTorrentAction);
     fileMenu->addSeparator();
-    fileMenu->addAction(QIcon(":/icons/exit.png"), tr("E&xit"), this, SLOT(close()));
+    fileMenu->addAction(QIcon(":/icons/exit.png"), tr("E&xit"), this, &MainWindow::close);
 
     // Help menu
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(tr("&About"), this, SLOT(about()));
-    helpMenu->addAction(tr("About &Qt"), qApp, SLOT(aboutQt()));
+    helpMenu->addAction(tr("&About"), this, &MainWindow::about);
+    helpMenu->addAction(tr("About &Qt"), qApp, QApplication::aboutQt);
 
     // Top toolbar
     QToolBar *topBar = new QToolBar(tr("Tools"));
@@ -188,24 +188,24 @@ MainWindow::MainWindow(QWidget *parent)
 #endif
 
     // Set up connections
-    connect(torrentView, SIGNAL(itemSelectionChanged()),
-            this, SLOT(setActionsEnabled()));
-    connect(torrentView, SIGNAL(fileDropped(QString)),
-            this, SLOT(acceptFileDrop(QString)));
-    connect(uploadLimitSlider, SIGNAL(valueChanged(int)),
-            this, SLOT(setUploadLimit(int)));
-    connect(downloadLimitSlider, SIGNAL(valueChanged(int)),
-            this, SLOT(setDownloadLimit(int)));
-    connect(newTorrentAction, SIGNAL(triggered()),
-            this, SLOT(addTorrent()));
-    connect(pauseTorrentAction, SIGNAL(triggered()),
-            this, SLOT(pauseTorrent()));
-    connect(removeTorrentAction, SIGNAL(triggered()),
-            this, SLOT(removeTorrent()));
-    connect(upActionTool, SIGNAL(triggered(bool)),
-            this, SLOT(moveTorrentUp()));
-    connect(downActionTool, SIGNAL(triggered(bool)),
-            this, SLOT(moveTorrentDown()));
+    connect(torrentView, &TorrentView::itemSelectionChanged,
+            this, &MainWindow::setActionsEnabled);
+    connect(torrentView, &TorrentView::fileDropped,
+            this, &MainWindow::acceptFileDrop);
+    connect(uploadLimitSlider, &QSlider::valueChanged,
+            this, &MainWindow::setUploadLimit);
+    connect(downloadLimitSlider, &QSlider::valueChanged,
+            this, &MainWindow::setDownloadLimit);
+    connect(newTorrentAction, &QAction::triggered,
+            this, QOverload<>::of(&MainWindow::addTorrent));
+    connect(pauseTorrentAction, &QAction::triggered,
+            this, &MainWindow::pauseTorrent);
+    connect(removeTorrentAction, &QAction::triggered,
+            this, &MainWindow::removeTorrent);
+    connect(upActionTool, &QAction::triggered,
+            this, &MainWindow::moveTorrentUp);
+    connect(downActionTool, &QAction::triggered,
+            this, &MainWindow::moveTorrentDown);
 
     // Load settings and start
     setWindowTitle(tr("Torrent Client"));
@@ -297,7 +297,7 @@ bool MainWindow::addTorrent()
     addTorrent(fileName, addTorrentDialog->destinationFolder());
     if (!saveChanges) {
         saveChanges = true;
-        QTimer::singleShot(1000, this, SLOT(saveSettings()));
+        QTimer::singleShot(1000, this, &MainWindow::saveSettings);
     }
     return true;
 }
@@ -311,7 +311,8 @@ void MainWindow::removeTorrent()
 
     // Stop the client.
     client->disconnect();
-    connect(client, SIGNAL(stopped()), this, SLOT(torrentStopped()));
+    connect(client, &TorrentClient::stopped,
+            this, &MainWindow::torrentStopped);
     client->stop();
 
     // Remove the row from the view.
@@ -379,13 +380,20 @@ bool MainWindow::addTorrent(const QString &fileName, const QString &destinationF
     client->setDumpedState(resumeState);
 
     // Setup the client connections.
-    connect(client, SIGNAL(stateChanged(TorrentClient::State)), this, SLOT(updateState(TorrentClient::State)));
-    connect(client, SIGNAL(peerInfoUpdated()), this, SLOT(updatePeerInfo()));
-    connect(client, SIGNAL(progressUpdated(int)), this, SLOT(updateProgress(int)));
-    connect(client, SIGNAL(downloadRateUpdated(int)), this, SLOT(updateDownloadRate(int)));
-    connect(client, SIGNAL(uploadRateUpdated(int)), this, SLOT(updateUploadRate(int)));
-    connect(client, SIGNAL(stopped()), this, SLOT(torrentStopped()));
-    connect(client, SIGNAL(error(TorrentClient::Error)), this, SLOT(torrentError(TorrentClient::Error)));
+    connect(client, &TorrentClient::stateChanged,
+            this, &MainWindow::updateState);
+    connect(client, &TorrentClient::peerInfoUpdated,
+            this, &MainWindow::updatePeerInfo);
+    connect(client, &TorrentClient::progressUpdated,
+            this, &MainWindow::updateProgress);
+    connect(client, &TorrentClient::downloadRateUpdated,
+            this, &MainWindow::updateDownloadRate);
+    connect(client, &TorrentClient::uploadRateUpdated,
+            this, &MainWindow::updateUploadRate);
+    connect(client, &TorrentClient::stopped,
+            this, &MainWindow::torrentStopped);
+    connect(client, QOverload<TorrentClient::Error>::of(&TorrentClient::error),
+            this, &MainWindow::torrentError);
 
     // Add the client to the list of downloading jobs.
     Job job;
@@ -414,7 +422,7 @@ bool MainWindow::addTorrent(const QString &fileName, const QString &destinationF
 
     if (!saveChanges) {
         saveChanges = true;
-        QTimer::singleShot(5000, this, SLOT(saveSettings()));
+        QTimer::singleShot(5000, this, &MainWindow::saveSettings);
     }
     client->start();
     return true;
@@ -491,15 +499,15 @@ void MainWindow::setActionsEnabled()
 {
     // Find the view item and client for the current row, and update
     // the states of the actions.
-    QTreeWidgetItem *item = 0;
+    QTreeWidgetItem *item = nullptr;
     if (!torrentView->selectedItems().isEmpty())
         item = torrentView->selectedItems().first();
-    TorrentClient *client = item ? jobs.at(torrentView->indexOfTopLevelItem(item)).client : 0;
+    TorrentClient *client = item ? jobs.at(torrentView->indexOfTopLevelItem(item)).client : nullptr;
     bool pauseEnabled = client && ((client->state() == TorrentClient::Paused)
                                        ||  (client->state() > TorrentClient::Preparing));
 
-    removeTorrentAction->setEnabled(item != 0);
-    pauseTorrentAction->setEnabled(item != 0 && pauseEnabled);
+    removeTorrentAction->setEnabled(item != nullptr);
+    pauseTorrentAction->setEnabled(item && pauseEnabled);
 
     if (client && client->state() == TorrentClient::Paused) {
         pauseTorrentAction->setIcon(QIcon(":/icons/player_play.png"));
@@ -524,7 +532,7 @@ void MainWindow::updateDownloadRate(int bytesPerSecond)
 
     if (!saveChanges) {
         saveChanges = true;
-        QTimer::singleShot(5000, this, SLOT(saveSettings()));
+        QTimer::singleShot(5000, this, &MainWindow::saveSettings);
     }
 }
 
@@ -538,7 +546,7 @@ void MainWindow::updateUploadRate(int bytesPerSecond)
 
     if (!saveChanges) {
         saveChanges = true;
-        QTimer::singleShot(5000, this, SLOT(saveSettings()));
+        QTimer::singleShot(5000, this, &MainWindow::saveSettings);
     }
 }
 
@@ -649,7 +657,7 @@ void MainWindow::about()
     about.setWindowTitle(tr("About Torrent Client"));
     about.setLayout(mainLayout);
 
-    connect(quitButton, SIGNAL(clicked()), &about, SLOT(close()));
+    connect(quitButton, &QPushButton::clicked, &about, &QDialog::close);
 
     about.exec();
 }
@@ -688,7 +696,7 @@ void MainWindow::closeEvent(QCloseEvent *)
         ++jobsToStop;
         TorrentClient *client = job.client;
         client->disconnect();
-        connect(client, SIGNAL(stopped()), this, SLOT(torrentStopped()));
+        connect(client, &TorrentClient::stopped, this, &MainWindow::torrentStopped);
         client->stop();
         delete torrentView->takeTopLevelItem(0);
     }
@@ -696,7 +704,7 @@ void MainWindow::closeEvent(QCloseEvent *)
     if (jobsToStop > jobsStopped)
         quitDialog->exec();
     quitDialog->deleteLater();
-    quitDialog = 0;
+    quitDialog = nullptr;
 }
 
 TorrentView::TorrentView(QWidget *parent)

@@ -151,9 +151,9 @@ CommandLineParseResult parseCommandLine(QCommandLineParser &parser, DnsQuery *qu
 //! [0]
 
 DnsManager::DnsManager()
+    : dns(new QDnsLookup(this))
 {
-    dns = new QDnsLookup(this);
-    connect(dns, SIGNAL(finished()), this, SLOT(showResults()));
+    connect(dns, &QDnsLookup::finished, this, &DnsManager::showResults);
 }
 
 void DnsManager::execute()

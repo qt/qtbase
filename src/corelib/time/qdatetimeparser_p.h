@@ -83,7 +83,7 @@ public:
         DateTimeEdit
     };
     QDateTimeParser(QVariant::Type t, Context ctx, const QCalendar &cal = QCalendar())
-        : currentSectionIndex(-1), display(nullptr), cachedDay(-1), parserType(t),
+        : currentSectionIndex(-1), cachedDay(-1), parserType(t),
         fixday(false), spec(Qt::LocalTime), context(ctx), calendar(cal)
     {
         defaultLocale = QLocale::system();

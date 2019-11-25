@@ -60,10 +60,10 @@ Client::Client()
     peerManager->setServerPort(server.serverPort());
     peerManager->startBroadcasting();
 
-    QObject::connect(peerManager, SIGNAL(newConnection(Connection*)),
-                     this, SLOT(newConnection(Connection*)));
-    QObject::connect(&server, SIGNAL(newConnection(Connection*)),
-                     this, SLOT(newConnection(Connection*)));
+    connect(peerManager, &PeerManager::newConnection,
+            this, &Client::newConnection);
+    connect(&server, &Server::newConnection,
+            this, &Client::newConnection);
 }
 
 void Client::sendMessage(const QString &message)
@@ -102,10 +102,10 @@ void Client::newConnection(Connection *connection)
 {
     connection->setGreetingMessage(peerManager->userName());
 
-    connect(connection, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(connectionError(QAbstractSocket::SocketError)));
-    connect(connection, SIGNAL(disconnected()), this, SLOT(disconnected()));
-    connect(connection, SIGNAL(readyForUse()), this, SLOT(readyForUse()));
+    connect(connection, QOverload<QAbstractSocket::SocketError>::of(&Connection::error),
+            this, &Client::connectionError);
+    connect(connection, &Connection::disconnected, this, &Client::disconnected);
+    connect(connection, &Connection::readyForUse, this, &Client::readyForUse);
 }
 
 void Client::readyForUse()
@@ -115,8 +115,8 @@ void Client::readyForUse()
                                      connection->peerPort()))
         return;
 
-    connect(connection, SIGNAL(newMessage(QString,QString)),
-            this, SIGNAL(newMessage(QString,QString)));
+    connect(connection,  &Connection::newMessage,
+            this, &Client::newMessage);
 
     peers.insert(connection->peerAddress(), connection);
     QString nick = connection->name();

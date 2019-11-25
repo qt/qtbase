@@ -1486,7 +1486,7 @@ bool QResourceFileEngine::isSequential() const
 QAbstractFileEngine::FileFlags QResourceFileEngine::fileFlags(QAbstractFileEngine::FileFlags type) const
 {
     Q_D(const QResourceFileEngine);
-    QAbstractFileEngine::FileFlags ret = 0;
+    QAbstractFileEngine::FileFlags ret;
     if(!d->resource.isValid())
         return ret;
 

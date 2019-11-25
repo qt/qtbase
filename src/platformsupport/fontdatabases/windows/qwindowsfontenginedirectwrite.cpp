@@ -458,7 +458,7 @@ bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGly
     glyphs->numGlyphs = actualLength;
 
     if (!(flags & GlyphIndicesOnly))
-        recalcAdvances(glyphs, 0);
+        recalcAdvances(glyphs, {});
 
     return true;
 }

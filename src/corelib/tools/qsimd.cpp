@@ -685,7 +685,7 @@ static QT_FUNCTION_TARGET(RDRND) Q_DECL_COLD_FUNCTION bool checkRdrndWorks() noe
     // Check the results for equality
     if (testBuffer[0] == testBuffer[1]
         && testBuffer[0] == testBuffer[2]
-        && end == testBuffer + TestBufferSize && testBuffer[0] == testBuffer[3]) {
+        && (end < testBuffer + TestBufferSize || testBuffer[0] == testBuffer[3])) {
         fprintf(stderr, "WARNING: CPU random generator seem to be failing, "
                         "disabling hardware random number generation\n"
                         "WARNING: RDRND generated:");

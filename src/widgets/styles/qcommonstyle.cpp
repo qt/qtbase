@@ -5143,7 +5143,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
 
     case SH_Table_GridLineColor:
         if (opt)
-            ret = opt->palette.color(QPalette::Mid).rgb();
+            ret = opt->palette.color(QPalette::Mid).rgba();
         else
             ret = -1;
         break;

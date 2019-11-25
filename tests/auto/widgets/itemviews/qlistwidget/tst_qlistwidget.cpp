@@ -1512,6 +1512,20 @@ void tst_QListWidget::itemData()
     QCOMPARE(flags.count(), 6);
     for (int i = 0; i < 4; ++i)
         QCOMPARE(flags[Qt::UserRole + i].toString(), QString::number(i + 1));
+
+    item.setBackground(QBrush(Qt::red));
+    item.setForeground(QBrush(Qt::red));
+    item.setSizeHint(QSize(10, 10));
+    QCOMPARE(item.data(Qt::BackgroundRole), QVariant(QBrush(Qt::red)));
+    QCOMPARE(item.data(Qt::ForegroundRole), QVariant(QBrush(Qt::red)));
+    QCOMPARE(item.data(Qt::SizeHintRole), QVariant(QSize(10, 10)));
+    // an empty brush should result in a QVariant()
+    item.setBackground(QBrush());
+    item.setForeground(QBrush());
+    item.setSizeHint(QSize());
+    QCOMPARE(item.data(Qt::BackgroundRole), QVariant());
+    QCOMPARE(item.data(Qt::ForegroundRole), QVariant());
+    QCOMPARE(item.data(Qt::SizeHintRole), QVariant());
 }
 
 void tst_QListWidget::changeDataWithSorting()

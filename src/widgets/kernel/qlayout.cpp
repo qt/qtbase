@@ -583,18 +583,18 @@ static bool removeWidgetRecursively(QLayoutItem *li, QObject *w)
 }
 
 
-void QLayoutPrivate::doResize(const QSize &r)
+void QLayoutPrivate::doResize()
 {
     Q_Q(QLayout);
-    int mbh = menuBarHeightForWidth(menubar, r.width());
     QWidget *mw = q->parentWidget();
     QRect rect = mw->testAttribute(Qt::WA_LayoutOnEntireRect) ? mw->rect() : mw->contentsRect();
+    const int mbh = menuBarHeightForWidth(menubar, rect.width());
     const int mbTop = rect.top();
     rect.setTop(mbTop + mbh);
     q->setGeometry(rect);
 #if QT_CONFIG(menubar)
     if (menubar)
-        menubar->setGeometry(rect.left(), mbTop, r.width(), mbh);
+        menubar->setGeometry(rect.left(), mbTop, rect.width(), mbh);
 #endif
 }
 
@@ -613,12 +613,10 @@ void QLayout::widgetEvent(QEvent *e)
 
     switch (e->type()) {
     case QEvent::Resize:
-        if (d->activated) {
-            QResizeEvent *r = (QResizeEvent *)e;
-            d->doResize(r->size());
-        } else {
+        if (d->activated)
+            d->doResize();
+        else
             activate();
-        }
         break;
     case QEvent::ChildRemoved:
         {
@@ -1116,7 +1114,7 @@ bool QLayout::activate()
         break;
     }
 
-    d->doResize(mw->size());
+    d->doResize();
 
     if (md->extra) {
         md->extra->explicitMinSize = explMin;
@@ -1339,7 +1337,7 @@ QRect QLayout::alignmentRect(const QRect &r) const
       returned by QLayoutItems that have an alignment.
     */
     QLayout *that = const_cast<QLayout *>(this);
-    that->setAlignment(0);
+    that->setAlignment({ });
     QSize ms = that->maximumSize();
     that->setAlignment(a);
 

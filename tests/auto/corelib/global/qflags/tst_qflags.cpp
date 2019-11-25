@@ -49,7 +49,7 @@ void tst_QFlags::testFlag() const
     QVERIFY(btn.testFlag(Qt::LeftButton));
     QVERIFY(!btn.testFlag(Qt::MidButton));
 
-    btn = 0;
+    btn = { };
     QVERIFY(!btn.testFlag(Qt::LeftButton));
 }
 

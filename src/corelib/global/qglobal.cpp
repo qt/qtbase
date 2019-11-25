@@ -250,7 +250,7 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
     Qt::Alignment type is simply a typedef for
     QFlags<Qt::AlignmentFlag>. QLabel::setAlignment() takes a
     Qt::Alignment parameter, which means that any combination of
-    Qt::AlignmentFlag values, or 0, is legal:
+    Qt::AlignmentFlag values, or \c{{ }}, is legal:
 
     \snippet code/src_corelib_global_qglobal.cpp 0
 
@@ -318,10 +318,20 @@ Q_STATIC_ASSERT((std::is_same<qsizetype, qptrdiff>::value));
 */
 
 /*!
+    \fn template <typename Enum> QFlags<Enum>::QFlags()
+    \since 5.15
+
+    Constructs a QFlags object with no flags set.
+*/
+
+/*!
     \fn template <typename Enum> QFlags<Enum>::QFlags(Zero)
+    \deprecated
 
     Constructs a QFlags object with no flags set. The parameter must be a
     literal 0 value.
+
+    Deprecated, use default constructor instead.
 */
 
 /*!

@@ -69,7 +69,7 @@ class BlockingClient : public QWidget
     Q_OBJECT
 
 public:
-    BlockingClient(QWidget *parent = 0);
+    BlockingClient(QWidget *parent = nullptr);
 
 private slots:
     void requestNewFortune();

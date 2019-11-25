@@ -59,7 +59,7 @@ class ChatDialog : public QDialog, private Ui::ChatDialog
     Q_OBJECT
 
 public:
-    ChatDialog(QWidget *parent = 0);
+    ChatDialog(QWidget *parent = nullptr);
 
 public slots:
     void appendMessage(const QString &from, const QString &message);

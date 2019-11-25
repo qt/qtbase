@@ -160,6 +160,10 @@ void QTextMarkdownImporter::import(QTextDocument *doc, const QString &markdown)
     m_paragraphMargin = m_doc->defaultFont().pointSize() * 2 / 3;
     m_cursor = new QTextCursor(doc);
     doc->clear();
+    if (doc->defaultFont().pointSize() != -1)
+        m_monoFont.setPointSize(doc->defaultFont().pointSize());
+    else
+        m_monoFont.setPixelSize(doc->defaultFont().pixelSize());
     qCDebug(lcMD) << "default font" << doc->defaultFont() << "mono font" << m_monoFont;
     QByteArray md = markdown.toUtf8();
     md_parse(md.constData(), MD_SIZE(md.size()), &callbacks, this);
@@ -216,6 +220,10 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
         qCDebug(lcMD) << "LI";
     } break;
     case MD_BLOCK_UL: {
+        if (m_needsInsertList) // list nested in an empty list
+            m_listStack.push(m_cursor->insertList(m_listFormat));
+        else
+            m_needsInsertList = true;
         MD_BLOCK_UL_DETAIL *detail = static_cast<MD_BLOCK_UL_DETAIL *>(det);
         m_listFormat = QTextListFormat();
         m_listFormat.setIndent(m_listStack.count() + 1);
@@ -230,17 +238,19 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
             m_listFormat.setStyle(QTextListFormat::ListDisc);
             break;
         }
-        qCDebug(lcMD, "UL %c level %d", detail->mark, m_listStack.count());
-        m_needsInsertList = true;
+        qCDebug(lcMD, "UL %c level %d", detail->mark, m_listStack.count() + 1);
     } break;
     case MD_BLOCK_OL: {
+        if (m_needsInsertList) // list nested in an empty list
+            m_listStack.push(m_cursor->insertList(m_listFormat));
+        else
+            m_needsInsertList = true;
         MD_BLOCK_OL_DETAIL *detail = static_cast<MD_BLOCK_OL_DETAIL *>(det);
         m_listFormat = QTextListFormat();
         m_listFormat.setIndent(m_listStack.count() + 1);
         m_listFormat.setNumberSuffix(QChar::fromLatin1(detail->mark_delimiter));
         m_listFormat.setStyle(QTextListFormat::ListDecimal);
-        qCDebug(lcMD, "OL xx%d level %d", detail->mark_delimiter, m_listStack.count());
-        m_needsInsertList = true;
+        qCDebug(lcMD, "OL xx%d level %d", detail->mark_delimiter, m_listStack.count() + 1);
     } break;
     case MD_BLOCK_TD: {
         MD_BLOCK_TD_DETAIL *detail = static_cast<MD_BLOCK_TD_DETAIL *>(det);
@@ -306,8 +316,14 @@ int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
         break;
     case MD_BLOCK_UL:
     case MD_BLOCK_OL:
-        qCDebug(lcMD, "list at level %d ended", m_listStack.count());
-        m_listStack.pop();
+        if (Q_UNLIKELY(m_needsInsertList))
+            m_listStack.push(m_cursor->createList(m_listFormat));
+        if (Q_UNLIKELY(m_listStack.isEmpty())) {
+            qCWarning(lcMD, "list ended unexpectedly");
+        } else {
+            qCDebug(lcMD, "list at level %d ended", m_listStack.count());
+            m_listStack.pop();
+        }
         break;
     case MD_BLOCK_TR: {
         // https://github.com/mity/md4c/issues/29

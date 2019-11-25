@@ -60,7 +60,7 @@ class Server : public QTcpServer
     Q_OBJECT
 
 public:
-    Server(QObject *parent = 0);
+    Server(QObject *parent = nullptr);
 
 signals:
     void newConnection(Connection *connection);

@@ -301,6 +301,13 @@ void tst_QFont::resolve()
     font5.setFamilies(fontFamilies);
     font6 = font6.resolve(font5);
     QCOMPARE(font6.families(), fontFamilies);
+
+    QFont font7, font8;
+    font7.setFamily(QLatin1String("Helvetica"));
+    font8.setFamilies(fontFamilies);
+    font7 = font7.resolve(font8);
+    QCOMPARE(font7.families(), QStringList({"Helvetica", "Arial"}));
+    QCOMPARE(font7.family(), "Helvetica");
 }
 
 #ifndef QT_NO_WIDGETS

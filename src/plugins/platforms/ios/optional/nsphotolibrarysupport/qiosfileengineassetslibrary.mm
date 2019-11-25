@@ -373,7 +373,7 @@ bool QIOSFileEngineAssetsLibrary::close()
 
 QAbstractFileEngine::FileFlags QIOSFileEngineAssetsLibrary::fileFlags(QAbstractFileEngine::FileFlags type) const
 {
-    QAbstractFileEngine::FileFlags flags = 0;
+    QAbstractFileEngine::FileFlags flags;
     const bool isDir = (m_assetUrl == QLatin1String("assets-library://"));
     const bool exists = isDir || m_assetUrl == g_iteratorCurrentUrl.localData() || loadAsset();
 

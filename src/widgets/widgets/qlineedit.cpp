@@ -276,7 +276,7 @@ QLineEdit::QLineEdit(QWidget* parent)
     \sa text(), setMaxLength()
 */
 QLineEdit::QLineEdit(const QString& contents, QWidget* parent)
-    : QWidget(*new QLineEditPrivate, parent, 0)
+    : QWidget(*new QLineEditPrivate, parent, { })
 {
     Q_D(QLineEdit);
     d->init(contents);

@@ -1431,7 +1431,7 @@ void QTableView::paintEvent(QPaintEvent *event)
     const bool showGrid = d->showGrid;
     const int gridSize = showGrid ? 1 : 0;
     const int gridHint = style()->styleHint(QStyle::SH_Table_GridLineColor, &option, this);
-    const QColor gridColor = static_cast<QRgb>(gridHint);
+    const QColor gridColor = QColor::fromRgba(static_cast<QRgb>(gridHint));
     const QPen gridPen = QPen(gridColor, 0, d->gridStyle);
     const QHeaderView *verticalHeader = d->verticalHeader;
     const QHeaderView *horizontalHeader = d->horizontalHeader;

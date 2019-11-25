@@ -374,7 +374,7 @@ QFileDialog::QFileDialog(QWidget *parent,
                      const QString &caption,
                      const QString &directory,
                      const QString &filter)
-    : QDialog(*new QFileDialogPrivate, parent, 0)
+    : QDialog(*new QFileDialogPrivate, parent, { })
 {
     Q_D(QFileDialog);
     d->init(QUrl::fromLocalFile(directory), filter, caption);
@@ -384,7 +384,7 @@ QFileDialog::QFileDialog(QWidget *parent,
     \internal
 */
 QFileDialog::QFileDialog(const QFileDialogArgs &args)
-    : QDialog(*new QFileDialogPrivate, args.parent, 0)
+    : QDialog(*new QFileDialogPrivate, args.parent, { })
 {
     Q_D(QFileDialog);
     d->init(args.directory, args.filter, args.caption);

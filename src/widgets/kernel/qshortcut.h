@@ -58,7 +58,63 @@ public:
     explicit QShortcut(QWidget *parent);
     explicit QShortcut(const QKeySequence& key, QWidget *parent,
                        const char *member = nullptr, const char *ambiguousMember = nullptr,
-                       Qt::ShortcutContext context = Qt::WindowShortcut);
+                       Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+#ifdef Q_CLANG_QDOC
+    template<typename Functor>
+    QShortcut(const QKeySequence &key, QWidget *parent,
+              Functor functor,
+              Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+    template<typename Functor>
+    QShortcut(const QKeySequence &key, QWidget *parent,
+              const QObject *context, Functor functor,
+              Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+    template<typename Functor, typename FunctorAmbiguous>
+    QShortcut(const QKeySequence &key, QWidget *parent,
+              const QObject *context1, Functor functor,
+              FunctorAmbiguous functorAmbiguous,
+              Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+    template<typename Functor, typename FunctorAmbiguous>
+    QShortcut(const QKeySequence &key, QWidget *parent,
+              const QObject *context1, Functor functor,
+              const QObject *context2, FunctorAmbiguous functorAmbiguous,
+              Qt::ShortcutContext shortcutContext = Qt::WindowShortcut);
+#else
+    template<typename Func1>
+    QShortcut(const QKeySequence &key, QWidget *parent,
+              Func1 slot1,
+              Qt::ShortcutContext context = Qt::WindowShortcut)
+        : QShortcut(key, parent, static_cast<const char*>(nullptr), static_cast<const char*>(nullptr), context)
+    {
+        connect(this, &QShortcut::activated, std::move(slot1));
+    }
+    template<class Obj1, typename Func1>
+    QShortcut(const QKeySequence &key, QWidget *parent,
+              const Obj1 *object1, Func1 slot1,
+              Qt::ShortcutContext context = Qt::WindowShortcut)
+        : QShortcut(key, parent, static_cast<const char*>(nullptr), static_cast<const char*>(nullptr), context)
+    {
+        connect(this, &QShortcut::activated, object1, std::move(slot1));
+    }
+    template<class Obj1, typename Func1, typename Func2>
+    QShortcut(const QKeySequence &key, QWidget *parent,
+              const Obj1 *object1, Func1 slot1, Func2 slot2,
+              Qt::ShortcutContext context = Qt::WindowShortcut)
+        : QShortcut(key, parent, static_cast<const char*>(nullptr), static_cast<const char*>(nullptr), context)
+    {
+        connect(this, &QShortcut::activated, object1, std::move(slot1));
+        connect(this, &QShortcut::activatedAmbiguously, object1, std::move(slot2));
+    }
+    template<class Obj1, typename Func1, class Obj2, typename Func2>
+    QShortcut(const QKeySequence &key, QWidget *parent,
+              const Obj1 *object1, Func1 slot1,
+              const Obj2 *object2, Func2 slot2,
+              Qt::ShortcutContext context = Qt::WindowShortcut)
+        : QShortcut(key, parent, static_cast<const char*>(nullptr), static_cast<const char*>(nullptr), context)
+    {
+        connect(this, &QShortcut::activated, object1, std::move(slot1));
+        connect(this, &QShortcut::activatedAmbiguously, object2, std::move(slot2));
+    }
+#endif
     ~QShortcut();
 
     void setWhatsThis(const QString &text);

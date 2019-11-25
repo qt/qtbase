@@ -164,7 +164,7 @@ public:
         QMutexLocker readyLocker(&m_readyMutex);
         while (!m_cancelled.loadRelaxed()) {
             if (!m_params && !m_cancelled.loadRelaxed()
-                && !m_readyCondition.wait(&m_readyMutex, 1000))
+                && !m_readyCondition.wait(&m_readyMutex, QDeadlineTimer(1000ll)))
                 continue;
 
             if (m_params) {
@@ -189,7 +189,7 @@ public:
             CoUninitialize();
     }
 
-    bool runWithParams(QShGetFileInfoParams *params, unsigned long timeOutMSecs)
+    bool runWithParams(QShGetFileInfoParams *params, qint64 timeOutMSecs)
     {
         QMutexLocker doneLocker(&m_doneMutex);
 
@@ -198,7 +198,7 @@ public:
         m_readyCondition.wakeAll();
         m_readyMutex.unlock();
 
-        return m_doneCondition.wait(&m_doneMutex, timeOutMSecs);
+        return m_doneCondition.wait(&m_doneMutex, QDeadlineTimer(timeOutMSecs));
     }
 
     void cancel()
@@ -220,7 +220,7 @@ private:
 
 static bool shGetFileInfoBackground(const QString &fileName, DWORD attributes,
                                     SHFILEINFO *info, UINT flags,
-                                    unsigned long  timeOutMSecs = 5000)
+                                    qint64 timeOutMSecs = 5000)
 {
     static QShGetFileInfoThread *getFileInfoThread = nullptr;
     if (!getFileInfoThread) {

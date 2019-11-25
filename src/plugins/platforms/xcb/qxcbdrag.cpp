@@ -883,7 +883,7 @@ void QXcbDrag::handleLeave(QPlatformWindow *w, const xcb_client_message_event_t 
                 event->data.data32[0], xdnd_dragsource);
     }
 
-    QWindowSystemInterface::handleDrag(w->window(), nullptr, QPoint(), Qt::IgnoreAction, 0, 0);
+    QWindowSystemInterface::handleDrag(w->window(), nullptr, QPoint(), Qt::IgnoreAction, { }, { });
 }
 
 void QXcbDrag::send_leave()

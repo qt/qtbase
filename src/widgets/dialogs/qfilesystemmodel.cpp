@@ -2077,7 +2077,8 @@ void QFileSystemModelPrivate::init()
 #endif // filesystemwatcher
     q->connect(&delayedSortTimer, SIGNAL(timeout()), q, SLOT(_q_performDelayedSort()), Qt::QueuedConnection);
 
-    roleNames.insertMulti(QFileSystemModel::FileIconRole, QByteArrayLiteral("fileIcon")); // == Qt::decoration
+    roleNames.insert(QFileSystemModel::FileIconRole,
+                     QByteArrayLiteral("fileIcon")); // == Qt::decoration
     roleNames.insert(QFileSystemModel::FilePathRole, QByteArrayLiteral("filePath"));
     roleNames.insert(QFileSystemModel::FileNameRole, QByteArrayLiteral("fileName"));
     roleNames.insert(QFileSystemModel::FilePermissions, QByteArrayLiteral("filePermissions"));

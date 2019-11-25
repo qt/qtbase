@@ -633,7 +633,13 @@ bool QTimeZonePrivate::isValidId(const QByteArray &ianaId)
 
     // Somewhat slack hand-rolled version:
     const int MinSectionLength = 1;
+#if defined(Q_OS_ANDROID) && !defined(Q_OS_ANDROID_EMBEDDED)
+    // Android has its own naming of zones.
+    // "Canada/East-Saskatchewan" has a 17-character second component.
+    const int MaxSectionLength = 17;
+#else
     const int MaxSectionLength = 14;
+#endif
     int sectionLength = 0;
     for (const char *it = ianaId.begin(), * const end = ianaId.end(); it != end; ++it, ++sectionLength) {
         const char ch = *it;

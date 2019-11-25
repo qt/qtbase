@@ -65,7 +65,7 @@ class QAlphaWidget: public QWidget, private QEffects
 {
     Q_OBJECT
 public:
-    QAlphaWidget(QWidget* w, Qt::WindowFlags f = 0);
+    QAlphaWidget(QWidget* w, Qt::WindowFlags f = { });
     ~QAlphaWidget();
 
     void run(int time);

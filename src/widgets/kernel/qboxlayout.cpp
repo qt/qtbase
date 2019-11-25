@@ -1173,7 +1173,7 @@ void QBoxLayout::setDirection(Direction direction)
             if (box->magic) {
                 QSpacerItem *sp = box->item->spacerItem();
                 if (sp) {
-                    if (sp->expandingDirections() == Qt::Orientations(0) /*No Direction*/) {
+                    if (sp->expandingDirections() == Qt::Orientations{} /*No Direction*/) {
                         //spacing or strut
                         QSize s = sp->sizeHint();
                         sp->changeSize(s.height(), s.width(),

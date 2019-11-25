@@ -320,7 +320,7 @@ QGroupBox* MainWindow::createAlbumGroupBox()
             this, &MainWindow::showAlbumDetails);
 
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->addWidget(albumView, 0, 0);
+    layout->addWidget(albumView, 0, { });
     box->setLayout(layout);
 
     return box;

@@ -1724,7 +1724,7 @@ void QNetworkAccessManager::setAutoDeleteReplies(bool shouldAutoDelete)
     This timeout is zero if setTransferTimeout() hasn't been
     called, which means that the timeout is not used.
 */
-int QNetworkAccessManager::transferTimeout()
+int QNetworkAccessManager::transferTimeout() const
 {
     return d_func()->transferTimeout;
 }
@@ -1979,7 +1979,7 @@ void QNetworkAccessManagerPrivate::destroyThread()
 {
     if (thread) {
         thread->quit();
-        thread->wait(5000);
+        thread->wait(QDeadlineTimer(5000));
         if (thread->isFinished())
             delete thread;
         else

@@ -482,7 +482,7 @@ QDialogButtonBox::QDialogButtonBox(QWidget *parent)
     \sa orientation, addButton()
 */
 QDialogButtonBox::QDialogButtonBox(Qt::Orientation orientation, QWidget *parent)
-    : QWidget(*new QDialogButtonBoxPrivate(orientation), parent, 0)
+    : QWidget(*new QDialogButtonBoxPrivate(orientation), parent, { })
 {
     d_func()->initLayout();
 }

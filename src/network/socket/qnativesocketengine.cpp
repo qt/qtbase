@@ -1341,7 +1341,7 @@ void QNativeSocketEngine::setReadNotificationEnabled(bool enable)
     Q_D(QNativeSocketEngine);
     if (d->readNotifier) {
         d->readNotifier->setEnabled(enable);
-    } else if (enable && d->threadData->hasEventDispatcher()) {
+    } else if (enable && d->threadData.loadRelaxed()->hasEventDispatcher()) {
         d->readNotifier = new QReadNotifier(d->socketDescriptor, this);
         d->readNotifier->setEnabled(true);
     }
@@ -1358,7 +1358,7 @@ void QNativeSocketEngine::setWriteNotificationEnabled(bool enable)
     Q_D(QNativeSocketEngine);
     if (d->writeNotifier) {
         d->writeNotifier->setEnabled(enable);
-    } else if (enable && d->threadData->hasEventDispatcher()) {
+    } else if (enable && d->threadData.loadRelaxed()->hasEventDispatcher()) {
         d->writeNotifier = new QWriteNotifier(d->socketDescriptor, this);
         d->writeNotifier->setEnabled(true);
     }
@@ -1375,7 +1375,7 @@ void QNativeSocketEngine::setExceptionNotificationEnabled(bool enable)
     Q_D(QNativeSocketEngine);
     if (d->exceptNotifier) {
         d->exceptNotifier->setEnabled(enable);
-    } else if (enable && d->threadData->hasEventDispatcher()) {
+    } else if (enable && d->threadData.loadRelaxed()->hasEventDispatcher()) {
         d->exceptNotifier = new QExceptionNotifier(d->socketDescriptor, this);
         d->exceptNotifier->setEnabled(true);
     }

@@ -1416,12 +1416,12 @@ QDateTimeEdit::StepEnabled QDateTimeEdit::stepEnabled() const
 {
     Q_D(const QDateTimeEdit);
     if (d->readOnly)
-        return StepEnabled(0);
+        return {};
     if (d->specialValue()) {
-        return (d->minimum == d->maximum ? StepEnabled(0) : StepEnabled(StepUpEnabled));
+        return (d->minimum == d->maximum ? StepEnabled{} : StepEnabled(StepUpEnabled));
     }
 
-    QAbstractSpinBox::StepEnabled ret = 0;
+    QAbstractSpinBox::StepEnabled ret = { };
 
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplicationPrivate::keypadNavigationEnabled() && !hasEditFocus()) {
@@ -1456,7 +1456,7 @@ QDateTimeEdit::StepEnabled QDateTimeEdit::stepEnabled() const
     switch (d->sectionType(d->currentSectionIndex)) {
     case QDateTimeParser::NoSection:
     case QDateTimeParser::FirstSection:
-    case QDateTimeParser::LastSection: return 0;
+    case QDateTimeParser::LastSection: return { };
     default: break;
     }
     if (d->wrapping)
@@ -1659,12 +1659,11 @@ QDateTimeEditPrivate::QDateTimeEditPrivate()
     cacheGuard = false;
     fixday = true;
     type = QVariant::DateTime;
-    sections = 0;
+    sections = { };
     cachedDay = -1;
     currentSectionIndex = FirstSectionIndex;
 
     first.pos = 0;
-    sections = 0;
     calendarPopup = false;
     minimum = QDATETIMEEDIT_COMPAT_DATE_MIN.startOfDay();
     maximum = QDATETIMEEDIT_DATE_MAX.endOfDay();
@@ -2256,7 +2255,7 @@ QDateTimeEdit::Section QDateTimeEditPrivate::convertToPublic(QDateTimeParser::Se
 
 QDateTimeEdit::Sections QDateTimeEditPrivate::convertSections(QDateTimeParser::Sections s)
 {
-    QDateTimeEdit::Sections ret = 0;
+    QDateTimeEdit::Sections ret;
     if (s & QDateTimeParser::MSecSection)
         ret |= QDateTimeEdit::MSecSection;
     if (s & QDateTimeParser::SecondSection)

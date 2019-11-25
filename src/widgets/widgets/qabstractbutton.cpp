@@ -467,7 +467,7 @@ void QAbstractButtonPrivate::emitToggled(bool checked)
     Constructs an abstract button with a \a parent.
 */
 QAbstractButton::QAbstractButton(QWidget *parent)
-    : QWidget(*new QAbstractButtonPrivate, parent, 0)
+    : QWidget(*new QAbstractButtonPrivate, parent, { })
 {
     Q_D(QAbstractButton);
     d->init();
@@ -489,7 +489,7 @@ QAbstractButton::QAbstractButton(QWidget *parent)
 /*! \internal
  */
 QAbstractButton::QAbstractButton(QAbstractButtonPrivate &dd, QWidget *parent)
-    : QWidget(dd, parent, 0)
+    : QWidget(dd, parent, { })
 {
     Q_D(QAbstractButton);
     d->init();

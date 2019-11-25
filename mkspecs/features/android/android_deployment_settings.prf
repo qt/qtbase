@@ -63,6 +63,22 @@ contains(TEMPLATE, ".*app"):!build_pass:!android-embedded {
         QML_ROOT_PATH = $$_PRO_FILE_PWD_
     FILE_CONTENT += "   \"qml-root-path\": $$emitString($$QML_ROOT_PATH),"
     FILE_CONTENT += "   \"stdcpp-path\": $$emitString($$ANDROID_STDCPP_PATH),"
+    !isEmpty(RESOURCES) {
+        # Make sure that qmake generated qrc files are accounted for
+        load(resources_functions)
+        qtFlattenResources()
+        for(resource, RESOURCES) {
+            contains(resource, ".*\\qmake_qmake_immediate.qrc$") {
+                # They will be created for each architecture, since they could be different
+                # we need to account for all of them
+                for (arch, ANDROID_ABIS): \
+                    rescopy += $$absolute_path("qmake_qmake_immediate.qrc", $$OUT_PWD/$$arch)
+            } else {
+                contains(resource, ".*\\.qrc$"): rescopy += $$absolute_path($$resource, $$_PRO_FILE_PWD_)
+            }
+        }
+        FILE_CONTENT += "   \"qrcFiles\": $$emitString($$join(rescopy, ",")),"
+    }
     FILE_CONTENT += ""
     FILE_CONTENT += "   \"application-binary\": $$emitString($$TARGET)"
     FILE_CONTENT += "}"

@@ -2059,7 +2059,7 @@ void tst_QItemSelectionModel::unselectable()
     QCOMPARE(selectionModel.selectedIndexes().count(), 10);
     QCOMPARE(selectionModel.selectedRows().count(), 10);
     for (int j = 0; j < 10; ++j)
-        model.item(j)->setFlags(0);
+        model.item(j)->setFlags({ });
     QCOMPARE(selectionModel.selectedIndexes().count(), 0);
     QCOMPARE(selectionModel.selectedRows().count(), 0);
 }

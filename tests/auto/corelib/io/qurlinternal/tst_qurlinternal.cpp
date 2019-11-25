@@ -848,7 +848,7 @@ void tst_QUrlInternal::correctEncodedMistakes()
     QString dataTag = QTest::currentDataTag();
     QString output = dataTag;
 
-    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), 0))
+    if (!qt_urlRecode(output, input.constData(), input.constData() + input.length(), { }))
         output += input;
     QCOMPARE(output, dataTag + expected);
 

@@ -70,9 +70,11 @@ public:
 
     QAndroidPlatformScreen *platformScreen() const;
 
+    QMargins safeAreaMargins() const override;
+
     void propagateSizeHints() override;
     void requestActivateWindow() override;
-    void updateStatusBarVisibility();
+    void updateSystemUiVisibility();
     inline bool isRaster() const {
         if (isForeignWindow())
             return false;

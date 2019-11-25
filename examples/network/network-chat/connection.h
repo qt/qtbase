@@ -79,8 +79,8 @@ public:
         Undefined
     };
 
-    Connection(QObject *parent = 0);
-    Connection(qintptr socketDescriptor, QObject *parent = 0);
+    Connection(QObject *parent = nullptr);
+    Connection(qintptr socketDescriptor, QObject *parent = nullptr);
     ~Connection();
 
     QString name() const;

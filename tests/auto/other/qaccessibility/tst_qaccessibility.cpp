@@ -316,7 +316,7 @@ void tst_QAccessibility::eventTest()
     QVERIFY(QTestAccessibility::containsEvent(&showEvent));
     button->setFocus(Qt::MouseFocusReason);
     QTestAccessibility::clearEvents();
-    QTest::mouseClick(button, Qt::LeftButton, 0);
+    QTest::mouseClick(button, Qt::LeftButton, { });
 
     button->setAccessibleName("Olaf the second");
     QAccessibleEvent nameEvent(button, QAccessible::NameChanged);
@@ -2843,14 +2843,14 @@ void tst_QAccessibility::listTest()
     QTestAccessibility::clearEvents();
 
     // Check for events
-    QTest::mouseClick(listView->viewport(), Qt::LeftButton, 0, listView->visualItemRect(listView->item(1)).center());
+    QTest::mouseClick(listView->viewport(), Qt::LeftButton, { }, listView->visualItemRect(listView->item(1)).center());
     QAccessibleEvent selectionEvent(listView, QAccessible::SelectionAdd);
     selectionEvent.setChild(1);
     QAccessibleEvent focusEvent(listView, QAccessible::Focus);
     focusEvent.setChild(1);
     QVERIFY(QTestAccessibility::containsEvent(&selectionEvent));
     QVERIFY(QTestAccessibility::containsEvent(&focusEvent));
-    QTest::mouseClick(listView->viewport(), Qt::LeftButton, 0, listView->visualItemRect(listView->item(2)).center());
+    QTest::mouseClick(listView->viewport(), Qt::LeftButton, { }, listView->visualItemRect(listView->item(2)).center());
 
     QAccessibleEvent selectionEvent2(listView, QAccessible::SelectionAdd);
     selectionEvent2.setChild(2);

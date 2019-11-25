@@ -455,7 +455,7 @@ void QXcbConnection::printXcbError(const char *message, xcb_generic_error_t *err
 
 static Qt::MouseButtons translateMouseButtons(int s)
 {
-    Qt::MouseButtons ret = 0;
+    Qt::MouseButtons ret;
     if (s & XCB_BUTTON_MASK_1)
         ret |= Qt::LeftButton;
     if (s & XCB_BUTTON_MASK_2)

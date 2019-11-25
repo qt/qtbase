@@ -69,7 +69,7 @@ class TrackerClient : public QObject
     Q_OBJECT
 
 public:
-    explicit TrackerClient(TorrentClient *downloader, QObject *parent = 0);
+    explicit TrackerClient(TorrentClient *downloader, QObject *parent = nullptr);
 
     void start(const MetaInfo &info);
     void stop();
@@ -98,21 +98,19 @@ private slots:
 private:
     TorrentClient *torrentDownloader;
 
-    int requestInterval;
-    int requestIntervalTimer;
+    int requestInterval = 5 * 60;
+    int requestIntervalTimer = -1;
     QNetworkAccessManager http;
     MetaInfo metaInfo;
     QByteArray trackerId;
     QList<TorrentPeer> peers;
-    qint64 uploadedBytes;
-    qint64 downloadedBytes;
-    qint64 length;
+    qint64 length = 0;
     QString uname;
     QString pwd;
 
-    bool firstTrackerRequest;
-    bool lastTrackerRequest;
-    bool firstSeeding;
+    bool firstTrackerRequest = true;
+    bool lastTrackerRequest = false;
+    bool firstSeeding = true;
 };
 
 #endif

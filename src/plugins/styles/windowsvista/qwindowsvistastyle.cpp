@@ -2110,7 +2110,7 @@ int QWindowsVistaStyle::styleHint(StyleHint hint, const QStyleOption *option, co
         break;
      case SH_Table_GridLineColor:
         if (option)
-            ret = int(option->palette.color(QPalette::Base).darker(118).rgb());
+            ret = int(option->palette.color(QPalette::Base).darker(118).rgba());
         else
             ret = -1;
         break;

@@ -51,14 +51,7 @@ QT_BEGIN_NAMESPACE
 
 QDomHandler::QDomHandler(QDomDocumentPrivate *adoc, QXmlSimpleReader *areader,
                          bool namespaceProcessing)
-    : errorLine(0),
-      errorColumn(0),
-      doc(adoc),
-      node(adoc),
-      cdata(false),
-      nsProcessing(namespaceProcessing),
-      locator(nullptr),
-      reader(areader)
+    : cdata(false), reader(areader), domBuilder(adoc, &locator, namespaceProcessing)
 {
 }
 
@@ -66,97 +59,33 @@ QDomHandler::~QDomHandler() {}
 
 bool QDomHandler::endDocument()
 {
-    // ### is this really necessary? (rms)
-    if (node != doc)
-        return false;
-    return true;
+    return domBuilder.endDocument();
 }
 
 bool QDomHandler::startDTD(const QString &name, const QString &publicId, const QString &systemId)
 {
-    doc->doctype()->name = name;
-    doc->doctype()->publicId = publicId;
-    doc->doctype()->systemId = systemId;
-    return true;
+    return domBuilder.startDTD(name, publicId, systemId);
 }
 
 bool QDomHandler::startElement(const QString &nsURI, const QString &, const QString &qName,
                                const QXmlAttributes &atts)
 {
-    // tag name
-    QDomNodePrivate *n;
-    if (nsProcessing) {
-        n = doc->createElementNS(nsURI, qName);
-    } else {
-        n = doc->createElement(qName);
-    }
-
-    if (!n)
-        return false;
-
-    n->setLocation(locator->lineNumber(), locator->columnNumber());
-
-    node->appendChild(n);
-    node = n;
-
-    // attributes
-    for (int i = 0; i < atts.length(); i++) {
-        if (nsProcessing) {
-            ((QDomElementPrivate *)node)->setAttributeNS(atts.uri(i), atts.qName(i), atts.value(i));
-        } else {
-            ((QDomElementPrivate *)node)->setAttribute(atts.qName(i), atts.value(i));
-        }
-    }
-
-    return true;
+    return domBuilder.startElement(nsURI, qName, atts);
 }
 
 bool QDomHandler::endElement(const QString &, const QString &, const QString &)
 {
-    if (!node || node == doc)
-        return false;
-    node = node->parent();
-
-    return true;
+    return domBuilder.endElement();
 }
 
 bool QDomHandler::characters(const QString &ch)
 {
-    // No text as child of some document
-    if (node == doc)
-        return false;
-
-    QScopedPointer<QDomNodePrivate> n;
-    if (cdata) {
-        n.reset(doc->createCDATASection(ch));
-    } else if (!entityName.isEmpty()) {
-        QScopedPointer<QDomEntityPrivate> e(
-                new QDomEntityPrivate(doc, nullptr, entityName, QString(), QString(), QString()));
-        e->value = ch;
-        e->ref.deref();
-        doc->doctype()->appendChild(e.data());
-        e.take();
-        n.reset(doc->createEntityReference(entityName));
-    } else {
-        n.reset(doc->createTextNode(ch));
-    }
-    n->setLocation(locator->lineNumber(), locator->columnNumber());
-    node->appendChild(n.data());
-    n.take();
-
-    return true;
+    return domBuilder.characters(ch, cdata);
 }
 
 bool QDomHandler::processingInstruction(const QString &target, const QString &data)
 {
-    QDomNodePrivate *n;
-    n = doc->createProcessingInstruction(target, data);
-    if (n) {
-        n->setLocation(locator->lineNumber(), locator->columnNumber());
-        node->appendChild(n);
-        return true;
-    } else
-        return false;
+    return domBuilder.processingInstruction(target, data);
 }
 
 bool QDomHandler::skippedEntity(const QString &name)
@@ -165,17 +94,14 @@ bool QDomHandler::skippedEntity(const QString &name)
     if (reader && !reader->d_ptr->skipped_entity_in_content)
         return true;
 
-    QDomNodePrivate *n = doc->createEntityReference(name);
-    n->setLocation(locator->lineNumber(), locator->columnNumber());
-    node->appendChild(n);
-    return true;
+    return domBuilder.skippedEntity(name);
 }
 
 bool QDomHandler::fatalError(const QXmlParseException &exception)
 {
-    errorMsg = exception.message();
-    errorLine = exception.lineNumber();
-    errorColumn = exception.columnNumber();
+    domBuilder.errorMsg = exception.message();
+    domBuilder.errorLine = exception.lineNumber();
+    domBuilder.errorColumn = exception.columnNumber();
     return QXmlDefaultHandler::fatalError(exception);
 }
 
@@ -193,34 +119,23 @@ bool QDomHandler::endCDATA()
 
 bool QDomHandler::startEntity(const QString &name)
 {
-    entityName = name;
-    return true;
+    return domBuilder.startEntity(name);
 }
 
 bool QDomHandler::endEntity(const QString &)
 {
-    entityName.clear();
-    return true;
+    return domBuilder.endEntity();
 }
 
 bool QDomHandler::comment(const QString &ch)
 {
-    QDomNodePrivate *n;
-    n = doc->createComment(ch);
-    n->setLocation(locator->lineNumber(), locator->columnNumber());
-    node->appendChild(n);
-    return true;
+    return domBuilder.comment(ch);
 }
 
 bool QDomHandler::unparsedEntityDecl(const QString &name, const QString &publicId,
                                      const QString &systemId, const QString &notationName)
 {
-    QDomEntityPrivate *e =
-            new QDomEntityPrivate(doc, nullptr, name, publicId, systemId, notationName);
-    // keep the refcount balanced: appendChild() does a ref anyway.
-    e->ref.deref();
-    doc->doctype()->appendChild(e);
-    return true;
+    return domBuilder.unparsedEntityDecl(name, publicId, systemId, notationName);
 }
 
 bool QDomHandler::externalEntityDecl(const QString &name, const QString &publicId,
@@ -232,16 +147,225 @@ bool QDomHandler::externalEntityDecl(const QString &name, const QString &publicI
 bool QDomHandler::notationDecl(const QString &name, const QString &publicId,
                                const QString &systemId)
 {
+    return domBuilder.notationDecl(name, publicId, systemId);
+}
+
+void QDomHandler::setDocumentLocator(QXmlLocator *locator)
+{
+    this->locator.setLocator(locator);
+}
+
+QDomBuilder::ErrorInfo QDomHandler::errorInfo() const
+{
+    return domBuilder.error();
+}
+
+/**************************************************************
+ *
+ * QXmlDocumentLocators
+ *
+ **************************************************************/
+
+void QSAXDocumentLocator::setLocator(QXmlLocator *l)
+{
+    locator = l;
+}
+
+int QSAXDocumentLocator::column() const
+{
+    if (!locator)
+        return 0;
+
+    return static_cast<int>(locator->columnNumber());
+}
+
+int QSAXDocumentLocator::line() const
+{
+    if (!locator)
+        return 0;
+
+    return static_cast<int>(locator->lineNumber());
+}
+
+/**************************************************************
+ *
+ * QDomBuilder
+ *
+ **************************************************************/
+
+QDomBuilder::QDomBuilder(QDomDocumentPrivate *d, QXmlDocumentLocator *l, bool namespaceProcessing)
+    : errorLine(0),
+      errorColumn(0),
+      doc(d),
+      node(d),
+      locator(l),
+      nsProcessing(namespaceProcessing)
+{
+}
+
+QDomBuilder::~QDomBuilder() {}
+
+bool QDomBuilder::endDocument()
+{
+    // ### is this really necessary? (rms)
+    if (node != doc)
+        return false;
+    return true;
+}
+
+bool QDomBuilder::startDTD(const QString &name, const QString &publicId, const QString &systemId)
+{
+    doc->doctype()->name = name;
+    doc->doctype()->publicId = publicId;
+    doc->doctype()->systemId = systemId;
+    return true;
+}
+
+bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
+                               const QXmlAttributes &atts)
+{
+    // tag name
+    QDomNodePrivate *n;
+    if (nsProcessing) {
+        n = doc->createElementNS(nsURI, qName);
+    } else {
+        n = doc->createElement(qName);
+    }
+
+    if (!n)
+        return false;
+
+    n->setLocation(locator->line(), locator->column());
+
+    node->appendChild(n);
+    node = n;
+
+    // attributes
+    for (int i = 0; i < atts.length(); i++) {
+        auto domElement = static_cast<QDomElementPrivate *>(node);
+        if (nsProcessing)
+            domElement->setAttributeNS(atts.uri(i), atts.qName(i), atts.value(i));
+        else
+            domElement->setAttribute(atts.qName(i), atts.value(i));
+    }
+
+    return true;
+}
+
+bool QDomBuilder::endElement()
+{
+    if (!node || node == doc)
+        return false;
+    node = node->parent();
+
+    return true;
+}
+
+bool QDomBuilder::characters(const QString &characters, bool cdata)
+{
+    // No text as child of some document
+    if (node == doc)
+        return false;
+
+    QScopedPointer<QDomNodePrivate> n;
+    if (cdata) {
+        n.reset(doc->createCDATASection(characters));
+    } else if (!entityName.isEmpty()) {
+        QScopedPointer<QDomEntityPrivate> e(
+                new QDomEntityPrivate(doc, nullptr, entityName, QString(), QString(), QString()));
+        e->value = characters;
+        e->ref.deref();
+        doc->doctype()->appendChild(e.data());
+        e.take();
+        n.reset(doc->createEntityReference(entityName));
+    } else {
+        n.reset(doc->createTextNode(characters));
+    }
+    n->setLocation(locator->line(), locator->column());
+    node->appendChild(n.data());
+    n.take();
+
+    return true;
+}
+
+bool QDomBuilder::processingInstruction(const QString &target, const QString &data)
+{
+    QDomNodePrivate *n;
+    n = doc->createProcessingInstruction(target, data);
+    if (n) {
+        n->setLocation(locator->line(), locator->column());
+        node->appendChild(n);
+        return true;
+    } else
+        return false;
+}
+
+bool QDomBuilder::skippedEntity(const QString &name)
+{
+    QDomNodePrivate *n = doc->createEntityReference(name);
+    n->setLocation(locator->line(), locator->column());
+    node->appendChild(n);
+    return true;
+}
+
+void QDomBuilder::fatalError(const QString &message)
+{
+    errorMsg = message;
+    errorLine = static_cast<int>(locator->line());
+    errorColumn = static_cast<int>(locator->column());
+}
+
+QDomBuilder::ErrorInfo QDomBuilder::error() const
+{
+    return ErrorInfo(errorMsg, errorLine, errorColumn);
+}
+
+bool QDomBuilder::startEntity(const QString &name)
+{
+    entityName = name;
+    return true;
+}
+
+bool QDomBuilder::endEntity()
+{
+    entityName.clear();
+    return true;
+}
+
+bool QDomBuilder::comment(const QString &characters)
+{
+    QDomNodePrivate *n;
+    n = doc->createComment(characters);
+    n->setLocation(locator->line(), locator->column());
+    node->appendChild(n);
+    return true;
+}
+
+bool QDomBuilder::unparsedEntityDecl(const QString &name, const QString &publicId,
+                                     const QString &systemId, const QString &notationName)
+{
+    QDomEntityPrivate *e =
+            new QDomEntityPrivate(doc, nullptr, name, publicId, systemId, notationName);
+    // keep the refcount balanced: appendChild() does a ref anyway.
+    e->ref.deref();
+    doc->doctype()->appendChild(e);
+    return true;
+}
+
+bool QDomBuilder::externalEntityDecl(const QString &name, const QString &publicId,
+                                     const QString &systemId)
+{
+    return unparsedEntityDecl(name, publicId, systemId, QString());
+}
+
+bool QDomBuilder::notationDecl(const QString &name, const QString &publicId,
+                               const QString &systemId)
+{
     QDomNotationPrivate *n = new QDomNotationPrivate(doc, nullptr, name, publicId, systemId);
     // keep the refcount balanced: appendChild() does a ref anyway.
     n->ref.deref();
     doc->doctype()->appendChild(n);
     return true;
-}
-
-void QDomHandler::setDocumentLocator(QXmlLocator *locator)
-{
-    this->locator = locator;
 }
 
 QT_END_NAMESPACE

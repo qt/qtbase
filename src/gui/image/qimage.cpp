@@ -1912,10 +1912,10 @@ void QImage::invertPixels(InvertMode mode)
     // Inverting premultiplied pixels would produce invalid image data.
     if (hasAlphaChannel() && qPixelLayouts[d->format].premultiplied) {
         if (depth() > 32) {
-            if (!d->convertInPlace(QImage::Format_RGBA64, 0))
+            if (!d->convertInPlace(QImage::Format_RGBA64, { }))
                 *this = convertToFormat(QImage::Format_RGBA64);
         } else {
-            if (!d->convertInPlace(QImage::Format_ARGB32, 0))
+            if (!d->convertInPlace(QImage::Format_ARGB32, { }))
                 *this = convertToFormat(QImage::Format_ARGB32);
         }
     }
@@ -1982,7 +1982,7 @@ void QImage::invertPixels(InvertMode mode)
     }
 
     if (originalFormat != d->format) {
-        if (!d->convertInPlace(originalFormat, 0))
+        if (!d->convertInPlace(originalFormat, { }))
             *this = convertToFormat(originalFormat);
     }
 }
@@ -2060,27 +2060,6 @@ QImage::Format QImage::format() const
     \sa {Image Formats}
 */
 
-static bool highColorPrecision(QImage::Format format)
-{
-    // Formats with higher color precision than ARGB32_Premultiplied.
-    switch (format) {
-    case QImage::Format_ARGB32:
-    case QImage::Format_RGBA8888:
-    case QImage::Format_BGR30:
-    case QImage::Format_RGB30:
-    case QImage::Format_A2BGR30_Premultiplied:
-    case QImage::Format_A2RGB30_Premultiplied:
-    case QImage::Format_RGBX64:
-    case QImage::Format_RGBA64:
-    case QImage::Format_RGBA64_Premultiplied:
-    case QImage::Format_Grayscale16:
-        return true;
-    default:
-        break;
-    }
-    return false;
-}
-
 /*!
     \internal
 */
@@ -2092,9 +2071,11 @@ QImage QImage::convertToFormat_helper(Format format, Qt::ImageConversionFlags fl
     if (format == Format_Invalid || d->format == Format_Invalid)
         return QImage();
 
+    const QPixelLayout *destLayout = &qPixelLayouts[format];
     Image_Converter converter = qimage_converter_map[d->format][format];
     if (!converter && format > QImage::Format_Indexed8 && d->format > QImage::Format_Indexed8) {
-        if (highColorPrecision(format) && highColorPrecision(d->format)) {
+        if (qt_highColorPrecision(d->format, !destLayout->hasAlphaChannel)
+                && qt_highColorPrecision(format, !hasAlphaChannel())) {
             converter = convert_generic_to_rgb64;
         } else
             converter = convert_generic;

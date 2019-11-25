@@ -83,12 +83,16 @@ bool QEglFSKmsGbmDevice::open()
 
     setFd(fd);
 
+    m_eventReader.create(this);
+
     return true;
 }
 
 void QEglFSKmsGbmDevice::close()
 {
     // Note: screens are gone at this stage.
+
+    m_eventReader.destroy();
 
     if (m_gbm_device) {
         gbm_device_destroy(m_gbm_device);
@@ -153,6 +157,16 @@ void QEglFSKmsGbmDevice::registerScreenCloning(QPlatformScreen *screen,
 
     QEglFSKmsGbmScreen *gbmScreen = static_cast<QEglFSKmsGbmScreen *>(screen);
     gbmScreen->initCloning(screenThisScreenClones, screensCloningThisScreen);
+}
+
+void QEglFSKmsGbmDevice::registerScreen(QPlatformScreen *screen,
+                                        bool isPrimary,
+                                        const QPoint &virtualPos,
+                                        const QList<QPlatformScreen *> &virtualSiblings)
+{
+    QEglFSKmsDevice::registerScreen(screen, isPrimary, virtualPos, virtualSiblings);
+    if (screenConfig()->hwCursor() && m_globalCursor)
+        m_globalCursor->reevaluateVisibilityForScreens();
 }
 
 QT_END_NAMESPACE

@@ -1700,13 +1700,7 @@ QGuiApplicationPrivate::~QGuiApplicationPrivate()
         qt_gl_set_global_share_context(0);
     }
 #endif
-#ifdef Q_OS_WASM
-    EM_ASM(
-        // unmount persistent directory as IDBFS
-        // see QTBUG-70002
-        FS.unmount('/home/web_user');
-    );
-#endif
+
     platform_integration->destroy();
 
     delete platform_theme;
@@ -1773,7 +1767,7 @@ Qt::KeyboardModifiers QGuiApplication::keyboardModifiers()
 */
 Qt::KeyboardModifiers QGuiApplication::queryKeyboardModifiers()
 {
-    CHECK_QAPP_INSTANCE(Qt::KeyboardModifiers(0))
+    CHECK_QAPP_INSTANCE(Qt::KeyboardModifiers{})
     QPlatformIntegration *pi = QGuiApplicationPrivate::platformIntegration();
     return pi->queryKeyboardModifiers();
 }

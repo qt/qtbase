@@ -1147,7 +1147,7 @@ QLayoutPolicy::ControlTypes QGridLayoutEngine::controlTypes(LayoutSide side) con
     Qt::Orientation orientation = (side == Top || side == Bottom) ? Qt::Vertical : Qt::Horizontal;
     int row = (side == Top || side == Left) ? effectiveFirstRow(orientation)
                                             : effectiveLastRow(orientation);
-    QLayoutPolicy::ControlTypes result = 0;
+    QLayoutPolicy::ControlTypes result;
 
     for (int column = columnCount(orientation) - 1; column >= 0; --column) {
         if (QGridLayoutItem *item = itemAt(row, column, orientation))

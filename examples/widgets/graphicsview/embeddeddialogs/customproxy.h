@@ -59,7 +59,7 @@ class CustomProxy : public QGraphicsProxyWidget
     Q_OBJECT
 
 public:
-    explicit CustomProxy(QGraphicsItem *parent = nullptr, Qt::WindowFlags wFlags = nullptr);
+    explicit CustomProxy(QGraphicsItem *parent = nullptr, Qt::WindowFlags wFlags = { });
 
     QRectF boundingRect() const override;
     void paintWindowFrame(QPainter *painter, const QStyleOptionGraphicsItem *option,

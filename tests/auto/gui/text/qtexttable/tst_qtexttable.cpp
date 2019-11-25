@@ -1041,7 +1041,7 @@ public:
         QList<QRectF> rects;
 
         PaintEngine()
-            : QPaintEngine(0)
+            : QPaintEngine(QPaintEngine::PaintEngineFeatures{ })
         {}
         virtual Type type() const
         {

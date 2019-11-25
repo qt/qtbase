@@ -76,8 +76,7 @@ class Q_AUTOTEST_EXPORT QFileSystemMetaData
 {
 public:
     QFileSystemMetaData()
-        : knownFlagsMask(nullptr),
-          size_(-1)
+        : size_(-1)
     {
     }
 
@@ -111,8 +110,10 @@ public:
         AliasType           =        0x0,
 #endif
 #if defined(Q_OS_WIN)
+        JunctionType        = 0x04000000,
         WinLnkType          = 0x08000000,   // Note: Uses the same position for AliasType on Mac
 #else
+        JunctionType        =        0x0,
         WinLnkType          =        0x0,
 #endif
         SequentialType      = 0x00800000,   // Note: overlaps with QAbstractFileEngine::RootFlag
@@ -184,7 +185,7 @@ public:
 
     void clear()
     {
-        knownFlagsMask = nullptr;
+        knownFlagsMask = {};
     }
 
     void clearFlags(MetaDataFlags flags = AllMetaDataFlags)
@@ -205,8 +206,10 @@ public:
     bool wasDeleted() const                 { return (entryFlags & WasDeletedAttribute); }
 #if defined(Q_OS_WIN)
     bool isLnkFile() const                  { return (entryFlags & WinLnkType); }
+    bool isJunction() const                 { return (entryFlags & JunctionType); }
 #else
     bool isLnkFile() const                  { return false; }
+    bool isJunction() const                 { return false; }
 #endif
 
     qint64 size() const                     { return size_; }
@@ -356,9 +359,15 @@ inline void QFileSystemMetaData::fillFromFindData(WIN32_FIND_DATA &findData, boo
     if (setLinkType) {
         knownFlagsMask |=  LinkType;
         entryFlags &= ~LinkType;
-        if ((fileAttribute_ & FILE_ATTRIBUTE_REPARSE_POINT)
-            && (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK)) {
-            entryFlags |= LinkType;
+        if (fileAttribute_ & FILE_ATTRIBUTE_REPARSE_POINT) {
+            if (findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK) {
+                entryFlags |= LinkType;
+#if defined(IO_REPARSE_TAG_MOUNT_POINT)
+            } else if ((fileAttribute_ & FILE_ATTRIBUTE_DIRECTORY)
+                    && (findData.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT)) {
+                entryFlags |= JunctionType;
+#endif
+            }
         }
     }
 }

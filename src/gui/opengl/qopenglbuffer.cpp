@@ -545,9 +545,9 @@ void *QOpenGLBuffer::map(QOpenGLBuffer::Access access)
         qWarning("QOpenGLBuffer::map(): buffer not created");
 #endif
     if (!d->guard || !d->guard->id())
-        return 0;
+        return nullptr;
     if (d->funcs->hasOpenGLExtension(QOpenGLExtensions::MapBufferRange)) {
-        QOpenGLBuffer::RangeAccessFlags rangeAccess = 0;
+        QOpenGLBuffer::RangeAccessFlags rangeAccess;
         switch (access) {
         case QOpenGLBuffer::ReadOnly:
             rangeAccess = QOpenGLBuffer::RangeRead;

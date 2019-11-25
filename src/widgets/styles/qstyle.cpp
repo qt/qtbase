@@ -1834,7 +1834,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SH_LineEdit_PasswordMaskDelay  Determines the delay before visible character is masked
     with password character, in milliseconds. This enum value was added in Qt 5.4.
 
-    \value SH_Table_GridLineColor The RGB value of the grid for a table.
+    \value SH_Table_GridLineColor The RGBA value of the grid for a table.
 
     \value SH_UnderlineShortcut  Whether shortcuts are underlined.
 

@@ -659,7 +659,7 @@ bool QAbstractSocketPrivate::initSocketLayer(QAbstractSocket::NetworkLayerProtoc
 
     configureCreatedSocket();
 
-    if (threadData->hasEventDispatcher())
+    if (threadData.loadRelaxed()->hasEventDispatcher())
         socketEngine->setReceiver(this);
 
 #if defined (QABSTRACTSOCKET_DEBUG)
@@ -1138,7 +1138,7 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
         }
 
         // Start the connect timer.
-        if (threadData->hasEventDispatcher()) {
+        if (threadData.loadRelaxed()->hasEventDispatcher()) {
             if (!connectTimer) {
                 connectTimer = new QTimer(q);
                 QObject::connect(connectTimer, SIGNAL(timeout()),
@@ -1740,7 +1740,7 @@ void QAbstractSocket::connectToHost(const QString &hostName, quint16 port,
         return;
 #endif
     } else {
-        if (d->threadData->hasEventDispatcher()) {
+        if (d->threadData.loadRelaxed()->hasEventDispatcher()) {
             // this internal API for QHostInfo either immediately gives us the desired
             // QHostInfo from cache or later calls the _q_startConnecting slot.
             bool immediateResultValid = false;
@@ -1953,7 +1953,7 @@ bool QAbstractSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState 
 
     // Sync up with error string, which open() shall clear.
     d->socketError = UnknownSocketError;
-    if (d->threadData->hasEventDispatcher())
+    if (d->threadData.loadRelaxed()->hasEventDispatcher())
         d->socketEngine->setReceiver(d);
 
     QIODevice::open(openMode);
@@ -2359,11 +2359,12 @@ bool QAbstractSocket::waitForBytesWritten(int msecs)
 }
 
 /*!
-    Waits until the socket has disconnected, up to \a msecs
-    milliseconds. If the connection has been disconnected, this
-    function returns \c true; otherwise it returns \c false. In the case
-    where it returns \c false, you can call error() to determine
-    the cause of the error.
+    Waits until the socket has disconnected, up to \a msecs milliseconds. If the
+    connection was successfully disconnected, this function returns \c true;
+    otherwise it returns \c false (if the operation timed out, if an error
+    occurred, or if this QAbstractSocket is already disconnected). In the case
+    where it returns \c false, you can call error() to determine the cause of
+    the error.
 
     The following example waits up to one second for a connection
     to be closed:

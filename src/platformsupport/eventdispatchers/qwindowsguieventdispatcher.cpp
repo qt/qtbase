@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 */
 
 QWindowsGuiEventDispatcher::QWindowsGuiEventDispatcher(QObject *parent) :
-    QEventDispatcherWin32(parent), m_flags(0)
+    QEventDispatcherWin32(parent)
 {
     setObjectName(QStringLiteral("QWindowsGuiEventDispatcher"));
     createInternalHwnd(); // QTBUG-40881: Do not delay registering timers, etc. for QtMfc.

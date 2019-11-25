@@ -735,7 +735,7 @@ QAction *QMenuBarPrivate::getNextAction(const int _start, const int increment) c
 /*!
     Constructs a menu bar with parent \a parent.
 */
-QMenuBar::QMenuBar(QWidget *parent) : QWidget(*new QMenuBarPrivate, parent, 0)
+QMenuBar::QMenuBar(QWidget *parent) : QWidget(*new QMenuBarPrivate, parent, { })
 {
     Q_D(QMenuBar);
     d->init();

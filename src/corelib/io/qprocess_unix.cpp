@@ -246,7 +246,7 @@ bool QProcessPrivate::openChannel(Channel &channel)
             return false;
 
         // create the socket notifiers
-        if (threadData->hasEventDispatcher()) {
+        if (threadData.loadRelaxed()->hasEventDispatcher()) {
             if (&channel == &stdinChannel) {
                 channel.notifier = new QSocketNotifier(channel.pipe[1],
                                                        QSocketNotifier::Write, q);
@@ -377,7 +377,7 @@ void QProcessPrivate::startProcess()
         return;
     }
 
-    if (threadData->hasEventDispatcher()) {
+    if (threadData.loadRelaxed()->hasEventDispatcher()) {
         startupSocketNotifier = new QSocketNotifier(childStartedPipe[0],
                                                     QSocketNotifier::Read, q);
         QObject::connect(startupSocketNotifier, SIGNAL(activated(int)),
@@ -517,7 +517,7 @@ void QProcessPrivate::startProcess()
     if (stderrChannel.pipe[0] != -1)
         ::fcntl(stderrChannel.pipe[0], F_SETFL, ::fcntl(stderrChannel.pipe[0], F_GETFL) | O_NONBLOCK);
 
-    if (threadData->eventDispatcher.loadAcquire()) {
+    if (threadData.loadRelaxed()->eventDispatcher.loadAcquire()) {
         deathNotifier = new QSocketNotifier(forkfd, QSocketNotifier::Read, q);
         QObject::connect(deathNotifier, SIGNAL(activated(int)),
                          q, SLOT(_q_processDied()));

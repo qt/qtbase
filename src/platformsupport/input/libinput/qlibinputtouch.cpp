@@ -113,16 +113,16 @@ void QLibInputTouch::processTouchMotion(libinput_event_touch *e)
     DeviceState *state = deviceState(e);
     QWindowSystemInterface::TouchPoint *tp = state->point(slot);
     if (tp) {
+        Qt::TouchPointState tmpState = Qt::TouchPointMoved;
         const QPointF p = getPos(e);
-        if (tp->area.center() != p) {
+        if (tp->area.center() == p)
+            tmpState = Qt::TouchPointStationary;
+        else
             tp->area.moveCenter(p);
-            // 'down' may be followed by 'motion' within the same "frame".
-            // Handle this by compressing and keeping the Pressed state until the 'frame'.
-            if (tp->state != Qt::TouchPointPressed)
-                tp->state = Qt::TouchPointMoved;
-        } else {
-            tp->state = Qt::TouchPointStationary;
-        }
+        // 'down' may be followed by 'motion' within the same "frame".
+        // Handle this by compressing and keeping the Pressed state until the 'frame'.
+        if (tp->state != Qt::TouchPointPressed && tp->state != Qt::TouchPointReleased)
+            tp->state = tmpState;
     } else {
         qWarning("Inconsistent touch state (got 'motion' without 'down')");
     }
@@ -136,7 +136,7 @@ void QLibInputTouch::processTouchUp(libinput_event_touch *e)
     if (tp) {
         tp->state = Qt::TouchPointReleased;
         // There may not be a Frame event after the last Up. Work this around.
-        Qt::TouchPointStates s = 0;
+        Qt::TouchPointStates s;
         for (int i = 0; i < state->m_points.count(); ++i)
             s |= state->m_points.at(i).state;
         if (s == Qt::TouchPointReleased)

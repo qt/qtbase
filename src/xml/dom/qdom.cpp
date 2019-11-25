@@ -2648,7 +2648,7 @@ QDomNodePrivate* QDomNamedNodeMapPrivate::item(int index) const
 {
     if (index >= length() || index < 0)
         return nullptr;
-    return *(map.constBegin() + index);
+    return *std::next(map.cbegin(), index);
 }
 
 int QDomNamedNodeMapPrivate::length() const
@@ -4312,20 +4312,20 @@ void QDomElement::setAttribute(const QString& name, const QString& value)
   \fn void QDomElement::setAttribute(const QString& name, int value)
 
     \overload
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 
 /*!
   \fn void QDomElement::setAttribute(const QString& name, uint value)
 
     \overload
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 
 /*!
     \overload
 
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 void QDomElement::setAttribute(const QString& name, qlonglong value)
 {
@@ -4339,7 +4339,7 @@ void QDomElement::setAttribute(const QString& name, qlonglong value)
 /*!
     \overload
 
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 void QDomElement::setAttribute(const QString& name, qulonglong value)
 {
@@ -4353,7 +4353,7 @@ void QDomElement::setAttribute(const QString& name, qulonglong value)
 /*!
     \overload
 
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 void QDomElement::setAttribute(const QString& name, float value)
 {
@@ -4367,19 +4367,14 @@ void QDomElement::setAttribute(const QString& name, float value)
 /*!
     \overload
 
-    The number is formatted according to the current locale.
+    The formatting always uses QLocale::C.
 */
 void QDomElement::setAttribute(const QString& name, double value)
 {
     if (!impl)
         return;
     QString x;
-    char buf[256];
-    int count = qsnprintf(buf, sizeof(buf), "%.16g", value);
-    if (count > 0)
-        x = QString::fromLatin1(buf, count);
-    else
-        x.setNum(value); // Fallback
+    x.setNum(value);
     IMPL->setAttribute(name, x);
 }
 
@@ -5728,11 +5723,11 @@ bool QDomDocumentPrivate::setContent(QXmlInputSource *source, QXmlReader *reader
 
     if (!reader->parse(source)) {
         if (errorMsg)
-            *errorMsg = hnd.errorMsg;
+            *errorMsg = std::get<0>(hnd.errorInfo());
         if (errorLine)
-            *errorLine = hnd.errorLine;
+            *errorLine = std::get<1>(hnd.errorInfo());
         if (errorColumn)
-            *errorColumn = hnd.errorColumn;
+            *errorColumn = std::get<2>(hnd.errorInfo());
         return false;
     }
 

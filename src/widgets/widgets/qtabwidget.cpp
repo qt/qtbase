@@ -359,7 +359,7 @@ void QTabWidget::initStyleOption(QStyleOptionTabWidgetFrame *option) const
     Constructs a tabbed widget with parent \a parent.
 */
 QTabWidget::QTabWidget(QWidget *parent)
-    : QWidget(*new QTabWidgetPrivate, parent, 0)
+    : QWidget(*new QTabWidgetPrivate, parent, { })
 {
     Q_D(QTabWidget);
     d->init();

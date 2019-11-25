@@ -67,13 +67,13 @@ void DownloadManager::append(const QStringList &urls)
         append(QUrl::fromEncoded(urlAsString.toLocal8Bit()));
 
     if (downloadQueue.isEmpty())
-        QTimer::singleShot(0, this, SIGNAL(finished()));
+        QTimer::singleShot(0, this, &DownloadManager::finished);
 }
 
 void DownloadManager::append(const QUrl &url)
 {
     if (downloadQueue.isEmpty())
-        QTimer::singleShot(0, this, SLOT(startNextDownload()));
+        QTimer::singleShot(0, this, &DownloadManager::startNextDownload);
 
     downloadQueue.enqueue(url);
     ++totalCount;
@@ -123,12 +123,12 @@ void DownloadManager::startNextDownload()
 
     QNetworkRequest request(url);
     currentDownload = manager.get(request);
-    connect(currentDownload, SIGNAL(downloadProgress(qint64,qint64)),
-            SLOT(downloadProgress(qint64,qint64)));
-    connect(currentDownload, SIGNAL(finished()),
-            SLOT(downloadFinished()));
-    connect(currentDownload, SIGNAL(readyRead()),
-            SLOT(downloadReadyRead()));
+    connect(currentDownload, &QNetworkReply::downloadProgress,
+            this, &DownloadManager::downloadProgress);
+    connect(currentDownload, &QNetworkReply::finished,
+            this, &DownloadManager::downloadFinished);
+    connect(currentDownload, &QNetworkReply::readyRead,
+            this, &DownloadManager::downloadReadyRead);
 
     // prepare the output
     printf("Downloading %s...\n", url.toEncoded().constData());

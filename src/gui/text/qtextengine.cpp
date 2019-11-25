@@ -1720,7 +1720,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
                         g.glyphs[i] = actualFontEngine->glyphIndex('-');
                         if (Q_LIKELY(g.glyphs[i] != 0)) {
                             QGlyphLayout tmp = g.mid(i, 1);
-                            actualFontEngine->recalcAdvances(&tmp, 0);
+                            actualFontEngine->recalcAdvances(&tmp, { });
                         }
                         g.attributes[i].dontPrint = true;
                     }
@@ -1896,7 +1896,7 @@ int QTextEngine::shapeTextWithHarfbuzz(const QScriptItem &si, const ushort *stri
         }
 
         if (kerningEnabled && !shaper_item.kerning_applied)
-            actualFontEngine->doKerning(&g, option.useDesignMetrics() ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlags(0));
+            actualFontEngine->doKerning(&g, option.useDesignMetrics() ? QFontEngine::DesignMetrics : QFontEngine::ShaperFlags{});
 
         if (engineIdx != 0) {
             for (quint32 i = 0; i < shaper_item.num_glyphs; ++i)
@@ -2581,7 +2581,7 @@ static void set(QJustificationPoint *point, int type, const QGlyphLayout &glyph,
             g.numGlyphs = 1;
             g.glyphs = &kashidaGlyph;
             g.advances = &point->kashidaWidth;
-            fe->recalcAdvances(&g, 0);
+            fe->recalcAdvances(&g, { });
 
             if (point->kashidaWidth == 0)
                 point->type = Justification_Prohibited;
@@ -3214,13 +3214,13 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         glyphs.advances = &ellipsisWidth;
 
         if (glyph != 0) {
-            engine->recalcAdvances(&glyphs, 0);
+            engine->recalcAdvances(&glyphs, { });
 
             ellipsisText = ellipsisChar;
         } else {
             glyph = engine->glyphIndex('.');
             if (glyph != 0) {
-                engine->recalcAdvances(&glyphs, 0);
+                engine->recalcAdvances(&glyphs, { });
 
                 ellipsisWidth *= 3;
                 ellipsisText = QStringLiteral("...");
@@ -3895,12 +3895,7 @@ QStackTextEngine::QStackTextEngine(const QString &string, const QFont &f)
 }
 
 QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFormat &format)
-    : justified(false),
-      underlineStyle(QTextCharFormat::NoUnderline),
-      charFormat(format),
-      num_chars(0),
-      chars(nullptr),
-      logClusters(nullptr),
+    : charFormat(format),
       f(font),
       fontEngine(font->d->engineForScript(si.analysis.script))
 {
@@ -3910,13 +3905,9 @@ QTextItemInt::QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFo
 }
 
 QTextItemInt::QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars_, int numChars, QFontEngine *fe, const QTextCharFormat &format)
-    : flags(0),
-      justified(false),
-      underlineStyle(QTextCharFormat::NoUnderline),
-      charFormat(format),
+    : charFormat(format),
       num_chars(numChars),
       chars(chars_),
-      logClusters(nullptr),
       f(font),
       glyphs(g),
       fontEngine(fe)
@@ -3928,7 +3919,7 @@ void QTextItemInt::initWithScriptItem(const QScriptItem &si)
 {
     // explicitly initialize flags so that initFontAttributes can be called
     // multiple times on the same TextItem
-    flags = 0;
+    flags = { };
     if (si.analysis.bidiLevel %2)
         flags |= QTextItem::RightToLeft;
     ascent = si.ascent;

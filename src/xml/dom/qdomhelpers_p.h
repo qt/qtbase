@@ -60,6 +60,83 @@ class QDomNodePrivate;
 
 /**************************************************************
  *
+ * QXmlDocumentLocators
+ *
+ **************************************************************/
+
+/* TODO: QXmlDocumentLocator can be removed when the SAX-based
+ * implementation is removed. Right now it is needed for QDomBuilder
+ * to work with both QXmlStreamReader and QXmlInputSource (SAX)
+ * based implementations.
+ */
+class QXmlDocumentLocator
+{
+public:
+    virtual ~QXmlDocumentLocator() = default;
+    virtual int column() const = 0;
+    virtual int line() const = 0;
+};
+
+class QSAXDocumentLocator : public QXmlDocumentLocator
+{
+public:
+    ~QSAXDocumentLocator() override = default;
+
+    int column() const override;
+    int line() const override;
+
+    void setLocator(QXmlLocator *l);
+
+private:
+    QXmlLocator *locator = nullptr;
+};
+
+/**************************************************************
+ *
+ * QDomBuilder
+ *
+ **************************************************************/
+
+class QDomBuilder
+{
+public:
+    QDomBuilder(QDomDocumentPrivate *d, QXmlDocumentLocator *l, bool namespaceProcessing);
+    ~QDomBuilder();
+
+    bool endDocument();
+    bool startElement(const QString &nsURI, const QString &qName, const QXmlAttributes &atts);
+    bool endElement();
+    bool characters(const QString &characters, bool cdata = false);
+    bool processingInstruction(const QString &target, const QString &data);
+    bool skippedEntity(const QString &name);
+    bool startEntity(const QString &name);
+    bool endEntity();
+    bool startDTD(const QString &name, const QString &publicId, const QString &systemId);
+    bool comment(const QString &characters);
+    bool externalEntityDecl(const QString &name, const QString &publicId, const QString &systemId);
+    bool notationDecl(const QString &name, const QString &publicId, const QString &systemId);
+    bool unparsedEntityDecl(const QString &name, const QString &publicId, const QString &systemId,
+                            const QString &notationName);
+
+    void fatalError(const QString &message);
+
+    using ErrorInfo = std::tuple<QString, int, int>;
+    ErrorInfo error() const;
+
+    QString errorMsg;
+    int errorLine;
+    int errorColumn;
+
+private:
+    QDomDocumentPrivate *doc;
+    QDomNodePrivate *node;
+    QXmlDocumentLocator *locator;
+    QString entityName;
+    bool nsProcessing;
+};
+
+/**************************************************************
+ *
  * QDomHandler
  *
  **************************************************************/
@@ -68,7 +145,7 @@ class QDomHandler : public QXmlDefaultHandler
 {
 public:
     QDomHandler(QDomDocumentPrivate *d, QXmlSimpleReader *reader, bool namespaceProcessing);
-    ~QDomHandler();
+    ~QDomHandler() override;
 
     // content handler
     bool endDocument() override;
@@ -102,18 +179,13 @@ public:
 
     void setDocumentLocator(QXmlLocator *locator) override;
 
-    QString errorMsg;
-    int errorLine;
-    int errorColumn;
+    QDomBuilder::ErrorInfo errorInfo() const;
 
 private:
-    QDomDocumentPrivate *doc;
-    QDomNodePrivate *node;
-    QString entityName;
     bool cdata;
-    bool nsProcessing;
-    QXmlLocator *locator;
     QXmlSimpleReader *reader;
+    QSAXDocumentLocator locator;
+    QDomBuilder domBuilder;
 };
 
 QT_END_NAMESPACE

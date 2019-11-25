@@ -53,6 +53,8 @@ class tst_QTextMarkdownImporter : public QObject
 private slots:
     void headingBulletsContinuations();
     void thematicBreaks();
+    void lists_data();
+    void lists();
 };
 
 void tst_QTextMarkdownImporter::headingBulletsContinuations()
@@ -157,6 +159,67 @@ void tst_QTextMarkdownImporter::thematicBreaks()
         out.close();
     }
 #endif
+}
+
+void tst_QTextMarkdownImporter::lists_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<int>("expectedItemCount");
+    QTest::addColumn<bool>("expectedEmptyItems");
+    QTest::addColumn<QString>("rewrite");
+
+    // Some of these cases show odd behavior, which is subject to change
+    // as the importer and the writer are tweaked to fix bugs over time.
+    QTest::newRow("dot newline") << ".\n" << 0 << true << ".\n\n";
+    QTest::newRow("number dot newline") << "1.\n" << 1 << true << "1.  \n";
+    QTest::newRow("star newline") << "*\n" << 1 << true << "* \n";
+    QTest::newRow("hyphen newline") << "-\n" << 1 << true << "- \n";
+    QTest::newRow("hyphen space newline") << "- \n" << 1 << true << "- \n";
+    QTest::newRow("hyphen space letter newline") << "- a\n" << 1 << false << "- a\n";
+    QTest::newRow("hyphen nbsp newline") <<
+        QString::fromUtf8("-\u00A0\n") << 0 << true << "-\u00A0\n\n";
+    QTest::newRow("nested empty lists") << "*\n  *\n  *\n" << 1 << true << "  * \n";
+    QTest::newRow("list nested in empty list") << "-\n  * a\n" << 2 << false << "- \n  * a\n";
+    QTest::newRow("lists nested in empty lists")
+            << "-\n  * a\n  * b\n- c\n  *\n    + d\n" << 5 << false
+            << "- \n  * a\n  * b\n- c *\n  + d\n";
+    QTest::newRow("numeric lists nested in empty lists")
+            << "- \n    1.  a\n    2.  b\n- c\n  1.\n       + d\n" << 4 << false
+            << "- \n    1.  a\n    2.  b\n- c 1. + d\n";
+}
+
+void tst_QTextMarkdownImporter::lists()
+{
+    QFETCH(QString, input);
+    QFETCH(int, expectedItemCount);
+    QFETCH(bool, expectedEmptyItems);
+    QFETCH(QString, rewrite);
+
+    QTextDocument doc;
+    doc.setMarkdown(input); // QTBUG-78870 : don't crash
+    QTextFrame::iterator iterator = doc.rootFrame()->begin();
+    QTextFrame *currentFrame = iterator.currentFrame();
+    int i = 0;
+    int itemCount = 0;
+    bool emptyItems = true;
+    while (!iterator.atEnd()) {
+        // There are no child frames
+        QCOMPARE(iterator.currentFrame(), currentFrame);
+        // Check whether the block is text or a horizontal rule
+        QTextBlock block = iterator.currentBlock();
+        if (block.textList()) {
+            ++itemCount;
+            if (!block.text().isEmpty())
+                emptyItems = false;
+        }
+        qCDebug(lcTests, "%d %s%s", i,
+                (block.textList() ? "<li>" : "<p>"), qPrintable(block.text()));
+        ++iterator;
+        ++i;
+    }
+    QCOMPARE(itemCount, expectedItemCount);
+    QCOMPARE(emptyItems, expectedEmptyItems);
+    QCOMPARE(doc.toMarkdown(), rewrite);
 }
 
 QTEST_MAIN(tst_QTextMarkdownImporter)

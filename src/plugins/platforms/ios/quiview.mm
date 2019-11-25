@@ -628,6 +628,14 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 #endif
 }
 
+- (void)addInteraction:(id<UIInteraction>)interaction
+{
+    if ([NSStringFromClass(interaction.class) isEqualToString:@"UITextInteraction"])
+        return;
+
+    [super addInteraction:interaction];
+}
+
 @end
 
 @implementation UIView (QtHelpers)

@@ -158,7 +158,7 @@ void TriangleOnCubeRenderer::initResources(QRhiRenderPassDescriptor *rp)
 
     m_ps->build();
 
-    QRhiTextureRenderTarget::Flags rtFlags = 0;
+    QRhiTextureRenderTarget::Flags rtFlags;
     if (IMAGE_UNDER_OFFSCREEN_RENDERING)
         rtFlags |= QRhiTextureRenderTarget::PreserveColorContents;
 

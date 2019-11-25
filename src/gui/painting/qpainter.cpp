@@ -5902,7 +5902,7 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
         int numGlyphs = len;
         QVarLengthGlyphLayoutArray glyphs(len);
         QFontEngine *fontEngine = d->state->font.d->engineForScript(QChar::Script_Common);
-        if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, 0))
+        if (!fontEngine->stringToCMap(str.data(), len, &glyphs, &numGlyphs, { }))
             Q_UNREACHABLE();
 
         QTextItemInt gf(glyphs, &d->state->font, str.data(), len, fontEngine);
@@ -6404,7 +6404,7 @@ Q_GUI_EXPORT void qt_draw_decoration_for_glyphs(QPainter *painter, const glyph_t
     }
 
     QFixed width = rightMost - leftMost;
-    QTextItem::RenderFlags flags = 0;
+    QTextItem::RenderFlags flags;
 
     if (font.underline())
         flags |= QTextItem::Underline;
@@ -7213,7 +7213,7 @@ QPainter::RenderHints QPainter::renderHints() const
     Q_D(const QPainter);
 
     if (!d->engine)
-        return 0;
+        return { };
 
     return d->state->renderHints;
 }
@@ -7786,16 +7786,9 @@ QPainterState::QPainterState(const QPainterState *s)
 }
 
 QPainterState::QPainterState()
-    : brushOrigin(0, 0), bgBrush(Qt::white), clipOperation(Qt::NoClip),
-      renderHints(0),
-      wx(0), wy(0), ww(0), wh(0), vx(0), vy(0), vw(0), vh(0),
-      opacity(1), WxF(false), VxF(false), clipEnabled(true),
-      bgMode(Qt::TransparentMode), painter(0),
-      layoutDirection(QGuiApplication::layoutDirection()),
-      composition_mode(QPainter::CompositionMode_SourceOver),
-      emulationSpecifier(0), changeFlags(0)
+    : brushOrigin(0, 0), WxF(false), VxF(false), clipEnabled(true),
+      layoutDirection(QGuiApplication::layoutDirection())
 {
-    dirtyFlags = 0;
 }
 
 QPainterState::~QPainterState()
@@ -7824,9 +7817,9 @@ void QPainterState::init(QPainter *p) {
     layoutDirection = QGuiApplication::layoutDirection();
     composition_mode = QPainter::CompositionMode_SourceOver;
     emulationSpecifier = 0;
-    dirtyFlags = 0;
+    dirtyFlags = { };
     changeFlags = 0;
-    renderHints = 0;
+    renderHints = { };
     opacity = 1;
 }
 
@@ -7883,7 +7876,7 @@ void QPainterState::init(QPainter *p) {
 
 /*!
     \fn void QPainter::drawImage(const QPointF &point, const QImage &image, const QRectF &source,
-                                 Qt::ImageConversionFlags flags = 0)
+                                 Qt::ImageConversionFlags flags = Qt::AutoColor)
 
     \overload
 
@@ -7893,7 +7886,7 @@ void QPainterState::init(QPainter *p) {
 
 /*!
     \fn void QPainter::drawImage(const QPoint &point, const QImage &image, const QRect &source,
-                                 Qt::ImageConversionFlags flags = 0)
+                                 Qt::ImageConversionFlags flags = Qt::AutoColor)
     \overload
 
     Draws the rectangular portion \a source of the given \a image with

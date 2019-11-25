@@ -154,7 +154,7 @@ void QFocusFrame::initStyleOption(QStyleOption *option) const
 */
 
 QFocusFrame::QFocusFrame(QWidget *parent)
-    : QWidget(*new QFocusFramePrivate, parent, 0)
+    : QWidget(*new QFocusFramePrivate, parent, { })
 {
     setAttribute(Qt::WA_TransparentForMouseEvents);
     setFocusPolicy(Qt::NoFocus);

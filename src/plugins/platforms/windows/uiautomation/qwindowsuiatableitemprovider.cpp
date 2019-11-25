@@ -80,7 +80,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaTableItemProvider::GetRowHeaderItems(SAFEAR
     if (!tableCellInterface)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    QList<QAccessibleInterface *> headers = tableCellInterface->rowHeaderCells();
+    const auto headers = tableCellInterface->rowHeaderCells();
 
     if ((*pRetVal = SafeArrayCreateVector(VT_UNKNOWN, 0, headers.size()))) {
         for (LONG i = 0; i < headers.size(); ++i) {
@@ -110,7 +110,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaTableItemProvider::GetColumnHeaderItems(SAF
     if (!tableCellInterface)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    QList<QAccessibleInterface *> headers = tableCellInterface->columnHeaderCells();
+    const auto headers = tableCellInterface->columnHeaderCells();
 
     if ((*pRetVal = SafeArrayCreateVector(VT_UNKNOWN, 0, headers.size()))) {
         for (LONG i = 0; i < headers.size(); ++i) {

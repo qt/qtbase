@@ -62,7 +62,8 @@ RateController *RateController::instance()
 
 void RateController::addSocket(PeerWireClient *socket)
 {
-    connect(socket, SIGNAL(readyToTransfer()), this, SLOT(scheduleTransfer()));
+    connect(socket, &PeerWireClient::readyToTransfer,
+            this, &RateController::scheduleTransfer);
     socket->setReadBufferSize(downLimit * 4);
     sockets << socket;
     scheduleTransfer();
@@ -70,7 +71,8 @@ void RateController::addSocket(PeerWireClient *socket)
 
 void RateController::removeSocket(PeerWireClient *socket)
 {
-    disconnect(socket, SIGNAL(readyToTransfer()), this, SLOT(scheduleTransfer()));
+    disconnect(socket, &PeerWireClient::readyToTransfer,
+               this, &RateController::scheduleTransfer);
     socket->setReadBufferSize(0);
     sockets.remove(socket);
 }

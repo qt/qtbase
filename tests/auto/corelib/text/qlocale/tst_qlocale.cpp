@@ -595,10 +595,7 @@ void tst_QLocale::emptyCtor_data()
     ADD_CTOR_TEST("zz_zz", "C");
     ADD_CTOR_TEST("zz...", "C");
     ADD_CTOR_TEST("en.bla", "en_US");
-#if !(defined(Q_OS_DARWIN) && QT_HAS_FEATURE(address_sanitizer))
-    // See QTBUG-69875
     ADD_CTOR_TEST("en@bla", "en_US");
-#endif
     ADD_CTOR_TEST("en_blaaa", "en_US");
     ADD_CTOR_TEST("en_zz", "en_US");
     ADD_CTOR_TEST("en_GB.bla", "en_GB");
@@ -607,10 +604,7 @@ void tst_QLocale::emptyCtor_data()
 
     // Empty optional fields, but with punctuators supplied
     ADD_CTOR_TEST("en.", "en_US");
-#if !(defined(Q_OS_DARWIN) && QT_HAS_FEATURE(address_sanitizer))
-    // See QTBUG-69875
     ADD_CTOR_TEST("en@", "en_US");
-#endif
     ADD_CTOR_TEST("en.@", "en_US");
     ADD_CTOR_TEST("en_", "en_US");
     ADD_CTOR_TEST("en_.", "en_US");
@@ -1346,7 +1340,7 @@ void tst_QLocale::long_long_conversion()
 void tst_QLocale::long_long_conversion_extra()
 {
     QLocale l(QLocale::C);
-    l.setNumberOptions(0);
+    l.setNumberOptions({ });
     QCOMPARE(l.toString((qlonglong)1), QString("1"));
     QCOMPARE(l.toString((qlonglong)12), QString("12"));
     QCOMPARE(l.toString((qlonglong)123), QString("123"));
@@ -2093,7 +2087,7 @@ void tst_QLocale::numberOptions()
     QVERIFY(ok);
     QCOMPARE(locale.toString(12345), QString("12345"));
 
-    locale.setNumberOptions(0);
+    locale.setNumberOptions({ });
     QCOMPARE(locale.numberOptions(), 0);
     QCOMPARE(locale.toInt(QString("12,345"), &ok), 12345);
     QVERIFY(ok);

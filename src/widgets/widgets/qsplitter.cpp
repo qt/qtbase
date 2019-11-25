@@ -119,7 +119,7 @@ QSplitterPrivate::~QSplitterPrivate()
     \a parent.
 */
 QSplitterHandle::QSplitterHandle(Qt::Orientation orientation, QSplitter *parent)
-    : QWidget(*new QSplitterHandlePrivate, parent, 0)
+    : QWidget(*new QSplitterHandlePrivate, parent, { })
 {
     Q_D(QSplitterHandle);
     d->s = parent;

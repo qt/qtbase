@@ -61,6 +61,7 @@
 #endif
 #ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
+#include "private/qlocking_p.h"
 #endif
 
 #ifdef Q_OS_MACOS
@@ -140,6 +141,15 @@ public:
 
     static void checkReceiverThread(QObject *receiver);
     void cleanupThreadData();
+
+    struct QPostEventListLocker
+    {
+        QThreadData *threadData;
+        std::unique_lock<QMutex> locker;
+
+        void unlock() { locker.unlock(); }
+    };
+    static QPostEventListLocker lockThreadPostEventList(QObject *object);
 #endif // QT_NO_QOBJECT
 
     int &argc;

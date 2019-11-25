@@ -48,8 +48,10 @@
 **
 ****************************************************************************/
 
-#include <QtWidgets>
-#include <QtNetwork>
+#include <QLabel>
+#include <QPushButton>
+#include <QUdpSocket>
+#include <QVBoxLayout>
 
 #include "receiver.h"
 
@@ -67,10 +69,11 @@ Receiver::Receiver(QWidget *parent)
 //! [0]
 
 //! [1]
-    connect(udpSocket, SIGNAL(readyRead()),
-            this, SLOT(processPendingDatagrams()));
+    connect(udpSocket, &QUdpSocket::readyRead,
+            this, &Receiver::processPendingDatagrams);
 //! [1]
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(quitButton, &QPushButton::clicked,
+            this, &Receiver::close);
 
     auto buttonLayout = new QHBoxLayout;
     buttonLayout->addStretch(1);

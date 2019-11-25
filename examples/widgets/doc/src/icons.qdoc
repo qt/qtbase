@@ -232,8 +232,8 @@
        combinations of states and modes for a given icon.
     \li \c IconSizeSpinBox is a subclass of QSpinBox that lets the
        user enter icon sizes (e.g., "48 x 48").
-    \li \c ImageDelegate is a subclass of QItemDelegate that provides
-       comboboxes for letting the user set the mode and state
+    \li \c ImageDelegate is a subclass of QStyledItemDelegate that
+       provides comboboxes for letting the user set the mode and state
        associated with an image.
     \endlist
 
@@ -468,7 +468,6 @@
     loaded into the application.
 
     \snippet widgets/icons/mainwindow.cpp 13
-    \snippet widgets/icons/mainwindow.cpp 14
 
     We retrieve the image name using the QFileInfo::baseName()
     function that returns the base name of the file without the path,
@@ -486,8 +485,6 @@
     Qt::ItemIsEditable flag. Table items are editable by default.
 
     \snippet widgets/icons/mainwindow.cpp 15
-    \snippet widgets/icons/mainwindow.cpp 16
-    \snippet widgets/icons/mainwindow.cpp 17
 
     Then we create the second and third items in the row making the
     default mode Normal and the default state Off. But if the \uicontrol
@@ -498,7 +495,6 @@
     example's \c images subdirectory respect this naming convention.
 
     \snippet widgets/icons/mainwindow.cpp 18
-    \snippet widgets/icons/mainwindow.cpp 19
 
     In the end we add the items to the associated row, and use the
     QTableWidget::openPersistentEditor() function to create
@@ -522,8 +518,6 @@
     application.
 
     \snippet widgets/icons/mainwindow.cpp 8
-    \snippet widgets/icons/mainwindow.cpp 9
-    \snippet widgets/icons/mainwindow.cpp 10
 
     We also extract the image file's name using the
     QTableWidgetItem::data() function. This function takes a
@@ -571,24 +565,22 @@
     delegate for the table widget. We create a \c ImageDelegate that
     we make the item delegate for our view.
 
-    The QItemDelegate class can be used to provide an editor for an item view
+    The QStyledItemDelegate class can be used to provide an editor for an item view
     class that is subclassed from QAbstractItemView. Using a delegate
     for this purpose allows the editing mechanism to be customized and
     developed independently from the model and view.
 
-    In this example we derive \c ImageDelegate from QItemDelegate.
-    QItemDelegate usually provides line editors, while our subclass
+    In this example we derive \c ImageDelegate from QStyledItemDelegate.
+    QStyledItemDelegate usually provides line editors, while our subclass
     \c ImageDelegate, provides comboboxes for the mode and state
     fields.
 
     \snippet widgets/icons/mainwindow.cpp 22
-    \snippet widgets/icons/mainwindow.cpp 23
 
     Then we customize the QTableWidget's horizontal header, and hide
     the vertical header.
 
     \snippet widgets/icons/mainwindow.cpp 24
-    \snippet widgets/icons/mainwindow.cpp 25
 
     At the end, we connect the QTableWidget::itemChanged() signal to
     the \c changeIcon() slot to ensure that the preview area is in
@@ -750,23 +742,23 @@
 
     \snippet widgets/icons/imagedelegate.h 0
 
-    The \c ImageDelegate class is a subclass of QItemDelegate. The
-    QItemDelegate class provides display and editing facilities for
-    data items from a model. A single QItemDelegate object is
+    The \c ImageDelegate class is a subclass of QStyledItemDelegate. The
+    QStyledItemDelegate class provides display and editing facilities for
+    data items from a model. A single QStyledItemDelegate object is
     responsible for all items displayed in a item view (in our case,
     a QTableWidget).
 
-    A QItemDelegate can be used to provide an editor for an item view
+    A QStyledItemDelegate can be used to provide an editor for an item view
     class that is subclassed from QAbstractItemView. Using a delegate
     for this purpose allows the editing mechanism to be customized and
     developed independently from the model and view.
 
     \snippet widgets/icons/imagedelegate.h 1
 
-    The default implementation of QItemDelegate creates a QLineEdit.
+    The default implementation of QStyledItemDelegate creates a QLineEdit.
     Since we want the editor to be a QComboBox, we need to subclass
-    QItemDelegate and reimplement the QItemDelegate::createEditor(),
-    QItemDelegate::setEditorData() and QItemDelegate::setModelData()
+    QStyledItemDelegate and reimplement the QStyledItemDelegate::createEditor(),
+    QStyledItemDelegate::setEditorData() and QStyledItemDelegate::setModelData()
     functions.
 
     \snippet widgets/icons/imagedelegate.h 2
@@ -783,7 +775,7 @@
 
     \snippet widgets/icons/imagedelegate.cpp 1
 
-    The default QItemDelegate::createEditor() implementation returns
+    The default QStyledItemDelegate::createEditor() implementation returns
     the widget used to edit the item specified by the model and item
     index for editing. The parent widget and style option are used to
     control the appearance of the editor widget.
@@ -803,7 +795,7 @@
 
     \snippet widgets/icons/imagedelegate.cpp 2
 
-    The QItemDelegate::setEditorData() function is used by
+    The QStyledItemDelegate::setEditorData() function is used by
     QTableWidget to transfer data from a QTableWidgetItem to the
     editor. The data is stored as a string; we use
     QComboBox::findText() to locate it in the combobox.
@@ -816,7 +808,7 @@
 
     \snippet widgets/icons/imagedelegate.cpp 3
 
-    The QItemDelegate::setEditorData() function is used by QTableWidget
+    The QStyledItemDelegate::setEditorData() function is used by QTableWidget
     to transfer data back from the editor to the \l{QTableWidgetItem}.
 
     \snippet widgets/icons/imagedelegate.cpp 4

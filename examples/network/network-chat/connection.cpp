@@ -82,11 +82,14 @@ Connection::Connection(QObject *parent)
     isGreetingMessageSent = false;
     pingTimer.setInterval(PingInterval);
 
-    QObject::connect(this, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
-    QObject::connect(this, SIGNAL(disconnected()), &pingTimer, SLOT(stop()));
-    QObject::connect(&pingTimer, SIGNAL(timeout()), this, SLOT(sendPing()));
-    QObject::connect(this, SIGNAL(connected()),
-                     this, SLOT(sendGreetingMessage()));
+    connect(this, &QTcpSocket::readyRead, this,
+            &Connection::processReadyRead);
+    connect(this, &QTcpSocket::disconnected,
+            &pingTimer, &QTimer::stop);
+    connect(&pingTimer, &QTimer::timeout,
+            this, &Connection::sendPing);
+    connect(this, &QTcpSocket::connected,
+            this, &Connection::sendGreetingMessage);
 }
 
 Connection::Connection(qintptr socketDescriptor, QObject *parent)

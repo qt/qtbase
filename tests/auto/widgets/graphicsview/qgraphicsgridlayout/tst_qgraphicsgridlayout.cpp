@@ -340,7 +340,7 @@ void tst_QGraphicsGridLayout::qgraphicsgridlayout()
     layout.setColumnStretchFactor(0, 0);
     layout.setGeometry(QRectF());
     layout.setHorizontalSpacing(0);
-    layout.setRowAlignment(0, 0);
+    layout.setRowAlignment(0, { });
     layout.setRowFixedHeight(0, 0);
     layout.setRowMaximumHeight(0, 0);
     layout.setRowMinimumHeight(0, 0);

@@ -103,7 +103,7 @@ QT_BEGIN_NAMESPACE
                           QPlatformCursor::clearOverrideCursor().
 */
 
-QPlatformCursor::Capabilities QPlatformCursor::m_capabilities = 0;
+QPlatformCursor::Capabilities QPlatformCursor::m_capabilities = { };
 
 /*!
     \fn QPlatformCursor::QPlatformCursor()

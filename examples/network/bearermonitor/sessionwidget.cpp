@@ -49,10 +49,10 @@
 ****************************************************************************/
 
 #include "sessionwidget.h"
-#include "qnetworkconfigmanager.h"
+#include <QNetworkConfigurationManager>
 
 SessionWidget::SessionWidget(const QNetworkConfiguration &config, QWidget *parent)
-:   QWidget(parent), statsTimer(-1)
+:   QWidget(parent)
 {
     setupUi(this);
 
@@ -65,10 +65,10 @@ SessionWidget::SessionWidget(const QNetworkConfiguration &config, QWidget *paren
 
     session = new QNetworkSession(config, this);
 
-    connect(session, SIGNAL(stateChanged(QNetworkSession::State)),
-            this, SLOT(updateSession()));
-    connect(session, SIGNAL(error(QNetworkSession::SessionError)),
-            this, SLOT(updateSessionError(QNetworkSession::SessionError)));
+    connect(session, &QNetworkSession::stateChanged,
+            this, &SessionWidget::updateSession);
+    connect(session, QOverload<QNetworkSession::SessionError>::of(&QNetworkSession::error),
+            this, &SessionWidget::updateSessionError);
 
     updateSession();
 
@@ -76,14 +76,14 @@ SessionWidget::SessionWidget(const QNetworkConfiguration &config, QWidget *paren
 
     configuration->setText(session->configuration().name());
 
-    connect(openSessionButton, SIGNAL(clicked()),
-            this, SLOT(openSession()));
-    connect(openSyncSessionButton, SIGNAL(clicked()),
-            this, SLOT(openSyncSession()));
-    connect(closeSessionButton, SIGNAL(clicked()),
-            this, SLOT(closeSession()));
-    connect(stopSessionButton, SIGNAL(clicked()),
-            this, SLOT(stopSession()));
+    connect(openSessionButton, &QPushButton::clicked,
+            this, &SessionWidget::openSession);
+    connect(openSyncSessionButton, &QPushButton::clicked,
+            this, &SessionWidget::openSyncSession);
+    connect(closeSessionButton, &QPushButton::clicked,
+            this, &SessionWidget::closeSession);
+    connect(stopSessionButton, &QPushButton::clicked,
+            this, &SessionWidget::stopSession);
 }
 
 SessionWidget::~SessionWidget()

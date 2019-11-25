@@ -96,7 +96,7 @@ public:
     void setLoadHints(QLibrary::LoadHints lh);
 
     static QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version = QString(),
-                                         QLibrary::LoadHints loadHints = nullptr);
+                                         QLibrary::LoadHints loadHints = { });
     static QStringList suffixes_sys(const QString &fullVersion);
     static QStringList prefixes_sys();
 

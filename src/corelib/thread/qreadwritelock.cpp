@@ -477,7 +477,7 @@ bool QReadWriteLockPrivate::lockForRead(int timeout)
             if (elapsed > timeout)
                 return false;
             waitingReaders++;
-            readerCond.wait(&mutex, timeout - elapsed);
+            readerCond.wait(&mutex, QDeadlineTimer(timeout - elapsed));
         } else {
             waitingReaders++;
             readerCond.wait(&mutex);
@@ -511,7 +511,7 @@ bool QReadWriteLockPrivate::lockForWrite(int timeout)
                 return false;
             }
             waitingWriters++;
-            writerCond.wait(&mutex, timeout - elapsed);
+            writerCond.wait(&mutex, QDeadlineTimer(timeout - elapsed));
         } else {
             waitingWriters++;
             writerCond.wait(&mutex);

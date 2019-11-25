@@ -40,15 +40,12 @@
 #ifndef QWAITCONDITION_H
 #define QWAITCONDITION_H
 
-#include <QtCore/qglobal.h>
-
-#include <limits.h>
+#include <QtCore/QDeadlineTimer>
 
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(thread)
 
-class QDeadlineTimer;
 class QWaitConditionPrivate;
 class QMutex;
 class QReadWriteLock;
@@ -59,11 +56,16 @@ public:
     QWaitCondition();
     ~QWaitCondition();
 
-    // ### Qt 6: remove unsigned long overloads
-    bool wait(QMutex *lockedMutex, unsigned long time = ULONG_MAX);
-    bool wait(QMutex *lockedMutex, QDeadlineTimer deadline);
-    bool wait(QReadWriteLock *lockedReadWriteLock, unsigned long time = ULONG_MAX);
-    bool wait(QReadWriteLock *lockedReadWriteLock, QDeadlineTimer deadline);
+    bool wait(QMutex *lockedMutex,
+              QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever));
+    bool wait(QReadWriteLock *lockedReadWriteLock,
+              QDeadlineTimer deadline = QDeadlineTimer(QDeadlineTimer::Forever));
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_VERSION_X_5_15("Use wait(QMutex *lockedMutex, QDeadlineTimer deadline) instead")
+    bool wait(QMutex *lockedMutex, unsigned long time);
+    QT_DEPRECATED_VERSION_X_5_15("Use wait(QReadWriteLock *lockedReadWriteLock, QDeadlineTimer deadline) instead")
+    bool wait(QReadWriteLock *lockedReadWriteLock, unsigned long time);
+#endif
 
     void wakeOne();
     void wakeAll();
@@ -80,21 +82,28 @@ private:
 #else
 
 class QMutex;
+class QReadWriteLock;
+
 class Q_CORE_EXPORT QWaitCondition
 {
 public:
     QWaitCondition() {}
     ~QWaitCondition() {}
 
-    bool wait(QMutex *mutex, unsigned long time = ULONG_MAX)
-    {
-        Q_UNUSED(mutex);
-        Q_UNUSED(time);
-        return true;
-    }
+    bool wait(QMutex *, QDeadlineTimer = QDeadlineTimer(QDeadlineTimer::Forever))
+    { return true; }
+    bool wait(QReadWriteLock *, QDeadlineTimer = QDeadlineTimer(QDeadlineTimer::Forever))
+    { return true; }
+#if QT_DEPRECATED_SINCE(5, 15)
+    bool wait(QMutex *, unsigned long) { return true; }
+    bool wait(QReadWriteLock *, unsigned long) { return true; }
+#endif
 
     void wakeOne() {}
     void wakeAll() {}
+
+    void notify_one() { wakeOne(); }
+    void notify_all() { wakeAll(); }
 };
 
 #endif // QT_CONFIG(thread)

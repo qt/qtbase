@@ -80,10 +80,12 @@ Receiver::Receiver(QWidget *parent)
             !udpSocket6.joinMulticastGroup(groupAddress6))
         statusLabel->setText(tr("Listening for multicast messages on IPv4 only"));
 
-    connect(&udpSocket4, SIGNAL(readyRead()),
-            this, SLOT(processPendingDatagrams()));
-    connect(&udpSocket6, &QUdpSocket::readyRead, this, &Receiver::processPendingDatagrams);
-    connect(quitButton, SIGNAL(clicked()), this, SLOT(close()));
+    connect(&udpSocket4, &QUdpSocket::readyRead,
+            this, &Receiver::processPendingDatagrams);
+    connect(&udpSocket6, &QUdpSocket::readyRead,
+            this, &Receiver::processPendingDatagrams);
+    connect(quitButton, &QPushButton::clicked,
+            this, &Receiver::close);
 }
 
 void Receiver::processPendingDatagrams()

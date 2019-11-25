@@ -697,7 +697,7 @@ void tst_QDirModel::roleNames_data()
 {
     QTest::addColumn<int>("role");
     QTest::addColumn<QByteArray>("roleName");
-    QTest::newRow("decoration") << int(Qt::DecorationRole) << QByteArray("decoration");
+    QTest::newRow("decoration") << int(Qt::DecorationRole) << QByteArray("fileIcon");
     QTest::newRow("display") << int(Qt::DisplayRole) << QByteArray("display");
     QTest::newRow("fileIcon") << int(QDirModel::FileIconRole) << QByteArray("fileIcon");
     QTest::newRow("filePath") << int(QDirModel::FilePathRole) << QByteArray("filePath");
@@ -713,8 +713,8 @@ void tst_QDirModel::roleNames()
     QVERIFY(roles.contains(role));
 
     QFETCH(QByteArray, roleName);
-    QList<QByteArray> values = roles.values(role);
-    QVERIFY(values.contains(roleName));
+    QCOMPARE(roles.values(role).count(), 1);
+    QCOMPARE(roles.value(role), roleName);
 }
 
 

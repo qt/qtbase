@@ -303,10 +303,7 @@ struct QScriptItem;
 class QTextItemInt : public QTextItem
 {
 public:
-    inline QTextItemInt()
-        : justified(false), underlineStyle(QTextCharFormat::NoUnderline), num_chars(0), chars(nullptr),
-          logClusters(nullptr), f(nullptr), fontEngine(nullptr)
-    {}
+    inline QTextItemInt() = default;
     QTextItemInt(const QScriptItem &si, QFont *font, const QTextCharFormat &format = QTextCharFormat());
     QTextItemInt(const QGlyphLayout &g, QFont *font, const QChar *chars, int numChars, QFontEngine *fe,
                  const QTextCharFormat &format = QTextCharFormat());
@@ -321,16 +318,16 @@ public:
     QFixed width;
 
     RenderFlags flags;
-    bool justified;
-    QTextCharFormat::UnderlineStyle underlineStyle;
+    bool justified = false;
+    QTextCharFormat::UnderlineStyle underlineStyle = QTextCharFormat::NoUnderline;
     const QTextCharFormat charFormat;
-    int num_chars;
-    const QChar *chars;
-    const unsigned short *logClusters;
-    const QFont *f;
+    int num_chars = 0;
+    const QChar *chars = nullptr;
+    const unsigned short *logClusters = nullptr;
+    const QFont *f = nullptr;
 
     QGlyphLayout glyphs;
-    QFontEngine *fontEngine;
+    QFontEngine *fontEngine = nullptr;
 };
 
 struct QScriptItem

@@ -466,14 +466,14 @@ inline void QWindowsFileDialogSharedData::setSelectedNameFilter(const QString &f
 inline QList<QUrl> QWindowsFileDialogSharedData::selectedFiles() const
 {
     m_data->mutex.lock();
-    const QList<QUrl> result = m_data->selectedFiles;
+    const auto result = m_data->selectedFiles;
     m_data->mutex.unlock();
     return result;
 }
 
 inline QString QWindowsFileDialogSharedData::selectedFile() const
 {
-    const QList<QUrl> files = selectedFiles();
+    const auto files = selectedFiles();
     return files.isEmpty() ? QString() : files.front().toLocalFile();
 }
 

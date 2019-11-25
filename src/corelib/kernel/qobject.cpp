@@ -211,11 +211,12 @@ QObjectPrivate::QObjectPrivate(int version)
 
 QObjectPrivate::~QObjectPrivate()
 {
+    auto thisThreadData = threadData.loadRelaxed();
     if (extraData && !extraData->runningTimers.isEmpty()) {
-        if (Q_LIKELY(threadData->thread.loadAcquire() == QThread::currentThread())) {
+        if (Q_LIKELY(thisThreadData->thread.loadAcquire() == QThread::currentThread())) {
             // unregister pending timers
-            if (threadData->hasEventDispatcher())
-                threadData->eventDispatcher.loadRelaxed()->unregisterTimers(q_ptr);
+            if (thisThreadData->hasEventDispatcher())
+                thisThreadData->eventDispatcher.loadRelaxed()->unregisterTimers(q_ptr);
 
             // release the timer ids back to the pool
             for (int i = 0; i < extraData->runningTimers.size(); ++i)
@@ -228,7 +229,7 @@ QObjectPrivate::~QObjectPrivate()
     if (postedEvents)
         QCoreApplication::removePostedEvents(q_ptr, 0);
 
-    threadData->deref();
+    thisThreadData->deref();
 
     if (metaObject) metaObject->objectDestroyed(q_ptr);
 
@@ -915,11 +916,12 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
 
     Q_D(QObject);
     d_ptr->q_ptr = this;
-    d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
-    d->threadData->ref();
+    auto threadData = (parent && !parent->thread()) ? parent->d_func()->threadData.loadRelaxed() : QThreadData::current();
+    threadData->ref();
+    d->threadData.storeRelaxed(threadData);
     if (parent) {
         QT_TRY {
-            if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
+            if (!check_parent_thread(parent, parent ? parent->d_func()->threadData.loadRelaxed() : 0, threadData))
                 parent = 0;
             if (d->isWidget) {
                 if (parent) {
@@ -931,7 +933,7 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
                 setParent(parent);
             }
         } QT_CATCH(...) {
-            d->threadData->deref();
+            threadData->deref();
             QT_RETHROW;
         }
     }
@@ -1308,7 +1310,7 @@ bool QObject::event(QEvent *e)
 
     case QEvent::ThreadChange: {
         Q_D(QObject);
-        QThreadData *threadData = d->threadData;
+        QThreadData *threadData = d->threadData.loadRelaxed();
         QAbstractEventDispatcher *eventDispatcher = threadData->eventDispatcher.loadRelaxed();
         if (eventDispatcher) {
             QList<QAbstractEventDispatcher::TimerInfo> timers = eventDispatcher->registeredTimers(this);
@@ -1475,7 +1477,7 @@ bool QObject::blockSignals(bool block) noexcept
 */
 QThread *QObject::thread() const
 {
-    return d_func()->threadData->thread.loadAcquire();
+    return d_func()->threadData.loadRelaxed()->thread.loadAcquire();
 }
 
 /*!
@@ -1522,7 +1524,7 @@ void QObject::moveToThread(QThread *targetThread)
 {
     Q_D(QObject);
 
-    if (d->threadData->thread.loadAcquire() == targetThread) {
+    if (d->threadData.loadRelaxed()->thread.loadAcquire() == targetThread) {
         // object is already in this thread
         return;
     }
@@ -1538,13 +1540,14 @@ void QObject::moveToThread(QThread *targetThread)
 
     QThreadData *currentData = QThreadData::current();
     QThreadData *targetData = targetThread ? QThreadData::get2(targetThread) : nullptr;
-    if (d->threadData->thread.loadAcquire() == 0 && currentData == targetData) {
+    QThreadData *thisThreadData = d->threadData.loadRelaxed();
+    if (!thisThreadData->thread.loadAcquire() && currentData == targetData) {
         // one exception to the rule: we allow moving objects with no thread affinity to the current thread
         currentData = d->threadData;
-    } else if (d->threadData != currentData) {
+    } else if (thisThreadData != currentData) {
         qWarning("QObject::moveToThread: Current thread (%p) is not the object's thread (%p).\n"
                  "Cannot move to target thread (%p)\n",
-                 currentData->thread.loadRelaxed(), d->threadData->thread.loadRelaxed(), targetData ? targetData->thread.loadRelaxed() : nullptr);
+                 currentData->thread.loadRelaxed(), thisThreadData->thread.loadRelaxed(), targetData ? targetData->thread.loadRelaxed() : nullptr);
 
 #ifdef Q_OS_MAC
         qWarning("You might be loading two sets of Qt binaries into the same process. "
@@ -1641,8 +1644,10 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
 
     // set new thread data
     targetData->ref();
-    threadData->deref();
-    threadData = targetData;
+    threadData.loadRelaxed()->deref();
+
+    // synchronizes with loadAcquire e.g. in QCoreApplication::postEvent
+    threadData.storeRelease(targetData);
 
     for (int i = 0; i < children.size(); ++i) {
         QObject *child = children.at(i);
@@ -1654,7 +1659,7 @@ void QObjectPrivate::_q_reregisterTimers(void *pointer)
 {
     Q_Q(QObject);
     QList<QAbstractEventDispatcher::TimerInfo> *timerList = reinterpret_cast<QList<QAbstractEventDispatcher::TimerInfo> *>(pointer);
-    QAbstractEventDispatcher *eventDispatcher = threadData->eventDispatcher.loadRelaxed();
+    QAbstractEventDispatcher *eventDispatcher = threadData.loadRelaxed()->eventDispatcher.loadRelaxed();
     for (int i = 0; i < timerList->size(); ++i) {
         const QAbstractEventDispatcher::TimerInfo &ti = timerList->at(i);
         eventDispatcher->registerTimer(ti.timerId, ti.interval, ti.timerType, q);
@@ -1712,7 +1717,9 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
         qWarning("QObject::startTimer: Timers cannot have negative intervals");
         return 0;
     }
-    if (Q_UNLIKELY(!d->threadData->hasEventDispatcher())) {
+
+    auto thisThreadData = d->threadData.loadRelaxed();
+    if (Q_UNLIKELY(!thisThreadData->hasEventDispatcher())) {
         qWarning("QObject::startTimer: Timers can only be used with threads started with QThread");
         return 0;
     }
@@ -1720,7 +1727,7 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
         qWarning("QObject::startTimer: Timers cannot be started from another thread");
         return 0;
     }
-    int timerId = d->threadData->eventDispatcher.loadRelaxed()->registerTimer(interval, timerType, this);
+    int timerId = thisThreadData->eventDispatcher.loadRelaxed()->registerTimer(interval, timerType, this);
     if (!d->extraData)
         d->extraData = new QObjectPrivate::ExtraData;
     d->extraData->runningTimers.append(timerId);
@@ -1794,8 +1801,9 @@ void QObject::killTimer(int id)
             return;
         }
 
-        if (d->threadData->hasEventDispatcher())
-            d->threadData->eventDispatcher.loadRelaxed()->unregisterTimer(id);
+        auto thisThreadData = d->threadData.loadRelaxed();
+        if (thisThreadData->hasEventDispatcher())
+            thisThreadData->eventDispatcher.loadRelaxed()->unregisterTimer(id);
 
         d->extraData->runningTimers.remove(at);
         QAbstractEventDispatcherPrivate::releaseTimerId(id);
@@ -3762,7 +3770,7 @@ void doActivate(QObject *sender, int signal_index, void **argv)
         list = &signalVector->at(-1);
 
     Qt::HANDLE currentThreadId = QThread::currentThreadId();
-    bool inSenderThread = currentThreadId == QObjectPrivate::get(sender)->threadData->threadId.loadRelaxed();
+    bool inSenderThread = currentThreadId == QObjectPrivate::get(sender)->threadData.loadRelaxed()->threadId.loadRelaxed();
 
     // We need to check against the highest connection id to ensure that signals added
     // during the signal emission are not emitted in this emission.

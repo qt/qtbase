@@ -1,4 +1,4 @@
-﻿/****************************************************************************
+/****************************************************************************
 **
 ** Copyright (C) 2017 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
@@ -398,7 +398,7 @@ void QWidget::setAutoFillBackground(bool enabled)
             If it is \nullptr (the default), the new widget will be a window.
             If not, it will be a child of \e parent, and be constrained by
             \e parent's geometry (unless you specify Qt::Window as window flag).
-        \li  \c{Qt::WindowFlags f = 0} (where available) sets the window flags;
+        \li  \c{Qt::WindowFlags f = { }} (where available) sets the window flags;
             the default is suitable for almost all widgets, but to get, for
             example, a window without a window system frame, you must use
             special flags.
@@ -1592,7 +1592,7 @@ void QWidgetPrivate::createTLExtra()
         x->basew = x->baseh = 0;
         x->frameStrut.setCoords(0, 0, 0, 0);
         x->normalGeometry = QRect(0,0,-1,-1);
-        x->savedFlags = 0;
+        x->savedFlags = { };
         x->opacity = 255;
         x->posIncludesFrame = 0;
         x->sizeAdjusted = false;
@@ -8165,6 +8165,8 @@ void QWidgetPrivate::showChildren(bool spontaneous)
     QList<QObject*> childList = children;
     for (int i = 0; i < childList.size(); ++i) {
         QWidget *widget = qobject_cast<QWidget*>(childList.at(i));
+        if (widget && widget->windowHandle() && !widget->testAttribute(Qt::WA_WState_ExplicitShowHide))
+            widget->setAttribute(Qt::WA_WState_Hidden, false);
         if (!widget
             || widget->isWindow()
             || widget->testAttribute(Qt::WA_WState_Hidden))

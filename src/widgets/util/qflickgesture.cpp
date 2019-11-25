@@ -610,7 +610,7 @@ QGestureRecognizer::Result QFlickGestureRecognizer::recognize(QGesture *state,
     }
 
     // depending on the scroller state return the gesture state
-    Result result(0);
+    Result result;
     bool scrollerIsActive = (scroller->state() == QScroller::Dragging ||
                              scroller->state() == QScroller::Scrolling);
 

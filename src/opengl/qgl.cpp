@@ -83,7 +83,8 @@ QT_BEGIN_NAMESPACE
 class QGLDefaultExtensions
 {
 public:
-    QGLDefaultExtensions() : extensions(0) {
+    QGLDefaultExtensions()
+    {
         QGLTemporaryContext tempContext;
         Q_ASSERT(QOpenGLContext::currentContext());
         QOpenGLExtensions *ext = qgl_extensions();
