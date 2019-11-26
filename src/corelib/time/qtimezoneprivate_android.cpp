@@ -54,9 +54,10 @@ QT_BEGIN_NAMESPACE
 QAndroidTimeZonePrivate::QAndroidTimeZonePrivate()
     : QTimeZonePrivate()
 {
-    // start with system time zone
-    androidTimeZone = QJNIObjectPrivate::callStaticObjectMethod("java.util.TimeZone", "getDefault", "()Ljava/util/TimeZone;");
-    init("UTC");
+    // Keep in sync with systemTimeZoneId():
+    androidTimeZone = QJNIObjectPrivate::callStaticObjectMethod(
+        "java.util.TimeZone", "getDefault", "()Ljava/util/TimeZone;");
+    m_id = androidTimeZone.callObjectMethod("getID", "()Ljava/lang/String;").toString().toUtf8();
 }
 
 // Create a named time zone
@@ -227,11 +228,10 @@ QTimeZonePrivate::Data QAndroidTimeZonePrivate::previousTransition(qint64 before
 
 QByteArray QAndroidTimeZonePrivate::systemTimeZoneId() const
 {
-    QJNIObjectPrivate androidSystemTimeZone = QJNIObjectPrivate::callStaticObjectMethod("java.util.TimeZone", "getDefault", "()Ljava/util/TimeZone;");
-    QJNIObjectPrivate systemTZIdAndroid = androidSystemTimeZone.callObjectMethod<jstring>("getID");
-    QByteArray systemTZid = systemTZIdAndroid.toString().toUtf8();
-
-    return systemTZid;
+    // Keep in sync with default constructor:
+    QJNIObjectPrivate androidSystemTimeZone = QJNIObjectPrivate::callStaticObjectMethod(
+        "java.util.TimeZone", "getDefault", "()Ljava/util/TimeZone;");
+    return androidSystemTimeZone.callObjectMethod<jstring>("getID").toString().toUtf8();
 }
 
 QList<QByteArray> QAndroidTimeZonePrivate::availableTimeZoneIds() const
