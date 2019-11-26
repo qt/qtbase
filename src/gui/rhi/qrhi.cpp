@@ -2319,6 +2319,24 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
 }
 
 /*!
+    \fn bool QRhiRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const;
+
+    \return true if the \a other QRhiRenderPassDescriptor is compatible with
+    this one, meaning \c this and \a other can be used interchangebly in
+    QRhiGraphicsPipeline::setRenderPassDescriptor().
+
+    The concept of the compatibility of renderpass descriptors is similar to
+    the \l{QRhiShaderResourceBindings::isLayoutCompatible}{layout
+    compatibility} of QRhiShaderResourceBindings instances. They allow better
+    reuse of QRhiGraphicsPipeline instances: for example, a
+    QRhiGraphicsPipeline instance cache is expected to use these functions to
+    look for a matching pipeline, instead of just comparing pointers, thus
+    allowing a different QRhiRenderPassDescriptor and
+    QRhiShaderResourceBindings to be used in combination with the pipeline, as
+    long as they are compatible.
+ */
+
+/*!
     \return a pointer to a backend-specific QRhiNativeHandles subclass, such as
     QRhiVulkanRenderPassNativeHandles. The returned value is null when exposing
     the underlying native resources is not supported by the backend.

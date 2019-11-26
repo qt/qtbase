@@ -690,6 +690,12 @@ void QNullRenderPassDescriptor::release()
 {
 }
 
+bool QNullRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
+{
+    Q_UNUSED(other);
+    return true;
+}
+
 QNullReferenceRenderTarget::QNullReferenceRenderTarget(QRhiImplementation *rhi)
     : QRhiRenderTarget(rhi),
       d(rhi)

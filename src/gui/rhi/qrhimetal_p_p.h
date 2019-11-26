@@ -138,6 +138,7 @@ struct QMetalRenderPassDescriptor : public QRhiRenderPassDescriptor
     QMetalRenderPassDescriptor(QRhiImplementation *rhi);
     ~QMetalRenderPassDescriptor();
     void release() override;
+    bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
 
     // there is no MTLRenderPassDescriptor here as one will be created for each pass in beginPass()
 

@@ -2658,6 +2658,32 @@ void QMetalRenderPassDescriptor::release()
     // nothing to do here
 }
 
+bool QMetalRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
+{
+    if (!other)
+        return false;
+
+    const QMetalRenderPassDescriptor *o = QRHI_RES(const QMetalRenderPassDescriptor, other);
+
+    if (colorAttachmentCount != o->colorAttachmentCount)
+        return false;
+
+    if (hasDepthStencil != o->hasDepthStencil)
+         return false;
+
+    for (int i = 0; i < colorAttachmentCount; ++i) {
+        if (colorFormat[i] != o->colorFormat[i])
+            return false;
+    }
+
+    if (hasDepthStencil) {
+        if (dsFormat != o->dsFormat)
+            return false;
+    }
+
+    return true;
+}
+
 QMetalReferenceRenderTarget::QMetalReferenceRenderTarget(QRhiImplementation *rhi)
     : QRhiRenderTarget(rhi),
       d(new QMetalRenderTargetData)

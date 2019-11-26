@@ -3455,6 +3455,12 @@ void QGles2RenderPassDescriptor::release()
     // nothing to do here
 }
 
+bool QGles2RenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
+{
+    Q_UNUSED(other);
+    return true;
+}
+
 QGles2ReferenceRenderTarget::QGles2ReferenceRenderTarget(QRhiImplementation *rhi)
     : QRhiRenderTarget(rhi),
       d(rhi)

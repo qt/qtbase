@@ -2940,6 +2940,12 @@ void QD3D11RenderPassDescriptor::release()
     // nothing to do here
 }
 
+bool QD3D11RenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
+{
+    Q_UNUSED(other);
+    return true;
+}
+
 QD3D11ReferenceRenderTarget::QD3D11ReferenceRenderTarget(QRhiImplementation *rhi)
     : QRhiRenderTarget(rhi),
       d(rhi)
