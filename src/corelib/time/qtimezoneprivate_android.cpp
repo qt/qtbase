@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2014 Drew Parsons <dparsons@emerall.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -76,32 +77,33 @@ QAndroidTimeZonePrivate::~QAndroidTimeZonePrivate()
 {
 }
 
-
 void QAndroidTimeZonePrivate::init(const QByteArray &ianaId)
 {
-    QJNIObjectPrivate jo_ianaId = QJNIObjectPrivate::fromString( QString::fromUtf8(ianaId) );
-    androidTimeZone = QJNIObjectPrivate::callStaticObjectMethod( "java.util.TimeZone", "getTimeZone", "(Ljava/lang/String;)Ljava/util/TimeZone;",  static_cast<jstring>(jo_ianaId.object()) );
+    const QString iana = QString::fromUtf8(ianaId);
+    androidTimeZone = QJNIObjectPrivate::callStaticObjectMethod(
+        "java.util.TimeZone", "getTimeZone", "(Ljava/lang/String;)Ljava/util/TimeZone;",
+        static_cast<jstring>(QJNIObjectPrivate::fromString(iana).object()));
+
+    // The ID or display name of the zone we've got, if it looks like what we asked for:
+    const auto match = [iana](const QJNIObjectPrivate &jname) -> QByteArray {
+        const QString name = jname.toString();
+        if (iana.compare(name, Qt::CaseInsensitive))
+            return name.toUtf8();
+
+        return QByteArray();
+    };
 
     // Painfully, JNI gives us back a default zone object if it doesn't
     // recognize the name; so check for whether ianaId is a recognized name of
     // the zone object we got and ignore the zone if not.
     // Try checking ianaId against getID(), getDisplayName():
-    QJNIObjectPrivate jname = androidTimeZone.callObjectMethod("getID", "()Ljava/lang/String;");
-    bool found = (jname.toString().toUtf8() == ianaId);
-    for (int style = 1; !found && style-- > 0;) {
-        for (int dst = 1; !found && dst-- > 0;) {
-            jname = androidTimeZone.callObjectMethod("getDisplayName", "(ZI;)Ljava/lang/String;",
-                                                     bool(dst), style);
-            found = (jname.toString().toUtf8() == ianaId);
+    m_id = match(androidTimeZone.callObjectMethod("getID", "()Ljava/lang/String;"));
+    for (int style = 1; m_id.isEmpty() && style-- > 0;) {
+        for (int dst = 1; m_id.isEmpty() && dst-- > 0;) {
+            m_id = match(androidTimeZone.callObjectMethod(
+                             "getDisplayName", "(ZI;)Ljava/lang/String;", bool(dst), style));
         }
     }
-
-    if (!found)
-        m_id.clear();
-    else if (ianaId.isEmpty())
-        m_id = systemTimeZoneId();
-    else
-        m_id = ianaId;
 }
 
 QAndroidTimeZonePrivate *QAndroidTimeZonePrivate::clone() const
