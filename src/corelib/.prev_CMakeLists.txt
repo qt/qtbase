@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_module(Core
+    GENERATE_METATYPES
     QMAKE_MODULE_CONFIG moc resources
     EXCEPTIONS
     SOURCES

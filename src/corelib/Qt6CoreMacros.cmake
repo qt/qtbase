@@ -530,3 +530,61 @@ function(qt6_import_plugins TARGET_NAME)
         endif()
     endforeach()
 endfunction()
+
+
+function(qt6_generate_meta_types_json_file target)
+
+    get_target_property(target_type ${target} TYPE)
+    if (target_type STREQUAL "INTERFACE_LIBRARY" OR CMAKE_VERSION VERSION_LESS "3.16.0")
+        # interface libraries not supported or cmake version is not high enough
+        message(WARNING "Meta types generation requires CMake >= 3.16")
+        return()
+    endif()
+
+    get_target_property(existing_meta_types_file ${target} QT_MODULE_META_TYPES_FILE)
+    if (existing_meta_types_file)
+        return()
+    endif()
+
+    get_target_property(target_binary_dir ${target} BINARY_DIR)
+
+    set(cmake_autogen_cache_file
+        "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache.txt")
+    set(cmake_autogen_info_file
+        "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/AutogenInfo.json")
+    set(type_list_file "${target_binary_dir}/meta_types/json_file_list.txt")
+
+    add_custom_target(${target}_automoc_json_extraction
+        BYPRODUCTS ${type_list_file}
+        COMMAND
+            ${QT_CMAKE_EXPORT_NAMESPACE}::cmake_automoc_parser
+            --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
+            --cmake-autogen-info-file "${cmake_autogen_info_file}"
+            --output-file-path "${type_list_file}"
+            --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include"
+        COMMENT "Running Automoc file extraction"
+    )
+
+    add_dependencies(${target}_automoc_json_extraction ${target}_autogen)
+
+    if (CMAKE_BUILD_TYPE)
+        string(TOLOWER ${target}_${CMAKE_BUILD_TYPE} target_lowercase)
+    else()
+        message(FATAL_ERROR "add_custom_command's OUTPUT parameter does not support generator expressions, so we can't generate this file for multi-config generators")
+    endif()
+    set(metatypes_file "${target_binary_dir}/meta_types/qt6${target_lowercase}_metatypes.json")
+    add_custom_command(OUTPUT ${metatypes_file}
+        DEPENDS ${type_list_file}
+        COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::moc
+            -o ${metatypes_file}
+            --collect-json "@${type_list_file}"
+        COMMENT "Runing automoc with --collect-json"
+    )
+
+    target_sources(${target} PRIVATE ${metatypes_file})
+    set_source_files_properties(${metatypes_file} PROPERTIES HEADER_FILE_ONLY TRUE)
+
+    set_target_properties(${target} PROPERTIES
+        QT_MODULE_META_TYPES_FILE ${metatypes_file}
+     )
+endfunction()

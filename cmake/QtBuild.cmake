@@ -1110,6 +1110,7 @@ function(qt_extend_target target)
                             ${private_visibility_option} ${arg_LINK_OPTIONS})
 
         if(NOT arg_HEADER_MODULE)
+            list(APPEND arg_MOC_OPTIONS "--output-json")
             set_target_properties("${target}" PROPERTIES
                 AUTOMOC_MOC_OPTIONS "${arg_MOC_OPTIONS}"
                 _qt_target_deps "${target_deps}"
@@ -1354,7 +1355,7 @@ function(qt_add_module target)
 
     # Process arguments:
     qt_parse_all_arguments(arg "qt_add_module"
-        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE"
+        "NO_MODULE_HEADERS;STATIC;DISABLE_TOOLS_EXPORT;EXCEPTIONS;INTERNAL_MODULE;NO_SYNC_QT;NO_PRIVATE_MODULE;HEADER_MODULE;GENERATE_METATYPES"
         "CONFIG_MODULE_NAME;PRECOMPILED_HEADER"
         "${__default_private_args};${__default_public_args};QMAKE_MODULE_CONFIG;EXTRA_CMAKE_FILES;EXTRA_CMAKE_INCLUDES;NO_PCH_SOURCES" ${ARGN})
 
@@ -1696,6 +1697,18 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
     endif()
 
     qt_describe_module(${target})
+
+    # Generate metatypes
+    if (${arg_GENERATE_METATYPES})
+        qt6_generate_meta_types_json_file(${target})
+        get_target_property(target_metatypes_file ${target} QT_MODULE_META_TYPES_FILE)
+        if (target_metatypes_file)
+            set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
+            qt_copy_or_install(FILES ${target_metatypes_file}
+                DESTINATION ${metatypes_install_dir}
+            )
+        endif()
+    endif()
 endfunction()
 
 function(qt_export_tools module_name)

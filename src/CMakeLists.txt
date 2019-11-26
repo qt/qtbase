@@ -8,6 +8,7 @@ function(find_or_build_bootstrap_names)
     add_subdirectory(tools/moc)
     add_subdirectory(tools/rcc)
     add_subdirectory(tools/tracegen)
+    add_subdirectory(tools/cmake_automoc_parser)
 endfunction()
 
 find_or_build_bootstrap_names()

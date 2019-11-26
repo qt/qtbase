@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_module(Gui
+    GENERATE_METATYPES
     PLUGIN_TYPES platforms platforms/darwin xcbglintegrations platformthemes platforminputcontexts generic iconengines imageformats egldeviceintegrations
     SOURCES
         image/qbitmap.cpp image/qbitmap.h

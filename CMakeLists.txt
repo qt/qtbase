@@ -56,6 +56,9 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     ## feature variables are available.
     qt_set_language_standards()
 
+    #include CoreMacros() for qt6_generate_meta_types()
+    include(src/corelib/Qt6CoreMacros.cmake)
+
     ## Visit all the directories:
     add_subdirectory(src)
 endif()

@@ -2827,6 +2827,8 @@ def write_module(cm_fh: IO[str], scope: Scope, *, indent: int = 0) -> str:
         extra.append("NO_PRIVATE_MODULE")
     if "header_module" in scope.get("CONFIG"):
         extra.append("HEADER_MODULE")
+    if "metatypes" in scope.get("CONFIG"):
+        extra.append("GENERATE_METATYPES")
 
     module_config = scope.get("MODULE_CONFIG")
     if len(module_config):

@@ -5,6 +5,7 @@
 #####################################################################
 
 qt_add_module(Widgets
+    GENERATE_METATYPES
     QMAKE_MODULE_CONFIG uic
     PLUGIN_TYPES styles
     SOURCES

@@ -27,6 +27,7 @@ file(RELATIVE_PATH QT_INVERSE_CONFIG_INSTALL_DIR ${_clean_prefix} ${CMAKE_INSTAL
 #####################################################################
 
 qt_add_module(Core
+    GENERATE_METATYPES
     QMAKE_MODULE_CONFIG moc resources
     EXCEPTIONS
     SOURCES
