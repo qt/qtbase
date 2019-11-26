@@ -821,9 +821,37 @@ void tst_QCborValue::mapMutation()
         QVERIFY(v.isUndefined());
 
         // now mutate the list
+        // simple -> HasByteData
+        const QString strValue = QStringLiteral("value");
+        v = strValue;
+        QVERIFY(v.isString());
+        QCOMPARE(v, QCborValue(strValue));
+        QCOMPARE(m, QCborMap({{42, strValue}}));
+
+        // HasByteData -> HasByteData
+        const QLatin1String otherStrValue("othervalue");
+        v = otherStrValue;
+        QVERIFY(v.isString());
+        QCOMPARE(v, QCborValue(otherStrValue));
+        QCOMPARE(m, QCborMap({{42, otherStrValue}}));
+
+        // HasByteData -> simple
+        v = 42;
+        QVERIFY(v.isInteger());
+        QCOMPARE(v, QCborValue(42));
+        QCOMPARE(m, QCborMap({{42, 42}}));
+
+        // simple -> container
+        v = QCborArray{1, 2, 3};
+        QVERIFY(v.isArray());
+        QCOMPARE(v, QCborArray({1, 2, 3}));
+        QCOMPARE(m,  QCborMap({{42, QCborArray{1, 2, 3}}}));
+
+        // container -> simple
         v = true;
         QVERIFY(v.isBool());
         QVERIFY(v.isTrue());
+        QCOMPARE(m, QCborMap({{42, true}}));
         QVERIFY(m.begin()->isTrue());
         QVERIFY(m.begin().value() == v);
         QVERIFY(v == m.begin().value());
