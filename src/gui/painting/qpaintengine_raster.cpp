@@ -1457,7 +1457,7 @@ static void fillRect_normalized(const QRect &r, QSpanData *data,
 
     ProcessSpans blend = isUnclipped ? data->unclipped_blend : data->blend;
 
-    const int nspans = 256;
+    const int nspans = 512;
     QT_FT_Span spans[nspans];
 
     Q_ASSERT(data->blend);
@@ -2700,7 +2700,7 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
     if (w <= 0 || h <= 0)
         return;
 
-    const int NSPANS = 256;
+    const int NSPANS = 512;
     QSpan spans[NSPANS];
     int current = 0;
 
@@ -3424,7 +3424,7 @@ void QRasterPaintEngine::drawBitmap(const QPointF &pos, const QImage &image, QSp
 
     Q_ASSERT(image.depth() == 1);
 
-    const int spanCount = 256;
+    const int spanCount = 512;
     QT_FT_Span spans[spanCount];
     int n = 0;
 
@@ -4124,7 +4124,7 @@ static void qt_span_fill_clipped(int spanCount, const QSpan *spans, void *userDa
 
     Q_ASSERT(fillData->blend && fillData->unclipped_blend);
 
-    const int NSPANS = 256;
+    const int NSPANS = 512;
     QSpan cspans[NSPANS];
     int currentClip = 0;
     const QSpan *end = spans + spanCount;
