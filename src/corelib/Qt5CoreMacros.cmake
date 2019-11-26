@@ -1,5 +1,6 @@
 #=============================================================================
 # Copyright 2005-2011 Kitware, Inc.
+# Copyright (C) 2020 The Qt Company Ltd.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,8 +39,17 @@
 
 include(CMakeParseArguments)
 
+function(_qt5_warn_deprecated command_name)
+    if(NOT DEFINED _QT5_INTERNAL_SCOPE)
+        message(AUTHOR_WARNING
+            "${command_name} is not part of the official API, and might be removed in Qt 6.")
+    endif()
+endfunction()
+
 # macro used to create the names of output files preserving relative dirs
 macro(qt5_make_output_file infile prefix ext outfile )
+    _qt5_warn_deprecated("qt5_make_output_file")
+
     string(LENGTH ${CMAKE_CURRENT_BINARY_DIR} _binlength)
     string(LENGTH ${infile} _infileLength)
     set(_checkinfile ${CMAKE_CURRENT_SOURCE_DIR})
@@ -73,6 +83,8 @@ endmacro()
 
 
 macro(qt5_get_moc_flags _moc_flags)
+    _qt5_warn_deprecated("qt5_get_moc_flags")
+
     set(${_moc_flags})
     get_directory_property(_inc_DIRS INCLUDE_DIRECTORIES)
 
@@ -105,6 +117,8 @@ endmacro()
 
 # helper macro to set up a moc rule
 function(qt5_create_moc_command infile outfile moc_flags moc_options moc_target moc_depends)
+    _qt5_warn_deprecated("qt5_create_moc_command")
+
     # Pass the parameters in a file.  Set the working directory to
     # be that containing the parameters file and reference it by
     # just the file name.  This is necessary because the moc tool on
@@ -151,6 +165,8 @@ endfunction()
 
 
 function(qt5_generate_moc infile outfile )
+    set(_QT5_INTERNAL_SCOPE ON)
+
     # get include dirs and flags
     qt5_get_moc_flags(moc_flags)
     get_filename_component(abs_infile ${infile} ABSOLUTE)
@@ -177,7 +193,9 @@ endif()
 
 # qt5_wrap_cpp(outfiles inputfile ... )
 
-function(qt5_wrap_cpp outfiles )
+function(qt5_wrap_cpp outfiles)
+    set(_QT5_INTERNAL_SCOPE ON)
+
     # get include dirs
     qt5_get_moc_flags(moc_flags)
 
@@ -250,7 +268,8 @@ endfunction()
 
 # qt5_add_binary_resources(target inputfiles ... )
 
-function(qt5_add_binary_resources target )
+function(qt5_add_binary_resources target)
+    set(_QT5_INTERNAL_SCOPE ON)
 
     set(options)
     set(oneValueArgs DESTINATION)
@@ -296,7 +315,8 @@ endif()
 
 # qt5_add_resources(outfiles inputfile ... )
 
-function(qt5_add_resources outfiles )
+function(qt5_add_resources outfiles)
+    set(_QT5_INTERNAL_SCOPE ON)
 
     set(options)
     set(oneValueArgs)
@@ -345,7 +365,9 @@ endif()
 
 # qt5_add_big_resources(outfiles inputfile ... )
 
-function(qt5_add_big_resources outfiles )
+function(qt5_add_big_resources outfiles)
+    set(_QT5_INTERNAL_SCOPE ON)
+
     if (CMAKE_VERSION VERSION_LESS 3.9)
         message(FATAL_ERROR, "qt5_add_big_resources requires CMake 3.9 or newer")
     endif()
@@ -406,15 +428,7 @@ endif()
 set(_Qt5_COMPONENT_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
 
 macro(qt5_use_modules _target _link_type)
-    if(CMAKE_WARN_DEPRECATED)
-        set(messageType WARNING)
-    endif()
-    if(CMAKE_ERROR_DEPRECATED)
-        set(messageType FATAL_ERROR)
-    endif()
-    if(messageType)
-        message(${messageType} "The qt5_use_modules macro is obsolete. Use target_link_libraries with IMPORTED targets instead.")
-    endif()
+    _qt5_warn_deprecated("qt5_use_modules")
 
     if (NOT TARGET ${_target})
         message(FATAL_ERROR "The first argument to qt5_use_modules must be an existing target.")
