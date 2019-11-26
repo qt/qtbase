@@ -39,7 +39,7 @@
 include(CMakeParseArguments)
 
 # macro used to create the names of output files preserving relative dirs
-macro(QT5_MAKE_OUTPUT_FILE infile prefix ext outfile )
+macro(qt5_make_output_file infile prefix ext outfile )
     string(LENGTH ${CMAKE_CURRENT_BINARY_DIR} _binlength)
     string(LENGTH ${infile} _infileLength)
     set(_checkinfile ${CMAKE_CURRENT_SOURCE_DIR})
@@ -65,7 +65,7 @@ macro(QT5_MAKE_OUTPUT_FILE infile prefix ext outfile )
 endmacro()
 
 
-macro(QT5_GET_MOC_FLAGS _moc_flags)
+macro(qt5_get_moc_flags _moc_flags)
     set(${_moc_flags})
     get_directory_property(_inc_DIRS INCLUDE_DIRECTORIES)
 
@@ -97,7 +97,7 @@ endmacro()
 
 
 # helper macro to set up a moc rule
-function(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options moc_target moc_depends)
+function(qt5_create_moc_command infile outfile moc_flags moc_options moc_target moc_depends)
     # Pass the parameters in a file.  Set the working directory to
     # be that containing the parameters file and reference it by
     # just the file name.  This is necessary because the moc tool on
@@ -143,7 +143,7 @@ function(QT5_CREATE_MOC_COMMAND infile outfile moc_flags moc_options moc_target 
 endfunction()
 
 
-function(QT5_GENERATE_MOC infile outfile )
+function(qt5_generate_moc infile outfile )
     # get include dirs and flags
     qt5_get_moc_flags(moc_flags)
     get_filename_component(abs_infile ${infile} ABSOLUTE)
@@ -160,7 +160,7 @@ endfunction()
 
 # qt5_wrap_cpp(outfiles inputfile ... )
 
-function(QT5_WRAP_CPP outfiles )
+function(qt5_wrap_cpp outfiles )
     # get include dirs
     qt5_get_moc_flags(moc_flags)
 
@@ -189,7 +189,7 @@ endfunction()
 # _qt5_parse_qrc_file(infile _out_depends _rc_depends)
 # internal
 
-function(_QT5_PARSE_QRC_FILE infile _out_depends _rc_depends)
+function(_qt5_parse_qrc_file infile _out_depends _rc_depends)
     get_filename_component(rc_path ${infile} PATH)
 
     if(EXISTS "${infile}")
@@ -222,7 +222,7 @@ endfunction()
 
 # qt5_add_binary_resources(target inputfiles ... )
 
-function(QT5_ADD_BINARY_RESOURCES target )
+function(qt5_add_binary_resources target )
 
     set(options)
     set(oneValueArgs DESTINATION)
@@ -241,7 +241,7 @@ function(QT5_ADD_BINARY_RESOURCES target )
     foreach(it ${rcc_files})
         get_filename_component(infile ${it} ABSOLUTE)
 
-        _QT5_PARSE_QRC_FILE(${infile} _out_depends _rc_depends)
+        _qt5_parse_qrc_file(${infile} _out_depends _rc_depends)
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
         set(infiles ${infiles} ${infile})
         set(out_depends ${out_depends} ${_out_depends})
@@ -258,7 +258,7 @@ endfunction()
 
 # qt5_add_resources(outfiles inputfile ... )
 
-function(QT5_ADD_RESOURCES outfiles )
+function(qt5_add_resources outfiles )
 
     set(options)
     set(oneValueArgs)
@@ -278,7 +278,7 @@ function(QT5_ADD_RESOURCES outfiles )
         get_filename_component(infile ${it} ABSOLUTE)
         set(outfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}.cpp)
 
-        _QT5_PARSE_QRC_FILE(${infile} _out_depends _rc_depends)
+        _qt5_parse_qrc_file(${infile} _out_depends _rc_depends)
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
 
         add_custom_command(OUTPUT ${outfile}
@@ -295,7 +295,7 @@ endfunction()
 
 # qt5_add_big_resources(outfiles inputfile ... )
 
-function(QT5_ADD_BIG_RESOURCES outfiles )
+function(qt5_add_big_resources outfiles )
     if (CMAKE_VERSION VERSION_LESS 3.9)
         message(FATAL_ERROR, "qt5_add_big_resources requires CMake 3.9 or newer")
     endif()
@@ -319,7 +319,7 @@ function(QT5_ADD_BIG_RESOURCES outfiles )
         set(tmpoutfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}tmp.cpp)
         set(outfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${outfilename}.o)
 
-        _QT5_PARSE_QRC_FILE(${infile} _out_depends _rc_depends)
+        _qt5_parse_qrc_file(${infile} _out_depends _rc_depends)
         set_source_files_properties(${infile} PROPERTIES SKIP_AUTORCC ON)
         add_custom_command(OUTPUT ${tmpoutfile}
                            COMMAND ${Qt5Core_RCC_EXECUTABLE} ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
@@ -389,7 +389,7 @@ macro(qt5_use_modules _target _link_type)
     endforeach()
 endmacro()
 
-function(QT5_IMPORT_PLUGINS TARGET_NAME)
+function(qt5_import_plugins TARGET_NAME)
     set(_doing "")
     foreach(_arg ${ARGN})
         if(_arg STREQUAL "INCLUDE")
