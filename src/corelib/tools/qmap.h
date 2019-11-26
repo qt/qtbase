@@ -380,12 +380,15 @@ public:
     T &operator[](const Key &key);
     const T operator[](const Key &key) const;
 
-    QList<Key> uniqueKeys() const;
     QList<Key> keys() const;
     QList<Key> keys(const T &value) const;
     QList<T> values() const;
-    QList<T> values(const Key &key) const;
-    int count(const Key &key) const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use QMultiMap for maps storing multiple values with the same key.") QList<Key> uniqueKeys() const;
+    QT_DEPRECATED_X("Use QMultiMap for maps storing multiple values with the same key.") QList<T> values(const Key &key) const;
+    QT_DEPRECATED_X("Use QMultiMap for maps storing multiple values with the same key.") int count(const Key &key) const;
+#endif
+
 
     inline const Key &firstKey() const { Q_ASSERT(!isEmpty()); return constBegin().key(); }
     inline const Key &lastKey() const { Q_ASSERT(!isEmpty()); return (constEnd() - 1).key(); }
@@ -452,6 +455,7 @@ public:
             { return i != o.i; }
 #endif
         friend class QMap<Key, T>;
+        friend class QMultiMap<Key, T>;
     };
     friend class iterator;
 
@@ -514,6 +518,7 @@ public:
         inline bool operator!=(const iterator &o) const { return operator!=(const_iterator(o)); }
 #endif
         friend class QMap<Key, T>;
+        friend class QMultiMap<Key, T>;
     };
     friend class const_iterator;
 
@@ -579,9 +584,11 @@ public:
     iterator insert(const Key &key, const T &value);
     iterator insert(const_iterator pos, const Key &key, const T &value);
     void insert(const QMap<Key, T> &map);
-    iterator insertMulti(const Key &key, const T &value);
-    iterator insertMulti(const_iterator pos, const Key &akey, const T &avalue);
-    QMap<Key, T> &unite(const QMap<Key, T> &other);
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use QMultiMap for maps storing multiple values with the same key.") iterator insertMulti(const Key &key, const T &value);
+    QT_DEPRECATED_X("Use QMultiMap for maps storing multiple values with the same key.") iterator insertMulti(const_iterator pos, const Key &akey, const T &avalue);
+    QT_DEPRECATED_X("Use QMultiMap for maps storing multiple values with the same key.") QMap<Key, T> &unite(const QMap<Key, T> &other);
+#endif
 
     // STL compatibility
     typedef Key key_type;
@@ -610,6 +617,8 @@ private:
         return true;
 #endif
     }
+
+    friend class QMultiMap<Key, T>;
 };
 
 template <class Key, class T>
@@ -669,23 +678,6 @@ Q_INLINE_TEMPLATE T &QMap<Key, T>::operator[](const Key &akey)
     if (!n)
         return *insert(akey, T());
     return n->value;
-}
-
-template <class Key, class T>
-Q_INLINE_TEMPLATE int QMap<Key, T>::count(const Key &akey) const
-{
-    Node *firstNode;
-    Node *lastNode;
-    d->nodeRange(akey, &firstNode, &lastNode);
-
-    const_iterator ci_first(firstNode);
-    const const_iterator ci_last(lastNode);
-    int cnt = 0;
-    while (ci_first != ci_last) {
-        ++cnt;
-        ++ci_first;
-    }
-    return cnt;
 }
 
 template <class Key, class T>
@@ -832,75 +824,6 @@ Q_INLINE_TEMPLATE void QMap<Key, T>::insert(const QMap<Key, T> &map)
     }
 }
 
-template <class Key, class T>
-Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const Key &akey,
-                                                                            const T &avalue)
-{
-    detach();
-    Node* y = d->end();
-    Node* x = static_cast<Node *>(d->root());
-    bool left = true;
-    while (x != nullptr) {
-        left = !qMapLessThanKey(x->key, akey);
-        y = x;
-        x = left ? x->leftNode() : x->rightNode();
-    }
-    Node *z = d->createNode(akey, avalue, y, left);
-    return iterator(z);
-}
-
-template <class Key, class T>
-typename QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const_iterator pos, const Key &akey, const T &avalue)
-{
-    if (d->ref.isShared())
-        return this->insertMulti(akey, avalue);
-
-    Q_ASSERT_X(isValidIterator(pos), "QMap::insertMulti", "The specified const_iterator argument 'pos' is invalid");
-
-    if (pos == constEnd()) {
-        // Hint is that the Node is larger than (or equal to) the largest value.
-        Node *n = static_cast<Node *>(pos.i->left);
-        if (n) {
-            while (n->right)
-                n = static_cast<Node *>(n->right);
-
-            if (!qMapLessThanKey(n->key, akey))
-                return this->insertMulti(akey, avalue); // ignore hint
-            Node *z = d->createNode(akey, avalue, n, false); // insert right most
-            return iterator(z);
-        }
-        return this->insertMulti(akey, avalue);
-    } else {
-        // Hint indicates that the node should be less (or equal to) the hint given
-        // but larger than the previous value.
-        Node *next = const_cast<Node*>(pos.i);
-        if (qMapLessThanKey(next->key, akey))
-            return this->insertMulti(akey, avalue); // ignore hint
-
-        if (pos == constBegin()) {
-            // There is no previous value (insert left most)
-            Node *z = d->createNode(akey, avalue, begin().i, true);
-            return iterator(z);
-        } else {
-            Node *prev = const_cast<Node*>(pos.i->previousNode());
-            if (!qMapLessThanKey(prev->key, akey))
-                return this->insertMulti(akey, avalue); // ignore hint
-
-            // Hint is ok - do insert
-            if (prev->right == nullptr) {
-                Node *z = d->createNode(akey, avalue, prev, false);
-                return iterator(z);
-            }
-            if (next->left == nullptr) {
-                Node *z = d->createNode(akey, avalue, next, true);
-                return iterator(z);
-            }
-            Q_ASSERT(false); // We should have prev->right == nullptr or next->left == nullptr.
-            return this->insertMulti(akey, avalue);
-        }
-    }
-}
-
 
 template <class Key, class T>
 Q_INLINE_TEMPLATE typename QMap<Key, T>::const_iterator QMap<Key, T>::constFind(const Key &akey) const
@@ -921,19 +844,6 @@ Q_INLINE_TEMPLATE typename QMap<Key, T>::iterator QMap<Key, T>::find(const Key &
     detach();
     Node *n = d->findNode(akey);
     return iterator(n ? n : d->end());
-}
-
-template <class Key, class T>
-Q_INLINE_TEMPLATE QMap<Key, T> &QMap<Key, T>::unite(const QMap<Key, T> &other)
-{
-    QMap<Key, T> copy(other);
-    const_iterator it = copy.constEnd();
-    const const_iterator b = copy.constBegin();
-    while (it != b) {
-        --it;
-        insertMulti(it.key(), it.value());
-    }
-    return *this;
 }
 
 template <class Key, class T>
@@ -1052,26 +962,6 @@ Q_OUTOFLINE_TEMPLATE void QMap<Key, T>::detach_helper()
 }
 
 template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE QList<Key> QMap<Key, T>::uniqueKeys() const
-{
-    QList<Key> res;
-    res.reserve(size()); // May be too much, but assume short lifetime
-    const_iterator i = begin();
-    if (i != end()) {
-        for (;;) {
-            const Key &aKey = i.key();
-            res.append(aKey);
-            do {
-                if (++i == end())
-                    goto break_out_of_outer_loop;
-            } while (!qMapLessThanKey(aKey, i.key()));   // loop while (key == i.key())
-        }
-    }
-break_out_of_outer_loop:
-    return res;
-}
-
-template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE QList<Key> QMap<Key, T>::keys() const
 {
     QList<Key> res;
@@ -1119,21 +1009,6 @@ Q_OUTOFLINE_TEMPLATE QList<T> QMap<Key, T>::values() const
     while (i != end()) {
         res.append(i.value());
         ++i;
-    }
-    return res;
-}
-
-template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE QList<T> QMap<Key, T>::values(const Key &akey) const
-{
-    QList<T> res;
-    Node *n = d->findNode(akey);
-    if (n) {
-        const_iterator it(n);
-        do {
-            res.append(*it);
-            ++it;
-        } while (it != constEnd() && !qMapLessThanKey<Key>(akey, it.key()));
     }
     return res;
 }
@@ -1234,15 +1109,20 @@ public:
     QMultiMap(QMap<Key, T> &&other) noexcept : QMap<Key, T>(std::move(other)) {}
     void swap(QMultiMap<Key, T> &other) noexcept { QMap<Key, T>::swap(other); }
 
+    QList<Key> uniqueKeys() const;
+    QList<T> values(const Key &key) const;
+
+    using typename QMap<Key, T>::iterator;
+    using typename QMap<Key, T>::const_iterator;
+
     inline typename QMap<Key, T>::iterator replace(const Key &key, const T &value)
     { return QMap<Key, T>::insert(key, value); }
-    inline typename QMap<Key, T>::iterator insert(const Key &key, const T &value)
-    { return QMap<Key, T>::insertMulti(key, value); }
-    inline typename QMap<Key, T>::iterator insert(typename QMap<Key, T>::const_iterator pos, const Key &key, const T &value)
-    { return QMap<Key, T>::insertMulti(pos, key, value); }
+    iterator insert(const Key &key, const T &value);
+    iterator insert(const_iterator pos, const Key &key, const T &value);
 
+    QMultiMap &unite(const QMultiMap &other);
     inline QMultiMap &operator+=(const QMultiMap &other)
-    { this->unite(other); return *this; }
+    { return unite(other); }
     inline QMultiMap operator+(const QMultiMap &other) const
     { QMultiMap result = *this; result += other; return result; }
 
@@ -1251,11 +1131,18 @@ public:
     using QMap<Key, T>::count;
     using QMap<Key, T>::find;
     using QMap<Key, T>::constFind;
+    using QMap<Key, T>::values;
+    using QMap<Key, T>::size;
+    using QMap<Key, T>::detach;
+    using QMap<Key, T>::erase;
+    using QMap<Key, T>::isValidIterator;
+    using typename QMap<Key, T>::Node;
 
     bool contains(const Key &key, const T &value) const;
 
     int remove(const Key &key, const T &value);
 
+    int count(const Key &key) const;
     int count(const Key &key, const T &value) const;
 
     typename QMap<Key, T>::iterator find(const Key &key, const T &value) {
@@ -1286,6 +1173,123 @@ private:
 };
 
 template <class Key, class T>
+Q_OUTOFLINE_TEMPLATE QList<Key> QMultiMap<Key, T>::uniqueKeys() const
+{
+    QList<Key> res;
+    res.reserve(size()); // May be too much, but assume short lifetime
+    const_iterator i = this->begin();
+    if (i != this->end()) {
+        for (;;) {
+            const Key &aKey = i.key();
+            res.append(aKey);
+            do {
+                if (++i == this->end())
+                    goto break_out_of_outer_loop;
+            } while (!qMapLessThanKey(aKey, i.key()));   // loop while (key == i.key())
+        }
+    }
+break_out_of_outer_loop:
+    return res;
+}
+
+template <class Key, class T>
+Q_OUTOFLINE_TEMPLATE QList<T> QMultiMap<Key, T>::values(const Key &akey) const
+{
+    QList<T> res;
+    Node *n = this->d->findNode(akey);
+    if (n) {
+        const_iterator it(n);
+        do {
+            res.append(*it);
+            ++it;
+        } while (it != this->constEnd() && !qMapLessThanKey<Key>(akey, it.key()));
+    }
+    return res;
+}
+
+template <class Key, class T>
+Q_INLINE_TEMPLATE typename QMultiMap<Key, T>::iterator QMultiMap<Key, T>::insert(const Key &akey,
+                                                                                 const T &avalue)
+{
+    detach();
+    Node* y = this->d->end();
+    Node* x = static_cast<Node *>(this->d->root());
+    bool left = true;
+    while (x != nullptr) {
+        left = !qMapLessThanKey(x->key, akey);
+        y = x;
+        x = left ? x->leftNode() : x->rightNode();
+    }
+    Node *z = this->d->createNode(akey, avalue, y, left);
+    return iterator(z);
+}
+
+template <class Key, class T>
+typename QMultiMap<Key, T>::iterator QMultiMap<Key, T>::insert(const_iterator pos, const Key &akey, const T &avalue)
+{
+    if (this->d->ref.isShared())
+        return insert(akey, avalue);
+
+    Q_ASSERT_X(isValidIterator(pos), "QMap::insert", "The specified const_iterator argument 'pos' is invalid");
+
+    if (pos == this->constEnd()) {
+        // Hint is that the Node is larger than (or equal to) the largest value.
+        Node *n = static_cast<Node *>(pos.i->left);
+        if (n) {
+            while (n->right)
+                n = static_cast<Node *>(n->right);
+
+            if (!qMapLessThanKey(n->key, akey))
+                return insert(akey, avalue); // ignore hint
+            Node *z = this->d->createNode(akey, avalue, n, false); // insert right most
+            return iterator(z);
+        }
+        return insert(akey, avalue);
+    } else {
+        // Hint indicates that the node should be less (or equal to) the hint given
+        // but larger than the previous value.
+        Node *next = const_cast<Node*>(pos.i);
+        if (qMapLessThanKey(next->key, akey))
+            return insert(akey, avalue); // ignore hint
+
+        if (pos == this->constBegin()) {
+            // There is no previous value (insert left most)
+            Node *z = this->d->createNode(akey, avalue, this->begin().i, true);
+            return iterator(z);
+        } else {
+            Node *prev = const_cast<Node*>(pos.i->previousNode());
+            if (!qMapLessThanKey(prev->key, akey))
+                return insert(akey, avalue); // ignore hint
+
+            // Hint is ok - do insert
+            if (prev->right == nullptr) {
+                Node *z = this->d->createNode(akey, avalue, prev, false);
+                return iterator(z);
+            }
+            if (next->left == nullptr) {
+                Node *z = this->d->createNode(akey, avalue, next, true);
+                return iterator(z);
+            }
+            Q_ASSERT(false); // We should have prev->right == nullptr or next->left == nullptr.
+            return insert(akey, avalue);
+        }
+    }
+}
+
+template <class Key, class T>
+Q_INLINE_TEMPLATE QMultiMap<Key, T> &QMultiMap<Key, T>::unite(const QMultiMap<Key, T> &other)
+{
+    QMultiMap<Key, T> copy(other);
+    const_iterator it = copy.constEnd();
+    const const_iterator b = copy.constBegin();
+    while (it != b) {
+        --it;
+        insert(it.key(), it.value());
+    }
+    return *this;
+}
+
+template <class Key, class T>
 Q_INLINE_TEMPLATE bool QMultiMap<Key, T>::contains(const Key &key, const T &value) const
 {
     return constFind(key, value) != QMap<Key, T>::constEnd();
@@ -1299,13 +1303,30 @@ Q_INLINE_TEMPLATE int QMultiMap<Key, T>::remove(const Key &key, const T &value)
     typename QMap<Key, T>::iterator end(QMap<Key, T>::end());
     while (i != end && !qMapLessThanKey<Key>(key, i.key())) {
         if (i.value() == value) {
-            i = this->erase(i);
+            i = erase(i);
             ++n;
         } else {
             ++i;
         }
     }
     return n;
+}
+
+template <class Key, class T>
+Q_INLINE_TEMPLATE int QMultiMap<Key, T>::count(const Key &akey) const
+{
+    QMultiMap::Node *firstNode;
+    QMultiMap::Node *lastNode;
+    this->d->nodeRange(akey, &firstNode, &lastNode);
+
+    const_iterator ci_first(firstNode);
+    const const_iterator ci_last(lastNode);
+    int cnt = 0;
+    while (ci_first != ci_last) {
+        ++cnt;
+        ++ci_first;
+    }
+    return cnt;
 }
 
 template <class Key, class T>
@@ -1321,6 +1342,44 @@ Q_INLINE_TEMPLATE int QMultiMap<Key, T>::count(const Key &key, const T &value) c
     }
     return n;
 }
+
+#if QT_DEPRECATED_SINCE(5, 15)
+template<class Key, class T>
+QList<Key> QMap<Key, T>::uniqueKeys() const
+{
+    return static_cast<const QMultiMap<Key, T> *>(this)->uniqueKeys();
+}
+
+template<class Key, class T>
+QList<T> QMap<Key, T>::values(const Key &key) const
+{
+    return static_cast<const QMultiMap<Key, T> *>(this)->values(key);
+}
+
+template<class Key, class T>
+int QMap<Key, T>::count(const Key &key) const
+{
+    return static_cast<const QMultiMap<Key, T> *>(this)->count(key);
+}
+
+template<class Key, class T>
+typename QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const Key &key, const T &value)
+{
+    return static_cast<QMultiMap<Key, T> *>(this)->insert(key, value);
+}
+
+template<class Key, class T>
+typename QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const_iterator pos, const Key &akey, const T &avalue)
+{
+    return static_cast<QMultiMap<Key, T> *>(this)->insert(pos, akey, avalue);
+}
+
+template<class Key, class T>
+QMap<Key, T> &QMap<Key, T>::unite(const QMap<Key, T> &other)
+{
+    return static_cast<QMultiMap<Key, T> *>(this)->unite(other);
+}
+#endif
 
 Q_DECLARE_ASSOCIATIVE_ITERATOR(Map)
 Q_DECLARE_MUTABLE_ASSOCIATIVE_ITERATOR(Map)
