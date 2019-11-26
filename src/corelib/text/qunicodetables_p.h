@@ -122,7 +122,7 @@ enum GraphemeBreakClass {
     Graphemebreak_E_Modifier,
     Graphemebreak_Glue_After_Zwj,
     Graphemebreak_E_Base_GAZ,
-    NumGraphemeBreakClasses,
+    NumGraphemeBreakClasses
 };
 
 enum WordBreakClass {
@@ -149,7 +149,7 @@ enum WordBreakClass {
     WordBreak_Glue_After_Zwj,
     WordBreak_E_Base_GAZ,
     WordBreak_WSegSpace,
-    NumWordBreakClasses,
+    NumWordBreakClasses
 };
 
 enum SentenceBreakClass {

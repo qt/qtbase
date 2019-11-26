@@ -437,7 +437,7 @@ public:
         Unicode_10_0,
         Unicode_11_0,
         Unicode_12_0,
-        Unicode_12_1,
+        Unicode_12_1
     };
     // ****** WHEN ADDING FUNCTIONS, CONSIDER ADDING TO QCharRef TOO
 

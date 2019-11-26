@@ -189,6 +189,9 @@ QT_BEGIN_NAMESPACE
     \value Unicode_8_0  Version 8.0  Since Qt 5.6
     \value Unicode_9_0  Version 9.0  Since Qt 5.11
     \value Unicode_10_0 Version 10.0 Since Qt 5.11
+    \value Unicode_11_0 Version 11.0 Since Qt 5.15
+    \value Unicode_12_0 Version 12.0 Since Qt 5.15
+    \value Unicode_12_1 Version 12.1 Since Qt 5.15
     \value Unicode_Unassigned  The value is not assigned to any character
                                in version 8.0 of Unicode.
 
@@ -317,9 +320,11 @@ QT_BEGIN_NAMESPACE
     \value Script_Cyrillic
     \value Script_Deseret
     \value Script_Devanagari
+    \value Script_Dogra Since Qt 5.15
     \value Script_Duployan Since Qt 5.5
     \value Script_EgyptianHieroglyphs
     \value Script_Elbasan Since Qt 5.5
+    \value Script_Elymaic Since Qt 5.15
     \value Script_Ethiopic
     \value Script_Georgian
     \value Script_Glagolitic
@@ -327,9 +332,11 @@ QT_BEGIN_NAMESPACE
     \value Script_Grantha Since Qt 5.5
     \value Script_Greek
     \value Script_Gujarati
+    \value Script_GunjalaGondi Since Qt 5.15
     \value Script_Gurmukhi
     \value Script_Han
     \value Script_Hangul
+    \value Script_HanifiRohingya Since Qt 5.15
     \value Script_Hanunoo
     \value Script_Hatran Since Qt 5.6
     \value Script_Hebrew
@@ -356,11 +363,13 @@ QT_BEGIN_NAMESPACE
     \value Script_Lycian
     \value Script_Lydian
     \value Script_Mahajani Since Qt 5.5
+    \value Script_Makasar Since Qt 5.15
     \value Script_Malayalam
     \value Script_Mandaic
     \value Script_Manichaean Since Qt 5.5
     \value Script_Marchen Since Qt 5.11
     \value Script_MasaramGondi Since Qt 5.11
+    \value Script_Medefaidrin Since Qt 5.15
     \value Script_MeeteiMayek
     \value Script_MendeKikakui Since Qt 5.5
     \value Script_MeroiticCursive
@@ -372,10 +381,12 @@ QT_BEGIN_NAMESPACE
     \value Script_Multani Since Qt 5.6
     \value Script_Myanmar
     \value Script_Nabataean Since Qt 5.5
+    \value Script_Nandinagari Since Qt 5.15
     \value Script_Newa Since Qt 5.11
     \value Script_NewTaiLue
     \value Script_Nko
     \value Script_Nushu Since Qt 5.11
+    \value Script_NyiakengPuachueHmong Since Qt 5.15
     \value Script_Ogham
     \value Script_OlChiki
     \value Script_OldHungarian Since Qt 5.6
@@ -383,6 +394,7 @@ QT_BEGIN_NAMESPACE
     \value Script_OldNorthArabian Since Qt 5.5
     \value Script_OldPermic Since Qt 5.5
     \value Script_OldPersian
+    \value Script_OldSogdian Since Qt 5.15
     \value Script_OldSouthArabian
     \value Script_OldTurkic
     \value Script_Oriya
@@ -403,6 +415,7 @@ QT_BEGIN_NAMESPACE
     \value Script_Siddham Since Qt 5.5
     \value Script_SignWriting Since Qt 5.6
     \value Script_Sinhala
+    \value Script_Sogdian Since Qt 5.15
     \value Script_SoraSompeng
     \value Script_Soyombo Since Qt 5.11
     \value Script_Sundaneseo
@@ -424,6 +437,7 @@ QT_BEGIN_NAMESPACE
     \value Script_Tirhuta Since Qt 5.5
     \value Script_Ugaritic
     \value Script_Vai
+    \value Script_Wancho Since Qt 5.15
     \value Script_WarangCiti Since Qt 5.5
     \value Script_Yi
     \value Script_ZanabazarSquare Since Qt 5.11

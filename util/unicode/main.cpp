@@ -294,7 +294,7 @@ static const char *grapheme_break_class_string =
     "    Graphemebreak_E_Modifier,\n"
     "    Graphemebreak_Glue_After_Zwj,\n"
     "    Graphemebreak_E_Base_GAZ,\n"
-    "    NumGraphemeBreakClasses,\n"
+    "    NumGraphemeBreakClasses\n"
     "};\n\n";
 
 enum GraphemeBreakClass {
@@ -381,7 +381,7 @@ static const char *word_break_class_string =
     "    WordBreak_Glue_After_Zwj,\n"
     "    WordBreak_E_Base_GAZ,\n"
     "    WordBreak_WSegSpace,\n"
-    "    NumWordBreakClasses,\n"
+    "    NumWordBreakClasses\n"
     "};\n\n";
 
 enum WordBreakClass {

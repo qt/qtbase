@@ -37,6 +37,9 @@ To update:
   the same time and update text/qt_attribution.json to match; use the
   UCD Revision number, rather than the Unicode standard number, as the
   Version, for all that qunicodetables.cpp uses the latter.
+* If there are enum additions in qchar.h (public API), be sure to also
+  update the documentation in qchar.cpp for each affected enum,
+  respecting the existing ordering.
 * If you don't normally build in the source tree, remember to delete
   qtbase/.qmake.stash while you're cleaning up.
 
