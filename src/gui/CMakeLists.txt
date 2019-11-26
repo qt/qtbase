@@ -591,7 +591,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_harfbuzz
     SOURCES
         text/qharfbuzzng.cpp text/qharfbuzzng_p.h
     LIBRARIES
-        harfbuzz::harfbuzz
+        WrapHarfbuzz::WrapHarfbuzz
 )
 
 qt_extend_target(Gui CONDITION QT_FEATURE_textodfwriter
