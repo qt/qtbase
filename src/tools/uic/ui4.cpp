@@ -862,13 +862,13 @@ void DomActionGroup::setElementActionGroup(const QVector<DomActionGroup *> &a)
     m_actionGroup = a;
 }
 
-void DomActionGroup::setElementProperty(const QList<DomProperty *> &a)
+void DomActionGroup::setElementProperty(const QVector<DomProperty *> &a)
 {
     m_children |= Property;
     m_property = a;
 }
 
-void DomActionGroup::setElementAttribute(const QList<DomProperty *> &a)
+void DomActionGroup::setElementAttribute(const QVector<DomProperty *> &a)
 {
     m_children |= Attribute;
     m_attribute = a;
@@ -944,13 +944,13 @@ void DomAction::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeEndElement();
 }
 
-void DomAction::setElementProperty(const QList<DomProperty *> &a)
+void DomAction::setElementProperty(const QVector<DomProperty *> &a)
 {
     m_children |= Property;
     m_property = a;
 }
 
-void DomAction::setElementAttribute(const QList<DomProperty *> &a)
+void DomAction::setElementAttribute(const QVector<DomProperty *> &a)
 {
     m_children |= Attribute;
     m_attribute = a;
@@ -1058,13 +1058,13 @@ void DomButtonGroup::write(QXmlStreamWriter &writer, const QString &tagName) con
     writer.writeEndElement();
 }
 
-void DomButtonGroup::setElementProperty(const QList<DomProperty *> &a)
+void DomButtonGroup::setElementProperty(const QVector<DomProperty *> &a)
 {
     m_children |= Property;
     m_property = a;
 }
 
-void DomButtonGroup::setElementAttribute(const QList<DomProperty *> &a)
+void DomButtonGroup::setElementAttribute(const QVector<DomProperty *> &a)
 {
     m_children |= Attribute;
     m_attribute = a;
@@ -1717,13 +1717,13 @@ void DomLayout::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeEndElement();
 }
 
-void DomLayout::setElementProperty(const QList<DomProperty *> &a)
+void DomLayout::setElementProperty(const QVector<DomProperty *> &a)
 {
     m_children |= Property;
     m_property = a;
 }
 
-void DomLayout::setElementAttribute(const QList<DomProperty *> &a)
+void DomLayout::setElementAttribute(const QVector<DomProperty *> &a)
 {
     m_children |= Attribute;
     m_attribute = a;
@@ -1938,7 +1938,7 @@ void DomRow::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeEndElement();
 }
 
-void DomRow::setElementProperty(const QList<DomProperty *> &a)
+void DomRow::setElementProperty(const QVector<DomProperty *> &a)
 {
     m_children |= Property;
     m_property = a;
@@ -1983,7 +1983,7 @@ void DomColumn::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeEndElement();
 }
 
-void DomColumn::setElementProperty(const QList<DomProperty *> &a)
+void DomColumn::setElementProperty(const QVector<DomProperty *> &a)
 {
     m_children |= Property;
     m_property = a;
@@ -2059,7 +2059,7 @@ void DomItem::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeEndElement();
 }
 
-void DomItem::setElementProperty(const QList<DomProperty *> &a)
+void DomItem::setElementProperty(const QVector<DomProperty *> &a)
 {
     m_children |= Property;
     m_property = a;
@@ -2268,13 +2268,13 @@ void DomWidget::setElementClass(const QStringList &a)
     m_class = a;
 }
 
-void DomWidget::setElementProperty(const QList<DomProperty *> &a)
+void DomWidget::setElementProperty(const QVector<DomProperty *> &a)
 {
     m_children |= Property;
     m_property = a;
 }
 
-void DomWidget::setElementAttribute(const QList<DomProperty *> &a)
+void DomWidget::setElementAttribute(const QVector<DomProperty *> &a)
 {
     m_children |= Attribute;
     m_attribute = a;
@@ -2386,7 +2386,7 @@ void DomSpacer::write(QXmlStreamWriter &writer, const QString &tagName) const
     writer.writeEndElement();
 }
 
-void DomSpacer::setElementProperty(const QList<DomProperty *> &a)
+void DomSpacer::setElementProperty(const QVector<DomProperty *> &a)
 {
     m_children |= Property;
     m_property = a;
@@ -5984,7 +5984,7 @@ void DomDesignerData::write(QXmlStreamWriter &writer, const QString &tagName) co
     writer.writeEndElement();
 }
 
-void DomDesignerData::setElementProperty(const QList<DomProperty *> &a)
+void DomDesignerData::setElementProperty(const QVector<DomProperty *> &a)
 {
     m_children |= Property;
     m_property = a;

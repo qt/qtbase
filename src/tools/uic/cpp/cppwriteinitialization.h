@@ -85,7 +85,7 @@ namespace CPP {
 
 struct WriteInitialization : public TreeWalker
 {
-    using DomPropertyList = QList<DomProperty*>;
+    using DomPropertyList = QVector<DomProperty*>;
     using DomPropertyMap = QHash<QString, DomProperty*>;
 
     WriteInitialization(Uic *uic);
