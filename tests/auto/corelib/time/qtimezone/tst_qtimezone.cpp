@@ -46,6 +46,7 @@ private slots:
     // Public class default system tests
     void createTest();
     void nullTest();
+    void systemZone();
     void dataStreamTest();
     void isTimeZoneIdAvailable();
     void availableTimeZoneIds();
@@ -313,6 +314,14 @@ void tst_QTimeZone::nullTest()
     QCOMPARE(data.offsetFromUtc, std::numeric_limits<int>::min());
     QCOMPARE(data.standardTimeOffset, std::numeric_limits<int>::min());
     QCOMPARE(data.daylightTimeOffset, std::numeric_limits<int>::min());
+}
+
+void tst_QTimeZone::systemZone()
+{
+    const QTimeZone zone = QTimeZone::systemTimeZone();
+    QVERIFY(zone.isValid());
+    QCOMPARE(zone.id(), QTimeZone::systemTimeZoneId());
+    QCOMPARE(zone, QTimeZone(QTimeZone::systemTimeZoneId()));
 }
 
 void tst_QTimeZone::dataStreamTest()
