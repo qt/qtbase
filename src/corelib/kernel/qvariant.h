@@ -841,7 +841,7 @@ namespace QtPrivate {
                 QAssociativeIterable iter = QVariantValueHelperInterface<QAssociativeIterable>::invoke(v);
                 QVariantMap l;
                 for (QAssociativeIterable::const_iterator it = iter.begin(), end = iter.end(); it != end; ++it)
-                    l.insertMulti(it.key().toString(), it.value());
+                    static_cast<QMultiMap<QString, QVariant> &>(l).insert(it.key().toString(), it.value());
                 return l;
             }
             return QVariantValueHelper<QVariantMap>::invoke(v);

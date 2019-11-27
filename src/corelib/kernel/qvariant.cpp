@@ -944,7 +944,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             const QVariantHash *hash = v_cast<QVariantHash>(d);
             const auto end = hash->end();
             for (auto it = hash->begin(); it != end; ++it)
-                map->insertMulti(it.key(), it.value());
+                static_cast<QMultiMap<QString, QVariant> *>(map)->insert(it.key(), it.value());
 #ifndef QT_BOOTSTRAPPED
         } else if (d->type == QMetaType::QCborValue) {
             if (!v_cast<QCborValue>(d)->isMap())
