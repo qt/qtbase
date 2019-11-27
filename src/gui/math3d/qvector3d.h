@@ -232,6 +232,7 @@ inline QVector3D &QVector3D::operator/=(const QVector3D &vector)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
 QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+QT_WARNING_DISABLE_INTEL(1572)
 Q_DECL_CONSTEXPR inline bool operator==(const QVector3D &v1, const QVector3D &v2)
 {
     return v1.v[0] == v2.v[0] && v1.v[1] == v2.v[1] && v1.v[2] == v2.v[2];
