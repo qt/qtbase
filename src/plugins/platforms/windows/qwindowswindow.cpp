@@ -253,7 +253,7 @@ QDebug operator<<(QDebug d, const GUID &guid)
 {
     QDebugStateSaver saver(d);
     d.nospace();
-    d << '{' << Qt::hex << Qt::uppercasedigits << qSetPadChar(QLatin1Char('0'))
+    d << '{' << Qt::hex << Qt::uppercasedigits << qSetPadChar(u'0')
       << qSetFieldWidth(8) << guid.Data1
       << qSetFieldWidth(0) << '-' << qSetFieldWidth(4)
       << guid.Data2 << qSetFieldWidth(0) << '-' << qSetFieldWidth(4)

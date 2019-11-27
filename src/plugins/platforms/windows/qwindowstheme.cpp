@@ -96,7 +96,7 @@ static inline QTextStream& operator<<(QTextStream &str, const QColor &c)
 {
     str.setIntegerBase(16);
     str.setFieldWidth(2);
-    str.setPadChar(QLatin1Char('0'));
+    str.setPadChar(u'0');
     str << " rgb: #" << c.red()  << c.green() << c.blue();
     str.setIntegerBase(10);
     str.setFieldWidth(0);
@@ -731,13 +731,13 @@ static QString dirIconPixmapCacheKey(int iIcon, int iconSize, int imageListSize)
 {
     QString key = QLatin1String("qt_dir_") + QString::number(iIcon);
     if (iconSize == SHGFI_LARGEICON)
-        key += QLatin1Char('l');
+        key += u'l';
     switch (imageListSize) {
     case sHIL_EXTRALARGE:
-        key += QLatin1Char('e');
+        key += u'e';
         break;
     case sHIL_JUMBO:
-        key += QLatin1Char('j');
+        key += u'j';
         break;
     }
     return key;
@@ -815,9 +815,9 @@ QString QWindowsFileIconEngine::cacheKey() const
     // It is faster to just look at the file extensions;
     // avoiding slow QFileInfo::isExecutable() (QTBUG-13182)
     QString suffix = fileInfo().suffix();
-    if (!suffix.compare(QLatin1String("exe"), Qt::CaseInsensitive)
-        || !suffix.compare(QLatin1String("lnk"), Qt::CaseInsensitive)
-        || !suffix.compare(QLatin1String("ico"), Qt::CaseInsensitive)) {
+    if (!suffix.compare(u"exe", Qt::CaseInsensitive)
+        || !suffix.compare(u"lnk", Qt::CaseInsensitive)
+        || !suffix.compare(u"ico", Qt::CaseInsensitive)) {
         return QString();
     }
     return QLatin1String("qt_.")

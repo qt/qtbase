@@ -88,7 +88,7 @@ static void *resolveFunc(HMODULE lib, const char *name)
     while (!proc && argSize <= 64) {
         nameStr = baseNameStr;
         if (argSize >= 0)
-            nameStr += QLatin1Char('@') + QString::number(argSize);
+            nameStr += u'@' + QString::number(argSize);
         argSize = argSize < 0 ? 0 : argSize + 4;
         proc = (void *) ::GetProcAddress(lib, nameStr.toLatin1().constData());
     }

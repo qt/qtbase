@@ -92,7 +92,7 @@ static inline QString mailCommand()
     // "rundll32.exe .. url.dll,MailToProtocolHandler %l" is returned. Launching it
     // silently fails or brings up a broken dialog after a long time, so exclude it and
     // fall back to ShellExecute() which brings up the URL assocation dialog.
-    if (command.isEmpty() || command.contains(QLatin1String(",MailToProtocolHandler")))
+    if (command.isEmpty() || command.contains(u",MailToProtocolHandler"))
         return QString();
     wchar_t expandedCommand[MAX_PATH] = {0};
     return ExpandEnvironmentStrings(reinterpret_cast<const wchar_t *>(command.utf16()),
@@ -108,7 +108,7 @@ static inline bool launchMail(const QUrl &url)
         return false;
     }
     //Make sure the path for the process is in quotes
-    const QChar doubleQuote = QLatin1Char('"');
+    const QChar doubleQuote = u'"';
     if (!command.startsWith(doubleQuote)) {
         const int exeIndex = command.indexOf(QStringLiteral(".exe "), 0, Qt::CaseInsensitive);
         if (exeIndex != -1) {
@@ -140,7 +140,7 @@ static inline bool launchMail(const QUrl &url)
 bool QWindowsServices::openUrl(const QUrl &url)
 {
     const QString scheme = url.scheme();
-    if (scheme == QLatin1String("mailto") && launchMail(url))
+    if (scheme == u"mailto" && launchMail(url))
         return true;
     return shellExecute(url);
 }

@@ -473,7 +473,7 @@ QString QWindowsUiaMainProvider::automationIdForAccessible(const QAccessibleInte
             if (name.isEmpty())
                 return QString();
             if (!result.isEmpty())
-                result.prepend(QLatin1Char('.'));
+                result.prepend(u'.');
             result.prepend(name);
             obj = obj->parent();
         }

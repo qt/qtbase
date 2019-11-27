@@ -261,7 +261,7 @@ void QWindowsSystemTrayIcon::showMessage(const QString &title, const QString &me
     // For empty messages, ensures that they show when only title is set
     QString message = messageIn;
     if (message.isEmpty() && !title.isEmpty())
-        message.append(QLatin1Char(' '));
+        message.append(u' ');
 
     NOTIFYICONDATA tnd;
     initNotifyIconData(tnd);
