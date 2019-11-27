@@ -122,6 +122,7 @@ enum GraphemeBreakClass {
     Graphemebreak_E_Modifier,
     Graphemebreak_Glue_After_Zwj,
     Graphemebreak_E_Base_GAZ,
+
     NumGraphemeBreakClasses
 };
 
@@ -149,6 +150,7 @@ enum WordBreakClass {
     WordBreak_Glue_After_Zwj,
     WordBreak_E_Base_GAZ,
     WordBreak_WSegSpace,
+
     NumWordBreakClasses
 };
 
@@ -167,6 +169,7 @@ enum SentenceBreakClass {
     SentenceBreak_SContinue,
     SentenceBreak_STerm,
     SentenceBreak_Close,
+
     NumSentenceBreakClasses
 };
 
@@ -182,6 +185,7 @@ enum LineBreakClass {
     LineBreak_EB, LineBreak_EM, LineBreak_ZWJ,
     LineBreak_SA, LineBreak_SG, LineBreak_SP,
     LineBreak_CR, LineBreak_LF, LineBreak_BK,
+
     NumLineBreakClasses
 };
 
