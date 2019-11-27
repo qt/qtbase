@@ -30,6 +30,7 @@
 #include <QMenuBar>
 #include <QLabel>
 #include <QHBoxLayout>
+#include <QFormLayout>
 #include <QApplication>
 #include <QAction>
 #include <QStyle>
@@ -69,6 +70,15 @@ static QTextStream &operator<<(QTextStream &str, const QRect &r)
     return str;
 }
 
+static QString formatWindowTitle(const QString &title)
+{
+    QString result;
+    QTextStream(&result) << title << ' ' << QT_VERSION_STR << " ("
+        << QGuiApplication::platformName()
+        << '/' << QApplication::style()->objectName() << ')';
+    return result;
+}
+
 class DemoContainerBase
 {
 public:
@@ -101,6 +111,13 @@ public:
     {
         if (visible && !m_widget) {
             m_widget = new T;
+            if (m_widget->windowTitle().isEmpty()) {
+                QString title = m_option.description();
+                if (title.startsWith("Test ", Qt::CaseInsensitive))
+                    title.remove(0, 5);
+                title[0] = title.at(0).toUpper();
+                m_widget->setWindowTitle(formatWindowTitle(title));
+            }
             m_widget->installEventFilter(parent);
         }
         if (m_widget)
@@ -201,13 +218,15 @@ private:
 DemoController::DemoController(DemoContainerList demos, QCommandLineParser *parser)
     : m_demos(std::move(demos))
 {
-    setWindowTitle("screen scale factors");
+    setWindowTitle(formatWindowTitle("Screen Scale Factors"));
     setObjectName("controller"); // make WindowScaleFactorSetter skip this window
 
-    auto layout = new QGridLayout(this);
+    auto mainLayout = new QVBoxLayout(this);
+    auto scaleLayout = new QGridLayout;
+    mainLayout->addLayout(scaleLayout);
 
     int layoutRow = 0;
-    LabelSlider *globalScaleSlider = new LabelSlider(this, "Global scale factor", layout, layoutRow++);
+    LabelSlider *globalScaleSlider = new LabelSlider(this, "Global scale factor", scaleLayout, layoutRow++);
     globalScaleSlider->setValue(int(getGlobalScaleFactor() * 10));
      connect(globalScaleSlider, &LabelSlider::valueChanged, [](int scaleFactor){
             // slider value is scale factor times ten;
@@ -222,7 +241,7 @@ DemoController::DemoController(DemoContainerList demos, QCommandLineParser *pars
         QSize screenSize = screen->geometry().size();
         QString screenId = screen->name() + QLatin1Char(' ') + QString::number(screenSize.width())
                                           + QLatin1Char(' ') + QString::number(screenSize.height());
-        LabelSlider *slider = new LabelSlider(this, screenId, layout, layoutRow++);
+        LabelSlider *slider = new LabelSlider(this, screenId, scaleLayout, layoutRow++);
         slider->setValue(getScreenFactorWithoutPixelDensity(screen) * 10);
 
         // handle slider value change
@@ -239,15 +258,18 @@ DemoController::DemoController(DemoContainerList demos, QCommandLineParser *pars
         });
     }
 
+    auto demoLayout = new QFormLayout;
+    mainLayout->addLayout(demoLayout);
     m_group = new QButtonGroup(this);
     m_group->setExclusive(false);
 
     for (int i = 0; i < m_demos.size(); ++i) {
         DemoContainerBase *demo = m_demos.at(i);
-        QPushButton *button = new QPushButton(demo->name());
-        button->setToolTip(demo->option().description());
+        QString name = demo->name();
+        name[0] = name.at(0).toUpper();
+        auto button = new QPushButton(name);
         button->setCheckable(true);
-        layout->addWidget(button, layoutRow++, 0, 1, -1);
+        demoLayout->addRow(demo->option().description(), button);
         m_group->addButton(button, i);
 
         if (parser->isSet(demo->option())) {
@@ -436,7 +458,7 @@ Labels::Labels()
     qtIcon.addFile(":/qticon32.png");
     qtIcon.addFile(":/qticon32@2x.png");
     setWindowIcon(qtIcon);
-    setWindowTitle("Labels");
+    setWindowTitle(formatWindowTitle("Labels"));
 
     QLabel *label1x = new QLabel();
     label1x->setPixmap(pixmap1X);
@@ -481,7 +503,7 @@ MainWindow::MainWindow()
     qtIcon1x.addFile(":/qticon16.png");
     qtIcon2x.addFile(":/qticon32.png");
     setWindowIcon(qtIcon);
-    setWindowTitle("MainWindow");
+    setWindowTitle(formatWindowTitle("MainWindow"));
 
     fileToolBar = addToolBar(tr("File"));
 //    fileToolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -1221,14 +1243,13 @@ public:
 
 class MetricsTest : public QWidget
 {
-    QPlainTextEdit *m_textEdit;
-
+    Q_OBJECT
 public:
     MetricsTest()
     {
-        qDebug() << R"(
-MetricsTest
-Relevant environment variables are:
+        qDebug().noquote().nospace() << "MetricsTest " << QT_VERSION_STR
+            << ' ' << QGuiApplication::platformName() << '\n'
+<< R"(Relevant environment variables are:
 QT_FONT_DPI=N
 QT_SCALE_FACTOR=n
 QT_ENABLE_HIGHDPI_SCALING=0|1
@@ -1244,6 +1265,18 @@ QT_DPI_ADJUSTMENT_POLICY=AdjustDpi|DontAdjustDpi|AdjustUpOnly)";
         m_textEdit = new QPlainTextEdit;
         m_textEdit->setReadOnly(true);
         layout->addWidget(m_textEdit);
+        setWindowTitle(formatWindowTitle("Screens"));
+    }
+
+    void setVisible(bool visible) override
+    {
+        QWidget::setVisible(visible);
+        if (visible && !m_screenChangedConnected) {
+            m_screenChangedConnected = true;
+            QObject::connect(windowHandle(), &QWindow::screenChanged,
+                             this, &MetricsTest::screenChanged);
+            updateMetrics();
+        }
     }
 
     void updateMetrics()
@@ -1287,18 +1320,38 @@ QT_DPI_ADJUSTMENT_POLICY=AdjustDpi|DontAdjustDpi|AdjustUpOnly)";
         m_textEdit->setPlainText(text);
     }
 
-    void paintEvent(QPaintEvent *ev) override
+private slots:
+    void screenChanged()
     {
-        // We get a paint event on screen change, so this is a convenient place
-        // to update the metrics, at the possible risk of doing something else
-        // than painting in a paint event.
+        qDebug().noquote() << __FUNCTION__ << windowHandle()->screen()->name();
         updateMetrics();
-        QWidget::paintEvent(ev);
     }
+
+private:
+    QPlainTextEdit *m_textEdit;
+    bool m_screenChangedConnected = false;
 };
 
 int main(int argc, char **argv)
 {
+#define NOSCALINGOPTION "noscaling"
+#define SCALINGOPTION "scaling"
+
+    qInfo("High DPI tester %s", QT_VERSION_STR);
+
+    int preAppOptionCount = 0;
+    for (int a = 1; a < argc; ++a) {
+        if (qstrcmp(argv[a], "--" NOSCALINGOPTION) == 0) {
+            QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
+            preAppOptionCount++;
+            qInfo("AA_DisableHighDpiScaling");
+        } else if (qstrcmp(argv[a], "--" SCALINGOPTION) == 0) {
+            QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+            preAppOptionCount++;
+            qInfo("AA_EnableHighDpiScaling");
+        }
+    }
+
     QApplication app(argc, argv);
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
@@ -1312,7 +1365,8 @@ int main(int argc, char **argv)
     parser.addVersionOption();
     QCommandLineOption controllerOption("interactive", "Show configuration window.");
     parser.addOption(controllerOption);
-
+    parser.addOption(QCommandLineOption(NOSCALINGOPTION, "Set AA_DisableHighDpiScaling"));
+    parser.addOption(QCommandLineOption(SCALINGOPTION, "Set AA_EnableHighDpiScaling"));
 
     DemoContainerList demoList;
     demoList << new DemoContainer<PixmapPainter>("pixmap", "Test pixmap painter");
@@ -1331,7 +1385,7 @@ int main(int argc, char **argv)
     demoList << new DemoContainer<ScreenDisplayer>("screens", "Test screen and window positioning");
     demoList << new DemoContainer<PhysicalSizeTest>("physicalsize", "Test manual highdpi support using physicalDotsPerInch");
     demoList << new DemoContainer<GraphicsViewCaching>("graphicsview", "Test QGraphicsView caching");
-    demoList << new DemoContainer<MetricsTest>("metrics", "Show display metrics");
+    demoList << new DemoContainer<MetricsTest>("metrics", "Show screen metrics");
 
     for (DemoContainerBase *demo : qAsConst(demoList))
         parser.addOption(demo->option());
@@ -1341,7 +1395,7 @@ int main(int argc, char **argv)
     //controller takes ownership of all demos
     DemoController controller(demoList, &parser);
 
-    if (parser.isSet(controllerOption) || QCoreApplication::arguments().count() <= 1)
+    if (parser.isSet(controllerOption) || (QCoreApplication::arguments().count() - preAppOptionCount) <= 1)
         controller.show();
 
     if (QApplication::topLevelWidgets().isEmpty())
