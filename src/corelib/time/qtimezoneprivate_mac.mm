@@ -111,7 +111,7 @@ void QMacTimeZonePrivate::init(const QByteArray &ianaId)
 
 QString QMacTimeZonePrivate::comment() const
 {
-    return QString::fromNSString([m_nstz description]);
+    return QString::fromNSString(m_nstz.description);
 }
 
 QString QMacTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
@@ -214,7 +214,7 @@ bool QMacTimeZonePrivate::hasTransitions() const
     // TODO Not sure what is returned in event of no transitions, assume will be before requested date
     NSDate *epoch = [NSDate dateWithTimeIntervalSince1970:0];
     const NSDate *date = [m_nstz nextDaylightSavingTimeTransitionAfterDate:epoch];
-    const bool result = ([date timeIntervalSince1970] > [epoch timeIntervalSince1970]);
+    const bool result = (date.timeIntervalSince1970 > epoch.timeIntervalSince1970);
     return result;
 }
 
@@ -224,7 +224,7 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
     const NSTimeInterval seconds = afterMSecsSinceEpoch / 1000.0;
     NSDate *nextDate = [NSDate dateWithTimeIntervalSince1970:seconds];
     nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
-    const NSTimeInterval nextSecs = [nextDate timeIntervalSince1970];
+    const NSTimeInterval nextSecs = nextDate.timeIntervalSince1970;
     if (nextDate == nil || nextSecs <= seconds) {
         [nextDate release];
         return invalidData();
@@ -250,7 +250,7 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::previousTransition(qint64 beforeMSec
     NSDate *nextDate = [NSDate dateWithTimeIntervalSince1970:nextSecs];
     nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
     if (nextDate != nil
-        && (tranSecs = [nextDate timeIntervalSince1970]) < endSecs) {
+        && (tranSecs = nextDate.timeIntervalSince1970) < endSecs) {
         // There's a transition within the last year before endSecs:
         nextSecs = tranSecs;
     } else {
@@ -259,7 +259,7 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::previousTransition(qint64 beforeMSec
         nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
         if (nextDate != nil) {
             NSTimeInterval lateSecs = nextSecs;
-            nextSecs = [nextDate timeIntervalSince1970];
+            nextSecs = nextDate.timeIntervalSince1970;
             Q_ASSERT(nextSecs <= endSecs - year || nextSecs == tranSecs);
             /*
               We're looking at the first ever transition for our zone, at
@@ -285,8 +285,7 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::previousTransition(qint64 beforeMSec
                 NSTimeInterval middle = nextSecs / 2 + lateSecs / 2;
                 NSDate *split = [NSDate dateWithTimeIntervalSince1970:middle];
                 split = [m_nstz nextDaylightSavingTimeTransitionAfterDate:split];
-                if (split != nil
-                    && (tranSecs = [split timeIntervalSince1970]) < endSecs) {
+                if (split != nil && (tranSecs = split.timeIntervalSince1970) < endSecs) {
                     nextDate = split;
                     nextSecs = tranSecs;
                 } else {
@@ -303,7 +302,7 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::previousTransition(qint64 beforeMSec
     while (nextDate != nil && nextSecs < endSecs) {
         prevSecs = nextSecs;
         nextDate = [m_nstz nextDaylightSavingTimeTransitionAfterDate:nextDate];
-        nextSecs = [nextDate timeIntervalSince1970];
+        nextSecs = nextDate.timeIntervalSince1970;
         if (nextSecs <= prevSecs) // presumably no later data available
             break;
     }
@@ -319,18 +318,18 @@ QByteArray QMacTimeZonePrivate::systemTimeZoneId() const
     // Reset the cached system tz then return the name
     [NSTimeZone resetSystemTimeZone];
     Q_ASSERT(NSTimeZone.systemTimeZone);
-    return QString::fromNSString([[NSTimeZone systemTimeZone] name]).toUtf8();
+    return QString::fromNSString(NSTimeZone.systemTimeZone.name).toUtf8();
 }
 
 QList<QByteArray> QMacTimeZonePrivate::availableTimeZoneIds() const
 {
-    NSEnumerator *enumerator = [[NSTimeZone knownTimeZoneNames] objectEnumerator];
-    QByteArray tzid = QString::fromNSString([enumerator nextObject]).toUtf8();
+    NSEnumerator *enumerator = NSTimeZone.knownTimeZoneNames.objectEnumerator;
+    QByteArray tzid = QString::fromNSString(enumerator.nextObject).toUtf8();
 
     QList<QByteArray> list;
     while (!tzid.isEmpty()) {
         list << tzid;
-        tzid = QString::fromNSString([enumerator nextObject]).toUtf8();
+        tzid = QString::fromNSString(enumerator.nextObject).toUtf8();
     }
 
     std::sort(list.begin(), list.end());
