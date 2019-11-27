@@ -648,8 +648,9 @@ void QUndoStack::push(QUndoCommand *cmd)
     } else {
         if (d->index > 0)
             cur = d->command_list.at(d->index - 1);
-        while (d->index < d->command_list.size())
-            delete d->command_list.takeLast();
+        if (!cmd->isObsolete())
+            while (d->index < d->command_list.size())
+                delete d->command_list.takeLast();
         if (d->clean_index > d->index)
             d->clean_index = -1; // we've deleted the clean state
     }
