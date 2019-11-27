@@ -60,22 +60,24 @@ QT_BEGIN_NAMESPACE
 
 // Create the system default time zone
 QMacTimeZonePrivate::QMacTimeZonePrivate()
-    : m_nstz(0)
 {
-    init(systemTimeZoneId());
+    // Reset the cached system tz then instantiate it:
+    [NSTimeZone resetSystemTimeZone];
+    m_nstz = [NSTimeZone.systemTimeZone retain];
+    Q_ASSERT(m_nstz);
+    m_id = QString::fromNSString(m_nstz.name).toUtf8();
 }
 
 // Create a named time zone
 QMacTimeZonePrivate::QMacTimeZonePrivate(const QByteArray &ianaId)
-    : m_nstz(0)
+    : m_nstz(nil)
 {
     init(ianaId);
 }
 
 QMacTimeZonePrivate::QMacTimeZonePrivate(const QMacTimeZonePrivate &other)
-    : QTimeZonePrivate(other), m_nstz(0)
+    : QTimeZonePrivate(other), m_nstz([other.m_nstz copy])
 {
-    m_nstz = [other.m_nstz copy];
 }
 
 QMacTimeZonePrivate::~QMacTimeZonePrivate()
@@ -316,6 +318,7 @@ QByteArray QMacTimeZonePrivate::systemTimeZoneId() const
 {
     // Reset the cached system tz then return the name
     [NSTimeZone resetSystemTimeZone];
+    Q_ASSERT(NSTimeZone.systemTimeZone);
     return QString::fromNSString([[NSTimeZone systemTimeZone] name]).toUtf8();
 }
 
