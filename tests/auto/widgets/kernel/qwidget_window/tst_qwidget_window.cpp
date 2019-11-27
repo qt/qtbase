@@ -845,12 +845,12 @@ void tst_QWidget_window::tst_dnd_propagation()
     auto posInsideLabel      = QHighDpi::toNativePixels(QPoint(60, 60), window->screen());
 
     // Enter DropTarget.
-    QWindowSystemInterface::handleDrag(window, &mimeData, posInsideDropTarget, supportedActions, 0, 0);
+    QWindowSystemInterface::handleDrag(window, &mimeData, posInsideDropTarget, supportedActions, {}, {});
     // Enter QLabel. This will propagate because default QLabel does
     // not accept the drop event in dragEnterEvent().
-    QWindowSystemInterface::handleDrag(window, &mimeData, posInsideLabel, supportedActions, 0, 0);
+    QWindowSystemInterface::handleDrag(window, &mimeData, posInsideLabel, supportedActions, {}, {});
     // Drop on QLabel. DropTarget will get dropEvent(), because it accepted the event.
-    QWindowSystemInterface::handleDrop(window, &mimeData, posInsideLabel, supportedActions, 0, 0);
+    QWindowSystemInterface::handleDrop(window, &mimeData, posInsideLabel, supportedActions, {}, {});
 
     QGuiApplication::processEvents();
 

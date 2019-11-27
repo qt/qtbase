@@ -245,7 +245,7 @@ void tst_QGraphicsLinearLayout::alignment()
     widget->setLayout(&layout);
 
     static const Qt::Alignment alignmentsToTest[] = {
-        (Qt::Alignment)0,
+        Qt::Alignment{},
         Qt::AlignLeft,
         Qt::AlignRight,
         Qt::AlignHCenter,
@@ -253,7 +253,7 @@ void tst_QGraphicsLinearLayout::alignment()
         Qt::AlignBottom,
         Qt::AlignVCenter,
         Qt::AlignCenter,
-        (Qt::Alignment)0,
+        Qt::Alignment{},
         Qt::AlignLeft,
         Qt::AlignRight,
         Qt::AlignHCenter,

@@ -4918,7 +4918,7 @@ void tst_QTreeView::taskQTBUG_61476()
         QEvent::MouseButtonPress)
         QTRY_VERIFY(!tv.isExpanded(mi));
 
-    QTest::mouseRelease(tv.viewport(), Qt::LeftButton, nullptr, pos);
+    QTest::mouseRelease(tv.viewport(), Qt::LeftButton, {}, pos);
     QTRY_VERIFY(!tv.isExpanded(mi));
     QCOMPARE(lastTopLevel->checkState(), Qt::Checked);
 }

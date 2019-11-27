@@ -356,7 +356,7 @@ void tst_QSaveFile::transactionalWriteErrorRenaming()
 #ifdef Q_OS_UNIX
     // Make rename() fail for lack of permissions in the directory
     QFile dirAsFile(dir.path()); // yay, I have to use QFile to change a dir's permissions...
-    QVERIFY(dirAsFile.setPermissions(QFile::Permissions(0))); // no permissions
+    QVERIFY(dirAsFile.setPermissions(QFile::Permissions{})); // no permissions
     PermissionRestorer permissionRestorer(dir.path());
 #else
     // Windows: Make rename() fail for lack of permissions on an existing target file

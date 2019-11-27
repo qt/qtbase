@@ -236,7 +236,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
     QTest::addColumn<QStringList>("entries");
 
     QTest::newRow("no flags")
-        << QString("entrylist") << QDirIterator::IteratorFlags(0)
+        << QString("entrylist") << QDirIterator::IteratorFlags{}
         << QDir::Filters(QDir::NoFilter) << QStringList("*")
         << QString(
                   "entrylist/.,"
@@ -252,7 +252,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/writable").split(',');
 
     QTest::newRow("NoDot")
-        << QString("entrylist") << QDirIterator::IteratorFlags(0)
+        << QString("entrylist") << QDirIterator::IteratorFlags{}
         << QDir::Filters(QDir::AllEntries | QDir::NoDot) << QStringList("*")
         << QString(
                    "entrylist/..,"
@@ -267,7 +267,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/writable").split(',');
 
     QTest::newRow("NoDotDot")
-        << QString("entrylist") << QDirIterator::IteratorFlags(0)
+        << QString("entrylist") << QDirIterator::IteratorFlags{}
         << QDir::Filters(QDir::AllEntries | QDir::NoDotDot) << QStringList("*")
         << QString(
                   "entrylist/.,"
@@ -282,7 +282,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/writable").split(',');
 
     QTest::newRow("NoDotAndDotDot")
-        << QString("entrylist") << QDirIterator::IteratorFlags(0)
+        << QString("entrylist") << QDirIterator::IteratorFlags{}
         << QDir::Filters(QDir::AllEntries | QDir::NoDotAndDotDot) << QStringList("*")
         << QString(
                    "entrylist/file,"
@@ -335,12 +335,12 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/writable").split(',');
 
     QTest::newRow("empty, default")
-        << QString("empty") << QDirIterator::IteratorFlags(0)
+        << QString("empty") << QDirIterator::IteratorFlags{}
         << QDir::Filters(QDir::NoFilter) << QStringList("*")
         << QString("empty/.,empty/..").split(',');
 
         QTest::newRow("empty, QDir::NoDotAndDotDot")
-            << QString("empty") << QDirIterator::IteratorFlags(0)
+            << QString("empty") << QDirIterator::IteratorFlags{}
             << QDir::Filters(QDir::NoDotAndDotDot) << QStringList("*")
             << QStringList();
 }
@@ -399,13 +399,13 @@ void tst_QDirIterator::iterateResource_data()
     QTest::addColumn<QStringList>("nameFilters");
     QTest::addColumn<QStringList>("entries");
 
-    QTest::newRow("invalid") << QString::fromLatin1(":/testdata/burpaburpa") << QDirIterator::IteratorFlags(0)
+    QTest::newRow("invalid") << QString::fromLatin1(":/testdata/burpaburpa") << QDirIterator::IteratorFlags{}
                              << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
                              << QStringList();
-    QTest::newRow(":/testdata") << QString::fromLatin1(":/testdata/") << QDirIterator::IteratorFlags(0)
+    QTest::newRow(":/testdata") << QString::fromLatin1(":/testdata/") << QDirIterator::IteratorFlags{}
                                << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
                                << QString::fromLatin1(":/testdata/entrylist").split(QLatin1String(","));
-    QTest::newRow(":/testdata/entrylist") << QString::fromLatin1(":/testdata/entrylist") << QDirIterator::IteratorFlags(0)
+    QTest::newRow(":/testdata/entrylist") << QString::fromLatin1(":/testdata/entrylist") << QDirIterator::IteratorFlags{}
                                << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
                                << QString::fromLatin1(":/testdata/entrylist/directory,:/testdata/entrylist/file").split(QLatin1String(","));
     QTest::newRow(":/testdata recursive") << QString::fromLatin1(":/testdata") << QDirIterator::IteratorFlags(QDirIterator::Subdirectories)

@@ -553,7 +553,7 @@ void tst_QToolBar::actionGeometry()
         QToolBarExtension *extension = extensions.at(0);
         if (extension->isVisible()) {
             QRect rect0 = extension->geometry();
-            QTest::mouseClick( extension, Qt::LeftButton, 0, rect0.center(), -1 );
+            QTest::mouseClick( extension, Qt::LeftButton, {}, rect0.center(), -1 );
             QApplication::processEvents();
             popupMenu = qobject_cast<QMenu *>(extension->menu());
             rect01 = popupMenu->actionGeometry(&action1);
@@ -875,7 +875,7 @@ void tst_QToolBar::actionTriggered()
         QToolBarExtension *extension = extensions.at(0);
         if (extension->isVisible()) {
             QRect rect0 = extension->geometry();
-            QTest::mouseClick( extension, Qt::LeftButton, 0, rect0.center(), -1 );
+            QTest::mouseClick( extension, Qt::LeftButton, {}, rect0.center(), -1 );
             QApplication::processEvents();
             popupMenu = qobject_cast<QMenu *>(extension->menu());
             rect01 = popupMenu->actionGeometry(&action1);
@@ -916,28 +916,28 @@ void tst_QToolBar::actionTriggered()
     if (!rect01.isValid())
         QTest::mouseClick(button1, Qt::LeftButton);
     else
-        QTest::mouseClick(popupMenu, Qt::LeftButton, 0, rect01.center(), -1 );
+        QTest::mouseClick(popupMenu, Qt::LeftButton, {}, rect01.center(), -1 );
     QCOMPARE(::triggered, &action1);
 
     ::triggered = 0;
     if (!rect02.isValid())
         QTest::mouseClick(button2, Qt::LeftButton);
     else
-        QTest::mouseClick(popupMenu, Qt::LeftButton, 0, rect02.center(), -1 );
+        QTest::mouseClick(popupMenu, Qt::LeftButton, {}, rect02.center(), -1 );
     QCOMPARE(::triggered, &action2);
 
     ::triggered = 0;
     if (!rect03.isValid())
         QTest::mouseClick(button3, Qt::LeftButton);
     else
-        QTest::mouseClick(popupMenu, Qt::LeftButton, 0, rect03.center(), -1 );
+        QTest::mouseClick(popupMenu, Qt::LeftButton, {}, rect03.center(), -1 );
     QCOMPARE(::triggered, &action3);
 
     ::triggered = 0;
     if (!rect04.isValid())
         QTest::mouseClick(button4, Qt::LeftButton);
     else
-        QTest::mouseClick(popupMenu, Qt::LeftButton, 0, rect04.center(), -1 );
+        QTest::mouseClick(popupMenu, Qt::LeftButton, {}, rect04.center(), -1 );
     QCOMPARE(::triggered, &action4);
 }
 

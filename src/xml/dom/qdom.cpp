@@ -59,6 +59,7 @@
 #include <qvariant.h>
 #include <qshareddata.h>
 #include <qdebug.h>
+#include <qxmlstream.h>
 #include <stdio.h>
 
 QT_BEGIN_NAMESPACE
@@ -5734,6 +5735,34 @@ bool QDomDocumentPrivate::setContent(QXmlInputSource *source, QXmlReader *reader
     return true;
 }
 
+bool QDomDocumentPrivate::setContent(QXmlStreamReader *reader, bool namespaceProcessing,
+                                     QString *errorMsg, int *errorLine, int *errorColumn)
+{
+    clear();
+    impl = new QDomImplementationPrivate;
+    type = new QDomDocumentTypePrivate(this, this);
+    type->ref.deref();
+
+    if (!reader) {
+        qWarning("Failed to set content, XML reader is not initialized");
+        return false;
+    }
+
+    QDomParser domParser(this, reader, namespaceProcessing);
+
+    if (!domParser.parse()) {
+        if (errorMsg)
+            *errorMsg = std::get<0>(domParser.errorInfo());
+        if (errorLine)
+            *errorLine = std::get<1>(domParser.errorInfo());
+        if (errorColumn)
+            *errorColumn = std::get<2>(domParser.errorInfo());
+        return false;
+    }
+
+    return true;
+}
+
 QDomNodePrivate* QDomDocumentPrivate::cloneNode(bool deep)
 {
     QDomNodePrivate *p = new QDomDocumentPrivate(this, deep);
@@ -6153,9 +6182,16 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing, QSt
 {
     if (!impl)
         impl = new QDomDocumentPrivate();
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QXmlInputSource source;
     source.setData(text);
     return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
+#else
+    QXmlStreamReader streamReader(text);
+    streamReader.setNamespaceProcessing(namespaceProcessing);
+    return IMPL->setContent(&streamReader, namespaceProcessing, errorMsg, errorLine, errorColumn);
+#endif
 }
 
 /*!
@@ -6215,10 +6251,17 @@ bool QDomDocument::setContent(const QByteArray &data, bool namespaceProcessing, 
 {
     if (!impl)
         impl = new QDomDocumentPrivate();
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QBuffer buf;
     buf.setData(data);
     QXmlInputSource source(&buf);
     return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
+#else
+    QXmlStreamReader streamReader(data);
+    streamReader.setNamespaceProcessing(namespaceProcessing);
+    return IMPL->setContent(&streamReader, namespaceProcessing, errorMsg, errorLine, errorColumn);
+#endif
 }
 
 /*!
@@ -6231,8 +6274,15 @@ bool QDomDocument::setContent(QIODevice* dev, bool namespaceProcessing, QString 
 {
     if (!impl)
         impl = new QDomDocumentPrivate();
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QXmlInputSource source(dev);
     return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
+#else
+    QXmlStreamReader streamReader(dev);
+    streamReader.setNamespaceProcessing(namespaceProcessing);
+    return IMPL->setContent(&streamReader, namespaceProcessing, errorMsg, errorLine, errorColumn);
+#endif
 }
 
 /*!
@@ -6312,6 +6362,33 @@ bool QDomDocument::setContent(QXmlInputSource *source, QXmlReader *reader, QStri
     if (!impl)
         impl = new QDomDocumentPrivate();
     return IMPL->setContent(source, reader, nullptr, errorMsg, errorLine, errorColumn);
+}
+
+/*!
+    \overload
+    \since 5.15
+
+    This function reads the XML document from the QXmlStreamReader \a reader
+    and parses it. Returns \c true if the content was successfully parsed;
+    otherwise returns \c false.
+
+    If \a namespaceProcessing is \c true, the parser recognizes namespaces in the XML
+    file and sets the prefix name, local name and namespace URI to appropriate values.
+    If \a namespaceProcessing is \c false, the parser does no namespace processing when
+    it reads the XML file.
+
+    If a parse error occurs, the error message is placed in \c{*}\a{errorMsg}, the line
+    number in \c{*}\a{errorLine} and the column number in \c{*}\a{errorColumn} (unless
+    the associated pointer is set to 0).
+
+    \sa QXmlStreamReader
+*/
+bool QDomDocument::setContent(QXmlStreamReader *reader, bool namespaceProcessing, QString *errorMsg,
+                              int *errorLine, int *errorColumn)
+{
+    if (!impl)
+        impl = new QDomDocumentPrivate();
+    return IMPL->setContent(reader, namespaceProcessing, errorMsg, errorLine, errorColumn);
 }
 
 /*!

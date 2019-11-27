@@ -668,12 +668,12 @@ void tst_QTabWidget::tabBarClicked()
     while (button <= Qt::MaxMouseButton) {
         const QPoint tabPos = tabBar.tabRect(0).center();
 
-        QTest::mouseClick(&tabBar, button, 0, tabPos);
+        QTest::mouseClick(&tabBar, button, {}, tabPos);
         QCOMPARE(clickSpy.count(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), 0);
         QCOMPARE(doubleClickSpy.count(), 0);
 
-        QTest::mouseDClick(&tabBar, button, 0, tabPos);
+        QTest::mouseDClick(&tabBar, button, {}, tabPos);
         QCOMPARE(clickSpy.count(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), 0);
         QCOMPARE(doubleClickSpy.count(), 1);
@@ -681,12 +681,12 @@ void tst_QTabWidget::tabBarClicked()
 
         const QPoint barPos(tabBar.tabRect(0).right() + 5, tabBar.tabRect(0).center().y());
 
-        QTest::mouseClick(&tabBar, button, 0, barPos);
+        QTest::mouseClick(&tabBar, button, {}, barPos);
         QCOMPARE(clickSpy.count(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), -1);
         QCOMPARE(doubleClickSpy.count(), 0);
 
-        QTest::mouseDClick(&tabBar, button, 0, barPos);
+        QTest::mouseDClick(&tabBar, button, {}, barPos);
         QCOMPARE(clickSpy.count(), 1);
         QCOMPARE(clickSpy.takeFirst().takeFirst().toInt(), -1);
         QCOMPARE(doubleClickSpy.count(), 1);

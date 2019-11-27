@@ -163,7 +163,7 @@ void tst_QDialogButtonBox::testConstructor3_data()
     QTest::addColumn<QDialogButtonBox::StandardButtons>("buttons");
     QTest::addColumn<int>("buttonCount");
 
-    QTest::newRow("nothing") << int(Qt::Horizontal) << (QDialogButtonBox::StandardButtons)0 << 0;
+    QTest::newRow("nothing") << int(Qt::Horizontal) << QDialogButtonBox::StandardButtons{} << 0;
     QTest::newRow("only 1") << int(Qt::Horizontal) << QDialogButtonBox::StandardButtons(QDialogButtonBox::Ok) << 1;
     QTest::newRow("only 1.. twice") << int(Qt::Horizontal)
                         << (QDialogButtonBox::Ok | QDialogButtonBox::Ok)
@@ -199,7 +199,7 @@ void tst_QDialogButtonBox::testConstructor4_data()
     QTest::addColumn<QDialogButtonBox::StandardButtons>("buttons");
     QTest::addColumn<int>("buttonCount");
 
-    QTest::newRow("nothing") << (QDialogButtonBox::StandardButtons)0 << 0;
+    QTest::newRow("nothing") << QDialogButtonBox::StandardButtons{} << 0;
     QTest::newRow("only 1") << QDialogButtonBox::StandardButtons(QDialogButtonBox::Ok) << 1;
     QTest::newRow("only 1.. twice")
                         << (QDialogButtonBox::Ok | QDialogButtonBox::Ok)

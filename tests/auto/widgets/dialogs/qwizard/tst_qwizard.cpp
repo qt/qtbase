@@ -238,7 +238,7 @@ void tst_QWizard::setButtonLayout()
 
     QWizard wizard;
     wizard.setWizardStyle(QWizard::ClassicStyle);
-    wizard.setOptions(0);
+    wizard.setOptions({});
     wizard.setButtonLayout(layout);
     wizard.show();
     qApp->processEvents();

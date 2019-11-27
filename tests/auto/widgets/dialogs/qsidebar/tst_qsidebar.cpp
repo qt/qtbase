@@ -190,7 +190,8 @@ void tst_QSidebar::goToUrl()
     qsidebar.show();
 
     QSignalSpy spy(&qsidebar, SIGNAL(goToUrl(QUrl)));
-    QTest::mousePress(qsidebar.viewport(), Qt::LeftButton, 0, qsidebar.visualRect(qsidebar.model()->index(0, 0)).center());
+    QTest::mousePress(qsidebar.viewport(), Qt::LeftButton, {},
+                      qsidebar.visualRect(qsidebar.model()->index(0, 0)).center());
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "Fails on WinRT - QTBUG-68297", Abort);
 #endif

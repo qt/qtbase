@@ -444,7 +444,7 @@ void tst_QLockFile::noPermissions()
 
     const QString fileName = dir.path() + "/staleLock";
     QFile dirAsFile(dir.path()); // I have to use QFile to change a dir's permissions...
-    QVERIFY2(dirAsFile.setPermissions(QFile::Permissions(0)), qPrintable(dir.path())); // no permissions
+    QVERIFY2(dirAsFile.setPermissions(QFile::Permissions{}), qPrintable(dir.path())); // no permissions
     PermissionRestorer permissionRestorer(dir.path());
 
     QLockFile lockFile(fileName);

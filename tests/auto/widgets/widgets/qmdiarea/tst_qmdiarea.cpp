@@ -331,7 +331,7 @@ void tst_QMdiArea::subWindowActivated()
     int i;
 
     for ( i = 0; i < count; ++i ) {
-        QWidget *widget = new QWidget(workspace, 0);
+        QWidget *widget = new QWidget(workspace, {});
         widget->setAttribute(Qt::WA_DeleteOnClose);
         widget->setFocus();
         workspace->addSubWindow(widget)->show();

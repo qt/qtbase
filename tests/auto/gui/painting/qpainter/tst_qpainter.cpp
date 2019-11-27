@@ -1739,7 +1739,7 @@ void tst_QPainter::renderHints()
 
     // Turn off all...
     p.setRenderHints(QPainter::RenderHints(0xffffffff), false);
-    QCOMPARE(p.renderHints(), QPainter::RenderHints(0));
+    QCOMPARE(p.renderHints(), QPainter::RenderHints{});
 
     // Single set/get
     p.setRenderHint(QPainter::Antialiasing);
