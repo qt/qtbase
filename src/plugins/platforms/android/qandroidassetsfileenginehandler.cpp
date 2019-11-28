@@ -72,9 +72,10 @@ static inline QString prefixedPath(QString path)
 struct AssetItem {
     enum class Type {
         File,
-        Folder
+        Folder,
+        Invalid
     };
-
+    AssetItem() = default;
     AssetItem (const QString &rawName)
         : name(rawName)
     {
@@ -92,20 +93,46 @@ using AssetItemList = QVector<AssetItem>;
 class FolderIterator : public AssetItemList
 {
 public:
-    static QSharedPointer<FolderIterator> fromCache(const QString &path)
+    static QSharedPointer<FolderIterator> fromCache(const QString &path, bool clone)
     {
         QMutexLocker lock(&m_assetsCacheMutex);
         QSharedPointer<FolderIterator> *folder = m_assetsCache.object(path);
         if (!folder) {
             folder = new QSharedPointer<FolderIterator>{new FolderIterator{path}};
-            if (!m_assetsCache.insert(path, folder)) {
+            if ((*folder)->empty() || !m_assetsCache.insert(path, folder)) {
                 QSharedPointer<FolderIterator> res = *folder;
                 delete folder;
                 return res;
             }
         }
-        return *folder;
+        return clone ? QSharedPointer<FolderIterator>{new FolderIterator{*(*folder)}} : *folder;
     }
+
+    static AssetItem::Type fileType(const QString &filePath)
+    {
+        const QStringList paths = filePath.split(QLatin1Char('/'));
+        QString fullPath;
+        AssetItem::Type res = AssetItem::Type::Invalid;
+        for (const auto &path: paths) {
+            auto folder = fromCache(fullPath, false);
+            auto it = std::lower_bound(folder->begin(), folder->end(), AssetItem{path}, [](const AssetItem &val, const AssetItem &assetItem) {
+                return val.name < assetItem.name;
+            });
+            if (it == folder->end() || it->name != path)
+                return AssetItem::Type::Invalid;
+            if (!fullPath.isEmpty())
+                fullPath.append(QLatin1Char('/'));
+            fullPath += path;
+            res = it->type;
+        }
+        return res;
+    }
+
+    FolderIterator(const FolderIterator &other)
+        : AssetItemList(other)
+        , m_index(-1)
+        , m_path(other.m_path)
+    {}
 
     FolderIterator(const QString &path)
         : m_path(path)
@@ -118,8 +145,12 @@ public:
             QJNIEnvironmentPrivate env;
             jobjectArray jFiles = static_cast<jobjectArray>(files.object());
             const jint nFiles = env->GetArrayLength(jFiles);
-            for (int i = 0; i < nFiles; ++i)
-                push_back({QJNIObjectPrivate(env->GetObjectArrayElement(jFiles, i)).toString()});
+            for (int i = 0; i < nFiles; ++i) {
+                AssetItem item{QJNIObjectPrivate(env->GetObjectArrayElement(jFiles, i)).toString()};
+                insert(std::upper_bound(begin(), end(), item, [](const auto &a, const auto &b){
+                    return a.name < b.name;
+                }), item);
+            }
         }
         m_path = assetsPrefix + QLatin1Char('/') + m_path + QLatin1Char('/');
         m_path.replace(QLatin1String("//"), QLatin1String("/"));
@@ -169,7 +200,7 @@ public:
                                       const QString &path)
         : QAbstractFileEngineIterator(filters, nameFilters)
     {
-        m_stack.push_back(FolderIterator::fromCache(cleanedAssetPath(path)));
+        m_stack.push_back(FolderIterator::fromCache(cleanedAssetPath(path), true));
         if (m_stack.last()->empty())
             m_stack.pop_back();
     }
@@ -215,7 +246,7 @@ public:
         if (!res)
             return {};
         if (res->second.type == AssetItem::Type::Folder) {
-            m_stack.push_back(FolderIterator::fromCache(cleanedAssetPath(currentFilePath())));
+            m_stack.push_back(FolderIterator::fromCache(cleanedAssetPath(currentFilePath()), true));
             if (m_stack.last()->empty())
                 m_stack.pop_back();
         }
@@ -305,12 +336,12 @@ public:
 
     FileFlags fileFlags(FileFlags type = FileInfoAll) const override
     {
-        FileFlags flags(ReadOwnerPerm|ReadUserPerm|ReadGroupPerm|ReadOtherPerm|ExistsFlag);
+        FileFlags commonFlags(ReadOwnerPerm|ReadUserPerm|ReadGroupPerm|ReadOtherPerm|ExistsFlag);
+        FileFlags flags;
         if (m_assetFile)
-            flags |= FileType;
+            flags = FileType | commonFlags;
         else if (m_isFolder)
-            flags |= DirectoryType;
-
+            flags = DirectoryType | commonFlags;
         return type & flags;
     }
 
@@ -341,9 +372,20 @@ public:
 
     void setFileName(const QString &file) override
     {
+        if (m_fileName == cleanedAssetPath(file))
+            return;
         close();
         m_fileName = cleanedAssetPath(file);
-        m_isFolder = !open(QIODevice::ReadOnly) && !FolderIterator::fromCache(m_fileName)->empty();
+        switch (FolderIterator::fileType(m_fileName)) {
+        case AssetItem::Type::File:
+            open(QIODevice::ReadOnly);
+            break;
+        case AssetItem::Type::Folder:
+            m_isFolder = true;
+            break;
+        case AssetItem::Type::Invalid:
+            break;
+        }
     }
 
     Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override
