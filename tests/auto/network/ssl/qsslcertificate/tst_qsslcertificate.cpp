@@ -33,6 +33,10 @@
 #include <qsslsocket.h>
 #include <qsslcertificateextension.h>
 
+#ifndef QT_NO_OPENSSL
+#include <openssl/obj_mac.h>
+#endif
+
 class tst_QSslCertificate : public QObject
 {
     Q_OBJECT
@@ -960,8 +964,12 @@ void tst_QSslCertificate::subjectAndIssuerAttributes()
     certList = QSslCertificate::fromPath(testDataDir + "more-certificates/natwest-banking.pem");
     QVERIFY(certList.count() > 0);
 
+    QByteArray shortName("1.3.6.1.4.1.311.60.2.1.3");
+#if !defined(QT_NO_OPENSSL) && defined(SN_jurisdictionCountryName)
+    shortName = SN_jurisdictionCountryName;
+#endif
     attributes = certList[0].subjectInfoAttributes();
-    QVERIFY(attributes.contains(QByteArray("1.3.6.1.4.1.311.60.2.1.3")));
+    QVERIFY(attributes.contains(shortName));
 }
 
 void tst_QSslCertificate::verify()
