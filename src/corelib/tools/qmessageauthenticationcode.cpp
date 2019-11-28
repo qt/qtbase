@@ -75,6 +75,8 @@
 // sha1.h - commented out '#include <stdint.h>' on line 74
 #include "../../3rdparty/rfc6234/sha.h"
 
+#include "../../3rdparty/blake2/src/blake2.h"
+
 #undef uint64_t
 #undef uint32_t
 #undef uint68_t
@@ -111,6 +113,16 @@ static int qt_hash_block_size(QCryptographicHash::Algorithm method)
     case QCryptographicHash::RealSha3_512:
     case QCryptographicHash::Keccak_512:
         return 72;
+    case QCryptographicHash::Blake2b_160:
+    case QCryptographicHash::Blake2b_256:
+    case QCryptographicHash::Blake2b_384:
+    case QCryptographicHash::Blake2b_512:
+        return BLAKE2B_BLOCKBYTES;
+    case QCryptographicHash::Blake2s_128:
+    case QCryptographicHash::Blake2s_160:
+    case QCryptographicHash::Blake2s_224:
+    case QCryptographicHash::Blake2s_256:
+        return BLAKE2S_BLOCKBYTES;
     }
     return 0;
 }

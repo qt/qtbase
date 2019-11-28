@@ -78,13 +78,22 @@ public:
         Sha3_224 = RealSha3_224,
         Sha3_256 = RealSha3_256,
         Sha3_384 = RealSha3_384,
-        Sha3_512 = RealSha3_512
+        Sha3_512 = RealSha3_512,
 #  else
         Sha3_224 = Keccak_224,
         Sha3_256 = Keccak_256,
         Sha3_384 = Keccak_384,
-        Sha3_512 = Keccak_512
+        Sha3_512 = Keccak_512,
 #  endif
+
+        Blake2b_160 = 15,
+        Blake2b_256,
+        Blake2b_384,
+        Blake2b_512,
+        Blake2s_128,
+        Blake2s_160,
+        Blake2s_224,
+        Blake2s_256,
 #endif
     };
     Q_ENUM(Algorithm)
