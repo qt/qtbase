@@ -53,6 +53,9 @@
 #include <qlayout.h>
 #include <qset.h>
 #include <qstyle.h>
+#if QT_CONFIG(timezone)
+#include <QTimeZone>
+#endif
 
 #include <algorithm>
 
@@ -218,8 +221,8 @@ QDateTimeEdit::~QDateTimeEdit()
   \property QDateTimeEdit::dateTime
   \brief the QDateTime that is set in the QDateTimeEdit
 
-  When setting this property the timespec of the QDateTimeEdit remains the same
-  and the timespec of the new QDateTime is ignored.
+  When setting this property, the new QDateTime is converted to the timespec of
+  the QDateTimeEdit, which thus remains unchanged.
 
   By default, this property is set to the start of 2000 CE. It can only be set
   to a valid QDateTime value. If any operation causes this property to have an
@@ -243,11 +246,14 @@ void QDateTimeEdit::setDateTime(const QDateTime &datetime)
 {
     Q_D(QDateTimeEdit);
     if (datetime.isValid()) {
+        QDateTime when = d->convertTimeSpec(datetime);
+        Q_ASSERT(when.timeSpec() == d->spec);
+
         d->clearCache();
-        const QDate date = datetime.date();
+        const QDate date = when.date();
         if (!(d->sections & DateSections_Mask))
             setDateRange(date, date);
-        d->setValue(QDateTime(date, datetime.time(), d->spec), EmitIfChanged);
+        d->setValue(when, EmitIfChanged);
     }
 }
 
@@ -1706,6 +1712,25 @@ QDateTimeEditPrivate::QDateTimeEditPrivate()
 #endif
 }
 
+QDateTime QDateTimeEditPrivate::convertTimeSpec(const QDateTime &datetime)
+{
+    Q_ASSERT(value.toDateTime().timeSpec() == spec);
+    switch (spec) {
+    case Qt::UTC:
+        return datetime.toUTC();
+    case Qt::LocalTime:
+        return datetime.toLocalTime();
+    case Qt::OffsetFromUTC:
+        return datetime.toOffsetFromUtc(value.toDateTime().offsetFromUtc());
+#if QT_CONFIG(timezone)
+    case Qt::TimeZone:
+        return datetime.toTimeZone(value.toDateTime().timeZone());
+#endif
+    }
+    Q_UNREACHABLE();
+}
+
+// FIXME: architecturaly incompatible with OffsetFromUTC or TimeZone as spec (QTBUG-80417).
 void QDateTimeEditPrivate::updateTimeSpec()
 {
     minimum = minimum.toDateTime().toTimeSpec(spec);

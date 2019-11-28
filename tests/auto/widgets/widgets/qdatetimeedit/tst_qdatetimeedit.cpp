@@ -262,6 +262,8 @@ private slots:
     void timeSpec();
     void timeSpecBug();
     void timeSpecInit();
+    void setDateTime_data();
+    void setDateTime();
 
     void monthEdgeCase();
     void setLocale();
@@ -3474,6 +3476,54 @@ void tst_QDateTimeEdit::timeSpecInit()
     QDateTime utc(QDate(2000, 1, 1), QTime(12, 0, 0), Qt::UTC);
     QDateTimeEdit widget(utc);
     QCOMPARE(widget.dateTime(), utc);
+}
+
+void tst_QDateTimeEdit::setDateTime_data()
+{
+    QTest::addColumn<Qt::TimeSpec>("spec");
+    QDateTime localNoon(QDate(2019, 12, 24), QTime(12, 0), Qt::LocalTime);
+#if 0 // Not yet supported
+    QTest::addColumn<int>("offset");
+    QTest::addColumn<QByteArray>("zoneName");
+
+    QTest::newRow("OffsetFromUTC/LocalTime")
+        << Qt::OffsetFromUTC << 7200 << ""
+        << localNoon << localNoon.toOffsetFromUtc(7200);
+#if QT_CONFIG(timezone)
+    QTest::newRow("TimeZone/LocalTime")
+        << Qt::TimeZone << 0 << "Europe/Berlin"
+        << localNoon << localNoon.toTimeZone(QTimeZone("Europe/Berlin"));
+#endif
+#endif // unsupported
+    QTest::addColumn<QDateTime>("store");
+    QTest::addColumn<QDateTime>("expect");
+    QTest::newRow("LocalTime/LocalTime")
+        << Qt::LocalTime // << 0 << ""
+        << localNoon << localNoon;
+    QTest::newRow("LocalTime/UTC")
+        << Qt::LocalTime // << 0 << ""
+        << localNoon.toUTC() << localNoon;
+    QTest::newRow("UTC/LocalTime")
+        << Qt::UTC // << 0 << ""
+        << localNoon << localNoon.toUTC();
+    QTest::newRow("UTC/UTC")
+        << Qt::UTC // << 0 << ""
+        << localNoon.toUTC() << localNoon.toUTC();
+}
+
+void tst_QDateTimeEdit::setDateTime()
+{
+    QFETCH(const Qt::TimeSpec, spec);
+#if 0 // Not yet supported
+    QFETCH(const int, offset);
+    QFETCH(const QByteArray, zoneName);
+#endif // configuring the spec, when OffsetFromUTC or TimeZone
+    QFETCH(const QDateTime, store);
+    QFETCH(const QDateTime, expect);
+    QDateTimeEdit editor;
+    editor.setTimeSpec(spec);
+    editor.setDateTime(store);
+    QCOMPARE(editor.dateTime(), expect);
 }
 
 void tst_QDateTimeEdit::cachedDayTest()

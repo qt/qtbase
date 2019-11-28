@@ -109,6 +109,7 @@ public:
 
     void updateCache(const QVariant &val, const QString &str) const;
 
+    QDateTime convertTimeSpec(const QDateTime &datetime);
     void updateTimeSpec();
     QString valueToText(const QVariant &var) const { return textFromValue(var); }
 
