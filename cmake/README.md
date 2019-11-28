@@ -114,8 +114,10 @@ install:
 
 QMake defines most features in configure.json files, like -developer-build or -no-opengl.
 
-In CMake land, we currently generate configure.cmake files from the configure.json files. If the
-feature in configure.json has the name "dlopen", you can specify whether to enable or disable that
+In CMake land, we currently generate configure.cmake files from the configure.json files into
+the source directory next to them using the helper script
+``path_to_qtbase_source/util/cmake/configurejson2cmake.py``. They are checked into the repository.
+If the feature in configure.json has the name "dlopen", you can specify whether to enable or disable that
 feature in CMake with a -D flag on the CMake command line. So for example -DFEATURE_dlopen=ON or
 -DFEATURE_sql_mysql=OFF. At the moment, if you change a FEATURE flag's value, you have to remove the
 CMakeCache.txt file and reconfigure with CMake. And even then you might stumble on some issues when
@@ -286,7 +288,7 @@ top-level source directory of a Qt repository.
 ``pro2cmake.py`` generates a skeleton CMakeLists.txt file from a .pro-file. You will need to polish
 the resulting CMakeLists.txt file, but e.g. the list of files, etc. should be extracted for you.
 
-``pro2cmake.py`` is run like this: ``/path/to/pro2cmake.py some.pro``.
+``pro2cmake.py`` is run like this: ``path_to_qtbase_source/util/cmake/pro2cmake.py some.pro``.
 
 
 ## run_pro2cmake.py
@@ -294,7 +296,7 @@ the resulting CMakeLists.txt file, but e.g. the list of files, etc. should be ex
 `` A small helper script to run pro2cmake.py on all .pro-files in a directory. Very useful to e.g.
 convert all the unit tests for a Qt module over to cmake;-)
 
-``run_pro2cmake.py`` is run like this: ``/path/to/run_pro2cmake.py some_dir``.
+``run_pro2cmake.py`` is run like this: ``path_to_qtbase_source/util/cmake/run_pro2cmake.py some_dir``.
 
 
 ## How to convert certain constructs
