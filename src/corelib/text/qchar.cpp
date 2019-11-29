@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -189,6 +189,9 @@ QT_BEGIN_NAMESPACE
     \value Unicode_8_0  Version 8.0  Since Qt 5.6
     \value Unicode_9_0  Version 9.0  Since Qt 5.11
     \value Unicode_10_0 Version 10.0 Since Qt 5.11
+    \value Unicode_11_0 Version 11.0 Since Qt 5.15
+    \value Unicode_12_0 Version 12.0 Since Qt 5.15
+    \value Unicode_12_1 Version 12.1 Since Qt 5.15
     \value Unicode_Unassigned  The value is not assigned to any character
                                in version 8.0 of Unicode.
 
@@ -288,145 +291,156 @@ QT_BEGIN_NAMESPACE
     \value Script_Common     For characters that may be used with multiple scripts
                              and that do not inherit their script from the preceding characters.
 
-    \value Script_Latin
-    \value Script_Greek
-    \value Script_Cyrillic
-    \value Script_Armenian
-    \value Script_Hebrew
+    \value Script_Adlam Since Qt 5.11
+    \value Script_Ahom Since Qt 5.6
+    \value Script_AnatolianHieroglyphs Since Qt 5.6
     \value Script_Arabic
-    \value Script_Syriac
-    \value Script_Thaana
-    \value Script_Devanagari
+    \value Script_Armenian
+    \value Script_Avestan
+    \value Script_Balinese
+    \value Script_Bamum
+    \value Script_BassaVah Since Qt 5.5
+    \value Script_Batak
     \value Script_Bengali
-    \value Script_Gurmukhi
-    \value Script_Gujarati
-    \value Script_Oriya
-    \value Script_Tamil
-    \value Script_Telugu
-    \value Script_Kannada
-    \value Script_Malayalam
-    \value Script_Sinhala
-    \value Script_Thai
-    \value Script_Lao
-    \value Script_Tibetan
-    \value Script_Myanmar
-    \value Script_Georgian
-    \value Script_Hangul
-    \value Script_Ethiopic
-    \value Script_Cherokee
-    \value Script_CanadianAboriginal
-    \value Script_Ogham
-    \value Script_Runic
-    \value Script_Khmer
-    \value Script_Mongolian
-    \value Script_Hiragana
-    \value Script_Katakana
+    \value Script_Bhaiksuki Since Qt 5.11
     \value Script_Bopomofo
-    \value Script_Han
-    \value Script_Yi
-    \value Script_OldItalic
-    \value Script_Gothic
-    \value Script_Deseret
-    \value Script_Tagalog
-    \value Script_Hanunoo
-    \value Script_Buhid
-    \value Script_Tagbanwa
-    \value Script_Coptic
-    \value Script_Limbu
-    \value Script_TaiLe
-    \value Script_LinearB
-    \value Script_Ugaritic
-    \value Script_Shavian
-    \value Script_Osmanya
-    \value Script_Cypriot
+    \value Script_Brahmi
     \value Script_Braille
     \value Script_Buginese
-    \value Script_NewTaiLue
-    \value Script_Glagolitic
-    \value Script_Tifinagh
-    \value Script_SylotiNagri
-    \value Script_OldPersian
-    \value Script_Kharoshthi
-    \value Script_Balinese
-    \value Script_Cuneiform
-    \value Script_Phoenician
-    \value Script_PhagsPa
-    \value Script_Nko
-    \value Script_Sundanese
-    \value Script_Lepcha
-    \value Script_OlChiki
-    \value Script_Vai
-    \value Script_Saurashtra
-    \value Script_KayahLi
-    \value Script_Rejang
-    \value Script_Lycian
+    \value Script_Buhid
+    \value Script_CanadianAboriginal
     \value Script_Carian
-    \value Script_Lydian
-    \value Script_Cham
-    \value Script_TaiTham
-    \value Script_TaiViet
-    \value Script_Avestan
-    \value Script_EgyptianHieroglyphs
-    \value Script_Samaritan
-    \value Script_Lisu
-    \value Script_Bamum
-    \value Script_Javanese
-    \value Script_MeeteiMayek
-    \value Script_ImperialAramaic
-    \value Script_OldSouthArabian
-    \value Script_InscriptionalParthian
-    \value Script_InscriptionalPahlavi
-    \value Script_OldTurkic
-    \value Script_Kaithi
-    \value Script_Batak
-    \value Script_Brahmi
-    \value Script_Mandaic
+    \value Script_CaucasianAlbanian Since Qt 5.5
     \value Script_Chakma
+    \value Script_Cham
+    \value Script_Cherokee
+    \value Script_Coptic
+    \value Script_Cuneiform
+    \value Script_Cypriot
+    \value Script_Cyrillic
+    \value Script_Deseret
+    \value Script_Devanagari
+    \value Script_Dogra Since Qt 5.15
+    \value Script_Duployan Since Qt 5.5
+    \value Script_EgyptianHieroglyphs
+    \value Script_Elbasan Since Qt 5.5
+    \value Script_Elymaic Since Qt 5.15
+    \value Script_Ethiopic
+    \value Script_Georgian
+    \value Script_Glagolitic
+    \value Script_Gothic
+    \value Script_Grantha Since Qt 5.5
+    \value Script_Greek
+    \value Script_Gujarati
+    \value Script_GunjalaGondi Since Qt 5.15
+    \value Script_Gurmukhi
+    \value Script_Han
+    \value Script_Hangul
+    \value Script_HanifiRohingya Since Qt 5.15
+    \value Script_Hanunoo
+    \value Script_Hatran Since Qt 5.6
+    \value Script_Hebrew
+    \value Script_Hiragana
+    \value Script_ImperialAramaic
+    \value Script_InscriptionalPahlavi
+    \value Script_InscriptionalParthian
+    \value Script_Javanese
+    \value Script_Kaithi
+    \value Script_Kannada
+    \value Script_Katakana
+    \value Script_KayahLi
+    \value Script_Kharoshthi
+    \value Script_Khmer
+    \value Script_Khojki Since Qt 5.5
+    \value Script_Khudawadi Since Qt 5.5
+    \value Script_Lao
+    \value Script_Latin
+    \value Script_Lepcha
+    \value Script_Limbu
+    \value Script_LinearA Since Qt 5.5
+    \value Script_LinearB
+    \value Script_Lisu
+    \value Script_Lycian
+    \value Script_Lydian
+    \value Script_Mahajani Since Qt 5.5
+    \value Script_Makasar Since Qt 5.15
+    \value Script_Malayalam
+    \value Script_Mandaic
+    \value Script_Manichaean Since Qt 5.5
+    \value Script_Marchen Since Qt 5.11
+    \value Script_MasaramGondi Since Qt 5.11
+    \value Script_Medefaidrin Since Qt 5.15
+    \value Script_MeeteiMayek
+    \value Script_MendeKikakui Since Qt 5.5
     \value Script_MeroiticCursive
     \value Script_MeroiticHieroglyphs
     \value Script_Miao
+    \value Script_Modi Since Qt 5.5
+    \value Script_Mongolian
+    \value Script_Mro Since Qt 5.5
+    \value Script_Multani Since Qt 5.6
+    \value Script_Myanmar
+    \value Script_Nabataean Since Qt 5.5
+    \value Script_Nandinagari Since Qt 5.15
+    \value Script_Newa Since Qt 5.11
+    \value Script_NewTaiLue
+    \value Script_Nko
+    \value Script_Nushu Since Qt 5.11
+    \value Script_NyiakengPuachueHmong Since Qt 5.15
+    \value Script_Ogham
+    \value Script_OlChiki
+    \value Script_OldHungarian Since Qt 5.6
+    \value Script_OldItalic
+    \value Script_OldNorthArabian Since Qt 5.5
+    \value Script_OldPermic Since Qt 5.5
+    \value Script_OldPersian
+    \value Script_OldSogdian Since Qt 5.15
+    \value Script_OldSouthArabian
+    \value Script_OldTurkic
+    \value Script_Oriya
+    \value Script_Osage Since Qt 5.11
+    \value Script_Osmanya
+    \value Script_PahawhHmong Since Qt 5.5
+    \value Script_Palmyrene Since Qt 5.5
+    \value Script_PauCinHau Since Qt 5.5
+    \value Script_PhagsPa
+    \value Script_Phoenician
+    \value Script_PsalterPahlavi Since Qt 5.5
+    \value Script_Rejang
+    \value Script_Runic
+    \value Script_Samaritan
+    \value Script_Saurashtra
     \value Script_Sharada
+    \value Script_Shavian
+    \value Script_Siddham Since Qt 5.5
+    \value Script_SignWriting Since Qt 5.6
+    \value Script_Sinhala
+    \value Script_Sogdian Since Qt 5.15
     \value Script_SoraSompeng
+    \value Script_Soyombo Since Qt 5.11
+    \value Script_Sundaneseo
+    \value Script_SylotiNagri
+    \value Script_Syriac
+    \value Script_Tagalog
+    \value Script_Tagbanwa
+    \value Script_TaiLe
+    \value Script_TaiTham
+    \value Script_TaiViet
     \value Script_Takri
-    \value Script_CaucasianAlbanian
-    \value Script_BassaVah
-    \value Script_Duployan
-    \value Script_Elbasan
-    \value Script_Grantha
-    \value Script_PahawhHmong
-    \value Script_Khojki
-    \value Script_LinearA
-    \value Script_Mahajani
-    \value Script_Manichaean
-    \value Script_MendeKikakui
-    \value Script_Modi
-    \value Script_Mro
-    \value Script_OldNorthArabian
-    \value Script_Nabataean
-    \value Script_Palmyrene
-    \value Script_PauCinHau
-    \value Script_OldPermic
-    \value Script_PsalterPahlavi
-    \value Script_Siddham
-    \value Script_Khudawadi
-    \value Script_Tirhuta
-    \value Script_WarangCiti
-    \value Script_Ahom
-    \value Script_AnatolianHieroglyphs
-    \value Script_Hatran
-    \value Script_Multani
-    \value Script_OldHungarian
-    \value Script_SignWriting
-    \value Script_Adlam
-    \value Script_Bhaiksuki
-    \value Script_Marchen
-    \value Script_Newa
-    \value Script_Osage
-    \value Script_Tangut
-    \value Script_MasaramGondi
-    \value Script_Nushu
-    \value Script_Soyombo
-    \value Script_ZanabazarSquare
+    \value Script_Tamil
+    \value Script_Tangut Since Qt 5.11
+    \value Script_Telugu
+    \value Script_Thaana
+    \value Script_Thai
+    \value Script_Tibetan
+    \value Script_Tifinagh
+    \value Script_Tirhuta Since Qt 5.5
+    \value Script_Ugaritic
+    \value Script_Vai
+    \value Script_Wancho Since Qt 5.15
+    \value Script_WarangCiti Since Qt 5.5
+    \value Script_Yi
+    \value Script_ZanabazarSquare Since Qt 5.11
 
     \omitvalue ScriptCount
 

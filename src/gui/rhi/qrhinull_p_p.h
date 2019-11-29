@@ -101,6 +101,7 @@ struct QNullRenderPassDescriptor : public QRhiRenderPassDescriptor
     QNullRenderPassDescriptor(QRhiImplementation *rhi);
     ~QNullRenderPassDescriptor();
     void release() override;
+    bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
 };
 
 struct QNullRenderTargetData

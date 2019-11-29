@@ -239,7 +239,7 @@ void Window::customRender()
         if (d.testStage == 6) {
             const QRhiNativeHandles *h = d.tex->nativeHandles();
             if (h) {
-#ifdef Q_OS_DARWIN
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
                 if (graphicsApi == Metal) {
                     qDebug() << "Metal texture: " << static_cast<const QRhiMetalTextureNativeHandles *>(h)->texture;
                     // Now could cast to id<MTLTexture> and do something with

@@ -1032,54 +1032,62 @@ VkFormat QRhiVulkan::optimalDepthStencilFormat()
     return optimalDsFormat;
 }
 
-bool QRhiVulkan::createDefaultRenderPass(VkRenderPass *rp, bool hasDepthStencil, VkSampleCountFlagBits samples, VkFormat colorFormat)
+bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD, bool hasDepthStencil, VkSampleCountFlagBits samples, VkFormat colorFormat)
 {
-    VkAttachmentDescription attDesc[3];
-    memset(attDesc, 0, sizeof(attDesc));
-
     // attachment list layout is color (1), ds (0-1), resolve (0-1)
 
-    attDesc[0].format = colorFormat;
-    attDesc[0].samples = samples;
-    attDesc[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attDesc[0].storeOp = samples > VK_SAMPLE_COUNT_1_BIT ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
-    attDesc[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attDesc[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attDesc[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attDesc[0].finalLayout = samples > VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    VkAttachmentDescription attDesc;
+    memset(&attDesc, 0, sizeof(attDesc));
+    attDesc.format = colorFormat;
+    attDesc.samples = samples;
+    attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attDesc.storeOp = samples > VK_SAMPLE_COUNT_1_BIT ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
+    attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attDesc.finalLayout = samples > VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    rpD->attDescs.append(attDesc);
 
-    // clear on load + no store + lazy alloc + transient image should play
-    // nicely with tiled GPUs (no physical backing necessary for ds buffer)
-    attDesc[1].format = optimalDepthStencilFormat();
-    attDesc[1].samples = samples;
-    attDesc[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attDesc[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attDesc[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attDesc[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attDesc[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attDesc[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    rpD->colorRefs.append({ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
 
-    if (samples > VK_SAMPLE_COUNT_1_BIT) {
-        attDesc[2].format = colorFormat;
-        attDesc[2].samples = VK_SAMPLE_COUNT_1_BIT;
-        attDesc[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        attDesc[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        attDesc[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        attDesc[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attDesc[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attDesc[2].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    if (hasDepthStencil) {
+        // clear on load + no store + lazy alloc + transient image should play
+        // nicely with tiled GPUs (no physical backing necessary for ds buffer)
+        memset(&attDesc, 0, sizeof(attDesc));
+        attDesc.format = optimalDepthStencilFormat();
+        attDesc.samples = samples;
+        attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attDesc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        rpD->attDescs.append(attDesc);
+
+        rpD->dsRef = { 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
     }
 
-    VkAttachmentReference colorRef = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
-    VkAttachmentReference dsRef = { 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
-    VkAttachmentReference resolveRef = { 2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+    if (samples > VK_SAMPLE_COUNT_1_BIT) {
+        memset(&attDesc, 0, sizeof(attDesc));
+        attDesc.format = colorFormat;
+        attDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+        attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        rpD->attDescs.append(attDesc);
+
+        rpD->resolveRefs.append({ 2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+    }
 
     VkSubpassDescription subpassDesc;
     memset(&subpassDesc, 0, sizeof(subpassDesc));
     subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpassDesc.colorAttachmentCount = 1;
-    subpassDesc.pColorAttachments = &colorRef;
-    subpassDesc.pDepthStencilAttachment = hasDepthStencil ? &dsRef : nullptr;
+    subpassDesc.pColorAttachments = rpD->colorRefs.constData();
+    subpassDesc.pDepthStencilAttachment = hasDepthStencil ? &rpD->dsRef : nullptr;
 
     // Replace the first implicit dep (TOP_OF_PIPE / ALL_COMMANDS) with our own.
     VkSubpassDependency subpassDep;
@@ -1095,7 +1103,7 @@ bool QRhiVulkan::createDefaultRenderPass(VkRenderPass *rp, bool hasDepthStencil,
     memset(&rpInfo, 0, sizeof(rpInfo));
     rpInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     rpInfo.attachmentCount = 1;
-    rpInfo.pAttachments = attDesc;
+    rpInfo.pAttachments = rpD->attDescs.constData();
     rpInfo.subpassCount = 1;
     rpInfo.pSubpasses = &subpassDesc;
     rpInfo.dependencyCount = 1;
@@ -1106,19 +1114,21 @@ bool QRhiVulkan::createDefaultRenderPass(VkRenderPass *rp, bool hasDepthStencil,
 
     if (samples > VK_SAMPLE_COUNT_1_BIT) {
         rpInfo.attachmentCount += 1;
-        subpassDesc.pResolveAttachments = &resolveRef;
+        subpassDesc.pResolveAttachments = rpD->resolveRefs.constData();
     }
 
-    VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, rp);
+    VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, &rpD->rp);
     if (err != VK_SUCCESS) {
         qWarning("Failed to create renderpass: %d", err);
         return false;
     }
 
+    rpD->hasDepthStencil = hasDepthStencil;
+
     return true;
 }
 
-bool QRhiVulkan::createOffscreenRenderPass(VkRenderPass *rp,
+bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
                                            const QRhiColorAttachment *firstColorAttachment,
                                            const QRhiColorAttachment *lastColorAttachment,
                                            bool preserveColor,
@@ -1126,10 +1136,6 @@ bool QRhiVulkan::createOffscreenRenderPass(VkRenderPass *rp,
                                            QRhiRenderBuffer *depthStencilBuffer,
                                            QRhiTexture *depthTexture)
 {
-    QVarLengthArray<VkAttachmentDescription, 8> attDescs;
-    QVarLengthArray<VkAttachmentReference, 8> colorRefs;
-    QVarLengthArray<VkAttachmentReference, 8> resolveRefs;
-
     // attachment list layout is color (0-8), ds (0-1), resolve (0-8)
 
     for (auto it = firstColorAttachment; it != lastColorAttachment; ++it) {
@@ -1150,14 +1156,14 @@ bool QRhiVulkan::createOffscreenRenderPass(VkRenderPass *rp,
         // this has to interact correctly with activateTextureRenderTarget(), hence leaving in COLOR_ATT
         attDesc.initialLayout = preserveColor ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
         attDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        attDescs.append(attDesc);
+        rpD->attDescs.append(attDesc);
 
-        const VkAttachmentReference ref = { uint32_t(attDescs.count() - 1), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
-        colorRefs.append(ref);
+        const VkAttachmentReference ref = { uint32_t(rpD->attDescs.count() - 1), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+        rpD->colorRefs.append(ref);
     }
 
-    const bool hasDepthStencil = depthStencilBuffer || depthTexture;
-    if (hasDepthStencil) {
+    rpD->hasDepthStencil = depthStencilBuffer || depthTexture;
+    if (rpD->hasDepthStencil) {
         const VkFormat dsFormat = depthTexture ? QRHI_RES(QVkTexture, depthTexture)->vkformat
                                                : QRHI_RES(QVkRenderBuffer, depthStencilBuffer)->vkformat;
         const VkSampleCountFlagBits samples = depthTexture ? QRHI_RES(QVkTexture, depthTexture)->samples
@@ -1174,9 +1180,9 @@ bool QRhiVulkan::createOffscreenRenderPass(VkRenderPass *rp,
         attDesc.stencilStoreOp = storeOp;
         attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         attDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        attDescs.append(attDesc);
+        rpD->attDescs.append(attDesc);
     }
-    VkAttachmentReference dsRef = { uint32_t(attDescs.count() - 1), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+    rpD->dsRef = { uint32_t(rpD->attDescs.count() - 1), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
 
     for (auto it = firstColorAttachment; it != lastColorAttachment; ++it) {
         if (it->resolveTexture()) {
@@ -1194,37 +1200,37 @@ bool QRhiVulkan::createOffscreenRenderPass(VkRenderPass *rp,
             attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             attDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attDescs.append(attDesc);
+            rpD->attDescs.append(attDesc);
 
-            const VkAttachmentReference ref = { uint32_t(attDescs.count() - 1), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
-            resolveRefs.append(ref);
+            const VkAttachmentReference ref = { uint32_t(rpD->attDescs.count() - 1), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+            rpD->resolveRefs.append(ref);
         } else {
             const VkAttachmentReference ref = { VK_ATTACHMENT_UNUSED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
-            resolveRefs.append(ref);
+            rpD->resolveRefs.append(ref);
         }
     }
 
     VkSubpassDescription subpassDesc;
     memset(&subpassDesc, 0, sizeof(subpassDesc));
     subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpassDesc.colorAttachmentCount = uint32_t(colorRefs.count());
-    Q_ASSERT(colorRefs.count() == resolveRefs.count());
-    subpassDesc.pColorAttachments = !colorRefs.isEmpty() ? colorRefs.constData() : nullptr;
-    subpassDesc.pDepthStencilAttachment = hasDepthStencil ? &dsRef : nullptr;
-    subpassDesc.pResolveAttachments = !resolveRefs.isEmpty() ? resolveRefs.constData() : nullptr;
+    subpassDesc.colorAttachmentCount = uint32_t(rpD->colorRefs.count());
+    Q_ASSERT(rpD->colorRefs.count() == rpD->resolveRefs.count());
+    subpassDesc.pColorAttachments = !rpD->colorRefs.isEmpty() ? rpD->colorRefs.constData() : nullptr;
+    subpassDesc.pDepthStencilAttachment = rpD->hasDepthStencil ? &rpD->dsRef : nullptr;
+    subpassDesc.pResolveAttachments = !rpD->resolveRefs.isEmpty() ? rpD->resolveRefs.constData() : nullptr;
 
     VkRenderPassCreateInfo rpInfo;
     memset(&rpInfo, 0, sizeof(rpInfo));
     rpInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    rpInfo.attachmentCount = uint32_t(attDescs.count());
-    rpInfo.pAttachments = attDescs.constData();
+    rpInfo.attachmentCount = uint32_t(rpD->attDescs.count());
+    rpInfo.pAttachments = rpD->attDescs.constData();
     rpInfo.subpassCount = 1;
     rpInfo.pSubpasses = &subpassDesc;
     // don't yet know the correct initial/final access and stage stuff for the
     // implicit deps at this point, so leave it to the resource tracking to
     // generate barriers
 
-    VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, rp);
+    VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, &rpD->rp);
     if (err != VK_SUCCESS) {
         qWarning("Failed to create renderpass: %d", err);
         return false;
@@ -4617,12 +4623,8 @@ static inline VkSamplerAddressMode toVkAddressMode(QRhiSampler::AddressMode m)
         return VK_SAMPLER_ADDRESS_MODE_REPEAT;
     case QRhiSampler::ClampToEdge:
         return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-    case QRhiSampler::Border:
-        return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
     case QRhiSampler::Mirror:
         return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-    case QRhiSampler::MirrorOnce:
-        return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
     default:
         Q_UNREACHABLE();
         return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -5505,6 +5507,61 @@ void QVkRenderPassDescriptor::release()
     rhiD->unregisterResource(this);
 }
 
+static inline bool attachmentDescriptionEquals(const VkAttachmentDescription &a, const VkAttachmentDescription &b)
+{
+    return a.format == b.format
+            && a.samples == b.samples
+            && a.loadOp == b.loadOp
+            && a.storeOp == b.storeOp
+            && a.stencilLoadOp == b.stencilLoadOp
+            && a.stencilStoreOp == b.stencilStoreOp
+            && a.initialLayout == b.initialLayout
+            && a.finalLayout == b.finalLayout;
+}
+
+bool QVkRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
+{
+    if (!other)
+        return false;
+
+    const QVkRenderPassDescriptor *o = QRHI_RES(const QVkRenderPassDescriptor, other);
+
+    if (attDescs.count() != o->attDescs.count())
+        return false;
+    if (colorRefs.count() != o->colorRefs.count())
+        return false;
+    if (resolveRefs.count() != o->resolveRefs.count())
+        return false;
+    if (hasDepthStencil != o->hasDepthStencil)
+        return false;
+
+    for (int i = 0, ie = colorRefs.count(); i != ie; ++i) {
+        const uint32_t attIdx = colorRefs[i].attachment;
+        if (attIdx != o->colorRefs[i].attachment)
+            return false;
+        if (attIdx != VK_ATTACHMENT_UNUSED && !attachmentDescriptionEquals(attDescs[attIdx], o->attDescs[attIdx]))
+            return false;
+    }
+
+    if (hasDepthStencil) {
+        const uint32_t attIdx = dsRef.attachment;
+        if (attIdx != o->dsRef.attachment)
+            return false;
+        if (attIdx != VK_ATTACHMENT_UNUSED && !attachmentDescriptionEquals(attDescs[attIdx], o->attDescs[attIdx]))
+            return false;
+    }
+
+    for (int i = 0, ie = resolveRefs.count(); i != ie; ++i) {
+        const uint32_t attIdx = resolveRefs[i].attachment;
+        if (attIdx != o->resolveRefs[i].attachment)
+            return false;
+        if (attIdx != VK_ATTACHMENT_UNUSED && !attachmentDescriptionEquals(attDescs[attIdx], o->attDescs[attIdx]))
+            return false;
+    }
+
+    return true;
+}
+
 const QRhiNativeHandles *QVkRenderPassDescriptor::nativeHandles()
 {
     nativeHandlesStruct.renderPass = rp;
@@ -5588,7 +5645,7 @@ QRhiRenderPassDescriptor *QVkTextureRenderTarget::newCompatibleRenderPassDescrip
 
     QRHI_RES_RHI(QRhiVulkan);
     QVkRenderPassDescriptor *rp = new QVkRenderPassDescriptor(m_rhi);
-    if (!rhiD->createOffscreenRenderPass(&rp->rp,
+    if (!rhiD->createOffscreenRenderPass(rp,
                                          m_desc.cbeginColorAttachments(),
                                          m_desc.cendColorAttachments(),
                                          m_flags.testFlag(QRhiTextureRenderTarget::PreserveColorContents),
@@ -6289,7 +6346,7 @@ QRhiRenderPassDescriptor *QVkSwapChain::newCompatibleRenderPassDescriptor()
 
     QRHI_RES_RHI(QRhiVulkan);
     QVkRenderPassDescriptor *rp = new QVkRenderPassDescriptor(m_rhi);
-    if (!rhiD->createDefaultRenderPass(&rp->rp,
+    if (!rhiD->createDefaultRenderPass(rp,
                                        m_depthStencil != nullptr,
                                        samples,
                                        colorFormat))

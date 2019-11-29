@@ -70,3 +70,7 @@ QT_END_NAMESPACE
 @property (nonatomic, readonly) UIEdgeInsets qt_safeAreaInsets;
 @end
 
+#ifdef Q_OS_IOS
+@interface QUIMetalView : QUIView
+@end
+#endif

@@ -171,10 +171,16 @@ struct QVkRenderPassDescriptor : public QRhiRenderPassDescriptor
     QVkRenderPassDescriptor(QRhiImplementation *rhi);
     ~QVkRenderPassDescriptor();
     void release() override;
+    bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
     const QRhiNativeHandles *nativeHandles() override;
 
     VkRenderPass rp = VK_NULL_HANDLE;
     bool ownsRp = false;
+    QVarLengthArray<VkAttachmentDescription, 8> attDescs;
+    QVarLengthArray<VkAttachmentReference, 8> colorRefs;
+    QVarLengthArray<VkAttachmentReference, 8> resolveRefs;
+    bool hasDepthStencil = false;
+    VkAttachmentReference dsRef;
     QRhiVulkanRenderPassNativeHandles nativeHandlesStruct;
     int lastActiveFrameSlot = -1;
 };
@@ -727,11 +733,11 @@ public:
 
     VkFormat optimalDepthStencilFormat();
     VkSampleCountFlagBits effectiveSampleCount(int sampleCount);
-    bool createDefaultRenderPass(VkRenderPass *rp,
+    bool createDefaultRenderPass(QVkRenderPassDescriptor *rpD,
                                  bool hasDepthStencil,
                                  VkSampleCountFlagBits samples,
                                  VkFormat colorFormat);
-    bool createOffscreenRenderPass(VkRenderPass *rp,
+    bool createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
                                    const QRhiColorAttachment *firstColorAttachment,
                                    const QRhiColorAttachment *lastColorAttachment,
                                    bool preserveColor,

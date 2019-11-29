@@ -136,6 +136,7 @@ struct QD3D11RenderPassDescriptor : public QRhiRenderPassDescriptor
     QD3D11RenderPassDescriptor(QRhiImplementation *rhi);
     ~QD3D11RenderPassDescriptor();
     void release() override;
+    bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
 };
 
 struct QD3D11RenderTargetData

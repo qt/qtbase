@@ -100,13 +100,15 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame])) {
-        // Set up EAGL layer
-        CAEAGLLayer *eaglLayer = static_cast<CAEAGLLayer *>(self.layer);
-        eaglLayer.opaque = TRUE;
-        eaglLayer.drawableProperties = @{
-            kEAGLDrawablePropertyRetainedBacking: @(YES),
-            kEAGLDrawablePropertyColorFormat: kEAGLColorFormatRGBA8
-        };
+        if ([self.layer isKindOfClass:[CAEAGLLayer class]]) {
+            // Set up EAGL layer
+            CAEAGLLayer *eaglLayer = static_cast<CAEAGLLayer *>(self.layer);
+            eaglLayer.opaque = TRUE;
+            eaglLayer.drawableProperties = @{
+                kEAGLDrawablePropertyRetainedBacking: @(YES),
+                kEAGLDrawablePropertyColorFormat: kEAGLColorFormatRGBA8
+            };
+        }
 
         if (isQtApplication())
             self.hidden = YES;
@@ -674,6 +676,25 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 }
 
 @end
+
+#ifdef Q_OS_IOS
+@implementation QUIMetalView
+
++ (Class)layerClass
+{
+#ifdef TARGET_IPHONE_SIMULATOR
+    if (@available(ios 13.0, *))
+#endif
+
+    return [CAMetalLayer class];
+
+#ifdef TARGET_IPHONE_SIMULATOR
+    return nil;
+#endif
+}
+
+@end
+#endif
 
 #ifndef QT_NO_ACCESSIBILITY
 // Include category as an alternative to using -ObjC (Apple QA1490)

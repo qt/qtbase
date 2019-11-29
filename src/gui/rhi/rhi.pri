@@ -43,15 +43,15 @@ win32 {
     LIBS += -ld3d11 -ldxgi -ldxguid
 }
 
-# darwin {
-macos {
+macos|ios {
     HEADERS += \
         rhi/qrhimetal_p.h \
         rhi/qrhimetal_p_p.h
     SOURCES += \
         rhi/qrhimetal.mm
 
-    LIBS += -framework AppKit -framework Metal
+    macos: LIBS += -framework AppKit
+    LIBS += -framework Metal
 }
 
 include($$PWD/../../3rdparty/VulkanMemoryAllocator.pri)
