@@ -59,10 +59,6 @@
 #include <QMenuBar>
 #include <QLayout>
 
-#ifndef QT_NO_OPENGL
-# include <QtOpenGL>
-#endif
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -84,14 +80,5 @@ MainWindow::MainWindow(QWidget *parent)
     view = new QGraphicsView(scene, this);
     view->setAlignment(Qt::AlignLeft | Qt::AlignTop);
     scene->setupScene(newAction, quitAction);
-#ifndef QT_NO_OPENGL
-    QGLWidget *glWidget = new QGLWidget(QGLFormat(QGL::SampleBuffers));
-    if (glWidget->context()->isValid()) {
-        view->setViewport(glWidget);
-    } else {
-        qWarning("Unable to create an Open GL context with sample buffers, not using Open GL.");
-        delete glWidget;
-    }
-#endif
     setCentralWidget(view);
 }

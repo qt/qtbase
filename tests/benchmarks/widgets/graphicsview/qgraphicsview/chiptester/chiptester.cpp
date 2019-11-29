@@ -56,13 +56,6 @@ void ChipTester::setAntialias(bool enabled)
     setRenderHint(QPainter::Antialiasing, enabled);
 }
 
-void ChipTester::setOpenGL(bool enabled)
-{
-#ifndef QT_NO_OPENGL
-    setViewport(enabled ? new QGLWidget(QGLFormat(QGL::SampleBuffers)) : 0);
-#endif
-}
-
 void ChipTester::setOperation(Operation operation)
 {
     this->operation = operation;
