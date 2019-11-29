@@ -2160,6 +2160,32 @@ QRhiResource::Type QRhiRenderBuffer::resourceType() const
  */
 
 /*!
+    \class QRhiTexture::NativeTexture
+    \brief Contains information about the underlying native resources of a texture.
+ */
+
+/*!
+    \variable QRhiTexture::NativeTexture::object
+    \brief a pointer to the native object handle.
+
+    With OpenGL, the native handle is a GLuint value, so \c object is then a
+    pointer to a GLuint. With Vulkan, the native handle is a VkImage, so \c
+    object is a pointer to a VkImage. With Direct3D 11 and Metal \c
+    object is a pointer to a ID3D11Texture2D or MTLTexture pointer, respectively.
+
+    \note Pay attention to the fact that \a object is always a pointer
+    to the native texture handle type, even if the native type itself is a
+    pointer.
+ */
+
+/*!
+    \variable QRhiTexture::NativeTexture::layout
+    \brief Specifies the current image layout for APIs like Vulkan.
+
+    For Vulkan, \c layout contains a \c VkImageLayout value.
+ */
+
+/*!
     \internal
  */
 QRhiTexture::QRhiTexture(QRhiImplementation *rhi, Format format_, const QSize &pixelSize_,
@@ -2196,9 +2222,22 @@ QRhiResource::Type QRhiTexture::resourceType() const
     \sa QRhiVulkanTextureNativeHandles, QRhiD3D11TextureNativeHandles,
     QRhiMetalTextureNativeHandles, QRhiGles2TextureNativeHandles
  */
+// TODO: remove this version once QtQuick has stopped using it
 const QRhiNativeHandles *QRhiTexture::nativeHandles()
 {
     return nullptr;
+}
+
+/*!
+    \return the underlying native resources for this texture. The returned value
+    will be empty if exposing the underlying native resources is not supported by
+    the backend.
+
+    \sa buildFrom()
+ */
+QRhiTexture::NativeTexture QRhiTexture::nativeTexture()
+{
+    return {};
 }
 
 /*!
@@ -2224,7 +2263,35 @@ const QRhiNativeHandles *QRhiTexture::nativeHandles()
     \sa QRhiVulkanTextureNativeHandles, QRhiD3D11TextureNativeHandles,
     QRhiMetalTextureNativeHandles, QRhiGles2TextureNativeHandles
  */
+// TODO: remove this version once QtQuick has stopped using it
 bool QRhiTexture::buildFrom(const QRhiNativeHandles *src)
+{
+    Q_UNUSED(src);
+    return false;
+}
+
+/*!
+    Similar to build() except that no new native textures are created. Instead,
+    the native texture resources specified by \a src is used.
+
+    This allows importing an existing native texture object (which must belong
+    to the same device or sharing context, depending on the graphics API) from
+    an external graphics engine.
+
+    \note format(), pixelSize(), sampleCount(), and flags() must still be set
+    correctly. Passing incorrect sizes and other values to QRhi::newTexture()
+    and then following it with a buildFrom() expecting that the native texture
+    object alone is sufficient to deduce such values is \b wrong and will lead
+    to problems.
+
+    \note QRhiTexture does not take ownership of the texture object. release()
+    does not free the object or any associated memory.
+
+    The opposite of this operation, exposing a QRhiTexture-created native
+    texture object to a foreign engine, is possible via nativeTexture().
+
+*/
+bool QRhiTexture::buildFrom(QRhiTexture::NativeTexture src)
 {
     Q_UNUSED(src);
     return false;

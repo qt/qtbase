@@ -760,6 +760,11 @@ public:
         ASTC_12x12
     };
 
+    struct NativeTexture {
+        const void *object;
+        int layout;
+    };
+
     QRhiResource::Type resourceType() const override;
 
     Format format() const { return m_format; }
@@ -776,7 +781,9 @@ public:
 
     virtual bool build() = 0;
     virtual const QRhiNativeHandles *nativeHandles();
+    virtual NativeTexture nativeTexture();
     virtual bool buildFrom(const QRhiNativeHandles *src);
+    virtual bool buildFrom(NativeTexture src);
 
 protected:
     QRhiTexture(QRhiImplementation *rhi, Format format_, const QSize &pixelSize_,

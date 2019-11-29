@@ -81,6 +81,7 @@ struct QNullTexture : public QRhiTexture
     void release() override;
     bool build() override;
     bool buildFrom(const QRhiNativeHandles *src) override;
+    bool buildFrom(NativeTexture src) override;
     const QRhiNativeHandles *nativeHandles() override;
 
     QRhiNullTextureNativeHandles nativeHandlesStruct;

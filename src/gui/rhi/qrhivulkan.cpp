@@ -5370,10 +5370,40 @@ bool QVkTexture::buildFrom(const QRhiNativeHandles *src)
     return true;
 }
 
+bool QVkTexture::buildFrom(QRhiTexture::NativeTexture src)
+{
+    auto *img = static_cast<const VkImage*>(src.object);
+    if (!img || !*img)
+        return false;
+
+    if (!prepareBuild())
+        return false;
+
+    image = *img;
+
+    if (!finishBuild())
+        return false;
+
+    QRHI_PROF;
+    QRHI_PROF_F(newTexture(this, false, int(mipLevelCount), m_flags.testFlag(CubeMap) ? 6 : 1, samples));
+
+    usageState.layout = VkImageLayout(src.layout);
+
+    owns = false;
+    QRHI_RES_RHI(QRhiVulkan);
+    rhiD->registerResource(this);
+    return true;
+}
+
 const QRhiNativeHandles *QVkTexture::nativeHandles()
 {
     nativeHandlesStruct.layout = usageState.layout;
     return &nativeHandlesStruct;
+}
+
+QRhiTexture::NativeTexture QVkTexture::nativeTexture()
+{
+    return {&nativeHandlesStruct.image, usageState.layout};
 }
 
 VkImageView QVkTexture::imageViewForLevel(int level)
