@@ -1969,7 +1969,8 @@ QString QLocale::toString(qlonglong i) const
 {
     int flags = d->m_numberOptions & OmitGroupSeparator
                     ? 0
-                    : QLocaleData::ThousandsGroup;
+                    : (d->m_data->m_country_id == Country::India)
+                      ? QLocaleData::IndianNumberGrouping : QLocaleData::ThousandsGroup;
 
     return d->m_data->longLongToString(i, -1, 10, -1, flags);
 }
@@ -1984,7 +1985,8 @@ QString QLocale::toString(qulonglong i) const
 {
     int flags = d->m_numberOptions & OmitGroupSeparator
                     ? 0
-                    : QLocaleData::ThousandsGroup;
+                    : (d->m_data->m_country_id == Country::India)
+                      ? QLocaleData::IndianNumberGrouping : QLocaleData::ThousandsGroup;
 
     return d->m_data->unsLongLongToString(i, -1, 10, -1, flags);
 }
@@ -3626,10 +3628,19 @@ QT_WARNING_DISABLE_MSVC(4146)
 QT_WARNING_POP
 
     uint cnt_thousand_sep = 0;
-    if (flags & ThousandsGroup && base == 10) {
-        for (int i = num_str.length() - 3; i > 0; i -= 3) {
-            num_str.insert(i, group);
-            ++cnt_thousand_sep;
+    if (base == 10){
+        if (flags & ThousandsGroup) {
+            for (int i = num_str.length() - 3; i > 0; i -= 3) {
+                num_str.insert(i, group);
+                ++cnt_thousand_sep;
+            }
+        } else if (flags & IndianNumberGrouping) {
+            if (num_str.length() > 3)
+                num_str.insert(num_str.length() - 3 , group);
+            for (int i = num_str.length() - 6; i > 0; i -= 2) {
+                num_str.insert(i, group);
+                ++cnt_thousand_sep;
+            }
         }
     }
 
@@ -3713,10 +3724,19 @@ QString QLocaleData::unsLongLongToString(const QChar zero, const QChar group,
     }
 
     uint cnt_thousand_sep = 0;
-    if (flags & ThousandsGroup && base == 10) {
-        for (int i = num_str.length() - 3; i > 0; i -=3) {
-            num_str.insert(i, group);
-            ++cnt_thousand_sep;
+    if (base == 10) {
+        if (flags & ThousandsGroup) {
+            for (int i = num_str.length() - 3; i > 0; i -=3) {
+                num_str.insert(i, group);
+                ++cnt_thousand_sep;
+            }
+        } else if (flags & IndianNumberGrouping) {
+            if (num_str.length() > 3)
+                num_str.insert(num_str.length() - 3 , group);
+            for (int i = num_str.length() - 6; i > 0; i -= 2) {
+                num_str.insert(i, group);
+                ++cnt_thousand_sep;
+            }
         }
     }
 
@@ -3851,7 +3871,10 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
                 // check distance from the last separator or from the beginning of the digits
                 // ### FIXME: Some locales allow other groupings!
                 // See https://en.wikipedia.org/wiki/Thousands_separator
-                if (last_separator_idx != -1 && idx - last_separator_idx != 4)
+                if (m_country_id == QLocale::India) {
+                    if (last_separator_idx != -1 && idx - last_separator_idx != 3)
+                        return false;
+                } else if (last_separator_idx != -1 && idx - last_separator_idx != 4)
                     return false;
                 if (last_separator_idx == -1
                     && (start_of_digits_idx == -1 || idx - start_of_digits_idx > 3)) {
