@@ -48,7 +48,6 @@
 
 #include <qmath.h>
 #include <QVulkanFunctions>
-#include <QVulkanWindow>
 
 QT_BEGIN_NAMESPACE
 
