@@ -20,39 +20,39 @@ qt_find_package(SQLite3 PROVIDED_TARGETS SQLite::SQLite3)
 
 #### Features
 
-qt_feature("sql_db2" PRIVATE
+qt_feature("sql-db2" PRIVATE
     LABEL "DB2 (IBM)"
     CONDITION DB2_FOUND
 )
-qt_feature("sql_ibase" PRIVATE
+qt_feature("sql-ibase" PRIVATE
     LABEL "InterBase"
     CONDITION libs.ibase OR FIXME
 )
-qt_feature("sql_mysql" PRIVATE
+qt_feature("sql-mysql" PRIVATE
     LABEL "MySql"
     CONDITION MySQL_FOUND
 )
-qt_feature("sql_oci" PRIVATE
+qt_feature("sql-oci" PRIVATE
     LABEL "OCI (Oracle)"
     CONDITION Oracle_FOUND
 )
-qt_feature("sql_odbc" PRIVATE
+qt_feature("sql-odbc" PRIVATE
     LABEL "ODBC"
     CONDITION QT_FEATURE_datestring AND ODBC_FOUND
 )
-qt_feature("sql_psql" PRIVATE
+qt_feature("sql-psql" PRIVATE
     LABEL "PostgreSQL"
     CONDITION PostgreSQL_FOUND
 )
-qt_feature("sql_sqlite2" PRIVATE
+qt_feature("sql-sqlite2" PRIVATE
     LABEL "SQLite2"
     CONDITION libs.sqlite2 OR FIXME
 )
-qt_feature("sql_sqlite" PRIVATE
+qt_feature("sql-sqlite" PRIVATE
     LABEL "SQLite"
     CONDITION QT_FEATURE_datestring AND SQLite3_FOUND
 )
-qt_feature("sql_tds" PRIVATE
+qt_feature("sql-tds" PRIVATE
     LABEL "TDS (Sybase)"
     CONDITION QT_FEATURE_datestring AND libs.tds OR FIXME
 )

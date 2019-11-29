@@ -502,15 +502,15 @@ qDoubleSscanf(argv[0], invalidLocale, \"invalid format\", &a, &argc);
 
 #### Features
 
-qt_feature("clock_gettime" PRIVATE
+qt_feature("clock-gettime" PRIVATE
     LABEL "clock_gettime()"
     CONDITION UNIX AND WrapRt_FOUND
 )
-qt_feature("clock_monotonic" PUBLIC
+qt_feature("clock-monotonic" PUBLIC
     LABEL "POSIX monotonic clock"
     CONDITION QT_FEATURE_clock_gettime AND TEST_clock_monotonic
 )
-qt_feature_definition("clock_monotonic" "QT_NO_CLOCK_MONOTONIC" NEGATE VALUE "1")
+qt_feature_definition("clock-monotonic" "QT_NO_CLOCK_MONOTONIC" NEGATE VALUE "1")
 qt_feature("cxx11_future" PUBLIC
     LABEL "C++11 <future>"
     CONDITION TEST_cxx11_future
@@ -554,19 +554,19 @@ qt_feature("iconv" PUBLIC PRIVATE
     CONDITION NOT QT_FEATURE_icu AND QT_FEATURE_textcodec AND ( TEST_posix_iconv OR TEST_sun_iconv )
 )
 qt_feature_definition("iconv" "QT_NO_ICONV" NEGATE VALUE "1")
-qt_feature("posix_libiconv" PRIVATE
+qt_feature("posix-libiconv" PRIVATE
     LABEL "POSIX iconv"
     CONDITION NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_posix_iconv AND TEST_iconv_needlib
     ENABLE TEST_posix_iconv AND TEST_iconv_needlib
     DISABLE NOT TEST_posix_iconv OR NOT TEST_iconv_needlib
 )
-qt_feature("sun_libiconv"
+qt_feature("sun-libiconv"
     LABEL "SUN iconv"
     CONDITION NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_sun_iconv
     ENABLE TEST_sun_iconv
     DISABLE NOT TEST_sun_iconv
 )
-qt_feature("gnu_libiconv" PRIVATE
+qt_feature("gnu-libiconv" PRIVATE
     LABEL "GNU iconv"
     CONDITION NOT WIN32 AND NOT QNX AND NOT ANDROID AND NOT APPLE AND TEST_posix_iconv AND NOT TEST_iconv_needlib
     ENABLE TEST_posix_iconv AND NOT TEST_iconv_needlib
@@ -599,7 +599,7 @@ qt_feature("linkat" PRIVATE
     AUTODETECT LINUX AND NOT ANDROID
     CONDITION TEST_linkat
 )
-qt_feature("std_atomic64" PUBLIC
+qt_feature("std-atomic64" PUBLIC
     LABEL "64 bit atomic operations"
     CONDITION Atomic_FOUND
 )
@@ -610,10 +610,16 @@ qt_feature("mimetype" PUBLIC
     CONDITION QT_FEATURE_textcodec
 )
 qt_feature_definition("mimetype" "QT_NO_MIMETYPE" NEGATE VALUE "1")
-qt_feature("mimetype_database" PRIVATE
+qt_feature("mimetype-database" PRIVATE
     LABEL "Built-in copy of the MIME database"
     CONDITION QT_FEATURE_mimetype
 )
+qt_feature("pcre2"
+    LABEL "PCRE2"
+    ENABLE INPUT_pcre STREQUAL 'qt'
+    DISABLE INPUT_pcre STREQUAL 'no' OR INPUT_pcre STREQUAL 'system'
+)
+qt_feature_config("pcre2" QMAKE_PRIVATE_CONFIG)
 qt_feature("poll_ppoll" PRIVATE
     LABEL "Native ppoll()"
     CONDITION NOT WASM AND TEST_ppoll
@@ -657,11 +663,12 @@ qt_feature("syslog" PRIVATE
     AUTODETECT OFF
     CONDITION TEST_syslog
 )
-qt_feature("threadsafe_cloexec"
+qt_feature("threadsafe-cloexec"
     LABEL "Threadsafe pipe creation"
     CONDITION TEST_cloexec
 )
-qt_feature_definition("threadsafe_cloexec" "QT_THREADSAFE_CLOEXEC" VALUE "1")
+qt_feature_definition("threadsafe-cloexec" "QT_THREADSAFE_CLOEXEC" VALUE "1")
+qt_feature_config("threadsafe-cloexec" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("properties" PUBLIC
     SECTION "Kernel"
     LABEL "Properties"
@@ -876,7 +883,7 @@ qt_feature("gestures" PUBLIC
     PURPOSE "Provides a framework for gestures."
 )
 qt_feature_definition("gestures" "QT_NO_GESTURES" NEGATE VALUE "1")
-qt_feature("sha3_fast" PRIVATE
+qt_feature("sha3-fast" PRIVATE
     SECTION "Utilities"
     LABEL "Speed optimized SHA3"
     PURPOSE "Optimizes SHA3 for speed instead of size."

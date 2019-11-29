@@ -20,31 +20,31 @@ qt_feature("gtk3" PRIVATE
     AUTODETECT NOT APPLE
     CONDITION QT_FEATURE_glib AND GTK3_FOUND
 )
-qt_feature("style_fusion" PRIVATE
+qt_feature("style-fusion" PRIVATE
     LABEL "Fusion"
 )
-qt_feature("style_mac" PRIVATE
+qt_feature("style-mac" PRIVATE
     LABEL "macOS"
     CONDITION APPLE_OSX AND QT_FEATURE_animation
 )
-qt_feature("style_windows" PRIVATE
+qt_feature("style-windows" PRIVATE
     LABEL "Windows"
 )
-qt_feature("style_windowsvista" PRIVATE
+qt_feature("style-windowsvista" PRIVATE
     LABEL "WindowsVista"
     CONDITION QT_FEATURE_style_windows AND QT_FEATURE_animation AND WIN32 AND NOT WINRT AND tests.uxtheme OR FIXME
 )
-qt_feature("style_android" PRIVATE
+qt_feature("style-android" PRIVATE
     LABEL "Android"
     AUTODETECT ANDROID
 )
-qt_feature("style_stylesheet" PUBLIC
+qt_feature("style-stylesheet" PUBLIC
     SECTION "Styles"
     LABEL "QStyleSheetStyle"
     PURPOSE "Provides a widget style which is configurable via CSS."
     CONDITION QT_FEATURE_style_windows AND QT_FEATURE_properties AND QT_FEATURE_cssparser
 )
-qt_feature_definition("style_stylesheet" "QT_NO_STYLE_STYLESHEET" NEGATE VALUE "1")
+qt_feature_definition("style-stylesheet" "QT_NO_STYLE_STYLESHEET" NEGATE VALUE "1")
 qt_feature("effects" PRIVATE
     SECTION "Kernel"
     LABEL "Effects"

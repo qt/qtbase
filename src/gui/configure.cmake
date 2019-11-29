@@ -521,11 +521,11 @@ xcb_xkb_get_kbd_by_name_replies_key_names_value_list_sizeof(nullptr, 0, 0, 0, 0,
 
 #### Features
 
-qt_feature("accessibility_atspi_bridge" PUBLIC PRIVATE
+qt_feature("accessibility-atspi-bridge" PUBLIC PRIVATE
     LABEL "ATSPI Bridge"
     CONDITION QT_FEATURE_accessibility AND QT_FEATURE_xcb AND QT_FEATURE_dbus AND ATSPI2_FOUND
 )
-qt_feature_definition("accessibility_atspi_bridge" "QT_NO_ACCESSIBILITY_ATSPI_BRIDGE" NEGATE VALUE "1")
+qt_feature_definition("accessibility-atspi-bridge" "QT_NO_ACCESSIBILITY_ATSPI_BRIDGE" NEGATE VALUE "1")
 qt_feature("angle" PUBLIC
     LABEL "ANGLE"
     AUTODETECT QT_FEATURE_opengles2 OR QT_FEATURE_opengl_dynamic
@@ -536,7 +536,7 @@ qt_feature("angle_d3d11_qdtd" PRIVATE
     LABEL "D3D11_QUERY_DATA_TIMESTAMP_DISJOINT"
     CONDITION QT_FEATURE_angle AND TEST_angle_d3d11_qdtd
 )
-qt_feature("combined_angle_lib" PUBLIC
+qt_feature("combined-angle-lib" PUBLIC
     LABEL "Combined ANGLE Library"
     AUTODETECT OFF
     CONDITION QT_FEATURE_angle
@@ -610,6 +610,11 @@ qt_feature("fontconfig" PUBLIC PRIVATE
     CONDITION NOT MSVC AND ON AND FONTCONFIG_FOUND
 )
 qt_feature_definition("fontconfig" "QT_NO_FONTCONFIG" NEGATE VALUE "1")
+qt_feature("gbm"
+    LABEL "GBM"
+    CONDITION gbm_FOUND
+)
+qt_feature_config("gbm" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("harfbuzz" PUBLIC PRIVATE
     LABEL "HarfBuzz"
     CONDITION harfbuzz_FOUND
@@ -629,6 +634,7 @@ qt_feature("kms" PRIVATE
     LABEL "KMS"
     CONDITION Libdrm_FOUND
 )
+qt_feature_config("kms" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("drm_atomic" PRIVATE
     LABEL "DRM Atomic API"
     CONDITION Libdrm_FOUND AND TEST_drm_atomic
@@ -641,10 +647,16 @@ qt_feature("integrityhid" PRIVATE
     LABEL "INTEGRITY HID"
     CONDITION INTEGRITY AND libs.integrityhid OR FIXME
 )
-qt_feature("libinput_axis_api" PRIVATE
+qt_feature("libinput-axis-api" PRIVATE
     LABEL "axis API in libinput"
     CONDITION QT_FEATURE_libinput AND ON
 )
+qt_feature("lgmon"
+    LABEL "lgmon"
+    CONDITION libs.lgmon OR FIXME
+    EMIT_IF QNX
+)
+qt_feature_config("lgmon" QMAKE_PRIVATE_CONFIG)
 qt_feature("linuxfb" PRIVATE
     SECTION "Platform plugins"
     LABEL "LinuxFB"
@@ -672,6 +684,7 @@ qt_feature("opengles2" PUBLIC
 )
 qt_feature_definition("opengles2" "QT_OPENGL_ES")
 qt_feature_definition("opengles2" "QT_OPENGL_ES_2")
+qt_feature_config("opengles2" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("opengles3" PUBLIC
     LABEL "OpenGL ES 3.0"
     CONDITION QT_FEATURE_opengles2 AND NOT QT_FEATURE_angle AND TEST_opengles3 AND NOT WASM
@@ -687,13 +700,13 @@ qt_feature("opengles32" PUBLIC
     CONDITION QT_FEATURE_opengles31 AND TEST_opengles32
 )
 qt_feature_definition("opengles32" "QT_OPENGL_ES_3_2")
-qt_feature("opengl_desktop"
+qt_feature("opengl-desktop"
     LABEL "Desktop OpenGL"
     CONDITION ( WIN32 AND NOT WINRT AND NOT QT_FEATURE_opengles2 AND ( MSVC OR OpenGL_OpenGL_FOUND ) ) OR ( NOT APPLE_WATCHOS AND NOT WIN32 AND NOT WASM AND OpenGL_OpenGL_FOUND )
     ENABLE INPUT_opengl STREQUAL 'desktop'
     DISABLE INPUT_opengl STREQUAL 'es2' OR INPUT_opengl STREQUAL 'dynamic' OR INPUT_opengl STREQUAL 'no'
 )
-qt_feature("opengl_dynamic"
+qt_feature("opengl-dynamic"
     LABEL "Dynamic OpenGL"
     AUTODETECT OFF
     CONDITION WIN32 AND NOT WINRT
@@ -704,7 +717,7 @@ qt_feature("dynamicgl" PUBLIC
     CONDITION QT_FEATURE_opengl_dynamic
     DISABLE INPUT_angle STREQUAL 'yes' OR INPUT_opengl STREQUAL 'no' OR INPUT_opengl STREQUAL 'desktop'
 )
-qt_feature_definition("opengl_dynamic" "QT_OPENGL_DYNAMIC")
+qt_feature_definition("opengl-dynamic" "QT_OPENGL_DYNAMIC")
 qt_feature("opengl" PUBLIC
     LABEL "OpenGL"
     CONDITION QT_FEATURE_opengl_desktop OR QT_FEATURE_opengl_dynamic OR QT_FEATURE_opengles2
@@ -818,22 +831,22 @@ qt_feature("xcb" PRIVATE
     AUTODETECT NOT APPLE
     CONDITION QT_FEATURE_thread AND TARGET XCB::XCB AND TEST_xcb_syslibs AND QT_FEATURE_xkbcommon_x11
 )
-qt_feature("xcb_glx_plugin" PRIVATE
+qt_feature("xcb-glx-plugin" PRIVATE
     LABEL "GLX Plugin"
     CONDITION QT_FEATURE_xcb_xlib AND QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
     EMIT_IF QT_FEATURE_xcb
 )
-qt_feature("xcb_glx" PRIVATE
+qt_feature("xcb-glx" PRIVATE
     LABEL "  XCB GLX"
     CONDITION XCB_GLX_FOUND
     EMIT_IF QT_FEATURE_xcb AND QT_FEATURE_xcb_glx_plugin
 )
-qt_feature("xcb_egl_plugin" PRIVATE
+qt_feature("xcb-egl-plugin" PRIVATE
     LABEL "EGL-X11 Plugin"
     CONDITION QT_FEATURE_egl_x11 AND QT_FEATURE_opengl
     EMIT_IF QT_FEATURE_xcb
 )
-qt_feature("xcb_native_painting" PRIVATE
+qt_feature("xcb-native-painting" PRIVATE
     LABEL "Native painting (experimental)"
     AUTODETECT OFF
     CONDITION QT_FEATURE_xcb_xlib AND QT_FEATURE_fontconfig AND XRender_FOUND
@@ -844,16 +857,16 @@ qt_feature("xrender" PRIVATE
     CONDITION QT_FEATURE_xcb_native_painting
     EMIT_IF QT_FEATURE_xcb AND QT_FEATURE_xcb_native_painting
 )
-qt_feature("xcb_xlib" PRIVATE
+qt_feature("xcb-xlib" PRIVATE
     LABEL "XCB Xlib"
     CONDITION QT_FEATURE_xlib AND X11_XCB_FOUND
 )
-qt_feature("xcb_sm" PRIVATE
+qt_feature("xcb-sm" PRIVATE
     LABEL "xcb-sm"
     CONDITION QT_FEATURE_sessionmanager AND X11_SM_FOUND
     EMIT_IF QT_FEATURE_xcb
 )
-qt_feature("system_xcb_xinput" PRIVATE
+qt_feature("system-xcb-xinput" PRIVATE
     LABEL "Using system-provided xcb-xinput"
     CONDITION XCB_XINPUT_FOUND
     ENABLE INPUT_bundled_xcb_xinput STREQUAL 'no'
@@ -864,7 +877,7 @@ qt_feature("xkbcommon" PRIVATE
     LABEL "xkbcommon"
     CONDITION XKB_FOUND
 )
-qt_feature("xkbcommon_x11" PRIVATE
+qt_feature("xkbcommon-x11" PRIVATE
     LABEL "xkbcommon-x11"
     CONDITION QT_FEATURE_xkbcommon AND XKB_FOUND
 )
@@ -886,7 +899,7 @@ qt_feature("textmarkdownreader" PUBLIC
     ENABLE INPUT_libmd4c STREQUAL 'system' OR INPUT_libmd4c STREQUAL 'qt' OR INPUT_libmd4c STREQUAL 'yes'
     DISABLE INPUT_libmd4c STREQUAL 'no'
 )
-qt_feature("system_textmarkdownreader" PUBLIC
+qt_feature("system-textmarkdownreader" PUBLIC
     SECTION "Kernel"
     LABEL "  Using system libmd4c"
     CONDITION libs.libmd4c OR FIXME
@@ -1086,7 +1099,7 @@ qt_feature("whatsthis" PUBLIC
     PURPOSE "Supports displaying \"What's this\" help."
 )
 qt_feature_definition("whatsthis" "QT_NO_WHATSTHIS" NEGATE VALUE "1")
-qt_feature("raster_64bit" PRIVATE
+qt_feature("raster-64bit" PRIVATE
     SECTION "Painting"
     LABEL "QPainter - 64 bit raster"
     PURPOSE "Internal painting support for 64 bit (16 bpc) rasterization."

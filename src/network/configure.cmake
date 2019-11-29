@@ -204,7 +204,7 @@ qt_feature("libproxy" PRIVATE
     AUTODETECT OFF
     CONDITION Libproxy_FOUND
 )
-qt_feature("linux_netlink" PRIVATE
+qt_feature("linux-netlink" PRIVATE
     LABEL "Linux AF_NETLINK"
     CONDITION LINUX AND TEST_linux_netlink
 )
@@ -214,19 +214,20 @@ qt_feature("openssl" PRIVATE
     ENABLE false
 )
 qt_feature_definition("openssl" "QT_NO_OPENSSL" NEGATE)
-qt_feature("openssl_runtime"
+qt_feature_config("openssl" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("openssl-runtime"
     AUTODETECT NOT WINRT AND NOT WASM
     CONDITION NOT QT_FEATURE_securetransport AND NOT QT_FEATURE_schannel AND OPENSSL_INCLUDE_DIR
     ENABLE INPUT_openssl STREQUAL 'yes' OR INPUT_openssl STREQUAL 'runtime'
     DISABLE INPUT_openssl STREQUAL 'no' OR INPUT_openssl STREQUAL 'linked' OR INPUT_ssl STREQUAL 'no'
 )
-qt_feature("openssl_linked" PRIVATE
+qt_feature("openssl-linked" PRIVATE
     LABEL "  Qt directly linked to OpenSSL"
     AUTODETECT OFF
     CONDITION NOT QT_FEATURE_securetransport AND NOT QT_FEATURE_schannel AND OpenSSL_FOUND
     ENABLE INPUT_openssl STREQUAL 'linked'
 )
-qt_feature_definition("openssl_linked" "QT_LINKED_OPENSSL")
+qt_feature_definition("openssl-linked" "QT_LINKED_OPENSSL")
 qt_feature("securetransport" PUBLIC
     LABEL "SecureTransport"
     CONDITION APPLE AND ( INPUT_openssl STREQUAL '' OR INPUT_openssl STREQUAL 'no' )
@@ -266,7 +267,7 @@ qt_feature("sctp" PUBLIC
     CONDITION TEST_sctp
 )
 qt_feature_definition("sctp" "QT_NO_SCTP" NEGATE VALUE "1")
-qt_feature("system_proxies" PRIVATE
+qt_feature("system-proxies" PRIVATE
     LABEL "Use system proxies"
 )
 qt_feature("ftp" PUBLIC
