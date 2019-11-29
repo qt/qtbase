@@ -8385,12 +8385,9 @@ void tst_QWidget::resizeInPaintEvent()
     widget.resizeInPaintEvent = true;
     // This will call resize in the paintEvent, which in turn will call
     // invalidateBackingStore() and a new update request should be posted.
-    widget.repaint();
-    QCOMPARE(widget.numPaintEvents, 1);
-    widget.numPaintEvents = 0;
-
-    // Make sure the resize triggers another update.
-    QTRY_COMPARE(widget.numPaintEvents, 1);
+    // the resize triggers another update.
+    widget.update();
+    QTRY_COMPARE(widget.numPaintEvents, 2);
 }
 
 void tst_QWidget::opaqueChildren()
@@ -8559,8 +8556,8 @@ void tst_QWidget::immediateRepaintAfterInvalidateBackingStore()
     // The entire widget is already dirty, but this time we want to update immediately
     // by calling repaint(), and thus we have to repaint the widget and not wait for
     // the UpdateRequest to be sent when we get back to the event loop.
-    widget->repaint();
-    QCOMPARE(widget->numPaintEvents, 1);
+    widget->update();
+    QTRY_COMPARE(widget->numPaintEvents, 1);
 }
 #endif
 
@@ -9832,7 +9829,7 @@ public:
         if (!static_cast<QWidgetPrivate*>(d_ptr.data())->maybeRepaintManager()) {
             static_cast<QWidgetPrivate*>(d_ptr.data())->topData()->repaintManager.reset(new QWidgetRepaintManager(this));
             static_cast<QWidgetPrivate*>(d_ptr.data())->invalidateBackingStore(this->rect());
-            repaint();
+            update();
         }
     }
 };
@@ -9855,7 +9852,7 @@ void tst_QWidget::scrollWithoutBackingStore()
     scrollable.scroll(-25,-25);
     QCOMPARE(child.pos(),QPoint(25,25));
     scrollable.enableBackingStore();
-    QCOMPARE(child.pos(),QPoint(25,25));
+    QTRY_COMPARE(child.pos(),QPoint(25,25));
 }
 #endif
 

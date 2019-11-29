@@ -48,8 +48,7 @@
 #ifdef Q_OS_WIN
 #include "qrhid3d11_p_p.h"
 #endif
-//#ifdef Q_OS_DARWIN
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 #include "qrhimetal_p_p.h"
 #endif
 
@@ -2253,9 +2252,7 @@ bool QRhiTexture::buildFrom(const QRhiNativeHandles *src)
 
     \value Repeat
     \value ClampToEdge
-    \value Border
     \value Mirror
-    \value MirrorOnce
  */
 
 /*!
@@ -2320,6 +2317,24 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
 {
     return RenderPassDescriptor;
 }
+
+/*!
+    \fn bool QRhiRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const;
+
+    \return true if the \a other QRhiRenderPassDescriptor is compatible with
+    this one, meaning \c this and \a other can be used interchangebly in
+    QRhiGraphicsPipeline::setRenderPassDescriptor().
+
+    The concept of the compatibility of renderpass descriptors is similar to
+    the \l{QRhiShaderResourceBindings::isLayoutCompatible}{layout
+    compatibility} of QRhiShaderResourceBindings instances. They allow better
+    reuse of QRhiGraphicsPipeline instances: for example, a
+    QRhiGraphicsPipeline instance cache is expected to use these functions to
+    look for a matching pipeline, instead of just comparing pointers, thus
+    allowing a different QRhiRenderPassDescriptor and
+    QRhiShaderResourceBindings to be used in combination with the pipeline, as
+    long as they are compatible.
+ */
 
 /*!
     \return a pointer to a backend-specific QRhiNativeHandles subclass, such as
@@ -4049,8 +4064,7 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
         break;
 #endif
     case Metal:
-//#ifdef Q_OS_DARWIN
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
         r->d = new QRhiMetal(static_cast<QRhiMetalInitParams *>(params),
                              static_cast<QRhiMetalNativeHandles *>(importDevice));
         break;

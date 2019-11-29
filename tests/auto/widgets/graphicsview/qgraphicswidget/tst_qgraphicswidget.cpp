@@ -1186,7 +1186,7 @@ void tst_QGraphicsWidget::layoutDirection()
     for (int i = 0; i < children.count(); ++i) {
         QTRY_COMPARE(children[i]->layoutDirection(), layoutDirection);
         QTRY_COMPARE(children[i]->testAttribute(Qt::WA_SetLayoutDirection), false);
-        view->repaint();
+        view->update();
         QTRY_COMPARE(children[i]->m_painterLayoutDirection, layoutDirection);
     }
 }

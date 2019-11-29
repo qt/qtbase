@@ -2862,12 +2862,8 @@ static inline D3D11_TEXTURE_ADDRESS_MODE toD3DAddressMode(QRhiSampler::AddressMo
         return D3D11_TEXTURE_ADDRESS_WRAP;
     case QRhiSampler::ClampToEdge:
         return D3D11_TEXTURE_ADDRESS_CLAMP;
-    case QRhiSampler::Border:
-        return D3D11_TEXTURE_ADDRESS_BORDER;
     case QRhiSampler::Mirror:
         return D3D11_TEXTURE_ADDRESS_MIRROR;
-    case QRhiSampler::MirrorOnce:
-        return D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
     default:
         Q_UNREACHABLE();
         return D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -2942,6 +2938,12 @@ QD3D11RenderPassDescriptor::~QD3D11RenderPassDescriptor()
 void QD3D11RenderPassDescriptor::release()
 {
     // nothing to do here
+}
+
+bool QD3D11RenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other) const
+{
+    Q_UNUSED(other);
+    return true;
 }
 
 QD3D11ReferenceRenderTarget::QD3D11ReferenceRenderTarget(QRhiImplementation *rhi)

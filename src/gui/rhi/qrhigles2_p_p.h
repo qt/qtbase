@@ -185,6 +185,7 @@ struct QGles2RenderPassDescriptor : public QRhiRenderPassDescriptor
     QGles2RenderPassDescriptor(QRhiImplementation *rhi);
     ~QGles2RenderPassDescriptor();
     void release() override;
+    bool isCompatible(const QRhiRenderPassDescriptor *other) const override;
 };
 
 struct QGles2RenderTargetData

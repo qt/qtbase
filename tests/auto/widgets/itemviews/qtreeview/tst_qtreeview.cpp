@@ -77,6 +77,30 @@ static void initStandardTreeModel(QStandardItemModel *model)
     model->insertRow(2, item);
 }
 
+class TreeView : public QTreeView
+{
+    Q_OBJECT
+public:
+    using QTreeView::QTreeView;
+    using QTreeView::selectedIndexes;
+
+    void paintEvent(QPaintEvent *event) override
+    {
+        QTreeView::paintEvent(event);
+        wasPainted = true;
+    }
+    bool wasPainted = false;
+public slots:
+    void handleSelectionChanged()
+    {
+        //let's select the last item
+        QModelIndex idx = model()->index(0, 0);
+        selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
+        disconnect(selectionModel(), &QItemSelectionModel::selectionChanged,
+                   this, &TreeView::handleSelectionChanged);
+    }
+};
+
 class tst_QTreeView : public QObject
 {
     Q_OBJECT
@@ -2980,7 +3004,7 @@ void tst_QTreeView::evilModel()
 {
     QFETCH(bool, visible);
     // init
-    QTreeView view;
+    TreeView view;
     EvilModel model;
     view.setModel(&model);
     view.setVisible(visible);
@@ -3018,7 +3042,7 @@ void tst_QTreeView::evilModel()
     view.scrollTo(thirdLevel);
     model.change();
 
-    view.repaint();
+    view.update();  // will not do anything since view is not visible
     model.change();
 
     QTest::mouseDClick(view.viewport(), Qt::LeftButton);
@@ -3175,7 +3199,7 @@ void tst_QTreeView::filterProxyModelCrash()
     QSortFilterProxyModel proxy;
     proxy.setSourceModel(&model);
 
-    QTreeView view;
+    TreeView view;
     view.setModel(&proxy);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
@@ -3184,7 +3208,8 @@ void tst_QTreeView::filterProxyModelCrash()
     QTest::qWait(20);
 
     proxy.invalidate();
-    view.repaint(); //used to crash
+    view.update(); //used to crash
+    QTRY_VERIFY(view.wasPainted);
 }
 
 void tst_QTreeView::renderToPixmap_data()
@@ -3652,10 +3677,7 @@ void tst_QTreeView::task220298_selectColumns()
             }
     };
 
-    class TreeView : public QTreeView {
-        public:
-            using QTreeView::selectedIndexes;
-    } view;
+    TreeView view;
     Model model;
     view.setModel(&model);
     view.show();
@@ -4003,20 +4025,6 @@ void tst_QTreeView::task254234_proxySort()
     QCOMPARE(view.model()->data(view.model()->index(0, 1)).toString(), QString::fromLatin1("h"));
     QCOMPARE(view.model()->data(view.model()->index(1, 1)).toString(), QString::fromLatin1("g"));
 }
-
-class TreeView : public QTreeView
-{
-    Q_OBJECT
-public slots:
-    void handleSelectionChanged()
-    {
-        //let's select the last item
-        QModelIndex idx = model()->index(0, 0);
-        selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
-        disconnect(selectionModel(), &QItemSelectionModel::selectionChanged,
-                   this, &TreeView::handleSelectionChanged);
-    }
-};
 
 void tst_QTreeView::task248022_changeSelection()
 {

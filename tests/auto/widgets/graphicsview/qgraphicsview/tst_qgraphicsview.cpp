@@ -358,13 +358,13 @@ void tst_QGraphicsView::renderHints()
     QCOMPARE(item->hints, 0);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    view.repaint();
+    view.update();
     QTRY_COMPARE(item->hints, view.renderHints());
 
     view.setRenderHints(QPainter::Antialiasing);
     QCOMPARE(view.renderHints(), QPainter::Antialiasing);
 
-    view.repaint();
+    view.update();
     QTRY_COMPARE(item->hints, view.renderHints());
 }
 
@@ -2631,13 +2631,12 @@ void tst_QGraphicsView::optimizationFlags()
 class MessUpPainterItem : public QGraphicsRectItem
 {
 public:
-    MessUpPainterItem(const QRectF &rect) : QGraphicsRectItem(rect), dirtyPainter(false)
-    { }
-
-    bool dirtyPainter;
-
+    using QGraphicsRectItem::QGraphicsRectItem;
+    bool dirtyPainter = false;
+    bool receivedPaintEvent = false;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *w)
     {
+        receivedPaintEvent = true;
         dirtyPainter = (painter->pen().color() != w->palette().color(w->foregroundRole()));
         painter->setPen(Qt::red);
     }
@@ -2675,18 +2674,22 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState()
     QGraphicsView view(&scene);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
-    view.viewport()->repaint();
+    parent->receivedPaintEvent = false;
+    child->receivedPaintEvent = false;
+    view.viewport()->update();
 
+    QTRY_VERIFY(parent->receivedPaintEvent);
+    QTRY_VERIFY(child->receivedPaintEvent);
     QVERIFY(!parent->dirtyPainter);
     QVERIFY(!child->dirtyPainter);
 
     view.setOptimizationFlags(QGraphicsView::DontSavePainterState);
-    view.viewport()->repaint();
+    parent->receivedPaintEvent = false;
+    child->receivedPaintEvent = false;
+    view.viewport()->update();
 
-#ifdef Q_OS_MAC
-    // Repaint on OS X actually does require spinning the event loop.
-    QTest::qWait(100);
-#endif
+    QTRY_VERIFY(parent->receivedPaintEvent);
+    QTRY_VERIFY(child->receivedPaintEvent);
     QVERIFY(!parent->dirtyPainter);
     QVERIFY(child->dirtyPainter);
 
@@ -2753,7 +2756,7 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState2()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
     // Make sure the view is repainted; otherwise the tests below will fail.
-    view.viewport()->repaint();
+    view.viewport()->update();
     QTRY_VERIFY(view.painted);
 
     // Make sure the painter's world transform is preserved after drawItems.
@@ -4732,14 +4735,12 @@ void tst_QGraphicsView::QTBUG_5859_exposedRect()
     QGraphicsView view(&scene);
     view.scale(4.15, 4.15);
     view.showNormal();
-    qApp->setActiveWindow(&view);
+    QApplication::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
-    view.viewport()->repaint(10,10,20,20);
-    QApplication::processEvents();
-
-    QCOMPARE(item.lastExposedRect, scene.lastBackgroundExposedRect);
+    view.viewport()->update(10,10,20,20);
+    QTRY_COMPARE(item.lastExposedRect, scene.lastBackgroundExposedRect);
 }
 
 #ifndef QT_NO_CURSOR

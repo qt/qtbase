@@ -45,13 +45,13 @@
 #include "qvector.h"
 #include "qcoreapplication.h"
 #include <private/qkeymapper_p.h>
+#include <QtCore/qloggingcategory.h>
 
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
 
-// To enable verbose output uncomment below
-//#define DEBUG_QSHORTCUTMAP
+Q_LOGGING_CATEGORY(lcShortcutMap, "qt.gui.shortcutmap")
 
 /* \internal
     Entry data for QShortcutMap
@@ -163,11 +163,9 @@ int QShortcutMap::addShortcut(QObject *owner, const QKeySequence &key, Qt::Short
     QShortcutEntry newEntry(owner, key, context, --(d->currentId), true, matcher);
     const auto it = std::upper_bound(d->sequences.begin(), d->sequences.end(), newEntry);
     d->sequences.insert(it, newEntry); // Insert sorted
-#if defined(DEBUG_QSHORTCUTMAP)
-    qDebug().nospace()
+    qCDebug(lcShortcutMap).nospace()
         << "QShortcutMap::addShortcut(" << owner << ", "
         << key << ", " << context << ") = " << d->currentId;
-#endif
     return d->currentId;
 }
 
@@ -210,11 +208,9 @@ int QShortcutMap::removeShortcut(int id, QObject *owner, const QKeySequence &key
             return itemsRemoved;
         --i;
     }
-#if defined(DEBUG_QSHORTCUTMAP)
-    qDebug().nospace()
+    qCDebug(lcShortcutMap).nospace()
         << "QShortcutMap::removeShortcut(" << id << ", " << owner << ", "
         << key << ") = " << itemsRemoved;
-#endif
     return itemsRemoved;
 }
 
@@ -248,11 +244,9 @@ int QShortcutMap::setShortcutEnabled(bool enable, int id, QObject *owner, const 
             return itemsChanged;
         --i;
     }
-#if defined(DEBUG_QSHORTCUTMAP)
-    qDebug().nospace()
+    qCDebug(lcShortcutMap).nospace()
         << "QShortcutMap::setShortcutEnabled(" << enable << ", " << id << ", "
         << owner << ", " << key << ") = " << itemsChanged;
-#endif
     return itemsChanged;
 }
 
@@ -286,11 +280,9 @@ int QShortcutMap::setShortcutAutoRepeat(bool on, int id, QObject *owner, const Q
             return itemsChanged;
         --i;
     }
-#if defined(DEBUG_QSHORTCUTMAP)
-    qDebug().nospace()
+    qCDebug(lcShortcutMap).nospace()
         << "QShortcutMap::setShortcutAutoRepeat(" << on << ", " << id << ", "
         << owner << ", " << key << ") = " << itemsChanged;
-#endif
     return itemsChanged;
 }
 
@@ -393,9 +385,7 @@ QKeySequence::SequenceMatch QShortcutMap::nextState(QKeyEvent *e)
         clearSequence(d->currentSequences);
     d->currentState = result;
 
-#if defined(DEBUG_QSHORTCUTMAP)
-    qDebug().nospace() << "QShortcutMap::nextState(" << e << ") = " << result;
-#endif
+    qCDebug(lcShortcutMap).nospace() << "QShortcutMap::nextState(" << e << ") = " << result;
     return result;
 }
 
@@ -434,9 +424,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
         return QKeySequence::NoMatch;
 
     createNewSequences(e, d->newEntries, ignoredModifiers);
-#if defined(DEBUG_QSHORTCUTMAP)
-    qDebug() << "Possible shortcut key sequences:" << d->newEntries;
-#endif
+    qCDebug(lcShortcutMap) << "Possible shortcut key sequences:" << d->newEntries;
 
     // Should never happen
     if (d->newEntries == d->currentSequences) {
@@ -489,15 +477,11 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
         // previous list. If this match is equal or better than the last match, append to the list
         if (oneKSResult > result) {
             okEntries.clear();
-#if defined(DEBUG_QSHORTCUTMAP)
-            qDebug() << "Found better match (" << d->newEntries << "), clearing key sequence list";
-#endif
+            qCDebug(lcShortcutMap) << "Found better match (" << d->newEntries << "), clearing key sequence list";
         }
         if (oneKSResult && oneKSResult >= result) {
             okEntries << d->newEntries.at(i);
-#if defined(DEBUG_QSHORTCUTMAP)
-            qDebug() << "Added ok key sequence" << d->newEntries;
-#endif
+            qCDebug(lcShortcutMap) << "Added ok key sequence" << d->newEntries;
         }
     }
 
@@ -513,9 +497,7 @@ QKeySequence::SequenceMatch QShortcutMap::find(QKeyEvent *e, int ignoredModifier
     }
     if (result != QKeySequence::NoMatch)
         d->currentSequences = okEntries;
-#if defined(DEBUG_QSHORTCUTMAP)
-    qDebug() << "Returning shortcut match == " << result;
-#endif
+    qCDebug(lcShortcutMap) << "Returning shortcut match == " << result;
     return QKeySequence::SequenceMatch(result);
 }
 
@@ -538,19 +520,16 @@ void QShortcutMap::createNewSequences(QKeyEvent *e, QVector<QKeySequence> &ksl, 
 {
     Q_D(QShortcutMap);
     QList<int> possibleKeys = QKeyMapper::possibleKeys(e);
-#if defined(DEBUG_QSHORTCUTMAP)
-    {
-        QDebug debug = qDebug().nospace();
-        debug << __FUNCTION__ << '(' << e << ", ignoredModifiers="
+    if (lcShortcutMap().isDebugEnabled()) {
+        qCDebug(lcShortcutMap).nospace() << __FUNCTION__ << '(' << e << ", ignoredModifiers="
             << Qt::KeyboardModifiers(ignoredModifiers) << "), possibleKeys=(";
         for (int i = 0, size = possibleKeys.size(); i < size; ++i) {
             if (i)
-                debug << ", ";
-            debug << QKeySequence(possibleKeys.at(i));
+                qCDebug(lcShortcutMap).nospace() << ", ";
+            qCDebug(lcShortcutMap).nospace() << QKeySequence(possibleKeys.at(i));
         }
-        debug << ')';
+        qCDebug(lcShortcutMap).nospace() << ')';
     }
-#endif // DEBUG_QSHORTCUTMAP
     int pkTotal = possibleKeys.count();
     if (!pkTotal)
         return;
@@ -659,16 +638,13 @@ void QShortcutMap::dispatchEvent(QKeyEvent *e)
     // Find next
     const QShortcutEntry *current = 0, *next = 0;
     int i = 0, enabledShortcuts = 0;
-#if defined(DEBUG_QSHORTCUTMAP)
     QVector<const QShortcutEntry*> ambiguousShortcuts;
-#endif
     while(i < d->identicals.size()) {
         current = d->identicals.at(i);
         if (current->enabled || !next){
             ++enabledShortcuts;
-#if defined(DEBUG_QSHORTCUTMAP)
-            ambiguousShortcuts.append(current);
-#endif
+            if (lcShortcutMap().isDebugEnabled())
+                ambiguousShortcuts.append(current);
             if (enabledShortcuts > d->ambigCount + 1)
                 break;
             next = current;
@@ -681,19 +657,18 @@ void QShortcutMap::dispatchEvent(QKeyEvent *e)
     if (!next || (e->isAutoRepeat() && !next->autorepeat))
         return;
     // Dispatch next enabled
-#if defined(DEBUG_QSHORTCUTMAP)
-    if (ambiguousShortcuts.size() > 1) {
-        qDebug() << "The following shortcuts are about to be activated ambiguously:";
-        for (const QShortcutEntry *entry : qAsConst(ambiguousShortcuts)) {
-            qDebug().nospace() << "- " << entry->keyseq << " (belonging to " << entry->owner << ")";
+    if (lcShortcutMap().isDebugEnabled()) {
+        if (ambiguousShortcuts.size() > 1) {
+            qCDebug(lcShortcutMap) << "The following shortcuts are about to be activated ambiguously:";
+            for (const QShortcutEntry *entry : qAsConst(ambiguousShortcuts))
+                qCDebug(lcShortcutMap).nospace() << "- " << entry->keyseq << " (belonging to " << entry->owner << ")";
         }
-    }
 
-    qDebug().nospace()
-        << "QShortcutMap::dispatchEvent(): Sending QShortcutEvent(\""
-        << next->keyseq.toString() << "\", " << next->id << ", "
-        << (bool)(enabledShortcuts>1) << ") to object(" << next->owner << ')';
-#endif
+        qCDebug(lcShortcutMap).nospace()
+            << "QShortcutMap::dispatchEvent(): Sending QShortcutEvent(\""
+            << next->keyseq.toString() << "\", " << next->id << ", "
+            << static_cast<bool>(enabledShortcuts>1) << ") to object(" << next->owner << ')';
+    }
     QShortcutEvent se(next->keyseq, next->id, enabledShortcuts>1);
     QCoreApplication::sendEvent(const_cast<QObject *>(next->owner), &se);
 }
