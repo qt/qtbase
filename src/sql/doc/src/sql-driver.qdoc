@@ -48,7 +48,7 @@
     \header \li Driver name \li DBMS
     \row \li \l{#QDB2}{QDB2} \li IBM DB2 (version 7.1 and above)
     \row \li \l{#QIBASE}{QIBASE} \li Borland InterBase
-    \row \li \l{#QMYSQL}{QMYSQL} \li MySQL
+    \row \li \l{#QMYSQL}{QMYSQL} \li MySQL (version 5.0 and above)
     \row \li \l{#QOCI}{QOCI} \li Oracle Call Interface Driver
     \row \li \l{#QODBC}{QODBC}
          \li Open Database Connectivity (ODBC) - Microsoft SQL Server and other
@@ -70,7 +70,8 @@
     access to the API exposed by the DBMS, and is typically shipped with it.
     Most installation programs also allow you to install "development
     libraries", and these are what you need. These libraries are responsible
-    for the low-level communication with the DBMS.
+    for the low-level communication with the DBMS. Also make sure to install
+    the correct database libraries for your Qt architecture (32 or 64 bit).
 
     \note When using Qt under Open Source terms but with a proprietary
     database, verify the client library's license compatibility with
@@ -91,10 +92,20 @@
     may be necessary to specify these paths using the \c *_INCDIR=,
     \c *_LIBDIR=, or \c *_PREFIX= command-line options. For example,
     if your MySQL files are installed in \c /usr/local/mysql (or in
-    \c{C:\mysql} on Windows), then pass the following parameter to
-    configure: \c MYSQL_PREFIX=/usr/local/mysql
-    (or \c{MYSQL_PREFIX=C:\mysql} for Windows).
+    \c{C:/Program Files/MySQL/MySQL Connector C 6.1} on Windows), then pass the
+    following parameter to configure: \c MYSQL_PREFIX=/usr/local/mysql
+    (or \c{MYSQL_PREFIX="C:/Program Files/MySQL/MySQL Connector C 6.1"} for Windows).
     The particulars for each driver are explained below.
+
+    If something goes wrong and you want qmake to recheck your
+    available drivers, you must remove \e{config.cache} in
+    \e{<QTDIR>/qtbase/src/plugins/sqldrivers} - otherwise qmake will not
+    search for the available drivers again. If you encounter an error during
+    the qmake stage, open \e{config.log} to see what went wrong.
+
+    A typical qmake run (in this case to configure for MySQL) looks like this:
+
+    \snippet code/doc_src_sql-driver.qdoc 41
 
     Due to the practicalities of dealing with external dependencies,
     only the SQLite3 plugin is shipped with binary builds of Qt.
@@ -112,11 +123,11 @@
     \section1 Driver Specifics
 
     \target QMYSQL
-    \section2 QMYSQL for MySQL 4 and higher
+    \section2 QMYSQL for MySQL 5 and higher
 
     \section3 QMYSQL Stored Procedure Support
 
-    MySQL 5 introduces stored procedure support at the SQL level, but no
+    MySQL 5 has stored procedure support at the SQL level, but no
     API to control IN, OUT, and INOUT parameters. Therefore, parameters
     have to be set and read using SQL commands instead of QSqlQuery::bindValue().
 
@@ -159,15 +170,31 @@
 
     \section3 How to Build the QMYSQL Plugin on Windows
 
-    You need to get the MySQL installation files. Run \c SETUP.EXE and
-    choose "Custom Install". Install the "Libs & Include Files" Module.
-    Build the plugin as follows (here it is assumed that MySQL is
-    installed in \c{C:\MySQL}):
+    You need to get the MySQL installation files (e.g.
+    \e{mysql-installer-web-community-8.0.18.0.msi}). Run the installer,
+    select custom installation and install the MySQL C Connector
+    which matches your Qt installation (x86 or x64).
+    After installation make sure that the needed files are there:
+    \list
+    \li \c {<MySQL dir>/lib/libmysql.lib}
+    \li \c {<MySQL dir>/lib/libmysql.dll}
+    \li \c {<MySQL dir>/include/mysql.h}
+    \endlist
+
+    Build the plugin as follows (here it is assumed that the MySQL
+    C Connector is installed in
+    \c{C:/Program Files/MySQL/MySQL Connector C 6.1}):
 
     \snippet code/doc_src_sql-driver.qdoc 5
 
     If you are not using a Microsoft compiler, replace \c nmake with \c
     mingw32-make in the line above.
+
+    When you distribute your application, remember to include libmysql.dll
+    in your installation package. It must be placed in the same folder
+    as the application executable. libmysql.dll additionally needs the
+    MSVC runtime libraries which can be installed with vcredist.exe
+    (\l {https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads}(vcredist.exe)
 
     \target QOCI
     \section2 QOCI for the Oracle Call Interface (OCI)
@@ -398,11 +425,6 @@
 
     \snippet code/doc_src_sql-driver.qdoc 40
 
-    \section3 QPSQL BLOB Support
-
-    Binary Large Objects are supported through the \c BYTEA field type in
-    PostgreSQL server versions >= 7.1.
-
     \section3 QPSQL Forward-only query support
 
     To use forward-only queries, you must build the QPSQL plugin with
@@ -462,6 +484,10 @@
 
     Users of MinGW may wish to consult the following online document:
     \l{http://www.postgresql.org/docs/current/static/installation-platform-notes.html#INSTALLATION-NOTES-MINGW}{PostgreSQL MinGW/Native Windows}.
+
+    When you distribute your application, remember to include libpq.dll
+    in your installation package. It must be placed in the same folder
+    as the application executable.
 
     \target QTDS
     \section2 QTDS for Sybase Adaptive Server
