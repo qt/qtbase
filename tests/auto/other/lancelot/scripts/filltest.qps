@@ -133,7 +133,7 @@ setPen nopen
 
 translate 50 0
 
-begin_block rects
+begin_block rects2
 drawPath rect
 drawRect 0 20 10 10
 drawImage img 0 40
@@ -154,59 +154,59 @@ translate 10 20
 rotate 90
 drawRect 0 0 10 10
 restore
-end_block rects
+end_block rects2
 
 setPen red
 drawText -5 -10 "0.0"
 setPen nopen
 
 translate 40 0.1
-repeat_block rects
+repeat_block rects2
 setPen red
 drawText -5 -10 "0.1"
 setPen nopen
 translate 40 0.1
-repeat_block rects
+repeat_block rects2
 setPen red
 drawText -5 -10 "0.2"
 setPen nopen
 translate 40 0.1
-repeat_block rects
+repeat_block rects2
 setPen red
 drawText -5 -10 "0.3"
 setPen nopen
 translate 40 0.1
-repeat_block rects
+repeat_block rects2
 setPen red
 drawText -5 -10 "0.4"
 setPen nopen
 translate 40 0.1
-repeat_block rects
+repeat_block rects2
 setPen red
 drawText -5 -10 "0.5"
 setPen nopen
 translate 40 0.1
-repeat_block rects
+repeat_block rects2
 setPen red
 drawText -5 -10 "0.6"
 setPen nopen
 translate 40 0.1
-repeat_block rects
+repeat_block rects2
 setPen red
 drawText -5 -10 "0.7"
 setPen nopen
 translate 40 0.1
-repeat_block rects
+repeat_block rects2
 setPen red
 drawText -5 -10 "0.8"
 setPen nopen
 translate 40 0.1
-repeat_block rects
+repeat_block rects2
 setPen red
 drawText -5 -10 "0.9"
 setPen nopen
 translate 40 0.1
-repeat_block rects
+repeat_block rects2
 setPen red
 drawText -5 -10 "1.0"
 setPen nopen

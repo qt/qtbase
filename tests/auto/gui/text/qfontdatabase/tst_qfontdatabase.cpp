@@ -76,6 +76,9 @@ private slots:
     void rasterFonts();
     void smoothFonts();
 
+    void registerOpenTypePreferredNamesSystem();
+    void registerOpenTypePreferredNamesApplication();
+
 private:
     QString m_ledFont;
     QString m_testFont;
@@ -438,6 +441,32 @@ void tst_QFontDatabase::smoothFonts()
     // Smooth and bitmap scaling are mutually exclusive
     QVERIFY(QFontDatabase().isSmoothlyScalable(font.family()));
     QVERIFY(!QFontDatabase().isBitmapScalable(font.family()));
+}
+
+void tst_QFontDatabase::registerOpenTypePreferredNamesSystem()
+{
+    QFontDatabase db;
+    // This font family was picked because it was the only one I had installed which showcased the
+    // problem
+    if (!db.hasFamily(QString::fromLatin1("Source Code Pro ExtraLight")))
+        QSKIP("Source Code Pro ExtraLight is not installed");
+
+    QStringList styles = db.styles(QString::fromLatin1("Source Code Pro"));
+    QVERIFY(styles.contains(QLatin1String("ExtraLight")));
+}
+
+void tst_QFontDatabase::registerOpenTypePreferredNamesApplication()
+{
+    QFontDatabase db;
+
+    int id = QFontDatabase::addApplicationFont(QString::fromLatin1(":/testfont_open.otf"));
+    if (id == -1)
+        QSKIP("Skip the test since app fonts are not supported on this system");
+
+    QStringList styles = db.styles(QString::fromLatin1("QtBidiTestFont"));
+    QVERIFY(styles.contains(QLatin1String("Open")));
+
+    QFontDatabase::removeApplicationFont(id);
 }
 
 QTEST_MAIN(tst_QFontDatabase)

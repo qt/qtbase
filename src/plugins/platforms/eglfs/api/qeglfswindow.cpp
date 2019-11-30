@@ -66,8 +66,7 @@ QEglFSWindow::QEglFSWindow(QWindow *w)
 #endif
       m_winId(0),
       m_surface(EGL_NO_SURFACE),
-      m_window(0),
-      m_flags(0)
+      m_window(0)
 {
 }
 

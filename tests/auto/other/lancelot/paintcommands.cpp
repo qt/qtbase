@@ -230,9 +230,9 @@ void PaintCommands::staticInit()
                       "begin_block <blockName>",
                       "begin_block blockName");
     DECL_PAINTCOMMAND("end_block", command_end_block,
-                      "^end_block$",
-                      "end_block",
-                      "end_block");
+                      "^end_block\\s*(\\w*)$",
+                      "end_block [blockName]",
+                      "end_block blockName");
     DECL_PAINTCOMMAND("repeat_block", command_repeat_block,
                       "^repeat_block\\s+(\\w*)$",
                       "repeat_block <blockName>",
@@ -744,6 +744,13 @@ void PaintCommands::runCommands()
     if (height <= 0)
         height = 800;
 
+    m_pathMap.clear();
+    m_imageMap.clear();
+    m_pixmapMap.clear();
+    m_regionMap.clear();
+    m_gradientStops.clear();
+    m_blockMap.clear();
+
     // paint background
     if (m_checkers_background) {
         QPixmap pm(20, 20);
@@ -901,6 +908,8 @@ void PaintCommands::command_begin_block(QRegularExpressionMatch re)
     const QString &blockName = re.captured(1);
     if (m_verboseMode)
         printf(" -(lance) begin_block (%s)\n", qPrintable(blockName));
+    if (m_blockMap.contains(blockName))
+        qFatal("Two blocks named (%s)", qPrintable(blockName));
 
     m_commands[m_currentCommandIndex] = QLatin1String("# begin block (") + blockName + QLatin1Char(')');
     QStringList newBlock;
