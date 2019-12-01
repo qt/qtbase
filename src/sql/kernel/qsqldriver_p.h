@@ -63,19 +63,16 @@ class QSqlDriverPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QSqlDriver)
 
 public:
-    QSqlDriverPrivate()
-      : QObjectPrivate(),
-        isOpen(false),
-        isOpenError(false),
-        precisionPolicy(QSql::LowPrecisionDouble),
-        dbmsType(QSqlDriver::UnknownDbms)
-    { }
+    QSqlDriverPrivate(QSqlDriver::DbmsType dbmstype = QSqlDriver::UnknownDbms)
+      : QObjectPrivate()
+      , dbmsType(dbmstype)
+    {}
 
-    uint isOpen;
-    uint isOpenError;
     QSqlError error;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
+    QSql::NumericalPrecisionPolicy precisionPolicy = QSql::LowPrecisionDouble;
     QSqlDriver::DbmsType dbmsType;
+    bool isOpen = false;
+    bool isOpenError = false;
 };
 
 QT_END_NAMESPACE

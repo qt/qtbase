@@ -101,7 +101,8 @@ class Q_SQL_EXPORT QSqlCachedResultPrivate: public QSqlResultPrivate
     Q_DECLARE_PUBLIC(QSqlCachedResult)
 
 public:
-    QSqlCachedResultPrivate(QSqlCachedResult *q, const QSqlDriver *drv);
+    using QSqlResultPrivate::QSqlResultPrivate;
+
     bool canSeek(int i) const;
     inline int cacheCount() const;
     void init(int count, bool fo);
@@ -110,9 +111,9 @@ public:
     void revertLast();
 
     QSqlCachedResult::ValueCache cache;
-    int rowCacheEnd;
-    int colCount;
-    bool atEnd;
+    int rowCacheEnd = 0;
+    int colCount = 0;
+    bool atEnd = false;
 };
 
 QT_END_NAMESPACE
