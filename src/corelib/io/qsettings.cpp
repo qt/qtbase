@@ -396,12 +396,12 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
 {
     QString result;
 
-    switch (v.type()) {
-        case QVariant::Invalid:
+    switch (v.userType()) {
+        case QMetaType::UnknownType:
             result = QLatin1String("@Invalid()");
             break;
 
-        case QVariant::ByteArray: {
+        case QMetaType::QByteArray: {
             QByteArray a = v.toByteArray();
             result = QLatin1String("@ByteArray(")
                      + QLatin1String(a.constData(), a.size())
@@ -409,14 +409,14 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
             break;
         }
 
-        case QVariant::String:
-        case QVariant::LongLong:
-        case QVariant::ULongLong:
-        case QVariant::Int:
-        case QVariant::UInt:
-        case QVariant::Bool:
-        case QVariant::Double:
-        case QVariant::KeySequence: {
+        case QMetaType::QString:
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+        case QMetaType::Int:
+        case QMetaType::UInt:
+        case QMetaType::Bool:
+        case QMetaType::Double:
+        case QMetaType::QKeySequence: {
             result = v.toString();
             if (result.contains(QChar::Null))
                 result = QLatin1String("@String(") + result + QLatin1Char(')');
@@ -425,17 +425,17 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
             break;
         }
 #ifndef QT_NO_GEOM_VARIANT
-        case QVariant::Rect: {
+        case QMetaType::QRect: {
             QRect r = qvariant_cast<QRect>(v);
             result = QString::asprintf("@Rect(%d %d %d %d)", r.x(), r.y(), r.width(), r.height());
             break;
         }
-        case QVariant::Size: {
+        case QMetaType::QSize: {
             QSize s = qvariant_cast<QSize>(v);
             result = QString::asprintf("@Size(%d %d)", s.width(), s.height());
             break;
         }
-        case QVariant::Point: {
+        case QMetaType::QPoint: {
             QPoint p = qvariant_cast<QPoint>(v);
             result = QString::asprintf("@Point(%d %d)", p.x(), p.y());
             break;
@@ -446,7 +446,7 @@ QString QSettingsPrivate::variantToString(const QVariant &v)
 #ifndef QT_NO_DATASTREAM
             QDataStream::Version version;
             const char *typeSpec;
-            if (v.type() == QVariant::DateTime) {
+            if (v.userType() == QMetaType::QDateTime) {
                 version = QDataStream::Qt_5_6;
                 typeSpec = "@DateTime(";
             } else {
@@ -1888,8 +1888,8 @@ bool QConfFileSettingsPrivate::writeIniFile(QIODevice &device, const ParsedSetti
                 QVariant(QString("foo")).toList() returns an empty
                 list, not a list containing "foo".
             */
-            if (value.type() == QVariant::StringList
-                    || (value.type() == QVariant::List && value.toList().size() != 1)) {
+            if (value.userType() == QMetaType::QStringList
+                    || (value.userType() == QMetaType::QVariantList && value.toList().size() != 1)) {
                 iniEscapedStringList(variantListToStringList(value.toList()), block, iniCodec);
             } else {
                 iniEscapedString(variantToString(value), block, iniCodec);

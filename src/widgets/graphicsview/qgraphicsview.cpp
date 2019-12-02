@@ -2589,13 +2589,13 @@ QVariant QGraphicsView::inputMethodQuery(Qt::InputMethodQuery query) const
         return QVariant();
 
     QVariant value = d->scene->inputMethodQuery(query);
-    if (value.type() == QVariant::RectF)
+    if (value.userType() == QMetaType::QRectF)
         value = d->mapRectFromScene(value.toRectF());
-    else if (value.type() == QVariant::PointF)
+    else if (value.userType() == QMetaType::QPointF)
         value = mapFromScene(value.toPointF());
-    else if (value.type() == QVariant::Rect)
+    else if (value.userType() == QMetaType::QRect)
         value = d->mapRectFromScene(value.toRect()).toRect();
-    else if (value.type() == QVariant::Point)
+    else if (value.userType() == QMetaType::QPoint)
         value = mapFromScene(value.toPoint());
     return value;
 }

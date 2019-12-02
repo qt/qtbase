@@ -218,7 +218,7 @@ template<> inline char *toString(const QVariant &v)
         vstring.append(type);
         if (!v.isNull()) {
             vstring.append(',');
-            if (v.canConvert(QVariant::String)) {
+            if (v.canConvert(QMetaType::QString)) {
                 vstring.append(v.toString().toLocal8Bit());
             }
             else {

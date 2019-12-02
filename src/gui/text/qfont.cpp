@@ -1753,7 +1753,7 @@ bool QFont::operator!=(const QFont &f) const
 */
 QFont::operator QVariant() const
 {
-    return QVariant(QVariant::Font, this);
+    return QVariant(QMetaType::QFont, this);
 }
 
 /*!

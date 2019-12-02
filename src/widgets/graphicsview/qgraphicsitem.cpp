@@ -10511,13 +10511,13 @@ QVariant QGraphicsTextItem::inputMethodQuery(Qt::InputMethodQuery query) const
         v = int(inputMethodHints());
     else if (dd->control)
         v = dd->control->inputMethodQuery(query, QVariant());
-    if (v.type() == QVariant::RectF)
+    if (v.userType() == QMetaType::QRectF)
         v = v.toRectF().translated(-dd->controlOffset());
-    else if (v.type() == QVariant::PointF)
+    else if (v.userType() == QMetaType::QPointF)
         v = v.toPointF() - dd->controlOffset();
-    else if (v.type() == QVariant::Rect)
+    else if (v.userType() == QMetaType::QRect)
         v = v.toRect().translated(-dd->controlOffset().toPoint());
-    else if (v.type() == QVariant::Point)
+    else if (v.userType() == QMetaType::QPoint)
         v = v.toPoint() - dd->controlOffset().toPoint();
     return v;
 }

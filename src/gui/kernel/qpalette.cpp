@@ -714,7 +714,7 @@ QPalette &QPalette::operator=(const QPalette &p)
 */
 QPalette::operator QVariant() const
 {
-    return QVariant(QVariant::Palette, this);
+    return QVariant(QMetaType::QPalette, this);
 }
 
 /*!

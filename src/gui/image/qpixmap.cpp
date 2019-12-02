@@ -402,7 +402,7 @@ QPixmap &QPixmap::operator=(const QPixmap &pixmap)
 */
 QPixmap::operator QVariant() const
 {
-    return QVariant(QVariant::Pixmap, this);
+    return QVariant(QMetaType::QPixmap, this);
 }
 
 /*!

@@ -144,11 +144,11 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
         menuOption.menuItemType = QStyleOptionMenuItem::Normal;
 
     QVariant variant = index.model()->data(index, Qt::DecorationRole);
-    switch (variant.type()) {
-    case QVariant::Icon:
+    switch (variant.userType()) {
+    case QMetaType::QIcon:
         menuOption.icon = qvariant_cast<QIcon>(variant);
         break;
-    case QVariant::Color: {
+    case QMetaType::QColor: {
         static QPixmap pixmap(option.decorationSize);
         pixmap.fill(qvariant_cast<QColor>(variant));
         menuOption.icon = pixmap;
@@ -1888,7 +1888,7 @@ void QComboBoxPrivate::updateDelegate(bool force)
 QIcon QComboBoxPrivate::itemIcon(const QModelIndex &index) const
 {
     QVariant decoration = model->data(index, Qt::DecorationRole);
-    if (decoration.type() == QVariant::Pixmap)
+    if (decoration.userType() == QMetaType::QPixmap)
         return QIcon(qvariant_cast<QPixmap>(decoration));
     else
         return qvariant_cast<QIcon>(decoration);

@@ -447,29 +447,29 @@ QJsonValue QJsonValue::fromVariant(const QVariant &variant)
     switch (variant.userType()) {
     case QMetaType::Nullptr:
         return QJsonValue(Null);
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return QJsonValue(variant.toBool());
-    case QVariant::Int:
+    case QMetaType::Int:
     case QMetaType::Float:
-    case QVariant::Double:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-    case QVariant::UInt:
+    case QMetaType::Double:
+    case QMetaType::LongLong:
+    case QMetaType::ULongLong:
+    case QMetaType::UInt:
         return QJsonValue(variant.toDouble());
-    case QVariant::String:
+    case QMetaType::QString:
         return QJsonValue(variant.toString());
-    case QVariant::StringList:
+    case QMetaType::QStringList:
         return QJsonValue(QJsonArray::fromStringList(variant.toStringList()));
-    case QVariant::List:
+    case QMetaType::QVariantList:
         return QJsonValue(QJsonArray::fromVariantList(variant.toList()));
-    case QVariant::Map:
+    case QMetaType::QVariantMap:
         return QJsonValue(QJsonObject::fromVariantMap(variant.toMap()));
-    case QVariant::Hash:
+    case QMetaType::QVariantHash:
         return QJsonValue(QJsonObject::fromVariantHash(variant.toHash()));
 #ifndef QT_BOOTSTRAPPED
-    case QVariant::Url:
+    case QMetaType::QUrl:
         return QJsonValue(variant.toUrl().toString(QUrl::FullyEncoded));
-    case QVariant::Uuid:
+    case QMetaType::QUuid:
         return variant.toUuid().toString(QUuid::WithoutBraces);
     case QMetaType::QJsonValue:
         return variant.toJsonValue();

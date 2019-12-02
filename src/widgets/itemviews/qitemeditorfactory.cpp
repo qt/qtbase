@@ -241,21 +241,21 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
 {
     switch (userType) {
 #if QT_CONFIG(combobox)
-    case QVariant::Bool: {
+    case QMetaType::Bool: {
         QBooleanComboBox *cb = new QBooleanComboBox(parent);
         cb->setFrame(false);
         cb->setSizePolicy(QSizePolicy::Ignored, cb->sizePolicy().verticalPolicy());
         return cb; }
 #endif
 #if QT_CONFIG(spinbox)
-    case QVariant::UInt: {
+    case QMetaType::UInt: {
         QSpinBox *sb = new QUIntSpinBox(parent);
         sb->setFrame(false);
         sb->setMinimum(0);
         sb->setMaximum(INT_MAX);
         sb->setSizePolicy(QSizePolicy::Ignored, sb->sizePolicy().verticalPolicy());
         return sb; }
-    case QVariant::Int: {
+    case QMetaType::Int: {
         QSpinBox *sb = new QSpinBox(parent);
         sb->setFrame(false);
         sb->setMinimum(INT_MIN);
@@ -264,25 +264,25 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
         return sb; }
 #endif
 #if QT_CONFIG(datetimeedit)
-    case QVariant::Date: {
+    case QMetaType::QDate: {
         QDateTimeEdit *ed = new QDateEdit(parent);
         ed->setFrame(false);
         return ed; }
-    case QVariant::Time: {
+    case QMetaType::QTime: {
         QDateTimeEdit *ed = new QTimeEdit(parent);
         ed->setFrame(false);
         return ed; }
-    case QVariant::DateTime: {
+    case QMetaType::QDateTime: {
         QDateTimeEdit *ed = new QDateTimeEdit(parent);
         ed->setFrame(false);
         return ed; }
 #endif
 #if QT_CONFIG(label)
-    case QVariant::Pixmap:
+    case QMetaType::QPixmap:
         return new QLabel(parent);
 #endif
 #if QT_CONFIG(spinbox)
-    case QVariant::Double: {
+    case QMetaType::Double: {
         QDoubleSpinBox *sb = new QDoubleSpinBox(parent);
         sb->setFrame(false);
         sb->setMinimum(-DBL_MAX);
@@ -291,7 +291,7 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
         return sb; }
 #endif
 #if QT_CONFIG(lineedit)
-    case QVariant::String:
+    case QMetaType::QString:
     default: {
         // the default editor is a lineedit
         QExpandingLineEdit *le = new QExpandingLineEdit(parent);
@@ -311,24 +311,24 @@ QByteArray QDefaultItemEditorFactory::valuePropertyName(int userType) const
 {
     switch (userType) {
 #if QT_CONFIG(combobox)
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return "currentIndex";
 #endif
 #if QT_CONFIG(spinbox)
-    case QVariant::UInt:
-    case QVariant::Int:
-    case QVariant::Double:
+    case QMetaType::UInt:
+    case QMetaType::Int:
+    case QMetaType::Double:
         return "value";
 #endif
 #if QT_CONFIG(datetimeedit)
-    case QVariant::Date:
+    case QMetaType::QDate:
         return "date";
-    case QVariant::Time:
+    case QMetaType::QTime:
         return "time";
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         return "dateTime";
 #endif
-    case QVariant::String:
+    case QMetaType::QString:
     default:
         // the default editor is a lineedit
         return "text";

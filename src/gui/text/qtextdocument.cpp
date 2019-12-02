@@ -2234,7 +2234,7 @@ QVariant QTextDocument::loadResource(int type, const QUrl &name)
     }
 
     if (!r.isNull()) {
-        if (type == ImageResource && r.type() == QVariant::ByteArray) {
+        if (type == ImageResource && r.userType() == QMetaType::QByteArray) {
             if (qApp->thread() != QThread::currentThread()) {
                 // must use images in non-GUI threads
                 QImage image;
@@ -3049,12 +3049,12 @@ QString QTextHtmlExporter::findUrlForImage(const QTextDocument *doc, qint64 cach
         for (; it != priv->cachedResources.constEnd(); ++it) {
 
             const QVariant &v = it.value();
-            if (v.type() == QVariant::Image && !isPixmap) {
+            if (v.userType() == QMetaType::QImage && !isPixmap) {
                 if (qvariant_cast<QImage>(v).cacheKey() == cacheKey)
                     break;
             }
 
-            if (v.type() == QVariant::Pixmap && isPixmap) {
+            if (v.userType() == QMetaType::QPixmap && isPixmap) {
                 if (qvariant_cast<QPixmap>(v).cacheKey() == cacheKey)
                     break;
             }

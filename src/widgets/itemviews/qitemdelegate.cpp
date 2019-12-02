@@ -414,7 +414,7 @@ void QItemDelegate::paint(QPainter *painter,
     if (value.isValid()) {
         // ### we need the pixmap to call the virtual function
         pixmap = decoration(opt, value);
-        if (value.type() == QVariant::Icon) {
+        if (value.userType() == QMetaType::QIcon) {
             d->tmp.icon = qvariant_cast<QIcon>(value);
             d->tmp.mode = d->iconMode(option.state);
             d->tmp.state = d->iconState(option.state);
@@ -969,12 +969,12 @@ void QItemDelegate::doLayout(const QStyleOptionViewItem &option,
 QPixmap QItemDelegate::decoration(const QStyleOptionViewItem &option, const QVariant &variant) const
 {
     Q_D(const QItemDelegate);
-    switch (variant.type()) {
-    case QVariant::Icon: {
+    switch (variant.userType()) {
+    case QMetaType::QIcon: {
         QIcon::Mode mode = d->iconMode(option.state);
         QIcon::State state = d->iconState(option.state);
         return qvariant_cast<QIcon>(variant).pixmap(option.decorationSize, mode, state); }
-    case QVariant::Color: {
+    case QMetaType::QColor: {
         static QPixmap pixmap(option.decorationSize);
         pixmap.fill(qvariant_cast<QColor>(variant));
         return pixmap; }
@@ -1060,24 +1060,24 @@ QRect QItemDelegate::rect(const QStyleOptionViewItem &option,
     if (role == Qt::CheckStateRole)
         return doCheck(option, option.rect, value);
     if (value.isValid() && !value.isNull()) {
-        switch (value.type()) {
-        case QVariant::Invalid:
+        switch (value.userType()) {
+        case QMetaType::UnknownType:
             break;
-        case QVariant::Pixmap: {
+        case QMetaType::QPixmap: {
             const QPixmap &pixmap = qvariant_cast<QPixmap>(value);
             return QRect(QPoint(0, 0), pixmap.size() / pixmap.devicePixelRatio() ); }
-        case QVariant::Image: {
+        case QMetaType::QImage: {
             const QImage &image = qvariant_cast<QImage>(value);
             return QRect(QPoint(0, 0), image.size() /  image.devicePixelRatio() ); }
-        case QVariant::Icon: {
+        case QMetaType::QIcon: {
             QIcon::Mode mode = d->iconMode(option.state);
             QIcon::State state = d->iconState(option.state);
             QIcon icon = qvariant_cast<QIcon>(value);
             QSize size = icon.actualSize(option.decorationSize, mode, state);
             return QRect(QPoint(0, 0), size); }
-        case QVariant::Color:
+        case QMetaType::QColor:
             return QRect(QPoint(0, 0), option.decorationSize);
-        case QVariant::String:
+        case QMetaType::QString:
         default: {
             const QString text = d->valueToText(value, option);
             value = index.data(Qt::FontRole);

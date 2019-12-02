@@ -2982,7 +2982,7 @@ int QMetaProperty::userType() const
         if (type == QMetaType::UnknownType) {
             type = registerPropertyType();
             if (type == QMetaType::UnknownType)
-                return QVariant::Int; // Match behavior of QMetaType::type()
+                return QMetaType::Int; // Match behavior of QMetaType::type()
         }
         return type;
     }
@@ -3100,7 +3100,7 @@ QVariant QMetaProperty::read(const QObject *object) const
     if (!object || !mobj)
         return QVariant();
 
-    uint t = QVariant::Int;
+    uint t = QMetaType::Int;
     if (isEnumType()) {
         /*
           try to create a QVariant that can be converted to this enum
@@ -3177,9 +3177,9 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
         return false;
 
     QVariant v = value;
-    uint t = QVariant::Invalid;
+    uint t = QMetaType::UnknownType;
     if (isEnumType()) {
-        if (v.type() == QVariant::String) {
+        if (v.userType() == QMetaType::QString) {
             bool ok;
             if (isFlagType())
                 v = QVariant(menum.keysToValue(value.toByteArray(), &ok));
@@ -3187,13 +3187,13 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
                 v = QVariant(menum.keyToValue(value.toByteArray(), &ok));
             if (!ok)
                 return false;
-        } else if (v.type() != QVariant::Int && v.type() != QVariant::UInt) {
+        } else if (v.userType() != QMetaType::Int && v.userType() != QMetaType::UInt) {
             int enumMetaTypeId = QMetaType::type(qualifiedName(menum));
             if ((enumMetaTypeId == QMetaType::UnknownType) || (v.userType() != enumMetaTypeId) || !v.constData())
                 return false;
             v = QVariant(*reinterpret_cast<const int *>(v.constData()));
         }
-        v.convert(QVariant::Int);
+        v.convert(QMetaType::Int);
     } else {
         int handle = priv(mobj->d.data)->propertyData + 3*idx;
         const char *typeName = nullptr;

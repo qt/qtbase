@@ -218,7 +218,7 @@ QBitmap::~QBitmap()
 */
 QBitmap::operator QVariant() const
 {
-    return QVariant(QVariant::Bitmap, this);
+    return QVariant(QMetaType::QBitmap, this);
 }
 
 static QBitmap makeBitmap(QImage &&image, Qt::ImageConversionFlags flags)

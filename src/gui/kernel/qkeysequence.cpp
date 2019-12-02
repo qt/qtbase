@@ -1404,7 +1404,7 @@ QKeySequence::SequenceMatch QKeySequence::matches(const QKeySequence &seq) const
 */
 QKeySequence::operator QVariant() const
 {
-    return QVariant(QVariant::KeySequence, this);
+    return QVariant(QMetaType::QKeySequence, this);
 }
 
 /*! \fn QKeySequence::operator int () const

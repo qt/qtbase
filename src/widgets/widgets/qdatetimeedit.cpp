@@ -195,11 +195,19 @@ QDateTimeEdit::QDateTimeEdit(const QTime &time, QWidget *parent)
     d->init(time.isValid() ? time : QDATETIMEEDIT_TIME_MIN);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 /*!
   \internal
 */
-
 QDateTimeEdit::QDateTimeEdit(const QVariant &var, QVariant::Type parserType, QWidget *parent)
+    : QDateTimeEdit(var, QMetaType::Type(parserType), parent)
+{ }
+/*!
+  \internal
+*/
+#endif
+
+QDateTimeEdit::QDateTimeEdit(const QVariant &var, QMetaType::Type parserType, QWidget *parent)
     : QAbstractSpinBox(*new QDateTimeEditPrivate, parent)
 {
     Q_D(QDateTimeEdit);
@@ -1564,7 +1572,7 @@ void QDateTimeEdit::mousePressEvent(QMouseEvent *event)
 
 
 QTimeEdit::QTimeEdit(QWidget *parent)
-    : QDateTimeEdit(QDATETIMEEDIT_TIME_MIN, QVariant::Time, parent)
+    : QDateTimeEdit(QDATETIMEEDIT_TIME_MIN, QMetaType::QTime, parent)
 {
     connect(this, &QTimeEdit::timeChanged, this, &QTimeEdit::userTimeChanged);
 }
@@ -1575,7 +1583,7 @@ QTimeEdit::QTimeEdit(QWidget *parent)
 */
 
 QTimeEdit::QTimeEdit(const QTime &time, QWidget *parent)
-    : QDateTimeEdit(time, QVariant::Time, parent)
+    : QDateTimeEdit(time, QMetaType::QTime, parent)
 {
     connect(this, &QTimeEdit::timeChanged, this, &QTimeEdit::userTimeChanged);
 }
@@ -1634,7 +1642,7 @@ QTimeEdit::~QTimeEdit()
 */
 
 QDateEdit::QDateEdit(QWidget *parent)
-    : QDateTimeEdit(QDATETIMEEDIT_DATE_INITIAL, QVariant::Date, parent)
+    : QDateTimeEdit(QDATETIMEEDIT_DATE_INITIAL, QMetaType::QDate, parent)
 {
     connect(this, &QDateEdit::dateChanged, this, &QDateEdit::userDateChanged);
 }
@@ -1645,7 +1653,7 @@ QDateEdit::QDateEdit(QWidget *parent)
 */
 
 QDateEdit::QDateEdit(const QDate &date, QWidget *parent)
-    : QDateTimeEdit(date, QVariant::Date, parent)
+    : QDateTimeEdit(date, QMetaType::QDate, parent)
 {
     connect(this, &QDateEdit::dateChanged, this, &QDateEdit::userDateChanged);
 }
@@ -1682,13 +1690,13 @@ QDateEdit::~QDateEdit()
 
 
 QDateTimeEditPrivate::QDateTimeEditPrivate()
-    : QDateTimeParser(QVariant::DateTime, QDateTimeParser::DateTimeEdit, QCalendar())
+    : QDateTimeParser(QMetaType::QDateTime, QDateTimeParser::DateTimeEdit, QCalendar())
 {
     hasHadFocus = false;
     formatExplicitlySet = false;
     cacheGuard = false;
     fixday = true;
-    type = QVariant::DateTime;
+    type = QMetaType::QDateTime;
     sections = { };
     cachedDay = -1;
     currentSectionIndex = FirstSectionIndex;
@@ -2430,22 +2438,22 @@ void QDateTimeEdit::initStyleOption(QStyleOptionSpinBox *option) const
 void QDateTimeEditPrivate::init(const QVariant &var)
 {
     Q_Q(QDateTimeEdit);
-    switch (var.type()) {
-    case QVariant::Date:
+    switch (var.userType()) {
+    case QMetaType::QDate:
         value = var.toDate().startOfDay();
         updateTimeSpec();
         q->setDisplayFormat(defaultDateFormat);
         if (sectionNodes.isEmpty()) // ### safeguard for broken locale
             q->setDisplayFormat(QLatin1String("dd/MM/yyyy"));
         break;
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         value = var;
         updateTimeSpec();
         q->setDisplayFormat(defaultDateTimeFormat);
         if (sectionNodes.isEmpty()) // ### safeguard for broken locale
             q->setDisplayFormat(QLatin1String("dd/MM/yyyy hh:mm:ss"));
         break;
-    case QVariant::Time:
+    case QMetaType::QTime:
         value = QDateTime(QDATETIMEEDIT_DATE_INITIAL, var.toTime());
         updateTimeSpec();
         q->setDisplayFormat(defaultTimeFormat);
@@ -2524,7 +2532,7 @@ void QDateTimeEditPrivate::updateEditFieldGeometry()
 
 QVariant QDateTimeEditPrivate::getZeroVariant() const
 {
-    Q_ASSERT(type == QVariant::DateTime);
+    Q_ASSERT(type == QMetaType::QDateTime);
     return QDateTime(QDATETIMEEDIT_DATE_INITIAL, QTime(), spec);
 }
 

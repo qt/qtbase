@@ -707,7 +707,7 @@ static Qt::Alignment parseAlignment(const QCss::Value *values, int count)
 static ColorData parseColorValue(QCss::Value v)
 {
     if (v.type == Value::Identifier || v.type == Value::String) {
-        v.variant.convert(QVariant::Color);
+        v.variant.convert(QMetaType::QColor);
         v.type = Value::Color;
     }
 
@@ -1143,7 +1143,7 @@ static bool setFontSizeFromValue(QCss::Value value, QFont *font, int *fontSizeAd
     } else if (s.endsWith(QLatin1String("px"), Qt::CaseInsensitive)) {
         s.chop(2);
         value.variant = s;
-        if (value.variant.convert(QVariant::Int)) {
+        if (value.variant.convert(QMetaType::Int)) {
             font->setPixelSize(value.variant.toInt());
             valid = true;
         }
@@ -1420,9 +1420,9 @@ QColor Declaration::colorValue(const QPalette &pal) const
         return QColor();
 
     if (d->parsed.isValid()) {
-        if (d->parsed.type() == QVariant::Color)
+        if (d->parsed.userType() == QMetaType::QColor)
             return qvariant_cast<QColor>(d->parsed);
-        if (d->parsed.type() == QVariant::Int)
+        if (d->parsed.userType() == QMetaType::Int)
             return pal.color((QPalette::ColorRole)(d->parsed.toInt()));
     }
 
@@ -1442,9 +1442,9 @@ QBrush Declaration::brushValue(const QPalette &pal) const
         return QBrush();
 
     if (d->parsed.isValid()) {
-        if (d->parsed.type() == QVariant::Brush)
+        if (d->parsed.userType() == QMetaType::QBrush)
             return qvariant_cast<QBrush>(d->parsed);
-        if (d->parsed.type() == QVariant::Int)
+        if (d->parsed.userType() == QMetaType::Int)
             return pal.color((QPalette::ColorRole)(d->parsed.toInt()));
     }
 
@@ -1469,9 +1469,9 @@ void Declaration::brushValues(QBrush *c, const QPalette &pal) const
         needParse = 0;
         QList<QVariant> v = d->parsed.toList();
         for (i = 0; i < qMin(v.count(), 4); i++) {
-            if (v.at(i).type() == QVariant::Brush) {
+            if (v.at(i).userType() == QMetaType::QBrush) {
                 c[i] = qvariant_cast<QBrush>(v.at(i));
-            } else if (v.at(i).type() == QVariant::Int) {
+            } else if (v.at(i).userType() == QMetaType::Int) {
                 c[i] = pal.color((QPalette::ColorRole)(v.at(i).toInt()));
             } else {
                 needParse |= (1<<i);
@@ -1598,7 +1598,7 @@ void Declaration::colorValues(QColor *c, const QPalette &pal) const
     if (d->parsed.isValid()) {
         QList<QVariant> v = d->parsed.toList();
         for (i = 0; i < qMin(d->values.count(), 4); i++) {
-            if (v.at(i).type() == QVariant::Color) {
+            if (v.at(i).userType() == QMetaType::QColor) {
                 c[i] = qvariant_cast<QColor>(v.at(i));
             } else {
                 c[i] = pal.color((QPalette::ColorRole)(v.at(i).toInt()));
@@ -2723,7 +2723,7 @@ bool Parser::parseTerm(Value *value)
     switch (lookup()) {
         case NUMBER:
             value->type = Value::Number;
-            value->variant.convert(QVariant::Double);
+            value->variant.convert(QMetaType::Double);
             break;
         case PERCENTAGE:
             value->type = Value::Percentage;

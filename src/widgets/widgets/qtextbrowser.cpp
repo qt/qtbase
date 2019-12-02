@@ -310,9 +310,9 @@ void QTextBrowserPrivate::setSource(const QUrl &url, QTextDocument::ResourceType
     if (url.isValid()
         && (newUrlWithoutFragment != currentUrlWithoutFragment || forceLoadOnSourceChange)) {
         QVariant data = q->loadResource(type, resolveUrl(url));
-        if (data.type() == QVariant::String) {
+        if (data.userType() == QMetaType::QString) {
             txt = data.toString();
-        } else if (data.type() == QVariant::ByteArray) {
+        } else if (data.userType() == QMetaType::QByteArray) {
             if (type == QTextDocument::HtmlResource) {
 #if QT_CONFIG(textcodec)
                 QByteArray ba = data.toByteArray();

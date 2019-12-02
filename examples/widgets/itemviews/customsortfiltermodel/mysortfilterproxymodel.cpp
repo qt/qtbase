@@ -98,7 +98,7 @@ bool MySortFilterProxyModel::lessThan(const QModelIndex &left,
 //! [4]
 
 //! [6]
-    if (leftData.type() == QVariant::DateTime) {
+    if (leftData.userType() == QMetaType::QDateTime) {
         return leftData.toDateTime() < rightData.toDateTime();
     } else {
         static const QRegularExpression emailPattern("[\\w\\.]*@[\\w\\.]*");

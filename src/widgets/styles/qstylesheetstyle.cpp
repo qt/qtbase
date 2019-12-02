@@ -1547,11 +1547,10 @@ public:
                 }
             }
         }
-        QString valueStr;
-        if(value.type() == QVariant::StringList || value.type() == QVariant::List)
-            valueStr = value.toStringList().join(QLatin1Char(' '));
-        else
-            valueStr = value.toString();
+        QString valueStr = (value.userType() == QMetaType::QStringList
+            || value.userType() == QMetaType::QVariantList)
+            ? value.toStringList().join(QLatin1Char(' '))
+            : value.toString();
         cache[name] = valueStr;
         return valueStr;
     }
@@ -2611,16 +2610,16 @@ void QStyleSheetStyle::setProperties(QWidget *w)
 
         QVariant v;
         const QVariant value = w->property(property.toLatin1());
-        switch (value.type()) {
-        case QVariant::Icon: v = decl.iconValue(); break;
-        case QVariant::Image: v = QImage(decl.uriValue()); break;
-        case QVariant::Pixmap: v = QPixmap(decl.uriValue()); break;
-        case QVariant::Rect: v = decl.rectValue(); break;
-        case QVariant::Size: v = decl.sizeValue(); break;
-        case QVariant::Color: v = decl.colorValue(); break;
-        case QVariant::Brush: v = decl.brushValue(); break;
+        switch (value.userType()) {
+        case QMetaType::QIcon: v = decl.iconValue(); break;
+        case QMetaType::QImage: v = QImage(decl.uriValue()); break;
+        case QMetaType::QPixmap: v = QPixmap(decl.uriValue()); break;
+        case QMetaType::QRect: v = decl.rectValue(); break;
+        case QMetaType::QSize: v = decl.sizeValue(); break;
+        case QMetaType::QColor: v = decl.colorValue(); break;
+        case QMetaType::QBrush: v = decl.brushValue(); break;
 #ifndef QT_NO_SHORTCUT
-        case QVariant::KeySequence: v = QKeySequence(decl.d->values.at(0).variant.toString()); break;
+        case QMetaType::QKeySequence: v = QKeySequence(decl.d->values.at(0).variant.toString()); break;
 #endif
         default: v = decl.d->values.at(0).variant; break;
         }
@@ -4648,7 +4647,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
     }
 
     if (baseStyle()->property("_q_styleSheetRealCloseButton").toBool())
-        baseStyle()->setProperty("_q_styleSheetRealCloseButton", QVariant(QVariant::Invalid));
+        baseStyle()->setProperty("_q_styleSheetRealCloseButton", QVariant());
 }
 
 QPixmap QStyleSheetStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap& pixmap,
@@ -6128,7 +6127,7 @@ void QStyleSheetStyle::saveWidgetFont(QWidget* w, const QFont& font) const
 
 void QStyleSheetStyle::clearWidgetFont(QWidget* w) const
 {
-    w->setProperty("_q_styleSheetWidgetFont", QVariant(QVariant::Invalid));
+    w->setProperty("_q_styleSheetWidgetFont", QVariant());
 }
 
 // Polish palette that should be used for a particular widget, with particular states

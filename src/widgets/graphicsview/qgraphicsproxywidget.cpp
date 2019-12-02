@@ -1441,17 +1441,17 @@ QVariant QGraphicsProxyWidget::inputMethodQuery(Qt::InputMethodQuery query) cons
         focusWidget = d->widget;
     QVariant v = focusWidget->inputMethodQuery(query);
     QPointF focusWidgetPos = subWidgetRect(focusWidget).topLeft();
-    switch (v.type()) {
-    case QVariant::RectF:
+    switch (v.userType()) {
+    case QMetaType::QRectF:
         v = v.toRectF().translated(focusWidgetPos);
         break;
-    case QVariant::PointF:
+    case QMetaType::QPointF:
         v = v.toPointF() + focusWidgetPos;
         break;
-    case QVariant::Rect:
+    case QMetaType::QRect:
         v = v.toRect().translated(focusWidgetPos.toPoint());
         break;
-    case QVariant::Point:
+    case QMetaType::QPoint:
         v = v.toPoint() + focusWidgetPos.toPoint();
         break;
     default:

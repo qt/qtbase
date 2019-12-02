@@ -2430,7 +2430,7 @@ QTime QLocale::toTime(const QString &string, const QString &format, QCalendar ca
 {
     QTime time;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString, cal);
+    QDateTimeParser dt(QMetaType::QTime, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
         dt.fromString(string, nullptr, &time);
@@ -2469,7 +2469,7 @@ QDate QLocale::toDate(const QString &string, const QString &format, QCalendar ca
 {
     QDate date;
 #if QT_CONFIG(datetimeparser)
-    QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString, cal);
+    QDateTimeParser dt(QMetaType::QDate, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
         dt.fromString(string, &date, nullptr);
@@ -2510,7 +2510,7 @@ QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCal
     QTime time;
     QDate date;
 
-    QDateTimeParser dt(QVariant::DateTime, QDateTimeParser::FromString, cal);
+    QDateTimeParser dt(QMetaType::QDateTime, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format) && dt.fromString(string, &date, &time))
         return QDateTime(date, time);

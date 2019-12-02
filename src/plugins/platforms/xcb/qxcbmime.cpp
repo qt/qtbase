@@ -159,7 +159,7 @@ QVector<xcb_atom_t> QXcbMime::mimeAtomsForFormat(QXcbConnection *connection, con
 }
 
 QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a, const QByteArray &d, const QString &format,
-                                       QVariant::Type requestedType, const QByteArray &encoding)
+                                       QMetaType::Type requestedType, const QByteArray &encoding)
 {
     QByteArray data = d;
     QString atomName = mimeAtomToString(connection, a);
@@ -169,7 +169,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
         && atomName == format + QLatin1String(";charset=") + QLatin1String(encoding)) {
 
 #if QT_CONFIG(textcodec)
-        if (requestedType == QVariant::String) {
+        if (requestedType == QMetaType::QString) {
             QTextCodec *codec = QTextCodec::codecForName(encoding);
             if (codec)
                 return codec->toUnicode(data);
@@ -264,7 +264,7 @@ QVariant QXcbMime::mimeConvertToFormat(QXcbConnection *connection, xcb_atom_t a,
     return QVariant();
 }
 
-xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString &format, QVariant::Type requestedType,
+xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString &format, QMetaType::Type requestedType,
                                  const QVector<xcb_atom_t> &atoms, QByteArray *requestedEncoding)
 {
     requestedEncoding->clear();
@@ -297,7 +297,7 @@ xcb_atom_t QXcbMime::mimeAtomForFormat(QXcbConnection *connection, const QString
 
     // for string/text requests try to use a format with a well-defined charset
     // first to avoid encoding problems
-    if (requestedType == QVariant::String
+    if (requestedType == QMetaType::QString
         && format.startsWith(QLatin1String("text/"))
         && !format.contains(QLatin1String("charset="))) {
 

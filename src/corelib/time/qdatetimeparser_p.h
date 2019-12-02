@@ -83,7 +83,7 @@ public:
         FromString,
         DateTimeEdit
     };
-    QDateTimeParser(QVariant::Type t, Context ctx, const QCalendar &cal = QCalendar())
+    QDateTimeParser(QMetaType::Type t, Context ctx, const QCalendar &cal = QCalendar())
         : currentSectionIndex(-1), cachedDay(-1), parserType(t),
         fixday(false), spec(Qt::LocalTime), context(ctx), calendar(cal)
     {
@@ -295,7 +295,7 @@ protected: // for the benefit of QDateTimeEditPrivate
     QStringList separators;
     QString displayFormat;
     QLocale defaultLocale;
-    QVariant::Type parserType;
+    QMetaType::Type parserType;
     bool fixday;
     Qt::TimeSpec spec; // spec if used by QDateTimeEdit
     Context context;

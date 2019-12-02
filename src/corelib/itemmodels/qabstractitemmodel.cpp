@@ -552,32 +552,32 @@ const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
 bool QAbstractItemModelPrivate::isVariantLessThan(const QVariant &left, const QVariant &right,
                                                   Qt::CaseSensitivity cs, bool isLocaleAware)
 {
-    if (left.userType() == QVariant::Invalid)
+    if (left.userType() == QMetaType::UnknownType)
         return false;
-    if (right.userType() == QVariant::Invalid)
+    if (right.userType() == QMetaType::UnknownType)
         return true;
     switch (left.userType()) {
-    case QVariant::Int:
+    case QMetaType::Int:
         return left.toInt() < right.toInt();
-    case QVariant::UInt:
+    case QMetaType::UInt:
         return left.toUInt() < right.toUInt();
-    case QVariant::LongLong:
+    case QMetaType::LongLong:
         return left.toLongLong() < right.toLongLong();
-    case QVariant::ULongLong:
+    case QMetaType::ULongLong:
         return left.toULongLong() < right.toULongLong();
     case QMetaType::Float:
         return left.toFloat() < right.toFloat();
-    case QVariant::Double:
+    case QMetaType::Double:
         return left.toDouble() < right.toDouble();
-    case QVariant::Char:
+    case QMetaType::QChar:
         return left.toChar() < right.toChar();
-    case QVariant::Date:
+    case QMetaType::QDate:
         return left.toDate() < right.toDate();
-    case QVariant::Time:
+    case QMetaType::QTime:
         return left.toTime() < right.toTime();
-    case QVariant::DateTime:
+    case QMetaType::QDateTime:
         return left.toDateTime() < right.toDateTime();
-    case QVariant::String:
+    case QMetaType::QString:
     default:
         if (isLocaleAware)
             return left.toString().localeAwareCompare(right.toString()) < 0;
@@ -591,19 +591,19 @@ static uint typeOfVariant(const QVariant &value)
 {
     //return 0 for integer, 1 for floating point and 2 for other
     switch (value.userType()) {
-        case QVariant::Bool:
-        case QVariant::Int:
-        case QVariant::UInt:
-        case QVariant::LongLong:
-        case QVariant::ULongLong:
-        case QVariant::Char:
+        case QMetaType::Bool:
+        case QMetaType::Int:
+        case QMetaType::UInt:
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+        case QMetaType::QChar:
         case QMetaType::Short:
         case QMetaType::UShort:
         case QMetaType::UChar:
         case QMetaType::ULong:
         case QMetaType::Long:
             return 0;
-        case QVariant::Double:
+        case QMetaType::Double:
         case QMetaType::Float:
             return 1;
         default:
@@ -2379,7 +2379,7 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
             } else { // QString or regular expression based matching
                 if (matchType == Qt::MatchRegularExpression) {
                     if (rx.pattern().isEmpty()) {
-                        if (value.type() == QVariant::RegularExpression) {
+                        if (value.userType() == QMetaType::QRegularExpression) {
                             rx = value.toRegularExpression();
                         } else {
                             rx.setPattern(value.toString());

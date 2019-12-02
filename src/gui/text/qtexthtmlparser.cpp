@@ -1451,19 +1451,19 @@ void QTextHtmlParserNode::applyBackgroundImage(const QString &url, const QTextDo
 
         if (QCoreApplication::instance()->thread() != QThread::currentThread()) {
             // must use images in non-GUI threads
-            if (val.type() == QVariant::Image) {
+            if (val.userType() == QMetaType::QImage) {
                 QImage image = qvariant_cast<QImage>(val);
                 charFormat.setBackground(image);
-            } else if (val.type() == QVariant::ByteArray) {
+            } else if (val.userType() == QMetaType::QByteArray) {
                 QImage image;
                 if (image.loadFromData(val.toByteArray())) {
                     charFormat.setBackground(image);
                 }
             }
         } else {
-            if (val.type() == QVariant::Image || val.type() == QVariant::Pixmap) {
+            if (val.userType() == QMetaType::QImage || val.userType() == QMetaType::QPixmap) {
                 charFormat.setBackground(qvariant_cast<QPixmap>(val));
-            } else if (val.type() == QVariant::ByteArray) {
+            } else if (val.userType() == QMetaType::QByteArray) {
                 QPixmap pm;
                 if (pm.loadFromData(val.toByteArray())) {
                     charFormat.setBackground(pm);
@@ -1907,9 +1907,9 @@ void QTextHtmlParser::importStyleSheet(const QString &href)
 
     QVariant res = resourceProvider->resource(QTextDocument::StyleSheetResource, href);
     QString css;
-    if (res.type() == QVariant::String) {
+    if (res.userType() == QMetaType::QString) {
         css = res.toString();
-    } else if (res.type() == QVariant::ByteArray) {
+    } else if (res.userType() == QMetaType::QByteArray) {
         // #### detect @charset
         css = QString::fromUtf8(res.toByteArray());
     }

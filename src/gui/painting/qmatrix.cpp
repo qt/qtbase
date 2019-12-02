@@ -1087,7 +1087,7 @@ QMatrix &QMatrix::operator=(const QMatrix &matrix) noexcept
 */
 QMatrix::operator QVariant() const
 {
-    return QVariant(QVariant::Matrix, this);
+    return QVariant(QMetaType::QMatrix, this);
 }
 
 Q_GUI_EXPORT QPainterPath operator *(const QPainterPath &p, const QMatrix &m)
