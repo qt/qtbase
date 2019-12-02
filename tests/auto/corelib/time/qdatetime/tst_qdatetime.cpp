@@ -2213,8 +2213,46 @@ void tst_QDateTime::fromStringDateFormat_data()
     QTest::newRow("trailing space") // QTBUG-80445
         << QString("2000-01-02 03:04:05.678 ")
         << Qt::ISODate << QDateTime(QDate(2000, 1, 2), QTime(3, 4, 5, 678));
+
+    // Invalid spaces (but keeping field widths correct):
     QTest::newRow("space before millis")
         << QString("2000-01-02 03:04:05. 678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space after seconds")
+        << QString("2000-01-02 03:04:5 .678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space before seconds")
+        << QString("2000-01-02 03:04: 5.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space after minutes")
+        << QString("2000-01-02 03:4 :05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space before minutes")
+        << QString("2000-01-02 03: 4:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space after hour")
+        << QString("2000-01-02 3 :04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space before hour")
+        << QString("2000-01-02  3:04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space after day")
+        << QString("2000-01-2  03:04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space before day")
+        << QString("2000-01- 2 03:04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space after month")
+        << QString("2000-1 -02 03:04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space before month")
+        << QString("2000- 1-02 03:04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("space after year")
+        << QString("200 -01-02 03:04:05.678") << Qt::ISODate << QDateTime();
+
+    // Spaces as separators:
+    QTest::newRow("sec-milli space")
+        << QString("2000-01-02 03:04:05 678") << Qt::ISODate
+        // Should be invalid, but we ignore trailing cruft (in some cases)
+        << QDateTime(QDate(2000, 1, 2), QTime(3, 4, 5));
+    QTest::newRow("min-sec space")
+        << QString("2000-01-02 03:04 05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("hour-min space")
+        << QString("2000-01-02 03 04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("mon-day space")
+        << QString("2000-01 02 03:04:05.678") << Qt::ISODate << QDateTime();
+    QTest::newRow("year-mon space")
+        << QString("2000 01-02 03:04:05.678") << Qt::ISODate << QDateTime();
 
     // Normal usage:
     QTest::newRow("ISO +01:00") << QString::fromLatin1("1987-02-13T13:24:51+01:00")

@@ -1626,6 +1626,29 @@ qint64 QDate::daysTo(const QDate &d) const
 */
 
 #if QT_CONFIG(datestring)
+namespace {
+
+struct ParsedInt { int value = 0; bool ok = false; };
+
+/*
+    /internal
+
+    Read an int that must be the whole text.  QStringRef::toInt() will ignore
+    spaces happily; but ISO date format should not.
+*/
+ParsedInt readInt(QStringView text)
+{
+    ParsedInt result;
+    for (const auto &ch : text) {
+        if (ch.isSpace())
+            return result;
+    }
+    result.value = QLocale::c().toInt(text, &result.ok);
+    return result;
+}
+
+}
+
 /*!
     Returns the QDate represented by the \a string, using the
     \a format given, or an invalid date if the string cannot be
@@ -1677,17 +1700,18 @@ QDate QDate::fromString(const QString &string, Qt::DateFormat format)
         return QDate(year, month, day);
         }
 #endif // textdate
-    case Qt::ISODate: {
-        // Semi-strict parsing, must be long enough and have non-numeric separators
-        if (string.size() < 10 || string.at(4).isDigit() || string.at(7).isDigit()
-            || (string.size() > 10 && string.at(10).isDigit())) {
-            return QDate();
+    case Qt::ISODate:
+        // Semi-strict parsing, must be long enough and have punctuators as separators
+        if (string.size() >= 10 && string.at(4).isPunct() && string.at(7).isPunct()
+                && (string.size() == 10 || !string.at(10).isDigit())) {
+            QStringView view(string);
+            const ParsedInt year = readInt(view.mid(0, 4));
+            const ParsedInt month = readInt(view.mid(5, 2));
+            const ParsedInt day = readInt(view.mid(8, 2));
+            if (year.ok && year.value > 0 && year.value <= 9999 && month.ok && day.ok)
+                return QDate(year.value, month.value, day.value);
         }
-        const int year = string.midRef(0, 4).toInt();
-        if (year <= 0 || year > 9999)
-            return QDate();
-        return QDate(year, string.midRef(5, 2).toInt(), string.midRef(8, 2).toInt());
-        }
+        break;
     }
     return QDate();
 }
@@ -2331,17 +2355,15 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
         *isMidnight24 = false;
 
     const int size = string.size();
-    if (size < 5)
+    if (size < 5 || string.at(2) != QLatin1Char(':'))
         return QTime();
 
-    const QLocale C(QLocale::c());
-    bool ok = false;
-    int hour = C.toInt(string.mid(0, 2), &ok);
-    if (!ok)
+    ParsedInt hour = readInt(string.mid(0, 2));
+    ParsedInt minute = readInt(string.mid(3, 2));
+    if (!hour.ok || !minute.ok)
         return QTime();
-    const int minute = C.toInt(string.mid(3, 2), &ok);
-    if (!ok)
-        return QTime();
+    // FIXME: ISO 8601 allows [,.]\d+ after hour, just as it does after minute
+
     int second = 0;
     int msec = 0;
 
@@ -2361,44 +2383,56 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
         // will then be rounded up AND clamped to 999.
 
         const QStringView minuteFractionStr = string.mid(6, qMin(qsizetype(5), string.size() - 6));
-        const long minuteFractionInt = C.toLong(minuteFractionStr, &ok);
-        if (!ok)
+        const ParsedInt parsed = readInt(minuteFractionStr);
+        if (!parsed.ok)
             return QTime();
-        const float minuteFraction = double(minuteFractionInt) / (std::pow(double(10), minuteFractionStr.size()));
+        const float secondWithMs
+            = double(parsed.value) * 60 / (std::pow(double(10), minuteFractionStr.size()));
 
-        const float secondWithMs = minuteFraction * 60;
-        const float secondNoMs = std::floor(secondWithMs);
-        const float secondFraction = secondWithMs - secondNoMs;
-        second = secondNoMs;
+        second = std::floor(secondWithMs);
+        const float secondFraction = secondWithMs - second;
         msec = qMin(qRound(secondFraction * 1000.0), 999);
-    } else {
+    } else if (string.at(5) == QLatin1Char(':')) {
         // HH:mm:ss or HH:mm:ss.zzz
-        second = C.toInt(string.mid(6, qMin(qsizetype(2), string.size() - 6)), &ok);
-        if (!ok)
+        const ParsedInt parsed = readInt(string.mid(6, qMin(qsizetype(2), string.size() - 6)));
+        if (!parsed.ok)
             return QTime();
-        if (size > 8 && (string.at(8) == QLatin1Char(',') || string.at(8) == QLatin1Char('.'))) {
+        second = parsed.value;
+        if (size <= 8) {
+            // No fractional part to read
+        } else if (string.at(8) == QLatin1Char(',') || string.at(8) == QLatin1Char('.')) {
             QStringView msecStr(string.mid(9, qMin(qsizetype(4), string.size() - 9)));
-            // toInt() ignores leading spaces, so catch them before calling it
+            bool ok = true;
+            // Can't use readInt() here, as we *do* allow trailing space - but not leading:
             if (!msecStr.isEmpty() && !msecStr.at(0).isDigit())
                 return QTime();
-            // We do, however, want to ignore *trailing* spaces.
             msecStr = msecStr.trimmed();
-            int msecInt = msecStr.isEmpty() ? 0 : C.toInt(msecStr, &ok);
+            int msecInt = msecStr.isEmpty() ? 0 : QLocale::c().toInt(msecStr, &ok);
             if (!ok)
                 return QTime();
             const double secondFraction(msecInt / (std::pow(double(10), msecStr.size())));
             msec = qMin(qRound(secondFraction * 1000.0), 999);
+        } else {
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0) // behavior change
+            // Stray cruft after date-time: tolerate trailing space, but nothing else.
+            for (const auto &ch : string.mid(8)) {
+                if (!ch.isSpace())
+                    return QTime();
+            }
+#endif
         }
+    } else {
+        return QTime();
     }
 
     const bool isISODate = format == Qt::ISODate || format == Qt::ISODateWithMs;
-    if (isISODate && hour == 24 && minute == 0 && second == 0 && msec == 0) {
+    if (isISODate && hour.value == 24 && minute.value == 0 && second == 0 && msec == 0) {
         if (isMidnight24)
             *isMidnight24 = true;
-        hour = 0;
+        hour.value = 0;
     }
 
-    return QTime(hour, minute, second, msec);
+    return QTime(hour.value, minute.value, second, msec);
 }
 
 /*!
