@@ -17,3 +17,14 @@ endif()
 include(\"${CMAKE_CURRENT_LIST_DIR}/Qt5Widgets_AccessibleFactory.cmake\" OPTIONAL)
 
 set(Qt5Widgets_UIC_EXECUTABLE Qt5::uic)
+
+# Create versionless tool targets.
+foreach(__qt_tool uic)
+    if(NOT \"${QT_NO_CREATE_VERSIONLESS_TARGETS}\" AND NOT TARGET Qt::${__qt_tool}
+       AND TARGET Qt5::${__qt_tool})
+        add_executable(Qt::${__qt_tool} IMPORTED)
+        get_target_property(__qt_imported_location Qt5::${__qt_tool} IMPORTED_LOCATION)
+        set_target_properties(Qt::${__qt_tool}
+                              PROPERTIES IMPORTED_LOCATION \"${__qt_imported_location}\")
+    endif()
+endforeach()
