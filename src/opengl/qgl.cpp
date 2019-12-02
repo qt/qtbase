@@ -4979,7 +4979,7 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         // The only option in Qt 5 is the shader-based OpenGL 2 paint engine.
         // Setting fixed pipeline transformations is futile. Instead, pass the
         // extra values directly and let the engine figure the matrices out.
-        static_cast<QGL2PaintEngineEx *>(p->paintEngine())->setTranslateZ(-win_z);
+        static_cast<QGL2PaintEngineEx *>(p->paintEngine())->setTranslateZ(-2 * win_z);
 
         qt_gl_draw_text(p, qRound(win_x), qRound(win_y), str, font);
 
