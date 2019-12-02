@@ -472,6 +472,10 @@ function(qt_feature_copy_global_config_features_to_core target)
 endfunction()
 
 function(qt_config_compile_test name)
+    if(DEFINED "TEST_${name}")
+        return()
+    endif()
+
     cmake_parse_arguments(arg "" "LABEL;PROJECT_PATH;C_STANDARD;CXX_STANDARD" "LIBRARIES;CODE" ${ARGN})
 
     if(arg_PROJECT_PATH)
