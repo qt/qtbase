@@ -1398,6 +1398,8 @@ void QXcbWindow::propagateSizeHints()
     }
 
     xcb_icccm_set_wm_normal_hints(xcb_connection(), m_window, &hints);
+
+    m_sizeHintsScaleFactor = QHighDpiScaling::scaleAndOrigin(screen()).factor;
 }
 
 void QXcbWindow::requestActivateWindow()
@@ -1788,6 +1790,9 @@ void QXcbWindow::handleConfigureNotifyEvent(const xcb_configure_notify_event_t *
     // with the newScreen. Just send the WindowScreenChanged event and QGuiApplication
     // will make the comparison later.
     QWindowSystemInterface::handleWindowScreenChanged(window(), newScreen->screen());
+
+    if (!qFuzzyCompare(QHighDpiScaling::scaleAndOrigin(newScreen).factor, m_sizeHintsScaleFactor))
+        propagateSizeHints();
 
     // Send the synthetic expose event on resize only when the window is shrinked,
     // because the "XCB_GRAVITY_NORTH_WEST" flag doesn't send it automatically.
