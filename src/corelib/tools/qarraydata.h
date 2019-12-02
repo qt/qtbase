@@ -52,22 +52,11 @@ template <class T> struct QTypedArrayData;
 struct Q_CORE_EXPORT QArrayData
 {
     enum ArrayOption {
-        RawDataType          = 0x0001,  //!< this class is really a QArrayData
-        AllocatedDataType    = 0x0002,  //!< this class is really a QArrayAllocatedData
-        DataTypeBits         = 0x000f,
-
-        CapacityReserved     = 0x0010,  //!< the capacity was reserved by the user, try to keep it
-        GrowsForward         = 0x0020,  //!< allocate with eyes towards growing through append()
-        GrowsBackwards       = 0x0040,  //!< allocate with eyes towards growing through prepend()
-        MutableData          = 0x0080,  //!< the data can be changed; doesn't say anything about the header
-        ImmutableHeader      = 0x0100,  //!< the header is static, it can't be changed
-
-        /// this option is used by the Q_ARRAY_LITERAL and similar macros
-        StaticDataFlags = RawDataType | ImmutableHeader,
         /// this option is used by the allocate() function
-        DefaultAllocationFlags = MutableData,
-        /// this option is used by the prepareRawData() function
-        DefaultRawFlags = 0
+        DefaultAllocationFlags = 0,
+        CapacityReserved     = 0x1,  //!< the capacity was reserved by the user, try to keep it
+        GrowsForward         = 0x2,  //!< allocate with eyes towards growing through append()
+        GrowsBackwards       = 0x4   //!< allocate with eyes towards growing through prepend()
     };
     Q_DECLARE_FLAGS(ArrayOptions, ArrayOption)
 
@@ -106,12 +95,12 @@ struct Q_CORE_EXPORT QArrayData
     // follow COW principles.
     bool isMutable() const
     {
-        return flags & MutableData;
+        return ref_.loadRelaxed() != -1;
     }
 
     bool isStatic() const
     {
-        return flags & ImmutableHeader;
+        return !isMutable();
     }
 
     bool isShared() const

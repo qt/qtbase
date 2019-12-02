@@ -153,11 +153,11 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wmissing-field-initializers")
 
 const QArrayData QArrayData::shared_null[2] = {
-    { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 }, // shared null
+    { Q_BASIC_ATOMIC_INITIALIZER(-1), 0, 0 }, // shared null
     /* zero initialized terminator */};
 
 static const QArrayData emptyNotNullShared[2] = {
-    { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 }, // shared empty
+    { Q_BASIC_ATOMIC_INITIALIZER(-1), 0, 0 }, // shared empty
     /* zero initialized terminator */};
 
 QT_WARNING_POP
@@ -217,8 +217,6 @@ void *QArrayData::allocate(QArrayData **dptr, size_t objectSize, size_t alignmen
         return nullptr;
 
     size_t allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
-    options |= AllocatedDataType | MutableData;
-    options &= ~ImmutableHeader;
     QArrayData *header = allocateData(allocSize, options);
     quintptr data = 0;
     if (header) {
@@ -241,7 +239,6 @@ QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
     size_t headerSize = sizeof(QArrayData);
     size_t allocSize = calculateBlockSize(capacity, objectSize, headerSize, options);
     qptrdiff offset = dataPointer ? reinterpret_cast<char *>(dataPointer) - reinterpret_cast<char *>(data) : headerSize;
-    options |= AllocatedDataType | MutableData;
     QArrayData *header = static_cast<QArrayData *>(::realloc(data, size_t(allocSize)));
     if (header) {
         header->flags = options;
@@ -260,8 +257,6 @@ void QArrayData::deallocate(QArrayData *data, size_t objectSize,
     Q_UNUSED(objectSize);
     Q_UNUSED(alignment);
 
-    Q_ASSERT_X(data == nullptr || !data->isStatic(), "QArrayData::deallocate",
-               "Static data cannot be deleted");
     ::free(data);
 }
 

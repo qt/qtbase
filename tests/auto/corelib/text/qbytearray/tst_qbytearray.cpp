@@ -148,14 +148,13 @@ private slots:
     void stdString();
 };
 
-static const QArrayData staticDataFlags = { Q_BASIC_ATOMIC_INITIALIZER(-1), QArrayData::StaticDataFlags, 0 };
 static const QByteArray::DataPointer staticStandard = {
-    static_cast<QTypedArrayData<char> *>(const_cast<QArrayData *>(&staticDataFlags)),
+    nullptr,
     const_cast<char *>("data"),
     4
 };
 static const QByteArray::DataPointer staticNotNullTerminated = {
-    static_cast<QTypedArrayData<char> *>(const_cast<QArrayData *>(&staticDataFlags)),
+    nullptr,
     const_cast<char *>("dataBAD"),
     4
 };
@@ -168,8 +167,8 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
 
     QByteArray::DataPointer baDataPtr = const_cast<QByteArray &>(ba).data_ptr();
 
-    // Skip if isStatic() or fromRawData(), as those offer no guarantees
-    if (baDataPtr->isStatic() || baDataPtr->flags() & QArrayData::RawDataType)
+    // Skip if isStatic() as those offer no guarantees
+    if (baDataPtr->isStatic())
         return ba;
 
     int baSize = ba.size();
