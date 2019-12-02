@@ -1214,8 +1214,8 @@ QMargins QLineEdit::textMargins() const
     \row \li \c a \li ASCII alphabetic character permitted but not required.
     \row \li \c N \li ASCII alphanumeric character required. A-Z, a-z, 0-9.
     \row \li \c n \li ASCII alphanumeric character permitted but not required.
-    \row \li \c X \li Any character required.
-    \row \li \c x \li Any character permitted but not required.
+    \row \li \c X \li Any non-blank character required.
+    \row \li \c x \li Any non-blank character permitted but not required.
     \row \li \c 9 \li ASCII digit required. 0-9.
     \row \li \c 0 \li ASCII digit permitted but not required.
     \row \li \c D \li ASCII digit required. 1-9.
