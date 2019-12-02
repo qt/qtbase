@@ -138,23 +138,42 @@ static const QVariant::Handler widgets_handler = {
 #endif
 };
 
-#define QT_IMPL_METATYPEINTERFACE_WIDGETS_TYPES(MetaTypeName, MetaTypeId, RealName) \
-    QT_METATYPE_INTERFACE_INIT(RealName),
+static const struct : QMetaTypeModuleHelper
+{
+    QtPrivate::QMetaTypeInterface *interfaceForType(int type) const override {
+        switch (type) {
+            QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_METATYPE_CONVERT_ID_TO_TYPE)
+            default: return nullptr;
+        }
+    }
+#ifndef QT_NO_DATASTREAM
+    bool save(QDataStream &stream, int type, const void *data) const override {
+        switch (type) {
+            QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_METATYPE_DATASTREAM_SAVE)
+            default: return false;
+        }
+    }
+    bool load(QDataStream &stream, int type, void *data) const override {
+        switch (type) {
+            QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_METATYPE_DATASTREAM_LOAD)
+            default: return false;
+        }
+    }
+#endif
 
-static const QMetaTypeInterface qVariantWidgetsHelper[] = {
-    QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_IMPL_METATYPEINTERFACE_WIDGETS_TYPES)
-};
+}  qVariantWidgetsHelper;
+
 
 #undef QT_IMPL_METATYPEINTERFACE_WIDGETS_TYPES
 
 }  // namespace
 
-extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeWidgetsHelper;
+extern Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeWidgetsHelper;
 
 void qRegisterWidgetsVariant()
 {
     qRegisterMetaType<QWidget*>();
-    qMetaTypeWidgetsHelper = qVariantWidgetsHelper;
+    qMetaTypeWidgetsHelper = &qVariantWidgetsHelper;
     QVariantPrivate::registerHandler(QModulesPrivate::Widgets, &widgets_handler);
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterWidgetsVariant)

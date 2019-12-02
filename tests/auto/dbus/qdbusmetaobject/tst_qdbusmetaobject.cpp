@@ -394,7 +394,6 @@ void tst_QDBusMetaObject::types()
         QCOMPARE(constructed.name(), expected.name());
         QCOMPARE(constructed.parameterCount(), expected.parameterCount());
         QCOMPARE(constructed.parameterNames(), expected.parameterNames());
-        QCOMPARE(constructed.parameterTypes(), expected.parameterTypes());
         for (int j = 0; j < constructed.parameterCount(); ++j)
             QCOMPARE(constructed.parameterType(j), expected.parameterType(j));
         QCOMPARE(constructed.tag(), expected.tag());

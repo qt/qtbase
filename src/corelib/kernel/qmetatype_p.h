@@ -121,77 +121,15 @@ QT_FOR_EACH_STATIC_WIDGETS_CLASS(QT_DECLARE_WIDGETS_MODULE_TYPES_ITER)
 #undef QT_DECLARE_GUI_MODULE_TYPES_ITER
 #undef QT_DECLARE_WIDGETS_MODULE_TYPES_ITER
 
-class QMetaTypeInterface
+class QMetaTypeModuleHelper
 {
 public:
-    QMetaType::SaveOperator saveOp;
-    QMetaType::LoadOperator loadOp;
-    QMetaType::Constructor constructor; // TODO Qt6: remove me
-    QMetaType::Destructor destructor;
-    int size;
-    QMetaType::TypeFlags::Int flags;
-    const QMetaObject *metaObject;
-    QMetaType::TypedConstructor typedConstructor;
-    QMetaType::TypedDestructor typedDestructor;
-};
-
+    virtual QtPrivate::QMetaTypeInterface *interfaceForType(int) const = 0;
 #ifndef QT_NO_DATASTREAM
-#  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
-    /*saveOp*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Save), \
-    /*loadOp*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Load),
-#  define QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(Type) \
-    /*saveOp*/ nullptr, \
-    /*loadOp*/ nullptr,
-#else
-#  define QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(Type) \
-    /*saveOp*/ nullptr, \
-    /*loadOp*/ nullptr,
-#  define QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL(Type) \
-    QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(Type)
+    virtual bool save(QDataStream &stream, int type, const void *data) const = 0;
+    virtual bool load(QDataStream &stream, int type, void *data) const = 0;
 #endif
-
-#ifndef QT_BOOTSTRAPPED
-#define METAOBJECT_DELEGATE(Type) (QtPrivate::MetaObjectForType<Type>::value())
-#else
-#define METAOBJECT_DELEGATE(Type) nullptr
-#endif
-
-#define QT_METATYPE_INTERFACE_INIT_IMPL(Type, DATASTREAM_DELEGATE) \
-{ \
-    DATASTREAM_DELEGATE(Type) \
-    /*constructor*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Construct), \
-    /*destructor*/(QtMetaTypePrivate::QMetaTypeFunctionHelper<Type, QtMetaTypePrivate::TypeDefinition<Type>::IsAvailable>::Destruct), \
-    /*size*/(QTypeInfo<Type>::sizeOf), \
-    /*flags*/QtPrivate::QMetaTypeTypeFlags<Type>::Flags, \
-    /*metaObject*/METAOBJECT_DELEGATE(Type), \
-    /*typedConstructor*/ nullptr, \
-    /*typedDestructor*/ nullptr \
-}
-
-
-/* These  QT_METATYPE_INTERFACE_INIT* macros are used to initialize QMetaTypeInterface instance.
-
- - QT_METATYPE_INTERFACE_INIT(Type) -> It takes Type argument and creates all necessary wrapper functions for the Type,
-   it detects if QT_NO_DATASTREAM was defined. Probably it is the macro that you want to use.
-
- - QT_METATYPE_INTERFACE_INIT_EMPTY() -> It initializes an empty QMetaTypeInterface instance.
-
- - QT_METATYPE_INTERFACE_INIT_NO_DATASTREAM(Type) -> Temporary workaround for missing auto-detection of data stream
-   operators. It creates same instance as QT_METATYPE_INTERFACE_INIT(Type) but with null stream operators callbacks.
- */
-#define QT_METATYPE_INTERFACE_INIT(Type) QT_METATYPE_INTERFACE_INIT_IMPL(Type, QT_METATYPE_INTERFACE_INIT_DATASTREAM_IMPL)
-#define QT_METATYPE_INTERFACE_INIT_NO_DATASTREAM(Type) QT_METATYPE_INTERFACE_INIT_IMPL(Type, QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL)
-#define QT_METATYPE_INTERFACE_INIT_EMPTY() \
-{ \
-    QT_METATYPE_INTERFACE_INIT_EMPTY_DATASTREAM_IMPL(void) \
-    /*constructor*/ nullptr, \
-    /*destructor*/ nullptr, \
-    /*size*/ 0, \
-    /*flags*/ 0, \
-    /*metaObject*/ nullptr , \
-    /*typedConstructor*/ nullptr, \
-    /*typedDestructor*/ nullptr \
-}
+};
 
 namespace QtMetaTypePrivate {
 template<typename T>
@@ -253,6 +191,32 @@ template<> struct TypeDefinition<QQuaternion> { static const bool IsAvailable = 
 #ifdef QT_NO_ICON
 template<> struct TypeDefinition<QIcon> { static const bool IsAvailable = false; };
 #endif
+
+template<typename T>
+static QtPrivate::QMetaTypeInterface *getInterfaceFromType()
+{
+    if constexpr (std::is_same_v<T, void>) {
+        return nullptr;
+    } else if constexpr (QtMetaTypePrivate::TypeDefinition<T>::IsAvailable) {
+        return &QtPrivate::QMetaTypeForType<T>::metaType;
+    }
+    return nullptr;
+}
+
+#define QT_METATYPE_CONVERT_ID_TO_TYPE(MetaTypeName, MetaTypeId, RealName)                         \
+    case QMetaType::MetaTypeName:                                                                  \
+        return QtMetaTypePrivate::getInterfaceFromType<RealName>();
+
+#define QT_METATYPE_DATASTREAM_SAVE(MetaTypeName, MetaTypeId, RealName) \
+    case QMetaType::MetaTypeName: \
+        QtMetaTypePrivate::QMetaTypeFunctionHelper<RealName, QtMetaTypePrivate::TypeDefinition<RealName>::IsAvailable>::Save(stream, data); \
+        return true;
+
+#define QT_METATYPE_DATASTREAM_LOAD(MetaTypeName, MetaTypeId, RealName) \
+    case QMetaType::MetaTypeName: \
+        QtMetaTypePrivate::QMetaTypeFunctionHelper<RealName, QtMetaTypePrivate::TypeDefinition<RealName>::IsAvailable>::Load(stream, data); \
+        return true;
+
 } //namespace QtMetaTypePrivate
 
 QT_END_NAMESPACE

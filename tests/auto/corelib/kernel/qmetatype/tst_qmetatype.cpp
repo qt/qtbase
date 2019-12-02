@@ -129,6 +129,7 @@ private slots:
 struct BaseGenericType
 {
     int m_typeId = -1;
+    QMetaType m_metatype;
     virtual void *constructor(int typeId, void *where, const void *copy) = 0;
     virtual void staticMetacallFunction(QMetaObject::Call _c, int _id, void **_a) = 0;
     virtual void saveOperator(QDataStream & out) const = 0;
@@ -300,11 +301,19 @@ void tst_QMetaType::registerGadget(const char *name, const QVector<GadgetPropert
     meta->d.static_metacall = &GadgetsStaticMetacallFunction;
     meta->d.superdata = nullptr;
     const auto flags = QMetaType::WasDeclaredAsMetaType | QMetaType::IsGadget | QMetaType::NeedsConstruction | QMetaType::NeedsDestruction;
-    int gadgetTypeId = QMetaType::registerType(name,
-                                               &GadgetTypedDestructor,
-                                               &GadgetTypedConstructor,
-                                               sizeof(GenericGadgetType),
-                                               flags, meta);
+    using TypeInfo = QtPrivate::QMetaTypeInterface;
+    auto typeInfo = new TypeInfo {
+        0, sizeof(GenericGadgetType), alignof(GenericGadgetType), uint(flags), meta, name, 0,
+        QtPrivate::RefCount{ 0 },
+        [](TypeInfo *self) { delete self; },
+        [](const TypeInfo *self, void *where) { GadgetTypedConstructor(self->typeId, where, nullptr); },
+        [](const TypeInfo *self, void *where, const void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
+        [](const TypeInfo *self, void *where, void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
+        [](const TypeInfo *self, void *ptr) { GadgetTypedDestructor(self->typeId, ptr); },
+        nullptr };
+    QMetaType gadgetMetaType(typeInfo);
+    dynamicGadgetProperties->m_metatype = gadgetMetaType;
+    int gadgetTypeId = QMetaType(typeInfo).id();
     QVERIFY(gadgetTypeId > 0);
     QMetaType::registerStreamOperators(gadgetTypeId, &GadgetSaveOperator, &GadgetLoadOperator);
     s_managedTypes[gadgetTypeId] = qMakePair(dynamicGadgetProperties, std::shared_ptr<QMetaObject>{meta, [](QMetaObject *ptr){ ::free(ptr); }});
@@ -389,10 +398,6 @@ protected:
             if (QMetaType::type(nm) != tp) {
                 ++failureCount;
                 qWarning() << "Wrong metatype returned for" << name;
-            }
-            if (QMetaType::typeName(tp) != name) {
-                ++failureCount;
-                qWarning() << "Wrong typeName returned for" << tp;
             }
             void *buf1 = QMetaType::create(tp, 0);
             void *buf2 = QMetaType::create(tp, buf1);
@@ -1006,6 +1011,10 @@ void tst_QMetaType::flagsBinaryCompatibility5_0_data()
     for (int i = 0; i < buffer.size(); i+=2) {
         const quint32 id = buffer.at(i);
         const quint32 flags = buffer.at(i + 1);
+        if (id > QMetaType::LastCoreType)
+            continue; // We do not link against QtGui, so we do longer consider such type as registered
+        if (id == QMetaType::Void)
+            continue; // The meaning of QMetaType::Void has changed in Qt6
         QVERIFY2(QMetaType::isRegistered(id), "A type could not be removed in BC way");
         QTest::newRow(QMetaType::typeName(id)) << id << flags;
     }
@@ -1158,11 +1167,19 @@ void tst_QMetaType::typedConstruct()
     auto dynamicGadgetProperties = std::make_shared<GenericPODType>();
     dynamicGadgetProperties->podData = myPodTesData;
     const auto flags = QMetaType::NeedsConstruction | QMetaType::NeedsDestruction;
-    int podTypeId = QMetaType::registerType(podTypeName,
-                                               &GadgetTypedDestructor,
-                                               &GadgetTypedConstructor,
-                                               sizeof(GenericGadgetType),
-                                               flags, nullptr);
+    using TypeInfo = QtPrivate::QMetaTypeInterface;
+    auto typeInfo = new TypeInfo {
+        0, sizeof(GenericGadgetType), alignof(GenericGadgetType), uint(flags), nullptr, podTypeName,
+        0, QtPrivate::RefCount{0},
+        [](TypeInfo *self) { delete self; },
+        [](const TypeInfo *self, void *where) { GadgetTypedConstructor(self->typeId, where, nullptr); },
+        [](const TypeInfo *self, void *where, const void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
+        [](const TypeInfo *self, void *where, void *copy) { GadgetTypedConstructor(self->typeId, where, copy); },
+        [](const TypeInfo *self, void *ptr) { GadgetTypedDestructor(self->typeId, ptr); },
+        nullptr };
+    QMetaType metatype(typeInfo);
+    dynamicGadgetProperties->m_metatype = metatype;
+    int podTypeId = metatype.id();
     QVERIFY(podTypeId > 0);
     QMetaType::registerStreamOperators(podTypeId, &GadgetSaveOperator, &GadgetLoadOperator);
     s_managedTypes[podTypeId] = qMakePair(dynamicGadgetProperties, std::shared_ptr<QMetaObject>{});
@@ -1309,54 +1326,6 @@ void tst_QMetaType::registerType()
     QCOMPARE(qRegisterMetaType<MyFoo>("MyFoo"), fooId);
 
     QCOMPARE(QMetaType::type("MyFoo"), fooId);
-
-    // cannot unregister built-in types
-    QVERIFY(!QMetaType::unregisterType(QMetaType::QString));
-    QCOMPARE(QMetaType::type("QString"), int(QMetaType::QString));
-    QCOMPARE(QMetaType::type("MyString"), int(QMetaType::QString));
-
-    // cannot unregister declared types
-    QVERIFY(!QMetaType::unregisterType(fooId));
-    QCOMPARE(QMetaType::type("TestSpace::Foo"), fooId);
-    QCOMPARE(QMetaType::type("MyFoo"), fooId);
-
-    // test unregistration of dynamic types (used by Qml)
-    int unregId = QMetaType::registerType("UnregisterMe",
-                                          0,
-                                          0,
-                                          QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Destruct,
-                                          QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Construct,
-                                          0, QMetaType::TypeFlags(), 0);
-    QCOMPARE(QMetaType::registerTypedef("UnregisterMeTypedef", unregId), unregId);
-    int unregId2 = QMetaType::registerType("UnregisterMe2",
-                                           0,
-                                           0,
-                                           QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Destruct,
-                                           QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Construct,
-                                           0, QMetaType::TypeFlags(), 0);
-    QVERIFY(unregId >= int(QMetaType::User));
-    QCOMPARE(unregId2, unregId + 2);
-
-    QVERIFY(QMetaType::unregisterType(unregId));
-    QCOMPARE(QMetaType::type("UnregisterMe"), 0);
-    QCOMPARE(QMetaType::type("UnregisterMeTypedef"), 0);
-    QCOMPARE(QMetaType::type("UnregisterMe2"), unregId2);
-    QVERIFY(QMetaType::unregisterType(unregId2));
-    QCOMPARE(QMetaType::type("UnregisterMe2"), 0);
-
-    // re-registering should always return the lowest free index
-    QCOMPARE(QMetaType::registerType("UnregisterMe2",
-                                     0,
-                                     0,
-                                     QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Destruct,
-                                     QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Construct,
-                                     0, QMetaType::TypeFlags(), 0), unregId);
-    QCOMPARE(QMetaType::registerType("UnregisterMe",
-                                     0,
-                                     0,
-                                     QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Destruct,
-                                     QtMetaTypePrivate::QMetaTypeFunctionHelper<void>::Construct,
-                                     0, QMetaType::TypeFlags(), 0), unregId + 1);
 }
 
 class IsRegisteredDummyType { };
@@ -1367,7 +1336,7 @@ void tst_QMetaType::isRegistered_data()
     QTest::addColumn<bool>("registered");
 
     // predefined/custom types
-    QTest::newRow("QMetaType::Void") << int(QMetaType::Void) << true;
+    QTest::newRow("QMetaType::Void") << int(QMetaType::Void) << false;
     QTest::newRow("QMetaType::Int") << int(QMetaType::Int) << true;
 
     int dummyTypeId = qRegisterMetaType<IsRegisteredDummyType>("IsRegisteredDummyType");
@@ -1733,8 +1702,8 @@ void tst_QMetaType::automaticTemplateRegistration()
             CONTAINER< __VA_ARGS__ > t; \
             const QVariant v = QVariant::fromValue(t); \
             QByteArray tn = createTypeName(#CONTAINER "<", #__VA_ARGS__); \
-            const int type = QMetaType::type(tn); \
             const int expectedType = ::qMetaTypeId<CONTAINER< __VA_ARGS__ > >(); \
+            const int type = QMetaType::type(tn); \
             QCOMPARE(type, expectedType); \
             QCOMPARE((QMetaType::fromType<CONTAINER< __VA_ARGS__ >>().id()), expectedType); \
         }
@@ -2545,7 +2514,8 @@ void tst_QMetaType::fromType()
         QCOMPARE(QMetaType::fromType<RealType>(), QMetaType(MetaTypeId)); \
         QVERIFY(QMetaType::fromType<RealType>() == QMetaType(MetaTypeId)); \
         QVERIFY(!(QMetaType::fromType<RealType>() != QMetaType(MetaTypeId))); \
-        QCOMPARE(QMetaType::fromType<RealType>().id(), MetaTypeId);
+        if (MetaTypeId != QMetaType::Void) \
+            QCOMPARE(QMetaType::fromType<RealType>().id(), MetaTypeId);
 
     FOR_EACH_CORE_METATYPE(FROMTYPE_CHECK)
 

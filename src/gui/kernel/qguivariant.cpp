@@ -338,19 +338,41 @@ const QVariant::Handler qt_gui_variant_handler = {
 #define QT_IMPL_METATYPEINTERFACE_GUI_TYPES(MetaTypeName, MetaTypeId, RealName) \
     QT_METATYPE_INTERFACE_INIT(RealName),
 
-static const QMetaTypeInterface qVariantGuiHelper[] = {
-    QT_FOR_EACH_STATIC_GUI_CLASS(QT_IMPL_METATYPEINTERFACE_GUI_TYPES)
-};
+static const struct : QMetaTypeModuleHelper
+{
+    QtPrivate::QMetaTypeInterface *interfaceForType(int type) const override {
+        switch (type) {
+            QT_FOR_EACH_STATIC_GUI_CLASS(QT_METATYPE_CONVERT_ID_TO_TYPE)
+            default: return nullptr;
+        }
+    }
+#ifndef QT_NO_DATASTREAM
+    bool save(QDataStream &stream, int type, const void *data) const override {
+        switch (type) {
+            QT_FOR_EACH_STATIC_GUI_CLASS(QT_METATYPE_DATASTREAM_SAVE)
+            default: return false;
+        }
+    }
+    bool load(QDataStream &stream, int type, void *data) const override {
+        switch (type) {
+            QT_FOR_EACH_STATIC_GUI_CLASS(QT_METATYPE_DATASTREAM_LOAD)
+            default: return false;
+        }
+    }
+#endif
+
+} qVariantGuiHelper;
+
 
 #undef QT_IMPL_METATYPEINTERFACE_GUI_TYPES
 } // namespace used to hide QVariant handler
 
-extern Q_CORE_EXPORT const QMetaTypeInterface *qMetaTypeGuiHelper;
+extern Q_CORE_EXPORT const QMetaTypeModuleHelper *qMetaTypeGuiHelper;
 
 void qRegisterGuiVariant()
 {
     QVariantPrivate::registerHandler(QModulesPrivate::Gui, &qt_gui_variant_handler);
-    qMetaTypeGuiHelper = qVariantGuiHelper;
+    qMetaTypeGuiHelper = &qVariantGuiHelper;
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterGuiVariant)
 

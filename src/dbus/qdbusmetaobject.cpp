@@ -127,27 +127,31 @@ QDBusMetaObjectGenerator::QDBusMetaObjectGenerator(const QString &interfaceName,
     }
 }
 
-static int registerComplexDBusType(const char *typeName)
+static int registerComplexDBusType(const QByteArray &typeName)
 {
-    struct QDBusRawTypeHandler {
-        static void destruct(void *)
-        {
-            qFatal("Cannot destruct placeholder type QDBusRawType");
-        }
-
-        static void *construct(void *, const void *)
-        {
-            qFatal("Cannot construct placeholder type QDBusRawType");
-            return nullptr;
-        }
+    struct QDBusRawTypeHandler : QtPrivate::QMetaTypeInterface
+    {
+        const QByteArray name;
+        QDBusRawTypeHandler(const QByteArray &name)
+            : QtPrivate::QMetaTypeInterface {
+                0, sizeof(void *), sizeof(void *), QMetaType::MovableType, nullptr,
+                name.constData(), 0, QtPrivate::RefCount{0},
+                [](QtPrivate::QMetaTypeInterface *self) {
+                    delete static_cast<QDBusRawTypeHandler *>(self);
+                },
+                nullptr, nullptr, nullptr, nullptr, nullptr
+            },
+            name(name)
+        {}
     };
 
-    return QMetaType::registerNormalizedType(typeName,
-                                             QDBusRawTypeHandler::destruct,
-                                             QDBusRawTypeHandler::construct,
-                                             sizeof(void *),
-                                             QMetaType::MovableType,
-                                             nullptr);
+    static QBasicMutex mutex;
+    static QHash<QByteArray, QMetaType> hash;
+    QMutexLocker lock(&mutex);
+    QMetaType &metatype = hash[typeName];
+    if (!metatype.isValid())
+        metatype = QMetaType(new QDBusRawTypeHandler(typeName));
+    return metatype.id();
 }
 
 Q_DBUS_EXPORT bool qt_dbus_metaobject_skip_annotations = false;
