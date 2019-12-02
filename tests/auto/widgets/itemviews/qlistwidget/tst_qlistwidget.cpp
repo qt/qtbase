@@ -177,8 +177,9 @@ void tst_QListWidget::moveRowsInvalid_data()
         result->addItems({"A", "B", "C", "D", "E", "F"});
         return result;
     };
+    constexpr int rowCount = 6;
 
-    QTest::addRow("destination_equal_source") << createWidget() << QModelIndex() << 0 << 1 << QModelIndex() << 1;
+    QTest::addRow("destination_equal_source") << createWidget() << QModelIndex() << 0 << 1 << QModelIndex() << 0;
     QTest::addRow("count_equal_0") << createWidget() << QModelIndex() << 0 << 0 << QModelIndex() << 2;
     QListWidget* tempWidget = createWidget();
     QTest::addRow("move_child") << tempWidget << tempWidget->model()->index(0, 0) << 0 << 1 << QModelIndex() << 2;
@@ -187,10 +188,11 @@ void tst_QListWidget::moveRowsInvalid_data()
     QTest::addRow("negative_count") << createWidget() << QModelIndex() << 0 << -1 << QModelIndex() << 2;
     QTest::addRow("negative_source_row") << createWidget() << QModelIndex() << -1 << 1 << QModelIndex() << 2;
     QTest::addRow("negative_destination_row") << createWidget() << QModelIndex() << 0 << 1 << QModelIndex() << -1;
-    QTest::addRow("source_row_equal_rowCount") << createWidget() << QModelIndex() << 6 << 1 << QModelIndex() << 1;
-    QTest::addRow("destination_row_greater_rowCount") << createWidget() << QModelIndex() << 0 << 1 << QModelIndex() << 6 + 1;
+    QTest::addRow("source_row_equal_rowCount") << createWidget() << QModelIndex() << rowCount << 1 << QModelIndex() << 1;
+    QTest::addRow("source_row_equal_destination_row") << createWidget() << QModelIndex() << 2 << 1 << QModelIndex() << 2;
+    QTest::addRow("source_row_equal_destination_row_plus1") << createWidget() << QModelIndex() << 2 << 1 << QModelIndex() << 3;
+    QTest::addRow("destination_row_greater_rowCount") << createWidget() << QModelIndex() << 0 << 1 << QModelIndex() << rowCount + 1;
     QTest::addRow("move_row_within_source_range") << createWidget() << QModelIndex() << 0 << 3 << QModelIndex() << 2;
-    QTest::addRow("destination_row_before_0") << createWidget() << QModelIndex() << 1 << 1 << QModelIndex() << 0;
 }
 
 void tst_QListWidget::moveRowsInvalid()
@@ -221,20 +223,20 @@ void tst_QListWidget::moveRows_data()
 
     QTest::newRow("1_Item_from_top_to_middle") << 0 << 1 << 3 << QStringList{"B", "C", "A", "D", "E", "F"};
     QTest::newRow("1_Item_from_top_to_bottom") << 0 << 1 << 6 << QStringList{"B", "C", "D", "E", "F", "A"};
-    QTest::newRow("1_Item_from_middle_to_top") << 2 << 1 << 1 << QStringList{"C", "A", "B", "D", "E", "F"};
-    QTest::newRow("1_Item_from_bottom_to_middle") << 5 << 1 << 3 << QStringList{"A", "B", "F", "C", "D", "E"};
-    QTest::newRow("1_Item_from_bottom to_top") << 5 << 1 << 1 << QStringList{"F", "A", "B", "C", "D", "E"};
+    QTest::newRow("1_Item_from_middle_to_top") << 2 << 1 << 0 << QStringList{"C", "A", "B", "D", "E", "F"};
+    QTest::newRow("1_Item_from_bottom_to_middle") << 5 << 1 << 2 << QStringList{"A", "B", "F", "C", "D", "E"};
+    QTest::newRow("1_Item_from_bottom to_top") << 5 << 1 << 0 << QStringList{"F", "A", "B", "C", "D", "E"};
     QTest::newRow("1_Item_from_middle_to_bottom") << 2 << 1 << 6 << QStringList{"A", "B", "D", "E", "F", "C"};
-    QTest::newRow("1_Item_from_middle_to_middle_before") << 2 << 1 << 1 << QStringList{"C", "A", "B", "D", "E", "F"};
+    QTest::newRow("1_Item_from_middle_to_middle_before") << 2 << 1 << 1 << QStringList{"A", "C", "B", "D", "E", "F"};
     QTest::newRow("1_Item_from_middle_to_middle_after") << 2 << 1 << 4 << QStringList{"A", "B", "D", "C", "E", "F"};
 
     QTest::newRow("2_Items_from_top_to_middle") << 0 << 2 << 3 << QStringList{"C", "A", "B", "D", "E", "F"};
     QTest::newRow("2_Items_from_top_to_bottom") << 0 << 2 << 6 << QStringList{"C", "D", "E", "F", "A", "B"};
-    QTest::newRow("2_Items_from_middle_to_top") << 2 << 2 << 1 << QStringList{"C", "D", "A", "B", "E", "F"};
-    QTest::newRow("2_Items_from_bottom_to_middle") << 4 << 2 << 3 << QStringList{"A", "B", "E", "F", "C", "D"};
-    QTest::newRow("2_Items_from_bottom_to_top") << 4 << 2 << 1 << QStringList{"E", "F", "A", "B", "C", "D"};
+    QTest::newRow("2_Items_from_middle_to_top") << 2 << 2 << 0 << QStringList{"C", "D", "A", "B", "E", "F"};
+    QTest::newRow("2_Items_from_bottom_to_middle") << 4 << 2 << 2 << QStringList{"A", "B", "E", "F", "C", "D"};
+    QTest::newRow("2_Items_from_bottom_to_top") << 4 << 2 << 0 << QStringList{"E", "F", "A", "B", "C", "D"};
     QTest::newRow("2_Items_from_middle_to_bottom") << 2 << 2 << 6 << QStringList{"A", "B", "E", "F", "C", "D"};
-    QTest::newRow("2_Items_from_middle_to_middle_before") << 3 << 2 << 2 << QStringList{"A", "D", "E", "B", "C", "F"};
+    QTest::newRow("2_Items_from_middle_to_middle_before") << 3 << 2 << 1 << QStringList{"A", "D", "E", "B", "C", "F"};
     QTest::newRow("2_Items_from_middle_to_middle_after") << 1 << 2 << 5 << QStringList{"A", "D", "E", "B", "C", "F"};
 }
 
