@@ -2568,8 +2568,16 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     ++d->selectionChanging;
     int oldSelectedItemSize = d->selectedItems.size();
 
-    // Enable mouse tracking if the item accepts hover events or has a cursor set.
-    if (d->allItemsIgnoreHoverEvents && d->itemAcceptsHoverEvents_helper(item)) {
+    // Enable mouse tracking if we haven't already done so, and the item needs it.
+    // We cannot use itemAcceptsHoverEvents_helper() here, since we need to enable
+    // mouse tracking also if this item is temporarily blocked by a modal panel.
+
+    auto needsMouseTracking = [](const QGraphicsItemPrivate *item) {
+        return item->acceptsHover
+                || (item->isWidget && static_cast<const QGraphicsWidgetPrivate *>(item)->hasDecoration());
+    };
+
+    if (d->allItemsIgnoreHoverEvents && needsMouseTracking(item->d_ptr.data())) {
         d->allItemsIgnoreHoverEvents = false;
         d->enableMouseTrackingOnViews();
     }
