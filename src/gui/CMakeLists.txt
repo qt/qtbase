@@ -726,20 +726,22 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
 )
 
 # special case begin
+# We must always generate syncqt-injected header files,
+# because we added a custom command earlier for those for framework builds.
+set(vulkan_fun "qvulkanfunctions.h")
+set(vulkan_fun_p "qvulkanfunctions_p.h")
+set(vulkan_fun_outputs "vulkan/${vulkan_fun}" "vulkan/${vulkan_fun_p}")
+set(vulkan_fun_command_content COMMAND "${CMAKE_COMMAND}" -E make_directory "vulkan")
 if (QT_FEATURE_vulkan)
-    set(vulkan_fun "qvulkanfunctions.h")
-    set(vulkan_fun_p "qvulkanfunctions_p.h")
     set(vulkan_fun_p_cpp "qvulkanfunctions_p.cpp")
+    list(APPEND vulkan_fun_outputs "vulkan/${vulkan_fun_p_cpp}")
 
-    add_custom_command(
-        OUTPUT "vulkan/${vulkan_fun}" "vulkan/${vulkan_fun_p}" "vulkan/${vulkan_fun_p_cpp}"
-        COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/vulkan/"
+    list(APPEND vulkan_fun_command_content
         COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qvkgen
             "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vk.xml"
             "${PROJECT_SOURCE_DIR}/header.LGPL"
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/qvulkanfunctions"
         DEPENDS vulkan/vk.xml
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         COMMENT "Generating vulkan data"
     )
 
@@ -749,7 +751,17 @@ if (QT_FEATURE_vulkan)
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun_p}"
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/${vulkan_fun_p_cpp}"
     )
+else()
+    foreach(file ${vulkan_fun_outputs})
+        list(APPEND vulkan_fun_command_content
+            COMMAND "${CMAKE_COMMAND}" -E touch "${file}")
+    endforeach()
 endif()
+add_custom_command(
+    OUTPUT ${vulkan_fun_outputs}
+    ${vulkan_fun_command_content}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+)
 # special case end
 
 #### Keys ignored in scope 68:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:

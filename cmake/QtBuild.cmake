@@ -1177,8 +1177,10 @@ function(qt_internal_library_deprecation_level result)
 endfunction()
 
 
-function(qt_install_injections module build_dir install_dir)
+function(qt_install_injections target build_dir install_dir)
     set(injections ${ARGN})
+    set(module "Qt${target}")
+    get_target_property(is_framework ${target} FRAMEWORK)
     # examples:
     #  SYNCQT.INJECTIONS = src/corelib/global/qconfig.h:qconfig.h:QtConfig src/corelib/global/qconfig_p.h:5.12.0/QtCore/private/qconfig_p.h
     #  SYNCQT.INJECTIONS = src/gui/vulkan/qvulkanfunctions.h:^qvulkanfunctions.h:QVulkanFunctions:QVulkanDeviceFunctions src/gui/vulkan/qvulkanfunctions_p.h:^5.12.0/QtGui/private/qvulkanfunctions_p.h
@@ -1234,14 +1236,24 @@ function(qt_install_injections module build_dir install_dir)
         file(GENERATE OUTPUT "${lower_case_forwarding_header_path}/${original_file_name}"
              CONTENT "${main_contents}")
 
-        # Copy the actual injected (generated) header file (not the just created forwarding one)
-        # to its install location when doing a prefix build. In an non-prefix build, the qt_install
-        # will be a no-op.
-        qt_path_join(install_destination
-                     ${install_dir} ${INSTALL_INCLUDEDIR} ${module} ${destinationdir})
-        qt_install(FILES ${current_repo_build_dir}/${file}
-                   DESTINATION ${install_destination}
-                   RENAME ${destinationname} OPTIONAL)
+        if(is_framework)
+            if(file MATCHES "_p\\.h$")
+                set(header_type PRIVATE)
+            else()
+                set(header_type PUBLIC)
+            endif()
+            qt_copy_framework_headers(${target} ${header_type}
+                ${current_repo_build_dir}/${file})
+        else()
+            # Copy the actual injected (generated) header file (not the just created forwarding one)
+            # to its install location when doing a prefix build. In an non-prefix build, the qt_install
+            # will be a no-op.
+            qt_path_join(install_destination
+                        ${install_dir} ${INSTALL_INCLUDEDIR} ${module} ${destinationdir})
+            qt_install(FILES ${current_repo_build_dir}/${file}
+                    DESTINATION ${install_destination}
+                    RENAME ${destinationname} OPTIONAL)
+        endif()
 
         # Generate UpperCaseNamed forwarding headers (part 3).
         foreach(fwd_hdr ${fwd_hdrs})
@@ -1254,11 +1266,17 @@ function(qt_install_injections module build_dir install_dir)
             file(GENERATE OUTPUT "${build_dir}/${upper_case_forwarding_header_path}/${fwd_hdr}"
                  CONTENT "#include \"${destinationname}\"\n")
 
-            # Install the forwarding header.
-            qt_path_join(install_destination
-                         ${install_dir} ${upper_case_forwarding_header_path})
-            qt_install(FILES "${build_dir}/${upper_case_forwarding_header_path}/${fwd_hdr}"
-                       DESTINATION ${install_destination} OPTIONAL)
+            if(is_framework)
+                # Copy the forwarding header to the framework's Headers directory.
+                qt_copy_framework_headers(${target} PUBLIC
+                    "${build_dir}/${upper_case_forwarding_header_path}/${fwd_hdr}")
+            else()
+                # Install the forwarding header.
+                qt_path_join(install_destination
+                            ${install_dir} ${upper_case_forwarding_header_path})
+                qt_install(FILES "${build_dir}/${upper_case_forwarding_header_path}/${fwd_hdr}"
+                        DESTINATION ${install_destination} OPTIONAL)
+            endif()
         endforeach()
     endforeach()
 endfunction()
@@ -1344,6 +1362,81 @@ function(qt_get_sanitized_plugin_type plugin_type out_var)
     set("${out_var}" "${plugin_type}" PARENT_SCOPE)
 endfunction()
 
+# Copy header files to QtXYZ.framework/Versions/6/Headers/
+# Use this function for header files that
+#   - are not added as source files to the target
+#   - are not marked as PUBLIC_HEADER
+#   - or are private and supposed to end up in the 6.7.8/QtXYZ/private subdir.
+function(qt_copy_framework_headers target)
+    get_target_property(is_fw ${target} FRAMEWORK)
+    if(NOT "${is_fw}")
+        return()
+    endif()
+
+    set(options PUBLIC PRIVATE QPA)
+    set(oneValueArgs)
+    set(multiValueArgs)
+    cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    get_target_property(fw_version ${target} FRAMEWORK_VERSION)
+    get_target_property(fw_bundle_version ${target} MACOSX_FRAMEWORK_BUNDLE_VERSION)
+    get_target_property(fw_dir ${target} LIBRARY_OUTPUT_DIRECTORY)
+    get_target_property(fw_name ${target} OUTPUT_NAME)
+    set(fw_headers_dir ${fw_dir}/${fw_name}.framework/Versions/${fw_version}/Headers/)
+    if(ARG_PRIVATE)
+        string(APPEND fw_headers_dir "${fw_bundle_version}/Qt${target}/private/")
+    elseif(ARG_QPA)
+        string(APPEND fw_headers_dir "${fw_bundle_version}/Qt${target}/qpa/")
+    endif()
+
+    set(out_files)
+    foreach(hdr IN LISTS ARG_UNPARSED_ARGUMENTS)
+        get_filename_component(in_file_path ${hdr} ABSOLUTE)
+        get_filename_component(in_file_name ${hdr} NAME)
+        set(out_file_path ${fw_headers_dir}${in_file_name})
+        add_custom_command(
+            OUTPUT ${out_file_path}
+            DEPENDS ${in_file_path}
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${fw_headers_dir}"
+            COMMAND ${CMAKE_COMMAND} -E copy "${in_file_path}" "${fw_headers_dir}")
+        list(APPEND out_files ${out_file_path})
+    endforeach()
+
+    get_target_property(fw_copied_headers ${target} QT_COPIED_FRAMEWORK_HEADERS)
+    if(NOT fw_copied_headers)
+        set(fw_copied_headers "")
+    endif()
+    list(APPEND fw_copied_headers ${out_files})
+    set_target_properties(${target} PROPERTIES QT_COPIED_FRAMEWORK_HEADERS "${fw_copied_headers}")
+endfunction()
+
+function(qt_finalize_framework_headers_copy target)
+    get_target_property(target_type ${target} TYPE)
+    if(${target_type} STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+    get_target_property(is_fw ${target} FRAMEWORK)
+    if(NOT "${is_fw}")
+        return()
+    endif()
+    get_target_property(headers ${target} QT_COPIED_FRAMEWORK_HEADERS)
+    if(headers)
+        # Hack to create the "Headers" symlink in the framework:
+        # Create a fake header file and copy it into the framework by marking it as PUBLIC_HEADER.
+        # CMake now takes care of creating the symlink.
+        set(fake_header ${target}_fake_header.h)
+        file(GENERATE OUTPUT ${fake_header} CONTENT "// ignore this file\n")
+        string(PREPEND fake_header "${CMAKE_CURRENT_BINARY_DIR}/")
+        target_sources(${target} PRIVATE ${fake_header})
+        set_source_files_properties(${fake_header} PROPERTIES GENERATED ON)
+        set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER ${fake_header})
+
+        # Add a target, e.g. Core_framework_headers, that triggers the header copy.
+        add_custom_target(${target}_framework_headers DEPENDS ${headers})
+        add_dependencies(${target} ${target}_framework_headers)
+    endif()
+endfunction()
+
 # This is the main entry function for creating a Qt module, that typically
 # consists of a library, public header files, private header files and configurable
 # features.
@@ -1370,14 +1463,28 @@ function(qt_add_module target)
     qt_internal_add_qt_repo_known_module("${target}")
 
     ### Define Targets:
+    set(is_interface_lib 0)
     if(${arg_HEADER_MODULE})
         add_library("${target}" INTERFACE)
+        set(is_interface_lib 1)
     elseif(${arg_STATIC})
         add_library("${target}" STATIC)
     elseif(${QT_BUILD_SHARED_LIBS})
         add_library("${target}" SHARED)
     else()
         add_library("${target}" STATIC)
+    endif()
+
+    set(is_framework 0)
+    if(QT_FEATURE_framework AND NOT ${arg_HEADER_MODULE} AND NOT ${arg_STATIC})
+        set(is_framework 1)
+        set_target_properties(${target} PROPERTIES
+            FRAMEWORK TRUE
+            FRAMEWORK_VERSION ${PROJECT_VERSION_MAJOR}
+            MACOSX_FRAMEWORK_IDENTIFIER org.qt-project.Qt${target}
+            MACOSX_FRAMEWORK_BUNDLE_VERSION ${PROJECT_VERSION}
+            MACOSX_FRAMEWORK_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+        )
     endif()
 
     if (ANDROID)
@@ -1391,6 +1498,28 @@ function(qt_add_module target)
         set(target_private "${target}Private")
         add_library("${target_private}" INTERFACE)
         qt_internal_add_target_aliases("${target_private}")
+    endif()
+
+    if(NOT arg_HEADER_MODULE)
+        set_target_properties(${target} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
+            RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+            ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
+            VERSION ${PROJECT_VERSION}
+            SOVERSION ${PROJECT_VERSION_MAJOR}
+        )
+
+        if(is_framework)
+            set_target_properties(${target} PROPERTIES
+                OUTPUT_NAME Qt${target}
+            )
+        else()
+            set_target_properties(${target} PROPERTIES
+                OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
+            )
+        endif()
     endif()
 
     # Module headers:
@@ -1415,15 +1544,30 @@ function(qt_add_module target)
 
         ### FIXME: Can we replace headers.pri?
         qt_read_headers_pri("${target}" "module_headers")
-        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_headers_public}")
-        set_property(TARGET "${target}" APPEND PROPERTY PUBLIC_HEADER "${module_include_dir}/${module}Depends")
-        set_property(TARGET "${target}" APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
+        set(module_depends_header "${module_include_dir}/${module}Depends")
+        if(is_framework)
+            if(NOT is_interface_lib)
+                set(public_headers_to_copy "${module_headers_public}" "${module_depends_header}")
+                qt_copy_framework_headers(${target} PUBLIC "${public_headers_to_copy}")
+                qt_copy_framework_headers(${target} PRIVATE "${module_headers_private}")
+            endif()
+        else()
+            set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER "${module_headers_public}")
+            set_property(TARGET ${target} APPEND PROPERTY PUBLIC_HEADER ${module_depends_header})
+            set_property(TARGET ${target} APPEND PROPERTY PRIVATE_HEADER "${module_headers_private}")
+        endif()
         if (NOT ${arg_HEADER_MODULE})
             set_property(TARGET "${target}" PROPERTY MODULE_HEADER "${module_include_dir}/${module}")
         endif()
 
         if(module_headers_qpa)
-            qt_install(FILES ${module_headers_qpa} DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/qpa)
+            if(is_framework)
+                qt_copy_framework_headers(${target} QPA "${module_headers_qpa}")
+            else()
+                qt_install(
+                    FILES ${module_headers_qpa}
+                    DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/qpa)
+            endif()
         endif()
     endif()
 
@@ -1437,17 +1581,6 @@ function(qt_add_module target)
                 qt_internal_add_qt_repo_known_plugin_types("${plugin_type}")
             endforeach()
         endif()
-
-        set_target_properties("${target}" PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
-            RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
-            RUNTIME_OUTPUT_DIRECTORY_RELEASE "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
-            RUNTIME_OUTPUT_DIRECTORY_DEBUG "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
-            ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
-            VERSION ${PROJECT_VERSION}
-            SOVERSION ${PROJECT_VERSION_MAJOR}
-            OUTPUT_NAME "${INSTALL_CMAKE_NAMESPACE}${target}"
-        )
     endif()
 
     qt_internal_library_deprecation_level(deprecation_define)
@@ -1463,6 +1596,25 @@ function(qt_add_module target)
     )
 
     set(public_includes "")
+    set(public_headers_list "public_includes")
+    if(is_framework)
+        set(public_headers_list "private_includes")
+        set(fw_bundle_subdir "${INSTALL_LIBDIR}/Qt${target}.framework")
+        set(fw_headers_subdir "Versions/${PROJECT_VERSION_MAJOR}/Headers")
+        list(APPEND public_includes
+            # Add the lib/Foo.framework dir as include path to let CMake generate
+            # the -F compiler flag.
+            "$<BUILD_INTERFACE:${QT_BUILD_DIR}/${fw_bundle_subdir}>"
+            "$<INSTALL_INTERFACE:${fw_bundle_subdir}>"
+
+            # Add the fully resolved Headers subdir, because the Headers symlink might
+            # not be there yet.
+            "$<BUILD_INTERFACE:${QT_BUILD_DIR}/${fw_bundle_subdir}/${fw_headers_subdir}>"
+
+            # After installing, the Headers symlink is guaranteed to exist.
+            "$<INSTALL_INTERFACE:${fw_bundle_subdir}/Headers>"
+            )
+    endif()
 
     # Handle cases like QmlDevTools which do not have their own headers, but rather borrow them
     # from another module.
@@ -1474,7 +1626,7 @@ function(qt_add_module target)
                         "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
         endif()
 
-        list(APPEND public_includes
+        list(APPEND ${public_headers_list}
                     # For the syncqt headers
                     "$<BUILD_INTERFACE:${module_repo_include_dir}>"
                     "$<BUILD_INTERFACE:${module_include_dir}>")
@@ -1482,9 +1634,9 @@ function(qt_add_module target)
 
     if(NOT arg_NO_MODULE_HEADERS AND NOT arg_NO_SYNC_QT)
         # For the syncqt headers
-        list(APPEND public_includes "$<INSTALL_INTERFACE:include/${module}>")
+        list(APPEND ${public_headers_list} "$<INSTALL_INTERFACE:include/${module}>")
     endif()
-    list(APPEND public_includes ${arg_PUBLIC_INCLUDE_DIRECTORIES})
+    list(APPEND ${public_headers_list} ${arg_PUBLIC_INCLUDE_DIRECTORIES})
 
     set(header_module)
     if(arg_HEADER_MODULE)
@@ -1570,7 +1722,7 @@ function(qt_add_module target)
     endif()
 
     if(final_injections)
-        qt_install_injections("${module}" "${QT_BUILD_DIR}" "${QT_INSTALL_DIR}" ${final_injections})
+        qt_install_injections(${target} "${QT_BUILD_DIR}" "${QT_INSTALL_DIR}" ${final_injections})
     endif()
 
     # Handle creation of cmake files for consumers of find_package().
@@ -1638,6 +1790,7 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         RUNTIME DESTINATION ${INSTALL_BINDIR}
         LIBRARY DESTINATION ${INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${INSTALL_LIBDIR}
+        FRAMEWORK DESTINATION ${INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}
         PRIVATE_HEADER DESTINATION ${INSTALL_INCLUDEDIR}/${module}/${PROJECT_VERSION}/${module}/private
         )
@@ -1690,14 +1843,26 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
                     "$<BUILD_INTERFACE:${module_include_dir}/${PROJECT_VERSION}/${module}>")
 
         if(NOT arg_NO_MODULE_HEADERS)
-            list(APPEND interface_includes
-                        "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>"
-                        "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>")
+            if(is_framework)
+                set(fw_headers_dir
+                    "${INSTALL_LIBDIR}/${module}.framework/Headers/")
+                list(APPEND interface_includes
+                            "$<INSTALL_INTERFACE:${fw_headers_dir}${PROJECT_VERSION}>"
+                            "$<INSTALL_INTERFACE:${fw_headers_dir}${PROJECT_VERSION}/${module}>")
+            else()
+                list(APPEND interface_includes
+                            "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}>"
+                            "$<INSTALL_INTERFACE:include/${module}/${PROJECT_VERSION}/${module}>")
+            endif()
         endif()
     endif()
 
     if(NOT ${arg_NO_PRIVATE_MODULE})
         target_include_directories("${target_private}" INTERFACE ${interface_includes})
+    endif()
+
+    if(is_framework AND NOT is_interface_lib)
+        qt_finalize_framework_headers_copy(${target})
     endif()
 
     qt_describe_module(${target})
