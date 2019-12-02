@@ -2210,6 +2210,13 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::TextDate << QDateTime(QDate(2013, 5, 6), QTime(1, 2, 3, 456));
 
     // Test Qt::ISODate format.
+    QTest::newRow("trailing space") // QTBUG-80445
+        << QString("2000-01-02 03:04:05.678 ")
+        << Qt::ISODate << QDateTime(QDate(2000, 1, 2), QTime(3, 4, 5, 678));
+    QTest::newRow("space before millis")
+        << QString("2000-01-02 03:04:05. 678") << Qt::ISODate << QDateTime();
+
+    // Normal usage:
     QTest::newRow("ISO +01:00") << QString::fromLatin1("1987-02-13T13:24:51+01:00")
         << Qt::ISODate << QDateTime(QDate(1987, 2, 13), QTime(12, 24, 51), Qt::UTC);
     QTest::newRow("ISO +00:01") << QString::fromLatin1("1987-02-13T13:24:51+00:01")
@@ -2233,8 +2240,12 @@ void tst_QDateTime::fromStringDateFormat_data()
     // No time specified - defaults to Qt::LocalTime.
     QTest::newRow("ISO data3") << QString::fromLatin1("2002-10-01")
         << Qt::ISODate << QDateTime(QDate(2002, 10, 1), QTime(0, 0, 0, 0), Qt::LocalTime);
+    // Excess digits in milliseconds, round correctly:
     QTest::newRow("ISO") << QString::fromLatin1("2005-06-28T07:57:30.0010000000Z")
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 1), Qt::UTC);
+    QTest::newRow("ISO rounding") << QString::fromLatin1("2005-06-28T07:57:30.0015Z")
+        << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 2), Qt::UTC);
+    // ... and accept comma as separator:
     QTest::newRow("ISO with comma 1") << QString::fromLatin1("2005-06-28T07:57:30,0040000000Z")
         << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 4), Qt::UTC);
     QTest::newRow("ISO with comma 2") << QString::fromLatin1("2005-06-28T07:57:30,0015Z")

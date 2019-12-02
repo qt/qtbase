@@ -2375,7 +2375,12 @@ static QTime fromIsoTimeString(const QStringRef &string, Qt::DateFormat format, 
         if (!ok)
             return QTime();
         if (size > 8 && (string.at(8) == QLatin1Char(',') || string.at(8) == QLatin1Char('.'))) {
-            const QStringRef msecStr(string.mid(9, 4));
+            QStringRef msecStr(string.mid(9, 4));
+            // toInt() ignores leading spaces, so catch them before calling it
+            if (!msecStr.isEmpty() && !msecStr.at(0).isDigit())
+                return QTime();
+            // We do, however, want to ignore *trailing* spaces.
+            msecStr = msecStr.trimmed();
             int msecInt = msecStr.isEmpty() ? 0 : msecStr.toInt(&ok);
             if (!ok)
                 return QTime();
