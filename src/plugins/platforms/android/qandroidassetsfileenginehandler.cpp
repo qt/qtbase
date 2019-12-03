@@ -288,6 +288,7 @@ public:
             m_assetFile = 0;
             return true;
         }
+        m_isFolder = false;
         return false;
     }
 
@@ -397,9 +398,9 @@ public:
 
 private:
     AAsset *m_assetFile = nullptr;
-    AAssetManager *m_assetManager;
+    AAssetManager *m_assetManager = nullptr;
     QString m_fileName;
-    bool m_isFolder;
+    bool m_isFolder = false;
 };
 
 
