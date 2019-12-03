@@ -5214,7 +5214,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         if (!date.isValid())
             return QDateTime();
         if (size == 10)
-            return QDateTime(date);
+            return date.startOfDay();
 
         Qt::TimeSpec spec = Qt::LocalTime;
         QStringRef isoString(&string);
