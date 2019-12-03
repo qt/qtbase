@@ -120,8 +120,6 @@ private slots:
     void constRefs();
     void convertCustomType_data();
     void convertCustomType();
-    void compareCustomType_data();
-    void compareCustomType();
     void compareCustomEqualOnlyType();
     void customDebugStream();
     void unknownType();
@@ -2132,7 +2130,7 @@ struct CustomConvertibleType
 };
 
 bool operator<(const CustomConvertibleType &lhs, const CustomConvertibleType &rhs)
-{ return lhs.m_foo < rhs.m_foo; }
+{ return lhs.m_foo.toString() < rhs.m_foo.toString(); }
 bool operator==(const CustomConvertibleType &lhs, const CustomConvertibleType &rhs)
 { return lhs.m_foo == rhs.m_foo; }
 bool operator!=(const CustomConvertibleType &lhs, const CustomConvertibleType &rhs)
@@ -2422,43 +2420,6 @@ void tst_QMetaType::convertCustomType()
     QCOMPARE(v.value<CustomConvertibleType2>().m_foo, testCustom.m_foo);
 }
 
-void tst_QMetaType::compareCustomType_data()
-{
-    QMetaType::registerComparators<CustomConvertibleType>();
-
-    QTest::addColumn<QVariantList>("unsorted");
-    QTest::addColumn<QVariantList>("sorted");
-
-    QTest::newRow("int") << (QVariantList() << 37 << 458 << 1 << 243 << -4 << 383)
-                         << (QVariantList() << -4 << 1 << 37 << 243 << 383 << 458);
-
-    QTest::newRow("dobule") << (QVariantList() << 4934.93 << 0.0 << 302.39 << -39.0)
-                            << (QVariantList() << -39.0 << 0.0 << 302.39 << 4934.93);
-
-    QTest::newRow("QString") << (QVariantList() << "Hello" << "World" << "this" << "is" << "a" << "test")
-                             << (QVariantList() << "a" << "Hello" << "is" << "test" << "this" << "World");
-
-    QTest::newRow("QTime") << (QVariantList() << QTime(14, 39) << QTime(0, 0) << QTime(18, 18) << QTime(9, 27))
-                           << (QVariantList() << QTime(0, 0) << QTime(9, 27) << QTime(14, 39) << QTime(18, 18));
-
-    QTest::newRow("QDate") << (QVariantList() << QDate(2013, 3, 23) << QDate(1900, 12, 1) << QDate(2001, 2, 2) << QDate(1982, 12, 16))
-                           << (QVariantList() << QDate(1900, 12, 1) << QDate(1982, 12, 16) << QDate(2001, 2, 2) << QDate(2013, 3, 23));
-
-    QTest::newRow("mixed")   << (QVariantList() << "Hello" << "World" << QChar('a') << 38 << QChar('z') << -39 << 4.6)
-                             << (QVariantList() << -39 << 4.6 << 38 << QChar('a') << "Hello" << "World" << QChar('z'));
-
-    QTest::newRow("custom") << (QVariantList() << QVariant::fromValue(CustomConvertibleType(1)) << QVariant::fromValue(CustomConvertibleType(100)) << QVariant::fromValue(CustomConvertibleType(50)))
-                            << (QVariantList() << QVariant::fromValue(CustomConvertibleType(1)) << QVariant::fromValue(CustomConvertibleType(50)) << QVariant::fromValue(CustomConvertibleType(100)));
-}
-
-void tst_QMetaType::compareCustomType()
-{
-    QFETCH(QVariantList, unsorted);
-    QFETCH(QVariantList, sorted);
-    std::sort(unsorted.begin(), unsorted.end());
-    QCOMPARE(unsorted, sorted);
-}
-
 void tst_QMetaType::compareCustomEqualOnlyType()
 {
     int metaTypeId = qRegisterMetaType<CustomEqualsOnlyType>();
@@ -2479,11 +2440,6 @@ void tst_QMetaType::compareCustomEqualOnlyType()
     QVERIFY(variant100x != variant50);
     QCOMPARE(variant100, variant100x);
     QCOMPARE(variant100, variant100);
-
-    // compare always fails
-    QVERIFY(!(variant50 < variant50));
-    QVERIFY(!(variant50 < variant100));
-    QVERIFY(!(variant100 < variant50));
 
     // check QMetaType::compare works/doesn't crash for equals only comparators
     bool wasSuccess = QMetaType::compare(variant50.constData(), variant50.constData(),
