@@ -2237,6 +2237,8 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::ISODate << QDateTime(QDate(2014, 12, 15), QTime(15, 37, 9), Qt::UTC);
     QTest::newRow("ISO zzz-3") << QString::fromLatin1("2014-12-15T12:37:09.745-3")
         << Qt::ISODate << QDateTime(QDate(2014, 12, 15), QTime(15, 37, 9, 745), Qt::UTC);
+    QTest::newRow("ISO lower-case") << QString::fromLatin1("2005-06-28T07:57:30.002z")
+        << Qt::ISODate << QDateTime(QDate(2005, 6, 28), QTime(7, 57, 30, 2), Qt::UTC);
     // No time specified - defaults to Qt::LocalTime.
     QTest::newRow("ISO data3") << QString::fromLatin1("2002-10-01")
         << Qt::ISODate << QDateTime(QDate(2002, 10, 1), QTime(0, 0, 0, 0), Qt::LocalTime);

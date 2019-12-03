@@ -5220,10 +5220,12 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
         QStringRef isoString(&string);
         isoString = isoString.mid(10); // trim "yyyy-MM-dd"
 
-        // Must be left with T and at least one digit for the hour:
+        // Must be left with T (or space) and at least one digit for the hour:
         if (isoString.size() < 2
-            || !(isoString.startsWith(QLatin1Char('T'))
-                 // FIXME: QSql relies on QVariant::toDateTime() accepting a space here:
+            || !(isoString.startsWith(QLatin1Char('T'), Qt::CaseInsensitive)
+                 // RFC 3339 (section 5.6) allows a space here.  (It actually
+                 // allows any separator one considers more readable, merely
+                 // giving space as an example - but let's not go wild !)
                  || isoString.startsWith(QLatin1Char(' ')))) {
             return QDateTime();
         }
@@ -5231,7 +5233,7 @@ QDateTime QDateTime::fromString(const QString &string, Qt::DateFormat format)
 
         int offset = 0;
         // Check end of string for Time Zone definition, either Z for UTC or [+-]HH:mm for Offset
-        if (isoString.endsWith(QLatin1Char('Z'))) {
+        if (isoString.endsWith(QLatin1Char('Z'), Qt::CaseInsensitive)) {
             spec = Qt::UTC;
             isoString.chop(1); // trim 'Z'
         } else {
