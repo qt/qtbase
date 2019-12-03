@@ -761,6 +761,85 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtCbor;
 
+static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
+{
+    qint64 tag = d->elements.at(0).value;
+    auto &e = d->elements[1];
+    const ByteData *b = d->byteData(e);
+
+    auto replaceByteData = [&](const char *buf, qsizetype len, Element::ValueFlags f) {
+        d->data.clear();
+        d->usedData = 0;
+        e.flags = Element::HasByteData | f;
+        e.value = d->addByteData(buf, len);
+    };
+
+    switch (tag) {
+    case qint64(QCborKnownTags::DateTimeString):
+    case qint64(QCborKnownTags::UnixTime_t): {
+        QDateTime dt;
+        if (tag == qint64(QCborKnownTags::DateTimeString) && b &&
+            e.type == QCborValue::String && (e.flags & Element::StringIsUtf16) == 0) {
+            // The data is supposed to be US-ASCII. If it isn't (contains UTF-8),
+            // QDateTime::fromString will fail anyway.
+            dt = QDateTime::fromString(b->asLatin1(), Qt::ISODateWithMs);
+        } else if (tag == qint64(QCborKnownTags::UnixTime_t) && e.type == QCborValue::Integer) {
+            dt = QDateTime::fromSecsSinceEpoch(e.value, Qt::UTC);
+        } else if (tag == qint64(QCborKnownTags::UnixTime_t) && e.type == QCborValue::Double) {
+            dt = QDateTime::fromMSecsSinceEpoch(qint64(e.fpvalue() * 1000), Qt::UTC);
+        }
+        if (dt.isValid()) {
+            QByteArray text = dt.toString(Qt::ISODateWithMs).toLatin1();
+            replaceByteData(text, text.size(), Element::StringIsAscii);
+            e.type = QCborValue::String;
+            d->elements[0].value = qint64(QCborKnownTags::DateTimeString);
+            return QCborValue::DateTime;
+        }
+        break;
+    }
+
+#ifndef QT_BOOTSTRAPPED
+    case qint64(QCborKnownTags::Url):
+        if (e.type == QCborValue::String) {
+            if (b) {
+                // normalize to a short (decoded) form, so as to save space
+                QUrl url(e.flags & Element::StringIsUtf16 ?
+                             b->asQStringRaw() :
+                             b->toUtf8String());
+                QByteArray encoded = url.toString(QUrl::DecodeReserved).toUtf8();
+                replaceByteData(encoded, encoded.size(), {});
+            }
+            return QCborValue::Url;
+        }
+        break;
+#endif // QT_BOOTSTRAPPED
+
+#if QT_CONFIG(regularexpression)
+    case quint64(QCborKnownTags::RegularExpression):
+        if (e.type == QCborValue::String) {
+            // no normalization is necessary
+            return QCborValue::RegularExpression;
+        }
+        break;
+#endif // QT_CONFIG(regularexpression)
+
+    case qint64(QCborKnownTags::Uuid):
+        if (e.type == QCborValue::ByteArray) {
+            // force the size to 16
+            char buf[sizeof(QUuid)] = {};
+            if (b)
+                memcpy(buf, b->byte(), qMin(sizeof(buf), size_t(b->len)));
+            replaceByteData(buf, sizeof(buf), {});
+
+            return QCborValue::Uuid;
+        }
+        break;
+    }
+
+    // no enriching happened
+    return QCborValue::Tag;
+}
+
 #if QT_CONFIG(cborstream)
 // in qcborstream.cpp
 extern void qt_cbor_stream_set_error(QCborStreamReaderPrivate *d, QCborError error);
@@ -1390,77 +1469,10 @@ static QCborValue taggedValueFromCbor(QCborStreamReader &reader)
         d->decodeValueFromCbor(reader);
     }
 
-    QCborValue::Type type = QCborValue::Tag;
+    QCborValue::Type type;
     if (reader.lastError() == QCborError::NoError) {
         // post-process to create our extended types
-        qint64 tag = d->elements.at(0).value;
-        auto &e = d->elements[1];
-        const ByteData *b = d->byteData(e);
-
-        auto replaceByteData = [&](const char *buf, qsizetype len) {
-            d->data.clear();
-            d->usedData = 0;
-            e.flags = Element::HasByteData | Element::StringIsAscii;
-            e.value = d->addByteData(buf, len);
-        };
-
-        switch (tag) {
-        case qint64(QCborKnownTags::DateTimeString):
-        case qint64(QCborKnownTags::UnixTime_t): {
-            QDateTime dt;
-            if (tag == qint64(QCborKnownTags::DateTimeString) && b &&
-                e.type == QCborValue::String && (e.flags & Element::StringIsUtf16) == 0) {
-                // The data is supposed to be US-ASCII. If it isn't,
-                // QDateTime::fromString will fail anyway.
-                dt = QDateTime::fromString(b->asLatin1(), Qt::ISODateWithMs);
-            } else if (tag == qint64(QCborKnownTags::UnixTime_t) && e.type == QCborValue::Integer) {
-                dt = QDateTime::fromSecsSinceEpoch(e.value, Qt::UTC);
-            } else if (tag == qint64(QCborKnownTags::UnixTime_t) && e.type == QCborValue::Double) {
-                dt = QDateTime::fromMSecsSinceEpoch(qint64(e.fpvalue() * 1000), Qt::UTC);
-            }
-            if (dt.isValid()) {
-                QByteArray text = dt.toString(Qt::ISODateWithMs).toLatin1();
-                replaceByteData(text, text.size());
-                e.type = QCborValue::String;
-                d->elements[0].value = qint64(QCborKnownTags::DateTimeString);
-                type = QCborValue::DateTime;
-            }
-            break;
-        }
-
-        case qint64(QCborKnownTags::Url):
-            if (e.type == QCborValue::String) {
-                if (b) {
-                    // normalize to a short (decoded) form, so as to save space
-                    QUrl url(e.flags & Element::StringIsUtf16 ?
-                                 b->asQStringRaw() :
-                                 b->toUtf8String());
-                    QByteArray encoded = url.toString(QUrl::DecodeReserved).toUtf8();
-                    replaceByteData(encoded, encoded.size());
-                }
-                type = QCborValue::Url;
-            }
-            break;
-
-        case quint64(QCborKnownTags::RegularExpression):
-            if (e.type == QCborValue::String) {
-                // no normalization is necessary
-                type = QCborValue::RegularExpression;
-            }
-            break;
-
-        case qint64(QCborKnownTags::Uuid):
-            if (e.type == QCborValue::ByteArray) {
-                // force the size to 16
-                char buf[sizeof(QUuid)] = {};
-                if (b)
-                    memcpy(buf, b->byte(), qMin(sizeof(buf), size_t(b->len)));
-                replaceByteData(buf, sizeof(buf));
-
-                type = QCborValue::Uuid;
-            }
-            break;
-        }
+        type = convertToExtendedType(d);
     } else {
         // decoding error
         type = QCborValue::Invalid;
@@ -1724,21 +1736,22 @@ QCborValue::QCborValue(const QCborMap &m)
 }
 
 /*!
-    \fn QCborValue::QCborValue(QCborTag t, const QCborValue &tv)
-    \fn QCborValue::QCborValue(QCborKnownTags t, const QCborValue &tv)
+    \fn QCborValue::QCborValue(QCborTag tag, const QCborValue &tv)
+    \fn QCborValue::QCborValue(QCborKnownTags tag, const QCborValue &tv)
 
     Creates a QCborValue for the extended type represented by the tag value \a
-    t, tagging value \a tv. The tag can later be retrieved using tag() and
+    tag, tagging value \a tv. The tag can later be retrieved using tag() and
     the tagged value using taggedValue().
 
     \sa isTag(), tag(), taggedValue(), QCborKnownTags
  */
-QCborValue::QCborValue(QCborTag t, const QCborValue &tv)
+QCborValue::QCborValue(QCborTag tag, const QCborValue &tv)
     : n(-1), container(new QCborContainerPrivate), t(Tag)
 {
     container->ref.storeRelaxed(1);
-    container->append(t);
+    container->append(tag);
     container->append(tv);
+    t = convertToExtendedType(container);
 }
 
 /*!

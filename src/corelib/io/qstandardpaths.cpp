@@ -357,14 +357,14 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QString QStandardPaths::writableLocation(StandardLocation type)
 
-    \include standardpath/functiondoc.qdocinc writableLocation
+    \include standardpath/functiondocs.qdocinc writableLocation
 */
 
 
 /*!
    \fn QStringList QStandardPaths::standardLocations(StandardLocation type)
 
-   \include standardpath/functiondoc.qdocinc standardLocations
+   \include standardpath/functiondocs.qdocinc standardLocations
 
    \sa writableLocation()
  */
@@ -388,7 +388,7 @@ static bool existsAsSpecified(const QString &path, QStandardPaths::LocateOptions
 }
 
 /*!
-    \include standardpath/functiondoc.qdocinc locate
+    \include standardpath/functiondocs.qdocinc locate
  */
 QString QStandardPaths::locate(StandardLocation type, const QString &fileName, LocateOptions options)
 {
@@ -402,7 +402,7 @@ QString QStandardPaths::locate(StandardLocation type, const QString &fileName, L
 }
 
 /*!
-    \include standardpath/functiondoc.qdocinc locateAll
+    \include standardpath/functiondocs.qdocinc locateAll
  */
 QStringList QStandardPaths::locateAll(StandardLocation type, const QString &fileName, LocateOptions options)
 {
@@ -475,7 +475,7 @@ static inline QString
 #endif // Q_OS_WIN
 
 /*!
-    \include standardpath/functiondoc.qdocinc findExecutable
+    \include standardpath/functiondocs.qdocinc findExecutable
  */
 QString QStandardPaths::findExecutable(const QString &executableName, const QStringList &paths)
 {
@@ -533,7 +533,7 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
 }
 
 /*!
-    \include standardpath/functiondoc.qdocinc displayName
+    \include standardpath/functiondocs.qdocinc displayName
 */
 
 #if !defined(Q_OS_MAC) && !defined(QT_BOOTSTRAPPED)
@@ -590,7 +590,7 @@ QString QStandardPaths::displayName(StandardLocation type)
 /*!
   \fn void QStandardPaths::setTestModeEnabled(bool testMode)
 
-  \include standardpath/functiondoc.qdocinc setTestModeEnabled
+  \include standardpath/functiondocs.qdocinc setTestModeEnabled
 */
 
 static bool qsp_testMode = false;

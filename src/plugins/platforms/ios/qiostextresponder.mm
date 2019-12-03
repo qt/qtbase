@@ -781,12 +781,16 @@
 
 - (UIView *)textInputView
 {
+    auto *focusWindow = QGuiApplication::focusWindow();
+    if (!focusWindow)
+        return nil;
+
     // iOS expects rects we return from other UITextInput methods
     // to be relative to the view this method returns.
     // Since QInputMethod returns rects relative to the top level
     // QWindow, that is also the view we need to return.
-    Q_ASSERT(qApp->focusWindow()->handle());
-    QPlatformWindow *topLevel = qApp->focusWindow()->handle();
+    Q_ASSERT(focusWindow->handle());
+    QPlatformWindow *topLevel = focusWindow->handle();
     while (QPlatformWindow *p = topLevel->parent())
         topLevel = p;
     return reinterpret_cast<UIView *>(topLevel->winId());

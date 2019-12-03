@@ -40,6 +40,7 @@
 #include <QtCore/qcborvalue.h>
 #include <QtTest>
 
+Q_DECLARE_METATYPE(QCborKnownTags)
 Q_DECLARE_METATYPE(QCborValue)
 Q_DECLARE_METATYPE(QCborValue::EncodingOptions)
 
@@ -294,34 +295,77 @@ void tst_QCborValue::tagged()
 void tst_QCborValue::extendedTypes_data()
 {
     QTest::addColumn<QCborValue>("extended");
-    QTest::addColumn<QCborValue>("tagged");
+    QTest::addColumn<QCborKnownTags>("tag");
+    QTest::addColumn<QCborValue>("taggedValue");
+    QTest::addColumn<QCborValue>("correctedTaggedValue");
+    QCborValue v(QCborValue::Invalid);
     QDateTime dt = QDateTime::currentDateTimeUtc();
+    QDateTime dtTzOffset(dt.date(), dt.time(), Qt::OffsetFromUTC, dt.offsetFromUtc());
     QUuid uuid = QUuid::createUuid();
 
+    // non-correcting extended types (tagged value remains unchanged)
     QTest::newRow("DateTime") << QCborValue(dt)
-                              << QCborValue(QCborKnownTags::DateTimeString, dt.toString(Qt::ISODateWithMs));
+                              << QCborKnownTags::DateTimeString << QCborValue(dt.toString(Qt::ISODateWithMs)) << v;
+    QTest::newRow("DateTime:TzOffset") << QCborValue(dtTzOffset)
+                                       << QCborKnownTags::DateTimeString << QCborValue(dtTzOffset.toString(Qt::ISODateWithMs)) << v;
     QTest::newRow("Url:Empty") << QCborValue(QUrl())
-                               << QCborValue(QCborKnownTags::Url, QString());
+                               << QCborKnownTags::Url << QCborValue(QString()) << v;
     QTest::newRow("Url:Authority") << QCborValue(QUrl("https://example.com"))
-                                   << QCborValue(QCborKnownTags::Url, "https://example.com");
+                                   << QCborKnownTags::Url << QCborValue("https://example.com") << v;
     QTest::newRow("Url:Path") << QCborValue(QUrl("file:///tmp/none"))
-                              << QCborValue(QCborKnownTags::Url, "file:///tmp/none");
+                              << QCborKnownTags::Url << QCborValue("file:///tmp/none") << v;
     QTest::newRow("Url:QueryFragment") << QCborValue(QUrl("whatever:?a=b&c=d#e"))
-                                       << QCborValue(QCborKnownTags::Url, "whatever:?a=b&c=d#e");
+                                       << QCborKnownTags::Url << QCborValue("whatever:?a=b&c=d#e") << v;
     QTest::newRow("Regex:Empty") << QCborValue(QRegularExpression())
-                                 << QCborValue(QCborKnownTags::RegularExpression, QString());
+                                 << QCborKnownTags::RegularExpression << QCborValue(QString()) << v;
     QTest::newRow("Regex") << QCborValue(QRegularExpression("^.*$"))
-                           << QCborValue(QCborKnownTags::RegularExpression, QString("^.*$"));
+                           << QCborKnownTags::RegularExpression << QCborValue(QString("^.*$")) << v;
     QTest::newRow("Uuid") << QCborValue(uuid)
-                          << QCborValue(QCborKnownTags::Uuid, uuid.toRfc4122());
+                          << QCborKnownTags::Uuid << QCborValue(uuid.toRfc4122()) << v;
+
+    // correcting extended types
+    QDateTime dtNoMsecs = dt.fromSecsSinceEpoch(dt.toSecsSinceEpoch(), Qt::UTC);
+    QUrl url("https://example.com/\xc2\xa9 ");
+    QTest::newRow("UnixTime_t:Integer") << QCborValue(dtNoMsecs) << QCborKnownTags::UnixTime_t
+                                        << QCborValue(dtNoMsecs.toSecsSinceEpoch())
+                                        << QCborValue(dtNoMsecs.toString(Qt::ISODateWithMs));
+    QTest::newRow("UnixTime_t:Double") << QCborValue(dt) << QCborKnownTags::UnixTime_t
+                                       << QCborValue(dt.toMSecsSinceEpoch() / 1000.)
+                                       << QCborValue(dt.toString(Qt::ISODateWithMs));
+    QTest::newRow("DateTime::JustDate") << QCborValue(QDateTime({2018, 1, 1}, {}))
+                                        << QCborKnownTags::DateTimeString
+                                        << QCborValue("2018-01-01") << QCborValue("2018-01-01T00:00:00.000");
+    QTest::newRow("DateTime::TzOffset") << QCborValue(QDateTime({2018, 1, 1}, {9, 0, 0}, Qt::UTC))
+                                        << QCborKnownTags::DateTimeString
+                                        << QCborValue("2018-01-01T09:00:00.000+00:00")
+                                        << QCborValue("2018-01-01T09:00:00.000Z");
+    QTest::newRow("Url:NotNormalized") << QCborValue(url) << QCborKnownTags::Url
+                                       << QCborValue("HTTPS://EXAMPLE.COM/%c2%a9%20")
+                                       << QCborValue(url.toString());
+    QTest::newRow("Uuid:Zero") << QCborValue(QUuid()) << QCborKnownTags::Uuid
+                               << QCborValue(QByteArray())
+                               << QCborValue(QByteArray(sizeof(QUuid), 0));
+    QTest::newRow("Uuid:TooShort") << QCborValue(QUuid(0x12345678, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+                                   << QCborKnownTags::Uuid
+                                   << QCborValue(raw("\x12\x34\x56\x78"))
+                                   << QCborValue(raw("\x12\x34\x56\x78" "\0\0\0\0" "\0\0\0\0" "\0\0\0\0"));
+    QTest::newRow("Uuid:TooLong") << QCborValue(uuid) << QCborKnownTags::Uuid
+                                  << QCborValue(uuid.toRfc4122() + "\1\2\3\4") << QCborValue(uuid.toRfc4122());
 }
 
 void tst_QCborValue::extendedTypes()
 {
     QFETCH(QCborValue, extended);
-    QFETCH(QCborValue, tagged);
+    QFETCH(QCborKnownTags, tag);
+    QFETCH(QCborValue, taggedValue);
+    QFETCH(QCborValue, correctedTaggedValue);
+    if (correctedTaggedValue.isInvalid())
+        correctedTaggedValue = taggedValue;
+
+    QCborValue tagged(tag, taggedValue);
     QVERIFY(extended.isTag());
     QVERIFY(tagged.isTag());
+    QCOMPARE(tagged.taggedValue(), correctedTaggedValue);
     QVERIFY(extended == tagged);
     QVERIFY(tagged == extended);
 
@@ -1224,8 +1268,11 @@ void tst_QCborValue::sorting()
     QCborValue va1(QCborValue::Array), va2(QCborArray{1}), va3(QCborArray{0, 0});
     QCborValue vm1(QCborValue::Map), vm2(QCborMap{{1, 0}}), vm3(QCborMap{{0, 0}, {1, 0}});
     QCborValue vdt1(QDateTime::fromMSecsSinceEpoch(0, Qt::UTC)), vdt2(QDateTime::currentDateTimeUtc());
-    QCborValue vtagged1(QCborKnownTags::UnixTime_t, 0), vtagged2(QCborKnownTags::UnixTime_t, 0.0),
-            vtagged3(QCborKnownTags::Signature, 0), vtagged4(QCborTag(-2), 0), vtagged5(QCborTag(-1), 0);
+    QCborValue vtagged1(QCborKnownTags::PositiveBignum, QByteArray()),
+            vtagged2(QCborKnownTags::PositiveBignum, 0.0),  // bignums are supposed to have byte arrays...
+            vtagged3(QCborKnownTags::Signature, 0),
+            vtagged4(QCborTag(-2), 0),
+            vtagged5(QCborTag(-1), 0);
     QCborValue vurl1(QUrl("https://example.net")), vurl2(QUrl("https://example.com/"));
     QCborValue vuuid1{QUuid()}, vuuid2(QUuid::createUuid());
     QCborValue vsimple1(QCborSimpleType(1)), vsimple32(QCborSimpleType(32)), vsimple255(QCborSimpleType(255));
@@ -1391,6 +1438,9 @@ static void addCommonCborData()
     QTest::newRow("Url") << QCborValue(QUrl("HTTPS://example.com/{%30%31}?q=%3Ca+b%20%C2%A9%3E&%26"))
                          << raw("\xd8\x20\x78\x27" "https://example.com/{01}?q=<a+b \xC2\xA9>&%26")
                          << noxfrm;
+    QTest::newRow("Url:NonAscii") << QCborValue(QUrl("https://example.com/\xc2\xa0"))
+                                  << raw("\xd8\x20\x76" "https://example.com/\xc2\xa0")
+                                  << noxfrm;
     QTest::newRow("Regex:Empty") << QCborValue(QRegularExpression()) << raw("\xd8\x23\x60") << noxfrm;
     QTest::newRow("Regex") << QCborValue(QRegularExpression("^.*$"))
                            << raw("\xd8\x23\x64" "^.*$") << noxfrm;

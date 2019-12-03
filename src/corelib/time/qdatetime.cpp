@@ -164,8 +164,8 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
 {
     ParsedRfcDateTime result;
 
-    // Matches "Wdy, dd Mon yyyy HH:mm:ss ±hhmm" (Wdy, being optional)
-    QRegExp rex(QStringLiteral("^(?:[A-Z][a-z]+,)?[ \\t]*(\\d{1,2})[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d)(?::(\\d\\d))?)?[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
+    // Matches "[ddd,] dd MMM yyyy[ hh:mm[:ss]] [±hhmm]" - correct RFC 822, 2822, 5322 format
+    QRegExp rex(QStringLiteral("^[ \\t]*(?:[A-Z][a-z]+,)?[ \\t]*(\\d{1,2})[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d)(?::(\\d\\d))?)?[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
     if (s.indexOf(rex) == 0) {
         const QStringList cap = rex.capturedTexts();
         result.date = QDate(cap[3].toInt(), qt_monthNumberFromShortName(cap[2]), cap[1].toInt());
@@ -176,8 +176,8 @@ static ParsedRfcDateTime rfcDateImpl(const QString &s)
         const int minOffset = cap[9].toInt();
         result.utcOffset = ((hourOffset * 60 + minOffset) * (positiveOffset ? 60 : -60));
     } else {
-        // Matches "Wdy Mon dd HH:mm:ss yyyy"
-        QRegExp rex(QStringLiteral("^[A-Z][a-z]+[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d):(\\d\\d))?[ \\t]+(\\d\\d\\d\\d)[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
+        // Matches "ddd MMM dd[ hh:mm:ss] yyyy [±hhmm]" - permissive RFC 850, 1036 (read only)
+        QRegExp rex(QStringLiteral("^[ \\t]*[A-Z][a-z]+[ \\t]+([A-Z][a-z]+)[ \\t]+(\\d\\d)(?:[ \\t]+(\\d\\d):(\\d\\d):(\\d\\d))?[ \\t]+(\\d\\d\\d\\d)[ \\t]*(?:([+-])(\\d\\d)(\\d\\d))?"));
         if (s.indexOf(rex) == 0) {
             const QStringList cap = rex.capturedTexts();
             result.date = QDate(cap[6].toInt(), qt_monthNumberFromShortName(cap[1]), cap[2].toInt());
