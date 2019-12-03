@@ -791,6 +791,8 @@ void QMenuSloppyState::setSubMenuPopup(const QRect &actionRect, QAction *resetAc
     m_use_reset_action = true;
     m_time.stop();
     m_action_rect = actionRect;
+    if (m_sub_menu)
+        QMenuPrivate::get(m_sub_menu)->sloppyState.m_parent = nullptr;
     m_sub_menu = subMenu;
     QMenuPrivate::get(subMenu)->sloppyState.m_parent = this;
     m_reset_action = resetAction;
