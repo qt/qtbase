@@ -1732,7 +1732,7 @@ QByteArray QByteArray::nulTerminated() const
 
 QByteArray &QByteArray::prepend(const QByteArray &ba)
 {
-    if (size() == 0 && d->isStatic() && ba.d.isMutable()) {
+    if (size() == 0 && ba.d.isMutable()) {
         *this = ba;
     } else if (ba.size() != 0) {
         QByteArray tmp = *this;
@@ -1825,7 +1825,7 @@ QByteArray &QByteArray::prepend(char ch)
 
 QByteArray &QByteArray::append(const QByteArray &ba)
 {
-    if (size() == 0 && d->isStatic() && ba.d.isMutable()) {
+    if (size() == 0 && ba.d.isMutable()) {
         *this = ba;
     } else if (ba.size() != 0) {
         if (d->needsDetach() || size() + ba.size() > capacity())

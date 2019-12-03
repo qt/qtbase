@@ -147,25 +147,7 @@ qCalculateGrowingBlockSize(size_t elementCount, size_t elementSize, size_t heade
     return result;
 }
 
-// End of qtools_p.h implementation
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_GCC("-Wmissing-field-initializers")
-
-const QArrayData QArrayData::shared_null[2] = {
-    { Q_BASIC_ATOMIC_INITIALIZER(-1), 0, 0 }, // shared null
-    /* zero initialized terminator */};
-
-static const QArrayData emptyNotNullShared[2] = {
-    { Q_BASIC_ATOMIC_INITIALIZER(-1), 0, 0 }, // shared empty
-    /* zero initialized terminator */};
-
-QT_WARNING_POP
-
-static const QArrayData &qt_array_empty = emptyNotNullShared[0];
-
-static inline size_t calculateBlockSize(size_t &capacity, size_t objectSize, size_t headerSize,
-                                        uint options)
+static inline size_t calculateBlockSize(size_t &capacity, size_t objectSize, size_t headerSize, uint options)
 {
     // Calculate the byte size
     // allocSize = objectSize * capacity + headerSize, but checked for overflow
@@ -199,9 +181,8 @@ void *QArrayData::allocate(QArrayData **dptr, size_t objectSize, size_t alignmen
             && !(alignment & (alignment - 1)));
 
     if (capacity == 0) {
-        // optimization for empty headers
-        *dptr = const_cast<QArrayData *>(&qt_array_empty);
-        return sharedNullData();
+        *dptr = nullptr;
+        return nullptr;
     }
 
     size_t headerSize = sizeof(QArrayData);

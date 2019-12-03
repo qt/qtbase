@@ -33,29 +33,12 @@
 
 #include "simplevector.h"
 
-struct SharedNullVerifier
-{
-    SharedNullVerifier()
-    {
-        Q_ASSERT(QArrayData::shared_null[0].isStatic());
-        Q_ASSERT(QArrayData::shared_null[0].isShared());
-    }
-};
-
-// This is meant to verify/ensure that shared_null is not being dynamically
-// initialized and stays away from the order-of-static-initialization fiasco.
-//
-// Of course, if this was to fail, qmake and the build should have crashed and
-// burned before we ever got to this point :-)
-SharedNullVerifier globalInit;
-
 class tst_QArrayData : public QObject
 {
     Q_OBJECT
 
 private slots:
     void referenceCounting();
-    void sharedNullEmpty();
     void simpleVector();
     void simpleVectorReserve_data();
     void simpleVectorReserve();
@@ -87,8 +70,6 @@ void tst_QArrayData::referenceCounting()
 
         QCOMPARE(array.ref_.loadRelaxed(), 1);
 
-        QVERIFY(!array.isStatic());
-
         QVERIFY(array.ref());
         QCOMPARE(array.ref_.loadRelaxed(), 2);
 
@@ -106,37 +87,6 @@ void tst_QArrayData::referenceCounting()
 
         // Now would be a good time to free/release allocated data
     }
-}
-
-void tst_QArrayData::sharedNullEmpty()
-{
-    QArrayData *null = const_cast<QArrayData *>(QArrayData::shared_null);
-    QArrayData *empty;
-    QArrayData::allocate(&empty, 1, alignof(QArrayData), 0);
-
-    QVERIFY(null->isStatic());
-    QVERIFY(null->isShared());
-
-    QVERIFY(empty->isStatic());
-    QVERIFY(empty->isShared());
-
-    QCOMPARE(null->ref_.loadRelaxed(), -1);
-    QCOMPARE(empty->ref_.loadRelaxed(), -1);
-
-    QCOMPARE(null->ref_.loadRelaxed(), -1);
-    QCOMPARE(empty->ref_.loadRelaxed(), -1);
-
-    QVERIFY(null->deref());
-    QVERIFY(empty->deref());
-
-    QCOMPARE(null->ref_.loadRelaxed(), -1);
-    QCOMPARE(empty->ref_.loadRelaxed(), -1);
-
-    QVERIFY(null != empty);
-
-    QCOMPARE(null->allocatedCapacity(), size_t(0));
-
-    QCOMPARE(empty->allocatedCapacity(), size_t(0));
 }
 
 void tst_QArrayData::simpleVector()
@@ -479,7 +429,6 @@ void tst_QArrayData::allocate_data()
     QTest::addColumn<size_t>("alignment");
     QTest::addColumn<QArrayData::ArrayOptions>("allocateOptions");
     QTest::addColumn<bool>("isCapacityReserved");
-    QTest::addColumn<const QArrayData *>("commonEmpty");
 
     struct {
         char const *typeName;
@@ -491,19 +440,14 @@ void tst_QArrayData::allocate_data()
         { "void *", sizeof(void *), alignof(void *) }
     };
 
-    QArrayData *shared_empty;
-    (void)QArrayData::allocate(&shared_empty, 1, alignof(QArrayData), 0);
-    QVERIFY(shared_empty);
-
     struct {
         char const *description;
         QArrayData::ArrayOptions allocateOptions;
         bool isCapacityReserved;
-        const QArrayData *commonEmpty;
     } options[] = {
-        { "Default", QArrayData::DefaultAllocationFlags, false, shared_empty },
-        { "Reserved", QArrayData::CapacityReserved, true, shared_empty },
-        { "Grow", QArrayData::GrowsForward, false, shared_empty }
+        { "Default", QArrayData::DefaultAllocationFlags, false },
+        { "Reserved", QArrayData::CapacityReserved, true },
+        { "Grow", QArrayData::GrowsForward, false }
     };
 
     for (size_t i = 0; i < sizeof(types)/sizeof(types[0]); ++i)
@@ -513,8 +457,7 @@ void tst_QArrayData::allocate_data()
                         + QLatin1String(": ")
                         + QLatin1String(options[j].description)))
                 << types[i].objectSize << types[i].alignment
-                << options[j].allocateOptions << options[j].isCapacityReserved
-                << options[j].commonEmpty;
+                << options[j].allocateOptions << options[j].isCapacityReserved;
 }
 
 void tst_QArrayData::allocate()
@@ -523,21 +466,15 @@ void tst_QArrayData::allocate()
     QFETCH(size_t, alignment);
     QFETCH(QArrayData::ArrayOptions, allocateOptions);
     QFETCH(bool, isCapacityReserved);
-    QFETCH(const QArrayData *, commonEmpty);
 
     // Minimum alignment that can be requested is that of QArrayData.
     // Typically, this alignment is sizeof(void *) and ensured by malloc.
     size_t minAlignment = qMax(alignment, alignof(QArrayData));
 
-    // Shared Empty
-    QArrayData *empty;
-    QCOMPARE((QArrayData::allocate(&empty, objectSize, minAlignment, 0,
-                QArrayData::ArrayOptions(allocateOptions)), empty), commonEmpty);
-
     Deallocator keeper(objectSize, minAlignment);
     keeper.headers.reserve(1024);
 
-    for (int capacity = 1; capacity <= 1024; capacity <<= 1) {
+    for (qsizetype capacity = 1; capacity <= 1024; capacity <<= 1) {
         QArrayData *data;
         void *dataPointer = QArrayData::allocate(&data, objectSize, minAlignment,
                 capacity, QArrayData::ArrayOptions(allocateOptions));
@@ -545,9 +482,9 @@ void tst_QArrayData::allocate()
         keeper.headers.append(data);
 
         if (allocateOptions & QArrayData::GrowsForward)
-            QVERIFY(data->allocatedCapacity() > uint(capacity));
+            QVERIFY(data->allocatedCapacity() > capacity);
         else
-            QCOMPARE(data->allocatedCapacity(), size_t(capacity));
+            QCOMPARE(data->allocatedCapacity(), capacity);
         QCOMPARE(bool(data->flags & QArrayData::CapacityReserved), isCapacityReserved);
 
         // Check that the allocated array can be used. Best tested with a
@@ -587,9 +524,9 @@ void tst_QArrayData::reallocate()
     keeper.headers.append(data);
 
     if (allocateOptions & QArrayData::GrowsForward)
-        QVERIFY(data->allocatedCapacity() > size_t(newCapacity));
+        QVERIFY(data->allocatedCapacity() > newCapacity);
     else
-        QCOMPARE(data->allocatedCapacity(), size_t(newCapacity));
+        QCOMPARE(data->allocatedCapacity(), newCapacity);
     QCOMPARE(!(data->flags & QArrayData::CapacityReserved), !isCapacityReserved);
 
     for (int i = 0; i < capacity; ++i)
@@ -658,7 +595,7 @@ void tst_QArrayData::typedData()
         keeper.headers.append(array);
 
         QVERIFY(array);
-        QCOMPARE(array->allocatedCapacity(), size_t(10));
+        QCOMPARE(array->allocatedCapacity(), qsizetype(10));
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
@@ -678,7 +615,7 @@ void tst_QArrayData::typedData()
         keeper.headers.append(array);
 
         QVERIFY(array);
-        QCOMPARE(array->allocatedCapacity(), size_t(10));
+        QCOMPARE(array->allocatedCapacity(), qsizetype(10));
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.
@@ -698,7 +635,7 @@ void tst_QArrayData::typedData()
         keeper.headers.append(array);
 
         QVERIFY(array);
-        QCOMPARE(array->allocatedCapacity(), size_t(10));
+        QCOMPARE(array->allocatedCapacity(), qsizetype(10));
 
         // Check that the allocated array can be used. Best tested with a
         // memory checker, such as valgrind, running.

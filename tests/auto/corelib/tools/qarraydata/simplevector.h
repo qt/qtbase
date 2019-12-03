@@ -85,7 +85,7 @@ public:
     bool isNull() const { return d.isNull(); }
     bool isEmpty() const { return this->empty(); }
 
-    bool isStatic() const { return d->isStatic(); }
+    bool isStatic() const { return !d.isMutable(); }
     bool isShared() const { return d->isShared(); }
     bool isSharedWith(const SimpleVector &other) const { return d == other.d; }
 

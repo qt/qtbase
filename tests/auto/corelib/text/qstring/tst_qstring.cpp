@@ -618,7 +618,7 @@ QString verifyZeroTermination(const QString &str)
     QString::DataPointer strDataPtr = const_cast<QString &>(str).data_ptr();
 
     // Skip if isStatic() or fromRawData(), as those offer no guarantees
-    if (strDataPtr->isStatic() || !strDataPtr->isMutable())
+    if (!strDataPtr->isMutable())
         return str;
 
     int strSize = str.size();

@@ -167,8 +167,8 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
 
     QByteArray::DataPointer baDataPtr = const_cast<QByteArray &>(ba).data_ptr();
 
-    // Skip if isStatic() as those offer no guarantees
-    if (baDataPtr->isStatic())
+    // Skip if !isMutable() as those offer no guarantees
+    if (!baDataPtr->isMutable())
         return ba;
 
     int baSize = ba.size();

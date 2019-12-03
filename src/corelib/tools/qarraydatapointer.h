@@ -78,7 +78,6 @@ public:
     explicit QArrayDataPointer(QPair<QTypedArrayData<T> *, T *> adata, size_t n = 0)
         : d(adata.first), ptr(adata.second), size(int(n))
     {
-        Q_CHECK_PTR(d);
     }
 
     static QArrayDataPointer fromRawData(const T *rawData, size_t length)
@@ -183,7 +182,6 @@ public:
     void ref() noexcept { if (d) d->ref(); }
     bool deref() noexcept { return !d || d->deref(); }
     bool isMutable() const noexcept { return d; }
-    bool isStatic() const noexcept { return !d; }
     bool isShared() const noexcept { return !d || d->isShared(); }
     bool isSharedWith(const QArrayDataPointer &other) const noexcept { return d && d == other.d; }
     bool needsDetach() const noexcept { return !d || d->needsDetach(); }
@@ -199,7 +197,6 @@ private:
     Q_REQUIRED_RESULT QPair<Data *, T *> clone(QArrayData::ArrayOptions options) const
     {
         QPair<Data *, T *> pair = Data::allocate(detachCapacity(size), options);
-        Q_CHECK_PTR(pair.first);
         QArrayDataPointer copy(pair.first, pair.second, 0);
         if (size)
             copy->copyAppend(begin(), end());

@@ -77,22 +77,14 @@ struct Q_CORE_EXPORT QArrayData
     /// Returns true if sharing took place
     bool ref()
     {
-        if (!isStatic())
-            ref_.ref();
+        ref_.ref();
         return true;
     }
 
     /// Returns false if deallocation is necessary
     bool deref()
     {
-        if (isStatic())
-            return true;
         return ref_.deref();
-    }
-
-    bool isStatic() const
-    {
-        return ref_.loadRelaxed() == -1;
     }
 
     bool isShared() const
@@ -133,14 +125,6 @@ struct Q_CORE_EXPORT QArrayData
             size_t objectSize, size_t newCapacity, ArrayOptions newOptions = DefaultAllocationFlags) Q_DECL_NOTHROW;
     static void deallocate(QArrayData *data, size_t objectSize,
             size_t alignment) noexcept;
-
-    static const QArrayData shared_null[2];
-    static QArrayData *sharedNull() noexcept { return const_cast<QArrayData*>(shared_null); }
-    static void *sharedNullData()
-    {
-        QArrayData *const null = const_cast<QArrayData *>(&shared_null[1]);
-        return null;
-    }
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QArrayData::ArrayOptions)
