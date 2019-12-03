@@ -284,7 +284,7 @@ public:
     CocoaControlType windowButtonCocoaControl(QStyle::SubControl sc) const;
 
 #if QT_CONFIG(tabbar)
-    void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const;
+    void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const override;
     static Direction tabDirection(QTabBar::Shape shape);
     static bool verticalTabs(QMacStylePrivate::Direction tabDirection);
 #endif

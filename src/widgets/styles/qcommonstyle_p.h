@@ -122,7 +122,7 @@ public:
 
     mutable QIcon tabBarcloseButtonIcon;
 #if QT_CONFIG(tabbar)
-    void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *pixmapRect) const;
+    virtual void tabLayout(const QStyleOptionTab *opt, const QWidget *widget, QRect *textRect, QRect *pixmapRect) const;
 #endif
 
     int animationFps;
