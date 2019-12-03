@@ -40,7 +40,7 @@ QT_END_NAMESPACE
 class DragWidget : public QWidget
 {
 public:
-    DragWidget(QString text = QString(), QWidget *parent = 0);
+    DragWidget(QString text = QString(), QWidget *parent = nullptr);
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
@@ -52,12 +52,13 @@ protected:
     void timerEvent(QTimerEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
+
 private:
     QPoint dragPos;
     QPoint dropPos;
     QBasicTimer dragTimer;
     QBasicTimer dropTimer;
-    QWidget *otherWindow;
+    QWidget *otherWindow = nullptr;
 };
 
 #endif // DRAGWIDGET_H

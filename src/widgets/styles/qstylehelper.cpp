@@ -274,6 +274,12 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
         painter->drawLines(QStyleHelper::calcLines(option));
     }
 
+    // setting color before BEGIN_STYLE_PIXMAPCACHE since
+    // otherwise it is not set when the image is in the cache
+    buttonColor.setHsv(buttonColor .hue(),
+                       qMin(140, buttonColor .saturation()),
+                       qMax(180, buttonColor.value()));
+
     // Cache dial background
     BEGIN_STYLE_PIXMAPCACHE(QString::fromLatin1("qdial"));
     p->setRenderHint(QPainter::Antialiasing);
@@ -285,9 +291,6 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
     QRectF br = QRectF(dx + 0.5, dy + 0.5,
                        int(r * 2 - 2 * d_ - 2),
                        int(r * 2 - 2 * d_ - 2));
-    buttonColor.setHsv(buttonColor .hue(),
-                       qMin(140, buttonColor .saturation()),
-                       qMax(180, buttonColor.value()));
 
     if (enabled) {
         // Drop shadow

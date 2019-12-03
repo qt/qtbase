@@ -352,6 +352,7 @@ Q_DECL_RELAXED_CONSTEXPR inline QPointF &QPointF::operator*=(qreal c)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
 QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+QT_WARNING_DISABLE_INTEL(1572)
 
 Q_DECL_CONSTEXPR inline bool operator==(const QPointF &p1, const QPointF &p2)
 {

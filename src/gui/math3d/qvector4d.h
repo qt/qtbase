@@ -232,6 +232,7 @@ inline QVector4D &QVector4D::operator/=(const QVector4D &vector)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
 QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+QT_WARNING_DISABLE_INTEL(1572)
 Q_DECL_CONSTEXPR inline bool operator==(const QVector4D &v1, const QVector4D &v2)
 {
     return v1.v[0] == v2.v[0] && v1.v[1] == v2.v[1] && v1.v[2] == v2.v[2] && v1.v[3] == v2.v[3];

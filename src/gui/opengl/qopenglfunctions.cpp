@@ -388,8 +388,12 @@ static int qt_gl_resolve_extensions()
                 | QOpenGLExtensions::MapBufferRange
                 | QOpenGLExtensions::FramebufferBlit
                 | QOpenGLExtensions::FramebufferMultisample
-                | QOpenGLExtensions::Sized8Formats
-                | QOpenGLExtensions::TextureSwizzle;
+                | QOpenGLExtensions::Sized8Formats;
+#ifndef Q_OS_WASM
+            // WebGL 2.0 specification explicitly does not support texture swizzles
+            // https://www.khronos.org/registry/webgl/specs/latest/2.0/#5.19
+            extensions |= QOpenGLExtensions::TextureSwizzle;
+#endif
         } else {
             // Recognize features by extension name.
             if (extensionMatcher.match("GL_OES_packed_depth_stencil"))

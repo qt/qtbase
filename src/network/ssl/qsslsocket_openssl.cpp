@@ -92,6 +92,7 @@
 #endif
 
 #include <algorithm>
+#include <memory>
 
 #include <string.h>
 
@@ -1957,6 +1958,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
         errors << QSslError(QSslError::UnspecifiedError);
         return errors;
     }
+    const std::unique_ptr<X509_STORE, decltype(&q_X509_STORE_free)> storeGuard(certStore, q_X509_STORE_free);
 
     if (s_loadRootCertsOnDemand) {
         setDefaultCaCertificates(defaultCaCertificates() + systemCaCertificates());
@@ -1997,7 +1999,6 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
         intermediates = (STACK_OF(X509) *) q_OPENSSL_sk_new_null();
 
         if (!intermediates) {
-            q_X509_STORE_free(certStore);
             errors << QSslError(QSslError::UnspecifiedError);
             return errors;
         }
@@ -2015,14 +2016,12 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
 
     X509_STORE_CTX *storeContext = q_X509_STORE_CTX_new();
     if (!storeContext) {
-        q_X509_STORE_free(certStore);
         errors << QSslError(QSslError::UnspecifiedError);
         return errors;
     }
+    std::unique_ptr<X509_STORE_CTX, decltype(&q_X509_STORE_CTX_free)> ctxGuard(storeContext, q_X509_STORE_CTX_free);
 
     if (!q_X509_STORE_CTX_init(storeContext, certStore, reinterpret_cast<X509 *>(certificateChain[0].handle()), intermediates)) {
-        q_X509_STORE_CTX_free(storeContext);
-        q_X509_STORE_free(certStore);
         errors << QSslError(QSslError::UnspecifiedError);
         return errors;
     }
@@ -2031,8 +2030,7 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
     // We ignore the result of this function since we process errors via the
     // callback.
     (void) q_X509_verify_cert(storeContext);
-
-    q_X509_STORE_CTX_free(storeContext);
+    ctxGuard.reset();
     q_OPENSSL_sk_free((OPENSSL_STACK *)intermediates);
 
     // Now process the errors
@@ -2053,8 +2051,6 @@ QList<QSslError> QSslSocketBackendPrivate::verify(const QList<QSslCertificate> &
     errors.reserve(errors.size() + lastErrors.size());
     for (const auto &error : qAsConst(lastErrors))
         errors << _q_OpenSSL_to_QSslError(error.code, certificateChain.value(error.depth));
-
-    q_X509_STORE_free(certStore);
 
     return errors;
 }

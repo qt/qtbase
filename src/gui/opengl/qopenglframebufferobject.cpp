@@ -658,13 +658,11 @@ void QOpenGLFramebufferObjectPrivate::initDepthStencilAttachments(QOpenGLContext
         funcs.glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer);
         Q_ASSERT(funcs.glIsRenderbuffer(depth_buffer));
 
-        GLenum storageFormat = GL_DEPTH_STENCIL;
-
         if (samples != 0 ) {
             funcs.glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples,
-                                                   storageFormat, dsSize.width(), dsSize.height());
+                                                   GL_DEPTH24_STENCIL8, dsSize.width(), dsSize.height());
         } else {
-            funcs.glRenderbufferStorage(GL_RENDERBUFFER, storageFormat,
+            funcs.glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL,
                                         dsSize.width(), dsSize.height());
         }
 

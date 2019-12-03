@@ -45,6 +45,8 @@ isEmpty(WIN_INCLUDETEMP) {
     QDOC_INCLUDE_PATHS=@$$shell_quote($$WIN_INCLUDETEMP)
 }
 
+macos: QDOC_INCLUDE_PATHS += $$join(QMAKE_DEFAULT_INCDIRS," -I","-I")
+
 !build_online_docs: qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
 
 qtPrepareTool(QTATTRIBUTIONSSCANNER, qtattributionsscanner)
@@ -93,7 +95,6 @@ qtattributionsscanner.CONFIG += phony
 QMAKE_EXTRA_TARGETS += qtattributionsscanner
 
 doc_command = $$QDOC $$QMAKE_DOCS
-
 prepare_docs {
     prepare_docs.commands += $$doc_command -prepare $$PREP_DOC_INDEXES -no-link-errors $$QDOC_INCLUDE_PATHS
     generate_docs.commands += $$doc_command -generate $$DOC_INDEXES $$QDOC_INCLUDE_PATHS
