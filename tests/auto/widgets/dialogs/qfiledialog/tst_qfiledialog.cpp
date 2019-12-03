@@ -1377,6 +1377,7 @@ void tst_QFiledialog::clearLineEdit()
     fd.setFileMode(QFileDialog::AnyFile);
     fd.show();
 
+    QVERIFY(QTest::qWaitForWindowExposed(&fd));
     QLineEdit *lineEdit = fd.findChild<QLineEdit*>("fileNameEdit");
     QVERIFY(lineEdit);
     QCOMPARE(lineEdit->text(), QLatin1String("foo"));
