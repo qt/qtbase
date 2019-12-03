@@ -64,30 +64,30 @@ struct Q_CORE_EXPORT QArrayData
     uint flags;
     uint alloc;
 
-    inline size_t allocatedCapacity()
+    inline size_t allocatedCapacity() noexcept
     {
         return alloc;
     }
 
-    inline size_t constAllocatedCapacity() const
+    inline size_t constAllocatedCapacity() const noexcept
     {
         return alloc;
     }
 
     /// Returns true if sharing took place
-    bool ref()
+    bool ref() noexcept
     {
         ref_.ref();
         return true;
     }
 
     /// Returns false if deallocation is necessary
-    bool deref()
+    bool deref() noexcept
     {
         return ref_.deref();
     }
 
-    bool isShared() const
+    bool isShared() const noexcept
     {
         return ref_.loadRelaxed() != 1;
     }
@@ -95,19 +95,19 @@ struct Q_CORE_EXPORT QArrayData
     // Returns true if a detach is necessary before modifying the data
     // This method is intentionally not const: if you want to know whether
     // detaching is necessary, you should be in a non-const function already
-    bool needsDetach()
+    bool needsDetach() const noexcept
     {
         return ref_.loadRelaxed() > 1;
     }
 
-    size_t detachCapacity(size_t newSize) const
+    size_t detachCapacity(size_t newSize) const noexcept
     {
         if (flags & CapacityReserved && newSize < constAllocatedCapacity())
             return constAllocatedCapacity();
         return newSize;
     }
 
-    ArrayOptions detachFlags() const
+    ArrayOptions detachFlags() const noexcept
     {
         ArrayOptions result = DefaultAllocationFlags;
         if (flags & CapacityReserved)
@@ -160,7 +160,7 @@ struct QTypedArrayData
         return qMakePair(static_cast<QTypedArrayData *>(pair.first), static_cast<T *>(pair.second));
     }
 
-    static void deallocate(QArrayData *data)
+    static void deallocate(QArrayData *data) noexcept
     {
         static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QArrayData::deallocate(data, sizeof(T), alignof(AlignmentDummy));

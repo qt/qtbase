@@ -75,12 +75,12 @@ public:
     {
     }
 
-    explicit QArrayDataPointer(QPair<QTypedArrayData<T> *, T *> adata, size_t n = 0)
+    explicit QArrayDataPointer(QPair<QTypedArrayData<T> *, T *> adata, size_t n = 0) noexcept
         : d(adata.first), ptr(adata.second), size(int(n))
     {
     }
 
-    static QArrayDataPointer fromRawData(const T *rawData, size_t length)
+    static QArrayDataPointer fromRawData(const T *rawData, size_t length) noexcept
     {
         Q_ASSERT(rawData || !length);
         return { nullptr, const_cast<T *>(rawData), length };
@@ -157,7 +157,7 @@ public:
         qSwap(size, other.size);
     }
 
-    void clear() Q_DECL_NOEXCEPT_EXPR(std::is_nothrow_destructible<T>::value)
+    void clear() noexcept(std::is_nothrow_destructible<T>::value)
     {
         QArrayDataPointer tmp;
         swap(tmp);
@@ -187,11 +187,11 @@ public:
     bool needsDetach() const noexcept { return !d || d->needsDetach(); }
     size_t detachCapacity(size_t newSize) const noexcept { return d ? d->detachCapacity(newSize) : newSize; }
     const typename Data::ArrayOptions flags() const noexcept { return d ? typename Data::ArrayOption(d->flags) : Data::DefaultAllocationFlags; }
-    void setFlag(typename Data::ArrayOptions f) { Q_ASSERT(d); d->flags |= f; }
-    void clearFlag(typename Data::ArrayOptions f) { Q_ASSERT(d); d->flags &= ~f; }
+    void setFlag(typename Data::ArrayOptions f) noexcept { Q_ASSERT(d); d->flags |= f; }
+    void clearFlag(typename Data::ArrayOptions f) noexcept { Q_ASSERT(d); d->flags &= ~f; }
     typename Data::ArrayOptions detachFlags() const noexcept { return d ? d->detachFlags() : Data::DefaultAllocationFlags; }
 
-    Data *d_ptr() { return d; }
+    Data *d_ptr() noexcept { return d; }
 
 private:
     Q_REQUIRED_RESULT QPair<Data *, T *> clone(QArrayData::ArrayOptions options) const
