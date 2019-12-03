@@ -90,17 +90,9 @@ struct Q_CORE_EXPORT QArrayData
         return ref_.deref();
     }
 
-    // This refers to array data mutability, not "header data" represented by
-    // data members in QArrayData. Shared data (array and header) must still
-    // follow COW principles.
-    bool isMutable() const
-    {
-        return ref_.loadRelaxed() != -1;
-    }
-
     bool isStatic() const
     {
-        return !isMutable();
+        return ref_.loadRelaxed() == -1;
     }
 
     bool isShared() const
@@ -113,8 +105,7 @@ struct Q_CORE_EXPORT QArrayData
     // detaching is necessary, you should be in a non-const function already
     bool needsDetach()
     {
-        // requires two conditionals
-        return !isMutable() || isShared();
+        return ref_.loadRelaxed() > 1;
     }
 
     size_t detachCapacity(size_t newSize) const
