@@ -3493,6 +3493,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 } else {
                     QWindowsStyle::drawControl(ce, &btnOpt, p, w);
                 }
+                rule.drawImage(p, rule.contentsRect(opt->rect));
                 if (!customMenu)
                     return;
             } else {
