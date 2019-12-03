@@ -3115,14 +3115,7 @@ void QGuiApplicationPrivate::processScreenGeometryChange(QWindowSystemInterfaceP
             updateFilteredScreenOrientation(s);
     }
 
-    if (availableGeometryChanged)
-        emit s->availableGeometryChanged(s->availableGeometry());
-
-    if (geometryChanged || availableGeometryChanged) {
-        const auto siblings = s->virtualSiblings();
-        for (QScreen* sibling : siblings)
-            emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
-    }
+    s->d_func()->emitGeometryChangeSignals(geometryChanged, availableGeometryChanged);
 
     resetCachedDevicePixelRatio();
 }
@@ -3140,6 +3133,7 @@ void QGuiApplicationPrivate::processScreenLogicalDotsPerInchChange(QWindowSystem
     s->d_func()->logicalDpi = QDpi(e->dpiX, e->dpiY);
 
     emit s->logicalDotsPerInchChanged(s->logicalDotsPerInch());
+    s->d_func()->updateGeometriesWithSignals();
 
     resetCachedDevicePixelRatio();
 }

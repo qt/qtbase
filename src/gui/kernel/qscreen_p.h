@@ -72,6 +72,8 @@ public:
     }
 
     void updatePrimaryOrientation();
+    void updateGeometriesWithSignals();
+    void emitGeometryChangeSignals(bool geometryChanged, bool availableGeometryChanged);
 
     QPlatformScreen *platformScreen = nullptr;
 
