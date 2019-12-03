@@ -137,13 +137,12 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
 #endif
         return false;
     }
-    const SectionNode &node = sectionNodes.at(index);
 
-    const QDate date = v.date();
+    QCalendar::YearMonthDay date = calendar.partsFromDate(v.date());
+    if (!date.isValid())
+        return false;
+
     const QTime time = v.time();
-    int year = date.year(calendar);
-    int month = date.month(calendar);
-    int day = date.day(calendar);
     int hour = time.hour();
     int minute = time.minute();
     int second = time.second();
@@ -152,14 +151,15 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
     // Only offset from UTC is amenable to setting an int value:
     int offset = tspec == Qt::OffsetFromUTC ? v.offsetFromUtc() : 0;
 
+    const SectionNode &node = sectionNodes.at(index);
     switch (node.type) {
     case Hour24Section: case Hour12Section: hour = newVal; break;
     case MinuteSection: minute = newVal; break;
     case SecondSection: second = newVal; break;
     case MSecSection: msec = newVal; break;
     case YearSection2Digits:
-    case YearSection: year = newVal; break;
-    case MonthSection: month = newVal; break;
+    case YearSection: date.year = newVal; break;
+    case MonthSection: date.month = newVal; break;
     case DaySection:
     case DayOfWeekSectionShort:
     case DayOfWeekSectionLong:
@@ -169,7 +169,7 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
             // to 31 for february should return true
             return false;
         }
-        day = newVal;
+        date.day = newVal;
         break;
     case TimeZoneSection:
         if (newVal < absoluteMin(index) || newVal > absoluteMax(index))
@@ -185,15 +185,14 @@ bool QDateTimeParser::setDigit(QDateTime &v, int index, int newVal) const
     }
 
     if (!(node.type & DaySectionMask)) {
-        if (day < cachedDay)
-            day = cachedDay;
-        const int max = calendar.daysInMonth(month, year);
-        if (day > max) {
-            day = max;
-        }
+        if (date.day < cachedDay)
+            date.day = cachedDay;
+        const int max = calendar.daysInMonth(date.month, date.year);
+        if (date.day > max)
+            date.day = max;
     }
 
-    const QDate newDate(year, month, day, calendar);
+    const QDate newDate = calendar.dateFromParts(date);
     const QTime newTime(hour, minute, second, msec);
     if (!newDate.isValid() || !newTime.isValid())
         return false;
