@@ -77,15 +77,33 @@ QScreen::QScreen(QPlatformScreen *screen)
     d->setPlatformScreen(screen);
 }
 
+void QScreenPrivate::updateGeometriesWithSignals()
+{
+    const QRect oldGeometry = geometry;
+    const QRect oldAvailableGeometry = availableGeometry;
+    updateHighDpi();
+    emitGeometryChangeSignals(oldGeometry != geometry, oldAvailableGeometry != availableGeometry);
+}
+
+void QScreenPrivate::emitGeometryChangeSignals(bool geometryChanged, bool availableGeometryChanged)
+{
+    Q_Q(QScreen);
+    if (availableGeometryChanged)
+        emit q->availableGeometryChanged(availableGeometry);
+
+    if (geometryChanged || availableGeometryChanged) {
+        const auto siblings = q->virtualSiblings();
+        for (QScreen* sibling : siblings)
+            emit sibling->virtualGeometryChanged(sibling->virtualGeometry());
+    }
+}
+
 void QScreenPrivate::setPlatformScreen(QPlatformScreen *screen)
 {
     Q_Q(QScreen);
     platformScreen = screen;
     platformScreen->d_func()->screen = q;
     orientation = platformScreen->orientation();
-    geometry = platformScreen->deviceIndependentGeometry();
-    availableGeometry = QHighDpi::fromNative(platformScreen->availableGeometry(),
-                        QHighDpiScaling::factor(platformScreen), geometry.topLeft());
 
     logicalDpi = QPlatformScreen::overrideDpi(platformScreen->logicalDpi());
 
