@@ -1740,16 +1740,16 @@ QRectF QMacStylePrivate::comboboxEditBounds(const QRectF &outerBounds, const Coc
     if (cw.type == ComboBox) {
         switch (cw.size) {
         case QStyleHelper::SizeLarge:
-            ret = ret.adjusted(0, 0, -28, 0).translated(3, 4.5);
+            ret = ret.adjusted(0, 0, -25, 0).translated(2, 4.5);
             ret.setHeight(16);
             break;
         case QStyleHelper::SizeSmall:
-            ret = ret.adjusted(0, 0, -24, 0).translated(3, 2);
+            ret = ret.adjusted(0, 0, -22, 0).translated(2, 3);
             ret.setHeight(14);
             break;
         case QStyleHelper::SizeMini:
-            ret = ret.adjusted(0, 0, -21, 0).translated(2, 3);
-            ret.setHeight(11);
+            ret = ret.adjusted(0, 0, -19, 0).translated(2, 2.5);
+            ret.setHeight(10.5);
             break;
         default:
             break;
