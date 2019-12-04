@@ -30,6 +30,7 @@
 #include "qwasmopenglcontext.h"
 #include "qwasmintegration.h"
 #include <EGL/egl.h>
+#include <emscripten/val.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -50,7 +51,13 @@ QWasmOpenGLContext::QWasmOpenGLContext(const QSurfaceFormat &format)
 QWasmOpenGLContext::~QWasmOpenGLContext()
 {
     if (m_context) {
+        // Destroy GL context. Work around bug in emscripten_webgl_destroy_context
+        // which removes all event handlers on the canvas by temporarily removing
+        // emscripten's JSEvents global object.
+        emscripten::val jsEvents = emscripten::val::global("window")["JSEvents"];
+        emscripten::val::global("window").set("JSEvents", emscripten::val::undefined());
         emscripten_webgl_destroy_context(m_context);
+        emscripten::val::global("window").set("JSEvents", jsEvents);
         m_context = 0;
     }
 }

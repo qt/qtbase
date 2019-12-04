@@ -182,6 +182,8 @@ private slots:
     void css_bodyBackground();
     void css_tableCellBackground();
     void css_tableCellBorder();
+    void css_tableCellBorderWidthOneValue();
+    void css_tableCellBorderWidthTwoValues();
     void css_tableCellBorderShorthand();
     void css_tableCellAllBordersShorthand();
     void css_tableCellOverrideOneBorder();
@@ -1785,6 +1787,42 @@ void tst_QTextDocumentFragment::css_tableCellBorder()
     QCOMPARE(cellFormat.topBorder(), qreal(8));
     QCOMPARE(cellFormat.topBorderBrush(), QBrush(QColor("green")));
     QCOMPARE(cellFormat.topBorderStyle(), QTextFrameFormat::BorderStyle_Groove);
+}
+
+void tst_QTextDocumentFragment::css_tableCellBorderWidthOneValue() // QTBUG-80496
+{
+    const char html[] = "<head><style type=\"text/css\"> body, td { border-width: 2px; }</style></head> <body> <table> <tr> <td></td> </tr> </table> </body> </html>";
+    doc->setHtml(html);
+
+    cursor.movePosition(QTextCursor::Start);
+    cursor.movePosition(QTextCursor::NextBlock);
+    QTextTable *table = cursor.currentTable();
+    QVERIFY(table);
+
+    QTextTableCell cell = table->cellAt(0, 0);
+    QTextTableCellFormat cellFormat = cell.format().toTableCellFormat();
+    QCOMPARE(cellFormat.leftBorder(), qreal(2));
+    QCOMPARE(cellFormat.rightBorder(), qreal(2));
+    QCOMPARE(cellFormat.bottomBorder(), qreal(2));
+    QCOMPARE(cellFormat.topBorder(), qreal(2));
+}
+
+void tst_QTextDocumentFragment::css_tableCellBorderWidthTwoValues() // QTBUG-80496
+{
+    const char html[] = "<head><style type=\"text/css\"> body, td { border-width: 2px 3px; }</style></head> <body> <table> <tr> <td></td> </tr> </table> </body> </html>";
+    doc->setHtml(html);
+
+    cursor.movePosition(QTextCursor::Start);
+    cursor.movePosition(QTextCursor::NextBlock);
+    QTextTable *table = cursor.currentTable();
+    QVERIFY(table);
+
+    QTextTableCell cell = table->cellAt(0, 0);
+    QTextTableCellFormat cellFormat = cell.format().toTableCellFormat();
+    QCOMPARE(cellFormat.leftBorder(), qreal(3));
+    QCOMPARE(cellFormat.rightBorder(), qreal(3));
+    QCOMPARE(cellFormat.bottomBorder(), qreal(2));
+    QCOMPARE(cellFormat.topBorder(), qreal(2));
 }
 
 void tst_QTextDocumentFragment::css_tableCellBorderShorthand()

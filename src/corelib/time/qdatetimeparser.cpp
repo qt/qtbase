@@ -369,13 +369,6 @@ static QString unquote(const QStringRef &str)
     }
     return ret;
 }
-/*!
-  \internal
-
-  Parses the format \a newFormat. If successful, returns \c true and
-  sets up the format. Else keeps the old format and returns \c false.
-
-*/
 
 static inline int countRepeat(const QString &str, int index, int maxCount)
 {
@@ -394,7 +387,12 @@ static inline void appendSeparator(QStringList *list, const QString &string, int
     list->append(lastQuote >= from ? unquote(separator) : separator.toString());
 }
 
+/*!
+    \internal
 
+    Parses the format \a newFormat. If successful, returns \c true and sets up
+    the format. Else keeps the old format and returns \c false.
+*/
 bool QDateTimeParser::parseFormat(const QString &newFormat)
 {
     const QLatin1Char quote('\'');

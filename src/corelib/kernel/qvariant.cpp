@@ -2577,8 +2577,8 @@ void QVariant::save(QDataStream &s) const
         } else if (typeId >= QMetaType::QKeySequence && typeId <= QMetaType::QQuaternion) {
             // and as a result these types received lower ids too
             typeId +=1;
-        } else if (typeId == QMetaType::QPolygonF) {
-            // This existed in Qt 4 only as a custom type
+        } else if (typeId == QMetaType::QPolygonF || typeId == QMetaType::QUuid) {
+            // These existed in Qt 4 only as a custom type
             typeId = 127;
             fakeUserType = true;
         }
