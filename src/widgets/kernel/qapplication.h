@@ -79,7 +79,9 @@ class Q_WIDGETS_EXPORT QApplication : public QGuiApplication
 #if QT_CONFIG(wheelevent)
     Q_PROPERTY(int wheelScrollLines  READ wheelScrollLines WRITE setWheelScrollLines)
 #endif
+#if QT_DEPRECATED_SINCE(5, 15)
     Q_PROPERTY(QSize globalStrut READ globalStrut WRITE setGlobalStrut)
+#endif
     Q_PROPERTY(int startDragTime  READ startDragTime WRITE setStartDragTime)
     Q_PROPERTY(int startDragDistance  READ startDragDistance WRITE setStartDragDistance)
 #ifndef QT_NO_STYLE_STYLESHEET
@@ -158,8 +160,10 @@ public:
     static void setWheelScrollLines(int);
     static int wheelScrollLines();
 #endif
+#if QT_DEPRECATED_SINCE(5, 15)
     static void setGlobalStrut(const QSize &);
     static QSize globalStrut();
+#endif
 
     static void setStartDragTime(int ms);
     static int startDragTime();

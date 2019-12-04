@@ -1224,6 +1224,7 @@ void QApplication::setColorSpec(int spec)
     \property QApplication::globalStrut
     \brief the minimum size that any GUI element that the user can interact
            with should have
+    \deprecated
 
     For example, no button should be resized to be smaller than the global
     strut size. The strut size should be considered when reimplementing GUI

@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 //! [3]
 QSize MyWidget::sizeHint() const
 {
-    return QSize(80, 25).expandedTo(QApplication::globalStrut());
+    return QSize(80, 25);
 }
 //! [3]
 
