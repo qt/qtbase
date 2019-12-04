@@ -1388,13 +1388,21 @@ void QMacStylePrivate::tabLayout(const QStyleOptionTab *opt, const QWidget *widg
         // High-dpi icons do not need adjustment; make sure tabIconSize is not larger than iconSize
         tabIconSize = QSize(qMin(tabIconSize.width(), iconSize.width()), qMin(tabIconSize.height(), iconSize.height()));
 
-        *iconRect = QRect(tr.left(), tr.center().y() - tabIconSize.height() / 2,
-                    tabIconSize.width(), tabIconSize.height());
+        const int stylePadding = proxyStyle->pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2 - hpadding;
+
+        if (opt->documentMode) {
+            // documents show the icon as part of the the text
+            const int textWidth =
+                opt->fontMetrics.boundingRect(tr, Qt::AlignCenter | Qt::TextShowMnemonic, opt->text).width();
+            *iconRect = QRect(tr.center().x() - textWidth / 2 - stylePadding - tabIconSize.width(),
+                              tr.center().y() - tabIconSize.height() / 2,
+                              tabIconSize.width(), tabIconSize.height());
+        } else {
+            *iconRect = QRect(tr.left() + stylePadding, tr.center().y() - tabIconSize.height() / 2,
+                        tabIconSize.width(), tabIconSize.height());
+        }
         if (!verticalTabs)
             *iconRect = proxyStyle->visualRect(opt->direction, opt->rect, *iconRect);
-
-        int stylePadding = proxyStyle->pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2;
-        stylePadding -= hpadding;
 
         tr.setLeft(tr.left() + stylePadding + tabIconSize.width() + 4);
         tr.setRight(tr.right() - stylePadding - tabIconSize.width() - 4);

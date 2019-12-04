@@ -79,11 +79,14 @@
 #include "qcocoamenuitem.h"
 #include "qcocoansmenu.h"
 
+#if QT_CONFIG(sessionmanager)
+#  include "qcocoasessionmanager.h"
+#endif
+
 #include <qevent.h>
 #include <qurl.h>
 #include <qdebug.h>
 #include <qguiapplication.h>
-#include <private/qguiapplication_p.h>
 #include "qt_mac_p.h"
 #include <qpa/qwindowsysteminterface.h>
 #include <qwindowdefs.h>
@@ -156,6 +159,17 @@ QT_USE_NAMESPACE
         qCDebug(lcQpaApplication) << "No running event loops, terminating now";
         return NSTerminateNow;
     }
+
+#if QT_CONFIG(sessionmanager)
+    QCocoaSessionManager *cocoaSessionManager = QCocoaSessionManager::instance();
+    cocoaSessionManager->resetCancellation();
+    cocoaSessionManager->appCommitData();
+
+    if (cocoaSessionManager->wasCanceled()) {
+        qCDebug(lcQpaApplication) << "Session management canceled application termination";
+        return NSTerminateCancel;
+    }
+#endif
 
     if (!QWindowSystemInterface::handleApplicationTermination<QWindowSystemInterface::SynchronousDelivery>()) {
         qCDebug(lcQpaApplication) << "Application termination canceled";

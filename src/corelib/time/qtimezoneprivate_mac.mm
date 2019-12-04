@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2013 John Layt <jlayt@kde.org>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -92,6 +93,16 @@ void QMacTimeZonePrivate::init(const QByteArray &ianaId)
     if (availableTimeZoneIds().contains(ianaId)) {
         m_nstz = [[NSTimeZone timeZoneWithName:QString::fromUtf8(ianaId).toNSString()] retain];
         if (m_nstz)
+            m_id = ianaId;
+    }
+    if (!m_nstz) {
+        // macOS has been seen returning a systemTimeZone which reports its name
+        // as Asia/Kolkata, which doesn't appear in knownTimeZoneNames (which
+        // calls the zone Asia/Calcutta). So explicitly check for the name
+        // systemTimeZoneId() returns, and use systemTimeZone if we get it:
+        m_nstz = [NSTimeZone.systemTimeZone retain];
+        Q_ASSERT(m_nstz);
+        if (QString::fromNSString(m_nstz.name).toUtf8() == ianaId)
             m_id = ianaId;
     }
 }

@@ -374,17 +374,6 @@ QFontEngine *QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>::fontEngine
     QCFType<CTFontDescriptorRef> descriptor = QCFType<CTFontDescriptorRef>::constructFromGet(
         static_cast<CTFontDescriptorRef>(usrPtr));
 
-    // CoreText will sometimes invalidate information in font descriptors that refer
-    // to system fonts in certain function calls or application states. While the descriptor
-    // looks the same from the outside, some internal plumbing is different, causing the results
-    // of creating CTFonts from those descriptors unreliable. The work-around for this
-    // is to copy the attributes of those descriptors each time we make a new CTFont
-    // from them instead of referring to the original, as that may trigger the CoreText bug.
-    if (m_systemFontDescriptors.contains(descriptor)) {
-        QCFType<CFDictionaryRef> attributes = CTFontDescriptorCopyAttributes(descriptor);
-        descriptor = CTFontDescriptorCreateWithAttributes(attributes);
-    }
-
     // Since we do not pass in the destination DPI to CoreText when making
     // the font, we need to pass in a point size which is scaled to include
     // the DPI. The default DPI for the screen is 72, thus the scale factor

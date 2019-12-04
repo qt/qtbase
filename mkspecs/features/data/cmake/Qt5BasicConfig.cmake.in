@@ -173,11 +173,20 @@ macro(_populate_$${CMAKE_MODULE_NAME}_target_properties Configuration LIB_LOCATI
     endif()
 
     set(_static_link_flags \"${_Qt5$${CMAKE_MODULE_NAME}_STATIC_${Configuration}_LINK_FLAGS}\")
-    if(NOT CMAKE_VERSION VERSION_LESS \"3.13\" AND _static_link_flags)
+    if(_static_link_flags)
         set(_static_link_flags_genex \"$<${_genex_condition}:${_static_link_flags}>\")
-        set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} APPEND PROPERTY INTERFACE_LINK_OPTIONS
-            \"${_static_link_flags_genex}\"
-        )
+        if(NOT CMAKE_VERSION VERSION_LESS \"3.13\")
+            set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} APPEND PROPERTY INTERFACE_LINK_OPTIONS
+                \"${_static_link_flags_genex}\"
+            )
+        else()
+            # Abuse INTERFACE_LINK_LIBRARIES to add link flags when CMake version is too low.
+            # Strip out SHELL:, because it is not supported in this property. And hope for the best.
+            string(REPLACE \"SHELL:\" \"\" _static_link_flags_genex \"${_static_link_flags_genex}\")
+            set_property(TARGET Qt5::$${CMAKE_MODULE_NAME} APPEND PROPERTY INTERFACE_LINK_LIBRARIES
+                \"${_static_link_flags_genex}\"
+            )
+        endif()
     endif()
 !!ENDIF
 
@@ -546,11 +555,20 @@ if (NOT TARGET Qt5::$${CMAKE_MODULE_NAME})
         endif()
 
         set(_static_link_flags \"${_Qt5${Plugin}_STATIC_${Configuration}_LINK_FLAGS}\")
-        if(NOT CMAKE_VERSION VERSION_LESS \"3.13\" AND _static_link_flags)
+        if(_static_link_flags)
             set(_static_link_flags_genex \"$<${_genex_condition}:${_static_link_flags}>\")
-            set_property(TARGET Qt5::${Plugin} APPEND PROPERTY INTERFACE_LINK_OPTIONS
-                \"${_static_link_flags_genex}\"
-            )
+            if(NOT CMAKE_VERSION VERSION_LESS \"3.13\")
+                set_property(TARGET Qt5::${Plugin} APPEND PROPERTY INTERFACE_LINK_OPTIONS
+                    \"${_static_link_flags_genex}\"
+                )
+            else()
+                # Abuse INTERFACE_LINK_LIBRARIES to add link flags when CMake version is too low.
+                # Strip out SHELL:, because it is not supported in this property. And hope for the best.
+                string(REPLACE \"SHELL:\" \"\" _static_link_flags_genex \"${_static_link_flags_genex}\")
+                set_property(TARGET Qt5::${Plugin} APPEND PROPERTY INTERFACE_LINK_LIBRARIES
+                    \"${_static_link_flags_genex}\"
+                )
+            endif()
         endif()
 !!ENDIF
     endmacro()

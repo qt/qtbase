@@ -665,6 +665,7 @@ Q_DECL_CONSTEXPR inline QRectF::QRectF(const QRect &r) noexcept
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_CLANG("-Wfloat-equal")
 QT_WARNING_DISABLE_GCC("-Wfloat-equal")
+QT_WARNING_DISABLE_INTEL(1572)
 
 Q_DECL_CONSTEXPR inline bool QRectF::isNull() const noexcept
 { return w == 0. && h == 0.; }

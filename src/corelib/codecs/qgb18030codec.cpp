@@ -107,7 +107,6 @@ QByteArray QGb18030Codec::convertFromUnicode(const QChar *uc, int len, Converter
         if (high >= 0) {
             if (uc[i].isLowSurrogate()) {
                 // valid surrogate pair
-                ++i;
                 uint u = QChar::surrogateToUcs4(high, uc[i].unicode());
                 len = qt_UnicodeToGb18030(u, buf);
                 if (len >= 2) {

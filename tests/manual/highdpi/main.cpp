@@ -30,6 +30,7 @@
 #include <QMenuBar>
 #include <QLabel>
 #include <QHBoxLayout>
+#include <QFormLayout>
 #include <QApplication>
 #include <QAction>
 #include <QStyle>
@@ -61,27 +62,38 @@
 
 #include "dragwidget.h"
 
+#include <utility>
+
 static QTextStream &operator<<(QTextStream &str, const QRect &r)
 {
     str << r.width() << 'x' << r.height() << Qt::forcesign << r.x() << r.y() << Qt::noforcesign;
     return str;
 }
 
+static QString formatWindowTitle(const QString &title)
+{
+    QString result;
+    QTextStream(&result) << title << ' ' << QT_VERSION_STR << " ("
+        << QGuiApplication::platformName()
+        << '/' << QApplication::style()->objectName() << ')';
+    return result;
+}
+
 class DemoContainerBase
 {
 public:
-    DemoContainerBase() : m_widget(nullptr) {}
-    virtual ~DemoContainerBase() {}
-    QString name() { return option().names().first(); }
+    DemoContainerBase() = default;
+    virtual ~DemoContainerBase() = default;
+    QString name() { return option().names().constFirst(); }
     virtual QCommandLineOption &option() = 0;
     virtual void makeVisible(bool visible, QWidget *parent) = 0;
-    QWidget *widget() { return m_widget; }
+    QWidget *widget() const { return m_widget; }
+
 protected:
-    QWidget *m_widget;
+    QWidget *m_widget = nullptr;
 };
 
-typedef QList<DemoContainerBase*> DemoContainerList ;
-
+using DemoContainerList = QVector<DemoContainerBase*>;
 
 template <class T>
 class DemoContainer : public DemoContainerBase
@@ -93,16 +105,25 @@ public:
     }
     ~DemoContainer() { delete m_widget; }
 
-    QCommandLineOption &option() { return m_option; }
+    QCommandLineOption &option() override { return m_option; }
 
-    void makeVisible(bool visible, QWidget *parent) {
+    void makeVisible(bool visible, QWidget *parent) override
+    {
         if (visible && !m_widget) {
             m_widget = new T;
+            if (m_widget->windowTitle().isEmpty()) {
+                QString title = m_option.description();
+                if (title.startsWith("Test ", Qt::CaseInsensitive))
+                    title.remove(0, 5);
+                title[0] = title.at(0).toUpper();
+                m_widget->setWindowTitle(formatWindowTitle(title));
+            }
             m_widget->installEventFilter(parent);
         }
         if (m_widget)
             m_widget->setVisible(visible);
     }
+
 private:
     QCommandLineOption m_option;
 };
@@ -134,12 +155,15 @@ public:
         connect(m_slider, &QSlider::sliderMoved, this, &LabelSlider::updateLabel);
         connect(m_slider, &QSlider::valueChanged, this, &LabelSlider::valueChanged);
     }
-    void setValue(int scaleFactor) {
+    void setValue(int scaleFactor)
+    {
         m_slider->setValue(scaleFactor);
         updateLabel(scaleFactor);
     }
+
 private slots:
-    void updateLabel(int scaleFactor) {
+    void updateLabel(int scaleFactor)
+    {
             // slider value is scale factor times ten;
             qreal scalefactorF = qreal(scaleFactor) / 10.0;
 
@@ -149,8 +173,10 @@ private slots:
                 number.append(".0");
             m_label->setText(number);
     }
+
 signals:
     void valueChanged(int scaleFactor);
+
 private:
     QSlider *m_slider;
     QLabel *m_label;
@@ -172,31 +198,35 @@ static inline qreal getGlobalScaleFactor()
 
 class DemoController : public QWidget
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-    DemoController(DemoContainerList *demos, QCommandLineParser *parser);
+    DemoController(DemoContainerList demos, QCommandLineParser *parser);
     ~DemoController();
+
 protected:
-    bool eventFilter(QObject *object, QEvent *event);
-    void closeEvent(QCloseEvent *) { qApp->quit(); }
+    bool eventFilter(QObject *object, QEvent *event) override;
+    void closeEvent(QCloseEvent *) override { QCoreApplication::quit(); }
+
 private slots:
     void handleButton(int id, bool toggled);
+
 private:
-    DemoContainerList *m_demos;
+    DemoContainerList m_demos;
     QButtonGroup *m_group;
 };
 
-DemoController::DemoController(DemoContainerList *demos, QCommandLineParser *parser)
-    : m_demos(demos)
+DemoController::DemoController(DemoContainerList demos, QCommandLineParser *parser)
+    : m_demos(std::move(demos))
 {
-    setWindowTitle("screen scale factors");
+    setWindowTitle(formatWindowTitle("Screen Scale Factors"));
     setObjectName("controller"); // make WindowScaleFactorSetter skip this window
 
-    QGridLayout *layout = new QGridLayout;
-    setLayout(layout);
+    auto mainLayout = new QVBoxLayout(this);
+    auto scaleLayout = new QGridLayout;
+    mainLayout->addLayout(scaleLayout);
 
     int layoutRow = 0;
-    LabelSlider *globalScaleSlider = new LabelSlider(this, "Global scale factor", layout, layoutRow++);
+    LabelSlider *globalScaleSlider = new LabelSlider(this, "Global scale factor", scaleLayout, layoutRow++);
     globalScaleSlider->setValue(int(getGlobalScaleFactor() * 10));
      connect(globalScaleSlider, &LabelSlider::valueChanged, [](int scaleFactor){
             // slider value is scale factor times ten;
@@ -205,13 +235,13 @@ DemoController::DemoController(DemoContainerList *demos, QCommandLineParser *par
          });
 
     // set up one scale control line per screen
-    QList<QScreen *> screens = QGuiApplication::screens();
-    foreach (QScreen *screen, screens) {
+    const auto screens = QGuiApplication::screens();
+    for (QScreen *screen : screens) {
         // create scale control line
         QSize screenSize = screen->geometry().size();
         QString screenId = screen->name() + QLatin1Char(' ') + QString::number(screenSize.width())
                                           + QLatin1Char(' ') + QString::number(screenSize.height());
-        LabelSlider *slider = new LabelSlider(this, screenId, layout, layoutRow++);
+        LabelSlider *slider = new LabelSlider(this, screenId, scaleLayout, layoutRow++);
         slider->setValue(getScreenFactorWithoutPixelDensity(screen) * 10);
 
         // handle slider value change
@@ -228,15 +258,18 @@ DemoController::DemoController(DemoContainerList *demos, QCommandLineParser *par
         });
     }
 
+    auto demoLayout = new QFormLayout;
+    mainLayout->addLayout(demoLayout);
     m_group = new QButtonGroup(this);
     m_group->setExclusive(false);
 
-    for (int i = 0; i < m_demos->size(); ++i) {
-        DemoContainerBase *demo = m_demos->at(i);
-        QPushButton *button = new QPushButton(demo->name());
-        button->setToolTip(demo->option().description());
+    for (int i = 0; i < m_demos.size(); ++i) {
+        DemoContainerBase *demo = m_demos.at(i);
+        QString name = demo->name();
+        name[0] = name.at(0).toUpper();
+        auto button = new QPushButton(name);
         button->setCheckable(true);
-        layout->addWidget(button, layoutRow++, 0, 1, -1);
+        demoLayout->addRow(demo->option().description(), button);
         m_group->addButton(button, i);
 
         if (parser->isSet(demo->option())) {
@@ -244,19 +277,20 @@ DemoController::DemoController(DemoContainerList *demos, QCommandLineParser *par
             button->setChecked(true);
         }
     }
-    connect(m_group, SIGNAL(buttonToggled(int, bool)), this, SLOT(handleButton(int, bool)));
+    connect(m_group, QOverload<int,bool>::of(&QButtonGroup::buttonToggled),
+            this, &DemoController::handleButton);
 }
 
 DemoController::~DemoController()
 {
-    qDeleteAll(*m_demos);
+    qDeleteAll(m_demos);
 }
 
 bool DemoController::eventFilter(QObject *object, QEvent *event)
 {
     if (event->type() == QEvent::Close) {
-        for (int i = 0; i < m_demos->size(); ++i) {
-            DemoContainerBase *demo = m_demos->at(i);
+        for (int i = 0; i < m_demos.size(); ++i) {
+            DemoContainerBase *demo = m_demos.at(i);
             if (demo->widget() == object) {
                 m_group->button(i)->setChecked(false);
                 break;
@@ -268,15 +302,17 @@ bool DemoController::eventFilter(QObject *object, QEvent *event)
 
 void DemoController::handleButton(int id, bool toggled)
 {
-    m_demos->at(id)->makeVisible(toggled, this);
+    m_demos.at(id)->makeVisible(toggled, this);
 }
 
 class PixmapPainter : public QWidget
 {
 public:
     PixmapPainter();
-    void paintEvent(QPaintEvent *event);
 
+    void paintEvent(QPaintEvent *event) override;
+
+private:
     QPixmap pixmap1X;
     QPixmap pixmap2X;
     QPixmap pixmapLarge;
@@ -348,12 +384,14 @@ void PixmapPainter::paintEvent(QPaintEvent *)
 class TiledPixmapPainter : public QWidget
 {
 public:
+    TiledPixmapPainter();
+
+    void paintEvent(QPaintEvent *event) override;
+
+private:
     QPixmap pixmap1X;
     QPixmap pixmap2X;
     QPixmap pixmapLarge;
-
-    TiledPixmapPainter();
-    void paintEvent(QPaintEvent *event);
 };
 
 TiledPixmapPainter::TiledPixmapPainter()
@@ -404,6 +442,7 @@ class Labels : public QWidget
 public:
     Labels();
 
+private:
     QPixmap pixmap1X;
     QPixmap pixmap2X;
     QPixmap pixmapLarge;
@@ -419,7 +458,7 @@ Labels::Labels()
     qtIcon.addFile(":/qticon32.png");
     qtIcon.addFile(":/qticon32@2x.png");
     setWindowIcon(qtIcon);
-    setWindowTitle("Labels");
+    setWindowTitle(formatWindowTitle("Labels"));
 
     QLabel *label1x = new QLabel();
     label1x->setPixmap(pixmap1X);
@@ -454,18 +493,17 @@ private:
     QIcon qtIcon2x;
 
     QToolBar *fileToolBar;
-    int menuCount;
     QAction *m_maskAction;
+    int menuCount = 0;
 };
 
 MainWindow::MainWindow()
-    :menuCount(0)
 {
     // beware that QIcon auto-loads the @2x versions.
     qtIcon1x.addFile(":/qticon16.png");
     qtIcon2x.addFile(":/qticon32.png");
     setWindowIcon(qtIcon);
-    setWindowTitle("MainWindow");
+    setWindowTitle(formatWindowTitle("MainWindow"));
 
     fileToolBar = addToolBar(tr("File"));
 //    fileToolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -483,7 +521,6 @@ MainWindow::MainWindow()
     addNewMenu("T&ools");
     addNewMenu("&Help", 2);
 }
-
 
 QMenu *MainWindow::addNewMenu(const QString &title, int itemCount)
 {
@@ -516,7 +553,7 @@ void MainWindow::maskActionToggled(bool t)
 class StandardIcons : public QWidget
 {
 public:
-    void paintEvent(QPaintEvent *)
+    void paintEvent(QPaintEvent *) override
     {
         int x = 10;
         int y = 10;
@@ -538,7 +575,7 @@ public:
 class Caching : public QWidget
 {
 public:
-    void paintEvent(QPaintEvent *)
+    void paintEvent(QPaintEvent *) override
     {
         QSize layoutSize(75, 75);
 
@@ -576,16 +613,12 @@ public:
     }
 };
 
-class Style : public QWidget {
+class Style : public QWidget
+{
 public:
-    QPushButton *button;
-    QLineEdit *lineEdit;
-    QSlider *slider;
-    QHBoxLayout *row1;
-
-    Style() {
-        row1 = new QHBoxLayout();
-        setLayout(row1);
+    Style()
+    {
+        row1 = new QHBoxLayout(this);
 
         button = new QPushButton();
         button->setText("Test Button");
@@ -601,17 +634,23 @@ public:
         row1->addWidget(new QSpinBox);
         row1->addWidget(new QScrollBar);
 
-        QTabBar *tab  = new QTabBar();
+        auto tab  = new QTabBar();
         tab->addTab("Foo");
         tab->addTab("Bar");
         row1->addWidget(tab);
     }
+
+private:
+    QPushButton *button;
+    QLineEdit *lineEdit;
+    QSlider *slider;
+    QHBoxLayout *row1;
 };
 
 class Fonts : public QWidget
 {
 public:
-    void paintEvent(QPaintEvent *)
+    void paintEvent(QPaintEvent *) override
     {
         QPainter painter(this);
 
@@ -690,7 +729,7 @@ public:
         iconNormalDpi.reset(new QIcon(path32_2)); // does not have a 2x version.
     }
 
-    void paintEvent(QPaintEvent *)
+    void paintEvent(QPaintEvent *) override
     {
         int x = 10;
         int y = 10;
@@ -782,7 +821,7 @@ public:
         tab->move(10, 100);
         tab->show();
 
-        QToolBar *toolBar = new QToolBar(this);
+        auto toolBar = new QToolBar(this);
         toolBar->addAction(QIcon(":/qticon16.png"), "16");
         toolBar->addAction(QIcon(":/qticon16@2x.png"), "16@2x");
         toolBar->addAction(QIcon(":/qticon32.png"), "32");
@@ -796,11 +835,12 @@ public:
 class LinePainter : public QWidget
 {
 public:
-    void paintEvent(QPaintEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void mouseMoveEvent(QMouseEvent *event);
+    void paintEvent(QPaintEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
 
+private:
     QPoint lastMousePoint;
     QVector<QPoint> linePoints;
 };
@@ -855,17 +895,15 @@ void LinePainter::mouseMoveEvent(QMouseEvent *event)
 class CursorTester : public QWidget
 {
 public:
-    CursorTester()
-        :moveLabel(nullptr), moving(false)
-    {
-    }
+    CursorTester() = default;
 
     inline QRect getRect(int idx) const
     {
         int h = height() / 2;
         return QRect(10, 10 + h * (idx - 1), width() - 20, h - 20);
     }
-    void paintEvent(QPaintEvent *)
+
+    void paintEvent(QPaintEvent *) override
     {
         QPainter p(this);
         QRect r1 = getRect(1);
@@ -899,7 +937,7 @@ public:
         }
     }
 
-    void mousePressEvent(QMouseEvent *e)
+    void mousePressEvent(QMouseEvent *e) override
     {
         if (moving)
             return;
@@ -923,7 +961,7 @@ public:
         moveLabel->show();
     }
 
-    void mouseReleaseEvent(QMouseEvent *)
+    void mouseReleaseEvent(QMouseEvent *) override
     {
         if (moveLabel)
             moveLabel->hide();
@@ -931,7 +969,7 @@ public:
         moving = false;
     }
 
-    void mouseMoveEvent(QMouseEvent *e)
+    void mouseMoveEvent(QMouseEvent *e) override
     {
         if (!moving)
             return;
@@ -943,32 +981,32 @@ public:
     }
 
 private:
-    QLabel *moveLabel;
-    bool useCursorPos;
-    bool moving;
+    QLabel *moveLabel = nullptr;
     QPoint mousePos;
+    bool useCursorPos = false;
+    bool moving = false;
 };
-
 
 class ScreenDisplayer : public QWidget
 {
 public:
-    ScreenDisplayer()
-        : QWidget(), moveLabel(nullptr), scaleFactor(1.0)
-    {
-    }
+    ScreenDisplayer() = default;
 
-    void timerEvent(QTimerEvent *) {
+    void timerEvent(QTimerEvent *) override
+    {
         update();
     }
 
-    void mousePressEvent(QMouseEvent *) {
+    void mousePressEvent(QMouseEvent *) override
+    {
         if (!moveLabel)
             moveLabel = new QLabel(this,Qt::BypassWindowManagerHint|Qt::FramelessWindowHint|Qt::Window );
         moveLabel->setText("Hello, Qt this is a label\nwith some text");
         moveLabel->show();
     }
-    void mouseMoveEvent(QMouseEvent *e) {
+
+    void mouseMoveEvent(QMouseEvent *e) override
+    {
         if (!moveLabel)
             return;
         moveLabel->move(e->pos() / scaleFactor);
@@ -978,23 +1016,30 @@ public:
         dbg << moveLabel->geometry();
         moveLabel->setText(str);
     }
-    void mouseReleaseEvent(QMouseEvent *) {
+
+    void mouseReleaseEvent(QMouseEvent *) override
+    {
         if (moveLabel)
             moveLabel->hide();
     }
-    void showEvent(QShowEvent *) {
+
+    void showEvent(QShowEvent *) override
+    {
         refreshTimer.start(300, this);
     }
-    void hideEvent(QHideEvent *) {
+
+    void hideEvent(QHideEvent *) override
+    {
         refreshTimer.stop();
     }
-    void paintEvent(QPaintEvent *) {
+
+    void paintEvent(QPaintEvent *) override
+    {
         QPainter p(this);
         QRectF total;
-        QList<QScreen*> screens = qApp->screens();
-        foreach (QScreen *screen, screens) {
+        const auto screens = QGuiApplication::screens();
+        for (const QScreen *screen : screens)
             total |= screen->geometry();
-        }
         if (total.isEmpty())
             return;
 
@@ -1006,8 +1051,7 @@ public:
         p.setPen(QPen(Qt::white, 10));
         p.setBrush(Qt::gray);
 
-
-        foreach (QScreen *screen, screens) {
+        for (const QScreen *screen : screens) {
             p.drawRect(screen->geometry());
             QFont f = font();
             f.setPixelSize(screen->geometry().height() / 8);
@@ -1015,7 +1059,9 @@ public:
             p.drawText(screen->geometry(), Qt::AlignCenter, screen->name());
         }
         p.setBrush(QColor(200,220,255,127));
-        foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+
+        const auto topLevels = QApplication::topLevelWidgets();
+        for (QWidget *widget : topLevels) {
             if (!widget->isHidden())
                 p.drawRect(widget->geometry());
         }
@@ -1028,42 +1074,51 @@ public:
         cursorShape.translate(QCursor::pos());
         p.drawPolygon(cursorShape);
     }
+
 private:
-    QLabel *moveLabel;
+    QLabel *moveLabel = nullptr;
+    qreal scaleFactor = 1;
     QBasicTimer refreshTimer;
-    qreal scaleFactor;
 };
 
 class PhysicalSizeTest : public QWidget
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-    PhysicalSizeTest() : QWidget(), m_ignoreResize(false) {}
-    void paintEvent(QPaintEvent *event);
-    void resizeEvent(QResizeEvent *) {
+    PhysicalSizeTest() = default;
+
+    void paintEvent(QPaintEvent *event) override;
+
+    void resizeEvent(QResizeEvent *) override
+    {
         qreal ppi = window()->windowHandle()->screen()->physicalDotsPerInchX();
         QSizeF s = size();
         if (!m_ignoreResize)
             m_physicalSize = s / ppi;
     }
-    bool event(QEvent *event) {
+
+    bool event(QEvent *event) override
+    {
         if (event->type() == QEvent::ScreenChangeInternal) {
             // we will get resize events when the scale factor changes
             m_ignoreResize = true;
-            QTimer::singleShot(100, this, SLOT(handleScreenChange()));
+            QTimer::singleShot(100, this, &PhysicalSizeTest::handleScreenChange);
         }
         return QWidget::event(event);
     }
+
 public slots:
-    void handleScreenChange() {
+    void handleScreenChange()
+    {
         qreal ppi = window()->windowHandle()->screen()->physicalDotsPerInchX();
         QSizeF newSize = m_physicalSize * ppi;
         resize(newSize.toSize());
         m_ignoreResize = false;
     }
+
 private:
     QSizeF m_physicalSize;
-    bool m_ignoreResize;
+    bool m_ignoreResize = false;
 };
 
 void PhysicalSizeTest::paintEvent(QPaintEvent *)
@@ -1166,8 +1221,9 @@ void PhysicalSizeTest::paintEvent(QPaintEvent *)
 class GraphicsViewCaching : public QGraphicsView
 {
 public:
-    GraphicsViewCaching() {
-        QGraphicsScene *scene = new QGraphicsScene(0, 0, 400, 400);
+    GraphicsViewCaching()
+    {
+        auto scene = new QGraphicsScene(0, 0, 400, 400);
 
         QGraphicsTextItem *item = scene->addText("NoCache");
         item->setCacheMode(QGraphicsItem::NoCache);
@@ -1187,14 +1243,13 @@ public:
 
 class MetricsTest : public QWidget
 {
-    QPlainTextEdit *m_textEdit;
-
+    Q_OBJECT
 public:
     MetricsTest()
     {
-        qDebug() << R"(
-MetricsTest
-Relevant environment variables are:
+        qDebug().noquote().nospace() << "MetricsTest " << QT_VERSION_STR
+            << ' ' << QGuiApplication::platformName() << '\n'
+<< R"(Relevant environment variables are:
 QT_FONT_DPI=N
 QT_SCALE_FACTOR=n
 QT_ENABLE_HIGHDPI_SCALING=0|1
@@ -1205,12 +1260,23 @@ QT_DPI_ADJUSTMENT_POLICY=AdjustDpi|DontAdjustDpi|AdjustUpOnly)";
 
         resize(480, 360);
 
-        QVBoxLayout *layout = new QVBoxLayout();
-        setLayout(layout);
+        auto layout = new QVBoxLayout(this);
 
         m_textEdit = new QPlainTextEdit;
         m_textEdit->setReadOnly(true);
         layout->addWidget(m_textEdit);
+        setWindowTitle(formatWindowTitle("Screens"));
+    }
+
+    void setVisible(bool visible) override
+    {
+        QWidget::setVisible(visible);
+        if (visible && !m_screenChangedConnected) {
+            m_screenChangedConnected = true;
+            QObject::connect(windowHandle(), &QWindow::screenChanged,
+                             this, &MetricsTest::screenChanged);
+            updateMetrics();
+        }
     }
 
     void updateMetrics()
@@ -1254,23 +1320,41 @@ QT_DPI_ADJUSTMENT_POLICY=AdjustDpi|DontAdjustDpi|AdjustUpOnly)";
         m_textEdit->setPlainText(text);
     }
 
-    void paintEvent(QPaintEvent *ev)
+private slots:
+    void screenChanged()
     {
-        // We get a paint event on screen change, so this is a convenient place
-        // to update the metrics, at the possible risk of doing something else
-        // than painting in a paint event.
+        qDebug().noquote() << __FUNCTION__ << windowHandle()->screen()->name();
         updateMetrics();
-        QWidget::paintEvent(ev);
     }
+
+private:
+    QPlainTextEdit *m_textEdit;
+    bool m_screenChangedConnected = false;
 };
 
 int main(int argc, char **argv)
 {
+#define NOSCALINGOPTION "noscaling"
+#define SCALINGOPTION "scaling"
+
+    qInfo("High DPI tester %s", QT_VERSION_STR);
+
+    int preAppOptionCount = 0;
+    for (int a = 1; a < argc; ++a) {
+        if (qstrcmp(argv[a], "--" NOSCALINGOPTION) == 0) {
+            QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
+            preAppOptionCount++;
+            qInfo("AA_DisableHighDpiScaling");
+        } else if (qstrcmp(argv[a], "--" SCALINGOPTION) == 0) {
+            QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+            preAppOptionCount++;
+            qInfo("AA_EnableHighDpiScaling");
+        }
+    }
+
     QApplication app(argc, argv);
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QCoreApplication::setApplicationVersion(QT_VERSION_STR);
-
-    int argumentCount = QCoreApplication::arguments().count();
 
     QCommandLineParser parser;
     parser.setApplicationDescription("High DPI tester. Pass one or more of the options to\n"
@@ -1281,7 +1365,8 @@ int main(int argc, char **argv)
     parser.addVersionOption();
     QCommandLineOption controllerOption("interactive", "Show configuration window.");
     parser.addOption(controllerOption);
-
+    parser.addOption(QCommandLineOption(NOSCALINGOPTION, "Set AA_DisableHighDpiScaling"));
+    parser.addOption(QCommandLineOption(SCALINGOPTION, "Set AA_EnableHighDpiScaling"));
 
     DemoContainerList demoList;
     demoList << new DemoContainer<PixmapPainter>("pixmap", "Test pixmap painter");
@@ -1300,17 +1385,17 @@ int main(int argc, char **argv)
     demoList << new DemoContainer<ScreenDisplayer>("screens", "Test screen and window positioning");
     demoList << new DemoContainer<PhysicalSizeTest>("physicalsize", "Test manual highdpi support using physicalDotsPerInch");
     demoList << new DemoContainer<GraphicsViewCaching>("graphicsview", "Test QGraphicsView caching");
-    demoList << new DemoContainer<MetricsTest>("metrics", "Show display metrics");
+    demoList << new DemoContainer<MetricsTest>("metrics", "Show screen metrics");
 
-    foreach (DemoContainerBase *demo, demoList)
+    for (DemoContainerBase *demo : qAsConst(demoList))
         parser.addOption(demo->option());
 
     parser.process(app);
 
     //controller takes ownership of all demos
-    DemoController controller(&demoList, &parser);
+    DemoController controller(demoList, &parser);
 
-    if (parser.isSet(controllerOption) || argumentCount <= 1)
+    if (parser.isSet(controllerOption) || (QCoreApplication::arguments().count() - preAppOptionCount) <= 1)
         controller.show();
 
     if (QApplication::topLevelWidgets().isEmpty())

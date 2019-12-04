@@ -7002,8 +7002,10 @@ void QWidget::resize(const QSize &s)
         d->setGeometry_sys(geometry().x(), geometry().y(), s.width(), s.height(), false);
         d->setDirtyOpaqueRegion();
     } else {
+        const auto oldRect = data->crect;
         data->crect.setSize(s.boundedTo(maximumSize()).expandedTo(minimumSize()));
-        setAttribute(Qt::WA_PendingResizeEvent);
+        if (oldRect != data->crect)
+            setAttribute(Qt::WA_PendingResizeEvent);
     }
 }
 
@@ -7018,10 +7020,13 @@ void QWidget::setGeometry(const QRect &r)
         d->setGeometry_sys(r.x(), r.y(), r.width(), r.height(), true);
         d->setDirtyOpaqueRegion();
     } else {
+        const auto oldRect = data->crect;
         data->crect.setTopLeft(r.topLeft());
         data->crect.setSize(r.size().boundedTo(maximumSize()).expandedTo(minimumSize()));
-        setAttribute(Qt::WA_PendingMoveEvent);
-        setAttribute(Qt::WA_PendingResizeEvent);
+        if (oldRect != data->crect) {
+            setAttribute(Qt::WA_PendingMoveEvent);
+            setAttribute(Qt::WA_PendingResizeEvent);
+        }
     }
 
     if (d->extra && d->extra->hasWindowContainer)

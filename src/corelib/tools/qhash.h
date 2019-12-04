@@ -597,10 +597,7 @@ Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::unite(const QHash &other)
         QHash copy(other);
         const_iterator it = copy.constEnd();
         while (it != copy.constBegin()) {
-            QT_WARNING_PUSH
-            QT_WARNING_DISABLE_DEPRECATED
-            --it;
-            QT_WARNING_POP
+            it.i = QHashData::previousNode(it.i);
             insertMulti(it.key(), it.value());
         }
 #else
