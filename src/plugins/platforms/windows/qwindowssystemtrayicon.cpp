@@ -62,6 +62,7 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qsettings.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <qt_windows.h>
 #include <commctrl.h>
@@ -136,7 +137,7 @@ extern "C" LRESULT QT_WIN_CALLBACK qWindowsTrayIconWndProc(HWND hwnd, UINT messa
 {
     if (message == MYWM_TASKBARCREATED || message == MYWM_NOTIFYICON
         || message == WM_INITMENU || message == WM_INITMENUPOPUP
-        || message == WM_COMMAND) {
+        || message == WM_CLOSE || message == WM_COMMAND) {
         const int index = indexOfHwnd(hwnd);
         if (index >= 0) {
             MSG msg;
@@ -438,6 +439,9 @@ bool QWindowsSystemTrayIcon::winEvent(const MSG &message, long *result)
     case WM_INITMENU:
     case WM_INITMENUPOPUP:
         QWindowsPopupMenu::notifyAboutToShow(reinterpret_cast<HMENU>(message.wParam));
+        break;
+    case WM_CLOSE:
+        QWindowSystemInterface::handleApplicationTermination<QWindowSystemInterface::SynchronousDelivery>();
         break;
     case WM_COMMAND:
         QWindowsPopupMenu::notifyTriggered(LOWORD(message.wParam));
