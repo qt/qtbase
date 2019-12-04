@@ -1717,16 +1717,17 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
         qmlImportScanner += QLatin1String(" -qrcFiles");
         for (const QString &qrcFile : options->qrcFiles)
             qmlImportScanner += QLatin1Char(' ') + shellQuote(qrcFile);
-    } else {
-        if (rootPath.isEmpty())
-            rootPath = QFileInfo(options->inputFileName).absolutePath();
-        else
-            rootPath = QFileInfo(rootPath).absoluteFilePath();
-
-        if (!rootPath.endsWith(QLatin1Char('/')))
-            rootPath += QLatin1Char('/');
-        qmlImportScanner += QLatin1String(" -rootPath %1").arg(shellQuote(rootPath));
     }
+
+    if (rootPath.isEmpty())
+        rootPath = QFileInfo(options->inputFileName).absolutePath();
+    else
+        rootPath = QFileInfo(rootPath).absoluteFilePath();
+
+    if (!rootPath.endsWith(QLatin1Char('/')))
+        rootPath += QLatin1Char('/');
+
+    qmlImportScanner += QLatin1String(" -rootPath %1").arg(shellQuote(rootPath));
 
     QStringList importPaths;
     importPaths += shellQuote(options->qtInstallDirectory + QLatin1String("/qml"));
