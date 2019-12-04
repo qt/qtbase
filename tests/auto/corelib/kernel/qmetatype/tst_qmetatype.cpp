@@ -2008,7 +2008,7 @@ void tst_QMetaType::metaObject_data()
     QTest::newRow("MyGadget") << ::qMetaTypeId<MyGadget>() <<  &MyGadget::staticMetaObject << true << false << false;
     QTest::newRow("MyGadget*") << ::qMetaTypeId<MyGadget*>() << &MyGadget::staticMetaObject << false << true << false;
     QTest::newRow("MyEnum") << ::qMetaTypeId<MyGadget::MyEnum>() <<  &MyGadget::staticMetaObject << false << false << false;
-    QTest::newRow("Qt::ScrollBarPolicy") << ::qMetaTypeId<Qt::ScrollBarPolicy>() <<  &QObject::staticQtMetaObject << false << false << false;
+    QTest::newRow("Qt::ScrollBarPolicy") << ::qMetaTypeId<Qt::ScrollBarPolicy>() <<  &Qt::staticMetaObject << false << false << false;
     QTest::newRow("MyQObjectFromGadget*") << ::qMetaTypeId<MyQObjectFromGadget*>() << &MyQObjectFromGadget::staticMetaObject << false << false << true;
 
     QTest::newRow("GadgetDerivedAndTyped<int>") << ::qMetaTypeId<GadgetDerivedAndTyped<int>>() <<  &GadgetDerivedAndTyped<int>::staticMetaObject << true << false << false;

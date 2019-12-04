@@ -434,9 +434,6 @@ protected:
 protected:
     QScopedPointer<QObjectData> d_ptr;
 
-    static const QMetaObject staticQtMetaObject;
-    friend inline const QMetaObject *qt_getQtMetaObject() noexcept;
-
     friend struct QMetaObject;
     friend struct QMetaObjectPrivate;
     friend class QMetaCallEvent;
@@ -466,9 +463,6 @@ private:
 inline QMetaObject::Connection QObject::connect(const QObject *asender, const char *asignal,
                                             const char *amember, Qt::ConnectionType atype) const
 { return connect(asender, asignal, this, amember, atype); }
-
-inline const QMetaObject *qt_getQtMetaObject() noexcept
-{ return &QObject::staticQtMetaObject; }
 
 #if QT_DEPRECATED_SINCE(5, 0)
 template<typename T>

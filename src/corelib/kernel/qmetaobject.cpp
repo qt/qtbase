@@ -1163,7 +1163,7 @@ QMetaProperty QMetaObject::property(int index) const
 
                 const QMetaObject *scope = 0;
                 if (qstrcmp(scope_name, "Qt") == 0)
-                    scope = &QObject::staticQtMetaObject;
+                    scope = &Qt::staticMetaObject;
                 else
                     scope = QMetaObject_findMetaObject(this, scope_name);
                 if (scope)

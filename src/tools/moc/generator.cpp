@@ -194,7 +194,6 @@ static bool qualifiedNameEquals(const QByteArray &qualifiedName, const QByteArra
 
 void Generator::generateCode()
 {
-    bool isQt = (cdef->classname == "Qt");
     bool isQObject = (cdef->classname == "QObject");
     bool isConstructible = !cdef->constructorList.isEmpty();
 
@@ -452,7 +451,7 @@ void Generator::generateCode()
 //
 // Generate internal qt_static_metacall() function
 //
-    const bool hasStaticMetaCall = !isQt &&
+    const bool hasStaticMetaCall =
             (cdef->hasQObject || !cdef->methodList.isEmpty()
              || !cdef->propertyList.isEmpty() || !cdef->constructorList.isEmpty());
     if (hasStaticMetaCall)
@@ -534,10 +533,7 @@ void Generator::generateCode()
 //
 // Finally create and initialize the static meta object
 //
-    if (isQt)
-        fprintf(out, "QT_INIT_METAOBJECT const QMetaObject QObject::staticQtMetaObject = { {\n");
-    else
-        fprintf(out, "QT_INIT_METAOBJECT const QMetaObject %s::staticMetaObject = { {\n", cdef->qualified.constData());
+    fprintf(out, "QT_INIT_METAOBJECT const QMetaObject %s::staticMetaObject = { {\n", cdef->qualified.constData());
 
     if (isQObject)
         fprintf(out, "    nullptr,\n");
@@ -558,9 +554,6 @@ void Generator::generateCode()
     else
         fprintf(out, "    qt_meta_extradata_%s,\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "    nullptr\n} };\n\n");
-
-    if(isQt)
-        return;
 
     if (!cdef->hasQObject)
         return;
