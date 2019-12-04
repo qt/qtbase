@@ -125,6 +125,7 @@ private slots:
     void clonePreservesResources();
     void clonePreservesUserStates();
     void clonePreservesIndentWidth();
+    void clonePreservesFormatsWhenEmpty();
     void blockCount();
     void defaultStyleSheet();
 
@@ -2340,6 +2341,32 @@ void tst_QTextDocument::clonePreservesIndentWidth()
     QTextDocument *clone = doc->clone();
     QCOMPARE(clone->indentWidth(), qreal(42));
     delete clone;
+}
+
+void tst_QTextDocument::clonePreservesFormatsWhenEmpty()
+{
+    QTextDocument document;
+    QTextCursor cursor(&document);
+
+    // Change a few char format attributes
+    QTextCharFormat charFormat;
+    charFormat.setFontPointSize(charFormat.fontPointSize() + 1);
+    charFormat.setFontWeight(charFormat.fontWeight() + 1);
+    cursor.setBlockCharFormat(charFormat);
+
+    // Change a few block format attributes
+    QTextBlockFormat blockFormat;
+    blockFormat.setAlignment(Qt::AlignRight); // The default is Qt::AlignLeft
+    blockFormat.setIndent(blockFormat.indent() + 1);
+    cursor.setBlockFormat(blockFormat);
+
+    auto clone = document.clone();
+    QTextCursor cloneCursor(clone);
+
+    QCOMPARE(cloneCursor.blockCharFormat().fontPointSize(), charFormat.fontPointSize());
+    QCOMPARE(cloneCursor.blockCharFormat().fontWeight(), charFormat.fontWeight());
+    QCOMPARE(cloneCursor.blockFormat().alignment(), blockFormat.alignment());
+    QCOMPARE(cloneCursor.blockFormat().indent(), blockFormat.indent());
 }
 
 void tst_QTextDocument::blockCount()
