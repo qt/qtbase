@@ -125,6 +125,7 @@ private slots:
     void compareCustomEqualOnlyType();
     void customDebugStream();
     void unknownType();
+    void fromType();
 };
 
 struct BaseGenericType
@@ -482,6 +483,7 @@ void tst_QMetaType::id()
 {
     QCOMPARE(QMetaType(QMetaType::QString).id(), QMetaType::QString);
     QCOMPARE(QMetaType(::qMetaTypeId<TestSpace::Foo>()).id(), ::qMetaTypeId<TestSpace::Foo>());
+    QCOMPARE(QMetaType::fromType<TestSpace::Foo>().id(), ::qMetaTypeId<TestSpace::Foo>());
 }
 
 void tst_QMetaType::qMetaTypeId()
@@ -600,6 +602,12 @@ void tst_QMetaType::typeName()
     QCOMPARE(name, aTypeName);
     QCOMPARE(name.toLatin1(), QMetaObject::normalizedType(name.toLatin1().constData()));
     QCOMPARE(rawname == nullptr, aTypeName.isNull());
+
+    QMetaType mt(aType);
+    if (mt.isValid()) { // Gui type are not valid
+        QCOMPARE(QString::fromLatin1(QMetaType(aType).name()), aTypeName);
+    }
+
 }
 
 void tst_QMetaType::type_data()
@@ -1728,6 +1736,7 @@ void tst_QMetaType::automaticTemplateRegistration()
             const int type = QMetaType::type(tn); \
             const int expectedType = ::qMetaTypeId<CONTAINER< __VA_ARGS__ > >(); \
             QCOMPARE(type, expectedType); \
+            QCOMPARE((QMetaType::fromType<CONTAINER< __VA_ARGS__ >>().id()), expectedType); \
         }
 
     #define FOR_EACH_1ARG_TEMPLATE_TYPE(F, TYPE) \
@@ -2572,6 +2581,26 @@ void tst_QMetaType::unknownType()
     invalid.construct(&buffer);
     QCOMPARE(buffer, 0xBAD);
 }
+
+void tst_QMetaType::fromType()
+{
+    #define FROMTYPE_CHECK(MetaTypeName, MetaTypeId, RealType) \
+        QCOMPARE(QMetaType::fromType<RealType>(), QMetaType(MetaTypeId)); \
+        QVERIFY(QMetaType::fromType<RealType>() == QMetaType(MetaTypeId)); \
+        QVERIFY(!(QMetaType::fromType<RealType>() != QMetaType(MetaTypeId))); \
+        QCOMPARE(QMetaType::fromType<RealType>().id(), MetaTypeId);
+
+    FOR_EACH_CORE_METATYPE(FROMTYPE_CHECK)
+
+    QVERIFY(QMetaType::fromType<QString>() != QMetaType());
+    QCOMPARE(QMetaType(), QMetaType());
+    QCOMPARE(QMetaType(QMetaType::UnknownType), QMetaType());
+
+    FROMTYPE_CHECK(_, ::qMetaTypeId<Whity<int>>(), Whity<int>)
+    #undef FROMTYPE_CHECK
+}
+
+
 // Compile-time test, it should be possible to register function pointer types
 class Undefined;
 

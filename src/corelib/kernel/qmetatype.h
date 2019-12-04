@@ -572,7 +572,7 @@ public:
     static bool load(QDataStream &stream, int type, void *data);
 #endif
 
-    explicit QMetaType(const int type); // ### Qt6: drop const
+    explicit QMetaType(const int type = QMetaType::UnknownType); // ### Qt6: drop const
     inline ~QMetaType();
 
     inline bool isValid() const;
@@ -581,11 +581,23 @@ public:
     inline int sizeOf() const;
     inline TypeFlags flags() const;
     inline const QMetaObject *metaObject() const;
+    QT_PREPEND_NAMESPACE(QByteArray) name() const;
 
     inline void *create(const void *copy = nullptr) const;
     inline void destroy(void *data) const;
     inline void *construct(void *where, const void *copy = nullptr) const;
     inline void destruct(void *data) const;
+
+    template<typename T>
+    static QMetaType fromType()
+    { return QMetaType(qMetaTypeId<T>()); }
+
+    friend bool operator==(const QMetaType &a, const QMetaType &b)
+    { return a.m_typeId == b.m_typeId; }
+
+    friend bool operator!=(const QMetaType &a, const QMetaType &b)
+    { return a.m_typeId != b.m_typeId; }
+
 
 public:
     template<typename T>
