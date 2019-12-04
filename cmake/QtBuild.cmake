@@ -2349,75 +2349,6 @@ function(qt_add_plugin target)
     qt_internal_add_linker_version_script(${target})
 endfunction()
 
-# Generate custom ${target}_qmltypes target for Qml Plugins
-function(qt_add_qmltypes_target target)
-
-    # Do nothing when cross compiling
-    if (CMAKE_CROSSCOMPILING)
-        return()
-    endif()
-
-    # Do nothing during a Qt static build (because the tool isn't built in that case).
-    if (NOT QT_BUILD_SHARED_LIBS)
-        return()
-    endif()
-
-    qt_parse_all_arguments(arg "qt_generate_qmltypes"
-        ""
-        "TARGET_PATH;IMPORT_VERSION;IMPORT_NAME;QML_PLUGINDUMP_DEPENDENCIES"
-        ""
-        ${ARGN})
-
-    # scan repos for qml repositories
-    foreach(repo IN LISTS QT_REPOS)
-        if (IS_DIRECTORY "${repo}/qml")
-            list(APPEND import_paths "${repo}/qml")
-        endif()
-    endforeach()
-    list(REMOVE_DUPLICATES import_paths)
-    if (UNIX)
-        list(JOIN import_paths ":" import_paths_env)
-    else()
-        list(JOIN import_paths "\;" import_paths_env)
-    endif()
-
-    if(NOT arg_IMPORT_NAME)
-        string(REGEX REPLACE "\\.\\d+$" "" import_name ${arg_TARGET_PATH})
-    else()
-        set(import_name ${arg_IMPORT_NAME})
-    endif()
-
-    if(NOT arg_IMPORT_VERSION)
-        message(FATAL_ERROR "Import version parameter was not specified. Specify the import version using the IMPORT_VERSION.")
-    endif()
-
-    get_target_property(source_dir ${target} SOURCE_DIR)
-
-    # qml1_target check is no longer required
-    set(qmltypes_command_args "-nonrelocatable")
-    if (NOT arg_QML_PLUGINDUMP_DEPENDENCIES AND EXISTS "${source_dir}/dependencies.json")
-        list(APPEND qmltypes_command_args "-dependencies" "${source_dir}/dependencies.json")
-    elseif(arg_QML_PLUGINDUMP_DEPENDENCIES)
-        list(APPEND qmltypes_command_args "-dependencies" "${arg_QML_PLUGINDUMP_DEPENDENCIES}")
-    endif()
-
-    string(REPLACE "/" "." import_name_arg ${import_name})
-
-    list(APPEND qmltypes_command_args "${import_name_arg}" "${arg_IMPORT_VERSION}")
-
-    set(qml_plugindump_target ${QT_CMAKE_EXPORT_NAMESPACE}::qmlplugindump)
-
-    # Manually set dependency on plugindump target since CMake will not add
-    # this rule because it's not the main executable argument to the COMMAND
-    # parameter.
-    add_custom_target(
-        "${target}_qmltypes"
-        DEPENDS ${qml_plugindump_target}
-        COMMAND ${CMAKE_COMMAND} -E env "QML2_IMPORTPATH=${import_paths_env}"
-        $<TARGET_FILE:${qml_plugindump_target}> ${qmltypes_command_args} > "${source_dir}/plugins.qmltypes"
-        )
-endfunction()
-
 function(qt_install_qml_files target)
 
     qt_parse_all_arguments(arg "qt_install_qml_files"
@@ -2488,6 +2419,7 @@ endfunction()
 function(qt_add_qml_module target)
 
     set(qml_module_optional_args
+        GENERATE_QMLTYPES
         DESIGNER_SUPPORTED
         DO_NOT_INSTALL
         SKIP_TYPE_REGISTRATION
@@ -2570,11 +2502,16 @@ function(qt_add_qml_module target)
         set(skip_registration_arg SKIP_TYPE_REGISTRATION)
     endif()
 
+    if (arg_GENERATE_QMLTYPES)
+        set(generate_qmltypes_arg GENERATE_QMLTYPES)
+    endif()
+
     qt6_add_qml_module(${target}
         ${designer_supported_arg}
         ${no_create_option}
         ${skip_registration_arg}
         ${classname_arg}
+        ${generate_qmltypes_arg}
         RESOURCE_PREFIX "/qt-project.org/imports"
         TARGET_PATH ${arg_TARGET_PATH}
         URI ${arg_URI}
@@ -2590,8 +2527,8 @@ function(qt_add_qml_module target)
     )
 
     get_target_property(qmldir_file ${target} QT_QML_MODULE_QMLDIR_FILE)
+    get_target_property(plugin_types ${target} QT_QML_MODULE_PLUGIN_TYPES_FILE)
     qt_path_join(qml_module_install_dir ${QT_INSTALL_DIR} "${INSTALL_QMLDIR}/${arg_TARGET_PATH}")
-    set(plugin_types "${CMAKE_CURRENT_SOURCE_DIR}/plugins.qmltypes")
     if (EXISTS ${plugin_types})
         qt_copy_or_install(FILES ${plugin_types}
             DESTINATION "${qml_module_install_dir}"
@@ -2605,7 +2542,6 @@ function(qt_add_qml_module target)
             )
         endif()
     endif()
-
 
     qt_copy_or_install(
         FILES
