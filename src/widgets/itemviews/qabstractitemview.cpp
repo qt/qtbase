@@ -3318,6 +3318,8 @@ void QAbstractItemView::update(const QModelIndex &index)
 
     The \a roles which have been changed can either be an empty container (meaning everything
     has changed), or a non-empty container with the subset of roles which have changed.
+
+    \note: Qt::ToolTipRole is not honored by dataChanged() in the views provided by Qt.
 */
 void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
