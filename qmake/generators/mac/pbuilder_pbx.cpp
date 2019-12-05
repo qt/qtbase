@@ -1629,17 +1629,24 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     }
                 }
 
-                // The symroot is marked by xcodebuild as excluded from Time Machine
-                // backups, as it's a temporary build dir, so we don't want it to be
-                // the same as the possibe in-source dir, as that would leave out
-                // sources from being backed up.
-                t << "\t\t\t\t" << writeSettings("SYMROOT",
-                    Option::output_dir + Option::dir_sep + ".xcode") << ";\n";
+                if (Option::output_dir != qmake_getpwd()) {
+                    // The SYMROOT is marked by Xcode as excluded from Time Machine
+                    // backups, as it's a temporary build dir, but that's fine when
+                    // we are shadow building.
+                    t << "\t\t\t\t" << writeSettings("SYMROOT", "$(PROJECT_DIR)") << ";\n";
+                } else {
+                    // For in-source builds we don't want to exclude the sources
+                    // from being backed up, so we point SYMROOT to a temporary
+                    // build directory.
+                    t << "\t\t\t\t" << writeSettings("SYMROOT", ".xcode") << ";\n";
 
-                // The configuration build dir however is not treated as excluded,
-                // so we can safely point it to the root output dir.
-                t << "\t\t\t\t" << writeSettings("CONFIGURATION_BUILD_DIR",
-                    Option::output_dir + Option::dir_sep + "$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)") << ";\n";
+                    // Then we set the configuration build dir instead, so that the
+                    // final build artifacts end up in the place Qt Creator expects.
+                    // The disadvantage of using this over SYMROOT is that Xcode will
+                    // fail to archive projects that override this variable.
+                    t << "\t\t\t\t" << writeSettings("CONFIGURATION_BUILD_DIR",
+                        "$(PROJECT_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)") << ";\n";
+                }
 
                 if (!project->isEmpty("DESTDIR")) {
                     ProString dir = project->first("DESTDIR");
