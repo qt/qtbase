@@ -521,6 +521,9 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     offset += methodParametersDataSize;
     Q_ASSERT(offset == header->propertyData);
 
+    QMetaType *metaTypes = new QMetaType[properties.count()];
+    int propertyId = 0;
+
     // add each property
     signatureOffset = header->propertyDBusData;
     for (QMap<QByteArray, Property>::ConstIterator it = properties.constBegin();
@@ -535,6 +538,8 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
 
         idata[signatureOffset++] = strings.enter(mp.signature);
         idata[signatureOffset++] = mp.type;
+
+        metaTypes[propertyId++] = QMetaType(mp.type);
     }
 
     Q_ASSERT(offset == header->propertyDBusData);
@@ -553,6 +558,7 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
     obj->d.extradata = nullptr;
     obj->d.stringdata = reinterpret_cast<const uint *>(string_data);
     obj->d.superdata = &QDBusAbstractInterface::staticMetaObject;
+    obj->d.metaTypes = reinterpret_cast<QtPrivate::QMetaTypeInterface *const *>(metaTypes);
 }
 
 #if 0

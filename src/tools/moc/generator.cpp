@@ -552,6 +552,18 @@ void Generator::generateCode()
         fprintf(out, "    nullptr,\n");
     else
         fprintf(out, "    qt_meta_extradata_%s,\n", qualifiedClassNameIdentifier.constData());
+
+    if (cdef->propertyList.isEmpty()) {
+        fprintf(out, "    nullptr,\n");
+    } else {
+        fprintf(out, "qt_metaTypeArray<\n");
+        for (int i = 0; i < cdef->propertyList.count(); ++i) {
+            const PropertyDef &p = cdef->propertyList.at(i);
+            fprintf(out, "%s%s", i == 0 ? "" : ", ", p.type.data());
+        }
+        fprintf(out, ">,\n");
+    }
+
     fprintf(out, "    nullptr\n} };\n\n");
 
     if (!cdef->hasQObject)

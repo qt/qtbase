@@ -77,6 +77,7 @@ struct Q_DBUS_EXPORT QDBusMetaObject: public QMetaObject
     {
         delete [] reinterpret_cast<const char *>(d.stringdata);
         delete [] d.data;
+        delete [] reinterpret_cast<const QMetaType *>(d.metaTypes);
     }
 
     // methods (slots & signals):

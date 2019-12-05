@@ -1196,6 +1196,7 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
         if (!relocatable) meta->d.superdata = d->superClass;
         meta->d.relatedMetaObjects = nullptr;
         meta->d.extradata = nullptr;
+        meta->d.metaTypes = nullptr;
         meta->d.static_metacall = d->staticMetacallFunction;
     }
 
@@ -1472,6 +1473,20 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
             objects[index] = nullptr;
         }
         size += sizeof(SuperData) * (d->relatedMetaObjects.size() + 1);
+    }
+
+    if (d->properties.size() > 0) {
+        ALIGN(size, QtPrivate::QMetaTypeInterface *);
+        auto types = reinterpret_cast<QtPrivate::QMetaTypeInterface **>(buf + size);
+        if (buf) {
+            meta->d.metaTypes = types;
+            for (const auto &prop : d->properties) {
+                QMetaType mt(QMetaType::type(prop.type));
+                *types = reinterpret_cast<QtPrivate::QMetaTypeInterface *&>(mt);
+                types++;
+            }
+        }
+        size += sizeof(QMetaType) * d->properties.size();
     }
 
     // Align the final size and return it.

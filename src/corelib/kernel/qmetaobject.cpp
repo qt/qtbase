@@ -2833,10 +2833,6 @@ QByteArray QMetaEnum::valueToKeys(int value) const
     The enum needs to be declared with Q_ENUM.
 */
 
-static QByteArray qualifiedName(const QMetaEnum &e)
-{
-    return QByteArray(e.scope()) + "::" + e.name();
-}
 
 /*!
     \class QMetaProperty
@@ -2927,65 +2923,45 @@ const char *QMetaProperty::typeName() const
     Returns this property's type. The return value is one
     of the values of the QVariant::Type enumeration.
 
-    \sa userType(), typeName(), name()
+    \sa userType(), typeName(), name(), metaType()
 */
 QVariant::Type QMetaProperty::type() const
 {
-    if (!mobj)
-        return QVariant::Invalid;
-    int handle = priv(mobj->d.data)->propertyData + 3*idx;
-
-    Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    uint type = typeFromTypeInfo(mobj, mobj->d.data[handle + 1]);
+    uint type = userType();
     if (type >= QMetaType::User)
         return QVariant::UserType;
-    if (type != QMetaType::UnknownType)
-        return QVariant::Type(type);
-    if (isEnumType()) {
-        int enumMetaTypeId = QMetaType::type(qualifiedName(menum));
-        if (enumMetaTypeId == QMetaType::UnknownType)
-            return QVariant::Int;
-    }
-#ifdef QT_COORD_TYPE
-    // qreal metatype must be resolved at runtime.
-    if (strcmp(typeName(), "qreal") == 0)
-        return QVariant::Type(qMetaTypeId<qreal>());
-#endif
-
-    return QVariant::UserType;
+    return QVariant::Type(type);
 }
 
 /*!
     \since 4.2
 
     Returns this property's user type. The return value is one
-    of the values that are registered with QMetaType, or QMetaType::UnknownType if
-    the type is not registered.
+    of the values that are registered with QMetaType.
 
-    \sa type(), QMetaType, typeName()
+    This is equivalent to metaType().id()
+
+    \sa type(), QMetaType, typeName(), metaType()
  */
 int QMetaProperty::userType() const
 {
     if (!mobj)
         return QMetaType::UnknownType;
-    Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-    int handle = priv(mobj->d.data)->propertyData + 3*idx;
-    int type = typeFromTypeInfo(mobj, mobj->d.data[handle + 1]);
-    if (type != QMetaType::UnknownType)
-        return type;
-    if (isEnumType()) {
-        type = QMetaType::type(qualifiedName(menum));
-        if (type == QMetaType::UnknownType) {
-            type = registerPropertyType();
-            if (type == QMetaType::UnknownType)
-                return QMetaType::Int; // Match behavior of QMetaType::type()
-        }
-        return type;
-    }
-    type = QMetaType::type(typeName());
-    if (type != QMetaType::UnknownType)
-        return type;
-    return registerPropertyType();
+    return QMetaType(mobj->d.metaTypes[idx]).id();
+}
+
+/*!
+    \since 6.0
+
+    Returns this property's QMetaType.
+
+    \sa QMetaType
+ */
+QMetaType QMetaProperty::metaType() const
+{
+    if (!mobj)
+        return {};
+    return QMetaType(mobj->d.metaTypes[idx]);
 }
 
 /*!
@@ -3096,37 +3072,6 @@ QVariant QMetaProperty::read(const QObject *object) const
     if (!object || !mobj)
         return QVariant();
 
-    uint t = QMetaType::Int;
-    if (isEnumType()) {
-        /*
-          try to create a QVariant that can be converted to this enum
-          type (only works if the enum has already been registered
-          with QMetaType)
-        */
-        int enumMetaTypeId = QMetaType::type(qualifiedName(menum));
-        if (enumMetaTypeId != QMetaType::UnknownType)
-            t = enumMetaTypeId;
-    } else {
-        int handle = priv(mobj->d.data)->propertyData + 3*idx;
-        const char *typeName = nullptr;
-        Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-        uint typeInfo = mobj->d.data[handle + 1];
-        if (!(typeInfo & IsUnresolvedType))
-            t = typeInfo;
-        else {
-            typeName = rawStringData(mobj, typeInfo & TypeNameIndexMask);
-            t = QMetaType::type(typeName);
-        }
-        if (t == QMetaType::UnknownType) {
-            // Try to register the type and try again before reporting an error.
-            t = registerPropertyType();
-            if (t == QMetaType::UnknownType) {
-                qWarning("QMetaProperty::read: Unable to handle unregistered datatype '%s' for property '%s::%s'", typeName, mobj->className(), name());
-                return QVariant();
-            }
-        }
-    }
-
     // the status variable is changed by qt_metacall to indicate what it did
     // this feature is currently only used by Qt D-Bus and should not be depended
     // upon. Don't change it without looking into QDBusAbstractInterface first
@@ -3135,10 +3080,11 @@ QVariant QMetaProperty::read(const QObject *object) const
     int status = -1;
     QVariant value;
     void *argv[] = { nullptr, &value, &status };
-    if (t == QMetaType::QVariant) {
+    QMetaType t(mobj->d.metaTypes[idx]);
+    if (t == QMetaType::fromType<QVariant>()) {
         argv[0] = &value;
     } else {
-        value = QVariant(t, (void*)nullptr);
+        value = QVariant(t, nullptr);
         argv[0] = value.data();
     }
     if (priv(mobj->d.data)->flags & PropertyAccessInStaticMetaCall && mobj->d.static_metacall) {
@@ -3150,9 +3096,9 @@ QVariant QMetaProperty::read(const QObject *object) const
 
     if (status != -1)
         return value;
-    if (t != QMetaType::QVariant && argv[0] != value.data())
+    if (t != QMetaType::fromType<QVariant>() && argv[0] != value.data())
         // pointer or reference
-        return QVariant((QVariant::Type)t, argv[0]);
+        return QVariant(t, argv[0]);
     return value;
 }
 
@@ -3173,9 +3119,10 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
         return false;
 
     QVariant v = value;
-    uint t = QMetaType::UnknownType;
-    if (isEnumType()) {
-        if (v.userType() == QMetaType::QString) {
+    QMetaType t(mobj->d.metaTypes[idx]);
+    if (t != QMetaType::fromType<QVariant>() && t != v.metaType()) {
+        if (isEnumType() && !t.metaObject() && v.userType() == QMetaType::QString) {
+            // Assigning a string to a property of type Q_ENUMS (instead of Q_ENUM)
             bool ok;
             if (isFlagType())
                 v = QVariant(menum.keysToValue(value.toByteArray(), &ok));
@@ -3183,39 +3130,14 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
                 v = QVariant(menum.keyToValue(value.toByteArray(), &ok));
             if (!ok)
                 return false;
-        } else if (v.userType() != QMetaType::Int && v.userType() != QMetaType::UInt) {
-            int enumMetaTypeId = QMetaType::type(qualifiedName(menum));
-            if ((enumMetaTypeId == QMetaType::UnknownType) || (v.userType() != enumMetaTypeId) || !v.constData())
-                return false;
-            v = QVariant(*reinterpret_cast<const int *>(v.constData()));
-        }
-        v.convert(QMetaType::Int);
-    } else {
-        int handle = priv(mobj->d.data)->propertyData + 3*idx;
-        const char *typeName = nullptr;
-        Q_ASSERT(priv(mobj->d.data)->revision >= 7);
-        uint typeInfo = mobj->d.data[handle + 1];
-        if (!(typeInfo & IsUnresolvedType))
-            t = typeInfo;
-        else {
-            typeName = rawStringData(mobj, typeInfo & TypeNameIndexMask);
-            t = QMetaType::type(typeName);
-            if (t == QMetaType::UnknownType)
-                t = registerPropertyType();
-            if (t == QMetaType::UnknownType)
-                return false;
-        }
-        if (t != QMetaType::QVariant && int(t) != value.userType()) {
-            if (!value.isValid()) {
-                if (isResettable())
-                    return reset(object);
-                v = QVariant(t, nullptr);
-            } else if (!v.convert(t)) {
-                return false;
-            }
+        } else if (!value.isValid()) {
+            if (isResettable())
+                return reset(object);
+            v = QVariant(t, nullptr);
+        } else if (!v.convert(t.id())) {
+            return false;
         }
     }
-
     // the status variable is changed by qt_metacall to indicate what it did
     // this feature is currently only used by Qt D-Bus and should not be depended
     // upon. Don't change it without looking into QDBusAbstractInterface first
@@ -3226,7 +3148,7 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
     // interception of property writes.
     int flags = 0;
     void *argv[] = { nullptr, &v, &status, &flags };
-    if (t == QMetaType::QVariant)
+    if (t == QMetaType::fromType<QVariant>())
         argv[0] = &v;
     else
         argv[0] = v.data();

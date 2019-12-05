@@ -250,6 +250,7 @@ public:
     const char *typeName() const;
     QVariant::Type type() const;
     int userType() const;
+    QMetaType metaType() const;
     int propertyIndex() const;
     int relativePropertyIndex() const;
 

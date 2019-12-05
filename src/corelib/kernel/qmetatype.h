@@ -2764,6 +2764,11 @@ QMetaType QMetaType::fromType()
     return QMetaType(QtPrivate::qMetaTypeIntefaceForType<T>());
 }
 
+template<typename... T>
+QtPrivate::QMetaTypeInterface *const qt_metaTypeArray[] = {
+    QtPrivate::qMetaTypeIntefaceForType<T>()...
+};
+
 QT_END_NAMESPACE
 
 #endif // QMETATYPE_H

@@ -3945,7 +3945,7 @@ void tst_Moc::testQNamespace()
 
     EnumFromNamespaceClass obj;
     const QVariant prop = obj.property("prop");
-    QCOMPARE(prop.type(), QMetaType::Int);
+    QCOMPARE(prop.userType(), QMetaType::fromType<FooNamespace::Enum1>().id());
     QCOMPARE(prop.toInt(), int(FooNamespace::Enum1::Key2));
 }
 

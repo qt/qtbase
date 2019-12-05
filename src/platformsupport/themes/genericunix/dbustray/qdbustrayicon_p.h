@@ -83,6 +83,7 @@ class QDBusTrayIcon: public QPlatformSystemTrayIcon
     Q_PROPERTY(QString attentionIconName READ attentionIconName NOTIFY attention)
     Q_PROPERTY(QIcon attentionIcon READ attentionIcon NOTIFY attention)
     Q_PROPERTY(QDBusPlatformMenu *menu READ menu NOTIFY menuChanged)
+    Q_MOC_INCLUDE("qdbusplatformmenu_p.h")
 
 public:
     QDBusTrayIcon();

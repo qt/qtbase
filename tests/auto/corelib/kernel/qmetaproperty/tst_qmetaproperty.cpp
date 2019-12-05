@@ -138,6 +138,7 @@ void tst_QMetaProperty::gadget()
     const QMetaObject *mo = &MyGadget::staticMetaObject;
     QMetaProperty valueProp = mo->property(mo->indexOfProperty("value"));
     QVERIFY(valueProp.isValid());
+    QCOMPARE(valueProp.metaType(), QMetaType::fromType<QString>());
     {
         MyGadget g;
         QString hello = QLatin1String("hello");

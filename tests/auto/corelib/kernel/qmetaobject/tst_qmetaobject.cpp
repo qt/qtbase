@@ -1446,13 +1446,15 @@ void tst_QMetaObject::customPropertyType()
     QMetaProperty prop = metaObject()->property(metaObject()->indexOfProperty("value3"));
 
     QCOMPARE(prop.type(), QVariant::UserType);
-    QCOMPARE(prop.userType(), 0);
+    QCOMPARE(prop.userType(), QMetaType::fromType<MyStruct>().id());
+    QCOMPARE(prop.metaType(), QMetaType::fromType<MyStruct>());
 
     qRegisterMetaType<MyStruct>("MyStruct");
     QCOMPARE(prop.userType(), QMetaType::type("MyStruct"));
 
     prop = metaObject()->property(metaObject()->indexOfProperty("value4"));
     QCOMPARE(prop.type(), QVariant::List);
+    QCOMPARE(prop.metaType(), QMetaType::fromType<QList<QVariant>>());
 
     prop = metaObject()->property(metaObject()->indexOfProperty("value5"));
     QCOMPARE(prop.type(), QVariant::List);

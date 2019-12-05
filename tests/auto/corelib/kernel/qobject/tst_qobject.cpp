@@ -1914,7 +1914,7 @@ void tst_QObject::property()
     property = mo->property(mo->indexOfProperty("alpha"));
     QVERIFY(property.isEnumType());
     QCOMPARE(property.typeName(), "Alpha");
-    QCOMPARE(property.type(), QVariant::Int);
+    QCOMPARE(property.userType(), QMetaType::fromType<PropertyObject::Alpha>().id());
 
     QVariant var = object.property("alpha");
     QVERIFY(!var.isNull());
@@ -1925,7 +1925,8 @@ void tst_QObject::property()
     QCOMPARE(object.property("alpha").toInt(), int(PropertyObject::Alpha2));
     QVERIFY(object.setProperty("alpha", "Alpha1"));
     QCOMPARE(object.property("alpha").toInt(), int(PropertyObject::Alpha1));
-    QVERIFY(!object.setProperty("alpha", QVariant()));
+    QVERIFY(object.setProperty("alpha", QVariant()));
+    QCOMPARE(object.property("alpha").toInt(), 0);
 
     QVERIFY(mo->indexOfProperty("number") != -1);
     QCOMPARE(object.property("number").toInt(), 0);
@@ -1995,7 +1996,7 @@ void tst_QObject::property()
     property = mo->property(mo->indexOfProperty("priority"));
     QVERIFY(property.isEnumType());
     QCOMPARE(property.typeName(), "Priority");
-    QCOMPARE(property.type(), QVariant::Int);
+    QCOMPARE(property.userType(), QMetaType::fromType<PropertyObject::Priority>().id());
 
     var = object.property("priority");
     QVERIFY(!var.isNull());
@@ -2006,7 +2007,8 @@ void tst_QObject::property()
     QCOMPARE(object.property("priority").toInt(), int(PropertyObject::VeryHigh));
     QVERIFY(object.setProperty("priority", "High"));
     QCOMPARE(object.property("priority").toInt(), int(PropertyObject::High));
-    QVERIFY(!object.setProperty("priority", QVariant()));
+    QVERIFY(object.setProperty("priority", QVariant()));
+    QCOMPARE(object.property("priority").toInt(), 0);
 
     // now it's registered, so it works as expected
     int priorityMetaTypeId = qRegisterMetaType<PropertyObject::Priority>("PropertyObject::Priority");
@@ -2028,7 +2030,8 @@ void tst_QObject::property()
     QCOMPARE(qvariant_cast<PropertyObject::Priority>(object.property("priority")), PropertyObject::VeryHigh);
     QVERIFY(object.setProperty("priority", "High"));
     QCOMPARE(qvariant_cast<PropertyObject::Priority>(object.property("priority")), PropertyObject::High);
-    QVERIFY(!object.setProperty("priority", QVariant()));
+    QVERIFY(object.setProperty("priority", QVariant()));
+    QCOMPARE(object.property("priority").toInt(), 0);
 
     var = object.property("priority");
     QCOMPARE(qvariant_cast<PropertyObject::Priority>(var), PropertyObject::High);
