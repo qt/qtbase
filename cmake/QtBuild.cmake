@@ -212,6 +212,8 @@ macro(qt_internal_append_known_modules_with_tools module)
     if(NOT ${module} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
         set(QT_KNOWN_MODULES_WITH_TOOLS "${QT_KNOWN_MODULES_WITH_TOOLS};${module}"
             CACHE INTERNAL "Known Qt modules with tools" FORCE)
+        set(QT_KNOWN_MODULE_${module}_TOOLS ""
+            CACHE INTERNAL "Known Qt module ${module} tools" FORCE)
     endif()
 endmacro()
 
