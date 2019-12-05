@@ -39,9 +39,9 @@
 include(CMakeParseArguments)
 
 
-# qt5_wrap_ui(outfiles inputfile ... )
+# qt6_wrap_ui(outfiles inputfile ... )
 
-function(qt5_wrap_ui outfiles )
+function(qt6_wrap_ui outfiles )
     set(options)
     set(oneValueArgs)
     set(multiValueArgs OPTIONS)
@@ -66,3 +66,15 @@ function(qt5_wrap_ui outfiles )
     endforeach()
     set(${outfiles} ${${outfiles}} PARENT_SCOPE)
 endfunction()
+
+# This will override the CMake upstream command, because that one is for Qt 3.
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_wrap_ui outfiles)
+        if(QT_DEFAULT_MAJOR_VERSION EQUAL 5)
+            qt5_wrap_ui("${outfiles}" ${ARGN})
+        elseif(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
+            qt6_wrap_ui("${outfiles}" ${ARGN})
+        endif()
+        set("${outfiles}" "${${outfiles}}" PARENT_SCOPE)
+    endfunction()
+endif()

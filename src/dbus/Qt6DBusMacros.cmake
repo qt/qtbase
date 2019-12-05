@@ -70,6 +70,17 @@ function(qt6_add_dbus_interface _sources _interface _basename)
     set(${_sources} ${${_sources}} PARENT_SCOPE)
 endfunction()
 
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_add_dbus_interface sources)
+        if(QT_DEFAULT_MAJOR_VERSION EQUAL 5)
+            qt5_add_dbus_interface("${sources}" ${ARGN})
+        elseif(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
+            qt6_add_dbus_interface("${sources}" ${ARGN})
+        endif()
+        set("${sources}" "${${sources}}" PARENT_SCOPE)
+    endfunction()
+endif()
+
 
 function(qt6_add_dbus_interfaces _sources)
     foreach(_current_FILE ${ARGN})
@@ -82,6 +93,17 @@ function(qt6_add_dbus_interfaces _sources)
     endforeach()
     set(${_sources} ${${_sources}} PARENT_SCOPE)
 endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_add_dbus_interfaces sources)
+        if(QT_DEFAULT_MAJOR_VERSION EQUAL 5)
+            qt5_add_dbus_interfaces("${sources}" ${ARGN})
+        elseif(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
+            qt6_add_dbus_interfaces("${sources}" ${ARGN})
+        endif()
+        set("${sources}" "${${sources}}" PARENT_SCOPE)
+    endfunction()
+endif()
 
 
 function(qt6_generate_dbus_interface _header) # _customName OPTIONS -some -options )
@@ -115,6 +137,16 @@ function(qt6_generate_dbus_interface _header) # _customName OPTIONS -some -optio
         DEPENDS ${_in_file} VERBATIM
     )
 endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_generate_dbus_interface)
+        if(QT_DEFAULT_MAJOR_VERSION EQUAL 5)
+            qt5_generate_dbus_interface(${ARGV})
+        elseif(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
+            qt6_generate_dbus_interface(${ARGV})
+        endif()
+    endfunction()
+endif()
 
 
 function(qt6_add_dbus_adaptor _sources _xml_file _include _parentClass) # _optionalBasename _optionalClassName)
@@ -152,3 +184,14 @@ function(qt6_add_dbus_adaptor _sources _xml_file _include _parentClass) # _optio
     list(APPEND ${_sources} "${_impl}" "${_header}" "${_moc}")
     set(${_sources} ${${_sources}} PARENT_SCOPE)
 endfunction()
+
+if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
+    function(qt_add_dbus_adaptor sources)
+        if(QT_DEFAULT_MAJOR_VERSION EQUAL 5)
+            qt5_add_dbus_adaptor("${sources}" ${ARGN})
+        elseif(QT_DEFAULT_MAJOR_VERSION EQUAL 6)
+            qt6_add_dbus_adaptor("${sources}" ${ARGN})
+        endif()
+        set("${sources}" "${${sources}}" PARENT_SCOPE)
+    endfunction()
+endif()
