@@ -273,6 +273,7 @@ private slots:
     void accessSequentialContainerKey();
 
     void fromStdVariant();
+    void qt4UuidDataStream();
 
 private:
     void dataStream_data(QDataStream::Version version);
@@ -4600,6 +4601,25 @@ void tst_QVariant::fromStdVariant()
         QCOMPARE(qvar.value<QChar>(), std::get<QChar>(stdvar));
     }
 #endif
+}
+
+void tst_QVariant::qt4UuidDataStream()
+{
+    qRegisterMetaTypeStreamOperators<QUuid>();
+
+    QByteArray data;
+    QDataStream stream(&data, QIODevice::WriteOnly);
+    stream.setVersion(QDataStream::Qt_4_8);
+    QUuid source(0x12345678,0x1234,0x1234,0x12,0x23,0x34,0x45,0x56,0x67,0x78,0x89);
+    stream << QVariant::fromValue(source);
+    const QByteArray qt4Data = QByteArray::fromHex("0000007f000000000651557569640012345678123412341223344556677889");
+    QCOMPARE(data, qt4Data);
+
+    QDataStream input(&data, QIODevice::ReadOnly);
+    input.setVersion(QDataStream::Qt_4_8);
+    QVariant result;
+    input >> result;
+    QCOMPARE(result.value<QUuid>(), source);
 }
 
 QTEST_MAIN(tst_QVariant)

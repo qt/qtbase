@@ -246,10 +246,6 @@ public:
         m_bindings.clear();
         std::copy(first, last, std::back_inserter(m_bindings));
     }
-    void setBindings(const QVector<QRhiVertexInputBinding> &bindings) // compat., to be removed
-    {
-        setBindings(bindings.cbegin(), bindings.cend());
-    }
     const QRhiVertexInputBinding *cbeginBindings() const { return m_bindings.cbegin(); }
     const QRhiVertexInputBinding *cendBindings() const { return m_bindings.cend(); }
     const QRhiVertexInputBinding *bindingAt(int index) const { return &m_bindings.at(index); }
@@ -260,10 +256,6 @@ public:
     {
         m_attributes.clear();
         std::copy(first, last, std::back_inserter(m_attributes));
-    }
-    void setAttributes(const QVector<QRhiVertexInputAttribute> &attributes) // compat., to be removed
-    {
-        setAttributes(attributes.cbegin(), attributes.cend());
     }
     const QRhiVertexInputAttribute *cbeginAttributes() const { return m_attributes.cbegin(); }
     const QRhiVertexInputAttribute *cendAttributes() const { return m_attributes.cend(); }
@@ -551,9 +543,6 @@ public:
     QRhiTextureUploadDescription() = default;
     QRhiTextureUploadDescription(const QRhiTextureUploadEntry &entry);
     QRhiTextureUploadDescription(std::initializer_list<QRhiTextureUploadEntry> list);
-    QRhiTextureUploadDescription(const QVector<QRhiTextureUploadEntry> &entries) // compat., to be removed
-        : m_entries(entries.cbegin(), entries.cend())
-    { }
 
     void setEntries(std::initializer_list<QRhiTextureUploadEntry> list) { m_entries = list; }
     template<typename InputIterator>
@@ -978,11 +967,6 @@ public:
         std::copy(first, last, std::back_inserter(m_bindings));
     }
 
-    void setBindings(const QVector<QRhiShaderResourceBinding> &bindings) // compat., to be removed
-    {
-        setBindings(bindings.cbegin(), bindings.cend());
-    }
-
     const QRhiShaderResourceBinding *cbeginBindings() const { return m_bindings.cbegin(); }
     const QRhiShaderResourceBinding *cendBindings() const { return m_bindings.cend(); }
 
@@ -1170,10 +1154,6 @@ public:
     {
         m_shaderStages.clear();
         std::copy(first, last, std::back_inserter(m_shaderStages));
-    }
-    void setShaderStages(const QVector<QRhiShaderStage> &stages) // compat., to be removed
-    {
-        setShaderStages(stages.cbegin(), stages.cend());
     }
     const QRhiShaderStage *cbeginShaderStages() const { return m_shaderStages.cbegin(); }
     const QRhiShaderStage *cendShaderStages() const { return m_shaderStages.cend(); }

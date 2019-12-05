@@ -1209,8 +1209,11 @@ void QTextHtmlParserNode::applyCssDeclarations(const QVector<QCss::Declaration> 
             if (decl.styleValue() != QCss::BorderStyle_Unknown && decl.styleValue() != QCss::BorderStyle_Native)
                 borderStyle = static_cast<QTextFrameFormat::BorderStyle>(decl.styleValue() - 1);
             break;
-        case QCss::BorderWidth:
-            tableBorder = extractor.lengthValue(decl);
+        case QCss::BorderWidth: {
+            int borders[4];
+            extractor.lengthValues(decl, borders);
+            tableBorder = borders[0];
+            }
             break;
         case QCss::BorderCollapse:
             borderCollapse = decl.borderCollapseValue();

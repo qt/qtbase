@@ -858,13 +858,13 @@ struct Q_GUI_EXPORT ValueExtractor
     bool extractImage(QIcon *icon, Qt::Alignment *a, QSize *size);
     bool extractIcon(QIcon *icon, QSize *size);
 
-    int lengthValue(const Declaration &decl);
+    void lengthValues(const Declaration &decl, int *m);
 
 private:
     void extractFont();
     void borderValue(const Declaration &decl, int *width, QCss::BorderStyle *style, QBrush *color);
     LengthData lengthValue(const Value& v);
-    void lengthValues(const Declaration &decl, int *m);
+    int lengthValue(const Declaration &decl);
     QSize sizeValue(const Declaration &decl);
     void sizeValues(const Declaration &decl, QSize *radii);
 
