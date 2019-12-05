@@ -1706,9 +1706,18 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         get_target_property(target_metatypes_file ${target} QT_MODULE_META_TYPES_FILE)
         if (target_metatypes_file)
             set(metatypes_install_dir ${INSTALL_LIBDIR}/metatypes)
-            qt_copy_or_install(FILES ${target_metatypes_file}
+            qt_install(FILES ${target_metatypes_file}
                 DESTINATION ${metatypes_install_dir}
             )
+            # For non prefix builds
+            if(NOT QT_WILL_INSTALL)
+                get_filename_component(file_name ${target_metatypes_file} NAME)
+                set(copy_destination ${QT_BUILD_DIR}/${metatypes_install_dir}/${file_name})
+                add_custom_command(TARGET ${target} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND}
+                    -E copy_if_different ${target_metatypes_file} ${copy_destination}
+                )
+            endif()
         endif()
     endif()
 endfunction()
