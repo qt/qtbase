@@ -351,6 +351,8 @@ public:
     QRect popupGeometry(int screen) const;
     bool useFullScreenForPopup() const;
     int getLastVisibleAction() const;
+    void popup(const QPoint &p, QAction *atAction);
+    QAction *exec(const QPoint &p, QAction *action);
 
     //selection
     static QMenu *mouseDown;
