@@ -4451,7 +4451,9 @@ QItemViewPaintPairs QAbstractItemViewPrivate::draggablePaintPairs(const QModelIn
             rect |= current;
         }
     }
-    rect &= viewportRect;
+    QRect clipped = rect & viewportRect;
+    rect.setLeft(clipped.left());
+    rect.setRight(clipped.right());
     return ret;
 }
 
