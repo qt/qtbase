@@ -15,7 +15,7 @@ cross_compile: DEFINES += MOC_CROSS_COMPILED
 HEADERS += using-namespaces.h no-keywords.h task87883.h c-comments.h backslash-newlines.h oldstyle-casts.h \
            slots-with-void-template.h qinvokable.h namespaced-flags.h trigraphs.h \
            escapes-in-string-literals.h cstyle-enums.h qprivateslots.h gadgetwithnoenums.h \
-           dir-in-include-path.h single_function_keyword.h task192552.h task189996.h \
+           dir-in-include-path.h single_function_keyword.h task192552.h \
            task234909.h task240368.h pure-virtual-signals.h cxx11-enums.h \
            cxx11-final-classes.h \
            cxx11-explicit-override-control.h \

@@ -2286,49 +2286,6 @@
     {
         "classes": [
             {
-                "className": "InlineSlotsWithThrowDeclaration",
-                "qualifiedClassName": "InlineSlotsWithThrowDeclaration",
-                "slots": [
-                    {
-                        "access": "public",
-                        "name": "a",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "b",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "c",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "d",
-                        "returnType": "void"
-                    },
-                    {
-                        "access": "public",
-                        "name": "e",
-                        "returnType": "void"
-                    }
-                ],
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
-            }
-        ],
-        "inputFile": "task189996.h",
-        "outputRevision": 67
-    },
-    {
-        "classes": [
-            {
                 "className": "Task192552",
                 "qualifiedClassName": "Task192552",
                 "superClasses": [
