@@ -1742,6 +1742,7 @@ function(qt_export_tools module_name)
     # Also assemble a list of tool targets to expose in the config file for informational purposes.
     set(extra_cmake_statements "")
     set(tool_targets "")
+    set(tool_targets_non_prefixed "")
 
     # List of package dependencies that need be find_package'd when using the Tools package.
     set(package_deps "")
@@ -1763,6 +1764,7 @@ if (NOT QT_NO_CREATE_TARGETS)
 endif()
 ")
         list(APPEND tool_targets "${QT_CMAKE_EXPORT_NAMESPACE}::${tool_name}")
+        list(APPEND tool_targets_non_prefixed "${tool_name}")
     endforeach()
 
     string(APPEND extra_cmake_statements
@@ -1816,11 +1818,19 @@ endif()
                NAMESPACE "${QT_CMAKE_EXPORT_NAMESPACE}::"
                DESTINATION "${config_install_dir}")
 
-    # Temporarily disable creation of versionless targets for tools,
-    # because it breaks qtdeclarative build.
-    #qt_internal_export_modern_cmake_config_targets_file(TARGETS ${QT_KNOWN_MODULE_${module_name}_TOOLS}
-    #                                                    EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
-    #                                                    CONFIG_INSTALL_DIR ${config_install_dir})
+
+    # Create versionless targets file.
+    configure_file(
+        "${QT_CMAKE_DIR}/QtModuleToolsVersionlessTargets.cmake.in"
+        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}VersionlessTargets.cmake"
+        @ONLY
+    )
+
+    qt_install(FILES
+        "${config_build_dir}/${INSTALL_CMAKE_NAMESPACE}${target}VersionlessTargets.cmake"
+        DESTINATION "${config_install_dir}"
+        COMPONENT Devel
+    )
 endfunction()
 
 # This function records a dependency between ${target_name} and ${dep_package_name}.

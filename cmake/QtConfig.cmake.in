@@ -10,7 +10,9 @@ set(_qt_@PROJECT_VERSION_MAJOR@_config_cmake_dir "${CMAKE_CURRENT_LIST_DIR}")
 
 if (NOT QT_NO_CREATE_TARGETS)
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Targets.cmake")
-    include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@VersionlessTargets.cmake")
+    if(NOT QT_NO_CREATE_VERSIONLESS_TARGETS)
+        include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@VersionlessTargets.cmake")
+    endif()
 else()
     # For examples using `find_package(...)` inside their CMakeLists.txt files:
     # Make CMake's AUTOGEN detect this Qt version properly
