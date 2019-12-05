@@ -155,6 +155,7 @@ private slots:
 #if QT_CONFIG(scrollbar)
     void updateAfterChangeCenterOnScroll();
 #endif
+    void updateCursorPositionAfterEdit();
 
 private:
     void createSelection();
@@ -1788,6 +1789,51 @@ void tst_QPlainTextEdit::updateAfterChangeCenterOnScroll()
 }
 
 #endif
+
+void tst_QPlainTextEdit::updateCursorPositionAfterEdit()
+{
+    QPlainTextEdit plaintextEdit;
+    plaintextEdit.setPlainText("some text some text\nsome text some text");
+
+    const auto initialPosition = 1;
+
+    // select some text
+    auto cursor = plaintextEdit.textCursor();
+    cursor.setPosition(initialPosition, QTextCursor::MoveAnchor);
+    cursor.setPosition(initialPosition + 3, QTextCursor::KeepAnchor);
+    plaintextEdit.setTextCursor(cursor);
+    QVERIFY(plaintextEdit.textCursor().hasSelection());
+
+    QTest::keyClick(&plaintextEdit, Qt::Key_Delete);
+    QTest::keyClick(&plaintextEdit, Qt::Key_Down);
+    QTest::keyClick(&plaintextEdit, Qt::Key_Up);
+
+    // Moving the cursor down and up should bring it to the initial position
+    QCOMPARE(plaintextEdit.textCursor().position(), initialPosition);
+
+    // Test the same with backspace
+    cursor = plaintextEdit.textCursor();
+    cursor.setPosition(initialPosition + 3, QTextCursor::KeepAnchor);
+    plaintextEdit.setTextCursor(cursor);
+    QVERIFY(plaintextEdit.textCursor().hasSelection());
+
+    QTest::keyClick(&plaintextEdit, Qt::Key_Backspace);
+    QTest::keyClick(&plaintextEdit, Qt::Key_Down);
+    QTest::keyClick(&plaintextEdit, Qt::Key_Up);
+
+    // Moving the cursor down and up should bring it to the initial position
+    QCOMPARE(plaintextEdit.textCursor().position(), initialPosition);
+
+    // Test insertion
+    const QString txt("txt");
+    QApplication::clipboard()->setText(txt);
+    plaintextEdit.paste();
+    QTest::keyClick(&plaintextEdit, Qt::Key_Down);
+    QTest::keyClick(&plaintextEdit, Qt::Key_Up);
+
+    // The curser should move back to the end of the copied text
+    QCOMPARE(plaintextEdit.textCursor().position(), initialPosition + txt.length());
+}
 
 QTEST_MAIN(tst_QPlainTextEdit)
 #include "tst_qplaintextedit.moc"

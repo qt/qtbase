@@ -2261,6 +2261,7 @@ void QTextCursor::insertFragment(const QTextDocumentFragment &fragment)
     d->remove();
     fragment.d->insert(*this);
     d->priv->endEditBlock();
+    d->setX();
 
     if (fragment.d && fragment.d->doc)
         d->priv->mergeCachedResources(fragment.d->doc->docHandle());
