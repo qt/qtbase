@@ -1542,14 +1542,14 @@ std::pair<bool, QString> UnixMakefileGenerator::writeObjectsPart(QTextStream &t,
                 t << "\\\n\t\t" << (*objit);
         }
         if (incrs_out.count() == objs.count()) { //we just switched places, no real incrementals to be done!
-            t << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << endl;
+            t << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << Qt::endl;
         } else if (!incrs_out.count()) {
-            t << endl;
+            t << Qt::endl;
         } else {
             src_incremental = true;
-            t << endl;
+            t << Qt::endl;
             t << "INCREMENTAL_OBJECTS = "
-              << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << endl;
+              << escapeFilePaths(incrs_out).join(QString(" \\\n\t\t")) << Qt::endl;
         }
     } else {
         const ProString &objMax = project->first("QMAKE_LINK_OBJECT_MAX");
@@ -1566,7 +1566,7 @@ std::pair<bool, QString> UnixMakefileGenerator::writeObjectsPart(QTextStream &t,
             createResponseFile(ld_response_file, objs);
             objectsLinkLine = "@" + escapeFilePath(ld_response_file);
         }
-        t << "OBJECTS       = " << valList(escapeDependencyPaths(objs)) << endl;
+        t << "OBJECTS       = " << valList(escapeDependencyPaths(objs)) << Qt::endl;
     }
     return std::make_pair(src_incremental, objectsLinkLine);
 }
