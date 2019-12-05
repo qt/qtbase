@@ -2322,7 +2322,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->popup(p, atAction);
 }
 
-void QMenuPrivate::popup(const QPoint &p, QAction *atAction)
+void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction positionFunction)
 {
     Q_Q(QMenu);
     if (scroll) { // reset scroll state from last popup
@@ -2388,6 +2388,10 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction)
 
     const QSize menuSizeHint(q->sizeHint());
     QSize size = menuSizeHint;
+
+    if (positionFunction)
+        pos = positionFunction(menuSizeHint);
+
     const int desktopFrame = q->style()->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, nullptr, q);
     bool adjustToDesktop = !q->window()->testAttribute(Qt::WA_DontShowOnScreen);
 
@@ -2642,14 +2646,14 @@ QAction *QMenu::exec(const QPoint &p, QAction *action)
     return d->exec(p, action);
 }
 
-QAction *QMenuPrivate::exec(const QPoint &p, QAction *action)
+QAction *QMenuPrivate::exec(const QPoint &p, QAction *action, PositionFunction positionFunction)
 {
     Q_Q(QMenu);
     q->ensurePolished();
     q->createWinId();
     QEventLoop evtLoop;
     eventLoop = &evtLoop;
-    popup(p, action);
+    popup(p, action, positionFunction);
 
     QPointer<QObject> guard = q;
     (void) evtLoop.exec();
