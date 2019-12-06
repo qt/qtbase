@@ -1241,12 +1241,26 @@ int QFontEngineFT::synthesized() const
     return s;
 }
 
-QFixed QFontEngineFT::ascent() const
+void QFontEngineFT::initializeHeightMetrics() const
 {
-    QFixed v = QFixed::fromFixed(metrics.ascender);
-    if (scalableBitmapScaleFactor != 1)
-        v *= scalableBitmapScaleFactor;
-    return v;
+    QFontEngine::initializeHeightMetrics();
+
+    if (scalableBitmapScaleFactor != 1) {
+        m_ascent *= scalableBitmapScaleFactor;
+        m_descent *= scalableBitmapScaleFactor;
+        m_leading *= scalableBitmapScaleFactor;
+    }
+}
+
+bool QFontEngineFT::processHheaTable() const
+{
+    if (!QFontEngine::processHheaTable()) {
+        m_ascent = QFixed::fromFixed(metrics.ascender);
+        m_descent = QFixed::fromFixed(-metrics.descender);
+        m_leading = QFixed::fromFixed(metrics.height - metrics.ascender + metrics.descender);
+    }
+
+    return true;
 }
 
 QFixed QFontEngineFT::capHeight() const
@@ -1259,22 +1273,6 @@ QFixed QFontEngineFT::capHeight() const
         return answer;
     }
     return calculatedCapHeight();
-}
-
-QFixed QFontEngineFT::descent() const
-{
-    QFixed v = QFixed::fromFixed(-metrics.descender);
-    if (scalableBitmapScaleFactor != 1)
-        v *= scalableBitmapScaleFactor;
-    return v;
-}
-
-QFixed QFontEngineFT::leading() const
-{
-    QFixed v = QFixed::fromFixed(metrics.height - metrics.ascender + metrics.descender);
-    if (scalableBitmapScaleFactor != 1)
-        v *= scalableBitmapScaleFactor;
-    return v;
 }
 
 QFixed QFontEngineFT::xHeight() const

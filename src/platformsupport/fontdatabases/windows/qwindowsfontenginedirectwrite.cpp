@@ -236,11 +236,8 @@ QWindowsFontEngineDirectWrite::QWindowsFontEngineDirectWrite(IDWriteFontFace *di
     , m_directWriteBitmapRenderTarget(0)
     , m_lineThickness(-1)
     , m_unitsPerEm(-1)
-    , m_ascent(-1)
     , m_capHeight(-1)
-    , m_descent(-1)
     , m_xHeight(-1)
-    , m_lineGap(-1)
 {
     qCDebug(lcQpaFonts) << __FUNCTION__ << pixelSize;
 
@@ -346,6 +343,20 @@ QString QWindowsFontEngineDirectWrite::filenameFromFontFile(IDWriteFontFile *fon
     return ret;
 }
 
+bool QWindowsFontEngineDirectWrite::processHheaTable() const
+{
+    if (!QFontEngine::processHheaTable()) {
+        DWRITE_FONT_METRICS metrics;
+        m_directWriteFontFace->GetMetrics(&metrics);
+
+        m_ascent = DESIGN_TO_LOGICAL(metrics.ascent);
+        m_descent = DESIGN_TO_LOGICAL(metrics.descent);
+        m_leading = DESIGN_TO_LOGICAL(metrics.lineGap);
+    }
+
+    return true;
+}
+
 void QWindowsFontEngineDirectWrite::collectMetrics()
 {
     DWRITE_FONT_METRICS metrics;
@@ -354,11 +365,8 @@ void QWindowsFontEngineDirectWrite::collectMetrics()
     m_unitsPerEm = metrics.designUnitsPerEm;
 
     m_lineThickness = DESIGN_TO_LOGICAL(metrics.underlineThickness);
-    m_ascent = DESIGN_TO_LOGICAL(metrics.ascent);
     m_capHeight = DESIGN_TO_LOGICAL(metrics.capHeight);
-    m_descent = DESIGN_TO_LOGICAL(metrics.descent);
     m_xHeight = DESIGN_TO_LOGICAL(metrics.xHeight);
-    m_lineGap = DESIGN_TO_LOGICAL(metrics.lineGap);
     m_underlinePosition = DESIGN_TO_LOGICAL(metrics.underlinePosition);
 
     IDWriteFontFile *fontFile = nullptr;
@@ -567,7 +575,7 @@ QT_WARNING_POP
 
     }
 
-    return glyph_metrics_t(0, -m_ascent, w - lastRightBearing(glyphs), m_ascent + m_descent, w, 0);
+    return glyph_metrics_t(0, -ascent(), w - lastRightBearing(glyphs), ascent() + descent(), w, 0);
 }
 
 glyph_metrics_t QWindowsFontEngineDirectWrite::boundingBox(glyph_t g)
@@ -608,16 +616,6 @@ QT_WARNING_POP
     return glyph_metrics_t();
 }
 
-QFixed QWindowsFontEngineDirectWrite::ascent() const
-{
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    return fontDef.styleStrategy & QFont::ForceIntegerMetrics
-            ? m_ascent.round()
-            : m_ascent;
-QT_WARNING_POP
-}
-
 QFixed QWindowsFontEngineDirectWrite::capHeight() const
 {
     if (m_capHeight <= 0)
@@ -628,26 +626,6 @@ QT_WARNING_DISABLE_DEPRECATED
     return fontDef.styleStrategy & QFont::ForceIntegerMetrics
             ? m_capHeight.round()
             : m_capHeight;
-QT_WARNING_POP
-}
-
-QFixed QWindowsFontEngineDirectWrite::descent() const
-{
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    return fontDef.styleStrategy & QFont::ForceIntegerMetrics
-           ? m_descent.round()
-           : m_descent;
-QT_WARNING_POP
-}
-
-QFixed QWindowsFontEngineDirectWrite::leading() const
-{
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    return fontDef.styleStrategy & QFont::ForceIntegerMetrics
-           ? m_lineGap.round()
-           : m_lineGap;
 QT_WARNING_POP
 }
 

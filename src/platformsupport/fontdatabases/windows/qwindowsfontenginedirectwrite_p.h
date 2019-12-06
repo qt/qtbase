@@ -99,10 +99,7 @@ public:
     glyph_metrics_t alphaMapBoundingBox(glyph_t glyph, QFixed,
                                         const QTransform &matrix, GlyphFormat) override;
 
-    QFixed ascent() const override;
     QFixed capHeight() const override;
-    QFixed descent() const override;
-    QFixed leading() const override;
     QFixed xHeight() const override;
     qreal maxCharWidth() const override;
     FaceId faceId() const override;
@@ -125,6 +122,8 @@ public:
 
     void setUniqueFamilyName(const QString &newName) { m_uniqueFamilyName = newName; }
 
+    bool processHheaTable() const override;
+
 private:
     QImage imageForGlyph(glyph_t t, QFixed subPixelPosition, int margin, const QTransform &xform, const QColor &color = QColor());
     void collectMetrics();
@@ -139,11 +138,8 @@ private:
     QFixed m_lineThickness;
     QFixed m_underlinePosition;
     int m_unitsPerEm;
-    QFixed m_ascent;
     QFixed m_capHeight;
-    QFixed m_descent;
     QFixed m_xHeight;
-    QFixed m_lineGap;
     QFixed m_maxAdvanceWidth;
     FaceId m_faceId;
     QString m_uniqueFamilyName;

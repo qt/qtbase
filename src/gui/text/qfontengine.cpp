@@ -148,6 +148,7 @@ QFontEngine::QFontEngine(Type type)
     : m_type(type), ref(0),
       font_(),
       face_(),
+      m_heightMetricsQueried(false),
       m_minLeftBearing(kBearingNotInitialized),
       m_minRightBearing(kBearingNotInitialized)
 {
@@ -425,6 +426,91 @@ void QFontEngine::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qreal *rig
         *leftBearing = gi.leftBearing().toReal();
     if (rightBearing != nullptr)
         *rightBearing = gi.rightBearing().toReal();
+}
+
+bool QFontEngine::processHheaTable() const
+{
+    QByteArray hhea = getSfntTable(MAKE_TAG('h', 'h', 'e', 'a'));
+    if (hhea.size() >= 10) {
+        qint16 ascent = qFromBigEndian<qint16>(hhea.constData() + 4);
+        qint16 descent = qFromBigEndian<qint16>(hhea.constData() + 6);
+        qint16 leading = qFromBigEndian<qint16>(hhea.constData() + 8);
+
+        QFixed unitsPerEm = emSquareSize();
+        m_ascent = QFixed::fromReal(ascent * fontDef.pixelSize) / unitsPerEm;
+        m_descent = -QFixed::fromReal(descent * fontDef.pixelSize) / unitsPerEm;
+
+        m_leading = QFixed::fromReal(leading * fontDef.pixelSize) / unitsPerEm;
+
+        return true;
+    }
+
+    return false;
+}
+
+void QFontEngine::initializeHeightMetrics() const
+{
+    if (!processHheaTable()) {
+        qWarning() << "Cannot determine metrics for font" << fontDef.family;
+        m_ascent = m_descent = m_leading = 1;
+    }
+
+    // Allow OS/2 metrics to override if present
+    processOS2Table();
+
+    m_heightMetricsQueried = true;
+}
+
+bool QFontEngine::processOS2Table() const
+{
+    QByteArray os2 = getSfntTable(MAKE_TAG('O', 'S', '/', '2'));
+    if (os2.size() >= 78) {
+        quint16 fsSelection = qFromBigEndian<quint16>(os2.constData() + 62);
+        qint16 typoAscent = qFromBigEndian<qint16>(os2.constData() + 68);
+        qint16 typoDescent = qFromBigEndian<qint16>(os2.constData() + 70);
+        qint16 typoLineGap = qFromBigEndian<qint16>(os2.constData() + 72);
+        quint16 winAscent = qFromBigEndian<quint16>(os2.constData() + 74);
+        quint16 winDescent = qFromBigEndian<quint16>(os2.constData() + 76);
+
+        enum { USE_TYPO_METRICS = 0x80 };
+        QFixed unitsPerEm = emSquareSize();
+        if (fsSelection & USE_TYPO_METRICS) {
+            m_ascent = QFixed::fromReal(typoAscent * fontDef.pixelSize) / unitsPerEm;
+            m_descent = -QFixed::fromReal(typoDescent * fontDef.pixelSize) / unitsPerEm;
+            m_leading = QFixed::fromReal(typoLineGap * fontDef.pixelSize) / unitsPerEm;
+        } else {
+            m_ascent = QFixed::fromReal(winAscent * fontDef.pixelSize) / unitsPerEm;
+            m_descent = QFixed::fromReal(winDescent * fontDef.pixelSize) / unitsPerEm;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+QFixed QFontEngine::leading() const
+{
+    if (!m_heightMetricsQueried)
+        initializeHeightMetrics();
+
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics) ? m_leading.round() : m_leading;
+}
+
+QFixed QFontEngine::ascent() const
+{
+    if (!m_heightMetricsQueried)
+        initializeHeightMetrics();
+
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics) ? m_ascent.round() : m_ascent;
+}
+
+QFixed QFontEngine::descent() const
+{
+    if (!m_heightMetricsQueried)
+        initializeHeightMetrics();
+
+    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics) ? m_descent.round() : m_descent;
 }
 
 qreal QFontEngine::minLeftBearing() const

@@ -98,9 +98,6 @@ public:
     glyph_metrics_t boundingBox(glyph_t g, const QTransform &t) override;
 
 
-    QFixed ascent() const override;
-    QFixed descent() const override;
-    QFixed leading() const override;
     QFixed xHeight() const override;
     QFixed capHeight() const override;
     QFixed averageCharWidth() const override;
@@ -131,6 +128,9 @@ public:
     const QSharedPointer<QWindowsFontEngineData> &fontEngineData() const { return m_fontEngineData; }
 
     void setUniqueFamilyName(const QString &newName) { uniqueFamilyName = newName; }
+
+protected:
+    bool processHheaTable() const override;
 
 private:
     QWindowsNativeImage *drawGDIGlyph(HFONT font, glyph_t, int margin, const QTransform &xform,

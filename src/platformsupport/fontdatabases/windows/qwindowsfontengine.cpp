@@ -492,21 +492,6 @@ glyph_metrics_t QWindowsFontEngine::boundingBox(glyph_t glyph, const QTransform 
     return glyphMetrics;
 }
 
-QFixed QWindowsFontEngine::ascent() const
-{
-    return tm.tmAscent;
-}
-
-QFixed QWindowsFontEngine::descent() const
-{
-    return tm.tmDescent;
-}
-
-QFixed QWindowsFontEngine::leading() const
-{
-    return tm.tmExternalLeading;
-}
-
 namespace {
 #   pragma pack(1)
 
@@ -624,6 +609,17 @@ void QWindowsFontEngine::getGlyphBearings(glyph_t glyph, qreal *leftBearing, qre
     }
 }
 #endif // Q_CC_MINGW
+
+bool QWindowsFontEngine::processHheaTable() const
+{
+    if (!QFontEngine::processHheaTable()) {
+        m_ascent = tm.tmAscent;
+        m_descent = tm.tmDescent;
+        m_leading = tm.tmExternalLeading;
+    }
+
+    return true;
+}
 
 bool QWindowsFontEngine::hasUnreliableGlyphOutline() const
 {

@@ -381,14 +381,15 @@ QT_WARNING_POP
     return ret;
 }
 
-QFixed QCoreTextFontEngine::ascent() const
+bool QCoreTextFontEngine::processHheaTable() const
 {
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? QFixed::fromReal(CTFontGetAscent(ctfont)).round()
-            : QFixed::fromReal(CTFontGetAscent(ctfont));
-QT_WARNING_POP
+    if (!QFontEngine::processHheaTable()) {
+        m_ascent = QFixed::fromReal(CTFontGetAscent(ctfont));
+        m_descent = QFixed::fromReal(CTFontGetDescent(ctfont));
+        m_leading = QFixed::fromReal(CTFontGetLeading(ctfont));
+    }
+
+    return true;
 }
 
 QFixed QCoreTextFontEngine::capHeight() const
@@ -406,26 +407,6 @@ QT_WARNING_POP
     return c;
 }
 
-QFixed QCoreTextFontEngine::descent() const
-{
-    QFixed d = QFixed::fromReal(CTFontGetDescent(ctfont));
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    if (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-QT_WARNING_POP
-        d = d.round();
-
-    return d;
-}
-QFixed QCoreTextFontEngine::leading() const
-{
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    return (fontDef.styleStrategy & QFont::ForceIntegerMetrics)
-            ? QFixed::fromReal(CTFontGetLeading(ctfont)).round()
-            : QFixed::fromReal(CTFontGetLeading(ctfont));
-QT_WARNING_POP
-}
 QFixed QCoreTextFontEngine::xHeight() const
 {
 QT_WARNING_PUSH

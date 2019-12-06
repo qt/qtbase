@@ -221,10 +221,10 @@ public:
     virtual glyph_metrics_t boundingBox(glyph_t glyph, const QTransform &matrix);
     glyph_metrics_t tightBoundingBox(const QGlyphLayout &glyphs);
 
-    virtual QFixed ascent() const = 0;
+    virtual QFixed ascent() const;
     virtual QFixed capHeight() const = 0;
-    virtual QFixed descent() const = 0;
-    virtual QFixed leading() const = 0;
+    virtual QFixed descent() const;
+    virtual QFixed leading() const;
     virtual QFixed xHeight() const;
     virtual QFixed averageCharWidth() const;
 
@@ -369,6 +369,15 @@ protected:
     inline void setUserData(const QVariant &userData) { m_userData = userData; }
     QFixed calculatedCapHeight() const;
 
+    mutable QFixed m_ascent;
+    mutable QFixed m_descent;
+    mutable QFixed m_leading;
+    mutable bool m_heightMetricsQueried;
+
+    virtual void initializeHeightMetrics() const;
+    virtual bool processHheaTable() const;
+    virtual bool processOS2Table() const;
+
 private:
     struct GlyphCacheEntry {
         GlyphCacheEntry();
@@ -388,7 +397,6 @@ private:
 
     mutable qreal m_minLeftBearing;
     mutable qreal m_minRightBearing;
-
 };
 Q_DECLARE_TYPEINFO(QFontEngine::KernPair, Q_PRIMITIVE_TYPE);
 

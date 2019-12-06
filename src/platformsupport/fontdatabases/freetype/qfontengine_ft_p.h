@@ -191,10 +191,9 @@ private:
     bool getSfntTableData(uint tag, uchar *buffer, uint *length) const override;
     int synthesized() const override;
 
-    QFixed ascent() const override;
+    void initializeHeightMetrics() const override;
+    bool processHheaTable() const override;
     QFixed capHeight() const override;
-    QFixed descent() const override;
-    QFixed leading() const override;
     QFixed xHeight() const override;
     QFixed averageCharWidth() const override;
 

@@ -82,10 +82,7 @@ public:
     glyph_metrics_t boundingBox(const QGlyphLayout &glyphs) override;
     glyph_metrics_t boundingBox(glyph_t glyph) override;
 
-    QFixed ascent() const override;
     QFixed capHeight() const override;
-    QFixed descent() const override;
-    QFixed leading() const override;
     QFixed xHeight() const override;
     qreal maxCharWidth() const override;
     QFixed averageCharWidth() const override;
@@ -142,6 +139,7 @@ protected:
     bool hasColorGlyphs() const;
     bool shouldAntialias() const;
     bool shouldSmoothFont() const;
+    bool processHheaTable() const override;
 
     QCFType<CTFontRef> ctfont;
     QCFType<CGFontRef> cgFont;
