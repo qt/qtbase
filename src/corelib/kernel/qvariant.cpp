@@ -1544,7 +1544,7 @@ static void customStreamDebug(QDebug dbg, const QVariant &variant) {
 #ifndef QT_BOOTSTRAPPED
     QMetaType::TypeFlags flags = QMetaType::typeFlags(variant.userType());
     if (flags & QMetaType::PointerToQObject)
-        dbg.nospace() << variant.value<QObject*>();
+        dbg.nospace() << qvariant_cast<QObject*>(variant);
 #else
     Q_UNUSED(dbg);
     Q_UNUSED(variant);

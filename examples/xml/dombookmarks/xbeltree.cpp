@@ -153,7 +153,7 @@ bool XbelTree::write(QIODevice *device) const
 
 void XbelTree::updateDomElement(const QTreeWidgetItem *item, int column)
 {
-    QDomElement element = item->data(0, DomElementRole).value<QDomElement>();
+    QDomElement element = qvariant_cast<QDomElement>(item->data(0, DomElementRole));
     if (!element.isNull()) {
         if (column == 0) {
             QDomElement oldTitleElement = element.firstChildElement(titleElement());

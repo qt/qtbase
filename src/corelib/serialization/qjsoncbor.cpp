@@ -757,13 +757,13 @@ QCborValue QCborValue::fromVariant(const QVariant &variant)
         return QCborMap::fromJsonObject(doc.object());
     }
     case QMetaType::QCborValue:
-        return variant.value<QCborValue>();
+        return qvariant_cast<QCborValue>(variant);
     case QMetaType::QCborArray:
-        return variant.value<QCborArray>();
+        return qvariant_cast<QCborArray>(variant);
     case QMetaType::QCborMap:
-        return variant.value<QCborMap>();
+        return qvariant_cast<QCborMap>(variant);
     case QMetaType::QCborSimpleType:
-        return variant.value<QCborSimpleType>();
+        return qvariant_cast<QCborSimpleType>(variant);
 #endif
     default:
         break;

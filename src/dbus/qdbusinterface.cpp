@@ -60,15 +60,15 @@ static void copyArgument(void *to, int id, const QVariant &arg)
             return;
 
         case QMetaType::UChar:
-            *reinterpret_cast<uchar *>(to) = arg.value<uchar>();
+            *reinterpret_cast<uchar *>(to) = qvariant_cast<uchar>(arg);
             return;
 
         case QMetaType::Short:
-            *reinterpret_cast<short *>(to) = arg.value<short>();
+            *reinterpret_cast<short *>(to) = qvariant_cast<short>(arg);
             return;
 
         case QMetaType::UShort:
-            *reinterpret_cast<ushort *>(to) = arg.value<ushort>();
+            *reinterpret_cast<ushort *>(to) = qvariant_cast<ushort>(arg);
             return;
 
         case QVariant::Int:
@@ -105,13 +105,13 @@ static void copyArgument(void *to, int id, const QVariant &arg)
         }
 
         if (id == QDBusMetaTypeId::variant()) {
-            *reinterpret_cast<QDBusVariant *>(to) = arg.value<QDBusVariant>();
+            *reinterpret_cast<QDBusVariant *>(to) = qvariant_cast<QDBusVariant>(arg);
             return;
         } else if (id == QDBusMetaTypeId::objectpath()) {
-            *reinterpret_cast<QDBusObjectPath *>(to) = arg.value<QDBusObjectPath>();
+            *reinterpret_cast<QDBusObjectPath *>(to) = qvariant_cast<QDBusObjectPath>(arg);
             return;
         } else if (id == QDBusMetaTypeId::signature()) {
-            *reinterpret_cast<QDBusSignature *>(to) = arg.value<QDBusSignature>();
+            *reinterpret_cast<QDBusSignature *>(to) = qvariant_cast<QDBusSignature>(arg);
             return;
         }
 
@@ -136,7 +136,7 @@ static void copyArgument(void *to, int id, const QVariant &arg)
     }
 
     // is it the same signature?
-    QDBusArgument dbarg = arg.value<QDBusArgument>();
+    QDBusArgument dbarg = qvariant_cast<QDBusArgument>(arg);
     if (dbarg.currentSignature() != QLatin1String(userSignature)) {
         // not the same signature, another mismatch
         //qWarning?

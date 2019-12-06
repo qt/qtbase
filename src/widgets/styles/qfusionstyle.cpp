@@ -2413,7 +2413,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 int oldMin = styleObject->property("_q_stylemin").toInt();
                 int oldMax = styleObject->property("_q_stylemax").toInt();
                 QRect oldRect = styleObject->property("_q_stylerect").toRect();
-                QStyle::State oldState = static_cast<QStyle::State>(styleObject->property("_q_stylestate").value<QStyle::State::Int>());
+                QStyle::State oldState = static_cast<QStyle::State>(qvariant_cast<QStyle::State::Int>(styleObject->property("_q_stylestate")));
                 uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
 
                 // a scrollbar is transient when the the scrollbar itself and

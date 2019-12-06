@@ -336,7 +336,7 @@ static void variantToXml(QXmlStreamWriter &xml, const QVariant &v)
     } else if (type == QVariant::Map || type == qMetaTypeId<VariantOrderedMap>()) {
         const VariantOrderedMap map = (type == QVariant::Map) ?
                     VariantOrderedMap(v.toMap()) :
-                    v.value<VariantOrderedMap>();
+                    qvariant_cast<VariantOrderedMap>(v);
 
         xml.writeStartElement("map");
         for (const auto &pair : map) {
@@ -425,10 +425,10 @@ static void variantToXml(QXmlStreamWriter &xml, const QVariant &v)
         default:
             if (type == qMetaTypeId<qfloat16>()) {
                 xml.writeAttribute(typeString, "number");
-                xml.writeCharacters(QString::number(float(v.value<qfloat16>())));
+                xml.writeCharacters(QString::number(float(qvariant_cast<qfloat16>(v))));
             } else if (type == qMetaTypeId<QCborSimpleType>()) {
                 xml.writeAttribute(typeString, "CBOR simple type");
-                xml.writeCharacters(QString::number(int(v.value<QCborSimpleType>())));
+                xml.writeCharacters(QString::number(int(qvariant_cast<QCborSimpleType>(v))));
             } else {
                 // does this convert to string?
                 const char *typeName = v.typeName();

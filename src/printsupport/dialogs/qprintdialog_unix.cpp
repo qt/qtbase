@@ -426,7 +426,7 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
 {
     bool anyWidgetCreated = false;
 
-    ppd_file_t *ppd = m_currentPrintDevice->property(PDPK_PpdFile).value<ppd_file_t*>();
+    ppd_file_t *ppd = qvariant_cast<ppd_file_t*>(m_currentPrintDevice->property(PDPK_PpdFile));
 
     if (ppd) {
         m_cupsCodec = QTextCodec::codecForName(ppd->lang_encoding);
@@ -532,7 +532,7 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
 void QPrintPropertiesDialog::setPrinterAdvancedCupsOptions() const
 {
     for (const QComboBox *choicesCb : m_advancedOptionsCombos) {
-        const ppd_option_t *option = choicesCb->property(ppdOptionProperty).value<const ppd_option_t *>();
+        const ppd_option_t *option = qvariant_cast<const ppd_option_t *>(choicesCb->property(ppdOptionProperty));
 
         // We can't use choicesCb->currentIndex() to know the index of the option in the choices[] array
         // because some of them may not be present in the list because they conflict with the
@@ -551,7 +551,7 @@ void QPrintPropertiesDialog::setPrinterAdvancedCupsOptions() const
 void QPrintPropertiesDialog::revertAdvancedOptionsToSavedValues() const
 {
     for (QComboBox *choicesCb : m_advancedOptionsCombos) {
-        const int originallySelectedChoice = choicesCb->property(ppdOriginallySelectedChoiceProperty).value<int>();
+        const int originallySelectedChoice = qvariant_cast<int>(choicesCb->property(ppdOriginallySelectedChoiceProperty));
         const int newComboIndexToSelect = choicesCb->findData(originallySelectedChoice);
         choicesCb->setCurrentIndex(newComboIndexToSelect);
         // The currentIndexChanged lambda takes care of resetting the ppd option
@@ -580,8 +580,8 @@ bool QPrintPropertiesDialog::anyAdvancedOptionConflict() const
     bool anyConflicted = false;
 
     for (const QComboBox *choicesCb : m_advancedOptionsCombos) {
-        const ppd_option_t *option = choicesCb->property(ppdOptionProperty).value<const ppd_option_t *>();
-        QLabel *warningLabel = choicesCb->property(warningLabelProperty).value<QLabel *>();
+        const ppd_option_t *option = qvariant_cast<const ppd_option_t *>(choicesCb->property(ppdOptionProperty));
+        QLabel *warningLabel = qvariant_cast<QLabel *>(choicesCb->property(warningLabelProperty));
         if (option->conflicted) {
             anyConflicted = true;
             const int pixmap_size = choicesCb->sizeHint().height() * .75;
@@ -900,7 +900,7 @@ void QPrintDialogPrivate::setupPrinter()
     // page set
     if (p->printRange() == QPrinter::AllPages || p->printRange() == QPrinter::PageRange) {
         //If the application is selecting pages and the first page number is even then need to adjust the odd-even accordingly
-        QCUPSSupport::PageSet pageSet = options.pageSetCombo->itemData(options.pageSetCombo->currentIndex()).value<QCUPSSupport::PageSet>();
+        QCUPSSupport::PageSet pageSet = qvariant_cast<QCUPSSupport::PageSet>(options.pageSetCombo->itemData(options.pageSetCombo->currentIndex()));
         if (q->isOptionEnabled(QPrintDialog::PrintPageRange)
             && p->printRange() == QPrinter::PageRange
             && (q->fromPage() % 2 == 0)) {
@@ -1323,10 +1323,10 @@ bool QUnixPrintWidgetPrivate::checkFields()
 
 #if QT_CONFIG(cups)
     if (propertiesDialog) {
-        QCUPSSupport::PagesPerSheet pagesPerSheet = propertiesDialog->widget.pageSetup->m_ui.pagesPerSheetCombo
-                                                                    ->currentData().value<QCUPSSupport::PagesPerSheet>();
+        QCUPSSupport::PagesPerSheet pagesPerSheet = qvariant_cast<QCUPSSupport::PagesPerSheet>(propertiesDialog->widget.pageSetup->m_ui.pagesPerSheetCombo
+                                                                    ->currentData());
 
-        QCUPSSupport::PageSet pageSet = optionsPane->options.pageSetCombo->currentData().value<QCUPSSupport::PageSet>();
+        QCUPSSupport::PageSet pageSet = qvariant_cast<QCUPSSupport::PageSet>(optionsPane->options.pageSetCombo->currentData());
 
 
         if (pagesPerSheet != QCUPSSupport::OnePagePerSheet

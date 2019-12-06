@@ -1089,7 +1089,7 @@ QList<QByteArray> QImageReader::supportedSubTypes() const
         return QList<QByteArray>();
 
     if (d->handler->supportsOption(QImageIOHandler::SupportedSubTypes))
-        return d->handler->option(QImageIOHandler::SupportedSubTypes).value< QList<QByteArray> >();
+        return qvariant_cast<QList<QByteArray> >(d->handler->option(QImageIOHandler::SupportedSubTypes));
     return QList<QByteArray>();
 }
 

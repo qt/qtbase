@@ -100,10 +100,10 @@ void QCupsPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &v
         d->cupsOptions = value.toStringList();
         break;
     case PPK_QPageSize:
-        d->setPageSize(value.value<QPageSize>());
+        d->setPageSize(qvariant_cast<QPageSize>(value));
         break;
     case PPK_QPageLayout: {
-        QPageLayout pageLayout = value.value<QPageLayout>();
+        QPageLayout pageLayout = qvariant_cast<QPageLayout>(value);
         if (pageLayout.isValid() && (d->m_printDevice.isValidPageLayout(pageLayout, d->resolution)
                                      || d->m_printDevice.supportsCustomPageSizes()
                                      || d->m_printDevice.supportedPageSizes().isEmpty())) {

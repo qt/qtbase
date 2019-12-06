@@ -62,7 +62,7 @@ void QIBusSerializable::deserializeFrom(const QDBusArgument &argument)
         argument >> key;
         argument >> value;
         argument.endMapEntry();
-        attachments[key] = value.variant().value<QDBusArgument>();
+        attachments[key] = qvariant_cast<QDBusArgument>(value.variant());
     }
     argument.endMap();
 }
@@ -201,7 +201,7 @@ void QIBusAttributeList::deserializeFrom(const QDBusArgument &arg)
         arg >> var;
 
         QIBusAttribute attr;
-        var.variant().value<QDBusArgument>() >> attr;
+        qvariant_cast<QDBusArgument>(var.variant()) >> attr;
         attributes.append(std::move(attr));
     }
     arg.endArray();
@@ -268,7 +268,7 @@ void QIBusText::deserializeFrom(const QDBusArgument &argument)
     argument >> text;
     QDBusVariant variant;
     argument >> variant;
-    variant.variant().value<QDBusArgument>() >> attributes;
+    qvariant_cast<QDBusArgument>(variant.variant()) >> attributes;
 
     argument.endStructure();
 }

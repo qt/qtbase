@@ -172,7 +172,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
     // that order, also override the font for the popup menu.
     QVariant fontRoleData = index.data(Qt::FontRole);
     if (fontRoleData.isValid()) {
-        menuOption.font = fontRoleData.value<QFont>();
+        menuOption.font = qvariant_cast<QFont>(fontRoleData);
     } else if (mCombo->testAttribute(Qt::WA_SetFont)
             || mCombo->testAttribute(Qt::WA_MacSmallSize)
             || mCombo->testAttribute(Qt::WA_MacMiniSize)

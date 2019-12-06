@@ -779,7 +779,7 @@ namespace QtPrivate {
                 return QSequentialIterable(QtMetaTypePrivate::QSequentialIterableImpl(reinterpret_cast<const QByteArrayList*>(v.constData())));
             }
 #endif
-            return QSequentialIterable(v.value<QtMetaTypePrivate::QSequentialIterableImpl>());
+            return QSequentialIterable(qvariant_cast<QtMetaTypePrivate::QSequentialIterableImpl>(v));
         }
     };
     template<>
@@ -794,7 +794,7 @@ namespace QtPrivate {
             if (typeId == qMetaTypeId<QVariantHash>()) {
                 return QAssociativeIterable(QtMetaTypePrivate::QAssociativeIterableImpl(reinterpret_cast<const QVariantHash*>(v.constData())));
             }
-            return QAssociativeIterable(v.value<QtMetaTypePrivate::QAssociativeIterableImpl>());
+            return QAssociativeIterable(qvariant_cast<QtMetaTypePrivate::QAssociativeIterableImpl>(v));
         }
     };
     template<>
@@ -857,7 +857,7 @@ namespace QtPrivate {
                 return QVariantValueHelper<QPair<QVariant, QVariant> >::invoke(v);
 
             if (QMetaType::hasRegisteredConverterFunction(typeId, qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>())) {
-                QtMetaTypePrivate::QPairVariantInterfaceImpl pi = v.value<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
+                QtMetaTypePrivate::QPairVariantInterfaceImpl pi = qvariant_cast<QtMetaTypePrivate::QPairVariantInterfaceImpl>(v);
 
                 const QtMetaTypePrivate::VariantData d1 = pi.first();
                 QVariant v1(d1.metaTypeId, d1.data, d1.flags);

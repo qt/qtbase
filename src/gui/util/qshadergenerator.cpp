@@ -273,11 +273,11 @@ namespace
             const QByteArray placeholder = QByteArray(QByteArrayLiteral("$") + parameterName.toUtf8());
             const QVariant parameter = node.parameter(parameterName);
             if (parameter.userType() == qMetaTypeId<QShaderLanguage::StorageQualifier>()) {
-                const QShaderLanguage::StorageQualifier qualifier = parameter.value<QShaderLanguage::StorageQualifier>();
+                const QShaderLanguage::StorageQualifier qualifier = qvariant_cast<QShaderLanguage::StorageQualifier>(parameter);
                 const QByteArray value = toGlsl(qualifier, format);
                 result.replace(placeholder, value);
             } else if (parameter.userType() == qMetaTypeId<QShaderLanguage::VariableType>()) {
-                const QShaderLanguage::VariableType type = parameter.value<QShaderLanguage::VariableType>();
+                const QShaderLanguage::VariableType type = qvariant_cast<QShaderLanguage::VariableType>(parameter);
                 const QByteArray value = toGlsl(type);
                 result.replace(placeholder, value);
             } else {

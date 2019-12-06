@@ -2230,7 +2230,7 @@ bool AtSpiAdaptor::valueInterface(QAccessibleInterface *interface, const QString
         return false;
 
     if (function == QLatin1String("SetCurrentValue")) {
-        QDBusVariant v = message.arguments().at(2).value<QDBusVariant>();
+        QDBusVariant v = qvariant_cast<QDBusVariant>(message.arguments().at(2));
         double value = v.variant().toDouble();
         //Temporary fix
         //See https://bugzilla.gnome.org/show_bug.cgi?id=652596

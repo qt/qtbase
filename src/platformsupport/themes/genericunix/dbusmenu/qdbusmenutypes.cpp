@@ -152,7 +152,7 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, QDBusMenuLayoutItem &i
     while (!arg.atEnd()) {
         QDBusVariant dbusVariant;
         arg >> dbusVariant;
-        QDBusArgument childArgument = dbusVariant.variant().value<QDBusArgument>();
+        QDBusArgument childArgument = qvariant_cast<QDBusArgument>(dbusVariant.variant());
 
         QDBusMenuLayoutItem child;
         childArgument >> child;

@@ -920,7 +920,7 @@ void QDialog::adjustPosition(QWidget* w)
     if (w) {
         // Use pos() if the widget is embedded into a native window
         QPoint pp;
-        if (w->windowHandle() && w->windowHandle()->property("_q_embedded_native_parent_handle").value<WId>())
+        if (w->windowHandle() && qvariant_cast<WId>(w->windowHandle()->property("_q_embedded_native_parent_handle")))
             pp = w->pos();
         else
             pp = w->mapToGlobal(QPoint(0,0));

@@ -3065,7 +3065,7 @@ QList<Qt::DayOfWeek> QLocale::weekdays() const
     if (d->m_data == systemData()) {
         QVariant res = systemLocale()->query(QSystemLocale::Weekdays, QVariant());
         if (!res.isNull())
-            return static_cast<QList<Qt::DayOfWeek> >(res.value<QList<Qt::DayOfWeek> >());
+            return static_cast<QList<Qt::DayOfWeek> >(qvariant_cast<QList<Qt::DayOfWeek> >(res));
     }
 #endif
     QList<Qt::DayOfWeek> weekdays;

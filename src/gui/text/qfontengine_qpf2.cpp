@@ -456,7 +456,7 @@ glyph_metrics_t QFontEngineQPF2::boundingBox(glyph_t glyph)
 
 QFixed QFontEngineQPF2::ascent() const
 {
-    return QFixed::fromReal(extractHeaderField(fontData, Tag_Ascent).value<qreal>());
+    return QFixed::fromReal(qvariant_cast<qreal>(extractHeaderField(fontData, Tag_Ascent)));
 }
 
 QFixed QFontEngineQPF2::capHeight() const
@@ -466,37 +466,37 @@ QFixed QFontEngineQPF2::capHeight() const
 
 QFixed QFontEngineQPF2::descent() const
 {
-    return QFixed::fromReal(extractHeaderField(fontData, Tag_Descent).value<qreal>());
+    return QFixed::fromReal(qvariant_cast<qreal>(extractHeaderField(fontData, Tag_Descent)));
 }
 
 QFixed QFontEngineQPF2::leading() const
 {
-    return QFixed::fromReal(extractHeaderField(fontData, Tag_Leading).value<qreal>());
+    return QFixed::fromReal(qvariant_cast<qreal>(extractHeaderField(fontData, Tag_Leading)));
 }
 
 qreal QFontEngineQPF2::maxCharWidth() const
 {
-    return extractHeaderField(fontData, Tag_MaxCharWidth).value<qreal>();
+    return qvariant_cast<qreal>(extractHeaderField(fontData, Tag_MaxCharWidth));
 }
 
 qreal QFontEngineQPF2::minLeftBearing() const
 {
-    return extractHeaderField(fontData, Tag_MinLeftBearing).value<qreal>();
+    return qvariant_cast<qreal>(extractHeaderField(fontData, Tag_MinLeftBearing));
 }
 
 qreal QFontEngineQPF2::minRightBearing() const
 {
-    return extractHeaderField(fontData, Tag_MinRightBearing).value<qreal>();
+    return qvariant_cast<qreal>(extractHeaderField(fontData, Tag_MinRightBearing));
 }
 
 QFixed QFontEngineQPF2::underlinePosition() const
 {
-    return QFixed::fromReal(extractHeaderField(fontData, Tag_UnderlinePosition).value<qreal>());
+    return QFixed::fromReal(qvariant_cast<qreal>(extractHeaderField(fontData, Tag_UnderlinePosition)));
 }
 
 QFixed QFontEngineQPF2::lineThickness() const
 {
-    return QFixed::fromReal(extractHeaderField(fontData, Tag_LineThickness).value<qreal>());
+    return QFixed::fromReal(qvariant_cast<qreal>(extractHeaderField(fontData, Tag_LineThickness)));
 }
 
 bool QFontEngineQPF2::isValid() const
