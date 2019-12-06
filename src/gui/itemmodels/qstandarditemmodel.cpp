@@ -138,10 +138,19 @@ void QStandardItemPrivate::setChild(int row, int column, QStandardItem *item,
             return;
         }
     }
+
+    // setting the model to nullptr invalidates the persistent index which we want to avoid
+    if (!item && oldItem)
+        oldItem->d_func()->setModel(nullptr);
+
+    children.replace(index, item);
+
+    // since now indexFromItem() does no longer return a valid index, the persistent index
+    // will not be invalidated anymore
     if (oldItem)
         oldItem->d_func()->setModel(nullptr);
     delete oldItem;
-    children.replace(index, item);
+
     if (item)
         item->d_func()->lastKnownIndex = index;
 

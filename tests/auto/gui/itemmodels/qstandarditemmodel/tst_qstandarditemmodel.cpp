@@ -131,6 +131,7 @@ private slots:
     void supportedDragDropActions();
 
     void taskQTBUG_45114_setItemData();
+    void setItemPersistentIndex();
 
 private:
     QStandardItemModel *m_model;
@@ -1809,6 +1810,27 @@ void tst_QStandardItemModel::taskQTBUG_45114_setItemData()
     itemRoles = model.itemData(index);
     QCOMPARE(itemRoles.size(), 3);
     QVERIFY(!itemRoles.keys().contains(Qt::UserRole + 3));
+}
+
+void tst_QStandardItemModel::setItemPersistentIndex()
+{
+    QPersistentModelIndex persistentIndex;
+    // setItem on an already existing item should not destroy the persistent index
+    QStandardItemModel m;
+    persistentIndex = m.index(0, 0);
+    QVERIFY(!persistentIndex.isValid());
+
+    m.setItem(0, 0, new QStandardItem);
+    persistentIndex = m.index(0, 0);
+    QVERIFY(persistentIndex.isValid());
+    QCOMPARE(persistentIndex.row(), 0);
+    QCOMPARE(persistentIndex.column(), 0);
+
+    m.setItem(0, 0, new QStandardItem);
+    QVERIFY(persistentIndex.isValid());
+
+    m.setItem(0, 0, nullptr);
+    QVERIFY(!persistentIndex.isValid());
 }
 
 QTEST_MAIN(tst_QStandardItemModel)
