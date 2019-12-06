@@ -299,6 +299,8 @@ QAccessible::State QAccessibleMenuItem::state() const
         s.disabled = true;
     if (m_action->isChecked())
         s.checked = true;
+    if (m_action->isCheckable())
+        s.checkable = true;
 
     return s;
 }
