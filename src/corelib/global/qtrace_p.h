@@ -52,10 +52,17 @@
 //
 
 /*
- * The Qt tracepoints API consists of only three macros:
+ * The Qt tracepoints API consists of only five macros:
  *
  *     - Q_TRACE(tracepoint, args...)
  *       Fires 'tracepoint' if it is enabled.
+ *
+ *     - Q_TRACE_EXIT(tracepoint, args...)
+ *       Fires 'tracepoint' if it is enabled when the current scope exists.
+ *
+ *     - Q_TRACE_SCOPE(tracepoint, args...)
+ *       Wrapper around Q_TRACE/_EXIT to trace entry and exit. First it traces
+ *       `${tracepoint}_entry` and then `${tracepoint}_exit` on scope exit.
  *
  *     - Q_UNCONDITIONAL_TRACE(tracepoint, args...)
  *       Fires 'tracepoint' unconditionally: no check is performed to query
@@ -110,15 +117,23 @@
  */
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qscopeguard.h>
 
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_TRACEPOINT) && !defined(QT_BOOTSTRAPPED)
 #  define Q_TRACE(x, ...) QtPrivate::trace_ ## x(__VA_ARGS__)
+#  define Q_TRACE_EXIT(x, ...) \
+    const auto qTraceExit_ ## x ## __COUNTER__ = qScopeGuard([&]() { Q_TRACE(x, __VA_ARGS__); });
+#  define Q_TRACE_SCOPE(x, ...) \
+    Q_TRACE(x ## _entry, __VA_ARGS__); \
+    Q_TRACE_EXIT(x ## _exit);
 #  define Q_UNCONDITIONAL_TRACE(x, ...) QtPrivate::do_trace_ ## x(__VA_ARGS__)
 #  define Q_TRACE_ENABLED(x) QtPrivate::trace_ ## x ## _enabled()
 #else
 #  define Q_TRACE(x, ...)
+#  define Q_TRACE_EXIT(x, ...)
+#  define Q_TRACE_SCOPE(x, ...)
 #  define Q_UNCONDITIONAL_TRACE(x, ...)
 #  define Q_TRACE_ENABLED(x) false
 #endif // defined(Q_TRACEPOINT) && !defined(QT_BOOTSTRAPPED)

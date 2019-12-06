@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -31,17 +31,9 @@
 
     \brief The Qt Core module is part of Qt's essential modules.
 
-    \section1 Getting Started
-    All other Qt modules rely on this module. To include the
-    definitions of the module's classes, use the following directive:
-
-    \snippet code/doc_src_qtcore.cpp 0
-
-    If you use \l qmake to build your projects, Qt Core is included by default.
-
     \section1 Core Functionalities
 
-    Qt adds these features to C++:
+    Qt Core adds these features to C++:
 
     \list
     \li a very powerful mechanism for seamless object communication called
@@ -60,6 +52,15 @@
     \li \l{Object Trees & Ownership}
     \li \l{Signals & Slots}
     \endlist
+
+    \include module-use.qdocinc using qt module
+    \quotefile overview/using-qt-core.cmake
+
+    See also the \l[QtDoc]{Building with CMake} overview.
+
+    \section2 Building with qmake
+
+    If you use \l qmake to build your projects, Qt5Core is linked by default.
 
     \section1 Threading and Concurrent Programming
 

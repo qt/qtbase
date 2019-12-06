@@ -137,32 +137,14 @@
 #include <qpa/qplatformtheme.h>
 #include <QtGui/private/qcoregraphics_p.h>
 
+#include <cmath>
+
 QT_USE_NAMESPACE
 
 static QWindow *qt_getWindow(const QWidget *widget)
 {
     return widget ? widget->window()->windowHandle() : 0;
 }
-
-@interface QT_MANGLE_NAMESPACE(NotificationReceiver) : NSObject
-@end
-
-QT_NAMESPACE_ALIAS_OBJC_CLASS(NotificationReceiver);
-
-@implementation NotificationReceiver
-
-- (void)scrollBarStyleDidChange:(NSNotification *)notification
-{
-    Q_UNUSED(notification);
-
-    // purge destroyed scroll bars:
-    QMacStylePrivate::scrollBars.removeAll(QPointer<QObject>());
-
-    QEvent event(QEvent::StyleChange);
-    for (const auto &o : QMacStylePrivate::scrollBars)
-        QCoreApplication::sendEvent(o, &event);
-}
-@end
 
 @interface QT_MANGLE_NAMESPACE(QIndeterminateProgressIndicator) : NSProgressIndicator
 
@@ -356,15 +338,44 @@ static const qreal titleBarButtonSpacing = 8;
 // active: window is active
 // selected: tab is selected
 // hovered: tab is hovered
-static const QColor tabBarTabBackgroundActive(190, 190, 190);
-static const QColor tabBarTabBackgroundActiveHovered(178, 178, 178);
-static const QColor tabBarTabBackgroundActiveSelected(211, 211, 211);
-static const QColor tabBarTabBackground(227, 227, 227);
-static const QColor tabBarTabBackgroundSelected(246, 246, 246);
-static const QColor tabBarTabLineActive(160, 160, 160);
-static const QColor tabBarTabLineActiveHovered(150, 150, 150);
-static const QColor tabBarTabLine(210, 210, 210);
-static const QColor tabBarTabLineSelected(189, 189, 189);
+bool isDarkMode() { return qt_mac_applicationIsInDarkMode(); }
+
+static const QColor lightTabBarTabBackgroundActive(190, 190, 190);
+static const QColor darkTabBarTabBackgroundActive(38, 38, 38);
+static const QColor tabBarTabBackgroundActive() { return isDarkMode() ? darkTabBarTabBackgroundActive : lightTabBarTabBackgroundActive; }
+
+static const QColor lightTabBarTabBackgroundActiveHovered(178, 178, 178);
+static const QColor darkTabBarTabBackgroundActiveHovered(32, 32, 32);
+static const QColor tabBarTabBackgroundActiveHovered() { return isDarkMode() ? darkTabBarTabBackgroundActiveHovered : lightTabBarTabBackgroundActiveHovered; }
+
+static const QColor lightTabBarTabBackgroundActiveSelected(211, 211, 211);
+static const QColor darkTabBarTabBackgroundActiveSelected(52, 52, 52);
+static const QColor tabBarTabBackgroundActiveSelected() { return isDarkMode() ? darkTabBarTabBackgroundActiveSelected : lightTabBarTabBackgroundActiveSelected; }
+
+static const QColor lightTabBarTabBackground(227, 227, 227);
+static const QColor darkTabBarTabBackground(38, 38, 38);
+static const QColor tabBarTabBackground() { return isDarkMode() ? darkTabBarTabBackground : lightTabBarTabBackground; }
+
+static const QColor lightTabBarTabBackgroundSelected(246, 246, 246);
+static const QColor darkTabBarTabBackgroundSelected(52, 52, 52);
+static const QColor tabBarTabBackgroundSelected() { return isDarkMode() ? darkTabBarTabBackgroundSelected : lightTabBarTabBackgroundSelected; }
+
+static const QColor lightTabBarTabLineActive(160, 160, 160);
+static const QColor darkTabBarTabLineActive(90, 90, 90);
+static const QColor tabBarTabLineActive() { return isDarkMode() ? darkTabBarTabLineActive : lightTabBarTabLineActive; }
+
+static const QColor lightTabBarTabLineActiveHovered(150, 150, 150);
+static const QColor darkTabBarTabLineActiveHovered(90, 90, 90);
+static const QColor tabBarTabLineActiveHovered() { return isDarkMode() ? darkTabBarTabLineActiveHovered : lightTabBarTabLineActiveHovered; }
+
+static const QColor lightTabBarTabLine(210, 210, 210);
+static const QColor darkTabBarTabLine(90, 90, 90);
+static const QColor tabBarTabLine() { return isDarkMode() ? darkTabBarTabLine : lightTabBarTabLine; }
+
+static const QColor lightTabBarTabLineSelected(189, 189, 189);
+static const QColor darkTabBarTabLineSelected(90, 90, 90);
+static const QColor tabBarTabLineSelected() { return isDarkMode() ? darkTabBarTabLineSelected : lightTabBarTabLineSelected; }
+
 static const QColor tabBarCloseButtonBackgroundHovered(162, 162, 162);
 static const QColor tabBarCloseButtonBackgroundPressed(153, 153, 153);
 static const QColor tabBarCloseButtonBackgroundSelectedHovered(192, 192, 192);
@@ -418,6 +429,42 @@ static const int toolButtonArrowMargin = 2;
 
 static const qreal focusRingWidth = 3.5;
 
+// An application can force 'Aqua' theme while the system theme is one of
+// the 'Dark' variants. Since in Qt we sometimes use NSControls and even
+// NSCells directly without attaching them to any view hierarchy, we have
+// to set NSAppearance.currentAppearance to 'Aqua' manually, to make sure
+// the correct rendering path is triggered. Apple recommends us to un-set
+// the current appearance back after we finished with drawing. This is what
+// AppearanceSync is for.
+
+class AppearanceSync {
+public:
+    AppearanceSync()
+    {
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave
+            && !qt_mac_applicationIsInDarkMode()) {
+            auto requiredAppearanceName = NSApplication.sharedApplication.effectiveAppearance.name;
+            if (![NSAppearance.currentAppearance.name isEqualToString:requiredAppearanceName]) {
+                previous = NSAppearance.currentAppearance;
+                NSAppearance.currentAppearance = [NSAppearance appearanceNamed:requiredAppearanceName];
+            }
+        }
+#endif // QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    }
+
+    ~AppearanceSync()
+    {
+        if (previous)
+            NSAppearance.currentAppearance = previous;
+    }
+
+private:
+    NSAppearance *previous = nil;
+
+    Q_DISABLE_COPY(AppearanceSync)
+};
+
 static bool setupScroller(NSScroller *scroller, const QStyleOptionSlider *sb)
 {
     const qreal length = sb->maximum - sb->minimum + sb->pageStep;
@@ -467,6 +514,37 @@ static bool setupSlider(NSSlider *slider, const QStyleOptionSlider *sl)
     }
 
     return true;
+}
+
+static void fixStaleGeometry(NSSlider *slider)
+{
+    // If it's later fixed in AppKit, this function is not needed.
+    // On macOS Mojave we suddenly have NSSliderCell with a cached
+    // (and stale) geometry, thus its -drawKnob, -drawBarInside:flipped:,
+    // -drawTickMarks fail to render the slider properly. Setting the number
+    // of tickmarks triggers an update in geometry.
+
+    Q_ASSERT(slider);
+
+    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSMojave)
+        return;
+
+    NSSliderCell *cell = slider.cell;
+    const NSRect barRect = [cell barRectFlipped:NO];
+    const NSSize sliderSize = slider.frame.size;
+    CGFloat difference = 0.;
+    if (slider.vertical)
+        difference = std::abs(sliderSize.height - barRect.size.height);
+    else
+        difference = std::abs(sliderSize.width - barRect.size.width);
+
+    if (difference > 6.) {
+        // Stale ...
+        const auto nOfTicks = slider.numberOfTickMarks;
+        // Non-zero, different from nOfTicks to force update
+        slider.numberOfTickMarks = nOfTicks + 10;
+        slider.numberOfTickMarks = nOfTicks;
+    }
 }
 
 static bool isInMacUnifiedToolbarArea(QWindow *window, int windowY)
@@ -561,7 +639,7 @@ void drawTabShape(QPainter *p, const QStyleOptionTab *tabOpt, bool isUnified, in
     const bool active = (tabOpt->state & QStyle::State_Active);
     const bool selected = (tabOpt->state & QStyle::State_Selected);
 
-    const QRect bodyRect(1, 1, width - 2, height - 2);
+    const QRect bodyRect(1, 2, width - 2, height - 3);
     const QRect topLineRect(1, 0, width - 2, 1);
     const QRect bottomLineRect(1, height - 1, width - 2, 1);
     if (selected) {
@@ -572,27 +650,27 @@ void drawTabShape(QPainter *p, const QStyleOptionTab *tabOpt, bool isUnified, in
             p->fillRect(tabRect, QColor(Qt::transparent));
             p->restore();
         } else if (active) {
-            p->fillRect(bodyRect, tabBarTabBackgroundActiveSelected);
+            p->fillRect(bodyRect, tabBarTabBackgroundActiveSelected());
             // top line
-            p->fillRect(topLineRect, tabBarTabLineSelected);
+            p->fillRect(topLineRect, tabBarTabLineSelected());
         } else {
-            p->fillRect(bodyRect, tabBarTabBackgroundSelected);
+            p->fillRect(bodyRect, tabBarTabBackgroundSelected());
         }
     } else {
         // when the mouse is over non selected tabs they get a new color
         const bool hover = (tabOpt->state & QStyle::State_MouseOver);
         if (hover) {
             // fill body
-            p->fillRect(bodyRect, tabBarTabBackgroundActiveHovered);
+            p->fillRect(bodyRect, tabBarTabBackgroundActiveHovered());
             // bottom line
-            p->fillRect(bottomLineRect, tabBarTabLineActiveHovered);
+            p->fillRect(bottomLineRect, isDarkMode() ? QColor(Qt::black) : tabBarTabLineActiveHovered());
         }
     }
 
     // separator lines between tabs
     const QRect leftLineRect(0, 1, 1, height - 2);
     const QRect rightLineRect(width - 1, 1, 1, height - 2);
-    const QColor separatorLineColor = active ? tabBarTabLineActive : tabBarTabLine;
+    const QColor separatorLineColor = active ? tabBarTabLineActive() : tabBarTabLine();
     p->fillRect(leftLineRect, separatorLineColor);
     p->fillRect(rightLineRect, separatorLineColor);
 }
@@ -612,17 +690,20 @@ void drawTabBase(QPainter *p, const QStyleOptionTabBarBase *tbb, const QWidget *
 
     // fill body
     const QRect bodyRect(0, 1, width, height - 1);
-    const QColor bodyColor = active ? tabBarTabBackgroundActive : tabBarTabBackground;
+    const QColor bodyColor = active ? tabBarTabBackgroundActive() : tabBarTabBackground();
     p->fillRect(bodyRect, bodyColor);
 
     // top line
     const QRect topLineRect(0, 0, width, 1);
-    const QColor topLineColor = active ? tabBarTabLineActive : tabBarTabLine;
+    const QColor topLineColor = active ? tabBarTabLineActive() : tabBarTabLine();
     p->fillRect(topLineRect, topLineColor);
 
     // bottom line
     const QRect bottomLineRect(0, height - 1, width, 1);
-    const QColor bottomLineColor = active ? tabBarTabLineActive : tabBarTabLine;
+    bool isDocument = false;
+    if (const QTabBar *tabBar = qobject_cast<const QTabBar*>(w))
+        isDocument = tabBar->documentMode();
+    const QColor bottomLineColor = isDocument && isDarkMode() ? QColor(Qt::black) : active ? tabBarTabLineActive() : tabBarTabLine();
     p->fillRect(bottomLineRect, bottomLineColor);
 }
 #endif
@@ -1227,11 +1308,17 @@ void QMacStylePrivate::drawFocusRing(QPainter *p, const QRectF &targetRect, int 
         Q_UNREACHABLE();
     }
 
-    const auto focusRingColor = qt_mac_toQColor(NSColor.keyboardFocusIndicatorColor.CGColor);
+    auto focusRingColor = qt_mac_toQColor(NSColor.keyboardFocusIndicatorColor.CGColor);
+    if (!qt_mac_applicationIsInDarkMode()) {
+        // This color already has alpha ~ 0.25, this value is too small - the ring is
+        // very pale and nothing like the native one. 0.39 makes it better (not ideal
+        // anyway). The color seems to be correct in dark more without any modification.
+        focusRingColor.setAlphaF(0.39);
+    }
 
     p->save();
     p->setRenderHint(QPainter::Antialiasing);
-    p->setOpacity(0.5);
+
     if (cw.type == SegmentedControl_First) {
         // TODO Flip left-right
     }
@@ -1991,23 +2078,34 @@ void QMacStylePrivate::resolveCurrentNSView(QWindow *window) const
 QMacStyle::QMacStyle()
     : QCommonStyle(*new QMacStylePrivate)
 {
-    Q_D(QMacStyle);
     QMacAutoReleasePool pool;
 
-    d->receiver = [[NotificationReceiver alloc] init];
-    [[NSNotificationCenter defaultCenter] addObserver:d->receiver
-                                             selector:@selector(scrollBarStyleDidChange:)
-                                                 name:NSPreferredScrollerStyleDidChangeNotification
-                                               object:nil];
+    static QMacNotificationObserver scrollbarStyleObserver(nil,
+        NSPreferredScrollerStyleDidChangeNotification, []() {
+            // Purge destroyed scroll bars
+            QMacStylePrivate::scrollBars.removeAll(QPointer<QObject>());
+
+            QEvent event(QEvent::StyleChange);
+            for (const auto &o : QMacStylePrivate::scrollBars)
+                QCoreApplication::sendEvent(o, &event);
+    });
+
+#if QT_MACOS_PLATFORM_SDK_EQUAL_OR_ABOVE(__MAC_10_14)
+    Q_D(QMacStyle);
+    // FIXME: Tie this logic into theme change, or even polish/unpolish
+    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
+        d->appearanceObserver = QMacKeyValueObserver(NSApp, @"effectiveAppearance", [this] {
+            Q_D(QMacStyle);
+            for (NSView *b : d->cocoaControls)
+                [b release];
+            d->cocoaControls.clear();
+        });
+    }
+#endif
 }
 
 QMacStyle::~QMacStyle()
 {
-    Q_D(QMacStyle);
-    QMacAutoReleasePool pool;
-
-    [[NSNotificationCenter defaultCenter] removeObserver:d->receiver];
-    [d->receiver release];
 }
 
 void QMacStyle::polish(QPalette &)
@@ -2074,10 +2172,9 @@ void QMacStyle::unpolish(QWidget* w)
 #if QT_CONFIG(menu)
         qobject_cast<QMenu*>(w) &&
 #endif
-        !w->testAttribute(Qt::WA_SetPalette)) {
-        QPalette pal = qApp->palette(w);
-        w->setPalette(pal);
-        w->setAttribute(Qt::WA_SetPalette, false);
+        !w->testAttribute(Qt::WA_SetPalette))
+    {
+        w->setPalette(QPalette());
         w->setWindowOpacity(1.0);
     }
 
@@ -2093,9 +2190,9 @@ void QMacStyle::unpolish(QWidget* w)
 #if QT_CONFIG(tabbar)
     if (qobject_cast<QTabBar*>(w)) {
         if (!w->testAttribute(Qt::WA_SetFont))
-            w->setFont(qApp->font(w));
+            w->setFont(QFont());
         if (!w->testAttribute(Qt::WA_SetPalette))
-            w->setPalette(qApp->palette(w));
+            w->setPalette(QPalette());
     }
 #endif
 
@@ -2491,11 +2588,12 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
 
 QPalette QMacStyle::standardPalette() const
 {
-    QPalette pal = QCommonStyle::standardPalette();
-    pal.setColor(QPalette::Disabled, QPalette::Dark, QColor(191, 191, 191));
-    pal.setColor(QPalette::Active, QPalette::Dark, QColor(191, 191, 191));
-    pal.setColor(QPalette::Inactive, QPalette::Dark, QColor(191, 191, 191));
-    return pal;
+    auto platformTheme = QGuiApplicationPrivate::platformTheme();
+    auto styleNames = platformTheme->themeHint(QPlatformTheme::StyleNames);
+    if (styleNames.toStringList().contains("macintosh"))
+        return *platformTheme->palette();
+    else
+        return QStyle::standardPalette();
 }
 
 int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w,
@@ -2880,6 +2978,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                               const QWidget *w) const
 {
     Q_D(const QMacStyle);
+    const AppearanceSync appSync;
     QMacCGContext cg(p);
     QWindow *window = w && w->window() ? w->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
@@ -3040,7 +3139,9 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             theStroker.setCapStyle(Qt::FlatCap);
             theStroker.setDashPattern(QVector<qreal>() << 1 << 2);
             path = theStroker.createStroke(path);
-            p->fillPath(path, QColor(0, 0, 0, 119));
+            const auto dark = qt_mac_applicationIsInDarkMode() ? opt->palette.dark().color().darker()
+                                                               : QColor(0, 0, 0, 119);
+            p->fillPath(path, dark);
         }
         break;
     case PE_FrameWindow:
@@ -3306,18 +3407,20 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
     case PE_IndicatorTabClose: {
         // Make close button visible only on the hovered tab.
         QTabBar *tabBar = qobject_cast<QTabBar*>(w->parentWidget());
+        const QWidget *closeBtn = w;
         if (!tabBar) {
             // QStyleSheetStyle instead of CloseButton (which has
             // a QTabBar as a parent widget) uses the QTabBar itself:
             tabBar = qobject_cast<QTabBar *>(const_cast<QWidget*>(w));
+            closeBtn = decltype(closeBtn)(property("_q_styleSheetRealCloseButton").value<void *>());
         }
         if (tabBar) {
             const bool documentMode = tabBar->documentMode();
             const QTabBarPrivate *tabBarPrivate = static_cast<QTabBarPrivate *>(QObjectPrivate::get(tabBar));
             const int hoveredTabIndex = tabBarPrivate->hoveredTabIndex();
             if (!documentMode ||
-                (hoveredTabIndex != -1 && ((w == tabBar->tabButton(hoveredTabIndex, QTabBar::LeftSide)) ||
-                                           (w == tabBar->tabButton(hoveredTabIndex, QTabBar::RightSide))))) {
+                (hoveredTabIndex != -1 && ((closeBtn == tabBar->tabButton(hoveredTabIndex, QTabBar::LeftSide)) ||
+                                           (closeBtn == tabBar->tabButton(hoveredTabIndex, QTabBar::RightSide))))) {
                 const bool hover = (opt->state & State_MouseOver);
                 const bool selected = (opt->state & State_Selected);
                 const bool pressed = (opt->state & State_Sunken);
@@ -3403,6 +3506,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                             const QWidget *w) const
 {
     Q_D(const QMacStyle);
+    const AppearanceSync sync;
     QMacCGContext cg(p);
     QWindow *window = w && w->window() ? w->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
@@ -3536,7 +3640,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         if (tbstyle == Qt::ToolButtonTextOnly
                             || (tbstyle != Qt::ToolButtonTextOnly && !down)) {
                             QPen pen = p->pen();
-                            QColor light = down ? Qt::black : Qt::white;
+                            QColor light = down || isDarkMode() ? Qt::black : Qt::white;
                             light.setAlphaF(0.375f);
                             p->setPen(light);
                             p->drawText(cr.adjusted(0, 1, 0, 1), alignment, tb->text);
@@ -3840,6 +3944,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         CGContextScaleCTM(ctx, -1, 1);
                         CGContextTranslateCTM(ctx, -frameRect.left(), 0);
                     } else if (tabDirection == QMacStylePrivate::West && tp == QStyleOptionTab::Beginning) {
+                        CGContextTranslateCTM(ctx, 0, opt->rect.top());
                         CGContextScaleCTM(ctx, 1, -1);
                         CGContextTranslateCTM(ctx, 0, -frameRect.right());
                     } else if (tabDirection == QMacStylePrivate::East && tp == QStyleOptionTab::End) {
@@ -3957,6 +4062,11 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 if (const auto *tabBar = qobject_cast<const QTabBar *>(w))
                     if (!tabBar->tabTextColor(tabBar->currentIndex()).isValid())
                         myTab.palette.setColor(QPalette::WindowText, Qt::white);
+
+            if (myTab.documentMode && isDarkMode()) {
+                bool active = (myTab.state & State_Selected) && (myTab.state & State_Active);
+                myTab.palette.setColor(QPalette::WindowText, active ? Qt::white : Qt::gray);
+            }
 
             int heightOffset = 0;
             if (verticalTabs) {
@@ -4207,13 +4317,17 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                                                      alpha:pc.alphaF()];
 
                     s = qt_mac_removeMnemonics(s);
-                    const auto textRect = CGRectMake(xpos, yPos, mi->rect.width() - xm - tabwidth + 1, mi->rect.height());
 
                     QMacCGContext cgCtx(p);
                     d->setupNSGraphicsContext(cgCtx, YES);
 
-                    [s.toNSString() drawInRect:textRect
-                                withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c }];
+                    // Draw at point instead of in rect, as the rect we've computed for the menu item
+                    // is based on the font metrics we got from HarfBuzz, so we may risk having CoreText
+                    // line-break the string if it doesn't fit the given rect. It's better to draw outside
+                    // the rect and possibly overlap something than to have part of the text disappear.
+                    [s.toNSString() drawAtPoint:CGPointMake(xpos, yPos)
+                                withAttributes:@{ NSFontAttributeName:f, NSForegroundColorAttributeName:c,
+                                                  NSObliquenessAttributeName: [NSNumber numberWithDouble: myFont.italic() ? 0.3 : 0.0]}];
 
                     d->restoreNSGraphicsContext(cgCtx);
                 } else {
@@ -4444,16 +4558,17 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         p->fillRect(opt->rect, linearGrad);
 
         p->save();
+        QRect toolbarRect = isDarkMode ? opt->rect.adjusted(0, 0, 0, 1) : opt->rect;
         if (opt->state & State_Horizontal) {
             p->setPen(isDarkMode ? darkModeSeparatorLine : mainWindowGradientBegin.lighter(114));
-            p->drawLine(opt->rect.topLeft(), opt->rect.topRight());
+            p->drawLine(toolbarRect.topLeft(), toolbarRect.topRight());
             p->setPen(isDarkMode ? darkModeSeparatorLine :mainWindowGradientEnd.darker(114));
-            p->drawLine(opt->rect.bottomLeft(), opt->rect.bottomRight());
+            p->drawLine(toolbarRect.bottomLeft(), toolbarRect.bottomRight());
         } else {
             p->setPen(isDarkMode ? darkModeSeparatorLine : mainWindowGradientBegin.lighter(114));
-            p->drawLine(opt->rect.topLeft(), opt->rect.bottomLeft());
+            p->drawLine(toolbarRect.topLeft(), toolbarRect.bottomLeft());
             p->setPen(isDarkMode ? darkModeSeparatorLine : mainWindowGradientEnd.darker(114));
-            p->drawLine(opt->rect.topRight(), opt->rect.bottomRight());
+            p->drawLine(toolbarRect.topRight(), toolbarRect.bottomRight());
         }
         p->restore();
 
@@ -4986,6 +5101,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                    const QWidget *widget) const
 {
     Q_D(const QMacStyle);
+    const AppearanceSync sync;
     QMacCGContext cg(p);
     QWindow *window = widget && widget->window() ? widget->window()->windowHandle() : nullptr;
     d->resolveCurrentNSView(window);
@@ -5236,6 +5352,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 #endif
                 {
                     [slider calcSize];
+                    if (!hasDoubleTicks)
+                        fixStaleGeometry(slider);
                     NSSliderCell *cell = slider.cell;
 
                     const int numberOfTickMarks = slider.numberOfTickMarks;
@@ -5245,10 +5363,10 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
 
                     const CGRect barRect = [cell barRectFlipped:hasTicks];
                     if (drawBar) {
+                        [cell drawBarInside:barRect flipped:!verticalFlip];
                         // This ain't HIG kosher: force unfilled bar look.
                         if (hasDoubleTicks)
                             slider.numberOfTickMarks = numberOfTickMarks;
-                        [cell drawBarInside:barRect flipped:!verticalFlip];
                     }
 
                     if (hasTicks && drawTicks) {

@@ -59,7 +59,7 @@
 #include "qguiapplication.h"
 #include <qdebug.h>
 
-#ifndef QT_NO_WIDGETS
+#if !defined(QT_NO_WIDGETS) && defined(QT_PRINTSUPPORT_LIB)
 #include "qcocoaprintersupport.h"
 #include "qprintengine_mac_p.h"
 #include <qpa/qplatformprintersupport.h>
@@ -153,30 +153,33 @@ QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInter
 
 QPlatformPrinterSupport *QCocoaNativeInterface::createPlatformPrinterSupport()
 {
-#if !defined(QT_NO_WIDGETS) && !defined(QT_NO_PRINTER)
+#if !defined(QT_NO_WIDGETS) && !defined(QT_NO_PRINTER) && defined(QT_PRINTSUPPORT_LIB)
     return new QCocoaPrinterSupport();
 #else
-    qFatal("Printing is not supported when Qt is configured with -no-widgets");
+    qFatal("Printing is not supported when Qt is configured with -no-widgets or -no-feature-printer");
     return nullptr;
 #endif
 }
 
 void *QCocoaNativeInterface::NSPrintInfoForPrintEngine(QPrintEngine *printEngine)
 {
-#if !defined(QT_NO_WIDGETS) && !defined(QT_NO_PRINTER)
+#if !defined(QT_NO_WIDGETS) && !defined(QT_NO_PRINTER) && defined(QT_PRINTSUPPORT_LIB)
     QMacPrintEnginePrivate *macPrintEnginePriv = static_cast<QMacPrintEngine *>(printEngine)->d_func();
     if (macPrintEnginePriv->state == QPrinter::Idle && !macPrintEnginePriv->isPrintSessionInitialized())
         macPrintEnginePriv->initialize();
     return macPrintEnginePriv->printInfo;
 #else
     Q_UNUSED(printEngine);
-    qFatal("Printing is not supported when Qt is configured with -no-widgets");
+    qFatal("Printing is not supported when Qt is configured with -no-widgets or -no-feature-printer");
     return nullptr;
 #endif
 }
 
 QPixmap QCocoaNativeInterface::defaultBackgroundPixmapForQWizard()
 {
+    // Note: starting with macOS 10.14, the KeyboardSetupAssistant app bundle no
+    // longer contains the "Background.png" image. This function then returns a
+    // null pixmap.
     const int ExpectedImageWidth = 242;
     const int ExpectedImageHeight = 414;
     QCFType<CFArrayRef> urls = LSCopyApplicationURLsForBundleIdentifier(

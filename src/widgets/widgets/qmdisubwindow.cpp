@@ -3140,8 +3140,6 @@ void QMdiSubWindow::paintEvent(QPaintEvent *paintEvent)
     }
 
     Q_D(QMdiSubWindow);
-    if (isMaximized() && !d->drawTitleBarWhenMaximized())
-        return;
 
     if (d->resizeTimerId != -1) {
         // Only update the style option rect and the window title.
@@ -3161,6 +3159,17 @@ void QMdiSubWindow::paintEvent(QPaintEvent *paintEvent)
     }
 
     QStylePainter painter(this);
+    QStyleOptionFrame frameOptions;
+    frameOptions.initFrom(this);
+    frameOptions.state.setFlag(QStyle::State_Active, d->isActive);
+    if (isMaximized() && !d->drawTitleBarWhenMaximized()) {
+        if (!autoFillBackground() && (!widget() || !qt_widget_private(widget())->isOpaque)) {
+            // make sure we paint all pixels of a maximized QMdiSubWindow if no-one else does
+            painter.drawPrimitive(QStyle::PE_FrameWindow, frameOptions);
+        }
+        return;
+    }
+
     if (!d->windowTitle.isEmpty())
         painter.setFont(d->font);
     painter.drawComplexControl(QStyle::CC_TitleBar, d->cachedStyleOptions);
@@ -3168,10 +3177,7 @@ void QMdiSubWindow::paintEvent(QPaintEvent *paintEvent)
     if (isMinimized() && !d->hasBorder(d->cachedStyleOptions))
         return;
 
-    QStyleOptionFrame frameOptions;
-    frameOptions.initFrom(this);
     frameOptions.lineWidth = style()->pixelMetric(QStyle::PM_MdiSubWindowFrameWidth, 0, this);
-    frameOptions.state.setFlag(QStyle::State_Active, d->isActive);
 
     // ### Ensure that we do not require setting the cliprect for 4.4
     if (!isMinimized() && !d->hasBorder(d->cachedStyleOptions))

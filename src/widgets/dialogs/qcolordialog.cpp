@@ -1739,7 +1739,7 @@ void QColorDialogPrivate::initWidgets()
         q->connect(custom, SIGNAL(selected(int,int)), SLOT(_q_newCustom(int,int)));
         q->connect(custom, SIGNAL(currentChanged(int,int)), SLOT(_q_nextCustom(int,int)));
 
-        q->connect(custom, &QWellArray::colorChanged, [=] (int index, QRgb color) {
+        q->connect(custom, &QWellArray::colorChanged, [this] (int index, QRgb color) {
             QColorDialogOptions::setCustomColor(index, color);
             if (custom)
                 custom->update();
@@ -1858,6 +1858,9 @@ void QColorDialogPrivate::_q_addCustom()
 
 void QColorDialogPrivate::retranslateStrings()
 {
+    if (nativeDialogInUse)
+        return;
+
     if (!smallDisplay) {
         lblBasicColors->setText(QColorDialog::tr("&Basic colors"));
         lblCustomColors->setText(QColorDialog::tr("&Custom colors"));

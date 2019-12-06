@@ -211,7 +211,6 @@ public:
     static Qt::MouseButton mousePressButton;
     static int mousePressX;
     static int mousePressY;
-    static int mouse_double_click_distance;
     static QPointF lastCursorPosition;
     static QWindow *currentMouseWindow;
     static QWindow *currentMousePressWindow;

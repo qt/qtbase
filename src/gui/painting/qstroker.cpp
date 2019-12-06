@@ -524,7 +524,7 @@ void QStroker::joinPoints(qfixed focal_x, qfixed focal_y, const QLineF &nextLine
 
             QLineF shortCut(prevLine.p2(), nextLine.p1());
             qreal angle = shortCut.angleTo(prevLine);
-            if (type == QLineF::BoundedIntersection || (angle > 90 && !qFuzzyCompare(angle, (qreal)90))) {
+            if ((type == QLineF::BoundedIntersection || (angle > qreal(90.01))) && nextLine.length() > offset) {
                 emitLineTo(focal_x, focal_y);
                 emitLineTo(qt_real_to_fixed(nextLine.x1()), qt_real_to_fixed(nextLine.y1()));
                 return;
@@ -1150,6 +1150,8 @@ void QDashStroker::processCurrentSubpath()
 
     QSubpathFlatIterator it(&m_elements, m_dashThreshold);
     qfixed2d prev = it.next();
+    if (!prev.isFinite())
+        return;
 
     bool clipping = !m_clip_rect.isEmpty();
     qfixed2d move_to_pos = prev;
@@ -1165,6 +1167,8 @@ void QDashStroker::processCurrentSubpath()
     bool hasMoveTo = false;
     while (it.hasNext()) {
         QStrokerOps::Element e = it.next();
+        if (!qfixed2d(e).isFinite())
+            continue;
 
         Q_ASSERT(e.isLineTo());
         cline = QLineF(qt_fixed_to_real(prev.x),

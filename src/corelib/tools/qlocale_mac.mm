@@ -332,6 +332,17 @@ static QString macCurrencySymbol(QLocale::CurrencySymbolFormat format)
     return QString();
 }
 
+static QString macZeroDigit()
+{
+    QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
+    QCFType<CFNumberFormatterRef> numberFormatter =
+            CFNumberFormatterCreate(nullptr, locale, kCFNumberFormatterNoStyle);
+    static const int zeroDigit = 0;
+    QCFType<CFStringRef> value = CFNumberFormatterCreateStringWithValue(nullptr, numberFormatter,
+                                                                        kCFNumberIntType, &zeroDigit);
+    return QString::fromCFString(value);
+}
+
 #ifndef QT_NO_SYSTEMLOCALE
 static QString macFormatCurrency(const QSystemLocale::CurrencyToStringArgument &arg)
 {
@@ -437,8 +448,9 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
 
     case NegativeSign:
     case PositiveSign:
-    case ZeroDigit:
         break;
+    case ZeroDigit:
+        return QVariant(macZeroDigit());
 
     case MeasurementSystem:
         return QVariant(static_cast<int>(macMeasurementSystem()));

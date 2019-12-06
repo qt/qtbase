@@ -1,5 +1,9 @@
 load(default_post)
 
+# Recompute SDK version in case the user set it explicitly
+sdk_version = $$QMAKE_MAC_SDK_VERSION
+QMAKE_MAC_SDK_VERSION = $$xcodeSDKInfo(SDKVersion)
+
 contains(TEMPLATE, .*app) {
     !macx-xcode:if(isEmpty(BUILDS)|build_pass) {
         # Detect changes to the platform SDK
@@ -14,7 +18,7 @@ contains(TEMPLATE, .*app) {
 
     !versionAtLeast(QMAKE_MAC_SDK_VERSION, $$QT_MAC_SDK_VERSION_MIN): \
         warning("Qt requires at least version $$QT_MAC_SDK_VERSION_MIN of the platform SDK," \
-              "you're using $${QMAKE_MAC_SDK_VERSION}. Please upgrade.")
+              "you're building against version $${QMAKE_MAC_SDK_VERSION}. Please upgrade.")
 
     !isEmpty(QT_MAC_SDK_VERSION_MAX) {
         # For Qt developers only
@@ -93,21 +97,22 @@ macx-xcode {
         qmake_pkginfo_typeinfo.value = "????"
     QMAKE_MAC_XCODE_SETTINGS += qmake_pkginfo_typeinfo
 
-    !isEmpty(VERSION) {
-        l = $$split(VERSION, '.') 0 0  # make sure there are at least three
-        VER_MAJ = $$member(l, 0, 0)
-        VER_MIN = $$member(l, 1, 1)
-        VER_PAT = $$member(l, 2, 2)
-        unset(l)
+    bundle_version = $$VERSION
+    isEmpty(bundle_version): bundle_version = 1.0.0
 
-        qmake_full_version.name = QMAKE_FULL_VERSION
-        qmake_full_version.value = $${VER_MAJ}.$${VER_MIN}.$${VER_PAT}
-        QMAKE_MAC_XCODE_SETTINGS += qmake_full_version
+    l = $$split(bundle_version, '.') 0 0  # make sure there are at least three
+    VER_MAJ = $$member(l, 0, 0)
+    VER_MIN = $$member(l, 1, 1)
+    VER_PAT = $$member(l, 2, 2)
+    unset(l)
 
-        qmake_short_version.name = QMAKE_SHORT_VERSION
-        qmake_short_version.value = $${VER_MAJ}.$${VER_MIN}
-        QMAKE_MAC_XCODE_SETTINGS += qmake_short_version
-    }
+    qmake_full_version.name = QMAKE_FULL_VERSION
+    qmake_full_version.value = $${VER_MAJ}.$${VER_MIN}.$${VER_PAT}
+    QMAKE_MAC_XCODE_SETTINGS += qmake_full_version
+
+    qmake_short_version.name = QMAKE_SHORT_VERSION
+    qmake_short_version.value = $${VER_MAJ}.$${VER_MIN}
+    QMAKE_MAC_XCODE_SETTINGS += qmake_short_version
 
     !isEmpty(QMAKE_XCODE_DEBUG_INFORMATION_FORMAT) {
         debug_information_format.name = DEBUG_INFORMATION_FORMAT
@@ -244,6 +249,11 @@ macx-xcode {
     QMAKE_PCH_OUTPUT_EXT = _${QMAKE_PCH_ARCH}$${QMAKE_PCH_OUTPUT_EXT}
 }
 
+!equals(sdk_version, $$QMAKE_MAC_SDK_VERSION) {
+    # Explicit SDK version has been set, respect that
+    QMAKE_LFLAGS += -Wl,-sdk_version -Wl,$$sdk_version
+}
+
 cache(QMAKE_XCODE_DEVELOPER_PATH, stash)
 !isEmpty(QMAKE_XCODE_VERSION): \
     cache(QMAKE_XCODE_VERSION, stash)
@@ -261,7 +271,7 @@ xcode_product_bundle_identifier_setting.value = "$${xcode_product_bundle_identif
 QMAKE_MAC_XCODE_SETTINGS += xcode_product_bundle_identifier_setting
 
 !macx-xcode {
-    generate_xcode_project.commands = @$(QMAKE) -spec macx-xcode $(EXPORT__PRO_FILE_)
+    generate_xcode_project.commands = @$(QMAKE) -spec macx-xcode \"$(EXPORT__PRO_FILE_)\" $$QMAKE_ARGS
     generate_xcode_project.target = xcodeproj
     QMAKE_EXTRA_VARIABLES += _PRO_FILE_
     QMAKE_EXTRA_TARGETS += generate_xcode_project

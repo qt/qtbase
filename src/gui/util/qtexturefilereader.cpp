@@ -37,10 +37,14 @@
 **
 ****************************************************************************/
 
+#include <QtGui/private/qtguiglobal_p.h>
 #include "qtexturefilereader_p.h"
 
 #include "qpkmhandler_p.h"
 #include "qktxhandler_p.h"
+#if QT_CONFIG(texture_format_astc_experimental)
+#include "qastchandler_p.h"
+#endif
 
 #include <QFileInfo>
 
@@ -80,6 +84,10 @@ bool QTextureFileReader::canRead()
             m_handler = new QPkmHandler(m_device, logName);
         } else if (QKtxHandler::canRead(suffix, headerBlock)) {
             m_handler = new QKtxHandler(m_device, logName);
+#if QT_CONFIG(texture_format_astc_experimental)
+        } else if (QAstcHandler::canRead(suffix, headerBlock)) {
+            m_handler = new QAstcHandler(m_device, logName);
+#endif
         }
         // else if OtherHandler::canRead() ...etc.
     }
@@ -89,7 +97,7 @@ bool QTextureFileReader::canRead()
 QList<QByteArray> QTextureFileReader::supportedFileFormats()
 {
     // Hardcoded for now
-    return {QByteArrayLiteral("pkm"), QByteArrayLiteral("ktx")};
+    return {QByteArrayLiteral("pkm"), QByteArrayLiteral("ktx"), QByteArrayLiteral("astc")};
 }
 
 bool QTextureFileReader::init()

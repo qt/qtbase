@@ -281,7 +281,7 @@ static quint32 icon_name_hash(const char *p)
 QVector<const char *> QIconCacheGtkReader::lookup(const QStringRef &name)
 {
     QVector<const char *> ret;
-    if (!isValid())
+    if (!isValid() || name.isEmpty())
         return ret;
 
     QByteArray nameUtf8 = name.toUtf8();
@@ -629,7 +629,10 @@ void QIconLoaderEngine::ensureLoaded()
 void QIconLoaderEngine::paint(QPainter *painter, const QRect &rect,
                              QIcon::Mode mode, QIcon::State state)
 {
-    QSize pixmapSize = rect.size();
+    const qreal dpr = !qApp->testAttribute(Qt::AA_UseHighDpiPixmaps) ?
+                qreal(1.0) : painter->device()->devicePixelRatioF();
+
+    QSize pixmapSize = rect.size() * dpr;
     painter->drawPixmap(rect, pixmap(pixmapSize, mode, state));
 }
 

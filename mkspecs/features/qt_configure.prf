@@ -515,6 +515,17 @@ defineTest(qtConfSetupLibraries) {
     }
 }
 
+defineReplace(qtGccSysrootifiedPath) {
+    return($$replace(1, ^=, $$[QT_SYSROOT]))
+}
+
+defineReplace(qtGccSysrootifiedPaths) {
+    sysrootified =
+    for (path, 1): \
+        sysrootified += $$qtGccSysrootifiedPath($$path)
+    return($$sysrootified)
+}
+
 # libs-var, libs, in-paths, out-paths-var
 defineTest(qtConfResolveLibs) {
     ret = true
@@ -531,6 +542,7 @@ defineTest(qtConfResolveLibs) {
             out += $$l
         } else: contains(l, "^-L.*") {
             lp = $$replace(l, "^-L", )
+            gcc: lp = $$qtGccSysrootifiedPath($$lp)
             !exists($$lp/.) {
                 qtLog("Library path $$val_escape(lp) is invalid.")
                 ret = false
@@ -540,7 +552,15 @@ defineTest(qtConfResolveLibs) {
         } else: contains(l, "^-l.*") {
             lib = $$replace(l, "^-l", )
             lcan =
-            unix {
+            integrity:contains(lib, "^.*\\.a") {
+                # INTEGRITY compiler searches for exact filename
+                # if -l argument has .a suffix
+                lcan += $${lib}
+            } else: contains(lib, "^:.*") {
+                # Use exact filename when -l:filename syntax is used.
+                lib ~= s/^://
+                lcan += $${lib}
+            } else: unix {
                 # Under UNIX, we look for actual shared libraries, in addition
                 # to static ones.
                 shexts = $$QMAKE_EXTENSION_SHLIB $$QMAKE_EXTENSIONS_AUX_SHLIB
@@ -596,6 +616,7 @@ defineTest(qtConfResolveAllLibs) {
 # libs-var, in-paths, libs
 defineTest(qtConfResolvePathLibs) {
     ret = true
+    gcc: 2 = $$qtGccSysrootifiedPaths($$2)
     for (libdir, 2) {
         !exists($$libdir/.) {
             qtLog("Library path $$val_escape(libdir) is invalid.")
@@ -646,6 +667,7 @@ defineReplace(qtConfGetTestIncludes) {
 # includes-var, in-paths, test-object-var
 defineTest(qtConfResolvePathIncs) {
     ret = true
+    gcc: 2 = $$qtGccSysrootifiedPaths($$2)
     for (incdir, 2) {
         !exists($$incdir/.) {
             qtLog("Include path $$val_escape(incdir) is invalid.")
@@ -764,6 +786,11 @@ defineTest(qtConfLibrary_makeSpec) {
     !qtConfResolvePathIncs($${1}.includedir, $$eval(QMAKE_INCDIR_$$spec), $$2): \
         return(false)
 
+    !isEmpty(QMAKE_EXPORT_INCDIR_$$spec) {
+        $${1}.exportincludedir = $$eval(QMAKE_EXPORT_INCDIR_$$spec)
+        export($${1}.exportincludedir)
+    }
+
     # note that the object is re-exported, because we resolve the libraries.
 
     return(true)
@@ -794,9 +821,9 @@ defineTest(qtConfLibrary_pkgConfig) {
     !qtConfResolveLibs($${1}.libs, $$libs): \
         return(false)
     contains($${1}.libs, ".*\\.$${QMAKE_EXTENSION_STATICLIB}$") {
-        qtRunLoggedCommand("$$pkg_config --static --libs-only-L $$args", libpaths)|return(false)
-        qtRunLoggedCommand("$$pkg_config --static --libs-only-l $$args", libs)|return(false)
-        eval(libs = $$libpaths $$libs)
+        qtRunLoggedCommand("$$pkg_config --static --libs $$args", libs)|return(false)
+        # Split by space
+        eval(libs = $$libs)
         !qtConfResolveLibs($${1}.libs, $$libs): \
             return(false)
     }
@@ -931,8 +958,11 @@ defineTest(qtConfExportLibrary) {
     }
     defines = $$eval($${spfx}.defines)
     !isEmpty(defines): qtConfOutputVar(assign, $$output, QMAKE_DEFINES_$$NAME, $$defines)
-    includes = $$eval($${spfx}.includedir)
-    !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
+    includes = $$eval($${spfx}.exportincludedir)
+    !equals(includes, -) {
+        isEmpty(includes): includes = $$eval($${spfx}.includedir)
+        !isEmpty(includes): qtConfOutputVar(assign, $$output, QMAKE_INCDIR_$$NAME, $$includes)
+    }
     uses = $$eval($${lpfx}.dependencies)
     !isEmpty(uses) {
         # FIXME: ideally, we would export transitive deps only for static
@@ -2472,17 +2502,19 @@ logn("Configure summary:")
 logn()
 qtConfPrintReport()
 
+load(qt_prefix_build_check)
+
 # final notes for the user
 logn()
 logn("Qt is now configured for building. Just run '$$QMAKE_MAKE_NAME'.")
 pfx = $$[QT_INSTALL_PREFIX]
-exists($$pfx/.qmake.cache) {
+qtIsPrefixBuild($$pfx) {
+    logn("Once everything is built, you must run '$$QMAKE_MAKE_NAME install'.")
+    logn("Qt will be installed into '$$system_path($$pfx)'.")
+} else {
     logn("Once everything is built, Qt is installed.")
     logn("You should NOT run '$$QMAKE_MAKE_NAME install'.")
     logn("Note that this build cannot be deployed to other machines or devices.")
-} else {
-    logn("Once everything is built, you must run '$$QMAKE_MAKE_NAME install'.")
-    logn("Qt will be installed into '$$system_path($$pfx)'.")
 }
 logn()
 logn("Prior to reconfiguration, make sure you remove any leftovers from")

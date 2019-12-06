@@ -1061,7 +1061,7 @@ QAbstractAnimation::~QAbstractAnimation()
     if (d->state != Stopped) {
         QAbstractAnimation::State oldState = d->state;
         d->state = Stopped;
-        emit stateChanged(oldState, d->state);
+        emit stateChanged(d->state, oldState);
         if (oldState == QAbstractAnimation::Running)
             QAnimationTimer::unregisterAnimation(this);
     }
@@ -1083,7 +1083,7 @@ QAbstractAnimation::State QAbstractAnimation::state() const
 
 /*!
     If this animation is part of a QAnimationGroup, this function returns a
-    pointer to the group; otherwise, it returns 0.
+    pointer to the group; otherwise, it returns \nullptr.
 
     \sa QAnimationGroup::addAnimation()
 */

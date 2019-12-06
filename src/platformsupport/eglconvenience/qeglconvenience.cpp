@@ -268,7 +268,7 @@ EGLConfig QEglConfigChooser::chooseConfig()
             configureAttributes.append(EGL_OPENGL_ES_BIT);
             break;
         }
-        // fall through
+        Q_FALLTHROUGH();
     default:
         needsES2Plus = true;
         break;

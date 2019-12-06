@@ -999,7 +999,7 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, const QString &ver
 
 /*!
     Returns the address of the exported symbol \a symbol. The library is
-    loaded if necessary. The function returns 0 if the symbol could
+    loaded if necessary. The function returns \nullptr if the symbol could
     not be resolved or if the library could not be loaded.
 
     Example:
@@ -1032,7 +1032,7 @@ QFunctionPointer QLibrary::resolve(const char *symbol)
     include the platform-specific file suffix; (see \l{fileName}). The
     library remains loaded until the application exits.
 
-    The function returns 0 if the symbol could not be resolved or if
+    The function returns \nullptr if the symbol could not be resolved or if
     the library could not be loaded.
 
     \sa resolve()
@@ -1052,7 +1052,7 @@ QFunctionPointer QLibrary::resolve(const QString &fileName, const char *symbol)
     (see \l{fileName}). The library remains loaded until the application exits.
     \a verNum is ignored on Windows.
 
-    The function returns 0 if the symbol could not be resolved or if
+    The function returns \nullptr if the symbol could not be resolved or if
     the library could not be loaded.
 
     \sa resolve()
@@ -1073,7 +1073,7 @@ QFunctionPointer QLibrary::resolve(const QString &fileName, int verNum, const ch
     (see \l{fileName}). The library remains loaded until the application exits.
     \a version is ignored on Windows.
 
-    The function returns 0 if the symbol could not be resolved or if
+    The function returns \nullptr if the symbol could not be resolved or if
     the library could not be loaded.
 
     \sa resolve()

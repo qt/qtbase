@@ -46,17 +46,33 @@
 #include <private/qwindow_p.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
+#include <qpa/qwindowsysteminterface.h>
+#include <qpa/qplatformdrag.h>
+#include <private/qhighdpiscaling_p.h>
 
 #include <QtTest/private/qtesthelpers_p.h>
 
 using namespace QTestPrivate;
+
+// Compare a window position that may go through scaling in the platform plugin with fuzz.
+static inline bool qFuzzyCompareWindowPosition(const QPoint &p1, const QPoint p2, int fuzz)
+{
+    return (p1 - p2).manhattanLength() <= fuzz;
+}
+
+static QString msgPointMismatch(const QPoint &p1, const QPoint p2)
+{
+    QString result;
+    QDebug(&result) << p1 << "!=" << p2 << ", manhattanLength=" << (p1 - p2).manhattanLength();
+    return result;
+}
 
 class tst_QWidget_window : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QWidget_window(){};
+    tst_QWidget_window();
 
 public slots:
     void initTestCase();
@@ -87,6 +103,7 @@ private slots:
 #if QT_CONFIG(draganddrop)
     void tst_dnd();
     void tst_dnd_events();
+    void tst_dnd_propagation();
 #endif
 
     void tst_qtbug35600();
@@ -106,7 +123,19 @@ private slots:
     void nativeShow();
 
     void QTBUG_56277_resize_on_showEvent();
+
+private:
+    QSize m_testWidgetSize;
+    const int m_fuzz;
 };
+
+tst_QWidget_window::tst_QWidget_window() :
+     m_fuzz(int(QHighDpiScaling::factor(QGuiApplication::primaryScreen())))
+{
+    const int screenWidth =  QGuiApplication::primaryScreen()->geometry().width();
+    const int width = qMax(200, 100 * ((screenWidth + 500) / 1000));
+    m_testWidgetSize = QSize(width, width);
+}
 
 void tst_QWidget_window::initTestCase()
 {
@@ -158,65 +187,65 @@ void tst_QWidget_window::tst_min_max_size()
 void tst_QWidget_window::tst_move_show()
 {
     QWidget w;
-    w.move(100, 100);
+    const QPoint pos(100, 100);
+    w.move(pos);
     w.show();
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "Winrt does not support move", Abort);
 #endif
-    QCOMPARE(w.pos(), QPoint(100, 100));
-//    QCoreApplication::processEvents(QEventLoop::AllEvents, 3000);
+    QVERIFY2(qFuzzyCompareWindowPosition(w.pos(), pos, m_fuzz),
+             qPrintable(msgPointMismatch(w.pos(), pos)));
 }
 
 void tst_QWidget_window::tst_show_move()
 {
     QWidget w;
     w.show();
-    w.move(100, 100);
-    QCOMPARE(w.pos(), QPoint(100, 100));
-//    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+    const QPoint pos(100, 100);
+    w.move(pos);
+    QVERIFY2(qFuzzyCompareWindowPosition(w.pos(), pos, m_fuzz),
+             qPrintable(msgPointMismatch(w.pos(), pos)));
 }
 
 void tst_QWidget_window::tst_show_move_hide_show()
 {
     QWidget w;
     w.show();
-    w.move(100, 100);
+    const QPoint pos(100, 100);
+    w.move(pos);
     w.hide();
     w.show();
-    QCOMPARE(w.pos(), QPoint(100, 100));
-//    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+    QVERIFY2(qFuzzyCompareWindowPosition(w.pos(), pos, m_fuzz),
+             qPrintable(msgPointMismatch(w.pos(), pos)));
 }
 
 void tst_QWidget_window::tst_resize_show()
 {
     QWidget w;
-    w.resize(200, 200);
+    w.resize(m_testWidgetSize);
     w.show();
 #ifdef Q_OS_WINRT
     QEXPECT_FAIL("", "Winrt does not support resize", Abort);
 #endif
-    QCOMPARE(w.size(), QSize(200, 200));
-//    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+    QCOMPARE(w.size(), m_testWidgetSize);
 }
 
 void tst_QWidget_window::tst_show_resize()
 {
     QWidget w;
     w.show();
-    w.resize(200, 200);
-    QCOMPARE(w.size(), QSize(200, 200));
-//    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+    w.resize(m_testWidgetSize);
+    QCOMPARE(w.size(), m_testWidgetSize);
 }
 
 void tst_QWidget_window::tst_show_resize_hide_show()
 {
     QWidget w;
     w.show();
-    w.resize(200, 200);
+    w.resize(m_testWidgetSize);
     w.hide();
     w.show();
-    QCOMPARE(w.size(), QSize(200, 200));
-//    QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+    QCOMPARE(w.size(), m_testWidgetSize);
 }
 
 class PaintTestWidget : public QWidget
@@ -744,6 +773,77 @@ void tst_QWidget_window::tst_dnd_events()
 
     QCOMPARE(dndWidget._dndEvents, expectedDndEvents);
 }
+
+class DropTarget : public QWidget
+{
+public:
+    explicit DropTarget()
+    {
+        setAcceptDrops(true);
+
+        const QRect availableGeometry = QGuiApplication::primaryScreen()->availableGeometry();
+        auto width = availableGeometry.width() / 6;
+        auto height = availableGeometry.height() / 4;
+
+        setGeometry(availableGeometry.x() + 200, availableGeometry.y() + 200, width, height);
+
+        QLabel *label = new QLabel(QStringLiteral("Test"), this);
+        label->setGeometry(40, 40, 60, 60);
+        label->setAcceptDrops(true);
+    }
+
+    void dragEnterEvent(QDragEnterEvent *event) override
+    {
+        event->accept();
+        mDndEvents.append("enter ");
+    }
+
+    void dragMoveEvent(QDragMoveEvent *event) override
+    {
+        event->acceptProposedAction();
+    }
+
+    void dragLeaveEvent(QDragLeaveEvent *) override
+    {
+        mDndEvents.append("leave ");
+    }
+
+    void dropEvent(QDropEvent *event) override
+    {
+        event->accept();
+        mDndEvents.append("drop ");
+    }
+
+    QString mDndEvents;
+};
+
+void tst_QWidget_window::tst_dnd_propagation()
+{
+    QMimeData mimeData;
+    mimeData.setText(QLatin1String("testmimetext"));
+
+    DropTarget target;
+    target.show();
+    QVERIFY(QTest::qWaitForWindowActive(&target));
+
+    Qt::DropActions supportedActions = Qt::DropAction::CopyAction;
+    QWindow *window = target.windowHandle();
+
+    auto posInsideDropTarget = QHighDpi::toNativePixels(QPoint(20, 20), window->screen());
+    auto posInsideLabel      = QHighDpi::toNativePixels(QPoint(60, 60), window->screen());
+
+    // Enter DropTarget.
+    QWindowSystemInterface::handleDrag(window, &mimeData, posInsideDropTarget, supportedActions, 0, 0);
+    // Enter QLabel. This will propagate because default QLabel does
+    // not accept the drop event in dragEnterEvent().
+    QWindowSystemInterface::handleDrag(window, &mimeData, posInsideLabel, supportedActions, 0, 0);
+    // Drop on QLabel. DropTarget will get dropEvent(), because it accepted the event.
+    QWindowSystemInterface::handleDrop(window, &mimeData, posInsideLabel, supportedActions, 0, 0);
+
+    QGuiApplication::processEvents();
+
+    QCOMPARE(target.mDndEvents, "enter leave enter drop ");
+}
 #endif
 
 void tst_QWidget_window::tst_qtbug35600()
@@ -782,7 +882,7 @@ void tst_QWidget_window::tst_updateWinId_QTBUG40681()
     lbl->setAttribute(Qt::WA_NativeWindow);
     lbl->setObjectName("label1");
     vl->addWidget(lbl);
-    w.setMinimumWidth(200);
+    w.setMinimumWidth(m_testWidgetSize.width());
 
     w.show();
 
@@ -805,6 +905,7 @@ void tst_QWidget_window::tst_updateWinId_QTBUG40681()
 void tst_QWidget_window::tst_recreateWindow_QTBUG40817()
 {
     QTabWidget tab;
+    tab.setMinimumWidth(m_testWidgetSize.width());
 
     QWidget *w = new QWidget;
     tab.addTab(w, "Tab1");
@@ -871,7 +972,7 @@ void tst_QWidget_window::tst_resize_count()
         resize.resizeCount = 0;
 
         ResizeWidget child(&resize);
-        child.resize(200,200);
+        child.resize(m_testWidgetSize);
         child.winId();
         child.show();
         QVERIFY(QTest::qWaitForWindowExposed(&child));
@@ -888,7 +989,7 @@ void tst_QWidget_window::tst_resize_count()
     {
         ResizeWidget parent;
         ResizeWidget child(&parent);
-        child.resize(200,200);
+        child.resize(m_testWidgetSize);
         child.winId();
         parent.show();
         QVERIFY(QTest::qWaitForWindowExposed(&parent));
@@ -1001,6 +1102,7 @@ void tst_QWidget_window::QTBUG_50561_QCocoaBackingStore_paintDevice_crash()
     ApplicationStateSaver as;
 
     QMainWindow w;
+    w.setMinimumWidth(m_testWidgetSize.width());
     w.addToolBar(new QToolBar(&w));
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));

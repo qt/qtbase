@@ -203,10 +203,13 @@ static CborError preparse_value(CborValue *it)
         it->extra = 0;
 
         /* read up to 16 bits into it->extra */
-        if (bytesNeeded <= 2) {
+        if (bytesNeeded == 1) {
+            uint8_t extra;
+            read_bytes_unchecked(it, &extra, 1, bytesNeeded);
+            it->extra = extra;
+        } else if (bytesNeeded == 2) {
             read_bytes_unchecked(it, &it->extra, 1, bytesNeeded);
-            if (bytesNeeded == 2)
-                it->extra = cbor_ntohs(it->extra);
+            it->extra = cbor_ntohs(it->extra);
         } else {
             cbor_static_assert(CborIteratorFlag_IntegerValueTooLarge == (Value32Bit & 3));
             cbor_static_assert((CborIteratorFlag_IntegerValueIs64Bit |
@@ -1520,7 +1523,7 @@ error:
  * floating point, this function takes a \c{void *} as a parameter for the
  * storage area, which must be at least 16 bits wide.
  *
- * \sa cbor_value_get_type(), cbor_value_is_valid(), cbor_value_is_half_float(), cbor_value_get_float()
+ * \sa cbor_value_get_type(), cbor_value_is_valid(), cbor_value_is_half_float(), cbor_value_get_half_float_as_float(), cbor_value_get_float()
  */
 
 /** @} */

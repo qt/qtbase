@@ -81,7 +81,7 @@
             "force-pkg-config": { "type": "void", "name": "pkg-config" },
             "framework": "boolean",
             "gc-binaries": { "type": "boolean", "name": "gc_binaries" },
-            "gdb-index": { "type": "boolean", "name": "gdb_index" },
+            "gdb-index": { "type": "boolean", "name": "enable_gdb_index" },
             "gcc-sysroot": "boolean",
             "gcov": "boolean",
             "gnumake": { "type": "boolean", "name": "GNUmake" },
@@ -233,12 +233,14 @@
             "label": "target architecture",
             "type": "architecture",
             "test": "arch",
+            "output": "arch",
             "log": "arch"
         },
         "host_architecture": {
             "label": "host architecture",
             "type": "architecture",
             "test": "arch",
+            "output": "arch_host",
             "host": true,
             "pro": "arch_host.pro",
             "log": "arch"
@@ -639,6 +641,7 @@
         },
         "optimize_debug": {
             "label": "Optimize debug build",
+            "autoDetect": "!features.developer-build",
             "condition": "!config.msvc && !config.clang && (features.debug || features.debug_and_release) && tests.optimize_debug",
             "output": [ "privateConfig" ]
         },
@@ -1229,7 +1232,7 @@
         "ccache": {
             "label": "Using ccache",
             "autoDetect": false,
-            "condition": "config.unix && tests.ccache",
+            "condition": "tests.ccache",
             "output": [ "privateConfig" ]
         },
         "msvc_mp": {

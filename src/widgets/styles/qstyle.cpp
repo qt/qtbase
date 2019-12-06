@@ -46,6 +46,7 @@
 #include "qstyleoption.h"
 #include "private/qstyle_p.h"
 #include "private/qguiapplication_p.h"
+#include <qpa/qplatformtheme.h>
 #ifndef QT_NO_DEBUG
 #include "qdebug.h"
 #endif
@@ -1971,8 +1972,8 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SH_Widget_Animate Deprecated. Use \l{SH_Widget_Animation_Duration} instead.
 
-    \value SH_Splitter_OpaqueResize Determines if resizing is opaque
-           This enum value has been introduced in Qt 5.2
+    \value SH_Splitter_OpaqueResize Determines if widgets are resized dynamically (opaquely) while
+           interactively moving the splitter. This enum value was introduced in Qt 5.2.
 
     \value SH_TabBar_ChangeCurrentDelay Determines the delay before the current
            tab is changed while dragging over the tabbar, in milliseconds. This
@@ -2445,6 +2446,13 @@ void QStyle::setProxy(QStyle *style)
 {
     Q_D(QStyle);
     d->proxyStyle = style;
+}
+
+//Windows and KDE allow menus to cover the taskbar, while GNOME and macOS don't
+bool QStylePrivate::useFullScreenForPopup()
+{
+    auto theme = QGuiApplicationPrivate::platformTheme();
+    return theme && theme->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool();
 }
 
 QT_END_NAMESPACE

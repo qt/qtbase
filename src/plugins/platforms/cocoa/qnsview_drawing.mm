@@ -154,6 +154,7 @@
         << "due to being" << ([self layerExplicitlyRequested] ? "explicitly requested"
             : [self shouldUseMetalLayer] ? "needed by surface type" : "enabled by macOS");
     [super setLayer:layer];
+    layer.delegate = self;
 }
 
 - (NSViewLayerContentsRedrawPolicy)layerContentsRedrawPolicy
@@ -162,6 +163,15 @@
     // returns LayerContentsRedrawNever for custom layers like CAMetalLayer.
     return NSViewLayerContentsRedrawDuringViewResize;
 }
+
+#if 0 // Disabled until we enable lazy backingstore resizing
+- (NSViewLayerContentsPlacement)layerContentsPlacement
+{
+    // Always place the layer at top left without any automatic scaling,
+    // so that we can re-use larger layers when resizing a window down.
+    return NSViewLayerContentsPlacementTopLeft;
+}
+#endif
 
 - (void)updateMetalLayerDrawableSize:(CAMetalLayer *)layer
 {
@@ -179,6 +189,15 @@
 
 - (void)displayLayer:(CALayer *)layer
 {
+    if (!NSThread.isMainThread) {
+        // Qt is calling AppKit APIs such as -[NSOpenGLContext setView:] on secondary threads,
+        // which we shouldn't do. This may result in AppKit (wrongly) triggering a display on
+        // the thread where we made the call, so block it here and defer to the main thread.
+        qCWarning(lcQpaDrawing) << "Display non non-main thread! Deferring to main thread";
+        dispatch_async(dispatch_get_main_queue(), ^{ self.needsDisplay = YES; });
+        return;
+    }
+
     Q_ASSERT(layer == self.layer);
 
     if (!m_platformWindow)

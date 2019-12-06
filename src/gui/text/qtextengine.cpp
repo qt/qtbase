@@ -399,6 +399,7 @@ struct QBidiAlgorithm {
                         analysis[i].bidiDirection = (level & 1) ? QChar::DirR : QChar::DirL;
                     runHasContent = true;
                     lastRunWithContent = -1;
+                    ++isolatePairPosition;
                 }
                 int runBeforeIsolate = runs.size();
                 ushort newLevel = isRtl ? ((stack.top().level + 1) | 1) : ((stack.top().level + 2) & ~1);
@@ -440,21 +441,19 @@ struct QBidiAlgorithm {
                 doEmbed(true, true, false);
                 break;
             case QChar::DirLRI:
-                Q_ASSERT(isolatePairs.at(isolatePairPosition).start == i);
                 doEmbed(false, false, true);
-                ++isolatePairPosition;
                 break;
             case QChar::DirRLI:
-                Q_ASSERT(isolatePairs.at(isolatePairPosition).start == i);
                 doEmbed(true, false, true);
-                ++isolatePairPosition;
                 break;
             case QChar::DirFSI: {
-                const auto &pair = isolatePairs.at(isolatePairPosition);
-                Q_ASSERT(pair.start == i);
-                bool isRtl = QStringView(text + pair.start + 1, pair.end - pair.start - 1).isRightToLeft();
+                bool isRtl = false;
+                if (isolatePairPosition < isolatePairs.size()) {
+                    const auto &pair = isolatePairs.at(isolatePairPosition);
+                    Q_ASSERT(pair.start == i);
+                    isRtl = QStringView(text + pair.start + 1, pair.end - pair.start - 1).isRightToLeft();
+                }
                 doEmbed(isRtl, false, true);
-                ++isolatePairPosition;
                 break;
             }
 
@@ -1383,11 +1382,12 @@ void QTextEngine::shapeText(int item) const
             if (QChar::isHighSurrogate(ucs4) && i + 1 < itemLength) {
                 uint low = string[i + 1];
                 if (QChar::isLowSurrogate(low)) {
+                    // high part never changes in simple casing
+                    uc[i] = ucs4;
                     ++i;
                     ucs4 = QChar::surrogateToUcs4(ucs4, low);
                     ucs4 = si.analysis.flags == QScriptAnalysis::Lowercase ? QChar::toLower(ucs4)
                                                                            : QChar::toUpper(ucs4);
-                    // high part never changes in simple casing
                     uc[i] = QChar::lowSurrogate(ucs4);
                 }
             } else {
@@ -1754,7 +1754,7 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
 
 #ifdef Q_OS_DARWIN
         if (actualFontEngine->type() == QFontEngine::Mac) {
-            if (actualFontEngine->fontDef.stretch != 100) {
+            if (actualFontEngine->fontDef.stretch != 100 && actualFontEngine->fontDef.stretch != QFont::AnyStretch) {
                 QFixed stretch = QFixed(int(actualFontEngine->fontDef.stretch)) / QFixed(100);
                 for (uint i = 0; i < num_glyphs; ++i)
                     g.advances[i] *= stretch;

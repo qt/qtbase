@@ -47,6 +47,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qtextboundaryfinder.h>
+#include <QtCore/qoperatingsystemversion.h>
 
 #include <QtGui/qevent.h>
 #include <QtGui/qtextformat.h>
@@ -279,7 +280,15 @@ void QWindowsInputContext::showInputPanel()
     // with Windows 10 if the Windows IME is (re)enabled _after_ the caret is shown.
     if (m_caretCreated) {
         cursorRectChanged();
-        ShowCaret(platformWindow->handle());
+        // We only call ShowCaret() on Windows 10 after 1703 as in earlier versions
+        // the caret would actually be visible (QTBUG-74492) and the workaround for
+        // the Surface seems unnecessary there anyway. But leave it hidden for IME.
+        if (QOperatingSystemVersion::current() >=
+            QOperatingSystemVersion(QOperatingSystemVersion::Windows, 10, 0, 16299)) {
+            ShowCaret(platformWindow->handle());
+        } else {
+            HideCaret(platformWindow->handle());
+        }
         setWindowsImeEnabled(platformWindow, false);
         setWindowsImeEnabled(platformWindow, true);
     }

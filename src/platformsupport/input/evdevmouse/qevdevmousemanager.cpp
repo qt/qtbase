@@ -102,7 +102,7 @@ QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specif
     }
 
     QInputDeviceManager *manager = QGuiApplicationPrivate::inputDeviceManager();
-    connect(manager, &QInputDeviceManager::cursorPositionChangeRequested, [=](const QPoint &pos) {
+    connect(manager, &QInputDeviceManager::cursorPositionChangeRequested, [this](const QPoint &pos) {
         m_x = pos.x();
         m_y = pos.y();
         clampPosition();

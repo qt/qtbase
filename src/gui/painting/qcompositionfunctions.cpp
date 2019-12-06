@@ -1763,8 +1763,10 @@ void QT_FASTCALL comp_func_Lighten_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const QR
 }
 
 /*
-   if Sca.Da + Dca.Sa >= Sa.Da
+   if Sca.Da + Dca.Sa > Sa.Da
        Dca' = Sa.Da + Sca.(1 - Da) + Dca.(1 - Sa)
+   else if Sca == Sa
+       Dca' = Dca.Sa + Sca.(1 - Da) + Dca.(1 - Sa)
    otherwise
        Dca' = Dca.Sa/(1-Sca/Sa) + Sca.(1 - Da) + Dca.(1 - Sa)
 */
@@ -1775,8 +1777,10 @@ static inline int color_dodge_op(int dst, int src, int da, int sa)
     const int src_da = src * da;
 
     const int temp = src * (255 - da) + dst * (255 - sa);
-    if (src_da + dst_sa >= sa_da)
+    if (src_da + dst_sa > sa_da)
         return qt_div_255(sa_da + temp);
+    else if (src == sa || sa == 0)
+        return qt_div_255(temp);
     else
         return qt_div_255(255 * dst_sa / (255 - 255 * src / sa) + temp);
 }
@@ -1788,8 +1792,10 @@ static inline uint color_dodge_op_rgb64(qint64 dst, qint64 src, qint64 da, qint6
     const qint64 src_da = src * da;
 
     const qint64 temp = src * (65535 - da) + dst * (65535 - sa);
-    if (src_da + dst_sa >= sa_da)
+    if (src_da + dst_sa > sa_da)
         return qt_div_65535(sa_da + temp);
+    else if (src == sa || sa == 0)
+        return qt_div_65535(temp);
     else
         return qt_div_65535(65535 * dst_sa / (65535 - 65535 * src / sa) + temp);
 }
@@ -1915,8 +1921,10 @@ void QT_FASTCALL comp_func_ColorDodge_rgb64(QRgba64 *Q_DECL_RESTRICT dest, const
 }
 
 /*
-   if Sca.Da + Dca.Sa <= Sa.Da
+   if Sca.Da + Dca.Sa < Sa.Da
        Dca' = Sca.(1 - Da) + Dca.(1 - Sa)
+   else if Sca == 0
+       Dca' = Dca.Sa + Sca.(1 - Da) + Dca.(1 - Sa)
    otherwise
        Dca' = Sa.(Sca.Da + Dca.Sa - Sa.Da)/Sca + Sca.(1 - Da) + Dca.(1 - Sa)
 */
@@ -1928,8 +1936,10 @@ static inline int color_burn_op(int dst, int src, int da, int sa)
 
     const int temp = src * (255 - da) + dst * (255 - sa);
 
-    if (src == 0 || src_da + dst_sa <= sa_da)
+    if (src_da + dst_sa < sa_da)
         return qt_div_255(temp);
+    else if (src == 0)
+        return qt_div_255(dst_sa + temp);
     return qt_div_255(sa * (src_da + dst_sa - sa_da) / src + temp);
 }
 
@@ -1941,8 +1951,10 @@ static inline uint color_burn_op_rgb64(qint64 dst, qint64 src, qint64 da, qint64
 
     const qint64 temp = src * (65535 - da) + dst * (65535 - sa);
 
-    if (src == 0 || src_da + dst_sa <= sa_da)
+    if (src_da + dst_sa < sa_da)
         return qt_div_65535(temp);
+    else if (src == 0)
+        return qt_div_65535(dst_sa + temp);
     return qt_div_65535(sa * (src_da + dst_sa - sa_da) / src + temp);
 }
 

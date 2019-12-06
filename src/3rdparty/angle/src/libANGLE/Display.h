@@ -65,6 +65,7 @@ class Display final : angle::NonCopyable
     static Display *GetDisplayFromDevice(Device *device, const AttributeMap &attribMap);
     static Display *GetDisplayFromNativeDisplay(EGLNativeDisplayType nativeDisplay,
                                                 const AttributeMap &attribMap);
+    static void CleanupDisplays();
 
     static const ClientExtensions &GetClientExtensions();
     static const std::string &GetClientExtensionString();

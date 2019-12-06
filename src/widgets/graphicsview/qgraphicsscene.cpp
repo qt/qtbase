@@ -4847,7 +4847,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
                 && painter->worldTransform().type() <= QTransform::TxTranslate)
             {
                 QRectF sourceRect = sourced->boundingRect(Qt::DeviceCoordinates);
-                QRect effectRect = sourced->paddedEffectRect(Qt::DeviceCoordinates, sourced->currentCachedMode(), sourceRect);
+                QRect effectRect = sourced->paddedEffectRect(Qt::DeviceCoordinates, sourced->currentCachedMode(), sourceRect).toAlignedRect();
 
                 sourced->setCachedOffset(effectRect.topLeft());
             } else {

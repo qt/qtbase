@@ -55,6 +55,8 @@
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusVariant>
 
+#include <QtGui/qtgui-config.h>
+
 QT_BEGIN_NAMESPACE
 
 class QDBusServiceWatcher;

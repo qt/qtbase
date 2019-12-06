@@ -320,7 +320,8 @@ void QDirIteratorPrivate::checkAndPushDirectory(const QFileInfo &fileInfo)
 
 bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInfo &fi) const
 {
-    Q_ASSERT(!fileName.isEmpty());
+    if (fileName.isEmpty())
+        return false;
 
     // filter . and ..?
     const int fileNameSize = fileName.size();

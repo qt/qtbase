@@ -1,2 +1,2 @@
-TARGET = arch
 SOURCES = arch.cpp
+include(write_info.pri)

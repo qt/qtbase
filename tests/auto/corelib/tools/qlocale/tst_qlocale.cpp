@@ -952,29 +952,42 @@ void tst_QLocale::stringToDouble()
 
 void tst_QLocale::stringToFloat_data()
 {
+    using Bounds = std::numeric_limits<float>;
     toReal_data();
-    if (std::numeric_limits<float>::has_infinity) {
-        double huge = std::numeric_limits<float>::infinity();
-        QTest::newRow("C inf") << QString("C") << QString("inf") << true << huge;
-        QTest::newRow("C +inf") << QString("C") << QString("+inf") << true << +huge;
-        QTest::newRow("C -inf") << QString("C") << QString("-inf") << true << -huge;
+    const QString C(QStringLiteral("C"));
+    if (Bounds::has_infinity) {
+        double huge = Bounds::infinity();
+        QTest::newRow("C inf") << C << QString("inf") << true << huge;
+        QTest::newRow("C +inf") << C << QString("+inf") << true << +huge;
+        QTest::newRow("C -inf") << C << QString("-inf") << true << -huge;
         // Overflow float, but not double:
-        QTest::newRow("C big") << QString("C") << QString("3.5e38") << false << huge;
-        QTest::newRow("C -big") << QString("C") << QString("-3.5e38") << false << -huge;
+        QTest::newRow("C big") << C << QString("3.5e38") << false << huge;
+        QTest::newRow("C -big") << C << QString("-3.5e38") << false << -huge;
         // Overflow double, too:
-        QTest::newRow("C huge") << QString("C") << QString("2e308") << false << huge;
-        QTest::newRow("C -huge") << QString("C") << QString("-2e308") << false << -huge;
+        QTest::newRow("C huge") << C << QString("2e308") << false << huge;
+        QTest::newRow("C -huge") << C << QString("-2e308") << false << -huge;
     }
-    if (std::numeric_limits<float>::has_quiet_NaN)
-        QTest::newRow("C qnan") << QString("C") << QString("NaN") << true << double(std::numeric_limits<float>::quiet_NaN());
+    if (Bounds::has_quiet_NaN)
+        QTest::newRow("C qnan") << C << QString("NaN") << true << double(Bounds::quiet_NaN());
+
+    // Minimal float: shouldn't underflow
+    QTest::newRow("C float min")
+        << C << QLocale::c().toString(Bounds::denorm_min()) << true << double(Bounds::denorm_min());
+    QTest::newRow("C float -min")
+        << C << QLocale::c().toString(-Bounds::denorm_min()) << true << -double(Bounds::denorm_min());
 
     // Underflow float, but not double:
-    QTest::newRow("C small") << QString("C") << QString("1e-45") << false << 0.;
-    QTest::newRow("C -small") << QString("C") << QString("-1e-45") << false << 0.;
+    QTest::newRow("C small") << C << QString("7e-46") << false << 0.;
+    QTest::newRow("C -small") << C << QString("-7e-46") << false << 0.;
+    using Double = std::numeric_limits<double>;
+    QTest::newRow("C double min")
+        << C << QLocale::c().toString(Double::denorm_min()) << false << 0.0;
+    QTest::newRow("C double -min")
+        << C << QLocale::c().toString(-Double::denorm_min()) << false << 0.0;
 
     // Underflow double, too:
-    QTest::newRow("C tiny") << QString("C") << QString("2e-324") << false << 0.;
-    QTest::newRow("C -tiny") << QString("C") << QString("-2e-324") << false << 0.;
+    QTest::newRow("C tiny") << C << QString("2e-324") << false << 0.;
+    QTest::newRow("C -tiny") << C << QString("-2e-324") << false << 0.;
 }
 
 void tst_QLocale::stringToFloat()
@@ -2445,9 +2458,9 @@ void tst_QLocale::timeFormat()
     QCOMPARE(c.timeFormat(QLocale::NarrowFormat), c.timeFormat(QLocale::ShortFormat));
 
     const QLocale no("no_NO");
-    QCOMPARE(no.timeFormat(QLocale::NarrowFormat), QLatin1String("HH:mm"));
-    QCOMPARE(no.timeFormat(QLocale::ShortFormat), QLatin1String("HH:mm"));
-    QCOMPARE(no.timeFormat(QLocale::LongFormat), QLatin1String("HH:mm:ss t"));
+    QCOMPARE(no.timeFormat(QLocale::NarrowFormat), QLatin1String("HH.mm"));
+    QCOMPARE(no.timeFormat(QLocale::ShortFormat), QLatin1String("HH.mm"));
+    QCOMPARE(no.timeFormat(QLocale::LongFormat), QLatin1String("HH.mm.ss t"));
 
     const QLocale id("id_ID");
     QCOMPARE(id.timeFormat(QLocale::ShortFormat), QLatin1String("HH.mm"));
@@ -2469,9 +2482,9 @@ void tst_QLocale::dateTimeFormat()
     QCOMPARE(c.dateTimeFormat(QLocale::NarrowFormat), c.dateTimeFormat(QLocale::ShortFormat));
 
     const QLocale no("no_NO");
-    QCOMPARE(no.dateTimeFormat(QLocale::NarrowFormat), QLatin1String("dd.MM.yyyy HH:mm"));
-    QCOMPARE(no.dateTimeFormat(QLocale::ShortFormat), QLatin1String("dd.MM.yyyy HH:mm"));
-    QCOMPARE(no.dateTimeFormat(QLocale::LongFormat), QLatin1String("dddd d. MMMM yyyy HH:mm:ss t"));
+    QCOMPARE(no.dateTimeFormat(QLocale::NarrowFormat), QLatin1String("dd.MM.yyyy HH.mm"));
+    QCOMPARE(no.dateTimeFormat(QLocale::ShortFormat), QLatin1String("dd.MM.yyyy HH.mm"));
+    QCOMPARE(no.dateTimeFormat(QLocale::LongFormat), QLatin1String("dddd d. MMMM yyyy HH.mm.ss t"));
 }
 
 void tst_QLocale::monthName()

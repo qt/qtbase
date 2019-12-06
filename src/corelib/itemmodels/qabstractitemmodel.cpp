@@ -2360,6 +2360,7 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
     bool wrap = flags & Qt::MatchWrap;
     bool allHits = (hits == -1);
     QString text; // only convert to a string if it is needed
+    const int column = start.column();
     QModelIndex p = parent(start);
     int from = start.row();
     int to = rowCount(p);
@@ -2367,7 +2368,7 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
     // iterates twice if wrapping
     for (int i = 0; (wrap && i < 2) || (!wrap && i < 1); ++i) {
         for (int r = from; (r < to) && (allHits || result.count() < hits); ++r) {
-            QModelIndex idx = index(r, start.column(), p);
+            QModelIndex idx = index(r, column, p);
             if (!idx.isValid())
                  continue;
             QVariant v = data(idx, role);
@@ -2406,10 +2407,13 @@ QModelIndexList QAbstractItemModel::match(const QModelIndex &start, int role,
                         result.append(idx);
                 }
             }
-            if (recurse && hasChildren(idx)) { // search the hierarchy
-                result += match(index(0, idx.column(), idx), role,
-                                (text.isEmpty() ? value : text),
-                                (allHits ? -1 : hits - result.count()), flags);
+            if (recurse) {
+                const auto parent = column != 0 ? idx.sibling(idx.row(), 0) : idx;
+                if (hasChildren(parent)) { // search the hierarchy
+                    result += match(index(0, column, parent), role,
+                                    (text.isEmpty() ? value : text),
+                                    (allHits ? -1 : hits - result.count()), flags);
+                }
             }
         }
         // prepare for the next iteration

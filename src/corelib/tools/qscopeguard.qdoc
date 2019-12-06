@@ -33,8 +33,14 @@ QT_BEGIN_NAMESPACE
     \class QScopeGuard
     \since 5.12
     \inmodule QtCore
-    \brief Provides a scope guard for calling a function at the of
+    \brief Provides a scope guard for calling a function at the end of
            a scope.
+*/
+
+/*! \fn template <typename F> void QScopeGuard<F>::dismiss()
+
+    Disarms the scope guard, so that the function \e F will not be called at
+    the end of the scope.
 */
 
 /*!

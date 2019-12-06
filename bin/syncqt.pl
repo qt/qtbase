@@ -1111,7 +1111,7 @@ foreach my $lib (@modules_to_sync) {
                             elsif (!$shadow) {
                                 $pri_install_pfiles.= "$pri_install_iheader ";;
                             }
-                            $pri_injections .= fixPaths($iheader, $out_basedir)
+                            $pri_injections .= fixPaths($iheader, $build_basedir)
                                                .":".($no_stamp ? "^" : "").fixPaths($oheader, "$out_basedir/include/$lib")
                                                .$injection." " if ($shadow);
                         }

@@ -48,6 +48,7 @@
 #include "qmutex.h"
 #include <private/qthread_p.h>
 #endif
+#include "qtextstream.h"
 #include <ctype.h>
 #include <qt_windows.h>
 
@@ -480,6 +481,7 @@ static const char *findWMstr(uint msg)
  { 0x02DD, "WM_TABLET_FIRST + 29" },
  { 0x02DE, "WM_TABLET_FIRST + 30" },
  { 0x02DF, "WM_TABLET_LAST" },
+ { 0x02E0, "WM_DPICHANGED" },
  { 0x0300, "WM_CUT" },
  { 0x0301, "WM_COPY" },
  { 0x0302, "WM_PASTE" },
@@ -692,6 +694,12 @@ static const char *winPosInsertAfter(quintptr h)
 
 static const char *sessionMgrLogOffOption(uint p)
 {
+#ifndef ENDSESSION_CLOSEAPP
+#define ENDSESSION_CLOSEAPP 0x00000001
+#endif
+#ifndef ENDSESSION_CRITICAL
+#define ENDSESSION_CRITICAL 0x40000000
+#endif
     static const QWinMessageMapping<uint> values[] = {
         {ENDSESSION_CLOSEAPP, "Close application"},
         {ENDSESSION_CRITICAL, "Force application end"},
@@ -764,6 +772,13 @@ QString decodeMSG(const MSG& msg)
             break;
         case WM_DESTROY:
             parameters = QLatin1String("Destroy hwnd ") + hwndS;
+            break;
+        case 0x02E0u: { // WM_DPICHANGED
+            auto rect = reinterpret_cast<const RECT *>(lParam);
+            QTextStream(&parameters) << "DPI: " << HIWORD(wParam) << ','
+                << LOWORD(wParam) << ' ' << (rect->right - rect->left) << 'x'
+                << (rect->bottom - rect->top) << forcesign << rect->left << rect->top;
+            }
             break;
         case WM_IME_NOTIFY:
             {
@@ -878,12 +893,6 @@ QString decodeMSG(const MSG& msg)
                 parameters += QLatin1Char(')');
             }
             break;
-#ifndef ENDSESSION_CLOSEAPP
-#define ENDSESSION_CLOSEAPP 0x00000001
-#endif
-#ifndef ENDSESSION_CRITICAL
-#define ENDSESSION_CRITICAL 0x40000000
-#endif
         case WM_QUERYENDSESSION:
             parameters = QLatin1String("End session: ");
             if (const char *logoffOption = sessionMgrLogOffOption(uint(wParam)))

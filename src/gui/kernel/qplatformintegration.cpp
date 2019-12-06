@@ -244,6 +244,9 @@ QPlatformServices *QPlatformIntegration::services() const
     \value TopStackedNativeChildWindows The platform supports native child windows via
     QWindowContainer without having to punch a transparent hole in the
     backingstore. (since 5.10)
+
+    \value OpenGLOnRasterSurface The platform supports making a QOpenGLContext current
+    in combination with a QWindow of type RasterSurface.
  */
 
 /*!
@@ -463,37 +466,16 @@ QList<int> QPlatformIntegration::possibleKeys(const QKeyEvent *) const
 }
 
 /*!
-  Should be called by the implementation whenever a new screen is added.
-
-  The first screen added will be the primary screen, used for default-created
-  windows, GL contexts, and other resources unless otherwise specified.
-
-  This adds the screen to QGuiApplication::screens(), and emits the
-  QGuiApplication::screenAdded() signal.
-
-  The screen should be deleted by calling QPlatformIntegration::destroyScreen().
+  \deprecated Use QWindowSystemInterface::handleScreenAdded instead.
 */
 void QPlatformIntegration::screenAdded(QPlatformScreen *ps, bool isPrimary)
 {
-    QScreen *screen = new QScreen(ps);
-
-    if (isPrimary) {
-        QGuiApplicationPrivate::screen_list.prepend(screen);
-    } else {
-        QGuiApplicationPrivate::screen_list.append(screen);
-    }
-    emit qGuiApp->screenAdded(screen);
-
-    if (isPrimary)
-        emit qGuiApp->primaryScreenChanged(screen);
+    QWindowSystemInterface::handleScreenAdded(ps, isPrimary);
 }
 
 /*!
-  Just removes the screen, call destroyScreen instead.
-
-  \sa destroyScreen()
+  \deprecated Use QWindowSystemInterface::handleScreenRemoved instead.
 */
-
 void QPlatformIntegration::removeScreen(QScreen *screen)
 {
     const bool wasPrimary = (!QGuiApplicationPrivate::screen_list.isEmpty() && QGuiApplicationPrivate::screen_list.at(0) == screen);
@@ -504,38 +486,19 @@ void QPlatformIntegration::removeScreen(QScreen *screen)
 }
 
 /*!
-  Should be called by the implementation whenever a screen is removed.
-
-  This removes the screen from QGuiApplication::screens(), and deletes it.
-
-  Failing to call this and manually deleting the QPlatformScreen instead may
-  lead to a crash due to a pure virtual call.
+  \deprecated Use QWindowSystemInterface::handleScreenRemoved instead.
 */
-void QPlatformIntegration::destroyScreen(QPlatformScreen *screen)
+void QPlatformIntegration::destroyScreen(QPlatformScreen *platformScreen)
 {
-    QScreen *qScreen = screen->screen();
-    removeScreen(qScreen);
-    delete qScreen;
-    delete screen;
+    QWindowSystemInterface::handleScreenRemoved(platformScreen);
 }
 
 /*!
-  Should be called whenever the primary screen changes.
-
-  When the screen specified as primary changes, this method will notify
-  QGuiApplication and emit the QGuiApplication::primaryScreenChanged signal.
- */
-
+  \deprecated Use QWindowSystemInterface::handlePrimaryScreenChanged instead.
+*/
 void QPlatformIntegration::setPrimaryScreen(QPlatformScreen *newPrimary)
 {
-    QScreen* newPrimaryScreen = newPrimary->screen();
-    int idx = QGuiApplicationPrivate::screen_list.indexOf(newPrimaryScreen);
-    Q_ASSERT(idx >= 0);
-    if (idx == 0)
-        return;
-
-    QGuiApplicationPrivate::screen_list.swap(0, idx);
-    emit qGuiApp->primaryScreenChanged(newPrimaryScreen);
+    QWindowSystemInterface::handlePrimaryScreenChanged(newPrimary);
 }
 
 QStringList QPlatformIntegration::themeNames() const

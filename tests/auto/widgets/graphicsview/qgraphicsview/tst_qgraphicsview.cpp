@@ -88,7 +88,7 @@ static void sendMousePress(QWidget *widget, const QPoint &point, Qt::MouseButton
 static void sendMouseMove(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::NoButton, Qt::MouseButtons buttons = 0)
 {
     QTest::mouseMove(widget, point);
-    QMouseEvent event(QEvent::MouseMove, point, button, buttons, 0);
+    QMouseEvent event(QEvent::MouseMove, point, widget->mapToGlobal(point), button, buttons, 0);
     QApplication::sendEvent(widget, &event);
     QApplication::processEvents();
 }
@@ -4075,6 +4075,8 @@ void tst_QGraphicsView::update()
         QTRY_COMPARE(view.lastUpdateRegions.at(0), QRegion(updateRect) & viewportRect);
     }
     QTRY_VERIFY(!viewPrivate->fullUpdatePending);
+#else
+    Q_UNUSED(updateRect);
 #endif
 }
 

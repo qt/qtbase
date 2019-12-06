@@ -524,6 +524,8 @@ bool QNetworkReplyHttpImplPrivate::loadFromCacheIfAllowed(QHttpNetworkRequest &h
         QHash<QByteArray, QByteArray> cacheControl = parseHttpOptionHeader(it->second);
         if (cacheControl.contains("must-revalidate"))
             return false;
+        if (cacheControl.contains("no-cache"))
+            return false;
     }
 
     QDateTime currentDateTime = QDateTime::currentDateTimeUtc();
@@ -750,8 +752,9 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
             quint64 requestStartOffset = requestRange.left(index).toULongLong();
             quint64 requestEndOffset = requestRange.mid(index + 1).toULongLong();
 
+            // In case an end offset is not given it is skipped from the request range
             requestRange = "bytes=" + QByteArray::number(resumeOffset + requestStartOffset) +
-                           '-' + QByteArray::number(requestEndOffset);
+                           '-' + (requestEndOffset ? QByteArray::number(requestEndOffset) : QByteArray());
 
             httpRequest.setHeaderField("Range", requestRange);
         } else {
@@ -1730,18 +1733,8 @@ QNetworkCacheMetaData QNetworkReplyHttpImplPrivate::fetchCacheMetaData(const QNe
     if (httpRequest.operation() == QHttpNetworkRequest::Get) {
 
         canDiskCache = true;
-        // 14.32
-        // HTTP/1.1 caches SHOULD treat "Pragma: no-cache" as if the client
-        // had sent "Cache-Control: no-cache".
-        it = cacheHeaders.findRawHeader("pragma");
-        if (it != cacheHeaders.rawHeaders.constEnd()
-            && it->second == "no-cache")
-            canDiskCache = false;
-
         // HTTP/1.1. Check the Cache-Control header
-        if (cacheControl.contains("no-cache"))
-            canDiskCache = false;
-        else if (cacheControl.contains("no-store"))
+        if (cacheControl.contains("no-store"))
             canDiskCache = false;
 
     // responses to POST might be cacheable

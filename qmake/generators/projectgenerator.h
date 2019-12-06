@@ -43,7 +43,7 @@ protected:
     void init() override;
     bool writeMakefile(QTextStream &) override;
 
-    QString escapeFilePath(const QString &path) const override { Q_ASSERT(false); return QString(); }
+    QString escapeFilePath(const QString &) const override { Q_ASSERT(false); return QString(); }
 
 public:
     ProjectGenerator();

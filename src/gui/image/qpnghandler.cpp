@@ -231,8 +231,8 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
     if (screen_gamma != 0.0 && file_gamma != 0.0)
         png_set_gamma(png_ptr, 1.0f / screen_gamma, file_gamma);
 
-    png_uint_32 width;
-    png_uint_32 height;
+    png_uint_32 width = 0;
+    png_uint_32 height = 0;
     int bit_depth = 0;
     int color_type = 0;
     png_bytep trans_alpha = 0;
@@ -240,7 +240,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
     int num_trans;
     png_colorp palette = 0;
     int num_palette;
-    int interlace_method;
+    int interlace_method = PNG_INTERLACE_LAST;
     png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_method, 0, 0);
     png_set_interlace_handling(png_ptr);
 
@@ -394,7 +394,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, QSize scal
         }
         QSize outSize(width,height);
         if (!scaledSize.isEmpty() && quint32(scaledSize.width()) <= width &&
-            quint32(scaledSize.height()) <= height && interlace_method == PNG_INTERLACE_NONE) {
+            quint32(scaledSize.height()) <= height && scaledSize != outSize && interlace_method == PNG_INTERLACE_NONE) {
             // Do inline downscaling
             outSize = scaledSize;
             if (doScaledRead)
@@ -677,7 +677,7 @@ bool QPngHandlerPrivate::readPngImage(QImage *outImage)
 QImage::Format QPngHandlerPrivate::readImageFormat()
 {
         QImage::Format format = QImage::Format_Invalid;
-        png_uint_32 width, height;
+        png_uint_32 width = 0, height = 0;
         int bit_depth = 0, color_type = 0;
         png_colorp palette;
         int num_palette;

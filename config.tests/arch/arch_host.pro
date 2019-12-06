@@ -1,2 +1,3 @@
 option(host_build)
-include(arch.pro)
+SOURCES = arch.cpp
+include(write_info.pri)

@@ -191,8 +191,8 @@ bool QNetworkCacheMetaData::isValid() const
     Some cache implementations can keep these cache items in memory for performance reasons,
     but for security reasons they should not be written to disk.
 
-    Specifically with http, documents marked with Pragma: no-cache, or have a Cache-control set to
-    no-store or no-cache or any https document that doesn't have "Cache-control: public" set will
+    Specifically with http, documents with Cache-control set to no-store or any
+    https document that doesn't have "Cache-control: public" set will
     set the saveToDisk to false.
 
     \sa setSaveToDisk()

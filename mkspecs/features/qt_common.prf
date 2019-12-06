@@ -38,6 +38,10 @@ contains(TEMPLATE, .*lib) {
         qt_libdir = $$[QT_INSTALL_LIBS]
     }
     contains(QMAKE_DEFAULT_LIBDIRS, $$qt_libdir) {
+        lib_replace0.match = $$rplbase/lib/
+        lib_replace0.replace = $$qqt_libdir/
+        lib_replace0.CONFIG = path
+        QMAKE_PRL_INSTALL_REPLACE += lib_replace0
         lib_replace.match = "[^ ']*$$rplbase/lib"
         lib_replace.replace =
     } else {
@@ -46,6 +50,12 @@ contains(TEMPLATE, .*lib) {
     }
     lib_replace.CONFIG = path
     QMAKE_PRL_INSTALL_REPLACE += lib_replace
+    !equals(qt_libdir, $$rplbase/lib) {
+        qtlibdir_replace.match = $$qt_libdir
+        qtlibdir_replace.replace = $$qqt_libdir
+        qtlibdir_replace.CONFIG = path
+        QMAKE_PRL_INSTALL_REPLACE += qtlibdir_replace
+    }
 }
 
 # The remainder of this file must not apply to host tools/libraries,

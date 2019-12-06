@@ -205,15 +205,23 @@ void tst_QFileSelector::urlConvenience_data()
 
     QString test("/test");// '/' is here so dir string can also be selector string
     QString custom1("custom1");
+    QString testWithQueryAndFragment("/test?query#Fragment");
 
     QTest::newRow("qrc") << QUrl("qrc:///extras/test") << (QStringList() << custom1)
         << QUrl(QString("qrc:///extras/") + QLatin1Char(selectorIndicator) + custom1 + test);
+    QTest::newRow("qrc with query and fragment") << QUrl(QString::fromLatin1("qrc:///extras%1").arg(testWithQueryAndFragment)) << (QStringList() << custom1)
+        << QUrl(QString("qrc:///extras/") + QLatin1Char(selectorIndicator) + custom1 + testWithQueryAndFragment);
 
     QString fileBasePath = QFINDTESTDATA("extras/test");
     QString fileSelectedPath = QFINDTESTDATA(QString("extras/") + QLatin1Char(selectorIndicator)
             + custom1 + QString("/test"));
     QTest::newRow("file") << QUrl::fromLocalFile(fileBasePath) << (QStringList() << custom1)
         << QUrl::fromLocalFile(fileSelectedPath);
+    // do not strip off the query and fragment
+    QString strUrlWithFragment = QString("file://") + testWithQueryAndFragment;
+    QTest::newRow("file with query and fragment") << QUrl(strUrlWithFragment) << (QStringList()) << QUrl(strUrlWithFragment);
+    strUrlWithFragment = QString("file:") + testWithQueryAndFragment;
+    QTest::newRow("file with query and fragment too") << QUrl(strUrlWithFragment) << (QStringList()) << QUrl(strUrlWithFragment);
 
     // http://qt-project.org/images/qtdn/sprites-combined-latest.png is chosen as a representative real world URL
     // But note that this test is checking that http urls are NOT selected so it shouldn't be checked

@@ -72,6 +72,9 @@
 #  endif
 #endif
 
+#include <qpa/qplatforminputcontextfactory_p.h>
+#include <qpa/qplatforminputcontext.h>
+
 #include "private/qgenericunixfontdatabase_p.h"
 #include "private/qgenericunixeventdispatcher_p.h"
 
@@ -152,6 +155,7 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     , m_inputContext(0)
     , m_buttonsNotifier(new QQnxButtonEventNotifier())
 #endif
+    , m_qpaInputContext(0)
     , m_services(0)
     , m_fontDatabase(new QGenericUnixFontDatabase())
     , m_eventDispatcher(createUnixEventDispatcher())
@@ -194,13 +198,17 @@ QQnxIntegration::QQnxIntegration(const QStringList &paramList)
     m_screenEventHandler->setScreenEventThread(m_screenEventThread);
     m_screenEventThread->start();
 
-#if QT_CONFIG(qqnx_pps)
-    // Create/start the keyboard class.
-    m_virtualKeyboard = new QQnxVirtualKeyboardPps();
+    m_qpaInputContext = QPlatformInputContextFactory::create();
 
-    // delay invocation of start() to the time the event loop is up and running
-    // needed to have the QThread internals of the main thread properly initialized
-    QMetaObject::invokeMethod(m_virtualKeyboard, "start", Qt::QueuedConnection);
+#if QT_CONFIG(qqnx_pps)
+    if (!m_qpaInputContext) {
+        // Create/start the keyboard class.
+        m_virtualKeyboard = new QQnxVirtualKeyboardPps();
+
+        // delay invocation of start() to the time the event loop is up and running
+        // needed to have the QThread internals of the main thread properly initialized
+        QMetaObject::invokeMethod(m_virtualKeyboard, "start", Qt::QueuedConnection);
+    }
 #endif
 
 #if QT_CONFIG(qqnx_pps)
@@ -281,6 +289,7 @@ QQnxIntegration::~QQnxIntegration()
     // Destroy input context
     delete m_inputContext;
 #endif
+    delete m_qpaInputContext;
 
     // Destroy the keyboard class.
     delete m_virtualKeyboard;
@@ -397,13 +406,13 @@ QPlatformOpenGLContext *QQnxIntegration::createPlatformOpenGLContext(QOpenGLCont
 }
 #endif
 
-#if QT_CONFIG(qqnx_pps)
 QPlatformInputContext *QQnxIntegration::inputContext() const
 {
     qIntegrationDebug();
+    if (m_qpaInputContext)
+        return m_qpaInputContext;
     return m_inputContext;
 }
-#endif
 
 void QQnxIntegration::moveToScreen(QWindow *window, int screen)
 {
@@ -640,7 +649,7 @@ void QQnxIntegration::createDisplay(screen_display_t display, bool isPrimary)
 {
     QQnxScreen *screen = new QQnxScreen(m_screenContext, display, isPrimary);
     m_screens.append(screen);
-    screenAdded(screen);
+    QWindowSystemInterface::handleScreenAdded(screen);
     screen->adjustOrientation();
 
     QObject::connect(m_screenEventHandler, SIGNAL(newWindowCreated(void*)),
@@ -660,14 +669,14 @@ void QQnxIntegration::removeDisplay(QQnxScreen *screen)
     Q_CHECK_PTR(screen);
     Q_ASSERT(m_screens.contains(screen));
     m_screens.removeAll(screen);
-    destroyScreen(screen);
+    QWindowSystemInterface::handleScreenRemoved(screen);
 }
 
 void QQnxIntegration::destroyDisplays()
 {
     qIntegrationDebug();
     Q_FOREACH (QQnxScreen *screen, m_screens) {
-        QPlatformIntegration::destroyScreen(screen);
+        QWindowSystemInterface::handleScreenRemoved(screen);
     }
     m_screens.clear();
 }

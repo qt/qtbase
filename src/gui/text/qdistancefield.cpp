@@ -899,11 +899,6 @@ QDistanceField::QDistanceField(int width, int height)
 {
 }
 
-QDistanceField::QDistanceField(const QDistanceField &other)
-{
-    d = other.d;
-}
-
 QDistanceField::QDistanceField(const QRawFont &font, glyph_t glyph, bool doubleResolution)
 {
     setGlyph(font, glyph, doubleResolution);

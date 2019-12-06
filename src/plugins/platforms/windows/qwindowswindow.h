@@ -59,24 +59,23 @@ class QDebug;
 
 struct QWindowsGeometryHint
 {
-    QWindowsGeometryHint() = default;
-    explicit QWindowsGeometryHint(const QWindow *w, const QMargins &customMargins);
-    static QMargins frame(DWORD style, DWORD exStyle);
+    static QMargins frameOnPrimaryScreen(DWORD style, DWORD exStyle);
+    static QMargins frameOnPrimaryScreen(HWND hwnd);
+    static QMargins frame(DWORD style, DWORD exStyle, qreal dpi);
+    static QMargins frame(HWND hwnd, DWORD style, DWORD exStyle);
+    static QMargins frame(const QWindow *w, const QRect &geometry,
+                          DWORD style, DWORD exStyle);
     static bool handleCalculateSize(const QMargins &customMargins, const MSG &msg, LRESULT *result);
-    void applyToMinMaxInfo(DWORD style, DWORD exStyle, MINMAXINFO *mmi) const;
-    void applyToMinMaxInfo(HWND hwnd, MINMAXINFO *mmi) const;
-    bool validSize(const QSize &s) const;
-
+    static void applyToMinMaxInfo(const QWindow *w, const QMargins &margins,
+                                  MINMAXINFO *mmi);
+    static void frameSizeConstraints(const QWindow *w, const QMargins &margins,
+                                     QSize *minimumSize, QSize *maximumSize);
     static inline QPoint mapToGlobal(HWND hwnd, const QPoint &);
     static inline QPoint mapToGlobal(const QWindow *w, const QPoint &);
     static inline QPoint mapFromGlobal(const HWND hwnd, const QPoint &);
     static inline QPoint mapFromGlobal(const QWindow *w, const QPoint &);
 
     static bool positionIncludesFrame(const QWindow *w);
-
-    QSize minimumSize;
-    QSize maximumSize;
-    QMargins customMargins;
 };
 
 struct QWindowCreationContext
@@ -85,13 +84,9 @@ struct QWindowCreationContext
                                     const QRect &geometryIn, const QRect &geometry,
                                     const QMargins &customMargins,
                                     DWORD style, DWORD exStyle);
-    void applyToMinMaxInfo(MINMAXINFO *mmi) const
-        { geometryHint.applyToMinMaxInfo(style, exStyle, mmi); }
+    void applyToMinMaxInfo(MINMAXINFO *mmi) const;
 
-    QWindowsGeometryHint geometryHint;
     const QWindow *window;
-    DWORD style;
-    DWORD exStyle;
     QRect requestedGeometryIn; // QWindow scaled
     QRect requestedGeometry; // after QPlatformWindow::initialGeometry()
     QRect obtainedGeometry;
@@ -112,6 +107,7 @@ struct QWindowsWindowData
     QMargins customMargins;    // User-defined, additional frame for NCCALCSIZE
     HWND hwnd = 0;
     bool embedded = false;
+    bool hasFrame = false;
 
     static QWindowsWindowData create(const QWindow *w,
                                      const QWindowsWindowData &parameters,
@@ -220,7 +216,8 @@ public:
         HasBorderInFullScreen = 0x200000,
         WithinDpiChanged = 0x400000,
         VulkanSurface = 0x800000,
-        ResizeMoveActive = 0x1000000
+        ResizeMoveActive = 0x1000000,
+        DisableNonClientScaling = 0x2000000
     };
 
     QWindowsWindow(QWindow *window, const QWindowsWindowData &data);
@@ -261,6 +258,7 @@ public:
     QMargins frameMargins() const override;
     QMargins fullFrameMargins() const override;
     void setFullFrameMargins(const QMargins &newMargins);
+    void updateFullFrameMargins();
 
     void setOpacity(qreal level) override;
     void setMask(const QRegion &region) override;
@@ -336,7 +334,8 @@ public:
     void alertWindow(int durationMs = 0);
     void stopAlertWindow();
 
-    void checkForScreenChanged();
+    enum ScreenChangeMode { FromGeometryChange, FromDpiChange };
+    void checkForScreenChanged(ScreenChangeMode mode = FromGeometryChange);
 
     static void setTouchWindowTouchTypeStatic(QWindow *window, QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes);
     void registerTouchWindow(QWindowsWindowFunctions::TouchWindowTouchTypes touchTypes = QWindowsWindowFunctions::NormalTouch);

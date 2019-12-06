@@ -27,7 +27,7 @@ QOBJS = \
 	qjsonarray.o qjson.o qjsondocument.o qjsonobject.o qjsonparser.o qjsonvalue.o \
 	qmetatype.o qsystemerror.o qvariant.o \
 	quuid.o \
-	qarraydata.o qbitarray.o qbytearray.o qbytearraymatcher.o \
+	qarraydata.o qbitarray.o qbytearray.o qbytearraylist.o qbytearraymatcher.o \
 	qcryptographichash.o qdatetime.o qhash.o qlinkedlist.o qlist.o \
 	qlocale.o qlocale_tools.o qmap.o qregexp.o qringbuffer.o \
 	qstringbuilder.o qstring_compat.o qstring.o qstringlist.o qversionnumber.o \
@@ -108,6 +108,7 @@ DEPEND_SRC = \
 	   $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp\
+	   $(SOURCE_PATH)/src/corelib/tools/qbytearraylist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qbytearraymatcher.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qdatetime.cpp \
@@ -305,6 +306,9 @@ qarraydata.o: $(SOURCE_PATH)/src/corelib/tools/qarraydata.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qbytearray.o: $(SOURCE_PATH)/src/corelib/tools/qbytearray.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $<
+
+qbytearraylist.o: $(SOURCE_PATH)/src/corelib/tools/qbytearraylist.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 
 qvsnprintf.o: $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp

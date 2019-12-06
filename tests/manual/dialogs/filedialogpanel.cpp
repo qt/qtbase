@@ -505,8 +505,15 @@ void FileDialogPanel::accepted()
     Q_ASSERT(d);
     m_result.clear();
     QDebug(&m_result).nospace()
+#if QT_VERSION >= 0x050000
+        << "URLs: " << d->selectedUrls() << '\n'
+#endif
         << "Files: " << d->selectedFiles()
-        << "\nDirectory: " << d->directory().absolutePath()
+        << "\nDirectory: "
+#if QT_VERSION >= 0x050000
+        << d->directoryUrl() << ", "
+#endif
+        << d->directory().absolutePath()
         << "\nName filter: " << d->selectedNameFilter();
     QTimer::singleShot(0, this, SLOT(showAcceptedResult())); // Avoid problems with the closing (modal) dialog as parent.
 }

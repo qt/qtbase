@@ -41,6 +41,7 @@
 
 #include <QtCore/qurl.h>
 #include <QtCore/qmimedata.h>
+#include "qwindowsmime.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -48,8 +49,9 @@ QT_BEGIN_NAMESPACE
     \class QWindowsDropDataObject
     \brief QWindowsOleDataObject subclass specialized for handling Drag&Drop.
 
-   Only allows "text/uri-list" data to be exported as CF_HDROP, to allow dropped
-   files to be attached to Office applications (instead of adding an URL link).
+    Prevents "text/uri-list" data for local files from being exported as text
+    or URLs, to allow dropped files to be attached to Office applications
+    (instead of creating local hyperlinks).
 
     \internal
     \ingroup qt-lighthouse-win
@@ -80,14 +82,22 @@ QWindowsDropDataObject::QueryGetData(LPFORMATETC pformatetc)
     return QWindowsOleDataObject::QueryGetData(pformatetc);
 }
 
-// If the data is text/uri-list for local files, tell we can only export it as CF_HDROP.
+// If the data is "text/uri-list" only, and all URIs are for local files,
+// we prevent it from being exported as text or URLs, to make target applications
+// like MS Office attach or open the files instead of creating local hyperlinks.
 bool QWindowsDropDataObject::shouldIgnore(LPFORMATETC pformatetc) const
 {
     QMimeData *dropData = mimeData();
 
-    if (dropData && dropData->hasFormat(QStringLiteral("text/uri-list")) && (pformatetc->cfFormat != CF_HDROP)) {
-        QList<QUrl> urls = dropData->urls();
-        return std::any_of(urls.cbegin(), urls.cend(), [] (const QUrl &u) { return u.isLocalFile(); });
+    if (dropData && dropData->formats().size() == 1 && dropData->hasUrls()) {
+        QString formatName = QWindowsMimeConverter::clipboardFormatName(pformatetc->cfFormat);
+        if (pformatetc->cfFormat == CF_UNICODETEXT
+                || pformatetc->cfFormat == CF_TEXT
+                || formatName == QStringLiteral("UniformResourceLocator")
+                || formatName == QStringLiteral("UniformResourceLocatorW")) {
+            QList<QUrl> urls = dropData->urls();
+            return std::all_of(urls.cbegin(), urls.cend(), [] (const QUrl &u) { return u.isLocalFile(); });
+        }
     }
 
     return false;

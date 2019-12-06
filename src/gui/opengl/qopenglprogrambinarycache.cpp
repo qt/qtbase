@@ -40,6 +40,7 @@
 #include "qopenglprogrambinarycache_p.h"
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
+#include <QSysInfo>
 #include <QStandardPaths>
 #include <QDir>
 #include <QSaveFile>
@@ -102,7 +103,7 @@ static inline bool qt_ensureWritableDir(const QString &name)
 QOpenGLProgramBinaryCache::QOpenGLProgramBinaryCache()
     : m_cacheWritable(false)
 {
-    const QString subPath = QLatin1String("/qtshadercache/");
+    const QString subPath = QLatin1String("/qtshadercache-") + QSysInfo::buildAbi() + QLatin1Char('/');
     const QString sharedCachePath = QStandardPaths::writableLocation(QStandardPaths::GenericCacheLocation);
     if (!sharedCachePath.isEmpty()) {
         m_cacheDir = sharedCachePath + subPath;
@@ -168,12 +169,19 @@ bool QOpenGLProgramBinaryCache::verifyHeader(const QByteArray &buf) const
 
 bool QOpenGLProgramBinaryCache::setProgramBinary(uint programId, uint blobFormat, const void *p, uint blobSize)
 {
-    QOpenGLExtraFunctions *funcs = QOpenGLContext::currentContext()->extraFunctions();
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+    QOpenGLExtraFunctions *funcs = context->extraFunctions();
     while (true) {
         GLenum error = funcs->glGetError();
         if (error == GL_NO_ERROR || error == GL_CONTEXT_LOST)
             break;
     }
+#if defined(QT_OPENGL_ES_2)
+    if (context->isOpenGLES() && context->format().majorVersion() < 3) {
+        initializeProgramBinaryOES(context);
+        programBinaryOES(programId, blobFormat, p, blobSize);
+    } else
+#endif
     funcs->glProgramBinary(programId, blobFormat, p, blobSize);
 
     GLenum err = funcs->glGetError();
@@ -255,10 +263,9 @@ public:
 
 bool QOpenGLProgramBinaryCache::load(const QByteArray &cacheKey, uint programId)
 {
-    if (m_memCache.contains(cacheKey)) {
-        const MemCacheEntry *e = m_memCache[cacheKey];
+    QMutexLocker lock(&m_mutex);
+    if (const MemCacheEntry *e = m_memCache.object(cacheKey))
         return setProgramBinary(programId, e->format, e->blob.constData(), e->blob.size());
-    }
 
     QByteArray buf;
     const QString fn = cacheFileName(cacheKey);
@@ -347,7 +354,8 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
 
     GLEnvInfo info;
 
-    QOpenGLExtraFunctions *funcs = QOpenGLContext::currentContext()->extraFunctions();
+    QOpenGLContext *context = QOpenGLContext::currentContext();
+    QOpenGLExtraFunctions *funcs = context->extraFunctions();
     GLint blobSize = 0;
     while (true) {
         GLenum error = funcs->glGetError();
@@ -390,6 +398,13 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
         *p++ = 0;
 
     GLint outSize = 0;
+#if defined(QT_OPENGL_ES_2)
+    if (context->isOpenGLES() && context->format().majorVersion() < 3) {
+        QMutexLocker lock(&m_mutex);
+        initializeProgramBinaryOES(context);
+        getProgramBinaryOES(programId, blobSize, &outSize, &blobFormat, p);
+    } else
+#endif
     funcs->glGetProgramBinary(programId, blobSize, &outSize, &blobFormat, p);
     if (blobSize != outSize) {
         qCDebug(DBG_SHADER_CACHE, "glGetProgramBinary returned size %d instead of %d", outSize, blobSize);
@@ -407,5 +422,18 @@ void QOpenGLProgramBinaryCache::save(const QByteArray &cacheKey, uint programId)
         qCDebug(DBG_SHADER_CACHE, "Failed to create %s in shader cache", qPrintable(f.fileName()));
     }
 }
+
+#if defined(QT_OPENGL_ES_2)
+void QOpenGLProgramBinaryCache::initializeProgramBinaryOES(QOpenGLContext *context)
+{
+    if (m_programBinaryOESInitialized)
+        return;
+    m_programBinaryOESInitialized = true;
+
+    Q_ASSERT(context);
+    getProgramBinaryOES = (void (QOPENGLF_APIENTRYP)(GLuint program, GLsizei bufSize, GLsizei *length, GLenum *binaryFormat, GLvoid *binary))context->getProcAddress("glGetProgramBinaryOES");
+    programBinaryOES = (void (QOPENGLF_APIENTRYP)(GLuint program, GLenum binaryFormat, const GLvoid *binary, GLint length))context->getProcAddress("glProgramBinaryOES");
+}
+#endif
 
 QT_END_NAMESPACE

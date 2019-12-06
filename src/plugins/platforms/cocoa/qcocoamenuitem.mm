@@ -140,6 +140,12 @@ void QCocoaMenuItem::setMenu(QPlatformMenu *menu)
     if (menu == m_menu)
         return;
 
+    bool setAttached = false;
+    if ([m_native.menu isKindOfClass:[QCocoaNSMenu class]]) {
+        auto parentMenu = static_cast<QCocoaNSMenu *>(m_native.menu);
+        setAttached = parentMenu.platformMenu && parentMenu.platformMenu->isAboutToShow();
+    }
+
     if (m_menu && m_menu->menuParent() == this) {
         m_menu->setMenuParent(nullptr);
         // Free the menu from its parent's influence
@@ -153,6 +159,8 @@ void QCocoaMenuItem::setMenu(QPlatformMenu *menu)
     if (m_menu) {
         m_menu->setMenuParent(this);
         m_menu->propagateEnabledState(isEnabled());
+        if (setAttached)
+            m_menu->setAttachedItem(m_native);
     } else {
         // we previously had a menu, but no longer
         // clear out our item so the nexy sync() call builds a new one

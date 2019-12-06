@@ -1991,6 +1991,23 @@ inline void fetchTransformed_pixelBounds(int max, int l1, int l2, int &v)
     }
 }
 
+static inline bool canUseFastMatrixPath(const qreal cx, const qreal cy, const qsizetype length, const QSpanData *data)
+{
+    if (Q_UNLIKELY(!data->fast_matrix))
+        return false;
+
+    qreal fx = (data->m21 * cy + data->m11 * cx + data->dx) * fixed_scale;
+    qreal fy = (data->m22 * cy + data->m12 * cx + data->dy) * fixed_scale;
+    qreal minc = std::min(fx, fy);
+    qreal maxc = std::max(fx, fy);
+    fx += std::trunc(data->m11 * fixed_scale) * length;
+    fy += std::trunc(data->m12 * fixed_scale) * length;
+    minc = std::min(minc, std::min(fx, fy));
+    maxc = std::max(maxc, std::max(fx, fy));
+
+    return minc >= std::numeric_limits<int>::min() && maxc <= std::numeric_limits<int>::max();
+}
+
 template<TextureBlendType blendType, QPixelLayout::BPP bpp, typename T>
 static void QT_FASTCALL fetchTransformed_fetcher(T *buffer, const QSpanData *data,
                                                  int y, int x, int length)
@@ -2008,7 +2025,7 @@ static void QT_FASTCALL fetchTransformed_fetcher(T *buffer, const QSpanData *dat
     // When templated 'fetch' should be inlined at compile time:
     const FetchPixelFunc fetch = (bpp == QPixelLayout::BPPNone) ? qFetchPixel[layout->bpp] : FetchPixelFunc(fetchPixel<bpp>);
 
-    if (data->fast_matrix) {
+    if (canUseFastMatrixPath(cx, cy, length, data)) {
         // The increment pr x in the scanline
         int fdx = (int)(data->m11 * fixed_scale);
         int fdy = (int)(data->m12 * fixed_scale);
@@ -2962,7 +2979,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinearARGB32PM(uint *buffer, c
 
     uint *end = buffer + length;
     uint *b = buffer;
-    if (data->fast_matrix) {
+    if (canUseFastMatrixPath(cx, cy, length, data)) {
         // The increment pr x in the scanline
         int fdx = (int)(data->m11 * fixed_scale);
         int fdy = (int)(data->m12 * fixed_scale);
@@ -3319,7 +3336,7 @@ static const uint *QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Oper
     const qreal cx = x + qreal(0.5);
     const qreal cy = y + qreal(0.5);
 
-    if (data->fast_matrix) {
+    if (canUseFastMatrixPath(cx, cy, length, data)) {
         // The increment pr x in the scanline
         int fdx = (int)(data->m11 * fixed_scale);
         int fdy = (int)(data->m12 * fixed_scale);
@@ -3505,7 +3522,7 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64_uint32(QRgba64 *buf
     QRgba64 *end = buffer + length;
     QRgba64 *b = buffer;
 
-    if (data->fast_matrix) {
+    if (canUseFastMatrixPath(cx, cy, length, data)) {
         // The increment pr x in the scanline
         const int fdx = (int)(data->m11 * fixed_scale);
         const int fdy = (int)(data->m12 * fixed_scale);
@@ -3663,7 +3680,7 @@ static const QRgba64 *QT_FASTCALL fetchTransformedBilinear64_uint64(QRgba64 *buf
     QRgba64 *end = buffer + length;
     QRgba64 *b = buffer;
 
-    if (data->fast_matrix) {
+    if (canUseFastMatrixPath(cx, cy, length, data)) {
         // The increment pr x in the scanline
         const int fdx = (int)(data->m11 * fixed_scale);
         const int fdy = (int)(data->m12 * fixed_scale);
@@ -4419,7 +4436,9 @@ static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
     if (mode == QPainter::CompositionMode_Source) {
         // inline for performance
         ushort c = data->solid.color.toRgb16();
-        while (count--) {
+        for (; count--; spans++) {
+            if (!spans->len)
+                continue;
             ushort *target = ((ushort *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
             if (spans->coverage == 255) {
                 QT_MEMFILL_USHORT(target, spans->len, c);
@@ -4432,13 +4451,14 @@ static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
                     ++target;
                 }
             }
-            ++spans;
         }
         return;
     }
 
     if (mode == QPainter::CompositionMode_SourceOver) {
-        while (count--) {
+        for (; count--; spans++) {
+            if (!spans->len)
+                continue;
             uint color = BYTE_MUL(data->solid.color.toArgb32(), spans->coverage);
             int ialpha = qAlpha(~color);
             ushort c = qConvertRgb32To16(color);
@@ -4470,7 +4490,6 @@ static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
                 // one last pixel beyond a full word
                 *target = c + BYTE_MUL_RGB16(*target, ialpha);
             }
-            ++spans;
         }
         return;
     }
@@ -4487,6 +4506,11 @@ void handleSpans(int count, const QSpan *spans, const QSpanData *data, T &handle
 
     int coverage = 0;
     while (count) {
+        if (!spans->len) {
+            ++spans;
+            --count;
+            continue;
+        }
         int x = spans->x;
         const int y = spans->y;
         int right = x + spans->len;
@@ -4639,7 +4663,9 @@ static void blend_untransformed_generic(int count, const QSpan *spans, void *use
     int xoff = -qRound(-data->dx);
     int yoff = -qRound(-data->dy);
 
-    while (count--) {
+    for (; count--; spans++) {
+        if (!spans->len)
+            continue;
         int x = spans->x;
         int length = spans->len;
         int sx = xoff + x;
@@ -4667,7 +4693,6 @@ static void blend_untransformed_generic(int count, const QSpan *spans, void *use
                 }
             }
         }
-        ++spans;
     }
 }
 
@@ -4688,7 +4713,9 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
     int xoff = -qRound(-data->dx);
     int yoff = -qRound(-data->dy);
 
-    while (count--) {
+    for (; count--; spans++) {
+        if (!spans->len)
+            continue;
         int x = spans->x;
         int length = spans->len;
         int sx = xoff + x;
@@ -4716,7 +4743,6 @@ static void blend_untransformed_generic_rgb64(int count, const QSpan *spans, voi
                 }
             }
         }
-        ++spans;
     }
 }
 
@@ -4736,7 +4762,9 @@ static void blend_untransformed_argb(int count, const QSpan *spans, void *userDa
     int xoff = -qRound(-data->dx);
     int yoff = -qRound(-data->dy);
 
-    while (count--) {
+    for (; count--; spans++) {
+        if (!spans->len)
+            continue;
         int x = spans->x;
         int length = spans->len;
         int sx = xoff + x;
@@ -4756,7 +4784,6 @@ static void blend_untransformed_argb(int count, const QSpan *spans, void *userDa
                 op.func(dest, src, length, coverage);
             }
         }
-        ++spans;
     }
 }
 
@@ -4829,7 +4856,12 @@ static void blend_untransformed_rgb565(int count, const QSpan *spans, void *user
     int xoff = -qRound(-data->dx);
     int yoff = -qRound(-data->dy);
 
-    while (count--) {
+    const QSpan *end = spans + count;
+    while (spans < end) {
+        if (!spans->len) {
+            ++spans;
+            continue;
+        }
         const quint8 coverage = (data->texture.const_alpha * spans->coverage) >> 8;
         if (coverage == 0) {
             ++spans;
@@ -6246,7 +6278,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
 
 #if defined(Q_CC_MSVC) && !defined(_MIPS_)
 template <class T>
-inline void qt_memfill_template(T *dest, T color, int count)
+inline void qt_memfill_template(T *dest, T color, qsizetype count)
 {
     while (count--)
         *dest++ = color;
@@ -6255,9 +6287,12 @@ inline void qt_memfill_template(T *dest, T color, int count)
 #else
 
 template <class T>
-inline void qt_memfill_template(T *dest, T color, int count)
+inline void qt_memfill_template(T *dest, T color, qsizetype count)
 {
-    int n = (count + 7) / 8;
+    if (!count)
+        return;
+
+    qsizetype n = (count + 7) / 8;
     switch (count & 0x07)
     {
     case 0: do { *dest++ = color; Q_FALLTHROUGH();
@@ -6273,7 +6308,7 @@ inline void qt_memfill_template(T *dest, T color, int count)
 }
 
 template <>
-inline void qt_memfill_template(quint16 *dest, quint16 value, int count)
+inline void qt_memfill_template(quint16 *dest, quint16 value, qsizetype count)
 {
     if (count < 3) {
         switch (count) {
@@ -6295,19 +6330,19 @@ inline void qt_memfill_template(quint16 *dest, quint16 value, int count)
 }
 #endif
 
-void qt_memfill64(quint64 *dest, quint64 color, int count)
+void qt_memfill64(quint64 *dest, quint64 color, qsizetype count)
 {
     qt_memfill_template<quint64>(dest, color, count);
 }
 
 #if !defined(__SSE2__)
-void qt_memfill16(quint16 *dest, quint16 color, int count)
+void qt_memfill16(quint16 *dest, quint16 color, qsizetype count)
 {
     qt_memfill_template<quint16>(dest, color, count);
 }
 #endif
 #if !defined(__SSE2__) && !defined(__ARM_NEON__) && !defined(__MIPS_DSP__)
-void qt_memfill32(quint32 *dest, quint32 color, int count)
+void qt_memfill32(quint32 *dest, quint32 color, qsizetype count)
 {
     qt_memfill_template<quint32>(dest, color, count);
 }

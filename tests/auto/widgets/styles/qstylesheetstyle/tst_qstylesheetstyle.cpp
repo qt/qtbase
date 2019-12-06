@@ -48,6 +48,7 @@ public:
 private slots:
     void init();
     void repolish();
+    void repolish_without_crashing();
     void numinstances();
     void widgetsBeforeAppStyleSheet();
     void widgetsAfterAppStyleSheet();
@@ -365,6 +366,26 @@ void tst_QStyleSheetStyle::repolish()
     p1.setStyleSheet("");
     QCOMPARE(COLOR(p1), APPCOLOR(p1));
     QCOMPARE(BACKGROUND(p1), APPBACKGROUND(p1));
+}
+
+void tst_QStyleSheetStyle::repolish_without_crashing()
+{
+    // This used to crash, QTBUG-69204
+    QMainWindow w;
+    QScopedPointer<QSplitter> splitter1(new QSplitter(w.centralWidget()));
+    QScopedPointer<QSplitter> splitter2(new QSplitter);
+    QScopedPointer<QSplitter> splitter3(new QSplitter);
+    splitter2->addWidget(splitter3.data());
+
+    splitter2->setStyleSheet("color: red");
+    QScopedPointer<QLabel> label(new QLabel);
+    label->setTextFormat(Qt::RichText);
+    splitter3->addWidget(label.data());
+    label->setText("hey");
+
+    splitter1->addWidget(splitter2.data());
+    w.show();
+    QCOMPARE(COLOR(*label), QColor(Qt::red));
 }
 
 void tst_QStyleSheetStyle::widgetStyle()

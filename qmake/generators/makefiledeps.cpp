@@ -815,7 +815,7 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                         break;
                     }
                     cpp_state = InCode;
-                    // ... and fall through to handle buffer[x] as such.
+                    Q_FALLTHROUGH(); // to handle buffer[x] as such.
                 case InCode:
                     // matching quotes (string literals and character literals)
                     if (buffer[x] == '\'' || buffer[x] == '"') {
@@ -837,7 +837,9 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
         if(inc) {
             if(!includes)
                 includes = new SourceFiles;
-            SourceFile *dep = includes->lookupFile(inc);
+            /* QTBUG-72383: Local includes "foo.h" must first be resolved relative to the
+             * sourceDir, only global includes <bar.h> are unique. */
+            SourceFile *dep = try_local ? nullptr : includes->lookupFile(inc);
             if(!dep) {
                 bool exists = false;
                 QMakeLocalFileName lfn(inc);
@@ -876,7 +878,11 @@ bool QMakeSourceFileInfo::findDeps(SourceFile *file)
                         dep->file = lfn;
                         dep->type = QMakeSourceFileInfo::TYPE_C;
                         files->addFile(dep);
-                        includes->addFile(dep, inc, false);
+                        /* QTBUG-72383: Local includes "foo.h" are keyed by the resolved
+                         * path (stored in dep itself), only global includes <bar.h> are
+                         * unique keys immediately. */
+                        const char *key = try_local ? nullptr : inc;
+                        includes->addFile(dep, key, false);
                     }
                     dep->exists = exists;
                 }

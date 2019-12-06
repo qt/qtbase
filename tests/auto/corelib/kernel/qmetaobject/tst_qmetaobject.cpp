@@ -40,6 +40,13 @@ struct MyStruct
     int i;
 };
 
+class MyGadget
+{
+    Q_GADGET
+public:
+    Q_INVOKABLE MyGadget() {}
+};
+
 namespace MyNamespace {
     // Used in tst_QMetaObject::checkScope
     class MyClass : public QObject
@@ -808,6 +815,15 @@ void tst_QMetaObject::invokePointer()
         QCOMPARE(obj.slotResult, QString("sl1:bubu"));
     }
     QCOMPARE(countedStructObjectsCount, 0);
+#ifdef __cpp_init_captures
+    {
+        CountedStruct str;
+        std::unique_ptr<int> ptr( new int );
+        QVERIFY(QMetaObject::invokeMethod(&obj, [str, &t1, &obj, p = std::move(ptr)]() { obj.sl1(t1); }));
+        QCOMPARE(obj.slotResult, QString("sl1:1"));
+    }
+    QCOMPARE(countedStructObjectsCount, 0);
+#endif
 }
 
 void tst_QMetaObject::invokeQueuedMetaMember()
@@ -1113,6 +1129,15 @@ void tst_QMetaObject::invokeBlockingQueuedPointer()
         QCOMPARE(exp, QString("yessir"));
         QCOMPARE(obj.slotResult, QString("sl1:bubu"));
     }
+#ifdef __cpp_init_captures
+    {
+        std::unique_ptr<int> ptr(new int);
+        QVERIFY(QMetaObject::invokeMethod(&obj,
+                                          [&obj, p = std::move(ptr)]() { return obj.sl1("hehe"); },
+                                          Qt::BlockingQueuedConnection));
+        QCOMPARE(obj.slotResult, QString("sl1:hehe"));
+    }
+#endif
     QVERIFY(QMetaObject::invokeMethod(&obj, [&](){obj.moveToThread(QThread::currentThread());}, Qt::BlockingQueuedConnection));
     t.quit();
     QVERIFY(t.wait());
@@ -1206,6 +1231,12 @@ void tst_QMetaObject::invokeMetaConstructor()
         QVERIFY(obj2 != 0);
         QCOMPARE(obj2->parent(), (QObject*)&obj);
         QVERIFY(qobject_cast<NamespaceWithConstructibleClass::ConstructibleClass*>(obj2) != 0);
+    }
+    // gadget shouldn't return a valid pointer
+    {
+        QCOMPARE(MyGadget::staticMetaObject.constructorCount(), 1);
+        QTest::ignoreMessage(QtWarningMsg, "QMetaObject::newInstance: type MyGadget does not inherit QObject");
+        QVERIFY(!MyGadget::staticMetaObject.newInstance());
     }
 }
 

@@ -274,7 +274,7 @@ QLibraryInfo::licensedProducts()
 QDate
 QLibraryInfo::buildDate()
 {
-    return QDate::fromString(QString::fromLatin1(qt_configure_installation + 12), Qt::ISODate);
+    return QDate::fromString(QString::fromLatin1("2012-12-20"), Qt::ISODate);
 }
 #endif
 #endif // datestring
@@ -322,8 +322,10 @@ QLibraryInfo::buildDate()
 #elif defined(Q_CC_MSVC)
 #  if _MSC_VER < 1910
 #    define COMPILER_STRING "MSVC 2015"
-#  elif _MSC_VER < 2000
+#  elif _MSC_VER < 1917
 #    define COMPILER_STRING "MSVC 2017"
+#  elif _MSC_VER < 2000
+#    define COMPILER_STRING "MSVC 2019"
 #  else
 #    define COMPILER_STRING "MSVC _MSC_VER " QT_STRINGIFY(_MSC_VER)
 #  endif
@@ -432,7 +434,24 @@ void QLibraryInfo::reload()
 {
     QLibraryInfoPrivate::reload();
 }
-#endif
+
+void QLibraryInfo::sysrootify(QString *path)
+{
+    if (!QVariant::fromValue(rawLocation(SysrootifyPrefixPath, FinalPaths)).toBool())
+        return;
+
+    const QString sysroot = rawLocation(SysrootPath, FinalPaths);
+    if (sysroot.isEmpty())
+        return;
+
+    if (path->length() > 2 && path->at(1) == QLatin1Char(':')
+        && (path->at(2) == QLatin1Char('/') || path->at(2) == QLatin1Char('\\'))) {
+        path->replace(0, 2, sysroot); // Strip out the drive on Windows targets
+    } else {
+        path->prepend(sysroot);
+    }
+}
+#endif // QT_BUILD_QMAKE
 
 /*!
   Returns the location specified by \a loc.
@@ -444,18 +463,8 @@ QLibraryInfo::location(LibraryLocation loc)
     QString ret = rawLocation(loc, FinalPaths);
 
     // Automatically prepend the sysroot to target paths
-    if (loc < SysrootPath || loc > LastHostPath) {
-        QString sysroot = rawLocation(SysrootPath, FinalPaths);
-        if (!sysroot.isEmpty()
-                && QVariant::fromValue(rawLocation(SysrootifyPrefixPath, FinalPaths)).toBool()) {
-            if (ret.length() > 2 && ret.at(1) == QLatin1Char(':')
-                   && (ret.at(2) == QLatin1Char('/') || ret.at(2) == QLatin1Char('\\'))) {
-                ret.replace(0, 2, sysroot); // Strip out the drive on Windows targets
-            } else {
-                ret.prepend(sysroot);
-            }
-        }
-    }
+    if (loc < SysrootPath || loc > LastHostPath)
+        sysrootify(&ret);
 
     return ret;
 }
@@ -598,6 +607,8 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
         } else {
             // we make any other path absolute to the prefix directory
             baseDir = rawLocation(PrefixPath, group);
+            if (group == EffectivePaths)
+                sysrootify(&baseDir);
         }
 #else
         if (loc == PrefixPath) {

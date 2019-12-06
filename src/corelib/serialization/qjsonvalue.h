@@ -173,9 +173,9 @@ class Q_CORE_EXPORT QJsonValueRef
 {
 public:
     QJsonValueRef(QJsonArray *array, int idx)
-        : a(array), is_object(false), index(idx) {}
+        : a(array), is_object(false), index(static_cast<uint>(idx)) {}
     QJsonValueRef(QJsonObject *object, int idx)
-        : o(object), is_object(true), index(idx) {}
+        : o(object), is_object(true), index(static_cast<uint>(idx)) {}
 
     inline operator QJsonValue() const { return toValue(); }
     QJsonValueRef &operator = (const QJsonValue &val);

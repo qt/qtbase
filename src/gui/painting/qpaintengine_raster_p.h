@@ -448,7 +448,7 @@ public:
 
     void resetBuffer(int val=0);
 
-    uchar *scanLine(int y) { Q_ASSERT(y>=0); Q_ASSERT(y<m_height); return m_buffer + y * bytes_per_line; }
+    uchar *scanLine(int y) { Q_ASSERT(y>=0); Q_ASSERT(y<m_height); return m_buffer + y * qsizetype(bytes_per_line); }
 
 #ifndef QT_NO_DEBUG
     QImage bufferImage() const;

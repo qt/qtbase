@@ -84,7 +84,7 @@ void QShaderNodesLoader::load()
         return;
 
     auto error = QJsonParseError();
-    const auto document = QJsonDocument::fromJson(m_device->readAll(), &error);
+    const QJsonDocument document = QJsonDocument::fromJson(m_device->readAll(), &error);
 
     if (error.error != QJsonParseError::NoError) {
         qWarning() << "Invalid JSON document:" << error.errorString();
@@ -98,7 +98,7 @@ void QShaderNodesLoader::load()
         return;
     }
 
-    const auto root = document.object();
+    const QJsonObject root = document.object();
     load(root);
 }
 
@@ -106,22 +106,22 @@ void QShaderNodesLoader::load(const QJsonObject &prototypesObject)
 {
     bool hasError = false;
 
-    for (const auto &property : prototypesObject.keys()) {
-        const auto nodeValue = prototypesObject.value(property);
+    for (const QString &property : prototypesObject.keys()) {
+        const QJsonValue nodeValue = prototypesObject.value(property);
         if (!nodeValue.isObject()) {
             qWarning() << "Invalid node found";
             hasError = true;
             break;
         }
 
-        const auto nodeObject = nodeValue.toObject();
+        const QJsonObject nodeObject = nodeValue.toObject();
 
         auto node = QShaderNode();
 
-        const auto inputsValue = nodeObject.value(QStringLiteral("inputs"));
+        const QJsonValue inputsValue = nodeObject.value(QStringLiteral("inputs"));
         if (inputsValue.isArray()) {
-            const auto inputsArray = inputsValue.toArray();
-            for (const auto &inputValue : inputsArray) {
+            const QJsonArray inputsArray = inputsValue.toArray();
+            for (const QJsonValue &inputValue : inputsArray) {
                 if (!inputValue.isString()) {
                     qWarning() << "Non-string value in inputs";
                     hasError = true;
@@ -135,10 +135,10 @@ void QShaderNodesLoader::load(const QJsonObject &prototypesObject)
             }
         }
 
-        const auto outputsValue = nodeObject.value(QStringLiteral("outputs"));
+        const QJsonValue outputsValue = nodeObject.value(QStringLiteral("outputs"));
         if (outputsValue.isArray()) {
-            const auto outputsArray = outputsValue.toArray();
-            for (const auto &outputValue : outputsArray) {
+            const QJsonArray outputsArray = outputsValue.toArray();
+            for (const QJsonValue &outputValue : outputsArray) {
                 if (!outputValue.isString()) {
                     qWarning() << "Non-string value in outputs";
                     hasError = true;
@@ -152,25 +152,25 @@ void QShaderNodesLoader::load(const QJsonObject &prototypesObject)
             }
         }
 
-        const auto parametersValue = nodeObject.value(QStringLiteral("parameters"));
+        const QJsonValue parametersValue = nodeObject.value(QStringLiteral("parameters"));
         if (parametersValue.isObject()) {
-            const auto parametersObject = parametersValue.toObject();
-            for (const auto &parameterName : parametersObject.keys()) {
-                const auto parameterValue = parametersObject.value(parameterName);
+            const QJsonObject parametersObject = parametersValue.toObject();
+            for (const QString &parameterName : parametersObject.keys()) {
+                const QJsonValue parameterValue = parametersObject.value(parameterName);
                 if (parameterValue.isObject()) {
-                    const auto parameterObject = parameterValue.toObject();
-                    const auto type = parameterObject.value(QStringLiteral("type")).toString();
-                    const auto typeId = QMetaType::type(type.toUtf8());
+                    const QJsonObject parameterObject = parameterValue.toObject();
+                    const QString type = parameterObject.value(QStringLiteral("type")).toString();
+                    const int typeId = QMetaType::type(type.toUtf8());
 
-                    const auto value = parameterObject.value(QStringLiteral("value")).toString();
+                    const QString value = parameterObject.value(QStringLiteral("value")).toString();
                     auto variant = QVariant(value);
 
                     if (QMetaType::typeFlags(typeId) & QMetaType::IsEnumeration) {
-                        const auto metaObject = QMetaType::metaObjectForType(typeId);
-                        const auto className = metaObject->className();
-                        const auto enumName = type.mid(static_cast<int>(qstrlen(className)) + 2).toUtf8();
-                        const auto metaEnum = metaObject->enumerator(metaObject->indexOfEnumerator(enumName));
-                        const auto enumValue = metaEnum.keyToValue(value.toUtf8());
+                        const QMetaObject *metaObject = QMetaType::metaObjectForType(typeId);
+                        const char *className = metaObject->className();
+                        const QByteArray enumName = type.mid(static_cast<int>(qstrlen(className)) + 2).toUtf8();
+                        const QMetaEnum metaEnum = metaObject->enumerator(metaObject->indexOfEnumerator(enumName));
+                        const int enumValue = metaEnum.keyToValue(value.toUtf8());
                         variant = QVariant(enumValue);
                         variant.convert(typeId);
                     } else {
@@ -183,36 +183,36 @@ void QShaderNodesLoader::load(const QJsonObject &prototypesObject)
             }
         }
 
-        const auto rulesValue = nodeObject.value(QStringLiteral("rules"));
+        const QJsonValue rulesValue = nodeObject.value(QStringLiteral("rules"));
         if (rulesValue.isArray()) {
-            const auto rulesArray = rulesValue.toArray();
-            for (const auto &ruleValue : rulesArray) {
+            const QJsonArray rulesArray = rulesValue.toArray();
+            for (const QJsonValue &ruleValue : rulesArray) {
                 if (!ruleValue.isObject()) {
                     qWarning() << "Rules should be objects";
                     hasError = true;
                     break;
                 }
 
-                const auto ruleObject = ruleValue.toObject();
+                const QJsonObject ruleObject = ruleValue.toObject();
 
-                const auto formatValue = ruleObject.value(QStringLiteral("format"));
+                const QJsonValue formatValue = ruleObject.value(QStringLiteral("format"));
                 if (!formatValue.isObject()) {
                     qWarning() << "Format is mandatory in rules and should be an object";
                     hasError = true;
                     break;
                 }
 
-                const auto formatObject = formatValue.toObject();
+                const QJsonObject formatObject = formatValue.toObject();
                 auto format = QShaderFormat();
 
-                const auto apiValue = formatObject.value(QStringLiteral("api"));
+                const QJsonValue apiValue = formatObject.value(QStringLiteral("api"));
                 if (!apiValue.isString()) {
                     qWarning() << "Format API must be a string";
                     hasError = true;
                     break;
                 }
 
-                const auto api = apiValue.toString();
+                const QString api = apiValue.toString();
                 format.setApi(api == QStringLiteral("OpenGLES") ? QShaderFormat::OpenGLES
                             : api == QStringLiteral("OpenGLNoProfile") ? QShaderFormat::OpenGLNoProfile
                             : api == QStringLiteral("OpenGLCoreProfile") ? QShaderFormat::OpenGLCoreProfile
@@ -224,8 +224,8 @@ void QShaderNodesLoader::load(const QJsonObject &prototypesObject)
                     break;
                 }
 
-                const auto majorValue = formatObject.value(QStringLiteral("major"));
-                const auto minorValue = formatObject.value(QStringLiteral("minor"));
+                const QJsonValue majorValue = formatObject.value(QStringLiteral("major"));
+                const QJsonValue minorValue = formatObject.value(QStringLiteral("minor"));
                 if (!majorValue.isDouble() || !minorValue.isDouble()) {
                     qWarning() << "Format major and minor version must be values";
                     hasError = true;
@@ -233,28 +233,39 @@ void QShaderNodesLoader::load(const QJsonObject &prototypesObject)
                 }
                 format.setVersion(QVersionNumber(majorValue.toInt(), minorValue.toInt()));
 
-                const auto extensionsValue = formatObject.value(QStringLiteral("extensions"));
-                const auto extensionsArray = extensionsValue.toArray();
+                const QJsonValue extensionsValue = formatObject.value(QStringLiteral("extensions"));
+                const QJsonArray extensionsArray = extensionsValue.toArray();
                 auto extensions = QStringList();
                 std::transform(extensionsArray.constBegin(), extensionsArray.constEnd(),
                                std::back_inserter(extensions),
                                [] (const QJsonValue &extensionValue) { return extensionValue.toString(); });
                 format.setExtensions(extensions);
 
-                const auto vendor = formatObject.value(QStringLiteral("vendor")).toString();
+                const QString vendor = formatObject.value(QStringLiteral("vendor")).toString();
                 format.setVendor(vendor);
 
-                const auto substitutionValue = ruleObject.value(QStringLiteral("substitution"));
+                const QJsonValue substitutionValue = ruleObject.value(QStringLiteral("substitution"));
                 if (!substitutionValue.isString()) {
                     qWarning() << "Substitution needs to be a string";
                     hasError = true;
                     break;
                 }
 
-                const auto substitution = substitutionValue.toString().toUtf8();
+                // We default out to a Fragment ShaderType if nothing is specified
+                // as that was the initial behavior we introduced
+                const QString shaderType = formatObject.value(QStringLiteral("shaderType")).toString();
+                format.setShaderType(shaderType == QStringLiteral("Fragment") ? QShaderFormat::Fragment
+                                   : shaderType == QStringLiteral("Vertex") ? QShaderFormat::Vertex
+                                   : shaderType == QStringLiteral("TessellationControl") ? QShaderFormat::TessellationControl
+                                   : shaderType == QStringLiteral("TessellationEvaluation") ? QShaderFormat::TessellationEvaluation
+                                   : shaderType == QStringLiteral("Geometry") ? QShaderFormat::Geometry
+                                   : shaderType == QStringLiteral("Compute") ? QShaderFormat::Compute
+                                   : QShaderFormat::Fragment);
 
-                const auto snippetsValue = ruleObject.value(QStringLiteral("headerSnippets"));
-                const auto snippetsArray = snippetsValue.toArray();
+                const QByteArray substitution = substitutionValue.toString().toUtf8();
+
+                const QJsonValue snippetsValue = ruleObject.value(QStringLiteral("headerSnippets"));
+                const QJsonArray snippetsArray = snippetsValue.toArray();
                 auto snippets = QByteArrayList();
                 std::transform(snippetsArray.constBegin(), snippetsArray.constEnd(),
                                std::back_inserter(snippets),

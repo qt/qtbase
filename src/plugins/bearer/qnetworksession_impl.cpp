@@ -56,12 +56,13 @@ QT_BEGIN_NAMESPACE
 static QBearerEngineImpl *getEngineFromId(const QString &id)
 {
     QNetworkConfigurationManagerPrivate *priv = qNetworkConfigurationManagerPrivate();
-
-    const auto engines = priv->engines();
-    for (QBearerEngine *engine : engines) {
-        QBearerEngineImpl *engineImpl = qobject_cast<QBearerEngineImpl *>(engine);
-        if (engineImpl && engineImpl->hasIdentifier(id))
-            return engineImpl;
+    if (priv) {
+        const auto engines = priv->engines();
+        for (QBearerEngine *engine : engines) {
+            QBearerEngineImpl *engineImpl = qobject_cast<QBearerEngineImpl *>(engine);
+            if (engineImpl && engineImpl->hasIdentifier(id))
+                return engineImpl;
+        }
     }
 
     return 0;

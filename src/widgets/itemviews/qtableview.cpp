@@ -1573,29 +1573,6 @@ void QTableView::paintEvent(QPaintEvent *event)
                     colp +=  columnWidth(col) - gridSize;
                 painter.drawLine(colp, dirtyArea.top(), colp, dirtyArea.bottom());
             }
-
-            //draw the top & left grid lines if the headers are not visible.
-            //We do update this line when subsequent scroll happen (see scrollContentsBy)
-            if (horizontalHeader->isHidden() && top == 0) {
-                const int row = verticalHeader->logicalIndex(top);
-                if (!verticalHeader->isSectionHidden(row)) {
-                    const int rowY = rowViewportPosition(row) + offset.y();
-                    if (rowY == dirtyArea.top())
-                        painter.drawLine(dirtyArea.left(), rowY, dirtyArea.right(), rowY);
-                }
-            }
-            if (verticalHeader->isHidden() && left == 0) {
-                const int col = horizontalHeader->logicalIndex(left);
-                if (!horizontalHeader->isSectionHidden(col)) {
-                    int colX = columnViewportPosition(col) + offset.x();
-                    if (!isLeftToRight())
-                        colX += columnWidth(left) - 1;
-                    if (isLeftToRight() && colX == dirtyArea.left())
-                        painter.drawLine(colX, dirtyArea.top(), colX, dirtyArea.bottom());
-                    if (!isLeftToRight() && colX == dirtyArea.right())
-                        painter.drawLine(colX, dirtyArea.top(), colX, dirtyArea.bottom());
-                }
-            }
             painter.setPen(old);
         }
     }
@@ -1870,7 +1847,7 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
         visualColumn = d->nextActiveVisualColumn(visualRow, right, -1,
                                                  QTableViewPrivate::SearchDirection::Decreasing);
         if (modifiers & Qt::ControlModifier)
-            visualRow = d->nextActiveVisualRow(bottom, current.column(), -1,
+            visualRow = d->nextActiveVisualRow(bottom, visualColumn, -1,
                                                QTableViewPrivate::SearchDirection::Decreasing);
         break;
     case MovePageUp: {

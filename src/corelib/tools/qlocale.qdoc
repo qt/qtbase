@@ -92,7 +92,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v34.
+    QLocale's data is based on Common Locale Data Repository v35.1.
 
     \sa QString::arg(), QString::toInt(), QString::toDouble(),
     QInputMethod::locale()
@@ -104,7 +104,7 @@
     This enumerated type is used to specify a language.
 
     \value AnyLanguage
-    \value C The "C" locale is identical in behavior to English/UnitedStates.
+    \value C A simplified English locale; see QLocale::c()
     \value Abkhazian
     \value Oromo
     \value Afan Obsolete, please use Oromo

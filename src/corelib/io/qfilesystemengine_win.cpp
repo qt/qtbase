@@ -310,9 +310,18 @@ static QString readSymLink(const QFileSystemEntry &link)
                 const wchar_t* PathBuffer = &rdb->SymbolicLinkReparseBuffer.PathBuffer[offset];
                 result = QString::fromWCharArray(PathBuffer, length);
             }
-            // cut-off "//?/" and "/??/"
-            if (result.size() > 4 && result.at(0) == QLatin1Char('\\') && result.at(2) == QLatin1Char('?') && result.at(3) == QLatin1Char('\\'))
+            // cut-off "\\?\" and "\??\"
+            if (result.size() > 4
+                    && result.at(0) == QLatin1Char('\\')
+                    && result.at(2) == QLatin1Char('?')
+                    && result.at(3) == QLatin1Char('\\')) {
                 result = result.mid(4);
+                // cut off UNC in addition when the link points at a UNC share
+                // in which case we need to prepend another backslash to get \\server\share
+                if (result.leftRef(3) == QLatin1String("UNC")) {
+                    result.replace(0, 3, QLatin1Char('\\'));
+                }
+            }
         }
         free(rdb);
         CloseHandle(handle);
@@ -555,7 +564,7 @@ typedef struct _FILE_ID_INFO {
 
 #endif // if defined (Q_CC_MINGW) && WINVER < 0x0602
 
-// File ID for Windows up to version 7.
+// File ID for Windows up to version 7 and FAT32 drives
 static inline QByteArray fileId(HANDLE handle)
 {
 #ifndef Q_OS_WINRT
@@ -588,6 +597,8 @@ QByteArray fileIdWin8(HANDLE handle)
         result += ':';
         // Note: MinGW-64's definition of FILE_ID_128 differs from the MSVC one.
         result += QByteArray(reinterpret_cast<const char *>(&infoEx.FileId), int(sizeof(infoEx.FileId))).toHex();
+    } else {
+        result = fileId(handle); // GetFileInformationByHandleEx() is observed to fail for FAT32, QTBUG-74759
     }
     return result;
 #else // !QT_BOOTSTRAPPED && !QT_BUILD_QMAKE

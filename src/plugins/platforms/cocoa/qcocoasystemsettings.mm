@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -52,6 +52,8 @@
 @property (class, strong, readonly) NSColor *unemphasizedSelectedTextColor NS_AVAILABLE_MAC(10_14);
 @property (class, strong, readonly) NSColor *unemphasizedSelectedContentBackgroundColor NS_AVAILABLE_MAC(10_14);
 @property (class, strong, readonly) NSArray<NSColor *> *alternatingContentBackgroundColors NS_AVAILABLE_MAC(10_14);
+// Missing from non-Mojave SDKs, even if introduced in 10.10
+@property (class, strong, readonly) NSColor *linkColor NS_AVAILABLE_MAC(10_10);
 @end
 #endif
 
@@ -111,6 +113,8 @@ QPalette * qt_mac_createSystemPalette()
 
     palette->setBrush(QPalette::ToolTipBase, qt_mac_toQBrush([NSColor controlColor]));
 
+    palette->setColor(QPalette::Normal, QPalette::Link, qt_mac_toQColor([NSColor linkColor]));
+
     return palette;
 }
 
@@ -158,10 +162,13 @@ QHash<QPlatformTheme::Palette, QPalette*> qt_mac_createRolePalettes()
             pal.setColor(QPalette::Inactive, QPalette::WindowText, qc);
             pal.setColor(QPalette::Active, QPalette::HighlightedText, qc);
             pal.setColor(QPalette::Inactive, QPalette::HighlightedText, qc);
+            pal.setColor(QPalette::Active, QPalette::ButtonText, qc);
+            pal.setColor(QPalette::Inactive, QPalette::ButtonText, qc);
             qc = qt_mac_toQColor(mac_widget_colors[i].inactive);
             pal.setColor(QPalette::Disabled, QPalette::Text, qc);
             pal.setColor(QPalette::Disabled, QPalette::WindowText, qc);
             pal.setColor(QPalette::Disabled, QPalette::HighlightedText, qc);
+            pal.setColor(QPalette::Disabled, QPalette::ButtonText, qc);
         }
         if (mac_widget_colors[i].paletteRole == QPlatformTheme::MenuPalette
                 || mac_widget_colors[i].paletteRole == QPlatformTheme::MenuBarPalette) {

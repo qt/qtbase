@@ -59,6 +59,8 @@ int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(systray);
 
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+
     QApplication app(argc, argv);
 
     if (!QSystemTrayIcon::isSystemTrayAvailable()) {

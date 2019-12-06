@@ -1074,7 +1074,7 @@ QList<QByteArray> QImageReader::supportedSubTypes() const
     \since 5.5
 
     Returns the transformation metadata of the image, including image orientation. If the format
-    does not support transformation metadata \c QImageIOHandler::Transformation_None is returned.
+    does not support transformation metadata, QImageIOHandler::TransformationNone is returned.
 
     \sa setAutoTransform(), autoTransform()
 */
@@ -1319,10 +1319,12 @@ bool QImageReader::read(QImage *image)
         }
     }
 
-    // successful read; check for "@2x" file name suffix and set device pixel ratio.
-    static bool disable2xImageLoading = !qEnvironmentVariableIsEmpty("QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING");
-    if (!disable2xImageLoading && QFileInfo(fileName()).baseName().endsWith(QLatin1String("@2x"))) {
-           image->setDevicePixelRatio(2.0);
+    // successful read; check for "@Nx" file name suffix and set device pixel ratio.
+    static bool disableNxImageLoading = !qEnvironmentVariableIsEmpty("QT_HIGHDPI_DISABLE_2X_IMAGE_LOADING");
+    if (!disableNxImageLoading) {
+        const QByteArray suffix = QFileInfo(fileName()).baseName().right(3).toLatin1();
+        if (suffix.length() == 3 && suffix[0] == '@' && suffix[1] >= '2' && suffix[1] <= '9' && suffix[2] == 'x')
+            image->setDevicePixelRatio(suffix[1] - '0');
     }
     if (autoTransform())
         qt_imageTransform(*image, transformation());

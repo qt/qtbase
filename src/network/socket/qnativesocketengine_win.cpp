@@ -608,13 +608,13 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     socketType = qt_socket_getType(socketDescriptor);
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    QString socketProtocolStr = "UnknownProtocol";
-    if (socketProtocol == QAbstractSocket::IPv4Protocol) socketProtocolStr = "IPv4Protocol";
-    else if (socketProtocol == QAbstractSocket::IPv6Protocol) socketProtocolStr = "IPv6Protocol";
+    QString socketProtocolStr = QStringLiteral("UnknownProtocol");
+    if (socketProtocol == QAbstractSocket::IPv4Protocol) socketProtocolStr = QStringLiteral("IPv4Protocol");
+    else if (socketProtocol == QAbstractSocket::IPv6Protocol) socketProtocolStr = QStringLiteral("IPv6Protocol");
 
-    QString socketTypeStr = "UnknownSocketType";
-    if (socketType == QAbstractSocket::TcpSocket) socketTypeStr = "TcpSocket";
-    else if (socketType == QAbstractSocket::UdpSocket) socketTypeStr = "UdpSocket";
+    QString socketTypeStr = QStringLiteral("UnknownSocketType");
+    if (socketType == QAbstractSocket::TcpSocket) socketTypeStr = QStringLiteral("TcpSocket");
+    else if (socketType == QAbstractSocket::UdpSocket) socketTypeStr = QStringLiteral("UdpSocket");
 
     qDebug("QNativeSocketEnginePrivate::fetchConnectionParameters() localAddress == %s, localPort = %i, peerAddress == %s, peerPort = %i, socketProtocol == %s, socketType == %s", localAddress.toString().toLatin1().constData(), localPort, peerAddress.toString().toLatin1().constData(), peerPort, socketProtocolStr.toLatin1().constData(), socketTypeStr.toLatin1().constData());
 #endif
@@ -622,6 +622,53 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     return true;
 }
 
+
+static void setErrorFromWSAError(int error, QNativeSocketEnginePrivate *d)
+{
+    Q_ASSERT(d);
+    switch (error) {
+    case WSAEISCONN:
+        d->socketState = QAbstractSocket::ConnectedState;
+        break;
+    case WSAEHOSTUNREACH:
+        d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::HostUnreachableErrorString);
+        d->socketState = QAbstractSocket::UnconnectedState;
+        break;
+    case WSAEADDRNOTAVAIL:
+        d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::AddressNotAvailableErrorString);
+        d->socketState = QAbstractSocket::UnconnectedState;
+        break;
+    case WSAEINPROGRESS:
+        d->setError(QAbstractSocket::UnfinishedSocketOperationError, QNativeSocketEnginePrivate::InvalidSocketErrorString);
+        d->socketState = QAbstractSocket::ConnectingState;
+        break;
+    case WSAEADDRINUSE:
+        d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::AddressInuseErrorString);
+        break;
+    case WSAECONNREFUSED:
+        d->setError(QAbstractSocket::ConnectionRefusedError, QNativeSocketEnginePrivate::ConnectionRefusedErrorString);
+        d->socketState = QAbstractSocket::UnconnectedState;
+        break;
+    case WSAETIMEDOUT:
+        d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::ConnectionTimeOutErrorString);
+        d->socketState = QAbstractSocket::UnconnectedState;
+        break;
+    case WSAEACCES:
+        d->setError(QAbstractSocket::SocketAccessError, QNativeSocketEnginePrivate::AccessErrorString);
+        d->socketState = QAbstractSocket::UnconnectedState;
+        break;
+    case WSAENETUNREACH:
+        d->setError(QAbstractSocket::NetworkError, QNativeSocketEnginePrivate::NetworkUnreachableErrorString);
+        d->socketState = QAbstractSocket::UnconnectedState;
+        break;
+    case WSAEINVAL:
+    case WSAEALREADY:
+        d->setError(QAbstractSocket::UnfinishedSocketOperationError, QNativeSocketEnginePrivate::InvalidSocketErrorString);
+        break;
+    default:
+        break;
+    }
+}
 
 bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quint16 port)
 {
@@ -651,9 +698,6 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
             case WSANOTINITIALISED:
                 //###
                 break;
-            case WSAEISCONN:
-                socketState = QAbstractSocket::ConnectedState;
-                break;
             case WSAEWOULDBLOCK: {
                 // If WSAConnect returns WSAEWOULDBLOCK on the second
                 // connection attempt, we have to check SO_ERROR's
@@ -668,82 +712,33 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
                 do {
                     if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_ERROR, (char *) &value, &valueSize) == 0) {
                         if (value != NOERROR) {
+                            WS_ERROR_DEBUG(value);
+                            errorDetected = true;
                             // MSDN says getsockopt with SO_ERROR clears the error, but it's not actually cleared
                             // and this can affect all subsequent WSAConnect attempts, so clear it now.
                             const int val = NO_ERROR;
                             ::setsockopt(socketDescriptor, SOL_SOCKET, SO_ERROR, reinterpret_cast<const char*>(&val), sizeof val);
-                        }
-
-                        if (value == WSAECONNREFUSED) {
-                            setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
-                            socketState = QAbstractSocket::UnconnectedState;
-                            errorDetected = true;
-                            break;
-                        }
-                        if (value == WSAETIMEDOUT) {
-                            setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
-                            socketState = QAbstractSocket::UnconnectedState;
-                            errorDetected = true;
-                            break;
-                        }
-                        if (value == WSAEHOSTUNREACH) {
-                            setError(QAbstractSocket::NetworkError, HostUnreachableErrorString);
-                            socketState = QAbstractSocket::UnconnectedState;
-                            errorDetected = true;
-                            break;
-                        }
-                        if (value == WSAEADDRNOTAVAIL) {
-                            setError(QAbstractSocket::NetworkError, AddressNotAvailableErrorString);
-                            socketState = QAbstractSocket::UnconnectedState;
-                            errorDetected = true;
-                            break;
-                        }
-                        if (value == NOERROR) {
+                        } else {
                             // When we get WSAEWOULDBLOCK the outcome was not known, so a
                             // NOERROR might indicate that the result of the operation
                             // is still unknown. We try again to increase the chance that we did
                             // get the correct result.
                             tryAgain = !tryAgain;
                         }
+                        setErrorFromWSAError(value, this);
                     }
                     tries++;
                 } while (tryAgain && (tries < 2));
 
                 if (errorDetected)
                     break;
+                // fall through to unfinished operation error handling
+                err = WSAEINPROGRESS;
                 Q_FALLTHROUGH();
             }
-            case WSAEINPROGRESS:
-                setError(QAbstractSocket::UnfinishedSocketOperationError, InvalidSocketErrorString);
-                socketState = QAbstractSocket::ConnectingState;
-                break;
-            case WSAEADDRINUSE:
-                setError(QAbstractSocket::NetworkError, AddressInuseErrorString);
-                break;
-            case WSAECONNREFUSED:
-                setError(QAbstractSocket::ConnectionRefusedError, ConnectionRefusedErrorString);
-                socketState = QAbstractSocket::UnconnectedState;
-                break;
-            case WSAETIMEDOUT:
-                setError(QAbstractSocket::NetworkError, ConnectionTimeOutErrorString);
-                break;
-            case WSAEACCES:
-                setError(QAbstractSocket::SocketAccessError, AccessErrorString);
-                socketState = QAbstractSocket::UnconnectedState;
-                break;
-            case WSAEHOSTUNREACH:
-                setError(QAbstractSocket::NetworkError, HostUnreachableErrorString);
-                socketState = QAbstractSocket::UnconnectedState;
-                break;
-            case WSAENETUNREACH:
-                setError(QAbstractSocket::NetworkError, NetworkUnreachableErrorString);
-                socketState = QAbstractSocket::UnconnectedState;
-                break;
-            case WSAEINVAL:
-            case WSAEALREADY:
-                setError(QAbstractSocket::UnfinishedSocketOperationError, InvalidSocketErrorString);
-                break;
+
             default:
+                setErrorFromWSAError(err, this);
                 break;
             }
             if (socketState != QAbstractSocket::ConnectedState) {
@@ -1487,8 +1482,8 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QNativeSocketEnginePrivate::nativeWrite(%p \"%s\", %li) == %li",
-           data, qt_prettyDebug(data, qMin((int)ret, 16), (int)ret).data(), (int)len, (int)ret);
+    qDebug("QNativeSocketEnginePrivate::nativeWrite(%p \"%s\", %lli) == %lli",
+           data, qt_prettyDebug(data, qMin(int(ret), 16), int(ret)).data(), len, ret);
 #endif
 
     return ret;
@@ -1530,11 +1525,11 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxLength)
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     if (ret != -2) {
-        qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %li) == %li",
-               data, qt_prettyDebug(data, qMin((int)bytesRead, 16), (int)bytesRead).data(), (int)maxLength, (int)ret);
+        qDebug("QNativeSocketEnginePrivate::nativeRead(%p \"%s\", %lli) == %lli",
+               data, qt_prettyDebug(data, qMin(int(bytesRead), 16), int(bytesRead)).data(), maxLength, ret);
     } else {
-        qDebug("QNativeSocketEnginePrivate::nativeRead(%p, %li) == -2 (WOULD BLOCK)",
-               data, int(maxLength));
+        qDebug("QNativeSocketEnginePrivate::nativeRead(%p, %lli) == -2 (WOULD BLOCK)",
+               data, maxLength);
     }
 #endif
 

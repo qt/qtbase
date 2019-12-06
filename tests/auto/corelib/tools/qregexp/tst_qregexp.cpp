@@ -834,6 +834,13 @@ void tst_QRegExp::testEscapingWildcard_data(){
     QTest::newRow("a true '\\' in input") << "\\Qt;" <<  "\\Qt;" << true;
     QTest::newRow("two true '\\' in input") << "\\\\Qt;" <<  "\\\\Qt;" << true;
     QTest::newRow("a '\\' at the end") << "\\\\Qt;\\" <<  "\\\\Qt;\\" << true;
+
+    QTest::newRow("[]\\] matches ]") << "[]\\]" << "]" << true;
+    QTest::newRow("[]\\] matches \\") << "[]\\]" << "\\" << true;
+    QTest::newRow("[]\\] does not match [") << "[]\\]" << "[" << false;
+    QTest::newRow("[]\\]a matches ]a") << "[]\\]a" << "]a" << true;
+    QTest::newRow("[]\\]a matches \\a") << "[]\\]a" << "\\a" << true;
+    QTest::newRow("[]\\]a does not match [a") << "[]\\]a" << "[a" << false;
 }
 
 void tst_QRegExp::testEscapingWildcard(){

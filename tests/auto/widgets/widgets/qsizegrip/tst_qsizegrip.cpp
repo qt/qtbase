@@ -59,25 +59,22 @@ class tst_QSizeGrip : public QObject
 {
     Q_OBJECT
 public slots:
-    void initTestCase();
-    void cleanupTestCase();
+    void cleanup();
 
 private slots:
     void hideAndShowOnWindowStateChange_data();
     void hideAndShowOnWindowStateChange();
     void orientation();
     void dontCrashOnTLWChange();
-
-private:
-    QLineEdit *dummyWidget;
 };
 
 class TestWidget : public QWidget
 {
 public:
-    TestWidget(QWidget *parent = 0, Qt::WindowFlags flags = 0) : QWidget(parent, flags) {}
-    QSize sizeHint() const { return QSize(300, 200); }
-    void changeEvent(QEvent *event)
+    using QWidget::QWidget;
+
+    QSize sizeHint() const override { return QSize(300, 200); }
+    void changeEvent(QEvent *event) override
     {
         QWidget::changeEvent(event);
         if (isWindow() && event->type() == QEvent::WindowStateChange)
@@ -85,16 +82,9 @@ public:
     }
 };
 
-void tst_QSizeGrip::initTestCase()
+void tst_QSizeGrip::cleanup()
 {
-    dummyWidget = new QLineEdit;
-    dummyWidget->show();
-}
-
-void tst_QSizeGrip::cleanupTestCase()
-{
-    delete dummyWidget;
-    dummyWidget = 0;
+    QVERIFY(QApplication::topLevelWidgets().isEmpty());
 }
 
 void tst_QSizeGrip::hideAndShowOnWindowStateChange_data()
@@ -111,46 +101,45 @@ void tst_QSizeGrip::hideAndShowOnWindowStateChange()
     QSKIP("Broken on WinRT - QTBUG-68297");
 #endif
 
-    QWidget *parentWidget = windowType == Qt::Window ?  0 : new QWidget;
-    TestWidget *widget = new TestWidget(parentWidget, Qt::WindowFlags(windowType));
-    QSizeGrip *sizeGrip = new QSizeGrip(widget);
+    QScopedPointer<QWidget> parentWidget;
+    if (windowType != Qt::Window)
+        parentWidget.reset(new QWidget);
+    QScopedPointer<TestWidget> widget(new TestWidget(parentWidget.data(), Qt::WindowFlags(windowType)));
+    QSizeGrip *sizeGrip = new QSizeGrip(widget.data());
 
     // Normal.
     if (parentWidget)
         parentWidget->show();
     else
         widget->show();
-    QVERIFY(sizeGrip->isVisible());
+    QTRY_VERIFY(sizeGrip->isVisible());
 
     widget->showFullScreen();
-    QVERIFY(!sizeGrip->isVisible());
+    QTRY_VERIFY(!sizeGrip->isVisible());
 
     widget->showNormal();
-    QVERIFY(sizeGrip->isVisible());
+    QTRY_VERIFY(sizeGrip->isVisible());
 
     widget->showMaximized();
 #ifndef Q_OS_MAC
-    QVERIFY(!sizeGrip->isVisible());
+    QTRY_VERIFY(!sizeGrip->isVisible());
 #else
     QEXPECT_FAIL("", "QTBUG-23681", Abort);
     QVERIFY(sizeGrip->isVisible());
 #endif
 
     widget->showNormal();
-    QVERIFY(sizeGrip->isVisible());
+    QTRY_VERIFY(sizeGrip->isVisible());
 
     sizeGrip->hide();
-    QVERIFY(!sizeGrip->isVisible());
+    QTRY_VERIFY(!sizeGrip->isVisible());
 
     widget->showFullScreen();
     widget->showNormal();
-    QVERIFY(!sizeGrip->isVisible());
+    QTRY_VERIFY(!sizeGrip->isVisible());
     widget->showMaximized();
     widget->showNormal();
-    QVERIFY(!sizeGrip->isVisible());
-
-    delete widget;
-    delete parentWidget;
+    QTRY_VERIFY(!sizeGrip->isVisible());
 }
 
 void tst_QSizeGrip::orientation()
@@ -196,10 +185,10 @@ void tst_QSizeGrip::dontCrashOnTLWChange()
     QMdiArea mdiArea;
     mdiArea.show();
 
-    QMainWindow *mw = new QMainWindow();
-    QMdiSubWindow *mdi = mdiArea.addSubWindow(mw);
+    QScopedPointer<QMainWindow> mw(new QMainWindow);
+    QMdiSubWindow *mdi = mdiArea.addSubWindow(mw.data());
     mw->statusBar()->setSizeGripEnabled(true);
-    mdiArea.removeSubWindow(mw);
+    mdiArea.removeSubWindow(mw.data());
     delete mdi;
     mw->show();
 
@@ -209,7 +198,7 @@ void tst_QSizeGrip::dontCrashOnTLWChange()
     QEXPECT_FAIL("", "Broken on WinRT - QTBUG-68297", Abort);
 #endif
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
-    QVERIFY(QTest::qWaitForWindowExposed(mw));
+    QVERIFY(QTest::qWaitForWindowExposed(mw.data()));
 }
 
 QTEST_MAIN(tst_QSizeGrip)

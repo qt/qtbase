@@ -78,7 +78,11 @@ QT_BEGIN_NAMESPACE
  * - statx                      4.11                    QT_CONFIG(statx)
  */
 
-#if QT_CONFIG(statx)
+#if QT_CONFIG(statx) && !QT_CONFIG(glibc)
+// if using glibc, the statx() function in sysdeps/unix/sysv/linux/statx.c
+// falls back to stat() for us.
+// (Using QT_CONFIG(glibc) instead of __GLIBC__ because the macros aren't
+// defined in assembler mode)
 #  define MINLINUX_MAJOR        4
 #  define MINLINUX_MINOR        11
 #  define MINLINUX_PATCH        0

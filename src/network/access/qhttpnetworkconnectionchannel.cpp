@@ -207,6 +207,9 @@ void QHttpNetworkConnectionChannel::init()
 
 void QHttpNetworkConnectionChannel::close()
 {
+    if (state == QHttpNetworkConnectionChannel::ClosingState)
+        return;
+
     if (!socket)
         state = QHttpNetworkConnectionChannel::IdleState;
     else if (socket->state() == QAbstractSocket::UnconnectedState)
@@ -846,8 +849,11 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     }
     state = QHttpNetworkConnectionChannel::IdleState;
-
-    requeueCurrentlyPipelinedRequests();
+    if (alreadyPipelinedRequests.length()) {
+        // If nothing was in a pipeline, no need in calling
+        // _q_startNextRequest (which it does):
+        requeueCurrentlyPipelinedRequests();
+    }
 
     pendingEncrypt = false;
 }
@@ -961,12 +967,26 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         if (!reply && state == QHttpNetworkConnectionChannel::IdleState) {
             // Not actually an error, it is normal for Keep-Alive connections to close after some time if no request
             // is sent on them. No need to error the other replies below. Just bail out here.
-            // The _q_disconnected will handle the possibly pipelined replies
+            // The _q_disconnected will handle the possibly pipelined replies. HTTP/2 is special for now,
+            // we do not resend, but must report errors if any request is in progress (note, while
+            // not in its sendRequest(), protocol handler switches the channel to IdleState, thus
+            // this check is under this condition in 'if'):
+            if (protocolHandler.data()) {
+                if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
+                    || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2) {
+                    auto h2Handler = static_cast<QHttp2ProtocolHandler *>(protocolHandler.data());
+                    h2Handler->handleConnectionClosure();
+                    protocolHandler.reset();
+                }
+            }
             return;
         } else if (state != QHttpNetworkConnectionChannel::IdleState && state != QHttpNetworkConnectionChannel::ReadingState) {
             // Try to reconnect/resend before sending an error.
             // While "Reading" the _q_disconnected() will handle this.
-            if (reconnectAttempts-- > 0) {
+            // If we're using ssl then the protocolHandler is not initialized until
+            // "encrypted" has been emitted, since retrying requires the protocolHandler (asserted)
+            // we will not try if encryption is not done.
+            if (!pendingEncrypt && reconnectAttempts-- > 0) {
                 resendCurrentRequest();
                 return;
             } else {
@@ -1109,11 +1129,13 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
 void QHttpNetworkConnectionChannel::_q_proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator* auth)
 {
     if (connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2
+        || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
 #ifndef QT_NO_SSL
         || connection->connectionType() == QHttpNetworkConnection::ConnectionTypeSPDY
 #endif
         ) {
-        connection->d_func()->emitProxyAuthenticationRequired(this, proxy, auth);
+        if (spdyRequestsToSend.count() > 0)
+            connection->d_func()->emitProxyAuthenticationRequired(this, proxy, auth);
     } else { // HTTP
         // Need to dequeue the request before we can emit the error.
         if (!reply)

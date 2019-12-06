@@ -91,8 +91,14 @@ private slots:
 
     void toCbor_data();
     void toCbor();
+    void toCborStreamWriter_data() { toCbor_data(); }
+    void toCborStreamWriter();
     void fromCbor_data();
     void fromCbor();
+    void fromCborStreamReaderByteArray_data() { fromCbor_data(); }
+    void fromCborStreamReaderByteArray();
+    void fromCborStreamReaderIODevice_data() { fromCbor_data(); }
+    void fromCborStreamReaderIODevice();
     void validation_data();
     void validation();
     void toDiagnosticNotation_data();
@@ -1395,6 +1401,22 @@ void tst_QCborValue::toCbor()
              "\xa1\x01\xd9\xd9\xf7" + result);
 }
 
+void tst_QCborValue::toCborStreamWriter()
+{
+    QFETCH(QCborValue, v);
+    QFETCH(QByteArray, result);
+    QFETCH(QCborValue::EncodingOptions, options);
+
+    QByteArray output;
+    QBuffer buffer(&output);
+    buffer.open(QIODevice::WriteOnly);
+    QCborStreamWriter writer(&buffer);
+
+    v.toCbor(writer, options);
+    QCOMPARE(buffer.pos(), result.size());
+    QCOMPARE(output, result);
+}
+
 void tst_QCborValue::fromCbor_data()
 {
     addCommonCborData();
@@ -1425,19 +1447,10 @@ void tst_QCborValue::fromCbor_data()
                                    << raw("\xd8\x25\x51" "\1\2\3\4""\4\3\2\0""\0\0\0\0""\0\0\0\1""\2");
 }
 
-void tst_QCborValue::fromCbor()
+void fromCbor_common(void (*doCheck)(const QCborValue &, const QByteArray &))
 {
     QFETCH(QCborValue, v);
     QFETCH(QByteArray, result);
-
-    auto doCheck = [](const QCborValue &v, const QByteArray &result) {
-        QCborParserError error;
-        QCborValue decoded = QCborValue::fromCbor(result, &error);
-        QVERIFY2(error.error == QCborError(), qPrintable(error.errorString()));
-        QCOMPARE(error.offset, result.size());
-        QVERIFY(decoded == v);
-        QVERIFY(v == decoded);
-    };
 
     doCheck(v, result);
     if (QTest::currentTestFailed())
@@ -1487,6 +1500,52 @@ void tst_QCborValue::fromCbor()
     doCheck(QCborMap{{1, t}}, "\xa1\1\xd9\xd9\xf7" + result);
     if (QTest::currentTestFailed())
         return;
+}
+
+void tst_QCborValue::fromCbor()
+{
+    auto doCheck = [](const QCborValue &v, const QByteArray &result) {
+        QCborParserError error;
+        QCborValue decoded = QCborValue::fromCbor(result, &error);
+        QVERIFY2(error.error == QCborError(), qPrintable(error.errorString()));
+        QCOMPARE(error.offset, result.size());
+        QVERIFY(decoded == v);
+        QVERIFY(v == decoded);
+    };
+
+    fromCbor_common(doCheck);
+}
+
+void tst_QCborValue::fromCborStreamReaderByteArray()
+{
+    auto doCheck = [](const QCborValue &expected, const QByteArray &data) {
+        QCborStreamReader reader(data);
+        QCborValue decoded = QCborValue::fromCbor(reader);
+        QCOMPARE(reader.lastError(), QCborError());
+        QCOMPARE(reader.currentOffset(), data.size());
+        QVERIFY(decoded == expected);
+        QVERIFY(expected == decoded);
+    };
+
+    fromCbor_common(doCheck);
+}
+
+void tst_QCborValue::fromCborStreamReaderIODevice()
+{
+    auto doCheck = [](const QCborValue &expected, const QByteArray &data) {
+        QBuffer buffer;
+        buffer.setData(data);
+        buffer.open(QIODevice::ReadOnly);
+        QCborStreamReader reader(&buffer);
+        QCborValue decoded = QCborValue::fromCbor(reader);
+        QCOMPARE(reader.lastError(), QCborError());
+        QCOMPARE(reader.currentOffset(), data.size());
+        QVERIFY(decoded == expected);
+        QVERIFY(expected == decoded);
+        QCOMPARE(buffer.pos(), reader.currentOffset());
+    };
+
+    fromCbor_common(doCheck);
 }
 
 void tst_QCborValue::validation_data()

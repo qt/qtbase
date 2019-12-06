@@ -26,6 +26,7 @@
 **
 ****************************************************************************/
 
+#include "../../../shared/highdpi.h"
 
 #include <QtTest/QtTest>
 
@@ -50,6 +51,8 @@
 #include <QTextEdit>
 #include <QPlainTextEdit>
 #include <QDialog>
+
+#include <qscreen.h>
 
 #include <QtWidgets/private/qabstractitemdelegate_p.h>
 
@@ -223,8 +226,8 @@ private slots:
     void dateTextForRole_data();
     void dateTextForRole();
 
-#ifdef QT_BUILD_INTERNAL
 private:
+#ifdef QT_BUILD_INTERNAL
     struct RoleDelegate : public QItemDelegate
     {
         QString textForRole(Qt::ItemDataRole role, const QVariant &value, const QLocale &locale)
@@ -234,6 +237,8 @@ private:
         }
     };
 #endif
+
+    const int m_fuzz = int(QGuiApplication::primaryScreen()->devicePixelRatio());
 };
 
 
@@ -286,8 +291,8 @@ void tst_QItemDelegate::textRectangle()
     QFont font;
     TestItemDelegate delegate;
     QRect result = delegate.textRectangle(0, rect, font, text);
-
-    QCOMPARE(result, expected);
+    QVERIFY2(HighDpi::fuzzyCompare(result, expected, m_fuzz),
+             HighDpi::msgRectMismatch(result, expected).constData());
 }
 
 void tst_QItemDelegate::sizeHint_data()

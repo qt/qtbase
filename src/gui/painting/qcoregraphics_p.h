@@ -51,6 +51,8 @@
 // We mean it.
 //
 
+#include <QtCore/private/qcore_mac_p.h>
+
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtGui/qregion.h>
 #include <QtGui/qpalette.h>
@@ -89,38 +91,16 @@ Q_GUI_EXPORT QBrush qt_mac_toQBrush(CGColorRef color);
 class Q_GUI_EXPORT QMacCGContext
 {
 public:
-    inline QMacCGContext() { context = 0; }
+    QMacCGContext() = default;
     QMacCGContext(QPaintDevice *pdev);
     QMacCGContext(QPainter *p);
-    inline QMacCGContext(CGContextRef cg, bool takeOwnership = false) {
-        context = cg;
-        if (!takeOwnership)
-            CGContextRetain(context);
-    }
-    inline QMacCGContext(const QMacCGContext &copy) : context(0) { *this = copy; }
-    inline ~QMacCGContext() {
-        if (context)
-            CGContextRelease(context);
-    }
-    inline bool isNull() const { return context; }
-    inline operator CGContextRef() { return context; }
-    inline QMacCGContext &operator=(const QMacCGContext &copy) {
-        if (context)
-            CGContextRelease(context);
-        context = copy.context;
-        CGContextRetain(context);
-        return *this;
-    }
-    inline QMacCGContext &operator=(CGContextRef cg) {
-        if (context)
-            CGContextRelease(context);
-        context = cg;
-        CGContextRetain(context); //we do not take ownership
-        return *this;
-    }
+
+    operator CGContextRef() { return context; }
 
 private:
-    CGContextRef context;
+    void initialize(QPaintDevice *paintDevice);
+    void initialize(const QImage *, QPainter *painter = nullptr);
+    QCFType<CGContextRef> context;
 };
 
 QT_END_NAMESPACE

@@ -1239,6 +1239,8 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
 
     This property gets and sets the plain text editor's contents. The previous
     contents are removed and undo/redo history is reset when this property is set.
+    currentCharFormat() is also reset, unless textCursor() is already at the
+    beginning of the document.
 
     By default, for an editor with no contents, this property contains an empty string.
 */
@@ -1518,7 +1520,12 @@ void QPlainTextEdit::paste()
 /*!
     Deletes all the text in the text edit.
 
-    Note that the undo/redo history is cleared by this function.
+    Notes:
+    \list
+    \li The undo/redo history is also cleared.
+    \li currentCharFormat() is reset, unless textCursor()
+    is already at the beginning of the document.
+    \endlist
 
     \sa cut(), setPlainText()
 */
@@ -1651,7 +1658,12 @@ void QPlainTextEdit::timerEvent(QTimerEvent *e)
 
     \a text is interpreted as plain text.
 
-    Note that the undo/redo history is cleared by this function.
+    Notes:
+    \list
+    \li The undo/redo history is also cleared.
+    \li currentCharFormat() is reset, unless textCursor()
+    is already at the beginning of the document.
+    \endlist
 
     \sa toPlainText()
 */
@@ -1945,6 +1957,7 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
     }
 
     QAbstractTextDocumentLayout::PaintContext context = getPaintContext();
+    painter.setPen(context.palette.text().color());
 
     while (block.isValid()) {
 

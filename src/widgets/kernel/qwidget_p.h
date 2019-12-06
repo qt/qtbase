@@ -181,6 +181,7 @@ struct QTLWExtra {
     QRect frameStrut;
     QRect normalGeometry; // used by showMin/maximized/FullScreen
     Qt::WindowFlags savedFlags; // Save widget flags while showing fullscreen
+    // ### TODO replace initialScreenIndex with QScreen *, in case the screens change at runtime
     int initialScreenIndex; // Screen number when passing a QDesktop[Screen]Widget as parent.
 
     QVector<QPlatformTextureList *> widgetTextures;
@@ -351,11 +352,12 @@ public:
     void update(T t);
 
     void init(QWidget *desktopWidget, Qt::WindowFlags f);
-    void create_sys(WId window, bool initializeWindow, bool destroyOldWindow);
+    void create();
     void createRecursively();
     void createWinId();
 
-    void setScreenForPoint(const QPoint &pos);
+    bool setScreenForPoint(const QPoint &pos);
+    bool setScreen(QScreen *screen);
 
     void createTLExtra();
     void createExtra();

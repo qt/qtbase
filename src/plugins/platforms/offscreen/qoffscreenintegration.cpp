@@ -63,6 +63,7 @@
 #include <qpa/qplatforminputcontextfactory_p.h>
 #include <qpa/qplatforminputcontext.h>
 #include <qpa/qplatformtheme.h>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <qpa/qplatformservices.h>
 
@@ -117,7 +118,7 @@ QOffscreenIntegration::QOffscreenIntegration()
 #endif
     m_services.reset(new QPlatformServices);
 
-    screenAdded(new QOffscreenScreen);
+    QWindowSystemInterface::handleScreenAdded(new QOffscreenScreen);
 }
 
 QOffscreenIntegration::~QOffscreenIntegration()

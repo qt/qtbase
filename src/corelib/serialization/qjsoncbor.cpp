@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -598,10 +598,12 @@ QCborValue QCborValue::fromJsonValue(const QJsonValue &v)
     switch (v.type()) {
     case QJsonValue::Bool:
         return v.b;
-    case QJsonValue::Double:
-        if (v.dbl == qint64(v.dbl))
-            return qint64(v.dbl);
+    case QJsonValue::Double: {
+        qint64 i;
+        if (convertDoubleTo(v.dbl, &i))
+            return i;
         return v.dbl;
+    }
     case QJsonValue::String:
         return v.toString();
     case QJsonValue::Array:

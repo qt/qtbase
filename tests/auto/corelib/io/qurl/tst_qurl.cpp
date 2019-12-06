@@ -47,6 +47,7 @@ class tst_QUrl : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
     void effectiveTLDs_data();
     void effectiveTLDs();
     void getSetCheck();
@@ -188,12 +189,19 @@ private slots:
 private:
     void testThreadingHelper();
 
+    const QString m_currentPath = QDir::currentPath();
     QTemporaryDir m_tempDir;
 };
 
 void tst_QUrl::initTestCase()
 {
     QVERIFY2(m_tempDir.isValid(), qPrintable(m_tempDir.errorString()));
+}
+
+void tst_QUrl::cleanupTestCase()
+{
+    // Restore working directory changed in fromUserInputWithCwd()
+    QDir::setCurrent(m_currentPath);
 }
 
 // Testing get/set functions

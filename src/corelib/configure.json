@@ -374,6 +374,16 @@
                 ]
             }
         },
+        "glibc": {
+            "label": "GNU libc",
+            "type": "compile",
+            "test": {
+                "include": "stdlib.h",
+                "main": [
+                    "return __GLIBC__;"
+                ]
+            }
+        },
         "inotify": {
             "label": "inotify",
             "type": "compile",
@@ -593,6 +603,12 @@
             "condition": "libs.glib",
             "output": [ "privateFeature", "feature" ]
         },
+        "glibc": {
+            "label": "GNU libc",
+            "autoDetect": "config.linux",
+            "condition": "tests.glibc",
+            "output": [ "privateFeature" ]
+        },
         "iconv": {
             "label": "iconv",
             "purpose": "Provides internationalization on Unix.",
@@ -798,7 +814,7 @@
         },
         "datestring": {
             "label": "QDate/QTime/QDateTime",
-            "purpose": "Provides convertion between dates and strings.",
+            "purpose": "Provides conversion between dates and strings.",
             "section": "Data structures",
             "condition": "features.textdate",
             "output": [ "publicFeature", "feature" ]

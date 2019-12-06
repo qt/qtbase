@@ -6,10 +6,9 @@ contains(TEMPLATE, ".*app") {
 
     qt:for(entryLib, $$list($$unique(QMAKE_LIBS_QT_ENTRY))) {
         isEqual(entryLib, -lqtmain) {
-            !contains(QMAKE_DEFAULT_LIBDIRS, $$QT.core.libs): \
-                QMAKE_LIBS += -L$$QT.core.libs
-            CONFIG(debug, debug|release): QMAKE_LIBS += $${entryLib}$${QT_LIBINFIX}d
-            else: QMAKE_LIBS += $${entryLib}$${QT_LIBINFIX}
+            lib = $$QT.core.libs/$${QMAKE_PREFIX_STATICLIB}qtmain$$QT_LIBINFIX$$qtPlatformTargetSuffix().$$QMAKE_EXTENSION_STATICLIB
+            PRE_TARGETDEPS += $$lib
+            QMAKE_LIBS += $$lib
         } else {
             QMAKE_LIBS += $${entryLib}
         }

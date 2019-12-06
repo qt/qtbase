@@ -48,12 +48,15 @@ void
 UnixMakefileGenerator::writePrlFile(QTextStream &t)
 {
     MakefileGenerator::writePrlFile(t);
+    const ProString tmplt = project->first("TEMPLATE");
+    if (tmplt != "lib" && tmplt != "aux")
+        return;
     // libtool support
-    if(project->isActiveConfig("create_libtool") && project->first("TEMPLATE") == "lib") { //write .la
+    if (project->isActiveConfig("create_libtool")) {
         writeLibtoolFile();
     }
     // pkg-config support
-    if(project->isActiveConfig("create_pc") && project->first("TEMPLATE") == "lib")
+    if (project->isActiveConfig("create_pc"))
         writePkgConfigFile();
 }
 
@@ -407,7 +410,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         const ProStringList &l = project->values("QMAKE_PRL_INTERNAL_FILES");
         ProStringList::ConstIterator it;
         for(it = l.begin(); it != l.end(); ++it) {
-            QMakeMetaInfo libinfo(project);
+            QMakeMetaInfo libinfo;
             if (libinfo.readLib((*it).toQString()) && !libinfo.isEmpty("QMAKE_PRL_BUILD_DIR")) {
                 ProString dir;
                 int slsh = (*it).lastIndexOf(Option::dir_sep);
@@ -1199,7 +1202,10 @@ void UnixMakefileGenerator::init2()
         project->values("QMAKE_FRAMEWORK_VERSION").append(project->first("VER_MAJ"));
 
     if (project->first("TEMPLATE") == "aux") {
-        // nothing
+        project->values("PRL_TARGET") = {
+            project->first("QMAKE_PREFIX_STATICLIB") +
+            project->first("TARGET")
+        };
     } else if (!project->values("QMAKE_APP_FLAG").isEmpty()) {
         if(!project->isEmpty("QMAKE_BUNDLE")) {
             ProString bundle_loc = project->first("QMAKE_BUNDLE_LOCATION");
@@ -1446,7 +1452,36 @@ UnixMakefileGenerator::libtoolFileName(bool fixify)
 void
 UnixMakefileGenerator::writeLibtoolFile()
 {
+    auto fixDependencyLibs
+            = [this](const ProStringList &libs)
+              {
+                  ProStringList result;
+                  for (auto lib : libs) {
+                      auto fi = fileInfo(lib.toQString());
+                      if (fi.isAbsolute()) {
+                          const QString libDirArg = "-L" + fi.path();
+                          if (!result.contains(libDirArg))
+                              result += libDirArg;
+                          QString namespec = fi.fileName();
+                          int dotPos = namespec.lastIndexOf('.');
+                          if (dotPos != -1 && namespec.startsWith("lib")) {
+                              namespec.truncate(dotPos);
+                              namespec.remove(0, 3);
+                          } else {
+                              debug_msg(1, "Ignoring dependency library %s",
+                                        lib.toLatin1().constData());
+                              continue;
+                          }
+                          result += "-l" + namespec;
+                      } else {
+                          result += lib;
+                      }
+                  }
+                  return result;
+              };
+
     QString fname = libtoolFileName(), lname = fname;
+    debug_msg(1, "Writing libtool file %s", fname.toLatin1().constData());
     mkdir(fileInfo(fname).path());
     int slsh = lname.lastIndexOf(Option::dir_sep);
     if(slsh != -1)
@@ -1484,12 +1519,11 @@ UnixMakefileGenerator::writeLibtoolFile()
                          << ".a'\n\n";
 
     t << "# Libraries that this one depends upon.\n";
+    static const ProKey libVars[] = { "LIBS", "QMAKE_LIBS" };
     ProStringList libs;
-    libs << "LIBS" << "QMAKE_LIBS";
-    t << "dependency_libs='";
-    for (ProStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it)
-        t << fixLibFlags((*it).toKey()).join(' ') << ' ';
-    t << "'\n\n";
+    for (auto var : libVars)
+        libs += fixLibFlags(var);
+    t << "dependency_libs='" << fixDependencyLibs(libs).join(' ') << "'\n\n";
 
     t << "# Version information for " << lname << "\n";
     int maj = project->first("VER_MAJ").toInt();

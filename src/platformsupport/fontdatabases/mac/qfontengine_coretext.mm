@@ -491,9 +491,11 @@ void QCoreTextFontEngine::draw(CGContextRef ctx, qreal x, qreal y, const QTextIt
 
 struct ConvertPathInfo
 {
-    ConvertPathInfo(QPainterPath *newPath, const QPointF &newPos) : path(newPath), pos(newPos) {}
+    ConvertPathInfo(QPainterPath *newPath, const QPointF &newPos, qreal newStretch = 1.0) :
+        path(newPath), pos(newPos), stretch(newStretch) {}
     QPainterPath *path;
     QPointF pos;
+    qreal stretch;
 };
 
 static void convertCGPathToQPainterPath(void *info, const CGPathElement *element)
@@ -501,25 +503,25 @@ static void convertCGPathToQPainterPath(void *info, const CGPathElement *element
     ConvertPathInfo *myInfo = static_cast<ConvertPathInfo *>(info);
     switch(element->type) {
         case kCGPathElementMoveToPoint:
-            myInfo->path->moveTo(element->points[0].x + myInfo->pos.x(),
+            myInfo->path->moveTo((element->points[0].x * myInfo->stretch) + myInfo->pos.x(),
                                  element->points[0].y + myInfo->pos.y());
             break;
         case kCGPathElementAddLineToPoint:
-            myInfo->path->lineTo(element->points[0].x + myInfo->pos.x(),
+            myInfo->path->lineTo((element->points[0].x * myInfo->stretch) + myInfo->pos.x(),
                                  element->points[0].y + myInfo->pos.y());
             break;
         case kCGPathElementAddQuadCurveToPoint:
-            myInfo->path->quadTo(element->points[0].x + myInfo->pos.x(),
+            myInfo->path->quadTo((element->points[0].x * myInfo->stretch) + myInfo->pos.x(),
                                  element->points[0].y + myInfo->pos.y(),
-                                 element->points[1].x + myInfo->pos.x(),
+                                 (element->points[1].x * myInfo->stretch) + myInfo->pos.x(),
                                  element->points[1].y + myInfo->pos.y());
             break;
         case kCGPathElementAddCurveToPoint:
-            myInfo->path->cubicTo(element->points[0].x + myInfo->pos.x(),
+            myInfo->path->cubicTo((element->points[0].x * myInfo->stretch) + myInfo->pos.x(),
                                   element->points[0].y + myInfo->pos.y(),
-                                  element->points[1].x + myInfo->pos.x(),
+                                  (element->points[1].x * myInfo->stretch) + myInfo->pos.x(),
                                   element->points[1].y + myInfo->pos.y(),
-                                  element->points[2].x + myInfo->pos.x(),
+                                  (element->points[2].x * myInfo->stretch) + myInfo->pos.x(),
                                   element->points[2].y + myInfo->pos.y());
             break;
         case kCGPathElementCloseSubpath:
@@ -543,9 +545,10 @@ void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *position
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
         cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, -SYNTHETIC_ITALIC_SKEW, 1, 0, 0));
 
+    qreal stretch = fontDef.stretch ? qreal(fontDef.stretch) / 100 : 1.0;
     for (int i = 0; i < nGlyphs; ++i) {
         QCFType<CGPathRef> cgpath = CTFontCreatePathForGlyph(ctfont, glyphs[i], &cgMatrix);
-        ConvertPathInfo info(path, positions[i].toPointF());
+        ConvertPathInfo info(path, positions[i].toPointF(), stretch);
         CGPathApply(cgpath, &info, convertCGPathToQPainterPath);
     }
 }
@@ -744,7 +747,7 @@ qreal QCoreTextFontEngine::fontSmoothingGamma()
     return 2.0;
 }
 
-QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &matrix, const QColor &color)
 {
     glyph_metrics_t br = alphaMapBoundingBox(glyph, subPixelPosition, matrix, glyphFormat);
 
@@ -824,6 +827,8 @@ QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, QFixed subPixelPosition
             CTFontDrawGlyphs(ctfont, &cgGlyph, &CGPointZero, 1, ctx);
         }
     } else {
+        CGContextSetRGBFillColor(ctx, color.redF(), color.greenF(), color.blueF(), color.alphaF());
+
         // CGContextSetTextMatrix does not work with color glyphs, so we use
         // the CTM instead. This means we must translate the CTM as well, to
         // set the glyph position, instead of using CGContextSetTextPosition.
@@ -881,12 +886,12 @@ QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed subPixelPo
     return imageForGlyph(glyph, subPixelPosition, x);
 }
 
-QImage QCoreTextFontEngine::bitmapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t)
+QImage QCoreTextFontEngine::bitmapForGlyph(glyph_t glyph, QFixed subPixelPosition, const QTransform &t, const QColor &color)
 {
     if (t.type() > QTransform::TxScale)
-        return QFontEngine::bitmapForGlyph(glyph, subPixelPosition, t);
+        return QFontEngine::bitmapForGlyph(glyph, subPixelPosition, t, color);
 
-    return imageForGlyph(glyph, subPixelPosition, t);
+    return imageForGlyph(glyph, subPixelPosition, t, color);
 }
 
 void QCoreTextFontEngine::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags flags) const

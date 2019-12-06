@@ -39,3 +39,8 @@ SOURCES += \
         util/qtexturefilereader.cpp \
         util/qpkmhandler.cpp \
         util/qktxhandler.cpp
+
+qtConfig(texture_format_astc_experimental) {
+        HEADERS += util/qastchandler_p.h
+        SOURCES += util/qastchandler.cpp
+}

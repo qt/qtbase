@@ -27,7 +27,6 @@
 ****************************************************************************/
 
 
-//#define QT_TST_QAPP_DEBUG
 #include <qdebug.h>
 
 #include <QtTest/QtTest>
@@ -55,35 +54,14 @@
 #include <QtWidgets/QStyle>
 
 #include <qpa/qwindowsysteminterface.h>
+#include <qpa/qwindowsysteminterface_p.h>
 #include <private/qhighdpiscaling_p.h>
 
+#include <algorithm>
+
+Q_LOGGING_CATEGORY(lcTests, "qt.widgets.tests")
+
 QT_BEGIN_NAMESPACE
-static QWindowSystemInterface::TouchPoint touchPoint(const QTouchEvent::TouchPoint& pt)
-{
-    QWindowSystemInterface::TouchPoint p;
-    p.id = pt.id();
-    p.flags = pt.flags();
-    p.normalPosition = pt.normalizedPos();
-    p.area = pt.screenRect();
-    p.pressure = pt.pressure();
-    p.state = pt.state();
-    p.velocity = pt.velocity();
-    p.rawPositions = pt.rawScreenPositions();
-    return p;
-}
-
-static QList<struct QWindowSystemInterface::TouchPoint> touchPointList(const QList<QTouchEvent::TouchPoint>& pointList)
-{
-    QList<struct QWindowSystemInterface::TouchPoint> newList;
-
-    Q_FOREACH (QTouchEvent::TouchPoint p, pointList)
-    {
-        newList.append(touchPoint(p));
-    }
-    return newList;
-}
-
-
 
 extern bool Q_GUI_EXPORT qt_tab_all_widgets(); // from qapplication.cpp
 QT_END_NAMESPACE
@@ -91,9 +69,6 @@ QT_END_NAMESPACE
 class tst_QApplication : public QObject
 {
 Q_OBJECT
-
-public:
-    tst_QApplication();
 
 private slots:
     void cleanup();
@@ -165,12 +140,6 @@ private slots:
 
     void settableStyleHints_data();
     void settableStyleHints();  // Needs to run last as it changes style hints.
-
-protected slots:
-    void quitApplication();
-
-private:
-    bool quitApplicationTriggered;
 };
 
 class EventSpy : public QObject
@@ -179,7 +148,7 @@ class EventSpy : public QObject
 
 public:
     QList<int> recordedEvents;
-    bool eventFilter(QObject *, QEvent *event)
+    bool eventFilter(QObject *, QEvent *event) override
     {
         recordedEvents.append(event->type());
         return false;
@@ -189,7 +158,7 @@ public:
 void tst_QApplication::sendEventsOnProcessEvents()
 {
     int argc = 0;
-    QApplication app(argc, 0);
+    QApplication app(argc, nullptr);
 
     EventSpy spy;
     app.installEventFilter(&spy);
@@ -203,14 +172,10 @@ void tst_QApplication::sendEventsOnProcessEvents()
 class CloseEventTestWindow : public QWidget
 {
 public:
-    CloseEventTestWindow(QWidget *parent = 0)
-        : QWidget(parent)
-    {
-    }
-
-    void closeEvent(QCloseEvent *event)
+    void closeEvent(QCloseEvent *event) override
     {
         QWidget dialog;
+        dialog.setWindowTitle(QLatin1String("CloseEventTestWindow"));
         dialog.show();
         dialog.close();
 
@@ -219,11 +184,6 @@ public:
 };
 
 static  char *argv0;
-
-tst_QApplication::tst_QApplication()
-    : quitApplicationTriggered(false)
-{
-}
 
 void tst_QApplication::cleanup()
 {
@@ -247,7 +207,7 @@ void tst_QApplication::staticSetup()
     QApplication::setFont(font);*/
 
     int argc = 0;
-    QApplication app(argc, 0);
+    QApplication app(argc, nullptr);
 }
 
 
@@ -255,13 +215,12 @@ void tst_QApplication::staticSetup()
 class TestApplication : public QApplication
 {
 public:
-    TestApplication( int &argc, char **argv )
-    : QApplication( argc, argv)
+    TestApplication(int &argc, char **argv) : QApplication( argc, argv)
     {
-        startTimer( 150 );
+        startTimer(150);
     }
 
-    void timerEvent( QTimerEvent * )
+    void timerEvent(QTimerEvent *) override
     {
         quit();
     }
@@ -273,24 +232,26 @@ void tst_QApplication::alert()
     QSKIP("WinRT does not support more than 1 native widget at the same time");
 #endif
     int argc = 0;
-    QApplication app(argc, 0);
-    app.alert(0, 0);
+    QApplication app(argc, nullptr);
+    QApplication::alert(nullptr, 0);
 
     QWidget widget;
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QWidget widget2;
-    app.alert(&widget, 100);
+    widget2.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1Char('2'));
+    QApplication::alert(&widget, 100);
     widget.show();
     widget2.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
     QVERIFY(QTest::qWaitForWindowExposed(&widget2));
-    app.alert(&widget, -1);
-    app.alert(&widget, 250);
+    QApplication::alert(&widget, -1);
+    QApplication::alert(&widget, 250);
     widget2.activateWindow();
     QApplication::setActiveWindow(&widget2);
-    app.alert(&widget, 0);
+    QApplication::alert(&widget, 0);
     widget.activateWindow();
     QApplication::setActiveWindow(&widget);
-    app.alert(&widget, 200);
+    QApplication::alert(&widget, 200);
 }
 
 void tst_QApplication::multiple_data()
@@ -311,7 +272,7 @@ void tst_QApplication::multiple()
     int i = 0;
     int argc = 0;
     while (i++ < 5) {
-        TestApplication app(argc, 0);
+        TestApplication app(argc, nullptr);
 
         if (features.contains("QFont")) {
             // create font and force loading
@@ -327,7 +288,7 @@ void tst_QApplication::multiple()
             QWidget widget;
         }
 
-        QVERIFY(!app.exec());
+        QVERIFY(!QCoreApplication::exec());
     }
 }
 
@@ -339,7 +300,7 @@ void tst_QApplication::nonGui()
 #endif
 
     int argc = 0;
-    QApplication app(argc, 0, false);
+    QApplication app(argc, nullptr, false);
     QCOMPARE(qApp, &app);
 }
 
@@ -350,36 +311,29 @@ void tst_QApplication::setFont_data()
     QTest::addColumn<bool>("beforeAppConstructor");
 
     int argc = 0;
-    QApplication app(argc, 0); // Needed for QFontDatabase
+    QApplication app(argc, nullptr); // Needed for QFontDatabase
 
-    int cnt = 0;
     QFontDatabase fdb;
-    QStringList families = fdb.families();
-    for (QStringList::const_iterator itr = families.begin();
-         itr != families.end();
-         ++itr) {
-        if (cnt < 3) {
-            QString family = *itr;
-            QStringList styles = fdb.styles(family);
-            if (styles.size() > 0) {
-                QString style = styles.first();
-                QList<int> sizes = fdb.pointSizes(family, style);
-                if (!sizes.size())
-                    sizes = fdb.standardSizes();
-                if (sizes.size() > 0) {
-                    const QByteArray cntB = QByteArray::number(cnt);
-                    QTest::newRow(("data" + cntB + "a").constData())
-                        << family
-                        << sizes.first()
-                        << false;
-                    QTest::newRow(("data" + cntB + "b").constData())
-                        << family
-                        << sizes.first()
-                        << true;
-                }
+    const QStringList &families = fdb.families();
+    for (int i = 0, count = qMin(3, families.size()); i < count; ++i) {
+        const auto &family = families.at(i);
+        const QStringList &styles = fdb.styles(family);
+        if (!styles.isEmpty()) {
+            QList<int> sizes = fdb.pointSizes(family, styles.constFirst());
+            if (sizes.isEmpty())
+                sizes = QFontDatabase::standardSizes();
+            if (!sizes.isEmpty()) {
+                const QByteArray name = QByteArrayLiteral("data") + QByteArray::number(i);
+                QTest::newRow((name + 'a').constData())
+                    << family
+                    << sizes.constFirst()
+                    << false;
+                QTest::newRow((name + 'b').constData())
+                    << family
+                    << sizes.constFirst()
+                    << true;
             }
         }
-        ++cnt;
     }
 
     QTest::newRow("nonexistingfont after") << "nosuchfont_probably_quiteunlikely"
@@ -407,7 +361,7 @@ void tst_QApplication::setFont()
     }
 
     int argc = 0;
-    QApplication app(argc, 0);
+    QApplication app(argc, nullptr);
     if (!beforeAppConstructor)
         QApplication::setFont( font );
 
@@ -431,31 +385,30 @@ void tst_QApplication::args_data()
 void tst_QApplication::task109149()
 {
     int argc = 0;
-    QApplication app(argc, 0);
+    QApplication app(argc, nullptr);
     QApplication::setFont(QFont("helvetica", 100));
 
     QWidget w;
     w.setWindowTitle("hello");
     w.show();
 
-    app.processEvents();
+    QCoreApplication::processEvents();
 }
 
-static char ** QString2cstrings( const QString &args )
+static char **QString2cstrings(const QString &args)
 {
-    static QList<QByteArray> cache;
+    static QByteArrayList cache;
 
-    int i;
-    char **argarray = 0;
-    QStringList list = args.split(' ');;
-    argarray = new char*[list.count()+1];
+    const auto &list = args.splitRef(' ');
+    auto argarray = new char*[list.count() + 1];
 
-    for (i = 0; i < (int)list.count(); ++i ) {
+    int i = 0;
+    for (; i < list.size(); ++i ) {
         QByteArray l1 = list[i].toLatin1();
         argarray[i] = l1.data();
         cache.append(l1);
     }
-    argarray[i] = 0;
+    argarray[i] = nullptr;
 
     return argarray;
 }
@@ -493,13 +446,13 @@ void tst_QApplication::args()
 
     delete [] argv;
     // Make sure we switch back to native style.
-    QApplicationPrivate::styleOverride = QString();
+    QApplicationPrivate::styleOverride.clear();
 }
 
 void tst_QApplication::appName()
 {
     char argv0[] = "tst_qapplication";
-    char *argv[] = { argv0, 0 };
+    char *argv[] = { argv0, nullptr };
     int argc = 1;
     QApplication app(argc, argv);
     QCOMPARE(::qAppName(), QString::fromLatin1("tst_qapplication"));
@@ -516,7 +469,7 @@ public:
     }
 
 protected:
-    void timerEvent(QTimerEvent *)
+    void timerEvent(QTimerEvent *) override
     {
         close();
     }
@@ -526,22 +479,24 @@ protected:
 void tst_QApplication::lastWindowClosed()
 {
     int argc = 0;
-    QApplication app(argc, 0);
+    QApplication app(argc, nullptr);
 
-    QSignalSpy spy(&app, SIGNAL(lastWindowClosed()));
+    QSignalSpy spy(&app, &QGuiApplication::lastWindowClosed);
 
     QPointer<QDialog> dialog = new QDialog;
+    dialog->setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1String("Dialog"));
     QVERIFY(dialog->testAttribute(Qt::WA_QuitOnClose));
-    QTimer::singleShot(1000, dialog, SLOT(accept()));
+    QTimer::singleShot(1000, dialog.data(), &QDialog::accept);
     dialog->exec();
     QVERIFY(dialog);
     QCOMPARE(spy.count(), 0);
 
     QPointer<CloseWidget>widget = new CloseWidget;
+    widget->setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1String("CloseWidget"));
     QVERIFY(widget->testAttribute(Qt::WA_QuitOnClose));
     widget->show();
-    QObject::connect(&app, SIGNAL(lastWindowClosed()), widget, SLOT(deleteLater()));
-    app.exec();
+    QObject::connect(&app, &QGuiApplication::lastWindowClosed, widget.data(), &QObject::deleteLater);
+    QCoreApplication::exec();
     QVERIFY(!widget);
     QCOMPARE(spy.count(), 1);
     spy.clear();
@@ -550,14 +505,17 @@ void tst_QApplication::lastWindowClosed()
 
     // show 3 windows, close them, should only get lastWindowClosed once
     QWidget w1;
+    w1.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1Char('1'));
     QWidget w2;
+    w1.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1Char('2'));
     QWidget w3;
+    w1.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1Char('3'));
     w1.show();
     w2.show();
     w3.show();
 
-    QTimer::singleShot(1000, &app, SLOT(closeAllWindows()));
-    app.exec();
+    QTimer::singleShot(1000, &app, &QApplication::closeAllWindows);
+    QCoreApplication::exec();
     QCOMPARE(spy.count(), 1);
 }
 
@@ -565,27 +523,27 @@ class QuitOnLastWindowClosedDialog : public QDialog
 {
     Q_OBJECT
 public:
-    QPushButton *okButton;
-
     QuitOnLastWindowClosedDialog()
     {
         QHBoxLayout *hbox = new QHBoxLayout(this);
-        okButton = new QPushButton("&ok", this);
+        m_okButton = new QPushButton("&ok", this);
 
-        hbox->addWidget(okButton);
-        connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
-        connect(okButton, SIGNAL(clicked()), this, SLOT(ok_clicked()));
+        hbox->addWidget(m_okButton);
+        connect(m_okButton, &QAbstractButton::clicked, this, &QDialog::accept);
+        connect(m_okButton, &QAbstractButton::clicked, this, &QuitOnLastWindowClosedDialog::ok_clicked);
     }
 
 public slots:
+    void animateOkClick() { m_okButton->animateClick(); }
+
     void ok_clicked()
     {
         QDialog other;
 
         QTimer timer;
-        connect(&timer, SIGNAL(timeout()), &other, SLOT(accept()));
-        QSignalSpy spy(&timer, SIGNAL(timeout()));
-        QSignalSpy appSpy(qApp, SIGNAL(lastWindowClosed()));
+        connect(&timer, &QTimer::timeout, &other, &QDialog::accept);
+        QSignalSpy spy(&timer, &QTimer::timeout);
+        QSignalSpy appSpy(qApp, &QGuiApplication::lastWindowClosed);
 
         timer.start(1000);
         other.exec();
@@ -594,6 +552,9 @@ public slots:
         QCOMPARE(spy.count(), 1);
         QCOMPARE(appSpy.count(), 1);
     }
+
+private:
+    QPushButton *m_okButton;
 };
 
 class QuitOnLastWindowClosedWindow : public QWidget
@@ -601,16 +562,16 @@ class QuitOnLastWindowClosedWindow : public QWidget
     Q_OBJECT
 
 public:
-    QuitOnLastWindowClosedWindow()
-    { }
+    QuitOnLastWindowClosedWindow() = default;
 
 public slots:
     void execDialogThenShow()
     {
         QDialog dialog;
+        dialog.setWindowTitle(QLatin1String("QuitOnLastWindowClosedWindow Dialog"));
         QTimer timer1;
-        connect(&timer1, SIGNAL(timeout()), &dialog, SLOT(accept()));
-        QSignalSpy spy1(&timer1, SIGNAL(timeout()));
+        connect(&timer1, &QTimer::timeout, &dialog, &QDialog::accept);
+        QSignalSpy spy1(&timer1, &QTimer::timeout);
         timer1.setSingleShot(true);
         timer1.start(1000);
         dialog.exec();
@@ -624,27 +585,29 @@ void tst_QApplication::quitOnLastWindowClosed()
 {
     {
         int argc = 0;
-        QApplication app(argc, 0);
+        QApplication app(argc, nullptr);
 
         QuitOnLastWindowClosedDialog d;
+        d.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
         d.show();
-        QTimer::singleShot(1000, d.okButton, SLOT(animateClick()));
+        QTimer::singleShot(1000, &d, &QuitOnLastWindowClosedDialog::animateOkClick);
 
-        QSignalSpy appSpy(&app, SIGNAL(lastWindowClosed()));
-        app.exec();
+        QSignalSpy appSpy(&app, &QGuiApplication::lastWindowClosed);
+        QCoreApplication::exec();
 
         // lastWindowClosed() signal should only be sent after the last dialog is closed
         QCOMPARE(appSpy.count(), 2);
     }
     {
         int argc = 0;
-        QApplication app(argc, 0);
-        QSignalSpy appSpy(&app, SIGNAL(lastWindowClosed()));
+        QApplication app(argc, nullptr);
+        QSignalSpy appSpy(&app, &QGuiApplication::lastWindowClosed);
 
         QDialog dialog;
+        dialog.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
         QTimer timer1;
-        connect(&timer1, SIGNAL(timeout()), &dialog, SLOT(accept()));
-        QSignalSpy spy1(&timer1, SIGNAL(timeout()));
+        connect(&timer1, &QTimer::timeout, &dialog, &QDialog::accept);
+        QSignalSpy spy1(&timer1, &QTimer::timeout);
         timer1.setSingleShot(true);
         timer1.start(1000);
         dialog.exec();
@@ -652,26 +615,28 @@ void tst_QApplication::quitOnLastWindowClosed()
         QCOMPARE(appSpy.count(), 0);
 
         QTimer timer2;
-        connect(&timer2, SIGNAL(timeout()), &app, SLOT(quit()));
-        QSignalSpy spy2(&timer2, SIGNAL(timeout()));
+        connect(&timer2, &QTimer::timeout, &app, &QCoreApplication::quit);
+        QSignalSpy spy2(&timer2, &QTimer::timeout);
         timer2.setSingleShot(true);
         timer2.start(1000);
-        int returnValue = app.exec();
+        int returnValue = QCoreApplication::exec();
         QCOMPARE(returnValue, 0);
         QCOMPARE(spy2.count(), 1);
         QCOMPARE(appSpy.count(), 0);
     }
     {
         int argc = 0;
-        QApplication app(argc, 0);
+        QApplication app(argc, nullptr);
         QTimer timer;
         timer.setInterval(100);
 
-        QSignalSpy spy(&app, SIGNAL(aboutToQuit()));
-        QSignalSpy spy2(&timer, SIGNAL(timeout()));
+        QSignalSpy spy(&app, &QCoreApplication::aboutToQuit);
+        QSignalSpy spy2(&timer, &QTimer::timeout);
 
         QMainWindow mainWindow;
+        mainWindow.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
         QDialog *dialog = new QDialog(&mainWindow);
+        dialog->setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1String("Dialog"));
 
         QVERIFY(app.quitOnLastWindowClosed());
         QVERIFY(mainWindow.testAttribute(Qt::WA_QuitOnClose));
@@ -683,21 +648,29 @@ void tst_QApplication::quitOnLastWindowClosed()
         QVERIFY(QTest::qWaitForWindowExposed(dialog));
 
         timer.start();
-        QTimer::singleShot(1000, &mainWindow, SLOT(close())); // This should quit the application
-        QTimer::singleShot(2000, &app, SLOT(quit()));        // This makes sure we quit even if it didn't
+        QTimer::singleShot(1000, &mainWindow, &QWidget::close); // This should quit the application
+        QTimer::singleShot(2000, &app, &QCoreApplication::quit); // This makes sure we quit even if it didn't
 
-        app.exec();
+        QCoreApplication::exec();
 
         QCOMPARE(spy.count(), 1);
         QVERIFY(spy2.count() < 15);      // Should be around 10 if closing caused the quit
     }
+
+    bool quitApplicationTriggered = false;
+    auto quitSlot = [&quitApplicationTriggered] () {
+        quitApplicationTriggered = true;
+        QCoreApplication::quit();
+    };
+
     {
         int argc = 0;
-        QApplication app(argc, 0);
+        QApplication app(argc, nullptr);
 
-        QSignalSpy spy(&app, SIGNAL(aboutToQuit()));
+        QSignalSpy spy(&app, &QCoreApplication::aboutToQuit);
 
         CloseEventTestWindow mainWindow;
+        mainWindow.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
 
         QVERIFY(app.quitOnLastWindowClosed());
         QVERIFY(mainWindow.testAttribute(Qt::WA_QuitOnClose));
@@ -705,30 +678,31 @@ void tst_QApplication::quitOnLastWindowClosed()
         mainWindow.show();
         QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 
-        QTimer::singleShot(1000, &mainWindow, SLOT(close())); // This should NOT quit the application (see CloseEventTestWindow)
+        QTimer::singleShot(1000, &mainWindow, &QWidget::close); // This should NOT quit the application (see CloseEventTestWindow)
         quitApplicationTriggered = false;
-        QTimer::singleShot(2000, this, SLOT(quitApplication())); // This actually quits the application.
+        QTimer::singleShot(2000, this, quitSlot); // This actually quits the application.
 
-        app.exec();
+        QCoreApplication::exec();
 
         QCOMPARE(spy.count(), 1);
         QVERIFY(quitApplicationTriggered);
     }
     {
         int argc = 0;
-        QApplication app(argc, 0);
-        QSignalSpy appSpy(&app, SIGNAL(lastWindowClosed()));
+        QApplication app(argc, nullptr);
+        QSignalSpy appSpy(&app, &QApplication::lastWindowClosed);
 
         // exec a dialog for 1 second, then show the window
         QuitOnLastWindowClosedWindow window;
-        QTimer::singleShot(0, &window, SLOT(execDialogThenShow()));
+        window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+        QTimer::singleShot(0, &window, &QuitOnLastWindowClosedWindow::execDialogThenShow);
 
         QTimer timer;
-        QSignalSpy timerSpy(&timer, SIGNAL(timeout()));
-        connect(&timer, SIGNAL(timeout()), &window, SLOT(close()));
+        QSignalSpy timerSpy(&timer, &QTimer::timeout);
+        connect(&timer, &QTimer::timeout, &window, &QWidget::close);
         timer.setSingleShot(true);
         timer.start(2000);
-        int returnValue = app.exec();
+        int returnValue = QCoreApplication::exec();
         QCOMPARE(returnValue, 0);
         // failure here means the timer above didn't fire, and the
         // quit was caused the dialog being closed (not the window)
@@ -737,34 +711,38 @@ void tst_QApplication::quitOnLastWindowClosed()
     }
     {
         int argc = 0;
-        QApplication app(argc, 0);
+        QApplication app(argc, nullptr);
         QVERIFY(app.quitOnLastWindowClosed());
 
         QWindow w;
+        w.setTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1String("Window"));
         w.show();
 
         QWidget wid;
+        wid.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1String("Widget"));
         wid.show();
 
-        QTimer::singleShot(1000, &wid, SLOT(close())); // This should NOT quit the application because the
+        QTimer::singleShot(1000, &wid, &QWidget::close); // This should NOT quit the application because the
                                                        // QWindow is still there.
         quitApplicationTriggered = false;
-        QTimer::singleShot(2000, this, SLOT(quitApplication()));  // This causes the quit.
+        QTimer::singleShot(2000, this, quitSlot);  // This causes the quit.
 
-        app.exec();
+        QCoreApplication::exec();
 
         QVERIFY(quitApplicationTriggered);      // Should be around 20 if closing did not caused the quit
     }
     {   // QTBUG-31569: If the last widget with Qt::WA_QuitOnClose set is closed, other
         // widgets that don't have the attribute set should be closed automatically.
         int argc = 0;
-        QApplication app(argc, 0);
+        QApplication app(argc, nullptr);
         QVERIFY(app.quitOnLastWindowClosed());
 
         QWidget w1;
+        w1.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1Char('1'));
         w1.show();
 
         QWidget w2;
+        w1.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1Char('2'));
         w2.setAttribute(Qt::WA_QuitOnClose, false);
         w2.show();
 
@@ -773,19 +751,24 @@ void tst_QApplication::quitOnLastWindowClosed()
         QTimer timer;
         timer.setInterval(100);
         timer.start();
-        QSignalSpy timerSpy(&timer, SIGNAL(timeout()));
+        QSignalSpy timerSpy(&timer, &QTimer::timeout);
 
-        QTimer::singleShot(100, &w1, SLOT(close()));
-        app.exec();
+        QTimer::singleShot(100, &w1, &QWidget::close);
+        QCoreApplication::exec();
 
         QVERIFY(timerSpy.count() < 10);
     }
 }
 
+static inline bool isVisible(const QWidget *w)
+{
+    return w->isVisible();
+}
+
 class PromptOnCloseWidget : public QWidget
 {
 public:
-    void closeEvent(QCloseEvent *event)
+    void closeEvent(QCloseEvent *event) override
     {
         QMessageBox *messageBox = new QMessageBox(this);
         messageBox->setWindowTitle("Unsaved data");
@@ -797,12 +780,12 @@ public:
         QVERIFY(QTest::qWaitForWindowExposed(messageBox));
 
         // verify that all windows are visible
-        foreach (QWidget *w, qApp->topLevelWidgets())
-            QVERIFY(w->isVisible());
+        const auto &topLevels = QApplication::topLevelWidgets();
+        QVERIFY(std::all_of(topLevels.cbegin(), topLevels.cend(), ::isVisible));
         // flush event queue
-        qApp->processEvents();
+        QCoreApplication::processEvents();
         // close all windows
-        qApp->closeAllWindows();
+        QApplication::closeAllWindows();
 
         if (messageBox->standardButton(messageBox->clickedButton()) == QMessageBox::Cancel)
             event->ignore();
@@ -819,7 +802,7 @@ void tst_QApplication::closeAllWindows()
     QSKIP("PromptOnCloseWidget does not work on WinRT - QTBUG-68297");
 #endif
     int argc = 0;
-    QApplication app(argc, 0);
+    QApplication app(argc, nullptr);
 
     // create some windows
     new QWidget;
@@ -827,39 +810,39 @@ void tst_QApplication::closeAllWindows()
     new QWidget;
 
     // show all windows
-    foreach (QWidget *w, app.topLevelWidgets()) {
+    auto topLevels = QApplication::topLevelWidgets();
+    for (QWidget *w : qAsConst(topLevels)) {
         w->show();
         QVERIFY(QTest::qWaitForWindowExposed(w));
     }
     // verify that they are visible
-    foreach (QWidget *w, app.topLevelWidgets())
-        QVERIFY(w->isVisible());
+    QVERIFY(std::all_of(topLevels.cbegin(), topLevels.cend(), isVisible));
     // empty event queue
-    app.processEvents();
+    QCoreApplication::processEvents();
     // close all windows
-    app.closeAllWindows();
+    QApplication::closeAllWindows();
     // all windows should no longer be visible
-    foreach (QWidget *w, app.topLevelWidgets())
-        QVERIFY(!w->isVisible());
+    QVERIFY(std::all_of(topLevels.cbegin(), topLevels.cend(), [] (const QWidget *w) { return !w->isVisible(); }));
 
     // add a window that prompts the user when closed
     PromptOnCloseWidget *promptOnCloseWidget = new PromptOnCloseWidget;
     // show all windows
-    foreach (QWidget *w, app.topLevelWidgets()) {
+    topLevels = QApplication::topLevelWidgets();
+    for (QWidget *w : qAsConst(topLevels)) {
         w->show();
         QVERIFY(QTest::qWaitForWindowExposed(w));
     }
     // close the last window to open the prompt (eventloop recurses)
     promptOnCloseWidget->close();
     // all windows should not be visible, except the one that opened the prompt
-    foreach (QWidget *w, app.topLevelWidgets()) {
+    for (QWidget *w : qAsConst(topLevels)) {
         if (w == promptOnCloseWidget)
             QVERIFY(w->isVisible());
         else
             QVERIFY(!w->isVisible());
     }
 
-    qDeleteAll(app.topLevelWidgets());
+    qDeleteAll(QApplication::topLevelWidgets());
 }
 
 bool isPathListIncluded(const QStringList &l, const QStringList &r)
@@ -883,7 +866,6 @@ bool isPathListIncluded(const QStringList &l, const QStringList &r)
 }
 
 #if QT_CONFIG(library)
-#define QT_TST_QAPP_DEBUG
 void tst_QApplication::libraryPaths()
 {
 #ifndef BUILTIN_TESTDATA
@@ -899,7 +881,7 @@ void tst_QApplication::libraryPaths()
         // creating QApplication adds the applicationDirPath to the libraryPath
         int argc = 1;
         QApplication app(argc, &argv0);
-        QString appDirPath = QDir(app.applicationDirPath()).canonicalPath();
+        QString appDirPath = QDir(QCoreApplication::applicationDirPath()).canonicalPath();
 
         QStringList actual = QApplication::libraryPaths();
         actual.sort();
@@ -914,7 +896,7 @@ void tst_QApplication::libraryPaths()
         // creating QApplication adds the applicationDirPath and plugin install path to the libraryPath
         int argc = 1;
         QApplication app(argc, &argv0);
-        QString appDirPath = app.applicationDirPath();
+        QString appDirPath = QCoreApplication::applicationDirPath();
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
 
         QStringList actual = QApplication::libraryPaths();
@@ -937,9 +919,7 @@ void tst_QApplication::libraryPaths()
                             "\nexpected:\n - " + testDir));
     }
     {
-#ifdef QT_TST_QAPP_DEBUG
-        qDebug() << "Initial library path:" << QApplication::libraryPaths();
-#endif
+        qCDebug(lcTests) << "Initial library path:" << QApplication::libraryPaths();
 
         int count = QApplication::libraryPaths().count();
 #if 0
@@ -948,10 +928,8 @@ void tst_QApplication::libraryPaths()
 #endif
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
         QApplication::addLibraryPath(installPathPlugins);
-#ifdef QT_TST_QAPP_DEBUG
-        qDebug() << "installPathPlugins" << installPathPlugins;
-        qDebug() << "After adding plugins path:" << QApplication::libraryPaths();
-#endif
+        qCDebug(lcTests) << "installPathPlugins" << installPathPlugins;
+        qCDebug(lcTests) << "After adding plugins path:" << QApplication::libraryPaths();
         QCOMPARE(QApplication::libraryPaths().count(), count);
         QApplication::addLibraryPath(testDir);
         QCOMPARE(QApplication::libraryPaths().count(), count + 1);
@@ -959,8 +937,8 @@ void tst_QApplication::libraryPaths()
         // creating QApplication adds the applicationDirPath to the libraryPath
         int argc = 1;
         QApplication app(argc, &argv0);
-        QString appDirPath = app.applicationDirPath();
-        qDebug() << QApplication::libraryPaths();
+        QString appDirPath = QCoreApplication::applicationDirPath();
+        qCDebug(lcTests) << QApplication::libraryPaths();
         // On Windows CE these are identical and might also be the case for other
         // systems too
         if (appDirPath != installPathPlugins)
@@ -970,36 +948,28 @@ void tst_QApplication::libraryPaths()
         int argc = 1;
         QApplication app(argc, &argv0);
 
-#ifdef QT_TST_QAPP_DEBUG
-        qDebug() << "Initial library path:" << app.libraryPaths();
-#endif
-        int count = app.libraryPaths().count();
+        qCDebug(lcTests) << "Initial library path:" << QCoreApplication::libraryPaths();
+        int count = QCoreApplication::libraryPaths().count();
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
-        app.addLibraryPath(installPathPlugins);
-#ifdef QT_TST_QAPP_DEBUG
-        qDebug() << "installPathPlugins" << installPathPlugins;
-        qDebug() << "After adding plugins path:" << app.libraryPaths();
-#endif
-        QCOMPARE(app.libraryPaths().count(), count);
+        QCoreApplication::addLibraryPath(installPathPlugins);
+        qCDebug(lcTests) << "installPathPlugins" << installPathPlugins;
+        qCDebug(lcTests) << "After adding plugins path:" << QCoreApplication::libraryPaths();
+        QCOMPARE(QCoreApplication::libraryPaths().count(), count);
 
-        QString appDirPath = app.applicationDirPath();
+        QString appDirPath = QCoreApplication::applicationDirPath();
 
-        app.addLibraryPath(appDirPath);
-        app.addLibraryPath(appDirPath + "/..");
-#ifdef QT_TST_QAPP_DEBUG
-        qDebug() << "appDirPath" << appDirPath;
-        qDebug() << "After adding appDirPath && appDirPath + /..:" << app.libraryPaths();
-#endif
-        QCOMPARE(app.libraryPaths().count(), count + 1);
-#ifdef Q_OS_MAC
-        app.addLibraryPath(appDirPath + "/../MacOS");
+        QCoreApplication::addLibraryPath(appDirPath);
+        QCoreApplication::addLibraryPath(appDirPath + "/..");
+        qCDebug(lcTests) << "appDirPath" << appDirPath;
+        qCDebug(lcTests) << "After adding appDirPath && appDirPath + /..:" << QCoreApplication::libraryPaths();
+        QCOMPARE(QCoreApplication::libraryPaths().count(), count + 1);
+#ifdef Q_OS_MACOS
+        QCoreApplication::addLibraryPath(appDirPath + "/../MacOS");
 #else
-        app.addLibraryPath(appDirPath + "/tmp/..");
+        QCoreApplication::addLibraryPath(appDirPath + "/tmp/..");
 #endif
-#ifdef QT_TST_QAPP_DEBUG
-        qDebug() << "After adding appDirPath + /tmp/..:" << app.libraryPaths();
-#endif
-        QCOMPARE(app.libraryPaths().count(), count + 1);
+        qCDebug(lcTests) << "After adding appDirPath + /tmp/..:" << QCoreApplication::libraryPaths();
+        QCOMPARE(QCoreApplication::libraryPaths().count(), count + 1);
     }
 }
 
@@ -1008,14 +978,14 @@ void tst_QApplication::libraryPaths_qt_plugin_path()
     int argc = 1;
 
     QApplication app(argc, &argv0);
-    QString appDirPath = app.applicationDirPath();
+    QString appDirPath = QCoreApplication::applicationDirPath();
 
     // Our hook into libraryPaths() initialization: Set the QT_PLUGIN_PATH environment variable
     QString installPathPluginsDeCanon = appDirPath + QString::fromLatin1("/tmp/..");
     QByteArray ascii = QFile::encodeName(installPathPluginsDeCanon);
     qputenv("QT_PLUGIN_PATH", ascii);
 
-    QVERIFY(!app.libraryPaths().contains(appDirPath + QString::fromLatin1("/tmp/..")));
+    QVERIFY(!QCoreApplication::libraryPaths().contains(appDirPath + QString::fromLatin1("/tmp/..")));
 }
 
 void tst_QApplication::libraryPaths_qt_plugin_path_2()
@@ -1042,14 +1012,14 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
         QStringList expected =
             QStringList()
             << QLibraryInfo::location(QLibraryInfo::PluginsPath)
-            << QDir(app.applicationDirPath()).canonicalPath()
+            << QDir(QCoreApplication::applicationDirPath()).canonicalPath()
             << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
 
 #ifdef Q_OS_WINRT
         QEXPECT_FAIL("", "On WinRT PluginsPath is outside of sandbox. QTBUG-68297", Abort);
 #endif
-        QVERIFY2(isPathListIncluded(app.libraryPaths(), expected),
-                 qPrintable("actual:\n - " + app.libraryPaths().join("\n - ") +
+        QVERIFY2(isPathListIncluded(QCoreApplication::libraryPaths(), expected),
+                 qPrintable("actual:\n - " + QCoreApplication::libraryPaths().join("\n - ") +
                             "\nexpected:\n - " + expected.join("\n - ")));
     }
 
@@ -1066,8 +1036,8 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
         QStringList expected =
             QStringList()
             << QLibraryInfo::location(QLibraryInfo::PluginsPath)
-            << app.applicationDirPath();
-        QVERIFY(isPathListIncluded(app.libraryPaths(), expected));
+            << QCoreApplication::applicationDirPath();
+        QVERIFY(isPathListIncluded(QCoreApplication::libraryPaths(), expected));
 
         qputenv("QT_PLUGIN_PATH", QByteArray());
     }
@@ -1079,7 +1049,7 @@ class SendPostedEventsTester : public QObject
     Q_OBJECT
 public:
     QList<int> eventSpy;
-    bool event(QEvent *e);
+    bool event(QEvent *e) override;
 private slots:
     void doTest();
 };
@@ -1100,7 +1070,7 @@ void SendPostedEventsTester::doTest()
     QEventLoop eventLoop;
     QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);
     eventLoop.exec();
-    QVERIFY(p != 0);
+    QVERIFY(p != nullptr);
 
     QCOMPARE(eventSpy.count(), 2);
     QCOMPARE(eventSpy.at(0), int(QEvent::MetaCall));
@@ -1111,12 +1081,12 @@ void SendPostedEventsTester::doTest()
 void tst_QApplication::sendPostedEvents()
 {
     int argc = 0;
-    QApplication app(argc, 0);
+    QApplication app(argc, nullptr);
     SendPostedEventsTester *tester = new SendPostedEventsTester;
     QMetaObject::invokeMethod(tester, "doTest", Qt::QueuedConnection);
     QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
     QPointer<SendPostedEventsTester> p = tester;
-    (void) app.exec();
+    (void) QCoreApplication::exec();
     QVERIFY(p.isNull());
 }
 
@@ -1124,7 +1094,7 @@ void tst_QApplication::thread()
 {
     QThread *currentThread = QThread::currentThread();
     // no app, but still have a valid thread
-    QVERIFY(currentThread != 0);
+    QVERIFY(currentThread != nullptr);
 
     // the thread should be running and not finished
     QVERIFY(currentThread->isRunning());
@@ -1140,10 +1110,10 @@ void tst_QApplication::thread()
 
     {
         int argc = 0;
-        QApplication app(argc, 0);
+        QApplication app(argc, nullptr);
 
         // current thread still valid
-        QVERIFY(QThread::currentThread() != 0);
+        QVERIFY(QThread::currentThread() != nullptr);
         // thread should be the same as before
         QCOMPARE(QThread::currentThread(), currentThread);
 
@@ -1158,7 +1128,7 @@ void tst_QApplication::thread()
     }
 
     // app dead, current thread still valid
-    QVERIFY(QThread::currentThread() != 0);
+    QVERIFY(QThread::currentThread() != nullptr);
     QCOMPARE(QThread::currentThread(), currentThread);
 
     // the thread should still be running and not finished
@@ -1173,10 +1143,10 @@ void tst_QApplication::thread()
     // before
     {
         int argc = 0;
-        QApplication app(argc, 0);
+        QApplication app(argc, nullptr);
 
         // current thread still valid
-        QVERIFY(QThread::currentThread() != 0);
+        QVERIFY(QThread::currentThread() != nullptr);
         // thread should be the same as before
         QCOMPARE(QThread::currentThread(), currentThread);
 
@@ -1195,7 +1165,7 @@ void tst_QApplication::thread()
     }
 
     // app dead, current thread still valid
-    QVERIFY(QThread::currentThread() != 0);
+    QVERIFY(QThread::currentThread() != nullptr);
     QCOMPARE(QThread::currentThread(), currentThread);
 
     // the thread should still be running and not finished
@@ -1211,10 +1181,10 @@ class DeleteLaterWidget : public QWidget
 {
     Q_OBJECT
 public:
-    DeleteLaterWidget(QApplication *_app, QWidget *parent = 0)
-        : QWidget(parent) { app = _app; child_deleted = false; }
+    explicit DeleteLaterWidget(QApplication *_app, QWidget *parent = nullptr)
+        : QWidget(parent), app(_app) {}
 
-    bool child_deleted;
+    bool child_deleted = false;
     QApplication *app;
 
 public slots:
@@ -1229,22 +1199,22 @@ void DeleteLaterWidget::runTest()
     QObject *stillAlive = this->findChild<QObject*>("deleteLater");
 
     QWidget *w = new QWidget(this);
-    connect(w, SIGNAL(destroyed()), this, SLOT(childDeleted()));
+    connect(w, &QObject::destroyed, this, &DeleteLaterWidget::childDeleted);
 
     w->deleteLater();
     QVERIFY(!child_deleted);
 
     QDialog dlg;
-    QTimer::singleShot(500, &dlg, SLOT(reject()));
+    QTimer::singleShot(500, &dlg, &QDialog::reject);
     dlg.exec();
 
     QVERIFY(!child_deleted);
-    app->processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(!child_deleted);
 
-    QTimer::singleShot(500, this, SLOT(checkDeleteLater()));
+    QTimer::singleShot(500, this, &DeleteLaterWidget::checkDeleteLater);
 
-    app->processEvents();
+    QCoreApplication::processEvents();
 
     QVERIFY(!stillAlive); // verify at the end to make test terminate
 }
@@ -1262,11 +1232,11 @@ void tst_QApplication::testDeleteLater()
     QSKIP("This test fails and then hangs on OS X, see QTBUG-24318");
 #endif
     int argc = 0;
-    QApplication app(argc, 0);
-    connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+    QApplication app(argc, nullptr);
+    connect(&app, &QApplication::lastWindowClosed, &app, &QCoreApplication::quit);
 
     DeleteLaterWidget *wgt = new DeleteLaterWidget(&app);
-    QTimer::singleShot(500, wgt, SLOT(runTest()));
+    QTimer::singleShot(500, wgt, &DeleteLaterWidget::runTest);
 
     QObject *object = new QObject(wgt);
     object->setObjectName("deleteLater");
@@ -1275,7 +1245,7 @@ void tst_QApplication::testDeleteLater()
     QObject *stillAlive = wgt->findChild<QObject*>("deleteLater");
     QVERIFY(stillAlive);
 
-    app.exec();
+    QCoreApplication::exec();
 
     delete wgt;
 
@@ -1296,7 +1266,7 @@ public slots:
           event loop
         */
         QMetaObject::invokeMethod(this, "deleteLater", Qt::QueuedConnection);
-        QTimer::singleShot(1000, &eventLoop, SLOT(quit()));
+        QTimer::singleShot(1000, &eventLoop, &QEventLoop::quit);
         eventLoop.exec();
         QVERIFY(p);
     }
@@ -1320,7 +1290,7 @@ public slots:
     }
     void sendPostedEventsWithDeferredDelete()
     {
-        QApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+        QApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
     }
 
     void deleteLaterAndProcessEvents()
@@ -1349,7 +1319,7 @@ public slots:
         QVERIFY(p);
 
         // however, it *will* work with this magic incantation
-        QApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+        QApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
         QVERIFY(!p);
     }
 };
@@ -1367,16 +1337,16 @@ void tst_QApplication::testDeleteLaterProcessEvents()
     delete object;
 
     {
-        QApplication app(argc, 0);
+        QApplication app(argc, nullptr);
         // If you call processEvents() with an event dispatcher present, but
         // outside any event loops, deferred deletes are not processed unless
         // sendPostedEvents(0, DeferredDelete) is called.
         object = new QObject;
         p = object;
         object->deleteLater();
-        app.processEvents();
+        QCoreApplication::processEvents();
         QVERIFY(p);
-        QApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
         QVERIFY(!p);
 
         // If you call deleteLater() on an object when there is no parent
@@ -1386,7 +1356,7 @@ void tst_QApplication::testDeleteLaterProcessEvents()
         p = object;
         object->deleteLater();
         QEventLoop loop;
-        QTimer::singleShot(1000, &loop, SLOT(quit()));
+        QTimer::singleShot(1000, &loop, &QEventLoop::quit);
         loop.exec();
         QVERIFY(!p);
     }
@@ -1394,12 +1364,12 @@ void tst_QApplication::testDeleteLaterProcessEvents()
         // When an object is in an event loop, then calls deleteLater() and enters
         // an event loop recursively, it should not die until the parent event
         // loop continues.
-        QApplication app(argc, 0);
+        QApplication app(argc, nullptr);
         QEventLoop loop;
         EventLoopNester *nester = new EventLoopNester;
         p = nester;
-        QTimer::singleShot(3000, &loop, SLOT(quit()));
-        QTimer::singleShot(0, nester, SLOT(deleteLaterAndEnterLoop()));
+        QTimer::singleShot(3000, &loop, &QEventLoop::quit);
+        QTimer::singleShot(0, nester, &EventLoopNester::deleteLaterAndEnterLoop);
 
         loop.exec();
         QVERIFY(!p);
@@ -1409,12 +1379,12 @@ void tst_QApplication::testDeleteLaterProcessEvents()
         // When the event loop that calls deleteLater() is exited
         // immediately, the object should die when returning to the
         // parent event loop
-        QApplication app(argc, 0);
+        QApplication app(argc, nullptr);
         QEventLoop loop;
         EventLoopNester *nester = new EventLoopNester;
         p = nester;
-        QTimer::singleShot(3000, &loop, SLOT(quit()));
-        QTimer::singleShot(0, nester, SLOT(deleteLaterAndExitLoop()));
+        QTimer::singleShot(3000, &loop, &QEventLoop::quit);
+        QTimer::singleShot(0, nester, &EventLoopNester::deleteLaterAndExitLoop);
 
         loop.exec();
         QVERIFY(!p);
@@ -1424,12 +1394,12 @@ void tst_QApplication::testDeleteLaterProcessEvents()
         // when the event loop that calls deleteLater() also calls
         // processEvents() immediately afterwards, the object should
         // not die until the parent loop continues
-        QApplication app(argc, 0);
+        QApplication app(argc, nullptr);
         QEventLoop loop;
         EventLoopNester *nester = new EventLoopNester();
         p = nester;
-        QTimer::singleShot(3000, &loop, SLOT(quit()));
-        QTimer::singleShot(0, nester, SLOT(deleteLaterAndProcessEvents()));
+        QTimer::singleShot(3000, &loop, &QEventLoop::quit);
+        QTimer::singleShot(0, nester, &EventLoopNester::deleteLaterAndProcessEvents);
 
         loop.exec();
         QVERIFY(!p);
@@ -1455,7 +1425,7 @@ void tst_QApplication::desktopSettingsAware()
 void tst_QApplication::setActiveWindow()
 {
     int argc = 0;
-    QApplication MyApp(argc, 0);
+    QApplication MyApp(argc, nullptr);
 
     QWidget* w = new QWidget;
     QVBoxLayout* layout = new QVBoxLayout(w);
@@ -1467,7 +1437,7 @@ void tst_QApplication::setActiveWindow()
     layout->addWidget(pb2);
 
     pb2->setFocus();
-    pb2->setParent(0);
+    pb2->setParent(nullptr);
     delete pb2;
 
     w->show();
@@ -1481,13 +1451,14 @@ void tst_QApplication::setActiveWindow()
 void tst_QApplication::focusChanged()
 {
     int argc = 0;
-    QApplication app(argc, 0);
+    QApplication app(argc, nullptr);
 
-    QSignalSpy spy(&app, SIGNAL(focusChanged(QWidget*,QWidget*)));
-    QWidget *now = 0;
-    QWidget *old = 0;
+    QSignalSpy spy(&app, QOverload<QWidget*,QWidget*>::of(&QApplication::focusChanged));
+    QWidget *now = nullptr;
+    QWidget *old = nullptr;
 
     QWidget parent1;
+    parent1.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1Char('1'));
     QHBoxLayout hbox1(&parent1);
     QLabel lb1(&parent1);
     QLineEdit le1(&parent1);
@@ -1538,6 +1509,7 @@ void tst_QApplication::focusChanged()
     spy.clear();
 
     QWidget parent2;
+    parent2.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1Char('1'));
     QHBoxLayout hbox2(&parent2);
     QLabel lb2(&parent2);
     QLineEdit le2(&parent2);
@@ -1556,9 +1528,9 @@ void tst_QApplication::focusChanged()
     QVERIFY(!old);
     spy.clear();
 
-    QTestKeyEvent tab(QTest::Press, Qt::Key_Tab, 0, 0);
-    QTestKeyEvent backtab(QTest::Press, Qt::Key_Backtab, 0, 0);
-    QTestMouseEvent click(QTest::MouseClick, Qt::LeftButton, 0, QPoint(5, 5), 0);
+    QTestKeyEvent tab(QTest::Press, Qt::Key_Tab, Qt::KeyboardModifiers(), 0);
+    QTestKeyEvent backtab(QTest::Press, Qt::Key_Backtab, Qt::KeyboardModifiers(), 0);
+    QTestMouseEvent click(QTest::MouseClick, Qt::LeftButton, Qt::KeyboardModifiers(), QPoint(5, 5), 0);
 
     bool tabAllControls = true;
 #ifdef Q_OS_MAC
@@ -1674,16 +1646,18 @@ void tst_QApplication::focusChanged()
 class LineEdit : public QLineEdit
 {
 public:
-    LineEdit(QWidget *parent = 0) : QLineEdit(parent) { }
+    using QLineEdit::QLineEdit;
 
 protected:
-    void focusOutEvent(QFocusEvent *e) {
+    void focusOutEvent(QFocusEvent *e) override
+    {
         QLineEdit::focusOutEvent(e);
         if (objectName() == "le1")
             setStyleSheet("");
     }
 
-    void focusInEvent(QFocusEvent *e) {
+    void focusInEvent(QFocusEvent *e)  override
+    {
         QLineEdit::focusInEvent(e);
         if (objectName() == "le2")
             setStyleSheet("");
@@ -1698,6 +1672,7 @@ void tst_QApplication::focusOut()
     // Tests the case where the style pointer changes when on focus in/out
     // (the above is the case when the stylesheet changes)
     QWidget w;
+    w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QLineEdit *le1 = new LineEdit(&w);
     le1->setObjectName("le1");
     le1->setStyleSheet("background: #fee");
@@ -1721,6 +1696,7 @@ void tst_QApplication::focusMouseClick()
     QApplication app(argc, &argv0);
 
     QWidget w;
+    w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     w.setFocusPolicy(Qt::StrongFocus);
     QWidget w2(&w);
     w2.setFocusPolicy(Qt::TabFocus);
@@ -1763,7 +1739,7 @@ void tst_QApplication::execAfterExit()
     QMetaObject::invokeMethod(&app, "quit", Qt::QueuedConnection);
     // this should be ignored, as exec() will reset the exitCode
     QApplication::exit(1);
-    int exitCode = app.exec();
+    int exitCode = QCoreApplication::exec();
     QCOMPARE(exitCode, 0);
 
     // the quitNow flag should have been reset, so we can spin an
@@ -1790,15 +1766,15 @@ void tst_QApplication::style()
 
     {
         QApplication app(argc, &argv0);
-        QPointer<QStyle> style = app.style();
-        app.setStyle(QStyleFactory::create(QLatin1String("Windows")));
+        QPointer<QStyle> style = QApplication::style();
+        QApplication::setStyle(QStyleFactory::create(QLatin1String("Windows")));
         QVERIFY(style.isNull());
     }
 
     QApplication app(argc, &argv0);
 
     // qApp style can never be 0
-    QVERIFY(QApplication::style() != 0);
+    QVERIFY(QApplication::style() != nullptr);
 }
 
 void tst_QApplication::allWidgets()
@@ -1806,11 +1782,9 @@ void tst_QApplication::allWidgets()
     int argc = 1;
     QApplication app(argc, &argv0);
     QWidget *w = new QWidget;
-    QVERIFY(app.allWidgets().contains(w)); // uncreate widget test
-    QVERIFY(app.allWidgets().contains(w)); // created widget test
+    QVERIFY(QApplication::allWidgets().contains(w)); // uncreate widget test
     delete w;
-    w = 0;
-    QVERIFY(!app.allWidgets().contains(w)); // removal test
+    QVERIFY(!QApplication::allWidgets().contains(w)); // removal test
 }
 
 void tst_QApplication::topLevelWidgets()
@@ -1820,16 +1794,15 @@ void tst_QApplication::topLevelWidgets()
     QWidget *w = new QWidget;
     w->show();
 #ifndef QT_NO_CLIPBOARD
-    QClipboard *clipboard = QApplication::clipboard();
-    QString originalText = clipboard->text();
-    clipboard->setText(QString("newText"));
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setText(QLatin1String("newText"));
 #endif
-    app.processEvents();
+    QCoreApplication::processEvents();
     QVERIFY(QApplication::topLevelWidgets().contains(w));
     QCOMPARE(QApplication::topLevelWidgets().count(), 1);
     delete w;
-    w = 0;
-    app.processEvents();
+    w = nullptr;
+    QCoreApplication::processEvents();
     QCOMPARE(QApplication::topLevelWidgets().count(), 0);
 }
 
@@ -1849,7 +1822,7 @@ void tst_QApplication::setAttribute()
     w = new QWidget;
     QVERIFY(w->testAttribute(Qt::WA_WState_Created));
     QWidget *w2 = new QWidget(w);
-    w2->setParent(0);
+    w2->setParent(nullptr);
     QVERIFY(w2->testAttribute(Qt::WA_WState_Created));
     delete w;
     delete w2;
@@ -1866,10 +1839,10 @@ class TouchEventPropagationTestWidget : public QWidget
     Q_OBJECT
 
 public:
-    bool seenTouchEvent, acceptTouchEvent, seenMouseEvent, acceptMouseEvent;
+    bool seenTouchEvent = false, acceptTouchEvent = false, seenMouseEvent = false, acceptMouseEvent = false;
 
-    TouchEventPropagationTestWidget(QWidget *parent = 0)
-        : QWidget(parent), seenTouchEvent(false), acceptTouchEvent(false), seenMouseEvent(false), acceptMouseEvent(false)
+
+    explicit TouchEventPropagationTestWidget(QWidget *parent = nullptr) : QWidget(parent)
     {
         setAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
     }
@@ -1879,7 +1852,7 @@ public:
         seenTouchEvent = acceptTouchEvent = seenMouseEvent = acceptMouseEvent = false;
     }
 
-    bool event(QEvent *event)
+    bool event(QEvent *event) override
     {
         switch (event->type()) {
         case QEvent::MouseButtonPress:
@@ -1923,11 +1896,13 @@ void tst_QApplication::touchEventPropagation()
     {
         // touch event behavior on a window
         TouchEventPropagationTestWidget window;
+        window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
         window.resize(200, 200);
         window.setObjectName("1. window");
         window.show(); // Must have an explicitly specified QWindow for handleTouchEvent,
                        // passing 0 would result in using topLevelAt() which is not ok in this case
                        // as the screen position in the point is bogus.
+        auto handle = window.windowHandle();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
         // QPA always takes screen positions and since we map the TouchPoint back to QPA's structure first,
         // we must ensure there is a screen position in the TouchPoint that maps to a local 0, 0.
@@ -1936,42 +1911,42 @@ void tst_QApplication::touchEventPropagation()
         pressedTouchPoints[0].setScreenPos(deviceGlobalPos);
         releasedTouchPoints[0].setScreenPos(deviceGlobalPos);
 
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(pressedTouchPoints));
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(pressedTouchPoints, handle));
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(releasedTouchPoints));
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(releasedTouchPoints, handle));
         QCoreApplication::processEvents();
         QVERIFY(!window.seenTouchEvent);
         QVERIFY(window.seenMouseEvent); // QApplication may transform ignored touch events in mouse events
 
         window.reset();
         window.setAttribute(Qt::WA_AcceptTouchEvents);
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(pressedTouchPoints));
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(pressedTouchPoints, handle));
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(releasedTouchPoints));
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(releasedTouchPoints, handle));
         QCoreApplication::processEvents();
         QVERIFY(window.seenTouchEvent);
         QVERIFY(window.seenMouseEvent);
 
         window.reset();
         window.acceptTouchEvent = true;
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(pressedTouchPoints));
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(pressedTouchPoints, handle));
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(releasedTouchPoints));
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(releasedTouchPoints, handle));
         QCoreApplication::processEvents();
         QVERIFY(window.seenTouchEvent);
         QVERIFY(!window.seenMouseEvent);
@@ -1980,26 +1955,28 @@ void tst_QApplication::touchEventPropagation()
     {
         // touch event behavior on a window with a child widget
         TouchEventPropagationTestWidget window;
+        window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
         window.resize(200, 200);
         window.setObjectName("2. window");
         TouchEventPropagationTestWidget widget(&window);
         widget.resize(200, 200);
         widget.setObjectName("2. widget");
         window.show();
+        auto handle = window.windowHandle();
         QVERIFY(QTest::qWaitForWindowExposed(&window));
         const QPoint deviceGlobalPos =
             QHighDpi::toNativePixels(window.mapToGlobal(QPoint(50, 150)), window.windowHandle()->screen());
         pressedTouchPoints[0].setScreenPos(deviceGlobalPos);
         releasedTouchPoints[0].setScreenPos(deviceGlobalPos);
 
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(pressedTouchPoints));
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(pressedTouchPoints, handle));
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(releasedTouchPoints));
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(releasedTouchPoints, handle));
         QTRY_VERIFY(widget.seenMouseEvent);
         QVERIFY(!widget.seenTouchEvent);
         QVERIFY(!window.seenTouchEvent);
@@ -2008,14 +1985,14 @@ void tst_QApplication::touchEventPropagation()
         window.reset();
         widget.reset();
         widget.setAttribute(Qt::WA_AcceptTouchEvents);
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(pressedTouchPoints));
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(pressedTouchPoints, handle));
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(releasedTouchPoints));
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(releasedTouchPoints, handle));
         QCoreApplication::processEvents();
         QVERIFY(widget.seenTouchEvent);
         QVERIFY(widget.seenMouseEvent);
@@ -2025,14 +2002,14 @@ void tst_QApplication::touchEventPropagation()
         window.reset();
         widget.reset();
         widget.acceptMouseEvent = true;
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(pressedTouchPoints));
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(pressedTouchPoints, handle));
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(releasedTouchPoints));
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(releasedTouchPoints, handle));
         QCoreApplication::processEvents();
         QVERIFY(widget.seenTouchEvent);
         QVERIFY(widget.seenMouseEvent);
@@ -2042,14 +2019,14 @@ void tst_QApplication::touchEventPropagation()
         window.reset();
         widget.reset();
         widget.acceptTouchEvent = true;
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(pressedTouchPoints));
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(pressedTouchPoints, handle));
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(releasedTouchPoints));
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(releasedTouchPoints, handle));
         QCoreApplication::processEvents();
         QVERIFY(widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
@@ -2060,14 +2037,14 @@ void tst_QApplication::touchEventPropagation()
         widget.reset();
         widget.setAttribute(Qt::WA_AcceptTouchEvents, false);
         window.setAttribute(Qt::WA_AcceptTouchEvents);
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(pressedTouchPoints));
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(pressedTouchPoints, handle));
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(releasedTouchPoints));
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(releasedTouchPoints, handle));
         QCoreApplication::processEvents();
         QVERIFY(!widget.seenTouchEvent);
         QVERIFY(widget.seenMouseEvent);
@@ -2077,14 +2054,14 @@ void tst_QApplication::touchEventPropagation()
         window.reset();
         widget.reset();
         window.acceptTouchEvent = true;
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(pressedTouchPoints));
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(pressedTouchPoints, handle));
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(releasedTouchPoints));
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(releasedTouchPoints, handle));
         QCoreApplication::processEvents();
         QVERIFY(!widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
@@ -2095,14 +2072,14 @@ void tst_QApplication::touchEventPropagation()
         widget.reset();
         widget.acceptMouseEvent = true; // doesn't matter, touch events are propagated first
         window.acceptTouchEvent = true;
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(pressedTouchPoints));
-        QWindowSystemInterface::handleTouchEvent(window.windowHandle(),
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(pressedTouchPoints, handle));
+        QWindowSystemInterface::handleTouchEvent(handle,
                                                  0,
                                                  device,
-                                                 touchPointList(releasedTouchPoints));
+                                                 QWindowSystemInterfacePrivate::toNativeTouchPoints(releasedTouchPoints, handle));
         QCoreApplication::processEvents();
         QVERIFY(!widget.seenTouchEvent);
         QVERIFY(!widget.seenMouseEvent);
@@ -2130,37 +2107,33 @@ class NoQuitOnHideWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit NoQuitOnHideWidget(QWidget *parent = 0)
+    explicit NoQuitOnHideWidget(QWidget *parent = nullptr)
       : QWidget(parent)
     {
-        QTimer::singleShot(0, this, SLOT(hide()));
-        QTimer::singleShot(500, this, SLOT(exitApp()));
-    }
-
-private slots:
-    void exitApp() {
-      qApp->exit(1);
+        QTimer::singleShot(0, this, &QWidget::hide);
+        QTimer::singleShot(500, this, [] () { QCoreApplication::exit(1); });
     }
 };
 
 void tst_QApplication::noQuitOnHide()
 {
     int argc = 0;
-    QApplication app(argc, 0);
+    QApplication app(argc, nullptr);
     NoQuitOnHideWidget window1;
+    window1.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window1.show();
-    QCOMPARE(app.exec(), 1);
+    QCOMPARE(QCoreApplication::exec(), 1);
 }
 
 class ShowCloseShowWidget : public QWidget
 {
     Q_OBJECT
 public:
-    ShowCloseShowWidget(bool showAgain, QWidget *parent = 0)
-      : QWidget(parent), showAgain(showAgain)
+    explicit ShowCloseShowWidget(bool showAgain, QWidget *parent = nullptr)
+        : QWidget(parent), showAgain(showAgain)
     {
-        QTimer::singleShot(0, this, SLOT(doClose()));
-        QTimer::singleShot(500, this, SLOT(exitApp()));
+        QTimer::singleShot(0, this, &ShowCloseShowWidget::doClose);
+        QTimer::singleShot(500, this, [] () { QCoreApplication::exit(1); });
     }
 
 private slots:
@@ -2170,25 +2143,23 @@ private slots:
             show();
     }
 
-    void exitApp() {
-      qApp->exit(1);
-    }
-
 private:
-    bool showAgain;
+    const bool showAgain;
 };
 
 void tst_QApplication::abortQuitOnShow()
 {
     int argc = 0;
-    QApplication app(argc, 0);
+    QApplication app(argc, nullptr);
     ShowCloseShowWidget window1(false);
+    window1.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window1.show();
-    QCOMPARE(app.exec(), 0);
+    QCOMPARE(QCoreApplication::exec(), 0);
 
     ShowCloseShowWidget window2(true);
+    window2.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window2.show();
-    QCOMPARE(app.exec(), 1);
+    QCOMPARE(QCoreApplication::exec(), 1);
 }
 
 // Test that static functions do not crash if there is no application instance.
@@ -2226,7 +2197,7 @@ void tst_QApplication::settableStyleHints()
     int argc = 0;
     QScopedPointer<QApplication> app;
     if (appInstance)
-        app.reset(new QApplication(argc, 0));
+        app.reset(new QApplication(argc, nullptr));
 
     QApplication::setCursorFlashTime(437);
     QCOMPARE(QApplication::cursorFlashTime(), 437);
@@ -2290,12 +2261,6 @@ void tst_QApplication::globalStaticObjectDestruction()
 #ifndef QT_NO_CURSOR
     QVERIFY(tst_qapp_cursor());
 #endif
-}
-
-void tst_QApplication::quitApplication()
-{
-    quitApplicationTriggered = true;
-    qApp->quit();
 }
 
 //QTEST_APPLESS_MAIN(tst_QApplication)

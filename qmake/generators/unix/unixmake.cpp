@@ -498,21 +498,20 @@ UnixMakefileGenerator::findLibraries(bool linkPrl, bool mergeLflags)
                         // Make sure we keep the dependency order of libraries
                         lflags[arch].removeAll(opt);
                         lflags[arch].append(opt);
-                    } else if (target_mode == TARG_MAC_MODE && opt.startsWith("-framework")) {
-                        if (opt.length() > 10) {
-                            opt = opt.mid(10).trimmed();
-                        } else {
-                            opt = l.at(++lit);
-                            if (opt.startsWith("-Xarch"))
-                                opt = l.at(++lit); // The user has done the right thing and prefixed each part
-                        }
+                    } else if (target_mode == TARG_MAC_MODE
+                        && (opt == "-framework" || opt == "-force_load")) {
+                        // Handle space separated options
+                        ProString dashOpt = opt;
+                        opt = l.at(++lit);
+                        if (opt.startsWith("-Xarch"))
+                            opt = l.at(++lit); // The user has done the right thing and prefixed each part
                         for(int x = 0; x < lflags[arch].size(); ++x) {
-                            if (lflags[arch].at(x) == "-framework" && lflags[arch].at(++x) == opt) {
+                            if (lflags[arch].at(x) == dashOpt && lflags[arch].at(++x) == opt) {
                                 lflags[arch].remove(x - 1, 2);
                                 break;
                             }
                         }
-                        lflags[arch].append("-framework");
+                        lflags[arch].append(dashOpt);
                         lflags[arch].append(opt);
                     } else {
                         lflags[arch].append(opt);
@@ -726,7 +725,7 @@ UnixMakefileGenerator::defaultInstall(const QString &t)
             }
         }
     }
-    if(project->first("TEMPLATE") == "lib") {
+    if (isAux || project->first("TEMPLATE") == "lib") {
         QStringList types;
         types << "prl" << "libtool" << "pkgconfig";
         for(int i = 0; i < types.size(); ++i) {

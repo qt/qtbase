@@ -569,12 +569,10 @@ public:
 
     bool isFileSystem() const  { return (m_attributes & SFGAO_FILESYSTEM) != 0; }
     bool isDir() const         { return (m_attributes & SFGAO_FOLDER) != 0; }
-    // Copy using IFileOperation
-    bool canCopy() const       { return (m_attributes & SFGAO_CANCOPY) != 0; }
     // Supports IStream
     bool canStream() const     { return (m_attributes & SFGAO_STREAM) != 0; }
 
-    bool copyData(QIODevice *out);
+    bool copyData(QIODevice *out, QString *errorMessage);
 
     static IShellItems itemsFromItemArray(IShellItemArray *items);
 
@@ -666,14 +664,19 @@ QWindowsShellItem::IShellItems QWindowsShellItem::itemsFromItemArray(IShellItemA
     return result;
 }
 
-bool QWindowsShellItem::copyData(QIODevice *out)
+bool QWindowsShellItem::copyData(QIODevice *out, QString *errorMessage)
 {
-    if (!canCopy() || !canStream())
+    if (!canStream()) {
+        *errorMessage = QLatin1String("Item not streamable");
         return false;
+    }
     IStream *istream = nullptr;
     HRESULT hr = m_item->BindToHandler(nullptr, BHID_Stream, IID_PPV_ARGS(&istream));
-    if (FAILED(hr))
+    if (FAILED(hr)) {
+        *errorMessage = QLatin1String("BindToHandler() failed: ")
+                        + QLatin1String(QWindowsContext::comErrorString(hr));
         return false;
+    }
     enum : ULONG { bufSize = 102400 };
     char buffer[bufSize];
     ULONG bytesRead;
@@ -686,7 +689,12 @@ bool QWindowsShellItem::copyData(QIODevice *out)
             break;
     }
     istream->Release();
-    return hr == S_OK || hr == S_FALSE;
+    if (hr != S_OK && hr != S_FALSE) {
+        *errorMessage = QLatin1String("Read() failed: ")
+                        + QLatin1String(QWindowsContext::comErrorString(hr));
+        return false;
+    }
+    return true;
 }
 
 // Helper for "Libraries": collections of folders appearing from Windows 7
@@ -735,8 +743,6 @@ void QWindowsShellItem::format(QDebug &d) const
         d << " [dir]";
     if (canStream())
         d << " [stream]";
-    if (canCopy())
-        d << " [copyable]";
     d << ", normalDisplay=\"" << normalDisplay()
         << "\", desktopAbsoluteParsing=\"" << desktopAbsoluteParsing()
         << "\", urlString=\"" << urlString() << "\", fileSysPath=\"" << fileSysPath() << '"';
@@ -967,7 +973,9 @@ void QWindowsNativeFileDialogBase::doExec(HWND owner)
     const HRESULT hr = m_fileDialog->Show(owner);
     QWindowsDialogs::eatMouseMove();
     qCDebug(lcQpaDialogs) << '<' << __FUNCTION__ << " returns " << hex << hr;
-    if (hr == S_OK) {
+    // Emit accepted() only if there is a result as otherwise UI hangs occur.
+    // For example, typing in invalid URLs results in empty result lists.
+    if (hr == S_OK && !m_data.selectedFiles().isEmpty()) {
         emit accepted();
     } else {
         emit rejected();
@@ -1393,21 +1401,50 @@ static void cleanupTemporaryItemCopies()
         QFile::remove(file);
 }
 
-static QString createTemporaryItemCopy(QWindowsShellItem &qItem)
-{
-    if (!qItem.canCopy() || !qItem.canStream())
-        return QString();
-    QString pattern = qItem.normalDisplay();
-    const int lastDot = pattern.lastIndexOf(QLatin1Char('.'));
-    const QString placeHolder = QStringLiteral("_XXXXXX");
-    if (lastDot >= 0)
-        pattern.insert(lastDot, placeHolder);
-    else
-        pattern.append(placeHolder);
+// Determine temporary file pattern from a shell item's display
+// name. This can be a URL.
 
-    QTemporaryFile targetFile(QDir::tempPath() + QLatin1Char('/') + pattern);
+static bool validFileNameCharacter(QChar c)
+{
+    return c.isLetterOrNumber() || c == QLatin1Char('_') || c == QLatin1Char('-');
+}
+
+QString tempFilePattern(QString name)
+{
+    const int lastSlash = qMax(name.lastIndexOf(QLatin1Char('/')),
+                               name.lastIndexOf(QLatin1Char('\\')));
+    if (lastSlash != -1)
+        name.remove(0, lastSlash + 1);
+
+    int lastDot = name.lastIndexOf(QLatin1Char('.'));
+    if (lastDot < 0)
+        lastDot = name.size();
+    name.insert(lastDot, QStringLiteral("_XXXXXX"));
+
+    for (int i = lastDot - 1; i >= 0; --i) {
+        if (!validFileNameCharacter(name.at(i)))
+            name[i] = QLatin1Char('_');
+    }
+
+    name.prepend(QDir::tempPath() + QLatin1Char('/'));
+    return name;
+}
+
+static QString createTemporaryItemCopy(QWindowsShellItem &qItem, QString *errorMessage)
+{
+    if (!qItem.canStream()) {
+        *errorMessage = QLatin1String("Item not streamable");
+        return QString();
+    }
+
+    QTemporaryFile targetFile(tempFilePattern(qItem.normalDisplay()));
     targetFile.setAutoRemove(false);
-    if (!targetFile.open() || !qItem.copyData(&targetFile))
+    if (!targetFile.open())  {
+        *errorMessage = QLatin1String("Cannot create temporary file: ")
+                        + targetFile.errorString();
+        return QString();
+    }
+    if (!qItem.copyData(&targetFile, errorMessage))
         return QString();
     const QString result = targetFile.fileName();
     if (temporaryItemCopies()->isEmpty())
@@ -1416,23 +1453,41 @@ static QString createTemporaryItemCopy(QWindowsShellItem &qItem)
     return result;
 }
 
+static QUrl itemToDialogUrl(QWindowsShellItem &qItem, QString *errorMessage)
+{
+    QUrl url = qItem.url();
+    if (url.isLocalFile() || url.scheme().startsWith(QLatin1String("http")))
+        return url;
+    const QString path = qItem.path();
+    if (path.isEmpty() && !qItem.isDir() && qItem.canStream()) {
+        const QString temporaryCopy = createTemporaryItemCopy(qItem, errorMessage);
+        if (temporaryCopy.isEmpty()) {
+            QDebug(errorMessage).noquote() << "Unable to create a local copy of"
+                << qItem << ": " << errorMessage;
+            return QUrl();
+        }
+        return QUrl::fromLocalFile(temporaryCopy);
+    }
+    if (!url.isValid())
+        QDebug(errorMessage).noquote() << "Invalid URL obtained from" << qItem;
+    return url;
+}
+
 QList<QUrl> QWindowsNativeOpenFileDialog::dialogResult() const
 {
     QList<QUrl> result;
     IShellItemArray *items = nullptr;
     if (SUCCEEDED(openFileDialog()->GetResults(&items)) && items) {
+        QString errorMessage;
         for (IShellItem *item : QWindowsShellItem::itemsFromItemArray(items)) {
             QWindowsShellItem qItem(item);
-            const QString path = qItem.path();
-            if (path.isEmpty() && !qItem.isDir()) {
-                const QString temporaryCopy = createTemporaryItemCopy(qItem);
-                if (temporaryCopy.isEmpty())
-                    qWarning() << "Unable to create a local copy of" << qItem;
-                else
-                    result.append(QUrl::fromLocalFile(temporaryCopy));
-            } else {
-                result.append(qItem.url());
+            const QUrl url = itemToDialogUrl(qItem, &errorMessage);
+            if (!url.isValid()) {
+                qWarning("%s", qPrintable(errorMessage));
+                result.clear();
+                break;
             }
+            result.append(url);
         }
     }
     return result;

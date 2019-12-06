@@ -77,8 +77,20 @@
 #define GL_UNSIGNED_INT_2_10_10_10_REV    0x8368
 #endif
 
-#ifndef GL_TEXTURE_SWIZZLE_RGBA
-#define GL_TEXTURE_SWIZZLE_RGBA           0x8E46
+#ifndef GL_TEXTURE_SWIZZLE_R
+#define GL_TEXTURE_SWIZZLE_R              0x8E42
+#endif
+
+#ifndef GL_TEXTURE_SWIZZLE_G
+#define GL_TEXTURE_SWIZZLE_G              0x8E43
+#endif
+
+#ifndef GL_TEXTURE_SWIZZLE_B
+#define GL_TEXTURE_SWIZZLE_B              0x8E44
+#endif
+
+#ifndef GL_TEXTURE_SWIZZLE_A
+#define GL_TEXTURE_SWIZZLE_A              0x8E45
 #endif
 
 #ifndef GL_SRGB
@@ -128,11 +140,13 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
 #endif
         } else if (funcs->hasOpenGLExtension(QOpenGLExtensions::TextureSwizzle)) {
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
-            GLint swizzle[4] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };
-            funcs->glTexParameteriv(target, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+            funcs->glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
+            funcs->glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_RED);
 #else
-            GLint swizzle[4] = { GL_GREEN, GL_BLUE, GL_ALPHA, GL_RED };
-            funcs->glTexParameteriv(target, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+            funcs->glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_GREEN);
+            funcs->glTexParameteri(target, GL_TEXTURE_SWIZZLE_G, GL_BLUE);
+            funcs->glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_ALPHA);
+            funcs->glTexParameteri(target, GL_TEXTURE_SWIZZLE_A, GL_RED);
 #endif
             externalFormat = internalFormat = GL_RGBA;
             pixelType = GL_UNSIGNED_BYTE;
@@ -164,12 +178,12 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
             externalFormat = GL_BGRA;
             internalFormat = GL_RGB10_A2;
             targetFormat = image.format();
-        } else if (funcs->hasOpenGLExtension(QOpenGLExtensions::TextureSwizzle) && (isOpenGL12orBetter || isOpenGLES3orBetter)) {
+        } else if (funcs->hasOpenGLExtension(QOpenGLExtensions::TextureSwizzle)) {
+            funcs->glTexParameteri(target, GL_TEXTURE_SWIZZLE_B, GL_RED);
+            funcs->glTexParameteri(target, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
             pixelType = GL_UNSIGNED_INT_2_10_10_10_REV;
             externalFormat = GL_RGBA;
             internalFormat = GL_RGB10_A2;
-            GLint swizzle[4] = { GL_BLUE, GL_GREEN, GL_RED, GL_ALPHA };
-            funcs->glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
             targetFormat = image.format();
         }
         break;
@@ -227,8 +241,10 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
             pixelType = GL_UNSIGNED_BYTE;
             targetFormat = image.format();
         } else if (funcs->hasOpenGLExtension(QOpenGLExtensions::TextureSwizzle)) {
-            GLint swizzle[4] = { GL_ZERO, GL_ZERO, GL_ZERO, GL_RED };
-            funcs->glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+            funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_ALPHA);
+            funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_ZERO);
+            funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_ZERO);
+            funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ZERO);
             externalFormat = internalFormat = GL_RED;
             pixelType = GL_UNSIGNED_BYTE;
             targetFormat = image.format();
@@ -247,8 +263,10 @@ qsizetype QOpenGLTextureUploader::textureImage(GLenum target, const QImage &imag
             pixelType = GL_UNSIGNED_BYTE;
             targetFormat = image.format();
         } else if (funcs->hasOpenGLExtension(QOpenGLExtensions::TextureSwizzle)) {
-            GLint swizzle[4] = { GL_RED, GL_RED, GL_RED, GL_ONE };
-            funcs->glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+            funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_RED);
+            funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
+            funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+            funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
             externalFormat = internalFormat = GL_RED;
             pixelType = GL_UNSIGNED_BYTE;
             targetFormat = image.format();

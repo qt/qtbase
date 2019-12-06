@@ -313,7 +313,7 @@ QOpenGLContext *qt_gl_global_share_context()
 
     \section1 Context Resource Sharing
 
-    Resources, such as framebuffer objects, textures, and vertex buffer objects
+    Resources such as textures and vertex buffer objects
     can be shared between contexts.  Use setShareContext() before calling
     create() to specify that the contexts should share these resources.
     QOpenGLContext internally keeps track of a QOpenGLContextGroup object which
@@ -612,8 +612,8 @@ bool QOpenGLContext::create()
     d->platformGLContext = QGuiApplicationPrivate::platformIntegration()->createPlatformOpenGLContext(this);
     if (!d->platformGLContext)
         return false;
-    d->platformGLContext->initialize();
     d->platformGLContext->setContext(this);
+    d->platformGLContext->initialize();
     if (!d->platformGLContext->isSharing())
         d->shareContext = 0;
     d->shareGroup = d->shareContext ? d->shareContext->shareGroup() : new QOpenGLContextGroup;
@@ -977,11 +977,8 @@ bool QOpenGLContext::makeCurrent(QSurface *surface)
     if (!surface->surfaceHandle())
         return false;
     if (!surface->supportsOpenGL()) {
-#ifndef Q_OS_WASM // ### work around the WASM platform plugin using QOpenGLContext with raster surfaces.
-        // see QTBUG-70076
         qWarning() << "QOpenGLContext::makeCurrent() called with non-opengl surface" << surface;
         return false;
-#endif
     }
 
     if (!d->platformGLContext->makeCurrent(surface->surfaceHandle()))

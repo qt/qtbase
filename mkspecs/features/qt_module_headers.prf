@@ -23,7 +23,7 @@ load(qt_build_paths)
         QMAKE_SYNCQT += -module $$mod
     QMAKE_SYNCQT += \
         -version $$VERSION -outdir $$system_quote($$MODULE_BASE_OUTDIR) \
-        -builddir $$system_quote($$shadowed($$MODULE_BASE_INDIR)) $$MODULE_SYNCQT_DIR
+        -builddir $$system_quote($$REAL_MODULE_BASE_OUTDIR) $$MODULE_SYNCQT_DIR
     !silent: message($$QMAKE_SYNCQT)
     system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")
 
@@ -272,7 +272,7 @@ headersclean:!internal_module {
             hcleanFLAGS += -std=c++98
         }
 
-        hcleanCOMMAND = $$QMAKE_CXX -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -xc++ ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+        hcleanCOMMAND = $(CXX) -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -xc++ ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
     } else: msvc:!intel_icl {
         # 4180: qualifier applied to function type has no meaning; ignored
         # 4458: declaration of 'identifier' hides class member
@@ -284,7 +284,7 @@ headersclean:!internal_module {
         # 4577: 'noexcept' used with no exception handling mode specified; termination on exception is not guaranteed. Specify /EHsc
         greaterThan(QMAKE_MSC_VER, 18): hcleanFLAGS += -wd4577
 
-        hcleanCOMMAND = $$QMAKE_CXX -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -FI${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT} \
+        hcleanCOMMAND = $(CXX) -c $(CXXFLAGS) $$hcleanFLAGS $(INCPATH) $$hcleanDEFS -FI${QMAKE_FILE_IN} -Fo${QMAKE_FILE_OUT} \
                         $$[QT_INSTALL_DATA/src]/mkspecs/features/data/dummy.cpp
     }
 
@@ -304,7 +304,6 @@ headersclean:!internal_module {
         header_check.variable_out = PRE_TARGETDEPS
         header_check.name = headercheck ${QMAKE_FILE_IN}
         header_check.commands = $$hcleanCOMMAND
-        silent:header_check.commands = @echo compiling[header] ${QMAKE_FILE_IN} && $$hcleanCOMMAND
         QMAKE_EXTRA_COMPILERS += header_check
     }
     unset(hcleanCOMMAND)

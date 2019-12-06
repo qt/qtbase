@@ -702,8 +702,8 @@ static inline double qt_fixed_to_double(const FIXED &p) {
     return ((p.value << 16) + p.fract) / 65536.0;
 }
 
-static inline QPointF qt_to_qpointf(const POINTFX &pt, qreal scale) {
-    return QPointF(qt_fixed_to_double(pt.x) * scale, -qt_fixed_to_double(pt.y) * scale);
+static inline QPointF qt_to_qpointf(const POINTFX &pt, qreal scale, qreal stretch) {
+    return QPointF(qt_fixed_to_double(pt.x) * scale * stretch, -qt_fixed_to_double(pt.y) * scale);
 }
 
 #ifndef GGO_UNHINTED
@@ -711,7 +711,8 @@ static inline QPointF qt_to_qpointf(const POINTFX &pt, qreal scale) {
 #endif
 
 static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
-                           QPainterPath *path, bool ttf, glyph_metrics_t *metric = 0, qreal scale = 1)
+                           QPainterPath *path, bool ttf, glyph_metrics_t *metric = 0,
+                           qreal scale = 1.0, qreal stretch = 1.0)
 {
     MAT2 mat;
     mat.eM11.value = mat.eM22.value = 1;
@@ -761,7 +762,7 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
     while (headerOffset < bufferSize) {
         const TTPOLYGONHEADER *ttph = reinterpret_cast<const TTPOLYGONHEADER *>(dataBuffer + headerOffset);
 
-        QPointF lastPoint(qt_to_qpointf(ttph->pfxStart, scale));
+        QPointF lastPoint(qt_to_qpointf(ttph->pfxStart, scale, stretch));
         path->moveTo(lastPoint + oset);
         offset += sizeof(TTPOLYGONHEADER);
         while (offset < headerOffset + ttph->cb) {
@@ -769,7 +770,7 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
             switch (curve->wType) {
             case TT_PRIM_LINE: {
                 for (int i=0; i<curve->cpfx; ++i) {
-                    QPointF p = qt_to_qpointf(curve->apfx[i], scale) + oset;
+                    QPointF p = qt_to_qpointf(curve->apfx[i], scale, stretch) + oset;
                     path->lineTo(p);
                 }
                 break;
@@ -779,8 +780,8 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
                 QPointF prev(elm.x, elm.y);
                 QPointF endPoint;
                 for (int i=0; i<curve->cpfx - 1; ++i) {
-                    QPointF p1 = qt_to_qpointf(curve->apfx[i], scale) + oset;
-                    QPointF p2 = qt_to_qpointf(curve->apfx[i+1], scale) + oset;
+                    QPointF p1 = qt_to_qpointf(curve->apfx[i], scale, stretch) + oset;
+                    QPointF p2 = qt_to_qpointf(curve->apfx[i+1], scale, stretch) + oset;
                     if (i < curve->cpfx - 2) {
                         endPoint = QPointF((p1.x() + p2.x()) / 2, (p1.y() + p2.y()) / 2);
                     } else {
@@ -795,9 +796,9 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
             }
             case TT_PRIM_CSPLINE: {
                 for (int i=0; i<curve->cpfx; ) {
-                    QPointF p2 = qt_to_qpointf(curve->apfx[i++], scale) + oset;
-                    QPointF p3 = qt_to_qpointf(curve->apfx[i++], scale) + oset;
-                    QPointF p4 = qt_to_qpointf(curve->apfx[i++], scale) + oset;
+                    QPointF p2 = qt_to_qpointf(curve->apfx[i++], scale, stretch) + oset;
+                    QPointF p3 = qt_to_qpointf(curve->apfx[i++], scale, stretch) + oset;
+                    QPointF p4 = qt_to_qpointf(curve->apfx[i++], scale, stretch) + oset;
                     path->cubicTo(p2, p3, p4);
                 }
                 break;
@@ -829,9 +830,11 @@ void QWindowsFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions
     HDC hdc = m_fontEngineData->hdc;
     HGDIOBJ oldfont = SelectObject(hdc, hf);
 
+    qreal scale = qreal(fontDef.pixelSize) / unitsPerEm;
+    qreal stretch = fontDef.stretch ? qreal(fontDef.stretch) / 100 : 1.0;
     for(int i = 0; i < nglyphs; ++i) {
         if (!addGlyphToPath(glyphs[i], positions[i], hdc, path, ttf, /*metric*/0,
-                            qreal(fontDef.pixelSize) / unitsPerEm)) {
+                            scale, stretch)) {
             // Some windows fonts, like "Modern", are vector stroke
             // fonts, which are reported as TMPF_VECTOR but do not
             // support GetGlyphOutline, and thus we set this bit so

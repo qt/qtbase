@@ -267,15 +267,11 @@ defineTest(qtConfTest_architecture) {
         error("Could not determine $$eval($${1}.label). See config.log for details.")
 
     test = $$eval($${1}.test)
+    output = $$eval($${1}.output)
     test_out_dir = $$OUT_PWD/$$basename(QMAKE_CONFIG_TESTS_DIR)/$$test
-    unix:exists($$test_out_dir/arch): \
-        content = $$cat($$test_out_dir/arch, blob)
-    else: win32:exists($$test_out_dir/arch.exe): \
-        content = $$cat($$test_out_dir/arch.exe, blob)
-    else: android:exists($$test_out_dir/libarch.so): \
-        content = $$cat($$test_out_dir/libarch.so, blob)
-    else: wasm:exists($$test_out_dir/arch.wasm): \
-        content = $$cat($$test_out_dir/arch.wasm, blob)
+    test_out_file = $$test_out_dir/$$cat($$test_out_dir/$${output}.target.txt)
+    exists($$test_out_file): \
+        content = $$cat($$test_out_file, blob)
     else: \
         error("$$eval($${1}.label) detection binary not found.")
 
@@ -448,7 +444,9 @@ defineTest(reloadSpec) {
             $$[QT_HOST_DATA/src]/mkspecs/features/mac/toolchain.prf \
             $$[QT_HOST_DATA/src]/mkspecs/features/toolchain.prf
 
-        _SAVED_CONFIG = $$CONFIG
+        saved_variables = CONFIG QMAKE_CXXFLAGS
+        for (name, saved_variables): \
+            _SAVED_$$name = $$eval($$name)
         load(spec_pre)
         # qdevice.pri gets written too late (and we can't write it early
         # enough, as it's populated in stages, with later ones depending
@@ -457,7 +455,8 @@ defineTest(reloadSpec) {
             eval($$l)
         include($$QMAKESPEC/qmake.conf)
         load(spec_post)
-        CONFIG += $$_SAVED_CONFIG
+        for (name, saved_variables): \
+            $$name += $$eval(_SAVED_$$name)
         load(default_pre)
 
         # ensure pristine environment for configuration. again.
@@ -836,9 +835,6 @@ defineTest(qtConfOutput_preparePaths) {
     addConfStr($$[QMAKE_SPEC])
 
     $${currentConfig}.output.qconfigSource = \
-        "/* Installation date */" \
-        "static const char qt_configure_installation     [12+11]  = \"qt_instdate=2012-12-20\";" \
-        "" \
         "/* Installation Info */" \
         "static const char qt_configure_prefix_path_str  [12+256] = \"qt_prfxpath=$$config.input.prefix\";" \
         "$${LITERAL_HASH}ifdef QT_BUILD_QMAKE" \

@@ -133,7 +133,7 @@ QWinRTIntegration::QWinRTIntegration() : d_ptr(new QWinRTIntegrationPrivate)
     });
     d->inputContext.reset(new QWinRTInputContext(d->mainScreen));
 
-    screenAdded(d->mainScreen);
+    QWindowSystemInterface::handleScreenAdded(d->mainScreen);
     d->platformServices = new QWinRTServices;
     d->clipboard = new QWinRTClipboard;
 #if QT_CONFIG(accessibility)
@@ -154,7 +154,7 @@ QWinRTIntegration::~QWinRTIntegration()
         Q_ASSERT_SUCCEEDED(hr);
     }
 
-    destroyScreen(d->mainScreen);
+    QWindowSystemInterface::handleScreenRemoved(d->mainScreen);
     Windows::Foundation::Uninitialize();
 }
 

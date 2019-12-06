@@ -143,6 +143,7 @@ const char _InterfaceIdentifierFileName[]       = "InterfaceIdentifierFileName";
 const char _IntermediateDirectory[]             = "IntermediateDirectory";
 const char _KeyContainer[]                      = "KeyContainer";
 const char _KeyFile[]                           = "KeyFile";
+const char _LanguageStandard[]                  = "LanguageStandard";
 const char _LargeAddressAware[]                 = "LargeAddressAware";
 const char _LinkDLL[]                           = "LinkDLL";
 const char _LinkErrorReporting[]                = "LinkErrorReporting";
@@ -1492,6 +1493,7 @@ void VCXProjectWriter::write(XmlOutput &xml, const VCCLCompilerTool &tool)
             << attrTagT(_IntrinsicFunctions, tool.EnableIntrinsicFunctions)
             << attrTagT(_MinimalRebuild, tool.MinimalRebuild)
             << attrTagT(_MultiProcessorCompilation, tool.MultiProcessorCompilation)
+            << attrTagS(_LanguageStandard, tool.LanguageStandard)
             << attrTagS(_ObjectFileName, tool.ObjectFile)
             << attrTagT(_OmitDefaultLibName, tool.OmitDefaultLibName)
             << attrTagT(_OmitFramePointers, tool.OmitFramePointers)

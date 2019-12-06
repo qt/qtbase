@@ -1811,7 +1811,8 @@ void tst_QGraphicsItem::selected_multi()
 
     {
         // Ctrl-move on item1
-        QMouseEvent event(QEvent::MouseMove, view.mapFromScene(item1->scenePos()) + QPoint(1, 0), Qt::LeftButton, Qt::LeftButton, Qt::ControlModifier);
+        const QPoint item1Point = view.mapFromScene(item1->scenePos()) + QPoint(1, 0);
+        QMouseEvent event(QEvent::MouseMove, item1Point, view.viewport()->mapToGlobal(item1Point), Qt::LeftButton, Qt::LeftButton, Qt::ControlModifier);
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(!item1->isSelected());
         QVERIFY(!item2->isSelected());
@@ -1832,7 +1833,8 @@ void tst_QGraphicsItem::selected_multi()
 
     {
         // Ctrl-move on item1
-        QMouseEvent event(QEvent::MouseMove, view.mapFromScene(item1->scenePos()) + QPoint(1, 0), Qt::LeftButton, Qt::LeftButton, Qt::ControlModifier);
+        const QPoint item1Point = view.mapFromScene(item1->scenePos()) + QPoint(1, 0);
+        QMouseEvent event(QEvent::MouseMove, item1Point, view.viewport()->mapToGlobal(item1Point), Qt::LeftButton, Qt::LeftButton, Qt::ControlModifier);
         QApplication::sendEvent(view.viewport(), &event);
         QVERIFY(item1->isSelected());
         QVERIFY(!item2->isSelected());
@@ -4151,6 +4153,8 @@ void tst_QGraphicsItem::cursor()
     QGraphicsView view(&scene);
     view.showFullScreen();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+    const Qt::CursorShape viewportShape = view.viewport()->cursor().shape();
+
     QGraphicsRectItem *item1 = scene.addRect(QRectF(-100, 0, 50, 50));
     QGraphicsRectItem *item2 = scene.addRect(QRectF(50, 0, 50, 50));
 
@@ -4178,41 +4182,45 @@ void tst_QGraphicsItem::cursor()
     item1->setCursor(Qt::IBeamCursor);
     item2->setCursor(Qt::PointingHandCursor);
 
-    QTest::mouseMove(&view, view.rect().center());
-
-    const Qt::CursorShape viewportShape = view.viewport()->cursor().shape();
+    QPoint viewCenter = view.rect().center();
+    QPoint item1Center = view.mapFromScene(item1->sceneBoundingRect().center());
+    QPoint item2Center = view.mapFromScene(item2->sceneBoundingRect().center());
 
     {
-        QTest::mouseMove(view.viewport(), QPoint(100, 50));
-        QMouseEvent event(QEvent::MouseMove, QPoint(100, 50), Qt::NoButton, 0, 0);
+        QMouseEvent event(QEvent::MouseMove, viewCenter, view.viewport()->mapToGlobal(viewCenter), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &event);
     }
 
-    QTRY_COMPARE(view.viewport()->cursor().shape(), viewportShape);
+    QCOMPARE(view.viewport()->cursor().shape(), viewportShape);
 
     {
-        QTest::mouseMove(view.viewport(), view.mapFromScene(item1->sceneBoundingRect().center()));
-        QMouseEvent event(QEvent::MouseMove, view.mapFromScene(item1->sceneBoundingRect().center()), Qt::NoButton, 0, 0);
+        QMouseEvent event(QEvent::MouseMove, item1Center, view.viewport()->mapToGlobal(item1Center), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &event);
     }
 
-    QTRY_COMPARE(view.viewport()->cursor().shape(), item1->cursor().shape());
+    QCOMPARE(view.viewport()->cursor().shape(), item1->cursor().shape());
 
     {
-        QTest::mouseMove(view.viewport(), view.mapFromScene(item2->sceneBoundingRect().center()));
-        QMouseEvent event(QEvent::MouseMove, view.mapFromScene(item2->sceneBoundingRect().center()), Qt::NoButton, 0, 0);
+        QMouseEvent event(QEvent::MouseMove, item2Center, view.viewport()->mapToGlobal(item2Center), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &event);
     }
 
-    QTRY_COMPARE(view.viewport()->cursor().shape(), item2->cursor().shape());
+    QCOMPARE(view.viewport()->cursor().shape(), item2->cursor().shape());
 
     {
-        QTest::mouseMove(view.viewport(), view.rect().center());
-        QMouseEvent event(QEvent::MouseMove, QPoint(100, 25), Qt::NoButton, 0, 0);
+        QMouseEvent event(QEvent::MouseMove, viewCenter, view.viewport()->mapToGlobal(viewCenter), Qt::NoButton, 0, 0);
         QApplication::sendEvent(view.viewport(), &event);
     }
 
-    QTRY_COMPARE(view.viewport()->cursor().shape(), viewportShape);
+    QCOMPARE(view.viewport()->cursor().shape(), viewportShape);
+
+    item1->setEnabled(false);
+    {
+        QMouseEvent event(QEvent::MouseMove, item1Center, view.viewport()->mapToGlobal(item1Center), Qt::NoButton, 0, 0);
+        QApplication::sendEvent(view.viewport(), &event);
+    }
+
+    QCOMPARE(view.viewport()->cursor().shape(), viewportShape);
 }
 #endif
 /*
@@ -5078,22 +5086,25 @@ void tst_QGraphicsItem::paint()
     PaintTester tester2;
     scene2.addItem(&tester2);
 
-    //First show one paint
-    QTRY_COMPARE(tester2.painted, 1);
+    //First show at least one paint
+    QCOMPARE(tester2.painted, 0);
+    QTRY_VERIFY(tester2.painted > 0);
+    int painted = tester2.painted;
 
     //nominal case, update call paint
     tester2.update();
-    QTRY_COMPARE(tester2.painted, 2);
+    QTRY_COMPARE(tester2.painted, painted + 1);
+    painted = tester2.painted;
 
     //we remove the item from the scene, number of updates is still the same
     tester2.update();
     scene2.removeItem(&tester2);
-    QTRY_COMPARE(tester2.painted, 2);
+    QTRY_COMPARE(tester2.painted, painted);
 
     //We re-add the item, the number of paint should increase
     scene2.addItem(&tester2);
     tester2.update();
-    QTRY_COMPARE(tester2.painted, 3);
+    QTRY_COMPARE(tester2.painted, painted + 1);
 }
 
 class HarakiriItem : public QGraphicsRectItem
@@ -11363,7 +11374,7 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
     origView.reset();
     childYellow->setOpacity(0.0);
 
-    QTRY_COMPARE(origView.repaints, 1);
+    QTRY_VERIFY(origView.repaints > 0);
 
     view.show();
     qApp->setActiveWindow(&view);
@@ -11378,8 +11389,8 @@ void tst_QGraphicsItem::QTBUG_7714_fullUpdateDiscardingOpacityUpdate2()
     QEXPECT_FAIL("", "Fails on WinRT. Figure out why - QTBUG-68297", Abort);
 #endif
 
-    QTRY_COMPARE(origView.repaints, 1);
-    QTRY_COMPARE(view.repaints, 1);
+    QTRY_VERIFY(origView.repaints > 0);
+    QTRY_VERIFY(view.repaints > 0);
 }
 
 void tst_QGraphicsItem::QT_2649_focusScope()

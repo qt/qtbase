@@ -200,6 +200,7 @@ public:
     uint has_pattern : 1;
     uint has_alpha_pen : 1;
     uint has_alpha_brush : 1;
+    uint use_sysclip : 1;
     uint render_hints;
 
     const QXcbX11Info *xinfo;
@@ -700,6 +701,9 @@ bool QX11PaintEngine::begin(QPaintDevice *pdev)
 #endif
     d->xlibMaxLinePoints = 32762; // a safe number used to avoid, call to XMaxRequestSize(d->dpy) - 3;
     d->opacity = 1;
+
+    QX11PlatformPixmap *x11pm = paintDevice()->devType() == QInternal::Pixmap ? qt_x11Pixmap(*static_cast<QPixmap *>(paintDevice())) : nullptr;
+    d->use_sysclip = paintDevice()->devType() == QInternal::Widget || (x11pm ? x11pm->isBackingStore() : false);
 
     // Set up the polygon clipper. Note: This will only work in
     // polyline mode as long as we have a buffer zone, since a
@@ -1472,7 +1476,7 @@ void QX11PaintEngine::updatePen(const QPen &pen)
     }
 
     if (!d->has_clipping) { // if clipping is set the paintevent clip region is merged with the clip region
-        QRegion sysClip = systemClip();
+        QRegion sysClip = d->use_sysclip ? systemClip() : QRegion();
         if (!sysClip.isEmpty())
             x11SetClipRegion(d->dpy, d->gc, 0, d->picture, sysClip);
         else
@@ -1603,7 +1607,7 @@ void QX11PaintEngine::updateBrush(const QBrush &brush, const QPointF &origin)
     vals.fill_style = s;
     XChangeGC(d->dpy, d->gc_brush, mask, &vals);
     if (!d->has_clipping) {
-        QRegion sysClip = systemClip();
+        QRegion sysClip = d->use_sysclip ? systemClip() : QRegion();
         if (!sysClip.isEmpty())
             x11SetClipRegion(d->dpy, d->gc_brush, 0, d->picture, sysClip);
         else
@@ -2223,7 +2227,7 @@ void QX11PaintEngine::updateMatrix(const QTransform &mtx)
 void QX11PaintEngine::updateClipRegion_dev(const QRegion &clipRegion, Qt::ClipOperation op)
 {
     Q_D(QX11PaintEngine);
-    QRegion sysClip = systemClip();
+    QRegion sysClip = d->use_sysclip ? systemClip() : QRegion();
     if (op == Qt::NoClip) {
         d->has_clipping = false;
         d->crgn = sysClip;
@@ -2640,6 +2644,13 @@ bool QXRenderGlyphCache::addGlyphs(const QTextItemInt &ti,
 
         if (glyph == 0 || glyph->format != glyphFormat())
             return false;
+
+        if (glyph->format == QFontEngine::Format_Mono) {
+            // Must convert bitmap from msb to lsb bit order
+            QImage img(glyph->data, glyph->width, glyph->height, QImage::Format_Mono);
+            img = img.convertToFormat(QImage::Format_MonoLSB);
+            memcpy(glyph->data, img.constBits(), static_cast<size_t>(img.sizeInBytes()));
+        }
 
         set->setGlyph(glyphs[i], spp, glyph);
         Q_ASSERT(glyph->data || glyph->width == 0 || glyph->height == 0);

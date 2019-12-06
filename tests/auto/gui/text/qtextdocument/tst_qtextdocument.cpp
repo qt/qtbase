@@ -188,6 +188,8 @@ private slots:
 
     void lineHeightType();
     void cssLineHeightMultiplier();
+
+    void clearUndoRedoStacks();
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -319,6 +321,15 @@ void tst_QTextDocument::find_data()
     QTest::newRow("nbsp") << "Hello" + QString(QChar(QChar::Nbsp)) +"World" << " " << int(QTextDocument::FindCaseSensitively) << 0 << 5 << 6;
 
     QTest::newRow("from-the-end") << "Hello World" << "Hello World" << int(QTextDocument::FindCaseSensitively| QTextDocument::FindBackward) << 11 << 0 << 11;
+
+    QTest::newRow("bw-cross-paras-1") << "a1\na2\nb1" << "a" << int(QTextDocument::FindBackward) << 7 << 3 << 4;
+    QTest::newRow("bw-cross-paras-2") << "a1\na2\nb1" << "a" << int(QTextDocument::FindBackward) << 6 << 3 << 4;
+    QTest::newRow("bw-cross-paras-3") << "a1\na2\nb1" << "a" << int(QTextDocument::FindBackward) << 5 << 3 << 4;
+    QTest::newRow("bw-cross-paras-4") << "a1\na2\nb1" << "a" << int(QTextDocument::FindBackward) << 3 << 0 << 1;
+    QTest::newRow("bw-cross-paras-5") << "xa\n\nb1" << "a" << int(QTextDocument::FindBackward) << 5 << 1 << 2;
+    QTest::newRow("bw-cross-paras-6") << "xa\n\nb1" << "a" << int(QTextDocument::FindBackward) << 4 << 1 << 2;
+    QTest::newRow("bw-cross-paras-7") << "xa\n\nb1" << "a" << int(QTextDocument::FindBackward) << 3 << 1 << 2;
+    QTest::newRow("bw-cross-paras-8") << "xa\n\nb1" << "a" << int(QTextDocument::FindBackward) << 2 << 1 << 2;
 }
 
 void tst_QTextDocument::find()
@@ -3476,6 +3487,17 @@ void tst_QTextDocument::cssLineHeightMultiplier()
         QCOMPARE(format.lineHeight(), 138.0);
     }
 }
+
+void tst_QTextDocument::clearUndoRedoStacks()
+{
+    QTextDocument doc;
+    QTextCursor c(&doc);
+    c.insertText(QStringLiteral("lorem ipsum"));
+    QVERIFY(doc.isUndoAvailable());
+    doc.clearUndoRedoStacks(QTextDocument::UndoStack); // Don't crash
+    QVERIFY(!doc.isUndoAvailable());
+}
+
 
 QTEST_MAIN(tst_QTextDocument)
 #include "tst_qtextdocument.moc"

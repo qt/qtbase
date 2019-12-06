@@ -35,13 +35,6 @@ QT_BEGIN_NAMESPACE
 
 QHash<QString, ProValueMap> QMakeMetaInfo::cache_vars;
 
-QMakeMetaInfo::QMakeMetaInfo(QMakeProject *_conf)
-    : conf(_conf)
-{
-
-}
-
-
 bool
 QMakeMetaInfo::readLib(const QString &meta_file)
 {

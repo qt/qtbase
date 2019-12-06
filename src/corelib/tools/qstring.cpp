@@ -501,7 +501,11 @@ bool qt_is_ascii(const char *&ptr, const char *end) Q_DECL_NOTHROW
     while (ptr + 4 <= end) {
         quint32 data = qFromUnaligned<quint32>(ptr);
         if (data &= 0x80808080U) {
+#if Q_BYTE_ORDER == Q_BIG_ENDIAN
+            uint idx = qCountLeadingZeroBits(data);
+#else
             uint idx = qCountTrailingZeroBits(data);
+#endif
             ptr += idx / 8;
             return false;
         }
@@ -1195,10 +1199,10 @@ static int qt_compare_strings(QLatin1String lhs, QStringView rhs, Qt::CaseSensit
 
 static int qt_compare_strings(QLatin1String lhs, QLatin1String rhs, Qt::CaseSensitivity cs) Q_DECL_NOTHROW
 {
-    if (cs == Qt::CaseInsensitive)
-        return qstrnicmp(lhs.data(), lhs.size(), rhs.data(), rhs.size());
     if (lhs.isEmpty())
         return lencmp(0, rhs.size());
+    if (cs == Qt::CaseInsensitive)
+        return qstrnicmp(lhs.data(), lhs.size(), rhs.data(), rhs.size());
     const auto l = std::min(lhs.size(), rhs.size());
     int r = qstrncmp(lhs.data(), rhs.data(), l);
     return r ? r : lencmp(lhs.size(), rhs.size());

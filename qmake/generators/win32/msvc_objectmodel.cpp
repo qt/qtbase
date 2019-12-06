@@ -1146,6 +1146,14 @@ bool VCCLCompilerTool::parseOption(const char* option)
             ShowIncludes = _True;
             break;
         }
+        if (strlen(option) > 8 && second == 't' && third == 'd') {
+            const QString version = option + 8;
+            static const QStringList knownVersions = { "14", "17", "latest" };
+            if (knownVersions.contains(version)) {
+                LanguageStandard = "stdcpp" + version;
+                break;
+            }
+        }
         found = false; break;
     case 'u':
         if (!second)
@@ -1559,21 +1567,12 @@ bool VCLinkerTool::parseOption(const char* option)
                 const char* str = option+6;
                 if (*str == 'S')
                     ShowProgress = linkProgressAll;
-#ifndef Q_OS_WIN
-                else if (strncasecmp(str, "pginstrument", 12))
+                else if (qstricmp(str, "pginstrument") == 0)
                     LinkTimeCodeGeneration = optLTCGInstrument;
-                else if (strncasecmp(str, "pgoptimize", 10))
+                else if (qstricmp(str, "pgoptimize") == 0)
                     LinkTimeCodeGeneration = optLTCGOptimize;
-                else if (strncasecmp(str, "pgupdate", 8 ))
+                else if (qstricmp(str, "pgupdate") == 0)
                     LinkTimeCodeGeneration = optLTCGUpdate;
-#else
-                else if (_stricmp(str, "pginstrument"))
-                    LinkTimeCodeGeneration = optLTCGInstrument;
-                else if (_stricmp(str, "pgoptimize"))
-                    LinkTimeCodeGeneration = optLTCGOptimize;
-                else if (_stricmp(str, "pgupdate"))
-                    LinkTimeCodeGeneration = optLTCGUpdate;
-#endif
             }
         } else {
             AdditionalOptions.append(option);
@@ -1982,6 +1981,7 @@ bool VCMIDLTool::parseOption(const char* option)
         break;
     case 0x5eb7af2: // /header filename
         offset = 5;
+        Q_FALLTHROUGH();
     case 0x0000358: // /h filename
         HeaderFileName = option + offset + 3;
         break;

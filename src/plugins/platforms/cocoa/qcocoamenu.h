@@ -92,6 +92,9 @@ public:
     bool isOpen() const;
     void setIsOpen(bool isOpen);
 
+    bool isAboutToShow() const;
+    void setIsAboutToShow(bool isAbout);
+
     void timerEvent(QTimerEvent *e) override;
 
     void syncMenuItem_helper(QPlatformMenuItem *menuItem, bool menubarUpdate);
@@ -111,6 +114,7 @@ private:
     bool m_parentEnabled:1;
     bool m_visible:1;
     bool m_isOpen:1;
+    bool m_isAboutToShow:1;
 };
 
 QT_END_NAMESPACE

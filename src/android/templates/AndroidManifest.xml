@@ -52,6 +52,12 @@
             <!--  Messages maps -->
 
             <!-- Splash screen -->
+            <!-- Orientation-specific (portrait/landscape) data is checked first. If not available for current orientation,
+                 then android.app.splash_screen_drawable. For best results, use together with splash_screen_sticky and
+                 use hideSplashScreen() with a fade-out animation from Qt Android Extras to hide the splash screen when you
+                 are done populating your window with content. -->
+            <!-- meta-data android:name="android.app.splash_screen_drawable_portrait" android:resource="@drawable/logo_portrait" / -->
+            <!-- meta-data android:name="android.app.splash_screen_drawable_landscape" android:resource="@drawable/logo_landscape" / -->
             <!-- meta-data android:name="android.app.splash_screen_drawable" android:resource="@drawable/logo"/ -->
             <!-- meta-data android:name="android.app.splash_screen_sticky" android:value="true"/ -->
             <!-- Splash screen -->

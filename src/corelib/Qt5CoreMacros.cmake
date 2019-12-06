@@ -59,7 +59,7 @@ macro(QT5_MAKE_OUTPUT_FILE infile prefix ext outfile )
     set(_outfile "${CMAKE_CURRENT_BINARY_DIR}/${rel}")
     string(REPLACE ".." "__" _outfile ${_outfile})
     get_filename_component(outpath ${_outfile} PATH)
-    get_filename_component(_outfile ${_outfile} NAME_WE)
+    string(REGEX REPLACE "\\.[^.]*$" "" _outfile ${_outfile})
     file(MAKE_DIRECTORY ${outpath})
     set(${outfile} ${outpath}/${prefix}${_outfile}.${ext})
 endmacro()
@@ -296,6 +296,9 @@ endfunction()
 # qt5_add_big_resources(outfiles inputfile ... )
 
 function(QT5_ADD_BIG_RESOURCES outfiles )
+    if (CMAKE_VERSION VERSION_LESS 3.9)
+        message(FATAL_ERROR, "qt5_add_big_resources requires CMake 3.9 or newer")
+    endif()
 
     set(options)
     set(oneValueArgs)
@@ -321,11 +324,13 @@ function(QT5_ADD_BIG_RESOURCES outfiles )
         add_custom_command(OUTPUT ${tmpoutfile}
                            COMMAND ${Qt5Core_RCC_EXECUTABLE} ${rcc_options} --name ${outfilename} --pass 1 --output ${tmpoutfile} ${infile}
                            DEPENDS ${infile} ${_rc_depends} "${out_depends}" VERBATIM)
-        set_source_files_properties(${tmpoutfile} PROPERTIES SKIP_AUTOMOC ON)
-        set_source_files_properties(${tmpoutfile} PROPERTIES SKIP_AUTOUIC ON)
         add_custom_target(big_resources_${outfilename} ALL DEPENDS ${tmpoutfile})
         add_library(rcc_object_${outfilename} OBJECT ${tmpoutfile})
+        set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOMOC OFF)
+        set_target_properties(rcc_object_${outfilename} PROPERTIES AUTOUIC OFF)
         add_dependencies(rcc_object_${outfilename} big_resources_${outfilename})
+        # The modification of TARGET_OBJECTS needs the following change in cmake
+        # https://gitlab.kitware.com/cmake/cmake/commit/93c89bc75ceee599ba7c08b8fe1ac5104942054f
         add_custom_command(OUTPUT ${outfile}
                            COMMAND ${Qt5Core_RCC_EXECUTABLE}
                            ARGS ${rcc_options} --name ${outfilename} --pass 2 --temp $<TARGET_OBJECTS:rcc_object_${outfilename}> --output ${outfile} ${infile}

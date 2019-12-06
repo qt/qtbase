@@ -448,7 +448,7 @@
             ],
             "sources": [
                 { "type": "pkgConfig", "args": "gl", "condition": "!config.darwin" },
-                { "type": "openglMakeSpec" }
+                { "type": "makeSpec", "spec": "OPENGL" }
             ]
         },
         "opengl_es2": {
@@ -764,7 +764,8 @@
             },
             "headers": [ "xkbcommon/xkbcommon.h" ],
             "sources": [
-                { "type": "pkgConfig", "args": "xkbcommon >= 0.5.0" }
+                { "type": "pkgConfig", "args": "xkbcommon >= 0.5.0" },
+                "-lxkbcommon"
             ]
         },
         "xkbcommon_x11": {
@@ -774,7 +775,8 @@
             },
             "headers": [ "xkbcommon/xkbcommon-x11.h" ],
             "sources": [
-                { "type": "pkgConfig", "args": "xkbcommon-x11" }
+                { "type": "pkgConfig", "args": "xkbcommon-x11" },
+                "-lxkbcommon -lxkbcommon-x11"
             ]
         },
         "xrender": {
@@ -1204,14 +1206,14 @@
             "label": "  Using system FreeType",
             "enable": "input.freetype == 'system'",
             "disable": "input.freetype == 'qt'",
-            "autoDetect": "!config.win32",
+            "autoDetect": "!config.msvc",
             "condition": "features.freetype && libs.freetype",
             "output": [ "privateFeature" ]
         },
         "fontconfig": {
             "label": "Fontconfig",
             "autoDetect": "!config.darwin",
-            "condition": "!config.win32 && features.system-freetype && libs.fontconfig",
+            "condition": "!config.msvc && features.system-freetype && libs.fontconfig",
             "output": [ "privateFeature", "feature" ]
         },
         "gbm": {
@@ -1745,6 +1747,11 @@
             "purpose": "Supports image file text strings.",
             "section": "Images",
             "output": [ "publicFeature", "feature" ]
+        },
+        "texture_format_astc_experimental" : {
+            "label": "ASTC Texture format (experimental)",
+            "autoDetect": "false",
+            "output": [ "privateFeature" ]
         },
         "picture": {
             "label": "QPicture",

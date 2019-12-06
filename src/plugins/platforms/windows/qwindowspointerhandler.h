@@ -46,7 +46,7 @@
 #include <QtCore/qpointer.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qhash.h>
-#include <qpa/qwindowsysteminterface.h>
+#include <QtGui/qevent.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,6 +64,7 @@ public:
     QTouchDevice *ensureTouchDevice();
     QWindow *windowUnderMouse() const { return m_windowUnderPointer.data(); }
     void clearWindowUnderMouse() { m_windowUnderPointer = nullptr; }
+    void clearEvents();
 
 private:
     bool translateTouchEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, PVOID vTouchInfo, unsigned int count);
@@ -79,6 +80,9 @@ private:
     QPointer<QWindow> m_currentWindow;
     QWindow *m_previousCaptureWindow = nullptr;
     bool m_needsEnterOnPointerUpdate = false;
+    QEvent::Type m_lastEventType = QEvent::None;
+    Qt::MouseButton m_lastEventButton = Qt::NoButton;
+    DWORD m_pointerType = 0;
 };
 
 QT_END_NAMESPACE

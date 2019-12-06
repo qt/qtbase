@@ -1105,6 +1105,8 @@
     \header \li Option \li Description
     \row \li app_bundle \li Puts the executable into a bundle (this is the default).
     \row \li lib_bundle \li Puts the library into a library bundle.
+    \row \li plugin_bundle \li Puts the plugin into a plugin bundle. This value
+         is not supported by the Xcode project generator.
     \endtable
 
     The build process for bundles is also influenced by
@@ -1157,6 +1159,10 @@
     For example:
 
     \snippet code/doc_src_qmake-manual.pro 30
+
+    \note The list of supported characters can depend on
+    the used build tool. In particular, parentheses do not
+    work with \c{make}.
 
     \target DISTFILES
     \section1 DISTFILES
@@ -1580,6 +1586,14 @@
     The value of this variable is typically handled by qmake or \l{#QMAKESPEC}{qmake.conf}
     and rarely needs to be modified.
 
+    \target QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
+    \section1 QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO
+
+    Specifies the C compiler flags for release builds where
+    \c{force_debug_info} is set in \c{CONFIG}.
+    The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
     \target QMAKE_CFLAGS_SHLIB
     \section1 QMAKE_CFLAGS_SHLIB
 
@@ -1645,6 +1659,14 @@
     \section1 QMAKE_CXXFLAGS_RELEASE
 
     Specifies the C++ compiler flags for release builds.
+    The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \target QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO
+    \section1 QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO
+
+    Specifies the C++ compiler flags for release builds where
+    \c{force_debug_info} is set in \c{CONFIG}.
     The value of this variable is typically handled by
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
@@ -2026,6 +2048,12 @@
 
     Specifies the linker flags for release builds.
     The value of this variable is typically handled by
+    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
+
+    \section1 QMAKE_LFLAGS_RELEASE_WITH_DEBUGINFO
+
+    Specifies the linker flags for release builds where \c{force_debug_info} is
+    set in \c{CONFIG}. The value of this variable is typically handled by
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
     \section1 QMAKE_LFLAGS_APP
@@ -2513,10 +2541,8 @@
 
     \section1 RC_FILE
 
-    Specifies the name of the resource file for the application.
-    The value of this variable is typically handled by
-    qmake or \l{#QMAKESPEC}{qmake.conf} and rarely
-    needs to be modified.
+    Windows only. Specifies the name of the Windows resource file (.rc) for the
+    target. See \l{Adding Windows Resource Files}.
 
     \target RC_CODEPAGE
     \section1 RC_CODEPAGE
@@ -2579,7 +2605,9 @@
 
     \section1 RES_FILE
 
-    Specifies the name of the compiled Windows resource file for the target.
+    Windows only. Specifies the name of the Windows resource compiler's output
+    file for this target. See \l{RC_FILE} and \l{Adding Windows Resource Files}.
+
     The value of this variable is typically handled by
     qmake or \l{#QMAKESPEC}{qmake.conf} and rarely
     needs to be modified.
@@ -3031,6 +3059,8 @@
 
     \snippet code/doc_src_qmake-manual.pro 159
 
+    This function was introduced in Qt 5.0.
+
     See also \l{clean_path(path)}{clean_path()},
     \l{relative_path(filePath[, base])}{relative_path()}.
 
@@ -3065,6 +3095,8 @@
     redundant ones removed, and "."s and ".."s resolved (as far as possible).
     This function is a wrapper around QDir::cleanPath.
 
+    This function was introduced in Qt 5.0.
+
     See also \l{absolute_path(path[, base])}{absolute_path()},
     \l{relative_path(filePath[, base])}{relative_path()},
     \l{shell_path(path)}{shell_path()}, \l{system_path(path)}{system_path()}.
@@ -3078,6 +3110,8 @@
     \section2 enumerate_vars
 
     Returns a list of all defined variable names.
+
+    This function was introduced in Qt 5.0.
 
     \section2 escape_expand(arg1 [, arg2 ..., argn])
 
@@ -3142,6 +3176,8 @@
 
     \snippet code/doc_src_qmake-manual.pro 163
 
+    This function was introduced in Qt 5.0.
+
     \section2 fromfile(filename, variablename)
 
     Evaluates \c filename as a qmake project file and returns the value assigned
@@ -3155,6 +3191,8 @@
     This is mostly equivalent to the \c $$(variablename) syntax.
     The \c getenv function, however, supports environment variables with
     parentheses in their name.
+
+    This function was introduced in Qt 5.12.
 
     \section2 join(variablename, glue, before, after)
 
@@ -3245,6 +3283,8 @@
     sum = $$num_add($$first, $$second_neg)
     \endcode
 
+    This function was introduced in Qt 5.8.
+
     \section2 prompt(question [, decorate])
 
     Displays the specified \c question, and returns a value read from stdin.
@@ -3273,6 +3313,8 @@
 
     \note This function is available only on Windows hosts.
 
+    This function was introduced in Qt 5.12.1.
+
     \section2 relative_path(filePath[, base])
 
     Returns the path to \c filePath relative to \c base.
@@ -3284,6 +3326,8 @@
     If \c filePath is relative, it is first resolved against the base
     directory; in that case, this function effectively acts as
     $$clean_path().
+
+    This function was introduced in Qt 5.0.
 
     See also \l{absolute_path(path[, base])}{absolute_path()},
     \l{clean_path(path)}{clean_path()}.
@@ -3304,9 +3348,13 @@
 
     This is an internal function that you will typically not need.
 
+    This function was introduced in Qt 5.0.
+
     \section2 reverse(variablename)
 
     Returns the values of \c variablename in reverse order.
+
+    This function was introduced in Qt 5.0.
 
     \section2 section(variablename, separator, begin, end)
 
@@ -3323,6 +3371,8 @@
     This function returns \c path for in-source builds. It returns an empty
     string if \c path points outside of the source tree.
 
+    This function was introduced in Qt 5.0.
+
     \section2 shell_path(path)
 
     Converts all directory separators within \c path to separators that are
@@ -3330,11 +3380,15 @@
     the shell that is invoked by the make tool). For example, slashes are
     converted to backslashes when the Windows shell is used.
 
+    This function was introduced in Qt 5.0.
+
     See also \l{system_path(path)}{system_path()}.
 
     \section2 shell_quote(arg)
 
     Quotes \c arg for the shell that is used while building the project.
+
+    This function was introduced in Qt 5.0.
 
     See also \l{system_quote(arg)}{system_quote()}.
 
@@ -3349,6 +3403,8 @@
 
     This is an internal function that you will typically not need.
 
+    This function was introduced in Qt 5.0.
+
     \section2 sorted(variablename)
 
     Returns the list of values in \c variablename with entries sorted
@@ -3356,6 +3412,8 @@
 
     Numerical sorting can be accomplished by zero-padding the values to
     a fixed length with the help of the \l{format_number()} function.
+
+    This function was introduced in Qt 5.8.
 
     \section2 split(variablename, separator)
 
@@ -3403,12 +3461,16 @@
 
     See also \l{member()}, \l{num_add()}.
 
+    This function was introduced in Qt 5.8.
+
     \target str_size()
     \section2 str_size(arg)
 
     Returns the number of characters in the argument.
 
     See also \l{fn_size}{size()}.
+
+    This function was introduced in Qt 5.8.
 
     \target system_replace
     \section2 system(command[, mode[, stsvar]])
@@ -3438,12 +3500,16 @@
     invoke commands. For example, slashes are converted to backslashes for the
     Windows shell.
 
+    This function was introduced in Qt 5.0.
+
     See also \l{shell_path(path)}{shell_path()}.
 
     \section2 system_quote(arg)
 
     Quotes \c arg for the shell that is used by the \c{system()}
     functions.
+
+    This function was introduced in Qt 5.0.
 
     See also \l{shell_quote(arg)}{shell_quote()}.
 
@@ -3455,6 +3521,8 @@
 
     This provides convenience for implementing queues, for example.
 
+    This function was introduced in Qt 5.8.
+
     See also \l{take_last()}, \l{fn_first}{first()}.
 
     \target take_last()
@@ -3464,6 +3532,8 @@
     source variable.
 
     This provides convenience for implementing stacks, for example.
+
+    This function was introduced in Qt 5.8.
 
     See also \l{take_first()}, \l{fn_last}{last()}.
 
@@ -3485,6 +3555,8 @@
 
     Escapes the values of \c variablename in a way that enables parsing them as
     qmake code.
+
+    This function was introduced in Qt 5.0.
 */
 
 /*!
@@ -3507,6 +3579,8 @@
     \section2 cache(variablename, [set|add|sub] [transient] [super|stash], [source variablename])
 
     This is an internal function that you will typically not need.
+
+    This function was introduced in Qt 5.0.
 
     \section2 CONFIG(config)
 
@@ -3714,6 +3788,8 @@
     Prints a message on the console. Unlike the \c message function, neither
     prepends text nor appends a line break.
 
+    This function was introduced in Qt 5.0.
+
     See also \l{message(string)}{message()}.
 
     \section2 message(string)
@@ -3738,6 +3814,8 @@
 
     Creates the directory path \c dirPath. This function is a wrapper around the
     QDir::mkpath function.
+
+    This function was introduced in Qt 5.0.
 
     \section2 requires(condition)
 
@@ -3765,6 +3843,8 @@
     Updates the time stamp of \c filename to match the time stamp of
     \c reference_filename.
 
+    This function was introduced in Qt 5.0.
+
     \section2 unset(variablename)
 
     Removes \c variablename from the current context.
@@ -3781,11 +3861,15 @@
     the string will be ignored. Comparison is performed segment-wise from left
     to right; if one version is a prefix of the other, it is considered smaller.
 
+    This function was introduced in Qt 5.10.
+
     \section2 versionAtMost(variablename, versionNumber)
 
     Tests that the version number from \c variablename is less than or equal to
     \c versionNumber. Works as
     \l{versionAtLeast(variablename, versionNumber)}{versionAtLeast()}.
+
+    This function was introduced in Qt 5.10.
 
     \section2 warning(string)
 
@@ -3797,6 +3881,8 @@
     each value on a separate line. If \c variablename is not specified, creates
     an empty file. If \c mode is \c append and the file already exists, appends
     to it instead of replacing it.
+
+    This function was introduced in Qt 5.0.
 
     \section1 Test Function Library
 
@@ -3844,6 +3930,8 @@
 
     \snippet code/doc_src_qmake-manual.pro 178
 
+    This function was introduced in Qt 5.0.
+
     \section2 qtCompileTest(test)
 
     Builds a test project. If the test passes, true is returned and
@@ -3884,10 +3972,14 @@
 
     See also \l{load(feature)}{load()}.
 
+    This function was introduced in Qt 5.0.
+
     \section2 qtHaveModule(name)
 
     Checks whether the Qt module specified by \c name is present.
     For a list of possible values, see \l{Variables#QT}{QT}.
+
+    This function was introduced in Qt 5.0.1.
 */
 
 /*!

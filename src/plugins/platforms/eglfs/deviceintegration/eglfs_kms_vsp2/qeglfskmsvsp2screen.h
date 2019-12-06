@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 class QEglFSKmsVsp2Screen : public QEglFSKmsScreen
 {
 public:
-    QEglFSKmsVsp2Screen(QKmsDevice *device, const QKmsOutput &output);
+    QEglFSKmsVsp2Screen(QEglFSKmsDevice *device, const QKmsOutput &output);
 
     gbm_surface *createSurface();
     void resetSurface();

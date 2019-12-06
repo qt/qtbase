@@ -54,8 +54,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QMutex QEglFSKmsGbmScreen::m_waitForFlipMutex;
-
 QEglFSKmsGbmIntegration::QEglFSKmsGbmIntegration()
 {
     qCDebug(qLcEglfsKmsDebug, "New DRM/KMS via GBM integration created");

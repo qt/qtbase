@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2016 Jolla Ltd, author: <gunnar.sletta@jollamobile.com>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -74,7 +74,7 @@ Q_LOGGING_CATEGORY(qLcEvdevTouch, "qt.qpa.input")
 #define ABS_MT_TOUCH_MAJOR      0x30    /* Major axis of touching ellipse */
 #endif
 #ifndef ABS_MT_POSITION_X
-#define ABS_MT_POSITION_X 0x35    /* Center X ellipse position */
+#define ABS_MT_POSITION_X       0x35    /* Center X ellipse position */
 #endif
 #ifndef ABS_MT_POSITION_Y
 #define ABS_MT_POSITION_Y       0x36    /* Center Y ellipse position */
@@ -87,6 +87,9 @@ Q_LOGGING_CATEGORY(qLcEvdevTouch, "qt.qpa.input")
 #endif
 #ifndef ABS_MT_TRACKING_ID
 #define ABS_MT_TRACKING_ID      0x39    /* Unique ID of initiated contact */
+#endif
+#ifndef ABS_MT_PRESSURE
+#define ABS_MT_PRESSURE         0x3a
 #endif
 #ifndef SYN_MT_REPORT
 #define SYN_MT_REPORT           2
@@ -532,7 +535,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 m_currentData.state = Qt::TouchPointReleased;
             if (m_typeB)
                 m_contacts[m_currentSlot].maj = m_currentData.maj;
-        } else if (data->code == ABS_PRESSURE) {
+        } else if (data->code == ABS_PRESSURE || data->code == ABS_MT_PRESSURE) {
             m_currentData.pressure = qBound(hw_pressure_min, data->value, hw_pressure_max);
             if (m_typeB || m_singleTouch)
                 m_contacts[m_currentSlot].pressure = m_currentData.pressure;
@@ -570,6 +573,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
         m_lastTouchPoints = m_touchPoints;
         m_touchPoints.clear();
         Qt::TouchPointStates combinedStates;
+        bool hasPressure = false;
 
         QMutableHashIterator<int, Contact> it(m_contacts);
         while (it.hasNext()) {
@@ -599,6 +603,9 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 it.remove();
                 continue;
             }
+
+            if (contact.pressure)
+                hasPressure = true;
 
             addTouchPoint(contact, &combinedStates);
         }
@@ -646,7 +653,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             m_contacts.clear();
 
 
-        if (!m_touchPoints.isEmpty() && combinedStates != Qt::TouchPointStationary)
+        if (!m_touchPoints.isEmpty() && (hasPressure || combinedStates != Qt::TouchPointStationary))
             reportPoints();
 
         if (m_filtered)

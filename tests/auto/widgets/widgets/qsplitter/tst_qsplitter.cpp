@@ -735,6 +735,7 @@ void tst_QSplitter::replaceWidget()
 
     // Configure splitter
     QWidget *oldWidget = sp.widget(index);
+    QTest::qWait(100); // Make sure we record the right original size (after the window manager adds the frame)
     const QRect oldGeom = oldWidget ? oldWidget->geometry() : QRect();
     if (oldWidget) {
         // Collapse first, then hide, if necessary

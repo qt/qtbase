@@ -1188,6 +1188,8 @@ void QSocks5SocketEnginePrivate::_q_controlSocketReadNotification()
             break;
         case RequestMethodSent:
             parseRequestMethodReply();
+            if (socks5State == Connected && data->controlSocket->bytesAvailable())
+                _q_controlSocketReadNotification();
             break;
         case Connected: {
             QByteArray buf;
@@ -1611,8 +1613,10 @@ qint64 QSocks5SocketEngine::readDatagram(char *data, qint64 maxlen, QIpPacketHea
     QSocks5RevivedDatagram datagram = d->udpData->pendingDatagrams.dequeue();
     int copyLen = qMin<int>(maxlen, datagram.data.size());
     memcpy(data, datagram.data.constData(), copyLen);
-    header->senderAddress = datagram.address;
-    header->senderPort = datagram.port;
+    if (header) {
+        header->senderAddress = datagram.address;
+        header->senderPort = datagram.port;
+    }
     return copyLen;
 #else
     Q_UNUSED(data)
@@ -1749,6 +1753,11 @@ bool QSocks5SocketEngine::waitForRead(int msecs, bool *timedOut)
         return false;
     if (d->data->controlSocket->state() == QAbstractSocket::UnconnectedState)
         return true;
+    if (bytesAvailable() && d->readNotificationPending) {
+        // We've got some data incoming, but the queued call hasn't been performed yet.
+        // The data is where we expect it to be already, so just return true.
+        return true;
+    }
 
     // we're connected
     if (d->mode == QSocks5SocketEnginePrivate::ConnectMode ||

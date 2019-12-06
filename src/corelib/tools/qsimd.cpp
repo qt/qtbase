@@ -376,6 +376,38 @@ static quint64 detectProcessorFeatures()
         features &= ~AllAVX512;
     }
 
+#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
+    /**
+     * Some AMD CPUs (e.g. AMD A4-6250J and AMD Ryzen 3000-series) have a
+     * failing random generation instruction, which always returns
+     * 0xffffffff, even when generation was "successful".
+     *
+     * This code checks if hardware random generator generates four consecutive
+     * equal numbers. If it does, then we probably have a failing one and
+     * should disable it completely.
+     *
+     * https://bugreports.qt.io/browse/QTBUG-69423
+     */
+    if (features & CpuFeatureRDRND) {
+        const qsizetype testBufferSize = 4;
+        unsigned testBuffer[4] = {};
+
+        const qsizetype generated = qRandomCpu(testBuffer, testBufferSize);
+
+        if (Q_UNLIKELY(generated == testBufferSize &&
+            testBuffer[0] == testBuffer[1] &&
+            testBuffer[1] == testBuffer[2] &&
+            testBuffer[2] == testBuffer[3])) {
+
+            fprintf(stderr, "WARNING: CPU random generator seem to be failing, disable hardware random number generation\n");
+            fprintf(stderr, "WARNING: RDRND generated: 0x%x 0x%x 0x%x 0x%x\n",
+                    testBuffer[0], testBuffer[1], testBuffer[2], testBuffer[3]);
+
+            features &= ~CpuFeatureRDRND;
+        }
+    }
+#endif
+
     return features;
 }
 
@@ -588,5 +620,41 @@ void qDumpCPUFeatures()
     }
     puts("");
 }
+
+#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
+
+#  ifdef Q_PROCESSOR_X86_64
+#    define _rdrandXX_step _rdrand64_step
+#  else
+#    define _rdrandXX_step _rdrand32_step
+#  endif
+
+QT_FUNCTION_TARGET(RDRND) qsizetype qRandomCpu(void *buffer, qsizetype count) Q_DECL_NOTHROW
+{
+    unsigned *ptr = reinterpret_cast<unsigned *>(buffer);
+    unsigned *end = ptr + count;
+    int retries = 10;
+
+    while (ptr + sizeof(qregisteruint)/sizeof(*ptr) <= end) {
+        if (_rdrandXX_step(reinterpret_cast<qregisteruint *>(ptr)))
+            ptr += sizeof(qregisteruint)/sizeof(*ptr);
+        else if (--retries == 0)
+            goto out;
+    }
+
+    while (sizeof(*ptr) != sizeof(qregisteruint) && ptr != end) {
+        bool ok = _rdrand32_step(ptr);
+        if (!ok && --retries)
+            continue;
+        if (ok)
+            ++ptr;
+        break;
+    }
+
+out:
+    return ptr - reinterpret_cast<unsigned *>(buffer);
+}
+#endif
+
 
 QT_END_NAMESPACE

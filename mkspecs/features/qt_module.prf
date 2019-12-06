@@ -82,6 +82,11 @@ header_module {
     CONFIG      += force_qt  # Needed for the headers_clean tests.
     !lib_bundle: \
         CONFIG  += qt_no_install_library
+
+    # Allow creation of .prl, .la and .pc files.
+    target.path = $$[QT_INSTALL_LIBS]
+    target.CONFIG += dummy_install
+    INSTALLS    += target
 } else {
     TEMPLATE     = lib
 }
@@ -284,6 +289,12 @@ load(qt_targets)
         QMAKE_PKGCONFIG_REQUIRES += $$replace(QT.$${i}.name, ^Qt, Qt$$section(QT.$${i}.VERSION, ., 0, 0))
     isEmpty(QMAKE_PKGCONFIG_DESCRIPTION): \
         QMAKE_PKGCONFIG_DESCRIPTION = $$replace(TARGET, ^Qt, "Qt ") module
+    !isEmpty(lib_replace0.match) {
+        pclib_replace0.match = $$lib_replace0.match
+        pclib_replace0.replace = $$QMAKE_PKGCONFIG_LIBDIR/
+        pclib_replace0.CONFIG = path
+        QMAKE_PKGCONFIG_INSTALL_REPLACE += pclib_replace0
+    }
     pclib_replace.match = $$lib_replace.match
     !isEmpty(lib_replace.replace): \
         pclib_replace.replace = $$QMAKE_PKGCONFIG_LIBDIR
@@ -296,6 +307,12 @@ load(qt_targets)
         QMAKE_LIBTOOL_LIBDIR = $$[QT_HOST_LIBS]
     else: \
         QMAKE_LIBTOOL_LIBDIR = "=$$[QT_INSTALL_LIBS/raw]"
+    !isEmpty(lib_replace0.match) {
+        ltlib_replace0.match = $$lib_replace0.match
+        ltlib_replace0.replace = $$QMAKE_LIBTOOL_LIBDIR/
+        ltlib_replace0.CONFIG = path
+        QMAKE_LIBTOOL_INSTALL_REPLACE += ltlib_replace0
+    }
     ltlib_replace.match = $$lib_replace.match
     !isEmpty(lib_replace.replace): \
         ltlib_replace.replace = $$QMAKE_LIBTOOL_LIBDIR

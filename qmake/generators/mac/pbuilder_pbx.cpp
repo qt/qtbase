@@ -514,11 +514,60 @@ static QList<QVariantMap> provisioningTeams()
     return flatTeams;
 }
 
+bool ProjectBuilderMakefileGenerator::replaceLibrarySuffix(const QString &lib_file,
+                                                           const ProString &opt,
+                                                           QString &name, QString &library)
+{
+    /* This isn't real nice, but it is real useful. This looks in a prl
+       for what the library will ultimately be called so we can stick it
+       in the ProjectFile. If the prl format ever changes (not likely) then
+       this will not really work. However, more concerning is that it will
+       encode the version number in the Project file which might be a bad
+       things in days to come? --Sam
+    */
+    if (lib_file.isEmpty())
+        return false;
+
+    QMakeMetaInfo libinfo;
+    if (!libinfo.readLib(lib_file) || libinfo.isEmpty("QMAKE_PRL_TARGET"))
+        return false;
+
+    const QString libDir = fileInfo(lib_file).absolutePath();
+    library = libDir + Option::dir_sep + libinfo.first("QMAKE_PRL_TARGET");
+
+    debug_msg(1, "pbuilder: Found library (%s) via PRL %s (%s)",
+              opt.toLatin1().constData(), lib_file.toLatin1().constData(), library.toLatin1().constData());
+
+    if (project->isActiveConfig("xcode_dynamic_library_suffix")) {
+        QString suffixSetting = project->first("QMAKE_XCODE_LIBRARY_SUFFIX_SETTING").toQString();
+        if (!suffixSetting.isEmpty()) {
+            QString librarySuffix = project->first("QMAKE_XCODE_LIBRARY_SUFFIX").toQString();
+            suffixSetting = "$(" + suffixSetting + ")";
+            if (!librarySuffix.isEmpty()) {
+                int pos = library.lastIndexOf(librarySuffix + '.');
+                if (pos == -1) {
+                    warn_msg(WarnLogic, "Failed to find expected suffix '%s' for library '%s'.",
+                             qPrintable(librarySuffix), qPrintable(library));
+                } else {
+                    library.replace(pos, librarySuffix.length(), suffixSetting);
+                    if (name.endsWith(librarySuffix))
+                        name.chop(librarySuffix.length());
+                }
+            } else {
+                int pos = library.lastIndexOf(name);
+                if (pos != -1)
+                    library.insert(pos + name.length(), suffixSetting);
+            }
+        }
+    }
+
+    return true;
+}
+
 bool
 ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
 {
     ProStringList tmp;
-    bool did_preprocess = false;
 
     //HEADER
     const int pbVersion = pbuilderVersion();
@@ -736,7 +785,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         QFile mkf(mkfile);
         if(mkf.open(QIODevice::WriteOnly | QIODevice::Text)) {
             writingUnixMakefileGenerator = true;
-            did_preprocess = true;
             debug_msg(1, "pbuilder: Creating file: %s", mkfile.toLatin1().constData());
             QTextStream mkt(&mkf);
             writeHeader(mkt);
@@ -827,6 +875,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
     }
 
     if(!project->isActiveConfig("staticlib")) { //DUMP LIBRARIES
+        const ProStringList defaultLibDirs = project->values("QMAKE_DEFAULT_LIBDIRS");
         ProStringList &libdirs = project->values("QMAKE_PBX_LIBPATHS"),
               &frameworkdirs = project->values("QMAKE_FRAMEWORKPATH");
         static const char * const libs[] = { "LIBS", "LIBS_PRIVATE",
@@ -834,6 +883,7 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         for (int i = 0; libs[i]; i++) {
             tmp = project->values(libs[i]);
             for(int x = 0; x < tmp.count();) {
+                bool libSuffixReplaced = false;
                 bool remove = false;
                 QString library, name;
                 ProString opt = tmp[x];
@@ -846,49 +896,12 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     QString lib("lib" + name);
                     for (ProStringList::Iterator lit = libdirs.begin(); lit != libdirs.end(); ++lit) {
                         if(project->isActiveConfig("link_prl")) {
-                            /* This isn't real nice, but it is real useful. This looks in a prl
-                               for what the library will ultimately be called so we can stick it
-                               in the ProjectFile. If the prl format ever changes (not likely) then
-                               this will not really work. However, more concerning is that it will
-                               encode the version number in the Project file which might be a bad
-                               things in days to come? --Sam
-                            */
-                            QString lib_file = QMakeMetaInfo::checkLib(Option::normalizePath(
-                                        (*lit) + Option::dir_sep + lib + Option::prl_ext));
-                            if (!lib_file.isEmpty()) {
-                                QMakeMetaInfo libinfo(project);
-                                if(libinfo.readLib(lib_file)) {
-                                    if(!libinfo.isEmpty("QMAKE_PRL_TARGET")) {
-                                        library = (*lit) + Option::dir_sep + libinfo.first("QMAKE_PRL_TARGET");
-                                        debug_msg(1, "pbuilder: Found library (%s) via PRL %s (%s)",
-                                                  opt.toLatin1().constData(), lib_file.toLatin1().constData(), library.toLatin1().constData());
-                                        remove = true;
-
-                                        if (project->isActiveConfig("xcode_dynamic_library_suffix")) {
-                                            QString suffixSetting = project->first("QMAKE_XCODE_LIBRARY_SUFFIX_SETTING").toQString();
-                                            if (!suffixSetting.isEmpty()) {
-                                                QString librarySuffix = project->first("QMAKE_XCODE_LIBRARY_SUFFIX").toQString();
-                                                suffixSetting = "$(" + suffixSetting + ")";
-                                                if (!librarySuffix.isEmpty()) {
-                                                    int pos = library.lastIndexOf(librarySuffix + '.');
-                                                    if (pos == -1) {
-                                                        warn_msg(WarnLogic, "Failed to find expected suffix '%s' for library '%s'.",
-                                                                            qPrintable(librarySuffix), qPrintable(library));
-                                                    } else {
-                                                        library.replace(pos, librarySuffix.length(), suffixSetting);
-                                                        if (name.endsWith(librarySuffix))
-                                                            name.chop(librarySuffix.length());
-                                                    }
-                                                } else {
-                                                    int pos = library.lastIndexOf(name);
-                                                    if (pos != -1)
-                                                        library.insert(pos + name.length(), suffixSetting);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            const QString prlFilePath = QMakeMetaInfo::checkLib(
+                                Option::normalizePath((*lit) + Option::dir_sep + lib
+                                                      + Option::prl_ext));
+                            if (replaceLibrarySuffix(prlFilePath, opt, name, library))
+                                remove = true;
+                            libSuffixReplaced = true;
                         }
                         if(!remove) {
                             QString extns[] = { ".dylib", ".so", ".a", QString() };
@@ -938,6 +951,16 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     }
                 }
                 if(!library.isEmpty()) {
+                    if (!libSuffixReplaced) {
+                        const QFileInfo fi = fileInfo(library);
+                        const QString prlFilePath = QMakeMetaInfo::checkLib(
+                            Option::normalizePath(fi.absolutePath() + '/' + fi.completeBaseName()
+                                                  + Option::prl_ext));
+                        if (!prlFilePath.isEmpty()) {
+                            name = fi.completeBaseName().mid(3);
+                            replaceLibrarySuffix(prlFilePath, opt, name, library);
+                        }
+                    }
                     const int slsh = library.lastIndexOf(Option::dir_sep);
                     if(name.isEmpty()) {
                         if(slsh != -1)
@@ -945,8 +968,10 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     }
                     if(slsh != -1) {
                         const QString path = QFileInfo(library.left(slsh)).absoluteFilePath();
-                        if(!path.isEmpty() && !libdirs.contains(path))
+                        if (!path.isEmpty() && !libdirs.contains(path)
+                            && !defaultLibDirs.contains(path)) {
                             libdirs += path;
+                        }
                     }
                     library = fileFixify(library, FileFixifyFromOutdir | FileFixifyAbsolute);
                     QString key = keyFor(library);

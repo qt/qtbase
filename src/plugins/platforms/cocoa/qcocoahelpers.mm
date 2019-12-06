@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
 Q_LOGGING_CATEGORY(lcQpaDrawing, "qt.qpa.drawing");
-Q_LOGGING_CATEGORY(lcQpaMouse, "qt.qpa.input.mouse");
+Q_LOGGING_CATEGORY(lcQpaMouse, "qt.qpa.input.mouse", QtCriticalMsg);
 Q_LOGGING_CATEGORY(lcQpaScreen, "qt.qpa.screen");
 
 //
@@ -297,13 +297,12 @@ Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
 */
 Qt::MouseButton cocoaButton2QtButton(NSEvent *event)
 {
-    switch (event.type) {
-    case NSEventTypeMouseMoved:
+    if (cocoaEvent2QtMouseEvent(event) == QEvent::MouseMove)
         return Qt::NoButton;
 
+    switch (event.type) {
     case NSEventTypeRightMouseUp:
     case NSEventTypeRightMouseDown:
-    case NSEventTypeRightMouseDragged:
         return Qt::RightButton;
 
     default:

@@ -54,7 +54,7 @@ QCocoaVulkanInstance::~QCocoaVulkanInstance()
 
 void QCocoaVulkanInstance::createOrAdoptInstance()
 {
-    initInstance(m_instance, QByteArrayList());
+    initInstance(m_instance, QByteArrayList() << QByteArrayLiteral("VK_MVK_macos_surface"));
 }
 
 VkSurfaceKHR *QCocoaVulkanInstance::createSurface(QWindow *window)

@@ -46,6 +46,7 @@
 #include "qcoreevent.h"
 #include "qeventloop.h"
 #endif
+#include "qmetaobject.h"
 #include "qcorecmdlineargs_p.h"
 #include <qdatastream.h>
 #include <qdebug.h>
@@ -778,7 +779,7 @@ QCoreApplication::QCoreApplication(int &argc, char **argv
 
 void QCoreApplicationPrivate::init()
 {
-    Q_TRACE(QCoreApplicationPrivate_init_entry);
+    Q_TRACE_SCOPE(QCoreApplicationPrivate_init);
 
 #if defined(Q_OS_MACOS)
     QMacAutoReleasePool pool;
@@ -883,8 +884,6 @@ void QCoreApplicationPrivate::init()
 #ifndef QT_NO_QOBJECT
     is_app_running = true; // No longer starting up.
 #endif
-
-    Q_TRACE(QCoreApplicationPrivate_init_exit);
 }
 
 /*!
@@ -968,6 +967,10 @@ bool QCoreApplication::isSetuidAllowed()
     Sets the attribute \a attribute if \a on is true;
     otherwise clears the attribute.
 
+    \note Some application attributes must be set \b before creating a
+    QCoreApplication instance. Refer to the Qt::ApplicationAttribute
+    documentation for more information.
+
     \sa testAttribute()
 */
 void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
@@ -976,6 +979,31 @@ void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
         QCoreApplicationPrivate::attribs |= 1 << attribute;
     else
         QCoreApplicationPrivate::attribs &= ~(1 << attribute);
+#if defined(QT_NO_QOBJECT)
+    if (Q_UNLIKELY(qApp)) {
+#else
+    if (Q_UNLIKELY(QCoreApplicationPrivate::is_app_running)) {
+#endif
+        switch (attribute) {
+            case Qt::AA_EnableHighDpiScaling:
+            case Qt::AA_DisableHighDpiScaling:
+            case Qt::AA_PluginApplication:
+            case Qt::AA_UseDesktopOpenGL:
+            case Qt::AA_UseOpenGLES:
+            case Qt::AA_UseSoftwareOpenGL:
+            case Qt::AA_ShareOpenGLContexts:
+#ifdef QT_BOOTSTRAPPED
+                qWarning("Attribute %d must be set before QCoreApplication is created.",
+                         attribute);
+#else
+                qWarning("Attribute Qt::%s must be set before QCoreApplication is created.",
+                         QMetaEnum::fromType<Qt::ApplicationAttribute>().valueToKey(attribute));
+#endif
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 /*!
@@ -1200,27 +1228,25 @@ bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
     // Note: when adjusting the tracepoints in here
     // consider adjusting QApplicationPrivate::notify_helper too.
     Q_TRACE(QCoreApplication_notify_entry, receiver, event, event->type());
+    bool consumed = false;
+    bool filtered = false;
+    Q_TRACE_EXIT(QCoreApplication_notify_exit, consumed, filtered);
 
     // send to all application event filters (only does anything in the main thread)
     if (QCoreApplication::self
             && receiver->d_func()->threadData->thread == mainThread()
             && QCoreApplication::self->d_func()->sendThroughApplicationEventFilters(receiver, event)) {
-        Q_TRACE(QCoreApplication_notify_event_filtered, receiver, event, event->type());
-        return true;
+        filtered = true;
+        return filtered;
     }
     // send to all receiver event filters
     if (sendThroughObjectEventFilters(receiver, event)) {
-        Q_TRACE(QCoreApplication_notify_event_filtered, receiver, event, event->type());
-        return true;
+        filtered = true;
+        return filtered;
     }
 
-    Q_TRACE(QCoreApplication_notify_before_delivery, receiver, event, event->type());
-
     // deliver the event
-    const bool consumed = receiver->event(event);
-
-    Q_TRACE(QCoreApplication_notify_after_delivery, receiver, event, event->type(), consumed);
-
+    consumed = receiver->event(event);
     return consumed;
 }
 
@@ -1491,7 +1517,7 @@ bool QCoreApplication::sendSpontaneousEvent(QObject *receiver, QEvent *event)
 */
 void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 {
-    Q_TRACE(QCoreApplication_postEvent_entry, receiver, event, event->type());
+    Q_TRACE_SCOPE(QCoreApplication_postEvent, receiver, event, event->type());
 
     if (receiver == 0) {
         qWarning("QCoreApplication::postEvent: Unexpected null receiver");
@@ -2923,7 +2949,7 @@ bool QCoreApplication::hasPendingEvents()
 
 /*!
     Returns a pointer to the event dispatcher object for the main thread. If no
-    event dispatcher exists for the thread, this function returns 0.
+    event dispatcher exists for the thread, this function returns \nullptr.
 */
 QAbstractEventDispatcher *QCoreApplication::eventDispatcher()
 {

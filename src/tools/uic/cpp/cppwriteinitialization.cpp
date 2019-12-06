@@ -767,9 +767,9 @@ void WriteInitialization::acceptWidget(DomWidget *node)
     static const QLatin1String realPropertyNames[] = {
         QLatin1String("visible"),
         QLatin1String("cascadingSectionResizes"),
+        QLatin1String("minimumSectionSize"),    // before defaultSectionSize
         QLatin1String("defaultSectionSize"),
         QLatin1String("highlightSections"),
-        QLatin1String("minimumSectionSize"),
         QLatin1String("showSortIndicator"),
         QLatin1String("stretchLastSection"),
     };

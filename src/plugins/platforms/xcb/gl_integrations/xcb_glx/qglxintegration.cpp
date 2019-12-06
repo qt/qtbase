@@ -63,6 +63,7 @@
 QT_BEGIN_NAMESPACE
 
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+typedef const GLubyte *(*glGetStringiProc)(GLenum, GLuint);
 
 #ifndef GLX_CONTEXT_CORE_PROFILE_BIT_ARB
 #define GLX_CONTEXT_CORE_PROFILE_BIT_ARB 0x00000001
@@ -145,6 +146,27 @@ static inline QByteArray getGlString(GLenum param)
     return QByteArray();
 }
 
+static bool hasGlExtension(const QSurfaceFormat &format, const char *ext)
+{
+    if (format.majorVersion() < 3) {
+        auto exts = reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS));
+        return exts && strstr(exts, ext);
+    } else {
+        auto glGetStringi = reinterpret_cast<glGetStringiProc>(
+                glXGetProcAddress(reinterpret_cast<const GLubyte*>("glGetStringi")));
+        if (glGetStringi) {
+            GLint n = 0;
+            glGetIntegerv(GL_NUM_EXTENSIONS, &n);
+            for (GLint i = 0; i < n; ++i) {
+                const char *p = reinterpret_cast<const char *>(glGetStringi(GL_EXTENSIONS, i));
+                if (p && !strcmp(p, ext))
+                    return true;
+            }
+        }
+        return false;
+    }
+}
+
 static void updateFormatFromContext(QSurfaceFormat &format)
 {
     // Update the version, profile, and context bit of the format
@@ -163,10 +185,12 @@ static void updateFormatFromContext(QSurfaceFormat &format)
         format.setOption(QSurfaceFormat::StereoBuffers);
 
     if (format.renderableType() == QSurfaceFormat::OpenGL) {
-        GLint value = 0;
-        glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY_ARB, &value);
-        if (value == GL_LOSE_CONTEXT_ON_RESET_ARB)
-            format.setOption(QSurfaceFormat::ResetNotification);
+        if (hasGlExtension(format, "GL_ARB_robustness")) {
+            GLint value = 0;
+            glGetIntegerv(GL_RESET_NOTIFICATION_STRATEGY_ARB, &value);
+            if (value == GL_LOSE_CONTEXT_ON_RESET_ARB)
+                format.setOption(QSurfaceFormat::ResetNotification);
+        }
 
         if (format.version() < qMakePair(3, 0)) {
             format.setOption(QSurfaceFormat::DeprecatedFunctions);
@@ -175,7 +199,7 @@ static void updateFormatFromContext(QSurfaceFormat &format)
 
         // Version 3.0 onwards - check if it includes deprecated functionality or is
         // a debug context
-        value = 0;
+        GLint value = 0;
         glGetIntegerv(GL_CONTEXT_FLAGS, &value);
         if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
             format.setOption(QSurfaceFormat::DeprecatedFunctions);
@@ -204,7 +228,6 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
     , m_shareContext(0)
     , m_format(format)
     , m_isPBufferCurrent(false)
-    , m_swapInterval(-1)
     , m_ownsContext(nativeHandle.isNull())
     , m_getGraphicsResetStatus(0)
     , m_lost(false)
@@ -270,7 +293,9 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share)
                 // ES does not support any format option
                 m_format.setOptions(QSurfaceFormat::FormatOptions());
             }
-
+            // Robustness must match that of the shared context.
+            if (share && share->format().testOption(QSurfaceFormat::ResetNotification))
+                m_format.setOption(QSurfaceFormat::ResetNotification);
             Q_ASSERT(glVersions.count() > 0);
 
             for (int i = 0; !m_context && i < glVersions.count(); i++) {
@@ -565,9 +590,9 @@ bool QGLXContext::makeCurrent(QPlatformSurface *surface)
 
     if (success && surfaceClass == QSurface::Window) {
         int interval = surface->format().swapInterval();
+        QXcbWindow *window = static_cast<QXcbWindow *>(surface);
         QXcbScreen *screen = screenForPlatformSurface(surface);
-        if (interval >= 0 && m_swapInterval != interval && screen) {
-            m_swapInterval = interval;
+        if (interval >= 0 && interval != window->swapInterval() && screen) {
             typedef void (*qt_glXSwapIntervalEXT)(Display *, GLXDrawable, int);
             typedef void (*qt_glXSwapIntervalMESA)(unsigned int);
             static qt_glXSwapIntervalEXT glXSwapIntervalEXT = 0;
@@ -586,6 +611,7 @@ bool QGLXContext::makeCurrent(QPlatformSurface *surface)
                 glXSwapIntervalEXT(m_display, glxDrawable, interval);
             else if (glXSwapIntervalMESA)
                 glXSwapIntervalMESA(interval);
+            window->setSwapInterval(interval);
         }
     }
 
@@ -652,6 +678,12 @@ static const char *qglx_threadedgl_blacklist_renderer[] = {
     0
 };
 
+static const char *qglx_threadedgl_blacklist_vendor[] = {
+    "llvmpipe",                             // QTCREATORBUG-10666
+    "nouveau",                              // https://bugs.freedesktop.org/show_bug.cgi?id=91632
+    nullptr
+};
+
 void QGLXContext::queryDummyContext()
 {
     if (m_queriedDummyContext)
@@ -705,6 +737,18 @@ void QGLXContext::queryDummyContext()
                                              "blacklisted renderer \""
                                           << qglx_threadedgl_blacklist_renderer[i]
                                           << "\"";
+                m_supportsThreading = false;
+                break;
+            }
+        }
+    }
+    if (const char *vendor = (const char *) glGetString(GL_VENDOR)) {
+        for (int i = 0; qglx_threadedgl_blacklist_vendor[i]; ++i) {
+            if (strstr(vendor, qglx_threadedgl_blacklist_vendor[i]) != 0) {
+                qCDebug(lcQpaGl).nospace() << "Multithreaded OpenGL disabled: "
+                                              "blacklisted vendor \""
+                                           << qglx_threadedgl_blacklist_vendor[i]
+                                           << "\"";
                 m_supportsThreading = false;
                 break;
             }

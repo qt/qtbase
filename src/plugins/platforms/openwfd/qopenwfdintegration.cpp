@@ -50,6 +50,7 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QScreen>
+#include <qpa/qwindowsysteminterface.h>
 
 #include <QtEventDispatcherSupport/private/qgenericunixeventdispatcher_p.h>
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
@@ -134,14 +135,4 @@ QPlatformNativeInterface * QOpenWFDIntegration::nativeInterface() const
 QPlatformPrinterSupport * QOpenWFDIntegration::printerSupport() const
 {
     return mPrinterSupport;
-}
-
-void QOpenWFDIntegration::addScreen(QOpenWFDScreen *screen)
-{
-    screenAdded(screen);
-}
-
-void QOpenWFDIntegration::destroyScreen(QOpenWFDScreen *screen)
-{
-    QPlatformIntegration::destroyScreen(screen);
 }

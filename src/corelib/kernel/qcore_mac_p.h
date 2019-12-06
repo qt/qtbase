@@ -67,6 +67,7 @@
 
 #ifdef __OBJC__
 #include <Foundation/Foundation.h>
+#include <functional>
 #endif
 
 #include "qstring.h"
@@ -202,6 +203,7 @@ class Q_CORE_EXPORT AppleUnifiedLogger
 public:
     static bool messageHandler(QtMsgType msgType, const QMessageLogContext &context, const QString &message,
         const QString &subsystem = QString());
+    static bool willMirrorToStderr();
 private:
     static os_log_type_t logTypeForMessageType(QtMsgType msgType);
     static os_log_t cachedLog(const QString &subsystem, const QString &category);
@@ -294,13 +296,13 @@ QT_MAC_WEAK_IMPORT(_os_activity_current);
 // -------------------------------------------------------------------------
 
 #if defined( __OBJC__)
-class QMacScopedObserver
+class QMacNotificationObserver
 {
 public:
-    QMacScopedObserver() {}
+    QMacNotificationObserver() {}
 
     template<typename Functor>
-    QMacScopedObserver(id object, NSNotificationName name, Functor callback) {
+    QMacNotificationObserver(id object, NSNotificationName name, Functor callback) {
         observer = [[NSNotificationCenter defaultCenter] addObserverForName:name
             object:object queue:nil usingBlock:^(NSNotification *) {
                 callback();
@@ -308,13 +310,13 @@ public:
         ];
     }
 
-    QMacScopedObserver(const QMacScopedObserver& other) = delete;
-    QMacScopedObserver(QMacScopedObserver&& other) : observer(other.observer) {
+    QMacNotificationObserver(const QMacNotificationObserver& other) = delete;
+    QMacNotificationObserver(QMacNotificationObserver&& other) : observer(other.observer) {
         other.observer = nil;
     }
 
-    QMacScopedObserver &operator=(const QMacScopedObserver& other) = delete;
-    QMacScopedObserver &operator=(QMacScopedObserver&& other) {
+    QMacNotificationObserver &operator=(const QMacNotificationObserver& other) = delete;
+    QMacNotificationObserver &operator=(QMacNotificationObserver&& other) {
         if (this != &other) {
             remove();
             observer = other.observer;
@@ -328,10 +330,68 @@ public:
             [[NSNotificationCenter defaultCenter] removeObserver:observer];
         observer = nil;
     }
-    ~QMacScopedObserver() { remove(); }
+    ~QMacNotificationObserver() { remove(); }
 
 private:
     id observer = nil;
+};
+
+QT_END_NAMESPACE
+@interface QT_MANGLE_NAMESPACE(KeyValueObserver) : NSObject
+@end
+QT_NAMESPACE_ALIAS_OBJC_CLASS(KeyValueObserver);
+QT_BEGIN_NAMESPACE
+
+class Q_CORE_EXPORT QMacKeyValueObserver
+{
+public:
+    using Callback = std::function<void()>;
+
+    QMacKeyValueObserver() {}
+
+    // Note: QMacKeyValueObserver must not outlive the object observed!
+    QMacKeyValueObserver(id object, NSString *keyPath, Callback callback,
+        NSKeyValueObservingOptions options = NSKeyValueObservingOptionNew)
+        : object(object), keyPath(keyPath), callback(new Callback(callback))
+    {
+        addObserver(options);
+    }
+
+    QMacKeyValueObserver(const QMacKeyValueObserver &other)
+         : QMacKeyValueObserver(other.object, other.keyPath, *other.callback.get()) {}
+
+    QMacKeyValueObserver(QMacKeyValueObserver &&other) { swap(other, *this); }
+
+    ~QMacKeyValueObserver() { removeObserver(); }
+
+    QMacKeyValueObserver &operator=(const QMacKeyValueObserver &other) {
+        QMacKeyValueObserver tmp(other);
+        swap(tmp, *this);
+        return *this;
+    }
+
+    QMacKeyValueObserver &operator=(QMacKeyValueObserver &&other) {
+        QMacKeyValueObserver tmp(std::move(other));
+        swap(tmp, *this);
+        return *this;
+    }
+
+    void removeObserver();
+
+private:
+    void swap(QMacKeyValueObserver &first, QMacKeyValueObserver &second) {
+        std::swap(first.object, second.object);
+        std::swap(first.keyPath, second.keyPath);
+        std::swap(first.callback, second.callback);
+    }
+
+    void addObserver(NSKeyValueObservingOptions options);
+
+    id object = nil;
+    NSString *keyPath = nullptr;
+    std::unique_ptr<Callback> callback;
+
+    static KeyValueObserver *observer;
 };
 #endif
 

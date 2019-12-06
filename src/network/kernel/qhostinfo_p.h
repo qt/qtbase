@@ -73,6 +73,7 @@
 #include <QNetworkSession>
 #include <QSharedPointer>
 
+#include <atomic>
 
 QT_BEGIN_NAMESPACE
 
@@ -83,12 +84,14 @@ class QHostInfoResult : public QObject
 
     QPointer<const QObject> receiver = nullptr;
     QtPrivate::QSlotObjectBase *slotObj = nullptr;
+    const bool withContextObject = false;
 
 public:
     QHostInfoResult() = default;
     QHostInfoResult(const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj) :
         receiver(receiver),
-        slotObj(slotObj)
+        slotObj(slotObj),
+        withContextObject(slotObj && receiver)
     {
         connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this,
                 &QObject::deleteLater);
@@ -96,13 +99,18 @@ public:
             moveToThread(receiver->thread());
     }
 
+    void postResultsReady(const QHostInfo &info);
+
 public Q_SLOTS:
     inline void emitResultsReady(const QHostInfo &info)
     {
         if (slotObj) {
-            QHostInfo copy = info;
-            void *args[2] = { 0, reinterpret_cast<void *>(&copy) };
-            slotObj->call(const_cast<QObject*>(receiver.data()), args);
+            // we either didn't have a context object, or it's still alive
+            if (!withContextObject || receiver) {
+                QHostInfo copy = info;
+                void *args[2] = { 0, reinterpret_cast<void *>(&copy) };
+                slotObj->call(const_cast<QObject*>(receiver.data()), args);
+            }
             slotObj->destroyIfLastRef();
         } else {
             emit resultsReady(info);
@@ -176,10 +184,12 @@ public:
     void put(const QString &name, const QHostInfo &info);
     void clear();
 
-    bool isEnabled();
-    void setEnabled(bool e);
+    bool isEnabled() { return enabled.load(std::memory_order_relaxed); }
+    // this function is currently only used for the auto tests
+    // and not usable by public API
+    void setEnabled(bool e) { enabled.store(e, std::memory_order_relaxed); }
 private:
-    bool enabled;
+    std::atomic<bool> enabled;
     struct QHostInfoCacheElement {
         QHostInfo info;
         QElapsedTimer age;

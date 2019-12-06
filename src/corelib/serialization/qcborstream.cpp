@@ -100,6 +100,16 @@ static CborError _cbor_value_dup_string(const CborValue *, void **, size_t *, Cb
     Q_UNREACHABLE();
     return CborErrorInternalError;
 }
+static CborError cbor_value_get_half_float_as_float(const CborValue *, float *)
+{
+    Q_UNREACHABLE();
+    return CborErrorInternalError;
+}
+static CborError cbor_encode_float_as_half_float(CborEncoder *, float)
+{
+    Q_UNREACHABLE();
+    return CborErrorInternalError;
+}
 QT_WARNING_POP
 
 Q_DECLARE_TYPEINFO(CborEncoder, Q_PRIMITIVE_TYPE);
@@ -404,7 +414,7 @@ QDebug operator<<(QDebug dbg, QCborKnownTags tag)
    \value IllegalSimpleType The CBOR stream contains a Simple Type encoded incorrectly (data is
                             corrupt and the error is not recoverable).
    \value InvalidUtf8String The CBOR stream contains a text string that does not decode properly
-                            as UTF (data is corrupt and the error is not recoverable).
+                            as UTF-8 (data is corrupt and the error is not recoverable).
    \value DataTooLarge      CBOR string, map or array is too big and cannot be parsed by Qt
                             (internal limitation, but the error is not recoverable).
    \value NestingTooDeep    Too many levels of arrays or maps encountered while processing the
@@ -412,6 +422,24 @@ QDebug operator<<(QDebug dbg, QCborKnownTags tag)
    \value UnsupportedType   The CBOR stream contains a known type that the implementation does not
                             support (internal limitation, but the error is not recoverable).
  */
+
+// Convert from CborError to QCborError.
+//
+// Centralized in a function in case we need to make more adjustments in the
+// future.
+static QCborError fromCborError(CborError err)
+{
+    return { QCborError::Code(int(err)) };
+}
+
+// Convert to CborError from QCborError.
+//
+// Centralized in a function in case we need to make more adjustments in the
+// future.
+static CborError toCborError(QCborError c)
+{
+    return CborError(int(c.c));
+}
 
 /*!
    \variable QCborError::c
@@ -483,8 +511,8 @@ QString QCborError::toString() const
         return QStringLiteral("Internal limitation: unsupported type");
     }
 
-    // get the error from TinyCBOR
-    CborError err = CborError(int(c));
+    // get the error string from TinyCBOR
+    CborError err = toCborError(*this);
     return QString::fromLatin1(cbor_error_string(err));
 }
 
@@ -1412,6 +1440,7 @@ bool QCborStreamWriter::endMap()
 
 /*!
    \class QCborStreamReader::StringResult
+   \inmodule QtCore
 
    This class is returned by readString() and readByteArray(), with either the
    contents of the string that was read or an indication that the parsing is
@@ -1823,8 +1852,7 @@ public:
         if (err != CborErrorUnexpectedEOF)
             corrupt = true;
 
-        // our error codes are the same (for now)
-        lastError = { QCborError::Code(err) };
+        lastError = fromCborError(err);
     }
 
     void updateBufferAfterString(qsizetype offset, qsizetype size)
@@ -1928,13 +1956,21 @@ inline void QCborStreamReader::preparse()
     if (lastError() == QCborError::NoError) {
         type_ = cbor_value_get_type(&d->currentElement);
 
-        if (type_ != CborInvalidType) {
+        if (type_ == CborInvalidType) {
+            // We may have reached the end.
+            if (d->device && d->containerStack.isEmpty()) {
+                d->buffer.clear();
+                if (d->bufferStart)
+                    d->device->skip(d->bufferStart);
+                d->bufferStart = 0;
+            }
+        } else {
             d->lastError = {};
             // Undo the type mapping that TinyCBOR does (we have an explicit type
             // for negative integer and we don't have separate types for Boolean,
             // Null and Undefined).
             if (type_ == CborBooleanType || type_ == CborNullType || type_ == CborUndefinedType) {
-                type_ = SimpleType;
+                type_ = CborSimpleType;
                 value64 = quint8(d->buffer.at(d->bufferStart)) - CborSimpleType;
             } else {
                 // Using internal TinyCBOR API!

@@ -107,6 +107,17 @@ template<bool RGBA, bool RGBx>
 static inline void convertARGBFromARGB32PM_sse4(uint *buffer, const uint *src, int count)
 {
     int i = 0;
+    if ((_MM_GET_EXCEPTION_MASK() & _MM_MASK_INVALID) == 0) {
+        for (; i < count; ++i) {
+            uint v = qUnpremultiply(src[i]);
+            if (RGBx)
+                v = 0xff000000 | v;
+            if (RGBA)
+                v = ARGB2RGBA(v);
+            buffer[i] = v;
+        }
+        return;
+    }
     const __m128i alphaMask = _mm_set1_epi32(0xff000000);
     const __m128i rgbaMask = _mm_setr_epi8(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
     const __m128i zero = _mm_setzero_si128();
@@ -174,6 +185,13 @@ template<bool RGBA>
 static inline void convertARGBFromRGBA64PM_sse4(uint *buffer, const QRgba64 *src, int count)
 {
     int i = 0;
+    if ((_MM_GET_EXCEPTION_MASK() & _MM_MASK_INVALID) == 0) {
+        for (; i < count; ++i) {
+            const QRgba64 v = src[i].unpremultiplied();
+            buffer[i] = RGBA ? toRgba8888(v) : toArgb32(v);
+        }
+        return;
+    }
     const __m128i alphaMask = _mm_set1_epi64x(qint64(Q_UINT64_C(0xffff) << 48));
     const __m128i alphaMask32 = _mm_set1_epi32(0xff000000);
     const __m128i rgbaMask = _mm_setr_epi8(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);

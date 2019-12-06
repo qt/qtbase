@@ -35,6 +35,8 @@
 #include <private/qrawfont_p.h>
 #include <qpa/qplatformfontdatabase.h>
 
+Q_LOGGING_CATEGORY(lcTests, "qt.text.tests")
+
 class tst_QFontDatabase : public QObject
 {
 Q_OBJECT
@@ -49,6 +51,7 @@ private slots:
 
     void fixedPitch_data();
     void fixedPitch();
+    void systemFixedFont();
 
 #ifdef Q_OS_MAC
     void trickyFonts_data();
@@ -154,6 +157,16 @@ void tst_QFontDatabase::fixedPitch()
     QFont qfont(font);
     QFontInfo fi(qfont);
     QCOMPARE(fi.fixedPitch(), fixedPitch);
+}
+
+void tst_QFontDatabase::systemFixedFont() // QTBUG-54623
+{
+    QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    QFontInfo fontInfo(font);
+    bool fdbSaysFixed = QFontDatabase().isFixedPitch(fontInfo.family(), fontInfo.styleName());
+    qCDebug(lcTests) << "system fixed font is" << font << "really fixed?" << fdbSaysFixed << fontInfo.fixedPitch();
+    QVERIFY(fdbSaysFixed);
+    QVERIFY(fontInfo.fixedPitch());
 }
 
 #ifdef Q_OS_MAC

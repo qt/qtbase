@@ -1118,7 +1118,7 @@ static bool addFontToDatabase(QString familyName,
 }
 
 static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *textmetric,
-                                     DWORD type, LPARAM)
+                                     DWORD type, LPARAM lparam)
 {
     const ENUMLOGFONTEX *f = reinterpret_cast<const ENUMLOGFONTEX *>(logFont);
     const QString familyName = QString::fromWCharArray(f->elfLogFont.lfFaceName);
@@ -1128,8 +1128,16 @@ static int QT_WIN_CALLBACK storeFont(const LOGFONT *logFont, const TEXTMETRIC *t
     // to the documentation is identical to a TEXTMETRIC except for the last four
     // members, which we don't use anyway
     const FONTSIGNATURE *signature = nullptr;
-    if (type & TRUETYPE_FONTTYPE)
+    if (type & TRUETYPE_FONTTYPE) {
         signature = &reinterpret_cast<const NEWTEXTMETRICEX *>(textmetric)->ntmFontSig;
+        // We get a callback for each script-type supported, but we register them all
+        // at once using the signature, so we only need one call to addFontToDatabase().
+        QSet<QPair<QString,QString>> *foundFontAndStyles = reinterpret_cast<QSet<QPair<QString,QString>> *>(lparam);
+        QPair<QString,QString> fontAndStyle(familyName, styleName);
+        if (foundFontAndStyles->contains(fontAndStyle))
+            return 1;
+        foundFontAndStyles->insert(fontAndStyle);
+    }
     addFontToDatabase(familyName, styleName, *logFont, textmetric, signature, type);
 
     // keep on enumerating
@@ -1149,7 +1157,8 @@ void QWindowsFontDatabase::populateFamily(const QString &familyName)
     familyName.toWCharArray(lf.lfFaceName);
     lf.lfFaceName[familyName.size()] = 0;
     lf.lfPitchAndFamily = 0;
-    EnumFontFamiliesEx(dummy, &lf, storeFont, 0, 0);
+    QSet<QPair<QString,QString>> foundFontAndStyles;
+    EnumFontFamiliesEx(dummy, &lf, storeFont, reinterpret_cast<intptr_t>(&foundFontAndStyles), 0);
     ReleaseDC(0, dummy);
 }
 
@@ -1952,13 +1961,13 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
         } else {
             HGDIOBJ oldFont = SelectObject(data->hdc, hfont);
 
+            const QFont::HintingPreference hintingPreference =
+                static_cast<QFont::HintingPreference>(request.hintingPreference);
+            bool useDw = useDirectWrite(hintingPreference, fam);
+
             IDWriteFontFace *directWriteFontFace = NULL;
             HRESULT hr = data->directWriteGdiInterop->CreateFontFaceFromHdc(data->hdc, &directWriteFontFace);
-            if (FAILED(hr)) {
-                const QString errorString = qt_error_string(int(hr));
-                qWarning().noquote().nospace() << "DirectWrite: CreateFontFaceFromHDC() failed ("
-                    << errorString << ") for " << request << ' ' << lf << " dpi=" << dpi;
-            } else {
+            if (SUCCEEDED(hr)) {
                 bool isColorFont = false;
 #if defined(QT_USE_DIRECTWRITE2)
                 IDWriteFontFace2 *directWriteFontFace2 = nullptr;
@@ -1968,9 +1977,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
                         isColorFont = directWriteFontFace2->GetPaletteEntryCount() > 0;
                 }
 #endif
-                const QFont::HintingPreference hintingPreference =
-                    static_cast<QFont::HintingPreference>(request.hintingPreference);
-                const bool useDw = useDirectWrite(hintingPreference, fam, isColorFont);
+                useDw = useDw || useDirectWrite(hintingPreference, fam, isColorFont);
                 qCDebug(lcQpaFonts) << __FUNCTION__ << request.family << request.pointSize
                     << "pt" << "hintingPreference=" << hintingPreference << "color=" << isColorFont
                     << dpi << "dpi" << "useDirectWrite=" << useDw;
@@ -1992,6 +1999,10 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
                 } else {
                     directWriteFontFace->Release();
                 }
+            } else if (useDw) {
+                const QString errorString = qt_error_string(int(hr));
+                qWarning().noquote().nospace() << "DirectWrite: CreateFontFaceFromHDC() failed ("
+                    << errorString << ") for " << request << ' ' << lf << " dpi=" << dpi;
             }
 
             SelectObject(data->hdc, oldFont);

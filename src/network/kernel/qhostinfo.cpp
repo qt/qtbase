@@ -106,11 +106,39 @@ int get_signal_index()
     return signal_index + QMetaObjectPrivate::signalOffset(senderMetaObject);
 }
 
-void emit_results_ready(const QHostInfo &hostInfo, const QObject *receiver,
-                        QtPrivate::QSlotObjectBase *slotObj)
+}
+
+/*
+    The calling thread is likely the one that executes the lookup via
+    QHostInfoRunnable. Unless we operate with a queued connection already,
+    posts the QHostInfo to a dedicated QHostInfoResult object that lives in
+    the same thread as the user-provided receiver, or (if there is none) in
+    the thread that made the call to lookupHost. That QHostInfoResult object
+    then calls the user code in the correct thread.
+
+    The 'result' object deletes itself (via deleteLater) when the metacall
+    event is received.
+*/
+void QHostInfoResult::postResultsReady(const QHostInfo &info)
 {
+    // queued connection will take care of dispatching to right thread
+    if (!slotObj) {
+        emitResultsReady(info);
+        return;
+    }
     static const int signal_index = get_signal_index();
+
+    // we used to have a context object, but it's already destroyed
+    if (withContextObject && !receiver)
+        return;
+
+    /* QHostInfoResult c'tor moves the result object to the thread of receiver.
+       If we don't have a receiver, then the result object will not live in a
+       thread that runs an event loop - so move it to this' thread, which is the thread
+       that initiated the lookup, and required to have a running event loop. */
     auto result = new QHostInfoResult(receiver, slotObj);
+    if (!receiver)
+        result->moveToThread(thread());
     Q_CHECK_PTR(result);
     const int nargs = 2;
     auto types = reinterpret_cast<int *>(malloc(nargs * sizeof(int)));
@@ -120,13 +148,11 @@ void emit_results_ready(const QHostInfo &hostInfo, const QObject *receiver,
     auto args = reinterpret_cast<void **>(malloc(nargs * sizeof(void *)));
     Q_CHECK_PTR(args);
     args[0] = 0;
-    args[1] = QMetaType::create(types[1], &hostInfo);
+    args[1] = QMetaType::create(types[1], &info);
     Q_CHECK_PTR(args[1]);
     auto metaCallEvent = new QMetaCallEvent(slotObj, nullptr, signal_index, nargs, types, args);
     Q_CHECK_PTR(metaCallEvent);
     qApp->postEvent(result, metaCallEvent);
-}
-
 }
 
 /*!
@@ -137,8 +163,7 @@ void emit_results_ready(const QHostInfo &hostInfo, const QObject *receiver,
     \inmodule QtNetwork
     \ingroup network
 
-    QHostInfo uses the lookup mechanisms provided by the operating
-    system to find the IP address(es) associated with a host name,
+    QHostInfo finds the IP address(es) associated with a host name,
     or the host name associated with an IP address.
     The class provides two static convenience functions: one that
     works asynchronously and emits a signal once the host is found,
@@ -173,6 +198,11 @@ void emit_results_ready(const QHostInfo &hostInfo, const QObject *receiver,
     To retrieve the name of the local host, use the static
     QHostInfo::localHostName() function.
 
+    QHostInfo uses the mechanisms provided by the operating system
+    to perform the lookup. As per {https://tools.ietf.org/html/rfc6724}{RFC 6724}
+    there is no guarantee that all IP addresses registered for a domain or
+    host will be returned.
+
     \note Since Qt 4.6.1 QHostInfo is using multiple threads for DNS lookup
     instead of one dedicated DNS thread. This improves performance,
     but also changes the order of signal emissions when using lookupHost()
@@ -180,7 +210,8 @@ void emit_results_ready(const QHostInfo &hostInfo, const QObject *receiver,
     \note Since Qt 4.6.3 QHostInfo is using a small internal 60 second DNS cache
     for performance improvements.
 
-    \sa QAbstractSocket, {http://www.rfc-editor.org/rfc/rfc3492.txt}{RFC 3492}
+    \sa QAbstractSocket, {http://www.rfc-editor.org/rfc/rfc3492.txt}{RFC 3492},
+    {https://tools.ietf.org/html/rfc6724}{RFC 6724}
 */
 
 static int nextId()
@@ -330,6 +361,10 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
     ready, the \a functor is called with a QHostInfo argument. The
     QHostInfo object can then be inspected to get the results of the
     lookup.
+
+    The \a functor will be run in the thread that makes the call to lookupHost;
+    that thread must have a running Qt event loop.
+
     \note There is no guarantee on the order the signals will be emitted
     if you start multiple requests with lookupHost().
 
@@ -627,7 +662,8 @@ int QHostInfo::lookupHostImpl(const QString &name,
         QHostInfo hostInfo(id);
         hostInfo.setError(QHostInfo::HostNotFound);
         hostInfo.setErrorString(QCoreApplication::translate("QHostInfo", "No host name given"));
-        emit_results_ready(hostInfo, receiver, slotObj);
+        QHostInfoResult result(receiver, slotObj);
+        result.postResultsReady(hostInfo);
         return id;
     }
 
@@ -641,7 +677,8 @@ int QHostInfo::lookupHostImpl(const QString &name,
             QHostInfo info = manager->cache.get(name, &valid);
             if (valid) {
                 info.setLookupId(id);
-                emit_results_ready(info, receiver, slotObj);
+                QHostInfoResult result(receiver, slotObj);
+                result.postResultsReady(info);
                 return id;
             }
         }
@@ -702,7 +739,7 @@ void QHostInfoRunnable::run()
 
     // signal emission
     hostInfo.setLookupId(id);
-    resultEmitter.emitResultsReady(hostInfo);
+    resultEmitter.postResultsReady(hostInfo);
 
 #if QT_CONFIG(thread)
     // now also iterate through the postponed ones
@@ -715,7 +752,7 @@ void QHostInfoRunnable::run()
             QHostInfoRunnable* postponed = *it;
             // we can now emit
             hostInfo.setLookupId(postponed->id);
-            postponed->resultEmitter.emitResultsReady(hostInfo);
+            postponed->resultEmitter.postResultsReady(hostInfo);
             delete postponed;
         }
         manager->postponedLookups.erase(partitionBegin, partitionEnd);
@@ -738,7 +775,9 @@ QHostInfoLookupManager::QHostInfoLookupManager() : mutex(QMutex::Recursive), was
 
 QHostInfoLookupManager::~QHostInfoLookupManager()
 {
+    QMutexLocker locker(&mutex);
     wasDeleted = true;
+    locker.unlock();
 
     // don't qDeleteAll currentLookups, the QThreadPool has ownership
     clear();
@@ -766,14 +805,14 @@ void QHostInfoLookupManager::clear()
 
 void QHostInfoLookupManager::work()
 {
+    QMutexLocker locker(&mutex);
+
     if (wasDeleted)
         return;
 
     // goals of this function:
     //  - launch new lookups via the thread pool
     //  - make sure only one lookup per host/IP is in progress
-
-    QMutexLocker locker(&mutex);
 
     if (!finishedLookups.isEmpty()) {
         // remove ID from aborted if it is in there
@@ -826,10 +865,11 @@ void QHostInfoLookupManager::work()
 // called by QHostInfo
 void QHostInfoLookupManager::scheduleLookup(QHostInfoRunnable *r)
 {
+    QMutexLocker locker(&this->mutex);
+
     if (wasDeleted)
         return;
 
-    QMutexLocker locker(&this->mutex);
     scheduledLookups.enqueue(r);
     work();
 }
@@ -837,10 +877,10 @@ void QHostInfoLookupManager::scheduleLookup(QHostInfoRunnable *r)
 // called by QHostInfo
 void QHostInfoLookupManager::abortLookup(int id)
 {
+    QMutexLocker locker(&this->mutex);
+
     if (wasDeleted)
         return;
-
-    QMutexLocker locker(&this->mutex);
 
 #if QT_CONFIG(thread)
     // is postponed? delete and return
@@ -867,20 +907,22 @@ void QHostInfoLookupManager::abortLookup(int id)
 // called from QHostInfoRunnable
 bool QHostInfoLookupManager::wasAborted(int id)
 {
+    QMutexLocker locker(&this->mutex);
+
     if (wasDeleted)
         return true;
 
-    QMutexLocker locker(&this->mutex);
     return abortedLookups.contains(id);
 }
 
 // called from QHostInfoRunnable
 void QHostInfoLookupManager::lookupFinished(QHostInfoRunnable *r)
 {
+    QMutexLocker locker(&this->mutex);
+
     if (wasDeleted)
         return;
 
-    QMutexLocker locker(&this->mutex);
 #if QT_CONFIG(thread)
     currentLookups.removeOne(r);
 #endif
@@ -942,22 +984,9 @@ void qt_qhostinfo_cache_inject(const QString &hostname, const QHostInfo &resolut
 QHostInfoCache::QHostInfoCache() : max_age(60), enabled(true), cache(128)
 {
 #ifdef QT_QHOSTINFO_CACHE_DISABLED_BY_DEFAULT
-    enabled = false;
+    enabled.store(false, std::memory_order_relaxed);
 #endif
 }
-
-bool QHostInfoCache::isEnabled()
-{
-    return enabled;
-}
-
-// this function is currently only used for the auto tests
-// and not usable by public API
-void QHostInfoCache::setEnabled(bool e)
-{
-    enabled = e;
-}
-
 
 QHostInfo QHostInfoCache::get(const QString &name, bool *valid)
 {

@@ -73,11 +73,13 @@
 #endif
 #include "qpushbutton.h"
 #include "qtooltip.h"
+#include <qwindow.h>
 #include <private/qpushbutton_p.h>
 #include <private/qaction_p.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
 #include <private/qdesktopwidget_p.h>
+#include <private/qstyle_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -198,7 +200,7 @@ void QMenuPrivate::init()
     q->setAttribute(Qt::WA_X11NetWmWindowTypePopupMenu);
     defaultMenuAction = menuAction = new QAction(q);
     menuAction->d_func()->menu = q;
-    QObject::connect(menuAction, &QAction::changed, [=] {
+    QObject::connect(menuAction, &QAction::changed, [this] {
         if (!tornPopup.isNull())
             tornPopup->updateWindowTitle();
     });
@@ -307,29 +309,26 @@ int QMenuPrivate::scrollerHeight() const
     return qMax(QApplication::globalStrut().height(), q->style()->pixelMetric(QStyle::PM_MenuScrollerHeight, 0, q));
 }
 
-//Windows and KDE allow menus to cover the taskbar, while GNOME and Mac don't
+// Windows and KDE allow menus to cover the taskbar, while GNOME and macOS
+// don't. Torn-off menus are again different
+inline bool QMenuPrivate::useFullScreenForPopup() const
+{
+    return !tornoff && QStylePrivate::useFullScreenForPopup();
+}
+
 QRect QMenuPrivate::popupGeometry() const
 {
     Q_Q(const QMenu);
-    if (!tornoff && // Torn-off menus are different
-            QGuiApplicationPrivate::platformTheme() &&
-            QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool()) {
-        return QDesktopWidgetPrivate::screenGeometry(q);
-    } else {
-        return QDesktopWidgetPrivate::availableGeometry(q);
-    }
+    return useFullScreenForPopup()
+        ? QDesktopWidgetPrivate::screenGeometry(q)
+        : QDesktopWidgetPrivate::availableGeometry(q);
 }
 
-//Windows and KDE allow menus to cover the taskbar, while GNOME and Mac don't
 QRect QMenuPrivate::popupGeometry(int screen) const
 {
-    if (!tornoff && // Torn-off menus are different
-            QGuiApplicationPrivate::platformTheme() &&
-            QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::UseFullScreenForPopupMenu).toBool()) {
-        return QDesktopWidgetPrivate::screenGeometry(screen);
-    } else {
-        return QDesktopWidgetPrivate::availableGeometry(screen);
-    }
+    return useFullScreenForPopup()
+        ? QDesktopWidgetPrivate::screenGeometry(screen)
+        : QDesktopWidgetPrivate::availableGeometry(screen);
 }
 
 QVector<QPointer<QWidget> > QMenuPrivate::calcCausedStack() const
@@ -1487,6 +1486,8 @@ void QMenuPrivate::_q_platformMenuAboutToShow()
 {
     Q_Q(QMenu);
 
+    emit q->aboutToShow();
+
 #ifdef Q_OS_OSX
     if (platformMenu) {
         const auto actions = q->actions();
@@ -1500,8 +1501,6 @@ void QMenuPrivate::_q_platformMenuAboutToShow()
         }
     }
 #endif
-
-    emit q->aboutToShow();
 }
 
 bool QMenuPrivate::hasMouseMoved(const QPoint &globalPos)
@@ -2358,8 +2357,23 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->motions = 0;
     d->doChildEffects = true;
     d->updateLayoutDirection();
-    // Ensure that we get correct sizeHints by placing this window on the right screen.
-    d->setScreenForPoint(p);
+
+    // Ensure that we get correct sizeHints by placing this window on the correct screen.
+    // However if the QMenu was constructed with a QDesktopScreenWidget as its parent,
+    // then initialScreenIndex was set, so we should respect that for the lifetime of this menu.
+    // Use d->popupScreen to remember, because initialScreenIndex will be reset after the first showing.
+    // However if eventLoop exists, then exec() already did this by calling createWinId(); so leave it alone. (QTBUG-76162)
+    if (!d->eventLoop) {
+        const int screenIndex = d->topData()->initialScreenIndex;
+        if (screenIndex >= 0)
+            d->popupScreen = screenIndex;
+        if (auto s = QGuiApplication::screens().value(d->popupScreen)) {
+            if (d->setScreen(s))
+                d->itemsDirty = true;
+        } else if (d->setScreenForPoint(p)) {
+            d->itemsDirty = true;
+        }
+    }
 
     const bool contextMenu = d->isContextMenu();
     if (d->lastContextMenu != contextMenu) {

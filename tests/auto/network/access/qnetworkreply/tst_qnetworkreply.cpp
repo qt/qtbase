@@ -3959,7 +3959,7 @@ void tst_QNetworkReply::ioGetFromHttpWithCache_data()
             "HTTP/1.0 200\r\n"
             "Connection: keep-alive\r\n"
             "Content-Type: text/plain\r\n"
-            "Cache-control: no-cache\r\n"
+            "Cache-control: no-store\r\n"
             "Content-length: 8\r\n"
             "\r\n"
             "Reloaded";
@@ -3984,6 +3984,33 @@ void tst_QNetworkReply::ioGetFromHttpWithCache_data()
     MyMemoryCache::CachedContent content;
     content.second = "Not-reloaded";
     content.first.setLastModified(past);
+
+    // "no-cache"
+    rawHeaders.clear();
+    rawHeaders << QNetworkCacheMetaData::RawHeader("Date", QLocale::c().toString(past, dateFormat).toLatin1())
+            << QNetworkCacheMetaData::RawHeader("Cache-control", "no-cache");
+    content.first.setRawHeaders(rawHeaders);
+    content.first.setLastModified(past);
+    content.first.setExpirationDate(future);
+
+    // "no-cache" does not mean "no cache", just that we must consult remote first
+    QTest::newRow("no-cache,200,always-network")
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::AlwaysNetwork) << QStringList() << false << true;
+    QTest::newRow("no-cache,200,prefer-network")
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferNetwork) << QStringList() << false << true;
+    QTest::newRow("no-cache,200,prefer-cache")
+            << reply200 << "Reloaded" << content << int(QNetworkRequest::PreferCache) << QStringList() << false << true;
+    // We're not allowed by the spec to deliver cached data without checking if it is still
+    // up-to-date.
+    QTest::newRow("no-cache,200,always-cache")
+            << reply200 << QString() << content << int(QNetworkRequest::AlwaysCache) << QStringList() << false << false;
+
+    QTest::newRow("no-cache,304,prefer-network")
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferNetwork) << QStringList() << true << true;
+    QTest::newRow("no-cache,304,prefer-cache")
+            << reply304 << "Not-reloaded" << content << int(QNetworkRequest::PreferCache) << QStringList() << true << true;
+    QTest::newRow("no-cache,304,always-cache")
+            << reply304 << QString() << content << int(QNetworkRequest::AlwaysCache) << QStringList() << false << false;
 
     //
     // Set to expired

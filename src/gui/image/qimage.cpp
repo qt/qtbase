@@ -124,7 +124,7 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format)
     int height = size.height();
     int depth = qt_depthForFormat(format);
     auto params = calculateImageParameters(width, height, depth);
-    if (params.bytesPerLine < 0)
+    if (!params.isValid())
         return nullptr;
 
     QScopedPointer<QImageData> d(new QImageData);
@@ -781,7 +781,7 @@ QImageData *QImageData::create(uchar *data, int width, int height,  int bpl, QIm
 
     const int depth = qt_depthForFormat(format);
     auto params = calculateImageParameters(width, height, depth);
-    if (params.totalSize < 0)
+    if (!params.isValid())
         return nullptr;
 
     if (bpl > 0) {
@@ -1089,13 +1089,29 @@ void QImage::detach()
 }
 
 
-static void copyMetadata(QImageData *dst, const QImageData *src)
+static void copyPhysicalMetadata(QImageData *dst, const QImageData *src)
 {
-    // Doesn't copy colortable and alpha_clut, or offset.
     dst->dpmx = src->dpmx;
     dst->dpmy = src->dpmy;
     dst->devicePixelRatio = src->devicePixelRatio;
+}
+
+static void copyMetadata(QImageData *dst, const QImageData *src)
+{
+    // Doesn't copy colortable and alpha_clut, or offset.
+    copyPhysicalMetadata(dst, src);
     dst->text = src->text;
+}
+
+static void copyMetadata(QImage *dst, const QImage &src)
+{
+    dst->setDotsPerMeterX(src.dotsPerMeterX());
+    dst->setDotsPerMeterY(src.dotsPerMeterY());
+    dst->setDevicePixelRatio(src.devicePixelRatio());
+    const auto textKeys = src.textKeys();
+    for (const auto &key: textKeys)
+        dst->setText(key, src.text(key));
+
 }
 
 /*!
@@ -1309,7 +1325,7 @@ QRect QImage::rect() const
     The image depth is the number of bits used to store a single
     pixel, also called bits per pixel (bpp).
 
-    The supported depths are 1, 8, 16, 24 and 32.
+    The supported depths are 1, 8, 16, 24, 32 and 64.
 
     \sa bitPlaneCount(), convertToFormat(), {QImage#Image Formats}{Image Formats},
     {QImage#Image Information}{Image Information}
@@ -1484,10 +1500,17 @@ qsizetype QImage::sizeInBytes() const
 
     \sa scanLine()
 */
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+qsizetype QImage::bytesPerLine() const
+{
+    return d ? d->bytes_per_line : 0;
+}
+#else
 int QImage::bytesPerLine() const
 {
     return d ? d->bytes_per_line : 0;
 }
+#endif
 
 
 /*!
@@ -1543,7 +1566,9 @@ void QImage::setColor(int i, QRgb c)
     Returns a pointer to the pixel data at the scanline with index \a
     i. The first scanline is at index 0.
 
-    The scanline data is aligned on a 32-bit boundary.
+    The scanline data is as minimum 32-bit aligned. For 64-bit formats
+    it follows the native alignment of 64-bit integers (64-bit for most
+    platforms, but notably 32-bit on i386).
 
     \warning If you are accessing 32-bpp image data, cast the returned
     pointer to \c{QRgb*} (QRgb has a 32-bit size) and use it to
@@ -2917,8 +2942,10 @@ QImage QImage::createAlphaMask(Qt::ImageConversionFlags flags) const
     }
 
     QImage mask(d->width, d->height, Format_MonoLSB);
-    if (!mask.isNull())
+    if (!mask.isNull()) {
         dither_to_Mono(mask.d, d, flags, true);
+        copyPhysicalMetadata(mask.d, d);
+    }
     return mask;
 }
 
@@ -3036,6 +3063,7 @@ QImage QImage::createHeuristicMask(bool clipTight) const
 
 #undef PIX
 
+    copyPhysicalMetadata(m.d, d);
     return m;
 }
 #endif //QT_NO_IMAGE_HEURISTIC_MASK
@@ -3079,6 +3107,8 @@ QImage QImage::createMaskFromColor(QRgb color, Qt::MaskMode mode) const
     }
     if  (mode == Qt::MaskOutColor)
         maskImage.invertPixels();
+
+    copyPhysicalMetadata(maskImage.d, d);
     return maskImage;
 }
 
@@ -4648,8 +4678,7 @@ QImage QImage::smoothScaled(int w, int h) const {
 static QImage rotated90(const QImage &image)
 {
     QImage out(image.height(), image.width(), image.format());
-    out.setDotsPerMeterX(image.dotsPerMeterY());
-    out.setDotsPerMeterY(image.dotsPerMeterX());
+    copyMetadata(&out, image);
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
@@ -4677,8 +4706,7 @@ static QImage rotated180(const QImage &image)
         return image.mirrored(true, true);
 
     QImage out(image.width(), image.height(), image.format());
-    out.setDotsPerMeterX(image.dotsPerMeterY());
-    out.setDotsPerMeterY(image.dotsPerMeterX());
+    copyMetadata(&out, image);
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
@@ -4690,8 +4718,7 @@ static QImage rotated180(const QImage &image)
 static QImage rotated270(const QImage &image)
 {
     QImage out(image.height(), image.width(), image.format());
-    out.setDotsPerMeterX(image.dotsPerMeterY());
-    out.setDotsPerMeterY(image.dotsPerMeterX());
+    copyMetadata(&out, image);
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();

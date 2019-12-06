@@ -38,47 +38,50 @@
 
 #include "../../../../shared/filesystem.h"
 
+#include <memory>
+
+Q_DECLARE_METATYPE(QCompleter::CompletionMode)
+
 using namespace QTestPrivate;
 
 class CsvCompleter : public QCompleter
 {
     Q_OBJECT
 public:
-    CsvCompleter(QObject *parent = 0) : QCompleter(parent), csv(true) { }
+    using QCompleter::QCompleter;
 
-    QString pathFromIndex(const QModelIndex& sourceIndex) const;
+    QString pathFromIndex(const QModelIndex& sourceIndex) const override;
 
     void setCsvCompletion(bool set) { csv = set; }
 
 protected:
-    QStringList splitPath(const QString &path) const {
+    QStringList splitPath(const QString &path) const override
+    {
         return csv ? path.split(QLatin1Char(',')) : QCompleter::splitPath(path);
     }
 
 private:
-    bool csv;
+    bool csv = true;
 };
 
-QString CsvCompleter::pathFromIndex(const QModelIndex& si) const
+QString CsvCompleter::pathFromIndex(const QModelIndex &sourceIndex) const
 {
     if (!csv)
-        return QCompleter::pathFromIndex(si);
+        return QCompleter::pathFromIndex(sourceIndex);
 
-    if (!si.isValid())
+    if (!sourceIndex.isValid())
         return QString();
 
-    QModelIndex idx = si;
+    QModelIndex idx = sourceIndex;
     QStringList list;
     do {
         QString t = model()->data(idx, completionRole()).toString();
         list.prepend(t);
         QModelIndex parent = idx.parent();
-        idx = parent.sibling(parent.row(), si.column());
+        idx = parent.sibling(parent.row(), sourceIndex.column());
     } while (idx.isValid());
 
-    if (list.count() == 1)
-        return list[0];
-    return list.join(',');
+    return list.count() == 1 ? list.constFirst() : list.join(QLatin1Char(','));
 }
 
 class tst_QCompleter : public QObject
@@ -154,15 +157,14 @@ private:
     };
     void setSourceModel(ModelType);
 
-    CsvCompleter *completer;
+    CsvCompleter *completer = nullptr;
     QTreeWidget *treeWidget;
-    const int completionColumn;
-    const int columnCount;
+    const int completionColumn = 0;
+    const int columnCount = 3;
 };
 
-tst_QCompleter::tst_QCompleter() : completer(0), completionColumn(0), columnCount(3)
+tst_QCompleter::tst_QCompleter() : treeWidget(new QTreeWidget)
 {
-    treeWidget = new QTreeWidget;
     treeWidget->move(100, 100);
     treeWidget->setColumnCount(columnCount);
 }
@@ -184,11 +186,11 @@ void tst_QCompleter::setSourceModel(ModelType type)
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 5; j++) {
                 parent = new QTreeWidgetItem(treeWidget);
-                const QString text = QString::asprintf("%c%i", i == 0 ? 'P' : 'p', j);
+                const QString text = QLatin1Char(i == 0 ? 'P' : 'p') + QString::number(j);
                 parent->setText(completionColumn, text);
                 for (int k = 0; k < 5; k++) {
                     child = new QTreeWidgetItem(parent);
-                    QString t = QString::asprintf("c%i", k) + text;
+                    QString t = QLatin1Char('c') + QString::number(k) + text;
                     child->setText(completionColumn, t);
                 }
             }
@@ -203,11 +205,11 @@ void tst_QCompleter::setSourceModel(ModelType type)
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 2; j++) {
                 parent = new QTreeWidgetItem(treeWidget);
-                const QString text = QString::asprintf("%c%i", j == 0 ? 'P' : 'p', i);
+                const QString text = QLatin1Char(j == 0 ? 'P' : 'p') + QString::number(i);
                 parent->setText(completionColumn, text);
                 for (int k = 0; k < 5; k++) {
                     child = new QTreeWidgetItem(parent);
-                    QString t = QString::asprintf("c%i", k) + text;
+                    QString t = QLatin1Char('c') + QString::number(k) + text;
                     child->setText(completionColumn, t);
                 }
             }
@@ -229,7 +231,7 @@ void tst_QCompleter::setSourceModel(ModelType type)
     case FILESYSTEM_MODEL:
         completer->setCsvCompletion(false);
         {
-            QFileSystemModel *m = new QFileSystemModel(completer);
+            auto m = new QFileSystemModel(completer);
             m->setRootPath("/");
             completer->setModel(m);
         }
@@ -237,13 +239,14 @@ void tst_QCompleter::setSourceModel(ModelType type)
         break;
     default:
         qDebug() << "Invalid type";
+        break;
     }
 }
 
 void tst_QCompleter::filter(bool assync)
 {
     QFETCH(QString, filterText);
-    QFETCH(QString, step);
+    QFETCH(const QString, step);
     QFETCH(QString, completion);
     QFETCH(QString, completionText);
 
@@ -252,33 +255,43 @@ void tst_QCompleter::filter(bool assync)
         return;
     }
 
-    int times = 0;
-retry:
+    int result = -1;
+    const int attempts = assync ? 10 : 1;
+    for (int times = 0; times < attempts; ++times) {
+        completer->setCompletionPrefix(filterText);
 
-    completer->setCompletionPrefix(filterText);
-
-    for (int i = 0; i < step.length(); i++) {
-        int row = completer->currentRow();
-        switch (step[i].toUpper().toLatin1()) {
-        case 'P': --row; break;
-        case 'N': ++row; break;
-        case 'L': row = completer->completionCount() - 1; break;
-        case 'F': row = 0; break;
-        default:
-            QFAIL(qPrintable(QString(
-                "Problem with 'step' value in test data: %1 (only P, N, L and F are allowed)."
-            ).arg(step[i])));
+        for (QChar s : step) {
+            int row = completer->currentRow();
+            switch (s.toUpper().toLatin1()) {
+            case 'P':
+                --row;
+                break;
+            case 'N':
+                ++row;
+                break;
+            case 'L':
+                row = completer->completionCount() - 1;
+                break;
+            case 'F':
+                row = 0;
+                break;
+            default:
+                QFAIL(qPrintable(QString(
+                                     "Problem with 'step' value in test data: %1 (only P, N, L and F are allowed)."
+                                     ).arg(s)));
+            }
+            completer->setCurrentRow(row);
         }
-        completer->setCurrentRow(row);
+
+        result = QString::compare(completer->currentCompletion(), completionText,
+                                  completer->caseSensitivity());
+        if (result == 0)
+            break;
+        if (assync)
+            QTest::qWait(50 * times);
     }
 
-    int r = QString::compare(completer->currentCompletion(), completionText, completer->caseSensitivity());
-    if (assync && r && times < 10) {
-        times++;
-        QTest::qWait(50*times);
-        goto retry;
-    }
-    QVERIFY(!r);
+    QCOMPARE(result, 0);
 }
 
 // Testing get/set functions
@@ -844,8 +857,7 @@ void tst_QCompleter::sortedEngineMapFromSource()
 
     QModelIndex si1, si2, pi;
     QAbstractItemModel *sourceModel = completer->model();
-    const QAbstractProxyModel *completionModel =
-        qobject_cast<const QAbstractProxyModel *>(completer->completionModel());
+    auto completionModel = qobject_cast<const QAbstractProxyModel *>(completer->completionModel());
 
     // Fitering ON
     // empty
@@ -915,8 +927,7 @@ void tst_QCompleter::unsortedEngineMapFromSource()
 
     QModelIndex si, si2, si3, pi;
     QAbstractItemModel *sourceModel = completer->model();
-    const QAbstractProxyModel *completionModel =
-        qobject_cast<const QAbstractProxyModel *>(completer->completionModel());
+    auto completionModel = qobject_cast<const QAbstractProxyModel *>(completer->completionModel());
 
     si = sourceModel->index(6, completionColumn); // "P3"
     QCOMPARE(si.data().toString(), QLatin1String("P3"));
@@ -997,8 +1008,7 @@ void tst_QCompleter::historySearch()
     completer->setCaseSensitivity(Qt::CaseSensitive);
     setSourceModel(HISTORY_MODEL);
 
-    const QAbstractProxyModel *completionModel =
-      qobject_cast<const QAbstractProxyModel *>(completer->completionModel());
+    auto completionModel = qobject_cast<const QAbstractProxyModel *>(completer->completionModel());
 
     // "p3,c3p3" and "p2,c4p2" are added in the tree root
 
@@ -1046,7 +1056,7 @@ void tst_QCompleter::setters()
 {
     delete completer;
     completer = new CsvCompleter;
-    QVERIFY(completer->popup() != 0);
+    QVERIFY(completer->popup() != nullptr);
     QPointer<QDirModel> dirModel = new QDirModel(completer);
     QAbstractItemModel *oldModel = completer->model();
     completer->setModel(dirModel);
@@ -1055,28 +1065,28 @@ void tst_QCompleter::setters()
     completer->setPopup(new QListView);
     QCOMPARE(completer->popup()->model(), completer->completionModel());
     completer->setModel(new QStringListModel(completer));
-    QVERIFY(dirModel == 0); // must have been deleted
+    QVERIFY(dirModel == nullptr); // must have been deleted
 
-    completer->setModel(0);
-    completer->setWidget(0);
+    completer->setModel(nullptr);
+    completer->setWidget(nullptr);
 }
 
 void tst_QCompleter::modelDeletion()
 {
     delete completer;
     completer = new CsvCompleter;
-    QStringList list;
-    list << "item1" << "item2" << "item3";
-    QStringListModel *listModel = new QStringListModel(list);
+    const QStringList list = {"item1", "item2", "item3"};
+    std::unique_ptr<QStringListModel> listModel(new QStringListModel(list));
     completer->setCompletionPrefix("i");
-    completer->setModel(listModel);
+    completer->setModel(listModel.get());
     QCOMPARE(completer->completionCount(), 3);
-    QScopedPointer<QListView> view(new QListView);
+    std::unique_ptr<QListView> view(new QListView);
+    view->setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view->setModel(completer->completionModel());
-    delete listModel;
+    listModel.reset();
     view->move(200, 200);
     view->show();
-    qApp->processEvents();
+    QCoreApplication::processEvents();
     view.reset();
     QCOMPARE(completer->completionCount(), 0);
     QCOMPARE(completer->currentRow(), -1);
@@ -1090,6 +1100,7 @@ void tst_QCompleter::multipleWidgets()
     completer.setCompletionMode(QCompleter::InlineCompletion);
 
     QWidget window;
+    window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window.move(200, 200);
     window.show();
     QApplication::setActiveWindow(&window);
@@ -1098,7 +1109,7 @@ void tst_QCompleter::multipleWidgets()
     QFocusEvent focusIn(QEvent::FocusIn);
     QFocusEvent focusOut(QEvent::FocusOut);
 
-    QComboBox *comboBox = new QComboBox(&window);
+    auto comboBox = new QComboBox(&window);
     comboBox->setEditable(true);
     comboBox->setCompleter(&completer);
     comboBox->setFocus();
@@ -1114,7 +1125,7 @@ void tst_QCompleter::multipleWidgets()
     comboBox->clearEditText();
     QCOMPARE(comboBox->currentText(), QString("")); // combo box text must not change!
 
-    QLineEdit *lineEdit = new QLineEdit(&window);
+    auto lineEdit = new QLineEdit(&window);
     lineEdit->setCompleter(&completer);
     lineEdit->show();
     lineEdit->setFocus();
@@ -1129,29 +1140,28 @@ void tst_QCompleter::multipleWidgets()
 
 void tst_QCompleter::focusIn()
 {
-    QStringList list;
-    list << "item1" << "item2" << "item2";
-    QCompleter completer(list);
+    QCompleter completer({"item1", "item2", "item2"});
 
     QWidget window;
+    window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window.move(200, 200);
     window.show();
     window.activateWindow();
     QApplication::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
-    QComboBox *comboBox = new QComboBox(&window);
+    auto comboBox = new QComboBox(&window);
     comboBox->setEditable(true);
     comboBox->setCompleter(&completer);
     comboBox->show();
     comboBox->lineEdit()->setText("it");
 
-    QLineEdit *lineEdit = new QLineEdit(&window);
+    auto lineEdit = new QLineEdit(&window);
     lineEdit->setCompleter(&completer);
     lineEdit->setText("it");
     lineEdit->show();
 
-    QLineEdit *lineEdit2 = new QLineEdit(&window); // has no completer!
+    auto lineEdit2 = new QLineEdit(&window); // has no completer!
     lineEdit2->show();
 
     comboBox->setFocus();
@@ -1190,12 +1200,13 @@ void tst_QCompleter::dynamicSortOrder()
 void tst_QCompleter::disabledItems()
 {
     QLineEdit lineEdit;
-    QStandardItemModel *model = new QStandardItemModel(&lineEdit);
+    lineEdit.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    auto model = new QStandardItemModel(&lineEdit);
     QStandardItem *suggestions = new QStandardItem("suggestions");
     suggestions->setEnabled(false);
     model->appendRow(suggestions);
     model->appendRow(new QStandardItem("suggestions Enabled"));
-    QCompleter *completer = new QCompleter(model, &lineEdit);
+    auto completer = new QCompleter(model, &lineEdit);
     QSignalSpy spy(completer, QOverload<const QString &>::of(&QCompleter::activated));
     lineEdit.setCompleter(completer);
     lineEdit.move(200, 200);
@@ -1206,42 +1217,40 @@ void tst_QCompleter::disabledItems()
     QTest::keyPress(&lineEdit, Qt::Key_U);
     QAbstractItemView *view = lineEdit.completer()->popup();
     QVERIFY(view->isVisible());
-    QTest::mouseClick(view->viewport(), Qt::LeftButton, 0, view->visualRect(view->model()->index(0, 0)).center());
+    QTest::mouseClick(view->viewport(), Qt::LeftButton, {}, view->visualRect(view->model()->index(0, 0)).center());
     QCOMPARE(spy.count(), 0);
     QVERIFY(view->isVisible());
-    QTest::mouseClick(view->viewport(), Qt::LeftButton, 0, view->visualRect(view->model()->index(1, 0)).center());
+    QTest::mouseClick(view->viewport(), Qt::LeftButton, {}, view->visualRect(view->model()->index(1, 0)).center());
     QCOMPARE(spy.count(), 1);
     QVERIFY(!view->isVisible());
 }
 
 void tst_QCompleter::task178797_activatedOnReturn()
 {
-    QStringList words;
-    words << "foobar1" << "foobar2";
     QLineEdit ledit;
     setFrameless(&ledit);
-    QCompleter *completer = new QCompleter(words, &ledit);
+    auto completer = new QCompleter({"foobar1", "foobar2"}, &ledit);
     ledit.setCompleter(completer);
     QSignalSpy spy(completer, QOverload<const QString &>::of(&QCompleter::activated));
     QCOMPARE(spy.count(), 0);
     ledit.move(200, 200);
     ledit.show();
-    qApp->setActiveWindow(&ledit);
+    QApplication::setActiveWindow(&ledit);
     QVERIFY(QTest::qWaitForWindowActive(&ledit));
     QTest::keyClick(&ledit, Qt::Key_F);
-    qApp->processEvents();
-    QTRY_VERIFY(qApp->activePopupWidget());
-    QTest::keyClick(qApp->activePopupWidget(), Qt::Key_Down);
-    qApp->processEvents();
-    QTest::keyClick(qApp->activePopupWidget(), Qt::Key_Return);
-    qApp->processEvents();
+    QCoreApplication::processEvents();
+    QTRY_VERIFY(QApplication::activePopupWidget());
+    QTest::keyClick(QApplication::activePopupWidget(), Qt::Key_Down);
+    QCoreApplication::processEvents();
+    QTest::keyClick(QApplication::activePopupWidget(), Qt::Key_Return);
+    QCoreApplication::processEvents();
     QCOMPARE(spy.count(), 1);
 }
 
 class task189564_StringListModel : public QStringListModel
 {
     const QString omitString;
-    Qt::ItemFlags flags(const QModelIndex &index) const
+    Qt::ItemFlags flags(const QModelIndex &index) const override
     {
         Qt::ItemFlags flags = Qt::ItemIsEnabled;
         if (data(index, Qt::DisplayRole).toString() != omitString)
@@ -1249,7 +1258,7 @@ class task189564_StringListModel : public QStringListModel
         return flags;
     }
 public:
-    task189564_StringListModel(const QString &omitString, QObject *parent = 0)
+    explicit task189564_StringListModel(const QString &omitString, QObject *parent = nullptr)
         : QStringListModel(parent)
         , omitString(omitString)
     {
@@ -1315,8 +1324,7 @@ void tst_QCompleter::task246056_setCompletionPrefix()
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Down);
     QTest::keyPress(comboBox.completer()->popup(), Qt::Key_Enter); // don't crash!
     QCOMPARE(spy.count(), 1);
-    QList<QVariant> arguments = spy.at(0);
-    QModelIndex index = arguments.at(0).value<QModelIndex>();
+    const auto index = spy.at(0).constFirst().toModelIndex();
     QVERIFY(!index.isValid());
 }
 
@@ -1331,7 +1339,7 @@ public:
         completer->setWidget(this);
     }
 
-    void keyPressEvent (QKeyEvent *e)
+    void keyPressEvent (QKeyEvent *e) override
     {
         completer->popup();
         QTextEdit::keyPressEvent(e);
@@ -1344,11 +1352,11 @@ class task250064_Widget : public QWidget
 public:
     task250064_Widget() : m_textEdit(new task250064_TextEdit)
     {
-        QTabWidget *tabWidget = new QTabWidget;
+        auto tabWidget = new QTabWidget;
         tabWidget->setFocusPolicy(Qt::ClickFocus);
         tabWidget->addTab(m_textEdit, "untitled");
 
-        QVBoxLayout *layout = new QVBoxLayout(this);
+        auto layout = new QVBoxLayout(this);
         layout->addWidget(tabWidget);
 
         m_textEdit->setPlainText("bla bla bla");
@@ -1357,7 +1365,7 @@ public:
 
     void setCompletionModel()
     {
-        m_textEdit->completer->setModel(0);
+        m_textEdit->completer->setModel(nullptr);
     }
 
     QTextEdit *textEdit() const { return m_textEdit; }
@@ -1369,6 +1377,7 @@ private:
 void tst_QCompleter::task250064_lostFocus()
 {
     task250064_Widget widget;
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     widget.show();
     QApplication::setActiveWindow(&widget);
     QVERIFY(QTest::qWaitForWindowActive(&widget));
@@ -1382,33 +1391,33 @@ void tst_QCompleter::task250064_lostFocus()
 void tst_QCompleter::task253125_lineEditCompletion_data()
 {
     QTest::addColumn<QStringList>("list");
-    QTest::addColumn<int>("completionMode");
+    QTest::addColumn<QCompleter::CompletionMode>("completionMode");
 
-    QStringList list = QStringList()
-        << "alpha" << "beta"    << "gamma"   << "delta" << "epsilon" << "zeta"
-        << "eta"   << "theta"   << "iota"    << "kappa" << "lambda"  << "mu"
-        << "nu"    << "xi"      << "omicron" << "pi"    << "rho"     << "sigma"
-        << "tau"   << "upsilon" << "phi"     << "chi"   << "psi"     << "omega";
+    QStringList list = {"alpha", "beta", "gamma", "delta", "epsilon", "zeta",
+        "eta", "theta", "iota", "kappa", "lambda", "mu",
+        "nu", "xi", "omicron", "pi", "rho", "sigma",
+        "tau", "upsilon", "phi", "chi", "psi", "omega"};
 
-    QTest::newRow("Inline") << list << (int)QCompleter::InlineCompletion;
-    QTest::newRow("Filtered") << list << (int)QCompleter::PopupCompletion;
-    QTest::newRow("Unfiltered") << list << (int)QCompleter::UnfilteredPopupCompletion;
+    QTest::newRow("Inline") << list << QCompleter::InlineCompletion;
+    QTest::newRow("Filtered") << list << QCompleter::PopupCompletion;
+    QTest::newRow("Unfiltered") << list << QCompleter::UnfilteredPopupCompletion;
 }
 
 void tst_QCompleter::task253125_lineEditCompletion()
 {
     QFETCH(QStringList, list);
-    QFETCH(int, completionMode);
+    QFETCH(QCompleter::CompletionMode, completionMode);
 
-    QStringListModel *model = new QStringListModel;
-    model->setStringList(list);
+    std::unique_ptr<QStringListModel> model(new QStringListModel(list));
 
-    QCompleter *completer = new QCompleter(list);
-    completer->setModel(model);
-    completer->setCompletionMode((QCompleter::CompletionMode)completionMode);
+    std::unique_ptr<QCompleter> completer(new QCompleter(list));
+    completer->setModel(model.get());
+    completer->setCompletionMode(completionMode);
 
     QLineEdit edit;
-    edit.setCompleter(completer);
+    edit.setWindowTitle(QLatin1String(QTest::currentTestFunction()) + QLatin1String("::")
+                        + QLatin1String(QTest::currentDataTag()));
+    edit.setCompleter(completer.get());
     edit.move(200, 200);
     edit.show();
     edit.setFocus();
@@ -1550,9 +1559,6 @@ void tst_QCompleter::task253125_lineEditCompletion()
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Enter);
 
     QCOMPARE(edit.text(), QString("zz"));
-
-    delete completer;
-    delete model;
 }
 
 void tst_QCompleter::task247560_keyboardNavigation()
@@ -1570,6 +1576,7 @@ void tst_QCompleter::task247560_keyboardNavigation()
     completer.setCompletionColumn(1);
 
     QLineEdit edit;
+    edit.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     edit.setCompleter(&completer);
     edit.move(200, 200);
     edit.show();
@@ -1688,6 +1695,7 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QVERIFY(fs.createDirectory(QLatin1String(testDir2)));
 
     QLineEdit edit;
+    edit.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QCompleter comp;
     comp.setModel(&model);
     edit.setCompleter(&comp);
@@ -1750,16 +1758,14 @@ void tst_QCompleter::QTBUG_14292_filesystem()
 
 void tst_QCompleter::QTBUG_52028_tabAutoCompletes()
 {
-    QStringList words;
-    words << "foobar1" << "foobar2" << "hux";
-
     QWidget w;
+    w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     w.setLayout(new QVBoxLayout);
 
     QComboBox cbox;
     cbox.setEditable(true);
     cbox.setInsertPolicy(QComboBox::NoInsert);
-    cbox.addItems(words);
+    cbox.addItems({"foobar1", "foobar2", "hux"});
 
     cbox.completer()->setCaseSensitivity(Qt::CaseInsensitive);
     cbox.completer()->setCompletionMode(QCompleter::PopupCompletion);
@@ -1767,8 +1773,8 @@ void tst_QCompleter::QTBUG_52028_tabAutoCompletes()
     w.layout()->addWidget(&cbox);
 
     // Adding a line edit is a good reason for tab to do something unrelated
-    QLineEdit le;
-    w.layout()->addWidget(&le);
+    auto le = new QLineEdit;
+    w.layout()->addWidget(le);
 
     const auto pos = QApplication::desktop()->availableGeometry(&w).topLeft() + QPoint(200,200);
     w.move(pos);
@@ -1789,30 +1795,27 @@ void tst_QCompleter::QTBUG_52028_tabAutoCompletes()
     QEXPECT_FAIL("", "QTBUG-52028 will not be fixed today.", Abort);
     QCOMPARE(cbox.currentText(), QLatin1String("hux"));
     QCOMPARE(activatedSpy.count(), 0);
-    QVERIFY(!le.hasFocus());
+    QVERIFY(!le->hasFocus());
 }
 
 void tst_QCompleter::QTBUG_51889_activatedSentTwice()
 {
-    QStringList words;
-    words << "foobar1" << "foobar2" << "bar" <<"hux";
-
     QWidget w;
+    w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     w.setLayout(new QVBoxLayout);
 
     QComboBox cbox;
     setFrameless(&cbox);
     cbox.setEditable(true);
     cbox.setInsertPolicy(QComboBox::NoInsert);
-    cbox.addItems(words);
+    cbox.addItems({"foobar1", "foobar2", "bar", "hux"});
 
     cbox.completer()->setCaseSensitivity(Qt::CaseInsensitive);
     cbox.completer()->setCompletionMode(QCompleter::PopupCompletion);
 
     w.layout()->addWidget(&cbox);
 
-    QLineEdit le;
-    w.layout()->addWidget(&le);
+    w.layout()->addWidget(new QLineEdit);
 
     const auto pos = QApplication::desktop()->availableGeometry(&w).topLeft() + QPoint(200,200);
     w.move(pos);

@@ -326,25 +326,22 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) Q_DECL_
     \brief The QDate class provides date functions.
 
 
-    A QDate object encodes a calendar date, i.e. year, month, and day numbers,
-    in the proleptic Gregorian calendar by default. It can read the current date
-    from the system clock. It provides functions for comparing dates, and for
-    manipulating dates. For example, it is possible to add and subtract days,
-    months, and years to dates.
+    A QDate object represents a particular date. This can be expressed as a
+    calendar date, i.e. year, month, and day numbers, in the proleptic Gregorian
+    calendar.
 
     A QDate object is typically created by giving the year, month, and day
-    numbers explicitly. Note that QDate interprets two digit years as presented,
-    i.e., as years 0 through 99, without adding any offset.  A QDate can also be
-    constructed with the static function currentDate(), which creates a QDate
-    object containing the system clock's date.  An explicit date can also be set
-    using setDate(). The fromString() function returns a QDate given a string
-    and a date format which is used to interpret the date within the string.
+    numbers explicitly. Note that QDate interprets year numbers less than 100 as
+    presented, i.e., as years 1 through 99, without adding any offset. The
+    static function currentDate() creates a QDate object containing the date
+    read from the system clock. An explicit date can also be set using
+    setDate(). The fromString() function returns a QDate given a string and a
+    date format which is used to interpret the date within the string.
 
-    The year(), month(), and day() functions provide access to the
-    year, month, and day numbers. Also, dayOfWeek() and dayOfYear()
-    functions are provided. The same information is provided in
-    textual format by the toString(), shortDayName(), longDayName(),
-    shortMonthName(), and longMonthName() functions.
+    The year(), month(), and day() functions provide access to the year, month,
+    and day numbers. Also, dayOfWeek() and dayOfYear() functions are
+    provided. The same information is provided in textual format by
+    toString(). The day and month numbers can be mapped to names using QLocal.
 
     QDate provides a full set of operators to compare two QDate
     objects where smaller means earlier, and larger means later.
@@ -372,7 +369,7 @@ static int fromOffsetString(const QStringRef &offsetString, bool *valid) Q_DECL_
     every day in a contiguous range, with 24 November 4714 BCE in the Gregorian
     calendar being Julian Day 0 (1 January 4713 BCE in the Julian calendar).
     As well as being an efficient and accurate way of storing an absolute date,
-    it is suitable for converting a Date into other calendar systems such as
+    it is suitable for converting a date into other calendar systems such as
     Hebrew, Islamic or Chinese. The Julian Day number can be obtained using
     QDate::toJulianDay() and can be set using QDate::fromJulianDay().
 
@@ -809,11 +806,10 @@ static QString toStringIsoDate(qint64 jd)
     Returns the date as a string. The \a format parameter determines
     the format of the string.
 
-    If the \a format is Qt::TextDate, the string is formatted in
-    the default way. QDate::shortDayName() and QDate::shortMonthName()
-    are used to generate the string, so the day and month names will
-    be localized names using the system locale, i.e. QLocale::system(). An
-    example of this formatting is "Sat May 20 1995".
+    If the \a format is Qt::TextDate, the string is formatted in the default
+    way. The day and month names will be localized names using the system
+    locale, i.e. QLocale::system(). An example of this formatting
+    is "Sat May 20 1995".
 
     If the \a format is Qt::ISODate, the string format corresponds
     to the ISO 8601 extended specification for representations of
@@ -845,7 +841,7 @@ static QString toStringIsoDate(qint64 jd)
     range 0 to 9999. This restriction may apply to locale-aware
     formats as well, depending on the locale settings.
 
-    \sa fromString(), shortDayName(), shortMonthName(), QLocale::toString()
+    \sa fromString(), QLocale::toString()
 */
 QString QDate::toString(Qt::DateFormat format) const
 {
@@ -1434,12 +1430,10 @@ bool QDate::isLeapYear(int y)
     Unlike QDateTime, QTime knows nothing about time zones or
     daylight-saving time (DST).
 
-    A QTime object is typically created either by giving the number
-    of hours, minutes, seconds, and milliseconds explicitly, or by
-    using the static function currentTime(), which creates a QTime
-    object that contains the system's local time. Note that the
-    accuracy depends on the accuracy of the underlying operating
-    system; not all systems provide 1-millisecond accuracy.
+    A QTime object is typically created either by giving the number of hours,
+    minutes, seconds, and milliseconds explicitly, or by using the static
+    function currentTime(), which creates a QTime object that represents the
+    system's local time.
 
     The hour(), minute(), second(), and msec() functions provide
     access to the number of hours, minutes, seconds, and milliseconds
@@ -1899,6 +1893,12 @@ int QTime::msecsTo(const QTime &t) const
 
     Note that the accuracy depends on the accuracy of the underlying
     operating system; not all systems provide 1-millisecond accuracy.
+
+    Furthermore, currentTime() only increases within each day; it shall drop by
+    24 hours each time midnight passes; and, beside this, changes in it may not
+    correspond to elapsed time, if a daylight-saving transition intervenes.
+
+    \sa QDateTime::currentDateTime(), QDateTime::currentDateTimeUtc()
 */
 
 #if QT_CONFIG(datestring)
@@ -3027,15 +3027,30 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     provides functions for comparing datetimes and for manipulating a
     datetime by adding a number of seconds, days, months, or years.
 
-    A QDateTime object is typically created either by giving a date
-    and time explicitly in the constructor, or by using the static
-    function currentDateTime() that returns a QDateTime object set
-    to the system clock's time. The date and time can be changed with
-    setDate() and setTime(). A datetime can also be set using the
-    setTime_t() function that takes a POSIX-standard "number of
-    seconds since 00:00:00 on January 1, 1970" value. The fromString()
-    function returns a QDateTime, given a string and a date format
-    used to interpret the date within the string.
+    QDateTime can describe datetimes with respect to \l{Qt::LocalTime}{local
+    time}, to \l{Qt::UTC}{UTC}, to a specified \l{Qt::OffsetFromUTC}{offset from
+    UTC} or to a specified \l{Qt::TimeZone}{time zone}, in conjunction with the
+    QTimeZone class. For example, a time zone of "Europe/Berlin" will apply the
+    daylight-saving rules as used in Germany since 1970. In contrast, an offset
+    from UTC of +3600 seconds is one hour ahead of UTC (usually written in ISO
+    standard notation as "UTC+01:00"), with no daylight-saving offset or
+    changes. When using either local time or a specified time zone, time-zone
+    transitions such as the starts and ends of daylight-saving time (DST; but
+    see below) are taken into account. The choice of system used to represent a
+    datetime is described as its "timespec".
+
+    A QDateTime object is typically created either by giving a date and time
+    explicitly in the constructor, or by using a static function such as
+    currentDateTime() or fromMSecsSinceEpoch(). The date and time can be changed
+    with setDate() and setTime(). A datetime can also be set using the
+    setMSecsSinceEpoch() function that takes the time, in milliseconds, since
+    00:00:00 on January 1, 1970. The fromString() function returns a QDateTime,
+    given a string and a date format used to interpret the date within the
+    string.
+
+    QDateTime::currentDateTime() returns a QDateTime that expresses the current
+    time with respect to local time. QDateTime::currentDateTimeUtc() returns a
+    QDateTime that expresses the current time with respect to UTC.
 
     The date() and time() functions provide access to the date and
     time parts of the datetime. The same information is provided in
@@ -3046,18 +3061,20 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
     later.
 
     You can increment (or decrement) a datetime by a given number of
-    milliseconds using addMSecs(), seconds using addSecs(), or days
-    using addDays(). Similarly, you can use addMonths() and addYears().
-    The daysTo() function returns the number of days between two datetimes,
-    secsTo() returns the number of seconds between two datetimes, and
-    msecsTo() returns the number of milliseconds between two datetimes.
+    milliseconds using addMSecs(), seconds using addSecs(), or days using
+    addDays(). Similarly, you can use addMonths() and addYears(). The daysTo()
+    function returns the number of days between two datetimes, secsTo() returns
+    the number of seconds between two datetimes, and msecsTo() returns the
+    number of milliseconds between two datetimes. These operations are aware of
+    daylight-saving time (DST) and other time-zone transitions, where
+    applicable.
 
-    QDateTime can store datetimes as \l{Qt::LocalTime}{local time} or
-    as \l{Qt::UTC}{UTC}. QDateTime::currentDateTime() returns a
-    QDateTime expressed as local time; use toUTC() to convert it to
-    UTC. You can also use timeSpec() to find out if a QDateTime
-    object stores a UTC time or a local time. Operations such as
-    addSecs() and secsTo() are aware of daylight-saving time (DST).
+    Use toTimeSpec() to express a datetime in local time or UTC,
+    toOffsetFromUtc() to express in terms of an offset from UTC, or toTimeZone()
+    to express it with respect to a general time zone. You can use timeSpec() to
+    find out what time-spec a QDateTime object stores its time relative to. When
+    that is Qt::TimeZone, you can use timeZone() to find out which zone it is
+    using.
 
     \note QDateTime does not account for leap seconds.
 
@@ -3071,67 +3088,57 @@ inline qint64 QDateTimePrivate::zoneMSecsToEpochMSecs(qint64 zoneMSecs, const QT
 
     \section2 Range of Valid Dates
 
-    The range of valid values able to be stored in QDateTime is dependent on
-    the internal storage implementation. QDateTime is currently stored in a
-    qint64 as a serial msecs value encoding the date and time.  This restricts
-    the date range to about +/- 292 million years, compared to the QDate range
-    of +/- 2 billion years.  Care must be taken when creating a QDateTime with
-    extreme values that you do not overflow the storage.  The exact range of
-    supported values varies depending on the Qt::TimeSpec and time zone.
+    The range of values that QDateTime can represent is dependent on the
+    internal storage implementation. QDateTime is currently stored in a qint64
+    as a serial msecs value encoding the date and time. This restricts the date
+    range to about +/- 292 million years, compared to the QDate range of +/- 2
+    billion years. Care must be taken when creating a QDateTime with extreme
+    values that you do not overflow the storage. The exact range of supported
+    values varies depending on the Qt::TimeSpec and time zone.
 
-    \section2 Use of System Timezone
+    \section2 Use of Timezones
 
-    QDateTime uses the system's time zone information to determine the
-    offset of local time from UTC. If the system is not configured
-    correctly or not up-to-date, QDateTime will give wrong results as
-    well.
+    QDateTime uses the system's time zone information to determine the current
+    local time zone and its offset from UTC. If the system is not configured
+    correctly or not up-to-date, QDateTime will give wrong results.
+
+    QDateTime likewise uses system-provided information to determine the offsets
+    of other timezones from UTC. If this information is incomplete or out of
+    date, QDateTime will give wrong results. See the QTimeZone documentation for
+    more details.
+
+    On modern Unix systems, this means QDateTime usually has accurate
+    information about historical transitions (including DST, see below) whenever
+    possible. On Windows, where the system doesn't support historical timezone
+    data, historical accuracy is not maintained with respect to timezone
+    transitions, notably including DST.
 
     \section2 Daylight-Saving Time (DST)
 
-    QDateTime takes into account the system's time zone information
-    when dealing with DST. On modern Unix systems, this means it
-    applies the correct historical DST data whenever possible. On
-    Windows, where the system doesn't support historical DST data,
-    historical accuracy is not maintained with respect to DST.
+    QDateTime takes into account transitions between Standard Time and
+    Daylight-Saving Time. For example, if the transition is at 2am and the clock
+    goes forward to 3am, then there is a "missing" hour from 02:00:00 to
+    02:59:59.999 which QDateTime considers to be invalid. Any date arithmetic
+    performed will take this missing hour into account and return a valid
+    result. For example, adding one minute to 01:59:59 will get 03:00:00.
 
-    The range of valid dates taking DST into account is 1970-01-01 to
-    the present, and rules are in place for handling DST correctly
-    until 2037-12-31, but these could change. For dates falling
-    outside that range, QDateTime makes a \e{best guess} using the
-    rules for year 1970 or 2037, but we can't guarantee accuracy. This
-    means QDateTime doesn't take into account changes in a locale's
-    time zone before 1970, even if the system's time zone database
-    supports that information.
+    The range of valid dates taking DST into account is 1970-01-01 to the
+    present, and rules are in place for handling DST correctly until 2037-12-31,
+    but these could change. For dates after 2037, QDateTime makes a \e{best
+    guess} using the rules for year 2037, but we can't guarantee accuracy;
+    indeed, for \e{any} future date, the time-zone may change its rules before
+    that date comes around. For dates before 1970, QDateTime doesn't take DST
+    changes into account, even if the system's time zone database provides that
+    information, although it does take into account changes to the time-zone's
+    standard offset, where this information is available.
 
-    QDateTime takes into consideration the Standard Time to Daylight-Saving Time
-    transition.  For example if the transition is at 2am and the clock goes
-    forward to 3am, then there is a "missing" hour from 02:00:00 to 02:59:59.999
-    which QDateTime considers to be invalid.  Any date maths performed
-    will take this missing hour into account and return a valid result.
+    \section2 Offsets From UTC
 
-    \section2 Offset From UTC
-
-    A Qt::TimeSpec of Qt::OffsetFromUTC is also supported. This allows you
-    to define a QDateTime relative to UTC at a fixed offset of a given number
-    of seconds from UTC.  For example, an offset of +3600 seconds is one hour
-    ahead of UTC and is usually written in ISO standard notation as
-    "UTC+01:00".  Daylight-Saving Time never applies with this TimeSpec.
-
-    There is no explicit size restriction to the offset seconds, but there is
-    an implicit limit imposed when using the toString() and fromString()
-    methods which use a format of [+|-]hh:mm, effectively limiting the range
-    to +/- 99 hours and 59 minutes and whole minutes only.  Note that currently
-    no time zone lies outside the range of +/- 14 hours.
-
-    \section2 Time Zone Support
-
-    A Qt::TimeSpec of Qt::TimeZone is also supported in conjunction with the
-    QTimeZone class.  This allows you to define a datetime in a named time zone
-    adhering to a consistent set of daylight-saving transition rules.  For
-    example a time zone of "Europe/Berlin" will apply the daylight-saving
-    rules as used in Germany since 1970.  Note that the transition rules
-    applied depend on the platform support.  See the QTimeZone documentation
-    for more details.
+    There is no explicit size restriction on an offset from UTC, but there is an
+    implicit limit imposed when using the toString() and fromString() methods
+    which use a [+|-]hh:mm format, effectively limiting the range to +/- 99
+    hours and 59 minutes and whole minutes only. Note that currently no time
+    zone lies outside the range of +/- 14 hours.
 
     \sa QDate, QTime, QDateTimeEdit, QTimeZone
 */
@@ -3369,17 +3376,22 @@ QTimeZone QDateTime::timeZone() const
 /*!
     \since 5.2
 
-    Returns the current Offset From UTC in seconds.
+    Returns this date-time's Offset From UTC in seconds.
 
-    If the timeSpec() is Qt::OffsetFromUTC this will be the value originally set.
+    The result depends on timeSpec():
+    \list
+    \li \c Qt::UTC The offset is 0.
+    \li \c Qt::OffsetFromUTC The offset is the value originally set.
+    \li \c Qt::LocalTime The local time's offset from UTC is returned.
+    \li \c Qt::TimeZone The offset used by the time-zone is returned.
+    \endlist
 
-    If the timeSpec() is Qt::TimeZone this will be the offset effective in the
-    Time Zone including any Daylight-Saving Offset.
-
-    If the timeSpec() is Qt::LocalTime this will be the difference between the
-    Local Time and UTC including any Daylight-Saving Offset.
-
-    If the timeSpec() is Qt::UTC this will be 0.
+    For the last two, the offset at this date and time will be returned, taking
+    account of Daylight-Saving Offset unless the date precedes the start of
+    1970. The offset is the difference between the local time or time in the
+    given time-zone and UTC time; it is positive in time-zones ahead of UTC
+    (East of The Prime Meridian), negative for those behind UTC (West of The
+    Prime Meridian).
 
     \sa setOffsetFromUtc()
 */
@@ -3795,12 +3807,10 @@ void QDateTime::setTime_t(uint secsSince1Jan1970UTC)
 
     Returns the datetime as a string in the \a format given.
 
-    If the \a format is Qt::TextDate, the string is formatted in
-    the default way. QDate::shortDayName(), QDate::shortMonthName(),
-    and QTime::toString() are used to generate the string, so the
-    day and month names will be localized names using the system locale,
-    i.e. QLocale::system(). An example of this formatting is
-    "Wed May 20 03:40:13 1998".
+    If the \a format is Qt::TextDate, the string is formatted in the default
+    way. The day and month names will be localized names using the system
+    locale, i.e. QLocale::system(). An example of this formatting is "Wed May 20
+    03:40:13 1998".
 
     If the \a format is Qt::ISODate, the string format corresponds
     to the ISO 8601 extended specification for representations of
@@ -4254,7 +4264,7 @@ qint64 QDateTime::msecsTo(const QDateTime &other) const
     Example:
     \snippet code/src_corelib_tools_qdatetime.cpp 16
 
-    \sa timeSpec(), toTimeZone(), toUTC(), toLocalTime()
+    \sa timeSpec(), toTimeZone(), toOffsetFromUtc()
 */
 
 QDateTime QDateTime::toTimeSpec(Qt::TimeSpec spec) const
@@ -4976,18 +4986,14 @@ QDateTime QDateTime::fromString(const QString& string, Qt::DateFormat format)
     \row \li dd \li the day as number with a leading zero (01 to 31)
     \row \li ddd
             \li the abbreviated localized day name (e.g. 'Mon' to 'Sun').
-            Uses QDate::shortDayName().
     \row \li dddd
             \li the long localized day name (e.g. 'Monday' to 'Sunday').
-            Uses QDate::longDayName().
     \row \li M \li the month as number without a leading zero (1-12)
     \row \li MM \li the month as number with a leading zero (01-12)
     \row \li MMM
             \li the abbreviated localized month name (e.g. 'Jan' to 'Dec').
-            Uses QDate::shortMonthName().
     \row \li MMMM
             \li the long localized month name (e.g. 'January' to 'December').
-            Uses QDate::longMonthName().
     \row \li yy \li the year as two digit number (00-99)
     \row \li yyyy \li the year as four digit number
     \endtable

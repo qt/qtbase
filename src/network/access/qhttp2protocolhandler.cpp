@@ -55,6 +55,8 @@
 #include <QtNetwork/qnetworkproxy.h>
 #endif
 
+#include <qcoreapplication.h>
+
 #include <algorithm>
 #include <vector>
 
@@ -170,7 +172,6 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
       encoder(HPack::FieldLookupTable::DefaultSize, true)
 {
     Q_ASSERT(channel && m_connection);
-
     continuedFrames.reserve(20);
 
     const ProtocolParameters params(m_connection->http2Parameters());
@@ -198,7 +199,7 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
         }
     }
 
-    if (!channel->ssl) {
+    if (!channel->ssl && m_connection->connectionType() != QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
         // We upgraded from HTTP/1.1 to HTTP/2. channel->request was already sent
         // as HTTP/1.1 request. The response with status code 101 triggered
         // protocol switch and now we are waiting for the real response, sent
@@ -210,6 +211,29 @@ QHttp2ProtocolHandler::QHttp2ProtocolHandler(QHttpNetworkConnectionChannel *chan
         Stream &stream = activeStreams[initialStreamID];
         stream.state = Stream::halfClosedLocal;
     }
+}
+
+void QHttp2ProtocolHandler::handleConnectionClosure()
+{
+    // The channel has just received RemoteHostClosedError and since it will
+    // not try (for HTTP/2) to re-connect, it's time to finish all replies
+    // with error.
+
+    // Maybe we still have some data to read and can successfully finish
+    // a stream/request?
+    _q_receiveReply();
+
+    // Finish all still active streams. If we previously had GOAWAY frame,
+    // we probably already closed some (or all) streams with ContentReSend
+    // error, but for those still active, not having any data to finish,
+    // we now report RemoteHostClosedError.
+    const auto errorString = QCoreApplication::translate("QHttp", "Connection closed");
+    for (auto it = activeStreams.begin(), eIt = activeStreams.end(); it != eIt; ++it)
+        finishStreamWithError(it.value(), QNetworkReply::RemoteHostClosedError, errorString);
+
+    // Make sure we'll never try to read anything later:
+    activeStreams.clear();
+    goingAway = true;
 }
 
 void QHttp2ProtocolHandler::_q_uploadDataReadyRead()
@@ -322,10 +346,32 @@ bool QHttp2ProtocolHandler::sendRequest()
         return false;
     }
 
+    // Process 'fake' (created by QNetworkAccessManager::connectToHostEncrypted())
+    // requests first:
+    auto &requests = m_channel->spdyRequestsToSend;
+    for (auto it = requests.begin(), endIt = requests.end(); it != endIt;) {
+        const auto &pair = *it;
+        const QString scheme(pair.first.url().scheme());
+        if (scheme == QLatin1String("preconnect-http")
+            || scheme == QLatin1String("preconnect-https")) {
+            m_connection->preConnectFinished();
+            emit pair.second->finished();
+            it = requests.erase(it);
+            if (!requests.size()) {
+                // Normally, after a connection was established and H2
+                // was negotiated, we send a client preface. connectToHostEncrypted
+                // though is not meant to send any data, it's just a 'preconnect'.
+                // Thus we return early:
+                return true;
+            }
+        } else {
+            ++it;
+        }
+    }
+
     if (!prefaceSent && !sendClientPreface())
         return false;
 
-    auto &requests = m_channel->spdyRequestsToSend;
     if (!requests.size())
         return true;
 
@@ -818,7 +864,6 @@ void QHttp2ProtocolHandler::handleGOAWAY()
         // and a NO_ERROR code."
         if (lastStreamID != Http2::lastValidStreamID || errorCode != HTTP2_NO_ERROR)
             return connectionError(PROTOCOL_ERROR, "GOAWAY invalid stream/error code");
-        lastStreamID = 1;
     } else {
         lastStreamID += 2;
     }
@@ -835,6 +880,14 @@ void QHttp2ProtocolHandler::handleGOAWAY()
     QNetworkReply::NetworkError error = QNetworkReply::NoError;
     QString message;
     qt_error(errorCode, error, message);
+
+    // Even if the GOAWAY frame contains NO_ERROR we must send an error
+    // when terminating streams to ensure users can distinguish from a
+    // successful completion.
+    if (errorCode == HTTP2_NO_ERROR) {
+        error = QNetworkReply::ContentReSendError;
+        message = QLatin1String("Server stopped accepting new streams before this stream was established");
+    }
 
     for (quint32 id = lastStreamID; id < nextID; id += 2) {
         const auto it = activeStreams.find(id);

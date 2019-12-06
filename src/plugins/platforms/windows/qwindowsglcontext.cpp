@@ -876,10 +876,6 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
         result.options |= QSurfaceFormat::DeprecatedFunctions;
     if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
         result.options |= QSurfaceFormat::DebugContext;
-    value = 0;
-    QOpenGLStaticContext::opengl32.glGetIntegerv(RESET_NOTIFICATION_STRATEGY_ARB, &value);
-    if (value == LOSE_CONTEXT_ON_RESET_ARB)
-        result.options |= QSurfaceFormat::ResetNotification;
     if (result.version < 0x0302)
         return result;
     // v3.2 onwards: Profiles
@@ -889,6 +885,13 @@ QWindowsOpenGLContextFormat QWindowsOpenGLContextFormat::current()
         result.profile = QSurfaceFormat::CoreProfile;
     else if (value & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
         result.profile = QSurfaceFormat::CompatibilityProfile;
+    if (result.version < 0x0400)
+        return result;
+    // v4.0 onwards
+    value = 0;
+    QOpenGLStaticContext::opengl32.glGetIntegerv(RESET_NOTIFICATION_STRATEGY_ARB, &value);
+    if (value == LOSE_CONTEXT_ON_RESET_ARB)
+        result.options |= QSurfaceFormat::ResetNotification;
     return result;
 }
 

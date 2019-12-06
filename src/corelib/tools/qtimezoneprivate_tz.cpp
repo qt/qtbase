@@ -39,6 +39,7 @@
 
 #include "qtimezone.h"
 #include "qtimezoneprivate_p.h"
+#include "qdatetime_p.h" // ### Qt 5.14: remove once YearRange is on QDateTime
 
 #include <QtCore/QFile>
 #include <QtCore/QHash>
@@ -50,6 +51,12 @@
 #include "qlocale_tools_p.h"
 
 #include <algorithm>
+#include <errno.h>
+#include <limits.h>
+#if !defined(Q_OS_INTEGRITY)
+#include <sys/param.h> // to use MAXSYMLINKS constant
+#endif
+#include <unistd.h>    // to use _SC_SYMLOOP_MAX constant
 
 QT_BEGIN_NAMESPACE
 
@@ -520,19 +527,14 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
 
 static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray &posixRule,
                                                                  int startYear, int endYear,
-                                                                 int lastTranMSecs)
+                                                                 qint64 lastTranMSecs)
 {
     QVector<QTimeZonePrivate::Data> result;
 
-    // Limit year by qint64 max size for msecs
-    if (startYear > 292278994)
-        startYear = 292278994;
-    if (endYear > 292278994)
-        endYear = 292278994;
-
     // POSIX Format is like "TZ=CST6CDT,M3.2.0/2:00:00,M11.1.0/2:00:00"
     // i.e. "std offset dst [offset],start[/time],end[/time]"
-    // See the section about TZ at http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html
+    // See the section about TZ at
+    // http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html
     QList<QByteArray> parts = posixRule.split(',');
 
     PosixZone stdZone, dstZone = PosixZone::invalid();
@@ -583,6 +585,13 @@ static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArra
     else
         stdTime = QTime(2, 0, 0);
 
+    // Limit year to the range QDateTime can represent:
+    const int minYear = int(QDateTimePrivate::YearRange::First);
+    const int maxYear = int(QDateTimePrivate::YearRange::Last);
+    startYear = qBound(minYear, startYear, maxYear);
+    endYear = qBound(minYear, endYear, maxYear);
+    Q_ASSERT(startYear <= endYear);
+
     for (int year = startYear; year <= endYear; ++year) {
         QTimeZonePrivate::Data dstData;
         QDateTime dst(calculatePosixDate(dstDateRule, year), dstTime, Qt::UTC);
@@ -598,13 +607,16 @@ static QVector<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArra
         stdData.standardTimeOffset = stdZone.offset;
         stdData.daylightTimeOffset = 0;
         stdData.abbreviation = stdZone.name;
-        // Part of the high year will overflow
-        if (year == 292278994 && (dstData.atMSecsSinceEpoch < 0 || stdData.atMSecsSinceEpoch < 0)) {
+        // Part of maxYear will overflow (likewise for minYear, below):
+        if (year == maxYear && (dstData.atMSecsSinceEpoch < 0 || stdData.atMSecsSinceEpoch < 0)) {
             if (dstData.atMSecsSinceEpoch > 0) {
                 result << dstData;
             } else if (stdData.atMSecsSinceEpoch > 0) {
                 result << stdData;
             }
+        } else if (year < 1970) { // We ignore DST before the epoch.
+            if (year > minYear || stdData.atMSecsSinceEpoch != QTimeZonePrivate::invalidMSecs())
+                result << stdData;
         } else if (dst < std) {
             result << dstData << stdData;
         } else {
@@ -794,6 +806,8 @@ void QTzTimeZonePrivate::init(const QByteArray &ianaId)
         tran.atMSecsSinceEpoch = tz_tran.tz_time * 1000;
         m_tranTimes.append(tran);
     }
+    if (m_tranTimes.isEmpty() && m_posixRule.isEmpty())
+        return; // Invalid after all !
 
     if (ianaId.isEmpty())
         m_id = systemTimeZoneId();
@@ -943,31 +957,36 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::dataForTzTransition(QTzTransitionTime
     return data;
 }
 
+QVector<QTimeZonePrivate::Data> QTzTimeZonePrivate::getPosixTransitions(qint64 msNear) const
+{
+    const int year = QDateTime::fromMSecsSinceEpoch(msNear, Qt::UTC).date().year();
+    // The Data::atMSecsSinceEpoch of the single entry if zone is constant:
+    qint64 atTime = m_tranTimes.isEmpty() ? msNear : m_tranTimes.last().atMSecsSinceEpoch;
+    return calculatePosixTransitions(m_posixRule, year - 1, year + 1, atTime);
+}
+
 QTimeZonePrivate::Data QTzTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
-    // If we have no rules (so probably an invalid tz), return invalid data:
-    if (!m_tranTimes.size())
-        return invalidData();
-
-    // If the required time is after the last transition and we have a POSIX rule then use it
-    if (m_tranTimes.last().atMSecsSinceEpoch < forMSecsSinceEpoch
-        && !m_posixRule.isEmpty() && forMSecsSinceEpoch >= 0) {
-        const int year = QDateTime::fromMSecsSinceEpoch(forMSecsSinceEpoch, Qt::UTC).date().year();
-        QVector<QTimeZonePrivate::Data> posixTrans =
-            calculatePosixTransitions(m_posixRule, year - 1, year + 1,
-                                      m_tranTimes.last().atMSecsSinceEpoch);
+    // If the required time is after the last transition (or there were none)
+    // and we have a POSIX rule, then use it:
+    if (!m_posixRule.isEmpty()
+        && (m_tranTimes.isEmpty() || m_tranTimes.last().atMSecsSinceEpoch < forMSecsSinceEpoch)) {
+        QVector<QTimeZonePrivate::Data> posixTrans = getPosixTransitions(forMSecsSinceEpoch);
         auto it = std::partition_point(posixTrans.cbegin(), posixTrans.cend(),
                                        [forMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
                                            return at.atMSecsSinceEpoch <= forMSecsSinceEpoch;
                                        });
-        if (it > posixTrans.cbegin()) {
-            QTimeZonePrivate::Data data = *--it;
+        // Use most recent, if any in the past; or the first if we have no other rules:
+        if (it > posixTrans.cbegin() || (m_tranTimes.isEmpty() && it < posixTrans.cend())) {
+            QTimeZonePrivate::Data data = *(it > posixTrans.cbegin() ? it - 1 : it);
             data.atMSecsSinceEpoch = forMSecsSinceEpoch;
             return data;
         }
     }
+    if (m_tranTimes.isEmpty()) // Only possible if !isValid()
+        return invalidData();
 
-    // Otherwise, if we can find a valid tran, then use its rule:
+    // Otherwise, use the rule for the most recent or first transition:
     auto last = std::partition_point(m_tranTimes.cbegin(), m_tranTimes.cend(),
                                      [forMSecsSinceEpoch] (const QTzTransitionTime &at) {
                                          return at.atMSecsSinceEpoch <= forMSecsSinceEpoch;
@@ -986,13 +1005,11 @@ bool QTzTimeZonePrivate::hasTransitions() const
 
 QTimeZonePrivate::Data QTzTimeZonePrivate::nextTransition(qint64 afterMSecsSinceEpoch) const
 {
-    // If the required time is after the last transition and we have a POSIX rule then use it
-    if (m_tranTimes.size() > 0 && m_tranTimes.last().atMSecsSinceEpoch < afterMSecsSinceEpoch
-        && !m_posixRule.isEmpty() && afterMSecsSinceEpoch >= 0) {
-        const int year = QDateTime::fromMSecsSinceEpoch(afterMSecsSinceEpoch, Qt::UTC).date().year();
-        QVector<QTimeZonePrivate::Data> posixTrans =
-            calculatePosixTransitions(m_posixRule, year - 1, year + 1,
-                                      m_tranTimes.last().atMSecsSinceEpoch);
+    // If the required time is after the last transition (or there were none)
+    // and we have a POSIX rule, then use it:
+    if (!m_posixRule.isEmpty()
+        && (m_tranTimes.isEmpty() || m_tranTimes.last().atMSecsSinceEpoch < afterMSecsSinceEpoch)) {
+        QVector<QTimeZonePrivate::Data> posixTrans = getPosixTransitions(afterMSecsSinceEpoch);
         auto it = std::partition_point(posixTrans.cbegin(), posixTrans.cend(),
                                        [afterMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
                                            return at.atMSecsSinceEpoch <= afterMSecsSinceEpoch;
@@ -1011,19 +1028,19 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::nextTransition(qint64 afterMSecsSince
 
 QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
 {
-    // If the required time is after the last transition and we have a POSIX rule then use it
-    if (m_tranTimes.size() > 0 && m_tranTimes.last().atMSecsSinceEpoch < beforeMSecsSinceEpoch
-        && !m_posixRule.isEmpty() && beforeMSecsSinceEpoch > 0) {
-        const int year = QDateTime::fromMSecsSinceEpoch(beforeMSecsSinceEpoch, Qt::UTC).date().year();
-        QVector<QTimeZonePrivate::Data> posixTrans =
-            calculatePosixTransitions(m_posixRule, year - 1, year + 1,
-                                      m_tranTimes.last().atMSecsSinceEpoch);
+    // If the required time is after the last transition (or there were none)
+    // and we have a POSIX rule, then use it:
+    if (!m_posixRule.isEmpty()
+        && (m_tranTimes.isEmpty() || m_tranTimes.last().atMSecsSinceEpoch < beforeMSecsSinceEpoch)) {
+        QVector<QTimeZonePrivate::Data> posixTrans = getPosixTransitions(beforeMSecsSinceEpoch);
         auto it = std::partition_point(posixTrans.cbegin(), posixTrans.cend(),
                                        [beforeMSecsSinceEpoch] (const QTimeZonePrivate::Data &at) {
                                            return at.atMSecsSinceEpoch < beforeMSecsSinceEpoch;
                                        });
-        Q_ASSERT(it > posixTrans.cbegin());
-        return *--it;
+        if (it > posixTrans.cbegin())
+            return *--it;
+        // It fell between the last transition (if any) and the first of the POSIX rule:
+        return m_tranTimes.isEmpty() ? invalidData() : dataForTzTransition(m_tranTimes.last());
     }
 
     // Otherwise if we can find a valid tran then use its rule
@@ -1032,6 +1049,27 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecs
                                          return at.atMSecsSinceEpoch < beforeMSecsSinceEpoch;
                                      });
     return last > m_tranTimes.cbegin() ? dataForTzTransition(*--last) : invalidData();
+}
+
+static long getSymloopMax()
+{
+#if defined(SYMLOOP_MAX)
+    return SYMLOOP_MAX; // if defined, at runtime it can only be greater than this, so this is a safe bet
+#else
+    errno = 0;
+    long result = sysconf(_SC_SYMLOOP_MAX);
+    if (result >= 0)
+        return result;
+    // result is -1, meaning either error or no limit
+    Q_ASSERT(!errno); // ... but it can't be an error, POSIX mandates _SC_SYMLOOP_MAX
+
+    // therefore we can make up our own limit
+#  if defined(MAXSYMLINKS)
+    return MAXSYMLINKS;
+#  else
+    return 8;
+#  endif
+#endif
 }
 
 // TODO Could cache the value and monitor the required files for any changes
@@ -1051,12 +1089,18 @@ QByteArray QTzTimeZonePrivate::systemTimeZoneId() const
 
     // On most distros /etc/localtime is a symlink to a real file so extract name from the path
     if (ianaId.isEmpty()) {
-        const QString path = QFile::symLinkTarget(QStringLiteral("/etc/localtime"));
-        if (!path.isEmpty()) {
+        const QLatin1String zoneinfo("/zoneinfo/");
+        QString path = QFile::symLinkTarget(QStringLiteral("/etc/localtime"));
+        int index = -1;
+        long iteration = getSymloopMax();
+        // Symlink may point to another symlink etc. before being under zoneinfo/
+        // We stop on the first path under /zoneinfo/, even if it is itself a
+        // symlink, like America/Montreal pointing to America/Toronto
+        while (iteration-- > 0 && !path.isEmpty() && (index = path.indexOf(zoneinfo)) < 0)
+            path = QFile::symLinkTarget(path);
+        if (index >= 0) {
             // /etc/localtime is a symlink to the current TZ file, so extract from path
-            int index = path.indexOf(QLatin1String("/zoneinfo/"));
-            if (index != -1)
-                ianaId = path.mid(index + 10).toUtf8();
+            ianaId = path.mid(index + zoneinfo.size()).toUtf8();
         }
     }
 

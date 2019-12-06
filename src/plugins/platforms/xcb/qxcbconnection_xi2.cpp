@@ -240,6 +240,10 @@ void QXcbConnection::xi2SetupDevice(void *info, bool removeExisting)
     } else if (name.contains("uc-logic") && isTablet) {
         tabletData.pointerType = QTabletEvent::Pen;
         dbgType = QLatin1String("pen");
+    } else if (name.contains("ugee")) {
+        isTablet = true;
+        tabletData.pointerType = QTabletEvent::Pen;
+        dbgType = QLatin1String("pen");
     } else {
         isTablet = false;
     }
@@ -1208,6 +1212,11 @@ bool QXcbConnection::xi2HandleTabletEvent(const void *event, TabletData *tabletD
     return handled;
 }
 
+inline qreal scaleOneValuator(qreal normValue, qreal screenMin, qreal screenSize)
+{
+    return screenMin + normValue * screenSize;
+}
+
 void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletData)
 {
     auto *ev = reinterpret_cast<const qt_xcb_input_device_event_t *>(event);
@@ -1220,6 +1229,17 @@ void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletD
     QPointF global(fixed1616ToReal(ev->root_x), fixed1616ToReal(ev->root_y));
     double pressure = 0, rotation = 0, tangentialPressure = 0;
     int xTilt = 0, yTilt = 0;
+    static const bool useValuators = !qEnvironmentVariableIsSet("QT_XCB_TABLET_LEGACY_COORDINATES");
+
+    // Valuators' values are relative to the physical size of the current virtual
+    // screen. Therefore we cannot use QScreen/QWindow geometry and should use
+    // QPlatformWindow/QPlatformScreen instead.
+    QRect physicalScreenArea;
+    if (Q_LIKELY(useValuators)) {
+        const QList<QPlatformScreen *> siblings = window->screen()->handle()->virtualSiblings();
+        for (const QPlatformScreen *screen : siblings)
+            physicalScreenArea |= screen->geometry();
+    }
 
     for (QHash<int, TabletData::ValuatorClassInfo>::iterator it = tabletData->valuatorInfo.begin(),
             ite = tabletData->valuatorInfo.end(); it != ite; ++it) {
@@ -1228,6 +1248,20 @@ void QXcbConnection::xi2ReportTabletEvent(const void *event, TabletData *tabletD
         xi2GetValuatorValueIfSet(event, classInfo.number, &classInfo.curVal);
         double normalizedValue = (classInfo.curVal - classInfo.minVal) / (classInfo.maxVal - classInfo.minVal);
         switch (valuator) {
+        case QXcbAtom::AbsX:
+            if (Q_LIKELY(useValuators)) {
+                const qreal value = scaleOneValuator(normalizedValue, physicalScreenArea.x(), physicalScreenArea.width());
+                global.setX(value);
+                local.setX(value - window->handle()->geometry().x());
+            }
+            break;
+        case QXcbAtom::AbsY:
+            if (Q_LIKELY(useValuators)) {
+                qreal value = scaleOneValuator(normalizedValue, physicalScreenArea.y(), physicalScreenArea.height());
+                global.setY(value);
+                local.setY(value - window->handle()->geometry().y());
+            }
+            break;
         case QXcbAtom::AbsPressure:
             pressure = normalizedValue;
             break;

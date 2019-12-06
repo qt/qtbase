@@ -1,4 +1,8 @@
+{
+QT_BEGIN_NAMESPACE
+class QEvent;
+QT_END_NAMESPACE
+}
+
 QApplication_notify_entry(QObject *receiver, QEvent *event, int type)
-QApplication_notify_event_filtered(QObject *receiver, QEvent *event, int type)
-QApplication_notify_before_delivery(QObject *receiver, QEvent *event, int type)
-QApplication_notify_after_delivery(QObject *receiver, QEvent *event, int type, bool consumed)
+QApplication_notify_exit(bool consumed, bool filtered)

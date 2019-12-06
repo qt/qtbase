@@ -252,10 +252,8 @@ public:
             const float huge = std::numeric_limits<float>::infinity();
             return d < 0 ? -huge : huge;
         }
-        if (std::fabs(d) >= std::numeric_limits<double>::min() // i.e. d != 0
-            && std::fabs(d) < std::numeric_limits<float>::min()) {
-            // Values smaller than std::numeric_limits<double>::min() have
-            // failed already; match them.
+        if (d != 0 && float(d) == 0) {
+            // Values that underflow double already failed. Match them:
             if (ok != 0)
                 *ok = false;
             return 0;
@@ -357,6 +355,7 @@ public:
     quint16 countryId() const { return m_data->m_country_id; }
 
     QByteArray bcp47Name(char separator = '-') const;
+    QByteArray rawName(char separator = '-') const;
 
     inline QLatin1String languageCode() const { return QLocalePrivate::languageToCode(QLocale::Language(m_data->m_language_id)); }
     inline QLatin1String scriptCode() const { return QLocalePrivate::scriptToCode(QLocale::Script(m_data->m_script_id)); }

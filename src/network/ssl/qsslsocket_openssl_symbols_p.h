@@ -450,6 +450,7 @@ int q_X509_STORE_CTX_set_purpose(X509_STORE_CTX *ctx, int purpose);
 int q_X509_STORE_CTX_get_error(X509_STORE_CTX *ctx);
 int q_X509_STORE_CTX_get_error_depth(X509_STORE_CTX *ctx);
 X509 *q_X509_STORE_CTX_get_current_cert(X509_STORE_CTX *ctx);
+X509_STORE *q_X509_STORE_CTX_get0_store(X509_STORE_CTX *ctx);
 
 // Diffie-Hellman support
 DH *q_DH_new();

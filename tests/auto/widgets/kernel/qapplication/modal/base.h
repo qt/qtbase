@@ -37,12 +37,10 @@ class base : public QWidget
 {
 Q_OBJECT
     QTimer *m_timer;
-    bool m_modalStarted;
-    QDialog *m_modalDialog;
+    bool m_modalStarted = false;
+    QDialog *m_modalDialog = nullptr;
 public:
-    explicit base(QWidget *parent = 0);
-
-signals:
+    explicit base(QWidget *parent = nullptr);
 
 public slots:
     void periodicTimer();

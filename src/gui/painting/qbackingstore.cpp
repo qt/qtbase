@@ -95,6 +95,11 @@ public:
 QBackingStore::QBackingStore(QWindow *window)
     : d_ptr(new QBackingStorePrivate(window))
 {
+    if (window->handle()) {
+        // Create platform backingstore up front if we have a platform window,
+        // otherwise delay the creation until absolutely necessary.
+        handle();
+    }
 }
 
 /*!
@@ -186,7 +191,7 @@ QPaintDevice *QBackingStore::paintDevice()
 void QBackingStore::endPaint()
 {
     if (paintDevice()->paintingActive())
-        qWarning() << "QBackingStore::endPaint() called with active painter on backingstore paint device";
+        qWarning("QBackingStore::endPaint() called with active painter; did you forget to destroy it or call QPainter::end() on it?");
 
     handle()->endPaint();
 }

@@ -267,9 +267,13 @@ isEmpty($${target_prefix}.INCDIRS) {
             for (line, output) {
                 contains(line, "^libraries: .*") {
                     line ~= s,^libraries: ,,
-                    # clang (7.x) on Windows uses the wrong path list separator ...
-                    equals(QMAKE_HOST.os, Windows): line ~= s,:(?![/\\\\]),;,
-                    paths = $$split(line, $$QMAKE_DIRLIST_SEP)
+                    equals(QMAKE_HOST.os, Windows) {
+                        # clang (7.x) on Windows uses the wrong path list separator ...
+                        line ~= s,:(?![/\\\\]),;,
+                        paths = $$split(line, ;)
+                    } else {
+                        paths = $$split(line, $$QMAKE_DIRLIST_SEP)
+                    }
                     for (path, paths): \
                         QMAKE_DEFAULT_LIBDIRS += $$clean_path($$replace(path, ^=, $$[SYSROOT]))
                 }

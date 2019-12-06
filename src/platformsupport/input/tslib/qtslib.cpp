@@ -85,7 +85,7 @@ QTsLibMouseHandler::QTsLibMouseHandler(const QString &key,
     if (fd >= 0) {
         qCDebug(qLcTsLib) << "tslib device is" << device;
         m_notify = new QSocketNotifier(fd, QSocketNotifier::Read, this);
-        connect(m_notify, SIGNAL(activated(int)), this, SLOT(readMouseData()));
+        connect(m_notify, &QSocketNotifier::activated, this, &QTsLibMouseHandler::readMouseData);
     } else {
         qErrnoWarning(errno, "tslib: Cannot open input device %s", device.constData());
     }
@@ -114,8 +114,8 @@ void QTsLibMouseHandler::readMouseData()
         int x = sample.x;
         int y = sample.y;
 
-        // work around missing coordinates on mouse release
-        if (sample.pressure == 0 && sample.x == 0 && sample.y == 0) {
+        // coordinates on release events can contain arbitrary values, just ignore them
+        if (sample.pressure == 0) {
             x = m_x;
             y = m_y;
         }
@@ -129,7 +129,9 @@ void QTsLibMouseHandler::readMouseData()
         }
         QPoint pos(x, y);
 
-        QWindowSystemInterface::handleMouseEvent(0, pos, pos, pressed ? Qt::LeftButton : Qt::NoButton);
+        QWindowSystemInterface::handleMouseEvent(nullptr, pos, pos,
+                                                 pressed ? Qt::LeftButton : Qt::NoButton,
+                                                 Qt::NoButton, QEvent::None);
 
         m_x = x;
         m_y = y;

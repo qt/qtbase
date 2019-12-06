@@ -110,19 +110,21 @@ static QString createGuid(const QUuid &uuid)
     return guid;
 }
 
-static void writePrologue(QTextStream &stream, const QString &fileName, const QString &providerName)
+static void writePrologue(QTextStream &stream, const QString &fileName, const Provider &provider)
 {
-    QUuid uuid = QUuid::createUuidV5(QUuid(), providerName.toLocal8Bit());
+    QUuid uuid = QUuid::createUuidV5(QUuid(), provider.name.toLocal8Bit());
 
-    const QString provider = providerVar(providerName);
+    const QString providerV = providerVar(provider.name);
     const QString guard = includeGuard(fileName);
     const QString guid = createGuid(uuid);
     const QString guidString = uuid.toString();
 
     stream << "#ifndef " << guard << "\n"
            << "#define " << guard << "\n"
+           << "\n"
            << "#include <windows.h>\n"
-           << "#include <TraceLoggingProvider.h>\n";
+           << "#include <TraceLoggingProvider.h>\n"
+           << "\n";
 
     /* TraceLogging API macros cannot deal with UTF8
      * source files, so we work around it like this
@@ -132,30 +134,33 @@ static void writePrologue(QTextStream &stream, const QString &fileName, const QS
               "#define _TlgPragmaUtf8Begin\n"
               "#define _TlgPragmaUtf8End\n";
 
-    stream << qtHeaders();
-
     stream << "\n";
+    stream << qtHeaders();
+    stream << "\n";
+
+    if (!provider.prefixText.isEmpty())
+        stream << provider.prefixText.join(QLatin1Char('\n')) << "\n\n";
 
     stream << "#ifdef TRACEPOINT_DEFINE\n"
            << "/* " << guidString << " */\n"
-           << "TRACELOGGING_DEFINE_PROVIDER(" << provider << ", \""
-           << providerName <<"\", " << guid << ");\n\n";
+           << "TRACELOGGING_DEFINE_PROVIDER(" << providerV << ", \""
+           << provider.name <<"\", " << guid << ");\n\n";
 
     stream << "static inline void registerProvider()\n"
            << "{\n"
-           << "    TraceLoggingRegister(" << provider << ");\n"
+           << "    TraceLoggingRegister(" << providerV << ");\n"
            << "}\n\n";
 
     stream << "static inline void unregisterProvider()\n"
            << "{\n"
-           << "    TraceLoggingUnregister(" << provider << ");\n"
+           << "    TraceLoggingUnregister(" << providerV << ");\n"
            << "}\n";
 
     stream << "Q_CONSTRUCTOR_FUNCTION(registerProvider)\n"
            << "Q_DESTRUCTOR_FUNCTION(unregisterProvider)\n\n";
 
     stream << "#else\n"
-           << "TRACELOGGING_DECLARE_PROVIDER(" << provider << ");\n"
+           << "TRACELOGGING_DECLARE_PROVIDER(" << providerV << ");\n"
            << "#endif // TRACEPOINT_DEFINE\n\n";
 }
 
@@ -224,7 +229,7 @@ void writeEtw(QFile &file, const Provider &provider)
 
     const QString fileName = QFileInfo(file.fileName()).fileName();
 
-    writePrologue(stream, fileName, provider.name);
+    writePrologue(stream, fileName, provider);
     writeTracepoints(stream, provider);
     writeEpilogue(stream, fileName);
 }

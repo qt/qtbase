@@ -181,7 +181,9 @@ ulong QGuiApplicationPrivate::mousePressTime = 0;
 Qt::MouseButton QGuiApplicationPrivate::mousePressButton = Qt::NoButton;
 int QGuiApplicationPrivate::mousePressX = 0;
 int QGuiApplicationPrivate::mousePressY = 0;
-int QGuiApplicationPrivate::mouse_double_click_distance = -1;
+
+static int mouseDoubleClickDistance = -1;
+static int touchDoubleTapDistance = -1;
 
 QWindow *QGuiApplicationPrivate::currentMousePressWindow = 0;
 
@@ -255,6 +257,12 @@ static inline void clearFontUnlocked()
 {
     delete QGuiApplicationPrivate::app_font;
     QGuiApplicationPrivate::app_font = 0;
+}
+
+static void initThemeHints()
+{
+    mouseDoubleClickDistance = QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::MouseDoubleClickDistance).toInt();
+    touchDoubleTapDistance = QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::TouchDoubleTapDistance).toInt();
 }
 
 static bool checkNeedPortalSupport()
@@ -1421,7 +1429,7 @@ void QGuiApplicationPrivate::eventDispatcherReady()
 
 void QGuiApplicationPrivate::init()
 {
-    Q_TRACE(QGuiApplicationPrivate_init_entry);
+    Q_TRACE_SCOPE(QGuiApplicationPrivate_init);
 
 #if defined(Q_OS_MACOS)
     QMacAutoReleasePool pool;
@@ -1519,8 +1527,7 @@ void QGuiApplicationPrivate::init()
 
     initPalette();
     QFont::initialize();
-
-    mouse_double_click_distance = platformTheme()->themeHint(QPlatformTheme::MouseDoubleClickDistance).toInt();
+    initThemeHints();
 
 #ifndef QT_NO_CURSOR
     QCursorData::initialize();
@@ -1585,8 +1592,6 @@ void QGuiApplicationPrivate::init()
     if (!QGuiApplicationPrivate::displayName)
         QObject::connect(q, &QGuiApplication::applicationNameChanged,
                          q, &QGuiApplication::applicationDisplayNameChanged);
-
-    Q_TRACE(QGuiApplicationPrivate_init_exit);
 }
 
 extern void qt_cleanupFontDatabase();
@@ -1830,7 +1835,7 @@ bool QGuiApplicationPrivate::processNativeEvent(QWindow *window, const QByteArra
 
 void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePrivate::WindowSystemEvent *e)
 {
-    Q_TRACE(QGuiApplicationPrivate_processWindowSystemEvent_entry, e->type);
+    Q_TRACE_SCOPE(QGuiApplicationPrivate_processWindowSystemEvent, e->type);
 
     switch(e->type) {
     case QWindowSystemInterfacePrivate::Mouse:
@@ -1940,8 +1945,6 @@ void QGuiApplicationPrivate::processWindowSystemEvent(QWindowSystemInterfacePriv
         qWarning() << "Unknown user input event type:" << e->type;
         break;
     }
-
-    Q_TRACE(QGuiApplicationPrivate_processWindowSystemEvent_exit, e->type);
 }
 
 /*! \internal
@@ -2034,8 +2037,10 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
 
     if (mouseMove) {
         QGuiApplicationPrivate::lastCursorPosition = globalPoint;
-        if (qAbs(globalPoint.x() - mousePressX) > mouse_double_click_distance||
-            qAbs(globalPoint.y() - mousePressY) > mouse_double_click_distance)
+        const auto doubleClickDistance = e->source == Qt::MouseEventNotSynthesized ?
+                    mouseDoubleClickDistance : touchDoubleTapDistance;
+        if (qAbs(globalPoint.x() - mousePressX) > doubleClickDistance ||
+            qAbs(globalPoint.y() - mousePressY) > doubleClickDistance)
             mousePressButton = Qt::NoButton;
     } else {
         mouse_buttons = e->buttons;
@@ -2690,7 +2695,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
     QWindow *window = e->window.data();
     typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
     QHash<QWindow *, StatesAndTouchPoints> windowsNeedingEvents;
-    bool stationaryTouchPointChangedVelocity = false;
+    bool stationaryTouchPointChangedProperty = false;
 
     for (int i = 0; i < e->points.count(); ++i) {
         QTouchEvent::TouchPoint touchPoint = e->points.at(i);
@@ -2770,7 +2775,13 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             if (touchPoint.state() == Qt::TouchPointStationary) {
                 if (touchInfo.touchPoint.velocity() != touchPoint.velocity()) {
                     touchInfo.touchPoint.setVelocity(touchPoint.velocity());
-                    stationaryTouchPointChangedVelocity = true;
+                    touchPoint.d->stationaryWithModifiedProperty = true;
+                    stationaryTouchPointChangedProperty = true;
+                }
+                if (!qFuzzyCompare(touchInfo.touchPoint.pressure(), touchPoint.pressure())) {
+                    touchInfo.touchPoint.setPressure(touchPoint.pressure());
+                    touchPoint.d->stationaryWithModifiedProperty = true;
+                    stationaryTouchPointChangedProperty = true;
                 }
             } else {
                 touchInfo.touchPoint = touchPoint;
@@ -2811,7 +2822,7 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
             break;
         case Qt::TouchPointStationary:
             // don't send the event if nothing changed
-            if (!stationaryTouchPointChangedVelocity)
+            if (!stationaryTouchPointChangedProperty)
                 continue;
             Q_FALLTHROUGH();
         default:
@@ -3228,9 +3239,12 @@ void QGuiApplication::setPalette(const QPalette &pal)
         QGuiApplicationPrivate::app_pal = new QPalette(pal);
     else
         *QGuiApplicationPrivate::app_pal = pal;
+
     applicationResourceFlags |= ApplicationPaletteExplicitlySet;
     QCoreApplication::setAttribute(Qt::AA_SetPalette);
-    emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
+
+    if (qGuiApp)
+        emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
 }
 
 void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
@@ -3276,8 +3290,11 @@ void QGuiApplication::setFont(const QFont &font)
         *QGuiApplicationPrivate::app_font = font;
     applicationResourceFlags |= ApplicationFontExplicitlySet;
 
-    if (emitChange && qGuiApp)
-        emit qGuiApp->fontChanged(*QGuiApplicationPrivate::app_font);
+    if (emitChange && qGuiApp) {
+        auto font = *QGuiApplicationPrivate::app_font;
+        locker.unlock();
+        emit qGuiApp->fontChanged(font);
+    }
 }
 
 /*!
@@ -3992,6 +4009,7 @@ void QGuiApplicationPrivate::notifyThemeChanged()
         clearFontUnlocked();
         initFontUnlocked();
     }
+    initThemeHints();
 }
 
 void QGuiApplicationPrivate::sendApplicationPaletteChange(bool toAllWidgets, const char *className)

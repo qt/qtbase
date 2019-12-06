@@ -1,3 +1,9 @@
+{
+QT_BEGIN_NAMESPACE
+class QEvent;
+QT_END_NAMESPACE
+}
+
 QCoreApplicationPrivate_init_entry()
 QCoreApplicationPrivate_init_exit()
 
@@ -10,6 +16,7 @@ QEvent_ctor(QEvent *event, int type)
 QEvent_dtor(QEvent *event, int type)
 
 QCoreApplication_postEvent_entry(QObject *receiver, QEvent *event, int type)
+QCoreApplication_postEvent_exit()
 QCoreApplication_postEvent_event_compressed(QObject *receiver, QEvent *event)
 QCoreApplication_postEvent_event_posted(QObject *receiver, QEvent *event, int type)
 
@@ -17,18 +24,18 @@ QCoreApplication_sendEvent(QObject *receiver, QEvent *event, int type)
 QCoreApplication_sendSpontaneousEvent(QObject *receiver, QEvent *event, int type)
 
 QCoreApplication_notify_entry(QObject *receiver, QEvent *event, int type)
-QCoreApplication_notify_event_filtered(QObject *receiver, QEvent *event, int type)
-QCoreApplication_notify_before_delivery(QObject *receiver, QEvent *event, int type)
-QCoreApplication_notify_after_delivery(QObject *receiver, QEvent *event, int type, bool consumed)
+QCoreApplication_notify_exit(bool consumed, bool filtered)
 
 QObject_ctor(QObject *object)
 QObject_dtor(QObject *object)
 
-QMetaObject_activate_begin_signal(QObject *sender, int signalIndex)
-QMetaObject_activate_end_signal(QObject *sender, int signalIndex)
-QMetaObject_activate_begin_slot(QObject *receiver, int slotIndex)
-QMetaObject_activate_end_slot(QObject *receiver, int slotIndex)
-QMetaObject_activate_begin_slot_functor(void *slotObject)
-QMetaObject_activate_end_slot_functor(void *slotObject)
-QMetaObject_activate_begin_declarative_signal(QObject *sender, int signalIndex)
-QMetaObject_activate_end_declarative_signal(QObject *sender, int signalIndex)
+QMetaObject_activate_entry(QObject *sender, int signalIndex)
+QMetaObject_activate_exit()
+QMetaObject_activate_slot_entry(QObject *receiver, int slotIndex)
+QMetaObject_activate_slot_exit()
+QMetaObject_activate_slot_functor_entry(void *slotObject)
+QMetaObject_activate_slot_functor_exit()
+QMetaObject_activate_declarative_signal_entry(QObject *sender, int signalIndex)
+QMetaObject_activate_declarative_signal_exit()
+
+qt_message_print(int type, const char *category, const char *function, const char *file, int line, const QString &message)

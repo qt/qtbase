@@ -90,42 +90,6 @@ DECLSPEC_IMPORT BOOLEAN WINAPI SystemFunction036(PVOID RandomBuffer, ULONG Rando
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_PROCESSOR_X86) && QT_COMPILER_SUPPORTS_HERE(RDRND)
-static qsizetype qt_random_cpu(void *buffer, qsizetype count) Q_DECL_NOTHROW;
-
-#  ifdef Q_PROCESSOR_X86_64
-#    define _rdrandXX_step _rdrand64_step
-#  else
-#    define _rdrandXX_step _rdrand32_step
-#  endif
-
-static QT_FUNCTION_TARGET(RDRND) qsizetype qt_random_cpu(void *buffer, qsizetype count) Q_DECL_NOTHROW
-{
-    unsigned *ptr = reinterpret_cast<unsigned *>(buffer);
-    unsigned *end = ptr + count;
-
-    while (ptr + sizeof(qregisteruint)/sizeof(*ptr) <= end) {
-        if (_rdrandXX_step(reinterpret_cast<qregisteruint *>(ptr)) == 0)
-            goto out;
-        ptr += sizeof(qregisteruint)/sizeof(*ptr);
-    }
-
-    if (sizeof(*ptr) != sizeof(qregisteruint) && ptr != end) {
-        if (_rdrand32_step(ptr))
-            goto out;
-        ++ptr;
-    }
-
-out:
-    return ptr - reinterpret_cast<unsigned *>(buffer);
-}
-#else
-static qsizetype qt_random_cpu(void *, qsizetype)
-{
-    return 0;
-}
-#endif
-
 enum {
     // may be "overridden" by a member enum
     FillBufferNoexcept = true
@@ -366,8 +330,8 @@ Q_NEVER_INLINE void QRandomGenerator::SystemGenerator::generate(quint32 *begin, 
     }
 
     qsizetype filled = 0;
-    if (qt_has_hwrng() && (uint(qt_randomdevice_control) & SkipHWRNG) == 0)
-        filled += qt_random_cpu(buffer, count);
+    if (qHasHwrng() && (uint(qt_randomdevice_control) & SkipHWRNG) == 0)
+        filled += qRandomCpu(buffer, count);
 
     if (filled != count && (uint(qt_randomdevice_control) & SkipSystemRNG) == 0) {
         qsizetype bytesFilled =
@@ -903,6 +867,10 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     \snippet code/src_corelib_global_qrandom.cpp 12
 
+    If the \a highest parameter is negative, the result will be negative too;
+    if it is infinite or NaN, the result will be infinite or NaN too (that is,
+    not random).
+
     \sa generateDouble(), bounded()
  */
 
@@ -930,11 +898,11 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn quint32 QRandomGenerator::bounded(int highest)
+    \fn int QRandomGenerator::bounded(int highest)
     \overload
 
     Generates one random 32-bit quantity in the range between 0 (inclusive) and
-    \a highest (exclusive). \a highest must not be negative.
+    \a highest (exclusive). \a highest must be positive.
 
     Note that this function cannot be used to obtain values in the full 32-bit
     range of int. Instead, use generate() and cast to int.
@@ -946,8 +914,11 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
     \fn quint32 QRandomGenerator::bounded(quint32 lowest, quint32 highest)
     \overload
 
-    Generates one random 32-bit quantity in the range between \a lowest (inclusive)
-    and \a highest (exclusive). The same result may also be obtained by using
+    Generates one random 32-bit quantity in the range between \a lowest
+    (inclusive) and \a highest (exclusive). The \a highest parameter must be
+    greater than \a lowest.
+
+    The same result may also be obtained by using
     \l{http://en.cppreference.com/w/cpp/numeric/random/uniform_int_distribution}{\c std::uniform_int_distribution}
     with parameters \a lowest and \c{\a highest - 1}. That class can also be used to
     obtain quantities larger than 32 bits.
@@ -957,7 +928,6 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
 
     \snippet code/src_corelib_global_qrandom.cpp 14
 
-
     Note that this function cannot be used to obtain values in the full 32-bit
     range of quint32. Instead, use generate().
 
@@ -965,11 +935,12 @@ inline QRandomGenerator::SystemGenerator &QRandomGenerator::SystemGenerator::sel
  */
 
 /*!
-    \fn quint32 QRandomGenerator::bounded(int lowest, int highest)
+    \fn int QRandomGenerator::bounded(int lowest, int highest)
     \overload
 
     Generates one random 32-bit quantity in the range between \a lowest
-    (inclusive) and \a highest (exclusive), both of which may be negative.
+    (inclusive) and \a highest (exclusive), both of which may be negative, but
+    \a highest must be greater than \a lowest.
 
     Note that this function cannot be used to obtain values in the full 32-bit
     range of int. Instead, use generate() and cast to int.

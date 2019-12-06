@@ -36,6 +36,7 @@ class tst_Sleep: public QObject
 
 private slots:
     void sleep();
+    void wait();
 };
 
 void tst_Sleep::sleep()
@@ -51,6 +52,24 @@ void tst_Sleep::sleep()
 
     QTest::qSleep(1000 * 10); // 10 seconds
     QVERIFY(t.elapsed() > 1000 * 10);
+}
+
+void tst_Sleep::wait()
+{
+    QElapsedTimer t;
+    t.start();
+
+    QTest::qWait(1);
+    QVERIFY(t.elapsed() >= 1);
+
+    QTest::qWait(10);
+    QVERIFY(t.elapsed() >= 11);
+
+    QTest::qWait(100);
+    QVERIFY(t.elapsed() >= 111);
+
+    QTest::qWait(1000);
+    QVERIFY(t.elapsed() >= 1111);
 }
 
 QTEST_MAIN(tst_Sleep)

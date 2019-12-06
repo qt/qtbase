@@ -453,13 +453,35 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
     if (type == Qt::ToolTip)
         windowLevel = NSScreenSaverWindowLevel;
 
-    // Any "special" window should be in at least the same level as its parent.
-    if (type != Qt::Window) {
-        const QWindow * const transientParent = window()->transientParent();
-        const QCocoaWindow * const transientParentWindow = transientParent ?
-                    static_cast<QCocoaWindow *>(transientParent->handle()) : nullptr;
-        if (transientParentWindow)
-            windowLevel = qMax([transientParentWindow->nativeWindow() level], windowLevel);
+    auto *transientParent = window()->transientParent();
+    if (transientParent && transientParent->handle()) {
+        // We try to keep windows in at least the same window level as
+        // their transient parent. Unfortunately this only works when the
+        // window is created. If the window level changes after that, as
+        // a result of a call to setWindowFlags, or by changing the level
+        // of the native window, we will not pick this up, and the window
+        // will be left behind (or in a different window level than) its
+        // parent. We could KVO-observe the window level of our transient
+        // parent, but that requires us to know when the parent goes away
+        // so that we can unregister the observation before the parent is
+        // dealloced, something we can't do for generic NSWindows. Another
+        // way would be to override [NSWindow setLevel:] and notify child
+        // windows about the change, but that doesn't work for foreign
+        // windows, which can still be transient parents via fromWinId().
+        // One area where this problem is apparent is when AppKit tweaks
+        // the window level of modal windows during application activation
+        // and deactivation. Since we don't pick up on these window level
+        // changes in a generic way, we need to add logic explicitly to
+        // re-evaluate the window level after AppKit has done its tweaks.
+
+        auto *transientCocoaWindow = static_cast<QCocoaWindow *>(transientParent->handle());
+        auto *nsWindow = transientCocoaWindow->nativeWindow();
+
+        // We only upgrade the window level for "special" windows, to work
+        // around Qt Designer parenting the designer windows to the widget
+        // palette window (QTBUG-31779). This should be fixed in designer.
+        if (type != Qt::Window)
+            windowLevel = qMax(windowLevel, nsWindow.level);
     }
 
     return windowLevel;
@@ -1010,16 +1032,16 @@ void QCocoaWindow::setMask(const QRegion &region)
         } else {
             m_view.layer.mask = nil;
         }
-    }
-
-    if (isContentView()) {
-        // Setting the mask requires invalidating the NSWindow shadow, but that needs
-        // to happen after the backingstore has been redrawn, so that AppKit can pick
-        // up the new window shape based on the backingstore content. Doing a display
-        // directly here is not an option, as the window might not be exposed at this
-        // time, and so would not result in an updated backingstore.
-        m_needsInvalidateShadow = true;
-        [m_view setNeedsDisplay:YES];
+    } else {
+        if (isContentView()) {
+            // Setting the mask requires invalidating the NSWindow shadow, but that needs
+            // to happen after the backingstore has been redrawn, so that AppKit can pick
+            // up the new window shape based on the backingstore content. Doing a display
+            // directly here is not an option, as the window might not be exposed at this
+            // time, and so would not result in an updated backingstore.
+            m_needsInvalidateShadow = true;
+            [m_view setNeedsDisplay:YES];
+        }
     }
 }
 
@@ -1085,9 +1107,11 @@ void QCocoaWindow::setEmbeddedInForeignView()
 
 void QCocoaWindow::viewDidChangeFrame()
 {
-    if (isContentView())
-        return; // Handled below
-
+    // Note: When the view is the content view, it would seem redundant
+    // to deliver geometry changes both from windowDidResize and this
+    // callback, but in some cases such as when macOS native tabbed
+    // windows are enabled we may end up with the wrong geometry in
+    // the initial windowDidResize callback when a new tab is created.
     handleGeometryChange();
 }
 
@@ -1207,24 +1231,46 @@ void QCocoaWindow::windowDidChangeScreen()
     if (!window())
         return;
 
-    const bool wasRunningDisplayLink = static_cast<QCocoaScreen *>(screen())->isRunningDisplayLink();
+    // Note: When a window is resized to 0x0 Cocoa will report the window's screen as nil
+    auto *currentScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen);
+    auto *previousScreen = static_cast<QCocoaScreen*>(screen());
 
-    if (QCocoaScreen *newScreen = QCocoaIntegration::instance()->screenForNSScreen(m_view.window.screen)) {
-        if (newScreen == screen()) {
-            // Screen properties have changed. Will be handled by
-            // NSApplicationDidChangeScreenParametersNotification
-            // in QCocoaIntegration::updateScreens().
-            return;
-        }
+    Q_ASSERT_X(!m_view.window.screen || currentScreen,
+        "QCocoaWindow", "Failed to get QCocoaScreen for NSScreen");
 
-        qCDebug(lcQpaWindow) << window() << "moved to" << newScreen;
-        QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(window(), newScreen->screen());
+    // Note: The previous screen may be the same as the current screen, either because
+    // the screen was just reconfigured, which still results in AppKit sending an
+    // NSWindowDidChangeScreenNotification, because the previous screen was removed,
+    // and we ended up calling QWindow::setScreen to move the window, which doesn't
+    // actually move the window to the new screen, or because we've delivered the
+    // screen change to the top level window, which will make all the child windows
+    // of that window report the new screen when requested via QWindow::screen().
+    // We still need to deliver the screen change in all these cases, as the
+    // device-pixel ratio may have changed, and needs to be delivered to all
+    // windows, both top level and child windows.
 
-        if (hasPendingUpdateRequest() && wasRunningDisplayLink)
-            requestUpdate(); // Restart display-link on new screen
-    } else {
-        qCWarning(lcQpaWindow) << "Failed to get QCocoaScreen for" << m_view.window.screen;
+    qCDebug(lcQpaWindow) << "Screen changed for" << window() << "from" << previousScreen << "to" << currentScreen;
+    QWindowSystemInterface::handleWindowScreenChanged<QWindowSystemInterface::SynchronousDelivery>(
+        window(), currentScreen ? currentScreen->screen() : nullptr);
+
+    if (currentScreen && hasPendingUpdateRequest()) {
+        // Restart display-link on new screen. We need to do this unconditionally,
+        // since we can't rely on the previousScreen reflecting whether or not the
+        // window actually moved from one screen to another, or just stayed on the
+        // same screen.
+        currentScreen->requestUpdate();
     }
+}
+/*
+    The window's backing scale factor or color space has changed.
+*/
+void QCocoaWindow::windowDidChangeBackingProperties()
+{
+    // Ideally we would plumb this thought QPA in a way that lets clients
+    // invalidate their own caches, and recreate QBackingStore. For now we
+    // trigger an expose, and let QCocoaBackingStore deal with its own
+    // buffer invalidation.
+    [m_view setNeedsDisplay:YES];
 }
 
 void QCocoaWindow::windowWillClose()
@@ -1508,12 +1554,6 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
     Qt::WindowType type = window()->type();
     Qt::WindowFlags flags = window()->flags();
 
-    // Note: The macOS window manager has a bug, where if a screen is rotated, it will not allow
-    // a window to be created within the area of the screen that has a Y coordinate (I quadrant)
-    // higher than the height of the screen  in its non-rotated state, unless the window is
-    // created with the NSWindowStyleMaskBorderless style mask.
-    NSWindowStyleMask styleMask = windowStyleMask(flags);
-
     QRect rect = geometry();
 
     QScreen *targetScreen = nullptr;
@@ -1524,35 +1564,57 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
         }
     }
 
+    NSWindowStyleMask styleMask = windowStyleMask(flags);
+
     if (!targetScreen) {
         qCWarning(lcQpaWindow) << "Window position" << rect << "outside any known screen, using primary screen";
         targetScreen = QGuiApplication::primaryScreen();
-        // AppKit will only reposition a window that's outside the target screen area if
-        // the window has a title bar. If left out, the window ends up with no screen.
-        // The style mask will be corrected to the original style mask in setWindowFlags.
-        styleMask |= NSWindowStyleMaskTitled;
+        // Unless the window is created as borderless AppKit won't find a position and
+        // screen that's close to the requested invalid position, and will always place
+        // the window on the primary screen.
+        styleMask = NSWindowStyleMaskBorderless;
     }
 
     rect.translate(-targetScreen->geometry().topLeft());
-    QCocoaScreen *cocoaScreen = static_cast<QCocoaScreen *>(targetScreen->handle());
-    NSRect frame = QCocoaScreen::mapToNative(rect, cocoaScreen);
+    auto *targetCocoaScreen = static_cast<QCocoaScreen *>(targetScreen->handle());
+    NSRect contentRect = QCocoaScreen::mapToNative(rect, targetCocoaScreen);
+
+    if (targetScreen->primaryOrientation() == Qt::PortraitOrientation) {
+        // The macOS window manager has a bug, where if a screen is rotated, it will not allow
+        // a window to be created within the area of the screen that has a Y coordinate (I quadrant)
+        // higher than the height of the screen in its non-rotated state (including a magic padding
+        // of 24 points), unless the window is created with the NSWindowStyleMaskBorderless style mask.
+        if (styleMask && (contentRect.origin.y + 24 > targetScreen->geometry().width())) {
+            qCDebug(lcQpaWindow) << "Window positioned on portrait screen."
+                << "Adjusting style mask during creation";
+            styleMask = NSWindowStyleMaskBorderless;
+        }
+    }
 
     // Create NSWindow
     Class windowClass = shouldBePanel ? [QNSPanel class] : [QNSWindow class];
-    QCocoaNSWindow *nsWindow = [[windowClass alloc] initWithContentRect:frame
+    QCocoaNSWindow *nsWindow = [[windowClass alloc] initWithContentRect:contentRect
+        // Mask will be updated in setWindowFlags if not the final mask
         styleMask:styleMask
         // Deferring window creation breaks OpenGL (the GL context is
         // set up before the window is shown and needs a proper window)
         backing:NSBackingStoreBuffered defer:NO
-        screen:cocoaScreen->nativeScreen()
+        screen:targetCocoaScreen->nativeScreen()
         platformWindow:this];
 
-    Q_ASSERT_X(nsWindow.screen == cocoaScreen->nativeScreen(), "QCocoaWindow",
-        "Resulting NSScreen should match the requested NSScreen");
+    // The resulting screen can be different from the screen requested if
+    // for example the application has been assigned to a specific display.
+    auto resultingScreen = QCocoaIntegration::instance()->screenForNSScreen(nsWindow.screen);
 
-    if (targetScreen != window()->screen()) {
+    // But may not always be resolved at this point, in which case we fall back
+    // to the target screen. The real screen will be delivered as a screen change
+    // when resolved as part of ordering the window on screen.
+    if (!resultingScreen)
+        resultingScreen = targetCocoaScreen;
+
+    if (resultingScreen->screen() != window()->screen()) {
         QWindowSystemInterface::handleWindowScreenChanged<
-            QWindowSystemInterface::SynchronousDelivery>(window(), targetScreen);
+            QWindowSystemInterface::SynchronousDelivery>(window(), resultingScreen->screen());
     }
 
     static QSharedPointer<QNSWindowDelegate> sharedDelegate([[QNSWindowDelegate alloc] init],
@@ -1597,20 +1659,8 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 
     applyContentBorderThickness(nsWindow);
 
-    // Prevent CoreGraphics RGB32 -> RGB64 backing store conversions on deep color
-    // displays by forcing 8-bit components, unless a deep color format has been
-    // requested. This conversion uses significant CPU time.
-    QSurface::SurfaceType surfaceType = QPlatformWindow::window()->surfaceType();
-    bool usesCoreGraphics = surfaceType == QSurface::RasterSurface || surfaceType == QSurface::RasterGLSurface;
-    QSurfaceFormat surfaceFormat = QPlatformWindow::window()->format();
-    bool usesDeepColor = surfaceFormat.redBufferSize() > 8 ||
-                         surfaceFormat.greenBufferSize() > 8 ||
-                         surfaceFormat.blueBufferSize() > 8;
-    bool usesLayer = view().layer;
-    if (usesCoreGraphics && !usesDeepColor && !usesLayer) {
-        [nsWindow setDynamicDepthLimit:NO];
-        [nsWindow setDepthLimit:NSWindowDepthTwentyfourBitRGB];
-    }
+    if (format().colorSpace() == QSurfaceFormat::sRGBColorSpace)
+        nsWindow.colorSpace = NSColorSpace.sRGBColorSpace;
 
     return nsWindow;
 }

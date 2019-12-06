@@ -65,14 +65,19 @@
 
     \section1 Thread-Safety
 
-    QSharedPointer and QWeakPointer are thread-safe and operate
-    atomically on the pointer value. Different threads can also access
-    the QSharedPointer or QWeakPointer pointing to the same object at
-    the same time without need for locking mechanisms.
+    QSharedPointer and QWeakPointer are reentrant classes. This means that, in
+    general, a given QSharedPointer or QWeakPointer object \b{cannot} be
+    accessed by multiple threads at the same time without synchronization.
 
-    It should be noted that, while the pointer value can be accessed
-    in this manner, QSharedPointer and QWeakPointer provide no
-    guarantee about the object being pointed to. Thread-safety and
+    Different QSharedPointer and QWeakPointer objects can safely be accessed
+    by multiple threads at the same time. This includes the case where they
+    hold pointers to the same object; the reference counting mechanism
+    is atomic, and no manual synchronization is required.
+
+    It should be noted that, while the pointer value can be accessed in this
+    manner (that is, by multiple threads at the same time, without
+    synchronization), QSharedPointer and QWeakPointer provide no guarantee
+    about the object being pointed to. The specific thread-safety and
     reentrancy rules for that object still apply.
 
     \section1 Other Pointer Classes
@@ -649,19 +654,7 @@
 */
 
 /*!
-    \fn template <class T> QSharedPointer<T> QSharedPointer<T>::create()
-    \since 5.1
-
-    Creates a QSharedPointer object and allocates a new item of type \tt T. The
-    QSharedPointer internals and the object are allocated in one single memory
-    allocation, which could help reduce memory fragmentation in a long-running
-    application.
-
-    This function calls the default constructor for type \tt T.
-*/
-
-/*!
-    \fn template <class T> QSharedPointer<T> QSharedPointer<T>::create(...)
+    \fn template <class T> template <typename... Args> QSharedPointer<T> QSharedPointer<T>::create(Args &&... args)
     \overload
     \since 5.1
 
@@ -671,18 +664,7 @@
     application.
 
     This function will attempt to call a constructor for type \tt T that can
-    accept all the arguments passed. Arguments will be perfectly-forwarded.
-
-    \note This function is only fully available with a C++11 compiler that
-    supports perfect forwarding of an arbitrary number of arguments.
-
-    If the compiler does not support the necessary C++11 features,
-    then a restricted version is available since Qt 5.4: you may pass
-    one (but just one) argument, and it will always be passed by const
-    reference.
-
-    If you target Qt before version 5.4, you must use the overload
-    that calls the default constructor.
+    accept all the arguments passed (\a args). Arguments will be perfectly-forwarded.
 */
 
 /*!
@@ -875,7 +857,7 @@
     \b without ensuring that it cannot get deleted. To have that guarantee,
     use toStrongRef(), which returns a QSharedPointer object. If this
     function can determine that the pointer has already been deleted, it
-    returns 0.
+    returns \nullptr.
 
     It is ok to obtain the value of the pointer and using that value itself,
     like for example in debugging statements:

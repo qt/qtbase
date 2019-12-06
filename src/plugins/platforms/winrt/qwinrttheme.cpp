@@ -44,6 +44,8 @@
 #include <QtCore/qfunctions_winrt.h>
 #include <QtGui/QPalette>
 
+#include <QtFontDatabaseSupport/private/qwinrtfontdatabase_p.h>
+
 #include <wrl.h>
 #include <windows.ui.h>
 #include <windows.ui.viewmanagement.h>
@@ -96,7 +98,13 @@ static IUISettings *uiSettings()
 class QWinRTThemePrivate
 {
 public:
+    QWinRTThemePrivate()
+        : monospaceFont(QWinRTFontDatabase::familyForStyleHint(QFont::Monospace))
+    {
+    }
+
     QPalette palette;
+    QFont monospaceFont;
 };
 
 static inline QColor fromColor(const Color &color)
@@ -319,6 +327,16 @@ const QPalette *QWinRTTheme::palette(Palette type) const
     if (type == SystemPalette)
         return &d->palette;
     return QPlatformTheme::palette(type);
+}
+
+const QFont *QWinRTTheme::font(QPlatformTheme::Font type) const
+{
+    Q_D(const QWinRTTheme);
+    qCDebug(lcQpaTheme) << __FUNCTION__ << type;
+    if (type == QPlatformTheme::FixedFont)
+        return &d->monospaceFont;
+
+    return QPlatformTheme::font(type);
 }
 
 QT_END_NAMESPACE

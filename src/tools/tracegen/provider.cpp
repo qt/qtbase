@@ -275,8 +275,20 @@ Provider parseProvider(const QString &filename)
     Provider provider;
     provider.name = QFileInfo(filename).baseName();
 
+    bool parsingPrefixText = false;
     for (int lineNumber = 1; !s.atEnd(); ++lineNumber) {
         QString line = s.readLine().trimmed();
+
+        if (line == QLatin1String("{")) {
+            parsingPrefixText = true;
+            continue;
+        } else if (parsingPrefixText && line == QLatin1String("}")) {
+            parsingPrefixText = false;
+            continue;
+        } else if (parsingPrefixText) {
+            provider.prefixText.append(line);
+            continue;
+        }
 
         if (line.isEmpty() || line.startsWith(QLatin1Char('#')))
             continue;
@@ -296,7 +308,14 @@ Provider parseProvider(const QString &filename)
         }
     }
 
+    if (parsingPrefixText) {
+        panic("Syntax error while processing '%s': "
+              "no closing brace found for prefix text block",
+              qPrintable(filename));
+    }
+
 #ifdef TRACEGEN_DEBUG
+    qDebug() << provider.prefixText;
     for (auto i = provider.tracepoints.constBegin(); i != provider.tracepoints.constEnd(); ++i)
         dumpTracepoint(*i);
 #endif

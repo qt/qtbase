@@ -242,7 +242,41 @@ static int doLink(int argc, char **argv)
 
 #endif
 
-static int installFile(const QString &source, const QString &target, bool exe = false)
+static bool setFilePermissions(QFile &file, QFileDevice::Permissions permissions)
+{
+    if (file.setPermissions(permissions))
+        return true;
+    fprintf(stderr, "Error setting permissions on %s: %s\n",
+            qPrintable(file.fileName()), qPrintable(file.errorString()));
+    return false;
+}
+
+static bool copyFileTimes(QFile &targetFile, const QString &sourceFilePath,
+                          bool mustEnsureWritability, QString *errorString)
+{
+#ifdef Q_OS_WIN
+    bool mustRestorePermissions = false;
+    QFileDevice::Permissions targetPermissions;
+    if (mustEnsureWritability) {
+        targetPermissions = targetFile.permissions();
+        if (!targetPermissions.testFlag(QFileDevice::WriteUser)) {
+            mustRestorePermissions = true;
+            if (!setFilePermissions(targetFile, targetPermissions | QFileDevice::WriteUser))
+                return false;
+        }
+    }
+#endif
+    if (!IoUtils::touchFile(targetFile.fileName(), sourceFilePath, errorString))
+        return false;
+#ifdef Q_OS_WIN
+    if (mustRestorePermissions && !setFilePermissions(targetFile, targetPermissions))
+        return false;
+#endif
+    return true;
+}
+
+static int installFile(const QString &source, const QString &target, bool exe = false,
+                       bool preservePermissions = false)
 {
     QFile sourceFile(source);
     QFile targetFile(target);
@@ -260,35 +294,29 @@ static int installFile(const QString &source, const QString &target, bool exe = 
         return 3;
     }
 
+    QFileDevice::Permissions targetPermissions = preservePermissions
+            ? sourceFile.permissions()
+            : (QFileDevice::ReadOwner | QFileDevice::WriteOwner
+               | QFileDevice::ReadUser | QFileDevice::WriteUser
+               | QFileDevice::ReadGroup | QFileDevice::ReadOther);
     if (exe) {
-        if (!targetFile.setPermissions(sourceFile.permissions() | QFileDevice::ExeOwner | QFileDevice::ExeUser |
-                                       QFileDevice::ExeGroup | QFileDevice::ExeOther)) {
-            fprintf(stderr, "Error setting execute permissions on %s: %s\n",
-                    qPrintable(target), qPrintable(targetFile.errorString()));
-            return 3;
-        }
+        targetPermissions |= QFileDevice::ExeOwner | QFileDevice::ExeUser |
+                QFileDevice::ExeGroup | QFileDevice::ExeOther;
     }
+    if (!setFilePermissions(targetFile, targetPermissions))
+        return 3;
 
-    // Copy file times
     QString error;
-#ifdef Q_OS_WIN
-    const QFile::Permissions permissions = targetFile.permissions();
-    const bool readOnly = !(permissions & QFile::WriteUser);
-    if (readOnly)
-        targetFile.setPermissions(permissions | QFile::WriteUser);
-#endif
-    if (!IoUtils::touchFile(target, sourceFile.fileName(), &error)) {
+    if (!copyFileTimes(targetFile, sourceFile.fileName(), preservePermissions, &error)) {
         fprintf(stderr, "%s", qPrintable(error));
         return 3;
     }
-#ifdef Q_OS_WIN
-    if (readOnly)
-        targetFile.setPermissions(permissions);
-#endif
+
     return 0;
 }
 
-static int installFileOrDirectory(const QString &source, const QString &target)
+static int installFileOrDirectory(const QString &source, const QString &target,
+                                  bool preservePermissions = false)
 {
     QFileInfo fi(source);
     if (false) {
@@ -308,18 +336,18 @@ static int installFileOrDirectory(const QString &source, const QString &target)
     } else if (fi.isDir()) {
         QDir::current().mkpath(target);
 
-        QDirIterator it(source, QDir::AllEntries | QDir::NoDotAndDotDot);
+        QDirIterator it(source, QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden);
         while (it.hasNext()) {
             it.next();
             const QFileInfo &entry = it.fileInfo();
             const QString &entryTarget = target + QDir::separator() + entry.fileName();
 
-            const int recursionResult = installFileOrDirectory(entry.filePath(), entryTarget);
+            const int recursionResult = installFileOrDirectory(entry.filePath(), entryTarget, true);
             if (recursionResult != 0)
                 return recursionResult;
         }
     } else {
-        const int fileCopyResult = installFile(source, target);
+        const int fileCopyResult = installFile(source, target, /*exe*/ false, preservePermissions);
         if (fileCopyResult != 0)
             return fileCopyResult;
     }

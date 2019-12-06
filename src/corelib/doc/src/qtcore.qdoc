@@ -33,12 +33,5 @@
 
     \brief Provides core non-GUI functionality.
 
-    All other Qt modules rely on this module. To include the
-    definitions of the module's classes, use the following directive:
-
-    \snippet code/doc_src_qtcore.cpp 0
-
-    If you use \l qmake to build your projects, \l{Qt Core} is included by
-    default.
-
+    All other Qt modules rely on this module.
 */

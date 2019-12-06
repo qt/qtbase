@@ -71,6 +71,24 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline bool isValidCoord(qreal c)
+{
+    if (sizeof(qreal) >= sizeof(double))
+        return qIsFinite(c) && fabs(c) < 1e128;
+    else
+        return qIsFinite(c) && fabsf(float(c)) < 1e16f;
+}
+
+static bool hasValidCoords(QPointF p)
+{
+    return isValidCoord(p.x()) && isValidCoord(p.y());
+}
+
+static bool hasValidCoords(QRectF r)
+{
+    return isValidCoord(r.x()) && isValidCoord(r.y()) && isValidCoord(r.width()) && isValidCoord(r.height());
+}
+
 struct QPainterPathPrivateDeleter
 {
     static inline void cleanup(QPainterPathPrivate *d)
@@ -675,9 +693,9 @@ void QPainterPath::moveTo(const QPointF &p)
     printf("QPainterPath::moveTo() (%.2f,%.2f)\n", p.x(), p.y());
 #endif
 
-    if (!qt_is_finite(p.x()) || !qt_is_finite(p.y())) {
+    if (!hasValidCoords(p)) {
 #ifndef QT_NO_DEBUG
-        qWarning("QPainterPath::moveTo: Adding point where x or y is NaN or Inf, ignoring call");
+        qWarning("QPainterPath::moveTo: Adding point with invalid coordinates, ignoring call");
 #endif
         return;
     }
@@ -725,9 +743,9 @@ void QPainterPath::lineTo(const QPointF &p)
     printf("QPainterPath::lineTo() (%.2f,%.2f)\n", p.x(), p.y());
 #endif
 
-    if (!qt_is_finite(p.x()) || !qt_is_finite(p.y())) {
+    if (!hasValidCoords(p)) {
 #ifndef QT_NO_DEBUG
-        qWarning("QPainterPath::lineTo: Adding point where x or y is NaN or Inf, ignoring call");
+        qWarning("QPainterPath::lineTo: Adding point with invalid coordinates, ignoring call");
 #endif
         return;
     }
@@ -784,10 +802,9 @@ void QPainterPath::cubicTo(const QPointF &c1, const QPointF &c2, const QPointF &
            c1.x(), c1.y(), c2.x(), c2.y(), e.x(), e.y());
 #endif
 
-    if (!qt_is_finite(c1.x()) || !qt_is_finite(c1.y()) || !qt_is_finite(c2.x()) || !qt_is_finite(c2.y())
-        || !qt_is_finite(e.x()) || !qt_is_finite(e.y())) {
+    if (!hasValidCoords(c1) || !hasValidCoords(c2) || !hasValidCoords(e)) {
 #ifndef QT_NO_DEBUG
-        qWarning("QPainterPath::cubicTo: Adding point where x or y is NaN or Inf, ignoring call");
+        qWarning("QPainterPath::cubicTo: Adding point with invalid coordinates, ignoring call");
 #endif
         return;
     }
@@ -841,9 +858,9 @@ void QPainterPath::quadTo(const QPointF &c, const QPointF &e)
            c.x(), c.y(), e.x(), e.y());
 #endif
 
-    if (!qt_is_finite(c.x()) || !qt_is_finite(c.y()) || !qt_is_finite(e.x()) || !qt_is_finite(e.y())) {
+    if (!hasValidCoords(c) || !hasValidCoords(e)) {
 #ifndef QT_NO_DEBUG
-        qWarning("QPainterPath::quadTo: Adding point where x or y is NaN or Inf, ignoring call");
+        qWarning("QPainterPath::quadTo: Adding point with invalid coordinates, ignoring call");
 #endif
         return;
     }
@@ -912,10 +929,9 @@ void QPainterPath::arcTo(const QRectF &rect, qreal startAngle, qreal sweepLength
            rect.x(), rect.y(), rect.width(), rect.height(), startAngle, sweepLength);
 #endif
 
-    if ((!qt_is_finite(rect.x()) && !qt_is_finite(rect.y())) || !qt_is_finite(rect.width()) || !qt_is_finite(rect.height())
-        || !qt_is_finite(startAngle) || !qt_is_finite(sweepLength)) {
+    if (!hasValidCoords(rect) || !isValidCoord(startAngle) || !isValidCoord(sweepLength)) {
 #ifndef QT_NO_DEBUG
-        qWarning("QPainterPath::arcTo: Adding arc where a parameter is NaN or Inf, ignoring call");
+        qWarning("QPainterPath::arcTo: Adding point with invalid coordinates, ignoring call");
 #endif
         return;
     }
@@ -1018,9 +1034,9 @@ QPointF QPainterPath::currentPosition() const
 */
 void QPainterPath::addRect(const QRectF &r)
 {
-    if (!qt_is_finite(r.x()) || !qt_is_finite(r.y()) || !qt_is_finite(r.width()) || !qt_is_finite(r.height())) {
+    if (!hasValidCoords(r)) {
 #ifndef QT_NO_DEBUG
-        qWarning("QPainterPath::addRect: Adding rect where a parameter is NaN or Inf, ignoring call");
+        qWarning("QPainterPath::addRect: Adding point with invalid coordinates, ignoring call");
 #endif
         return;
     }
@@ -1098,10 +1114,9 @@ void QPainterPath::addPolygon(const QPolygonF &polygon)
 */
 void QPainterPath::addEllipse(const QRectF &boundingRect)
 {
-    if (!qt_is_finite(boundingRect.x()) || !qt_is_finite(boundingRect.y())
-        || !qt_is_finite(boundingRect.width()) || !qt_is_finite(boundingRect.height())) {
+    if (!hasValidCoords(boundingRect)) {
 #ifndef QT_NO_DEBUG
-        qWarning("QPainterPath::addEllipse: Adding ellipse where a parameter is NaN or Inf, ignoring call");
+        qWarning("QPainterPath::addEllipse: Adding point with invalid coordinates, ignoring call");
 #endif
         return;
     }
@@ -2446,6 +2461,7 @@ QDataStream &operator<<(QDataStream &s, const QPainterPath &p)
 */
 QDataStream &operator>>(QDataStream &s, QPainterPath &p)
 {
+    bool errorDetected = false;
     int size;
     s >> size;
 
@@ -2464,10 +2480,11 @@ QDataStream &operator>>(QDataStream &s, QPainterPath &p)
         s >> x;
         s >> y;
         Q_ASSERT(type >= 0 && type <= 3);
-        if (!qt_is_finite(x) || !qt_is_finite(y)) {
+        if (!isValidCoord(qreal(x)) || !isValidCoord(qreal(y))) {
 #ifndef QT_NO_DEBUG
-            qWarning("QDataStream::operator>>: NaN or Inf element found in path, skipping it");
+            qWarning("QDataStream::operator>>: Invalid QPainterPath coordinates read, skipping it");
 #endif
+            errorDetected = true;
             continue;
         }
         QPainterPath::Element elm = { qreal(x), qreal(y), QPainterPath::ElementType(type) };
@@ -2480,6 +2497,8 @@ QDataStream &operator>>(QDataStream &s, QPainterPath &p)
     p.d_func()->fillRule = Qt::FillRule(fillRule);
     p.d_func()->dirtyBounds = true;
     p.d_func()->dirtyControlBounds = true;
+    if (errorDetected)
+        p = QPainterPath();  // Better than to return path with possibly corrupt datastructure, which would likely cause crash
     return s;
 }
 #endif // QT_NO_DATASTREAM

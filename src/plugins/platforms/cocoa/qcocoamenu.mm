@@ -178,6 +178,16 @@ void QCocoaMenu::setIsOpen(bool isOpen)
     m_isOpen = isOpen;
 }
 
+bool QCocoaMenu::isAboutToShow() const
+{
+    return m_isAboutToShow;
+}
+
+void QCocoaMenu::setIsAboutToShow(bool isAbout)
+{
+    m_isAboutToShow = isAbout;
+}
+
 void QCocoaMenu::removeMenuItem(QPlatformMenuItem *menuItem)
 {
     QMacAutoReleasePool pool;
@@ -250,6 +260,9 @@ void QCocoaMenu::syncMenuItem_helper(QPlatformMenuItem *menuItem, bool menubarUp
             if (wasMerged) {
                 oldItem.enabled = NO;
                 oldItem.hidden = YES;
+                oldItem.keyEquivalent = @"";
+                oldItem.keyEquivalentModifierMask = NSEventModifierFlagCommand;
+
             } else {
                 [m_nativeMenu removeItem:oldItem];
             }

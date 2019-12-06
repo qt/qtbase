@@ -86,6 +86,7 @@ struct Provider
 {
     QString name;
     QVector<Tracepoint> tracepoints;
+    QStringList prefixText;
 };
 
 Provider parseProvider(const QString &filename);

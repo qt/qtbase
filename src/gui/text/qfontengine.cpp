@@ -899,7 +899,7 @@ QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, QFixed /*subPixelPosition
     return rgbMask;
 }
 
-QImage QFontEngine::bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform&)
+QImage QFontEngine::bitmapForGlyph(glyph_t, QFixed subPixelPosition, const QTransform&, const QColor &)
 {
     Q_UNUSED(subPixelPosition);
 
@@ -923,29 +923,10 @@ QFixed QFontEngine::subPixelPositionForX(QFixed x) const
     return subPixelPosition;
 }
 
-QImage *QFontEngine::lockedAlphaMapForGlyph(glyph_t glyph, QFixed subPixelPosition,
-                                            QFontEngine::GlyphFormat neededFormat,
-                                            const QTransform &t, QPoint *offset)
+QFontEngine::Glyph *QFontEngine::glyphData(glyph_t, QFixed,
+                                           QFontEngine::GlyphFormat, const QTransform &)
 {
-    Q_ASSERT(currentlyLockedAlphaMap.isNull());
-    if (neededFormat == Format_None)
-        neededFormat = Format_A32;
-
-    if (neededFormat != Format_A32)
-        currentlyLockedAlphaMap = alphaMapForGlyph(glyph, subPixelPosition, t);
-    else
-        currentlyLockedAlphaMap = alphaRGBMapForGlyph(glyph, subPixelPosition, t);
-
-    if (offset != 0)
-        *offset = QPoint(0, 0);
-
-    return &currentlyLockedAlphaMap;
-}
-
-void QFontEngine::unlockAlphaMapForGlyph()
-{
-    Q_ASSERT(!currentlyLockedAlphaMap.isNull());
-    currentlyLockedAlphaMap = QImage();
+    return nullptr;
 }
 
 QImage QFontEngine::alphaMapForGlyph(glyph_t glyph)
@@ -1075,7 +1056,10 @@ void QFontEngine::setGlyphCache(const void *context, QFontEngineGlyphCache *cach
 
 }
 
-QFontEngineGlyphCache *QFontEngine::glyphCache(const void *context, GlyphFormat format, const QTransform &transform) const
+QFontEngineGlyphCache *QFontEngine::glyphCache(const void *context,
+                                               GlyphFormat format,
+                                               const QTransform &transform,
+                                               const QColor &color) const
 {
     const QHash<const void*, GlyphCaches>::const_iterator caches = m_glyphCaches.constFind(context);
     if (caches == m_glyphCaches.cend())
@@ -1083,8 +1067,11 @@ QFontEngineGlyphCache *QFontEngine::glyphCache(const void *context, GlyphFormat 
 
     for (GlyphCaches::const_iterator it = caches->begin(), end = caches->end(); it != end; ++it) {
         QFontEngineGlyphCache *cache = it->cache.data();
-        if (format == cache->glyphFormat() && qtransform_equals_no_translate(cache->m_transform, transform))
+        if (format == cache->glyphFormat()
+                && (format != Format_ARGB || color == cache->color())
+                && qtransform_equals_no_translate(cache->m_transform, transform)) {
             return cache;
+        }
     }
 
     return nullptr;

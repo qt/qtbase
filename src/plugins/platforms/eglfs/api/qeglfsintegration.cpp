@@ -120,16 +120,6 @@ QEglFSIntegration::QEglFSIntegration()
     initResources();
 }
 
-void QEglFSIntegration::addScreen(QPlatformScreen *screen, bool isPrimary)
-{
-    screenAdded(screen, isPrimary);
-}
-
-void QEglFSIntegration::removeScreen(QPlatformScreen *screen)
-{
-    destroyScreen(screen);
-}
-
 void QEglFSIntegration::initialize()
 {
     qt_egl_device_integration()->platformInit();
@@ -147,7 +137,7 @@ void QEglFSIntegration::initialize()
     m_vtHandler.reset(new QFbVtHandler);
 
     if (qt_egl_device_integration()->usesDefaultScreen())
-        addScreen(new QEglFSScreen(display()));
+        QWindowSystemInterface::handleScreenAdded(new QEglFSScreen(display()));
     else
         qt_egl_device_integration()->screenInit();
 
@@ -208,6 +198,10 @@ QPlatformWindow *QEglFSIntegration::createPlatformWindow(QWindow *window) const
     QWindowSystemInterface::flushWindowSystemEvents(QEventLoop::ExcludeUserInputEvents);
     QEglFSWindow *w = qt_egl_device_integration()->createWindow(window);
     w->create();
+
+    const auto showWithoutActivating = window->property("_q_showWithoutActivating");
+    if (showWithoutActivating.isValid() && showWithoutActivating.toBool())
+        return w;
 
     // Activate only the window for the primary screen to make input work
     if (window->type() != Qt::ToolTip && window->screen() == QGuiApplication::primaryScreen())
@@ -271,6 +265,7 @@ bool QEglFSIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case RasterGLSurface: return false;
 #endif
     case WindowManagement: return false;
+    case OpenGLOnRasterSurface: return true;
     default: return QPlatformIntegration::hasCapability(cap);
     }
 }

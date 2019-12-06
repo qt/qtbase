@@ -548,7 +548,8 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
 
     This property gets and sets the text editor's contents as plain
     text. Previous contents are removed and undo/redo history is reset
-    when the property is set.
+    when the property is set. currentCharFormat() is also reset, unless
+    textCursor() is already at the beginning of the document.
 
     If the text edit has another content type, it will not be replaced
     by plain text if you call toPlainText(). The only exception to this
@@ -1026,7 +1027,12 @@ void QTextEdit::paste()
 /*!
     Deletes all the text in the text edit.
 
-    Note that the undo/redo history is cleared by this function.
+    Notes:
+    \list
+    \li The undo/redo history is also cleared.
+    \li currentCharFormat() is reset, unless textCursor()
+    is already at the beginning of the document.
+    \endlist
 
     \sa cut(), setPlainText(), setHtml()
 */
@@ -1131,9 +1137,13 @@ void QTextEdit::timerEvent(QTimerEvent *e)
     Changes the text of the text edit to the string \a text.
     Any previous text is removed.
 
-    \a text is interpreted as plain text.
-
-    Note that the undo/redo history is cleared by this function.
+    Notes:
+    \list
+    \li \a text is interpreted as plain text.
+    \li The undo/redo history is also cleared.
+    \li currentCharFormat() is reset, unless textCursor()
+    is already at the beginning of the document.
+    \endlist
 
     \sa toPlainText()
 */
@@ -1167,7 +1177,8 @@ QString QTextEdit::toPlainText() const
 
     setHtml() changes the text of the text edit.  Any previous text is
     removed and the undo/redo history is cleared. The input text is
-    interpreted as rich text in html format.
+    interpreted as rich text in html format. currentCharFormat() is also
+    reset, unless textCursor() is already at the beginning of the document.
 
     \note It is the responsibility of the caller to make sure that the
     text is correctly decoded when a QString containing HTML is created

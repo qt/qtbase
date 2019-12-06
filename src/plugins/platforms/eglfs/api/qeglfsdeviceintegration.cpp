@@ -200,10 +200,8 @@ void QEglFSDeviceIntegration::screenInit()
 void QEglFSDeviceIntegration::screenDestroy()
 {
     QGuiApplication *app = qGuiApp;
-    QEglFSIntegration *platformIntegration = static_cast<QEglFSIntegration *>(
-        QGuiApplicationPrivate::platformIntegration());
     while (!app->screens().isEmpty())
-        platformIntegration->removeScreen(app->screens().constLast()->handle());
+        QWindowSystemInterface::handleScreenRemoved(app->screens().constLast()->handle());
 }
 
 QSizeF QEglFSDeviceIntegration::physicalScreenSize() const

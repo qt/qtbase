@@ -106,7 +106,7 @@ static bool ft_getSfntTable(void *user_data, uint tag, uchar *buffer, uint *leng
     return result;
 }
 
-static QFontEngineFT::Glyph emptyGlyph = {0, 0, 0, 0, 0, 0, 0, 0};
+static QFontEngineFT::Glyph emptyGlyph;
 
 static const QFontEngine::HintStyle ftInitialDefaultHintStyle =
 #ifdef Q_OS_WIN
@@ -554,11 +554,6 @@ void QFreetypeFace::addBitmapToPath(FT_GlyphSlot slot, const QFixedPoint &point,
     QPointF cp = point.toPointF();
     qt_addBitmapToPath(cp.x() + TRUNC(slot->metrics.horiBearingX), cp.y() - TRUNC(slot->metrics.horiBearingY),
                        slot->bitmap.buffer, slot->bitmap.pitch, slot->bitmap.width, slot->bitmap.rows, path);
-}
-
-QFontEngineFT::Glyph::~Glyph()
-{
-    delete [] data;
 }
 
 struct LcdFilterDummy
@@ -1061,7 +1056,7 @@ QFontEngineFT::Glyph *QFontEngineFT::loadGlyph(QGlyphSet *set, uint glyph,
                      || matrix.xy != 0
                      || matrix.yx != 0;
 
-    if (transform || (format != Format_Mono && !isScalableBitmap()))
+    if (transform || obliquen || (format != Format_Mono && !isScalableBitmap()))
         load_flags |= FT_LOAD_NO_BITMAP;
 
     FT_Error err = FT_Load_Glyph(face, glyph, load_flags);
@@ -1986,11 +1981,10 @@ static inline QImage alphaMapFromGlyphData(QFontEngineFT::Glyph *glyph, QFontEng
     return img;
 }
 
-QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixelPosition,
-                                              QFontEngine::GlyphFormat neededFormat,
-                                              const QTransform &t, QPoint *offset)
+QFontEngine::Glyph *QFontEngineFT::glyphData(glyph_t glyphIndex, QFixed subPixelPosition,
+                                             QFontEngine::GlyphFormat neededFormat, const QTransform &t)
 {
-    Q_ASSERT(currentlyLockedAlphaMap.isNull());
+    Q_ASSERT(cacheEnabled);
 
     if (isBitmapFont())
         neededFormat = Format_Mono;
@@ -2000,33 +1994,10 @@ QImage *QFontEngineFT::lockedAlphaMapForGlyph(glyph_t glyphIndex, QFixed subPixe
         neededFormat = Format_A8;
 
     Glyph *glyph = loadGlyphFor(glyphIndex, subPixelPosition, neededFormat, t);
-
-    if (offset != 0 && glyph != 0)
-        *offset = QPoint(glyph->x, -glyph->y);
-
-    currentlyLockedAlphaMap = alphaMapFromGlyphData(glyph, neededFormat);
-
-    const bool glyphHasGeometry = glyph != nullptr && glyph->height != 0 && glyph->width != 0;
-    if (!cacheEnabled && glyph != &emptyGlyph) {
-        currentlyLockedAlphaMap = currentlyLockedAlphaMap.copy();
-        delete glyph;
-    }
-
-    if (!glyphHasGeometry)
+    if (!glyph || !glyph->width || !glyph->height)
         return nullptr;
 
-    if (currentlyLockedAlphaMap.isNull())
-        return QFontEngine::lockedAlphaMapForGlyph(glyphIndex, subPixelPosition, neededFormat, t, offset);
-
-    QImageData *data = currentlyLockedAlphaMap.data_ptr();
-    data->is_locked = true;
-
-    return &currentlyLockedAlphaMap;
-}
-
-void QFontEngineFT::unlockAlphaMapForGlyph()
-{
-    QFontEngine::unlockAlphaMapForGlyph();
+    return glyph;
 }
 
 static inline bool is2dRotation(const QTransform &t)
@@ -2105,8 +2076,10 @@ QImage QFontEngineFT::alphaRGBMapForGlyph(glyph_t g, QFixed subPixelPosition, co
     return QFontEngine::alphaRGBMapForGlyph(g, subPixelPosition, t);
 }
 
-QImage QFontEngineFT::bitmapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t)
+QImage QFontEngineFT::bitmapForGlyph(glyph_t g, QFixed subPixelPosition, const QTransform &t, const QColor &color)
 {
+    Q_UNUSED(color);
+
     Glyph *glyph = loadGlyphFor(g, subPixelPosition, defaultFormat, t);
     if (glyph == nullptr)
         return QImage();

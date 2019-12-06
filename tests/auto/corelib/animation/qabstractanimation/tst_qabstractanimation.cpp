@@ -83,6 +83,21 @@ void tst_QAbstractAnimation::destruction()
 {
     TestableQAbstractAnimation *anim = new TestableQAbstractAnimation;
     delete anim;
+
+    // Animations should stop when deleted
+    auto *stopWhenDeleted = new TestableQAbstractAnimation;
+    QAbstractAnimation::State lastOldState, lastNewState;
+    QObject::connect(stopWhenDeleted, &QAbstractAnimation::stateChanged,
+        [&](QAbstractAnimation::State newState, QAbstractAnimation::State oldState) {
+            lastNewState = newState;
+            lastOldState = oldState;
+    });
+    stopWhenDeleted->start();
+    QCOMPARE(lastOldState, QAbstractAnimation::Stopped);
+    QCOMPARE(lastNewState, QAbstractAnimation::Running);
+    delete stopWhenDeleted;
+    QCOMPARE(lastOldState, QAbstractAnimation::Running);
+    QCOMPARE(lastNewState, QAbstractAnimation::Stopped);
 }
 
 void tst_QAbstractAnimation::currentLoop()

@@ -59,6 +59,7 @@ enum OutputConfiguration {
     OutputConfigOff,
     OutputConfigPreferred,
     OutputConfigCurrent,
+    OutputConfigSkip,
     OutputConfigMode,
     OutputConfigModeline
 };
@@ -191,6 +192,8 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
         configuration = OutputConfigPreferred;
     } else if (mode == "current") {
         configuration = OutputConfigCurrent;
+    } else if (mode == "skip") {
+        configuration = OutputConfigSkip;
     } else if (sscanf(mode.constData(), "%dx%d@%d", &configurationSize.rwidth(), &configurationSize.rheight(),
                       &configurationRefresh) == 3)
     {
@@ -226,6 +229,11 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     // Skip disconnected output
     if (configuration == OutputConfigPreferred && connector->connection == DRM_MODE_DISCONNECTED) {
         qCDebug(qLcKmsDebug) << "Skipping disconnected output" << connectorName;
+        return nullptr;
+    }
+
+    if (configuration == OutputConfigSkip) {
+        qCDebug(qLcKmsDebug) << "Skipping output" << connectorName;
         return nullptr;
     }
 
@@ -334,10 +342,14 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     }
     qCDebug(qLcKmsDebug) << "Physical size is" << physSize << "mm" << "for output" << connectorName;
 
-    const QByteArray formatStr = userConnectorConfig.value(QStringLiteral("format"), QStringLiteral("xrgb8888"))
+    const QByteArray formatStr = userConnectorConfig.value(QStringLiteral("format"), QString())
             .toByteArray().toLower();
     uint32_t drmFormat;
-    if (formatStr == "xrgb8888") {
+    bool drmFormatExplicit = true;
+    if (formatStr.isEmpty()) {
+        drmFormat = DRM_FORMAT_XRGB8888;
+        drmFormatExplicit = false;
+    } else if (formatStr == "xrgb8888") {
         drmFormat = DRM_FORMAT_XRGB8888;
     } else if (formatStr == "xbgr8888") {
         drmFormat = DRM_FORMAT_XBGR8888;
@@ -360,7 +372,10 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     } else {
         qWarning("Invalid pixel format \"%s\" for output %s", formatStr.constData(), connectorName.constData());
         drmFormat = DRM_FORMAT_XRGB8888;
+        drmFormatExplicit = false;
     }
+    qCDebug(qLcKmsDebug) << "Format is" << hex << drmFormat << dec << "requested_by_user =" << drmFormatExplicit
+                         << "for output" << connectorName;
 
     const QString cloneSource = userConnectorConfig.value(QStringLiteral("clones")).toString();
     if (!cloneSource.isEmpty())
@@ -403,6 +418,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     output.forced_plane_id = 0;
     output.forced_plane_set = false;
     output.drm_format = drmFormat;
+    output.drm_format_requested_by_user = drmFormatExplicit;
     output.clone_source = cloneSource;
     output.size = framebufferSize;
 
@@ -506,10 +522,6 @@ QKmsDevice::QKmsDevice(QKmsScreenConfig *screenConfig, const QString &path)
     , m_path(path)
     , m_dri_fd(-1)
     , m_has_atomic_support(false)
-#if QT_CONFIG(drm_atomic)
-    , m_atomic_request(nullptr)
-    , m_previous_request(nullptr)
-#endif
     , m_crtc_allocator(0)
 {
     if (m_path.isEmpty()) {
@@ -525,7 +537,7 @@ QKmsDevice::QKmsDevice(QKmsScreenConfig *screenConfig, const QString &path)
 QKmsDevice::~QKmsDevice()
 {
 #if QT_CONFIG(drm_atomic)
-    atomicReset();
+    threadLocalAtomicReset();
 #endif
 }
 
@@ -573,10 +585,16 @@ void QKmsDevice::createScreens()
 
 #if QT_CONFIG(drm_atomic)
     // check atomic support
-    m_has_atomic_support = !drmSetClientCap(m_dri_fd, DRM_CLIENT_CAP_ATOMIC, 1)
-                           && qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_ATOMIC");
-    if (m_has_atomic_support)
-        qCDebug(qLcKmsDebug) << "Atomic Support found";
+    m_has_atomic_support = !drmSetClientCap(m_dri_fd, DRM_CLIENT_CAP_ATOMIC, 1);
+    if (m_has_atomic_support) {
+        qCDebug(qLcKmsDebug, "Atomic reported as supported");
+        if (qEnvironmentVariableIntValue("QT_QPA_EGLFS_KMS_ATOMIC")) {
+            qCDebug(qLcKmsDebug, "Atomic enabled");
+        } else {
+            qCDebug(qLcKmsDebug, "Atomic disabled");
+            m_has_atomic_support = false;
+        }
+    }
 #endif
 
     drmModeResPtr resources = drmModeGetResources(m_dri_fd);
@@ -859,39 +877,51 @@ bool QKmsDevice::hasAtomicSupport()
 }
 
 #if QT_CONFIG(drm_atomic)
-drmModeAtomicReq * QKmsDevice::atomic_request()
+drmModeAtomicReq *QKmsDevice::threadLocalAtomicRequest()
 {
-    if (!m_atomic_request && m_has_atomic_support)
-        m_atomic_request = drmModeAtomicAlloc();
+    if (!m_has_atomic_support)
+        return nullptr;
 
-    return m_atomic_request;
+    AtomicReqs &a(m_atomicReqs.localData());
+    if (!a.request)
+        a.request = drmModeAtomicAlloc();
+
+    return a.request;
 }
 
-bool QKmsDevice::atomicCommit(void *user_data)
+bool QKmsDevice::threadLocalAtomicCommit(void *user_data)
 {
-    if (m_atomic_request) {
-        int ret = drmModeAtomicCommit(m_dri_fd, m_atomic_request,
-                          DRM_MODE_ATOMIC_NONBLOCK | DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_ATOMIC_ALLOW_MODESET, user_data);
+    if (!m_has_atomic_support)
+        return false;
 
-        if (ret) {
-           qWarning("Failed to commit atomic request (code=%d)", ret);
-           return false;
-        }
+    AtomicReqs &a(m_atomicReqs.localData());
+    if (!a.request)
+        return false;
 
-        m_previous_request = m_atomic_request;
-        m_atomic_request = nullptr;
+    int ret = drmModeAtomicCommit(m_dri_fd, a.request,
+                                  DRM_MODE_ATOMIC_NONBLOCK | DRM_MODE_PAGE_FLIP_EVENT | DRM_MODE_ATOMIC_ALLOW_MODESET,
+                                  user_data);
 
-        return true;
+    if (ret) {
+        qWarning("Failed to commit atomic request (code=%d)", ret);
+        return false;
     }
 
-    return false;
+    a.previous_request = a.request;
+    a.request = nullptr;
+
+    return true;
 }
 
-void QKmsDevice::atomicReset()
+void QKmsDevice::threadLocalAtomicReset()
 {
-    if (m_previous_request) {
-        drmModeAtomicFree(m_previous_request);
-        m_previous_request = nullptr;
+    if (!m_has_atomic_support)
+        return;
+
+    AtomicReqs &a(m_atomicReqs.localData());
+    if (a.previous_request) {
+        drmModeAtomicFree(a.previous_request);
+        a.previous_request = nullptr;
     }
 }
 #endif

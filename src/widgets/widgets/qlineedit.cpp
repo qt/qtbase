@@ -293,7 +293,7 @@ QLineEdit::~QLineEdit()
 
 /*!
     \property QLineEdit::text
-    \brief the line edit's text
+    \brief the line edit's text.
 
     Setting this property clears the selection, clears the undo/redo
     history, moves the cursor to the end of the line and resets the
@@ -322,7 +322,7 @@ void QLineEdit::setText(const QString& text)
     \since 4.7
 
     \property QLineEdit::placeholderText
-    \brief the line edit's placeholder text
+    \brief the line edit's placeholder text.
 
     Setting this property makes the line edit display a grayed-out
     placeholder text as long as the line edit is empty.
@@ -354,7 +354,7 @@ void QLineEdit::setPlaceholderText(const QString& placeholderText)
 
 /*!
     \property QLineEdit::displayText
-    \brief the displayed text
+    \brief the displayed text.
 
     If \l echoMode is \l Normal this returns the same as text(); if
     \l EchoMode is \l Password or \l PasswordEchoOnEdit it returns a string of
@@ -375,7 +375,7 @@ QString QLineEdit::displayText() const
 
 /*!
     \property QLineEdit::maxLength
-    \brief the maximum permitted length of the text
+    \brief the maximum permitted length of the text.
 
     If the text is too long, it is truncated at the limit.
 
@@ -405,7 +405,7 @@ void QLineEdit::setMaxLength(int maxLength)
 
 /*!
     \property QLineEdit::frame
-    \brief whether the line edit draws itself with a frame
+    \brief whether the line edit draws itself with a frame.
 
     If enabled (the default) the line edit draws itself inside a
     frame, otherwise the line edit draws itself without any frame.
@@ -544,7 +544,7 @@ void QLineEdit::setFrame(bool enable)
 
 /*!
     \property QLineEdit::echoMode
-    \brief the line edit's echo mode
+    \brief the line edit's echo mode.
 
     The echo mode determines how the text entered in the line edit is
     displayed (or echoed) to the user.
@@ -684,7 +684,7 @@ QSize QLineEdit::sizeHint() const
     ensurePolished();
     QFontMetrics fm(font());
     const int iconSize = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, this);
-    int h = qMax(fm.height(), iconSize - 2) + 2*d->verticalMargin
+    int h = qMax(fm.height(), qMax(14, iconSize - 2)) + 2*d->verticalMargin
             + d->topTextMargin + d->bottomTextMargin
             + d->topmargin + d->bottommargin;
     int w = fm.horizontalAdvance(QLatin1Char('x')) * 17 + 2*d->horizontalMargin
@@ -723,7 +723,7 @@ QSize QLineEdit::minimumSizeHint() const
 
 /*!
     \property QLineEdit::cursorPosition
-    \brief the current cursor position for this line edit
+    \brief the current cursor position for this line edit.
 
     Setting the cursor position causes a repaint when appropriate.
 
@@ -756,7 +756,7 @@ int QLineEdit::cursorPositionAt(const QPoint &pos)
 
 /*!
     \property QLineEdit::alignment
-    \brief the alignment of the line edit
+    \brief the alignment of the line edit.
 
     Both horizontal and vertical alignment is allowed here, Qt::AlignJustify
     will map to Qt::AlignLeft.
@@ -894,7 +894,7 @@ void QLineEdit::end(bool mark)
 
 /*!
     \property QLineEdit::modified
-    \brief whether the line edit's contents has been modified by the user
+    \brief whether the line edit's contents has been modified by the user.
 
     The modified flag is never read by QLineEdit; it has a default value
     of false and is changed to true whenever the user changes the line
@@ -924,7 +924,7 @@ void QLineEdit::setModified(bool modified)
 
 /*!
     \property QLineEdit::hasSelectedText
-    \brief whether there is any text selected
+    \brief whether there is any text selected.
 
     hasSelectedText() returns \c true if some or all of the text has been
     selected by the user; otherwise returns \c false.
@@ -943,7 +943,7 @@ bool QLineEdit::hasSelectedText() const
 
 /*!
     \property QLineEdit::selectedText
-    \brief the selected text
+    \brief the selected text.
 
     If there is no selected text this property's value is
     an empty string.
@@ -1030,7 +1030,7 @@ void QLineEdit::setSelection(int start, int length)
 
 /*!
     \property QLineEdit::undoAvailable
-    \brief whether undo is available
+    \brief whether undo is available.
 
     Undo becomes available once the user has modified the text in the line edit.
 
@@ -1045,7 +1045,7 @@ bool QLineEdit::isUndoAvailable() const
 
 /*!
     \property QLineEdit::redoAvailable
-    \brief whether redo is available
+    \brief whether redo is available.
 
     Redo becomes available once the user has performed one or more undo operations
     on text in the line edit.
@@ -1062,7 +1062,7 @@ bool QLineEdit::isRedoAvailable() const
 /*!
     \property QLineEdit::dragEnabled
     \brief whether the lineedit starts a drag if the user presses and
-    moves the mouse on some selected text
+    moves the mouse on some selected text.
 
     Dragging is disabled by default.
 */
@@ -1081,7 +1081,7 @@ void QLineEdit::setDragEnabled(bool b)
 
 /*!
   \property QLineEdit::cursorMoveStyle
-  \brief the movement style of cursor in this line edit
+  \brief the movement style of cursor in this line edit.
   \since 4.8
 
   When this property is set to Qt::VisualMoveStyle, the line edit will use visual
@@ -1184,7 +1184,7 @@ QMargins QLineEdit::textMargins() const
 
 /*!
     \property QLineEdit::inputMask
-    \brief The validation input mask
+    \brief The validation input mask.
 
     If no mask is set, inputMask() returns an empty string.
 
@@ -1369,6 +1369,12 @@ void QLineEdit::setReadOnly(bool enable)
         QEvent event(QEvent::ReadOnlyChange);
         QCoreApplication::sendEvent(this, &event);
         update();
+#ifndef QT_NO_ACCESSIBILITY
+        QAccessible::State changedState;
+        changedState.readOnly = true;
+        QAccessibleStateChangeEvent ev(this, changedState);
+        QAccessible::updateAccessibility(&ev);
+#endif
     }
 }
 

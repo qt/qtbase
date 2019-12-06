@@ -163,9 +163,9 @@ extern SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::N
 extern DrawHelper qDrawHelper[QImage::NImageFormats];
 
 void qBlendTexture(int count, const QSpan *spans, void *userData);
-extern void qt_memfill64(quint64 *dest, quint64 value, int count);
-extern void qt_memfill32(quint32 *dest, quint32 value, int count);
-extern void qt_memfill16(quint16 *dest, quint16 value, int count);
+extern void qt_memfill64(quint64 *dest, quint64 value, qsizetype count);
+extern void qt_memfill32(quint32 *dest, quint32 value, qsizetype count);
+extern void qt_memfill16(quint16 *dest, quint16 value, qsizetype count);
 
 typedef void (QT_FASTCALL *CompositionFunction)(uint *Q_DECL_RESTRICT dest, const uint *Q_DECL_RESTRICT src, int length, uint const_alpha);
 typedef void (QT_FASTCALL *CompositionFunction64)(QRgba64 *Q_DECL_RESTRICT dest, const QRgba64 *Q_DECL_RESTRICT src, int length, uint const_alpha);
@@ -888,35 +888,35 @@ inline quint24::operator uint() const
 }
 
 template <class T> Q_STATIC_TEMPLATE_FUNCTION
-void qt_memfill(T *dest, T value, int count);
+void qt_memfill(T *dest, T value, qsizetype count);
 
-template<> inline void qt_memfill(quint64 *dest, quint64 color, int count)
+template<> inline void qt_memfill(quint64 *dest, quint64 color, qsizetype count)
 {
     qt_memfill64(dest, color, count);
 }
 
-template<> inline void qt_memfill(quint32 *dest, quint32 color, int count)
+template<> inline void qt_memfill(quint32 *dest, quint32 color, qsizetype count)
 {
     qt_memfill32(dest, color, count);
 }
 
-template<> inline void qt_memfill(quint16 *dest, quint16 color, int count)
+template<> inline void qt_memfill(quint16 *dest, quint16 color, qsizetype count)
 {
     qt_memfill16(dest, color, count);
 }
 
-template<> inline void qt_memfill(quint8 *dest, quint8 color, int count)
+template<> inline void qt_memfill(quint8 *dest, quint8 color, qsizetype count)
 {
     memset(dest, color, count);
 }
 
 template <class T>
-inline void qt_memfill(T *dest, T value, int count)
+inline void qt_memfill(T *dest, T value, qsizetype count)
 {
     if (!count)
         return;
 
-    int n = (count + 7) / 8;
+    qsizetype n = (count + 7) / 8;
     switch (count & 0x07)
     {
     case 0: do { *dest++ = value; Q_FALLTHROUGH();
@@ -937,7 +937,7 @@ inline void qt_rectfill(T *dest, T value,
 {
     char *d = reinterpret_cast<char*>(dest + x) + y * stride;
     if (uint(stride) == (width * sizeof(T))) {
-        qt_memfill(reinterpret_cast<T*>(d), value, width * height);
+        qt_memfill(reinterpret_cast<T*>(d), value, qsizetype(width) * height);
     } else {
         for (int j = 0; j < height; ++j) {
             dest = reinterpret_cast<T*>(d);
@@ -958,7 +958,7 @@ do {                                          \
     /* Duff's device */                       \
     uint *_d = (uint*)(dest) + length;         \
     const uint *_s = (uint*)(src) + length;    \
-    int n = ((length) + 7) / 8;               \
+    qsizetype n = ((length) + 7) / 8;         \
     switch ((length) & 0x07)                  \
     {                                         \
     case 0: do { *--_d = *--_s; Q_FALLTHROUGH(); \
@@ -978,7 +978,7 @@ do {                                          \
     /* Duff's device */                       \
     ushort *_d = (ushort*)(dest);         \
     const ushort *_s = (const ushort*)(src);    \
-    int n = ((length) + 7) / 8;               \
+    qsizetype n = ((length) + 7) / 8;         \
     switch ((length) & 0x07)                  \
     {                                         \
     case 0: do { *_d++ = *_s++; Q_FALLTHROUGH(); \

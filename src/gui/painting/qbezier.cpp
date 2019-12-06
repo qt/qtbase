@@ -122,10 +122,10 @@ void QBezier::addToPolygon(QPolygonF *polygon, qreal bezier_flattening_threshold
     int levels[10];
     beziers[0] = *this;
     levels[0] = 9;
-    QBezier *b = beziers;
-    int *lvl = levels;
+    int top = 0;
 
-    while (b >= beziers) {
+    while (top >= 0) {
+        QBezier *b = &beziers[top];
         // check if we can pop the top bezier curve from the stack
         qreal y4y1 = b->y4 - b->y1;
         qreal x4x1 = b->x4 - b->x1;
@@ -139,17 +139,15 @@ void QBezier::addToPolygon(QPolygonF *polygon, qreal bezier_flattening_threshold
                 qAbs(b->x1 - b->x3) + qAbs(b->y1 - b->y3);
             l = 1.;
         }
-        if (d < bezier_flattening_threshold*l || *lvl == 0) {
+        if (d < bezier_flattening_threshold * l || levels[top] == 0) {
             // good enough, we pop it off and add the endpoint
             polygon->append(QPointF(b->x4, b->y4));
-            --b;
-            --lvl;
+            --top;
         } else {
             // split, second half of the polygon goes lower into the stack
             b->split(b+1, b);
-            lvl[1] = --lvl[0];
-            ++b;
-            ++lvl;
+            levels[top + 1] = --levels[top];
+            ++top;
         }
     }
 }
@@ -160,10 +158,10 @@ void QBezier::addToPolygon(QDataBuffer<QPointF> &polygon, qreal bezier_flattenin
     int levels[10];
     beziers[0] = *this;
     levels[0] = 9;
-    QBezier *b = beziers;
-    int *lvl = levels;
+    int top = 0;
 
-    while (b >= beziers) {
+    while (top >= 0) {
+        QBezier *b = &beziers[top];
         // check if we can pop the top bezier curve from the stack
         qreal y4y1 = b->y4 - b->y1;
         qreal x4x1 = b->x4 - b->x1;
@@ -177,17 +175,15 @@ void QBezier::addToPolygon(QDataBuffer<QPointF> &polygon, qreal bezier_flattenin
                 qAbs(b->x1 - b->x3) + qAbs(b->y1 - b->y3);
             l = 1.;
         }
-        if (d < bezier_flattening_threshold*l || *lvl == 0) {
+        if (d < bezier_flattening_threshold * l || levels[top] == 0) {
             // good enough, we pop it off and add the endpoint
             polygon.add(QPointF(b->x4, b->y4));
-            --b;
-            --lvl;
+            --top;
         } else {
             // split, second half of the polygon goes lower into the stack
             b->split(b+1, b);
-            lvl[1] = --lvl[0];
-            ++b;
-            ++lvl;
+            levels[top + 1] = --levels[top];
+            ++top;
         }
     }
 }
@@ -261,9 +257,9 @@ static ShiftResult good_offset(const QBezier *b1, const QBezier *b2, qreal offse
 static ShiftResult shift(const QBezier *orig, QBezier *shifted, qreal offset, qreal threshold)
 {
     int map[4];
-    bool p1_p2_equal = (orig->x1 == orig->x2 && orig->y1 == orig->y2);
-    bool p2_p3_equal = (orig->x2 == orig->x3 && orig->y2 == orig->y3);
-    bool p3_p4_equal = (orig->x3 == orig->x4 && orig->y3 == orig->y4);
+    bool p1_p2_equal = qFuzzyCompare(orig->x1, orig->x2) && qFuzzyCompare(orig->y1, orig->y2);
+    bool p2_p3_equal = qFuzzyCompare(orig->x2, orig->x3) && qFuzzyCompare(orig->y2, orig->y3);
+    bool p3_p4_equal = qFuzzyCompare(orig->x3, orig->x4) && qFuzzyCompare(orig->y3, orig->y4);
 
     QPointF points[4];
     int np = 0;
@@ -333,7 +329,9 @@ static ShiftResult shift(const QBezier *orig, QBezier *shifted, qreal offset, qr
     *shifted = QBezier::fromPoints(points_shifted[map[0]], points_shifted[map[1]],
                                    points_shifted[map[2]], points_shifted[map[3]]);
 
-    return good_offset(orig, shifted, offset, threshold);
+    if (np > 2)
+        return good_offset(orig, shifted, offset, threshold);
+    return Ok;
 }
 
 // This value is used to determine the length of control point vectors
@@ -432,7 +430,6 @@ redo:
         } else if (res == Ok) {
             ++o;
             --b;
-            continue;
         } else if (res == Circle && maxSegments - (o - curveSegments) >= 2) {
             // add semi circle
             if (addCircle(b, offset, o))

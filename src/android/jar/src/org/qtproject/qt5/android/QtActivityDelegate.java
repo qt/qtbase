@@ -553,16 +553,8 @@ public class QtActivityDelegate
             editButtons &= ~EditContextView.PASTE_BUTTON;
 
         if ((mode & CursorHandleShowEdit) == CursorHandleShowEdit && editButtons != 0) {
-            editY -= m_editPopupMenu.getHeight();
-            if (editY < 0) {
-                if (m_cursorHandle != null)
-                    editY = m_cursorHandle.bottom();
-                else if (m_leftSelectionHandle != null && m_rightSelectionHandle != null)
-                    editY = Math.max(m_leftSelectionHandle.bottom(), m_rightSelectionHandle.bottom());
-                else
-                    return;
-            }
-            m_editPopupMenu.setPosition(editX, editY, editButtons);
+            m_editPopupMenu.setPosition(editX, editY, editButtons, m_cursorHandle, m_leftSelectionHandle,
+                                        m_rightSelectionHandle);
         } else {
             if (m_editPopupMenu != null)
                 m_editPopupMenu.hide();
@@ -744,11 +736,19 @@ public class QtActivityDelegate
         }
         m_layout = new QtLayout(m_activity, startApplication);
 
+        int orientation = m_activity.getResources().getConfiguration().orientation;
+
         try {
             ActivityInfo info = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), PackageManager.GET_META_DATA);
-            if (info.metaData.containsKey("android.app.splash_screen_drawable")) {
+
+            String splashScreenKey = "android.app.splash_screen_drawable_"
+                + (orientation == Configuration.ORIENTATION_LANDSCAPE ? "landscape" : "portrait");
+            if (!info.metaData.containsKey(splashScreenKey))
+                splashScreenKey = "android.app.splash_screen_drawable";
+
+            if (info.metaData.containsKey(splashScreenKey)) {
                 m_splashScreenSticky = info.metaData.containsKey("android.app.splash_screen_sticky") && info.metaData.getBoolean("android.app.splash_screen_sticky");
-                int id = info.metaData.getInt("android.app.splash_screen_drawable");
+                int id = info.metaData.getInt(splashScreenKey);
                 m_splashScreen = new ImageView(m_activity);
                 m_splashScreen.setImageDrawable(m_activity.getResources().getDrawable(id));
                 m_splashScreen.setScaleType(ImageView.ScaleType.FIT_XY);
@@ -768,7 +768,6 @@ public class QtActivityDelegate
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                              ViewGroup.LayoutParams.MATCH_PARENT));
 
-        int orientation = m_activity.getResources().getConfiguration().orientation;
         int rotation = m_activity.getWindowManager().getDefaultDisplay().getRotation();
         boolean rot90 = (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270);
         boolean currentlyLandscape = (orientation == Configuration.ORIENTATION_LANDSCAPE);

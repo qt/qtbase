@@ -101,6 +101,8 @@
 - (id)accessibilityElementAtIndex:(NSInteger)index
 {
     [self initAccessibility];
+    if (NSUInteger(index) >= [m_accessibleElements count])
+        return nil;
     return m_accessibleElements[index];
 }
 
@@ -108,6 +110,12 @@
 {
     [self initAccessibility];
     return [m_accessibleElements indexOfObject:element];
+}
+
+- (NSArray *)accessibilityElements
+{
+    [self initAccessibility];
+    return m_accessibleElements;
 }
 
 @end

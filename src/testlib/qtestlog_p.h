@@ -53,6 +53,10 @@
 
 #include <QtTest/qttestglobal.h>
 
+#if defined(Q_OS_DARWIN)
+#include <QtCore/private/qcore_mac_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QBenchmarkResult;
@@ -63,9 +67,12 @@ class Q_TESTLIB_EXPORT QTestLog
 {
 public:
     enum LogMode {
-        Plain = 0, XML, LightXML, XunitXML, CSV, TeamCity, TAP,
+        Plain = 0, XML, LightXML, XunitXML, CSV, TeamCity, TAP
+#if defined(QT_USE_APPLE_UNIFIED_LOGGING)
+        , Apple
+#endif
 #if defined(HAVE_XCTEST)
-        XCTest
+        , XCTest
 #endif
     };
 

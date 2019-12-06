@@ -40,12 +40,55 @@
 #include "qplatformdefs.h"
 #include "qfilesystemiterator_p.h"
 
+#if QT_CONFIG(textcodec)
+#  include <qtextcodec.h>
+#  include <private/qutfcodec_p.h>
+#endif
+
 #ifndef QT_NO_FILESYSTEMITERATOR
+
+#include <memory>
 
 #include <stdlib.h>
 #include <errno.h>
 
 QT_BEGIN_NAMESPACE
+
+static bool checkNameDecodable(const char *d_name, qsizetype len)
+{
+    // This function is called in a loop from advance() below, but the loop is
+    // usually run only once.
+
+#if QT_CONFIG(textcodec)
+    // We identify the codecs by their RFC 2978 MIBenum values. In this
+    // function:
+    //  3   US-ASCII (ANSI X3.4-1986)
+    //  4   Latin1 (ISO-8859-1)
+    // 106  UTF-8
+    QTextCodec *codec = QTextCodec::codecForLocale();
+#  ifdef QT_LOCALE_IS_UTF8
+    int mibEnum = 106;
+#  else
+    int mibEnum = 4;                // Latin 1
+    if (codec)
+        mibEnum = codec->mibEnum();
+#  endif
+    if (Q_LIKELY(mibEnum == 106))   // UTF-8
+        return QUtf8::isValidUtf8(d_name, len).isValidUtf8;
+    if (mibEnum == 3)               // US-ASCII
+        return QtPrivate::isAscii(QLatin1String(d_name, len));
+    if (mibEnum == 4)               // Latin 1
+        return true;
+
+    // fall back to generic QTextCodec
+    QTextCodec::ConverterState cs(QTextCodec::IgnoreHeader);
+    codec->toUnicode(d_name, len, &cs);
+    return cs.invalidChars == 0 && cs.remainingChars == 0;
+#else
+    // if we have no text codecs, then QString::fromLocal8Bit is fromLatin1
+    return true;
+#endif
+}
 
 QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
                                          const QStringList &nameFilters, QDirIterator::IteratorFlags flags)
@@ -81,9 +124,9 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
         dirEntry = QT_READDIR(dir);
 
         if (dirEntry) {
-            // process entries with correct UTF-8 names only
-            if (QFile::encodeName(QFile::decodeName(dirEntry->d_name)) == dirEntry->d_name) {
-                fileEntry = QFileSystemEntry(nativePath + QByteArray(dirEntry->d_name), QFileSystemEntry::FromNativePath());
+            qsizetype len = strlen(dirEntry->d_name);
+            if (checkNameDecodable(dirEntry->d_name, len)) {
+                fileEntry = QFileSystemEntry(nativePath + QByteArray(dirEntry->d_name, len), QFileSystemEntry::FromNativePath());
                 metaData.fillFromDirEnt(*dirEntry);
                 return true;
             }

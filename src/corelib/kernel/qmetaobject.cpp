@@ -112,6 +112,13 @@ QT_BEGIN_NAMESPACE
     are returned by classInfo(), and you can search for pairs with
     indexOfClassInfo().
 
+    \note Operations that use the meta object system are generally thread-
+    safe, as QMetaObjects are typically static read-only instances
+    generated at compile time. However, if meta objects are dynamically
+    modified by the application (for instance, when using QQmlPropertyMap),
+    then the application has to explicitly synchronize access to the
+    respective meta object.
+
     \sa QMetaClassInfo, QMetaEnum, QMetaMethod, QMetaProperty, QMetaType,
         {Meta-Object System}
 */
@@ -235,6 +242,12 @@ QObject *QMetaObject::newInstance(QGenericArgument val0,
                                   QGenericArgument val8,
                                   QGenericArgument val9) const
 {
+    if (!inherits(&QObject::staticMetaObject))
+    {
+        qWarning("QMetaObject::newInstance: type %s does not inherit QObject", className());
+        return nullptr;
+    }
+
     QByteArray constructorName = className();
     {
         int idx = constructorName.lastIndexOf(':');
@@ -349,7 +362,7 @@ bool QMetaObject::inherits(const QMetaObject *metaObject) const Q_DECL_NOEXCEPT
     \internal
 
     Returns \a obj if object \a obj inherits from this
-    meta-object; otherwise returns 0.
+    meta-object; otherwise returns \nullptr.
 */
 QObject *QMetaObject::cast(QObject *obj) const
 {
@@ -361,7 +374,7 @@ QObject *QMetaObject::cast(QObject *obj) const
     \internal
 
     Returns \a obj if object \a obj inherits from this
-    meta-object; otherwise returns 0.
+    meta-object; otherwise returns \nullptr.
 */
 const QObject *QMetaObject::cast(const QObject *obj) const
 {

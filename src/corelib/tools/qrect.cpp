@@ -1194,7 +1194,7 @@ bool QRect::intersects(const QRect &r) const Q_DECL_NOTHROW
     \fn QRect operator-(const QRect &lhs, const QMargins &rhs)
     \relates QRect
 
-    Returns the \a lhs rectangle shrunken by the \a rhs margins.
+    Returns the \a lhs rectangle shrunk by the \a rhs margins.
 
     \since 5.3
 */
@@ -2417,7 +2417,7 @@ QRect QRectF::toAlignedRect() const Q_DECL_NOTHROW
     \relates QRectF
     \since 5.3
 
-    Returns the \a lhs rectangle grown by the \a rhs margins.
+    Returns the \a lhs rectangle shrunk by the \a rhs margins.
 */
 
 /*!

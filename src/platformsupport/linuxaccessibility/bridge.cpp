@@ -261,6 +261,12 @@ static RoleMapping map[] = {
     //: Role of an accessible object
     { QAccessible::ComplementaryContent, ATSPI_ROLE_SECTION, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "complementary content") },
     //: Role of an accessible object
+    { QAccessible::Terminal, ATSPI_ROLE_TERMINAL, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "terminal") },
+    //: Role of an accessible object
+    { QAccessible::Desktop, ATSPI_ROLE_DESKTOP_FRAME, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "desktop") },
+    //: Role of an accessible object
+    { QAccessible::Notification, ATSPI_ROLE_NOTIFICATION, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "notification") },
+    //: Role of an accessible object
     { QAccessible::UserRole, ATSPI_ROLE_UNKNOWN, QT_TRANSLATE_NOOP("QSpiAccessibleBridge", "unknown") }
 };
 
@@ -268,6 +274,12 @@ void QSpiAccessibleBridge::initializeConstantMappings()
 {
     for (uint i = 0; i < sizeof(map) / sizeof(RoleMapping); ++i)
         qSpiRoleMapping.insert(map[i].role, RoleNames(map[i].spiRole, QLatin1String(map[i].name), tr(map[i].name)));
+
+    // -1 because we have button duplicated, as PushButton and Button.
+    Q_ASSERT_X(qSpiRoleMapping.size() ==
+               QAccessible::staticMetaObject.enumerator(
+                   QAccessible::staticMetaObject.indexOfEnumerator("Role")).keyCount() - 1,
+               "", "Handle all QAccessible::Role members in qSpiRoleMapping");
 }
 
 QT_END_NAMESPACE

@@ -38,7 +38,7 @@
 ****************************************************************************/
 
 #include "qfontdatabase.h"
-#include "qdebug.h"
+#include "qloggingcategory.h"
 #include "qalgorithms.h"
 #include "qguiapplication.h"
 #include "qvarlengtharray.h" // here or earlier - workaround for VC++6
@@ -59,24 +59,12 @@
 #include <stdlib.h>
 #include <algorithm>
 
-
-// #define QFONTDATABASE_DEBUG
-#ifdef QFONTDATABASE_DEBUG
-#  define FD_DEBUG qDebug
-#else
-#  define FD_DEBUG if (false) qDebug
-#endif
-
-// #define FONT_MATCH_DEBUG
-#ifdef FONT_MATCH_DEBUG
-#  define FM_DEBUG qDebug
-#else
-#  define FM_DEBUG if (false) qDebug
-#endif
-
 #include <qtgui_tracepoints_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcFontDb, "qt.text.font.db")
+Q_LOGGING_CATEGORY(lcFontMatch, "qt.text.font.match")
 
 #define SMOOTH_SCALABLE 0xffff
 
@@ -744,7 +732,7 @@ void qt_registerFont(const QString &familyName, const QString &stylename,
                      const QSupportedWritingSystems &writingSystems, void *handle)
 {
     QFontDatabasePrivate *d = privateDb();
-//    qDebug() << "Adding font" << familyName << weight << style << pixelSize << antialiased;
+    qCDebug(lcFontDb) << "Adding font" << familyName << weight << style << pixelSize << "aa" << antialiased << "fixed" << fixedPitch;
     QtFontStyle::Key styleKey;
     styleKey.style = style;
     styleKey.weight = weight;
@@ -1079,7 +1067,7 @@ static QtFontStyle *bestStyle(QtFontFoundry *foundry, const QtFontStyle::Key &st
         }
     }
 
-    FM_DEBUG( "          best style has distance 0x%x", dist );
+    qCDebug(lcFontMatch,  "          best style has distance 0x%x", dist );
     return foundry->styles[best];
 }
 
@@ -1098,20 +1086,20 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
     desc->size = 0;
 
 
-    FM_DEBUG("  REMARK: looking for best foundry for family '%s' [%d]", family->name.toLatin1().constData(), family->count);
+    qCDebug(lcFontMatch, "  REMARK: looking for best foundry for family '%s' [%d]", family->name.toLatin1().constData(), family->count);
 
     for (int x = 0; x < family->count; ++x) {
         QtFontFoundry *foundry = family->foundries[x];
         if (!foundry_name.isEmpty() && foundry->name.compare(foundry_name, Qt::CaseInsensitive) != 0)
             continue;
 
-        FM_DEBUG("          looking for matching style in foundry '%s' %d",
+        qCDebug(lcFontMatch, "          looking for matching style in foundry '%s' %d",
                  foundry->name.isEmpty() ? "-- none --" : foundry->name.toLatin1().constData(), foundry->count);
 
         QtFontStyle *style = bestStyle(foundry, styleKey, styleName);
 
         if (!style->smoothScalable && (styleStrategy & QFont::ForceOutline)) {
-            FM_DEBUG("            ForceOutline set, but not smoothly scalable");
+            qCDebug(lcFontMatch, "            ForceOutline set, but not smoothly scalable");
             continue;
         }
 
@@ -1122,7 +1110,7 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
         if (!(styleStrategy & QFont::ForceOutline)) {
             size = style->pixelSize(pixelSize);
             if (size) {
-                FM_DEBUG("          found exact size match (%d pixels)", size->pixelSize);
+                qCDebug(lcFontMatch, "          found exact size match (%d pixels)", size->pixelSize);
                 px = size->pixelSize;
             }
         }
@@ -1131,7 +1119,7 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
         if (!size && style->smoothScalable && ! (styleStrategy & QFont::PreferBitmap)) {
             size = style->pixelSize(SMOOTH_SCALABLE);
             if (size) {
-                FM_DEBUG("          found smoothly scalable font (%d pixels)", pixelSize);
+                qCDebug(lcFontMatch, "          found smoothly scalable font (%d pixels)", pixelSize);
                 px = pixelSize;
             }
         }
@@ -1140,7 +1128,7 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
         if (!size && style->bitmapScalable && (styleStrategy & QFont::PreferMatch)) {
             size = style->pixelSize(0);
             if (size) {
-                FM_DEBUG("          found bitmap scalable font (%d pixels)", pixelSize);
+                qCDebug(lcFontMatch, "          found bitmap scalable font (%d pixels)", pixelSize);
                 px = pixelSize;
             }
         }
@@ -1164,12 +1152,12 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
                 if (d < distance) {
                     distance = d;
                     size = style->pixelSizes + x;
-                    FM_DEBUG("          best size so far: %3d (%d)", size->pixelSize, pixelSize);
+                    qCDebug(lcFontMatch, "          best size so far: %3d (%d)", size->pixelSize, pixelSize);
                 }
             }
 
             if (!size) {
-                FM_DEBUG("          no size supports the script we want");
+                qCDebug(lcFontMatch, "          no size supports the script we want");
                 continue;
             }
 
@@ -1204,7 +1192,7 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
             this_score += qAbs(px - pixelSize);
 
         if (this_score < score) {
-            FM_DEBUG("          found a match: score %x best score so far %x",
+            qCDebug(lcFontMatch, "          found a match: score %x best score so far %x",
                      this_score, score);
 
             score = this_score;
@@ -1212,7 +1200,7 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
             desc->style = style;
             desc->size = size;
         } else {
-            FM_DEBUG("          score %x no better than best %x", this_score, score);
+            qCDebug(lcFontMatch, "          score %x no better than best %x", this_score, score);
         }
     }
 
@@ -1245,7 +1233,7 @@ static int match(int script, const QFontDef &request,
     char pitch = request.ignorePitch ? '*' : request.fixedPitch ? 'm' : 'p';
 
 
-    FM_DEBUG("QFontDatabase::match\n"
+    qCDebug(lcFontMatch, "QFontDatabase::match\n"
              "  request:\n"
              "    family: %s [%s], script: %d\n"
              "    weight: %d, style: %d\n"
@@ -2683,7 +2671,7 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
     QFontCache::Key key(request, script, multi ? 1 : 0);
     engine = fontCache->findEngine(key);
     if (engine) {
-        FM_DEBUG("Cache hit level 1");
+        qCDebug(lcFontMatch, "Cache hit level 1");
         return engine;
     }
 
@@ -2713,7 +2701,7 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
         else
             blackListed.append(index);
     } else {
-        FM_DEBUG("  NO MATCH FOUND\n");
+        qCDebug(lcFontMatch, "  NO MATCH FOUND\n");
     }
 
     if (!engine) {
@@ -2757,7 +2745,7 @@ QFontEngine *QFontDatabase::findFont(const QFontDef &request, int script)
         if (!engine)
             engine = new QFontEngineBox(request.pixelSize);
 
-        FM_DEBUG("returning box engine");
+        qCDebug(lcFontMatch, "returning box engine");
     }
 
     return engine;
