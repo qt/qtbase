@@ -589,6 +589,20 @@ private Q_SLOTS:
     void trim_trimmed_QByteArray_data() { trimmed_data(); }
     void trim_trimmed_QByteArray() { trimmed_impl<QByteArray>(); }
 
+private:
+    void toNumber_data();
+    template <typename String> void toNumber_impl();
+
+private Q_SLOTS:
+    void toNumber_QString_data() { toNumber_data(); }
+    void toNumber_QString() { toNumber_impl<QString>(); }
+    void toNumber_QStringRef_data() { toNumber_data(); }
+    void toNumber_QStringRef() { toNumber_impl<QStringRef>(); }
+    void toNumber_QStringView_data() { toNumber_data(); }
+    void toNumber_QStringView() { toNumber_impl<QStringView>(); }
+    void toNumber_QByteArray_data() { toNumber_data(); }
+    void toNumber_QByteArray() { toNumber_impl<QByteArray>(); }
+
     //
     // UTF-16-only checks:
     //
@@ -1597,6 +1611,105 @@ void tst_QStringApiSymmetry::trimmed_impl()
         QCOMPARE(trimmed, result);
         QCOMPARE(trimmed.isNull(), result.isNull());
         QCOMPARE(trimmed.isEmpty(), result.isEmpty());
+    }
+}
+
+void tst_QStringApiSymmetry::toNumber_data()
+{
+    QTest::addColumn<QString>("data");
+    QTest::addColumn<qint64>("result");
+    QTest::addColumn<bool>("ok");
+
+    QTest::addRow("0") << QString::fromUtf8("0") << qint64(0) << true;
+    QTest::addRow("a0") << QString::fromUtf8("a0") << qint64(0) << false;
+    QTest::addRow("10") << QString::fromUtf8("10") << qint64(10) << true;
+    QTest::addRow("-10") << QString::fromUtf8("-10") << qint64(-10) << true;
+    QTest::addRow("32767") << QString::fromUtf8("32767") << qint64(32767) << true;
+    QTest::addRow("32768") << QString::fromUtf8("32768") << qint64(32768) << true;
+    QTest::addRow("-32767") << QString::fromUtf8("-32767") << qint64(-32767) << true;
+    QTest::addRow("-32768") << QString::fromUtf8("-32768") << qint64(-32768) << true;
+    QTest::addRow("100x") << QString::fromUtf8("100x") << qint64(0) << false;
+    QTest::addRow("-100x") << QString::fromUtf8("-100x") << qint64(0) << false;
+}
+
+template<typename T>
+bool inRange(qint64 n)
+{
+    bool checkMax = quint64(std::numeric_limits<T>::max()) <= quint64(std::numeric_limits<qint64>::max());
+    if (checkMax && n > qint64(std::numeric_limits<T>::max()))
+        return false;
+    return qint64(std::numeric_limits<T>::min()) <= n;
+}
+
+template<typename String>
+void tst_QStringApiSymmetry::toNumber_impl()
+{
+    QFETCH(const QString, data);
+    QFETCH(qint64, result);
+    QFETCH(bool, ok);
+
+    const auto utf8 = data.toUtf8();
+    const auto l1s  = data.toLatin1();
+    const auto l1   = l1s.isNull() ? QLatin1String() : QLatin1String(l1s);
+
+    const auto ref = data.isNull() ? QStringRef() : QStringRef(&data);
+    const auto s = make<String>(ref, l1, utf8);
+
+    bool is_ok = false;
+    qint64 n = 0;
+
+    n = s.toShort(&is_ok);
+    QCOMPARE(is_ok, ok && inRange<short>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toUShort(&is_ok);
+    QCOMPARE(is_ok, ok && inRange<ushort>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toInt(&is_ok);
+    QCOMPARE(is_ok, ok && inRange<int>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toUInt(&is_ok);
+    QCOMPARE(is_ok, ok && inRange<uint>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toLong(&is_ok);
+    QCOMPARE(is_ok, ok && inRange<long>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toULong(&is_ok);
+    QCOMPARE(is_ok, ok && inRange<ulong>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toLongLong(&is_ok);
+    QCOMPARE(is_ok, ok && inRange<qlonglong>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    n = s.toULongLong(&is_ok);
+    QCOMPARE(is_ok, ok && inRange<qulonglong>(result));
+    if (is_ok)
+        QCOMPARE(n, result);
+
+    if (qint64(float(n)) == n) {
+        float f = s.toFloat(&is_ok);
+        QCOMPARE(is_ok, ok);
+        if (is_ok)
+            QCOMPARE(qint64(f), result);
+    }
+
+    if (qint64(double(n)) == n) {
+        double d = s.toDouble(&is_ok);
+        QCOMPARE(is_ok, ok);
+        if (is_ok)
+            QCOMPARE(qint64(d), result);
     }
 }
 

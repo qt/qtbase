@@ -1016,6 +1016,23 @@ public:
 QString QStringView::toString() const
 { return Q_ASSERT(size() == length()), QString(data(), length()); }
 
+qint64 QStringView::toLongLong(bool *ok, int base) const
+{ return QString::toIntegral_helper<qint64>(*this, ok, base); }
+quint64 QStringView::toULongLong(bool *ok, int base) const
+{ return QString::toIntegral_helper<quint64>(*this, ok, base); }
+long QStringView::toLong(bool *ok, int base) const
+{ return QString::toIntegral_helper<long>(*this, ok, base); }
+ulong QStringView::toULong(bool *ok, int base) const
+{ return QString::toIntegral_helper<ulong>(*this, ok, base); }
+int QStringView::toInt(bool *ok, int base) const
+{ return QString::toIntegral_helper<int>(*this, ok, base); }
+uint QStringView::toUInt(bool *ok, int base) const
+{ return QString::toIntegral_helper<uint>(*this, ok, base); }
+short QStringView::toShort(bool *ok, int base) const
+{ return QString::toIntegral_helper<short>(*this, ok, base); }
+ushort QStringView::toUShort(bool *ok, int base) const
+{ return QString::toIntegral_helper<ushort>(*this, ok, base); }
+
 //
 // QString inline members
 //
@@ -1073,6 +1090,7 @@ inline QString QString::arg(short a, int fieldWidth, int base, QChar fillChar) c
 { return arg(qlonglong(a), fieldWidth, base, fillChar); }
 inline QString QString::arg(ushort a, int fieldWidth, int base, QChar fillChar) const
 { return arg(qulonglong(a), fieldWidth, base, fillChar); }
+
 #if QT_STRINGVIEW_LEVEL < 2
 inline QString QString::arg(const QString &a1, const QString &a2) const
 { return qToStringViewIgnoringNull(*this).arg(a1, a2); }

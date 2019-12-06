@@ -39,6 +39,7 @@
 
 #include "qstringview.h"
 #include "qstring.h"
+#include "qlocale_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -910,6 +911,224 @@ QT_BEGIN_NAMESPACE
     Returns the number of \c wchar_t entries written to \a array.
 
     \sa QString::toWCharArray()
+*/
+
+/*!
+  \fn qint64 QStringView::toLongLong(bool *ok, int base) const
+
+    Returns the string converted to a \c{long long} using base \a
+    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns 0 if the conversion fails.
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+    If \a base is 0, the C language convention is used: If the string
+    begins with "0x", base 16 is used; if the string begins with "0",
+    base 8 is used; otherwise, base 10 is used.
+
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toLongLong()
+
+    \sa QString::toLongLong()
+
+    \since 6.0
+*/
+
+/*!
+  \fn quint64 QStringView::toULongLong(bool *ok, int base) const
+
+    Returns the string converted to an \c{unsigned long long} using base \a
+    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns 0 if the conversion fails.
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+    If \a base is 0, the C language convention is used: If the string
+    begins with "0x", base 16 is used; if the string begins with "0",
+    base 8 is used; otherwise, base 10 is used.
+
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toULongLong()
+
+    \sa QString::toULongLong()
+
+    \since 6.0
+*/
+
+/*!
+    \fn long QStringView::toLong(bool *ok, int base) const
+
+    Returns the string converted to a \c long using base \a
+    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns 0 if the conversion fails.
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+    If \a base is 0, the C language convention is used: If the string
+    begins with "0x", base 16 is used; if the string begins with "0",
+    base 8 is used; otherwise, base 10 is used.
+
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toLong()
+
+    \sa QString::toLong()
+
+    \since 6.0
+*/
+
+/*!
+    \fn ulong QStringView::toULong(bool *ok, int base) const
+
+    Returns the string converted to an \c{unsigned long} using base \a
+    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns 0 if the conversion fails.
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+    If \a base is 0, the C language convention is used: If the string
+    begins with "0x", base 16 is used; if the string begins with "0",
+    base 8 is used; otherwise, base 10 is used.
+
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toULongLong()
+
+    \sa QString::toULong()
+
+    \since 6.0
+*/
+
+/*!
+  \fn int QStringView::toInt(bool *ok, int base) const
+
+    Returns the string converted to an \c int using base \a
+    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns 0 if the conversion fails.
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+    If \a base is 0, the C language convention is used: If the string
+    begins with "0x", base 16 is used; if the string begins with "0",
+    base 8 is used; otherwise, base 10 is used.
+
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toInt()
+
+    \sa QString::toInt()
+
+    \since 6.0
+*/
+
+/*!
+  \fn uint QStringView::toUInt(bool *ok, int base) const
+
+    Returns the string converted to an \c{unsigned int} using base \a
+    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns 0 if the conversion fails.
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+    If \a base is 0, the C language convention is used: If the string
+    begins with "0x", base 16 is used; if the string begins with "0",
+    base 8 is used; otherwise, base 10 is used.
+
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toUInt()
+
+    \sa QString::toUInt()
+
+    \since 6.0
+*/
+
+/*!
+  \fn short QStringView::toShort(bool *ok, int base) const
+
+    Returns the string converted to a \c short using base \a
+    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns 0 if the conversion fails.
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+    If \a base is 0, the C language convention is used: If the string
+    begins with "0x", base 16 is used; if the string begins with "0",
+    base 8 is used; otherwise, base 10 is used.
+
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toShort()
+
+    \sa QString::toShort()
+
+    \since 6.0
+*/
+
+/*!
+  \fn ushort QStringView::toUShort(bool *ok, int base) const
+
+    Returns the string converted to an \c{unsigned short} using base \a
+    base, which is 10 by default and must be between 2 and 36, or 0.
+    Returns 0 if the conversion fails.
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+    If \a base is 0, the C language convention is used: If the string
+    begins with "0x", base 16 is used; if the string begins with "0",
+    base 8 is used; otherwise, base 10 is used.
+
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toUShort()
+
+    \sa QString::toUShort()
+
+    \since 6.0
+*/
+
+/*!
+  \fn double QStringView::toDouble(bool *ok) const
+
+    Returns the string converted to a \c double value.
+
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for other reasons (e.g. underflow).
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toDouble()
+
+    For historic reasons, this function does not handle
+    thousands group separators. If you need to convert such numbers,
+    use QLocale::toDouble().
+
+    \sa QString::toDouble()
+
+    \since 6.0
+*/
+
+/*!
+  \fn float QStringView::toFloat(bool *ok) const
+
+    Returns the string converted to a \c float value.
+
+    Returns an infinity if the conversion overflows or 0.0 if the
+    conversion fails for other reasons (e.g. underflow).
+
+    If \a ok is not \nullptr, failure is reported by setting *\a{ok}
+    to \c false, and success by setting *\a{ok} to \c true.
+
+    The string conversion will always happen in the 'C' locale. For locale
+    dependent conversion use QLocale::toFloat()
+
+    \sa QString::toFloat()
+
+    \since 6.0
 */
 
 QT_END_NAMESPACE

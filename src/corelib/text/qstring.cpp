@@ -12127,4 +12127,14 @@ void QAbstractConcatenable::appendLatin1To(const char *a, int len, QChar *out) n
     qt_from_latin1(reinterpret_cast<char16_t *>(out), a, uint(len));
 }
 
+double QStringView::toDouble(bool *ok) const
+{
+    return QLocaleData::c()->stringToDouble(*this, ok, QLocale::RejectGroupSeparator);
+}
+
+float QStringView::toFloat(bool *ok) const
+{
+    return QLocaleData::convertDoubleToFloat(toDouble(ok), ok);
+}
+
 QT_END_NAMESPACE
