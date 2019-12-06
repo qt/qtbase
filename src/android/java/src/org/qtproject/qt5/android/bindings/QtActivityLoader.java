@@ -132,23 +132,6 @@ public class QtActivityLoader extends QtLoader {
             return;
         }
 
-        if (Build.VERSION.SDK_INT < 16) {
-            // fatal error, show the error and quit
-            AlertDialog errorDialog = new AlertDialog.Builder(m_activity).create();
-            if (m_contextInfo.metaData.containsKey("android.app.unsupported_android_version"))
-                errorDialog.setMessage(m_contextInfo.metaData.getString("android.app.unsupported_android_version"));
-            else
-                errorDialog.setMessage("Unsupported Android version.");
-            errorDialog.setButton(m_activity.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    finish();
-                }
-            });
-            errorDialog.show();
-            return;
-        }
-
         try {
             m_activity.setTheme(Class.forName("android.R$style").getDeclaredField(QT_ANDROID_DEFAULT_THEME).getInt(null));
         } catch (Exception e) {
