@@ -320,9 +320,19 @@ bool QXcbVirtualDesktop::xResource(const QByteArray &identifier,
 
 static bool parseXftInt(const QByteArray& stringValue, int *value)
 {
-    Q_ASSERT(value != 0);
+    Q_ASSERT(value);
     bool ok;
     *value = stringValue.toInt(&ok);
+    return ok;
+}
+
+static bool parseXftDpi(const QByteArray& stringValue, int *value)
+{
+    Q_ASSERT(value);
+    bool ok = parseXftInt(stringValue, value);
+    // Support GNOME 3 bug that wrote DPI with fraction:
+    if (!ok)
+        *value = qRound(stringValue.toDouble(&ok));
     return ok;
 }
 
@@ -391,7 +401,7 @@ void QXcbVirtualDesktop::readXResources()
         int value;
         QByteArray stringValue;
         if (xResource(r, "Xft.dpi:\t", stringValue)) {
-            if (parseXftInt(stringValue, &value))
+            if (parseXftDpi(stringValue, &value))
                 m_forcedDpi = value;
         } else if (xResource(r, "Xft.hintstyle:\t", stringValue)) {
             m_hintStyle = parseXftHintStyle(stringValue);
