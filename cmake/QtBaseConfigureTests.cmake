@@ -28,8 +28,14 @@ function(qt_run_config_test_architecture)
     if (EMSCRIPTEN)
         set(_arch_file_suffix ".wasm")
     endif()
+
+    set(arch_test_location "config.tests/arch")
+    if(QT_MULTI_CONFIG_FIRST_CONFIG)
+        string(APPEND arch_test_location "/${QT_MULTI_CONFIG_FIRST_CONFIG}")
+    endif()
+
     set(_arch_file
-        "${CMAKE_CURRENT_BINARY_DIR}/config.tests/arch/architecture_test${_arch_file_suffix}")
+        "${CMAKE_CURRENT_BINARY_DIR}/${arch_test_location}/architecture_test${_arch_file_suffix}")
     if (NOT EXISTS "${_arch_file}")
         message(FATAL_ERROR
                 "Failed to find compiled architecture detection executable at ${_arch_file}.")

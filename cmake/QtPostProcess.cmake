@@ -298,7 +298,6 @@ endfunction()
 
 function(qt_generate_build_internals_extra_cmake_code)
     if(PROJECT_NAME STREQUAL "QtBase")
-        set(QT_EXTRA_BUILD_INTERNALS_VARS)
         foreach(var IN LISTS QT_BASE_CONFIGURE_TESTS_VARS_TO_EXPORT)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "set(${var} \"${${var}}\" CACHE INTERNAL \"\")\n")
         endforeach()
@@ -307,6 +306,32 @@ function(qt_generate_build_internals_extra_cmake_code)
         qt_path_join(extra_file_path
                      ${QT_CONFIG_BUILD_DIR}
                      ${INSTALL_CMAKE_NAMESPACE}BuildInternals/QtBuildInternalsExtra.cmake)
+
+        if(CMAKE_BUILD_TYPE)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(CMAKE_BUILD_TYPE \"${CMAKE_BUILD_TYPE}\")\n")
+        endif()
+        if(CMAKE_CONFIGURATION_TYPES)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(CMAKE_CONFIGURATION_TYPES \"${CMAKE_CONFIGURATION_TYPES}\")\n")
+        endif()
+        if(CMAKE_TRY_COMPILE_CONFIGURATION)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(CMAKE_TRY_COMPILE_CONFIGURATION \"${CMAKE_TRY_COMPILE_CONFIGURATION}\")\n")
+        endif()
+        if(QT_MULTI_CONFIG_FIRST_CONFIG)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_MULTI_CONFIG_FIRST_CONFIG \"${QT_MULTI_CONFIG_FIRST_CONFIG}\")\n")
+        endif()
+        if(CMAKE_NINJA_MULTI_CROSS_CONFIG_ENABLE)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(CMAKE_NINJA_MULTI_CROSS_CONFIG_ENABLE \"${CMAKE_NINJA_MULTI_CROSS_CONFIG_ENABLE}\")\n")
+        endif()
+        if(CMAKE_NINJA_MULTI_DEFAULT_BUILD_TYPE)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(CMAKE_NINJA_MULTI_DEFAULT_BUILD_TYPE \"${CMAKE_NINJA_MULTI_DEFAULT_BUILD_TYPE}\")\n")
+        endif()
+
         configure_file(
             "${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake.in"
             "${extra_file_path}"

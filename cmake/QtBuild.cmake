@@ -1463,7 +1463,9 @@ function(qt_finalize_framework_headers_copy target)
         # Create a fake header file and copy it into the framework by marking it as PUBLIC_HEADER.
         # CMake now takes care of creating the symlink.
         set(fake_header ${target}_fake_header.h)
-        file(GENERATE OUTPUT ${fake_header} CONTENT "// ignore this file\n")
+        qt_get_main_cmake_configuration(main_config)
+        file(GENERATE OUTPUT ${fake_header} CONTENT "// ignore this file\n"
+             CONDITION "$<CONFIG:${main_config}>")
         string(PREPEND fake_header "${CMAKE_CURRENT_BINARY_DIR}/")
         target_sources(${target} PRIVATE ${fake_header})
         set_source_files_properties(${fake_header} PROPERTIES GENERATED ON)
@@ -1473,6 +1475,24 @@ function(qt_finalize_framework_headers_copy target)
         add_custom_target(${target}_framework_headers DEPENDS ${headers})
         add_dependencies(${target} ${target}_framework_headers)
     endif()
+endfunction()
+
+function(qt_clone_property_for_configs target property configs)
+    get_target_property(value "${target}" "${property}")
+    foreach(config ${configs})
+        string(TOUPPER "${config}" upper_config)
+        set_property(TARGET "${target}" PROPERTY "${property}_${upper_config}" "${value}")
+    endforeach()
+endfunction()
+
+function(qt_handle_multi_config_output_dirs target)
+    set(possible_configs "${CMAKE_BUILD_TYPE}")
+    if(CMAKE_CONFIGURATION_TYPES)
+        set(possible_configs "${CMAKE_CONFIGURATION_TYPES}")
+    endif()
+    qt_clone_property_for_configs(${target} LIBRARY_OUTPUT_DIRECTORY "${possible_configs}")
+    qt_clone_property_for_configs(${target} RUNTIME_OUTPUT_DIRECTORY "${possible_configs}")
+    qt_clone_property_for_configs(${target} ARCHIVE_OUTPUT_DIRECTORY "${possible_configs}")
 endfunction()
 
 # This is the main entry function for creating a Qt module, that typically
@@ -1542,12 +1562,11 @@ function(qt_add_module target)
         set_target_properties(${target} PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
             RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
-            RUNTIME_OUTPUT_DIRECTORY_RELEASE "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
-            RUNTIME_OUTPUT_DIRECTORY_DEBUG "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
             ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
             VERSION ${PROJECT_VERSION}
             SOVERSION ${PROJECT_VERSION_MAJOR}
         )
+        qt_handle_multi_config_output_dirs("${target}")
 
         if(is_framework)
             set_target_properties(${target} PROPERTIES
@@ -2203,6 +2222,7 @@ function(qt_add_plugin target)
         RUNTIME_OUTPUT_DIRECTORY "${output_directory}"
         ARCHIVE_OUTPUT_DIRECTORY "${output_directory}"
         QT_PLUGIN_CLASS_NAME "${arg_CLASS_NAME}")
+        qt_handle_multi_config_output_dirs("${target}")
 
     qt_internal_library_deprecation_level(deprecation_define)
 
@@ -3028,6 +3048,21 @@ function(qt_add_cmake_library target)
 
 endfunction()
 
+function(qt_get_tool_cmake_configuration out_var)
+    qt_get_main_cmake_configuration("${out_var}")
+    string(TOUPPER "${${out_var}}" upper_config)
+    set("${out_var}" "${upper_config}" PARENT_SCOPE)
+endfunction()
+
+function(qt_get_main_cmake_configuration out_var)
+    if(CMAKE_BUILD_TYPE)
+        set(config "${CMAKE_BUILD_TYPE}")
+    elseif(QT_MULTI_CONFIG_FIRST_CONFIG)
+        set(config "${QT_MULTI_CONFIG_FIRST_CONFIG}")
+    endif()
+    set("${out_var}" "${config}" PARENT_SCOPE)
+endfunction()
+
 # This function is used to define a "Qt tool", such as moc, uic or rcc.
 # The BOOTSTRAP option allows building it as standalone program, otherwise
 # it will be linked against QtCore.
@@ -3146,8 +3181,11 @@ function(qt_add_tool name)
     )
     qt_internal_add_target_aliases("${name}")
 
+    # If building with a multi-config configuration, the main configuration tool will be placed in
+    # ./bin, while the rest will be in <CONFIG> specific subdirectories.
+    qt_get_tool_cmake_configuration(tool_cmake_configuration)
     set_target_properties("${name}" PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
+        RUNTIME_OUTPUT_DIRECTORY_${tool_cmake_configuration} "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
     )
 
     if(NOT arg_NO_INSTALL AND arg_TOOLS_TARGET)
@@ -3394,7 +3432,7 @@ function(qt_add_docs)
 
 
     # Generate include dir list
-    set(target_include_dirs_file "${doc_ouput_dir}/includes.txt")
+    set(target_include_dirs_file "${doc_ouput_dir}/$<CONFIG>/includes.txt")
 
     set(include_paths_property "$<TARGET_PROPERTY:${target},INCLUDE_DIRECTORIES>")
     if (NOT target_type STREQUAL "INTERFACE_LIBRARY")

@@ -264,6 +264,12 @@ int main(int argc, char **argv)
     cmakeAutogenIncludeDirOption.setValueName(QStringLiteral("CMake AutoGen include directory"));
     parser.addOption(cmakeAutogenIncludeDirOption);
 
+    QCommandLineOption isMultiConfigOption(
+            QStringLiteral("cmake-multi-config"));
+    isMultiConfigOption.setDescription(
+            QStringLiteral("Set this option when using CMake with a multi-config generator"));
+    parser.addOption(isMultiConfigOption);
+
     QStringList arguments = QCoreApplication::arguments();
     parser.process(arguments);
 
@@ -354,13 +360,17 @@ int main(int argc, char **argv)
     }
 
     // 2) Process headers
+    const bool isMultiConfig = parser.isSet(isMultiConfigOption);
     for (auto mapIt = autoGenHeaders.begin(); mapIt != autoGenHeaders.end(); ++mapIt) {
         auto it = parseCacheEntries.find(mapIt.key());
         if (it == parseCacheEntries.end()) {
             continue;
         }
+        const QString pathPrefix = !isMultiConfig
+            ? QStringLiteral("../")
+            : QString();
         const QString jsonPath =
-                dir.filePath(QLatin1String("../") + mapIt.value() + QLatin1String(".json"));
+                dir.filePath(pathPrefix + mapIt.value() + QLatin1String(".json"));
         jsonFileList.push_back(jsonPath);
     }
 

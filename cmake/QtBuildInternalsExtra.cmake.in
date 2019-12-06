@@ -3,7 +3,6 @@ set(QT_BUILD_SHARED_LIBS @BUILD_SHARED_LIBS@)
 option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" @BUILD_SHARED_LIBS@)
 set(QT_CMAKE_EXPORT_NAMESPACE @QT_CMAKE_EXPORT_NAMESPACE@)
 set(INSTALL_CMAKE_NAMESPACE @INSTALL_CMAKE_NAMESPACE@)
-set(CMAKE_BUILD_TYPE @CMAKE_BUILD_TYPE@)
 set(QT_BUILD_INTERNALS_PATH "${CMAKE_CURRENT_LIST_DIR}")
 
 # Propagate the original install prefix, so that a developer building a child module can
@@ -30,6 +29,9 @@ set(QT_NO_MAKE_TESTS @QT_NO_MAKE_TESTS@ CACHE BOOL
     "Should tests be built as part of the default 'all' target.")
 set(QT_NO_MAKE_EXAMPLES @QT_NO_MAKE_EXAMPLES@ CACHE BOOL
     "Should examples be built as part of the default 'all' target.")
+
+# Propagate usage of ccache.
+set(QT_USE_CCACHE @QT_USE_CCACHE@ CACHE BOOL "Enable the use of ccache")
 
 # Extra set of exported variables
 @QT_EXTRA_BUILD_INTERNALS_VARS@

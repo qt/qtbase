@@ -543,8 +543,20 @@ function(qt6_generate_meta_types_json_file target)
 
     get_target_property(target_binary_dir ${target} BINARY_DIR)
 
-    set(cmake_autogen_cache_file
-        "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache.txt")
+    if(CMAKE_BUILD_TYPE)
+        set(cmake_autogen_cache_file
+            "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache.txt")
+        set(mutli_config_args
+            --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include"
+        )
+    else()
+        set(cmake_autogen_cache_file
+            "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/ParseCache_$<CONFIG>.txt")
+        set(mutli_config_args
+            --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include_$<CONFIG>"
+            "--cmake-multi-config")
+    endif()
+
     set(cmake_autogen_info_file
         "${target_binary_dir}/CMakeFiles/${target}_autogen.dir/AutogenInfo.json")
     set(type_list_file "${target_binary_dir}/meta_types/json_file_list.txt")
@@ -556,8 +568,9 @@ function(qt6_generate_meta_types_json_file target)
             --cmake-autogen-cache-file "${cmake_autogen_cache_file}"
             --cmake-autogen-info-file "${cmake_autogen_info_file}"
             --output-file-path "${type_list_file}"
-            --cmake-autogen-include-dir-path "${target_binary_dir}/${target}_autogen/include"
+            ${mutli_config_args}
         COMMENT "Running Automoc file extraction"
+        COMMAND_EXPAND_LISTS
     )
 
     add_dependencies(${target}_automoc_json_extraction ${target}_autogen)
@@ -565,7 +578,7 @@ function(qt6_generate_meta_types_json_file target)
     if (CMAKE_BUILD_TYPE)
         string(TOLOWER ${target}_${CMAKE_BUILD_TYPE} target_lowercase)
     else()
-        message(FATAL_ERROR "add_custom_command's OUTPUT parameter does not support generator expressions, so we can't generate this file for multi-config generators")
+        string(TOLOWER ${target} target_lowercase)
     endif()
     set(metatypes_file "${target_binary_dir}/meta_types/qt6${target_lowercase}_metatypes.json")
     add_custom_command(OUTPUT ${metatypes_file}

@@ -137,6 +137,26 @@ else()
     qt_install(PROGRAMS "${QT_BUILD_DIR}/bin/qt-cmake.bat" DESTINATION "${INSTALL_BINDIR}")
 endif()
 
+# Provide a private convenience wrapper with options which should not be propagated via the public
+# qt-cmake wrapper e.g. CMAKE_GENERATOR.
+# These options can not be set in a toolchain file, but only on the command line.
+# These options should not be in the public wrapper, because a consumer of Qt might want to build
+# their CMake app with the Unix Makefiles generator, while Qt should be built with the Ninja
+# generator.
+# The private wrapper is more conveient for building Qt itself, because a developer doesn't need
+# to specify the same options for each qt module built.
+set(__qt_cmake_extra "-G\"${CMAKE_GENERATOR}\"")
+if(UNIX)
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.in"
+        "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private" @ONLY)
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/bin/qt-cmake-private" DESTINATION "${INSTALL_BINDIR}")
+else()
+    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.bat.in"
+        "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private.bat" @ONLY)
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/bin/qt-cmake-private.bat" DESTINATION "${INSTALL_BINDIR}")
+endif()
+unset(__qt_cmake_extra)
+
 ## Library to hold global features:
 ## These features are stored and accessed via Qt::GlobalConfig, but the
 ## files always lived in Qt::Core, so we keep it that way

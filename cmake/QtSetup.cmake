@@ -10,10 +10,22 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
     set(_default_build_type "Debug")
 endif()
 
+# Reset content of extra build internal vars for each inclusion of QtSetup.
+unset(QT_EXTRA_BUILD_INTERNALS_VARS)
+
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${_default_build_type}' as none was specified.")
   set(CMAKE_BUILD_TYPE "${_default_build_type}" CACHE STRING "Choose the type of build." FORCE)
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo") # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE
+      PROPERTY STRINGS
+      "Debug" "Release" "MinSizeRel" "RelWithDebInfo") # Set the possible values for cmake-gui.
+elseif(CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Building for multiple configurations: ${CMAKE_CONFIGURATION_TYPES}.")
+    message(STATUS "Main configuration is: ${QT_MULTI_CONFIG_FIRST_CONFIG}.")
+    if(CMAKE_NINJA_MULTI_DEFAULT_BUILD_TYPE)
+        message(STATUS
+            "Default build configuration set to '${CMAKE_NINJA_MULTI_DEFAULT_BUILD_TYPE}'.")
+    endif()
 endif()
 
 # Appends a 'debug postfix' to library targets (not executables)
