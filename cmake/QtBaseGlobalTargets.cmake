@@ -214,6 +214,7 @@ qt_copy_or_install(FILES
                    cmake/QtModuleDependencies.cmake.in
                    cmake/QtModuleToolsDependencies.cmake.in
                    cmake/QtModuleToolsConfig.cmake.in
+                   cmake/QtModuleToolsVersionlessTargets.cmake.in
                    cmake/QtStandaloneTestsConfig.cmake.in
                    cmake/QtPlugins.cmake.in
                    cmake/QtPluginConfig.cmake.in
