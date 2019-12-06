@@ -342,6 +342,40 @@ QBitArray QBitArray::fromBits(const char *data, qsizetype size)
     return result;
 }
 
+/*!
+    \since 5.13
+
+    Returns the array of bit converted to an int. The conversion is based of endianness value.
+    Converts up to the first 32 bits of the array to \c uint32_t and returns it,
+    obeying \a endianness. If the array has more than 32 bits, \a ok is set to false
+    and this function returns zero; otherwise, it's set to true.
+*/
+quint32 QBitArray::toUInt32(QSysInfo::Endian endianness, bool *ok) const noexcept
+{
+    if (size() > 32) {
+        if (ok != nullptr) {
+            *ok = false;
+        }
+
+        return 0;
+    }
+
+    if (ok != nullptr) {
+        *ok = true;
+    }
+
+    auto factor = 1;
+    quint32 total = 0;
+    for (auto i = 0; i < size(); ++i, factor *= 2) {
+        const auto index = endianness == QSysInfo::Endian::LittleEndian ? i : (size() - i - 1);
+        if (testBit(index)) {
+            total += factor;
+        }
+    }
+
+    return total;
+}
+
 /*! \fn bool QBitArray::isDetached() const
 
     \internal

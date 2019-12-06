@@ -105,6 +105,8 @@ public:
     const char *bits() const { return isEmpty() ? nullptr : d.constData() + 1; }
     static QBitArray fromBits(const char *data, qsizetype len);
 
+    quint32 toUInt32(QSysInfo::Endian endianness, bool *ok = nullptr) const noexcept;
+
 public:
     typedef QByteArray::DataPointer DataPtr;
     inline DataPtr &data_ptr() { return d.data_ptr(); }
