@@ -2611,7 +2611,7 @@ void QTreeView::sortByColumn(int column, Qt::SortOrder order)
     // If sorting is enabled it will emit a signal connected to
     // _q_sortIndicatorChanged, which then actually sorts
     d->header->setSortIndicator(column, order);
-    // If sorting is not enabled, force to sort now
+    // If sorting is enabled, force to sort now
     if (!d->sortingEnabled)
         d->model->sort(column, order);
 }
