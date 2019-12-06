@@ -41,6 +41,7 @@
 #include "qbitmap.h"
 #include "qbrush.h"
 #include "qcolor.h"
+#include "qcolorspace.h"
 #include "qcursor.h"
 #include "qfont.h"
 #include "qimage.h"

@@ -175,6 +175,7 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
     F(QVector4D, 84, QVector4D) \
     F(QQuaternion, 85, QQuaternion) \
     F(QPolygonF, 86, QPolygonF) \
+    F(QColorSpace, 87, QColorSpace) \
 
 
 #define QT_FOR_EACH_STATIC_WIDGETS_CLASS(F)\
@@ -437,7 +438,7 @@ public:
         FirstCoreType = Bool,
         LastCoreType = QCborMap,
         FirstGuiType = QFont,
-        LastGuiType = QPolygonF,
+        LastGuiType = QColorSpace,
         FirstWidgetsType = QSizePolicy,
         LastWidgetsType = QSizePolicy,
         HighestInternalId = LastWidgetsType,
@@ -472,12 +473,12 @@ public:
         QIcon = 69, QImage = 70, QPolygon = 71, QRegion = 72, QBitmap = 73,
         QCursor = 74, QKeySequence = 75, QPen = 76, QTextLength = 77, QTextFormat = 78,
         QMatrix = 79, QTransform = 80, QMatrix4x4 = 81, QVector2D = 82,
-        QVector3D = 83, QVector4D = 84, QQuaternion = 85, QPolygonF = 86,
+        QVector3D = 83, QVector4D = 84, QQuaternion = 85, QPolygonF = 86, QColorSpace = 87,
 
         // Widget types
         QSizePolicy = 121,
         LastCoreType = QCborMap,
-        LastGuiType = QPolygonF,
+        LastGuiType = QColorSpace,
         User = 1024
     };
 #endif

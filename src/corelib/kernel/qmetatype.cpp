@@ -252,6 +252,7 @@ struct DefinedTypesFilter {
     \value QPolygon QPolygon
     \value QPolygonF QPolygonF
     \value QColor QColor
+    \value QColorSpace QColorSpace
     \value QSizeF QSizeF
     \value QRectF QRectF
     \value QLine QLine

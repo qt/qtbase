@@ -44,6 +44,7 @@
 #include <QtGui/qcolortransform.h>
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qshareddata.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -125,6 +126,7 @@ public:
 
     QColorTransform transformationToColorSpace(const QColorSpace &colorspace) const;
 
+    operator QVariant() const;
 
 private:
     Q_DECLARE_PRIVATE(QColorSpace)
