@@ -692,40 +692,24 @@ QVariant QPSQLResult::data(int i)
         return dbl;
     }
     case QVariant::Date:
-        if (val[0] == '\0') {
-            return QVariant(QDate());
-        } else {
 #if QT_CONFIG(datestring)
-            return QVariant(QDate::fromString(QString::fromLatin1(val), Qt::ISODate));
+        return QVariant(QDate::fromString(QString::fromLatin1(val), Qt::ISODate));
 #else
-            return QVariant(QString::fromLatin1(val));
+        return QVariant(QString::fromLatin1(val));
 #endif
-        }
-    case QVariant::Time: {
-        const QString str = QString::fromLatin1(val);
+    case QVariant::Time:
 #if QT_CONFIG(datestring)
-        if (str.isEmpty())
-            return QVariant(QTime());
-        else
-            return QVariant(QTime::fromString(str, Qt::ISODate));
+        return QVariant(QTime::fromString(QString::fromLatin1(val), Qt::ISODate));
 #else
-        return QVariant(str);
+        return QVariant(QString::fromLatin1(val));
 #endif
-    }
-    case QVariant::DateTime: {
-        QString dtval = QString::fromLatin1(val);
+    case QVariant::DateTime:
 #if QT_CONFIG(datestring)
-        if (dtval.length() < 10) {
-            return QVariant(QDateTime());
-        } else {
-            QChar sign = dtval[dtval.size() - 3];
-            if (sign == QLatin1Char('-') || sign == QLatin1Char('+')) dtval += QLatin1String(":00");
-            return QVariant(QDateTime::fromString(dtval, Qt::ISODate).toLocalTime());
-        }
+        return QVariant(QDateTime::fromString(QString::fromLatin1(val),
+                                              Qt::ISODate).toLocalTime());
 #else
-        return QVariant(dtval);
+        return QVariant(QString::fromLatin1(val));
 #endif
-    }
     case QVariant::ByteArray: {
         size_t len;
         unsigned char *data = PQunescapeBytea((const unsigned char*)val, &len);
