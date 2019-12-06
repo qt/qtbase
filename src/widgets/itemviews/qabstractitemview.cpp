@@ -3074,9 +3074,10 @@ void QAbstractItemView::keyboardSearch(const QString &search)
 QSize QAbstractItemView::sizeHintForIndex(const QModelIndex &index) const
 {
     Q_D(const QAbstractItemView);
-    if (!d->isIndexValid(index) || !d->itemDelegate)
+    if (!d->isIndexValid(index))
         return QSize();
-    return d->delegateForIndex(index)->sizeHint(d->viewOptionsV1(), index);
+    const auto delegate = d->delegateForIndex(index);
+    return delegate ? delegate->sizeHint(d->viewOptionsV1(), index) : QSize();
 }
 
 /*!
