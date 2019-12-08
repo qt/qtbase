@@ -84,10 +84,10 @@ QT_BEGIN_NAMESPACE
     must start and stop the timer in its thread; it is not possible to
     start a timer from another thread.
 
-    As a special case, a QTimer with a timeout of 0 will time out as
-    soon as all the events in the window system's event queue have
-    been processed. This can be used to do heavy work while providing
-    a snappy user interface:
+    As a special case, a QTimer with a timeout of 0 will time out as soon as
+    possible, though the ordering between zero timers and other sources of
+    events is unspecified. Zero timers can be used to do some work while still
+    providing a snappy user interface:
 
     \snippet timers/timers.cpp 4
     \snippet timers/timers.cpp 5
