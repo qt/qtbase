@@ -108,7 +108,7 @@
 #  endif // QT_LARGEFILE_SUPPORT
 #endif // Q_OS_BSD4
 
-#if QT_HAS_INCLUDE(<paths.h>)
+#if __has_include(<paths.h>)
 #  include <paths.h>
 #endif
 #ifndef _PATH_MOUNTED

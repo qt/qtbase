@@ -59,7 +59,7 @@
 #  undef False
 #endif
 
-#if 0 && QT_HAS_INCLUDE(<compare>)
+#if 0 && __has_include(<compare>)
 #  include <compare>
 #endif
 
@@ -261,7 +261,7 @@ public:
     QCborValueRef operator[](const QString & key);
 
     int compare(const QCborValue &other) const;
-#if 0 && QT_HAS_INCLUDE(<compare>)
+#if 0 && __has_include(<compare>)
     std::strong_ordering operator<=>(const QCborValue &other) const
     {
         int c = compare(other);
@@ -411,7 +411,7 @@ public:
 
     int compare(const QCborValue &other) const
     { return concrete().compare(other); }
-#if 0 && QT_HAS_INCLUDE(<compare>)
+#if 0 && __has_include(<compare>)
     std::strong_ordering operator<=>(const QCborValue &other) const
     {
         int c = compare(other);

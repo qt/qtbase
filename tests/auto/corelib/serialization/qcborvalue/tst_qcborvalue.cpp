@@ -384,7 +384,7 @@ void tst_QCborValue::copyCompare()
     QCOMPARE(v, other);
     QVERIFY(!(v != other));
     QVERIFY(!(v < other));
-#if 0 && QT_HAS_INCLUDE(<compare>)
+#if 0 && __has_include(<compare>)
     QVERIFY(v <= other);
     QVERIFY(v >= other);
     QVERIFY(!(v > other));

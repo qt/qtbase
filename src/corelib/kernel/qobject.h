@@ -55,7 +55,7 @@
 
 #include <QtCore/qobject_impl.h>
 
-#if QT_HAS_INCLUDE(<chrono>)
+#if __has_include(<chrono>)
 #  include <chrono>
 #endif
 
@@ -160,7 +160,7 @@ public:
     void moveToThread(QThread *thread);
 
     int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);
-#if QT_HAS_INCLUDE(<chrono>)
+#if __has_include(<chrono>)
     Q_ALWAYS_INLINE
     int startTimer(std::chrono::milliseconds time, Qt::TimerType timerType = Qt::CoarseTimer)
     {

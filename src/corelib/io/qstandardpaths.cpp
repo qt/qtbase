@@ -48,7 +48,7 @@
 #include <qcoreapplication.h>
 #endif
 
-#if QT_HAS_INCLUDE(<paths.h>)
+#if __has_include(<paths.h>)
 #include <paths.h>
 #endif
 

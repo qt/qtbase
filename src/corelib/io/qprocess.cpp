@@ -100,7 +100,7 @@ QT_END_NAMESPACE
 #include <private/qcore_unix_p.h>
 #endif
 
-#if QT_HAS_INCLUDE(<paths.h>)
+#if __has_include(<paths.h>)
 #include <paths.h>
 #endif
 

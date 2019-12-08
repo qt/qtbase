@@ -32,7 +32,7 @@
 #include <QtCore/QElapsedTimer>
 #include <QtTest/QtTest>
 
-#if QT_HAS_INCLUDE(<chrono>)
+#if __has_include(<chrono>)
 #  include <chrono>
 #endif
 
@@ -519,7 +519,7 @@ void tst_QDeadlineTimer::expire()
 
 void tst_QDeadlineTimer::stdchrono()
 {
-#if !QT_HAS_INCLUDE(<chrono>)
+#if !__has_include(<chrono>)
     QSKIP("std::chrono not found on this system");
 #else
     using namespace std::chrono;

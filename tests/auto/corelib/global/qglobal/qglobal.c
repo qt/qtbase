@@ -28,7 +28,7 @@
 
 #include <QtCore/qglobal.h>
 
-#if QT_HAS_INCLUDE(<stdbool.h>) || __STDC_VERSION__ >= 199901L
+#if __has_include(<stdbool.h>) || __STDC_VERSION__ >= 199901L
 #  include <stdbool.h>
 #else
 #  undef true
