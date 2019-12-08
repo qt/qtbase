@@ -1846,7 +1846,8 @@ void tst_QSqlQuery::precision()
         QSKIP("DB unable to store high precision");
 
     const QString qtest_precision(qTableName("qtest_precision", __FILE__, db));
-    static const char* precStr = "1.2345678901234567891";
+    static const char precStr[] = "1.2345678901234567891";
+    const int precStrLen = sizeof(precStr);
 
     {
         // need a new scope for SQLITE
@@ -1868,7 +1869,7 @@ void tst_QSqlQuery::precision()
         if ( !val.startsWith( "1.2345678901234567891" ) ) {
             int i = 0;
 
-            while ( precStr[i] != 0 && *( precStr + i ) == val[i].toLatin1() )
+            while ( i < precStrLen && i < val.size() && precStr[i] != 0 && *( precStr + i ) == val[i].toLatin1() )
                 i++;
 
             // MySQL and TDS have crappy precisions by default
