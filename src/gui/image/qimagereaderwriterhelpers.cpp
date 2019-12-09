@@ -63,7 +63,7 @@ static void appendImagePluginFormats(QFactoryLoader *loader,
     const PluginKeyMap keyMap = loader->keyMap();
     const PluginKeyMapConstIterator cend = keyMap.constEnd();
     int i = -1;
-    QImageIOPlugin *plugin = 0;
+    QImageIOPlugin *plugin = nullptr;
     result->reserve(result->size() + keyMap.size());
     for (PluginKeyMapConstIterator it = keyMap.constBegin(); it != cend; ++it) {
         if (it.key() != i) {
@@ -71,7 +71,7 @@ static void appendImagePluginFormats(QFactoryLoader *loader,
             plugin = qobject_cast<QImageIOPlugin *>(loader->instance(i));
         }
         const QByteArray key = it.value().toLatin1();
-        if (plugin && (plugin->capabilities(0, key) & cap) != 0)
+        if (plugin && (plugin->capabilities(nullptr, key) & cap) != 0)
             result->append(key);
     }
 }
@@ -92,7 +92,7 @@ static void appendImagePluginMimeTypes(QFactoryLoader *loader,
         const int keyCount = keys.size();
         for (int k = 0; k < keyCount; ++k) {
             const QByteArray key = keys.at(k).toString().toLatin1();
-            if (plugin && (plugin->capabilities(0, key) & cap) != 0) {
+            if (plugin && (plugin->capabilities(nullptr, key) & cap) != 0) {
                 result->append(mimeTypes.at(k).toString().toLatin1());
                 if (resultKeys)
                     resultKeys->append(key);

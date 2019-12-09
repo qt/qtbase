@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 
 QPaintDevice::QPaintDevice() noexcept
 {
-    reserved = 0;
+    reserved = nullptr;
     painters = 0;
 }
 
@@ -67,7 +67,7 @@ void QPaintDevice::initPainter(QPainter *) const
 */
 QPaintDevice *QPaintDevice::redirected(QPoint *) const
 {
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -75,7 +75,7 @@ QPaintDevice *QPaintDevice::redirected(QPoint *) const
 */
 QPainter *QPaintDevice::sharedPainter() const
 {
-    return 0;
+    return nullptr;
 }
 
 Q_GUI_EXPORT int qt_paint_device_metric(const QPaintDevice *device, QPaintDevice::PaintDeviceMetric metric)

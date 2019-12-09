@@ -136,7 +136,7 @@ void QShaderGraphLoader::load()
         if (prototypesValue.isObject()) {
             QShaderNodesLoader loader;
             loader.load(prototypesValue.toObject());
-            m_prototypes.unite(loader.nodes());
+            m_prototypes.insert(loader.nodes());
         } else {
             qWarning() << "Invalid prototypes property, should be an object";
             m_status = Error;

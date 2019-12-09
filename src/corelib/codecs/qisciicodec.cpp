@@ -74,7 +74,7 @@ QTextCodec *QIsciiCodec::create(const char *name)
         if (qTextCodecNameMatch(name, codecs[i].name))
             return new QIsciiCodec(i);
     }
-    return 0;
+    return nullptr;
 }
 
 QIsciiCodec::~QIsciiCodec()

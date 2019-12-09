@@ -153,7 +153,7 @@ QAbstractOpenGLFunctions *QOpenGLVersionFunctionsFactory::create(const QOpenGLVe
         else if (major == 1 && minor == 0)
             return new QOpenGLFunctions_1_0;
     }
-    return 0;
+    return nullptr;
 #else
     Q_UNUSED(versionProfile);
     return new QOpenGLFunctions_ES2;

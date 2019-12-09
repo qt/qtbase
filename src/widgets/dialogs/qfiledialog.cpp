@@ -535,15 +535,15 @@ void QFileDialog::changeEvent(QEvent *e)
 QFileDialogPrivate::QFileDialogPrivate()
     :
 #if QT_CONFIG(proxymodel)
-        proxyModel(0),
+        proxyModel(nullptr),
 #endif
-        model(0),
+        model(nullptr),
         currentHistoryLocation(-1),
-        renameAction(0),
-        deleteAction(0),
-        showHiddenAction(0),
+        renameAction(nullptr),
+        deleteAction(nullptr),
+        showHiddenAction(nullptr),
         useDefaultCaption(true),
-        qFileDialogUi(0),
+        qFileDialogUi(nullptr),
         options(QFileDialogOptions::create())
 {
 }
@@ -886,14 +886,14 @@ void QFileDialog::setVisible(bool visible)
 #if QT_CONFIG(fscompleter)
             // So the completer doesn't try to complete and therefore show a popup
             if (!d->nativeDialogInUse)
-                d->completer->setModel(0);
+                d->completer->setModel(nullptr);
 #endif
         } else {
             d->createWidgets();
             setAttribute(Qt::WA_DontShowOnScreen, false);
 #if QT_CONFIG(fscompleter)
             if (!d->nativeDialogInUse) {
-                if (d->proxyModel != 0)
+                if (d->proxyModel != nullptr)
                     d->completer->setModel(d->proxyModel);
                 else
                     d->completer->setModel(d->model);
@@ -1828,7 +1828,7 @@ QModelIndex QFileDialogPrivate::rootIndex() const {
 
 QAbstractItemView *QFileDialogPrivate::currentView() const {
     if (!qFileDialogUi->stackedWidget)
-        return 0;
+        return nullptr;
     if (qFileDialogUi->stackedWidget->currentWidget() == qFileDialogUi->listView->parent())
         return qFileDialogUi->listView;
     return qFileDialogUi->treeView;
@@ -2042,7 +2042,7 @@ QAbstractItemDelegate *QFileDialog::itemDelegate() const
 {
     Q_D(const QFileDialog);
     if (!d->usingWidgets())
-        return 0;
+        return nullptr;
     return d->qFileDialogUi->listView->itemDelegate();
 }
 
@@ -2780,7 +2780,7 @@ void QFileDialog::done(int result)
     if (d->receiverToDisconnectOnClose) {
         disconnect(this, d->signalToDisconnectOnClose,
                    d->receiverToDisconnectOnClose, d->memberToDisconnectOnClose);
-        d->receiverToDisconnectOnClose = 0;
+        d->receiverToDisconnectOnClose = nullptr;
     }
     d->memberToDisconnectOnClose.clear();
     d->signalToDisconnectOnClose.clear();
@@ -3019,7 +3019,7 @@ void QFileDialogPrivate::init(const QUrl &directory, const QString &nameFilter,
     }
 
     q->setAcceptMode(QFileDialog::AcceptOpen);
-    nativeDialogInUse = platformFileDialogHelper() != 0;
+    nativeDialogInUse = platformFileDialogHelper() != nullptr;
     if (!nativeDialogInUse)
         createWidgets();
     q->setFileMode(QFileDialog::AnyFile);
@@ -3277,7 +3277,7 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
             this, SLOT(_q_rowsInserted(QModelIndex)));
     }
 
-    if (proxyModel != 0) {
+    if (proxyModel != nullptr) {
         proxyModel->setParent(this);
         d->proxyModel = proxyModel;
         proxyModel->setSourceModel(d->model);
@@ -3290,13 +3290,13 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         connect(d->proxyModel, SIGNAL(rowsInserted(QModelIndex,int,int)),
             this, SLOT(_q_rowsInserted(QModelIndex)));
     } else {
-        d->proxyModel = 0;
+        d->proxyModel = nullptr;
         d->qFileDialogUi->listView->setModel(d->model);
         d->qFileDialogUi->treeView->setModel(d->model);
 #if QT_CONFIG(fscompleter)
         d->completer->setModel(d->model);
         d->completer->sourceModel = d->model;
-        d->completer->proxyModel = 0;
+        d->completer->proxyModel = nullptr;
 #endif
         connect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
             this, SLOT(_q_rowsInserted(QModelIndex)));
@@ -3334,27 +3334,27 @@ QAbstractProxyModel *QFileDialog::proxyModel() const
 void QFileDialogPrivate::createToolButtons()
 {
     Q_Q(QFileDialog);
-    qFileDialogUi->backButton->setIcon(q->style()->standardIcon(QStyle::SP_ArrowBack, 0, q));
+    qFileDialogUi->backButton->setIcon(q->style()->standardIcon(QStyle::SP_ArrowBack, nullptr, q));
     qFileDialogUi->backButton->setAutoRaise(true);
     qFileDialogUi->backButton->setEnabled(false);
     QObject::connect(qFileDialogUi->backButton, SIGNAL(clicked()), q, SLOT(_q_navigateBackward()));
 
-    qFileDialogUi->forwardButton->setIcon(q->style()->standardIcon(QStyle::SP_ArrowForward, 0, q));
+    qFileDialogUi->forwardButton->setIcon(q->style()->standardIcon(QStyle::SP_ArrowForward, nullptr, q));
     qFileDialogUi->forwardButton->setAutoRaise(true);
     qFileDialogUi->forwardButton->setEnabled(false);
     QObject::connect(qFileDialogUi->forwardButton, SIGNAL(clicked()), q, SLOT(_q_navigateForward()));
 
-    qFileDialogUi->toParentButton->setIcon(q->style()->standardIcon(QStyle::SP_FileDialogToParent, 0, q));
+    qFileDialogUi->toParentButton->setIcon(q->style()->standardIcon(QStyle::SP_FileDialogToParent, nullptr, q));
     qFileDialogUi->toParentButton->setAutoRaise(true);
     qFileDialogUi->toParentButton->setEnabled(false);
     QObject::connect(qFileDialogUi->toParentButton, SIGNAL(clicked()), q, SLOT(_q_navigateToParent()));
 
-    qFileDialogUi->listModeButton->setIcon(q->style()->standardIcon(QStyle::SP_FileDialogListView, 0, q));
+    qFileDialogUi->listModeButton->setIcon(q->style()->standardIcon(QStyle::SP_FileDialogListView, nullptr, q));
     qFileDialogUi->listModeButton->setAutoRaise(true);
     qFileDialogUi->listModeButton->setDown(true);
     QObject::connect(qFileDialogUi->listModeButton, SIGNAL(clicked()), q, SLOT(_q_showListView()));
 
-    qFileDialogUi->detailModeButton->setIcon(q->style()->standardIcon(QStyle::SP_FileDialogDetailedView, 0, q));
+    qFileDialogUi->detailModeButton->setIcon(q->style()->standardIcon(QStyle::SP_FileDialogDetailedView, nullptr, q));
     qFileDialogUi->detailModeButton->setAutoRaise(true);
     QObject::connect(qFileDialogUi->detailModeButton, SIGNAL(clicked()), q, SLOT(_q_showDetailsView()));
 
@@ -3365,7 +3365,7 @@ void QFileDialogPrivate::createToolButtons()
     qFileDialogUi->forwardButton->setFixedSize(toolSize);
     qFileDialogUi->toParentButton->setFixedSize(toolSize);
 
-    qFileDialogUi->newFolderButton->setIcon(q->style()->standardIcon(QStyle::SP_FileDialogNewFolder, 0, q));
+    qFileDialogUi->newFolderButton->setIcon(q->style()->standardIcon(QStyle::SP_FileDialogNewFolder, nullptr, q));
     qFileDialogUi->newFolderButton->setFixedSize(toolSize);
     qFileDialogUi->newFolderButton->setAutoRaise(true);
     qFileDialogUi->newFolderButton->setEnabled(false);
@@ -3602,7 +3602,7 @@ void QFileDialogPrivate::_q_showContextMenu(const QPoint &position)
     Q_UNUSED(position);
 #else
     Q_Q(QFileDialog);
-    QAbstractItemView *view = 0;
+    QAbstractItemView *view = nullptr;
     if (q->viewMode() == QFileDialog::Detail)
         view = qFileDialogUi->treeView;
     else

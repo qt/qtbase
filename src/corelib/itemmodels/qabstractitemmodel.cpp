@@ -61,7 +61,7 @@ Q_LOGGING_CATEGORY(lcCheckIndex, "qt.core.qabstractitemmodel.checkindex")
 QPersistentModelIndexData *QPersistentModelIndexData::create(const QModelIndex &index)
 {
     Q_ASSERT(index.isValid()); // we will _never_ insert an invalid index in the list
-    QPersistentModelIndexData *d = 0;
+    QPersistentModelIndexData *d = nullptr;
     QAbstractItemModel *model = const_cast<QAbstractItemModel *>(index.model());
     QHash<QModelIndex, QPersistentModelIndexData *> &indexes = model->d_func()->persistent.indexes;
     const auto it = indexes.constFind(index);
@@ -136,7 +136,7 @@ void QPersistentModelIndexData::destroy(QPersistentModelIndexData *data)
 */
 
 QPersistentModelIndex::QPersistentModelIndex()
-    : d(0)
+    : d(nullptr)
 {
 }
 
@@ -158,7 +158,7 @@ QPersistentModelIndex::QPersistentModelIndex(const QPersistentModelIndex &other)
 */
 
 QPersistentModelIndex::QPersistentModelIndex(const QModelIndex &index)
-    : d(0)
+    : d(nullptr)
 {
     if (index.isValid()) {
         d = QPersistentModelIndexData::create(index);
@@ -176,7 +176,7 @@ QPersistentModelIndex::~QPersistentModelIndex()
 {
     if (d && !d->ref.deref()) {
         QPersistentModelIndexData::destroy(d);
-        d = 0;
+        d = nullptr;
     }
 }
 
@@ -257,7 +257,7 @@ QPersistentModelIndex &QPersistentModelIndex::operator=(const QModelIndex &other
         d = QPersistentModelIndexData::create(other);
         if (d) d->ref.ref();
     } else {
-        d = 0;
+        d = nullptr;
     }
     return *this;
 }
@@ -344,7 +344,7 @@ void *QPersistentModelIndex::internalPointer() const
 {
     if (d)
         return d->index.internalPointer();
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -442,7 +442,7 @@ const QAbstractItemModel *QPersistentModelIndex::model() const
 {
     if (d)
         return d->index.model();
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -484,7 +484,7 @@ QDebug operator<<(QDebug dbg, const QPersistentModelIndex &idx)
 class QEmptyItemModel : public QAbstractItemModel
 {
 public:
-    explicit QEmptyItemModel(QObject *parent = 0) : QAbstractItemModel(parent) {}
+    explicit QEmptyItemModel(QObject *parent = nullptr) : QAbstractItemModel(parent) {}
     QModelIndex index(int, int, const QModelIndex &) const override { return QModelIndex(); }
     QModelIndex parent(const QModelIndex &) const override { return QModelIndex(); }
     int rowCount(const QModelIndex &) const override { return 0; }
@@ -1950,10 +1950,10 @@ QStringList QAbstractItemModel::mimeTypes() const
 QMimeData *QAbstractItemModel::mimeData(const QModelIndexList &indexes) const
 {
     if (indexes.count() <= 0)
-        return 0;
+        return nullptr;
     QStringList types = mimeTypes();
     if (types.isEmpty())
-        return 0;
+        return nullptr;
     QMimeData *data = new QMimeData();
     QString format = types.at(0);
     QByteArray encoded;

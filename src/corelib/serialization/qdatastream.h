@@ -316,7 +316,7 @@ template <typename Container>
 QDataStream &writeAssociativeContainer(QDataStream &s, const Container &c)
 {
     s << quint32(c.size());
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && QT_DEPRECATED_SINCE(5, 15)
     // Deserialization should occur in the reverse order.
     // Otherwise, value() will return the least recently inserted
     // value instead of the most recently inserted one.

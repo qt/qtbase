@@ -546,7 +546,7 @@ void QPainterPath::setElementPositionAt(int i, qreal x, qreal y)
     Constructs an empty QPainterPath object.
 */
 QPainterPath::QPainterPath() noexcept
-    : d_ptr(0)
+    : d_ptr(nullptr)
 {
 }
 
@@ -602,7 +602,7 @@ void QPainterPath::ensureData_helper()
     QPainterPath::Element e = { 0, 0, QPainterPath::MoveToElement };
     data->elements << e;
     d_ptr.reset(data);
-    Q_ASSERT(d_ptr != 0);
+    Q_ASSERT(d_ptr != nullptr);
 }
 
 /*!
@@ -1036,7 +1036,7 @@ void QPainterPath::arcMoveTo(const QRectF &rect, qreal angle)
         return;
 
     QPointF pt;
-    qt_find_ellipse_coords(rect, angle, 0, &pt, 0);
+    qt_find_ellipse_coords(rect, angle, 0, &pt, nullptr);
     moveTo(pt);
 }
 

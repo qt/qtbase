@@ -156,7 +156,7 @@ QT_BEGIN_NAMESPACE
     \sa setScreen()
 */
 QWindow::QWindow(QScreen *targetScreen)
-    : QObject(*new QWindowPrivate(), 0)
+    : QObject(*new QWindowPrivate(), nullptr)
     , QSurface(QSurface::Window)
 {
     Q_D(QWindow);
@@ -223,7 +223,7 @@ QWindow::~QWindow()
     // some cases end up becoming the focus window again. Clear it again
     // here as a workaround. See QTBUG-75326.
     if (QGuiApplicationPrivate::focus_window == this)
-        QGuiApplicationPrivate::focus_window = 0;
+        QGuiApplicationPrivate::focus_window = nullptr;
 }
 
 void QWindowPrivate::init(QScreen *targetScreen)
@@ -469,7 +469,7 @@ inline bool QWindowPrivate::windowRecreationRequired(QScreen *newScreen) const
 inline void QWindowPrivate::disconnectFromScreen()
 {
     if (topLevelScreen)
-        topLevelScreen = 0;
+        topLevelScreen = nullptr;
 }
 
 void QWindowPrivate::connectToScreen(QScreen *screen)
@@ -732,7 +732,7 @@ void QWindow::setParent(QWindow *parent)
         if (parent)
             parent->create();
 
-        d->platformWindow->setParent(parent ? parent->d_func()->platformWindow : 0);
+        d->platformWindow->setParent(parent ? parent->d_func()->platformWindow : nullptr);
     }
 
     QGuiApplicationPrivate::updateBlockedStatus(this);
@@ -744,7 +744,7 @@ void QWindow::setParent(QWindow *parent)
 bool QWindow::isTopLevel() const
 {
     Q_D(const QWindow);
-    return d->parentWindow == 0;
+    return d->parentWindow == nullptr;
 }
 
 /*!
@@ -2018,7 +2018,7 @@ void QWindow::setScreen(QScreen *newScreen)
     Q_D(QWindow);
     if (!newScreen)
         newScreen = QGuiApplication::primaryScreen();
-    d->setTopLevelScreen(newScreen, newScreen != 0);
+    d->setTopLevelScreen(newScreen, newScreen != nullptr);
 }
 
 /*!
@@ -2036,7 +2036,7 @@ void QWindow::setScreen(QScreen *newScreen)
   */
 QAccessibleInterface *QWindow::accessibleRoot() const
 {
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -2696,7 +2696,7 @@ QWindow *QWindow::fromWinId(WId id)
 {
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ForeignWindows)) {
         qWarning("QWindow::fromWinId(): platform plugin does not support foreign windows.");
-        return 0;
+        return nullptr;
     }
 
     QWindow *window = new QWindow;
@@ -2770,7 +2770,7 @@ void QWindow::setCursor(const QCursor &cursor)
 void QWindow::unsetCursor()
 {
     Q_D(QWindow);
-    d->setCursor(0);
+    d->setCursor(nullptr);
 }
 
 /*!

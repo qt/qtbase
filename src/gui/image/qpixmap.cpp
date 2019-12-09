@@ -94,7 +94,7 @@ void QPixmap::doInit(int w, int h, int type)
     if ((w > 0 && h > 0) || type == QPlatformPixmap::BitmapType)
         data = QPlatformPixmap::create(w, h, (QPlatformPixmap::PixelType) type);
     else
-        data = 0;
+        data = nullptr;
 }
 
 /*!
@@ -780,7 +780,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
 bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Qt::ImageConversionFlags flags)
 {
-    if (len == 0 || buf == 0) {
+    if (len == 0 || buf == nullptr) {
         data.reset();
         return false;
     }
@@ -1455,7 +1455,7 @@ int QPixmap::metric(PaintDeviceMetric metric) const
 */
 QPaintEngine *QPixmap::paintEngine() const
 {
-    return data ? data->paintEngine() : 0;
+    return data ? data->paintEngine() : nullptr;
 }
 
 /*!

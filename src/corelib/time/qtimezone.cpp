@@ -318,7 +318,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
 */
 
 QTimeZone::QTimeZone() noexcept
-    : d(0)
+    : d(nullptr)
 {
 }
 

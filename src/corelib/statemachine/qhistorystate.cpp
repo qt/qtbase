@@ -147,7 +147,7 @@ protected:
 
 QHistoryStatePrivate::QHistoryStatePrivate()
     : QAbstractStatePrivate(HistoryState)
-    , defaultTransition(0)
+    , defaultTransition(nullptr)
     , historyType(QHistoryState::ShallowHistory)
 {
 }

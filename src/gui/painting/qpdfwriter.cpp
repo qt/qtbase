@@ -55,7 +55,7 @@ public:
         : QObjectPrivate()
     {
         engine = new QPdfEngine();
-        output = 0;
+        output = nullptr;
         pdfVersion = QPdfWriter::PdfVersion_1_4;
     }
     ~QPdfWriterPrivate()

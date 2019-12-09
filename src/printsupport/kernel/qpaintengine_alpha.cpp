@@ -377,16 +377,16 @@ void QAlphaPaintEngine::cleanUp()
     delete d->m_picpainter;
     delete d->m_pic;
 
-    d->m_picpainter = 0;
-    d->m_pic = 0;
-    d->m_picengine = 0;
+    d->m_picpainter = nullptr;
+    d->m_pic = nullptr;
+    d->m_picengine = nullptr;
 }
 
 QAlphaPaintEnginePrivate::QAlphaPaintEnginePrivate()
     :   m_pass(0),
-        m_pic(0),
-        m_picengine(0),
-        m_picpainter(0),
+        m_pic(nullptr),
+        m_picengine(nullptr),
+        m_picpainter(nullptr),
         m_numberOfCachedRects(0),
         m_hasalpha(false),
         m_alphaPen(false),

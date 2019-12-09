@@ -205,7 +205,7 @@ QT_WARNING_POP
 }
 
 QDesktopWidget::QDesktopWidget()
-    : QWidget(*new QDesktopWidgetPrivate, 0, Qt::Desktop)
+    : QWidget(*new QDesktopWidgetPrivate, nullptr, Qt::Desktop)
 {
     Q_D(QDesktopWidget);
     setObjectName(QLatin1String("desktop"));

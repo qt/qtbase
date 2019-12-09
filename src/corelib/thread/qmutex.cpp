@@ -70,7 +70,7 @@ class QRecursiveMutexPrivate : public QMutexData
 {
 public:
     QRecursiveMutexPrivate()
-        : QMutexData(QMutex::Recursive), owner(0), count(0) {}
+        : QMutexData(QMutex::Recursive), owner(nullptr), count(0) {}
 
     // written to by the thread that first owns 'mutex';
     // read during attempts to acquire ownership of 'mutex' from any other thread:
@@ -186,7 +186,7 @@ public:
 */
 QMutex::QMutex(RecursionMode mode)
 {
-    d_ptr.storeRelaxed(mode == Recursive ? new QRecursiveMutexPrivate : 0);
+    d_ptr.storeRelaxed(mode == Recursive ? new QRecursiveMutexPrivate : nullptr);
 }
 
 /*!
@@ -799,7 +799,7 @@ inline void QRecursiveMutexPrivate::unlock() noexcept
     if (count > 0) {
         count--;
     } else {
-        owner.storeRelaxed(0);
+        owner.storeRelaxed(nullptr);
         mutex.QBasicMutex::unlock();
     }
 }

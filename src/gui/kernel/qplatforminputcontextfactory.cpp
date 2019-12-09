@@ -85,7 +85,7 @@ QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)
 #else
     Q_UNUSED(key);
 #endif
-    return 0;
+    return nullptr;
 }
 
 QPlatformInputContext *QPlatformInputContextFactory::create()

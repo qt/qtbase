@@ -105,9 +105,9 @@ public:
     struct Tab {
         inline Tab(const QIcon &ico, const QString &txt)
             : enabled(true) , shortcutId(0), text(txt), icon(ico),
-            leftWidget(0), rightWidget(0), lastTab(-1), dragOffset(0)
+            leftWidget(nullptr), rightWidget(nullptr), lastTab(-1), dragOffset(0)
 #if QT_CONFIG(animation)
-            , animation(0)
+            , animation(nullptr)
 #endif // animation
         {}
         bool operator==(const Tab &other) const { return &other == this; }

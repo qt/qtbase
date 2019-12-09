@@ -145,7 +145,7 @@ void QWidgetAction::setDefaultWidget(QWidget *widget)
 
     setVisible(!(widget->isHidden() && widget->testAttribute(Qt::WA_WState_ExplicitShowHide)));
     d->defaultWidget->hide();
-    d->defaultWidget->setParent(0);
+    d->defaultWidget->setParent(nullptr);
     d->defaultWidgetInUse = false;
     if (!isEnabled())
         d->defaultWidget->setEnabled(false);
@@ -176,7 +176,7 @@ QWidget *QWidgetAction::requestWidget(QWidget *parent)
     QWidget *w = createWidget(parent);
     if (!w) {
         if (d->defaultWidgetInUse || !d->defaultWidget)
-            return 0;
+            return nullptr;
         d->defaultWidget->setParent(parent);
         d->defaultWidgetInUse = true;
         return d->defaultWidget;
@@ -202,7 +202,7 @@ void QWidgetAction::releaseWidget(QWidget *widget)
 
     if (widget == d->defaultWidget) {
         d->defaultWidget->hide();
-        d->defaultWidget->setParent(0);
+        d->defaultWidget->setParent(nullptr);
         d->defaultWidgetInUse = false;
         return;
     }
@@ -250,7 +250,7 @@ bool QWidgetAction::eventFilter(QObject *obj, QEvent *event)
 QWidget *QWidgetAction::createWidget(QWidget *parent)
 {
     Q_UNUSED(parent)
-    return 0;
+    return nullptr;
 }
 
 /*!

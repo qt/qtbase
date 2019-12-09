@@ -508,6 +508,31 @@ struct DefinedTypesFilter {
     Destructs this object.
 */
 
+/*!
+    \fn template<typename T> QMetaType QMetaType::fromType()
+    \since 5.15
+
+    Returns the QMetaType corresponding to the type in the template parameter.
+*/
+
+/*! \fn bool operator==(const QMetaType &a, const QMetaType &b)
+    \since 5.15
+    \relates QMetaType
+    \overload
+
+    Returns \c true if the QMetaType \a a represents the same type
+    as the QMetaType \a b, otherwise returns \c false.
+*/
+
+/*! \fn bool operator!=(const QMetaType &a, const QMetaType &c)
+    \since 5.15
+    \relates QMetaType
+    \overload
+
+    Returns \c true if the QMetaType \a a represents a difference type
+    than the QMetaType \a b, otherwise returns \c false.
+*/
+
 #define QT_ADD_STATIC_METATYPE(MetaTypeName, MetaTypeId, RealName) \
     { #RealName, sizeof(#RealName) - 1, MetaTypeId },
 
@@ -932,7 +957,7 @@ constexpr MetaTypeOffsets<QtPrivate::Indexes<QMetaType::HighestInternalId + 1>::
     pointer if no matching type was found. The returned pointer must not be
     deleted.
 
-    \sa type(), isRegistered(), Type
+    \sa type(), isRegistered(), Type, name()
 */
 const char *QMetaType::typeName(int typeId)
 {
@@ -950,6 +975,20 @@ const char *QMetaType::typeName(int typeId)
             : nullptr;
 
 #undef QT_METATYPE_TYPEID_TYPENAME_CONVERTER
+}
+
+/*!
+    \since 5.15
+
+    Returns the type name associated with this QMetaType, or a null
+    pointer if no matching type was found. The returned pointer must not be
+    deleted.
+
+    \sa typeName()
+*/
+QByteArray QMetaType::name() const
+{
+    return QMetaType::typeName(m_typeId);
 }
 
 /*
@@ -1115,8 +1154,8 @@ static int registerNormalizedType(const NS(QByteArray) &normalizedTypeName,
             QCustomTypeInfo inf;
             inf.typeName = normalizedTypeName;
 #ifndef QT_NO_DATASTREAM
-            inf.loadOp = 0;
-            inf.saveOp = 0;
+            inf.loadOp = nullptr;
+            inf.saveOp = nullptr;
 #endif
             inf.alias = -1;
             inf.typedConstructor = typedConstructor;
@@ -1957,7 +1996,7 @@ public:
                 return Q_LIKELY(qMetaTypeWidgetsHelper)
                     ? qMetaTypeWidgetsHelper[type - QMetaType::FirstWidgetsType].metaObject
                     : nullptr;
-            return 0;
+            return nullptr;
         }
     };
 
@@ -2216,6 +2255,8 @@ QMetaType QMetaType::typeInfo(const int type)
      \since 5.0
 
      Constructs a QMetaType object that contains all information about type \a typeId.
+
+     \note: The default parameter was added in Qt 5.15
 */
 QMetaType::QMetaType(const int typeId)
     : m_typeId(typeId)

@@ -90,7 +90,7 @@ QTreeWidgetItemIterator::QTreeWidgetItemIterator(const QTreeWidgetItemIterator &
 */
 
 QTreeWidgetItemIterator::QTreeWidgetItemIterator(QTreeWidget *widget, IteratorFlags flags)
-: current(0), flags(flags)
+: current(nullptr), flags(flags)
 {
     Q_ASSERT(widget);
     QTreeModel *model = qobject_cast<QTreeModel*>(widget->model());
@@ -266,7 +266,7 @@ bool QTreeWidgetItemIterator::matchesFlags(const QTreeWidgetItem *item) const
 QTreeWidgetItem* QTreeWidgetItemIteratorPrivate::nextSibling(const QTreeWidgetItem* item) const
 {
     Q_ASSERT(item);
-    QTreeWidgetItem *next = 0;
+    QTreeWidgetItem *next = nullptr;
     if (QTreeWidgetItem *par = item->parent()) {
         int i = par->indexOfChild(const_cast<QTreeWidgetItem*>(item));
         next = par->child(i + 1);
@@ -280,9 +280,9 @@ QTreeWidgetItem* QTreeWidgetItemIteratorPrivate::nextSibling(const QTreeWidgetIt
 
 QTreeWidgetItem *QTreeWidgetItemIteratorPrivate::next(const QTreeWidgetItem *current)
 {
-    if (!current) return 0;
+    if (!current) return nullptr;
 
-    QTreeWidgetItem *next = 0;
+    QTreeWidgetItem *next = nullptr;
     if (current->childCount()) {
         // walk the child
         m_parentIndex.push(m_currentIndex);
@@ -307,9 +307,9 @@ QTreeWidgetItem *QTreeWidgetItemIteratorPrivate::next(const QTreeWidgetItem *cur
 
 QTreeWidgetItem *QTreeWidgetItemIteratorPrivate::previous(const QTreeWidgetItem *current)
 {
-    if (!current) return 0;
+    if (!current) return nullptr;
 
-    QTreeWidgetItem *prev = 0;
+    QTreeWidgetItem *prev = nullptr;
     // walk the previous sibling
     QTreeWidgetItem *parent = current->parent();
     prev = parent ? parent->child(m_currentIndex - 1)
@@ -347,7 +347,7 @@ void QTreeWidgetItemIteratorPrivate::ensureValidIterator(const QTreeWidgetItem *
     // we need to adjust the iterator.
     if (nextItem == itemToBeRemoved) {
         QTreeWidgetItem *parent = nextItem;
-        nextItem = 0;
+        nextItem = nullptr;
         while (parent && !nextItem) {
             nextItem = nextSibling(parent);
             parent = parent->parent();
@@ -358,7 +358,7 @@ void QTreeWidgetItemIteratorPrivate::ensureValidIterator(const QTreeWidgetItem *
             if (!(q->matchesFlags(nextItem))) ++(*q);
         } else {
             // set it to null.
-            q->current = 0;
+            q->current = nullptr;
             m_parentIndex.clear();
             return;
         }

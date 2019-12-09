@@ -225,7 +225,7 @@ static StrokeLine strokeLine(int strokeSelection)
         break;
     default:
         Q_ASSERT(false);
-        stroke = 0;
+        stroke = nullptr;
     }
     return stroke;
 }
@@ -252,8 +252,8 @@ void QCosmeticStroker::setup()
     const QVector<qreal> &penPattern = state->lastPen.dashPattern();
     if (penPattern.isEmpty()) {
         Q_ASSERT(!pattern && !reversePattern);
-        pattern = 0;
-        reversePattern = 0;
+        pattern = nullptr;
+        reversePattern = nullptr;
         patternLength = 0;
         patternSize = 0;
     } else {

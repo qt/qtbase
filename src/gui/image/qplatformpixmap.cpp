@@ -266,7 +266,7 @@ QImage QPlatformPixmap::toImage(const QRect &rect) const
 
 QImage* QPlatformPixmap::buffer()
 {
-    return 0;
+    return nullptr;
 }
 
 

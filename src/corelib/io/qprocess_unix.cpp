@@ -338,11 +338,11 @@ static char **_q_dupEnvironment(const QProcessEnvironmentPrivate::Map &environme
 {
     *envc = 0;
     if (environment.isEmpty())
-        return 0;
+        return nullptr;
 
     char **envp = new char *[environment.count() + 2];
-    envp[environment.count()] = 0;
-    envp[environment.count() + 1] = 0;
+    envp[environment.count()] = nullptr;
+    envp[environment.count() + 1] = nullptr;
 
     auto it = environment.constBegin();
     const auto end = environment.constEnd();
@@ -390,7 +390,7 @@ void QProcessPrivate::startProcess()
     // Create argument list with right number of elements, and set the final
     // one to 0.
     char **argv = new char *[arguments.count() + 2];
-    argv[arguments.count() + 1] = 0;
+    argv[arguments.count() + 1] = nullptr;
 
     // Encode the program name.
     QByteArray encodedProgramName = QFile::encodeName(program);
@@ -437,13 +437,13 @@ void QProcessPrivate::startProcess()
 
     // Duplicate the environment.
     int envc = 0;
-    char **envp = 0;
+    char **envp = nullptr;
     if (environment.d.constData()) {
         envp = _q_dupEnvironment(environment.d.constData()->vars, &envc);
     }
 
     // Encode the working directory if it's non-empty, otherwise just pass 0.
-    const char *workingDirPtr = 0;
+    const char *workingDirPtr = nullptr;
     QByteArray encodedWorkingDirectory;
     if (!workingDirectory.isEmpty()) {
         encodedWorkingDirectory = QFile::encodeName(workingDirectory);
@@ -596,7 +596,7 @@ bool QProcessPrivate::processStarted(QString *errorMessage)
     if (startupSocketNotifier) {
         startupSocketNotifier->setEnabled(false);
         startupSocketNotifier->deleteLater();
-        startupSocketNotifier = 0;
+        startupSocketNotifier = nullptr;
     }
     qt_safe_close(childStartedPipe[0]);
     childStartedPipe[0] = -1;
@@ -889,7 +889,7 @@ bool QProcessPrivate::waitForDeadChild()
     crashed = info.code != CLD_EXITED;
 
     delete deathNotifier;
-    deathNotifier = 0;
+    deathNotifier = nullptr;
 
     EINTR_LOOP(ret, forkfd_close(forkfd));
     forkfd = -1; // Child is dead, don't try to kill it anymore
@@ -935,7 +935,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         struct sigaction noaction;
         memset(&noaction, 0, sizeof(noaction));
         noaction.sa_handler = SIG_IGN;
-        ::sigaction(SIGPIPE, &noaction, 0);
+        ::sigaction(SIGPIPE, &noaction, nullptr);
 
         ::setsid();
 
@@ -964,7 +964,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             char **argv = new char *[arguments.size() + 2];
             for (int i = 0; i < arguments.size(); ++i)
                 argv[i + 1] = ::strdup(QFile::encodeName(arguments.at(i)).constData());
-            argv[arguments.size() + 1] = 0;
+            argv[arguments.size() + 1] = nullptr;
 
             // Duplicate the environment.
             int envc = 0;
@@ -991,7 +991,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             struct sigaction noaction;
             memset(&noaction, 0, sizeof(noaction));
             noaction.sa_handler = SIG_IGN;
-            ::sigaction(SIGPIPE, &noaction, 0);
+            ::sigaction(SIGPIPE, &noaction, nullptr);
 
             // '\1' means execv failed
             char c = '\1';
@@ -1002,7 +1002,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
             struct sigaction noaction;
             memset(&noaction, 0, sizeof(noaction));
             noaction.sa_handler = SIG_IGN;
-            ::sigaction(SIGPIPE, &noaction, 0);
+            ::sigaction(SIGPIPE, &noaction, nullptr);
 
             // '\2' means internal error
             char c = '\2';

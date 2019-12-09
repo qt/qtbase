@@ -1578,7 +1578,7 @@ QAbstractFileEngine::Iterator *QResourceFileEngine::beginEntryList(QDir::Filters
 */
 QAbstractFileEngine::Iterator *QResourceFileEngine::endEntryList()
 {
-    return 0;
+    return nullptr;
 }
 
 bool QResourceFileEngine::extension(Extension extension, const ExtensionOption *option, ExtensionReturn *output)
@@ -1588,7 +1588,7 @@ bool QResourceFileEngine::extension(Extension extension, const ExtensionOption *
         const MapExtensionOption *options = (const MapExtensionOption*)(option);
         MapExtensionReturn *returnValue = static_cast<MapExtensionReturn*>(output);
         returnValue->address = d->map(options->offset, options->size, options->flags);
-        return (returnValue->address != 0);
+        return (returnValue->address != nullptr);
     }
     if (extension == UnMapExtension) {
         const UnMapExtensionOption *options = (const UnMapExtensionOption*)option;
@@ -1617,7 +1617,7 @@ uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::Memory
     if (offset < 0 || size <= 0 || !resource.isValid() ||
             add_overflow(offset, size, &end) || end > max) {
         q->setError(QFile::UnspecifiedError, QString());
-        return 0;
+        return nullptr;
     }
 
     const uchar *address = resource.data();

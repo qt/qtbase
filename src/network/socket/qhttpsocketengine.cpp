@@ -216,7 +216,7 @@ void QHttpSocketEngine::close()
     if (d->socket) {
         d->socket->close();
         delete d->socket;
-        d->socket = 0;
+        d->socket = nullptr;
     }
 }
 
@@ -586,7 +586,7 @@ void QHttpSocketEngine::slotSocketReadNotification()
     }
 
     int statusCode = d->reply->statusCode();
-    QAuthenticatorPrivate *priv = 0;
+    QAuthenticatorPrivate *priv = nullptr;
     if (statusCode == 200) {
         d->state = Connected;
         setLocalAddress(d->socket->localAddress());
@@ -829,8 +829,8 @@ QHttpSocketEnginePrivate::QHttpSocketEnginePrivate()
     , credentialsSent(false)
     , pendingResponseData(0)
 {
-    socket = 0;
-    reply = 0;
+    socket = nullptr;
+    reply = nullptr;
     state = QHttpSocketEngine::None;
 }
 
@@ -843,15 +843,15 @@ QAbstractSocketEngine *QHttpSocketEngineHandler::createSocketEngine(QAbstractSoc
                                                                     QObject *parent)
 {
     if (socketType != QAbstractSocket::TcpSocket)
-        return 0;
+        return nullptr;
 
     // proxy type must have been resolved by now
     if (proxy.type() != QNetworkProxy::HttpProxy)
-        return 0;
+        return nullptr;
 
     // we only accept active sockets
     if (!qobject_cast<QAbstractSocket *>(parent))
-        return 0;
+        return nullptr;
 
     QHttpSocketEngine *engine = new QHttpSocketEngine(parent);
     engine->setProxy(proxy);
@@ -860,7 +860,7 @@ QAbstractSocketEngine *QHttpSocketEngineHandler::createSocketEngine(QAbstractSoc
 
 QAbstractSocketEngine *QHttpSocketEngineHandler::createSocketEngine(qintptr, QObject *)
 {
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

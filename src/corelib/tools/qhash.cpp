@@ -1807,6 +1807,18 @@ uint qHash(long double key, uint seed) noexcept
     \sa insertMulti()
 */
 
+/*! \fn template <class Key, class T> void QHash<Key, T>::insert(const QHash &other)
+    \since 5.15
+
+    Inserts all the items in the \a other hash into this hash.
+
+    If a key is common to both hashes, its value will be replaced with the
+    value stored in \a other.
+
+    \note If \a other contains multiple entries with the same key then the
+    final value of the key is undefined.
+*/
+
 /*! \fn template <class Key, class T> QHash<Key, T>::iterator QHash<Key, T>::insertMulti(const Key &key, const T &value)
 
     Inserts a new item with the \a key and a value of \a value.

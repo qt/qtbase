@@ -76,7 +76,7 @@ static QWindow* topLevelAt(const QPoint &pos)
         if (w->isVisible() && w->handle() && w->geometry().contains(pos) && !qobject_cast<QShapedPixmapWindow*>(w))
             return w;
     }
-    return 0;
+    return nullptr;
 }
 
 /*!

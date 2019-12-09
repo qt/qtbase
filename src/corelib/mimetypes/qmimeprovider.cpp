@@ -130,7 +130,7 @@ bool QMimeBinaryProvider::CacheFile::reload()
     if (file.isOpen()) {
         file.close();
     }
-    data = 0;
+    data = nullptr;
     return load();
 }
 
@@ -306,7 +306,7 @@ bool QMimeBinaryProvider::matchMagicRule(QMimeBinaryProvider::CacheFile *cacheFi
         const int valueLength = cacheFile->getUint32(off + 12);
         const int valueOffset = cacheFile->getUint32(off + 16);
         const int maskOffset = cacheFile->getUint32(off + 20);
-        const char *mask = maskOffset ? cacheFile->getCharStar(maskOffset) : NULL;
+        const char *mask = maskOffset ? cacheFile->getCharStar(maskOffset) : nullptr;
 
         if (!QMimeMagicRule::matchSubstring(dataPtr, dataSize, rangeStart, rangeLength, valueLength, cacheFile->getCharStar(valueOffset), mask))
             continue;

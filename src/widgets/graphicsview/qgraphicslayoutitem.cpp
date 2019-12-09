@@ -105,7 +105,7 @@ static void normalizeHints(qreal &minimum, qreal &preferred, qreal &maximum, qre
     \internal
 */
 QGraphicsLayoutItemPrivate::QGraphicsLayoutItemPrivate(QGraphicsLayoutItem *par, bool layout)
-    : parent(par), userSizeHints(0), isLayout(layout), ownedByLayout(false), graphicsItem(0)
+    : parent(par), userSizeHints(nullptr), isLayout(layout), ownedByLayout(false), graphicsItem(nullptr)
 {
 }
 

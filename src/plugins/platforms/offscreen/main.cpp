@@ -57,7 +57,7 @@ QPlatformIntegration *QOffscreenIntegrationPlugin::create(const QString& system,
     if (!system.compare(QLatin1String("offscreen"), Qt::CaseInsensitive))
         return QOffscreenIntegration::createOffscreenIntegration();
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

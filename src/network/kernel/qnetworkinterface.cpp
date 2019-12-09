@@ -627,7 +627,7 @@ bool QNetworkAddressEntry::isPermanent() const
     Constructs an empty network interface object.
 */
 QNetworkInterface::QNetworkInterface()
-    : d(0)
+    : d(nullptr)
 {
 }
 

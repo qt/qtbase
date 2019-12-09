@@ -97,10 +97,10 @@ public:
         if (t == QAccessible::ActionInterface) {
             return static_cast<QAccessibleActionInterface*>(this);
         }
-        return 0;
+        return nullptr;
     }
 
-    QObject *object() const override { return 0; }
+    QObject *object() const override { return nullptr; }
     QAccessible::Role role() const override { return QAccessible::PageTab; }
     QAccessible::State state() const override {
         if (!isValid()) {
@@ -129,7 +129,7 @@ public:
         return false;
     }
 
-    QAccessibleInterface *childAt(int, int) const override { return 0; }
+    QAccessibleInterface *childAt(int, int) const override { return nullptr; }
     int childCount() const override { return 0; }
     int indexOfChild(const QAccessibleInterface *) const override  { return -1; }
 
@@ -168,7 +168,7 @@ public:
     QAccessibleInterface *parent() const override {
         return QAccessible::queryAccessibleInterface(m_parent.data());
     }
-    QAccessibleInterface *child(int) const override { return 0; }
+    QAccessibleInterface *child(int) const override { return nullptr; }
 
     // action interface
     QStringList actionNames() const override
@@ -237,7 +237,7 @@ QAccessibleInterface* QAccessibleTabBar::child(int index) const
             return QAccessible::queryAccessibleInterface(tabBar()->d_func()->rightB);
         }
     }
-    return 0;
+    return nullptr;
 }
 
 int QAccessibleTabBar::indexOfChild(const QAccessibleInterface *child) const
@@ -314,7 +314,7 @@ QAccessibleInterface *QAccessibleComboBox::child(int index) const
     } else if (index == 1 && comboBox()->isEditable()) {
         return QAccessible::queryAccessibleInterface(comboBox()->lineEdit());
     }
-    return 0;
+    return nullptr;
 }
 
 int QAccessibleComboBox::childCount() const
@@ -327,7 +327,7 @@ QAccessibleInterface *QAccessibleComboBox::childAt(int x, int y) const
 {
     if (comboBox()->isEditable() && comboBox()->lineEdit()->rect().contains(x, y))
         return child(1);
-    return 0;
+    return nullptr;
 }
 
 int QAccessibleComboBox::indexOfChild(const QAccessibleInterface *child) const
@@ -432,7 +432,7 @@ bool QAccessibleAbstractScrollArea::isValid() const
 QAccessibleInterface *QAccessibleAbstractScrollArea::childAt(int x, int y) const
 {
     if (!abstractScrollArea()->isVisible())
-        return 0;
+        return nullptr;
 
     for (int i = 0; i < childCount(); ++i) {
         QPoint wpos = accessibleChildren().at(i)->mapToGlobal(QPoint(0, 0));
@@ -440,7 +440,7 @@ QAccessibleInterface *QAccessibleAbstractScrollArea::childAt(int x, int y) const
         if (rect.contains(x, y))
             return child(i);
     }
-    return 0;
+    return nullptr;
 }
 
 QAbstractScrollArea *QAccessibleAbstractScrollArea::abstractScrollArea() const

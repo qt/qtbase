@@ -138,7 +138,7 @@ class QInputDialogDoubleSpinBox : public QDoubleSpinBox
     Q_OBJECT
 
 public:
-    QInputDialogDoubleSpinBox(QWidget *parent = 0)
+    QInputDialogDoubleSpinBox(QWidget *parent = nullptr)
         : QDoubleSpinBox(parent) {
         connect(lineEdit(), SIGNAL(textChanged(QString)), this, SLOT(notifyTextChanged()));
         connect(this, SIGNAL(editingFinished()), this, SLOT(notifyTextChanged()));
@@ -171,7 +171,7 @@ private:
 class QInputDialogListView : public QListView
 {
 public:
-    QInputDialogListView(QWidget *parent = 0) : QListView(parent) {}
+    QInputDialogListView(QWidget *parent = nullptr) : QListView(parent) {}
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const override
     {
         if (query == Qt::ImEnabled)
@@ -223,8 +223,8 @@ public:
 };
 
 QInputDialogPrivate::QInputDialogPrivate()
-    : label(0), buttonBox(0), lineEdit(0), plainTextEdit(0), intSpinBox(0), doubleSpinBox(0),
-      comboBox(0), listView(0), inputWidget(0), mainLayout(0)
+    : label(nullptr), buttonBox(nullptr), lineEdit(nullptr), plainTextEdit(nullptr), intSpinBox(nullptr), doubleSpinBox(nullptr),
+      comboBox(nullptr), listView(nullptr), inputWidget(nullptr), mainLayout(nullptr)
 {
 }
 
@@ -1174,7 +1174,7 @@ void QInputDialog::done(int result)
     if (d->receiverToDisconnectOnClose) {
         disconnect(this, signalForMember(d->memberToDisconnectOnClose),
                    d->receiverToDisconnectOnClose, d->memberToDisconnectOnClose);
-        d->receiverToDisconnectOnClose = 0;
+        d->receiverToDisconnectOnClose = nullptr;
     }
     d->memberToDisconnectOnClose.clear();
 }

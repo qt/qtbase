@@ -54,7 +54,7 @@ QPlatformIntegration *QPlatformIntegrationPlugin::create(const QString &key, con
 {
     Q_UNUSED(key)
     Q_UNUSED(paramList);
-    return 0;
+    return nullptr;
 }
 
 QPlatformIntegration *QPlatformIntegrationPlugin::create(const QString &key, const QStringList &paramList, int &argc, char **argv)

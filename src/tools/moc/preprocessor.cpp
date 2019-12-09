@@ -943,7 +943,7 @@ int PP_Expression::primary_expression()
         test(PP_RPAREN);
     } else {
         next();
-        value = lexem().toInt(0, 0);
+        value = lexem().toInt(nullptr, 0);
     }
     return value;
 }

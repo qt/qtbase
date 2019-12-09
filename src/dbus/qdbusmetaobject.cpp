@@ -138,7 +138,7 @@ static int registerComplexDBusType(const char *typeName)
         static void *construct(void *, const void *)
         {
             qFatal("Cannot construct placeholder type QDBusRawType");
-            return 0;
+            return nullptr;
         }
     };
 
@@ -147,7 +147,7 @@ static int registerComplexDBusType(const char *typeName)
                                              QDBusRawTypeHandler::construct,
                                              sizeof(void *),
                                              QMetaType::MovableType,
-                                             0);
+                                             nullptr);
 }
 
 Q_DBUS_EXPORT bool qt_dbus_metaobject_skip_annotations = false;
@@ -544,9 +544,9 @@ void QDBusMetaObjectGenerator::write(QDBusMetaObject *obj)
 
     // put the metaobject together
     obj->d.data = uint_data;
-    obj->d.relatedMetaObjects = 0;
-    obj->d.static_metacall = 0;
-    obj->d.extradata = 0;
+    obj->d.relatedMetaObjects = nullptr;
+    obj->d.static_metacall = nullptr;
+    obj->d.extradata = nullptr;
     obj->d.stringdata = reinterpret_cast<const uint *>(string_data);
     obj->d.superdata = &QDBusAbstractInterface::staticMetaObject;
 }
@@ -587,7 +587,7 @@ QDBusMetaObject *QDBusMetaObject::createMetaObject(const QString &interface, con
     error = QDBusError();
     QDBusIntrospection::Interfaces parsed = QDBusIntrospection::parseInterfaces(xml);
 
-    QDBusMetaObject *we = 0;
+    QDBusMetaObject *we = nullptr;
     QDBusIntrospection::Interfaces::ConstIterator it = parsed.constBegin();
     QDBusIntrospection::Interfaces::ConstIterator end = parsed.constEnd();
     for ( ; it != end; ++it) {
@@ -621,7 +621,7 @@ QDBusMetaObject *QDBusMetaObject::createMetaObject(const QString &interface, con
     if (parsed.isEmpty()) {
         // object didn't return introspection
         we = new QDBusMetaObject;
-        QDBusMetaObjectGenerator generator(interface, 0);
+        QDBusMetaObjectGenerator generator(interface, nullptr);
         generator.write(we);
         we->cached = false;
         return we;
@@ -651,7 +651,7 @@ QDBusMetaObject *QDBusMetaObject::createMetaObject(const QString &interface, con
     error = QDBusError(QDBusError::UnknownInterface,
         QLatin1String("Interface '%1' was not found")
                        .arg(interface));
-    return 0;
+    return nullptr;
 }
 
 QDBusMetaObject::QDBusMetaObject()
@@ -670,7 +670,7 @@ const int *QDBusMetaObject::inputTypesForMethod(int id) const
         int handle = priv(d.data)->methodDBusData + id*intsPerMethod;
         return reinterpret_cast<const int*>(d.data + d.data[handle]);
     }
-    return 0;
+    return nullptr;
 }
 
 const int *QDBusMetaObject::outputTypesForMethod(int id) const
@@ -680,7 +680,7 @@ const int *QDBusMetaObject::outputTypesForMethod(int id) const
         int handle = priv(d.data)->methodDBusData + id*intsPerMethod;
         return reinterpret_cast<const int*>(d.data + d.data[handle + 1]);
     }
-    return 0;
+    return nullptr;
 }
 
 int QDBusMetaObject::propertyMetaType(int id) const

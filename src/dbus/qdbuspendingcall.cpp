@@ -182,7 +182,7 @@ bool QDBusPendingCallPrivate::setReplyCallback(QObject *target, const char *memb
     if (metaTypes.at(count) == QDBusMetaTypeId::message())
         --count;
 
-    setMetaTypes(count, count ? metaTypes.constData() + 1 : 0);
+    setMetaTypes(count, count ? metaTypes.constData() + 1 : nullptr);
     return true;
 }
 
@@ -469,10 +469,10 @@ QDBusPendingCall QDBusPendingCall::fromError(const QDBusError &error)
 */
 QDBusPendingCall QDBusPendingCall::fromCompletedCall(const QDBusMessage &msg)
 {
-    QDBusPendingCallPrivate *d = 0;
+    QDBusPendingCallPrivate *d = nullptr;
     if (msg.type() == QDBusMessage::ErrorMessage ||
         msg.type() == QDBusMessage::ReplyMessage) {
-        d = new QDBusPendingCallPrivate(QDBusMessage(), 0);
+        d = new QDBusPendingCallPrivate(QDBusMessage(), nullptr);
         d->replyMessage = msg;
         d->ref.storeRelaxed(1);
     }

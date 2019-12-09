@@ -100,7 +100,7 @@ QT_BEGIN_NAMESPACE
 */
 QEventTransitionPrivate::QEventTransitionPrivate()
 {
-    object = 0;
+    object = nullptr;
     eventType = QEvent::None;
     registered = false;
 }

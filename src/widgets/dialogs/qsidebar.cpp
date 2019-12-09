@@ -73,7 +73,7 @@ void QSideBarDelegate::initStyleOption(QStyleOptionViewItem *option,
 
     Example usage: File dialog sidebar and combo box
  */
-QUrlModel::QUrlModel(QObject *parent) : QStandardItemModel(parent), showFullPath(false), fileSystemModel(0)
+QUrlModel::QUrlModel(QObject *parent) : QStandardItemModel(parent), showFullPath(false), fileSystemModel(nullptr)
 {
 }
 
@@ -298,7 +298,7 @@ void QUrlModel::setFileSystemModel(QFileSystemModel *model)
 {
     if (model == fileSystemModel)
         return;
-    if (fileSystemModel != 0) {
+    if (fileSystemModel != nullptr) {
         disconnect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
             this, SLOT(dataChanged(QModelIndex,QModelIndex)));
         disconnect(model, SIGNAL(layoutChanged()),
@@ -307,7 +307,7 @@ void QUrlModel::setFileSystemModel(QFileSystemModel *model)
             this, SLOT(layoutChanged()));
     }
     fileSystemModel = model;
-    if (fileSystemModel != 0) {
+    if (fileSystemModel != nullptr) {
         connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
             this, SLOT(dataChanged(QModelIndex,QModelIndex)));
         connect(model, SIGNAL(layoutChanged()),

@@ -85,7 +85,7 @@ QAbstractSocketEnginePrivate::QAbstractSocketEnginePrivate()
     , peerPort(0)
     , inboundStreamCount(0)
     , outboundStreamCount(0)
-    , receiver(0)
+    , receiver(nullptr)
 {
 }
 
@@ -104,7 +104,7 @@ QAbstractSocketEngine *QAbstractSocketEngine::createSocketEngine(QAbstractSocket
 #ifndef QT_NO_NETWORKPROXY
     // proxy type must have been resolved by now
     if (proxy.type() == QNetworkProxy::DefaultProxy)
-        return 0;
+        return nullptr;
 #endif
 
     QMutexLocker locker(&socketHandlers()->mutex);
@@ -116,7 +116,7 @@ QAbstractSocketEngine *QAbstractSocketEngine::createSocketEngine(QAbstractSocket
 #ifndef QT_NO_NETWORKPROXY
     // only NoProxy can have reached here
     if (proxy.type() != QNetworkProxy::NoProxy)
-        return 0;
+        return nullptr;
 #endif
 
     return new QNativeSocketEngine(parent);

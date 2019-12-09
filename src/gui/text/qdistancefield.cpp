@@ -850,7 +850,7 @@ QDistanceFieldData::QDistanceFieldData(const QDistanceFieldData &other)
     if (nbytes && other.data)
         data = (uchar *)memcpy(malloc(nbytes), other.data, nbytes);
     else
-        data = 0;
+        data = nullptr;
 }
 
 QDistanceFieldData::~QDistanceFieldData()
@@ -1046,7 +1046,7 @@ const uchar *QDistanceField::constBits() const
 uchar *QDistanceField::scanLine(int i)
 {
     if (isNull())
-        return 0;
+        return nullptr;
 
     Q_ASSERT(i >= 0 && i < d->height);
     return d->data + i * d->width;
@@ -1055,7 +1055,7 @@ uchar *QDistanceField::scanLine(int i)
 const uchar *QDistanceField::scanLine(int i) const
 {
     if (isNull())
-        return 0;
+        return nullptr;
 
     Q_ASSERT(i >= 0 && i < d->height);
     return d->data + i * d->width;
@@ -1064,7 +1064,7 @@ const uchar *QDistanceField::scanLine(int i) const
 const uchar *QDistanceField::constScanLine(int i) const
 {
     if (isNull())
-        return 0;
+        return nullptr;
 
     Q_ASSERT(i >= 0 && i < d->height);
     return d->data + i * d->width;

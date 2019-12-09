@@ -93,7 +93,7 @@ static int nullErrorHandler(Display *dpy, XErrorEvent *err)
 static int ioErrorHandler(Display *dpy)
 {
     xcb_connection_t *conn = XGetXCBConnection(dpy);
-    if (conn != NULL) {
+    if (conn != nullptr) {
         /* Print a message with a textual description of the error */
         int code = xcb_connection_has_error(conn);
         const char *str = "Unknown error";
@@ -134,7 +134,7 @@ QXcbBasicConnection::QXcbBasicConnection(const char *displayName)
 
     xcb_extension_t *extensions[] = {
         &xcb_shm_id, &xcb_xfixes_id, &xcb_randr_id, &xcb_shape_id, &xcb_sync_id,
-        &xcb_render_id, &xcb_xkb_id, &xcb_input_id, 0
+        &xcb_render_id, &xcb_xkb_id, &xcb_input_id, nullptr
     };
 
     for (xcb_extension_t **ext_it = extensions; *ext_it; ++ext_it)

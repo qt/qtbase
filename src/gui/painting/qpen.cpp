@@ -254,7 +254,7 @@ public:
     {
         if (!pen->ref.deref())
             delete pen;
-        pen = 0;
+        pen = nullptr;
     }
 };
 

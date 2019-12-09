@@ -278,7 +278,7 @@ bool QHttpProtocolHandler::sendRequest()
             m_reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
             m_channel->allDone();
             m_connection->preConnectFinished(); // will only decrease the counter
-            m_reply = 0; // so we can reuse this channel
+            m_reply = nullptr; // so we can reuse this channel
             return true; // we have a working connection and are done
         }
 
@@ -373,7 +373,7 @@ bool QHttpProtocolHandler::sendRequest()
                 // premature eof happened
                 m_connection->d_func()->emitReplyError(m_socket, m_reply, QNetworkReply::UnknownNetworkError);
                 return false;
-            } else if (readPointer == 0 || currentReadSize == 0) {
+            } else if (readPointer == nullptr || currentReadSize == 0) {
                 // nothing to read currently, break the loop
                 break;
             } else {

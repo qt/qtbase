@@ -142,7 +142,7 @@ void QColumnView::setResizeGripsVisible(bool visible)
             connect(grip, SIGNAL(gripMoved(int)), this, SLOT(_q_gripMoved(int)));
         } else {
             QWidget *widget = view->cornerWidget();
-            view->setCornerWidget(0);
+            view->setCornerWidget(nullptr);
             widget->deleteLater();
         }
     }
@@ -327,7 +327,7 @@ void QColumnView::scrollTo(const QModelIndex &index, ScrollHint hint)
     }
 
 #if QT_CONFIG(animation)
-    if (const int animationDuration = style()->styleHint(QStyle::SH_Widget_Animation_Duration, 0, this)) {
+    if (const int animationDuration = style()->styleHint(QStyle::SH_Widget_Animation_Duration, nullptr, this)) {
         d->currentAnimation.setDuration(animationDuration);
         d->currentAnimation.setEndValue(newScrollbarValue);
         d->currentAnimation.start();
@@ -638,7 +638,7 @@ void QColumnViewPrivate::_q_clicked(const QModelIndex &index)
 {
     Q_Q(QColumnView);
     QModelIndex parent = index.parent();
-    QAbstractItemView *columnClicked = 0;
+    QAbstractItemView *columnClicked = nullptr;
     for (int column = 0; column < columns.count(); ++column) {
         if (columns.at(column)->rootIndex() == parent) {
             columnClicked = columns[column];
@@ -666,7 +666,7 @@ void QColumnViewPrivate::_q_clicked(const QModelIndex &index)
 QAbstractItemView *QColumnViewPrivate::createColumn(const QModelIndex &index, bool show)
 {
     Q_Q(QColumnView);
-    QAbstractItemView *view = 0;
+    QAbstractItemView *view = nullptr;
     if (model->hasChildren(index)) {
         view = q->createColumn(index);
         q->connect(view, SIGNAL(clicked(QModelIndex)),
@@ -1045,8 +1045,8 @@ QColumnViewPrivate::QColumnViewPrivate()
 :  QAbstractItemViewPrivate()
 ,showResizeGrips(true)
 ,offset(0)
-,previewWidget(0)
-,previewColumn(0)
+,previewWidget(nullptr)
+,previewColumn(nullptr)
 {
 }
 

@@ -145,9 +145,19 @@ public:
         Base64UrlEncoding = 1,
 
         KeepTrailingEquals = 0,
-        OmitTrailingEquals = 2
+        OmitTrailingEquals = 2,
+
+        IgnoreBase64DecodingErrors = 0,
+        AbortOnBase64DecodingErrors = 4,
     };
     Q_DECLARE_FLAGS(Base64Options, Base64Option)
+
+    enum class Base64DecodingStatus {
+        Ok,
+        IllegalInputLength,
+        IllegalCharacter,
+        IllegalPadding,
+    };
 
     inline QByteArray() noexcept;
     QByteArray(const char *, int size = -1);
@@ -356,8 +366,11 @@ public:
     Q_REQUIRED_RESULT static QByteArray number(qulonglong, int base = 10);
     Q_REQUIRED_RESULT static QByteArray number(double, char f = 'g', int prec = 6);
     Q_REQUIRED_RESULT static QByteArray fromRawData(const char *, int size);
-    Q_REQUIRED_RESULT static QByteArray fromBase64(const QByteArray &base64,
-                                                   Base64Options options = Base64Encoding);
+
+    class FromBase64Result;
+    Q_REQUIRED_RESULT static FromBase64Result fromBase64Encoding(QByteArray &&base64, Base64Options options = Base64Encoding);
+    Q_REQUIRED_RESULT static FromBase64Result fromBase64Encoding(const QByteArray &base64, Base64Options options = Base64Encoding);
+    Q_REQUIRED_RESULT static QByteArray fromBase64(const QByteArray &base64, Base64Options options = Base64Encoding);
     Q_REQUIRED_RESULT static QByteArray fromHex(const QByteArray &hexEncoded);
     Q_REQUIRED_RESULT static QByteArray fromPercentEncoding(const QByteArray &pctEncoded, char percent = '%');
 
@@ -641,6 +654,50 @@ inline QByteArray qUncompress(const QByteArray& data)
 #endif
 
 Q_DECLARE_SHARED(QByteArray)
+
+class QByteArray::FromBase64Result
+{
+public:
+    QByteArray decoded;
+    QByteArray::Base64DecodingStatus decodingStatus;
+
+    void swap(QByteArray::FromBase64Result &other) noexcept
+    {
+        qSwap(decoded, other.decoded);
+        qSwap(decodingStatus, other.decodingStatus);
+    }
+
+    explicit operator bool() const noexcept { return decodingStatus == QByteArray::Base64DecodingStatus::Ok; }
+
+#if defined(Q_COMPILER_REF_QUALIFIERS) && !defined(Q_QDOC)
+    QByteArray &operator*() & noexcept { return decoded; }
+    const QByteArray &operator*() const & noexcept { return decoded; }
+    QByteArray &&operator*() && noexcept { return std::move(decoded); }
+#else
+    QByteArray &operator*() noexcept { return decoded; }
+    const QByteArray &operator*() const noexcept { return decoded; }
+#endif
+};
+
+Q_DECLARE_SHARED(QByteArray::FromBase64Result)
+
+inline bool operator==(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
+{
+    if (lhs.decodingStatus != rhs.decodingStatus)
+        return false;
+
+    if (lhs.decodingStatus == QByteArray::Base64DecodingStatus::Ok && lhs.decoded != rhs.decoded)
+        return false;
+
+    return true;
+}
+
+inline bool operator!=(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
+{
+    return !operator==(lhs, rhs);
+}
+
+Q_CORE_EXPORT Q_DECL_PURE_FUNCTION uint qHash(const QByteArray::FromBase64Result &key, uint seed = 0) noexcept;
 
 QT_END_NAMESPACE
 

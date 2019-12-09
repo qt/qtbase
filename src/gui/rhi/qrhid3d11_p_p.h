@@ -100,7 +100,9 @@ struct QD3D11Texture : public QRhiTexture
     void release() override;
     bool build() override;
     bool buildFrom(const QRhiNativeHandles *src) override;
+    bool buildFrom(NativeTexture src) override;
     const QRhiNativeHandles *nativeHandles() override;
+    NativeTexture nativeTexture() override;
 
     bool prepareBuild(QSize *adjustedSize = nullptr);
     bool finishBuild();

@@ -77,8 +77,8 @@ class QOpenGLTimerQueryPrivate : public QObjectPrivate
 public:
     QOpenGLTimerQueryPrivate()
         : QObjectPrivate(),
-          context(0),
-          ext(0),
+          context(nullptr),
+          ext(nullptr),
           timeInterval(0),
           timer(0)
     {
@@ -168,7 +168,7 @@ void QOpenGLTimerQueryPrivate::destroy()
 
     core->glDeleteQueries(1, &timer);
     timer = 0;
-    context = 0;
+    context = nullptr;
 }
 
 // GL_TIME_ELAPSED_EXT is not defined on OS X 10.6
@@ -310,14 +310,14 @@ QOpenGLTimerQuery::~QOpenGLTimerQuery()
     QOpenGLContext* ctx = QOpenGLContext::currentContext();
 
     Q_D(QOpenGLTimerQuery);
-    QOpenGLContext *oldContext = 0;
+    QOpenGLContext *oldContext = nullptr;
     if (d->context != ctx) {
         oldContext = ctx;
         if (d->context->makeCurrent(oldContext->surface())) {
             ctx = d->context;
         } else {
             qWarning("QOpenGLTimerQuery::~QOpenGLTimerQuery() failed to make query objects's context current");
-            ctx = 0;
+            ctx = nullptr;
         }
     }
 
@@ -468,9 +468,9 @@ public:
         : QObjectPrivate(),
           timers(),
           timeSamples(),
-          context(0),
-          core(0),
-          ext(0),
+          context(nullptr),
+          core(nullptr),
+          ext(nullptr),
           requestedSampleCount(2),
           currentSample(-1),
           timerQueryActive(false)
@@ -556,10 +556,10 @@ void QOpenGLTimeMonitorPrivate::destroy()
     core->glDeleteQueries(timers.size(), timers.data());
     timers.clear();
     delete core;
-    core = 0;
+    core = nullptr;
     delete ext;
-    ext = 0;
-    context = 0;
+    ext = nullptr;
+    context = nullptr;
 }
 
 void QOpenGLTimeMonitorPrivate::recordSample()
@@ -701,14 +701,14 @@ QOpenGLTimeMonitor::~QOpenGLTimeMonitor()
     QOpenGLContext* ctx = QOpenGLContext::currentContext();
 
     Q_D(QOpenGLTimeMonitor);
-    QOpenGLContext *oldContext = 0;
+    QOpenGLContext *oldContext = nullptr;
     if (d->context != ctx) {
         oldContext = ctx;
         if (d->context->makeCurrent(oldContext->surface())) {
             ctx = d->context;
         } else {
             qWarning("QOpenGLTimeMonitor::~QOpenGLTimeMonitor() failed to make time monitor's context current");
-            ctx = 0;
+            ctx = nullptr;
         }
     }
 

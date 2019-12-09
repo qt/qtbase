@@ -179,7 +179,7 @@ void QWindowSystemInterfacePrivate::installWindowSystemEventHandler(QWindowSyste
 void QWindowSystemInterfacePrivate::removeWindowSystemEventhandler(QWindowSystemEventHandler *handler)
 {
     if (eventHandler == handler)
-        eventHandler = 0;
+        eventHandler = nullptr;
 }
 
 QWindowSystemEventHandler::~QWindowSystemEventHandler()

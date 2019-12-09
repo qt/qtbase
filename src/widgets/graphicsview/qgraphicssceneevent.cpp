@@ -278,8 +278,8 @@ class QGraphicsSceneEventPrivate
 {
 public:
     inline QGraphicsSceneEventPrivate()
-        : widget(0),
-          q_ptr(0)
+        : widget(nullptr),
+          q_ptr(nullptr)
     { }
 
     inline virtual ~QGraphicsSceneEventPrivate()
@@ -1290,7 +1290,7 @@ class QGraphicsSceneDragDropEventPrivate : public QGraphicsSceneEventPrivate
     Q_DECLARE_PUBLIC(QGraphicsSceneDragDropEvent)
 public:
     inline QGraphicsSceneDragDropEventPrivate()
-        : source(0), mimeData(0)
+        : source(nullptr), mimeData(nullptr)
     { }
 
     QPointF pos;

@@ -332,14 +332,14 @@ QAccessibleStackedWidget::QAccessibleStackedWidget(QWidget *widget)
 QAccessibleInterface *QAccessibleStackedWidget::childAt(int x, int y) const
 {
     if (!stackedWidget()->isVisible())
-        return 0;
+        return nullptr;
     QWidget *currentWidget = stackedWidget()->currentWidget();
     if (!currentWidget)
-        return 0;
+        return nullptr;
     QPoint position = currentWidget->mapFromGlobal(QPoint(x, y));
     if (currentWidget->rect().contains(position))
         return child(stackedWidget()->currentIndex());
-    return 0;
+    return nullptr;
 }
 
 int QAccessibleStackedWidget::childCount() const
@@ -359,7 +359,7 @@ int QAccessibleStackedWidget::indexOfChild(const QAccessibleInterface *child) co
 QAccessibleInterface *QAccessibleStackedWidget::child(int index) const
 {
     if (index < 0 || index >= stackedWidget()->count())
-        return 0;
+        return nullptr;
     return QAccessible::queryAccessibleInterface(stackedWidget()->widget(index));
 }
 
@@ -401,7 +401,7 @@ QAccessibleInterface *QAccessibleMdiArea::child(int index) const
     QList<QMdiSubWindow *> subWindows = mdiArea()->subWindowList();
     QWidget *targetObject = subWindows.value(index);
     if (!targetObject)
-       return 0;
+       return nullptr;
     return QAccessible::queryAccessibleInterface(targetObject);
 }
 
@@ -478,7 +478,7 @@ QAccessibleInterface *QAccessibleMdiSubWindow::child(int index) const
 {
     QMdiSubWindow *source = mdiSubWindow();
     if (index != 0 || !source->widget())
-        return 0;
+        return nullptr;
 
     return QAccessible::queryAccessibleInterface(source->widget());
 }
@@ -554,7 +554,7 @@ int QAccessibleCalendarWidget::indexOfChild(const QAccessibleInterface *child) c
 QAccessibleInterface *QAccessibleCalendarWidget::child(int index) const
 {
     if (index < 0 || index >= childCount())
-        return 0;
+        return nullptr;
 
     if (childCount() > 1 && index == 0)
         return QAccessible::queryAccessibleInterface(navigationBar());
@@ -573,7 +573,7 @@ QAbstractItemView *QAccessibleCalendarWidget::calendarView() const
         if (child->objectName() == QLatin1String("qt_calendar_calendarview"))
             return static_cast<QAbstractItemView *>(child);
     }
-    return 0;
+    return nullptr;
 }
 
 QWidget *QAccessibleCalendarWidget::navigationBar() const
@@ -582,7 +582,7 @@ QWidget *QAccessibleCalendarWidget::navigationBar() const
         if (child->objectName() == QLatin1String("qt_calendar_navigationbar"))
             return static_cast<QWidget *>(child);
     }
-    return 0;
+    return nullptr;
 }
 #endif // QT_CONFIG(calendarwidget)
 
@@ -624,7 +624,7 @@ QAccessibleInterface *QAccessibleDockWidget::child(int index) const
         if (item)
             return QAccessible::queryAccessibleInterface(item->widget());
     }
-    return 0;
+    return nullptr;
 }
 
 int QAccessibleDockWidget::indexOfChild(const QAccessibleInterface *child) const
@@ -1109,7 +1109,7 @@ QAccessibleInterface *QAccessibleMainWindow::child(int index) const
     if (index >= 0 && index < kids.count()) {
         return QAccessible::queryAccessibleInterface(kids.at(index));
     }
-    return 0;
+    return nullptr;
 }
 
 int QAccessibleMainWindow::childCount() const
@@ -1128,10 +1128,10 @@ QAccessibleInterface *QAccessibleMainWindow::childAt(int x, int y) const
 {
     QWidget *w = widget();
     if (!w->isVisible())
-        return 0;
+        return nullptr;
     QPoint gp = w->mapToGlobal(QPoint(0, 0));
     if (!QRect(gp.x(), gp.y(), w->width(), w->height()).contains(x, y))
-        return 0;
+        return nullptr;
 
     const QWidgetList kids = childWidgets(mainWindow());
     QPoint rp = mainWindow()->mapFromGlobal(QPoint(x, y));
@@ -1140,7 +1140,7 @@ QAccessibleInterface *QAccessibleMainWindow::childAt(int x, int y) const
             return QAccessible::queryAccessibleInterface(child);
         }
     }
-    return 0;
+    return nullptr;
 }
 
 QMainWindow *QAccessibleMainWindow::mainWindow() const

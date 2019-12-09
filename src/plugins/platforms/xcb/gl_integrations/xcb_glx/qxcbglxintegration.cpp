@@ -133,7 +133,7 @@ bool QXcbGlxIntegration::handleXcbEvent(xcb_generic_event_t *event, uint respons
     Display *xdisplay = static_cast<Display *>(m_connection->xlib_display());
     XLockDisplay(xdisplay);
     bool locked = true;
-    Bool (*proc)(Display*, XEvent*, xEvent*) = XESetWireToEvent(xdisplay, responseType, 0);
+    Bool (*proc)(Display*, XEvent*, xEvent*) = XESetWireToEvent(xdisplay, responseType, nullptr);
     if (proc) {
         XESetWireToEvent(xdisplay, responseType, proc);
         XEvent dummy;
@@ -212,7 +212,7 @@ QPlatformOffscreenSurface *QXcbGlxIntegration::createPlatformOffscreenSurface(QO
     if (glxPbufferUsable)
         return new QGLXPbuffer(surface);
     else
-        return 0; // trigger fallback to hidden QWindow
+        return nullptr; // trigger fallback to hidden QWindow
 
 }
 

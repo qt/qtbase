@@ -165,12 +165,12 @@ void QGtk3Dialog::onResponse(QGtk3Dialog *dialog, int response)
 void QGtk3Dialog::onParentWindowDestroyed()
 {
     // The QGtk3*DialogHelper classes own this object. Make sure the parent doesn't delete it.
-    setParent(0);
+    setParent(nullptr);
 }
 
 QGtk3ColorDialogHelper::QGtk3ColorDialogHelper()
 {
-    d.reset(new QGtk3Dialog(gtk_color_chooser_dialog_new("", 0)));
+    d.reset(new QGtk3Dialog(gtk_color_chooser_dialog_new("", nullptr)));
     connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
     connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
 
@@ -238,7 +238,7 @@ void QGtk3ColorDialogHelper::applyOptions()
 
 QGtk3FileDialogHelper::QGtk3FileDialogHelper()
 {
-    d.reset(new QGtk3Dialog(gtk_file_chooser_dialog_new("", 0,
+    d.reset(new QGtk3Dialog(gtk_file_chooser_dialog_new("", nullptr,
                                                         GTK_FILE_CHOOSER_ACTION_OPEN,
                                                         qUtf8Printable(QGtk3Theme::defaultStandardButtonText(QPlatformDialogHelper::Cancel)), GTK_RESPONSE_CANCEL,
                                                         qUtf8Printable(QGtk3Theme::defaultStandardButtonText(QPlatformDialogHelper::Ok)), GTK_RESPONSE_OK,
@@ -497,7 +497,7 @@ void QGtk3FileDialogHelper::setNameFilters(const QStringList &filters)
 
 QGtk3FontDialogHelper::QGtk3FontDialogHelper()
 {
-    d.reset(new QGtk3Dialog(gtk_font_chooser_dialog_new("", 0)));
+    d.reset(new QGtk3Dialog(gtk_font_chooser_dialog_new("", nullptr)));
     connect(d.data(), SIGNAL(accept()), this, SLOT(onAccepted()));
     connect(d.data(), SIGNAL(reject()), this, SIGNAL(reject()));
 

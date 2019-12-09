@@ -49,7 +49,7 @@ class QStackedWidgetPrivate : public QFramePrivate
 {
     Q_DECLARE_PUBLIC(QStackedWidget)
 public:
-    QStackedWidgetPrivate():layout(0){}
+    QStackedWidgetPrivate():layout(nullptr){}
     QStackedLayout *layout;
     bool blockChildAdd;
 };

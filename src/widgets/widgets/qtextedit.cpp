@@ -117,7 +117,7 @@ public:
 };
 
 QTextEditPrivate::QTextEditPrivate()
-    : control(0),
+    : control(nullptr),
       autoFormatting(QTextEdit::AutoNone), tabChangesFocus(false),
       lineWrap(QTextEdit::WidgetWidth), lineWrapColumnOrWidth(0),
       wordWrap(QTextOption::WrapAtWordBoundaryOrAnywhere), clickCausedFocus(0),

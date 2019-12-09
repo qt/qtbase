@@ -69,7 +69,7 @@ QOffscreenWindow::QOffscreenWindow(QWindow *window)
 QOffscreenWindow::~QOffscreenWindow()
 {
     if (QOffscreenScreen::windowContainingCursor == this)
-        QOffscreenScreen::windowContainingCursor = 0;
+        QOffscreenScreen::windowContainingCursor = nullptr;
     m_windowForWinIdHash.remove(m_winId);
 }
 

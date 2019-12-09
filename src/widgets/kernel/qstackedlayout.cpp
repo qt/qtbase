@@ -61,11 +61,11 @@ QLayoutItem* QStackedLayoutPrivate::replaceAt(int idx, QLayoutItem *newitem)
 {
     Q_Q(QStackedLayout);
     if (idx < 0 || idx >= list.size() || !newitem)
-        return 0;
+        return nullptr;
     QWidget *wdg = newitem->widget();
     if (Q_UNLIKELY(!wdg)) {
         qWarning("QStackedLayout::replaceAt: Only widgets can be added");
-        return 0;
+        return nullptr;
     }
     QLayoutItem *orgitem = list.at(idx);
     list.replace(idx, newitem);
@@ -154,7 +154,7 @@ QLayoutItem* QStackedLayoutPrivate::replaceAt(int idx, QLayoutItem *newitem)
     \sa addWidget(), insertWidget()
 */
 QStackedLayout::QStackedLayout()
-    : QLayout(*new QStackedLayoutPrivate, 0, 0)
+    : QLayout(*new QStackedLayoutPrivate, nullptr, nullptr)
 {
 }
 
@@ -165,7 +165,7 @@ QStackedLayout::QStackedLayout()
     manage the geometry of its children.
 */
 QStackedLayout::QStackedLayout(QWidget *parent)
-    : QLayout(*new QStackedLayoutPrivate, 0, parent)
+    : QLayout(*new QStackedLayoutPrivate, nullptr, parent)
 {
 }
 
@@ -174,7 +174,7 @@ QStackedLayout::QStackedLayout(QWidget *parent)
     the given \a parentLayout.
 */
 QStackedLayout::QStackedLayout(QLayout *parentLayout)
-    : QLayout(*new QStackedLayoutPrivate, parentLayout, 0)
+    : QLayout(*new QStackedLayoutPrivate, parentLayout, nullptr)
 {
 }
 
@@ -264,7 +264,7 @@ QLayoutItem *QStackedLayout::takeAt(int index)
 {
     Q_D(QStackedLayout);
     if (index <0 || index >= d->list.size())
-        return 0;
+        return nullptr;
     QLayoutItem *item = d->list.takeAt(index);
     if (index == d->index) {
         d->index = -1;
@@ -307,7 +307,7 @@ void QStackedLayout::setCurrentIndex(int index)
         parent->setUpdatesEnabled(false);
     }
 
-    QPointer<QWidget> fw = parent ? parent->window()->focusWidget() : 0;
+    QPointer<QWidget> fw = parent ? parent->window()->focusWidget() : nullptr;
     const bool focusWasOnOldPage = fw && (prev && prev->isAncestorOf(fw));
 
     if (prev) {

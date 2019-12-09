@@ -56,7 +56,7 @@ QPlatformIntegration* QVncIntegrationPlugin::create(const QString& system, const
     if (!system.compare(QLatin1String("vnc"), Qt::CaseInsensitive))
         return new QVncIntegration(paramList);
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

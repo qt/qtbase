@@ -53,9 +53,9 @@
 QT_BEGIN_NAMESPACE
 
 inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
-    : backend(0), outgoingData(0),
-      copyDevice(0),
-      cacheEnabled(false), cacheSaveDevice(0),
+    : backend(nullptr), outgoingData(nullptr),
+      copyDevice(nullptr),
+      cacheEnabled(false), cacheSaveDevice(nullptr),
       notificationHandlingPaused(false),
       bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1), preMigrationDownloaded(-1),
       httpStatusCode(0),
@@ -63,7 +63,7 @@ inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
       , downloadBufferReadPosition(0)
       , downloadBufferCurrentSize(0)
       , downloadBufferMaximumSize(0)
-      , downloadBuffer(0)
+      , downloadBuffer(nullptr)
 {
     if (request.attribute(QNetworkRequest::EmitAllUploadProgressSignalsAttribute).toBool() == true)
         emitAllUploadProgressSignals = true;
@@ -489,7 +489,7 @@ void QNetworkReplyImplPrivate::resumeNotificationHandling()
 QAbstractNetworkCache *QNetworkReplyImplPrivate::networkCache() const
 {
     if (!backend)
-        return 0;
+        return nullptr;
     return backend->networkCache();
 }
 
@@ -504,7 +504,7 @@ void QNetworkReplyImplPrivate::createCache()
 
 bool QNetworkReplyImplPrivate::isCachingEnabled() const
 {
-    return (cacheEnabled && networkCache() != 0);
+    return (cacheEnabled && networkCache() != nullptr);
 }
 
 void QNetworkReplyImplPrivate::setCachingEnabled(bool enable)
@@ -529,7 +529,7 @@ void QNetworkReplyImplPrivate::setCachingEnabled(bool enable)
                "backend %s probably needs to be fixed",
                backend->metaObject()->className());
         networkCache()->remove(url);
-        cacheSaveDevice = 0;
+        cacheSaveDevice = nullptr;
         cacheEnabled = false;
     }
 }
@@ -541,7 +541,7 @@ void QNetworkReplyImplPrivate::completeCacheSave()
     } else if (cacheEnabled && cacheSaveDevice) {
         networkCache()->insert(cacheSaveDevice);
     }
-    cacheSaveDevice = 0;
+    cacheSaveDevice = nullptr;
     cacheEnabled = false;
 }
 
@@ -610,7 +610,7 @@ void QNetworkReplyImplPrivate::initCacheSaveDevice()
                   networkCache()->metaObject()->className());
 
         networkCache()->remove(url);
-        cacheSaveDevice = 0;
+        cacheSaveDevice = nullptr;
         cacheEnabled = false;
     }
 }
@@ -927,9 +927,9 @@ void QNetworkReplyImpl::abort()
 
     // stop both upload and download
     if (d->outgoingData)
-        disconnect(d->outgoingData, 0, this, 0);
+        disconnect(d->outgoingData, nullptr, this, nullptr);
     if (d->copyDevice)
-        disconnect(d->copyDevice, 0, this, 0);
+        disconnect(d->copyDevice, nullptr, this, nullptr);
 
     QNetworkReply::close();
 
@@ -943,7 +943,7 @@ void QNetworkReplyImpl::abort()
     // finished may access the backend
     if (d->backend) {
         d->backend->deleteLater();
-        d->backend = 0;
+        d->backend = nullptr;
     }
 }
 
@@ -958,7 +958,7 @@ void QNetworkReplyImpl::close()
     if (d->backend)
         d->backend->closeDownstreamChannel();
     if (d->copyDevice)
-        disconnect(d->copyDevice, 0, this, 0);
+        disconnect(d->copyDevice, nullptr, this, nullptr);
 
     QNetworkReply::close();
 

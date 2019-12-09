@@ -56,7 +56,7 @@ QPlatformIntegration* QEglFSIntegrationPlugin::create(const QString& system, con
     if (!system.compare(QLatin1String("eglfs"), Qt::CaseInsensitive))
         return new QEglFSIntegration;
 
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

@@ -56,7 +56,7 @@ public:
     Q_DECLARE_PUBLIC(QDataWidgetMapper)
 
     QDataWidgetMapperPrivate()
-        : model(QAbstractItemModelPrivate::staticEmptyModel()), delegate(0),
+        : model(QAbstractItemModelPrivate::staticEmptyModel()), delegate(nullptr),
           orientation(Qt::Horizontal), submitPolicy(QDataWidgetMapper::AutoSubmit)
     {
     }
@@ -226,7 +226,7 @@ void QDataWidgetMapperPrivate::_q_modelDestroyed()
 {
     Q_Q(QDataWidgetMapper);
 
-    model = 0;
+    model = nullptr;
     q->setModel(QAbstractItemModelPrivate::staticEmptyModel());
 }
 
@@ -374,7 +374,7 @@ QAbstractItemModel *QDataWidgetMapper::model() const
 {
     Q_D(const QDataWidgetMapper);
     return d->model == QAbstractItemModelPrivate::staticEmptyModel()
-            ? static_cast<QAbstractItemModel *>(0)
+            ? static_cast<QAbstractItemModel *>(nullptr)
             : d->model;
 }
 
@@ -567,7 +567,7 @@ QWidget *QDataWidgetMapper::mappedWidgetAt(int section) const
             return e.widget;
     }
 
-    return 0;
+    return nullptr;
 }
 
 /*!

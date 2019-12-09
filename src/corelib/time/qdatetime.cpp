@@ -1769,7 +1769,7 @@ QDate QDate::fromString(const QString &string, const QString &format, QCalendar 
     QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString, cal);
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format))
-        dt.fromString(string, &date, 0);
+        dt.fromString(string, &date, nullptr);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);
@@ -2499,7 +2499,7 @@ QTime QTime::fromString(const QString &string, const QString &format)
     QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString, QCalendar());
     // dt.setDefaultLocale(QLocale::c()); ### Qt 6
     if (dt.parseFormat(format))
-        dt.fromString(string, 0, &time);
+        dt.fromString(string, nullptr, &time);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);

@@ -151,7 +151,7 @@ public:
     };
 
     QLineEditPrivate()
-        : control(0), frame(1), contextMenuEnabled(1), cursorVisible(0),
+        : control(nullptr), frame(1), contextMenuEnabled(1), cursorVisible(0),
         dragEnabled(0), clickCausedFocus(0), edited(0), hscroll(0), vscroll(0),
         alignment(Qt::AlignLeading | Qt::AlignVCenter),
         textMargins{0, 0, 0, 0},

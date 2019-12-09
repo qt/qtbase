@@ -848,9 +848,9 @@ void QAbstractSpinBox::changeEvent(QEvent *event)
 
     switch (event->type()) {
         case QEvent::StyleChange:
-            d->spinClickTimerInterval = style()->styleHint(QStyle::SH_SpinBox_ClickAutoRepeatRate, 0, this);
+            d->spinClickTimerInterval = style()->styleHint(QStyle::SH_SpinBox_ClickAutoRepeatRate, nullptr, this);
             d->spinClickThresholdTimerInterval =
-                style()->styleHint(QStyle::SH_SpinBox_ClickAutoRepeatThreshold, 0, this);
+                style()->styleHint(QStyle::SH_SpinBox_ClickAutoRepeatThreshold, nullptr, this);
             if (d->edit)
                 d->edit->setFrame(!style()->styleHint(QStyle::SH_SpinBox_ButtonsInsideFrame, nullptr, this));
             d->stepModifier = static_cast<Qt::KeyboardModifier>(style()->styleHint(QStyle::SH_SpinBox_StepModifier, nullptr, this));
@@ -1043,7 +1043,7 @@ void QAbstractSpinBox::keyPressEvent(QKeyEvent *event)
             steps *= 10;
         if (!up)
             steps *= -1;
-        if (style()->styleHint(QStyle::SH_SpinBox_AnimateButton, 0, this)) {
+        if (style()->styleHint(QStyle::SH_SpinBox_AnimateButton, nullptr, this)) {
             d->buttonState = (Keyboard | (up ? Up : Down));
         }
         if (d->spinClickTimerId == -1)
@@ -1421,14 +1421,14 @@ void QAbstractSpinBox::mouseReleaseEvent(QMouseEvent *event)
 */
 
 QAbstractSpinBoxPrivate::QAbstractSpinBoxPrivate()
-    : edit(0), type(QVariant::Invalid), spinClickTimerId(-1),
+    : edit(nullptr), type(QVariant::Invalid), spinClickTimerId(-1),
       spinClickTimerInterval(100), spinClickThresholdTimerId(-1), spinClickThresholdTimerInterval(-1),
       effectiveSpinRepeatRate(1), buttonState(None), cachedText(QLatin1String("\x01")),
       cachedState(QValidator::Invalid), pendingEmit(false), readOnly(false), wrapping(false),
       ignoreCursorPositionChanged(false), frame(true), accelerate(false), keyboardTracking(true),
       cleared(false), ignoreUpdateEdit(false), correctionMode(QAbstractSpinBox::CorrectToPreviousValue),
       stepModifier(Qt::ControlModifier), acceleration(0), hoverControl(QStyle::SC_None),
-      buttonSymbols(QAbstractSpinBox::UpDownArrows), validator(0), showGroupSeparator(0),
+      buttonSymbols(QAbstractSpinBox::UpDownArrows), validator(nullptr), showGroupSeparator(0),
       wheelDeltaRemainder(0)
 {
 }

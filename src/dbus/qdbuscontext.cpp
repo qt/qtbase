@@ -64,7 +64,7 @@ QDBusContextPrivate *QDBusContextPrivate::set(QObject *obj, QDBusContextPrivate 
         return old;
     }
 
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -104,7 +104,7 @@ QDBusContextPrivate *QDBusContextPrivate::set(QObject *obj, QDBusContextPrivate 
   Constructs an empty QDBusContext.
  */
 QDBusContext::QDBusContext()
-    : d_ptr(0)
+    : d_ptr(nullptr)
 {
 }
 

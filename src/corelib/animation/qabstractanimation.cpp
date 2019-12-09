@@ -220,7 +220,7 @@ QUnifiedTimer::QUnifiedTimer() :
     QObject(), defaultDriver(this), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
     currentAnimationIdx(0), insideTick(false), insideRestart(false), consistentTiming(false), slowMode(false),
     startTimersPending(false), stopTimerPending(false),
-    slowdownFactor(5.0f), profilerCallback(0),
+    slowdownFactor(5.0f), profilerCallback(nullptr),
     driverStartTime(0), temporalDrift(0)
 {
     time.invalidate();
@@ -922,7 +922,7 @@ qint64 QAnimationDriver::elapsed() const
    The default animation driver just spins the timer...
  */
 QDefaultAnimationDriver::QDefaultAnimationDriver(QUnifiedTimer *timer)
-    : QAnimationDriver(0), m_unified_timer(timer)
+    : QAnimationDriver(nullptr), m_unified_timer(timer)
 {
     connect(this, SIGNAL(started()), this, SLOT(startTimer()));
     connect(this, SIGNAL(stopped()), this, SLOT(stopTimer()));
@@ -1035,7 +1035,7 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     \sa QVariantAnimation, QAnimationGroup
 */
 QAbstractAnimation::QAbstractAnimation(QObject *parent)
-    : QObject(*new QAbstractAnimationPrivate, 0)
+    : QObject(*new QAbstractAnimationPrivate, nullptr)
 {
     // Allow auto-add on reparent
     setParent(parent);
@@ -1045,7 +1045,7 @@ QAbstractAnimation::QAbstractAnimation(QObject *parent)
     \internal
 */
 QAbstractAnimation::QAbstractAnimation(QAbstractAnimationPrivate &dd, QObject *parent)
-    : QObject(dd, 0)
+    : QObject(dd, nullptr)
 {
     // Allow auto-add on reparent
    setParent(parent);

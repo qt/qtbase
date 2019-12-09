@@ -276,7 +276,7 @@ void QArrayData::deallocate(QArrayData *data, size_t objectSize,
             && !(alignment & (alignment - 1)));
     Q_UNUSED(objectSize) Q_UNUSED(alignment)
 
-    Q_ASSERT_X(data == 0 || !data->isStatic(), "QArrayData::deallocate",
+    Q_ASSERT_X(data == nullptr || !data->isStatic(), "QArrayData::deallocate",
                "Static data cannot be deleted");
     ::free(data);
 }

@@ -72,7 +72,7 @@ int QDBusAdaptorConnector::relaySlotMethodIndex()
 QDBusAdaptorConnector *qDBusFindAdaptorConnector(QObject *obj)
 {
     if (!obj)
-        return 0;
+        return nullptr;
     const QObjectList &children = obj->children();
     QObjectList::ConstIterator it = children.constBegin();
     QObjectList::ConstIterator end = children.constEnd();
@@ -83,7 +83,7 @@ QDBusAdaptorConnector *qDBusFindAdaptorConnector(QObject *obj)
             return connector;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 QDBusAdaptorConnector *qDBusFindAdaptorConnector(QDBusAbstractAdaptor *adaptor)

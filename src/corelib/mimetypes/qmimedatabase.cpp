@@ -487,7 +487,7 @@ QMimeDatabase::QMimeDatabase() :
  */
 QMimeDatabase::~QMimeDatabase()
 {
-    d = 0;
+    d = nullptr;
 }
 
 /*!

@@ -92,8 +92,8 @@ void QBlittablePlatformPixmap::setBlittable(QBlittable *blittable)
 
 void QBlittablePlatformPixmap::resize(int width, int height)
 {
-    m_blittable.reset(0);
-    m_engine.reset(0);
+    m_blittable.reset(nullptr);
+    m_engine.reset(nullptr);
     d = QGuiApplication::primaryScreen()->depth();
     w = width;
     h = height;
@@ -145,8 +145,8 @@ void QBlittablePlatformPixmap::fill(const QColor &color)
         // if we could just change the format, e.g. when going from
         // RGB32 -> ARGB8888.
         if (color.alpha() != 255 && !hasAlphaChannel()) {
-            m_blittable.reset(0);
-            m_engine.reset(0);
+            m_blittable.reset(nullptr);
+            m_engine.reset(nullptr);
             m_alpha = true;
         }
 

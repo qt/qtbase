@@ -91,7 +91,7 @@ class QUIntSpinBox : public QSpinBox
     Q_OBJECT
     Q_PROPERTY(uint value READ uintValue WRITE setUIntValue NOTIFY uintValueChanged USER true)
 public:
-    explicit QUIntSpinBox(QWidget *parent = 0)
+    explicit QUIntSpinBox(QWidget *parent = nullptr)
       : QSpinBox(parent)
     {
         connect(this, SIGNAL(valueChanged(int)), SIGNAL(uintValueChanged()));
@@ -176,7 +176,7 @@ QWidget *QItemEditorFactory::createEditor(int userType, QWidget *parent) const
     QItemEditorCreatorBase *creator = creatorMap.value(userType, 0);
     if (!creator) {
         const QItemEditorFactory *dfactory = defaultFactory();
-        return dfactory == this ? 0 : dfactory->createEditor(userType, parent);
+        return dfactory == this ? nullptr : dfactory->createEditor(userType, parent);
     }
     return creator->createWidget(parent);
 }
@@ -295,8 +295,8 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
     default: {
         // the default editor is a lineedit
         QExpandingLineEdit *le = new QExpandingLineEdit(parent);
-        le->setFrame(le->style()->styleHint(QStyle::SH_ItemView_DrawDelegateFrame, 0, le));
-        if (!le->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, 0, le))
+        le->setFrame(le->style()->styleHint(QStyle::SH_ItemView_DrawDelegateFrame, nullptr, le));
+        if (!le->style()->styleHint(QStyle::SH_ItemView_ShowDecorationSelected, nullptr, le))
             le->setWidgetOwnsGeometry(true);
         return le; }
 #else
@@ -304,7 +304,7 @@ QWidget *QDefaultItemEditorFactory::createEditor(int userType, QWidget *parent) 
         break;
 #endif
     }
-    return 0;
+    return nullptr;
 }
 
 QByteArray QDefaultItemEditorFactory::valuePropertyName(int userType) const
@@ -335,11 +335,11 @@ QByteArray QDefaultItemEditorFactory::valuePropertyName(int userType) const
     }
 }
 
-static QItemEditorFactory *q_default_factory = 0;
+static QItemEditorFactory *q_default_factory = nullptr;
 struct QDefaultFactoryCleaner
 {
     inline QDefaultFactoryCleaner() {}
-    ~QDefaultFactoryCleaner() { delete q_default_factory; q_default_factory = 0; }
+    ~QDefaultFactoryCleaner() { delete q_default_factory; q_default_factory = nullptr; }
 };
 
 /*!

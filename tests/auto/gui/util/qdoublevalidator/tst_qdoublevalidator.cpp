@@ -73,6 +73,7 @@ void tst_QDoubleValidator::validateThouSep_data()
     QTest::newRow("1.000,1de_reject") << "de" << QString("1.000,1") << true << INV;
     QTest::newRow(",C") << "C" << QString(",") << false << INV;
     QTest::newRow(",de") << "de" << QString(",") << false << ITM;
+    QTest::newRow("1,23") << "en_AU" << QString("1,00") << false << ITM;
 }
 
 void tst_QDoubleValidator::validateThouSep()

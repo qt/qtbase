@@ -714,7 +714,7 @@ QIconLoaderEngineEntry *QIconLoaderEngine::entryForSize(const QThemeIconInfo &in
 
     // Find the minimum distance icon
     int minimalSize = INT_MAX;
-    QIconLoaderEngineEntry *closestMatch = 0;
+    QIconLoaderEngineEntry *closestMatch = nullptr;
     for (int i = 0; i < numEntries; ++i) {
         QIconLoaderEngineEntry *entry = info.entries.at(i);
         int distance = directorySizeDistance(entry->dir, iconsize, scale);

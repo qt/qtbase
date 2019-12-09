@@ -125,12 +125,12 @@ static const QVariant::Handler widgets_handler = {
     clear,
     isNull,
 #ifndef QT_NO_DATASTREAM
-    0,
-    0,
+    nullptr,
+    nullptr,
 #endif
     compare,
     convert,
-    0,
+    nullptr,
 #if !defined(QT_NO_DEBUG_STREAM)
     streamDebug
 #else

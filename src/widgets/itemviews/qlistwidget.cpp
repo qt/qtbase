@@ -75,7 +75,7 @@ void QListModel::clear()
     for (int i = 0; i < items.count(); ++i) {
         if (items.at(i)) {
             items.at(i)->d->theid = -1;
-            items.at(i)->view = 0;
+            items.at(i)->view = nullptr;
             delete items.at(i);
         }
     }
@@ -96,7 +96,7 @@ void QListModel::remove(QListWidgetItem *item)
     Q_ASSERT(row != -1);
     beginRemoveRows(QModelIndex(), row, row);
     items.at(row)->d->theid = -1;
-    items.at(row)->view = 0;
+    items.at(row)->view = nullptr;
     items.removeAt(row);
     endRemoveRows();
 }
@@ -156,11 +156,11 @@ void QListModel::insert(int row, const QStringList &labels)
 QListWidgetItem *QListModel::take(int row)
 {
     if (row < 0 || row >= items.count())
-        return 0;
+        return nullptr;
 
     beginRemoveRows(QModelIndex(), row, row);
     items.at(row)->d->theid = -1;
-    items.at(row)->view = 0;
+    items.at(row)->view = nullptr;
     QListWidgetItem *item = items.takeAt(row);
     endRemoveRows();
     return item;
@@ -263,7 +263,7 @@ bool QListModel::insertRows(int row, int count, const QModelIndex &parent)
 
     beginInsertRows(QModelIndex(), row, row + count - 1);
     QListWidget *view = qobject_cast<QListWidget*>(QObject::parent());
-    QListWidgetItem *itm = 0;
+    QListWidgetItem *itm = nullptr;
 
     for (int r = row; r < row + count; ++r) {
         itm = new QListWidgetItem;
@@ -282,10 +282,10 @@ bool QListModel::removeRows(int row, int count, const QModelIndex &parent)
         return false;
 
     beginRemoveRows(QModelIndex(), row, row + count - 1);
-    QListWidgetItem *itm = 0;
+    QListWidgetItem *itm = nullptr;
     for (int r = row; r < row + count; ++r) {
         itm = items.takeAt(row);
-        itm->view = 0;
+        itm->view = nullptr;
         itm->d->theid = -1;
         delete itm;
     }
@@ -1220,7 +1220,7 @@ void QListWidgetPrivate::_q_emitCurrentItemChanged(const QModelIndex &current,
     //persistentCurrent is invalid if something changed the model in response
     //to the currentItemChanged signal emission and the item was removed
     if (!persistentCurrent.isValid()) {
-        currentItem = 0;
+        currentItem = nullptr;
     }
 
     emit q->currentTextChanged(currentItem ? currentItem->text() : QString());
@@ -1478,7 +1478,7 @@ QListWidgetItem *QListWidget::item(int row) const
 {
     Q_D(const QListWidget);
     if (row < 0 || row >= d->model->rowCount())
-        return 0;
+        return nullptr;
     return d->listModel()->at(row);
 }
 
@@ -1548,7 +1548,7 @@ QListWidgetItem *QListWidget::takeItem(int row)
 {
     Q_D(QListWidget);
     if (row < 0 || row >= d->model->rowCount())
-        return 0;
+        return nullptr;
     return d->listModel()->take(row);
 }
 
@@ -2064,7 +2064,7 @@ QListWidgetItem *QListWidget::itemFromIndex(const QModelIndex &index) const
     Q_D(const QListWidget);
     if (d->isIndexValid(index))
         return d->listModel()->at(index.row());
-    return 0;
+    return nullptr;
 }
 
 /*!

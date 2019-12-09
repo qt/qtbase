@@ -530,10 +530,10 @@ void QCoreApplicationPrivate::eventDispatcherReady()
 {
 }
 
-QBasicAtomicPointer<QThread> QCoreApplicationPrivate::theMainThread = Q_BASIC_ATOMIC_INITIALIZER(0);
+QBasicAtomicPointer<QThread> QCoreApplicationPrivate::theMainThread = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 QThread *QCoreApplicationPrivate::mainThread()
 {
-    Q_ASSERT(theMainThread.loadRelaxed() != 0);
+    Q_ASSERT(theMainThread.loadRelaxed() != nullptr);
     return theMainThread.loadRelaxed();
 }
 
@@ -690,7 +690,7 @@ QCoreApplication::QCoreApplication(QCoreApplicationPrivate &p)
 #ifdef QT_NO_QOBJECT
     : d_ptr(&p)
 #else
-    : QObject(p, 0)
+    : QObject(p, nullptr)
 #endif
 {
     d_func()->q_ptr = this;
@@ -1139,7 +1139,7 @@ bool QCoreApplication::notify(QObject *receiver, QEvent *event)
 
 static bool doNotify(QObject *receiver, QEvent *event)
 {
-    if (receiver == 0) {                        // serious error
+    if (receiver == nullptr) {                        // serious error
         qWarning("QCoreApplication::notify: Unexpected null receiver");
         return true;
     }
@@ -1388,7 +1388,7 @@ void QCoreApplicationPrivate::execCleanup()
     if (!aboutToQuitEmitted)
         emit q_func()->aboutToQuit(QCoreApplication::QPrivateSignal());
     aboutToQuitEmitted = true;
-    QCoreApplication::sendPostedEvents(0, QEvent::DeferredDelete);
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 }
 
 
@@ -1531,7 +1531,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
 {
     Q_TRACE_SCOPE(QCoreApplication_postEvent, receiver, event, event->type());
 
-    if (receiver == 0) {
+    if (receiver == nullptr) {
         qWarning("QCoreApplication::postEvent: Unexpected null receiver");
         delete event;
         return;
@@ -1635,7 +1635,7 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
         for (int i = 0; i < postedEvents->size(); ++i) {
             const QPostEvent &cur = postedEvents->at(i);
             if (cur.receiver != receiver
-                    || cur.event == 0
+                    || cur.event == nullptr
                     || cur.event->type() != event->type())
                 continue;
             // found an event for this receiver
@@ -1784,7 +1784,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
 
                     // null out the event so if sendPostedEvents recurses, it
                     // will ignore this one, as it's been re-posted.
-                    const_cast<QPostEvent &>(pe).event = 0;
+                    const_cast<QPostEvent &>(pe).event = nullptr;
 
                     // re-post the copied event so it isn't lost
                     data->postEventList.addEvent(pe_copy);
@@ -1804,7 +1804,7 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
 
         // next, update the data structure so that we're ready
         // for the next event.
-        const_cast<QPostEvent &>(pe).event = 0;
+        const_cast<QPostEvent &>(pe).event = nullptr;
 
         locker.unlock();
         const auto relocker = qScopeGuard([&locker] { locker.lock(); });
@@ -1867,7 +1867,7 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
             --pe.receiver->d_func()->postedEvents;
             pe.event->posted = false;
             events.append(pe.event);
-            const_cast<QPostEvent &>(pe).event = 0;
+            const_cast<QPostEvent &>(pe).event = nullptr;
         } else if (!data->postEventList.recursion) {
             if (i != j)
                 qSwap(data->postEventList[i], data->postEventList[j]);
@@ -1929,7 +1929,7 @@ void QCoreApplicationPrivate::removePostedEvent(QEvent * event)
             --pe.receiver->d_func()->postedEvents;
             pe.event->posted = false;
             delete pe.event;
-            const_cast<QPostEvent &>(pe).event = 0;
+            const_cast<QPostEvent &>(pe).event = nullptr;
             return;
         }
     }
@@ -2204,7 +2204,7 @@ QString QCoreApplication::translate(const char *context, const char *sourceText,
 // Declared in qglobal.h
 QString qtTrId(const char *id, int n)
 {
-    return QCoreApplication::translate(0, id, 0, n);
+    return QCoreApplication::translate(nullptr, id, nullptr, n);
 }
 
 bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
@@ -2956,7 +2956,7 @@ QAbstractEventDispatcher *QCoreApplication::eventDispatcher()
 {
     if (QCoreApplicationPrivate::theMainThread.loadAcquire())
         return QCoreApplicationPrivate::theMainThread.loadRelaxed()->eventDispatcher();
-    return 0;
+    return nullptr;
 }
 
 /*!

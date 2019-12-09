@@ -76,8 +76,8 @@ class Q_EXPORT_SQLDRIVER_SQLITE2 QSQLite2Driver : public QSqlDriver
     Q_DECLARE_PRIVATE(QSQLite2Driver)
     Q_OBJECT
 public:
-    explicit QSQLite2Driver(QObject *parent = 0);
-    explicit QSQLite2Driver(sqlite *connection, QObject *parent = 0);
+    explicit QSQLite2Driver(QObject *parent = nullptr);
+    explicit QSQLite2Driver(sqlite *connection, QObject *parent = nullptr);
     ~QSQLite2Driver();
     bool hasFeature(DriverFeature f) const override;
     bool open(const QString &db,

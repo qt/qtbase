@@ -73,6 +73,8 @@ private slots:
     void create();
     void nativeHandles_data();
     void nativeHandles();
+    void nativeTexture_data();
+    void nativeTexture();
     void resourceUpdateBatchBuffer_data();
     void resourceUpdateBatchBuffer();
     void resourceUpdateBatchRGBATextureUpload_data();
@@ -525,6 +527,71 @@ void tst_QRhi::nativeHandles()
         default:
             Q_ASSERT(false);
         }
+    }
+}
+
+void tst_QRhi::nativeTexture_data()
+{
+    rhiTestData();
+}
+
+void tst_QRhi::nativeTexture()
+{
+    QFETCH(QRhi::Implementation, impl);
+    QFETCH(QRhiInitParams *, initParams);
+
+    QScopedPointer<QRhi> rhi(QRhi::create(impl, initParams, QRhi::Flags(), nullptr));
+    if (!rhi)
+        QSKIP("QRhi could not be created, skipping testing native texture");
+
+    QScopedPointer<QRhiTexture> tex(rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 256)));
+    QVERIFY(tex->build());
+
+    const QRhiTexture::NativeTexture nativeTex = tex->nativeTexture();
+
+    switch (impl) {
+    case QRhi::Null:
+        break;
+#ifdef TST_VK
+    case QRhi::Vulkan:
+    {
+        auto *image = static_cast<const VkImage *>(nativeTex.object);
+        QVERIFY(image);
+        QVERIFY(*image);
+        QVERIFY(nativeTex.layout >= 1); // VK_IMAGE_LAYOUT_GENERAL
+        QVERIFY(nativeTex.layout <= 8); // VK_IMAGE_LAYOUT_PREINITIALIZED
+    }
+        break;
+#endif
+#ifdef TST_GL
+    case QRhi::OpenGLES2:
+    {
+        auto *textureId = static_cast<const uint *>(nativeTex.object);
+        QVERIFY(textureId);
+        QVERIFY(*textureId);
+    }
+        break;
+#endif
+#ifdef TST_D3D11
+    case QRhi::D3D11:
+    {
+        auto *texture = static_cast<void * const *>(nativeTex.object);
+        QVERIFY(texture);
+        QVERIFY(*texture);
+    }
+        break;
+#endif
+#ifdef TST_MTL
+    case QRhi::Metal:
+    {
+        void * const * texture = (void * const *)nativeTex.object;
+        QVERIFY(texture);
+        QVERIFY(*texture);
+    }
+        break;
+#endif
+    default:
+        Q_ASSERT(false);
     }
 }
 

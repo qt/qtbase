@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 void QButtonGroupPrivate::detectCheckedButton()
 {
     QAbstractButton *previous = checkedButton;
-    checkedButton = 0;
+    checkedButton = nullptr;
     if (exclusive)
         return;
     for (int i = 0; i < buttonList.count(); i++) {
@@ -119,7 +119,7 @@ QButtonGroup::~QButtonGroup()
 {
     Q_D(QButtonGroup);
     for (int i = 0; i < d->buttonList.count(); ++i)
-        d->buttonList.at(i)->d_func()->group = 0;
+        d->buttonList.at(i)->d_func()->group = nullptr;
 }
 
 /*!
@@ -273,7 +273,7 @@ void QButtonGroup::removeButton(QAbstractButton *button)
         d->detectCheckedButton();
     }
     if (button->d_func()->group == this) {
-        button->d_func()->group = 0;
+        button->d_func()->group = nullptr;
         d->buttonList.removeAll(button);
         d->mapping.remove(button);
     }

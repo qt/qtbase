@@ -193,7 +193,7 @@ GLXFBConfig qglx_findConfig(Display *display, int screen , QSurfaceFormat format
 {
     QXcbSoftwareOpenGLEnforcer softwareOpenGLEnforcer;
 
-    GLXFBConfig config = 0;
+    GLXFBConfig config = nullptr;
 
     do {
         const QVector<int> spec = qglx_buildSpec(format, drawableBit, flags);
@@ -273,7 +273,7 @@ XVisualInfo *qglx_findVisualInfo(Display *display, int screen, QSurfaceFormat *f
 {
     Q_ASSERT(format);
 
-    XVisualInfo *visualInfo = 0;
+    XVisualInfo *visualInfo = nullptr;
 
     GLXFBConfig config = qglx_findConfig(display, screen, *format, false, drawableBit, flags);
     if (config)

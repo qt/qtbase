@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 QThreadData::QThreadData(int initialRefCount)
     : _ref(initialRefCount), loopLevel(0), scopeLevel(0),
-      eventDispatcher(0),
+      eventDispatcher(nullptr),
       quitNow(false), canWait(true), isAdopted(false), requiresCoreApplication(true)
 {
     // fprintf(stderr, "QThreadData %p created\n", this);
@@ -399,7 +399,7 @@ QThreadPrivate::~QThreadPrivate()
 QThread *QThread::currentThread()
 {
     QThreadData *data = QThreadData::current();
-    Q_ASSERT(data != 0);
+    Q_ASSERT(data != nullptr);
     return data->thread.loadAcquire();
 }
 
@@ -451,7 +451,7 @@ QThread::~QThread()
         if (d->running && !d->finished && !d->data->isAdopted)
             qFatal("QThread: Destroyed while thread is still running");
 
-        d->data->thread = 0;
+        d->data->thread = nullptr;
     }
 }
 

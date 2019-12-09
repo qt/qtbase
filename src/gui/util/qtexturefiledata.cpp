@@ -247,7 +247,7 @@ void QTextureFileData::setLogName(const QByteArray &name)
 
 static QByteArray glFormatName(quint32 fmt)
 {
-    const char *id = 0;
+    const char *id = nullptr;
 #if QT_CONFIG(opengl)
     id = QMetaEnum::fromType<QOpenGLTexture::TextureFormat>().valueToKey(fmt);
 #endif

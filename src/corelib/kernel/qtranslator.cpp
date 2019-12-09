@@ -289,8 +289,8 @@ public:
 #if defined(QT_USE_MMAP)
           used_mmap(0),
 #endif
-          unmapPointer(0), unmapLength(0), resource(0),
-          messageArray(0), offsetArray(0), contextArray(0), numerusRulesArray(0),
+          unmapPointer(nullptr), unmapLength(0), resource(nullptr),
+          messageArray(nullptr), offsetArray(nullptr), contextArray(nullptr), numerusRulesArray(nullptr),
           messageLength(0), offsetLength(0), contextLength(0), numerusRulesLength(0) {}
 
 #if defined(QT_USE_MMAP)
@@ -539,7 +539,7 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
             ok = true;
         } else {
             delete resource;
-            resource = 0;
+            resource = nullptr;
         }
     }
 
@@ -610,8 +610,8 @@ bool QTranslatorPrivate::do_load(const QString &realname, const QString &directo
         delete [] unmapPointer;
 
     delete d->resource;
-    d->resource = 0;
-    d->unmapPointer = 0;
+    d->resource = nullptr;
+    d->unmapPointer = nullptr;
     d->unmapLength = 0;
 
     return false;
@@ -874,10 +874,10 @@ bool QTranslatorPrivate::do_load(const uchar *data, qsizetype len, const QString
     }
 
     if (!ok) {
-        messageArray = 0;
-        contextArray = 0;
-        offsetArray = 0;
-        numerusRulesArray = 0;
+        messageArray = nullptr;
+        contextArray = nullptr;
+        offsetArray = nullptr;
+        numerusRulesArray = nullptr;
         messageLength = 0;
         contextLength = 0;
         offsetLength = 0;
@@ -890,7 +890,7 @@ bool QTranslatorPrivate::do_load(const uchar *data, qsizetype len, const QString
 static QString getMessage(const uchar *m, const uchar *end, const char *context,
                           const char *sourceText, const char *comment, uint numerus)
 {
-    const uchar *tn = 0;
+    const uchar *tn = nullptr;
     uint tn_length = 0;
     const uint sourceTextLen = uint(strlen(sourceText));
     const uint contextLen = uint(strlen(context));
@@ -957,11 +957,11 @@ end:
 QString QTranslatorPrivate::do_translate(const char *context, const char *sourceText,
                                          const char *comment, int n) const
 {
-    if (context == 0)
+    if (context == nullptr)
         context = "";
-    if (sourceText == 0)
+    if (sourceText == nullptr)
         sourceText = "";
-    if (comment == 0)
+    if (comment == nullptr)
         comment = "";
 
     uint numerus = 0;
@@ -1076,13 +1076,13 @@ void QTranslatorPrivate::clear()
     }
 
     delete resource;
-    resource = 0;
-    unmapPointer = 0;
+    resource = nullptr;
+    unmapPointer = nullptr;
     unmapLength = 0;
-    messageArray = 0;
-    contextArray = 0;
-    offsetArray = 0;
-    numerusRulesArray = 0;
+    messageArray = nullptr;
+    contextArray = nullptr;
+    offsetArray = nullptr;
+    numerusRulesArray = nullptr;
     messageLength = 0;
     contextLength = 0;
     offsetLength = 0;

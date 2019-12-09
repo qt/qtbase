@@ -2939,7 +2939,7 @@ QObject* QDropEvent::source() const
 {
     if (const QDragManager *manager = QDragManager::self())
         return manager->source();
-    return 0;
+    return nullptr;
 }
 
 
@@ -4304,8 +4304,8 @@ QTouchEvent::QTouchEvent(QEvent::Type eventType,
                          Qt::TouchPointStates touchPointStates,
                          const QList<QTouchEvent::TouchPoint> &touchPoints)
     : QInputEvent(eventType, modifiers),
-      _window(0),
-      _target(0),
+      _window(nullptr),
+      _target(nullptr),
       _device(device),
       _touchPointStates(touchPointStates),
       _touchPoints(touchPoints)
@@ -4997,7 +4997,7 @@ void QTouchEvent::TouchPoint::setFlags(InfoFlags flags)
     The \a startPos is the position of a touch or mouse event that started the scrolling.
 */
 QScrollPrepareEvent::QScrollPrepareEvent(const QPointF &startPos)
-    : QEvent(QEvent::ScrollPrepare), m_target(0), m_startPos(startPos)
+    : QEvent(QEvent::ScrollPrepare), m_target(nullptr), m_startPos(startPos)
 {
     Q_UNUSED(m_target);
 }

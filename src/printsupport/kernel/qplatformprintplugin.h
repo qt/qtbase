@@ -66,7 +66,7 @@ class Q_PRINTSUPPORT_EXPORT QPlatformPrinterSupportPlugin : public QObject
 {
     Q_OBJECT
 public:
-    explicit QPlatformPrinterSupportPlugin(QObject *parent = 0);
+    explicit QPlatformPrinterSupportPlugin(QObject *parent = nullptr);
     ~QPlatformPrinterSupportPlugin();
 
     virtual QPlatformPrinterSupport *create(const QString &key) = 0;

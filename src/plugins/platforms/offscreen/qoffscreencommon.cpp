@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QPlatformWindow *QOffscreenScreen::windowContainingCursor = 0;
+QPlatformWindow *QOffscreenScreen::windowContainingCursor = nullptr;
 
 class QOffscreenCursor : public QPlatformCursor
 {
@@ -60,7 +60,7 @@ public:
     {
         m_pos = pos;
         const QWindowList wl = QGuiApplication::topLevelWindows();
-        QWindow *containing = 0;
+        QWindow *containing = nullptr;
         for (QWindow *w : wl) {
             if (w->type() != Qt::Desktop && w->isExposed() && w->geometry().contains(pos)) {
                 containing = w;
@@ -72,7 +72,7 @@ public:
         if (containing)
             local -= containing->position();
 
-        QWindow *previous = QOffscreenScreen::windowContainingCursor ? QOffscreenScreen::windowContainingCursor->window() : 0;
+        QWindow *previous = QOffscreenScreen::windowContainingCursor ? QOffscreenScreen::windowContainingCursor->window() : nullptr;
 
         if (containing != previous)
             QWindowSystemInterface::handleEnterLeaveEvent(containing, previous, local, pos);
@@ -80,7 +80,7 @@ public:
         QWindowSystemInterface::handleMouseEvent(containing, local, pos, QGuiApplication::mouseButtons(), Qt::NoButton,
                                                  QEvent::MouseMove, QGuiApplication::keyboardModifiers(), Qt::MouseEventSynthesizedByQt);
 
-        QOffscreenScreen::windowContainingCursor = containing ? containing->handle() : 0;
+        QOffscreenScreen::windowContainingCursor = containing ? containing->handle() : nullptr;
     }
 #ifndef QT_NO_CURSOR
     void changeCursor(QCursor *windowCursor, QWindow *window) override
@@ -106,7 +106,7 @@ QPixmap QOffscreenScreen::grabWindow(WId id, int x, int y, int width, int height
     QOffscreenWindow *window = QOffscreenWindow::windowForWinId(id);
     if (!window || window->window()->type() == Qt::Desktop) {
         const QWindowList wl = QGuiApplication::topLevelWindows();
-        QWindow *containing = 0;
+        QWindow *containing = nullptr;
         for (QWindow *w : wl) {
             if (w->type() != Qt::Desktop && w->isExposed() && w->geometry().contains(rect)) {
                 containing = w;

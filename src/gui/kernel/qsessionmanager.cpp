@@ -135,7 +135,7 @@ QSessionManagerPrivate::QSessionManagerPrivate(const QString &id,
 QSessionManagerPrivate::~QSessionManagerPrivate()
 {
     delete platformSessionManager;
-    platformSessionManager = 0;
+    platformSessionManager = nullptr;
 }
 
 QSessionManager::QSessionManager(QGuiApplication *app, QString &id, QString &key)

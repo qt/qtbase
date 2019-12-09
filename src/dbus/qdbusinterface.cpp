@@ -149,7 +149,7 @@ static void copyArgument(void *to, int id, const QVariant &arg)
 
 QDBusInterfacePrivate::QDBusInterfacePrivate(const QString &serv, const QString &p,
                                              const QString &iface, const QDBusConnection &con)
-    : QDBusAbstractInterfacePrivate(serv, p, iface, con, true), metaObject(0)
+    : QDBusAbstractInterfacePrivate(serv, p, iface, con, true), metaObject(nullptr)
 {
     // QDBusAbstractInterfacePrivate's constructor checked the parameters for us
     if (connection.isConnected()) {
@@ -245,7 +245,7 @@ const QMetaObject *QDBusInterface::metaObject() const
 */
 void *QDBusInterface::qt_metacast(const char *_clname)
 {
-    if (!_clname) return 0;
+    if (!_clname) return nullptr;
     if (!strcmp(_clname, "QDBusInterface"))
         return static_cast<void*>(const_cast<QDBusInterface*>(this));
     if (d_func()->interface.toLatin1() == _clname)

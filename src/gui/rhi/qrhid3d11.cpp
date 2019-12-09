@@ -2764,9 +2764,37 @@ bool QD3D11Texture::buildFrom(const QRhiNativeHandles *src)
     return true;
 }
 
+bool QD3D11Texture::buildFrom(QRhiTexture::NativeTexture src)
+{
+    auto *srcTex = static_cast<ID3D11Texture2D * const *>(src.object);
+    if (!srcTex || !*srcTex)
+        return false;
+
+    if (!prepareBuild())
+        return false;
+
+    tex = *srcTex;
+
+    if (!finishBuild())
+        return false;
+
+    QRHI_PROF;
+    QRHI_PROF_F(newTexture(this, false, int(mipLevelCount), m_flags.testFlag(CubeMap) ? 6 : 1, int(sampleDesc.Count)));
+
+    owns = false;
+    QRHI_RES_RHI(QRhiD3D11);
+    rhiD->registerResource(this);
+    return true;
+}
+
 const QRhiNativeHandles *QD3D11Texture::nativeHandles()
 {
     return &nativeHandlesStruct;
+}
+
+QRhiTexture::NativeTexture QD3D11Texture::nativeTexture()
+{
+    return {&nativeHandlesStruct.texture, 0};
 }
 
 ID3D11UnorderedAccessView *QD3D11Texture::unorderedAccessViewForLevel(int level)

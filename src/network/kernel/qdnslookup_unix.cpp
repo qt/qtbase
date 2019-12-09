@@ -73,13 +73,13 @@ QT_BEGIN_NAMESPACE
 typedef struct __res_state* res_state;
 #endif
 typedef int (*dn_expand_proto)(const unsigned char *, const unsigned char *, const unsigned char *, char *, int);
-static dn_expand_proto local_dn_expand = 0;
+static dn_expand_proto local_dn_expand = nullptr;
 typedef void (*res_nclose_proto)(res_state);
-static res_nclose_proto local_res_nclose = 0;
+static res_nclose_proto local_res_nclose = nullptr;
 typedef int (*res_ninit_proto)(res_state);
-static res_ninit_proto local_res_ninit = 0;
+static res_ninit_proto local_res_ninit = nullptr;
 typedef int (*res_nquery_proto)(res_state, const char *, int, int, unsigned char *, int);
-static res_nquery_proto local_res_nquery = 0;
+static res_nquery_proto local_res_nquery = nullptr;
 
 // Custom deleter to close resolver state.
 

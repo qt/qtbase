@@ -461,7 +461,7 @@ QIODevice::QIODevice(QIODevicePrivate &dd)
 */
 
 QIODevice::QIODevice()
-    : QObject(*new QIODevicePrivate, 0)
+    : QObject(*new QIODevicePrivate, nullptr)
 {
 #if defined QIODEVICE_DEBUG
     QFile *file = qobject_cast<QFile *>(this);

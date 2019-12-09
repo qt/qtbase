@@ -151,7 +151,7 @@ QT_BEGIN_NAMESPACE
 
 QStyleOption::QStyleOption(int version, int type)
     : version(version), type(type), state(QStyle::State_None),
-      direction(QGuiApplication::layoutDirection()), fontMetrics(QFont()), styleObject(0)
+      direction(QGuiApplication::layoutDirection()), fontMetrics(QFont()), styleObject(nullptr)
 {
 }
 
@@ -3085,7 +3085,7 @@ QStyleOptionViewItem::QStyleOptionViewItem()
     : QStyleOption(Version, SO_ViewItem),
       displayAlignment(Qt::AlignLeft), decorationAlignment(Qt::AlignLeft),
       textElideMode(Qt::ElideMiddle), decorationPosition(Left),
-      showDecorationSelected(false), features(None), widget(0),
+      showDecorationSelected(false), features(None), widget(nullptr),
       checkState(Qt::Unchecked), viewItemPosition(QStyleOptionViewItem::Invalid)
 {
 }
@@ -3097,7 +3097,7 @@ QStyleOptionViewItem::QStyleOptionViewItem(int version)
     : QStyleOption(version, SO_ViewItem),
       displayAlignment(Qt::AlignLeft), decorationAlignment(Qt::AlignLeft),
       textElideMode(Qt::ElideMiddle), decorationPosition(Left),
-      showDecorationSelected(false), features(None), widget(0),
+      showDecorationSelected(false), features(None), widget(nullptr),
       checkState(Qt::Unchecked), viewItemPosition(QStyleOptionViewItem::Invalid)
 {
 }

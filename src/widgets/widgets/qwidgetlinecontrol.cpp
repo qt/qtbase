@@ -964,7 +964,7 @@ void QWidgetLineControl::parseInputMask(const QString &maskFields)
     if (maskFields.isEmpty() || delimiter == 0) {
         if (m_maskData) {
             delete [] m_maskData;
-            m_maskData = 0;
+            m_maskData = nullptr;
             m_maxLength = 32767;
             internalSetText(QString(), -1, false);
         }

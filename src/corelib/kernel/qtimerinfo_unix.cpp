@@ -83,7 +83,7 @@ QTimerInfoList::QTimerInfoList()
     }
 #endif
 
-    firstTimerInfo = 0;
+    firstTimerInfo = nullptr;
 }
 
 timespec QTimerInfoList::updateCurrentTime()
@@ -389,7 +389,7 @@ bool QTimerInfoList::timerWait(timespec &tm)
     repairTimersIfNeeded();
 
     // Find first waiting timer not already active
-    QTimerInfo *t = 0;
+    QTimerInfo *t = nullptr;
     for (QTimerInfoList::const_iterator it = constBegin(); it != constEnd(); ++it) {
         if (!(*it)->activateRef) {
             t = *it;
@@ -450,7 +450,7 @@ void QTimerInfoList::registerTimer(int timerId, int interval, Qt::TimerType time
     t->interval = interval;
     t->timerType = timerType;
     t->obj = object;
-    t->activateRef = 0;
+    t->activateRef = nullptr;
 
     timespec expected = updateCurrentTime() + interval;
 
@@ -514,9 +514,9 @@ bool QTimerInfoList::unregisterTimer(int timerId)
             // found it
             removeAt(i);
             if (t == firstTimerInfo)
-                firstTimerInfo = 0;
+                firstTimerInfo = nullptr;
             if (t->activateRef)
-                *(t->activateRef) = 0;
+                *(t->activateRef) = nullptr;
             delete t;
             return true;
         }
@@ -535,9 +535,9 @@ bool QTimerInfoList::unregisterTimers(QObject *object)
             // object found
             removeAt(i);
             if (t == firstTimerInfo)
-                firstTimerInfo = 0;
+                firstTimerInfo = nullptr;
             if (t->activateRef)
-                *(t->activateRef) = 0;
+                *(t->activateRef) = nullptr;
             delete t;
             // move back one so that we don't skip the new current item
             --i;
@@ -571,7 +571,7 @@ int QTimerInfoList::activateTimers()
         return 0; // nothing to do
 
     int n_act = 0, maxCount = 0;
-    firstTimerInfo = 0;
+    firstTimerInfo = nullptr;
 
     timespec currentTime = updateCurrentTime();
     // qDebug() << "Thread" << QThread::currentThreadId() << "woken up at" << currentTime;
@@ -643,11 +643,11 @@ int QTimerInfoList::activateTimers()
             QCoreApplication::sendEvent(currentTimerInfo->obj, &e);
 
             if (currentTimerInfo)
-                currentTimerInfo->activateRef = 0;
+                currentTimerInfo->activateRef = nullptr;
         }
     }
 
-    firstTimerInfo = 0;
+    firstTimerInfo = nullptr;
     // qDebug() << "Thread" << QThread::currentThreadId() << "activated" << n_act << "timers";
     return n_act;
 }

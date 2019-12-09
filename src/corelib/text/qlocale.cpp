@@ -79,7 +79,7 @@
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SYSTEMLOCALE
-static QSystemLocale *_systemLocale = 0;
+static QSystemLocale *_systemLocale = nullptr;
 class QSystemLocaleSingleton: public QSystemLocale
 {
 public:
@@ -695,7 +695,7 @@ QSystemLocale::QSystemLocale(bool)
 QSystemLocale::~QSystemLocale()
 {
     if (_systemLocale == this) {
-        _systemLocale = 0;
+        _systemLocale = nullptr;
 
         globalLocaleData.m_language_id = 0;
     }
@@ -2429,7 +2429,7 @@ QTime QLocale::toTime(const QString &string, const QString &format, QCalendar ca
     QDateTimeParser dt(QVariant::Time, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
-        dt.fromString(string, 0, &time);
+        dt.fromString(string, nullptr, &time);
 #else
     Q_UNUSED(cal);
     Q_UNUSED(string);
@@ -2468,7 +2468,7 @@ QDate QLocale::toDate(const QString &string, const QString &format, QCalendar ca
     QDateTimeParser dt(QVariant::Date, QDateTimeParser::FromString, cal);
     dt.setDefaultLocale(*this);
     if (dt.parseFormat(format))
-        dt.fromString(string, &date, 0);
+        dt.fromString(string, &date, nullptr);
 #else
     Q_UNUSED(string);
     Q_UNUSED(format);

@@ -111,7 +111,7 @@ public:
     typedef std::vector<std::unique_ptr<Page>> PageList;
 
     inline QToolBoxPrivate()
-        : currentPage(0)
+        : currentPage(nullptr)
     {
     }
     void _q_buttonClicked();
@@ -157,7 +157,7 @@ const QToolBoxPrivate::Page *QToolBoxPrivate::page(int index) const
 
 void QToolBoxPrivate::updateTabs()
 {
-    QToolBoxButton *lastButton = currentPage ? currentPage->button : 0;
+    QToolBoxButton *lastButton = currentPage ? currentPage->button : nullptr;
     bool after = false;
     int index = 0;
     for (const auto &page : pageList) {
@@ -184,7 +184,7 @@ QSize QToolBoxButton::sizeHint() const
 {
     QSize iconSize(8, 8);
     if (!icon().isNull()) {
-        int icone = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, parentWidget() /* QToolBox */);
+        int icone = style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, parentWidget() /* QToolBox */);
         iconSize += QSize(icone + 2, icone);
     }
     QSize textSize = fontMetrics().size(Qt::TextShowMnemonic, text()) + QSize(0, 8);
@@ -197,7 +197,7 @@ QSize QToolBoxButton::minimumSizeHint() const
 {
     if (icon().isNull())
         return QSize();
-    int icone = style()->pixelMetric(QStyle::PM_SmallIconSize, 0, parentWidget() /* QToolBox */);
+    int icone = style()->pixelMetric(QStyle::PM_SmallIconSize, nullptr, parentWidget() /* QToolBox */);
     return QSize(icone + 8, icone + 8);
 }
 
@@ -378,7 +378,7 @@ int QToolBox::insertItem(int index, QWidget *widget, const QIcon &icon, const QS
             QWidget *current = d->currentPage->widget;
             int oldindex = indexOf(current);
             if (index <= oldindex) {
-                d->currentPage = 0; // trigger change
+                d->currentPage = nullptr; // trigger change
                 setCurrentIndex(oldindex);
             }
         }
@@ -472,10 +472,10 @@ void QToolBoxPrivate::_q_widgetDestroyed(QObject *object)
     pageList.erase(std::remove_if(pageList.begin(), pageList.end(), pageEquals(c)), pageList.end());
 
     if (pageList.empty()) {
-        currentPage = 0;
+        currentPage = nullptr;
         emit q->currentChanged(-1);
     } else if (removeCurrent) {
-        currentPage = 0;
+        currentPage = nullptr;
         q->setCurrentIndex(0);
     }
 }
@@ -562,7 +562,7 @@ QWidget *QToolBox::widget(int index) const
 int QToolBox::indexOf(QWidget *widget) const
 {
     Q_D(const QToolBox);
-    const QToolBoxPrivate::Page *c = (widget ? d->page(widget) : 0);
+    const QToolBoxPrivate::Page *c = (widget ? d->page(widget) : nullptr);
     if (!c)
         return -1;
     const auto it = std::find_if(d->pageList.cbegin(), d->pageList.cend(), pageEquals(c));

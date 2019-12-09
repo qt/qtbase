@@ -247,7 +247,7 @@
 */
 
 QDBusPendingReplyData::QDBusPendingReplyData()
-    : QDBusPendingCall(0)         // initialize base class empty
+    : QDBusPendingCall(nullptr)         // initialize base class empty
 {
 }
 
@@ -262,7 +262,7 @@ void QDBusPendingReplyData::assign(const QDBusPendingCall &other)
 
 void QDBusPendingReplyData::assign(const QDBusMessage &message)
 {
-    d = new QDBusPendingCallPrivate(QDBusMessage(), 0); // drops the reference to the old one
+    d = new QDBusPendingCallPrivate(QDBusMessage(), nullptr); // drops the reference to the old one
     d->replyMessage = message;
 }
 

@@ -586,9 +586,9 @@ QModelIndex QFileSystemModel::parent(const QModelIndex &index) const
         return QModelIndex();
 
     QFileSystemModelPrivate::QFileSystemNode *indexNode = d->node(index);
-    Q_ASSERT(indexNode != 0);
+    Q_ASSERT(indexNode != nullptr);
     QFileSystemModelPrivate::QFileSystemNode *parentNode = indexNode->parent;
-    if (parentNode == 0 || parentNode == &d->root)
+    if (parentNode == nullptr || parentNode == &d->root)
         return QModelIndex();
 
     // get the parent's row
@@ -608,7 +608,7 @@ QModelIndex QFileSystemModel::parent(const QModelIndex &index) const
 QModelIndex QFileSystemModelPrivate::index(const QFileSystemModelPrivate::QFileSystemNode *node, int column) const
 {
     Q_Q(const QFileSystemModel);
-    QFileSystemModelPrivate::QFileSystemNode *parentNode = (node ? node->parent : 0);
+    QFileSystemModelPrivate::QFileSystemNode *parentNode = (node ? node->parent : nullptr);
     if (node == &root || !parentNode)
         return QModelIndex();
 

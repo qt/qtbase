@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 */
 
 QScreen::QScreen(QPlatformScreen *screen)
-    : QObject(*new QScreenPrivate(), 0)
+    : QObject(*new QScreenPrivate(), nullptr)
 {
     Q_D(QScreen);
     d->setPlatformScreen(screen);

@@ -461,7 +461,7 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
 const QMimeData* QClipboard::mimeData(Mode mode) const
 {
     QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
-    if (!clipboard->supportsMode(mode)) return 0;
+    if (!clipboard->supportsMode(mode)) return nullptr;
     return clipboard->mimeData(mode);
 }
 
@@ -488,7 +488,7 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
 {
     QPlatformClipboard *clipboard = QGuiApplicationPrivate::platformIntegration()->clipboard();
     if (!clipboard->supportsMode(mode)) {
-        if (src != 0) {
+        if (src != nullptr) {
             qDebug("Data set on unsupported clipboard mode. QMimeData object will be deleted.");
             src->deleteLater();
         }
@@ -512,7 +512,7 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
 */
 void QClipboard::clear(Mode mode)
 {
-    setMimeData(0, mode);
+    setMimeData(nullptr, mode);
 }
 
 /*!

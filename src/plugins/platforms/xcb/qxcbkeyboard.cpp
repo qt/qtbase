@@ -579,7 +579,7 @@ void QXcbKeyboard::selectEvents()
                 required_events,
                 required_map_parts,
                 required_map_parts,
-                0);
+                nullptr);
 
     xcb_generic_error_t *error = xcb_request_check(xcb_connection(), select);
     if (error) {
@@ -620,7 +620,7 @@ void QXcbKeyboard::updateVModMapping()
     vmod_mask = name_reply->virtualMods;
     // find the virtual modifiers for which names are defined.
     for (bit = 1; vmod_mask; bit <<= 1) {
-        vmod_name = 0;
+        vmod_name = nullptr;
 
         if (!(vmod_mask & bit))
             continue;

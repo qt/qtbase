@@ -1152,7 +1152,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
         }
         pos += separator.size();
         sectionNodes[index].pos = pos;
-        int *current = 0;
+        int *current = nullptr;
         const SectionNode sn = sectionNodes.at(index);
         ParsedSection sect;
 

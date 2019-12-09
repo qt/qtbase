@@ -198,7 +198,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
             store = destLayout->storeFromRGB32;
     }
     QDitherInfo dither;
-    QDitherInfo *ditherPtr = 0;
+    QDitherInfo *ditherPtr = nullptr;
     if ((flags & Qt::PreferDither) && (flags & Qt::Dither_Mask) != Qt::ThresholdDither)
         ditherPtr = &dither;
 
@@ -212,8 +212,8 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
                 buffer = reinterpret_cast<uint *>(destData) + x;
             else
                 l = qMin(l, BufferSize);
-            const uint *ptr = fetch(buffer, srcData, x, l, 0, ditherPtr);
-            store(destData, ptr, x, l, 0, ditherPtr);
+            const uint *ptr = fetch(buffer, srcData, x, l, nullptr, ditherPtr);
+            store(destData, ptr, x, l, nullptr, ditherPtr);
             x += l;
         }
         srcData += src->bytes_per_line;
@@ -314,7 +314,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
             store = destLayout->storeFromRGB32;
     }
     QDitherInfo dither;
-    QDitherInfo *ditherPtr = 0;
+    QDitherInfo *ditherPtr = nullptr;
     if ((flags & Qt::PreferDither) && (flags & Qt::Dither_Mask) != Qt::ThresholdDither)
         ditherPtr = &dither;
 

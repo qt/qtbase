@@ -249,7 +249,7 @@ class QOpenGLShaderPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QOpenGLShader)
 public:
     QOpenGLShaderPrivate(QOpenGLContext *ctx, QOpenGLShader::ShaderType type)
-        : shaderGuard(0)
+        : shaderGuard(nullptr)
         , shaderType(type)
         , compiled(false)
         , glfuncs(new QOpenGLExtraFunctions(ctx))
@@ -374,8 +374,8 @@ bool QOpenGLShaderPrivate::compile(QOpenGLShader *q)
         // Get info and source code lengths
         GLint infoLogLength = 0;
         GLint sourceCodeLength = 0;
-        char *logBuffer = 0;
-        char *sourceCodeBuffer = 0;
+        char *logBuffer = nullptr;
+        char *sourceCodeBuffer = nullptr;
 
         // Get the compilation info log
         glfuncs->glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
@@ -425,7 +425,7 @@ void QOpenGLShaderPrivate::deleteShader()
 {
     if (shaderGuard) {
         shaderGuard->free();
-        shaderGuard = 0;
+        shaderGuard = nullptr;
     }
 }
 
@@ -783,13 +783,13 @@ class QOpenGLShaderProgramPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QOpenGLShaderProgram)
 public:
     QOpenGLShaderProgramPrivate()
-        : programGuard(0)
+        : programGuard(nullptr)
         , linked(false)
         , inited(false)
         , removingShaders(false)
         , glfuncs(new QOpenGLExtraFunctions)
 #ifndef QT_OPENGL_ES_2
-        , tessellationFuncs(0)
+        , tessellationFuncs(nullptr)
 #endif
         , linkBinaryRecursion(false)
     {

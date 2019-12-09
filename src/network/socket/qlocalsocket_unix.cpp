@@ -61,8 +61,8 @@
 QT_BEGIN_NAMESPACE
 
 QLocalSocketPrivate::QLocalSocketPrivate() : QIODevicePrivate(),
-        delayConnect(0),
-        connectTimer(0),
+        delayConnect(nullptr),
+        connectTimer(nullptr),
         connectingSocket(-1),
         state(QLocalSocket::UnconnectedState)
 {
@@ -379,10 +379,10 @@ void QLocalSocketPrivate::cancelDelayedConnect()
     if (delayConnect) {
         delayConnect->setEnabled(false);
         delete delayConnect;
-        delayConnect = 0;
+        delayConnect = nullptr;
         connectTimer->stop();
         delete connectTimer;
-        connectTimer = 0;
+        connectTimer = nullptr;
     }
 }
 

@@ -75,7 +75,7 @@ void EventReader::run()
             if (client->format == 32
                 && client->type == atoms[Atoms::WM_PROTOCOLS]
                 && client->data.data32[0] == atoms[Atoms::WM_DELETE_WINDOW]) {
-                QWindow *window = m_integration->platformWindow() ? m_integration->platformWindow()->window() : 0;
+                QWindow *window = m_integration->platformWindow() ? m_integration->platformWindow()->window() : nullptr;
                 if (window)
                     QWindowSystemInterface::handleCloseEvent(window);
             }
@@ -106,7 +106,7 @@ void QEglFSX11Integration::sendConnectionEvent(xcb_atom_t a)
 
 void QEglFSX11Integration::platformInit()
 {
-    m_display = XOpenDisplay(0);
+    m_display = XOpenDisplay(nullptr);
     if (Q_UNLIKELY(!m_display))
         qFatal("Could not open display");
 
@@ -121,7 +121,7 @@ void QEglFSX11Integration::platformInit()
     xcb_create_window(m_connection, XCB_COPY_FROM_PARENT,
                       m_connectionEventListener, it.data->root,
                       0, 0, 1, 1, 0, XCB_WINDOW_CLASS_INPUT_ONLY,
-                      it.data->root_visual, 0, 0);
+                      it.data->root_visual, 0, nullptr);
 
     m_eventReader = new EventReader(this);
     m_eventReader->start();
@@ -135,11 +135,11 @@ void QEglFSX11Integration::platformDestroy()
 
     m_eventReader->wait();
     delete m_eventReader;
-    m_eventReader = 0;
+    m_eventReader = nullptr;
 
     XCloseDisplay(DISPLAY);
-    m_display = 0;
-    m_connection = 0;
+    m_display = nullptr;
+    m_connection = nullptr;
 }
 
 EGLNativeDisplayType QEglFSX11Integration::platformDisplay() const
@@ -175,7 +175,7 @@ EGLNativeWindowType QEglFSX11Integration::createNativeWindow(QPlatformWindow *pl
     xcb_create_window(m_connection, XCB_COPY_FROM_PARENT, m_window, it.data->root,
                       0, 0, size.width(), size.height(), 0,
                       XCB_WINDOW_CLASS_INPUT_OUTPUT, it.data->root_visual,
-                      0, 0);
+                      0, nullptr);
 
     xcb_intern_atom_cookie_t cookies[Atoms::N_ATOMS];
     static const char *atomNames[Atoms::N_ATOMS] = {
@@ -189,7 +189,7 @@ EGLNativeWindowType QEglFSX11Integration::createNativeWindow(QPlatformWindow *pl
 
     for (int i = 0; i < Atoms::N_ATOMS; ++i) {
         cookies[i] = xcb_intern_atom(m_connection, false, strlen(atomNames[i]), atomNames[i]);
-        xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(m_connection, cookies[i], 0);
+        xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(m_connection, cookies[i], nullptr);
         m_atoms[i] = reply->atom;
         free(reply);
     }

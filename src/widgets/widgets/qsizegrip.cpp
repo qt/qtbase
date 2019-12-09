@@ -128,7 +128,7 @@ QSizeGripPrivate::QSizeGripPrivate()
     : dxMax(0)
     , dyMax(0)
     , gotMousePress(false)
-    , tlw(0)
+    , tlw(nullptr)
     , m_platformSizeGrip(false)
 {
 }

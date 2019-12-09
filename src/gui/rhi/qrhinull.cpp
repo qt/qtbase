@@ -651,6 +651,12 @@ bool QNullTexture::buildFrom(const QRhiNativeHandles *src)
     return true;
 }
 
+bool QNullTexture::buildFrom(QRhiTexture::NativeTexture src)
+{
+    Q_UNUSED(src)
+    return buildFrom(nullptr);
+}
+
 const QRhiNativeHandles *QNullTexture::nativeHandles()
 {
     return &nativeHandlesStruct;

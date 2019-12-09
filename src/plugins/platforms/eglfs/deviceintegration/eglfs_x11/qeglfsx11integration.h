@@ -67,7 +67,7 @@ class EventReader;
 class QEglFSX11Integration : public QEglFSDeviceIntegration
 {
 public:
-    QEglFSX11Integration() : m_connection(0), m_window(0), m_eventReader(0) {}
+    QEglFSX11Integration() : m_connection(nullptr), m_window(0), m_eventReader(nullptr) {}
 
     void platformInit() override;
     void platformDestroy() override;

@@ -55,8 +55,8 @@ class QFocusFramePrivate : public QWidgetPrivate
     bool showFrameAboveWidget;
 public:
     QFocusFramePrivate() {
-        widget = 0;
-        frameParent = 0;
+        widget = nullptr;
+        frameParent = nullptr;
         sendChildEvents = false;
         showFrameAboveWidget = false;
     }
@@ -159,7 +159,7 @@ QFocusFrame::QFocusFrame(QWidget *parent)
     setAttribute(Qt::WA_TransparentForMouseEvents);
     setFocusPolicy(Qt::NoFocus);
     setAttribute(Qt::WA_NoChildEventsForParent, true);
-    setAttribute(Qt::WA_AcceptDrops, style()->styleHint(QStyle::SH_FocusFrame_AboveWidget, 0, this));
+    setAttribute(Qt::WA_AcceptDrops, style()->styleHint(QStyle::SH_FocusFrame_AboveWidget, nullptr, this));
 }
 
 /*!
@@ -184,7 +184,7 @@ QFocusFrame::setWidget(QWidget *widget)
 {
     Q_D(QFocusFrame);
 
-    if (style()->styleHint(QStyle::SH_FocusFrame_AboveWidget, 0, this))
+    if (style()->styleHint(QStyle::SH_FocusFrame_AboveWidget, nullptr, this))
         d->showFrameAboveWidget = true;
     else
         d->showFrameAboveWidget = false;
@@ -205,7 +205,7 @@ QFocusFrame::setWidget(QWidget *widget)
         d->widget = widget;
         d->widget->installEventFilter(this);
         QWidget *p = widget->parentWidget();
-        QWidget *prev = 0;
+        QWidget *prev = nullptr;
         if (d->showFrameAboveWidget) {
             // Find the right parent for the focus frame.
             while (p) {
@@ -231,7 +231,7 @@ QFocusFrame::setWidget(QWidget *widget)
         }
         d->update();
     } else {
-        d->widget = 0;
+        d->widget = nullptr;
         hide();
     }
 }
@@ -290,7 +290,7 @@ QFocusFrame::eventFilter(QObject *o, QEvent *e)
         case QEvent::ParentChange:
             if (d->showFrameAboveWidget) {
                 QWidget *w = d->widget;
-                setWidget(0);
+                setWidget(nullptr);
                 setWidget(w);
             } else {
                 d->update();
@@ -304,13 +304,13 @@ QFocusFrame::eventFilter(QObject *o, QEvent *e)
             setPalette(d->widget->palette());
             break;
         case QEvent::ZOrderChange:
-            if (style()->styleHint(QStyle::SH_FocusFrame_AboveWidget, 0, this))
+            if (style()->styleHint(QStyle::SH_FocusFrame_AboveWidget, nullptr, this))
                 raise();
             else
                 stackUnder(d->widget);
             break;
         case QEvent::Destroy:
-            setWidget(0);
+            setWidget(nullptr);
             break;
         default:
             break;

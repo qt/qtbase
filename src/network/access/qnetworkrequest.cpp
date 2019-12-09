@@ -426,7 +426,7 @@ public:
     inline QNetworkRequestPrivate()
         : priority(QNetworkRequest::NormalPriority)
 #ifndef QT_NO_SSL
-        , sslConfiguration(0)
+        , sslConfiguration(nullptr)
 #endif
         , maxRedirectsAllowed(maxRedirectCount)
         , transferTimeout(0)
@@ -446,7 +446,7 @@ public:
         priority = other.priority;
         maxRedirectsAllowed = other.maxRedirectsAllowed;
 #ifndef QT_NO_SSL
-        sslConfiguration = 0;
+        sslConfiguration = nullptr;
         if (other.sslConfiguration)
             sslConfiguration = new QSslConfiguration(*other.sslConfiguration);
 #endif
@@ -532,7 +532,7 @@ QNetworkRequest::QNetworkRequest(const QNetworkRequest &other)
 QNetworkRequest::~QNetworkRequest()
 {
     // QSharedDataPointer auto deletes
-    d = 0;
+    d = nullptr;
 }
 
 /*!

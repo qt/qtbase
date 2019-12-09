@@ -2499,9 +2499,38 @@ bool QMetalTexture::buildFrom(const QRhiNativeHandles *src)
     return true;
 }
 
+bool QMetalTexture::buildFrom(QRhiTexture::NativeTexture src)
+{
+    void * const * tex = (void * const *) src.object;
+    if (!tex || !*tex)
+        return false;
+
+    if (!prepareBuild())
+        return false;
+
+    d->tex = (id<MTLTexture>) *tex;
+
+    d->owns = false;
+    nativeHandlesStruct.texture = d->tex;
+
+    QRHI_PROF;
+    QRHI_PROF_F(newTexture(this, false, mipLevelCount, m_flags.testFlag(CubeMap) ? 6 : 1, samples));
+
+    lastActiveFrameSlot = -1;
+    generation += 1;
+    QRHI_RES_RHI(QRhiMetal);
+    rhiD->registerResource(this);
+    return true;
+}
+
 const QRhiNativeHandles *QMetalTexture::nativeHandles()
 {
     return &nativeHandlesStruct;
+}
+
+QRhiTexture::NativeTexture QMetalTexture::nativeTexture()
+{
+    return {&nativeHandlesStruct.texture, 0};
 }
 
 id<MTLTexture> QMetalTextureData::viewForLevel(int level)

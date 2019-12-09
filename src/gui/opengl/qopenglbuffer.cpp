@@ -143,10 +143,10 @@ public:
     QOpenGLBufferPrivate(QOpenGLBuffer::Type t)
         : ref(1),
           type(t),
-          guard(0),
+          guard(nullptr),
           usagePattern(QOpenGLBuffer::StaticDraw),
           actualUsagePattern(QOpenGLBuffer::StaticDraw),
-          funcs(0)
+          funcs(nullptr)
     {
     }
 
@@ -323,10 +323,10 @@ void QOpenGLBuffer::destroy()
     Q_D(QOpenGLBuffer);
     if (d->guard) {
         d->guard->free();
-        d->guard = 0;
+        d->guard = nullptr;
     }
     delete d->funcs;
-    d->funcs = 0;
+    d->funcs = nullptr;
 }
 
 /*!
@@ -586,7 +586,7 @@ void *QOpenGLBuffer::mapRange(int offset, int count, QOpenGLBuffer::RangeAccessF
         qWarning("QOpenGLBuffer::mapRange(): buffer not created");
 #endif
     if (!d->guard || !d->guard->id())
-        return 0;
+        return nullptr;
     return d->funcs->glMapBufferRange(d->type, offset, count, access);
 }
 

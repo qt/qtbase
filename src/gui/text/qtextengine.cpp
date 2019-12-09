@@ -72,7 +72,7 @@ public:
         : m_string(string),
         m_analysis(analysis),
         m_items(items),
-        m_splitter(0)
+        m_splitter(nullptr)
     {
     }
     ~Itemizer()
@@ -138,7 +138,7 @@ private:
         if (!m_splitter)
             m_splitter = new QTextBoundaryFinder(QTextBoundaryFinder::Word,
                                                  m_string.constData(), m_string.length(),
-                                                 /*buffer*/0, /*buffer size*/0);
+                                                 /*buffer*/nullptr, /*buffer size*/0);
 
         m_splitter->setPosition(start);
         QScriptAnalysis itemAnalysis = m_analysis[start];
@@ -1680,8 +1680,8 @@ int QTextEngine::shapeTextWithHarfbuzzNG(const QScriptItem &si,
         QGlyphLayout g = availableGlyphs(&si).mid(glyphs_shaped, num_glyphs);
         ushort *log_clusters = logClusters(&si) + item_pos;
 
-        hb_glyph_info_t *infos = hb_buffer_get_glyph_infos(buffer, 0);
-        hb_glyph_position_t *positions = hb_buffer_get_glyph_positions(buffer, 0);
+        hb_glyph_info_t *infos = hb_buffer_get_glyph_infos(buffer, nullptr);
+        hb_glyph_position_t *positions = hb_buffer_get_glyph_positions(buffer, nullptr);
         uint str_pos = 0;
         uint last_cluster = ~0u;
         uint last_glyph_pos = glyphs_shaped;
@@ -1917,12 +1917,12 @@ void QTextEngine::init(QTextEngine *e)
     e->visualMovement = false;
     e->delayDecorations = false;
 
-    e->layoutData = 0;
+    e->layoutData = nullptr;
 
     e->minWidth = 0;
     e->maxWidth = 0;
 
-    e->specialData = 0;
+    e->specialData = nullptr;
     e->stackEngine = false;
 #ifndef QT_NO_RAWFONT
     e->useRawFont = false;
@@ -1956,7 +1956,7 @@ const QCharAttributes *QTextEngine::attributes() const
 
     itemize();
     if (! ensureSpace(layoutData->string.length()))
-        return NULL;
+        return nullptr;
 
     QVarLengthArray<QUnicodeTools::ScriptItem> scriptItems(layoutData->items.size());
     for (int i = 0; i < layoutData->items.size(); ++i) {
@@ -2148,7 +2148,7 @@ void QTextEngine::itemize() const
             if (it == end || format != frag->format) {
                 if (s && position >= s->preeditPosition) {
                     position += s->preeditText.length();
-                    s = 0;
+                    s = nullptr;
                 }
                 Q_ASSERT(position <= length);
                 QFont::Capitalization capitalization =
@@ -2443,8 +2443,8 @@ QTextEngine::FontEngineCache::FontEngineCache()
 //input is common (and hard to cache at a higher level)
 QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFixed *descent, QFixed *leading) const
 {
-    QFontEngine *engine = 0;
-    QFontEngine *scaledEngine = 0;
+    QFontEngine *engine = nullptr;
+    QFontEngine *scaledEngine = nullptr;
     int script = si.analysis.script;
 
     QFont font = fnt;
@@ -2459,7 +2459,7 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
             engine->ref.ref();
             if (feCache.prevScaledFontEngine) {
                 releaseCachedFontEngine(feCache.prevScaledFontEngine);
-                feCache.prevScaledFontEngine = 0;
+                feCache.prevScaledFontEngine = nullptr;
             }
         }
         if (si.analysis.flags == QScriptAnalysis::SmallCaps) {
@@ -2538,7 +2538,7 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
                 feCache.prevScript = script;
                 feCache.prevPosition = -1;
                 feCache.prevLength = -1;
-                feCache.prevScaledFontEngine = 0;
+                feCache.prevScaledFontEngine = nullptr;
             }
         }
 
@@ -2808,14 +2808,14 @@ void QScriptLine::setDefaultHeight(QTextEngine *eng)
 
 QTextEngine::LayoutData::LayoutData()
 {
-    memory = 0;
+    memory = nullptr;
     allocated = 0;
     memory_on_stack = false;
     used = 0;
     hasBidi = false;
     layoutState = LayoutEmpty;
     haveCharAttributes = false;
-    logClustersPtr = 0;
+    logClustersPtr = nullptr;
     available_glyphs = 0;
 }
 
@@ -2833,8 +2833,8 @@ QTextEngine::LayoutData::LayoutData(const QString &str, void **stack_memory, int
         allocated = 0;
 
         memory_on_stack = false;
-        memory = 0;
-        logClustersPtr = 0;
+        memory = nullptr;
+        logClustersPtr = nullptr;
     } else {
         memory_on_stack = true;
         memory = stack_memory;
@@ -2855,7 +2855,7 @@ QTextEngine::LayoutData::~LayoutData()
 {
     if (!memory_on_stack)
         free(memory);
-    memory = 0;
+    memory = nullptr;
 }
 
 bool QTextEngine::LayoutData::reallocate(int totalGlyphs)
@@ -2879,7 +2879,7 @@ bool QTextEngine::LayoutData::reallocate(int totalGlyphs)
         return false;
     }
 
-    void **newMem = (void **)::realloc(memory_on_stack ? 0 : memory, newAllocated*sizeof(void *));
+    void **newMem = (void **)::realloc(memory_on_stack ? nullptr : memory, newAllocated*sizeof(void *));
     if (!newMem) {
         layoutState = LayoutFailed;
         return false;
@@ -2928,7 +2928,7 @@ void QTextEngine::freeMemory()
 {
     if (!stackEngine) {
         delete layoutData;
-        layoutData = 0;
+        layoutData = nullptr;
     } else {
         layoutData->used = 0;
         layoutData->hasBidi = false;
@@ -3035,7 +3035,7 @@ void QTextEngine::setPreeditArea(int position, const QString &preeditText)
             return;
         if (specialData->formats.isEmpty()) {
             delete specialData;
-            specialData = 0;
+            specialData = nullptr;
         } else {
             specialData->preeditText = QString();
             specialData->preeditPosition = -1;
@@ -3057,7 +3057,7 @@ void QTextEngine::setFormats(const QVector<QTextLayout::FormatRange> &formats)
             return;
         if (specialData->preeditText.isEmpty()) {
             delete specialData;
-            specialData = 0;
+            specialData = nullptr;
         } else {
             specialData->formats.clear();
         }
@@ -4004,7 +4004,7 @@ QTextLineItemIterator::QTextLineItemIterator(QTextEngine *_eng, int _lineNum, co
                                              const QTextLayout::FormatRange *_selection)
     : eng(_eng),
       line(eng->lines[_lineNum]),
-      si(0),
+      si(nullptr),
       lineNum(_lineNum),
       lineEnd(line.from + line.length),
       firstItem(eng->findItem(line.from)),
