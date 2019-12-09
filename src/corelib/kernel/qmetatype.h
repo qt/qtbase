@@ -495,7 +495,8 @@ public:
         TrackingPointerToQObject = 0x80,
         WasDeclaredAsMetaType = 0x100,
         IsGadget = 0x200,
-        PointerToGadget = 0x400
+        PointerToGadget = 0x400,
+        IsPointer = 0x800,
     };
     Q_DECLARE_FLAGS(TypeFlags, TypeFlag)
 
@@ -692,6 +693,7 @@ public:
     static bool registerConverterFunction(const QtPrivate::AbstractConverterFunction *f, int from, int to);
     static void unregisterConverterFunction(int from, int to);
 private:
+    friend class QVariant;
     QtPrivate::QMetaTypeInterface *d_ptr = nullptr;
 };
 
@@ -1708,6 +1710,7 @@ namespace QtPrivate {
                      | (std::is_enum<T>::value ? QMetaType::IsEnumeration : 0)
                      | (IsGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::IsGadget : 0)
                      | (IsPointerToGadgetHelper<T>::IsGadgetOrDerivedFrom ? QMetaType::PointerToGadget : 0)
+                     | (QTypeInfo<T>::isPointer ? QMetaType::IsPointer : 0)
              };
     };
 

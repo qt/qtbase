@@ -48,36 +48,6 @@
 QT_BEGIN_NAMESPACE
 
 namespace {
-static void construct(QVariant::Private *x, const void *copy)
-{
-    switch (x->type) {
-    case QMetaType::QSizePolicy:
-        v_construct<QSizePolicy>(x, copy);
-        break;
-    default:
-        qWarning("Trying to construct an instance of an invalid type, type id: %i", x->type);
-        x->type = QMetaType::UnknownType;
-        return;
-    }
-    x->is_null = !copy;
-}
-
-static void clear(QVariant::Private *d)
-{
-    switch (d->type) {
-    case QMetaType::QSizePolicy:
-        v_clear<QSizePolicy>(d);
-        break;
-    default:
-        Q_ASSERT(false);
-        return;
-    }
-
-    d->type = QMetaType::UnknownType;
-    d->is_null = true;
-    d->is_shared = false;
-}
-
 
 static bool isNull(const QVariant::Private *)
 {
@@ -86,8 +56,8 @@ static bool isNull(const QVariant::Private *)
 
 static bool compare(const QVariant::Private *a, const QVariant::Private *b)
 {
-    Q_ASSERT(a->type == b->type);
-    switch(a->type) {
+    Q_ASSERT(a->type() == b->type());
+    switch (a->type().id()) {
     case QMetaType::QSizePolicy:
         return *v_cast<QSizePolicy>(a) == *v_cast<QSizePolicy>(b);
     default:
@@ -110,19 +80,17 @@ static bool convert(const QVariant::Private *d, int type, void *result, bool *ok
 static void streamDebug(QDebug dbg, const QVariant &v)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
-    switch (d->type) {
+    switch (d->type().id()) {
     case QMetaType::QSizePolicy:
         dbg.nospace() << *v_cast<QSizePolicy>(d);
         break;
     default:
-        dbg.nospace() << "QMetaType::Type(" << d->type << ')';
+        dbg.nospace() << "QMetaType::Type(" << d->type().id() << ')';
     }
 }
 #endif
 
 static const QVariant::Handler widgets_handler = {
-    construct,
-    clear,
     isNull,
 #ifndef QT_NO_DATASTREAM
     nullptr,

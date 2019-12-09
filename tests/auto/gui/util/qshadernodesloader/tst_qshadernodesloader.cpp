@@ -272,6 +272,10 @@ void tst_QShaderNodesLoader::shouldLoadFromJsonStream_data()
 
     QTest::newRow("NotOpen") << createBuffer(smallJson, QIODevice::NotOpen) << NodeHash() << QShaderNodesLoader::Error;
     QTest::newRow("CorrectJSON") << createBuffer(smallJson) << smallProtos << QShaderNodesLoader::Ready;
+
+    // These types are normaly registered by QShaderGraphLoader
+    qRegisterMetaType<QShaderLanguage::StorageQualifier>();
+    qRegisterMetaType<QShaderLanguage::VariableType>();
 }
 
 void tst_QShaderNodesLoader::shouldLoadFromJsonStream()

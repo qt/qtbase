@@ -660,12 +660,7 @@ void QMetaType::destruct(void *data) const
     }
 }
 
-/*!
-    \fn QMetaType::~QMetaType()
-
-    Destructs this object.
-*/
-QMetaType::~QMetaType()
+void QtMetaTypePrivate::derefAndDestroy(QtPrivate::QMetaTypeInterface *d_ptr)
 {
     if (d_ptr && !d_ptr->ref.deref()) {
         if (auto reg = customTypeRegistery())
@@ -673,6 +668,16 @@ QMetaType::~QMetaType()
         Q_ASSERT(d_ptr->deleteSelf);
         d_ptr->deleteSelf(d_ptr);
     }
+}
+
+/*!
+    \fn QMetaType::~QMetaType()
+
+    Destructs this object.
+*/
+QMetaType::~QMetaType()
+{
+    QtMetaTypePrivate::derefAndDestroy(d_ptr);
 }
 
 QMetaType::QMetaType(QtPrivate::QMetaTypeInterface *d) : d_ptr(d)

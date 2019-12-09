@@ -234,7 +234,7 @@ public:
     QVariantComparator(const QVariant::Private *a, const QVariant::Private *b)
         : m_a(a), m_b(b)
     {
-        Q_ASSERT(a->type == b->type);
+        Q_ASSERT(a->type() == b->type());
     }
 
     template<typename T>
@@ -344,113 +344,6 @@ public:
     }
 protected:
     const QVariant::Private *m_d;
-};
-
-template<class Filter>
-class QVariantConstructor
-{
-    template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
-    struct FilteredConstructor {
-        FilteredConstructor(const QVariantConstructor &tc)
-        {
-            v_construct<T>(tc.m_x, tc.m_copy);
-            tc.m_x->is_null = !tc.m_copy;
-        }
-    };
-    template<typename T>
-    struct FilteredConstructor<T, /* IsAcceptedType = */ false> {
-        FilteredConstructor(const QVariantConstructor &tc)
-        {
-            // ignore types that lives outside of the current library
-            tc.m_x->type = QMetaType::UnknownType;
-        }
-    };
-public:
-    QVariantConstructor(QVariant::Private *x, const void *copy)
-        : m_x(x)
-        , m_copy(copy)
-    {}
-
-    template<typename T>
-    void delegate(const T*)
-    {
-        FilteredConstructor<T>(*this);
-    }
-
-    void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
-    {
-        // QVariantConstructor is used only for built-in types.
-        Q_ASSERT(false);
-    }
-
-    void delegate(const void*)
-    {
-        qWarning("Trying to create a QVariant instance of QMetaType::Void type, an invalid QVariant will be constructed instead");
-        m_x->type = QMetaType::UnknownType;
-        m_x->is_shared = false;
-        m_x->is_null = !m_copy;
-    }
-
-    void delegate(const QMetaTypeSwitcher::UnknownType*)
-    {
-        if (m_x->type != QMetaType::UnknownType) {
-            qWarning("Trying to construct an instance of an invalid type, type id: %i", m_x->type);
-            m_x->type = QMetaType::UnknownType;
-        }
-        m_x->is_shared = false;
-        m_x->is_null = !m_copy;
-    }
-private:
-    QVariant::Private *m_x;
-    const void *m_copy;
-};
-
-template<class Filter>
-class QVariantDestructor
-{
-    template<typename T, bool IsAcceptedType = Filter::template Acceptor<T>::IsAccepted>
-    struct FilteredDestructor {
-        FilteredDestructor(QVariant::Private *d)
-        {
-            v_clear<T>(d);
-        }
-    };
-    template<typename T>
-    struct FilteredDestructor<T, /* IsAcceptedType = */ false> {
-        FilteredDestructor(QVariant::Private *)
-        {
-            // It is not possible to create not accepted type
-            Q_ASSERT(false);
-        }
-    };
-
-public:
-    QVariantDestructor(QVariant::Private *d)
-        : m_d(d)
-    {}
-    ~QVariantDestructor()
-    {
-        m_d->type = QMetaType::UnknownType;
-        m_d->is_null = true;
-        m_d->is_shared = false;
-    }
-
-    template<typename T>
-    void delegate(const T*)
-    {
-        FilteredDestructor<T> cleaner(m_d);
-    }
-
-    void delegate(const QMetaTypeSwitcher::NotBuiltinType*)
-    {
-        // QVariantDestructor class is used only for a built-in type
-        Q_ASSERT(false);
-    }
-    // Ignore nonconstructible type
-    void delegate(const QMetaTypeSwitcher::UnknownType*) {}
-    void delegate(const void*) { Q_ASSERT(false); }
-private:
-    QVariant::Private *m_d;
 };
 
 namespace QVariantPrivate {

@@ -349,13 +349,13 @@ void tst_QVariant::constructor_invalid()
 
     QFETCH(uint, typeId);
     {
-        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type, type id:"));
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type"));
         QVariant variant(static_cast<QVariant::Type>(typeId));
         QVERIFY(!variant.isValid());
         QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
     }
     {
-        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type, type id:"));
+        QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type"));
         QVariant variant(typeId, /* copy */ 0);
         QVERIFY(!variant.isValid());
         QCOMPARE(variant.userType(), int(QMetaType::UnknownType));
@@ -1433,10 +1433,7 @@ void tst_QVariant::checkDataStream()
     const int typeId = QMetaType::LastCoreType + 1;
     QVERIFY(!QMetaType::isRegistered(typeId));
 
-    QByteArray errorMessage("Trying to construct an instance of an invalid type, type id: ");
-    errorMessage.append(QString::number(typeId, 10));
-
-    QTest::ignoreMessage(QtWarningMsg, errorMessage.constData());
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type"));
     QByteArray settingsHex("000000");
     settingsHex.append(QString::number(typeId, 16));
     settingsHex.append("ffffffffff");
@@ -2839,7 +2836,7 @@ void tst_QVariant::loadUnknownUserType()
 
 void tst_QVariant::loadBrokenUserType()
 {
-    QTest::ignoreMessage(QtWarningMsg, "Trying to construct an instance of an invalid type, type id: 127");
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("^Trying to construct an instance of an invalid type"));
     char data[] = {0, 0, 0, 127, 0 };
 
     QByteArray ba(data, sizeof(data));

@@ -101,19 +101,6 @@ struct GuiTypesFilter {
     };
 };
 
-static void construct(QVariant::Private *x, const void *copy)
-{
-    const int type = x->type;
-    QVariantConstructor<GuiTypesFilter> constructor(x, copy);
-    QMetaTypeSwitcher::switcher<void>(constructor, type, nullptr);
-}
-
-static void clear(QVariant::Private *d)
-{
-    QVariantDestructor<GuiTypesFilter> destructor(d);
-    QMetaTypeSwitcher::switcher<void>(destructor, d->type, nullptr);
-}
-
 // This class is a hack that customizes access to QPolygon and QPolygonF
 template<class Filter>
 class QGuiVariantIsNull : public QVariantIsNull<Filter> {
@@ -131,7 +118,7 @@ public:
 static bool isNull(const QVariant::Private *d)
 {
     QGuiVariantIsNull<GuiTypesFilter> isNull(d);
-    return QMetaTypeSwitcher::switcher<bool>(isNull, d->type, nullptr);
+    return QMetaTypeSwitcher::switcher<bool>(isNull, d->type().id(), nullptr);
 }
 
 // This class is a hack that customizes access to QPixmap, QBitmap, QCursor and QIcon
@@ -173,7 +160,7 @@ public:
 static bool compare(const QVariant::Private *a, const QVariant::Private *b)
 {
     QGuiVariantComparator<GuiTypesFilter> comparator(a, b);
-    return QMetaTypeSwitcher::switcher<bool>(comparator, a->type, nullptr);
+    return QMetaTypeSwitcher::switcher<bool>(comparator, a->type().id(), nullptr);
 }
 
 static bool convert(const QVariant::Private *d, int t,
@@ -181,7 +168,7 @@ static bool convert(const QVariant::Private *d, int t,
 {
     switch (t) {
     case QMetaType::QByteArray:
-        if (d->type == QMetaType::QColor) {
+        if (d->type().id() == QMetaType::QColor) {
             const QColor *c = v_cast<QColor>(d);
             *static_cast<QByteArray *>(result) = c->name(c->alpha() != 255 ? QColor::HexArgb : QColor::HexRgb).toLatin1();
             return true;
@@ -189,7 +176,7 @@ static bool convert(const QVariant::Private *d, int t,
         break;
     case QMetaType::QString: {
         QString *str = static_cast<QString *>(result);
-        switch (d->type) {
+        switch (d->type().id()) {
 #if QT_CONFIG(shortcut)
         case QMetaType::QKeySequence:
             *str = (*v_cast<QKeySequence>(d)).toString(QKeySequence::NativeText);
@@ -209,13 +196,13 @@ static bool convert(const QVariant::Private *d, int t,
         break;
     }
     case QMetaType::QPixmap:
-        if (d->type == QMetaType::QImage) {
+        if (d->type().id() == QMetaType::QImage) {
             *static_cast<QPixmap *>(result) = QPixmap::fromImage(*v_cast<QImage>(d));
             return true;
-        } else if (d->type == QMetaType::QBitmap) {
+        } else if (d->type().id() == QMetaType::QBitmap) {
             *static_cast<QPixmap *>(result) = *v_cast<QBitmap>(d);
             return true;
-        } else if (d->type == QMetaType::QBrush) {
+        } else if (d->type().id() == QMetaType::QBrush) {
             if (v_cast<QBrush>(d)->style() == Qt::TexturePattern) {
                 *static_cast<QPixmap *>(result) = v_cast<QBrush>(d)->texture();
                 return true;
@@ -223,26 +210,26 @@ static bool convert(const QVariant::Private *d, int t,
         }
         break;
     case QMetaType::QImage:
-        if (d->type == QMetaType::QPixmap) {
+        if (d->type().id() == QMetaType::QPixmap) {
             *static_cast<QImage *>(result) = v_cast<QPixmap>(d)->toImage();
             return true;
-        } else if (d->type == QMetaType::QBitmap) {
+        } else if (d->type().id() == QMetaType::QBitmap) {
             *static_cast<QImage *>(result) = v_cast<QBitmap>(d)->toImage();
             return true;
         }
         break;
     case QMetaType::QBitmap:
-        if (d->type == QMetaType::QPixmap) {
+        if (d->type().id() == QMetaType::QPixmap) {
             *static_cast<QBitmap *>(result) = *v_cast<QPixmap>(d);
             return true;
-        } else if (d->type == QMetaType::QImage) {
+        } else if (d->type().id() == QMetaType::QImage) {
             *static_cast<QBitmap *>(result) = QBitmap::fromImage(*v_cast<QImage>(d));
             return true;
         }
         break;
 #if QT_CONFIG(shortcut)
     case QMetaType::Int:
-        if (d->type == QMetaType::QKeySequence) {
+        if (d->type().id() == QMetaType::QKeySequence) {
             const QKeySequence &seq = *v_cast<QKeySequence>(d);
             *static_cast<int *>(result) = seq.isEmpty() ? 0 : seq[0];
             return true;
@@ -250,20 +237,20 @@ static bool convert(const QVariant::Private *d, int t,
         break;
 #endif
     case QMetaType::QFont:
-        if (d->type == QMetaType::QString) {
+        if (d->type().id() == QMetaType::QString) {
             QFont *f = static_cast<QFont *>(result);
             f->fromString(*v_cast<QString>(d));
             return true;
         }
         break;
     case QMetaType::QColor:
-        if (d->type == QMetaType::QString) {
+        if (d->type().id() == QMetaType::QString) {
             static_cast<QColor *>(result)->setNamedColor(*v_cast<QString>(d));
             return static_cast<QColor *>(result)->isValid();
-        } else if (d->type == QMetaType::QByteArray) {
+        } else if (d->type().id() == QMetaType::QByteArray) {
             static_cast<QColor *>(result)->setNamedColor(QLatin1String(*v_cast<QByteArray>(d)));
             return true;
-        } else if (d->type == QMetaType::QBrush) {
+        } else if (d->type().id() == QMetaType::QBrush) {
             if (v_cast<QBrush>(d)->style() == Qt::SolidPattern) {
                 *static_cast<QColor *>(result) = v_cast<QBrush>(d)->color();
                 return true;
@@ -271,10 +258,10 @@ static bool convert(const QVariant::Private *d, int t,
         }
         break;
     case QMetaType::QBrush:
-        if (d->type == QMetaType::QColor) {
+        if (d->type().id() == QMetaType::QColor) {
             *static_cast<QBrush *>(result) = QBrush(*v_cast<QColor>(d));
             return true;
-        } else if (d->type == QMetaType::QPixmap) {
+        } else if (d->type().id() == QMetaType::QPixmap) {
             *static_cast<QBrush *>(result) = QBrush(*v_cast<QPixmap>(d));
             return true;
         }
@@ -282,7 +269,7 @@ static bool convert(const QVariant::Private *d, int t,
 #if QT_CONFIG(shortcut)
     case QMetaType::QKeySequence: {
         QKeySequence *seq = static_cast<QKeySequence *>(result);
-        switch (d->type) {
+        switch (d->type().id()) {
         case QMetaType::QString:
             *seq = QKeySequence(*v_cast<QString>(d));
             return true;
@@ -313,13 +300,11 @@ static void streamDebug(QDebug dbg, const QVariant &v)
 {
     QVariant::Private *d = const_cast<QVariant::Private *>(&v.data_ptr());
     QVariantDebugStream<GuiTypesFilter> stream(dbg, d);
-    QMetaTypeSwitcher::switcher<void>(stream, d->type, nullptr);
+    QMetaTypeSwitcher::switcher<void>(stream, d->type().id(), nullptr);
 }
 #endif
 
 const QVariant::Handler qt_gui_variant_handler = {
-    construct,
-    clear,
     isNull,
 #ifndef QT_NO_DATASTREAM
     nullptr,

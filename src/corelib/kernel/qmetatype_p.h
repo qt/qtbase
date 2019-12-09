@@ -217,6 +217,8 @@ static QtPrivate::QMetaTypeInterface *getInterfaceFromType()
         QtMetaTypePrivate::QMetaTypeFunctionHelper<RealName, QtMetaTypePrivate::TypeDefinition<RealName>::IsAvailable>::Load(stream, data); \
         return true;
 
+void derefAndDestroy(QtPrivate::QMetaTypeInterface *d_ptr);
+
 } //namespace QtMetaTypePrivate
 
 QT_END_NAMESPACE
