@@ -362,6 +362,9 @@ _qt_library_map = [
         "Qt6",
         "Qt::LinuxOfonoSupportPrivate",
         extra=["COMPONENTS", "LinuxOfonoSupportPrivate"],
+    ),
+    LibraryMapping(
+        "tools", "Qt6", "Qt::Tools", extra=["COMPONENTS", "Tools"]
     )
     # qtzlib: No longer supported.
 ]
