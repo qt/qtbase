@@ -3149,7 +3149,10 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
     [opts release];
     // src is autoreleased
 
-    if (err) {
+    // if lib is null and err is non-null, we had errors (fail)
+    // if lib is non-null and err is non-null, we had warnings (success)
+    // if lib is non-null and err is null, there were no errors or warnings (success)
+    if (!lib) {
         const QString msg = QString::fromNSString(err.localizedDescription);
         *error = msg;
         return nil;
