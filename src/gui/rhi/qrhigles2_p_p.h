@@ -706,7 +706,14 @@ public:
     QByteArray shaderSource(const QRhiShaderStage &shaderStage, int *glslVersion);
     bool compileShader(GLuint program, const QRhiShaderStage &shaderStage, int *glslVersion);
     bool linkProgram(GLuint program);
-    void gatherUniforms(GLuint program, const QShaderDescription::UniformBlock &ub,
+    void registerUniformIfActive(const QShaderDescription::BlockVariable &var,
+                                 const QByteArray &namePrefix,
+                                 int binding,
+                                 int baseOffset,
+                                 GLuint program,
+                                 QVector<QGles2UniformDescription> *dst);
+    void gatherUniforms(GLuint program,
+                        const QShaderDescription::UniformBlock &ub,
                         QVector<QGles2UniformDescription> *dst);
     void gatherSamplers(GLuint program, const QShaderDescription::InOutVariable &v,
                         QVector<QGles2SamplerDescription> *dst);
