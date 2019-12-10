@@ -15,4 +15,12 @@ HEADERS += \
 SOURCES += \
     qopengldebug.cpp
 
+!qtConfig(opengles2) {
+    HEADERS += \
+        qopenglqueryhelper_p.h \
+        qopengltimerquery.h
+
+    SOURCES += qopengltimerquery.cpp
+}
+
 load(qt_module)

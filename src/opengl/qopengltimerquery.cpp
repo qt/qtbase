@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Klaralvdalens Datakonsult AB (KDAB).
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -238,7 +238,7 @@ GLuint64 QOpenGLTimerQueryPrivate::result() const
 /*!
     \class QOpenGLTimerQuery
     \brief The QOpenGLTimerQuery class wraps an OpenGL timer query object.
-    \inmodule QtGui
+    \inmodule QtOpenGL
     \since 5.1
     \ingroup painting-3D
 
@@ -645,7 +645,7 @@ void QOpenGLTimeMonitorPrivate::reset()
 /*!
     \class QOpenGLTimeMonitor
     \brief The QOpenGLTimeMonitor class wraps a sequence of OpenGL timer query objects.
-    \inmodule QtGui
+    \inmodule QtOpenGL
     \since 5.1
     \ingroup painting-3D
 

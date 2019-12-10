@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Klaralvdalens Datakonsult AB (KDAB).
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -40,7 +40,7 @@
 #ifndef QOPENGLTIMERQUERY_H
 #define QOPENGLTIMERQUERY_H
 
-#include <QtGui/qtguiglobal.h>
+#include <QtOpenGL/qtopenglglobal.h>
 
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)
 
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpenGLTimerQueryPrivate;
 
-class Q_GUI_EXPORT QOpenGLTimerQuery : public QObject
+class Q_OPENGL_EXPORT QOpenGLTimerQuery : public QObject
 {
     Q_OBJECT
 
@@ -79,7 +79,7 @@ private:
 
 class QOpenGLTimeMonitorPrivate;
 
-class Q_GUI_EXPORT QOpenGLTimeMonitor : public QObject
+class Q_OPENGL_EXPORT QOpenGLTimeMonitor : public QObject
 {
     Q_OBJECT
 

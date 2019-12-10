@@ -85,9 +85,7 @@ qtConfig(opengl) {
                    opengl/qopenglfunctions_4_2_compatibility.h \
                    opengl/qopenglfunctions_4_3_compatibility.h \
                    opengl/qopenglfunctions_4_4_compatibility.h \
-                   opengl/qopenglfunctions_4_5_compatibility.h \
-                   opengl/qopenglqueryhelper_p.h \
-                   opengl/qopengltimerquery.h
+                   opengl/qopenglfunctions_4_5_compatibility.h
 
         SOURCES += opengl/qopenglfunctions_1_0.cpp \
                    opengl/qopenglfunctions_1_1.cpp \
@@ -114,8 +112,7 @@ qtConfig(opengl) {
                    opengl/qopenglfunctions_4_2_compatibility.cpp \
                    opengl/qopenglfunctions_4_3_compatibility.cpp \
                    opengl/qopenglfunctions_4_4_compatibility.cpp \
-                   opengl/qopenglfunctions_4_5_compatibility.cpp \
-                   opengl/qopengltimerquery.cpp
+                   opengl/qopenglfunctions_4_5_compatibility.cpp
     }
 
     qtConfig(opengles2) {
