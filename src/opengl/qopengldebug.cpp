@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QOpenGLDebugMessage
     \brief The QOpenGLDebugMessage class wraps an OpenGL debug message.
-    \inmodule QtGui
+    \inmodule QtOpenGL
     \reentrant
     \since 5.1
     \ingroup shared
@@ -72,7 +72,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QOpenGLDebugLogger
     \brief The QOpenGLDebugLogger enables logging of OpenGL debugging messages.
-    \inmodule QtGui
+    \inmodule QtOpenGL
     \since 5.1
     \ingroup painting-3D
 

@@ -27,7 +27,6 @@ qtConfig(opengl) {
                opengl/qopenglversionfunctions.h \
                opengl/qopenglversionfunctionsfactory_p.h \
                opengl/qopenglvertexarrayobject.h \
-               opengl/qopengldebug.h \
                opengl/qopengltextureblitter.h \
                opengl/qopengltexture.h \
                opengl/qopengltexture_p.h \
@@ -53,7 +52,6 @@ qtConfig(opengl) {
                opengl/qopenglversionfunctions.cpp \
                opengl/qopenglversionfunctionsfactory.cpp \
                opengl/qopenglvertexarrayobject.cpp \
-               opengl/qopengldebug.cpp \
                opengl/qopengltextureblitter.cpp \
                opengl/qopengltexture.cpp \
                opengl/qopengltexturehelper.cpp \

@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -40,7 +40,7 @@
 #ifndef QOPENGLDEBUG_H
 #define QOPENGLDEBUG_H
 
-#include <QtGui/qtguiglobal.h>
+#include <QtOpenGL/qtopenglglobal.h>
 
 #ifndef QT_NO_OPENGL
 
@@ -63,7 +63,7 @@ class QOpenGLDebugLogger;
 class QOpenGLDebugLoggerPrivate;
 class QOpenGLDebugMessagePrivate;
 
-class Q_GUI_EXPORT QOpenGLDebugMessage
+class Q_OPENGL_EXPORT QOpenGLDebugMessage
 {
 public:
     enum Source {
@@ -145,15 +145,15 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLDebugMessage::Types)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLDebugMessage::Severities)
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QOpenGLDebugMessage &message);
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, QOpenGLDebugMessage::Source source);
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, QOpenGLDebugMessage::Type type);
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, QOpenGLDebugMessage::Severity severity);
+Q_OPENGL_EXPORT QDebug operator<<(QDebug debug, const QOpenGLDebugMessage &message);
+Q_OPENGL_EXPORT QDebug operator<<(QDebug debug, QOpenGLDebugMessage::Source source);
+Q_OPENGL_EXPORT QDebug operator<<(QDebug debug, QOpenGLDebugMessage::Type type);
+Q_OPENGL_EXPORT QDebug operator<<(QDebug debug, QOpenGLDebugMessage::Severity severity);
 #endif
 
 class QOpenGLDebugLoggerPrivate;
 
-class Q_GUI_EXPORT QOpenGLDebugLogger : public QObject
+class Q_OPENGL_EXPORT QOpenGLDebugLogger : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(LoggingMode loggingMode READ loggingMode)

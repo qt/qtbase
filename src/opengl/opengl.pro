@@ -9,6 +9,10 @@ qtConfig(opengl): CONFIG += opengl
 qtConfig(opengles2): CONFIG += opengles2
 
 HEADERS += \
+    qopengldebug.h \
     qtopenglglobal.h
+
+SOURCES += \
+    qopengldebug.cpp
 
 load(qt_module)
