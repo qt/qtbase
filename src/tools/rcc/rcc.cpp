@@ -1478,13 +1478,19 @@ bool RCCResourceLibrary::writeInitializer()
         writeString("    return 1;\n");
         writeString("}\n\n");
 
-        writeByteArray(
-                    "namespace {\n"
-                  "   struct initializer {\n"
-                  "       initializer() { QT_RCC_MANGLE_NAMESPACE(" + initResources + ")(); }\n"
-                  "       ~initializer() { QT_RCC_MANGLE_NAMESPACE(" + cleanResources + ")(); }\n"
-                  "   } dummy;\n"
-                  "}\n");
+
+        writeString("namespace {\n"
+                    "   struct initializer {\n");
+
+        if (m_useNameSpace) {
+            writeByteArray("       initializer() { QT_RCC_MANGLE_NAMESPACE(" + initResources + ")(); }\n"
+                           "       ~initializer() { QT_RCC_MANGLE_NAMESPACE(" + cleanResources + ")(); }\n");
+        } else {
+            writeByteArray("       initializer() { " + initResources + "(); }\n"
+                           "       ~initializer() { " + cleanResources + "(); }\n");
+        }
+        writeString("   } dummy;\n"
+                    "}\n");
 
     } else if (m_format == Binary) {
         int i = 4;
