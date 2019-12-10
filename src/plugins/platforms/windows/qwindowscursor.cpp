@@ -50,6 +50,7 @@
 #include <QtGui/qscreen.h>
 #include <QtGui/private/qguiapplication_p.h> // getPixmapCursor()
 #include <QtGui/private/qhighdpiscaling_p.h>
+#include <QtCore/private/qwinregistry_p.h>
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qscopedpointer.h>
@@ -684,6 +685,30 @@ QPoint QWindowsCursor::pos() const
 void QWindowsCursor::setPos(const QPoint &pos)
 {
     SetCursorPos(pos.x() , pos.y());
+}
+
+/*
+    The standard size is 32x32, even though the cursor is actually just
+    16 pixels large. If a large cursor is set in the accessibility settings,
+    then the cursor increases with 8 pixels for each step.
+*/
+QSize QWindowsCursor::size() const
+{
+    const QPair<DWORD,bool> cursorSizeSetting =
+        QWinRegistryKey(HKEY_CURRENT_USER, LR"(Control Panel\Cursors)")
+                       .dwordValue(L"CursorBaseSize");
+    const int baseSize = screenCursorSize(m_screen).width() / 2;
+    if (!cursorSizeSetting.second)
+        return QSize(baseSize / 2, baseSize / 2);
+
+    // The registry values are dpi-independent, so we need to scale the result.
+    int cursorSizeValue = cursorSizeSetting.first * m_screen->logicalDpi().first
+                                                  / m_screen->logicalBaseDpi().first;
+
+    // map from registry value 32-256 to 0-14, and from there to pixels
+    cursorSizeValue = (cursorSizeValue - 2 * baseSize) / baseSize;
+    const int cursorSize = baseSize + cursorSizeValue * (baseSize / 2);
+    return QSize(cursorSize, cursorSize);
 }
 
 QPixmap QWindowsCursor::dragDefaultCursor(Qt::DropAction action) const

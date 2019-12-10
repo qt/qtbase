@@ -44,7 +44,7 @@
 #include <QtCore/qatomic.h>
 #include <new>
 
-#if QT_HAS_INCLUDE(<chrono>)
+#if __has_include(<chrono>)
 #  include <chrono>
 #  include <limits>
 #endif
@@ -147,7 +147,7 @@ public:
     // Lockable concept
     bool try_lock() QT_MUTEX_LOCK_NOEXCEPT { return tryLock(); }
 
-#if QT_HAS_INCLUDE(<chrono>) || defined(Q_CLANG_QDOC)
+#if __has_include(<chrono>) || defined(Q_CLANG_QDOC)
     // TimedLockable concept
     template <class Rep, class Period>
     bool try_lock_for(std::chrono::duration<Rep, Period> duration)
@@ -175,7 +175,7 @@ private:
     friend class QRecursiveMutex;
     friend class ::tst_QMutex;
 
-#if QT_HAS_INCLUDE(<chrono>)
+#if __has_include(<chrono>)
     template<class Rep, class Period>
     static int convertToMilliseconds(std::chrono::duration<Rep, Period> duration)
     {
@@ -213,7 +213,7 @@ public:
     using QMutex::tryLock;
     using QMutex::unlock;
     using QMutex::try_lock;
-#if QT_HAS_INCLUDE(<chrono>)
+#if __has_include(<chrono>)
     using QMutex::try_lock_for;
     using QMutex::try_lock_until;
 #endif
@@ -295,7 +295,7 @@ public:
     inline void unlock() noexcept {}
     inline bool isRecursive() const noexcept { return true; }
 
-#if QT_HAS_INCLUDE(<chrono>)
+#if __has_include(<chrono>)
     template <class Rep, class Period>
     inline bool try_lock_for(std::chrono::duration<Rep, Period> duration) noexcept
     {

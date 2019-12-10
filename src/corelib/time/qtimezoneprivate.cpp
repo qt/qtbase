@@ -381,18 +381,15 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
                   On the first pass, the case we consider is what hint told us to expect
                   (except when hint was -1 and didn't actually tell us what to expect),
                   so it's likely right.  We only get a second pass if the first failed,
-                  by which time the second case, that we're trying, is likely right.  If
-                  an overwhelming majority of calls have hint == -1, the Q_LIKELY here
-                  shall be wrong half the time; otherwise, its errors shall be rarer
-                  than that.
+                  by which time the second case, that we're trying, is likely right.
                 */
                 if (nextFirst ? i == 0 : i) {
                     Q_ASSERT(nextStart != invalidMSecs());
-                    if (Q_LIKELY(nextStart <= nextTran.atMSecsSinceEpoch))
+                    if (nextStart <= nextTran.atMSecsSinceEpoch)
                         return nextTran;
                 } else {
                     // If next is invalid, nextFirst is false, to route us here first:
-                    if (nextStart == invalidMSecs() || Q_LIKELY(nextStart > tran.atMSecsSinceEpoch))
+                    if (nextStart == invalidMSecs() || nextStart > tran.atMSecsSinceEpoch)
                         return tran;
                 }
             }
@@ -421,7 +418,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
 
     int early = offsetFromUtc(recent);
     int late = offsetFromUtc(imminent);
-    if (Q_LIKELY(early == late)) { // > 99% of the time
+    if (early == late) { // > 99% of the time
         utcEpochMSecs = forLocalMSecs - early * 1000;
     } else {
         // Close to a DST transition: early > late is near a fall-back,
@@ -433,7 +430,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::dataForLocalTime(qint64 forLocalMSecs, 
         const qint64 forStd = forLocalMSecs - offsetInStd * 1000;
         // Best guess at the answer:
         const qint64 hinted = hint > 0 ? forDst : forStd;
-        if (Q_LIKELY(offsetFromUtc(hinted) == (hint > 0 ? offsetInDst : offsetInStd))) {
+        if (offsetFromUtc(hinted) == (hint > 0 ? offsetInDst : offsetInStd)) {
             utcEpochMSecs = hinted;
         } else if (hint <= 0 && offsetFromUtc(forDst) == offsetInDst) {
             utcEpochMSecs = forDst;

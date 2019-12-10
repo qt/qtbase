@@ -838,6 +838,7 @@ QSqlRecord QPSQLResult::record() const
         }
         int ptype = PQftype(d->result, i);
         f.setType(qDecodePSQLType(ptype));
+        f.setValue(QVariant(f.type())); // only set in setType() when it's invalid before
         int len = PQfsize(d->result, i);
         int precision = PQfmod(d->result, i);
 

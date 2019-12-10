@@ -146,6 +146,9 @@ qsizetype qFindStringBoyerMoore(QStringView haystack, qsizetype from, QStringVie
 static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept;
 template <typename Haystack>
 static inline qsizetype qLastIndexOf(Haystack haystack, QChar needle, qsizetype from, Qt::CaseSensitivity cs) noexcept;
+template <>
+inline qsizetype qLastIndexOf(QString haystack, QChar needle,
+                              qsizetype from, Qt::CaseSensitivity cs) noexcept = delete; // unwanted, would detach
 static inline qsizetype qt_string_count(QStringView haystack, QStringView needle, Qt::CaseSensitivity cs);
 static inline qsizetype qt_string_count(QStringView haystack, QChar needle, Qt::CaseSensitivity cs);
 
@@ -3817,7 +3820,7 @@ int QString::indexOf(const QStringRef &str, int from, Qt::CaseSensitivity cs) co
 int QString::lastIndexOf(const QString &str, int from, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsizetype
-    return int(QtPrivate::lastIndexOf(*this, from, str, cs));
+    return int(QtPrivate::lastIndexOf(QStringView(*this), from, str, cs));
 }
 
 #endif // QT_STRINGVIEW_LEVEL < 2
@@ -3856,7 +3859,7 @@ int QString::lastIndexOf(QLatin1String str, int from, Qt::CaseSensitivity cs) co
 int QString::lastIndexOf(QChar ch, int from, Qt::CaseSensitivity cs) const
 {
     // ### Qt6: qsizetype
-    return int(qLastIndexOf(*this, ch, from, cs));
+    return int(qLastIndexOf(QStringView(*this), ch, from, cs));
 }
 
 #if QT_STRINGVIEW_LEVEL < 2

@@ -45,7 +45,7 @@
 #include <limits.h>
 #include <float.h>
 #include <cmath>
-#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+#if __has_include(<variant>) && __cplusplus >= 201703L
 #include <variant>
 #endif
 #include <QLinkedList>
@@ -4992,7 +4992,7 @@ void tst_QVariant::accessSequentialContainerKey()
 
 void tst_QVariant::fromStdVariant()
 {
-#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+#if __has_include(<variant>) && __cplusplus >= 201703L
     {
         typedef std::variant<int, bool> intorbool_t;
         intorbool_t stdvar = 5;

@@ -214,7 +214,7 @@ public:
     bool contains(const QCborValue &value) const;
 
     int compare(const QCborArray &other) const noexcept Q_DECL_PURE_FUNCTION;
-#if 0 && QT_HAS_INCLUDE(<compare>)
+#if 0 && __has_include(<compare>)
     std::strong_ordering operator<=>(const QCborArray &other) const
     {
         int c = compare(other);

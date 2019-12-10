@@ -71,7 +71,7 @@ contains(TEMPLATE, .*app) {
     # replacing the app name placeholder with the actual app name.
     apphtml.name = application main html file
     apphtml.output = $$DESTDIR/$$TARGET_HTML
-    apphtml.commands = sed -e s/@APPNAME@/$$TARGET_BASE/g $$WASM_PLUGIN_PATH/wasm_shell.html > $$DESTDIR/$$TARGET_HTML
+    apphtml.commands = $$QMAKE_STREAM_EDITOR -e s/@APPNAME@/$$TARGET_BASE/g $$WASM_PLUGIN_PATH/wasm_shell.html > $$DESTDIR/$$TARGET_HTML
     apphtml.input = $$WASM_PLUGIN_PATH/wasm_shell.html
     apphtml.depends = $$apphtml.input
     QMAKE_EXTRA_COMPILERS += apphtml

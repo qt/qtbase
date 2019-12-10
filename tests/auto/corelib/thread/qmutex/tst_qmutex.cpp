@@ -89,7 +89,7 @@ enum {
     waitTime = 100
 };
 
-#if QT_HAS_INCLUDE(<chrono>)
+#if __has_include(<chrono>)
 static Q_CONSTEXPR std::chrono::milliseconds waitTimeAsDuration(waitTime);
 #endif
 
@@ -100,7 +100,7 @@ void tst_QMutex::convertToMilliseconds_data()
     QTest::addColumn<qint64>("intValue");
     QTest::addColumn<qint64>("expected");
 
-#if !QT_HAS_INCLUDE(<chrono>)
+#if !__has_include(<chrono>)
     QSKIP("This test requires <chrono>");
 #endif
 
@@ -156,7 +156,7 @@ void tst_QMutex::convertToMilliseconds_data()
 
 void tst_QMutex::convertToMilliseconds()
 {
-#if !QT_HAS_INCLUDE(<chrono>)
+#if !__has_include(<chrono>)
     QSKIP("This test requires <chrono>");
 #else
     QFETCH(TimeUnit, unit);
@@ -325,7 +325,7 @@ void tst_QMutex::tryLock_non_recursive()
 }
 
 void tst_QMutex::try_lock_for_non_recursive() {
-#if !QT_HAS_INCLUDE(<chrono>)
+#if !__has_include(<chrono>)
     QSKIP("This test requires <chrono>");
 #else
     class Thread : public QThread
@@ -454,7 +454,7 @@ void tst_QMutex::try_lock_for_non_recursive() {
 
 void tst_QMutex::try_lock_until_non_recursive()
 {
-#if !QT_HAS_INCLUDE(<chrono>)
+#if !__has_include(<chrono>)
     QSKIP("This test requires <chrono>");
 #else
     class Thread : public QThread
@@ -707,7 +707,7 @@ void tst_QMutex::tryLock_recursive()
 
 void tst_QMutex::try_lock_for_recursive()
 {
-#if !QT_HAS_INCLUDE(<chrono>)
+#if !__has_include(<chrono>)
     QSKIP("This test requires <chrono>");
 #else
     class Thread : public QThread
@@ -836,7 +836,7 @@ void tst_QMutex::try_lock_for_recursive()
 
 void tst_QMutex::try_lock_until_recursive()
 {
-#if !QT_HAS_INCLUDE(<chrono>)
+#if !__has_include(<chrono>)
     QSKIP("This test requires <chrono>");
 #else
     class Thread : public QThread

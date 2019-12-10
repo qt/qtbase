@@ -53,7 +53,7 @@
 #include <QtCore/qbytearraylist.h>
 #endif
 
-#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+#if __has_include(<variant>) && __cplusplus >= 201703L
 #include <variant>
 #elif defined(Q_CLANG_QDOC)
 namespace std { template<typename...> struct variant; }
@@ -370,7 +370,7 @@ class Q_CORE_EXPORT QVariant
     static inline QVariant fromValue(const T &value)
     { return QVariant(qMetaTypeId<T>(), &value, QTypeInfo<T>::isPointer); }
 
-#if (QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L) || defined(Q_CLANG_QDOC)
+#if (__has_include(<variant>) && __cplusplus >= 201703L) || defined(Q_CLANG_QDOC)
     template<typename... Types>
     static inline QVariant fromStdVariant(const std::variant<Types...> &value)
     {
@@ -546,7 +546,7 @@ inline QVariant QVariant::fromValue(const QVariant &value)
     return value;
 }
 
-#if QT_HAS_INCLUDE(<variant>) && __cplusplus >= 201703L
+#if __has_include(<variant>) && __cplusplus >= 201703L
 template<>
 inline QVariant QVariant::fromValue(const std::monostate &)
 {
