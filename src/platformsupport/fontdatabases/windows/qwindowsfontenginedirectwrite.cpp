@@ -1012,8 +1012,8 @@ glyph_metrics_t QWindowsFontEngineDirectWrite::alphaMapBoundingBox(glyph_t glyph
 
         int margin = glyphMargin(QFontEngine::Format_A32);
 
-        return glyph_metrics_t(rect.left,
-                               rect.top,
+        return glyph_metrics_t(rect.left - margin,
+                               rect.top - margin,
                                rect.right - rect.left + margin * 2,
                                rect.bottom - rect.top + margin * 2,
                                bbox.xoff, bbox.yoff);
