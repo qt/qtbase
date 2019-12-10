@@ -127,8 +127,6 @@ qt_add_tool(qmake # special case
         "qmake_pch.h"
 )
 
-qt_internal_add_target_aliases(Bootstrap) # special case
-
 #### Keys ignored in scope 1:.:.:qmake.pro:<TRUE>:
 # _OPTION = "host_build"
 
