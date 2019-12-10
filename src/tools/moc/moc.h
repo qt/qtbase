@@ -223,6 +223,7 @@ public:
     QHash<QByteArray, QByteArray> knownQObjectClasses;
     QHash<QByteArray, QByteArray> knownGadgets;
     QMap<QString, QJsonArray> metaArgs;
+    QVector<QString> parsedPluginMetadataFiles;
 
     void parse();
     void generate(FILE *out, FILE *jsonOutput);
