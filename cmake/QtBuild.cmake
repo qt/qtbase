@@ -2574,7 +2574,9 @@ endfunction()
 function(qt_add_test name)
     qt_parse_all_arguments(arg "qt_add_test"
         "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST"
-        "OUTPUT_DIRECTORY" "QML_IMPORTPATH;TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN})
+        "OUTPUT_DIRECTORY;WORKING_DIRECTORY"
+        "QML_IMPORTPATH;TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN}
+    )
 
     if (NOT arg_OUTPUT_DIRECTORY)
         set(arg_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
@@ -2658,7 +2660,11 @@ function(qt_add_test name)
             set(test_working_dir "${CMAKE_CURRENT_SOURCE_DIR}")
             set(test_executable ${QT_CMAKE_EXPORT_NAMESPACE}::qmltestrunner)
         else()
-            set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
+            if (arg_WORKING_DIRECTORY)
+                set(test_working_dir "${arg_WORKING_DIRECTORY}")
+            else()
+                set(test_working_dir "${CMAKE_CURRENT_BINARY_DIR}")
+            endif()
             set(test_executable "${name}")
         endif()
 
