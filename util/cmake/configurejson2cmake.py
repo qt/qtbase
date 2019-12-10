@@ -317,6 +317,9 @@ def map_condition(condition):
     condition = re.sub("\\s+", " ", mapped_condition)
     condition = condition.strip()
 
+    # Special case for WrapLibClang in qttools
+    condition = condition.replace("TEST_libclang.has_clangcpp", "TEST_libclang")
+
     if has_failed:
         condition += " OR FIXME"
 
