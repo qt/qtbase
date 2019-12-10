@@ -55,7 +55,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-#if QT_HAS_INCLUDE(<paths.h>)
+#if __has_include(<paths.h>)
 # include <paths.h>
 #endif
 #ifndef _PATH_TMP           // from <paths.h>

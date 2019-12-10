@@ -83,6 +83,10 @@
          \li Custom types can easily be added to the test data and test output.
     \endtable
 
+    You can use a Qt Creator wizard to create a project that contains Qt tests
+    and build and run them directly from Qt Creator. For more information, see
+    \l {Running Autotests}.
+
     \section1 Creating a Test
 
     To create a test, subclass QObject and add one or more private slots to it. Each
@@ -133,6 +137,41 @@
     \if !defined(qtforpython)
     \section1 Building a Test
 
+    You can build an executable that contains one test class that typically
+    tests one class of production code. However, usually you would want to
+    test several classes in a project by running one command.
+
+    See \l {Chapter 1: Writing a Unit Test}{Writing a Unit Test} for a step by
+    step explanation.
+
+    \section2 Building with CMake and CTest
+
+    You can use \l {CMake and CTest} to create a test.
+    \l{https://cmake.org/cmake/help/latest/manual/ctest.1.html}{CTest} enables
+    you to include or exclude tests based on a regular expression that is
+    matched against the test name. You can further apply the \c LABELS property
+    to a test and CTest can then include or exclude tests based on those labels.
+    All labeled targets will be run when \c {test} target is called on the
+    command line.
+
+    There are several other advantages with CMake. For example, the result of
+    a test run can be published on a web server using CDash with virtually no
+    effort.
+
+    CTest scales to very different unit test frameworks, and works out of the
+    box with QTest.
+
+    The following is an example of a CMakeLists.txt file that specifies the
+    project name and the language used (here, \e mytest and C++), the Qt
+    modules required for building the test (Qt5Test), and the files that are
+    included in the test (\e tst_mytest.cpp).
+
+    \quotefile code/doc_src_cmakelists.txt
+
+    For more information about the options you have, see \l {Build with CMake}.
+
+    \section2 Building with qmake
+
     If you are using \c qmake as your build tool, just add the
     following to your project file:
 
@@ -146,14 +185,14 @@
     See the \l{Building a Testcase}{qmake manual} for
     more information about \c{make check}.
 
+    \section2 Building with Other Tools
+
     If you are using other build tools, make sure that you add the location
     of the Qt Test header files to your include path (usually \c{include/QtTest}
     under your Qt installation directory). If you are using a release build
     of Qt, link your test to the \c QtTest library. For debug builds, use
     \c{QtTest_debug}.
 
-    See \l {Chapter 1: Writing a Unit Test}{Writing a Unit Test} for a step by
-    step explanation.
     \endif
 
     \section1 Qt Test Command Line Arguments

@@ -81,7 +81,7 @@ QT_END_NAMESPACE
 // if not defined in linux/futex.h
 #  define FUTEX_PRIVATE_FLAG        128         // added in v2.6.22
 
-#  if QT_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)
+#  if __has_feature(thread_sanitizer) || defined(__SANITIZE_THREAD__)
 #    include <sanitizer/tsan_interface.h>
 inline void _q_tsan_acquire(void *addr, void *addr2)
 {
@@ -98,7 +98,7 @@ inline void _q_tsan_release(void *addr, void *addr2)
 #  else
 inline void _q_tsan_acquire(void *, void *) {}
 inline void _q_tsan_release(void *, void *) {}
-#  endif // QT_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)
+#  endif // __has_feature(thread_sanitizer) || defined(__SANITIZE_THREAD__)
 
 QT_BEGIN_NAMESPACE
 namespace QtLinuxFutex {

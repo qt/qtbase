@@ -784,10 +784,12 @@ QDebug operator<<(QDebug dbg, const QColorSpace &colorSpace)
     QDebugStateSaver saver(dbg);
     dbg.nospace();
     dbg << "QColorSpace(";
-    if (colorSpace.d_ptr->namedColorSpace)
-        dbg << colorSpace.d_ptr->namedColorSpace << ", ";
-    dbg << colorSpace.primaries() << ", " << colorSpace.transferFunction();
-    dbg << ", gamma=" << colorSpace.gamma();
+    if (colorSpace.d_ptr) {
+        if (colorSpace.d_ptr->namedColorSpace)
+            dbg << colorSpace.d_ptr->namedColorSpace << ", ";
+        dbg << colorSpace.primaries() << ", " << colorSpace.transferFunction();
+        dbg << ", gamma=" << colorSpace.gamma();
+    }
     dbg << ')';
     return dbg;
 }

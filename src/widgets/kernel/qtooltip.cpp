@@ -53,11 +53,14 @@
 #endif
 #include <qtextdocument.h>
 #include <qdebug.h>
+#include <qpa/qplatformscreen.h>
+#include <qpa/qplatformcursor.h>
 #include <private/qstylesheetstyle_p.h>
 
 #ifndef QT_NO_TOOLTIP
 #include <qlabel.h>
 #include <QtWidgets/private/qlabel_p.h>
+#include <QtGui/private/qhighdpiscaling_p.h>
 #include <qtooltip.h>
 
 QT_BEGIN_NAMESPACE
@@ -398,24 +401,34 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
     }
 #endif //QT_NO_STYLE_STYLESHEET
 
-
-    QRect screen = QDesktopWidgetPrivate::screenGeometry(getTipScreen(pos, w));
-
     QPoint p = pos;
-    p += QPoint(2, 16);
+    int screenNumber = getTipScreen(pos, w);
+    QScreen *screen = QGuiApplication::screens().at(screenNumber);
+    if (screen) {
+        const QPlatformScreen *platformScreen = screen->handle();
+        const QSize cursorSize = QHighDpi::fromNativePixels(platformScreen->cursor()->size(),
+                                                            platformScreen);
+        QPoint offset(2, cursorSize.height());
+        // assuming an arrow shape, we can just move to the side for very large cursors
+        if (cursorSize.height() > 2 * this->height())
+            offset = QPoint(cursorSize.width() / 2, 0);
 
-    if (p.x() + this->width() > screen.x() + screen.width())
+        p += offset;
+
+        QRect screenRect = screen->geometry();
+        if (p.x() + this->width() > screenRect.x() + screenRect.width())
         p.rx() -= 4 + this->width();
-    if (p.y() + this->height() > screen.y() + screen.height())
+        if (p.y() + this->height() > screenRect.y() + screenRect.height())
         p.ry() -= 24 + this->height();
-    if (p.y() < screen.y())
-        p.setY(screen.y());
-    if (p.x() + this->width() > screen.x() + screen.width())
-        p.setX(screen.x() + screen.width() - this->width());
-    if (p.x() < screen.x())
-        p.setX(screen.x());
-    if (p.y() + this->height() > screen.y() + screen.height())
-        p.setY(screen.y() + screen.height() - this->height());
+        if (p.y() < screenRect.y())
+            p.setY(screenRect.y());
+        if (p.x() + this->width() > screenRect.x() + screenRect.width())
+            p.setX(screenRect.x() + screenRect.width() - this->width());
+        if (p.x() < screenRect.x())
+            p.setX(screenRect.x());
+        if (p.y() + this->height() > screenRect.y() + screenRect.height())
+            p.setY(screenRect.y() + screenRect.height() - this->height());
+    }
     this->move(p);
 }
 

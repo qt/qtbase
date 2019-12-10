@@ -86,6 +86,10 @@ private:
     QSurfaceFormat m_format;
     QVarLengthArray<QMacNotificationObserver, 3> m_updateObservers;
     QAtomicInt m_needsUpdate = false;
+
+#ifndef QT_NO_DEBUG_STREAM
+    friend QDebug operator<<(QDebug debug, const QCocoaGLContext *screen);
+#endif
 };
 
 QT_END_NAMESPACE

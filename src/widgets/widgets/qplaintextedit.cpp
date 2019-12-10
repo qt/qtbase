@@ -2328,6 +2328,7 @@ void QPlainTextEdit::changeEvent(QEvent *e)
             d->autoScrollTimer.stop();
     } else if (e->type() == QEvent::EnabledChange) {
         e->setAccepted(isEnabled());
+        d->control->setPalette(palette());
         d->sendControlEvent(e);
     } else if (e->type() == QEvent::PaletteChange) {
         d->control->setPalette(palette());

@@ -347,7 +347,19 @@ QTextDocument *QTextDocument::clone(QObject *parent) const
 {
     Q_D(const QTextDocument);
     QTextDocument *doc = new QTextDocument(parent);
-    QTextCursor(doc).insertFragment(QTextDocumentFragment(this));
+    if (isEmpty()) {
+        const QTextCursor thisCursor(const_cast<QTextDocument *>(this));
+
+        const auto blockFormat = thisCursor.blockFormat();
+        if (blockFormat.isValid() && !blockFormat.isEmpty())
+            QTextCursor(doc).setBlockFormat(blockFormat);
+
+        const auto blockCharFormat = thisCursor.blockCharFormat();
+        if (blockCharFormat.isValid() && !blockCharFormat.isEmpty())
+            QTextCursor(doc).setBlockCharFormat(blockCharFormat);
+    } else {
+        QTextCursor(doc).insertFragment(QTextDocumentFragment(this));
+    }
     doc->rootFrame()->setFrameFormat(rootFrame()->frameFormat());
     QTextDocumentPrivate *priv = doc->d_func();
     priv->title = d->title;

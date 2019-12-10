@@ -154,7 +154,7 @@ static int doSed(int argc, char **argv)
         FILE *f;
         if (!strcmp(inFile, "-")) {
             f = stdin;
-        } else if (!(f = fopen(inFile, "r"))) {
+        } else if (!(f = fopen(inFile, "rb"))) {
             perror(inFile);
             return 1;
         }

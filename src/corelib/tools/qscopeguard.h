@@ -51,7 +51,7 @@ template <typename F> QScopeGuard<F> qScopeGuard(F f);
 
 template <typename F>
 class
-#if QT_HAS_CPP_ATTRIBUTE(nodiscard)
+#if __has_cpp_attribute(nodiscard)
 // Q_REQUIRED_RESULT can be defined as __warn_unused_result__ or as [[nodiscard]]
 // but the 1st one has some limitations for example can be placed only on functions.
 Q_REQUIRED_RESULT
@@ -91,7 +91,7 @@ private:
 
 
 template <typename F>
-#if QT_HAS_CPP_ATTRIBUTE(nodiscard)
+#if __has_cpp_attribute(nodiscard)
 Q_REQUIRED_RESULT
 #endif
 QScopeGuard<F> qScopeGuard(F f)
