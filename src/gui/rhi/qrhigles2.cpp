@@ -2428,7 +2428,15 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                         f->glUniformMatrix2fv(uniform.glslLocation, 1, GL_FALSE, reinterpret_cast<const float *>(src));
                         break;
                     case QShaderDescription::Mat3:
-                        f->glUniformMatrix3fv(uniform.glslLocation, 1, GL_FALSE, reinterpret_cast<const float *>(src));
+                    {
+                        // 4 floats per column (or row, if row-major)
+                        float mat[9];
+                        const float *srcMat = reinterpret_cast<const float *>(src);
+                        memcpy(mat, srcMat, 3 * sizeof(float));
+                        memcpy(mat + 3, srcMat + 4, 3 * sizeof(float));
+                        memcpy(mat + 6, srcMat + 8, 3 * sizeof(float));
+                        f->glUniformMatrix3fv(uniform.glslLocation, 1, GL_FALSE, mat);
+                    }
                         break;
                     case QShaderDescription::Mat4:
                         f->glUniformMatrix4fv(uniform.glslLocation, 1, GL_FALSE, reinterpret_cast<const float *>(src));
