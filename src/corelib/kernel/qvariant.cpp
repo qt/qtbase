@@ -4520,15 +4520,24 @@ QSequentialIterable::const_iterator QSequentialIterable::end() const
     return it;
 }
 
+static const QVariant variantFromVariantDataHelper(const QtMetaTypePrivate::VariantData &d) {
+    QVariant v;
+    if (d.metaTypeId == qMetaTypeId<QVariant>())
+        v =  *reinterpret_cast<const QVariant*>(d.data);
+    else
+        v = QVariant(d.metaTypeId, d.data, d.flags & ~QVariantConstructionFlags::ShouldDeleteVariantData);
+    if (d.flags & QVariantConstructionFlags::ShouldDeleteVariantData)
+        QMetaType::destroy(d.metaTypeId, const_cast<void *>(d.data));
+    return v;
+}
+
 /*!
     Returns the element at position \a idx in the container.
 */
 QVariant QSequentialIterable::at(int idx) const
 {
     const QtMetaTypePrivate::VariantData d = m_impl.at(idx);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return QVariant(d.metaTypeId, d.data, d.flags);
+    return variantFromVariantDataHelper(d);
 }
 
 /*!
@@ -4605,9 +4614,7 @@ QSequentialIterable::const_iterator::operator=(const const_iterator &other)
 const QVariant QSequentialIterable::const_iterator::operator*() const
 {
     const QtMetaTypePrivate::VariantData d = m_impl.getCurrent();
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return QVariant(d.metaTypeId, d.data, d.flags);
+    return variantFromVariantDataHelper(d);
 }
 
 /*!
@@ -4939,10 +4946,7 @@ QAssociativeIterable::const_iterator::operator=(const const_iterator &other)
 const QVariant QAssociativeIterable::const_iterator::operator*() const
 {
     const QtMetaTypePrivate::VariantData d = m_impl.getCurrentValue();
-    QVariant v(d.metaTypeId, d.data, d.flags);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return v;
+    return variantFromVariantDataHelper(d);
 }
 
 /*!
@@ -4951,10 +4955,7 @@ const QVariant QAssociativeIterable::const_iterator::operator*() const
 const QVariant QAssociativeIterable::const_iterator::key() const
 {
     const QtMetaTypePrivate::VariantData d = m_impl.getCurrentKey();
-    QVariant v(d.metaTypeId, d.data, d.flags);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return v;
+    return variantFromVariantDataHelper(d);
 }
 
 /*!
@@ -4962,11 +4963,7 @@ const QVariant QAssociativeIterable::const_iterator::key() const
 */
 const QVariant QAssociativeIterable::const_iterator::value() const
 {
-    const QtMetaTypePrivate::VariantData d = m_impl.getCurrentValue();
-    QVariant v(d.metaTypeId, d.data, d.flags);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return v;
+    return operator*();
 }
 
 /*!
