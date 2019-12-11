@@ -111,10 +111,10 @@ class Q_CORE_EXPORT QDebug
     void putString(const QChar *begin, size_t length);
     void putByteArray(const char *begin, size_t length, Latin1Content content);
 public:
-    inline QDebug(QIODevice *device) : stream(new Stream(device)) {}
-    inline QDebug(QString *string) : stream(new Stream(string)) {}
-    inline QDebug(QtMsgType t) : stream(new Stream(t)) {}
-    inline QDebug(const QDebug &o):stream(o.stream) { ++stream->ref; }
+    explicit QDebug(QIODevice *device) : stream(new Stream(device)) {}
+    explicit QDebug(QString *string) : stream(new Stream(string)) {}
+    explicit QDebug(QtMsgType t) : stream(new Stream(t)) {}
+    QDebug(const QDebug &o) : stream(o.stream) { ++stream->ref; }
     QDebug(QDebug &&other) noexcept : stream{qExchange(other.stream, nullptr)} {}
     inline QDebug &operator=(const QDebug &other);
     QDebug &operator=(QDebug &&other) noexcept
