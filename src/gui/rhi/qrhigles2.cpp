@@ -2378,12 +2378,23 @@ void QRhiGles2::executeBindGraphicsPipeline(QRhiGraphicsPipeline *ps)
     f->glUseProgram(psD->program);
 }
 
+static inline void qrhi_std140_to_packed(float *dst, int vecSize, int elemCount, const void *src)
+{
+    const float *p = reinterpret_cast<const float *>(src);
+    for (int i = 0; i < elemCount; ++i) {
+        for (int j = 0; j < vecSize; ++j)
+            dst[vecSize * i + j] = *p++;
+        p += 4 - vecSize;
+    }
+}
+
 void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiComputePipeline *maybeComputePs,
                                     QRhiShaderResourceBindings *srb,
                                     const uint *dynOfsPairs, int dynOfsCount)
 {
     QGles2ShaderResourceBindings *srbD = QRHI_RES(QGles2ShaderResourceBindings, srb);
     int texUnit = 0;
+    QVarLengthArray<float, 256> packedFloatArray;
 
     for (int i = 0, ie = srbD->m_bindings.count(); i != ie; ++i) {
         const QRhiShaderResourceBinding::Data *b = srbD->m_bindings.at(i).data();
@@ -2411,18 +2422,64 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                     // so this should not cause unaligned reads
                     const void *src = bufView.constData() + uniform.offset;
 
+                    if (uniform.arrayDim > 0
+                            && uniform.type != QShaderDescription::Float
+                            && uniform.type != QShaderDescription::Vec2
+                            && uniform.type != QShaderDescription::Vec3
+                            && uniform.type != QShaderDescription::Vec4)
+                    {
+                        qWarning("Uniform with buffer binding %d, buffer offset %d, type %d is an array, "
+                                 "but arrays are only supported for float, vec2, vec3, and vec4. "
+                                 "Only the first element will be set.",
+                                 uniform.binding, uniform.offset, uniform.type);
+                    }
+
+                    // Our input is an std140 layout uniform block. See
+                    // "Standard Uniform Block Layout" in section 7.6.2.2 of
+                    // the OpenGL spec. This has some peculiar alignment
+                    // requirements, which is not what glUniform* wants. Hence
+                    // the unpacking/repacking for arrays and certain types.
+
                     switch (uniform.type) {
                     case QShaderDescription::Float:
-                        f->glUniform1f(uniform.glslLocation, *reinterpret_cast<const float *>(src));
+                    {
+                        const int elemCount = uniform.arrayDim;
+                        if (elemCount < 1) {
+                            f->glUniform1f(uniform.glslLocation, *reinterpret_cast<const float *>(src));
+                        } else {
+                            // input is 16 bytes per element as per std140, have to convert to packed
+                            packedFloatArray.resize(elemCount);
+                            qrhi_std140_to_packed(packedFloatArray.data(), 1, elemCount, src);
+                            f->glUniform1fv(uniform.glslLocation, elemCount, packedFloatArray.constData());
+                        }
+                    }
                         break;
                     case QShaderDescription::Vec2:
-                        f->glUniform2fv(uniform.glslLocation, 1, reinterpret_cast<const float *>(src));
+                    {
+                        const int elemCount = uniform.arrayDim;
+                        if (elemCount < 1) {
+                            f->glUniform2fv(uniform.glslLocation, 1, reinterpret_cast<const float *>(src));
+                        } else {
+                            packedFloatArray.resize(elemCount * 2);
+                            qrhi_std140_to_packed(packedFloatArray.data(), 2, elemCount, src);
+                            f->glUniform2fv(uniform.glslLocation, elemCount, packedFloatArray.constData());
+                        }
+                    }
                         break;
                     case QShaderDescription::Vec3:
-                        f->glUniform3fv(uniform.glslLocation, 1, reinterpret_cast<const float *>(src));
+                    {
+                        const int elemCount = uniform.arrayDim;
+                        if (elemCount < 1) {
+                            f->glUniform3fv(uniform.glslLocation, 1, reinterpret_cast<const float *>(src));
+                        } else {
+                            packedFloatArray.resize(elemCount * 3);
+                            qrhi_std140_to_packed(packedFloatArray.data(), 3, elemCount, src);
+                            f->glUniform3fv(uniform.glslLocation, elemCount, packedFloatArray.constData());
+                        }
+                    }
                         break;
                     case QShaderDescription::Vec4:
-                        f->glUniform4fv(uniform.glslLocation, 1, reinterpret_cast<const float *>(src));
+                        f->glUniform4fv(uniform.glslLocation, qMax(1, uniform.arrayDim), reinterpret_cast<const float *>(src));
                         break;
                     case QShaderDescription::Mat2:
                         f->glUniformMatrix2fv(uniform.glslLocation, 1, GL_FALSE, reinterpret_cast<const float *>(src));
@@ -2477,8 +2534,9 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                     case QShaderDescription::Bool4:
                         f->glUniform4iv(uniform.glslLocation, 1, reinterpret_cast<const qint32 *>(src));
                         break;
-                    // ### more types
                     default:
+                        qWarning("Uniform with buffer binding %d, buffer offset %d has unsupported type %d",
+                                 uniform.binding, uniform.offset, uniform.type);
                         break;
                     }
                 }
@@ -2944,9 +3002,15 @@ void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable 
     const QByteArray name = namePrefix + var.name.toUtf8();
     uniform.glslLocation = f->glGetUniformLocation(program, name.constData());
     if (uniform.glslLocation >= 0) {
+        if (var.arrayDims.count() > 1) {
+            qWarning("Array '%s' has more than one dimension. This is not supported.",
+                     qPrintable(var.name));
+            return;
+        }
         uniform.binding = binding;
         uniform.offset = uint(baseOffset + var.offset);
         uniform.size = var.size;
+        uniform.arrayDim = var.arrayDims.isEmpty() ? 0 : var.arrayDims.first();
         dst->append(uniform);
     }
 }
@@ -2979,11 +3043,6 @@ void QRhiGles2::gatherUniforms(GLuint program,
                 }
             }
         } else {
-            if (!blockMember.arrayDims.isEmpty()) {
-                qWarning("Arrays are only supported for structs at the moment. '%s' ignored.",
-                         qPrintable(blockMember.name));
-                continue;
-            }
             registerUniformIfActive(blockMember, prefix, ub.binding, 0, program, dst);
         }
     }

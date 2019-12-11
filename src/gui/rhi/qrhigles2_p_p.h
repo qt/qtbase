@@ -252,6 +252,7 @@ struct QGles2UniformDescription
     int binding;
     uint offset;
     int size;
+    int arrayDim;
 };
 
 Q_DECLARE_TYPEINFO(QGles2UniformDescription, Q_MOVABLE_TYPE);
