@@ -673,12 +673,17 @@ static inline int mapBinding(int binding,
                              BindingType type)
 {
     const QShader::NativeResourceBindingMap *map = nativeResourceBindingMaps[stageIndex];
-    if (map) {
-        auto it = map->constFind(binding);
-        if (it != map->cend())
-            return type == BindingType::Sampler ? it->second : it->first;
-    }
-    return binding;
+    if (!map)
+        return binding; // old QShader versions do not have this map, assume 1:1 mapping then
+
+    auto it = map->constFind(binding);
+    if (it != map->cend())
+        return type == BindingType::Sampler ? it->second : it->first; // may be -1, if the resource is inactive
+
+    // Hitting this path is normal too, is not given that the resource (e.g. a
+    // uniform block) is really present in the shaders for all the stages
+    // specified by the visibility mask in the QRhiShaderResourceBinding.
+    return -1;
 }
 
 void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD,
@@ -712,16 +717,25 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
                 }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                res[VERTEX].buffers.feed(mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
-                res[VERTEX].bufferOffsets.feed(b->binding, offset);
+                const int nativeBinding = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Buffer);
+                if (nativeBinding >= 0) {
+                    res[VERTEX].buffers.feed(nativeBinding, mtlbuf);
+                    res[VERTEX].bufferOffsets.feed(b->binding, offset);
+                }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                res[FRAGMENT].buffers.feed(mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
-                res[FRAGMENT].bufferOffsets.feed(b->binding, offset);
+                const int nativeBinding = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Buffer);
+                if (nativeBinding >= 0) {
+                    res[FRAGMENT].buffers.feed(nativeBinding, mtlbuf);
+                    res[FRAGMENT].bufferOffsets.feed(b->binding, offset);
+                }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                res[COMPUTE].buffers.feed(mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
-                res[COMPUTE].bufferOffsets.feed(b->binding, offset);
+                const int nativeBinding = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Buffer);
+                if (nativeBinding >= 0) {
+                    res[COMPUTE].buffers.feed(nativeBinding, mtlbuf);
+                    res[COMPUTE].bufferOffsets.feed(b->binding, offset);
+                }
             }
         }
             break;
@@ -730,16 +744,28 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.stex.tex);
             QMetalSampler *samplerD = QRHI_RES(QMetalSampler, b->u.stex.sampler);
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                res[VERTEX].textures.feed(mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture), texD->d->tex);
-                res[VERTEX].samplers.feed(mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Sampler), samplerD->d->samplerState);
+                const int nativeBindingTexture = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture);
+                const int nativeBindingSampler = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Sampler);
+                if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
+                    res[VERTEX].textures.feed(nativeBindingTexture, texD->d->tex);
+                    res[VERTEX].samplers.feed(nativeBindingSampler, samplerD->d->samplerState);
+                }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                res[FRAGMENT].textures.feed(mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture), texD->d->tex);
-                res[FRAGMENT].samplers.feed(mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Sampler), samplerD->d->samplerState);
+                const int nativeBindingTexture = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture);
+                const int nativeBindingSampler = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Sampler);
+                if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
+                    res[FRAGMENT].textures.feed(nativeBindingTexture, texD->d->tex);
+                    res[FRAGMENT].samplers.feed(nativeBindingSampler, samplerD->d->samplerState);
+                }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                res[COMPUTE].textures.feed(mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture), texD->d->tex);
-                res[COMPUTE].samplers.feed(mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Sampler), samplerD->d->samplerState);
+                const int nativeBindingTexture = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture);
+                const int nativeBindingSampler = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Sampler);
+                if (nativeBindingTexture >= 0 && nativeBindingSampler >= 0) {
+                    res[COMPUTE].textures.feed(nativeBindingTexture, texD->d->tex);
+                    res[COMPUTE].samplers.feed(nativeBindingSampler, samplerD->d->samplerState);
+                }
             }
         }
             break;
@@ -751,12 +777,21 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         {
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
             id<MTLTexture> t = texD->d->viewForLevel(b->u.simage.level);
-            if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage))
-                res[VERTEX].textures.feed(mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture), t);
-            if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage))
-                res[FRAGMENT].textures.feed(mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture), t);
-            if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage))
-                res[COMPUTE].textures.feed(mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture), t);
+            if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
+                const int nativeBinding = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Texture);
+                if (nativeBinding >= 0)
+                    res[VERTEX].textures.feed(nativeBinding, t);
+            }
+            if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
+                const int nativeBinding = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Texture);
+                if (nativeBinding >= 0)
+                    res[FRAGMENT].textures.feed(nativeBinding, t);
+            }
+            if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
+                const int nativeBinding = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Texture);
+                if (nativeBinding >= 0)
+                    res[COMPUTE].textures.feed(nativeBinding, t);
+            }
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
@@ -769,16 +804,25 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
             id<MTLBuffer> mtlbuf = bufD->d->buf[0];
             uint offset = uint(b->u.sbuf.offset);
             if (b->stage.testFlag(QRhiShaderResourceBinding::VertexStage)) {
-                res[VERTEX].buffers.feed(mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
-                res[VERTEX].bufferOffsets.feed(b->binding, offset);
+                const int nativeBinding = mapBinding(b->binding, VERTEX, nativeResourceBindingMaps, BindingType::Buffer);
+                if (nativeBinding >= 0) {
+                    res[VERTEX].buffers.feed(nativeBinding, mtlbuf);
+                    res[VERTEX].bufferOffsets.feed(b->binding, offset);
+                }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::FragmentStage)) {
-                res[FRAGMENT].buffers.feed(mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
-                res[FRAGMENT].bufferOffsets.feed(b->binding, offset);
+                const int nativeBinding = mapBinding(b->binding, FRAGMENT, nativeResourceBindingMaps, BindingType::Buffer);
+                if (nativeBinding >= 0) {
+                    res[FRAGMENT].buffers.feed(nativeBinding, mtlbuf);
+                    res[FRAGMENT].bufferOffsets.feed(b->binding, offset);
+                }
             }
             if (b->stage.testFlag(QRhiShaderResourceBinding::ComputeStage)) {
-                res[COMPUTE].buffers.feed(mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Buffer), mtlbuf);
-                res[COMPUTE].bufferOffsets.feed(b->binding, offset);
+                const int nativeBinding = mapBinding(b->binding, COMPUTE, nativeResourceBindingMaps, BindingType::Buffer);
+                if (nativeBinding >= 0) {
+                    res[COMPUTE].buffers.feed(nativeBinding, mtlbuf);
+                    res[COMPUTE].bufferOffsets.feed(b->binding, offset);
+                }
             }
         }
             break;

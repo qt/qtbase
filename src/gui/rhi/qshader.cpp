@@ -660,6 +660,13 @@ QDebug operator<<(QDebug dbg, const QShaderVersion &v)
     pair, because combined image samplers may map to two native resources (a
     texture and a sampler) in some shading languages. In that case the second
     value refers to the sampler.
+
+    \note The native binding may be -1, in case there is no active binding for
+    the resource in the shader. (for example, there is a uniform block
+    declared, but it is not used in the shader code) The map is always
+    complete, meaning there is an entry for all declared uniform blocks,
+    storage blocks, image objects, and combined samplers, but the value will be
+    -1 for those that are not actually referenced in the shader functions.
 */
 
 /*!
