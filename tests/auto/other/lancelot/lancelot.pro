@@ -1,6 +1,7 @@
 CONFIG += testcase
 TARGET = tst_lancelot
 QT += testlib gui-private
+qtConfig(opengl): QT += opengl
 
 SOURCES += tst_lancelot.cpp \
            paintcommands.cpp

@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -51,7 +51,6 @@
 #ifndef QOPENGL2PEXVERTEXARRAY_P_H
 #define QOPENGL2PEXVERTEXARRAY_P_H
 
-#include <QtGui/private/qtguiglobal_p.h>
 #include <QRectF>
 
 #include <private/qdatabuffer_p.h>

@@ -45,14 +45,16 @@
 #include <QtGui/QWindow>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
-#include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/qpa/qplatformwindow.h>
 #include <QtGui/qpa/qplatformintegration.h>
+#include <QtOpenGL/QOpenGLPaintDevice>
+
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qfont_p.h>
-#include <QtGui/private/qopenglpaintdevice_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
+#include <QtOpenGL/private/qopenglpaintdevice_p.h>
+
 #include <QtWidgets/private/qwidget_p.h>
 
 QT_BEGIN_NAMESPACE

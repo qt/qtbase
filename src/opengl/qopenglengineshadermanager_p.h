@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -220,7 +220,6 @@
 #ifndef QOPENGLENGINE_SHADER_MANAGER_H
 #define QOPENGLENGINE_SHADER_MANAGER_H
 
-#include <QtGui/private/qtguiglobal_p.h>
 #include <QOpenGLShader>
 #include <QOpenGLShaderProgram>
 #include <QPainter>
@@ -255,7 +254,7 @@ static const GLuint QT_PMV_MATRIX_3_ATTR = 5;
 
 class QOpenGLEngineShaderProg;
 
-class Q_GUI_EXPORT QOpenGLEngineSharedShaders
+class Q_OPENGL_EXPORT QOpenGLEngineSharedShaders
 {
     Q_GADGET
 public:
@@ -406,7 +405,7 @@ public:
     }
 };
 
-class Q_GUI_EXPORT QOpenGLEngineShaderManager : public QObject
+class Q_OPENGL_EXPORT QOpenGLEngineShaderManager : public QObject
 {
     Q_OBJECT
 public:

@@ -21,6 +21,7 @@ HEADERS =   qminimaleglintegration.h \
             qminimaleglscreen.h
 
 qtConfig(opengl) {
+    QT += opengl
     SOURCES += qminimaleglbackingstore.cpp
     HEADERS += qminimaleglbackingstore.h
 }

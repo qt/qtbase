@@ -2,6 +2,7 @@ TEMPLATE      = subdirs
 
 SUBDIRS = hellowindow \
           paintedwindow \
+          openglwindow \
           qopenglwindow
 
 qtHaveModule(widgets) {

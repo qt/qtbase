@@ -4,7 +4,7 @@
 
 CONFIG += testcase
 TARGET = tst_qopengl
-QT += gui-private core-private testlib
+QT += opengl gui-private core-private testlib
 
 SOURCES   += tst_qopengl.cpp
 

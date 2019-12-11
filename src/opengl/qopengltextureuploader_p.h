@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2018 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,52 +37,48 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENGL_PAINTDEVICE_P_H
-#define QOPENGL_PAINTDEVICE_P_H
-
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists for the convenience
-// of the Qt OpenGL classes.  This header file may change from
-// version to version without notice, or even be removed.
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
-#include <qopenglpaintdevice.h>
+#ifndef QOPENGLTEXTUREUPLOADER_P_H
+#define QOPENGLTEXTUREUPLOADER_P_H
+
+#include <QtCore/qsize.h>
+#include <QtOpenGL/qtopenglglobal.h>
+#include <QtGui/private/qopenglcontext_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLContext;
-class QPaintEngine;
+class QImage;
 
-class Q_GUI_EXPORT QOpenGLPaintDevicePrivate
+class Q_OPENGL_EXPORT QOpenGLTextureUploader
 {
 public:
-    QOpenGLPaintDevicePrivate(const QSize &size);
-    virtual ~QOpenGLPaintDevicePrivate();
+    enum BindOption {
+        NoBindOption                            = 0x0000,
+        PremultipliedAlphaBindOption            = 0x0001,
+        UseRedForAlphaAndLuminanceBindOption    = 0x0002,
+        SRgbBindOption                          = 0x0004,
+        PowerOfTwoBindOption                    = 0x0008
+    };
+    Q_DECLARE_FLAGS(BindOptions, BindOption)
+    Q_FLAGS(BindOptions)
 
-    static QOpenGLPaintDevicePrivate *get(QOpenGLPaintDevice *dev) { return dev->d_func(); }
+    static qsizetype textureImage(GLenum target, const QImage &image, BindOptions options, QSize maxSize = QSize());
 
-    virtual void beginPaint() { }
-    virtual void endPaint() { }
-
-public:
-    QSize size;
-    QOpenGLContext *ctx;
-
-    qreal dpmx;
-    qreal dpmy;
-    qreal devicePixelRatio;
-
-    bool flipped;
-
-    QPaintEngine *engine;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLTextureUploader::BindOptions)
 
 QT_END_NAMESPACE
 
-#endif // QOPENGL_PAINTDEVICE_P_H
+#endif
+

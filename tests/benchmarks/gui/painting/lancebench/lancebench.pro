@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = tst_bench_lancebench
 
 QT += testlib gui-private
-
+qtConfig(opengl): QT += opengl
 
 SOURCES += tst_lancebench.cpp
 

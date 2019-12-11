@@ -62,8 +62,8 @@
 #include <QRegularExpression>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
-#include <QOpenGLPaintDevice>
 #if QT_CONFIG(opengl)
+#include <QtOpenGL/QOpenGLPaintDevice>
 #include <QtOpenGL/QOpenGLWindow>
 #endif
 

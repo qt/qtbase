@@ -40,7 +40,7 @@
 #include "qminimaleglbackingstore.h"
 
 #include <QtGui/QOpenGLContext>
-#include <QtGui/QOpenGLPaintDevice>
+#include <QtOpenGL/QOpenGLPaintDevice>
 
 QT_BEGIN_NAMESPACE
 

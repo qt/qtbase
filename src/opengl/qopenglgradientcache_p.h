@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,6 +37,9 @@
 **
 ****************************************************************************/
 
+#ifndef QOPENGLGRADIENTCACHE_P_H
+#define QOPENGLGRADIENTCACHE_P_H
+
 //
 //  W A R N I N G
 //  -------------
@@ -48,61 +51,57 @@
 // We mean it.
 //
 
-#ifndef QOPENGLTEXTURECACHE_P_H
-#define QOPENGLTEXTURECACHE_P_H
-
-#include <QtGui/private/qtguiglobal_p.h>
-#include <QHash>
+#include <QMultiHash>
 #include <QObject>
-#include <QCache>
 #include <private/qopenglcontext_p.h>
-#include <private/qopengltextureuploader_p.h>
 #include <QtCore/qmutex.h>
+#include <QGradient>
+#include <qrgba64.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGLCachedTexture;
-
-class Q_GUI_EXPORT QOpenGLTextureCache : public QOpenGLSharedResource
+class QOpenGL2GradientCache : public QOpenGLSharedResource
 {
+    struct CacheInfo
+    {
+        inline CacheInfo(QGradientStops s, qreal op, QGradient::InterpolationMode mode) :
+            stops(std::move(s)), opacity(op), interpolationMode(mode) {}
+
+        GLuint texId;
+        QGradientStops stops;
+        qreal opacity;
+        QGradient::InterpolationMode interpolationMode;
+    };
+
+    typedef QMultiHash<quint64, CacheInfo> QOpenGLGradientColorTableHash;
+
 public:
-    static QOpenGLTextureCache *cacheForContext(QOpenGLContext *context);
+    static QOpenGL2GradientCache *cacheForContext(QOpenGLContext *context);
 
-    QOpenGLTextureCache(QOpenGLContext *);
-    ~QOpenGLTextureCache();
+    QOpenGL2GradientCache(QOpenGLContext *);
+    ~QOpenGL2GradientCache();
 
-    GLuint bindTexture(QOpenGLContext *context, const QPixmap &pixmap,
-                       QOpenGLTextureUploader::BindOptions options = QOpenGLTextureUploader::PremultipliedAlphaBindOption);
-    GLuint bindTexture(QOpenGLContext *context, const QImage &image,
-                       QOpenGLTextureUploader::BindOptions options = QOpenGLTextureUploader::PremultipliedAlphaBindOption);
-
-    void invalidate(qint64 key);
+    GLuint getBuffer(const QGradient &gradient, qreal opacity);
+    inline int paletteSize() const { return 1024; }
 
     void invalidateResource() override;
     void freeResource(QOpenGLContext *ctx) override;
 
 private:
-    GLuint bindTexture(QOpenGLContext *context, qint64 key, const QImage &image, QOpenGLTextureUploader::BindOptions options);
+    inline int maxCacheSize() const { return 60; }
+    inline void generateGradientColorTable(const QGradient& gradient,
+                                           QRgba64 *colorTable,
+                                           int size, qreal opacity) const;
+    inline void generateGradientColorTable(const QGradient& gradient,
+                                           uint *colorTable,
+                                           int size, qreal opacity) const;
+    GLuint addCacheElement(quint64 hash_val, const QGradient &gradient, qreal opacity);
+    void cleanCache();
 
+    QOpenGLGradientColorTableHash cache;
     QMutex m_mutex;
-    QCache<quint64, QOpenGLCachedTexture> m_cache;
-};
-
-class QOpenGLCachedTexture
-{
-public:
-    QOpenGLCachedTexture(GLuint id, QOpenGLTextureUploader::BindOptions options, QOpenGLContext *context);
-    ~QOpenGLCachedTexture() { m_resource->free(); }
-
-    GLuint id() const { return m_resource->id(); }
-    QOpenGLTextureUploader::BindOptions options() const { return m_options; }
-
-private:
-    QOpenGLSharedResourceGuard *m_resource;
-    QOpenGLTextureUploader::BindOptions m_options;
 };
 
 QT_END_NAMESPACE
 
-#endif
-
+#endif // QOPENGLGRADIENTCACHE_P_H

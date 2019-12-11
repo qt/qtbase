@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
+#include <QtOpenGL/qtopenglglobal.h>
 #include <private/qtextureglyphcache_p.h>
 #include <private/qopenglcontext_p.h>
 #include <qopenglshaderprogram.h>
@@ -107,7 +107,7 @@ public:
     int m_height;
 };
 
-class Q_GUI_EXPORT QOpenGLTextureGlyphCache : public QImageTextureGlyphCache
+class Q_OPENGL_EXPORT QOpenGLTextureGlyphCache : public QImageTextureGlyphCache
 {
 public:
     QOpenGLTextureGlyphCache(QFontEngine::GlyphFormat glyphFormat, const QTransform &matrix, const QColor &color = QColor());

@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,9 +37,6 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENGLGRADIENTCACHE_P_H
-#define QOPENGLGRADIENTCACHE_P_H
-
 //
 //  W A R N I N G
 //  -------------
@@ -51,58 +48,39 @@
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
-#include <QMultiHash>
-#include <QObject>
-#include <private/qopenglcontext_p.h>
-#include <QtCore/qmutex.h>
-#include <QGradient>
-#include <qrgba64.h>
+#ifndef QOPENGLSHADERCACHE_P_H
+#define QOPENGLSHADERCACHE_P_H
+
+#include <QtOpenGL/qtopenglglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpenGL2GradientCache : public QOpenGLSharedResource
+
+class QOpenGLShaderProgram;
+class QOpenGLContext;
+
+class CachedShader
 {
-    struct CacheInfo
-    {
-        inline CacheInfo(QGradientStops s, qreal op, QGradient::InterpolationMode mode) :
-            stops(std::move(s)), opacity(op), interpolationMode(mode) {}
-
-        GLuint texId;
-        QGradientStops stops;
-        qreal opacity;
-        QGradient::InterpolationMode interpolationMode;
-    };
-
-    typedef QMultiHash<quint64, CacheInfo> QOpenGLGradientColorTableHash;
-
 public:
-    static QOpenGL2GradientCache *cacheForContext(QOpenGLContext *context);
+    inline CachedShader(const QByteArray &, const QByteArray &)
+    {}
 
-    QOpenGL2GradientCache(QOpenGLContext *);
-    ~QOpenGL2GradientCache();
+    inline bool isCached()
+    {
+        return false;
+    }
 
-    GLuint getBuffer(const QGradient &gradient, qreal opacity);
-    inline int paletteSize() const { return 1024; }
+    inline bool load(QOpenGLShaderProgram *, QOpenGLContext *)
+    {
+        return false;
+    }
 
-    void invalidateResource() override;
-    void freeResource(QOpenGLContext *ctx) override;
-
-private:
-    inline int maxCacheSize() const { return 60; }
-    inline void generateGradientColorTable(const QGradient& gradient,
-                                           QRgba64 *colorTable,
-                                           int size, qreal opacity) const;
-    inline void generateGradientColorTable(const QGradient& gradient,
-                                           uint *colorTable,
-                                           int size, qreal opacity) const;
-    GLuint addCacheElement(quint64 hash_val, const QGradient &gradient, qreal opacity);
-    void cleanCache();
-
-    QOpenGLGradientColorTableHash cache;
-    QMutex m_mutex;
+    inline bool store(QOpenGLShaderProgram *, QOpenGLContext *)
+    {
+        return false;
+    }
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPENGLGRADIENTCACHE_P_H
+#endif

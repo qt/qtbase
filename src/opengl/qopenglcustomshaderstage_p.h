@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,6 +37,9 @@
 **
 ****************************************************************************/
 
+#ifndef QOPENGL_CUSTOM_SHADER_STAGE_H
+#define QOPENGL_CUSTOM_SHADER_STAGE_H
+
 //
 //  W A R N I N G
 //  -------------
@@ -48,39 +51,40 @@
 // We mean it.
 //
 
-#ifndef QOPENGLSHADERCACHE_P_H
-#define QOPENGLSHADERCACHE_P_H
-
-#include <QtGui/private/qtguiglobal_p.h>
+#include <QtOpenGL/qtopenglglobal.h>
+#include <QOpenGLShaderProgram>
 
 QT_BEGIN_NAMESPACE
 
 
-class QOpenGLShaderProgram;
-class QOpenGLContext;
-
-class CachedShader
+class QPainter;
+class QOpenGLCustomShaderStagePrivate;
+class Q_OPENGL_EXPORT QOpenGLCustomShaderStage
 {
+    Q_DECLARE_PRIVATE(QOpenGLCustomShaderStage)
 public:
-    inline CachedShader(const QByteArray &, const QByteArray &)
-    {}
+    QOpenGLCustomShaderStage();
+    virtual ~QOpenGLCustomShaderStage();
+    virtual void setUniforms(QOpenGLShaderProgram*) {}
 
-    inline bool isCached()
-    {
-        return false;
-    }
+    void setUniformsDirty();
 
-    inline bool load(QOpenGLShaderProgram *, QOpenGLContext *)
-    {
-        return false;
-    }
+    bool setOnPainter(QPainter*);
+    void removeFromPainter(QPainter*);
+    QByteArray source() const;
 
-    inline bool store(QOpenGLShaderProgram *, QOpenGLContext *)
-    {
-        return false;
-    }
+    void setInactive();
+protected:
+    void setSource(const QByteArray&);
+
+private:
+    QOpenGLCustomShaderStagePrivate* d_ptr;
+
+    Q_DISABLE_COPY_MOVE(QOpenGLCustomShaderStage)
 };
 
+
 QT_END_NAMESPACE
+
 
 #endif

@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -62,8 +62,8 @@
 
 // #define QT_OPENGL_CACHE_AS_VBOS
 
-#include "qopenglgradientcache_p.h"
-#include "qopengltexturecache_p.h"
+#include <private/qopenglgradientcache_p.h>
+#include <private/qopengltexturecache_p.h>
 #include "qopenglpaintengine_p.h"
 #include "qopenglpaintdevice_p.h"
 
@@ -81,9 +81,9 @@
 #include <private/qstatictext_p.h>
 #include <private/qtriangulator_p.h>
 
-#include "qopenglengineshadermanager_p.h"
-#include "qopengl2pexvertexarray_p.h"
-#include "qopengltextureglyphcache_p.h"
+#include <private/qopenglengineshadermanager_p.h>
+#include <private/qopengl2pexvertexarray_p.h>
+#include <private/qopengltextureglyphcache_p.h>
 
 #include <QDebug>
 
@@ -110,7 +110,7 @@
 QT_BEGIN_NAMESPACE
 
 
-Q_GUI_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
+Q_OPENGL_EXPORT QImage qt_imageForBrush(int brushStyle, bool invert);
 
 ////////////////////////////////// Private Methods //////////////////////////////////////////
 
@@ -1348,7 +1348,7 @@ void QOpenGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
     d->fill(path);
 }
 
-Q_GUI_EXPORT bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+Q_GUI_EXPORT extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
 
 
 void QOpenGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)

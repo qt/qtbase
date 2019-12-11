@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -48,35 +48,59 @@
 // We mean it.
 //
 
-#ifndef QOPENGLTEXTUREUPLOADER_P_H
-#define QOPENGLTEXTUREUPLOADER_P_H
+#ifndef QOPENGLTEXTURECACHE_P_H
+#define QOPENGLTEXTURECACHE_P_H
 
-#include <QtCore/qsize.h>
-#include <QtGui/private/qtguiglobal_p.h>
-#include <QtGui/private/qopenglcontext_p.h>
+#include <QtOpenGL/qtopenglglobal.h>
+#include <QHash>
+#include <QObject>
+#include <QCache>
+#include <private/qopenglcontext_p.h>
+#include <private/qopengltextureuploader_p.h>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 
-class QImage;
+class QOpenGLCachedTexture;
 
-class Q_GUI_EXPORT QOpenGLTextureUploader
+class Q_OPENGL_EXPORT QOpenGLTextureCache : public QOpenGLSharedResource
 {
 public:
-    enum BindOption {
-        NoBindOption                            = 0x0000,
-        PremultipliedAlphaBindOption            = 0x0001,
-        UseRedForAlphaAndLuminanceBindOption    = 0x0002,
-        SRgbBindOption                          = 0x0004,
-        PowerOfTwoBindOption                    = 0x0008
-    };
-    Q_DECLARE_FLAGS(BindOptions, BindOption)
-    Q_FLAGS(BindOptions)
+    static QOpenGLTextureCache *cacheForContext(QOpenGLContext *context);
 
-    static qsizetype textureImage(GLenum target, const QImage &image, BindOptions options, QSize maxSize = QSize());
+    QOpenGLTextureCache(QOpenGLContext *);
+    ~QOpenGLTextureCache();
 
+    GLuint bindTexture(QOpenGLContext *context, const QPixmap &pixmap,
+                       QOpenGLTextureUploader::BindOptions options = QOpenGLTextureUploader::PremultipliedAlphaBindOption);
+    GLuint bindTexture(QOpenGLContext *context, const QImage &image,
+                       QOpenGLTextureUploader::BindOptions options = QOpenGLTextureUploader::PremultipliedAlphaBindOption);
+
+    void invalidate(qint64 key);
+
+    void invalidateResource() override;
+    void freeResource(QOpenGLContext *ctx) override;
+
+private:
+    GLuint bindTexture(QOpenGLContext *context, qint64 key, const QImage &image, QOpenGLTextureUploader::BindOptions options);
+
+    QMutex m_mutex;
+    QCache<quint64, QOpenGLCachedTexture> m_cache;
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLTextureUploader::BindOptions)
+class QOpenGLCachedTexture
+{
+public:
+    QOpenGLCachedTexture(GLuint id, QOpenGLTextureUploader::BindOptions options, QOpenGLContext *context);
+    ~QOpenGLCachedTexture() { m_resource->free(); }
+
+    GLuint id() const { return m_resource->id(); }
+    QOpenGLTextureUploader::BindOptions options() const { return m_options; }
+
+private:
+    QOpenGLSharedResourceGuard *m_resource;
+    QOpenGLTextureUploader::BindOptions m_options;
+};
 
 QT_END_NAMESPACE
 

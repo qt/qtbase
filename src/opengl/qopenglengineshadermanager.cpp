@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -40,7 +40,7 @@
 #include "qopenglengineshadermanager_p.h"
 #include "qopenglengineshadersource_p.h"
 #include "qopenglpaintengine_p.h"
-#include "qopenglshadercache_p.h"
+#include <private/qopenglshadercache_p.h>
 
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtCore/qthreadstorage.h>

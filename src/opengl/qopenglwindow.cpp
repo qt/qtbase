@@ -39,7 +39,6 @@
 
 #include "qopenglwindow.h"
 #include <QtGui/QOpenGLFramebufferObject>
-#include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLTextureBlitter>
 #include <QtGui/private/qpaintdevicewindow_p.h>
@@ -47,6 +46,7 @@
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QMatrix4x4>
 #include <QtGui/QOffscreenSurface>
+#include <QtOpenGL/QOpenGLPaintDevice>
 
 QT_BEGIN_NAMESPACE
 

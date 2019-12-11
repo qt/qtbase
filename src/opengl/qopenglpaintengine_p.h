@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -51,7 +51,6 @@
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
 #include <QDebug>
 
 #include <qopenglpaintdevice.h>
@@ -109,7 +108,7 @@ public:
     QRect rectangleClip;
 };
 
-class Q_GUI_EXPORT QOpenGL2PaintEngineEx : public QPaintEngineEx
+class Q_OPENGL_EXPORT QOpenGL2PaintEngineEx : public QPaintEngineEx
 {
     Q_DECLARE_PRIVATE(QOpenGL2PaintEngineEx)
 public:

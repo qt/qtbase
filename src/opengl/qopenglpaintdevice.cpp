@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     \class QOpenGLPaintDevice
     \brief The QOpenGLPaintDevice class enables painting to an OpenGL context using QPainter.
     \since 5.0
-    \inmodule QtGui
+    \inmodule QtOpenGL
 
     \ingroup painting-3D
 

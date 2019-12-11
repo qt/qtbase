@@ -1,5 +1,5 @@
 CONFIG += testcase
 TARGET = tst_qopenglwidget
-QT += opengl gui-private core-private testlib widgets
+QT += opengl opengl-private gui-private core-private testlib widgets
 
 SOURCES   += tst_qopenglwidget.cpp

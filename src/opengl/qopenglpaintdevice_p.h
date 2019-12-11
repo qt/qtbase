@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -37,54 +37,51 @@
 **
 ****************************************************************************/
 
-#ifndef QOPENGL_CUSTOM_SHADER_STAGE_H
-#define QOPENGL_CUSTOM_SHADER_STAGE_H
+#ifndef QOPENGL_PAINTDEVICE_P_H
+#define QOPENGL_PAINTDEVICE_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
+// This file is not part of the Qt API.  It exists for the convenience
+// of the Qt OpenGL classes.  This header file may change from
+// version to version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
-#include <QOpenGLShaderProgram>
+#include <qopenglpaintdevice.h>
 
 QT_BEGIN_NAMESPACE
 
+class QOpenGLContext;
+class QPaintEngine;
 
-class QPainter;
-class QOpenGLCustomShaderStagePrivate;
-class Q_GUI_EXPORT QOpenGLCustomShaderStage
+class Q_OPENGL_EXPORT QOpenGLPaintDevicePrivate
 {
-    Q_DECLARE_PRIVATE(QOpenGLCustomShaderStage)
 public:
-    QOpenGLCustomShaderStage();
-    virtual ~QOpenGLCustomShaderStage();
-    virtual void setUniforms(QOpenGLShaderProgram*) {}
+    QOpenGLPaintDevicePrivate(const QSize &size);
+    virtual ~QOpenGLPaintDevicePrivate();
 
-    void setUniformsDirty();
+    static QOpenGLPaintDevicePrivate *get(QOpenGLPaintDevice *dev) { return dev->d_func(); }
 
-    bool setOnPainter(QPainter*);
-    void removeFromPainter(QPainter*);
-    QByteArray source() const;
+    virtual void beginPaint() { }
+    virtual void endPaint() { }
 
-    void setInactive();
-protected:
-    void setSource(const QByteArray&);
+public:
+    QSize size;
+    QOpenGLContext *ctx;
 
-private:
-    QOpenGLCustomShaderStagePrivate* d_ptr;
+    qreal dpmx;
+    qreal dpmy;
+    qreal devicePixelRatio;
 
-    Q_DISABLE_COPY_MOVE(QOpenGLCustomShaderStage)
+    bool flipped;
+
+    QPaintEngine *engine;
 };
-
 
 QT_END_NAMESPACE
 
-
-#endif
+#endif // QOPENGL_PAINTDEVICE_P_H
