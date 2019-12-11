@@ -18,7 +18,8 @@ else()
     # Make CMake's AUTOGEN detect this Qt version properly
     set_directory_properties(PROPERTIES
                              QT_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
-                             QT_VERSION_MINOR @PROJECT_VERSION_MINOR@)
+                             QT_VERSION_MINOR @PROJECT_VERSION_MINOR@
+                             QT_VERSION_PATCH @PROJECT_VERSION_PATCH@)
 endif()
 
 # if (NOT @INSTALL_CMAKE_NAMESPACE@_FIND_COMPONENTS)

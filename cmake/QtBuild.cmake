@@ -904,8 +904,10 @@ function(qt_autogen_tools_initial_setup target)
     set_property(TARGET "${target}" APPEND PROPERTY COMPATIBLE_INTERFACE_STRING QT_MAJOR_VERSION)
 
     set_directory_properties(PROPERTIES
-                             QT_VERSION_MAJOR ${PROJECT_VERSION_MAJOR}
-                             QT_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+        QT_VERSION_MAJOR ${PROJECT_VERSION_MAJOR}
+        QT_VERSION_MINOR ${PROJECT_VERSION_MINOR}
+        QT_VERSION_PATCH ${PROJECT_VERSION_PATCH}
+    )
 
     qt_enable_autogen_tool(${target} "moc" ON)
 endfunction()
