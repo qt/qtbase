@@ -11,9 +11,11 @@ qtConfig(opengles2): CONFIG += opengles2
 
 HEADERS += \
     qopengldebug.h \
+    qopenglwindow.h \
     qtopenglglobal.h
 
 SOURCES += \
+    qopenglwindow.cpp \
     qopengldebug.cpp
 
 !qtConfig(opengles2) {

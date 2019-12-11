@@ -53,6 +53,10 @@
 
 #include <algorithm>
 
+#if QT_CONFIG(opengl)
+#include <QtOpenGL/QOpenGLWindow>
+#endif
+
 #define printf
 
 HoverPoints::HoverPoints(QWidget *widget, PointShape shape)

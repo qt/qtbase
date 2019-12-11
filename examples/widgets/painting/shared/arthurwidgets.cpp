@@ -63,7 +63,9 @@
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QOpenGLPaintDevice>
-#include <QOpenGLWindow>
+#if QT_CONFIG(opengl)
+#include <QtOpenGL/QOpenGLWindow>
+#endif
 
 extern QPixmap cached(const QString &img);
 

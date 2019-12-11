@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,11 +38,11 @@
 ****************************************************************************/
 
 #include "qopenglwindow.h"
-#include "qpaintdevicewindow_p.h"
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtGui/QOpenGLPaintDevice>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLTextureBlitter>
+#include <QtGui/private/qpaintdevicewindow_p.h>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QMatrix4x4>
@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QOpenGLWindow
-  \inmodule QtGui
+  \inmodule QtOpenGL
   \since 5.4
   \brief The QOpenGLWindow class is a convenience subclass of QWindow to perform OpenGL painting.
 

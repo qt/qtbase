@@ -158,13 +158,11 @@ qtConfig(opengl) {
     HEADERS += \
             kernel/qplatformopenglcontext.h \
             kernel/qopenglcontext.h \
-            kernel/qopenglcontext_p.h \
-            kernel/qopenglwindow.h
+            kernel/qopenglcontext_p.h
 
     SOURCES += \
             kernel/qplatformopenglcontext.cpp \
-            kernel/qopenglcontext.cpp \
-            kernel/qopenglwindow.cpp
+            kernel/qopenglcontext.cpp
 }
 
 qtConfig(shortcut) {

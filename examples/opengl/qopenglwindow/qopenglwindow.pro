@@ -1,6 +1,7 @@
 TEMPLATE = app
 TARGET = qopenglwindow
 INCLUDEPATH += .
+QT += opengl
 
 RESOURCES += shaders.qrc
 

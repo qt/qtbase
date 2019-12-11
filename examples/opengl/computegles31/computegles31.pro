@@ -1,3 +1,5 @@
+QT += opengl
+
 HEADERS = $$PWD/glwindow.h
 
 SOURCES = $$PWD/glwindow.cpp \

@@ -1,3 +1,5 @@
+QT += opengl
+
 HEADERS = $$PWD/glwindow.h \
           $$PWD/../hellogl2/logo.h
 

@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -40,7 +40,7 @@
 #ifndef QOPENGLWINDOW_H
 #define QOPENGLWINDOW_H
 
-#include <QtGui/qtguiglobal.h>
+#include <QtOpenGL/qtopenglglobal.h>
 
 #ifndef QT_NO_OPENGL
 
@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpenGLWindowPrivate;
 
-class Q_GUI_EXPORT QOpenGLWindow : public QPaintDeviceWindow
+class Q_OPENGL_EXPORT QOpenGLWindow : public QPaintDeviceWindow
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QOpenGLWindow)
