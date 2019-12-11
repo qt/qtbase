@@ -48,8 +48,8 @@
 #include <QtWidgets/QBoxLayout>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QPushButton>
-#ifndef QT_NO_OPENGL
-#include <QtWidgets/QOpenGLWidget>
+#if QT_CONFIG(opengl)
+#include <QtOpenGL/QOpenGLWidget>
 #endif
 #include <private/qgraphicsscene_p.h>
 #include <private/qgraphicsview_p.h>
@@ -154,7 +154,7 @@ private slots:
     void sceneRect_growing();
     void setSceneRect();
     void viewport();
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
     void openGLViewport();
 #endif
     void dragMode_scrollHand();
@@ -659,7 +659,7 @@ void tst_QGraphicsView::viewport()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 }
 
-#ifndef QT_NO_OPENGL
+#if QT_CONFIG(opengl)
 void tst_QGraphicsView::openGLViewport()
 {
     if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::OpenGL))

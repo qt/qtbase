@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtWidgets module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -40,7 +40,7 @@
 #ifndef QOPENGLWIDGET_H
 #define QOPENGLWIDGET_H
 
-#include <QtWidgets/qtwidgetsglobal.h>
+#include <QtOpenGL/qtopenglglobal.h>
 
 #ifndef QT_NO_OPENGL
 
@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpenGLWidgetPrivate;
 
-class Q_WIDGETS_EXPORT QOpenGLWidget : public QWidget
+class Q_OPENGL_EXPORT QOpenGLWidget : public QWidget
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QOpenGLWidget)
