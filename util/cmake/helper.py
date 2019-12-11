@@ -365,6 +365,12 @@ _qt_library_map = [
     ),
     LibraryMapping(
         "tools", "Qt6", "Qt::Tools", extra=["COMPONENTS", "Tools"]
+    ),
+    LibraryMapping(
+        "axcontainer", "Qt6", "Qt::AxContainer", extra=["COMPONENTS", "AxContainer"]
+    ),
+    LibraryMapping(
+        "webkitwidgets", "Qt6", "Qt::WebKitWidgets", extra=["COMPONENTS", "WebKitWidgets"]
     )
     # qtzlib: No longer supported.
 ]
