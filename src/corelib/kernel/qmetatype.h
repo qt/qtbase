@@ -2723,6 +2723,24 @@ QMetaTypeInterface QMetaTypeForType<T>::metaType = {
 template<typename T>
 constexpr const decltype(typenameHelper<T>()) QMetaTypeForType<T>::name = typenameHelper<T>();
 
+template<>
+class QMetaTypeForType<void>
+{
+};
+
+#ifndef QT_BOOTSTRAPPED
+#define QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER(TypeName, Id, Name)                               \
+    extern template class Q_CORE_EXPORT QMetaTypeForType<Name>;
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wattributes") // false positive because of QMetaTypeForType<void>
+QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER)
+QT_WARNING_POP
+QT_FOR_EACH_STATIC_PRIMITIVE_POINTER(QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER)
+QT_FOR_EACH_STATIC_CORE_CLASS(QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER)
+QT_FOR_EACH_STATIC_CORE_POINTER(QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER)
+QT_FOR_EACH_STATIC_CORE_TEMPLATE(QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER)
+#undef QT_METATYPE_DECLARE_EXTERN_TEMPLATE_ITER
+#endif
 
 template<typename T>
 constexpr QMetaTypeInterface *qMetaTypeIntefaceForType()
