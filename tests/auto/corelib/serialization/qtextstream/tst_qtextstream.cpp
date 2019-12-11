@@ -3022,7 +3022,7 @@ void tst_QTextStream::int_read_with_locale()
     QFETCH(int, output);
 
     QTextStream stream(&input);
-    stream.setLocale(locale);
+    stream.setLocale(QLocale(locale));
     int result;
     stream >> result;
     QCOMPARE(result, output);
@@ -3053,7 +3053,7 @@ void tst_QTextStream::int_write_with_locale()
 
     QString result;
     QTextStream stream(&result);
-    stream.setLocale(locale);
+    stream.setLocale(QLocale(locale));
     if (numberFlags)
         stream.setNumberFlags(QTextStream::NumberFlags(numberFlags));
     stream << input;

@@ -193,7 +193,7 @@ void tst_QCollator::compare()
     QFETCH(bool, ignorePunctuation);
     QFETCH(int, punctuationResult);
 
-    QCollator collator(locale);
+    QCollator collator((QLocale(locale)));
     // Need to canonicalize sign to -1, 0 or 1, as .compare() can produce any -ve for <, any +ve for >.
     auto asSign = [](int compared) {
         return compared < 0 ? -1 : compared > 0 ? 1 : 0;

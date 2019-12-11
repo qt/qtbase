@@ -344,9 +344,9 @@ void tst_QTimeZone::dataStreamTest()
     QCOMPARE(tz2.comment(), QString("Qt Testing"));
     QCOMPARE(tz2.country(), QLocale::Norway);
     QCOMPARE(tz2.abbreviation(QDateTime::currentDateTime()), QString("QST"));
-    QCOMPARE(tz2.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QString()),
+    QCOMPARE(tz2.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QLocale()),
              QString("Qt Standard Time"));
-    QCOMPARE(tz2.displayName(QTimeZone::DaylightTime, QTimeZone::LongName, QString()),
+    QCOMPARE(tz2.displayName(QTimeZone::DaylightTime, QTimeZone::LongName, QLocale()),
              QString("Qt Standard Time"));
     QCOMPARE(tz2.offsetFromUtc(QDateTime::currentDateTime()), 123456);
 
@@ -944,7 +944,7 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tzp.id(), QByteArray("UTC"));
     QCOMPARE(tzp.country(), QLocale::AnyCountry);
     QCOMPARE(tzp.abbreviation(0), QString("UTC"));
-    QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QString()), QString("UTC"));
+    QCOMPARE(tzp.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QLocale()), QString("UTC"));
     QCOMPARE(tzp.offsetFromUtc(0), 0);
     QCOMPARE(tzp.standardTimeOffset(0), 0);
     QCOMPARE(tzp.daylightTimeOffset(0), 0);
@@ -985,7 +985,7 @@ void tst_QTimeZone::utcTest()
     QCOMPARE(tz.comment(), QString("Qt Testing"));
     QCOMPARE(tz.country(), QLocale::Norway);
     QCOMPARE(tz.abbreviation(now), QString("QST"));
-    QCOMPARE(tz.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QString()),
+    QCOMPARE(tz.displayName(QTimeZone::StandardTime, QTimeZone::LongName, QLocale()),
              QString("Qt Standard Time"));
     QCOMPARE(tz.offsetFromUtc(now), 123456);
     QCOMPARE(tz.standardTimeOffset(now), 123456);

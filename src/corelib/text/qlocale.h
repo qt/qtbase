@@ -941,7 +941,7 @@ public:
     Q_FLAG(DataSizeFormats)
 
     QLocale();
-    QLocale(const QString &name);
+    explicit QLocale(const QString &name);
     QLocale(Language language, Country country = AnyCountry);
     QLocale(Language language, Script script, Country country);
     QLocale(const QLocale &other);

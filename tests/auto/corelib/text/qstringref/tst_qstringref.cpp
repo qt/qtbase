@@ -165,7 +165,7 @@ static inline double nan()
 
 void tst_QStringRef::cleanup()
 {
-    QLocale::setDefault(QString(QLatin1Char('C')));
+    QLocale::setDefault(QLocale(QString(QLatin1Char('C'))));
 }
 
 void tst_QStringRef::at()

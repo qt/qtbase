@@ -4776,7 +4776,7 @@ void tst_QString::arg()
     is all messed up, because Qt Test itself uses QString::arg().
 */
 
-    TransientDefaultLocale transient(QString("de_DE"));
+    TransientDefaultLocale transient(QLocale(QString("de_DE")));
 
     QString s4( "[%0]" );
     QString s5( "[%1]" );
@@ -4924,7 +4924,7 @@ void tst_QString::arg()
     QCOMPARE(QString("%1").arg(-1., 3, 'g', -1, QChar('x')), QLatin1String("x-1"));
     QCOMPARE(QString("%1").arg(-100., 3, 'g', -1, QChar('x')), QLatin1String("-100"));
 
-    transient.revise(QString("ar"));
+    transient.revise(QLocale(QString("ar")));
     QCOMPARE( QString("%L1").arg(12345.6789, 10, 'g', 7, QLatin1Char('0')),
               QString::fromUtf8("\xd9\xa0\xd9\xa1\xd9\xa2\xd9\xac\xd9\xa3\xd9\xa4\xd9\xa5\xd9\xab\xd9\xa6\xd9\xa8") ); // "٠١٢٬٣٤٥٫٦٨"
     QCOMPARE( QString("%L1").arg(123456789, 13, 10, QLatin1Char('0')),

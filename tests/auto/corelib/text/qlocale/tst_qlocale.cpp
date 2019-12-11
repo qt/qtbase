@@ -3010,7 +3010,8 @@ void tst_QLocale::systemLocale()
     QFETCH(QLocale::Language, language);
 
     {
-        MySystemLocale sLocale(name);
+        QLocale locale(name);
+        MySystemLocale sLocale(locale);
         QCOMPARE(QLocale().language(), language);
         QCOMPARE(QLocale::system().language(), language);
     }
