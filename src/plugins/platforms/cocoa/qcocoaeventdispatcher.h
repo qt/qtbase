@@ -186,6 +186,7 @@ public:
     QAtomicInt serialNumber;
     int lastSerial;
     bool interrupt;
+    bool propagateInterrupt = false;
 
     static void postedEventsSourceCallback(void *info);
     static void waitingObserverCallback(CFRunLoopObserverRef observer,

@@ -2428,7 +2428,15 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
                         f->glUniformMatrix2fv(uniform.glslLocation, 1, GL_FALSE, reinterpret_cast<const float *>(src));
                         break;
                     case QShaderDescription::Mat3:
-                        f->glUniformMatrix3fv(uniform.glslLocation, 1, GL_FALSE, reinterpret_cast<const float *>(src));
+                    {
+                        // 4 floats per column (or row, if row-major)
+                        float mat[9];
+                        const float *srcMat = reinterpret_cast<const float *>(src);
+                        memcpy(mat, srcMat, 3 * sizeof(float));
+                        memcpy(mat + 3, srcMat + 4, 3 * sizeof(float));
+                        memcpy(mat + 6, srcMat + 8, 3 * sizeof(float));
+                        f->glUniformMatrix3fv(uniform.glslLocation, 1, GL_FALSE, mat);
+                    }
                         break;
                     case QShaderDescription::Mat4:
                         f->glUniformMatrix4fv(uniform.glslLocation, 1, GL_FALSE, reinterpret_cast<const float *>(src));
@@ -2919,21 +2927,64 @@ bool QRhiGles2::linkProgram(GLuint program)
     return true;
 }
 
-void QRhiGles2::gatherUniforms(GLuint program, const QShaderDescription::UniformBlock &ub,
+void QRhiGles2::registerUniformIfActive(const QShaderDescription::BlockVariable &var,
+                                        const QByteArray &namePrefix,
+                                        int binding,
+                                        int baseOffset,
+                                        GLuint program,
+                                        QVector<QGles2UniformDescription> *dst)
+{
+    if (var.type == QShaderDescription::Struct) {
+        qWarning("Nested structs are not supported at the moment. '%s' ignored.",
+                 qPrintable(var.name));
+        return;
+    }
+    QGles2UniformDescription uniform;
+    uniform.type = var.type;
+    const QByteArray name = namePrefix + var.name.toUtf8();
+    uniform.glslLocation = f->glGetUniformLocation(program, name.constData());
+    if (uniform.glslLocation >= 0) {
+        uniform.binding = binding;
+        uniform.offset = uint(baseOffset + var.offset);
+        uniform.size = var.size;
+        dst->append(uniform);
+    }
+}
+
+void QRhiGles2::gatherUniforms(GLuint program,
+                               const QShaderDescription::UniformBlock &ub,
                                QVector<QGles2UniformDescription> *dst)
 {
-    const QByteArray prefix = ub.structName.toUtf8() + '.';
+    QByteArray prefix = ub.structName.toUtf8() + '.';
     for (const QShaderDescription::BlockVariable &blockMember : ub.members) {
-        // ### no array support for now
-        QGles2UniformDescription uniform;
-        uniform.type = blockMember.type;
-        const QByteArray name = prefix + blockMember.name.toUtf8();
-        uniform.glslLocation = f->glGetUniformLocation(program, name.constData());
-        if (uniform.glslLocation >= 0) {
-            uniform.binding = ub.binding;
-            uniform.offset = uint(blockMember.offset);
-            uniform.size = blockMember.size;
-            dst->append(uniform);
+        if (blockMember.type == QShaderDescription::Struct) {
+            prefix += blockMember.name.toUtf8();
+            const int baseOffset = blockMember.offset;
+            if (blockMember.arrayDims.isEmpty()) {
+                for (const QShaderDescription::BlockVariable &structMember : blockMember.structMembers)
+                    registerUniformIfActive(structMember, prefix, ub.binding, baseOffset, program, dst);
+            } else {
+                if (blockMember.arrayDims.count() > 1) {
+                    qWarning("Array of struct '%s' has more than one dimension. Only the first dimension is used.",
+                             qPrintable(blockMember.name));
+                }
+                const int dim = blockMember.arrayDims.first();
+                const int elemSize = blockMember.size / dim;
+                int elemOffset = baseOffset;
+                for (int di = 0; di < dim; ++di) {
+                    const QByteArray arrayPrefix = prefix + '[' + QByteArray::number(di) + ']' + '.';
+                    for (const QShaderDescription::BlockVariable &structMember : blockMember.structMembers)
+                        registerUniformIfActive(structMember, arrayPrefix, ub.binding, elemOffset, program, dst);
+                    elemOffset += elemSize;
+                }
+            }
+        } else {
+            if (!blockMember.arrayDims.isEmpty()) {
+                qWarning("Arrays are only supported for structs at the moment. '%s' ignored.",
+                         qPrintable(blockMember.name));
+                continue;
+            }
+            registerUniformIfActive(blockMember, prefix, ub.binding, 0, program, dst);
         }
     }
 }

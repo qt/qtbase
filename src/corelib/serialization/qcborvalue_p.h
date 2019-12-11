@@ -196,8 +196,7 @@ public:
         if (value.container)
             return replaceAt_complex(e, value, disp);
 
-        e.value = value.value_helper();
-        e.type = value.type();
+        e = { value.value_helper(), value.type() };
         if (value.isContainer())
             e.container = nullptr;
     }

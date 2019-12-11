@@ -1090,7 +1090,7 @@ bool QWidgetLineControl::isValidInput(QChar key, QChar mask) const
             return true;
         break;
     case 'X':
-        if (key.isPrint())
+        if (key.isPrint() && key != m_blank)
             return true;
         break;
     case 'x':

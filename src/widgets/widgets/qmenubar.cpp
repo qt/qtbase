@@ -846,7 +846,8 @@ QMenu *QMenuBar::addMenu(const QIcon &icon, const QString &title)
 }
 
 /*!
-    Appends \a menu to the menu bar. Returns the menu's menuAction().
+    Appends \a menu to the menu bar. Returns the menu's menuAction(). The menu bar
+    does not take ownership of the menu.
 
     \note The returned QAction object can be used to hide the corresponding
     menu.

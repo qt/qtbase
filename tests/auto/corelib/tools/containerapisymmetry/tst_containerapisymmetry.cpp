@@ -51,7 +51,7 @@
 #ifdef Q_CC_MSVC
 #define COMPILER_HAS_STDLIB_INCLUDE(x) 1
 #else
-#define COMPILER_HAS_STDLIB_INCLUDE(x) QT_HAS_INCLUDE(x)
+#define COMPILER_HAS_STDLIB_INCLUDE(x) __has_include(x)
 #endif
 
 #if COMPILER_HAS_STDLIB_INCLUDE(<forward_list>)

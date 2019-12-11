@@ -67,7 +67,7 @@ void QCocoaClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
         }
 
         pasteBoard->sync();
-        pasteBoard->setMimeData(data);
+        pasteBoard->setMimeData(data, QMacPasteboard::LazyRequest);
         emitChanged(mode);
     }
 }

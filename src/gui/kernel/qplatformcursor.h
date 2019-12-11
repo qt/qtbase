@@ -96,6 +96,7 @@ public:
 #endif // QT_NO_CURSOR
     virtual QPoint pos() const;
     virtual void setPos(const QPoint &pos);
+    virtual QSize size() const;
 
     static Capabilities capabilities() { return m_capabilities; }
     static void setCapabilities(Capabilities c) { m_capabilities = c; }

@@ -223,7 +223,7 @@ void tst_QTimer::remainingTimeDuringActivation()
 
 namespace {
 
-#if QT_HAS_INCLUDE(<chrono>)
+#if __has_include(<chrono>)
     template <typename T>
     std::chrono::milliseconds to_ms(T t)
     { return std::chrono::duration_cast<std::chrono::milliseconds>(t); }
@@ -233,7 +233,7 @@ namespace {
 
 void tst_QTimer::basic_chrono()
 {
-#if !QT_HAS_INCLUDE(<chrono>)
+#if !__has_include(<chrono>)
     QSKIP("This test requires C++11 <chrono> support");
 #else
     // duplicates zeroTimer, singleShotTimeout, interval and remainingTime
@@ -871,7 +871,7 @@ void tst_QTimer::singleShotToFunctors()
 
 void tst_QTimer::singleShot_chrono()
 {
-#if !QT_HAS_INCLUDE(<chrono>)
+#if !__has_include(<chrono>)
     QSKIP("This test requires C++11 <chrono> support");
 #else
     // duplicates singleShotStaticFunctionZeroTimeout and singleShotToFunctors

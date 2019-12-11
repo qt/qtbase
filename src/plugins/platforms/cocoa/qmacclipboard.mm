@@ -138,8 +138,12 @@ QMacPasteboard::QMacPasteboard(CFStringRef name, uchar mt)
 
 QMacPasteboard::~QMacPasteboard()
 {
-    // commit all promises for paste after exit close
-    resolvingBeforeDestruction = true;
+    /*
+        Commit all promises for paste when shutting down,
+        unless we are the stack-allocated clipboard used by QCocoaDrag.
+    */
+    if (mime_type == QMacInternalPasteboardMime::MIME_DND)
+        resolvingBeforeDestruction = true;
     PasteboardResolvePromises(paste);
     if (paste)
         CFRelease(paste);

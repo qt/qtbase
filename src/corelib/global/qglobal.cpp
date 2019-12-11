@@ -92,7 +92,7 @@
 #  include <sys/systeminfo.h>
 #endif
 
-#if defined(Q_OS_DARWIN) && QT_HAS_INCLUDE(<IOKit/IOKitLib.h>)
+#if defined(Q_OS_DARWIN) && __has_include(<IOKit/IOKitLib.h>)
 #  include <IOKit/IOKitLib.h>
 #  include <private/qcore_mac_p.h>
 #endif
@@ -3067,7 +3067,7 @@ enum {
 */
 QByteArray QSysInfo::machineUniqueId()
 {
-#if defined(Q_OS_DARWIN) && QT_HAS_INCLUDE(<IOKit/IOKitLib.h>)
+#if defined(Q_OS_DARWIN) && __has_include(<IOKit/IOKitLib.h>)
     char uuid[UuidStringLen + 1];
     io_service_t service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"));
     QCFString stringRef = (CFStringRef)IORegistryEntryCreateCFProperty(service, CFSTR(kIOPlatformUUIDKey), kCFAllocatorDefault, 0);

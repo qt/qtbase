@@ -60,6 +60,18 @@ static const int c_screenCode = _PULSE_CODE_MINAVAIL + 0;
 static const int c_armCode = _PULSE_CODE_MINAVAIL + 1;
 static const int c_quitCode = _PULSE_CODE_MINAVAIL + 2;
 
+#if !defined(screen_register_event)
+int screen_register_event(screen_context_t, struct sigevent *event)
+{
+    return MsgRegisterEvent(event, -1);
+}
+
+int screen_unregister_event(struct sigevent *event)
+{
+    return MsgUnregisterEvent(event);
+}
+#endif
+
 QQnxScreenEventThread::QQnxScreenEventThread(screen_context_t context)
     : QThread()
     , m_screenContext(context)
@@ -75,10 +87,14 @@ QQnxScreenEventThread::QQnxScreenEventThread(screen_context_t context)
         qFatal("QQnxScreenEventThread: Can't continue without a channel connection");
     }
 
-    struct sigevent screenEvent;
-    SIGEV_PULSE_INIT(&screenEvent, m_connectionId, SIGEV_PULSE_PRIO_INHERIT, c_screenCode, 0);
+    SIGEV_PULSE_INIT(&m_screenEvent, m_connectionId, SIGEV_PULSE_PRIO_INHERIT, c_screenCode, 0);
+    if (screen_register_event(m_screenContext, &m_screenEvent) == -1) {
+        ConnectDetach(m_connectionId);
+        ChannelDestroy(m_channelId);
+        qFatal("QQnxScreenEventThread: Can't continue without a registered event");
+    }
 
-    screen_notify(m_screenContext, SCREEN_NOTIFY_EVENT, nullptr, &screenEvent);
+    screen_notify(m_screenContext, SCREEN_NOTIFY_EVENT, nullptr, &m_screenEvent);
 }
 
 QQnxScreenEventThread::~QQnxScreenEventThread()
@@ -86,6 +102,8 @@ QQnxScreenEventThread::~QQnxScreenEventThread()
     // block until thread terminates
     shutdown();
 
+    screen_notify(m_screenContext, SCREEN_NOTIFY_EVENT, nullptr, nullptr);
+    screen_unregister_event(&m_screenEvent);
     ConnectDetach(m_connectionId);
     ChannelDestroy(m_channelId);
 }

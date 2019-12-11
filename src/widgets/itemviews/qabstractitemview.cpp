@@ -3074,9 +3074,10 @@ void QAbstractItemView::keyboardSearch(const QString &search)
 QSize QAbstractItemView::sizeHintForIndex(const QModelIndex &index) const
 {
     Q_D(const QAbstractItemView);
-    if (!d->isIndexValid(index) || !d->itemDelegate)
+    if (!d->isIndexValid(index))
         return QSize();
-    return d->delegateForIndex(index)->sizeHint(d->viewOptionsV1(), index);
+    const auto delegate = d->delegateForIndex(index);
+    return delegate ? delegate->sizeHint(d->viewOptionsV1(), index) : QSize();
 }
 
 /*!
@@ -3318,6 +3319,8 @@ void QAbstractItemView::update(const QModelIndex &index)
 
     The \a roles which have been changed can either be an empty container (meaning everything
     has changed), or a non-empty container with the subset of roles which have changed.
+
+    \note: Qt::ToolTipRole is not honored by dataChanged() in the views provided by Qt.
 */
 void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
@@ -4451,7 +4454,9 @@ QItemViewPaintPairs QAbstractItemViewPrivate::draggablePaintPairs(const QModelIn
             rect |= current;
         }
     }
-    rect &= viewportRect;
+    QRect clipped = rect & viewportRect;
+    rect.setLeft(clipped.left());
+    rect.setRight(clipped.right());
     return ret;
 }
 
