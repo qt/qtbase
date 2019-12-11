@@ -965,9 +965,7 @@ void tst_QSqlQuery::blob()
     //don' make it too big otherwise sybase and mysql will complain
     QByteArray ba( BLOBSIZE, 0 );
 
-    int i;
-
-    for ( i = 0; i < ( int )ba.size(); ++i )
+    for (int i = 0; i < ba.size(); ++i)
         ba[i] = i % 256;
 
     QSqlQuery q( db );
@@ -980,7 +978,7 @@ void tst_QSqlQuery::blob()
 
     QVERIFY_SQL(q, prepare("insert into " + qTableName("qtest_blob", __FILE__, db) + " (id, t_blob) values (?, ?)"));
 
-    for ( i = 0; i < BLOBCOUNT; ++i ) {
+    for (int i = 0; i < BLOBCOUNT; ++i) {
         q.addBindValue( i );
         q.addBindValue( ba );
         QVERIFY_SQL( q, exec() );
@@ -988,13 +986,13 @@ void tst_QSqlQuery::blob()
 
     QVERIFY_SQL(q, exec("select * from " + qTableName("qtest_blob", __FILE__, db)));
 
-    for ( i = 0; i < BLOBCOUNT; ++i ) {
+    for (int i = 0; i < BLOBCOUNT; ++i) {
         QVERIFY( q.next() );
         QByteArray res = q.value( 1 ).toByteArray();
         QVERIFY2( res.size() >= ba.size(),
                   QString( "array sizes differ, expected %1, got %2" ).arg( ba.size() ).arg( res.size() ).toLatin1() );
 
-        for ( int i2 = 0; i2 < ( int )ba.size(); ++i2 ) {
+        for (int i2 = 0; i2 < ba.size(); ++i2) {
             if ( res[i2] != ba[i2] )
                 QFAIL( QString( "ByteArrays differ at position %1, expected %2, got %3" ).arg(
                            i2 ).arg(( int )( unsigned char )ba[i2] ).arg(( int )( unsigned char )res[i2] ).toLatin1() );
@@ -1834,7 +1832,7 @@ void tst_QSqlQuery::oci_rawField()
 }
 
 // test whether we can fetch values with more than DOUBLE precision
-// note that MySQL's 3.x highest precision is that of a double, although
+// note that SQLite highest precision is that of a double, although
 // you can define field with higher precision
 void tst_QSqlQuery::precision()
 {
@@ -1845,46 +1843,41 @@ void tst_QSqlQuery::precision()
     if (dbType == QSqlDriver::Interbase)
         QSKIP("DB unable to store high precision");
 
+    const auto oldPrecision = db.driver()->numericalPrecisionPolicy();
+    db.driver()->setNumericalPrecisionPolicy(QSql::HighPrecision);
     const QString qtest_precision(qTableName("qtest_precision", __FILE__, db));
-    static const char precStr[] = "1.2345678901234567891";
-    const int precStrLen = sizeof(precStr);
+    static const QLatin1String precStr("1.2345678901234567891");
 
     {
         // need a new scope for SQLITE
         QSqlQuery q( db );
 
         q.exec("drop table " + qtest_precision);
-        if ( tst_Databases::isMSAccess( db ) )
-            QVERIFY_SQL( q, exec( "create table " + qtest_precision + " (col1 number)" ) );
+        if (tst_Databases::isMSAccess(db))
+            QVERIFY_SQL(q, exec("CREATE TABLE " + qtest_precision + " (col1 number)"));
         else
-            QVERIFY_SQL( q, exec( "create table " + qtest_precision + " (col1 numeric(21, 20))" ) );
+            QVERIFY_SQL(q, exec("CREATE TABLE " + qtest_precision + " (col1 numeric(21, 20))"));
 
-        QVERIFY_SQL( q, exec( "insert into " + qtest_precision + " (col1) values (1.2345678901234567891)" ) );
-
-        QVERIFY_SQL( q, exec( "select * from " + qtest_precision ) );
-        QVERIFY( q.next() );
-
-        QString val = q.value( 0 ).toString();
-
-        if ( !val.startsWith( "1.2345678901234567891" ) ) {
+        QVERIFY_SQL(q, exec("INSERT INTO " + qtest_precision + " (col1) VALUES (" + precStr + ")"));
+        QVERIFY_SQL(q, exec("SELECT * FROM " + qtest_precision));
+        QVERIFY(q.next());
+        const QString val = q.value(0).toString();
+        if (!val.startsWith(precStr)) {
             int i = 0;
-
-            while ( i < precStrLen && i < val.size() && precStr[i] != 0 && *( precStr + i ) == val[i].toLatin1() )
+            while (i < val.size() && precStr[i] != 0 && precStr[i] == val[i].toLatin1())
                 i++;
 
-            // MySQL and TDS have crappy precisions by default
-            if (dbType == QSqlDriver::MySqlServer) {
-                if ( i < 17 )
-                    QWARN( "MySQL didn't return the right precision" );
-            } else if (dbType == QSqlDriver::Sybase) {
-                if ( i < 18 )
-                    QWARN( "TDS didn't return the right precision" );
+            // TDS has crappy precisions by default
+            if (dbType == QSqlDriver::Sybase) {
+                if (i < 18)
+                    QWARN("TDS didn't return the right precision");
             } else {
-                QWARN( QString( tst_Databases::dbToString( db ) + " didn't return the right precision (" +
-                                QString::number( i ) + " out of 21), " + val ).toLatin1() );
+                QWARN(QString(tst_Databases::dbToString(db) + " didn't return the right precision (" +
+                              QString::number(i) + " out of 21), " + val).toUtf8());
             }
         }
     } // SQLITE scope
+    db.driver()->setNumericalPrecisionPolicy(oldPrecision);
 }
 
 void tst_QSqlQuery::nullResult()
@@ -2840,10 +2833,11 @@ void tst_QSqlQuery::psql_bindWithDoubleColonCastOperator()
     QVERIFY_SQL( q, exec() );
     QVERIFY_SQL( q, next() );
 
-    if ( db.driver()->hasFeature( QSqlDriver::PreparedQueries ) )
-        QCOMPARE( q.executedQuery(), QString( "select sum((fld1 - fld2)::int) from " + tablename + " where id1 = ? and id2 =? and id3=?" ) );
+    // the positional placeholders are converted to named placeholders in executedQuery()
+    if (db.driver()->hasFeature(QSqlDriver::PreparedQueries))
+        QCOMPARE(q.executedQuery(), QString("select sum((fld1 - fld2)::int) from " + tablename + " where id1 = :myid1 and id2 =:myid2 and id3=:myid3"));
     else
-        QCOMPARE( q.executedQuery(), QString( "select sum((fld1 - fld2)::int) from " + tablename + " where id1 = 1 and id2 =2 and id3=3" ) );
+        QCOMPARE(q.executedQuery(), QString("select sum((fld1 - fld2)::int) from " + tablename + " where id1 = 1 and id2 =2 and id3=3"));
 }
 
 void tst_QSqlQuery::psql_specialFloatValues()
@@ -4003,8 +3997,8 @@ void tst_QSqlQuery::QTBUG_2192()
 
         // Check if retrieved value preserves reported precision
         int precision = qMax(0, q.record().field("dt").precision());
-        int diff = qAbs(q.value(0).toDateTime().msecsTo(dt));
-        int keep = qMin(1000, (int)qPow(10.0, precision));
+        qint64 diff = qAbs(q.value(0).toDateTime().msecsTo(dt));
+        qint64 keep = qMin(1000LL, qRound64(qPow(10.0, precision)));
         QVERIFY(diff <= 1000 - keep);
     }
 }
@@ -4021,8 +4015,10 @@ void tst_QSqlQuery::QTBUG_36211()
         QSqlQuery q(db);
         QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (dtwtz timestamptz, dtwotz timestamp)").arg(tableName)));
 
-        QTimeZone l_tzBrazil("BRT");
-        QTimeZone l_tzChina("CST");
+        QTimeZone l_tzBrazil("America/Sao_Paulo");
+        QTimeZone l_tzChina("Asia/Shanghai");
+        QVERIFY(l_tzBrazil.isValid());
+        QVERIFY(l_tzChina.isValid());
         QDateTime dt = QDateTime(QDate(2014, 10, 30), QTime(14, 12, 02, 357));
         QVERIFY_SQL(q, prepare("INSERT INTO " + tableName + " (dtwtz, dtwotz) VALUES (:dt, :dt)"));
         q.bindValue(":dt", dt);
@@ -4040,8 +4036,8 @@ void tst_QSqlQuery::QTBUG_36211()
             for (int j = 0; j < 2; ++j) {
                 // Check if retrieved value preserves reported precision
                 int precision = qMax(0, q.record().field(j).precision());
-                int diff = qAbs(q.value(j).toDateTime().msecsTo(dt));
-                int keep = qMin(1000, (int)qPow(10.0, precision));
+                qint64 diff = qAbs(q.value(j).toDateTime().msecsTo(dt));
+                qint64 keep = qMin(1000LL, qRound64(qPow(10.0, precision)));
                 QVERIFY(diff <= 1000 - keep);
             }
         }

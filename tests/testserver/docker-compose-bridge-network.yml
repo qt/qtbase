@@ -1,11 +1,20 @@
 version: '2.1'
 
-# The tag of images is used by docker compose file to launch the corresponding
-# docker containers. The value of tag comes from the provisioning script
-# (coin/provisioning/.../testserver/docker_testserver.sh). The script gets SHA-1
-# of each server context as the tag of docker images. If one of the server
-# contexts gets changes, please make sure to update this compose file as well.
-# You can run command 'docker images' to list all the tags of test server images.
+# The tag of images is used by docker compose file to launch the correct
+# docker containers. By default we always launch the "latest" tag.
+#
+# But in the "docker build" phase, we also tag the images with a unique tag,
+# the SHA1 hash of all files used for "docker build" - see sha1tree() in
+# provisioning.
+#
+# So if you want to update the docker image at a specific time, make sure that
+#   1. you modify this file to run the specific image's SHA1 tag, instead of
+#      "latest"
+#   2. you build two docker images in provisioning, the currently used one,
+#      plus the new one that you tag as "latest"
+#   3. you switch this file to the "latest" tag when ready
+
+# You can run `docker images` to list all the tags of available images:
 # For example:
 # REPOSITORY              TAG
 # qt-test-server-apache2  537fe302f61851d1663f41495230d8e3554a4a13
@@ -20,7 +29,7 @@ services:
         build:
             context: .
             args:
-                provisioningImage: qt-test-server-apache2:537fe302f61851d1663f41495230d8e3554a4a13
+                provisioningImage: qt-test-server-apache2:latest
                 shareDir: ./common
                 serviceDir: ./apache2
         entrypoint: service/startup.sh
@@ -43,7 +52,7 @@ services:
         build:
             context: .
             args:
-                provisioningImage: qt-test-server-squid:9c32f41b19aca3d778733c4d8fb0ecc5955e893c
+                provisioningImage: qt-test-server-squid:latest
                 shareDir: ./common
                 serviceDir: ./squid
         entrypoint: service/startup.sh
@@ -58,7 +67,7 @@ services:
         build:
             context: .
             args:
-                provisioningImage: qt-test-server-vsftpd:f3a9c8d793a77cc007c0e4e481bec01f9e3eeb7e
+                provisioningImage: qt-test-server-vsftpd:latest
                 shareDir: ./common
                 serviceDir: ./vsftpd
         entrypoint: service/startup.sh
@@ -77,7 +86,7 @@ services:
         build:
             context: .
             args:
-                provisioningImage: qt-test-server-ftp-proxy:d7de8b28392d173db512a558ccc84ead8bece2ae
+                provisioningImage: qt-test-server-ftp-proxy:latest
                 shareDir: ./common
                 serviceDir: ./ftp-proxy
         entrypoint: service/startup.sh
@@ -102,7 +111,7 @@ services:
         build:
             context: .
             args:
-                provisioningImage: qt-test-server-danted:35607f9b790524cf9690c7d12a9a401696b7b6b5
+                provisioningImage: qt-test-server-danted:latest
                 shareDir: ./common
                 serviceDir: ./danted
         entrypoint: service/startup.sh
@@ -117,7 +126,7 @@ services:
         build:
             context: .
             args:
-                provisioningImage: qt-test-server-cyrus:c8d72754abc0e501afd624ce838e4df35505abc9
+                provisioningImage: qt-test-server-cyrus:latest
                 shareDir: ./common
                 serviceDir: ./cyrus
         entrypoint: service/startup.sh
@@ -132,7 +141,7 @@ services:
         build:
             context: .
             args:
-                provisioningImage: qt-test-server-iptables:cb7a8bd6d28602085a88c8ced7d67e28e75781e2
+                provisioningImage: qt-test-server-iptables:latest
                 shareDir: ./common
                 serviceDir: ./iptables
         entrypoint: service/startup.sh
@@ -150,7 +159,7 @@ services:
         build:
             context: .
             args:
-                provisioningImage: qt-test-server-echo:b29ad409e746a834c1055fd0f7a55fd5056da6ea
+                provisioningImage: qt-test-server-echo:latest
                 shareDir: ./common
                 serviceDir: ./echo
         entrypoint: service/startup.sh

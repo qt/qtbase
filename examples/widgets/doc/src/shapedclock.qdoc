@@ -29,16 +29,18 @@
     \example widgets/shapedclock
     \title Shaped Clock Example
     \ingroup examples-widgets
-    \brief The Shaped Clock example shows how to apply a widget mask to a top-level
-    widget to produce a shaped window.
+    \brief The Shaped Clock example shows how to apply a translucent background
+    and a widget mask to a top-level widget to produce a shaped window.
 
     \borderedimage shapedclock-example.png
 
-    Widget masks are used to customize the shapes of top-level widgets by restricting
-    the available area for painting. On some window systems, setting certain window flags
-    will cause the window decoration (title bar, window frame, buttons) to be disabled,
-    allowing specially-shaped windows to be created. In this example, we use this feature
-    to create a circular window containing an analog clock.
+    Widget masks are used to customize the shapes of top-level widgets by
+    restricting the area available for painting and mouse input. Using a
+    translucent background facilitates partially transparent windows and smooth
+    edges. On most window systems, setting certain window flags will cause the
+    window decoration (title bar, window frame, buttons) to be disabled,
+    allowing specially-shaped windows to be created. In this example, we use
+    this feature to create a circular window containing an analog clock.
 
     Since this example's window does not provide a \uicontrol File menu or a close
     button, we provide a context menu with an \uicontrol Exit entry so that the example
@@ -52,8 +54,10 @@
 
     \snippet widgets/shapedclock/shapedclock.h 0
 
-    The \l{QWidget::paintEvent()}{paintEvent()} implementation is the same as that found
-    in the \c AnalogClock class. We implement \l{QWidget::sizeHint()}{sizeHint()}
+    The \l{QWidget::paintEvent()}{paintEvent()} implementation is the same as
+    that found in the \c AnalogClock class, with one important exception: we
+    now must also draw background (the clock face) ourselves, since the widget
+    background is just transparent. We implement \l{QWidget::sizeHint()}{sizeHint()}
     so that we don't have to resize the widget explicitly. We also provide an event
     handler for resize events. This allows us to update the mask if the clock is resized.
 
@@ -70,9 +74,11 @@
 
     \snippet widgets/shapedclock/shapedclock.cpp 0
 
-    We inform the window manager that the widget is not to be decorated with a window
-    frame by setting the Qt::FramelessWindowHint flag on the widget. As a result, we need
-    to provide a way for the user to move the clock around the screen.
+    We request a transparent window by setting the Qt::WA_TranslucentBackground
+    widget attribute. We inform the window manager that the widget is not to be
+    decorated with a window frame by setting the Qt::FramelessWindowHint flag
+    on the widget. As a result, we need to provide a way for the user to move
+    the clock around the screen.
 
     Mouse button events are delivered to the \c mousePressEvent() handler:
 
@@ -94,14 +100,20 @@
     widget is moved to the point given by subtracting the \c dragPosition from the current
     cursor position in global coordinates. If we drag the widget, we also accept the event.
 
-    The \c paintEvent() function is given for completeness. See the
-    \l{Analog Clock Example}{Analog Clock} example for a description of the process used
-    to render the clock.
+    The \c paintEvent() function is mainly the same as described in the
+    \l{Analog Clock Example}{Analog Clock} example. The one addition is that we
+    use QPainter::drawEllipse() to draw a round clock face with the current
+    palette's default background color. We make the clock face a bit smaller
+    than the widget mask, so that the anti-aliased, semi-transparent pixels on
+    the edge are not clipped away by the widget mask. This gives the shaped
+    window smooth edges on the screen.
 
     \snippet widgets/shapedclock/shapedclock.cpp 3
 
-    In the \c resizeEvent() handler, we re-use some of the code from the \c paintEvent()
-    to determine the region of the widget that is visible to the user:
+    In the \c resizeEvent() handler, we re-use some of the code from the \c
+    paintEvent() to determine the region of the widget that is visible to the
+    user. This tells the system the area where mouse clicks should go to us,
+    and not to whatever window is behind us:
 
     \snippet widgets/shapedclock/shapedclock.cpp 4
 
@@ -120,6 +132,12 @@
     \snippet widgets/shapedclock/shapedclock.cpp 5
 
     \section1 Notes on Widget Masks
+
+    Widget masks are used to hint to the window system that the application
+    does not want mouse events for areas outside the mask. On most systems,
+    they also result in coarse visual clipping. To get smooth window edges, one
+    should use translucent background and anti-aliased painting, as shown in
+    this example.
 
     Since QRegion allows arbitrarily complex regions to be created, widget masks can be
     made to suit the most unconventionally-shaped windows, and even allow widgets to be

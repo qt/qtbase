@@ -54,6 +54,8 @@ QWasmScreen::QWasmScreen(const QString &canvasId)
     m_compositor = new QWasmCompositor(this);
     m_eventTranslator = new QWasmEventTranslator(this);
     updateQScreenAndCanvasRenderSize();
+    emscripten::val canvas = emscripten::val::global(m_canvasId.toUtf8().constData());
+    canvas.call<void>("focus");
 }
 
 QWasmScreen::~QWasmScreen()

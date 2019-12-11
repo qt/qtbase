@@ -67,6 +67,7 @@ private slots:
     void sendPostedEvents_data();
     void sendPostedEvents();
     void processEventsOnlySendsQueuedEvents();
+    void eventLoopExit();
 };
 
 bool tst_QEventDispatcher::event(QEvent *e)
@@ -312,6 +313,50 @@ void tst_QEventDispatcher::processEventsOnlySendsQueuedEvents()
     QCOMPARE(object.eventsReceived, 3);
     QCoreApplication::processEvents();
     QCOMPARE(object.eventsReceived, 4);
+}
+
+void tst_QEventDispatcher::eventLoopExit()
+{
+    // This test was inspired by QTBUG-79477. A particular
+    // implementation detail in QCocoaEventDispatcher allowed
+    // QEventLoop::exit() to fail to really exit the event loop.
+    // Thus this test is a part of the dispatcher auto-test.
+
+    // Imitates QApplication::exec():
+    QEventLoop mainLoop;
+    // The test itself is a lambda:
+    QTimer::singleShot(0, [&mainLoop]() {
+        // Two more single shots, both will be posted as events
+        // (zero timeout) and supposed to be processes by the
+        // mainLoop:
+
+        QTimer::singleShot(0, [&mainLoop]() {
+            // wakeUp triggers QCocoaEventDispatcher into incrementing
+            // its 'serialNumber':
+            mainLoop.wakeUp();
+            // QCocoaEventDispatcher::processEvents() will process
+            // posted events and execute the second lambda defined below:
+            QCoreApplication::processEvents();
+        });
+
+        QTimer::singleShot(0, [&mainLoop]() {
+            // With QCocoaEventDispatcher this is executed while in the
+            // processEvents (see above) and would fail to actually
+            // interrupt the loop.
+            mainLoop.exit();
+        });
+    });
+
+    bool timeoutObserved = false;
+    QTimer::singleShot(500, [&timeoutObserved, &mainLoop]() {
+        // In case the QEventLoop::exit above failed, we have to bail out
+        // early, not wasting time:
+        mainLoop.exit();
+        timeoutObserved = true;
+    });
+
+    mainLoop.exec();
+    QVERIFY(!timeoutObserved);
 }
 
 QTEST_MAIN(tst_QEventDispatcher)

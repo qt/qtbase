@@ -885,9 +885,6 @@ void tst_QLineEdit::hasAcceptableInputMask()
     qApp->sendEvent(testWidget, &lostFocus);
     QVERIFY(validInput);
 
-    // at the moment we don't strip the blank character if it is valid input, this makes the test between x vs X useless
-    QEXPECT_FAIL( "Any optional and required", "To eat blanks or not? Known issue. Task 43172", Abort);
-
     // test requiredMask
     testWidget->setInputMask(requiredMask);
     validInput = true;

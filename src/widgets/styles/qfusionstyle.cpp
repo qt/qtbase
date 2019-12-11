@@ -1770,59 +1770,10 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         break;
     case CE_PushButtonLabel:
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            QRect ir = button->rect;
-            uint tf = Qt::AlignVCenter;
-            if (styleHint(SH_UnderlineShortcut, button, widget))
-                tf |= Qt::TextShowMnemonic;
-            else
-                tf |= Qt::TextHideMnemonic;
-
-            if (!button->icon.isNull()) {
-                //Center both icon and text
-                QPoint point;
-
-                QIcon::Mode mode = button->state & State_Enabled ? QIcon::Normal
-                                                                 : QIcon::Disabled;
-                if (mode == QIcon::Normal && button->state & State_HasFocus)
-                    mode = QIcon::Active;
-                QIcon::State state = QIcon::Off;
-                if (button->state & State_On)
-                    state = QIcon::On;
-
-                QPixmap pixmap = button->icon.pixmap(qt_getWindow(widget), button->iconSize, mode, state);
-                int w = pixmap.width() / pixmap.devicePixelRatio();
-                int h = pixmap.height() / pixmap.devicePixelRatio();
-
-                if (!button->text.isEmpty())
-                    w += button->fontMetrics.boundingRect(option->rect, tf, button->text).width() + 2;
-
-                point = QPoint(ir.x() + ir.width() / 2 - w / 2,
-                               ir.y() + ir.height() / 2 - h / 2);
-
-                w = pixmap.width() / pixmap.devicePixelRatio();
-
-                if (button->direction == Qt::RightToLeft)
-                    point.rx() += w;
-
-                painter->drawPixmap(visualPos(button->direction, button->rect, point), pixmap);
-
-                if (button->direction == Qt::RightToLeft)
-                    ir.translate(-point.x() - 2, 0);
-                else
-                    ir.translate(point.x() + w, 0);
-
-                // left-align text if there is
-                if (!button->text.isEmpty())
-                    tf |= Qt::AlignLeft;
-
-            } else {
-                tf |= Qt::AlignHCenter;
-            }
-
-            if (button->features & QStyleOptionButton::HasMenu)
-                ir = ir.adjusted(0, 0, -proxy()->pixelMetric(PM_MenuButtonIndicator, button, widget), 0);
-            proxy()->drawItemText(painter, ir, tf, button->palette, (button->state & State_Enabled),
-                                  button->text, QPalette::ButtonText);
+            QStyleOptionButton b(*button);
+            // no PM_ButtonShiftHorizontal and PM_ButtonShiftVertical for fusion style
+            b.state &= ~(State_On | State_Sunken);
+            QCommonStyle::drawControl(element, &b, painter, widget);
         }
         break;
     case CE_MenuBarEmptyArea:

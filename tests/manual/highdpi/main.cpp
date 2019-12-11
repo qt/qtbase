@@ -39,6 +39,7 @@
 #include <QButtonGroup>
 #include <QLineEdit>
 #include <QPlainTextEdit>
+#include <QTabWidget>
 #include <QScrollBar>
 #include <QSlider>
 #include <QSpinBox>
@@ -51,18 +52,26 @@
 #include <QGraphicsView>
 #include <QGraphicsTextItem>
 #include <QFile>
+#include <QFontMetrics>
 #include <QMouseEvent>
 #include <QTemporaryDir>
 #include <QTimer>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 #include <QDebug>
+#include <QElapsedTimer>
 #include <private/qhighdpiscaling_p.h>
 #include <qpa/qplatformscreen.h>
 
 #include "dragwidget.h"
 
 #include <utility>
+
+static QTextStream &operator<<(QTextStream &str, const QSizeF &s)
+{
+    str << s.width() << 'x' << s.height();
+    return str;
+}
 
 static QTextStream &operator<<(QTextStream &str, const QRect &r)
 {
@@ -1241,7 +1250,7 @@ public:
     }
 };
 
-class MetricsTest : public QWidget
+class MetricsTest : public QTabWidget
 {
     Q_OBJECT
 public:
@@ -1258,14 +1267,25 @@ QT_SCREEN_SCALE_FACTORS=N;N;N or QT_SCREEN_SCALE_FACTORS=name:N
 QT_SCALE_FACTOR_ROUNDING_POLICY=Round|Ceil|Floor|RoundPreferFloor|PassThrough
 QT_DPI_ADJUSTMENT_POLICY=AdjustDpi|DontAdjustDpi|AdjustUpOnly)";
 
-        resize(480, 360);
+        m_textEdit = addTextPage("Parameters");
+        m_logEdit = addTextPage("Screen Change Log");
 
-        auto layout = new QVBoxLayout(this);
+        const auto screens = QGuiApplication::screens();
+        for (auto screen : screens)
+            connectScreenChangeSignals(screen);
+        connect(qApp, &QGuiApplication::screenAdded, this, &MetricsTest::slotScreenAdded);
+        connect(qApp, &QGuiApplication::primaryScreenChanged, this, &MetricsTest::slotPrimaryScreenChanged);
+        connect(qApp, &QGuiApplication::screenRemoved, this, &MetricsTest::slotScreenRemoved);
 
-        m_textEdit = new QPlainTextEdit;
-        m_textEdit->setReadOnly(true);
-        layout->addWidget(m_textEdit);
         setWindowTitle(formatWindowTitle("Screens"));
+        m_logTimer.start();
+        logMessage(briefFormatScreens());
+
+        // Resize to roughly match the metrics text.
+        const auto metrics = QFontMetrics(m_textEdit->font(), m_textEdit);
+        const int width = 10 + metrics.horizontalAdvance(QStringLiteral("X")) * 50;
+        const int height = 40 + metrics.height() * (10 + 8 * screens.size());
+        resize(width, height);
     }
 
     void setVisible(bool visible) override
@@ -1323,14 +1343,117 @@ QT_DPI_ADJUSTMENT_POLICY=AdjustDpi|DontAdjustDpi|AdjustUpOnly)";
 private slots:
     void screenChanged()
     {
-        qDebug().noquote() << __FUNCTION__ << windowHandle()->screen()->name();
+        const QString message = QLatin1String("screenChanged ") + windowHandle()->screen()->name();
+        qInfo("%s", qPrintable(message));
+        logMessage(message);
         updateMetrics();
     }
 
+    void slotScreenAdded(QScreen *);
+    void slotScreenRemoved(QScreen *);
+    void slotPrimaryScreenChanged(QScreen *);
+    void slotScreenGeometryChanged(const QRect &geometry)
+    { logScreenChangeSignal(sender(), "geometry", geometry); }
+    void slotScreenAvailableGeometryChanged(const QRect &geometry)
+    { logScreenChangeSignal(sender(), "availableGeometry", geometry); }
+    void slotScreenPhysicalSizeChanged(const QSizeF &size)
+    { logScreenChangeSignal(sender(), "physicalSize", size); }
+    void slotScreenPhysicalDotsPerInchChanged(qreal dpi)
+    { logScreenChangeSignal(sender(), "physicalDotsPerInch", dpi); }
+    void slotScreenLogicalDotsPerInchChanged(qreal dpi)
+    { logScreenChangeSignal(sender(), "logicalDotsPerInch", dpi); }
+    void slotScreenVirtualGeometryChanged(const QRect &rect)
+    { logScreenChangeSignal(sender(), "virtualGeometry", rect); }
+    void slotScreenPrimaryOrientationChanged(Qt::ScreenOrientation orientation)
+    { logScreenChangeSignal(sender(), "primaryOrientation", orientation); }
+    void slotScreenOrientationChanged(Qt::ScreenOrientation orientation)
+    { logScreenChangeSignal(sender(), "orientation", orientation); }
+    void slotScreenRefreshRateChanged(qreal refreshRate)
+    { logScreenChangeSignal(sender(), "refreshRate", refreshRate); }
+
 private:
+    QPlainTextEdit *addTextPage(const QString &title);
+    void logMessage(const QString &);
+    void connectScreenChangeSignals(QScreen *s);
+    static QString briefFormatScreens();
+    template <class T>
+    void logScreenChangeSignal(const QObject *o, const char *name, const T &value);
+
     QPlainTextEdit *m_textEdit;
+    QPlainTextEdit *m_logEdit;
+    QElapsedTimer m_logTimer;
     bool m_screenChangedConnected = false;
 };
+
+void MetricsTest::slotScreenAdded(QScreen *screen)
+{
+    logMessage(QLatin1String("Added ") + screen->name() + QLatin1Char(' ')
+               + briefFormatScreens());
+    connectScreenChangeSignals(screen);
+}
+
+void MetricsTest::slotScreenRemoved(QScreen *screen)
+{
+    logMessage(QLatin1String("Removed ") + screen->name() + QLatin1Char(' ')
+               + briefFormatScreens());
+}
+
+void MetricsTest::slotPrimaryScreenChanged(QScreen *screen)
+{
+    logMessage(QLatin1String("PrimaryScreenChanged ") + screen->name() + QLatin1Char(' ')
+               + briefFormatScreens());
+}
+
+QPlainTextEdit *MetricsTest::addTextPage(const QString &title)
+{
+    auto result = new QPlainTextEdit(this);
+    result->setReadOnly(true);
+    result->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    addTab(result, title);
+    return result;
+}
+
+void MetricsTest::logMessage(const QString &m)
+{
+    const QString timeStamp =
+        QStringLiteral("%1ms: %2").arg(m_logTimer.elapsed(), 6, 10, QLatin1Char('0')).arg(m);
+    m_logEdit->appendPlainText(timeStamp);
+}
+
+void MetricsTest::connectScreenChangeSignals(QScreen *s)
+{
+    connect(s, &QScreen::geometryChanged, this, &MetricsTest::slotScreenGeometryChanged);
+    connect(s, &QScreen::availableGeometryChanged, this, &MetricsTest::slotScreenAvailableGeometryChanged);
+    connect(s, &QScreen::physicalSizeChanged, this, &MetricsTest::slotScreenPhysicalSizeChanged);
+    connect(s, &QScreen::physicalDotsPerInchChanged, this, &MetricsTest::slotScreenPhysicalDotsPerInchChanged);
+    connect(s, &QScreen::logicalDotsPerInchChanged, this, &MetricsTest::slotScreenLogicalDotsPerInchChanged);
+    connect(s, &QScreen::virtualGeometryChanged, this, &MetricsTest::slotScreenVirtualGeometryChanged);
+    connect(s, &QScreen::primaryOrientationChanged, this, &MetricsTest::slotScreenPrimaryOrientationChanged);
+    connect(s, &QScreen::orientationChanged, this, &MetricsTest::slotScreenOrientationChanged);
+    connect(s, &QScreen::refreshRateChanged, this, &MetricsTest::slotScreenRefreshRateChanged);
+}
+
+QString MetricsTest::briefFormatScreens()
+{
+    QString message;
+    QTextStream str(&message);
+    const auto screens = QGuiApplication::screens();
+    for (int i = 0, size = screens.size(); i < size; ++i) {
+        str << (i ? ", " : "(");
+        str << screens.at(i)->name() << " " << screens.at(i)->geometry();
+    }
+    str << ')';
+    return message;
+}
+
+template <class T>
+void MetricsTest::logScreenChangeSignal(const QObject *o, const char *name, const T &value)
+{
+    auto screen = qobject_cast<const QScreen *>(o);
+    QString message;
+    QTextStream(&message) << (screen ? screen->name() : QString()) << ' ' << name << " changed: " << value;
+    logMessage(message);
+}
 
 int main(int argc, char **argv)
 {

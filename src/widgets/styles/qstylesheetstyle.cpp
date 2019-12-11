@@ -3501,6 +3501,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 } else {
                     QWindowsStyle::drawControl(ce, &btnOpt, p, w);
                 }
+                rule.drawImage(p, rule.contentsRect(opt->rect));
                 if (!customMenu)
                     return;
             } else {
@@ -3730,6 +3731,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 bool dis = !(opt->state & QStyle::State_Enabled),
                      act = opt->state & QStyle::State_Selected;
 
+                int textRectOffset = m->maxIconWidth;
                 if (!mi.icon.isNull()) {
                     QIcon::Mode mode = dis ? QIcon::Disabled : QIcon::Normal;
                     if (act && !dis)
@@ -3755,19 +3757,21 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     p->drawPixmap(pmr.topLeft(), pixmap);
                 } else if (checkable) {
                     QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
+                    const QRect cmRect = positionRect(w, subRule, subSubRule, PseudoElement_MenuCheckMark, opt->rect, opt->direction);
                     if (subSubRule.hasDrawable() || checked) {
                         QStyleOptionMenuItem newMi = mi;
                         if (!dis)
                             newMi.state |= State_Enabled;
-                        if (act)
+                        if (mi.checked)
                             newMi.state |= State_On;
-                        newMi.rect = positionRect(w, subRule, subSubRule, PseudoElement_MenuCheckMark, opt->rect, opt->direction);
+                        newMi.rect = cmRect;
                         drawPrimitive(PE_IndicatorMenuCheckMark, &newMi, p, w);
                     }
+                    textRectOffset = std::max(textRectOffset, cmRect.width());
                 }
 
                 QRect textRect = subRule.contentsRect(opt->rect);
-                textRect.setLeft(textRect.left() + m->maxIconWidth);
+                textRect.setLeft(textRect.left() + textRectOffset);
                 textRect.setWidth(textRect.width() - mi.tabWidth);
                 const QRect vTextRect = visualRect(opt->direction, m->rect, textRect);
 

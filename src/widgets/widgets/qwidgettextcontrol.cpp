@@ -1283,6 +1283,8 @@ void QWidgetTextControlPrivate::keyPressEvent(QKeyEvent *e)
         } else {
             QTextCursor localCursor = cursor;
             localCursor.deletePreviousChar();
+            if (cursor.d)
+                cursor.d->setX();
         }
         goto accept;
     }
@@ -1322,9 +1324,13 @@ void QWidgetTextControlPrivate::keyPressEvent(QKeyEvent *e)
     else if (e == QKeySequence::Delete) {
         QTextCursor localCursor = cursor;
         localCursor.deleteChar();
+        if (cursor.d)
+            cursor.d->setX();
     } else if (e == QKeySequence::Backspace) {
         QTextCursor localCursor = cursor;
         localCursor.deletePreviousChar();
+        if (cursor.d)
+            cursor.d->setX();
     }else if (e == QKeySequence::DeleteEndOfWord) {
         if (!cursor.hasSelection())
             cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);

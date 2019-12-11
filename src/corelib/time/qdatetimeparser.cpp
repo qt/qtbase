@@ -1363,7 +1363,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue,
     // given date (which might be a spring-forward, skipping an hour).
     if (parserType == QVariant::DateTime && !(isSet & HourSectionMask) && !when.isValid()) {
         qint64 msecs = when.toMSecsSinceEpoch();
-        // Fortunately, that gets a useful answer ...
+        // Fortunately, that gets a useful answer, even though when is invalid ...
         const QDateTime replace =
 #if QT_CONFIG(timezone)
             tspec == Qt::TimeZone

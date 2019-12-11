@@ -66,7 +66,7 @@ template <typename T> Q_ALWAYS_INLINE void qToUnaligned(const T src, void *dest)
     // Using sizeof(T) inside memcpy function produces internal compiler error with
     // MSVC2008/ARM in tst_endian -> use extra indirection to resolve size of T.
     const size_t size = sizeof(T);
-#if QT_HAS_BUILTIN(__builtin_memcpy)
+#if __has_builtin(__builtin_memcpy)
     __builtin_memcpy
 #else
     memcpy
@@ -78,7 +78,7 @@ template <typename T> Q_ALWAYS_INLINE T qFromUnaligned(const void *src)
 {
     T dest;
     const size_t size = sizeof(T);
-#if QT_HAS_BUILTIN(__builtin_memcpy)
+#if __has_builtin(__builtin_memcpy)
     __builtin_memcpy
 #else
     memcpy
