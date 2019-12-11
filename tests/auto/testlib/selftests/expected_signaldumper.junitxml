@@ -147,7 +147,7 @@
     <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QVector&lt;int&gt;&amp;)@_POINTER_)" type="info" -->
     <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QVector&lt;int&gt;())" type="info" -->
     <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QVector&lt;int&gt;*)_POINTER_)" type="info" -->
-    <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ()" type="info" -->
+    <!-- message="Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QVector&lt;int&gt;*)_POINTER_)" type="info" -->
     <!-- message="Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())" type="info" -->
     <!-- message="Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())" type="info" -->
   </testcase>
@@ -279,7 +279,7 @@
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QVector<int>&)@_POINTER_)]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QVector<int>())]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QVector<int>*)_POINTER_)]]>
-<![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ()]]>
+<![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QVector<int>*)_POINTER_)]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]>
 <![CDATA[Signal: SignalSlotClass(_POINTER_) signalWithoutParameters ()]]>

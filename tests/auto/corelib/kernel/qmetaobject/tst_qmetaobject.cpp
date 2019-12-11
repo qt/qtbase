@@ -1332,7 +1332,7 @@ void tst_QMetaObject::normalizedSignature_data()
     QTest::newRow("const ref") << "const QString &foo()" << "const QString&foo()";
     QTest::newRow("reference") << "QString &foo()" << "QString&foo()";
     QTest::newRow("const1") << "void foo(QString const *)" << "void foo(const QString*)";
-    QTest::newRow("const2") << "void foo(QString * const)" << "void foo(QString*const)";
+    QTest::newRow("const2") << "void foo(QString * const)" << "void foo(QString*)";
     QTest::newRow("const3") << "void foo(QString const &)" << "void foo(QString)";
     QTest::newRow("const4") << "void foo(const int)" << "void foo(int)";
     QTest::newRow("const5") << "void foo(const int, int const, const int &, int const &)"
@@ -1342,11 +1342,16 @@ void tst_QMetaObject::normalizedSignature_data()
     QTest::newRow("const8") << "void foo(QVector<int const*>)" << "void foo(QVector<const int*>)";
     QTest::newRow("const9") << "void foo(const Foo<Bar>)" << "void foo(Foo<Bar>)";
     QTest::newRow("const10") << "void foo(Foo<Bar>const)" << "void foo(Foo<Bar>)";
-    QTest::newRow("const11") << "void foo(Foo<Bar> *const)" << "void foo(Foo<Bar>*const)";
-    QTest::newRow("const12") << "void foo(Foo<Bar>const*const *const)" << "void foo(Foo<Bar>*const*const)";
+    QTest::newRow("const11") << "void foo(Foo<Bar> *const)" << "void foo(Foo<Bar>*)";
+    QTest::newRow("const12") << "void foo(Foo<Bar>const*const *const)" << "void foo(const Foo<Bar>*const*)";
     QTest::newRow("const13") << "void foo(const Foo<Bar>&)" << "void foo(Foo<Bar>)";
     QTest::newRow("const14") << "void foo(Foo<Bar>const&)" << "void foo(Foo<Bar>)";
     QTest::newRow("QList") << "void foo(QList<int>)" << "void foo(QVector<int>)";
+    QTest::newRow("QList1") << "void foo(const Template<QList, MyQList const>)"
+                            << "void foo(Template<QVector,const MyQList>)";
+
+    QTest::newRow("refref") << "const char* foo(const X &&,X const &&, const X* &&) && "
+                            << "const char*foo(const X&&,const X&&,const X*&&)&&";
 
     QTest::newRow("invalid1") << "a( b" << "a(b";
 }
@@ -1372,23 +1377,59 @@ void tst_QMetaObject::normalizedType_data()
     QTest::newRow("template2") << "QVector<const int *>" << "QVector<const int*>";
     QTest::newRow("template3") << "QMap<QString, int>" << "QMap<QString,int>";
     QTest::newRow("template4") << "const QMap<QString, int> &" << "QMap<QString,int>";
-    QTest::newRow("template5") << "QVector< ::Foo::Bar>" << "QVector< ::Foo::Bar>";
+    QTest::newRow("template5") << "QVector< ::Foo::Bar>" << "QVector<::Foo::Bar>";
     QTest::newRow("template6") << "QVector<::Foo::Bar>" << "QVector<::Foo::Bar>";
-    QTest::newRow("template7") << "QVector<QVector<int> >" << "QVector<QVector<int> >";
+    QTest::newRow("template7") << "QVector<QVector<int> >" << "QVector<QVector<int>>";
     QTest::newRow("template8") << "QMap<const int, const short*>" << "QMap<const int,const short*>";
-    QTest::newRow("template9") << "QPair<const QPair<int, int const *> , QPair<QHash<int, const char*>  >  >" << "QPair<const QPair<int,const int*>,QPair<QHash<int,const char*> > >";
+    QTest::newRow("template9") << "QPair<const QPair<int, int const *> , QPair<QHash<int, const char*>  >  >" << "QPair<const QPair<int,const int*>,QPair<QHash<int,const char*>>>";
+    QTest::newRow("template10") << "QList<int const * const> const" << "QVector<const int*const>";
+    QTest::newRow("template11") << " QSharedPointer<QVarLengthArray< QString const, ( 16>> 2 )> > const & "
+        << "QSharedPointer<QVarLengthArray<const QString,(16>>2)>>";
+    QTest::newRow("template_sub") << "X<( Y < 8), (Y >6)> const  & " << "X<(Y<8),(Y>6)>";
     QTest::newRow("value1") << "const QString &" << "QString";
     QTest::newRow("value2") << "QString const &" << "QString";
     QTest::newRow("constInName1") << "constconst" << "constconst";
     QTest::newRow("constInName2") << "constconst*" << "constconst*";
     QTest::newRow("constInName3") << "const constconst&" << "constconst";
-    QTest::newRow("constInName4") << "constconst const*const" << "constconst*const";
+    QTest::newRow("constInName4") << "constconst const*const" << "const constconst*";
     QTest::newRow("class") << "const class foo&" << "foo";
     QTest::newRow("struct") << "const struct foo*" << "const foo*";
     QTest::newRow("struct2") << "struct foo const*" << "const foo*";
     QTest::newRow("enum") << "enum foo" << "foo";
     QTest::newRow("void") << "void" << "void";
     QTest::newRow("QList") << "QList<int>" << "QVector<int>";
+    QTest::newRow("refref") << "X const*const&&" << "const X*const&&";
+    QTest::newRow("refref2") << "const X<T const&&>&&" << "const X<const T&&>&&";
+    QTest::newRow("long1") << "long unsigned int long" << "unsigned long long";
+    QTest::newRow("long2") << "int signed long" << "long";
+    QTest::newRow("long3") << "long unsigned" << "ulong";
+    QTest::newRow("long double") << " long  double" << "long double";
+    QTest::newRow("signed char") << "char signed" << "signed char";
+    QTest::newRow("unsigned char") << "char unsigned" << "unsigned char";
+    QTest::newRow("signed short") << "short signed" << "short";
+    QTest::newRow("unsigned shot") << "short unsigned" << "unsigned short";
+    QTest::newRow("unsigned shot") << "short unsigned" << "unsigned short";
+    QTest::newRow("array1") << "unsigned int [4]" << "uint[4]";
+    QTest::newRow("array2") << "unsigned int const [4][5]" << "const uint[4][5]";
+    QTest::newRow("array3") << "unsigned[] const" << "uint[]";
+    QTest::newRow("nttp1") << "S<'>', int const> const"
+                           << "S<'>',const int>";
+    QTest::newRow("nttp2") << "S< \"> \\\">const *   \\\\\"  , int const> const"
+                           << "S<\"> \\\">const *   \\\\\",const int>";
+    QTest::newRow("nttp3") << "S<\"Q <\"  , int const> const*"
+                           << "const S<\"Q <\",const int>*";
+    QTest::newRow("nttp4") << "S< 1'2 , int const> const"
+                           << "S<1'2,const int>";
+    QTest::newRow("invalid") << "'const"
+                             << "'const";
+    QTest::newRow("anonym1") << "XX::<unnamed struct>"
+                             << "XX::<unnamed struct>";
+    QTest::newRow("anonym2") << "XX::{unnamed type#1}"
+                             << "XX::{unnamed type#1}";
+    QTest::newRow("anonym3") << "struct XX::<unnamed-type-s>"
+                             << "XX::<unnamed-type-s>";
+    QTest::newRow("anonym4") << "XX::(anonymous struct at ./example.cpp:10:13)"
+                             << "XX::(anonymous struct at./example.cpp:10:13)";
 }
 
 void tst_QMetaObject::normalizedType()
@@ -1397,6 +1438,7 @@ void tst_QMetaObject::normalizedType()
     QFETCH(QString, result);
 
     QCOMPARE(QMetaObject::normalizedType(type.toLatin1()), result.toLatin1());
+    QCOMPARE(QMetaObject::normalizedType(result.toLatin1()), result.toLatin1());
 }
 
 void tst_QMetaObject::customPropertyType()

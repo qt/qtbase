@@ -1827,8 +1827,8 @@ void tst_Moc::QTBUG12260_defaultTemplate()
 {
     QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doSomething(QHash<QString,QVariant>)") != -1);
     QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doAnotherThing(bool,bool)") != -1);
-    QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doSomethingElse(QSharedPointer<QVarLengthArray<QString,(16>>2)> >)") != -1);
-    QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("performSomething(QVector<QList<QString> >,QHash<int,QVector<QString> >)") != -1);
+    QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("doSomethingElse(QSharedPointer<QVarLengthArray<QString,(16>>2)>>)") != -1);
+    QVERIFY(QTBUG12260_defaultTemplate_Object::staticMetaObject.indexOfSlot("performSomething(QVector<QList<QString>>,QHash<int,QVector<QString>>)") != -1);
 }
 
 void tst_Moc::notifyError()

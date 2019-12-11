@@ -1315,17 +1315,7 @@ static char *qNormalizeType(char *d, int &templdepth, QByteArray &result)
  */
 QByteArray QMetaObject::normalizedType(const char *type)
 {
-    QByteArray result;
-
-    if (!type || !*type)
-        return result;
-
-    QVarLengthArray<char> stackbuf(qstrlen(type) + 1);
-    qRemoveWhitespace(type, stackbuf.data());
-    int templdepth = 0;
-    qNormalizeType(stackbuf.data(), templdepth, result);
-
-    return result;
+    return normalizeTypeInternal(type, type + qstrlen(type));
 }
 
 /*!

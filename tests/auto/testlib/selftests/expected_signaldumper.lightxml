@@ -557,7 +557,7 @@
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QVector<int>*)_POINTER_)]]></Description>
 </Message>
 <Message type="info" file="" line="0">
-    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ()]]></Description>
+    <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QVector<int>*)_POINTER_)]]></Description>
 </Message>
 <Message type="info" file="" line="0">
     <Description><![CDATA[Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())]]></Description>

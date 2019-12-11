@@ -124,6 +124,8 @@ private slots:
     void customDebugStream();
     void unknownType();
     void fromType();
+    void operatorEq_data();
+    void operatorEq();
 };
 
 struct BaseGenericType
@@ -579,11 +581,11 @@ void tst_QMetaType::typeName_data()
     // automatic registration
     QTest::newRow("QHash<int,int>") << ::qMetaTypeId<QHash<int, int> >() << QString::fromLatin1("QHash<int,int>");
     QTest::newRow("QMap<int,int>") << ::qMetaTypeId<QMap<int, int> >() << QString::fromLatin1("QMap<int,int>");
-    QTest::newRow("QVector<QMap<int,int>>") << ::qMetaTypeId<QVector<QMap<int, int> > >() << QString::fromLatin1("QVector<QMap<int,int> >");
+    QTest::newRow("QVector<QMap<int,int>>") << ::qMetaTypeId<QVector<QMap<int, int> > >() << QString::fromLatin1("QVector<QMap<int,int>>");
 
     // automatic registration with automatic QList to QVector aliasing
     QTest::newRow("QList<int>") << ::qMetaTypeId<QList<int> >() << QString::fromLatin1("QVector<int>");
-    QTest::newRow("QVector<QList<int>>") << ::qMetaTypeId<QVector<QList<int> > >() << QString::fromLatin1("QVector<QVector<int> >");
+    QTest::newRow("QVector<QList<int>>") << ::qMetaTypeId<QVector<QList<int> > >() << QString::fromLatin1("QVector<QVector<int>>");
 
     QTest::newRow("CustomQObject*") << ::qMetaTypeId<CustomQObject*>() << QString::fromLatin1("CustomQObject*");
     QTest::newRow("CustomGadget") << ::qMetaTypeId<CustomGadget>() << QString::fromLatin1("CustomGadget");
@@ -1745,7 +1747,7 @@ void tst_QMetaType::automaticTemplateRegistration()
       PRINT_2ARG_TEMPLATE
     )
 
-    CREATE_AND_VERIFY_CONTAINER(QList, QList<QMap<int, QHash<char, QVariantList> > >)
+    CREATE_AND_VERIFY_CONTAINER(QList, QList<QMap<int, QHash<char, QList<QVariant> > > >)
     CREATE_AND_VERIFY_CONTAINER(QVector, void*)
     CREATE_AND_VERIFY_CONTAINER(QVector, const void*)
     CREATE_AND_VERIFY_CONTAINER(QList, void*)
@@ -2527,6 +2529,50 @@ void tst_QMetaType::fromType()
     #undef FROMTYPE_CHECK
 }
 
+template<char X, typename T = void>
+struct CharTemplate
+{
+    struct
+    {
+        int a;
+    } x;
+};
+
+void tst_QMetaType::operatorEq_data()
+{
+    QTest::addColumn<QMetaType>("typeA");
+    QTest::addColumn<QMetaType>("typeB");
+    QTest::addColumn<bool>("eq");
+
+    QTest::newRow("String") << QMetaType(QMetaType::QString)
+                            << QMetaType::fromType<const QString &>() << true;
+    QTest::newRow("void1") << QMetaType(QMetaType::UnknownType) << QMetaType::fromType<void>()
+                           << true;
+    QTest::newRow("void2") << QMetaType::fromType<const void>() << QMetaType::fromType<void>()
+                           << true;
+    QTest::newRow("vec1") << QMetaType::fromType<QVector<const int *>>()
+                          << QMetaType::fromType<QVector<const int *>>() << true;
+    QTest::newRow("vec2") << QMetaType::fromType<QVector<const int *>>()
+                          << QMetaType::fromType<QVector<int *>>() << false;
+    QTest::newRow("char1") << QMetaType::fromType<CharTemplate<'>'>>()
+                           << QMetaType::fromType<CharTemplate<'>', void>>() << true;
+    QTest::newRow("annon1") << QMetaType::fromType<decltype(CharTemplate<'>'>::x)>()
+                            << QMetaType::fromType<decltype(CharTemplate<'>'>::x)>() << true;
+    QTest::newRow("annon2") << QMetaType::fromType<decltype(CharTemplate<'>'>::x)>()
+                            << QMetaType::fromType<decltype(CharTemplate<'<'>::x)>() << false;
+}
+
+void tst_QMetaType::operatorEq()
+{
+    QFETCH(QMetaType, typeA);
+    QFETCH(QMetaType, typeB);
+    QFETCH(bool, eq);
+
+    QCOMPARE(typeA == typeB, eq);
+    QCOMPARE(typeB == typeA, eq);
+    QCOMPARE(typeA != typeB, !eq);
+    QCOMPARE(typeB != typeA, !eq);
+}
 
 // Compile-time test, it should be possible to register function pointer types
 class Undefined;

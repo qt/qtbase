@@ -43,30 +43,9 @@
 QT_BEGIN_NAMESPACE
 
 // only moc needs this function
-static QByteArray normalizeType(const QByteArray &ba, bool fixScope = false)
+static QByteArray normalizeType(const QByteArray &ba)
 {
-    const char *s = ba.constData();
-    int len = ba.size();
-    char stackbuf[64];
-    char *buf = (len >= 64 ? new char[len + 1] : stackbuf);
-    char *d = buf;
-    char last = 0;
-    while(*s && is_space(*s))
-        s++;
-    while (*s) {
-        while (*s && !is_space(*s))
-            last = *d++ = *s++;
-        while (*s && is_space(*s))
-            s++;
-        if (*s && ((is_ident_char(*s) && is_ident_char(last))
-                   || ((*s == ':') && (last == '<')))) {
-            last = *d++ = ' ';
-        }
-    }
-    *d = '\0';
-    QByteArray result = normalizeTypeInternal(buf, d, fixScope);
-    if (buf != stackbuf)
-        delete [] buf;
+    QByteArray result = normalizeTypeInternal(ba.constBegin(), ba.constEnd());
     return result;
 }
 

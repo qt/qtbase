@@ -139,7 +139,7 @@ INFO   : tst_Signaldumper::variousTypes() Signal: SignalSlotClass(_POINTER_) qVe
 INFO   : tst_Signaldumper::variousTypes() Signal: SignalSlotClass(_POINTER_) qVectorRefSignal ((QVector<int>&)@_POINTER_)
 INFO   : tst_Signaldumper::variousTypes() Signal: SignalSlotClass(_POINTER_) qVectorConstRefSignal (QVector<int>())
 INFO   : tst_Signaldumper::variousTypes() Signal: SignalSlotClass(_POINTER_) qVectorConstPointerSignal ((const QVector<int>*)_POINTER_)
-INFO   : tst_Signaldumper::variousTypes() Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ()
+INFO   : tst_Signaldumper::variousTypes() Signal: SignalSlotClass(_POINTER_) qVectorPointerConstSignal ((QVector<int>*)_POINTER_)
 INFO   : tst_Signaldumper::variousTypes() Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())
 INFO   : tst_Signaldumper::variousTypes() Signal: SignalSlotClass(_POINTER_) qVariantSignal (QVariant())
 PASS   : tst_Signaldumper::variousTypes()

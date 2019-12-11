@@ -50,8 +50,9 @@
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobjectdefs.h>
 #endif
-#include <new>
 
+#include <array>
+#include <new>
 #include <vector>
 #include <list>
 #include <map>
@@ -1741,17 +1742,14 @@ namespace QtPrivate {
 }
 
 template <typename T>
-int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &_normalizedTypeName
+int qRegisterNormalizedMetaType(const QT_PREPEND_NAMESPACE(QByteArray) &normalizedTypeName
 #ifndef Q_CLANG_QDOC
     , T * = 0
     , typename QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::DefinedType  = QtPrivate::MetaTypeDefinedHelper<T, QMetaTypeId2<T>::Defined && !QMetaTypeId2<T>::IsBuiltIn>::Defined
 #endif
 )
 {
-    auto normalizedTypeName = _normalizedTypeName;
 #ifndef QT_NO_QOBJECT
-    // FIXME currently not normalized because we don't do compile time normalization
-    normalizedTypeName = QMetaObject::normalizedType(_normalizedTypeName.constData());
     Q_ASSERT_X(normalizedTypeName == QMetaObject::normalizedType(normalizedTypeName.constData()), "qRegisterNormalizedMetaType", "qRegisterNormalizedMetaType was called with a not normalized type name, please call qRegisterMetaType instead.");
 #endif
 
@@ -2014,8 +2012,6 @@ struct QMetaTypeId< SINGLE_ARG_TEMPLATE<T> > \
         typeName.reserve(int(sizeof(#SINGLE_ARG_TEMPLATE)) + 1 + tNameLen + 1 + 1); \
         typeName.append(#SINGLE_ARG_TEMPLATE, int(sizeof(#SINGLE_ARG_TEMPLATE)) - 1) \
             .append('<').append(tName, tNameLen); \
-        if (typeName.endsWith('>')) \
-            typeName.append(' '); \
         typeName.append('>'); \
         const int newId = qRegisterNormalizedMetaType< SINGLE_ARG_TEMPLATE<T> >( \
                         typeName, \
@@ -2056,8 +2052,6 @@ struct QMetaTypeId< DOUBLE_ARG_TEMPLATE<T, U> > \
         typeName.reserve(int(sizeof(#DOUBLE_ARG_TEMPLATE)) + 1 + tNameLen + 1 + uNameLen + 1 + 1); \
         typeName.append(#DOUBLE_ARG_TEMPLATE, int(sizeof(#DOUBLE_ARG_TEMPLATE)) - 1) \
             .append('<').append(tName, tNameLen).append(',').append(uName, uNameLen); \
-        if (typeName.endsWith('>')) \
-            typeName.append(' '); \
         typeName.append('>'); \
         const int newId = qRegisterNormalizedMetaType< DOUBLE_ARG_TEMPLATE<T, U> >(\
                         typeName, \
@@ -2284,20 +2278,360 @@ public:
     LegacyRegisterOp legacyRegisterOp;
 };
 
+struct QTypeNormalizer
+{
+    char *output;
+    int len = 0;
+    char last = 0;
+
+private:
+    static constexpr bool is_ident_char(char s)
+    {
+        return ((s >= 'a' && s <= 'z') || (s >= 'A' && s <= 'Z') || (s >= '0' && s <= '9')
+                || s == '_');
+    }
+    static constexpr bool is_space(char s) { return (s == ' ' || s == '\t' || s == '\n'); }
+    static constexpr bool is_number(char s) { return s >= '0' && s <= '9'; };
+    static constexpr bool starts_with_token(const char *b, const char *e, const char *token,
+                                            bool msvcKw = false)
+    {
+        while (b != e && *token && *b == *token) {
+            b++;
+            token++;
+        }
+        if (*token)
+            return false;
+#ifdef Q_CC_MSVC
+        /// On MSVC, keywords like class or struct are not separated with spaces in constexpr
+        /// context
+        if (msvcKw)
+            return true;
+#endif
+        Q_UNUSED(msvcKw);
+        return b == e || !is_ident_char(*b);
+    }
+    static constexpr bool skipToken(const char *&x, const char *e, const char *token,
+                                    bool msvcKw = false)
+    {
+        if (!starts_with_token(x, e, token, msvcKw))
+            return false;
+        while (*token++)
+            x++;
+        while (x != e && is_space(*x))
+            x++;
+        return true;
+    }
+    static constexpr const char *skipString(const char *x, const char *e)
+    {
+        char delim = *x;
+        x++;
+        while (x != e && *x != delim) {
+            if (*x == '\\') {
+                x++;
+                if (x == e)
+                    return e;
+            }
+            x++;
+        }
+        if (x != e)
+            x++;
+        return x;
+    };
+    static constexpr const char *skipTemplate(const char *x, const char *e, bool stopAtComa = false)
+    {
+        int scopeDepth = 0;
+        int templateDepth = 0;
+        while (x != e) {
+            switch (*x) {
+            case '<':
+                if (!scopeDepth)
+                    templateDepth++;
+                break;
+            case ',':
+                if (stopAtComa && !scopeDepth && !templateDepth)
+                    return x;
+                break;
+            case '>':
+                if (!scopeDepth)
+                    if (--templateDepth < 0)
+                        return x;
+                break;
+            case '(':
+            case '[':
+            case '{':
+                scopeDepth++;
+                break;
+            case '}':
+            case ']':
+            case ')':
+                scopeDepth--;
+                break;
+            case '\'':
+                if (is_number(x[-1]))
+                    break;
+                Q_FALLTHROUGH();
+            case '\"':
+                x = skipString(x, e);
+                continue;
+            }
+            x++;
+        }
+        return x;
+    };
+
+    constexpr void append(char x)
+    {
+        last = x;
+        len++;
+        if (output)
+            *output++ = x;
+    }
+
+    constexpr void appendStr(const char *x)
+    {
+        while (*x)
+            append(*x++);
+    };
+
+public:
+    constexpr int normalizeType(const char *begin, const char *end, bool adjustConst = true)
+    {
+        // Trim spaces
+        while (begin != end && is_space(*begin))
+            begin++;
+        while (begin != end && is_space(*(end - 1)))
+            end--;
+
+        // Convert 'char const *' into 'const char *'. Start at index 1,
+        // not 0, because 'const char *' is already OK.
+        const char *cst = begin + 1;
+        if (*begin == '\'' || *begin == '"')
+            cst = skipString(begin, end);
+        bool seenStar = false;
+        bool hasMiddleConst = false;
+        while (cst < end) {
+            if (*cst == '\"' || (*cst == '\'' && !is_number(cst[-1]))) {
+                cst = skipString(cst, end);
+                if (cst == end)
+                    break;
+            }
+
+            // We mustn't convert 'char * const *' into 'const char **'
+            // and we must beware of 'Bar<const Bla>'.
+            if (*cst == '&' || *cst == '*' || *cst == '[') {
+                seenStar = *cst != '&' || cst != (end - 1);
+                break;
+            }
+            if (*cst == '<') {
+                cst = skipTemplate(cst + 1, end);
+                if (cst == end)
+                    break;
+            }
+            cst++;
+            const char *skipedCst = cst;
+            if (!is_ident_char(*(cst - 1)) && skipToken(skipedCst, end, "const")) {
+                const char *testEnd = end;
+                while (skipedCst < testEnd--) {
+                    if (*testEnd == '*' || *testEnd == '['
+                        || (*testEnd == '&' && testEnd != (end - 1))) {
+                        seenStar = true;
+                        break;
+                    }
+                    if (*testEnd == '>')
+                        break;
+                }
+                if (adjustConst && !seenStar) {
+                    if (*(end - 1) == '&')
+                        end--;
+                } else {
+                    appendStr("const ");
+                }
+                normalizeType(begin, cst, false);
+                begin = skipedCst;
+                hasMiddleConst = true;
+                break;
+            }
+        }
+        if (skipToken(begin, end, "const")) {
+            if (adjustConst && !seenStar) {
+                if (*(end - 1) == '&')
+                    end--;
+            } else {
+                appendStr("const ");
+            }
+        }
+        if (seenStar && adjustConst) {
+            const char *e = end;
+            if (*(end - 1) == '&' && *(end - 2) != '&')
+                e--;
+            while (begin != e && is_space(*(e - 1)))
+                e--;
+            const char *token = "tsnoc"; // 'const' reverse, to check if it ends with const
+            while (*token && begin != e && *(--e) == *token++)
+                ;
+            if (!*token && begin != e && !is_ident_char(*(e - 1))) {
+                while (begin != e && is_space(*(e - 1)))
+                    e--;
+                end = e;
+            }
+        }
+
+        // discard 'struct', 'class', and 'enum'; they are optional
+        // and we don't want them in the normalized signature
+        skipToken(begin, end, "struct", true) || skipToken(begin, end, "class", true)
+                || skipToken(begin, end, "enum", true);
+
+#ifdef QT_NAMESPACE
+        const char *nsbeg = begin;
+        if (skipToken(nsbeg, end, QT_STRINGIFY(QT_NAMESPACE)) && nsbeg + 2 < end && nsbeg[0] == ':'
+            && nsbeg[1] == ':') {
+            begin = nsbeg + 2;
+            while (begin != end && is_space(*begin))
+                begin++;
+        }
+#endif
+
+        if (skipToken(begin, end, "QList")) {
+            // Replace QList by QVector
+            appendStr("QVector");
+        }
+        if (!hasMiddleConst) {
+            // Normalize the integer types
+            int numLong = 0;
+            int numSigned = 0;
+            int numUnsigned = 0;
+            int numInt = 0;
+            int numShort = 0;
+            int numChar = 0;
+            while (begin < end) {
+                if (skipToken(begin, end, "long")) {
+                    numLong++;
+                    continue;
+                }
+                if (skipToken(begin, end, "int")) {
+                    numInt++;
+                    continue;
+                }
+                if (skipToken(begin, end, "short")) {
+                    numShort++;
+                    continue;
+                }
+                if (skipToken(begin, end, "unsigned")) {
+                    numUnsigned++;
+                    continue;
+                }
+                if (skipToken(begin, end, "signed")) {
+                    numSigned++;
+                    continue;
+                }
+                if (skipToken(begin, end, "char")) {
+                    numChar++;
+                    continue;
+                }
+                break;
+            }
+            if (numChar || numShort) {
+                if (numSigned && numChar)
+                    appendStr("signed ");
+                if (numUnsigned)
+                    appendStr("unsigned ");
+                if (numChar)
+                    appendStr("char");
+                else
+                    appendStr("short");
+            } else if (numLong) {
+                if (numLong == 1) {
+                    if (numUnsigned)
+                        append('u');
+                    appendStr("long");
+                } else {
+                    if (numUnsigned)
+                        appendStr("unsigned ");
+                    appendStr("long long");
+                }
+            } else if (numUnsigned || numSigned || numInt) {
+                if (numUnsigned)
+                    append('u');
+                appendStr("int");
+            }
+        }
+
+        bool spaceSkiped = true;
+        while (begin != end) {
+            char c = *begin++;
+            if (is_space(c)) {
+                spaceSkiped = true;
+            } else if ((c == '\'' && !is_number(last)) || c == '\"') {
+                begin--;
+                auto x = skipString(begin, end);
+                while (begin < x)
+                    append(*begin++);
+            } else {
+                if (spaceSkiped && is_ident_char(last) && is_ident_char(c))
+                    append(' ');
+                append(c);
+                spaceSkiped = false;
+                if (c == '<') {
+                    do {
+                        // template recursion
+                        const char *tpl = skipTemplate(begin, end, true);
+                        normalizeType(begin, tpl, false);
+                        if (tpl == end)
+                            return len;
+                        append(*tpl);
+                        begin = tpl;
+                    } while (*begin++ == ',');
+                }
+            }
+        }
+        return len;
+    }
+};
+
+// Normalize the type between begin and end, and store the data in the output. Returns the length.
+// The idea is to first run this function with nullptr as output to allocate the output with the
+// size
+constexpr int qNormalizeType(const char *begin, const char *end, char *output)
+{
+    return QTypeNormalizer { output }.normalizeType(begin, end);
+}
+
 template<typename T>
 constexpr auto typenameHelper()
 {
     constexpr auto prefix = sizeof(
-#ifdef Q_CC_CLANG
-        "auto QtPrivate::typenameHelper() [T = ") - 1;
-#else
-        "constexpr auto QtPrivate::typenameHelper() [with T = ") - 1;
+#ifdef QT_NAMESPACE
+        QT_STRINGIFY(QT_NAMESPACE) "::"
 #endif
+#ifdef Q_CC_MSVC
+        "auto __cdecl QtPrivate::typenameHelper<"
+#elif defined(Q_CC_CLANG)
+        "auto QtPrivate::typenameHelper() [T = "
+#else
+        "constexpr auto QtPrivate::typenameHelper() [with T = "
+#endif
+        ) - 1;
+#ifdef Q_CC_MSVC
+    constexpr int suffix = sizeof(">(void)");
+#else
     constexpr int suffix = sizeof("]");
-    constexpr int len = sizeof(__PRETTY_FUNCTION__) - prefix - suffix;
+#endif
+
+#if !(defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG))
+    constexpr auto func = Q_FUNC_INFO;
+    constexpr const char *begin = func + prefix;
+    constexpr const char *end = func + sizeof(Q_FUNC_INFO) - suffix;
+    constexpr int len = qNormalizeType(begin, end, nullptr);
+#else // GCC < 8.1 did not have Q_FUNC_INFO as constexpr, and GCC 9 has a precompiled header bug
+    auto func = Q_FUNC_INFO;
+    const char *begin = func + prefix;
+    const char *end = func + sizeof(Q_FUNC_INFO) - suffix;
+    // This is an upper bound of the size since the normalized signature should always be smaller
+    // (Unless there is a QList -> QVector change, but that should not happen)
+    constexpr int len = sizeof(Q_FUNC_INFO) - suffix - prefix;
+#endif
     std::array<char, len + 1> result {};
-    for (int i = 0; i < len; ++i)
-        result[i] = __PRETTY_FUNCTION__[prefix + i];
+    qNormalizeType(begin, end, result.data());
     return result;
 }
 
