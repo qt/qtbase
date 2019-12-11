@@ -1627,10 +1627,9 @@ bool QItemSelectionModel::rowIntersectsSelection(int row, const QModelIndex &par
 
     QItemSelection sel = d->ranges;
     sel.merge(d->currentSelection, d->currentCommand);
-    for (int i = 0; i < sel.count(); ++i) {
-        QItemSelectionRange range = sel.at(i);
+    for (const QItemSelectionRange &range : qAsConst(sel)) {
         if (range.parent() != parent)
-          return false;
+            return false;
         int top = range.top();
         int bottom = range.bottom();
         int left = range.left();
@@ -1661,11 +1660,13 @@ bool QItemSelectionModel::columnIntersectsSelection(int column, const QModelInde
 
     QItemSelection sel = d->ranges;
     sel.merge(d->currentSelection, d->currentCommand);
-    for (int i = 0; i < sel.count(); ++i) {
-        int left = sel.at(i).left();
-        int right = sel.at(i).right();
-        int top =  sel.at(i).top();
-        int bottom =  sel.at(i).bottom();
+    for (const QItemSelectionRange &range : qAsConst(sel)) {
+        if (range.parent() != parent)
+            return false;
+        int top = range.top();
+        int bottom = range.bottom();
+        int left = range.left();
+        int right = range.right();
         if (left <= column && right >= column) {
             for (int j = top; j <= bottom; j++) {
                 const Qt::ItemFlags flags = d->model->index(j, column, parent).flags();
