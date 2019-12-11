@@ -1525,6 +1525,8 @@ def map_condition(condition: str) -> str:
     )
     condition = re.sub(r"styles___contains___fusion", r"QT_FEATURE_style_fusion", condition)
 
+    condition = condition.replace("cross_compile", "CMAKE_CROSS_COMPILING")
+
     cmake_condition = ""
     for part in condition.split():
         # some features contain e.g. linux, that should not be
