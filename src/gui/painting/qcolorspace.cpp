@@ -549,8 +549,12 @@ float QColorSpace::gamma() const noexcept
 */
 void QColorSpace::setTransferFunction(QColorSpace::TransferFunction transferFunction, float gamma)
 {
-    if (!isValid() || transferFunction == QColorSpace::TransferFunction::Custom)
+    if (transferFunction == TransferFunction::Custom)
         return;
+    if (!d_ptr) {
+        d_ptr = new QColorSpacePrivate(Primaries::Custom, transferFunction, gamma);
+        return;
+    }
     if (d_ptr->transferFunction == transferFunction && d_ptr->gamma == gamma)
         return;
     QColorSpacePrivate::getWritable(*this);  // detach
@@ -585,8 +589,12 @@ QColorSpace QColorSpace::withTransferFunction(QColorSpace::TransferFunction tran
 */
 void QColorSpace::setPrimaries(QColorSpace::Primaries primariesId)
 {
-    if (!isValid() || primariesId == QColorSpace::Primaries::Custom)
+    if (primariesId == Primaries::Custom)
         return;
+    if (!d_ptr) {
+        d_ptr = new QColorSpacePrivate(primariesId, TransferFunction::Custom, 0.0f);
+        return;
+    }
     if (d_ptr->primaries == primariesId)
         return;
     QColorSpacePrivate::getWritable(*this);  // detach
@@ -605,11 +613,13 @@ void QColorSpace::setPrimaries(QColorSpace::Primaries primariesId)
 void QColorSpace::setPrimaries(const QPointF &whitePoint, const QPointF &redPoint,
                                const QPointF &greenPoint, const QPointF &bluePoint)
 {
-    if (!isValid())
-        return;
     QColorSpacePrimaries primaries(whitePoint, redPoint, greenPoint, bluePoint);
     if (!primaries.areValid())
         return;
+    if (!d_ptr) {
+        d_ptr = new QColorSpacePrivate(primaries, TransferFunction::Custom, 0.0f);
+        return;
+    }
     QColorMatrix toXyz = primaries.toXyzMatrix();
     if (QColorVector(primaries.whitePoint) == d_ptr->whitePoint && toXyz == d_ptr->toXyz)
         return;
@@ -692,12 +702,14 @@ bool operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
 
     const bool valid1 = colorSpace1.isValid();
     const bool valid2 = colorSpace2.isValid();
-    if (!valid1 && !valid2)
-        return colorSpace1.d_ptr->iccProfile == colorSpace2.d_ptr->iccProfile;
-    else if (!valid1 || !valid2)
+    if (valid1 != valid2)
         return false;
+    if (!valid1 && !valid2) {
+        if (!colorSpace1.d_ptr->iccProfile.isEmpty() || !colorSpace2.d_ptr->iccProfile.isEmpty())
+            return colorSpace1.d_ptr->iccProfile == colorSpace2.d_ptr->iccProfile;
+    }
 
-    // At this point one or both color spaces are unknown but valid, and must be compared in detail instead
+    // At this point one or both color spaces are unknown, and must be compared in detail instead
 
     if (colorSpace1.primaries() != QColorSpace::Primaries::Custom && colorSpace2.primaries() != QColorSpace::Primaries::Custom) {
         if (colorSpace1.primaries() != colorSpace2.primaries())

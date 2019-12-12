@@ -413,6 +413,7 @@ void tst_QColorSpace::primaries2()
 
 void tst_QColorSpace::invalidPrimaries()
 {
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("QColorSpace attempted constructed from invalid primaries"));
     QColorSpace custom(QPointF(), QPointF(), QPointF(), QPointF(), QColorSpace::TransferFunction::Linear);
     QVERIFY(!custom.isValid());
 }
@@ -444,8 +445,15 @@ void tst_QColorSpace::changeTransferFunction()
 
     QColorSpace undefined;
     QCOMPARE(undefined.withTransferFunction(QColorSpace::TransferFunction::Linear), undefined);
-    undefined.setTransferFunction(QColorSpace::TransferFunction::SRgb);
-    QCOMPARE(undefined, QColorSpace());
+
+    QColorSpace partial;
+    partial.setTransferFunction(QColorSpace::TransferFunction::SRgb);
+    QCOMPARE(partial.transferFunction(), QColorSpace::TransferFunction::SRgb);
+    QVERIFY(!partial.isValid());
+
+    partial.setPrimaries(QColorSpace::Primaries::SRgb);
+    QVERIFY(partial.isValid());
+    QCOMPARE(partial, QColorSpace(QColorSpace::SRgb));
 }
 
 void tst_QColorSpace::changePrimaries()
