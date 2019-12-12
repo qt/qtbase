@@ -422,6 +422,10 @@ QColorSpace::QColorSpace()
  */
 QColorSpace::QColorSpace(NamedColorSpace namedColorSpace)
 {
+    if (namedColorSpace < QColorSpace::SRgb || namedColorSpace > QColorSpace::ProPhotoRgb) {
+        qWarning() << "QColorSpace attempted constructed from invalid QColorSpace::NamedColorSpace: " << int(namedColorSpace);
+        return;
+    }
     static QColorSpacePrivate *predefinedColorspacePrivates[QColorSpace::ProPhotoRgb + 1];
     if (!predefinedColorspacePrivates[namedColorSpace]) {
         predefinedColorspacePrivates[namedColorSpace] = new QColorSpacePrivate(namedColorSpace);
