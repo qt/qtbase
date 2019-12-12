@@ -56,8 +56,6 @@
 #include <private/qopenglextensions_p.h>
 #include <private/qopenglversionfunctionsfactory_p.h>
 
-#include <private/qopengltexturehelper_p.h>
-
 #include <QDebug>
 
 #ifndef QT_OPENGL_ES_2
@@ -664,7 +662,10 @@ void QOpenGLContext::destroy()
     qDeleteAll(d->versionFunctions);
     d->versionFunctions.clear();
 
-    delete d->textureFunctions;
+    if (d->textureFunctionsDestroyCallback) {
+        d->textureFunctionsDestroyCallback();
+        d->textureFunctionsDestroyCallback = nullptr;
+    }
     d->textureFunctions = nullptr;
 
     d->nativeHandle = QVariant();
@@ -1388,10 +1389,11 @@ QOpenGLTextureHelper* QOpenGLContext::textureFunctions() const
 /*!
     \internal
 */
-void QOpenGLContext::setTextureFunctions(QOpenGLTextureHelper* textureFuncs)
+void QOpenGLContext::setTextureFunctions(QOpenGLTextureHelper* textureFuncs, std::function<void()> destroyCallback)
 {
     Q_D(QOpenGLContext);
     d->textureFunctions = textureFuncs;
+    d->textureFunctionsDestroyCallback = destroyCallback;
 }
 
 /*!

@@ -243,7 +243,7 @@ private:
     void removeExternalFunctions(QAbstractOpenGLFunctions *f);
 
     QOpenGLTextureHelper* textureFunctions() const;
-    void setTextureFunctions(QOpenGLTextureHelper* textureFuncs);
+    void setTextureFunctions(QOpenGLTextureHelper* textureFuncs, std::function<void()> destroyCallback);
 
     void destroy();
 

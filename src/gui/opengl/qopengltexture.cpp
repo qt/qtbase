@@ -151,7 +151,8 @@ void QOpenGLTexturePrivate::initializeOpenGLFunctions()
     texFuncs = context->textureFunctions();
     if (!texFuncs) {
         texFuncs = new QOpenGLTextureHelper(context);
-        context->setTextureFunctions(texFuncs);
+        auto *funcs = texFuncs; // lets us capture by pointer value below
+        context->setTextureFunctions(funcs, [funcs] { delete funcs; });
     }
 }
 
