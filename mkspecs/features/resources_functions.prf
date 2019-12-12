@@ -1,5 +1,21 @@
+# http://www.w3.org/TR/xml/#syntax
+defineReplace(xml_escape) {
+    1 ~= s,&,&amp;,
+    1 ~= s,\',&apos;,
+    1 ~= s,\",&quot;,
+    1 ~= s,<,&lt;,
+    1 ~= s,>,&gt;,
+    return($$1)
+}
+
 defineTest(qtFlattenResources) {
-    RESOURCES += qmake_immediate
+    immediate = qmake_immediate$$QMAKE_RESOURCES_IMMEDIATE_NR
+    defined(QMAKE_RESOURCES_IMMEDIATE_NR, var): \
+        QMAKE_RESOURCES_IMMEDIATE_NR = $$num_add($$QMAKE_RESOURCES_IMMEDIATE_NR, 1)
+    else: \
+        QMAKE_RESOURCES_IMMEDIATE_NR = 1
+
+    RESOURCES += $$immediate
     for(resource, RESOURCES) {
         # Regular case of user qrc file
         contains(resource, ".*\\.qrc$"): \
@@ -7,10 +23,10 @@ defineTest(qtFlattenResources) {
 
         # Fallback for stand-alone files/directories
         !defined($${resource}.files, var) {
-            !equals(resource, qmake_immediate) {
+            !equals(resource, $$immediate) {
                 !exists($$absolute_path($$resource, $$_PRO_FILE_PWD_)): \
                     warning("Failure to find: $$resource")
-                qmake_immediate.files += $$resource
+                $${immediate}.files += $$resource
                 OTHER_FILES *= $$resource
             }
             RESOURCES -= $$resource
@@ -56,8 +72,9 @@ defineTest(qtFlattenResources) {
         RESOURCES -= $$resource
         RESOURCES += $$resource_file
     }
+    export(QMAKE_RESOURCES_IMMEDIATE_NR)
     export(RESOURCES)
     export(OTHER_FILES)
-    export(qmake_immediate.files)
+    export($${immediate}.files)
     return(true)
 }
