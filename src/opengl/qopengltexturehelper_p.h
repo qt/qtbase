@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Klaralvdalens Datakonsult AB (KDAB).
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -51,7 +51,7 @@
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
+#include <QtOpenGL/qtopenglglobal.h>
 
 #ifndef QT_NO_OPENGL
 

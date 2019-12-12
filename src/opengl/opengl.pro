@@ -19,7 +19,11 @@ HEADERS += \
     qopenglpaintdevice.h \
     qopenglpaintdevice_p.h \
     qopenglpaintengine_p.h \
+    qopenglpixeltransferoptions.h \
     qopenglshadercache_p.h \
+    qopengltexture.h \
+    qopengltexture_p.h \
+    qopengltexturehelper_p.h \
     qopengltexturecache_p.h \
     qopengltextureglyphcache_p.h \
     qopengltextureuploader_p.h \
@@ -33,6 +37,9 @@ SOURCES += \
     qopenglgradientcache.cpp \
     qopenglpaintdevice.cpp \
     qopenglpaintengine.cpp \
+    qopenglpixeltransferoptions.cpp \
+    qopengltexture.cpp \
+    qopengltexturehelper.cpp \
     qopengltexturecache.cpp \
     qopengltextureglyphcache.cpp \
     qopengltextureuploader.cpp \

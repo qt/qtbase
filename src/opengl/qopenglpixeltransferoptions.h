@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Klaralvdalens Datakonsult AB (KDAB).
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -40,7 +40,7 @@
 #ifndef QOPENGLPIXELUPLOADOPTIONS_H
 #define QOPENGLPIXELUPLOADOPTIONS_H
 
-#include <QtGui/qtguiglobal.h>
+#include <QtOpenGL/qtopenglglobal.h>
 
 #if !defined(QT_NO_OPENGL)
 
@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpenGLPixelTransferOptionsData;
 
-class Q_GUI_EXPORT QOpenGLPixelTransferOptions
+class Q_OPENGL_EXPORT QOpenGLPixelTransferOptions
 {
 public:
     QOpenGLPixelTransferOptions();

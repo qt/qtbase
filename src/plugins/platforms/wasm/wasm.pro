@@ -50,6 +50,7 @@ wasmfonts.base = ../../../3rdparty/wasm
 RESOURCES += wasmfonts
 
 qtConfig(opengl) {
+    QT += opengl
     SOURCES += qwasmbackingstore.cpp
     HEADERS += qwasmbackingstore.h
 }

@@ -17,10 +17,6 @@ qtConfig(opengl) {
                opengl/qopenglversionfunctionsfactory_p.h \
                opengl/qopenglvertexarrayobject.h \
                opengl/qopengltextureblitter.h \
-               opengl/qopengltexture.h \
-               opengl/qopengltexture_p.h \
-               opengl/qopengltexturehelper_p.h \
-               opengl/qopenglpixeltransferoptions.h \
                opengl/qopenglextrafunctions.h \
                opengl/qopenglprogrambinarycache_p.h
 
@@ -33,9 +29,6 @@ qtConfig(opengl) {
                opengl/qopenglversionfunctionsfactory.cpp \
                opengl/qopenglvertexarrayobject.cpp \
                opengl/qopengltextureblitter.cpp \
-               opengl/qopengltexture.cpp \
-               opengl/qopengltexturehelper.cpp \
-               opengl/qopenglpixeltransferoptions.cpp \
                opengl/qopenglprogrambinarycache.cpp
 
     !qtConfig(opengles2) {

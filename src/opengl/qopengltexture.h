@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Klaralvdalens Datakonsult AB (KDAB).
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -40,7 +40,7 @@
 #ifndef QOPENGLABSTRACTTEXTURE_H
 #define QOPENGLABSTRACTTEXTURE_H
 
-#include <QtGui/qtguiglobal.h>
+#include <QtOpenGL/qtopenglglobal.h>
 
 #ifndef QT_NO_OPENGL
 
@@ -54,7 +54,7 @@ class QDebug;
 class QOpenGLTexturePrivate;
 class QOpenGLPixelTransferOptions;
 
-class Q_GUI_EXPORT QOpenGLTexture
+class Q_OPENGL_EXPORT QOpenGLTexture
 {
     Q_GADGET
 public:
@@ -641,7 +641,7 @@ public:
     float levelofDetailBias() const;
 
 #ifndef QT_NO_DEBUG_STREAM
-    friend Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QOpenGLTexture *t);
+    friend Q_OPENGL_EXPORT QDebug operator<<(QDebug dbg, const QOpenGLTexture *t);
 #endif
 
 private:
@@ -653,7 +653,7 @@ private:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLTexture::Features)
 
 #ifndef QT_NO_DEBUG_STREAM
-Q_GUI_EXPORT QDebug operator<<(QDebug debug, const QOpenGLTexture *t);
+Q_OPENGL_EXPORT QDebug operator<<(QDebug debug, const QOpenGLTexture *t);
 #endif
 
 QT_END_NAMESPACE

@@ -39,7 +39,9 @@
 
 #include "qvkconvenience_p.h"
 
-#include <QOpenGLTexture>
+#if QT_CONFIG(opengl)
+#include <QtOpenGL/QOpenGLTexture>
+#endif
 
 QT_BEGIN_NAMESPACE
 
