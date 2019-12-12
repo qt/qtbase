@@ -1481,6 +1481,10 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
             "type": "error",
             "condition": "!features.stl",
             "message": "Qt requires a compliant STL library."
+        },
+        {
+            "type": "emccVersion",
+            "condition": "config.wasm"
         }
     ],
 

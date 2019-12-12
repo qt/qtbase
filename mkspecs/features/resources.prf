@@ -6,16 +6,6 @@ isEmpty(QMAKE_MOD_RCC):QMAKE_MOD_RCC = qrc
 !contains(QMAKE_RESOURCE_FLAGS, -root):!isEmpty(QMAKE_RESOURCE_ROOT):QMAKE_RESOURCE_FLAGS += -root $$QMAKE_RESOURCE_ROOT
 !contains(QMAKE_RESOURCE_FLAGS, -name): QMAKE_RESOURCE_FLAGS += -name ${QMAKE_FILE_BASE}
 
-# http://www.w3.org/TR/xml/#syntax
-defineReplace(xml_escape) {
-    1 ~= s,&,&amp;,
-    1 ~= s,\',&apos;,
-    1 ~= s,\",&quot;,
-    1 ~= s,<,&lt;,
-    1 ~= s,>,&gt;,
-    return($$1)
-}
-
 load(resources_functions)
 qtFlattenResources()
 
