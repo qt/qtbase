@@ -14,6 +14,8 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qtypeinfo.h>
 
+#include <QtCore/qxptype_traits.h>
+
 #include <cstring>
 #include <iterator>
 #include <memory>
@@ -203,43 +205,25 @@ void reserveIfForwardIterator(Container *c, ForwardIterator f, ForwardIterator l
     c->reserve(static_cast<typename Container::size_type>(std::distance(f, l)));
 }
 
-template <typename Iterator, typename = std::void_t<>>
-struct AssociativeIteratorHasKeyAndValue : std::false_type
-{
-};
+template <typename Iterator>
+using KeyAndValueTest = decltype(
+    std::declval<Iterator &>().key(),
+    std::declval<Iterator &>().value()
+);
 
 template <typename Iterator>
-struct AssociativeIteratorHasKeyAndValue<
-        Iterator,
-        std::void_t<decltype(std::declval<Iterator &>().key()),
-                    decltype(std::declval<Iterator &>().value())>
-    >
-    : std::true_type
-{
-};
-
-template <typename Iterator, typename = std::void_t<>, typename = std::void_t<>>
-struct AssociativeIteratorHasFirstAndSecond : std::false_type
-{
-};
-
-template <typename Iterator>
-struct AssociativeIteratorHasFirstAndSecond<
-        Iterator,
-        std::void_t<decltype(std::declval<Iterator &>()->first),
-                    decltype(std::declval<Iterator &>()->second)>
-    >
-    : std::true_type
-{
-};
+using FirstAndSecondTest = decltype(
+    std::declval<Iterator &>()->first,
+    std::declval<Iterator &>()->second
+);
 
 template <typename Iterator>
 using IfAssociativeIteratorHasKeyAndValue =
-    typename std::enable_if<AssociativeIteratorHasKeyAndValue<Iterator>::value, bool>::type;
+    std::enable_if_t<qxp::is_detected_v<KeyAndValueTest, Iterator>, bool>;
 
 template <typename Iterator>
 using IfAssociativeIteratorHasFirstAndSecond =
-    typename std::enable_if<AssociativeIteratorHasFirstAndSecond<Iterator>::value, bool>::type;
+    std::enable_if_t<qxp::is_detected_v<FirstAndSecondTest, Iterator>, bool>;
 
 template <typename T, typename U>
 using IfIsNotSame =
