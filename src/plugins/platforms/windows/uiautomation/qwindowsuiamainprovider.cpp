@@ -53,6 +53,7 @@
 #include "qwindowsuiagridprovider.h"
 #include "qwindowsuiagriditemprovider.h"
 #include "qwindowsuiawindowprovider.h"
+#include "qwindowsuiaexpandcollapseprovider.h"
 #include "qwindowscombase.h"
 #include "qwindowscontext.h"
 #include "qwindowsuiautils.h"
@@ -339,6 +340,14 @@ HRESULT QWindowsUiaMainProvider::GetPatternProvider(PATTERNID idPattern, IUnknow
         // Things that have an invokable action (e.g., simple buttons).
         if (accessible->actionInterface()) {
             *pRetVal = new QWindowsUiaInvokeProvider(id());
+        }
+        break;
+    case UIA_ExpandCollapsePatternId:
+        // Menu items with submenus.
+        if (accessible->role() == QAccessible::MenuItem
+                && accessible->childCount() > 0
+                && accessible->child(0)->role() == QAccessible::PopupMenu) {
+            *pRetVal = new QWindowsUiaExpandCollapseProvider(id());
         }
         break;
     default:
