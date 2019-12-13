@@ -187,10 +187,6 @@ inline Q_DECL_CONSTEXPR int qMetaTypeId();
 #define QT_FOR_EACH_STATIC_WIDGETS_CLASS(F)\
     F(QSizePolicy, 121, QSizePolicy) \
 
-// ### FIXME kill that set
-#define QT_FOR_EACH_STATIC_HACKS_TYPE(F)\
-    F(QMetaTypeId2<qreal>::MetaType, -1, qreal)
-
 // F is a tuple: (QMetaType::TypeName, QMetaType::TypeNameID, AliasingType, "RealType")
 #define QT_FOR_EACH_STATIC_ALIAS_TYPE(F)\
     F(ULong, -1, ulong, "unsigned long") \
@@ -755,8 +751,6 @@ private:
     static bool registerDebugStreamOperatorFunction(const QtPrivate::AbstractDebugStreamFunction *f, int type);
 #endif
 
-// ### Qt6: FIXME: Remove the special Q_CC_MSVC handling, it was introduced to maintain BC.
-#if !defined(Q_NO_TEMPLATE_FRIENDS) && !defined(Q_CC_MSVC)
 #ifndef Q_CLANG_QDOC
     template<typename, bool> friend struct QtPrivate::ValueTypeIsMetaType;
     template<typename, typename> friend struct QtPrivate::ConverterMemberFunction;
@@ -765,9 +759,6 @@ private:
     template<typename, bool> friend struct QtPrivate::AssociativeValueTypeIsMetaType;
     template<typename, bool> friend struct QtPrivate::IsMetaTypePair;
     template<typename, typename> friend struct QtPrivate::MetaTypeSmartPointerHelper;
-#endif
-#else
-public:
 #endif
     static bool registerConverterFunction(const QtPrivate::AbstractConverterFunction *f, int from, int to);
     static void unregisterConverterFunction(int from, int to);

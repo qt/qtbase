@@ -539,13 +539,12 @@ struct DefinedTypesFilter {
 #define QT_ADD_STATIC_METATYPE_ALIASES_ITER(MetaTypeName, MetaTypeId, AliasingName, RealNameStr) \
     { RealNameStr, sizeof(RealNameStr) - 1, QMetaType::MetaTypeName },
 
-#define QT_ADD_STATIC_METATYPE_HACKS_ITER(MetaTypeName, TypeId, Name) \
-    QT_ADD_STATIC_METATYPE(MetaTypeName, MetaTypeName, Name)
+
 
 static const struct { const char * typeName; int typeNameLength; int type; } types[] = {
     QT_FOR_EACH_STATIC_TYPE(QT_ADD_STATIC_METATYPE)
     QT_FOR_EACH_STATIC_ALIAS_TYPE(QT_ADD_STATIC_METATYPE_ALIASES_ITER)
-    QT_FOR_EACH_STATIC_HACKS_TYPE(QT_ADD_STATIC_METATYPE_HACKS_ITER)
+    QT_ADD_STATIC_METATYPE(_, QMetaTypeId2<qreal>::MetaType, qreal)
     {nullptr, 0, QMetaType::UnknownType}
 };
 
