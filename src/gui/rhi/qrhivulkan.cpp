@@ -501,6 +501,17 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             }
         }
 
+        QByteArrayList envExtList;
+        if (qEnvironmentVariableIsSet("QT_VULKAN_DEVICE_EXTENSIONS")) {
+            envExtList = qgetenv("QT_VULKAN_DEVICE_EXTENSIONS").split(';');
+            for (auto ext : requestedDevExts)
+                envExtList.removeAll(ext);
+            for (const QByteArray &ext : envExtList) {
+                if (!ext.isEmpty())
+                    requestedDevExts.append(ext.constData());
+            }
+        }
+
         VkDeviceCreateInfo devInfo;
         memset(&devInfo, 0, sizeof(devInfo));
         devInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
