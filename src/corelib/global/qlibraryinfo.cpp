@@ -562,9 +562,39 @@ static QString getRelocatablePrefix()
     HMODULE hModule = getWindowsModuleHandle();
     const int kBufferSize = 4096;
     wchar_t buffer[kBufferSize];
-    const int pathSize = GetModuleFileName(hModule, buffer, kBufferSize);
-    if (pathSize > 0)
-        prefixPath = prefixFromQtCoreLibraryHelper(QString::fromWCharArray(buffer, pathSize));
+    DWORD pathSize = GetModuleFileName(hModule, buffer, kBufferSize);
+    const QString qtCoreFilePath = QString::fromWCharArray(buffer, int(pathSize));
+    const QString qtCoreDirPath = QFileInfo(qtCoreFilePath).absolutePath();
+    pathSize = GetModuleFileName(NULL, buffer, kBufferSize);
+    const QString exeDirPath = QFileInfo(QString::fromWCharArray(buffer, int(pathSize))).absolutePath();
+    if (QFileInfo(exeDirPath) == QFileInfo(qtCoreDirPath)) {
+        // QtCore DLL is next to the executable. This is either a windeployqt'ed executable or an
+        // executable within the QT_HOST_BIN directory. We're detecting the latter case by checking
+        // whether there's an import library corresponding to our QtCore DLL in PREFIX/lib.
+        const QString libdir = QString::fromLatin1(
+            qt_configure_strs + qt_configure_str_offsets[QLibraryInfo::LibrariesPath - 1]);
+        const QLatin1Char slash('/');
+#if defined(Q_CC_MINGW)
+        const QString implibPrefix = QStringLiteral("lib");
+        const QString implibSuffix = QStringLiteral(".a");
+#else
+        const QString implibPrefix;
+        const QString implibSuffix = QStringLiteral(".lib");
+#endif
+        const QString qtCoreImpLibFileName = implibPrefix
+                + QFileInfo(qtCoreFilePath).completeBaseName() + implibSuffix;
+        const QString qtCoreImpLibPath = qtCoreDirPath
+                + slash + QLatin1String(QT_CONFIGURE_LIBLOCATION_TO_PREFIX_PATH)
+                + slash + libdir
+                + slash + qtCoreImpLibFileName;
+        if (!QFileInfo::exists(qtCoreImpLibPath)) {
+            // We did not find a corresponding import library and conclude that this is a
+            // windeployqt'ed executable.
+            return exeDirPath;
+        }
+    }
+    if (!qtCoreFilePath.isEmpty())
+        prefixPath = prefixFromQtCoreLibraryHelper(qtCoreFilePath);
 #else
 #error "The chosen platform / config does not support querying for a dynamic prefix."
 #endif
