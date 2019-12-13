@@ -166,7 +166,6 @@ bool QGuiApplicationPrivate::is_fallback_session_management_enabled = true;
 
 enum ApplicationResourceFlags
 {
-    ApplicationPaletteExplicitlySet = 0x1,
     ApplicationFontExplicitlySet = 0x2
 };
 
@@ -3297,7 +3296,6 @@ void QGuiApplication::setPalette(const QPalette &pal)
     else
         *QGuiApplicationPrivate::app_pal = pal;
 
-    applicationResourceFlags |= ApplicationPaletteExplicitlySet;
     QCoreApplication::setAttribute(Qt::AA_SetPalette);
 
     if (qGuiApp)
@@ -4100,8 +4098,7 @@ QPixmap QGuiApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
 
 void QGuiApplicationPrivate::notifyThemeChanged()
 {
-    if (!(applicationResourceFlags & ApplicationPaletteExplicitlySet) &&
-        !QCoreApplication::testAttribute(Qt::AA_SetPalette)) {
+    if (!testAttribute(Qt::AA_SetPalette)) {
         clearPalette();
         initPalette();
         emit qGuiApp->paletteChanged(*app_pal);
