@@ -99,6 +99,10 @@ qtConfig(system-doubleconversion) {
     include($$PWD/../../3rdparty/double-conversion/double-conversion.pri)
 }
 
+qtConfig(system-libb2) {
+    QMAKE_USE_PRIVATE += libb2
+}
+
 qtConfig(easingcurve) {
     HEADERS += \
         tools/qeasingcurve.h \

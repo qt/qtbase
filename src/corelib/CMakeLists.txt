@@ -247,13 +247,13 @@ qt_add_module(Core
         # ../3rdparty/md5 # special case remove
         # ../3rdparty/sha3 # special case remove
         ../3rdparty/tinycbor/src
+    LIBRARIES
+        Qt::GlobalConfigPrivate # special case
+        Threads::Threads # special case
     PRECOMPILED_HEADER
         "global/qt_pch.h"
     NO_PCH_SOURCES
         "text/qstring_compat.cpp"
-    LIBRARIES
-        Qt::GlobalConfigPrivate # special case
-        Threads::Threads # special case
     PUBLIC_LIBRARIES  # special case:
         Qt::Platform # special case:
     # special case begin
@@ -747,6 +747,11 @@ qt_extend_target(Core CONDITION QT_FEATURE_doubleconversion AND NOT QT_FEATURE_s
         ../3rdparty/double-conversion/include
 )
 
+qt_extend_target(Core CONDITION QT_FEATURE_system_libb2
+    LIBRARIES
+        PkgConfig::Libb2
+)
+
 qt_extend_target(Core CONDITION QT_FEATURE_easingcurve
     SOURCES
         tools/qeasingcurve.cpp tools/qeasingcurve.h
@@ -1123,7 +1128,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_mimetype
         mimetypes/qmimetypeparser.cpp mimetypes/qmimetypeparser_p.h
 )
 
-#### Keys ignored in scope 180:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
+#### Keys ignored in scope 181:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
 # MIME_DATABASE = "mimetypes/mime/packages/freedesktop.org.xml"
 # OTHER_FILES = "$$MIME_DATABASE"
 
@@ -1134,7 +1139,7 @@ qt_extend_target(Core CONDITION QT_FEATURE_mimetype
 #)
 # special case end
 
-#### Keys ignored in scope 181:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype_database:
+#### Keys ignored in scope 182:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype_database:
 # QMAKE_EXTRA_COMPILERS = "mimedb"
 # mimedb.commands = "${QMAKE_FILE_IN}" ">" "${QMAKE_FILE_OUT}"
 # mimedb.depends = "$$PWD/mime/generate.pl"
@@ -1142,23 +1147,23 @@ qt_extend_target(Core CONDITION QT_FEATURE_mimetype
 # mimedb.output = "$$outpath/qmimeprovider_database.cpp"
 # mimedb.variable_out = "INCLUDED_SOURCES"
 
-#### Keys ignored in scope 182:.:mimetypes:mimetypes/mimetypes.pri:ANDROID:
+#### Keys ignored in scope 183:.:mimetypes:mimetypes/mimetypes.pri:ANDROID:
 # outpath = "$$outpath/$${QT_ARCH}"
 
-#### Keys ignored in scope 184:.:mimetypes:mimetypes/mimetypes.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
+#### Keys ignored in scope 185:.:mimetypes:mimetypes/mimetypes.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
 # outpath = "$$outpath/debug"
 
-#### Keys ignored in scope 185:.:mimetypes:mimetypes/mimetypes.pri:else:
+#### Keys ignored in scope 186:.:mimetypes:mimetypes/mimetypes.pri:else:
 # outpath = "$$outpath/release"
 
-#### Keys ignored in scope 186:.:mimetypes:mimetypes/mimetypes.pri:MAKEFILE_GENERATOR___equals___MSVC.NET OR MAKEFILE_GENERATOR___equals___MSBUILD OR QMAKE_SH_ISEMPTY:
+#### Keys ignored in scope 187:.:mimetypes:mimetypes/mimetypes.pri:MAKEFILE_GENERATOR___equals___MSVC.NET OR MAKEFILE_GENERATOR___equals___MSBUILD OR QMAKE_SH_ISEMPTY:
 # mimedb.commands = "cmd" "/c" "$$shell_path($$PWD/mime/generate.bat)"
 # mimedb.depends = "$$PWD/mime/generate.bat" "$$PWD/mime/hexdump.ps1"
 
-#### Keys ignored in scope 187:.:mimetypes:mimetypes/mimetypes.pri:else:
+#### Keys ignored in scope 188:.:mimetypes:mimetypes/mimetypes.pri:else:
 # mimedb.commands = "perl" "$${mimedb.depends}"
 
-#### Keys ignored in scope 188:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_zstd:
+#### Keys ignored in scope 189:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_zstd:
 # mimedb.commands = "--zstd"
 # Resources:
 # special case begin

@@ -40,6 +40,8 @@
 #include "qmessageauthenticationcode.h"
 #include "qvarlengtharray.h"
 
+#include "qtcore-config_p.h"
+
 /*
     These #defines replace the typedefs needed by the RFC6234 code. Normally
     the typedefs would come from from stdint.h, but since this header is not
@@ -75,7 +77,11 @@
 // sha1.h - commented out '#include <stdint.h>' on line 74
 #include "../../3rdparty/rfc6234/sha.h"
 
+#if QT_CONFIG(system_libb2)
+#include <blake2.h>
+#else
 #include "../../3rdparty/blake2/src/blake2.h"
+#endif
 
 #undef uint64_t
 #undef uint32_t

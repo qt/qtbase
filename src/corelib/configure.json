@@ -10,6 +10,7 @@
             "icu": "boolean",
             "inotify": "boolean",
             "journald": "boolean",
+            "libb2": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "mimetype-database": "boolean",
             "pcre": { "type": "enum", "values": [ "no", "qt", "system" ] },
             "posix-ipc": { "type": "boolean", "name": "ipc_posix" },
@@ -109,6 +110,16 @@
             "sources": [
                 "",
                 "-latomic"
+            ]
+        },
+        "libb2": {
+            "label": "libb2",
+            "test": {
+                "main": "BLAKE2B_BLOCKBYTES;"
+            },
+            "headers": "blake2.h",
+            "sources": [
+                { "type": "pkgConfig", "args": "libb2" }
             ]
         },
         "librt": {
@@ -647,6 +658,14 @@
             "condition": "libs.journald",
             "output": [ "privateFeature" ]
         },
+        "system-libb2": {
+            "label": "Using system libb2",
+            "comment": "Used by QCryptographicHash for the BLAKE2 hashing algorithms",
+            "disable": "input.libb2 == 'no' || input.libb2 == 'qt'",
+            "enable": "input.libb2 == 'system'",
+            "condition": "libs.libb2",
+            "output": [ "privateFeature" ]
+        },
         "linkat": {
             "label": "linkat()",
             "comment": "Currently only used by QTemporaryFile; linkat() exists on Android, but hardlink creation fails due to security rules",
@@ -1074,6 +1093,7 @@ Note that this is required for plugin loading. Qt GUI needs QPA plugins for basi
                 "system-doubleconversion",
                 "glib",
                 "icu",
+                "system-libb2",
                 "mimetype-database",
                 {
                     "message": "Tracing backend",
