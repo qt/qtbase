@@ -26,9 +26,9 @@ QMAKE_EXTRA_COMPILERS += dumpcpp_impl
 !build_pass:have_target:!contains(TEMPLATE, vc.*) {
     for(tlb, TYPELIBS) {
         tlbCopy = $$replace(tlb, \", )
-        hdr = $$basename(tlb)
+        hdr = $$basename(tlbCopy)
         hdr = $$section(hdr, ., 0, -2)
-        tmp_command = $$QMAKE_DUMPCPP $$system_quote($$absolute_path($$tlb, $$_PRO_FILE_PWD_)) \
+        tmp_command = $$QMAKE_DUMPCPP $$system_quote($$absolute_path($$tlbCopy, $$_PRO_FILE_PWD_)) \
                         -o $$system_quote($$OUT_PWD/$$hdr)
         qaxcontainer_compat: tmp_command += -compat
         !exists($$OUT_PWD/$${hdr}.h): system($$tmp_command)
