@@ -100,7 +100,7 @@ struct Registry {
         if (id == QCalendar::System::User) {
             byId.push_back(calendar);
         } else {
-            Q_ASSERT(byId.at(size_t(id)) == nullptr);
+            Q_ASSERT(byId[size_t(id)] == nullptr);
             byId[size_t(id)] = calendar;
         }
         if (id == QCalendar::System::Gregorian) {
@@ -618,7 +618,7 @@ const QCalendarBackend *QCalendarBackend::fromEnum(QCalendar::System system)
     if (calendarRegistry.isDestroyed() || system == QCalendar::System::User)
         return nullptr;
     Q_ASSERT(calendarRegistry->byId.size() >= size_t(system));
-    if (auto *c = calendarRegistry->byId.at(size_t(system)))
+    if (auto *c = calendarRegistry->byId[size_t(system)])
         return c;
     switch (system) {
     case QCalendar::System::Gregorian:

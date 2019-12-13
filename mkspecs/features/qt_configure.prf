@@ -666,6 +666,7 @@ defineTest(qtConfLibrary_inline) {
         vars += $$eval(config.commandline.rev_assignments.$${iv})
         defined(config.input.$${iv}, var) {
             eval($${1}.builds.$${b} = $$eval(config.input.$${iv}))
+            export($${1}.builds.$${b})
             $${1}.builds._KEYS_ *= $${b}
             any = true
         } else {
@@ -680,11 +681,14 @@ defineTest(qtConfLibrary_inline) {
         export($${1}.builds._KEYS_)
         # we also reset the generic libs, to avoid surprises.
         $${1}.libs =
+        export($${1}.libs)
     }
 
     # direct libs. overwrites inline libs.
-    defined(config.input.$${input}.libs, var): \
+    defined(config.input.$${input}.libs, var) {
         eval($${1}.libs = $$eval(config.input.$${input}.libs))
+        export($${1}.libs)
+    }
 
     includes = $$eval(config.input.$${input}.incdir)
 
@@ -693,6 +697,7 @@ defineTest(qtConfLibrary_inline) {
     !isEmpty(prefix) {
         includes += $$prefix/include
         $${1}.libs = -L$$prefix/lib $$eval($${1}.libs)
+        export($${1}.libs)
     }
 
     libdir = $$eval(config.input.$${input}.libdir)
