@@ -5407,7 +5407,7 @@
         \li The exit code of the test will be ignored during \c{make check}.
     \endtable
 
-    Testcases will often be written with \l{QTest} or \l{TestCase}, but
+    Test cases will often be written with \l{QTest} or \l[QML]{TestCase}, but
     that is not a requirement to make use of \c{CONFIG+=testcase} and \c{make check}.
     The only primary requirement is that the test program exit with a zero exit code
     on success, and a non-zero exit code on failure.

@@ -171,7 +171,8 @@
     \section3 How to Build the QMYSQL Plugin on Windows
 
     You need to get the MySQL installation files (e.g.
-    \e{mysql-installer-web-community-8.0.18.0.msi}). Run the installer,
+    \l {https://dev.mysql.com/downloads/installer/}{mysql-installer-web-community-8.0.18.0.msi}).
+    Run the installer,
     select custom installation and install the MySQL C Connector
     which matches your Qt installation (x86 or x64).
     After installation make sure that the needed files are there:
@@ -192,9 +193,9 @@
 
     When you distribute your application, remember to include libmysql.dll
     in your installation package. It must be placed in the same folder
-    as the application executable. libmysql.dll additionally needs the
+    as the application executable. \e libmysql.dll additionally needs the
     MSVC runtime libraries which can be installed with vcredist.exe
-    (\l {https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads}(vcredist.exe)
+    (\l {https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads}{vcredist.exe}
 
     \target QOCI
     \section2 QOCI for the Oracle Call Interface (OCI)
@@ -355,10 +356,6 @@
     The QODBC Plugin will use the Unicode API if UNICODE is defined. On
     Windows NT based systems, this is the default. Note that the ODBC
     driver and the DBMS must also support Unicode.
-
-    Some driver managers and drivers do not support UNICODE. To use the
-    QODBC plugin with such drivers, it has to be compiled with
-    Q_ODBC_VERSION_2 defined.
 
     For the Oracle 9 ODBC driver (Windows), it is necessary to check
     "SQL_WCHAR support" in the ODBC driver manager otherwise Oracle
