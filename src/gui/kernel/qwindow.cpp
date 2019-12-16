@@ -1344,7 +1344,7 @@ Qt::WindowStates QWindow::windowStates() const
     This is a hint to the window manager that this window is a dialog or pop-up
     on behalf of the transient parent.
 
-    In order to cause the window to be centered above its transient parent by
+    In order to cause the window to be centered above its transient \a parent by
     default, depending on the window manager, it may also be necessary to call
     setFlags() with a suitable \l Qt::WindowType (such as \c Qt::Dialog).
 

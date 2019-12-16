@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
 namespace CoreGraphics {
     Q_NAMESPACE
     enum DisplayChange {
+        ReconfiguredWithFlagsMissing = 0,
         Moved = kCGDisplayMovedFlag,
         SetMain = kCGDisplaySetMainFlag,
         SetMode = kCGDisplaySetModeFlag,
@@ -71,73 +72,165 @@ namespace CoreGraphics {
     Q_ENUM_NS(DisplayChange)
 }
 
+NSArray *QCocoaScreen::s_screenConfigurationBeforeUpdate = nil;
+
 void QCocoaScreen::initializeScreens()
 {
-    uint32_t displayCount = 0;
-    if (CGGetActiveDisplayList(0, nullptr, &displayCount) != kCGErrorSuccess)
-        qFatal("Failed to get number of active displays");
-
-    CGDirectDisplayID activeDisplays[displayCount];
-    if (CGGetActiveDisplayList(displayCount, &activeDisplays[0], &displayCount) != kCGErrorSuccess)
-        qFatal("Failed to get active displays");
-
-    for (CGDirectDisplayID displayId : activeDisplays)
-        QCocoaScreen::add(displayId);
+    updateScreens();
 
     CGDisplayRegisterReconfigurationCallback([](CGDirectDisplayID displayId, CGDisplayChangeSummaryFlags flags, void *userInfo) {
-        if (flags & kCGDisplayBeginConfigurationFlag)
-            return; // Wait for changes to apply
-
         Q_UNUSED(userInfo);
 
-        qCDebug(lcQpaScreen).verbosity(0).nospace() << "Display reconfiguration"
-            << " (" << QFlags<CoreGraphics::DisplayChange>(flags) << ")"
-            << " for displayId=" << displayId;
+        // Displays are reconfigured in batches, and we want to update our screens
+        // once a batch ends, so that all the states of the displays are up to date.
+        static int displayReconfigurationsInProgress = 0;
 
-        QCocoaScreen *cocoaScreen = QCocoaScreen::get(displayId);
+        const bool beforeReconfigure = flags & kCGDisplayBeginConfigurationFlag;
+        qCDebug(lcQpaScreen).verbosity(0).nospace() << "Display " << displayId
+                << (beforeReconfigure ? " about to reconfigure" : " was ")
+                << QFlags<CoreGraphics::DisplayChange>(flags)
+                << " with " << displayReconfigurationsInProgress
+                << " display configuration(s) in progress";
 
-        if ((flags & kCGDisplayAddFlag) || !cocoaScreen) {
-            if (!CGDisplayIsActive(displayId)) {
-                qCDebug(lcQpaScreen) << "Not adding inactive display" << displayId;
-                return; // Will be added when activated
+        if (!flags) {
+            // CGDisplayRegisterReconfigurationCallback has been observed to be called
+            // with flags unset. This seems like a bug. The callback is not paired with
+            // a matching "completion" callback either, so we don't know whether to treat
+            // it as a begin or end of reconfigure.
+            return;
+        }
+
+        if (beforeReconfigure) {
+            if (!displayReconfigurationsInProgress++) {
+                // There might have been a screen reconfigure before this that
+                // we didn't process yet, so do that now if that's the case.
+                updateScreensIfNeeded();
+
+                Q_ASSERT(!s_screenConfigurationBeforeUpdate);
+                s_screenConfigurationBeforeUpdate = NSScreen.screens;
+                qCDebug(lcQpaScreen, "Display reconfigure transaction started"
+                    " with screen configuration %p", s_screenConfigurationBeforeUpdate);
+
+                static void (^tryScreenUpdate)();
+                tryScreenUpdate = ^void () {
+                    qCDebug(lcQpaScreen) << "Attempting screen update from runloop block";
+                    if (!updateScreensIfNeeded())
+                        CFRunLoopPerformBlock(CFRunLoopGetMain(), kCFRunLoopCommonModes, tryScreenUpdate);
+                };
+                CFRunLoopPerformBlock(CFRunLoopGetMain(), kCFRunLoopCommonModes, tryScreenUpdate);
             }
-            QCocoaScreen::add(displayId);
-        } else if ((flags & kCGDisplayRemoveFlag) || !CGDisplayIsActive(displayId)) {
-            cocoaScreen->remove();
         } else {
-            // Detect changes to the primary screen immediately, instead of
-            // waiting for a display reconfigure with kCGDisplaySetMainFlag.
-            // This ensures that any property updates to the other screens
-            // will be in reference to the correct primary screen.
-            QCocoaScreen *mainDisplay = QCocoaScreen::get(CGMainDisplayID());
-            if (QGuiApplication::primaryScreen()->handle() != mainDisplay) {
-                mainDisplay->updateProperties();
-                qCInfo(lcQpaScreen) << "Primary screen changed to" << mainDisplay;
-                QWindowSystemInterface::handlePrimaryScreenChanged(mainDisplay);
-                if (cocoaScreen == mainDisplay)
-                    return; // Already reconfigured
-            }
+            Q_ASSERT_X(displayReconfigurationsInProgress, "QCococaScreen",
+                "Display configuration transactions are expected to be balanced");
 
-            cocoaScreen->updateProperties();
-            qCInfo(lcQpaScreen).nospace() << "Reconfigured " <<
-                (primaryScreen() == cocoaScreen ? "primary " : "")
-                << cocoaScreen;
+            if (!--displayReconfigurationsInProgress) {
+                qCDebug(lcQpaScreen) << "Display reconfigure transaction completed";
+                // We optimistically update now, in case the NSScreens have changed
+                updateScreensIfNeeded();
+            }
         }
     }, nullptr);
+
+    static QMacNotificationObserver screenParameterObserver(NSApplication.sharedApplication,
+        NSApplicationDidChangeScreenParametersNotification, [&]() {
+            qCDebug(lcQpaScreen) << "Received screen parameter change notification";
+            updateScreensIfNeeded(); // As a last resort we update screens here
+        });
+}
+
+bool QCocoaScreen::updateScreensIfNeeded()
+{
+    if (!s_screenConfigurationBeforeUpdate) {
+        qCDebug(lcQpaScreen) << "QScreens have already been updated, all good";
+        return true;
+    }
+
+    if (s_screenConfigurationBeforeUpdate == NSScreen.screens) {
+        qCDebug(lcQpaScreen) << "Still waiting for NSScreen configuration change";
+        return false;
+    }
+
+    qCDebug(lcQpaScreen, "NSScreen configuration changed to %p", NSScreen.screens);
+    updateScreens();
+
+    s_screenConfigurationBeforeUpdate = nil;
+    return true;
+}
+
+/*
+    Update the list of available QScreens, and the properties of existing screens.
+
+    At this point we rely on the NSScreen.screens to be up to date.
+*/
+void QCocoaScreen::updateScreens()
+{
+    uint32_t displayCount = 0;
+    if (CGGetOnlineDisplayList(0, nullptr, &displayCount) != kCGErrorSuccess)
+        qFatal("Failed to get number of online displays");
+
+    QVector<CGDirectDisplayID> onlineDisplays(displayCount);
+    if (CGGetOnlineDisplayList(displayCount, onlineDisplays.data(), &displayCount) != kCGErrorSuccess)
+        qFatal("Failed to get online displays");
+
+    qCInfo(lcQpaScreen) << "Updating screens with" << displayCount
+        << "online displays:" << onlineDisplays;
+
+    // TODO: Verify whether we can always assume the main display is first
+    int mainDisplayIndex = onlineDisplays.indexOf(CGMainDisplayID());
+    if (mainDisplayIndex < 0) {
+        qCWarning(lcQpaScreen) << "Main display not in list of online displays!";
+    } else if (mainDisplayIndex > 0) {
+        qCWarning(lcQpaScreen) << "Main display not first display, making sure it is";
+        onlineDisplays.move(mainDisplayIndex, 0);
+    }
+
+    for (CGDirectDisplayID displayId : onlineDisplays) {
+        Q_ASSERT(CGDisplayIsOnline(displayId));
+
+        if (CGDisplayMirrorsDisplay(displayId))
+            continue;
+
+        // A single physical screen can map to multiple displays IDs,
+        // depending on which GPU is in use or which physical port the
+        // screen is connected to. By mapping the display ID to a UUID,
+        // which are shared between displays that target the same screen,
+        // we can pick an existing QScreen to update instead of needlessly
+        // adding and removing QScreens.
+        QCFType<CFUUIDRef> uuid = CGDisplayCreateUUIDFromDisplayID(displayId);
+        Q_ASSERT(uuid);
+
+        if (QCocoaScreen *existingScreen = QCocoaScreen::get(uuid)) {
+            existingScreen->update(displayId);
+            qCInfo(lcQpaScreen) << "Updated" << existingScreen;
+            if (CGDisplayIsMain(displayId) && existingScreen != qGuiApp->primaryScreen()->handle()) {
+                qCInfo(lcQpaScreen) << "Primary screen changed to" << existingScreen;
+                QWindowSystemInterface::handlePrimaryScreenChanged(existingScreen);
+            }
+        } else {
+            QCocoaScreen::add(displayId);
+        }
+    }
+
+    for (QScreen *screen : QGuiApplication::screens()) {
+        QCocoaScreen *platformScreen = static_cast<QCocoaScreen*>(screen->handle());
+        if (!platformScreen->isOnline() || platformScreen->isMirroring())
+            platformScreen->remove();
+    }
 }
 
 void QCocoaScreen::add(CGDirectDisplayID displayId)
 {
     const bool isPrimary = CGDisplayIsMain(displayId);
     QCocoaScreen *cocoaScreen = new QCocoaScreen(displayId);
-    qCInfo(lcQpaScreen).nospace() << "Adding " << (isPrimary ? "new primary " : "") << cocoaScreen;
+    qCInfo(lcQpaScreen) << "Adding" << cocoaScreen
+        << (isPrimary ? "as new primary screen" : "");
     QWindowSystemInterface::handleScreenAdded(cocoaScreen, isPrimary);
 }
 
 QCocoaScreen::QCocoaScreen(CGDirectDisplayID displayId)
     : QPlatformScreen(), m_displayId(displayId)
 {
-    updateProperties();
+    update(m_displayId);
     m_cursor = new QCocoaCursor;
 }
 
@@ -150,8 +243,6 @@ void QCocoaScreen::cleanupScreens()
 
 void QCocoaScreen::remove()
 {
-    m_displayId = kCGNullDirectDisplay; // Prevent stale references during removal
-
     // This may result in the application responding to QGuiApplication::screenRemoved
     // by moving the window to another screen, either by setGeometry, or by setScreen.
     // If the window isn't moved by the application, Qt will as a fallback move it to
@@ -163,7 +254,7 @@ void QCocoaScreen::remove()
     // QCocoaWindow::windowDidChangeScreen. At that point the window will appear to have
     // already changed its screen, but that's only true if comparing the Qt screens,
     // not when comparing the NSScreens.
-    qCInfo(lcQpaScreen).nospace() << "Removing " << (primaryScreen() == this ? "current primary " : "") << this;
+    qCInfo(lcQpaScreen) << "Removing " << this;
     QWindowSystemInterface::handleScreenRemoved(this);
 }
 
@@ -210,9 +301,14 @@ static QString displayName(CGDirectDisplayID displayID)
     return QString();
 }
 
-void QCocoaScreen::updateProperties()
+void QCocoaScreen::update(CGDirectDisplayID displayId)
 {
-    Q_ASSERT(m_displayId);
+    if (displayId != m_displayId) {
+        qCDebug(lcQpaScreen) << "Reconnecting" << this << "as display" << displayId;
+        m_displayId = displayId;
+    }
+
+    Q_ASSERT(isOnline());
 
     const QRect previousGeometry = m_geometry;
     const QRect previousAvailableGeometry = m_availableGeometry;
@@ -350,8 +446,8 @@ struct DeferredDebugHelper
 
 void QCocoaScreen::deliverUpdateRequests()
 {
-    if (!m_displayId)
-        return; // Screen removed
+    if (!isOnline())
+        return;
 
     QMacAutoReleasePool pool;
 
@@ -562,6 +658,29 @@ QPixmap QCocoaScreen::grabWindow(WId view, int x, int y, int width, int height) 
     return windowPixmap;
 }
 
+bool QCocoaScreen::isOnline() const
+{
+    // When a display is disconnected CGDisplayIsOnline and other CGDisplay
+    // functions that take a displayId will not return false, but will start
+    // returning -1 to signal that the displayId is invalid. Some functions
+    // will also assert or even crash in this case, so it's important that
+    // we double check if a display is online before calling other functions.
+    auto isOnline = CGDisplayIsOnline(m_displayId);
+    static const uint32_t kCGDisplayIsDisconnected = int32_t(-1);
+    return isOnline != kCGDisplayIsDisconnected && isOnline;
+}
+
+/*
+    Returns true if a screen is mirroring another screen
+*/
+bool QCocoaScreen::isMirroring() const
+{
+    if (!isOnline())
+        return false;
+
+    return CGDisplayMirrorsDisplay(m_displayId);
+}
+
 /*!
     The screen used as a reference for global window geometry
 */
@@ -586,6 +705,12 @@ QList<QPlatformScreen*> QCocoaScreen::virtualSiblings() const
 
 QCocoaScreen *QCocoaScreen::get(NSScreen *nsScreen)
 {
+    if (s_screenConfigurationBeforeUpdate) {
+        qCWarning(lcQpaScreen) << "Trying to resolve screen while waiting for screen reconfigure!";
+        if (!updateScreensIfNeeded())
+            qCWarning(lcQpaScreen) << "Failed to do last minute screen update. Expect crashes.";
+    }
+
     return get(nsScreen.qt_displayId);
 }
 
@@ -600,23 +725,34 @@ QCocoaScreen *QCocoaScreen::get(CGDirectDisplayID displayId)
     return nullptr;
 }
 
+QCocoaScreen *QCocoaScreen::get(CFUUIDRef uuid)
+{
+    for (QScreen *screen : QGuiApplication::screens()) {
+        auto *platformScreen = static_cast<QCocoaScreen*>(screen->handle());
+        if (!platformScreen->isOnline())
+            continue;
+
+        auto displayId = platformScreen->displayId();
+        QCFType<CFUUIDRef> candidateUuid(CGDisplayCreateUUIDFromDisplayID(displayId));
+        Q_ASSERT(candidateUuid);
+
+        if (candidateUuid == uuid)
+            return platformScreen;
+    }
+
+    return nullptr;
+}
+
 NSScreen *QCocoaScreen::nativeScreen() const
 {
     if (!m_displayId)
         return nil; // The display has been disconnected
 
-    // A single display may have different displayIds depending on
-    // which GPU is in use or which physical port the display is
-    // connected to. By comparing UUIDs instead of display IDs we
-    // ensure that we always pick up the appropriate NSScreen.
-    QCFType<CFUUIDRef> uuid = CGDisplayCreateUUIDFromDisplayID(m_displayId);
-
-    for (NSScreen *screen in [NSScreen screens]) {
-        if (QCFType<CFUUIDRef>(CGDisplayCreateUUIDFromDisplayID(screen.qt_displayId)) == uuid)
+    for (NSScreen *screen in NSScreen.screens) {
+        if (screen.qt_displayId == m_displayId)
             return screen;
     }
 
-    qCWarning(lcQpaScreen) << "Could not find NSScreen for display ID" << m_displayId;
     return nil;
 }
 
@@ -651,11 +787,21 @@ QDebug operator<<(QDebug debug, const QCocoaScreen *screen)
     debug.nospace();
     debug << "QCocoaScreen(" << (const void *)screen;
     if (screen) {
-        debug << ", geometry=" << screen->geometry();
+        debug << ", " << screen->name();
+        if (screen->isOnline()) {
+            if (CGDisplayIsAsleep(screen->displayId()))
+                debug << ", Sleeping";
+            if (auto mirroring = CGDisplayMirrorsDisplay(screen->displayId()))
+                debug << ", mirroring=" << mirroring;
+        } else {
+            debug << ", Offline";
+        }
+        debug << ", " << screen->geometry();
         debug << ", dpr=" << screen->devicePixelRatio();
-        debug << ", name=" << screen->name();
-        debug << ", displayId=" << screen->m_displayId;
-        debug << ", native=" << screen->nativeScreen();
+        debug << ", displayId=" << screen->displayId();
+
+        if (auto nativeScreen = screen->nativeScreen())
+            debug << ", " << nativeScreen;
     }
     debug << ')';
     return debug;

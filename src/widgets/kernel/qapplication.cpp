@@ -142,16 +142,19 @@ QApplicationPrivate *QApplicationPrivate::self = nullptr;
 
 static void initSystemPalette()
 {
-    if (!QApplicationPrivate::sys_pal) {
-        QPalette defaultPlatte;
-        if (QApplicationPrivate::app_style)
-            defaultPlatte = QApplicationPrivate::app_style->standardPalette();
-        if (const QPalette *themePalette = QGuiApplicationPrivate::platformTheme()->palette()) {
-            QApplicationPrivate::setSystemPalette(themePalette->resolve(defaultPlatte));
-            QApplicationPrivate::initializeWidgetPaletteHash();
-        } else {
-            QApplicationPrivate::setSystemPalette(defaultPlatte);
-        }
+    if (QApplicationPrivate::sys_pal)
+        return; // Already initialized
+
+    QPalette defaultPalette;
+    if (QApplicationPrivate::app_style)
+        defaultPalette = QApplicationPrivate::app_style->standardPalette();
+
+    auto *platformTheme = QGuiApplicationPrivate::platformTheme();
+    if (const QPalette *themePalette = platformTheme ? platformTheme->palette() : nullptr) {
+        QApplicationPrivate::setSystemPalette(themePalette->resolve(defaultPalette));
+        QApplicationPrivate::initializeWidgetPaletteHash();
+    } else {
+        QApplicationPrivate::setSystemPalette(defaultPalette);
     }
 }
 
@@ -379,7 +382,6 @@ QString QApplicationPrivate::styleSheet;           // default application styles
 QPointer<QWidget> QApplicationPrivate::leaveAfterRelease = nullptr;
 
 QPalette *QApplicationPrivate::sys_pal = nullptr;        // default system palette
-QPalette *QApplicationPrivate::set_pal = nullptr;        // default palette set by programmer
 
 QFont *QApplicationPrivate::sys_font = nullptr;        // default system font
 QFont *QApplicationPrivate::set_font = nullptr;        // default font set by programmer
@@ -430,13 +432,6 @@ void QApplicationPrivate::process_cmdline()
 {
     if (styleOverride.isEmpty() && qEnvironmentVariableIsSet("QT_STYLE_OVERRIDE"))
         styleOverride = QString::fromLocal8Bit(qgetenv("QT_STYLE_OVERRIDE"));
-
-    if (!styleOverride.isEmpty()) {
-        if (app_style) {
-            delete app_style;
-            app_style = nullptr;
-        }
-    }
 
     // process platform-indep command line
     if (!qt_is_gui_used || !argc)
@@ -552,6 +547,12 @@ void QApplicationPrivate::init()
 
     // Must be called before initialize()
     QColormap::initialize();
+    if (sys_pal) {
+        // Now that we have a platform theme we need to reset
+        // the system palette to pick up the theme colors.
+        clearSystemPalette();
+        initSystemPalette();
+    }
     qt_init_tooltip_palette();
     QApplicationPrivate::initializeWidgetFontHash();
 
@@ -597,8 +598,20 @@ void QApplicationPrivate::initialize()
     // needed for widgets in QML
     QAbstractDeclarativeData::setWidgetParent = QWidgetPrivate::setWidgetParentHelper;
 
-    if (application_type != QApplicationPrivate::Tty)
-        (void) QApplication::style();  // trigger creation of application style
+    if (application_type != QApplicationPrivate::Tty) {
+        if (!styleOverride.isEmpty()) {
+            if (auto *style = QStyleFactory::create(styleOverride.toLower())) {
+                QApplication::setStyle(style);
+            } else {
+                qWarning("QApplication: invalid style override '%s' passed, ignoring it.\n"
+                    "\tAvailable styles: %s", qPrintable(styleOverride),
+                    qPrintable(QStyleFactory::keys().join(QLatin1String(", "))));
+            }
+        }
+
+        // Trigger default style if none was set already
+        Q_UNUSED(QApplication::style());
+    }
 #if QT_CONFIG(statemachine)
     // trigger registering of QStateMachine's GUI types
     qRegisterGuiStateMachine();
@@ -789,8 +802,6 @@ QApplication::~QApplication()
     delete QApplicationPrivate::app_pal;
     QApplicationPrivate::app_pal = nullptr;
     clearSystemPalette();
-    delete QApplicationPrivate::set_pal;
-    QApplicationPrivate::set_pal = nullptr;
     app_palettes()->clear();
 
     delete QApplicationPrivate::sys_font;
@@ -1016,55 +1027,45 @@ void QApplication::setStyleSheet(const QString& styleSheet)
 */
 QStyle *QApplication::style()
 {
-    if (QApplicationPrivate::app_style)
-        return QApplicationPrivate::app_style;
-    if (!qobject_cast<QApplication *>(QCoreApplication::instance())) {
-        Q_ASSERT(!"No style available without QApplication!");
-        return nullptr;
-    }
-
     if (!QApplicationPrivate::app_style) {
-        // Compile-time search for default style
-        //
-        QStyle *&app_style = QApplicationPrivate::app_style;
-
-        if (!QApplicationPrivate::styleOverride.isEmpty()) {
-            const QString style = QApplicationPrivate::styleOverride.toLower();
-            app_style = QStyleFactory::create(style);
-            if (Q_UNLIKELY(!app_style)) {
-                qWarning("QApplication: invalid style override passed, ignoring it.\n"
-                "    Available styles: %s", qPrintable(QStyleFactory::keys().join(QLatin1String(", "))));
-            }
+        // Create default style
+        if (!qobject_cast<QApplication *>(QCoreApplication::instance())) {
+            Q_ASSERT(!"No style available without QApplication!");
+            return nullptr;
         }
-        if (!app_style)
-            app_style = QStyleFactory::create(QApplicationPrivate::desktopStyleKey());
 
-        if (!app_style) {
+        auto &defaultStyle = QApplicationPrivate::app_style;
+
+        defaultStyle = QStyleFactory::create(QApplicationPrivate::desktopStyleKey());
+        if (!defaultStyle) {
             const QStringList styles = QStyleFactory::keys();
             for (const auto &style : styles) {
-                if ((app_style = QStyleFactory::create(style)))
+                if ((defaultStyle = QStyleFactory::create(style)))
                     break;
             }
         }
-        if (!app_style) {
+        if (!defaultStyle) {
             Q_ASSERT(!"No styles available!");
             return nullptr;
         }
-    }
-    // take ownership of the style
-    QApplicationPrivate::app_style->setParent(qApp);
 
-    initSystemPalette();
+        // Take ownership of the style
+        defaultStyle->setParent(qApp);
 
-    if (QApplicationPrivate::set_pal) // repolish set palette with the new style
-        QApplication::setPalette(*QApplicationPrivate::set_pal);
+        initSystemPalette();
+
+        if (testAttribute(Qt::AA_SetPalette))
+            defaultStyle->polish(*QGuiApplicationPrivate::app_pal);
 
 #ifndef QT_NO_STYLE_STYLESHEET
-    if (!QApplicationPrivate::styleSheet.isEmpty()) {
-        qApp->setStyleSheet(QApplicationPrivate::styleSheet);
-    } else
+        if (!QApplicationPrivate::styleSheet.isEmpty()) {
+            qApp->setStyleSheet(QApplicationPrivate::styleSheet);
+        } else
 #endif
-        QApplicationPrivate::app_style->polish(qApp);
+        {
+            defaultStyle->polish(qApp);
+        }
+    }
 
     return QApplicationPrivate::app_style;
 }
@@ -1128,16 +1129,20 @@ void QApplication::setStyle(QStyle *style)
     // take care of possible palette requirements of certain gui
     // styles. Do it before polishing the application since the style
     // might call QApplication::setPalette() itself
-    if (QApplicationPrivate::set_pal) {
-        QApplication::setPalette(*QApplicationPrivate::set_pal);
-    } else if (QApplicationPrivate::sys_pal) {
-        clearSystemPalette();
+    if (testAttribute(Qt::AA_SetPalette)) {
+        QApplicationPrivate::app_style->polish(*QGuiApplicationPrivate::app_pal);
+    } else {
+        if (QApplicationPrivate::sys_pal)
+            clearSystemPalette();
         initSystemPalette();
-        QApplicationPrivate::initializeWidgetFontHash();
-    } else if (!QApplicationPrivate::sys_pal) {
-        // Initialize the sys_pal if it hasn't happened yet...
-        QApplicationPrivate::setSystemPalette(QApplicationPrivate::app_style->standardPalette());
     }
+
+    // The default widget font hash is based on the platform theme,
+    // not the style, but the widget fonts could in theory have been
+    // affected by polish of the previous style, without a proper
+    // cleanup in unpolish, so reset it now before polishing the
+    // new style.
+    QApplicationPrivate::initializeWidgetFontHash();
 
     // initialize the application with the new style
     QApplicationPrivate::app_style->polish(qApp);
@@ -1389,11 +1394,8 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
         // Send ApplicationPaletteChange to qApp itself, and to the widgets.
         qApp->d_func()->sendApplicationPaletteChange(all, className);
     }
+
     if (!className && (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal))) {
-        if (!QApplicationPrivate::set_pal)
-            QApplicationPrivate::set_pal = new QPalette(palette);
-        else
-            *QApplicationPrivate::set_pal = palette;
         QCoreApplication::setAttribute(Qt::AA_SetPalette);
         emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
     }
@@ -1436,7 +1438,7 @@ void QApplicationPrivate::setSystemPalette(const QPalette &pal)
     else
         *sys_pal = pal;
 
-    if (!QApplicationPrivate::set_pal)
+    if (!testAttribute(Qt::AA_SetPalette))
         QApplication::setPalette(*sys_pal);
 }
 

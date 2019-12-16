@@ -373,6 +373,7 @@
             },
             "headers": "jpeglib.h",
             "sources": [
+                { "type": "pkgConfig", "args": "libjpeg" },
                 { "libs": "-llibjpeg", "condition": "config.msvc" },
                 "-ljpeg"
             ]

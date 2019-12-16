@@ -1453,7 +1453,7 @@ QStyleOptionTab::QStyleOptionTab(int version)
     \value None A normal tab button.
     \value HasFrame The tab button is positioned on a tab frame
 
-    \sa features
+    \sa QStyleOptionToolBar::features
 */
 
 /*!
