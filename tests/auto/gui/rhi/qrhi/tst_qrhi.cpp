@@ -381,56 +381,6 @@ void tst_QRhi::nativeHandles()
         }
     }
 
-    // QRhiTexture::nativeHandles()
-    {
-        QScopedPointer<QRhiTexture> tex(rhi->newTexture(QRhiTexture::RGBA8, QSize(512, 256)));
-        QVERIFY(tex->build());
-
-        const QRhiNativeHandles *texHandles = tex->nativeHandles();
-        QVERIFY(texHandles);
-
-        switch (impl) {
-        case QRhi::Null:
-            break;
-#ifdef TST_VK
-        case QRhi::Vulkan:
-        {
-            const QRhiVulkanTextureNativeHandles *vkHandles = static_cast<const QRhiVulkanTextureNativeHandles *>(texHandles);
-            QVERIFY(vkHandles->image);
-            QVERIFY(vkHandles->layout >= 1); // VK_IMAGE_LAYOUT_GENERAL
-            QVERIFY(vkHandles->layout <= 8); // VK_IMAGE_LAYOUT_PREINITIALIZED
-        }
-            break;
-#endif
-#ifdef TST_GL
-        case QRhi::OpenGLES2:
-        {
-            const QRhiGles2TextureNativeHandles *glHandles = static_cast<const QRhiGles2TextureNativeHandles *>(texHandles);
-            QVERIFY(glHandles->texture);
-        }
-            break;
-#endif
-#ifdef TST_D3D11
-        case QRhi::D3D11:
-        {
-            const QRhiD3D11TextureNativeHandles *d3dHandles = static_cast<const QRhiD3D11TextureNativeHandles *>(texHandles);
-            QVERIFY(d3dHandles->texture);
-        }
-            break;
-#endif
-#ifdef TST_MTL
-        case QRhi::Metal:
-        {
-            const QRhiMetalTextureNativeHandles *mtlHandles = static_cast<const QRhiMetalTextureNativeHandles *>(texHandles);
-            QVERIFY(mtlHandles->texture);
-        }
-            break;
-#endif
-        default:
-            Q_ASSERT(false);
-        }
-    }
-
     // QRhiCommandBuffer::nativeHandles()
     {
         QRhiCommandBuffer *cb = nullptr;

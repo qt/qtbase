@@ -74,11 +74,6 @@ struct Q_GUI_EXPORT QRhiGles2NativeHandles : public QRhiNativeHandles
     QOpenGLContext *context = nullptr;
 };
 
-struct Q_GUI_EXPORT QRhiGles2TextureNativeHandles : public QRhiNativeHandles
-{
-    uint texture = 0;
-};
-
 QT_END_NAMESPACE
 
 #endif

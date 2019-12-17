@@ -60,10 +60,6 @@ struct Q_GUI_EXPORT QRhiNullNativeHandles : public QRhiNativeHandles
 {
 };
 
-struct Q_GUI_EXPORT QRhiNullTextureNativeHandles : public QRhiNativeHandles
-{
-};
-
 QT_END_NAMESPACE
 
 #endif

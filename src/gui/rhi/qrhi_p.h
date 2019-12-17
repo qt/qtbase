@@ -780,9 +780,7 @@ public:
     void setSampleCount(int s) { m_sampleCount = s; }
 
     virtual bool build() = 0;
-    virtual const QRhiNativeHandles *nativeHandles();
     virtual NativeTexture nativeTexture();
-    virtual bool buildFrom(const QRhiNativeHandles *src);
     virtual bool buildFrom(NativeTexture src);
 
 protected:

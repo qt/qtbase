@@ -120,9 +120,7 @@ struct QVkTexture : public QRhiTexture
     ~QVkTexture();
     void release() override;
     bool build() override;
-    bool buildFrom(const QRhiNativeHandles *src) override;
     bool buildFrom(NativeTexture src) override;
-    const QRhiNativeHandles *nativeHandles() override;
     NativeTexture nativeTexture() override;
 
     bool prepareBuild(QSize *adjustedSize = nullptr);
@@ -136,7 +134,6 @@ struct QVkTexture : public QRhiTexture
     QVkAlloc stagingAllocations[QVK_FRAMES_IN_FLIGHT];
     VkImageView perLevelImageViews[QRhi::MAX_LEVELS];
     bool owns = true;
-    QRhiVulkanTextureNativeHandles nativeHandlesStruct;
     struct UsageState {
         // no tracking of subresource layouts (some operations can keep
         // subresources in different layouts for some time, but that does not
