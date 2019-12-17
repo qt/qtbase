@@ -375,6 +375,7 @@ void QCosmeticStroker::drawLine(const QPointF &p1, const QPointF &p2)
 
     patternOffset = state->lastPen.dashOffset()*64;
     lastPixel.x = INT_MIN;
+    lastPixel.y = INT_MIN;
 
     stroke(this, start.x(), start.y(), end.x(), end.y(), drawCaps ? CapBegin|CapEnd : 0);
 
