@@ -27,7 +27,7 @@
 
 /*!
   \dontdocument (QTypeInfo QScreenOrientationChangeEvent QApplicationStateChangeEvent
-                 QImageTextKeyLang QMetaTypeId QAbstractUndoItem
+                 QMetaTypeId QAbstractUndoItem
                  QOpenGLVersionStatus
                  QOpenGLVersionFunctionsBackend
                  QOpenGLVersionFunctionsStorage

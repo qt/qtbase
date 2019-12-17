@@ -1381,11 +1381,7 @@ int QImage::colorCount() const
     \sa colorTable(), setColor(), {QImage#Image Transformations}{Image
     Transformations}
 */
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void QImage::setColorTable(const QVector<QRgb> &colors)
-#else
-void QImage::setColorTable(const QVector<QRgb> colors)
-#endif
 {
     if (!d)
         return;
@@ -1395,11 +1391,7 @@ void QImage::setColorTable(const QVector<QRgb> colors)
     if (!d)
         return;
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     d->colortable = colors;
-#else
-    d->colortable = std::move(const_cast<QVector<QRgb>&>(colors));
-#endif
     d->has_alpha_clut = false;
     for (int i = 0; i < d->colortable.size(); ++i) {
         if (qAlpha(d->colortable.at(i)) != 255) {
@@ -1472,25 +1464,6 @@ void QImage::setDevicePixelRatio(qreal scaleFactor)
         d->devicePixelRatio = scaleFactor;
 }
 
-#if QT_DEPRECATED_SINCE(5, 10)
-/*!
-    \since 4.6
-    \obsolete
-    Returns the number of bytes occupied by the image data.
-
-    Note this method should never be called on an image larger than 2 gigabytes.
-    Instead use sizeInBytes().
-
-    \sa sizeInBytes(), bytesPerLine(), bits(), {QImage#Image Information}{Image
-    Information}
-*/
-int QImage::byteCount() const
-{
-    Q_ASSERT(!d || d->nbytes < std::numeric_limits<int>::max());
-    return d ? int(d->nbytes) : 0;
-}
-#endif
-
 /*!
     \since 5.10
     Returns the image data size in bytes.
@@ -1510,17 +1483,10 @@ qsizetype QImage::sizeInBytes() const
 
     \sa scanLine()
 */
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 qsizetype QImage::bytesPerLine() const
 {
     return d ? d->bytes_per_line : 0;
 }
-#else
-int QImage::bytesPerLine() const
-{
-    return d ? d->bytes_per_line : 0;
-}
-#endif
 
 
 /*!
@@ -4054,71 +4020,10 @@ void QImage::setText(const QString &key, const QString &value)
 }
 
 /*!
-    \fn QString QImage::text(const char* key, const char* language) const
-    \obsolete
-
-    Returns the text recorded for the given \a key in the given \a
-    language, or in a default language if \a language is 0.
-
-    Use text() instead.
-
-    The language the text is recorded in is no longer relevant since
-    the text is always set using QString and UTF-8 representation.
-*/
-
-/*!
-    \fn QString QImage::text(const QImageTextKeyLang& keywordAndLanguage) const
-    \overload
-    \obsolete
-
-    Returns the text recorded for the given \a keywordAndLanguage.
-
-    Use text() instead.
-
-    The language the text is recorded in is no longer relevant since
-    the text is always set using QString and UTF-8 representation.
-*/
-
-/*!
-    \fn void QImage::setText(const char* key, const char* language, const QString& text)
-    \obsolete
-
-    Sets the image text to the given \a text and associate it with the
-    given \a key. The text is recorded in the specified \a language,
-    or in a default language if \a language is 0.
-
-    Use setText() instead.
-
-    The language the text is recorded in is no longer relevant since
-    the text is always set using QString and UTF-8 representation.
-
-    \omit
-    Records string \a  for the keyword \a key. The \a key should be
-    a portable keyword recognizable by other software - some suggested
-    values can be found in
-    \l{http://www.libpng.org/pub/png/spec/1.2/png-1.2-pdg.html#C.Anc-text}
-    {the PNG specification}. \a s can be any text. \a lang should
-    specify the language code (see
-    \l{http://www.rfc-editor.org/rfc/rfc1766.txt}{RFC 1766}) or 0.
-    \endomit
-*/
-
-/*
-    Sets the image bits to the \a pixmap contents and returns a
-    reference to the image.
-
-    If the image shares data with other images, it will first
-    dereference the shared data.
-
-    Makes a call to QPixmap::convertToImage().
-*/
-
-/*!
     \internal
 
     Used by QPainter to retrieve a paint engine for the image.
 */
-
 QPaintEngine *QImage::paintEngine() const
 {
     if (!d)
@@ -4363,22 +4268,6 @@ bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth
 #undef IWX_MSB
 #undef IWX_LSB
 #undef IWX_PIX
-
-/*! \fn int QImage::serialNumber() const
-    \obsolete
-    Returns a number that identifies the contents of this
-    QImage object. Distinct QImage objects can only have the same
-    serial number if they refer to the same contents (but they don't
-    have to).
-
-    Use cacheKey() instead.
-
-    \warning The serial number doesn't necessarily change when the
-    image is altered. This means that it may be dangerous to use
-    it as a cache key.
-
-    \sa operator==()
-*/
 
 /*!
     Returns a number that identifies the contents of this QImage
@@ -5121,50 +5010,6 @@ QDebug operator<<(QDebug dbg, const QImage &i)
     return dbg;
 }
 #endif
-
-/*!
-    \fn void QImage::setNumColors(int n)
-    \obsolete
-
-    Resizes the color table to contain \a n entries.
-
-    \sa setColorCount()
- */
-
-/*!
-    \fn int QImage::numBytes() const
-    \obsolete
-
-    Returns the number of bytes occupied by the image data.
-
-    \sa sizeInBytes()
- */
-
-/*!
-    \fn QStringList QImage::textLanguages() const
-    \obsolete
-
-    Returns the language identifiers for which some texts are recorded.
-    Note that if you want to iterate over the list, you should iterate over a copy.
-
-    The language the text is recorded in is no longer relevant since the text is
-    always set using QString and UTF-8 representation.
-
-    \sa textKeys()
- */
-
-/*!
-    \fn QList<QImageTextKeyLang> QImage::textList() const
-    \obsolete
-
-    Returns a list of QImageTextKeyLang objects that enumerate all the texts
-    key/language pairs set for this image.
-
-    The language the text is recorded in is no longer relevant since the text
-    is always set using QString and UTF-8 representation.
-
-    \sa textKeys()
- */
 
 static Q_CONSTEXPR QPixelFormat pixelformats[] = {
         //QImage::Format_Invalid:

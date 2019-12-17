@@ -50,10 +50,6 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qstring.h>
 
-#if QT_DEPRECATED_SINCE(5, 0)
-#include <QtCore/qstringlist.h>
-#endif
-
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
 Q_FORWARD_DECLARE_MUTABLE_CG_TYPE(CGImage);
 #endif
@@ -71,27 +67,6 @@ class QVariant;
 template <class T> class QVector;
 
 struct QImageData;
-class QImageDataMisc; // internal
-#if QT_DEPRECATED_SINCE(5, 0)
-class QImageTextKeyLang {
-public:
-    QT_DEPRECATED QImageTextKeyLang(const char* k, const char* l) : key(k), lang(l) { }
-    QT_DEPRECATED QImageTextKeyLang() { }
-
-    QByteArray key;
-    QByteArray lang;
-
-    bool operator< (const QImageTextKeyLang& other) const
-        { return key < other.key || (key==other.key && lang < other.lang); }
-    bool operator== (const QImageTextKeyLang& other) const
-        { return key==other.key && lang==other.lang; }
-    inline bool operator!= (const QImageTextKeyLang &other) const
-        { return !operator==(other); }
-private:
-    friend class QImage;
-    QImageTextKeyLang(bool /*dummy*/) {}
-};
-#endif
 
 typedef void (*QImageCleanupFunction)(void*);
 
@@ -212,19 +187,12 @@ public:
     const uchar *bits() const;
     const uchar *constBits() const;
 
-#if QT_DEPRECATED_SINCE(5, 10)
-    QT_DEPRECATED_X("Use sizeInBytes") int byteCount() const;
-#endif
     qsizetype sizeInBytes() const;
 
     uchar *scanLine(int);
     const uchar *scanLine(int) const;
     const uchar *constScanLine(int) const;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     qsizetype bytesPerLine() const;
-#else
-    int bytesPerLine() const;
-#endif
 
     bool valid(int x, int y) const;
     bool valid(const QPoint &pt) const;
@@ -245,11 +213,7 @@ public:
     void setPixelColor(const QPoint &pt, const QColor &c);
 
     QVector<QRgb> colorTable() const;
-#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     void setColorTable(const QVector<QRgb> &colors);
-#else
-    void setColorTable(const QVector<QRgb> colors);
-#endif
 
     qreal devicePixelRatio() const;
     void setDevicePixelRatio(qreal scaleFactor);
@@ -309,9 +273,6 @@ public:
     inline static QImage fromData(const QByteArray &data, const char *format = nullptr)
         { return fromData(reinterpret_cast<const uchar *>(data.constData()), data.size(), format); }
 
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline int serialNumber() const { return cacheKey() >> 32; }
-#endif
     qint64 cacheKey() const;
 
     QPaintEngine *paintEngine() const override;
@@ -335,20 +296,6 @@ public:
     // Platform specific conversion functions
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     CGImageRef toCGImage() const Q_DECL_CF_RETURNS_RETAINED;
-#endif
-
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline QString text(const char *key, const char *lang = nullptr) const;
-    QT_DEPRECATED inline QList<QImageTextKeyLang> textList() const;
-    QT_DEPRECATED inline QStringList textLanguages() const;
-    QT_DEPRECATED inline QString text(const QImageTextKeyLang&) const;
-    QT_DEPRECATED inline void setText(const char* key, const char* lang, const QString&);
-#endif
-
-#if QT_DEPRECATED_SINCE(5, 0)
-    QT_DEPRECATED inline int numColors() const;
-    QT_DEPRECATED inline void setNumColors(int);
-    QT_DEPRECATED inline int numBytes() const;
 #endif
 
 protected:
@@ -384,99 +331,6 @@ inline QRgb QImage::pixel(const QPoint &pt) const { return pixel(pt.x(), pt.y())
 inline void QImage::setPixel(const QPoint &pt, uint index_or_rgb) { setPixel(pt.x(), pt.y(), index_or_rgb); }
 inline QColor QImage::pixelColor(const QPoint &pt) const { return pixelColor(pt.x(), pt.y()); }
 inline void QImage::setPixelColor(const QPoint &pt, const QColor &c) { setPixelColor(pt.x(), pt.y(), c); }
-
-#if QT_DEPRECATED_SINCE(5, 0)
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-
-inline QString QImage::text(const char* key, const char* lang) const
-{
-    if (!d)
-        return QString();
-    QString k = QString::fromLatin1(key);
-    if (lang && *lang)
-        k += QLatin1Char('/') + QString::fromLatin1(lang);
-    return text(k);
-}
-
-inline QList<QImageTextKeyLang> QImage::textList() const
-{
-    QList<QImageTextKeyLang> imageTextKeys;
-    if (!d)
-        return imageTextKeys;
-    QStringList keys = textKeys();
-    for (int i = 0; i < keys.size(); ++i) {
-        int index = keys.at(i).indexOf(QLatin1Char('/'));
-        if (index > 0) {
-            QImageTextKeyLang tkl(true);
-            tkl.key = keys.at(i).left(index).toLatin1();
-            tkl.lang = keys.at(i).mid(index+1).toLatin1();
-            imageTextKeys += tkl;
-        }
-    }
-
-    return imageTextKeys;
-}
-
-inline QStringList QImage::textLanguages() const
-{
-    if (!d)
-        return QStringList();
-    QStringList keys = textKeys();
-    QStringList languages;
-    for (int i = 0; i < keys.size(); ++i) {
-        int index = keys.at(i).indexOf(QLatin1Char('/'));
-        if (index > 0)
-            languages += keys.at(i).mid(index+1);
-    }
-
-    return languages;
-}
-
-inline QString QImage::text(const QImageTextKeyLang&kl) const
-{
-    if (!d)
-        return QString();
-    QString k = QString::fromLatin1(kl.key.constData());
-    if (!kl.lang.isEmpty())
-        k += QLatin1Char('/') + QString::fromLatin1(kl.lang.constData());
-    return text(k);
-}
-
-inline void QImage::setText(const char* key, const char* lang, const QString &s)
-{
-    if (!d)
-        return;
-    detach();
-
-    // In case detach() ran out of memory
-    if (!d)
-        return;
-
-    QString k = QString::fromLatin1(key);
-    if (lang && *lang)
-        k += QLatin1Char('/') + QString::fromLatin1(lang);
-    setText(k, s);
-}
-
-QT_WARNING_POP
-
-inline int QImage::numColors() const
-{
-    return colorCount();
-}
-
-inline void QImage::setNumColors(int n)
-{
-    setColorCount(n);
-}
-
-inline int QImage::numBytes() const
-{
-    return int(sizeInBytes());
-}
-#endif
 
 // QImage stream functions
 
