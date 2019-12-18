@@ -694,7 +694,7 @@ void QWasmCompositor::frame()
 
     if (m_context.isNull()) {
         m_context.reset(new QOpenGLContext());
-        //mContext->setFormat(mScreen->format());
+        m_context->setFormat(someWindow->window()->requestedFormat());
         m_context->setScreen(screen()->screen());
         m_context->create();
     }
