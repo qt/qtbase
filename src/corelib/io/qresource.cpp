@@ -629,6 +629,8 @@ const uchar *QResource::data() const
 }
 
 /*!
+    \since 5.8
+
     Returns the date and time when the file was last modified before
     packaging into a resource.
 */
