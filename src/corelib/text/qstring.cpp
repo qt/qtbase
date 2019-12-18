@@ -591,6 +591,20 @@ bool QtPrivate::isLatin1(QStringView s) noexcept
     return true;
 }
 
+bool QtPrivate::isValidUtf16(QStringView s) noexcept
+{
+    Q_CONSTEXPR uint InvalidCodePoint = UINT_MAX;
+
+    QStringIterator i(s);
+    while (i.hasNext()) {
+        uint c = i.next(InvalidCodePoint);
+        if (c == InvalidCodePoint)
+            return false;
+    }
+
+    return true;
+}
+
 // conversion between Latin 1 and UTF-16
 void qt_from_latin1(ushort *dst, const char *str, size_t size) noexcept
 {
@@ -9045,6 +9059,21 @@ bool QString::isRightToLeft() const
 {
     return QtPrivate::isRightToLeft(QStringView(*this));
 }
+
+/*!
+    \fn bool QString::isValidUtf16() const noexcept
+    \since 5.15
+
+    Returns \c true if the string contains valid UTF-16 encoded data,
+    or \c false otherwise.
+
+    Note that this function does not perform any special validation of the
+    data; it merely checks if it can be successfully decoded from UTF-16.
+    The data is assumed to be in host byte order; the presence of a BOM
+    is meaningless.
+
+    \sa QStringView::isValidUtf16()
+*/
 
 /*! \fn QChar *QString::data()
 
