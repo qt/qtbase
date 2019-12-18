@@ -1135,8 +1135,12 @@ void QPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const Q
         destImage = std::move(buffer);
     }
 
-    if (srcImage.hasAlphaChannel())
-        destImage.setAlphaChannel(srcImage.alphaChannel());
+    if (srcImage.hasAlphaChannel()) {
+        Q_ASSERT(destImage.format() == QImage::Format_ARGB32_Premultiplied);
+        QPainter maskPainter(&destImage);
+        maskPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+        maskPainter.drawImage(0, 0, srcImage);
+    }
 
     painter->drawImage(dest, destImage);
 }
