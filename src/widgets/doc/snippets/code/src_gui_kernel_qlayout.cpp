@@ -70,8 +70,9 @@ void MyWidget::paintEvent(QPaintEvent *)
 
 //! [1]
 QLayoutItem *child;
-while ((child = layout->takeAt(0)) != 0) {
+while ((child = layout->takeAt(0)) != nullptr) {
     ...
-    delete child;
+    delete child->widget(); // delete the widget
+    delete child;   // delete the layout item
 }
 //! [1]
