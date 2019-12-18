@@ -43,9 +43,9 @@
 #if QT_CONFIG(regularexpression)
 #  include <qregularexpression.h>
 #endif
+#include <private/qduplicatetracker_p.h>
 
 #include <algorithm>
-
 QT_BEGIN_NAMESPACE
 
 /*! \typedef QStringListIterator
@@ -885,15 +885,13 @@ int QtPrivate::QStringList_removeDuplicates(QStringList *that)
 {
     int n = that->size();
     int j = 0;
-    QSet<QString> seen;
+
+    QDuplicateTracker<QString> seen;
     seen.reserve(n);
-    int setSize = 0;
     for (int i = 0; i < n; ++i) {
         const QString &s = that->at(i);
-        seen.insert(s);
-        if (setSize == seen.size()) // unchanged size => was already seen
+        if (seen.hasSeen(s))
             continue;
-        ++setSize;
         if (j != i)
             that->swapItemsAt(i, j);
         ++j;
