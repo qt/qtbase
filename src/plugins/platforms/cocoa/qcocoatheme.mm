@@ -129,7 +129,7 @@ void QCocoaTheme::handleSystemThemeChange()
         QFontCache::instance()->clear();
     }
 
-    QWindowSystemInterface::handleThemeChange(nullptr);
+    QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>(nullptr);
 }
 
 bool QCocoaTheme::usePlatformNativeDialog(DialogType dialogType) const

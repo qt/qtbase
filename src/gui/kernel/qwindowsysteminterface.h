@@ -249,6 +249,7 @@ public:
     static void handleScreenLogicalDotsPerInchChange(QScreen *screen, qreal newDpiX, qreal newDpiY);
     static void handleScreenRefreshRateChange(QScreen *screen, qreal newRefreshRate);
 
+    template<typename Delivery = QWindowSystemInterface::DefaultDelivery>
     static void handleThemeChange(QWindow *window);
 
     static void handleFileOpenEvent(const QString& fileName);
