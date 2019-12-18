@@ -43,7 +43,7 @@ from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QFont,
     QRadialGradient)
 from PySide2.QtWidgets import *
 
-import GammaView
+from gammaview import GammaView
 
 
 class Ui_Config(object):
