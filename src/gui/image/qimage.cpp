@@ -4410,37 +4410,28 @@ bool QImage::isDetached() const
 
 
 /*!
-    \obsolete
     Sets the alpha channel of this image to the given \a alphaChannel.
 
-    If \a alphaChannel is an 8 bit grayscale image, the intensity values are
-    written into this buffer directly. Otherwise, \a alphaChannel is converted
-    to 32 bit and the intensity of the RGB pixel values is used.
+    If \a alphaChannel is an 8 bit alpha image, the alpha values are
+    used directly. Otherwise, \a alphaChannel is converted to 8 bit
+    grayscale and the intensity of the pixel values is used.
 
-    Note that the image will be converted to the Format_ARGB32_Premultiplied
-    format if the function succeeds.
+    If the image already has an alpha channel, the existing alpha channel
+    is multiplied with the new one. If the image doesn't have an alpha
+    channel it will be converted to a format that does.
 
-    Use one of the composition modes in QPainter::CompositionMode instead.
+    The operation is similar to painting \a alphaChannel as an alpha image
+    over this image using \c QPainter::CompositionMode_DestinationIn.
 
-    \warning This function is expensive.
-
-    \sa alphaChannel(), {QImage#Image Transformations}{Image
-    Transformations}, {QImage#Image Formats}{Image Formats}
+    \sa hasAlphaChannel(), alphaChannel(),
+        {QImage#Image Transformations}{Image Transformations},
+        {QImage#Image Formats}{Image Formats}
 */
 
 void QImage::setAlphaChannel(const QImage &alphaChannel)
 {
-    if (!d)
+    if (!d || alphaChannel.isNull())
         return;
-
-    int w = d->width;
-    int h = d->height;
-
-    if (w != alphaChannel.d->width || h != alphaChannel.d->height) {
-        qWarning("QImage::setAlphaChannel: "
-                 "Alpha channel must have same dimensions as the target image");
-        return;
-    }
 
     if (d->paintEngine && d->paintEngine->isActive()) {
         qWarning("QImage::setAlphaChannel: "
@@ -4448,61 +4439,32 @@ void QImage::setAlphaChannel(const QImage &alphaChannel)
         return;
     }
 
-    if (d->format == QImage::Format_ARGB32_Premultiplied)
+    const Format alphaFormat = qt_alphaVersionForPainting(d->format);
+    if (d->format == alphaFormat)
         detach();
     else
-        *this = convertToFormat(QImage::Format_ARGB32_Premultiplied);
+        convertTo(alphaFormat);
 
     if (isNull())
         return;
 
-    // Slight optimization since alphachannels are returned as 8-bit grays.
-    if (alphaChannel.format() == QImage::Format_Alpha8 ||( alphaChannel.d->depth == 8 && alphaChannel.isGrayscale())) {
-        const uchar *src_data = alphaChannel.d->data;
-        uchar *dest_data = d->data;
-        for (int y=0; y<h; ++y) {
-            const uchar *src = src_data;
-            QRgb *dest = (QRgb *)dest_data;
-            for (int x=0; x<w; ++x) {
-                int alpha = *src;
-                int destAlpha = qt_div_255(alpha * qAlpha(*dest));
-                *dest = ((destAlpha << 24)
-                         | (qt_div_255(qRed(*dest) * alpha) << 16)
-                         | (qt_div_255(qGreen(*dest) * alpha) << 8)
-                         | (qt_div_255(qBlue(*dest) * alpha)));
-                ++dest;
-                ++src;
-            }
-            src_data += alphaChannel.d->bytes_per_line;
-            dest_data += d->bytes_per_line;
-        }
+    QImage sourceImage;
+    if (alphaChannel.format() == QImage::Format_Alpha8 || (alphaChannel.d->depth == 8 && alphaChannel.isGrayscale()))
+        sourceImage = alphaChannel;
+    else
+        sourceImage = alphaChannel.convertToFormat(QImage::Format_Grayscale8);
+    if (!sourceImage.reinterpretAsFormat(QImage::Format_Alpha8))
+        return;
 
-    } else {
-        const QImage sourceImage = alphaChannel.convertToFormat(QImage::Format_RGB32);
-        if (sourceImage.isNull())
-            return;
-        const uchar *src_data = sourceImage.d->data;
-        uchar *dest_data = d->data;
-        for (int y=0; y<h; ++y) {
-            const QRgb *src = (const QRgb *) src_data;
-            QRgb *dest = (QRgb *) dest_data;
-            for (int x=0; x<w; ++x) {
-                int alpha = qGray(*src);
-                int destAlpha = qt_div_255(alpha * qAlpha(*dest));
-                *dest = ((destAlpha << 24)
-                         | (qt_div_255(qRed(*dest) * alpha) << 16)
-                         | (qt_div_255(qGreen(*dest) * alpha) << 8)
-                         | (qt_div_255(qBlue(*dest) * alpha)));
-                ++dest;
-                ++src;
-            }
-            src_data += sourceImage.d->bytes_per_line;
-            dest_data += d->bytes_per_line;
-        }
-    }
+    QPainter painter(this);
+    if (sourceImage.size() != size())
+        painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+    painter.drawImage(rect(), sourceImage);
 }
 
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \obsolete
 
@@ -4592,6 +4554,7 @@ QImage QImage::alphaChannel() const
 
     return image;
 }
+#endif
 
 /*!
     Returns \c true if the image has a format that respects the alpha
