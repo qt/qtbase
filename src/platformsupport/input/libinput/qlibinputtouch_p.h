@@ -42,6 +42,7 @@
 
 #include <QtCore/QHash>
 #include <QtCore/QList>
+#include <QtCore/QPointer>
 #include <qpa/qwindowsysteminterface.h>
 
 //
@@ -60,6 +61,7 @@ struct libinput_device;
 
 QT_BEGIN_NAMESPACE
 
+class QScreen;
 class QLibInputTouch
 {
 public:
@@ -73,15 +75,18 @@ public:
 
 private:
     struct DeviceState {
-        DeviceState() : m_touchDevice(0) { }
+        DeviceState() : m_touchDevice(nullptr), m_screenName() { }
         QWindowSystemInterface::TouchPoint *point(int32_t slot);
         QList<QWindowSystemInterface::TouchPoint> m_points;
         QTouchDevice *m_touchDevice;
+        QString m_screenName;
     };
 
     DeviceState *deviceState(libinput_event_touch *e);
+    QPointF getPos(libinput_event_touch *e);
 
     QHash<libinput_device *, DeviceState> m_devState;
+    mutable QPointer<QScreen> m_screen;
 };
 
 QT_END_NAMESPACE
