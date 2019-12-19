@@ -695,8 +695,6 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::lastCursorPosition = {qInf(), qInf()};
     QGuiApplicationPrivate::currentMousePressWindow = QGuiApplicationPrivate::currentMouseWindow = nullptr;
     QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
-    QGuiApplicationPrivate::highDpiScaleFactorRoundingPolicy =
-        Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor;
     QGuiApplicationPrivate::highDpiScalingUpdated = false;
     QGuiApplicationPrivate::currentDragWindow = nullptr;
     QGuiApplicationPrivate::tabletDevicePoints.clear();
