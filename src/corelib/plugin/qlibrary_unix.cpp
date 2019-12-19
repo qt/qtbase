@@ -317,12 +317,6 @@ Q_CORE_EXPORT QFunctionPointer qt_mac_resolve_sys(void *handle, const char *symb
 QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
 {
     QFunctionPointer address = QFunctionPointer(dlsym(pHnd, symbol));
-    if (!address) {
-        errorString = QLibrary::tr("Cannot resolve symbol \"%1\" in %2: %3").arg(
-            QString::fromLatin1(symbol), fileName, qdlerror());
-    } else {
-        errorString.clear();
-    }
     return address;
 }
 

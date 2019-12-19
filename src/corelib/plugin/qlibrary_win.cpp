@@ -162,12 +162,6 @@ bool QLibraryPrivate::unload_sys()
 QFunctionPointer QLibraryPrivate::resolve_sys(const char* symbol)
 {
     FARPROC address = GetProcAddress(pHnd, symbol);
-    if (!address) {
-        errorString = QLibrary::tr("Cannot resolve symbol \"%1\" in %2: %3").arg(
-            QString::fromLatin1(symbol), QDir::toNativeSeparators(fileName), qt_error_string());
-    } else {
-        errorString.clear();
-    }
     return QFunctionPointer(address);
 }
 QT_END_NAMESPACE
