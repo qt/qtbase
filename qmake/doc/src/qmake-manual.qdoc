@@ -1577,6 +1577,12 @@
     \l{CONFIG}{CONFIG += lrelease} will be installed to. Does not have any
     effect if \l{CONFIG}{CONFIG += embed_translations} is set.
 
+    \target QML_IMPORT_PATH
+    \section1 QML_IMPORT_PATH
+
+    This variable is only used by \l{Qt Creator Manual}{Qt Creator}.
+    See \l{Qt Creator: Using QML Modules with Plugins} for details.
+
     \target QMAKE_systemvariable
     \section1 QMAKE
 
