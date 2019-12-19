@@ -772,7 +772,7 @@
         },
         "debug": {
             "label": "Build for debugging",
-            "autoDetect": "features.developer-build || config.win32 || config.darwin"
+            "autoDetect": "features.developer-build || (config.win32 && !config.gcc) || config.darwin"
         },
         "debug_and_release": {
             "label": "Compile libs in debug and release mode",
