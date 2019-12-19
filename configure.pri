@@ -72,7 +72,9 @@ defineTest(qtConfCommandline_coverage) {
     !contains(val, "^-.*"):!isEmpty(val) {
         equals(val, "trace-pc-guard") {
             qtConfCommandlineSetInput("coverage_trace_pc_guard", "yes")
-        } else {
+        } else: equals(val, "source-based") {
+            qtConfCommandlineSetInput("coverage_source_based", "yes")
+        } else: {
             qtConfAddError("Invalid argument $$val to command line parameter $$arg")
         }
     } else {

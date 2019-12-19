@@ -916,9 +916,14 @@
             "autoDetect": false,
             "output": [ "publicConfig" ]
         },
+        "coverage_source_based": {
+            "label": "source-based",
+            "autoDetect": false,
+            "output": [ "publicConfig" ]
+        },
         "coverage": {
             "label": "Code Coverage Instrumentation",
-            "condition": "features.coverage_trace_pc_guard",
+            "condition": "features.coverage_trace_pc_guard || features.coverage_source_based",
             "output": [ "publicConfig" ]
         },
         "GNUmake": {
@@ -1612,7 +1617,7 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
                 {
                     "message": "Code Coverage Instrumentation",
                     "type": "firstAvailableFeature",
-                    "args": "coverage_trace_pc_guard",
+                    "args": "coverage_trace_pc_guard coverage_source_based",
                     "condition": "features.coverage"
                 },
                 {
