@@ -828,13 +828,14 @@
 #    endif
 #  endif
 
-#  if defined(__has_warning)
-#    if __has_warning("-Wunused-private-field")
-#      define Q_DECL_UNUSED_MEMBER Q_DECL_UNUSED
-#    endif
-#  endif
+#endif // Q_CC_CLANG &&  !Q_CC_INTEL && !Q_CC_MSVC
 
-#endif // Q_CC_CLANG
+#if defined(Q_CC_CLANG) && !defined(Q_CC_INTEL)
+#  ifndef Q_DECL_UNUSED
+#    define Q_DECL_UNUSED __attribute__((__unused__))
+#  endif
+#  define Q_DECL_UNUSED_MEMBER Q_DECL_UNUSED
+#endif
 
 #if defined(Q_CC_GNU) && !defined(Q_CC_INTEL) && !defined(Q_CC_CLANG)
 #  define Q_COMPILER_RESTRICTED_VLA
