@@ -88,6 +88,10 @@ class QMainWindowLayoutSeparatorHelper
     QWidget *window() { return layout()->parentWidget(); }
 
 public:
+    Q_DISABLE_COPY_MOVE(QMainWindowLayoutSeparatorHelper)
+
+    QMainWindowLayoutSeparatorHelper() = default;
+
     QList<int> hoverSeparator;
     QPoint hoverPos;
 
