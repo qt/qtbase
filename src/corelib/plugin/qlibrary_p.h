@@ -86,7 +86,7 @@ public:
     QString fullVersion;
 
     bool load();
-    bool loadPlugin(); // loads and resolves instance
+    QtPluginInstanceFunction loadPlugin(); // loads and resolves instance
     bool unload(UnloadFlag flag = UnloadSys);
     void release();
     QFunctionPointer resolve(const char *);
@@ -100,8 +100,8 @@ public:
     static QStringList suffixes_sys(const QString &fullVersion);
     static QStringList prefixes_sys();
 
-    QPointer<QObject> inst;
-    QtPluginInstanceFunction instance;
+    QPointer<QObject> inst;         // used by QFactoryLoader
+    QAtomicPointer<std::remove_pointer<QtPluginInstanceFunction>::type> instanceFactory;
     QJsonObject metaData;
 
     QString errorString;

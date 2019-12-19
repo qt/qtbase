@@ -498,7 +498,7 @@ inline void QLibraryStore::releaseLibrary(QLibraryPrivate *lib)
 }
 
 QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString &version, QLibrary::LoadHints loadHints)
-    : pHnd(0), fileName(canonicalFileName), fullVersion(version), instance(0),
+    : pHnd(0), fileName(canonicalFileName), fullVersion(version),
       libraryRefCount(0), libraryUnloadCount(0), pluginState(MightBeAPlugin)
 {
     loadHintsInt.storeRelaxed(loadHints);
@@ -537,6 +537,32 @@ void QLibraryPrivate::setLoadHints(QLibrary::LoadHints lh)
     // this locks a global mutex
     QMutexLocker lock(&qt_library_mutex);
     mergeLoadHints(lh);
+}
+
+QObject *QLibraryPrivate::pluginInstance()
+{
+    // first, check if the instance is cached and hasn't been deleted
+    QObject *obj = inst.data();
+    if (obj)
+        return obj;
+
+    // We need to call the plugin's factory function. Is that cached?
+    // skip increasing the reference count (why? -Thiago)
+    QtPluginInstanceFunction factory = instanceFactory.loadAcquire();
+    if (!factory)
+        factory = loadPlugin();
+
+    if (!factory)
+        return nullptr;
+
+    obj = factory();
+
+    // cache again
+    if (inst)
+        obj = inst;
+    else
+        inst = obj;
+    return obj;
 }
 
 bool QLibraryPrivate::load()
@@ -585,7 +611,7 @@ bool QLibraryPrivate::unload(UnloadFlag flag)
             //can get deleted
             libraryRefCount.deref();
             pHnd = 0;
-            instance = 0;
+            instanceFactory.storeRelaxed(nullptr);
         }
     }
 
@@ -597,22 +623,23 @@ void QLibraryPrivate::release()
     QLibraryStore::releaseLibrary(this);
 }
 
-bool QLibraryPrivate::loadPlugin()
+QtPluginInstanceFunction QLibraryPrivate::loadPlugin()
 {
-    if (instance) {
+    if (auto ptr = instanceFactory.loadAcquire()) {
         libraryUnloadCount.ref();
-        return true;
+        return ptr;
     }
     if (pluginState == IsNotAPlugin)
-        return false;
+        return nullptr;
     if (load()) {
-        instance = (QtPluginInstanceFunction)resolve("qt_plugin_instance");
-        return instance;
+        auto ptr = reinterpret_cast<QtPluginInstanceFunction>(resolve("qt_plugin_instance"));
+        instanceFactory.storeRelease(ptr); // two threads may store the same value
+        return ptr;
     }
     if (qt_debug_component())
         qWarning() << "QLibraryPrivate::loadPlugin failed on" << fileName << ":" << errorString;
     pluginState = IsNotAPlugin;
-    return false;
+    return nullptr;
 }
 
 /*!
