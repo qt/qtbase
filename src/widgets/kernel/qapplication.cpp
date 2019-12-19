@@ -1354,15 +1354,14 @@ QPalette QApplication::palette(const QWidget* w)
 */
 QPalette QApplication::palette(const char *className)
 {
-    if (!QApplicationPrivate::app_pal)
-        palette();
     PaletteHash *hash = app_palettes();
     if (className && hash && hash->size()) {
         QHash<QByteArray, QPalette>::ConstIterator it = hash->constFind(className);
         if (it != hash->constEnd())
             return *it;
     }
-    return *QApplicationPrivate::app_pal;
+
+    return QGuiApplication::palette();
 }
 
 void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash)
