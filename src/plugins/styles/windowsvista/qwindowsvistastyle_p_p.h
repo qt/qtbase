@@ -106,7 +106,9 @@
 #include <qtableview.h>
 #endif
 #include <qdatetime.h>
+#if QT_CONFIG(commandlinkbutton)
 #include <qcommandlinkbutton.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
