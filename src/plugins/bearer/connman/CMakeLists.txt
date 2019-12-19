@@ -6,7 +6,6 @@
 
 qt_add_plugin(qconnmanbearer
     TYPE bearer
-    DEFAULT_IF False # special case QTBUG-78164
     CLASS_NAME QConnmanEnginePlugin
     SOURCES
         main.cpp
