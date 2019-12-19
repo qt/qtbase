@@ -1380,6 +1380,10 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
             QApplicationPrivate::app_pal = new QPalette(pal);
         else
             *QApplicationPrivate::app_pal = pal;
+
+        if (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal))
+            QCoreApplication::setAttribute(Qt::AA_SetPalette);
+
         if (hash && hash->size()) {
             all = true;
             if (clearWidgetPaletteHash)
@@ -1388,9 +1392,6 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
     } else if (hash) {
         hash->insert(className, pal);
     }
-
-    if (!className && (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal)))
-        QCoreApplication::setAttribute(Qt::AA_SetPalette);
 
     if (qApp)
         qApp->d_func()->sendApplicationPaletteChange(all, className);
