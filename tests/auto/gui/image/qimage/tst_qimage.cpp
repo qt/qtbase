@@ -3369,7 +3369,7 @@ void tst_QImage::cleanupFunctions()
 
     {
         called = false;
-        QImage *copy = 0;
+        QImage *copy = nullptr;
         {
             QImage image(bufferImage.bits(), bufferImage.width(), bufferImage.height(), bufferImage.format(), cleanupFunction, &called);
             copy = new QImage(image);
@@ -3378,7 +3378,38 @@ void tst_QImage::cleanupFunctions()
         delete copy;
         QVERIFY(called);
     }
-
+    {
+        called = false;
+        QImage container;
+        {
+            QImage image(bufferImage.bits(), bufferImage.width(), bufferImage.height(), bufferImage.format(), cleanupFunction, &called);
+            container = std::move(image);
+            // Test methods don't crash after move:
+            Q_UNUSED(image.isNull());
+            Q_UNUSED(image.width());
+            Q_UNUSED(image.bytesPerLine());
+            Q_UNUSED(image.sizeInBytes());
+            Q_UNUSED(image.constBits());
+        }
+        // 'image' was moved and should outlive its scope
+        QVERIFY(!called);
+        container = QImage();
+        QVERIFY(called);
+    }
+    {
+        called = false;
+        QImage outer(bufferImage.bits(), bufferImage.width(), bufferImage.height(), bufferImage.format(), cleanupFunction, &called);
+        bool called2 = false;
+        {
+            uchar internalData[256];
+            QImage internal(internalData, 16, 16, QImage::Format_Grayscale8, cleanupFunction, &called2);
+            internal = std::move(outer);
+        }
+        // 'internal' was _not_ moved and should not outlive its original scope
+        QVERIFY(called2);
+        // 'outer' was moved into the inner scope and should now be dead.
+        QVERIFY(called);
+    }
 }
 
 // test image devicePixelRatio setting and detaching
