@@ -51,17 +51,6 @@ QT_BEGIN_NAMESPACE
 QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
     : QRasterBackingStore(window)
 {
-    // Ideally this would be plumbed from the platform layer to QtGui, and
-    // the QBackingStore would be recreated, but we don't have that code yet,
-    // so at least make sure we invalidate our backingstore when the backing
-    // properties (color space e.g.) are changed.
-    NSView *view = static_cast<QCocoaWindow *>(window->handle())->view();
-    m_backingPropertiesObserver = QMacNotificationObserver(view.window,
-        NSWindowDidChangeBackingPropertiesNotification, [this]() {
-            qCDebug(lcQpaBackingStore) << "Backing properties for"
-                << this->window() << "did change";
-            backingPropertiesChanged();
-        });
 }
 
 QCFType<CGColorSpaceRef> QCocoaBackingStore::colorSpace() const
@@ -341,11 +330,6 @@ void QNSWindowBackingStore::redrawRoundedBottomCorners(CGRect windowRect) const
 #endif
 }
 
-void QNSWindowBackingStore::backingPropertiesChanged()
-{
-    m_image = QImage();
-}
-
 // ----------------------------------------------------------------------------
 
 // https://stackoverflow.com/a/52722575/2761869
@@ -365,6 +349,18 @@ QCALayerBackingStore::QCALayerBackingStore(QWindow *window)
 {
     qCDebug(lcQpaBackingStore) << "Creating QCALayerBackingStore for" << window;
     m_buffers.resize(1);
+
+    // Ideally this would be plumbed from the platform layer to QtGui, and
+    // the QBackingStore would be recreated, but we don't have that code yet,
+    // so at least make sure we update our backingstore when the backing
+    // properties (color space e.g.) are changed.
+    NSView *view = static_cast<QCocoaWindow *>(window->handle())->view();
+    m_backingPropertiesObserver = QMacNotificationObserver(view.window,
+        NSWindowDidChangeBackingPropertiesNotification, [this]() {
+            qCDebug(lcQpaBackingStore) << "Backing properties for"
+                << this->window() << "did change";
+            backingPropertiesChanged();
+        });
 }
 
 QCALayerBackingStore::~QCALayerBackingStore()
@@ -632,8 +628,9 @@ QImage QCALayerBackingStore::toImage() const
 
 void QCALayerBackingStore::backingPropertiesChanged()
 {
-    m_buffers.clear();
-    m_buffers.resize(1);
+    qCDebug(lcQpaBackingStore) << "Updating color space of existing buffers";
+    for (auto &buffer : m_buffers)
+        buffer->setColorSpace(colorSpace());
 }
 
 QPlatformGraphicsBuffer *QCALayerBackingStore::graphicsBuffer() const
@@ -710,10 +707,11 @@ bool QCALayerBackingStore::prepareForFlush()
 
 QCALayerBackingStore::GraphicsBuffer::GraphicsBuffer(const QSize &size, qreal devicePixelRatio,
                                 const QPixelFormat &format, QCFType<CGColorSpaceRef> colorSpace)
-    : QIOSurfaceGraphicsBuffer(size, format, colorSpace)
+    : QIOSurfaceGraphicsBuffer(size, format)
     , dirtyRegion(0, 0, size.width() / devicePixelRatio, size.height() / devicePixelRatio)
     , m_devicePixelRatio(devicePixelRatio)
 {
+    setColorSpace(colorSpace);
 }
 
 QImage *QCALayerBackingStore::GraphicsBuffer::asImage()
