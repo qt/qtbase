@@ -1374,12 +1374,8 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
     bool all = false;
     PaletteHash *hash = app_palettes();
     if (!className) {
-        if (QApplicationPrivate::app_pal && pal.isCopyOf(*QApplicationPrivate::app_pal))
+        if (!QGuiApplicationPrivate::setPalette(pal))
             return;
-        if (!QApplicationPrivate::app_pal)
-            QApplicationPrivate::app_pal = new QPalette(pal);
-        else
-            *QApplicationPrivate::app_pal = pal;
 
         if (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal))
             QCoreApplication::setAttribute(Qt::AA_SetPalette);
