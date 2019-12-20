@@ -185,7 +185,7 @@ public:
     static bool widgetCount; // Coupled with -widgetcount switch
 
     static void setSystemPalette(const QPalette &pal);
-    static void setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash);
+    static void setPalette_helper(const QPalette &palette, const char* className);
     static void initializeWidgetPaletteHash();
     static void initializeWidgetFontHash();
     static void setSystemFont(const QFont &font);

@@ -633,7 +633,7 @@ static void setPossiblePalette(const QPalette *palette, const char *className)
 {
     if (palette == 0)
         return;
-    QApplicationPrivate::setPalette_helper(*palette, className, false);
+    QApplicationPrivate::setPalette_helper(*palette, className);
 }
 
 void QApplicationPrivate::initializeWidgetPaletteHash()
@@ -1363,7 +1363,7 @@ QPalette QApplication::palette(const char *className)
     return QGuiApplication::palette();
 }
 
-void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash)
+void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char* className)
 {
     QPalette pal = palette;
 
@@ -1380,8 +1380,7 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
 
         if (!widgetPalettes.isEmpty()) {
             all = true;
-            if (clearWidgetPaletteHash)
-                widgetPalettes.clear();
+            widgetPalettes.clear();
         }
     } else {
         widgetPalettes.insert(className, pal);
@@ -1416,7 +1415,7 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
 
 void QApplication::setPalette(const QPalette &palette, const char* className)
 {
-    QApplicationPrivate::setPalette_helper(palette, className, /*clearWidgetPaletteHash=*/ true);
+    QApplicationPrivate::setPalette_helper(palette, className);
 }
 
 
