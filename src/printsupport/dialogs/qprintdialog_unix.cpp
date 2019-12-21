@@ -637,8 +637,10 @@ void QPrintDialogPrivate::init()
     options.pageSetCombo->addItem(tr("Odd Pages"), QVariant::fromValue(QCUPSSupport::OddPages));
     options.pageSetCombo->addItem(tr("Even Pages"), QVariant::fromValue(QCUPSSupport::EvenPages));
 #else
-    for (int i = options.pagesLayout->count() - 1; i >= 0; --i)
-        delete options.pagesLayout->itemAt(i)->widget();
+    delete options.pagesRadioButton;
+    delete options.pagesLineEdit;
+    options.pagesRadioButton = nullptr;
+    options.pagesLineEdit = nullptr;
 #endif
 
     top->d->setOptionsPane(this);
@@ -727,12 +729,12 @@ void QPrintDialogPrivate::selectPrinter(const QPrinter::OutputFormat outputForma
         else
             options.pageSetCombo->setEnabled(true);
 
+#if QT_CONFIG(cups)
         // Disable complex page ranges widget when printing to pdf
         // It doesn't work since it relies on cups to do the heavy lifting and cups
         // is not used when printing to PDF
         options.pagesRadioButton->setEnabled(outputFormat != QPrinter::PdfFormat);
 
-#if QT_CONFIG(cups)
         // Disable color options on main dialog if not printing to file, it will be handled by CUPS advanced dialog
         options.colorMode->setVisible(outputFormat == QPrinter::PdfFormat);
 #endif
