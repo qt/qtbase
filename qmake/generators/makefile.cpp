@@ -3456,28 +3456,34 @@ ProKey MakefileGenerator::fullTargetVariable() const
     return "TARGET";
 }
 
-void MakefileGenerator::createResponseFile(const QString &fileName, const ProStringList &objList)
+QString MakefileGenerator::createResponseFile(const QString &baseName, const ProStringList &objList)
 {
+    QString fileName = baseName + '.' + fileVar("QMAKE_ORIG_TARGET");
+    if (!var("BUILD_NAME").isEmpty())
+        fileName += '.' + var("BUILD_NAME");
+    if (!var("MAKEFILE").isEmpty())
+        fileName += '.' + var("MAKEFILE");
     QString filePath = Option::output_dir + QDir::separator() + fileName;
     QFile file(filePath);
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream t(&file);
-        for (ProStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
-            QString path = (*it).toQString();
-            // In response files, whitespace and special characters are
-            // escaped with a backslash; backslashes themselves can either
-            // be escaped into double backslashes, or, as this is a list of
-            // path names, converted to forward slashes.
-            path.replace(QLatin1Char('\\'), QLatin1String("/"))
-                .replace(QLatin1Char(' '), QLatin1String("\\ "))
-                .replace(QLatin1Char('\t'), QLatin1String("\\\t"))
-                .replace(QLatin1Char('"'), QLatin1String("\\\""))
-                .replace(QLatin1Char('\''), QLatin1String("\\'"));
-            t << path << Qt::endl;
-        }
-        t.flush();
-        file.close();
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return QString();
+    QTextStream t(&file);
+    for (ProStringList::ConstIterator it = objList.constBegin(); it != objList.constEnd(); ++it) {
+        QString path = (*it).toQString();
+        // In response files, whitespace and special characters are
+        // escaped with a backslash; backslashes themselves can either
+        // be escaped into double backslashes, or, as this is a list of
+        // path names, converted to forward slashes.
+        path.replace(QLatin1Char('\\'), QLatin1String("/"))
+            .replace(QLatin1Char(' '), QLatin1String("\\ "))
+            .replace(QLatin1Char('\t'), QLatin1String("\\\t"))
+            .replace(QLatin1Char('"'), QLatin1String("\\\""))
+            .replace(QLatin1Char('\''), QLatin1String("\\'"));
+        t << path << Qt::endl;
     }
+    t.flush();
+    file.close();
+    return fileName;
 }
 
 QT_END_NAMESPACE

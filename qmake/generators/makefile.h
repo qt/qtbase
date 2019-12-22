@@ -264,7 +264,7 @@ protected:
                                     QStringView fixedBase, int slashOff);
     bool processPrlFileCore(QString &origFile, QStringView origName,
                             const QString &fixedFile);
-    void createResponseFile(const QString &fileName, const ProStringList &objList);
+    QString createResponseFile(const QString &baseName, const ProStringList &objList);
 
 public:
     QMakeProject *projectFile() const;

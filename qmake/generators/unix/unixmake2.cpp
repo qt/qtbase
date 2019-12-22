@@ -1554,13 +1554,8 @@ std::pair<bool, QString> UnixMakefileGenerator::writeObjectsPart(QTextStream &t,
         if (objMax.isEmpty() || project->values("OBJECTS").count() < objMax.toInt()) {
             objectsLinkLine = "$(OBJECTS)";
         } else {
-            QString ld_response_file = fileVar("OBJECTS_DIR");
-            ld_response_file += var("QMAKE_LINK_OBJECT_SCRIPT") + "." + var("QMAKE_TARGET");
-            if (!var("BUILD_NAME").isEmpty())
-                ld_response_file += "." + var("BUILD_NAME");
-            if (!var("MAKEFILE").isEmpty())
-                ld_response_file += "." + var("MAKEFILE");
-            createResponseFile(ld_response_file, objs);
+            const QString ld_response_file = createResponseFile(
+                        fileVar("OBJECTS_DIR") + var("QMAKE_LINK_OBJECT_SCRIPT"), objs);
             objectsLinkLine = "@" + escapeFilePath(ld_response_file);
         }
         t << "OBJECTS       = " << valList(escapeDependencyPaths(objs)) << Qt::endl;
