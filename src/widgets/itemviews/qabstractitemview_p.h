@@ -108,6 +108,7 @@ public:
     virtual void _q_layoutChanged();
     virtual void _q_rowsMoved(const QModelIndex &source, int sourceStart, int sourceEnd, const QModelIndex &destination, int destinationStart);
     virtual void _q_columnsMoved(const QModelIndex &source, int sourceStart, int sourceEnd, const QModelIndex &destination, int destinationStart);
+    virtual QRect intersectedRect(const QRect rect, const QModelIndex &topLeft, const QModelIndex &bottomRight) const;
 
     void _q_headerDataChanged() { doDelayedItemsLayout(); }
     void _q_scrollerStateChanged();

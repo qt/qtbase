@@ -135,6 +135,7 @@ public:
     void _q_modelAboutToBeReset();
     void _q_sortIndicatorChanged(int column, Qt::SortOrder order);
     void _q_modelDestroyed() override;
+    QRect intersectedRect(const QRect rect, const QModelIndex &topLeft, const QModelIndex &bottomRight) const override;
 
     void layout(int item, bool recusiveExpanding = false, bool afterIsUninitialized = false);
 

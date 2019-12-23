@@ -243,6 +243,14 @@ public:
         verticalHeader()->setMinimumSectionSize(0);
     }
 
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override
+    {
+        QTableView::dataChanged(topLeft, bottomRight, roles);
+        QTableViewPrivate *av = static_cast<QTableViewPrivate*>(qt_widget_private(this));
+        m_intersectecRect = av->intersectedRect(av->viewport->rect(), topLeft, bottomRight);
+    }
+    mutable QRect m_intersectecRect;
+
     using QTableView::moveCursor;
     using QTableView::isIndexHidden;
     using QTableView::setSelection;
@@ -401,6 +409,9 @@ private slots:
     void bigModel();
     void selectionSignal();
     void setCurrentIndex();
+
+    void checkIntersectedRect_data();
+    void checkIntersectedRect();
 
     // task-specific tests:
     void task173773_updateVerticalHeader();
@@ -3840,6 +3851,121 @@ void tst_QTableView::setCurrentIndex()
     QCOMPARE(model.submit_count, 4);
     view.setCurrentIndex(model.index(0,0));
     QCOMPARE(model.submit_count, 4);
+}
+
+void tst_QTableView::checkIntersectedRect_data()
+{
+    QTest::addColumn<QtTestTableModel *>("model");
+    QTest::addColumn<QVector<QModelIndex>>("changedIndexes");
+    QTest::addColumn<bool>("isEmpty");
+    QTest::addColumn<bool>("swapFirstAndLastIndexRow");  // for QHeaderView::sectionsMoved()
+    QTest::addColumn<bool>("swapFirstAndLastIndexColumn");  // for QHeaderView::sectionsMoved()
+    QTest::addColumn<Qt::LayoutDirection>("layoutDirection");
+    QTest::addColumn<int>("hiddenRow");
+    QTest::addColumn<int>("hiddenCol");
+    const auto testName = [](const QByteArray &prefix, Qt::LayoutDirection dir, bool r, bool c)
+    {
+        const char *strDir = dir == Qt::LeftToRight ? ", LeftToRight" : ", RightToLeft";
+        const char *strRow = r ? ", rowsSwapped" : "";
+        const char *strCol = c ? ", colsSwapped" : "";
+        return prefix + strDir + strRow + strCol;
+    };
+    for (int i = 0; i < 2; ++i) {
+        const Qt::LayoutDirection dir(i == 0 ? Qt::LeftToRight : Qt::RightToLeft);
+        for (int j = 0; j < 4; ++j) {
+            const bool swapRow = ((j & 1) == 1);
+            const bool swapColumn = ((j & 2) == 2);
+            {
+                QtTestTableModel *model = new QtTestTableModel(10, 3);
+                QTest::newRow(testName("multiple columns", dir, swapRow, swapColumn).data())
+                    << model
+                    << QVector<QModelIndex>({model->index(0, 0),
+                                             model->index(0, 1)})
+                    << false << swapRow << swapColumn << dir << -1 << -1;
+            }
+            {
+                QtTestTableModel *model = new QtTestTableModel(10, 3);
+                QTest::newRow(testName("multiple rows", dir, swapRow, swapColumn).data())
+                    << model
+                    << QVector<QModelIndex>({model->index(0, 0),
+                                             model->index(1, 0),
+                                             model->index(2, 0)})
+                    << false << swapRow << swapColumn << dir << -1 << -1;
+            }
+            {
+                QtTestTableModel *model = new QtTestTableModel(10, 3);
+                QTest::newRow(testName("hidden row", dir, swapRow, swapColumn).data())
+                    << model
+                    << QVector<QModelIndex>({model->index(3, 0),
+                                             model->index(3, 1)})
+                    << true << swapRow << swapColumn << dir << 3 << -1;
+            }
+            {
+                QtTestTableModel *model = new QtTestTableModel(50, 2);
+                QTest::newRow(testName("row outside viewport", dir, swapRow, swapColumn).data())
+                    << model
+                    << QVector<QModelIndex>({model->index(49, 0),
+                                             model->index(49, 1)})
+                    << true << swapRow << swapColumn << dir << -1 << -1;
+            }
+        }
+    }
+}
+
+void tst_QTableView::checkIntersectedRect()
+{
+    QFETCH(QtTestTableModel *, model);
+    QFETCH(const QVector<QModelIndex>, changedIndexes);
+    QFETCH(bool, isEmpty);
+    QFETCH(bool, swapFirstAndLastIndexRow);
+    QFETCH(bool, swapFirstAndLastIndexColumn);
+    QFETCH(Qt::LayoutDirection, layoutDirection);
+    QFETCH(int, hiddenRow);
+    QFETCH(int, hiddenCol);
+
+    QtTestTableView view;
+    model->setParent(&view);
+    view.setLayoutDirection(layoutDirection);
+    view.setModel(model);
+    view.resize(400, 400);
+    view.show();
+    if (hiddenRow >= 0)
+        view.hideRow(hiddenRow);
+    if (hiddenCol >= 0)
+        view.hideRow(hiddenCol);
+    if (swapFirstAndLastIndexRow)
+        view.verticalHeader()->swapSections(changedIndexes.first().row(), changedIndexes.last().row());
+    if (swapFirstAndLastIndexColumn)
+        view.horizontalHeader()->swapSections(changedIndexes.first().column(), changedIndexes.last().column());
+
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    const auto toString = [](const QModelIndex &idx)
+    {
+        return QStringLiteral("idx: %1/%2").arg(idx.row()).arg(idx.column());
+    };
+
+    view.m_intersectecRect = QRect();
+    emit view.model()->dataChanged(changedIndexes.first(), changedIndexes.last());
+    if (isEmpty) {
+        QVERIFY(view.m_intersectecRect.isEmpty());
+    } else if (!changedIndexes.first().isValid()) {
+        QCOMPARE(view.m_intersectecRect, view.viewport()->rect());
+    } else {
+        const auto parent = changedIndexes.first().parent();
+        const int rCount = view.model()->rowCount(parent);
+        const int cCount = view.model()->columnCount(parent);
+        for (int r = 0; r < rCount; ++r) {
+            for (int c = 0; c < cCount; ++c) {
+                const QModelIndex &idx = view.model()->index(r, c, parent);
+                const auto rect = view.visualRect(idx);
+                if (changedIndexes.contains(idx))
+                    QVERIFY2(view.m_intersectecRect.contains(rect), qPrintable(toString(idx)));
+                else
+                    QVERIFY2(!view.m_intersectecRect.contains(rect), qPrintable(toString(idx)));
+            }
+        }
+    }
 }
 
 class task173773_EventFilter : public QObject

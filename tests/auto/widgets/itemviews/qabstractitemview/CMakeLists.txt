@@ -12,4 +12,5 @@ add_qt_test(tst_qabstractitemview
         Qt::GuiPrivate
         Qt::TestPrivate
         Qt::Widgets
+        Qt::WidgetsPrivate
 )

@@ -669,6 +669,52 @@ void QTableViewPrivate::trimHiddenSelections(QItemSelectionRange *range) const
     *range = QItemSelectionRange(topLeft, bottomRight);
 }
 
+QRect QTableViewPrivate::intersectedRect(const QRect rect, const QModelIndex &topLeft, const QModelIndex &bottomRight) const
+{
+    Q_Q(const QTableView);
+
+    using minMaxPair = std::pair<int, int>;
+    const auto calcMinMax = [q, rect](QHeaderView *hdr, int startIdx, int endIdx, minMaxPair bounds) -> minMaxPair
+    {
+        minMaxPair ret(std::numeric_limits<int>::max(), std::numeric_limits<int>::min());
+        if (hdr->sectionsMoved()) {
+            for (int i = startIdx; i <= endIdx; ++i) {
+                const int start = hdr->sectionViewportPosition(i);
+                const int end = start + hdr->sectionSize(i);
+                ret.first = std::min(start, ret.first);
+                ret.second = std::max(end, ret.second);
+                if (ret.first <= bounds.first && ret.second >= bounds.second)
+                    break;
+            }
+        } else {
+            if (q->isRightToLeft() && q->horizontalHeader() == hdr)
+                std::swap(startIdx, endIdx);
+            ret.first = hdr->sectionViewportPosition(startIdx);
+            ret.second = hdr->sectionViewportPosition(endIdx) +
+                         hdr->sectionSize(endIdx);
+        }
+        return ret;
+    };
+
+    const auto yVals = calcMinMax(verticalHeader, topLeft.row(), bottomRight.row(),
+                                  minMaxPair(rect.top(), rect.bottom()));
+    if (yVals.first == yVals.second) // all affected rows are hidden
+        return QRect();
+
+    // short circuit: check if no row is inside rect
+    const QRect colRect(QPoint(rect.left(), yVals.first),
+                        QPoint(rect.right(), yVals.second));
+    const QRect intersected = rect.intersected(colRect);
+    if (intersected.isNull())
+        return QRect();
+
+    const auto xVals = calcMinMax(horizontalHeader, topLeft.column(), bottomRight.column(),
+                                  minMaxPair(rect.left(), rect.right()));
+    const QRect updateRect(QPoint(xVals.first, yVals.first),
+                           QPoint(xVals.second, yVals.second));
+    return rect.intersected(updateRect);
+}
+
 /*!
   \internal
   Sets the span for the cell at (\a row, \a column).

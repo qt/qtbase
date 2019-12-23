@@ -1396,6 +1396,24 @@ void QTreeViewPrivate::_q_modelDestroyed()
     QAbstractItemViewPrivate::_q_modelDestroyed();
 }
 
+QRect QTreeViewPrivate::intersectedRect(const QRect rect, const QModelIndex &topLeft, const QModelIndex &bottomRight) const
+{
+    Q_Q(const QTreeView);
+
+    const auto parentIdx = topLeft.parent();
+    executePostedLayout();
+    QRect updateRect;
+    for (int r = topLeft.row(); r <= bottomRight.row(); ++r) {
+        if (isRowHidden(model->index(r, 0, parentIdx)))
+            continue;
+        for (int c = topLeft.column(); c <= bottomRight.column(); ++c) {
+            const QModelIndex idx(model->index(r, c, parentIdx));
+            updateRect |= q->visualRect(idx);
+        }
+    }
+    return rect.intersected(updateRect);
+}
+
 /*!
   \reimp
 

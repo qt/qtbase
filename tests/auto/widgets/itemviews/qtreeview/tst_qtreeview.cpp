@@ -89,6 +89,13 @@ public:
         QTreeView::paintEvent(event);
         wasPainted = true;
     }
+    void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override
+    {
+        QTreeView::dataChanged(topLeft, bottomRight, roles);
+        QTreeViewPrivate *av = static_cast<QTreeViewPrivate*>(qt_widget_private(this));
+        m_intersectecRect = av->intersectedRect(av->viewport->rect(), topLeft, bottomRight);
+    }
+    mutable QRect m_intersectecRect;
     bool wasPainted = false;
 public slots:
     void handleSelectionChanged()
@@ -208,6 +215,8 @@ private slots:
     void statusTip_data();
     void statusTip();
     void fetchMoreOnScroll();
+    void checkIntersectedRect_data();
+    void checkIntersectedRect();
 
     // task-specific tests:
     void task174627_moveLeftToRoot();
@@ -4830,6 +4839,111 @@ void tst_QTreeView::fetchMoreOnScroll()
     tw.verticalScrollBar()->setValue(tw.verticalScrollBar()->maximum());
     // The item should have now fetched the other children, thus bringing the count to 20
     QCOMPARE(im.item(19)->rowCount(), 20);
+}
+
+void tst_QTreeView::checkIntersectedRect_data()
+{
+    auto createModel = [](int rowCount)
+    {
+        QStandardItemModel *model = new QStandardItemModel;
+        for (int i = 0; i < rowCount; ++i) {
+            const QList<QStandardItem *> sil({new QStandardItem(QLatin1String("Row %1 Item").arg(i)),
+                                              new QStandardItem(QLatin1String("2nd column"))});
+            model->appendRow(sil);
+        }
+        for (int i = 2; i < 4; ++i) {
+            const QList<QStandardItem *> sil({new QStandardItem(QLatin1String("Row %1 Item").arg(i)),
+                                              new QStandardItem(QLatin1String("2nd column"))});
+            model->item(i)->appendRow(sil);
+        }
+        return model;
+    };
+    QTest::addColumn<QStandardItemModel *>("model");
+    QTest::addColumn<QVector<QModelIndex>>("changedIndexes");
+    QTest::addColumn<bool>("isEmpty");
+    {
+        auto model = createModel(5);
+        QTest::newRow("multiple columns") << model
+                                          << QVector<QModelIndex>({model->index(0, 0),
+                                                                   model->index(0, 1)})
+                                          << false;
+    }
+    {
+        auto model = createModel(5);
+        QTest::newRow("multiple rows") << model
+                                       << QVector<QModelIndex>({model->index(0, 0),
+                                                                model->index(1, 0),
+                                                                model->index(2, 0)})
+                                       << false;
+    }
+    {
+        auto model = createModel(5);
+        const QModelIndex idxRow2(model->indexFromItem(model->item(2)));
+        QTest::newRow("child row") << model
+                                   << QVector<QModelIndex>({model->index(0, 0, idxRow2),
+                                                            model->index(0, 1, idxRow2)})
+                                   << false;
+        }
+    {
+        auto model = createModel(5);
+        QTest::newRow("hidden row") << model
+                                    << QVector<QModelIndex>({model->index(3, 0),
+                                                             model->index(3, 1)})
+                                    << true;
+    }
+    {
+        auto model = createModel(5);
+        const QModelIndex idxRow3(model->indexFromItem(model->item(3)));
+        QTest::newRow("hidden child row") << model
+                                          << QVector<QModelIndex>({model->index(0, 0, idxRow3),
+                                                                   model->index(0, 1, idxRow3)})
+                                          << true;
+    }
+    {
+        auto model = createModel(50);
+        QTest::newRow("row outside viewport") << model
+                                              << QVector<QModelIndex>({model->index(49, 0),
+                                                                       model->index(49, 1)})
+                                              << true;
+    }
+}
+
+void tst_QTreeView::checkIntersectedRect()
+{
+    QFETCH(QStandardItemModel *, model);
+    QFETCH(const QVector<QModelIndex>, changedIndexes);
+    QFETCH(bool, isEmpty);
+
+    TreeView view;
+    model->setParent(&view);
+    view.setModel(model);
+    view.resize(400, 400);
+    view.show();
+    view.expandAll();
+    view.setRowHidden(3, QModelIndex(), true);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    view.m_intersectecRect = QRect();
+    emit view.model()->dataChanged(changedIndexes.first(), changedIndexes.last());
+    if (isEmpty) {
+        QVERIFY(view.m_intersectecRect.isEmpty());
+    } else if (!changedIndexes.first().isValid()) {
+        QCOMPARE(view.m_intersectecRect, view.viewport()->rect());
+    } else {
+        const auto parent = changedIndexes.first().parent();
+        const int rCount = view.model()->rowCount(parent);
+        const int cCount = view.model()->columnCount(parent);
+        for (int r = 0; r < rCount; ++r) {
+            for (int c = 0; c < cCount; ++c) {
+                const QModelIndex &idx = view.model()->index(r, c, parent);
+                const auto rect = view.visualRect(idx);
+                if (changedIndexes.contains(idx))
+                    QVERIFY(view.m_intersectecRect.contains(rect));
+                else
+                    QVERIFY(!view.m_intersectecRect.contains(rect));
+            }
+        }
+    }
 }
 
 static void fillModeltaskQTBUG_8376(QAbstractItemModel &model)

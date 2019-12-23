@@ -51,6 +51,7 @@
 #include <QTest>
 #include <QVBoxLayout>
 #include <QtTest/private/qtesthelpers_p.h>
+#include <private/qabstractitemview_p.h>
 
 Q_DECLARE_METATYPE(Qt::ItemFlags);
 
@@ -114,6 +115,9 @@ private slots:
     void noFallbackToRoot();
     void setCurrentIndex_data();
     void setCurrentIndex();
+
+    void checkIntersectedRect_data();
+    void checkIntersectedRect();
 
     void task221955_selectedEditor();
     void task250754_fontChange();
@@ -468,7 +472,8 @@ void tst_QAbstractItemView::basic_tests(QAbstractItemView *view)
     view->setCurrentIndex(QModelIndex());
 
     // protected methods
-    view->dataChanged(QModelIndex(), QModelIndex());
+    // will assert because an invalid index is passed
+    //view->dataChanged(QModelIndex(), QModelIndex());
     view->rowsInserted(QModelIndex(), -1, -1);
     view->rowsAboutToBeRemoved(QModelIndex(), -1, -1);
     view->selectionChanged(QItemSelection(), QItemSelection());
@@ -1096,6 +1101,101 @@ void tst_QAbstractItemView::setCurrentIndex()
     QCOMPARE(view->currentIndex(), model->index(0, 0));
     view->setCurrentIndex(model->index(1, 0));
     QVERIFY(view->currentIndex() == model->index(result ? 1 : 0, 0));
+}
+
+void tst_QAbstractItemView::checkIntersectedRect_data()
+{
+    auto createModel = [](int rowCount) -> QStandardItemModel*
+    {
+        QStandardItemModel *model = new QStandardItemModel;
+        for (int i = 0; i < rowCount; ++i) {
+            const QList<QStandardItem *> sil({new QStandardItem(QLatin1String("Row %1 Item").arg(i)),
+                                              new QStandardItem(QLatin1String("2nd column"))});
+            model->appendRow(sil);
+        }
+        return model;
+    };
+    QTest::addColumn<QStandardItemModel *>("model");
+    QTest::addColumn<QVector<QModelIndex>>("changedIndexes");
+    QTest::addColumn<bool>("isEmpty");
+    {
+        auto model = createModel(5);
+        QTest::newRow("multiple columns") << model
+                                          << QVector<QModelIndex>({model->index(0, 0),
+                                                                   model->index(0, 1)})
+                                          << false;
+    }
+    {
+        auto model = createModel(5);
+        QTest::newRow("multiple rows") << model
+                                       << QVector<QModelIndex>({model->index(0, 0),
+                                                                model->index(1, 0),
+                                                                model->index(2, 0)})
+                                       << false;
+    }
+    {
+        auto model = createModel(5);
+        QTest::newRow("hidden rows") << model
+                                     << QVector<QModelIndex>({model->index(3, 0),
+                                                              model->index(4, 0)})
+                                     << true;
+    }
+    {
+        auto model = createModel(500);
+        QTest::newRow("rows outside viewport") << model
+                                               << QVector<QModelIndex>({model->index(498, 0),
+                                                                        model->index(499, 0)})
+                                               << true;
+    }
+}
+
+void tst_QAbstractItemView::checkIntersectedRect()
+{
+    QFETCH(QStandardItemModel *, model);
+    QFETCH(const QVector<QModelIndex>, changedIndexes);
+    QFETCH(bool, isEmpty);
+
+    class TableView : public QTableView
+    {
+    public:
+        void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override
+        {
+            QTableView::dataChanged(topLeft, bottomRight, roles);
+            // we want to check the base class implementation here!
+            QAbstractItemViewPrivate *av = static_cast<QAbstractItemViewPrivate*>(qt_widget_private(this));
+            m_intersectecRect = av->intersectedRect(av->viewport->rect(), topLeft, bottomRight);
+        }
+        mutable QRect m_intersectecRect;
+    };
+
+    TableView view;
+    model->setParent(&view);
+    view.setModel(model);
+    view.resize(400, 400);
+    view.show();
+    view.setRowHidden(3, true);
+    view.setRowHidden(4, true);
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    view.m_intersectecRect = QRect();
+    emit view.model()->dataChanged(changedIndexes.first(), changedIndexes.last());
+    if (isEmpty) {
+        QVERIFY(view.m_intersectecRect.isEmpty());
+    } else {
+        const auto parent = changedIndexes.first().parent();
+        const int rCount = view.model()->rowCount(parent);
+        const int cCount = view.model()->columnCount(parent);
+        for (int r = 0; r < rCount; ++r) {
+            for (int c = 0; c < cCount; ++c) {
+                const QModelIndex &idx = view.model()->index(r, c, parent);
+                const auto rect = view.visualRect(idx);
+                if (changedIndexes.contains(idx))
+                    QVERIFY(view.m_intersectecRect.contains(rect));
+                else
+                    QVERIFY(!view.m_intersectecRect.contains(rect));
+            }
+        }
+    }
 }
 
 void tst_QAbstractItemView::task221955_selectedEditor()

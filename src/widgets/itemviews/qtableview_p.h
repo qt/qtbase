@@ -149,6 +149,7 @@ public:
  }
     void init();
     void trimHiddenSelections(QItemSelectionRange *range) const;
+    QRect intersectedRect(const QRect rect, const QModelIndex &topLeft, const QModelIndex &bottomRight) const override;
 
     inline bool isHidden(int row, int col) const {
         return verticalHeader->isSectionHidden(row)

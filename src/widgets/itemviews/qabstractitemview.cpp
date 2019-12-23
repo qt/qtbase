@@ -3335,8 +3335,19 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
         }
     } else {
         d->updateEditorData(topLeft, bottomRight);
-        if (isVisible() && !d->delayedPendingLayout)
-            d->viewport->update();
+        if (isVisible() && !d->delayedPendingLayout) {
+            if (!topLeft.isValid() ||
+                topLeft.parent() != bottomRight.parent() ||
+                topLeft.row() > bottomRight.row() ||
+                topLeft.column() > bottomRight.column()) {
+                // invalid parameter - call update() to redraw all
+                d->viewport->update();
+            } else {
+                const QRect updateRect = d->intersectedRect(d->viewport->rect(), topLeft, bottomRight);
+                if (!updateRect.isEmpty())
+                    d->viewport->update(updateRect);
+            }
+        }
     }
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -3618,6 +3629,19 @@ void QAbstractItemViewPrivate::_q_rowsMoved(const QModelIndex &, int, int, const
 void QAbstractItemViewPrivate::_q_columnsMoved(const QModelIndex &, int, int, const QModelIndex &, int)
 {
   _q_layoutChanged();
+}
+
+QRect QAbstractItemViewPrivate::intersectedRect(const QRect rect, const QModelIndex &topLeft, const QModelIndex &bottomRight) const
+{
+    Q_Q(const QAbstractItemView);
+
+    const auto parentIdx = topLeft.parent();
+    QRect updateRect;
+    for (int r = topLeft.row(); r <= bottomRight.row(); ++r) {
+        for (int c = topLeft.column(); c <= bottomRight.column(); ++c)
+            updateRect |= q->visualRect(model->index(r, c, parentIdx));
+    }
+    return rect.intersected(updateRect);
 }
 
 /*!
