@@ -443,6 +443,38 @@ QT_BEGIN_NAMESPACE
 
     Other differences are outlined below.
 
+    \section2 Different pattern syntax
+
+    Porting a regular expression from QRegExp to QRegularExpression may require
+    changes to the pattern itself.
+
+    In certain scenarios, QRegExp was too lenient and accepted patterns that
+    are simply invalid when using QRegularExpression. These are somehow easy
+    to detect, because the QRegularExpression objects built with these patterns
+    are not valid (cf. isValid()).
+
+    In other cases, a pattern ported from QRegExp to QRegularExpression may
+    silently change semantics. Therefore, it is necessary to review the
+    patterns used. The most notable cases of silent incompatibility are:
+
+    \list
+
+    \li Curly braces are needed in order to use a hexadecimal escape like
+    \c{\xHHHH} with more than 2 digits. A pattern like \c{\x2022} neeeds to
+    be ported to \c{\x{2022}}, or it will match a space (\c{0x20}) followed
+    by the string \c{"22"}. In general, it is highly recommended to always use
+    curly braces with the \c{\\x} escape, no matter the amount of digits
+    specified.
+
+    \li A 0-to-n quantification like \c{{,n}} needs to be ported to c{{0,n}} to
+    preserve semantics. Otherwise, a pattern such as \c{\d{,3}} would
+    actually match a digit followed by the exact string \c{"{,3}"}.
+
+    \li QRegExp by default does Unicode-aware matching, while
+    QRegularExpression requires a separate option; see below for more details.
+
+    \endlist
+
     \section2 Porting from QRegExp::exactMatch()
 
     QRegExp::exactMatch() in Qt 4 served two purposes: it exactly matched
