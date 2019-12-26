@@ -68,6 +68,7 @@ QByteArray QWasmCursor::cursorShapeToHtml(Qt::CursorShape shape)
         cursorName = "default";
         break;
     case Qt::UpArrowCursor:
+        cursorName = "n-resize";
         break;
     case Qt::CrossCursor:
         cursorName = "crosshair";
@@ -91,7 +92,8 @@ QByteArray QWasmCursor::cursorShapeToHtml(Qt::CursorShape shape)
         cursorName = "nwse-resize";
         break;
     case Qt::SizeAllCursor:
-        break; // no equivalent?
+        cursorName = "move";
+        break;
     case Qt::BlankCursor:
         cursorName = "none";
         break;
@@ -111,18 +113,23 @@ QByteArray QWasmCursor::cursorShapeToHtml(Qt::CursorShape shape)
         cursorName = "help";
         break;
     case Qt::BusyCursor:
-        cursorName = "wait";
+        cursorName = "progress";
         break;
     case Qt::OpenHandCursor:
-        break; // no equivalent?
+        cursorName = "grab";
+        break;
     case Qt::ClosedHandCursor:
-        break; // no equivalent?
+        cursorName = "grabbing";
+        break;
     case Qt::DragCopyCursor:
-        break; // no equivalent?
+        cursorName = "copy";
+        break;
     case Qt::DragMoveCursor:
-        break; // no equivalent?
+        cursorName = "default";
+        break;
     case Qt::DragLinkCursor:
-        break; // no equivalent?
+        cursorName = "alias";
+        break;
     default:
         break;
     }
