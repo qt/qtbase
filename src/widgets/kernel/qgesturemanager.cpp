@@ -105,11 +105,10 @@ QGestureManager::QGestureManager(QObject *parent)
 QGestureManager::~QGestureManager()
 {
     qDeleteAll(m_recognizers);
-    foreach (QGestureRecognizer *recognizer, m_obsoleteGestures.keys()) {
-        qDeleteAll(m_obsoleteGestures.value(recognizer));
-        delete recognizer;
+    for (auto it = m_obsoleteGestures.cbegin(), end = m_obsoleteGestures.cend(); it != end; ++it) {
+        qDeleteAll(it.value());
+        delete it.key();
     }
-    m_obsoleteGestures.clear();
 }
 
 Qt::GestureType QGestureManager::registerGestureRecognizer(QGestureRecognizer *recognizer)
