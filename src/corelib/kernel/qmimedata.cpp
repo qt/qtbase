@@ -72,40 +72,44 @@ public:
 
     QVariant retrieveTypedData(const QString &format, QMetaType::Type type) const;
 
-    QVector<QMimeDataStruct> dataList;
+    std::vector<QMimeDataStruct>::iterator find(const QString &format) noexcept {
+        const auto formatEquals = [](const QString &format) {
+            return [&format](const QMimeDataStruct &s) { return s.format == format; };
+        };
+        return std::find_if(dataList.begin(), dataList.end(), formatEquals(format));
+    }
+
+    std::vector<QMimeDataStruct>::const_iterator find(const QString &format) const noexcept {
+        return const_cast<QMimeDataPrivate*>(this)->find(format);
+    }
+
+    std::vector<QMimeDataStruct> dataList;
 };
 
 void QMimeDataPrivate::removeData(const QString &format)
 {
-    for (int i=0; i<dataList.size(); i++) {
-        if (dataList.at(i).format == format) {
-            dataList.removeAt(i);
-            return;
-        }
-    }
+    const auto it = find(format);
+    if (it != dataList.end())
+        dataList.erase(it);
 }
 
 void QMimeDataPrivate::setData(const QString &format, const QVariant &data)
 {
-    // remove it first if the format is already here.
-    removeData(format);
-    QMimeDataStruct mimeData;
-    mimeData.format = format;
-    mimeData.data = data;
-    dataList += mimeData;
+    const auto it = find(format);
+    if (it == dataList.end())
+        dataList.push_back({format, data});
+    else
+        it->data = data;
 }
 
 
 QVariant QMimeDataPrivate::getData(const QString &format) const
 {
-    QVariant data;
-    for (int i=0; i<dataList.size(); i++) {
-        if (dataList.at(i).format == format) {
-            data = dataList.at(i).data;
-            break;
-        }
-    }
-    return data;
+    const auto it = find(format);
+    if (it == dataList.cend())
+        return {};
+    else
+        return it->data;
 }
 
 QVariant QMimeDataPrivate::retrieveTypedData(const QString &format, QMetaType::Type type) const
@@ -635,10 +639,9 @@ QStringList QMimeData::formats() const
 {
     Q_D(const QMimeData);
     QStringList list;
-    const int size = d->dataList.size();
-    list.reserve(size);
-    for (int i = 0; i < size; ++i)
-        list += d->dataList.at(i).format;
+    list.reserve(static_cast<int>(d->dataList.size()));
+    for (auto &e : d->dataList)
+        list += e.format;
     return list;
 }
 
