@@ -108,7 +108,10 @@ public:
             s.invalid = true;
             return s;
         }
-        return parent()->state();
+
+        QAccessible::State s = parent()->state();
+        s.focused = (m_index == m_parent->currentIndex());
+        return s;
     }
     QRect rect() const override {
         if (!isValid())
@@ -214,6 +217,16 @@ QAccessibleTabBar::~QAccessibleTabBar()
 QTabBar *QAccessibleTabBar::tabBar() const
 {
     return qobject_cast<QTabBar*>(object());
+}
+
+QAccessibleInterface* QAccessibleTabBar::focusChild() const
+{
+    for (int i = 0; i < childCount(); ++i) {
+        if (child(i)->state().focused)
+            return child(i);
+    }
+
+    return nullptr;
 }
 
 QAccessibleInterface* QAccessibleTabBar::child(int index) const

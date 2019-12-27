@@ -175,6 +175,8 @@ QT_BEGIN_NAMESPACE
   \fn void QCursor::swap(QCursor &other)
 
   Swaps this cursor with the \a other cursor.
+
+  \since 5.7
  */
 
 /*!

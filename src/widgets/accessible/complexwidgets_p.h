@@ -112,6 +112,7 @@ public:
     explicit QAccessibleTabBar(QWidget *w);
     ~QAccessibleTabBar();
 
+    QAccessibleInterface *focusChild() const override;
     int childCount() const override;
     QString text(QAccessible::Text t) const override;
 

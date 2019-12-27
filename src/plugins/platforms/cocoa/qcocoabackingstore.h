@@ -54,8 +54,6 @@ class QCocoaBackingStore : public QRasterBackingStore
 protected:
     QCocoaBackingStore(QWindow *window);
     QCFType<CGColorSpaceRef> colorSpace() const;
-    QMacNotificationObserver m_backingPropertiesObserver;
-    virtual void backingPropertiesChanged() = 0;
 };
 
 class QNSWindowBackingStore : public QCocoaBackingStore
@@ -71,7 +69,6 @@ private:
     bool windowHasUnifiedToolbar() const;
     QImage::Format format() const override;
     void redrawRoundedBottomCorners(CGRect) const;
-    void backingPropertiesChanged() override;
 };
 
 class QCALayerBackingStore : public QCocoaBackingStore
@@ -118,7 +115,8 @@ private:
     bool recreateBackBufferIfNeeded();
     bool prepareForFlush();
 
-    void backingPropertiesChanged() override;
+    void backingPropertiesChanged();
+    QMacNotificationObserver m_backingPropertiesObserver;
 
     std::list<std::unique_ptr<GraphicsBuffer>> m_buffers;
 };

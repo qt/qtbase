@@ -824,8 +824,8 @@ void WriteInitialization::acceptWidget(DomWidget *node)
                     qPrintable(m_option.messagePrefix()),
                     name.toLatin1().data());
         } else {
-            m_output << m_indent << varName << language::derefPointer << "raise()"
-                << language::eol;
+            m_output << m_indent << varName << language::derefPointer
+                << (language::language() != Language::Python ? "raise()" : "raise_()") << language::eol;
         }
     }
 }

@@ -1354,15 +1354,14 @@ QPalette QApplication::palette(const QWidget* w)
 */
 QPalette QApplication::palette(const char *className)
 {
-    if (!QApplicationPrivate::app_pal)
-        palette();
     PaletteHash *hash = app_palettes();
     if (className && hash && hash->size()) {
         QHash<QByteArray, QPalette>::ConstIterator it = hash->constFind(className);
         if (it != hash->constEnd())
             return *it;
     }
-    return *QApplicationPrivate::app_pal;
+
+    return QGuiApplication::palette();
 }
 
 void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash)
@@ -1381,6 +1380,10 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
             QApplicationPrivate::app_pal = new QPalette(pal);
         else
             *QApplicationPrivate::app_pal = pal;
+
+        if (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal))
+            QCoreApplication::setAttribute(Qt::AA_SetPalette);
+
         if (hash && hash->size()) {
             all = true;
             if (clearWidgetPaletteHash)
@@ -1390,15 +1393,8 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
         hash->insert(className, pal);
     }
 
-    if (QApplicationPrivate::is_app_running && !QApplicationPrivate::is_app_closing) {
-        // Send ApplicationPaletteChange to qApp itself, and to the widgets.
+    if (qApp)
         qApp->d_func()->sendApplicationPaletteChange(all, className);
-    }
-
-    if (!className && (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal))) {
-        QCoreApplication::setAttribute(Qt::AA_SetPalette);
-        emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
-    }
 }
 
 /*!
@@ -4431,7 +4427,10 @@ void QApplicationPrivate::notifyThemeChanged()
 
 void QApplicationPrivate::sendApplicationPaletteChange(bool toAllWidgets, const char *className)
 {
-    QGuiApplicationPrivate::sendApplicationPaletteChange();
+    if (!is_app_running || is_app_closing)
+        return;
+
+    QGuiApplicationPrivate::sendApplicationPaletteChange(toAllWidgets, className);
 
     QEvent event(QEvent::ApplicationPaletteChange);
     const QWidgetList widgets = QApplication::allWidgets();

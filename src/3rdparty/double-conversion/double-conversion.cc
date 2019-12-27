@@ -535,22 +535,10 @@ static double SignedZero(bool sign) {
 
 
 // Returns true if 'c' is a decimal digit that is valid for the given radix.
-//
-// The function is small and could be inlined, but VS2012 emitted a warning
-// because it constant-propagated the radix and concluded that the last
-// condition was always true. By moving it into a separate function the
-// compiler wouldn't warn anymore.
-#ifdef _MSC_VER
-#pragma optimize("",off)
-static bool IsDecimalDigitForRadix(int c, int radix) {
-  return '0' <= c && c <= '9' && (c - '0') < radix;
-}
-#pragma optimize("",on)
-#else
 static bool inline IsDecimalDigitForRadix(int c, int radix) {
   return '0' <= c && c <= '9' && (c - '0') < radix;
 }
-#endif
+
 // Returns true if 'c' is a character digit that is valid for the given radix.
 // The 'a_character' should be 'a' or 'A'.
 //

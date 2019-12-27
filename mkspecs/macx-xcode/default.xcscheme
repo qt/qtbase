@@ -64,6 +64,8 @@
       buildConfiguration = "Debug"
       ignoresPersistentStateOnLaunch = "NO"
       disableMainThreadChecker = "YES"
+      enableGPUFrameCaptureMode = "3"
+      enableGPUValidationMode = "1"
       debugDocumentVersioning = "NO"
       allowLocationSimulation = "YES">
       <BuildableProductRunnable>

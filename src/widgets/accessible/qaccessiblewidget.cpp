@@ -376,8 +376,12 @@ QAccessibleInterface *QAccessibleWidget::focusChild() const
     if (!fw)
         return nullptr;
 
-    if (isAncestor(widget(), fw) || fw == widget())
-        return QAccessible::queryAccessibleInterface(fw);
+    if (isAncestor(widget(), fw)) {
+        QAccessibleInterface *iface = QAccessible::queryAccessibleInterface(fw);
+        if (!iface || iface == this || !iface->focusChild())
+            return iface;
+        return iface->focusChild();
+    }
     return nullptr;
 }
 

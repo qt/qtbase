@@ -221,7 +221,9 @@ public:
 
     bool isModified() const;
 
+#ifndef QT_NO_PRINTER
     void print(QPagedPaintDevice *printer) const;
+#endif
 
     enum ResourceType {
         UnknownResource = 0,

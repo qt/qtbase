@@ -1295,7 +1295,7 @@ void qsrand(uint seed)
     \note This function is deprecated. In new applications, use
     QRandomGenerator instead.
 
-    \sa qrand(), QRandomGenerator
+    \sa qsrand(), QRandomGenerator
 */
 int qrand()
 {

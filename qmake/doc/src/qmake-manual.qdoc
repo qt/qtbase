@@ -1329,7 +1329,7 @@
             \li Value
             \li Description
         \row
-            \li no_check_exists
+            \li no_check_exist
             \li If not set, qmake looks to see if the files to install actually
                 exist. If these files don't exist, qmake doesn’t create the
                 install rule. Use this config value if you need to install

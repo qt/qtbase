@@ -825,6 +825,8 @@ defineTest(qtConfOutput_preparePaths) {
         libloc_absolute_path = $$absolute_path($$config.rel_input.libdir, $$config.input.prefix)
     }
     config.input.liblocation_to_prefix = $$relative_path($$config.input.prefix, $$libloc_absolute_path)
+    config.qtbase.features.shared.available =
+    export(config.qtbase.features.shared.available)
 
     hostbindir_absolute_path = $$absolute_path($$config.rel_input.hostbindir, $$config.input.hostprefix)
     config.input.hostbindir_to_hostprefix = $$relative_path($$config.input.hostprefix, $$hostbindir_absolute_path)

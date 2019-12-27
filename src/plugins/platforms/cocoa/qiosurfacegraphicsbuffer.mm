@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaIOSurface, "qt.qpa.backingstore.iosurface");
 
-QIOSurfaceGraphicsBuffer::QIOSurfaceGraphicsBuffer(const QSize &size, const QPixelFormat &format, QCFType<CGColorSpaceRef> colorSpace)
+QIOSurfaceGraphicsBuffer::QIOSurfaceGraphicsBuffer(const QSize &size, const QPixelFormat &format)
     : QPlatformGraphicsBuffer(size, format)
 {
     const size_t width = size.width();
@@ -81,15 +81,17 @@ QIOSurfaceGraphicsBuffer::QIOSurfaceGraphicsBuffer(const QSize &size, const QPix
 
     Q_ASSERT(size_t(bytesPerLine()) == bytesPerRow);
     Q_ASSERT(size_t(byteCount()) == totalBytes);
-
-    if (colorSpace) {
-        IOSurfaceSetValue(m_surface, CFSTR("IOSurfaceColorSpace"),
-            QCFType<CFPropertyListRef>(CGColorSpaceCopyPropertyList(colorSpace)));
-    }
 }
 
 QIOSurfaceGraphicsBuffer::~QIOSurfaceGraphicsBuffer()
 {
+}
+
+void QIOSurfaceGraphicsBuffer::setColorSpace(QCFType<CGColorSpaceRef> colorSpace)
+{
+    Q_ASSERT(colorSpace);
+    IOSurfaceSetValue(m_surface, CFSTR("IOSurfaceColorSpace"),
+        QCFType<CFPropertyListRef>(CGColorSpaceCopyPropertyList(colorSpace)));
 }
 
 const uchar *QIOSurfaceGraphicsBuffer::data() const
