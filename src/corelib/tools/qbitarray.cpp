@@ -343,34 +343,32 @@ QBitArray QBitArray::fromBits(const char *data, qsizetype size)
 }
 
 /*!
-    \since 5.13
+    \since 6.0
 
-    Returns the array of bit converted to an int. The conversion is based of endianness value.
-    Converts up to the first 32 bits of the array to \c uint32_t and returns it,
-    obeying \a endianness. If the array has more than 32 bits, \a ok is set to false
-    and this function returns zero; otherwise, it's set to true.
+    Returns the array of bit converted to an int. The conversion is based on \a endianness.
+    Converts up to the first 32 bits of the array to \c quint32 and returns it,
+    obeying \a endianness. If \a ok is not a null pointer, and the array has more
+    than 32 bits, \a ok is set to false and this function returns zero; otherwise,
+    it's set to true.
 */
 quint32 QBitArray::toUInt32(QSysInfo::Endian endianness, bool *ok) const noexcept
 {
-    if (size() > 32) {
-        if (ok != nullptr) {
+    const qsizetype _size = size();
+    if (_size > 32) {
+        if (ok)
             *ok = false;
-        }
-
         return 0;
     }
 
-    if (ok != nullptr) {
+    if (ok)
         *ok = true;
-    }
 
-    auto factor = 1;
+    quint32 factor = 1;
     quint32 total = 0;
-    for (auto i = 0; i < size(); ++i, factor *= 2) {
-        const auto index = endianness == QSysInfo::Endian::LittleEndian ? i : (size() - i - 1);
-        if (testBit(index)) {
+    for (qsizetype i = 0; i < _size; ++i, factor *= 2) {
+        const auto index = endianness == QSysInfo::Endian::LittleEndian ? i : (_size - i - 1);
+        if (testBit(index))
             total += factor;
-        }
     }
 
     return total;
