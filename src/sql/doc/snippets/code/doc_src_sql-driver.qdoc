@@ -235,7 +235,7 @@ make sub-oci
 
 //! [35]
 QSqlDatabase: QPSQL driver not loaded
-QSqlDatabase: available drivers: QSQLITE QMYSQL QMYSQL3 QODBC QODBC3 QPSQL QPSQL7
+QSqlDatabase: available drivers: QSQLITE QMYSQL QMYSQL3 QMARIADB QODBC QODBC3 QPSQL QPSQL7
 Could not create database object
 //! [35]
 

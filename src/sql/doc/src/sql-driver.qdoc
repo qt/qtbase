@@ -48,7 +48,7 @@
     \header \li Driver name \li DBMS
     \row \li \l{#QDB2}{QDB2} \li IBM DB2 (version 7.1 and above)
     \row \li \l{#QIBASE}{QIBASE} \li Borland InterBase
-    \row \li \l{#QMYSQL}{QMYSQL} \li MySQL (version 5.0 and above)
+    \row \li \l{#QMYSQL}{QMYSQL / MARIADB} \li MySQL or MariaDB (version 5.0 and above)
     \row \li \l{#QOCI}{QOCI} \li Oracle Call Interface Driver
     \row \li \l{#QODBC}{QODBC}
          \li Open Database Connectivity (ODBC) - Microsoft SQL Server and other
@@ -123,7 +123,13 @@
     \section1 Driver Specifics
 
     \target QMYSQL
-    \section2 QMYSQL for MySQL 5 and higher
+    \section2 QMYSQL for MySQL or MariaDB 5 and higher
+
+    MariaDB is a fork of MySQL intended to remain free and open-source software
+    under the GNU General Public License. MariaDB intended to maintain high
+    compatibility with MySQL, ensuring a drop-in replacement capability with
+    library binary parity and exact matching with MySQL APIs and commands.
+    Therefore the plugin for MySQL and MariaDB are combined into one Qt plugin.
 
     \section3 QMYSQL Stored Procedure Support
 
@@ -158,12 +164,13 @@
 
     \section3 How to Build the QMYSQL Plugin on Unix and \macos
 
-    You need the MySQL header files, as well as the shared library
-    \c{libmysqlclient.so}. Depending on your Linux distribution, you may
-    need to install a package which is usually called "mysql-devel".
+    You need the MySQL / MariaDB header files, as well as the shared library
+    \c{libmysqlclient.so} / \c{libmariadb.so}. Depending on your Linux distribution,
+    you may need to install a package which is usually called "mysql-devel"
+    or "mariadb-devel".
 
-    Tell \l qmake where to find the MySQL header files and shared
-    libraries (here it is assumed that MySQL is installed in
+    Tell \l qmake where to find the MySQL / MariaDB header files and shared
+    libraries (here it is assumed that MySQL / MariaDB is installed in
     \c{/usr/local}) and run \c{make}:
 
     \snippet code/doc_src_sql-driver.qdoc 3
@@ -171,7 +178,8 @@
     \section3 How to Build the QMYSQL Plugin on Windows
 
     You need to get the MySQL installation files (e.g.
-    \l {https://dev.mysql.com/downloads/installer/}{mysql-installer-web-community-8.0.18.0.msi}).
+    \l {https://dev.mysql.com/downloads/installer/}{mysql-installer-web-community-8.0.18.0.msi}) or
+    \l {https://downloads.mariadb.org/connector-c/3.1.5/}{mariadb-connector-c-3.1.5-win64.msi}.
     Run the installer,
     select custom installation and install the MySQL C Connector
     which matches your Qt installation (x86 or x64).
@@ -180,6 +188,12 @@
     \li \c {<MySQL dir>/lib/libmysql.lib}
     \li \c {<MySQL dir>/lib/libmysql.dll}
     \li \c {<MySQL dir>/include/mysql.h}
+    \endlist
+    and for MariaDB
+    \list
+    \li \c {<MariaDB dir>/lib/libmariadb.lib}
+    \li \c {<MariaDB dir>/lib/libmariadb.dll}
+    \li \c {<MariaDB dir>/include/mysql.h}
     \endlist
 
     Build the plugin as follows (here it is assumed that the MySQL
@@ -191,7 +205,7 @@
     If you are not using a Microsoft compiler, replace \c nmake with \c
     mingw32-make in the line above.
 
-    When you distribute your application, remember to include libmysql.dll
+    When you distribute your application, remember to include libmysql.dll / libmariadb.dll
     in your installation package. It must be placed in the same folder
     as the application executable. \e libmysql.dll additionally needs the
     MSVC runtime libraries which can be installed with vcredist.exe
