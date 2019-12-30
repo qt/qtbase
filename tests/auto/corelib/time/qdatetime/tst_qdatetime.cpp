@@ -2243,8 +2243,12 @@ void tst_QDateTime::fromStringDateFormat_data()
     // Spaces as separators:
     QTest::newRow("sec-milli space")
         << QString("2000-01-02 03:04:05 678") << Qt::ISODate
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        << invalidDateTime();
+#else
         // Should be invalid, but we ignore trailing cruft (in some cases)
         << QDateTime(QDate(2000, 1, 2), QTime(3, 4, 5));
+#endif
     QTest::newRow("min-sec space")
         << QString("2000-01-02 03:04 05.678") << Qt::ISODate << QDateTime();
     QTest::newRow("hour-min space")
@@ -2332,7 +2336,11 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0), Qt::LocalTime);
     // Test invalid characters (should ignore invalid characters at end of string).
     QTest::newRow("ISO invalid character at end") << QString::fromLatin1("2012-01-01T08:00:00!")
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        << Qt::ISODate << invalidDateTime();
+#else
         << Qt::ISODate << QDateTime(QDate(2012, 1, 1), QTime(8, 0, 0, 0), Qt::LocalTime);
+#endif
     QTest::newRow("ISO invalid character at front") << QString::fromLatin1("!2012-01-01T08:00:00")
         << Qt::ISODate << invalidDateTime();
     QTest::newRow("ISO invalid character both ends") << QString::fromLatin1("!2012-01-01T08:00:00!")
