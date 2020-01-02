@@ -149,7 +149,7 @@ QJsonValue::QJsonValue(bool b)
 }
 
 /*!
-    Creates a value of type Double, with value \a n.
+    Creates a value of type Double, with value \a v.
  */
 QJsonValue::QJsonValue(double v)
     : d(nullptr)
@@ -164,7 +164,7 @@ QJsonValue::QJsonValue(double v)
 
 /*!
     \overload
-    Creates a value of type Double, with value \a n.
+    Creates a value of type Double, with value \a v.
  */
 QJsonValue::QJsonValue(int v)
     : n(v), t(QCborValue::Integer)
@@ -173,7 +173,7 @@ QJsonValue::QJsonValue(int v)
 
 /*!
     \overload
-    Creates a value of type Double, with value \a n.
+    Creates a value of type Double, with value \a v.
     NOTE: the integer limits for IEEE 754 double precision data is 2^53 (-9007199254740992 to +9007199254740992).
     If you pass in values outside this range expect a loss of precision to occur.
  */

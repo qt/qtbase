@@ -579,7 +579,7 @@ bool QTabWidget::isTabVisible(int index) const
 }
 
 /*!
-    If \a enable is true, the page at position \a index is visible; otherwise the page at
+    If \a visible is true, the page at position \a index is visible; otherwise the page at
     position \a index is hidden. The page's tab is redrawn appropriately.
 
     \sa isTabVisible()

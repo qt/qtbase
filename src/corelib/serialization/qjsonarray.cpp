@@ -175,12 +175,6 @@ void QJsonArray::initialize()
  */
 QJsonArray::~QJsonArray() = default;
 
-/*!
-    Creates a copy of \a other.
-
-    Since QJsonArray is implicitly shared, the copy is shallow
-    as long as the object doesn't get modified.
- */
 QJsonArray::QJsonArray(std::initializer_list<QJsonValue> args)
 {
     initialize();
@@ -188,6 +182,12 @@ QJsonArray::QJsonArray(std::initializer_list<QJsonValue> args)
         append(arg);
 }
 
+/*!
+    Creates a copy of \a other.
+
+    Since QJsonArray is implicitly shared, the copy is shallow
+    as long as the object doesn't get modified.
+ */
 QJsonArray::QJsonArray(const QJsonArray &other)
 {
     a = other.a;

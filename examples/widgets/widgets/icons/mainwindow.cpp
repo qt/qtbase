@@ -361,7 +361,7 @@ QWidget *MainWindow::createImagesGroupBox()
     QVBoxLayout *layout = new QVBoxLayout(imagesGroupBox);
     layout->addWidget(imagesTable);
     return imagesGroupBox;
-//! [25]
+//! [24]
 }
 
 //! [26]

@@ -2638,7 +2638,7 @@ uint qHash(long double key, uint seed) noexcept
     \sa insert()
 */
 
-/*! \fn template <class Key, class T> QList<Key> QHash<Key, T>::uniqueKeys() const
+/*! \fn template <class Key, class T> QList<Key> QMultiHash<Key, T>::uniqueKeys() const
     \since 5.13
 
     Returns a list containing all the keys in the map. Keys that occur multiple
@@ -2661,7 +2661,7 @@ uint qHash(long double key, uint seed) noexcept
     Inserts all the items in the \a other hash into this hash
     and returns a reference to this hash.
 
-    \sa unit(), insert()
+    \sa unite(), insert()
 */
 
 /*! \fn template <class Key, class T> QMultiHash QMultiHash<Key, T>::operator+(const QMultiHash &other) const
