@@ -527,6 +527,8 @@ void tst_QtJson::testObjectSmallKeys()
     QVERIFY(data1.contains(QStringLiteral("123")));
     QCOMPARE(data1.value(QStringLiteral("123")).type(), QJsonValue::Double);
     QCOMPARE(data1.value(QStringLiteral("123")).toDouble(), (double)323);
+    QCOMPARE(data1.constEnd() - data1.constBegin(), 3);
+    QCOMPARE(data1.end() - data1.begin(), 3);
 }
 
 void tst_QtJson::testArraySimple()

@@ -221,7 +221,7 @@ public:
         inline const_iterator operator-(int j) const { return operator+(-j); }
         inline const_iterator &operator+=(int j) { i += j; return *this; }
         inline const_iterator &operator-=(int j) { i -= j; return *this; }
-        int operator-(iterator j) const { return i - j.i; }
+        int operator-(const_iterator j) const { return i - j.i; }
 
         inline bool operator==(const iterator &other) const { return i == other.i; }
         inline bool operator!=(const iterator &other) const { return i != other.i; }
