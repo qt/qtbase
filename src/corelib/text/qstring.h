@@ -1042,7 +1042,7 @@ inline void QString::clear()
 inline QString::QString(const QString &other) noexcept : d(other.d)
 { }
 inline int QString::capacity() const
-{ int realCapacity = d->constAllocatedCapacity(); return realCapacity ? realCapacity - 1 : 0; }
+{ const auto realCapacity = d->constAllocatedCapacity(); return realCapacity ? int(realCapacity) - 1 : 0; }
 inline QString &QString::setNum(short n, int base)
 { return setNum(qlonglong(n), base); }
 inline QString &QString::setNum(ushort n, int base)

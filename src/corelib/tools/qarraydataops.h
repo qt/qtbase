@@ -158,7 +158,7 @@ struct QPodArrayOps
 
         ::memmove(static_cast<void *>(where + n), static_cast<void *>(where),
                   (static_cast<const T*>(this->end()) - where) * sizeof(T));
-        this->size += n; // PODs can't throw on copy
+        this->size += int(n); // PODs can't throw on copy
         while (n--)
             *where++ = t;
     }
@@ -655,7 +655,7 @@ struct QMovableArrayOps
 
         copier.copy(n, t);
         displace.commit();
-        this->size += n;
+        this->size += int(n);
     }
 
     // use moving insert

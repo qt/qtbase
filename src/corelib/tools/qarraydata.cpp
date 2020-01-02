@@ -233,7 +233,7 @@ void *QArrayData::allocate(QArrayData **dptr, size_t objectSize, size_t alignmen
         // find where offset should point to so that data() is aligned to alignment bytes
         data = (quintptr(header) + sizeof(QArrayData) + alignment - 1)
                 & ~(alignment - 1);
-        header->alloc = capacity;
+        header->alloc = uint(capacity);
     }
 
     *dptr = header;
@@ -262,7 +262,7 @@ QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
     options |= AllocatedDataType | MutableData;
     QArrayData *header = reallocateData(data, allocSize, options);
     if (header) {
-        header->alloc = capacity;
+        header->alloc = uint(capacity);
         dataPointer = reinterpret_cast<char *>(header) + offset;
     }
     return qMakePair(static_cast<QArrayData *>(header), dataPointer);

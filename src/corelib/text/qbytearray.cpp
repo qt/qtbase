@@ -1218,7 +1218,7 @@ QByteArray &QByteArray::operator=(const char *str)
         d = QByteArrayData(pair.first, pair.second, 0);
     } else {
         const int len = int(strlen(str));
-        const size_t fullLen = len + 1;
+        const uint fullLen = uint(len) + 1;
         if (d->needsDetach() || fullLen > d->allocatedCapacity()
                 || (len < size() && fullLen < (d->allocatedCapacity() >> 1)))
             reallocData(fullLen, d->detachFlags());
