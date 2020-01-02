@@ -68,6 +68,8 @@ public:
     bool usePCH;
     VCProjectWriter *projectWriter;
 
+    using Win32MakefileGenerator::callExtraCompilerDependCommand;
+
 protected:
     virtual VCProjectWriter *createProjectWriter();
     bool doDepends() const override { return false; } // Never necessary

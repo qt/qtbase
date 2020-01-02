@@ -2350,33 +2350,15 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
         if (!tmp_dep.isEmpty())
             deps = tmp_dep;
         if (!tmp_dep_cmd.isEmpty()) {
-            // Execute dependency command, and add every line as a dep
-            char buff[256];
-            QString dep_cmd = Project->replaceExtraCompilerVariables(
-                        tmp_dep_cmd, inFile, out, MakefileGenerator::LocalShell);
-            if(Project->canExecute(dep_cmd)) {
-                dep_cmd.prepend(QLatin1String("cd ")
-                                + IoUtils::shellQuote(Option::fixPathToLocalOS(Option::output_dir, false))
-                                + QLatin1String(" && "));
-                if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
-                    QString indeps;
-                    while(!feof(proc)) {
-                        int read_in = (int)fread(buff, 1, 255, proc);
-                        if(!read_in)
-                            break;
-                        indeps += QByteArray(buff, read_in);
-                    }
-                    QT_PCLOSE(proc);
-                    if(!indeps.isEmpty()) {
-                        QStringList extradeps = indeps.split(QLatin1Char('\n'));
-                        for (int i = 0; i < extradeps.count(); ++i) {
-                            QString dd = extradeps.at(i).simplified();
-                            if (!dd.isEmpty())
-                                deps += Project->fileFixify(dd, MakefileGenerator::FileFixifyFromOutdir);
-                        }
-                    }
-                }
-            }
+            const QString dep_cd_cmd = QLatin1String("cd ")
+                    + IoUtils::shellQuote(Option::fixPathToLocalOS(Option::output_dir, false))
+                    + QLatin1String(" && ");
+            Project->callExtraCompilerDependCommand(extraCompilerName, dep_cd_cmd, tmp_dep_cmd,
+                                                    inFile, out,
+                                                    true, // dep_lines
+                                                    &deps,
+                                                    configs.contains("dep_existing_only"),
+                                                    true  /* checkCommandAvailability */);
         }
         for (int i = 0; i < deps.count(); ++i)
             deps[i] = Option::fixPathToTargetOS(

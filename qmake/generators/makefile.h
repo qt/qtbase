@@ -87,7 +87,8 @@ protected:
     void callExtraCompilerDependCommand(const ProString &extraCompiler, const QString &dep_cd_cmd,
                                         const QString &tmp_dep_cmd, const QString &inpf,
                                         const QString &tmp_out, bool dep_lines, QStringList *deps,
-                                        bool existingDepsOnly);
+                                        bool existingDepsOnly,
+                                        bool checkCommandAvailability = false);
     void writeExtraCompilerTargets(QTextStream &t);
     void writeExtraCompilerVariables(QTextStream &t);
     bool writeDummyMakefile(QTextStream &t);
