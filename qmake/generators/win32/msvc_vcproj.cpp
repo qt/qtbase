@@ -1483,12 +1483,8 @@ void VcprojGenerator::initResourceFiles()
     if(!rcc_dep_cmd.isEmpty()) {
         const QStringList qrc_files = project->values("RESOURCES").toQStringList();
         QStringList deps;
-        const QString rcc_dep_cd_cmd = QLatin1String("cd ")
-                + IoUtils::shellQuote(Option::fixPathToLocalOS(Option::output_dir, false))
-                + QLatin1String(" && ");
         for (const QString &qrc_file : qrc_files) {
             callExtraCompilerDependCommand("rcc",
-                                           rcc_dep_cd_cmd,
                                            rcc_dep_cmd,
                                            qrc_file,
                                            QString(),
