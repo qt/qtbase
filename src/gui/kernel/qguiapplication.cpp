@@ -153,7 +153,7 @@ Qt::HighDpiScaleFactorRoundingPolicy QGuiApplicationPrivate::highDpiScaleFactorR
     // that behavior by disabling rounding by default.
     Qt::HighDpiScaleFactorRoundingPolicy::PassThrough;
 #else
-    Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor;
+    Qt::HighDpiScaleFactorRoundingPolicy::Round;
 #endif
 bool QGuiApplicationPrivate::highDpiScalingUpdated = false;
 
@@ -3554,8 +3554,8 @@ Qt::ApplicationState QGuiApplication::applicationState()
     environment variable. The QGuiApplication::highDpiScaleFactorRoundingPolicy()
     accessor will reflect the environment, if set.
 
-    The default value is Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor.
-    On Qt for Android the default is Qt::HighDpiScaleFactorRoundingPolicy::PassThough,
+    The default value is Qt::HighDpiScaleFactorRoundingPolicy::Round.
+    On Qt for Android the default is Qt::HighDpiScaleFactorRoundingPolicy::PassThrough,
     which preserves historical behavior from earlier Qt versions.
 */
 void QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy policy)
