@@ -4612,7 +4612,7 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
     It works exactly like the Q_NAMESPACE macro. However, the external
     \c{staticMetaObject} variable that gets defined in the namespace
-    is declared with the supplied \c{EXPORT_MACRO} qualifier. This is
+    is declared with the supplied \a EXPORT_MACRO qualifier. This is
     useful if the object needs to be exported from a dynamic library.
 
     \sa Q_NAMESPACE, {Creating Shared Libraries}

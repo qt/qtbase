@@ -1202,14 +1202,6 @@
 */
 
 /*!
-\fn QString QLocale::toString(ushort i) const
-
-\overload
-
-\sa toUShort()
-*/
-
-/*!
 \fn QString QLocale::toString(int i) const
 
 \overload

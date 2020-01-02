@@ -292,7 +292,8 @@ QList<QAction*> QActionGroup::actions() const
     \brief Enable or disable the group exclusion checking
 
     This is a convenience method that calls
-    setExclusionPolicy(ExclusionPolicy::Exclusive).
+    setExclusionPolicy(ExclusionPolicy::Exclusive) when \a b is true,
+    else setExclusionPolicy(QActionGroup::ExclusionPolicy::None).
 
     \sa QActionGroup::exclusionPolicy
 */
@@ -303,7 +304,7 @@ void QActionGroup::setExclusive(bool b)
 }
 
 /*!
-    \brief Returs true if the group is exclusive
+    \brief Returns true if the group is exclusive
 
     The group is exclusive if the ExclusionPolicy is either Exclusive
     or ExclusionOptional.

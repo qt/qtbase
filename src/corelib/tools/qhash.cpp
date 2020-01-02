@@ -2597,7 +2597,7 @@ uint qHash(long double key, uint seed) noexcept
     \sa operator=()
 */
 
-/*! \fn template <class Key, class T> template <class InputIterator> QMultiHash::QMultiHash(InputIterator begin, InputIterator end)
+/*! \fn template <class Key, class T> template <class InputIterator> QMultiHash<Key, T>::QMultiHash(InputIterator begin, InputIterator end)
     \since 5.14
 
     Constructs a multi-hash with a copy of each of the elements in the iterator range
