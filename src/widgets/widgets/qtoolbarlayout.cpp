@@ -360,6 +360,8 @@ void QToolBarLayout::updateMacBorderMetrics()
         return;
 
     QPlatformNativeInterface *nativeInterface = QApplication::platformNativeInterface();
+    if (!nativeInterface)
+        return; // Not Cocoa platform plugin.
     QPlatformNativeInterface::NativeResourceForIntegrationFunction function =
         nativeInterface->nativeResourceFunctionForIntegration("registerContentBorderArea");
     if (!function)

@@ -4569,7 +4569,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_MenuPanelWidth:
     case PM_TabBarBaseOverlap:
     case PM_TabBarBaseHeight:
-        ret = proxy()->pixelMetric(PM_DefaultFrameWidth, opt);
+        ret = proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget);
         break;
 
     case PM_MdiSubWindowFrameWidth:
@@ -4801,7 +4801,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         break;
 
     case PM_TabBarIconSize:
-        ret = proxy()->pixelMetric(PM_SmallIconSize, opt);
+        ret = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
         break;
     case PM_ListViewIconSize:
 #if QT_CONFIG(filedialog)
@@ -4809,7 +4809,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
             ret = int(QStyleHelper::dpiScaled(24., opt));
         else
 #endif
-            ret = proxy()->pixelMetric(PM_SmallIconSize, opt);
+            ret = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
         break;
 
     case PM_ButtonIconSize:
@@ -4817,7 +4817,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         ret = int(QStyleHelper::dpiScaled(16, opt));
         break;
     case PM_IconViewIconSize:
-        ret = proxy()->pixelMetric(PM_LargeIconSize, opt);
+        ret = proxy()->pixelMetric(PM_LargeIconSize, opt, widget);
         break;
 
     case PM_LargeIconSize:
@@ -4855,13 +4855,13 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         ret = int(QStyleHelper::dpiScaled(16, opt));
         break;
     case PM_ScrollView_ScrollBarSpacing:
-        ret = 2 * proxy()->pixelMetric(PM_DefaultFrameWidth, opt);
+        ret = 2 * proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget);
         break;
     case PM_ScrollView_ScrollBarOverlap:
         ret = 0;
         break;
     case PM_SubMenuOverlap:
-        ret = -proxy()->pixelMetric(QStyle::PM_MenuPanelWidth, opt);
+        ret = -proxy()->pixelMetric(QStyle::PM_MenuPanelWidth, opt, widget);
         break;
     case PM_TreeViewIndentation:
         ret = int(QStyleHelper::dpiScaled(20, opt));

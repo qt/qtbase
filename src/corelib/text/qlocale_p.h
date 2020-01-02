@@ -213,7 +213,8 @@ public:
         ShowBase            = 0x80,
         UppercaseBase       = 0x100,
         ZeroPadExponent     = 0x200,
-        ForcePoint          = 0x400
+        ForcePoint          = 0x400,
+        IndianNumberGrouping= 0x800
     };
 
     enum NumberMode { IntegerMode, DoubleStandardMode, DoubleScientificMode };
