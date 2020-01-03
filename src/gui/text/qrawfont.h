@@ -79,7 +79,7 @@ public:
              qreal pixelSize,
              QFont::HintingPreference hintingPreference = QFont::PreferDefaultHinting);
     QRawFont(const QRawFont &other);
-    QRawFont &operator=(QRawFont &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QRawFont)
     QRawFont &operator=(const QRawFont &other);
     ~QRawFont();
 

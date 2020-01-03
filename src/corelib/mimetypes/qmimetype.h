@@ -78,7 +78,7 @@ public:
     QMimeType();
     QMimeType(const QMimeType &other);
     QMimeType &operator=(const QMimeType &other);
-    QMimeType &operator=(QMimeType &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QMimeType)
     void swap(QMimeType &other) noexcept
     {
         qSwap(d, other.d);

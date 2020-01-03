@@ -68,7 +68,7 @@ public:
     QProcessEnvironment();
     QProcessEnvironment(const QProcessEnvironment &other);
     ~QProcessEnvironment();
-    QProcessEnvironment &operator=(QProcessEnvironment && other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QProcessEnvironment)
     QProcessEnvironment &operator=(const QProcessEnvironment &other);
 
     void swap(QProcessEnvironment &other) noexcept { qSwap(d, other.d); }

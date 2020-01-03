@@ -111,13 +111,8 @@ public:
         }
         return *this;
     }
-    QSharedDataPointer(QSharedDataPointer &&o) noexcept : d(o.d) { o.d = nullptr; }
-    inline QSharedDataPointer<T> &operator=(QSharedDataPointer<T> &&other) noexcept
-    {
-        QSharedDataPointer moved(std::move(other));
-        swap(moved);
-        return *this;
-    }
+    QSharedDataPointer(QSharedDataPointer &&o) noexcept : d(qExchange(o.d, nullptr)) {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSharedDataPointer)
 
     inline bool operator!() const { return !d; }
 
@@ -216,13 +211,8 @@ public:
         }
         return *this;
     }
-    inline QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o) noexcept : d(o.d) { o.d = nullptr; }
-    inline QExplicitlySharedDataPointer<T> &operator=(QExplicitlySharedDataPointer<T> &&other) noexcept
-    {
-        QExplicitlySharedDataPointer moved(std::move(other));
-        swap(moved);
-        return *this;
-    }
+    inline QExplicitlySharedDataPointer(QExplicitlySharedDataPointer &&o) noexcept : d(qExchange(o.d, nullptr)) {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QExplicitlySharedDataPointer)
 
     inline bool operator!() const { return !d; }
 

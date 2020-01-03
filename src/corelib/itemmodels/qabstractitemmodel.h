@@ -220,9 +220,8 @@ public:
     { return !operator==(other); }
     QPersistentModelIndex &operator=(const QPersistentModelIndex &other);
     inline QPersistentModelIndex(QPersistentModelIndex &&other) noexcept
-        : d(other.d) { other.d = nullptr; }
-    inline QPersistentModelIndex &operator=(QPersistentModelIndex &&other) noexcept
-    { qSwap(d, other.d); return *this; }
+        : d(qExchange(other.d, nullptr)) {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPersistentModelIndex)
     inline void swap(QPersistentModelIndex &other) noexcept { qSwap(d, other.d); }
     bool operator==(const QModelIndex &other) const;
     bool operator!=(const QModelIndex &other) const;

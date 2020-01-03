@@ -260,21 +260,12 @@ public:
     QAppleLogActivity(os_activity_t activity) : activity(activity) {}
     ~QAppleLogActivity() { if (activity) leave(); }
 
-    QAppleLogActivity(const QAppleLogActivity &) = delete;
-    QAppleLogActivity& operator=(const QAppleLogActivity &) = delete;
+    Q_DISABLE_COPY(QAppleLogActivity)
 
     QAppleLogActivity(QAppleLogActivity&& other)
-        : activity(other.activity), state(other.state) { other.activity = nullptr; }
+        : activity(qExchange(other.activity, nullptr)), state(other.state) {}
 
-    QAppleLogActivity& operator=(QAppleLogActivity &&other)
-    {
-        if (this != &other) {
-            activity = other.activity;
-            state = other.state;
-            other.activity = nullptr;
-        }
-        return *this;
-    }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QAppleLogActivity)
 
     QAppleLogActivity&& enter()
     {
@@ -343,18 +334,14 @@ public:
 #endif
 
     QMacNotificationObserver(const QMacNotificationObserver& other) = delete;
-    QMacNotificationObserver(QMacNotificationObserver&& other) : observer(other.observer) {
-        other.observer = nullptr;
-    }
+    QMacNotificationObserver(QMacNotificationObserver&& other) : observer(qExchange(other.observer, nullptr)) {}
 
     QMacNotificationObserver &operator=(const QMacNotificationObserver& other) = delete;
-    QMacNotificationObserver &operator=(QMacNotificationObserver&& other) {
-        if (this != &other) {
-            remove();
-            observer = other.observer;
-            other.observer = nullptr;
-        }
-        return *this;
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QMacNotificationObserver)
+
+    void swap(QMacNotificationObserver &other) noexcept
+    {
+        qSwap(observer, other.observer);
     }
 
     void remove();
@@ -397,11 +384,7 @@ public:
         return *this;
     }
 
-    QMacKeyValueObserver &operator=(QMacKeyValueObserver &&other) {
-        QMacKeyValueObserver tmp(std::move(other));
-        swap(tmp, *this);
-        return *this;
-    }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QMacKeyValueObserver)
 
     void removeObserver();
 

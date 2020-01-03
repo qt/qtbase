@@ -81,7 +81,7 @@ public:
                 const QMarginsF &margins, Unit units = Point,
                 const QMarginsF &minMargins = QMarginsF(0, 0, 0, 0));
     QPageLayout(const QPageLayout &other);
-    QPageLayout &operator=(QPageLayout &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPageLayout)
     QPageLayout &operator=(const QPageLayout &other);
     ~QPageLayout();
 

@@ -232,7 +232,7 @@ public:
                        const QString &name = QString(),
                        SizeMatchPolicy matchPolicy = FuzzyMatch);
     QPageSize(const QPageSize &other);
-    QPageSize &operator=(QPageSize &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPageSize)
     QPageSize &operator=(const QPageSize &other);
     ~QPageSize();
 

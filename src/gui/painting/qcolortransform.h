@@ -64,11 +64,7 @@ public:
         QColorTransform{other}.swap(*this);
         return *this;
     }
-    QColorTransform &operator=(QColorTransform &&other) noexcept
-    {
-        QColorTransform{std::move(other)}.swap(*this);
-        return *this;
-    }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QColorTransform)
 
     void swap(QColorTransform &other) noexcept { qSwap(d, other.d); }
 

@@ -70,12 +70,11 @@ public:
     QRegion(const QPolygon &pa, Qt::FillRule fillRule = Qt::OddEvenFill);
     QRegion(const QRegion &region);
     QRegion(QRegion &&other) noexcept
-        : d(other.d) { other.d = const_cast<QRegionData*>(&shared_empty); }
+        : d(qExchange(other.d, const_cast<QRegionData*>(&shared_empty))) {}
     QRegion(const QBitmap &bitmap);
     ~QRegion();
     QRegion &operator=(const QRegion &);
-    inline QRegion &operator=(QRegion &&other) noexcept
-    { qSwap(d, other.d); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QRegion);
     inline void swap(QRegion &other) noexcept { qSwap(d, other.d); }
     bool isEmpty() const;
     bool isNull() const;

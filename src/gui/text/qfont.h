@@ -252,8 +252,7 @@ public:
     bool operator<(const QFont &) const;
     operator QVariant() const;
     bool isCopyOf(const QFont &) const;
-    inline QFont &operator=(QFont &&other) noexcept
-    { qSwap(d, other.d); qSwap(resolve_mask, other.resolve_mask);  return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFont)
 
     QString key() const;
 

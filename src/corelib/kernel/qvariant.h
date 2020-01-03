@@ -234,8 +234,7 @@ class Q_CORE_EXPORT QVariant
     QVariant& operator=(const QVariant &other);
     inline QVariant(QVariant &&other) noexcept : d(other.d)
     { other.d = Private(); }
-    inline QVariant &operator=(QVariant &&other) noexcept
-    { QVariant moved(std::move(other)); swap(moved); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QVariant)
 
     inline void swap(QVariant &other) noexcept { qSwap(d, other.d); }
 

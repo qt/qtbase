@@ -333,12 +333,7 @@ public:
         other.d = nullptr;
         other.value = nullptr;
     }
-    QSharedPointer &operator=(QSharedPointer &&other) noexcept
-    {
-        QSharedPointer moved(std::move(other));
-        swap(moved);
-        return *this;
-    }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSharedPointer)
 
     template <class X, IfCompatible<X> = true>
     QSharedPointer(QSharedPointer<X> &&other) noexcept
@@ -563,8 +558,7 @@ public:
         other.d = nullptr;
         other.value = nullptr;
     }
-    QWeakPointer &operator=(QWeakPointer &&other) noexcept
-    { QWeakPointer moved(std::move(other)); swap(moved); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QWeakPointer)
     QWeakPointer &operator=(const QWeakPointer &other) noexcept
     {
         QWeakPointer copy(other);

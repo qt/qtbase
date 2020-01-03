@@ -304,14 +304,11 @@ public:
         explicit Holder(void *p, qt_destroy_func_t d) : ptr(p), destroy_func(d) {}
         ~Holder() { if (ptr && destroy_func) destroy_func(ptr); }
         Holder(Holder &&other) noexcept
-            : ptr(other.ptr),
-              destroy_func(other.destroy_func)
+            : ptr(qExchange(other.ptr, nullptr)),
+              destroy_func(qExchange(other.destroy_func, nullptr))
         {
-            other.ptr = nullptr;
-            other.destroy_func = nullptr;
         }
-        Holder &operator=(Holder &&other) noexcept
-        { swap(other); return *this; }
+        QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(Holder)
 
         void swap(Holder &other) noexcept
         {

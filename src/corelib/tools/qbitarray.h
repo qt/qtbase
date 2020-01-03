@@ -61,8 +61,7 @@ public:
     QBitArray(const QBitArray &other) : d(other.d) {}
     inline QBitArray &operator=(const QBitArray &other) { d = other.d; return *this; }
     inline QBitArray(QBitArray &&other) noexcept : d(std::move(other.d)) {}
-    inline QBitArray &operator=(QBitArray &&other) noexcept
-    { qSwap(d, other.d); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QBitArray)
 
     inline void swap(QBitArray &other) noexcept { qSwap(d, other.d); }
 

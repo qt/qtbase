@@ -95,12 +95,7 @@ public:
     QColorSpace(QColorSpace &&colorSpace) noexcept
             : d_ptr(qExchange(colorSpace.d_ptr, nullptr))
     { }
-    QColorSpace &operator=(QColorSpace &&colorSpace) noexcept
-    {
-        // Make the deallocation of this->d_ptr happen in ~QColorSpace()
-        QColorSpace(std::move(colorSpace)).swap(*this);
-        return *this;
-    }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QColorSpace)
 
     void swap(QColorSpace &colorSpace) noexcept
     { qSwap(d_ptr, colorSpace.d_ptr); }

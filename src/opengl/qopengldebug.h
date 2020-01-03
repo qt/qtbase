@@ -109,7 +109,7 @@ public:
     QOpenGLDebugMessage(const QOpenGLDebugMessage &debugMessage);
 
     QOpenGLDebugMessage &operator=(const QOpenGLDebugMessage &debugMessage);
-    QOpenGLDebugMessage &operator=(QOpenGLDebugMessage &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QOpenGLDebugMessage)
     ~QOpenGLDebugMessage();
 
     void swap(QOpenGLDebugMessage &other) noexcept { qSwap(d, other.d); }

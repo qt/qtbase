@@ -94,8 +94,7 @@ public:
     inline bool isDetached() const { return d->ref.loadRelaxed() == 1; }
 
     QContiguousCache<T> &operator=(const QContiguousCache<T> &other);
-    inline QContiguousCache<T> &operator=(QContiguousCache<T> &&other) noexcept
-    { qSwap(d, other.d); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QContiguousCache)
     inline void swap(QContiguousCache<T> &other) noexcept { qSwap(d, other.d); }
 
     template <typename U = T>

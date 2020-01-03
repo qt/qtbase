@@ -102,8 +102,7 @@ public:
     QDebug(const QDebug &o) : stream(o.stream) { ++stream->ref; }
     QDebug(QDebug &&other) noexcept : stream{qExchange(other.stream, nullptr)} {}
     inline QDebug &operator=(const QDebug &other);
-    QDebug &operator=(QDebug &&other) noexcept
-    { QDebug{std::move(other)}.swap(*this); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QDebug)
     ~QDebug();
     inline void swap(QDebug &other) noexcept { qSwap(stream, other.stream); }
 

@@ -121,7 +121,7 @@ public:
     ~QDir();
 
     QDir &operator=(const QDir &);
-    QDir &operator=(QDir &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QDir)
 
     void swap(QDir &other) noexcept
     { qSwap(d_ptr, other.d_ptr); }

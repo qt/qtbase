@@ -77,8 +77,7 @@ public:
     void setBoundingRect(const QRect &r);
 
     QPicture& operator=(const QPicture &p);
-    inline QPicture &operator=(QPicture &&other) noexcept
-    { qSwap(d_ptr, other.d_ptr); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPicture)
     inline void swap(QPicture &other) noexcept
     { d_ptr.swap(other.d_ptr); }
     void detach();

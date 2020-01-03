@@ -71,9 +71,8 @@ public:
 
     QPen &operator=(const QPen &pen) noexcept;
     QPen(QPen &&other) noexcept
-        : d(other.d) { other.d = nullptr; }
-    QPen &operator=(QPen &&other) noexcept
-    { qSwap(d, other.d); return *this; }
+        : d(qExchange(other.d, nullptr)) {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPen)
     void swap(QPen &other) noexcept { qSwap(d, other.d); }
 
     Qt::PenStyle style() const;

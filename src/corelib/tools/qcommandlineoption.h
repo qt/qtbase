@@ -72,7 +72,7 @@ public:
     ~QCommandLineOption();
 
     QCommandLineOption &operator=(const QCommandLineOption &other);
-    QCommandLineOption &operator=(QCommandLineOption &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QCommandLineOption)
 
     void swap(QCommandLineOption &other) noexcept
     { qSwap(d, other.d); }

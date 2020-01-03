@@ -184,8 +184,7 @@ public:
 #endif
     QUrl(QUrl &&other) noexcept : d(other.d)
     { other.d = nullptr; }
-    inline QUrl &operator=(QUrl &&other) noexcept
-    { qSwap(d, other.d); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QUrl)
     ~QUrl();
 
     inline void swap(QUrl &other) noexcept { qSwap(d, other.d); }

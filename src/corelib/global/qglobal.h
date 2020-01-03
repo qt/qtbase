@@ -432,6 +432,51 @@ Q_DECL_UNUSED constexpr Deprecated_t Deprecated = {};
     Q_DISABLE_MOVE(Class)
 
 /*
+    Implementing a move assignment operator using an established
+    technique (move-and-swap, pure swap) is just boilerplate.
+    Here's a couple of *private* macros for convenience.
+
+    To know which one to use:
+
+    * if you don't have a move constructor (*) => use pure swap;
+    * if you have a move constructor, then
+      * if your class holds just memory (no file handles, no user-defined
+        datatypes, etc.) => use pure swap;
+      * use move and swap.
+
+    The preference should always go for the move-and-swap one, as it
+    will deterministically destroy the data previously held in *this,
+    and not "dump" it in the moved-from object (which may then be alive
+    for longer).
+
+    The requirement for either macro is the presence of a member swap(),
+    which any value class that defines its own special member functions
+    should have anyhow.
+
+    (*) Many value classes in Qt do not have move constructors; mostly,
+    the implicitly shared classes using QSharedDataPointer and friends.
+    The reason is mostly historical: those classes require either an
+    out-of-line move constructor, which we could not provide before we
+    made C++11 mandatory (and that we don't like anyhow), or
+    an out-of-line dtor for the Q(E)DSP<Private> member (cf. QPixmap).
+
+    If you can however add a move constructor to a class lacking it,
+    consider doing so, then reevaluate which macro to choose.
+*/
+#define QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(Class) \
+    Class &operator=(Class &&other) noexcept { \
+        Class moved(std::move(other)); \
+        swap(moved); \
+        return *this; \
+    }
+
+#define QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(Class) \
+    Class &operator=(Class &&other) noexcept { \
+        swap(other); \
+        return *this; \
+    }
+
+/*
    No, this is not an evil backdoor. QT_BUILD_INTERNAL just exports more symbols
    for Qt's internal unit tests. If you want slower loading times and more
    symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.

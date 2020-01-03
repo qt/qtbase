@@ -126,10 +126,11 @@ class QVersionNumber
             other.dummy = 1;
         }
 
-        SegmentStorage &operator=(SegmentStorage &&other) noexcept
+        QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(SegmentStorage)
+
+        void swap(SegmentStorage &other) noexcept
         {
             qSwap(dummy, other.dummy);
-            return *this;
         }
 
         explicit SegmentStorage(QList<int> &&seg)

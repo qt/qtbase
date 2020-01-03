@@ -87,9 +87,8 @@ public:
     QCursor(const QCursor &cursor);
     ~QCursor();
     QCursor &operator=(const QCursor &cursor);
-    QCursor(QCursor &&other) noexcept : d(other.d) { other.d = nullptr; }
-    inline QCursor &operator=(QCursor &&other) noexcept
-    { swap(other); return *this; }
+    QCursor(QCursor &&other) noexcept : d(qExchange(other.d, nullptr)) {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QCursor)
 
     void swap(QCursor &other) noexcept { qSwap(d, other.d); }
 

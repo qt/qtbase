@@ -88,8 +88,7 @@ public:
     QRegularExpression(const QRegularExpression &re);
     ~QRegularExpression();
     QRegularExpression &operator=(const QRegularExpression &re);
-    QRegularExpression &operator=(QRegularExpression &&re) noexcept
-    { d.swap(re.d); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QRegularExpression)
 
     void swap(QRegularExpression &other) noexcept { d.swap(other.d); }
 

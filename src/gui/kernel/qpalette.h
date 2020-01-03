@@ -68,12 +68,9 @@ public:
     ~QPalette();
     QPalette &operator=(const QPalette &palette);
     QPalette(QPalette &&other) noexcept
-        : d(other.d), data(other.data)
-    { other.d = nullptr; }
-    inline QPalette &operator=(QPalette &&other) noexcept
-    {
-        swap(other); return *this;
-    }
+        : d(qExchange(other.d, nullptr)), data(other.data)
+    {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPalette)
 
     void swap(QPalette &other) noexcept
     {

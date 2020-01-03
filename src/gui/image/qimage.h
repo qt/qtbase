@@ -125,13 +125,12 @@ public:
 
     QImage(const QImage &);
     inline QImage(QImage &&other) noexcept
-        : QPaintDevice(), d(nullptr)
-    { qSwap(d, other.d); }
+        : QPaintDevice(), d(qExchange(other.d, nullptr))
+    {}
     ~QImage();
 
     QImage &operator=(const QImage &);
-    inline QImage &operator=(QImage &&other) noexcept
-    { qSwap(d, other.d); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QImage)
     inline void swap(QImage &other) noexcept
     { qSwap(d, other.d); }
 

@@ -62,7 +62,7 @@ public:
     ~QStorageInfo();
 
     QStorageInfo &operator=(const QStorageInfo &other);
-    QStorageInfo &operator=(QStorageInfo &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QStorageInfo)
 
     inline void swap(QStorageInfo &other) noexcept
     { qSwap(d, other.d); }

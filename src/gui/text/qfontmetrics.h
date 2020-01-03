@@ -60,8 +60,7 @@ public:
     ~QFontMetrics();
 
     QFontMetrics &operator=(const QFontMetrics &);
-    inline QFontMetrics &operator=(QFontMetrics &&other) noexcept
-    { qSwap(d, other.d); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFontMetrics)
 
     void swap(QFontMetrics &other) noexcept
     { qSwap(d, other.d); }
@@ -131,8 +130,7 @@ public:
 
     QFontMetricsF &operator=(const QFontMetricsF &);
     QFontMetricsF &operator=(const QFontMetrics &);
-    inline QFontMetricsF &operator=(QFontMetricsF &&other) noexcept
-    { qSwap(d, other.d); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFontMetricsF)
 
     void swap(QFontMetricsF &other) noexcept { qSwap(d, other.d); }
 

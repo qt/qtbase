@@ -750,15 +750,7 @@ public:
         : d(std::exchange(other.d, nullptr))
     {
     }
-    QHash &operator=(QHash &&other) noexcept(std::is_nothrow_destructible<Node>::value)
-    {
-        if (d != other.d) {
-            if (d && !d->ref.deref())
-                delete d;
-            d = std::exchange(other.d, nullptr);
-        }
-        return *this;
-    }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QHash)
 #ifdef Q_QDOC
     template <typename InputIterator>
     QHash(InputIterator f, InputIterator l);

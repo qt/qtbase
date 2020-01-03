@@ -80,8 +80,7 @@ public:
     QEasingCurve &operator=(const QEasingCurve &other)
     { if ( this != &other ) { QEasingCurve copy(other); swap(copy); } return *this; }
     QEasingCurve(QEasingCurve &&other) noexcept : d_ptr(other.d_ptr) { other.d_ptr = nullptr; }
-    QEasingCurve &operator=(QEasingCurve &&other) noexcept
-    { qSwap(d_ptr, other.d_ptr); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QEasingCurve)
 
     void swap(QEasingCurve &other) noexcept { qSwap(d_ptr, other.d_ptr); }
 

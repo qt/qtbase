@@ -61,11 +61,7 @@ public:
         : id{qExchange(other.id, 0)}
     {}
 
-    QBasicTimer& operator=(QBasicTimer &&other) noexcept
-    {
-        QBasicTimer{std::move(other)}.swap(*this);
-        return *this;
-    }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QBasicTimer)
 
     void swap(QBasicTimer &other) noexcept { qSwap(id, other.id); }
 

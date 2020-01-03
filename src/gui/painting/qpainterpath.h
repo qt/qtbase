@@ -92,8 +92,7 @@ public:
     explicit QPainterPath(const QPointF &startPoint);
     QPainterPath(const QPainterPath &other);
     QPainterPath &operator=(const QPainterPath &other);
-    inline QPainterPath &operator=(QPainterPath &&other) noexcept
-    { qSwap(d_ptr, other.d_ptr); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QPainterPath)
     ~QPainterPath();
 
     inline void swap(QPainterPath &other) noexcept { d_ptr.swap(other.d_ptr); }

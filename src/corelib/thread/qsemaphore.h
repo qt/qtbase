@@ -83,8 +83,7 @@ public:
         : m_sem(sem), m_n(n) {}
     QSemaphoreReleaser(QSemaphoreReleaser &&other) noexcept
         : m_sem(other.cancel()), m_n(other.m_n) {}
-    QSemaphoreReleaser &operator=(QSemaphoreReleaser &&other) noexcept
-    { QSemaphoreReleaser moved(std::move(other)); swap(moved); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSemaphoreReleaser)
 
     ~QSemaphoreReleaser()
     {

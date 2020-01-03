@@ -73,7 +73,7 @@ public:
     explicit QTextCursor(QTextFrame *frame);
     explicit QTextCursor(const QTextBlock &block);
     QTextCursor(const QTextCursor &cursor);
-    QTextCursor &operator=(QTextCursor &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QTextCursor)
     QTextCursor &operator=(const QTextCursor &other);
     ~QTextCursor();
 

@@ -271,7 +271,7 @@ public:
     QDateTime(QDateTime &&other) noexcept;
     ~QDateTime();
 
-    QDateTime &operator=(QDateTime &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QDateTime)
     QDateTime &operator=(const QDateTime &other) noexcept;
 
     void swap(QDateTime &other) noexcept { qSwap(d.d, other.d.d); }

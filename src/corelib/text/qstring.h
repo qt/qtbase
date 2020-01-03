@@ -337,8 +337,7 @@ public:
     QString &operator=(QLatin1String latin1);
     inline QString(QString &&other) noexcept
     { qSwap(d, other.d); }
-    inline QString &operator=(QString &&other) noexcept
-    { qSwap(d, other.d); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QString)
     inline void swap(QString &other) noexcept { qSwap(d, other.d); }
     inline qsizetype size() const { return d.size; }
     inline qsizetype count() const { return d.size; }

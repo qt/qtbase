@@ -185,7 +185,7 @@ public:
     operator QVariant() const;
     QKeyCombination operator[](uint i) const;
     QKeySequence &operator=(const QKeySequence &other);
-    QKeySequence &operator=(QKeySequence &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QKeySequence)
     void swap(QKeySequence &other) noexcept { qSwap(d, other.d); }
 
     bool operator==(const QKeySequence &other) const;

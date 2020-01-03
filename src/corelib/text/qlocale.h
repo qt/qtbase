@@ -944,7 +944,7 @@ public:
     QLocale(Language language, Country country = AnyCountry);
     QLocale(Language language, Script script, Country country);
     QLocale(const QLocale &other);
-    QLocale &operator=(QLocale &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QLocale)
     QLocale &operator=(const QLocale &other);
     ~QLocale();
 

@@ -78,8 +78,7 @@ public:
 
     ~QBrush();
     QBrush &operator=(const QBrush &brush);
-    inline QBrush &operator=(QBrush &&other) noexcept
-    { qSwap(d, other.d); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QBrush)
     inline void swap(QBrush &other) noexcept
     { qSwap(d, other.d); }
 

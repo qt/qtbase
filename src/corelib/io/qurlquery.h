@@ -67,7 +67,7 @@ public:
 
     QUrlQuery(const QUrlQuery &other);
     QUrlQuery &operator=(const QUrlQuery &other);
-    QUrlQuery &operator=(QUrlQuery &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QUrlQuery)
     ~QUrlQuery();
 
     bool operator==(const QUrlQuery &other) const;

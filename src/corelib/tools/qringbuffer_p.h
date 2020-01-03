@@ -94,11 +94,7 @@ public:
     {
         other.headOffset = other.tailOffset = 0;
     }
-    inline QRingChunk &operator=(QRingChunk &&other) noexcept
-    {
-        swap(other);
-        return *this;
-    }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QRingChunk)
 
     inline void swap(QRingChunk &other) noexcept
     {

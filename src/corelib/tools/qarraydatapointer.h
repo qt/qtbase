@@ -101,12 +101,7 @@ public:
         other.size = 0;
     }
 
-    QArrayDataPointer &operator=(QArrayDataPointer &&other) noexcept
-    {
-        QArrayDataPointer moved(std::move(other));
-        swap(moved);
-        return *this;
-    }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QArrayDataPointer)
 
     DataOps &operator*() noexcept
     {

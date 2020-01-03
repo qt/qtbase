@@ -79,7 +79,7 @@ public:
     ~QFileInfo();
 
     QFileInfo &operator=(const QFileInfo &fileinfo);
-    QFileInfo &operator=(QFileInfo &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFileInfo)
 
     void swap(QFileInfo &other) noexcept
     { qSwap(d_ptr, other.d_ptr); }

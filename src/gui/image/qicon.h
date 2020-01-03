@@ -62,14 +62,13 @@ public:
     QIcon(const QPixmap &pixmap);
     QIcon(const QIcon &other);
     QIcon(QIcon &&other) noexcept
-        : d(other.d)
-    { other.d = nullptr; }
+        : d(qExchange(other.d, nullptr))
+    {}
     explicit QIcon(const QString &fileName); // file or resource name
     explicit QIcon(QIconEngine *engine);
     ~QIcon();
     QIcon &operator=(const QIcon &other);
-    inline QIcon &operator=(QIcon &&other) noexcept
-    { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QIcon)
     inline void swap(QIcon &other) noexcept
     { qSwap(d, other.d); }
     bool operator==(const QIcon &) const = delete;

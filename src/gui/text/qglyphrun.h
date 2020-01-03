@@ -66,7 +66,7 @@ public:
 
     QGlyphRun();
     QGlyphRun(const QGlyphRun &other);
-    QGlyphRun &operator=(QGlyphRun &&other) noexcept { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QGlyphRun)
     QGlyphRun &operator=(const QGlyphRun &other);
     ~QGlyphRun();
 

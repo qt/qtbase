@@ -55,8 +55,7 @@ class Q_OPENGL_EXPORT QOpenGLPixelTransferOptions
 public:
     QOpenGLPixelTransferOptions();
     QOpenGLPixelTransferOptions(const QOpenGLPixelTransferOptions &);
-    QOpenGLPixelTransferOptions &operator=(QOpenGLPixelTransferOptions &&other) noexcept
-    { swap(other); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QOpenGLPixelTransferOptions)
     QOpenGLPixelTransferOptions &operator=(const QOpenGLPixelTransferOptions &);
     ~QOpenGLPixelTransferOptions();
 
