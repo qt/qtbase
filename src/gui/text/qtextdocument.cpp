@@ -2301,10 +2301,8 @@ static QStringList resolvedFontFamilies(const QTextCharFormat &format)
 {
     QStringList fontFamilies = format.fontFamilies().toStringList();
     const QString mainFontFamily = format.fontFamily();
-    if (!mainFontFamily.isEmpty() && !fontFamilies.startsWith(mainFontFamily)) {
-        fontFamilies.removeAll(mainFontFamily);
-        fontFamilies.prepend(mainFontFamily);
-    }
+    if (!mainFontFamily.isEmpty() && !fontFamilies.contains(mainFontFamily))
+        fontFamilies.append(mainFontFamily);
     return fontFamilies;
 }
 
