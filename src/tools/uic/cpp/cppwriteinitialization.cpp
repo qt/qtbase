@@ -2372,9 +2372,11 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
     const auto &columns = w->elementColumn();
 
     if (!columns.empty()) {
-        m_output << m_indent << "if (" << varName << language::derefPointer << "columnCount() < "
-            << columns.size() << ")\n"
-            << m_dindent << varName << language::derefPointer << "setColumnCount("
+        m_output << m_indent << "if (" << varName << language::derefPointer
+            << "columnCount() < " << columns.size() << ')';
+        if (language::language() == Language::Python)
+            m_output << ':';
+        m_output << '\n' << m_dindent << varName << language::derefPointer << "setColumnCount("
             << columns.size() << ')' << language::eol;
     }
 
@@ -2400,8 +2402,11 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
     const auto &rows = w->elementRow();
 
     if (!rows.isEmpty()) {
-        m_output << m_indent << "if (" << varName << language::derefPointer << "rowCount() < " << rows.size() << ")\n"
-            << m_dindent << varName << language::derefPointer << "setRowCount("
+        m_output << m_indent << "if (" << varName << language::derefPointer
+            << "rowCount() < " << rows.size() << ')';
+        if (language::language() == Language::Python)
+            m_output << ':';
+        m_output << '\n' << m_dindent << varName << language::derefPointer << "setRowCount("
             << rows.size() << ')' << language::eol;
     }
 
