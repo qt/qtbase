@@ -749,6 +749,11 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
     }
 }
 
+static inline bool shouldApplyDarkFrame(const QWindow *w)
+{
+    return w->isTopLevel() && !w->flags().testFlag(Qt::FramelessWindowHint);
+}
+
 QWindowsWindowData
     WindowCreationData::create(const QWindow *w, const WindowData &data, QString title) const
 {
@@ -814,6 +819,12 @@ QWindowsWindowData
     if (!result.hwnd) {
         qErrnoWarning("%s: CreateWindowEx failed", __FUNCTION__);
         return result;
+    }
+
+    if (QWindowsContext::isDarkMode()
+        && (QWindowsIntegration::instance()->options() & QWindowsIntegration::DarkModeWindowFrames) != 0
+        && shouldApplyDarkFrame(w)) {
+        QWindowsWindow::setDarkBorderToWindow(result.hwnd, true);
     }
 
     if (mirrorParentWidth != 0) {
@@ -2890,6 +2901,39 @@ void QWindowsWindow::setWindowIcon(const QIcon &icon)
 bool QWindowsWindow::isTopLevel() const
 {
     return window()->isTopLevel() && !m_data.embedded;
+}
+
+enum : WORD {
+    DwmwaUseImmersiveDarkMode = 20,
+    DwmwaUseImmersiveDarkModeBefore20h1 = 19
+};
+
+static bool queryDarkBorder(HWND hwnd)
+{
+    BOOL result = FALSE;
+    const bool ok =
+        SUCCEEDED(DwmGetWindowAttribute(hwnd, DwmwaUseImmersiveDarkMode, &result, sizeof(result)))
+        || SUCCEEDED(DwmGetWindowAttribute(hwnd, DwmwaUseImmersiveDarkModeBefore20h1, &result, sizeof(result)));
+    if (!ok)
+        qWarning("%s: Unable to retrieve dark window border setting.", __FUNCTION__);
+    return result == TRUE;
+}
+
+bool QWindowsWindow::setDarkBorderToWindow(HWND hwnd, bool d)
+{
+    const BOOL darkBorder = d ? TRUE : FALSE;
+    const bool ok =
+        SUCCEEDED(DwmSetWindowAttribute(hwnd, DwmwaUseImmersiveDarkMode, &darkBorder, sizeof(darkBorder)))
+        || SUCCEEDED(DwmSetWindowAttribute(hwnd, DwmwaUseImmersiveDarkModeBefore20h1, &darkBorder, sizeof(darkBorder)));
+    if (!ok)
+        qWarning("%s: Unable to set dark window border.", __FUNCTION__);
+    return ok;
+}
+
+void QWindowsWindow::setDarkBorder(bool d)
+{
+    if (shouldApplyDarkFrame(window()) && queryDarkBorder(m_data.hwnd) != d)
+        setDarkBorderToWindow(m_data.hwnd, d);
 }
 
 QWindowsMenuBar *QWindowsWindow::menuBar() const

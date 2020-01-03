@@ -1221,6 +1221,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             auto nativeInterface =
                 static_cast<QWindowsNativeInterface *>(QWindowsIntegration::instance()->nativeInterface());
             emit nativeInterface->darkModeChanged(darkMode);
+            const auto options = QWindowsIntegration::instance()->options();
+            if ((options & QWindowsIntegration::DarkModeWindowFrames) != 0) {
+                for (QWindowsWindow *w : d->m_windows)
+                    w->setDarkBorder(QWindowsContextPrivate::m_darkMode);
+            }
         }
         return d->m_screenManager.handleScreenChanges();
     }

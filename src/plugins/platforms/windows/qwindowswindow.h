@@ -287,6 +287,9 @@ public:
     HWND handle() const override { return m_data.hwnd; }
     bool isTopLevel() const override;
 
+    static bool setDarkBorderToWindow(HWND hwnd, bool d);
+    void setDarkBorder(bool d);
+
     QWindowsMenuBar *menuBar() const;
     void setMenuBar(QWindowsMenuBar *mb);
 
