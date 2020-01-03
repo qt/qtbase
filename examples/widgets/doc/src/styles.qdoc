@@ -27,7 +27,6 @@
 
 /*!
     \example widgets/styles
-    \meta {tag} {gallery}
     \title Styles Example
     \ingroup examples-widgets
     \brief The Styles example illustrates how to create custom widget

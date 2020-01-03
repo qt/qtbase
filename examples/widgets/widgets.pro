@@ -9,6 +9,7 @@ SUBDIRS       = \
                 dialogs \
                 draganddrop \
                 effects \
+                gallery \
                 gestures \
                 graphicsview \
                 itemviews \
