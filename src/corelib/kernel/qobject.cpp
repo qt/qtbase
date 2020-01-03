@@ -4543,6 +4543,23 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 */
 
 /*!
+    \macro Q_MOC_INCLUDE
+    \relates QObject
+    \since 6.0
+
+    The Q_MOC_INCLUDE macro can be used within or outside a class, and tell the
+    \l{moc}{Meta Object Compiler} to add an include.
+
+    \code
+        // Put this in your code and the generated code will include this header.
+        Q_MOC_INCLUDE("myheader.h")
+    \endcode
+
+    This is useful if the types you use as properties or signal/slots arguments
+    are forward declared.
+*/
+
+/*!
     \macro Q_SIGNALS
     \relates QObject
 

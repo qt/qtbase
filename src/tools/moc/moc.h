@@ -256,6 +256,7 @@ public:
     void parseInterfaces(ClassDef *def);
     void parseDeclareInterface();
     void parseDeclareMetatype();
+    void parseMocInclude();
     void parseSlotInPrivate(ClassDef *def, FunctionDef::Access access);
     void parsePrivateProperty(ClassDef *def);
 

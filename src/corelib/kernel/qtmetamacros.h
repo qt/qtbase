@@ -112,6 +112,7 @@ QT_BEGIN_NAMESPACE
 #define Q_INVOKABLE  QT_ANNOTATE_FUNCTION(qt_invokable)
 #define Q_SIGNAL QT_ANNOTATE_FUNCTION(qt_signal)
 #define Q_SLOT QT_ANNOTATE_FUNCTION(qt_slot)
+#define Q_MOC_INCLUDE(...) QT_ANNOTATE_CLASS(qt_moc_include, __VA_ARGS__)
 #endif // QT_NO_META_MACROS
 
 #ifndef QT_NO_TRANSLATION

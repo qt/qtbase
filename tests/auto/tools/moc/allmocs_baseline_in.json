@@ -1015,6 +1015,65 @@
     {
         "classes": [
             {
+                "className": "TestFwdProperties",
+                "properties": [
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "name": "prop1",
+                        "read": "getProp1",
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "FwdClass1",
+                        "user": false,
+                        "write": "setProp1"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "name": "prop2",
+                        "read": "getProp2",
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "FwdClass2",
+                        "user": false,
+                        "write": "setProp2"
+                    },
+                    {
+                        "constant": false,
+                        "designable": true,
+                        "final": false,
+                        "name": "prop3",
+                        "read": "getProp3",
+                        "scriptable": true,
+                        "stored": true,
+                        "type": "FwdClass3",
+                        "user": false,
+                        "write": "setProp3"
+                    }
+                ],
+                "qualifiedClassName": "TestFwdProperties",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "SomeRandomNamespace",
+                "gadget": true,
+                "qualifiedClassName": "SomeRandomNamespace"
+            }
+        ],
+        "inputFile": "moc_include.h",
+        "outputRevision": 67
+    },
+    {
+        "classes": [
+            {
                 "className": "FooNamespace",
                 "enums": [
                     {

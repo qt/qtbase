@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>
+** Copyright (C) 2020 Olivier Goffart <ogoffart@woboq.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -26,8 +26,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-
 
 #include <QtTest/QtTest>
 #include <stdio.h>
@@ -73,6 +71,11 @@
 #include "namespace.h"
 #include "cxx17-namespaces.h"
 #include "cxx-attributes.h"
+
+#include "moc_include.h"
+#include "fwdclass1.h"
+#include "fwdclass2.h"
+#include "fwdclass3.h"
 
 #ifdef Q_MOC_RUN
 // check that moc can parse these constructs, they are being used in Windows winsock2.h header
@@ -717,6 +720,7 @@ private slots:
     void cxx17Namespaces();
     void cxxAttributes();
     void mocJsonOutput();
+    void mocInclude();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -4000,6 +4004,29 @@ void tst_Moc::mocJsonOutput()
     };
 
     QVERIFY2(actualOutput == expectedOutput, showPotentialDiff(actualOutput, expectedOutput).constData());
+}
+
+void TestFwdProperties::setProp1(const FwdClass1 &v)
+{
+    prop1.reset(new FwdClass1(v));
+}
+void TestFwdProperties::setProp2(const FwdClass2 &v)
+{
+    prop2.reset(new FwdClass2(v));
+}
+void TestFwdProperties::setProp3(const FwdClass3 &v)
+{
+    prop3.reset(new FwdClass3(v));
+}
+TestFwdProperties::~TestFwdProperties() {}
+
+Q_DECLARE_METATYPE(FwdClass1);
+
+void tst_Moc::mocInclude()
+{
+    TestFwdProperties obj;
+    obj.setProperty("prop1", QVariant::fromValue(FwdClass1 { 45 }));
+    QCOMPARE(obj.prop1->x, 45);
 }
 
 QTEST_MAIN(tst_Moc)

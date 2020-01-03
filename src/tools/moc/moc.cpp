@@ -653,6 +653,11 @@ void Moc::parse()
                             case Q_CLASSINFO_TOKEN:
                                 parseClassInfo(&def);
                                 break;
+                            case Q_MOC_INCLUDE_TOKEN:
+                                // skip it, the namespace is parsed twice
+                                next(LPAREN);
+                                lexemUntil(RPAREN);
+                                break;
                             case ENUM: {
                                 EnumDef enumDef;
                                 if (parseEnum(&enumDef))
@@ -695,6 +700,9 @@ void Moc::parse()
                 break;
             case Q_DECLARE_METATYPE_TOKEN:
                 parseDeclareMetatype();
+                break;
+            case Q_MOC_INCLUDE_TOKEN:
+                parseMocInclude();
                 break;
             case USING:
                 if (test(NAMESPACE)) {
@@ -827,6 +835,9 @@ void Moc::parse()
                     break;
                 case Q_CLASSINFO_TOKEN:
                     parseClassInfo(&def);
+                    break;
+                case Q_MOC_INCLUDE_TOKEN:
+                    parseMocInclude();
                     break;
                 case Q_INTERFACES_TOKEN:
                     parseInterfaces(&def);
@@ -1560,6 +1571,16 @@ void Moc::parseDeclareMetatype()
     typeName.remove(0, 1);
     typeName.chop(1);
     metaTypes.append(typeName);
+}
+
+void Moc::parseMocInclude()
+{
+    next(LPAREN);
+    QByteArray include = lexemUntil(RPAREN);
+    // remove parentheses
+    include.remove(0, 1);
+    include.chop(1);
+    includeFiles.append(include);
 }
 
 void Moc::parseSlotInPrivate(ClassDef *def, FunctionDef::Access access)
