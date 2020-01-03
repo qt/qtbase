@@ -590,7 +590,12 @@ void tst_QTime::fromStringDateFormat_data()
     QTest::newRow("TextDate - invalid, minutes") << QString::fromLatin1("23:XX:00") << Qt::TextDate << invalidTime();
     QTest::newRow("TextDate - invalid, minute fraction") << QString::fromLatin1("23:00.123456") << Qt::TextDate << invalidTime();
     QTest::newRow("TextDate - invalid, seconds") << QString::fromLatin1("23:00:XX") << Qt::TextDate << invalidTime();
-    QTest::newRow("TextDate - invalid, milliseconds") << QString::fromLatin1("23:01:01:XXXX") << Qt::TextDate << QTime(23, 1, 1, 0);
+    QTest::newRow("TextDate - invalid, milliseconds") << QString::fromLatin1("23:01:01:XXXX") << Qt::TextDate
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        << invalidTime();
+#else
+        << QTime(23, 1, 1, 0);
+#endif
     QTest::newRow("TextDate - midnight 24") << QString("24:00:00") << Qt::TextDate << QTime();
 
     QTest::newRow("IsoDate - valid, start of day, omit seconds") << QString::fromLatin1("00:00") << Qt::ISODate << QTime(0, 0, 0);
@@ -607,8 +612,12 @@ void tst_QTime::fromStringDateFormat_data()
     QTest::newRow("IsoDate - invalid, not enough minutes") << QString::fromLatin1("23:0") << Qt::ISODate << invalidTime();
     QTest::newRow("IsoDate - invalid, minute fraction") << QString::fromLatin1("23:00,XX") << Qt::ISODate << invalidTime();
     QTest::newRow("IsoDate - invalid, seconds") << QString::fromLatin1("23:00:XX") << Qt::ISODate << invalidTime();
-    QTest::newRow("IsoDate - invalid, milliseconds") << QString::fromLatin1("23:01:01:XXXX") << Qt::ISODate << QTime(23, 1, 1, 0);
-
+    QTest::newRow("IsoDate - invalid, milliseconds") << QString::fromLatin1("23:01:01:XXXX") << Qt::ISODate
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        << invalidTime();
+#else
+        << QTime(23, 1, 1, 0);
+#endif
     QTest::newRow("IsoDate - data0") << QString("00:00:00") << Qt::ISODate << QTime(0,0,0,0);
     QTest::newRow("IsoDate - data1") << QString("10:12:34") << Qt::ISODate << QTime(10,12,34,0);
     QTest::newRow("IsoDate - data2") << QString("19:03:54.998601") << Qt::ISODate << QTime(19, 3, 54, 999);
