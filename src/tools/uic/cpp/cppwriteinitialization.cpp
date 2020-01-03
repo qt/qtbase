@@ -1612,7 +1612,7 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
     }
     if (f->hasElementWeight() && f->elementWeight() > 0) {
         m_output << m_indent << fontName << ".setWeight("
-            << f->elementWeight() << ");" << Qt::endl;
+            << f->elementWeight() << ")" << language::eol;
     }
     if (f->hasElementStrikeOut()) {
          m_output << m_indent << fontName << ".setStrikeOut("
