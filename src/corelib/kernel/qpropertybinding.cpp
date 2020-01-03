@@ -79,22 +79,37 @@ bool QPropertyBindingPrivate::evaluateIfDirtyAndReturnTrueIfValueChanged()
     QScopedValueRollback<bool> updateGuard(updating, true);
 
     BindingEvaluationState evaluationFrame(this);
+
+    QUntypedPropertyBinding::BindingEvaluationResult result;
     bool changed = false;
-    auto result = evaluationFunction(/*version*/1, propertyDataPtr);
-    if (auto changedPtr = std::get_if<bool>(&result))
-        changed = *changedPtr;
-    else if (auto errorPtr = std::get_if<QPropertyBindingError>(&result))
+    if (metaType.id() == QMetaType::Bool) {
+        auto propertyPtr = reinterpret_cast<QPropertyBase *>(propertyDataPtr);
+        bool temp = propertyPtr->extraBit();
+        result = evaluationFunction(metaType, &temp);
+        if (auto changedPtr = std::get_if<bool>(&result)) {
+            changed = *changedPtr;
+            if (changed)
+                propertyPtr->setExtraBit(temp);
+        }
+    } else {
+        result = evaluationFunction(metaType, propertyDataPtr);
+        if (auto changedPtr = std::get_if<bool>(&result))
+            changed = *changedPtr;
+    }
+
+    if (auto errorPtr = std::get_if<QPropertyBindingError>(&result))
         error = std::move(*errorPtr);
+
     dirty = false;
     return changed;
 }
 
 QUntypedPropertyBinding::QUntypedPropertyBinding() = default;
 
-QUntypedPropertyBinding::QUntypedPropertyBinding(QUntypedPropertyBinding::BindingEvaluationFunction function,
+QUntypedPropertyBinding::QUntypedPropertyBinding(const QMetaType &metaType, QUntypedPropertyBinding::BindingEvaluationFunction function,
                                                  const QPropertyBindingSourceLocation &location)
 {
-    d = new QPropertyBindingPrivate(std::move(function), std::move(location));
+    d = new QPropertyBindingPrivate(metaType, std::move(function), std::move(location));
 }
 
 QUntypedPropertyBinding::QUntypedPropertyBinding(QUntypedPropertyBinding &&other)
@@ -138,6 +153,13 @@ QPropertyBindingError QUntypedPropertyBinding::error() const
     if (!d)
         return QPropertyBindingError();
     return d->error;
+}
+
+QMetaType QUntypedPropertyBinding::valueMetaType() const
+{
+    if (!d)
+        return QMetaType();
+    return d->metaType;
 }
 
 QT_END_NAMESPACE

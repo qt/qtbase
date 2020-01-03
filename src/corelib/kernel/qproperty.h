@@ -43,6 +43,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QString>
+#include <QtCore/qmetatype.h>
 #include <functional>
 #include <type_traits>
 #include <variant>
@@ -120,10 +121,10 @@ public:
     using BindingEvaluationResult = std::variant<bool, QPropertyBindingError>;
     // returns true if value changed, false if the binding evaluation lead to the same value as the property
     // already has.
-    using BindingEvaluationFunction = std::function<BindingEvaluationResult(int version, void *propertyStoragePtr)>;
+    using BindingEvaluationFunction = std::function<BindingEvaluationResult(const QMetaType &metaType, void *dataPtr)>;
 
     QUntypedPropertyBinding();
-    QUntypedPropertyBinding(BindingEvaluationFunction function, const QPropertyBindingSourceLocation &location);
+    QUntypedPropertyBinding(const QMetaType &metaType, BindingEvaluationFunction function, const QPropertyBindingSourceLocation &location);
     QUntypedPropertyBinding(QUntypedPropertyBinding &&other);
     QUntypedPropertyBinding(const QUntypedPropertyBinding &other);
     QUntypedPropertyBinding &operator=(const QUntypedPropertyBinding &other);
@@ -133,6 +134,8 @@ public:
     bool isNull() const;
 
     QPropertyBindingError error() const;
+
+    QMetaType valueMetaType() const;
 
 private:
     explicit QUntypedPropertyBinding(const QPropertyBindingPrivatePtr &priv);
@@ -149,15 +152,18 @@ class QPropertyBinding : public QUntypedPropertyBinding
     struct BindingAdaptor
     {
         Functor impl;
-        QUntypedPropertyBinding::BindingEvaluationResult operator()(int /*version*/, void *propertyStoragePtr)
+        QUntypedPropertyBinding::BindingEvaluationResult operator()(const QMetaType &/*metaType*/, void *dataPtr)
         {
             std::variant<PropertyType, QPropertyBindingError> result(impl());
             if (auto errorPtr = std::get_if<QPropertyBindingError>(&result))
                 return *errorPtr;
 
             if (auto valuePtr = std::get_if<PropertyType>(&result)) {
-                auto storagePtr = reinterpret_cast<QtPrivate::QPropertyValueStorage<PropertyType>*>(propertyStoragePtr);
-                return storagePtr->setValueAndReturnTrueIfChanged(std::move(*valuePtr));
+                PropertyType *propertyPtr = reinterpret_cast<PropertyType *>(dataPtr);
+                if (*propertyPtr == *valuePtr)
+                    return false;
+                *propertyPtr = std::move(*valuePtr);
+                return true;
             }
 
             return false;
@@ -169,7 +175,7 @@ public:
 
     template<typename Functor>
     QPropertyBinding(Functor &&f, const QPropertyBindingSourceLocation &location)
-        : QUntypedPropertyBinding(BindingAdaptor<Functor>{std::forward<Functor>(f)}, location)
+        : QUntypedPropertyBinding(QMetaType::fromType<PropertyType>(), BindingAdaptor<Functor>{std::forward<Functor>(f)}, location)
     {}
 
     QPropertyBinding(const QProperty<PropertyType> &property)
@@ -212,6 +218,8 @@ template <typename T>
 class QProperty
 {
 public:
+    using value_type = T;
+
     QProperty() = default;
     explicit QProperty(const T &initialValue) : d(initialValue) {}
     explicit QProperty(T &&initialValue) : d(std::move(initialValue)) {}
@@ -297,6 +305,15 @@ public:
         QPropertyBinding<T> oldBinding(d.priv.setBinding(b, &d));
         notify();
         return oldBinding;
+    }
+
+    bool setBinding(const QUntypedPropertyBinding &newBinding)
+    {
+        if (newBinding.valueMetaType().id() != qMetaTypeId<T>())
+            return false;
+        d.priv.setBinding(newBinding, &d);
+        notify();
+        return true;
     }
 
 #ifndef Q_CLANG_QDOC

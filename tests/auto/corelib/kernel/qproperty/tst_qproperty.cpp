@@ -65,6 +65,8 @@ private slots:
     void changePropertyFromWithinChangeHandlerThroughDependency();
     void changePropertyFromWithinChangeHandler2();
     void settingPropertyValueDoesRemoveBinding();
+    void genericPropertyBinding();
+    void genericPropertyBindingBool();
 };
 
 void tst_QProperty::functorBinding()
@@ -608,6 +610,54 @@ void tst_QProperty::settingPropertyValueDoesRemoveBinding()
     source = 1;
     QCOMPARE(property.value(), 100);
     QVERIFY(property.binding().isNull());
+}
+
+void tst_QProperty::genericPropertyBinding()
+{
+    QProperty<int> property;
+
+    {
+        QUntypedPropertyBinding doubleBinding(QMetaType::fromType<double>(),
+                                              [](const QMetaType &, void *) -> bool {
+            Q_ASSERT(false);
+            return false;
+        }, QPropertyBindingSourceLocation());
+        QVERIFY(!property.setBinding(doubleBinding));
+    }
+
+    QUntypedPropertyBinding intBinding(QMetaType::fromType<int>(),
+                                    [](const QMetaType &metaType, void *dataPtr) -> bool {
+        Q_ASSERT(metaType.id() == qMetaTypeId<int>());
+
+        int *intPtr = reinterpret_cast<int*>(dataPtr);
+        if (*intPtr == 100)
+            return false;
+        *intPtr = 100;
+        return true;
+    }, QPropertyBindingSourceLocation());
+
+    QVERIFY(property.setBinding(intBinding));
+
+    QCOMPARE(property.value(), 100);
+}
+
+void tst_QProperty::genericPropertyBindingBool()
+{
+    QProperty<bool> property;
+
+    QVERIFY(!property.value());
+
+    QUntypedPropertyBinding boolBinding(QMetaType::fromType<bool>(),
+            [](const QMetaType &, void *dataPtr) -> bool {
+        auto boolPtr = reinterpret_cast<bool *>(dataPtr);
+        if (*boolPtr)
+            return false;
+        *boolPtr = true;
+        return true;
+    }, QPropertyBindingSourceLocation());
+    QVERIFY(property.setBinding(boolBinding));
+
+    QVERIFY(property.value());
 }
 
 QTEST_MAIN(tst_QProperty);

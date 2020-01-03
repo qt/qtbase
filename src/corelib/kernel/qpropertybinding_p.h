@@ -74,13 +74,16 @@ struct QPropertyBindingPrivate : public QSharedData
     QPropertyBindingSourceLocation location;
     QPropertyBindingError error;
 
+    QMetaType metaType;
+
     bool dirty = false;
     bool updating = false;
 
-    QPropertyBindingPrivate(QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction,
+    QPropertyBindingPrivate(const QMetaType &metaType, QUntypedPropertyBinding::BindingEvaluationFunction evaluationFunction,
                             const QPropertyBindingSourceLocation &location)
         : evaluationFunction(std::move(evaluationFunction))
         , location(location)
+        , metaType(metaType)
     {}
     virtual ~QPropertyBindingPrivate();
 

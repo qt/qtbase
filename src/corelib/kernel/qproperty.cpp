@@ -611,6 +611,19 @@ QPropertyBindingSourceLocation QPropertyBindingError::location() const
 */
 
 /*!
+  \fn template <typename T> QPropertyBinding<T> bool QProperty<T>::setBinding(const QUntypedPropertyBinding &newBinding)
+  \overload
+
+  Associates the value of this property with the provided \a newBinding
+  expression. The first time the property value is read, the binding is evaluated.
+  Whenever a dependency of the binding changes, the binding will be re-evaluated
+  the next time the value of this property is read.
+
+  Returns true if the type of this property is the same as the type the binding
+  function returns; false otherwise.
+*/
+
+/*!
   \fn template <typename T> QPropertyBinding<T> QProperty<T>::binding() const
 
   Returns the binding expression that is associated with this property. A
