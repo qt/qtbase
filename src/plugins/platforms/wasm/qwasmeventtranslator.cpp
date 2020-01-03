@@ -547,7 +547,7 @@ void resizeWindow(QWindow *window, QWasmWindow::ResizeMode mode,
 
 void QWasmEventTranslator::processMouse(int eventType, const EmscriptenMouseEvent *mouseEvent)
 {
-    auto timestamp = mouseEvent->timestamp;
+    auto timestamp = emscripten_date_now();
     QPoint targetPoint(mouseEvent->targetX, mouseEvent->targetY);
     QPoint globalPoint = screen()->geometry().topLeft() + targetPoint;
 
@@ -673,7 +673,7 @@ int QWasmEventTranslator::wheel_cb(int eventType, const EmscriptenWheelEvent *wh
 
     QWasmEventTranslator *translator = (QWasmEventTranslator*)userData;
     Qt::KeyboardModifiers modifiers = translator->translateMouseEventModifier(&mouseEvent);
-    auto timestamp = mouseEvent.timestamp;
+    auto timestamp = emscripten_date_now();
     QPoint targetPoint(mouseEvent.targetX, mouseEvent.targetY);
     QPoint globalPoint = eventTranslator->screen()->geometry().topLeft() + targetPoint;
 
