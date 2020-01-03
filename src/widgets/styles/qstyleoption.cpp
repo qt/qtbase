@@ -1470,6 +1470,22 @@ QStyleOptionTab::QStyleOptionTab(int version)
     The default value is QSize(-1, -1), i.e. an invalid size;
 */
 
+/*!
+    Constructs a QStyleOptionTabV4 object, initializing the members
+    variables to their default values.
+ */
+
+QStyleOptionTabV4::QStyleOptionTabV4() : QStyleOptionTab(QStyleOptionTabV4::Version)
+{
+}
+
+/*!
+    \variable QStyleOptionTabV4::tabIndex
+    \brief the index for the tab being represented.
+
+    The default value is -1, i.e. a tab not on a tabbar;
+ */
+
 #endif // QT_CONFIG(tabbar)
 
 /*!

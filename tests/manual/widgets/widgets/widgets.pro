@@ -2,4 +2,5 @@ TEMPLATE = subdirs
 SUBDIRS = bigmenucreator \
     defaultUpMenuBar \
     multiscreen-menus \
-    qtoolbutton/menuOnMultiScreens
+    qtoolbutton/menuOnMultiScreens \
+    qtabbar
