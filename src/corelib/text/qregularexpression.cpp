@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 Giuseppe D'Angelo <dangelog@gmail.com>.
-** Copyright (C) 2016 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
+** Copyright (C) 2020 Giuseppe D'Angelo <dangelog@gmail.com>.
+** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -1829,7 +1829,19 @@ uint qHash(const QRegularExpression &key, uint seed) noexcept
     return seed;
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
+    \overload
+*/
+QString QRegularExpression::escape(const QString &str)
+{
+    return escape(QStringView(str));
+}
+#endif // QT_STRINGVIEW_LEVEL < 2
+
+/*!
+    \since 5.15
+
     Escapes all characters of \a str so that they no longer have any special
     meaning when used as a regular expression pattern string, and returns
     the escaped string. For instance:
@@ -1847,7 +1859,7 @@ uint qHash(const QRegularExpression &key, uint seed) noexcept
     inside \a str is escaped with the sequence \c{"\\0"} (backslash +
     \c{'0'}), instead of \c{"\\\0"} (backslash + \c{NUL}).
 */
-QString QRegularExpression::escape(const QString &str)
+QString QRegularExpression::escape(QStringView str)
 {
     QString result;
     const int count = str.size();
@@ -1882,8 +1894,19 @@ QString QRegularExpression::escape(const QString &str)
     return result;
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \since 5.12
+    \overload
+*/
+QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
+{
+    return wildcardToRegularExpression(QStringView(pattern));
+}
+#endif // QT_STRINGVIEW_LEVEL < 2
+
+/*!
+    \since 5.15
 
     Returns a regular expression representation of the given glob \a pattern.
     The transformation is targeting file path globbing, which means in particular
@@ -1928,13 +1951,13 @@ QString QRegularExpression::escape(const QString &str)
 
     \sa escape()
 */
-QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
+QString QRegularExpression::wildcardToRegularExpression(QStringView pattern)
 {
     const int wclen = pattern.length();
     QString rx;
     rx.reserve(wclen + wclen / 16);
     int i = 0;
-    const QChar *wc = pattern.unicode();
+    const QChar *wc = pattern.data();
 
 #ifdef Q_OS_WIN
     const QLatin1Char nativePathSeparator('\\');
@@ -2006,16 +2029,31 @@ QString QRegularExpression::wildcardToRegularExpression(const QString &pattern)
     return anchoredPattern(rx);
 }
 
+#if QT_STRINGVIEW_LEVEL < 2
 /*!
     \fn QRegularExpression::anchoredPattern(const QString &expression)
 
     \since 5.12
+
+    \overload
+*/
+#endif // QT_STRINGVIEW_LEVEL < 2
+
+/*!
+    \since 5.15
 
     Returns the \a expression wrapped between the \c{\A} and \c{\z} anchors to
     be used for exact matching.
 
     \sa {Porting from QRegExp's Exact Matching}
 */
+QString QRegularExpression::anchoredPattern(QStringView expression)
+{
+    return QString()
+           + QLatin1String("\\A(?:")
+           + expression
+           + QLatin1String(")\\z");
+}
 
 /*!
     \since 5.1
