@@ -1185,8 +1185,8 @@ QObjectPrivate::Connection::~Connection()
     \relates QObject
 
     Returns the given \a object cast to type T if the object is of type
-    T (or of a subclass); otherwise returns 0.  If \a object is 0 then
-    it will also return 0.
+    T (or of a subclass); otherwise returns \nullptr. If \a object is
+    \nullptr then it will also return \nullptr.
 
     The class T must inherit (directly or indirectly) QObject and be
     declared with the \l Q_OBJECT macro.
@@ -1538,7 +1538,7 @@ QThread *QObject::thread() const
     the thread affinity is changed. You can handle this event to
     perform any special processing. Note that any new events that are
     posted to this object will be handled in the \a targetThread,
-    provided it is non-null: when it is \nullptr, no event processing
+    provided it is not \nullptr: when it is \nullptr, no event processing
     for this object or its children can happen, as they are no longer
     associated with any thread.
 
@@ -2335,7 +2335,7 @@ void QObject::deleteLater()
 
     If the same \a sourceText is used in different roles within the
     same context, an additional identifying string may be passed in
-    \a disambiguation (0 by default). In Qt 4.4 and earlier, this was
+    \a disambiguation (\nullptr by default). In Qt 4.4 and earlier, this was
     the preferred way to pass comments to translators.
 
     Example:
@@ -2521,7 +2521,7 @@ QObject *QObject::sender() const
 
     For signals with default parameters, this function will always return
     the index with all parameters, regardless of which was used with
-    connect(). For example, the signal \c {destroyed(QObject *obj = 0)}
+    connect(). For example, the signal \c {destroyed(QObject *obj = \nullptr)}
     will have two different indexes (with and without the parameter), but
     this function will always return the index with a parameter. This does
     not apply when overloading signals with different parameters.
@@ -2662,7 +2662,7 @@ bool QObject::isSignalConnected(const QMetaMethod &signal) const
     member in the specified class.
 
     \list
-    \li If member.mobj is 0 then both signalIndex and methodIndex are set to -1.
+    \li If member.mobj is \nullptr then both signalIndex and methodIndex are set to -1.
 
     \li If specified member is not a member of obj instance class (or one of
     its parent classes) then both signalIndex and methodIndex are set to -1.
@@ -2799,12 +2799,12 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const char *sign
                                      const QObject *receiver, const char *method,
                                      Qt::ConnectionType type)
 {
-    if (sender == 0 || receiver == 0 || signal == 0 || method == 0) {
+    if (sender == nullptr || receiver == nullptr || signal == nullptr || method == nullptr) {
         qWarning("QObject::connect: Cannot connect %s::%s to %s::%s",
-                 sender ? sender->metaObject()->className() : "(null)",
-                 (signal && *signal) ? signal+1 : "(null)",
-                 receiver ? receiver->metaObject()->className() : "(null)",
-                 (method && *method) ? method+1 : "(null)");
+                 sender ? sender->metaObject()->className() : "(nullptr)",
+                 (signal && *signal) ? signal+1 : "(nullptr)",
+                 receiver ? receiver->metaObject()->className() : "(nullptr)",
+                 (method && *method) ? method+1 : "(nullptr)");
         return QMetaObject::Connection(0);
     }
     QByteArray tmp_signal_name;
@@ -2937,14 +2937,14 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
                                      const QObject *receiver, const QMetaMethod &method,
                                      Qt::ConnectionType type)
 {
-    if (sender == 0
-            || receiver == 0
+    if (sender == nullptr
+            || receiver == nullptr
             || signal.methodType() != QMetaMethod::Signal
             || method.methodType() == QMetaMethod::Constructor) {
         qWarning("QObject::connect: Cannot connect %s::%s to %s::%s",
-                 sender ? sender->metaObject()->className() : "(null)",
+                 sender ? sender->metaObject()->className() : "(nullptr)",
                  signal.methodSignature().constData(),
-                 receiver ? receiver->metaObject()->className() : "(null)",
+                 receiver ? receiver->metaObject()->className() : "(nullptr)",
                  method.methodSignature().constData() );
         return QMetaObject::Connection(0);
     }
@@ -3046,20 +3046,20 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
 
     \endlist
 
-    0 may be used as a wildcard, meaning "any signal", "any receiving
+    \nullptr may be used as a wildcard, meaning "any signal", "any receiving
     object", or "any slot in the receiving object", respectively.
 
     The \a sender may never be \nullptr. (You cannot disconnect signals
     from more than one object in a single call.)
 
-    If \a signal is 0, it disconnects \a receiver and \a method from
+    If \a signal is \nullptr, it disconnects \a receiver and \a method from
     any signal. If not, only the specified signal is disconnected.
 
-    If \a receiver is 0, it disconnects anything connected to \a
+    If \a receiver is \nullptr, it disconnects anything connected to \a
     signal. If not, slots in objects other than \a receiver are not
     disconnected.
 
-    If \a method is 0, it disconnects anything that is connected to \a
+    If \a method is \nullptr, it disconnects anything that is connected to \a
     receiver. If not, only slots named \a method will be disconnected,
     and all other slots are left alone. The \a method must be \nullptr
     if \a receiver is left out, so you cannot disconnect a
@@ -3070,8 +3070,8 @@ QMetaObject::Connection QObject::connect(const QObject *sender, const QMetaMetho
 bool QObject::disconnect(const QObject *sender, const char *signal,
                          const QObject *receiver, const char *method)
 {
-    if (sender == 0 || (receiver == 0 && method != 0)) {
-        qWarning("QObject::disconnect: Unexpected null parameter");
+    if (sender == nullptr || (receiver == nullptr && method != nullptr)) {
+        qWarning("QObject::disconnect: Unexpected nullptr parameter");
         return false;
     }
 
@@ -3197,16 +3197,16 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     \endlist
 
     QMetaMethod() may be used as wildcard in the meaning "any signal" or "any slot in receiving object".
-    In the same way 0 can be used for \a receiver in the meaning "any receiving object". In this case
-    method should also be QMetaMethod(). \a sender parameter should be never 0.
+    In the same way \nullptr can be used for \a receiver in the meaning "any receiving object".
+    In this case method should also be QMetaMethod(). \a sender parameter should be never \nullptr.
 
     \sa disconnect(const QObject *sender, const char *signal, const QObject *receiver, const char *method)
  */
 bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
                          const QObject *receiver, const QMetaMethod &method)
 {
-    if (sender == 0 || (receiver == 0 && method.mobj != 0)) {
-        qWarning("QObject::disconnect: Unexpected null parameter");
+    if (sender == nullptr || (receiver == nullptr && method.mobj != nullptr)) {
+        qWarning("QObject::disconnect: Unexpected nullptr parameter");
         return false;
     }
     if (signal.mobj) {
@@ -3240,7 +3240,7 @@ bool QObject::disconnect(const QObject *sender, const QMetaMethod &signal,
         QMetaObjectPrivate::memberIndexes(sender, signal, &signal_index, &dummy);
         QMetaObjectPrivate::memberIndexes(receiver, method, &dummy, &method_index);
     }
-    // If we are here sender is not null. If signal is not null while signal_index
+    // If we are here sender is not nullptr. If signal is not nullptr while signal_index
     // is -1 then this signal is not a member of sender.
     if (signal.mobj && signal_index == -1) {
         qWarning("QObject::disconect: signal %s not found on class %s",
@@ -3329,7 +3329,7 @@ void QObject::connectNotify(const QMetaMethod &signal)
     \a signal with a specific signal.
 
     If all signals were disconnected from this object (e.g., the
-    signal argument to disconnect() was 0), disconnectNotify()
+    signal argument to disconnect() was \nullptr), disconnectNotify()
     is only called once, and the \a signal will be an invalid
     QMetaMethod (QMetaMethod::isValid() returns \c false).
 
@@ -4929,7 +4929,7 @@ void qDeleteInEventHandler(QObject *o)
 
     \a sender is the sender object
     \a signal is a pointer to a pointer to a member signal of the sender
-    \a receiver is the receiver object, may not be null, will be equal to sender when
+    \a receiver is the receiver object, may not be \nullptr, will be equal to sender when
                 connecting to a static function or a functor
     \a slot a pointer only used when using Qt::UniqueConnection
     \a type the Qt::ConnctionType passed as argument to connect
@@ -4937,7 +4937,7 @@ void qDeleteInEventHandler(QObject *o)
              to be used with queued connection
              must stay valid at least for the whole time of the connection, this function
              do not take ownership. typically static data.
-             If null, then the types will be computed when the signal is emit in a queued
+             If \nullptr, then the types will be computed when the signal is emit in a queued
              connection from the types from the signature.
     \a senderMetaObject is the metaobject used to lookup the signal, the signal must be in
                         this metaobject
@@ -4948,7 +4948,7 @@ QMetaObject::Connection QObject::connectImpl(const QObject *sender, void **signa
                                              const int *types, const QMetaObject *senderMetaObject)
 {
     if (!signal) {
-        qWarning("QObject::connect: invalid null parameter");
+        qWarning("QObject::connect: invalid nullptr parameter");
         if (slotObj)
             slotObj->destroyIfLastRef();
         return QMetaObject::Connection();
@@ -4988,7 +4988,7 @@ QMetaObject::Connection QObjectPrivate::connectImpl(const QObject *sender, int s
                                           : "Unknown";
         const char *receiverString = receiver ? receiver->metaObject()->className()
                                               : "Unknown";
-        qWarning("QObject::connect(%s, %s): invalid null parameter", senderString, receiverString);
+        qWarning("QObject::connect(%s, %s): invalid nullptr parameter", senderString, receiverString);
         if (slotObj)
             slotObj->destroyIfLastRef();
         return QMetaObject::Connection();
@@ -5121,20 +5121,20 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
 
     \endlist
 
-    0 may be used as a wildcard, meaning "any signal", "any receiving
+    \nullptr may be used as a wildcard, meaning "any signal", "any receiving
     object", or "any slot in the receiving object", respectively.
 
     The \a sender may never be \nullptr. (You cannot disconnect signals
     from more than one object in a single call.)
 
-    If \a signal is 0, it disconnects \a receiver and \a method from
+    If \a signal is \nullptr, it disconnects \a receiver and \a method from
     any signal. If not, only the specified signal is disconnected.
 
-    If \a receiver is 0, it disconnects anything connected to \a
+    If \a receiver is \nullptr, it disconnects anything connected to \a
     signal. If not, slots in objects other than \a receiver are not
     disconnected.
 
-    If \a method is 0, it disconnects anything that is connected to \a
+    If \a method is \nullptr, it disconnects anything that is connected to \a
     receiver. If not, only slots named \a method will be disconnected,
     and all other slots are left alone. The \a method must be \nullptr
     if \a receiver is left out, so you cannot disconnect a
@@ -5150,8 +5150,8 @@ bool QObject::disconnect(const QMetaObject::Connection &connection)
 
 bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject *receiver, void **slot, const QMetaObject *senderMetaObject)
 {
-    if (sender == 0 || (receiver == 0 && slot != 0)) {
-        qWarning("QObject::disconnect: Unexpected null parameter");
+    if (sender == nullptr || (receiver == nullptr && slot != nullptr)) {
+        qWarning("QObject::disconnect: Unexpected nullptr parameter");
         return false;
     }
 
@@ -5182,7 +5182,7 @@ bool QObject::disconnectImpl(const QObject *sender, void **signal, const QObject
 QMetaObject::Connection QObjectPrivate::connect(const QObject *sender, int signal_index, QtPrivate::QSlotObjectBase *slotObj, Qt::ConnectionType type)
 {
     if (!sender) {
-        qWarning("QObject::connect: invalid null parameter");
+        qWarning("QObject::connect: invalid nullptr parameter");
         if (slotObj)
             slotObj->destroyIfLastRef();
         return QMetaObject::Connection();
