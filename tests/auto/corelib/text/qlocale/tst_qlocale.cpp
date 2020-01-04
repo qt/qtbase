@@ -147,6 +147,8 @@ private slots:
     void systemLocale_data();
     void systemLocale();
 
+    void IndianNumberGrouping();
+
     // *** ORDER-DEPENDENCY *** (This Is Bad.)
     // Test order is determined by order of declaration here: *all* tests that
     // QLocale::setDefault() *must* appear *after* all other tests !
@@ -2989,6 +2991,57 @@ void tst_QLocale::systemLocale()
 
     QCOMPARE(QLocale(), originalLocale);
     QCOMPARE(QLocale::system(), originalSystemLocale);
+}
+
+void tst_QLocale::IndianNumberGrouping()
+{
+    QLocale indian(QLocale::Hindi, QLocale::India);
+
+    qint8 int8 = 100;
+    QString strResult8("100");
+    QCOMPARE(indian.toString(int8), strResult8);
+    QCOMPARE(indian.toShort(strResult8), short(int8));
+
+    quint8 uint8 = 100;
+    QCOMPARE(indian.toString(uint8), strResult8);
+    QCOMPARE(indian.toShort(strResult8), short(uint8));
+
+    // Boundary case 1000 for short and ushort
+    short shortInt = 1000;
+    QString strResult16("1,000");
+    QCOMPARE(indian.toString(shortInt), strResult16);
+    QCOMPARE(indian.toShort(strResult16), shortInt);
+
+    ushort uShortInt = 1000;
+    QCOMPARE(indian.toString(uShortInt), strResult16);
+    QCOMPARE(indian.toUShort(strResult16), uShortInt);
+
+    shortInt = 10000;
+    strResult16 = "10,000";
+    QCOMPARE(indian.toString(shortInt), strResult16);
+    QCOMPARE(indian.toShort(strResult16), shortInt);
+
+    uShortInt = 10000;
+    QCOMPARE(indian.toString(uShortInt), strResult16);
+    QCOMPARE(indian.toUShort(strResult16), uShortInt);
+
+    int intInt = 1000000000;
+    QString strResult32("1,00,00,00,000");
+    QCOMPARE(indian.toString(intInt), strResult32);
+    QCOMPARE(indian.toInt(strResult32), intInt);
+
+    uint uIntInt = 1000000000;
+    QCOMPARE(indian.toString(uIntInt), strResult32);
+    QCOMPARE(indian.toUInt(strResult32), uIntInt);
+
+    QString strResult64("10,00,00,00,00,00,00,00,000");
+    qint64 int64 = Q_INT64_C(1000000000000000000);
+    QCOMPARE(indian.toString(int64), strResult64);
+    QCOMPARE(indian.toLongLong(strResult64), int64);
+
+    quint64 uint64 = Q_UINT64_C(1000000000000000000);
+    QCOMPARE(indian.toString(uint64), strResult64);
+    QCOMPARE(indian.toULongLong(strResult64), uint64);
 }
 
 QTEST_MAIN(tst_QLocale)

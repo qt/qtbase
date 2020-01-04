@@ -285,7 +285,7 @@ void QIBusPlatformInputContext::commitText(const QDBusVariant &text)
     if (!input)
         return;
 
-    const QDBusArgument arg = text.variant().value<QDBusArgument>();
+    const QDBusArgument arg = qvariant_cast<QDBusArgument>(text.variant());
 
     QIBusText t;
     if (debug)
@@ -311,7 +311,7 @@ void QIBusPlatformInputContext::updatePreeditText(const QDBusVariant &text, uint
     if (!input)
         return;
 
-    const QDBusArgument arg = text.variant().value<QDBusArgument>();
+    const QDBusArgument arg = qvariant_cast<QDBusArgument>(text.variant());
 
     QIBusText t;
     arg >> t;

@@ -234,22 +234,26 @@
     \sa QAtomicPointer
 */
 
-/*! \fn QAtomicInt::QAtomicInt(int value)
+/*!
+    \fn QAtomicInt::QAtomicInt(int value)
 
     Constructs a QAtomicInt with the given \a value.
 */
 
-/*! \fn QAtomicInteger<T>::QAtomicInteger(T value)
+/*!
+    \fn template <typename T> QAtomicInteger<T>::QAtomicInteger(T value)
 
     Constructs a QAtomicInteger with the given \a value.
 */
 
-/*! \fn template <typename T> QAtomicInteger<T>::QAtomicInteger(const QAtomicInteger &other)
+/*!
+    \fn template <typename T> QAtomicInteger<T>::QAtomicInteger(const QAtomicInteger &other)
 
     Constructs a copy of \a other.
 */
 
-/*! \fn template <typename T> QAtomicInteger &QAtomicInteger<T>::operator=(const QAtomicInteger &other)
+/*!
+    \fn template <typename T> QAtomicInteger &QAtomicInteger<T>::operator=(const QAtomicInteger &other)
 
     Assigns \a other to this QAtomicInteger and returns a reference to
     this QAtomicInteger.
@@ -344,19 +348,22 @@
     \sa storeRelaxed(), storeRelease()
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::isReferenceCountingNative()
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::isReferenceCountingNative()
 
     Returns \c true if reference counting is implemented using atomic
     processor instructions, false otherwise.
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::isReferenceCountingWaitFree()
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::isReferenceCountingWaitFree()
 
     Returns \c true if atomic reference counting is wait-free, false
     otherwise.
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::ref()
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::ref()
     Atomically increments the value of this QAtomicInteger. Returns \c true
     if the new value is non-zero, false otherwise.
 
@@ -394,7 +401,8 @@
     \sa ref(), operator++(), operator--(int)
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::deref()
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::deref()
     Atomically decrements the value of this QAtomicInteger. Returns \c true
     if the new value is non-zero, false otherwise.
 
@@ -432,18 +440,21 @@
     \sa deref(), operator--(), operator++(int)
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::isTestAndSetNative()
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::isTestAndSetNative()
 
     Returns \c true if test-and-set is implemented using atomic processor
     instructions, false otherwise.
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::isTestAndSetWaitFree()
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::isTestAndSetWaitFree()
 
     Returns \c true if atomic test-and-set is wait-free, false otherwise.
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::testAndSetRelaxed(T expectedValue, T newValue)
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::testAndSetRelaxed(T expectedValue, T newValue)
 
     Atomic test-and-set.
 
@@ -457,7 +468,8 @@
     processor to freely reorder memory accesses.
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::testAndSetAcquire(T expectedValue, T newValue)
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::testAndSetAcquire(T expectedValue, T newValue)
 
     Atomic test-and-set.
 
@@ -472,7 +484,8 @@
     be re-ordered before the atomic operation.
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::testAndSetRelease(T expectedValue, T newValue)
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::testAndSetRelease(T expectedValue, T newValue)
 
     Atomic test-and-set.
 
@@ -487,7 +500,8 @@
     re-ordered after the atomic operation.
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::testAndSetOrdered(T expectedValue, T newValue)
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::testAndSetOrdered(T expectedValue, T newValue)
 
     Atomic test-and-set.
 
@@ -502,19 +516,22 @@
     may not be re-ordered.
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::isFetchAndStoreNative()
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::isFetchAndStoreNative()
 
     Returns \c true if fetch-and-store is implemented using atomic
     processor instructions, false otherwise.
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::isFetchAndStoreWaitFree()
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::isFetchAndStoreWaitFree()
 
     Returns \c true if atomic fetch-and-store is wait-free, false
     otherwise.
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndStoreRelaxed(T newValue)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndStoreRelaxed(T newValue)
 
     Atomic fetch-and-store.
 
@@ -526,7 +543,8 @@
     processor to freely reorder memory accesses.
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndStoreAcquire(T newValue)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndStoreAcquire(T newValue)
 
     Atomic fetch-and-store.
 
@@ -539,7 +557,8 @@
     be re-ordered before the atomic operation.
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndStoreRelease(T newValue)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndStoreRelease(T newValue)
 
     Atomic fetch-and-store.
 
@@ -552,7 +571,8 @@
     re-ordered after the atomic operation.
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndStoreOrdered(T newValue)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndStoreOrdered(T newValue)
 
     Atomic fetch-and-store.
 
@@ -565,19 +585,22 @@
     may not be re-ordered.
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::isFetchAndAddNative()
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::isFetchAndAddNative()
 
     Returns \c true if fetch-and-add is implemented using atomic
     processor instructions, false otherwise.
 */
 
-/*! \fn template <typename T> bool QAtomicInteger<T>::isFetchAndAddWaitFree()
+/*!
+    \fn template <typename T> bool QAtomicInteger<T>::isFetchAndAddWaitFree()
 
     Returns \c true if atomic fetch-and-add is wait-free, false
     otherwise.
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndAddRelaxed(T valueToAdd)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndAddRelaxed(T valueToAdd)
 
     Atomic fetch-and-add.
 
@@ -591,7 +614,8 @@
     \sa operator+=(), fetchAndSubRelaxed()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndAddAcquire(T valueToAdd)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndAddAcquire(T valueToAdd)
 
     Atomic fetch-and-add.
 
@@ -606,7 +630,8 @@
     \sa operator+=(), fetchAndSubAcquire()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndAddRelease(T valueToAdd)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndAddRelease(T valueToAdd)
 
     Atomic fetch-and-add.
 
@@ -621,7 +646,8 @@
     \sa operator+=(), fetchAndSubRelease()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndAddOrdered(T valueToAdd)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndAddOrdered(T valueToAdd)
 
     Atomic fetch-and-add.
 
@@ -636,7 +662,8 @@
     \sa operator+=(), fetchAndSubOrdered()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::operator+=(T value)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::operator+=(T value)
     \since 5.3
 
     Atomic add-and-fetch.
@@ -650,7 +677,8 @@
     \sa fetchAndAddOrdered(), operator-=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndSubRelaxed(T valueToSub)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndSubRelaxed(T valueToSub)
     \since 5.3
 
     Atomic fetch-and-sub.
@@ -665,7 +693,8 @@
     \sa operator-=(), fetchAndAddRelaxed()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndSubAcquire(T valueToSub)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndSubAcquire(T valueToSub)
     \since 5.3
 
     Atomic fetch-and-sub.
@@ -681,7 +710,8 @@
     \sa operator-=(), fetchAndAddAcquire()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndSubRelease(T valueToSub)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndSubRelease(T valueToSub)
     \since 5.3
 
     Atomic fetch-and-sub.
@@ -697,7 +727,8 @@
     \sa operator-=(), fetchAndAddRelease()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndSubOrdered(T valueToSub)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndSubOrdered(T valueToSub)
     \since 5.3
 
     Atomic fetch-and-sub.
@@ -713,7 +744,8 @@
     \sa operator-=(), fetchAndAddOrdered()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::operator-=(T value)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::operator-=(T value)
     \since 5.3
 
     Atomic sub-and-fetch.
@@ -727,7 +759,8 @@
     \sa fetchAndSubOrdered(), operator+=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndOrRelaxed(T valueToOr)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndOrRelaxed(T valueToOr)
     \since 5.3
 
     Atomic fetch-and-or.
@@ -742,7 +775,8 @@
     \sa operator|=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndOrAcquire(T valueToOr)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndOrAcquire(T valueToOr)
     \since 5.3
 
     Atomic fetch-and-or.
@@ -758,7 +792,8 @@
     \sa operator|=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndOrRelease(T valueToOr)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndOrRelease(T valueToOr)
     \since 5.3
 
     Atomic fetch-and-or.
@@ -774,7 +809,8 @@
     \sa operator|=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndOrOrdered(T valueToOr)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndOrOrdered(T valueToOr)
     \since 5.3
 
     Atomic fetch-and-or.
@@ -790,7 +826,8 @@
     \sa operator|=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::operator|=(T value)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::operator|=(T value)
     \since 5.3
 
     Atomic or-and-fetch.
@@ -804,7 +841,8 @@
     \sa fetchAndOrOrdered()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndXorRelaxed(T valueToXor)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndXorRelaxed(T valueToXor)
     \since 5.3
 
     Atomic fetch-and-xor.
@@ -819,7 +857,8 @@
     \sa operator^=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndXorAcquire(T valueToXor)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndXorAcquire(T valueToXor)
     \since 5.3
 
     Atomic fetch-and-xor.
@@ -835,7 +874,8 @@
     \sa operator^=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndXorRelease(T valueToXor)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndXorRelease(T valueToXor)
     \since 5.3
 
     Atomic fetch-and-xor.
@@ -851,7 +891,8 @@
     \sa operator^=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndXorOrdered(T valueToXor)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndXorOrdered(T valueToXor)
     \since 5.3
 
     Atomic fetch-and-xor.
@@ -867,7 +908,8 @@
     \sa operator^=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::operator^=(T value)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::operator^=(T value)
     \since 5.3
 
     Atomic xor-and-fetch.
@@ -881,7 +923,8 @@
     \sa fetchAndXorOrdered()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndAndRelaxed(T valueToAnd)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndAndRelaxed(T valueToAnd)
     \since 5.3
 
     Atomic fetch-and-and.
@@ -896,7 +939,8 @@
     \sa operator&=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndAndAcquire(T valueToAnd)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndAndAcquire(T valueToAnd)
     \since 5.3
 
     Atomic fetch-and-and.
@@ -912,7 +956,8 @@
     \sa operator&=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndAndRelease(T valueToAnd)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndAndRelease(T valueToAnd)
     \since 5.3
 
     Atomic fetch-and-and.
@@ -928,7 +973,8 @@
     \sa operator&=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::fetchAndAndOrdered(T valueToAnd)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::fetchAndAndOrdered(T valueToAnd)
     \since 5.3
 
     Atomic fetch-and-and.
@@ -944,7 +990,8 @@
     \sa operator&=()
 */
 
-/*! \fn template <typename T> T QAtomicInteger<T>::operator&=(T value)
+/*!
+    \fn template <typename T> T QAtomicInteger<T>::operator&=(T value)
     \since 5.3
 
     Atomic add-and-fetch.
@@ -1287,17 +1334,20 @@
     \sa QAtomicInteger
 */
 
-/*! \fn template <typename T> QAtomicPointer<T>::QAtomicPointer(T *value)
+/*!
+    \fn template <typename T> QAtomicPointer<T>::QAtomicPointer(T *value)
 
     Constructs a QAtomicPointer with the given \a value.
 */
 
-/*! \fn template <typename T> QAtomicPointer<T>::QAtomicPointer(const QAtomicPointer<T> &other)
+/*!
+    \fn template <typename T> QAtomicPointer<T>::QAtomicPointer(const QAtomicPointer<T> &other)
 
     Constructs a copy of \a other.
 */
 
-/*! \fn template <typename T> QAtomicPointer &QAtomicPointer<T>::operator=(const QAtomicPointer &other)
+/*!
+    \fn template <typename T> QAtomicPointer &QAtomicPointer<T>::operator=(const QAtomicPointer &other)
 
     Assigns \a other to this QAtomicPointer and returns a reference to
     this QAtomicPointer.
@@ -1369,18 +1419,21 @@
     \sa storeRelaxed(), loadRelaxed()
 */
 
-/*! \fn template <typename T> bool QAtomicPointer<T>::isTestAndSetNative()
+/*!
+    \fn template <typename T> bool QAtomicPointer<T>::isTestAndSetNative()
 
     Returns \c true if test-and-set is implemented using atomic processor
     instructions, false otherwise.
 */
 
-/*! \fn template <typename T> bool QAtomicPointer<T>::isTestAndSetWaitFree()
+/*!
+    \fn template <typename T> bool QAtomicPointer<T>::isTestAndSetWaitFree()
 
     Returns \c true if atomic test-and-set is wait-free, false otherwise.
 */
 
-/*! \fn template <typename T> bool QAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
+/*!
+    \fn template <typename T> bool QAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
 
     Atomic test-and-set.
 
@@ -1394,7 +1447,8 @@
     processor to freely reorder memory accesses.
 */
 
-/*! \fn template <typename T> bool QAtomicPointer<T>::testAndSetAcquire(T *expectedValue, T *newValue)
+/*!
+    \fn template <typename T> bool QAtomicPointer<T>::testAndSetAcquire(T *expectedValue, T *newValue)
 
     Atomic test-and-set.
 
@@ -1409,7 +1463,8 @@
     be re-ordered before the atomic operation.
 */
 
-/*! \fn template <typename T> bool QAtomicPointer<T>::testAndSetRelease(T *expectedValue, T *newValue)
+/*!
+    \fn template <typename T> bool QAtomicPointer<T>::testAndSetRelease(T *expectedValue, T *newValue)
 
     Atomic test-and-set.
 
@@ -1424,7 +1479,8 @@
     re-ordered after the atomic operation.
 */
 
-/*! \fn template <typename T> bool QAtomicPointer<T>::testAndSetOrdered(T *expectedValue, T *newValue)
+/*!
+    \fn template <typename T> bool QAtomicPointer<T>::testAndSetOrdered(T *expectedValue, T *newValue)
 
     Atomic test-and-set.
 
@@ -1439,19 +1495,22 @@
     may not be re-ordered.
 */
 
-/*! \fn template <typename T> bool QAtomicPointer<T>::isFetchAndStoreNative()
+/*!
+    \fn template <typename T> bool QAtomicPointer<T>::isFetchAndStoreNative()
 
     Returns \c true if fetch-and-store is implemented using atomic
     processor instructions, false otherwise.
 */
 
-/*! \fn template <typename T> bool QAtomicPointer<T>::isFetchAndStoreWaitFree()
+/*!
+    \fn template <typename T> bool QAtomicPointer<T>::isFetchAndStoreWaitFree()
 
     Returns \c true if atomic fetch-and-store is wait-free, false
     otherwise.
 */
 
-/*! \fn template <typename T> T *QAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
+/*!
+    \fn template <typename T> T *QAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
 
     Atomic fetch-and-store.
 
@@ -1463,7 +1522,8 @@
     processor to freely reorder memory accesses.
 */
 
-/*! \fn template <typename T> T *QAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
+/*!
+    \fn template <typename T> T *QAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
 
     Atomic fetch-and-store.
 
@@ -1476,7 +1536,8 @@
     be re-ordered before the atomic operation.
 */
 
-/*! \fn template <typename T> T *QAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
+/*!
+    \fn template <typename T> T *QAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
 
     Atomic fetch-and-store.
 
@@ -1489,7 +1550,8 @@
     re-ordered after the atomic operation.
 */
 
-/*! \fn template <typename T> T *QAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
+/*!
+    \fn template <typename T> T *QAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
 
     Atomic fetch-and-store.
 
@@ -1502,19 +1564,22 @@
     may not be re-ordered.
 */
 
-/*! \fn template <typename T> bool QAtomicPointer<T>::isFetchAndAddNative()
+/*!
+    \fn template <typename T> bool QAtomicPointer<T>::isFetchAndAddNative()
 
     Returns \c true if fetch-and-add is implemented using atomic
     processor instructions, false otherwise.
 */
 
-/*! \fn template <typename T> bool QAtomicPointer<T>::isFetchAndAddWaitFree()
+/*!
+    \fn template <typename T> bool QAtomicPointer<T>::isFetchAndAddWaitFree()
 
     Returns \c true if atomic fetch-and-add is wait-free, false
     otherwise.
 */
 
-/*! \fn template <typename T> T *QAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd)
+/*!
+    \fn template <typename T> T *QAtomicPointer<T>::fetchAndAddRelaxed(qptrdiff valueToAdd)
 
     Atomic fetch-and-add.
 
@@ -1526,7 +1591,8 @@
     processor to freely reorder memory accesses.
 */
 
-/*! \fn template <typename T> T *QAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueToAdd)
+/*!
+    \fn template <typename T> T *QAtomicPointer<T>::fetchAndAddAcquire(qptrdiff valueToAdd)
 
     Atomic fetch-and-add.
 
@@ -1539,7 +1605,8 @@
     be re-ordered before the atomic operation.
 */
 
-/*! \fn template <typename T> T *QAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueToAdd)
+/*!
+    \fn template <typename T> T *QAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueToAdd)
 
     Atomic fetch-and-add.
 
@@ -1552,7 +1619,8 @@
     re-ordered after the atomic operation.
 */
 
-/*! \fn template <typename T> T *QAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueToAdd)
+/*!
+    \fn template <typename T> T *QAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueToAdd)
 
     Atomic fetch-and-add.
 

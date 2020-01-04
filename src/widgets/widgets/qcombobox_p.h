@@ -266,7 +266,9 @@ class Q_AUTOTEST_EXPORT QComboMenuDelegate : public QAbstractItemDelegate
 {
     Q_OBJECT
 public:
-    QComboMenuDelegate(QObject *parent, QComboBox *cmb) : QAbstractItemDelegate(parent), mCombo(cmb) {}
+    QComboMenuDelegate(QObject *parent, QComboBox *cmb)
+    : QAbstractItemDelegate(parent), mCombo(cmb), pressedIndex(-1)
+    {}
 
 protected:
     void paint(QPainter *painter,
@@ -282,11 +284,14 @@ protected:
         return mCombo->style()->sizeFromContents(
             QStyle::CT_MenuItem, &opt, option.rect.size(), mCombo);
     }
+    bool editorEvent(QEvent *event, QAbstractItemModel *model,
+                     const QStyleOptionViewItem &option, const QModelIndex &index) override;
 
 private:
     QStyleOptionMenuItem getStyleOption(const QStyleOptionViewItem &option,
                                         const QModelIndex &index) const;
     QComboBox *mCombo;
+    int pressedIndex;
 };
 
 // ### Qt6: QStyledItemDelegate ?

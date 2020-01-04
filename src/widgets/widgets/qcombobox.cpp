@@ -129,7 +129,15 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
     if (option.state & QStyle::State_Selected)
         menuOption.state |= QStyle::State_Selected;
     menuOption.checkType = QStyleOptionMenuItem::NonExclusive;
-    menuOption.checked = mCombo->currentIndex() == index.row();
+    // a valid checkstate means that the model has checkable items
+    const QVariant checkState = index.data(Qt::CheckStateRole);
+    if (!checkState.isValid()) {
+        menuOption.checked = mCombo->currentIndex() == index.row();
+    } else {
+        menuOption.checked = qvariant_cast<int>(checkState) == Qt::Checked;
+        menuOption.state |= qvariant_cast<int>(checkState) == Qt::Checked
+                          ? QStyle::State_On : QStyle::State_Off;
+    }
     if (QComboBoxDelegate::isSeparator(index))
         menuOption.menuItemType = QStyleOptionMenuItem::Separator;
     else
@@ -164,7 +172,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
     // that order, also override the font for the popup menu.
     QVariant fontRoleData = index.data(Qt::FontRole);
     if (fontRoleData.isValid()) {
-        menuOption.font = fontRoleData.value<QFont>();
+        menuOption.font = qvariant_cast<QFont>(fontRoleData);
     } else if (mCombo->testAttribute(Qt::WA_SetFont)
             || mCombo->testAttribute(Qt::WA_MacSmallSize)
             || mCombo->testAttribute(Qt::WA_MacMiniSize)
@@ -177,6 +185,55 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
     menuOption.fontMetrics = QFontMetrics(menuOption.font);
 
     return menuOption;
+}
+
+bool QComboMenuDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
+                                     const QStyleOptionViewItem &option, const QModelIndex &index)
+{
+    Q_ASSERT(event);
+    Q_ASSERT(model);
+
+    // make sure that the item is checkable
+    Qt::ItemFlags flags = model->flags(index);
+    if (!(flags & Qt::ItemIsUserCheckable) || !(option.state & QStyle::State_Enabled)
+        || !(flags & Qt::ItemIsEnabled))
+        return false;
+
+    // make sure that we have a check state
+    const QVariant checkState = index.data(Qt::CheckStateRole);
+    if (!checkState.isValid())
+        return false;
+
+    // make sure that we have the right event type
+    if ((event->type() == QEvent::MouseButtonRelease)
+        || (event->type() == QEvent::MouseButtonDblClick)
+        || (event->type() == QEvent::MouseButtonPress)) {
+        QMouseEvent *me = static_cast<QMouseEvent*>(event);
+        if (me->button() != Qt::LeftButton)
+            return false;
+
+        if ((event->type() == QEvent::MouseButtonPress)
+            || (event->type() == QEvent::MouseButtonDblClick)) {
+            pressedIndex = index.row();
+            return false;
+        }
+
+        if (index.row() != pressedIndex)
+            return false;
+        pressedIndex = -1;
+
+    } else if (event->type() == QEvent::KeyPress) {
+        if (static_cast<QKeyEvent*>(event)->key() != Qt::Key_Space
+         && static_cast<QKeyEvent*>(event)->key() != Qt::Key_Select)
+            return false;
+    } else {
+        return false;
+    }
+
+    // we don't support user-tristate items in QComboBox (not implemented in any style)
+    Qt::CheckState newState = (static_cast<Qt::CheckState>(checkState.toInt()) == Qt::Checked)
+                            ? Qt::Unchecked : Qt::Checked;
+    return model->setData(index, newState, Qt::CheckStateRole);
 }
 
 #if QT_CONFIG(completer)

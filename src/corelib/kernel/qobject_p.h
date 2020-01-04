@@ -362,7 +362,6 @@ public:
     }
 public:
     ExtraData *extraData;    // extra data set by the user
-    QThreadData *getThreadData() const { return threadData.loadAcquire(); }
     // This atomic requires acquire/release semantics in a few places,
     // e.g. QObject::moveToThread must synchronize with QCoreApplication::postEvent,
     // because postEvent is thread-safe.

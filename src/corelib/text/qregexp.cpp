@@ -2528,7 +2528,7 @@ void QRegExpEngine::Box::cat(const Box &b)
     eng->addCatTransitions(rs, b.ls);
     addAnchorsToEngine(b);
     if (minl == 0) {
-        lanchors.unite(b.lanchors);
+        lanchors.insert(b.lanchors);
         if (skipanchors != 0) {
             for (int i = 0; i < b.ls.size(); i++) {
                 int a = eng->anchorConcatenation(lanchors.value(b.ls.at(i), 0), skipanchors);
@@ -2538,7 +2538,7 @@ void QRegExpEngine::Box::cat(const Box &b)
         mergeInto(&ls, b.ls);
     }
     if (b.minl == 0) {
-        ranchors.unite(b.ranchors);
+        ranchors.insert(b.ranchors);
         if (b.skipanchors != 0) {
             for (int i = 0; i < rs.size(); i++) {
                 int a = eng->anchorConcatenation(ranchors.value(rs.at(i), 0), b.skipanchors);
@@ -2596,9 +2596,9 @@ void QRegExpEngine::Box::cat(const Box &b)
 void QRegExpEngine::Box::orx(const Box &b)
 {
     mergeInto(&ls, b.ls);
-    lanchors.unite(b.lanchors);
+    lanchors.insert(b.lanchors);
     mergeInto(&rs, b.rs);
-    ranchors.unite(b.ranchors);
+    ranchors.insert(b.ranchors);
 
     if (b.minl == 0) {
         if (minl == 0)

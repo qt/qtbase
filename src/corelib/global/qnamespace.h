@@ -505,6 +505,7 @@ namespace Qt {
         AA_DontUseNativeMenuBar = 6,
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_Use96Dpi = 8,
+        AA_MSWindowsDisableVirtualKeyboard = 9,
 #if QT_DEPRECATED_SINCE(5, 14)
         AA_X11InitThreads Q_DECL_ENUMERATOR_DEPRECATED = 10,
 #endif

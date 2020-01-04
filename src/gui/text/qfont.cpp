@@ -2707,7 +2707,7 @@ bool QFontInfo::fixedPitch() const
         QChar ch[2] = { QLatin1Char('i'), QLatin1Char('m') };
         QGlyphLayoutArray<2> g;
         int l = 2;
-        if (!engine->stringToCMap(ch, 2, &g, &l, 0))
+        if (!engine->stringToCMap(ch, 2, &g, &l, {}))
             Q_UNREACHABLE();
         Q_ASSERT(l == 2);
         engine->fontDef.fixedPitch = g.advances[0] == g.advances[1];

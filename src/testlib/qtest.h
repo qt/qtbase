@@ -95,7 +95,7 @@ template<> inline char *toString(const QByteArray &ba)
 template<> inline char *toString(const QBitArray &ba)
 {
     qsizetype size = ba.size();
-    char *str = static_cast<char *>(malloc(size + 1));
+    char *str = new char[size + 1];
     for (qsizetype i = 0; i < size; ++i)
         str[i] = "01"[ba.testBit(i)];
     str[size] = '\0';

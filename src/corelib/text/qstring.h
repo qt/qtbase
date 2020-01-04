@@ -916,6 +916,8 @@ public:
 
     bool isSimpleText() const;
     bool isRightToLeft() const;
+    Q_REQUIRED_RESULT bool isValidUtf16() const noexcept
+    { return QStringView(*this).isValidUtf16(); }
 
     QString(int size, Qt::Initialization);
     explicit QString(DataPointer dd) : d(dd) {}

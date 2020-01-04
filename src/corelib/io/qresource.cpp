@@ -280,9 +280,9 @@ static inline QStringList *resourceSearchPaths()
     RCC tool used to compress the payload.
 
     \value NoCompression    Contents are not compressed
-    \value ZlibCompression  Contents are compressed using \l{zlib}{https://zlib.net} and can
+    \value ZlibCompression  Contents are compressed using \l{https://zlib.net}{zlib} and can
                             be decompressed using the qUncompress() function.
-    \value ZstdCompression  Contents are compressed using \l{zstd}{https://zstd.net}. To
+    \value ZstdCompression  Contents are compressed using \l{https://zstd.net}{zstd}. To
                             decompress, use the \c{ZSTD_decompress} function from the zstd
                             library.
 
@@ -629,6 +629,8 @@ const uchar *QResource::data() const
 }
 
 /*!
+    \since 5.8
+
     Returns the date and time when the file was last modified before
     packaging into a resource.
 */

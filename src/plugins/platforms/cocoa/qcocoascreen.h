@@ -53,9 +53,6 @@ class QCocoaIntegration;
 class QCocoaScreen : public QPlatformScreen
 {
 public:
-    static void initializeScreens();
-    static void cleanupScreens();
-
     ~QCocoaScreen();
 
     // ----------------------------------------------------
@@ -79,7 +76,6 @@ public:
     // ----------------------------------------------------
 
     NSScreen *nativeScreen() const;
-    void updateProperties();
 
     void requestUpdate();
     void deliverUpdateRequests();
@@ -88,6 +84,7 @@ public:
     static QCocoaScreen *primaryScreen();
     static QCocoaScreen *get(NSScreen *nsScreen);
     static QCocoaScreen *get(CGDirectDisplayID displayId);
+    static QCocoaScreen *get(CFUUIDRef uuid);
 
     static CGPoint mapToNative(const QPointF &pos, QCocoaScreen *screen = QCocoaScreen::primaryScreen());
     static CGRect mapToNative(const QRectF &rect, QCocoaScreen *screen = QCocoaScreen::primaryScreen());
@@ -95,11 +92,23 @@ public:
     static QRectF mapFromNative(CGRect rect, QCocoaScreen *screen = QCocoaScreen::primaryScreen());
 
 private:
-    QCocoaScreen(CGDirectDisplayID displayId);
+    static void initializeScreens();
+    static void updateScreens();
+    static void cleanupScreens();
+
+    static bool updateScreensIfNeeded();
+    static NSArray *s_screenConfigurationBeforeUpdate;
+
     static void add(CGDirectDisplayID displayId);
+    QCocoaScreen(CGDirectDisplayID displayId);
+    void update(CGDirectDisplayID displayId);
     void remove();
 
+    bool isOnline() const;
+    bool isMirroring() const;
+
     CGDirectDisplayID m_displayId = kCGNullDirectDisplay;
+    CGDirectDisplayID displayId() const { return m_displayId; }
 
     QRect m_geometry;
     QRect m_availableGeometry;
@@ -116,6 +125,8 @@ private:
     dispatch_source_t m_displayLinkSource = nullptr;
     QAtomicInt m_pendingUpdates;
 
+    friend class QCocoaIntegration;
+    friend class QCocoaWindow;
     friend QDebug operator<<(QDebug debug, const QCocoaScreen *screen);
 };
 

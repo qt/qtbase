@@ -544,8 +544,8 @@ bool QTabWidget::isTabEnabled(int index) const
 }
 
 /*!
-    If \a enable is true, the page at position \a index is enabled; otherwise the page at position \a index is
-    disabled. The page's tab is redrawn appropriately.
+    If \a enable is true, the page at position \a index is enabled; otherwise the page at
+    position \a index is disabled. The page's tab is redrawn appropriately.
 
     QTabWidget uses QWidget::setEnabled() internally, rather than
     keeping a separate flag.
@@ -563,6 +563,44 @@ void QTabWidget::setTabEnabled(int index, bool enable)
     d->tabs->setTabEnabled(index, enable);
     if (QWidget *widget = d->stack->widget(index))
         widget->setEnabled(enable);
+}
+
+/*!
+    Returns true if the page at position \a index is visible; otherwise returns false.
+
+    \sa setTabVisible()
+    \since 5.15
+*/
+
+bool QTabWidget::isTabVisible(int index) const
+{
+    Q_D(const QTabWidget);
+    return d->tabs->isTabVisible(index);
+}
+
+/*!
+    If \a visible is true, the page at position \a index is visible; otherwise the page at
+    position \a index is hidden. The page's tab is redrawn appropriately.
+
+    \sa isTabVisible()
+    \since 5.15
+*/
+
+void QTabWidget::setTabVisible(int index, bool visible)
+{
+    Q_D(QTabWidget);
+    QWidget *widget = d->stack->widget(index);
+    bool currentVisible = d->tabs->isTabVisible(d->tabs->currentIndex());
+    d->tabs->setTabVisible(index, visible);
+    if (!visible) {
+        if (widget)
+            widget->setVisible(false);
+    } else if (!currentVisible) {
+        setCurrentIndex(index);
+        if (widget)
+            widget->setVisible(true);
+    }
+    setUpLayout();
 }
 
 /*!
@@ -848,7 +886,13 @@ QSize QTabWidget::sizeHint() const
         QTabWidget *that = const_cast<QTabWidget*>(this);
         that->setUpLayout(true);
     }
-    QSize s(d->stack->sizeHint());
+    QSize s;
+    for (int i=0; i< d->stack->count(); ++i) {
+        if (const QWidget* w = d->stack->widget(i)) {
+            if (d->tabs->isTabVisible(i))
+                s = s.expandedTo(w->sizeHint());
+        }
+    }
     QSize t;
     if (!d->isAutoHidden()) {
         t = d->tabs->sizeHint();

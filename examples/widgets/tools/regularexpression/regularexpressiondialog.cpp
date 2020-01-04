@@ -286,7 +286,7 @@ void RegularExpressionDialog::refresh()
 
     setResultUiEnabled(true);
 
-    QRegularExpression::MatchType matchType = matchTypeComboBox->currentData().value<QRegularExpression::MatchType>();
+    QRegularExpression::MatchType matchType = qvariant_cast<QRegularExpression::MatchType>(matchTypeComboBox->currentData());
     QRegularExpression::PatternOptions patternOptions = QRegularExpression::NoPatternOption;
     QRegularExpression::MatchOptions matchOptions = QRegularExpression::NoMatchOption;
 

@@ -46,7 +46,9 @@
 #include <qpa/qplatformintegration.h>
 #include <qdebug.h>
 #include "qhighdpiscaling_p.h"
+
 #include <QtCore/qscopedvaluerollback.h>
+#include <QtCore/private/qlocking_p.h>
 
 #if QT_CONFIG(draganddrop)
 #include <qpa/qplatformdrag.h>
@@ -623,7 +625,7 @@ bool QWindowSystemInterface::isTouchDeviceRegistered(const QTouchDevice *device)
 static int g_nextPointId = 1;
 
 // map from device-independent point id (arbitrary) to "Qt point" ids
-QMutex QWindowSystemInterfacePrivate::pointIdMapMutex;
+static QBasicMutex pointIdMapMutex;
 typedef QMap<quint64, int> PointIdMap;
 Q_GLOBAL_STATIC(PointIdMap, g_pointIdMap)
 
@@ -641,7 +643,7 @@ Q_GLOBAL_STATIC(PointIdMap, g_pointIdMap)
 */
 static int acquireCombinedPointId(quint8 deviceId, int pointId)
 {
-    QMutexLocker locker(&QWindowSystemInterfacePrivate::pointIdMapMutex);
+    const auto locker = qt_scoped_lock(pointIdMapMutex);
 
     quint64 combinedId64 = (quint64(deviceId) << 32) + pointId;
     auto it = g_pointIdMap->constFind(combinedId64);
@@ -702,7 +704,7 @@ QList<QTouchEvent::TouchPoint>
     }
 
     if (states == Qt::TouchPointReleased) {
-        QMutexLocker locker(&QWindowSystemInterfacePrivate::pointIdMapMutex);
+        const auto locker = qt_scoped_lock(pointIdMapMutex);
 
         // All points on deviceId have been released.
         // Remove all points associated with that device from g_pointIdMap.
@@ -723,7 +725,7 @@ QList<QTouchEvent::TouchPoint>
 
 void QWindowSystemInterfacePrivate::clearPointIdMap()
 {
-    QMutexLocker locker(&QWindowSystemInterfacePrivate::pointIdMapMutex);
+    const auto locker = qt_scoped_lock(pointIdMapMutex);
     g_pointIdMap->clear();
     g_nextPointId = 1;
 }
@@ -880,10 +882,10 @@ void QWindowSystemInterface::handleScreenRefreshRateChange(QScreen *screen, qrea
     QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
 }
 
-void QWindowSystemInterface::handleThemeChange(QWindow *window)
+QT_DEFINE_QPA_EVENT_HANDLER(void, handleThemeChange, QWindow *window)
 {
     QWindowSystemInterfacePrivate::ThemeChangeEvent *e = new QWindowSystemInterfacePrivate::ThemeChangeEvent(window);
-    QWindowSystemInterfacePrivate::handleWindowSystemEvent(e);
+    QWindowSystemInterfacePrivate::handleWindowSystemEvent<Delivery>(e);
 }
 
 #if QT_CONFIG(draganddrop)

@@ -944,7 +944,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             const QVariantHash *hash = v_cast<QVariantHash>(d);
             const auto end = hash->end();
             for (auto it = hash->begin(); it != end; ++it)
-                map->insertMulti(it.key(), it.value());
+                static_cast<QMultiMap<QString, QVariant> *>(map)->insert(it.key(), it.value());
 #ifndef QT_BOOTSTRAPPED
         } else if (d->type == QMetaType::QCborValue) {
             if (!v_cast<QCborValue>(d)->isMap())
@@ -972,7 +972,7 @@ static bool convert(const QVariant::Private *d, int t, void *result, bool *ok)
             const QVariantMap *map = v_cast<QVariantMap>(d);
             const auto end = map->end();
             for (auto it = map->begin(); it != end; ++it)
-                hash->insertMulti(it.key(), it.value());
+                static_cast<QMultiHash<QString, QVariant> *>(hash)->insert(it.key(), it.value());
 #ifndef QT_BOOTSTRAPPED
         } else if (d->type == QMetaType::QCborValue) {
             if (!v_cast<QCborValue>(d)->isMap())
@@ -1544,7 +1544,7 @@ static void customStreamDebug(QDebug dbg, const QVariant &variant) {
 #ifndef QT_BOOTSTRAPPED
     QMetaType::TypeFlags flags = QMetaType::typeFlags(variant.userType());
     if (flags & QMetaType::PointerToQObject)
-        dbg.nospace() << variant.value<QObject*>();
+        dbg.nospace() << qvariant_cast<QObject*>(variant);
 #else
     Q_UNUSED(dbg);
     Q_UNUSED(variant);
@@ -4414,15 +4414,24 @@ QSequentialIterable::const_iterator QSequentialIterable::end() const
     return it;
 }
 
+static const QVariant variantFromVariantDataHelper(const QtMetaTypePrivate::VariantData &d) {
+    QVariant v;
+    if (d.metaTypeId == qMetaTypeId<QVariant>())
+        v =  *reinterpret_cast<const QVariant*>(d.data);
+    else
+        v = QVariant(d.metaTypeId, d.data, d.flags & ~QVariantConstructionFlags::ShouldDeleteVariantData);
+    if (d.flags & QVariantConstructionFlags::ShouldDeleteVariantData)
+        QMetaType::destroy(d.metaTypeId, const_cast<void *>(d.data));
+    return v;
+}
+
 /*!
     Returns the element at position \a idx in the container.
 */
 QVariant QSequentialIterable::at(int idx) const
 {
     const QtMetaTypePrivate::VariantData d = m_impl.at(idx);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return QVariant(d.metaTypeId, d.data, d.flags);
+    return variantFromVariantDataHelper(d);
 }
 
 /*!
@@ -4499,9 +4508,7 @@ QSequentialIterable::const_iterator::operator=(const const_iterator &other)
 const QVariant QSequentialIterable::const_iterator::operator*() const
 {
     const QtMetaTypePrivate::VariantData d = m_impl.getCurrent();
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return QVariant(d.metaTypeId, d.data, d.flags);
+    return variantFromVariantDataHelper(d);
 }
 
 /*!
@@ -4833,10 +4840,7 @@ QAssociativeIterable::const_iterator::operator=(const const_iterator &other)
 const QVariant QAssociativeIterable::const_iterator::operator*() const
 {
     const QtMetaTypePrivate::VariantData d = m_impl.getCurrentValue();
-    QVariant v(d.metaTypeId, d.data, d.flags);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return v;
+    return variantFromVariantDataHelper(d);
 }
 
 /*!
@@ -4845,10 +4849,7 @@ const QVariant QAssociativeIterable::const_iterator::operator*() const
 const QVariant QAssociativeIterable::const_iterator::key() const
 {
     const QtMetaTypePrivate::VariantData d = m_impl.getCurrentKey();
-    QVariant v(d.metaTypeId, d.data, d.flags);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return v;
+    return variantFromVariantDataHelper(d);
 }
 
 /*!
@@ -4856,11 +4857,7 @@ const QVariant QAssociativeIterable::const_iterator::key() const
 */
 const QVariant QAssociativeIterable::const_iterator::value() const
 {
-    const QtMetaTypePrivate::VariantData d = m_impl.getCurrentValue();
-    QVariant v(d.metaTypeId, d.data, d.flags);
-    if (d.metaTypeId == qMetaTypeId<QVariant>())
-        return *reinterpret_cast<const QVariant*>(d.data);
-    return v;
+    return operator*();
 }
 
 /*!

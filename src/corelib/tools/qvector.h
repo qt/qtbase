@@ -107,6 +107,7 @@ private:
         const std::less<const T*> less = {};
         return !less(d->end(), i) && !less(i, d->begin());
     }
+public:
     QVector(DataPointer dd) noexcept
         : d(dd)
     {

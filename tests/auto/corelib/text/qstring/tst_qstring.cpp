@@ -596,6 +596,8 @@ private slots:
     void assignQChar();
     void isRightToLeft_data();
     void isRightToLeft();
+    void isValidUtf16_data();
+    void isValidUtf16();
     void unicodeStrings();
 };
 
@@ -7000,6 +7002,52 @@ void tst_QString::isRightToLeft()
     QFETCH(bool, rtl);
 
     QCOMPARE(unicode.isRightToLeft(), rtl);
+}
+
+void tst_QString::isValidUtf16_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<bool>("valid");
+
+    int row = 0;
+    QTest::addRow("valid-%02d", row++) << QString() << true;
+    QTest::addRow("valid-%02d", row++) << QString("") << true;
+    QTest::addRow("valid-%02d", row++) << QString("abc def") << true;
+    QTest::addRow("valid-%02d", row++) << QString("àbç") << true;
+    QTest::addRow("valid-%02d", row++) << QString("ßẞ") << true;
+    QTest::addRow("valid-%02d", row++) << QString("𝐀𝐁𝐂abc𝐃𝐄𝐅def") << true;
+    QTest::addRow("valid-%02d", row++) << QString("abc𝐀𝐁𝐂def𝐃𝐄𝐅") << true;
+    QTest::addRow("valid-%02d", row++) << (QString("abc") + QChar(0x0000) + QString("def")) << true;
+    QTest::addRow("valid-%02d", row++) << (QString("abc") + QChar(0xFFFF) + QString("def")) << true;
+    // check that BOM presence doesn't make any difference
+    QTest::addRow("valid-%02d", row++) << (QString() + QChar(0xFEFF) + QString("abc𝐀𝐁𝐂def𝐃𝐄𝐅")) << true;
+    QTest::addRow("valid-%02d", row++) << (QString() + QChar(0xFFFE) + QString("abc𝐀𝐁𝐂def𝐃𝐄𝐅")) << true;
+
+    row = 0;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + QChar(0xD800)) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + QString("abc") + QChar(0xD800)) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + QChar(0xD800) + QString("def")) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + QString("abc") + QChar(0xD800) + QString("def")) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + QChar(0xD800) + QChar(0xD800)) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + QString("abc") + QChar(0xD800) + QChar(0xD800)) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + QChar(0xD800) + QChar(0xD800) + QString("def")) << false;
+    QTest::addRow("stray-high-%02d", row++) << (QString() + QString("abc") + QChar(0xD800) + QChar(0xD800) + QString("def")) << false;
+
+    row = 0;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + QChar(0xDC00)) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + QString("abc") + QChar(0xDC00)) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + QChar(0xDC00) + QString("def")) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + QString("abc") + QChar(0xDC00) + QString("def")) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + QChar(0xDC00) + QChar(0xDC00)) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + QString("abc") + QChar(0xDC00) + QChar(0xDC00)) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + QChar(0xDC00) + QChar(0xDC00) + QString("def")) << false;
+    QTest::addRow("stray-low-%02d", row++) << (QString() + QString("abc") + QChar(0xDC00) + QChar(0xDC00) + QString("def")) << false;
+}
+
+void tst_QString::isValidUtf16()
+{
+    QFETCH(QString, string);
+    QTEST(string.isValidUtf16(), "valid");
 }
 
 QTEST_APPLESS_MAIN(tst_QString)

@@ -119,16 +119,14 @@
     \sa wakeOne()
 */
 
-#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \fn bool QWaitCondition::wait(QMutex *lockedMutex, unsigned long time)
-    \obsolete use wait(QMutex *lockedMutex, QDeadlineTimer deadline) instead
+    \overload
 */
 /*!
     \fn bool QWaitCondition::wait(QReadWriteLock *lockedReadWriteLock, unsigned long time)
-    \obsolete use wait(QReadWriteLock *lockedReadWriteLock, QDeadlineTimer deadline) instead
+    \overload
 */
-#endif
 
 /*!
     \fn bool QWaitCondition::wait(QMutex *lockedMutex, QDeadlineTimer deadline)

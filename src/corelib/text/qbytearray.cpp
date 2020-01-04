@@ -4999,7 +4999,7 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
 */
 
 /*!
-    \fn QByteArray::FromBase64Result::operator QByteArray() const
+    \fn QByteArray &QByteArray::FromBase64Result::operator*() const
 
     Returns the decoded byte array.
 */
@@ -5008,17 +5008,18 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     \fn bool operator==(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
     \relates QByteArray::FromBase64Result
 
-    Compares \a lhs and \a rhs for equality. \a lhs and \a rhs are equal
-    if and only if they contain the same decoding status and, if the
-    status is QByteArray::Base64DecodingStatus::Ok, if and only if
-    they contain the same decoded data.
+    Returns \c true if \a lhs and \a rhs are equal, otherwise returns \c false.
+
+    \a lhs and \a rhs are equal if and only if they contain the same decoding
+    status and, if the status is QByteArray::Base64DecodingStatus::Ok, if and
+    only if they contain the same decoded data.
 */
 
 /*!
     \fn bool operator!=(const QByteArray::FromBase64Result &lhs, const QByteArray::FromBase64Result &rhs) noexcept
     \relates QByteArray::FromBase64Result
 
-    Compares \a lhs and \a rhs for inequality.
+    Returns \c true if \a lhs and \a rhs are different, otherwise returns \c false.
 */
 
 /*!

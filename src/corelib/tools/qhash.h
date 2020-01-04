@@ -305,12 +305,14 @@ public:
     T &operator[](const Key &key);
     const T operator[](const Key &key) const;
 
-    QList<Key> uniqueKeys() const;
     QList<Key> keys() const;
     QList<Key> keys(const T &value) const;
     QList<T> values() const;
-    QList<T> values(const Key &key) const;
-    int count(const Key &key) const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use QMultiHash for hashes storing multiple values with the same key.") QList<Key> uniqueKeys() const;
+    QT_DEPRECATED_X("Use QMultiHash for hashes storing multiple values with the same key.") QList<T> values(const Key &key) const;
+    QT_DEPRECATED_X("Use QMultiHash for hashes storing multiple values with the same key.") int count(const Key &key) const;
+#endif
 
     class const_iterator;
 
@@ -380,6 +382,7 @@ public:
     {
         friend class iterator;
         friend class QHash<Key, T>;
+        friend class QMultiHash<Key, T>;
         friend class QSet<Key>;
         QHashData::Node *i;
 
@@ -508,8 +511,10 @@ public:
     const_iterator constFind(const Key &key) const;
     iterator insert(const Key &key, const T &value);
     void insert(const QHash &hash);
-    iterator insertMulti(const Key &key, const T &value);
-    QHash &unite(const QHash &other);
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use QMultiHash for hashes storing multiple values with the same key.") iterator insertMulti(const Key &key, const T &value);
+    QT_DEPRECATED_X("Use QMultiHash for hashes storing multiple values with the same key.") QHash &unite(const QHash &other);
+#endif
 
     // STL compatibility
     typedef T mapped_type;
@@ -551,6 +556,7 @@ private:
 #endif
     }
     friend class QSet<Key>;
+    friend class QMultiHash<Key, T>;
 };
 
 
@@ -586,38 +592,6 @@ QHash<Key, T>::createNode(uint ah, const Key &akey, const T &avalue, Node **anex
     *anextNode = node;
     ++d->size;
     return node;
-}
-
-template <class Key, class T>
-Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::unite(const QHash &other)
-{
-    if (d == &QHashData::shared_null) {
-        *this = other;
-    } else {
-#if QT_DEPRECATED_SINCE(5, 15)
-        QHash copy(other);
-        const_iterator it = copy.constEnd();
-        while (it != copy.constBegin()) {
-            it.i = QHashData::previousNode(it.i);
-            insertMulti(it.key(), it.value());
-        }
-#else
-        QHash copy(other);
-        const_iterator it = copy.cbegin();
-        const const_iterator end = copy.cend();
-        while (it != end) {
-            const auto rangeStart = it++;
-            while (it != end && rangeStart.key() == it.key())
-                ++it;
-            const qint64 last = std::distance(rangeStart, it) - 1;
-            for (qint64 i = last; i >= 0; --i) {
-                auto next = std::next(rangeStart, i);
-                insertMulti(next.key(), next.value());
-            }
-        }
-#endif
-    }
-    return *this;
 }
 
 template <class Key, class T>
@@ -679,26 +653,6 @@ Q_INLINE_TEMPLATE const T QHash<Key, T>::value(const Key &akey, const T &adefaul
 }
 
 template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE QList<Key> QHash<Key, T>::uniqueKeys() const
-{
-    QList<Key> res;
-    res.reserve(size()); // May be too much, but assume short lifetime
-    const_iterator i = begin();
-    if (i != end()) {
-        for (;;) {
-            const Key &aKey = i.key();
-            res.append(aKey);
-            do {
-                if (++i == end())
-                    goto break_out_of_outer_loop;
-            } while (aKey == i.key());
-        }
-    }
-break_out_of_outer_loop:
-    return res;
-}
-
-template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE QList<Key> QHash<Key, T>::keys() const
 {
     QList<Key> res;
@@ -754,32 +708,6 @@ Q_OUTOFLINE_TEMPLATE QList<T> QHash<Key, T>::values() const
         ++i;
     }
     return res;
-}
-
-template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE QList<T> QHash<Key, T>::values(const Key &akey) const
-{
-    QList<T> res;
-    Node *node = *findNode(akey);
-    if (node != e) {
-        do {
-            res.append(node->value);
-        } while ((node = node->next) != e && node->key == akey);
-    }
-    return res;
-}
-
-template <class Key, class T>
-Q_OUTOFLINE_TEMPLATE int QHash<Key, T>::count(const Key &akey) const
-{
-    int cnt = 0;
-    Node *node = *findNode(akey);
-    if (node != e) {
-        do {
-            ++cnt;
-        } while ((node = node->next) != e && node->key == akey);
-    }
-    return cnt;
 }
 
 template <class Key, class T>
@@ -845,18 +773,6 @@ Q_INLINE_TEMPLATE void QHash<Key, T>::insert(const QHash &hash)
         }
         i = QHashData::nextNode(i);
     }
-}
-
-template <class Key, class T>
-Q_INLINE_TEMPLATE typename QHash<Key, T>::iterator QHash<Key, T>::insertMulti(const Key &akey,
-                                                                              const T &avalue)
-{
-    detach();
-    d->willGrow();
-
-    uint h;
-    Node **nextNode = findNode(akey, &h);
-    return iterator(createNode(h, akey, avalue, nextNode));
 }
 
 template <class Key, class T>
@@ -1109,11 +1025,12 @@ public:
     inline typename QHash<Key, T>::iterator replace(const Key &key, const T &value)
     { return QHash<Key, T>::insert(key, value); }
 
-    inline typename QHash<Key, T>::iterator insert(const Key &key, const T &value)
-    { return QHash<Key, T>::insertMulti(key, value); }
+    typename QHash<Key, T>::iterator insert(const Key &key, const T &value);
+
+    inline QMultiHash &unite(const QMultiHash &other);
 
     inline QMultiHash &operator+=(const QMultiHash &other)
-    { this->unite(other); return *this; }
+    { return unite(other); }
     inline QMultiHash operator+(const QMultiHash &other) const
     { QMultiHash result = *this; result += other; return result; }
 
@@ -1122,12 +1039,26 @@ public:
     using QHash<Key, T>::count;
     using QHash<Key, T>::find;
     using QHash<Key, T>::constFind;
+    using QHash<Key, T>::values;
+    using QHash<Key, T>::findNode;
+    using QHash<Key, T>::createNode;
+    using QHash<Key, T>::concrete;
+    using QHash<Key, T>::detach;
+
+    using typename QHash<Key, T>::Node;
+    using typename QHash<Key, T>::iterator;
+    using typename QHash<Key, T>::const_iterator;
 
     bool contains(const Key &key, const T &value) const;
 
     int remove(const Key &key, const T &value);
 
+    int count(const Key &key) const;
     int count(const Key &key, const T &value) const;
+
+    QList<Key> uniqueKeys() const;
+
+    QList<T> values(const Key &akey) const;
 
     typename QHash<Key, T>::iterator find(const Key &key, const T &value) {
         typename QHash<Key, T>::iterator i(find(key));
@@ -1155,6 +1086,50 @@ private:
     T &operator[](const Key &key);
     const T operator[](const Key &key) const;
 };
+
+template <class Key, class T>
+Q_INLINE_TEMPLATE typename QHash<Key, T>::iterator QMultiHash<Key, T>::insert(const Key &akey, const T &avalue)
+{
+    detach();
+    this->d->willGrow();
+
+    uint h;
+    Node **nextNode = findNode(akey, &h);
+    return iterator(createNode(h, akey, avalue, nextNode));
+}
+
+template <class Key, class T>
+Q_INLINE_TEMPLATE QMultiHash<Key, T> &QMultiHash<Key, T>::unite(const QMultiHash &other)
+{
+    if (this->d == &QHashData::shared_null) {
+        *this = other;
+    } else {
+#if QT_DEPRECATED_SINCE(5, 15)
+        QMultiHash copy(other);
+        const_iterator it = copy.constEnd();
+        while (it != copy.constBegin()) {
+            it.i = QHashData::previousNode(it.i);
+            insert(it.key(), it.value());
+        }
+#else
+        const QMultiHash copy(other);
+        const_iterator it = copy.cbegin();
+        const const_iterator end = copy.cend();
+        while (it != end) {
+            const auto rangeStart = it++;
+            while (it != end && rangeStart.key() == it.key())
+                ++it;
+            const qint64 last = std::distance(rangeStart, it) - 1;
+            for (qint64 i = last; i >= 0; --i) {
+                auto next = std::next(rangeStart, i);
+                insert(next.key(), next.value());
+            }
+        }
+#endif
+    }
+    return *this;
+}
+
 
 template <class Key, class T>
 Q_INLINE_TEMPLATE bool QMultiHash<Key, T>::contains(const Key &key, const T &value) const
@@ -1193,7 +1168,84 @@ Q_INLINE_TEMPLATE int QMultiHash<Key, T>::count(const Key &key, const T &value) 
     return n;
 }
 
-template<class Key, class T>
+template <class Key, class T>
+Q_OUTOFLINE_TEMPLATE QList<Key> QMultiHash<Key, T>::uniqueKeys() const
+{
+    QList<Key> res;
+    res.reserve(QHash<Key, T>::size()); // May be too much, but assume short lifetime
+    typename QHash<Key, T>::const_iterator i = QHash<Key, T>::begin();
+    if (i != QHash<Key, T>::end()) {
+        for (;;) {
+            const Key &aKey = i.key();
+            res.append(aKey);
+            do {
+                if (++i == QHash<Key, T>::end())
+                    goto break_out_of_outer_loop;
+            } while (aKey == i.key());
+        }
+    }
+break_out_of_outer_loop:
+    return res;
+}
+
+#if QT_DEPRECATED_SINCE(5, 15)
+
+template <class Key, class T>
+Q_OUTOFLINE_TEMPLATE typename QHash<Key, T>::iterator QHash<Key, T>::insertMulti(const Key &key, const T &value) {
+    return static_cast<QMultiHash<Key, T> *>(this)->insert(key, value);
+}
+
+template <class Key, class T>
+Q_OUTOFLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::unite(const QHash &other) {
+    return static_cast<QMultiHash<Key, T> *>(this)->unite(other);
+}
+
+template <class Key, class T>
+Q_OUTOFLINE_TEMPLATE QList<T> QHash<Key, T>::values(const Key &akey) const
+{
+    return static_cast<const QMultiHash<Key, T> *>(this)->values(akey);
+}
+
+template <class Key, class T>
+Q_OUTOFLINE_TEMPLATE int QHash<Key, T>::count(const Key &akey) const
+{
+    return static_cast<const QMultiHash<Key, T> *>(this)->count(akey);
+}
+
+template <class Key, class T>
+Q_OUTOFLINE_TEMPLATE QList<Key> QHash<Key, T>::uniqueKeys() const
+{
+    return static_cast<const QMultiHash<Key, T> *>(this)->uniqueKeys();
+}
+#endif
+
+template <class Key, class T>
+Q_OUTOFLINE_TEMPLATE QList<T> QMultiHash<Key, T>::values(const Key &akey) const
+{
+    QList<T> res;
+    Node *node = *findNode(akey);
+    if (node != this->e) {
+        do {
+            res.append(node->value);
+        } while ((node = node->next) != this->e && node->key == akey);
+    }
+    return res;
+}
+
+template <class Key, class T>
+Q_OUTOFLINE_TEMPLATE int QMultiHash<Key, T>::count(const Key &akey) const
+{
+    int cnt = 0;
+    Node *node = *findNode(akey);
+    if (node != this->e) {
+        do {
+            ++cnt;
+        } while ((node = node->next) != this->e && node->key == akey);
+    }
+    return cnt;
+}
+
+template <class Key, class T>
 class QHashIterator
 {
     typedef typename QHash<Key, T>::const_iterator const_iterator;

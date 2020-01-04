@@ -299,6 +299,8 @@ int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
 
     Returns the current OS type without constructing a QOperatingSystemVersion instance.
 
+    \since 5.10
+
     \sa current()
 */
 

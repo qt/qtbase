@@ -631,10 +631,10 @@ QDBusMetaObject *QDBusMetaObject::createMetaObject(const QString &interface, con
         QDBusIntrospection::Interface merged = *it.value().constData();
 
         for (++it; it != end; ++it) {
-            merged.annotations.unite(it.value()->annotations);
+            merged.annotations.insert(it.value()->annotations);
             merged.methods.unite(it.value()->methods);
             merged.signals_.unite(it.value()->signals_);
-            merged.properties.unite(it.value()->properties);
+            merged.properties.insert(it.value()->properties);
         }
 
         merged.name = QLatin1String("local.Merged");

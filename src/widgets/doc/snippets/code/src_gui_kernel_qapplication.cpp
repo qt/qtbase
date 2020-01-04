@@ -51,9 +51,10 @@
 //! [0]
 QCoreApplication* createApplication(int &argc, char *argv[])
 {
-    for (int i = 1; i < argc; ++i)
+    for (int i = 1; i < argc; ++i) {
         if (!qstrcmp(argv[i], "-no-gui"))
             return new QCoreApplication(argc, argv);
+    }
     return new QApplication(argc, argv);
 }
 
@@ -187,14 +188,14 @@ for (const QString &command : commands)
 
 
 //! [12]
-QWidget *widget = qApp->widgetAt(x, y);
+QWidget *widget = QApplication::widgetAt(x, y);
 if (widget)
     widget = widget->window();
 //! [12]
 
 
 //! [13]
-QWidget *widget = qApp->widgetAt(point);
+QWidget *widget = QApplication::widgetAt(point);
 if (widget)
     widget = widget->window();
 //! [13]

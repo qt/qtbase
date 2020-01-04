@@ -406,6 +406,8 @@ QVariant QCocoaIntegration::styleHint(StyleHint hint) const
         return QCoreTextFontEngine::fontSmoothingGamma();
     case ShowShortcutsInContextMenus:
         return QVariant(false);
+    // case CursorFlashTime:
+    //     return 50000;
     default: break;
     }
 

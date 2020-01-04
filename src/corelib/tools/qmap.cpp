@@ -1150,6 +1150,20 @@ void QMapDataBase::freeData(QMapDataBase *d)
     \sa insertMulti()
 */
 
+/*! \fn template <class Key, class T> void QMap<Key, T>::insert(const QMap<Key, T> &map)
+    \since 5.15
+
+    Inserts all the items in \a map into this map.
+
+    If a key is common to both maps, its value will be replaced with
+    the value stored in \a map.
+
+    \note If \a map contains multiple entries with the same key then the
+    final value of the key is undefined.
+
+    \sa insertMulti()
+*/
+
 /*! \fn template <class Key, class T> QMap<Key, T>::iterator QMap<Key, T>::insertMulti(const Key &key, const T &value)
 
     Inserts a new item with the key \a key and a value of \a value.

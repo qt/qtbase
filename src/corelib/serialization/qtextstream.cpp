@@ -2689,11 +2689,8 @@ QTextStream &QTextStream::operator<<(const void *ptr)
     d->params.numberFlags = oldFlags;
     return *this;
 }
-#if defined(Q_QDOC) || QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+
 namespace Qt {
-#else
-namespace QTextStreamFunctions {
-#endif
 
 /*!
     \relates QTextStream
@@ -3020,7 +3017,7 @@ QTextStream &ws(QTextStream &stream)
     return stream;
 }
 
-} // namespace QTextStreamFunctions
+} // namespace Qt
 
 /*!
     \fn QTextStreamManipulator qSetFieldWidth(int width)
@@ -3045,11 +3042,7 @@ QTextStream &ws(QTextStream &stream)
 
 #if QT_CONFIG(textcodec)
 
-#if defined(Q_QDOC) || QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 namespace Qt {
-#else
-namespace QTextStreamFunctions {
-#endif
 /*!
     \relates QTextStream
 
@@ -3064,7 +3057,7 @@ QTextStream &bom(QTextStream &stream)
     return stream;
 }
 
-} // namespace QTextStreamFunctions
+} // namespace Qt
 
 /*!
     Sets the codec for this stream to \a codec. The codec is used for
@@ -3214,6 +3207,45 @@ QLocale QTextStream::locale() const
     Q_D(const QTextStream);
     return d->locale;
 }
+
+#if QT_DEPRECATED_SINCE(5, 15) && !defined(Q_QDOC)
+// Deprecated source compatible migration versions:
+namespace QTextStreamFunctions {
+QTextStream &bin(QTextStream &s) { return Qt::bin(s); }
+QTextStream &oct(QTextStream &s) { return Qt::oct(s); }
+QTextStream &dec(QTextStream &s) { return Qt::dec(s); }
+QTextStream &hex(QTextStream &s) { return Qt::hex(s); }
+
+QTextStream &showbase(QTextStream &s) { return Qt::showbase(s); }
+QTextStream &forcesign(QTextStream &s) { return Qt::forcesign(s); }
+QTextStream &forcepoint(QTextStream &s) { return Qt::forcepoint(s); }
+QTextStream &noshowbase(QTextStream &s) { return Qt::noshowbase(s); }
+QTextStream &noforcesign(QTextStream &s) { return Qt::noforcesign(s); }
+QTextStream &noforcepoint(QTextStream &s) { return Qt::noforcepoint(s); }
+
+QTextStream &uppercasebase(QTextStream &s) { return Qt::uppercasebase(s); }
+QTextStream &uppercasedigits(QTextStream &s) { return Qt::uppercasedigits(s); }
+QTextStream &lowercasebase(QTextStream &s) { return Qt::lowercasebase(s); }
+QTextStream &lowercasedigits(QTextStream &s) { return Qt::lowercasedigits(s); }
+
+QTextStream &fixed(QTextStream &s) { return Qt::fixed(s); }
+QTextStream &scientific(QTextStream &s) { return Qt::scientific(s); }
+
+QTextStream &left(QTextStream &s) { return Qt::left(s); }
+QTextStream &right(QTextStream &s) { return Qt::right(s); }
+QTextStream &center(QTextStream &s) { return Qt::center(s); }
+
+QTextStream &endl(QTextStream &s) { return Qt::endl(s); }
+QTextStream &flush(QTextStream &s) { return Qt::flush(s); }
+QTextStream &reset(QTextStream &s) { return Qt::reset(s); }
+
+QTextStream &ws(QTextStream &s) { return Qt::ws(s); }
+
+#if QT_CONFIG(textcodec)
+QTextStream &bom(QTextStream &s) { return Qt::bom(s); }
+#endif
+} // namespace QTextStreamFunctions
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && !defined(Q_QDOC)
 // Binary compatible definitions for Qt<5.14

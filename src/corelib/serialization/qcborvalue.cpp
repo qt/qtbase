@@ -43,8 +43,12 @@
 #include "qcborarray.h"
 #include "qcbormap.h"
 
-#if QT_CONFIG(cborstream)
-#include "qcborstream.h"
+#if QT_CONFIG(cborstreamreader)
+#include "qcborstreamreader.h"
+#endif
+
+#if QT_CONFIG(cborstreamwriter)
+#include "qcborstreamwriter.h"
 #endif
 
 #include <qendian.h>
@@ -840,16 +844,20 @@ static QCborValue::Type convertToExtendedType(QCborContainerPrivate *d)
     return QCborValue::Tag;
 }
 
-#if QT_CONFIG(cborstream)
+#if QT_CONFIG(cborstreamreader)
 // in qcborstream.cpp
 extern void qt_cbor_stream_set_error(QCborStreamReaderPrivate *d, QCborError error);
+#endif
 
+#if QT_CONFIG(cborstreamwriter)
 static void writeDoubleToCbor(QCborStreamWriter &writer, double d, QCborValue::EncodingOptions opt)
 {
     if (qt_is_nan(d)) {
-        if (opt & QCborValue::UseFloat16) {
+        if (opt & QCborValue::UseFloat) {
+#ifndef QT_BOOTSTRAPPED
             if ((opt & QCborValue::UseFloat16) == QCborValue::UseFloat16)
                 return writer.append(std::numeric_limits<qfloat16>::quiet_NaN());
+#endif
             return writer.append(std::numeric_limits<float>::quiet_NaN());
         }
         return writer.append(qt_qnan());
@@ -866,15 +874,17 @@ static void writeDoubleToCbor(QCborStreamWriter &writer, double d, QCborValue::E
         }
     }
 
-    if (opt & QCborValue::UseFloat16) {
+    if (opt & QCborValue::UseFloat) {
         float f = float(d);
         if (f == d) {
             // no data loss, we could use float
+#ifndef QT_BOOTSTRAPPED
             if ((opt & QCborValue::UseFloat16) == QCborValue::UseFloat16) {
                 qfloat16 f16 = f;
                 if (f16 == f)
                     return writer.append(f16);
             }
+#endif
 
             return writer.append(f);
         }
@@ -882,7 +892,7 @@ static void writeDoubleToCbor(QCborStreamWriter &writer, double d, QCborValue::E
 
     writer.append(d);
 }
-#endif // QT_CONFIG(cborstream)
+#endif // QT_CONFIG(cborstreamwriter)
 
 static inline int typeOrder(Element e1, Element e2)
 {
@@ -1305,7 +1315,7 @@ int QCborMap::compare(const QCborMap &other) const noexcept
     return compareContainer(d.data(), other.d.data());
 }
 
-#if QT_CONFIG(cborstream)
+#if QT_CONFIG(cborstreamwriter)
 static void encodeToCbor(QCborStreamWriter &writer, const QCborContainerPrivate *d, qsizetype idx,
                          QCborValue::EncodingOptions opt)
 {
@@ -1393,7 +1403,9 @@ static void encodeToCbor(QCborStreamWriter &writer, const QCborContainerPrivate 
         qWarning("QCborValue: found unknown type 0x%x", e.type);
     }
 }
+#endif // QT_CONFIG(cborstreamwriter)
 
+#if QT_CONFIG(cborstreamreader)
 static inline double integerOutOfRange(const QCborStreamReader &reader)
 {
     Q_ASSERT(reader.isInteger());
@@ -1650,7 +1662,7 @@ void QCborContainerPrivate::decodeFromCbor(QCborStreamReader &reader)
     if (reader.lastError() == QCborError::NoError)
         reader.leaveContainer();
 }
-#endif // QT_CONFIG(cborstream)
+#endif // QT_CONFIG(cborstreamreader)
 
 /*!
     Creates a QCborValue with byte array value \a ba. The value can later be
@@ -2350,7 +2362,7 @@ QCborValueRef QCborValue::operator[](qint64 key)
     return { container, index };
 }
 
-#if QT_CONFIG(cborstream)
+#if QT_CONFIG(cborstreamreader)
 /*!
     Decodes one item from the CBOR stream found in \a reader and returns the
     equivalent representation. This function is recursive: if the item is a map
@@ -2465,7 +2477,9 @@ QCborValue QCborValue::fromCbor(const QByteArray &ba, QCborParserError *error)
     overload of this function that accepts a QByteArray, also passing \a error,
     if provided.
 */
+#endif // QT_CONFIG(cborstreamreader)
 
+#if QT_CONFIG(cborstreamwriter)
 /*!
     Encodes this QCborValue object to its CBOR representation, using the
     options specified in \a opt, and return the byte array containing that
@@ -2588,7 +2602,7 @@ void QCborValueRef::toCbor(QCborStreamWriter &writer, QCborValue::EncodingOption
 {
     concrete().toCbor(writer, opt);
 }
-#endif // QT_CONFIG(cborstream)
+#endif // QT_CONFIG(cborstreamwriter)
 
 void QCborValueRef::assign(QCborValueRef that, const QCborValue &other)
 {

@@ -54,5 +54,5 @@ menubar->addMenu(fileMenu);
 
 
 //! [1]
-QMenuBar *menuBar = new QMenuBar(0);
+QMenuBar *menuBar = new QMenuBar(nullptr);
 //! [1]

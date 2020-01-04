@@ -257,7 +257,7 @@ void QQnxScreenEventHandler::injectKeyboardEvent(int flags, int sym, int modifie
                                                capKeyString(cap, modifiers, key);
 
     QWindowSystemInterface::handleExtendedKeyEvent(QGuiApplication::focusWindow(), type, key, qtMod,
-            scan, virtualKey, modifiers, keyStr);
+            scan, virtualKey, modifiers, keyStr, flags & KEY_REPEAT);
     qScreenEventDebug() << "Qt key t=" << type << ", k=" << key << ", s=" << keyStr;
 }
 

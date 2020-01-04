@@ -70,7 +70,6 @@ BEGIN
 END
 //! [1]
 
-
 //! [3]
 cd $QTDIR/qtbase/src/plugins/sqldrivers
 qmake -- MYSQL_PREFIX=/usr/local
@@ -86,14 +85,15 @@ make install
 
 //! [5]
 cd %QTDIR%\qtbase\src\plugins\sqldrivers
-qmake -- MYSQL_INCDIR=C:/MySQL/include "MYSQL_LIBDIR=C:/MYSQL/MySQL Server <version>/lib/opt"
+qmake -- MYSQL_INCDIR="C:/Program Files/MySQL/MySQL Connector C 6.1/include" MYSQL_LIBDIR="C:/Program Files/MySQL/MySQL Connector C 6.1/lib"
 nmake sub-mysql
+nmake install
 //! [5]
 
 
 //! [6]
 cd $QTDIR/qtbase/src/plugins/sqldrivers
-qmake -- "OCI_INCDIR=$ORACLE_HOME/rdbms/public" OCI_LIBDIR=$ORACLE_HOME/lib "OCI_LIBS=-lclntsh -lwtc9"
+qmake -- OCI_INCDIR="$ORACLE_HOME/rdbms/public" OCI_LIBDIR="$ORACLE_HOME/lib" OCI_LIBS="-lclntsh -lwtc9"
 make sub-oci
 //! [6]
 
@@ -142,6 +142,7 @@ make sub-psql
 cd %QTDIR%\qtbase\src\plugins\sqldrivers
 qmake -- PSQL_INCDIR=C:/psql/include PSQL_LIBDIR=C:/psql/lib/ms
 nmake sub-psql
+nmake install
 //! [15]
 
 
@@ -156,6 +157,7 @@ make sub-tds
 cd %QTDIR%\qtbase\src\plugins\sqldrivers
 qmake
 nmake sub-tds
+nmake install
 //! [17]
 
 
@@ -168,8 +170,9 @@ make sub-db2
 
 //! [20]
 cd %QTDIR%\qtbase\src\plugins\sqldrivers
-qmake -- "DB2_PREFIX=<DB2 home>/sqllib"
+qmake -- DB2_PREFIX="<DB2 home>/sqllib"
 nmake sub-db2
+nmake install
 //! [20]
 
 
@@ -184,6 +187,7 @@ make sub-sqlite
 cd %QTDIR%\qtbase\src\plugins\sqldrivers
 qmake -- -system-sqlite SQLITE3_PREFIX=C:/SQLITE
 nmake sub-sqlite
+nmake install
 //! [23]
 
 
@@ -205,6 +209,7 @@ make sub-ibase
 cd %QTDIR%\qtbase\src\plugins\sqldrivers
 qmake -- IBASE_INCDIR=C:/interbase/include
 nmake sub-ibase
+nmake install
 //! [29]
 
 
@@ -212,24 +217,25 @@ nmake sub-ibase
 cd %QTDIR%\qtbase\src\plugins\sqldrivers
 qmake -- IBASE_INCDIR=C:/interbase/include IBASE_LIBS=-lfbclient
 nmake sub-ibase
+nmake install
 //! [30]
 
 
 //! [32]
-configure OCI_INCDIR=/usr/include/oracle/10.1.0.3/client OCI_LIBDIR=/usr/lib/oracle/10.1.0.3/client/lib -R /usr/lib/oracle/10.1.0.3/client/lib "OCI_LIBS=-lclntsh -lnnz10"
+configure OCI_INCDIR=/usr/include/oracle/10.1.0.3/client OCI_LIBDIR=/usr/lib/oracle/10.1.0.3/client/lib -R /usr/lib/oracle/10.1.0.3/client/lib OCI_LIBS="-lclntsh -lnnz10"
 make
 //! [32]
 
 //! [33]
 cd $QTDIR/qtbase/src/plugins/sqldrivers
-qmake -- OCI_INCDIR=/usr/include/oracle/10.1.0.3/client OCI_LIBDIR=/usr/lib/oracle/10.1.0.3/client/lib "OCI_LIBS=-Wl,-rpath,/usr/lib/oracle/10.1.0.3/client/lib -lclntsh -lnnz10"
+qmake -- OCI_INCDIR=/usr/include/oracle/10.1.0.3/client OCI_LIBDIR=/usr/lib/oracle/10.1.0.3/client/lib OCI_LIBS="-Wl,-rpath,/usr/lib/oracle/10.1.0.3/client/lib -lclntsh -lnnz10"
 make sub-oci
 //! [33]
 
 
 //! [35]
 QSqlDatabase: QPSQL driver not loaded
-QSqlDatabase: available drivers: QSQLITE QMYSQL QMYSQL3 QODBC QODBC3 QPSQL QPSQL7
+QSqlDatabase: available drivers: QSQLITE QMYSQL QMYSQL3 QMARIADB QODBC QODBC3 QPSQL QPSQL7
 Could not create database object
 //! [35]
 
@@ -250,3 +256,42 @@ q.exec(QString("CREATE TABLE %1 (id INTEGER)").arg(tableString));
 // Call toLower() on the string so that it can be matched
 QSqlRecord rec = database.record(tableString.toLower());
 //! [40]
+
+//! [41]
+C:\Qt5\5.13.2\Src\qtbase\src\plugins\sqldrivers>qmake -version
+QMake version 3.1
+Using Qt version 5.13.2 in C:/Qt5/5.13.2/mingw73_64/lib
+C:\Qt5\5.13.2\Src\qtbase\src\plugins\sqldrivers>qmake -- MYSQL_INCDIR="C:/Program Files/MySQL/MySQL Connector C 6.1/include" MYSQL_LIBDIR="C:/Program Files/MySQL/MySQL Connector C 6.1/lib"
+Info: creating stash file C:\Qt5\5.13.2\Src\qtbase\src\plugins\sqldrivers\.qmake.stash
+
+Running configuration tests...
+Checking for DB2 (IBM)... no
+Checking for InterBase... no
+Checking for MySQL... yes
+Checking for OCI (Oracle)... no
+Checking for ODBC... yes
+Checking for PostgreSQL... no
+Checking for SQLite (version 2)... no
+Checking for TDS (Sybase)... no
+Done running configuration tests.
+
+Configure summary:
+
+Qt Sql Drivers:
+  DB2 (IBM) .............................. no
+  InterBase .............................. no
+  MySql .................................. yes
+  OCI (Oracle) ........................... no
+  ODBC ................................... yes
+  PostgreSQL ............................. no
+  SQLite2 ................................ no
+  SQLite ................................. yes
+    Using system provided SQLite ......... no
+  TDS (Sybase) ........................... no
+
+Qt is now configured for building. Just run 'mingw32-make'.
+Once everything is built, you must run 'mingw32-make install'.
+Qt will be installed into 'C:\Qt5\5.13.2\mingw73_64'.
+
+Prior to reconfiguration, make sure you remove any leftovers from the previous build.
+//! [41]

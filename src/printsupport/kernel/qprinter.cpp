@@ -294,7 +294,7 @@ public:
     {
         QPrinterPrivate *pd = QPrinterPrivate::get(m_printer);
 
-        return pd->printEngine->property(QPrintEngine::PPK_QPageLayout).value<QPageLayout>();
+        return qvariant_cast<QPageLayout>(pd->printEngine->property(QPrintEngine::PPK_QPageLayout));
     }
 
     QPrinter *m_printer;

@@ -53,8 +53,8 @@ class MyProxyStyle : public QProxyStyle
 {
 public:
 
-    int styleHint(StyleHint hint, const QStyleOption *option = 0,
-                  const QWidget *widget = 0, QStyleHintReturn *returnData = 0) const override
+    int styleHint(StyleHint hint, const QStyleOption *option = nullptr,
+                  const QWidget *widget = nullptr, QStyleHintReturn *returnData = nullptr) const override
     {
         if (hint == QStyle::SH_UnderlineShortcut)
             return 1;
@@ -72,8 +72,8 @@ public:
 class MyProxyStyle : public QProxyStyle
 {
   public:
-    int styleHint(StyleHint hint, const QStyleOption *option = 0,
-                  const QWidget *widget = 0, QStyleHintReturn *returnData = 0) const override
+    int styleHint(StyleHint hint, const QStyleOption *option = nullptr,
+                  const QWidget *widget = nullptr, QStyleHintReturn *returnData = nullptr) const override
     {
         if (hint == QStyle::SH_UnderlineShortcut)
             return 0;

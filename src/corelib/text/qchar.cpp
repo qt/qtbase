@@ -418,7 +418,7 @@ QT_BEGIN_NAMESPACE
     \value Script_Sogdian Since Qt 5.15
     \value Script_SoraSompeng
     \value Script_Soyombo Since Qt 5.11
-    \value Script_Sundaneseo
+    \value Script_Sundanese
     \value Script_SylotiNagri
     \value Script_Syriac
     \value Script_Tagalog

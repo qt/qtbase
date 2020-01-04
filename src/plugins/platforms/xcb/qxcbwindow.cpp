@@ -930,7 +930,7 @@ void QXcbWindow::setWindowFlags(Qt::WindowFlags flags)
     QXcbWindowFunctions::WmWindowTypes wmWindowTypes;
     if (window()->dynamicPropertyNames().contains(wm_window_type_property_id)) {
         wmWindowTypes = static_cast<QXcbWindowFunctions::WmWindowTypes>(
-            window()->property(wm_window_type_property_id).value<int>());
+            qvariant_cast<int>(window()->property(wm_window_type_property_id)));
     }
 
     setWmWindowType(wmWindowTypes, flags);

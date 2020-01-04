@@ -1247,10 +1247,10 @@ void VcprojGenerator::initDeploymentTool()
                         + "|" + targetPath
                         + "|0;";
                 if (!qpaPluginDeployed) {
-                    QChar debugInfixChar;
+                    QString debugInfix;
                     bool foundGuid = dllName.contains(QLatin1String("Guid"));
                     if (foundGuid)
-                        debugInfixChar = QLatin1Char('d');
+                        debugInfix = QLatin1Char('d');
 
                     if (foundGuid || dllName.contains(QLatin1String("Gui"))) {
                         QFileInfo info2;
@@ -1258,13 +1258,14 @@ void VcprojGenerator::initDeploymentTool()
                             QString absoluteDllFilePath = dllPath.toQString();
                             if (!absoluteDllFilePath.endsWith(QLatin1Char('/')))
                                 absoluteDllFilePath += QLatin1Char('/');
-                            absoluteDllFilePath += QLatin1String("../plugins/platforms/qwindows") + debugInfixChar + QLatin1String(".dll");
+                            absoluteDllFilePath += QLatin1String("../plugins/platforms/qwindows")
+                                    + debugInfix + QLatin1String(".dll");
                             info2 = QFileInfo(absoluteDllFilePath);
                             if (info2.exists())
                                 break;
                         }
                         if (info2.exists()) {
-                            conf.deployment.AdditionalFiles += QLatin1String("qwindows") + debugInfixChar + QLatin1String(".dll")
+                            conf.deployment.AdditionalFiles += QLatin1String("qwindows") + debugInfix + QLatin1String(".dll")
                                                         + QLatin1Char('|') + QDir::toNativeSeparators(info2.absolutePath())
                                                         + QLatin1Char('|') + targetPath + QLatin1String("\\platforms")
                                                         + QLatin1String("|0;");

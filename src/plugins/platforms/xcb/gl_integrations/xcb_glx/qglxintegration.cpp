@@ -429,7 +429,7 @@ void QGLXContext::init(QXcbScreen *screen, QPlatformOpenGLContext *share, const 
         qWarning("QGLXContext: Requires a QGLXNativeContext");
         return;
     }
-    QGLXNativeContext handle = nativeHandle.value<QGLXNativeContext>();
+    QGLXNativeContext handle = qvariant_cast<QGLXNativeContext>(nativeHandle);
     GLXContext context = handle.context();
     if (!context) {
         qWarning("QGLXContext: No GLXContext given");

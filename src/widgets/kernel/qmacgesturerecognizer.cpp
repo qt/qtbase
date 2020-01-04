@@ -149,8 +149,8 @@ QMacPinchGestureRecognizer::recognize(QGesture *gesture, QObject *obj, QEvent *e
 void QMacPinchGestureRecognizer::reset(QGesture *gesture)
 {
     QPinchGesture *g = static_cast<QPinchGesture *>(gesture);
-    g->setChangeFlags(0);
-    g->setTotalChangeFlags(0);
+    g->setChangeFlags({});
+    g->setTotalChangeFlags({});
     g->setScaleFactor(1.0f);
     g->setTotalScaleFactor(1.0f);
     g->setLastScaleFactor(1.0f);

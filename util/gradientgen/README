@@ -1,0 +1,11 @@
+Regeneration of gradients:
+
+0) Grab a new .css for the webgradients
+1) Run the gradientgen.js script (requires node):
+
+   gradientgen.js enum webgradients.css    # will regen the enumeration names (on stdout)
+   gradientgen.js json webgradients.css    # will regen the actual gradients (on stdout)
+
+2) Build gradientgen.pro
+3) Run gradientgen, passing the json as stdin, the result will be on stdout
+

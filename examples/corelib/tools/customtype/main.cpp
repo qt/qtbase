@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     qDebug() << "Stored:" << stored;
 
 //! [retrieving a custom value]
-    Message retrieved = stored.value<Message>();
+    Message retrieved = qvariant_cast<Message>(stored);
     qDebug() << "Retrieved:" << retrieved;
     retrieved = qvariant_cast<Message>(stored);
     qDebug() << "Retrieved:" << retrieved;

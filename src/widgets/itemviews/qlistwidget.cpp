@@ -301,16 +301,23 @@ bool QListModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int co
 {
     if (sourceRow < 0
         || sourceRow + count - 1 >= rowCount(sourceParent)
-        || destinationChild <= 0
+        || destinationChild < 0
         || destinationChild > rowCount(destinationParent)
+        || sourceRow == destinationChild
         || sourceRow == destinationChild - 1
-        || count <= 0) {
+        || count <= 0
+        || sourceParent.isValid()
+        || destinationParent.isValid()) {
         return false;
     }
     if (!beginMoveRows(QModelIndex(), sourceRow, sourceRow + count - 1, QModelIndex(), destinationChild))
         return false;
-    destinationChild--;
-    const int fromRow = destinationChild < sourceRow ? (sourceRow + count - 1) : sourceRow;
+
+    int fromRow = sourceRow;
+    if (destinationChild < sourceRow)
+        fromRow += count - 1;
+    else
+        destinationChild--;
     while (count--)
         items.move(fromRow, destinationChild);
     endMoveRows();

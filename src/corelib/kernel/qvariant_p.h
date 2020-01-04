@@ -105,6 +105,11 @@ inline T *v_cast(QVariant::Private *d, T * = nullptr)
 
 #endif
 
+enum QVariantConstructionFlags : uint {
+    Default = 0x0,
+    PointerType = 0x1,
+    ShouldDeleteVariantData = 0x2 // only used in Q*Iterable
+};
 
 //a simple template that avoids to allocate 2 memory chunks when creating a QVariant
 template <class T> class QVariantPrivateSharedEx : public QVariant::PrivateShared

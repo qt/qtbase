@@ -561,7 +561,7 @@ QList<QByteArray> QImageWriter::supportedSubTypes() const
 {
     if (!supportsOption(QImageIOHandler::SupportedSubTypes))
         return QList<QByteArray>();
-    return d->handler->option(QImageIOHandler::SupportedSubTypes).value< QList<QByteArray> >();
+    return qvariant_cast<QList<QByteArray> >(d->handler->option(QImageIOHandler::SupportedSubTypes));
 }
 
 /*!

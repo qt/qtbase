@@ -206,7 +206,7 @@ QString GpuDescription::toString() const
     str <<   "         Card name         : " << description
         << "\n       Driver Name         : " << driverName
         << "\n    Driver Version         : " << driverVersion.toString()
-        << "\n         Vendor ID         : 0x" << qSetPadChar(QLatin1Char('0'))
+        << "\n         Vendor ID         : 0x" << qSetPadChar(u'0')
         << Qt::uppercasedigits << Qt::hex << qSetFieldWidth(4) << vendorId
         << "\n         Device ID         : 0x" << qSetFieldWidth(4) << deviceId
         << "\n         SubSys ID         : 0x" << qSetFieldWidth(8) << subSysId
@@ -285,7 +285,7 @@ static inline QString resolveBugListFile(const QString &fileName)
     // then resolve via QStandardPaths::ConfigLocation.
     const QString settingsPath = QLibraryInfo::location(QLibraryInfo::SettingsPath);
     if (!settingsPath.isEmpty()) { // SettingsPath is empty unless specified in qt.conf.
-        const QFileInfo fi(settingsPath + QLatin1Char('/') + fileName);
+        const QFileInfo fi(settingsPath + u'/' + fileName);
         if (fi.isFile())
             return fi.absoluteFilePath();
     }

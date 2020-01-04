@@ -207,8 +207,8 @@ void QTabBarPrivate::initBasicStyleOption(QStyleOptionTab *option, int tabIndex)
     else
         option->selectedPosition = QStyleOptionTab::NotAdjacent;
 
-    const bool paintBeginning = (tabIndex == 0) || (dragInProgress && tabIndex == pressedIndex + 1);
-    const bool paintEnd = (tabIndex == totalTabs - 1) || (dragInProgress && tabIndex == pressedIndex - 1);
+    const bool paintBeginning = (tabIndex == firstVisible) || (dragInProgress && tabIndex == pressedIndex + 1);
+    const bool paintEnd = (tabIndex == lastVisible - 1) || (dragInProgress && tabIndex == pressedIndex - 1);
     if (paintBeginning) {
         if (paintEnd)
             option->position = QStyleOptionTab::OnlyOneTab;
@@ -459,6 +459,7 @@ void QTabBarPrivate::layoutTabs()
     int i;
     bool vertTabs = verticalTabs(shape);
     int tabChainIndex = 0;
+    int hiddenTabs = 0;
 
     Qt::Alignment tabAlignment = Qt::Alignment(q->style()->styleHint(QStyle::SH_TabBar_Alignment, nullptr, q));
     QVector<QLayoutStruct> tabChain(tabList.count() + 2);
@@ -484,7 +485,11 @@ void QTabBarPrivate::layoutTabs()
         int minx = 0;
         int x = 0;
         int maxHeight = 0;
-        for (i = 0; i < tabList.count(); ++i, ++tabChainIndex) {
+        for (i = 0; i < tabList.count(); ++i) {
+            if (!tabList.at(i).visible) {
+                ++hiddenTabs;
+                continue;
+            }
             QSize sz = q->tabSizeHint(i);
             tabList[i].maxRect = QRect(x, 0, sz.width(), sz.height());
             x += sz.width();
@@ -500,6 +505,7 @@ void QTabBarPrivate::layoutTabs()
 
             if (!expanding)
                 tabChain[tabChainIndex].maximumSize = tabChain[tabChainIndex].sizeHint;
+            ++tabChainIndex;
         }
 
         last = minx;
@@ -509,7 +515,11 @@ void QTabBarPrivate::layoutTabs()
         int miny = 0;
         int y = 0;
         int maxWidth = 0;
-        for (i = 0; i < tabList.count(); ++i, ++tabChainIndex) {
+        for (i = 0; i < tabList.count(); ++i) {
+            if (!tabList.at(i).visible) {
+                ++hiddenTabs;
+                continue;
+            }
             QSize sz = q->tabSizeHint(i);
             tabList[i].maxRect = QRect(0, y, sz.width(), sz.height());
             y += sz.height();
@@ -525,6 +535,7 @@ void QTabBarPrivate::layoutTabs()
 
             if (!expanding)
                 tabChain[tabChainIndex].maximumSize = tabChain[tabChainIndex].sizeHint;
+            ++tabChainIndex;
         }
 
         last = miny;
@@ -538,14 +549,20 @@ void QTabBarPrivate::layoutTabs()
                                         && (tabAlignment != Qt::AlignRight)
                                         && (tabAlignment != Qt::AlignJustify);
     tabChain[tabChainIndex].empty = true;
-    Q_ASSERT(tabChainIndex == tabChain.count() - 1); // add an assert just to make sure.
+    Q_ASSERT(tabChainIndex == tabChain.count() - 1 - hiddenTabs); // add an assert just to make sure.
 
     // Do the calculation
     qGeomCalc(tabChain, 0, tabChain.count(), 0, qMax(available, last), 0);
 
     // Use the results
+    hiddenTabs = 0;
     for (i = 0; i < tabList.count(); ++i) {
-        const QLayoutStruct &lstruct = tabChain.at(i + 1);
+        if (!tabList.at(i).visible) {
+            tabList[i].rect = QRect();
+            ++hiddenTabs;
+            continue;
+        }
+        const QLayoutStruct &lstruct = tabChain.at(i + 1 - hiddenTabs);
         if (!vertTabs)
             tabList[i].rect.setRect(lstruct.pos, 0, lstruct.size, maxExtent);
         else
@@ -975,11 +992,15 @@ int QTabBar::insertTab(int index, const QIcon& icon, const QString &text)
 #ifndef QT_NO_SHORTCUT
     d->tabList[index].shortcutId = grabShortcut(QKeySequence::mnemonic(text));
 #endif
+    d->firstVisible = qMax(qMin(index, d->firstVisible), 0);
+    d->lastVisible  = qMax(index, d->lastVisible);
     d->refresh();
     if (d->tabList.count() == 1)
         setCurrentIndex(index);
-    else if (index <= d->currentIndex)
+    else if (index <= d->currentIndex) {
         ++d->currentIndex;
+        ++d->lastVisible;
+    }
 
     if (d->closeButtonOnTabs) {
         QStyleOptionTab opt;
@@ -1035,6 +1056,9 @@ void QTabBar::removeTab(int index)
             if (d->tabList[i].lastTab > index)
                 --d->tabList[i].lastTab;
         }
+
+        d->calculateFirstLastVisible(index, false, true);
+
         if (index == d->currentIndex) {
             // The current tab is going away, in order to make sure
             // we emit that "current has changed", we need to reset this
@@ -1045,16 +1069,14 @@ void QTabBar::removeTab(int index)
                 case SelectPreviousTab:
                     if (newIndex > index)
                         newIndex--;
-                    if (d->validIndex(newIndex))
+                    if (d->validIndex(newIndex) && d->tabList.at(newIndex).visible)
                         break;
                     Q_FALLTHROUGH();
                 case SelectRightTab:
-                    newIndex = index;
-                    if (newIndex >= d->tabList.size())
-                        newIndex = d->tabList.size() - 1;
+                    newIndex = qBound(d->firstVisible, index, d->lastVisible);
                     break;
                 case SelectLeftTab:
-                    newIndex = index - 1;
+                    newIndex = qBound(d->firstVisible, index-1, d->lastVisible);
                     if (newIndex < 0)
                         newIndex = 0;
                     break;
@@ -1118,9 +1140,52 @@ void QTabBar::setTabEnabled(int index, bool enabled)
 #endif
         update();
         if (!enabled && index == d->currentIndex)
-            setCurrentIndex(d->validIndex(index+1)?index+1:0);
-        else if (enabled && !d->validIndex(d->currentIndex))
-            setCurrentIndex(index);
+            setCurrentIndex(d->selectNewCurrentIndexFrom(index+1));
+        else if (enabled && !isTabVisible(d->currentIndex))
+            setCurrentIndex(d->selectNewCurrentIndexFrom(index));
+    }
+}
+
+
+/*!
+    Returns true if the tab at position \a index is visible; otherwise
+    returns false.
+    \since 5.15
+*/
+bool QTabBar::isTabVisible(int index) const
+{
+    Q_D(const QTabBar);
+    if (d->validIndex(index))
+        return d->tabList.at(index).visible;
+    return false;
+}
+
+/*!
+    If \a visible is true, make the tab at position \a index visible,
+    otherwise make it hidden.
+    \since 5.15
+*/
+void QTabBar::setTabVisible(int index, bool visible)
+{
+    Q_D(QTabBar);
+    if (QTabBarPrivate::Tab *tab = d->at(index)) {
+        d->layoutDirty = (visible != tab->visible);
+        if (!d->layoutDirty)
+            return;
+        tab->visible = visible;
+        if (tab->leftWidget)
+            tab->leftWidget->setVisible(visible);
+        if (tab->rightWidget)
+            tab->rightWidget->setVisible(visible);
+#ifndef QT_NO_SHORTCUT
+        setShortcutEnabled(tab->shortcutId, visible);
+#endif
+        d->calculateFirstLastVisible(index, visible, false);
+        if (!visible && index == d->currentIndex) {
+            const int newindex = d->selectNewCurrentIndexFrom(index+1);
+            setCurrentIndex(newindex);
+        }
+        update();
     }
 }
 
@@ -1291,7 +1356,7 @@ QVariant QTabBar::tabData(int index) const
 
 /*!
     Returns the visual rectangle of the tab at position \a
-    index, or a null rectangle if \a index is out of range.
+    index, or a null rectangle if \a index is hidden, or out of range.
 */
 QRect QTabBar::tabRect(int index) const
 {
@@ -1299,6 +1364,8 @@ QRect QTabBar::tabRect(int index) const
     if (const QTabBarPrivate::Tab *tab = d->at(index)) {
         if (d->layoutDirty)
             const_cast<QTabBarPrivate*>(d)->layoutTabs();
+        if (!tab->visible)
+            return QRect();
         QRect r = tab->rect;
         if (verticalTabs(d->shape))
             r.translate(0, -d->scrollOffset);
@@ -1429,8 +1496,10 @@ QSize QTabBar::sizeHint() const
     if (d->layoutDirty)
         const_cast<QTabBarPrivate*>(d)->layoutTabs();
     QRect r;
-    for (int i = 0; i < d->tabList.count(); ++i)
-        r = r.united(d->tabList.at(i).maxRect);
+    for (int i = 0; i < d->tabList.count(); ++i) {
+        if (d->tabList.at(i).visible)
+            r = r.united(d->tabList.at(i).maxRect);
+    }
     QSize sz = QApplication::globalStrut();
     return r.size().expandedTo(sz);
 }
@@ -1444,8 +1513,10 @@ QSize QTabBar::minimumSizeHint() const
         const_cast<QTabBarPrivate*>(d)->layoutTabs();
     if (!d->useScrollButtons) {
         QRect r;
-        for (int i = 0; i < d->tabList.count(); ++i)
-            r = r.united(d->tabList.at(i).minRect);
+        for (int i = 0; i < d->tabList.count(); ++i) {
+            if (d->tabList.at(i).visible)
+                r = r.united(d->tabList.at(i).minRect);
+        }
         return r.size().expandedTo(QApplication::globalStrut());
     }
     if (verticalTabs(d->shape))
@@ -1746,6 +1817,8 @@ void QTabBar::paintEvent(QPaintEvent *)
         p.drawPrimitive(QStyle::PE_FrameTabBarBase, optTabBase);
 
     for (int i = 0; i < d->tabList.count(); ++i) {
+        if (!d->at(i)->visible)
+            continue;
         QStyleOptionTab tab;
         initStyleOption(&tab, i);
         if (d->paintWithOffsets && d->tabList[i].dragOffset != 0) {
@@ -1817,6 +1890,65 @@ void QTabBar::paintEvent(QPaintEvent *)
         cutTabRight.rect = style()->subElementRect(QStyle::SE_TabBarTearIndicatorRight, &cutTabRight, this);
         p.drawPrimitive(QStyle::PE_IndicatorTabTearRight, cutTabRight);
     }
+}
+
+/*
+    When index changes visibility, we have to find first & last visible indexes.
+    If remove is set, we force both
+ */
+void QTabBarPrivate::calculateFirstLastVisible(int index, bool visible, bool remove)
+{
+    if (visible) {
+        firstVisible = qMin(index, firstVisible);
+        lastVisible  = qMax(index, lastVisible);
+    } else {
+        if (remove || (index == firstVisible)) {
+            firstVisible = -1;
+            for (int i = 0; i < tabList.count(); ++i) {
+                if (tabList.at(i).visible) {
+                    firstVisible = i;
+                    break;
+                }
+            }
+            if (firstVisible < 0)
+                firstVisible = 0;
+        }
+        if (remove || (index == lastVisible)) {
+            lastVisible = -1;
+            for (int i = tabList.count() - 1; i >= 0; --i) {
+                if (tabList.at(i).visible) {
+                    lastVisible = i;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+/*
+    Selects the new current index starting at "fromIndex". If "fromIndex" is visible we're done.
+    Else it tries any index AFTER fromIndex, then any BEFORE fromIndex and, if everything fails,
+    it returns -1 indicating that no index is available
+ */
+int QTabBarPrivate::selectNewCurrentIndexFrom(int fromIndex)
+{
+    int newindex = -1;
+    for (int i = fromIndex; i < tabList.count(); ++i) {
+        if (at(i)->visible && at(i)->enabled) {
+          newindex = i;
+          break;
+        }
+    }
+    if (newindex < 0) {
+        for (int i = fromIndex-1; i > -1; --i) {
+            if (at(i)->visible && at(i)->enabled) {
+              newindex = i;
+              break;
+            }
+        }
+    }
+
+    return newindex;
 }
 
 /*

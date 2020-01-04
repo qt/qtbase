@@ -112,7 +112,7 @@ fs.readFile(filename, (err, css) => {
             stops.push({ color, position })
           });
 
-          gradients[gradients.length - 1] = { start, end, stops };
+          gradients[gradients.length - 1] = { name, start, end, stops };
         });
 
         if (!gradients[gradients.length - 1])

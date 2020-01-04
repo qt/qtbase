@@ -249,7 +249,7 @@ void QNetworkManagerEngine::interfacePropertiesChanged(const QMap<QString, QVari
         if (i.key() == QLatin1String("ActiveConnections")) {
             // Active connections changed, update configurations.
 
-            const auto activeConnections = qdbus_cast<QList<QDBusObjectPath> >(i.value().value<QDBusArgument>());
+            const auto activeConnections = qdbus_cast<QList<QDBusObjectPath> >(qvariant_cast<QDBusArgument>(i.value()));
 
             QStringList identifiers = accessPointConfigurations.keys();
             QStringList priorActiveConnections = activeConnectionsList.keys();

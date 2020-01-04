@@ -32,6 +32,7 @@
 #include <QStandardItemModel>
 #include <QStringListModel>
 #include <QTest>
+#include <QTransposeProxyModel>
 #include <QLoggingCategory>
 
 #include "dynamictreemodel.h"
@@ -69,6 +70,7 @@ private slots:
     void insertRows();
     void removeRows();
     void moveRows();
+    void moveColumns();
     void reset();
     void dataChanged();
 
@@ -235,47 +237,24 @@ void tst_QIdentityProxyModel::removeRows()
 
 void tst_QIdentityProxyModel::moveRows()
 {
-    DynamicTreeModel model;
-
-    {
-        ModelInsertCommand insertCommand(&model);
-        insertCommand.setStartRow(0);
-        insertCommand.setEndRow(9);
-        insertCommand.doCommand();
-    }
-    {
-        ModelInsertCommand insertCommand(&model);
-        insertCommand.setAncestorRowNumbers(QList<int>() << 5);
-        insertCommand.setStartRow(0);
-        insertCommand.setEndRow(9);
-        insertCommand.doCommand();
-    }
+    QStringListModel model({"A", "B", "C", "D", "E", "F"});
 
     m_proxy->setSourceModel(&model);
 
     verifyIdentity(&model);
 
-    QSignalSpy modelBeforeSpy(&model, &DynamicTreeModel::rowsAboutToBeMoved);
-    QSignalSpy modelAfterSpy(&model, &DynamicTreeModel::rowsMoved);
-    QSignalSpy proxyBeforeSpy(m_proxy, &QIdentityProxyModel::rowsAboutToBeMoved);
-    QSignalSpy proxyAfterSpy(m_proxy, &QIdentityProxyModel::rowsMoved);
+    QSignalSpy modelBeforeSpy(&model, &QAbstractItemModel::rowsAboutToBeMoved);
+    QSignalSpy modelAfterSpy(&model, &QAbstractItemModel::rowsMoved);
+    QSignalSpy proxyBeforeSpy(m_proxy, &QAbstractItemModel::rowsAboutToBeMoved);
+    QSignalSpy proxyAfterSpy(m_proxy, &QAbstractItemModel::rowsMoved);
 
-    QVERIFY(modelBeforeSpy.isValid());
-    QVERIFY(modelAfterSpy.isValid());
-    QVERIFY(proxyBeforeSpy.isValid());
-    QVERIFY(proxyAfterSpy.isValid());
+    QVERIFY(m_proxy->moveRows(QModelIndex(), 1, 2, QModelIndex(), 5));
+    QCOMPARE(model.stringList(), QStringList({"A", "D", "E", "B", "C", "F"}));
 
-    {
-        ModelMoveCommand moveCommand(&model, 0);
-        moveCommand.setAncestorRowNumbers(QList<int>() << 5);
-        moveCommand.setStartRow(3);
-        moveCommand.setEndRow(4);
-        moveCommand.setDestRow(1);
-        moveCommand.doCommand();
-    }
-
-    QVERIFY(modelBeforeSpy.size() == 1 && 1 == proxyBeforeSpy.size());
-    QVERIFY(modelAfterSpy.size() == 1 && 1 == proxyAfterSpy.size());
+    QCOMPARE(modelBeforeSpy.size(), 1);
+    QCOMPARE(proxyBeforeSpy.size(), 1);
+    QCOMPARE(modelAfterSpy.size(), 1);
+    QCOMPARE(proxyAfterSpy.size(), 1);
 
     QCOMPARE(modelBeforeSpy.first().first().value<QModelIndex>(), m_proxy->mapToSource(proxyBeforeSpy.first().first().value<QModelIndex>()));
     QCOMPARE(modelBeforeSpy.first().at(1), proxyBeforeSpy.first().at(1));
@@ -289,9 +268,62 @@ void tst_QIdentityProxyModel::moveRows()
     QCOMPARE(modelAfterSpy.first().at(3).value<QModelIndex>(), m_proxy->mapToSource(proxyAfterSpy.first().at(3).value<QModelIndex>()));
     QCOMPARE(modelAfterSpy.first().at(4), proxyAfterSpy.first().at(4));
 
+    QVERIFY(m_proxy->moveRows(QModelIndex(), 3, 2, QModelIndex(), 1));
+    QCOMPARE(model.stringList(), QStringList({"A", "B", "C", "D", "E", "F"}));
+    QVERIFY(m_proxy->moveRows(QModelIndex(), 0, 3, QModelIndex(), 6));
+    QCOMPARE(model.stringList(), QStringList({"D", "E", "F", "A", "B", "C"}));
+
     verifyIdentity(&model);
 
-    m_proxy->setSourceModel(0);
+    m_proxy->setSourceModel(nullptr);
+}
+
+void tst_QIdentityProxyModel::moveColumns()
+{
+    // QStringListModel implements moveRows but not moveColumns
+    // so we have to use a QTransposeProxyModel inbetween to check if
+    // QIdentityProxyModel::moveColumns works as expected
+    QStringListModel model({"A", "B", "C", "D", "E", "F"});
+    QTransposeProxyModel tpm;
+    tpm.setSourceModel(&model);
+
+    m_proxy->setSourceModel(&tpm);
+
+    verifyIdentity(&tpm);
+
+    QSignalSpy modelBeforeSpy(&tpm, &QAbstractItemModel::columnsAboutToBeMoved);
+    QSignalSpy modelAfterSpy(&tpm, &QAbstractItemModel::columnsMoved);
+    QSignalSpy proxyBeforeSpy(m_proxy, &QAbstractItemModel::columnsAboutToBeMoved);
+    QSignalSpy proxyAfterSpy(m_proxy, &QAbstractItemModel::columnsMoved);
+
+    QVERIFY(m_proxy->moveColumns(QModelIndex(), 1, 2, QModelIndex(), 5));
+    QCOMPARE(model.stringList(), QStringList({"A", "D", "E", "B", "C", "F"}));
+
+    QCOMPARE(proxyBeforeSpy.size(), 1);
+    QCOMPARE(modelBeforeSpy.size(), 1);
+    QCOMPARE(modelAfterSpy.size(), 1);
+    QCOMPARE(proxyAfterSpy.size(), 1);
+
+    QCOMPARE(modelBeforeSpy.first().first().value<QModelIndex>(), m_proxy->mapToSource(proxyBeforeSpy.first().first().value<QModelIndex>()));
+    QCOMPARE(modelBeforeSpy.first().at(1), proxyBeforeSpy.first().at(1));
+    QCOMPARE(modelBeforeSpy.first().at(2), proxyBeforeSpy.first().at(2));
+    QCOMPARE(modelBeforeSpy.first().at(3).value<QModelIndex>(), m_proxy->mapToSource(proxyBeforeSpy.first().at(3).value<QModelIndex>()));
+    QCOMPARE(modelBeforeSpy.first().at(4), proxyBeforeSpy.first().at(4));
+
+    QCOMPARE(modelAfterSpy.first().first().value<QModelIndex>(), m_proxy->mapToSource(proxyAfterSpy.first().first().value<QModelIndex>()));
+    QCOMPARE(modelAfterSpy.first().at(1), proxyAfterSpy.first().at(1));
+    QCOMPARE(modelAfterSpy.first().at(2), proxyAfterSpy.first().at(2));
+    QCOMPARE(modelAfterSpy.first().at(3).value<QModelIndex>(), m_proxy->mapToSource(proxyAfterSpy.first().at(3).value<QModelIndex>()));
+    QCOMPARE(modelAfterSpy.first().at(4), proxyAfterSpy.first().at(4));
+
+    QVERIFY(m_proxy->moveColumns(QModelIndex(), 3, 2, QModelIndex(), 1));
+    QCOMPARE(model.stringList(), QStringList({"A", "B", "C", "D", "E", "F"}));
+    QVERIFY(m_proxy->moveColumns(QModelIndex(), 0, 3, QModelIndex(), 6));
+    QCOMPARE(model.stringList(), QStringList({"D", "E", "F", "A", "B", "C"}));
+
+    verifyIdentity(&tpm);
+
+    m_proxy->setSourceModel(nullptr);
 }
 
 void tst_QIdentityProxyModel::reset()

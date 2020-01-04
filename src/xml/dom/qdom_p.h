@@ -235,7 +235,7 @@ public:
 
     // Variables
     QAtomicInt ref;
-    QHash<QString, QDomNodePrivate *> map;
+    QMultiHash<QString, QDomNodePrivate *> map;
     QDomNodePrivate *parent;
     bool readonly;
     bool appendToParent;

@@ -144,7 +144,7 @@ static QCborValue convertFromVariant(const QVariant &v, TrimFloatingPoint fpTrim
     }
 
     if (v.userType() == qMetaTypeId<VariantOrderedMap>()) {
-        const auto m = v.value<VariantOrderedMap>();
+        const auto m = qvariant_cast<VariantOrderedMap>(v);
         QCborMap map;
         for (const auto &pair : m)
             map.insert(convertFromVariant(pair.first, fpTrimming),

@@ -85,21 +85,21 @@ void MainWindow::setBrushColor()
 //! [2]
 void MainWindow::setAlphaValuator(QAction *action)
 {
-    m_canvas->setAlphaChannelValuator(action->data().value<TabletCanvas::Valuator>());
+    m_canvas->setAlphaChannelValuator(qvariant_cast<TabletCanvas::Valuator>(action->data()));
 }
 //! [2]
 
 //! [3]
 void MainWindow::setLineWidthValuator(QAction *action)
 {
-    m_canvas->setLineWidthType(action->data().value<TabletCanvas::Valuator>());
+    m_canvas->setLineWidthType(qvariant_cast<TabletCanvas::Valuator>(action->data()));
 }
 //! [3]
 
 //! [4]
 void MainWindow::setSaturationValuator(QAction *action)
 {
-    m_canvas->setColorSaturationValuator(action->data().value<TabletCanvas::Valuator>());
+    m_canvas->setColorSaturationValuator(qvariant_cast<TabletCanvas::Valuator>(action->data()));
 }
 //! [4]
 

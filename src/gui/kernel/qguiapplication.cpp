@@ -148,7 +148,13 @@ QString QGuiApplicationPrivate::styleOverride;
 Qt::ApplicationState QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
 
 Qt::HighDpiScaleFactorRoundingPolicy QGuiApplicationPrivate::highDpiScaleFactorRoundingPolicy =
+#ifdef Q_OS_ANDROID
+    // On Android, Qt has newer rounded the scale factor. Preserve
+    // that behavior by disabling rounding by default.
+    Qt::HighDpiScaleFactorRoundingPolicy::PassThrough;
+#else
     Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor;
+#endif
 bool QGuiApplicationPrivate::highDpiScalingUpdated = false;
 
 QPointer<QWindow> QGuiApplicationPrivate::currentDragWindow;
@@ -166,7 +172,6 @@ bool QGuiApplicationPrivate::is_fallback_session_management_enabled = true;
 
 enum ApplicationResourceFlags
 {
-    ApplicationPaletteExplicitlySet = 0x1,
     ApplicationFontExplicitlySet = 0x2
 };
 
@@ -690,8 +695,6 @@ QGuiApplication::~QGuiApplication()
     QGuiApplicationPrivate::lastCursorPosition = {qInf(), qInf()};
     QGuiApplicationPrivate::currentMousePressWindow = QGuiApplicationPrivate::currentMouseWindow = nullptr;
     QGuiApplicationPrivate::applicationState = Qt::ApplicationInactive;
-    QGuiApplicationPrivate::highDpiScaleFactorRoundingPolicy =
-        Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor;
     QGuiApplicationPrivate::highDpiScalingUpdated = false;
     QGuiApplicationPrivate::currentDragWindow = nullptr;
     QGuiApplicationPrivate::tabletDevicePoints.clear();
@@ -3297,11 +3300,10 @@ void QGuiApplication::setPalette(const QPalette &pal)
     else
         *QGuiApplicationPrivate::app_pal = pal;
 
-    applicationResourceFlags |= ApplicationPaletteExplicitlySet;
     QCoreApplication::setAttribute(Qt::AA_SetPalette);
 
     if (qGuiApp)
-        emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
+        qGuiApp->d_func()->sendApplicationPaletteChange();
 }
 
 void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)
@@ -3553,6 +3555,8 @@ Qt::ApplicationState QGuiApplication::applicationState()
     accessor will reflect the environment, if set.
 
     The default value is Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor.
+    On Qt for Android the default is Qt::HighDpiScaleFactorRoundingPolicy::PassThough,
+    which preserves historical behavior from earlier Qt versions.
 */
 void QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy policy)
 {
@@ -4100,13 +4104,10 @@ QPixmap QGuiApplicationPrivate::getPixmapCursor(Qt::CursorShape cshape)
 
 void QGuiApplicationPrivate::notifyThemeChanged()
 {
-    if (!(applicationResourceFlags & ApplicationPaletteExplicitlySet) &&
-        !QCoreApplication::testAttribute(Qt::AA_SetPalette)) {
+    if (!testAttribute(Qt::AA_SetPalette)) {
         clearPalette();
         initPalette();
-        emit qGuiApp->paletteChanged(*app_pal);
-        if (is_app_running && !is_app_closing)
-            sendApplicationPaletteChange();
+        sendApplicationPaletteChange();
     }
     if (!(applicationResourceFlags & ApplicationFontExplicitlySet)) {
         const auto locker = qt_scoped_lock(applicationFontMutex);
@@ -4119,7 +4120,12 @@ void QGuiApplicationPrivate::notifyThemeChanged()
 void QGuiApplicationPrivate::sendApplicationPaletteChange(bool toAllWidgets, const char *className)
 {
     Q_UNUSED(toAllWidgets)
-    Q_UNUSED(className)
+
+    if (!className)
+        emit qGuiApp->paletteChanged(*QGuiApplicationPrivate::app_pal);
+
+    if (!is_app_running || is_app_closing)
+        return;
 
     QEvent event(QEvent::ApplicationPaletteChange);
     QGuiApplication::sendEvent(QGuiApplication::instance(), &event);

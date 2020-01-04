@@ -1639,7 +1639,7 @@ QList<QSslCertificate> QSslSocket::caCertificates() const
     default CA certificate database.
 
     \sa QSslConfiguration::caCertificates(), QSslConfiguration::addCaCertificates(),
-        QSslConfiguration::addDefaultCaCertificate()
+        QSslConfiguration::addCaCertificate()
 */
 bool QSslSocket::addDefaultCaCertificates(const QString &path, QSsl::EncodingFormat encoding,
                                           QRegExp::PatternSyntax syntax)
@@ -1656,7 +1656,7 @@ bool QSslSocket::addDefaultCaCertificates(const QString &path, QSsl::EncodingFor
     SSL socket's CA certificate database is initialized to the default
     CA certificate database.
 
-    \sa QSslConfiguration::caCertificates(), QSslConfiguration::addCaCertificates()
+    \sa QSslConfiguration::addCaCertificates()
 */
 void QSslSocket::addDefaultCaCertificate(const QSslCertificate &certificate)
 {

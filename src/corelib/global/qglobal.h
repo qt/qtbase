@@ -892,6 +892,10 @@ QT_WARNING_POP
 #  define Q_DUMMY_COMPARISON_OPERATOR(C)
 #endif
 
+QT_WARNING_PUSH
+// warning: noexcept-expression evaluates to ‘false’ because of a call to ‘void swap(..., ...)'
+QT_WARNING_DISABLE_GCC("-Wnoexcept")
+
 namespace QtPrivate
 {
 namespace SwapExceptionTester { // insulate users from the "using std::swap" below
@@ -910,6 +914,8 @@ inline void qSwap(T &value1, T &value2)
     using std::swap;
     swap(value1, value2);
 }
+
+QT_WARNING_POP
 
 #if QT_DEPRECATED_SINCE(5, 0)
 Q_CORE_EXPORT QT_DEPRECATED void *qMalloc(size_t size) Q_ALLOC_SIZE(1);
@@ -1214,8 +1220,10 @@ inline int qIntCast(float f) { return int(f); }
 /*
   Reentrant versions of basic rand() functions for random number generation
 */
-Q_CORE_EXPORT void qsrand(uint seed);
-Q_CORE_EXPORT int qrand();
+#if QT_DEPRECATED_SINCE(5, 15)
+Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_5_15("use QRandomGenerator instead") void qsrand(uint seed);
+Q_CORE_EXPORT QT_DEPRECATED_VERSION_X_5_15("use QRandomGenerator instead") int qrand();
+#endif
 
 #define QT_MODULE(x)
 

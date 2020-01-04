@@ -218,7 +218,7 @@ void QEGLPlatformContext::adopt(const QVariant &nativeHandle, QPlatformOpenGLCon
         qWarning("QEGLPlatformContext: Requires a QEGLNativeContext");
         return;
     }
-    QEGLNativeContext handle = nativeHandle.value<QEGLNativeContext>();
+    QEGLNativeContext handle = qvariant_cast<QEGLNativeContext>(nativeHandle);
     EGLContext context = handle.context();
     if (!context) {
         qWarning("QEGLPlatformContext: No EGLContext given");

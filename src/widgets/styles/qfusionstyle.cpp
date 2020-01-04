@@ -1590,7 +1590,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 (option->styleObject && option->styleObject->property("_q_isComboBoxPopupItem").toBool()))
                 ignoreCheckMark = true; //ignore the checkmarks provided by the QComboMenuDelegate
 
-            if (!ignoreCheckMark) {
+            if (!ignoreCheckMark || menuItem->state & (State_On | State_Off)) {
                 // Check, using qreal and QRectF to avoid error accumulation
                 const qreal boxMargin = dpiScaled(3.5, option);
                 const qreal boxWidth = checkcol - 2 * boxMargin;
@@ -1601,7 +1601,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                 if (checkable) {
                     if (menuItem->checkType & QStyleOptionMenuItem::Exclusive) {
                         // Radio button
-                        if (checked || sunken) {
+                        if (menuItem->state & State_On || checked || sunken) {
                             painter->setRenderHint(QPainter::Antialiasing);
                             painter->setPen(Qt::NoPen);
 
@@ -1617,8 +1617,10 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                             QStyleOptionButton box;
                             box.QStyleOption::operator=(*option);
                             box.rect = checkRect;
-                            if (checked)
+                            if (checked || menuItem->state & State_On)
                                 box.state |= State_On;
+                            else
+                                box.state |= State_Off;
                             proxy()->drawPrimitive(PE_IndicatorCheckBox, &box, painter, widget);
                         }
                     }
@@ -2411,7 +2413,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 int oldMin = styleObject->property("_q_stylemin").toInt();
                 int oldMax = styleObject->property("_q_stylemax").toInt();
                 QRect oldRect = styleObject->property("_q_stylerect").toRect();
-                QStyle::State oldState = static_cast<QStyle::State>(styleObject->property("_q_stylestate").value<QStyle::State::Int>());
+                QStyle::State oldState = static_cast<QStyle::State>(qvariant_cast<QStyle::State::Int>(styleObject->property("_q_stylestate")));
                 uint oldActiveControls = styleObject->property("_q_stylecontrols").toUInt();
 
                 // a scrollbar is transient when the the scrollbar itself and

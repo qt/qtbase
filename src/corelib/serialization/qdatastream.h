@@ -296,7 +296,10 @@ QDataStream &readAssociativeContainer(QDataStream &s, Container &c)
             c.clear();
             break;
         }
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
         c.insertMulti(k, t);
+QT_WARNING_POP
     }
 
     return s;

@@ -82,6 +82,9 @@ public:
     bool isTabEnabled(int index) const;
     void setTabEnabled(int index, bool);
 
+    bool isTabVisible(int index) const;
+    void setTabVisible(int index, bool);
+
     QString tabText(int index) const;
     void setTabText(int index, const QString &);
 

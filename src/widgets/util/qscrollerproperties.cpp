@@ -261,9 +261,9 @@ void QScrollerProperties::setScrollMetric(ScrollMetric metric, const QVariant &v
     case OvershootDragDistanceFactor:   d->overshootDragDistanceFactor = qBound(qreal(0), value.toReal(), qreal(1)); break;
     case OvershootScrollDistanceFactor: d->overshootScrollDistanceFactor = qBound(qreal(0), value.toReal(), qreal(1)); break;
     case OvershootScrollTime:           d->overshootScrollTime = value.toReal(); break;
-    case HorizontalOvershootPolicy:     d->hOvershootPolicy = value.value<QScrollerProperties::OvershootPolicy>(); break;
-    case VerticalOvershootPolicy:       d->vOvershootPolicy = value.value<QScrollerProperties::OvershootPolicy>(); break;
-    case FrameRate:                     d->frameRate = value.value<QScrollerProperties::FrameRates>(); break;
+    case HorizontalOvershootPolicy:     d->hOvershootPolicy = qvariant_cast<QScrollerProperties::OvershootPolicy>(value); break;
+    case VerticalOvershootPolicy:       d->vOvershootPolicy = qvariant_cast<QScrollerProperties::OvershootPolicy>(value); break;
+    case FrameRate:                     d->frameRate = qvariant_cast<QScrollerProperties::FrameRates>(value); break;
     case ScrollMetricCount:             break;
     }
 }

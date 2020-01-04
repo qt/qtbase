@@ -605,7 +605,7 @@ void QAbstractItemModelTesterPrivate::data()
     // Check that the alignment is one we know about
     QVariant textAlignmentVariant = model->data(model->index(0, 0), Qt::TextAlignmentRole);
     if (textAlignmentVariant.isValid()) {
-        Qt::Alignment alignment = textAlignmentVariant.value<Qt::Alignment>();
+        Qt::Alignment alignment = qvariant_cast<Qt::Alignment>(textAlignmentVariant);
         MODELTESTER_COMPARE(alignment, (alignment & (Qt::AlignHorizontal_Mask | Qt::AlignVertical_Mask)));
     }
 

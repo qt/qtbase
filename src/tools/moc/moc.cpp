@@ -935,9 +935,9 @@ void Moc::parse()
 
         if (it != classList.end()) {
             it->classInfoList += def.classInfoList;
-            it->enumDeclarations.unite(def.enumDeclarations);
+            it->enumDeclarations.insert(def.enumDeclarations);
             it->enumList += def.enumList;
-            it->flagAliases.unite(def.flagAliases);
+            it->flagAliases.insert(def.flagAliases);
         } else {
             knownGadgets.insert(def.classname, def.qualified);
             knownGadgets.insert(def.qualified, def.qualified);
@@ -1387,6 +1387,7 @@ void Moc::parsePluginData(ClassDef *def)
                 error(msg.constData());
                 return;
             }
+            parsedPluginMetadataFiles.append(fi.canonicalFilePath());
             metaData = file.readAll();
         }
     }

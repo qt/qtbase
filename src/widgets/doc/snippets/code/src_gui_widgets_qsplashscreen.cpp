@@ -56,10 +56,10 @@ splash->show();
 ... // Loading some items
 splash->showMessage("Loaded modules");
 
-qApp->processEvents();
+QCoreApplication::processEvents();
 
 ... // Establishing connections
 splash->showMessage("Established connections");
 
-qApp->processEvents();
+QCoreApplication::processEvents();
 //! [0]

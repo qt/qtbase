@@ -50,6 +50,10 @@ QT_BEGIN_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wextra")
 
+#ifdef Q_CLANG_QDOC
+#  undef QT_BASIC_ATOMIC_HAS_CONSTRUCTORS
+#endif
+
 // High-level atomic integer operations
 template <typename T>
 class QAtomicInteger : public QBasicAtomicInteger<T>
@@ -194,7 +198,9 @@ public:
 #ifdef Q_QDOC
     T *load() const;
     T *loadAcquire() const;
+    T *loadRelaxed() const;
     void store(T *newValue);
+    void storeRelaxed(T *newValue);
     void storeRelease(T *newValue);
 
     static Q_DECL_CONSTEXPR bool isTestAndSetNative();

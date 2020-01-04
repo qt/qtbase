@@ -36,6 +36,7 @@ build_pass {
             }
         }
     } else: contains(TEMPLATE, "lib"):!static:!QTDIR_build:android_install {
+        !contains(TARGET, "_$${QT_ARCH}"): TARGET = $${TARGET}_$${QT_ARCH}
         target.path = /libs/$$ANDROID_TARGET_ARCH/
         INSTALLS *= target
     }

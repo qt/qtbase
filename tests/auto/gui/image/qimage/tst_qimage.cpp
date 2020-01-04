@@ -191,6 +191,8 @@ private slots:
     void invertPixelsRGB_data();
     void invertPixelsRGB();
 
+    void invertPixelsIndexed();
+
     void exifOrientation_data();
     void exifOrientation();
 
@@ -3084,6 +3086,36 @@ void tst_QImage::invertPixelsRGB()
     QCOMPARE(qRed(pixel) >> 4, (255 - 32) >> 4);
     QCOMPARE(qGreen(pixel) >> 4, (255 - 64) >> 4);
     QCOMPARE(qBlue(pixel) >> 4, (255 - 96) >> 4);
+}
+
+void tst_QImage::invertPixelsIndexed()
+{
+    {
+        QImage image(1, 1, QImage::Format_Mono);
+        image.fill(Qt::color1);
+        image.invertPixels();
+        QCOMPARE(image.pixelIndex(0, 0), 0);
+    }
+    {
+        QImage image(1, 1, QImage::Format_MonoLSB);
+        image.fill(Qt::color0);
+        image.invertPixels();
+        QCOMPARE(image.pixelIndex(0, 0), 1);
+    }
+    {
+        QImage image(1, 1, QImage::Format_Indexed8);
+        image.setColorTable({0xff000000, 0xffffffff});
+        image.fill(Qt::black);
+        image.invertPixels();
+        QCOMPARE(image.pixelIndex(0, 0), 255);
+    }
+    {
+        QImage image(1, 1, QImage::Format_Indexed8);
+        image.setColorTable({0xff000000, 0xffffffff, 0x80000000, 0x80ffffff, 0x00000000});
+        image.fill(Qt::white);
+        image.invertPixels();
+        QCOMPARE(image.pixelIndex(0, 0), 254);
+    }
 }
 
 void tst_QImage::exifOrientation_data()

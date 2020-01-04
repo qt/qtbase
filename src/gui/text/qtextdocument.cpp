@@ -3085,7 +3085,7 @@ void QTextDocumentPrivate::mergeCachedResources(const QTextDocumentPrivate *priv
     if (!priv)
         return;
 
-    cachedResources.unite(priv->cachedResources);
+    cachedResources.insert(priv->cachedResources);
 }
 
 void QTextHtmlExporter::emitBackgroundAttribute(const QTextFormat &format)

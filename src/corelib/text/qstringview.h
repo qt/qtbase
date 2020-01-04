@@ -294,6 +294,8 @@ public:
 
     Q_REQUIRED_RESULT bool isRightToLeft() const noexcept
     { return QtPrivate::isRightToLeft(*this); }
+    Q_REQUIRED_RESULT bool isValidUtf16() const noexcept
+    { return QtPrivate::isValidUtf16(*this); }
 
     Q_REQUIRED_RESULT inline int toWCharArray(wchar_t *array) const; // defined in qstring.h
 

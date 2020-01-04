@@ -75,6 +75,11 @@ public:
     void setResolution(int resolution);
     int resolution() const;
 
+    void setDocumentXmpMetadata(const QByteArray &xmpMetadata);
+    QByteArray documentXmpMetadata() const;
+
+    void addFileAttachment(const QString &fileName, const QByteArray &data, const QString &mimeType = QString());
+
 #ifdef Q_QDOC
     bool setPageLayout(const QPageLayout &pageLayout);
     bool setPageSize(const QPageSize &pageSize);
