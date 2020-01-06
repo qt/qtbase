@@ -140,7 +140,7 @@ Qt::KeyboardModifiers QGuiApplicationPrivate::modifier_buttons = Qt::NoModifier;
 
 QPointF QGuiApplicationPrivate::lastCursorPosition(qInf(), qInf());
 
-QWindow *QGuiApplicationPrivate::currentMouseWindow = 0;
+QPointer<QWindow> QGuiApplicationPrivate::currentMouseWindow;
 
 QString QGuiApplicationPrivate::styleOverride;
 
@@ -185,7 +185,7 @@ int QGuiApplicationPrivate::mousePressY = 0;
 static int mouseDoubleClickDistance = -1;
 static int touchDoubleTapDistance = -1;
 
-QWindow *QGuiApplicationPrivate::currentMousePressWindow = 0;
+QPointer<QWindow> QGuiApplicationPrivate::currentMousePressWindow;
 
 static Qt::LayoutDirection layout_direction = Qt::LayoutDirectionAuto;
 static bool force_reverse = false;
@@ -201,7 +201,7 @@ QClipboard *QGuiApplicationPrivate::qt_clipboard = 0;
 QList<QScreen *> QGuiApplicationPrivate::screen_list;
 
 QWindowList QGuiApplicationPrivate::window_list;
-QWindow *QGuiApplicationPrivate::focus_window = 0;
+QPointer<QWindow> QGuiApplicationPrivate::focus_window;
 
 static QBasicMutex applicationFontMutex;
 QFont *QGuiApplicationPrivate::app_font = 0;

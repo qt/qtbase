@@ -212,8 +212,8 @@ public:
     static int mousePressX;
     static int mousePressY;
     static QPointF lastCursorPosition;
-    static QWindow *currentMouseWindow;
-    static QWindow *currentMousePressWindow;
+    static QPointer<QWindow> currentMouseWindow;
+    static QPointer<QWindow> currentMousePressWindow;
     static Qt::ApplicationState applicationState;
     static bool highDpiScalingUpdated;
     static QPointer<QWindow> currentDragWindow;
@@ -234,7 +234,7 @@ public:
     static QPalette *app_pal;
 
     static QWindowList window_list;
-    static QWindow *focus_window;
+    static QPointer<QWindow> focus_window;
 
 #ifndef QT_NO_CURSOR
     QList<QCursor> cursor_list;
