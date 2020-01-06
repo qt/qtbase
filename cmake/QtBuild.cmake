@@ -1180,7 +1180,12 @@ endfunction()
 function(qt_install_injections target build_dir install_dir)
     set(injections ${ARGN})
     set(module "Qt${target}")
-    get_target_property(is_framework ${target} FRAMEWORK)
+    get_target_property(target_type ${target} TYPE)
+    if (target_type STREQUAL "INTERFACE_LIBRARY")
+        set(is_framework FALSE)
+    else()
+        get_target_property(is_framework ${target} FRAMEWORK)
+    endif()
     # examples:
     #  SYNCQT.INJECTIONS = src/corelib/global/qconfig.h:qconfig.h:QtConfig src/corelib/global/qconfig_p.h:5.12.0/QtCore/private/qconfig_p.h
     #  SYNCQT.INJECTIONS = src/gui/vulkan/qvulkanfunctions.h:^qvulkanfunctions.h:QVulkanFunctions:QVulkanDeviceFunctions src/gui/vulkan/qvulkanfunctions_p.h:^5.12.0/QtGui/private/qvulkanfunctions_p.h
