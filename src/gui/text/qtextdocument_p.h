@@ -396,7 +396,6 @@ private:
     void emitBorderStyle(QTextFrameFormat::BorderStyle style);
     void emitPageBreakPolicy(QTextFormat::PageBreakFlags policy);
 
-    void emitFontFamily(const QString &family);
     void emitFontFamily(const QStringList &families);
 
     void emitBackgroundAttribute(const QTextFormat &format);

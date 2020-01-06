@@ -46,6 +46,7 @@ public:
     void acceptCustomWidget(DomCustomWidget *node) override;
 
 private:
+    void writeImport(const QString &module);
     QString qtModuleOf(const DomCustomWidget *node) const;
 
     Uic *const m_uic;

@@ -839,7 +839,8 @@ void QPlainTextEditPrivate::_q_textChanged()
 
     placeholderVisible = !placeholderText.isEmpty()
             && q->document()->isEmpty()
-            && q->firstVisibleBlock().layout()->preeditAreaText().isEmpty();
+            && (!q->firstVisibleBlock().isValid() ||
+                 q->firstVisibleBlock().layout()->preeditAreaText().isEmpty());
 
     if (placeholderCurrentyVisible != placeholderVisible)
         viewport->update();

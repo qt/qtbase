@@ -335,7 +335,6 @@ void QDateTimeEdit::setCalendar(QCalendar calendar)
 /*!
   \since 4.4
   \property QDateTimeEdit::minimumDateTime
-
   \brief the minimum datetime of the date time edit
 
   Changing this property implicitly updates the \l minimumDate and \l
@@ -637,8 +636,8 @@ void QDateTimeEdit::setDateRange(const QDate &min, const QDate &max)
 
   Note that these only constrain the date time edit's value on,
   respectively, the \l minimumDate and \l maximumDate. When these date
-  properties do not coincide, times after \a maximumTime are allowed on dates
-  before \l maximumDate and times before \a minimumTime are allowed on dates
+  properties do not coincide, times after \a max are allowed on dates
+  before \l maximumDate and times before \a min are allowed on dates
   after \l minimumDate.
 
   \snippet code/src_gui_widgets_qdatetimeedit.cpp 5
@@ -649,7 +648,7 @@ void QDateTimeEdit::setDateRange(const QDate &min, const QDate &max)
 
   If either \a min or \a max is invalid, this function does nothing. This
   function preserves the \l minimumDate and \l maximumDate properties. If those
-  properties coincide and max is \a less than \a min, \a min is used as \a max.
+  properties coincide and \a max is less than \a min, \a min is used as \a max.
 
   \sa minimumTime, maximumTime, setDateTimeRange(), QTime::isValid()
 */

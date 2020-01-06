@@ -595,7 +595,7 @@ QHostInfo::QHostInfo(const QHostInfo &other)
 }
 
 /*!
-    \fn QHostInfo(QHostInfo &&other)
+    \fn QHostInfo::QHostInfo(QHostInfo &&other)
 
     Move-constructs a new QHostInfo from \a other.
 

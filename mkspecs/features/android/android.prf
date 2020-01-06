@@ -41,10 +41,9 @@ build_pass {
         INSTALLS *= target
     }
 } else {
-    QMAKE_EXTRA_TARGETS *= aab apk apk_install_target
-
     android-build-distclean.commands = \
         $$QMAKE_DEL_TREE $$shell_quote($$shell_path($$OUT_PWD/android-build))
     QMAKE_EXTRA_TARGETS *= android-build-distclean
     CLEAN_DEPS += android-build-distclean
 }
+QMAKE_EXTRA_TARGETS *= aab apk apk_install_target

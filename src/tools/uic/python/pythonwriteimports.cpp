@@ -29,6 +29,7 @@
 #include "pythonwriteimports.h"
 
 #include <customwidgetsinfo.h>
+#include <option.h>
 #include <uic.h>
 
 #include <ui4.h>
@@ -46,6 +47,20 @@ from PySide2.QtGui import (QBrush, QColor, QConicalGradient, QFont,
 from PySide2.QtWidgets import *
 )I";
 
+// Change the name of a qrc file "dir/foo.qrc" file to the Python
+// module name "foo_rc" according to project conventions.
+static QString pythonResource(QString resource)
+{
+    const int lastSlash = resource.lastIndexOf(QLatin1Char('/'));
+    if (lastSlash != -1)
+        resource.remove(0, lastSlash + 1);
+    if (resource.endsWith(QLatin1String(".qrc"))) {
+        resource.chop(4);
+        resource.append(QLatin1String("_rc"));
+    }
+    return resource;
+}
+
 namespace Python {
 
 WriteImports::WriteImports(Uic *uic) : m_uic(uic)
@@ -60,6 +75,23 @@ void WriteImports::acceptUI(DomUI *node)
         TreeWalker::acceptCustomWidgets(customWidgets);
         output << '\n';
     }
+
+    if (auto resources = node->elementResources()) {
+        const auto includes = resources->elementInclude();
+        for (auto include : includes) {
+            if (include->hasAttributeLocation())
+                writeImport(pythonResource(include->attributeLocation()));
+        }
+        output << '\n';
+    }
+}
+
+void WriteImports::writeImport(const QString &module)
+{
+
+    if (m_uic->option().fromImports)
+        m_uic->output() << "from  . ";
+    m_uic->output() << "import " << module << '\n';
 }
 
 QString WriteImports::qtModuleOf(const DomCustomWidget *node) const

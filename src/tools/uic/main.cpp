@@ -108,6 +108,10 @@ int runUic(int argc, char *argv[])
     idBasedOption.setDescription(QStringLiteral("Use id based function for i18n"));
     parser.addOption(idBasedOption);
 
+    QCommandLineOption fromImportsOption(QStringLiteral("from-imports"));
+    fromImportsOption.setDescription(QStringLiteral("Python: generate imports relative to '.'"));
+    parser.addOption(fromImportsOption);
+
     parser.addPositionalArgument(QStringLiteral("[uifile]"), QStringLiteral("Input file (*.ui), otherwise stdin."));
 
     parser.process(app);
@@ -118,6 +122,7 @@ int runUic(int argc, char *argv[])
     driver.option().headerProtection = !parser.isSet(noProtOption);
     driver.option().implicitIncludes = !parser.isSet(noImplicitIncludesOption);
     driver.option().idBased = parser.isSet(idBasedOption);
+    driver.option().fromImports = parser.isSet(fromImportsOption);
     driver.option().postfix = parser.value(postfixOption);
     driver.option().translateFunction = parser.value(translateOption);
     driver.option().includeFile = parser.value(includeOption);
