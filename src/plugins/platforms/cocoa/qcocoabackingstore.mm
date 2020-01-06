@@ -617,8 +617,10 @@ QImage QCALayerBackingStore::toImage() const
 void QCALayerBackingStore::backingPropertiesChanged()
 {
     qCDebug(lcQpaBackingStore) << "Updating color space of existing buffers";
-    for (auto &buffer : m_buffers)
-        buffer->setColorSpace(colorSpace());
+    for (auto &buffer : m_buffers) {
+        if (buffer)
+            buffer->setColorSpace(colorSpace());
+    }
 }
 
 QPlatformGraphicsBuffer *QCALayerBackingStore::graphicsBuffer() const

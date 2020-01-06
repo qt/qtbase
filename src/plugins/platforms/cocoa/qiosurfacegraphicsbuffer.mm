@@ -89,9 +89,16 @@ QIOSurfaceGraphicsBuffer::~QIOSurfaceGraphicsBuffer()
 
 void QIOSurfaceGraphicsBuffer::setColorSpace(QCFType<CGColorSpaceRef> colorSpace)
 {
-    Q_ASSERT(colorSpace);
-    IOSurfaceSetValue(m_surface, CFSTR("IOSurfaceColorSpace"),
-        QCFType<CFPropertyListRef>(CGColorSpaceCopyPropertyList(colorSpace)));
+    static const auto kIOSurfaceColorSpace = CFSTR("IOSurfaceColorSpace");
+
+    qCDebug(lcQpaIOSurface) << "Tagging" << this << "with color space" << colorSpace;
+
+    if (colorSpace) {
+        IOSurfaceSetValue(m_surface, kIOSurfaceColorSpace,
+            QCFType<CFPropertyListRef>(CGColorSpaceCopyPropertyList(colorSpace)));
+    } else {
+        IOSurfaceRemoveValue(m_surface, kIOSurfaceColorSpace);
+    }
 }
 
 const uchar *QIOSurfaceGraphicsBuffer::data() const

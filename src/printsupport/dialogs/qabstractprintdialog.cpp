@@ -344,13 +344,6 @@ void QAbstractPrintDialogPrivate::setPrinter(QPrinter *newPrinter)
 }
 
 /*!
-    \fn int QAbstractPrintDialog::exec()
-
-    This virtual function is called to pop up the dialog. It must be
-    reimplemented in subclasses.
-*/
-
-/*!
     \class QPrintDialog
 
     \brief The QPrintDialog class provides a dialog for specifying

@@ -3027,6 +3027,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                     r = positionRect(w, subRule, subRule2, PseudoElement_ComboBoxArrow, r, opt->direction);
                     subRule2.drawRule(p, r);
                 } else {
+                    rule.configurePalette(&cmbOpt.palette, QPalette::ButtonText, QPalette::Button);
                     cmbOpt.subControls = QStyle::SC_ComboBoxArrow;
                     QWindowsStyle::drawComplexControl(cc, &cmbOpt, p, w);
                 }

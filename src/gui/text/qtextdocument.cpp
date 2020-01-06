@@ -2297,6 +2297,17 @@ QTextHtmlExporter::QTextHtmlExporter(const QTextDocument *_doc)
     defaultCharFormat.clearProperty(QTextFormat::TextUnderlineStyle);
 }
 
+static QStringList resolvedFontFamilies(const QTextCharFormat &format)
+{
+    QStringList fontFamilies = format.fontFamilies().toStringList();
+    const QString mainFontFamily = format.fontFamily();
+    if (!mainFontFamily.isEmpty() && !fontFamilies.startsWith(mainFontFamily)) {
+        fontFamilies.removeAll(mainFontFamily);
+        fontFamilies.prepend(mainFontFamily);
+    }
+    return fontFamilies;
+}
+
 /*!
     Returns the document in HTML format. The conversion may not be
     perfect, especially for complex documents, due to the limitations
@@ -2325,11 +2336,7 @@ QString QTextHtmlExporter::toHtml(const QByteArray &encoding, ExportMode mode)
     if (mode == ExportEntireDocument) {
         html += QLatin1String(" style=\"");
 
-        QStringList fontFamilies = defaultCharFormat.fontFamilies().toStringList();
-        if (!fontFamilies.isEmpty())
-            emitFontFamily(fontFamilies);
-        else
-            emitFontFamily(defaultCharFormat.fontFamily());
+        emitFontFamily(resolvedFontFamilies(defaultCharFormat));
 
         if (defaultCharFormat.hasProperty(QTextFormat::FontPointSize)) {
             html += QLatin1String(" font-size:");
@@ -2391,13 +2398,9 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
     bool attributesEmitted = false;
 
     {
-        const QStringList families = format.fontFamilies().toStringList();
-        const QString family = format.fontFamily();
-        if (!families.isEmpty() && families != defaultCharFormat.fontFamilies().toStringList()) {
+        const QStringList families = resolvedFontFamilies(format);
+        if (!families.isEmpty() && families != resolvedFontFamilies(defaultCharFormat)) {
             emitFontFamily(families);
-            attributesEmitted = true;
-        } else if (!family.isEmpty() && family != defaultCharFormat.fontFamily()) {
-            emitFontFamily(family);
             attributesEmitted = true;
         }
     }
@@ -2659,20 +2662,6 @@ void QTextHtmlExporter::emitPageBreakPolicy(QTextFormat::PageBreakFlags policy)
 
     if (policy & QTextFormat::PageBreak_AlwaysAfter)
         html += QLatin1String(" page-break-after:always;");
-}
-
-void QTextHtmlExporter::emitFontFamily(const QString &family)
-{
-    html += QLatin1String(" font-family:");
-
-    QLatin1String quote("\'");
-    if (family.contains(QLatin1Char('\'')))
-        quote = QLatin1String("&quot;");
-
-    html += quote;
-    html += family.toHtmlEscaped();
-    html += quote;
-    html += QLatin1Char(';');
 }
 
 void QTextHtmlExporter::emitFontFamily(const QStringList &families)

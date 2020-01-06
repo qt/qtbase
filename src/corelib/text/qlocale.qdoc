@@ -174,7 +174,7 @@
     \value Chewa Obsolete, please use Nyanja
     \value Chickasaw Since Qt 5.14
     \value Chiga
-    \value Chinese
+    \value Chinese (Mandarin)
     \value Church
     \value Chuvash
     \value ClassicalMandaic Since Qt 5.1
@@ -1199,14 +1199,6 @@
 \overload
 
 \sa toShort()
-*/
-
-/*!
-\fn QString QLocale::toString(ushort i) const
-
-\overload
-
-\sa toUShort()
 */
 
 /*!

@@ -6048,7 +6048,11 @@ static inline void alphargbblend_argb32(quint32 *dst, uint coverage, const QRgba
         // Give up and do a naive gray alphablend. Needed to deal with ARGB32 and invalid ARGB32_premultiplied, see QTBUG-60571
         blend_pixel(*dst, src, qRgbAvg(coverage));
     } else if (!colorProfile) {
-        *dst = rgbBlend(*dst, src, coverage);
+        // First do naive blend with text-color
+        QRgb s = *dst;
+        blend_pixel(s, src);
+        // Then a naive blend with glyph shape
+        *dst = rgbBlend(*dst, s, coverage);
     } else if (srcLinear.isOpaque()) {
         rgbBlendPixel(dst, coverage, srcLinear, colorProfile);
     } else {

@@ -243,7 +243,7 @@
     Instead of \c Q_ASSERT, the \l QCOMPARE() or \l QVERIFY() macro variants
     should be used. They cause the current test to report a failure and
     terminate, but allow the remaining test functions to be executed and the
-    entire test program to terminate normally. \l Q_VERIFY2() even allows a
+    entire test program to terminate normally. \l QVERIFY2() even allows a
     descriptive error message to be recorded in the test log.
 
     \section1 Writing Reliable Tests
