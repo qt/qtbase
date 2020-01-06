@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -87,7 +87,7 @@ public:
         LanguageId, // uint
         CountryId, // uint
         DecimalPoint, // QString
-        GroupSeparator, // QString
+        GroupSeparator, // QString (empty QString means: don't group digits)
         ZeroDigit, // QString
         NegativeSign, // QString
         DateFormatLong, // QString

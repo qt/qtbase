@@ -660,6 +660,11 @@ static QLocalePrivate *c_private()
     return &c_locale;
 }
 
+static const QLocaleData *systemData();
+static QLocale::NumberOptions system_number_options = QLocale::DefaultNumberOptions;
+Q_GLOBAL_STATIC_WITH_ARGS(QExplicitlySharedDataPointer<QLocalePrivate>, systemLocalePrivate,
+                          (QLocalePrivate::create(systemData(), system_number_options)))
+
 #ifndef QT_NO_SYSTEMLOCALE
 /******************************************************************************
 ** Default system locale behavior
@@ -711,6 +716,7 @@ static void updateSystemPrivate()
 {
     // This function is NOT thread-safe!
     // It *should not* be called by anything but systemData()
+    // It *is* called before {system,default}LocalePrivate exist.
     const QSystemLocale *sys_locale = systemLocale();
 
     // tell the object that the system locale has changed.
@@ -718,11 +724,14 @@ static void updateSystemPrivate()
 
     // Populate global with fallback as basis:
     globalLocaleData = *sys_locale->fallbackUiLocaleData();
+    system_number_options = QLocale::DefaultNumberOptions;
 
     QVariant res = sys_locale->query(QSystemLocale::LanguageId, QVariant());
     if (!res.isNull()) {
         globalLocaleData.m_language_id = res.toInt();
         globalLocaleData.m_script_id = QLocale::AnyScript; // default for compatibility
+        if (globalLocaleData.m_language_id == QLocale::C)
+            system_number_options = QLocale::OmitGroupSeparator;
     }
     res = sys_locale->query(QSystemLocale::CountryId, QVariant());
     if (!res.isNull()) {
@@ -737,9 +746,26 @@ static void updateSystemPrivate()
     if (!res.isNull() && !res.toString().isEmpty())
         globalLocaleData.m_decimal = res.toString().at(0).unicode();
 
+    // System may supply empty group separator to say we should omit grouping;
+    // and it makes no sense to use the same separator for decimal and grouping
+    // (which might happen by system supplying, as decimal, what CLDR has given
+    // us for grouping; or the other way round). Assume, at least, that each of
+    // system and CLDR has decimal != group, all the same.
     res = sys_locale->query(QSystemLocale::GroupSeparator, QVariant());
-    if (!res.isNull() && !res.toString().isEmpty())
-        globalLocaleData.m_group = res.toString().at(0).unicode();
+    if (res.isNull()) {
+        // The case where system over-rides decimal but not group, and its
+        // decimal clashes with CLDR's group.
+        if (globalLocaleData.m_group == globalLocaleData.m_decimal)
+            system_number_options |= QLocale::OmitGroupSeparator;
+    } else if (res.toString().isEmpty()) {
+        system_number_options |= QLocale::OmitGroupSeparator;
+    } else {
+        const ushort group = res.toString().at(0).unicode();
+        if (group != globalLocaleData.m_decimal)
+            globalLocaleData.m_group = group;
+        else if (group == globalLocaleData.m_group)
+            qWarning("System-supplied decimal and grouping character are both 0x%hx", group);
+    }
 
     res = sys_locale->query(QSystemLocale::ZeroDigit, QVariant());
     if (!res.isNull() && !res.toString().isEmpty())
@@ -752,6 +778,10 @@ static void updateSystemPrivate()
     res = sys_locale->query(QSystemLocale::PositiveSign, QVariant());
     if (!res.isNull() && !res.toString().isEmpty())
         globalLocaleData.m_plus = res.toString().at(0).unicode();
+
+    if (systemLocalePrivate.exists())
+        systemLocalePrivate->data()->m_numberOptions = system_number_options;
+    // else: system_number_options will be passed to create() when constructing.
 }
 #endif // !QT_NO_SYSTEMLOCALE
 
@@ -834,8 +864,6 @@ static const int locale_data_size = sizeof(locale_data)/sizeof(QLocaleData) - 1;
 
 Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
                           (QLocalePrivate::create(defaultData())))
-Q_GLOBAL_STATIC_WITH_ARGS(QExplicitlySharedDataPointer<QLocalePrivate>, systemLocalePrivate,
-                          (QLocalePrivate::create(systemData())))
 
 static QLocalePrivate *localePrivateByName(const QString &name)
 {

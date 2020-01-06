@@ -283,10 +283,12 @@ static QString getMacTimeFormat(CFDateFormatterStyle style)
     return macToQtFormat(QString::fromCFString(CFDateFormatterGetFormat(formatter)));
 }
 
-static QString getCFLocaleValue(CFStringRef key)
+static QVariant getCFLocaleValue(CFStringRef key)
 {
     QCFType<CFLocaleRef> locale = CFLocaleCopyCurrent();
     CFTypeRef value = CFLocaleGetValue(locale, key);
+    if (!value)
+        return QVariant();
     return QString::fromCFString(CFStringRef(static_cast<CFTypeRef>(value)));
 }
 
@@ -411,14 +413,10 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
     switch(type) {
 //     case Name:
 //         return getMacLocaleName();
-    case DecimalPoint: {
-        QString value = getCFLocaleValue(kCFLocaleDecimalSeparator);
-        return value.isEmpty() ? QVariant() : value;
-    }
-    case GroupSeparator: {
-        QString value = getCFLocaleValue(kCFLocaleGroupingSeparator);
-        return value.isEmpty() ? QVariant() : value;
-    }
+    case DecimalPoint:
+        return getCFLocaleValue(kCFLocaleDecimalSeparator);
+    case GroupSeparator:
+        return getCFLocaleValue(kCFLocaleGroupingSeparator);
     case DateFormatLong:
     case DateFormatShort:
         return getMacDateFormat(type == DateFormatShort

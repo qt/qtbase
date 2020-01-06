@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -1869,14 +1869,16 @@ void tst_QLocale::toDateTime()
 
 // Format number string according to system locale settings.
 // Expected in format is US "1,234.56".
-QString systemLocaleFormatNumber(const QString &numberString)
+QString systemLocaleFormatNumber(QString &&numberString)
 {
     QLocale locale = QLocale::system();
-    QString numberStringCopy = numberString;
-    return numberStringCopy.replace(QChar(','), QChar('G'))
-                           .replace(QChar('.'), QChar('D'))
-                           .replace(QChar('G'), locale.groupSeparator())
-                           .replace(QChar('D'), locale.decimalPoint());
+    QString numberStringMunged =
+        numberString.replace(QChar(','), QChar('G')).replace(QChar('.'), QChar('D'));
+    if (locale.numberOptions() & QLocale::OmitGroupSeparator)
+        numberStringMunged.remove(QLatin1Char('G'));
+    else
+        numberStringMunged.replace(QChar('G'), locale.groupSeparator());
+    return numberStringMunged.replace(QChar('D'), locale.decimalPoint());
 }
 
 void tst_QLocale::macDefaultLocale()
@@ -1899,12 +1901,14 @@ void tst_QLocale::macDefaultLocale()
     // independently of the locale. Verify that they have one of the
     // allowed values and are not the same.
     QVERIFY(locale.decimalPoint() == QChar('.') || locale.decimalPoint() == QChar(','));
-    QVERIFY(locale.groupSeparator() == QChar(',')
-        || locale.groupSeparator() == QChar('.')
-        || locale.groupSeparator() == QChar('\xA0') // no-breaking space
-        || locale.groupSeparator() == QChar('\'')
-        || locale.groupSeparator() == QChar());
-    QVERIFY(locale.decimalPoint() != locale.groupSeparator());
+    if (!(locale.numberOptions() & QLocale::OmitGroupSeparator)) {
+        QVERIFY(locale.groupSeparator() == QChar(',')
+             || locale.groupSeparator() == QChar('.')
+             || locale.groupSeparator() == QChar('\xA0') // no-breaking space
+             || locale.groupSeparator() == QChar('\'')
+             || locale.groupSeparator() == QChar());
+        QVERIFY(locale.decimalPoint() != locale.groupSeparator());
+    }
 
     // make sure we are using the system to parse them
     QCOMPARE(locale.toString(1234.56), systemLocaleFormatNumber(QString("1,234.56")));
