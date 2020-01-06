@@ -125,9 +125,11 @@ qtConfig(ssl) {
         #   - libs in <OPENSSL_DIR>\lib\VC\static
         #   - configure: -openssl -openssl-linked -I <OPENSSL_DIR>\include -L <OPENSSL_DIR>\lib\VC\static OPENSSL_LIBS="-lUser32 -lAdvapi32 -lGdi32" OPENSSL_LIBS_DEBUG="-lssleay32MDd -llibeay32MDd" OPENSSL_LIBS_RELEASE="-lssleay32MD -llibeay32MD"
 
-        qtConfig(openssl-linked): \
-            QMAKE_USE_FOR_PRIVATE += openssl
-        else: \
+        qtConfig(openssl-linked): {
+            android {
+                build_pass: LIBS_PRIVATE += -lssl_$${QT_ARCH} -lcrypto_$${QT_ARCH}
+            } else: QMAKE_USE_FOR_PRIVATE += openssl
+        } else: \
             QMAKE_USE_FOR_PRIVATE += openssl/nolink
         win32 {
             LIBS_PRIVATE += -lcrypt32
