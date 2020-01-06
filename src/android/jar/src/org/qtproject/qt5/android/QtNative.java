@@ -91,10 +91,8 @@ public class QtNative
     private static boolean m_started = false;
     private static int m_displayMetricsScreenWidthPixels = 0;
     private static int m_displayMetricsScreenHeightPixels = 0;
-    private static int m_displayMetricsAvailableLeftPixels = 0;
-    private static int m_displayMetricsAvailableTopPixels = 0;
-    private static int m_displayMetricsAvailableWidthPixels = 0;
-    private static int m_displayMetricsAvailableHeightPixels = 0;
+    private static int m_displayMetricsDesktopWidthPixels = 0;
+    private static int m_displayMetricsDesktopHeightPixels = 0;
     private static double m_displayMetricsXDpi = .0;
     private static double m_displayMetricsYDpi = .0;
     private static double m_displayMetricsScaledDensity = 1.0;
@@ -378,10 +376,8 @@ public class QtNative
                     res[0] = startQtAndroidPlugin(qtParams, environment);
                     setDisplayMetrics(m_displayMetricsScreenWidthPixels,
                                       m_displayMetricsScreenHeightPixels,
-                                      m_displayMetricsAvailableLeftPixels,
-                                      m_displayMetricsAvailableTopPixels,
-                                      m_displayMetricsAvailableWidthPixels,
-                                      m_displayMetricsAvailableHeightPixels,
+                                      m_displayMetricsDesktopWidthPixels,
+                                      m_displayMetricsDesktopHeightPixels,
                                       m_displayMetricsXDpi,
                                       m_displayMetricsYDpi,
                                       m_displayMetricsScaledDensity,
@@ -402,10 +398,8 @@ public class QtNative
 
     public static void setApplicationDisplayMetrics(int screenWidthPixels,
                                                     int screenHeightPixels,
-                                                    int availableLeftPixels,
-                                                    int availableTopPixels,
-                                                    int availableWidthPixels,
-                                                    int availableHeightPixels,
+                                                    int desktopWidthPixels,
+                                                    int desktopHeightPixels,
                                                     double XDpi,
                                                     double YDpi,
                                                     double scaledDensity,
@@ -421,10 +415,8 @@ public class QtNative
             if (m_started) {
                 setDisplayMetrics(screenWidthPixels,
                                   screenHeightPixels,
-                                  availableLeftPixels,
-                                  availableTopPixels,
-                                  availableWidthPixels,
-                                  availableHeightPixels,
+                                  desktopWidthPixels,
+                                  desktopHeightPixels,
                                   XDpi,
                                   YDpi,
                                   scaledDensity,
@@ -432,10 +424,8 @@ public class QtNative
             } else {
                 m_displayMetricsScreenWidthPixels = screenWidthPixels;
                 m_displayMetricsScreenHeightPixels = screenHeightPixels;
-                m_displayMetricsAvailableLeftPixels = availableLeftPixels;
-                m_displayMetricsAvailableTopPixels = availableTopPixels;
-                m_displayMetricsAvailableWidthPixels = availableWidthPixels;
-                m_displayMetricsAvailableHeightPixels = availableHeightPixels;
+                m_displayMetricsDesktopWidthPixels = desktopWidthPixels;
+                m_displayMetricsDesktopHeightPixels = desktopHeightPixels;
                 m_displayMetricsXDpi = XDpi;
                 m_displayMetricsYDpi = YDpi;
                 m_displayMetricsScaledDensity = scaledDensity;
@@ -696,13 +686,13 @@ public class QtNative
         });
     }
 
-    private static void setSystemUiVisibility(final int systemUiVisibility)
+    private static void setFullScreen(final boolean fullScreen)
     {
         runAction(new Runnable() {
             @Override
             public void run() {
                 if (m_activityDelegate != null) {
-                    m_activityDelegate.setSystemUiVisibility(systemUiVisibility);
+                    m_activityDelegate.setFullScreen(fullScreen);
                 }
                 updateWindow();
             }
@@ -1045,10 +1035,8 @@ public class QtNative
     // screen methods
     public static native void setDisplayMetrics(int screenWidthPixels,
                                                 int screenHeightPixels,
-                                                int availableLeftPixels,
-                                                int availableTopPixels,
-                                                int availableWidthPixels,
-                                                int availableHeightPixels,
+                                                int desktopWidthPixels,
+                                                int desktopHeightPixels,
                                                 double XDpi,
                                                 double YDpi,
                                                 double scaledDensity,

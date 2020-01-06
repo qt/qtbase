@@ -111,8 +111,8 @@ static int m_surfaceId = 1;
 
 static QAndroidPlatformIntegration *m_androidPlatformIntegration = nullptr;
 
-static int m_availableWidthPixels  = 0;
-static int m_availableHeightPixels = 0;
+static int m_desktopWidthPixels  = 0;
+static int m_desktopHeightPixels = 0;
 static double m_scaledDensity = 0;
 static double m_density = 1.0;
 
@@ -155,14 +155,14 @@ namespace QtAndroid
                : 0;
     }
 
-    int availableWidthPixels()
+    int desktopWidthPixels()
     {
-        return m_availableWidthPixels;
+        return m_desktopWidthPixels;
     }
 
-    int availableHeightPixels()
+    int desktopHeightPixels()
     {
-        return m_availableHeightPixels;
+        return m_desktopHeightPixels;
     }
 
     double scaledDensity()
@@ -200,9 +200,22 @@ namespace QtAndroid
         return m_serviceObject;
     }
 
-    void setSystemUiVisibility(SystemUiVisibility uiVisibility)
+    void showStatusBar()
     {
-        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "setSystemUiVisibility", "(I)V", jint(uiVisibility));
+        if (m_statusBarShowing)
+            return;
+
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "setFullScreen", "(Z)V", false);
+        m_statusBarShowing = true;
+    }
+
+    void hideStatusBar()
+    {
+        if (!m_statusBarShowing)
+            return;
+
+        QJNIObjectPrivate::callStaticMethod<void>(m_applicationClass, "setFullScreen", "(Z)V", true);
+        m_statusBarShowing = false;
     }
 
     jobject createBitmap(QImage img, JNIEnv *env)
@@ -607,33 +620,35 @@ static void setSurface(JNIEnv *env, jobject /*thiz*/, jint id, jobject jSurface,
 }
 
 static void setDisplayMetrics(JNIEnv */*env*/, jclass /*clazz*/,
-                            jint screenWidthPixels, jint screenHeightPixels,
-                            jint availableLeftPixels, jint availableTopPixels,
-                            jint availableWidthPixels, jint availableHeightPixels,
+                            jint widthPixels, jint heightPixels,
+                            jint desktopWidthPixels, jint desktopHeightPixels,
                             jdouble xdpi, jdouble ydpi,
                             jdouble scaledDensity, jdouble density)
 {
-    m_availableWidthPixels = availableWidthPixels;
-    m_availableHeightPixels = availableHeightPixels;
+    // Android does not give us the correct screen size for immersive mode, but
+    // the surface does have the right size
+
+    widthPixels = qMax(widthPixels, desktopWidthPixels);
+    heightPixels = qMax(heightPixels, desktopHeightPixels);
+
+    m_desktopWidthPixels = desktopWidthPixels;
+    m_desktopHeightPixels = desktopHeightPixels;
     m_scaledDensity = scaledDensity;
     m_density = density;
 
     QMutexLocker lock(&m_platformMutex);
     if (!m_androidPlatformIntegration) {
-        QAndroidPlatformIntegration::setDefaultDisplayMetrics(availableLeftPixels,
-                                                              availableTopPixels,
-                                                              availableWidthPixels,
-                                                              availableHeightPixels,
-                                                              qRound(double(screenWidthPixels)  / xdpi * 25.4),
-                                                              qRound(double(screenHeightPixels) / ydpi * 25.4),
-                                                              screenWidthPixels,
-                                                              screenHeightPixels);
+        QAndroidPlatformIntegration::setDefaultDisplayMetrics(desktopWidthPixels,
+                                                              desktopHeightPixels,
+                                                              qRound(double(widthPixels)  / xdpi * 25.4),
+                                                              qRound(double(heightPixels) / ydpi * 25.4),
+                                                              widthPixels,
+                                                              heightPixels);
     } else {
-        m_androidPlatformIntegration->setPhysicalSize(qRound(double(screenWidthPixels)  / xdpi * 25.4),
-                                                      qRound(double(screenHeightPixels) / ydpi * 25.4));
-        m_androidPlatformIntegration->setScreenSize(screenWidthPixels, screenHeightPixels);
-        m_androidPlatformIntegration->setAvailableGeometry(QRect(availableLeftPixels, availableTopPixels,
-                                                                 availableWidthPixels, availableHeightPixels));
+        m_androidPlatformIntegration->setDisplayMetrics(qRound(double(widthPixels)  / xdpi * 25.4),
+                                                        qRound(double(heightPixels) / ydpi * 25.4));
+        m_androidPlatformIntegration->setScreenSize(widthPixels, heightPixels);
+        m_androidPlatformIntegration->setDesktopSize(desktopWidthPixels, desktopHeightPixels);
     }
 }
 
@@ -759,7 +774,7 @@ static JNINativeMethod methods[] = {
     {"quitQtCoreApplication", "()V", (void *)quitQtCoreApplication},
     {"terminateQt", "()V", (void *)terminateQt},
     {"waitForServiceSetup", "()V", (void *)waitForServiceSetup},
-    {"setDisplayMetrics", "(IIIIIIDDDD)V", (void *)setDisplayMetrics},
+    {"setDisplayMetrics", "(IIIIDDDD)V", (void *)setDisplayMetrics},
     {"setSurface", "(ILjava/lang/Object;II)V", (void *)setSurface},
     {"updateWindow", "()V", (void *)updateWindow},
     {"updateApplicationState", "(I)V", (void *)updateApplicationState},

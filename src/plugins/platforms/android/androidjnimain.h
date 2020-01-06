@@ -77,8 +77,8 @@ namespace QtAndroid
     void bringChildToBack(int surfaceId);
 
     QWindow *topLevelWindowAt(const QPoint &globalPos);
-    int availableWidthPixels();
-    int availableHeightPixels();
+    int desktopWidthPixels();
+    int desktopHeightPixels();
     double scaledDensity();
     double pixelDensity();
     JavaVM *javaVM();
@@ -88,13 +88,8 @@ namespace QtAndroid
     jobject activity();
     jobject service();
 
-    // Keep synchronized with flags in ActivityDelegate.java
-    enum SystemUiVisibility {
-        SYSTEM_UI_VISIBILITY_NORMAL = 0,
-        SYSTEM_UI_VISIBILITY_FULLSCREEN = 1,
-        SYSTEM_UI_VISIBILITY_TRANSLUCENT = 2
-    };
-    void setSystemUiVisibility(SystemUiVisibility uiVisibility);
+    void showStatusBar();
+    void hideStatusBar();
 
     jobject createBitmap(QImage img, JNIEnv *env = 0);
     jobject createBitmap(int width, int height, QImage::Format format, JNIEnv *env);
