@@ -500,26 +500,27 @@ void tst_QSpinBox::valueChangedHelper(int value)
     actualValues << value;
 }
 
-class MySpinBox: public QSpinBox
+class ReadOnlyChangeTracker: public QSpinBox
 {
 public:
-    MySpinBox(QWidget *parent = 0) : QSpinBox(parent) {}
+    ReadOnlyChangeTracker(QWidget *parent = 0) : QSpinBox(parent) {}
 
     void changeEvent(QEvent *ev) {
-        eventsReceived.append(ev->type());
+        if (ev->type() == QEvent::ReadOnlyChange)
+            ++readOnlyChangeEventCount;
     }
-    QList<QEvent::Type> eventsReceived;
+    int readOnlyChangeEventCount = 0;
 };
 
 void tst_QSpinBox::setReadOnly()
 {
-    MySpinBox spin(0);
+    ReadOnlyChangeTracker spin(0);
     spin.show();
     QTest::keyClick(&spin, Qt::Key_Up);
     QCOMPARE(spin.value(), 1);
     spin.setReadOnly(true);
 #ifndef Q_OS_WINRT // QTBUG-68297
-    QCOMPARE(spin.eventsReceived, QList<QEvent::Type>() << QEvent::ReadOnlyChange);
+    QCOMPARE(spin.readOnlyChangeEventCount, 1);
 #endif
     QTest::keyClick(&spin, Qt::Key_Up);
     QCOMPARE(spin.value(), 1);
@@ -527,7 +528,7 @@ void tst_QSpinBox::setReadOnly()
     QCOMPARE(spin.value(), 2);
     spin.setReadOnly(false);
 #ifndef Q_OS_WINRT // QTBUG-68297
-    QCOMPARE(spin.eventsReceived, QList<QEvent::Type>() << QEvent::ReadOnlyChange << QEvent::ReadOnlyChange);
+    QCOMPARE(spin.readOnlyChangeEventCount, 2);
 #endif
     QTest::keyClick(&spin, Qt::Key_Up);
     QCOMPARE(spin.value(), 3);
