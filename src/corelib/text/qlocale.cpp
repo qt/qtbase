@@ -651,7 +651,6 @@ int qt_repeatCount(QStringView s)
 }
 
 static const QLocaleData *default_data = nullptr;
-static QLocale::NumberOptions default_number_options = QLocale::DefaultNumberOptions;
 
 static const QLocaleData *const c_data = locale_data;
 static QLocalePrivate *c_private()
@@ -834,7 +833,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 static const int locale_data_size = sizeof(locale_data)/sizeof(QLocaleData) - 1;
 
 Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
-                          (QLocalePrivate::create(defaultData(), default_number_options)))
+                          (QLocalePrivate::create(defaultData())))
 Q_GLOBAL_STATIC_WITH_ARGS(QExplicitlySharedDataPointer<QLocalePrivate>, systemLocalePrivate,
                           (QLocalePrivate::create(systemData())))
 
@@ -862,8 +861,9 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
     QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions;
 
     // If not found, should default to system
-    if (data->m_language_id == QLocale::C && language != QLocale::C) {
-        numberOptions = default_number_options;
+    if (data->m_language_id == QLocale::C) {
+        if (defaultLocalePrivate.exists())
+            numberOptions = defaultLocalePrivate->data()->m_numberOptions;
         data = defaultData();
     }
     return QLocalePrivate::create(data, offset, numberOptions);
@@ -1175,12 +1175,9 @@ QString QLocale::createSeparatedList(const QStringList &list) const
 void QLocale::setDefault(const QLocale &locale)
 {
     default_data = locale.d->m_data;
-    default_number_options = locale.numberOptions();
 
-    if (defaultLocalePrivate.exists()) {
-        // update the cached private
+    if (defaultLocalePrivate.exists()) // update the cached private
         *defaultLocalePrivate = locale.d;
-    }
 }
 
 /*!
