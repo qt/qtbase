@@ -72,6 +72,7 @@
 #include <QtWidgets/QGraphicsProxyWidget>
 #include <QtGui/qwindow.h>
 #include <qtimer.h>
+#include <QtWidgets/QDoubleSpinBox>
 
 #if defined(Q_OS_OSX)
 #include "tst_qwidget_mac_helpers.h"  // Abstract the ObjC stuff out so not everyone must run an ObjC++ compile.
@@ -187,6 +188,7 @@ private slots:
     void tabOrderNoChange2();
     void appFocusWidgetWithFocusProxyLater();
     void appFocusWidgetWhenLosingFocusProxy();
+    void explicitTabOrderWithComplexWidget();
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)
     void activation();
 #endif
@@ -2084,6 +2086,32 @@ void tst_QWidget::appFocusWidgetWhenLosingFocusProxy()
 
     // Then the application focus widget should be back to the lineedit
     QCOMPARE(QApplication::focusWidget(), lineEdit);
+}
+
+void tst_QWidget::explicitTabOrderWithComplexWidget()
+{
+    // Check that handling tab/backtab with a widget comprimised of other widgets
+    // handles tabbing correctly
+    Container window;
+    auto lineEditOne = new QLineEdit;
+    window.box->addWidget(lineEditOne);
+    auto lineEditTwo = new QLineEdit;
+    window.box->addWidget(lineEditTwo);
+    QWidget::setTabOrder(lineEditOne, lineEditTwo);
+    lineEditOne->setFocus();
+    window.show();
+    QApplication::setActiveWindow(&window);
+    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QTRY_COMPARE(QApplication::focusWidget(), lineEditOne);
+
+    window.tab();
+    QTRY_COMPARE(QApplication::focusWidget(), lineEditTwo);
+    window.tab();
+    QTRY_COMPARE(QApplication::focusWidget(), lineEditOne);
+    window.backTab();
+    QTRY_COMPARE(QApplication::focusWidget(), lineEditTwo);
+    window.backTab();
+    QTRY_COMPARE(QApplication::focusWidget(), lineEditOne);
 }
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINRT)

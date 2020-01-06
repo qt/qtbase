@@ -2139,7 +2139,8 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
             && !(!next && focusProxy && test->isAncestorOf(focusProxy))
             && test->isVisibleTo(toplevel) && test->isEnabled()
             && !(w->windowType() == Qt::SubWindow && !w->isAncestorOf(test))
-            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))) {
+            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))
+            && f != focusProxy) {
             w = test;
             if (seenWindow)
                 focusWidgetAfterWindow = true;
