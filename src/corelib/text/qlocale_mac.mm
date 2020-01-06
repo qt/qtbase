@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -67,16 +67,16 @@ static QByteArray envVarLocale()
     return lang;
 }
 
-static QByteArray getMacLocaleName()
+static QString getMacLocaleName()
 {
-    QByteArray result = envVarLocale();
+    QString result = QString::fromLocal8Bit(envVarLocale());
 
     QString lang, script, cntry;
     if (result.isEmpty()
-        || (result != "C" && !qt_splitLocaleName(QString::fromLocal8Bit(result), lang, script, cntry))) {
+        || (result != QLatin1String("C") && !qt_splitLocaleName(result, lang, script, cntry))) {
         QCFType<CFLocaleRef> l = CFLocaleCopyCurrent();
         CFStringRef locale = CFLocaleGetIdentifier(l);
-        result = QString::fromCFString(locale).toUtf8();
+        result = QString::fromCFString(locale);
     }
     return result;
 }
@@ -402,10 +402,10 @@ static QVariant macQuoteString(QSystemLocale::QueryType type, const QStringRef &
 
 QLocale QSystemLocale::fallbackUiLocale() const
 {
-    return QLocale(QString::fromUtf8(getMacLocaleName().constData()));
+    return QLocale(getMacLocaleName());
 }
 
-QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
+QVariant QSystemLocale::query(QueryType type, QVariant in) const
 {
     QMacAutoReleasePool pool;
     switch(type) {
