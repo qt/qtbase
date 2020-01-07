@@ -1984,6 +1984,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             }
             t << endl;
         }
+        const bool existingDepsOnly = config.contains("dep_existing_only");
         QStringList tmp_dep = project->values(ProKey(*it + ".depends")).toQStringList();
         if (config.indexOf("combine") != -1) {
             if (tmp_out.contains(QRegExp("(^|[^$])\\$\\{QMAKE_(?!VAR_)"))) {
@@ -2025,6 +2026,8 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                                             warn_msg(WarnDeprecated, ".depend_command for extra compiler %s"
                                                                      " prints paths relative to source directory",
                                                                      (*it).toLatin1().constData());
+                                        else if (existingDepsOnly)
+                                            file.clear();
                                         else
                                             file = absFile;  // fallback for generated resources
                                     } else {
@@ -2110,6 +2113,8 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                                         warn_msg(WarnDeprecated, ".depend_command for extra compiler %s"
                                                                  " prints paths relative to source directory",
                                                                  (*it).toLatin1().constData());
+                                    else if (existingDepsOnly)
+                                        file.clear();
                                     else
                                         file = absFile;  // fallback for generated resources
                                 } else {
