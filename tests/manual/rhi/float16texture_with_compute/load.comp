@@ -1,0 +1,19 @@
+#version 440
+
+layout(local_size_x = 16, local_size_y = 16) in;
+layout(rgba8, binding = 1) readonly uniform image2D inputImage;
+layout(rgba16f, binding = 2) writeonly uniform image2D outputImage;
+
+// There is no equivalent of gl_NumWorkGroups in HLSL. So instead pass the
+// values in in a uniform buffer.
+layout(std140, binding = 0) uniform numWorkGroupsBuf {
+    uvec3 numWorkGroups;
+};
+
+void main()
+{
+    if (gl_GlobalInvocationID.x >= numWorkGroups.x || gl_GlobalInvocationID.y >= numWorkGroups.y)
+        return;
+    vec4 value = imageLoad(inputImage, ivec2(gl_GlobalInvocationID.xy));
+    imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), value);
+}

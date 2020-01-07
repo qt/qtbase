@@ -1,0 +1,50 @@
+#version 440
+
+layout(local_size_x = 16, local_size_y = 16) in;
+layout(rgba16f, binding = 1) readonly uniform image2D inputImage;
+layout(rgba16f, binding = 2) writeonly uniform image2D outputImage;
+
+// There is no equivalent of gl_NumWorkGroups in HLSL. So instead pass the
+// values in in a uniform buffer.
+layout(std140, binding = 0) uniform numWorkGroupsBuf {
+    uvec3 numWorkGroups;
+};
+
+int wrapMod( in int a, in int base )
+{
+    return ( a >= 0 ) ? a % base : -(a % base) + base;
+}
+
+void getWrappedCoords( inout int sX, inout int sY, in int width, in int height )
+{
+    if (sY < 0) { sX -= width >> 1; sY = -sY; }
+    if (sY >= height) { sX += width >> 1; sY = height - sY; }
+    sX = wrapMod( sX, width );
+}
+
+void main()
+{
+    int prevWidth = int(numWorkGroups.x) << 1;
+    int prevHeight = int(numWorkGroups.y) << 1;
+    if (gl_GlobalInvocationID.x >= numWorkGroups.x || gl_GlobalInvocationID.y >= numWorkGroups.y)
+        return;
+    vec4 accumVal = vec4(0.0);
+    for (int sy = -2; sy <= 2; ++sy) {
+        for (int sx = -2; sx <= 2; ++sx) {
+            int sampleX = sx + (int(gl_GlobalInvocationID.x) << 1);
+            int sampleY = sy + (int(gl_GlobalInvocationID.y) << 1);
+            getWrappedCoords(sampleX, sampleY, prevWidth, prevHeight);
+            if ((sampleY * prevWidth + sampleX) < 0 )
+                sampleY = prevHeight + sampleY;
+            ivec2 pos = ivec2(sampleX, sampleY);
+            vec4 value = imageLoad(inputImage, pos);
+            float filterPdf = 1.0 / ( 1.0 + float(sx*sx + sy*sy)*2.0 );
+            filterPdf /= 4.71238898;
+            accumVal[0] += filterPdf * value.r;
+            accumVal[1] += filterPdf * value.g;
+            accumVal[2] += filterPdf * value.b;
+            accumVal[3] += filterPdf * value.a;
+        }
+    }
+    imageStore(outputImage, ivec2(gl_GlobalInvocationID.xy), accumVal);
+}

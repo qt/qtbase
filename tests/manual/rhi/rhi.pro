@@ -14,6 +14,7 @@ SUBDIRS += \
     triquadcube \
     offscreen \
     floattexture \
+    float16texture_with_compute \
     mrt \
     shadowmap \
     computebuffer \
