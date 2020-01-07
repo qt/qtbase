@@ -25,7 +25,6 @@ SOURCES += main.mm \
     qcocoaclipboard.mm \
     qcocoadrag.mm \
     qmacclipboard.mm \
-    qcocoasystemsettings.mm \
     qcocoainputcontext.mm \
     qcocoaservices.mm \
     qcocoasystemtrayicon.mm \
@@ -59,7 +58,6 @@ HEADERS += qcocoaintegration.h \
     qcocoaclipboard.h \
     qcocoadrag.h \
     qmacclipboard.h \
-    qcocoasystemsettings.h \
     qcocoainputcontext.h \
     qcocoaservices.h \
     qcocoasystemtrayicon.h \
