@@ -508,10 +508,10 @@ inline void QVector<T>::remove(int i, int n)
 
 template <typename T>
 inline void QVector<T>::prepend(const T &t)
-{ insert(begin(), 1, t); }
+{ insert(0, 1, t); }
 template <typename T>
 void QVector<T>::prepend(rvalue_ref t)
-{ insert(begin(), std::move(t)); }
+{ insert(0, std::move(t)); }
 
 template<typename T>
 inline T QVector<T>::value(int i, const T &defaultValue) const
@@ -618,8 +618,8 @@ QVector<T>::insert(int i, rvalue_ref t)
 template <typename T>
 typename QVector<T>::iterator QVector<T>::erase(iterator abegin, iterator aend)
 {
-    Q_ASSERT_X(isValidIterator(abegin), "QVector::erase", "The specified iterator argument 'abegin' is invalid");
-    Q_ASSERT_X(isValidIterator(aend), "QVector::erase", "The specified iterator argument 'aend' is invalid");
+    Q_ASSERT_X(isValidIterator(const_iterator(abegin)), "QVector::erase", "The specified iterator argument 'abegin' is invalid");
+    Q_ASSERT_X(isValidIterator(const_iterator(aend)), "QVector::erase", "The specified iterator argument 'aend' is invalid");
     Q_ASSERT(aend >= abegin);
 
     // d.begin() so we don't detach just yet
