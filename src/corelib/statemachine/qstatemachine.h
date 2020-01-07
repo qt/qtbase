@@ -48,6 +48,10 @@
 #include <QtCore/qset.h>
 #include <QtCore/qvariant.h>
 
+#if __has_include(<chrono>)
+#    include <chrono>
+#endif
+
 QT_REQUIRE_CONFIG(statemachine);
 
 QT_BEGIN_NAMESPACE
@@ -143,6 +147,13 @@ public:
 
 #if QT_CONFIG(qeventtransition)
     bool eventFilter(QObject *watched, QEvent *event) override;
+#endif
+
+#if __has_include(<chrono>) || defined(Q_QDOC)
+    int postDelayedEvent(QEvent *event, std::chrono::milliseconds delay)
+    {
+        return postDelayedEvent(event, int(delay.count()));
+    }
 #endif
 
 public Q_SLOTS:

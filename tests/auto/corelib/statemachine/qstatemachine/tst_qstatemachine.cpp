@@ -253,6 +253,10 @@ private slots:
     void qtbug_46703();
     void postEventFromBeginSelectTransitions();
     void dontProcessSlotsWhenMachineIsNotRunning();
+
+    void cancelDelayedEventWithChrono();
+    void postDelayedEventWithChronoAndStop();
+    void postDelayedEventWithChronoFromThread();
 };
 
 class TestState : public QState
@@ -6700,6 +6704,164 @@ void tst_QStateMachine::dontProcessSlotsWhenMachineIsNotRunning()
     QTRY_COMPARE_WITH_TIMEOUT(emittedSpy.count(), 2, 100);
     QTRY_COMPARE(finishedSpy.count(), 1);
     QTRY_VERIFY(emitter.thread.isFinished());
+}
+
+void tst_QStateMachine::cancelDelayedEventWithChrono()
+{
+#if __has_include(<chrono>)
+    QStateMachine machine;
+    QTest::ignoreMessage(QtWarningMsg,
+                         "QStateMachine::cancelDelayedEvent: the machine is not running");
+    QVERIFY(!machine.cancelDelayedEvent(-1));
+
+    QState *s1 = new QState(&machine);
+    DEFINE_ACTIVE_SPY(s1);
+    QFinalState *s2 = new QFinalState(&machine);
+    s1->addTransition(new StringTransition("a", s2));
+    machine.setInitialState(s1);
+
+    QSignalSpy startedSpy(&machine, &QStateMachine::started);
+    QSignalSpy runningSpy(&machine, &QStateMachine::runningChanged);
+    QVERIFY(startedSpy.isValid());
+    QVERIFY(runningSpy.isValid());
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+    TEST_RUNNING_CHANGED(true);
+    TEST_ACTIVE_CHANGED(s1, 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+    int id1 = machine.postDelayedEvent(new StringEvent("c"), std::chrono::seconds{50});
+    QVERIFY(id1 != -1);
+    int id2 = machine.postDelayedEvent(new StringEvent("b"), std::chrono::seconds{25});
+    QVERIFY(id2 != -1);
+    QVERIFY(id2 != id1);
+    int id3 = machine.postDelayedEvent(new StringEvent("a"), std::chrono::milliseconds{100});
+    QVERIFY(id3 != -1);
+    QVERIFY(id3 != id2);
+    QVERIFY(machine.cancelDelayedEvent(id1));
+    QVERIFY(!machine.cancelDelayedEvent(id1));
+    QVERIFY(machine.cancelDelayedEvent(id2));
+    QVERIFY(!machine.cancelDelayedEvent(id2));
+
+    QSignalSpy finishedSpy(&machine, &QStateMachine::finished);
+    QVERIFY(finishedSpy.isValid());
+    QTRY_COMPARE(finishedSpy.count(), 1);
+    TEST_RUNNING_CHANGED(false);
+    TEST_ACTIVE_CHANGED(s1, 2);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
+#endif
+}
+
+void tst_QStateMachine::postDelayedEventWithChronoAndStop()
+{
+#if __has_include(<chrono>)
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    DEFINE_ACTIVE_SPY(s1);
+    QFinalState *s2 = new QFinalState(&machine);
+    s1->addTransition(new StringTransition("a", s2));
+    machine.setInitialState(s1);
+
+    QSignalSpy runningSpy(&machine, &QStateMachine::runningChanged);
+    QVERIFY(runningSpy.isValid());
+    QSignalSpy startedSpy(&machine, &QStateMachine::started);
+    QVERIFY(startedSpy.isValid());
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+    TEST_RUNNING_CHANGED(true);
+    TEST_ACTIVE_CHANGED(s1, 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    int id1 = machine.postDelayedEvent(new StringEvent("a"), std::chrono::milliseconds{0});
+    QVERIFY(id1 != -1);
+    QSignalSpy stoppedSpy(&machine, &QStateMachine::stopped);
+    QVERIFY(stoppedSpy.isValid());
+    machine.stop();
+    QTRY_COMPARE(stoppedSpy.count(), 1);
+    TEST_RUNNING_CHANGED(false);
+    TEST_ACTIVE_CHANGED(s1, 1);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 2);
+    TEST_RUNNING_CHANGED(true);
+    TEST_ACTIVE_CHANGED(s1, 3);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    int id2 = machine.postDelayedEvent(new StringEvent("a"), std::chrono::seconds{1});
+    QVERIFY(id2 != -1);
+    machine.stop();
+    QTRY_COMPARE(stoppedSpy.count(), 2);
+    TEST_RUNNING_CHANGED(false);
+    TEST_ACTIVE_CHANGED(s1, 3);
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 3);
+    TEST_RUNNING_CHANGED(true);
+    QTestEventLoop::instance().enterLoop(2);
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+    TEST_ACTIVE_CHANGED(s1, 5);
+    QVERIFY(machine.isRunning());
+#endif
+}
+
+class DelayedEventWithChronoPosterThread : public QThread
+{
+    Q_OBJECT
+public:
+    DelayedEventWithChronoPosterThread(QStateMachine *machine, QObject *parent = 0)
+        : QThread(parent), firstEventWasCancelled(false), m_machine(machine)
+    {
+        moveToThread(this);
+        QObject::connect(m_machine, SIGNAL(started()), this, SLOT(postEvent()));
+    }
+
+    mutable bool firstEventWasCancelled;
+
+private Q_SLOTS:
+    void postEvent()
+    {
+#if __has_include(<chrono>)
+        int id = m_machine->postDelayedEvent(new QEvent(QEvent::User), std::chrono::seconds{1});
+        firstEventWasCancelled = m_machine->cancelDelayedEvent(id);
+
+        m_machine->postDelayedEvent(new QEvent(QEvent::User), std::chrono::milliseconds{1});
+
+        quit();
+#endif
+    }
+
+private:
+    QStateMachine *m_machine;
+};
+
+void tst_QStateMachine::postDelayedEventWithChronoFromThread()
+{
+#if __has_include(<chrono>)
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    DEFINE_ACTIVE_SPY(s1);
+    QFinalState *f = new QFinalState(&machine);
+    s1->addTransition(new EventTransition(QEvent::User, f));
+    machine.setInitialState(s1);
+
+    DelayedEventWithChronoPosterThread poster(&machine);
+    poster.start();
+
+    QSignalSpy runningSpy(&machine, &QStateMachine::runningChanged);
+    QVERIFY(runningSpy.isValid());
+    QSignalSpy finishedSpy(&machine, &QStateMachine::finished);
+    QVERIFY(finishedSpy.isValid());
+    machine.start();
+    QTRY_COMPARE(finishedSpy.count(), 1);
+    TEST_RUNNING_CHANGED_STARTED_STOPPED;
+    TEST_ACTIVE_CHANGED(s1, 2);
+    QVERIFY(poster.firstEventWasCancelled);
+#endif
 }
 
 QTEST_MAIN(tst_QStateMachine)
