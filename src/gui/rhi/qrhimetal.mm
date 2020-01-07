@@ -114,15 +114,6 @@ QT_BEGIN_NAMESPACE
  */
 
 /*!
-    \class QRhiMetalTextureNativeHandles
-    \inmodule QtRhi
-    \brief Holds the Metal texture object that is backing a QRhiTexture instance.
-
-    \note The class uses \c{void *} as the type since including the Objective C
-    headers is not acceptable here. The actual type is \c{id<MTLTexture>}.
- */
-
-/*!
     \class QRhiMetalCommandBufferNativeHandles
     \inmodule QtRhi
     \brief Holds the MTLCommandBuffer and MTLRenderCommandEncoder objects that are backing a QRhiCommandBuffer.
@@ -2296,7 +2287,6 @@ void QMetalTexture::release()
 
     e.texture.texture = d->owns ? d->tex : nil;
     d->tex = nil;
-    nativeHandlesStruct.texture = nullptr;
 
     for (int i = 0; i < QMTL_FRAMES_IN_FLIGHT; ++i) {
         e.texture.stagingBuffers[i] = d->stagingBuf[i];
@@ -2508,37 +2498,12 @@ bool QMetalTexture::build()
         d->tex.label = [NSString stringWithUTF8String: m_objectName.constData()];
 
     d->owns = true;
-    nativeHandlesStruct.texture = d->tex;
 
     QRHI_PROF;
     QRHI_PROF_F(newTexture(this, true, mipLevelCount, isCube ? 6 : 1, samples));
 
     lastActiveFrameSlot = -1;
     generation += 1;
-    rhiD->registerResource(this);
-    return true;
-}
-
-bool QMetalTexture::buildFrom(const QRhiNativeHandles *src)
-{
-    const QRhiMetalTextureNativeHandles *h = static_cast<const QRhiMetalTextureNativeHandles *>(src);
-    if (!h || !h->texture)
-        return false;
-
-    if (!prepareBuild())
-        return false;
-
-    d->tex = (id<MTLTexture>) h->texture;
-
-    d->owns = false;
-    nativeHandlesStruct.texture = d->tex;
-
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, false, mipLevelCount, m_flags.testFlag(CubeMap) ? 6 : 1, samples));
-
-    lastActiveFrameSlot = -1;
-    generation += 1;
-    QRHI_RES_RHI(QRhiMetal);
     rhiD->registerResource(this);
     return true;
 }
@@ -2555,7 +2520,6 @@ bool QMetalTexture::buildFrom(QRhiTexture::NativeTexture src)
     d->tex = (id<MTLTexture>) *tex;
 
     d->owns = false;
-    nativeHandlesStruct.texture = d->tex;
 
     QRHI_PROF;
     QRHI_PROF_F(newTexture(this, false, mipLevelCount, m_flags.testFlag(CubeMap) ? 6 : 1, samples));
@@ -2567,14 +2531,9 @@ bool QMetalTexture::buildFrom(QRhiTexture::NativeTexture src)
     return true;
 }
 
-const QRhiNativeHandles *QMetalTexture::nativeHandles()
-{
-    return &nativeHandlesStruct;
-}
-
 QRhiTexture::NativeTexture QMetalTexture::nativeTexture()
 {
-    return {&nativeHandlesStruct.texture, 0};
+    return {&d->tex, 0};
 }
 
 id<MTLTexture> QMetalTextureData::viewForLevel(int level)

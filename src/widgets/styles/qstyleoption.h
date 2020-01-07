@@ -296,6 +296,14 @@ protected:
     QStyleOptionTab(int version);
 };
 
+class Q_WIDGETS_EXPORT QStyleOptionTabV4 : public QStyleOptionTab
+{
+public:
+    enum StyleOptionVersion { Version = 4 };
+    QStyleOptionTabV4();
+    int tabIndex = -1;
+};
+
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyleOptionTab::CornerWidgets)
 
 typedef Q_DECL_DEPRECATED QStyleOptionTab QStyleOptionTabV2;

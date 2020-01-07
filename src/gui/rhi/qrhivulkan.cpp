@@ -177,21 +177,6 @@ QT_BEGIN_NAMESPACE
  */
 
 /*!
-    \class QRhiVulkanTextureNativeHandles
-    \internal
-    \inmodule QtGui
-    \brief Holds the Vulkan image object that is backing a QRhiTexture.
-
-    Importing and exporting Vulkan image objects that back a QRhiTexture when
-    running with the Vulkan backend is supported via this class. Ownership of
-    the Vulkan object is never transferred.
-
-    \note Memory allocation details are not exposed. This is intentional since
-    memory is typically suballocated from a bigger chunk of VkDeviceMemory, and
-    exposing the allocator details is not desirable for now.
- */
-
-/*!
     \class QRhiVulkanCommandBufferNativeHandles
     \internal
     \inmodule QtGui
@@ -498,6 +483,17 @@ bool QRhiVulkan::create(QRhi::Flags flags)
                     requestedDevExts.append(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
                     vertexAttribDivisorAvailable = true;
                 }
+            }
+        }
+
+        QByteArrayList envExtList;
+        if (qEnvironmentVariableIsSet("QT_VULKAN_DEVICE_EXTENSIONS")) {
+            envExtList = qgetenv("QT_VULKAN_DEVICE_EXTENSIONS").split(';');
+            for (auto ext : requestedDevExts)
+                envExtList.removeAll(ext);
+            for (const QByteArray &ext : envExtList) {
+                if (!ext.isEmpty())
+                    requestedDevExts.append(ext.constData());
             }
         }
 
@@ -5187,7 +5183,6 @@ void QVkTexture::release()
     image = VK_NULL_HANDLE;
     imageView = VK_NULL_HANDLE;
     imageAlloc = nullptr;
-    nativeHandlesStruct.image = VK_NULL_HANDLE;
 
     QRHI_RES_RHI(QRhiVulkan);
     rhiD->releaseQueue.append(e);
@@ -5272,8 +5267,6 @@ bool QVkTexture::finishBuild()
         return false;
     }
 
-    nativeHandlesStruct.image = image;
-
     lastActiveFrameSlot = -1;
     generation += 1;
 
@@ -5345,31 +5338,6 @@ bool QVkTexture::build()
     return true;
 }
 
-bool QVkTexture::buildFrom(const QRhiNativeHandles *src)
-{
-    const QRhiVulkanTextureNativeHandles *h = static_cast<const QRhiVulkanTextureNativeHandles *>(src);
-    if (!h || !h->image)
-        return false;
-
-    if (!prepareBuild())
-        return false;
-
-    image = h->image;
-
-    if (!finishBuild())
-        return false;
-
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, false, int(mipLevelCount), m_flags.testFlag(CubeMap) ? 6 : 1, samples));
-
-    usageState.layout = h->layout;
-
-    owns = false;
-    QRHI_RES_RHI(QRhiVulkan);
-    rhiD->registerResource(this);
-    return true;
-}
-
 bool QVkTexture::buildFrom(QRhiTexture::NativeTexture src)
 {
     auto *img = static_cast<const VkImage*>(src.object);
@@ -5395,15 +5363,9 @@ bool QVkTexture::buildFrom(QRhiTexture::NativeTexture src)
     return true;
 }
 
-const QRhiNativeHandles *QVkTexture::nativeHandles()
-{
-    nativeHandlesStruct.layout = usageState.layout;
-    return &nativeHandlesStruct;
-}
-
 QRhiTexture::NativeTexture QVkTexture::nativeTexture()
 {
-    return {&nativeHandlesStruct.image, usageState.layout};
+    return {&image, usageState.layout};
 }
 
 VkImageView QVkTexture::imageViewForLevel(int level)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Giuseppe D'Angelo <dangelog@gmail.com>.
-** Copyright (C) 2012 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
+** Copyright (C) 2020 Giuseppe D'Angelo <dangelog@gmail.com>.
+** Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -42,9 +42,8 @@
 #define QREGULAREXPRESSION_H
 
 #include <QtCore/qglobal.h>
-
 #include <QtCore/qstring.h>
-#include <QtCore/qstringlist.h>
+#include <QtCore/qstringview.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qvariant.h>
 
@@ -52,7 +51,8 @@ QT_REQUIRE_CONFIG(regularexpression);
 
 QT_BEGIN_NAMESPACE
 
-class QStringView;
+class QStringList;
+class QLatin1String;
 
 class QRegularExpressionMatch;
 class QRegularExpressionMatchIterator;
@@ -137,14 +137,18 @@ public:
 
     void optimize() const;
 
+#if QT_STRINGVIEW_LEVEL < 2
     static QString escape(const QString &str);
     static QString wildcardToRegularExpression(const QString &str);
     static inline QString anchoredPattern(const QString &expression)
     {
-        return QLatin1String("\\A(?:")
-               + expression
-               + QLatin1String(")\\z");
+        return anchoredPattern(QStringView(expression));
     }
+#endif
+
+    static QString escape(QStringView str);
+    static QString wildcardToRegularExpression(QStringView str);
+    static QString anchoredPattern(QStringView expression);
 
     bool operator==(const QRegularExpression &re) const;
     inline bool operator!=(const QRegularExpression &re) const { return !operator==(re); }

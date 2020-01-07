@@ -731,7 +731,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
         if (const DomProperty *picon = attributes.value(QLatin1String("icon")))
             icon = QLatin1String(", ") + iconCall(picon); // Side effect: Writes icon definition
         m_output << m_indent << parentWidget << language::derefPointer << "addTab("
-            << varName << icon << ", " << "QString())" << language::eol;
+            << varName << icon << ", " << language::emptyString << ')' << language::eol;
 
         autoTrOutput(ptitleString, pageDefaultString) << m_indent << parentWidget
             << language::derefPointer << "setTabText(" << parentWidget
@@ -1612,7 +1612,7 @@ QString WriteInitialization::writeFontProperties(const DomFont *f)
     }
     if (f->hasElementWeight() && f->elementWeight() > 0) {
         m_output << m_indent << fontName << ".setWeight("
-            << f->elementWeight() << ");" << Qt::endl;
+            << f->elementWeight() << ")" << language::eol;
     }
     if (f->hasElementStrikeOut()) {
          m_output << m_indent << fontName << ".setStrikeOut("
@@ -2086,7 +2086,7 @@ void WriteInitialization::initializeComboBox(DomWidget *w)
             m_output << iconValue << ", ";
 
         if (needsTranslation(text->elementString())) {
-            m_output << "QString())" << language::eol;
+            m_output << language::emptyString << ')' << language::eol;
             m_refreshOut << m_indent << varName << language::derefPointer
                 << "setItemText(" << i << ", " << trCall(text->elementString())
                 << ')' << language::eol;
@@ -2288,7 +2288,7 @@ void WriteInitialization::initializeTreeWidget(DomWidget *w)
             if (str && str->text().isEmpty()) {
                 m_output << m_indent << varName << language::derefPointer
                     << "headerItem()" << language::derefPointer << "setText("
-                    << i << ", QString())" << language::eol;
+                    << i << ", " << language::emptyString << ')' << language::eol;
             }
         }
     }
@@ -2372,9 +2372,11 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
     const auto &columns = w->elementColumn();
 
     if (!columns.empty()) {
-        m_output << m_indent << "if (" << varName << language::derefPointer << "columnCount() < "
-            << columns.size() << ")\n"
-            << m_dindent << varName << language::derefPointer << "setColumnCount("
+        m_output << m_indent << "if (" << varName << language::derefPointer
+            << "columnCount() < " << columns.size() << ')';
+        if (language::language() == Language::Python)
+            m_output << ':';
+        m_output << '\n' << m_dindent << varName << language::derefPointer << "setColumnCount("
             << columns.size() << ')' << language::eol;
     }
 
@@ -2400,8 +2402,11 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
     const auto &rows = w->elementRow();
 
     if (!rows.isEmpty()) {
-        m_output << m_indent << "if (" << varName << language::derefPointer << "rowCount() < " << rows.size() << ")\n"
-            << m_dindent << varName << language::derefPointer << "setRowCount("
+        m_output << m_indent << "if (" << varName << language::derefPointer
+            << "rowCount() < " << rows.size() << ')';
+        if (language::language() == Language::Python)
+            m_output << ':';
+        m_output << '\n' << m_dindent << varName << language::derefPointer << "setRowCount("
             << rows.size() << ')' << language::eol;
     }
 
@@ -2451,10 +2456,8 @@ void WriteInitialization::initializeTableWidget(DomWidget *w)
 
 QString WriteInitialization::trCall(const QString &str, const QString &commentHint, const QString &id) const
 {
-    if (str.isEmpty()) {
-        return language::language() == Language::Cpp
-            ? QLatin1String("QString()") : QLatin1String("\"\"");
-    }
+    if (str.isEmpty())
+        return language::emptyString;
 
     QString result;
     QTextStream ts(&result);

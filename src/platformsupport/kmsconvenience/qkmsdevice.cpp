@@ -262,7 +262,7 @@ QPlatformScreen *QKmsDevice::createScreenForConnector(drmModeResPtr resources,
     // Get the current mode on the current crtc
     drmModeModeInfo crtc_mode;
     memset(&crtc_mode, 0, sizeof crtc_mode);
-    if (drmModeEncoderPtr encoder = drmModeGetEncoder(m_dri_fd, connector->connector_id)) {
+    if (drmModeEncoderPtr encoder = drmModeGetEncoder(m_dri_fd, connector->encoder_id)) {
         drmModeCrtcPtr crtc = drmModeGetCrtc(m_dri_fd, encoder->crtc_id);
         drmModeFreeEncoder(encoder);
 

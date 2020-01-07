@@ -44,12 +44,15 @@
 
 QT_BEGIN_NAMESPACE
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
 /**************************************************************
  *
  * QDomHandler
  *
  **************************************************************/
-
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 QDomHandler::QDomHandler(QDomDocumentPrivate *adoc, QXmlSimpleReader *areader,
                          bool namespaceProcessing)
     : cdata(false), reader(areader), domBuilder(adoc, &locator, namespaceProcessing)
@@ -160,6 +163,9 @@ QDomBuilder::ErrorInfo QDomHandler::errorInfo() const
 {
     return domBuilder.error();
 }
+QT_WARNING_POP
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /**************************************************************
  *
@@ -179,10 +185,15 @@ int QDomDocumentLocator::line() const
     return static_cast<int>(reader->lineNumber());
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void QSAXDocumentLocator::setLocator(QXmlLocator *l)
 {
     locator = l;
 }
+QT_WARNING_POP
 
 int QSAXDocumentLocator::column() const
 {
@@ -199,6 +210,8 @@ int QSAXDocumentLocator::line() const
 
     return static_cast<int>(locator->lineNumber());
 }
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 /**************************************************************
  *
@@ -234,6 +247,10 @@ bool QDomBuilder::startDTD(const QString &name, const QString &publicId, const Q
     return true;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
                                const QXmlAttributes &atts)
 {
@@ -264,6 +281,9 @@ bool QDomBuilder::startElement(const QString &nsURI, const QString &qName,
 
     return true;
 }
+QT_WARNING_POP
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 inline QString stringRefToString(const QStringRef &stringRef)
 {

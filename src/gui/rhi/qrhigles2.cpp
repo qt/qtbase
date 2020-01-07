@@ -137,13 +137,6 @@ QT_BEGIN_NAMESPACE
     \brief Holds the OpenGL context used by the QRhi.
  */
 
-/*!
-    \class QRhiGles2TextureNativeHandles
-    \internal
-    \inmodule QtGui
-    \brief Holds the OpenGL texture object that is backing a QRhiTexture instance.
- */
-
 #ifndef GL_BGRA
 #define GL_BGRA                           0x80E1
 #endif
@@ -3324,7 +3317,6 @@ void QGles2Texture::release()
 
     texture = 0;
     specified = false;
-    nativeHandlesStruct.texture = 0;
 
     QRHI_RES_RHI(QRhiGles2);
     if (owns)
@@ -3483,31 +3475,6 @@ bool QGles2Texture::build()
     QRHI_PROF_F(newTexture(this, true, mipLevelCount, isCube ? 6 : 1, 1));
 
     owns = true;
-    nativeHandlesStruct.texture = texture;
-
-    generation += 1;
-    rhiD->registerResource(this);
-    return true;
-}
-
-bool QGles2Texture::buildFrom(const QRhiNativeHandles *src)
-{
-    const QRhiGles2TextureNativeHandles *h = static_cast<const QRhiGles2TextureNativeHandles *>(src);
-    if (!h || !h->texture)
-        return false;
-
-    if (!prepareBuild())
-        return false;
-
-    texture = h->texture;
-    specified = true;
-
-    QRHI_RES_RHI(QRhiGles2);
-    QRHI_PROF;
-    QRHI_PROF_F(newTexture(this, false, mipLevelCount, m_flags.testFlag(CubeMap) ? 6 : 1, 1));
-
-    owns = false;
-    nativeHandlesStruct.texture = texture;
 
     generation += 1;
     rhiD->registerResource(this);
@@ -3531,21 +3498,15 @@ bool QGles2Texture::buildFrom(QRhiTexture::NativeTexture src)
     QRHI_PROF_F(newTexture(this, false, mipLevelCount, m_flags.testFlag(CubeMap) ? 6 : 1, 1));
 
     owns = false;
-    nativeHandlesStruct.texture = texture;
 
     generation += 1;
     rhiD->registerResource(this);
     return true;
 }
 
-const QRhiNativeHandles *QGles2Texture::nativeHandles()
-{
-    return &nativeHandlesStruct;
-}
-
 QRhiTexture::NativeTexture QGles2Texture::nativeTexture()
 {
-    return {&nativeHandlesStruct.texture, 0};
+    return {&texture, 0};
 }
 
 QGles2Sampler::QGles2Sampler(QRhiImplementation *rhi, Filter magFilter, Filter minFilter, Filter mipmapMode,

@@ -2215,20 +2215,6 @@ QRhiResource::Type QRhiTexture::resourceType() const
  */
 
 /*!
-    \return a pointer to a backend-specific QRhiNativeHandles subclass, such as
-    QRhiVulkanTextureNativeHandles. The returned value is null when exposing
-    the underlying native resources is not supported by the backend.
-
-    \sa QRhiVulkanTextureNativeHandles, QRhiD3D11TextureNativeHandles,
-    QRhiMetalTextureNativeHandles, QRhiGles2TextureNativeHandles
- */
-// TODO: remove this version once QtQuick has stopped using it
-const QRhiNativeHandles *QRhiTexture::nativeHandles()
-{
-    return nullptr;
-}
-
-/*!
     \return the underlying native resources for this texture. The returned value
     will be empty if exposing the underlying native resources is not supported by
     the backend.
@@ -2238,36 +2224,6 @@ const QRhiNativeHandles *QRhiTexture::nativeHandles()
 QRhiTexture::NativeTexture QRhiTexture::nativeTexture()
 {
     return {};
-}
-
-/*!
-    Similar to build() except that no new native textures are created. Instead,
-    the texture from \a src is used.
-
-    This allows importing an existing native texture object (which must belong
-    to the same device or sharing context, depending on the graphics API) from
-    an external graphics engine.
-
-    \note format(), pixelSize(), sampleCount(), and flags() must still be set
-    correctly. Passing incorrect sizes and other values to QRhi::newTexture()
-    and then following it with a buildFrom() expecting that the native texture
-    object alone is sufficient to deduce such values is \b wrong and will lead
-    to problems.
-
-    \note QRhiTexture does not take ownership of the texture object. release()
-    does not free the object or any associated memory.
-
-    The opposite of this operation, exposing a QRhiTexture-created native
-    texture object to a foreign engine, is possible via nativeHandles().
-
-    \sa QRhiVulkanTextureNativeHandles, QRhiD3D11TextureNativeHandles,
-    QRhiMetalTextureNativeHandles, QRhiGles2TextureNativeHandles
- */
-// TODO: remove this version once QtQuick has stopped using it
-bool QRhiTexture::buildFrom(const QRhiNativeHandles *src)
-{
-    Q_UNUSED(src);
-    return false;
 }
 
 /*!

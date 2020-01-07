@@ -80,11 +80,8 @@ struct QNullTexture : public QRhiTexture
     ~QNullTexture();
     void release() override;
     bool build() override;
-    bool buildFrom(const QRhiNativeHandles *src) override;
     bool buildFrom(NativeTexture src) override;
-    const QRhiNativeHandles *nativeHandles() override;
 
-    QRhiNullTextureNativeHandles nativeHandlesStruct;
     QImage image[QRhi::MAX_LAYERS][QRhi::MAX_LEVELS];
 };
 

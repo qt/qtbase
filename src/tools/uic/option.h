@@ -45,6 +45,7 @@ struct Option
     unsigned int limitXPM_LineLength : 1;
     unsigned int implicitIncludes: 1;
     unsigned int idBased: 1;
+    unsigned int fromImports: 1;
 
     QString inputFile;
     QString outputFile;
@@ -65,6 +66,7 @@ struct Option
           limitXPM_LineLength(0),
           implicitIncludes(1),
           idBased(0),
+          fromImports(0),
           prefix(QLatin1String("Ui_"))
     { indent.fill(QLatin1Char(' '), 4); }
 

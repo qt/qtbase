@@ -69,11 +69,6 @@ struct Q_GUI_EXPORT QRhiD3D11NativeHandles : public QRhiNativeHandles
     void *context = nullptr;
 };
 
-struct Q_GUI_EXPORT QRhiD3D11TextureNativeHandles : public QRhiNativeHandles
-{
-    void *texture = nullptr; // ID3D11Texture2D*
-};
-
 QT_END_NAMESPACE
 
 #endif

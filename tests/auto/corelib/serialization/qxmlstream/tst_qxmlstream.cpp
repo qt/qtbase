@@ -221,7 +221,7 @@ static QString documentElement(const QByteArray &document)
  *
  * See \l {http://www.w3.org/XML/Test/} {Extensible Markup Language (XML) Conformance Test Suites}
  */
-class TestSuiteHandler : public QXmlDefaultHandler
+class TestSuiteHandler
 {
 public:
     /**
@@ -286,29 +286,33 @@ public:
         m_baseURI.push(baseURI);
     }
 
-    virtual bool characters(const QString &chars)
+    bool runTests(QFile *file)
     {
-        m_ch = chars;
-        return true;
+        QXmlStreamReader reader(file);
+        while (!reader.atEnd() && !reader.hasError()) {
+            reader.readNext();
+
+            if (reader.isStartElement() && !startElement(reader.attributes()))
+                return false;
+
+            if (reader.isEndElement() && !endElement(reader.name().toString()))
+                return false;
+        }
+        return !reader.hasError();
     }
 
-    virtual bool startElement(const QString &,
-                              const QString &,
-                              const QString &,
-                              const QXmlAttributes &atts)
+    bool startElement(const QXmlStreamAttributes &atts)
     {
         m_atts.push(atts);
-        const int i = atts.index(QLatin1String("xml:base"));
 
-        if(i != -1)
-            m_baseURI.push(m_baseURI.top().resolved(atts.value(i)));
+        const auto attr = atts.value(QLatin1String("xml:base"));
+        if (!attr.isEmpty())
+            m_baseURI.push(m_baseURI.top().resolved(attr.toString()));
 
         return true;
     }
 
-    virtual bool endElement(const QString &,
-                            const QString &localName,
-                            const QString &)
+    bool endElement(const QString &localName)
     {
         if(localName == QLatin1String("TEST"))
         {
@@ -329,19 +333,19 @@ public:
                 return true;
             }
 
-            const QString inputFilePath(m_baseURI.top().resolved(m_atts.top().value(QString(), QLatin1String("URI")))
-                                                                .toLocalFile());
-            const QString id(m_atts.top().value(QString(), QLatin1String("ID")));
-            const QString type(m_atts.top().value(QString(), QLatin1String("TYPE")));
+            const QString inputFilePath(
+                    m_baseURI.top()
+                            .resolved(
+                                    m_atts.top().value(QString(), QLatin1String("URI")).toString())
+                            .toLocalFile());
+            const QString id(m_atts.top().value(QString(), QLatin1String("ID")).toString());
+            const QString type(m_atts.top().value(QString(), QLatin1String("TYPE")).toString());
 
             QString expectedFilePath;
-            const int index = m_atts.top().index(QString(), QLatin1String("OUTPUT"));
 
-            if(index != -1)
-            {
-                expectedFilePath = m_baseURI.top().resolved(m_atts.top().value(QString(),
-                                                            QLatin1String("OUTPUT"))).toLocalFile();
-            }
+            const auto attr = m_atts.top().value(QString(), QLatin1String("OUTPUT"));
+            if (!attr.isEmpty())
+                expectedFilePath = m_baseURI.top().resolved(attr.toString()).toLocalFile();
 
             /* testcases.dtd: 'No parser should accept a "not-wf" testcase
              * unless it's a nonvalidating parser and the test contains
@@ -349,7 +353,7 @@ public:
              *
              * We also let this apply to "valid", "invalid" and "error" tests, although
              * I'm not fully sure this is correct. */
-            const QString ents(m_atts.top().value(QString(), QLatin1String("ENTITIES")));
+            const QString ents(m_atts.top().value(QString(), QLatin1String("ENTITIES")).toString());
             m_atts.pop();
 
             if(ents == QLatin1String("both") ||
@@ -455,8 +459,8 @@ public:
                 qFatal("The input catalog is invalid.");
                 return false;
             }
-        }
-        else if(localName == QLatin1String("TESTCASES") && m_atts.top().index(QLatin1String("xml:base")) != -1)
+        } else if (localName == QLatin1String("TESTCASES")
+                   && m_atts.top().hasAttribute(QLatin1String("xml:base")))
             m_baseURI.pop();
 
         m_atts.pop();
@@ -516,9 +520,8 @@ public:
     }
 
 private:
-    QStack<QXmlAttributes>  m_atts;
-    QString                 m_ch;
-    QStack<QUrl>            m_baseURI;
+    QStack<QXmlStreamAttributes> m_atts;
+    QStack<QUrl> m_baseURI;
 };
 QT_BEGIN_NAMESPACE
 Q_DECLARE_SHARED(TestSuiteHandler::MissedBaseline)
@@ -592,11 +595,7 @@ void tst_QXmlStream::initTestCase()
     QVERIFY2(file.open(QIODevice::ReadOnly),
              qPrintable(QString::fromLatin1("Failed to open the test suite catalog; %1").arg(file.fileName())));
 
-    QXmlInputSource source(&file);
-    QXmlSimpleReader reader;
-    reader.setContentHandler(&m_handler);
-
-    QVERIFY(reader.parse(&source, false));
+    QVERIFY(m_handler.runTests(&file));
 }
 
 void tst_QXmlStream::cleanupTestCase()

@@ -5691,6 +5691,10 @@ void QDomDocumentPrivate::clear()
     QDomNodePrivate::clear();
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 static void initializeReader(QXmlSimpleReader &reader, bool namespaceProcessing)
 {
     reader.setFeature(QLatin1String("http://xml.org/sax/features/namespaces"), namespaceProcessing);
@@ -5734,6 +5738,9 @@ bool QDomDocumentPrivate::setContent(QXmlInputSource *source, QXmlReader *reader
 
     return true;
 }
+QT_WARNING_POP
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 bool QDomDocumentPrivate::setContent(QXmlStreamReader *reader, bool namespaceProcessing,
                                      QString *errorMsg, int *errorLine, int *errorColumn)
@@ -6183,8 +6190,11 @@ bool QDomDocument::setContent(const QString& text, bool namespaceProcessing, QSt
     if (!impl)
         impl = new QDomDocumentPrivate();
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QXmlInputSource source;
+QT_WARNING_POP
     source.setData(text);
     return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
 #else
@@ -6252,10 +6262,13 @@ bool QDomDocument::setContent(const QByteArray &data, bool namespaceProcessing, 
     if (!impl)
         impl = new QDomDocumentPrivate();
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && QT_DEPRECATED_SINCE(5, 15)
     QBuffer buf;
     buf.setData(data);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QXmlInputSource source(&buf);
+QT_WARNING_POP
     return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
 #else
     QXmlStreamReader streamReader(data);
@@ -6275,8 +6288,11 @@ bool QDomDocument::setContent(QIODevice* dev, bool namespaceProcessing, QString 
     if (!impl)
         impl = new QDomDocumentPrivate();
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QXmlInputSource source(dev);
+QT_WARNING_POP
     return IMPL->setContent(&source, namespaceProcessing, errorMsg, errorLine, errorColumn);
 #else
     QXmlStreamReader streamReader(dev);
@@ -6285,14 +6301,18 @@ bool QDomDocument::setContent(QIODevice* dev, bool namespaceProcessing, QString 
 #endif
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
+    \obsolete
     \since 4.5
 
     This function reads the XML document from the QXmlInputSource \a source,
     returning true if the content was successfully parsed; otherwise returns \c false.
 
 */
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 bool QDomDocument::setContent(QXmlInputSource *source, bool namespaceProcessing, QString *errorMsg, int *errorLine, int *errorColumn )
 {
     if (!impl)
@@ -6301,6 +6321,9 @@ bool QDomDocument::setContent(QXmlInputSource *source, bool namespaceProcessing,
     initializeReader(reader, namespaceProcessing);
     return IMPL->setContent(source, &reader, &reader, errorMsg, errorLine, errorColumn);
 }
+QT_WARNING_POP
+
+#endif
 
 /*!
     \overload
@@ -6333,6 +6356,7 @@ bool QDomDocument::setContent(const QByteArray& buffer, QString *errorMsg, int *
 
 /*!
     \overload
+    \obsolete
 
     This function reads the XML document from the IO device \a dev, returning
     true if the content was successfully parsed; otherwise returns \c false.
@@ -6344,8 +6368,10 @@ bool QDomDocument::setContent(QIODevice* dev, QString *errorMsg, int *errorLine,
     return setContent(dev, false, errorMsg, errorLine, errorColumn);
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
     \overload
+    \obsolete
 
     This function reads the XML document from the QXmlInputSource \a source and
     parses it with the QXmlReader \a reader, returning true if the content was
@@ -6357,12 +6383,17 @@ bool QDomDocument::setContent(QIODevice* dev, QString *errorMsg, int *errorLine,
 
     \sa QXmlSimpleReader
 */
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 bool QDomDocument::setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg, int *errorLine, int *errorColumn )
 {
     if (!impl)
         impl = new QDomDocumentPrivate();
     return IMPL->setContent(source, reader, nullptr, errorMsg, errorLine, errorColumn);
 }
+QT_WARNING_POP
+
+#endif
 
 /*!
     \overload

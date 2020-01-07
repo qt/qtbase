@@ -99,9 +99,7 @@ struct QD3D11Texture : public QRhiTexture
     ~QD3D11Texture();
     void release() override;
     bool build() override;
-    bool buildFrom(const QRhiNativeHandles *src) override;
     bool buildFrom(NativeTexture src) override;
-    const QRhiNativeHandles *nativeHandles() override;
     NativeTexture nativeTexture() override;
 
     bool prepareBuild(QSize *adjustedSize = nullptr);
@@ -114,7 +112,6 @@ struct QD3D11Texture : public QRhiTexture
     DXGI_FORMAT dxgiFormat;
     uint mipLevelCount = 0;
     DXGI_SAMPLE_DESC sampleDesc;
-    QRhiD3D11TextureNativeHandles nativeHandlesStruct;
     ID3D11UnorderedAccessView *perLevelViews[QRhi::MAX_LEVELS];
     uint generation = 0;
     friend class QRhiD3D11;

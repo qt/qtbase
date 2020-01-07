@@ -535,8 +535,6 @@ QImage ICOReader::iconAt(int index)
                                     if (!mask.isNull()) {
                                         img = image;
                                         img.setAlphaChannel(mask);
-                                        // (Luckily, it seems that setAlphaChannel() does not ruin the alpha values
-                                        // of partially transparent pixels in those icons that have that)
                                     }
                                 }
                             }

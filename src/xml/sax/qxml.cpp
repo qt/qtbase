@@ -51,6 +51,7 @@
 #include "qstack.h"
 #include <qdebug.h>
 
+#if QT_DEPRECATED_SINCE(5, 15)
 
 #ifdef Q_CC_BOR // borland 6 finds bogus warnings when building this file in uic3
 #    pragma warn -8080
@@ -284,6 +285,7 @@ class QXmlDefaultHandlerPrivate
 
 /*!
     \class QXmlParseException
+    \obsolete
     \reentrant
     \brief The QXmlParseException class is used to report errors with
     the QXmlErrorHandler interface.
@@ -403,6 +405,7 @@ QString QXmlParseException::systemId() const
 
 /*!
     \class QXmlLocator
+    \obsolete
     \reentrant
     \brief The QXmlLocator class provides the XML handler classes with
     information about the parsing position within a file.
@@ -444,6 +447,9 @@ QXmlLocator::~QXmlLocator()
     Returns the line number (starting at 1) or -1 if there is no line
     number available.
 */
+
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 
 class QXmlSimpleReaderLocator : public QXmlLocator
 {
@@ -497,6 +503,7 @@ public:
 
 /*!
     \class QXmlNamespaceSupport
+    \obsolete
     \since 4.4
     \reentrant
     \brief The QXmlNamespaceSupport class is a helper class for XML
@@ -745,6 +752,7 @@ void QXmlNamespaceSupport::reset()
 
 /*!
     \class QXmlAttributes
+    \obsolete
     \reentrant
     \brief The QXmlAttributes class provides XML attributes.
 
@@ -1028,6 +1036,7 @@ void QXmlAttributes::append(const QString &qName, const QString &uri, const QStr
 
 /*!
     \class QXmlInputSource
+    \obsolete
     \reentrant
     \brief The QXmlInputSource class provides the input data for the
     QXmlReader subclasses.
@@ -1446,6 +1455,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
 
 /*!
     \class QXmlContentHandler
+    \obsolete
     \reentrant
     \brief The QXmlContentHandler class provides an interface to
     report the logical content of XML data.
@@ -1688,6 +1698,7 @@ QString QXmlInputSource::fromRawData(const QByteArray &data, bool beginning)
 
 /*!
     \class QXmlErrorHandler
+    \obsolete
     \reentrant
     \brief The QXmlErrorHandler class provides an interface to report
     errors in XML data.
@@ -1763,6 +1774,7 @@ events are reported.
 
 /*!
     \class QXmlDTDHandler
+    \obsolete
     \reentrant
     \brief The QXmlDTDHandler class provides an interface to report
     DTD content of XML data.
@@ -1830,6 +1842,7 @@ events are reported.
 
 /*!
     \class QXmlEntityResolver
+    \obsolete
     \reentrant
     \brief The QXmlEntityResolver class provides an interface to
     resolve external entities contained in XML data.
@@ -1886,6 +1899,7 @@ events are reported.
 
 /*!
     \class QXmlLexicalHandler
+    \obsolete
     \reentrant
     \brief The QXmlLexicalHandler class provides an interface to
     report the lexical content of XML data.
@@ -2037,6 +2051,7 @@ events are reported.
 
 /*!
     \class QXmlDeclHandler
+    \obsolete
     \reentrant
     \brief The QXmlDeclHandler class provides an interface to report declaration
     content of XML data.
@@ -2124,6 +2139,7 @@ events are reported.
 
 /*!
     \class QXmlDefaultHandler
+    \obsolete
     \reentrant
     \brief The QXmlDefaultHandler class provides a default implementation of all
     the XML handler classes.
@@ -2558,6 +2574,7 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 
 /*!
     \class QXmlReader
+    \obsolete
     \reentrant
     \brief The QXmlReader class provides an interface for XML readers (i.e.
     parsers).
@@ -2596,6 +2613,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     setContentHandler(), setErrorHandler(), setLexicalHandler() and
     setDeclHandler(). The parse itself is started with a call to
     parse().
+
+    Note that this class is now deprecated, please use QXmlStreamReader or
+    QDomDocument for reading XML files.
 
     \sa QXmlSimpleReader
 */
@@ -2783,6 +2803,7 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 
 /*!
     \class QXmlSimpleReader
+    \obsolete
     \nonreentrant
     \brief The QXmlSimpleReader class provides an implementation of a
     simple XML parser.
@@ -2845,6 +2866,9 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
     QXmlSimpleReader is not reentrant. If you want to use the class
     in threaded code, lock the code using QXmlSimpleReader with a
     locking mechanism, such as a QMutex.
+
+    Note that this class is now deprecated, please use QXmlStreamReader or
+    QDomDocument for reading XML files.
 */
 
 static inline bool is_S(QChar ch)
@@ -5255,7 +5279,10 @@ bool QXmlSimpleReaderPrivate::parsePEReference()
                     } else if (entityRes) {
                         QMap<QString,QXmlSimpleReaderPrivate::ExternParameterEntity>::Iterator it2;
                         it2 = externParameterEntities.find(ref());
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
                         QXmlInputSource *ret = nullptr;
+QT_WARNING_POP
                         if (it2 != externParameterEntities.end()) {
                             if (!entityRes->resolveEntity((*it2).publicId, (*it2).systemId, ret)) {
                                 delete ret;
@@ -7610,7 +7637,10 @@ bool QXmlSimpleReaderPrivate::processReference()
                             // Included if validating
                             bool skipIt = true;
                             if (entityRes) {
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
                                 QXmlInputSource *ret = nullptr;
+QT_WARNING_POP
                                 if (!entityRes->resolveEntity((*itExtern).publicId, (*itExtern).systemId, ret)) {
                                     delete ret;
                                     reportParseError(entityRes->errorString());
@@ -7850,6 +7880,8 @@ bool QXmlSimpleReaderPrivate::next_eat_ws()
   This private function initializes the reader. \a i is the input source to
   read the data from.
 */
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void QXmlSimpleReaderPrivate::init(const QXmlInputSource *i)
 {
     lineNr = 0;
@@ -7870,6 +7902,7 @@ void QXmlSimpleReaderPrivate::init(const QXmlInputSource *i)
     standalone = QXmlSimpleReaderPrivate::Unknown;
     error.clear();
 }
+QT_WARNING_POP
 
 /*
   This private function initializes the XML data related variables. Especially,
@@ -7898,6 +7931,8 @@ bool QXmlSimpleReaderPrivate::entityExist(const QString& e) const
     }
 }
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 void QXmlSimpleReaderPrivate::reportParseError(const QString& error)
 {
     this->error = error;
@@ -7913,6 +7948,7 @@ void QXmlSimpleReaderPrivate::reportParseError(const QString& error)
         }
     }
 }
+QT_WARNING_POP
 
 /*
   This private function is called when a parsing function encounters an
@@ -8006,3 +8042,5 @@ void QXmlSimpleReaderPrivate::refAddC(QChar ch)
     refArray[refArrayPos++] = ch;
 }
 QT_END_NAMESPACE
+
+#endif // QT_DEPRECATED_SINCE(5, 15)

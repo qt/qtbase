@@ -194,6 +194,8 @@ private slots:
     void fontTagFace();
 
     void clearUndoRedoStacks();
+    void mergeFontFamilies();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -3583,6 +3585,25 @@ void tst_QTextDocument::fontTagFace()
         QStringList expectedFamilies = { QLatin1String("Times"), QLatin1String("serif") };
         QCOMPARE(format.fontFamilies().toStringList(), expectedFamilies);
     }
+}
+
+void tst_QTextDocument::mergeFontFamilies()
+{
+    QTextDocument td;
+    td.setHtml(QLatin1String(
+                   "<html><body>"
+                   "<span style=\" font-family:'MS Shell Dlg 2';\">Hello world</span>"
+                   "</body></html>"));
+
+    QTextCharFormat newFormat;
+    newFormat.setFontFamily(QLatin1String("Jokerman"));
+
+    QTextCursor cursor = QTextCursor(&td);
+    cursor.setPosition(0);
+    cursor.setPosition(QByteArray("Hello World").length(), QTextCursor::KeepAnchor);
+    cursor.mergeCharFormat(newFormat);
+
+    QVERIFY(td.toHtml().contains(QLatin1String("font-family:'Jokerman','MS Shell Dlg 2';")));
 }
 
 void tst_QTextDocument::clearUndoRedoStacks()

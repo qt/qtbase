@@ -277,6 +277,8 @@ private slots:
     void fromStdVariant();
     void qt4UuidDataStream();
 
+    void preferDirectConversionOverInterfaces();
+
 private:
     void dataStream_data(QDataStream::Version version);
     void loadQVariantFromDataStream(QDataStream::Version version);
@@ -4714,6 +4716,48 @@ void tst_QVariant::qt4UuidDataStream()
     QVariant result;
     input >> result;
     QCOMPARE(result.value<QUuid>(), source);
+}
+
+void tst_QVariant::preferDirectConversionOverInterfaces()
+{
+    using namespace QtMetaTypePrivate;
+    bool calledCorrectConverter = false;
+    QMetaType::registerConverter<MyType, QSequentialIterableImpl>([](const MyType &) {
+        return QSequentialIterableImpl {};
+    });
+    QMetaType::registerConverter<MyType, QVariantList>([&calledCorrectConverter](const MyType &) {
+        calledCorrectConverter = true;
+        return QVariantList {};
+    });
+    QMetaType::registerConverter<MyType, QAssociativeIterableImpl>([](const MyType &) {
+        return QAssociativeIterableImpl {};
+    });
+    QMetaType::registerConverter<MyType, QVariantHash>([&calledCorrectConverter](const MyType &) {
+        calledCorrectConverter = true;
+        return QVariantHash {};
+    });
+    QMetaType::registerConverter<MyType, QVariantMap>([&calledCorrectConverter](const MyType &) {
+        calledCorrectConverter = true;
+        return QVariantMap {};
+    });
+    auto holder = QVariant::fromValue(MyType {});
+
+    QVERIFY(holder.canConvert<QSequentialIterableImpl>());
+    QVERIFY(holder.canConvert<QVariantList>());
+    QVERIFY(holder.canConvert<QAssociativeIterableImpl>());
+    QVERIFY(holder.canConvert<QVariantHash>());
+    QVERIFY(holder.canConvert<QVariantMap>());
+
+    holder.value<QVariantList>();
+    QVERIFY(calledCorrectConverter);
+    calledCorrectConverter = false;
+
+    holder.value<QVariantHash>();
+    QVERIFY(calledCorrectConverter);
+    calledCorrectConverter = false;
+
+    holder.value<QVariantMap>();
+    QVERIFY(calledCorrectConverter);
 }
 
 QTEST_MAIN(tst_QVariant)

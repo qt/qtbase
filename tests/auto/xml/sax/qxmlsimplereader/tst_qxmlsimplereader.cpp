@@ -127,6 +127,7 @@ class tst_QXmlSimpleReader : public QObject
 {
     Q_OBJECT
 
+#if QT_DEPRECATED_SINCE(5, 15)
     public:
         tst_QXmlSimpleReader();
         ~tst_QXmlSimpleReader();
@@ -157,7 +158,12 @@ class tst_QXmlSimpleReader : public QObject
         static QDomDocument fromByteArray(const QString &title, const QByteArray &ba, bool *ok);
         XmlServer *server;
         QString prefix;
+#endif // QT_DEPRECATED_SINCE(5, 15)
 };
+
+#if QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 
 tst_QXmlSimpleReader::tst_QXmlSimpleReader() : server(new XmlServer(this))
 {
@@ -819,6 +825,9 @@ void tst_QXmlSimpleReader::dtdRecursionLimit()
         QCOMPARE(handler.recursionCount, 2);
     }
 }
+
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 QTEST_MAIN(tst_QXmlSimpleReader)
 #include "tst_qxmlsimplereader.moc"

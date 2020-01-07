@@ -3027,6 +3027,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                     r = positionRect(w, subRule, subRule2, PseudoElement_ComboBoxArrow, r, opt->direction);
                     subRule2.drawRule(p, r);
                 } else {
+                    rule.configurePalette(&cmbOpt.palette, QPalette::ButtonText, QPalette::Button);
                     cmbOpt.subControls = QStyle::SC_ComboBoxArrow;
                     QWindowsStyle::drawComplexControl(cc, &cmbOpt, p, w);
                 }
@@ -6009,6 +6010,16 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
     case SE_TabBarTabRightButton: {
         QRenderRule subRule = renderRule(w, opt, PseudoElement_TabBarTab);
         if (subRule.hasBox() || !subRule.hasNativeBorder()) {
+            if (se == SE_TabBarTabText) {
+                if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(opt)) {
+                    const QTabBar *bar = qobject_cast<const QTabBar *>(w);
+                    const QRect optRect = bar && tab->tabIndex != -1 ? bar->tabRect(tab->tabIndex) : opt->rect;
+                    const QRect r = positionRect(w, subRule, PseudoElement_TabBarTab, optRect, opt->direction);
+                    QStyleOptionTabV4 tabCopy(*tab);
+                    tabCopy.rect = subRule.contentsRect(r);
+                    return ParentStyle::subElementRect(se, &tabCopy, w);
+                }
+            }
             return ParentStyle::subElementRect(se, opt, w);
         }
         break;

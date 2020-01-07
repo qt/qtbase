@@ -100,15 +100,12 @@ struct QMetalTexture : public QRhiTexture
     ~QMetalTexture();
     void release() override;
     bool build() override;
-    bool buildFrom(const QRhiNativeHandles *src) override;
     bool buildFrom(NativeTexture src) override;
-    const QRhiNativeHandles *nativeHandles() override;
     NativeTexture nativeTexture() override;
 
     bool prepareBuild(QSize *adjustedSize = nullptr);
 
     QMetalTextureData *d;
-    QRhiMetalTextureNativeHandles nativeHandlesStruct;
     int mipLevelCount = 0;
     int samples = 1;
     uint generation = 0;

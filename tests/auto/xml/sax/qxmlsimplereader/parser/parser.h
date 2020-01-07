@@ -28,6 +28,10 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <qglobal.h>
+
+#if QT_DEPRECATED_SINCE(5, 15)
+
 #include <qfile.h>
 #include <qstring.h>
 #include <qxml.h>
@@ -47,5 +51,7 @@ public:
 private:
     ContentHandler *handler;
 };
+
+#endif // QT_DEPRECATED_SINCE(5, 15)
 
 #endif
