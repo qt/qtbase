@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -2525,6 +2525,10 @@ QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCal
     \since 4.1
 
     Returns the decimal point character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
 */
 QChar QLocale::decimalPoint() const
 {
@@ -2535,6 +2539,10 @@ QChar QLocale::decimalPoint() const
     \since 4.1
 
     Returns the group separator character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
 */
 QChar QLocale::groupSeparator() const
 {
@@ -2545,6 +2553,10 @@ QChar QLocale::groupSeparator() const
     \since 4.1
 
     Returns the percent character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
 */
 QChar QLocale::percent() const
 {
@@ -2555,6 +2567,10 @@ QChar QLocale::percent() const
     \since 4.1
 
     Returns the zero digit character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
 */
 QChar QLocale::zeroDigit() const
 {
@@ -2565,6 +2581,10 @@ QChar QLocale::zeroDigit() const
     \since 4.1
 
     Returns the negative sign character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
 */
 QChar QLocale::negativeSign() const
 {
@@ -2575,6 +2595,10 @@ QChar QLocale::negativeSign() const
     \since 4.5
 
     Returns the positive sign character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
 */
 QChar QLocale::positiveSign() const
 {
@@ -2585,6 +2609,10 @@ QChar QLocale::positiveSign() const
     \since 4.1
 
     Returns the exponential character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
 */
 QChar QLocale::exponential() const
 {
