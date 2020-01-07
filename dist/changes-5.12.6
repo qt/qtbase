@@ -1,0 +1,53 @@
+Qt 5.12.6 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.12.0 through 5.12.5.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.12 series is binary compatible with the 5.11.x series.
+Applications compiled for 5.11 will continue to run with 5.12.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - QLocale:
+   * The system locale's UI languages list now includes, as for that of an
+     ordinary locale, the results of adding likely sub-tags from each
+     locale name, and of removing some, where this doesn't change which
+     locale is specified. This gives searches for translation files a
+     better chance of finding a suitable file.
+
+****************************************************************************
+*                                 Windows                                  *
+****************************************************************************
+
+ - Text:
+   * [QTBUG-57180] Removed confusing DirectWrite warning when loading
+     bitmap fonts.
+
+****************************************************************************
+*                                 Android                                  *
+****************************************************************************
+
+ - Fixed regression that made it impossible for an application to use the
+   tap-and-hold gesture.
+
+****************************************************************************
+*                             Third-Party Code                             *
+****************************************************************************
+
+ - libjpeg-turbo was updated to version 2.0.3
+
+ - QtSQL
+   * Updated sqlite to v3.29.0

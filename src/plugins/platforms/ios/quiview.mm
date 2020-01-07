@@ -630,10 +630,8 @@ Q_LOGGING_CATEGORY(lcQpaTablet, "qt.qpa.input.tablet")
 
 - (void)addInteraction:(id<UIInteraction>)interaction
 {
-    if (__builtin_available(iOS 13.0, *)) {
-        if ([interaction isKindOfClass:UITextInteraction.class])
-            return; // Prevent iOS from adding UITextInteraction
-    }
+    if ([NSStringFromClass(interaction.class) isEqualToString:@"UITextInteraction"])
+        return;
 
     [super addInteraction:interaction];
 }
