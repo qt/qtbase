@@ -227,7 +227,10 @@ inline bool QPixmap::loadFromData(const QByteArray &buf, const char *format,
 #if QT_DEPRECATED_SINCE(5, 0)
 inline QPixmap QPixmap::alphaChannel() const
 {
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_DEPRECATED
     return QPixmap::fromImage(toImage().alphaChannel());
+    QT_WARNING_POP
 }
 
 inline void QPixmap::setAlphaChannel(const QPixmap &p)
