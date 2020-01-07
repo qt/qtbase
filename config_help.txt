@@ -258,6 +258,7 @@ Network options:
   -no-openssl .......... Do not use OpenSSL [default on Apple and WinRT]
   -openssl-linked ...... Use OpenSSL and link to libssl [no]
   -openssl-runtime ..... Use OpenSSL and dynamically load libssl [auto]
+  -schannel ............ Use Secure Channel [no] (Windows only)
   -securetransport ..... Use SecureTransport [auto] (Apple only)
 
   -sctp ................ Enable SCTP support [no]

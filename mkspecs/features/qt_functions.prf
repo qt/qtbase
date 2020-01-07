@@ -5,7 +5,7 @@ defineReplace(qtPlatformTargetSuffix) {
     else: CONFIG(debug, debug|release) {
         !debug_and_release|build_pass {
             mac: return($${suffix}_debug)
-            win32:!gcc: return($${suffix}d)
+            win32: return($${suffix}d)
         }
     }
     return($$suffix)
