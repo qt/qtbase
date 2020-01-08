@@ -56,23 +56,21 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qmap.h>
+#include <QtCore/private/qlocale_p.h>
 
 QT_BEGIN_NAMESPACE
 
 // Locale-related parts, mostly handled in ../text/qlocale.cpp
-struct QLocaleDataEntry {
-    quint16 index, size;
-};
 
 struct QCalendarLocale {
     quint16 m_language_id, m_script_id, m_country_id;
     // Month name indexes:
-    QLocaleDataEntry m_standalone_short;
-    QLocaleDataEntry m_standalone_long;
-    QLocaleDataEntry m_standalone_narrow;
-    QLocaleDataEntry m_short;
-    QLocaleDataEntry m_long;
-    QLocaleDataEntry m_narrow;
+    QLocaleData::DataRange m_standalone_short;
+    QLocaleData::DataRange m_standalone_long;
+    QLocaleData::DataRange m_standalone_narrow;
+    QLocaleData::DataRange m_short;
+    QLocaleData::DataRange m_long;
+    QLocaleData::DataRange m_narrow;
 };
 
 // Partial implementation, of methods with common forms, in qcalendar.cpp

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2016 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -287,6 +287,75 @@ public:
     // this function is used in QIntValidator (QtGui)
     Q_CORE_EXPORT bool validateChars(QStringView str, NumberMode numMode, QByteArray *buff, int decDigits = -1,
             QLocale::NumberOptions number_options = QLocale::DefaultNumberOptions) const;
+
+    struct DataRange
+    {
+        quint16 offset;
+        quint16 size;
+        QString getData(const ushort *table) const
+        {
+            return size > 0
+                ? QString::fromRawData(reinterpret_cast<const QChar *>(table + offset), size)
+                : QString();
+        }
+        QStringView viewData(const ushort *table) const
+        {
+            return { reinterpret_cast<const QChar *>(table + offset), size };
+        }
+        QString getListEntry(const ushort *table, int index) const
+        {
+            return listEntry(table, index).getData(table);
+        }
+        QStringView viewListEntry(const ushort *table, int index) const
+        {
+            return listEntry(table, index).viewData(table);
+        }
+    private:
+        DataRange listEntry(const ushort *table, int index) const
+        {
+            const ushort separator = ';';
+            quint16 i = 0;
+            while (index > 0 && i < size) {
+                if (table[offset + i] == separator)
+                    index--;
+                i++;
+            }
+            quint16 end = i;
+            while (end < size && table[offset + end] != separator)
+                end++;
+            return { quint16(offset + i), quint16(end - i) };
+        }
+    };
+#define rangeGetter(name, stem) \
+    DataRange name() const { return { m_ ## stem ## _idx, m_ ## stem ## _size }; }
+
+    rangeGetter(startListPattern, list_pattern_part_start)
+    rangeGetter(midListPattern, list_pattern_part_mid)
+    rangeGetter(endListPattern, list_pattern_part_end)
+    rangeGetter(pairListPattern, list_pattern_part_two)
+    rangeGetter(shortDateFormat, short_date_format)
+    rangeGetter(longDateFormat, long_date_format)
+    rangeGetter(shortTimeFormat, short_time_format)
+    rangeGetter(longTimeFormat, long_time_format)
+    rangeGetter(narrowDayNamesStandalone, standalone_narrow_day_names)
+    rangeGetter(shortDayNamesStandalone, standalone_short_day_names)
+    rangeGetter(longDayNamesStandalone, standalone_long_day_names)
+    rangeGetter(narrowDayNames, narrow_day_names)
+    rangeGetter(shortDayNames, short_day_names)
+    rangeGetter(longDayNames, long_day_names)
+    rangeGetter(anteMeridiem, am)
+    rangeGetter(postMeridiem, pm)
+    rangeGetter(byteCount, byte)
+    rangeGetter(byteAmountSI, byte_si_quantified)
+    rangeGetter(byteAmountIEC, byte_iec_quantified)
+    rangeGetter(currencySymbol, currency_symbol)
+    rangeGetter(currencyDisplayName, currency_display_name)
+    rangeGetter(currencyFormat, currency_format)
+    rangeGetter(currencyFormatNegative, currency_negative_format)
+    rangeGetter(endonymLanguage, language_endonym)
+    rangeGetter(endonymCountry, country_endonym)
+
+#undef rangeGetter
 
 public:
     quint16 m_language_id, m_script_id, m_country_id;
