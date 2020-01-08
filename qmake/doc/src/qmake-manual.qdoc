@@ -4418,6 +4418,20 @@
 
     \snippet qmake/scopes.pro 4
 
+    If you need to mix both operators, you can use the \c if function to specify
+    operator precedence.
+
+    \snippet qmake/scopes.pro 5
+
+    The condition accepts the wildcard character to match a family of \c{CONFIG}
+    values or mkspec names.
+
+    \snippet qmake/scopes.pro 6
+
+    \note Historically, checking the mkspec name with wildcards like above was
+    qmake's way to check for the platform. Nowadays, we recommend to use values
+    that are defined by the mkspec in the \c QMAKE_PLATFORM variable.
+
     You can also provide alternative declarations to those within a scope by
     using an \c else scope. Each \c else scope is processed if the conditions
     for the preceding scopes are false.
