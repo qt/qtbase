@@ -1048,6 +1048,8 @@ uint qHash(const QLocale &key, uint seed) noexcept
 
     Sets the \a options related to number conversions for this
     QLocale instance.
+
+    \sa numberOptions()
 */
 void QLocale::setNumberOptions(NumberOptions options)
 {
@@ -1060,7 +1062,10 @@ void QLocale::setNumberOptions(NumberOptions options)
     Returns the options related to number conversions for this
     QLocale instance.
 
-    By default, no options are set for the standard locales.
+    By default, no options are set for the standard locales, except
+    for the "C" locale, which has OmitGroupSeparator set by default.
+
+    \sa setNumberOptions(), toString(), groupSeparator()
 */
 QLocale::NumberOptions QLocale::numberOptions() const
 {
@@ -1962,7 +1967,7 @@ double QLocale::toDouble(QStringView s, bool *ok) const
 /*!
     Returns a localized string representation of \a i.
 
-    \sa toLongLong()
+    \sa toLongLong(), numberOptions(), zeroDigit(), positiveSign()
 */
 
 QString QLocale::toString(qlonglong i) const
@@ -1978,7 +1983,7 @@ QString QLocale::toString(qlonglong i) const
 /*!
     \overload
 
-    \sa toULongLong()
+    \sa toULongLong(), numberOptions(), zeroDigit(), positiveSign()
 */
 
 QString QLocale::toString(qulonglong i) const
@@ -2529,6 +2534,8 @@ QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCal
     \note This function shall change to return a QString instead of QChar in
     Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
     convert early in preparation for this.
+
+    \sa groupSeparator(), toString()
 */
 QChar QLocale::decimalPoint() const
 {
@@ -2543,6 +2550,8 @@ QChar QLocale::decimalPoint() const
     \note This function shall change to return a QString instead of QChar in
     Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
     convert early in preparation for this.
+
+    \sa decimalPoint(), toString()
 */
 QChar QLocale::groupSeparator() const
 {
@@ -2557,6 +2566,8 @@ QChar QLocale::groupSeparator() const
     \note This function shall change to return a QString instead of QChar in
     Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
     convert early in preparation for this.
+
+    \sa toString()
 */
 QChar QLocale::percent() const
 {
@@ -2571,6 +2582,8 @@ QChar QLocale::percent() const
     \note This function shall change to return a QString instead of QChar in
     Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
     convert early in preparation for this.
+
+    \sa toString()
 */
 QChar QLocale::zeroDigit() const
 {
@@ -2585,6 +2598,8 @@ QChar QLocale::zeroDigit() const
     \note This function shall change to return a QString instead of QChar in
     Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
     convert early in preparation for this.
+
+    \sa positiveSign(), toString()
 */
 QChar QLocale::negativeSign() const
 {
@@ -2599,6 +2614,8 @@ QChar QLocale::negativeSign() const
     \note This function shall change to return a QString instead of QChar in
     Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
     convert early in preparation for this.
+
+    \sa negativeSign(), toString()
 */
 QChar QLocale::positiveSign() const
 {
@@ -2608,11 +2625,14 @@ QChar QLocale::positiveSign() const
 /*!
     \since 4.1
 
-    Returns the exponential character of this locale.
+    Returns the exponential character of this locale, used to separate exponent
+    from mantissa in some floating-point numeric representations.
 
     \note This function shall change to return a QString instead of QChar in
     Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
     convert early in preparation for this.
+
+    \sa toString(double, char, int)
 */
 QChar QLocale::exponential() const
 {
@@ -2637,7 +2657,7 @@ static char qToLower(char c)
 
     \a f and \a prec have the same meaning as in QString::number(double, char, int).
 
-    \sa toDouble()
+    \sa toDouble(), numberOptions(), exponential(), decimalPoint(), zeroDigit(), positiveSign(), percent()
 */
 
 QString QLocale::toString(double i, char f, int prec) const
