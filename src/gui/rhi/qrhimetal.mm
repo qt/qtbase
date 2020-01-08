@@ -664,15 +664,15 @@ static inline int mapBinding(int binding,
                              BindingType type)
 {
     const QShader::NativeResourceBindingMap *map = nativeResourceBindingMaps[stageIndex];
-    if (!map)
+    if (!map || map->isEmpty())
         return binding; // old QShader versions do not have this map, assume 1:1 mapping then
 
     auto it = map->constFind(binding);
     if (it != map->cend())
         return type == BindingType::Sampler ? it->second : it->first; // may be -1, if the resource is inactive
 
-    // Hitting this path is normal too, is not given that the resource (e.g. a
-    // uniform block) is really present in the shaders for all the stages
+    // Hitting this path is normal too. It is not given that the resource (for
+    // example, a uniform block) is present in the shaders for all the stages
     // specified by the visibility mask in the QRhiShaderResourceBinding.
     return -1;
 }
