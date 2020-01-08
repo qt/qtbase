@@ -342,8 +342,11 @@ bool QShaderDescription::isValid() const
  */
 QByteArray QShaderDescription::toBinaryJson() const
 {
-#if QT_CONFIG(binaryjson)
+#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     return d->makeDoc().toBinaryData();
+QT_WARNING_POP
 #else
     qWarning("Cannot generate binary JSON from QShaderDescription due to disabled binaryjson feature");
     return QByteArray();
@@ -382,8 +385,11 @@ QByteArray QShaderDescription::toJson() const
 QShaderDescription QShaderDescription::fromBinaryJson(const QByteArray &data)
 {
     QShaderDescription desc;
-#if QT_CONFIG(binaryjson)
+#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QShaderDescriptionPrivate::get(&desc)->loadDoc(QJsonDocument::fromBinaryData(data));
+QT_WARNING_POP
 #else
     Q_UNUSED(data);
     qWarning("Cannot load QShaderDescription from binary JSON due to disabled binaryjson feature");

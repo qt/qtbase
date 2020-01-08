@@ -69,17 +69,4 @@ public:
     void saveFile(QIODevice *f, const QVariant &contents, const QStringList &options) override;
 };
 
-class BinaryJsonConverter : public Converter
-{
-    // Converter interface
-public:
-    QString name() override;
-    Direction directions() override;
-    Options outputOptions() override;
-    const char *optionsHelp() override;
-    bool probeFile(QIODevice *f) override;
-    QVariant loadFile(QIODevice *f, Converter *&outputConverter) override;
-    void saveFile(QIODevice *f, const QVariant &contents, const QStringList &options) override;
-};
-
 #endif // JSONCONVERTER_H

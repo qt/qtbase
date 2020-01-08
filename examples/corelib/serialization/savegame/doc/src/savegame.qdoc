@@ -37,8 +37,8 @@
     game generally involves serializing each game object's member variables
     to a file. Many formats can be used for this purpose, one of which is JSON.
     With QJsonDocument, you also have the ability to serialize a document in a
-    binary format, which is great if you don't want the save file to be
-    readable, or if you need to keep the file size down.
+    \l {https://tools.ietf.org/html/rfc7049} {CBOR} format, which is great if you
+    don't want the save file to be readable, or if you need to keep the file size down.
 
     In this example, we'll demonstrate how to save and load a simple game to
     and from JSON and binary formats.
@@ -133,7 +133,7 @@
 
     When loading a saved game in loadGame(), the first thing we do is open the
     save file based on which format it was saved to; \c "save.json" for JSON,
-    and \c "save.dat" for binary. We print a warning and return \c false if the
+    and \c "save.dat" for CBOR. We print a warning and return \c false if the
     file couldn't be opened.
 
     Since QJsonDocument's \l{QJsonDocument::fromJson()}{fromJson()} and
@@ -172,7 +172,7 @@
     \snippet serialization/savegame/main.cpp 1
 
     When the player has finished, we save their game. For demonstration
-    purposes, we can serialize to either JSON or binary. You can examine the
+    purposes, we can serialize to either JSON or CBOR. You can examine the
     contents of the files in the same directory as the executable (or re-run
     the example, making sure to also specify the "load" option), although the
     binary save file will contain some garbage characters (which is normal).

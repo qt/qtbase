@@ -50,6 +50,8 @@
 
 #include "game.h"
 
+#include <QCborMap>
+#include <QCborValue>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -122,14 +124,14 @@ bool Game::loadGame(Game::SaveFormat saveFormat)
 
     QJsonDocument loadDoc(saveFormat == Json
         ? QJsonDocument::fromJson(saveData)
-        : QJsonDocument::fromBinaryData(saveData));
+        : QJsonDocument(QCborValue::fromCbor(saveData).toMap().toJsonObject()));
 
     read(loadDoc.object());
 
     QTextStream(stdout) << "Loaded save for "
                         << loadDoc["player"]["name"].toString()
                         << " using "
-                        << (saveFormat != Json ? "binary " : "") << "JSON...\n";
+                        << (saveFormat != Json ? "CBOR" : "JSON") << "...\n";
     return true;
 }
 //! [3]
@@ -148,10 +150,9 @@ bool Game::saveGame(Game::SaveFormat saveFormat) const
 
     QJsonObject gameObject;
     write(gameObject);
-    QJsonDocument saveDoc(gameObject);
     saveFile.write(saveFormat == Json
-        ? saveDoc.toJson()
-        : saveDoc.toBinaryData());
+        ? QJsonDocument(gameObject).toJson()
+        : QCborValue::fromJsonValue(gameObject).toCbor());
 
     return true;
 }
