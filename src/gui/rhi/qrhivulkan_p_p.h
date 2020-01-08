@@ -370,6 +370,13 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     QVarLengthArray<VkCommandBuffer, 4> secondaryCbs;
     bool inExternal;
 
+    struct {
+        QHash<QRhiResource *, QPair<VkAccessFlags, bool> > writtenResources;
+        void reset() {
+            writtenResources.clear();
+        }
+    } computePassState;
+
     struct Command {
         enum Cmd {
             CopyBuffer,
@@ -429,12 +436,14 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
             struct {
                 VkPipelineStageFlags srcStageMask;
                 VkPipelineStageFlags dstStageMask;
-                VkImageMemoryBarrier desc;
+                int count;
+                int index;
             } imageBarrier;
             struct {
                 VkPipelineStageFlags srcStageMask;
                 VkPipelineStageFlags dstStageMask;
-                VkBufferMemoryBarrier desc;
+                int count;
+                int index;
             } bufferBarrier;
             struct {
                 VkImage src;
@@ -537,6 +546,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         pools.vertexBuffer.clear();
         pools.vertexBufferOffset.clear();
         pools.debugMarkerData.clear();
+        pools.imageBarrier.clear();
+        pools.bufferBarrier.clear();
     }
 
     struct {
@@ -546,6 +557,8 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
         QVarLengthArray<VkBuffer, 4> vertexBuffer;
         QVarLengthArray<VkDeviceSize, 4> vertexBufferOffset;
         QVarLengthArray<QByteArray, 4> debugMarkerData;
+        QVarLengthArray<VkImageMemoryBarrier, 8> imageBarrier;
+        QVarLengthArray<VkBufferMemoryBarrier, 8> bufferBarrier;
     } pools;
 
     friend class QRhiVulkan;

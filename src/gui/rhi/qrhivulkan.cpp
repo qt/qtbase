@@ -2219,6 +2219,8 @@ void QRhiVulkan::beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch
 
     cbD->recordingPass = QVkCommandBuffer::ComputePass;
 
+    cbD->computePassState.reset();
+
     if (cbD->useSecondaryCb)
         cbD->secondaryCbs.append(startSecondaryCommandBuffer());
 }
@@ -2267,15 +2269,152 @@ void QRhiVulkan::setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *
     psD->lastActiveFrameSlot = currentFrameSlot;
 }
 
+template<typename T>
+inline void qrhivk_accumulateComputeResource(T *writtenResources, QRhiResource *resource,
+                                             QRhiShaderResourceBinding::Type bindingType,
+                                             int loadTypeVal, int storeTypeVal, int loadStoreTypeVal)
+{
+    VkAccessFlags access = 0;
+    if (bindingType == loadTypeVal) {
+        access = VK_ACCESS_SHADER_READ_BIT;
+    } else {
+        access = VK_ACCESS_SHADER_WRITE_BIT;
+        if (bindingType == loadStoreTypeVal)
+            access |= VK_ACCESS_SHADER_READ_BIT;
+    }
+    auto it = writtenResources->find(resource);
+    if (it != writtenResources->end())
+        it->first |= access;
+    else if (bindingType == storeTypeVal || bindingType == loadStoreTypeVal)
+        writtenResources->insert(resource, { access, true });
+}
+
 void QRhiVulkan::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
 {
     QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::ComputePass);
 
+    // When there are multiple dispatches, read-after-write and
+    // write-after-write need a barrier.
+    QVarLengthArray<VkImageMemoryBarrier, 8> imageBarriers;
+    QVarLengthArray<VkBufferMemoryBarrier, 8> bufferBarriers;
+    if (cbD->currentComputeSrb) {
+        // The key in the writtenResources map indicates that the resource was
+        // written in a previous dispatch, whereas the value accumulates the
+        // access mask in the current one.
+        for (auto &accessAndIsNewFlag : cbD->computePassState.writtenResources)
+            accessAndIsNewFlag = { 0, false };
+
+        QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, cbD->currentComputeSrb);
+        const int bindingCount = srbD->m_bindings.count();
+        for (int i = 0; i < bindingCount; ++i) {
+            const QRhiShaderResourceBinding::Data *b = srbD->m_bindings.at(i).data();
+            switch (b->type) {
+            case QRhiShaderResourceBinding::ImageLoad:
+            case QRhiShaderResourceBinding::ImageStore:
+            case QRhiShaderResourceBinding::ImageLoadStore:
+                qrhivk_accumulateComputeResource(&cbD->computePassState.writtenResources,
+                                                 b->u.simage.tex,
+                                                 b->type,
+                                                 QRhiShaderResourceBinding::ImageLoad,
+                                                 QRhiShaderResourceBinding::ImageStore,
+                                                 QRhiShaderResourceBinding::ImageLoadStore);
+                break;
+            case QRhiShaderResourceBinding::BufferLoad:
+            case QRhiShaderResourceBinding::BufferStore:
+            case QRhiShaderResourceBinding::BufferLoadStore:
+                qrhivk_accumulateComputeResource(&cbD->computePassState.writtenResources,
+                                                 b->u.sbuf.buf,
+                                                 b->type,
+                                                 QRhiShaderResourceBinding::BufferLoad,
+                                                 QRhiShaderResourceBinding::BufferStore,
+                                                 QRhiShaderResourceBinding::BufferLoadStore);
+                break;
+            default:
+                break;
+            }
+        }
+
+        for (auto it = cbD->computePassState.writtenResources.begin(); it != cbD->computePassState.writtenResources.end(); ) {
+            const int accessInThisDispatch = it->first;
+            const bool isNewInThisDispatch = it->second;
+            if (accessInThisDispatch && !isNewInThisDispatch) {
+                if (it.key()->resourceType() == QRhiResource::Texture) {
+                    QVkTexture *texD = QRHI_RES(QVkTexture, it.key());
+                    VkImageMemoryBarrier barrier;
+                    memset(&barrier, 0, sizeof(barrier));
+                    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    // won't care about subresources, pretend the whole resource was written
+                    barrier.subresourceRange.baseMipLevel = 0;
+                    barrier.subresourceRange.levelCount = VK_REMAINING_MIP_LEVELS;
+                    barrier.subresourceRange.baseArrayLayer = 0;
+                    barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
+                    barrier.oldLayout = texD->usageState.layout;
+                    barrier.newLayout = texD->usageState.layout;
+                    barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                    barrier.dstAccessMask = accessInThisDispatch;
+                    barrier.image = texD->image;
+                    imageBarriers.append(barrier);
+                } else {
+                    QVkBuffer *bufD = QRHI_RES(QVkBuffer, it.key());
+                    VkBufferMemoryBarrier barrier;
+                    memset(&barrier, 0, sizeof(barrier));
+                    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+                    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+                    barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                    barrier.dstAccessMask = accessInThisDispatch;
+                    barrier.buffer = bufD->buffers[bufD->m_type == QRhiBuffer::Dynamic ? currentFrameSlot : 0];
+                    barrier.size = VK_WHOLE_SIZE;
+                    bufferBarriers.append(barrier);
+                }
+            }
+            // Anything that was previously written, but is only read now, can be
+            // removed from the written list (because that previous write got a
+            // corresponding barrier now).
+            if (accessInThisDispatch == VK_ACCESS_SHADER_READ_BIT)
+                it = cbD->computePassState.writtenResources.erase(it);
+            else
+                ++it;
+        }
+    }
+
     if (cbD->useSecondaryCb) {
-        df->vkCmdDispatch(cbD->secondaryCbs.last(), uint32_t(x), uint32_t(y), uint32_t(z));
+        VkCommandBuffer secondaryCb = cbD->secondaryCbs.last();
+        if (!imageBarriers.isEmpty()) {
+            df->vkCmdPipelineBarrier(secondaryCb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                                     0, 0, nullptr,
+                                     0, nullptr,
+                                     imageBarriers.count(), imageBarriers.constData());
+        }
+        if (!bufferBarriers.isEmpty()) {
+            df->vkCmdPipelineBarrier(secondaryCb, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                                     0, 0, nullptr,
+                                     bufferBarriers.count(), bufferBarriers.constData(),
+                                     0, nullptr);
+        }
+        df->vkCmdDispatch(secondaryCb, uint32_t(x), uint32_t(y), uint32_t(z));
     } else {
         QVkCommandBuffer::Command cmd;
+        if (!imageBarriers.isEmpty()) {
+            cmd.cmd = QVkCommandBuffer::Command::ImageBarrier;
+            cmd.args.imageBarrier.srcStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+            cmd.args.imageBarrier.dstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+            cmd.args.imageBarrier.count = imageBarriers.count();
+            cmd.args.imageBarrier.index = cbD->pools.imageBarrier.count();
+            cbD->pools.imageBarrier.append(imageBarriers.constData(), imageBarriers.count());
+            cbD->commands.append(cmd);
+        }
+        if (!bufferBarriers.isEmpty()) {
+            cmd.cmd = QVkCommandBuffer::Command::BufferBarrier;
+            cmd.args.bufferBarrier.srcStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+            cmd.args.bufferBarrier.dstStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+            cmd.args.bufferBarrier.count = bufferBarriers.count();
+            cmd.args.bufferBarrier.index = cbD->pools.bufferBarrier.count();
+            cbD->pools.bufferBarrier.append(bufferBarriers.constData(), bufferBarriers.count());
+            cbD->commands.append(cmd);
+        }
         cmd.cmd = QVkCommandBuffer::Command::Dispatch;
         cmd.args.dispatch.x = x;
         cmd.args.dispatch.y = y;
@@ -2465,7 +2604,9 @@ void QRhiVulkan::trackedBufferBarrier(QVkCommandBuffer *cbD, QVkBuffer *bufD, in
     cmd.cmd = QVkCommandBuffer::Command::BufferBarrier;
     cmd.args.bufferBarrier.srcStageMask = s.stage;
     cmd.args.bufferBarrier.dstStageMask = stage;
-    cmd.args.bufferBarrier.desc = bufMemBarrier;
+    cmd.args.bufferBarrier.count = 1;
+    cmd.args.bufferBarrier.index = cbD->pools.bufferBarrier.count();
+    cbD->pools.bufferBarrier.append(bufMemBarrier);
     cbD->commands.append(cmd);
 
     s.access = access;
@@ -2507,7 +2648,9 @@ void QRhiVulkan::trackedImageBarrier(QVkCommandBuffer *cbD, QVkTexture *texD,
     cmd.cmd = QVkCommandBuffer::Command::ImageBarrier;
     cmd.args.imageBarrier.srcStageMask = srcStage;
     cmd.args.imageBarrier.dstStageMask = stage;
-    cmd.args.imageBarrier.desc = barrier;
+    cmd.args.imageBarrier.count = 1;
+    cmd.args.imageBarrier.index = cbD->pools.imageBarrier.count();
+    cbD->pools.imageBarrier.append(barrier);
     cbD->commands.append(cmd);
 
     s.layout = layout;
@@ -2541,7 +2684,9 @@ void QRhiVulkan::subresourceBarrier(QVkCommandBuffer *cbD, VkImage image,
     cmd.cmd = QVkCommandBuffer::Command::ImageBarrier;
     cmd.args.imageBarrier.srcStageMask = srcStage;
     cmd.args.imageBarrier.dstStageMask = dstStage;
-    cmd.args.imageBarrier.desc = barrier;
+    cmd.args.imageBarrier.count = 1;
+    cmd.args.imageBarrier.index = cbD->pools.imageBarrier.count();
+    cbD->pools.imageBarrier.append(barrier);
     cbD->commands.append(cmd);
 }
 
@@ -3409,12 +3554,12 @@ void QRhiVulkan::recordPrimaryCommandBuffer(QVkCommandBuffer *cbD)
         case QVkCommandBuffer::Command::ImageBarrier:
             df->vkCmdPipelineBarrier(cbD->cb, cmd.args.imageBarrier.srcStageMask, cmd.args.imageBarrier.dstStageMask,
                                      0, 0, nullptr, 0, nullptr,
-                                     1, &cmd.args.imageBarrier.desc);
+                                     cmd.args.imageBarrier.count, cbD->pools.imageBarrier.constData() + cmd.args.imageBarrier.index);
             break;
         case QVkCommandBuffer::Command::BufferBarrier:
             df->vkCmdPipelineBarrier(cbD->cb, cmd.args.bufferBarrier.srcStageMask, cmd.args.bufferBarrier.dstStageMask,
                                      0, 0, nullptr,
-                                     1, &cmd.args.bufferBarrier.desc,
+                                     cmd.args.bufferBarrier.count, cbD->pools.bufferBarrier.constData() + cmd.args.bufferBarrier.index,
                                      0, nullptr);
             break;
         case QVkCommandBuffer::Command::BlitImage:

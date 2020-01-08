@@ -521,6 +521,17 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
     QRhiShaderResourceBindings *currentComputeSrb;
     uint currentSrbGeneration;
 
+    struct ComputePassState {
+        enum Access {
+            Read = 0x01,
+            Write = 0x02
+        };
+        QHash<QRhiResource *, QPair<int, bool> > writtenResources;
+        void reset() {
+            writtenResources.clear();
+        }
+    } computePassState;
+
     QVector<QByteArray> dataRetainPool;
     QVector<QImage> imageRetainPool;
 
