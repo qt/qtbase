@@ -630,9 +630,7 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->u.simage.tex);
@@ -644,9 +642,7 @@ void QRhiD3D11::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->u.sbuf.buf);
@@ -1128,39 +1124,24 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
         return srgb ? DXGI_FORMAT_BC7_UNORM_SRGB : DXGI_FORMAT_BC7_UNORM;
 
     case QRhiTexture::ETC2_RGB8:
-        Q_FALLTHROUGH();
     case QRhiTexture::ETC2_RGB8A1:
-        Q_FALLTHROUGH();
     case QRhiTexture::ETC2_RGBA8:
         qWarning("QRhiD3D11 does not support ETC2 textures");
         return DXGI_FORMAT_R8G8B8A8_UNORM;
 
     case QRhiTexture::ASTC_4x4:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_5x4:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_5x5:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_6x5:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_6x6:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_8x5:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_8x6:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_8x8:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_10x5:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_10x6:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_10x8:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_10x10:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_12x10:
-        Q_FALLTHROUGH();
     case QRhiTexture::ASTC_12x12:
         qWarning("QRhiD3D11 does not support ASTC textures");
         return DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -1201,7 +1182,6 @@ static inline bool isDepthTextureFormat(QRhiTexture::Format format)
 {
     switch (format) {
     case QRhiTexture::Format::D16:
-        Q_FALLTHROUGH();
     case QRhiTexture::Format::D32F:
         return true;
 
@@ -1867,9 +1847,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD)
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QD3D11Texture *texD = QRHI_RES(QD3D11Texture, b->u.simage.tex);
@@ -1885,9 +1863,7 @@ void QRhiD3D11::updateShaderResourceBindings(QD3D11ShaderResourceBindings *srbD)
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QD3D11Buffer *bufD = QRHI_RES(QD3D11Buffer, b->u.sbuf.buf);
@@ -3356,11 +3332,9 @@ static inline D3D11_BLEND toD3DBlendFactor(QRhiGraphicsPipeline::BlendFactor f)
     case QRhiGraphicsPipeline::OneMinusDstAlpha:
         return D3D11_BLEND_INV_DEST_ALPHA;
     case QRhiGraphicsPipeline::ConstantColor:
-        Q_FALLTHROUGH();
     case QRhiGraphicsPipeline::ConstantAlpha:
         return D3D11_BLEND_BLEND_FACTOR;
     case QRhiGraphicsPipeline::OneMinusConstantColor:
-        Q_FALLTHROUGH();
     case QRhiGraphicsPipeline::OneMinusConstantAlpha:
         return D3D11_BLEND_INV_BLEND_FACTOR;
     case QRhiGraphicsPipeline::SrcAlphaSaturate:

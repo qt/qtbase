@@ -681,7 +681,6 @@ bool QRhiGles2::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture
 
     switch (format) {
     case QRhiTexture::D16:
-        Q_FALLTHROUGH();
     case QRhiTexture::D32F:
         return caps.depthTexture;
 
@@ -695,7 +694,6 @@ bool QRhiGles2::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture
         return caps.r16Format;
 
     case QRhiTexture::RGBA16F:
-        Q_FALLTHROUGH();
     case QRhiTexture::RGBA32F:
         return caps.floatFormats;
 
@@ -899,9 +897,7 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
                                    QRhiPassResourceTracker::toPassTrackerTextureStage(b->stage));
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.simage.tex);
@@ -917,9 +913,7 @@ void QRhiGles2::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.sbuf.buf);
@@ -1654,11 +1648,8 @@ static inline GLenum toGlBlendFactor(QRhiGraphicsPipeline::BlendFactor f)
     case QRhiGraphicsPipeline::SrcAlphaSaturate:
         return GL_SRC_ALPHA_SATURATE;
     case QRhiGraphicsPipeline::Src1Color:
-        Q_FALLTHROUGH();
     case QRhiGraphicsPipeline::OneMinusSrc1Color:
-        Q_FALLTHROUGH();
     case QRhiGraphicsPipeline::Src1Alpha:
-        Q_FALLTHROUGH();
     case QRhiGraphicsPipeline::OneMinusSrc1Alpha:
         qWarning("Unsupported blend factor %d", f);
         return GL_ZERO;
@@ -2573,9 +2564,7 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QGles2Texture *texD = QRHI_RES(QGles2Texture, b->u.simage.tex);
@@ -2591,9 +2580,7 @@ void QRhiGles2::bindShaderResources(QRhiGraphicsPipeline *maybeGraphicsPs, QRhiC
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QGles2Buffer *bufD = QRHI_RES(QGles2Buffer, b->u.sbuf.buf);
