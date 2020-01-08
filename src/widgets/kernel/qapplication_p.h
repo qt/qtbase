@@ -158,12 +158,12 @@ public:
     static QSize app_strut;
     static QWidgetList *popupWidgets;
     static QStyle *app_style;
-    static QPalette *sys_pal;
 
 protected:
     void notifyThemeChanged() override;
-    void sendApplicationPaletteChange(bool toAllWidgets = false,
-                                      const char *className = nullptr) override;
+
+    QPalette basePalette() const override;
+    void handlePaletteChanged(const char *className = nullptr) override;
 
 #if QT_CONFIG(draganddrop)
     void notifyDragStarted(const QDrag *) override;
@@ -184,9 +184,7 @@ public:
     static int enabledAnimations; // Combination of QPlatformTheme::UiEffect
     static bool widgetCount; // Coupled with -widgetcount switch
 
-    static void setSystemPalette(const QPalette &pal);
-    static void setPalette_helper(const QPalette &palette, const char* className);
-    static void initializeWidgetPaletteHash();
+    static void initializeWidgetPalettesFromTheme();
     static void initializeWidgetFontHash();
     static void setSystemFont(const QFont &font);
 
