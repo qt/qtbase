@@ -1,0 +1,74 @@
+Qt 5.14.1 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 5.14.0.
+
+For more details, refer to the online documentation included in this
+distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.14 series is binary compatible with the 5.13.x series.
+Applications compiled for 5.13 will continue to run with 5.14.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Qt Bug Tracker:
+
+https://bugreports.qt.io/
+
+Each of these identifiers can be entered in the bug tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                                  MinGW                                   *
+****************************************************************************
+
+ - Qt will by default be built in release mode. Use -debug-or-release to
+   force the pre 5.14.0 default.
+
+****************************************************************************
+*                                  QtCore                                  *
+****************************************************************************
+
+ - QCborValue:
+   * The constructor taking a CBOR tag and a value to be tagged now
+     attempts to convert to a QCborValue extended type. For example, if the
+     tag is 0 (UnixTime_t) and the payload is a number, the resulting
+     object will become tag 1 (DateTime) and the payload will be the the
+     ISO-8601 date/time string.
+
+ - QDateTime:
+   * ISO 8601: parsing of dates now requires a punctuator as separator (it
+     previously allowed any non-digit; officially only a dash should be
+     allowed) and parsing of date-times no longer tolerates spaces in the
+     numeric fields: an internal space is only allowed in an ISO 8601
+     date-time as replacement for the T between date and time.
+
+****************************************************************************
+*                                  QtGui                                   *
+****************************************************************************
+
+ - QGuiApplication:
+   * [QTBUG-80934] Fixed High DPI scaling factors to be equal to pre 5.14.
+
+****************************************************************************
+*                                QtWidgets                                 *
+****************************************************************************
+
+ - QApplication:
+   * [QTBUG-81107] Fixed an exit hang related to QGraphicsProxyWidget.
+ - QToolTip:
+   * Make sure that the tooltip is not obscured by very large mouse
+     pointers on Windows and macOS.
+
+****************************************************************************
+*                                  Tools                                   *
+****************************************************************************
+
+ - rcc:
+   * rcc now generates correct code when using the --namespace option.
+
+****************************************************************************
+*                                macOS/iOS                                 *
+****************************************************************************
+
+ - Fixed a bug where QFontDatabase::systemFont() would return the wrong
+   fonts on macOS 10.15 and iOS 13.
