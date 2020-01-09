@@ -90,8 +90,8 @@ private:
 QAndroidPlatformScreen::QAndroidPlatformScreen()
     : QObject(), QPlatformScreen()
 {
-    m_availableGeometry = QAndroidPlatformIntegration::m_defaultAvailableGeometry;
-    m_size = QAndroidPlatformIntegration::m_defaultScreenSize;
+    m_availableGeometry = QRect(0, 0, QAndroidPlatformIntegration::m_defaultGeometryWidth, QAndroidPlatformIntegration::m_defaultGeometryHeight);
+    m_size = QSize(QAndroidPlatformIntegration::m_defaultScreenWidth, QAndroidPlatformIntegration::m_defaultScreenHeight);
     // Raster only apps should set QT_ANDROID_RASTER_IMAGE_DEPTH to 16
     // is way much faster than 32
     if (qEnvironmentVariableIntValue("QT_ANDROID_RASTER_IMAGE_DEPTH") == 16) {
@@ -101,7 +101,8 @@ QAndroidPlatformScreen::QAndroidPlatformScreen()
         m_format = QImage::Format_ARGB32_Premultiplied;
         m_depth = 32;
     }
-    m_physicalSize = QAndroidPlatformIntegration::m_defaultPhysicalSize;
+    m_physicalSize.setHeight(QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight);
+    m_physicalSize.setWidth(QAndroidPlatformIntegration::m_defaultPhysicalSizeWidth);
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QAndroidPlatformScreen::applicationStateChanged);
 }
 
@@ -293,7 +294,7 @@ void QAndroidPlatformScreen::topWindowChanged(QWindow *w)
     if (w != 0) {
         QAndroidPlatformWindow *platformWindow = static_cast<QAndroidPlatformWindow *>(w->handle());
         if (platformWindow != 0)
-            platformWindow->updateSystemUiVisibility();
+            platformWindow->updateStatusBarVisibility();
     }
 }
 
@@ -333,7 +334,7 @@ void QAndroidPlatformScreen::doRedraw()
     }
     QMutexLocker lock(&m_surfaceMutex);
     if (m_id == -1 && m_rasterSurfaces) {
-        m_id = QtAndroid::createSurface(this, geometry(), true, m_depth);
+        m_id = QtAndroid::createSurface(this, m_availableGeometry, true, m_depth);
         AndroidDeadlockProtector protector;
         if (!protector.acquire())
             return;

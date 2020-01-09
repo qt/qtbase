@@ -67,39 +67,25 @@ void QAndroidPlatformWindow::lower()
 
 void QAndroidPlatformWindow::raise()
 {
-    updateSystemUiVisibility();
+    updateStatusBarVisibility();
     platformScreen()->raise(this);
-}
-
-QMargins QAndroidPlatformWindow::safeAreaMargins() const
-{
-    if ((m_windowState & Qt::WindowMaximized) && (window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint)) {
-        QRect availableGeometry = platformScreen()->availableGeometry();
-        return QMargins(availableGeometry.left(), availableGeometry.top(),
-                        availableGeometry.right(), availableGeometry.bottom());
-    } else {
-        return QPlatformWindow::safeAreaMargins();
-    }
 }
 
 void QAndroidPlatformWindow::setGeometry(const QRect &rect)
 {
-    QPlatformWindow::setGeometry(rect);
     QWindowSystemInterface::handleGeometryChange(window(), rect);
 }
 
 void QAndroidPlatformWindow::setVisible(bool visible)
 {
     if (visible)
-        updateSystemUiVisibility();
+        updateStatusBarVisibility();
 
     if (visible) {
-        if ((m_windowState & Qt::WindowFullScreen)
-                || ((m_windowState & Qt::WindowMaximized) && (window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint))) {
+        if (m_windowState & Qt::WindowFullScreen)
             setGeometry(platformScreen()->geometry());
-        } else if (m_windowState & Qt::WindowMaximized) {
+        else if (m_windowState & Qt::WindowMaximized)
             setGeometry(platformScreen()->availableGeometry());
-        }
     }
 
     if (visible)
@@ -121,7 +107,7 @@ void QAndroidPlatformWindow::setWindowState(Qt::WindowStates state)
     m_windowState = state;
 
     if (window()->isVisible())
-        updateSystemUiVisibility();
+        updateStatusBarVisibility();
 }
 
 void QAndroidPlatformWindow::setWindowFlags(Qt::WindowFlags flags)
@@ -157,17 +143,15 @@ void QAndroidPlatformWindow::requestActivateWindow()
     platformScreen()->topWindowChanged(window());
 }
 
-void QAndroidPlatformWindow::updateSystemUiVisibility()
+void QAndroidPlatformWindow::updateStatusBarVisibility()
 {
     Qt::WindowFlags flags = window()->flags();
     bool isNonRegularWindow = flags & (Qt::Popup | Qt::Dialog | Qt::Sheet) & ~Qt::Window;
     if (!isNonRegularWindow) {
         if (m_windowState & Qt::WindowFullScreen)
-            QtAndroid::setSystemUiVisibility(QtAndroid::SYSTEM_UI_VISIBILITY_FULLSCREEN);
-        else if (flags & Qt::MaximizeUsingFullscreenGeometryHint)
-            QtAndroid::setSystemUiVisibility(QtAndroid::SYSTEM_UI_VISIBILITY_TRANSLUCENT);
+            QtAndroid::hideStatusBar();
         else
-            QtAndroid::setSystemUiVisibility(QtAndroid::SYSTEM_UI_VISIBILITY_NORMAL);
+            QtAndroid::showStatusBar();
     }
 }
 

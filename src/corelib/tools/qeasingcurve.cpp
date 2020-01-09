@@ -1507,7 +1507,7 @@ QDebug operator<<(QDebug debug, const QEasingCurve &item)
 {
     QDebugStateSaver saver(debug);
     debug << "type:" << item.d_ptr->type
-          << "func:" << item.d_ptr->func;
+          << "func:" << reinterpret_cast<const void *>(item.d_ptr->func);
     if (item.d_ptr->config) {
         debug << QString::fromLatin1("period:%1").arg(item.d_ptr->config->_p, 0, 'f', 20)
               << QString::fromLatin1("amp:%1").arg(item.d_ptr->config->_a, 0, 'f', 20)
