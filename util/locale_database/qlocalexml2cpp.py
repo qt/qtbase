@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 #############################################################################
 ##
-## Copyright (C) 2018 The Qt Company Ltd.
+## Copyright (C) 2020 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -272,31 +272,45 @@ class StringData:
         self.data = []
         self.hash = {}
         self.name = name
+        self.text = '' # Used in quick-search for matches in data
 
     def append(self, s):
-        if s in self.hash:
-            return self.hash[s]
-
-        lst = unicode2hex(s)
-        index = len(self.data)
-        if index > 65535:
-            print "\n\n\n#error Data index is too big!"
-            sys.stderr.write ("\n\n\nERROR: index exceeds the uint16 range! index = %d\n" % index)
-            sys.exit(1)
-        size = len(lst)
-        if size >= 65535:
-            print "\n\n\n#error Data is too big!"
-            sys.stderr.write ("\n\n\nERROR: data size exceeds the uint16 range! size = %d\n" % size)
-            sys.exit(1)
-        token = None
         try:
-            token = StringDataToken(index, size)
-        except Error as e:
-            sys.stderr.write("\n\n\nERROR: %s: on data '%s'" % (e, s))
-            sys.exit(1)
-        self.hash[s] = token
-        self.data += lst
+            token = self.hash[s]
+        except KeyError:
+            token = self.__store(s)
+            self.hash[s] = token
         return token
+
+    def __store(self, s):
+        """Add string s to known data.
+
+        Seeks to avoid duplication, where possible.
+        For example, short-forms may be prefixes of long-forms.
+        """
+        if not s:
+            return StringDataToken(0, 0)
+        ucs2 = unicode2hex(s)
+        try:
+            index = self.text.index(s) - 1
+            matched = 0
+            while matched < len(ucs2):
+                index, matched = self.data.index(ucs2[0], index + 1), 1
+                if index + len(ucs2) >= len(self.data):
+                    raise ValueError # not found after all !
+                while matched < len(ucs2) and self.data[index + matched] == ucs2[matched]:
+                    matched += 1
+        except ValueError:
+            index = len(self.data)
+            self.data += ucs2
+            self.text += s
+
+        assert index >= 0
+        try:
+            return StringDataToken(index, len(ucs2))
+        except ValueError as e:
+            e.args += (self.name, s)
+            raise
 
     def write(self, fd):
         fd.write("\nstatic const ushort %s[] = {\n" % self.name)
