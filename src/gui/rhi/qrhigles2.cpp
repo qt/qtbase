@@ -165,6 +165,14 @@ QT_BEGIN_NAMESPACE
 #define GL_RGBA16F                        0x881A
 #endif
 
+#ifndef GL_R16F
+#define GL_R16F                           0x822D
+#endif
+
+#ifndef GL_R32F
+#define GL_R32F                           0x822E
+#endif
+
 #ifndef GL_HALF_FLOAT
 #define GL_HALF_FLOAT                     0x140B
 #endif
@@ -695,6 +703,10 @@ bool QRhiGles2::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture
 
     case QRhiTexture::RGBA16F:
     case QRhiTexture::RGBA32F:
+        return caps.floatFormats;
+
+    case QRhiTexture::R16F:
+    case QRhiTexture::R32F:
         return caps.floatFormats;
 
     default:
@@ -3382,6 +3394,18 @@ bool QGles2Texture::prepareBuild(QSize *adjustedSize)
             glintformat = GL_RGBA32F;
             glsizedintformat = glintformat;
             glformat = GL_RGBA;
+            gltype = GL_FLOAT;
+            break;
+        case QRhiTexture::R16F:
+            glintformat = GL_R16F;
+            glsizedintformat = glintformat;
+            glformat = GL_RED;
+            gltype = GL_HALF_FLOAT;
+            break;
+        case QRhiTexture::R32F:
+            glintformat = GL_R32F;
+            glsizedintformat = glintformat;
+            glformat = GL_RED;
             gltype = GL_FLOAT;
             break;
         case QRhiTexture::D16:

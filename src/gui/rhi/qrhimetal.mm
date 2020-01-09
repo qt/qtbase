@@ -2320,6 +2320,10 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
         return MTLPixelFormatRGBA16Float;
     case QRhiTexture::RGBA32F:
         return MTLPixelFormatRGBA32Float;
+    case QRhiTexture::R16F:
+        return MTLPixelFormatR16Float;
+    case QRhiTexture::R32F:
+        return MTLPixelFormatR32Float;
 
     case QRhiTexture::D16:
 #ifdef Q_OS_MACOS

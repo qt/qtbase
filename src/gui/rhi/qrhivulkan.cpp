@@ -767,6 +767,10 @@ static inline VkFormat toVkTextureFormat(QRhiTexture::Format format, QRhiTexture
         return VK_FORMAT_R16G16B16A16_SFLOAT;
     case QRhiTexture::RGBA32F:
         return VK_FORMAT_R32G32B32A32_SFLOAT;
+    case QRhiTexture::R16F:
+        return VK_FORMAT_R16_SFLOAT;
+    case QRhiTexture::R32F:
+        return VK_FORMAT_R32_SFLOAT;
 
     case QRhiTexture::D16:
         return VK_FORMAT_D16_UNORM;

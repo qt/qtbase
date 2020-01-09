@@ -728,6 +728,8 @@ public:
 
         RGBA16F,
         RGBA32F,
+        R16F,
+        R32F,
 
         D16,
         D32F,

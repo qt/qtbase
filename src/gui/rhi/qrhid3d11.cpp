@@ -1102,6 +1102,10 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
         return DXGI_FORMAT_R16G16B16A16_FLOAT;
     case QRhiTexture::RGBA32F:
         return DXGI_FORMAT_R32G32B32A32_FLOAT;
+    case QRhiTexture::R16F:
+        return DXGI_FORMAT_R16_FLOAT;
+    case QRhiTexture::R32F:
+        return DXGI_FORMAT_R32_FLOAT;
 
     case QRhiTexture::D16:
         return DXGI_FORMAT_R16_TYPELESS;
