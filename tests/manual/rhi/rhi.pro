@@ -9,6 +9,7 @@ SUBDIRS += \
     msaarenderbuffer \
     cubemap \
     cubemap_scissor \
+    cubemap_render \
     multiwindow \
     multiwindow_threaded \
     triquadcube \

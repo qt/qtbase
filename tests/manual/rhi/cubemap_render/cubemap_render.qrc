@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+  <qresource>
+    <file>cubemap_oneface.vert.qsb</file>
+    <file>cubemap_oneface.frag.qsb</file>
+    <file>cubemap_mrt.vert.qsb</file>
+    <file>cubemap_mrt.frag.qsb</file>
+    <file>cubemap_sample.vert.qsb</file>
+    <file>cubemap_sample.frag.qsb</file>
+</qresource>
+</RCC>
