@@ -417,7 +417,7 @@ xcb_window_t QXcbClipboard::requestor() const
                           XCB_WINDOW_CLASS_INPUT_OUTPUT,         // window class
                           platformScreen->screen()->root_visual, // visual
                           0,                                     // value mask
-                          nullptr);                                    // value list
+                          nullptr);                              // value list
 
         QXcbWindow::setWindowTitle(connection(), window,
                                    QStringLiteral("Qt Clipboard Requestor Window"));

@@ -803,7 +803,7 @@ xcb_window_t QXcbConnection::getQtSelectionOwner()
                           XCB_WINDOW_CLASS_INPUT_OUTPUT,      // window class
                           xcbScreen->root_visual,             // visual
                           0,                                  // value mask
-                          nullptr);                                 // value list
+                          nullptr);                           // value list
 
         QXcbWindow::setWindowTitle(connection(), m_qtSelectionOwner,
                                    QLatin1String("Qt Selection Owner for ") + QCoreApplication::applicationName());

@@ -1190,7 +1190,7 @@ void QXcbWindow::updateNetWmUserTime(xcb_timestamp_t timestamp)
                               XCB_WINDOW_CLASS_INPUT_OUTPUT,   // window class
                               m_visualId,                      // visual
                               0,                               // value mask
-                              nullptr);                              // value list
+                              nullptr);                        // value list
             wid = m_netWmUserTimeWindow;
             xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, m_window, atom(QXcbAtom::_NET_WM_USER_TIME_WINDOW),
                                 XCB_ATOM_WINDOW, 32, 1, &m_netWmUserTimeWindow);
