@@ -1857,10 +1857,13 @@ void MakefileGenerator::callExtraCompilerDependCommand(const ProString &extraCom
                                                        const QString &tmp_out,
                                                        bool dep_lines,
                                                        QStringList *deps,
-                                                       bool existingDepsOnly)
+                                                       bool existingDepsOnly,
+                                                       bool checkCommandAvailability)
 {
     char buff[256];
     QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, inpf, tmp_out, LocalShell);
+    if (checkCommandAvailability && !canExecute(dep_cmd))
+        return;
     dep_cmd = dep_cd_cmd + fixEnvVariables(dep_cmd);
     if (FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), QT_POPEN_READ)) {
         QByteArray depData;

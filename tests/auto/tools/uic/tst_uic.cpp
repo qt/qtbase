@@ -45,10 +45,22 @@ static const char diffToStderrEnvVar[] = "UIC_STDERR_DIFF";
 
 struct TestEntry
 {
+    enum Flag
+    {
+        IdBasedTranslation = 0x1,
+        Python = 0x2, // Python baseline is present
+        DontTestPythonCompile = 0x4 // Do not test Python compilation
+    };
+    Q_DECLARE_FLAGS(Flags, Flag)
+
     QByteArray name;
-    QString baselineBaseName;
+    QString uiFileName;
+    QString baseLineFileName;
     QString generatedFileName;
+    Flags flags;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(TestEntry::Flags)
 
 class tst_uic : public QObject
 {
@@ -73,8 +85,8 @@ private Q_SLOTS:
     void compare();
     void compare_data() const;
 
-    void python();
-    void python_data() const;
+    void pythonCompile();
+    void pythonCompile_data() const;
 
     void runCompare();
 
@@ -89,9 +101,12 @@ private:
     QString m_python;
 };
 
+static const char versionRegexp[] =
+    R"([*#][*#] Created by: Qt User Interface Compiler version \d{1,2}\.\d{1,2}\.\d{1,2})";
+
 tst_uic::tst_uic()
     : m_command(QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/uic"))
-    , m_versionRegexp(QLatin1String(R"(\*\* Created by: Qt User Interface Compiler version \d{1,2}\.\d{1,2}\.\d{1,2})"))
+    , m_versionRegexp(QLatin1String(versionRegexp))
 {
 }
 
@@ -165,10 +180,27 @@ void tst_uic::populateTestEntries()
     m_testEntries.reserve(baselineFiles.size());
     for (const QFileInfo &baselineFile : baselineFiles) {
         const QString baseName = baselineFile.baseName();
-        const QString baselineBaseName = baseLinePrefix + baseName;
-        const QString generatedFile = generatedPrefix + baselineFile.fileName()
-            + QLatin1String(".h");
-        m_testEntries.append(TestEntry{baseName.toLocal8Bit(), baselineBaseName, generatedFile});
+        TestEntry entry;
+        // qprintsettingsoutput: variable named 'from' clashes with Python
+        if (baseName == QLatin1String("qprintsettingsoutput"))
+            entry.flags.setFlag(TestEntry::DontTestPythonCompile);
+        else if (baseName  == QLatin1String("qttrid"))
+            entry.flags.setFlag(TestEntry::IdBasedTranslation);
+        entry.name = baseName.toLocal8Bit();
+        entry.uiFileName = baselineFile.absoluteFilePath();
+        entry.baseLineFileName = entry.uiFileName + QLatin1String(".h");
+        const QString generatedFilePrefix = generatedPrefix + baselineFile.fileName();
+        entry.generatedFileName = generatedFilePrefix + QLatin1String(".h");
+        m_testEntries.append(entry);
+        // Check for a Python baseline
+        entry.baseLineFileName = entry.uiFileName + QLatin1String(".py");
+        if (QFileInfo::exists(entry.baseLineFileName)) {
+            entry.name.append(QByteArrayLiteral("-python"));
+            entry.flags.setFlag(TestEntry::DontTestPythonCompile);
+            entry.flags.setFlag(TestEntry::Python);
+            entry.generatedFileName = generatedFilePrefix + QLatin1String(".py");
+            m_testEntries.append(entry);
+        }
     }
 }
 
@@ -237,9 +269,11 @@ void tst_uic::run_data() const
 
     for (const TestEntry &te : m_testEntries) {
         QStringList options;
-        if (te.name == QByteArrayLiteral("qttrid"))
-            options << QStringList(QLatin1String("-idbased"));
-        QTest::newRow(te.name.constData()) << (te.baselineBaseName + QLatin1String(".ui"))
+        if (te.flags.testFlag(TestEntry::IdBasedTranslation))
+            options.append(QLatin1String("-idbased"));
+        if (te.flags.testFlag(TestEntry::Python))
+            options << QLatin1String("-g") << QLatin1String("python");
+        QTest::newRow(te.name.constData()) << te.uiFileName
             << te.generatedFileName << options;
     }
 }
@@ -319,7 +353,7 @@ void tst_uic::compare_data() const
     QTest::addColumn<QString>("generatedFile");
 
     for (const TestEntry &te : m_testEntries) {
-        QTest::newRow(te.name.constData()) << (te.baselineBaseName + QLatin1String(".ui.h"))
+        QTest::newRow(te.name.constData()) << te.baseLineFileName
             << te.generatedFileName;
     }
 }
@@ -396,7 +430,8 @@ static inline QByteArray msgCompilePythonFailed(const QByteArray &error)
     return lines.join('\n');
 }
 
-void tst_uic::python_data() const
+// Test Python code generation by compiling the file
+void tst_uic::pythonCompile_data() const
 {
     QTest::addColumn<QString>("originalFile");
     QTest::addColumn<QString>("generatedFile");
@@ -405,19 +440,15 @@ void tst_uic::python_data() const
         ? qMin(1, m_testEntries.size()) : m_testEntries.size();
     for (int i = 0; i < size; ++i) {
         const TestEntry &te = m_testEntries.at(i);
-        // qprintsettingsoutput: variable named 'from' clashes with Python
-        if (!te.baselineBaseName.endsWith(QLatin1String("/qprintsettingsoutput"))) {
-            QString generatedFile = te.generatedFileName;
-            generatedFile.chop(1); // foo.h -> foo.py
-            generatedFile.append(QLatin1String("py"));
+        if (!te.flags.testFlag(TestEntry::DontTestPythonCompile)) {
             QTest::newRow(te.name.constData())
-                << (te.baselineBaseName + QLatin1String(".ui"))
-                << generatedFile;
+                << te.uiFileName
+                << te.generatedFileName;
         }
     }
 }
 
-void tst_uic::python()
+void tst_uic::pythonCompile()
 {
     QFETCH(QString, originalFile);
     QFETCH(QString, generatedFile);

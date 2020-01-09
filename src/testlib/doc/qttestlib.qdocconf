@@ -28,7 +28,7 @@ qhp.QtTestLib.subprojects.classes.sortPages = true
 
 tagfile                 = ../../../doc/qttestlib/qttestlib.tags
 
-depends                 += qtcore qtdoc qtwidgets qtgui qmake qtqmltest
+depends                 += qtcore qtdoc qtwidgets qtgui qmake qtqmltest qtcmake
 
 headerdirs  += ..
 

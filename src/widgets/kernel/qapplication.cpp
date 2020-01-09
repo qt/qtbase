@@ -1868,7 +1868,7 @@ bool QApplication::event(QEvent *e)
         closeAllWindows();
         for (auto *w : topLevelWidgets()) {
             if (w->isVisible() && !(w->windowType() == Qt::Desktop) && !(w->windowType() == Qt::Popup) &&
-                 (!(w->windowType() == Qt::Dialog) || !w->parentWidget())) {
+                 (!(w->windowType() == Qt::Dialog) || !w->parentWidget()) && !w->testAttribute(Qt::WA_DontShowOnScreen)) {
                 e->ignore();
                 return true;
             }
