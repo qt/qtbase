@@ -287,7 +287,7 @@ void tst_QSocks5SocketEngine::errorTest()
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(int(socket.error()), expectedError);
+    QCOMPARE(int(socket.socketError()), expectedError);
 }
 
 //---------------------------------------------------------------------------
@@ -1010,7 +1010,7 @@ void tst_QSocks5SocketEngine::incomplete()
     QTestEventLoop::instance().enterLoop(70);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(socket.error(), QAbstractSocket::ProxyConnectionClosedError);
+    QCOMPARE(socket.socketError(), QAbstractSocket::ProxyConnectionClosedError);
 }
 
 //----------------------------------------------------------------------------------

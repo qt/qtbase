@@ -180,7 +180,12 @@ public:
 
     SocketType socketType() const;
     SocketState state() const;
-    SocketError error() const;
+
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use socketError()") SocketError error() const;
+#endif // QT_DEPRECATED_SINCE(5, 15)
+
+    SocketError socketError() const;
 
     // from QIODevice
     void close() override;

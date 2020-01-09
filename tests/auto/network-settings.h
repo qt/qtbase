@@ -174,7 +174,7 @@ public:
         if (!s.peerAddress().isNull())
             debug << ", peer=" << s.peerAddress().toString() << ':' << s.peerPort();
         debug << ", type=" << s.socketType() << ", state=" << s.state()
-            << ", error=" << s.error() << ": " << s.errorString();
+            << ", error=" << s.socketError() << ": " << s.errorString();
        return result.toLocal8Bit();
     }
 #endif // QT_NETWORK_LIB
