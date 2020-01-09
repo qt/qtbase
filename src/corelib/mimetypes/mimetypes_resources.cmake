@@ -10,7 +10,7 @@ set(corelib_mimetypes_resource_file
 function(corelib_add_mimetypes_resources target)
     set(source_file "${corelib_mimetypes_resource_file}")
     set_source_files_properties("${source_file}"
-        PROPERTIES alias "freedesktop.org.xml"
+        PROPERTIES QT_RESOURCE_ALIAS "freedesktop.org.xml"
     )
     qt_add_resource(${target} "mimetypes"
         PREFIX
