@@ -319,7 +319,7 @@ def escapedString(s):
     need_escape = False
     result = ""
     for c in s:
-        if ord(c) < 128 and (not need_escape or ord(c.lower()) < ord('a') or ord(c.lower()) > ord('f')):
+        if ord(c) < 128 and not (need_escape and ord('a') <= ord(c.lower()) <= ord('f')):
             line += c
             need_escape = False
         else:
@@ -361,7 +361,7 @@ def main():
                     for leaf in ('qlocale_data_p.h', 'qlocale.h', 'qlocale.qdoc'))):
         usage()
 
-    (data_temp_file, data_temp_file_path) = tempfile.mkstemp("qlocale_data_p", dir=qtsrcdir)
+    (data_temp_file, data_temp_file_path) = tempfile.mkstemp("qlocale_data_p.h", dir=qtsrcdir)
     data_temp_file = os.fdopen(data_temp_file, "w")
     qlocaledata_file = open(qtsrcdir + "/src/corelib/text/qlocale_data_p.h", "r")
     s = qlocaledata_file.readline()
@@ -426,7 +426,8 @@ def main():
             cmnt_to = cmnt_to + country_map[to_country][1]
 
         data_temp_file.write("    ")
-        data_temp_file.write("{ %3d, %3d, %3d }, { %3d, %3d, %3d }" % (from_language, from_script, from_country, to_language, to_script, to_country))
+        data_temp_file.write("{ %3d, %3d, %3d }, { %3d, %3d, %3d }" %
+                             (from_language, from_script, from_country, to_language, to_script, to_country))
         index += 1
         if index != len(likely_subtags_map):
             data_temp_file.write(",")
@@ -591,7 +592,7 @@ def main():
                         endonyms_data.append(l.languageEndonym),
                         endonyms_data.append(l.countryEndonym),
                         l.currencyDigits,
-                        l.currencyRounding,
+                        l.currencyRounding, # unused (QTBUG-81343)
                         l.firstDayOfWeek,
                         l.weekendStart,
                         l.weekendEnd)
@@ -600,7 +601,7 @@ def main():
                          % ( (0,) * (3 + 8 + 4) + ("0,0",) * (16 + 3)
                              + (currencyIsoCodeData(0),)
                              + ("0,0",) * 6 + (0,) * (2 + 3))
-                         + " // trailing 0s\n")
+                         + " // trailing zeros\n")
     data_temp_file.write("};\n")
 
     # StringData tables:
@@ -776,7 +777,7 @@ def main():
                    months_data.append(l.shortMonths[calendar]),
                    months_data.append(l.longMonths[calendar]),
                    months_data.append(l.narrowMonths[calendar]))
-                + "// %s/%s/%s\n " % (l.language, l.script, l.country))
+                + "// %s/%s/%s\n" % (l.language, l.script, l.country))
         calendar_temp_file.write(calendar_format % ( (0,) * 3 + ('0,0',) * 6 )
                                       + '// trailing zeros\n')
         calendar_temp_file.write("};\n")
@@ -815,9 +816,7 @@ def main():
                              ",\n")
     qlocaleh_temp_file.write("\n")
     qlocaleh_temp_file.write("        LastLanguage = " + language + "\n")
-    qlocaleh_temp_file.write("    };\n")
-
-    qlocaleh_temp_file.write("\n")
+    qlocaleh_temp_file.write("    };\n\n")
 
     # Script enum
     qlocaleh_temp_file.write("    enum Script {\n")
@@ -831,7 +830,7 @@ def main():
                              ",\n")
     qlocaleh_temp_file.write("\n")
     qlocaleh_temp_file.write("        LastScript = " + script + "\n")
-    qlocaleh_temp_file.write("    };\n")
+    qlocaleh_temp_file.write("    };\n\n")
 
     # Country enum
     qlocaleh_temp_file.write("    enum Country {\n")
