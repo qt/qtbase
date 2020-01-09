@@ -182,6 +182,6 @@
     In addition to the functions and slots discussed above, we have
     also implemented several convenience functions to simplify the
     constructor: \c createIconGroupBox(), \c createMessageGroupBox(),
-    \c createActions() and \c createTrayIcon(). See the \l
-    {desktop/systray/window.cpp}{window.cpp} file for details.
+    \c createActions() and \c createTrayIcon(). See the \c
+    {desktop/systray/window.cpp} file for details.
 */

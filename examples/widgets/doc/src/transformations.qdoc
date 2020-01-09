@@ -320,8 +320,8 @@
 
     The \c setupShapes() function is called from the constructor and
     create the QPainterPath objects representing the shapes that are
-    used in the application. For construction details, see the \l
-    {painting/transformations/window.cpp}{window.cpp} example
+    used in the application. For construction details, see the \c
+    {painting/transformations/window.cpp} example
     file. The shapes are stored in a QList. The QList::append()
     function inserts the given shape at the end of the list.
 

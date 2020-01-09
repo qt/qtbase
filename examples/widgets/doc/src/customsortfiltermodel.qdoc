@@ -284,6 +284,6 @@
     instance of the QStandardItemModel class, i.e., a generic model
     for storing custom data typically used as a repository for
     standard Qt data types. Each mail description is added to the
-    model using \c addMail(), another convenience function. See \l
-    {itemviews/customsortfiltermodel/main.cpp}{main.cpp} for details.
+    model using \c addMail(), another convenience function. See \c
+    {itemviews/customsortfiltermodel/main.cpp} for details.
 */

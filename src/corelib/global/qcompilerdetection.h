@@ -882,7 +882,6 @@
 #      define Q_COMPILER_DEFAULT_MEMBERS
 #      define Q_COMPILER_DELETE_MEMBERS
        /* C++11 features supported in GCC 4.6: */
-#      define Q_COMPILER_CONSTEXPR
 #      define Q_COMPILER_NULLPTR
 #      define Q_COMPILER_UNRESTRICTED_UNIONS
 #      define Q_COMPILER_RANGE_FOR
@@ -913,7 +912,11 @@
 #         define Q_COMPILER_REF_QUALIFIERS
 #      endif
 #    endif
-     /* C++11 features are complete as of GCC 4.8.1 */
+#    if Q_CC_GNU >= 500
+       /* GCC 4.6 introduces constexpr, but it's bugged (at least) in the whole
+        * 4.x series, see e.g. https://gcc.gnu.org/bugzilla/show_bug.cgi?id=57694 */
+#      define Q_COMPILER_CONSTEXPR
+#    endif
 #  endif
 #  if __cplusplus > 201103L
 #    if Q_CC_GNU >= 409

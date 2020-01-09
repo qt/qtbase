@@ -136,7 +136,7 @@
 
     \section1 Defining the AddressBook Class
 
-    The \l{tutorials/addressbook/part1/addressbook.h}{\c addressbook.h} file is
+    The \c{tutorials/addressbook/part1/addressbook.h} file is
     used to define the \c AddressBook class.
 
     We start by defining \c AddressBook as a QWidget subclass and declaring

@@ -94,9 +94,6 @@ extern QClipboard *qt_clipboard;
 typedef QHash<QByteArray, QFont> FontHash;
 Q_WIDGETS_EXPORT FontHash *qt_app_fonts_hash();
 
-typedef QHash<QByteArray, QPalette> PaletteHash;
-PaletteHash *qt_app_palettes_hash();
-
 #define QApplicationPrivateBase QGuiApplicationPrivate
 
 class Q_WIDGETS_EXPORT QApplicationPrivate : public QApplicationPrivateBase
@@ -188,10 +185,13 @@ public:
     static bool widgetCount; // Coupled with -widgetcount switch
 
     static void setSystemPalette(const QPalette &pal);
-    static void setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash);
+    static void setPalette_helper(const QPalette &palette, const char* className);
     static void initializeWidgetPaletteHash();
     static void initializeWidgetFontHash();
     static void setSystemFont(const QFont &font);
+
+    using PaletteHash = QHash<QByteArray, QPalette>;
+    static PaletteHash widgetPalettes;
 
     static QApplicationPrivate *instance() { return self; }
 
