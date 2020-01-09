@@ -2827,16 +2827,16 @@ static QString rawMonthName(const QCalendarLocale &localeData,
     QLocaleData::DataRange range;
     switch (type) {
     case QLocale::LongFormat:
-       range = localeData.m_long;
-       break;
+        range = localeData.longMonth();
+        break;
     case QLocale::ShortFormat:
-       range = localeData.m_short;
-       break;
+        range = localeData.shortMonth();
+        break;
     case QLocale::NarrowFormat:
-       range = localeData.m_narrow;
-       break;
+        range = localeData.narrowMonth();
+        break;
     default:
-       return QString();
+        return QString();
     }
     return range.getListEntry(monthsData, month - 1);
 }
@@ -2852,13 +2852,13 @@ static QString rawStandaloneMonthName(const QCalendarLocale &localeData,
     QLocaleData::DataRange range;
     switch (type) {
     case QLocale::LongFormat:
-        range = localeData.m_standalone_long;
+        range = localeData.longMonthStandalone();
         break;
     case QLocale::ShortFormat:
-        range = localeData.m_standalone_short;
+        range = localeData.shortMonthStandalone();
         break;
     case QLocale::NarrowFormat:
-        range = localeData.m_standalone_narrow;
+        range = localeData.narrowMonthStandalone();
         break;
     default:
         return QString();

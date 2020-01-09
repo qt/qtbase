@@ -326,35 +326,22 @@ public:
             return { quint16(offset + i), quint16(end - i) };
         }
     };
-#define rangeGetter(name, stem) \
-    DataRange name() const { return { m_ ## stem ## _idx, m_ ## stem ## _size }; }
 
-    rangeGetter(startListPattern, list_pattern_part_start)
-    rangeGetter(midListPattern, list_pattern_part_mid)
-    rangeGetter(endListPattern, list_pattern_part_end)
-    rangeGetter(pairListPattern, list_pattern_part_two)
-    rangeGetter(shortDateFormat, short_date_format)
-    rangeGetter(longDateFormat, long_date_format)
-    rangeGetter(shortTimeFormat, short_time_format)
-    rangeGetter(longTimeFormat, long_time_format)
-    rangeGetter(narrowDayNamesStandalone, standalone_narrow_day_names)
-    rangeGetter(shortDayNamesStandalone, standalone_short_day_names)
-    rangeGetter(longDayNamesStandalone, standalone_long_day_names)
-    rangeGetter(narrowDayNames, narrow_day_names)
-    rangeGetter(shortDayNames, short_day_names)
-    rangeGetter(longDayNames, long_day_names)
-    rangeGetter(anteMeridiem, am)
-    rangeGetter(postMeridiem, pm)
-    rangeGetter(byteCount, byte)
-    rangeGetter(byteAmountSI, byte_si_quantified)
-    rangeGetter(byteAmountIEC, byte_iec_quantified)
-    rangeGetter(currencySymbol, currency_symbol)
-    rangeGetter(currencyDisplayName, currency_display_name)
-    rangeGetter(currencyFormat, currency_format)
-    rangeGetter(currencyFormatNegative, currency_negative_format)
-    rangeGetter(endonymLanguage, language_endonym)
-    rangeGetter(endonymCountry, country_endonym)
+#define ForEachQLocaleRange(X) \
+    X(startListPattern) X(midListPattern) X(endListPattern) X(pairListPattern) \
+    X(longDateFormat) X(shortDateFormat) X(longTimeFormat) X(shortTimeFormat) \
+    X(longDayNamesStandalone) X(longDayNames) \
+    X(shortDayNamesStandalone) X(shortDayNames) \
+    X(narrowDayNamesStandalone) X(narrowDayNames) \
+    X(anteMeridiem) X(postMeridiem) \
+    X(byteCount) X(byteAmountSI) X(byteAmountIEC) \
+    X(currencySymbol) X(currencyDisplayName) \
+    X(currencyFormat) X(currencyFormatNegative) \
+    X(endonymLanguage) X(endonymCountry)
 
+#define rangeGetter(name) \
+    DataRange name() const { return { m_ ## name ## _idx, m_ ## name ## _size }; }
+    ForEachQLocaleRange(rangeGetter)
 #undef rangeGetter
 
 public:
@@ -365,34 +352,20 @@ public:
     char16_t m_quotation_start, m_quotation_end;
     char16_t m_alternate_quotation_start, m_alternate_quotation_end;
 
-    quint16 m_list_pattern_part_start_idx, m_list_pattern_part_start_size;
-    quint16 m_list_pattern_part_mid_idx, m_list_pattern_part_mid_size;
-    quint16 m_list_pattern_part_end_idx, m_list_pattern_part_end_size;
-    quint16 m_list_pattern_part_two_idx, m_list_pattern_part_two_size;
-    quint16 m_short_date_format_idx, m_short_date_format_size;
-    quint16 m_long_date_format_idx, m_long_date_format_size;
-    quint16 m_short_time_format_idx, m_short_time_format_size;
-    quint16 m_long_time_format_idx, m_long_time_format_size;
-    quint16 m_standalone_short_day_names_idx, m_standalone_short_day_names_size;
-    quint16 m_standalone_long_day_names_idx, m_standalone_long_day_names_size;
-    quint16 m_standalone_narrow_day_names_idx, m_standalone_narrow_day_names_size;
-    quint16 m_short_day_names_idx, m_short_day_names_size;
-    quint16 m_long_day_names_idx, m_long_day_names_size;
-    quint16 m_narrow_day_names_idx, m_narrow_day_names_size;
-    quint16 m_am_idx, m_am_size;
-    quint16 m_pm_idx, m_pm_size;
-    quint16 m_byte_idx, m_byte_size;
-    quint16 m_byte_si_quantified_idx, m_byte_si_quantified_size;
-    quint16 m_byte_iec_quantified_idx, m_byte_iec_quantified_size;
+    // Offsets, then sizes, for each range:
+#define rangeIndex(name) quint16 m_ ## name ## _idx;
+    ForEachQLocaleRange(rangeIndex)
+#undef rangeIndex
+#define Size(name) quint8 m_ ## name ## _size;
+    ForEachQLocaleRange(Size)
+#undef Size
+
+#undef ForEachQLocaleRange
+
+    // Strays:
     char    m_currency_iso_code[3];
-    quint16 m_currency_symbol_idx, m_currency_symbol_size;
-    quint16 m_currency_display_name_idx, m_currency_display_name_size;
-    quint8  m_currency_format_idx, m_currency_format_size;
-    quint8  m_currency_negative_format_idx, m_currency_negative_format_size;
-    quint16 m_language_endonym_idx, m_language_endonym_size;
-    quint16 m_country_endonym_idx, m_country_endonym_size;
     quint16 m_currency_digits : 2;
-    quint16 m_currency_rounding : 3;
+    quint16 m_currency_rounding : 3; // (not yet used !)
     quint16 m_first_day_of_week : 3;
     quint16 m_weekend_start : 3;
     quint16 m_weekend_end : 3;

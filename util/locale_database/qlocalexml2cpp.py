@@ -259,13 +259,16 @@ def unicode2hex(s):
     return lst
 
 class StringDataToken:
-    def __init__(self, index, length):
-        if index > 0xFFFF or length > 0xFFFF:
-            raise Error("Position exceeds ushort range: %d,%d " % (index, length))
+    def __init__(self, index, length, bits):
+        if index > 0xffff:
+            print "\n\n\n#error Data index is too big!", index
+            raise ValueError("Start-index (%d) exceeds the uint16 range!" % index)
+        if length >= (1 << bits):
+            print "\n\n\n#error Range length is too big!", length
+            raise ValueError("Data size (%d) exceeds the %d-bit range!" % (length, bits))
+
         self.index = index
         self.length = length
-    def __str__(self):
-        return " %d,%d " % (self.index, self.length)
 
 class StringData:
     def __init__(self, name):
@@ -274,22 +277,22 @@ class StringData:
         self.name = name
         self.text = '' # Used in quick-search for matches in data
 
-    def append(self, s):
+    def append(self, s, bits=8):
         try:
             token = self.hash[s]
         except KeyError:
-            token = self.__store(s)
+            token = self.__store(s, bits)
             self.hash[s] = token
         return token
 
-    def __store(self, s):
+    def __store(self, s, bits):
         """Add string s to known data.
 
         Seeks to avoid duplication, where possible.
         For example, short-forms may be prefixes of long-forms.
         """
         if not s:
-            return StringDataToken(0, 0)
+            return StringDataToken(0, 0, bits)
         ucs2 = unicode2hex(s)
         try:
             index = self.text.index(s) - 1
@@ -307,12 +310,15 @@ class StringData:
 
         assert index >= 0
         try:
-            return StringDataToken(index, len(ucs2))
+            return StringDataToken(index, len(ucs2), bits)
         except ValueError as e:
             e.args += (self.name, s)
             raise
 
     def write(self, fd):
+        if len(self.data) > 0xffff:
+            raise ValueError("Data is too big for quint16 index to its end!" % len(self.data),
+                             self.name)
         fd.write("\nstatic const ushort %s[] = {\n" % self.name)
         fd.write(wrap_list(self.data))
         fd.write("\n};\n")
@@ -498,39 +504,43 @@ def main():
                          + ' quotEnd '
                          + 'altQtOpn '
                          + 'altQtEnd '
-                         # Width 11 + comma:
-                         + '  lpStart   ' # List pattern
-                         + '   lpMid    '
-                         + '   lpEnd    '
-                         + '   lpTwo    '
-                         + '   sDtFmt   ' # Date format
-                         + '   lDtFmt   '
-                         + '   sTmFmt   ' # Time format
-                         + '   lTmFmt   '
-                         + '   ssDays   ' # Days
-                         + '   slDays   '
-                         + '   snDays   '
-                         + '    sDays   '
-                         + '    lDays   '
-                         + '    nDays   '
-                         + '     am     ' # am/pm indicators
-                         + '     pm     '
-                         # Width 8 + comma
-                         + '  byte   '
-                         + ' siQuant '
-                         + 'iecQuant '
+
+                         # Range entries (all start-indices, then all sizes):
+                         # Width 5 + comma:
+                         + 'lStrt ' # List pattern
+                         + 'lpMid '
+                         + 'lpEnd '
+                         + 'lPair '
+                         + 'lDFmt ' # Date format
+                         + 'sDFmt '
+                         + 'lTFmt ' # Time format
+                         + 'sTFmt '
+                         + 'slDay ' # Day names
+                         + 'lDays '
+                         + 'ssDys '
+                         + 'sDays '
+                         + 'snDay '
+                         + 'nDays '
+                         + '  am  ' # am/pm indicators
+                         + '  pm  '
+                         + ' byte '
+                         + 'siQnt '
+                         + 'iecQn '
+                         + 'crSym ' # Currency formatting:
+                         + 'crDsp '
+                         + 'crFmt '
+                         + 'crFNg '
+                         + 'ntLng ' # Name of language in itself, and of territory:
+                         + 'ntTer '
+                         # Width 3 + comma for each size; no header
+                         + '    ' * 25
+
+                         # Strays (char array, bit-fields):
                          # Width 8+4 + comma
                          + '   currISO   '
-                         # Width 11 + comma:
-                         + '  currSym   ' # Currency formatting:
-                         + ' currDsply  '
-                         + '  currFmt   '
-                         + ' currFmtNeg '
-                         + '  endoLang  ' # Name of language in itself, and of country:
-                         + '  endoCntry '
                          # Width 6 + comma:
-                         + 'curDgt ' # Currency number representation:
-                         + 'curRnd '
+                         + 'curDgt ' # Currency digits
+                         + 'curRnd ' # Currencty rounding (unused: QTBUG-81343)
                          + 'dow1st ' # First day of week
                          + ' wknd+ ' # Week-end start/end days:
                          + ' wknd-'
@@ -550,14 +560,16 @@ def main():
                    + '%6d,' * 8
                    # Quotation marks:
                    + '%8d,' * 4
+
                    # List patterns, date/time formats, month/day names, am/pm:
-                   + '%11s,' * 16
                    # SI/IEC byte-unit abbreviations:
-                   + '%8s,' * 3
+                   # Currency and endonyms
+                   + '%5d,' * 25
+                   # Sizes for the same:
+                   + '%3d,' * 25
+
                    # Currency ISO code:
                    + ' %10s, '
-                   # Currency and endonyms
-                   + '%11s,' * 6
                    # Currency formatting:
                    + '%6d,%6d'
                    # Day of week and week-end:
@@ -565,8 +577,32 @@ def main():
                    + ' }')
     for key in locale_keys:
         l = locale_map[key]
+        # Sequence of StringDataToken:
+        ranges = (tuple(list_pattern_part_data.append(p) for p in # 4 entries:
+                        (l.listPatternPartStart, l.listPatternPartMiddle,
+                         l.listPatternPartEnd, l.listPatternPartTwo)) +
+                  tuple (date_format_data.append(f) for f in # 2 entries:
+                         (l.longDateFormat, l.shortDateFormat)) +
+                  tuple(time_format_data.append(f) for f in # 2 entries:
+                        (l.longTimeFormat, l.shortTimeFormat)) +
+                  tuple(days_data.append(d) for d in # 6 entries:
+                        (l.standaloneLongDays, l.longDays,
+                         l.standaloneShortDays, l.shortDays,
+                         l.standaloneNarrowDays, l.narrowDays)) +
+                  (am_data.append(l.am), pm_data.append(l.pm)) + # 2 entries:
+                  tuple(byte_unit_data.append(b) for b in # 3 entries:
+                        (l.byte_unit, l.byte_si_quantified, l.byte_iec_quantified)) +
+                  (currency_symbol_data.append(l.currencySymbol),
+                   currency_display_name_data.append(l.currencyDisplayName),
+                   currency_format_data.append(l.currencyFormat),
+                   currency_format_data.append(l.currencyNegativeFormat),
+                   endonyms_data.append(l.languageEndonym),
+                   endonyms_data.append(l.countryEndonym)) # 6 entries
+                  ) # Total: 25 entries
+        assert len(ranges) == 25
+
         data_temp_file.write(line_format
-                    % (key[0], key[1], key[2],
+                    % ((key[0], key[1], key[2],
                         l.decimal,
                         l.group,
                         l.listDelim,
@@ -578,43 +614,21 @@ def main():
                         l.quotationStart,
                         l.quotationEnd,
                         l.alternateQuotationStart,
-                        l.alternateQuotationEnd,
-                        list_pattern_part_data.append(l.listPatternPartStart),
-                        list_pattern_part_data.append(l.listPatternPartMiddle),
-                        list_pattern_part_data.append(l.listPatternPartEnd),
-                        list_pattern_part_data.append(l.listPatternPartTwo),
-                        date_format_data.append(l.shortDateFormat),
-                        date_format_data.append(l.longDateFormat),
-                        time_format_data.append(l.shortTimeFormat),
-                        time_format_data.append(l.longTimeFormat),
-                        days_data.append(l.standaloneShortDays),
-                        days_data.append(l.standaloneLongDays),
-                        days_data.append(l.standaloneNarrowDays),
-                        days_data.append(l.shortDays),
-                        days_data.append(l.longDays),
-                        days_data.append(l.narrowDays),
-                        am_data.append(l.am),
-                        pm_data.append(l.pm),
-                        byte_unit_data.append(l.byte_unit),
-                        byte_unit_data.append(l.byte_si_quantified),
-                        byte_unit_data.append(l.byte_iec_quantified),
-                        currencyIsoCodeData(l.currencyIsoCode),
-                        currency_symbol_data.append(l.currencySymbol),
-                        currency_display_name_data.append(l.currencyDisplayName),
-                        currency_format_data.append(l.currencyFormat),
-                        currency_format_data.append(l.currencyNegativeFormat),
-                        endonyms_data.append(l.languageEndonym),
-                        endonyms_data.append(l.countryEndonym),
+                        l.alternateQuotationEnd) +
+                       tuple(r.index for r in ranges) +
+                       tuple(r.length for r in ranges) +
+                       (currencyIsoCodeData(l.currencyIsoCode),
                         l.currencyDigits,
                         l.currencyRounding, # unused (QTBUG-81343)
                         l.firstDayOfWeek,
                         l.weekendStart,
-                        l.weekendEnd)
+                        l.weekendEnd))
                              + ", // %s/%s/%s\n" % (l.language, l.script, l.country))
     data_temp_file.write(line_format # All zeros, matching the format:
-                         % ( (0,) * (3 + 8 + 4) + ("0,0",) * (16 + 3)
+                         % ( (0,) * (3 + 8 + 4) + (0,) * 25 * 2
                              + (currencyIsoCodeData(0),)
-                             + ("0,0",) * 6 + (0,) * (2 + 3))
+                             + (0,) * 2
+                             + (0,) * 3)
                          + " // trailing zeros\n")
     data_temp_file.write("};\n")
 
@@ -750,7 +764,7 @@ def main():
     os.rename(data_temp_file_path, qtsrcdir + "/src/corelib/text/qlocale_data_p.h")
 
     # Generate calendar data
-    calendar_format = '      {%6d,%6d,%6d,{%5s},{%5s},{%5s},{%5s},{%5s},{%5s}}, '
+    calendar_format = '      {%6d,%6d,%6d' + ',%5d' * 6 + ',%3d' * 6 + ' },'
     for calendar, stem in calendars.items():
         months_data = StringData('months_data')
         calendar_data_file = "q%scalendar_data_p.h" % stem
@@ -770,30 +784,38 @@ def main():
                                  + ' lang  '
                                  + ' script'
                                  + ' terr  '
-                                 # Month-name start-end pairs, width 8 (5 plus '{},'):
-                                     + ' sShort '
-                                 + ' sLong  '
-                                 + ' sNarrow'
-                                 + ' short  '
-                                 + ' long   '
-                                 + ' narrow'
-                                 # No trailing space on last; be sure
-                                 # to pad before adding later entries.
+                                 # Month-name start-indices, width 6 (5 + comma):
+                                 + 'sLng '
+                                 + 'long '
+                                 + 'sSrt '
+                                 + 'shrt '
+                                 + 'sNrw '
+                                 + 'naro '
+                                 # No individual headers for the sizes.
+                                 + 'Sizes...'
                                  + '\n')
         for key in locale_keys:
             l = locale_map[key]
+            # Sequence of StringDataToken:
+            try:
+                # Twelve long month names can add up to more than 256 (e.g. kde_TZ: 264)
+                ranges = (tuple(months_data.append(m[calendar], 16) for m in
+                                (l.standaloneLongMonths, l.longMonths)) +
+                          tuple(months_data.append(m[calendar]) for m in
+                                (l.standaloneShortMonths, l.shortMonths,
+                                 l.standaloneNarrowMonths, l.narrowMonths)))
+            except ValueError as e:
+                e.args += (l.language, l.script, l.country, stem)
+                raise
+
             calendar_temp_file.write(
                 calendar_format
-                % (key[0], key[1], key[2],
-                   months_data.append(l.standaloneShortMonths[calendar]),
-                   months_data.append(l.standaloneLongMonths[calendar]),
-                   months_data.append(l.standaloneNarrowMonths[calendar]),
-                   months_data.append(l.shortMonths[calendar]),
-                   months_data.append(l.longMonths[calendar]),
-                   months_data.append(l.narrowMonths[calendar]))
+                % ((key[0], key[1], key[2]) +
+                   tuple(r.index for r in ranges) +
+                   tuple(r.length for r in ranges))
                 + "// %s/%s/%s\n" % (l.language, l.script, l.country))
-        calendar_temp_file.write(calendar_format % ( (0,) * 3 + ('0,0',) * 6 )
-                                      + '// trailing zeros\n')
+        calendar_temp_file.write(calendar_format % ( (0,) * (3 + 6 * 2) )
+                                 + '// trailing zeros\n')
         calendar_temp_file.write("};\n")
         months_data.write(calendar_temp_file)
         s = calendar_template_file.readline()

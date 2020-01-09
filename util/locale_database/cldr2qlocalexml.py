@@ -352,13 +352,15 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
     result['currencySymbol'] = ''
     result['currencyDisplayName'] = ''
     if result['currencyIsoCode']:
-        result['currencySymbol'] = findEntryDef(path, "numbers/currencies/currency[%s]/symbol" % result['currencyIsoCode'])
-        result['currencyDisplayName'] = ';'.join(
-            findEntryDef(path, 'numbers/currencies/currency[' + result['currencyIsoCode']
-                         + ']/displayName' + tail)
-            for tail in ['',] + [
-                '[count=%s]' % x for x in ('zero', 'one', 'two', 'few', 'many', 'other')
-                ]) + ';'
+        stem = "numbers/currencies/currency[%s]/" % result['currencyIsoCode']
+        result['currencySymbol'] = findEntryDef(path, stem + 'symbol')
+        displays = tuple(findEntryDef(path, stem + 'displayName' + tail)
+                         for tail in ('',) + tuple(
+                             '[count=%s]' % x for x in ('zero', 'one', 'two',
+                                                        'few', 'many', 'other')))
+        while displays and not displays[-1]:
+            displays = displays[:-1]
+        result['currencyDisplayName'] = ';'.join(displays)
 
     def findUnitDef(path, stem, fallback=''):
         # The displayName for a quantified unit in en.xml is kByte
@@ -405,7 +407,7 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
             prop = 'monthContext[' + mode + ']/monthWidth[' + size + ']/'
             result[key + 'Months_' + cal] = ';'.join(
                 findEntry(path, stem + prop + "month[%d]" % i)
-                for i in range(1, 13)) + ';'
+                for i in range(1, 13))
 
     # Day data (for Gregorian, at least):
     stem = 'dates/calendars/calendar[gregorian]/days/'
@@ -414,7 +416,7 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
         prop = 'dayContext[' + mode + ']/dayWidth[' + size + ']/day'
         result[key + 'Days'] = ';'.join(
             findEntry(path, stem + prop + '[' + day + ']')
-            for day in days) + ';'
+            for day in days)
 
     return Locale(result)
 

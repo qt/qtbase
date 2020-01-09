@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -64,13 +64,25 @@ QT_BEGIN_NAMESPACE
 
 struct QCalendarLocale {
     quint16 m_language_id, m_script_id, m_country_id;
+
+#define rangeGetter(name) \
+    QLocaleData::DataRange name() const { return { m_ ## name ## _idx, m_ ## name ## _size }; }
+
+    rangeGetter(longMonthStandalone) rangeGetter(longMonth)
+    rangeGetter(shortMonthStandalone) rangeGetter(shortMonth)
+    rangeGetter(narrowMonthStandalone) rangeGetter(narrowMonth)
+#undef rangeGetter
+
     // Month name indexes:
-    QLocaleData::DataRange m_standalone_short;
-    QLocaleData::DataRange m_standalone_long;
-    QLocaleData::DataRange m_standalone_narrow;
-    QLocaleData::DataRange m_short;
-    QLocaleData::DataRange m_long;
-    QLocaleData::DataRange m_narrow;
+    quint16 m_longMonthStandalone_idx, m_longMonth_idx;
+    quint16 m_shortMonthStandalone_idx, m_shortMonth_idx;
+    quint16 m_narrowMonthStandalone_idx, m_narrowMonth_idx;
+
+    // Twelve long month names (separated by commas) can add up to more than 256
+    // QChars - e.g. kde_TZ gets to 264.
+    quint16 m_longMonthStandalone_size, m_longMonth_size;
+    quint8 m_shortMonthStandalone_size, m_shortMonth_size;
+    quint8 m_narrowMonthStandalone_size, m_narrowMonth_size;
 };
 
 // Partial implementation, of methods with common forms, in qcalendar.cpp
