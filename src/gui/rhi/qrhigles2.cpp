@@ -2287,12 +2287,13 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                     barriers |= GL_ALL_BARRIER_BITS;
                 }
             }
-            if (barriers)
+            if (barriers && caps.compute)
                 f->glMemoryBarrier(barriers);
         }
             break;
         case QGles2CommandBuffer::Command::Barrier:
-            f->glMemoryBarrier(cmd.args.barrier.barriers);
+            if (caps.compute)
+                f->glMemoryBarrier(cmd.args.barrier.barriers);
             break;
         default:
             break;
