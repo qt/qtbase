@@ -68,11 +68,13 @@ public:
 
     bool isValid() const;
 
-    QByteArray toBinaryJson() const;
     QByteArray toCbor() const;
     QByteArray toJson() const;
 
+#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use CBOR format instead")
     static QShaderDescription fromBinaryJson(const QByteArray &data);
+#endif
     static QShaderDescription fromCbor(const QByteArray &data);
 
     enum VariableType {

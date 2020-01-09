@@ -439,10 +439,19 @@ QShader QShader::fromSerialized(const QByteArray &data)
     d->stage = Stage(intVal);
     QByteArray descBin;
     ds >> descBin;
-    if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON)
+    if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON) {
         d->desc = QShaderDescription::fromCbor(descBin);
-    else
+    } else {
+#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
+        QT_WARNING_PUSH
+        QT_WARNING_DISABLE_DEPRECATED
         d->desc = QShaderDescription::fromBinaryJson(descBin);
+        QT_WARNING_POP
+#else
+        qWarning("Cannot load QShaderDescription from binary JSON due to disabled binaryjson feature");
+        d->desc = QShaderDescription();
+#endif
+    }
     int count;
     ds >> count;
     for (int i = 0; i < count; ++i) {
