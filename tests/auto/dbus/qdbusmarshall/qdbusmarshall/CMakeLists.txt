@@ -5,7 +5,7 @@
 #####################################################################
 
 add_qt_test(tst_qdbusmarshall
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         ../tst_qdbusmarshall.cpp
     LIBRARIES
