@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2016 The Qt Company Ltd.
-** Copyright (C) 2018 Intel Corporation
+** Copyright (C) 2020 Intel Corporation
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -207,6 +207,8 @@ bool QLibraryPrivate::load_sys()
     for(int prefix = 0; retry && !pHnd && prefix < prefixes.size(); prefix++) {
         for(int suffix = 0; retry && !pHnd && suffix < suffixes.size(); suffix++) {
             if (!prefixes.at(prefix).isEmpty() && name.startsWith(prefixes.at(prefix)))
+                continue;
+            if (path.isEmpty() && prefixes.at(prefix).contains(QLatin1Char('/')))
                 continue;
             if (!suffixes.at(suffix).isEmpty() && name.endsWith(suffixes.at(suffix)))
                 continue;
