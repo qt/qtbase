@@ -536,7 +536,7 @@ void tst_qnetworkreply::echoPerformance()
         connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
         QTestEventLoop::instance().enterLoop(5);
         QVERIFY(!QTestEventLoop::instance().timeout());
-        QVERIFY(reply->error() == QNetworkReply::NoError);
+        QVERIFY(reply->networkError() == QNetworkReply::NoError);
         delete reply;
     }
 }
@@ -566,7 +566,7 @@ void tst_qnetworkreply::preConnectEncrypted()
     QPair<QNetworkReply *, qint64> normalResult = runGetRequest(&manager, request);
     QNetworkReply *normalReply = normalResult.first;
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QVERIFY(normalReply->error() == QNetworkReply::NoError);
+    QVERIFY(normalReply->networkError() == QNetworkReply::NoError);
     qint64 normalElapsed = normalResult.second;
 
     // clear all caches again
@@ -590,7 +590,7 @@ void tst_qnetworkreply::preConnectEncrypted()
     QPair<QNetworkReply *, qint64> preConnectResult = runGetRequest(&manager, request);
     QNetworkReply *preConnectReply = normalResult.first;
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QVERIFY(preConnectReply->error() == QNetworkReply::NoError);
+    QVERIFY(preConnectReply->networkError() == QNetworkReply::NoError);
     bool spdyWasUsed = preConnectReply->attribute(QNetworkRequest::SpdyWasUsedAttribute).toBool();
     QCOMPARE(spdyEnabled, spdyWasUsed);
     qint64 preConnectElapsed = preConnectResult.second;
@@ -663,7 +663,7 @@ void tst_qnetworkreply::uploadPerformance()
       QTimer::singleShot(5000, &generator, SLOT(stop()));
 
       QTestEventLoop::instance().enterLoop(30);
-      QCOMPARE(reply->error(), QNetworkReply::NoError);
+      QCOMPARE(reply->networkError(), QNetworkReply::NoError);
       QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
@@ -689,7 +689,7 @@ void tst_qnetworkreply::httpUploadPerformance()
       reader.exit();
       reader.wait();
       QVERIFY(reply->isFinished());
-      QCOMPARE(reply->error(), QNetworkReply::NoError);
+      QCOMPARE(reply->networkError(), QNetworkReply::NoError);
       QVERIFY(!QTestEventLoop::instance().timeout());
 
       qDebug() << "tst_QNetworkReply::httpUploadPerformance" << elapsed << "msec, "
@@ -750,7 +750,7 @@ void tst_qnetworkreply::httpDownloadPerformance()
     QTime time;
     time.start();
     QTestEventLoop::instance().enterLoop(40);
-    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->networkError(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     qint64 elapsed = time.elapsed();
@@ -832,7 +832,7 @@ void tst_qnetworkreply::httpDownloadPerformanceDownloadBuffer()
 
     QBENCHMARK_ONCE {
         QTestEventLoop::instance().enterLoop(40);
-        QCOMPARE(reply->error(), QNetworkReply::NoError);
+        QCOMPARE(reply->networkError(), QNetworkReply::NoError);
         QVERIFY(reply->isFinished());
         QVERIFY(!QTestEventLoop::instance().timeout());
     }
@@ -867,7 +867,7 @@ public slots:
         }
         QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
         if (reply) {
-            QVERIFY(reply->error() == QNetworkReply::NoError);
+            QVERIFY(reply->networkError() == QNetworkReply::NoError);
             qDebug() << "time =" << timeOneRequest.elapsed() << "ms";
             timeList.append(timeOneRequest.elapsed());
         }
@@ -922,7 +922,7 @@ void tst_qnetworkreply::runHttpsUploadRequest(const QByteArray &data, const QNet
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(15);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->networkError(), QNetworkReply::NoError);
     reply->deleteLater();
 }
 
@@ -962,7 +962,7 @@ void tst_qnetworkreply::preConnect()
     QPair<QNetworkReply *, qint64> normalResult = runGetRequest(&manager, request);
     QNetworkReply *normalReply = normalResult.first;
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QVERIFY(normalReply->error() == QNetworkReply::NoError);
+    QVERIFY(normalReply->networkError() == QNetworkReply::NoError);
     qint64 normalElapsed = normalResult.second;
 
     // clear all caches again
@@ -982,7 +982,7 @@ void tst_qnetworkreply::preConnect()
     QPair<QNetworkReply *, qint64> preConnectResult = runGetRequest(&manager, request);
     QNetworkReply *preConnectReply = normalResult.first;
     QVERIFY(!QTestEventLoop::instance().timeout());
-    QVERIFY(preConnectReply->error() == QNetworkReply::NoError);
+    QVERIFY(preConnectReply->networkError() == QNetworkReply::NoError);
     qint64 preConnectElapsed = preConnectResult.second;
     qDebug() << request.url().toString() << "full request:" << normalElapsed
              << "ms, pre-connect request:" << preConnectElapsed << "ms, difference:"

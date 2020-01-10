@@ -554,13 +554,34 @@ QNetworkAccessManager::Operation QNetworkReply::operation() const
     return d_func()->operation;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
+    \deprecated
+
+    Use networkError() instead.
+
+    Returns the error that was found during the processing of this
+    request. If no error was found, returns NoError.
+
+    \sa setError(), networkError()
+*/
+/*
+QNetworkReply::NetworkError QNetworkReply::error() const
+{
+    return networkError();
+}
+*/
+#endif // QT_DEPRECATED_SINCE(5, 15)
+
+/*!
+    \since 5.15
+
     Returns the error that was found during the processing of this
     request. If no error was found, returns NoError.
 
     \sa setError()
 */
-QNetworkReply::NetworkError QNetworkReply::error() const
+QNetworkReply::NetworkError QNetworkReply::networkError() const
 {
     return d_func()->errorCode;
 }
@@ -858,7 +879,7 @@ void QNetworkReply::setRequest(const QNetworkRequest &request)
     Calling setError() does not emit the error(QNetworkReply::NetworkError)
     signal.
 
-    \sa error(), errorString()
+    \sa error(), errorString(), networkError()
 */
 void QNetworkReply::setError(NetworkError errorCode, const QString &errorString)
 {

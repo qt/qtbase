@@ -162,7 +162,7 @@ void DownloadManager::downloadFinished()
     progressBar.clear();
     output.close();
 
-    if (currentDownload->error()) {
+    if (currentDownload->networkError()) {
         // download failed
         fprintf(stderr, "Failed: %s\n", qPrintable(currentDownload->errorString()));
         output.remove();
