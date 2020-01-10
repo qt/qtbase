@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_test(tst_qnetworksession
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         ../../qbearertestcommon.h
         tst_qnetworksession.cpp
