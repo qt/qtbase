@@ -187,7 +187,7 @@ void View::setupMatrix()
 {
     qreal scale = qPow(qreal(2), (zoomSlider->value() - 250) / qreal(50));
 
-    QMatrix matrix;
+    QTransform matrix;
     matrix.scale(scale, scale);
     matrix.rotate(rotateSlider->value());
 

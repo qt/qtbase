@@ -273,7 +273,9 @@ public:
     QBrush backgroundBrush() const;
     Qt::BGMode backgroundMode() const;
     QFont font() const;
-    QMatrix matrix() const;
+#if QT_DEPRECATED_SINCE(5, 15)
+    QT_DEPRECATED_X("Use transform()") QMatrix matrix() const;
+#endif // QT_DEPRECATED_SINCE(5, 15)
     QTransform transform() const;
 
     Qt::ClipOperation clipOperation() const;

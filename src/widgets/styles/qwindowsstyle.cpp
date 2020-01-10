@@ -1692,7 +1692,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
             const bool vertical = pb->orientation == Qt::Vertical;
             const bool inverted = pb->invertedAppearance;
 
-            QMatrix m;
+            QTransform m;
             if (vertical) {
                 rect = QRect(rect.y(), rect.x(), rect.height(), rect.width()); // flip width and height
                 m.rotate(90);

@@ -47,7 +47,6 @@
 #include "qimage.h"
 #include "qkeysequence.h"
 #include "qtransform.h"
-#include "qmatrix.h"
 #include "qpalette.h"
 #include "qpen.h"
 #include "qpixmap.h"

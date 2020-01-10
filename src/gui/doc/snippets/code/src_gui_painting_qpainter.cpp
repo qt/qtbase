@@ -93,9 +93,9 @@ painter2->begin(myWidget); // impossible - only one painter at a time
 //! [4]
 void QPainter::rotate(qreal angle)
 {
-    QMatrix matrix;
+    QTransform matrix;
     matrix.rotate(angle);
-    setWorldMatrix(matrix, true);
+    setWorldTransform(matrix, true);
 }
 //! [4]
 

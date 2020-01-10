@@ -380,10 +380,10 @@ void JavaStyle::drawControl(ControlElement control, const QStyleOption *option,
             QRect rect = bar->rect;
             if (bar->orientation == Qt::Vertical) {
                 rect = QRect(rect.left(), rect.top(), rect.height(), rect.width());
-                QMatrix m;
+                QTransform m;
                 m.translate(rect.height()-1, 0);
                 m.rotate(90.0);
-                painter->setMatrix(m);
+                painter->setTransform(m);
             }
 
             painter->setPen(bar->palette.color(QPalette::Mid));

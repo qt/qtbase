@@ -152,9 +152,9 @@ void tst_QPathClipper::initTestCase()
     for (int i = 0; i < paths.size(); ++i) {
         QRectF bounds = paths[i].boundingRect();
 
-        QMatrix m(1, 0,
-                  0, 1,
-                  -bounds.center().x(), -bounds.center().y());
+        QTransform m(1, 0,
+                     0, 1,
+                     -bounds.center().x(), -bounds.center().y());
 
         paths[i] = m.map(paths[i]);
     }

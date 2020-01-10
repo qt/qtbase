@@ -67,7 +67,7 @@ using namespace QTestPrivate;
 Q_DECLARE_METATYPE(ExpectedValueDescription)
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QList<QRectF>)
-Q_DECLARE_METATYPE(QMatrix)
+Q_DECLARE_METATYPE(QTransform)
 Q_DECLARE_METATYPE(QPainterPath)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
 Q_DECLARE_METATYPE(ScrollBarCount)
@@ -291,7 +291,7 @@ void tst_QGraphicsView::construction()
     QCOMPARE(view.sceneRect(), QRectF());
     QVERIFY(view.viewport());
     QCOMPARE(view.viewport()->metaObject()->className(), "QWidget");
-    QCOMPARE(view.matrix(), QMatrix());
+    QCOMPARE(view.transform(), QTransform());
     QVERIFY(view.items().isEmpty());
     QVERIFY(view.items(QPoint()).isEmpty());
     QVERIFY(view.items(QRect()).isEmpty());
@@ -1208,37 +1208,37 @@ void tst_QGraphicsView::matrix()
 void tst_QGraphicsView::matrix_convenience()
 {
     QGraphicsView view;
-    QCOMPARE(view.matrix(), QMatrix());
+    QCOMPARE(view.transform(), QTransform());
 
     // Check the convenience functions
     view.rotate(90);
-    QCOMPARE(view.matrix(), QMatrix().rotate(90));
+    QCOMPARE(view.transform(), QTransform().rotate(90));
     view.scale(2, 2);
-    QCOMPARE(view.matrix(), QMatrix().scale(2, 2) * QMatrix().rotate(90));
+    QCOMPARE(view.transform(), QTransform().scale(2, 2) * QTransform().rotate(90));
     view.shear(1.2, 1.2);
-    QCOMPARE(view.matrix(), QMatrix().shear(1.2, 1.2) * QMatrix().scale(2, 2) * QMatrix().rotate(90));
+    QCOMPARE(view.transform(), QTransform().shear(1.2, 1.2) * QTransform().scale(2, 2) * QTransform().rotate(90));
     view.translate(1, 1);
-    QCOMPARE(view.matrix(), QMatrix().translate(1, 1) * QMatrix().shear(1.2, 1.2) * QMatrix().scale(2, 2) * QMatrix().rotate(90));
+    QCOMPARE(view.transform(), QTransform().translate(1, 1) * QTransform().shear(1.2, 1.2) * QTransform().scale(2, 2) * QTransform().rotate(90));
 }
 
 void tst_QGraphicsView::matrix_combine()
 {
     // Check matrix combining
     QGraphicsView view;
-    QCOMPARE(view.matrix(), QMatrix());
-    view.setMatrix(QMatrix().rotate(90), true);
-    view.setMatrix(QMatrix().rotate(90), true);
-    view.setMatrix(QMatrix().rotate(90), true);
-    view.setMatrix(QMatrix().rotate(90), true);
-    QCOMPARE(view.matrix(), QMatrix());
+    QCOMPARE(view.transform(), QTransform());
+    view.setTransform(QTransform().rotate(90), true);
+    view.setTransform(QTransform().rotate(90), true);
+    view.setTransform(QTransform().rotate(90), true);
+    view.setTransform(QTransform().rotate(90), true);
+    QCOMPARE(view.transform(), QTransform());
 
-    view.resetMatrix();
-    QCOMPARE(view.matrix(), QMatrix());
-    view.setMatrix(QMatrix().rotate(90), false);
-    view.setMatrix(QMatrix().rotate(90), false);
-    view.setMatrix(QMatrix().rotate(90), false);
-    view.setMatrix(QMatrix().rotate(90), false);
-    QCOMPARE(view.matrix(), QMatrix().rotate(90));
+    view.resetTransform();
+    QCOMPARE(view.transform(), QTransform());
+    view.setTransform(QTransform().rotate(90), false);
+    view.setTransform(QTransform().rotate(90), false);
+    view.setTransform(QTransform().rotate(90), false);
+    view.setTransform(QTransform().rotate(90), false);
+    QCOMPARE(view.transform(), QTransform().rotate(90));
 }
 
 void tst_QGraphicsView::centerOnPoint()
@@ -2125,8 +2125,8 @@ void tst_QGraphicsView::mapFromScenePath()
     QPainterPath path2;
     path2.addPolygon(polygon2);
 
-    QPolygonF pathPoly = view.mapFromScene(path).toFillPolygon();
-    QPolygonF path2Poly = path2.toFillPolygon();
+    QPolygonF pathPoly = view.mapFromScene(path).toFillPolygon(QTransform());
+    QPolygonF path2Poly = path2.toFillPolygon(QTransform());
 
     for (int i = 0; i < pathPoly.size(); ++i) {
         QVERIFY(qAbs(pathPoly[i].x() - path2Poly[i].x()) < 3);

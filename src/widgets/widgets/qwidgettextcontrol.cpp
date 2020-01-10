@@ -992,12 +992,12 @@ void QWidgetTextControl::selectAll()
 
 void QWidgetTextControl::processEvent(QEvent *e, const QPointF &coordinateOffset, QWidget *contextWidget)
 {
-    QMatrix m;
-    m.translate(coordinateOffset.x(), coordinateOffset.y());
-    processEvent(e, m, contextWidget);
+    QTransform t;
+    t.translate(coordinateOffset.x(), coordinateOffset.y());
+    processEvent(e, t, contextWidget);
 }
 
-void QWidgetTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget *contextWidget)
+void QWidgetTextControl::processEvent(QEvent *e, const QTransform &transform, QWidget *contextWidget)
 {
     Q_D(QWidgetTextControl);
     if (d->interactionFlags == Qt::NoTextInteraction) {
@@ -1038,22 +1038,22 @@ void QWidgetTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget 
             break;
         case QEvent::MouseButtonPress: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
-            d->mousePressEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(),
+            d->mousePressEvent(ev, ev->button(), transform.map(ev->pos()), ev->modifiers(),
                                ev->buttons(), ev->globalPos());
             break; }
         case QEvent::MouseMove: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
-            d->mouseMoveEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(),
+            d->mouseMoveEvent(ev, ev->button(), transform.map(ev->pos()), ev->modifiers(),
                               ev->buttons(), ev->globalPos());
             break; }
         case QEvent::MouseButtonRelease: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
-            d->mouseReleaseEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(),
+            d->mouseReleaseEvent(ev, ev->button(), transform.map(ev->pos()), ev->modifiers(),
                                  ev->buttons(), ev->globalPos());
             break; }
         case QEvent::MouseButtonDblClick: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
-            d->mouseDoubleClickEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(),
+            d->mouseDoubleClickEvent(ev, ev->button(), transform.map(ev->pos()), ev->modifiers(),
                                      ev->buttons(), ev->globalPos());
             break; }
         case QEvent::InputMethod:
@@ -1062,7 +1062,7 @@ void QWidgetTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget 
 #ifndef QT_NO_CONTEXTMENU
     case QEvent::ContextMenu: {
             QContextMenuEvent *ev = static_cast<QContextMenuEvent *>(e);
-            d->contextMenuEvent(ev->globalPos(), matrix.map(ev->pos()), contextWidget);
+            d->contextMenuEvent(ev->globalPos(), transform.map(ev->pos()), contextWidget);
             break; }
 #endif // QT_NO_CONTEXTMENU
         case QEvent::FocusIn:
@@ -1077,7 +1077,7 @@ void QWidgetTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget 
 #ifndef QT_NO_TOOLTIP
         case QEvent::ToolTip: {
             QHelpEvent *ev = static_cast<QHelpEvent *>(e);
-            d->showToolTip(ev->globalPos(), matrix.map(ev->pos()), contextWidget);
+            d->showToolTip(ev->globalPos(), transform.map(ev->pos()), contextWidget);
             break;
         }
 #endif // QT_NO_TOOLTIP
@@ -1094,13 +1094,13 @@ void QWidgetTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget 
             break;
         case QEvent::DragMove: {
             QDragMoveEvent *ev = static_cast<QDragMoveEvent *>(e);
-            if (d->dragMoveEvent(e, ev->mimeData(), matrix.map(ev->pos())))
+            if (d->dragMoveEvent(e, ev->mimeData(), transform.map(ev->pos())))
                 ev->acceptProposedAction();
             break;
         }
         case QEvent::Drop: {
             QDropEvent *ev = static_cast<QDropEvent *>(e);
-            if (d->dropEvent(ev->mimeData(), matrix.map(ev->pos()), ev->dropAction(), ev->source()))
+            if (d->dropEvent(ev->mimeData(), transform.map(ev->pos()), ev->dropAction(), ev->source()))
                 ev->acceptProposedAction();
             break;
         }
@@ -1109,32 +1109,32 @@ void QWidgetTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget 
 #if QT_CONFIG(graphicsview)
         case QEvent::GraphicsSceneMousePress: {
             QGraphicsSceneMouseEvent *ev = static_cast<QGraphicsSceneMouseEvent *>(e);
-            d->mousePressEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(), ev->buttons(),
+            d->mousePressEvent(ev, ev->button(), transform.map(ev->pos()), ev->modifiers(), ev->buttons(),
                                ev->screenPos());
             break; }
         case QEvent::GraphicsSceneMouseMove: {
             QGraphicsSceneMouseEvent *ev = static_cast<QGraphicsSceneMouseEvent *>(e);
-            d->mouseMoveEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(), ev->buttons(),
+            d->mouseMoveEvent(ev, ev->button(), transform.map(ev->pos()), ev->modifiers(), ev->buttons(),
                               ev->screenPos());
             break; }
         case QEvent::GraphicsSceneMouseRelease: {
             QGraphicsSceneMouseEvent *ev = static_cast<QGraphicsSceneMouseEvent *>(e);
-            d->mouseReleaseEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(), ev->buttons(),
+            d->mouseReleaseEvent(ev, ev->button(), transform.map(ev->pos()), ev->modifiers(), ev->buttons(),
                                  ev->screenPos());
             break; }
         case QEvent::GraphicsSceneMouseDoubleClick: {
             QGraphicsSceneMouseEvent *ev = static_cast<QGraphicsSceneMouseEvent *>(e);
-            d->mouseDoubleClickEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(), ev->buttons(),
+            d->mouseDoubleClickEvent(ev, ev->button(), transform.map(ev->pos()), ev->modifiers(), ev->buttons(),
                                      ev->screenPos());
             break; }
         case QEvent::GraphicsSceneContextMenu: {
             QGraphicsSceneContextMenuEvent *ev = static_cast<QGraphicsSceneContextMenuEvent *>(e);
-            d->contextMenuEvent(ev->screenPos(), matrix.map(ev->pos()), contextWidget);
+            d->contextMenuEvent(ev->screenPos(), transform.map(ev->pos()), contextWidget);
             break; }
 
         case QEvent::GraphicsSceneHoverMove: {
             QGraphicsSceneHoverEvent *ev = static_cast<QGraphicsSceneHoverEvent *>(e);
-            d->mouseMoveEvent(ev, Qt::NoButton, matrix.map(ev->pos()), ev->modifiers(),Qt::NoButton,
+            d->mouseMoveEvent(ev, Qt::NoButton, transform.map(ev->pos()), ev->modifiers(),Qt::NoButton,
                               ev->screenPos());
             break; }
 
@@ -1148,12 +1148,12 @@ void QWidgetTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget 
             break;
         case QEvent::GraphicsSceneDragMove: {
             QGraphicsSceneDragDropEvent *ev = static_cast<QGraphicsSceneDragDropEvent *>(e);
-            if (d->dragMoveEvent(e, ev->mimeData(), matrix.map(ev->pos())))
+            if (d->dragMoveEvent(e, ev->mimeData(), transform.map(ev->pos())))
                 ev->acceptProposedAction();
             break; }
         case QEvent::GraphicsSceneDrop: {
             QGraphicsSceneDragDropEvent *ev = static_cast<QGraphicsSceneDragDropEvent *>(e);
-            if (d->dropEvent(ev->mimeData(), matrix.map(ev->pos()), ev->dropAction(), ev->source()))
+            if (d->dropEvent(ev->mimeData(), transform.map(ev->pos()), ev->dropAction(), ev->source()))
                 ev->accept();
             break; }
 #endif // QT_CONFIG(graphicsview)
