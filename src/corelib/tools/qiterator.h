@@ -195,7 +195,6 @@ public:
     typedef typename Iterator::iterator_category iterator_category;
     typedef typename Iterator::difference_type difference_type;
     typedef std::pair<Key, T> value_type;
-    typedef const value_type *pointer;
     typedef const value_type &reference;
 
     QKeyValueIterator() = default;
@@ -204,6 +203,31 @@ public:
 
     std::pair<Key, T> operator*() const {
         return std::pair<Key, T>(i.key(), i.value());
+    }
+
+    struct pointer {
+        pointer(value_type&& r_)
+            : r(std::move(r_))
+        {}
+
+        pointer() = default;
+        pointer(const pointer &other) = default;
+        pointer(pointer &&other) = default;
+        pointer& operator=(const pointer &other) = default;
+        pointer& operator=(pointer &&other) = default;
+
+        value_type& operator*() const {
+            return r;
+        }
+
+        value_type r;
+        const value_type *operator->() const {
+            return &r;
+        }
+    };
+
+    pointer operator->() const {
+        return pointer(std::pair<Key, T>(i.key(), i.value()));
     }
 
     friend bool operator==(QKeyValueIterator lhs, QKeyValueIterator rhs) noexcept { return lhs.i == rhs.i; }
