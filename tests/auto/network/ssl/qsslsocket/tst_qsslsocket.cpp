@@ -732,7 +732,7 @@ void tst_QSslSocket::sslErrors()
     // check the SSL errors contain HostNameMismatch and an error due to
     // the certificate being self-signed
     SslErrorList sslErrors;
-    const auto socketSslErrors = socket->sslErrors();
+    const auto socketSslErrors = socket->sslHandshakeErrors();
     for (const QSslError &err : socketSslErrors)
         sslErrors << err.error();
     std::sort(sslErrors.begin(), sslErrors.end());
@@ -2432,7 +2432,7 @@ void tst_QSslSocket::verifyMode()
 
     QList<QSslError> expectedErrors = QList<QSslError>()
                                       << QSslError(FLUKE_CERTIFICATE_ERROR, socket.peerCertificate());
-    QCOMPARE(socket.sslErrors(), expectedErrors);
+    QCOMPARE(socket.sslHandshakeErrors(), expectedErrors);
     socket.abort();
 
     VerifyServer server;
@@ -2448,7 +2448,7 @@ void tst_QSslSocket::verifyMode()
     loop.exec();
 
     QVERIFY(clientSocket.isEncrypted());
-    QVERIFY(server.socket->sslErrors().isEmpty());
+    QVERIFY(server.socket->sslHandshakeErrors().isEmpty());
 }
 
 void tst_QSslSocket::verifyDepth()
@@ -2825,7 +2825,7 @@ void tst_QSslSocket::blacklistedCertificates()
     connect(receiver, SIGNAL(sslErrors(QList<QSslError>)), SLOT(exitLoop()));
     connect(receiver, SIGNAL(encrypted()), SLOT(exitLoop()));
     enterLoop(1);
-    QList<QSslError> sslErrors = receiver->sslErrors();
+    QList<QSslError> sslErrors = receiver->sslHandshakeErrors();
     QVERIFY(sslErrors.count() > 0);
     // there are more errors (self signed cert and hostname mismatch), but we only care about the blacklist error
     QCOMPARE(sslErrors.at(0).error(), QSslError::CertificateBlacklisted);

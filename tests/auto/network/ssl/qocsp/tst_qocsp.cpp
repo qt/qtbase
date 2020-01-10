@@ -431,14 +431,14 @@ private:
 };
 
 #define QCOMPARE_SINGLE_ERROR(sslSocket, expectedError) \
-    const auto &tlsErrors = sslSocket.sslErrors(); \
+    const auto &tlsErrors = sslSocket.sslHandshakeErrors(); \
     QCOMPARE(tlsErrors.size(), 1); \
     QCOMPARE(tlsErrors[0].error(), expectedError)
 
 #define QVERIFY_HANDSHAKE_WITHOUT_ERRORS(sslSocket) \
     QVERIFY(sslSocket.isEncrypted()); \
     QCOMPARE(sslSocket.state(), QAbstractSocket::ConnectedState); \
-    QVERIFY(sslSocket.sslErrors().isEmpty())
+    QVERIFY(sslSocket.sslHandshakeErrors().isEmpty())
 
 #define QDECLARE_CHAIN(object, chainFileName) \
     CertificateChain object = QSslCertificate::fromPath(certDirPath + QLatin1String(chainFileName)); \
@@ -722,7 +722,7 @@ void tst_QOcsp::wrongCertificateInResponse()
     loop.enterLoopMSecs(handshakeTimeoutMS);
 
     QVERIFY(!clientSocket.isEncrypted());
-    QVERIFY(containsError(clientSocket.sslErrors(), expectedError));
+    QVERIFY(containsError(clientSocket.sslHandshakeErrors(), expectedError));
 }
 
 void tst_QOcsp::untrustedResponder()
@@ -747,7 +747,7 @@ void tst_QOcsp::untrustedResponder()
     loop.enterLoopMSecs(handshakeTimeoutMS);
 
     QVERIFY(!clientSocket.isEncrypted());
-    QVERIFY(containsError(clientSocket.sslErrors(), expectedError));
+    QVERIFY(containsError(clientSocket.sslHandshakeErrors(), expectedError));
 }
 
 void tst_QOcsp::setupOcspClient(QSslSocket &clientSocket, const CertificateChain &caCerts, const QString &name)
