@@ -226,6 +226,8 @@ void QXcbEventQueue::run()
     };
 
     while (!m_closeConnectionDetected && (event = xcb_wait_for_event(connection))) {
+        // This lock can block only if there are users of waitForNewEvents().
+        // Currently only the clipboard implementation relies on it.
         m_newEventsMutex.lock();
         enqueueEvent(event);
         while (!m_closeConnectionDetected && (event = xcb_poll_for_queued_event(connection)))
@@ -350,12 +352,12 @@ bool QXcbEventQueue::peekEventQueue(PeekerCallback peeker, void *peekerData,
     return result;
 }
 
-void QXcbEventQueue::waitForNewEvents(unsigned long time)
+void QXcbEventQueue::waitForNewEvents(const QXcbEventNode *sinceFlushedTail,
+                                      unsigned long time)
 {
     QMutexLocker locker(&m_newEventsMutex);
-    QXcbEventNode *tailBeforeFlush = m_flushedTail;
     flushBufferedEvents();
-    if (tailBeforeFlush != m_flushedTail)
+    if (sinceFlushedTail != m_flushedTail)
         return;
     m_newEventsCondition.wait(&m_newEventsMutex, time);
 }

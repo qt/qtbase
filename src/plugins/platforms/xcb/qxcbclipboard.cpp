@@ -787,6 +787,12 @@ xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t window, i
         if (e) // found the waited for event
             return e;
 
+        // It is safe to assume here that the pointed to node won't be re-used
+        // while we are holding the pointer to it. The nodes can be recycled
+        // only when they are dequeued, which is done only by
+        // QXcbConnection::processXcbEvents().
+        const QXcbEventNode *flushedTailNode = queue->flushedTail();
+
         if (checkManager) {
             auto reply = Q_XCB_REPLY(xcb_get_selection_owner, xcb_connection(), atom(QXcbAtom::CLIPBOARD_MANAGER));
             if (!reply || reply->owner == XCB_NONE)
@@ -812,7 +818,7 @@ xcb_generic_event_t *QXcbClipboard::waitForClipboardEvent(xcb_window_t window, i
 
         const auto elapsed = timer.elapsed();
         if (elapsed < clipboard_timeout)
-            queue->waitForNewEvents(clipboard_timeout - elapsed);
+            queue->waitForNewEvents(flushedTailNode, clipboard_timeout - elapsed);
     } while (timer.elapsed() < clipboard_timeout);
 
     return nullptr;
