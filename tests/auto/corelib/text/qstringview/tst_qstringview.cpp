@@ -221,6 +221,8 @@ private Q_SLOTS:
 
     void comparison();
 
+    void overloadResolution();
+
 private:
     template <typename String>
     void conversion_tests(String arg) const;
@@ -676,6 +678,62 @@ void tst_QStringView::comparison()
     QCOMPARE(aa.compare(upperAa, Qt::CaseInsensitive), 0);
     QVERIFY(aa.compare(bb) < 0);
     QVERIFY(bb.compare(aa) > 0);
+}
+
+namespace QStringViewOverloadResolution {
+static void test(QString) = delete;
+static void test(QStringView) {}
+}
+
+// Compile-time only test: overload resolution prefers QStringView over QString
+void tst_QStringView::overloadResolution()
+{
+    {
+        QChar qcharArray[42] = {};
+        QStringViewOverloadResolution::test(qcharArray);
+        QChar *qcharPointer = qcharArray;
+        QStringViewOverloadResolution::test(qcharPointer);
+    }
+
+    {
+        ushort ushortArray[42] = {};
+        QStringViewOverloadResolution::test(ushortArray);
+        ushort *ushortPointer = ushortArray;
+        QStringViewOverloadResolution::test(ushortPointer);
+    }
+
+    {
+        QStringRef stringRef;
+        QStringViewOverloadResolution::test(stringRef);
+        QStringViewOverloadResolution::test(qAsConst(stringRef));
+        QStringViewOverloadResolution::test(std::move(stringRef));
+    }
+
+#if defined(Q_OS_WIN)
+    {
+        wchar_t wchartArray[42] = {};
+        QStringViewOverloadResolution::test(wchartArray);
+        QStringViewOverloadResolution::test(L"test");
+    }
+#endif
+
+#if defined(Q_COMPILER_UNICODE_STRINGS)
+    {
+        char16_t char16Array[] = u"test";
+        QStringViewOverloadResolution::test(char16Array);
+        char16_t *char16Pointer = char16Array;
+        QStringViewOverloadResolution::test(char16Pointer);
+    }
+#endif
+
+#if defined(Q_STDLIB_UNICODE_STRINGS)
+    {
+        std::u16string string;
+        QStringViewOverloadResolution::test(string);
+        QStringViewOverloadResolution::test(qAsConst(string));
+        QStringViewOverloadResolution::test(std::move(string));
+    }
+#endif
 }
 
 QTEST_APPLESS_MAIN(tst_QStringView)

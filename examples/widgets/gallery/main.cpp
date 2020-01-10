@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 Intel Corporation.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -48,25 +48,28 @@
 **
 ****************************************************************************/
 
-#ifndef JSONCONVERTER_H
-#define JSONCONVERTER_H
+#include <QApplication>
 
-#include "converter.h"
+#include "widgetgallery.h"
 
-class JsonConverter : public Converter
+int main(int argc, char *argv[])
 {
-public:
-    JsonConverter();
+    bool useHighDpiScaling = true;
 
-    // Converter interface
-public:
-    QString name() override;
-    Direction directions() override;
-    Options outputOptions() override;
-    const char *optionsHelp() override;
-    bool probeFile(QIODevice *f) override;
-    QVariant loadFile(QIODevice *f, Converter *&outputConverter) override;
-    void saveFile(QIODevice *f, const QVariant &contents, const QStringList &options) override;
-};
+    for (int i = 1; i < argc; ++i) {
+        if (qstrcmp(argv[i], "--no-scaling") == 0)
+            useHighDpiScaling = false;
+    }
 
-#endif // JSONCONVERTER_H
+    if (useHighDpiScaling) {
+        QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    } else {
+        QCoreApplication::setAttribute(Qt::AA_DisableHighDpiScaling);
+    }
+
+    QApplication app(argc, argv);
+    WidgetGallery gallery;
+    gallery.show();
+    return QCoreApplication::exec();
+}

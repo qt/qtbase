@@ -57,7 +57,6 @@
 #include <QJsonValue>
 
 static JsonConverter jsonConverter;
-static BinaryJsonConverter BinaryJsonConverter;
 
 static const char optionHelp[] =
         "compact=no|yes              Use compact JSON form.\n";
@@ -150,63 +149,4 @@ void JsonConverter::saveFile(QIODevice *f, const QVariant &contents, const QStri
     }
 
     f->write(convertFromVariant(contents).toJson(format));
-}
-
-QString BinaryJsonConverter::name()
-{
-    return "binary-json";
-}
-
-Converter::Direction BinaryJsonConverter::directions()
-{
-    return InOut;
-}
-
-Converter::Options BinaryJsonConverter::outputOptions()
-{
-    return {};
-}
-
-const char *BinaryJsonConverter::optionsHelp()
-{
-    return nullptr;
-}
-
-bool BinaryJsonConverter::probeFile(QIODevice *f)
-{
-    return f->isReadable() && f->peek(4) == "qbjs";
-}
-
-QVariant BinaryJsonConverter::loadFile(QIODevice *f, Converter *&outputConverter)
-{
-    if (!outputConverter)
-        outputConverter = &jsonConverter;
-
-    QJsonDocument doc;
-    if (auto file = qobject_cast<QFile *>(f)) {
-        uchar *ptr = file->map(0, file->size());
-        if (ptr)
-            doc = QJsonDocument::fromRawData(reinterpret_cast<char *>(ptr), file->size());
-    }
-
-    if (doc.isNull())
-        doc = QJsonDocument::fromBinaryData(f->readAll());
-
-    if (!doc.isObject() && !doc.isArray()) {
-        fprintf(stderr, "Failed to load Binary JSON.\n");
-        exit(EXIT_FAILURE);
-    }
-    if (outputConverter == null)
-        return QVariant();
-    return doc.toVariant();
-}
-
-void BinaryJsonConverter::saveFile(QIODevice *f, const QVariant &contents, const QStringList &options)
-{
-    if (!options.isEmpty()) {
-        fprintf(stderr, "Unknown option '%s' to JSON output. This format has no options.\n", qPrintable(options.first()));
-        exit(EXIT_FAILURE);
-    }
-
-    f->write(convertFromVariant(contents).toBinaryData());
 }

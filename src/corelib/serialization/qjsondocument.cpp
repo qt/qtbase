@@ -237,7 +237,7 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
   the application.
   */
 
-#if QT_CONFIG(binaryjson)
+#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
 /*!
  Creates a QJsonDocument that uses the first \a size bytes from
  \a data. It assumes \a data contains a binary encoded JSON document.
@@ -385,10 +385,13 @@ QJsonDocument QJsonDocument::fromBinaryData(const QByteArray &data, DataValidati
 QByteArray QJsonDocument::toBinaryData() const
 {
     int size = 0;
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     const char *raw = rawData(&size);
+QT_WARNING_POP
     return QByteArray(raw, size);
 }
-#endif // QT_CONFIG(binaryjson)
+#endif // QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
 
 /*!
  Creates a QJsonDocument from the QVariant \a variant.

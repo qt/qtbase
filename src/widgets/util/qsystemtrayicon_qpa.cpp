@@ -42,6 +42,7 @@
 #include <QtGui/qpa/qplatformsystemtrayicon.h>
 #include <qpa/qplatformtheme.h>
 #include <private/qguiapplication_p.h>
+#include <private/qhighdpiscaling_p.h>
 
 #include <QApplication>
 #include <QStyle>
@@ -75,10 +76,14 @@ void QSystemTrayIconPrivate::remove_sys()
 
 QRect QSystemTrayIconPrivate::geometry_sys() const
 {
-    if (qpa_sys)
-        return qpa_sys->geometry();
-    else
+    if (!qpa_sys)
         return QRect();
+    auto screen = QGuiApplication::primaryScreen();
+#if QT_CONFIG(menu)
+    if (menu)
+        screen = menu->screen();
+#endif
+    return QHighDpi::fromNativePixels(qpa_sys->geometry(), screen);
 }
 
 void QSystemTrayIconPrivate::updateIcon_sys()
