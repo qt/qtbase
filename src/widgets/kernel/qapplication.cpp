@@ -3762,7 +3762,9 @@ void QApplicationPrivate::closePopup(QWidget *popup)
         if (QWidget *fw = aw->focusWidget())
             fw->setFocus(Qt::PopupFocusReason);
 
-        if (QApplicationPrivate::popupWidgets->count() == 1) // grab mouse/keyboard
+        // can become nullptr due to setFocus() above
+        if (QApplicationPrivate::popupWidgets &&
+            QApplicationPrivate::popupWidgets->count() == 1) // grab mouse/keyboard
             grabForPopup(aw);
     }
 
