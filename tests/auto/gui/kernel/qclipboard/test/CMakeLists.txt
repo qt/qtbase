@@ -5,6 +5,7 @@
 #####################################################################
 
 add_qt_test(tst_qclipboard
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
     SOURCES
         ../tst_qclipboard.cpp
     PUBLIC_LIBRARIES
