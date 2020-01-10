@@ -28,7 +28,7 @@ if(NOT @BUILD_SHARED_LIBS@)
     if (@QT_SUPERBUILD@)
         set(_build_allow_plugin_link_rules_genex "$<NOT:$<STREQUAL:$<TARGET_PROPERTY:QT_BUILD_PROJECT_NAME>,@PROJECT_NAME@>>")
     else()
-        set(_build_allow_plugin_link_rules_genex TRUE)
+        set(_build_allow_plugin_link_rules_genex 1)
     endif()
 
     # The code in here uses the properties defined in qt_import_plugins (Qt6CoreMacros.cmake)
