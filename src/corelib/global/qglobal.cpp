@@ -139,10 +139,12 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 // in. The idea here is to error or warn if otherwise implicit Qt
 // assumptions are not fulfilled on new hardware or compilers
 // (if this list becomes too long, consider factoring into a separate file)
-Q_STATIC_ASSERT_X(sizeof(int) == 4, "Qt assumes that int is 32 bits");
 Q_STATIC_ASSERT_X(UCHAR_MAX == 255, "Qt assumes that char is 8 bits");
+Q_STATIC_ASSERT_X(sizeof(int) == 4, "Qt assumes that int is 32 bits");
 Q_STATIC_ASSERT_X(QT_POINTER_SIZE == sizeof(void *), "QT_POINTER_SIZE defined incorrectly");
 Q_STATIC_ASSERT_X(sizeof(float) == 4, "Qt assumes that float is 32 bits");
+Q_STATIC_ASSERT_X(sizeof(char16_t) == 2, "Qt assumes that char16_t is 16 bits");
+Q_STATIC_ASSERT_X(sizeof(char32_t) == 4, "Qt assumes that char32_t is 32 bits");
 
 // While we'd like to check for __STDC_IEC_559__, as per ISO/IEC 9899:2011
 // Annex F (C11, normative for C++11), there are a few corner cases regarding
