@@ -73,12 +73,12 @@ static inline QString testSuiteWarning()
     str << "\nCannot find the shared-mime-info test suite\nstarting from: "
         << QDir::toNativeSeparators(QDir::currentPath()) << "\n"
            "cd " << QDir::toNativeSeparators(QStringLiteral("tests/auto/corelib/mimetypes/qmimedatabase")) << "\n"
-           "wget http://cgit.freedesktop.org/xdg/shared-mime-info/snapshot/Release-1-10.zip\n"
-           "unzip Release-1-10.zip\n";
+           "wget https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/Release-1-10/shared-mime-info-Release-1-10.zip\n"
+           "unzip shared-mime-info-Release-1-10.zip\n";
 #ifdef Q_OS_WIN
-    str << "mkdir testfiles\nxcopy /s Release-1-10 s-m-i\n";
+    str << "mkdir testfiles\nxcopy /s shared-mime-info-Release-1-10 s-m-i\n";
 #else
-    str << "ln -s Release-1-10 s-m-i\n";
+    str << "ln -s shared-mime-info-Release-1-10 s-m-i\n";
 #endif
     return result;
 }
