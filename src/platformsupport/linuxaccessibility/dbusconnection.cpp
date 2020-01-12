@@ -120,8 +120,7 @@ void DBusConnection::serviceRegistered()
     //debugging.
     static const bool a11yAlwaysOn = qEnvironmentVariableIsSet("QT_LINUX_ACCESSIBILITY_ALWAYS_ON");
 
-    // a11yStatus->isEnabled() returns always true (since Gnome 3.6)
-    bool enabled = a11yAlwaysOn || a11yStatus->screenReaderEnabled();
+    bool enabled = a11yAlwaysOn || a11yStatus->screenReaderEnabled() || a11yStatus->isEnabled();
 
     if (enabled != m_enabled) {
         m_enabled = enabled;
