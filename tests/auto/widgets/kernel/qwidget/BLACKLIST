@@ -34,8 +34,7 @@ osx
 [render_systemClip]
 osx
 [showMinimizedKeepsFocus]
-osx-10.12 ci
-osx-10.13 ci
+macos
 [maskedUpdate]
 opensuse
 opensuse-leap
