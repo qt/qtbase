@@ -2,7 +2,7 @@
 # coding=utf8
 #############################################################################
 ##
-## Copyright (C) 2018 The Qt Company Ltd.
+## Copyright (C) 2020 The Qt Company Ltd.
 ## Contact: https://www.qt.io/licensing/
 ##
 ## This file is part of the test suite of the Qt Toolkit.
@@ -581,6 +581,10 @@ ldml = open(cldr_dir+"/../dtd/ldml.dtd", "r")
 for line in ldml:
     if 'version cldrVersion CDATA #FIXED' in line:
         cldr_version = line.split('"')[1]
+
+if sys.stdout.encoding != 'UTF-8' or (sys.stdout.encoding is None and sys.getdefaultencoding() != 'UTF-8'):
+    reload(sys) # Weirdly, this gets a richer sys module than the plain import got us !
+    sys.setdefaultencoding('UTF-8')
 
 print "<localeDatabase>"
 print "    <version>" + cldr_version + "</version>"
