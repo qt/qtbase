@@ -27,13 +27,15 @@
 ****************************************************************************/
 
 #include <QtTest/QtTest>
+#include <QBuffer>
+#include <QDebug>
+#include <QFontInfo>
 #include <QTextDocument>
 #include <QTextCursor>
 #include <QTextBlock>
+#include <QTextDocumentFragment>
 #include <QTextList>
 #include <QTextTable>
-#include <QBuffer>
-#include <QDebug>
 
 #include <private/qtextmarkdownimporter_p.h>
 
@@ -55,11 +57,27 @@ private slots:
     void thematicBreaks();
     void lists_data();
     void lists();
+    void nestedSpans_data();
+    void nestedSpans();
     void avoidBlankLineAtBeginning_data();
     void avoidBlankLineAtBeginning();
     void pathological_data();
     void pathological();
+
+public:
+    enum CharFormat {
+        Normal = 0x0,
+        Italic = 0x1,
+        Bold = 0x02,
+        Strikeout = 0x04,
+        Mono = 0x08,
+        Link = 0x10
+    };
+    Q_DECLARE_FLAGS(CharFormats, CharFormat)
 };
+
+Q_DECLARE_METATYPE(tst_QTextMarkdownImporter::CharFormats)
+Q_DECLARE_OPERATORS_FOR_FLAGS(tst_QTextMarkdownImporter::CharFormats)
 
 void tst_QTextMarkdownImporter::headingBulletsContinuations()
 {
@@ -223,6 +241,98 @@ void tst_QTextMarkdownImporter::lists()
     QCOMPARE(itemCount, expectedItemCount);
     QCOMPARE(emptyItems, expectedEmptyItems);
     QCOMPARE(doc.toMarkdown(), rewrite);
+}
+
+void tst_QTextMarkdownImporter::nestedSpans_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<int>("wordToCheck");
+    QTest::addColumn<CharFormats>("expectedFormat");
+
+    QTest::newRow("bold italic")
+            << "before ***bold italic*** after"
+            << 1 << (Bold | Italic);
+    QTest::newRow("bold strikeout")
+            << "before **~~bold strikeout~~** after"
+            << 1 << (Bold | Strikeout);
+    QTest::newRow("italic strikeout")
+            << "before *~~italic strikeout~~* after"
+            << 1 << (Italic | Strikeout);
+    QTest::newRow("bold italic strikeout")
+            << "before ***~~bold italic strikeout~~*** after"
+            << 1 << (Bold | Italic | Strikeout);
+    QTest::newRow("bold link text")
+            << "before [**bold link**](https://qt.io) after"
+            << 1 << (Bold | Link);
+    QTest::newRow("italic link text")
+            << "before [*italic link*](https://qt.io) after"
+            << 1 << (Italic | Link);
+    QTest::newRow("bold italic link text")
+            << "before [***bold italic link***](https://qt.io) after"
+            << 1 << (Bold | Italic | Link);
+    QTest::newRow("strikeout link text")
+            << "before [~~strikeout link~~](https://qt.io) after"
+            << 1 << (Strikeout | Link);
+    QTest::newRow("strikeout bold italic link text")
+            << "before [~~***strikeout bold italic link***~~](https://qt.io) after"
+            << 1 << (Strikeout | Bold | Italic | Link);
+    QTest::newRow("bold image alt")
+            << "before [**bold image alt**](/path/to/image.png) after"
+            << 1 << (Bold | Link);
+    QTest::newRow("bold strikeout italic image alt")
+            << "before [**~~*bold strikeout italic image alt*~~**](/path/to/image.png) after"
+            << 1 << (Strikeout | Bold | Italic | Link);
+    // code spans currently override all surrounding formatting
+    QTest::newRow("code in italic span")
+            << "before *italic `code` and* after"
+            << 2 << (Mono | Normal);
+    // but the format after the code span ends should revert to what it was before
+    QTest::newRow("code in italic strikeout bold span")
+            << "before *italic ~~strikeout **bold `code` and**~~* after"
+            << 5 << (Bold | Italic | Strikeout);
+}
+
+void tst_QTextMarkdownImporter::nestedSpans()
+{
+    QFETCH(QString, input);
+    QFETCH(int, wordToCheck);
+    QFETCH(CharFormats, expectedFormat);
+
+    QTextDocument doc;
+    doc.setMarkdown(input);
+
+#ifdef DEBUG_WRITE_HTML
+    {
+        QFile out("/tmp/" + QLatin1String(QTest::currentDataTag()) + ".html");
+        out.open(QFile::WriteOnly);
+        out.write(doc.toHtml().toLatin1());
+        out.close();
+    }
+#endif
+
+    QTextFrame::iterator iterator = doc.rootFrame()->begin();
+    QTextFrame *currentFrame = iterator.currentFrame();
+    while (!iterator.atEnd()) {
+        // There are no child frames
+        QCOMPARE(iterator.currentFrame(), currentFrame);
+        // Check the QTextCharFormat of the specified word
+        QTextCursor cur(iterator.currentBlock());
+        cur.movePosition(QTextCursor::NextWord, QTextCursor::MoveAnchor, wordToCheck);
+        cur.select(QTextCursor::WordUnderCursor);
+        QTextCharFormat fmt = cur.charFormat();
+        qCDebug(lcTests) << "word" << wordToCheck << cur.selectedText() << "font" << fmt.font()
+                         << "weight" << fmt.fontWeight() << "italic" << fmt.fontItalic()
+                         << "strikeout" << fmt.fontStrikeOut() << "anchor" << fmt.isAnchor()
+                         << "monospace" << QFontInfo(fmt.font()).fixedPitch() // depends on installed fonts (QTBUG-75649)
+                                        << fmt.fontFixedPitch() // returns false even when font family is "monospace"
+                                        << fmt.hasProperty(QTextFormat::FontFixedPitch); // works
+        QCOMPARE(fmt.fontWeight() > 50, expectedFormat.testFlag(Bold));
+        QCOMPARE(fmt.fontItalic(), expectedFormat.testFlag(Italic));
+        QCOMPARE(fmt.fontStrikeOut(), expectedFormat.testFlag(Strikeout));
+        QCOMPARE(fmt.isAnchor(), expectedFormat.testFlag(Link));
+        QCOMPARE(fmt.hasProperty(QTextFormat::FontFixedPitch), expectedFormat.testFlag(Mono));
+        ++iterator;
+    }
 }
 
 void tst_QTextMarkdownImporter::avoidBlankLineAtBeginning_data()
