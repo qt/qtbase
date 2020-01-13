@@ -2892,10 +2892,10 @@ function(qt_add_test name)
     if (arg_TIMEOUT)
         set_tests_properties(${name} PROPERTIES TIMEOUT ${arg_TIMEOUT})
     endif()
-
     # Get path to qtbase/bin, then prepend this path containing the shared libraries to PATH
     set(INSTALL_PREFIX_BIN "${CMAKE_INSTALL_PREFIX}/bin")
     set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "PATH=${CMAKE_CURRENT_BINARY_DIR}${QT_PATH_SEPARATOR}${INSTALL_PREFIX_BIN}${QT_PATH_SEPARATOR}$ENV{PATH}")
+    set_property(TEST "${name}" APPEND PROPERTY ENVIRONMENT "QT_TEST_RUNNING_IN_CTEST=1")
 
     # Add the install prefix to list of plugin paths when doing a prefix build
     if(NOT QT_INSTALL_DIR)
