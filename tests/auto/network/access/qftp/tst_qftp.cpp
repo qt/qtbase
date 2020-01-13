@@ -215,7 +215,8 @@ void tst_QFtp::initTestCase()
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::socksProxyServerName(), 1080));
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3128));
 #else
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 #endif
 #ifndef QT_NO_BEARERMANAGEMENT
     QNetworkConfigurationManager manager;

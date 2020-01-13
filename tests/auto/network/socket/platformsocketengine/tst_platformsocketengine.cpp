@@ -87,7 +87,8 @@ private slots:
 
 void tst_PlatformSocketEngine::initTestCase()
 {
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 }
 
 //---------------------------------------------------------------------------

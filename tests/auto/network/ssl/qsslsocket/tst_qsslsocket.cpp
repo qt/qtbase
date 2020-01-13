@@ -391,7 +391,8 @@ void tst_QSslSocket::initTestCase()
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::imapServerName(), 993));
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::echoServerName(), 13));
 #else
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 #endif // QT_TEST_SERVER
 #endif // QT_NO_SSL
 }

@@ -108,7 +108,8 @@ protected:
 void tst_qnetworkreply::initTestCase()
 {
     qRegisterMetaType<QNetworkReply *>(); // for QSignalSpy
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 }
 
 void tst_qnetworkreply::limiting_data()

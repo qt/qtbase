@@ -1,5 +1,6 @@
 TEMPLATE=subdirs
 SUBDIRS=\
+   selftest \
    access \
    bearer \
    kernel \
