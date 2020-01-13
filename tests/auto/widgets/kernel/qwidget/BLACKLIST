@@ -49,3 +49,7 @@ ubuntu
 # QTBUG-75270
 winrt
 
+[syntheticEnterLeave]
+macos # Can't move cursor (QTBUG-76312)
+[taskQTBUG_4055_sendSyntheticEnterLeave]
+macos # Can't move cursor (QTBUG-76312)

@@ -11,3 +11,5 @@ osx-10.13
 osx-10.14
 [activeSubMenuPosition]
 winrt
+[submenuTearOffDontClose]
+macos # Can't move cursor (QTBUG-76312)
