@@ -428,72 +428,85 @@ qstrtoll(const char * nptr, const char **endptr, int base, bool *ok)
     return result;
 }
 
-QString qulltoa(qulonglong l, int base, const QChar _zero)
+QString qulltoa(qulonglong number, int base, const QStringView zero)
 {
-    ushort buff[65]; // length of MAX_ULLONG in base 2
-    ushort *p = buff + 65;
+    // Length of MAX_ULLONG in base 2 is 64; and we may need a surrogate pair
+    // per digit. We do not need a terminator.
+    const unsigned maxlen = 128;
+    Q_STATIC_ASSERT(CHAR_BIT * sizeof(number) <= maxlen);
+    ushort buff[maxlen];
+    ushort *const end = buff + maxlen, *p = end;
 
-    if (base != 10 || _zero.unicode() == '0') {
-        while (l != 0) {
-            int c = l % base;
-
-            --p;
-
-            if (c < 10)
-                *p = '0' + c;
-            else
-                *p = c - 10 + 'a';
-
-            l /= base;
+    if (base != 10 || zero == u"0") {
+        while (number != 0) {
+            int c = number % base;
+            *--p = c < 10 ? '0' + c : c - 10 + 'a';
+            number /= base;
         }
-    }
-    else {
-        while (l != 0) {
-            int c = l % base;
+    } else if (zero.size() && !zero.at(0).isSurrogate()) {
+        const ushort zeroUcs4 = zero.at(0).unicode();
+        while (number != 0) {
+            *(--p) = zeroUcs4 + number % base;
 
-            *(--p) = _zero.unicode() + c;
-
-            l /= base;
+            number /= base;
         }
+    } else if (zero.size() == 2 && zero.at(0).isHighSurrogate()) {
+        const uint zeroUcs4 = QChar::surrogateToUcs4(zero.at(0), zero.at(1));
+        while (number != 0) {
+            const uint digit = zeroUcs4 + number % base;
+
+            *(--p) = QChar::lowSurrogate(digit);
+            *(--p) = QChar::highSurrogate(digit);
+
+            number /= base;
+        }
+    } else {
+        return QString();
     }
 
-    return QString(reinterpret_cast<QChar *>(p), 65 - (p - buff));
+    return QString(reinterpret_cast<QChar *>(p), end - p);
 }
 
-QString &decimalForm(QChar zero, QChar decimal, QChar group,
+QString &decimalForm(const QString &zero, const QString &decimal, const QString &group,
                      QString &digits, int decpt, int precision,
                      PrecisionMode pm,
                      bool always_show_decpt,
                      bool thousands_group)
 {
+    const auto digitWidth = zero.size();
+    Q_ASSERT(digitWidth == 1 || digitWidth == 2);
+    Q_ASSERT(digits.size() % digitWidth == 0);
+
     if (decpt < 0) {
         for (int i = 0; i < -decpt; ++i)
             digits.prepend(zero);
         decpt = 0;
-    }
-    else if (decpt > digits.length()) {
-        for (int i = digits.length(); i < decpt; ++i)
+    } else {
+        for (int i = digits.length() / digitWidth; i < decpt; ++i)
             digits.append(zero);
     }
 
-    if (pm == PMDecimalDigits) {
-        uint decimal_digits = digits.length() - decpt;
-        for (int i = decimal_digits; i < precision; ++i)
+    switch (pm) {
+    case PMDecimalDigits:
+        for (int i = digits.length() / digitWidth - decpt; i < precision; ++i)
             digits.append(zero);
-    }
-    else if (pm == PMSignificantDigits) {
-        for (int i = digits.length(); i < precision; ++i)
+        break;
+    case  PMSignificantDigits:
+        for (int i = digits.length() / digitWidth; i < precision; ++i)
             digits.append(zero);
-    }
-    else { // pm == PMChopTrailingZeros
+        break;
+    case PMChopTrailingZeros:
+        break;
     }
 
-    if (always_show_decpt || decpt < digits.length())
-        digits.insert(decpt, decimal);
+    if (always_show_decpt || decpt < digits.length() / digitWidth)
+        digits.insert(decpt * digitWidth, decimal);
 
+    // FIXME: they're not simply thousands separators !
+    // Need to mirror IndianNumberGrouping code in QLocaleData::longLongToString()
     if (thousands_group) {
         for (int i = decpt - 3; i > 0; i -= 3)
-            digits.insert(i, group);
+            digits.insert(i * digitWidth, group);
     }
 
     if (decpt == 0)
@@ -502,32 +515,37 @@ QString &decimalForm(QChar zero, QChar decimal, QChar group,
     return digits;
 }
 
-QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
-                      QChar group, QChar plus, QChar minus,
+QString &exponentForm(const QString &zero, const QString &decimal, const QString &exponential,
+                      const QString &group, const QString &plus, const QString &minus,
                       QString &digits, int decpt, int precision,
                       PrecisionMode pm,
                       bool always_show_decpt,
                       bool leading_zero_in_exponent)
 {
-    int exp = decpt - 1;
+    const auto digitWidth = zero.size();
+    Q_ASSERT(digitWidth == 1 || digitWidth == 2);
+    Q_ASSERT(digits.size() % digitWidth == 0);
 
-    if (pm == PMDecimalDigits) {
-        for (int i = digits.length(); i < precision + 1; ++i)
+    switch (pm) {
+    case PMDecimalDigits:
+        for (int i = digits.length() / digitWidth; i < precision + 1; ++i)
             digits.append(zero);
-    }
-    else if (pm == PMSignificantDigits) {
-        for (int i = digits.length(); i < precision; ++i)
+        break;
+    case PMSignificantDigits:
+        for (int i = digits.length() / digitWidth; i < precision; ++i)
             digits.append(zero);
-    }
-    else { // pm == PMChopTrailingZeros
+        break;
+    case PMChopTrailingZeros:
+        break;
     }
 
-    if (always_show_decpt || digits.length() > 1)
-        digits.insert(1, decimal);
+    if (always_show_decpt || digits.length() > digitWidth)
+        digits.insert(digitWidth, decimal);
 
     digits.append(exponential);
-    digits.append(QLocaleData::longLongToString(zero, group, plus, minus,
-                   exp, leading_zero_in_exponent ? 2 : 1, 10, -1, QLocaleData::AlwaysShowSign));
+    digits.append(QLocaleData::longLongToString(zero, group, plus, minus, decpt - 1,
+                                                leading_zero_in_exponent ? 2 : 1,
+                                                10, -1, QLocaleData::AlwaysShowSign));
 
     return digits;
 }

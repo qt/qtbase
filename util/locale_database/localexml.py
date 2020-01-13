@@ -43,17 +43,6 @@ def camel(seq):
 def camelCase(words):
     return ''.join(camel(iter(words)))
 
-def ordStr(c):
-    if len(c) == 1:
-        return str(ord(c))
-    raise xpathlite.Error('Unable to handle value "%s"' % addEscapes(c))
-
-# Fix for a problem with QLocale returning a character instead of
-# strings for QLocale::exponential() and others. So we fallback to
-# default values in these cases.
-def fixOrdStr(c, d):
-    return str(ord(c if len(c) == 1 else d))
-
 def startCount(c, text): # strspn
     """First index in text where it doesn't have a character in c"""
     assert text and text[0] in c
@@ -121,18 +110,17 @@ class Locale:
             yield camelCase(('standalone', L, scale))
 
     # Expected to be numbers, read with int():
-    __asint = ("decimal", "group", "zero",
-               "list", "percent", "minus", "plus", "exp",
-               "currencyDigits", "currencyRounding")
-    # Single character; use the code-point number for each:
-    __asord = ("quotationStart", "quotationEnd",
-               "alternateQuotationStart", "alternateQuotationEnd")
+    __asint = ("currencyDigits", "currencyRounding")
     # Convert day-name to Qt day-of-week number:
     __asdow = ("firstDayOfWeek", "weekendStart", "weekendEnd")
     # Convert from CLDR format-strings to QDateTimeParser ones:
     __asfmt = ("longDateFormat", "shortDateFormat", "longTimeFormat", "shortTimeFormat")
     # Just use the raw text:
     __astxt = ("language", "languageEndonym", "script", "country", "countryEndonym",
+               "decimal", "group", "zero",
+               "list", "percent", "minus", "plus", "exp",
+               "quotationStart", "quotationEnd",
+               "alternateQuotationStart", "alternateQuotationEnd",
                "listPatternPartStart", "listPatternPartMiddle",
                "listPatternPartEnd", "listPatternPartTwo", "am", "pm",
                'byte_unit', 'byte_si_quantified', 'byte_iec_quantified',
@@ -154,13 +142,7 @@ class Locale:
         texts.\n"""
         data = {}
         for k in cls.__asint:
-            data['listDelim' if k == 'list' else k] = int(lookup(k))
-
-        for k in cls.__asord:
-            value = lookup(k)
-            assert len(value) == 1, \
-                (k, value, 'value should be exactly one character')
-            data[k] = ord(value)
+            data[k] = int(lookup(k))
 
         for k in cls.__asdow:
             data[k] = cls.__qDoW[lookup(k)]
@@ -169,7 +151,7 @@ class Locale:
             data[k] = convertFormat(lookup(k))
 
         for k in cls.__astxt + tuple(cls.propsMonthDay('days')):
-            data[k] = lookup(k)
+            data['listDelim' if k == 'list' else k] = lookup(k)
 
         for k in cls.propsMonthDay('months'):
             data[k] = dict((cal, lookup('_'.join((k, cal)))) for cal in calendars)
@@ -184,11 +166,8 @@ class Locale:
             print inner + "<%s>" % key + get(key) + "</%s>" % key
             print inner + "<%scode>" % key + get(key + '_code') + "</%scode>" % key
 
-        for key in ('decimal', 'group', 'zero'):
-            print inner + "<%s>" % key + ordStr(get(key)) + "</%s>" % key
-        for key, std in (('list', ';'), ('percent', '%'),
-                         ('minus', '-'), ('plus', '+'), ('exp', 'e')):
-            print inner + "<%s>" % key + fixOrdStr(get(key), std) + "</%s>" % key
+        for key in ('decimal', 'group', 'zero', 'list', 'percent', 'minus', 'plus', 'exp'):
+            print inner + "<%s>" % key + get(key) + "</%s>" % key
 
         for key in ('language_endonym', 'country_endonym',
                     'quotationStart', 'quotationEnd',

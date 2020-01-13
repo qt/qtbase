@@ -47,7 +47,7 @@ namespace QIPAddressUtils {
 
 static QString number(quint8 val, int base = 10)
 {
-    QChar zero(0x30);
+    QString zero = QStringLiteral("0");
     return val ? qulltoa(val, base, zero) : zero;
 }
 

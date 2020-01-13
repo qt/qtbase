@@ -1049,15 +1049,13 @@ public:
 # endif // 5.15
 #endif
 
-    // ### Qt 6: We need to return QString from these function since
-    //           UTF-16 may need surrogate pairs to represent these fields.
-    QChar decimalPoint() const;
-    QChar groupSeparator() const;
-    QChar percent() const;
-    QChar zeroDigit() const;
-    QChar negativeSign() const;
-    QChar positiveSign() const;
-    QChar exponential() const;
+    QString decimalPoint() const;
+    QString groupSeparator() const;
+    QString percent() const;
+    QString zeroDigit() const;
+    QString negativeSign() const;
+    QString positiveSign() const;
+    QString exponential() const;
 
     QString monthName(int, FormatType format = LongFormat) const;
     QString standaloneMonthName(int, FormatType format = LongFormat) const;

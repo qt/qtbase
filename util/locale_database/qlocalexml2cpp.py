@@ -472,6 +472,7 @@ def main():
     data_temp_file.write("};\n\n")
 
     list_pattern_part_data = StringData('list_pattern_part_data')
+    single_character_data = StringData('single_character_data')
     date_format_data = StringData('date_format_data')
     time_format_data = StringData('time_format_data')
     days_data = StringData('days_data')
@@ -491,19 +492,6 @@ def main():
                          + ' lang  ' # IDs
                          + 'script '
                          + '  terr '
-                         + '  dec  ' # Numeric punctuation:
-                         + ' group '
-                         + ' list  ' # List delimiter
-                         + ' prcnt ' # Arithmetic symbols:
-                         + '  zero '
-                         + ' minus '
-                         + ' plus  '
-                         + '  exp  '
-                         # Width 8 + comma - to make space for these wide labels !
-                         + ' quotOpn ' # Quotation marks
-                         + ' quotEnd '
-                         + 'altQtOpn '
-                         + 'altQtEnd '
 
                          # Range entries (all start-indices, then all sizes):
                          # Width 5 + comma:
@@ -511,6 +499,20 @@ def main():
                          + 'lpMid '
                          + 'lpEnd '
                          + 'lPair '
+                         + 'lDelm ' # List delimiter
+                         # Representing numbers:
+                         + ' dec  '
+                         + 'group '
+                         + 'prcnt '
+                         + ' zero '
+                         + 'minus '
+                         + 'plus  '
+                         + ' exp  '
+                         # Quotation marks
+                         + 'qtOpn '
+                         + 'qtEnd '
+                         + 'altQO '
+                         + 'altQE '
                          + 'lDFmt ' # Date format
                          + 'sDFmt '
                          + 'lTFmt ' # Time format
@@ -533,7 +535,7 @@ def main():
                          + 'ntLng ' # Name of language in itself, and of territory:
                          + 'ntTer '
                          # Width 3 + comma for each size; no header
-                         + '    ' * 25
+                         + '    ' * 37
 
                          # Strays (char array, bit-fields):
                          # Width 8+4 + comma
@@ -556,17 +558,10 @@ def main():
     line_format = ('    { '
                    # Locale-identifier:
                    + '%6d,' * 3
-                   # Numeric formats, list delimiter:
-                   + '%6d,' * 8
-                   # Quotation marks:
-                   + '%8d,' * 4
-
-                   # List patterns, date/time formats, month/day names, am/pm:
-                   # SI/IEC byte-unit abbreviations:
-                   # Currency and endonyms
-                   + '%5d,' * 25
+                   # Offsets for starts of ranges:
+                   + '%5d,' * 37
                    # Sizes for the same:
-                   + '%3d,' * 25
+                   + '%3d,' * 37
 
                    # Currency ISO code:
                    + ' %10s, '
@@ -578,9 +573,13 @@ def main():
     for key in locale_keys:
         l = locale_map[key]
         # Sequence of StringDataToken:
-        ranges = (tuple(list_pattern_part_data.append(p) for p in # 4 entries:
+        ranges = (tuple(list_pattern_part_data.append(p) for p in # 5 entries:
                         (l.listPatternPartStart, l.listPatternPartMiddle,
-                         l.listPatternPartEnd, l.listPatternPartTwo)) +
+                         l.listPatternPartEnd, l.listPatternPartTwo, l.listDelim)) +
+                  tuple(single_character_data.append(p) for p in # 11 entries
+                        (l.decimal, l.group, l.percent, l.zero, l.minus, l.plus, l.exp,
+                         l.quotationStart, l.quotationEnd,
+                         l.alternateQuotationStart, l.alternateQuotationEnd)) +
                   tuple (date_format_data.append(f) for f in # 2 entries:
                          (l.longDateFormat, l.shortDateFormat)) +
                   tuple(time_format_data.append(f) for f in # 2 entries:
@@ -598,23 +597,11 @@ def main():
                    currency_format_data.append(l.currencyNegativeFormat),
                    endonyms_data.append(l.languageEndonym),
                    endonyms_data.append(l.countryEndonym)) # 6 entries
-                  ) # Total: 25 entries
-        assert len(ranges) == 25
+                  ) # Total: 37 entries
+        assert len(ranges) == 37
 
         data_temp_file.write(line_format
-                    % ((key[0], key[1], key[2],
-                        l.decimal,
-                        l.group,
-                        l.listDelim,
-                        l.percent,
-                        l.zero,
-                        l.minus,
-                        l.plus,
-                        l.exp,
-                        l.quotationStart,
-                        l.quotationEnd,
-                        l.alternateQuotationStart,
-                        l.alternateQuotationEnd) +
+                    % ((key[0], key[1], key[2]) +
                        tuple(r.index for r in ranges) +
                        tuple(r.length for r in ranges) +
                        (currencyIsoCodeData(l.currencyIsoCode),
@@ -625,7 +612,7 @@ def main():
                         l.weekendEnd))
                              + ", // %s/%s/%s\n" % (l.language, l.script, l.country))
     data_temp_file.write(line_format # All zeros, matching the format:
-                         % ( (0,) * (3 + 8 + 4) + (0,) * 25 * 2
+                         % ( (0,) * 3 + (0,) * 37 * 2
                              + (currencyIsoCodeData(0),)
                              + (0,) * 2
                              + (0,) * 3)
@@ -633,8 +620,8 @@ def main():
     data_temp_file.write("};\n")
 
     # StringData tables:
-    for data in (list_pattern_part_data, date_format_data,
-                 time_format_data, days_data,
+    for data in (list_pattern_part_data, single_character_data,
+                 date_format_data, time_format_data, days_data,
                  byte_unit_data, am_data, pm_data, currency_symbol_data,
                  currency_display_name_data, currency_format_data,
                  endonyms_data):

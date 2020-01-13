@@ -201,14 +201,7 @@ def getNumberSystems(cache={}):
                                  'numberingSystems'):
             # ns has form: [u'numberingSystem', [(u'digits', u'0123456789'), (u'type', u'numeric'), (u'id', u'latn')]]
             entry = dict(ns[1])
-            name = entry[u'id']
-            if u'digits' in entry and ord(entry[u'digits'][0]) > 0xffff:
-                # FIXME, QTBUG-69324: make this redundant:
-                # omit number system if zero doesn't fit in single-char16 UTF-16 :-(
-                sys.stderr.write('skipping number system "%s" [can\'t represent its zero, U+%X]\n'
-                                 % (name, ord(entry[u'digits'][0])))
-            else:
-                cache[name] = entry
+            cache[entry[u'id']] = entry
     return cache
 
 def _generateLocaleInfo(path, language_code, script_code, country_code, variant_code=""):
@@ -309,7 +302,9 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
     result['list'] = get_number_in_system(path, "numbers/symbols/list", numbering_system)
     result['percent'] = get_number_in_system(path, "numbers/symbols/percentSign", numbering_system)
     try:
-        result['zero'] = getNumberSystems()[numbering_system][u"digits"][0]
+        digits = getNumberSystems()[numbering_system][u"digits"];
+        assert len(digits) == 10 and all(ord(d) - i == ord(digits[0]) for i, d in enumerate(digits))
+        result['zero'] = digits[0]
     except Exception as e:
         sys.stderr.write("Native zero detection problem: %s\n" % repr(e))
         result['zero'] = get_number_in_system(path, "numbers/symbols/nativeZeroDigit", numbering_system)

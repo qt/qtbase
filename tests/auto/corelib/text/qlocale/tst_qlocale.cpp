@@ -1437,6 +1437,9 @@ void tst_QLocale::negativeZero_data()
     QTest::newRow("Arabic")
         << QLocale::Arabic << QLocale::ArabicScript << QLocale::AnyCountry
         << QStringView(u"\u0660");
+    QTest::newRow("Chakma")
+        << QLocale::Chakma << QLocale::ChakmaScript << QLocale::AnyCountry
+        << QStringView(u"\xD804\xDD36"); // A surrogate pair.
 }
 
 void tst_QLocale::negativeZero()
@@ -1918,15 +1921,14 @@ void tst_QLocale::macDefaultLocale()
     // On OS X the decimal point and group separator are configurable
     // independently of the locale. Verify that they have one of the
     // allowed values and are not the same.
-    QVERIFY(locale.decimalPoint() == QChar('.') || locale.decimalPoint() == QChar(','));
-    if (!(locale.numberOptions() & QLocale::OmitGroupSeparator)) {
-        QVERIFY(locale.groupSeparator() == QChar(',')
-             || locale.groupSeparator() == QChar('.')
-             || locale.groupSeparator() == QChar('\xA0') // no-breaking space
-             || locale.groupSeparator() == QChar('\'')
-             || locale.groupSeparator() == QChar());
-        QVERIFY(locale.decimalPoint() != locale.groupSeparator());
-    }
+    QVERIFY(locale.decimalPoint() == QStringView(u".")
+            || locale.decimalPoint() == QStringView(u","));
+    QVERIFY(locale.groupSeparator() == QStringView(u",")
+         || locale.groupSeparator() == QStringView(u".")
+         || locale.groupSeparator() == QStringView(u"\xA0") // no-breaking space
+         || locale.groupSeparator() == QStringView(u"'")
+         || locale.groupSeparator().isEmpty());
+    QVERIFY(locale.decimalPoint() != locale.groupSeparator());
 
     // make sure we are using the system to parse them
     QCOMPARE(locale.toString(1234.56), systemLocaleFormatNumber(QString("1,234.56")));
@@ -2067,8 +2069,8 @@ void tst_QLocale::windowsDefaultLocale()
     QLocale locale = QLocale::system();
 
     // make sure we are seeing the system's format strings
-    QCOMPARE(locale.decimalPoint(), QChar('@'));
-    QCOMPARE(locale.groupSeparator(), QChar('?'));
+    QCOMPARE(locale.decimalPoint(), QStringView(u"@"));
+    QCOMPARE(locale.groupSeparator(), QStringView(u"?"));
     QCOMPARE(locale.dateFormat(QLocale::ShortFormat), shortDateFormat);
     QCOMPARE(locale.dateFormat(QLocale::LongFormat), longDateFormat);
     QCOMPARE(locale.timeFormat(QLocale::ShortFormat), shortTimeFormat);

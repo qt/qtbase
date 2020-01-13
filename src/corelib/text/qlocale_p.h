@@ -221,21 +221,19 @@ public:
 
     typedef QVarLengthArray<char, 256> CharBuff;
 
-    static QString doubleToString(const QChar zero, const QChar plus,
-                                  const QChar minus, const QChar exponent,
-                                  const QChar group, const QChar decimal,
-                                  double d, int precision,
-                                  DoubleForm form,
+    static QString doubleToString(const QString &zero, const QString &plus,
+                                  const QString &minus, const QString &exponent,
+                                  const QString &group, const QString &decimal,
+                                  double d, int precision, DoubleForm form,
                                   int width, unsigned flags);
-    static QString longLongToString(const QChar zero, const QChar group,
-                                    const QChar plus, const QChar minus,
+    static QString longLongToString(const QString &zero, const QString &group,
+                                    const QString &plus, const QString &minus,
                                     qint64 l, int precision, int base,
                                     int width, unsigned flags);
-    static QString unsLongLongToString(const QChar zero, const QChar group,
-                                       const QChar plus,
+    static QString unsLongLongToString(const QString &zero, const QString &group,
+                                       const QString &plus,
                                        quint64 l, int precision,
-                                       int base, int width,
-                                       unsigned flags);
+                                       int base, int width, unsigned flags);
 
     QString doubleToString(double d,
                            int precision = -1,
@@ -282,11 +280,21 @@ public:
 
     bool numberToCLocale(QStringView s, QLocale::NumberOptions number_options,
                          CharBuff *result) const;
-    inline char digitToCLocale(QChar c) const;
+    inline char numericToCLocale(QStringView in) const;
 
     // this function is used in QIntValidator (QtGui)
     Q_CORE_EXPORT bool validateChars(QStringView str, NumberMode numMode, QByteArray *buff, int decDigits = -1,
             QLocale::NumberOptions number_options = QLocale::DefaultNumberOptions) const;
+
+    QString decimalPoint() const;
+    QString groupSeparator() const;
+    QString listSeparator() const;
+    QString percentSign() const;
+    QString zeroDigit() const;
+    uint zeroUcs() const;
+    QString positiveSign() const;
+    QString negativeSign() const;
+    QString exponentSeparator() const;
 
     struct DataRange
     {
@@ -310,6 +318,14 @@ public:
         {
             return listEntry(table, index).viewData(table);
         }
+        uint ucsFirst(const ushort *table) const
+        {
+            if (size && !QChar::isSurrogate(table[offset]))
+                return table[offset];
+            if (size > 1 && QChar::isHighSurrogate(table[offset]))
+                return QChar::surrogateToUcs4(table[offset], table[offset + 1]);
+            return 0;
+        }
     private:
         DataRange listEntry(const ushort *table, int index) const
         {
@@ -328,7 +344,9 @@ public:
     };
 
 #define ForEachQLocaleRange(X) \
-    X(startListPattern) X(midListPattern) X(endListPattern) X(pairListPattern) \
+    X(startListPattern) X(midListPattern) X(endListPattern) X(pairListPattern) X(listDelimit) \
+    X(decimalSeparator) X(groupDelim) X(percent) X(zero) X(minus) X(plus) X(exponential) \
+    X(quoteStart) X(quoteEnd) X(quoteStartAlternate) X(quoteEndAlternate) \
     X(longDateFormat) X(shortDateFormat) X(longTimeFormat) X(shortTimeFormat) \
     X(longDayNamesStandalone) X(longDayNames) \
     X(shortDayNamesStandalone) X(shortDayNames) \
@@ -346,11 +364,6 @@ public:
 
 public:
     quint16 m_language_id, m_script_id, m_country_id;
-
-    // FIXME QTBUG-69324: not all unicode code-points map to single-token UTF-16 :-(
-    char16_t m_decimal, m_group, m_list, m_percent, m_zero, m_minus, m_plus, m_exponential;
-    char16_t m_quotation_start, m_quotation_end;
-    char16_t m_alternate_quotation_start, m_alternate_quotation_end;
 
     // Offsets, then sizes, for each range:
 #define rangeIndex(name) quint16 m_ ## name ## _idx;
@@ -388,15 +401,6 @@ public:
 
     static QLocalePrivate *get(QLocale &l) { return l.d; }
     static const QLocalePrivate *get(const QLocale &l) { return l.d; }
-
-    QChar decimal() const { return QChar(m_data->m_decimal); }
-    QChar group() const { return QChar(m_data->m_group); }
-    QChar list() const { return QChar(m_data->m_list); }
-    QChar percent() const { return QChar(m_data->m_percent); }
-    QChar zero() const { return QChar(m_data->m_zero); }
-    QChar plus() const { return QChar(m_data->m_plus); }
-    QChar minus() const { return QChar(m_data->m_minus); }
-    QChar exponential() const { return QChar(m_data->m_exponential); }
 
     quint16 languageId() const { return m_data->m_language_id; }
     quint16 countryId() const { return m_data->m_country_id; }
@@ -437,36 +441,43 @@ inline QLocalePrivate *QSharedDataPointer<QLocalePrivate>::clone()
     return QLocalePrivate::create(d->m_data, d->m_data_offset, d->m_numberOptions);
 }
 
-inline char QLocaleData::digitToCLocale(QChar in) const
+inline char QLocaleData::numericToCLocale(QStringView in) const
 {
-    const ushort tenUnicode = m_zero + 10;
+    Q_ASSERT(in.size() == 1 || (in.size() == 2 && in.at(0).isHighSurrogate()));
 
-    if (in.unicode() >= m_zero && in.unicode() < tenUnicode)
-        return '0' + in.unicode() - m_zero;
-
-    if (in.unicode() >= '0' && in.unicode() <= '9')
-        return in.toLatin1();
-
-    if (in == m_plus || in == QLatin1Char('+'))
+    if (in == positiveSign() || in == u"+")
         return '+';
 
-    if (in == m_minus || in == QLatin1Char('-') || in == QChar(0x2212))
+    if (in == negativeSign() || in == u"-" || in == u"\x2212")
         return '-';
 
-    if (in == m_decimal)
+    if (in == decimalPoint())
         return '.';
 
-    if (in == m_group)
-        return ',';
-
-    if (in == m_exponential || in.toCaseFolded().unicode() == QChar::toCaseFolded(m_exponential))
+    if (in.compare(exponentSeparator(), Qt::CaseInsensitive) == 0)
         return 'e';
+
+    const QString group = groupSeparator();
+    if (in == group)
+        return ',';
 
     // In several languages group() is a non-breaking space (U+00A0) or its thin
     // version (U+202f), which look like spaces.  People (and thus some of our
     // tests) use a regular space instead and complain if it doesn't work.
-    if ((m_group == 0xA0 || m_group == 0x202f) && in.unicode() == ' ')
+    // Should this be extended generally to any case where group is a space ?
+    if ((group == u"\xa0" || group == u"\x202f") && in == u" ")
         return ',';
+
+    const uint zeroUcs4 = zeroUcs();
+    const uint tenUcs4 = zeroUcs4 + 10;
+    const uint inUcs4 = in.size() == 2
+        ? QChar::surrogateToUcs4(in.at(0), in.at(1)) : in.at(0).unicode();
+
+    if (zeroUcs4 <= inUcs4 && inUcs4 < tenUcs4)
+        return '0' + inUcs4 - zeroUcs4;
+
+    if ('0' <= inUcs4 && inUcs4 <= '9')
+        return inUcs4;
 
     return 0;
 }

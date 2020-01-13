@@ -67,7 +67,7 @@ double qt_asciiToDouble(const char *num, int numLen, bool &ok, int &processed,
 void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, char *buf, int bufSize,
                       bool &sign, int &length, int &decpt);
 
-QString qulltoa(qulonglong l, int base, const QChar _zero);
+QString qulltoa(qulonglong l, int base, const QStringView zero);
 Q_CORE_EXPORT QString qdtoa(qreal d, int *decpt, int *sign);
 
 enum PrecisionMode {
@@ -76,13 +76,13 @@ enum PrecisionMode {
     PMChopTrailingZeros =   0x03
 };
 
-QString &decimalForm(QChar zero, QChar decimal, QChar group,
+QString &decimalForm(const QString &zero, const QString &decimal, const QString &group,
                      QString &digits, int decpt, int precision,
                      PrecisionMode pm,
                      bool always_show_decpt,
                      bool thousands_group);
-QString &exponentForm(QChar zero, QChar decimal, QChar exponential,
-                      QChar group, QChar plus, QChar minus,
+QString &exponentForm(const QString &zero, const QString &decimal, const QString &exponential,
+                      const QString &group, const QString &plus, const QString &minus,
                       QString &digits, int decpt, int precision,
                       PrecisionMode pm,
                       bool always_show_decpt,

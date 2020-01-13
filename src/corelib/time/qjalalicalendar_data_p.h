@@ -409,12 +409,12 @@ static const QCalendarLocale locale_data[] = {
       {    98,     7,    41,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Sango/Latin/Central African Republic
       {    99,    13,   100,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Sanskrit/Devanagari/India
       {   100,     2,   243, 3199, 3199, 3199, 3199,  153,  153, 80, 80, 80, 80, 26, 26 },// Serbian/Cyrillic/Serbia
-      {   100,     2,    27, 3199, 3199, 3199, 3199,  153,  153, 80, 80, 80, 80, 26, 26 },// Serbian/Cyrillic/Bosnia And Herzegowina
-      {   100,     2,   242, 3199, 3199, 3199, 3199,  153,  153, 80, 80, 80, 80, 26, 26 },// Serbian/Cyrillic/Montenegro
-      {   100,     2,   257, 3199, 3199, 3199, 3199,  153,  153, 80, 80, 80, 80, 26, 26 },// Serbian/Cyrillic/Kosovo
       {   100,     7,    27, 3279, 3279, 3279, 3279,  153,  153, 80, 80, 80, 80, 26, 26 },// Serbian/Latin/Bosnia And Herzegowina
       {   100,     7,   242, 3279, 3279, 3279, 3279,  153,  153, 80, 80, 80, 80, 26, 26 },// Serbian/Latin/Montenegro
       {   100,     7,   243, 3279, 3279, 3279, 3279,  153,  153, 80, 80, 80, 80, 26, 26 },// Serbian/Latin/Serbia
+      {   100,     2,    27, 3199, 3199, 3199, 3199,  153,  153, 80, 80, 80, 80, 26, 26 },// Serbian/Cyrillic/Bosnia And Herzegowina
+      {   100,     2,   242, 3199, 3199, 3199, 3199,  153,  153, 80, 80, 80, 80, 26, 26 },// Serbian/Cyrillic/Montenegro
+      {   100,     2,   257, 3199, 3199, 3199, 3199,  153,  153, 80, 80, 80, 80, 26, 26 },// Serbian/Cyrillic/Kosovo
       {   100,     7,   257, 3279, 3279, 3279, 3279,  153,  153, 80, 80, 80, 80, 26, 26 },// Serbian/Latin/Kosovo
       {   101,     2,    81,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Ossetic/Cyrillic/Georgia
       {   101,     2,   178,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Ossetic/Cyrillic/Russia
@@ -627,6 +627,8 @@ static const QCalendarLocale locale_data[] = {
       {   259,     7,    37,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Meta/Latin/Cameroon
       {   260,     7,    37,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Ngiemboon/Latin/Cameroon
       {   261,     7,   197,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Aragonese/Latin/Spain
+      {   272,    46,    18,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Chakma/Chakma/Bangladesh
+      {   272,    46,   100,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Chakma/Chakma/India
       {   290,    11,   100,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Manipuri/Bengali/India
       {   309,   100,   232,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Tai Dam/Tai Viet/Vietnam
       {   312,     7,    37,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Akoose/Latin/Cameroon
