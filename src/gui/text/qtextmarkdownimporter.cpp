@@ -388,6 +388,8 @@ int QTextMarkdownImporter::cbLeaveBlock(int blockType, void *detail)
 int QTextMarkdownImporter::cbEnterSpan(int spanType, void *det)
 {
     QTextCharFormat charFmt;
+    if (!m_spanFormatStack.isEmpty())
+        charFmt = m_spanFormatStack.top();
     switch (spanType) {
     case MD_SPAN_EM:
         charFmt.setFontItalic(true);
