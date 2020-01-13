@@ -767,6 +767,10 @@ static inline VkFormat toVkTextureFormat(QRhiTexture::Format format, QRhiTexture
         return VK_FORMAT_R16G16B16A16_SFLOAT;
     case QRhiTexture::RGBA32F:
         return VK_FORMAT_R32G32B32A32_SFLOAT;
+    case QRhiTexture::R16F:
+        return VK_FORMAT_R16_SFLOAT;
+    case QRhiTexture::R32F:
+        return VK_FORMAT_R32_SFLOAT;
 
     case QRhiTexture::D16:
         return VK_FORMAT_D16_UNORM;
@@ -864,7 +868,6 @@ static inline bool isDepthTextureFormat(QRhiTexture::Format format)
 {
     switch (format) {
     case QRhiTexture::Format::D16:
-        Q_FALLTHROUGH();
     case QRhiTexture::Format::D32F:
         return true;
 
@@ -2373,9 +2376,7 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
             }
                 break;
             case QRhiShaderResourceBinding::ImageLoad:
-                Q_FALLTHROUGH();
             case QRhiShaderResourceBinding::ImageStore:
-                Q_FALLTHROUGH();
             case QRhiShaderResourceBinding::ImageLoadStore:
             {
                 QVkTexture *texD = QRHI_RES(QVkTexture, b->u.simage.tex);
@@ -2394,9 +2395,7 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
             }
                 break;
             case QRhiShaderResourceBinding::BufferLoad:
-                Q_FALLTHROUGH();
             case QRhiShaderResourceBinding::BufferStore:
-                Q_FALLTHROUGH();
             case QRhiShaderResourceBinding::BufferLoadStore:
             {
                 QVkBuffer *bufD = QRHI_RES(QVkBuffer, b->u.sbuf.buf);
@@ -3564,9 +3563,7 @@ static inline VkImageLayout toVkLayout(QRhiPassResourceTracker::TextureAccess ac
     case QRhiPassResourceTracker::TexDepthOutput:
         return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     case QRhiPassResourceTracker::TexStorageLoad:
-        Q_FALLTHROUGH();
     case QRhiPassResourceTracker::TexStorageStore:
-        Q_FALLTHROUGH();
     case QRhiPassResourceTracker::TexStorageLoadStore:
         return VK_IMAGE_LAYOUT_GENERAL;
     default:
@@ -4045,9 +4042,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QVkTexture *texD = QRHI_RES(QVkTexture, b->u.simage.tex);
@@ -4072,9 +4067,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QVkBuffer *bufD = QRHI_RES(QVkBuffer, b->u.sbuf.buf);
@@ -4863,16 +4856,12 @@ static inline VkDescriptorType toVkDescriptorType(const QRhiShaderResourceBindin
         return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 
     case QRhiShaderResourceBinding::ImageLoad:
-        Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::ImageStore:
-        Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::ImageLoadStore:
         return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 
     case QRhiShaderResourceBinding::BufferLoad:
-        Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::BufferStore:
-        Q_FALLTHROUGH();
     case QRhiShaderResourceBinding::BufferLoadStore:
         return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 
@@ -6356,17 +6345,11 @@ static inline bool isSrgbFormat(VkFormat format)
 {
     switch (format) {
     case VK_FORMAT_R8_SRGB:
-        Q_FALLTHROUGH();
     case VK_FORMAT_R8G8_SRGB:
-        Q_FALLTHROUGH();
     case VK_FORMAT_R8G8B8_SRGB:
-        Q_FALLTHROUGH();
     case VK_FORMAT_B8G8R8_SRGB:
-        Q_FALLTHROUGH();
     case VK_FORMAT_R8G8B8A8_SRGB:
-        Q_FALLTHROUGH();
     case VK_FORMAT_B8G8R8A8_SRGB:
-        Q_FALLTHROUGH();
     case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
         return true;
     default:

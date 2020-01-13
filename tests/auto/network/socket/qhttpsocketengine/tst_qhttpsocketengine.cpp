@@ -274,7 +274,7 @@ void tst_QHttpSocketEngine::errorTest()
     QTestEventLoop::instance().enterLoop(30);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
-    QCOMPARE(int(socket.error()), expectedError);
+    QCOMPARE(int(socket.socketError()), expectedError);
 }
 
 //---------------------------------------------------------------------------

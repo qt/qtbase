@@ -332,9 +332,9 @@ private:
         return Type(quint8(st) | SimpleType);
     }
 
-    Q_DECL_CONSTEXPR static bool isTag_helper(Type t)
+    Q_DECL_CONSTEXPR static bool isTag_helper(Type tt)
     {
-        return t == Tag || t >= 0x10000;
+        return tt == Tag || tt >= 0x10000;
     }
 };
 Q_DECLARE_SHARED(QCborValue)

@@ -664,15 +664,15 @@ static inline int mapBinding(int binding,
                              BindingType type)
 {
     const QShader::NativeResourceBindingMap *map = nativeResourceBindingMaps[stageIndex];
-    if (!map)
+    if (!map || map->isEmpty())
         return binding; // old QShader versions do not have this map, assume 1:1 mapping then
 
     auto it = map->constFind(binding);
     if (it != map->cend())
         return type == BindingType::Sampler ? it->second : it->first; // may be -1, if the resource is inactive
 
-    // Hitting this path is normal too, is not given that the resource (e.g. a
-    // uniform block) is really present in the shaders for all the stages
+    // Hitting this path is normal too. It is not given that the resource (for
+    // example, a uniform block) is present in the shaders for all the stages
     // specified by the visibility mask in the QRhiShaderResourceBinding.
     return -1;
 }
@@ -761,9 +761,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
@@ -786,9 +784,7 @@ void QRhiMetal::enqueueShaderResourceBindings(QMetalShaderResourceBindings *srbD
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
@@ -996,9 +992,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
@@ -1011,9 +1005,7 @@ void QRhiMetal::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBind
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);
@@ -2328,6 +2320,10 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
         return MTLPixelFormatRGBA16Float;
     case QRhiTexture::RGBA32F:
         return MTLPixelFormatRGBA32Float;
+    case QRhiTexture::R16F:
+        return MTLPixelFormatR16Float;
+    case QRhiTexture::R32F:
+        return MTLPixelFormatR32Float;
 
     case QRhiTexture::D16:
 #ifdef Q_OS_MACOS
@@ -2928,9 +2924,7 @@ bool QMetalShaderResourceBindings::build()
         }
             break;
         case QRhiShaderResourceBinding::ImageLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::ImageLoadStore:
         {
             QMetalTexture *texD = QRHI_RES(QMetalTexture, b->u.simage.tex);
@@ -2939,9 +2933,7 @@ bool QMetalShaderResourceBindings::build()
         }
             break;
         case QRhiShaderResourceBinding::BufferLoad:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferStore:
-            Q_FALLTHROUGH();
         case QRhiShaderResourceBinding::BufferLoadStore:
         {
             QMetalBuffer *bufD = QRHI_RES(QMetalBuffer, b->u.sbuf.buf);

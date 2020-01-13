@@ -102,8 +102,8 @@ QT_BEGIN_NAMESPACE
     float \c opacity at offset 64.
 
     All this is described by a QShaderDescription object. QShaderDescription
-    can also be serialized to JSON and binary JSON, and can be deserialized
-    from binary JSON. In practice this is rarely needed since QShader
+    can also be serialized to JSON and CBOR, and can be deserialized
+    from CBOR. In practice this is rarely needed since QShader
     takes care of the associated QShaderDescription automatically, but if the
     QShaderDescription of the above shader would be written out as JSON, it
     would look like the following:
@@ -336,28 +336,10 @@ bool QShaderDescription::isValid() const
 }
 
 /*!
-    \return a serialized binary version of the data.
-
-    \sa toJson(), toCbor()
- */
-QByteArray QShaderDescription::toBinaryJson() const
-{
-#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-    return d->makeDoc().toBinaryData();
-QT_WARNING_POP
-#else
-    qWarning("Cannot generate binary JSON from QShaderDescription due to disabled binaryjson feature");
-    return QByteArray();
-#endif
-}
-
-/*!
    \return a serialized binary version of the data in CBOR (Concise Binary
    Object Representation) format.
 
-   \sa QCborValue, toBinaryJson(), toJson()
+   \sa QCborValue, toJson()
  */
 QByteArray QShaderDescription::toCbor() const
 {
@@ -369,14 +351,17 @@ QByteArray QShaderDescription::toCbor() const
 
     \note There is no deserialization method provided for JSON text.
 
-    \sa toBinaryJson(), toCbor()
+    \sa toCbor()
  */
 QByteArray QShaderDescription::toJson() const
 {
     return d->makeDoc().toJson();
 }
 
+#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
 /*!
+    \deprecated
+
     Deserializes the given binary JSON \a data and returns a new
     QShaderDescription.
 
@@ -385,22 +370,16 @@ QByteArray QShaderDescription::toJson() const
 QShaderDescription QShaderDescription::fromBinaryJson(const QByteArray &data)
 {
     QShaderDescription desc;
-#if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
     QShaderDescriptionPrivate::get(&desc)->loadDoc(QJsonDocument::fromBinaryData(data));
 QT_WARNING_POP
-#else
-    Q_UNUSED(data);
-    qWarning("Cannot load QShaderDescription from binary JSON due to disabled binaryjson feature");
-#endif
     return desc;
 }
+#endif
 
 /*!
     Deserializes the given CBOR \a data and returns a new QShaderDescription.
-
-    \sa fromBinaryJson()
  */
 QShaderDescription QShaderDescription::fromCbor(const QByteArray &data)
 {

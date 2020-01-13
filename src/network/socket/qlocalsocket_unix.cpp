@@ -461,10 +461,17 @@ void QLocalSocket::disconnectFromServer()
     d->unixSocket.disconnectFromHost();
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 QLocalSocket::LocalSocketError QLocalSocket::error() const
 {
+    return socketError();
+}
+#endif // QT_DEPRECATED_SINCE(5, 15)
+
+QLocalSocket::LocalSocketError QLocalSocket::socketError() const
+{
     Q_D(const QLocalSocket);
-    switch (d->unixSocket.error()) {
+    switch (d->unixSocket.socketError()) {
     case QAbstractSocket::ConnectionRefusedError:
         return QLocalSocket::ConnectionRefusedError;
     case QAbstractSocket::RemoteHostClosedError:

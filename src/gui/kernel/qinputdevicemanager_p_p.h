@@ -69,7 +69,7 @@ public:
     int deviceCount(QInputDeviceManager::DeviceType type) const;
     void setDeviceCount(QInputDeviceManager::DeviceType type, int count);
 
-    std::array<int, QInputDeviceManager::NumDeviceTypes> m_deviceCount;
+    std::array<int, QInputDeviceManager::NumDeviceTypes> m_deviceCount = {};
 
     Qt::KeyboardModifiers keyboardModifiers;
 };

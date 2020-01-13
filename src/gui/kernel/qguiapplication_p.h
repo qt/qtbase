@@ -326,6 +326,8 @@ public:
 
     static void resetCachedDevicePixelRatio();
 
+    static bool setPalette(const QPalette &palette);
+
 protected:
     virtual void notifyThemeChanged();
     virtual void sendApplicationPaletteChange(bool toAllWidgets = false, const char *className = nullptr);

@@ -3293,17 +3293,26 @@ QPalette QGuiApplication::palette()
 */
 void QGuiApplication::setPalette(const QPalette &pal)
 {
-    if (QGuiApplicationPrivate::app_pal && pal.isCopyOf(*QGuiApplicationPrivate::app_pal))
+    if (!QGuiApplicationPrivate::setPalette(pal))
         return;
-    if (!QGuiApplicationPrivate::app_pal)
-        QGuiApplicationPrivate::app_pal = new QPalette(pal);
-    else
-        *QGuiApplicationPrivate::app_pal = pal;
 
     QCoreApplication::setAttribute(Qt::AA_SetPalette);
 
     if (qGuiApp)
         qGuiApp->d_func()->sendApplicationPaletteChange();
+}
+
+bool QGuiApplicationPrivate::setPalette(const QPalette &palette)
+{
+    if (app_pal && palette.isCopyOf(*app_pal))
+        return false;
+
+    if (!app_pal)
+        app_pal = new QPalette(palette);
+    else
+        *app_pal = palette;
+
+    return true;
 }
 
 void QGuiApplicationPrivate::applyWindowGeometrySpecificationTo(QWindow *window)

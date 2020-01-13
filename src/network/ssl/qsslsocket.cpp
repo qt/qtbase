@@ -357,7 +357,7 @@
     If you want to continue connecting despite the errors that have occurred,
     you must call QSslSocket::ignoreSslErrors() from inside a slot connected to
     this signal. If you need to access the error list at a later point, you
-    can call sslErrors() (without arguments).
+    can call sslHandshakeErrors().
 
     \a errors contains one or more errors that prevent QSslSocket from
     verifying the identity of the peer.
@@ -659,7 +659,7 @@ bool QSslSocket::setSocketDescriptor(qintptr socketDescriptor, SocketState state
         d->createPlainSocket(openMode);
     bool retVal = d->plainSocket->setSocketDescriptor(socketDescriptor, state, openMode);
     d->cachedSocketDescriptor = d->plainSocket->socketDescriptor();
-    d->setError(d->plainSocket->error(), d->plainSocket->errorString());
+    d->setError(d->plainSocket->socketError(), d->plainSocket->errorString());
     setSocketState(state);
     setOpenMode(openMode);
     setLocalPort(d->plainSocket->localPort());
@@ -1764,7 +1764,7 @@ bool QSslSocket::waitForConnected(int msecs)
     bool retVal = d->plainSocket->waitForConnected(msecs);
     if (!retVal) {
         setSocketState(d->plainSocket->state());
-        d->setError(d->plainSocket->error(), d->plainSocket->errorString());
+        d->setError(d->plainSocket->socketError(), d->plainSocket->errorString());
     }
     return retVal;
 }
@@ -1933,12 +1933,33 @@ bool QSslSocket::waitForDisconnected(int msecs)
     bool retVal = d->plainSocket->waitForDisconnected(qt_subtract_from_timeout(msecs, stopWatch.elapsed()));
     if (!retVal) {
         setSocketState(d->plainSocket->state());
-        d->setError(d->plainSocket->error(), d->plainSocket->errorString());
+        d->setError(d->plainSocket->socketError(), d->plainSocket->errorString());
     }
     return retVal;
 }
 
+#if QT_DEPRECATED_SINCE(5, 15)
 /*!
+    \deprecated
+
+    Use sslHandshakeErrors() instead.
+
+    Returns a list of the last SSL errors that occurred. This is the
+    same list as QSslSocket passes via the sslErrors() signal. If the
+    connection has been encrypted with no errors, this function will
+    return an empty list.
+
+    \sa connectToHostEncrypted(), sslHandshakeErrors()
+*/
+QList<QSslError> QSslSocket::sslErrors() const
+{
+    return sslHandshakeErrors();
+}
+#endif // QT_DEPRECATED_SINCE(5, 15)
+
+/*!
+    \since 5.15
+
     Returns a list of the last SSL errors that occurred. This is the
     same list as QSslSocket passes via the sslErrors() signal. If the
     connection has been encrypted with no errors, this function will
@@ -1946,7 +1967,7 @@ bool QSslSocket::waitForDisconnected(int msecs)
 
     \sa connectToHostEncrypted()
 */
-QList<QSslError> QSslSocket::sslErrors() const
+QList<QSslError> QSslSocket::sslHandshakeErrors() const
 {
     Q_D(const QSslSocket);
     return d->sslErrors;
@@ -2148,7 +2169,7 @@ void QSslSocket::ignoreSslErrors()
     You can clear the list of errors you want to ignore by calling this
     function with an empty list.
 
-    \sa sslErrors()
+    \sa sslErrors(), sslHandshakeErrors()
 */
 void QSslSocket::ignoreSslErrors(const QList<QSslError> &errors)
 {
@@ -2813,7 +2834,7 @@ void QSslSocketPrivate::_q_errorSlot(QAbstractSocket::SocketError error)
         readBufferMaxSize = tmpReadBufferMaxSize;
     }
 
-    setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
+    setErrorAndEmit(plainSocket->socketError(), plainSocket->errorString());
 }
 
 /*!

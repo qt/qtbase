@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 
 QXcbVulkanWindow::QXcbVulkanWindow(QWindow *window)
     : QXcbWindow(window),
-      m_surface(nullptr)
+      m_surface(VK_NULL_HANDLE)
 {
 }
 

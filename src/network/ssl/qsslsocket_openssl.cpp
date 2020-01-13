@@ -1109,7 +1109,7 @@ void QSslSocketBackendPrivate::transmit()
             if (actualWritten < 0) {
                 //plain socket write fails if it was in the pending close state.
                 const ScopedBool bg(inSetAndEmitError, true);
-                setErrorAndEmit(plainSocket->error(), plainSocket->errorString());
+                setErrorAndEmit(plainSocket->socketError(), plainSocket->errorString());
                 return;
             }
             transmitting = true;

@@ -242,9 +242,9 @@ void QNetworkAccessDebugPipeBackend::closeDownstreamChannel()
 
 void QNetworkAccessDebugPipeBackend::socketError()
 {
-    qWarning("QNetworkAccessDebugPipeBackend::socketError() %d",socket.error());
+    qWarning("QNetworkAccessDebugPipeBackend::socketError() %d",socket.socketError());
     QNetworkReply::NetworkError code;
-    switch (socket.error()) {
+    switch (socket.socketError()) {
     case QAbstractSocket::RemoteHostClosedError:
         return;                 // socketDisconnected will be called
 

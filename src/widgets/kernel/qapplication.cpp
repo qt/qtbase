@@ -414,11 +414,9 @@ bool Q_WIDGETS_EXPORT qt_tab_all_widgets()
 }
 
 // ######## move to QApplicationPrivate
-// Default application palettes and fonts (per widget type)
-Q_GLOBAL_STATIC(PaletteHash, app_palettes)
+// Default fonts (per widget type)
 Q_GLOBAL_STATIC(FontHash, app_fonts)
-// Exported accessors for use outside of this file
-PaletteHash *qt_app_palettes_hash() { return app_palettes(); }
+// Exported accessor for use outside of this file
 FontHash *qt_app_fonts_hash() { return app_fonts(); }
 
 QWidgetList *QApplicationPrivate::popupWidgets = nullptr;        // has keyboard input focus
@@ -635,7 +633,7 @@ static void setPossiblePalette(const QPalette *palette, const char *className)
 {
     if (palette == nullptr)
         return;
-    QApplicationPrivate::setPalette_helper(*palette, className, false);
+    QApplicationPrivate::setPalette_helper(*palette, className);
 }
 
 void QApplicationPrivate::initializeWidgetPaletteHash()
@@ -643,7 +641,8 @@ void QApplicationPrivate::initializeWidgetPaletteHash()
     QPlatformTheme *platformTheme = QGuiApplicationPrivate::platformTheme();
     if (!platformTheme)
         return;
-    app_palettes()->clear();
+
+    widgetPalettes.clear();
 
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ToolButtonPalette), "QToolButton");
     setPossiblePalette(platformTheme->palette(QPlatformTheme::ButtonPalette), "QAbstractButton");
@@ -802,7 +801,7 @@ QApplication::~QApplication()
     delete QApplicationPrivate::app_pal;
     QApplicationPrivate::app_pal = nullptr;
     clearSystemPalette();
-    app_palettes()->clear();
+    QApplicationPrivate::widgetPalettes.clear();
 
     delete QApplicationPrivate::sys_font;
     QApplicationPrivate::sys_font = nullptr;
@@ -1315,6 +1314,8 @@ void QApplication::setGlobalStrut(const QSize& strut)
     QApplicationPrivate::app_strut = strut;
 }
 
+// Widget specific palettes
+QApplicationPrivate::PaletteHash QApplicationPrivate::widgetPalettes;
 
 /*!
     \fn QPalette QApplication::palette(const QWidget* widget)
@@ -1329,15 +1330,13 @@ void QApplication::setGlobalStrut(const QSize& strut)
 */
 QPalette QApplication::palette(const QWidget* w)
 {
-    typedef PaletteHash::const_iterator PaletteHashConstIt;
-
-    PaletteHash *hash = app_palettes();
-    if (w && hash && hash->size()) {
-        PaletteHashConstIt it = hash->constFind(w->metaObject()->className());
-        const PaletteHashConstIt cend = hash->constEnd();
+    auto &widgetPalettes = QApplicationPrivate::widgetPalettes;
+    if (w && !widgetPalettes.isEmpty()) {
+        auto it = widgetPalettes.constFind(w->metaObject()->className());
+        const auto cend = widgetPalettes.constEnd();
         if (it != cend)
             return *it;
-        for (it = hash->constBegin(); it != cend; ++it) {
+        for (it = widgetPalettes.constBegin(); it != cend; ++it) {
             if (w->inherits(it.key()))
                 return it.value();
         }
@@ -1354,17 +1353,17 @@ QPalette QApplication::palette(const QWidget* w)
 */
 QPalette QApplication::palette(const char *className)
 {
-    PaletteHash *hash = app_palettes();
-    if (className && hash && hash->size()) {
-        QHash<QByteArray, QPalette>::ConstIterator it = hash->constFind(className);
-        if (it != hash->constEnd())
+    auto &widgetPalettes = QApplicationPrivate::widgetPalettes;
+    if (className && !widgetPalettes.isEmpty()) {
+        auto it = widgetPalettes.constFind(className);
+        if (it != widgetPalettes.constEnd())
             return *it;
     }
 
     return QGuiApplication::palette();
 }
 
-void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char* className, bool clearWidgetPaletteHash)
+void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char* className)
 {
     QPalette pal = palette;
 
@@ -1372,25 +1371,19 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
         QApplicationPrivate::app_style->polish(pal); // NB: non-const reference
 
     bool all = false;
-    PaletteHash *hash = app_palettes();
     if (!className) {
-        if (QApplicationPrivate::app_pal && pal.isCopyOf(*QApplicationPrivate::app_pal))
+        if (!QGuiApplicationPrivate::setPalette(pal))
             return;
-        if (!QApplicationPrivate::app_pal)
-            QApplicationPrivate::app_pal = new QPalette(pal);
-        else
-            *QApplicationPrivate::app_pal = pal;
 
         if (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal))
             QCoreApplication::setAttribute(Qt::AA_SetPalette);
 
-        if (hash && hash->size()) {
+        if (!widgetPalettes.isEmpty()) {
             all = true;
-            if (clearWidgetPaletteHash)
-                hash->clear();
+            widgetPalettes.clear();
         }
-    } else if (hash) {
-        hash->insert(className, pal);
+    } else {
+        widgetPalettes.insert(className, pal);
     }
 
     if (qApp)
@@ -1422,7 +1415,7 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
 
 void QApplication::setPalette(const QPalette &palette, const char* className)
 {
-    QApplicationPrivate::setPalette_helper(palette, className, /*clearWidgetPaletteHash=*/ true);
+    QApplicationPrivate::setPalette_helper(palette, className);
 }
 
 

@@ -745,7 +745,11 @@
 - (UITextPosition *)positionFromPosition:(UITextPosition *)position offset:(NSInteger)offset
 {
     int p = static_cast<QUITextPosition *>(position).index;
-    return [QUITextPosition positionWithIndex:p + offset];
+    const int posWithIndex = p + offset;
+    const int textLength = [self currentImeState:Qt::ImSurroundingText].toString().length();
+    if (posWithIndex < 0 || posWithIndex > textLength)
+        return nil;
+    return [QUITextPosition positionWithIndex:posWithIndex];
 }
 
 - (UITextPosition *)positionFromPosition:(UITextPosition *)position inDirection:(UITextLayoutDirection)direction offset:(NSInteger)offset

@@ -219,7 +219,7 @@ QDateTimeEdit::~QDateTimeEdit()
 
 /*!
   \property QDateTimeEdit::dateTime
-  \brief the QDateTime that is set in the QDateTimeEdit
+  \brief The QDateTime that is set in the QDateTimeEdit.
 
   When setting this property, the new QDateTime is converted to the timespec of
   the QDateTimeEdit, which thus remains unchanged.
@@ -259,7 +259,7 @@ void QDateTimeEdit::setDateTime(const QDateTime &datetime)
 
 /*!
   \property QDateTimeEdit::date
-  \brief the QDate that is set in the widget
+  \brief The QDate that is set in the widget.
 
   By default, this property contains a date that refers to January 1, 2000.
 
@@ -296,7 +296,7 @@ void QDateTimeEdit::setDate(const QDate &date)
 
 /*!
   \property QDateTimeEdit::time
-  \brief the QTime that is set in the widget
+  \brief The QTime that is set in the widget.
 
   By default, this property contains a time of 00:00:00 and 0 milliseconds.
 
@@ -341,7 +341,8 @@ void QDateTimeEdit::setCalendar(QCalendar calendar)
 /*!
   \since 4.4
   \property QDateTimeEdit::minimumDateTime
-  \brief the minimum datetime of the date time edit
+
+  \brief The minimum datetime of the date time edit.
 
   Changing this property implicitly updates the \l minimumDate and \l
   minimumTime properties to the date and time parts of this property,
@@ -382,7 +383,7 @@ void QDateTimeEdit::setMinimumDateTime(const QDateTime &dt)
   \since 4.4
   \property QDateTimeEdit::maximumDateTime
 
-  \brief the maximum datetime of the date time edit
+  \brief The maximum datetime of the date time edit.
 
   Changing this property implicitly updates the \l maximumDate and \l
   maximumTime properties to the date and time parts of this property,
@@ -450,7 +451,7 @@ void QDateTimeEdit::setDateTimeRange(const QDateTime &min, const QDateTime &max)
 /*!
   \property QDateTimeEdit::minimumDate
 
-  \brief the minimum date of the date time edit
+  \brief The minimum date of the date time edit.
 
   Changing this property updates the date of the \l minimumDateTime property
   while preserving the \l minimumTime property. When setting this property,
@@ -490,7 +491,7 @@ void QDateTimeEdit::clearMinimumDate()
 /*!
   \property QDateTimeEdit::maximumDate
 
-  \brief the maximum date of the date time edit
+  \brief The maximum date of the date time edit.
 
   Changing this property updates the date of the \l maximumDateTime property
   while preserving the \l maximumTime property. When setting this property, the
@@ -529,7 +530,7 @@ void QDateTimeEdit::clearMaximumDate()
 /*!
   \property QDateTimeEdit::minimumTime
 
-  \brief the minimum time of the date time edit
+  \brief The minimum time of the date time edit.
 
   Changing this property updates the time of the \l minimumDateTime property
   while preserving the \l minimumDate and \l maximumDate properties. If those
@@ -568,7 +569,7 @@ void QDateTimeEdit::clearMinimumTime()
 /*!
   \property QDateTimeEdit::maximumTime
 
-  \brief the maximum time of the date time edit
+  \brief The maximum time of the date time edit.
 
   Changing this property updates the time of the \l maximumDateTime property
   while preserving the \l minimumDate and \l maximumDate properties. If those
@@ -671,7 +672,7 @@ void QDateTimeEdit::setTimeRange(const QTime &min, const QTime &max)
 /*!
   \property QDateTimeEdit::displayedSections
 
-  \brief the currently displayed fields of the date time edit
+  \brief The currently displayed fields of the date time edit.
 
   Returns a bit set of the displayed sections for this format.
   \a setDisplayFormat(), displayFormat()
@@ -686,7 +687,7 @@ QDateTimeEdit::Sections QDateTimeEdit::displayedSections() const
 /*!
   \property QDateTimeEdit::currentSection
 
-  \brief the current section of the spinbox
+  \brief The current section of the spinbox.
   \a setCurrentSection()
 */
 
@@ -745,7 +746,7 @@ QDateTimeEdit::Section QDateTimeEdit::sectionAt(int index) const
 
   \property QDateTimeEdit::sectionCount
 
-  \brief the number of sections displayed.
+  \brief The number of sections displayed.
   If the format is 'yyyy/yy/yyyy', sectionCount returns 3
 */
 
@@ -761,7 +762,7 @@ int QDateTimeEdit::sectionCount() const
 
   \property QDateTimeEdit::currentSectionIndex
 
-  \brief the current section index of the spinbox
+  \brief The current section index of the spinbox.
 
   If the format is 'yyyy/MM/dd', the displayText is '2001/05/21', and
   the cursorPosition is 5, currentSectionIndex returns 1. If the
@@ -885,7 +886,7 @@ QString QDateTimeEdit::sectionText(Section section) const
 /*!
   \property QDateTimeEdit::displayFormat
 
-  \brief the format used to display the time/date of the date time edit
+  \brief The format used to display the time/date of the date time edit.
 
   This format is described in QDateTime::toString() and QDateTime::fromString()
 
@@ -957,7 +958,7 @@ void QDateTimeEdit::setDisplayFormat(const QString &format)
 
 /*!
     \property QDateTimeEdit::calendarPopup
-    \brief the current calendar pop-up show mode.
+    \brief The current calendar pop-up show mode.
     \since 4.2
 
     The calendar pop-up will be shown upon clicking the arrow button.
@@ -989,7 +990,7 @@ void QDateTimeEdit::setCalendarPopup(bool enable)
 
 /*!
     \property QDateTimeEdit::timeSpec
-    \brief the current timespec used by the date time edit.
+    \brief The current timespec used by the date time edit.
     \since 4.4
 */
 

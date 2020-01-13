@@ -3939,6 +3939,12 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
     case QRhiTexture::RGBA32F:
         bpc = 16;
         break;
+    case QRhiTexture::R16F:
+        bpc = 2;
+        break;
+    case QRhiTexture::R32F:
+        bpc = 4;
+        break;
 
     case QRhiTexture::D16:
         bpc = 2;

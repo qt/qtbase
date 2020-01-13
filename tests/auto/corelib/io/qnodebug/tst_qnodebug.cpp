@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -65,7 +65,7 @@ void tst_QNoDebug::noDebugOutput() const
 void tst_QNoDebug::streaming() const
 {
     QDateTime dt(QDate(1,2,3),QTime(4,5,6));
-    const QByteArray debugString = dt.toString(u"yyyy-MM-dd HH:mm:ss.zzz t").toLatin1();
+    const QByteArray debugString = dt.toString(u"yyyy-MM-dd HH:mm:ss.zzz t").toLocal8Bit();
     const QByteArray message = "QDateTime(" + debugString + " Qt::LocalTime)";
     QTest::ignoreMessage(QtWarningMsg, message.constData());
     qWarning() << dt;
