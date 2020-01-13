@@ -605,8 +605,13 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
     The following parameters are available for \c {-platform windows}:
 
     \list
+        \li \c {altgr}, detect the key \c {AltGr} found on some keyboards as
+               Qt::GroupSwitchModifier (since Qt 5.12).
         \li \c {dialogs=[xp|none]}, \c xp uses XP-style native dialogs and
             \c none disables them.
+
+        \li \c {dpiawareness=[0|1|2} Sets the DPI awareness of the process
+               (see \l{High DPI Displays}, since Qt 5.4).
         \li \c {fontengine=freetype}, uses the FreeType font engine.
         \li \c {menus=[native|none]}, controls the use of native menus.
 
@@ -616,10 +621,23 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
                provide hover signals. They are mainly intended for Qt Quick.
                By default, they will be used if the application is not an
                instance of QApplication or for Qt Quick Controls 2
-               applications.
+               applications (since Qt 5.10).
 
-        \li \c {altgr}, detect the key \c {AltGr} found on some keyboards as
-               Qt::GroupSwitchModifier.
+        \li \c {nocolorfonts} Turn off DirectWrite Color fonts
+               (since Qt 5.8).
+
+        \li \c {nodirectwrite} Turn off DirectWrite fonts (since Qt 5.8).
+
+        \li \c {nomousefromtouch} Ignores mouse events synthesized
+               from touch events by the operating system.
+
+        \li \c {nowmpointer} Switches from Pointer Input Messages handling
+               to legacy mouse handling (since Qt 5.12).
+        \li \c {reverse} Activates Right-to-left mode (experimental).
+               Windows title bars will be shown accordingly in Right-to-left locales
+               (since Qt 5.13).
+        \li \c {tabletabsoluterange=<value>} Sets a value for mouse mode detection
+               of WinTab tablets (Legacy, since Qt 5.3).
     \endlist
 
     The following parameter is available for \c {-platform cocoa} (on macOS):
