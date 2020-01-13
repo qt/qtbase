@@ -51,6 +51,8 @@ public:
 protected:
     bool processEvents(QEventLoop::ProcessEventsFlags flags) override;
     void doMaintainTimers();
+    void wakeUp() override;
+    static void mainThreadWakeUp(void *eventDispatcher);
 
 private:
     bool m_hasMainLoop = false;

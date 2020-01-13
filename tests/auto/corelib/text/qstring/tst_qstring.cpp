@@ -459,8 +459,8 @@ private slots:
     void trimmed();
     void toUpper();
     void toLower();
-    void isUpper();
-    void isLower();
+    void isLower_isUpper_data();
+    void isLower_isUpper();
     void toCaseFolded();
     void rightJustified();
     void leftJustified();
@@ -2313,44 +2313,83 @@ void tst_QString::toLower()
 #endif // icu
 }
 
-void tst_QString::isUpper()
+void tst_QString::isLower_isUpper_data()
 {
-    QVERIFY(!QString().isUpper());
-    QVERIFY(!QString("").isUpper());
-    QVERIFY(QString("TEXT").isUpper());
-    QVERIFY(!QString("text").isUpper());
-    QVERIFY(!QString("Text").isUpper());
-    QVERIFY(!QString("tExt").isUpper());
-    QVERIFY(!QString("teXt").isUpper());
-    QVERIFY(!QString("texT").isUpper());
-    QVERIFY(!QString("TExt").isUpper());
-    QVERIFY(!QString("teXT").isUpper());
-    QVERIFY(!QString("tEXt").isUpper());
-    QVERIFY(!QString("tExT").isUpper());
-    QVERIFY(!QString("@ABYZ[").isUpper());
-    QVERIFY(!QString("@abyz[").isUpper());
-    QVERIFY(!QString("`ABYZ{").isUpper());
-    QVERIFY(!QString("`abyz{").isUpper());
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<bool>("isLower");
+    QTest::addColumn<bool>("isUpper");
+
+    int row = 0;
+    QTest::addRow("lower-and-upper-%02d", row++) << QString() << true << true;
+    QTest::addRow("lower-and-upper-%02d", row++) << QString("") << true << true;
+    QTest::addRow("lower-and-upper-%02d", row++) << QString(" ") << true << true;
+    QTest::addRow("lower-and-upper-%02d", row++) << QString("123") << true << true;
+    QTest::addRow("lower-and-upper-%02d", row++) << QString("@123$#") << true << true;
+    QTest::addRow("lower-and-upper-%02d", row++) << QString("𝄞𝄴𝆏♫") << true << true; // Unicode Block 'Musical Symbols'
+    // not foldable
+    QTest::addRow("lower-and-upper-%02d", row++) << QString("𝚊𝚋𝚌𝚍𝚎") << true << true; // MATHEMATICAL MONOSPACE SMALL A, ... E
+    QTest::addRow("lower-and-upper-%02d", row++) << QString("𝙖,𝙗,𝙘,𝙙,𝙚") << true << true; // MATHEMATICAL SANS-SERIF BOLD ITALIC SMALL A, ... E
+    QTest::addRow("lower-and-upper-%02d", row++) << QString("𝗔𝗕𝗖𝗗𝗘") << true << true; // MATHEMATICAL SANS-SERIF BOLD CAPITAL A, ... E
+    QTest::addRow("lower-and-upper-%02d", row++) << QString("𝐀,𝐁,𝐂,𝐃,𝐄") << true << true; // MATHEMATICAL BOLD CAPITAL A, ... E
+
+    row = 0;
+    QTest::addRow("only-lower-%02d", row++) << QString("text") << true << false;
+    QTest::addRow("only-lower-%02d", row++) << QString("àaa") << true << false;
+    QTest::addRow("only-lower-%02d", row++) << QString("øæß") << true << false;
+    QTest::addRow("only-lower-%02d", row++) << QString("text ") << true << false;
+    QTest::addRow("only-lower-%02d", row++) << QString(" text") << true << false;
+    QTest::addRow("only-lower-%02d", row++) << QString("hello, world!") << true << false;
+    QTest::addRow("only-lower-%02d", row++) << QString("123@abyz[") << true << false;
+    QTest::addRow("only-lower-%02d", row++) << QString("`abyz{") << true << false;
+    QTest::addRow("only-lower-%02d", row++) << QString("a𝙖a|b𝙗b|c𝙘c|d𝙙d|e𝙚e") << true << false; // MATHEMATICAL SANS-SERIF BOLD ITALIC SMALL A, ... E
+    QTest::addRow("only-lower-%02d", row++) << QString("𐐨") << true << false; // DESERET SMALL LETTER LONG I
+    // uppercase letters, not foldable
+    QTest::addRow("only-lower-%02d", row++) << QString("text𝗔text") << true << false; // MATHEMATICAL SANS-SERIF BOLD CAPITAL A
+
+    row = 0;
+    QTest::addRow("only-upper-%02d", row++) << QString("TEXT") << false << true;
+    QTest::addRow("only-upper-%02d", row++) << QString("ÀAA") << false << true;
+    QTest::addRow("only-upper-%02d", row++) << QString("ØÆẞ") << false << true;
+    QTest::addRow("only-upper-%02d", row++) << QString("TEXT ") << false << true;
+    QTest::addRow("only-upper-%02d", row++) << QString(" TEXT") << false << true;
+    QTest::addRow("only-upper-%02d", row++) << QString("HELLO, WORLD!") << false << true;
+    QTest::addRow("only-upper-%02d", row++) << QString("123@ABYZ[") << false << true;
+    QTest::addRow("only-upper-%02d", row++) << QString("`ABYZ{") << false << true;
+    QTest::addRow("only-upper-%02d", row++) << QString("A𝐀A|B𝐁B|C𝐂C|D𝐃D|E𝐄E") << false << true; // MATHEMATICAL BOLD CAPITAL A, ... E
+    QTest::addRow("only-upper-%02d", row++) << QString("𐐀") << false << true; // DESERET CAPITAL LETTER LONG I
+    // lowercase letters, not foldable
+    QTest::addRow("only-upper-%02d", row++) << QString("TEXT𝚊TEXT") << false << true; // MATHEMATICAL MONOSPACE SMALL A
+
+    row = 0;
+    QTest::addRow("not-lower-nor-upper-%02d", row++) << QString("Text") << false << false;
+    QTest::addRow("not-lower-nor-upper-%02d", row++) << QString("tExt") << false << false;
+    QTest::addRow("not-lower-nor-upper-%02d", row++) << QString("teXt") << false << false;
+    QTest::addRow("not-lower-nor-upper-%02d", row++) << QString("texT") << false << false;
+    QTest::addRow("not-lower-nor-upper-%02d", row++) << QString("TExt") << false << false;
+    QTest::addRow("not-lower-nor-upper-%02d", row++) << QString("teXT") << false << false;
+    QTest::addRow("not-lower-nor-upper-%02d", row++) << QString("tEXt") << false << false;
+    QTest::addRow("not-lower-nor-upper-%02d", row++) << QString("tExT") << false << false;
+    // not foldable
+    QTest::addRow("not-lower-nor-upper-%02d", row++) << QString("TEXT𝚊text") << false << false; // MATHEMATICAL MONOSPACE SMALL A
+    QTest::addRow("not-lower-nor-upper-%02d", row++) << QString("text𝗔TEXT") << false << false; // MATHEMATICAL SANS-SERIF BOLD CAPITAL A
+    // titlecase, foldable
+    QTest::addRow("not-lower-nor-upper-%02d", row++) << QString("abcǈdef") << false << false; // LATIN CAPITAL LETTER L WITH SMALL LETTER J
+    QTest::addRow("not-lower-nor-upper-%02d", row++) << QString("ABCǈDEF") << false << false; // LATIN CAPITAL LETTER L WITH SMALL LETTER J
 }
 
-void tst_QString::isLower()
+void tst_QString::isLower_isUpper()
 {
-    QVERIFY(!QString().isLower());
-    QVERIFY(!QString("").isLower());
-    QVERIFY(QString("text").isLower());
-    QVERIFY(!QString("Text").isLower());
-    QVERIFY(!QString("tExt").isLower());
-    QVERIFY(!QString("teXt").isLower());
-    QVERIFY(!QString("texT").isLower());
-    QVERIFY(!QString("TExt").isLower());
-    QVERIFY(!QString("teXT").isLower());
-    QVERIFY(!QString("tEXt").isLower());
-    QVERIFY(!QString("tExT").isLower());
-    QVERIFY(!QString("TEXT").isLower());
-    QVERIFY(!QString("@ABYZ[").isLower());
-    QVERIFY(!QString("@abyz[").isLower());
-    QVERIFY(!QString("`ABYZ{").isLower());
-    QVERIFY(!QString("`abyz{").isLower());
+    QFETCH(QString, string);
+    QFETCH(bool, isLower);
+    QFETCH(bool, isUpper);
+
+    QCOMPARE(string.isLower(), isLower);
+    QCOMPARE(string.toLower() == string, isLower);
+    QVERIFY(string.toLower().isLower());
+
+    QCOMPARE(string.isUpper(), isUpper);
+    QCOMPARE(string.toUpper() == string, isUpper);
+    QVERIFY(string.toUpper().isUpper());
 }
 
 void tst_QString::toCaseFolded()

@@ -5123,21 +5123,25 @@ bool QString::endsWith(QChar c, Qt::CaseSensitivity cs) const
 }
 
 /*!
-    Returns \c true if the string only contains uppercase letters,
-    otherwise returns \c false.
+    Returns \c true if the string is uppercase, that is, it's identical
+    to its toUpper() folding.
+
+    Note that this does \e not mean that the string does not contain
+    lowercase letters (some lowercase letters do not have a uppercase
+    folding; they are left unchanged by toUpper()).
+    For more information, refer to the Unicode standard, section 3.13.
+
     \since 5.12
 
-    \sa QChar::isUpper(), isLower()
+    \sa QChar::toUpper(), isLower()
 */
 bool QString::isUpper() const
 {
-    if (isEmpty())
-        return false;
+    QStringIterator it(*this);
 
-    const QChar *d = data();
-
-    for (int i = 0, max = size(); i < max; ++i) {
-        if (!d[i].isUpper())
+    while (it.hasNext()) {
+        uint uc = it.nextUnchecked();
+        if (qGetProp(uc)->cases[QUnicodeTables::UpperCase].diff)
             return false;
     }
 
@@ -5145,21 +5149,25 @@ bool QString::isUpper() const
 }
 
 /*!
-    Returns \c true if the string only contains lowercase letters,
-    otherwise returns \c false.
+    Returns \c true if the string is lowercase, that is, it's identical
+    to its toLower() folding.
+
+    Note that this does \e not mean that the string does not contain
+    uppercase letters (some uppercase letters do not have a lowercase
+    folding; they are left unchanged by toLower()).
+    For more information, refer to the Unicode standard, section 3.13.
+
     \since 5.12
 
-    \sa QChar::isLower(), isUpper()
+    \sa QChar::toLower(), isUpper()
  */
 bool QString::isLower() const
 {
-    if (isEmpty())
-        return false;
+    QStringIterator it(*this);
 
-    const QChar *d = data();
-
-    for (int i = 0, max = size(); i < max; ++i) {
-        if (!d[i].isLower())
+    while (it.hasNext()) {
+        uint uc = it.nextUnchecked();
+        if (qGetProp(uc)->cases[QUnicodeTables::LowerCase].diff)
             return false;
     }
 
