@@ -389,10 +389,12 @@ void tst_QShader::serializeShaderDesc()
         }
         QVERIFY(!data.isEmpty());
 
-        QShaderDescription desc2;
-        QVERIFY(!desc2.isValid());
-        QVERIFY(!(desc == desc2));
-        QVERIFY(desc != desc2);
+        {
+            QShaderDescription desc2;
+            QVERIFY(!desc2.isValid());
+            QVERIFY(!(desc == desc2));
+            QVERIFY(desc != desc2);
+        }
 
         {
             QBuffer buf(&data);
