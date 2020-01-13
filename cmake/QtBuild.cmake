@@ -2792,7 +2792,7 @@ endfunction()
 function(qt_add_test name)
     qt_parse_all_arguments(arg "qt_add_test"
         "RUN_SERIAL;EXCEPTIONS;GUI;QMLTEST"
-        "OUTPUT_DIRECTORY;WORKING_DIRECTORY"
+        "OUTPUT_DIRECTORY;WORKING_DIRECTORY;TIMEOUT"
         "QML_IMPORTPATH;TESTDATA;${__default_private_args};${__default_public_args}" ${ARGN}
     )
 
@@ -2889,6 +2889,9 @@ function(qt_add_test name)
         add_test(NAME "${name}" COMMAND ${test_executable} ${extra_test_args} -o ${name}.xml,xml -o -,txt  WORKING_DIRECTORY "${test_working_dir}")
     endif()
     set_tests_properties("${name}" PROPERTIES RUN_SERIAL "${arg_RUN_SERIAL}" LABELS "${label}")
+    if (arg_TIMEOUT)
+        set_tests_properties(${name} PROPERTIES TIMEOUT ${arg_TIMEOUT})
+    endif()
 
     # Get path to qtbase/bin, then prepend this path containing the shared libraries to PATH
     set(INSTALL_PREFIX_BIN "${CMAKE_INSTALL_PREFIX}/bin")
