@@ -717,7 +717,11 @@ void QWidgetBackingStore::markDirtyOnScreen(const QRegion &region, QWidget *widg
 
     // Alien widgets.
     if (!hasPlatformWindow(widget) && !widget->isWindow()) {
-        QWidget *nativeParent = widget->nativeParentWidget();        // Alien widgets with the top-level as the native parent (common case).
+        QWidget *nativeParent = widget->nativeParentWidget();
+        if (!nativeParent)
+            return;
+
+        // Alien widgets with the top-level as the native parent (common case).
         if (nativeParent == tlw) {
             dirtyOnScreen += region.translated(topLevelOffset);
             return;
