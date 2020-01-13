@@ -5955,7 +5955,11 @@ void QWidget::setWindowTitle(const QString &title)
     has been set, windowIcon() returns the application icon
     (QApplication::windowIcon()).
 
-    \sa windowTitle
+    \note On \macos, window icons represent the active document,
+    and will not be displayed unless a file path has also been
+    set using setFilePath.
+
+    \sa windowTitle, setFilePath
 */
 QIcon QWidget::windowIcon() const
 {
