@@ -126,7 +126,7 @@ public:
     QNetworkRequest request() const;
 
 #if QT_DEPRECATED_SINCE(5, 15)
- //   QT_DEPRECATED_X("Use networkError()") NetworkError error() const;
+    QT_DEPRECATED_X("Use networkError()") NetworkError error() const;
 #endif // QT_DEPRECATED_SINCE(5, 15)
     NetworkError networkError() const;
 

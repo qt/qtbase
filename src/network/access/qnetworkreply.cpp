@@ -565,12 +565,10 @@ QNetworkAccessManager::Operation QNetworkReply::operation() const
 
     \sa setError(), networkError()
 */
-/*
 QNetworkReply::NetworkError QNetworkReply::error() const
 {
     return networkError();
 }
-*/
 #endif // QT_DEPRECATED_SINCE(5, 15)
 
 /*!
