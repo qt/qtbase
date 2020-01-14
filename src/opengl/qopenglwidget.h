@@ -42,7 +42,7 @@
 
 #include <QtOpenGL/qtopenglglobal.h>
 
-#ifndef QT_NO_OPENGL
+#ifdef QT_WIDGETS_LIB
 
 #include <QtWidgets/QWidget>
 #include <QtGui/QSurfaceFormat>
@@ -110,6 +110,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_OPENGL
+#endif // QT_WIDGETS_LIB
 
 #endif // QOPENGLWIDGET_H
