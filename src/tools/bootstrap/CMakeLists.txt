@@ -184,34 +184,34 @@ qt_extend_target(Bootstrap CONDITION UNIX AND NOT APPLE_OSX
         ../../corelib/io/qstandardpaths_unix.cpp
 )
 
-qt_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING
-    SOURCES
-        ../../3rdparty/zlib/src/adler32.c
-        ../../3rdparty/zlib/src/compress.c
-        ../../3rdparty/zlib/src/crc32.c
-        ../../3rdparty/zlib/src/deflate.c
-        ../../3rdparty/zlib/src/gzclose.c
-        ../../3rdparty/zlib/src/gzlib.c
-        ../../3rdparty/zlib/src/gzread.c
-        ../../3rdparty/zlib/src/gzwrite.c
-        ../../3rdparty/zlib/src/infback.c
-        ../../3rdparty/zlib/src/inffast.c
-        ../../3rdparty/zlib/src/inflate.c
-        ../../3rdparty/zlib/src/inftrees.c
-        ../../3rdparty/zlib/src/trees.c
-        ../../3rdparty/zlib/src/uncompr.c
-        ../../3rdparty/zlib/src/zutil.c
-    INCLUDE_DIRECTORIES
-        ../../3rdparty/zlib/src
-)
-
-qt_extend_target(Bootstrap CONDITION NOT CMAKE_CROSSCOMPILING
-    LIBRARIES
-        ZLIB::ZLIB
-)
-# special case: This will never get cross_compiled!
-# extend_target(Bootstrap CONDITION cross_compile [...])
-# extend_target(Bootstrap CONDITION NOT cross_compile [...])
+# special case begin
+# These lines need to commented out. This will never get cross_compiled!
+#qt_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING
+#    SOURCES
+#        ../../3rdparty/zlib/src/adler32.c
+#        ../../3rdparty/zlib/src/compress.c
+#        ../../3rdparty/zlib/src/crc32.c
+#        ../../3rdparty/zlib/src/deflate.c
+#        ../../3rdparty/zlib/src/gzclose.c
+#        ../../3rdparty/zlib/src/gzlib.c
+#        ../../3rdparty/zlib/src/gzread.c
+#        ../../3rdparty/zlib/src/gzwrite.c
+#        ../../3rdparty/zlib/src/infback.c
+#       ../../3rdparty/zlib/src/inffast.c
+#        ../../3rdparty/zlib/src/inflate.c
+#        ../../3rdparty/zlib/src/inftrees.c
+#        ../../3rdparty/zlib/src/trees.c
+#        ../../3rdparty/zlib/src/uncompr.c
+#        ../../3rdparty/zlib/src/zutil.c
+#    INCLUDE_DIRECTORIES
+#        ../../3rdparty/zlib/src
+#)
+#
+#qt_extend_target(Bootstrap CONDITION NOT CMAKE_CROSSCOMPILING
+#    LIBRARIES
+#        ZLIB::ZLIB
+#)
+# special case end
 
 qt_extend_target(Bootstrap CONDITION WIN32 AND mingw
     PUBLIC_LIBRARIES
