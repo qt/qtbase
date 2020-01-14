@@ -1370,6 +1370,10 @@ class Scope(object):
         return re.sub(r"\.\./", "", target)
 
     @property
+    def TARGET_ORIGINAL(self) -> str:
+        return self.expandString("TARGET") or os.path.splitext(os.path.basename(self.file))[0]
+
+    @property
     def _INCLUDED(self) -> List[str]:
         return self.get("_INCLUDED")
 
@@ -2903,6 +2907,10 @@ def write_test(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int =
             extra.append("QML_IMPORTPATH")
             for path in importpath:
                 extra.append(f'    "{path}"')
+
+    target_original = scope.TARGET_ORIGINAL
+    if target_original and target_original.startswith("../"):
+        extra.append("OUTPUT_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}/../\"")
 
     requires_content = expand_project_requirements(scope, skip_message=True)
     if requires_content:
