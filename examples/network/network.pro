@@ -29,7 +29,7 @@ qtHaveModule(widgets) {
 
     }
 
-    qtConfig(openssl): SUBDIRS += securesocketclient
+    qtConfig(ssl): SUBDIRS += securesocketclient
     qtConfig(dtls): SUBDIRS += secureudpserver secureudpclient
     qtConfig(sctp): SUBDIRS += multistreamserver multistreamclient
 }
