@@ -25,14 +25,14 @@ qt_add_tool(rcc
 ## Scopes:
 #####################################################################
 
-qt_extend_target(rcc CONDITION QT_FEATURE_zstd AND NOT cross_compile
+qt_extend_target(rcc CONDITION QT_FEATURE_zstd AND NOT CMAKE_CROSSCOMPILING
     DEFINES
         QT_FEATURE_zstd=1
     LIBRARIES
         ZSTD::ZSTD
 )
 
-qt_extend_target(rcc CONDITION cross_compile OR NOT QT_FEATURE_zstd
+qt_extend_target(rcc CONDITION CMAKE_CROSSCOMPILING OR NOT QT_FEATURE_zstd
     DEFINES
         QT_FEATURE_zstd=-1
 )

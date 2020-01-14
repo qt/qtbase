@@ -179,7 +179,7 @@ qt_extend_target(Bootstrap CONDITION UNIX AND NOT APPLE_OSX
         ../../corelib/io/qstandardpaths_unix.cpp
 )
 
-qt_extend_target(Bootstrap CONDITION cross_compile
+qt_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING
     SOURCES
         ../../3rdparty/zlib/src/adler32.c
         ../../3rdparty/zlib/src/compress.c
@@ -200,7 +200,7 @@ qt_extend_target(Bootstrap CONDITION cross_compile
         ../../3rdparty/zlib/src
 )
 
-qt_extend_target(Bootstrap CONDITION NOT cross_compile
+qt_extend_target(Bootstrap CONDITION NOT CMAKE_CROSSCOMPILING
     LIBRARIES
         ZLIB::ZLIB
 )

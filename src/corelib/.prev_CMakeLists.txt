@@ -452,7 +452,7 @@ if(NOT _ss_f16c_cxx)
     )
 endif()
 
-qt_extend_target(Core CONDITION NOT _x_-armcc_x_ AND NOT cross_compile AND NOT static AND (hurd_x_ OR linux_x_)
+qt_extend_target(Core CONDITION NOT CMAKE_CROSSCOMPILING AND NOT _x_-armcc_x_ AND NOT static AND (hurd_x_ OR linux_x_)
     DEFINES
         ELF_INTERPRETER=\\\"=Creadelf-l/bin/ls|perl-n-e\'['quote', ['if', ['/program', 'interpreter:', ['.*'], ']/'], '{', 'print', '$1;', '}']]\'\\\"
     LINK_OPTIONS
