@@ -119,9 +119,6 @@ class QHostInfoAgent
 {
 public:
     static QHostInfo fromName(const QString &hostName);
-#ifndef QT_NO_BEARERMANAGEMENT
-    static QHostInfo fromName(const QString &hostName, QSharedPointer<QNetworkSession> networkSession);
-#endif
 private:
     static QHostInfo lookup(const QString &hostName);
     static QHostInfo reverseLookup(const QHostAddress &address);
@@ -136,10 +133,6 @@ public:
           lookupId(0)
     {
     }
-#ifndef QT_NO_BEARERMANAGEMENT
-    //not a public API yet
-    static QHostInfo fromName(const QString &hostName, QSharedPointer<QNetworkSession> networkSession);
-#endif
     static int lookupHostImpl(const QString &name,
                               const QObject *receiver,
                               QtPrivate::QSlotObjectBase *slotObj,
