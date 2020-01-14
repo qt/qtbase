@@ -72,6 +72,7 @@
 
 #include <QtCore/qset.h>
 #include <QtCore/qhash.h>
+#include <QtCore/qlibraryinfo.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qoperatingsystemversion.h>
@@ -426,7 +427,7 @@ bool QWindowsContext::initPowerNotificationHandler()
     if (d->m_powerNotification)
         return false;
 
-    d->m_powerDummyWindow = createDummyWindow(QStringLiteral("QtPowerDummyWindow"), L"QtPowerDummyWindow", qWindowsPowerWindowProc);
+    d->m_powerDummyWindow = createDummyWindow(QStringLiteral("PowerDummyWindow"), L"QtPowerDummyWindow", qWindowsPowerWindowProc);
     if (!d->m_powerDummyWindow)
         return false;
 
@@ -536,6 +537,23 @@ void QWindowsContext::setKeyGrabber(QWindow *w)
     d->m_keyMapper.setKeyGrabber(w);
 }
 
+QString QWindowsContext::classNamePrefix()
+{
+    static QString result;
+    if (result.isEmpty()) {
+        QTextStream str(&result);
+        str << "Qt" << QT_VERSION_MAJOR << QT_VERSION_MINOR << QT_VERSION_PATCH;
+        if (QLibraryInfo::isDebugBuild())
+            str << 'd';
+#ifdef QT_NAMESPACE
+#  define xstr(s) str(s)
+#  define str(s) #s
+        str << xstr(QT_NAMESPACE);
+#endif
+    }
+    return result;
+}
+
 // Window class registering code (from qapplication_win.cpp)
 
 QString QWindowsContext::registerWindowClass(const QWindow *w)
@@ -567,8 +585,8 @@ QString QWindowsContext::registerWindowClass(const QWindow *w)
         break;
     }
     // Create a unique name for the flag combination
-    QString cname;
-    cname += QLatin1String("Qt5QWindow");
+    QString cname = classNamePrefix();
+    cname += QLatin1String("QWindow");
     switch (type) {
     case Qt::Tool:
         cname += QLatin1String("Tool");
@@ -878,7 +896,7 @@ HWND QWindowsContext::createDummyWindow(const QString &classNameIn,
 {
     if (!wndProc)
         wndProc = DefWindowProc;
-    QString className = registerWindowClass(classNameIn, wndProc);
+    QString className = registerWindowClass(classNamePrefix() + classNameIn, wndProc);
     return CreateWindowEx(0, reinterpret_cast<LPCWSTR>(className.utf16()),
                           windowName, style,
                           CW_USEDEFAULT, CW_USEDEFAULT,

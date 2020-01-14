@@ -802,7 +802,7 @@ static HGLRC createContext(const QOpenGLStaticContext &staticContext,
 static inline HWND createDummyGLWindow()
 {
     return QWindowsContext::instance()->
-        createDummyWindow(QStringLiteral("QtOpenGLDummyWindow"),
+        createDummyWindow(QStringLiteral("OpenGLDummyWindow"),
                           L"OpenGLDummyWindow", nullptr, WS_OVERLAPPED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
 }
 
