@@ -14,6 +14,7 @@ list(APPEND test_data "../resources")
 list(APPEND test_data "../BLACKLIST")
 
 add_qt_test(tst_qtextstream
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../../../../../shared/emulationdetector.h
         ../tst_qtextstream.cpp

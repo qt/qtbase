@@ -1,10 +1,10 @@
 # Generated from qmyserver.pro.
 
 #####################################################################
-## qmyserver Binary:
+## qmyserver_qdbusinterface Binary:
 #####################################################################
 
-add_qt_executable(qmyserver
+add_qt_executable(qmyserver_qdbusinterface
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         ../myobject.h

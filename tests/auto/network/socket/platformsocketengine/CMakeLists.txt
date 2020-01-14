@@ -34,7 +34,7 @@ extend_target(tst_platformsocketengine CONDITION WIN32
 
 extend_target(tst_platformsocketengine CONDITION QT_FEATURE_reduce_exports AND UNIX
     SOURCES
-        ${QT_SOURCE_TREE}/src/network/socket/qabstractsocketengine.cpp
+        ${QT_SOURCE_TREE}/src/network/socket/qabstractsocketengine.cpp ${QT_SOURCE_TREE}/src/network/socket/qabstractsocketengine_p.h
         ${QT_SOURCE_TREE}/src/network/socket/qnativesocketengine.cpp ${QT_SOURCE_TREE}/src/network/socket/qnativesocketengine_p.h
         ${QT_SOURCE_TREE}/src/network/socket/qnativesocketengine_unix.cpp
 )

@@ -9,6 +9,7 @@ list(APPEND test_data "../elftest")
 list(APPEND test_data "../machtest")
 
 add_qt_test(tst_qpluginloader
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../fakeplugin.cpp
         ../theplugin/plugininterface.h

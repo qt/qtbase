@@ -5,7 +5,7 @@
 #####################################################################
 
 add_qt_test(tst_qfactoryloader
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../" # special case
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../plugin1/plugininterface1.h
         ../plugin2/plugininterface2.h
