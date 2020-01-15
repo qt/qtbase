@@ -3885,7 +3885,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
             if (decpt_idx != -1 || exponent_idx != -1)
                 return false;
             decpt_idx = idx;
-        } else if (out == 'e' || out == 'E') {
+        } else if (out == 'e') {
             exponent_idx = idx;
         }
 
@@ -3932,7 +3932,7 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
                 // don't add the group separator
                 ++idx;
                 continue;
-            } else if (out == '.' || out == 'e' || out == 'E') {
+            } else if (out == '.' || idx == exponent_idx) {
                 // check distance from the last separator
                 // ### FIXME: Some locales allow other groupings!
                 // See https://en.wikipedia.org/wiki/Thousands_separator

@@ -314,7 +314,7 @@ def _generateLocaleInfo(path, language_code, script_code, country_code, variant_
         result['zero'] = get_number_in_system(path, "numbers/symbols/nativeZeroDigit", numbering_system)
     result['minus'] = get_number_in_system(path, "numbers/symbols/minusSign", numbering_system)
     result['plus'] = get_number_in_system(path, "numbers/symbols/plusSign", numbering_system)
-    result['exp'] = get_number_in_system(path, "numbers/symbols/exponential", numbering_system).lower()
+    result['exp'] = get_number_in_system(path, "numbers/symbols/exponential", numbering_system)
     result['quotationStart'] = findEntry(path, "delimiters/quotationStart")
     result['quotationEnd'] = findEntry(path, "delimiters/quotationEnd")
     result['alternateQuotationStart'] = findEntry(path, "delimiters/alternateQuotationStart")

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -2449,8 +2449,8 @@ void tst_QTextStream::generateRealNumbersDataWrite()
     QTest::newRow("0") << 0.0 << QByteArray("0") << QByteArray("0");
     QTest::newRow("3.14") << 3.14 << QByteArray("3.14") << QByteArray("3.14");
     QTest::newRow("-3.14") << -3.14 << QByteArray("-3.14") << QByteArray("-3.14");
-    QTest::newRow("1.2e+10") << 1.2e+10 << QByteArray("1.2e+10") << QByteArray("1.2e+10");
-    QTest::newRow("-1.2e+10") << -1.2e+10 << QByteArray("-1.2e+10") << QByteArray("-1.2e+10");
+    QTest::newRow("1.2e+10") << 1.2e+10 << QByteArray("1.2e+10") << QByteArray("1.2E+10");
+    QTest::newRow("-1.2e+10") << -1.2e+10 << QByteArray("-1.2e+10") << QByteArray("-1.2E+10");
     QTest::newRow("12345") << 12345. << QByteArray("12345") << QByteArray("12,345");
 }
 

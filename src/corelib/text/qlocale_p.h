@@ -417,7 +417,7 @@ inline char QLocaleData::digitToCLocale(QChar in) const
     if (in == m_group)
         return ',';
 
-    if (in == m_exponential || in == QChar(QChar::toUpper(m_exponential)))
+    if (in == m_exponential || in.toCaseFolded().unicode() == QChar::toCaseFolded(m_exponential))
         return 'e';
 
     // In several languages group() is a non-breaking space (U+00A0) or its thin
