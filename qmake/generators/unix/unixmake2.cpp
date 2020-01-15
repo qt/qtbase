@@ -558,6 +558,8 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
             t << destdir_d << depVar("TARGET") << ": " << depVar("PRE_TARGETDEPS") << ' '
               << incr_deps << " $(SUBLIBS) " << target_deps << ' ' << depVar("POST_TARGETDEPS");
         } else {
+            ProStringList &cmd = project->values("QMAKE_LINK_SHLIB_CMD");
+            cmd[0] = cmd.at(0).toQString().replace(QLatin1String("$(OBJECTS)"), objectParts.second);
             t << destdir_d << depVar("TARGET") << ": " << depVar("PRE_TARGETDEPS")
               << " $(OBJECTS) $(SUBLIBS) $(OBJCOMP) " << target_deps
               << ' ' << depVar("POST_TARGETDEPS");
