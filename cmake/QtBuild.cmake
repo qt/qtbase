@@ -4,6 +4,7 @@ include(CMakePackageConfigHelpers)
 set(INSTALL_BINDIR "bin" CACHE STRING "Executables [PREFIX/bin]")
 set(INSTALL_INCLUDEDIR "include" CACHE STRING "Header files [PREFIX/include]")
 set(INSTALL_LIBDIR "lib" CACHE STRING "Libraries [PREFIX/lib]")
+set(INSTALL_MKSPECSDIR "mkspecs" CACHE STRING "Mkspecs files [PREFIX/mkspecs]")
 set(INSTALL_ARCHDATADIR "." CACHE STRING "Arch-dependent data [PREFIX]")
 set(INSTALL_PLUGINSDIR "${INSTALL_ARCHDATADIR}/plugins" CACHE STRING
     "Plugins [ARCHDATADIR/plugins]")
@@ -56,7 +57,7 @@ if(NOT QT_MKSPECS_DIR)
       get_filename_component(QT_MKSPECS_DIR "${CMAKE_CURRENT_LIST_DIR}/../mkspecs" ABSOLUTE)
     else()
       # We can rely on CMAKE_INSTALL_PREFIX being set by QtBuildInternalsExtra.cmake
-      get_filename_component(QT_MKSPECS_DIR "${CMAKE_INSTALL_PREFIX}/mkspecs" ABSOLUTE)
+      get_filename_component(QT_MKSPECS_DIR "${CMAKE_INSTALL_PREFIX}/${INSTALL_MKSPECSDIR}" ABSOLUTE)
     endif()
     set(QT_MKSPECS_DIR "${QT_MKSPECS_DIR}" CACHE INTERNAL "")
 endif()
@@ -145,8 +146,19 @@ endif()
 # TODO: Fixme to be correct.
 set(QT_QMAKE_HOST_MKSPEC "${QT_QMAKE_TARGET_MKSPEC}")
 
-if(QT_QMAKE_TARGET_MKSPEC)
-    set(QT_DEFAULT_PLATFORM_DEFINITION_DIR mkspecs/${QT_QMAKE_TARGET_MKSPEC})
+# Platform definition dir provided by user on command line.
+# Derive the absolute one relative to the current source dir.
+if(QT_PLATFORM_DEFINITION_DIR)
+    set(QT_DEFAULT_PLATFORM_DEFINITION_DIR "${QT_PLATFORM_DEFINITION_DIR}")
+    get_filename_component(
+        QT_DEFAULT_PLATFORM_DEFINITION_DIR_ABSOLUTE
+        "${QT_PLATFORM_DEFINITION_DIR}"
+        ABSOLUTE)
+elseif(QT_QMAKE_TARGET_MKSPEC)
+    # Used by consumers of prefix builds via INSTALL_INTERFACE (relative path).
+    set(QT_DEFAULT_PLATFORM_DEFINITION_DIR "${INSTALL_MKSPECSDIR}/${QT_QMAKE_TARGET_MKSPEC}")
+    # Used by qtbase itself and consumers of non-prefix builds via BUILD_INTERFACE (absolute path).
+    set(QT_DEFAULT_PLATFORM_DEFINITION_DIR_ABSOLUTE "${QT_MKSPECS_DIR}/${QT_QMAKE_TARGET_MKSPEC}")
 endif()
 
 if(NOT DEFINED QT_DEFAULT_PLATFORM_DEFINITIONS)
@@ -155,8 +167,10 @@ endif()
 
 set(QT_PLATFORM_DEFINITIONS ${QT_DEFAULT_PLATFORM_DEFINITIONS}
     CACHE STRING "Qt platform specific pre-processor defines")
-set(QT_PLATFORM_DEFINITION_DIR ${QT_DEFAULT_PLATFORM_DEFINITION_DIR}
+set(QT_PLATFORM_DEFINITION_DIR "${QT_DEFAULT_PLATFORM_DEFINITION_DIR}"
     CACHE PATH "Path to directory that contains qplatformdefs.h")
+set(QT_PLATFORM_DEFINITION_DIR_ABSOLUTE "${QT_DEFAULT_PLATFORM_DEFINITION_DIR_ABSOLUTE}"
+    CACHE INTERNAL "Path to directory that contains qplatformdefs.h")
 set(QT_NAMESPACE "" CACHE STRING "Qt Namespace")
 if(QT_NAMESPACE STREQUAL "")
     set(QT_HAS_NAMESPACE OFF)
@@ -574,7 +588,7 @@ QT.${module_lower}_private.disabled_features = ${disabled_private_features}
 endfunction()
 
 function(qt_generate_global_config_pri_file)
-    qt_path_join(qconfig_pri_target_path ${PROJECT_BINARY_DIR} mkspecs)
+    qt_path_join(qconfig_pri_target_path ${PROJECT_BINARY_DIR} ${INSTALL_MKSPECSDIR})
     qt_path_join(qconfig_pri_target_path "${qconfig_pri_target_path}" "qconfig.pri")
 
     get_target_property(enabled_features GlobalConfig INTERFACE_QT_ENABLED_PUBLIC_FEATURES)
@@ -626,7 +640,7 @@ CONFIG -= link_prl # we do not create prl files right now
 CONFIG += ${config_entries}
 "
     )
-    qt_install(FILES "${qconfig_pri_target_path}" DESTINATION mkspecs)
+    qt_install(FILES "${qconfig_pri_target_path}" DESTINATION ${INSTALL_MKSPECSDIR})
 endfunction()
 
 # Takes a list of path components and joins them into one path separated by forward slashes "/",
@@ -1899,14 +1913,14 @@ set(QT_CMAKE_EXPORT_NAMESPACE ${QT_CMAKE_EXPORT_NAMESPACE})")
         unset(arg_INTERNAL_MODULE)
     endif()
 
-    qt_path_join(pri_target_path ${PROJECT_BINARY_DIR} mkspecs/modules)
+    qt_path_join(pri_target_path ${PROJECT_BINARY_DIR} ${INSTALL_MKSPECSDIR}/modules)
     qt_generate_module_pri_file("${target}" "${pri_target_path}" module_pri_files
         ${arg_INTERNAL_MODULE}
         ${header_module}
         QMAKE_MODULE_CONFIG
             ${arg_QMAKE_MODULE_CONFIG}
         )
-    qt_install(FILES "${module_pri_files}" DESTINATION mkspecs/modules)
+    qt_install(FILES "${module_pri_files}" DESTINATION ${INSTALL_MKSPECSDIR}/modules)
 
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.

@@ -79,11 +79,16 @@ if(NOT QT_BUILD_STANDALONE_TESTS)
     endif()
     # As long as we use the mkspecs (for qplatformdefs.h), we need to always
     # install it, especially when cross-compiling.
-    set(mkspecs_install_dir "${INSTALL_DATADIR}")
+    set(mkspecs_install_dir "${INSTALL_MKSPECSDIR}")
     qt_path_join(mkspecs_install_dir ${QT_INSTALL_DIR} ${mkspecs_install_dir})
 
-    qt_copy_or_install(DIRECTORY "${PROJECT_SOURCE_DIR}/mkspecs"
-                       DESTINATION ${mkspecs_install_dir})
+    file(GLOB mkspecs_subdirs
+        LIST_DIRECTORIES TRUE
+        "${PROJECT_SOURCE_DIR}/mkspecs/*")
+    foreach(directory IN LISTS mkspecs_subdirs)
+        qt_copy_or_install(DIRECTORY "${directory}"
+                          DESTINATION ${mkspecs_install_dir})
+    endforeach()
 endif()
 
 qt_build_repo_end()
