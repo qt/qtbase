@@ -451,7 +451,7 @@ void tst_QResourceEngine::checkStructure()
         }
 
         list = dir.entryInfoList(QDir::Files, QDir::Name);
-        QCOMPARE(containedFiles.size(), list.size());
+        QCOMPARE(list.size(), containedFiles.size());
 
         for (i=0; i<list.size(); ++i) {
             QVERIFY(!list.at(i).isDir());
@@ -459,7 +459,7 @@ void tst_QResourceEngine::checkStructure()
         }
 
         list = dir.entryInfoList(QDir::NoFilter, QDir::SortFlags(QDir::Name | QDir::DirsFirst));
-        QCOMPARE(containedFiles.size() + containedDirs.size(), list.size());
+        QCOMPARE(list.size(), containedFiles.size() + containedDirs.size());
 
         for (i=0; i<list.size(); ++i) {
             QString expectedName;
