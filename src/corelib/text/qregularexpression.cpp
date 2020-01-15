@@ -1892,6 +1892,10 @@ QString QRegularExpression::escape(const QString &str)
 
     \snippet code/src_corelib_tools_qregularexpression.cpp 31
 
+    The returned regular expression is already fully anchored. In other
+    words, there is no need of calling anchoredPattern() again on the
+    result.
+
     \warning Unlike QRegExp, this implementation follows closely the definition
     of wildcard for glob patterns:
     \table
@@ -1918,12 +1922,12 @@ QString QRegularExpression::escape(const QString &str)
 
     \note The backslash (\\) character is \e not an escape char in this context.
     In order to match one of the special characters, place it in square brackets
-    (for example, "[?]").
+    (for example, \c{[?]}).
 
     More information about the implementation can be found in:
     \list
     \li \l {https://en.wikipedia.org/wiki/Glob_(programming)} {The Wikipedia Glob article}
-    \li \c man 7 glob
+    \li \c {man 7 glob}
     \endlist
 
     \sa escape()
