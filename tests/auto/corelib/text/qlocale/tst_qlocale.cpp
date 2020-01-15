@@ -59,6 +59,7 @@
 #endif
 
 Q_DECLARE_METATYPE(QLocale::FormatType)
+Q_DECLARE_METATYPE(QStringView)
 
 class tst_QLocale : public QObject
 {
@@ -95,6 +96,7 @@ private slots:
     void long_long_conversion_extra();
     void testInfAndNan();
     void fpExceptions();
+    void negativeZero_data();
     void negativeZero();
     void dayOfWeek();
     void dayOfWeek_data();
@@ -1422,13 +1424,29 @@ void tst_QLocale::fpExceptions()
 #endif
 }
 
+void tst_QLocale::negativeZero_data()
+{
+    QTest::addColumn<QLocale::Language>("language");
+    QTest::addColumn<QLocale::Script>("script");
+    QTest::addColumn<QLocale::Country>("territory");
+    QTest::addColumn<QStringView>("expect");
+
+    QTest::newRow("C")
+        << QLocale::C << QLocale::AnyScript << QLocale::AnyCountry
+        << QStringView(u"0");
+    QTest::newRow("Arabic")
+        << QLocale::Arabic << QLocale::ArabicScript << QLocale::AnyCountry
+        << QStringView(u"\u0660");
+}
+
 void tst_QLocale::negativeZero()
 {
-    double negativeZero( 0.0 ); // Initialise to zero.
-    uchar *ptr = (uchar *)&negativeZero;
-    ptr[QSysInfo::ByteOrder == QSysInfo::BigEndian ? 0 : 7] = 0x80;
-    QString s = QString::number(negativeZero);
-    QCOMPARE(s, QString("0"));
+    QFETCH(QLocale::Language, language);
+    QFETCH(QLocale::Script, script);
+    QFETCH(QLocale::Country, territory);
+    QFETCH(QStringView, expect);
+    QLocale locale(language, script, territory);
+    QCOMPARE(locale.toString(std::copysign(0.0, -1.0)), expect);
 }
 
 void tst_QLocale::dayOfWeek_data()
