@@ -232,7 +232,7 @@ public:
 
     Connection *senders;     // linked list of connections connected to this object
     Sender *currentSender;   // object currently activating the object
-    mutable quint32 connectedSignals[2];
+    mutable QAtomicInteger<quint32> connectedSignals[2];
 
     union {
         QObject *currentChildBeingDeleted; // should only be used when QObjectData::isDeletingChildren is set
@@ -257,7 +257,7 @@ Q_DECLARE_TYPEINFO(QObjectPrivate::ConnectionList, Q_MOVABLE_TYPE);
 inline bool QObjectPrivate::isSignalConnected(uint signal_index, bool checkDeclarative) const
 {
     return signal_index >= sizeof(connectedSignals) * 8
-        || (connectedSignals[signal_index >> 5] & (1 << (signal_index & 0x1f))
+        || (connectedSignals[signal_index >> 5].load() & (1 << (signal_index & 0x1f))
         || (checkDeclarative && isDeclarativeSignalConnected(signal_index)));
 }
 

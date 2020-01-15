@@ -232,7 +232,7 @@ QObjectPrivate::QObjectPrivate(int version)
     receiveChildEvents = true;
     postedEvents = 0;
     extraData = 0;
-    connectedSignals[0] = connectedSignals[1] = 0;
+    // connectedSignals[0] = connectedSignals[1] = 0;  // already 0.
     metaObject = 0;
     isWindow = false;
     deleteLaterCalled = false;
@@ -411,9 +411,10 @@ void QObjectPrivate::addConnection(int signal, Connection *c)
         c->next->prev = &c->next;
 
     if (signal < 0) {
-        connectedSignals[0] = connectedSignals[1] = ~0;
+        connectedSignals[0].store(~0);
+        connectedSignals[1].store(~0);
     } else if (signal < (int)sizeof(connectedSignals) * 8) {
-        connectedSignals[signal >> 5] |= (1 << (signal & 0x1f));
+        connectedSignals[signal >> 5].store(connectedSignals[signal >> 5].load() | (1 << (signal & 0x1f)));
     }
 }
 
@@ -455,7 +456,7 @@ void QObjectPrivate::cleanConnectionLists()
             if (!allConnected && !connected && signal >= 0
                 && size_t(signal) < sizeof(connectedSignals) * 8) {
                 // This signal is no longer connected
-                connectedSignals[signal >> 5] &= ~(1 << (signal & 0x1f));
+                connectedSignals[signal >> 5].store(connectedSignals[signal >> 5].load() & ~(1 << (signal & 0x1f)));
             } else if (signal == -1) {
                 allConnected = connected;
             }
