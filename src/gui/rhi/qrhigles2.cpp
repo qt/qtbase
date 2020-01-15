@@ -269,6 +269,14 @@ QT_BEGIN_NAMESPACE
 #define GL_ALL_BARRIER_BITS               0xFFFFFFFF
 #endif
 
+#ifndef GL_SHADER_IMAGE_ACCESS_BARRIER_BIT
+#define GL_SHADER_IMAGE_ACCESS_BARRIER_BIT 0x00000020
+#endif
+
+#ifndef GL_SHADER_STORAGE_BARRIER_BIT
+#define GL_SHADER_STORAGE_BARRIER_BIT     0x00002000
+#endif
+
 #ifndef GL_VERTEX_PROGRAM_POINT_SIZE
 #define GL_VERTEX_PROGRAM_POINT_SIZE      0x8642
 #endif
@@ -1307,6 +1315,21 @@ QRhi::FrameOpResult QRhiGles2::finish()
     return QRhi::FrameOpSuccess;
 }
 
+static bool bufferAccessIsWrite(QGles2Buffer::Access access)
+{
+    return access == QGles2Buffer::AccessStorageWrite
+        || access == QGles2Buffer::AccessStorageReadWrite
+        || access == QGles2Buffer::AccessUpdate;
+}
+
+static bool textureAccessIsWrite(QGles2Texture::Access access)
+{
+    return access == QGles2Texture::AccessStorageWrite
+        || access == QGles2Texture::AccessStorageReadWrite
+        || access == QGles2Texture::AccessUpdate
+        || access == QGles2Texture::AccessFramebuffer;
+}
+
 void QRhiGles2::trackedBufferBarrier(QGles2CommandBuffer *cbD, QGles2Buffer *bufD, QGles2Buffer::Access access)
 {
     Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::NoPass); // this is for resource updates only
@@ -1314,7 +1337,7 @@ void QRhiGles2::trackedBufferBarrier(QGles2CommandBuffer *cbD, QGles2Buffer *buf
     if (access == prevAccess)
         return;
 
-    if (prevAccess == QGles2Buffer::AccessStorageWrite || prevAccess == QGles2Buffer::AccessStorageReadWrite) {
+    if (bufferAccessIsWrite(prevAccess)) {
         // Generating the minimal barrier set is way too complicated to do
         // correctly (prevAccess is overwritten so we won't have proper
         // tracking across multiple passes) so setting all barrier bits will do
@@ -1335,7 +1358,7 @@ void QRhiGles2::trackedImageBarrier(QGles2CommandBuffer *cbD, QGles2Texture *tex
     if (access == prevAccess)
         return;
 
-    if (prevAccess == QGles2Texture::AccessStorageWrite || prevAccess == QGles2Texture::AccessStorageReadWrite) {
+    if (textureAccessIsWrite(prevAccess)) {
         QGles2CommandBuffer::Command cmd;
         cmd.cmd = QGles2CommandBuffer::Command::Barrier;
         cmd.args.barrier.barriers = GL_ALL_BARRIER_BITS;
@@ -2273,26 +2296,21 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             // subsequent pass.
             for (auto it = tracker.cbeginBuffers(), itEnd = tracker.cendBuffers(); it != itEnd; ++it) {
                 QGles2Buffer::Access accessBeforePass = QGles2Buffer::Access(it->stateAtPassBegin.access);
-                if (accessBeforePass == QGles2Buffer::AccessStorageWrite
-                        || accessBeforePass == QGles2Buffer::AccessStorageReadWrite)
-                {
+                if (bufferAccessIsWrite(accessBeforePass))
                     barriers |= GL_ALL_BARRIER_BITS;
-                }
             }
             for (auto it = tracker.cbeginTextures(), itEnd = tracker.cendTextures(); it != itEnd; ++it) {
                 QGles2Texture::Access accessBeforePass = QGles2Texture::Access(it->stateAtPassBegin.access);
-                if (accessBeforePass == QGles2Texture::AccessStorageWrite
-                        || accessBeforePass == QGles2Texture::AccessStorageReadWrite)
-                {
+                if (textureAccessIsWrite(accessBeforePass))
                     barriers |= GL_ALL_BARRIER_BITS;
-                }
             }
-            if (barriers)
+            if (barriers && caps.compute)
                 f->glMemoryBarrier(barriers);
         }
             break;
         case QGles2CommandBuffer::Command::Barrier:
-            f->glMemoryBarrier(cmd.args.barrier.barriers);
+            if (caps.compute)
+                f->glMemoryBarrier(cmd.args.barrier.barriers);
             break;
         default:
             break;
@@ -2791,6 +2809,8 @@ void QRhiGles2::beginComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch 
     cbD->recordingPass = QGles2CommandBuffer::ComputePass;
 
     cbD->resetCachedState();
+
+    cbD->computePassState.reset();
 }
 
 void QRhiGles2::endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -2823,10 +2843,95 @@ void QRhiGles2::setComputePipeline(QRhiCommandBuffer *cb, QRhiComputePipeline *p
     }
 }
 
+template<typename T>
+inline void qrhigl_accumulateComputeResource(T *writtenResources, QRhiResource *resource,
+                                             QRhiShaderResourceBinding::Type bindingType,
+                                             int loadTypeVal, int storeTypeVal, int loadStoreTypeVal)
+{
+    int access = 0;
+    if (bindingType == loadTypeVal) {
+        access = QGles2CommandBuffer::ComputePassState::Read;
+    } else {
+        access = QGles2CommandBuffer::ComputePassState::Write;
+        if (bindingType == loadStoreTypeVal)
+            access |= QGles2CommandBuffer::ComputePassState::Read;
+    }
+    auto it = writtenResources->find(resource);
+    if (it != writtenResources->end())
+        it->first |= access;
+    else if (bindingType == storeTypeVal || bindingType == loadStoreTypeVal)
+        writtenResources->insert(resource, { access, true });
+}
+
 void QRhiGles2::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
 {
     QGles2CommandBuffer *cbD = QRHI_RES(QGles2CommandBuffer, cb);
     Q_ASSERT(cbD->recordingPass == QGles2CommandBuffer::ComputePass);
+
+    if (cbD->currentComputeSrb) {
+        GLbitfield barriers = 0;
+
+        // The key in the writtenResources map indicates that the resource was
+        // written in a previous dispatch, whereas the value accumulates the
+        // access mask in the current one.
+        for (auto &accessAndIsNewFlag : cbD->computePassState.writtenResources)
+            accessAndIsNewFlag = { 0, false };
+
+        QGles2ShaderResourceBindings *srbD = QRHI_RES(QGles2ShaderResourceBindings, cbD->currentComputeSrb);
+        const int bindingCount = srbD->m_bindings.count();
+        for (int i = 0; i < bindingCount; ++i) {
+            const QRhiShaderResourceBinding::Data *b = srbD->m_bindings.at(i).data();
+            switch (b->type) {
+            case QRhiShaderResourceBinding::ImageLoad:
+            case QRhiShaderResourceBinding::ImageStore:
+            case QRhiShaderResourceBinding::ImageLoadStore:
+                qrhigl_accumulateComputeResource(&cbD->computePassState.writtenResources,
+                                                 b->u.simage.tex,
+                                                 b->type,
+                                                 QRhiShaderResourceBinding::ImageLoad,
+                                                 QRhiShaderResourceBinding::ImageStore,
+                                                 QRhiShaderResourceBinding::ImageLoadStore);
+                break;
+            case QRhiShaderResourceBinding::BufferLoad:
+            case QRhiShaderResourceBinding::BufferStore:
+            case QRhiShaderResourceBinding::BufferLoadStore:
+                qrhigl_accumulateComputeResource(&cbD->computePassState.writtenResources,
+                                                 b->u.sbuf.buf,
+                                                 b->type,
+                                                 QRhiShaderResourceBinding::BufferLoad,
+                                                 QRhiShaderResourceBinding::BufferStore,
+                                                 QRhiShaderResourceBinding::BufferLoadStore);
+                break;
+            default:
+                break;
+            }
+        }
+
+        for (auto it = cbD->computePassState.writtenResources.begin(); it != cbD->computePassState.writtenResources.end(); ) {
+            const int accessInThisDispatch = it->first;
+            const bool isNewInThisDispatch = it->second;
+            if (accessInThisDispatch && !isNewInThisDispatch) {
+                if (it.key()->resourceType() == QRhiResource::Texture)
+                    barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+                else
+                    barriers |= GL_SHADER_STORAGE_BARRIER_BIT;
+            }
+            // Anything that was previously written, but is only read now, can be
+            // removed from the written list (because that previous write got a
+            // corresponding barrier now).
+            if (accessInThisDispatch == QGles2CommandBuffer::ComputePassState::Read)
+                it = cbD->computePassState.writtenResources.erase(it);
+            else
+                ++it;
+        }
+
+        if (barriers) {
+            QGles2CommandBuffer::Command cmd;
+            cmd.cmd = QGles2CommandBuffer::Command::Barrier;
+            cmd.args.barrier.barriers = barriers;
+            cbD->commands.append(cmd);
+        }
+    }
 
     QGles2CommandBuffer::Command cmd;
     cmd.cmd = QGles2CommandBuffer::Command::Dispatch;

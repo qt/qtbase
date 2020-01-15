@@ -140,30 +140,6 @@ Q_GUI_EXPORT bool qt_sendShortcutOverrideEvent(QObject *o, ulong timestamp, int 
 
 QApplicationPrivate *QApplicationPrivate::self = nullptr;
 
-static void initSystemPalette()
-{
-    if (QApplicationPrivate::sys_pal)
-        return; // Already initialized
-
-    QPalette defaultPalette;
-    if (QApplicationPrivate::app_style)
-        defaultPalette = QApplicationPrivate::app_style->standardPalette();
-
-    auto *platformTheme = QGuiApplicationPrivate::platformTheme();
-    if (const QPalette *themePalette = platformTheme ? platformTheme->palette() : nullptr) {
-        QApplicationPrivate::setSystemPalette(themePalette->resolve(defaultPalette));
-        QApplicationPrivate::initializeWidgetPaletteHash();
-    } else {
-        QApplicationPrivate::setSystemPalette(defaultPalette);
-    }
-}
-
-static void clearSystemPalette()
-{
-    delete QApplicationPrivate::sys_pal;
-    QApplicationPrivate::sys_pal = nullptr;
-}
-
 bool QApplicationPrivate::autoSipEnabled = true;
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, int flags)
@@ -381,8 +357,6 @@ QString QApplicationPrivate::styleSheet;           // default application styles
 #endif
 QPointer<QWidget> QApplicationPrivate::leaveAfterRelease = nullptr;
 
-QPalette *QApplicationPrivate::sys_pal = nullptr;        // default system palette
-
 QFont *QApplicationPrivate::sys_font = nullptr;        // default system font
 QFont *QApplicationPrivate::set_font = nullptr;        // default font set by programmer
 
@@ -545,12 +519,7 @@ void QApplicationPrivate::init()
 
     // Must be called before initialize()
     QColormap::initialize();
-    if (sys_pal) {
-        // Now that we have a platform theme we need to reset
-        // the system palette to pick up the theme colors.
-        clearSystemPalette();
-        initSystemPalette();
-    }
+    initializeWidgetPalettesFromTheme();
     qt_init_tooltip_palette();
     QApplicationPrivate::initializeWidgetFontHash();
 
@@ -627,38 +596,6 @@ void QApplicationPrivate::initialize()
         }
 
     is_app_running = true; // no longer starting up
-}
-
-static void setPossiblePalette(const QPalette *palette, const char *className)
-{
-    if (palette == nullptr)
-        return;
-    QApplicationPrivate::setPalette_helper(*palette, className);
-}
-
-void QApplicationPrivate::initializeWidgetPaletteHash()
-{
-    QPlatformTheme *platformTheme = QGuiApplicationPrivate::platformTheme();
-    if (!platformTheme)
-        return;
-
-    widgetPalettes.clear();
-
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::ToolButtonPalette), "QToolButton");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::ButtonPalette), "QAbstractButton");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::CheckBoxPalette), "QCheckBox");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::RadioButtonPalette), "QRadioButton");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::HeaderPalette), "QHeaderView");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::ItemViewPalette), "QAbstractItemView");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::MessageBoxLabelPalette), "QMessageBoxLabel");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::TabBarPalette), "QTabBar");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::LabelPalette), "QLabel");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::GroupBoxPalette), "QGroupBox");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::MenuPalette), "QMenu");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::MenuBarPalette), "QMenuBar");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::TextEditPalette), "QTextEdit");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::TextEditPalette), "QTextControl");
-    setPossiblePalette(platformTheme->palette(QPlatformTheme::TextLineEditPalette), "QLineEdit");
 }
 
 void QApplicationPrivate::initializeWidgetFontHash()
@@ -798,9 +735,6 @@ QApplication::~QApplication()
     delete qt_desktopWidget;
     qt_desktopWidget = nullptr;
 
-    delete QApplicationPrivate::app_pal;
-    QApplicationPrivate::app_pal = nullptr;
-    clearSystemPalette();
     QApplicationPrivate::widgetPalettes.clear();
 
     delete QApplicationPrivate::sys_font;
@@ -1051,10 +985,10 @@ QStyle *QApplication::style()
         // Take ownership of the style
         defaultStyle->setParent(qApp);
 
-        initSystemPalette();
-
         if (testAttribute(Qt::AA_SetPalette))
             defaultStyle->polish(*QGuiApplicationPrivate::app_pal);
+        else
+            QApplicationPrivate::initializeWidgetPalettesFromTheme();
 
 #ifndef QT_NO_STYLE_STYLESHEET
         if (!QApplicationPrivate::styleSheet.isEmpty()) {
@@ -1128,13 +1062,10 @@ void QApplication::setStyle(QStyle *style)
     // take care of possible palette requirements of certain gui
     // styles. Do it before polishing the application since the style
     // might call QApplication::setPalette() itself
-    if (testAttribute(Qt::AA_SetPalette)) {
+    if (testAttribute(Qt::AA_SetPalette))
         QApplicationPrivate::app_style->polish(*QGuiApplicationPrivate::app_pal);
-    } else {
-        if (QApplicationPrivate::sys_pal)
-            clearSystemPalette();
-        initSystemPalette();
-    }
+    else
+        QApplicationPrivate::initializeWidgetPalettesFromTheme();
 
     // The default widget font hash is based on the platform theme,
     // not the style, but the widget fonts could in theory have been
@@ -1317,6 +1248,22 @@ void QApplication::setGlobalStrut(const QSize& strut)
 // Widget specific palettes
 QApplicationPrivate::PaletteHash QApplicationPrivate::widgetPalettes;
 
+QPalette QApplicationPrivate::basePalette() const
+{
+    // Start out with a palette based on the style, in case there's no theme
+    // available, or so that we can fill in missing roles in the theme.
+    QPalette palette = app_style ? app_style->standardPalette() : Qt::gray;
+
+    // Prefer theme palette if available, but fill in missing roles from style
+    // for compatibility. Note that the style's standard palette is not prioritized
+    // over the theme palette, as the documented way of applying the style's palette
+    // is to set it explicitly using QApplication::setPalette().
+    if (const QPalette *themePalette = platformTheme() ? platformTheme()->palette() : nullptr)
+        palette = themePalette->resolve(palette);
+
+    return palette;
+}
+
 /*!
     \fn QPalette QApplication::palette(const QWidget* widget)
 
@@ -1363,35 +1310,8 @@ QPalette QApplication::palette(const char *className)
     return QGuiApplication::palette();
 }
 
-void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char* className)
-{
-    QPalette pal = palette;
-
-    if (QApplicationPrivate::app_style)
-        QApplicationPrivate::app_style->polish(pal); // NB: non-const reference
-
-    bool all = false;
-    if (!className) {
-        if (!QGuiApplicationPrivate::setPalette(pal))
-            return;
-
-        if (!QApplicationPrivate::sys_pal || !palette.isCopyOf(*QApplicationPrivate::sys_pal))
-            QCoreApplication::setAttribute(Qt::AA_SetPalette);
-
-        if (!widgetPalettes.isEmpty()) {
-            all = true;
-            widgetPalettes.clear();
-        }
-    } else {
-        widgetPalettes.insert(className, pal);
-    }
-
-    if (qApp)
-        qApp->d_func()->sendApplicationPaletteChange(all, className);
-}
-
 /*!
-    Changes the default application palette to \a palette.
+    Changes the application palette to \a palette.
 
     If \a className is passed, the change applies only to widgets that inherit
     \a className (as reported by QObject::inherits()). If \a className is left
@@ -1412,23 +1332,87 @@ void QApplicationPrivate::setPalette_helper(const QPalette &palette, const char*
 
     \sa QWidget::setPalette(), palette(), QStyle::polish()
 */
-
 void QApplication::setPalette(const QPalette &palette, const char* className)
 {
-    QApplicationPrivate::setPalette_helper(palette, className);
+    QPalette polishedPalette = palette;
+
+    if (QApplicationPrivate::app_style)
+        QApplicationPrivate::app_style->polish(polishedPalette);
+
+    if (className) {
+        QApplicationPrivate::widgetPalettes.insert(className, polishedPalette);
+        if (qApp)
+            qApp->d_func()->handlePaletteChanged(className);
+    } else {
+        QGuiApplication::setPalette(polishedPalette);
+    }
 }
 
-
-
-void QApplicationPrivate::setSystemPalette(const QPalette &pal)
+void QApplicationPrivate::handlePaletteChanged(const char *className)
 {
-    if (!sys_pal)
-        sys_pal = new QPalette(pal);
-    else
-        *sys_pal = pal;
+    if (!is_app_running || is_app_closing)
+        return;
 
-    if (!testAttribute(Qt::AA_SetPalette))
-        QApplication::setPalette(*sys_pal);
+    // Setting the global application palette is documented to
+    // reset any previously set class specific widget palettes.
+    bool sendPaletteChangeToAllWidgets = false;
+    if (!className && !widgetPalettes.isEmpty()) {
+        sendPaletteChangeToAllWidgets = true;
+        widgetPalettes.clear();
+    }
+
+    QGuiApplicationPrivate::handlePaletteChanged(className);
+
+    QEvent event(QEvent::ApplicationPaletteChange);
+    const QWidgetList widgets = QApplication::allWidgets();
+    for (auto widget : widgets) {
+        if (sendPaletteChangeToAllWidgets || (!className && widget->isWindow()) || (className && widget->inherits(className)))
+            QCoreApplication::sendEvent(widget, &event);
+    }
+
+#if QT_CONFIG(graphicsview)
+    for (auto scene : qAsConst(scene_list))
+        QCoreApplication::sendEvent(scene, &event);
+#endif
+
+    // Palette has been reset back to the default application palette,
+    // so we need to reinitialize the widget palettes from the theme.
+    if (!className && !testAttribute(Qt::AA_SetPalette))
+        initializeWidgetPalettesFromTheme();
+}
+
+void QApplicationPrivate::initializeWidgetPalettesFromTheme()
+{
+    QPlatformTheme *platformTheme = QGuiApplicationPrivate::platformTheme();
+    if (!platformTheme)
+        return;
+
+    widgetPalettes.clear();
+
+    struct ThemedWidget { const char *className; QPlatformTheme::Palette palette; };
+
+    static const ThemedWidget themedWidgets[] = {
+        { "QToolButton", QPlatformTheme::ToolButtonPalette },
+        { "QAbstractButton", QPlatformTheme::ButtonPalette },
+        { "QCheckBox", QPlatformTheme::CheckBoxPalette },
+        { "QRadioButton", QPlatformTheme::RadioButtonPalette },
+        { "QHeaderView", QPlatformTheme::HeaderPalette },
+        { "QAbstractItemView", QPlatformTheme::ItemViewPalette },
+        { "QMessageBoxLabel", QPlatformTheme::MessageBoxLabelPalette },
+        { "QTabBar", QPlatformTheme::TabBarPalette },
+        { "QLabel", QPlatformTheme::LabelPalette },
+        { "QGroupBox", QPlatformTheme::GroupBoxPalette },
+        { "QMenu", QPlatformTheme::MenuPalette },
+        { "QMenuBar", QPlatformTheme::MenuBarPalette },
+        { "QTextEdit", QPlatformTheme::TextEditPalette },
+        { "QTextControl", QPlatformTheme::TextEditPalette },
+        { "QLineEdit", QPlatformTheme::TextLineEditPalette },
+    };
+
+    for (const auto themedWidget : themedWidgets) {
+        if (auto *palette = platformTheme->palette(themedWidget.palette))
+            QApplication::setPalette(*palette, themedWidget.className);
+    }
 }
 
 /*!
@@ -4413,29 +4397,8 @@ void QApplicationPrivate::translateTouchCancel(QTouchDevice *device, ulong times
 void QApplicationPrivate::notifyThemeChanged()
 {
     QGuiApplicationPrivate::notifyThemeChanged();
-    clearSystemPalette();
-    initSystemPalette();
+
     qt_init_tooltip_palette();
-}
-
-void QApplicationPrivate::sendApplicationPaletteChange(bool toAllWidgets, const char *className)
-{
-    if (!is_app_running || is_app_closing)
-        return;
-
-    QGuiApplicationPrivate::sendApplicationPaletteChange(toAllWidgets, className);
-
-    QEvent event(QEvent::ApplicationPaletteChange);
-    const QWidgetList widgets = QApplication::allWidgets();
-    for (auto widget : widgets) {
-        if (toAllWidgets || (!className && widget->isWindow()) || (className && widget->inherits(className)))
-            QCoreApplication::sendEvent(widget, &event);
-    }
-
-#if QT_CONFIG(graphicsview)
-    for (auto scene : qAsConst(scene_list))
-        QCoreApplication::sendEvent(scene, &event);
-#endif // QT_CONFIG(graphicsview)
 }
 
 #if QT_CONFIG(draganddrop)

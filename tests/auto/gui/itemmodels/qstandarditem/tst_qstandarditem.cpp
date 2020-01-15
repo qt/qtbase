@@ -29,7 +29,7 @@
 
 #include <QtTest/QtTest>
 
-#include <qstandarditemmodel.h>
+#include <QStandardItem>
 
 class tst_QStandardItem : public QObject
 {
@@ -48,8 +48,6 @@ private slots:
     void parent();
     void insertColumn_data();
     void insertColumn();
-    void insertColumns_data();
-    void insertColumns();
     void insertRow_data();
     void insertRow();
     void insertRows_data();
@@ -312,12 +310,15 @@ void tst_QStandardItem::getSetFlags()
     QCOMPARE(item.checkState(), Qt::Checked);
 
 #if QT_DEPRECATED_SINCE(5, 6)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     // deprecated API
     item.setTristate(true);
     QVERIFY(item.isTristate());
     QVERIFY(item.flags() & Qt::ItemIsTristate);
     item.setTristate(false);
     QVERIFY(!(item.flags() & Qt::ItemIsTristate));
+QT_WARNING_POP
 #endif
 }
 
@@ -382,7 +383,7 @@ void tst_QStandardItem::getSetChild()
     QStandardItem item(rows, columns);
     bool shouldHaveChildren = (rows > 0) && (columns > 0);
     QCOMPARE(item.hasChildren(), shouldHaveChildren);
-    QCOMPARE(item.child(row, column), static_cast<QStandardItem*>(0));
+    QCOMPARE(item.child(row, column), nullptr);
 
     QStandardItem *child = new QStandardItem;
     item.setChild(row, column, child);
@@ -399,11 +400,11 @@ void tst_QStandardItem::getSetChild()
         QCOMPARE(item.child(row, column), anotherChild);
         QCOMPARE(anotherChild->row(), row);
         QCOMPARE(anotherChild->column(), column);
-        item.setChild(row, column, 0);
+        item.setChild(row, column, nullptr);
     } else {
         delete child;
     }
-    QCOMPARE(item.child(row, column), static_cast<QStandardItem*>(0));
+    QCOMPARE(item.child(row, column), nullptr);
 }
 
 void tst_QStandardItem::parent()
@@ -411,7 +412,7 @@ void tst_QStandardItem::parent()
     {
         QStandardItem item;
         QStandardItem *child = new QStandardItem;
-        QCOMPARE(child->parent(), static_cast<QStandardItem*>(0));
+        QCOMPARE(child->parent(), nullptr);
         item.setChild(0, 0, child);
         QCOMPARE(child->parent(), &item);
 
@@ -425,7 +426,7 @@ void tst_QStandardItem::parent()
         QStandardItem *item = new QStandardItem;
         model.appendRow(item);
         // parent of a top-level item should be 0
-        QCOMPARE(item->parent(), static_cast<QStandardItem*>(0));
+        QCOMPARE(item->parent(), nullptr);
     }
 }
 
@@ -485,20 +486,12 @@ void tst_QStandardItem::insertColumn()
         for (int i = 0; i < count; ++i)
             QCOMPARE(item.child(i, column), columnItems.at(i));
         for (int i = count; i < item.rowCount(); ++i)
-            QCOMPARE(item.child(i, column), static_cast<QStandardItem*>(0));
+            QCOMPARE(item.child(i, column), nullptr);
     } else {
         QCOMPARE(item.columnCount(), columns);
         QCOMPARE(item.rowCount(), rows);
         qDeleteAll(columnItems);
     }
-}
-
-void tst_QStandardItem::insertColumns_data()
-{
-}
-
-void tst_QStandardItem::insertColumns()
-{
 }
 
 void tst_QStandardItem::insertRow_data()
@@ -557,7 +550,7 @@ void tst_QStandardItem::insertRow()
         for (int i = 0; i < count; ++i)
             QCOMPARE(item.child(row, i), rowItems.at(i));
         for (int i = count; i < item.columnCount(); ++i)
-            QCOMPARE(item.child(row, i), static_cast<QStandardItem*>(0));
+            QCOMPARE(item.child(row, i), nullptr);
     } else {
         QCOMPARE(item.columnCount(), columns);
         QCOMPARE(item.rowCount(), rows);
@@ -585,9 +578,8 @@ void tst_QStandardItem::insertRows()
     QStandardItem item(rows, columns);
 
     QList<QStandardItem*> items;
-    for (int i = 0; i < insertCount; ++i) {
+    for (int i = 0; i < insertCount; ++i)
         items.append(new QStandardItem());
-    }
     item.insertRows(insertAt, items);
 
     QCOMPARE(item.rowCount(), rows + insertCount);
@@ -659,7 +651,7 @@ void tst_QStandardItem::appendColumn()
     for (int i = 0; i < count; ++i)
         QCOMPARE(item.child(i, columns), columnItems.at(i));
     for (int i = count; i < item.rowCount(); ++i)
-        QCOMPARE(item.child(i, columns), static_cast<QStandardItem*>(0));
+        QCOMPARE(item.child(i, columns), nullptr);
 
     // make sure original children remained unchanged
     for (int i = 0; i < rows; ++i) {
@@ -734,7 +726,7 @@ void tst_QStandardItem::appendRow()
     for (int i = 0; i < count; ++i)
         QCOMPARE(item.child(rows, i), rowItems.at(i));
     for (int i = count; i < item.columnCount(); ++i)
-        QCOMPARE(item.child(rows, i), static_cast<QStandardItem*>(0));
+        QCOMPARE(item.child(rows, i), nullptr);
 
     // make sure original children remained unchanged
     for (int i = 0; i < rows; ++i) {
@@ -753,7 +745,7 @@ void tst_QStandardItem::takeChild()
 
     for (int i = 0; i < item.rowCount(); ++i) {
         QCOMPARE(item.takeChild(i), itemList.at(i));
-        QCOMPARE(item.takeChild(0, 0), static_cast<QStandardItem*>(0));
+        QCOMPARE(item.takeChild(0, 0), nullptr);
         for (int j = i + 1; j < item.rowCount(); ++j)
             QCOMPARE(item.child(j), itemList.at(j));
     }
@@ -938,7 +930,7 @@ void tst_QStandardItem::deleteItem()
         for (int j = 0; j < model.columnCount(); ++j) {
             QStandardItem *item = model.item(i, j);
             delete item;
-            QCOMPARE(model.item(i, j), static_cast<QStandardItem*>(0));
+            QCOMPARE(model.item(i, j), nullptr);
         }
     }
 }
@@ -995,9 +987,9 @@ void tst_QStandardItem::sortChildren()
         item->appendRow(two);
 
         QSignalSpy layoutAboutToBeChangedSpy(
-            model, SIGNAL(layoutAboutToBeChanged()));
+            model, &QAbstractItemModel::layoutAboutToBeChanged);
         QSignalSpy layoutChangedSpy(
-            model, SIGNAL(layoutChanged()));
+            model, &QAbstractItemModel::layoutChanged);
 
         one->sortChildren(0, Qt::DescendingOrder);
         // verify sorted
@@ -1040,19 +1032,16 @@ void tst_QStandardItem::sortChildren()
 class CustomItem : public QStandardItem
 {
 public:
-    CustomItem(const QString &text) : QStandardItem(text) { }
-    CustomItem() { }
-    virtual ~CustomItem() { }
+    using QStandardItem::QStandardItem;
 
-    virtual int type() const { return QStandardItem::UserType + 1; }
+    int type() const override { return QStandardItem::UserType + 1; }
 
-    virtual QStandardItem *clone() const { return QStandardItem::clone(); }
-
-    void emitDataChanged() { QStandardItem::emitDataChanged(); }
-
-    virtual bool operator<(const QStandardItem &other) const {
+    bool operator<(const QStandardItem &other) const override {
         return text().length() < other.text().length();
     }
+
+    using QStandardItem::clone;
+    using QStandardItem::emitDataChanged;
 };
 
 Q_DECLARE_METATYPE(QStandardItem*)
@@ -1072,11 +1061,11 @@ void tst_QStandardItem::subclassing()
     QStandardItemModel model;
     model.appendRow(item);
 
-    QSignalSpy itemChangedSpy(&model, SIGNAL(itemChanged(QStandardItem*)));
+    QSignalSpy itemChangedSpy(&model, &QStandardItemModel::itemChanged);
     item->emitDataChanged();
     QCOMPARE(itemChangedSpy.count(), 1);
     QCOMPARE(itemChangedSpy.at(0).count(), 1);
-    QCOMPARE(qvariant_cast<QStandardItem*>(itemChangedSpy.at(0).at(0)), (QStandardItem*)item);
+    QCOMPARE(qvariant_cast<QStandardItem*>(itemChangedSpy.at(0).at(0)), item);
 
     CustomItem *child0 = new CustomItem("cc");
     CustomItem *child1 = new CustomItem("bbb");
@@ -1085,9 +1074,9 @@ void tst_QStandardItem::subclassing()
     item->appendRow(child1);
     item->appendRow(child2);
     item->sortChildren(0);
-    QCOMPARE(item->child(0), (QStandardItem*)child2);
-    QCOMPARE(item->child(1), (QStandardItem*)child0);
-    QCOMPARE(item->child(2), (QStandardItem*)child1);
+    QCOMPARE(item->child(0), child2);
+    QCOMPARE(item->child(1), child0);
+    QCOMPARE(item->child(2), child1);
 }
 
 void tst_QStandardItem::lessThan()

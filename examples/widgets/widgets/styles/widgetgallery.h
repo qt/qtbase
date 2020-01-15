@@ -96,8 +96,6 @@ private:
     void createBottomRightGroupBox();
     void createProgressBar();
 
-    QPalette originalPalette;
-
     QLabel *styleLabel;
     QComboBox *styleComboBox;
     QCheckBox *useStylePaletteCheckBox;

@@ -463,10 +463,10 @@ QT_BEGIN_NAMESPACE
     \c{\xHHHH} with more than 2 digits. A pattern like \c{\x2022} neeeds to
     be ported to \c{\x{2022}}, or it will match a space (\c{0x20}) followed
     by the string \c{"22"}. In general, it is highly recommended to always use
-    curly braces with the \c{\\x} escape, no matter the amount of digits
+    curly braces with the \c{\x} escape, no matter the amount of digits
     specified.
 
-    \li A 0-to-n quantification like \c{{,n}} needs to be ported to c{{0,n}} to
+    \li A 0-to-n quantification like \c{{,n}} needs to be ported to \c{{0,n}} to
     preserve semantics. Otherwise, a pattern such as \c{\d{,3}} would
     actually match a digit followed by the exact string \c{"{,3}"}.
 

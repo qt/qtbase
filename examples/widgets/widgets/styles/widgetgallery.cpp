@@ -75,8 +75,6 @@
 WidgetGallery::WidgetGallery(QWidget *parent)
     : QDialog(parent)
 {
-    originalPalette = QApplication::palette();
-
     styleComboBox = new QComboBox;
     const QString defaultStyleName = QApplication::style()->objectName();
     QStringList styleNames = QStyleFactory::keys();
@@ -162,10 +160,8 @@ void WidgetGallery::changeStyle(const QString &styleName)
 void WidgetGallery::changePalette()
 //! [7] //! [8]
 {
-    if (useStylePaletteCheckBox->isChecked())
-        QApplication::setPalette(QApplication::style()->standardPalette());
-    else
-        QApplication::setPalette(originalPalette);
+    QApplication::setPalette(useStylePaletteCheckBox->isChecked() ?
+        QApplication::style()->standardPalette() : QPalette());
 }
 //! [8]
 

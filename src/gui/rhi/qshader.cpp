@@ -367,7 +367,7 @@ QByteArray QShader::serialized() const
 
     ds << QShaderPrivate::QSB_VERSION;
     ds << int(d->stage);
-    ds << d->desc.toCbor();
+    d->desc.serialize(&ds);
     ds << d->shaders.count();
     for (auto it = d->shaders.cbegin(), itEnd = d->shaders.cend(); it != itEnd; ++it) {
         const QShaderKey &k(it.key());
@@ -428,6 +428,7 @@ QShader QShader::fromSerialized(const QByteArray &data)
     ds >> intVal;
     d->qsbVersion = intVal;
     if (d->qsbVersion != QShaderPrivate::QSB_VERSION
+            && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITH_CBOR
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON
             && d->qsbVersion != QShaderPrivate::QSB_VERSION_WITHOUT_BINDINGS)
     {
@@ -437,14 +438,18 @@ QShader QShader::fromSerialized(const QByteArray &data)
 
     ds >> intVal;
     d->stage = Stage(intVal);
-    QByteArray descBin;
-    ds >> descBin;
-    if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON) {
+    if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_CBOR) {
+        d->desc = QShaderDescription::deserialize(&ds);
+    } else if (d->qsbVersion > QShaderPrivate::QSB_VERSION_WITH_BINARY_JSON) {
+        QByteArray descBin;
+        ds >> descBin;
         d->desc = QShaderDescription::fromCbor(descBin);
     } else {
 #if QT_CONFIG(binaryjson) && QT_DEPRECATED_SINCE(5, 15)
         QT_WARNING_PUSH
         QT_WARNING_DISABLE_DEPRECATED
+        QByteArray descBin;
+        ds >> descBin;
         d->desc = QShaderDescription::fromBinaryJson(descBin);
         QT_WARNING_POP
 #else

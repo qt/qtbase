@@ -9,11 +9,13 @@ SUBDIRS += \
     msaarenderbuffer \
     cubemap \
     cubemap_scissor \
+    cubemap_render \
     multiwindow \
     multiwindow_threaded \
     triquadcube \
     offscreen \
     floattexture \
+    float16texture_with_compute \
     mrt \
     shadowmap \
     computebuffer \

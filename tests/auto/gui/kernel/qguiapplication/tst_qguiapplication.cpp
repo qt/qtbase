@@ -506,29 +506,67 @@ void tst_QGuiApplication::keyboardModifiers()
     window->close();
 }
 
+/*
+    Compare actual against expected but ignore unset roles.
+
+    Comparing palettes via operator== will compare all roles.
+*/
+static bool palettesMatch(const QPalette &actual, const QPalette &expected)
+{
+    if (actual.resolve() != expected.resolve())
+        return false;
+
+    for (int i = 0; i < QPalette::NColorGroups; i++) {
+        for (int j = 0; j < QPalette::NColorRoles; j++) {
+            const auto g = QPalette::ColorGroup(i);
+            const auto r = QPalette::ColorRole(j);
+            if (expected.isBrushSet(g, r)) {
+                if (actual.brush(g, r) != expected.brush(g, r))
+                    return false;
+            }
+        }
+    }
+    return true;
+}
+
 void tst_QGuiApplication::palette()
 {
+    // Getting the palette before application construction should work
+    QPalette paletteBeforeAppConstruction = QGuiApplication::palette();
+    // And should be reflected in the default constructed palette
+    QCOMPARE(paletteBeforeAppConstruction, QPalette());
+
     int argc = 1;
     char *argv[] = { const_cast<char*>("tst_qguiapplication") };
     QGuiApplication app(argc, argv);
+
+    // The same should be true after application construction
+    QCOMPARE(QGuiApplication::palette(), QPalette());
+
+    // The default application palette is not resolved
+    QVERIFY(!QGuiApplication::palette().resolve());
+
     QSignalSpy signalSpy(&app, SIGNAL(paletteChanged(QPalette)));
 
     QPalette oldPalette = QGuiApplication::palette();
     QPalette newPalette = QPalette(Qt::red);
 
     QGuiApplication::setPalette(newPalette);
-    QCOMPARE(QGuiApplication::palette(), newPalette);
+    QVERIFY(palettesMatch(QGuiApplication::palette(), newPalette));
     QCOMPARE(signalSpy.count(), 1);
-    QCOMPARE(signalSpy.at(0).at(0), QVariant(newPalette));
+    QVERIFY(palettesMatch(signalSpy.at(0).at(0).value<QPalette>(), newPalette));
+    QCOMPARE(QGuiApplication::palette(), QPalette());
 
     QGuiApplication::setPalette(oldPalette);
-    QCOMPARE(QGuiApplication::palette(), oldPalette);
+    QVERIFY(palettesMatch(QGuiApplication::palette(), oldPalette));
     QCOMPARE(signalSpy.count(), 2);
-    QCOMPARE(signalSpy.at(1).at(0), QVariant(oldPalette));
+    QVERIFY(palettesMatch(signalSpy.at(1).at(0).value<QPalette>(), oldPalette));
+    QCOMPARE(QGuiApplication::palette(), QPalette());
 
     QGuiApplication::setPalette(oldPalette);
-    QCOMPARE(QGuiApplication::palette(), oldPalette);
+    QVERIFY(palettesMatch(QGuiApplication::palette(), oldPalette));
     QCOMPARE(signalSpy.count(), 2);
+    QCOMPARE(QGuiApplication::palette(), QPalette());
 }
 
 void tst_QGuiApplication::font()
@@ -1073,6 +1111,9 @@ void tst_QGuiApplication::testSetPaletteAttribute()
     QGuiApplication::setPalette(palette);
 
     QVERIFY(QCoreApplication::testAttribute(Qt::AA_SetPalette));
+
+    QGuiApplication::setPalette(QPalette());
+    QVERIFY(!QCoreApplication::testAttribute(Qt::AA_SetPalette));
 }
 
 // Test that static functions do not crash if there is no application instance.

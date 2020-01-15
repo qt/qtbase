@@ -1,0 +1,9 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  <file>load.comp.qsb</file>
+  <file>prefilter.comp.qsb</file>
+  <file alias="texture.vert.qsb">../shared/texture.vert.qsb</file>
+  <file alias="texture.frag.qsb">../shared/texture.frag.qsb</file>
+  <file alias="qt256.png">../shared/qt256.png</file>
+</qresource>
+</RCC>

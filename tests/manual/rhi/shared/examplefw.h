@@ -148,6 +148,9 @@ protected:
 
     void exposeEvent(QExposeEvent *) override;
     bool event(QEvent *) override;
+#ifdef EXAMPLEFW_KEYPRESS_EVENTS
+    void keyPressEvent(QKeyEvent *e) override;
+#endif
 
     bool m_running = false;
     bool m_notExposed = false;

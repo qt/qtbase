@@ -209,7 +209,7 @@ void GSuggestCompletion::preventSuggest()
 void GSuggestCompletion::handleNetworkData(QNetworkReply *networkReply)
 {
     QUrl url = networkReply->url();
-    if (networkReply->error() == QNetworkReply::NoError) {
+    if (networkReply->networkError() == QNetworkReply::NoError) {
         QVector<QString> choices;
 
         QByteArray response(networkReply->readAll());
