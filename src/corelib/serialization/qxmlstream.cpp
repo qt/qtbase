@@ -50,6 +50,7 @@
 #endif
 #include <qstack.h>
 #include <qbuffer.h>
+#include <qscopeguard.h>
 #ifndef QT_BOOTSTRAPPED
 #include <qcoreapplication.h>
 #else
@@ -1582,6 +1583,7 @@ QStringRef QXmlStreamReaderPrivate::namespaceForPrefix(const QStringRef &prefix)
  */
 void QXmlStreamReaderPrivate::resolveTag()
 {
+    const auto attributeStackCleaner = qScopeGuard([this](){ attributeStack.clear(); });
     int n = attributeStack.size();
 
     if (namespaceProcessing) {
@@ -1649,7 +1651,10 @@ void QXmlStreamReaderPrivate::resolveTag()
             if (attributes[j].name() == attribute.name()
                 && attributes[j].namespaceUri() == attribute.namespaceUri()
                 && (namespaceProcessing || attributes[j].qualifiedName() == attribute.qualifiedName()))
+            {
                 raiseWellFormedError(QXmlStream::tr("Attribute '%1' redefined.").arg(attribute.qualifiedName()));
+                return;
+            }
         }
     }
 
@@ -1680,8 +1685,6 @@ void QXmlStreamReaderPrivate::resolveTag()
         attribute.m_isDefault = true;
         attributes.append(attribute);
     }
-
-    attributeStack.clear();
 }
 
 void QXmlStreamReaderPrivate::resolvePublicNamespaces()
