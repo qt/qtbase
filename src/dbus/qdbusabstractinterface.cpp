@@ -696,7 +696,7 @@ void QDBusAbstractInterface::internalPropSet(const char *propname, const QVarian
 */
 
 /*!
-    \fn QDBusAbstractInterface::call(const QString &message, Args&&...args)
+    \fn template <typename...Args> QDBusMessage QDBusAbstractInterface::call(const QString &method, Args&&...args)
 
     Calls the method \a method on this interface and passes \a args to the method.
     All \a args must be convertible to QVariant.
@@ -745,7 +745,7 @@ QDBusMessage QDBusAbstractInterface::call(const QString &method, const QVariant 
 */
 
 /*!
-    \fn QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &message, Args&&...args)
+    \fn template <typename...Args> QDBusMessage QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &method, Args&&...args)
 
     \overload
 
@@ -827,7 +827,7 @@ QDBusMessage QDBusAbstractInterface::call(QDBus::CallMode mode, const QString &m
 */
 
 /*!
-    \fn QDBusAbstractInterface::asyncCall(const QString &message, Args&&...args)
+    \fn template <typename...Args> QDBusPendingCall QDBusAbstractInterface::asyncCall(const QString &method, Args&&...args)
 
     Calls the method \a method on this interface and passes \a args to the method.
     All \a args must be convertible to QVariant.

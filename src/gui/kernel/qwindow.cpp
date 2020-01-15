@@ -2690,7 +2690,6 @@ QOpenGLContext *QWindowPrivate::shareContext() const
     platform dependent and untested.
 
     \sa setParent()
-    \sa setTransientParent()
 */
 QWindow *QWindow::fromWinId(WId id)
 {

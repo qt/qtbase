@@ -82,8 +82,7 @@ QT_BEGIN_NAMESPACE
           provide a method of detaching the copies (since they refer
           to the same pending call)
 
-    \sa QDBusPendingReply, QDBusPendingCallWatcher,
-        QDBusAbstractInterface::asyncCall()
+    \sa QDBusPendingReply, QDBusPendingCallWatcher
 */
 
 /*!
@@ -115,7 +114,7 @@ QT_BEGIN_NAMESPACE
     (one string and one QByteArray), QDBusPendingReply::isError() will
     return true.
 
-    \sa QDBusPendingReply, QDBusAbstractInterface::asyncCall()
+    \sa QDBusPendingReply
 */
 
 /*!

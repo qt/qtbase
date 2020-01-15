@@ -129,7 +129,7 @@ QT_BEGIN_NAMESPACE
     recording a frame, that is, between a \l{QRhi::beginFrame()}{beginFrame()}
     - \l{QRhi::endFrame()}{endFrame()} or
     \l{QRhi::beginOffscreenFrame()}{beginOffscreenFrame()} -
-    \l{QRhi::endOffsrceenFrame()}{endOffscreenFrame()} pair.
+    \l{QRhi::endOffscreenFrame()}{endOffsrceenFrame()} pair.
 
     \note The command encoder is only valid while recording a pass, that is,
     between \l{QRhiCommandBuffer::beginPass()} -

@@ -217,7 +217,7 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
 
     This class includes data obtained from the CLDR data files under the terms
     of the Unicode Data Files and Software License. See
-    \l{Unicode Common Locale Data Repository (CLDR)} for details.
+    \l{unicode-cldr}{Unicode Common Locale Data Repository (CLDR)} for details.
 
     \sa QDateTime
 */

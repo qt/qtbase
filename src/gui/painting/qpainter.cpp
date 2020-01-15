@@ -1404,8 +1404,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     cases where expensive operations are ok to use, for instance when
     the result is cached in a QPixmap.
 
-    \sa QPaintDevice, QPaintEngine, {Qt SVG}, {Basic Drawing Example},
-        {Drawing Utility Functions}
+    \sa QPaintDevice, QPaintEngine, {Qt SVG}, {Basic Drawing Example}, {<qdrawutil.h>}{Drawing Utility Functions}
 */
 
 /*!
