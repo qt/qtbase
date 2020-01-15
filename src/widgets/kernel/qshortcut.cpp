@@ -475,7 +475,7 @@ QShortcut::QShortcut(QWidget *parent)
     match the \a key sequence. Depending on the ambiguity of the
     event, the shortcut will call the \a member function, or the \a
     ambiguousMember function, if the key press was in the shortcut's
-    \a shortcutContext.
+    \a context.
 */
 QShortcut::QShortcut(const QKeySequence &key, QWidget *parent,
                      const char *member, const char *ambiguousMember,

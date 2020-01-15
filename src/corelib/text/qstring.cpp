@@ -915,7 +915,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     };
 
     // we're going to read a[0..15] and b[0..15] (32 bytes)
-    for ( ; a + offset + 16 <= end; offset += 16) {
+    for ( ; end - a >= offset + 16; offset += 16) {
 #ifdef __AVX2__
         __m256i a_data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(a + offset));
         __m256i b_data = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(b + offset));
@@ -939,7 +939,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     }
 
     // we're going to read a[0..7] and b[0..7] (16 bytes)
-    if (a + offset + 8 <= end) {
+    if (end - a >= offset + 8) {
         __m128i a_data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(a + offset));
         __m128i b_data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(b + offset));
         if (isDifferent(a_data, b_data))
@@ -949,7 +949,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     }
 
     // we're going to read a[0..3] and b[0..3] (8 bytes)
-    if (a + offset + 4 <= end) {
+    if (end - a >= offset + 4) {
         __m128i a_data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(a + offset));
         __m128i b_data = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(b + offset));
         if (isDifferent(a_data, b_data))
@@ -970,7 +970,7 @@ static int ucstrncmp(const QChar *a, const QChar *b, size_t l)
     if (l >= 8) {
         const QChar *end = a + l;
         const uint16x8_t mask = { 1, 1 << 1, 1 << 2, 1 << 3, 1 << 4, 1 << 5, 1 << 6, 1 << 7 };
-        while (a + 7 < end) {
+        while (end - a > 7) {
             uint16x8_t da = vld1q_u16(reinterpret_cast<const uint16_t *>(a));
             uint16x8_t db = vld1q_u16(reinterpret_cast<const uint16_t *>(b));
 
@@ -5109,21 +5109,25 @@ bool QString::endsWith(QChar c, Qt::CaseSensitivity cs) const
 }
 
 /*!
-    Returns \c true if the string only contains uppercase letters,
-    otherwise returns \c false.
+    Returns \c true if the string is uppercase, that is, it's identical
+    to its toUpper() folding.
+
+    Note that this does \e not mean that the string does not contain
+    lowercase letters (some lowercase letters do not have a uppercase
+    folding; they are left unchanged by toUpper()).
+    For more information, refer to the Unicode standard, section 3.13.
+
     \since 5.12
 
-    \sa QChar::isUpper(), isLower()
+    \sa QChar::toUpper(), isLower()
 */
 bool QString::isUpper() const
 {
-    if (isEmpty())
-        return false;
+    QStringIterator it(*this);
 
-    const QChar *d = data();
-
-    for (int i = 0, max = size(); i < max; ++i) {
-        if (!d[i].isUpper())
+    while (it.hasNext()) {
+        uint uc = it.nextUnchecked();
+        if (qGetProp(uc)->cases[QUnicodeTables::UpperCase].diff)
             return false;
     }
 
@@ -5131,21 +5135,25 @@ bool QString::isUpper() const
 }
 
 /*!
-    Returns \c true if the string only contains lowercase letters,
-    otherwise returns \c false.
+    Returns \c true if the string is lowercase, that is, it's identical
+    to its toLower() folding.
+
+    Note that this does \e not mean that the string does not contain
+    uppercase letters (some uppercase letters do not have a lowercase
+    folding; they are left unchanged by toLower()).
+    For more information, refer to the Unicode standard, section 3.13.
+
     \since 5.12
 
-    \sa QChar::isLower(), isUpper()
+    \sa QChar::toLower(), isUpper()
  */
 bool QString::isLower() const
 {
-    if (isEmpty())
-        return false;
+    QStringIterator it(*this);
 
-    const QChar *d = data();
-
-    for (int i = 0, max = size(); i < max; ++i) {
-        if (!d[i].isLower())
+    while (it.hasNext()) {
+        uint uc = it.nextUnchecked();
+        if (qGetProp(uc)->cases[QUnicodeTables::LowerCase].diff)
             return false;
     }
 

@@ -62,6 +62,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// Clang does not consider __declspec(nothrow) as nothrow
+QT_WARNING_DISABLE_CLANG("-Wmicrosoft-exception-spec")
+
 // Convert from design units to logical pixels
 #define DESIGN_TO_LOGICAL(DESIGN_UNIT_VALUE) \
     QFixed::fromReal((qreal(DESIGN_UNIT_VALUE) / qreal(m_unitsPerEm)) * fontDef.pixelSize)

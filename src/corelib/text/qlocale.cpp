@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Copyright (C) 2019 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -651,7 +651,6 @@ int qt_repeatCount(QStringView s)
 }
 
 static const QLocaleData *default_data = nullptr;
-static QLocale::NumberOptions default_number_options = QLocale::DefaultNumberOptions;
 
 static const QLocaleData *const c_data = locale_data;
 static QLocalePrivate *c_private()
@@ -834,7 +833,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 static const int locale_data_size = sizeof(locale_data)/sizeof(QLocaleData) - 1;
 
 Q_GLOBAL_STATIC_WITH_ARGS(QSharedDataPointer<QLocalePrivate>, defaultLocalePrivate,
-                          (QLocalePrivate::create(defaultData(), default_number_options)))
+                          (QLocalePrivate::create(defaultData())))
 Q_GLOBAL_STATIC_WITH_ARGS(QExplicitlySharedDataPointer<QLocalePrivate>, systemLocalePrivate,
                           (QLocalePrivate::create(systemData())))
 
@@ -862,8 +861,9 @@ static QLocalePrivate *findLocalePrivate(QLocale::Language language, QLocale::Sc
     QLocale::NumberOptions numberOptions = QLocale::DefaultNumberOptions;
 
     // If not found, should default to system
-    if (data->m_language_id == QLocale::C && language != QLocale::C) {
-        numberOptions = default_number_options;
+    if (data->m_language_id == QLocale::C) {
+        if (defaultLocalePrivate.exists())
+            numberOptions = defaultLocalePrivate->data()->m_numberOptions;
         data = defaultData();
     }
     return QLocalePrivate::create(data, offset, numberOptions);
@@ -1048,6 +1048,8 @@ uint qHash(const QLocale &key, uint seed) noexcept
 
     Sets the \a options related to number conversions for this
     QLocale instance.
+
+    \sa numberOptions()
 */
 void QLocale::setNumberOptions(NumberOptions options)
 {
@@ -1060,7 +1062,10 @@ void QLocale::setNumberOptions(NumberOptions options)
     Returns the options related to number conversions for this
     QLocale instance.
 
-    By default, no options are set for the standard locales.
+    By default, no options are set for the standard locales, except
+    for the "C" locale, which has OmitGroupSeparator set by default.
+
+    \sa setNumberOptions(), toString(), groupSeparator()
 */
 QLocale::NumberOptions QLocale::numberOptions() const
 {
@@ -1170,12 +1175,9 @@ QString QLocale::createSeparatedList(const QStringList &list) const
 void QLocale::setDefault(const QLocale &locale)
 {
     default_data = locale.d->m_data;
-    default_number_options = locale.numberOptions();
 
-    if (defaultLocalePrivate.exists()) {
-        // update the cached private
+    if (defaultLocalePrivate.exists()) // update the cached private
         *defaultLocalePrivate = locale.d;
-    }
 }
 
 /*!
@@ -1962,7 +1964,7 @@ double QLocale::toDouble(QStringView s, bool *ok) const
 /*!
     Returns a localized string representation of \a i.
 
-    \sa toLongLong()
+    \sa toLongLong(), numberOptions(), zeroDigit(), positiveSign()
 */
 
 QString QLocale::toString(qlonglong i) const
@@ -1978,7 +1980,7 @@ QString QLocale::toString(qlonglong i) const
 /*!
     \overload
 
-    \sa toULongLong()
+    \sa toULongLong(), numberOptions(), zeroDigit(), positiveSign()
 */
 
 QString QLocale::toString(qulonglong i) const
@@ -2525,6 +2527,12 @@ QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCal
     \since 4.1
 
     Returns the decimal point character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa groupSeparator(), toString()
 */
 QChar QLocale::decimalPoint() const
 {
@@ -2535,6 +2543,12 @@ QChar QLocale::decimalPoint() const
     \since 4.1
 
     Returns the group separator character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa decimalPoint(), toString()
 */
 QChar QLocale::groupSeparator() const
 {
@@ -2545,6 +2559,12 @@ QChar QLocale::groupSeparator() const
     \since 4.1
 
     Returns the percent character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa toString()
 */
 QChar QLocale::percent() const
 {
@@ -2555,6 +2575,12 @@ QChar QLocale::percent() const
     \since 4.1
 
     Returns the zero digit character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa toString()
 */
 QChar QLocale::zeroDigit() const
 {
@@ -2565,6 +2591,12 @@ QChar QLocale::zeroDigit() const
     \since 4.1
 
     Returns the negative sign character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa positiveSign(), toString()
 */
 QChar QLocale::negativeSign() const
 {
@@ -2575,6 +2607,12 @@ QChar QLocale::negativeSign() const
     \since 4.5
 
     Returns the positive sign character of this locale.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa negativeSign(), toString()
 */
 QChar QLocale::positiveSign() const
 {
@@ -2584,7 +2622,14 @@ QChar QLocale::positiveSign() const
 /*!
     \since 4.1
 
-    Returns the exponential character of this locale.
+    Returns the exponential character of this locale, used to separate exponent
+    from mantissa in some floating-point numeric representations.
+
+    \note This function shall change to return a QString instead of QChar in
+    Qt6. Callers are encouraged to exploit the QString(QChar) constructor to
+    convert early in preparation for this.
+
+    \sa toString(double, char, int)
 */
 QChar QLocale::exponential() const
 {
@@ -2609,7 +2654,7 @@ static char qToLower(char c)
 
     \a f and \a prec have the same meaning as in QString::number(double, char, int).
 
-    \sa toDouble()
+    \sa toDouble(), numberOptions(), exponential(), decimalPoint(), zeroDigit(), positiveSign(), percent()
 */
 
 QString QLocale::toString(double i, char f, int prec) const

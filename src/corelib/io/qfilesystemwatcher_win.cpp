@@ -403,6 +403,7 @@ QStringList QWindowsFileSystemWatcherEngine::addPaths(const QStringList &paths,
         const QString absolutePath = isDir ? fileInfo.absoluteFilePath() : fileInfo.absolutePath();
         const uint flags = isDir
                            ? (FILE_NOTIFY_CHANGE_DIR_NAME
+                              | FILE_NOTIFY_CHANGE_ATTRIBUTES
                               | FILE_NOTIFY_CHANGE_FILE_NAME)
                            : (FILE_NOTIFY_CHANGE_DIR_NAME
                               | FILE_NOTIFY_CHANGE_FILE_NAME

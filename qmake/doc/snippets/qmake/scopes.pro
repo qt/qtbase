@@ -40,3 +40,21 @@ win32|macx {
     HEADERS += debugging.h
 }
 #! [4]
+
+#! [5]
+if(win32|macos):CONFIG(debug, debug|release) {
+    # Do something on Windows and macOS,
+    # but only for the debug configuration.
+}
+win32|if(macos:CONFIG(debug, debug|release)) {
+    # Do something on Windows (regardless of debug or release)
+    # and on macOS (only for debug).
+}
+#! [5]
+
+#! [6]
+win32-* {
+    # Matches every mkspec starting with "win32-"
+    SOURCES += win32_specific.cpp
+}
+#! [6]

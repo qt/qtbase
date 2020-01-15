@@ -1330,6 +1330,7 @@ void QOpenGL2PaintEngineExPrivate::drawVertexArrays(const float *data, int *stop
 QOpenGL2PaintEngineEx::QOpenGL2PaintEngineEx()
     : QPaintEngineEx(*(new QOpenGL2PaintEngineExPrivate(this)))
 {
+    gccaps &= ~QPaintEngine::RasterOpModes;
 }
 
 QOpenGL2PaintEngineEx::~QOpenGL2PaintEngineEx()

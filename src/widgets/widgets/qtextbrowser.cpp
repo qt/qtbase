@@ -823,7 +823,7 @@ void QTextBrowser::setSource(const QUrl &url)
 /*!
     Attempts to load the document at the given \a url with the specified \a type.
 
-    If \a type is \l {QTextDocument::ResourceType::UnknownResource}{UnknownResource}
+    If \a type is \l {QTextDocument::UnknownResource}{UnknownResource}
     (the default), the document type will be detected: that is, if the url ends
     with an extension of \c{.md}, \c{.mkd} or \c{.markdown}, the document will be
     loaded via \l QTextDocument::setMarkdown(); otherwise it will be loaded via

@@ -107,6 +107,9 @@ private:
     ULONG m_ref;
 };
 
+// Clang does not consider __declspec(nothrow) as nothrow
+QT_WARNING_DISABLE_CLANG("-Wmicrosoft-exception-spec")
+
 QT_END_NAMESPACE
 
 #endif // QWINDOWSCOMBASE_H

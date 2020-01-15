@@ -26,50 +26,30 @@
 **
 ****************************************************************************/
 
-// This test is for "release" mode, with -DQT_NO_DEBUG -DQT_NO_DEBUG_OUTPUT
-#ifndef QT_NO_DEBUG
-#define QT_NO_DEBUG
-#endif
-#ifndef QT_NO_DEBUG_OUTPUT
-#define QT_NO_DEBUG_OUTPUT
-#endif
 
-#include <QtCore/QtCore>
-#include <QtCore/QtDebug>
-#include <QtCore/QLoggingCategory>
 #include <QtTest/QtTest>
 
-class tst_QNoDebug: public QObject
+#include "../../network-settings.h"
+
+class tst_NetworkSelftest : public QObject
 {
     Q_OBJECT
+
 private slots:
-    void noDebugOutput() const;
-    void streaming() const;
+    void testServerIsAvailableInCI();
 };
 
-void tst_QNoDebug::noDebugOutput() const
+void tst_NetworkSelftest::testServerIsAvailableInCI()
 {
-    QLoggingCategory cat("custom");
-    // should do nothing
-    qDebug() << "foo";
-    qCDebug(cat) << "foo";
-    qCDebug(cat, "foo");
+    if (!qEnvironmentVariable("QTEST_ENVIRONMENT").split(' ').contains("ci"))
+        QSKIP("Not running in the CI");
 
-    // qWarning still works, though
-    QTest::ignoreMessage(QtWarningMsg, "bar");
-    QTest::ignoreMessage(QtWarningMsg, "custom-bar");
-    qWarning() << "bar";
-    qCWarning(cat) << "custom-bar";
+#if !defined(QT_TEST_SERVER)
+    QVERIFY2(QtNetworkSettings::verifyTestNetworkSettings(),
+        "Test server must be available when running in the CI");
+#endif
 }
 
-void tst_QNoDebug::streaming() const
-{
-    QDateTime dt(QDate(1,2,3),QTime(4,5,6));
-    const QByteArray debugString = dt.toString(u"yyyy-MM-dd HH:mm:ss.zzz t").toLocal8Bit();
-    const QByteArray message = "QDateTime(" + debugString + " Qt::LocalTime)";
-    QTest::ignoreMessage(QtWarningMsg, message.constData());
-    qWarning() << dt;
-}
+QTEST_MAIN(tst_NetworkSelftest)
 
-QTEST_MAIN(tst_QNoDebug);
-#include "tst_qnodebug.moc"
+#include "tst_networkselftest.moc"

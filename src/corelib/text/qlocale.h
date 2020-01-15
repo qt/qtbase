@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2019 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1044,8 +1044,8 @@ public:
     QDateTime toDateTime(const QString &string, const QString &format, QCalendar cal) const;
 #endif
 
-    // ### Qt 5: We need to return QString from these function since
-    //           unicode data contains several characters for these fields.
+    // ### Qt 6: We need to return QString from these function since
+    //           UTF-16 may need surrogate pairs to represent these fields.
     QChar decimalPoint() const;
     QChar groupSeparator() const;
     QChar percent() const;

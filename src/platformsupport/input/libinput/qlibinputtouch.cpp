@@ -38,12 +38,15 @@
 ****************************************************************************/
 
 #include "qlibinputtouch_p.h"
+#include "qtouchoutputmapping_p.h"
 #include <libinput.h>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 #include <QtGui/private/qhighdpiscaling_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(qLcLibInput)
 
 QWindowSystemInterface::TouchPoint *QLibInputTouch::DeviceState::point(int32_t slot)
 {
@@ -62,12 +65,23 @@ QLibInputTouch::DeviceState *QLibInputTouch::deviceState(libinput_event_touch *e
     return &m_devState[dev];
 }
 
-static inline QPointF getPos(libinput_event_touch *e)
+QPointF QLibInputTouch::getPos(libinput_event_touch *e)
 {
-    // TODO Map to correct screen using QTouchOutputMapping.
-    // Perhaps investigate libinput_device_get_output_name as well.
-    // For now just use the primary screen.
+    DeviceState *state = deviceState(e);
     QScreen *screen = QGuiApplication::primaryScreen();
+    if (!state->m_screenName.isEmpty()) {
+        if (!m_screen) {
+            const QList<QScreen *> screens = QGuiApplication::screens();
+            for (QScreen *s : screens) {
+                if (s->name() == state->m_screenName) {
+                    m_screen = s;
+                    break;
+                }
+            }
+        }
+        if (m_screen)
+            screen = m_screen;
+    }
     const QRect geom = QHighDpi::toNativePixels(screen->geometry(), screen);
     const double x = libinput_event_touch_get_x_transformed(e, geom.width());
     const double y = libinput_event_touch_get_y_transformed(e, geom.height());
@@ -76,9 +90,25 @@ static inline QPointF getPos(libinput_event_touch *e)
 
 void QLibInputTouch::registerDevice(libinput_device *dev)
 {
+    struct udev_device *udev_device;
+    udev_device = libinput_device_get_udev_device(dev);
+    QString devNode = QString::fromUtf8(udev_device_get_devnode(udev_device));
+    QString devName = QString::fromUtf8(libinput_device_get_name(dev));
+
+    qCDebug(qLcLibInput, "libinput: registerDevice %s - %s",
+            qPrintable(devNode), qPrintable(devName));
+
+    QTouchOutputMapping mapping;
+    if (mapping.load()) {
+        m_devState[dev].m_screenName = mapping.screenNameForDeviceNode(devNode);
+        if (!m_devState[dev].m_screenName.isEmpty())
+            qCDebug(qLcLibInput, "libinput: Mapping device %s to screen %s",
+                    qPrintable(devNode), qPrintable(m_devState[dev].m_screenName));
+    }
+
     QTouchDevice *&td = m_devState[dev].m_touchDevice;
     td = new QTouchDevice;
-    td->setName(QString::fromUtf8(libinput_device_get_name(dev)));
+    td->setName(devName);
     td->setType(QTouchDevice::TouchScreen);
     td->setCapabilities(QTouchDevice::Position | QTouchDevice::Area);
     QWindowSystemInterface::registerTouchDevice(td);

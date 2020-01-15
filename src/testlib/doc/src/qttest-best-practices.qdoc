@@ -270,7 +270,7 @@
     When side-effects are unavoidable, ensure that the prior state is restored
     at the end of the test function, even if the test fails. This commonly
     requires use of an RAII (resource acquisition is initialization) class
-    that restores state when the function returns, or a \l cleanup() method.
+    that restores state when the function returns, or a \c cleanup() method.
     Do not simply put the restoration code at the end of the test. If part of
     the test fails, such code will be skipped and the prior state will not be
     restored.

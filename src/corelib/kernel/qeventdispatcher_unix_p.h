@@ -118,7 +118,7 @@ public:
 
     int remainingTime(int timerId) final;
 
-    void wakeUp() final;
+    void wakeUp() override;
     void interrupt() final;
     void flush() override;
 

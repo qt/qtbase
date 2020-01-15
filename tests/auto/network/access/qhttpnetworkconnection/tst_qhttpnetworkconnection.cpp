@@ -105,7 +105,8 @@ void tst_QHttpNetworkConnection::initTestCase()
 #if defined(QT_TEST_SERVER)
     QVERIFY(QtNetworkSettings::verifyConnection(httpServerName(), 80));
 #else
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 #endif
 }
 
