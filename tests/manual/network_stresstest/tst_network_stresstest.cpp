@@ -123,7 +123,8 @@ void tst_NetworkStressTest::initTestCase_data()
 
 void tst_NetworkStressTest::initTestCase()
 {
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 }
 
 void tst_NetworkStressTest::init()

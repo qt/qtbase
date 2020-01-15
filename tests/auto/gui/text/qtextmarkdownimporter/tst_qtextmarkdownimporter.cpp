@@ -55,12 +55,13 @@ private slots:
     void thematicBreaks();
     void lists_data();
     void lists();
+    void avoidBlankLineAtBeginning_data();
+    void avoidBlankLineAtBeginning();
 };
 
 void tst_QTextMarkdownImporter::headingBulletsContinuations()
 {
     const QStringList expectedBlocks = QStringList() <<
-        "" << // we could do without this blank line before the heading, but currently it happens
         "heading" <<
         "bullet 1 continuation line 1, indented via tab" <<
         "bullet 2 continuation line 2, indented via 4 spaces" <<
@@ -220,6 +221,39 @@ void tst_QTextMarkdownImporter::lists()
     QCOMPARE(itemCount, expectedItemCount);
     QCOMPARE(emptyItems, expectedEmptyItems);
     QCOMPARE(doc.toMarkdown(), rewrite);
+}
+
+void tst_QTextMarkdownImporter::avoidBlankLineAtBeginning_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<int>("expectedNumberOfParagraphs");
+
+    QTest::newRow("Text block") << QString("Markdown text") << 1;
+    QTest::newRow("Headline") << QString("Markdown text\n============") << 1;
+    QTest::newRow("Code block") << QString("    Markdown text") << 2;
+    QTest::newRow("Unordered list") << QString("* Markdown text") << 1;
+    QTest::newRow("Ordered list") << QString("1. Markdown text") << 1;
+    QTest::newRow("Blockquote") << QString("> Markdown text") << 1;
+}
+
+void tst_QTextMarkdownImporter::avoidBlankLineAtBeginning() // QTBUG-81060
+{
+    QFETCH(QString, input);
+    QFETCH(int, expectedNumberOfParagraphs);
+
+    QTextDocument doc;
+    QTextMarkdownImporter(QTextMarkdownImporter::DialectGitHub).import(&doc, input);
+    QTextFrame::iterator iterator = doc.rootFrame()->begin();
+    int i = 0;
+    while (!iterator.atEnd()) {
+        QTextBlock block = iterator.currentBlock();
+        // Make sure there is no empty paragraph at the beginning of the document
+        if (i == 0)
+            QVERIFY(!block.text().isEmpty());
+        ++iterator;
+        ++i;
+    }
+    QCOMPARE(i, expectedNumberOfParagraphs);
 }
 
 QTEST_MAIN(tst_QTextMarkdownImporter)

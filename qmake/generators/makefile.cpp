@@ -1520,7 +1520,7 @@ MakefileGenerator::createObjectList(const ProStringList &sources)
             if (!noIO()) {
                 // Ensure that the final output directory of each object exists
                 QString outRelativePath = fileFixify(dir, FileFixifyBackwards);
-                if (!mkdir(outRelativePath))
+                if (!outRelativePath.isEmpty() && !mkdir(outRelativePath))
                     warn_msg(WarnLogic, "Cannot create directory '%s'", outRelativePath.toLatin1().constData());
             }
         } else {

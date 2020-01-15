@@ -37,5 +37,5 @@
                  QCborValueRef qfloat16 QDeferredDeleteEvent QSpecialInteger QLittleEndianStorageType
                  QBigEndianStorageType QFactoryInterface QFutureWatcherBase QJsonValuePtr
                  QJsonValueRefPtr QLinkedListNode QAbstractConcatenable QStringBuilderCommon
-                 QTextCodec::ConverterState QThreadStorageData)
+                 QTextCodec::ConverterState QThreadStorageData QTextStreamManipulator)
 */

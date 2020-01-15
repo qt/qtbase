@@ -1,2 +1,4 @@
 [task232085_spinBoxLineEditBg]
 osx
+[widgetStylePropagation]
+macos # QTBUG-75786

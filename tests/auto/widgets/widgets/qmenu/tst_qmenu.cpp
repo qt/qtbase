@@ -1066,6 +1066,10 @@ static inline QByteArray msgGeometryIntersects(const QRect &r1, const QRect &r2)
 
 void tst_QMenu::pushButtonPopulateOnAboutToShow()
 {
+#ifdef Q_OS_MACOS
+    QSKIP("Popup menus may partially overlap the button on macOS, and that's okey");
+#endif
+
     QPushButton b("Test PushButton");
     b.setWindowFlags(Qt::FramelessWindowHint | Qt::X11BypassWindowManagerHint);
 

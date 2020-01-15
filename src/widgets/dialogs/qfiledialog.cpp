@@ -2374,7 +2374,8 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
 
     This function is used to access local files on Qt for WebAssembly, where the web
     sandbox places restrictions on how such access may happen. Its implementation will
-    make the browser display a native file dialog, where the user makes the file selection.
+    make the browser display a native file dialog, where the user makes the file selection
+    based on the parameter \a nameFilter.
 
     It can also be used on other platforms, where it will fall back to using QFileDialog.
 

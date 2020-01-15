@@ -88,7 +88,7 @@ private slots:
     void toStringDateFormat();
     void isLeapYear();
     void yearsZeroToNinetyNine();
-    void negativeYear() const;
+    void printNegativeYear_data() const;
     void printNegativeYear() const;
     void roundtripGermanLocale() const;
 #if QT_CONFIG(textdate) && QT_DEPRECATED_SINCE(5, 10)
@@ -1458,33 +1458,28 @@ void tst_QDate::yearsZeroToNinetyNine()
     }
 }
 
-
-void tst_QDate::negativeYear() const
+void tst_QDate::printNegativeYear_data() const
 {
-    QDate y(-20, 3, 4);
-    QVERIFY(y.isValid());
-    QCOMPARE(y.year(), -20);
+    QTest::addColumn<int>("year");
+    QTest::addColumn<QString>("expect");
+    QTest::newRow("millennium") << -1000 << QStringLiteral("-1000");
+    QTest::newRow("century") << -500 << QStringLiteral("-0500");
+    QTest::newRow("decade") << -20 << QStringLiteral("-0020");
+    QTest::newRow("year") << -7 << QStringLiteral("-0007");
 }
 
 void tst_QDate::printNegativeYear() const
 {
-    {
-        QDate date(-500, 3, 4);
-        QVERIFY(date.isValid());
-        QCOMPARE(date.toString(QLatin1String("yyyy")), QString::fromLatin1("-0500"));
-    }
+    QFETCH(int, year);
+    QFETCH(QString, expect);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    expect.replace(QLatin1Char('-'), QLocale().negativeSign());
+#endif
 
-    {
-        QDate date(-10, 3, 4);
-        QVERIFY(date.isValid());
-        QCOMPARE(date.toString(QLatin1String("yyyy")), QString::fromLatin1("-0010"));
-    }
-
-    {
-        QDate date(-2, 3, 4);
-        QVERIFY(date.isValid());
-        QCOMPARE(date.toString(QLatin1String("yyyy")), QString::fromLatin1("-0002"));
-    }
+    QDate date(year, 3, 4);
+    QVERIFY(date.isValid());
+    QCOMPARE(date.year(), year);
+    QCOMPARE(date.toString(QLatin1String("yyyy")), expect);
 }
 
 void tst_QDate::roundtripGermanLocale() const
