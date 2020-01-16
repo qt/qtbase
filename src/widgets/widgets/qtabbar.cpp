@@ -208,7 +208,7 @@ void QTabBarPrivate::initBasicStyleOption(QStyleOptionTab *option, int tabIndex)
         option->selectedPosition = QStyleOptionTab::NotAdjacent;
 
     const bool paintBeginning = (tabIndex == firstVisible) || (dragInProgress && tabIndex == pressedIndex + 1);
-    const bool paintEnd = (tabIndex == lastVisible - 1) || (dragInProgress && tabIndex == pressedIndex - 1);
+    const bool paintEnd = (tabIndex == lastVisible) || (dragInProgress && tabIndex == pressedIndex - 1);
     if (paintBeginning) {
         if (paintEnd)
             option->position = QStyleOptionTab::OnlyOneTab;
