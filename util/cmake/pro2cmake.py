@@ -2710,8 +2710,14 @@ def write_main_part(
     # Check for DESTDIR override
     destdir = scope.get_string("DESTDIR")
     if destdir:
-        destdir = replace_path_constants(destdir, scope)
-        extra_lines.append(f'OUTPUT_DIRECTORY "{destdir}"')
+        already_added = False
+        for line in extra_lines:
+            if line.startswith("OUTPUT_DIRECTORY"):
+                already_added = True
+                break
+        if not already_added:
+            destdir = replace_path_constants(destdir, scope)
+            extra_lines.append(f'OUTPUT_DIRECTORY "{destdir}"')
 
     cm_fh.write(f"{spaces(indent)}{cmake_function}({name}\n")
     for extra_line in extra_lines:
