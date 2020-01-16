@@ -87,12 +87,13 @@ load(qt_common)
     # against concurrent wrapper creation by omitting it during build passes.
     # However, creating the actual targets is reserved to the build passes.
     build_pass|!debug_and_release {
-        isEmpty(IMPORT_VERSION) {
+        isEmpty(QML_IMPORT_VERSION):!isEmpty(IMPORT_VERSION): QML_IMPORT_VERSION = $$IMPORT_VERSION
+        isEmpty(QML_IMPORT_VERSION) {
             no_cxx_module {
-                IMPORT_VERSION = $$section(MODULE_VERSION, ., 0, 1)
-                isEmpty(IMPORT_VERSION): error("Must set IMPORT_VERSION")
+                QML_IMPORT_VERSION = $$section(MODULE_VERSION, ., 0, 1)
+                isEmpty(QML_IMPORT_VERSION): error("Must set QML_IMPORT_VERSION")
             } else {
-                IMPORT_VERSION = $$section(QT.$${CXX_MODULE}.VERSION, ., 0, 1)
+                QML_IMPORT_VERSION = $$section(QT.$${CXX_MODULE}.VERSION, ., 0, 1)
             }
         }
 
@@ -107,7 +108,7 @@ load(qt_common)
         }
 
         qmltypes.target = qmltypes
-        qmltypes.commands = $$QMLPLUGINDUMP -nonrelocatable $$QMAKE_QMLPLUGINDUMP_FLAGS $$replace(IMPORT_NAME, /, .) $$IMPORT_VERSION > $$QMLTYPEFILE
+        qmltypes.commands = $$QMLPLUGINDUMP -nonrelocatable $$QMAKE_QMLPLUGINDUMP_FLAGS $$replace(IMPORT_NAME, /, .) $$QML_IMPORT_VERSION > $$QMLTYPEFILE
         qmltypes.depends = $$QMAKE_RESOLVED_TARGET
     } else {
         qmltypes.CONFIG += recursive
