@@ -1269,6 +1269,14 @@
     \row    \li \c word-spacing
             \li <width>px
             \li Specifies an alternate spacing between each word.
+    \row    \li \c line-height
+            \li <number>[% | px | pt | cm]
+            \li Specifies the height of a line. It can be one of the
+                following:
+                \list
+                 \li fixed line height in pixels, points, or centimeters.
+                 \li a percent of the current font size.
+                \endlist
     \endtable
 
     \section1 Supported CSS Selectors
