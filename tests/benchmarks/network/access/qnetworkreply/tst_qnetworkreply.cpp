@@ -479,7 +479,8 @@ private:
 
 void tst_qnetworkreply::initTestCase()
 {
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 }
 
 void tst_qnetworkreply::httpLatency()

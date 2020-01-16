@@ -893,7 +893,7 @@ QT_WARNING_POP
 #endif
 
 QT_WARNING_PUSH
-// warning: noexcept-expression evaluates to ‘false’ because of a call to ‘void swap(..., ...)'
+// warning: noexcept-expression evaluates to 'false' because of a call to 'void swap(..., ...)'
 QT_WARNING_DISABLE_GCC("-Wnoexcept")
 
 namespace QtPrivate

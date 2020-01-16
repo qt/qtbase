@@ -238,8 +238,7 @@
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 1
 
     The interesting part of the constructor is the
-    qRegisterMetaType() and QObject::connect() calls. Let's start
-    with the \l{QObject::connect()}{connect()} call.
+    QObject::connect() call.
 
     Although it looks like a standard signal-slot connection between
     two \l{QObject}s, because the signal is emitted in a different
@@ -254,9 +253,10 @@
     With queued connections, Qt must store a copy of the arguments
     that were passed to the signal so that it can pass them to the
     slot later on. Qt knows how to take of copy of many C++ and Qt
-    types, but QImage isn't one of them. We must therefore call the
-    template function qRegisterMetaType() before we can use QImage
-    as a parameter in queued connections.
+    types, so, no further action is needed for QImage.
+    If a custom type was used, a call to the template function
+    qRegisterMetaType() would be required before the type
+    could be used as a parameter in queued connections.
 
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 2
     \snippet threads/mandelbrot/mandelbrotwidget.cpp 3

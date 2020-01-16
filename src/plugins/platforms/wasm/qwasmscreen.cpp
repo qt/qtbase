@@ -44,6 +44,7 @@
 #include <QtGui/qguiapplication.h>
 #include <private/qhighdpiscaling_p.h>
 
+using namespace emscripten;
 
 QT_BEGIN_NAMESPACE
 
@@ -184,13 +185,15 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
     QSizeF cssSize(css_width, css_height);
 
     QSizeF canvasSize = cssSize * devicePixelRatio();
-    emscripten::val canvas = emscripten::val::global(canvasId.constData());
+    val document = val::global("document");
+    val canvas = document.call<val>("getElementById", val(canvasId.constData()));
+
     canvas.set("width", canvasSize.width());
     canvas.set("height", canvasSize.height());
 
     QPoint offset;
-    offset.setX(emscripten::val::global(canvasId.constData())["offsetTop"].as<int>());
-    offset.setY(emscripten::val::global(canvasId.constData())["offsetLeft"].as<int>());
+    offset.setX(canvas["offsetTop"].as<int>());
+    offset.setY(canvas["offsetLeft"].as<int>());
 
     emscripten::val rect = canvas.call<emscripten::val>("getBoundingClientRect");
     QPoint position(rect["left"].as<int>() - offset.x(), rect["top"].as<int>() - offset.y());

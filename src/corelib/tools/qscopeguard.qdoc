@@ -51,10 +51,10 @@ QT_BEGIN_NAMESPACE
            of the scope.
     \ingroup misc
 
-    QScopeGuard<F> is a class which sole purpose is to run a function \e F in
-    its destructor. This is useful for guaranteeing your cleanup code is
-    executed, whether the function is exited normally, exited early by a return
-    statement, or exited by an exception.
+    QScopeGuard<F> is a class of which the sole purpose is to run the function
+    \a f in its destructor. This is useful for guaranteeing
+    your cleanup code is executed, whether the function is exited normally,
+    exited early by a return statement, or exited by an exception.
 
     If \e F is a lambda then you cannot instantiate the template directly,
     therefore the qScopeGuard() helper is provided and QScopeGuard<F> is made a

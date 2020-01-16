@@ -1285,6 +1285,8 @@
     \relates QSharedPointer
     \since 5.14
 
+    Returns a shared pointer to the pointer held by \a src.
+
     Same as qSharedPointerObjectCast(). This function is provided for STL
     compatibility.
 */

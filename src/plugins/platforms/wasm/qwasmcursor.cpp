@@ -36,6 +36,8 @@
 #include <emscripten/emscripten.h>
 #include <emscripten/bind.h>
 
+using namespace emscripten;
+
 void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 {
     if (!windowCursor || !window)
@@ -54,8 +56,10 @@ void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
         htmlCursorName = "auto";
 
     // Set cursor on the canvas
-    QString canvasId = QWasmScreen::get(screen)->canvasId();
-    emscripten::val canvasStyle = emscripten::val::global(canvasId.toUtf8().constData())["style"];
+    QByteArray canvasId = QWasmScreen::get(screen)->canvasId().toUtf8();
+    val document = val::global("document");
+    val canvas = document.call<val>("getElementById", val(canvasId.constData()));
+    val canvasStyle = canvas["style"];
     canvasStyle.set("cursor", emscripten::val(htmlCursorName.constData()));
 }
 

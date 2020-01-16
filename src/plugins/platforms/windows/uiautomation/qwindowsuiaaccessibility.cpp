@@ -52,6 +52,8 @@
 #include <qpa/qplatformintegration.h>
 #include <QtWindowsUIAutomationSupport/private/qwindowsuiawrapper_p.h>
 
+#include <QtCore/private/qwinregistry_p.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QWindowsUiAutomation;
@@ -85,11 +87,62 @@ bool QWindowsUiaAccessibility::handleWmGetObject(HWND hwnd, WPARAM wParam, LPARA
     return false;
 }
 
+// Retrieve sound name by checking the icon property of a message box
+// should it be the event object.
+static QString alertSound(const QObject *object)
+{
+    if (object->inherits("QMessageBox")) {
+        enum MessageBoxIcon { // Keep in sync with QMessageBox::Icon
+            Information = 1,
+            Warning = 2,
+            Critical = 3
+        };
+        switch (object->property("icon").toInt()) {
+        case Information:
+            return QStringLiteral("SystemAsterisk");
+        case Warning:
+            return QStringLiteral("SystemExclamation");
+        case Critical:
+            return QStringLiteral("SystemHand");
+        }
+    }
+    return QStringLiteral("SystemAsterisk");
+}
+
+static QString soundFileName(const QString &soundName)
+{
+    const QString key = QStringLiteral("AppEvents\\Schemes\\Apps\\.Default\\")
+        + soundName + QStringLiteral("\\.Current");
+    return QWinRegistryKey(HKEY_CURRENT_USER, key).stringValue(L"");
+}
+
+static void playSystemSound(const QString &soundName)
+{
+    if (!soundName.isEmpty() && !soundFileName(soundName).isEmpty()) {
+        PlaySound(reinterpret_cast<const wchar_t *>(soundName.utf16()), nullptr,
+                  SND_ALIAS | SND_ASYNC | SND_NODEFAULT | SND_NOWAIT);
+    }
+}
+
 // Handles accessibility update notifications.
 void QWindowsUiaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
 {
     if (!event)
         return;
+
+    switch (event->type()) {
+        case QAccessible::PopupMenuStart:
+            playSystemSound(QStringLiteral("MenuPopup"));
+            break;
+        case QAccessible::MenuCommand:
+            playSystemSound(QStringLiteral("MenuCommand"));
+            break;
+        case QAccessible::Alert:
+            playSystemSound(alertSound(event->object()));
+            break;
+        default:
+            break;
+    }
 
     QAccessibleInterface *accessible = event->accessibleInterface();
     if (!isActive() || !accessible || !accessible->isValid())

@@ -63,7 +63,8 @@ tst_QSslSocket::~tst_QSslSocket()
 
 void tst_QSslSocket::initTestCase()
 {
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 }
 
 void tst_QSslSocket::init()

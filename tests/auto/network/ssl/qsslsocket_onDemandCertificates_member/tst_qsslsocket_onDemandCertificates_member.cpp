@@ -109,7 +109,8 @@ void tst_QSslSocket_onDemandCertificates_member::initTestCase()
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3129));
     QVERIFY(QtNetworkSettings::verifyConnection(QtNetworkSettings::httpProxyServerName(), 3130));
 #else
-    QVERIFY(QtNetworkSettings::verifyTestNetworkSettings());
+    if (!QtNetworkSettings::verifyTestNetworkSettings())
+        QSKIP("No network test server available");
 #endif // QT_TEST_SERVER
 }
 
