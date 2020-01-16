@@ -1425,8 +1425,8 @@ bool updateAndroidManifest(Options &options)
                     options.packageName = reader.attributes().value(QLatin1String("package")).toString();
                 } else if (reader.name() == QLatin1String("uses-sdk")) {
                     if (reader.attributes().hasAttribute(QLatin1String("android:minSdkVersion")))
-                        if (reader.attributes().value(QLatin1String("android:minSdkVersion")).toInt() < 21) {
-                            fprintf(stderr, "Invalid minSdkVersion version, minSdkVersion must be >= 21\n");
+                        if (reader.attributes().value(QLatin1String("android:minSdkVersion")).toInt() < 23) {
+                            fprintf(stderr, "Invalid minSdkVersion version, minSdkVersion must be >= 23\n");
                             return false;
                         }
                 } else if ((reader.name() == QLatin1String("application") ||

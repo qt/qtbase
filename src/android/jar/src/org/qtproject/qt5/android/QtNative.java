@@ -704,14 +704,9 @@ public class QtNative
         synchronized (m_mainActivityMutex) {
             Context context = getContext();
             try {
-                if (Build.VERSION.SDK_INT >= 23) {
-                    if (m_checkSelfPermissionMethod == null)
-                        m_checkSelfPermissionMethod = Context.class.getMethod("checkSelfPermission", String.class);
-                    perm = (Integer)m_checkSelfPermissionMethod.invoke(context, permission);
-                } else {
-                    final PackageManager pm = context.getPackageManager();
-                    perm = pm.checkPermission(permission, context.getApplicationContext().getPackageName());
-                }
+                if (m_checkSelfPermissionMethod == null)
+                    m_checkSelfPermissionMethod = Context.class.getMethod("checkSelfPermission", String.class);
+                perm = (Integer)m_checkSelfPermissionMethod.invoke(context, permission);
             } catch (Exception e) {
                 e.printStackTrace();
             }

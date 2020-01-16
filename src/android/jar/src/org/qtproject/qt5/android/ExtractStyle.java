@@ -673,7 +673,7 @@ public class ExtractStyle {
             json.put("gradient",gradientStateClass.getField("mGradient").getInt(obj));
             GradientDrawable.Orientation orientation=(Orientation) gradientStateClass.getField("mOrientation").get(obj);
             json.put("orientation",orientation.name());
-            int [] intArray=(int[]) gradientStateClass.getField((Build.VERSION.SDK_INT < 23) ? "mColors" : "mGradientColors").get(obj);
+            int [] intArray=(int[]) gradientStateClass.getField("mGradientColors").get(obj);
             if (intArray != null)
                 json.put("colors",getJsonArray(intArray, 0, intArray.length));
             json.put("positions",getJsonArray((float[]) gradientStateClass.getField("mPositions").get(obj)));
@@ -1089,9 +1089,7 @@ public class ExtractStyle {
                 {
                     try {
                         InsetDrawable d = (InsetDrawable)drawable;
-                        // mInsetState changed to mState in Android 5.1 (22)
-                        Object mInsetStateObject = getAccessibleField(InsetDrawable.class, (Build.VERSION.SDK_INT > 21) ? "mState"
-                                                                                                                        : "mInsetState").get(d);
+                        Object mInsetStateObject = getAccessibleField(InsetDrawable.class, "mState").get(d);
                         Rect _padding = new Rect();
                         boolean hasPadding = d.getPadding(_padding);
                         return getDrawable(getAccessibleField(mInsetStateObject.getClass(), "mDrawable").get(mInsetStateObject), filename, hasPadding ? _padding : null);

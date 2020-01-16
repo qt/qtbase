@@ -625,7 +625,7 @@ defineTest(qtConfOutput_prepareOptions) {
             android_abis = armeabi-v7a,arm64-v8a,x86,x86_64
         platform = $$eval(config.input.android-ndk-platform)
         isEmpty(platform): \
-            platform = android-21
+            platform = android-23
 
         $${currentConfig}.output.devicePro += \
             "DEFAULT_ANDROID_SDK_ROOT = $$val_escape(sdk_root)" \
