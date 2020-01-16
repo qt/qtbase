@@ -363,12 +363,8 @@ _qt_library_map = [
         "Qt::LinuxOfonoSupportPrivate",
         extra=["COMPONENTS", "LinuxOfonoSupportPrivate"],
     ),
-    LibraryMapping(
-        "tools", "Qt6", "Qt::Tools", extra=["COMPONENTS", "Tools"]
-    ),
-    LibraryMapping(
-        "axcontainer", "Qt6", "Qt::AxContainer", extra=["COMPONENTS", "AxContainer"]
-    ),
+    LibraryMapping("tools", "Qt6", "Qt::Tools", extra=["COMPONENTS", "Tools"]),
+    LibraryMapping("axcontainer", "Qt6", "Qt::AxContainer", extra=["COMPONENTS", "AxContainer"]),
     LibraryMapping(
         "webkitwidgets", "Qt6", "Qt::WebKitWidgets", extra=["COMPONENTS", "WebKitWidgets"]
     )

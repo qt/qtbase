@@ -2916,7 +2916,7 @@ def write_test(cm_fh: IO[str], scope: Scope, gui: bool = False, *, indent: int =
 
     target_original = scope.TARGET_ORIGINAL
     if target_original and target_original.startswith("../"):
-        extra.append("OUTPUT_DIRECTORY \"${CMAKE_CURRENT_BINARY_DIR}/../\"")
+        extra.append('OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"')
 
     requires_content = expand_project_requirements(scope, skip_message=True)
     if requires_content:
