@@ -36,6 +36,7 @@
 #include <qjsondocument.h>
 #include <qjsonarray.h>
 #include <qjsonobject.h>
+#include <qversionnumber.h>
 #include <stdio.h>
 #include <ctype.h>
 
@@ -271,6 +272,7 @@ public:
     bool testFunctionAttribute(FunctionDef *def);
     bool testFunctionAttribute(Token tok, FunctionDef *def);
     bool testFunctionRevision(FunctionDef *def);
+    QTypeRevision parseRevision();
 
     bool skipCxxAttributes();
 

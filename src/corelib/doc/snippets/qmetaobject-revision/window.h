@@ -58,7 +58,7 @@ class Window : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(int normalProperty READ normalProperty)
-    Q_PROPERTY(int newProperty READ newProperty REVISION 1)
+    Q_PROPERTY(int newProperty READ newProperty REVISION(2, 1))
 
 public:
     Window();
@@ -66,7 +66,7 @@ public:
     int newProperty();
 public slots:
     void normalMethod();
-    Q_REVISION(1) void newMethod();
+    Q_REVISION(2, 1) void newMethod();
 };
 //! [Window class with revision]
 

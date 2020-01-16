@@ -4674,10 +4674,15 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
     Using the same Window class as the previous example, the newProperty and
     newMethod would only be exposed in this code when the expected version is
-    1 or greater.
+    \c{2.1} or greater.
 
-    Since all methods are considered to be in revision 0 if untagged, a tag
-    of Q_REVISION(0) is invalid and ignored.
+    Since all methods are considered to be in revision \c{0} if untagged, a tag
+    of \c{Q_REVISION(0)}, or \c{Q_REVISION(0, 0)} is invalid and ignored.
+
+    You can pass one or two integer parameters to \c{Q_REVISION}. If you pass
+    one, the parameter denotes the minor version and major version is
+    unspecified. If you pass two, the first parameter is the major version and
+    the second parameter is the minor version.
 
     This tag is not used by the meta-object system itself. Currently this is only
     used by the QtQml module.
