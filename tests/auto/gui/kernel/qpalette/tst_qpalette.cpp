@@ -124,23 +124,35 @@ void tst_QPalette::resolve()
     QVERIFY(p2ResolvedTo1 != p2);
 }
 
+
+static void compareAllPaletteData(const QPalette &firstPalette, const QPalette &secondPalette)
+{
+    QCOMPARE(firstPalette, secondPalette);
+
+    // For historical reasons, operator== compares only brushes, but it's not enough for proper
+    // comparison after move/copy, because some additional data can also be moved/copied.
+    // Let's compare this data here.
+    QCOMPARE(firstPalette.resolve(), secondPalette.resolve());
+    QCOMPARE(firstPalette.currentColorGroup(), secondPalette.currentColorGroup());
+}
+
 void tst_QPalette::copySemantics()
 {
     QPalette src(Qt::red), dst;
     const QPalette control = src; // copy construction
     QVERIFY(src != dst);
     QVERIFY(!src.isCopyOf(dst));
-    QCOMPARE(src, control);
+    compareAllPaletteData(src, control);
     QVERIFY(src.isCopyOf(control));
     dst = src; // copy assignment
-    QCOMPARE(dst, src);
-    QCOMPARE(dst, control);
+    compareAllPaletteData(dst, src);
+    compareAllPaletteData(dst, control);
     QVERIFY(dst.isCopyOf(src));
 
     dst = QPalette(Qt::green);
     QVERIFY(dst != src);
     QVERIFY(dst != control);
-    QCOMPARE(src, control);
+    compareAllPaletteData(src, control);
     QVERIFY(!dst.isCopyOf(src));
     QVERIFY(src.isCopyOf(control));
 }
@@ -150,13 +162,13 @@ void tst_QPalette::moveSemantics()
     QPalette src(Qt::red), dst;
     const QPalette control = src;
     QVERIFY(src != dst);
-    QCOMPARE(src, control);
+    compareAllPaletteData(src, control);
     QVERIFY(!dst.isCopyOf(src));
     QVERIFY(!dst.isCopyOf(control));
     dst = std::move(src); // move assignment
     QVERIFY(!dst.isCopyOf(src)); // isCopyOf() works on moved-from palettes, too
     QVERIFY(dst.isCopyOf(control));
-    QCOMPARE(dst, control);
+    compareAllPaletteData(dst, control);
     src = control; // check moved-from 'src' can still be assigned to (doesn't crash)
     QVERIFY(src.isCopyOf(dst));
     QVERIFY(src.isCopyOf(control));
@@ -164,7 +176,7 @@ void tst_QPalette::moveSemantics()
     QVERIFY(!src.isCopyOf(dst));
     QVERIFY(!src.isCopyOf(dst2));
     QVERIFY(!src.isCopyOf(control));
-    QCOMPARE(dst2, control);
+    compareAllPaletteData(dst2, control);
     QVERIFY(dst2.isCopyOf(dst));
     QVERIFY(dst2.isCopyOf(control));
     // check moved-from 'src' can still be destroyed (doesn't crash)

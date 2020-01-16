@@ -72,11 +72,12 @@ public:
     { other.d = nullptr; }
     inline QPalette &operator=(QPalette &&other) noexcept
     {
-        qSwap(d, other.d); return *this;
+        swap(other); return *this;
     }
 
     void swap(QPalette &other) noexcept
     {
+        qSwap(data, other.data);
         qSwap(d, other.d);
     }
 
