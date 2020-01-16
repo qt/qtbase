@@ -9,10 +9,11 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/opengl/hellogles3")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
+find_package(Qt6 COMPONENTS OpenGL)
 
 add_qt_gui_executable(hellogles3
     ../hellogl2/logo.cpp ../hellogl2/logo.h
@@ -22,7 +23,9 @@ add_qt_gui_executable(hellogles3
 target_link_libraries(hellogles3 PUBLIC
     Qt::Core
     Qt::Gui
+    Qt::OpenGL
 )
+
 
 # Resources:
 set(hellogles3_resource_files
@@ -35,7 +38,6 @@ qt6_add_resources(hellogles3 "hellogles3"
     FILES
         ${hellogles3_resource_files}
 )
-
 
 install(TARGETS hellogles3
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

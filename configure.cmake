@@ -387,6 +387,12 @@ qt_feature("testcocoon"
     AUTODETECT OFF
 )
 qt_feature_config("testcocoon" QMAKE_PUBLIC_CONFIG)
+qt_feature("sanitize_fuzzer_no_link"
+    LABEL "Fuzzer (instrumentation only)"
+    PURPOSE "Adds instrumentation for fuzzing to the binaries but links to the usual main function instead of a fuzzer's."
+    AUTODETECT OFF
+)
+qt_feature_config("sanitize_fuzzer_no_link" QMAKE_PUBLIC_CONFIG)
 qt_feature("coverage_trace_pc_guard"
     LABEL "trace-pc-guard"
     AUTODETECT OFF

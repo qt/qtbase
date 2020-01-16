@@ -14,7 +14,3 @@ add_subdirectory(flowlayout)
 add_subdirectory(anchorlayout)
 add_subdirectory(simpleanchorlayout)
 add_subdirectory(weatheranchorlayout)
-
-if(TARGET Qt::OpenGL AND NOT QT_FEATURE_opengles2 AND NOT QT_FEATURE_dynamicgl)
-   add_subdirectory(boxes)
-endif()

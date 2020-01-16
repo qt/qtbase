@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/opengl/legacy/framebufferobject2")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
@@ -27,6 +27,7 @@ target_link_libraries(framebufferobject2 PUBLIC
     Qt::Widgets
 )
 
+
 # Resources:
 set(framebufferobject2_resource_files
     "cubelogo.png"
@@ -38,7 +39,6 @@ qt6_add_resources(framebufferobject2 "framebufferobject2"
     FILES
         ${framebufferobject2_resource_files}
 )
-
 
 install(TARGETS framebufferobject2
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

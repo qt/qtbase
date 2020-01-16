@@ -51,6 +51,8 @@ qt_extend_target(Bootstrap
         ../../corelib/kernel/qsystemsemaphore.cpp
         ../../corelib/kernel/qvariant.cpp
         ../../corelib/plugin/quuid.cpp
+        ../../corelib/serialization/qcborcommon.cpp
+        ../../corelib/serialization/qcborstreamwriter.cpp
         ../../corelib/serialization/qcborvalue.cpp
         ../../corelib/serialization/qdatastream.cpp
         ../../corelib/serialization/qjsonarray.cpp
@@ -104,6 +106,9 @@ qt_extend_target(Bootstrap
         QT_NO_CAST_FROM_ASCII
         QT_NO_CAST_TO_ASCII
         QT_NO_FOREACH
+    INCLUDE_DIRECTORIES
+        ..
+        ../../3rdparty/tinycbor/src
     PUBLIC_INCLUDE_DIRECTORIES  # special case
         $<TARGET_PROPERTY:Core,INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:Xml,INCLUDE_DIRECTORIES>

@@ -898,7 +898,7 @@
             "label": "Fuzzer (instrumentation only)",
             "autoDetect": false,
             "output": [ "publicConfig" ],
-            "purpose": [ "Adds instrumentation for fuzzing to the binaries but links to the usual main function instead of a fuzzer's." ]
+            "purpose": "Adds instrumentation for fuzzing to the binaries but links to the usual main function instead of a fuzzer's."
         },
         "sanitize_undefined": {
             "label": "Undefined",

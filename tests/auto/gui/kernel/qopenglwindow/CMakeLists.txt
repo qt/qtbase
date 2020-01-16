@@ -12,4 +12,5 @@ add_qt_test(tst_qopenglwindow
         Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::OpenGL
 )

@@ -12,5 +12,6 @@ add_qt_test(tst_qopenglwidget
         Qt::GuiPrivate
     PUBLIC_LIBRARIES
         Qt::Gui
+        Qt::OpenGL
         Qt::Widgets
 )

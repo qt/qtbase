@@ -59,7 +59,7 @@ qt_extend_target(FontDatabaseSupport CONDITION UNIX
         genericunix/qgenericunixfontdatabase_p.h
 )
 
-qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_fontconfig AND UNIX
+qt_extend_target(FontDatabaseSupport CONDITION QT_FEATURE_fontconfig
     SOURCES
         fontconfig/qfontconfigdatabase.cpp fontconfig/qfontconfigdatabase_p.h
         fontconfig/qfontenginemultifontconfig.cpp fontconfig/qfontenginemultifontconfig_p.h

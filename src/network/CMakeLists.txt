@@ -5,13 +5,11 @@
 # proper implementation of additional compile tests for library dependencies
 # in configure.json
 
-if (UNIX OR ANDROID)
 find_package(OpenSSL)
 if (NOT OPENSSL_FOUND OR NOT OPENSSL_VERSION VERSION_GREATER_EQUAL "1.1.0")
     set(QT_FEATURE_openssl_runtime OFF CACHE BOOL "" FORCE)
     set(QT_FEATURE_openssl_linked OFF CACHE BOOL "" FORCE)
     set(QT_FEATURE_openssl OFF CACHE BOOL "" FORCE)
-endif()
 endif()
 # special case end
 
@@ -417,7 +415,13 @@ qt_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE
         ssl/qsslsocket_openssl_android.cpp
 )
 
-qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl
+qt_extend_target(Network CONDITION ANDROID AND QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl AND build_pass
+    LIBRARIES
+        crypto_${CMAKE_SYSTEM_PROCESSOR}
+        ssl_${CMAKE_SYSTEM_PROCESSOR}
+)
+
+qt_extend_target(Network CONDITION QT_FEATURE_openssl AND QT_FEATURE_openssl_linked AND QT_FEATURE_ssl AND NOT ANDROID
     LIBRARIES
         OpenSSL::SSL
 )

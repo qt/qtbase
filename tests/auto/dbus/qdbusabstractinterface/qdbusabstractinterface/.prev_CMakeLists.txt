@@ -6,7 +6,6 @@
 
 add_qt_test(tst_qdbusabstractinterface
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
     SOURCES
         ../interface.cpp ../interface.h
         ../tst_qdbusabstractinterface.cpp

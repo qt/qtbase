@@ -53,6 +53,8 @@ qt_add_module(Bootstrap
         ../../corelib/kernel/qsystemsemaphore.cpp
         ../../corelib/kernel/qvariant.cpp
         ../../corelib/plugin/quuid.cpp
+        ../../corelib/serialization/qcborcommon.cpp
+        ../../corelib/serialization/qcborstreamwriter.cpp
         ../../corelib/serialization/qcborvalue.cpp
         ../../corelib/serialization/qdatastream.cpp
         ../../corelib/serialization/qjsonarray.cpp
@@ -105,6 +107,9 @@ qt_add_module(Bootstrap
         QT_VERSION_MINOR=
         QT_VERSION_PATCH=
         QT_VERSION_STR=\"\"
+    INCLUDE_DIRECTORIES
+        ..
+        ../../3rdparty/tinycbor/src
 )
 
 #### Keys ignored in scope 1:.:.:bootstrap.pro:<TRUE>:

@@ -37,6 +37,7 @@ qt_add_tool(qmake # special case
         ../src/corelib/kernel/qsystemerror.cpp ../src/corelib/kernel/qsystemerror_p.h
         ../src/corelib/kernel/qvariant.cpp
         ../src/corelib/plugin/quuid.cpp ../src/corelib/plugin/quuid.h
+        ../src/corelib/serialization/qcborstreamwriter.cpp ../src/corelib/serialization/qcborstreamwriter.h
         ../src/corelib/serialization/qcborvalue.cpp ../src/corelib/serialization/qcborvalue.h ../src/corelib/serialization/qcborvalue_p.h
         ../src/corelib/serialization/qjson_p.h
         ../src/corelib/serialization/qjsonarray.cpp ../src/corelib/serialization/qjsonarray.h

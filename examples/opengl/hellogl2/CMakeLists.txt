@@ -9,11 +9,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/opengl/hellogl2")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
+find_package(Qt6 COMPONENTS OpenGL)
 
 add_qt_gui_executable(hellogl2
     glwidget.cpp glwidget.h
@@ -25,6 +26,7 @@ add_qt_gui_executable(hellogl2
 target_link_libraries(hellogl2 PUBLIC
     Qt::Core
     Qt::Gui
+    Qt::OpenGL
     Qt::Widgets
 )
 

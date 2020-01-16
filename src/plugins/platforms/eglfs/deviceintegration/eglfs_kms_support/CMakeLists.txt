@@ -9,6 +9,7 @@ qt_add_module(EglFsKmsSupport
     NO_MODULE_HEADERS
     SOURCES
         qeglfskmsdevice.cpp qeglfskmsdevice.h
+        qeglfskmseventreader.cpp qeglfskmseventreader.h
         qeglfskmshelpers.h
         qeglfskmsintegration.cpp qeglfskmsintegration.h
         qeglfskmsscreen.cpp qeglfskmsscreen.h

@@ -22,3 +22,11 @@ add_qt_test(tst_qgraphicsview
 
 #### Keys ignored in scope 1:.:.:qgraphicsview.pro:<TRUE>:
 # testcase.timeout = "500"
+
+## Scopes:
+#####################################################################
+
+extend_target(tst_qgraphicsview CONDITION QT_FEATURE_opengl
+    PUBLIC_LIBRARIES
+        Qt::OpenGL
+)

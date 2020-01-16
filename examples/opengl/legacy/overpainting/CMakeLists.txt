@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/opengl/legacy/overpainting")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
@@ -25,6 +25,7 @@ add_qt_gui_executable(overpainting
 target_include_directories(overpainting PUBLIC
     ../shared
 )
+
 target_link_libraries(overpainting PUBLIC
     Qt::Core
     Qt::Gui

@@ -31,7 +31,6 @@ qt_add_plugin(qcocoa
         qcocoansmenu.h qcocoansmenu.mm
         qcocoascreen.h qcocoascreen.mm
         qcocoaservices.h qcocoaservices.mm
-        qcocoasystemsettings.h qcocoasystemsettings.mm
         qcocoasystemtrayicon.h qcocoasystemtrayicon.mm
         qcocoatheme.h qcocoatheme.mm
         qcocoawindow.h qcocoawindow.mm
@@ -112,6 +111,11 @@ qt_extend_target(qcocoa CONDITION QT_FEATURE_accessibility
         Qt::AccessibilitySupport
 )
 
+qt_extend_target(qcocoa CONDITION QT_FEATURE_sessionmanager
+    SOURCES
+        qcocoasessionmanager.cpp qcocoasessionmanager.h
+)
+
 qt_extend_target(qcocoa CONDITION TARGET Qt::Widgets
     SOURCES
         qpaintengine_mac.mm qpaintengine_mac_p.h
@@ -121,7 +125,7 @@ qt_extend_target(qcocoa CONDITION TARGET Qt::Widgets
         Qt::Widgets
 )
 
-#### Keys ignored in scope 6:.:.:cocoa.pro:TARGET Qt::Widgets:
+#### Keys ignored in scope 7:.:.:cocoa.pro:TARGET Qt::Widgets:
 # QT_FOR_CONFIG = "widgets"
 
 qt_extend_target(qcocoa CONDITION TARGET Qt::PrintSupport AND TARGET Qt::Widgets
@@ -150,5 +154,5 @@ qt_extend_target(qcocoa CONDITION QT_FEATURE_fontdialog AND TARGET Qt::Widgets
         qcocoafontdialoghelper.h qcocoafontdialoghelper.mm
 )
 
-#### Keys ignored in scope 11:.:.:cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
+#### Keys ignored in scope 12:.:.:cocoa.pro:NOT TARGET___equals____ss_QT_DEFAULT_QPA_PLUGIN:
 # PLUGIN_EXTENDS = "-"

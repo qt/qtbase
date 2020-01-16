@@ -687,7 +687,7 @@ qt_feature_definition("opengles2" "QT_OPENGL_ES_2")
 qt_feature_config("opengles2" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("opengles3" PUBLIC
     LABEL "OpenGL ES 3.0"
-    CONDITION QT_FEATURE_opengles2 AND NOT QT_FEATURE_angle AND TEST_opengles3 AND NOT WASM
+    CONDITION QT_FEATURE_opengles2 AND NOT QT_FEATURE_angle AND TEST_opengles3
 )
 qt_feature_definition("opengles3" "QT_OPENGL_ES_3")
 qt_feature("opengles31" PUBLIC
@@ -737,7 +737,7 @@ qt_feature("openvg" PUBLIC
 )
 qt_feature("egl" PUBLIC PRIVATE
     LABEL "EGL"
-    CONDITION ( QT_FEATURE_opengl OR QT_FEATURE_openvg ) AND ( QT_FEATURE_angle OR EGL_FOUND ) AND ( QT_FEATURE_dlopen OR NOT UNIX )
+    CONDITION ( QT_FEATURE_opengl OR QT_FEATURE_openvg ) AND ( QT_FEATURE_angle OR EGL_FOUND ) AND ( QT_FEATURE_dlopen OR NOT UNIX OR INTEGRITY )
 )
 qt_feature_definition("egl" "QT_NO_EGL" NEGATE VALUE "1")
 qt_feature("egl_x11" PRIVATE

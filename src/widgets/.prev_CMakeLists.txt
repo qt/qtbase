@@ -300,11 +300,6 @@ qt_extend_target(Widgets CONDITION APPLE_OSX
         z
 )
 
-qt_extend_target(Widgets CONDITION WIN32
-    INCLUDE_DIRECTORIES
-        ../3rdparty/wintab
-)
-
 qt_extend_target(Widgets CONDITION WIN32 AND NOT WINRT
     LIBRARIES
         dwmapi
@@ -323,11 +318,6 @@ qt_extend_target(Widgets CONDITION QT_FEATURE_action
         kernel/qaction.cpp kernel/qaction.h kernel/qaction_p.h
         kernel/qactiongroup.cpp kernel/qactiongroup.h
         kernel/qwidgetaction.cpp kernel/qwidgetaction.h kernel/qwidgetaction_p.h
-)
-
-qt_extend_target(Widgets CONDITION QT_FEATURE_opengl
-    SOURCES
-        kernel/qopenglwidget.cpp kernel/qopenglwidget.h
 )
 
 qt_extend_target(Widgets CONDITION QT_FEATURE_formlayout

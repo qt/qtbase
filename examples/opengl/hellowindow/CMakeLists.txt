@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/opengl/hellowindow")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
@@ -22,6 +22,7 @@ target_link_libraries(hellowindow PRIVATE
     Qt::CorePrivate
     Qt::GuiPrivate
 )
+
 target_link_libraries(hellowindow PUBLIC
     Qt::Core
     Qt::Gui

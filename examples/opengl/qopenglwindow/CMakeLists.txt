@@ -9,10 +9,11 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/opengl/qopenglwindow")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
+find_package(Qt6 COMPONENTS OpenGL)
 
 add_qt_gui_executable(qopenglwindow
     background_renderer.cpp background_renderer.h
@@ -21,10 +22,13 @@ add_qt_gui_executable(qopenglwindow
 target_include_directories(qopenglwindow PUBLIC
     .
 )
+
 target_link_libraries(qopenglwindow PUBLIC
     Qt::Core
     Qt::Gui
+    Qt::OpenGL
 )
+
 
 # Resources:
 set(shaders_resource_files
@@ -37,7 +41,6 @@ qt6_add_resources(qopenglwindow "shaders"
     FILES
         ${shaders_resource_files}
 )
-
 
 install(TARGETS qopenglwindow
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

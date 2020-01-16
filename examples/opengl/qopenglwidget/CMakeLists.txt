@@ -9,11 +9,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/opengl/qopenglwidget")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
+find_package(Qt6 COMPONENTS OpenGL)
 
 add_qt_gui_executable(qopenglwidget
     bubble.cpp bubble.h
@@ -24,8 +25,10 @@ add_qt_gui_executable(qopenglwidget
 target_link_libraries(qopenglwidget PUBLIC
     Qt::Core
     Qt::Gui
+    Qt::OpenGL
     Qt::Widgets
 )
+
 
 # Resources:
 set(texture_resource_files
@@ -38,7 +41,6 @@ qt6_add_resources(qopenglwidget "texture"
     FILES
         ${texture_resource_files}
 )
-
 
 install(TARGETS qopenglwidget
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

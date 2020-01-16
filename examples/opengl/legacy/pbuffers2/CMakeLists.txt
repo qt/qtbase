@@ -9,7 +9,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples")
+set(INSTALL_EXAMPLEDIR "examples/opengl/legacy/pbuffers2")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
@@ -29,6 +29,7 @@ target_link_libraries(pbuffers2 PUBLIC
     Qt::Widgets
 )
 
+
 # Resources:
 set(pbuffers2_resource_files
     "bubbles.svg"
@@ -41,7 +42,6 @@ qt6_add_resources(pbuffers2 "pbuffers2"
     FILES
         ${pbuffers2_resource_files}
 )
-
 
 install(TARGETS pbuffers2
     RUNTIME DESTINATION "${INSTALL_EXAMPLEDIR}"

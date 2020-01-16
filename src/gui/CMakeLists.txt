@@ -286,18 +286,6 @@ qt_add_resource(Gui "qpdf"
     FILES
         ${qpdf_resource_files}
 )
-set(qmake_webgradients_resource_files
-    "painting/webgradients.binaryjson"
-)
-
-qt_add_resource(Gui "qmake_webgradients"
-    PREFIX
-        "/qgradient/" # special case
-    #BASE # special case remove
-        #"painting" # special case remove
-    FILES
-        ${qmake_webgradients_resource_files}
-)
 
 # special case begin
 # Replace arch_haswell with avx2 feature. That is what is used in the code requireing
@@ -345,13 +333,11 @@ endif()
 qt_extend_target(Gui CONDITION QT_FEATURE_opengl
     SOURCES
         kernel/qopenglcontext.cpp kernel/qopenglcontext.h kernel/qopenglcontext_p.h
-        kernel/qopenglwindow.cpp kernel/qopenglwindow.h
         kernel/qplatformopenglcontext.cpp kernel/qplatformopenglcontext.h
         opengl/qopengl.cpp opengl/qopengl.h opengl/qopengl_p.h
         opengl/qopengl2pexvertexarray.cpp opengl/qopengl2pexvertexarray_p.h
         opengl/qopenglbuffer.cpp opengl/qopenglbuffer.h
         opengl/qopenglcustomshaderstage.cpp opengl/qopenglcustomshaderstage_p.h
-        opengl/qopengldebug.cpp opengl/qopengldebug.h
         opengl/qopenglengineshadermanager.cpp opengl/qopenglengineshadermanager_p.h
         opengl/qopenglengineshadersource_p.h
         opengl/qopenglextensions_p.h
@@ -385,14 +371,10 @@ qt_extend_target(Gui CONDITION QT_FEATURE_opengl
 # MODULE_AUX_INCLUDES = "\$\$QT_MODULE_INCLUDE_BASE/QtANGLE"
 
 qt_extend_target(Gui CONDITION APPLE_OSX
-    SOURCES
-        rhi/qrhimetal.mm rhi/qrhimetal_p.h
-        rhi/qrhimetal_p_p.h
     LIBRARIES
         ${FWAppKit}
     PUBLIC_LIBRARIES
         ${FWAppKit}
-        ${FWMetal}
 )
 
 qt_extend_target(Gui CONDITION APPLE
@@ -514,6 +496,14 @@ qt_extend_target(Gui CONDITION QT_FEATURE_png
         image/qpnghandler.cpp image/qpnghandler_p.h
     LIBRARIES
         PNG::PNG
+)
+
+#### Keys ignored in scope 38:.:image:image/image.pri:WIN32 AND mingw:
+# GCC_VERSION = "$${QMAKE_GCC_MAJOR_VERSION}.$${QMAKE_GCC_MINOR_VERSION}.$${QMAKE_GCC_PATCH_VERSION}"
+
+qt_extend_target(Gui CONDITION ((QT_FEATURE_png) AND (WIN32 AND mingw)) AND (GCC_VERSION___equals___8.1.0)
+    COMPILE_OPTIONS
+        -fno-reorder-blocks-and-partition
 )
 
 if(NOT ANDROID)
@@ -696,8 +686,6 @@ qt_extend_target(Gui CONDITION QT_FEATURE_opengl AND NOT QT_FEATURE_opengles2
         opengl/qopenglfunctions_4_4_core.cpp opengl/qopenglfunctions_4_4_core.h
         opengl/qopenglfunctions_4_5_compatibility.cpp opengl/qopenglfunctions_4_5_compatibility.h
         opengl/qopenglfunctions_4_5_core.cpp opengl/qopenglfunctions_4_5_core.h
-        opengl/qopenglqueryhelper_p.h
-        opengl/qopengltimerquery.cpp opengl/qopengltimerquery.h
 )
 
 qt_extend_target(Gui CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengles2
@@ -725,6 +713,7 @@ qt_extend_target(Gui CONDITION QT_FEATURE_vulkan
         Vulkan::Vulkan_nolink
 )
 
+#### Keys ignored in scope 82:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vkgen:
 # special case begin
 # We must always generate syncqt-injected header files,
 # because we added a custom command earlier for those for framework builds.
@@ -780,15 +769,23 @@ add_custom_command(
 # qvkgen_pimpl.input = "QMAKE_QVKGEN_INPUT"
 # qvkgen_pimpl.output = "$$OUT_PWD/vulkan/qvulkanfunctions_p.cpp"
 
-#### Keys ignored in scope 81:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
+#### Keys ignored in scope 83:.:vulkan:vulkan/vulkan.pri:QT_FEATURE_vulkan:
 # qvkgen_h.variable_out = "HEADERS"
 
-#### Keys ignored in scope 82:.:vulkan:vulkan/vulkan.pri:else:
+#### Keys ignored in scope 84:.:vulkan:vulkan/vulkan.pri:else:
 # qvkgen_h.CONFIG = "target_predeps" "no_link"
 
 qt_extend_target(Gui CONDITION WASM
     SOURCES
         platform/wasm/qwasmlocalfileaccess.cpp platform/wasm/qwasmlocalfileaccess_p.h
+)
+
+qt_extend_target(Gui CONDITION APPLE_IOS OR APPLE_OSX
+    SOURCES
+        rhi/qrhimetal.mm rhi/qrhimetal_p.h
+        rhi/qrhimetal_p_p.h
+    PUBLIC_LIBRARIES
+        ${FWMetal}
 )
 
 qt_extend_target(Gui CONDITION NOT GCC OR NOT QT_COMPILER_VERSION_MAJOR STREQUAL 5

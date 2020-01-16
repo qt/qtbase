@@ -9,13 +9,17 @@ endif()
 
 add_subdirectory(bearerex)
 add_subdirectory(filetest)
-add_subdirectory(embeddedintoforeignwindow)
-add_subdirectory(foreignwindows)
+# special case begin
+# diaglib is broken in dev due to missing
+# QtOpenGL/QGLFunctions headers
+# add_subdirectory(embeddedintoforeignwindow)
+# add_subdirectory(foreignwindows)
+# special case end
 add_subdirectory(gestures)
 add_subdirectory(highdpi)
 add_subdirectory(inputmethodhints)
 add_subdirectory(keypadnavigation)
-add_subdirectory(lance)
+#add_subdirectory(lance) # special case qgl.h missing
 add_subdirectory(qcursor)
 add_subdirectory(qdesktopservices)
 add_subdirectory(qdesktopwidget)

@@ -6,22 +6,8 @@
 
 qt_add_module(OpenGL
     SOURCES
-        gl2paintengineex/qgl2pexvertexarray.cpp gl2paintengineex/qgl2pexvertexarray_p.h
-        gl2paintengineex/qglcustomshaderstage.cpp gl2paintengineex/qglcustomshaderstage_p.h
-        gl2paintengineex/qglengineshadermanager.cpp gl2paintengineex/qglengineshadermanager_p.h
-        gl2paintengineex/qglengineshadersource_p.h
-        gl2paintengineex/qglgradientcache.cpp gl2paintengineex/qglgradientcache_p.h
-        gl2paintengineex/qglshadercache_p.h
-        gl2paintengineex/qpaintengineex_opengl2.cpp gl2paintengineex/qpaintengineex_opengl2_p.h
-        gl2paintengineex/qtextureglyphcache_gl.cpp gl2paintengineex/qtextureglyphcache_gl_p.h
-        qgl.cpp qgl.h qgl_p.h
-        qglbuffer.cpp qglbuffer.h
-        qglcolormap.cpp qglcolormap.h
-        qglframebufferobject.cpp qglframebufferobject.h qglframebufferobject_p.h
-        qglfunctions.cpp qglfunctions.h
-        qglpaintdevice.cpp qglpaintdevice_p.h
-        qglpixelbuffer.cpp qglpixelbuffer.h qglpixelbuffer_p.h
-        qglshaderprogram.cpp qglshaderprogram.h
+        qopengldebug.cpp qopengldebug.h
+        qopenglwindow.cpp qopenglwindow.h
         qtopenglglobal.h
     DEFINES
         QT_NO_FOREACH
@@ -29,27 +15,27 @@ qt_add_module(OpenGL
     LIBRARIES
         Qt::CorePrivate
         Qt::GuiPrivate
-        Qt::WidgetsPrivate
     PUBLIC_LIBRARIES
         Qt::Core
         Qt::Gui
-        Qt::Widgets
 )
 
 ## Scopes:
 #####################################################################
 
-qt_extend_target(OpenGL CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
-    LINK_OPTIONS
-        "/BASE:0x63000000"
+qt_extend_target(OpenGL CONDITION QT_FEATURE_widgets
+    SOURCES
+        qopenglwidget.cpp qopenglwidget.h
+    LIBRARIES
+        Qt::WidgetsPrivate
+    PUBLIC_LIBRARIES
+        Qt::Widgets
 )
 
-#### Keys ignored in scope 3:.:.:opengl.pro:solaris-cc_x_:
-# QMAKE_CXXFLAGS_RELEASE = "--O2"
-
-qt_extend_target(OpenGL CONDITION QT_FEATURE_graphicseffect
+qt_extend_target(OpenGL CONDITION NOT QT_FEATURE_opengles2
     SOURCES
-        qgraphicsshadereffect.cpp qgraphicsshadereffect_p.h
+        qopenglqueryhelper_p.h
+        qopengltimerquery.cpp qopengltimerquery.h
 )
 qt_add_docs(OpenGL
     doc/qtopengl.qdocconf

@@ -133,9 +133,10 @@ qt_add_module(Core
         plugin/qpluginloader.cpp plugin/qpluginloader.h
         plugin/quuid.cpp plugin/quuid.h
         serialization/qcborarray.h
-        serialization/qcborcommon.h
+        serialization/qcborcommon.cpp serialization/qcborcommon.h serialization/qcborcommon_p.h
         serialization/qcbordiagnostic.cpp
         serialization/qcbormap.h
+        serialization/qcborstream.h
         serialization/qcborvalue.cpp serialization/qcborvalue.h serialization/qcborvalue_p.h
         serialization/qdatastream.cpp serialization/qdatastream.h serialization/qdatastream_p.h
         serialization/qjson_p.h
@@ -207,6 +208,7 @@ qt_add_module(Core
         tools/qcontainertools_impl.h
         tools/qcontiguouscache.cpp tools/qcontiguouscache.h
         tools/qcryptographichash.cpp tools/qcryptographichash.h
+        tools/qflatmap_p.h
         tools/qfreelist.cpp tools/qfreelist_p.h
         tools/qhash.cpp tools/qhash.h
         tools/qhashfunctions.h
@@ -856,6 +858,11 @@ qt_extend_target(Core CONDITION APPLE AND QT_FEATURE_settings AND NOT NACL
         io/qsettings_mac.cpp
 )
 
+qt_extend_target(Core CONDITION QT_FEATURE_settings AND WASM
+    SOURCES
+        io/qsettings_wasm.cpp
+)
+
 qt_extend_target(Core CONDITION QT_FEATURE_filesystemiterator AND WIN32
     SOURCES
         io/qfilesystemiterator_win.cpp
@@ -1071,9 +1078,14 @@ qt_extend_target(Core CONDITION QT_FEATURE_textcodec AND WIN32 AND NOT QT_FEATUR
         codecs/qwindowscodec.cpp codecs/qwindowscodec_p.h
 )
 
-qt_extend_target(Core CONDITION QT_FEATURE_cborstream
+qt_extend_target(Core CONDITION QT_FEATURE_cborstreamreader
     SOURCES
-        serialization/qcborstream.cpp serialization/qcborstream.h
+        serialization/qcborstreamreader.cpp serialization/qcborstreamreader.h
+)
+
+qt_extend_target(Core CONDITION QT_FEATURE_cborstreamwriter
+    SOURCES
+        serialization/qcborstreamwriter.cpp serialization/qcborstreamwriter.h
 )
 
 qt_extend_target(Core CONDITION QT_FEATURE_binaryjson
@@ -1100,6 +1112,40 @@ qt_extend_target(Core CONDITION QT_FEATURE_mimetype
         mimetypes/qmimetypeparser.cpp mimetypes/qmimetypeparser_p.h
 )
 
+#### Keys ignored in scope 197:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype:
+# MIME_DATABASE = "mimetypes/mime/packages/freedesktop.org.xml"
+# OTHER_FILES = "$$MIME_DATABASE"
+
+# special case begin
+# qt_extend_target(Core CONDITION QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database
+#        INCLUDE_DIRECTORIES
+#        .rcc
+#)
+# special case end
+
+#### Keys ignored in scope 198:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_mimetype_database:
+# QMAKE_EXTRA_COMPILERS = "mimedb"
+# mimedb.commands = "${QMAKE_FILE_IN}" ">" "${QMAKE_FILE_OUT}"
+# mimedb.depends = "$$PWD/mime/generate.pl"
+# mimedb.input = "MIME_DATABASE"
+# mimedb.output = "$$outpath/qmimeprovider_database.cpp"
+# mimedb.variable_out = "INCLUDED_SOURCES"
+
+#### Keys ignored in scope 200:.:mimetypes:mimetypes/mimetypes.pri:(CMAKE_BUILD_TYPE STREQUAL Debug):
+# outpath = ".rcc/debug"
+
+#### Keys ignored in scope 201:.:mimetypes:mimetypes/mimetypes.pri:else:
+# outpath = ".rcc/release"
+
+#### Keys ignored in scope 202:.:mimetypes:mimetypes/mimetypes.pri:MAKEFILE_GENERATOR___equals___MSVC.NET OR MAKEFILE_GENERATOR___equals___MSBUILD OR QMAKE_SH_ISEMPTY:
+# mimedb.commands = "cmd" "/c" "$$shell_path($$PWD/mime/generate.bat)"
+# mimedb.depends = "$$PWD/mime/generate.bat" "$$PWD/mime/hexdump.ps1"
+
+#### Keys ignored in scope 203:.:mimetypes:mimetypes/mimetypes.pri:else:
+# mimedb.commands = "perl" "$${mimedb.depends}"
+
+#### Keys ignored in scope 204:.:mimetypes:mimetypes/mimetypes.pri:QT_FEATURE_zstd:
+# mimedb.commands = "--zstd"
 # Resources:
 # special case begin
 # We can't specify the resources directly as we have unit tests that
@@ -1108,7 +1154,36 @@ qt_extend_target(Core CONDITION QT_FEATURE_mimetype
 if(QT_FEATURE_mimetype AND QT_FEATURE_mimetype_database)
     include(${CMAKE_CURRENT_SOURCE_DIR}/mimetypes/mimetypes_resources.cmake)
     corelib_add_mimetypes_resources(Core)
+
+# Generate qmimeprovider_database.cpp
+    set(qmimeprovider_db_output "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qmimeprovider_database.cpp")
+    set(command_args "")
+    set(mime_dir "${CMAKE_CURRENT_SOURCE_DIR}/mimetypes/mime")
+    set(command_depends "${mime_dir}/generate.pl" "${corelib_mimetypes_resource_file}")
+    if (MSVC)
+        list(APPEND command_args "${mime_dir}/generate.bat" "${mime_dir}/hexdump.ps1" )
+        list(APPEND command_depends "${mime_dir}/generate.bat" "${mime_dir}/hexdump.ps1" )
+    else()
+        list(APPEND command_args perl "${mime_dir}/generate.pl" )
+    endif()
+
+    if (QT_FEATURE_zstd)
+        list(APPEND command_args "--zstd")
+    endif()
+
+    list(APPEND command_args "${corelib_mimetypes_resource_file}" ">" "${qmimeprovider_db_output}")
+
+    add_custom_command(OUTPUT "${qmimeprovider_db_output}"
+         DEPENDS ${command_depends}
+         COMMAND ${command_args}
+         COMMENT "Generating ${qmimeprovider_db_output}"
+    )
+
+    target_sources(Core PRIVATE ${qmimeprovider_db_output})
+    set_source_files_properties(${qmimeprovider_db_output} PROPERTIES HEADER_FILE_ONLY TRUE)
+    target_include_directories(Core PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/.rcc")
 endif()
+
 # special case end
 
 qt_extend_target(Core CONDITION WASM
