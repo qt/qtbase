@@ -47,8 +47,9 @@
 
 #include <iostream>
 
-QT_BEGIN_NAMESPACE
 using namespace emscripten;
+
+QT_BEGIN_NAMESPACE
 
 typedef struct emkb2qt {
     const char *em;
@@ -353,10 +354,11 @@ void QWasmEventTranslator::initEventHandlers()
         g_useNaturalScrolling = false; // make this !default on macOS
 
         if (emscripten::val::global("window")["safari"].isUndefined()) {
-
-            emscripten::val::global(canvasId).call<void>("addEventListener",
-                                                         std::string("wheel"),
-                                                         val::module_property("qtMouseWheelEvent"));
+            val document = val::global("document");
+            val canvas = document.call<val>("getElementById", val(canvasId));
+            canvas.call<void>("addEventListener",
+                              std::string("wheel"),
+                              val::module_property("qtMouseWheelEvent"));
         }
     }
 

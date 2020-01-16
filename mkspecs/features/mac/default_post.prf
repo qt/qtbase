@@ -212,14 +212,17 @@ macx-xcode {
         QMAKE_CXXFLAGS += $(EXPORT_QMAKE_XARCH_CFLAGS)
         QMAKE_LFLAGS += $(EXPORT_QMAKE_XARCH_LFLAGS)
     } else {
-        simulator: \
+        simulator {
             version_identifier = $$simulator.deployment_identifier
-        else: \
+            sysroot_path  = $$xcodeSDKInfo(Path, $$simulator.sdk)
+        } else {
             version_identifier = $$device.deployment_identifier
+            sysroot_path  = $$xcodeSDKInfo(Path, $$device.sdk)
+        }
         version_min_flag = -m$${version_identifier}-version-min=$$deployment_target
-        QMAKE_CFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH $$version_min_flag
-        QMAKE_CXXFLAGS += -isysroot $$QMAKE_MAC_SDK_PATH $$version_min_flag
-        QMAKE_LFLAGS += -Wl,-syslibroot,$$QMAKE_MAC_SDK_PATH $$version_min_flag
+        QMAKE_CFLAGS += -isysroot $$sysroot_path $$version_min_flag
+        QMAKE_CXXFLAGS += -isysroot $$sysroot_path $$version_min_flag
+        QMAKE_LFLAGS += -Wl,-syslibroot,$$sysroot_path $$version_min_flag
     }
 
     # Enable precompiled headers for multiple architectures

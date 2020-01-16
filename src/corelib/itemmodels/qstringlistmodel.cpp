@@ -212,6 +212,7 @@ Qt::ItemFlags QStringListModel::flags(const QModelIndex &index) const
     \a index in the model, to the provided \a value.
 
     The dataChanged() signal is emitted if the item is changed.
+    Returns \c true after emitting the dataChanged() signal.
 
     \sa Qt::ItemDataRole, data()
 */
@@ -249,6 +250,8 @@ bool QStringListModel::clearItemData(const QModelIndex &index)
     specified, indicating that the rows are inserted in the top level of
     the model.
 
+    Returns \c true if the insertion was successful.
+
     \sa QAbstractItemModel::insertRows()
 */
 
@@ -274,6 +277,8 @@ bool QStringListModel::insertRows(int row, int count, const QModelIndex &parent)
     consistency with QAbstractItemModel. By default, a null index is
     specified, indicating that the rows are removed in the top level of
     the model.
+
+    Returns \c true if the row removal was successful.
 
     \sa QAbstractItemModel::removeRows()
 */

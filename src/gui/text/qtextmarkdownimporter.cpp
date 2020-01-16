@@ -207,7 +207,12 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
         charFmt.setFontWeight(QFont::Bold);
         blockFmt.setHeadingLevel(int(detail->level));
         m_needsInsertBlock = false;
-        m_cursor->insertBlock(blockFmt, charFmt);
+        if (m_doc->isEmpty()) {
+            m_cursor->setBlockFormat(blockFmt);
+            m_cursor->setCharFormat(charFmt);
+        } else {
+            m_cursor->insertBlock(blockFmt, charFmt);
+        }
         qCDebug(lcMD, "H%d", detail->level);
     } break;
     case MD_BLOCK_LI: {
@@ -592,7 +597,12 @@ void QTextMarkdownImporter::insertBlock()
         blockFormat.setMarker(m_markerType);
     if (!m_listStack.isEmpty())
         blockFormat.setIndent(m_listStack.count());
-    m_cursor->insertBlock(blockFormat, charFormat);
+    if (m_doc->isEmpty()) {
+        m_cursor->setBlockFormat(blockFormat);
+        m_cursor->setCharFormat(charFormat);
+    } else {
+        m_cursor->insertBlock(blockFormat, charFormat);
+    }
     if (m_needsInsertList) {
         m_listStack.push(m_cursor->createList(m_listFormat));
     } else if (!m_listStack.isEmpty() && m_listItem) {

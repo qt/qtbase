@@ -1213,7 +1213,8 @@ QMimeData *QFileSystemModel::mimeData(const QModelIndexList &indexes) const
 /*!
     Handles the \a data supplied by a drag and drop operation that ended with
     the given \a action over the row in the model specified by the \a row and
-    \a column and by the \a parent index.
+    \a column and by the \a parent index. Returns true if the operation was
+    successful.
 
     \sa supportedDropActions()
 */

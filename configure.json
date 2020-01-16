@@ -1484,6 +1484,11 @@ Configure with '-qreal float' to create a build that is binary-compatible with 5
         {
             "type": "emccVersion",
             "condition": "config.wasm"
+        },
+        {
+            "type": "error",
+            "condition": "config.ios && features.debug && !features.debug_and_release",
+            "message": "Debug build wihtout Release build is not currently supported on ios see QTBUG-71990. Use -debug-and-release."
         }
     ],
 

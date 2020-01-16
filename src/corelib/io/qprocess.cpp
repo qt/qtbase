@@ -1004,7 +1004,7 @@ QT_WARNING_POP
 
 /*!
     \internal
-    Returns true if we emitted readyRead().
+    Returns \c true if we emitted readyRead().
 */
 bool QProcessPrivate::tryReadFromChannel(Channel *channel)
 {
@@ -2186,6 +2186,8 @@ bool QProcess::startDetached(qint64 *pid)
 
     This method is an alias for start(), and exists only to fully implement
     the interface defined by QIODevice.
+
+    Returns \c true if the program has been started.
 
     \sa start(), setProgram(), setArguments()
 */

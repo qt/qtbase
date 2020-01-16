@@ -2144,20 +2144,13 @@ bool QAbstractSocket::waitForConnected(int msecs)
 #endif
         QHostInfo::abortHostLookup(d->hostLookupId);
         d->hostLookupId = -1;
-#ifndef QT_NO_BEARERMANAGEMENT
-        if (networkSession) {
-            d->_q_startConnecting(QHostInfoPrivate::fromName(d->hostName, networkSession));
-        } else
-#endif
-        {
-            QHostAddress temp;
-            if (temp.setAddress(d->hostName)) {
-                QHostInfo info;
-                info.setAddresses(QList<QHostAddress>() << temp);
-                d->_q_startConnecting(info);
-            } else {
-                d->_q_startConnecting(QHostInfo::fromName(d->hostName));
-            }
+        QHostAddress temp;
+        if (temp.setAddress(d->hostName)) {
+            QHostInfo info;
+            info.setAddresses(QList<QHostAddress>() << temp);
+            d->_q_startConnecting(info);
+        } else {
+            d->_q_startConnecting(QHostInfo::fromName(d->hostName));
         }
     }
     if (state() == UnconnectedState)

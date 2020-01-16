@@ -383,27 +383,6 @@ QHostInfo QHostInfo::fromName(const QString &name)
     return hostInfo;
 }
 
-#ifndef QT_NO_BEARERMANAGEMENT
-QHostInfo QHostInfoPrivate::fromName(const QString &name, QSharedPointer<QNetworkSession> session)
-{
-#if defined QHOSTINFO_DEBUG
-    qDebug("QHostInfoPrivate::fromName(\"%s\") with session %p",name.toLatin1().constData(), session.data());
-#endif
-
-    QHostInfo hostInfo = QHostInfoAgent::fromName(name, session);
-    QHostInfoLookupManager* manager = theHostInfoLookupManager();
-    manager->cache.put(name, hostInfo);
-    return hostInfo;
-}
-#endif
-
-#ifndef QT_NO_BEARERMANAGEMENT
-QHostInfo QHostInfoAgent::fromName(const QString &hostName, QSharedPointer<QNetworkSession>)
-{
-    return QHostInfoAgent::fromName(hostName);
-}
-#endif
-
 QHostInfo QHostInfoAgent::reverseLookup(const QHostAddress &address)
 {
     QHostInfo results;

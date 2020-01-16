@@ -936,7 +936,9 @@
             file.
     \row    \li ordered  \li When using the \c subdirs template, this option
             specifies that the directories listed should be processed in the
-            order in which they are given.
+            order in which they are given. \note The use of this option is discouraged.
+            Specify dependencies as described in the \l{#SUBDIRS}{SUBDIRS}
+            variable documentation.
     \row    \li precompile_header \li Enables support for the use of
             \l{Using Precompiled Headers}{precompiled headers} in projects.
     \row    \li precompile_header_c (MSVC only) \li Enables support for the use of
@@ -2730,21 +2732,35 @@
 
     \snippet code/doc_src_qmake-manual.pro 50
 
-    If you need to ensure that the subdirectories are built in the order in
-    which they are specified, update the \l{#CONFIG}{CONFIG} variable to
-    include the \c ordered option:
+    If you need to ensure that the subdirectories are built in a particular
+    order, use the \c .depends modifier on the relevant \c SUBDIRS elements.
+
+    For example:
 
     \snippet code/doc_src_qmake-manual.pro 51
 
-    It is possible to modify this default behavior of \c SUBDIRS by giving
-    additional modifiers to \c SUBDIRS elements. Supported modifiers are:
+    The configuration above ensures that \c{my_library} is built before
+    \c{my_executable} and that \c{my_executable} is built before \c{tests}.
+    However, \c{doc} can be built in parallel with the other subdirectories,
+    thus speeding up the build process.
+
+    \note Multiple dependencies can be listed and they will all be built before
+    the target that depends on them.
+
+    \note Using \l{#CONFIG}{CONFIG += ordered} is discouraged as it can slow down
+    multi-core builds. Unlike the example shown above, all builds will happen
+    sequentially even if they don't have dependencies.
+
+    Beside defining the build order, it is possible to modify the default behavior
+    of \c SUBDIRS by giving additional modifiers to \c SUBDIRS elements.
+    Supported modifiers are:
 
     \table
     \header \li Modifier \li Effect
     \row \li .subdir     \li Use the specified subdirectory instead of \c SUBDIRS value.
     \row \li .file       \li Specify the subproject \c pro file explicitly. Cannot be
                         used in conjunction with \c .subdir modifier.
-    \row \li .depends    \li This subproject depends on specified subproject.
+    \row \li .depends    \li This subproject depends on specified subproject(s).
     \row \li .makefile   \li The makefile of subproject.
                         Available only on platforms that use makefiles.
     \row \li .target     \li Base string used for makefile targets related to this

@@ -27,9 +27,10 @@
 **
 ****************************************************************************/
 
-
 #include <QtTest/QtTest>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QScopeGuard>
+#include <QtCore/private/qglobal_p.h>
 
 class tst_QResourceEngine: public QObject
 {
@@ -50,6 +51,8 @@ private slots:
 
     void checkUnregisterResource_data();
     void checkUnregisterResource();
+    void compressedResource_data();
+    void compressedResource();
     void checkStructure_data();
     void checkStructure();
     void searchPath_data();
@@ -105,6 +108,75 @@ void tst_QResourceEngine::cleanupTestCase()
     QVERIFY(QResource::unregisterResource(m_runtimeResourceRcc, "/secondary_root/"));
 }
 
+void tst_QResourceEngine::compressedResource_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<int>("compressionAlgo");
+    QTest::addColumn<bool>("supported");
+
+    QTest::newRow("uncompressed")
+            << QFINDTESTDATA("uncompressed.rcc") << int(QResource::NoCompression) << true;
+    QTest::newRow("zlib")
+            << QFINDTESTDATA("zlib.rcc") << int(QResource::ZlibCompression) << true;
+    QTest::newRow("zstd")
+            << QFINDTESTDATA("zstd.rcc") << int(QResource::ZstdCompression) << QT_CONFIG(zstd);
+}
+
+// Note: generateResource.sh parses this line. Make sure it's a simple number.
+#define ZERO_FILE_LEN   16384
+// End note
+void tst_QResourceEngine::compressedResource()
+{
+    QFETCH(QString, fileName);
+    QFETCH(int, compressionAlgo);
+    QFETCH(bool, supported);
+    const QByteArray expectedData(ZERO_FILE_LEN, '\0');
+
+    QVERIFY(!QResource("zero.txt").isValid());
+    QCOMPARE(QResource::registerResource(fileName), supported);
+    if (!supported)
+        return;
+
+    auto unregister = qScopeGuard([=] { QResource::unregisterResource(fileName); });
+
+    QResource resource("zero.txt");
+    QVERIFY(resource.isValid());
+    QVERIFY(resource.size() > 0);
+    QVERIFY(resource.data());
+    QCOMPARE(resource.compressionAlgorithm(), QResource::Compression(compressionAlgo));
+
+    if (compressionAlgo == QResource::NoCompression) {
+        QCOMPARE(resource.size(), ZERO_FILE_LEN);
+        QCOMPARE(memcmp(resource.data(), expectedData.data(), ZERO_FILE_LEN), 0);
+
+        // API guarantees it will be QByteArray::fromRawData:
+        QCOMPARE(static_cast<const void *>(resource.uncompressedData().constData()),
+                 static_cast<const void *>(resource.data()));
+    } else {
+        // reasonable expectation:
+        QVERIFY(resource.size() < ZERO_FILE_LEN);
+    }
+
+    // using the engine
+    QFile f(":/zero.txt");
+    QVERIFY(f.exists());
+    QVERIFY(f.open(QIODevice::ReadOnly));
+
+    // verify that we can decompress correctly
+    QCOMPARE(resource.uncompressedSize(), ZERO_FILE_LEN);
+    QCOMPARE(f.size(), ZERO_FILE_LEN);
+
+    QByteArray data = resource.uncompressedData();
+    QCOMPARE(data.size(), expectedData.size());
+    QCOMPARE(data, expectedData);
+
+    // decompression through the engine
+    data = f.readAll();
+    QCOMPARE(data.size(), expectedData.size());
+    QCOMPARE(data, expectedData);
+}
+
+
 void tst_QResourceEngine::checkStructure_data()
 {
     QTest::addColumn<QString>("pathName");
@@ -140,7 +212,13 @@ void tst_QResourceEngine::checkStructure_data()
                                            << "parentdir.txt"
                                            << "runtime_resource.rcc"
 #endif
-                                           << "search_file.txt")
+                                           << "search_file.txt"
+#if defined(BUILTIN_TESTDATA)
+                                           << "uncompressed.rcc"
+                                           << "zlib.rcc"
+                                           << "zstd.rcc"
+#endif
+                                           )
                                        << rootContents
                                        << QLocale::c()
                                        << qlonglong(0);
