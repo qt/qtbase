@@ -248,8 +248,8 @@ namespace QtAndroidInput
             break;
         }
 
-        const int dw = desktopWidthPixels();
-        const int dh = desktopHeightPixels();
+        const int dw = availableWidthPixels();
+        const int dh = availableHeightPixels();
         QWindowSystemInterface::TouchPoint touchPoint;
         touchPoint.id = id;
         touchPoint.pressure = pressure;

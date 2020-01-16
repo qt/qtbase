@@ -82,12 +82,9 @@
 
 QT_BEGIN_NAMESPACE
 
-int QAndroidPlatformIntegration::m_defaultGeometryWidth = 320;
-int QAndroidPlatformIntegration::m_defaultGeometryHeight = 455;
-int QAndroidPlatformIntegration::m_defaultScreenWidth = 320;
-int QAndroidPlatformIntegration::m_defaultScreenHeight = 455;
-int QAndroidPlatformIntegration::m_defaultPhysicalSizeWidth = 50;
-int QAndroidPlatformIntegration::m_defaultPhysicalSizeHeight = 71;
+QSize QAndroidPlatformIntegration::m_defaultScreenSize = QSize(320, 455);
+QRect QAndroidPlatformIntegration::m_defaultAvailableGeometry = QRect(0, 0, 320, 455);
+QSize QAndroidPlatformIntegration::m_defaultPhysicalSize = QSize(50, 71);
 
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_orientation = Qt::PrimaryOrientation;
 Qt::ScreenOrientation QAndroidPlatformIntegration::m_nativeOrientation = Qt::PrimaryOrientation;
@@ -180,9 +177,9 @@ QAndroidPlatformIntegration::QAndroidPlatformIntegration(const QStringList &para
 
     m_primaryScreen = new QAndroidPlatformScreen();
     QWindowSystemInterface::handleScreenAdded(m_primaryScreen);
-    m_primaryScreen->setPhysicalSize(QSize(m_defaultPhysicalSizeWidth, m_defaultPhysicalSizeHeight));
-    m_primaryScreen->setSize(QSize(m_defaultScreenWidth, m_defaultScreenHeight));
-    m_primaryScreen->setAvailableGeometry(QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));
+    m_primaryScreen->setPhysicalSize(m_defaultPhysicalSize);
+    m_primaryScreen->setSize(m_defaultScreenSize);
+    m_primaryScreen->setAvailableGeometry(m_defaultAvailableGeometry);
 
     m_mainThread = QThread::currentThread();
 
@@ -281,6 +278,7 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
         case ThreadedOpenGL: return !needsBasicRenderloopWorkaround() && QtAndroid::activity();
         case RasterGLSurface: return QtAndroid::activity();
         case TopStackedNativeChildWindows: return false;
+        case MaximizeUsingFullscreenGeometry: return true;
         default:
             return QPlatformIntegration::hasCapability(cap);
     }
@@ -435,20 +433,19 @@ QPlatformTheme *QAndroidPlatformIntegration::createPlatformTheme(const QString &
     return 0;
 }
 
-void QAndroidPlatformIntegration::setDefaultDisplayMetrics(int gw, int gh, int sw, int sh, int screenWidth, int screenHeight)
+void QAndroidPlatformIntegration::setDefaultDisplayMetrics(int availableLeft,
+                                                           int availableTop,
+                                                           int availableWidth,
+                                                           int availableHeight,
+                                                           int physicalWidth,
+                                                           int physicalHeight,
+                                                           int screenWidth,
+                                                           int screenHeight)
 {
-    m_defaultGeometryWidth = gw;
-    m_defaultGeometryHeight = gh;
-    m_defaultPhysicalSizeWidth = sw;
-    m_defaultPhysicalSizeHeight = sh;
-    m_defaultScreenWidth = screenWidth;
-    m_defaultScreenHeight = screenHeight;
-}
-
-void QAndroidPlatformIntegration::setDefaultDesktopSize(int gw, int gh)
-{
-    m_defaultGeometryWidth = gw;
-    m_defaultGeometryHeight = gh;
+    m_defaultAvailableGeometry = QRect(availableLeft, availableTop,
+                                       availableWidth, availableHeight);
+    m_defaultPhysicalSize = QSize(physicalWidth, physicalHeight);
+    m_defaultScreenSize = QSize(screenWidth, screenHeight);
 }
 
 void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation currentOrientation,
@@ -460,10 +457,9 @@ void QAndroidPlatformIntegration::setScreenOrientation(Qt::ScreenOrientation cur
 
 void QAndroidPlatformIntegration::flushPendingUpdates()
 {
-    m_primaryScreen->setPhysicalSize(QSize(m_defaultPhysicalSizeWidth,
-                                           m_defaultPhysicalSizeHeight));
-    m_primaryScreen->setSize(QSize(m_defaultScreenWidth, m_defaultScreenHeight));
-    m_primaryScreen->setAvailableGeometry(QRect(0, 0, m_defaultGeometryWidth, m_defaultGeometryHeight));
+    m_primaryScreen->setPhysicalSize(m_defaultPhysicalSize);
+    m_primaryScreen->setSize(m_defaultScreenSize);
+    m_primaryScreen->setAvailableGeometry(m_defaultAvailableGeometry);
 }
 
 #ifndef QT_NO_ACCESSIBILITY
@@ -473,13 +469,13 @@ QPlatformAccessibility *QAndroidPlatformIntegration::accessibility() const
 }
 #endif
 
-void QAndroidPlatformIntegration::setDesktopSize(int width, int height)
+void QAndroidPlatformIntegration::setAvailableGeometry(const QRect &availableGeometry)
 {
     if (m_primaryScreen)
-        QMetaObject::invokeMethod(m_primaryScreen, "setAvailableGeometry", Qt::AutoConnection, Q_ARG(QRect, QRect(0,0,width, height)));
+        QMetaObject::invokeMethod(m_primaryScreen, "setAvailableGeometry", Qt::AutoConnection, Q_ARG(QRect, availableGeometry));
 }
 
-void QAndroidPlatformIntegration::setDisplayMetrics(int width, int height)
+void QAndroidPlatformIntegration::setPhysicalSize(int width, int height)
 {
     if (m_primaryScreen)
         QMetaObject::invokeMethod(m_primaryScreen, "setPhysicalSize", Qt::AutoConnection, Q_ARG(QSize, QSize(width, height)));

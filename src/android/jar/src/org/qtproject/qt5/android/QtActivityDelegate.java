@@ -121,6 +121,10 @@ public class QtActivityDelegate
     private static final String EXTRACT_STYLE_KEY = "extract.android.style";
     private static final String EXTRACT_STYLE_MINIMAL_KEY = "extract.android.style.option";
 
+    public static final int SYSTEM_UI_VISIBILITY_NORMAL = 0;
+    public static final int SYSTEM_UI_VISIBILITY_FULLSCREEN = 1;
+    public static final int SYSTEM_UI_VISIBILITY_TRANSLUCENT = 2;
+
     private static String m_environmentVariables = null;
     private static String m_applicationParameters = null;
 
@@ -131,7 +135,7 @@ public class QtActivityDelegate
     private long m_metaState;
     private int m_lastChar = 0;
     private int m_softInputMode = 0;
-    private boolean m_fullScreen = false;
+    private int m_systemUiVisibility = SYSTEM_UI_VISIBILITY_NORMAL;
     private boolean m_started = false;
     private HashMap<Integer, QtSurface> m_surfaces = null;
     private HashMap<Integer, View> m_nativeViews = null;
@@ -153,38 +157,51 @@ public class QtActivityDelegate
     private CursorHandle m_rightSelectionHandle;
     private EditPopupMenu m_editPopupMenu;
 
-    public void setFullScreen(boolean enterFullScreen)
+
+    public void setSystemUiVisibility(int systemUiVisibility)
     {
-        if (m_fullScreen == enterFullScreen)
+        if (m_systemUiVisibility == systemUiVisibility)
             return;
 
-        if (m_fullScreen = enterFullScreen) {
-            m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-            try {
-                int flags = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-                flags |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-                flags |= View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
-                flags |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-                flags |= View.SYSTEM_UI_FLAG_FULLSCREEN;
-                flags |= View.class.getDeclaredField("SYSTEM_UI_FLAG_IMMERSIVE_STICKY").getInt(null);
-                m_activity.getWindow().getDecorView().setSystemUiVisibility(flags | View.INVISIBLE);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
+        m_systemUiVisibility = systemUiVisibility;
+
+        int systemUiVisibilityFlags = 0;
+        switch (m_systemUiVisibility) {
+        case SYSTEM_UI_VISIBILITY_NORMAL:
             m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            m_activity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-        }
+            systemUiVisibilityFlags = View.SYSTEM_UI_FLAG_VISIBLE;
+            break;
+        case SYSTEM_UI_VISIBILITY_FULLSCREEN:
+            m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+            systemUiVisibilityFlags = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    | View.INVISIBLE;
+            break;
+        case SYSTEM_UI_VISIBILITY_TRANSLUCENT:
+            m_activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN
+                    | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+                    | WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            m_activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            systemUiVisibilityFlags = View.SYSTEM_UI_FLAG_VISIBLE;
+            break;
+        };
+
+        m_activity.getWindow().getDecorView().setSystemUiVisibility(systemUiVisibilityFlags);
+
         m_layout.requestLayout();
     }
 
     public void updateFullScreen()
     {
-        if (m_fullScreen) {
-            m_fullScreen = false;
-            setFullScreen(true);
+        if (m_systemUiVisibility == SYSTEM_UI_VISIBILITY_FULLSCREEN) {
+            m_systemUiVisibility = SYSTEM_UI_VISIBILITY_NORMAL;
+            setSystemUiVisibility(SYSTEM_UI_VISIBILITY_FULLSCREEN);
         }
     }
 
@@ -943,7 +960,7 @@ public class QtActivityDelegate
         } catch (Exception e) {
             e.printStackTrace();
         }
-        outState.putBoolean("FullScreen", m_fullScreen);
+        outState.putInt("SystemUiVisibility", m_systemUiVisibility);
         outState.putBoolean("Started", m_started);
         // It should never
     }

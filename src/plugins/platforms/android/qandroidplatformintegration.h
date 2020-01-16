@@ -93,8 +93,8 @@ public:
     QAndroidPlatformScreen *screen() { return m_primaryScreen; }
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 
-    virtual void setDesktopSize(int width, int height);
-    virtual void setDisplayMetrics(int width, int height);
+    void setAvailableGeometry(const QRect &availableGeometry);
+    void setPhysicalSize(int width, int height);
     void setScreenSize(int width, int height);
     bool isVirtualDesktop() { return true; }
 
@@ -118,15 +118,16 @@ public:
     QStringList themeNames() const override;
     QPlatformTheme *createPlatformTheme(const QString &name) const override;
 
-    static void setDefaultDisplayMetrics(int gw, int gh, int sw, int sh, int width, int height);
-    static void setDefaultDesktopSize(int gw, int gh);
+    static void setDefaultDisplayMetrics(int availableLeft,
+                                         int availableTop,
+                                         int availableWidth,
+                                         int availableHeight,
+                                         int physicalWidth,
+                                         int physicalHeight,
+                                         int screenWidth,
+                                         int screenHeight);
     static void setScreenOrientation(Qt::ScreenOrientation currentOrientation,
                                      Qt::ScreenOrientation nativeOrientation);
-
-    static QSize defaultDesktopSize()
-    {
-        return QSize(m_defaultGeometryWidth, m_defaultGeometryHeight);
-    }
 
     QTouchDevice *touchDevice() const { return m_touchDevice; }
     void setTouchDevice(QTouchDevice *touchDevice) { m_touchDevice = touchDevice; }
@@ -145,12 +146,9 @@ private:
 
     QThread *m_mainThread;
 
-    static int m_defaultGeometryWidth;
-    static int m_defaultGeometryHeight;
-    static int m_defaultPhysicalSizeWidth;
-    static int m_defaultPhysicalSizeHeight;
-    static int m_defaultScreenWidth;
-    static int m_defaultScreenHeight;
+    static QRect m_defaultAvailableGeometry;
+    static QSize m_defaultPhysicalSize;
+    static QSize m_defaultScreenSize;
 
     static Qt::ScreenOrientation m_orientation;
     static Qt::ScreenOrientation m_nativeOrientation;
