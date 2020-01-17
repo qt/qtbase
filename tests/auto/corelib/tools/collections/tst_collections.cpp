@@ -1551,12 +1551,12 @@ void tst_Collections::hash()
     }
 
     {
-        QHash<int, QString> hash1, hash2;
-        hash1.insertMulti(1, "Alpha");
-        hash1.insertMulti(1, "Gamma");
-        hash2.insertMulti(1, "Beta");
-        hash2.insertMulti(1, "Gamma");
-        hash2.insertMulti(1, "Gamma");
+        QMultiHash<int, QString> hash1, hash2;
+        hash1.insert(1, "Alpha");
+        hash1.insert(1, "Gamma");
+        hash2.insert(1, "Beta");
+        hash2.insert(1, "Gamma");
+        hash2.insert(1, "Gamma");
 
         hash1.unite(hash2);
         QCOMPARE(hash1.size(), 5);
@@ -1985,15 +1985,6 @@ void tst_Collections::qstring()
     QVERIFY(null.mid(0).isNull());
     QVERIFY(null.isNull());
     QVERIFY(!nonNull.isNull());
-
-#if QT_DEPRECATED_SINCE(5, 9)
-    QVERIFY(null == QString::null);
-    QVERIFY(QString::null  == null);
-    QVERIFY(nonNull != QString::null);
-    QVERIFY(QString::null != nonNull);
-    QVERIFY(null == nonNull);
-    QVERIFY(QString::null == QString::null);
-#endif
 
     QString fill = "123";
     fill.fill('a');
