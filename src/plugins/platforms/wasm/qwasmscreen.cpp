@@ -32,6 +32,8 @@
 #include "qwasmeventtranslator.h"
 #include "qwasmcompositor.h"
 #include "qwasmintegration.h"
+#include "qwasmstring.h"
+
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
@@ -184,7 +186,7 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
 
     QSizeF canvasSize = cssSize * devicePixelRatio();
     val document = val::global("document");
-    val canvas = document.call<val>("getElementById", val(canvasId.constData()));
+    val canvas = document.call<val>("getElementById", QWasmString::fromQString(m_canvasId));
 
     canvas.set("width", canvasSize.width());
     canvas.set("height", canvasSize.height());

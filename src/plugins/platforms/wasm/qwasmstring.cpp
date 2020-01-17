@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -27,21 +27,35 @@
 **
 ****************************************************************************/
 
-#include "qwasmservices.h"
 #include "qwasmstring.h"
-
-#include <QtCore/QUrl>
-#include <QtCore/QDebug>
-
-#include <emscripten/val.h>
 
 QT_BEGIN_NAMESPACE
 
-bool QWasmServices::openUrl(const QUrl &url)
+using namespace emscripten;
+
+val QWasmString::fromQString(const QString &str)
 {
-    emscripten::val jsUrl = QWasmString::fromQString(url.toString());
-    emscripten::val::global("window").call<void>("open", jsUrl, emscripten::val("_blank"));
-    return true;
+    static const val UTF16ToString(
+        val::global("Module")["UTF16ToString"]);
+
+    auto ptr = quintptr(str.utf16());
+    return UTF16ToString(val(ptr));
+}
+
+QString QWasmString::toQString(const val &v)
+{
+    QString result;
+    if (!v.isString())
+        return result;
+
+    static const val stringToUTF16(
+        val::global("Module")["stringToUTF16"]);
+    static const val length("length");
+
+    result.resize(v[length].as<int>());
+    auto ptr = quintptr(result.utf16());
+    stringToUTF16(v, val(ptr));
+    return result;
 }
 
 QT_END_NAMESPACE

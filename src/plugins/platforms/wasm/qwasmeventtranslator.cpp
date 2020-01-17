@@ -32,6 +32,7 @@
 #include "qwasmcompositor.h"
 #include "qwasmintegration.h"
 #include "qwasmclipboard.h"
+#include "qwasmstring.h"
 
 #include <QtGui/qevent.h>
 #include <qpa/qwindowsysteminterface.h>
@@ -355,9 +356,10 @@ void QWasmEventTranslator::initEventHandlers()
 
         if (emscripten::val::global("window")["safari"].isUndefined()) {
             val document = val::global("document");
-            val canvas = document.call<val>("getElementById", val(canvasId));
+            val jsCanvasId = QWasmString::fromQString(screen()->canvasId());
+            val canvas = document.call<val>("getElementById", jsCanvasId);
             canvas.call<void>("addEventListener",
-                              std::string("wheel"),
+                              val("wheel"),
                               val::module_property("qtMouseWheelEvent"));
         }
     }

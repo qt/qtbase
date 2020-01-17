@@ -29,6 +29,7 @@
 
 #include "qwasmcursor.h"
 #include "qwasmscreen.h"
+#include "qwasmstring.h"
 
 #include <QtCore/qdebug.h>
 #include <QtGui/qwindow.h>
@@ -56,11 +57,11 @@ void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
         htmlCursorName = "auto";
 
     // Set cursor on the canvas
-    QByteArray canvasId = QWasmScreen::get(screen)->canvasId().toUtf8();
+    val jsCanvasId = QWasmString::fromQString(QWasmScreen::get(screen)->canvasId());
     val document = val::global("document");
-    val canvas = document.call<val>("getElementById", val(canvasId.constData()));
+    val canvas = document.call<val>("getElementById", jsCanvasId);
     val canvasStyle = canvas["style"];
-    canvasStyle.set("cursor", emscripten::val(htmlCursorName.constData()));
+    canvasStyle.set("cursor", val(htmlCursorName.constData()));
 }
 
 QByteArray QWasmCursor::cursorShapeToHtml(Qt::CursorShape shape)

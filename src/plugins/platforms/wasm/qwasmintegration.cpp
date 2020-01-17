@@ -36,6 +36,7 @@
 #include "qwasmclipboard.h"
 #include "qwasmservices.h"
 #include "qwasmoffscreensurface.h"
+#include "qwasmstring.h"
 
 #include "qwasmwindow.h"
 #ifndef QT_NO_OPENGL
@@ -67,19 +68,19 @@ static void browserBeforeUnload(emscripten::val)
 
 static void addCanvasElement(emscripten::val canvas)
 {
-    QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+    QString canvasId = QWasmString::toQString(canvas["id"]);
     QWasmIntegration::get()->addScreen(canvasId);
 }
 
 static void removeCanvasElement(emscripten::val canvas)
 {
-    QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+    QString canvasId = QWasmString::toQString(canvas["id"]);
     QWasmIntegration::get()->removeScreen(canvasId);
 }
 
 static void resizeCanvasElement(emscripten::val canvas)
 {
-    QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+    QString canvasId = QWasmString::toQString(canvas["id"]);
     QWasmIntegration::get()->resizeScreen(canvasId);
 }
 
@@ -115,11 +116,11 @@ QWasmIntegration::QWasmIntegration()
         int screenCount = qtCanvaseElements["length"].as<int>();
         for (int i = 0; i < screenCount; ++i) {
             emscripten::val canvas = qtCanvaseElements[i].as<emscripten::val>();
-            QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+            QString canvasId = QWasmString::toQString(canvas["id"]);
             addScreen(canvasId);
         }
     } else if (!canvas.isUndefined()){
-        QString canvasId = QString::fromStdString(canvas["id"].as<std::string>());
+        QString canvasId = QWasmString::toQString(canvas["id"]);
         addScreen(canvasId);
     }
 
