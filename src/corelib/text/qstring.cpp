@@ -6288,7 +6288,7 @@ static uint parse_flag_characters(const char * &c) noexcept
         case '-': flags |= QLocaleData::LeftAdjusted; break;
         case ' ': flags |= QLocaleData::BlankBeforePositive; break;
         case '+': flags |= QLocaleData::AlwaysShowSign; break;
-        case '\'': flags |= QLocaleData::ThousandsGroup; break;
+        case '\'': flags |= QLocaleData::GroupDigits; break;
         default: return flags;
         }
         ++c;
@@ -8010,7 +8010,7 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, QChar fillChar) cons
     if (d.locale_occurrences > 0) {
         QLocale locale;
         if (!(locale.numberOptions() & QLocale::OmitGroupSeparator))
-            flags |= QLocaleData::ThousandsGroup;
+            flags |= QLocaleData::GroupDigits;
         locale_arg = locale.d->m_data->longLongToString(a, -1, base, fieldWidth, flags);
     }
 
@@ -8054,7 +8054,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, QChar fillChar) con
     if (d.locale_occurrences > 0) {
         QLocale locale;
         if (!(locale.numberOptions() & QLocale::OmitGroupSeparator))
-            flags |= QLocaleData::ThousandsGroup;
+            flags |= QLocaleData::GroupDigits;
         locale_arg = locale.d->m_data->unsLongLongToString(a, -1, base, fieldWidth, flags);
     }
 
@@ -8185,7 +8185,7 @@ QString QString::arg(double a, int fieldWidth, char fmt, int prec, QChar fillCha
 
         const QLocale::NumberOptions numberOptions = locale.numberOptions();
         if (!(numberOptions & QLocale::OmitGroupSeparator))
-            flags |= QLocaleData::ThousandsGroup;
+            flags |= QLocaleData::GroupDigits;
         if (!(numberOptions & QLocale::OmitLeadingZeroInExponent))
             flags |= QLocaleData::ZeroPadExponent;
         if (numberOptions & QLocale::IncludeTrailingZeroesAfterDot)

@@ -1807,10 +1807,8 @@ double QLocale::toDouble(QStringView s, bool *ok) const
 
 QString QLocale::toString(qlonglong i) const
 {
-    int flags = d->m_numberOptions & OmitGroupSeparator
-                    ? 0
-                    : (d->m_data->m_country_id == Country::India)
-                      ? QLocaleData::IndianNumberGrouping : QLocaleData::ThousandsGroup;
+    int flags = (d->m_numberOptions & OmitGroupSeparator
+                 ? 0 : QLocaleData::GroupDigits);
 
     return d->m_data->longLongToString(i, -1, 10, -1, flags);
 }
@@ -1823,10 +1821,8 @@ QString QLocale::toString(qlonglong i) const
 
 QString QLocale::toString(qulonglong i) const
 {
-    int flags = d->m_numberOptions & OmitGroupSeparator
-                    ? 0
-                    : (d->m_data->m_country_id == Country::India)
-                      ? QLocaleData::IndianNumberGrouping : QLocaleData::ThousandsGroup;
+    int flags = (d->m_numberOptions & OmitGroupSeparator
+                 ? 0 : QLocaleData::GroupDigits);
 
     return d->m_data->unsLongLongToString(i, -1, 10, -1, flags);
 }
@@ -2497,7 +2493,7 @@ QString QLocale::toString(double i, char f, int prec) const
     }
 
     if (!(d->m_numberOptions & OmitGroupSeparator))
-        flags |= QLocaleData::ThousandsGroup;
+        flags |= QLocaleData::GroupDigits;
     if (!(d->m_numberOptions & OmitLeadingZeroInExponent))
         flags |= QLocaleData::ZeroPadExponent;
     if (d->m_numberOptions & IncludeTrailingZeroesAfterDot)
@@ -3380,7 +3376,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
         }
 
         const bool mustMarkDecimal = flags & ForcePoint;
-        const bool groupDigits = flags & ThousandsGroup;
+        const bool groupDigits = flags & GroupDigits;
         const int minExponentDigits = flags & ZeroPadExponent ? 2 : 1;
         switch (form) {
             case DFExponent:
@@ -3415,8 +3411,8 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
                     // Exponent adds separator, sign and digits:
                     int bias = 2 + minExponentDigits;
                     // Decimal form may get grouping separators inserted:
-                    if (groupDigits && decpt > 3)
-                        bias -= (decpt - 1) / 3;
+                    if (groupDigits && decpt >= m_grouping_top + m_grouping_least)
+                        bias -= (decpt - m_grouping_top - m_grouping_least) / m_grouping_higher + 1;
                     // X = decpt - 1 needs two digits if decpt > 10:
                     if (decpt > 10 && minExponentDigits == 1)
                         ++bias;
@@ -3501,12 +3497,14 @@ QString QLocaleData::decimalForm(QString &&digits, int decpt, int precision,
     if (mustMarkDecimal || decpt < digits.length() / digitWidth)
         digits.insert(decpt * digitWidth, decimalPoint());
 
-    // FIXME: they're not simply thousands separators !
-    // Need to mirror IndianNumberGrouping code in longLongToString()
     if (groupDigits) {
         const QString group = groupSeparator();
-        for (int i = decpt - 3; i > 0; i -= 3)
+        int i = decpt - m_grouping_least;
+        if (i >= m_grouping_top) {
             digits.insert(i * digitWidth, group);
+            while ((i -= m_grouping_higher) >= m_grouping_top)
+                digits.insert(i * digitWidth, group);
+        }
     }
 
     if (decpt == 0)
@@ -3615,22 +3613,18 @@ QString QLocaleData::applyIntegerFormatting(QString &&numStr, bool negative, int
     // Count how much of width we've used up.  Each digit counts as one
     int usedWidth = digitCount + prefix.size();
 
-    if (base == 10) {
+    if (base == 10 && flags & GroupDigits) {
         const QString group = groupSeparator();
-        if (flags & ThousandsGroup) {
-            for (int i = numStr.length() / digitWidth - 3; i > 0; i -= 3) {
-                numStr.insert(i * digitWidth, group);
-                ++usedWidth;
-            }
-        } else if (flags & IndianNumberGrouping) {
-            const int size = numStr.length();
-            if (size > 3 * digitWidth)
-                numStr.insert(size - 3 * digitWidth , group);
-            for (int i = size / digitWidth - 5; i > 0; i -= 2) {
+        int i = digitCount - m_grouping_least;
+        if (i >= m_grouping_top) {
+            numStr.insert(i * digitWidth, group);
+            ++usedWidth;
+            while ((i -= m_grouping_higher) >= m_grouping_top) {
                 numStr.insert(i * digitWidth, group);
                 ++usedWidth;
             }
         }
+        // TODO: should we group any zero-padding we add later ?
     }
 
     const bool noPrecision = precision == -1;
@@ -3671,7 +3665,6 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
     auto length = s.size();
     decltype(length) idx = 0;
 
-    const int leadingGroupWidth = (m_country_id == QLocale::India ? 2 : 3);
     int digitsInGroup = 0;
     int group_cnt = 0; // counts number of group chars
     int decpt_idx = -1;
@@ -3731,13 +3724,14 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
                     return false;
 
                 if (last_separator_idx == -1) {
-                    if (start_of_digits_idx == -1 || digitsInGroup > leadingGroupWidth)
+                    // Check distance from the beginning of the digits:
+                    if (start_of_digits_idx == -1 || m_grouping_top > digitsInGroup
+                        || digitsInGroup >= m_grouping_higher + m_grouping_top) {
                         return false;
+                    }
                 } else {
-                    // check distance from the last separator or from the beginning of the digits
-                    // ### FIXME: Some locales allow other groupings!
-                    // See https://en.wikipedia.org/wiki/Thousands_separator
-                    if (digitsInGroup != leadingGroupWidth)
+                    // Check distance from the last separator:
+                    if (digitsInGroup != m_grouping_higher)
                         return false;
                 }
 
@@ -3749,11 +3743,11 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
                 idx += in.size();
                 continue;
             } else if (out == '.' || idx == exponent_idx) {
-                // check distance from the last separator
-                // ### FIXME: Some locales allow other groupings!
-                // See https://en.wikipedia.org/wiki/Thousands_separator
-                if (last_separator_idx != -1 && digitsInGroup != 3)
+                // Were there enough digits since the last separator?
+                if (last_separator_idx != -1 && digitsInGroup != m_grouping_least)
                     return false;
+                // If we saw no separator, should we fail if
+                // digitsInGroup > m_grouping_top + m_grouping_least ?
 
                 // stop processing separators
                 last_separator_idx = -1;
@@ -3771,9 +3765,11 @@ bool QLocaleData::numberToCLocale(QStringView s, QLocale::NumberOptions number_o
         // did we end in a separator?
         if (last_separator_idx + 1 == idx)
             return false;
-        // were there enough digits since the last separator?
-        if (last_separator_idx != -1 && digitsInGroup != 3)
+        // Were there enough digits since the last separator?
+        if (last_separator_idx != -1 && digitsInGroup != m_grouping_least)
             return false;
+        // If we saw no separator, and no decimal point, should we fail if
+        // digitsInGroup > m_grouping_top + m_grouping_least ?
     }
 
     if (number_options & QLocale::RejectTrailingZeroesAfterDot) {

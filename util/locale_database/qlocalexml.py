@@ -476,6 +476,11 @@ class Locale (object):
         for k in cls.propsMonthDay('months'):
             data[k] = dict((cal, lookup('_'.join((k, cal)))) for cal in calendars)
 
+        grouping = lookup('groupSizes').split(';')
+        data.update(groupLeast = int(grouping[0]),
+                    groupHigher = int(grouping[1]),
+                    groupTop = int(grouping[2]))
+
         return cls(data)
 
     def toXml(self, write, calendars=('gregorian',)):
@@ -515,6 +520,7 @@ class Locale (object):
                 for cal in calendars):
             write(key, escape(get(key)).encode('utf-8'))
 
+        write('groupSizes', ';'.join(str(x) for x in get('groupSizes')))
         for key in ('currencyDigits', 'currencyRounding'):
             write(key, get(key))
 
@@ -586,6 +592,7 @@ class Locale (object):
                    language='C', language_code='0', languageEndonym='',
                    script='AnyScript', script_code='0',
                    country='AnyCountry', country_code='0', countryEndonym='',
+                   groupSizes=(3, 3, 1),
                    decimal='.', group=',', list=';', percent='%',
                    zero='0', minus='-', plus='+', exp='e',
                    quotationStart='"', quotationEnd='"',

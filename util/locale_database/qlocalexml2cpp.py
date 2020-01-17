@@ -253,7 +253,10 @@ class LocaleDataWriter (LocaleSourceEditor):
                           'curRnd ' # Currencty rounding (unused: QTBUG-81343)
                           'dow1st ' # First day of week
                           ' wknd+ ' # Week-end start/end days
-                          ' wknd-'
+                          ' wknd- '
+                          'grpTop '
+                          'grpMid '
+                          'grpEnd'
                           # No trailing space on last entry (be sure to
                           # pad before adding anything after it).
                           '\n')
@@ -275,6 +278,8 @@ class LocaleDataWriter (LocaleSourceEditor):
             # Currency formatting
             '{:6d},{:6d}',
             # Day of week and week-end
+            ',{:6d}' * 3,
+            # Number group sizes
             ',{:6d}' * 3,
             ' }}')).format
         for key in names:
@@ -318,16 +323,14 @@ class LocaleDataWriter (LocaleSourceEditor):
                         (currencyIsoCodeData(locale.currencyIsoCode),
                          locale.currencyDigits,
                          locale.currencyRounding, # unused (QTBUG-81343)
-                         locale.firstDayOfWeek,
-                         locale.weekendStart,
-                         locale.weekendEnd) ))
+                         locale.firstDayOfWeek, locale.weekendStart, locale.weekendEnd,
+                         locale.groupTop, locale.groupHigher, locale.groupLeast) ))
                               + ', // {}/{}/{}\n'.format(
                     locale.language, locale.script, locale.country))
         self.writer.write(formatLine(*( # All zeros, matching the format:
                     (0,) * 3 + (0,) * 37 * 2
                     + (currencyIsoCodeData(0),)
-                    + (0,) * 2
-                    + (0,) * 3 ))
+                    + (0,) * 8 ))
                           + ' // trailing zeros\n')
         self.writer.write('};\n')
 

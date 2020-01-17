@@ -294,6 +294,7 @@ class LocaleScanner (object):
         yield 'percent', self.find(stem + 'percentSign')
         yield 'list', self.find(stem + 'list')
         yield 'exp', self.find(stem + 'exponential')
+        yield 'groupSizes', self.__numberGrouping(system)
 
         digits = lookup(system)['digits']
         assert len(digits) == 10
@@ -526,6 +527,36 @@ class LocaleScanner (object):
                     tail = rest if all(rest == k for k in cache) else suffix
                     cache.append(rest)
                 yield it
+
+    def __numberGrouping(self, system):
+        """Sizes of groups of digits within a number.
+
+        Returns a triple (least, higher, top) for which:
+          * least is the number of digits after the last grouping
+            separator;
+          * higher is the number of digits between grouping
+            separators;
+          * top is the fewest digits that can appear before the first
+            grouping separator.
+
+        Thus (4, 3, 2) would want 1e7 as 1000,0000 but 1e8 as 10,000,0000.
+
+        Note: CLDR does countenance the possibility of grouping also
+        in the fractional part.  This is not presently attempted.  Nor
+        is placement of the sign character anywhere but at the start
+        of the number (some formats may place it at the end, possibly
+        elsewhere)."""
+        top = int(self.find('numbers/minimumGroupingDigits'))
+        assert top < 4, top # We store it in a 2-bit field
+        grouping = self.find('numbers/decimalFormats[numberSystem='
+                             + system + ']/decimalFormatLength/decimalFormat/pattern')
+        groups = grouping.split('.')[0].split(',')[-3:]
+        assert all(len(x) < 8 for x in groups[-2:]), grouping # we store them in 3-bit fields
+        if len(groups) > 2:
+            return len(groups[-1]), len(groups[-2]), top
+
+        size = len(groups[-1]) if len(groups) == 2 else 3
+        return size, size, top
 
     @staticmethod
     def __currencyFormats(patterns, plus, minus):

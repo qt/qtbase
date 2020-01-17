@@ -2269,7 +2269,7 @@ void QTextStreamPrivate::putNumber(qulonglong number, bool negative)
     // add thousands group separators. For backward compatibility we
     // don't add a group separator for C locale.
     if (locale != QLocale::c() && !locale.numberOptions().testFlag(QLocale::OmitGroupSeparator))
-        flags |= QLocaleData::ThousandsGroup;
+        flags |= QLocaleData::GroupDigits;
 
     const QLocaleData *dd = locale.d->m_data;
     int base = params.integerBase ? params.integerBase : 10;
@@ -2485,7 +2485,7 @@ QTextStream &QTextStream::operator<<(double f)
         flags |= QLocaleData::AddTrailingZeroes | QLocaleData::ShowBase;
     }
     if (locale() != QLocale::c() && !(numberOptions & QLocale::OmitGroupSeparator))
-        flags |= QLocaleData::ThousandsGroup;
+        flags |= QLocaleData::GroupDigits;
     if (!(numberOptions & QLocale::OmitLeadingZeroInExponent))
         flags |= QLocaleData::ZeroPadExponent;
     if (numberOptions & QLocale::IncludeTrailingZeroesAfterDot)

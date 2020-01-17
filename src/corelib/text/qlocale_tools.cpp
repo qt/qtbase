@@ -86,9 +86,10 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision, cha
     }
 
     // Detect special numbers (nan, +/-inf)
-    // We cannot use the high-level API of libdouble-conversion as we need to apply locale-specific
-    // formatting, such as decimal points, thousands-separators, etc. Because of this, we have to
-    // check for infinity and NaN before calling DoubleToAscii.
+    // We cannot use the high-level API of libdouble-conversion as we need to
+    // apply locale-specific formatting, such as decimal points, grouping
+    // separators, etc. Because of this, we have to check for infinity and NaN
+    // before calling DoubleToAscii.
     if (qt_is_inf(d)) {
         sign = d < 0;
         if (bufSize >= 3) {

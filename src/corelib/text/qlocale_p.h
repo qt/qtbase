@@ -196,14 +196,13 @@ public:
         LeftAdjusted        = 0x04,
         BlankBeforePositive = 0x08,
         AlwaysShowSign      = 0x10,
-        ThousandsGroup      = 0x20,
+        GroupDigits         = 0x20,
         CapitalEorX         = 0x40,
 
         ShowBase            = 0x80,
         UppercaseBase       = 0x100,
         ZeroPadExponent     = 0x200,
-        ForcePoint          = 0x400,
-        IndianNumberGrouping= 0x800
+        ForcePoint          = 0x400
     };
 
     enum NumberMode { IntegerMode, DoubleStandardMode, DoubleScientificMode };
@@ -369,12 +368,15 @@ public:
 #undef ForEachQLocaleRange
 
     // Strays:
-    char    m_currency_iso_code[3];
-    quint16 m_currency_digits : 2;
-    quint16 m_currency_rounding : 3; // (not yet used !)
-    quint16 m_first_day_of_week : 3;
-    quint16 m_weekend_start : 3;
-    quint16 m_weekend_end : 3;
+    char m_currency_iso_code[3];
+    quint8 m_currency_digits : 2;
+    quint8 m_currency_rounding : 3; // (not yet used !)
+    quint8 m_first_day_of_week : 3;
+    quint8 m_weekend_start : 3;
+    quint8 m_weekend_end : 3;
+    quint8 m_grouping_top : 2; // Must have this many before the first grouping separator
+    quint8 m_grouping_higher : 3; // Number of digits between grouping separators
+    quint8 m_grouping_least : 3; // Number of digits after last grouping separator (before decimal).
 };
 
 class Q_CORE_EXPORT QLocalePrivate // A POD type

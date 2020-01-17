@@ -2682,7 +2682,9 @@ void tst_QLocale::currency()
 
     const QLocale es_CR(QLocale::Spanish, QLocale::CostaRica);
     QCOMPARE(es_CR.toCurrencyString(double(1565.25)),
-             QString::fromUtf8("\xE2\x82\xA1" "1\xC2\xA0" "565,25"));
+             QString::fromUtf8("\xE2\x82\xA1" "1565,25"));
+    QCOMPARE(es_CR.toCurrencyString(double(12565.25)),
+             QString::fromUtf8("\xE2\x82\xA1" "12\xC2\xA0" "565,25"));
 
     const QLocale system = QLocale::system();
     QVERIFY(system.toCurrencyString(1, QLatin1String("FOO")).contains(QLatin1String("FOO")));
@@ -3135,9 +3137,7 @@ void tst_QLocale::numberGroupingIndia()
 
 void tst_QLocale::numberFormatChakma()
 {
-    // Initially India's flavour, since the number formatting is currently only
-    // done right for India.  Should change to Bangladesh once that's fixed.
-    const QLocale chakma(QLocale::Chakma, QLocale::ChakmaScript, QLocale::India);
+    const QLocale chakma(QLocale::Chakma, QLocale::ChakmaScript, QLocale::Bangladesh);
     const uint zeroVal = 0x11136; // Unicode's representation of Chakma zero
     const QChar data[] = {
         QChar::highSurrogate(zeroVal), QChar::lowSurrogate(zeroVal),
