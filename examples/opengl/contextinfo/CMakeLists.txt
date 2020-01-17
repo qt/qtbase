@@ -14,6 +14,7 @@ set(INSTALL_EXAMPLEDIR "examples/opengl/contextinfo")
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Widgets)
+find_package(Qt6 COMPONENTS OpenGL)
 
 add_qt_gui_executable(contextinfo
     main.cpp
@@ -23,6 +24,7 @@ add_qt_gui_executable(contextinfo
 target_link_libraries(contextinfo PUBLIC
     Qt::Core
     Qt::Gui
+    Qt::OpenGL
     Qt::Widgets
 )
 

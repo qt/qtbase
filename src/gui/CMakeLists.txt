@@ -342,7 +342,6 @@ qt_extend_target(Gui CONDITION QT_FEATURE_opengl
         opengl/qopenglextrafunctions.h
         opengl/qopenglfunctions.cpp opengl/qopenglfunctions.h
         opengl/qopenglprogrambinarycache.cpp opengl/qopenglprogrambinarycache_p.h
-        opengl/qopenglshaderprogram.cpp opengl/qopenglshaderprogram.h
         opengl/qopenglversionfunctions.cpp opengl/qopenglversionfunctions.h
         opengl/qopenglversionfunctionsfactory.cpp opengl/qopenglversionfunctionsfactory_p.h
         opengl/qopenglvertexarrayobject.cpp opengl/qopenglvertexarrayobject.h

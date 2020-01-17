@@ -1,5 +1,5 @@
 TEMPLATE = app
-QT += widgets
+QT += widgets opengl
 requires(qtConfig(filedialog))
 
 SOURCES += main.cpp \

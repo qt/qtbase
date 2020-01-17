@@ -45,7 +45,6 @@
 #include <QDir>
 #include <QSaveFile>
 #include <QCoreApplication>
-#include <QLoggingCategory>
 #include <QCryptographicHash>
 
 #ifdef Q_OS_UNIX

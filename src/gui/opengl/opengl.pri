@@ -9,7 +9,6 @@ qtConfig(opengl) {
                opengl/qopengl_p.h \
                opengl/qopenglfunctions.h \
                opengl/qopenglbuffer.h \
-               opengl/qopenglshaderprogram.h \
                opengl/qopenglextensions_p.h \
                opengl/qopenglversionfunctions.h \
                opengl/qopenglversionfunctionsfactory_p.h \
@@ -20,7 +19,6 @@ qtConfig(opengl) {
     SOURCES += opengl/qopengl.cpp \
                opengl/qopenglfunctions.cpp \
                opengl/qopenglbuffer.cpp \
-               opengl/qopenglshaderprogram.cpp \
                opengl/qopenglversionfunctions.cpp \
                opengl/qopenglversionfunctionsfactory.cpp \
                opengl/qopenglvertexarrayobject.cpp \

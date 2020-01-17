@@ -13,6 +13,7 @@ set(INSTALL_EXAMPLEDIR "examples/opengl/hellowindow")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
+find_package(Qt6 COMPONENTS OpenGL)
 
 add_qt_gui_executable(hellowindow
     hellowindow.cpp hellowindow.h
@@ -23,6 +24,7 @@ target_link_libraries(hellowindow PUBLIC
     Qt::CorePrivate
     Qt::Gui
     Qt::GuiPrivate
+    Qt::OpenGL
 )
 
 install(TARGETS hellowindow

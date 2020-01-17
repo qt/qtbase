@@ -51,7 +51,7 @@
 #include <QWindow>
 
 #include <QtGui/qopengl.h>
-#include <QtGui/qopenglshaderprogram.h>
+#include <QtOpenGL/qopenglshaderprogram.h>
 #include <QtOpenGL/qopenglframebufferobject.h>
 
 #include <QPropertyAnimation>

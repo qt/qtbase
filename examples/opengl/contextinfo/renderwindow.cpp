@@ -52,7 +52,7 @@
 #include <QTimer>
 #include <QMatrix4x4>
 #include <QOpenGLContext>
-#include <QOpenGLShaderProgram>
+#include <QtOpenGL/QOpenGLShaderProgram>
 #include <QOpenGLFunctions>
 
 RenderWindow::RenderWindow(const QSurfaceFormat &format)

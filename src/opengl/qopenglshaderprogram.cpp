@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -38,7 +38,6 @@
 ****************************************************************************/
 
 #include "qopenglshaderprogram.h"
-#include "qopenglprogrambinarycache_p.h"
 #include "qopenglextrafunctions.h"
 #include "private/qopenglcontext_p.h"
 #include <QtCore/private/qobject_p.h>
@@ -47,6 +46,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qloggingcategory.h>
+#include <QtGui/private/qopenglprogrambinarycache_p.h>
 #include <QtGui/qtransform.h>
 #include <QtGui/QColor>
 #include <QtGui/QSurfaceFormat>
@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
     \brief The QOpenGLShaderProgram class allows OpenGL shader programs to be linked and used.
     \since 5.0
     \ingroup painting-3D
-    \inmodule QtGui
+    \inmodule QtOpenGL
 
     \section1 Introduction
 
@@ -150,7 +150,7 @@ QT_BEGIN_NAMESPACE
     \brief The QOpenGLShader class allows OpenGL shaders to be compiled.
     \since 5.0
     \ingroup painting-3D
-    \inmodule QtGui
+    \inmodule QtOpenGL
 
     This class supports shaders written in the OpenGL Shading Language (GLSL)
     and in the OpenGL/ES Shading Language (GLSL/ES).
@@ -176,8 +176,6 @@ QT_BEGIN_NAMESPACE
     \value Compute Compute shaders written in the OpenGL shading language (GLSL)
            (requires OpenGL >= 4.3 or OpenGL ES >= 3.1).
 */
-
-Q_DECLARE_LOGGING_CATEGORY(lcOpenGLProgramDiskCache)
 
 // For GLES 3.1/3.2
 #ifndef GL_GEOMETRY_SHADER

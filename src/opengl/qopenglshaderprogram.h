@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -40,9 +40,7 @@
 #ifndef QOPENGLSHADERPROGRAM_H
 #define QOPENGLSHADERPROGRAM_H
 
-#include <QtGui/qtguiglobal.h>
-
-#ifndef QT_NO_OPENGL
+#include <QtOpenGL/qtopenglglobal.h>
 
 #include <QtGui/qopengl.h>
 #include <QtGui/qvector2d.h>
@@ -57,7 +55,7 @@ class QOpenGLContext;
 class QOpenGLShaderProgram;
 class QOpenGLShaderPrivate;
 
-class Q_GUI_EXPORT QOpenGLShader : public QObject
+class Q_OPENGL_EXPORT QOpenGLShader : public QObject
 {
     Q_OBJECT
 public:
@@ -103,7 +101,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QOpenGLShader::ShaderType)
 
 class QOpenGLShaderProgramPrivate;
 
-class Q_GUI_EXPORT QOpenGLShaderProgram : public QObject
+class Q_OPENGL_EXPORT QOpenGLShaderProgram : public QObject
 {
     Q_OBJECT
 public:
@@ -312,7 +310,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_OPENGL
 
 #endif

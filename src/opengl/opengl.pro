@@ -22,6 +22,7 @@ HEADERS += \
     qopenglpaintengine_p.h \
     qopenglpixeltransferoptions.h \
     qopenglshadercache_p.h \
+    qopenglshaderprogram.h \
     qopengltexture.h \
     qopengltexture_p.h \
     qopengltexturehelper_p.h \
@@ -41,6 +42,7 @@ SOURCES += \
     qopenglpaintdevice.cpp \
     qopenglpaintengine.cpp \
     qopenglpixeltransferoptions.cpp \
+    qopenglshaderprogram.cpp \
     qopengltexture.cpp \
     qopengltexturehelper.cpp \
     qopengltextureblitter.cpp \

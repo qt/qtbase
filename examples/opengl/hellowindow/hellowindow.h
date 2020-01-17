@@ -52,7 +52,7 @@
 
 #include <QColor>
 #include <QMutex>
-#include <QOpenGLShaderProgram>
+#include <QtOpenGL/QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
 #include <QSharedPointer>
 #include <QTimer>

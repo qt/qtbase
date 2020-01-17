@@ -1,4 +1,4 @@
-QT += gui-private core-private
+QT += gui-private core-private opengl
 
 HEADERS += hellowindow.h
 SOURCES += hellowindow.cpp main.cpp

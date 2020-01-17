@@ -289,8 +289,6 @@ QT_BEGIN_NAMESPACE
 #define GL_MAP_READ_BIT                   0x0001
 #endif
 
-Q_DECLARE_LOGGING_CATEGORY(lcOpenGLProgramDiskCache)
-
 /*!
     Constructs a new QRhiGles2InitParams.
 

@@ -17,6 +17,7 @@ qt_add_module(OpenGL
         qopenglpaintengine.cpp qopenglpaintengine_p.h
         qopenglpixeltransferoptions.cpp qopenglpixeltransferoptions.h
         qopenglshadercache_p.h
+        qopenglshaderprogram.cpp qopenglshaderprogram.h
         qopengltexture.cpp qopengltexture.h qopengltexture_p.h
         qopengltextureblitter.cpp qopengltextureblitter.h
         qopengltexturecache.cpp qopengltexturecache_p.h

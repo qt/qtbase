@@ -54,9 +54,9 @@
 #include "qeglfsglobal_p.h"
 #include <qpa/qplatformcursor.h>
 #include <qpa/qplatformscreen.h>
+#include <QtOpenGL/QOpenGLShaderProgram>
 #include <QtGui/QMatrix4x4>
 #include <QtGui/QOpenGLFunctions>
-#include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/private/qinputdevicemanager_p.h>
 
 #include <QtCore/qvector.h>
