@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,31 +37,50 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSVIVINTEGRATION_H
-#define QEGLFSVIVINTEGRATION_H
+#ifndef QEGLFSVULKANINSTANCE_H
+#define QEGLFSVULKANINSTANCE_H
 
-#include "private/qeglfsdeviceintegration_p.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qeglfsglobal_p.h"
+#include <QtVulkanSupport/private/qbasicvulkanplatforminstance_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSVivIntegration : public QEglFSDeviceIntegration
+class QEglFSWindow;
+
+class Q_EGLFS_EXPORT QEglFSVulkanInstance : public QBasicPlatformVulkanInstance
 {
 public:
-    void platformInit() override;
-    QSize screenSize() const override;
-    EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format) override;
-    void destroyNativeWindow(EGLNativeWindowType window) override;
-    EGLNativeDisplayType platformDisplay() const override;
+    QEglFSVulkanInstance(QVulkanInstance *instance);
 
-    // Vulkan support with VK_KHR_display
-#if QT_CONFIG(vulkan)
-    QEglFSWindow *createWindow(QWindow *window) const override;
-    QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) override;
-#endif
+    void createOrAdoptInstance() override;
+    bool supportsPresent(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, QWindow *window) override;
+    void presentAboutToBeQueued(QWindow *window) override;
+
+    VkSurfaceKHR createSurface(QEglFSWindow *window);
 
 private:
-    QSize mScreenSize;
-    EGLNativeDisplayType mNativeDisplay;
+    QVulkanInstance *m_instance;
+    VkPhysicalDevice m_physDev = VK_NULL_HANDLE;
+    PFN_vkEnumeratePhysicalDevices m_enumeratePhysicalDevices = nullptr;
+#if VK_KHR_display
+    PFN_vkGetPhysicalDeviceDisplayPropertiesKHR m_getPhysicalDeviceDisplayPropertiesKHR = nullptr;
+    PFN_vkGetDisplayModePropertiesKHR m_getDisplayModePropertiesKHR = nullptr;
+    PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR m_getPhysicalDeviceDisplayPlanePropertiesKHR = nullptr;
+    PFN_vkGetDisplayPlaneSupportedDisplaysKHR m_getDisplayPlaneSupportedDisplaysKHR = nullptr;
+    PFN_vkGetDisplayPlaneCapabilitiesKHR m_getDisplayPlaneCapabilitiesKHR = nullptr;
+    PFN_vkCreateDisplayPlaneSurfaceKHR m_createDisplayPlaneSurfaceKHR = nullptr;
+#endif
 };
 
 QT_END_NAMESPACE

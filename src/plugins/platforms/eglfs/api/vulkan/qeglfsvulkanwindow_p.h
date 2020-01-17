@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,31 +37,36 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSVIVINTEGRATION_H
-#define QEGLFSVIVINTEGRATION_H
+#ifndef QEGLFSVULKANWINDOW_H
+#define QEGLFSVULKANWINDOW_H
 
-#include "private/qeglfsdeviceintegration_p.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qeglfsglobal_p.h"
+#include "qeglfswindow_p.h"
+#include "qeglfsvulkaninstance_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSVivIntegration : public QEglFSDeviceIntegration
+class Q_EGLFS_EXPORT QEglFSVulkanWindow : public QEglFSWindow
 {
 public:
-    void platformInit() override;
-    QSize screenSize() const override;
-    EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format) override;
-    void destroyNativeWindow(EGLNativeWindowType window) override;
-    EGLNativeDisplayType platformDisplay() const override;
+    QEglFSVulkanWindow(QWindow *window);
+    ~QEglFSVulkanWindow();
 
-    // Vulkan support with VK_KHR_display
-#if QT_CONFIG(vulkan)
-    QEglFSWindow *createWindow(QWindow *window) const override;
-    QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) override;
-#endif
+    void *vulkanSurfacePtr() override;
 
 private:
-    QSize mScreenSize;
-    EGLNativeDisplayType mNativeDisplay;
+    VkSurfaceKHR m_surface;
 };
 
 QT_END_NAMESPACE

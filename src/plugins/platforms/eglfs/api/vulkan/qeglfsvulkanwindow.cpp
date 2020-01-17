@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -37,33 +37,39 @@
 **
 ****************************************************************************/
 
-#ifndef QEGLFSVIVINTEGRATION_H
-#define QEGLFSVIVINTEGRATION_H
-
-#include "private/qeglfsdeviceintegration_p.h"
+#include "qeglfsvulkanwindow_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QEglFSVivIntegration : public QEglFSDeviceIntegration
+QEglFSVulkanWindow::QEglFSVulkanWindow(QWindow *window)
+    : QEglFSWindow(window),
+      m_surface(VK_NULL_HANDLE)
 {
-public:
-    void platformInit() override;
-    QSize screenSize() const override;
-    EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format) override;
-    void destroyNativeWindow(EGLNativeWindowType window) override;
-    EGLNativeDisplayType platformDisplay() const override;
+}
 
-    // Vulkan support with VK_KHR_display
-#if QT_CONFIG(vulkan)
-    QEglFSWindow *createWindow(QWindow *window) const override;
-    QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) override;
-#endif
+QEglFSVulkanWindow::~QEglFSVulkanWindow()
+{
+    if (m_surface) {
+        QVulkanInstance *inst = window()->vulkanInstance();
+        if (inst)
+            static_cast<QEglFSVulkanInstance *>(inst->handle())->destroySurface(m_surface);
+    }
+}
 
-private:
-    QSize mScreenSize;
-    EGLNativeDisplayType mNativeDisplay;
-};
+void *QEglFSVulkanWindow::vulkanSurfacePtr()
+{
+    if (m_surface)
+        return &m_surface;
+
+    QVulkanInstance *inst = window()->vulkanInstance();
+    if (!inst) {
+        qWarning("Attempted to create Vulkan surface without an instance; was QWindow::setVulkanInstance() called?");
+        return nullptr;
+    }
+    QEglFSVulkanInstance *eglfsInst = static_cast<QEglFSVulkanInstance *>(inst->handle());
+    m_surface = eglfsInst->createSurface(this);
+
+    return &m_surface;
+}
 
 QT_END_NAMESPACE
-
-#endif

@@ -20,6 +20,9 @@ qtHaveModule(input_support-private): \
 qtHaveModule(platformcompositor_support-private): \
     QT += platformcompositor_support-private
 
+qtConfig(vulkan): \
+    QT += vulkan_support-private
+
 # Avoid X11 header collision, use generic EGL native types
 DEFINES += QT_EGL_NO_X11
 
