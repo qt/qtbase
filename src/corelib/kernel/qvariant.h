@@ -818,7 +818,7 @@ namespace QtPrivate {
                 QVariantHash l;
                 l.reserve(iter.size());
                 for (QAssociativeIterable::const_iterator it = iter.begin(), end = iter.end(); it != end; ++it)
-                    static_cast<QMultiHash<QString, QVariant> &>(l).insert(it.key().toString(), it.value());
+                    l.insert(it.key().toString(), it.value());
                 return l;
             }
             return QVariantValueHelper<QVariantHash>::invoke(v);
