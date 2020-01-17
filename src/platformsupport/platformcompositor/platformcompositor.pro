@@ -1,7 +1,7 @@
 TARGET = QtPlatformCompositorSupport
 MODULE = platformcompositor_support
 
-QT = core-private gui-private
+QT = core-private gui-private opengl
 CONFIG += static internal_module
 
 DEFINES += QT_NO_CAST_FROM_ASCII

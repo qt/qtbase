@@ -46,11 +46,10 @@
 #include <qpa/qplatformgraphicsbuffer.h>
 #include <qpa/qplatformgraphicsbufferhelper.h>
 
+#include <QtOpenGL/QOpenGLTextureBlitter>
 #include <QtGui/qopengl.h>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLContext>
-#include <QtGui/QOpenGLTextureBlitter>
-
 #include <QtGui/QOffscreenSurface>
 
 #ifndef GL_TEXTURE_BASE_LEVEL

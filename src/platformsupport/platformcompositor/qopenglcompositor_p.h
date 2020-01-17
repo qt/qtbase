@@ -52,7 +52,7 @@
 //
 
 #include <QtCore/QTimer>
-#include <QtGui/QOpenGLTextureBlitter>
+#include <QtOpenGL/QOpenGLTextureBlitter>
 #include <QtGui/QMatrix4x4>
 
 QT_BEGIN_NAMESPACE

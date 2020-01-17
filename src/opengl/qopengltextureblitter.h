@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -40,9 +40,7 @@
 #ifndef QOPENGLTEXTUREBLITTER_H
 #define QOPENGLTEXTUREBLITTER_H
 
-#include <QtGui/qtguiglobal.h>
-
-#ifndef QT_NO_OPENGL
+#include <QtOpenGL/qtopenglglobal.h>
 
 #include <QtGui/qopengl.h>
 #include <QtGui/QMatrix3x3>
@@ -52,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpenGLTextureBlitterPrivate;
 
-class Q_GUI_EXPORT QOpenGLTextureBlitter
+class Q_OPENGL_EXPORT QOpenGLTextureBlitter
 {
 public:
     QOpenGLTextureBlitter();
@@ -88,7 +86,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif
 
 #endif //QOPENGLTEXTUREBLITTER_H
