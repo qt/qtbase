@@ -247,21 +247,24 @@ void tst_QSet::squeeze()
     set.squeeze();
     QVERIFY(set.capacity() < 100);
 
-    for (int i = 0; i < 500; ++i)
+    for (int i = 0; i < 512; ++i)
         set.insert(i);
-    QVERIFY(set.capacity() >= 500 && set.capacity() < 10000);
+    QVERIFY(set.capacity() == 512);
 
     set.reserve(50000);
     QVERIFY(set.capacity() >= 50000);
 
     set.squeeze();
-    QVERIFY(set.capacity() < 500);
+    QVERIFY(set.capacity() == 512);
 
     set.remove(499);
-    QVERIFY(set.capacity() < 500);
+    QVERIFY(set.capacity() == 512);
 
     set.insert(499);
-    QVERIFY(set.capacity() >= 500);
+    QVERIFY(set.capacity() == 512);
+
+    set.insert(1000);
+    QVERIFY(set.capacity() == 1024);
 
     for (int i = 0; i < 500; ++i)
         set.remove(i);
@@ -495,12 +498,12 @@ void tst_QSet::end()
 
         QVERIFY(i == j);
         QVERIFY(k == ell);
-        QVERIFY(i != k);
-        QVERIFY(j != ell);
 
         QVERIFY(set1.constBegin() != set1.constEnd());
         QVERIFY(set2.constBegin() == set2.constEnd());
+        QVERIFY(set1.constBegin() != set2.constBegin());
     }
+
 
     set2 = set1;
 

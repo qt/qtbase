@@ -62,7 +62,6 @@ private slots:
     void keyIterator();
     void keyValueIterator();
     void keys_values_uniqueKeys(); // slightly modified from tst_QMap
-    void noNeedlessRehashes();
 
     void const_shared_null();
     void twoArguments_qHash();
@@ -70,6 +69,8 @@ private slots:
     void eraseValidIteratorOnSharedHash();
     void equal_range();
     void insert_hash();
+
+    void badHashFunction();
 };
 
 struct IdentityTracker {
@@ -1325,20 +1326,6 @@ void tst_QHash::keys_values_uniqueKeys()
     QVERIFY(sorted(hash.values()) == sorted(QList<int>() << 2 << 1 << 4 << -2));
 }
 
-void tst_QHash::noNeedlessRehashes()
-{
-    QHash<int, int> hash;
-    for (int i = 0; i < 512; ++i) {
-        int j = (i * 345) % 512;
-        hash.insert(j, j);
-        int oldCapacity = hash.capacity();
-        hash[j] = j + 1;
-        QCOMPARE(oldCapacity, hash.capacity());
-        hash.insert(j, j + 1);
-        QCOMPARE(oldCapacity, hash.capacity());
-    }
-}
-
 void tst_QHash::const_shared_null()
 {
     QHash<int, QString> hash2;
@@ -1661,6 +1648,34 @@ void tst_QHash::insert_hash()
         QCOMPARE(hash[2], 5);
         QCOMPARE(hash[7], 55);
     }
+}
+
+struct BadKey {
+    int k;
+    BadKey(int i) : k(i) {}
+    bool operator==(const BadKey &other) const
+    {
+        return k == other.k;
+    }
+};
+
+size_t qHash(BadKey, size_t seed)
+{
+    return seed;
+}
+
+void tst_QHash::badHashFunction()
+{
+    QHash<BadKey, int> hash;
+    for (int i = 0; i < 10000; ++i)
+        hash.insert(i, i);
+
+    for (int i = 0; i < 10000; ++i)
+        QCOMPARE(hash.value(i), i);
+
+    for (int i = 10000; i < 20000; ++i)
+        QVERIFY(!hash.contains(i));
+
 }
 
 QTEST_APPLESS_MAIN(tst_QHash)

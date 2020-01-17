@@ -1286,19 +1286,13 @@ void tst_Collections::hash()
             QHash<int, int> hash;
             for (int i = 0; i < 1000; ++i)
                 hash.insert(i, i);
-            QVERIFY(hash.capacity() == 1031);
-            hash.squeeze();
-            QVERIFY(hash.capacity() == 521);
-
-            hash.insert(12345, 12345);
-            QVERIFY(hash.capacity() == 1031);
+            QVERIFY(hash.capacity() > 1000);
 
             for (int j = 0; j < 900; ++j)
                 hash.remove(j);
-            QVERIFY(hash.capacity() == 257);
+            QVERIFY(hash.capacity() > 1000);
             hash.squeeze();
-            QVERIFY(hash.capacity() == 67);
-            hash.reserve(0);
+            QVERIFY(hash.capacity() < 200);
         }
     }
 
@@ -1331,13 +1325,21 @@ void tst_Collections::hash()
 
         hash1.unite(hash2);
         QCOMPARE(hash1.size(), 5);
-        QCOMPARE(hash1.values(),
-                (QList<QString>() << "Gamma" << "Gamma" << "Beta" << "Gamma" << "Alpha"));
+        auto values = hash1.values();
+        qSort(values);
+        QList<QString> expected;
+        expected << "Gamma" << "Gamma" << "Beta" << "Gamma" << "Alpha";
+        qSort(expected);
+        QCOMPARE(values, expected);
 
         hash2 = hash1;
         hash2.unite(hash2);
         QCOMPARE(hash2.size(), 10);
-        QCOMPARE(hash2.values(), hash1.values() + hash1.values());
+        values = hash2.values();
+        qSort(values);
+        expected += expected;
+        qSort(expected);
+        QCOMPARE(values, expected);
     }
 }
 

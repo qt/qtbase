@@ -281,24 +281,14 @@ Q_INLINE_TEMPLATE bool QSet<T>::intersects(const QSet<T> &other) const
     const bool otherIsBigger = other.size() > size();
     const QSet &smallestSet = otherIsBigger ? *this : other;
     const QSet &biggestSet = otherIsBigger ? other : *this;
-    const bool equalSeeds = q_hash.d->seed == other.q_hash.d->seed;
     typename QSet::const_iterator i = smallestSet.cbegin();
     typename QSet::const_iterator e = smallestSet.cend();
 
-    if (Q_LIKELY(equalSeeds)) {
-        // If seeds are equal we take the fast path so no hash is recalculated.
-        while (i != e) {
-            if (*biggestSet.q_hash.findNode(*i, i.i.i->h) != biggestSet.q_hash.e)
-                return true;
-            ++i;
-        }
-    } else {
-        while (i != e) {
-            if (biggestSet.contains(*i))
-                return true;
-            ++i;
-        }
-     }
+    while (i != e) {
+        if (biggestSet.contains(*i))
+            return true;
+        ++i;
+    }
 
     return false;
 }

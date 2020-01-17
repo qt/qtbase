@@ -1630,7 +1630,7 @@ void QtSharedPointer::internalSafetyCheckCleanCheck()
         qFatal("Internal consistency error: the number of pointers is not equal!");
 
     if (Q_UNLIKELY(!kp->dPointers.isEmpty()))
-        qFatal("Pointer cleaning failed: %d entries remaining", kp->dPointers.size());
+        qFatal("Pointer cleaning failed: %d entries remaining", int(kp->dPointers.size()));
 #  endif
 }
 
