@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -51,7 +51,6 @@
 // We mean it.
 //
 
-#include <QtGui/private/qtguiglobal_p.h>
 #include <qopenglframebufferobject.h>
 #include <private/qopenglcontext_p.h>
 #include <private/qopenglextensions_p.h>
@@ -147,6 +146,7 @@ public:
     inline GLuint fbo() const { return fbo_guard ? fbo_guard->id() : 0; }
 };
 
+Q_OPENGL_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha);
 
 QT_END_NAMESPACE
 

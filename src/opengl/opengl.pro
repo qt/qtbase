@@ -15,6 +15,8 @@ HEADERS += \
     qopengldebug.h \
     qopenglengineshadermanager_p.h \
     qopenglengineshadersource_p.h \
+    qopenglframebufferobject.h \
+    qopenglframebufferobject_p.h \
     qopenglgradientcache_p.h \
     qopenglpaintdevice.h \
     qopenglpaintdevice_p.h \
@@ -35,6 +37,7 @@ SOURCES += \
     qopengl2pexvertexarray.cpp \
     qopenglcustomshaderstage.cpp \
     qopenglengineshadermanager.cpp \
+    qopenglframebufferobject.cpp \
     qopenglgradientcache.cpp \
     qopenglpaintdevice.cpp \
     qopenglpaintengine.cpp \

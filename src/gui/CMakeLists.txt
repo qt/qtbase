@@ -340,7 +340,6 @@ qt_extend_target(Gui CONDITION QT_FEATURE_opengl
         opengl/qopenglbuffer.cpp opengl/qopenglbuffer.h
         opengl/qopenglextensions_p.h
         opengl/qopenglextrafunctions.h
-        opengl/qopenglframebufferobject.cpp opengl/qopenglframebufferobject.h opengl/qopenglframebufferobject_p.h
         opengl/qopenglfunctions.cpp opengl/qopenglfunctions.h
         opengl/qopenglprogrambinarycache.cpp opengl/qopenglprogrambinarycache_p.h
         opengl/qopenglshaderprogram.cpp opengl/qopenglshaderprogram.h

@@ -11,6 +11,7 @@ qt_add_module(OpenGL
         qopengldebug.cpp qopengldebug.h
         qopenglengineshadermanager.cpp qopenglengineshadermanager_p.h
         qopenglengineshadersource_p.h
+        qopenglframebufferobject.cpp qopenglframebufferobject.h qopenglframebufferobject_p.h
         qopenglgradientcache.cpp qopenglgradientcache_p.h
         qopenglpaintdevice.cpp qopenglpaintdevice.h qopenglpaintdevice_p.h
         qopenglpaintengine.cpp qopenglpaintengine_p.h

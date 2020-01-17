@@ -8,8 +8,6 @@ qtConfig(opengl) {
     HEADERS += opengl/qopengl.h \
                opengl/qopengl_p.h \
                opengl/qopenglfunctions.h \
-               opengl/qopenglframebufferobject.h  \
-               opengl/qopenglframebufferobject_p.h  \
                opengl/qopenglbuffer.h \
                opengl/qopenglshaderprogram.h \
                opengl/qopenglextensions_p.h \
@@ -21,7 +19,6 @@ qtConfig(opengl) {
 
     SOURCES += opengl/qopengl.cpp \
                opengl/qopenglfunctions.cpp \
-               opengl/qopenglframebufferobject.cpp \
                opengl/qopenglbuffer.cpp \
                opengl/qopenglshaderprogram.cpp \
                opengl/qopenglversionfunctions.cpp \

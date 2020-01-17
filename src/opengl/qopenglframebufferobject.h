@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -40,9 +40,7 @@
 #ifndef QOPENGLFRAMEBUFFEROBJECT_H
 #define QOPENGLFRAMEBUFFEROBJECT_H
 
-#include <QtGui/qtguiglobal.h>
-
-#ifndef QT_NO_OPENGL
+#include <QtOpenGL/qtopenglglobal.h>
 
 #include <QtGui/qopengl.h>
 #include <QtGui/qpaintdevice.h>
@@ -65,7 +63,7 @@ QT_BEGIN_NAMESPACE
 class QOpenGLFramebufferObjectPrivate;
 class QOpenGLFramebufferObjectFormat;
 
-class Q_GUI_EXPORT QOpenGLFramebufferObject
+class Q_OPENGL_EXPORT QOpenGLFramebufferObject
 {
     Q_DECLARE_PRIVATE(QOpenGLFramebufferObject)
 public:
@@ -161,7 +159,7 @@ private:
 };
 
 class QOpenGLFramebufferObjectFormatPrivate;
-class Q_GUI_EXPORT QOpenGLFramebufferObjectFormat
+class Q_OPENGL_EXPORT QOpenGLFramebufferObjectFormat
 {
 public:
     QOpenGLFramebufferObjectFormat();
@@ -194,7 +192,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QT_NO_OPENGL
 
 #endif // QOPENGLFRAMEBUFFEROBJECT_H

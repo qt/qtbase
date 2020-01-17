@@ -38,13 +38,15 @@
 ****************************************************************************/
 
 #include "qopenglwindow.h"
-#include <QtGui/QOpenGLFramebufferObject>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/private/qpaintdevicewindow_p.h>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QMatrix4x4>
 #include <QtGui/QOffscreenSurface>
+
+#include <QtOpenGL/private/qopenglframebufferobject_p.h>
+#include <QtOpenGL/QOpenGLFramebufferObject>
 #include <QtOpenGL/QOpenGLTextureBlitter>
 #include <QtOpenGL/QOpenGLPaintDevice>
 
@@ -507,8 +509,6 @@ GLuint QOpenGLWindow::defaultFramebufferObject() const
     else
         return 0;
 }
-
-extern Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha);
 
 /*!
   Returns a copy of the framebuffer.

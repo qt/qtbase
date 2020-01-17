@@ -26,11 +26,11 @@
 **
 ****************************************************************************/
 
+#include <QtOpenGL/QOpenGLFramebufferObject>
 #include <QtOpenGL/QOpenGLPaintDevice>
 #include <QtOpenGL/QOpenGLTexture>
 #include <QtOpenGL/qopengltextureblitter.h>
 #include <QtGui/private/qopenglcontext_p.h>
-#include <QtGui/QOpenGLFramebufferObject>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLFunctions_4_2_Core>
 #include <QtGui/QOpenGLVertexArrayObject>

@@ -39,7 +39,6 @@
 
 #include "qopenglwidget.h"
 #include <QtGui/QOpenGLContext>
-#include <QtGui/QOpenGLFramebufferObject>
 #include <QtGui/QOffscreenSurface>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QWindow>
@@ -47,12 +46,14 @@
 #include <QtGui/QScreen>
 #include <QtGui/qpa/qplatformwindow.h>
 #include <QtGui/qpa/qplatformintegration.h>
+#include <QtOpenGL/QOpenGLFramebufferObject>
 #include <QtOpenGL/QOpenGLPaintDevice>
 
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qopenglextensions_p.h>
 #include <QtGui/private/qfont_p.h>
 #include <QtGui/private/qopenglcontext_p.h>
+#include <QtOpenGL/private/qopenglframebufferobject_p.h>
 #include <QtOpenGL/private/qopenglpaintdevice_p.h>
 
 #include <QtWidgets/private/qwidget_p.h>
@@ -929,8 +930,6 @@ void QOpenGLWidgetPrivate::invalidateFbo()
         f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 }
-
-extern Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha);
 
 QImage QOpenGLWidgetPrivate::grabFramebuffer()
 {

@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
+#include <QtOpenGL/QOpenGLFramebufferObject>
 #include <QtGui/QOpenGLContext>
-#include <QtGui/QOpenGLFramebufferObject>
 #include <QtGui/QWindow>
 #include <qpa/qplatformbackingstore.h>
 

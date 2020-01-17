@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -156,7 +156,7 @@ QT_BEGIN_NAMESPACE
     \class QOpenGLFramebufferObjectFormat
     \brief The QOpenGLFramebufferObjectFormat class specifies the format of an OpenGL
     framebuffer object.
-    \inmodule QtGui
+    \inmodule QtOpenGL
 
     \since 5.0
 
@@ -808,7 +808,7 @@ void QOpenGLFramebufferObjectPrivate::initDepthStencilAttachments(QOpenGLContext
     \class QOpenGLFramebufferObject
     \brief The QOpenGLFramebufferObject class encapsulates an OpenGL framebuffer object.
     \since 5.0
-    \inmodule QtGui
+    \inmodule QtOpenGL
 
     \ingroup painting-3D
 
@@ -1405,7 +1405,7 @@ static QImage qt_gl_read_framebuffer(const QSize &size, GLenum internal_format, 
     return QImage();
 }
 
-Q_GUI_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
+Q_OPENGL_EXPORT QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include_alpha)
 {
     return qt_gl_read_framebuffer(size, alpha_format ? GL_RGBA : GL_RGB, include_alpha, true);
 }

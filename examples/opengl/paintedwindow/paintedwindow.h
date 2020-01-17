@@ -52,7 +52,7 @@
 
 #include <QtGui/qopengl.h>
 #include <QtGui/qopenglshaderprogram.h>
-#include <QtGui/qopenglframebufferobject.h>
+#include <QtOpenGL/qopenglframebufferobject.h>
 
 #include <QPropertyAnimation>
 
