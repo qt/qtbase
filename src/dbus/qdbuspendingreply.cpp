@@ -91,8 +91,7 @@
     QDBusPendingCallWatcher objects, which emit signals when the reply
     arrives.
 
-    \sa QDBusPendingCallWatcher, QDBusReply,
-        QDBusAbstractInterface::asyncCall()
+    \sa QDBusPendingCallWatcher, QDBusReply
 */
 
 /*!

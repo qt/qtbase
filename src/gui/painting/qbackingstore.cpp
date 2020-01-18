@@ -220,8 +220,6 @@ static bool isRasterSurface(QWindow *window)
     to the backingstore's top level window.
 
     You should call this function after ending painting with endPaint().
-
-    \sa QWindow::transientParent()
 */
 void QBackingStore::flush(const QRegion &region, QWindow *window, const QPoint &offset)
 {

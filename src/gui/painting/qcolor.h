@@ -72,10 +72,10 @@ public:
     QColor(Qt::GlobalColor color) noexcept;
     Q_DECL_CONSTEXPR QColor(int r, int g, int b, int a = 255) noexcept
         : cspec(isRgbaValid(r, g, b, a) ? Rgb : Invalid),
-          ct(cspec == Rgb ? a * 0x0101 : 0,
-             cspec == Rgb ? r * 0x0101 : 0,
-             cspec == Rgb ? g * 0x0101 : 0,
-             cspec == Rgb ? b * 0x0101 : 0,
+          ct(ushort(cspec == Rgb ? a * 0x0101 : 0),
+             ushort(cspec == Rgb ? r * 0x0101 : 0),
+             ushort(cspec == Rgb ? g * 0x0101 : 0),
+             ushort(cspec == Rgb ? b * 0x0101 : 0),
              0) {}
     QColor(QRgb rgb) noexcept;
     QColor(QRgba64 rgba64) noexcept;

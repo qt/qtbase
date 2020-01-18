@@ -192,7 +192,6 @@ QT_BEGIN_NAMESPACE
     an in-place swap (if necessary). If they are not the same, the memory
     regions must not overlap.
 
-    \sa qFromLittleEndian()
     \sa qToBigEndian()
     \sa qToLittleEndian()
 */

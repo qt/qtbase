@@ -387,17 +387,12 @@
     \snippet graphicsview/padnavigator/padnavigator.cpp 7
 
     We now create the animations that control the flip-effect when you press
-    the enter key. The main goal is to rotate the pad by 180 degrees or back,
-    but we also need to make sure the selection item's tilt rotations are reset
-    back to 0 when the pad is flipped, and restored back to their original
-    values when flipped back:
+    the enter key. The main goal is to rotate the pad by 180 degrees or back.
 
     \list
     \li \c smoothFlipRotation: Animates the main 180 degree rotation of the pad.
     \li \c smoothFlipScale: Scales the pad out and then in again while the pad is rotating.
-    \li \c smoothFlipXRotation: Animates the selection item's X-tilt to 0 and back.
-    \li \c smoothFlipYRotation: Animates the selection item's Y-tilt to 0 and back.
-    \li \c flipAnimation: A parallel animation group that ensures all the above animations are run in parallel.
+    \li \c flipAnimation: A parallel animation group that ensures the above animations are run in parallel.
     \endlist
 
     All animations are given a 500 millisecond duration and an
@@ -447,10 +442,16 @@
     Each state assigns specific properties to objects on entry. Most
     interesting perhaps is the assignment of the value 0.0 to the pad's \c
     flipRotation angle property when in \c frontState, and 180.0 when in \c
-    backState. At the end of this section we register default animations with
-    the state engine; these animations will apply to their respective objects
-    and properties for any state transition. Otherwise it's common to assign
+    backState.
+
+    At the end of this section we register default animations with the state
+    engine; these animations will apply to their respective objects and
+    properties for any state transition. Otherwise it's common to assign
     animations to specific transitions.
+
+    Specifically, we use default animations to control the selection item's
+    movement and tilt rotations. The tilt rotations are set to 0 when the pad
+    is flipped, and restored back to their original values when flipped back.
 
     The \c splashState state is set as the initial state. This is required
     before we start the state engine. We proceed with creating some
