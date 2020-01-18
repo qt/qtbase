@@ -47,7 +47,7 @@ depends += \
     qtnetwork \
     qtopengl \
     qtprintsupport \
-    qtqml \
+    qtqml qtqmltest \
     qtquick \
     qtquickcontrols \
     qtquickdialogs \

@@ -41,6 +41,7 @@ depends += \
     qtwidgets \
     qtdoc \
     qmake \
+    qtcmake \
     qttestlib
 
 headerdirs  += ..
