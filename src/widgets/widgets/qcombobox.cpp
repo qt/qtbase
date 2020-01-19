@@ -2096,6 +2096,9 @@ QAbstractItemDelegate *QComboBox::itemDelegate() const
     Sets the item \a delegate for the popup list view.
     The combobox takes ownership of the delegate.
 
+    Any existing delegate will be removed, but not deleted. QComboBox
+    does not take ownership of \a delegate.
+
     \warning You should not share the same instance of a delegate between comboboxes,
     widget mappers or views. Doing so can cause incorrect or unintuitive editing behavior
     since each view connected to a given delegate may receive the
@@ -2110,7 +2113,6 @@ void QComboBox::setItemDelegate(QAbstractItemDelegate *delegate)
         qWarning("QComboBox::setItemDelegate: cannot set a 0 delegate");
         return;
     }
-    delete view()->itemDelegate();
     view()->setItemDelegate(delegate);
 }
 

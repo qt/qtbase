@@ -383,6 +383,9 @@ QAbstractItemModel *QDataWidgetMapper::model() const
     data from the model into the widget and from the widget to the model,
     using QAbstractItemDelegate::setEditorData() and QAbstractItemDelegate::setModelData().
 
+    Any existing delegate will be removed, but not deleted. QDataWidgetMapper
+    does not take ownership of \a delegate.
+
     The delegate also decides when to apply data and when to change the editor,
     using QAbstractItemDelegate::commitData() and QAbstractItemDelegate::closeEditor().
 
