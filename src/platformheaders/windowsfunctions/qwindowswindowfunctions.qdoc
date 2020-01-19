@@ -28,6 +28,7 @@
 /*!
     \class QWindowsWindowFunctions
     \inmodule QtPlatformHeaders
+    \inheaderfile QtPlatformHeaders/QWindowsWindowFunctions
     \since 5.5
     \brief The QWindowsWindowFunctions class is an inline class containing
     miscellaneous functionality for Windows window specific functionality.

@@ -723,7 +723,7 @@ QCalendar::QCalendar(QLatin1String name)
 QCalendar::QCalendar(QStringView name)
     : d(QCalendarBackend::fromName(name)) {}
 
-/*
+/*!
     \fn bool QCalendar::isValid() const
 
     Returns true if this is a valid calendar object.

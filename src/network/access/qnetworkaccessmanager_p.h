@@ -120,8 +120,8 @@ public:
     QThread * createThread();
     void destroyThread();
 
-    void _q_replyFinished();
-    void _q_replyEncrypted();
+    void _q_replyFinished(QNetworkReply *reply);
+    void _q_replyEncrypted(QNetworkReply *reply);
     void _q_replySslErrors(const QList<QSslError> &errors);
     void _q_replyPreSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *authenticator);
     QNetworkReply *postProcess(QNetworkReply *reply);
