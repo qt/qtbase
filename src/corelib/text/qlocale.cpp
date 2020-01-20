@@ -734,23 +734,23 @@ static void updateSystemPrivate()
         globalLocaleData.m_script_id = res.toInt();
 
     res = sys_locale->query(QSystemLocale::DecimalPoint, QVariant());
-    if (!res.isNull())
+    if (!res.isNull() && !res.toString().isEmpty())
         globalLocaleData.m_decimal = res.toString().at(0).unicode();
 
     res = sys_locale->query(QSystemLocale::GroupSeparator, QVariant());
-    if (!res.isNull())
+    if (!res.isNull() && !res.toString().isEmpty())
         globalLocaleData.m_group = res.toString().at(0).unicode();
 
     res = sys_locale->query(QSystemLocale::ZeroDigit, QVariant());
-    if (!res.isNull())
+    if (!res.isNull() && !res.toString().isEmpty())
         globalLocaleData.m_zero = res.toString().at(0).unicode();
 
     res = sys_locale->query(QSystemLocale::NegativeSign, QVariant());
-    if (!res.isNull())
+    if (!res.isNull() && !res.toString().isEmpty())
         globalLocaleData.m_minus = res.toString().at(0).unicode();
 
     res = sys_locale->query(QSystemLocale::PositiveSign, QVariant());
-    if (!res.isNull())
+    if (!res.isNull() && !res.toString().isEmpty())
         globalLocaleData.m_plus = res.toString().at(0).unicode();
 }
 #endif // !QT_NO_SYSTEMLOCALE
