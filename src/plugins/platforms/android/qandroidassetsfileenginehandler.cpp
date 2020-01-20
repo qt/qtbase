@@ -146,7 +146,7 @@ public:
             jobjectArray jFiles = static_cast<jobjectArray>(files.object());
             const jint nFiles = env->GetArrayLength(jFiles);
             for (int i = 0; i < nFiles; ++i) {
-                AssetItem item{QJNIObjectPrivate(env->GetObjectArrayElement(jFiles, i)).toString()};
+                AssetItem item{QJNIObjectPrivate::fromLocalRef(env->GetObjectArrayElement(jFiles, i)).toString()};
                 insert(std::upper_bound(begin(), end(), item, [](const auto &a, const auto &b){
                     return a.name < b.name;
                 }), item);
