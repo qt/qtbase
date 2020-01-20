@@ -3282,6 +3282,11 @@ function(qt_add_simd_part target)
 
         target_link_libraries("${target}" PRIVATE "${name}")
 
+        # Add a link-only dependency on the parent library, to force copying of framework headers
+        # before trying to compile a source file.
+        target_link_libraries("${name}" PRIVATE
+              $<FILTER:$<TARGET_PROPERTY:${target},LINK_LIBRARIES>,EXCLUDE,^${target}_simd_>)
+
         if(NOT BUILD_SHARED_LIBS)
             qt_install(
               TARGETS ${name}
