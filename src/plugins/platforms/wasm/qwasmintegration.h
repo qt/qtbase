@@ -88,6 +88,7 @@ public:
     void resizeScreen(const QString &canvasId);
     void resizeAllScreens();
     void updateDpi();
+    void removeBackingStore(QWindow* window);
 
 private:
     mutable QWasmFontDatabase *m_fontDb;
