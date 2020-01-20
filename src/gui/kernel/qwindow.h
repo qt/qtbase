@@ -119,11 +119,11 @@ class Q_GUI_EXPORT QWindow : public QObject, public QSurface
     Q_PROPERTY(int maximumWidth READ maximumWidth WRITE setMaximumWidth NOTIFY maximumWidthChanged)
     Q_PROPERTY(int maximumHeight READ maximumHeight WRITE setMaximumHeight NOTIFY maximumHeightChanged)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
-    Q_PROPERTY(bool active READ isActive NOTIFY activeChanged REVISION 1)
-    Q_PROPERTY(Visibility visibility READ visibility WRITE setVisibility NOTIFY visibilityChanged REVISION 1)
+    Q_PROPERTY(bool active READ isActive NOTIFY activeChanged REVISION(2, 1))
+    Q_PROPERTY(Visibility visibility READ visibility WRITE setVisibility NOTIFY visibilityChanged REVISION(2, 1))
     Q_PROPERTY(Qt::ScreenOrientation contentOrientation READ contentOrientation WRITE reportContentOrientationChange NOTIFY contentOrientationChanged)
-    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged REVISION 1)
-    Q_PRIVATE_PROPERTY(QWindow::d_func(), QWindow* transientParent MEMBER transientParent WRITE setTransientParent NOTIFY transientParentChanged REVISION 13)
+    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged REVISION(2, 1))
+    Q_PRIVATE_PROPERTY(QWindow::d_func(), QWindow* transientParent MEMBER transientParent WRITE setTransientParent NOTIFY transientParentChanged REVISION(2, 13))
 
 public:
     enum Visibility {
@@ -277,7 +277,7 @@ public:
 #endif
 
 public Q_SLOTS:
-    Q_REVISION(1) void requestActivate();
+    Q_REVISION(2, 1) void requestActivate();
 
     void setVisible(bool visible);
 
@@ -309,15 +309,15 @@ public Q_SLOTS:
     void setMaximumWidth(int w);
     void setMaximumHeight(int h);
 
-    Q_REVISION(1) void alert(int msec);
+    Q_REVISION(2, 1) void alert(int msec);
 
-    Q_REVISION(3) void requestUpdate();
+    Q_REVISION(2 ,3) void requestUpdate();
 
 Q_SIGNALS:
     void screenChanged(QScreen *screen);
     void modalityChanged(Qt::WindowModality modality);
     void windowStateChanged(Qt::WindowState windowState);
-    Q_REVISION(2) void windowTitleChanged(const QString &title);
+    Q_REVISION(2, 2) void windowTitleChanged(const QString &title);
 
     void xChanged(int arg);
     void yChanged(int arg);
@@ -331,15 +331,15 @@ Q_SIGNALS:
     void maximumHeightChanged(int arg);
 
     void visibleChanged(bool arg);
-    Q_REVISION(1) void visibilityChanged(QWindow::Visibility visibility);
-    Q_REVISION(1) void activeChanged();
+    Q_REVISION(2, 1) void visibilityChanged(QWindow::Visibility visibility);
+    Q_REVISION(2, 1) void activeChanged();
     void contentOrientationChanged(Qt::ScreenOrientation orientation);
 
     void focusObjectChanged(QObject *object);
 
-    Q_REVISION(1) void opacityChanged(qreal opacity);
+    Q_REVISION(2, 1) void opacityChanged(qreal opacity);
 
-    Q_REVISION(13) void transientParentChanged(QWindow *transientParent);
+    Q_REVISION(2, 13) void transientParentChanged(QWindow *transientParent);
 
 protected:
     virtual void exposeEvent(QExposeEvent *);
