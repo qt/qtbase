@@ -1776,6 +1776,8 @@ void QNetworkAccessManagerPrivate::_q_replyEncrypted(QNetworkReply *reply)
 #ifndef QT_NO_SSL
     Q_Q(QNetworkAccessManager);
     emit q->encrypted(reply);
+#else
+    Q_UNUSED(reply);
 #endif
 }
 
