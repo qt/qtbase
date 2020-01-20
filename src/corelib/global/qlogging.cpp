@@ -1669,14 +1669,34 @@ static bool android_default_message_handler(QtMsgType type,
 #endif //Q_OS_ANDROID
 
 #ifdef Q_OS_WIN
+static void win_outputDebugString_helper(QStringView message)
+{
+    const int maxOutputStringLength = 32766;
+    static QBasicMutex m;
+    auto locker = qt_unique_lock(m);
+    // fast path: Avoid string copies if one output is enough
+    if (message.length() <= maxOutputStringLength) {
+        OutputDebugString(reinterpret_cast<const wchar_t *>(message.utf16()));
+    } else {
+        wchar_t *messagePart = new wchar_t[maxOutputStringLength + 1];
+        for (int i = 0; i < message.length(); i += maxOutputStringLength ) {
+            const int length = std::min(message.length() - i, maxOutputStringLength );
+            const int len = message.mid(i, length).toWCharArray(messagePart);
+            Q_ASSERT(len == length);
+            messagePart[len] = 0;
+            OutputDebugString(messagePart);
+        }
+        delete[] messagePart;
+    }
+}
+
 static bool win_message_handler(QtMsgType type, const QMessageLogContext &context, const QString &message)
 {
     if (shouldLogToStderr())
         return false; // Leave logging up to stderr handler
 
-    QString formattedMessage = qFormatLogMessage(type, context, message);
-    formattedMessage.append(QLatin1Char('\n'));
-    OutputDebugString(reinterpret_cast<const wchar_t *>(formattedMessage.utf16()));
+    const QString formattedMessage = qFormatLogMessage(type, context, message).append('\n');
+    win_outputDebugString_helper(formattedMessage);
 
     return true; // Prevent further output to stderr
 }
@@ -1832,11 +1852,11 @@ static void qt_message_print(QtMsgType msgType, const QMessageLogContext &contex
 static void qt_message_print(const QString &message)
 {
 #if defined(Q_OS_WINRT)
-    OutputDebugString(reinterpret_cast<const wchar_t*>(message.utf16()));
+    win_outputDebugString_helper(message);
     return;
 #elif defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
     if (!shouldLogToStderr()) {
-        OutputDebugString(reinterpret_cast<const wchar_t*>(message.utf16()));
+        win_outputDebugString_helper(message);
         return;
     }
 #endif
