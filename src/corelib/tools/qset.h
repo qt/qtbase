@@ -105,11 +105,7 @@ public:
         friend class QSet<T>;
 
     public:
-#if QT_DEPRECATED_SINCE(5, 15)
-        typedef std::bidirectional_iterator_tag iterator_category;
-#else
         typedef std::forward_iterator_tag iterator_category;
-#endif
         typedef qptrdiff difference_type;
         typedef T value_type;
         typedef const T *pointer;
@@ -129,15 +125,6 @@ public:
             { return i != o.i; }
         inline iterator &operator++() { ++i; return *this; }
         inline iterator operator++(int) { iterator r = *this; ++i; return r; }
-#if QT_DEPRECATED_SINCE(5, 15)
-        inline QT_DEPRECATED iterator &operator--() { --i; return *this; }
-        inline QT_DEPRECATED iterator operator--(int) { iterator r = *this; --i; return r; }
-        inline QT_DEPRECATED iterator operator+(int j) const { return i + j; }
-        inline QT_DEPRECATED iterator operator-(int j) const { return i - j; }
-        friend inline QT_DEPRECATED iterator operator+(int j, iterator k) { return k + j; }
-        inline QT_DEPRECATED iterator &operator+=(int j) { i += j; return *this; }
-        inline QT_DEPRECATED iterator &operator-=(int j) { i -= j; return *this; }
-#endif
     };
 
     class const_iterator
@@ -148,11 +135,7 @@ public:
         friend class QSet<T>;
 
     public:
-#if QT_DEPRECATED_SINCE(5, 15)
-        typedef std::bidirectional_iterator_tag iterator_category;
-#else
         typedef std::forward_iterator_tag iterator_category;
-#endif
         typedef qptrdiff difference_type;
         typedef T value_type;
         typedef const T *pointer;
@@ -170,15 +153,6 @@ public:
         inline bool operator!=(const const_iterator &o) const { return i != o.i; }
         inline const_iterator &operator++() { ++i; return *this; }
         inline const_iterator operator++(int) { const_iterator r = *this; ++i; return r; }
-#if QT_DEPRECATED_SINCE(5, 15)
-        inline QT_DEPRECATED const_iterator &operator--() { --i; return *this; }
-        inline QT_DEPRECATED const_iterator operator--(int) { const_iterator r = *this; --i; return r; }
-        inline QT_DEPRECATED const_iterator operator+(int j) const { return i + j; }
-        inline QT_DEPRECATED const_iterator operator-(int j) const { return i - j; }
-        friend inline QT_DEPRECATED const_iterator operator+(int j, const_iterator k) { return k + j; }
-        inline QT_DEPRECATED const_iterator &operator+=(int j) { i += j; return *this; }
-        inline QT_DEPRECATED const_iterator &operator-=(int j) { i -= j; return *this; }
-#endif
     };
 
     // STL style
@@ -191,23 +165,10 @@ public:
     inline const_iterator cend() const noexcept { return q_hash.end(); }
     inline const_iterator constEnd() const noexcept { return q_hash.constEnd(); }
 
-#if QT_DEPRECATED_SINCE(5, 15)
-    typedef std::reverse_iterator<iterator> reverse_iterator;
-    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-
-    reverse_iterator QT_DEPRECATED rbegin() { return reverse_iterator(end()); }
-    reverse_iterator QT_DEPRECATED rend() { return reverse_iterator(begin()); }
-    const_reverse_iterator QT_DEPRECATED rbegin() const noexcept { return const_reverse_iterator(end()); }
-    const_reverse_iterator QT_DEPRECATED rend() const noexcept { return const_reverse_iterator(begin()); }
-    const_reverse_iterator QT_DEPRECATED crbegin() const noexcept { return const_reverse_iterator(end()); }
-    const_reverse_iterator QT_DEPRECATED crend() const noexcept { return const_reverse_iterator(begin()); }
-#endif
-
     iterator erase(iterator i)
     { return erase(m2c(i)); }
     iterator erase(const_iterator i)
     {
-        Q_ASSERT_X(isValidIterator(i), "QSet::erase", "The specified const_iterator argument 'i' is invalid");
         return q_hash.erase(reinterpret_cast<typename Hash::const_iterator &>(i));
     }
 
@@ -263,15 +224,6 @@ private:
 
     static const_iterator m2c(iterator it) noexcept
     { return const_iterator(typename Hash::const_iterator(it.i.i)); }
-
-    bool isValidIterator(const iterator &i) const
-    {
-        return q_hash.isValidIterator(reinterpret_cast<const typename Hash::iterator&>(i));
-    }
-    bool isValidIterator(const const_iterator &i) const noexcept
-    {
-        return q_hash.isValidIterator(reinterpret_cast<const typename Hash::const_iterator&>(i));
-    }
 };
 
 #if defined(__cpp_deduction_guides) && __cpp_deduction_guides >= 201606
@@ -415,14 +367,6 @@ public:
     inline const T &value() const { Q_ASSERT(item_exists()); return *n; }
     inline bool findNext(const T &t)
     { while (c->constEnd() != (n = i)) if (*i++ == t) return true; return false; }
-#if QT_DEPRECATED_SINCE(5, 15)
-    inline QT_DEPRECATED bool hasPrevious() const { return c->constBegin() != i; }
-    inline QT_DEPRECATED const T &previous() { n = --i; return *n; }
-    inline QT_DEPRECATED const T &peekPrevious() const { iterator p = i; return *--p; }
-    inline QT_DEPRECATED bool findPrevious(const T &t)
-    { while (c->constBegin() != i) if (*(n = --i) == t) return true;
-      n = c->end(); return false;  }
-#endif
 };
 #endif // QT_NO_JAVA_STYLE_ITERATORS
 

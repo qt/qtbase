@@ -59,7 +59,6 @@ private slots:
     void begin();
     void end();
     void insert();
-    void reverseIterators();
     void setOperations();
     void stlIterator();
     void stlMutableIterator();
@@ -577,21 +576,6 @@ void tst_QSet::insert()
     }
 }
 
-void tst_QSet::reverseIterators()
-{
-    QSet<int> s;
-    s << 1 << 17 << 61 << 127 << 911;
-    std::vector<int> v(s.begin(), s.end());
-    std::reverse(v.begin(), v.end());
-    const QSet<int> &cs = s;
-    QVERIFY(std::equal(v.begin(), v.end(), s.rbegin()));
-    QVERIFY(std::equal(v.begin(), v.end(), s.crbegin()));
-    QVERIFY(std::equal(v.begin(), v.end(), cs.rbegin()));
-    QVERIFY(std::equal(s.rbegin(), s.rend(), v.begin()));
-    QVERIFY(std::equal(s.crbegin(), s.crend(), v.begin()));
-    QVERIFY(std::equal(cs.rbegin(), cs.rend(), v.begin()));
-}
-
 void tst_QSet::setOperations()
 {
     QSet<QString> set1, set2;
@@ -705,16 +689,6 @@ void tst_QSet::stlIterator()
         }
         QVERIFY(sum == 24999 * 25000 / 2);
     }
-
-    {
-        int sum = 0;
-        QSet<QString>::const_iterator i = set1.end();
-        while (i != set1.begin()) {
-            --i;
-            sum += toNumber(*i);
-        }
-        QVERIFY(sum == 24999 * 25000 / 2);
-    }
 }
 
 void tst_QSet::stlMutableIterator()
@@ -734,21 +708,10 @@ void tst_QSet::stlMutableIterator()
     }
 
     {
-        int sum = 0;
-        QSet<QString>::iterator i = set1.end();
-        while (i != set1.begin()) {
-            --i;
-            sum += toNumber(*i);
-        }
-        QVERIFY(sum == 24999 * 25000 / 2);
-    }
-
-    {
         QSet<QString> set2 = set1;
         QSet<QString> set3 = set2;
 
         QSet<QString>::iterator i = set2.begin();
-        QSet<QString>::iterator j = set3.begin();
 
         while (i != set2.end()) {
             i = set2.erase(i);
@@ -756,24 +719,7 @@ void tst_QSet::stlMutableIterator()
         QVERIFY(set2.isEmpty());
         QVERIFY(!set3.isEmpty());
 
-        j = set3.end();
-        while (j != set3.begin()) {
-            j--;
-            if (j + 1 != set3.end())
-                set3.erase(j + 1);
-        }
-        if (set3.begin() != set3.end())
-            set3.erase(set3.begin());
-
-        QVERIFY(set2.isEmpty());
-        QVERIFY(set3.isEmpty());
-
-// #if QT_VERSION >= 0x050000
-//         i = set2.insert("foo");
-// #else
-        QSet<QString>::const_iterator k = set2.insert("foo");
-        i = reinterpret_cast<QSet<QString>::iterator &>(k);
-// #endif
+        i = set2.insert("foo");
         QCOMPARE(*i, QLatin1String("foo"));
     }
 }
@@ -798,47 +744,6 @@ void tst_QSet::javaIterator()
         while (i.hasNext()) {
             sum += toNumber(i.peekNext());
             i.next();
-        }
-        QVERIFY(sum == 24999 * 25000 / 2);
-    }
-
-    {
-        int sum = 0;
-        QSetIterator<QString> i(set1);
-        while (i.hasNext()) {
-            i.next();
-            sum += toNumber(i.peekPrevious());
-        }
-        QVERIFY(sum == 24999 * 25000 / 2);
-    }
-
-    {
-        int sum = 0;
-        QSetIterator<QString> i(set1);
-        i.toBack();
-        while (i.hasPrevious())
-            sum += toNumber(i.previous());
-        QVERIFY(sum == 24999 * 25000 / 2);
-    }
-
-    {
-        int sum = 0;
-        QSetIterator<QString> i(set1);
-        i.toBack();
-        while (i.hasPrevious()) {
-            sum += toNumber(i.peekPrevious());
-            i.previous();
-        }
-        QVERIFY(sum == 24999 * 25000 / 2);
-    }
-
-    {
-        int sum = 0;
-        QSetIterator<QString> i(set1);
-        i.toBack();
-        while (i.hasPrevious()) {
-            i.previous();
-            sum += toNumber(i.peekNext());
         }
         QVERIFY(sum == 24999 * 25000 / 2);
     }
@@ -897,52 +802,10 @@ void tst_QSet::javaMutableIterator()
     }
 
     {
-        int sum = 0;
-        QMutableSetIterator<QString> i(set1);
-        while (i.hasNext()) {
-            i.next();
-            sum += toNumber(i.peekPrevious());
-        }
-        QVERIFY(sum == 24999 * 25000 / 2);
-    }
-
-    {
-        int sum = 0;
-        QMutableSetIterator<QString> i(set1);
-        i.toBack();
-        while (i.hasPrevious())
-            sum += toNumber(i.previous());
-        QVERIFY(sum == 24999 * 25000 / 2);
-    }
-
-    {
-        int sum = 0;
-        QMutableSetIterator<QString> i(set1);
-        i.toBack();
-        while (i.hasPrevious()) {
-            sum += toNumber(i.peekPrevious());
-            i.previous();
-        }
-        QVERIFY(sum == 24999 * 25000 / 2);
-    }
-
-    {
-        int sum = 0;
-        QMutableSetIterator<QString> i(set1);
-        i.toBack();
-        while (i.hasPrevious()) {
-            i.previous();
-            sum += toNumber(i.peekNext());
-        }
-        QVERIFY(sum == 24999 * 25000 / 2);
-    }
-
-    {
         QSet<QString> set2 = set1;
         QSet<QString> set3 = set2;
 
         QMutableSetIterator<QString> i(set2);
-        QMutableSetIterator<QString> j(set3);
 
         while (i.hasNext()) {
             i.next();
@@ -950,14 +813,6 @@ void tst_QSet::javaMutableIterator()
         }
         QVERIFY(set2.isEmpty());
         QVERIFY(!set3.isEmpty());
-
-        j.toBack();
-        while (j.hasPrevious()) {
-            j.previous();
-            j.remove();
-        }
-        QVERIFY(set2.isEmpty());
-        QVERIFY(set3.isEmpty());
     }
 }
 
