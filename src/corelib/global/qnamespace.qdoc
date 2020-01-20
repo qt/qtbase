@@ -1017,7 +1017,7 @@
 
     \value WA_MacNoClickThrough This value is obsolete and has no effect.
 
-    \value WA_MacOpaqueSizeGrip Indicates that the native Carbon size grip
+    \value WA_MacOpaqueSizeGrip Indicates that the native size grip
     should be opaque instead of transparent (the default). This attribute
     is only applicable to \macos and is set by the widget's author.
 
