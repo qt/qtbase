@@ -33,8 +33,10 @@
 
 #include <emscripten.h>
 
+#if QT_CONFIG(thread)
 #if (__EMSCRIPTEN_major__ > 1 || __EMSCRIPTEN_minor__ > 38 || __EMSCRIPTEN_minor__ == 38 && __EMSCRIPTEN_tiny__ >= 22)
 #  define EMSCRIPTEN_HAS_ASYNC_RUN_IN_MAIN_RUNTIME_THREAD
+#endif
 #endif
 
 #ifdef EMSCRIPTEN_HAS_ASYNC_RUN_IN_MAIN_RUNTIME_THREAD
