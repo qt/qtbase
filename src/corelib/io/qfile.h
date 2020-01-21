@@ -125,6 +125,9 @@ public:
     bool remove();
     static bool remove(const QString &fileName);
 
+    bool moveToTrash();
+    static bool moveToTrash(const QString &fileName, QString *pathInTrash = nullptr);
+
     bool rename(const QString &newName);
     static bool rename(const QString &oldName, const QString &newName);
 
