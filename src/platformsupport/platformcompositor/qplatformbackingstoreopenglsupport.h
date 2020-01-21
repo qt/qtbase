@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2020 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -37,19 +37,51 @@
 **
 ****************************************************************************/
 
-#ifndef QPLATFORMGRAPHICSBUFFERHELPER_H
-#define QPLATFORMGRAPHICSBUFFERHELPER_H
+#ifndef QPLATFORMBACKINGSTOREOPENGLSUPPORT_H
+#define QPLATFORMBACKINGSTOREOPENGLSUPPORT_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is part of the QPA API and is not meant to be used
+// in applications. Usage of this API may make your code
+// source and binary incompatible with future versions of Qt.
+//
+
+#ifndef QT_NO_OPENGL
 
 #include <QtGui/qtguiglobal.h>
-#include <QtGui/qpa/qplatformgraphicsbuffer.h>
+#include <qpa/qplatformbackingstore.h>
+
+#include <QtGui/QOpenGLContext>
 
 QT_BEGIN_NAMESPACE
 
-namespace QPlatformGraphicsBufferHelper {
-    Q_GUI_EXPORT bool lockAndBindToTexture(QPlatformGraphicsBuffer *graphicsBuffer, bool *swizzleRandB, bool *premultipliedB, const QRect &rect = QRect());
-    bool bindSWToTexture(const QPlatformGraphicsBuffer *graphicsBuffer, bool *swizzleRandB = nullptr, bool *premultipliedB = nullptr, const QRect &rect = QRect());
-}
+class QOpenGLTextureBlitter;
+class QOpenGLBackingStore;
+
+class QPlatformBackingStoreOpenGLSupport : public QPlatformBackingStoreOpenGLSupportBase
+{
+public:
+    explicit QPlatformBackingStoreOpenGLSupport(QPlatformBackingStore *backingStore) : backingStore(backingStore) {}
+    ~QPlatformBackingStoreOpenGLSupport() override;
+    void composeAndFlush(QWindow *window, const QRegion &region, const QPoint &offset,
+                         QPlatformTextureList *textures, bool translucentBackground) override;
+    GLuint toTexture(const QRegion &dirtyRegion, QSize *textureSize, QPlatformBackingStore::TextureFlags *flags) const override;
+
+private:
+    QPlatformBackingStore *backingStore = nullptr;
+    QScopedPointer<QOpenGLContext> context;
+    mutable GLuint textureId = 0;
+    mutable QSize textureSize;
+    mutable bool needsSwizzle = false;
+    mutable bool premultiplied = false;
+    QOpenGLTextureBlitter *blitter = nullptr;
+};
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QT_NO_OPENGL
+
+#endif // QPLATFORMBACKINGSTOREOPENGLSUPPORT_H

@@ -101,6 +101,8 @@ QT += \
 
 qtConfig(vulkan): QT += vulkan_support-private
 
+qtHaveModule(platformcompositor_support-private): QT += platformcompositor_support-private
+
 CONFIG += no_app_extension_api_only
 
 qtHaveModule(widgets) {

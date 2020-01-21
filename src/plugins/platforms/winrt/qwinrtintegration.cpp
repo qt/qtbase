@@ -53,6 +53,9 @@
 #if QT_CONFIG(accessibility)
 #  include "uiautomation/qwinrtuiaaccessibility.h"
 #endif
+#if QT_CONFIG(opengl)
+#include <QtPlatformCompositorSupport/qpa/qplatformbackingstoreopenglsupport.h>
+#endif
 
 #include <QtGui/QOffscreenSurface>
 #include <QtGui/QOpenGLContext>
@@ -205,7 +208,11 @@ QPlatformWindow *QWinRTIntegration::createPlatformWindow(QWindow *window) const
 
 QPlatformBackingStore *QWinRTIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QWinRTBackingStore(window);
+    auto *backingStore = new QWinRTBackingStore(window);
+#if QT_CONFIG(opengl)
+    backingStore->setOpenGLSupport(new QPlatformBackingStoreOpenGLSupport(backingStore));
+#endif
+    return backingStore;
 }
 
 QPlatformOpenGLContext *QWinRTIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const

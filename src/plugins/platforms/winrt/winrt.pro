@@ -6,6 +6,8 @@ QT += \
     core-private gui-private \
     fontdatabase_support-private egl_support-private
 
+qtHaveModule(platformcompositor_support-private): QT += platformcompositor_support-private
+
 DEFINES *= QT_NO_CAST_FROM_ASCII __WRL_NO_DEFAULT_LIB__
 
 QMAKE_USE_PRIVATE += d3d11 ws2_32

@@ -61,6 +61,9 @@
 
 #include <QtFontDatabaseSupport/private/qgenericunixfontdatabase_p.h>
 #include <QtServiceSupport/private/qgenericunixservices_p.h>
+#if QT_CONFIG(opengl)
+#include <QtPlatformCompositorSupport/qpa/qplatformbackingstoreopenglsupport.h>
+#endif
 
 #include <stdio.h>
 
@@ -288,16 +291,23 @@ QPlatformOpenGLContext *QXcbIntegration::createPlatformOpenGLContext(QOpenGLCont
 
 QPlatformBackingStore *QXcbIntegration::createPlatformBackingStore(QWindow *window) const
 {
+    QPlatformBackingStore *backingStore = nullptr;
+
     const bool isTrayIconWindow = QXcbWindow::isTrayIconWindow(window);
-    if (isTrayIconWindow)
-        return new QXcbSystemTrayBackingStore(window);
-
+    if (isTrayIconWindow) {
+        backingStore = new QXcbSystemTrayBackingStore(window);
 #if QT_CONFIG(xcb_native_painting)
-    if (nativePaintingEnabled())
-        return new QXcbNativeBackingStore(window);
+    } else if (nativePaintingEnabled()) {
+        backingStore = new QXcbNativeBackingStore(window);
 #endif
-
-    return new QXcbBackingStore(window);
+    } else {
+        backingStore = new QXcbBackingStore(window);
+    }
+    Q_ASSERT(backingStore);
+#ifndef QT_NO_OPENGL
+    backingStore->setOpenGLSupport(new QPlatformBackingStoreOpenGLSupport(backingStore));
+#endif
+    return backingStore;
 }
 
 QPlatformOffscreenSurface *QXcbIntegration::createPlatformOffscreenSurface(QOffscreenSurface *surface) const

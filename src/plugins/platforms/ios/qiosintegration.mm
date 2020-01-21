@@ -65,6 +65,10 @@
 
 #import <AudioToolbox/AudioServices.h>
 
+#if QT_CONFIG(opengl)
+#include <QtPlatformCompositorSupport/qpa/qplatformbackingstoreopenglsupport.h>
+#endif
+
 #include <QtDebug>
 
 QT_BEGIN_NAMESPACE
@@ -186,7 +190,11 @@ QPlatformWindow *QIOSIntegration::createPlatformWindow(QWindow *window) const
 // Used when the QWindow's surface type is set by the client to QSurface::RasterSurface
 QPlatformBackingStore *QIOSIntegration::createPlatformBackingStore(QWindow *window) const
 {
-    return new QIOSBackingStore(window);
+    auto *backingStore = new QIOSBackingStore(window);
+#if QT_CONFIG(opengl)
+    backingStore->setOpenGLSupport(new QPlatformBackingStoreOpenGLSupport(backingStore));
+#endif
+    return backingStore;
 }
 
 // Used when the QWindow's surface type is set by the client to QSurface::OpenGLSurface

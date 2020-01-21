@@ -9,6 +9,9 @@ QT += \
     edid_support-private \
     xkbcommon_support-private
 
+qtHaveModule(platformcompositor_support-private): \
+    QT += platformcompositor_support-private
+
 qtHaveModule(linuxaccessibility_support-private): \
     QT += linuxaccessibility_support-private
 
