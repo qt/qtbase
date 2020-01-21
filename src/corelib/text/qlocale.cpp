@@ -4463,6 +4463,8 @@ QStringList QLocale::uiLanguages() const
             for (const auto entry : qAsConst(uiLanguages))
                 locales.append(QLocale(entry));
         }
+        if (locales.isEmpty())
+            locales.append(systemLocale()->fallbackUiLocale());
     } else
 #endif
     {
