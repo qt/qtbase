@@ -411,22 +411,22 @@ QT_BEGIN_NAMESPACE
     \value Script_Khudawadi
     \value Script_Tirhuta
     \value Script_WarangCiti
-    \value Script_Ahom
-    \value Script_AnatolianHieroglyphs
-    \value Script_Hatran
-    \value Script_Multani
-    \value Script_OldHungarian
-    \value Script_SignWriting
-    \value Script_Adlam
-    \value Script_Bhaiksuki
-    \value Script_Marchen
-    \value Script_Newa
-    \value Script_Osage
-    \value Script_Tangut
-    \value Script_MasaramGondi
-    \value Script_Nushu
-    \value Script_Soyombo
-    \value Script_ZanabazarSquare
+    \value Script_Ahom                  This value was introduced in Qt 5.6.
+    \value Script_AnatolianHieroglyphs  This value was introduced in Qt 5.6.
+    \value Script_Hatran                This value was introduced in Qt 5.6.
+    \value Script_Multani               This value was introduced in Qt 5.6.
+    \value Script_OldHungarian          This value was introduced in Qt 5.6.
+    \value Script_SignWriting           This value was introduced in Qt 5.6.
+    \value Script_Adlam                 This value was introduced in Qt 5.11.
+    \value Script_Bhaiksuki             This value was introduced in Qt 5.11.
+    \value Script_Marchen               This value was introduced in Qt 5.11.
+    \value Script_Newa                  This value was introduced in Qt 5.11.
+    \value Script_Osage                 This value was introduced in Qt 5.11.
+    \value Script_Tangut                This value was introduced in Qt 5.11.
+    \value Script_MasaramGondi          This value was introduced in Qt 5.11.
+    \value Script_Nushu                 This value was introduced in Qt 5.11.
+    \value Script_Soyombo               This value was introduced in Qt 5.11.
+    \value Script_ZanabazarSquare       This value was introduced in Qt 5.11.
 
     \omitvalue ScriptCount
 
