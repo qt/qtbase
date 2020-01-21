@@ -63,9 +63,9 @@ if(NOT QT_MKSPECS_DIR)
 endif()
 
 # the default RPATH to be used when installing, but only if it's not a system directory
-LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}" isSystemDir)
 IF("${isSystemDir}" STREQUAL "-1")
-   SET(_default_install_rpath "${CMAKE_INSTALL_PREFIX}/lib")
+   SET(_default_install_rpath "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
 ENDIF("${isSystemDir}" STREQUAL "-1")
 
 # Default rpath settings: Use rpath for build tree as well as a full path for the installed binaries.
@@ -3950,7 +3950,7 @@ function(qt_generate_qconfig_cpp)
     if(WIN32)
         set(lib_location_absolute_path "${CMAKE_INSTALL_PREFIX}/${INSTALL_BINDIR}")
     else()
-        set(lib_location_absolute_path "${CMAKE_INSTALL_PREFIX}/lib")
+        set(lib_location_absolute_path "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBDIR}")
     endif()
     file(RELATIVE_PATH from_lib_location_to_prefix
          "${lib_location_absolute_path}" "${CMAKE_INSTALL_PREFIX}")
