@@ -3573,6 +3573,21 @@ bool QMetaProperty::isFinal() const
 }
 
 /*!
+  \since 5.15
+  Returns \c true if the property is required; otherwise returns \c false.
+
+  A property is final if the \c{Q_PROPERTY()}'s \c REQUIRED attribute
+  is set.
+*/
+bool QMetaProperty::isRequired() const
+{
+    if (!mobj)
+        return false;
+    int flags = mobj->d.data[handle + 2];
+    return flags & Required;
+}
+
+/*!
     \obsolete
 
     Returns \c true if the property is editable for the given \a object;

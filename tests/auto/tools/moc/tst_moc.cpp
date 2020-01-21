@@ -719,6 +719,7 @@ private slots:
     void cxx17Namespaces();
     void cxxAttributes();
     void mocJsonOutput();
+    void requiredProperties();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -4023,6 +4024,29 @@ void tst_Moc::mocJsonOutput()
     };
 
     QVERIFY2(actualOutput == expectedOutput, showPotentialDiff(actualOutput, expectedOutput).constData());
+}
+
+class RequiredTest :public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(int required MEMBER m_required REQUIRED)
+    Q_PROPERTY(int notRequired MEMBER m_notRequired)
+
+private:
+    int m_required;
+    int m_notRequired;
+};
+
+void tst_Moc::requiredProperties()
+{
+    QMetaObject mo = RequiredTest::staticMetaObject;
+    QMetaProperty required = mo.property(mo.indexOfProperty("required"));
+    QVERIFY(required.isValid());
+    QVERIFY(required.isRequired());
+    QMetaProperty notRequired = mo.property(mo.indexOfProperty("notRequired"));
+    QVERIFY(notRequired.isValid());
+    QVERIFY(!notRequired.isRequired());
 }
 
 QTEST_MAIN(tst_Moc)

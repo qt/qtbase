@@ -85,7 +85,8 @@ enum PropertyFlags  {
     User = 0x00100000,
     ResolveUser = 0x00200000,
     Notify = 0x00400000,
-    Revisioned = 0x00800000
+    Revisioned = 0x00800000,
+    Required = 0x01000000,
 };
 
 enum MethodFlags  {

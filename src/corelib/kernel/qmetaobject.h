@@ -266,6 +266,7 @@ public:
     bool isUser(const QObject *obj = nullptr) const;
     bool isConstant() const;
     bool isFinal() const;
+    bool isRequired() const;
 
     bool isFlagType() const;
     bool isEnumType() const;

@@ -137,6 +137,7 @@ struct PropertyDef
     int revision = 0;
     bool constant = false;
     bool final = false;
+    bool required = false;
 
     QJsonObject toJson() const;
 };
