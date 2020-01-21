@@ -791,6 +791,12 @@ function(qt_ensure_sync_qt)
         qt_path_join(syncqt_install_dir ${QT_INSTALL_DIR} ${INSTALL_LIBEXECDIR})
         qt_copy_or_install(PROGRAMS "${SYNCQT_FROM_SOURCE}"
                            DESTINATION "${syncqt_install_dir}")
+    elseif(QT_HOST_PATH)
+        get_filename_component(syncqt_absolute_path
+                               "${QT_HOST_PATH}/${INSTALL_LIBEXECDIR}/syncqt.pl"
+                               ABSOLUTE)
+        set(QT_SYNCQT "${syncqt_absolute_path}" CACHE FILEPATH "syncqt script")
+        message(STATUS "Using host syncqt found at: ${QT_SYNCQT}")
     else()
         get_filename_component(syncqt_absolute_path
                                "${CMAKE_INSTALL_PREFIX}/${INSTALL_LIBEXECDIR}/syncqt.pl"
