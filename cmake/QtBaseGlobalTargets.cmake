@@ -131,10 +131,10 @@ qt_install(FILES "${__GlobalConfig_build_dir}/qt.toolchain.cmake" DESTINATION "$
 # Also provide a convenience cmake wrapper
 if(UNIX)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.in" "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake" @ONLY)
-    qt_install(PROGRAMS "${QT_BUILD_DIR}/bin/qt-cmake" DESTINATION "${INSTALL_BINDIR}")
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake" DESTINATION "${INSTALL_BINDIR}")
 else()
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.bat.in" "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake.bat" @ONLY)
-    qt_install(PROGRAMS "${QT_BUILD_DIR}/bin/qt-cmake.bat" DESTINATION "${INSTALL_BINDIR}")
+    qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake.bat" DESTINATION "${INSTALL_BINDIR}")
 endif()
 
 # Provide a private convenience wrapper with options which should not be propagated via the public
@@ -149,11 +149,11 @@ set(__qt_cmake_extra "-G\"${CMAKE_GENERATOR}\"")
 if(UNIX)
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.in"
         "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private" @ONLY)
-    qt_install(PROGRAMS "${QT_BUILD_DIR}/bin/qt-cmake-private" DESTINATION "${INSTALL_BINDIR}")
+qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private" DESTINATION "${INSTALL_BINDIR}")
 else()
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/bin/qt-cmake.bat.in"
         "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private.bat" @ONLY)
-    qt_install(PROGRAMS "${QT_BUILD_DIR}/bin/qt-cmake-private.bat" DESTINATION "${INSTALL_BINDIR}")
+qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_BINDIR}/qt-cmake-private.bat" DESTINATION "${INSTALL_BINDIR}")
 endif()
 unset(__qt_cmake_extra)
 
