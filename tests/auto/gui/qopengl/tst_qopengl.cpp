@@ -31,10 +31,10 @@
 #include <QtOpenGL/QOpenGLTexture>
 #include <QtOpenGL/qopengltextureblitter.h>
 #include <QtOpenGL/QOpenGLVertexArrayObject>
+#include <QtOpenGL/QOpenGLBuffer>
 #include <QtGui/private/qopenglcontext_p.h>
 #include <QtGui/QOpenGLFunctions>
 #include <QtGui/QOpenGLFunctions_4_2_Core>
-#include <QtGui/QOpenGLBuffer>
 #include <QtGui/QPainter>
 #include <QtGui/QScreen>
 #include <QtGui/QWindow>

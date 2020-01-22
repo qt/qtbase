@@ -41,7 +41,7 @@
 
 #include <QtOpenGL/QOpenGLShaderProgram>
 #include <QtOpenGL/QOpenGLVertexArrayObject>
-#include <QtGui/QOpenGLBuffer>
+#include <QtOpenGL/QOpenGLBuffer>
 #include <QtGui/QOpenGLContext>
 #include <QtGui/QOpenGLFunctions>
 

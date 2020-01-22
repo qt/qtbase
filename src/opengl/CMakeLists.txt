@@ -7,6 +7,7 @@
 qt_add_module(OpenGL
     SOURCES
         qopengl2pexvertexarray.cpp qopengl2pexvertexarray_p.h
+        qopenglbuffer.cpp qopenglbuffer.h
         qopenglcustomshaderstage.cpp qopenglcustomshaderstage_p.h
         qopengldebug.cpp qopengldebug.h
         qopenglengineshadermanager.cpp qopenglengineshadermanager_p.h

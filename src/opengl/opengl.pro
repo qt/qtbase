@@ -10,6 +10,7 @@ qtConfig(opengles2): CONFIG += opengles2
 
 HEADERS += \
     qopengl2pexvertexarray_p.h \
+    qopenglbuffer.h \
     qopenglcustomshaderstage_p.h \
     qopengldebug.h \
     qopenglengineshadermanager_p.h \
@@ -36,6 +37,7 @@ HEADERS += \
 
 SOURCES += \
     qopengl2pexvertexarray.cpp \
+    qopenglbuffer.cpp \
     qopenglcustomshaderstage.cpp \
     qopenglengineshadermanager.cpp \
     qopenglframebufferobject.cpp \

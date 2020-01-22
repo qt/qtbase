@@ -3,7 +3,7 @@
 ** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
     \brief The QOpenGLBuffer class provides functions for creating and managing OpenGL buffer objects.
     \since 5.0
     \ingroup painting-3D
-    \inmodule QtGui
+    \inmodule QtOpenGL
 
     Buffer objects are created in the OpenGL server so that the
     client application can avoid uploading vertices, indices,

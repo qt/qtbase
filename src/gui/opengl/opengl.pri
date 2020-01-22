@@ -8,7 +8,6 @@ qtConfig(opengl) {
     HEADERS += opengl/qopengl.h \
                opengl/qopengl_p.h \
                opengl/qopenglfunctions.h \
-               opengl/qopenglbuffer.h \
                opengl/qopenglextensions_p.h \
                opengl/qopenglversionfunctions.h \
                opengl/qopenglversionfunctionsfactory_p.h \
@@ -17,7 +16,6 @@ qtConfig(opengl) {
 
     SOURCES += opengl/qopengl.cpp \
                opengl/qopenglfunctions.cpp \
-               opengl/qopenglbuffer.cpp \
                opengl/qopenglversionfunctions.cpp \
                opengl/qopenglversionfunctionsfactory.cpp \
                opengl/qopenglprogrambinarycache.cpp
